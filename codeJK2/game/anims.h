@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __ANIMS_H__
 #define __ANIMS_H__
@@ -1395,14 +1399,36 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 #endif// #ifndef CG_PLAYER_CPP
 
 // !!!!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!!!
-typedef struct
+class animFileSet_t
 {
+public:
 	char			filename[MAX_QPATH];
 	animation_t		animations[MAX_ANIMATIONS];
 	animsounds_t	torsoAnimSnds[MAX_ANIM_SOUNDS];
 	animsounds_t	legsAnimSnds[MAX_ANIM_SOUNDS];
 	qboolean		soundsCached;
-} animFileSet_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int8_t>(filename);
+		saved_game.write<>(animations);
+		saved_game.write<>(torsoAnimSnds);
+		saved_game.write<>(legsAnimSnds);
+		saved_game.write<int32_t>(soundsCached);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int8_t>(filename);
+		saved_game.read<>(animations);
+		saved_game.read<>(torsoAnimSnds);
+		saved_game.read<>(legsAnimSnds);
+		saved_game.read<int32_t>(soundsCached);
+	}
+}; // animFileSet_t
 #define MAX_ANIM_FILES	64
 
 #endif// #ifndef __ANIMS_H__

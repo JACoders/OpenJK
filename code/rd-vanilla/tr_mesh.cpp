@@ -1,25 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_mesh.c: triangle model functions
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
@@ -44,12 +48,12 @@ float ProjectRadius( float r, vec3_t location )
 	p[1] = Q_fabs( r );
 	p[2] = -dist;
 
-	width = p[0] * tr.viewParms.projectionMatrix[1] + 
+	width = p[0] * tr.viewParms.projectionMatrix[1] +
 		           p[1] * tr.viewParms.projectionMatrix[5] +
 				   p[2] * tr.viewParms.projectionMatrix[9] +
 				   tr.viewParms.projectionMatrix[13];
 
-	depth = p[0] * tr.viewParms.projectionMatrix[3] + 
+	depth = p[0] * tr.viewParms.projectionMatrix[3] +
 		           p[1] * tr.viewParms.projectionMatrix[7] +
 				   p[2] * tr.viewParms.projectionMatrix[11] +
 				   tr.viewParms.projectionMatrix[15];
@@ -126,7 +130,7 @@ static int R_CullModel( md3Header_t *header, trRefEntity_t *ent ) {
 			}
 		}
 	}
-	
+
 	// calculate a bounding box in the current coordinate system
 	for (i = 0 ; i < 3 ; i++) {
 		bounds[0][i] = oldFrame->bounds[0][i] < newFrame->bounds[0][i] ? oldFrame->bounds[0][i] : newFrame->bounds[0][i];
@@ -195,7 +199,7 @@ static int R_ComputeLOD( trRefEntity_t *ent ) {
 
 	// multiple LODs exist, so compute projected bounding sphere
 	// and use that as a criteria for selecting LOD
-//	if ( tr.currentModel->md3[0] ) 
+//	if ( tr.currentModel->md3[0] )
 	{	//normal md3
 		md3Frame_t *frame;
 		frame = ( md3Frame_t * ) ( ( ( unsigned char * ) tr.currentModel->md3[0] ) + tr.currentModel->md3[0]->ofsFrames );
@@ -220,7 +224,7 @@ static int R_ComputeLOD( trRefEntity_t *ent ) {
 	} else if ( lod >= tr.currentModel->numLods ) {
 		lod = tr.currentModel->numLods - 1;
 	}
-	
+
 	lod += r_lodbias->integer;
 	if ( lod >= tr.currentModel->numLods )
 		lod = tr.currentModel->numLods - 1;
@@ -259,12 +263,12 @@ static int R_ComputeFogNum( md3Header_t *header, trRefEntity_t *ent ) {
 	int partialFog = 0;
 	for ( i = 1 ; i < tr.world->numfogs ; i++ ) {
 		fog = &tr.world->fogs[i];
-		if ( localOrigin[0] - md3Frame->radius >= fog->bounds[0][0] 
-			&& localOrigin[0] + md3Frame->radius <= fog->bounds[1][0] 
+		if ( localOrigin[0] - md3Frame->radius >= fog->bounds[0][0]
+			&& localOrigin[0] + md3Frame->radius <= fog->bounds[1][0]
 			&& localOrigin[1] - md3Frame->radius >= fog->bounds[0][1]
-			&& localOrigin[1] + md3Frame->radius <= fog->bounds[1][1] 
+			&& localOrigin[1] + md3Frame->radius <= fog->bounds[1][1]
 			&& localOrigin[2] - md3Frame->radius >= fog->bounds[0][2]
-			&& localOrigin[2] + md3Frame->radius <= fog->bounds[1][2] ) 
+			&& localOrigin[2] + md3Frame->radius <= fog->bounds[1][2] )
 		{//totally inside it
 			return i;
 			break;
@@ -272,7 +276,7 @@ static int R_ComputeFogNum( md3Header_t *header, trRefEntity_t *ent ) {
 		if ( ( localOrigin[0] - md3Frame->radius >= fog->bounds[0][0] && localOrigin[1] - md3Frame->radius >= fog->bounds[0][1] && localOrigin[2] - md3Frame->radius >= fog->bounds[0][2] &&
 				localOrigin[0] - md3Frame->radius <= fog->bounds[1][0] && localOrigin[1] - md3Frame->radius <= fog->bounds[1][1] && localOrigin[2] - md3Frame->radius <= fog->bounds[1][2]) ||
 			( localOrigin[0] + md3Frame->radius >= fog->bounds[0][0] && localOrigin[1] + md3Frame->radius >= fog->bounds[0][1] && localOrigin[2] + md3Frame->radius >= fog->bounds[0][2] &&
-				localOrigin[0] + md3Frame->radius <= fog->bounds[1][0] && localOrigin[1] + md3Frame->radius <= fog->bounds[1][1] && localOrigin[2] + md3Frame->radius <= fog->bounds[1][2] ) ) 
+				localOrigin[0] + md3Frame->radius <= fog->bounds[1][0] && localOrigin[1] + md3Frame->radius <= fog->bounds[1][1] && localOrigin[2] + md3Frame->radius <= fog->bounds[1][2] ) )
 		{//partially inside it
 			if ( tr.refdef.fogIndex == i || R_FogParmsMatch( tr.refdef.fogIndex, i ) )
 			{//take new one only if it's the same one that the viewpoint is in
@@ -308,7 +312,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	qboolean		personalModel;
 
 	// don't add third_person objects if not in a portal
-	personalModel = (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal;
+	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
 
 	if ( ent->e.renderfx & RF_CAP_FRAMES) {
 		if (ent->e.frame > tr.currentModel->md3[0]->numFrames-1)
@@ -327,10 +331,10 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	// when the surfaces are rendered, they don't need to be
 	// range checked again.
 	//
-	if ( (ent->e.frame >= tr.currentModel->md3[0]->numFrames) 
+	if ( (ent->e.frame >= tr.currentModel->md3[0]->numFrames)
 		|| (ent->e.frame < 0)
 		|| (ent->e.oldframe >= tr.currentModel->md3[0]->numFrames)
-		|| (ent->e.oldframe < 0) ) 
+		|| (ent->e.oldframe < 0) )
 	{
 			ri.Printf (PRINT_ALL, "R_AddMD3Surfaces: no such frame %d to %d for '%s'\n",
 				ent->e.oldframe, ent->e.frame,
@@ -405,10 +409,10 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 
 		// stencil shadows can't do personal models unless I polyhedron clip
 		if ( !personalModel
-			&& r_shadows->integer == 2 
+			&& r_shadows->integer == 2
 			&& fogNum == 0
 			&& (ent->e.renderfx & RF_SHADOW_PLANE )
-			&& !(ent->e.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) ) 
+			&& !(ent->e.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) )
 			&& shader->sort == SS_OPAQUE ) {
 			R_AddDrawSurf( (surfaceType_t *)surface, tr.shadowShader, 0, qfalse );
 		}

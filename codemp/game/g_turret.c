@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "g_local.h"
 #include "qcommon/q_shared.h"
 
@@ -22,7 +43,7 @@ void TurretPain( gentity_t *self, gentity_t *attacker, int damage )
 
 	if ( attacker->client && attacker->client->ps.weapon == WP_DEMP2 )
 	{
-		self->attackDebounceTime = level.time + 800 + random() * 500;
+		self->attackDebounceTime = level.time + 800 + Q_flrand(0.0f, 1.0f) * 500;
 		self->painDebounceTime = self->attackDebounceTime;
 	}
 	if ( !self->enemy )
@@ -69,13 +90,13 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	pos[2] += self->r.maxs[2]*0.5f;
 	G_PlayEffect( EFFECT_EXPLOSION_TURRET, pos, forward );
 	G_PlayEffectID( G_EffectIndex( "turret/explode" ), pos, forward );
-	
+
 	if ( self->splashDamage > 0 && self->splashRadius > 0 )
 	{
-		G_RadiusDamage( self->r.currentOrigin, 
-						attacker, 
-						self->splashDamage, 
-						self->splashRadius, 
+		G_RadiusDamage( self->r.currentOrigin,
+						attacker,
+						self->splashDamage,
+						self->splashRadius,
 						attacker,
 						NULL,
 						MOD_UNKNOWN );
@@ -96,7 +117,7 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 
 		VectorCopy( self->r.currentAngles, self->s.apos.trBase );
 		VectorClear( self->s.apos.trDelta );
-		
+
 		if ( self->target )
 		{
 			G_UseTargets( self, attacker );
@@ -162,7 +183,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	bolt->methodOfDeath = MOD_TARGET_LASER;
 	bolt->splashMethodOfDeath = MOD_TARGET_LASER;
 	bolt->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame	
+	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame
 
 	VectorSet( bolt->r.maxs, 1.5, 1.5, 1.5 );
 	VectorScale( bolt->r.maxs, -1, bolt->r.mins );
@@ -206,7 +227,7 @@ void turret_head_think( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the flash bolt here
-		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -280,7 +301,7 @@ static void turret_aim( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the "eye" here
-		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->s.origin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -448,13 +469,13 @@ static qboolean turret_find_enemies( gentity_t *self )
 			if ( target->client )
 			{
 				if ( target->client->sess.sessionTeam == self->alliedTeam )
-				{ 
+				{
 					// A bot/client/NPC we don't want to shoot
 					continue;
 				}
 			}
 			else if ( target->teamnodmg == self->alliedTeam )
-			{ 
+			{
 				// An ent we don't want to shoot
 				continue;
 			}
@@ -603,7 +624,7 @@ void turret_base_think( gentity_t *self )
 	else
 	{
 		// keep our enemy for a minimum of 2 seconds from now
-		self->bounceCount = level.time + 2000 + random() * 150;
+		self->bounceCount = level.time + 2000 + Q_flrand(0.0f, 1.0f) * 150;
 	}
 
 	turret_aim( self );
@@ -639,18 +660,18 @@ Large 2-piece turbolaser turret
   dmg	- How much damage each shot does (default 100)
   health - How much damage it can take before exploding (default 3000)
   speed - how fast it turns (default 10)
-  
+
   splashDamage - How much damage the explosion does (300)
   splashRadius - The radius of the explosion (128)
 
   shotspeed - speed at which projectiles will move
-  
+
   targetname - Toggles it on/off
   target - What to use when destroyed
   target2 - What to use when it decides to start shooting at an enemy
 
   showhealth - set to 1 to show health bar on this entity when crosshair is over it
-  
+
   teamowner - crosshair shows green for this team, red for opposite team
 	0 - none
 	1 - red
@@ -679,12 +700,12 @@ void SP_misc_turret( gentity_t *base )
 	//base->playerModel = trap->G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
 	//base->s.radius = 80.0f;
 
-	//trap->G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
+	//trap->G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL );
 	//base->torsoBolt = trap->G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
 
 	G_SpawnString( "icon", "", &s );
 	if (s && s[0])
-	{ 
+	{
 		// We have an icon, so index it now.  We are reusing the genericenemyindex
 		// variable rather than adding a new one to the entity state.
 		base->s.genericenemyindex = G_IconIndex(s);
@@ -753,7 +774,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	top->speed = 0;
 
 	// this is a random time offset for the no-enemy-search-around-mode
-	top->count = random() * 9000;
+	top->count = Q_flrand(0.0f, 1.0f) * 9000;
 
 	if ( !base->health )
 	{
@@ -808,7 +829,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	// How quickly to fire
 	if ( !base->wait )
 	{
-		base->wait = 300 + random() * 55;
+		base->wait = 300 + Q_flrand(0.0f, 1.0f) * 55;
 	}
 	top->wait = base->wait;
 

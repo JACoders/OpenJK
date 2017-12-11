@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 #include "g_nav.h"
 
@@ -105,7 +127,7 @@ void Wampa_Patrol( void )
 	{
 		if ( TIMER_Done( NPCS.NPC, "patrolTime" ))
 		{
-			TIMER_Set( NPCS.NPC, "patrolTime", crandom() * 5000 + 5000 );
+			TIMER_Set( NPCS.NPC, "patrolTime", Q_flrand(-1.0f, 1.0f) * 5000 + 5000 );
 		}
 	}
 
@@ -117,7 +139,7 @@ void Wampa_Patrol( void )
 	Wampa_CheckRoar( NPCS.NPC );
 	TIMER_Set( NPCS.NPC, "lookForNewEnemy", Q_irand( 5000, 15000 ) );
 }
- 
+
 /*
 -------------------------
 Wampa_Move
@@ -133,7 +155,7 @@ void Wampa_Move( qboolean visible )
 		{//pick correct movement speed and anim
 			//run by default
 			NPCS.ucmd.buttons &= ~BUTTON_WALKING;
-			if ( !TIMER_Done( NPCS.NPC, "runfar" ) 
+			if ( !TIMER_Done( NPCS.NPC, "runfar" )
 				|| !TIMER_Done( NPCS.NPC, "runclose" ) )
 			{//keep running with this anim & speed for a bit
 			}
@@ -192,12 +214,12 @@ void Wampa_Slash( int boltIndex, qboolean backhand )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnt == NPCS.NPC )
 		{//Skip the wampa ent
 			continue;
 		}
-		
+
 		if ( radiusEnt->client == NULL )
 		{//must be a client
 			continue;
@@ -289,7 +311,7 @@ void Wampa_Attack( float distance, qboolean doCharge )
 			TIMER_Set( NPCS.NPC, "attack_dmg", 250 );
 		}
 
-		TIMER_Set( NPCS.NPC, "attacking", NPCS.NPC->client->ps.legsTimer + random() * 200 );
+		TIMER_Set( NPCS.NPC, "attacking", NPCS.NPC->client->ps.legsTimer + Q_flrand(0.0f, 1.0f) * 200 );
 		//allow us to re-evaluate our running speed/anim
 		TIMER_Set( NPCS.NPC, "runfar", -1 );
 		TIMER_Set( NPCS.NPC, "runclose", -1 );
@@ -370,7 +392,7 @@ void Wampa_Combat( void )
 	}
 	else
 	{
-		float		distance = enemyDist = Distance( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+		float		distance = enemyDist = Distance( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 		qboolean	advance = (qboolean)( distance > (NPCS.NPC->r.maxs[0]+MIN_DISTANCE) ? qtrue : qfalse  );
 		qboolean	doCharge = qfalse;
 
@@ -428,15 +450,15 @@ void Wampa_Combat( void )
 NPC_Wampa_Pain
 -------------------------
 */
-void NPC_Wampa_Pain( gentity_t *self, gentity_t *attacker, int damage ) 
+void NPC_Wampa_Pain( gentity_t *self, gentity_t *attacker, int damage )
 {
 	qboolean hitByWampa = qfalse;
 	if ( attacker&&attacker->client&&attacker->client->NPC_class==CLASS_WAMPA )
 	{
 		hitByWampa = qtrue;
 	}
-	if ( attacker 
-		&& attacker->inuse 
+	if ( attacker
+		&& attacker->inuse
 		&& attacker != self->enemy
 		&& !(attacker->flags&FL_NOTARGET) )
 	{
@@ -444,7 +466,7 @@ void NPC_Wampa_Pain( gentity_t *self, gentity_t *attacker, int damage )
 			|| !self->enemy
 			|| self->enemy->health == 0
 			|| (self->enemy->client&&self->enemy->client->NPC_class == CLASS_WAMPA)
-			|| (!Q_irand(0, 4 ) && DistanceSquared( attacker->r.currentOrigin, self->r.currentOrigin ) < DistanceSquared( self->enemy->r.currentOrigin, self->r.currentOrigin )) ) 
+			|| (!Q_irand(0, 4 ) && DistanceSquared( attacker->r.currentOrigin, self->r.currentOrigin ) < DistanceSquared( self->enemy->r.currentOrigin, self->r.currentOrigin )) )
 		{//if my enemy is dead (or attacked by player) and I'm not still holding/eating someone, turn on the attacker
 			//FIXME: if can't nav to my enemy, take this guy if I can nav to him
 			G_SetEnemy( self, attacker );
@@ -596,7 +618,7 @@ void NPC_BSWampa_Default( void )
 			return;
 		}
 	}
-	else 
+	else
 	{
 		if ( TIMER_Done(NPCS.NPC,"idlenoise") )
 		{

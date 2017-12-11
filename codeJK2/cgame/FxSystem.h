@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #if !defined(CG_LOCAL_H_INC)
 	#include "cg_local.h"
@@ -23,6 +27,8 @@ This file is part of Jedi Knight 2.
 #ifndef FX_SYSTEM_H_INC
 #define FX_SYSTEM_H_INC
 
+#include "qcommon/safe/gsl.h"
+
 
 #define irand	Q_irand
 #define flrand	Q_flrand
@@ -30,27 +36,7 @@ This file is part of Jedi Knight 2.
 extern vmCvar_t	fx_debug;
 extern vmCvar_t	fx_freeze;
 
-inline void Vector2Clear(vec2_t a)
-{
-	a[0] = 0.0f;
-	a[1] = 0.0f;
-}
-
-inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
-
 extern void	CG_CalcEntityLerpPositions( centity_t * );	
-
 
 struct SFxHelper
 {
@@ -73,7 +59,7 @@ struct SFxHelper
 
 	// Sound
 	void	PlaySound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-	int		RegisterSound( const char *sound );
+	int		RegisterSound( const gsl::cstring_view& sound );
 
 	// Physics/collision
 	void	Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end, int skipEntNum, int flags );
@@ -81,8 +67,8 @@ struct SFxHelper
 	void	AddFxToScene( refEntity_t *ent );
 	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue );
 
-	int		RegisterShader( const char *shader );
-	int		RegisterModel( const char *model );
+	int		RegisterShader( const gsl::cstring_view& shader );
+	int		RegisterModel( const gsl::cstring_view& model );
 
 	void	AddPolyToScene( int shader, int count, polyVert_t *verts );
 

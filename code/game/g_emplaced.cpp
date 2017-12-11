@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -28,7 +32,7 @@ extern Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt );
 
 //lock the owner into place relative to the cannon pos
 void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
-{ 
+{
 	mdxaBone_t boltMatrix;
 	vec3_t p, p2, d;
 	trace_t tr;
@@ -57,8 +61,8 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 		}
 	}
 	//trace over
-	gi.G2API_GetBoltMatrix( eweb->ghoul2, 0, eweb->headBolt, &boltMatrix, 
-		eweb->s.apos.trBase, eweb->currentOrigin, 
+	gi.G2API_GetBoltMatrix( eweb->ghoul2, 0, eweb->headBolt, &boltMatrix,
+		eweb->s.apos.trBase, eweb->currentOrigin,
 		(cg.time?cg.time:level.time), NULL, eweb->s.modelScale );
 	gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, p );
 	gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, d );
@@ -70,7 +74,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 		VectorCopy( p, tr.endpos );
 		tr.allsolid = tr.startsolid = qfalse;
 	}
-	else 
+	else
 	{
 		p[2] = p2[2];
 		if ( owner->s.number < MAX_CLIENTS )
@@ -120,7 +124,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 				}
 				NPC_SetAnim( owner, SETANIM_LEGS, strafeAnim,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
-			
+
 			G_SetOrigin(owner, p);
 			VectorCopy(p, owner->client->ps.origin);
 			gi.linkentity( owner );
@@ -189,8 +193,8 @@ void eweb_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int d
 	// turn off any firing animations it may have been doing
 	self->s.frame = self->startFrame = self->endFrame = 0;
 	self->svFlags &= ~(SVF_ANIMATING|SVF_PLAYER_USABLE);
-	
-			
+
+
 	self->health = 0;
 //	self->s.weapon = WP_EMPLACED_GUN; // we need to be able to switch back to the old weapon
 
@@ -245,7 +249,7 @@ void eweb_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int d
 
 		ent->fxID = G_EffectIndex( "emplaced/dead_smoke" );
 
-		ent->e_ThinkFunc = thinkF_fx_runner_think; 
+		ent->e_ThinkFunc = thinkF_fx_runner_think;
 		ent->nextthink = level.time + 50;
 
 		// move up above the gun origin
@@ -470,9 +474,9 @@ void SP_emplaced_eweb( gentity_t *ent )
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
 	ent->lowerLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cannon_Yrot", qtrue );
 	ent->upperLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cannon_Xrot", qtrue );
-	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL, 0, 0); 
-	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->upperLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL, 0, 0); 
-	//gi.G2API_SetBoneAngles( &ent->ghoul2[0], "cannon_Yrot", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL); 
+	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL, 0, 0);
+	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->upperLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL, 0, 0);
+	//gi.G2API_SetBoneAngles( &ent->ghoul2[0], "cannon_Yrot", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL);
 	//set the constraints for this guy as an emplaced weapon, and his constraint angles
 	//ent->s.origin2[0] = 60.0f; //60 degrees in either direction
 
@@ -508,7 +512,7 @@ void SP_emplaced_eweb( gentity_t *ent )
  scripts:
 	will run usescript, painscript and deathscript
 */
- 
+
 //----------------------------------------------------------
 void emplaced_gun_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 {
@@ -692,7 +696,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	// turn off any firing animations it may have been doing
 	self->s.frame = self->startFrame = self->endFrame = 0;
 	self->svFlags &= ~SVF_ANIMATING;
-			
+
 	self->health = 0;
 //	self->s.weapon = WP_EMPLACED_GUN; // we need to be able to switch back to the old weapon
 
@@ -741,9 +745,9 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	vec3_t ugly;
 
 	ugly[YAW] = 4;
-	ugly[PITCH] = self->lastAngles[PITCH] * 0.8f + crandom() * 6;
-	ugly[ROLL] = crandom() * 7;
-	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
+	ugly[PITCH] = self->lastAngles[PITCH] * 0.8f + Q_flrand(-1.0f, 1.0f) * 6;
+	ugly[ROLL] = Q_flrand(-1.0f, 1.0f) * 7;
+	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
 
 	VectorCopy( self->currentOrigin,  org );
 	org[2] += 20;
@@ -760,7 +764,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 
 		ent->fxID = G_EffectIndex( "emplaced/dead_smoke" );
 
-		ent->e_ThinkFunc = thinkF_fx_runner_think; 
+		ent->e_ThinkFunc = thinkF_fx_runner_think;
 		ent->nextthink = level.time + 50;
 
 		// move up above the gun origin
@@ -835,7 +839,7 @@ void SP_emplaced_gun( gentity_t *ent )
 	ent->handRBolt = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*flash02" );
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "base_bone", qtrue );
 	ent->lowerLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "swivel_bone", qtrue );
-	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0); 
+	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0);
 
 	RegisterItem( FindItemForWeapon( WP_EMPLACED_GUN ));
 	ent->s.weapon = WP_EMPLACED_GUN;
@@ -996,7 +1000,7 @@ void ExitEmplacedWeapon( gentity_t *ent )
 
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 extern void CG_ChangeWeapon( int num );
-	if ( ent->health <= 0 ) 
+	if ( ent->health <= 0 )
 	{//when die, don't set weapon back on when ejected from emplaced/eweb
 		//empty hands
 		ent->client->ps.weapon = WP_NONE;

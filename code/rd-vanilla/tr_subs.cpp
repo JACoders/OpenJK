@@ -1,4 +1,27 @@
-//Anything above this #include will be ignored by the compiler
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "../server/exe_headers.h"
 
 // tr_subs.cpp - common function replacements for modular renderer
@@ -54,94 +77,23 @@ void Com_DPrintf(const char *format, ...)
 //}
 
 // ZONE
-void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
-	return ri.Z_Malloc( iSize, eTag, bZeroit, iAlign );
+
+void *R_Malloc( int iSize, memtag_t eTag, qboolean bZeroit ) {
+	return ri.Malloc( iSize, eTag, bZeroit, 4 );
 }
 
-int Z_Free( void *ptr ) {
-	return ri.Z_Free( ptr );
+void R_Free( void *ptr ) {
+	ri.Z_Free( ptr );
 }
 
-int Z_MemSize( memtag_t eTag ) {
+int R_MemSize( memtag_t eTag ) {
 	return ri.Z_MemSize( eTag );
 }
 
-void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
+void R_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 	ri.Z_MorphMallocTag( pvBuffer, eDesiredTag );
 }
 
-// Parsing
-
-#include "../game/genericparser2.h"
-
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
-{
-	fileHandle_t	f;
-	int				length = 0;
-	char			*buf = 0, *bufParse = 0;
-
-	length = ri.FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
-	{
-		return false;
-	}
-
-	buf = new char [length + 1];
-	ri.FS_Read( buf, length, f );
-	buf[length] = 0;
-
-	bufParse = buf;
-	parser.Parse(&bufParse, cleanFirst);
-	delete[] buf;
-
-	ri.FS_FCloseFile( f );
-
-	return true;
+void *R_Hunk_Alloc( int iSize, qboolean bZeroit ) {
+	return ri.Malloc( iSize, TAG_HUNKALLOC, bZeroit, 4 );
 }
-
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser)
-{
-	parser.Clean();
-}
-
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable)
-{
-	fileHandle_t	f;
-	int				length = 0;
-	char			*buf = 0, *bufParse = 0;
-	CGenericParser2 *parse;
-
-	length = ri.FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
-	{
-		return 0;
-	}
-
-	buf = new char [length + 1];
-	ri.FS_Read( buf, length, f );
-	ri.FS_FCloseFile( f );
-	buf[length] = 0;
-
-	bufParse = buf;
-
-	parse = new CGenericParser2;
-	if (!parse->Parse(&bufParse, cleanFirst, writeable))
-	{
-		delete parse;
-		parse = 0;
-	}
-
-	delete[] buf;
-
-	return parse;
-}
-
-#ifndef _WIN32
-void Sys_SetEnv(const char *name, const char *value)
-{
-	if(value && *value)
-		setenv(name, value, 1);
-	else
-		unsetenv(name);
-}
-#endif

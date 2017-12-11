@@ -1,34 +1,37 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_light.c
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "tr_local.h"
 
 #define	DLIGHT_AT_RADIUS		16
 // at the edge of a dlight's influence, this amount of light will be added
 
-#define	DLIGHT_MINIMUM_RADIUS	16		
+#define	DLIGHT_MINIMUM_RADIUS	16
 // never calculate a range less than this to prevent huge light numbers
 
 
@@ -93,7 +96,7 @@ void R_DlightBmodel( bmodel_t *bmodel, qboolean NoLight ) {
 		}
 	}
 
-	tr.currentEntity->needDlights = (mask != 0);
+	tr.currentEntity->needDlights = (qboolean)(mask != 0);
 	tr.currentEntity->dlightBits = mask;
 
 
@@ -138,7 +141,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 	vec3_t			direction;
 	float			totalFactor;
 	unsigned short	*startGridPos;
-	
+
 	if (r_fullbright->integer || (tr.refdef.rdflags & RDF_doLAGoggles) )
 	{
 		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[2] = 255.0;
@@ -183,7 +186,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 	gridStep[0] = 1;
 	gridStep[1] = tr.world->lightGridBounds[0];
 	gridStep[2] = tr.world->lightGridBounds[0] * tr.world->lightGridBounds[1];
-	startGridPos = tr.world->lightGridArray	+ pos[0] * gridStep[0] 
+	startGridPos = tr.world->lightGridArray	+ pos[0] * gridStep[0]
 					+ pos[1] * gridStep[1] 	+ pos[2] * gridStep[2];
 #if ACCURATE_LIGHTGRID_SAMPLING
 	vec3_t	startGridOrg;
@@ -224,7 +227,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 		}
 		data = tr.world->lightGridData + *gridPos;
 
-		if ( data->styles[0] == LS_NONE ) 
+		if ( data->styles[0] == LS_NONE )
 		{
 			continue;	// ignore samples in walls
 		}
@@ -276,7 +279,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 #if ACCURATE_LIGHTGRID_SAMPLING
 		if ( r_debugLight->integer && ent->e.hModel == -1 )
 		{
-			//draw 	
+			//draw
 			refEntity_t refEnt;
 			refEnt.hModel = 0;
 			refEnt.ghoul2 = NULL;
@@ -312,7 +315,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 #endif
 	}
 
-	if ( totalFactor > 0 && totalFactor < 0.99 ) 
+	if ( totalFactor > 0 && totalFactor < 0.99 )
 	{
 		totalFactor = 1.0 / totalFactor;
 		VectorScale( ent->ambientLight, totalFactor, ent->ambientLight );
@@ -380,7 +383,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	vec3_t			lightDir;
 	vec3_t			lightOrigin;
 
-	// lighting calculations 
+	// lighting calculations
 	if ( ent->lightingCalculated ) {
 		return;
 	}
@@ -399,13 +402,13 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 
 	// if NOWORLDMODEL, only use dynamic lights (menu system, etc)
-	if ( !(refdef->rdflags & RDF_NOWORLDMODEL ) 
+	if ( !(refdef->rdflags & RDF_NOWORLDMODEL )
 		&& tr.world->lightGridData ) {
 		R_SetupEntityLightingGrid( ent );
 	} else {
-		ent->ambientLight[0] = ent->ambientLight[1] = 
+		ent->ambientLight[0] = ent->ambientLight[1] =
 			ent->ambientLight[2] = tr.identityLight * 150;
-		ent->directedLight[0] = ent->directedLight[1] = 
+		ent->directedLight[0] = ent->directedLight[1] =
 			ent->directedLight[2] = tr.identityLight * 150;
 		VectorCopy( tr.sunDirection, ent->lightDir );
 	}
@@ -460,7 +463,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	((byte *)&ent->ambientLightInt)[1] = Q_ftol( ent->ambientLight[1] );
 	((byte *)&ent->ambientLightInt)[2] = Q_ftol( ent->ambientLight[2] );
 	((byte *)&ent->ambientLightInt)[3] = 0xff;
-	
+
 	// transform the direction to local space
 	VectorNormalize( lightDir );
 	ent->lightDir[0] = DotProduct( lightDir, ent->e.axis[0] );
@@ -501,7 +504,7 @@ R_LightForPoint
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir )
 {
 	trRefEntity_t ent;
-	
+
 	// bk010103 - this segfaults with -nolight maps
 	if ( tr.world->lightGridData == NULL )
 	  return qfalse;

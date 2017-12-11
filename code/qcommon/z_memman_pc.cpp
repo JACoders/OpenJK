@@ -1,28 +1,32 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Created 2/3/03 by Brian Osman - split Zone code from common.cpp
 
 #include "q_shared.h"
 #include "qcommon.h"
-#include "sstring.h"
 
 #ifdef DEBUG_ZONE_ALLOCS
+#include "sstring.h"
 int giZoneSnaphotNum=0;
 #define DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE 256
 typedef sstring<DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE> sDebugString_t;
@@ -65,7 +69,7 @@ struct	zoneHeader_s		*pPrev;
 
 } zoneHeader_t;
 
-typedef struct 
+typedef struct
 {
 	int iMagic;
 
@@ -77,7 +81,7 @@ static inline zoneTail_t *ZoneTailFromHeader(zoneHeader_t *pHeader)
 }
 
 #ifdef DETAILED_ZONE_DEBUG_CODE
-map <void*,int> mapAllocatedZones;
+std::map <void*,int> mapAllocatedZones;
 #endif
 
 
@@ -90,8 +94,8 @@ typedef struct zoneStats_s
 	// I'm keeping these updated on the fly, since it's quicker for cache-pool
 	//	purposes rather than recalculating each time...
 	//
-	int		iSizesPerTag [TAG_COUNT];	
-	int		iCountsPerTag[TAG_COUNT];	
+	int		iSizesPerTag [TAG_COUNT];
+	int		iCountsPerTag[TAG_COUNT];
 
 } zoneStats_t;
 
@@ -111,7 +115,7 @@ zone_t	TheZone = {};
 // Scans through the linked list of mallocs and makes sure no data has been overwritten
 
 int Z_Validate(void)
-{	
+{
 	int ret=0;
 	if(!com_validateZone || !com_validateZone->integer)
 	{
@@ -128,7 +132,7 @@ int Z_Validate(void)
 		{
 			Com_Error(ERR_FATAL, "Z_Validate(): Bad block allocation count!");
 			return ret;
-		}		   
+		}
 		#endif
 
 		if(pMemory->iMagic != ZONE_MAGIC)
@@ -138,10 +142,10 @@ int Z_Validate(void)
 		}
 
 		// this block of code is intended to make sure all of the data is paged in
-		if (pMemory->eTag != TAG_IMAGE_T 
-			&& pMemory->eTag != TAG_MODEL_MD3 
-			&& pMemory->eTag != TAG_MODEL_GLM 
-			&& pMemory->eTag != TAG_MODEL_GLA )	//don't bother with disk caches as they've already been hit or will be thrown out next 
+		if (pMemory->eTag != TAG_IMAGE_T
+			&& pMemory->eTag != TAG_MODEL_MD3
+			&& pMemory->eTag != TAG_MODEL_GLM
+			&& pMemory->eTag != TAG_MODEL_GLA )	//don't bother with disk caches as they've already been hit or will be thrown out next
 		{
 			unsigned char *memstart = (unsigned char *)pMemory;
 			int totalSize = pMemory->iSize;
@@ -159,12 +163,12 @@ int Z_Validate(void)
 			Com_Error(ERR_FATAL, "Z_Validate(): Corrupt zone tail!");
 			return ret;
 		}
-		
+
 		pMemory = pMemory->pNext;
 	}
 	return ret;
 }
-				
+
 
 
 // static mem blocks to reduce a lot of small zone overhead
@@ -173,14 +177,14 @@ int Z_Validate(void)
 #pragma pack(1)
 typedef struct
 {
-	zoneHeader_t	Header;	
+	zoneHeader_t	Header;
 //	byte mem[0];
 	zoneTail_t		Tail;
 } StaticZeroMem_t;
 
 typedef struct
 {
-	zoneHeader_t	Header;	
+	zoneHeader_t	Header;
 	byte mem[2];
 	zoneTail_t		Tail;
 } StaticMem_t;
@@ -213,15 +217,41 @@ const static StaticMem_t gNumberString[] = {
 
 qboolean gbMemFreeupOccured = qfalse;
 
+#ifdef DEBUG_ZONE_ALLOCS
+// returns actual filename only, no path
+// (copes with either slash-scheme for names)
+//
+// (normally I'd call another function for this, but this is supposed to be engine-independent,
+//	 so a certain amount of re-invention of the wheel is to be expected...)
+//
+char *_D_Z_Filename_WithoutPath(const char *psFilename)
+{
+	static char sString[ MAX_QPATH ];
+
+	const char *psCopyPos = psFilename;
+
+	while (*psFilename)
+	{
+		if (*psFilename == PATH_SEP)
+			psCopyPos = psFilename+1;
+		psFilename++;
+	}
+
+	strcpy(sString,psCopyPos);
+
+	return sString;
+}
+#endif
+
 #include "../rd-common/tr_public.h"	// sorta hack sorta not
 extern refexport_t re;
 
 #ifdef DEBUG_ZONE_ALLOCS
 void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
 #else
-void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
+void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /*unusedAlign*/)
 #endif
-{	
+{
 	gbMemFreeupOccured = qfalse;
 
 	if (iSize == 0)
@@ -240,12 +270,10 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 	zoneHeader_t *pMemory = NULL;
 	while (pMemory == NULL)
 	{
-		#ifdef _WIN32
 		if (gbMemFreeupOccured)
 		{
-			Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
+			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
 		}
-		#endif
 
 		if (bZeroit) {
 			pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );
@@ -293,23 +321,23 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 				continue;
 			}
 
-			// as a last panic measure, dump all the audio memory, but not if we're in the audio loader 
+			// as a last panic measure, dump all the audio memory, but not if we're in the audio loader
 			//	(which is annoying, but I'm not sure how to ensure we're not dumping any memory needed by the sound
 			//	currently being loaded if that was the case)...
 			//
 			// note that this keeps querying until it's freed up as many bytes as the requested size, but freeing
 			//	several small blocks might not mean that one larger one is satisfiable after freeup, however that'll
-			//	just make it go round again and try for freeing up another bunch of blocks until the total is satisfied 
-			//	again (though this will have freed twice the requested amount in that case), so it'll either work 
+			//	just make it go round again and try for freeing up another bunch of blocks until the total is satisfied
+			//	again (though this will have freed twice the requested amount in that case), so it'll either work
 			//	eventually or not free up enough and drop through to the final ERR_DROP. No worries...
 			//
-			extern qboolean gbInsideLoadSound;			
+			extern qboolean gbInsideLoadSound;
 			extern int SND_FreeOldestSound(void);	// I had to add a void-arg version of this because of link issues, sigh
 			if (!gbInsideLoadSound)
 			{
 				int iBytesFreed = SND_FreeOldestSound();
 				if (iBytesFreed)
-				{						
+				{
 					int iTheseBytesFreed = 0;
 					while ( (iTheseBytesFreed = SND_FreeOldestSound()) != 0)
 					{
@@ -335,10 +363,8 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 
 
 #ifdef DEBUG_ZONE_ALLOCS
-	extern char *Filename_WithoutPath(const char *psFilename);
-
-	Q_strncpyz(pMemory->sSrcFileBaseName, Filename_WithoutPath(psFile), sizeof(pMemory->sSrcFileBaseName));
-	pMemory->iSrcFileLineNum	= iLine;	
+	Q_strncpyz(pMemory->sSrcFileBaseName, _D_Z_Filename_WithoutPath(psFile), sizeof(pMemory->sSrcFileBaseName));
+	pMemory->iSrcFileLineNum	= iLine;
 	pMemory->sOptionalLabel[0]	= '\0';
 	pMemory->iSnapshotNumber	= giZoneSnaphotNum;
 #endif
@@ -346,7 +372,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 	// Link in
 	pMemory->iMagic	= ZONE_MAGIC;
 	pMemory->eTag	= eTag;
-	pMemory->iSize	= iSize;	
+	pMemory->iSize	= iSize;
 	pMemory->pNext  = TheZone.Header.pNext;
 	TheZone.Header.pNext = pMemory;
 	if (pMemory->pNext)
@@ -364,7 +390,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 	TheZone.Stats.iCurrent += iSize;
 	TheZone.Stats.iCount++;
 	TheZone.Stats.iSizesPerTag	[eTag] += iSize;
-	TheZone.Stats.iCountsPerTag	[eTag]++;	
+	TheZone.Stats.iCountsPerTag	[eTag]++;
 
 	if (TheZone.Stats.iCurrent > TheZone.Stats.iPeak)
 	{
@@ -374,11 +400,27 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 #ifdef DETAILED_ZONE_DEBUG_CODE
 	mapAllocatedZones[pMemory]++;
 #endif
-	
+
 	Z_Validate();	// check for corruption
 
 	void *pvReturnMem = &pMemory[1];
 	return pvReturnMem;
+}
+
+// Special wrapper around Z_Malloc for better separation between the main engine
+// code and the bundled minizip library.
+
+extern "C" Q_EXPORT void* openjk_minizip_malloc(int size);
+extern "C" Q_EXPORT int openjk_minizip_free(void* to_free);
+
+void* openjk_minizip_malloc(int size)
+{
+    return Z_Malloc(size, TAG_MINIZIP, qfalse);
+}
+
+int openjk_minizip_free(void *to_free)
+{
+    return Z_Free(to_free);
 }
 
 // used during model cacheing to save an extra malloc, lets us morph the disk-load buffer then
@@ -438,12 +480,12 @@ static int Zone_FreeBlock(zoneHeader_t *pMemory)
 		{
 			pMemory->pNext->pPrev = pMemory->pPrev;
 		}
-		
+
 		//debugging double frees
 		pMemory->iMagic = INT_ID('F','R','E','E');
 		free (pMemory);
 
-		
+
 		#ifdef DETAILED_ZONE_DEBUG_CODE
 		// this has already been checked for in execution order, but wtf?
 		int& iAllocCount = mapAllocatedZones[pMemory];
@@ -452,7 +494,7 @@ static int Zone_FreeBlock(zoneHeader_t *pMemory)
 			Com_Error(ERR_FATAL, "Zone_FreeBlock(): Double-freeing block!");
 			return -1;
 		}
-		iAllocCount--;	
+		iAllocCount--;
 		#endif
 	}
 	return iSize;
@@ -482,7 +524,7 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag)
 		return qfalse;
 	}
 
-	return pMemory->iSize;
+	return (qboolean)(pMemory->iSize != 0);
 }
 
 // stats-query function to ask how big a malloc is...
@@ -507,7 +549,7 @@ int Z_Size(void *pvAddress)
 
 
 #ifdef DEBUG_ZONE_ALLOCS
-void _D_Z_Label(const void *pvAddress, const char *psLabel)
+void Z_Label(const void *pvAddress, const char *psLabel)
 {
 	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
 
@@ -522,7 +564,6 @@ void _D_Z_Label(const void *pvAddress, const char *psLabel)
 	}
 
 	Q_strncpyz(	pMemory->sOptionalLabel, psLabel, sizeof(pMemory->sOptionalLabel));
-				pMemory->sOptionalLabel[ sizeof(pMemory->sOptionalLabel)-1 ] = '\0';
 }
 #endif
 
@@ -560,10 +601,10 @@ int Z_Free(void *pvAddress)
 	//
 	int& iAllocCount = mapAllocatedZones[pMemory];
 	if (iAllocCount <= 0)
-	{			
+	{
 		Com_Error(ERR_FATAL, "Z_Free(): Block already-freed, or not allocated through Z_Malloc!");
 		return -1;
-	}		   
+	}
 	#endif
 
 	if (pMemory->iMagic != ZONE_MAGIC)
@@ -621,7 +662,7 @@ void *_D_S_Malloc ( int iSize, const char *psFile, int iLine)
 	return _D_Z_Malloc( iSize, TAG_SMALL, qfalse, psFile, iLine );
 }
 #else
-void *S_Malloc( int iSize ) 
+void *S_Malloc( int iSize )
 {
 	return Z_Malloc( iSize, TAG_SMALL, qfalse);
 }
@@ -631,7 +672,7 @@ void *S_Malloc( int iSize )
 #ifdef _DEBUG
 static void Z_MemRecoverTest_f(void)
 {
-	// needs to be in _DEBUG only, not good for final game! 
+	// needs to be in _DEBUG only, not good for final game!
 	//
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "Usage: zone_memrecovertest max2alloc\n" );
@@ -658,14 +699,14 @@ static void Z_MemRecoverTest_f(void)
 
 static void Z_Stats_f(void)
 {
-	Com_Printf("\nThe zone is using %d bytes (%.2fMB) in %d memory blocks\n", 
-								  TheZone.Stats.iCurrent, 
-									        (float)TheZone.Stats.iCurrent / 1024.0f / 1024.0f, 
+	Com_Printf("\nThe zone is using %d bytes (%.2fMB) in %d memory blocks\n",
+								  TheZone.Stats.iCurrent,
+									        (float)TheZone.Stats.iCurrent / 1024.0f / 1024.0f,
 													  TheZone.Stats.iCount
 				);
 
-	Com_Printf("The zone peaked at %d bytes (%.2fMB)\n", 
-									TheZone.Stats.iPeak, 
+	Com_Printf("The zone peaked at %d bytes (%.2fMB)\n",
+									TheZone.Stats.iPeak,
 									         (float)TheZone.Stats.iPeak / 1024.0f / 1024.0f
 				);
 }
@@ -685,18 +726,17 @@ static void Z_Details_f(void)
 
 		if (iThisCount)
 		{
-			// can you believe that using %2.2f as a format specifier doesn't bloody work? 
+			// can you believe that using %2.2f as a format specifier doesn't bloody work?
 			//	It ignores the left-hand specifier. Sigh, now I've got to do shit like this...
 			//
 			float	fSize		= (float)(iThisSize) / 1024.0f / 1024.0f;
 			int		iSize		= fSize;
 			int		iRemainder 	= 100.0f * (fSize - floor(fSize));
-			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d Bytes/block)\n", 
-					    psTagStrings[i], 
-							  iThisSize, 
-								iSize,iRemainder,
-								           iThisCount, iThisSize / iThisCount
-					   );
+			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d Bytes/block)\n",
+				psTagStrings[i],
+				iThisSize,
+				iSize, iRemainder,
+				iThisCount, iThisSize / iThisCount);
 		}
 	}
 	Com_Printf("---------------------------------------------------------------------------\n");
@@ -705,20 +745,20 @@ static void Z_Details_f(void)
 }
 
 #ifdef DEBUG_ZONE_ALLOCS
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-typedef map <sDebugString_t,int> LabelRefCount_t;	// yet another place where Gil's tring class works and MS's doesn't
-typedef map <sDebugString_t,LabelRefCount_t>	TagBlockLabels_t;
-										TagBlockLabels_t AllTagBlockLabels;
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+typedef std::map <sDebugString_t, int> LabelRefCount_t;	// yet another place where Gil's string class works and MS's doesn't
+typedef std::map <sDebugString_t, LabelRefCount_t>	TagBlockLabels_t;
+
+static TagBlockLabels_t AllTagBlockLabels;
+
 static void Z_Snapshot_f(void)
-{	
+{
 	AllTagBlockLabels.clear();
 
 	zoneHeader_t *pMemory = TheZone.Header.pNext;
 	while (pMemory)
 	{
 		AllTagBlockLabels[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel]++;
-		pMemory = pMemory->pNext;		
+		pMemory = pMemory->pNext;
 	}
 
 	giZoneSnaphotNum++;
@@ -743,7 +783,7 @@ static void Z_TagDebug_f(void)
 
 			AllTagBlockLabels_Local = AllTagBlockLabels;	// horrible great STL copy
 
-			psTAGName = Cmd_Argv(2);			
+			psTAGName = Cmd_Argv(2);
 		}
 
 		if (psTAGName[0])
@@ -800,7 +840,7 @@ static void Z_TagDebug_f(void)
 			{
 				AllTagBlockLabels_Local[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel]--;
 			}
-			pMemory = pMemory->pNext;		
+			pMemory = pMemory->pNext;
 		}
 	}
 
@@ -838,7 +878,7 @@ static void Z_TagDebug_f(void)
 			}
 			iBlocksListed++;
 			iTotalSize += pMemory->iSize;
-			
+
 			if (bSnapShotTestActive)
 			{
 				// bump ref count so we only 1 warning per new string, not for every one sharing that label...
@@ -846,7 +886,7 @@ static void Z_TagDebug_f(void)
 				AllTagBlockLabels_Local[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel]++;
 			}
 		}
-		pMemory = pMemory->pNext;		
+		pMemory = pMemory->pNext;
 	}
 
 	Com_Printf("( %d blocks listed, %d bytes (%.2fMB) total )\n",iBlocksListed, iTotalSize, (float)iTotalSize / 1024.0f / 1024.0f);
@@ -878,7 +918,7 @@ void Com_ShutdownZoneMemory(void)
 											// commands will just simply be wrong in displaying bytes, but in my tests, it's only off
 											// by like 10 bytes / 1 block, which isn't a real problem --eez
 		if(TheZone.Stats.iCount < 0) {
-			Com_Printf(S_COLOR_YELLOW"WARNING: Freeing %d extra blocks (%d bytes) not tracked by the zone manager\n", 
+			Com_Printf(S_COLOR_YELLOW"WARNING: Freeing %d extra blocks (%d bytes) not tracked by the zone manager\n",
 				abs(TheZone.Stats.iCount), abs(TheZone.Stats.iCurrent));
 		}
 	}
@@ -886,13 +926,16 @@ void Com_ShutdownZoneMemory(void)
 
 // Initialises the zone memory system
 
-void Com_InitZoneMemory( void ) 
+void Com_InitZoneMemory( void )
 {
 	Com_Printf("Initialising zone memory .....\n");
 
-	memset(&TheZone, 0, sizeof(TheZone)); 
+	memset(&TheZone, 0, sizeof(TheZone));
 	TheZone.Header.iMagic = ZONE_MAGIC;
+}
 
+void Com_InitZoneMemoryVars( void)
+{
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 
 	Cmd_AddCommand("zone_stats",	Z_Stats_f);
@@ -901,7 +944,6 @@ void Com_InitZoneMemory( void )
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
 #endif
-
 
 #ifdef DEBUG_ZONE_ALLOCS
 	Cmd_AddCommand("zone_tagdebug",	Z_TagDebug_f);
@@ -951,7 +993,7 @@ Touch all known used data to make sure it is paged in
 void Com_TouchMemory( void ) {
 	//int		start, end;
 	int		i, j;
-	int		sum;	
+	int		sum;
 	int		totalTouched;
 
 	Z_Validate();

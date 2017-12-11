@@ -1,10 +1,29 @@
-// cmodel.c -- model loading
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+// cmodel.c -- model loading
 #include "cm_local.h"
-#include "cm_landscape.h" //rwwRMG - include
-#include "RMG/RM_Headers.h" //rwwRMG - include
+#include "qcommon/qfiles.h"
 
 #ifdef BSPC
 
@@ -45,6 +64,7 @@ byte		*cmod_base;
 cvar_t		*cm_noAreas;
 cvar_t		*cm_noCurves;
 cvar_t		*cm_playerCurveClip;
+cvar_t		*cm_extraVerbose;
 #endif
 
 cmodel_t	box_model;
@@ -73,7 +93,7 @@ int			NumSubBSP, TotalSubModels;
 CMod_LoadShaders
 =================
 */
-void CMod_LoadShaders( lump_t *l, clipMap_t	&cm ) 
+static void CMod_LoadShaders( const lump_t *l, clipMap_t &cm )
 {
 	dshader_t	*in;
 	int			i, count;
@@ -92,7 +112,7 @@ void CMod_LoadShaders( lump_t *l, clipMap_t	&cm )
 	cm.numShaders = count;
 
 	out = cm.shaders;
-	for ( i = 0; i < count; i++, in++, out++ ) 
+	for ( i = 0; i < count; i++, in++, out++ )
 	{
 		Q_strncpyz(out->shader, in->shader, MAX_QPATH);
 		out->contentFlags = LittleLong( in->contentFlags );
@@ -106,7 +126,7 @@ void CMod_LoadShaders( lump_t *l, clipMap_t	&cm )
 CMod_LoadSubmodels
 =================
 */
-void CMod_LoadSubmodels( lump_t *l, clipMap_t &cm ) {
+static void CMod_LoadSubmodels( const lump_t *l, clipMap_t &cm ) {
 	dmodel_t	*in;
 	cmodel_t	*out;
 	int			i, j, count;
@@ -172,15 +192,15 @@ CMod_LoadNodes
 
 =================
 */
-void CMod_LoadNodes( lump_t *l, clipMap_t &cm ) {
+static void CMod_LoadNodes( const lump_t *l, clipMap_t &cm ) {
 	dnode_t		*in;
 	int			child;
 	cNode_t		*out;
 	int			i, j, count;
-	
+
 	in = (dnode_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadNodes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
@@ -226,14 +246,14 @@ CMod_LoadBrushes
 
 =================
 */
-void CMod_LoadBrushes( lump_t *l, clipMap_t	&cm ) {
+void CMod_LoadBrushes( const lump_t *l, clipMap_t &cm ) {
 	dbrush_t	*in;
 	cbrush_t	*out;
 	int			i, count;
 
 	in = (dbrush_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in)) {
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadBrushes: funny lump size");
 	}
 	count = l->filelen / sizeof(*in);
 
@@ -252,10 +272,6 @@ void CMod_LoadBrushes( lump_t *l, clipMap_t	&cm ) {
 		}
 		out->contents = cm.shaders[out->shaderNum].contentFlags;
 
-		// Landscapes are set up afterwards in the entity spawning
-		//out->landscape = NULL;	//the memory was cleared already by hunk_alloc
-		//out->checkcount=0;
-
 		CM_BoundBrush( out );
 	}
 
@@ -266,16 +282,16 @@ void CMod_LoadBrushes( lump_t *l, clipMap_t	&cm ) {
 CMod_LoadLeafs
 =================
 */
-void CMod_LoadLeafs (lump_t *l, clipMap_t &cm)
+static void CMod_LoadLeafs (const lump_t *l, clipMap_t &cm)
 {
 	int			i;
 	cLeaf_t		*out;
 	dleaf_t 	*in;
 	int			count;
-	
+
 	in = (dleaf_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadLeafs: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
@@ -284,7 +300,7 @@ void CMod_LoadLeafs (lump_t *l, clipMap_t &cm)
 	cm.leafs = (cLeaf_t *)Hunk_Alloc( ( BOX_LEAFS + count ) * sizeof( *cm.leafs ), h_high );
 	cm.numLeafs = count;
 
-	out = cm.leafs;	
+	out = cm.leafs;
 	for ( i=0 ; i<count ; i++, in++, out++)
 	{
 		out->cluster = LittleLong (in->cluster);
@@ -309,17 +325,17 @@ void CMod_LoadLeafs (lump_t *l, clipMap_t &cm)
 CMod_LoadPlanes
 =================
 */
-void CMod_LoadPlanes (lump_t *l, clipMap_t &cm)
+static void CMod_LoadPlanes (const lump_t *l, clipMap_t &cm)
 {
 	int			i, j;
 	cplane_t	*out;
 	dplane_t 	*in;
 	int			count;
 	int			bits;
-	
+
 	in = (dplane_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadPlanes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
@@ -327,7 +343,7 @@ void CMod_LoadPlanes (lump_t *l, clipMap_t &cm)
 	cm.planes = (struct cplane_s *)Hunk_Alloc( ( BOX_PLANES + count ) * sizeof( *cm.planes ), h_high );
 	cm.numPlanes = count;
 
-	out = cm.planes;	
+	out = cm.planes;
 
 	for ( i=0 ; i<count ; i++, in++, out++)
 	{
@@ -350,16 +366,16 @@ void CMod_LoadPlanes (lump_t *l, clipMap_t &cm)
 CMod_LoadLeafBrushes
 =================
 */
-void CMod_LoadLeafBrushes (lump_t *l, clipMap_t	&cm)
+static void CMod_LoadLeafBrushes (const lump_t *l, clipMap_t &cm)
 {
 	int			i;
 	int			*out;
 	int		 	*in;
 	int			count;
-	
+
 	in = (int *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadLeafBrushes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	cm.leafbrushes = (int *)Hunk_Alloc( (count + BOX_BRUSHES) * sizeof( *cm.leafbrushes ), h_high );
@@ -377,16 +393,16 @@ void CMod_LoadLeafBrushes (lump_t *l, clipMap_t	&cm)
 CMod_LoadLeafSurfaces
 =================
 */
-void CMod_LoadLeafSurfaces( lump_t *l, clipMap_t &cm )
+static void CMod_LoadLeafSurfaces( const lump_t *l, clipMap_t &cm )
 {
 	int			i;
 	int			*out;
 	int		 	*in;
 	int			count;
-	
+
 	in = (int *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadLeafSurfaces: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	cm.leafsurfaces = (int *)Hunk_Alloc( count * sizeof( *cm.leafsurfaces ), h_high );
@@ -404,7 +420,7 @@ void CMod_LoadLeafSurfaces( lump_t *l, clipMap_t &cm )
 CMod_LoadBrushSides
 =================
 */
-void CMod_LoadBrushSides (lump_t *l, clipMap_t &cm)
+static void CMod_LoadBrushSides (const lump_t *l, clipMap_t &cm)
 {
 	int				i;
 	cbrushside_t	*out;
@@ -414,14 +430,14 @@ void CMod_LoadBrushSides (lump_t *l, clipMap_t &cm)
 
 	in = (dbrushside_t *)(cmod_base + l->fileofs);
 	if ( l->filelen % sizeof(*in) ) {
-		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadBrushSides: funny lump size");
 	}
 	count = l->filelen / sizeof(*in);
 
 	cm.brushsides = (cbrushside_t *)Hunk_Alloc( ( BOX_SIDES + count ) * sizeof( *cm.brushsides ), h_high );
 	cm.numBrushSides = count;
 
-	out = cm.brushsides;	
+	out = cm.brushsides;
 
 	for ( i=0 ; i<count ; i++, in++, out++) {
 		num = LittleLong( in->planeNum );
@@ -439,7 +455,28 @@ void CMod_LoadBrushSides (lump_t *l, clipMap_t &cm)
 CMod_LoadEntityString
 =================
 */
-void CMod_LoadEntityString( lump_t *l, clipMap_t &cm ) {
+static void CMod_LoadEntityString( const lump_t *l, clipMap_t &cm, const char* name ) {
+	fileHandle_t h;
+	char entName[MAX_QPATH];
+
+	// Attempt to load entities from an external .ent file if available
+	Q_strncpyz(entName, name, sizeof(entName));
+	const size_t entNameLen = strlen(entName);
+	entName[entNameLen - 3] = 'e';
+	entName[entNameLen - 2] = 'n';
+	entName[entNameLen - 1] = 't';
+	const int iEntityFileLen = FS_FOpenFileRead(entName, &h, qfalse);
+	if (h)
+	{
+		cm.entityString = (char *)Hunk_Alloc(iEntityFileLen + 1, h_high);
+		cm.numEntityChars = iEntityFileLen + 1;
+		FS_Read(cm.entityString, iEntityFileLen, h);
+		FS_FCloseFile(h);
+		cm.entityString[iEntityFileLen] = '\0';
+		Com_Printf("Loaded entities from %s\n", entName);
+		return;
+	}
+
 	cm.entityString = (char *)Hunk_Alloc( l->filelen, h_high );
 	cm.numEntityChars = l->filelen;
 	Com_Memcpy (cm.entityString, cmod_base + l->fileofs, l->filelen);
@@ -451,7 +488,7 @@ CMod_LoadVisibility
 =================
 */
 #define	VIS_HEADER	8
-void CMod_LoadVisibility( lump_t *l, clipMap_t &cm ) {
+static void CMod_LoadVisibility( const lump_t *l, clipMap_t &cm ) {
 	int		len;
 	byte	*buf;
 
@@ -480,7 +517,7 @@ CMod_LoadPatches
 =================
 */
 #define	MAX_PATCH_VERTS		1024
-void CMod_LoadPatches( lump_t *surfs, lump_t *verts, clipMap_t &cm ) {
+static void CMod_LoadPatches( const lump_t *surfs, const lump_t *verts, clipMap_t &cm ) {
 	drawVert_t	*dv, *dv_p;
 	dsurface_t	*in;
 	int			count;
@@ -568,7 +605,7 @@ qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete)
 			bActuallyFreedSomething = qtrue;
 		}
 		gsCachedMapDiskImage[0] = '\0';
-		
+
 		// force map loader to ignore cached internal BSP structures for next level CM_LoadMap() call...
 		//
 		cmg.name[0] = '\0';
@@ -584,7 +621,7 @@ qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete)
 static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *checksum, clipMap_t &cm )
 { //rwwRMG - function needs heavy modification
 	int				*buf;
-	dheader_t		header;	
+	dheader_t		header;
 	static unsigned	last_checksum;
 	char			origName[MAX_OSPATH];
 	void			*newBuff = 0;
@@ -596,7 +633,8 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 #ifndef BSPC
 	cm_noAreas = Cvar_Get ("cm_noAreas", "0", CVAR_CHEAT);
 	cm_noCurves = Cvar_Get ("cm_noCurves", "0", CVAR_CHEAT);
-	cm_playerCurveClip = Cvar_Get ("cm_playerCurveClip", "1", CVAR_ARCHIVE|CVAR_CHEAT );
+	cm_playerCurveClip = Cvar_Get ("cm_playerCurveClip", "1", CVAR_ARCHIVE_ND|CVAR_CHEAT );
+	cm_extraVerbose = Cvar_Get ("cm_extraVerbose", "0", CVAR_TEMP );
 #endif
 	Com_DPrintf( "CM_LoadMap( %s, %i )\n", name, clientload );
 
@@ -609,7 +647,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	strcpy(origName, name);
 
 	if (&cm == &cmg)
-	{	
+	{
 		// free old stuff
 		CM_ClearMap();
 		CM_ClearLevelPatches();
@@ -642,14 +680,14 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 #ifndef BSPC
 	//
 	// load the file into a buffer that we either discard as usual at the bottom, or if we've got enough memory
-	//	then keep it long enough to save the renderer re-loading it (if not dedicated server), 
+	//	then keep it long enough to save the renderer re-loading it (if not dedicated server),
 	//	then discard it after that...
 	//
-	buf = NULL;	
-	fileHandle_t h;	
+	buf = NULL;
+	fileHandle_t h;
 	const int iBSPLen = FS_FOpenFileRead( name, &h, qfalse );
 	if (h)
-	{			
+	{
 		newBuff = Z_Malloc( iBSPLen, TAG_BSP_DISKIMAGE );
 		FS_Read( newBuff, iBSPLen, h);
 		FS_FCloseFile( h );
@@ -662,7 +700,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 		}
 
 		// carry on as before...
-		//	
+		//
 	}
 #else
 	const int iBSPLen = LoadQuakeFile((quakefile_t *) name, (void **)&buf);
@@ -701,7 +739,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES], cm);
 	CMod_LoadSubmodels (&header.lumps[LUMP_MODELS], cm);
 	CMod_LoadNodes (&header.lumps[LUMP_NODES], cm);
-	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES], cm);
+	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES], cm, name);
 	CMod_LoadVisibility( &header.lumps[LUMP_VISIBILITY], cm );
 	CMod_LoadPatches( &header.lumps[LUMP_SURFACES], &header.lumps[LUMP_DRAWVERTS], cm );
 
@@ -710,13 +748,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	if (&cm == &cmg)
 	{
 		// Load in the shader text - return instantly if already loaded
-#if !defined(BSPC)
-		CM_LoadShaderText(qfalse);
-#endif
 		CM_InitBoxHull ();
-#if !defined(BSPC)
-		CM_SetupShaderProperties();
-#endif
 	}
 
 #ifndef BSPC	// I hope we can lose this crap soon
@@ -725,7 +757,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	//	for the renderer to chew on... (but not if this gets ported to a big-endian machine, because some of the
 	//	map data will have been Little-Long'd, but some hasn't).
 	//
-	if (Sys_LowPhysicalMemory() 
+	if (Sys_LowPhysicalMemory()
 		|| com_dedicated->integer
 //		|| we're on a big-endian machine
 		)
@@ -769,26 +801,9 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum )
 CM_ClearMap
 ==================
 */
-void CM_ClearMap( void ) 
+void CM_ClearMap( void )
 {
 	int		i;
-
-#if !defined(BSPC)
-	CM_ShutdownShaderProperties();
-//	MAT_Shutdown();
-#endif
-
-	if (TheRandomMissionManager)
-	{
-		delete TheRandomMissionManager;
-		TheRandomMissionManager = 0;
-	}
-
-	if (cmg.landScape)
-	{
-		delete cmg.landScape;
-		cmg.landScape = NULL;
-	}
 
 	Com_Memset( &cmg, 0, sizeof( cmg ) );
 	CM_ClearLevelPatches();
@@ -810,11 +825,11 @@ cmodel_t	*CM_ClipHandleToModel( clipHandle_t handle, clipMap_t **clipMap ) {
 	int		i;
 	int		count;
 
-	if ( handle < 0 ) 
+	if ( handle < 0 )
 	{
 		Com_Error( ERR_DROP, "CM_ClipHandleToModel: bad handle %i", handle );
 	}
-	if ( handle < cmg.numSubModels ) 
+	if ( handle < cmg.numSubModels )
 	{
 		if (clipMap)
 		{
@@ -822,7 +837,7 @@ cmodel_t	*CM_ClipHandleToModel( clipHandle_t handle, clipMap_t **clipMap ) {
 		}
 		return &cmg.cmodels[handle];
 	}
-	if ( handle == BOX_MODEL_HANDLE ) 
+	if ( handle == BOX_MODEL_HANDLE )
 	{
 		if (clipMap)
 		{
@@ -845,9 +860,9 @@ cmodel_t	*CM_ClipHandleToModel( clipHandle_t handle, clipMap_t **clipMap ) {
 		count += SubBSP[i].numSubModels;
 	}
 
-	if ( handle < MAX_SUBMODELS ) 
+	if ( handle < MAX_SUBMODELS )
 	{
-		Com_Error( ERR_DROP, "CM_ClipHandleToModel: bad handle %i < %i < %i", 
+		Com_Error( ERR_DROP, "CM_ClipHandleToModel: bad handle (count: %i) < (handle: %i) < (max: %i)",
 			cmg.numSubModels, handle, MAX_SUBMODELS );
 	}
 	Com_Error( ERR_DROP, "CM_ClipHandleToModel: bad handle %i", handle + MAX_SUBMODELS );
@@ -875,7 +890,7 @@ char	*CM_EntityString( void ) {
 	return cmg.entityString;
 }
 
-char *CM_SubBSPEntityString( int index ) 
+char *CM_SubBSPEntityString( int index )
 {
 	return SubBSP[index].entityString;
 }
@@ -948,7 +963,7 @@ void CM_InitBoxHull (void)
 		p->normal[i>>1] = -1;
 
 		SetPlaneSignbits( p );
-	}	
+	}
 }
 
 /*
@@ -1000,61 +1015,6 @@ void CM_ModelBounds( clipHandle_t model, vec3_t mins, vec3_t maxs ) {
 	VectorCopy( cmod->mins, mins );
 	VectorCopy( cmod->maxs, maxs );
 }
-
-/*
-===================
-CM_RegisterTerrain
-
-Allows physics to examine the terrain data.
-===================
-*/
-#if !defined(BSPC)
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server)
-{
-	CCMLandScape	*ls;
-
-	if(cmg.landScape)
-	{
-		// Already spawned so just return
-		ls = cmg.landScape;
-		ls->IncreaseRefCount();
-		return(ls);
-	}
-	// Doesn't exist so create and link in
-	ls = CM_InitTerrain(config, 0, server);
-
-	// Increment for the next instance
-	if (cmg.landScape)
-	{
-		Com_Error(ERR_DROP, "You cannot have more than one terrain brush.\n");
-	}
-	cmg.landScape = ls;
-	return(ls);
-}
-
-/*
-===================
-CM_ShutdownTerrain
-===================
-*/
-
-void CM_ShutdownTerrain( thandle_t terrainId)
-{
-	CCMLandScape	*landscape;
-
-	landscape = cmg.landScape;
-
-	if (landscape)
-	{
-		landscape->DecreaseRefCount();
-		if(landscape->GetRefCount() <= 0)
-		{
-			delete landscape;
-			cmg.landScape = NULL;
-		}
-	}
-}
-#endif
 
 int CM_LoadSubBSP(const char *name, qboolean clientload)
 {
@@ -1111,7 +1071,7 @@ void CM_GetWorldBounds ( vec3_t mins, vec3_t maxs )
 	VectorCopy ( cmg.cmodels[0].maxs, maxs );
 }
 
-int CM_ModelContents_Actual( clipHandle_t model, clipMap_t *cm ) 
+int CM_ModelContents_Actual( clipHandle_t model, clipMap_t *cm )
 {
 	cmodel_t	*cmod;
 	int			contents = 0;
@@ -1125,27 +1085,22 @@ int CM_ModelContents_Actual( clipHandle_t model, clipMap_t *cm )
 	cmod = CM_ClipHandleToModel( model, &cm );
 
 	//MCG ADDED - return the contents, too
-	if( cmod->leaf.numLeafBrushes )		// check for brush
+
+	for ( i = 0; i < cmod->leaf.numLeafBrushes; i++ )
 	{
-		int brushNum;
-		for ( i = cmod->leaf.firstLeafBrush; i < cmod->leaf.firstLeafBrush+cmod->leaf.numLeafBrushes; i++ )
-		{
-			brushNum = cm->leafbrushes[i];
-			contents |= cm->brushes[brushNum].contents;
+		int brushNum = cm->leafbrushes[cmod->leaf.firstLeafBrush + i];
+		contents |= cm->brushes[brushNum].contents;
+	}
+
+	for ( i = 0; i < cmod->leaf.numLeafSurfaces; i++ )
+	{
+		int surfaceNum = cm->leafsurfaces[cmod->leaf.firstLeafSurface + i];
+		if ( cm->surfaces[surfaceNum] != NULL )
+		{//HERNH?  How could we have a null surf within our cmod->leaf.numLeafSurfaces?
+			contents |= cm->surfaces[surfaceNum]->contents;
 		}
 	}
-	if( cmod->leaf.numLeafSurfaces )	// if not brush, check for patch
-	{	
-		int surfaceNum;
-		for ( i = cmod->leaf.firstLeafSurface; i < cmod->leaf.firstLeafSurface+cmod->leaf.numLeafSurfaces; i++ )
-		{
-			surfaceNum = cm->leafsurfaces[i];
-			if ( cm->surfaces[surfaceNum] != NULL )
-			{//HERNH?  How could we have a null surf within our cmod->leaf.numLeafSurfaces?
-				contents |= cm->surfaces[surfaceNum]->contents;
-			}
-		}
-	}
+
 	return contents;
 }
 

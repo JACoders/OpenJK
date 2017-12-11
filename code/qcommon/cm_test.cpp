@@ -1,23 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "cm_local.h"
-using namespace std;
 
 class CPoint
 {
@@ -29,7 +33,7 @@ public:
 		z(_z)
 	{
 	}
-	bool operator== (const CPoint& _P) const {return((x==_P.x)&&(y==_P.y)&&(z==_P.z));}
+	bool operator== (const CPoint& P) const {return((x==P.x)&&(y==P.y)&&(z==P.z));}
 };
 /*
 class CPointComparator
@@ -97,7 +101,7 @@ int CM_PointLeafnum_r( const vec3_t p, int num, clipMap_t *local ) {
 	{
 		node = local->nodes + num;
 		plane = node->plane;
-		
+
 		if (plane->type < 3)
 			d = p[plane->type] - plane->dist;
 		else
@@ -207,7 +211,7 @@ void CM_BoxLeafnums_r( leafList_t *ll, int nodenum ) {
 			ll->storeLeafs( ll, nodenum );
 			return;
 		}
-	
+
 		node = &cmg.nodes[nodenum];
 		plane = node->plane;
 
@@ -281,7 +285,7 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 	if ( model ) {
 		clipm = CM_ClipHandleToModel( model, &local );
 		leaf = &clipm->leaf;
-	} 
+	}
 	else
 	{
 		local = &cmg;
@@ -370,13 +374,6 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 
 		if ( i == b->numsides ) {
 			contents |= b->contents;
-			if(cmg.landScape && (contents & CONTENTS_TERRAIN) )
-			{
-				if(p[2] < cmg.landScape->GetWaterHeight())
-				{
-					contents |= cmg.landScape->GetWaterContents();
-				}
-			}
 		}
 	}
 
@@ -400,11 +397,11 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 	}
 
 	CPoint pt(p[0],p[1],p[2]);
-	if ( model ) 
+	if ( model )
 	{
 		clipm = CM_ClipHandleToModel( model );
 		leaf = &clipm->leaf;
-	} 
+	}
 	else
 	{
 		hlist<pair<CPoint,int> >::iterator l;
@@ -422,24 +419,24 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 	}
 
 	contents = 0;
-	for (k=0 ; k<leaf->numLeafBrushes ; k++) 
+	for (k=0 ; k<leaf->numLeafBrushes ; k++)
 	{
 		brushnum = cmg.leafbrushes[leaf->firstLeafBrush+k];
 		b = &cmg.brushes[brushnum];
 
 		// see if the point is in the brush
-		for ( i = 0 ; i < b->numsides ; i++ ) 
+		for ( i = 0 ; i < b->numsides ; i++ )
 		{
 			d = DotProduct( p, b->sides[i].plane->normal );
 			// FIXME test for Cash
 //			if ( d >= b->sides[i].plane->dist ) {
-			if ( d > b->sides[i].plane->dist ) 
+			if ( d > b->sides[i].plane->dist )
 			{
 				break;
 			}
 		}
 
-		if ( i == b->numsides ) 
+		if ( i == b->numsides )
 		{
 			contents |= b->contents;
 		}
@@ -476,7 +473,7 @@ int	CM_TransformedPointContents( const vec3_t p, clipHandle_t model, const vec3_
 	VectorSubtract (p, origin, p_l);
 
 	// rotate start and end into the models frame of reference
-	if ( model != BOX_MODEL_HANDLE && 
+	if ( model != BOX_MODEL_HANDLE &&
 	(angles[0] || angles[1] || angles[2]) )
 	{
 		AngleVectors (angles, forward, right, up);
@@ -670,7 +667,7 @@ void CM_SnapPVS(vec3_t origin,byte *buffer)
 	int		clientarea;
 	int		leafnum;
 	int		i;
-	
+
 	leafnum = CM_PointLeafnum (origin);
 	clientarea = CM_LeafArea (leafnum);
 

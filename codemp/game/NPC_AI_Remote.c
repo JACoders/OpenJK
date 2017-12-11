@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 #include "g_nav.h"
 
@@ -42,7 +64,7 @@ Remote_MaintainHeight
 -------------------------
 */
 void Remote_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -65,7 +87,7 @@ void Remote_MaintainHeight( void )
 			TIMER_Set( NPCS.NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  Q_irand( 0, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2]; 
+			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  Q_irand( 0, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 2 )
@@ -163,7 +185,7 @@ void Remote_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 	//	NPC->fx_time = level.time;
-		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 
@@ -236,7 +258,7 @@ void Remote_Fire (void)
 
 	CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_org1 );
 	VectorCopy( NPCS.NPC->r.currentOrigin, muzzle1 );
-	
+
 	VectorSubtract (enemy_org1, muzzle1, delta1);
 
 	vectoangles ( delta1, angleToEnemy1 );
@@ -296,7 +318,7 @@ void Remote_Attack( void )
 	if ( TIMER_Done(NPCS.NPC,"spin") )
 	{
 		TIMER_Set( NPCS.NPC, "spin", Q_irand( 250, 1500 ) );
-		NPCS.NPCInfo->desiredYaw += Q_irand( -200, 200 ); 
+		NPCS.NPCInfo->desiredYaw += Q_irand( -200, 200 );
 	}
 	// Always keep a good height off the ground
 	Remote_MaintainHeight();
@@ -309,7 +331,7 @@ void Remote_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	idealDist	= MIN_DISTANCE_SQR+(MIN_DISTANCE_SQR*flrand( 0, 1 ));
 	advance		= (qboolean)(distance > idealDist*1.25);

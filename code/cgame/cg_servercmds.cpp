@@ -1,29 +1,32 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_servercmds.c -- text commands sent by the server
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "cg_lights.h"
 
 
 /*
@@ -46,7 +49,7 @@ void CG_ParseServerinfo( void ) {
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	const char *p = strrchr(mapname,'/');
-	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
+	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName[0]) );
 	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
@@ -64,7 +67,7 @@ void CG_ParseServerinfo( void ) {
 	// JKA...
 	if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN1B"))
 	{
-		strcpy( cgs.stripLevelName[1], "YAVIN1");
+		Q_strncpyz( cgs.stripLevelName[1], "YAVIN1", sizeof(cgs.stripLevelName[1]));
 	}
 
 /*	// JK2...
@@ -123,7 +126,7 @@ static void CG_ConfigStringModified( void ) {
 	if ( num == CS_ITEMS ) {
 		int i;
 		for ( i = 1 ; i < bg_numItems ; i++ ) {
-			if ( str[ i ] == '1' ) 
+			if ( str[ i ] == '1' )
 			{
 				if (bg_itemlist[i].classname)
 				{
@@ -148,11 +151,11 @@ static void CG_ConfigStringModified( void ) {
 		if ( str[0] != '*' ) {
 			cgs.sound_precache[ num-CS_SOUNDS] = cgi_S_RegisterSound( str );
 		}
-	} 
-	else if ( num >= CS_EFFECTS && num < CS_EFFECTS + MAX_FX ) 
+	}
+	else if ( num >= CS_EFFECTS && num < CS_EFFECTS + MAX_FX )
 	{
 		theFxScheduler.RegisterEffect( str );
-	} 
+	}
 	else if ( num >= CS_PLAYERS && num < CS_PLAYERS+MAX_CLIENTS ) {
 		CG_NewClientinfo( num - CS_PLAYERS );
 		CG_RegisterClientModels( num - CS_PLAYERS );
@@ -200,7 +203,7 @@ typedef struct serverCommand_s {
 	void		(*func)(void);
 } serverCommand_t;
 
-int svcmdcmp( const void *a, const void *b ) {
+static int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
 }
 
@@ -231,7 +234,12 @@ static void CG_ServerCommand( void ) {
 	const char		*cmd = CG_Argv( 0 );
 	serverCommand_t	*command = NULL;
 
-	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
+	if ( !cmd[0] ) {
+		// server claimed the command
+		return;
+	}
+
+	command = (serverCommand_t *)Q_LinearSearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 
 	if ( command ) {
 		command->func();

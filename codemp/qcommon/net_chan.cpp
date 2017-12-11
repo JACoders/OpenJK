@@ -1,7 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+This file is part of the OpenJK source code.
 
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 /*
 
@@ -25,6 +44,8 @@ channel matches even if the IP port differs.  The IP port should be updated
 to the new value before sending out any replies.
 
 */
+
+#include "qcommon/qcommon.h"
 
 #define	MAX_PACKETLEN			1400		// max size of a network packet
 #define	FRAGMENT_SIZE			(MAX_PACKETLEN - 100)
@@ -63,7 +84,7 @@ called to open a channel to a remote system
 */
 void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport ) {
 	Com_Memset (chan, 0, sizeof(*chan));
-	
+
 	chan->sock = sock;
 	chan->remoteAddress = adr;
 	chan->qport = qport;
@@ -149,7 +170,7 @@ void Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 		Com_Printf("[ISM] Stomping Unsent Fragments %s\n",netsrcString[ chan->sock ]);
 	}
 	// fragment large reliable messages
-	if ( length >= FRAGMENT_SIZE ) 
+	if ( length >= FRAGMENT_SIZE )
 	{
 		chan->unsentFragments = qtrue;
 		chan->unsentLength = length;
@@ -204,7 +225,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 	int			fragmentStart, fragmentLength;
 	qboolean	fragmented;
 
-	// get sequence numbers		
+	// get sequence numbers
 	MSG_BeginReadingOOB( msg );
 	sequence = MSG_ReadLong( msg );
 
@@ -270,14 +291,14 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			, sequence );
 		}
 	}
-	
+
 
 	//
 	// if this is the final framgent of a reliable message,
-	// bump incoming_reliable_sequence 
+	// bump incoming_reliable_sequence
 	//
 	if ( fragmented ) {
-		// make sure we 
+		// make sure we
 		if ( sequence != chan->fragmentSequence ) {
 			chan->fragmentSequence = sequence;
 			chan->fragmentLength = 0;
@@ -317,7 +338,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			return qfalse;
 		}
 
-		Com_Memcpy( chan->fragmentBuffer + chan->fragmentLength, 
+		Com_Memcpy( chan->fragmentBuffer + chan->fragmentLength,
 			msg->data + msg->readcount, fragmentLength );
 
 		chan->fragmentLength += fragmentLength;
@@ -345,7 +366,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 		msg->readcount = 4;	// past the sequence number
 		msg->bit = 32;	// past the sequence number
 
-		// but I am a wuss -mw 
+		// but I am a wuss -mw
 		// chan->incomingSequence = sequence;   // lets not accept any more with this sequence number -gil
 		return qtrue;
 	}
@@ -363,28 +384,66 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 
 /*
 ===================
+NET_CompareBaseAdrMask
+
+Compare without port, and up to the bit number given in netmask.
+===================
+*/
+qboolean NET_CompareBaseAdrMask( netadr_t a, netadr_t b, int netmask )
+{
+	byte cmpmask, *addra, *addrb;
+	int curbyte;
+
+	if ( a.type != b.type )
+		return qfalse;
+
+	if ( a.type == NA_LOOPBACK )
+		return qtrue;
+
+	if ( a.type == NA_IP )
+	{
+		addra = (byte *)&a.ip;
+		addrb = (byte *)&b.ip;
+
+		if ( netmask < 0 || netmask > 32 )
+			netmask = 32;
+	}
+	else
+	{
+		Com_Printf( "NET_CompareBaseAdr: bad address type\n" );
+		return qfalse;
+	}
+
+	curbyte = netmask >> 3;
+
+	if ( curbyte && memcmp( addra, addrb, curbyte ) )
+		return qfalse;
+
+	netmask &= 0x07;
+	if ( netmask )
+	{
+		cmpmask = (1 << netmask) - 1;
+		cmpmask <<= 8 - netmask;
+
+		if ( (addra[curbyte] & cmpmask) == (addrb[curbyte] & cmpmask) )
+			return qtrue;
+	}
+	else
+		return qtrue;
+
+	return qfalse;
+}
+
+/*
+===================
 NET_CompareBaseAdr
 
 Compares without the port
 ===================
 */
-qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
+qboolean NET_CompareBaseAdr( netadr_t a, netadr_t b )
 {
-	if (a.type != b.type)
-		return qfalse;
-
-	if (a.type == NA_LOOPBACK)
-		return qtrue;
-
-	if (a.type == NA_IP)
-	{
-		if ((memcmp(a.ip, b.ip, 4) == 0))
-			return qtrue;
-		return qfalse;
-	}
-
-	Com_Printf ("NET_CompareBaseAdr: bad address type\n");
-	return qfalse;
+	return NET_CompareBaseAdrMask( a, b, -1 );
 }
 
 const char	*NET_AdrToString (netadr_t a)

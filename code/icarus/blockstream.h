@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // BlockStream.h
 
@@ -33,7 +37,7 @@ typedef float vec3_t[3];
 class CBlockMember
 {
 public:
-	CBlockMember();	
+	CBlockMember();
 
 protected:
 	~CBlockMember();
@@ -105,12 +109,12 @@ protected:
 	void	*m_data;	//Data for this member
 
 };
-	
+
 //CBlock
 
 class CBlock
 {
-	typedef vector< CBlockMember * >	blockMember_v;
+	typedef std::vector< CBlockMember * >	blockMember_v;
 
 public:
 
@@ -144,11 +148,11 @@ public:
 	CBlock *Duplicate( CIcarus* icarus );
 
 	int	GetBlockID( void )		const	{	return m_id;			}	//Get the ID for the block
-	int	GetNumMembers( void )	const	{	return m_members.size();}	//Get the number of member in the block's list
+	int	GetNumMembers( void )	const	{	return (int)m_members.size();}	//Get the number of member in the block's list
 
 	void SetFlags( unsigned char flags )	{	m_flags = flags;	}
 	void SetFlag( unsigned char flag )		{	m_flags |= flag;	}
-	
+
 	int HasFlag( unsigned char flag )	const	{	return ( m_flags & flag );	}
 	unsigned char GetFlags( void )		const	{	return m_flags;				}
 
@@ -200,7 +204,7 @@ public:
 
 	int WriteBlock( CBlock *, CIcarus* icarus );	//Write the block out
 	int ReadBlock( CBlock *, CIcarus* icarus );	//Read the block in
-	
+
 	int Open( char *, long );	//Open a stream for reading / writing
 
 	// Overloaded new operator.
@@ -216,7 +220,7 @@ public:
 	}
 
 protected:
-	long	m_fileSize;							//Size of the file	
+	long	m_fileSize;							//Size of the file
 	FILE	*m_fileHandle;						//Global file handle of current I/O source
 	char	m_fileName[CIcarus::MAX_FILENAME_LENGTH];	//Name of the current file
 

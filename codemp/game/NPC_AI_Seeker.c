@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 #include "g_nav.h"
 
@@ -47,7 +69,7 @@ void NPC_Seeker_Pain(gentity_t *self, gentity_t *attacker, int damage)
 
 //------------------------------------
 void Seeker_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -63,7 +85,7 @@ void Seeker_MaintainHeight( void )
 			TIMER_Set( NPCS.NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  flrand( NPCS.NPC->enemy->r.maxs[2]/2, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2]; 
+			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  flrand( NPCS.NPC->enemy->r.maxs[2]/2, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2];
 
 			difFactor = 1.0f;
 			if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -154,7 +176,7 @@ void Seeker_Strafe( void )
 	vec3_t	end, right, dir;
 	trace_t	tr;
 
-	if ( random() > 0.7f || !NPCS.NPC->enemy || !NPCS.NPC->enemy->client )
+	if ( Q_flrand(0.0f, 1.0f) > 0.7f || !NPCS.NPC->enemy || !NPCS.NPC->enemy->client )
 	{
 		// Do a regular style strafe
 		AngleVectors( NPCS.NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
@@ -184,7 +206,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPCS.NPC->client->ps.velocity[2] += upPush;
 
-			NPCS.NPCInfo->standTime = level.time + 1000 + random() * 500;
+			NPCS.NPCInfo->standTime = level.time + 1000 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 	else
@@ -204,7 +226,7 @@ void Seeker_Strafe( void )
 		VectorMA( NPCS.NPC->enemy->r.currentOrigin, stDis * side, right, end );
 
 		// then add a very small bit of random in front of/behind the player action
-		VectorMA( end, crandom() * 25, dir, end );
+		VectorMA( end, Q_flrand(-1.0f, 1.0f) * 25, dir, end );
 
 		trap->Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
@@ -233,7 +255,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPCS.NPC->client->ps.velocity[2] += upPush;
 
-			NPCS.NPCInfo->standTime = level.time + 2500 + random() * 500;
+			NPCS.NPCInfo->standTime = level.time + 2500 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 }
@@ -344,7 +366,7 @@ void Seeker_Ranged( qboolean visible, qboolean advance )
 	{
 		Seeker_Hunt( visible, advance );
 	}
-} 
+}
 
 //------------------------------------
 void Seeker_Attack( void )
@@ -356,7 +378,7 @@ void Seeker_Attack( void )
 	Seeker_MaintainHeight();
 
 	// Rate our distance to the target, and our visibilty
-	distance	= DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
@@ -393,13 +415,13 @@ void Seeker_FindEnemy( void )
 
 	numFound = trap->EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( i = 0 ; i < numFound ; i++ ) 
+	for ( i = 0 ; i < numFound ; i++ )
 	{
 		ent = &g_entities[entityList[i]];
 
-		if ( ent->s.number == NPCS.NPC->s.number 
-			|| !ent->client //&& || !ent->NPC 
-			|| ent->health <= 0 
+		if ( ent->s.number == NPCS.NPC->s.number
+			|| !ent->client //&& || !ent->NPC
+			|| ent->health <= 0
 			|| !ent->inuse )
 		{
 			continue;
@@ -428,7 +450,7 @@ void Seeker_FindEnemy( void )
 	if ( best )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPCS.NPC->random = random() * 6.3f; // roughly 2pi
+		NPCS.NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 
 		NPCS.NPC->enemy = best;
 	}
@@ -453,7 +475,7 @@ void Seeker_FollowOwner( void )
 	}
 	//rwwFIXMEFIXME: Care about all clients not just 0
 	dis	= DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, owner->r.currentOrigin );
-	
+
 	minDistSqr = MIN_DISTANCE_SQR;
 
 	if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -496,7 +518,7 @@ void Seeker_FollowOwner( void )
 		{
 			if ( TIMER_Done( NPCS.NPC, "seekerhiss" ))
 			{
-				TIMER_Set( NPCS.NPC, "seekerhiss", 1000 + random() * 1000 );
+				TIMER_Set( NPCS.NPC, "seekerhiss", 1000 + Q_flrand(0.0f, 1.0f) * 1000 );
 				G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/seeker/misc/hiss" ));
 			}
 		}
@@ -536,7 +558,7 @@ void NPC_BSSeeker_Default( void )
 	{
 		//OJKFIXME: clientnum 0
 		gentity_t *owner = &g_entities[0];
-		if ( owner->health <= 0 
+		if ( owner->health <= 0
 			|| (owner->client && owner->client->pers.connected == CON_DISCONNECTED) )
 		{//owner is dead or gone
 			//remove me
@@ -548,7 +570,7 @@ void NPC_BSSeeker_Default( void )
 	if ( NPCS.NPC->random == 0.0f )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPCS.NPC->random = random() * 6.3f; // roughly 2pi
+		NPCS.NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 	}
 
 	if ( NPCS.NPC->enemy && NPCS.NPC->enemy->health && NPCS.NPC->enemy->inuse )

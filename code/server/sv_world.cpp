@@ -1,27 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // world.c -- world query functions
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 #include "../qcommon/cm_local.h"
 
  /*
@@ -44,10 +46,6 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
-#if MEM_DEBUG
-#include "..\smartheap\heapagnt.h"
-#define SV_TRACE_PROFILE (0)
-#endif
 
 #if 0 //G2_SUPERSIZEDBBOX is not being used
 static const float superSizedAdd=64.0f;
@@ -120,7 +118,7 @@ worldSector_t *SV_CreateworldSector( int depth, vec3_t mins, vec3_t maxs ) {
 		anode->children[0] = anode->children[1] = NULL;
 		return anode;
 	}
-	
+
 	VectorSubtract (maxs, mins, size);
 	if (size[0] > size[1]) {
 		anode->axis = 0;
@@ -129,13 +127,13 @@ worldSector_t *SV_CreateworldSector( int depth, vec3_t mins, vec3_t maxs ) {
 	}
 
 	anode->dist = 0.5 * (maxs[anode->axis] + mins[anode->axis]);
-	VectorCopy (mins, mins1);	
-	VectorCopy (mins, mins2);	
-	VectorCopy (maxs, maxs1);	
-	VectorCopy (maxs, maxs2);	
-	
+	VectorCopy (mins, mins1);
+	VectorCopy (mins, mins2);
+	VectorCopy (maxs, maxs1);
+	VectorCopy (maxs, maxs2);
+
 	maxs1[anode->axis] = mins2[anode->axis] = anode->dist;
-	
+
 	anode->children[0] = SV_CreateworldSector (depth+1, mins2, maxs2);
 	anode->children[1] = SV_CreateworldSector (depth+1, mins1, maxs1);
 
@@ -280,7 +278,7 @@ void SV_LinkEntity( gentity_t *gEnt ) {
 		}
 	} else {
 		// normal
-		VectorAdd (origin, gEnt->mins, gEnt->absmin);	
+		VectorAdd (origin, gEnt->mins, gEnt->absmin);
 		VectorAdd (origin, gEnt->maxs, gEnt->absmax);
 	}
 
@@ -358,7 +356,7 @@ void SV_LinkEntity( gentity_t *gEnt ) {
 		else
 			break;		// crosses the node
 	}
-	
+
 	// link it in
 	ent->worldSector = node;
 	ent->nextEntityInWorldSector = node->entities;
@@ -417,7 +415,7 @@ void SV_AreaEntities_r( worldSector_t *node, areaParms_t *ap ) {
 		ap->list[ap->count] = gcheck;
 		ap->count++;
 	}
-	
+
 	if (node->axis == -1) {
 		return;		// terminal node
 	}
@@ -445,15 +443,6 @@ int SV_AreaEntities( const vec3_t mins, const vec3_t maxs, gentity_t **elist, in
 	ap.count = 0;
 	ap.maxcount = maxcount;
 
-#if SV_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2003);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
 	SV_AreaEntities_r( sv_worldSectors, &ap );
 
 	return ap.count;
@@ -488,7 +477,6 @@ void SV_SectorList_f( void ) {
 #include <list>
 #include <map>
 #pragma warning (pop)
-using namespace std;
 
 class CBBox
 {
@@ -675,7 +663,7 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			vec3_t sh_mins;
 			vec3_t sh_maxs;
 			int j;
-			for ( j=0 ; j<3 ; j++ ) 
+			for ( j=0 ; j<3 ; j++ )
 			{
 					sh_mins[j]=clip->mins[j]+superSizedAdd;
 					sh_maxs[j]=clip->maxs[j]-superSizedAdd;
@@ -697,13 +685,13 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 				clip->mins, clip->maxs, clipHandle,  clip->contentmask,
 				origin, angles);
 #endif
-		//FIXME: when startsolid in another ent, doesn't return correct entityNum 
+		//FIXME: when startsolid in another ent, doesn't return correct entityNum
 		//ALSO: 2 players can be standing next to each other and this function will
 		//think they're in each other!!!
 		}
 		oldTrace = clip->trace;
 
-		if ( trace.allsolid ) 
+		if ( trace.allsolid )
 		{
 			if(!clip->trace.allsolid)
 			{//We didn't come in here all solid, so set the clip->trace's entityNum
@@ -711,8 +699,8 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			}
 			clip->trace.allsolid = qtrue;
 			trace.entityNum = touch->s.number;
-		} 
-		else if ( trace.startsolid ) 
+		}
+		else if ( trace.startsolid )
 		{
 			if(!clip->trace.startsolid)
 			{//We didn't come in here starting solid, so set the clip->trace's entityNum
@@ -722,7 +710,7 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			trace.entityNum = touch->s.number;
 		}
 
-		if ( trace.fraction < clip->trace.fraction ) 
+		if ( trace.fraction < clip->trace.fraction )
 		{
 			qboolean	oldStart;
 
@@ -731,7 +719,10 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 
 			trace.entityNum = touch->s.number;
 			clip->trace = trace;
-			clip->trace.startsolid |= oldStart;
+			if ( oldStart )
+			{
+				clip->trace.startsolid = qtrue;
+			}
 		}
 /*
 Ghoul2 Insert Start
@@ -775,7 +766,7 @@ Ghoul2 Insert Start
 				if (touch->client)
 				{
 					vec3_t world_angles;
-					
+
 					world_angles[PITCH] =  0;
 					//legs do not *always* point toward the viewangles!
 					//world_angles[YAW] =  touch->client->viewangles[YAW];
@@ -794,7 +785,7 @@ Ghoul2 Insert Start
 				}
 
 				// set our new trace record size
- 
+
 				for (z=0;z<MAX_G2_COLLISIONS;z++)
 				{
 					if (clip->trace.G2CollisionMap[z].mEntityNum != -1)
@@ -852,16 +843,6 @@ Ghoul2 Insert End
 	assert( !Q_isnan(start[0])&&!Q_isnan(start[1])&&!Q_isnan(start[2])&&!Q_isnan(end[0])&&!Q_isnan(end[1])&&!Q_isnan(end[2]));
 #endif// _DEBUG
 
-#if SV_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2002);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
-
 	moveclip_t	clip;
 	int			i;
 //	int			startMS, endMS;
@@ -887,17 +868,17 @@ Ghoul2 Insert End
 	//BoxTrace or have it not clip against entity brushes here.
 	CM_BoxTrace( &clip.trace, start, end, mins, maxs, 0, contentmask );
 	clip.trace.entityNum = clip.trace.fraction != 1.0 ? ENTITYNUM_WORLD : ENTITYNUM_NONE;
-	if ( clip.trace.fraction == 0 ) 
+	if ( clip.trace.fraction == 0 )
 	{// blocked immediately by the world
 		*results = clip.trace;
-//		goto addtime;		
+//		goto addtime;
 		return;
 	}
 
 	clip.contentmask = contentmask;
 /*
 Ghoul2 Insert Start
-*/	
+*/
 	VectorCopy( start, clip.start );
 	clip.eG2TraceType = eG2TraceType;
 	clip.useLod = useLod;
@@ -910,7 +891,7 @@ Ghoul2 Insert End
 	world_frac = clip.trace.fraction;
 	//set the fraction back to 1.0 for the trace vs. entities
 	clip.trace.fraction = 1.0f;
-	
+
 	//VectorCopy( end, clip.end );
 	// create the bounding box of the entire move
 	// we can limit it to the part of the move not
@@ -924,7 +905,7 @@ Ghoul2 Insert End
 
 	if (eG2TraceType==G2_SUPERSIZEDBBOX)
 	{
-		for ( i=0 ; i<3 ; i++ ) 
+		for ( i=0 ; i<3 ; i++ )
 		{
 				superMin[i]=mins[i]-superSizedAdd;
 				superMax[i]=maxs[i]+superSizedAdd;
@@ -975,24 +956,7 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 	gentity_t		*touch[MAX_GENTITIES], *hit;
 	int			i, num;
 	int			contents, c2;
-//	int			startMS, endMS;
 	clipHandle_t	clipHandle;
-	const float		*angles;
-
-#if MEM_DEBUG
-#if SV_TRACE_PROFILE
-	{
-		int old=dbgMemSetCheckpoint(2001);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
-
-	/*
-	startMS = Sys_Milliseconds ();
-	numTraces++;
-	*/
 
 	// get base contents from world
 	contents = CM_PointContents( p, 0 );
@@ -1007,20 +971,12 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 		}
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity( hit );
-		angles = hit->s.angles;
-		if ( !hit->bmodel ) {
-			angles = vec3_origin;	// boxes don't rotate
-		}
 
 		c2 = CM_TransformedPointContents (p, clipHandle, hit->s.origin, hit->s.angles);
 
 		contents |= c2;
 	}
 
-	/*
-	endMS = Sys_Milliseconds ();
-	timeInTrace += endMS - startMS;
-	*/
 	return contents;
 }
 

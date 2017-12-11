@@ -1,9 +1,28 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // ICARUS Engine Interface File
 //
-//	This file is the only section of the ICARUS systems that 
+//	This file is the only section of the ICARUS systems that
 //	is not directly portable from engine to engine.
 //
 //	-- jweier
@@ -20,13 +39,13 @@
 //#define stringIDExpand(str, strEnum)	str,strEnum
 
 /*
-stringID_table_t tagsTable [] = 
+stringID_table_t tagsTable [] =
 {
 }
 */
 
 extern float Q_flrand(float min, float max);
-extern qboolean COM_ParseString( char **data, char **s ); 
+extern qboolean COM_ParseString( char **data, char **s );
 
 //=======================================================================
 
@@ -37,7 +56,7 @@ interface_export_t	interface_export;
 ============
 Q3_ReadScript
   Description	: Reads in a file and attaches the script directory properly
-  Return type	: static int 
+  Return type	: static int
   Argument		: const char *name
   Argument		: void **buf
 ============
@@ -50,9 +69,9 @@ static int Q3_ReadScript( const char *name, void **buf )
 
 /*
 ============
-Q3_CenterPrint 
+Q3_CenterPrint
   Description	: Prints a message in the center of the screen
-  Return type	: static void 
+  Return type	: static void
   Argument		:  const char *format
   Argument		: ...
 ============
@@ -180,8 +199,8 @@ void Q3_TaskIDSet( sharedEntity_t *ent, taskID_t taskType, int taskID )
 /*
 ============
 Q3_CheckStringCounterIncrement
-  Description	: 
-  Return type	: static float 
+  Description	:
+  Return type	: static float
   Argument		: const char *string
 ============
 */
@@ -260,7 +279,7 @@ static unsigned int Q3_GetTime( void )
 G_AddSexToMunroString
 
 Take any string, look for "kyle/" replace with "kyla/" based on "sex"
-And: Take any string, look for "/mr_" replace with "/ms_" based on "sex" 
+And: Take any string, look for "/mr_" replace with "/ms_" based on "sex"
 returns qtrue if changed to ms
 =============
 */
@@ -325,8 +344,8 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 /*
 ============
 Q3_SetVar
-  Description	: 
-  Return type	: static void 
+  Description	:
+  Return type	: static void
   Argument		:  int taskID
   Argument		: int entID
   Argument		: const char *type_name
@@ -339,7 +358,7 @@ void Q3_SetVar( int taskID, int entID, const char *type_name, const char *data )
 	float	float_data;
 	float	val = 0.0f;
 
-	
+
 	if ( vret != VTYPE_NONE )
 	{
 		switch ( vret )
@@ -376,8 +395,8 @@ void Q3_SetVar( int taskID, int entID, const char *type_name, const char *data )
 /*
 ============
 Q3_Set
-  Description	: 
-  Return type	: void 
+  Description	:
+  Return type	: void
   Argument		:  int taskID
   Argument		: int entID
   Argument		: const char *type_name
@@ -403,8 +422,8 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 /*
 ============
 Q3_Evaluate
-  Description	: 
-  Return type	: int 
+  Description	:
+  Return type	: int
   Argument		:  int p1Type
   Argument		: const char *p1
   Argument		: int p2Type
@@ -600,7 +619,7 @@ static int Q3_Evaluate( int p1Type, const char *p1, int p2Type, const char *p2, 
 		}
 
 		break;
-	
+
 	default:
 		Q3_DebugPrint( WL_ERROR, "Q3_Evaluate unknown operator used!\n");
 		break;
@@ -654,11 +673,11 @@ void Q3_DebugPrint( int level, const char *format, ... )
 		case WL_ERROR:
 			Com_Printf ( S_COLOR_RED"ERROR: %s", text );
 			break;
-		
+
 		case WL_WARNING:
 			Com_Printf ( S_COLOR_YELLOW"WARNING: %s", text );
 			break;
-		
+
 		case WL_DEBUG:
 			{
 				int		entNum;
@@ -691,7 +710,7 @@ void CGCam_Anything( void )
 }
 
 //These are useless for MP. Just taking it for now since I don't want to remove all calls to this in ICARUS.
-int AppendToSaveGame(unsigned long chid, void *data, int length)
+int AppendToSaveGame(unsigned long chid, const void *data, int length)
 {
 	return 1;
 }
@@ -944,7 +963,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 ============
 Interface_Init
   Description	: Inits the interface for the game
-  Return type	: void 
+  Return type	: void
   Argument		: interface_export_t *pe
 ============
 */
@@ -965,7 +984,7 @@ void Interface_Init( interface_export_t *pe )
 	pe->I_Lerp2Angles			=	Q3_Lerp2Angles;
 	pe->I_GetTag				=	Q3_GetTag;
 	pe->I_Lerp2Start			=	Q3_Lerp2Start;
-	pe->I_Lerp2End				=	Q3_Lerp2End;	
+	pe->I_Lerp2End				=	Q3_Lerp2End;
 	pe->I_Use					=	Q3_Use;
 	pe->I_Kill					=	Q3_Kill;
 	pe->I_Remove				=	Q3_Remove;

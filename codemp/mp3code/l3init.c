@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: l3init.c,v 1.2 1999/10/19 07:13:09 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -35,12 +35,6 @@ ____________________________________________________________________________*/
 #include <float.h>
 #include <math.h>
 #include "l3.h"
-
-/* get rid of precision loss warnings on conversion */
-#ifdef _MSC_VER
-#pragma warning(disable:4244 4056)
-#endif
-
 
 /*---------- quant ---------------------------------*/
 /* 8 bit lookup x = pow(2.0, 0.25*(global_gain-210)) */
@@ -224,7 +218,7 @@ void hwin_init()
 	/*-- invert signs for short blocks --*/
 	   for (i = 3; i < 12; i++)
 		  win[2][i] = -win[2][i];
-   }   
+   }
 }
 /*=============================================================*/
 typedef float ARRAY4[4];
@@ -257,7 +251,7 @@ void imdct_init()
 	   for (p = 0; p < n; p++)
 		  w[p] = (float) (2.0 * cos(t * (2 * p + 1)));
 	   for (p = 0; p < 9; p++)
-		  w2[p] = (float) 2.0 *cos(2 * t * (2 * p + 1));
+		  w2[p] = (float) (2.0 *cos(2 * t * (2 * p + 1)));
 
 	   t = pi / (2 * n);
 	   for (k = 0; k < 9; k++)
@@ -276,10 +270,10 @@ void imdct_init()
 	   pi = 4.0 * atan(1.0);
 	   t = pi / (4 * n);
 	   for (p = 0; p < n; p++)
-		  v[p] = (float) 2.0 *cos(t * (2 * p + 1));
+		  v[p] = (float) (2.0 *cos(t * (2 * p + 1)));
 
 	   for (p = 0; p < 3; p++)
-		  v2[p] = (float) 2.0 *cos(2 * t * (2 * p + 1));
+		  v2[p] = (float) (2.0 *cos(2 * t * (2 * p + 1)));
 
 	   t = pi / (2 * n);
 	   k = 1;
@@ -288,9 +282,9 @@ void imdct_init()
 	/* adjust scaling to save a few mults */
 	   for (p = 0; p < 6; p++)
 		  v[p] = v[p] / 2.0f;
-	   *coef87 = (float) 2.0 *(*coef87);
+	   *coef87 = (float) (2.0 *(*coef87));
 
-   }   
+   }
 }
 /*===============================================================*/
 typedef float ARRAY8_2[8][2];
@@ -335,9 +329,9 @@ void msis_init()
 
 
 	/*-------
-	for(i=0;i<21;i++) nBand[0][i] = 
+	for(i=0;i<21;i++) nBand[0][i] =
 				sfBandTable[sr_index].l[i+1] - sfBandTable[sr_index].l[i];
-	for(i=0;i<12;i++) nBand[1][i] = 
+	for(i=0;i<12;i++) nBand[1][i] =
 				sfBandTable[sr_index].s[i+1] - sfBandTable[sr_index].s[i];
 	-------------*/
    }

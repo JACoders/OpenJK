@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
@@ -75,7 +79,7 @@ void NPC_Mark2_Part_Explode( gentity_t *self, int bolt )
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					bolt,
 					&boltMatrix, self->currentAngles, self->currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -96,10 +100,10 @@ NPC_Mark2_Pain
 - look at what was hit and see if it should be removed from the model.
 -------------------------
 */
-void NPC_Mark2_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Mark2_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	int newBolt,i;
-	
+
 	NPC_Pain( self, inflictor, other, point, damage, mod );
 
 	for (i=0;i<3;i++)
@@ -107,7 +111,7 @@ void NPC_Mark2_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, co
 		if ((hitLoc==HL_GENERIC1+i) && (self->locationDamage[HL_GENERIC1+i] > AMMO_POD_HEALTH))	// Blow it up?
 		{
 			if (self->locationDamage[hitLoc] >= AMMO_POD_HEALTH)
-			{			
+			{
 				newBolt = gi.G2API_AddBolt( &self->ghoul2[self->playerModel], va("torso_canister%d",(i+1)) );
 				if ( newBolt != -1 )
 				{
@@ -159,7 +163,7 @@ void Mark2_FireBlaster(qboolean advance)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 
-	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel, 
+	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel,
 				NPC->genericBolt1,
 				&boltMatrix, NPC->currentAngles, NPC->currentOrigin, (cg.time?cg.time:level.time),
 				NULL, NPC->s.modelScale );
@@ -229,7 +233,7 @@ void Mark2_AttackDecision( void )
 {
 	NPC_FaceEnemy( qtrue );
 
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
@@ -238,7 +242,7 @@ void Mark2_AttackDecision( void )
 	{
 		NPC->flags &= ~FL_SHIELDED;
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1START, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
-		if ((NPC->client->ps.legsAnimTimer==0) && 
+		if ((NPC->client->ps.legsAnimTimer==0) &&
 			NPC->client->ps.torsoAnim == BOTH_RUN1START )
 		{
 			NPCInfo->localState = LSTATE_NONE;	// He's up again.

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 /*****************************************************************************
  * name:		be_ai_gen.c
@@ -5,7 +27,7 @@
  * desc:		genetic selection
  *
  * $Archive: /MissionPack/code/botlib/be_ai_gen.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 3 $
  * $Modtime: 11/22/00 8:50a $
  * $Date: 11/22/00 8:55a $
@@ -47,7 +69,7 @@ int GeneticSelection(int numranks, float *rankings)
 	{
 		//select a bot where the ones with the higest rankings have
 		//the highest chance of being selected
-		//sum *= random();
+		//sum *= Q_flrand(0.0f, 1.0f);
 		for (i = 0; i < numranks; i++)
 		{
 			if (rankings[i] < 0) continue;
@@ -56,7 +78,7 @@ int GeneticSelection(int numranks, float *rankings)
 		} //end for
 	} //end if
 	//select a bot randomly
-	index = random() * numranks;
+	index = Q_flrand(0.0f, 1.0f) * numranks;
 	for (i = 0; i < numranks; i++)
 	{
 		if (rankings[index] >= 0) return index;

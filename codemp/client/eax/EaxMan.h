@@ -47,7 +47,7 @@ typedef struct _SOURCEATTRIBUTES {
  float               fMaxDistance;
  long                lDupCount;
  long                lPriority;
-} SOURCEATTRIBUTES; 
+} SOURCEATTRIBUTES;
 typedef SOURCEATTRIBUTES FAR *LPSOURCEATTRIBUTES;
 
 typedef struct _MATERIALATTRIBUTES {

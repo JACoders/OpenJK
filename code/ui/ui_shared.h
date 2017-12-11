@@ -1,23 +1,34 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __UI_SHARED_H
 #define __UI_SHARED_H
+
+enum {
+	SSF_JPEG = 0,
+	SSF_TGA,
+	SSF_PNG
+};
 
 #define MAX_TOKENLENGTH		1024
 #define MAX_OPEN_MENUS 16
@@ -40,27 +51,16 @@ This file is part of Jedi Academy.
 #define SLIDER_THUMB_HEIGHT 16.0
 #define SCROLLBAR_SIZE 16.0
 
-typedef struct pc_token_s
-{
-	int			type;
-	int			subtype;
-	int			intvalue;
-	float		floatvalue;
-	char		string[MAX_TOKENLENGTH];
-} pc_token_t;
-
-
-
 // FIXME: combine flags into bitfields to save space
 // FIXME: consolidate all of the common stuff in one structure for menus and items
 // THINKABOUTME: is there any compelling reason not to have items contain items
-// and do away with a menu per say.. major issue is not being able to dynamically allocate 
-// and destroy stuff.. Another point to consider is adding an alloc free call for vm's and have 
+// and do away with a menu per say.. major issue is not being able to dynamically allocate
+// and destroy stuff.. Another point to consider is adding an alloc free call for vm's and have
 // the engine just allocate the pool for it based on a cvar
 // many of the vars are re-used for different item types, as such they are not always named appropriately
 // the benefits of c++ in DOOM will greatly help crap like this
 // FIXME: need to put a type ptr that points to specific type info per type
-// 
+//
 #define MAX_LB_COLUMNS 16
 
 typedef struct columnInfo_s {
@@ -90,10 +90,10 @@ typedef struct editFieldDef_s {
 	float		minVal;						//	edit field limits
 	float		maxVal;						//
 	float		defVal;						//
-	float		range;						// 
+	float		range;						//
 	int			maxChars;					// for edit fields
 	int			maxPaintChars;				// for edit fields
-	int			paintOffset;				// 
+	int			paintOffset;				//
 } editFieldDef_t;
 
 #define MAX_MULTI_CVARS 64//32
@@ -112,12 +112,7 @@ typedef struct multiDef_s {
 #define CVAR_HIDE		0x00000008
 #define CVAR_SUBSTRING	0x00000010	//when using enable or disable, just check for strstr instead of ==
 
-
-#ifdef CGAME
-#define STRING_POOL_SIZE 128*1024
-#else
-#define STRING_POOL_SIZE 384*1024
-#endif
+#define STRING_POOL_SIZE (2*1024*1024)
 
 #define	NUM_CROSSHAIRS			9
 
@@ -152,7 +147,7 @@ typedef struct {
 	sfxHandle_t datapadmoveSaberSound6;
 
 	sfxHandle_t nullSound;
-	
+
 	float		fadeClamp;
 	int			fadeCycle;
 	float		fadeAmount;
@@ -181,7 +176,7 @@ typedef struct {
 	void		(*drawText) (float x, float y, float scale, vec4_t color, const char *text, int iMaxPixelWidth, int style, int iFontIndex );
 	void		(*drawTextWithCursor)(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, char cursor, int iMaxPixelWidth, int style, int iFontIndex);
 	void		(*drawTopBottom) (float x, float y, float w, float h, float size);
-	void		(*executeText)(int exec_when, const char *text );	
+	void		(*executeText)(int exec_when, const char *text );
 	int			(*feederCount)(float feederID);
 	void		(*feederSelection)(float feederID, int index, struct itemDef_s *item);
 	void		(*fillRect) ( float x, float y, float w, float h, const vec4_t color);
@@ -200,7 +195,7 @@ typedef struct {
 	void		(*Print)(const char *msg, ...);
 	int			(*registerFont) (const char *pFontname);
 	qhandle_t	(*registerModel) (const char *p);
-	qhandle_t	(*registerShaderNoMip) (const char *p);	
+	qhandle_t	(*registerShaderNoMip) (const char *p);
 	sfxHandle_t (*registerSound)(const char *name, qboolean compressed);
 	void		(*renderScene) ( const refdef_t *fd );
 	qboolean	(*runScript)(const char **p);
@@ -250,6 +245,8 @@ typedef struct {
 	qhandle_t	gradientImage;
 	float FPS;
 
+	int			screenshotFormat;
+
 } displayContextDef_t;
 
 void UI_InitMemory( void );
@@ -265,7 +262,7 @@ void UI_InitMemory( void );
 #define WINDOW_HASFOCUS			0x00000002	// has cursor focus, exclusive
 #define WINDOW_VISIBLE			0x00000004	// is visible
 #define WINDOW_INACTIVE			0x00000008	// is visible but grey ( non-active )
-#define WINDOW_DECORATION		0x00000010	// for decoration only, no mouse, keyboard, etc.. 
+#define WINDOW_DECORATION		0x00000010	// for decoration only, no mouse, keyboard, etc..
 #define WINDOW_FADINGOUT		0x00000020	// fading out, non-active
 #define WINDOW_FADINGIN			0x00000040	// fading in
 #define WINDOW_MOUSEOVERTEXT	0x00000080	// mouse is over it, non exclusive
@@ -283,7 +280,7 @@ void UI_InitMemory( void );
 #define WINDOW_AUTOWRAPPED		0x00080000	// auto wrap text
 #define WINDOW_FORCED			0x00100000	// forced open
 #define WINDOW_POPUP			0x00200000	// popup
-#define WINDOW_BACKCOLORSET		0x00400000	// backcolor was explicitly set 
+#define WINDOW_BACKCOLORSET		0x00400000	// backcolor was explicitly set
 #define WINDOW_TIMEDVISIBLE		0x00800000	// visibility timing ( NOT implemented )
 #define WINDOW_PLAYERCOLOR		0x01000000	// hack the forecolor to match ui_char_color_*
 #define WINDOW_SCRIPTWAITING	0x02000000	// delayed script waiting to run
@@ -312,7 +309,7 @@ typedef struct {
 	int			border;                     //
 	int			ownerDraw;					// ownerDraw style
 	int			ownerDrawFlags;				// show flags for ownerdraw items
-	float		borderSize;					// 
+	float		borderSize;					//
 	int			flags;						// visible, focus, mouseover, cursor
 	UIRectangle	rectEffects;				// for various effects
 	UIRectangle	rectEffects2;				// for various effects
@@ -324,7 +321,7 @@ typedef struct {
 	vec4_t		backColor;					// border color
 	vec4_t		borderColor;				// border color
 	vec4_t		outlineColor;				// border color
-	qhandle_t	background;					// background asset  
+	qhandle_t	background;					// background asset
 } windowDef_t;
 
 typedef windowDef_t Window;
@@ -361,7 +358,7 @@ typedef struct modelDef_s {
 
 typedef struct itemDef_s {
 	Window		window;						// common positional, border, style, layout info
-	UIRectangle	textRect;					// rectangle the text ( if any ) consumes     
+	UIRectangle	textRect;					// rectangle the text ( if any ) consumes
 	int			type;						// text, button, radiobutton, checkbox, textfield, listbox, combo
 	int			alignment;					// left center right
 	int			textalignment;				// ( optional ) alignment for text within rect based on text width
@@ -381,7 +378,7 @@ typedef struct itemDef_s {
 	const char	*mouseEnterText;			// mouse enter script
 	const char	*mouseExitText;				// mouse exit script
 	const char	*mouseEnter;				// mouse enter script
-	const char	*mouseExit;					// mouse exit script 
+	const char	*mouseExit;					// mouse exit script
 	const char	*action;					// select script
 //JLFACCEPT MPMOVED
 	const char  *accept;
@@ -391,7 +388,7 @@ typedef struct itemDef_s {
 
 	const char	*onFocus;					// select script
 	const char	*leaveFocus;				// select script
-	const char	*cvar;						// associated cvar 
+	const char	*cvar;						// associated cvar
 	const char	*cvarTest;					// associated cvar for enable actions
 	const char	*enableCvar;				// enable, disable, show, or hide based on value, this can contain a list
 	int			cvarFlags;					//	what type of action to take on cvarenables
@@ -400,21 +397,22 @@ typedef struct itemDef_s {
 	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
 	float		special;					// used for feeder id's etc.. diff per type
 	int			cursorPos;					// cursor position in characters
-	void		*typeData;					// type specific data ptr's	
+	void		*typeData;					// type specific data ptr's
 	int			appearanceSlot;				// order of appearance
 	int			value;						// used by ITEM_TYPE_MULTI that aren't linked to a particular cvar.
 	int			font;						// FONT_SMALL,FONT_MEDIUM,FONT_LARGE
 	int			invertYesNo;
 	int			xoffset;
-
+	qboolean	disabled;					// Does this item ignore mouse and keyboard focus
+	qboolean	disabledHidden;				// hide the item when 'disabled' is true (for generic image items)
 } itemDef_t;
 
 typedef struct {
 	Window window;
 	const char  *font;						// font
-	qboolean	fullScreen;					// covers entire screen 
+	qboolean	fullScreen;					// covers entire screen
 	int			itemCount;					// number of items;
-	int			fontIndex;					// 
+	int			fontIndex;					//
 	int			cursorItem;					// which item as the cursor
 	int			fadeCycle;					//
 	float		fadeClamp;					//
@@ -429,7 +427,7 @@ typedef struct {
 
 	vec4_t		focusColor;					// focus color for items
 	vec4_t		disableColor;				// focus color for items
-	itemDef_t	*items[MAX_MENUITEMS];		// items this menu contains   
+	itemDef_t	*items[MAX_MENUITEMS];		// items this menu contains
 	float		appearanceTime;				//	when next item should appear
 	int			appearanceCnt;				//	current item displayed
 	float		appearanceIncrement;		//
@@ -440,10 +438,10 @@ typedef struct {
 	float		descScale;					// Description scale
 	int			descTextStyle;					// ( optional ) style, normal and shadowed are it for now
 
-	
+
 } menuDef_t;
 
-typedef struct textScrollDef_s 
+typedef struct textScrollDef_s
 {
 	int				startPos;
 	int				endPos;
@@ -459,7 +457,7 @@ typedef struct textScrollDef_s
 
 } textScrollDef_t;
 
-typedef struct 
+typedef struct
 {
 	const char *name;
 	qboolean (*handler) (itemDef_t *item, const char** args);
@@ -469,7 +467,8 @@ typedef struct
 menuDef_t	*Menu_GetFocused(void);
 
 void		Controls_GetConfig( void );
-void		Controls_SetConfig(qboolean restart);
+void		Controls_SetConfig( void );
+void		Controls_SetDefaults( void );
 qboolean	Display_KeyBindPending(void);
 qboolean	Display_MouseMove(void *p, int x, int y);
 int			Display_VisibleMenuCount(void);
@@ -481,11 +480,16 @@ qboolean	Menus_AnyFullScreenVisible(void);
 void		Menus_CloseAll(void);
 int			Menu_Count(void);
 itemDef_t	*Menu_FindItemByName(menuDef_t *menu, const char *p);
+void Menu_ShowGroup (menuDef_t *menu, const char *itemName, qboolean showFlag);
+void Menu_ItemDisable(menuDef_t *menu, const char *name, qboolean disableFlag);
+int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name);
+itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *name);
+
 void		Menu_HandleKey(menuDef_t *menu, int key, qboolean down);
 void		Menu_New(char *buffer);
 void		Menus_OpenByName(const char *p);
 void		Menu_PaintAll(void);
-void		Menu_Reset(void); 
+void		Menu_Reset(void);
 void		PC_EndParseSession(char *buffer);
 qboolean	PC_Float_Parse(int handle, float *f);
 qboolean	PC_ParseString(const char **tempStr);

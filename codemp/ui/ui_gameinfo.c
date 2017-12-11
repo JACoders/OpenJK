@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //
 // gameinfo.c
 //
@@ -123,10 +144,12 @@ static void UI_LoadArenasFromFile( char *filename ) {
 UI_LoadArenas
 ===============
 */
+
+#define MAPSBUFSIZE (MAX_MAPS * 64)
 void UI_LoadArenas( void ) {
 	int			numdirs;
-	char		filename[128];
-	char		dirlist[1024];
+	char		filename[MAX_QPATH];
+	char		dirlist[MAPSBUFSIZE];
 	char*		dirptr;
 	int			i, n;
 	int			dirlen;
@@ -136,7 +159,7 @@ void UI_LoadArenas( void ) {
 	uiInfo.mapCount = 0;
 
 	// get all arenas from .arena files
-	numdirs = trap->FS_GetFileList("scripts", ".arena", dirlist, 1024 );
+	numdirs = trap->FS_GetFileList( "scripts", ".arena", dirlist, ARRAY_LEN( dirlist ) );
 	dirptr  = dirlist;
 	for (i = 0; i < numdirs; i++, dirptr += dirlen+1) {
 		dirlen = strlen(dirptr);
@@ -164,6 +187,8 @@ void UI_LoadArenas( void ) {
 		if( *type ) {
 			if( strstr( type, "ffa" ) ) {
 				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_FFA);
+				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_TEAM);
+				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_JEDIMASTER);
 			}
 			if( strstr( type, "holocron" ) ) {
 				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_HOLOCRON);

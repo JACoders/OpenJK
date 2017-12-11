@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "../qcommon/q_shared.h"
@@ -87,7 +110,7 @@ typedef struct md3Tag_s {
 ** XyzNormals		sizeof( md3XyzNormal_t ) * numVerts * numFrames
 */
 typedef struct md3Surface_s {
-	int		ident;				// 
+	int		ident;				//
 
 	char	name[MAX_QPATH];	// polyset name
 
@@ -134,7 +157,7 @@ typedef struct md3Header_s {
 	int			flags;
 
 	int			numFrames;
-	int			numTags;			
+	int			numTags;
 	int			numSurfaces;
 
 	int			numSkins;
@@ -363,13 +386,13 @@ typedef struct dsurface_s {
 #define STYLE_BLINK			0x40000000
 #define	SET_MASK			0x00ffffff
 
-typedef struct 
+typedef struct
 {
 	short		width;					// number of pixels wide
 	short		height;					// number of scan lines
 	short		horizAdvance;			// number of pixels to advance to the next char
 	short		horizOffset;			// x offset into space to render glyph
-	int			baseline;				// y offset 
+	int			baseline;				// y offset
 	float		s;						// x start tex coord
 	float		t;						// y start tex coord
 	float		s2;						// x end tex coord

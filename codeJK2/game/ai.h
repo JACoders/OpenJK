@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __AI__
 #define __AI__
@@ -101,18 +105,39 @@ void NPC_BSHowler_Default( void );
 //Group AI
 #define	MAX_FRAME_GROUPS	32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct AIGroupMember_s
+class AIGroupMember_t
 {
+public:
 	int	number;
 	int waypoint;
 	int pathCostToEnemy;
 	int	closestBuddy;
-} AIGroupMember_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(number);
+		saved_game.write<int32_t>(waypoint);
+		saved_game.write<int32_t>(pathCostToEnemy);
+		saved_game.write<int32_t>(closestBuddy);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(number);
+		saved_game.read<int32_t>(waypoint);
+		saved_game.read<int32_t>(pathCostToEnemy);
+		saved_game.read<int32_t>(closestBuddy);
+	}
+}; // AIGroupMember_t
 
 #define MAX_GROUP_MEMBERS 32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct AIGroupInfo_s
+class AIGroupInfo_t
 {
+public:
 	int			numGroup;
 	qboolean	processed;
 	team_t		team;
@@ -130,7 +155,52 @@ typedef struct AIGroupInfo_s
 	vec3_t		enemyLastSeenPos;
 	int			numState[ NUM_SQUAD_STATES ];
 	AIGroupMember_t member[ MAX_GROUP_MEMBERS ];
-} AIGroupInfo_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(numGroup);
+		saved_game.write<int32_t>(processed);
+		saved_game.write<int32_t>(team);
+		saved_game.write<int32_t>(enemy);
+		saved_game.write<int32_t>(enemyWP);
+		saved_game.write<int32_t>(speechDebounceTime);
+		saved_game.write<int32_t>(lastClearShotTime);
+		saved_game.write<int32_t>(lastSeenEnemyTime);
+		saved_game.write<int32_t>(morale);
+		saved_game.write<int32_t>(moraleAdjust);
+		saved_game.write<int32_t>(moraleDebounce);
+		saved_game.write<int32_t>(memberValidateTime);
+		saved_game.write<int32_t>(activeMemberNum);
+		saved_game.write<int32_t>(commander);
+		saved_game.write<float>(enemyLastSeenPos);
+		saved_game.write<int32_t>(numState);
+		saved_game.write<>(member);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(numGroup);
+		saved_game.read<int32_t>(processed);
+		saved_game.read<int32_t>(team);
+		saved_game.read<int32_t>(enemy);
+		saved_game.read<int32_t>(enemyWP);
+		saved_game.read<int32_t>(speechDebounceTime);
+		saved_game.read<int32_t>(lastClearShotTime);
+		saved_game.read<int32_t>(lastSeenEnemyTime);
+		saved_game.read<int32_t>(morale);
+		saved_game.read<int32_t>(moraleAdjust);
+		saved_game.read<int32_t>(moraleDebounce);
+		saved_game.read<int32_t>(memberValidateTime);
+		saved_game.read<int32_t>(activeMemberNum);
+		saved_game.read<int32_t>(commander);
+		saved_game.read<float>(enemyLastSeenPos);
+		saved_game.read<int32_t>(numState);
+		saved_game.read<>(member);
+	}
+}; // AIGroupInfo_t
 
 int	AI_GetGroupSize( vec3_t origin, int radius, team_t playerTeam, gentity_t *avoid = NULL );
 int AI_GetGroupSize( gentity_t *ent, int radius );

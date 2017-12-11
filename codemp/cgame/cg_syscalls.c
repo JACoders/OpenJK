@@ -1,9 +1,30 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_syscalls.c -- this file is only included when building a dll
-// cg_syscalls.asm is included instead when building a qvm
 #include "cg_local.h"
- 
+
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
 static void TranslateSyscalls( void );
@@ -23,12 +44,12 @@ int PASSFLOAT( float x ) {
 void trap_Print( const char *fmt ) {
 	Q_syscall( CG_PRINT, fmt );
 }
-void trap_Error( const char *fmt ) {
+NORETURN void trap_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
 	exit(1);
 }
 int trap_Milliseconds( void ) {
-	return Q_syscall( CG_MILLISECONDS ); 
+	return Q_syscall( CG_MILLISECONDS );
 }
 void trap_PrecisionTimer_Start( void **theNewTimer ) {
 	Q_syscall( CG_PRECISIONTIMER_START, theNewTimer );
@@ -36,7 +57,7 @@ void trap_PrecisionTimer_Start( void **theNewTimer ) {
 int trap_PrecisionTimer_End( void *theTimer ) {
 	return Q_syscall(CG_PRECISIONTIMER_END, theTimer);
 }
-void trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags ) {
+void trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags ) {
 	Q_syscall( CG_CVAR_REGISTER, vmCvar, varName, defaultValue, flags );
 }
 void trap_Cvar_Update( vmCvar_t *vmCvar ) {
@@ -198,7 +219,12 @@ qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 qhandle_t trap_R_RegisterFont( const char *fontName ) {
 	return Q_syscall( CG_R_REGISTERFONT, fontName);
 }
-int	trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
+int trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
+	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
+	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
+	return width * scale;
+}
+float trap_R_Font_StrLenPixelsFloat(const char *text, const int iFontIndex, const float scale) {
 	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
 	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
 	return width * scale;
@@ -207,7 +233,8 @@ int trap_R_Font_StrLenChars(const char *text) {
 	return Q_syscall( CG_R_FONT_STRLENCHARS, text);
 }
 int trap_R_Font_HeightPixels(const int iFontIndex, const float scale) {
-	return Q_syscall( CG_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(scale));
+	float height = (float)Q_syscall( CG_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(1.0f) );
+	return height * scale;
 }
 void trap_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iCharLimit, const float scale) {
 	Q_syscall( CG_R_FONT_DRAWSTRING, ox, oy, text, rgba, setIndex, iCharLimit, PASSFLOAT(scale));
@@ -436,7 +463,7 @@ void trap_FX_AddScheduledEffects( qboolean skyPortal ) {
 }
 void trap_FX_Draw2DEffects ( float screenXScale, float screenYScale ) {
 	Q_syscall( CG_FX_DRAW_2D_EFFECTS, PASSFLOAT(screenXScale), PASSFLOAT(screenYScale) );
-}	
+}
 int	trap_FX_InitSystem( refdef_t* refdef ) {
 	return Q_syscall( CG_FX_INIT_SYSTEM, refdef );
 }
@@ -656,15 +683,6 @@ void trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, cha
 void trap_CG_RegisterSharedMemory(char *memory) {
 	Q_syscall(CG_SET_SHARED_BUFFER, memory);
 }
-int trap_CM_RegisterTerrain(const char *config) {
-	return Q_syscall(CG_CM_REGISTER_TERRAIN, config);
-}
-void trap_RMG_Init(int terrainID, const char *terrainInfo) {
-	Q_syscall(CG_RMG_INIT, terrainID, terrainInfo);
-}
-void trap_RE_InitRendererTerrain( const char *info ) {
-	Q_syscall(CG_RE_INIT_RENDERER_TERRAIN, info);
-}
 void trap_R_WeatherContentsOverride( int contents ) {
 	Q_syscall(CG_R_WEATHER_CONTENTS_OVERRIDE, contents);
 }
@@ -688,7 +706,7 @@ float CGSyscall_R_GetDistanceCull( void ) { float tmp; trap_R_GetDistanceCull( &
 void CGSyscall_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal ) { if ( isPortal ) trap_FX_PlayPortalEffectID( id, org, fwd, vol, rad ); else trap_FX_PlayEffectID( id, org, fwd, vol, rad ); }
 void CGSyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
 
-void QDECL CG_Error( int level, const char *error, ... ) {
+NORETURN void QDECL CG_Error( int level, const char *error, ... ) {
 	va_list argptr;
 	char text[1024] = {0};
 
@@ -755,12 +773,10 @@ static void TranslateSyscalls( void ) {
 	trap->CM_LoadMap						= trap_CM_LoadMap;
 	trap->CM_NumInlineModels				= trap_CM_NumInlineModels;
 	trap->CM_PointContents					= trap_CM_PointContents;
-	trap->CM_RegisterTerrain				= trap_CM_RegisterTerrain;
 	trap->CM_TempModel						= CGSyscall_CM_TempModel;
 	trap->CM_Trace							= CGSyscall_CM_Trace;
 	trap->CM_TransformedPointContents		= trap_CM_TransformedPointContents;
 	trap->CM_TransformedTrace				= CGSyscall_CM_TransformedTrace;
-	trap->RMG_Init							= trap_RMG_Init;
 	trap->S_AddLocalSet						= trap_S_AddLocalSet;
 	trap->S_AddLoopingSound					= trap_S_AddLoopingSound;
 	trap->S_ClearLoopingSounds				= trap_S_ClearLoopingSounds;
@@ -821,7 +837,6 @@ static void TranslateSyscalls( void ) {
 	trap->R_SetRangedFog					= trap_R_SetRangeFog;
 	trap->R_SetRefractionProperties			= trap_R_SetRefractProp;
 	trap->R_WorldEffectCommand				= trap_R_WorldEffectCommand;
-	trap->RE_InitRendererTerrain			= trap_RE_InitRendererTerrain;
 	trap->WE_AddWeatherZone					= trap_WE_AddWeatherZone;
 	trap->GetCurrentSnapshotNumber			= trap_GetCurrentSnapshotNumber;
 	trap->GetCurrentCmdNumber				= trap_GetCurrentCmdNumber;
@@ -927,4 +942,6 @@ static void TranslateSyscalls( void ) {
 	trap->G2API_CleanEntAttachments			= trap_G2API_CleanEntAttachments;
 	trap->G2API_OverrideServer				= trap_G2API_OverrideServer;
 	trap->G2API_GetSurfaceName				= trap_G2API_GetSurfaceName;
+
+	trap->ext.R_Font_StrLenPixels			= trap_R_Font_StrLenPixelsFloat;
 }

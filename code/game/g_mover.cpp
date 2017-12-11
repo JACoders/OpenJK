@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "bg_public.h"
 #include "../cgame/cg_local.h"
@@ -114,16 +119,16 @@ gentity_t	*G_TestEntityPosition( gentity_t *ent ) {
 	if ( (ent->client && ent->health <= 0) || !ent->clipmask )
 	{//corpse or something with no clipmask
 		mask = MASK_SOLID;
-	} 
-	else 
+	}
+	else
 	{
 		mask = ent->clipmask;
 	}
-	if ( ent->client ) 
+	if ( ent->client )
 	{
 		gi.trace( &tr, ent->client->ps.origin, ent->mins, ent->maxs, ent->client->ps.origin, ent->s.number, mask, (EG2_Collision)0, 0 );
-	} 
-	else 
+	}
+	else
 	{
 		if ( ent->s.eFlags & EF_MISSILE_STICK )//Arggh, this is dumb...but when it used the bbox, it was pretty much always in solid when it is riding something..which is wrong..so I changed it to basically be a point contents check
 		{
@@ -134,10 +139,10 @@ gentity_t	*G_TestEntityPosition( gentity_t *ent ) {
 			gi.trace( &tr, ent->s.pos.trBase, ent->mins, ent->maxs, ent->s.pos.trBase, ent->s.number, mask, (EG2_Collision)0, 0 );
 		}
 	}
-	
+
 	if (tr.startsolid)
 		return &g_entities[ tr.entityNum ];
-		
+
 	return NULL;
 }
 
@@ -159,7 +164,7 @@ qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, v
 	/*
 	// EF_MOVER_STOP will just stop when contacting another entity
 	// instead of pushing it, but entities can still ride on top of it
-	if ( ( pusher->s.eFlags & EF_MOVER_STOP ) && 
+	if ( ( pusher->s.eFlags & EF_MOVER_STOP ) &&
 		check->s.groundEntityNum != pusher->s.number ) {
 		return qfalse;
 	}
@@ -182,7 +187,7 @@ qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, v
 	VectorSubtract (vec3_origin, amove, org);
 	AngleVectors (org, forward, right, up);
 
-	// try moving the contacted entity 
+	// try moving the contacted entity
 	VectorAdd (check->s.pos.trBase, move, check->s.pos.trBase);
 	if (check->client) {
 		// make sure the client's view rotates when on a rotating mover
@@ -291,22 +296,22 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 	// mins/maxs are the bounds at the destination
 	// totalMins / totalMaxs are the bounds for the entire move
 	if ( pusher->currentAngles[0] || pusher->currentAngles[1] || pusher->currentAngles[2]
-		|| amove[0] || amove[1] || amove[2] ) 
+		|| amove[0] || amove[1] || amove[2] )
 	{
 		float		radius;
 
 		radius = RadiusFromBounds( pusher->mins, pusher->maxs );
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
 			mins[i] = pusher->currentOrigin[i] + move[i] - radius;
 			maxs[i] = pusher->currentOrigin[i] + move[i] + radius;
 			totalMins[i] = mins[i] - move[i];
 			totalMaxs[i] = maxs[i] - move[i];
 		}
-	} 
-	else 
+	}
+	else
 	{
-		for (i=0 ; i<3 ; i++) 
+		for (i=0 ; i<3 ; i++)
 		{
 			mins[i] = pusher->absmin[i] + move[i];
 			maxs[i] = pusher->absmax[i] + move[i];
@@ -314,13 +319,13 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 
 		VectorCopy( pusher->absmin, totalMins );
 		VectorCopy( pusher->absmax, totalMaxs );
-		for (i=0 ; i<3 ; i++) 
+		for (i=0 ; i<3 ; i++)
 		{
-			if ( move[i] > 0 ) 
+			if ( move[i] > 0 )
 			{
 				totalMaxs[i] += move[i];
-			} 
-			else 
+			}
+			else
 			{
 				totalMins[i] += move[i];
 			}
@@ -337,7 +342,7 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 	VectorAdd( pusher->currentAngles, amove, pusher->currentAngles );
 	gi.linkentity( pusher );
 
-	notMoving = (VectorCompare( vec3_origin, move )&&VectorCompare( vec3_origin, amove ));
+	notMoving = (qboolean)(VectorCompare( vec3_origin, move )&&VectorCompare( vec3_origin, amove ));
 
 	// see if any solid entities are inside the final position
 	for ( e = 0 ; e < listedEntities ; e++ ) {
@@ -351,10 +356,10 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 		}
 
 		// only push items and players
-		if ( check->s.eType != ET_ITEM ) 
+		if ( check->s.eType != ET_ITEM )
 		{
 			//FIXME: however it allows items to be pushed through stuff, do same for corpses?
-			if ( check->s.eType != ET_PLAYER ) 
+			if ( check->s.eType != ET_PLAYER )
 			{
 				if ( !( check->s.eFlags & EF_MISSILE_STICK ))
 				{
@@ -403,7 +408,7 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 			}
 			// see if the ent's bbox is inside the pusher's final position
 			// this does allow a fast moving object to pass through a thin entity...
-			if ( G_TestEntityPosition( check ) != pusher ) 
+			if ( G_TestEntityPosition( check ) != pusher )
 			{
 				continue;
 			}
@@ -434,7 +439,7 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 		VectorCopy( check->s.pos.trBase, oldOrg );
 
 		// the entity needs to be pushed
-		if ( G_TryPushingEntity( check, pusher, move, amove ) ) 
+		if ( G_TryPushingEntity( check, pusher, move, amove ) )
 		{
 			// the mover wasn't blocked
 			if ( check->s.eFlags & EF_MISSILE_STICK )
@@ -461,7 +466,7 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 			G_Damage( check, pusher, pusher, NULL, NULL, 99999, 0, MOD_CRUSH );
 			continue;
 		}
-		
+
 		// save off the obstacle so we can call the block function (crush, etc)
 		*obstacle = check;
 
@@ -500,7 +505,7 @@ void G_MoverTeam( gentity_t *ent ) {
 	// any moves or calling any think functions
 	// if the move is blocked, all moved objects will be backed out
 	pushed_p = pushed;
-	for (part = ent ; part ; part=part->teamchain) 
+	for (part = ent ; part ; part=part->teamchain)
 	{
 		// get current position
 		part->s.eFlags &= ~EF_BLOCKED_MOVER;
@@ -508,17 +513,17 @@ void G_MoverTeam( gentity_t *ent ) {
 		EvaluateTrajectory( &part->s.apos, level.time, angles );
 		VectorSubtract( origin, part->currentOrigin, move );
 		VectorSubtract( angles, part->currentAngles, amove );
-		if ( !G_MoverPush( part, move, amove, &obstacle ) ) 
+		if ( !G_MoverPush( part, move, amove, &obstacle ) )
 		{
 			break;	// move was blocked
 		}
 	}
 
-	if (part) 
+	if (part)
 	{
 		// if the pusher has a "blocked" function, call it
 		// go back to the previous position
-		for ( part = ent ; part ; part = part->teamchain ) 
+		for ( part = ent ; part ; part = part->teamchain )
 		{
 			//Push up time so it doesn't wiggle when blocked
 			part->s.pos.trTime += level.time - level.previousTime;
@@ -529,7 +534,7 @@ void G_MoverTeam( gentity_t *ent ) {
 			part->s.eFlags |= EF_BLOCKED_MOVER;
 		}
 
-		if ( ent->e_BlockedFunc != blockedF_NULL ) 
+		if ( ent->e_BlockedFunc != blockedF_NULL )
 		{// this check no longer necessary, done internally below, but it's here for reference
 			GEntity_BlockedFunc( ent, obstacle );
 		}
@@ -537,14 +542,14 @@ void G_MoverTeam( gentity_t *ent ) {
 	}
 
 	// the move succeeded
-	for ( part = ent ; part ; part = part->teamchain ) 
+	for ( part = ent ; part ; part = part->teamchain )
 	{
 		// call the reached function if time is at or past end point
 		if ( part->s.pos.trType == TR_LINEAR_STOP ||
-			part->s.pos.trType == TR_NONLINEAR_STOP ) 
+			part->s.pos.trType == TR_NONLINEAR_STOP )
 		{
-			if ( level.time >= part->s.pos.trTime + part->s.pos.trDuration ) 
-			{				
+			if ( level.time >= part->s.pos.trTime + part->s.pos.trDuration )
+			{
 				GEntity_ReachedFunc( part );
 			}
 		}
@@ -594,7 +599,7 @@ CalcTeamDoorCenter
 Finds all the doors of a team and returns their center position
 */
 
-void CalcTeamDoorCenter ( gentity_t *ent, vec3_t center ) 
+void CalcTeamDoorCenter ( gentity_t *ent, vec3_t center )
 {
 	vec3_t		slavecenter;
 	gentity_t	*slave;
@@ -602,7 +607,7 @@ void CalcTeamDoorCenter ( gentity_t *ent, vec3_t center )
 	//Start with our center
 	VectorAdd(ent->mins, ent->maxs, center);
 	VectorScale(center, 0.5, center);
-	for ( slave = ent->teamchain ; slave ; slave = slave->teamchain ) 
+	for ( slave = ent->teamchain ; slave ; slave = slave->teamchain )
 	{
 		//Find slave's center
 		VectorAdd(slave->mins, slave->maxs, slavecenter);
@@ -671,7 +676,7 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time ) {
 		ent->s.eFlags &= ~EF_BLOCKED_MOVER;
 		break;
 	}
-	EvaluateTrajectory( &ent->s.pos, level.time, ent->currentOrigin );	
+	EvaluateTrajectory( &ent->s.pos, level.time, ent->currentOrigin );
 	gi.linkentity( ent );
 }
 
@@ -717,12 +722,12 @@ Reached_BinaryMover
 ================
 */
 
-void Reached_BinaryMover( gentity_t *ent ) 
+void Reached_BinaryMover( gentity_t *ent )
 {
 	// stop the looping sound
 	ent->s.loopSound = 0;
 
-	if ( ent->moverState == MOVER_1TO2 ) 
+	if ( ent->moverState == MOVER_1TO2 )
 	{//reached open
 		// reached pos2
 		SetMoverState( ent, MOVER_POS2, level.time );
@@ -758,13 +763,13 @@ void Reached_BinaryMover( gentity_t *ent )
 		}
 
 		// fire targets
-		if ( !ent->activator ) 
+		if ( !ent->activator )
 		{
 			ent->activator = ent;
 		}
 		G_UseTargets2( ent, ent->activator, ent->opentarget );
-	} 
-	else if ( ent->moverState == MOVER_2TO1 ) 
+	}
+	else if ( ent->moverState == MOVER_2TO1 )
 	{//closed
 		// reached pos1
 		SetMoverState( ent, MOVER_POS1, level.time );
@@ -779,13 +784,13 @@ void Reached_BinaryMover( gentity_t *ent )
 		G_PlayDoorSound( ent, BMS_END );
 
 		// close areaportals
-		if ( ent->teammaster == ent || !ent->teammaster ) 
+		if ( ent->teammaster == ent || !ent->teammaster )
 		{
 			gi.AdjustAreaPortalState( ent, qfalse );
 		}
 		G_UseTargets2( ent, ent->activator, ent->closetarget );
-	} 
-	else 
+	}
+	else
 	{
 		G_Error( "Reached_BinaryMover: bad moverState" );
 	}
@@ -797,7 +802,7 @@ void Reached_BinaryMover( gentity_t *ent )
 Use_BinaryMover_Go
 ================
 */
-void Use_BinaryMover_Go( gentity_t *ent ) 
+void Use_BinaryMover_Go( gentity_t *ent )
 {
 	int		total;
 	int		partial;
@@ -806,7 +811,7 @@ void Use_BinaryMover_Go( gentity_t *ent )
 
 	ent->activator = activator;
 
-	if ( ent->moverState == MOVER_POS1 ) 
+	if ( ent->moverState == MOVER_POS1 )
 	{
 		// start moving 50 msec later, becase if this was player
 		// triggered, level.time hasn't been advanced yet
@@ -849,7 +854,7 @@ void Use_BinaryMover_Go( gentity_t *ent )
 	}
 
 	// only partway down before reversing
-	if ( ent->moverState == MOVER_2TO1 ) 
+	if ( ent->moverState == MOVER_2TO1 )
 	{
 		total = ent->s.pos.trDuration-50;
 		if ( ent->s.pos.trType == TR_NONLINEAR_STOP )
@@ -883,7 +888,7 @@ void Use_BinaryMover_Go( gentity_t *ent )
 	}
 
 	// only partway up before reversing
-	if ( ent->moverState == MOVER_1TO2 ) 
+	if ( ent->moverState == MOVER_1TO2 )
 	{
 		total = ent->s.pos.trDuration-50;
 		if ( ent->s.pos.trType == TR_NONLINEAR_STOP )
@@ -921,7 +926,7 @@ void UnLockDoors(gentity_t *const ent)
 	//noise?
 	//go through and unlock the door and all the slaves
 	gentity_t	*slave = ent;
-	do 
+	do
 	{	// want to allow locked toggle doors, so keep the targetname
 		if( !(slave->spawnflags & MOVER_TOGGLE) )
 		{
@@ -937,7 +942,7 @@ void LockDoors(gentity_t *const ent)
 	//noise?
 	//go through and lock the door and all the slaves
 	gentity_t	*slave = ent;
-	do 
+	do
 	{
 		slave->spawnflags |= MOVER_LOCKED;
 		slave->s.frame = 0;//first stage of anim
@@ -949,7 +954,7 @@ void LockDoors(gentity_t *const ent)
 Use_BinaryMover
 ================
 */
-void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
+void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	int	key;
 	const char *text;
@@ -960,7 +965,7 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 	}
 
 	// only the master should be used
-	if ( ent->flags & FL_TEAMSLAVE ) 
+	if ( ent->flags & FL_TEAMSLAVE )
 	{
 		Use_BinaryMover( ent->teammaster, other, activator );
 		return;
@@ -983,12 +988,12 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		{
 			return;
 		}
-		else 
+		else
 		{
 			key = INV_GoodieKeyCheck( activator );
 			if (key)
 			{//activator has a goodie key, remove it
-				activator->client->ps.inventory[key]--;		
+				activator->client->ps.inventory[key]--;
 				G_Sound( activator, G_SoundIndex( "sound/movers/goodie_pass.wav" ) );
 				// once the goodie mover has been used, it no longer requires a goodie key
 				ent->spawnflags &= ~MOVER_GOODIE;
@@ -1041,19 +1046,19 @@ void InitMoverTrData( gentity_t *ent )
 	// calculate time to reach second position from speed
 	VectorSubtract( ent->pos2, ent->pos1, move );
 	distance = VectorLength( move );
-	if ( ! ent->speed ) 
+	if ( ! ent->speed )
 	{
 		ent->speed = 100;
 	}
 	VectorScale( move, ent->speed, ent->s.pos.trDelta );
 	ent->s.pos.trDuration = distance * 1000 / ent->speed;
-	if ( ent->s.pos.trDuration <= 0 ) 
+	if ( ent->s.pos.trDuration <= 0 )
 	{
 		ent->s.pos.trDuration = 1;
 	}
 }
 
-void InitMover( gentity_t *ent ) 
+void InitMover( gentity_t *ent )
 {
 	float		light;
 	vec3_t		color;
@@ -1061,7 +1066,7 @@ void InitMover( gentity_t *ent )
 
 	// if the "model2" key is set, use a seperate model
 	// for drawing, but clip against the brushes
-	if ( ent->model2 ) 
+	if ( ent->model2 )
 	{
 		if ( strstr( ent->model2, ".glm" ))
 		{
@@ -1112,7 +1117,7 @@ void InitMover( gentity_t *ent )
 	ent->svFlags = SVF_USE_CURRENT_ORIGIN;
 	if ( ent->spawnflags & MOVER_INACTIVE )
 	{// Make it inactive
-		ent->svFlags |= SVF_INACTIVE;	
+		ent->svFlags |= SVF_INACTIVE;
 	}
 	if(ent->spawnflags & MOVER_PLAYER_USE)
 	{//Can be used by the player's BUTTON_USE
@@ -1143,7 +1148,7 @@ Blocked_Door
 ================
 */
 void Blocked_Door( gentity_t *ent, gentity_t *other ) {
-	
+
 	// remove anything other than a client -- no longer the case
 
 	// don't remove security keys or goodie keys
@@ -1162,7 +1167,7 @@ void Blocked_Door( gentity_t *ent, gentity_t *other ) {
 		}
 	}
 
-	if ( ent->damage ) 
+	if ( ent->damage )
 	{
 		if ( (ent->spawnflags&MOVER_CRUSHER)//a crusher
  			&& other->s.clientNum >= MAX_CLIENTS//not the player
@@ -1192,7 +1197,7 @@ Touch_DoorTrigger
 ================
 */
 
-void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace ) 
+void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace )
 {
 	if ( ent->svFlags & SVF_INACTIVE )
 	{
@@ -1200,11 +1205,11 @@ void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace )
 	}
 
 	if ( ent->owner->spawnflags & MOVER_LOCKED )
-	{//don't even try to use the door if it's locked 
+	{//don't even try to use the door if it's locked
 		return;
 	}
 
-	if ( ent->owner->moverState != MOVER_1TO2 ) 
+	if ( ent->owner->moverState != MOVER_1TO2 )
 	{//Door is not already opening
 		//if ( ent->owner->moverState == MOVER_POS1 || ent->owner->moverState == MOVER_2TO1 )
 		//{//only check these if closed or closing
@@ -1229,16 +1234,16 @@ All of the parts of a door have been spawned, so create
 a trigger that encloses all of them
 ======================
 */
-void Think_SpawnNewDoorTrigger( gentity_t *ent ) 
+void Think_SpawnNewDoorTrigger( gentity_t *ent )
 {
 	gentity_t		*other;
 	vec3_t		mins, maxs;
 	int			i, best;
 
 	// set all of the slaves as shootable
-	if ( ent->takedamage ) 
+	if ( ent->takedamage )
 	{
-		for ( other = ent ; other ; other = other->teamchain ) 
+		for ( other = ent ; other ; other = other->teamchain )
 		{
 			other->takedamage = qtrue;
 		}
@@ -1276,7 +1281,7 @@ void Think_SpawnNewDoorTrigger( gentity_t *ent )
 	MatchTeam( ent, ent->moverState, level.time );
 }
 
-void Think_MatchTeam( gentity_t *ent ) 
+void Think_MatchTeam( gentity_t *ent )
 {
 	MatchTeam( ent, ent->moverState, level.time );
 }
@@ -1438,7 +1443,7 @@ INACTIVE	must be used by a target_activate before it can be used
 "linear"	set to 1 and it will move linearly rather than with acceleration (default is 0)
 0 - no sound (default)
 */
-void SP_func_door (gentity_t *ent) 
+void SP_func_door (gentity_t *ent)
 {
 	vec3_t	abs_movedir;
 	float	distance;
@@ -1488,7 +1493,7 @@ void SP_func_door (gentity_t *ent)
 	VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
 
 	// if "start_open", reverse position 1 and 2
-	if ( ent->spawnflags & 1 ) 
+	if ( ent->spawnflags & 1 )
 	{
 		vec3_t	temp;
 
@@ -1506,23 +1511,23 @@ void SP_func_door (gentity_t *ent)
 
 	ent->nextthink = level.time + FRAMETIME;
 
-	if ( !(ent->flags&FL_TEAMSLAVE) ) 
+	if ( !(ent->flags&FL_TEAMSLAVE) )
 	{
 		int health;
 
 		G_SpawnInt( "health", "0", &health );
-		
-		if ( health ) 
+
+		if ( health )
 		{
 			ent->takedamage = qtrue;
 		}
-		
+
 		if ( !(ent->spawnflags&MOVER_LOCKED) && (ent->targetname || health || ent->spawnflags & MOVER_PLAYER_USE || ent->spawnflags & MOVER_FORCE_ACTIVATE) )
 		{
 			// non touch/shoot doors
 			ent->e_ThinkFunc = thinkF_Think_MatchTeam;
-		} 
-		else 
+		}
+		else
 		{//locked doors still spawn a trigger
 			ent->e_ThinkFunc = thinkF_Think_SpawnNewDoorTrigger;
 		}
@@ -1592,7 +1597,7 @@ void SpawnPlatTrigger( gentity_t *ent ) {
 	trigger->e_TouchFunc = touchF_Touch_PlatCenterTrigger;
 	trigger->contents = CONTENTS_TRIGGER;
 	trigger->owner = ent;
-	
+
 	tmin[0] = ent->pos1[0] + ent->mins[0] + 33;
 	tmin[1] = ent->pos1[1] + ent->mins[1] + 33;
 	tmin[2] = ent->pos1[2] + ent->mins[2];
@@ -1609,7 +1614,7 @@ void SpawnPlatTrigger( gentity_t *ent ) {
 		tmin[1] = ent->pos1[1] + (ent->mins[1] + ent->maxs[1]) *0.5;
 		tmax[1] = tmin[1] + 1;
 	}
-	
+
 	VectorCopy (tmin, trigger->mins);
 	VectorCopy (tmax, trigger->maxs);
 
@@ -1725,7 +1730,7 @@ void SP_func_button( gentity_t *ent ) {
 	float		lip;
 
 //	ent->sound1to2 = G_SoundIndex("sound/movers/switches/butn2.wav");
-	
+
 	if ( !ent->speed ) {
 		ent->speed = 40;
 	}
@@ -1786,7 +1791,7 @@ The wait time at a corner has completed, so start moving again
 */
 void Think_BeginMoving( gentity_t *ent ) {
 
-	if ( ent->spawnflags & 2048 ) 
+	if ( ent->spawnflags & 2048 )
 	{
 		// this tie fighter hack is done for doom_detention, where the shooting gallery takes place. let them draw again when they start moving
 		ent->s.eFlags &= ~EF_NODRAW;
@@ -1882,7 +1887,7 @@ void Reached_Train( gentity_t *ent ) {
 			ent->s.apos.trType = TR_NONLINEAR_STOP;
 		}
 	}
-	else 
+	else
 	{
 		if (( next->spawnflags & 4 ))
 		{//yaw
@@ -1921,7 +1926,7 @@ void Reached_Train( gentity_t *ent ) {
 	}
 
 	// if there is a "wait" value on the target, don't start moving yet
-	if ( next->wait ) 
+	if ( next->wait )
 	{
 		ent->nextthink = level.time + next->wait * 1000;
 		ent->e_ThinkFunc = thinkF_Think_BeginMoving;
@@ -2018,7 +2023,7 @@ void Think_SetupTrainTargets( gentity_t *ent ) {
 /*QUAKED path_corner (.5 .3 0) (-8 -8 -8) (8 8 8) TURN_TRAIN INVISIBLE YAW_TRAIN ROLL_TRAIN
 
 TURN_TRAIN	func_train moving on this path will turn to face the next path_corner within 2 seconds
-INVISIBLE - train will become invisible ( but still solid ) when it reaches this path_corner.  
+INVISIBLE - train will become invisible ( but still solid ) when it reaches this path_corner.
 		It will become visible again at the next path_corner that does not have this option checked
 
 Train path corners.
@@ -2144,7 +2149,7 @@ void SP_func_train (gentity_t *self) {
 	{
 		self->spawnflags &= ~32; // once only
 
-		gi.G2API_SetBoneAnim( &self->ghoul2[self->playerModel], "model_root", self->startFrame, self->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + crandom() * 0.1f, 0, -1, -1 );
+		gi.G2API_SetBoneAnim( &self->ghoul2[self->playerModel], "model_root", self->startFrame, self->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1 );
 		self->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
 }
@@ -2177,7 +2182,7 @@ A bmodel that just sits there, doing nothing.  Can be used for conditional walls
 "linear" set to 1 and it will move linearly rather than with acceleration (default is 0)
 "NPC_targetname" if set up to be push/pullable, only this NPC can push/pull it (for the player, use "player")
 */
-void SP_func_static( gentity_t *ent ) 
+void SP_func_static( gentity_t *ent )
 {
 	gi.SetBrushModel( ent, ent->model );
 
@@ -2239,7 +2244,7 @@ ROTATING
 
 ===============================================================================
 */
-void func_rotating_touch( gentity_t *self, gentity_t *other, trace_t *trace ) 
+void func_rotating_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 {
 //	vec3_t spot;
 //	gentity_t	*tent;
@@ -2256,7 +2261,7 @@ void func_rotating_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 //		tent->owner = self;
 		// let G_Damage call the fx instead, beside, this way you can disintegrate a corpse this way
 		G_Sound( other, G_SoundIndex( "sound/effects/energy_crackle.wav" ) );
-		G_Damage( other, self, self, NULL, NULL, 10000, DAMAGE_NO_KNOCKBACK, MOD_SNIPER );			
+		G_Damage( other, self, self, NULL, NULL, 10000, DAMAGE_NO_KNOCKBACK, MOD_SNIPER );
 	}
 }
 
@@ -2333,12 +2338,12 @@ void SP_func_rotating (gentity_t *ent) {
 
 	gi.SetBrushModel( ent, ent->model );
 	InitMover( ent );
-	
+
 	if ( ent->targetname )
 	{
 		ent->e_UseFunc = useF_func_rotating_use;
 	}
-	
+
 	VectorCopy( ent->s.origin, ent->s.pos.trBase );
 	VectorCopy( ent->s.pos.trBase, ent->currentOrigin );
 	VectorCopy( ent->s.apos.trBase, ent->currentAngles );
@@ -2563,9 +2568,9 @@ A bmodel that just sits there, doing nothing.  Can be used for conditional walls
 "light"		constantLight radius
 
 START_OFF - the wall will not be there
-AUTOANIMATE - if a model is used it will animate				
+AUTOANIMATE - if a model is used it will animate
 */
-void SP_func_wall( gentity_t *ent ) 
+void SP_func_wall( gentity_t *ent )
 {
 	gi.SetBrushModel( ent, ent->model );
 

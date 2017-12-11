@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_predict.c -- this file generates cg.predicted_player_state by either
 // interpolating between snapshots from the server or locally predicting
@@ -29,10 +34,6 @@ static	pmove_t		cg_pmove;
 static	int			cg_numSolidEntities;
 static	centity_t	*cg_solidEntities[MAX_ENTITIES_IN_SNAPSHOT];
 
-#if MEM_DEBUG
-#include "../smartheap/heapagnt.h"
-#define CG_TRACE_PROFILE (0)
-#endif
 /*
 ====================
 CG_BuildSolidList
@@ -150,15 +151,6 @@ CG_Trace
 void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 					 const int skipNumber, const int mask, const EG2_Collision eG2TraceType/*=G2_NOCOLLIDE*/, const int useLod/*=0*/) {
 	trace_t	t;
-#if CG_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2004);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
 
 	cgi_CM_BoxTrace ( &t, start, end, mins, maxs, 0, mask);
 	t.entityNum = t.fraction != 1.0 ? ENTITYNUM_WORLD : ENTITYNUM_NONE;
@@ -180,15 +172,6 @@ int		CG_PointContents( const vec3_t point, int passEntityNum ) {
 	clipHandle_t cmodel;
 	int			contents;
 
-#if CG_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2005);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
 	contents = cgi_CM_PointContents (point, 0);
 
 	for ( i = 0 ; i < cg_numSolidEntities ; i++ ) {
@@ -541,7 +524,7 @@ void CG_TouchTriggerPrediction( void ) {
 		return;
 	}
 
-	spectator = ( cg.predicted_player_state.pm_type == PM_SPECTATOR );
+	spectator = (qboolean)( cg.predicted_player_state.pm_type == PM_SPECTATOR );
 
 	if ( cg.predicted_player_state.pm_type != PM_NORMAL && !spectator ) {
 		return;
@@ -650,7 +633,7 @@ void CG_PredictPlayerState( void ) {
 	cg_pmove.trace = CG_Trace;
 	cg_pmove.pointcontents = CG_PointContents;
 	cg_pmove.tracemask = MASK_PLAYERSOLID;
-	cg_pmove.noFootsteps = 0;//( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
+	cg_pmove.noFootsteps = qfalse;//( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
 
 	// save the state before the pmove so we can detect transitions
 	oldPlayerState = cg.predicted_player_state;

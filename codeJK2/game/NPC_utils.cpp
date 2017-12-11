@@ -1,28 +1,28 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //NPC_utils.cpp
 
-// leave this line at the top for all NPC_xxxx.cpp files...
 #include "g_headers.h"
-
-
-
 
 #include "b_local.h"
 #include "g_icarus.h"
@@ -393,7 +393,7 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 					//Snap to
 					if(fabs(error) > 10)
 					{
-						if(random() > 0.6)
+						if(Q_flrand(0.0f, 1.0f) > 0.6)
 						{
 							doSound = qtrue;
 						}
@@ -467,7 +467,7 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 					//Snap to
 					if(fabs(error) > 10)
 					{
-						if(random() > 0.6)
+						if(Q_flrand(0.0f, 1.0f) > 0.6)
 						{
 							doSound = qtrue;
 						}
@@ -890,7 +890,7 @@ qboolean G_ActivateBehavior (gentity_t *self, int bset )
 		bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
 	}
 
-	if(bSID > -1)
+	if(bSID != (bState_t)-1)
 	{
 		self->NPC->tempBehavior = BS_DEFAULT;
 		self->NPC->behaviorState = bSID;
@@ -1094,16 +1094,6 @@ NPC_PickEnemyExt
 
 gentity_t *NPC_PickEnemyExt( qboolean checkAlerts = qfalse )
 {
-	//Check for Hazard Team status and remove this check
-	/*
-	if ( NPC->client->playerTeam != TEAM_STARFLEET )
-	{
-		//If we've found the player, return it
-		if ( NPC_FindPlayer() )
-			return &g_entities[0];
-	}
-	*/
-
 	//If we've asked for the closest enemy
 	int entID = NPC_FindNearestEnemy( NPC );
 

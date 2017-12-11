@@ -1,5 +1,24 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // Script Command Sequences
 //
@@ -69,7 +88,7 @@ void CSequence::Delete( void )
 		{
 			(*iterSeq).second->SetParent( NULL );
 		}*/
-		
+
 		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->SetParent( NULL );
@@ -113,7 +132,7 @@ void CSequence::RemoveChild( CSequence *child )
 	assert( child );
 	if ( child == NULL )
 		return;
-	
+
 	//Remove the child
 	m_children.remove( child );
 }
@@ -158,7 +177,7 @@ void CSequence::SetParent( CSequence *parent )
 		m_flags |= SQ_RETAIN;
 
 	if ( parent->m_flags & SQ_PENDING )
-		m_flags |= SQ_PENDING;	
+		m_flags |= SQ_PENDING;
 }
 
 /*
@@ -184,7 +203,7 @@ CBlock *CSequence::PopCommand( int type )
 		command = m_commands.front();
 		m_commands.pop_front();
 		m_numCommands--;
-	
+
 		return command;
 		break;
 
@@ -193,7 +212,7 @@ CBlock *CSequence::PopCommand( int type )
 		command = m_commands.back();
 		m_commands.pop_back();
 		m_numCommands--;
-		
+
 		return command;
 		break;
 	}
@@ -217,7 +236,7 @@ int CSequence::PushCommand( CBlock *block, int type )
 	switch ( type )
 	{
 	case PUSH_FRONT:
-		
+
 		m_commands.push_front( block );
 		m_numCommands++;
 
@@ -322,7 +341,7 @@ int CSequence::SaveCommand( CBlock *block )
 	unsigned char	flags;
 	int				numMembers, bID, size;
 	CBlockMember	*bm;
-	
+
 	//Save out the block ID
 	bID = block->GetBlockID();
 	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','L','I','D'), &bID, sizeof ( bID ) );
@@ -342,11 +361,11 @@ int CSequence::SaveCommand( CBlock *block )
 		//Save the block id
 		bID = bm->GetID();
 		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','I','D'), &bID, sizeof ( bID ) );
-		
+
 		//Save out the data size
 		size = bm->GetSize();
 		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','S','I','Z'), &size, sizeof( size ) );
-		
+
 		//Save out the raw data
 		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','E','M'), bm->GetData(), size );
 	}
@@ -374,7 +393,7 @@ int CSequence::Save( void )
 	//Save the return (by GUID)
 	id = ( m_return != NULL ) ? m_return->GetID() : -1;
 	(m_owner->GetInterface())->I_WriteSaveData( 'SRID', &id, sizeof( id ) );
-	
+
 	//Save the number of children
 //	(m_owner->GetInterface())->I_WriteSaveData( 'SNCH', &m_numChildren, sizeof( m_numChildren ) );
 
@@ -414,7 +433,7 @@ Load
 int CSequence::Load( void )
 {
 #if 0 //piss off, stupid function
-	unsigned char	flags; 
+	unsigned char	flags;
 	CSequence		*sequence;
 	CBlock			*block;
 	int				id, numMembers;
@@ -425,7 +444,7 @@ int CSequence::Load( void )
 	//Get the parent sequence
 	(m_owner->GetInterface())->I_ReadSaveData( 'SPID', &id, sizeof( id ) );
 	m_parent = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
-	
+
 	//Get the return sequence
 	(m_owner->GetInterface())->I_ReadSaveData( 'SRID', &id, sizeof( id ) );
 	m_return = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
@@ -442,7 +461,7 @@ int CSequence::Load( void )
 		//Get the desired sequence
 		if ( ( sequence = m_owner->GetSequence( id ) ) == NULL )
 			return false;
-		
+
 		//Insert this into the list
 		STL_INSERT( m_children, sequence );
 
@@ -450,7 +469,7 @@ int CSequence::Load( void )
 //		m_childrenMap[ i ] = sequence;
 	}
 
-	
+
 	//Get the sequence flags
 	(m_owner->GetInterface())->I_ReadSaveData( 'SFLG', &m_flags, sizeof( m_flags ) );
 
@@ -468,21 +487,21 @@ int CSequence::Load( void )
 		//Get the block ID and create a new container
 		(m_owner->GetInterface())->I_ReadSaveData( 'BLID', &id, sizeof( id ) );
 		block = new CBlock;
-		
+
 		block->Create( id );
-		
+
 		//Read the block's flags
 		(m_owner->GetInterface())->I_ReadSaveData( 'BFLG', &flags, sizeof( flags ) );
 		block->SetFlags( flags );
 
 		//Get the number of block members
 		(m_owner->GetInterface())->I_ReadSaveData( 'BNUM', &numMembers, sizeof( numMembers ) );
-		
+
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
 			(m_owner->GetInterface())->I_ReadSaveData( 'BMID', &bID, sizeof( bID ) );
-			
+
 			//Get the member size
 			(m_owner->GetInterface())->I_ReadSaveData( 'BSIZ', &bSize, sizeof( bSize ) );
 
@@ -530,7 +549,7 @@ int CSequence::Load( void )
 			case ID_RANDOM:
 				block->Write( ID_RANDOM, *(float *) bData );//(float) ID_RANDOM );
 				break;
-			
+
 			case TK_EQUALS:
 			case TK_GREATER_THAN:
 			case TK_LESS_THAN:
@@ -543,7 +562,7 @@ int CSequence::Load( void )
 				return false;
 				break;
 			}
-			
+
 			//Get rid of the temp memory
 			ICARUS_Free( bData );
 		}

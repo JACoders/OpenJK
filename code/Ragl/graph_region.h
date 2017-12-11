@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -61,7 +65,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		NULL_REGION	= -1,
 		NULL_EDGE	= -1,
@@ -73,7 +77,7 @@ public:
 	// Some Public Type Defines
     ////////////////////////////////////////////////////////////////////////////////////
 	typedef		ragl::graph_vs<TNODE, MAXNODES, TEDGE, MAXEDGES, NUM_EDGES_PER_NODE>	TGraph;
-	typedef		ratl::vector_vs<int, MAXNODES>						TRegions;		
+	typedef		ratl::vector_vs<int, MAXNODES>						TRegions;
 	typedef		ratl::vector_vs<short, MAXREGIONS>					TRegionEdge;	// List Of All Edges Which Connect RegionA<->RegionB
 	typedef		ratl::pool_vs<TRegionEdge, MAXREGIONEDGES>			TEdges;			// Pool Of All RegionEdges
 	typedef		ratl::grid2_vs<short, MAXREGIONS, MAXREGIONS>		TLinks;			// Graph Of Links From Region To Region, Each Points To A RegionEdge
@@ -135,7 +139,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Call this function to find out if it is at all possible to get from nodeA to
-	// nodeB.  If there is no possible connection, or there is one, but the connection 
+	// nodeB.  If there is no possible connection, or there is one, but the connection
 	// is not valid at the current time, this routine will return false.  Use it as
 	// a quick cull routine before a search.
 	//
@@ -274,7 +278,7 @@ public:
 							}
 						}
 
-						
+
 						// Add This Edge To The Other Region Links
 						//-----------------------------------------
 						else if (!ReservedRegionLink)
@@ -356,7 +360,7 @@ private:
 					for (int j=0; j<mEdges[CurRegionEdge].size(); j++)
 					{
 						if (user.is_valid(
-										mGraph.get_edge(mEdges[CurRegionEdge][j]), 
+										mGraph.get_edge(mEdges[CurRegionEdge][j]),
 										(NextRegion==TargetRegion)?(-1):(0)
 										)
 							)
@@ -417,7 +421,7 @@ public:
 		if (mRegionCount)
 		{
 			int RegionEdges = 0;
-			for (typename TEdges::iterator it=mEdges.begin(); it!=mEdges.end(); it++)
+			for (typename TEdges::iterator it=mEdges.begin(); it!=mEdges.end(); ++it)
 			{
 				RegionEdges += (*it).size();
 			}

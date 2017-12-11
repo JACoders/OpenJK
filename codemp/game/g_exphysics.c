@@ -1,11 +1,31 @@
-// Copyright (C) 2000-2002 Raven Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 /*****************************************************************************
  * name:		g_exphysics.c
  *
  * desc:		Custom physics system (Expensive Physics)
  *
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  *
  *****************************************************************************/
@@ -112,7 +132,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 
 		//Get the difference relative to the entity origin and projected origin, to add to each bolt position.
 		VectorSubtract(ent->r.currentOrigin, projectedOrigin, trajDif);
-        
+
 		while (i < numG2Bolts)
 		{
 			//Get the position of the actual bolt for this frame

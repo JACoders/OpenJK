@@ -1,22 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every CPP file
 #include "common_headers.h"
 
 #if !defined(FX_SCHEDULER_H_INC)
@@ -46,7 +49,7 @@ int				mParticles;
 int				mOParticles;
 int				mLines;
 int				mTails;
-qboolean		fxInitialized = qfalse;	
+qboolean		fxInitialized = qfalse;
 
 //-------------------------
 // FX_Free
@@ -99,7 +102,7 @@ void FX_Stop( void )
 // Preps system for use
 //-------------------------
 int	FX_Init( void )
-{ 
+{
 	if ( fxInitialized == qfalse )
 	{
 		fxInitialized = qtrue;
@@ -214,7 +217,7 @@ void FX_Add( bool portal )
 	for ( i = 0, ef = effectList; i < MAX_EFFECTS && numFx; i++, ef++ )
 	{
 		if ( ef->mEffect != 0)
-		{ 
+		{
 			--numFx;
 			if (portal != ef->mPortal)
 			{
@@ -222,10 +225,10 @@ void FX_Add( bool portal )
 			}
 			// Effect is active
 			if ( theFxHelper.mTime > ef->mKillTime )
-			{ 
+			{
 				// Clean up old effects, calling any death effects as needed
 				// this flag just has to be cleared otherwise death effects might not happen correctly
-				ef->mEffect->ClearFlags( FX_KILL_ON_IMPACT ); 
+				ef->mEffect->ClearFlags( FX_KILL_ON_IMPACT );
 				FX_FreeMember( ef );
 			}
 			else
@@ -401,8 +404,8 @@ void FX_AddPrimitive( CEffect **pEffect, int killTime )
 //  FX_AddParticle
 //-------------------------
 CParticle *FX_AddParticle(  int clientID, const vec3_t org, const vec3_t vel, const vec3_t accel, float gravity,
-							float size1, float size2, float sizeParm, 
-							float alpha1, float alpha2, float alphaParm, 
+							float size1, float size2, float sizeParm,
+							float alpha1, float alpha2, float alphaParm,
 							const vec3_t sRGB, const vec3_t eRGB, float rgbParm,
 							float rotation, float rotationDelta,
 							const vec3_t min, const vec3_t max, float elasticity,
@@ -652,7 +655,7 @@ CElectricity *FX_AddElectricity( int clientID, vec3_t start, vec3_t end, float s
 		// in the editor, fx may now be NULL?
 		if ( fx )
 		{
-			fx->Initialize(); 
+			fx->Initialize();
 		}
 	}
 
@@ -663,12 +666,12 @@ CElectricity *FX_AddElectricity( int clientID, vec3_t start, vec3_t end, float s
 //-------------------------
 //  FX_AddTail
 //-------------------------
-CTail *FX_AddTail( int clientID, vec3_t org, vec3_t vel, vec3_t accel, 
-							float size1, float size2, float sizeParm, 
+CTail *FX_AddTail( int clientID, vec3_t org, vec3_t vel, vec3_t accel,
+							float size1, float size2, float sizeParm,
 							float length1, float length2, float lengthParm,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t sRGB, vec3_t eRGB, float rgbParm,
-							vec3_t min, vec3_t max, float elasticity, 
+							vec3_t min, vec3_t max, float elasticity,
 							int deathID, int impactID,
 							int killTime, qhandle_t shader, int flags, int modelNum, int boltNum )
 {
@@ -765,7 +768,7 @@ CTail *FX_AddTail( int clientID, vec3_t org, vec3_t vel, vec3_t accel,
 //-------------------------
 //  FX_AddCylinder
 //-------------------------
-CCylinder *FX_AddCylinder( int clientID, vec3_t start, vec3_t normal, 
+CCylinder *FX_AddCylinder( int clientID, vec3_t start, vec3_t normal,
 							float size1s, float size1e, float sizeParm,
 							float size2s, float size2e, float size2Parm,
 							float length1, float length2, float lengthParm,
@@ -874,12 +877,12 @@ CCylinder *FX_AddCylinder( int clientID, vec3_t start, vec3_t normal,
 //-------------------------
 //  FX_AddEmitter
 //-------------------------
-CEmitter *FX_AddEmitter( vec3_t org, vec3_t vel, vec3_t accel, 
+CEmitter *FX_AddEmitter( vec3_t org, vec3_t vel, vec3_t accel,
 								float size1, float size2, float sizeParm,
 								float alpha1, float alpha2, float alphaParm,
 								vec3_t rgb1, vec3_t rgb2, float rgbParm,
 								vec3_t angs, vec3_t deltaAngs,
-								vec3_t min, vec3_t max, float elasticity, 
+								vec3_t min, vec3_t max, float elasticity,
 								int deathID, int impactID, int emitterID,
 								float density, float variance,
 								int killTime, qhandle_t model, int flags )
@@ -1114,7 +1117,7 @@ COrientedParticle *FX_AddOrientedParticle( int clientID, vec3_t org, vec3_t norm
 //-------------------------
 //  FX_AddPoly
 //-------------------------
-CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts, 
+CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts,
 							vec3_t vel, vec3_t accel,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
@@ -1134,7 +1137,7 @@ CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts,
 		for ( int i = 0; i < numVerts; i++ )
 		{
 			VectorCopy( verts[i], fx->mOrg[i] );
-			Vector2Copy( st[i], fx->mST[i] );
+			VectorCopy2( st[i], fx->mST[i] );
 		}
 
 		fx->SetVel( vel );
@@ -1188,7 +1191,7 @@ CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts,
 //-------------------------
 //  FX_AddBezier
 //-------------------------
-CBezier *FX_AddBezier( const vec3_t start, const vec3_t end, 
+CBezier *FX_AddBezier( const vec3_t start, const vec3_t end,
 						const vec3_t control1, const vec3_t control1Vel,
 						const vec3_t control2, const vec3_t control2Vel,
 						float size1, float size2, float sizeParm,
@@ -1323,7 +1326,7 @@ CFlash *FX_AddFlash( vec3_t origin, vec3_t sRGB, vec3_t eRGB, float rgbParm,
 		fx->SetFlags( flags );
 
 //		fx->SetSTScale( 1.0f, 1.0f );
-		
+
 		fx->Init();
 
 		FX_AddPrimitive( (CEffect**)&fx, killTime );
@@ -1334,7 +1337,7 @@ CFlash *FX_AddFlash( vec3_t origin, vec3_t sRGB, vec3_t eRGB, float rgbParm,
 
 //-------------------------------------------------------
 // Functions for limited backward compatibility with EF.
-//	These calls can be used for simple programmatic 
+//	These calls can be used for simple programmatic
 //	effects, temp effects or debug graphics.
 // Note that this is not an all-inclusive list of
 //	fx add functions from EF, nor are the calls guaranteed
@@ -1342,13 +1345,13 @@ CFlash *FX_AddFlash( vec3_t origin, vec3_t sRGB, vec3_t eRGB, float rgbParm,
 //-------------------------------------------------------
 
 //---------------------------------------------------
-void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel, 
-							float scale, float dscale, 
-							float sAlpha, float eAlpha, 
-							float rotation, float bounce,  
+void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel,
+							float scale, float dscale,
+							float sAlpha, float eAlpha,
+							float rotation, float bounce,
 							int life, qhandle_t shader, int flags )
 {
-	FX_AddParticle( -1, origin, vel, accel, 0, scale, scale, 0, 
+	FX_AddParticle( -1, origin, vel, accel, 0, scale, scale, 0,
 							sAlpha, eAlpha, FX_ALPHA_LINEAR,
 							WHITE, WHITE, 0,
 							rotation, 0,
@@ -1358,14 +1361,14 @@ void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel,
 }
 
 //---------------------------------------------------
-void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel, 
-							float scale, float dscale, 
-							float sAlpha, float eAlpha, 
-							vec3_t sRGB, vec3_t eRGB, 
-							float rotation, float bounce, 
+void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel,
+							float scale, float dscale,
+							float sAlpha, float eAlpha,
+							vec3_t sRGB, vec3_t eRGB,
+							float rotation, float bounce,
 							int life, qhandle_t shader, int flags )
 {
-	FX_AddParticle( -1, origin, vel, accel, 0, scale, scale, 0, 
+	FX_AddParticle( -1, origin, vel, accel, 0, scale, scale, 0,
 							sAlpha, eAlpha, FX_ALPHA_LINEAR,
 							sRGB, eRGB, 0,
 							rotation, 0,
@@ -1375,9 +1378,9 @@ void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel,
 }
 
 //---------------------------------------------------
-void FX_AddLine( vec3_t start, vec3_t end, float stScale, 
-							float width, float dwidth, 
-							float sAlpha, float eAlpha, 
+void FX_AddLine( vec3_t start, vec3_t end, float stScale,
+							float width, float dwidth,
+							float sAlpha, float eAlpha,
 							int life, qhandle_t shader, int flags )
 {
 	FX_AddLine( -1, start, end, width, width, 0,
@@ -1387,10 +1390,10 @@ void FX_AddLine( vec3_t start, vec3_t end, float stScale,
 }
 
 //---------------------------------------------------
-void FX_AddLine( vec3_t start, vec3_t end, float stScale, 
-							float width, float dwidth, 
-							float sAlpha, float eAlpha, 
-							vec3_t sRGB, vec3_t eRGB, 
+void FX_AddLine( vec3_t start, vec3_t end, float stScale,
+							float width, float dwidth,
+							float sAlpha, float eAlpha,
+							vec3_t sRGB, vec3_t eRGB,
 							int life, qhandle_t shader, int flags )
 {
 	FX_AddLine( -1, start, end, width, width, 0,
@@ -1400,18 +1403,18 @@ void FX_AddLine( vec3_t start, vec3_t end, float stScale,
 }
 
 //---------------------------------------------------
-void FX_AddQuad( vec3_t origin, vec3_t normal, 
-							vec3_t vel, vec3_t accel, 
-							float sradius, float eradius, 
-							float salpha, float ealpha, 
-							vec3_t sRGB, vec3_t eRGB, 
+void FX_AddQuad( vec3_t origin, vec3_t normal,
+							vec3_t vel, vec3_t accel,
+							float sradius, float eradius,
+							float salpha, float ealpha,
+							vec3_t sRGB, vec3_t eRGB,
 							float rotation, int life, qhandle_t shader, int flags )
 {
-	FX_AddOrientedParticle( -1, origin, normal, vel, accel, 
+	FX_AddOrientedParticle( -1, origin, normal, vel, accel,
 							sradius, eradius, 0.0f,
 							salpha, ealpha, 0.0f,
 							sRGB, eRGB, 0.0f,
-							rotation, 0.0f, 
+							rotation, 0.0f,
 							NULL, NULL, 0.0f, 0, 0, life,
 							shader, 0 );
 }

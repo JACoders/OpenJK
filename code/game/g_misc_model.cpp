@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -55,7 +59,7 @@ void SetMiscModelModels( char *modelNameString, gentity_t *ent, qboolean damage_
 }
 
 //------------------------------------------------------------
-void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag, 
+void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag,
 									qboolean take_damage, qboolean damage_model = qfalse )
 {
 	// Apply damage and chunk models if they exist
@@ -70,20 +74,20 @@ void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *mater
 	gi.linkentity (ent);
 
 	// Set a generic use function
-	
-	ent->e_UseFunc = use_func;	
-/*	if (use_func == useF_health_use) 
+
+	ent->e_UseFunc = use_func;
+/*	if (use_func == useF_health_use)
 	{
 		G_SoundIndex("sound/player/suithealth.wav");
-	} 
-	else if (use_func == useF_ammo_use ) 
+	}
+	else if (use_func == useF_ammo_use )
 	{
 		G_SoundIndex("sound/player/suitenergy.wav");
 	}
 */
 	G_SpawnInt( "material", material, (int *)&ent->material );
-	
-	if (ent->health) 
+
+	if (ent->health)
 	{
 		ent->max_health = ent->health;
 		ent->takedamage = take_damage;
@@ -101,14 +105,14 @@ void HealthStationSettings(gentity_t *ent)
 		switch (g_spskill->integer)
 		{
 		case 0:	//	EASY
-			ent->count = 100; 
+			ent->count = 100;
 			break;
 		case 1:	//	MEDIUM
-			ent->count = 75; 
+			ent->count = 75;
 			break;
 		default :
 		case 2:	//	HARD
-			ent->count = 50; 
+			ent->count = 50;
 			break;
 		}
 	}
@@ -124,14 +128,14 @@ void CrystalAmmoSettings(gentity_t *ent)
 		switch (g_spskill->integer)
 		{
 		case 0:	//	EASY
-			ent->count = 75; 
+			ent->count = 75;
 			break;
 		case 1:	//	MEDIUM
-			ent->count = 75; 
+			ent->count = 75;
 			break;
 		default :
 		case 2:	//	HARD
-			ent->count = 75; 
+			ent->count = 75;
 			break;
 		}
 	}
@@ -158,7 +162,7 @@ void set_MiscAnim( gentity_t *ent)
 		float animSpeed = 50.0f / animations[anim].frameLerp;
 
 		// yes, its the same animation, so work out where we are in the leg anim, and blend us
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, 
+		gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame,
 							(animations[anim].numFrames -1 )+ animations[anim].firstFrame,
 							BONE_ANIM_OVERRIDE_FREEZE | BONE_ANIM_BLEND , animSpeed, (cg.time?cg.time:level.time), -1, 350);
 	}
@@ -166,7 +170,7 @@ void set_MiscAnim( gentity_t *ent)
 	{
 		int anim = BOTH_PAIN3;
 		float animSpeed = 50.0f / animations[anim].frameLerp;
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, 
+		gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame,
 						(animations[anim].numFrames -1 )+ animations[anim].firstFrame,
 						BONE_ANIM_OVERRIDE_FREEZE | BONE_ANIM_BLEND, animSpeed, (cg.time?cg.time:level.time), -1, 350);
 	}
@@ -184,6 +188,32 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
+
+	qboolean bHasScale = G_SpawnVector( "modelscale_vec", "1 1 1", ent->s.modelScale );
+	if ( !bHasScale ) {
+		float temp;
+		G_SpawnFloat( "modelscale", "0", &temp );
+		if ( temp != 0.0f ) {
+			ent->s.modelScale[0] = ent->s.modelScale[1] = ent->s.modelScale[2] = temp;
+			bHasScale = qtrue;
+		}
+	}
+	if ( bHasScale ) {
+		//scale the x axis of the bbox up.
+		ent->maxs[0] *= ent->s.modelScale[0];
+		ent->mins[0] *= ent->s.modelScale[0];
+
+		//scale the y axis of the bbox up.
+		ent->maxs[1] *= ent->s.modelScale[1];
+		ent->mins[1] *= ent->s.modelScale[1];
+
+		//scale the z axis of the bbox up and adjust origin accordingly
+		ent->maxs[2] *= ent->s.modelScale[2];
+		float oldMins2 = ent->mins[2];
+		ent->mins[2] *= ent->s.modelScale[2];
+		ent->s.origin[2] += (oldMins2 - ent->mins[2]);
+	}
+
 	gi.linkentity (ent);
 #else
 	char name1[200] = "models/players/kyle/model.glm";
@@ -194,11 +224,11 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 			// we found the model ok - load it's animation config
 	temp_animFileIndex = G_ParseAnimFileSet("_humanoid", "kyle");
- 	if ( temp_animFileIndex<0 ) 
+ 	if ( temp_animFileIndex<0 )
  	{
  		Com_Printf( S_COLOR_RED"Failed to load animation file set models/players/jedi/animation.cfg\n");
  	}
- 
+
 
 	ent->s.angles[0] = 0;
 	ent->s.angles[1] = 90;
@@ -232,7 +262,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 	int anim = BOTH_STAND3;
 	float animSpeed = 50.0f / animations[anim].frameLerp;
-	gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, 
+	gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame,
 					(animations[anim].numFrames -1 )+ animations[anim].firstFrame,
 					BONE_ANIM_OVERRIDE_FREEZE , animSpeed, cg.time);
 
@@ -354,18 +384,18 @@ void GunRackAddItem( gitem_t *gun, vec3_t org, vec3_t angs, float ffwd, float fr
 			{
 				if ( t == YAW )
 				{
-					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 180 + crandom() * 14 );
+					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 180 + Q_flrand(-1.0f, 1.0f) * 14 );
 				}
 				else
 				{
-					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + crandom() * 4 );
+					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + Q_flrand(-1.0f, 1.0f) * 4 );
 				}
 			}
 			else
 			{
 				if ( t == YAW )
 				{
-					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 90 + crandom() * 4 );
+					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 90 + Q_flrand(-1.0f, 1.0f) * 4 );
 				}
 			}
 		}
@@ -433,7 +463,7 @@ void SP_misc_model_gun_rack( gentity_t *ent )
 	{
 		for ( int i = 0; i < ct; i++ )
 		{
-			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, crandom() * 2, ( i - 1 ) * 9 + crandom() * 2, ofz[i] );
+			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 2, ( i - 1 ) * 9 + Q_flrand(-1.0f, 1.0f) * 2, ofz[i] );
 		}
 	}
 
@@ -608,7 +638,7 @@ void spawn_rack_goods( gentity_t *ent )
 	{
 		for ( int i = 0; i < ct; i++ )
 		{
-			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, crandom() * 0.5f, (i-1)* 8, 7.0f );
+			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 0.5f, (i-1)* 8, 7.0f );
 		}
 	}
 
@@ -644,9 +674,9 @@ void spawn_rack_goods( gentity_t *ent )
 		{
 			// since we may have to put up a health pack on the shelf, we should know where we randomly put
 			//	the gun so we don't put the pack on the same spot..so pick either the left or right side
-			pos = ( random() > .5 ) ? -1 : 1;
+			pos = ( Q_flrand(0.0f, 1.0f) > .5 ) ? -1 : 1;
 
-			GunRackAddItem( it, ent->s.origin, ent->s.angles, crandom() * 2, ( random() * 6 + 4 ) * pos, v_off );
+			GunRackAddItem( it, ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 2, ( Q_flrand(0.0f, 1.0f) * 6 + 4 ) * pos, v_off );
 		}
 	}
 
@@ -656,7 +686,7 @@ void spawn_rack_goods( gentity_t *ent )
 		if ( !pos )
 		{
 			// we haven't picked a side already...
-			pos = ( random() > .5 ) ? -1 : 1;
+			pos = ( Q_flrand(0.0f, 1.0f) > .5 ) ? -1 : 1;
 		}
 		else
 		{
@@ -664,7 +694,7 @@ void spawn_rack_goods( gentity_t *ent )
 			pos *= -1;
 		}
 
-		GunRackAddItem( health, ent->s.origin, ent->s.angles, crandom() * 0.5f, ( random() * 4 + 4 ) * pos, 24 );
+		GunRackAddItem( health, ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 0.5f, ( Q_flrand(0.0f, 1.0f) * 4 + 4 ) * pos, 24 );
 	}
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/kejim/weaponsrung.md3" );
@@ -723,8 +753,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( health )
 		{
-			temp[0] = org[0] + crandom() * 8 + 16;
-			temp[1] = org[1] + crandom() * 8 + 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
 
 			LaunchItem( health, temp, vec3_origin, NULL );
 		}
@@ -735,8 +765,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( shields )
 		{
-			temp[0] = org[0] + crandom() * 8 - 16;
-			temp[1] = org[1] + crandom() * 8 + 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
 
 			LaunchItem( shields, temp, vec3_origin, NULL );
 		}
@@ -748,8 +778,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( bacta )
 		{
-			temp[0] = org[0] + crandom() * 8 - 16;
-			temp[1] = org[1] + crandom() * 8 - 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
 
 			LaunchItem( bacta, temp, vec3_origin, NULL );
 		}
@@ -761,8 +791,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( batteries )
 		{
-			temp[0] = org[0] + crandom() * 8 + 16;
-			temp[1] = org[1] + crandom() * 8 - 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
 
 			LaunchItem( batteries, temp, vec3_origin, NULL );
 		}

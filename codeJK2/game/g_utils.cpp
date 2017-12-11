@@ -1,27 +1,29 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // g_utils.c -- misc utility functions for game module
 
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
-
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -63,7 +65,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 		if ( !s[0] ) {
 			break;
 		}
-		if ( !stricmp( s, name ) ) {
+		if ( !Q_stricmp( s, name ) ) {
 			return i;
 		}
 	}
@@ -98,7 +100,7 @@ int G_ModelIndex( const char *name ) {
 int G_SoundIndex( const char *name ) {
 	char stripped[MAX_QPATH];
 	COM_StripExtension(name, stripped, sizeof(stripped));
-	
+
 	return G_FindConfigstringIndex (stripped, CS_SOUNDS, MAX_SOUNDS, qtrue);
 }
 
@@ -195,7 +197,7 @@ void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const in
 	tent->s.eventParm = fxID;
 
 	tent->svFlags |=SVF_BROADCAST;
-	gi.G2API_AttachEnt(&tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex); 
+	gi.G2API_AttachEnt(&tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex);
 }
 
 //-----------------------------
@@ -240,7 +242,7 @@ void G_SoundOnEnt (gentity_t *ent, soundChannel_t channel, const char *soundPath
 	}
 
 	cgi_S_UpdateEntityPosition( ent->s.number, ent->currentOrigin );
-	if ( cgs.sound_precache[ index ] ) 
+	if ( cgs.sound_precache[ index ] )
 	{
 		cgi_S_StartSound( NULL, ent->s.number, channel, cgs.sound_precache[ index ] );
 	}
@@ -406,7 +408,7 @@ NULL will be returned if the end of the list is reached.
 gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 {
 	char	*s;
-	
+
 	if(!match || !match[0])
 	{
 		return NULL;
@@ -421,7 +423,7 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 	int i=from-g_entities;
 	for ( ; i < globals.num_entities ; i++)
 	{
-//		if (!from->inuse)	
+//		if (!from->inuse)
 		if(!PInUse(i))
 			continue;
 
@@ -442,7 +444,7 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 G_RadiusList - given an origin and a radius, return all entities that are in use that are within the list
 ============
 */
-int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean takeDamage, gentity_t *ent_list[MAX_GENTITIES])					  
+int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean takeDamage, gentity_t *ent_list[MAX_GENTITIES])
 {
 	float		dist;
 	gentity_t	*ent;
@@ -453,12 +455,12 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 	int			i, e;
 	int			ent_count = 0;
 
-	if ( radius < 1 ) 
+	if ( radius < 1 )
 	{
 		radius = 1;
 	}
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = origin[i] - radius;
 		maxs[i] = origin[i] + radius;
@@ -466,7 +468,7 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 
 	numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		ent = entityList[ e ];
 
@@ -474,26 +476,26 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 			continue;
 
 		// find the distance from the edge of the bounding box
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
-			if ( origin[i] < ent->absmin[i] ) 
+			if ( origin[i] < ent->absmin[i] )
 			{
 				v[i] = ent->absmin[i] - origin[i];
-			} else if ( origin[i] > ent->absmax[i] ) 
+			} else if ( origin[i] > ent->absmax[i] )
 			{
 				v[i] = origin[i] - ent->absmax[i];
-			} else 
+			} else
 			{
 				v[i] = 0;
 			}
 		}
 
 		dist = VectorLength( v );
-		if ( dist >= radius ) 
+		if ( dist >= radius )
 		{
 			continue;
 		}
-		
+
 		// ok, we are within the radius, add us to the incoming list
 		ent_list[ent_count] = ent;
 		ent_count++;
@@ -547,7 +549,7 @@ gentity_t *G_PickTarget (char *targetname)
 void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 {
 	gentity_t		*t;
-	
+
 //
 // fire targets
 //
@@ -672,7 +674,7 @@ void G_SetMovedir( vec3_t angles, vec3_t movedir ) {
 
 float vectoyaw( const vec3_t vec ) {
 	float	yaw;
-	
+
 	if (vec[YAW] == 0 && vec[PITCH] == 0) {
 		yaw = 0;
 	} else {
@@ -692,7 +694,7 @@ float vectoyaw( const vec3_t vec ) {
 }
 
 
-void G_InitGentity( gentity_t *e ) 
+void G_InitGentity( gentity_t *e )
 {
 	e->inuse = qtrue;
 	SetInUse(e);
@@ -700,7 +702,7 @@ void G_InitGentity( gentity_t *e )
 	e->s.number = e - g_entities;
 
 	ICARUS_FreeEnt( e );	//ICARUS information must be added after this point
-	
+
 	// remove any ghoul2 models here
 	//let not gi.G2API_CleanGhoul2Models(e->ghoul2);
 
@@ -725,14 +727,14 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-gentity_t *G_Spawn( void ) 
+gentity_t *G_Spawn( void )
 {
 	int			i, force;
 	gentity_t	*e;
 
 	e = NULL;	// shut up warning
 	i = 0;		// shut up warning
-	for ( force = 0 ; force < 2 ; force++ ) 
+	for ( force = 0 ; force < 2 ; force++ )
 	{
 		// if we go through all entities and can't find one to free,
 		// override the normal minimum times before use
@@ -743,12 +745,12 @@ gentity_t *G_Spawn( void )
 //			{
 //				continue;
 //			}
-		for ( i = MAX_CLIENTS ; i<globals.num_entities ; i++) 
+		for ( i = MAX_CLIENTS ; i<globals.num_entities ; i++)
 		{
 			if(PInUse(i))
 			{
 				continue;
-			}			
+			}
 			e=&g_entities[i];
 
 			// the first couple seconds of server time can involve a lot of
@@ -777,7 +779,7 @@ gentity_t *G_Spawn( void )
 		FILE *fp;
 
 		fp = fopen( "c:/dump.txt", "w" );
-		for ( i = 0 ; i<globals.num_entities ; i++, e++) 
+		for ( i = 0 ; i<globals.num_entities ; i++, e++)
 		{
 			if ( e->classname )
 			{
@@ -788,7 +790,7 @@ gentity_t *G_Spawn( void )
 		}
 		fclose( fp );
 //---------------Or use this to dump to the console -- beware though, the console will fill quickly and you probably won't see the full list
-		for ( i = 0 ; i<globals.num_entities ; i++, e++) 
+		for ( i = 0 ; i<globals.num_entities ; i++, e++)
 		{
 			if ( e->classname )
 			{
@@ -799,7 +801,7 @@ gentity_t *G_Spawn( void )
 */
 		G_Error( "G_Spawn: no free entities" );
 	}
-	
+
 	// open up a new slot
 	globals.num_entities++;
 	G_InitGentity( e );
@@ -903,7 +905,7 @@ void G_KillBox (gentity_t *ent) {
 		if ( hit == ent ) {
 			continue;
 		}
-		if ( ent->s.number && hit->client->ps.stats[STAT_HEALTH] <= 0 ) 
+		if ( ent->s.number && hit->client->ps.stats[STAT_HEALTH] <= 0 )
 		{//NPC
 			continue;
 		}
@@ -914,9 +916,9 @@ void G_KillBox (gentity_t *ent) {
 				continue;
 			}
 		}
-		else 
+		else
 		{//player
-			if ( !(hit->contents & ent->contents) ) 
+			if ( !(hit->contents & ent->contents) )
 			{
 				continue;
 			}
@@ -1004,7 +1006,7 @@ void G_AddEvent( gentity_t *ent, int event, int eventParm ) {
 G_Sound
 =============
 */
-void G_Sound( gentity_t *ent, int soundIndex ) 
+void G_Sound( gentity_t *ent, int soundIndex )
 {
 	gentity_t	*te;
 
@@ -1017,7 +1019,7 @@ void G_Sound( gentity_t *ent, int soundIndex )
 G_Sound
 =============
 */
-void G_SoundAtSpot( vec3_t org, int soundIndex ) 
+void G_SoundAtSpot( vec3_t org, int soundIndex )
 {
 	gentity_t	*te;
 
@@ -1032,7 +1034,7 @@ G_SoundBroadcast
   Plays sound that can permeate PVS blockage
 =============
 */
-void G_SoundBroadcast( gentity_t *ent, int soundIndex ) 
+void G_SoundBroadcast( gentity_t *ent, int soundIndex )
 {
 	gentity_t	*te;
 
@@ -1050,7 +1052,7 @@ G_SetOrigin
 Sets the pos trajectory for a fixed position
 ================
 */
-void G_SetOrigin( gentity_t *ent, const vec3_t origin ) 
+void G_SetOrigin( gentity_t *ent, const vec3_t origin )
 {
 	VectorCopy( origin, ent->s.pos.trBase );
 	if(ent->client)
@@ -1085,7 +1087,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 	{
 		return qtrue;
 	}
-	
+
 	if(trace.fraction < 1.0)
 	{
 		if(fix)
@@ -1104,7 +1106,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 			return qtrue;
 		}
 	}
-		
+
 	return qfalse;
 }
 
@@ -1240,12 +1242,12 @@ qboolean ValidUseTarget( gentity_t *ent )
 	{//set by target_deactivate
 		return qfalse;
 	}
-	
+
 	if ( !(ent->svFlags & SVF_PLAYER_USABLE) )
 	{//Check for flag that denotes BUTTON_USE useability
 		return qfalse;
 	}
-	
+
 	//FIXME: This is only a temp fix..
 	if ( !strncmp( ent->classname, "trigger", 7) )
 	{
@@ -1279,14 +1281,14 @@ void TryUse( gentity_t *ent )
 	//FIXME: this does not match where the new accurate crosshair aims...
 	//cg.refdef.vieworg, basically
 	VectorCopy( ent->client->renderInfo.eyePoint, src );
-	
+
 	AngleVectors( ent->client->ps.viewangles, vf, NULL, NULL );//ent->client->renderInfo.eyeAngles was cg.refdef.viewangles, basically
 	//extend to find end of use trace
 	VectorMA( src, USE_DISTANCE, vf, dest );
 
 	//Trace ahead to find a valid target
 	gi.trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE, G2_NOCOLLIDE, 0 );
-	
+
 	if ( trace.fraction == 1.0f || trace.entityNum < 1 )
 	{
 		//TODO: Play a failure sound
@@ -1315,10 +1317,10 @@ void TryUse( gentity_t *ent )
 		GEntity_UseFunc( target, ent, ent );
 		return;
 	}
-	else if ( target->client 
-		&& target->client->ps.pm_type < PM_DEAD 
-		&& target->NPC!=NULL 
-		&& target->client->playerTeam 
+	else if ( target->client
+		&& target->client->ps.pm_type < PM_DEAD
+		&& target->NPC!=NULL
+		&& target->client->playerTeam
 		&& (target->client->playerTeam == ent->client->playerTeam || target->client->playerTeam == TEAM_NEUTRAL)
 		&& !(target->NPC->scriptFlags&SCF_NO_RESPONSE) )
 	{
@@ -1448,7 +1450,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 	vec3_t	start, end;
 
 	VectorCopy( point, start );
-	
+
 	for ( int i = 0; i < 3; i++ )
 	{
 		VectorCopy( start, end );
@@ -1494,9 +1496,9 @@ void removeBoltSurface( gentity_t *ent)
 	// check first to be sure the bolt is still there on the model
 	if ((hitEnt->ghoul2.size() > ent->damage) &&
 		(hitEnt->ghoul2[ent->damage].mModelindex != -1) &&
-		(hitEnt->ghoul2[ent->damage].mSlist.size() > ent->aimDebounceTime) &&
+		((int)hitEnt->ghoul2[ent->damage].mSlist.size() > ent->aimDebounceTime) &&
 		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].surface != -1) &&
-		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].offFlags == G2SURFACEFLAG_GENERATED)) 
+		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].offFlags == G2SURFACEFLAG_GENERATED))
 	{
 		// remove the bolt
 		gi.G2API_RemoveBolt(&hitEnt->ghoul2[ent->damage], ent->attackDebounceTime);

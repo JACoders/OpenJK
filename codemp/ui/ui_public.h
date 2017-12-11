@@ -1,9 +1,29 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
-
-#define UI_API_VERSION 1
+#define UI_API_VERSION 3
 #define UI_LEGACY_API_VERSION 7
 
 typedef struct uiClientState_s {
@@ -208,14 +228,14 @@ typedef enum uiExportLegacy_e {
 
 typedef struct uiImport_s {
 	void			(*Print)								( const char *msg, ... );
-	void			(*Error)								( int level, const char *error, ... );
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	int				(*Milliseconds)							( void );
 	int				(*RealTime)								( qtime_t *qtime );
 	int				(*MemoryRemaining)						( void );
 
-	void			(*Cvar_Create)							( const char *var_name, const char *var_value, int flags );
+	void			(*Cvar_Create)							( const char *var_name, const char *var_value, uint32_t flags );
 	void			(*Cvar_InfoStringBuffer)				( int bit, char *buffer, int bufsize );
-	void			(*Cvar_Register)						( vmCvar_t *cvar, const char *var_name, const char *value, int flags );
+	void			(*Cvar_Register)						( vmCvar_t *cvar, const char *var_name, const char *value, uint32_t flags );
 	void			(*Cvar_Reset)							( const char *name );
 	void			(*Cvar_Set)								( const char *var_name, const char *value );
 	void			(*Cvar_SetValue)						( const char *var_name, float value );
@@ -350,6 +370,12 @@ typedef struct uiImport_s {
 	void			(*G2API_GetSurfaceName)					( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf );
 	qboolean		(*G2API_SetSkin)						( void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin );
 	qboolean		(*G2API_AttachG2Model)					( void *ghoul2From, int modelIndexFrom, void *ghoul2To, int toBoltIndex, int toModel );
+
+	struct {
+		float			(*R_Font_StrLenPixels)					( const char *text, const int iFontIndex, const float scale );
+		void			(*AddCommand)							( const char *cmd_name );
+		void			(*RemoveCommand)						( const char *cmd_name );
+	} ext;
 } uiImport_t;
 
 typedef struct uiExport_s {

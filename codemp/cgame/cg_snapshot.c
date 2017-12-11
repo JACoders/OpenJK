@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_snapshot.c -- things that happen on snapshot transition,
 // not necessarily every single rendered frame
 
@@ -71,7 +92,7 @@ static void CG_TransitionEntity( centity_t *cent ) {
 CG_SetInitialSnapshot
 
 This will only happen on the very first snapshot, or
-on tourney restarts.  All other times will use 
+on tourney restarts.  All other times will use
 CG_TransitionSnapshot instead.
 
 FIXME: Also called by map_restart?
@@ -82,13 +103,13 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	centity_t		*cent;
 	entityState_t	*state;
 
-	cg.snap = snap; 
+	cg.snap = snap;
 
 	if ((cg_entities[snap->ps.clientNum].ghoul2 == NULL) && trap->G2_HaveWeGhoul2Models(cgs.clientinfo[snap->ps.clientNum].ghoul2Model))
 	{
 		trap->G2API_DuplicateGhoul2Instance(cgs.clientinfo[snap->ps.clientNum].ghoul2Model, &cg_entities[snap->ps.clientNum].ghoul2);
 		CG_CopyG2WeaponInstance(&cg_entities[snap->ps.clientNum], FIRST_WEAPON, cg_entities[snap->ps.clientNum].ghoul2);
-		
+
 		if (trap->G2API_AddBolt(cg_entities[snap->ps.clientNum].ghoul2, 0, "face") == -1)
 		{ //check now to see if we have this bone for setting anims and such
 			cg_entities[snap->ps.clientNum].noFace = qtrue;
@@ -217,7 +238,7 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 	//No longer want to do this, as the cg_entities[clnum] and cg.predictedPlayerEntity are one in the same.
 
 	// check for extrapolation errors
-	for ( num = 0 ; num < snap->numEntities ; num++ ) 
+	for ( num = 0 ; num < snap->numEntities ; num++ )
 	{
 		es = &snap->entities[num];
 		cent = &cg_entities[ es->number ];
@@ -272,7 +293,7 @@ static snapshot_t *CG_ReadNextSnapshot( void ) {
 	snapshot_t	*dest;
 
 	if ( cg.latestSnapshotNum > cgs.processedSnapshotNum + 1000 ) {
-		trap->Print( "WARNING: CG_ReadNextSnapshot: way out of range, %i > %i\n", 
+		trap->Print( "WARNING: CG_ReadNextSnapshot: way out of range, %i > %i\n",
 			cg.latestSnapshotNum, cgs.processedSnapshotNum );
 	}
 
@@ -293,7 +314,7 @@ static snapshot_t *CG_ReadNextSnapshot( void ) {
 			//[BugFix30]
 			//According to dumbledore, this situation occurs when you're playing back a demo that was record when
 			//the game was running in local mode.  As such, we need to skip those snaps or the demo looks laggy.
-			if ( cg.demoPlayback ) 
+			if ( cg.demoPlayback )
 			{
 				continue;
 			}

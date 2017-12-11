@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "g_local.h"
 #include "g_functions.h"
 
@@ -118,12 +123,12 @@ void func_usable_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 		self->svFlags &= ~SVF_PLAYER_USABLE;
 		//also remove ability to call any use func at all!
 		self->e_UseFunc = useF_NULL;
-		
+
 		if(self->target && self->target[0])
 		{
 			G_UseTargets(self, activator);
 		}
-		
+
 		if ( self->wait )
 		{
 			self->e_ThinkFunc = thinkF_func_usable_think;
@@ -181,7 +186,7 @@ void func_usable_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
 
 /*QUAKED func_usable (0 .5 .8) ? STARTOFF AUTOANIMATE ANIM_ONCE ALWAYS_ON BLOCKCHECK NPC_USE PLAYER_USE INACTIVE
 START_OFF - the wall will not be there
-AUTOANIMATE - if a model is used it will animate				
+AUTOANIMATE - if a model is used it will animate
 ANIM_ONCE - When turned on, goes through anim once
 ALWAYS_ON - Doesn't toggle on and off when used, just runs usescript and fires target
 NPC_ONLY - Only NPCs can directly use this
@@ -204,7 +209,7 @@ A bmodel that just sits there, doing nothing.  Can be used for conditional walls
 "forcevisible" - When you turn on force sight (any level), you can see these draw through the entire level...
 */
 
-void SP_func_usable( gentity_t *self ) 
+void SP_func_usable( gentity_t *self )
 {
 	gi.SetBrushModel( self, self->model );
 	InitMover( self );

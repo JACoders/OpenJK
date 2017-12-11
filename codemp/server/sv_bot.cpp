@@ -1,9 +1,30 @@
-// sv_bot.c
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+// sv_bot.c
 #include "server.h"
 #include "botlib/botlib.h"
+#include "qcommon/cm_public.h"
 #include "server/sv_gameapi.h"
 
 typedef struct bot_debugpoly_s
@@ -38,18 +59,12 @@ static int NotWithinRange(int base, int extent)
 	return 1;
 }
 
-int SV_OrgVisibleBox(vec3_t org1, vec3_t mins, vec3_t maxs, vec3_t org2, int ignore, int rmg)
+int SV_OrgVisibleBox(vec3_t org1, vec3_t mins, vec3_t maxs, vec3_t org2, int ignore)
 {
 	trace_t tr;
 
-	if (rmg)
-	{
-		SV_Trace(&tr, org1, NULL, NULL, org2, ignore, MASK_SOLID, 0, 0, 10);
-	}
-	else
-	{
-		SV_Trace(&tr, org1, mins, maxs, org2, ignore, MASK_SOLID, 0, 0, 10);
-	}
+
+	SV_Trace(&tr, org1, mins, maxs, org2, ignore, MASK_SOLID, 0, 0, 10);
 
 	if (tr.fraction == 1 && !tr.startsolid && !tr.allsolid)
 	{
@@ -79,7 +94,7 @@ void SV_BotWaypointReception(int wpnum, wpobject_t **wps)
 SV_BotCalculatePaths
 ==================
 */
-void SV_BotCalculatePaths(int rmg)
+void SV_BotCalculatePaths( int /*rmg*/ )
 {
 	int i;
 	int c;
@@ -92,11 +107,6 @@ void SV_BotCalculatePaths(int rmg)
 	if (!gWPNum)
 	{
 		return;
-	}
-
-	if (rmg)
-	{
-		maxNeighborDist = DEFAULT_GRID_SPACING + (DEFAULT_GRID_SPACING*0.5);
 	}
 
 	mins[0] = -15;
@@ -145,7 +155,7 @@ void SV_BotCalculatePaths(int rmg)
 
 					if ((nLDist < maxNeighborDist || forceJumpable) &&
 						((int)gWPArray[i]->origin[2] == (int)gWPArray[c]->origin[2] || forceJumpable) &&
-						(SV_OrgVisibleBox(gWPArray[i]->origin, mins, maxs, gWPArray[c]->origin, ENTITYNUM_NONE, rmg) || forceJumpable))
+						(SV_OrgVisibleBox(gWPArray[i]->origin, mins, maxs, gWPArray[c]->origin, ENTITYNUM_NONE) || forceJumpable))
 					{
 						gWPArray[i]->neighbors[gWPArray[i]->neighbornum].num = c;
 						if (forceJumpable && ((int)gWPArray[i]->origin[2] != (int)gWPArray[c]->origin[2] || nLDist < maxNeighborDist))
@@ -727,7 +737,7 @@ void SV_BotInitBotLib(void) {
 	botlib_import.DebugPolygonDelete = BotImport_DebugPolygonDelete;
 
 	botlib_export = (botlib_export_t *)GetBotLibAPI( BOTLIB_API_VERSION, &botlib_import );
-	assert(botlib_export); 	// bk001129 - somehow we end up with a zero import.
+	assert(botlib_export);
 }
 
 

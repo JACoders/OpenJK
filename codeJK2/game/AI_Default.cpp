@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_headers.h"
 
@@ -116,8 +120,8 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 	{
 		if ( NPC->health < 20 )
 		{
-		//	if( NPC->svFlags&SVF_HEALING || random() )
-			if( random() )
+		//	if( NPC->svFlags&SVF_HEALING || Q_flrand(0.0f, 1.0f) )
+			if( Q_flrand(0.0f, 1.0f) )
 			{
 				duck_ok = qtrue;
 			}
@@ -127,12 +131,6 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 //			if ( NPC->svFlags&SVF_HEALING )
 //			{//Medic is on the way, get down!
 //				duck_ok = qtrue;
-//			}
-			// no more borg
-///			if ( NPC->client->playerTeam!= TEAM_BORG )
-//			{//Borg don't care if they're about to die
-				//attack_scale will be a max of .66
-//				attack_scale = NPC->health/60;
 //			}
 		}
 	}
@@ -211,11 +209,15 @@ void NPC_BSStandGuard (void)
 	//FIXME: Use Snapshot info
 	if ( NPC->enemy == NULL )
 	{//Possible to pick one up by being shot
-		if( random() < 0.5 )
+		if( Q_flrand(0.0f, 1.0f) < 0.5 )
 		{
 			if(NPC->client->enemyTeam)
 			{
-				gentity_t *newenemy = NPC_PickEnemy(NPC, NPC->client->enemyTeam, (NPC->cantHitEnemyCounter < 10), (NPC->client->enemyTeam == TEAM_PLAYER), qtrue);
+				gentity_t *newenemy = NPC_PickEnemy(
+					NPC, NPC->client->enemyTeam,
+					(qboolean)(NPC->cantHitEnemyCounter < 10),
+					(qboolean)(NPC->client->enemyTeam == TEAM_PLAYER),
+					qtrue);
 				//only checks for vis if couldn't hit last enemy
 				if(newenemy)
 				{
@@ -255,7 +257,7 @@ void NPC_BSHuntAndKill( void )
 	visibility_t	oEVis;
 	int			curAnim;
 
-	NPC_CheckEnemy( NPCInfo->tempBehavior != BS_HUNT_AND_KILL, qfalse );//don't find new enemy if this is tempbehav
+	NPC_CheckEnemy( (qboolean)(NPCInfo->tempBehavior != BS_HUNT_AND_KILL), qfalse );//don't find new enemy if this is tempbehav
 
 	if ( NPC->enemy )
 	{
@@ -545,7 +547,6 @@ void NPC_BSPointShoot (qboolean shoot)
 	switch( NPC->client->ps.weapon )
 	{
 	case WP_NONE:
-//	case WP_TRICORDER:
 	case WP_MELEE:
 	case WP_SABER:
 		//don't do any pitch change if not holding a firing weapon
@@ -754,7 +755,7 @@ void NPC_BSDefault( void )
 		}
 	}
 	//look for a new enemy if don't have one and are allowed to look, validate current enemy if have one
-	NPC_CheckEnemy( (NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES), qfalse );
+	NPC_CheckEnemy( (qboolean)(NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES), qfalse );
 	if ( !NPC->enemy )
 	{//still don't have an enemy
 		if ( !(NPCInfo->scriptFlags&SCF_IGNORE_ALERTS) )

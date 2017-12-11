@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "qcommon/q_shared.h"
@@ -64,11 +87,8 @@ typedef struct server_s {
 	char			*mSharedMemory;
 
 	time_t			realMapTimeStarted;	// time the current map was started
+	qboolean		demosPruned; // whether or not existing demos were cleaned up already
 } server_t;
-
-
-
-
 
 typedef struct clientSnapshot_s {
 	int				areabytes;
@@ -175,33 +195,12 @@ typedef struct client_s {
 //=============================================================================
 
 
-// MAX_CHALLENGES is made large to prevent a denial
-// of service attack that could cycle all of them
-// out before legitimate users connected
-#define	MAX_CHALLENGES	2048
-// Allow a certain amount of challenges to have the same IP address
-// to make it a bit harder to DOS one single IP address from connecting
-// while not allowing a single ip to grab all challenge resources
-#define MAX_CHALLENGES_MULTI (MAX_CHALLENGES / 2)
-
-#define	AUTHORIZE_TIMEOUT	5000
-
-typedef struct challenge_s {
-	netadr_t	adr;
-	int			challenge;
-	int			clientChallenge;		// challenge number coming from the client
-	int			time;				// time the last packet was sent to the autherize server
-	int			pingTime;			// time the challenge response was sent to client
-	int			firstTime;			// time the adr was first used, for authorize timeout checks
-	qboolean	wasrefused;
-	qboolean	connected;
-} challenge_t;
-
 // this structure will be cleared only when the game dll changes
 typedef struct serverStatic_s {
 	qboolean	initialized;				// sv_init has completed
 
 	int			time;						// will be strictly increasing across level changes
+	time_t		startTime;					// time since epoch the executable was started
 
 	int			snapFlagServerBit;			// ^= SNAPFLAG_SERVERCOUNT every SV_SpawnServer()
 
@@ -210,13 +209,22 @@ typedef struct serverStatic_s {
 	int			nextSnapshotEntities;		// next snapshotEntities to use
 	entityState_t	*snapshotEntities;		// [numSnapshotEntities]
 	int			nextHeartbeatTime;
-	challenge_t	challenges[MAX_CHALLENGES];	// to prevent invalid IPs from connecting
 	netadr_t	redirectAddress;			// for rcon return messages
 
 	netadr_t	authorizeAddress;			// for rcon return messages
 
 	qboolean	gameStarted;				// gvm is loaded
 } serverStatic_t;
+
+#define SERVER_MAXBANS	1024
+// Structure for managing bans
+typedef struct serverBan_s {
+	netadr_t ip;
+	// For a CIDR-Notation type suffix
+	int subnet;
+
+	qboolean isexception;
+} serverBan_t;
 
 //=============================================================================
 
@@ -226,10 +234,9 @@ extern	server_t		sv;					// cleared each map
 //FIXME: dedi server probably can't have this..
 extern	refexport_t		*re;					// interface to refresh .dll
 
-#define	MAX_MASTER_SERVERS	5
-
 extern	cvar_t	*sv_snapsMin;
 extern	cvar_t	*sv_snapsMax;
+extern	cvar_t	*sv_snapsPolicy;
 extern	cvar_t	*sv_fps;
 extern	cvar_t	*sv_timeout;
 extern	cvar_t	*sv_zombietime;
@@ -248,6 +255,9 @@ extern	cvar_t	*sv_killserver;
 extern	cvar_t	*sv_mapname;
 extern	cvar_t	*sv_mapChecksum;
 extern	cvar_t	*sv_serverid;
+extern	cvar_t	*sv_ratePolicy;
+extern	cvar_t	*sv_clientRate;
+extern	cvar_t	*sv_minRate;
 extern	cvar_t	*sv_maxRate;
 extern	cvar_t	*sv_minPing;
 extern	cvar_t	*sv_maxPing;
@@ -260,6 +270,11 @@ extern	cvar_t	*sv_filterCommands;
 extern	cvar_t	*sv_autoDemo;
 extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
+extern	cvar_t	*sv_legacyFixForceSelect;
+extern	cvar_t	*sv_banFile;
+
+extern	serverBan_t serverBans[SERVER_MAXBANS];
+extern	int serverBansCount;
 
 //===========================================================
 
@@ -316,13 +331,19 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 
 
 //
+// sv_challenge.cpp
+//
+void SV_ChallengeInit();
+void SV_ChallengeShutdown();
+int SV_CreateChallenge(netadr_t from);
+qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from);
+
+//
 // sv_client.c
 //
 void SV_GetChallenge( netadr_t from );
 
 void SV_DirectConnect( netadr_t from );
-
-void SV_AuthorizeIpPacket( netadr_t from );
 
 void SV_SendClientMapChange( client_t *client );
 void SV_ExecuteClientMessage( client_t *cl, msg_t *msg );

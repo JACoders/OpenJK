@@ -1,25 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_consolecmds.c -- text commands typed in at the local console, or
 // executed by a key binding
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"	//just for cgs....
@@ -60,7 +64,7 @@ Debugging command to print the current position
 */
 static void CG_Viewpos_f (void) {
 	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2],
 		(int)cg.refdefViewAngles[YAW]);
 }
 
@@ -71,7 +75,7 @@ void CG_WriteCam_f (void)
 	static	int	numCams;
 
 	numCams++;
-	
+
 	targetname = CG_Argv(1);
 
 	if( !targetname || !targetname[0] )
@@ -192,12 +196,12 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
-void CG_LoadHud_f( void ) 
+void CG_LoadHud_f( void )
 {
 	const char *hudSet;
 
 	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0') 
+	if (hudSet[0] == '\0')
 	{
 		hudSet = "ui/jahud.txt";
 	}
@@ -265,7 +269,7 @@ Cmd_Argc() / Cmd_Argv()
 qboolean CG_ConsoleCommand( void ) {
 	consoleCommand_t	*command = NULL;
 
-	command = (consoleCommand_t *)bsearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
+	command = (consoleCommand_t *)Q_LinearSearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
 
 	if ( !command )
 		return qfalse;
@@ -277,6 +281,7 @@ qboolean CG_ConsoleCommand( void ) {
 static const char *gcmds[] = {
 	"bow",
 	"entitylist",
+	"difficulty",
 	"flourish",
 	"force_absorb",
 	"force_distract",
@@ -291,6 +296,7 @@ static const char *gcmds[] = {
 	"give",
 	"gloat",
 	"god",
+	"invuse",
 	"kill",
 	"meditate",
 	"nav",
@@ -299,11 +305,13 @@ static const char *gcmds[] = {
 	"npc",
 	"playermodel",
 	"playerteam",
+	"playertint",
 	"runscript",
 	"saber",
 	"saberAttackCycle",
 	"saberColor",
 	"saberblade",
+	"secrets",
 	"setForceAll",
 	"setSaberAll",
 	"setobjective",

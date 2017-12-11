@@ -1,26 +1,36 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __Q_SHARED_H
 #define __Q_SHARED_H
 
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
+
+#include "qcommon/q_math.h"
+#include "qcommon/q_color.h"
+#include "qcommon/q_string.h"
 
 #ifdef _MSC_VER
 
@@ -50,8 +60,19 @@ This file is part of Jedi Academy.
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
+#ifndef JK2_MODE
 #define _G2_GORE
+#endif // !JK2_MODE
 
+#if JK2_MODE
+#define PRODUCT_NAME			"openjo_sp"
+
+#define CLIENT_WINDOW_TITLE "OpenJO (SP)"
+#define CLIENT_CONSOLE_TITLE "OpenJO Console (SP)"
+#define HOMEPATH_NAME_UNIX "openjo"
+#define HOMEPATH_NAME_WIN "OpenJO"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+#else
 #define PRODUCT_NAME			"openjk_sp"
 
 #define CLIENT_WINDOW_TITLE "OpenJK (SP)"
@@ -59,16 +80,21 @@ This file is part of Jedi Academy.
 #define HOMEPATH_NAME_UNIX "openjk"
 #define HOMEPATH_NAME_WIN "OpenJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+#endif
 
 #define	BASEGAME "base"
+#define OPENJKGAME "OpenJK"
 
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
+
+#define BASE_SAVE_COMPAT // this is defined to disable/fix some changes that break save compatibility
 
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //JAC: Added
 #define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
 #define STRING( a ) #a
+#define XSTRING( a ) STRING( a )
 
 #ifndef FINAL_BUILD
 #ifdef _WIN32
@@ -88,6 +114,11 @@ This file is part of Jedi Academy.
 #include <limits.h>
 #include <errno.h>
 #include <stddef.h>
+
+#ifdef __cplusplus
+#include <cmath>
+#endif
+
 
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
@@ -123,77 +154,22 @@ This file is part of Jedi Academy.
 	#define idppc	0
 #endif
 
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
+#include "qcommon/q_platform.h"
+#include "ojk_saved_game_helper_fwd.h"
 
-
-#include "../qcommon/q_platform.h"
 
 // ================================================================
 // TYPE DEFINITIONS
 // ================================================================
 
-typedef unsigned long		ulong;
-typedef unsigned short		word;
-typedef unsigned char 		byte;
+typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
 
-typedef enum {qfalse, qtrue}	qboolean;
-#define	qboolean	int		//don't want strict type checking on the qboolean
-
-typedef union {
-	float f;
-	int i;
-	unsigned int ui;
-} floatint_t;
-
-typedef int		qhandle_t;
-typedef int		thandle_t;
-typedef int		fxHandle_t;
-typedef int		sfxHandle_t;
-typedef int		fileHandle_t;
-typedef int		clipHandle_t;
-
-#define NULL_HANDLE   ((qhandle_t) 0)
-#define NULL_SOUND    ((sfxHandle_t) 0)
-#define NULL_FX       ((fxHandle_t) 0)
-#define NULL_SFX      ((sfxHandle_t) 0)
-#define NULL_FILE     ((fileHandle_t) 0)
-#define NULL_CLIP     ((clipHandle_t) 0)
-
-//Raz: can't think of a better place to put this atm,
-//		should probably be in the platform specific definitions
-#if defined (_MSC_VER) && (_MSC_VER >= 1600)
-
-	#include <stdint.h>
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
-#elif defined (_MSC_VER)
-
-	#include <io.h>
-
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#else // not using MSVC
-
-	#include <stdint.h>
-
-	#define Q_vsnprintf vsnprintf
-
-#endif
+#define NULL_HANDLE ((qhandle_t)0)
+#define NULL_SOUND ((sfxHandle_t)0)
+#define NULL_FX ((fxHandle_t)0)
+#define NULL_SFX ((sfxHandle_t)0)
+#define NULL_FILE ((fileHandle_t)0)
+#define NULL_CLIP ((clipHandle_t)0)
 
 #define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
@@ -211,15 +187,7 @@ typedef int		clipHandle_t;
 #define NULL ((void *)0)
 #endif
 
-#define	MAX_QINT			0x7fffffff
-#define	MIN_QINT			(-MAX_QINT-1)
-
 #define INT_ID( a, b, c, d ) (uint32_t)((((a) & 0xff) << 24) | (((b) & 0xff) << 16) | (((c) & 0xff) << 8) | ((d) & 0xff))
-
-// angle indexes
-#define	PITCH				0		// up / down
-#define	YAW					1		// left / right
-#define	ROLL				2		// fall over
 
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
@@ -309,13 +277,11 @@ typedef enum {
 #define UI_FORMATMASK	0x00000007
 #define UI_SMALLFONT	0x00000010
 #define UI_BIGFONT		0x00000020	// default
-#define UI_GIANTFONT	0x00000040
+
 #define UI_DROPSHADOW	0x00000800
 #define UI_BLINK		0x00001000
 #define UI_INVERSE		0x00002000
 #define UI_PULSE		0x00004000
-#define UI_UNDERLINE	0x00008000
-#define UI_TINYFONT		0x00010000
 
 
 #define Com_Memset memset
@@ -329,51 +295,6 @@ typedef enum {
 #define CIN_silent	8
 #define CIN_shader	16
 
-
-/*
-==============================================================
-
-MATHLIB
-
-==============================================================
-*/
-
-
-typedef float vec_t;
-typedef vec_t vec2_t[2];
-typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
-typedef vec_t vec5_t[5];
-
-typedef vec3_t	vec3pair_t[2];
-
-typedef int ivec2_t[2];
-typedef int ivec3_t[3];
-typedef int ivec4_t[4];
-typedef int ivec5_t[5];
-
-typedef	int	fixed4_t;
-typedef	int	fixed8_t;
-typedef	int	fixed16_t;
-
-#ifndef M_PI
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
-#endif
-
-#if defined(_MSC_VER)
-static __inline long Q_ftol(float f)
-{
-	return (long)f;
-}
-#else
-static inline long Q_ftol(float f)
-{
-	return (long)f;
-}
-#endif
-
-#define NUMVERTEXNORMALS	162
-extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 
 // all drawing is done to a 640*480 virtual screen size
 // and will be automatically scaled to the real resolution
@@ -392,129 +313,6 @@ extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 #define	GIANTCHAR_WIDTH		32
 #define	GIANTCHAR_HEIGHT	48
 
-typedef enum
-{
-CT_NONE,
-CT_BLACK,
-CT_RED,
-CT_GREEN,
-CT_BLUE,
-CT_YELLOW,
-CT_MAGENTA,
-CT_CYAN,
-CT_WHITE,
-CT_LTGREY,
-CT_MDGREY,
-CT_DKGREY,
-CT_DKGREY2,
-
-CT_VLTORANGE,
-CT_LTORANGE,
-CT_DKORANGE,
-CT_VDKORANGE,
-
-CT_VLTBLUE1,
-CT_LTBLUE1,
-CT_DKBLUE1,
-CT_VDKBLUE1,
-
-CT_VLTBLUE2,
-CT_LTBLUE2,
-CT_DKBLUE2,
-CT_VDKBLUE2,
-
-CT_VLTBROWN1,
-CT_LTBROWN1,
-CT_DKBROWN1,
-CT_VDKBROWN1,
-
-CT_VLTGOLD1,
-CT_LTGOLD1,
-CT_DKGOLD1,
-CT_VDKGOLD1,
-
-CT_VLTPURPLE1,
-CT_LTPURPLE1,
-CT_DKPURPLE1,
-CT_VDKPURPLE1,
-
-CT_VLTPURPLE2,
-CT_LTPURPLE2,
-CT_DKPURPLE2,
-CT_VDKPURPLE2,
-
-CT_VLTPURPLE3,
-CT_LTPURPLE3,
-CT_DKPURPLE3,
-CT_VDKPURPLE3,
-
-CT_VLTRED1,
-CT_LTRED1,
-CT_DKRED1,
-CT_VDKRED1,
-CT_VDKRED,
-CT_DKRED,
-
-CT_VLTAQUA,
-CT_LTAQUA,
-CT_DKAQUA,
-CT_VDKAQUA,
-
-CT_LTPINK,
-CT_DKPINK,
-CT_LTCYAN,
-CT_DKCYAN,
-CT_LTBLUE3,
-CT_BLUE3,
-CT_DKBLUE3,
-
-CT_HUD_GREEN,
-CT_HUD_RED,
-CT_ICON_BLUE,
-CT_NO_AMMO_RED,
-CT_HUD_ORANGE,
-
-CT_TITLE,
-
-CT_MAX
-} ct_table_t;
-
-extern vec4_t colorTable[CT_MAX];
-
-#define Q_COLOR_ESCAPE	'^'
-#define Q_COLOR_BITS 0xF // was 7
-
-// you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
-#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '9' && *((p)+1) >= '0' )
-#define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) >= '0' && *((p)+1) <= '9') // ^[0-9]
-
-#define COLOR_BLACK		'0'
-#define COLOR_RED		'1'
-#define COLOR_GREEN		'2'
-#define COLOR_YELLOW	'3'
-#define COLOR_BLUE		'4'
-#define COLOR_CYAN		'5'
-#define COLOR_MAGENTA	'6'
-#define COLOR_WHITE		'7'
-#define COLOR_ORANGE	'8'
-#define COLOR_GREY		'9'
-#define ColorIndex(c)	( ( (c) - '0' ) & Q_COLOR_BITS )
-
-#define S_COLOR_BLACK	"^0"
-#define S_COLOR_RED		"^1"
-#define S_COLOR_GREEN	"^2"
-#define S_COLOR_YELLOW	"^3"
-#define S_COLOR_BLUE	"^4"
-#define S_COLOR_CYAN	"^5"
-#define S_COLOR_MAGENTA	"^6"
-#define S_COLOR_WHITE	"^7"
-#define S_COLOR_ORANGE	"^8"
-#define S_COLOR_GREY	"^9"
-
-extern vec4_t g_color_table[Q_COLOR_BITS+1];
-
-#define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
-#define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
 
 // Player weapons effects
 typedef enum
@@ -530,445 +328,9 @@ typedef enum
 
 #define MAX_BATTERIES	2500
 
-#define PI_DIV_180		0.017453292519943295769236907684886
-#define INV_PI_DIV_180	57.295779513082320876798154814105
-
-// Punish Aurelio if you don't like these performance enhancements. :-)
-#define DEG2RAD( a ) ( ( (a) * PI_DIV_180 ) )
-#define RAD2DEG( a ) ( ( (a) * INV_PI_DIV_180 ) )
-
-// A divide can be avoided by just multiplying by PI_DIV_180 which is PI divided by 180. - Aurelio
-//#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
-// A divide can be avoided by just multiplying by INV_PI_DIV_180(inverse of PI/180) which is 180 divided by PI. - Aurelio
-//#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
-
 #define ENUM2STRING(arg)   { #arg,arg }
 
-struct cplane_s;
-
-extern	const vec3_t	vec3_origin;
-extern	const vec3_t	axisDefault[3];
-
-#define	nanmask (255<<23)
-
-#define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
-
-float Q_fabs( float f );
-float Q_rsqrt( float f );		// reciprocal square root
-
-#define SQRTFAST( x ) ( 1.0f / Q_rsqrt( x ) )
-
-signed char ClampChar( int i );
-signed short ClampShort( int i );
-
-float Q_powf( float x, int y );
-
-// this isn't a real cheap function to call!
-int DirToByte( vec3_t dir );
-void ByteToDir( int b, vec3_t dir );
-
-#define _DotProduct(x,y)		((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
-#define _VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
-#define _VectorAdd(a,b,c)		((c)[0]=(a)[0]+(b)[0],(c)[1]=(a)[1]+(b)[1],(c)[2]=(a)[2]+(b)[2])
-#define _VectorCopy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2])
-#define	_VectorScale(v, s, o)	((o)[0]=(v)[0]*(s),(o)[1]=(v)[1]*(s),(o)[2]=(v)[2]*(s))
-#define	_VectorMA(v, s, b, o)	((o)[0]=(v)[0]+(b)[0]*(s),(o)[1]=(v)[1]+(b)[1]*(s),(o)[2]=(v)[2]+(b)[2]*(s))
-
-
-#define VectorClear(a)			((a)[0]=(a)[1]=(a)[2]=0)
-#define VectorNegate(a,b)		((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
-#define VectorSet(v, x, y, z)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z))
-#define Vector4Copy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
-
-#define	SnapVector(v) {v[0]=(int)v[0];v[1]=(int)v[1];v[2]=(int)v[2];}
-
-// just in case you do't want to use the macros
-inline void VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc) {
-	vecc[0] = veca[0] + scale*vecb[0];
-	vecc[1] = veca[1] + scale*vecb[1];
-	vecc[2] = veca[2] + scale*vecb[2];
-}
-
-inline vec_t DotProduct( const vec3_t v1, const vec3_t v2 ) {
-	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
-}
-
-inline void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) {
-	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
-	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
-	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
-}
-
-inline void VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t o ) {
-	o[0] = veca[0]-vecb[0];
-	o[1] = veca[1]-vecb[1];
-	o[2] = veca[2]-vecb[2];
-}
-
-inline void VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t o ) {
-	o[0] = veca[0]+vecb[0];
-	o[1] = veca[1]+vecb[1];
-	o[2] = veca[2]+vecb[2];
-}
-
-inline void VectorCopy( const vec3_t in, vec3_t out ) {
-	out[0] = in[0];
-	out[1] = in[1];
-	out[2] = in[2];
-}
-
-inline void VectorScale( const vec3_t i, vec_t scale, vec3_t o ) {
-	o[0] = i[0]*scale;
-	o[1] = i[1]*scale;
-	o[2] = i[2]*scale;
-}
-
-float DotProductNormalize( const vec3_t inVec1, const vec3_t inVec2 );
-
-unsigned ColorBytes3 (float r, float g, float b);
-unsigned ColorBytes4 (float r, float g, float b, float a);
-
-float NormalizeColor( const vec3_t in, vec3_t out );
-float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
-
-void ClearBounds( vec3_t mins, vec3_t maxs );
-
-inline void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
-	if ( v[0] < mins[0] ) {
-		mins[0] = v[0];
-	}
-	if ( v[0] > maxs[0]) {
-		maxs[0] = v[0];
-	}
-
-	if ( v[1] < mins[1] ) {
-		mins[1] = v[1];
-	}
-	if ( v[1] > maxs[1]) {
-		maxs[1] = v[1];
-	}
-
-	if ( v[2] < mins[2] ) {
-		mins[2] = v[2];
-	}
-	if ( v[2] > maxs[2]) {
-		maxs[2] = v[2];
-	}
-}
-
-inline int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
-	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]) {
-		return 0;
-	}			
-	return 1;
-}
-
-//NOTE: less precise
-inline int VectorCompare2( const vec3_t v1, const vec3_t v2 ) {
-	if ( v1[0] > v2[0]+0.0001f || v1[0] < v2[0]-0.0001f
-		|| v1[1] > v2[1]+0.0001f || v1[1] < v2[1]-0.0001f
-		|| v1[2] > v2[2]+0.0001f || v1[2] < v2[2]-0.0001f ) {
-		return 0;
-	}			
-	return 1;
-}
-inline vec_t VectorLength( const vec3_t v ) {
-	return (vec_t)sqrt (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-inline vec_t VectorLengthSquared( const vec3_t v ) {
-	return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-inline vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t	v;
-
-	VectorSubtract (p2, p1, v);
-	return VectorLength( v );
-}
-
-inline vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t	v;
-
-	VectorSubtract (p2, p1, v);
-	return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-}
-
-// fast vector normalize routine that does not check to make sure
-// that length != 0, nor does it return length, uses rsqrt approximation
-inline void VectorNormalizeFast( vec3_t v )
-{
-	float ilength;
-
-	ilength = Q_rsqrt( DotProduct( v, v ) );
-
-	v[0] *= ilength;
-	v[1] *= ilength;
-	v[2] *= ilength;
-}
-
-inline void VectorInverse( vec3_t v ){
-	v[0] = -v[0];
-	v[1] = -v[1];
-	v[2] = -v[2];
-}
-
-inline void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out )
-{
-	out[0] = DotProduct( in, matrix[0] );
-	out[1] = DotProduct( in, matrix[1] );
-	out[2] = DotProduct( in, matrix[2] );
-}
-
-//if length is 0, v is untouched otherwise v is normalized
-inline vec_t VectorNormalize( vec3_t v ) {
-	float	length, ilength;
-
-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);
-
-	if ( length > 0.0001f ) {
-		ilength = 1/length;
-		v[0] *= ilength;
-		v[1] *= ilength;
-		v[2] *= ilength;
-	}
-		
-	return length;
-}
-
-
-//if length is 0, out is cleared, otherwise out is normalized
-inline vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
-	float	length, ilength;
-
-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);
-
-	if (length)
-	{
-		ilength = 1/length;
-		out[0] = v[0]*ilength;
-		out[1] = v[1]*ilength;
-		out[2] = v[2]*ilength;
-	} else {
-		VectorClear( out );
-	}
-		
-	return length;
-}
-
-int Q_log2(int val);
-
-inline qboolean Q_isnan ( float f ) {
-#ifdef _WIN32
-	return _isnan (f);
-#else
-	return isnan (f);
-#endif
-}
-
-inline int Q_rand( int *seed ) {
-	*seed = (69069 * *seed + 1);
-	return *seed;
-}
-
-inline float Q_random( int *seed ) {
-	return ( Q_rand( seed ) & 0xffff ) / (float)0x10000;
-}
-
-inline float Q_crandom( int *seed ) {
-	return 2.0F * ( Q_random( seed ) - 0.5f );
-}
-
-//  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
-inline float Q_flrand(float min, float max) {
-	return ((rand() * (max - min)) / ((float)RAND_MAX)) + min;
-}
-
-// Returns an integer min <= x <= max (ie inclusive)
-inline int Q_irand(int min, int max) {
-	max++; //so it can round down
-#ifdef _WIN32
-	return ((rand() * (max - min)) >> 15) + min;
-#else
-	//rand() returns much larger values on OSX/Linux, so make the result smaller
-	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
-#endif
-}
-
-#ifdef _WIN32
-//returns a float between 0 and 1.0
-inline float random() {
-	return (rand() / ((float)0x7fff));
-}
-#else
-#define random() (rand() / ((float)RAND_MAX))
-#endif
-
-//returns a float between -1 and 1.0
-inline float crandom() {
-	return (2.0F * (random() - 0.5F));
-}
-
-float erandom( float mean );
-
-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-
-/*
-=================
-AnglesToAxis
-=================
-*/
-inline void AnglesToAxis( const vec3_t angles, vec3_t axis[3] ) {
-	vec3_t	right;
-
-	// angle vectors returns "right" instead of "y axis"
-	AngleVectors( angles, axis[0], right, axis[2] );
-	VectorSubtract( vec3_origin, right, axis[1] );
-}
-
-inline void AxisClear( vec3_t axis[3] ) {
-	axis[0][0] = 1;
-	axis[0][1] = 0;
-	axis[0][2] = 0;
-	axis[1][0] = 0;
-	axis[1][1] = 1;
-	axis[1][2] = 0;
-	axis[2][0] = 0;
-	axis[2][1] = 0;
-	axis[2][2] = 1;
-}
-
-inline void AxisCopy( const vec3_t in[3], vec3_t out[3] ) {
-	VectorCopy( in[0], out[0] );
-	VectorCopy( in[1], out[1] );
-	VectorCopy( in[2], out[2] );
-}
-
-void vectoangles( const vec3_t value1, vec3_t angles);
-
-vec_t DistanceHorizontal( const vec3_t p1, const vec3_t p2 );
-vec_t DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 );
-
-inline vec_t GetYawForDirection( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t v, angles;
-
-	VectorSubtract( p2, p1, v );
-	vectoangles( v, angles );
-
-	return angles[YAW];
-}
-
-inline void GetAnglesForDirection( const vec3_t p1, const vec3_t p2, vec3_t out ) {
-	vec3_t v;
-
-	VectorSubtract( p2, p1, v );
-	vectoangles( v, out );
-}
-
-
-void SetPlaneSignbits( struct cplane_s *out );
-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-//float	AngleMod(float a);
-
-inline float LerpAngle (float from, float to, float frac) {
-	float	a;
-
-	if ( to - from > 180 ) {
-		to -= 360;
-	}
-	if ( to - from < -180 ) {
-		to += 360;
-	}
-	a = from + frac * (to - from);
-
-	return a;
-}
-
-/*
-=================
-AngleSubtract
-
-Always returns a value from -180 to 180
-=================
-*/
-inline float	AngleSubtract( float a1, float a2 ) {
-	float	a;
-
-	a = a1 - a2;
-	while ( a > 180 ) {
-		a -= 360;
-	}
-	while ( a < -180 ) {
-		a += 360;
-	}
-	return a;
-}
-
-inline void AnglesSubtract( vec3_t v1, vec3_t v2, vec3_t v3 ) {
-	v3[0] = AngleSubtract( v1[0], v2[0] );
-	v3[1] = AngleSubtract( v1[1], v2[1] );
-	v3[2] = AngleSubtract( v1[2], v2[2] );
-}
-
-/*
-=================
-AngleNormalize360
-
-returns angle normalized to the range [0 <= angle < 360]
-=================
-*/
-inline float AngleNormalize360 ( float angle ) {
-	return (360.0 / 65536) * ((int)(angle * (65536 / 360.0)) & 65535);
-}
-
-/*
-=================
-AngleNormalize180
-
-returns angle normalized to the range [-180 < angle <= 180]
-=================
-*/
-inline float AngleNormalize180 ( float angle ) {
-	angle = AngleNormalize360( angle );
-	if ( angle > 180.0 ) {
-		angle -= 360.0;
-	}
-	return angle;
-}
-
-/*
-=================
-AngleDelta
-
-returns the normalized delta from angle1 to angle2
-=================
-*/
-inline float AngleDelta ( float angle1, float angle2 ) {
-	return AngleNormalize180( angle1 - angle2 );
-}
-
-qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
-void RotateAroundDirection( vec3_t axis[3], float yaw );
-void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up );
-// perpendicular vector could be replaced by this
-
-int	PlaneTypeForNormal (vec3_t normal);
-
-void MatrixMultiply(float in1[3][3], float in2[3][3], float out[3][3]);
-void PerpendicularVector( vec3_t dst, const vec3_t src );
-
-
-
 //=============================================
-
-int Com_Clampi( int min, int max, int value );
-float Com_Clamp( float min, float max, float value );
-int Com_AbsClampi( int min, int max, int value );
-float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
@@ -979,6 +341,18 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 //JLFCALLOUT include MPNOTUSED
 void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
+
+// For compatibility with shared code
+QINLINE void COM_BeginParseSession( const char *sessionName )
+{
+	COM_BeginParseSession();
+}
+
+class COM_ParseSession {
+public:
+	COM_ParseSession() { COM_BeginParseSession(); };
+	~COM_ParseSession() { COM_EndParseSession(); };
+};
 
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );
@@ -1022,66 +396,6 @@ typedef enum {
 } fsOrigin_t;
 
 //=============================================
-
-int Q_isprint( int c );
-int Q_islower( int c );
-int Q_isupper( int c );
-int Q_isalpha( int c );
-qboolean Q_isanumber( const char *s );
-qboolean Q_isintegral( float f );
-
-#if 1
-// portable case insensitive compare
-int		Q_strncmp (const char *s1, const char *s2, int n);
-int		Q_stricmpn (const char *s1, const char *s2, int n);
-inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
-char	*Q_strlwr( char *s1 );
-char	*Q_strupr( char *s1 );
-char	*Q_strrchr( const char* string, int c );
-#else
-// NON-portable (but faster) versions
-inline int	Q_stricmp (const char *s1, const char *s2) { return stricmp(s1, s2); }
-inline int	Q_strncmp (const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
-inline int	Q_stricmpn (const char *s1, const char *s2, int n) { return strnicmp(s1, s2, n); }
-inline char	*Q_strlwr( char *s1 ) { return strlwr(s1); }
-inline char	*Q_strupr( char *s1 ) { return strupr(s1); }
-inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c); }
-#endif
-
-
-// buffer size safe library replacements
-#ifdef __cplusplus
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong = qfalse );
-#else
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong );
-#endif
-void	Q_strcat( char *dest, int size, const char *src );
-
-const char *Q_stristr( const char *s, const char *find );
-
-// strlen that discounts Quake color sequences
-int Q_PrintStrlen( const char *string );
-// removes color sequences from string
-char *Q_CleanStr( char *string );
-void Q_StripColor ( char *string );
-void Q_strstrip( char *string, const char *strip, const char *repl );
-const char *Q_strchrs( const char *string, const char *search );
-//=============================================
-
-//=============================================
-/*
-short	BigShort(short l);
-short	LittleShort(short l);
-int		BigLong (int l);
-int		LittleLong (int l);
-qint64  BigLong64 (qint64 l);
-qint64  LittleLong64 (qint64 l);
-float	BigFloat (const float *l);
-float	LittleFloat (const float *l);
-
-void	Swap_Init (void);
-*/
-
 char	* QDECL va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
@@ -1099,7 +413,7 @@ qboolean Info_Validate( const char *s );
 void Info_NextPair( const char **s, char key[MAX_INFO_KEY], char value[MAX_INFO_VALUE] );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-void	QDECL Com_Error( int level, const char *error, ... );
+void	NORETURN QDECL Com_Error( int level, const char *error, ... );
 void	QDECL Com_Printf( const char *msg, ... );
 
 
@@ -1137,6 +451,9 @@ default values.
 #define CVAR_SERVER_CREATED	2048	// cvar was created by a server the client connected to.
 #define CVAR_VM_CREATED		4096	// cvar was created exclusively in one of the VMs.
 #define CVAR_PROTECTED		8192	// prevent modifying this var from VMs or the server
+#define CVAR_NODEFAULT		16384	// do not write to config if matching with default value
+
+#define CVAR_ARCHIVE_ND		(CVAR_ARCHIVE | CVAR_NODEFAULT)
 // These flags are only returned by the Cvar_Flags() function
 #define CVAR_MODIFIED		0x40000000		// Cvar was modified
 #define CVAR_NONEXISTENT	0x80000000		// Cvar doesn't exist.
@@ -1187,24 +504,6 @@ COLLISION DETECTION
 
 #include "../game/surfaceflags.h"			// shared with the q3map utility
 
-// plane types are used to speed some tests
-// 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
-#define	PLANE_NON_AXIAL	3
-
-
-// plane_t structure
-// !!! if this is changed, it must be changed in asm code too !!!
-typedef struct cplane_s {
-	vec3_t	normal;
-	float	dist;
-	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
-	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
-	byte	pad[2];
-} cplane_t;
-
 /*
 Ghoul2 Insert Start
 */
@@ -1235,6 +534,35 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int8_t>(allsolid);
+		saved_game.write<int8_t>(startsolid);
+		saved_game.write<float>(fraction);
+		saved_game.write<float>(endpos);
+		saved_game.write<>(plane);
+		saved_game.write<int8_t>(surfaceFlags);
+		saved_game.write<int8_t>(contents);
+		saved_game.write<int8_t>(entityNum);
+		saved_game.write<>(G2CollisionMap);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int8_t>(allsolid);
+		saved_game.read<int8_t>(startsolid);
+		saved_game.read<float>(fraction);
+		saved_game.read<float>(endpos);
+		saved_game.read<>(plane);
+		saved_game.read<int8_t>(surfaceFlags);
+		saved_game.read<int8_t>(contents);
+		saved_game.read<int8_t>(entityNum);
+		saved_game.read<>(G2CollisionMap);
+	}
 } trace_t;
 
 // trace->entityNum can also be 0 to (MAX_GENTITIES-1)
@@ -1301,14 +629,24 @@ typedef struct {
 
 
 #define	MAX_MODELS			256
+
+#ifdef JK2_MODE
+#define MAX_SOUNDS (256)
+#else
 #define	MAX_SOUNDS			380
+#endif // JK2_MODE
 
 #define MAX_SUB_BSP			32
 
 #define	MAX_SUBMODELS		512		// nine bits
 
 #define MAX_FX				128
+
+#ifdef JK2_MODE
+#define MAX_WORLD_FX (4)
+#else
 #define MAX_WORLD_FX		66		// was 16 // was 4
+#endif // JK2_MODE
 
 /*
 Ghoul2 Insert Start
@@ -1318,7 +656,11 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+#ifdef JK2_MODE
+#define MAX_CONFIGSTRINGS (1024)
+#else
 #define	MAX_CONFIGSTRINGS	1300//1024 //rww - I had to up this for terrains
+#endif // JK2_MODE
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication
@@ -1339,14 +681,36 @@ Ghoul2 Insert End
 
 #define	CS_MODELS			10
 
+#ifndef JK2_MODE
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
+#endif // !JK2_MODE
 
+#ifdef JK2_MODE
+#define CS_SOUNDS (CS_MODELS + MAX_MODELS)
+#else
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
+#endif // JK2_MODE
+
+#ifdef BASE_SAVE_COMPAT
+#define CS_RESERVED1		(CS_SOUNDS+MAX_SOUNDS) // reserved field for base compat from immersion removal
+#define	CS_PLAYERS			(CS_RESERVED1 + 96)
+#else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
+#endif
+
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
+
+#ifndef JK2_MODE
 #define CS_TERRAINS			(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS		(CS_TERRAINS + MAX_TERRAINS)
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+#define CS_EFFECTS (CS_LIGHT_STYLES + (MAX_LIGHT_STYLES * 3))
+#else
 #define CS_EFFECTS			(CS_BSP_MODELS + MAX_SUB_BSP)//(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
+#endif // JK2_MODE
+
 /*
 Ghoul2 Insert Start
 */
@@ -1355,7 +719,7 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 #define CS_DYNAMIC_MUSIC_STATE	(CS_CHARSKINS + MAX_CHARSKINS)
-#define CS_WORLD_FX				(CS_DYNAMIC_MUSIC_STATE + 1)	
+#define CS_WORLD_FX				(CS_DYNAMIC_MUSIC_STATE + 1)
 #define CS_MAX					(CS_WORLD_FX + MAX_WORLD_FX)
 
 #if (CS_MAX) > MAX_CONFIGSTRINGS
@@ -1383,12 +747,16 @@ typedef enum
 	FP_SABERTHROW,
 	FP_SABER_DEFENSE,
 	FP_SABER_OFFENSE,
+
+#ifndef JK2_MODE
 	//new Jedi Academy powers
 	FP_RAGE,//duration - speed, invincibility and extra damage for short period, drains your health and leaves you weak and slow afterwards.
 	FP_PROTECT,//duration - protect against physical/energy (level 1 stops blaster/energy bolts, level 2 stops projectiles, level 3 protects against explosions)
 	FP_ABSORB,//duration - protect against dark force powers (grip, lightning, drain - maybe push/pull, too?)
 	FP_DRAIN,//hold/duration - drain force power for health
 	FP_SEE,//duration - detect/see hidden enemies
+#endif // !JK2_MODE
+
 	NUM_FORCE_POWERS
 } forcePowers_t;
 
@@ -1421,8 +789,8 @@ typedef enum
 #define	MAX_PERSISTANT			16
 
 #define	MAX_POWERUPS			16
-#define	MAX_WEAPONS				32		
-#define MAX_AMMO				10		
+#define	MAX_WEAPONS				32
+#define MAX_AMMO				10
 #define MAX_INVENTORY			15		// See INV_MAX
 #define MAX_SECURITY_KEYS		5
 #define MAX_SECURITY_KEY_MESSSAGE		24
@@ -1447,7 +815,7 @@ typedef enum
 } waterHeightLevel_t;
 
 // !!!!!!! loadsave affecting struct !!!!!!!
-typedef struct 
+typedef struct
 {
 	// Actual trail stuff
 	int		inAction;	// controls whether should we even consider starting one
@@ -1458,10 +826,38 @@ typedef struct
 
 	// Marks stuff
 	qboolean	haveOldPos[2];
-	vec3_t		oldPos[2];		
+	vec3_t		oldPos[2];
 	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
 							//	..then we'll need the normal to project a mark blob onto the impact point
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(inAction);
+		saved_game.write<int32_t>(duration);
+		saved_game.write<int32_t>(lastTime);
+		saved_game.write<float>(base);
+		saved_game.write<float>(tip);
+		saved_game.write<int32_t>(haveOldPos);
+		saved_game.write<float>(oldPos);
+		saved_game.write<float>(oldNormal);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(inAction);
+		saved_game.read<int32_t>(duration);
+		saved_game.read<int32_t>(lastTime);
+		saved_game.read<float>(base);
+		saved_game.read<float>(tip);
+		saved_game.read<int32_t>(haveOldPos);
+		saved_game.read<float>(oldPos);
+		saved_game.read<float>(oldNormal);
+	}
 } saberTrail_t;
+
 #define MAX_SABER_TRAIL_SEGS 8
 
 // !!!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!
@@ -1488,7 +884,41 @@ typedef struct
 					trail.inAction = qfalse;
 					trail.duration = duration;
 				};
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(active);
+		saved_game.write<int32_t>(color);
+		saved_game.write<float>(radius);
+		saved_game.write<float>(length);
+		saved_game.write<float>(lengthMax);
+		saved_game.write<float>(lengthOld);
+		saved_game.write<float>(muzzlePoint);
+		saved_game.write<float>(muzzlePointOld);
+		saved_game.write<float>(muzzleDir);
+		saved_game.write<float>(muzzleDirOld);
+		saved_game.write<>(trail);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(active);
+		saved_game.read<int32_t>(color);
+		saved_game.read<float>(radius);
+		saved_game.read<float>(length);
+		saved_game.read<float>(lengthMax);
+		saved_game.read<float>(lengthOld);
+		saved_game.read<float>(muzzlePoint);
+		saved_game.read<float>(muzzlePointOld);
+		saved_game.read<float>(muzzleDir);
+		saved_game.read<float>(muzzleDirOld);
+		saved_game.read<>(trail);
+	}
 } bladeInfo_t;
+
 #define MAX_BLADES 8
 
 typedef enum
@@ -1595,10 +1025,10 @@ typedef struct
 	float		animSpeedScale;				//1.0 - plays normal attack animations faster/slower
 
 	//done in both cgame and game (BG code)
-	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack 
-	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack
+	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack
 	int	jumpAtkBackMove;		//LS_INVALID - if set, player will execute this move when they jump+back+attack
 	int	jumpAtkRightMove;		//LS_INVALID - if set, player will execute this move when they jump+rightattack
 	int	jumpAtkLeftMove;		//LS_INVALID - if set, player will execute this move when they jump+left+attack
@@ -1615,7 +1045,7 @@ typedef struct
 	int			bladeStyle2Start;			//0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
 
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
-	
+
 	//===PRIMARY BLADES=====================
 	//done in cgame (client-side code)
 	int			trailStyle;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1637,7 +1067,7 @@ typedef struct
 	float		splashRadius;				//0 - radius of splashDamage
 	int			splashDamage;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
 	float		splashKnockback;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
-	
+
 	//===SECONDARY BLADES===================
 	//done in cgame (client-side code)
 	int			trailStyle2;				//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1690,7 +1120,7 @@ typedef struct
 					blade[iBlade].active = bActive;
 				}
 
-	qboolean	Active() 
+	qboolean	Active()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1701,7 +1131,7 @@ typedef struct
 					}
 					return qfalse;
 				}
-	qboolean	ActiveManualOnly() 
+	qboolean	ActiveManualOnly()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1737,26 +1167,26 @@ typedef struct
 						blade[i].length = length;
 					}
 				}
-	float		Length() 
+	float		Length()
 				{//return largest length
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].length > len1 )
 						{
-							len1 = blade[i].length; 
+							len1 = blade[i].length;
 						}
 					}
 					return len1;
 				};
-	float		LengthMax() 
-				{ 
+	float		LengthMax()
+				{
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].lengthMax > len1 )
 						{
-							len1 = blade[i].lengthMax; 
+							len1 = blade[i].lengthMax;
 						}
 					}
 					return len1;
@@ -1775,11 +1205,175 @@ typedef struct
 						blade[i].DeactivateTrail( duration );
 					}
 				};
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(name);
+		saved_game.write<int32_t>(fullName);
+		saved_game.write<int32_t>(type);
+		saved_game.write<int32_t>(model);
+		saved_game.write<int32_t>(skin);
+		saved_game.write<int32_t>(soundOn);
+		saved_game.write<int32_t>(soundLoop);
+		saved_game.write<int32_t>(soundOff);
+		saved_game.write<int32_t>(numBlades);
+		saved_game.write<>(blade);
+		saved_game.write<int32_t>(stylesLearned);
+		saved_game.write<int32_t>(stylesForbidden);
+		saved_game.write<int32_t>(maxChain);
+		saved_game.write<int32_t>(forceRestrictions);
+		saved_game.write<int32_t>(lockBonus);
+		saved_game.write<int32_t>(parryBonus);
+		saved_game.write<int32_t>(breakParryBonus);
+		saved_game.write<int32_t>(breakParryBonus2);
+		saved_game.write<int32_t>(disarmBonus);
+		saved_game.write<int32_t>(disarmBonus2);
+		saved_game.write<int32_t>(singleBladeStyle);
+		saved_game.write<int32_t>(brokenSaber1);
+		saved_game.write<int32_t>(brokenSaber2);
+		saved_game.write<int32_t>(saberFlags);
+		saved_game.write<int32_t>(saberFlags2);
+		saved_game.write<int32_t>(spinSound);
+		saved_game.write<int32_t>(swingSound);
+		saved_game.write<int32_t>(fallSound);
+		saved_game.write<float>(moveSpeedScale);
+		saved_game.write<float>(animSpeedScale);
+		saved_game.write<int32_t>(kataMove);
+		saved_game.write<int32_t>(lungeAtkMove);
+		saved_game.write<int32_t>(jumpAtkUpMove);
+		saved_game.write<int32_t>(jumpAtkFwdMove);
+		saved_game.write<int32_t>(jumpAtkBackMove);
+		saved_game.write<int32_t>(jumpAtkRightMove);
+		saved_game.write<int32_t>(jumpAtkLeftMove);
+		saved_game.write<int32_t>(readyAnim);
+		saved_game.write<int32_t>(drawAnim);
+		saved_game.write<int32_t>(putawayAnim);
+		saved_game.write<int32_t>(tauntAnim);
+		saved_game.write<int32_t>(bowAnim);
+		saved_game.write<int32_t>(meditateAnim);
+		saved_game.write<int32_t>(flourishAnim);
+		saved_game.write<int32_t>(gloatAnim);
+		saved_game.write<int32_t>(bladeStyle2Start);
+		saved_game.write<int32_t>(trailStyle);
+		saved_game.write<int8_t>(g2MarksShader);
+		saved_game.write<int8_t>(g2WeaponMarkShader);
+		saved_game.write<int32_t>(hitSound);
+		saved_game.write<int32_t>(blockSound);
+		saved_game.write<int32_t>(bounceSound);
+		saved_game.write<int32_t>(blockEffect);
+		saved_game.write<int32_t>(hitPersonEffect);
+		saved_game.write<int32_t>(hitOtherEffect);
+		saved_game.write<int32_t>(bladeEffect);
+		saved_game.write<float>(knockbackScale);
+		saved_game.write<float>(damageScale);
+		saved_game.write<float>(splashRadius);
+		saved_game.write<int32_t>(splashDamage);
+		saved_game.write<float>(splashKnockback);
+		saved_game.write<int32_t>(trailStyle2);
+		saved_game.write<int8_t>(g2MarksShader2);
+		saved_game.write<int8_t>(g2WeaponMarkShader2);
+		saved_game.write<int32_t>(hit2Sound);
+		saved_game.write<int32_t>(block2Sound);
+		saved_game.write<int32_t>(bounce2Sound);
+		saved_game.write<int32_t>(blockEffect2);
+		saved_game.write<int32_t>(hitPersonEffect2);
+		saved_game.write<int32_t>(hitOtherEffect2);
+		saved_game.write<int32_t>(bladeEffect2);
+		saved_game.write<float>(knockbackScale2);
+		saved_game.write<float>(damageScale2);
+		saved_game.write<float>(splashRadius2);
+		saved_game.write<int32_t>(splashDamage2);
+		saved_game.write<float>(splashKnockback2);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(name);
+		saved_game.read<int32_t>(fullName);
+		saved_game.read<int32_t>(type);
+		saved_game.read<int32_t>(model);
+		saved_game.read<int32_t>(skin);
+		saved_game.read<int32_t>(soundOn);
+		saved_game.read<int32_t>(soundLoop);
+		saved_game.read<int32_t>(soundOff);
+		saved_game.read<int32_t>(numBlades);
+		saved_game.read<>(blade);
+		saved_game.read<int32_t>(stylesLearned);
+		saved_game.read<int32_t>(stylesForbidden);
+		saved_game.read<int32_t>(maxChain);
+		saved_game.read<int32_t>(forceRestrictions);
+		saved_game.read<int32_t>(lockBonus);
+		saved_game.read<int32_t>(parryBonus);
+		saved_game.read<int32_t>(breakParryBonus);
+		saved_game.read<int32_t>(breakParryBonus2);
+		saved_game.read<int32_t>(disarmBonus);
+		saved_game.read<int32_t>(disarmBonus2);
+		saved_game.read<int32_t>(singleBladeStyle);
+		saved_game.read<int32_t>(brokenSaber1);
+		saved_game.read<int32_t>(brokenSaber2);
+		saved_game.read<int32_t>(saberFlags);
+		saved_game.read<int32_t>(saberFlags2);
+		saved_game.read<int32_t>(spinSound);
+		saved_game.read<int32_t>(swingSound);
+		saved_game.read<int32_t>(fallSound);
+		saved_game.read<float>(moveSpeedScale);
+		saved_game.read<float>(animSpeedScale);
+		saved_game.read<int32_t>(kataMove);
+		saved_game.read<int32_t>(lungeAtkMove);
+		saved_game.read<int32_t>(jumpAtkUpMove);
+		saved_game.read<int32_t>(jumpAtkFwdMove);
+		saved_game.read<int32_t>(jumpAtkBackMove);
+		saved_game.read<int32_t>(jumpAtkRightMove);
+		saved_game.read<int32_t>(jumpAtkLeftMove);
+		saved_game.read<int32_t>(readyAnim);
+		saved_game.read<int32_t>(drawAnim);
+		saved_game.read<int32_t>(putawayAnim);
+		saved_game.read<int32_t>(tauntAnim);
+		saved_game.read<int32_t>(bowAnim);
+		saved_game.read<int32_t>(meditateAnim);
+		saved_game.read<int32_t>(flourishAnim);
+		saved_game.read<int32_t>(gloatAnim);
+		saved_game.read<int32_t>(bladeStyle2Start);
+		saved_game.read<int32_t>(trailStyle);
+		saved_game.read<int8_t>(g2MarksShader);
+		saved_game.read<int8_t>(g2WeaponMarkShader);
+		saved_game.read<int32_t>(hitSound);
+		saved_game.read<int32_t>(blockSound);
+		saved_game.read<int32_t>(bounceSound);
+		saved_game.read<int32_t>(blockEffect);
+		saved_game.read<int32_t>(hitPersonEffect);
+		saved_game.read<int32_t>(hitOtherEffect);
+		saved_game.read<int32_t>(bladeEffect);
+		saved_game.read<float>(knockbackScale);
+		saved_game.read<float>(damageScale);
+		saved_game.read<float>(splashRadius);
+		saved_game.read<int32_t>(splashDamage);
+		saved_game.read<float>(splashKnockback);
+		saved_game.read<int32_t>(trailStyle2);
+		saved_game.read<int8_t>(g2MarksShader2);
+		saved_game.read<int8_t>(g2WeaponMarkShader2);
+		saved_game.read<int32_t>(hit2Sound);
+		saved_game.read<int32_t>(block2Sound);
+		saved_game.read<int32_t>(bounce2Sound);
+		saved_game.read<int32_t>(blockEffect2);
+		saved_game.read<int32_t>(hitPersonEffect2);
+		saved_game.read<int32_t>(hitOtherEffect2);
+		saved_game.read<int32_t>(bladeEffect2);
+		saved_game.read<float>(knockbackScale2);
+		saved_game.read<float>(damageScale2);
+		saved_game.read<float>(splashRadius2);
+		saved_game.read<int32_t>(splashDamage2);
+		saved_game.read<float>(splashKnockback2);
+	}
 } saberInfo_t;
 
 //NOTE: Below is the *retail* version of the saberInfo_t structure - it is ONLY used for loading retail-version savegames (we load the savegame into this smaller structure, then copy each field into the appropriate field in the new structure - see SG_ConvertRetailSaberinfoToNewSaberinfo()
-typedef struct
+class saberInfoRetail_t
 {
+public:
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -1837,7 +1431,7 @@ typedef struct
 					blade[iBlade].active = bActive;
 				}
 
-	qboolean	Active() 
+	qboolean	Active()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1855,26 +1449,26 @@ typedef struct
 						blade[i].length = length;
 					}
 				}
-	float		Length() 
+	float		Length()
 				{//return largest length
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].length > len1 )
 						{
-							len1 = blade[i].length; 
+							len1 = blade[i].length;
 						}
 					}
 					return len1;
 				};
-	float		LengthMax() 
-				{ 
+	float		LengthMax()
+				{
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].lengthMax > len1 )
 						{
-							len1 = blade[i].lengthMax; 
+							len1 = blade[i].lengthMax;
 						}
 					}
 					return len1;
@@ -1893,7 +1487,75 @@ typedef struct
 						blade[i].DeactivateTrail( duration );
 					}
 				};
-} saberInfoRetail_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(name);
+		saved_game.write<int32_t>(fullName);
+		saved_game.write<int32_t>(type);
+		saved_game.write<int32_t>(model);
+		saved_game.write<int32_t>(skin);
+		saved_game.write<int32_t>(soundOn);
+		saved_game.write<int32_t>(soundLoop);
+		saved_game.write<int32_t>(soundOff);
+		saved_game.write<int32_t>(numBlades);
+		saved_game.write<>(blade);
+		saved_game.write<int32_t>(style);
+		saved_game.write<int32_t>(maxChain);
+		saved_game.write<int32_t>(lockable);
+		saved_game.write<int32_t>(throwable);
+		saved_game.write<int32_t>(disarmable);
+		saved_game.write<int32_t>(activeBlocking);
+		saved_game.write<int32_t>(twoHanded);
+		saved_game.write<int32_t>(forceRestrictions);
+		saved_game.write<int32_t>(lockBonus);
+		saved_game.write<int32_t>(parryBonus);
+		saved_game.write<int32_t>(breakParryBonus);
+		saved_game.write<int32_t>(disarmBonus);
+		saved_game.write<int32_t>(singleBladeStyle);
+		saved_game.write<int32_t>(singleBladeThrowable);
+		saved_game.write<int32_t>(brokenSaber1);
+		saved_game.write<int32_t>(brokenSaber2);
+		saved_game.write<int32_t>(returnDamage);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(name);
+		saved_game.read<int32_t>(fullName);
+		saved_game.read<int32_t>(type);
+		saved_game.read<int32_t>(model);
+		saved_game.read<int32_t>(skin);
+		saved_game.read<int32_t>(soundOn);
+		saved_game.read<int32_t>(soundLoop);
+		saved_game.read<int32_t>(soundOff);
+		saved_game.read<int32_t>(numBlades);
+		saved_game.read<>(blade);
+		saved_game.read<int32_t>(style);
+		saved_game.read<int32_t>(maxChain);
+		saved_game.read<int32_t>(lockable);
+		saved_game.read<int32_t>(throwable);
+		saved_game.read<int32_t>(disarmable);
+		saved_game.read<int32_t>(activeBlocking);
+		saved_game.read<int32_t>(twoHanded);
+		saved_game.read<int32_t>(forceRestrictions);
+		saved_game.read<int32_t>(lockBonus);
+		saved_game.read<int32_t>(parryBonus);
+		saved_game.read<int32_t>(breakParryBonus);
+		saved_game.read<int32_t>(disarmBonus);
+		saved_game.read<int32_t>(singleBladeStyle);
+		saved_game.read<int32_t>(singleBladeThrowable);
+		saved_game.read<int32_t>(brokenSaber1);
+		saved_game.read<int32_t>(brokenSaber2);
+		saved_game.read<int32_t>(returnDamage);
+	}
+
+	void sg_export(
+		saberInfo_t& dst) const;
+}; // saberInfoRetail_t
 
 #define MAX_SABERS 2	// if this ever changes then update the table "static const save_field_t savefields_gClient[]"!!!!!!!!!!!!
 
@@ -1908,7 +1570,10 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct playerState_s {
+template<typename TSaberInfo>
+class PlayerStateBase
+{
+public:
 	int			commandTime;		// cmd->serverTime of last executed command
 	int			pm_type;
 	int			bobCycle;			// for view bobbing and footstep generation
@@ -1921,16 +1586,16 @@ typedef struct playerState_s {
 	int			weaponChargeTime;
 	int			rechargeTime;		// for the phaser
 	int			gravity;
-	int			leanofs;			
+	int			leanofs;
 	int			friction;
 	int			speed;
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 
 	int			groundEntityNum;// ENTITYNUM_NONE = in air
-	int			legsAnim;		// 
+	int			legsAnim;		//
 	int			legsAnimTimer;	// don't change low priority animations on legs until this runs out
-	int			torsoAnim;		// 
+	int			torsoAnim;		//
 	int			torsoAnimTimer;	// don't change low priority animations on torso until this runs out
 	int			movementDir;	// a number 0 to 7 that represents the relative angle
 								// of movement to the view angle (axial and diagonals)
@@ -1968,12 +1633,12 @@ typedef struct playerState_s {
 	int			powerups[MAX_POWERUPS];					// level.time that the powerup runs out
 	int			ammo[MAX_AMMO];
 	int			inventory[MAX_INVENTORY];							// Count of each inventory item.
-	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types 
+	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types
 
 	vec3_t		serverViewOrg;
 
 	qboolean	saberInFlight;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	qboolean	saberActive;	// -- JK2 --
 
 	int			vehicleModel;	// -- JK2 --
@@ -2008,12 +1673,13 @@ typedef struct playerState_s {
 	int			lastStationary;	//last time you were on the ground
 	int			weaponShotCount;
 
-	//FIXME: maybe allocate all these structures (saber, force powers, vehicles) 
+#ifndef JK2_MODE
+	//FIXME: maybe allocate all these structures (saber, force powers, vehicles)
 	//			or descend them as classes - so not every client has all this info
-	saberInfo_t	saber[MAX_SABERS];
+	TSaberInfo	saber[MAX_SABERS];
 	qboolean	dualSabers;
-	qboolean	SaberStaff( void ) { return ( saber[0].type == SABER_STAFF || (dualSabers && saber[1].type == SABER_STAFF) ); };
-	qboolean	SaberActive() { return ( saber[0].Active() || (dualSabers&&saber[1].Active()) ); };
+	qboolean	SaberStaff( void ) { return (qboolean)( saber[0].type == SABER_STAFF || (dualSabers && saber[1].type == SABER_STAFF) ); };
+	qboolean	SaberActive() { return (qboolean)( saber[0].Active() || (dualSabers&&saber[1].Active()) ); };
 	void		SetSaberLength( float length )
 				{
 					saber[0].SetLength( length );
@@ -2022,24 +1688,24 @@ typedef struct playerState_s {
 						saber[1].SetLength( length );
 					}
 				}
-	float		SaberLength() 
+	float		SaberLength()
 				{//return largest length
 					float len1 = saber[0].Length();
 					if ( dualSabers && saber[1].Length() > len1 )
 					{
-						return saber[1].Length(); 
+						return saber[1].Length();
 					}
 					return len1;
 				};
-	float		SaberLengthMax() 
-				{ 
+	float		SaberLengthMax()
+				{
 					if ( saber[0].LengthMax() > saber[1].LengthMax() )
 					{
 						return saber[0].LengthMax();
 					}
 					else if ( dualSabers )
 					{
-						return saber[1].LengthMax(); 
+						return saber[1].LengthMax();
 					}
 					return 0.0f;
 				};
@@ -2068,9 +1734,9 @@ typedef struct playerState_s {
 						saber[1].Activate();
 					}
 				}
-	void		SaberDeactivate( void ) 
-				{ 
-					saber[0].Deactivate(); 
+	void		SaberDeactivate( void )
+				{
+					saber[0].Deactivate();
 					saber[1].Deactivate();
 				};
 	void		SaberActivateTrail ( float duration )
@@ -2131,15 +1797,20 @@ typedef struct playerState_s {
 					}
 					return parryBonus;
 				};
+#endif // !JK2_MODE
 
 	short		saberMove;
+
+#ifndef JK2_MODE
 	short		saberMoveNext;
+#endif // !JK2_MODE
+
 	short		saberBounceMove;
 	short		saberBlocking;
 	short		saberBlocked;
 	short		leanStopDebounceTime;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	float		saberLengthOld;
 #endif
 	int			saberEntityNum;
@@ -2154,8 +1825,12 @@ typedef struct playerState_s {
 	int			saberAttackChainCount;
 	int			saberLockTime;
 	int			saberLockEnemy;
+
+#ifndef JK2_MODE
 	int			saberStylesKnown;
-#ifndef __NO_JK2
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
 	char		*saberModel;
 #endif
 
@@ -2165,17 +1840,26 @@ typedef struct playerState_s {
 	int			forcePower;
 	int			forcePowerMax;
 	int			forcePowerRegenDebounceTime;
+
+#ifndef JK2_MODE
 	int			forcePowerRegenRate;				//default is 100ms
 	int			forcePowerRegenAmount;				//default is 1
+#endif // !JK2_MODE
+
 	int			forcePowerLevel[NUM_FORCE_POWERS];		//so we know the max forceJump power you have
 	float		forceJumpZStart;					//So when you land, you don't get hurt as much
 	float		forceJumpCharge;					//you're current forceJump charge-up level, increases the longer you hold the force jump button down
 	int			forceGripEntityNum;					//what entity I'm gripping
 	vec3_t		forceGripOrg;						//where the gripped ent should be lifted to
+
+#ifndef JK2_MODE
 	int			forceDrainEntityNum;				//what entity I'm draining
 	vec3_t		forceDrainOrg;						//where the drained ent should be lifted to
+#endif // !JK2_MODE
+
 	int			forceHealCount;						//how many points of force heal have been applied so far
-	
+
+#ifndef JK2_MODE
 	//new Jedi Academy force powers
 	int			forceAllowDeactivateTime;
 	int			forceRageDrainTime;
@@ -2186,6 +1870,7 @@ typedef struct playerState_s {
 	int			pullAttackEntNum;
 	int			pullAttackTime;
 	int			lastKickedEntNum;
+#endif // !JK2_MODE
 
 	int			taunting;							//replaced BUTTON_GESTURE
 
@@ -2195,6 +1880,7 @@ typedef struct playerState_s {
 	float		waterheight;						//exactly what the z org of the water is (will be +4 above if under water, -4 below if not in water)
 	waterHeightLevel_t	waterHeightLevel;					//how high it really is
 
+#ifndef JK2_MODE
 	//testing IK grabbing
 	qboolean	ikStatus;		//for IK
 	int			heldClient;		//for IK, who I'm grabbing, if anyone
@@ -2209,9 +1895,350 @@ typedef struct playerState_s {
 	//NOTE: not really used in SP, just for Fighter Vehicle damage stuff
 	int			brokenLimbs;
 	int			electrifyTime;
-} playerState_t;
+#endif // !JK2_MODE
 
 
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(commandTime);
+		saved_game.write<int32_t>(pm_type);
+		saved_game.write<int32_t>(bobCycle);
+		saved_game.write<int32_t>(pm_flags);
+		saved_game.write<int32_t>(pm_time);
+		saved_game.write<float>(origin);
+		saved_game.write<float>(velocity);
+		saved_game.write<int32_t>(weaponTime);
+		saved_game.write<int32_t>(weaponChargeTime);
+		saved_game.write<int32_t>(rechargeTime);
+		saved_game.write<int32_t>(gravity);
+		saved_game.write<int32_t>(leanofs);
+		saved_game.write<int32_t>(friction);
+		saved_game.write<int32_t>(speed);
+		saved_game.write<int32_t>(delta_angles);
+		saved_game.write<int32_t>(groundEntityNum);
+		saved_game.write<int32_t>(legsAnim);
+		saved_game.write<int32_t>(legsAnimTimer);
+		saved_game.write<int32_t>(torsoAnim);
+		saved_game.write<int32_t>(torsoAnimTimer);
+		saved_game.write<int32_t>(movementDir);
+		saved_game.write<int32_t>(eFlags);
+		saved_game.write<int32_t>(eventSequence);
+		saved_game.write<int32_t>(events);
+		saved_game.write<int32_t>(eventParms);
+		saved_game.write<int32_t>(externalEvent);
+		saved_game.write<int32_t>(externalEventParm);
+		saved_game.write<int32_t>(externalEventTime);
+		saved_game.write<int32_t>(clientNum);
+		saved_game.write<int32_t>(weapon);
+		saved_game.write<int32_t>(weaponstate);
+		saved_game.write<int32_t>(batteryCharge);
+		saved_game.write<float>(viewangles);
+		saved_game.write<float>(legsYaw);
+		saved_game.write<int32_t>(viewheight);
+		saved_game.write<int32_t>(damageEvent);
+		saved_game.write<int32_t>(damageYaw);
+		saved_game.write<int32_t>(damagePitch);
+		saved_game.write<int32_t>(damageCount);
+		saved_game.write<int32_t>(stats);
+		saved_game.write<int32_t>(persistant);
+		saved_game.write<int32_t>(powerups);
+		saved_game.write<int32_t>(ammo);
+		saved_game.write<int32_t>(inventory);
+		saved_game.write<int8_t>(security_key_message);
+		saved_game.write<float>(serverViewOrg);
+		saved_game.write<int32_t>(saberInFlight);
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(saberActive);
+		saved_game.write<int32_t>(vehicleModel);
+		saved_game.write<int32_t>(viewEntity);
+		saved_game.write<int32_t>(saberColor);
+		saved_game.write<float>(saberLength);
+		saved_game.write<float>(saberLengthMax);
+		saved_game.write<int32_t>(forcePowersActive);
+#else
+		saved_game.write<int32_t>(viewEntity);
+		saved_game.write<int32_t>(forcePowersActive);
+#endif // JK2_MODE
+
+		saved_game.write<int32_t>(useTime);
+		saved_game.write<int32_t>(lastShotTime);
+		saved_game.write<int32_t>(ping);
+		saved_game.write<int32_t>(lastOnGround);
+		saved_game.write<int32_t>(lastStationary);
+		saved_game.write<int32_t>(weaponShotCount);
+
+#ifndef JK2_MODE
+		saved_game.write<>(saber);
+		saved_game.write<int32_t>(dualSabers);
+#endif // !JK2_MODE
+
+		saved_game.write<int16_t>(saberMove);
+
+#ifndef JK2_MODE
+		saved_game.write<int16_t>(saberMoveNext);
+#endif // !JK2_MODE
+
+		saved_game.write<int16_t>(saberBounceMove);
+		saved_game.write<int16_t>(saberBlocking);
+		saved_game.write<int16_t>(saberBlocked);
+		saved_game.write<int16_t>(leanStopDebounceTime);
+
+#ifdef JK2_MODE
+		saved_game.skip(2);
+		saved_game.write<float>(saberLengthOld);
+#endif // JK2_MODE
+
+		saved_game.write<int32_t>(saberEntityNum);
+		saved_game.write<float>(saberEntityDist);
+		saved_game.write<int32_t>(saberThrowTime);
+		saved_game.write<int32_t>(saberEntityState);
+		saved_game.write<int32_t>(saberDamageDebounceTime);
+		saved_game.write<int32_t>(saberHitWallSoundDebounceTime);
+		saved_game.write<int32_t>(saberEventFlags);
+		saved_game.write<int32_t>(saberBlockingTime);
+		saved_game.write<int32_t>(saberAnimLevel);
+		saved_game.write<int32_t>(saberAttackChainCount);
+		saved_game.write<int32_t>(saberLockTime);
+		saved_game.write<int32_t>(saberLockEnemy);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(saberStylesKnown);
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(saberModel);
+#endif // JK2_MODE
+
+		saved_game.write<int32_t>(forcePowersKnown);
+		saved_game.write<int32_t>(forcePowerDuration);
+		saved_game.write<int32_t>(forcePowerDebounce);
+		saved_game.write<int32_t>(forcePower);
+		saved_game.write<int32_t>(forcePowerMax);
+		saved_game.write<int32_t>(forcePowerRegenDebounceTime);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(forcePowerRegenRate);
+		saved_game.write<int32_t>(forcePowerRegenAmount);
+#endif // !JK2_MODE
+
+		saved_game.write<int32_t>(forcePowerLevel);
+		saved_game.write<float>(forceJumpZStart);
+		saved_game.write<float>(forceJumpCharge);
+		saved_game.write<int32_t>(forceGripEntityNum);
+		saved_game.write<float>(forceGripOrg);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(forceDrainEntityNum);
+		saved_game.write<float>(forceDrainOrg);
+#endif // !JK2_MODE
+
+		saved_game.write<int32_t>(forceHealCount);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(forceAllowDeactivateTime);
+		saved_game.write<int32_t>(forceRageDrainTime);
+		saved_game.write<int32_t>(forceRageRecoveryTime);
+		saved_game.write<int32_t>(forceDrainEntNum);
+		saved_game.write<float>(forceDrainTime);
+		saved_game.write<int32_t>(forcePowersForced);
+		saved_game.write<int32_t>(pullAttackEntNum);
+		saved_game.write<int32_t>(pullAttackTime);
+		saved_game.write<int32_t>(lastKickedEntNum);
+#endif // !JK2_MODE
+
+		saved_game.write<int32_t>(taunting);
+		saved_game.write<float>(jumpZStart);
+		saved_game.write<float>(moveDir);
+		saved_game.write<float>(waterheight);
+		saved_game.write<int32_t>(waterHeightLevel);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(ikStatus);
+		saved_game.write<int32_t>(heldClient);
+		saved_game.write<int32_t>(heldByClient);
+		saved_game.write<int32_t>(heldByBolt);
+		saved_game.write<int32_t>(heldByBone);
+		saved_game.write<int32_t>(vehTurnaroundIndex);
+		saved_game.write<int32_t>(vehTurnaroundTime);
+		saved_game.write<int32_t>(brokenLimbs);
+		saved_game.write<int32_t>(electrifyTime);
+#endif // !JK2_MODE
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(commandTime);
+		saved_game.read<int32_t>(pm_type);
+		saved_game.read<int32_t>(bobCycle);
+		saved_game.read<int32_t>(pm_flags);
+		saved_game.read<int32_t>(pm_time);
+		saved_game.read<float>(origin);
+		saved_game.read<float>(velocity);
+		saved_game.read<int32_t>(weaponTime);
+		saved_game.read<int32_t>(weaponChargeTime);
+		saved_game.read<int32_t>(rechargeTime);
+		saved_game.read<int32_t>(gravity);
+		saved_game.read<int32_t>(leanofs);
+		saved_game.read<int32_t>(friction);
+		saved_game.read<int32_t>(speed);
+		saved_game.read<int32_t>(delta_angles);
+		saved_game.read<int32_t>(groundEntityNum);
+		saved_game.read<int32_t>(legsAnim);
+		saved_game.read<int32_t>(legsAnimTimer);
+		saved_game.read<int32_t>(torsoAnim);
+		saved_game.read<int32_t>(torsoAnimTimer);
+		saved_game.read<int32_t>(movementDir);
+		saved_game.read<int32_t>(eFlags);
+		saved_game.read<int32_t>(eventSequence);
+		saved_game.read<int32_t>(events);
+		saved_game.read<int32_t>(eventParms);
+		saved_game.read<int32_t>(externalEvent);
+		saved_game.read<int32_t>(externalEventParm);
+		saved_game.read<int32_t>(externalEventTime);
+		saved_game.read<int32_t>(clientNum);
+		saved_game.read<int32_t>(weapon);
+		saved_game.read<int32_t>(weaponstate);
+		saved_game.read<int32_t>(batteryCharge);
+		saved_game.read<float>(viewangles);
+		saved_game.read<float>(legsYaw);
+		saved_game.read<int32_t>(viewheight);
+		saved_game.read<int32_t>(damageEvent);
+		saved_game.read<int32_t>(damageYaw);
+		saved_game.read<int32_t>(damagePitch);
+		saved_game.read<int32_t>(damageCount);
+		saved_game.read<int32_t>(stats);
+		saved_game.read<int32_t>(persistant);
+		saved_game.read<int32_t>(powerups);
+		saved_game.read<int32_t>(ammo);
+		saved_game.read<int32_t>(inventory);
+		saved_game.read<int8_t>(security_key_message);
+		saved_game.read<float>(serverViewOrg);
+		saved_game.read<int32_t>(saberInFlight);
+
+#ifdef JK2_MODE
+		saved_game.read<int32_t>(saberActive);
+		saved_game.read<int32_t>(vehicleModel);
+		saved_game.read<int32_t>(viewEntity);
+		saved_game.read<int32_t>(saberColor);
+		saved_game.read<float>(saberLength);
+		saved_game.read<float>(saberLengthMax);
+		saved_game.read<int32_t>(forcePowersActive);
+#else
+		saved_game.read<int32_t>(viewEntity);
+		saved_game.read<int32_t>(forcePowersActive);
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(useTime);
+		saved_game.read<int32_t>(lastShotTime);
+		saved_game.read<int32_t>(ping);
+		saved_game.read<int32_t>(lastOnGround);
+		saved_game.read<int32_t>(lastStationary);
+		saved_game.read<int32_t>(weaponShotCount);
+
+#ifndef JK2_MODE
+		saved_game.read<>(saber);
+		saved_game.read<int32_t>(dualSabers);
+#endif // !JK2_MODE
+
+		saved_game.read<int16_t>(saberMove);
+
+#ifndef JK2_MODE
+		saved_game.read<int16_t>(saberMoveNext);
+#endif // !JK2_MODE
+
+		saved_game.read<int16_t>(saberBounceMove);
+		saved_game.read<int16_t>(saberBlocking);
+		saved_game.read<int16_t>(saberBlocked);
+		saved_game.read<int16_t>(leanStopDebounceTime);
+
+#ifdef JK2_MODE
+		saved_game.skip(2);
+		saved_game.read<float>(saberLengthOld);
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(saberEntityNum);
+		saved_game.read<float>(saberEntityDist);
+		saved_game.read<int32_t>(saberThrowTime);
+		saved_game.read<int32_t>(saberEntityState);
+		saved_game.read<int32_t>(saberDamageDebounceTime);
+		saved_game.read<int32_t>(saberHitWallSoundDebounceTime);
+		saved_game.read<int32_t>(saberEventFlags);
+		saved_game.read<int32_t>(saberBlockingTime);
+		saved_game.read<int32_t>(saberAnimLevel);
+		saved_game.read<int32_t>(saberAttackChainCount);
+		saved_game.read<int32_t>(saberLockTime);
+		saved_game.read<int32_t>(saberLockEnemy);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(saberStylesKnown);
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+		saved_game.read<int32_t>(saberModel);
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(forcePowersKnown);
+		saved_game.read<int32_t>(forcePowerDuration);
+		saved_game.read<int32_t>(forcePowerDebounce);
+		saved_game.read<int32_t>(forcePower);
+		saved_game.read<int32_t>(forcePowerMax);
+		saved_game.read<int32_t>(forcePowerRegenDebounceTime);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(forcePowerRegenRate);
+		saved_game.read<int32_t>(forcePowerRegenAmount);
+#endif // !JK2_MODE
+
+		saved_game.read<int32_t>(forcePowerLevel);
+		saved_game.read<float>(forceJumpZStart);
+		saved_game.read<float>(forceJumpCharge);
+		saved_game.read<int32_t>(forceGripEntityNum);
+		saved_game.read<float>(forceGripOrg);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(forceDrainEntityNum);
+		saved_game.read<float>(forceDrainOrg);
+#endif // !JK2_MODE
+
+		saved_game.read<int32_t>(forceHealCount);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(forceAllowDeactivateTime);
+		saved_game.read<int32_t>(forceRageDrainTime);
+		saved_game.read<int32_t>(forceRageRecoveryTime);
+		saved_game.read<int32_t>(forceDrainEntNum);
+		saved_game.read<float>(forceDrainTime);
+		saved_game.read<int32_t>(forcePowersForced);
+		saved_game.read<int32_t>(pullAttackEntNum);
+		saved_game.read<int32_t>(pullAttackTime);
+		saved_game.read<int32_t>(lastKickedEntNum);
+#endif // !JK2_MODE
+
+		saved_game.read<int32_t>(taunting);
+		saved_game.read<float>(jumpZStart);
+		saved_game.read<float>(moveDir);
+		saved_game.read<float>(waterheight);
+		saved_game.read<int32_t>(waterHeightLevel);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(ikStatus);
+		saved_game.read<int32_t>(heldClient);
+		saved_game.read<int32_t>(heldByClient);
+		saved_game.read<int32_t>(heldByBolt);
+		saved_game.read<int32_t>(heldByBone);
+		saved_game.read<int32_t>(vehTurnaroundIndex);
+		saved_game.read<int32_t>(vehTurnaroundTime);
+		saved_game.read<int32_t>(brokenLimbs);
+		saved_game.read<int32_t>(electrifyTime);
+#endif // !JK2_MODE
+	}
+}; // PlayerStateBase
+
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 //====================================================================
 
 
@@ -2227,9 +2254,9 @@ typedef struct playerState_s {
 #define	BUTTON_VEH_SPEED	8			// used for some horrible vehicle hack... :)
 #define	BUTTON_WALKING		16			// walking can't just be infered from MOVE_RUN because a key pressed late in the frame will
 										// only generate a small move value for that frame walking will use different animations and
-										// won't generate footsteps 
+										// won't generate footsteps
 #define	BUTTON_USE			32			// the ol' use key returns!
-#define BUTTON_FORCEGRIP	64			// 
+#define BUTTON_FORCEGRIP	64			//
 #define BUTTON_ALT_ATTACK	128
 
 #define	BUTTON_FORCE_FOCUS	256			// any key whatsoever
@@ -2264,6 +2291,35 @@ typedef struct usercmd_s {
 	int		angles[3];
 	byte	generic_cmd;
 	signed char	forwardmove, rightmove, upmove;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(serverTime);
+		saved_game.write<int32_t>(buttons);
+		saved_game.write<uint8_t>(weapon);
+		saved_game.skip(3);
+		saved_game.write<int32_t>(angles);
+		saved_game.write<uint8_t>(generic_cmd);
+		saved_game.write<int8_t>(forwardmove);
+		saved_game.write<int8_t>(rightmove);
+		saved_game.write<int8_t>(upmove);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(serverTime);
+		saved_game.read<int32_t>(buttons);
+		saved_game.read<uint8_t>(weapon);
+		saved_game.skip(3);
+		saved_game.read<int32_t>(angles);
+		saved_game.read<uint8_t>(generic_cmd);
+		saved_game.read<int8_t>(forwardmove);
+		saved_game.read<int8_t>(rightmove);
+		saved_game.read<int8_t>(upmove);
+	}
 } usercmd_t;
 
 //===================================================================
@@ -2287,6 +2343,27 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 	int		trDuration;			// if non 0, trTime + trDuration = stop time
 	vec3_t	trBase;
 	vec3_t	trDelta;			// velocity, etc
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(trType);
+		saved_game.write<int32_t>(trTime);
+		saved_game.write<int32_t>(trDuration);
+		saved_game.write<float>(trBase);
+		saved_game.write<float>(trDelta);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(trType);
+		saved_game.read<int32_t>(trTime);
+		saved_game.read<int32_t>(trDuration);
+		saved_game.read<float>(trBase);
+		saved_game.read<float>(trDelta);
+	}
 } trajectory_t;
 
 
@@ -2336,9 +2413,9 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	// for players
 	int		powerups;		// bit flags
 	int		weapon;			// determines weapon and flash model, etc
-	int		legsAnim;		// 
+	int		legsAnim;		//
 	int		legsAnimTimer;	// don't change low priority animations on legs until this runs out
-	int		torsoAnim;		// 
+	int		torsoAnim;		//
 	int		torsoAnimTimer;	// don't change low priority animations on torso until this runs out
 
 	int		scale;			//Scale players
@@ -2347,15 +2424,17 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	qboolean	saberInFlight;
 	qboolean	saberActive;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	int		vehicleModel;	// For overriding your playermodel with a drivable vehicle
 #endif
 
+#ifndef JK2_MODE
 	//int		vehicleIndex;		// What kind of vehicle you're driving
-	vec3_t	vehicleAngles;		// 
+	vec3_t	vehicleAngles;		//
 	int		vehicleArmor;		// current armor of your vehicle (explodes if drops to 0)
 	// 0 if not in a vehicle, otherwise the client number.
 	int m_iVehicleNum;
+#endif // !JK2_MODE
 
 /*
 Ghoul2 Insert Start
@@ -2367,9 +2446,124 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+#ifndef JK2_MODE
 	qboolean	isPortalEnt;
+#endif // !JK2_MODE
 
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(number);
+		saved_game.write<int32_t>(eType);
+		saved_game.write<int32_t>(eFlags);
+		saved_game.write<>(pos);
+		saved_game.write<>(apos);
+		saved_game.write<int32_t>(time);
+		saved_game.write<int32_t>(time2);
+		saved_game.write<float>(origin);
+		saved_game.write<float>(origin2);
+		saved_game.write<float>(angles);
+		saved_game.write<float>(angles2);
+		saved_game.write<int32_t>(otherEntityNum);
+		saved_game.write<int32_t>(otherEntityNum2);
+		saved_game.write<int32_t>(groundEntityNum);
+		saved_game.write<int32_t>(constantLight);
+		saved_game.write<int32_t>(loopSound);
+		saved_game.write<int32_t>(modelindex);
+		saved_game.write<int32_t>(modelindex2);
+		saved_game.write<int32_t>(modelindex3);
+		saved_game.write<int32_t>(clientNum);
+		saved_game.write<int32_t>(frame);
+		saved_game.write<int32_t>(solid);
+		saved_game.write<int32_t>(event);
+		saved_game.write<int32_t>(eventParm);
+		saved_game.write<int32_t>(powerups);
+		saved_game.write<int32_t>(weapon);
+		saved_game.write<int32_t>(legsAnim);
+		saved_game.write<int32_t>(legsAnimTimer);
+		saved_game.write<int32_t>(torsoAnim);
+		saved_game.write<int32_t>(torsoAnimTimer);
+		saved_game.write<int32_t>(scale);
+		saved_game.write<int32_t>(saberInFlight);
+		saved_game.write<int32_t>(saberActive);
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(vehicleModel);
+#endif // JK2_MODE
+
+#ifndef JK2_MODE
+		saved_game.write<float>(vehicleAngles);
+		saved_game.write<int32_t>(vehicleArmor);
+		saved_game.write<int32_t>(m_iVehicleNum);
+#endif // !JK2_MODE
+
+		saved_game.write<float>(modelScale);
+		saved_game.write<int32_t>(radius);
+		saved_game.write<int32_t>(boltInfo);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(isPortalEnt);
+#endif // !JK2_MODE
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(number);
+		saved_game.read<int32_t>(eType);
+		saved_game.read<int32_t>(eFlags);
+		saved_game.read<>(pos);
+		saved_game.read<>(apos);
+		saved_game.read<int32_t>(time);
+		saved_game.read<int32_t>(time2);
+		saved_game.read<float>(origin);
+		saved_game.read<float>(origin2);
+		saved_game.read<float>(angles);
+		saved_game.read<float>(angles2);
+		saved_game.read<int32_t>(otherEntityNum);
+		saved_game.read<int32_t>(otherEntityNum2);
+		saved_game.read<int32_t>(groundEntityNum);
+		saved_game.read<int32_t>(constantLight);
+		saved_game.read<int32_t>(loopSound);
+		saved_game.read<int32_t>(modelindex);
+		saved_game.read<int32_t>(modelindex2);
+		saved_game.read<int32_t>(modelindex3);
+		saved_game.read<int32_t>(clientNum);
+		saved_game.read<int32_t>(frame);
+		saved_game.read<int32_t>(solid);
+		saved_game.read<int32_t>(event);
+		saved_game.read<int32_t>(eventParm);
+		saved_game.read<int32_t>(powerups);
+		saved_game.read<int32_t>(weapon);
+		saved_game.read<int32_t>(legsAnim);
+		saved_game.read<int32_t>(legsAnimTimer);
+		saved_game.read<int32_t>(torsoAnim);
+		saved_game.read<int32_t>(torsoAnimTimer);
+		saved_game.read<int32_t>(scale);
+		saved_game.read<int32_t>(saberInFlight);
+		saved_game.read<int32_t>(saberActive);
+
+#ifdef JK2_MODE
+		saved_game.read<int32_t>(vehicleModel);
+#endif // JK2_MODE
+
+#ifndef JK2_MODE
+		saved_game.read<float>(vehicleAngles);
+		saved_game.read<int32_t>(vehicleArmor);
+		saved_game.read<int32_t>(m_iVehicleNum);
+#endif // !JK2_MODE
+
+		saved_game.read<float>(modelScale);
+		saved_game.read<int32_t>(radius);
+		saved_game.read<int32_t>(boltInfo);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(isPortalEnt);
+#endif // !JK2_MODE
+	}
 } entityState_t;
+
 
 typedef enum {
 	CA_UNINITIALIZED,
@@ -2496,7 +2690,7 @@ Ghoul2 Insert Start
 
 enum Eorientations
 {
-	ORIGIN = 0, 
+	ORIGIN = 0,
 	POSITIVE_X,
 	POSITIVE_Z,
 	POSITIVE_Y,
@@ -2513,6 +2707,7 @@ typedef struct parseData_s
 {
 	char	fileName[MAX_QPATH];			// Name of current file being read in
 	int		com_lines;						// Number of lines read in
+	int		com_tokenline;
 	const char	*bufferStart;					// Start address of buffer holding data that was read in
 	const char	*bufferCurrent;					// Where data is currently being parsed from buffer
 } parseData_t;
@@ -2554,7 +2749,13 @@ typedef enum
 
 } ForceReload_e;
 
+qboolean Q_InBitflags( const uint32_t *bits, int index, uint32_t bitsPerByte );
+void Q_AddToBitflags( uint32_t *bits, int index, uint32_t bitsPerByte );
+void Q_RemoveFromBitflags( uint32_t *bits, int index, uint32_t bitsPerByte );
 
-#include "../game/genericparser2.h"
+typedef int( *cmpFunc_t )(const void *a, const void *b);
+
+void *Q_LinearSearch( const void *key, const void *ptr, size_t count,
+	size_t size, cmpFunc_t cmp );
 
 #endif	// __Q_SHARED_H

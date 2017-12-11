@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Interpreted Block Stream Functions
 //
@@ -76,7 +80,7 @@ GetInfo
 */
 
 void CBlockMember::GetInfo( int *id, int *size, void **data )
-{	
+{
 	*id = m_id;
 	*size = m_size;
 	*data = m_data;
@@ -120,7 +124,7 @@ ReadMember
 int CBlockMember::ReadMember( char **stream, long *streamPos, CIcarus* icarus )
 {
 	IGameInterface* game = icarus->GetGame();
-	m_id = *(int *) (*stream + *streamPos);
+	m_id = LittleLong(*(int *) (*stream + *streamPos));
 	*streamPos += sizeof( int );
 
 	if ( m_id == CIcarus::ID_RANDOM )
@@ -133,13 +137,18 @@ int CBlockMember::ReadMember( char **stream, long *streamPos, CIcarus* icarus )
 	}
 	else
 	{
-		m_size = *(int *) (*stream + *streamPos);
+		m_size = LittleLong(*(int *) (*stream + *streamPos));
 		*streamPos += sizeof( int );
 		m_data = game->Malloc( m_size );
 		memcpy( m_data, (*stream + *streamPos), m_size );
+#ifdef Q3_BIG_ENDIAN
+		// only TK_INT, TK_VECTOR and TK_FLOAT has to be swapped, but just in case
+		if (m_size == 4 && m_id != CIcarus::TK_STRING && m_id != CIcarus::TK_IDENTIFIER && m_id != CIcarus::TK_CHAR)
+			*(int *)m_data = LittleLong(*(int *)m_data);
+#endif
 	}
 	*streamPos += m_size;
-	
+
 	return true;
 }
 
@@ -256,7 +265,7 @@ int CBlock::Write( int member_id, const char *member_data, CIcarus* icarus )
 	CBlockMember *bMember = new CBlockMember;
 
 	bMember->SetID( member_id );
-	
+
 	bMember->SetData( member_data, icarus );
 	bMember->SetSize( strlen(member_data) + 1 );
 
@@ -267,7 +276,7 @@ int CBlock::Write( int member_id, const char *member_data, CIcarus* icarus )
 
 int CBlock::Write( int member_id, vec3_t member_data, CIcarus* icarus )
 {
-	CBlockMember *bMember; 
+	CBlockMember *bMember;
 
 	bMember = new CBlockMember;
 
@@ -310,7 +319,7 @@ int CBlock::Write( int member_id, int member_data, CIcarus* icarus )
 int CBlock::Write( CBlockMember *bMember, CIcarus* )
 {
 // findme: this is wrong:	bMember->SetSize( sizeof(bMember->GetData()) );
-	
+
 	AddMember( bMember );
 
 	return true;
@@ -379,7 +388,7 @@ CBlock *CBlock::Duplicate( CIcarus* icarus )
 	newblock->Create( m_id );
 
 	//Duplicate entire block and return the cc
-	for ( mi = m_members.begin(); mi != m_members.end(); mi++ )
+	for ( mi = m_members.begin(); mi != m_members.end(); ++mi )
 	{
 		newblock->AddMember( (*mi)->Duplicate(icarus) );
 	}
@@ -425,24 +434,10 @@ Create
 */
 
 int CBlockStream::Create( char *filename )
-{	
-	// strip extension
-	int		extensionloc = strlen(filename);
-	while ( (filename[extensionloc] != '.') && (extensionloc >= 0) )
-	{
-		extensionloc--;
-	}
-	if ( extensionloc < 0 )
-	{
-		strcpy(m_fileName, filename);
-	}
-	else
-	{
-		strncpy(m_fileName, filename, extensionloc);
-		m_fileName[extensionloc] = '\0';
-	}
-	// add extension
-	strcat((char *) m_fileName, s_IBI_EXT);
+{
+	//Strip the extension and add the BLOCK_EXT extension
+	COM_StripExtension( filename, m_fileName, sizeof(m_fileName) );
+	COM_DefaultExtension( m_fileName, sizeof(m_fileName), s_IBI_EXT );
 
 	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{
@@ -487,12 +482,12 @@ int CBlockStream::WriteBlock( CBlock *block, CIcarus* icarus )
 	int				numMembers = block->GetNumMembers();
 	unsigned char	flags = block->GetFlags();
 
-	fwrite ( &id, sizeof(id), 1, m_fileHandle ); 
+	fwrite ( &id, sizeof(id), 1, m_fileHandle );
 	fwrite ( &numMembers, sizeof(numMembers), 1, m_fileHandle );
 	fwrite ( &flags, sizeof( flags ), 1, m_fileHandle );
 
 	for ( int i = 0; i < numMembers; i++ )
-	{	
+	{
 		bMember = block->GetMember( i );
 		bMember->WriteMember( m_fileHandle );
 	}
@@ -531,10 +526,10 @@ int CBlockStream::ReadBlock( CBlock *get, CIcarus* icarus )
 	if (!BlockAvailable())
 		return false;
 
-	b_id		= *(int *) (m_stream + m_streamPos);
+	b_id		= LittleLong(*(int *) (m_stream + m_streamPos));
 	m_streamPos += sizeof( b_id );
 
-	numMembers	= *(int *) (m_stream + m_streamPos);
+	numMembers	= LittleLong(*(int *) (m_stream + m_streamPos));
 	m_streamPos += sizeof( numMembers );
 
 	flags		= *(unsigned char*) (m_stream + m_streamPos);
@@ -547,7 +542,7 @@ int CBlockStream::ReadBlock( CBlock *get, CIcarus* icarus )
 	get->SetFlags( flags );
 
 	while ( numMembers-- > 0)
-	{	
+	{
 		bMember = new CBlockMember;
 		bMember->ReadMember( &m_stream, &m_streamPos, icarus );
 		get->AddMember( bMember );
@@ -566,7 +561,7 @@ int CBlockStream::Open( char *buffer, long size )
 {
 	char	id_header[IBI_HEADER_ID_LENGTH];
 	float	version;
-	
+
 	Init();
 
 	m_fileSize = size;
@@ -578,7 +573,7 @@ int CBlockStream::Open( char *buffer, long size )
 		id_header[i] = *(m_stream + m_streamPos++);
 	}
 
-	version = *(float *) (m_stream + m_streamPos);
+	version = LittleFloat(*(float *) (m_stream + m_streamPos));
 	m_streamPos += sizeof( version );
 
 	//Check for valid header

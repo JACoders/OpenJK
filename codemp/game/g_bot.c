@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // g_bot.c
 
 #include "g_local.h"
@@ -244,7 +265,7 @@ const char *G_RefreshNextMap(int gametype, qboolean forced)
 		}
 
 		type = Info_ValueForKey(level.arenas.infos[n], "type");
-		
+
 		typeBits = G_GetMapTypeBits(type);
 		if (typeBits & (1 << gametype))
 		{
@@ -306,7 +327,7 @@ G_LoadArenas
 */
 
 #define MAX_MAPS 256
-#define MAPSBUFSIZE (MAX_MAPS * 32)
+#define MAPSBUFSIZE (MAX_MAPS * 64)
 
 void G_LoadArenas( void ) {
 #if 0
@@ -329,7 +350,7 @@ void G_LoadArenas( void ) {
 		G_LoadArenasFromFile(filename);
 	}
 //	trap->Print( "%i arenas parsed\n", level.arenas.num );
-	
+
 	for( n = 0; n < level.arenas.num; n++ ) {
 		Info_SetValueForKey( level.arenas.infos[n], "num", va( "%i", n ) );
 	}
@@ -363,7 +384,7 @@ void G_LoadArenas( void ) {
 		fileptr += len + 1;
 	}
 //	trap->Print( "%i arenas parsed\n", level.arenas.num );
-	
+
 	for( n = 0; n < level.arenas.num; n++ ) {
 		Info_SetValueForKey( level.arenas.infos[n], "num", va( "%i", n ) );
 	}
@@ -460,7 +481,7 @@ void G_AddRandomBot( int team ) {
 			num++;
 		}
 	}
-	num = random() * num;
+	num = Q_flrand(0.0f, 1.0f) * num;
 	for ( n = 0; n < level.bots.num ; n++ ) {
 		value = Info_ValueForKey( level.bots.infos[n], "name" );
 		//
@@ -859,8 +880,8 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// get the botinfo from bots.txt
 	botinfo = G_GetBotInfoByName( name );
 	if ( !botinfo ) {
-		trap->BotFreeClient( clientNum );
 		trap->Print( S_COLOR_RED "Error: Bot '%s' not defined\n", name );
+		trap->BotFreeClient( clientNum );
 		return;
 	}
 
@@ -954,7 +975,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// initialize the bot settings
 	if ( !team || !*team ) {
 		if ( level.gametype >= GT_TEAM ) {
-			if ( PickTeam( clientNum ) == TEAM_RED)
+			if ( PickTeam( clientNum ) == TEAM_RED )
 				team = "red";
 			else
 				team = "blue";
@@ -1184,7 +1205,7 @@ static void G_SpawnBots( char *botList, int baseDelay ) {
 		while( *p && *p == ' ' ) {
 			p++;
 		}
-		if( !p ) {
+		if( !*p ) {
 			break;
 		}
 

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 
 //static void R5D2_LookAround( void );
@@ -28,18 +50,18 @@ void R2D2_PartsMove(void)
 	{
 		NPCS.NPC->pos1[1] = AngleNormalize360( NPCS.NPC->pos1[1]);
 
-		NPCS.NPC->pos1[0]+=Q_irand( -20, 20 );	// Roll	
-		NPCS.NPC->pos1[1]=Q_irand( -20, 20 );	
-		NPCS.NPC->pos1[2]=Q_irand( -20, 20 );	
+		NPCS.NPC->pos1[0]+=Q_irand( -20, 20 );	// Roll
+		NPCS.NPC->pos1[1]=Q_irand( -20, 20 );
+		NPCS.NPC->pos1[2]=Q_irand( -20, 20 );
 
 		/*
 		if (NPC->genericBone1)
 		{
-			trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+			trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL );
 		}
 		*/
 		NPC_SetBoneAngles(NPCS.NPC, "f_eye", NPCS.NPC->pos1);
-		
+
 
 		TIMER_Set( NPCS.NPC, "eyeDelay", Q_irand( 100, 1000 ) );
 	}
@@ -179,11 +201,11 @@ void Droid_Run( void )
 	if ( NPCS.NPCInfo->localState == LSTATE_BACKINGUP )
 	{
 		NPCS.ucmd.forwardmove = -127;
-		NPCS.NPCInfo->desiredYaw += 5; 
+		NPCS.NPCInfo->desiredYaw += 5;
 
 		NPCS.NPCInfo->localState = LSTATE_NONE;	// So he doesn't constantly backup.
 	}
-	else 
+	else
 	{
 		NPCS.ucmd.forwardmove = 64;
 		//If we have somewhere to go, then do that
@@ -210,9 +232,9 @@ void Droid_Spin( void )
 
 	R2D2_TurnAnims();
 
-						
+
 	// Head is gone, spin and spark
-	if ( NPCS.NPC->client->NPC_class == CLASS_R5D2 
+	if ( NPCS.NPC->client->NPC_class == CLASS_R5D2
 		|| NPCS.NPC->client->NPC_class == CLASS_R2D2 )
 	{
 		// No head?
@@ -233,7 +255,7 @@ void Droid_Spin( void )
 			NPCS.ucmd.forwardmove = Q_irand( -64, 64);
 
 			if (TIMER_Done(NPCS.NPC,"roam"))
-			{	
+			{
 				TIMER_Set( NPCS.NPC, "roam", Q_irand( 250, 1000 ) );
 				NPCS.NPCInfo->desiredYaw = Q_irand( 0, 360 ); // Go in random directions
 			}
@@ -250,7 +272,7 @@ void Droid_Spin( void )
 			}
 		}
 	}
-	else 
+	else
 	{
 		if (TIMER_Done(NPCS.NPC,"roam"))
 		{
@@ -284,7 +306,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		pain_chance = NPC_GetPainChance( self, damage );
 
 		// Put it in pain
-		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || random() < pain_chance )	// Spin around in pain? Demp2 always does this
+		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || Q_flrand(0.0f, 1.0f) < pain_chance )	// Spin around in pain? Demp2 always does this
 		{
 			// Health is between 0-30 or was hit by a DEMP2 so pop his head
 			if ( !self->s.m_iVehicleNum
@@ -292,7 +314,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 			{
 				if (!(self->spawnflags & 2))	// Doesn't have to ALWAYSDIE
 				{
-					if ((self->NPC->localState != LSTATE_SPINNING) && 
+					if ((self->NPC->localState != LSTATE_SPINNING) &&
 						(!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
 					{
 						NPC_SetSurfaceOnOff( self, "head", TURN_OFF );
@@ -338,7 +360,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				// Spin around in pain
 				self->NPC->localState = LSTATE_SPINNING;
 				TIMER_Set( self, "roam", Q_irand(1000,2000));
-			} 
+			}
 		}
 	}
 	else if (self->client->NPC_class == CLASS_MOUSE)
@@ -362,7 +384,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 
 		pain_chance = NPC_GetPainChance( self, damage );
 
-		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || random() < pain_chance )	// Spin around in pain? Demp2 always does this
+		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || Q_flrand(0.0f, 1.0f) < pain_chance )	// Spin around in pain? Demp2 always does this
 		{
 			// Health is between 0-30 or was hit by a DEMP2 so pop his head
 			if ( !self->s.m_iVehicleNum
@@ -370,7 +392,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 			{
 				if (!(self->spawnflags & 2))	// Doesn't have to ALWAYSDIE
 				{
-					if ((self->NPC->localState != LSTATE_SPINNING) && 
+					if ((self->NPC->localState != LSTATE_SPINNING) &&
 						(!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
 					{
 						NPC_SetSurfaceOnOff( self, "head", TURN_OFF );
@@ -417,7 +439,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				self->NPC->localState = LSTATE_SPINNING;
 				TIMER_Set( self, "roam", Q_irand(1000,2000));
 			}
-		} 
+		}
 	}
 	else if ( self->client->NPC_class == CLASS_INTERROGATOR && ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT ) && other )
 	{
@@ -549,7 +571,7 @@ static void R5D2_OffsetLook( float offset, vec3_t out )
 	angles[YAW] += offset;
 	AngleVectors( angles, forward, NULL, NULL );
 	VectorMA( NPC->r.currentOrigin, 64, forward, out );
-	
+
 	CalcEntitySpot( NPC, SPOT_HEAD, temp );
 	out[2] = temp[2];
 }
@@ -608,7 +630,7 @@ void NPC_BSDroid_Default( void )
 	else if ( NPCS.NPCInfo->localState == LSTATE_DROP )
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
-		NPCS.ucmd.upmove = crandom() * 64;
+		NPCS.ucmd.upmove = Q_flrand(-1.0f, 1.0f) * 64;
 	}
 	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{

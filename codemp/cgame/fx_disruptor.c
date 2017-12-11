@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // Disruptor Weapon
 
 #include "cg_local.h"
@@ -15,10 +37,10 @@ void FX_DisruptorMainShot( vec3_t start, vec3_t end )
 //	vec3_t	dir;
 //	float	len;
 
-	trap->FX_AddLine( start, end, 0.1f, 6.0f, 0.0f, 
+	trap->FX_AddLine( start, end, 0.1f, 6.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							WHITE, WHITE, 0.0f,
-							150, trap->R_RegisterShader( "gfx/effects/redLine" ), 
+							150, trap->R_RegisterShader( "gfx/effects/redLine" ),
 							FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 
 //	VectorSubtract( end, start, dir );
@@ -40,10 +62,10 @@ FX_DisruptorAltShot
 */
 void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean fullCharge )
 {
-	trap->FX_AddLine( start, end, 0.1f, 10.0f, 0.0f, 
+	trap->FX_AddLine( start, end, 0.1f, 10.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							WHITE, WHITE, 0.0f,
-							175, trap->R_RegisterShader( "gfx/effects/redLine" ), 
+							175, trap->R_RegisterShader( "gfx/effects/redLine" ),
 							FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 
 	if ( fullCharge )
@@ -51,10 +73,10 @@ void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean fullCharge )
 		vec3_t	YELLER={0.8f,0.7f,0.0f};
 
 		// add some beef
-		trap->FX_AddLine( start, end, 0.1f, 7.0f, 0.0f, 
+		trap->FX_AddLine( start, end, 0.1f, 7.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							YELLER, YELLER, 0.0f,
-							150, trap->R_RegisterShader( "gfx/misc/whiteline2" ), 
+							150, trap->R_RegisterShader( "gfx/misc/whiteline2" ),
 							FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 	}
 }
@@ -76,7 +98,7 @@ void FX_DisruptorAltMiss( vec3_t origin, vec3_t normal )
 	VectorCopy( c1, c2 );
 	c1[2] += 4;
 	c2[2] += 12;
-	
+
 	VectorAdd( origin, normal, pos );
 	pos[2] += 28;
 
@@ -98,7 +120,7 @@ void FX_DisruptorAltMiss( vec3_t origin, vec3_t normal )
 	b.alpha1 = 0.0f;
 	b.alpha2 = 0.2f;
 	b.alphaParm = 0.5f;
-	
+
 	VectorCopy(WHITE, b.sRGB);
 	VectorCopy(WHITE, b.eRGB);
 

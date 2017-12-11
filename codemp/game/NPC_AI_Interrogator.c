@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 #include "g_nav.h"
 
@@ -46,8 +68,8 @@ void Interrogator_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	*/
 	{
 		self->client->ps.eFlags2 &= ~EF2_FLYING;//moveType = MT_WALK;
-		self->client->ps.velocity[0] = Q_irand( -10, -20 );
-		self->client->ps.velocity[1] = Q_irand( -10, -20 );
+		self->client->ps.velocity[0] = Q_irand( -20, -10 );
+		self->client->ps.velocity[1] = Q_irand( -20, -10 );
 		self->client->ps.velocity[2] = -100;
 	}
 	//self->takedamage = qfalse;
@@ -70,18 +92,18 @@ void Interrogator_PartsMove(void)
 
 		if ((NPCS.NPC->pos1[1] < 60) || (NPCS.NPC->pos1[1] > 300))
 		{
-			NPCS.NPC->pos1[1]+=Q_irand( -20, 20 );	// Pitch	
+			NPCS.NPC->pos1[1]+=Q_irand( -20, 20 );	// Pitch
 		}
 		else if (NPCS.NPC->pos1[1] > 180)
 		{
-			NPCS.NPC->pos1[1]=Q_irand( 300, 360 );	// Pitch	
+			NPCS.NPC->pos1[1]=Q_irand( 300, 360 );	// Pitch
 		}
-		else 
+		else
 		{
-			NPCS.NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch	
+			NPCS.NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch
 		}
 
-	//	trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	//	trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL );
 		NPC_SetBoneAngles(NPCS.NPC, "left_arm", NPCS.NPC->pos1);
 
 		TIMER_Set( NPCS.NPC, "syringeDelay", Q_irand( 100, 1000 ) );
@@ -112,7 +134,7 @@ void Interrogator_PartsMove(void)
 		}
 
 		NPCS.NPC->pos2[0] = AngleNormalize360( NPCS.NPC->pos2[0]);
-	//	trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	//	trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL );
 
 		NPC_SetBoneAngles(NPCS.NPC, "right_arm", NPCS.NPC->pos2);
 	}
@@ -120,7 +142,7 @@ void Interrogator_PartsMove(void)
 	// Claw
 	NPCS.NPC->pos3[1] += Q_irand( 10, 30 );
 	NPCS.NPC->pos3[1] = AngleNormalize360( NPCS.NPC->pos3[1]);
-	//trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	//trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL );
 
 	NPC_SetBoneAngles(NPCS.NPC, "claw", NPCS.NPC->pos3);
 
@@ -135,7 +157,7 @@ Interrogator_MaintainHeight
 -------------------------
 */
 void Interrogator_MaintainHeight( void )
-{	
+{
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
@@ -148,7 +170,7 @@ void Interrogator_MaintainHeight( void )
 	if ( NPCS.NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPCS.NPC->enemy->r.currentOrigin[2] + NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2]; 
+		dif = (NPCS.NPC->enemy->r.currentOrigin[2] + NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 2 )
@@ -260,7 +282,7 @@ void Interrogator_Strafe( void )
 		if ( NPCS.NPC->enemy )
 		{
 			// Find the height difference
-			dif = (NPCS.NPC->enemy->r.currentOrigin[2] + 32) - NPCS.NPC->r.currentOrigin[2]; 
+			dif = (NPCS.NPC->enemy->r.currentOrigin[2] + 32) - NPCS.NPC->r.currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 8 )
@@ -272,9 +294,9 @@ void Interrogator_Strafe( void )
 
 		}
 
-		// Set the strafe start time 
+		// Set the strafe start time
 		//NPCS.NPC->fx_time = level.time;
-		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 
@@ -406,7 +428,7 @@ void Interrogator_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE*MIN_DISTANCE );
 

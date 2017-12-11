@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 #include "g_nav.h"
 
@@ -75,7 +97,7 @@ NPC_Sentry_Pain
 -------------------------
 */
 void NPC_Sentry_Pain(gentity_t *self, gentity_t *attacker, int damage)
-{		
+{
 	int mod = gPainMOD;
 
 	NPC_Pain( self, attacker, damage );
@@ -86,7 +108,7 @@ void NPC_Sentry_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		TIMER_Set( self, "attackDelay", Q_irand( 9000, 12000) );
 		self->flags |= FL_SHIELDED;
 		NPC_SetAnim( self, SETANIM_BOTH, BOTH_FLY_SHIELDED, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-		G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_pain") );		
+		G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_pain") );
 
 		self->NPC->localState = LSTATE_ACTIVE;
 	}
@@ -134,7 +156,7 @@ void Sentry_Fire (void)
 	{
 		NPCS.NPCInfo->localState = LSTATE_POWERING_UP;
 
-		G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_shield_open") );		
+		G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_shield_open") );
 		NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_POWERUP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		TIMER_Set( NPCS.NPC, "powerup", 250 );
 		return;
@@ -161,7 +183,7 @@ void Sentry_Fire (void)
 		bolt = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash03");
 	}
 
-	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
+	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0,
 				bolt,
 				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
 				NULL, NPCS.NPC->modelScale );
@@ -205,7 +227,7 @@ Sentry_MaintainHeight
 -------------------------
 */
 void Sentry_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	NPCS.NPC->s.loopSound = G_SoundIndex( "sound/chars/sentry/misc/sentry_hover_1_lp" );
@@ -217,7 +239,7 @@ void Sentry_MaintainHeight( void )
 	if ( NPCS.NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPCS.NPC->enemy->r.currentOrigin[2]+NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2]; 
+		dif = (NPCS.NPC->enemy->r.currentOrigin[2]+NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 8 )
@@ -357,7 +379,7 @@ void Sentry_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 	//	NPC->fx_time = level.time;
-		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 
@@ -451,7 +473,7 @@ Sentry_AttackDecision
 */
 void Sentry_AttackDecision( void )
 {
-	float		distance;	
+	float		distance;
 	qboolean	visible, advance;
 
 	// Always keep a good height off the ground
@@ -486,7 +508,7 @@ void Sentry_AttackDecision( void )
 	}
 
 	// Rate our distance to the target and visibilty
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 

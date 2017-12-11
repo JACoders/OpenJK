@@ -1,29 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // sv_client.c -- server code for dealing with clients
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
-
 
 #include "server.h"
 
@@ -80,10 +80,10 @@ void SV_DirectConnect( netadr_t from ) {
 			continue;
 		}
 		if ( NET_CompareBaseAdr( from, cl->netchan.remoteAddress )
-			&& ( cl->netchan.qport == qport 
+			&& ( cl->netchan.qport == qport
 			|| from.port == cl->netchan.remoteAddress.port ) )
 		{
-			if (( sv.time - cl->lastConnectTime) 
+			if (( sv.time - cl->lastConnectTime)
 				< (sv_reconnectlimit->integer * 1000))
 			{
 				Com_DPrintf ("%s:reconnect rejected : too soon\n", NET_AdrToString (from));
@@ -111,7 +111,7 @@ void SV_DirectConnect( netadr_t from ) {
 		return;
 	}
 
-gotnewcl:	
+gotnewcl:
 	// build a new connection
 	// accept the new client
 	// this is the only place a client_t is ever initialized
@@ -140,7 +140,6 @@ gotnewcl:
 	NET_OutOfBandPrint( NS_SERVER, from, "connectResponse" );
 
 	newcl->state = CS_CONNECTED;
-	newcl->nextSnapshotTime = sv.time;
 	newcl->lastPacketTime = sv.time;
 	newcl->lastConnectTime = sv.time;
 
@@ -256,12 +255,11 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd, SavedGameJustLoaded_
 	client->gentity = ent;
 
 	// normally I check 'qbFromSavedGame' to avoid overwriting loaded client data, but this stuff I want
-	//	to be reset so that client packet delta-ing bgins afresh, rather than based on your previous frame 
+	//	to be reset so that client packet delta-ing bgins afresh, rather than based on your previous frame
 	//	(which didn't in fact happen now if we've just loaded from a saved game...)
 	//
 	client->deltaMessage = -1;
 	client->cmdNum = 0;
-	client->nextSnapshotTime = sv.time;	// generate a snapshot immediately
 
 	// call the game begin function
 	ge->ClientBegin( client - svs.clients, cmd, eSavedGameJustLoaded );
@@ -293,36 +291,11 @@ static void SV_Disconnect_f( client_t *cl ) {
 =================
 SV_UserinfoChanged
 
-Pull specific info from a newly changed userinfo string
-into a more C friendly form.
+Pull specific info from a newly changed userinfo string into a more C friendly form.
 =================
 */
 void SV_UserinfoChanged( client_t *cl ) {
-	const char	*val;
-	int		i;
-
-	// name for C code
-	Q_strncpyz( cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name) );
-
-	// rate command
-
-	// if the client is on the same subnet as the server and we aren't running an
-	// internet public server, assume they don't need a rate choke
-	cl->rate = 99999;	// lans should not rate limit
-
-	// snaps command
-	val = Info_ValueForKey (cl->userinfo, "snaps");
-	if (strlen(val)) {
-		i = atoi(val);
-		if ( i < 1 ) {
-			i = 1;
-		} else if ( i > 30 ) {
-			i = 30;
-		}
-		cl->snapshotMsec = 1000/i;
-	} else {
-		cl->snapshotMsec = 50;
-	}
+	Q_strncpyz( cl->name, Info_ValueForKey( cl->userinfo, "name" ), sizeof( cl->name ) );
 }
 
 
@@ -334,10 +307,9 @@ SV_UpdateUserinfo_f
 static void SV_UpdateUserinfo_f( client_t *cl ) {
 	Q_strncpyz( cl->userinfo, Cmd_Argv(1), sizeof(cl->userinfo) );
 
+	SV_UserinfoChanged( cl );
 	// call prog code to allow overrides
 	ge->ClientUserinfoChanged( cl - svs.clients );
-	
-	SV_UserinfoChanged( cl );
 }
 
 typedef struct {
@@ -359,7 +331,7 @@ SV_ExecuteClientCommand
 */
 void SV_ExecuteClientCommand( client_t *cl, const char *s ) {
 	ucmd_t	*u;
-	
+
 	Cmd_TokenizeString( s );
 
 	// see if it is a server level command
@@ -399,7 +371,7 @@ static void SV_ClientCommand( client_t *cl, msg_t *msg ) {
 
 	// drop the connection if we have somehow lost commands
 	if ( seq > cl->lastClientCommand + 1 ) {
-		Com_Printf( "Client %s lost %i clientCommands\n", cl->name, 
+		Com_Printf( "Client %s lost %i clientCommands\n", cl->name,
 			seq - cl->lastClientCommand + 1 );
 	}
 
@@ -431,7 +403,7 @@ void SV_ClientThink (client_t *cl, usercmd_t *cmd) {
 ==================
 SV_UserMove
 
-The message usually contains all the movement commands 
+The message usually contains all the movement commands
 that were in the last three packets, so that the information
 in dropped packets can be recovered.
 
@@ -529,7 +501,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg ) {
 	// with a packetdup of 0, firstNum == cmdNum
 	firstNum = cmdNum - ( cmdCount - 1 );
 	if ( cl->cmdNum < firstNum - 1 ) {
-		cl->droppedCommands = qtrue; 
+		cl->droppedCommands = qtrue;
 		if ( sv_showloss->integer ) {
 			Com_Printf("Lost %i usercmds from %s\n", firstNum - 1 - cl->cmdNum,
 				cl->name);
@@ -574,18 +546,18 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		if ( msg->readcount > msg->cursize ) {
 			SV_DropClient (cl, "had a badread");
 			return;
-		}	
+		}
 
 		c = MSG_ReadByte( msg );
 		if ( c == -1 ) {
 			break;
 		}
-				
+
 		switch( c ) {
 		default:
 			SV_DropClient( cl,"had an unknown command char" );
 			return;
-						
+
 		case clc_nop:
 			break;
 

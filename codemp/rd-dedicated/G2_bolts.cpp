@@ -1,12 +1,27 @@
-// leave this as first line for PCH reasons...
-//
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
+This file is part of the OpenJK source code.
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 //=====================================================================================================================
 // Bolt List handling routines - so entities can attach themselves to any part of the model in question
@@ -54,7 +69,7 @@ int G2_Find_Bolt_Surface_Num(boltInfo_v &bltlist, const int surfaceNum, const in
 	// didn't find it
 	return -1;
 }
-			
+
 //=========================================================================================
 //// Public Bolt Routines
 int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist, const int surfNum)
@@ -80,7 +95,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 		}
 	}
 
-	// we have a surface 
+	// we have a surface
 	// look through entire list - see if it's already there first
 	for(size_t i=0; i<bltlist.size(); i++)
 	{
@@ -94,7 +109,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 	 		return i;
 		}
 	}
-	
+
 	// ok, we didn't find an existing surface of that name, or an empty slot. Lets add an entry
 	tempBolt.surfaceNumber = surfNum;
 	tempBolt.surfaceType = G2SURFACEFLAG_GENERATED;
@@ -147,7 +162,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		 		return i;
 			}
 		}
-	
+
 		// ok, we didn't find an existing surface of that name, or an empty slot. Lets add an entry
 		tempBolt.surfaceNumber = surfNum;
 		tempBolt.boneNumber = -1;
@@ -208,7 +223,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	 		return i;
 		}
 	}
-	
+
 	// ok, we didn't find an existing bone of that name, or an empty slot. Lets add an entry
 	tempBolt.boneNumber = x;
 	tempBolt.surfaceNumber = -1;
@@ -269,7 +284,7 @@ void G2_Init_Bolt_List(boltInfo_v &bltlist)
 	bltlist.clear();
 }
 
-// remove any bolts that reference original surfaces, generated surfaces, or bones that aren't active anymore 
+// remove any bolts that reference original surfaces, generated surfaces, or bones that aren't active anymore
 void G2_RemoveRedundantBolts(boltInfo_v &bltlist, surfaceInfo_v &slist, int *activeSurfaces, int *activeBones)
 {
 	// walk the bolt list

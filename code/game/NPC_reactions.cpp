@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //NPC_reactions.cpp
 
@@ -65,7 +69,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 	//FIXME: I don't see anything in here that would stop teammates from taking a teammate
 	//			as an enemy.  Ideally, there would be code before this to prevent that from
 	//			happening, but that is presumptuous.
-	
+
 	//valid ent - FIXME: a VALIDENT macro would be nice here
 	if ( !other )
 		return;
@@ -77,7 +81,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 		return;
 
 	//Don't take a target that doesn't want to be
-	if ( other->flags & FL_NOTARGET ) 
+	if ( other->flags & FL_NOTARGET )
 		return;
 
 	if ( NPC->svFlags & SVF_LOCKEDENEMY )
@@ -140,7 +144,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 		}
 
 		//Randomly pick up the target
-		if ( random() > luckThreshold )
+		if ( Q_flrand(0.0f, 1.0f) > luckThreshold )
 		{
 			G_ClearEnemy( other );
 			other->enemy = NPC;
@@ -154,14 +158,10 @@ void NPC_SetPainEvent( gentity_t *self )
 {
 	if ( !self->NPC || !(self->NPC->aiFlags&NPCAI_DIE_ON_IMPACT) )
 	{
-	// no more borg
-	//	if( self->client->playerTeam != TEAM_BORG )
-	//	{
-			if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
-			{
-				G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
-			}
-	//	}
+        if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
+        {
+            G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
+        }
 	}
 }
 
@@ -224,7 +224,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 
 	int		pain_anim = -1;
 	float	pain_chance;
-	
+
 	if ( self->s.weapon == WP_THERMAL && self->client->fireDelay > 0 )
 	{//don't interrupt thermal throwing anim
 		return;
@@ -258,14 +258,14 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 	{//ally shot by player always complains
 		pain_chance = 1.1f;
 	}
-	else 
+	else
 	{
 		if ( other && (other->s.weapon == WP_SABER || mod == MOD_ELECTROCUTE || mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/) )
 		{
-			if ( self->client->ps.weapon == WP_SABER 
+			if ( self->client->ps.weapon == WP_SABER
 				&& other->s.number < MAX_CLIENTS )
-			{//hmm, shouldn't *always* react to damage from player if I have a saber 
-				pain_chance = 1.05f - ((self->NPC->rank)/(float)RANK_CAPTAIN); 
+			{//hmm, shouldn't *always* react to damage from player if I have a saber
+				pain_chance = 1.05f - ((self->NPC->rank)/(float)RANK_CAPTAIN);
 			}
 			else
 			{
@@ -295,7 +295,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 	}
 
 	//See if we're going to flinch
-	if ( random() < pain_chance )
+	if ( Q_flrand(0.0f, 1.0f) < pain_chance )
 	{
 		//Pick and play our animation
 		if ( (self->client->ps.eFlags&EF_FORCE_GRIPPED) )
@@ -324,6 +324,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 				|| PM_RollingAnim( self->client->ps.legsAnim )
 				|| (PM_FlippingAnim( self->client->ps.legsAnim )&&!PM_InCartwheel( self->client->ps.legsAnim )) )
 			{//strong attacks, rolls, knockdowns, flips and spins cannot be interrupted by pain
+				return;
 			}
 			else
 			{//play an anim
@@ -368,7 +369,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 				NPC_SetPainEvent( self );
 			}
 		}
-		
+
 		//Setup the timing for it
 		if ( mod == MOD_ELECTROCUTE )
 		{
@@ -385,7 +386,7 @@ gentity_t *G_CheckControlledTurretEnemy(gentity_t *self, gentity_t *enemy, qbool
 	if ( enemy->e_UseFunc == useF_emplaced_gun_use
 		|| enemy->e_UseFunc == useF_eweb_use )
 	{
-		if ( enemy->activator 
+		if ( enemy->activator
 			&& enemy->activator->client )
 		{//return the controller of the eweb/emplaced gun
 			if (validate==qfalse || !self->client || G_ValidEnemy(self, enemy))
@@ -404,22 +405,22 @@ extern void		Boba_Pain( gentity_t *self, gentity_t *inflictor, int damage, int m
 NPC_Pain
 ===============
 */
-void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod, int hitLoc ) 
+void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod, int hitLoc )
 {
 	team_t otherTeam = TEAM_FREE;
 	int		voiceEvent = -1;
 
-	if ( self->NPC == NULL ) 
+	if ( self->NPC == NULL )
 		return;
 
-	if ( other == NULL ) 
+	if ( other == NULL )
 		return;
 
 	//or just remove ->pain in player_die?
 	if ( self->client->ps.pm_type == PM_DEAD )
 		return;
 
-	if ( other == self ) 
+	if ( other == self )
 		return;
 
 	other = G_CheckControlledTurretEnemy(self, other, qfalse);
@@ -438,15 +439,15 @@ void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const ve
 	//	}
 	}
 
-	if ( self->client->playerTeam 
-		&& other->client 
-		&& otherTeam == self->client->playerTeam 
-		&& (!player->client->ps.viewEntity || other->s.number != player->client->ps.viewEntity)) 
+	if ( self->client->playerTeam
+		&& other->client
+		&& otherTeam == self->client->playerTeam
+		&& (!player->client->ps.viewEntity || other->s.number != player->client->ps.viewEntity))
 	{//hit by a teammate
 		if ( other != self->enemy && self != other->enemy )
 		{//we weren't already enemies
-			if ( self->enemy || other->enemy 
-				|| (other->s.number&&other->s.number!=player->client->ps.viewEntity) 
+			if ( self->enemy || other->enemy
+				|| (other->s.number&&other->s.number!=player->client->ps.viewEntity)
 				/*|| (!other->s.number&&Q_irand( 0, 3 ))*/ )
 			{//if one of us actually has an enemy already, it's okay, just an accident OR wasn't hit by player or someone controlled by player OR player hit ally and didn't get 25% chance of getting mad (FIXME:accumulate anger+base on diff?)
 				//FIXME: player should have to do a certain amount of damage to ally or hit them several times to make them mad
@@ -455,7 +456,7 @@ void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const ve
 				{//Run any pain instructions
 					if ( self->health <= (self->max_health/3) && G_ActivateBehavior(self, BSET_FLEE) )
 					{
-						
+
 					}
 					else// if( VALIDSTRING( self->behaviorSet[BSET_PAIN] ) )
 					{
@@ -583,7 +584,7 @@ NPC_Touch
 -------------------------
 */
 extern qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname );
-void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace) 
+void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 {
 	if(!self->NPC)
 		return;
@@ -633,15 +634,15 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 		}
 	}
 
-	if ( other->client ) 
+	if ( other->client )
 	{//FIXME:  if pushing against another bot, both ucmd.rightmove = 127???
 		//Except if not facing one another...
-		if ( other->health > 0 ) 
+		if ( other->health > 0 )
 		{
 			NPCInfo->touchedByPlayer = other;
 		}
 
-		if ( other == NPCInfo->goalEntity ) 
+		if ( other == NPCInfo->goalEntity )
 		{
 			NPCInfo->aiFlags |= NPCAI_TOUCHED_GOAL;
 		}
@@ -673,9 +674,9 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 		}
 		*/
 	}
-	else 
+	else
 	{//FIXME: check for SVF_NONNPC_ENEMY flag here?
-		if ( other->health > 0 ) 
+		if ( other->health > 0 )
 		{
 			if ( NPC->enemy == other && (other->svFlags&SVF_NONNPC_ENEMY) )
 			{
@@ -683,7 +684,7 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 			}
 		}
 
-		if ( other == NPCInfo->goalEntity ) 
+		if ( other == NPCInfo->goalEntity )
 		{
 			NPCInfo->aiFlags |= NPCAI_TOUCHED_GOAL;
 		}
@@ -691,7 +692,7 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 
 	if ( NPC->client->NPC_class == CLASS_RANCOR )
 	{//rancor
-		if ( NPCInfo->blockedEntity != other && TIMER_Done(NPC, "blockedEntityIgnore")) 
+		if ( NPCInfo->blockedEntity != other && TIMER_Done(NPC, "blockedEntityIgnore"))
 		{//blocked
 			//if ( G_EntIsBreakable( other->s.number, NPC ) )
 			{//bumped into another breakable, so take that one instead?
@@ -833,7 +834,7 @@ void NPC_Respond( gentity_t *self, int userNum )
 		if ( !self->enemy )
 		{
 			/*
-			if ( !(self->svFlags&SVF_IGNORE_ENEMIES) 
+			if ( !(self->svFlags&SVF_IGNORE_ENEMIES)
 				&& (self->NPC->scriptFlags&SCF_LOOK_FOR_ENEMIES)
 				&& self->client->enemyTeam == TEAM_ENEMY )
 			{
@@ -980,11 +981,11 @@ void NPC_Respond( gentity_t *self, int userNum )
 	default:
 		break;
 	}
-	
+
 	if ( event != -1 )
 	{
 		//hack here because we reuse some "combat" and "extra" sounds
-		qboolean addFlag = (self->NPC->scriptFlags&SCF_NO_COMBAT_TALK);
+		qboolean addFlag = (qboolean)((self->NPC->scriptFlags&SCF_NO_COMBAT_TALK) != 0);
 		self->NPC->scriptFlags &= ~SCF_NO_COMBAT_TALK;
 
 		G_AddVoiceEvent( self, event, 3000 );
@@ -1057,7 +1058,7 @@ NPC_Use
 */
 extern void Add_Batteries( gentity_t *ent, int *count );
 
-void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator ) 
+void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator )
 {
 	if (self->client->ps.pm_type == PM_DEAD)
 	{//or just remove ->pain in player_die?
@@ -1067,7 +1068,7 @@ void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator )
 	SaveNPCGlobals();
 	SetNPCGlobals( self );
 
-	if(self->client && self->NPC) 
+	if(self->client && self->NPC)
 	{
 		// If this is a vehicle, let the other guy board it. Added 12/14/02 by AReis.
 		if ( self->client->NPC_class == CLASS_VEHICLE )
@@ -1132,10 +1133,10 @@ void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator )
 //		{//Heal me NOW, dammit!
 //			NPC_TakePatient( activator );
 //		}
-		else if ( !self->enemy 
+		else if ( !self->enemy
 			//&& self->client->NPC_class == CLASS_VEHICLE
-			&& activator->s.number == 0 
-			&& !gi.VoiceVolume[self->s.number] 
+			&& activator->s.number == 0
+			&& !gi.VoiceVolume[self->s.number]
 			&& !(self->NPC->scriptFlags&SCF_NO_RESPONSE) )
 		{//I don't have an enemy and I'm not talking and I was used by the player
 			NPC_UseResponse( self, other, qfalse );
@@ -1153,7 +1154,7 @@ void NPC_CheckPlayerAim( void )
 
 	if ( player && player->client && player->client->ps.weapon > (int)(WP_NONE) && player->client->ps.weapon < (int)(WP_TRICORDER) )
 	{//player has a weapon ready
-		if ( g_crosshairEntNum == NPC->s.number && level.time - g_crosshairEntTime < 200 
+		if ( g_crosshairEntNum == NPC->s.number && level.time - g_crosshairEntTime < 200
 			&& g_crosshairSameEntTime >= 3000 && g_crosshairEntDist < 256 )
 		{//if the player holds the crosshair on you for a few seconds
 			//ask them what the fuck they're doing

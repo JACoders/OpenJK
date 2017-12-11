@@ -1,19 +1,28 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "qcommon/q_shared.h"
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4018)
-#pragma warning( disable : 4245)
-#pragma warning( disable : 4284)
-#pragma warning( disable : 4512)
-#pragma warning( disable : 4786)
-
-#pragma warning ( disable : 4663 )	//spcialize class
-#pragma warning( push, 3 )
-#endif
 #include <algorithm>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
 
 #include "navigator.h"
 #include "game/g_nav.h"
@@ -118,7 +127,7 @@ CNode *CNode::Create( vec3_t position, int flags, int radius, int ID )
 	CNode	*node = new CNode;
 
 	VectorCopy( position, node->m_position );
-	
+
 	node->m_flags = flags;
 	node->m_ID = ID;
 	node->m_radius = radius;
@@ -159,7 +168,7 @@ void CNode::AddEdge( int ID, int cost, int flags )
 			}
 		}
 	}
-	
+
 	edge_t	edge;
 
 	edge.ID		= ID;
@@ -303,7 +312,7 @@ byte CNode::GetEdgeFlags( int edgeNum )
 
 		count++;
 	}
-	
+
 	return 0;
 }
 
@@ -601,6 +610,9 @@ bool CNavigator::Load( const char *filename, int checksum )
 {
 	fileHandle_t	file;
 
+	// Free previous map just in case. jampgame doesn't do this by default...
+	Free();
+
 	//Attempt to load the file
 	FS_FOpenFileByMode( va( "maps/%s.nav", filename ), &file, FS_READ );
 
@@ -627,7 +639,7 @@ bool CNavigator::Load( const char *filename, int checksum )
 	}
 
 	int numNodes = GetInt( file );
-	
+
 	for ( int i = 0; i < numNodes; i++ )
 	{
 		CNode	*node = CNode::Create();
@@ -645,9 +657,9 @@ bool CNavigator::Load( const char *filename, int checksum )
 	FS_Read( &failedEdges, sizeof( failedEdges ), file );
 	for ( int j = 0; j < MAX_FAILED_EDGES; j++ )
 	{
-		m_edgeLookupMap.insert(pair<int, int>(failedEdges[j].startID, j));		
+		m_edgeLookupMap.insert(std::pair<int, int>(failedEdges[j].startID, j));
 	}
-		
+
 
 	FS_FCloseFile( file );
 
@@ -714,7 +726,7 @@ int CNavigator::AddRawPoint( vec3_t point, int flags, int radius )
 		Com_Error( ERR_DROP, "Error adding node!\n" );
 		return -1;
 	}
-	
+
 	//TODO: Validate the position
 	//TODO: Correct stuck waypoints
 
@@ -766,7 +778,7 @@ void CNavigator::SetEdgeCost( int ID1, int ID2, int cost )
 	{//they want us to calc it
 		//FIXME: can we just remember this instead of recalcing every time?
 		vec3_t	pos1, pos2;
-		
+
 		node1->GetPosition( pos1 );
 		node2->GetPosition( pos2 );
 		cost = Distance( pos1, pos2 );
@@ -837,14 +849,14 @@ void CNavigator::CalculatePath( CNode *node )
 	}
 
 	//float				minDist;
-	CEdge				*test;	
+	CEdge				*test;
 
 	//Now flood fill all the others
 	while ( !pathList->Empty() )
 	{
-		//minDist = Q3_INFINITE;			
+		//minDist = Q3_INFINITE;
 		test	 = pathList->Pop();
-		
+
 		CNode	*testNode = m_nodes[ (*test).m_first ];
 		assert( testNode );
 
@@ -883,7 +895,7 @@ void CNavigator::CalculatePaths( qboolean recalc )
 {
 #if _HARD_CONNECT
 #else
-#endif	
+#endif
 
 	for ( size_t i = 0; i < m_nodes.size(); i++ )
 	{
@@ -895,7 +907,7 @@ void CNavigator::CalculatePaths( qboolean recalc )
 	{
 		CalculatePath( m_nodes[i] );
 	}
-		
+
 	if(!recalc)	//Mike says doesn't need to happen on recalc
 	{
 		GVM_NAV_FindCombatPointWaypoints();
@@ -926,11 +938,11 @@ void CNavigator::ShowNodes( void )
 		showRadius = qfalse;
 		//if( NAVDEBUG_showRadius )
 		if (0)
-		{	
+		{
 			dist = DistanceSquared( SV_GentityNum(0)->r.currentOrigin, position );
 			radius = (*ni)->GetRadius();
 			// if player within node radius or 256, draw radius (sometimes the radius is really small, so we check for 256 to catch everything)
-			if( (dist <= radius*radius) || dist <= 65536 ) 
+			if( (dist <= radius*radius) || dist <= 65536 )
 			{
 				showRadius = qtrue;
 			}
@@ -955,7 +967,7 @@ ShowEdges
 -------------------------
 */
 
-typedef	map < int, bool >		drawMap_m;
+typedef	std::map < int, bool >		drawMap_m;
 
 void CNavigator::ShowEdges( void )
 {
@@ -1120,7 +1132,7 @@ void CNavigator::HardConnect( int first, int second )
 	end->GetPosition( p2 );
 
 	trace_t	trace;
-	
+
 	int		flags = EFLAG_NONE;
 
 	SV_Trace( &trace, p1, wpMins, wpMaxs, p2, ENTITYNUM_NONE, MASK_SOLID|CONTENTS_BOTCLIP|CONTENTS_MONSTERCLIP, qfalse, 0, 10 );
@@ -1155,7 +1167,7 @@ int CNavigator::TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t pos
 	//Check the path
 	if ( GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, position, clipmask, okToHitEntNum ) == false )
 		return false;
-	
+
 	return true;
 }
 
@@ -1194,7 +1206,7 @@ int	CNavigator::TestBestFirst( sharedEntity_t *ent, int lastID, int flags )
 
 	node->GetPosition( nodePos );
 
-	//Setup our last node as our root, and search for a closer one according to its edges	
+	//Setup our last node as our root, and search for a closer one according to its edges
 	int bestNode = ( TestNodePath( ent, ENTITYNUM_NONE, nodePos, qtrue ) ) ? lastID : NODE_NONE;
 	float bestDist = ( bestNode == NODE_NONE ) ? Q3_INFINITE : DistanceSquared( ent->r.currentOrigin, nodePos );
 
@@ -1227,7 +1239,7 @@ int	CNavigator::TestBestFirst( sharedEntity_t *ent, int lastID, int flags )
 			{
 				SetCheckedNode(testNode->GetID(),ent->s.number,CHECKED_FAILED);
 			}
-		}	
+		}
 	}
 
 	return bestNode;
@@ -1262,7 +1274,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 		//Must be within our radius range
 		if ( dist > (float) ( radius * radius ) )
 			continue;
-		
+
 		nodeList_t				nChain;
 		nodeChain_l::iterator	nci;
 
@@ -1290,7 +1302,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 				nodeChain.insert( nci, nChain );
 				collected = nodeChain.size();
 				added = true;
-				
+
 				//If we've hit our collection limit, throw off the oldest one
 				if ( (int)nodeChain.size() > maxCollect )
 				{
@@ -1368,7 +1380,7 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 			}
 			//okay, since we only have to do this once, let's check to see if this node is even usable (could help us short-circuit a whole loop of the dest nodes)
 			radius	= node->GetRadius();
-			
+
 			//If we're not within the known clear radius of this node OR out of Z height range...
 			if ( (int)(*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
 			{
@@ -1458,7 +1470,7 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 					continue;
 				}
 				radius	= node2->GetRadius();
-				
+
 				//If we're not within the known clear radius of this node OR out of Z height range...
 				if ( (int)(*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
 				{
@@ -1549,7 +1561,7 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 		node->GetPosition( position );
 
 		radius	= node->GetRadius();
-		
+
 		if ( NodeFailed( ent, (*nci).nodeID ) )
 		{
 			continue;
@@ -1560,7 +1572,7 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 			//Do a z-difference sanity check
 			if ( fabs( position[2] - ent->r.currentOrigin[2] ) < MAX_Z_DELTA )
 			{
-				//Found one		
+				//Found one
 				return (*nci).nodeID;
 			}
 		}
@@ -1627,7 +1639,7 @@ ShowPath
 */
 
 void CNavigator::ShowPath( int start, int end )
-{	
+{
 	//Validate the start position
 	if ( ( start < 0 ) || ( start >= (int)m_nodes.size() ) )
 		return;
@@ -1638,7 +1650,7 @@ void CNavigator::ShowPath( int start, int end )
 
 	CNode	*startNode	= m_nodes[ start ];
 	CNode	*endNode	= m_nodes[ end ];
-	
+
 	CNode	*moveNode = startNode;
 	CNode	*testNode = NULL;
 
@@ -1651,7 +1663,7 @@ void CNavigator::ShowPath( int start, int end )
 	while ( moveNode != endNode )
 	{
 		bestNode = GetBestNode( moveNode->GetID(), end );
-		
+
 		//Some nodes may be fragmented
 		if ( bestNode == -1 )
 		{
@@ -1665,7 +1677,7 @@ void CNavigator::ShowPath( int start, int end )
 		//Get their origins
 		moveNode->GetPosition( startPos );
 		testNode->GetPosition( endPos );
-		
+
 		//Draw the edge
 		//rwwFIXMEFIXME: ...
 		//CG_DrawEdge( startPos, endPos, EDGE_PATH );
@@ -1681,7 +1693,7 @@ void CNavigator::ShowPath( int start, int end )
 	}
 }
 
-static map<int,byte> CheckedNodes;
+static std::map<int,byte> CheckedNodes;
 void CNavigator::ClearCheckedNodes( void )
 {
 	CheckedNodes.clear();
@@ -1695,7 +1707,7 @@ byte CNavigator::CheckedNode(int wayPoint,int ent)
 		return CHECKED_NO;
 	}
 	assert(ent>=0&&ent<MAX_GENTITIES);
-	map<int,byte>::iterator f=CheckedNodes.find(wayPoint*MAX_GENTITIES+ent);
+	std::map<int,byte>::iterator f=CheckedNodes.find(wayPoint*MAX_GENTITIES+ent);
 	if (f!=CheckedNodes.end())
 	{
 		return (*f).second;
@@ -1871,25 +1883,25 @@ void CNavigator::ClearAllFailedEdges( void )
 }
 
 int CNavigator::EdgeFailed( int startID, int endID )
-{	
+{
 	//OPTIMIZED WAY  (bjg 01/02)
 	//find in lookup map
-	pair <EdgeMultimapIt, EdgeMultimapIt> findValue;
-	findValue = m_edgeLookupMap.equal_range(startID);	
-	while ( findValue.first != findValue.second ) 
+	std::pair <EdgeMultimapIt, EdgeMultimapIt> findValue;
+	findValue = m_edgeLookupMap.equal_range(startID);
+	while ( findValue.first != findValue.second )
 	{
 		if( failedEdges[findValue.first->second].endID == endID)
-		{	
-			return findValue.first->second;		
+		{
+			return findValue.first->second;
 		}
 		++findValue.first;
 	}
-	findValue = m_edgeLookupMap.equal_range(endID);	
-	while ( findValue.first != findValue.second ) 
+	findValue = m_edgeLookupMap.equal_range(endID);
+	while ( findValue.first != findValue.second )
 	{
 		if( failedEdges[findValue.first->second].endID == startID)
-		{	
-			return findValue.first->second;		
+		{
+			return findValue.first->second;
 		}
 		++findValue.first;
 	}
@@ -1983,7 +1995,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 			//Check one second from now to see if it's clear
 			failedEdges[j].checkTime = svs.time + CHECK_FAILED_EDGE_INTERVAL + Q_irand( 0, 1000 );
 
-			m_edgeLookupMap.insert(pair<int, int>(startID, j));
+			m_edgeLookupMap.insert(std::pair<int, int>(startID, j));
 
 			/*
 			//DISABLED this for now, makes people stand around too long when
@@ -2009,7 +2021,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 				}
 			}
 			*/
-			
+
 			//Remember who needed it
 			failedEdges[j].entID = entID;
 
@@ -2183,7 +2195,7 @@ qboolean CNavigator::RouteBlocked( int startID, int testEdgeID, int endID, int r
 	{//Neighbors, checked out, all clear
 		return qfalse;
 	}
-	
+
 	//Okay, first edge is clear, now check rest of route!
 	end	= m_nodes[ endID ];
 	nextID = testEdgeID;
@@ -2235,7 +2247,7 @@ qboolean CNavigator::RouteBlocked( int startID, int testEdgeID, int endID, int r
 				allEdgesFailed = qfalse;
 			}
 		}
-		
+
 		if ( allEdgesFailed )
 		{
 			//This route has no clear way of getting to end
@@ -2548,7 +2560,7 @@ unsigned int CNavigator::GetPathCost( int startID, int endID )
 	}
 
 	CNode	*endNode	= m_nodes[ endID ];
-	
+
 	CNode	*moveNode = startNode;
 
 	int		bestNode;
@@ -2575,7 +2587,7 @@ unsigned int CNavigator::GetPathCost( int startID, int endID )
 			if ( edgeID == endID )
 			{
 				return pathCost + moveNode->GetEdgeCost( i );
-			}	
+			}
 
 			testRank = endNode->GetRank( edgeID );
 
@@ -2687,7 +2699,7 @@ int CNavigator::GetProjectedNode( vec3_t origin, int nodeID )
 //////////////////////////////////////////////////////////////////
 // Helper pop_mHeap algorithm class
 //////////////////////////////////////////////////////////////////
-class NodeTotalGreater 
+class NodeTotalGreater
 {
 public:
    bool operator()( CEdge * first, CEdge * second ) const {
@@ -2712,7 +2724,7 @@ CPriorityQueue::~CPriorityQueue()
 //////////////////////////////////////////////////////////////////
 CEdge* CPriorityQueue::Find(int npNum)
 {
-	for(vector<CEdge*>::iterator HeapIter=mHeap.begin(); HeapIter!=mHeap.end(); ++HeapIter)
+	for(std::vector<CEdge*>::iterator HeapIter=mHeap.begin(); HeapIter!=mHeap.end(); ++HeapIter)
 	{
 		if ((*HeapIter)->m_first == npNum)
 		{
@@ -2726,7 +2738,7 @@ CEdge* CPriorityQueue::Find(int npNum)
 // Remove Node And Resort
 //////////////////////////////////////////////////////////////////
 CEdge* CPriorityQueue::Pop()
-{  
+{
    CEdge *edge = mHeap.front();
 
    //pop_mHeap will move the node at the front to the position N
@@ -2746,7 +2758,7 @@ CEdge* CPriorityQueue::Pop()
 // Add New Node And Resort
 //////////////////////////////////////////////////////////////////
 void CPriorityQueue::Push(CEdge* theEdge )
-{    
+{
    //Pushes the node onto the back of the mHeap
    mHeap.push_back( theEdge );
 
@@ -2758,8 +2770,8 @@ void CPriorityQueue::Push(CEdge* theEdge )
 // Find The Node In Question And Resort mHeap Around It
 //////////////////////////////////////////////////////////////////
 void CPriorityQueue::Update( CEdge* edge )
-{  
-   for(vector<CEdge*>::iterator i=mHeap.begin(); i!=mHeap.end(); ++i)
+{
+   for(std::vector<CEdge*>::iterator i=mHeap.begin(); i!=mHeap.end(); ++i)
    {
       if( (*i)->m_first == edge->m_first )
       {  //Found node - resort from this position in the mHeap

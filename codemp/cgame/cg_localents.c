@@ -1,5 +1,25 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // cg_localents.c -- every frame, generate renderer commands for locally
 // processed entities, like smoke puffs, gibs, shells, etc.
@@ -113,7 +133,7 @@ void CG_BloodTrail( localEntity_t *le ) {
 	for ( ; t <= t2; t += step ) {
 		BG_EvaluateTrajectory( &le->pos, t, newOrigin );
 
-		blood = CG_SmokePuff( newOrigin, vec3_origin, 
+		blood = CG_SmokePuff( newOrigin, vec3_origin,
 					  20,		// radius
 					  1, 1, 1, 1,	// color
 					  2000,		// trailTime
@@ -139,10 +159,10 @@ void CG_FragmentBounceMark( localEntity_t *le, trace_t *trace ) {
 
 	if ( le->leMarkType == LEMT_BLOOD ) {
 	//	radius = 16 + (rand()&31);
-	//	CG_ImpactMark( cgs.media.bloodMarkShader, trace->endpos, trace->plane.normal, random()*360, 1,1,1,1, qtrue, radius, qfalse );
+	//	CG_ImpactMark( cgs.media.bloodMarkShader, trace->endpos, trace->plane.normal, Q_flrand(0.0f, 1.0f)*360, 1,1,1,1, qtrue, radius, qfalse );
 	} else if ( le->leMarkType == LEMT_BURN ) {
 	//	radius = 8 + (rand()&15);
-	//	CG_ImpactMark( cgs.media.burnMarkShader, trace->endpos, trace->plane.normal, random()*360, 1,1,1,1, qtrue, radius, qfalse );
+	//	CG_ImpactMark( cgs.media.burnMarkShader, trace->endpos, trace->plane.normal, Q_flrand(0.0f, 1.0f)*360, 1,1,1,1, qtrue, radius, qfalse );
 	}
 
 	// don't allow a fragment to make multiple marks, or they pile up while settling
@@ -156,7 +176,7 @@ CG_FragmentBounceSound
 */
 void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace ) {
 	// half the fragments will make a bounce sounds
-	if ( rand() & 1 ) 
+	if ( rand() & 1 )
 	{
 		sfxHandle_t	s = 0;
 
@@ -180,7 +200,7 @@ void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace ) {
 		// bouncers only make the sound once...
 		// FIXME: arbitrary...change if it bugs you
 		le->leBounceSoundType = LEBS_NONE;
-	} 
+	}
 	else if ( rand() & 1 )
 	{
 		// we may end up bouncing again, but each bounce reduces the chance of playing the sound again or they may make a lot of noise when they settle
@@ -212,8 +232,8 @@ void CG_ReflectVelocity( localEntity_t *le, trace_t *trace ) {
 	le->pos.trTime = cg.time;
 
 	// check for stop, making sure that even on low FPS systems it doesn't bobble
-	if ( trace->allsolid || 
-		( trace->plane.normal[2] > 0 && 
+	if ( trace->allsolid ||
+		( trace->plane.normal[2] > 0 &&
 		( le->pos.trDelta[2] < 40 || le->pos.trDelta[2] < -cg.frametime * le->pos.trDelta[2] ) ) ) {
 		le->pos.trType = TR_STATIONARY;
 	} else {
@@ -240,7 +260,7 @@ void CG_AddFragment( localEntity_t *le ) {
 		// sink into the ground if near the removal time
 		int		t;
 		float	t_e;
-		
+
 		t = le->endTime - cg.time;
 		if ( t < (SINK_TIME*2) ) {
 			le->refEntity.renderfx |= RF_FORCE_ENT_ALPHA;
@@ -301,7 +321,7 @@ void CG_AddFragment( localEntity_t *le ) {
 	// if it is in a nodrop zone, remove it
 	// this keeps gibs from waiting at the bottom of pits of death
 	// and floating levels
-	if ( trap->CM_PointContents( trace.endpos, 0 ) & CONTENTS_NODROP ) {
+	if ( CG_PointContents( trace.endpos, 0 ) & CONTENTS_NODROP ) {
 		CG_FreeLocalEntity( le );
 		return;
 	}
@@ -725,7 +745,7 @@ void CG_AddOLine( localEntity_t *le )
 	re = &le->refEntity;
 
 	frac = (cg.time - le->startTime) / ( float ) ( le->endTime - le->startTime );
-	if ( frac > 1 ) 
+	if ( frac > 1 )
 		frac = 1.0;	// can happen during connection problems
 	else if (frac < 0)
 		frac = 0.0;

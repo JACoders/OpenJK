@@ -1,7 +1,28 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // this file is only included when building a dll
-// syscalls.asm is included instead when building a qvm
 #include "ui_local.h"
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
@@ -22,14 +43,14 @@ int PASSFLOAT( float x ) {
 void trap_Print( const char *string ) {
 	Q_syscall( UI_PRINT, string );
 }
-void trap_Error( const char *string ) {
+NORETURN void trap_Error( const char *string ) {
 	Q_syscall( UI_ERROR, string );
 	exit(1);
 }
 int trap_Milliseconds( void ) {
-	return Q_syscall( UI_MILLISECONDS ); 
+	return Q_syscall( UI_MILLISECONDS );
 }
-void trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, int flags ) {
+void trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, uint32_t flags ) {
 	Q_syscall( UI_CVAR_REGISTER, cvar, var_name, value, flags );
 }
 void trap_Cvar_Update( vmCvar_t *cvar ) {
@@ -50,9 +71,9 @@ void trap_Cvar_SetValue( const char *var_name, float value ) {
 	Q_syscall( UI_CVAR_SETVALUE, var_name, PASSFLOAT( value ) );
 }
 void trap_Cvar_Reset( const char *name ) {
-	Q_syscall( UI_CVAR_RESET, name ); 
+	Q_syscall( UI_CVAR_RESET, name );
 }
-void trap_Cvar_Create( const char *var_name, const char *var_value, int flags ) {
+void trap_Cvar_Create( const char *var_name, const char *var_value, uint32_t flags ) {
 	Q_syscall( UI_CVAR_CREATE, var_name, var_value, flags );
 }
 void trap_Cvar_InfoStringBuffer( int bit, char *buffer, int bufsize ) {
@@ -92,13 +113,21 @@ qhandle_t trap_R_RegisterFont( const char *fontName ) {
 	return Q_syscall( UI_R_REGISTERFONT, fontName);
 }
 int	trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
-	return Q_syscall( UI_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(scale));
+	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
+	float width = (float)Q_syscall( UI_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
+	return width * scale;
+}
+float trap_R_Font_StrLenPixelsFloat(const char *text, const int iFontIndex, const float scale) {
+	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
+	float width = (float)Q_syscall( UI_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
+	return width * scale;
 }
 int trap_R_Font_StrLenChars(const char *text) {
 	return Q_syscall( UI_R_FONT_STRLENCHARS, text);
 }
 int trap_R_Font_HeightPixels(const int iFontIndex, const float scale) {
-	return Q_syscall( UI_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(scale));
+	float height = (float)Q_syscall( UI_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT( 1.0f ) );
+	return height * scale;
 }
 void trap_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iCharLimit, const float scale) {
 	Q_syscall( UI_R_FONT_DRAWSTRING, ox, oy, text, rgba, setIndex, iCharLimit, PASSFLOAT(scale));
@@ -114,7 +143,7 @@ unsigned int trap_AnyLanguage_ReadCharFromString( const char *psText, int *piAdv
 }
 qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 	char buf[1024];
-	
+
 	if (name[0] == '*') {
 		trap_Cvar_VariableStringBuffer(name+1, buf, sizeof(buf));
 		if (buf[0])
@@ -428,7 +457,19 @@ int UISyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_
 void UISyscall_R_AddPolysToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts, int num ) { trap_R_AddPolyToScene( hShader, numVerts, verts ); }
 void UISyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
 
-void QDECL UI_Error( int level, const char *error, ... ) {
+void UISyscall_AddCommand( const char *cmd_name )
+{
+	// TODO warn developer only
+	Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.AddCommand() is only supported with OpenJK mod API!\n" );
+}
+
+void UISyscall_RemoveCommand( const char *cmd_name )
+{
+	// TODO warn developer only
+	Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.RemoveCommand() is only supported with OpenJK mod API!\n" );
+}
+
+NORETURN void QDECL UI_Error( int level, const char *error, ... ) {
 	va_list argptr;
 	char text[4096] = {0};
 
@@ -606,4 +647,8 @@ static void TranslateSyscalls( void ) {
 	trap->G2API_IKMove						= trap_G2API_IKMove;
 	trap->G2API_GetSurfaceName				= trap_G2API_GetSurfaceName;
 	trap->G2API_AttachG2Model				= trap_G2API_AttachG2Model;
+
+	trap->ext.R_Font_StrLenPixels			= trap_R_Font_StrLenPixelsFloat;
+	trap->ext.AddCommand					= UISyscall_AddCommand;
+	trap->ext.RemoveCommand					= UISyscall_RemoveCommand;
 }

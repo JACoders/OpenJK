@@ -1,24 +1,25 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
 #include "g_headers.h"
-
 	    
 #include "b_local.h"
 
@@ -71,7 +72,7 @@ void Howler_Patrol( void )
 	{
 		if ( TIMER_Done( NPC, "patrolTime" ))
 		{
-			TIMER_Set( NPC, "patrolTime", crandom() * 5000 + 5000 );
+			TIMER_Set( NPC, "patrolTime", Q_flrand(-1.0f, 1.0f) * 5000 + 5000 );
 		}
 	}
 
@@ -135,7 +136,7 @@ void Howler_Attack( void )
 	if ( !TIMER_Exists( NPC, "attacking" ))
 	{
 		// Going to do ATTACK1
-		TIMER_Set( NPC, "attacking", 1700 + random() * 200 );
+		TIMER_Set( NPC, "attacking", 1700 + Q_flrand(0.0f, 1.0f) * 200 );
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_ATTACK1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD );
 
 		TIMER_Set( NPC, "attack_dmg", 200 ); // level two damage
@@ -180,7 +181,7 @@ void Howler_Combat( void )
 		}
 		else
 		{
-			Howler_Move( 1 );
+			Howler_Move( qtrue );
 		}
 	}
 	else

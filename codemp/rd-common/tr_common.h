@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #ifndef TR_COMMON_H
 #define TR_COMMON_H
 
@@ -37,13 +60,6 @@ qboolean R_ImageLoader_Add( const char *extension, ImageLoaderFn imageLoader );
 // Load an image from file.
 void R_LoadImage( const char *shortname, byte **pic, int *width, int *height );
 
-// Load an image from file.
-// xyc: How does this differ from R_LoadImage (except it doesn't load PNG files)?
-void R_LoadDataImage( const char *name, byte **pic, int *width, int *height );
-
-// Load raw image data from pallette-colored TGA image.
-bool LoadTGAPalletteImage( const char *name, byte **pic, int *width, int *height );
-
 // Load raw image data from TGA image.
 void LoadTGA( const char *name, byte **pic, int *width, int *height );
 
@@ -67,17 +83,5 @@ void RE_SaveJPG( const char * filename, int quality, int image_width, int image_
 
 // Save raw image data as PNG image file.
 int RE_SavePNG( const char *filename, byte *buf, size_t width, size_t height, int byteDepth );
-
-
-/*
-================================================================================
- Image manipulation
-================================================================================
-*/
-// Flip an image along its y-axis.
-void R_InvertImage( byte *data, int width, int height, int depth );
-
-// Resize an image by resampling the image.
-void R_Resample( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components );
 
 #endif

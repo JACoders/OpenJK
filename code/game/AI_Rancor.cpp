@@ -1,21 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-    
+
 #include "b_local.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
@@ -156,7 +160,7 @@ void Rancor_Patrol( void )
 	Rancor_CheckRoar( NPC );
 	TIMER_Set( NPC, "lookForNewEnemy", Q_irand( 5000, 15000 ) );
 }
- 
+
 /*
 -------------------------
 Rancor_Move
@@ -276,7 +280,7 @@ void Rancor_Move( qboolean visible )
 					//let him know he should attack at random out of frustration?
 					if ( NPCInfo->goalEntity == NPC->enemy )
 					{
-						if ( TIMER_Done( NPC, "attacking" ) 
+						if ( TIMER_Done( NPC, "attacking" )
 							&& TIMER_Done( NPC, "frustrationAttack" ) )
 						{
 							float enemyDist = Distance( dest, NPC->currentOrigin );
@@ -428,18 +432,18 @@ void Rancor_Swing( int boltIndex, qboolean tryGrab )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnts[i] == NPC )
 		{//Skip the rancor ent
 			continue;
 		}
-		
+
 		if ( radiusEnts[i]->client == NULL )
 		{//must be a client
 			continue;
 		}
 
-		if ( (radiusEnts[i]->client->ps.eFlags&EF_HELD_BY_RANCOR) 
+		if ( (radiusEnts[i]->client->ps.eFlags&EF_HELD_BY_RANCOR)
 			||(radiusEnts[i]->client->ps.eFlags&EF_HELD_BY_WAMPA) )
 		{//can't be one already being held
 			continue;
@@ -455,7 +459,7 @@ void Rancor_Swing( int boltIndex, qboolean tryGrab )
 			continue;
 		}
 		*/
-		
+
 		if ( DistanceSquared( radiusEnts[i]->currentOrigin, boltOrg ) <= radiusSquared )
 		{
 			if ( !gi.inPVS( radiusEnts[i]->currentOrigin, NPC->currentOrigin ) )
@@ -472,7 +476,7 @@ void Rancor_Swing( int boltIndex, qboolean tryGrab )
 				skipGrab = qtrue;
 			}
 			*/
-			if ( tryGrab 
+			if ( tryGrab
 				//&& !skipGrab
 				&& NPC->count != 1 //don't have one in hand or in mouth already - FIXME: allow one in hand and any number in mouth!
 				&& radiusEnts[i]->client->NPC_class != CLASS_RANCOR
@@ -524,7 +528,7 @@ void Rancor_Swing( int boltIndex, qboolean tryGrab )
 				pushDir[2] = Q_flrand( 100, 200 );
 				VectorNormalize( pushDir );
 				*/
-				if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL) 
+				if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL)
 					&& radiusEnts[i]->s.number >= MAX_CLIENTS )
 				{
 					G_Damage( radiusEnts[i], NPC, NPC, vec3_origin, boltOrg, radiusEnts[i]->health+1000, (DAMAGE_NO_KNOCKBACK|DAMAGE_NO_PROTECTION), MOD_MELEE );
@@ -605,12 +609,12 @@ void Rancor_Smash( void )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnts[i] == NPC )
 		{//Skip the rancor ent
 			continue;
 		}
-		
+
 		if ( radiusEnts[i]->client == NULL )
 		{//must be a client
 			if ( G_EntIsBreakable( radiusEnts[i]->s.number, NPC ) )
@@ -632,14 +636,14 @@ void Rancor_Smash( void )
 		{//not if invisible
 			continue;
 		}
-		
+
 		distSq = DistanceSquared( radiusEnts[i]->currentOrigin, boltOrg );
 		if ( distSq <= radiusSquared )
 		{
 			if ( distSq < halfRadSquared )
 			{//close enough to do damage, too
 				G_Sound( radiusEnts[i], G_SoundIndex( "sound/chars/rancor/swipehit.wav" ) );
-				if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL) 
+				if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL)
 					&& radiusEnts[i]->s.number >= MAX_CLIENTS )
 				{
 					G_Damage( radiusEnts[i], NPC, NPC, vec3_origin, boltOrg, radiusEnts[i]->health+1000, (DAMAGE_NO_KNOCKBACK|DAMAGE_NO_PROTECTION), MOD_MELEE );
@@ -653,12 +657,12 @@ void Rancor_Smash( void )
 					G_Damage( radiusEnts[i], NPC, NPC, vec3_origin, radiusEnts[i]->currentOrigin, Q_irand( 10, 25 ), DAMAGE_NO_KNOCKBACK, MOD_MELEE );
 				}
 			}
-			if ( radiusEnts[i]->health > 0 
+			if ( radiusEnts[i]->health > 0
 				&& radiusEnts[i]->client
 				&& radiusEnts[i]->client->NPC_class != CLASS_RANCOR
 				&& radiusEnts[i]->client->NPC_class != CLASS_ATST )
 			{
-				if ( distSq < halfRadSquared 
+				if ( distSq < halfRadSquared
 					|| radiusEnts[i]->client->ps.groundEntityNum != ENTITYNUM_NONE )
 				{//within range of my fist or withing ground-shaking range and not in the air
 					if ( (NPC->spawnflags&SPF_RANCOR_MUTANT) )
@@ -692,12 +696,12 @@ void Rancor_Bite( void )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnts[i] == NPC )
 		{//Skip the rancor ent
 			continue;
 		}
-		
+
 		if ( radiusEnts[i]->client == NULL )
 		{//must be a client
 			continue;
@@ -712,10 +716,10 @@ void Rancor_Bite( void )
 		{//not if invisible
 			continue;
 		}
-		
+
 		if ( DistanceSquared( radiusEnts[i]->currentOrigin, boltOrg ) <= radiusSquared )
 		{
-			if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL) 
+			if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL)
 				&& radiusEnts[i]->s.number >= MAX_CLIENTS )
 			{
 				G_Damage( radiusEnts[i], NPC, NPC, vec3_origin, radiusEnts[i]->currentOrigin, radiusEnts[i]->health+1000, (DAMAGE_NO_KNOCKBACK|DAMAGE_NO_PROTECTION), MOD_MELEE );
@@ -762,7 +766,7 @@ void Rancor_Bite( void )
 extern gentity_t *TossClientItems( gentity_t *self );
 void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEntity )
 {
-	if ( !TIMER_Exists( NPC, "attacking" ) 
+	if ( !TIMER_Exists( NPC, "attacking" )
 		&& TIMER_Done( NPC, "attackDebounce" ) )
 	{
 		if ( NPC->count == 2 && NPC->activator )
@@ -771,7 +775,7 @@ void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEnti
 		else if ( NPC->count == 1 && NPC->activator )
 		{//holding enemy
 			if ( (!(NPC->spawnflags&SPF_RANCOR_FASTKILL) ||NPC->activator->s.number<MAX_CLIENTS)
-				&& NPC->activator->health > 0 
+				&& NPC->activator->health > 0
 				&& Q_irand( 0, 1 ) )
 			{//quick bite
 				NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_ATTACK1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD );
@@ -867,7 +871,7 @@ void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEnti
 				}
 			}
 		}
-		else if ( !Q_irand(0, 1) 
+		else if ( !Q_irand(0, 1)
 			/*&& (NPC->spawnflags&SPF_RANCOR_MUTANT)*/ )
 		{//mutant rancor can smash
 			NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_MELEE1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD );
@@ -929,7 +933,7 @@ void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEnti
 			return;
 		}
 
-		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + random() * 200 );
+		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + Q_flrand(0.0f, 1.0f) * 200 );
 	}
 
 	// Need to do delayed damage since the attack animations encapsulate multiple mini-attacks
@@ -964,7 +968,7 @@ void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEnti
 		case BOTH_ATTACK1:
 			if ( NPC->count == 1 && NPC->activator )
 			{
-				if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL) 
+				if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL)
 					&& NPC->activator->s.number >= MAX_CLIENTS )
 				{
 					G_Damage( NPC->activator, NPC, NPC, vec3_origin, NPC->activator->currentOrigin, NPC->activator->health+1000, (DAMAGE_NO_KNOCKBACK|DAMAGE_NO_PROTECTION), MOD_MELEE );
@@ -1067,13 +1071,13 @@ void Rancor_Combat( void )
 		{
 			NPCInfo->localState = LSTATE_CLEAR;
 		}
-		else if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL) 
+		else if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL)
 			&& NPC->activator
 			&& NPC->activator->s.number >= MAX_CLIENTS )
 		{
 			Rancor_Attack( 0, qfalse, qfalse );
 		}
-		else if ( NPC->useDebounceTime >= level.time 
+		else if ( NPC->useDebounceTime >= level.time
 			&& NPC->activator )
 		{//just sniffing the guy
 			if ( NPC->useDebounceTime <= level.time + 100
@@ -1085,8 +1089,8 @@ void Rancor_Combat( void )
 		}
 		else
 		{
-			if ( !NPC->useDebounceTime 
-				&& NPC->activator 
+			if ( !NPC->useDebounceTime
+				&& NPC->activator
 				&& NPC->activator->s.number < MAX_CLIENTS )
 			{//first time I pick the player, just sniff them
 				if ( TIMER_Done(NPC,"attacking") )
@@ -1120,7 +1124,7 @@ void Rancor_Combat( void )
 	// Sometimes I have problems with facing the enemy I'm attacking, so force the issue so I don't look dumb
 	NPC_FaceEnemy( qtrue );
 
-	float	distance	= Distance( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float	distance	= Distance( NPC->currentOrigin, NPC->enemy->currentOrigin );
 
 	qboolean	advance = (qboolean)( distance > (NPC->maxs[0]+(MIN_DISTANCE*NPC->s.modelScale[0])) ? qtrue : qfalse  );
 	qboolean	doCharge = qfalse;
@@ -1160,7 +1164,7 @@ void Rancor_Combat( void )
 		}
 		else
 		{
-			Rancor_Move( 1 );
+			Rancor_Move( qtrue );
 		}
 	}
 	else
@@ -1174,10 +1178,10 @@ void Rancor_Combat( void )
 NPC_Rancor_Pain
 -------------------------
 */
-void NPC_Rancor_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Rancor_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	qboolean hitByRancor = qfalse;
-	
+
 	if ( self->NPC && self->NPC->ignorePain )
 	{
 		return;
@@ -1193,8 +1197,8 @@ void NPC_Rancor_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 	{
 		hitByRancor = qtrue;
 	}
-	if ( other 
-		&& other->inuse 
+	if ( other
+		&& other->inuse
 		&& other != self->enemy
 		&& !(other->flags&FL_NOTARGET) )
 	{
@@ -1204,7 +1208,7 @@ void NPC_Rancor_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 				|| !self->enemy
 				|| self->enemy->health == 0
 				|| (self->enemy->client&&self->enemy->client->NPC_class == CLASS_RANCOR)
-				|| (!Q_irand(0, 4 ) && DistanceSquared( other->currentOrigin, self->currentOrigin ) < DistanceSquared( self->enemy->currentOrigin, self->currentOrigin )) ) 
+				|| (!Q_irand(0, 4 ) && DistanceSquared( other->currentOrigin, self->currentOrigin ) < DistanceSquared( self->enemy->currentOrigin, self->currentOrigin )) )
 			{//if my enemy is dead (or attacked by player) and I'm not still holding/eating someone, turn on the attacker
 				//FIXME: if can't nav to my enemy, take this guy if I can nav to him
 				self->lastEnemy = self->enemy;
@@ -1235,7 +1239,7 @@ void NPC_Rancor_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 				&& self->client->ps.legsAnim != BOTH_ATTACK11 )
 			{//cant interrupt one of the big attack anims
 				/*
-				if ( self->count != 1 
+				if ( self->count != 1
 					|| other == self->activator
 					|| (self->client->ps.legsAnim != BOTH_ATTACK1&&self->client->ps.legsAnim != BOTH_ATTACK3) )
 				*/
@@ -1276,15 +1280,15 @@ void NPC_Rancor_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 
 void Rancor_CheckDropVictim( void )
 {
-	if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL) 
+	if ( (NPC->spawnflags&SPF_RANCOR_FASTKILL)
 		&& NPC->activator->s.number >= MAX_CLIENTS )
 	{
 		return;
 	}
 	vec3_t mins={NPC->activator->mins[0]-1,NPC->activator->mins[1]-1,0};
 	vec3_t maxs={NPC->activator->maxs[0]+1,NPC->activator->maxs[1]+1,1};
-	vec3_t start={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmin[2]}; 
-	vec3_t end={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmax[2]-1}; 
+	vec3_t start={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmin[2]};
+	vec3_t end={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmax[2]-1};
 	trace_t	trace;
 	gi.trace( &trace, start, mins, maxs, end, NPC->activator->s.number, NPC->activator->clipmask, (EG2_Collision)0, 0 );
 	if ( !trace.allsolid && !trace.startsolid && trace.fraction >= 1.0f )
@@ -1401,8 +1405,8 @@ void Rancor_FireBreathAttack( void )
 	gi.trace( &tr, start, traceMins, traceMaxs, end, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 
 	traceEnt = &g_entities[tr.entityNum];
-	if ( tr.entityNum < ENTITYNUM_WORLD 
-		&& traceEnt->takedamage 
+	if ( tr.entityNum < ENTITYNUM_WORLD
+		&& traceEnt->takedamage
 		&& traceEnt->client )
 	{//breath attack only does damage to living things
 		G_Damage( traceEnt, NPC, NPC, dir, tr.endpos, damage*2, DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC|DAMAGE_IGNORE_TEAM, MOD_LAVA, HL_NONE );
@@ -1453,7 +1457,7 @@ NPC_BSRancor_Default
 -------------------------
 */
 void NPC_BSRancor_Default( void )
-{ 
+{
 	AddSightEvent( NPC, NPC->currentOrigin, 1024, AEL_DANGER_GREAT, 50 );
 
 	if (NPCInfo->blockedEntity && TIMER_Done(NPC, "blockedEntityIgnore"))
@@ -1496,7 +1500,7 @@ void NPC_BSRancor_Default( void )
 		Rancor_DropVictim( NPC );
 	}
 	else if ( (NPC->client->ps.legsAnim == BOTH_PAIN2 || NPC->client->ps.legsAnim == BOTH_HOLD_DROP )
-		&& NPC->count == 1 
+		&& NPC->count == 1
 		&& NPC->activator )
 	{
 		Rancor_CheckDropVictim();
@@ -1508,7 +1512,7 @@ void NPC_BSRancor_Default( void )
 		return;
 	}
 
-	if ( NPCInfo->localState == LSTATE_WAITING 
+	if ( NPCInfo->localState == LSTATE_WAITING
 		&& TIMER_Done2( NPC, "takingPain", qtrue ) )
 	{//was not doing anything because we were taking pain, but pain is done now, so clear it...
 		NPCInfo->localState = LSTATE_CLEAR;
@@ -1567,7 +1571,7 @@ void NPC_BSRancor_Default( void )
 					{//breakable brush
 						if ( !Rancor_AttackBBrush() )
 						{//didn't move inside that func, so call move here...?
-							Rancor_Move( 1 );
+							Rancor_Move( qtrue );
 						}
 						NPC_UpdateAngles( qtrue, qtrue );
 						return;
@@ -1575,7 +1579,7 @@ void NPC_BSRancor_Default( void )
 					else
 					{//if it's a client and in our way, get mad at it!
 						if ( NPCInfo->blockedEntity != NPC->enemy
-							&& NPCInfo->blockedEntity->client 
+							&& NPCInfo->blockedEntity->client
 							&& NPC_ValidEnemy( NPCInfo->blockedEntity )
 							&& !Q_irand( 0, 9 ) )
 						{
@@ -1590,8 +1594,8 @@ void NPC_BSRancor_Default( void )
 			if ( NPC_ValidEnemy( NPC->enemy ) == qfalse )
 			{
 				TIMER_Remove( NPC, "lookForNewEnemy" );//make them look again right now
-				if ( !NPC->enemy->inuse 
-					|| level.time - NPC->enemy->s.time > Q_irand( 10000, 15000 ) 
+				if ( !NPC->enemy->inuse
+					|| level.time - NPC->enemy->s.time > Q_irand( 10000, 15000 )
 					|| (NPC->spawnflags&SPF_RANCOR_FASTKILL) )//don't linger on dead bodies
 				{//it's been a while since the enemy died, or enemy is completely gone, get bored with him
 					if ( (NPC->spawnflags&SPF_RANCOR_MUTANT)
@@ -1617,7 +1621,7 @@ void NPC_BSRancor_Default( void )
 			{
 				gentity_t *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 				NPC->enemy = NULL;
-				gentity_t *newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+				gentity_t *newEnemy = NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse, qfalse );
 				NPC->enemy = sav_enemy;
 				if ( newEnemy && newEnemy != sav_enemy )
 				{//picked up a new enemy!
@@ -1640,7 +1644,7 @@ void NPC_BSRancor_Default( void )
 		if ( TIMER_Done( NPC, "attacking" )
 			&& TIMER_Done( NPC, "takingpain" )
 			&& TIMER_Done( NPC, "confusionDebounce" )
-			&& NPCInfo->localState == LSTATE_CLEAR 
+			&& NPCInfo->localState == LSTATE_CLEAR
 			&& !NPC->count )
 		{//not busy
 			if ( !ucmd.forwardmove
@@ -1666,7 +1670,7 @@ void NPC_BSRancor_Default( void )
 			}
 		}
 	}
-	else 
+	else
 	{
 		if ( TIMER_Done(NPC,"idlenoise") )
 		{

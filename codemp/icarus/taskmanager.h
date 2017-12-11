@@ -1,11 +1,31 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // Task Manager header file
 
 #include <map>
-#ifndef _WIN32
 #include <string>
-#endif
 
 #include "sequencer.h"
 class CSequencer;
@@ -22,14 +42,14 @@ enum
 	TASK_RETURN_FAILED,
 };
 
-enum 
+enum
 {
 	TASK_OK,
 	TASK_FAILED,
 	TASK_START,
 	TASK_END,
 };
-	
+
 // CTask
 
 class CTask
@@ -65,7 +85,7 @@ class CTaskGroup
 {
 public:
 
-	typedef map < int, bool > taskCallback_m;
+	typedef std::map < int, bool > taskCallback_m;
 
 	CTaskGroup( void );
 	~CTaskGroup( void );
@@ -73,7 +93,7 @@ public:
 	void Init( void );
 
 	int Add( CTask *task );
-	
+
 	void SetGUID( int GUID );
 	void SetParent( CTaskGroup *group )	{	m_parent = group;	}
 
@@ -99,11 +119,11 @@ public:
 class CTaskManager
 {
 
-	typedef	map < int, CTask * >			taskID_m;
-	typedef map < string, CTaskGroup * >	taskGroupName_m;
-	typedef map < int, CTaskGroup * >		taskGroupID_m;
-	typedef vector < CTaskGroup * >			taskGroup_v;
-	typedef list < CTask *>					tasks_l;
+	typedef	std::map < int, CTask * >			taskID_m;
+	typedef std::map < std::string, CTaskGroup * >	taskGroupName_m;
+	typedef std::map < int, CTaskGroup * >		taskGroupID_m;
+	typedef std::vector < CTaskGroup * >			taskGroup_v;
+	typedef std::list < CTask *>					tasks_l;
 
 public:
 
@@ -181,7 +201,7 @@ protected:
 
 	int						m_GUID;
 	int						m_count;
-	
+
 	taskGroupName_m			m_taskGroupNameMap;
 	taskGroupID_m			m_taskGroupIDMap;
 

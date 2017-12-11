@@ -1,23 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
@@ -63,7 +66,7 @@ static qboolean	R_CullGrid( srfGridMesh_t *cv ) {
 		sphereCull = R_CullPointAndRadius( cv->localOrigin, cv->meshRadius );
 	}
 	boxCull = CULL_OUT;
-	
+
 	// check for trivial reject
 	if ( sphereCull == CULL_OUT )
 	{
@@ -77,7 +80,7 @@ static qboolean	R_CullGrid( srfGridMesh_t *cv ) {
 
 		boxCull = R_CullLocalBox( cv->meshBounds );
 
-		if ( boxCull == CULL_OUT ) 
+		if ( boxCull == CULL_OUT )
 		{
 			tr.pc.c_box_cull_patch_out++;
 			return qtrue;
@@ -144,7 +147,7 @@ static qboolean	R_CullSurface( surfaceType_t *surface, shader_t *shader ) {
 
 	// don't cull exactly on the plane, because there are levels of rounding
 	// through the BSP, ICD, and hardware that may cause pixel gaps if an
-	// epsilon isn't allowed here 
+	// epsilon isn't allowed here
 	if ( shader->cullType == CT_FRONT_SIDED ) {
 		if ( d < sface->plane.dist - 8 ) {
 			return qtrue;
@@ -288,22 +291,22 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 
 	if (!noViewCount)
 	{
-		if ( surf->viewCount == tr.viewCount ) 
+		if ( surf->viewCount == tr.viewCount )
 		{
 			// already in this view, but lets make sure all the dlight bits are set
-			if ( *surf->data == SF_FACE ) 
+			if ( *surf->data == SF_FACE )
 			{
 				((srfSurfaceFace_t *)surf->data)->dlightBits |= dlightBits;
-			} 
-			else if ( *surf->data == SF_GRID ) 
+			}
+			else if ( *surf->data == SF_GRID )
 			{
 				((srfGridMesh_t *)surf->data)->dlightBits |= dlightBits;
-			} 
-			else if ( *surf->data == SF_TRIANGLES ) 
+			}
+			else if ( *surf->data == SF_TRIANGLES )
 			{
 				((srfTriangles_t *)surf->data)->dlightBits |= dlightBits;
 			}
-			return;		
+			return;
 		}
 		surf->viewCount = tr.viewCount;
 		// FIXME: bmodel fog?
@@ -324,7 +327,7 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 	}
 
 	R_AddDrawSurf( surf->data, surf->shader, surf->fogIndex, dlightBits );
-} 
+}
 
 /*
 =============================================================
@@ -353,7 +356,7 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent ) {
 	if ( clip == CULL_OUT ) {
 		return;
 	}
-	
+
 	if(pModel->bspInstance)
 	{
 		R_SetupEntityLighting(&tr.refdef, ent);
@@ -372,7 +375,7 @@ float GetQuadArea( vec3_t v1, vec3_t v2, vec3_t v3, vec3_t v4 )
 
 	// Get area of tri1
 	VectorSubtract( v1, v2, vec1 );
-	VectorSubtract( v1, v4, vec2 ); 
+	VectorSubtract( v1, v4, vec2 );
 	CrossProduct( vec1, vec2, dis1 );
 	VectorScale( dis1, 0.25f, dis1 );
 
@@ -404,7 +407,7 @@ void RE_GetBModelVerts( int bmodelIndex, vec3_t *verts, vec3_t normal )
 	bmodel = pModel->bmodel;
 
 	// Loop through all surfaces on the brush and find the best two candidates
-	for ( i = 0 ; i < bmodel->numSurfaces; i++ ) 
+	for ( i = 0 ; i < bmodel->numSurfaces; i++ )
 	{
 		surfs = bmodel->firstSurface + i;
 		face = ( srfSurfaceFace_t *)surfs->data;
@@ -435,7 +438,7 @@ void RE_GetBModelVerts( int bmodelIndex, vec3_t *verts, vec3_t normal )
 	surfs = bmodel->firstSurface + maxIndx[0];
 	face = ( srfSurfaceFace_t *)surfs->data;
 	dot1 = DotProduct( face->plane.normal, tr.refdef.viewaxis[0] );
-	
+
 	surfs = bmodel->firstSurface + maxIndx[1];
 	face = ( srfSurfaceFace_t *)surfs->data;
 	dot2 = DotProduct( face->plane.normal, tr.refdef.viewaxis[0] );
@@ -550,11 +553,11 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 		}
 
 		// determine which dlights are needed
-		if ( r_nocull->integer!=2 ) 
+		if ( r_nocull->integer!=2 )
 		{
 			newDlights[0] = 0;
 			newDlights[1] = 0;
-			if ( dlightBits ) 
+			if ( dlightBits )
 			{
 				int	i;
 				for ( i = 0 ; i < tr.refdef.num_dlights ; i++ )
@@ -565,7 +568,7 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 					if ( dlightBits & ( 1 << i ) ) {
 						dl = &tr.refdef.dlights[i];
 						dist = DotProduct( dl->origin, node->plane->normal ) - node->plane->dist;
-						
+
 						if ( dist > -dl->radius ) {
 							newDlights[0] |= ( 1 << i );
 						}
@@ -640,7 +643,7 @@ static mnode_t *R_PointInLeaf( vec3_t p ) {
 	mnode_t		*node;
 	float		d;
 	cplane_t	*plane;
-	
+
 	if ( !tr.world ) {
 		Com_Error (ERR_DROP, "R_PointInLeaf: bad model");
 	}
@@ -659,7 +662,7 @@ static mnode_t *R_PointInLeaf( vec3_t p ) {
 			node = node->children[1];
 		}
 	}
-	
+
 	return node;
 }
 
@@ -723,8 +726,8 @@ static void R_MarkLeaves (void) {
 	// if the cluster is the same and the area visibility matrix
 	// hasn't changed, we don't need to mark everything again
 
-	// if r_showcluster was just turned on, remark everything 
-	if ( tr.viewCluster == cluster && !tr.refdef.areamaskModified 
+	// if r_showcluster was just turned on, remark everything
+	if ( tr.viewCluster == cluster && !tr.refdef.areamaskModified
 		&& !r_showcluster->modified ) {
 		return;
 	}
@@ -749,7 +752,7 @@ static void R_MarkLeaves (void) {
 	}
 
 	vis = R_ClusterPVS (tr.viewCluster);
-	
+
 	for (i=0,leaf=tr.world->nodes ; i<tr.world->numnodes ; i++, leaf++) {
 		cluster = leaf->cluster;
 		if ( cluster < 0 || cluster >= tr.world->numClusters ) {

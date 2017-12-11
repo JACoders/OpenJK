@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // g_misc.c
 
@@ -27,7 +32,7 @@ This file is part of Jedi Academy.
 
 extern gentity_t *G_FindDoorTrigger( gentity_t *door );
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
-extern void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag, 
+extern void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag,
 									qboolean take_damage, qboolean damage_model);
 
 #define MAX_AMMO_GIVE 4
@@ -73,7 +78,7 @@ void SP_info_notnull( gentity_t *self ){
 /*QUAKED lightJunior (0 0.7 0.3) (-8 -8 -8) (8 8 8) nonlinear angle negative_spot negative_point
 Non-displayed light that only affects dynamic game models, but does not contribute to lightmaps
 "light" overrides the default 300 intensity.
-Nonlinear checkbox gives inverse square falloff instead of linear 
+Nonlinear checkbox gives inverse square falloff instead of linear
 Angle adds light:surface angle calculations (only valid for "Linear" lights) (wolf)
 Lights pointed at a target will be spotlights.
 "radius" overrides the default 64 unit radius of a spotlight at the target point.
@@ -133,7 +138,7 @@ static void misc_lightstyle_set ( gentity_t *ent)
 			gi.SetConfigstring(CS_LIGHT_STYLES + (mLightStyle*3)+1, "a");
 			gi.SetConfigstring(CS_LIGHT_STYLES + (mLightStyle*3)+2, "a");
 		}
-	} 
+	}
 	else
 	{	//Turn myself on now
 		if (mLightSwitchStyle)	//i have a light style i'd like to use when on
@@ -187,7 +192,7 @@ void misc_dlight_use ( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	ent->misc_dlight_active = !ent->misc_dlight_active;	//toggle
+	ent->misc_dlight_active = (qboolean)!ent->misc_dlight_active;	//toggle
 	misc_lightstyle_set (ent);
 }
 
@@ -200,13 +205,13 @@ TELEPORTERS
 =================================================================================
 */
 
-void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) 
+void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles )
 {
 	if ( player->NPC && ( player->NPC->aiFlags&NPCAI_FORM_TELE_NAV ) )
 	{
 		//My leader teleported, I was trying to catch up, take this off
 		player->NPC->aiFlags &= ~NPCAI_FORM_TELE_NAV;
-		
+
 	}
 
 	// unlink to make sure it can't possibly interfere with G_KillBox
@@ -237,7 +242,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles )
 	gi.linkentity (player);
 }
 
-void TeleportMover( gentity_t *mover, vec3_t origin, vec3_t diffAngles, qboolean snapAngle ) 
+void TeleportMover( gentity_t *mover, vec3_t origin, vec3_t diffAngles, qboolean snapAngle )
 {//FIXME: need an effect
 	vec3_t		oldAngle, newAngle;
 	float		speed;
@@ -288,7 +293,7 @@ void TeleportMover( gentity_t *mover, vec3_t origin, vec3_t diffAngles, qboolean
 	VectorScale( mover->s.apos.trDelta, speed, mover->s.apos.trDelta );
 
 	mover->s.apos.trTime = level.time;
-	
+
 	//Tell them it was teleported this move
 	mover->s.eFlags |= EF_TELEPORT_BIT;
 
@@ -348,7 +353,7 @@ void SP_misc_teleporter (gentity_t *ent)
 	VectorSet (trig->mins, -8, -8, 8);
 	VectorSet (trig->maxs, 8, 8, 24);
 	gi.linkentity (trig);
-	
+
 }
 
 /*QUAK-D misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16) - - NODRAW
@@ -428,11 +433,11 @@ void setCamera ( gentity_t *ent )
 	gentity_t	*target = 0;
 
 	// frame holds the rotate speed
-	if ( ent->owner->spawnflags & 1 ) 
+	if ( ent->owner->spawnflags & 1 )
 	{
 		ent->s.frame = 25;
-	} 
-	else if ( ent->owner->spawnflags & 2 ) 
+	}
+	else if ( ent->owner->spawnflags & 2 )
 	{
 		ent->s.frame = 75;
 	}
@@ -446,12 +451,12 @@ void setCamera ( gentity_t *ent )
 	if (ent->owner->target) {
 		target = G_PickTarget( ent->owner->target );
 	}
-	if ( target ) 
+	if ( target )
 	{
 		VectorSubtract( target->s.origin, ent->owner->s.origin, dir );
 		VectorNormalize( dir );
-	} 
-	else 
+	}
+	else
 	{
 		G_SetMovedir( ent->owner->s.angles, dir );
 	}
@@ -494,11 +499,11 @@ void misc_portal_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 	cycleCamera( self );
 }
 
-void locateCamera( gentity_t *ent ) 
+void locateCamera( gentity_t *ent )
 {//FIXME: make this fadeout with distance from misc_camera_portal
 
 	ent->owner = G_Find(NULL, FOFS(targetname), ent->target);
-	if ( !ent->owner ) 
+	if ( !ent->owner )
 	{
 		gi.Printf( "Couldn't find target for misc_portal_surface\n" );
 		G_FreeEntity( ent );
@@ -533,7 +538,7 @@ wait - makes it auto-cycle between all cameras it's pointed at at intevervals of
 
   cameras will be cycled through in the order they were created on the map.
 */
-void SP_misc_portal_surface(gentity_t *ent) 
+void SP_misc_portal_surface(gentity_t *ent)
 {
 	VectorClear( ent->mins );
 	VectorClear( ent->maxs );
@@ -543,11 +548,11 @@ void SP_misc_portal_surface(gentity_t *ent)
 	ent->s.eType = ET_PORTAL;
 	ent->wait *= 1000;
 
-	if ( !ent->target ) 
+	if ( !ent->target )
 	{//mirror?
 		VectorCopy( ent->s.origin, ent->s.origin2 );
-	} 
-	else 
+	}
+	else
 	{
 		ent->e_ThinkFunc = thinkF_locateCamera;
 		ent->nextthink = level.time + 100;
@@ -581,7 +586,7 @@ void G_SubBSPSpawnEntitiesFromString(const char *entityString, vec3_t posOffset,
 /*QUAKED misc_bsp (1 0 0) (-16 -16 -16) (16 16 16)
 "bspmodel"		arbitrary .bsp file to display
 */
-void SP_misc_bsp(gentity_t *ent) 
+void SP_misc_bsp(gentity_t *ent)
 {
 	char	temp[MAX_QPATH];
 	char	*out;
@@ -596,7 +601,7 @@ void SP_misc_bsp(gentity_t *ent)
 	// don't support rotation any other way
 	ent->s.angles[0] = 0.0;
 	ent->s.angles[2] = 0.0;
-	
+
 	G_SpawnString("bspmodel", "", &out);
 
 	ent->s.eFlags = EF_PERMANENT;
@@ -660,128 +665,9 @@ miscentDef - defines which client models spawn on the terrain (file is base/ext_
 densityMap - how dense the client models are packed
 
 */
-void SP_terrain(gentity_t *ent) 
+void SP_terrain(gentity_t *ent)
 {
-	char				temp[MAX_INFO_STRING];
-	char				final[MAX_QPATH];
-//	char				seed[MAX_QPATH];
-//	char				missionType[MAX_QPATH];
-//	char				soundSet[MAX_QPATH];
-	int					shaderNum, i;
-	char				*value;
-	int					terrainID;
-
-	//k, found a terrain, just set rmg to 1.
-	//This should always get set before RE_LoadWorldMap and all that is
-	//called which is all that matters.
-	//gi.cvar_set("RMG", "1");
-
-	VectorClear (ent->s.angles);
-	gi.SetBrushModel( ent, ent->model );
-
-	// Get the shader from the top of the brush
-//	shaderNum = gi.CM_GetShaderNum(s.modelindex);
-	shaderNum = 0;
-
-	//rww - Why not do this all the time? Not like terrain entities are used when you don't want them to be terrain.
-/*	if (g_RMG->integer)
-	{
-		gi.Cvar_VariableStringBuffer("RMG_seed", seed, MAX_QPATH);
-		gi.Cvar_VariableStringBuffer("RMG_mission", missionType, MAX_QPATH);
-
-	//	gi.Cvar_VariableStringBuffer("RMG_soundset", soundSet, MAX_QPATH);
-	//	gi.SetConfigstring(CS_AMBIENT_SOUNDSETS, soundSet );
-	}
-*/
-	// Arbitrary (but sane) limits to the number of terxels
-//	if((mTerxels < MIN_TERXELS) || (mTerxels > MAX_TERXELS))
-	{
-//		Com_printf("G_Terrain: terxels out of range - defaulting to 4\n");
-//		mTerxels = 4;
-	}
-
-	// Get info required for the common init
-	temp[0] = 0;
-	G_SpawnString("heightmap", "", &value);
-	Info_SetValueForKey(temp, "heightMap", value);
-
-	G_SpawnString("numpatches", "400", &value);
-	Info_SetValueForKey(temp, "numPatches", va("%d", atoi(value)));
-
-	G_SpawnString("terxels", "4", &value);
-	Info_SetValueForKey(temp, "terxels", va("%d", atoi(value)));
-
-	//Info_SetValueForKey(temp, "seed", seed);
-	Info_SetValueForKey(temp, "minx", va("%f", ent->mins[0]));
-	Info_SetValueForKey(temp, "miny", va("%f", ent->mins[1]));
-	Info_SetValueForKey(temp, "minz", va("%f", ent->mins[2]));
-	Info_SetValueForKey(temp, "maxx", va("%f", ent->maxs[0]));
-	Info_SetValueForKey(temp, "maxy", va("%f", ent->maxs[1]));
-	Info_SetValueForKey(temp, "maxz", va("%f", ent->maxs[2]));
-
-	Info_SetValueForKey(temp, "modelIndex", va("%d", ent->s.modelindex));
-
-	G_SpawnString("terraindef", "grassyhills", &value);
-	Info_SetValueForKey(temp, "terrainDef", value);
-
-	G_SpawnString("instancedef", "", &value);
-	Info_SetValueForKey(temp, "instanceDef", value);
-
-	G_SpawnString("miscentdef", "", &value);
-	Info_SetValueForKey(temp, "miscentDef", value);
-
-	//Info_SetValueForKey(temp, "missionType", missionType);
-	
-	for(i = 0; i < MAX_INSTANCE_TYPES; i++)
-	{
-		gi.Cvar_VariableStringBuffer(va("RMG_instance%d", i), final, MAX_QPATH);
-		if(strlen(final))
-		{
-			Info_SetValueForKey(temp, va("inst%d", i), final);
-		}
-	}
-
-	// Set additional data required on the client only
-	G_SpawnString("densitymap", "", &value);
-	Info_SetValueForKey(temp, "densityMap", value);
-
-	Info_SetValueForKey(temp, "shader", va("%d", shaderNum));
-	G_SpawnString("texturescale", "0.005", &value);
-	Info_SetValueForKey(temp, "texturescale", va("%f", atof(value)));
-
-	// Initialise the common aspects of the terrain
-	terrainID = gi.CM_RegisterTerrain(temp);
-//	SetCommon(common);
-
-	Info_SetValueForKey(temp, "terrainId", va("%d", terrainID));
-
-	// Let the entity know if it is random generated or not
-//	SetIsRandom(common->GetIsRandom());
-
-	// Let the game remember everything
-//	level.landScapes[terrainID] = ent;
-	//rww - I'm not doing this. Because it didn't even appear to be used. Is it?
-
-	// Send all the data down to the client
-	gi.SetConfigstring(CS_TERRAINS + terrainID, temp);
-
-	// Make sure the contents are properly set
-	ent->contents = CONTENTS_TERRAIN;
-	ent->svFlags = SVF_NOCLIENT;
-	ent->s.eFlags = EF_PERMANENT;
-	ent->s.eType = ET_TERRAIN;
-
-	// Hook into the world so physics will work
-	gi.linkentity(ent);
-
-	// If running RMG then initialize the terrain and handle team skins
-	//rww - Why not do this all the time? Not like terrain entities are used when you don't want them to be terrain.
-/* not using RMG
-	if ( g_RMG->integer ) 
-	{
-		gi.RMG_Init(terrainID);
-	}
-*/
+	G_FreeEntity( ent );
 }
 
 //rww - Called by skyportal entities. This will check through entities and flag them
@@ -827,9 +713,9 @@ Use a fog brush instead.
 */
 void SP_misc_skyportal (gentity_t *ent)
 {
-	vec3_t	fogv;	//----(SA)	
-	int		fogn;	//----(SA)	
-	int		fogf;	//----(SA)	
+	vec3_t	fogv;	//----(SA)
+	int		fogn;	//----(SA)
+	int		fogf;	//----(SA)
 	int		isfog = 0;	// (SA)
 
 	isfog += G_SpawnVector ("fogcolor", "0 0 0", fogv);
@@ -999,7 +885,7 @@ VULNERABLE - allow camera to be destroyed
 "closetarget" - (sigh...) yet another target, fired this when it's destroyed
 "wait"    - how long to wait between being used (default 0.5)
 */
-void SP_misc_camera( gentity_t *self ) 
+void SP_misc_camera( gentity_t *self )
 {
 	G_SpawnFloat( "wait", "0.5", &self->wait );
 
@@ -1037,7 +923,7 @@ void SP_misc_camera( gentity_t *self )
 
 	self->health = 10;
 	self->e_DieFunc = dieF_camera_die;
-	
+
 	self->e_UseFunc = useF_camera_use;
 
 	self->e_ThinkFunc = thinkF_camera_aim;
@@ -1051,7 +937,7 @@ void SP_misc_camera( gentity_t *self )
 ======================================================================
 */
 
-void Use_Shooter( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
+void Use_Shooter( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	G_ActivateBehavior(ent,BSET_USE);
 }
@@ -1079,7 +965,7 @@ void InitShooter( gentity_t *ent, int weapon ) {
 Fires at either the target or the current direction.
 "random" the number of degrees of deviance from the taget. (1.0 default)
 */
-void SP_shooter_rocket( gentity_t *ent ) 
+void SP_shooter_rocket( gentity_t *ent )
 {
 //	InitShooter( ent, WP_TETRION_DISRUPTOR );
 }
@@ -1088,7 +974,7 @@ void SP_shooter_rocket( gentity_t *ent )
 Fires at either the target or the current direction.
 "random" is the number of degrees of deviance from the taget. (1.0 default)
 */
-void SP_shooter_plasma( gentity_t *ent ) 
+void SP_shooter_plasma( gentity_t *ent )
 {
 	InitShooter( ent, WP_BRYAR_PISTOL);
 }
@@ -1097,7 +983,7 @@ void SP_shooter_plasma( gentity_t *ent )
 Fires at either the target or the current direction.
 "random" is the number of degrees of deviance from the taget. (1.0 default)
 */
-void SP_shooter_grenade( gentity_t *ent ) 
+void SP_shooter_grenade( gentity_t *ent )
 {
 //	InitShooter( ent, WP_GRENADE_LAUNCHER);
 }
@@ -1112,7 +998,7 @@ KLINGON - klingon style barrel
 NO_SMOKE - will not leave lingering smoke cloud when killed
 POWDERKEG - wooden explosive barrel
 
-health		 default = 20 
+health		 default = 20
 splashDamage default = 100
 splashRadius default = 200
 */
@@ -1135,7 +1021,7 @@ void SP_object_cargo_barrel1(gentity_t *ent)
 	}
 
 	ent->contents = CONTENTS_SOLID|CONTENTS_OPAQUE;
-	
+
 	if ( ent->spawnflags & 1 )
 	{
 		VectorSet (ent->mins, -8, -8, -16);
@@ -1152,7 +1038,7 @@ void SP_object_cargo_barrel1(gentity_t *ent)
 
 	if(!ent->health)
 		ent->health = 20;
-	
+
 	if(!ent->splashDamage)
 		ent->splashDamage = 100;
 
@@ -1162,7 +1048,7 @@ void SP_object_cargo_barrel1(gentity_t *ent)
 	ent->takedamage = qtrue;
 
 	ent->e_DieFunc = dieF_ExplodeDeath_Wait;
-	
+
 	if(ent->targetname)
 		ent->e_UseFunc = useF_GoExplodeDeath;
 
@@ -1172,7 +1058,7 @@ void SP_object_cargo_barrel1(gentity_t *ent)
 
 /*QUAKED misc_dlight (0.2 0.8 0.2) (-4 -4 -4) (4 4 4) STARTOFF FADEON FADEOFF PULSE
 Dynamic light, toggles on and off when used
-  
+
 STARTOFF - Starts off
 FADEON - Fades from 0 Radius to start Radius
 FADEOFF - Fades from current Radius to 0 Radius before turning off
@@ -1201,7 +1087,7 @@ void SP_misc_dlight(gentity_t *ent)
 
 	//FIXME: attach self to a train or something?
 	ent->e_UseFunc = useF_misc_dlight_use;
-	
+
 	ent->misc_dlight_active = qfalse;
 	ent->e_clThinkFunc = clThinkF_NULL;
 
@@ -1280,7 +1166,7 @@ void misc_dlight_think ( gentity_t *ent )
 }
 
 
-void station_pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void station_pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 //	self->s.modelindex = G_ModelIndex("/models/mapobjects/stasis/plugin2_in.md3");
 //	self->s.eFlags &= ~ EF_ANIM_ALLFAST;
@@ -1308,15 +1194,15 @@ void health_shutdown( gentity_t *self )
 		self->s.eFlags |= EF_ANIM_ONCE;
 
 		// Switch to and animate its used up model.
-		if (!Q_stricmp(self->model,"models/mapobjects/stasis/plugin2.md3"))	
+		if (!Q_stricmp(self->model,"models/mapobjects/stasis/plugin2.md3"))
 		{
 			self->s.modelindex = self->s.modelindex2;
 		}
-		else if (!Q_stricmp(self->model,"models/mapobjects/borg/plugin2.md3"))	
+		else if (!Q_stricmp(self->model,"models/mapobjects/borg/plugin2.md3"))
 		{
 			self->s.modelindex = self->s.modelindex2;
-		}                                
-		else if (!Q_stricmp(self->model,"models/mapobjects/stasis/plugin2_floor.md3"))	
+		}
+		else if (!Q_stricmp(self->model,"models/mapobjects/stasis/plugin2_floor.md3"))
 		{
 			self->s.modelindex = self->s.modelindex2;
 //			G_Sound(self, G_SoundIndex("sound/ambience/stasis/shrinkage1.wav") );
@@ -1353,9 +1239,9 @@ void health_think( gentity_t *ent )
 		{
 			dif= 3;
 		}
-		else if (dif < 0) 
+		else if (dif < 0)
 		{
-			dif= 0;	
+			dif= 0;
 		}
 
 		if (dif > ent->count)	// Can't give more than count
@@ -1363,7 +1249,7 @@ void health_think( gentity_t *ent )
 			dif = ent->count;
 		}
 
-		if ((ITM_AddHealth (ent->enemy,dif)) && (dif>0))		
+		if ((ITM_AddHealth (ent->enemy,dif)) && (dif>0))
 		{
 			ITM_AddArmor (ent->enemy,1);	// 1 armor for every 3 health
 
@@ -1372,16 +1258,16 @@ void health_think( gentity_t *ent )
 		}
 		else	// User has taken all health he can hold, see about giving it all to armor
 		{
-			dif = ent->enemy->client->ps.stats[STAT_MAX_HEALTH] - 
+			dif = ent->enemy->client->ps.stats[STAT_MAX_HEALTH] -
 				ent->enemy->client->ps.stats[STAT_ARMOR];
 
 			if (dif > 3)
 			{
 				dif = 3;
 			}
-			else if (dif < 0) 
+			else if (dif < 0)
 			{
-				dif= 0;	
+				dif= 0;
 			}
 
 			if (ent->count < dif)	// Can't give more than count
@@ -1391,7 +1277,7 @@ void health_think( gentity_t *ent )
 
 			if ((!ITM_AddArmor(ent->enemy,dif)) || (dif<=0))
 			{
-				ent->e_UseFunc = useF_health_use;	
+				ent->e_UseFunc = useF_health_use;
 				ent->e_ThinkFunc = thinkF_NULL;
 			}
 			else
@@ -1423,10 +1309,10 @@ void misc_model_useup( gentity_t *self, gentity_t *other, gentity_t *activator)
 	// Use target when used
 	if (self->spawnflags & 8)
 	{
-		G_UseTargets( self, activator );	
+		G_UseTargets( self, activator );
 	}
 
-	self->e_UseFunc = useF_NULL;	
+	self->e_UseFunc = useF_NULL;
 	self->e_ThinkFunc = thinkF_NULL;
 	self->nextthink = -1;
 }
@@ -1454,7 +1340,7 @@ void health_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 				dif = 1;
 				self->count = 0;
 			}
-			else 
+			else
 			{	// Health
 				dif = other->client->ps.stats[STAT_MAX_HEALTH] - other->client->ps.stats[STAT_HEALTH];
 				// Armor
@@ -1465,11 +1351,11 @@ void health_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 				if (hold>0)	// Need more armor than health
 				{
 					// Calculate total amount of station energy needed.
-					
+
 					hold = dif / 3;	//	For every 3 points of health, you get 1 point of armor
 					dif2 -= hold;
-					dif2 += dif;	
-					
+					dif2 += dif;
+
 					dif = dif2;
 				}
 			}
@@ -1479,7 +1365,7 @@ void health_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 			dif = 1;
 			self->count = 0;
 		}
-		
+
 		// Does player already have full health and full armor?
 		if (dif > 0)
 		{
@@ -1492,10 +1378,10 @@ void health_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 			// Use target when used
 			if (self->spawnflags & 8)
 			{
-				G_UseTargets( self, activator );	
+				G_UseTargets( self, activator );
 			}
 
-			self->e_UseFunc = useF_NULL;	
+			self->e_UseFunc = useF_NULL;
 			self->enemy = other;
 			self->e_ThinkFunc = thinkF_health_think;
 			self->nextthink = level.time + 50;
@@ -1504,7 +1390,7 @@ void health_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 		{
 //			G_Sound(self, G_SoundIndex("sound/weapons/noammo.wav") );
 		}
-	}	
+	}
 }
 
 // --------------------------------------------------------------------
@@ -1538,9 +1424,9 @@ void ammo_think( gentity_t *ent )
 		{
 			dif= 2;
 		}
-		else if (dif < 0) 
+		else if (dif < 0)
 		{
-			dif= 0;	
+			dif= 0;
 		}
 
 		if (ent->count < dif)	// Can't give more than count
@@ -1548,15 +1434,15 @@ void ammo_think( gentity_t *ent )
 			dif = ent->count;
 		}
 
-		// Give player ammo 
-		if (Add_Ammo2(ent->enemy,AMMO_BLASTER,dif) && (dif!=0))	
+		// Give player ammo
+		if (Add_Ammo2(ent->enemy,AMMO_BLASTER,dif) && (dif!=0))
 		{
 			ent->count-=dif;
 			ent->nextthink = level.time + 10;
 		}
 		else	// User has taken all ammo he can hold
 		{
-			ent->e_UseFunc = useF_ammo_use;	
+			ent->e_UseFunc = useF_ammo_use;
 			ent->e_ThinkFunc = thinkF_NULL;
 		}
 	}
@@ -1602,7 +1488,7 @@ void ammo_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 			{
 				ammo_shutdown(self);
 			}
-		}	
+		}
 		else
 		{
 //			G_Sound(self, G_SoundIndex("sound/weapons/noammo.wav") );
@@ -1610,14 +1496,14 @@ void ammo_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 		// Use target when used
 		if (self->spawnflags & 8)
 		{
-			G_UseTargets( self, activator );	
+			G_UseTargets( self, activator );
 		}
 
-		self->e_UseFunc = useF_NULL;	
+		self->e_UseFunc = useF_NULL;
 		G_SetEnemy( self, other );
 		self->e_ThinkFunc = thinkF_ammo_think;
 		self->nextthink = level.time + 50;
-	}	
+	}
 }
 
 //------------------------------------------------------------
@@ -1641,7 +1527,7 @@ void mega_ammo_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 //	G_Sound( self, G_SoundIndex("sound/player/superenergy.wav") );
 
 	// Clear our usefunc, then think until our ammo is full
-	self->e_UseFunc = useF_NULL;	
+	self->e_UseFunc = useF_NULL;
 	G_SetEnemy( self, other );
 	self->e_ThinkFunc = thinkF_mega_ammo_think;
 	self->nextthink = level.time + 50;
@@ -1663,7 +1549,7 @@ void mega_ammo_think( gentity_t *self )
 		if ( self->s.frame > 16 && self->s.modelindex != self->s.modelindex2 )
 			self->s.modelindex = self->s.modelindex2;
 	}
-	
+
 	if ( self->enemy && self->count > 0 )
 	{
 		// Add an equal ammount of ammo to each type
@@ -1712,7 +1598,7 @@ void touch_ammo_crystal_tigger( gentity_t *self, gentity_t *other, trace_t *trac
 		return;
 
 	// Only player can pick it up
-	if ( !other->s.number == 0 )
+	if ( other->s.number != 0 )
 	{
 		return;
 	}
@@ -1725,7 +1611,7 @@ void touch_ammo_crystal_tigger( gentity_t *self, gentity_t *other, trace_t *trac
 	// Add the ammo
 	other->client->ps.ammo[AMMO_POWERCELL] += self->owner->count;
 
-	if ( other->client->ps.ammo[AMMO_POWERCELL] > ammoData[AMMO_POWERCELL].max ) 
+	if ( other->client->ps.ammo[AMMO_POWERCELL] > ammoData[AMMO_POWERCELL].max )
 	{
 		other->client->ps.ammo[AMMO_POWERCELL] = ammoData[AMMO_POWERCELL].max;
 	}
@@ -1830,7 +1716,7 @@ void misc_replicator_item_spawn ( gentity_t *self, gentity_t *other, gentity_t *
 	tent->owner = self;
 }
 
-/*QUAK-ED misc_replicator_item (0.2 0.8 0.2) (-4 -4 0) (4 4 8) 
+/*QUAK-ED misc_replicator_item (0.2 0.8 0.2) (-4 -4 0) (4 4 8)
 When used. this will "spawn" an entity with a random model from the ones provided below...
 
 Using it again removes the item as if it were picked up.
@@ -2010,7 +1896,7 @@ void maglock_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, in
 			self->activator->svFlags &= ~SVF_INACTIVE;
 		}
 	}
-	
+
 	//use targets
 	G_UseTargets( self, attacker );
 	//die
@@ -2018,8 +1904,8 @@ void maglock_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, in
 }
 void SP_misc_maglock ( gentity_t *self )
 {
-	//NOTE: May have to make these only work on doors that are either untargeted 
-	//		or are targeted by a trigger, not doors fired off by scripts, counters 
+	//NOTE: May have to make these only work on doors that are either untargeted
+	//		or are targeted by a trigger, not doors fired off by scripts, counters
 	//		or other such things?
 	self->s.modelindex = G_ModelIndex( "models/map_objects/imp_detention/door_lock.md3" );
 	self->fxID = G_EffectIndex( "maglock/explosion" );
@@ -2114,14 +2000,14 @@ void EnergyShieldStationSettings(gentity_t *ent)
 		switch (g_spskill->integer)
 		{
 		case 0:	//	EASY
-			ent->count = 100; 
+			ent->count = 100;
 			break;
 		case 1:	//	MEDIUM
-			ent->count = 75; 
+			ent->count = 75;
 			break;
 		default :
 		case 2:	//	HARD
-			ent->count = 50; 
+			ent->count = 50;
 			break;
 		}
 	}
@@ -2172,7 +2058,7 @@ void shield_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *a
 
 			self->s.loopSound = G_SoundIndex( "sound/interface/shieldcon_run.wav" );
 		}
-	
+
 		if ( self->count <= 0 )
 		{
 			// play empty sound
@@ -2207,7 +2093,7 @@ void shield_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *a
 		self->e_ThinkFunc = thinkF_NULL;
 		self->nextthink = 0;
 	}
-	
+
 	if ( activator->client->ps.stats[STAT_ARMOR] > 0 )
 	{
 		activator->client->ps.powerups[PW_BATTLESUIT] = Q3_INFINITE;
@@ -2334,7 +2220,7 @@ void beacon_think( gentity_t *ent )
 	ent->nextthink = level.time + FRAMETIME * 0.5f;
 
 	// Deploy animation complete? Stop thinking and just animate signal forever.
-	if ( ent->s.frame == 30 ) 
+	if ( ent->s.frame == 30 )
 	{
 		ent->e_ThinkFunc = thinkF_NULL;
 		ent->nextthink = -1;
@@ -2361,7 +2247,7 @@ void beacon_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 	else
 	{
 		self->s.eFlags = EF_NODRAW;
-		self->contents = 0; 
+		self->contents = 0;
 		self->count = 0;
 		self->s.loopSound = 0;
 		self->svFlags = 0;
@@ -2460,14 +2346,14 @@ void EnergyAmmoStationSettings(gentity_t *ent)
 		switch (g_spskill->integer)
 		{
 		case 0:	//	EASY
-			ent->count = 100; 
+			ent->count = 100;
 			break;
 		case 1:	//	MEDIUM
-			ent->count = 75; 
+			ent->count = 75;
 			break;
 		default :
 		case 2:	//	HARD
-			ent->count = 50; 
+			ent->count = 50;
 			break;
 		}
 	}
@@ -2510,7 +2396,7 @@ void ammo_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *act
 		difMetalBolts	= ammoData[AMMO_METAL_BOLTS].max - ps->ammo[AMMO_METAL_BOLTS];
 
 		// Has it got any power left...and can we even use any of it?
-		if ( self->count && ( difBlaster > 0 || difPowerCell > 0 || difMetalBolts > 0 ))	
+		if ( self->count && ( difBlaster > 0 || difPowerCell > 0 || difMetalBolts > 0 ))
 		{
 			// at least one of the ammo types could stand to take on a bit more ammo
 			self->setTime = level.time + 100;
@@ -2566,8 +2452,8 @@ void ammo_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *act
 				self->s.frame = 1;
 			}
 		}
-		else if  ( ps->ammo[AMMO_BLASTER] >= ammoData[AMMO_BLASTER].max 
-						&& ps->ammo[AMMO_POWERCELL] >= ammoData[AMMO_POWERCELL].max 
+		else if  ( ps->ammo[AMMO_BLASTER] >= ammoData[AMMO_BLASTER].max
+						&& ps->ammo[AMMO_POWERCELL] >= ammoData[AMMO_POWERCELL].max
 						&& ps->ammo[AMMO_METAL_BOLTS] >= ammoData[AMMO_METAL_BOLTS].max )
 		{
 			// play full sound
@@ -2577,7 +2463,7 @@ void ammo_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *act
 		}
 	}
 
-	
+
 	if ( self->s.loopSound )
 	{
 		// we will have to shut of the loop sound, so I guess try and do it intelligently...NOTE: this could get completely stomped every time through the loop
@@ -2668,12 +2554,12 @@ void welder_think( gentity_t *self )
 	mdxaBone_t	boltMatrix;
 
 	if( self->svFlags & SVF_INACTIVE )
-	{	
+	{
 		return;
 	}
 
 	int newBolt;
-	
+
 	// could alternate between the two... or make it random... ?
 	newBolt = gi.G2API_AddBolt( &self->ghoul2[self->playerModel], "*flash" );
 //	newBolt = gi.G2API_AddBolt( &self->ghoul2[self->playerModel], "*flash01" );
@@ -2695,7 +2581,7 @@ void welder_think( gentity_t *self )
 		G_RadiusDamage( org, self, 10, 45, self, MOD_UNKNOWN );
 	}
 
-} 
+}
 
 /*
 ================
@@ -2707,17 +2593,17 @@ void welder_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 	// Toggle on and off
 	if( self->spawnflags & 1 )
 	{
-		self->nextthink = level.time + FRAMETIME;		
+		self->nextthink = level.time + FRAMETIME;
 	}
 	else
 	{
-		self->nextthink = -1;	
+		self->nextthink = -1;
 	}
 	self->spawnflags = (self->spawnflags ^ 1);
-	
+
 }
 
-/*QUAKED misc_model_welder (1 0 0) (-16 -16 -16) (16 16 16) START_OFF 
+/*QUAKED misc_model_welder (1 0 0) (-16 -16 -16) (16 16 16) START_OFF
 model="models/map_objects/cairn/welder.md3"
 When 'on' emits sparks from it's welding points
 
@@ -2780,7 +2666,7 @@ The eye camera that popped out of Jabba's front door
   EXTENDED - Starts in the extended position
 
   targetname - Toggles it on/off
-  
+
 */
 //-----------------------------------------------------
 void SP_misc_model_jabba_cam( gentity_t *ent )
@@ -2789,7 +2675,7 @@ void SP_misc_model_jabba_cam( gentity_t *ent )
 
 	VectorSet( ent->mins, -60.0f, -8.0f, 0.0f );
 	VectorSet( ent->maxs, 60.0f, 8.0f, 16.0f );
-		
+
 	SetMiscModelDefaults( ent, useF_jabba_cam_use, "4", 0, 0, qfalse, qfalse );
 	G_SetAngles( ent, ent->s.angles );
 
@@ -2799,7 +2685,7 @@ void SP_misc_model_jabba_cam( gentity_t *ent )
 	VectorSet( ent->s.modelScale, 1.0f, 1.0f, 1.0f );
 
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
-	
+
 	ent->e_UseFunc = useF_jabba_cam_use;
 
 	ent->takedamage = qfalse;
@@ -2842,7 +2728,7 @@ void SP_misc_exploding_crate( gentity_t *ent )
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/crate_xplode.md3" );
 	G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");
 	G_EffectIndex( "chunks/metalexplode" );
-	
+
 	VectorSet( ent->mins, -24, -24, 0 );
 	VectorSet( ent->maxs, 24, 24, 64 );
 
@@ -2885,7 +2771,7 @@ void gas_random_jet( gentity_t *self )
 
 	G_PlayEffect( "env/mini_gasjet", pt );
 
-	self->nextthink = level.time + random() * 16000 + 12000; // do this rarely
+	self->nextthink = level.time + Q_flrand(0.0f, 1.0f) * 16000 + 12000; // do this rarely
 }
 
 //------------------------------------------------------------
@@ -2941,16 +2827,16 @@ void SP_misc_gas_tank( gentity_t *ent )
 	ent->e_DieFunc = dieF_misc_model_breakable_die;
 
 	ent->e_ThinkFunc = thinkF_gas_random_jet;
-	ent->nextthink = level.time + random() * 12000 + 6000; // do this rarely
+	ent->nextthink = level.time + Q_flrand(0.0f, 1.0f) * 12000 + 6000; // do this rarely
 }
 
 /*QUAKED misc_crystal_crate (1 0 0.25) (-34 -34 0) (34 34 44) NON_SOLID
 model="models/map_objects/imp_mine/crate_open.md3"
 Open crate of crystals that explode when shot
 
-NON_SOLID - can only be shot 
+NON_SOLID - can only be shot
 
-"health" - how much health the crate has, default 80 
+"health" - how much health the crate has, default 80
 
 "splashRadius" - radius to do damage in, default 80
 "splashDamage" - amount of damage to do when it explodes, default 40
@@ -2990,7 +2876,7 @@ void SP_misc_crystal_crate( gentity_t *ent )
 
 	VectorSet( ent->mins, -34, -34, 0 );
 	VectorSet( ent->maxs, 34, 34, 44 );
-	
+
 	//Blocks movement
 	ent->contents = CONTENTS_SOLID|CONTENTS_OPAQUE|CONTENTS_BODY|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP;//Was CONTENTS_SOLID, but only architecture should be this
 
@@ -2999,7 +2885,7 @@ void SP_misc_crystal_crate( gentity_t *ent )
 		//Can only be shot
 		ent->contents = CONTENTS_SHOTCLIP;
 	}
-	
+
 
 	ent->takedamage = qtrue;
 
@@ -3041,7 +2927,7 @@ void misc_atst_setanim( gentity_t *self, int bone, int anim )
 	for ( int i = 0; i < level.numKnownAnimFileSets; i++ )
 	{
 		if ( !Q_stricmp( "atst", level.knownAnimFileSets[i].filename ) )
-		{ 
+		{
 			firstFrame = level.knownAnimFileSets[i].animations[anim].firstFrame;
 			lastFrame = firstFrame+level.knownAnimFileSets[i].animations[anim].numFrames;
 			animSpeed = 50.0f / level.knownAnimFileSets[i].animations[anim].frameLerp;
@@ -3051,11 +2937,11 @@ void misc_atst_setanim( gentity_t *self, int bone, int anim )
 	if ( firstFrame != -1 && lastFrame != -1 && animSpeed != 0 )
 	{
 		if (!gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], bone, firstFrame,
-								lastFrame, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeed, 
+								lastFrame, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeed,
 								(cg.time?cg.time:level.time), -1, 150 ))
 		{
 			gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], bone, firstFrame,
-								lastFrame, BONE_ANIM_OVERRIDE_FREEZE, animSpeed, 
+								lastFrame, BONE_ANIM_OVERRIDE_FREEZE, animSpeed,
 								(cg.time?cg.time:level.time), -1, 150 );
 		}
 	}
@@ -3135,8 +3021,8 @@ void misc_atst_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 	else
 	{//get out of ATST
 		int legsAnim = activator->client->ps.legsAnim;
-		if ( legsAnim != BOTH_STAND1 
-			&& !PM_InSlopeAnim( legsAnim ) 
+		if ( legsAnim != BOTH_STAND1
+			&& !PM_InSlopeAnim( legsAnim )
 			&& legsAnim != BOTH_TURN_RIGHT1 && legsAnim != BOTH_TURN_LEFT1 )
 		{//can't get out of it while it's still moving
 			return;
@@ -3249,7 +3135,7 @@ void SP_misc_atst_drivable( gentity_t *ent )
 
 extern int	G_FindConfigstringIndex( const char *name, int start, int max, qboolean create );
 
-/*QUAKED misc_weather_zone (0 .5 .8) ? 
+/*QUAKED misc_weather_zone (0 .5 .8) ?
 Determines a region to check for weather contents - (optional, used to reduce load times)
 Place surrounding your inside/outside brushes.  It will not check for weather contents outside of these zones.
 */
@@ -3258,12 +3144,17 @@ void SP_misc_weather_zone( gentity_t *ent )
 	gi.SetBrushModel(ent, ent->model);
 
 	char	temp[256];
-	sprintf( temp, "zone ( %f %f %f ) ( %f %f %f )", 
-		ent->mins[0], ent->mins[1], ent->mins[2], 
+	sprintf( temp, "zone ( %f %f %f ) ( %f %f %f )",
+		ent->mins[0], ent->mins[1], ent->mins[2],
 		ent->maxs[0], ent->maxs[1], ent->maxs[2] );
 
 	G_FindConfigstringIndex(temp, CS_WORLD_FX, MAX_WORLD_FX, qtrue);
 
 //	gi.WE_AddWeatherZone(ent->mins, ent->maxs);
 	G_FreeEntity(ent);
+}
+
+void SP_misc_cubemap( gentity_t *ent )
+{
+	G_FreeEntity( ent );
 }

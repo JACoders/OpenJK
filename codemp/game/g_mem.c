@@ -1,7 +1,28 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
-// Simple linear memory allocator
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // g_mem.c
+// Simple linear memory allocator
 //
 
 #include "g_local.h"
@@ -21,7 +42,7 @@
   http://www.altdevblogaday.com/2011/02/12/alternatives-to-malloc-and-new/
 */
 
-#define POOLSIZE	(512 * 1024)//[JAPRO - Serverside - All - Increase game_memory poolsize x2]
+#define POOLSIZE	(4 * 1024 * 1024) // (256*1024)
 
 static char		memoryPool[POOLSIZE];
 static int		allocPoint;
@@ -57,5 +78,8 @@ void G_InitMemory( void ) {
 }
 
 void Svcmd_GameMem_f( void ) {
-	trap->Print( "Game memory status: %i out of %i bytes allocated\n", allocPoint, POOLSIZE );
+	float f = allocPoint;
+	f /= POOLSIZE;
+	f *= 100;
+	trap->Print("Game Memory Pool is %.1f%% full, %i bytes out of %i used.\n", f, allocPoint, POOLSIZE);
 }

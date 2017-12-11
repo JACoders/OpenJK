@@ -1,22 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// cg_text.c -- 
+// cg_text.c --
 
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
@@ -37,7 +41,7 @@ extern vec4_t textcolor_center;
 extern vec4_t textcolor_scroll;
 
 
-// display text in a supplied box, start at top left and going down by however many pixels I feel like internally, 
+// display text in a supplied box, start at top left and going down by however many pixels I feel like internally,
 //	return value is NULL if all fitted, else char * of next char to continue from that didn't fit.
 //
 // (coords are in the usual 640x480 virtual space)...
@@ -49,7 +53,7 @@ extern vec4_t textcolor_scroll;
 		float gfAdvanceHack = 0.0f;	// MUST default to this
 		int giLinesOutput;		// hack-city after release, only used by one function
 //
-const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight, 
+const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight,
 								const char *psText, int iFontHandle, float fScale,
 								const vec4_t v4Color)
 {
@@ -62,11 +66,11 @@ const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHei
 	const int iFontHeightAdvance = (int) ( ((gfAdvanceHack == 0.0f) ? 1.5f : gfAdvanceHack) * (float) iFontHeight);
 	int iYpos = iBoxY;	// start print pos
 
-	// this could probably be simplified now, but it was converted from something else I didn't originally write, 
+	// this could probably be simplified now, but it was converted from something else I didn't originally write,
 	//	and it works anyway so wtf...
 	//
-	const char *psCurrentTextReadPos = psText;	
-	const char *psReadPosAtLineStart = psCurrentTextReadPos;	
+	const char *psCurrentTextReadPos = psText;
+	const char *psReadPosAtLineStart = psCurrentTextReadPos;
 	const char *psBestLineBreakSrcPos = psCurrentTextReadPos;
 	const char *psLastGood_s;	// needed if we get a full screen of chars with no punctuation or space (see usage notes)
 	while( *psCurrentTextReadPos && (iYpos + iFontHeight < (iBoxY + iBoxHeight)) )
@@ -114,9 +118,9 @@ const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHei
 				psBestLineBreakSrcPos = psCurrentTextReadPos;
 				break;	// print this line
 			}
-			else 
+			else
 			if ( cgi_R_Font_StrLenPixels(sLineForDisplay, iFontHandle, fScale) >= iBoxWidth )
-			{					
+			{
 				// reached screen edge, so cap off string at bytepos after last good position...
 				//
 				if (uiLetter > 255 && bIsTrailingPunctuation && !cgi_Language_UsesSpaces())
@@ -131,9 +135,9 @@ const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHei
 					{
 						//  aarrrggh!!!!!   we'll only get here is someone has fed in a (probably) garbage string,
 						//		since it doesn't have a single space or punctuation mark right the way across one line
-						//		of the screen.  So far, this has only happened in testing when I hardwired a taiwanese 
-						//		string into this function while the game was running in english (which should NEVER happen 
-						//		normally).  On the other hand I suppose it'psCurrentTextReadPos entirely possible that some taiwanese string 
+						//		of the screen.  So far, this has only happened in testing when I hardwired a taiwanese
+						//		string into this function while the game was running in english (which should NEVER happen
+						//		normally).  On the other hand I suppose it'psCurrentTextReadPos entirely possible that some taiwanese string
 						//		might have no punctuation at all, so...
 						//
 						psBestLineBreakSrcPos = psLastGood_s;	// force a break after last good letter
@@ -178,7 +182,7 @@ CAPTION TEXT
 
 ===============================================================================
 */
-void CG_CaptionTextStop(void) 
+void CG_CaptionTextStop(void)
 {
 	cg.captionTextTime = 0;
 }
@@ -214,10 +218,10 @@ static int cg_SP_GetStringTextStringWithRetry( const char *psReference, char *ps
 }
 
 // slightly confusingly, the char arg for this function is an audio filename of the form "path/path/filename",
-//	the "filename" part of which should be the same as the StripEd reference we're looking for in the current 
+//	the "filename" part of which should be the same as the StripEd reference we're looking for in the current
 //	level's string package...
 //
-void CG_CaptionText( const char *str, int sound) 
+void CG_CaptionText( const char *str, int sound)
 {
 	const char	*s, *holds;
 	int i;
@@ -232,24 +236,24 @@ void CG_CaptionText( const char *str, int sound)
 #ifndef FINAL_BUILD
 		Com_Printf("WARNING: CG_CaptionText given audio filename with no '/':'%s'\n",str);
 #endif
-		return; 
+		return;
 	}
 	i = cg_SP_GetStringTextStringWithRetry( holds+1, text, sizeof(text) );
 	//ensure we found a match
-	if (!i) 
-	{	
+	if (!i)
+	{
 #ifndef FINAL_BUILD
 		// we only care about some sound dirs...
 		if (!Q_stricmpn(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
 		{
-			Com_Printf("WARNING: CG_CaptionText given invalid text key :'%s'\n",str);
+			Com_Printf("WARNING: CG_CaptionText given invalid text key: '%s'\n", str);
 		}
 		else
 		{
 			// anything else is probably stuff we don't care about. It certainly shouldn't be speech, anyway
 		}
 #endif
-		return; 
+		return;
 	}
 
 	const int fontHeight = (int) ((cgi_Language_IsAsian() ? 1.4f : 1.0f) * (float) cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, fFontScale));	// taiwanese & japanese need 1.5 fontheight spacing
@@ -325,7 +329,7 @@ void CG_CaptionText( const char *str, int sound)
 			psBestLineBreakSrcPos = s;
 			cg.scrollTextLines++;
 		}
-		else 
+		else
 		if ( cgi_R_Font_StrLenPixels(cg.captionText[i], cgs.media.qhFontMedium, fFontScale) >= SCREEN_WIDTH)
 		{
 			// reached screen edge, so cap off string at bytepos after last good position...
@@ -342,9 +346,9 @@ void CG_CaptionText( const char *str, int sound)
 				{
 					//  aarrrggh!!!!!   we'll only get here is someone has fed in a (probably) garbage string,
 					//		since it doesn't have a single space or punctuation mark right the way across one line
-					//		of the screen.  So far, this has only happened in testing when I hardwired a taiwanese 
-					//		string into this function while the game was running in english (which should NEVER happen 
-					//		normally).  On the other hand I suppose it's entirely possible that some taiwanese string 
+					//		of the screen.  So far, this has only happened in testing when I hardwired a taiwanese
+					//		string into this function while the game was running in english (which should NEVER happen
+					//		normally).  On the other hand I suppose it's entirely possible that some taiwanese string
 					//		might have no punctuation at all, so...
 					//
 					psBestLineBreakSrcPos = psLastGood_s;	// force a break after last good letter
@@ -373,7 +377,7 @@ void CG_CaptionText( const char *str, int sound)
 	{
 		holdTime += strlen(cg.captionText[1]);	// strlen is also good for MBCS in this instance, since it's for timing
 	}
-	cg.captionNextTextTime = cg.time + (holdTime * cg.captionLetterTime);	
+	cg.captionNextTextTime = cg.time + (holdTime * cg.captionLetterTime);
 
 	cg.scrollTextTime = 0;	// No scrolling during captions
 
@@ -391,7 +395,7 @@ void CG_DrawCaptionText(void)
 	int		x, y, w;
 	int	holdTime;
 
-	if ( !cg.captionTextTime ) 
+	if ( !cg.captionTextTime )
 	{
 		return;
 	}
@@ -404,7 +408,7 @@ void CG_DrawCaptionText(void)
 		return;
 	}
 
-	if ( cg.captionNextTextTime < cg.time ) 
+	if ( cg.captionNextTextTime < cg.time )
 	{
 		cg.captionTextCurrentLine += 2;
 
@@ -428,10 +432,10 @@ void CG_DrawCaptionText(void)
 	}
 
 	// Give a color if one wasn't given
-	if((textcolor_caption[0] == 0) && (textcolor_caption[1] == 0) && 
+	if((textcolor_caption[0] == 0) && (textcolor_caption[1] == 0) &&
 		(textcolor_caption[2] == 0) && (textcolor_caption[3] == 0))
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor_caption );
+		VectorCopy4( colorTable[CT_WHITE], textcolor_caption );
 	}
 
 	cgi_R_SetColor(textcolor_caption);
@@ -445,7 +449,7 @@ void CG_DrawCaptionText(void)
 
 	for (i=	cg.captionTextCurrentLine;i< cg.captionTextCurrentLine + 2;++i)
 	{
-		w = cgi_R_Font_StrLenPixels(cg.captionText[i], cgs.media.qhFontMedium, fFontScale);	
+		w = cgi_R_Font_StrLenPixels(cg.captionText[i], cgs.media.qhFontMedium, fFontScale);
 		if (w)
 		{
 			x = (SCREEN_WIDTH-w) / 2;
@@ -478,7 +482,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 	giScrollTextPixelWidth = iPixelWidth;
 
 	// first, ask the strlen of the final string...
-	//	
+	//
 	i = cgi_SP_GetStringTextString( str, NULL, 0 );
 
 	//ensure we found a match
@@ -487,7 +491,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 #ifndef FINAL_BUILD
 		Com_Printf("WARNING: CG_ScrollText given invalid text key :'%s'\n",str);
 #endif
-		return; 
+		return;
 	}
 	//
 	// malloc space to hold it...
@@ -495,7 +499,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 	char *psText = (char *) cgi_Z_Malloc( i+1, TAG_TEMP_WORKSPACE );
 	//
 	// now get the string...
-	//	
+	//
 	i = cgi_SP_GetStringTextString( str, psText, i+1 );
 	//ensure we found a match
 	if (!i)
@@ -505,13 +509,13 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 #ifndef FINAL_BUILD
 		Com_Printf("WARNING: CG_ScrollText given invalid text key :'%s'\n",str);
 #endif
-		return; 
+		return;
 	}
 
 	cg.scrollTextTime = cg.time;
 	cg.printTextY = SCREEN_HEIGHT;
 	cg.scrollTextLines = 1;
-	
+
 	s = psText;
 	i = 0;
 	holds = s;
@@ -567,7 +571,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 			holds = s;
 			cg.scrollTextLines++;
 		}
-		else 
+		else
 		if ( cgi_R_Font_StrLenPixels(cg.printText[i], cgs.media.qhFontMedium, 1.0f) >= iPixelWidth)
 		{
 			// reached screen edge, so cap off string at bytepos after last good position...
@@ -576,9 +580,9 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 			{
 				//  aarrrggh!!!!!   we'll only get here is someone has fed in a (probably) garbage string,
 				//		since it doesn't have a single space or punctuation mark right the way across one line
-				//		of the screen.  So far, this has only happened in testing when I hardwired a taiwanese 
-				//		string into this function while the game was running in english (which should NEVER happen 
-				//		normally).  On the other hand I suppose it's entirely possible that some taiwanese string 
+				//		of the screen.  So far, this has only happened in testing when I hardwired a taiwanese
+				//		string into this function while the game was running in english (which should NEVER happen
+				//		normally).  On the other hand I suppose it's entirely possible that some taiwanese string
 				//		might have no punctuation at all, so...
 				//
 				psBestLineBreakSrcPos = psLastGood_s;	// force a break after last good letter
@@ -601,13 +605,12 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 //
 #define SCROLL_LPM (1/50.0) // 1 line per 50 ms
 void CG_DrawScrollText(void)
-{		
-	char	*start;
+{
 	int		i;
-	int		x,y;	
+	int		x,y;
 	const int fontHeight = (int) (1.5f * (float) cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, 1.0f));	// taiwanese & japanese need 1.5 fontheight spacing
 
-	if ( !cg.scrollTextTime ) 
+	if ( !cg.scrollTextTime )
 	{
 		return;
 	}
@@ -640,15 +643,13 @@ void CG_DrawScrollText(void)
 			break;
 		}
 
-		start = cg.printText[i];
-
-//		w = cgi_R_Font_StrLenPixels(cg.printText[i], cgs.media.qhFontMedium, 1.0f);	
+//		w = cgi_R_Font_StrLenPixels(cg.printText[i], cgs.media.qhFontMedium, 1.0f);
 //		if (w)
 		{
 			x = (SCREEN_WIDTH - giScrollTextPixelWidth) / 2;
 			cgi_R_Font_DrawString(x,y, cg.printText[i], textcolor_scroll, cgs.media.qhFontMedium, -1, 1.0f);
 			y += fontHeight;
-		}		
+		}
 	}
 
 	cgi_R_SetColor( NULL );
@@ -674,7 +675,7 @@ for a few moments
 */
 void CG_CenterPrint( const char *str, int y) {
 	char	*s;
-	
+
 	// Find text to match the str given
 	if (*str == '@')
 	{
@@ -684,7 +685,7 @@ void CG_CenterPrint( const char *str, int y) {
 
 		if (!i)
 		{
-			Com_Printf (S_COLOR_RED"CG_CenterPrint: cannot find reference '%s' in StringPackage!\n",str);	
+			Com_Printf (S_COLOR_RED"CG_CenterPrint: cannot find reference '%s' in StringPackage!\n",str);
 			Q_strncpyz( cg.centerPrint, str, sizeof(cg.centerPrint) );
 		}
 	}
@@ -713,7 +714,7 @@ void CG_CenterPrint( const char *str, int y) {
 CG_DrawCenterString
 ===================
 */
-void CG_DrawCenterString( void ) 
+void CG_DrawCenterString( void )
 {
 	char	*start;
 	unsigned int l;
@@ -729,10 +730,10 @@ void CG_DrawCenterString( void )
 		return;
 	}
 
-	if((textcolor_center[0] == 0) && (textcolor_center[1] == 0) && 
+	if((textcolor_center[0] == 0) && (textcolor_center[1] == 0) &&
 		(textcolor_center[2] == 0) && (textcolor_center[3] == 0))
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor_center );
+		VectorCopy4( colorTable[CT_WHITE], textcolor_center );
 	}
 
 	start = cg.centerPrint;
@@ -744,7 +745,7 @@ void CG_DrawCenterString( void )
 		char linebuffer[1024];
 
 		// this is kind of unpleasant when dealing with MBCS, but...
-		//		
+		//
 		const char *psString = start;
 		int iOutIndex = 0;
 		for ( l = 0; l < sizeof(linebuffer)-1; l++ ) {
@@ -766,7 +767,7 @@ void CG_DrawCenterString( void )
 		}
 		linebuffer[iOutIndex++] = '\0';
 
-		w = cgi_R_Font_StrLenPixels(linebuffer, cgs.media.qhFontMedium, 1.0f);	
+		w = cgi_R_Font_StrLenPixels(linebuffer, cgs.media.qhFontMedium, 1.0f);
 
 		x = ( SCREEN_WIDTH - w ) / 2;
 

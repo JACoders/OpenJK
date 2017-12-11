@@ -1,22 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"
@@ -29,7 +33,7 @@ static const short objectiveStartingXpos = 60;		// X starting position for objec
 static const int objectiveTextBoxWidth = 500;		// Width (in pixels) of text box
 static const int objectiveTextBoxHeight = 300;		// Height (in pixels) of text box
 
-const char *showLoadPowersName[] = 
+const char *showLoadPowersName[] =
 {
 	"SP_INGAME_HEAL2",
 	"SP_INGAME_JUMP2",
@@ -69,15 +73,9 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 
 	int iYPixelsPerLine = cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, 1.0f);
 
-	if( gi.Cvar_VariableIntegerValue("com_demo") )
-	{
-		cgi_SP_GetStringTextString( va("OBJECTIVES_DEMO_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-	}
-	else
-	{
-		cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-	}
-	// A hack to be able to count prisoners 
+	cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
+
+	// A hack to be able to count prisoners
 	if (objectIndex==T2_RANCOR_OBJ5)
 	{
 		char value[64];
@@ -99,7 +97,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 	{
 		// this is execrable, and should NOT have had to've been done now, but...
 		//
-		extern const char *CG_DisplayBoxedText(	int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight, 
+		extern const char *CG_DisplayBoxedText(	int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight,
 												const char *psText, int iFontHandle, float fScale,
 												const vec4_t v4Color);
 		extern int giLinesOutput;
@@ -123,7 +121,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 			objectiveTextBoxWidth,
 			objectiveTextBoxHeight,
 			finalText,	// int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight, const char *psText
-			cgs.media.qhFontMedium,		// int iFontHandle, 
+			cgs.media.qhFontMedium,		// int iFontHandle,
 			1.0f,						// float fScale,
 			colorTable[color]			// const vec4_t v4Color
 			);
@@ -140,12 +138,12 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 			y =objectiveStartingYpos + (iYPixelsPerLine * (missionYcnt));
 
 			cgi_R_Font_DrawString (
-				objectiveStartingXpos, 
-				y, 
-				str, 
-				colorTable[color], 
-				cgs.media.qhFontMedium, 
-				-1, 
+				objectiveStartingXpos,
+				y,
+				str,
+				colorTable[color],
+				cgs.media.qhFontMedium,
+				-1,
 				1.0f);
 
 			++missionYcnt;
@@ -159,7 +157,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 			holdText2[1] = '\0';
 			strBegin = str;
 
-			while( *str ) 
+			while( *str )
 			{
 				holdText2[0] = *str;
 				pixelLen += cgi_R_Font_StrLenPixels(holdText2, cgs.media.qhFontMedium, 1.0f);
@@ -167,7 +165,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 				pixelLen += 2; // For kerning
 				++charLen;
 
-				if (pixelLen > objectiveTextBoxWidth ) 
+				if (pixelLen > objectiveTextBoxWidth )
 				{	//Reached max length of this line
 					//step back until we find a space
 					while ((charLen>10) && (*str != ' ' ))
@@ -192,14 +190,14 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 					y = objectiveStartingYpos + (iYPixelsPerLine * missionYcnt);
 
 					CG_DrawProportionalString(
-						objectiveStartingXpos, 
-						y, 
-						holdText, 
-						CG_SMALLFONT, 
+						objectiveStartingXpos,
+						y,
+						holdText,
+						CG_SMALLFONT,
 						colorTable[color] );
 
 					++missionYcnt;
-				} 
+				}
 				else if (*(str+1) == '\0')
 				{
 					++charLen;
@@ -210,18 +208,18 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 
 					Q_strncpyz( holdText, strBegin, charLen);
 					CG_DrawProportionalString(
-						objectiveStartingXpos, 
-						y, holdText, 
-						CG_SMALLFONT, 
+						objectiveStartingXpos,
+						y, holdText,
+						CG_SMALLFONT,
 						colorTable[color] );
 
 					++missionYcnt;
 					break;
 				}
-				++str; 
+				++str;
 
 
-			} 
+			}
 		}
 	}
 
@@ -264,13 +262,13 @@ void CG_DrawDataPadObjectives(const centity_t *cent )
 	missionInfo_Updated = qfalse;		// This will stop the text from flashing
 	cg.missionInfoFlashTime = 0;
 
-	// zero out objective graphics 
+	// zero out objective graphics
 	for (i=0;i<MAX_OBJ_GRAPHICS;i++)
 	{
 		obj_graphics[i] = qfalse;
 	}
 
-	// Title Text at the top 
+	// Title Text at the top
 	char text[1024]={0};
 	cgi_SP_GetStringTextString( "SP_INGAME_OBJECTIVES", text, sizeof(text) );
 	cgi_R_Font_DrawString (titleXPos, titleYPos, text, colorTable[CT_TITLE], cgs.media.qhFontMedium, -1, 1.0f);
@@ -309,12 +307,12 @@ void CG_DrawDataPadObjectives(const centity_t *cent )
 		int messageXPosition = objectiveStartingXpos + (objectiveTextBoxWidth/2) -  (cgi_R_Font_StrLenPixels(text, cgs.media.qhFontMedium, 1.0f) /2);
 
 		cgi_R_Font_DrawString (
-			messageXPosition, 
-			messageYPosition, 
-			text, 
-			colorTable[CT_WHITE], 
-			cgs.media.qhFontMedium, 
-			-1, 
+			messageXPosition,
+			messageYPosition,
+			text,
+			colorTable[CT_WHITE],
+			cgs.media.qhFontMedium,
+			-1,
 			1.0f);
 	}
 }
@@ -332,7 +330,7 @@ static void CG_DrawForceCount( const int force, int x, float *y, const int pad,q
 
 	sscanf( s, "%d",&val );
 
-	if ((val<1) || (val> NUM_FORCE_POWERS))	
+	if ((val<1) || (val> NUM_FORCE_POWERS))
 	{
 		return;
 	}
@@ -353,7 +351,7 @@ static void CG_DrawForceCount( const int force, int x, float *y, const int pad,q
 
 		for ( int i = 0; i < val; i++ )
 		{
-			CG_DrawPic( x - iconSize - i * (iconSize + 10) , *y, iconSize, iconSize, force_icons[force] ); 
+			CG_DrawPic( x - iconSize - i * (iconSize + 10) , *y, iconSize, iconSize, force_icons[force] );
 		}
 	}
 
@@ -393,9 +391,9 @@ static void CG_LoadScreen_PersonalInfo(void)
 	CG_DrawForceCount( FP_SABERTHROW, x, &y, pad,&hasForcePowers );
 	CG_DrawForceCount( FP_SABER_OFFENSE, x, &y, pad,&hasForcePowers );
 	CG_DrawForceCount( FP_SABER_DEFENSE, x, &y, pad,&hasForcePowers );
-	
+
 	if (hasForcePowers)
-	{	
+	{
 		cgi_SP_GetStringTextString( "SP_INGAME_CURRENTFORCEPOWERS", text, sizeof(text) );
 		CG_DrawProportionalString( 200, 65, text, CG_CENTER | CG_BIGFONT, colorTable[CT_WHITE] );
 	}
@@ -439,11 +437,10 @@ int CG_WeaponCheck( int weaponIndex );
 // For printing load screen icons
 const int	MAXLOADICONSPERROW = 8;		// Max icons displayed per row
 const int	MAXLOADWEAPONS = 16;
-const int	MAXLOADFORCEPOWERS = 12;	
 const int	MAXLOAD_FORCEICONSIZE = 40;	// Size of force power icons
 const int	MAXLOAD_FORCEICONPAD = 12;	// Padding space between icons
 
-static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int rowIconCnt, int startIndex) 
+static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int rowIconCnt, int startIndex)
 {
 	int		i,endIndex=0, printedIconCnt=0;
 	int		iconSize;
@@ -484,7 +481,7 @@ static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int
 		if (weaponData[i].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( i );	
+			CG_RegisterWeapon( i );
 			weaponInfo = &cg_weapons[i];
 			endIndex = i;
 
@@ -513,16 +510,16 @@ static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int
 
 // Print weapons the player is carrying
 // Two rows print if there are too many
-static void CG_DrawLoadWeapons( int weaponBits ) 
+static void CG_DrawLoadWeapons( int weaponBits )
 {
 	int		i,endIndex=0;
 	int		iconCnt,rowIconCnt;
 
 	// count the number of weapons owned
 	iconCnt = 0;
-	for ( i = 1 ; i < MAXLOADWEAPONS ; i++ ) 
+	for ( i = 1 ; i < MAXLOADWEAPONS ; i++ )
 	{
-		if ( weaponBits & ( 1 << i ) ) 
+		if ( weaponBits & ( 1 << i ) )
 		{
 			iconCnt++;
 		}
@@ -553,7 +550,7 @@ static void CG_DrawLoadWeapons( int weaponBits )
 }
 
 
-static int CG_DrawLoadForcePrintRow( const char *itemName, int forceBits,int rowIconCnt, int startIndex) 
+static int CG_DrawLoadForcePrintRow( const char *itemName, int forceBits,int rowIconCnt, int startIndex)
 {
 	int		i,endIndex=0, printedIconCnt=0;
 	int		holdX,x,y;
@@ -615,7 +612,7 @@ ForcePowerDataPad_Valid
 */
 qboolean CG_ForcePower_Valid(int forceKnownBits, int index)
 {
-	if ((forceKnownBits & (1 << showPowers[index])) && 
+	if ((forceKnownBits & (1 << showPowers[index])) &&
 		loadForcePowerLevel[showPowers[index]])	// Does he have the force power?
 	{
 		return qtrue;
@@ -626,7 +623,7 @@ qboolean CG_ForcePower_Valid(int forceKnownBits, int index)
 
 // Print force powers the player is using
 // Two rows print if there are too many
-static void CG_DrawLoadForcePowers( int forceBits ) 
+static void CG_DrawLoadForcePowers( int forceBits )
 {
 	int		i,endIndex=0;
 	int		iconCnt=0,rowIconCnt;
@@ -634,7 +631,7 @@ static void CG_DrawLoadForcePowers( int forceBits )
 	// Count the number of force powers known
 	for (i=0; i<MAX_SHOWPOWERS; ++i)
 	{
-		if (CG_ForcePower_Valid(forceBits, i)) 
+		if (CG_ForcePower_Valid(forceBits, i))
 		{
 			iconCnt++;
 		}
@@ -664,7 +661,7 @@ static void CG_DrawLoadForcePowers( int forceBits )
 	cgi_R_SetColor( NULL );
 }
 
-// Get the player weapons and force power info 
+// Get the player weapons and force power info
 static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 {
 	char	s[MAX_STRING_CHARS];
@@ -675,10 +672,10 @@ static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 	gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
 
 	// Get player weapons and force powers known
-	if (s[0])	
+	if (s[0])
 	{
-	//				|general info				  |-force powers 
-		sscanf( s, "%i %i %i %i %i %i %i %f %f %f %i %i", 
+	//				|general info				  |-force powers
+		sscanf( s, "%i %i %i %i %i %i %i %f %f %f %i %i",
 				&iDummy,	//	&client->ps.stats[STAT_HEALTH],
 				&iDummy,	//	&client->ps.stats[STAT_ARMOR],
 				&*weaponBits,//	&client->ps.stats[STAT_WEAPONS],
@@ -695,59 +692,19 @@ static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 
 				);
 	}
-	else
+
+	// the new JK2 stuff - force powers, etc...
+	//
+	gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
+	i=0;
+	var = strtok( s, " " );
+	while( var != NULL )
 	{
-		// will also need to do this for weapons
-		if( gi.Cvar_VariableIntegerValue("com_demo") )
-		{
-			gi.Cvar_VariableStringBuffer( "demo_playerwpns", s, sizeof(s) );
-			
-			*weaponBits = atoi(s);
-
-		}
-
+		/* While there are tokens in "s" */
+		loadForcePowerLevel[i++] = atoi(var);
+		/* Get next token: */
+		var = strtok( NULL, " " );
 	}
-
-    if( gi.Cvar_VariableIntegerValue("com_demo") )
-	{
-		// le Demo stuff...
-		// the new JK2 stuff - force powers, etc...
-		//
-		*forceBits = 0; // need to zero it out it might have already been set above if coming from a true
-						// map transition in the demo
-		gi.Cvar_VariableStringBuffer( "demo_playerfplvl", s, sizeof(s) );
-		int j=0;
-		var = strtok( s, " " );
-		while( var != NULL )
-		{
-			/* While there are tokens in "s" */
-			loadForcePowerLevel[j] = atoi(var);
-			if( loadForcePowerLevel[j] )
-			{
-				*forceBits |= (1<<j);
-			}
-			j++;
-			/* Get next token: */
-			var = strtok( NULL, " " );
-		}
-
-	}
-	else
-	{
-		// the new JK2 stuff - force powers, etc...
-		//
-		gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
-		i=0;
-		var = strtok( s, " " );
-		while( var != NULL )
-		{
-			/* While there are tokens in "s" */
-			loadForcePowerLevel[i++] = atoi(var);
-			/* Get next token: */
-			var = strtok( NULL, " " );
-		}
-	}
-
 }
 
 /*
@@ -757,7 +714,7 @@ CG_DrawLoadingScreen
 Load screen displays the map pic, the mission briefing and weapons/force powers
 ====================
 */
-static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName) 
+static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName)
 {
 	int xPos,yPos,width,height;
 	vec4_t	color;
@@ -845,25 +802,25 @@ void CG_DrawInformation( void ) {
 	qhandle_t	levelshot;
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
-//	if ( g_eSavedGameJustLoaded == eFULL ) 
+//	if ( g_eSavedGameJustLoaded == eFULL )
 //	{
 //		levelshot = 0;	//use the loaded thumbnail instead of the levelshot
-//	} 
+//	}
 //	else
 	{
-		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
+		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
 	#ifndef FINAL_BUILD
 		if (!levelshot && !strncmp(s, "work/",5) )
 		{
-			levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s+5 ) );	
+			levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s+5 ) );
 		}
 	#endif
 		if (!levelshot) {
-			levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+			levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );
 		}
 	}
 
-	if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"yavin1") || !strcmp(s,"demo")) )//special case for first map!
+	if ( g_eSavedGameJustLoaded != eFULL && !strcmp(s,"yavin1") )//special case for first map!
 	{
 		char	text[1024]={0};
 
@@ -879,7 +836,8 @@ void CG_DrawInformation( void ) {
 	else
 	{
 		CG_DrawLoadingScreen(levelshot, s);
-		cgi_UI_MenuPaintAll();
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "loadscreen" ), qtrue );
+		//cgi_UI_MenuPaintAll();
 	}
 
 	CG_LoadBar();
@@ -887,7 +845,7 @@ void CG_DrawInformation( void ) {
 
 	// the first 150 rows are reserved for the client connection
 	// screen to write into
-//	if ( cg.processedSnapshotNum == 0 ) 
+//	if ( cg.processedSnapshotNum == 0 )
 	{
 		// still loading
 		// print the current item being loaded
@@ -903,15 +861,15 @@ void CG_DrawInformation( void ) {
 	// map-specific message (long map name)
 	s = CG_ConfigString( CS_MESSAGE );
 
-	if ( s[0] ) 
+	if ( s[0] )
 	{
 		if (s[0] == '@')
-		{	
+		{
 			char text[1024]={0};
 			cgi_SP_GetStringTextString( s+1, text, sizeof(text) );
 			cgi_R_Font_DrawString( 15, y, va("\"%s\"",text),colorTable[CT_WHITE],cgs.media.qhFontMedium, -1, 1.0f );
 		}
-		else 
+		else
 		{
 			cgi_R_Font_DrawString( 15, y, va("\"%s\"",s),colorTable[CT_WHITE],cgs.media.qhFontMedium, -1, 1.0f );
 		}

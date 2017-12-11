@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	sstring.h
 //
@@ -26,6 +30,8 @@ This file is part of Jedi Academy.
 #define SSTRING_H
 
 #include "../qcommon/q_shared.h"
+#include "qcommon/safe/gsl.h"
+#include <algorithm>
 
 template<int MaxSize>
 class sstring
@@ -43,17 +49,26 @@ public:
 		assert(strlen(o.mStorage.data)<MaxSize);
 		strcpy(mStorage.data,o.mStorage.data);
 	}
-*/	
+*/
 	sstring(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
-		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data));
 	}
 	sstring(const char *s)
 	{
 		//assert(strlen(s)<MaxSize);
 		//strcpy(mStorage.data,s);
-		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
+	}
+	sstring( const gsl::cstring_view& v )
+	{
+		if( v.size() + 1 > sizeof( mStorage.data ) )
+		{
+			Com_Error( ERR_FATAL, "String dest buffer too small (%d) to hold string of length %d", sizeof( mStorage.data ), v.size() );
+		}
+		std::copy( v.begin(), v.end(), mStorage.data );
+		mStorage.data[ v.size() ] = '\0';
 	}
 	sstring()
 	{
@@ -67,28 +82,28 @@ public:
 		strcpy(mStorage.data,o.mStorage.data);
 		return *this;
 	}
-*/	
+*/
 	sstring<MaxSize> & operator=(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
-		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data));
 		return *this;
 	}
 	sstring<MaxSize> & operator=(const char *s)
 	{
 		assert(strlen(s)<MaxSize);
 		//strcpy(mStorage.data,s);
-		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
 		return *this;
 	}
 	char *c_str()
 	{
 		return mStorage.data;
-	}	
+	}
 	const char *c_str() const
 	{
 		return mStorage.data;
-	}	
+	}
 	int capacity() const
 	{
 		return MaxSize;	// not sure if this should be MaxSize-1? depends if talking bytes or strlen space I guess

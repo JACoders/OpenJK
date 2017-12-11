@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Sequencer Header File
 
@@ -26,22 +30,10 @@ This file is part of Jedi Knight 2.
 #include "taskmanager.h"
 #include "sequence.h"
 
-#ifdef _MSC_VER
-	#pragma warning(disable : 4786)	//identifier was truncated 
-
-	#pragma warning (push, 3)	//go back down to 3 for the stl include
-	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <list>
 #include <vector>
 #include <map>
 #include <algorithm>
-#ifdef _MSC_VER
-	#pragma warning (pop)
-	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-
-using namespace std;
 
 //Defines
 
@@ -90,9 +82,9 @@ class ICARUS_Instance;
 
 class CSequencer
 {
-	typedef	map < int, CSequence * >			sequenceID_m;
-	typedef list < CSequence * >				sequence_l;
-	typedef map < CTaskGroup *, CSequence * >	taskSequence_m;
+	typedef	std::map < int, CSequence * >			sequenceID_m;
+	typedef std::list < CSequence * >				sequence_l;
+	typedef std::map < CTaskGroup *, CSequence * >	taskSequence_m;
 
 public:
 
@@ -159,8 +151,6 @@ protected:
 
 	int Prime( CTaskManager *taskManager, CBlock *command );
 
-	void StripExtension( const char *in, char *out );
-
 	int ParseRun( CBlock *block );
 	int ParseLoop( CBlock *block, bstream_t *bstream );
 	int ParseAffect( CBlock *block, bstream_t *bstream );
@@ -195,7 +185,7 @@ protected:
 
 	int					m_elseValid;
 	CBlock				*m_elseOwner;
-	vector<bstream_t*>  m_streamsCreated;
+	std::vector<bstream_t*>  m_streamsCreated;
 };
 
 #endif	//__SEQUENCER__

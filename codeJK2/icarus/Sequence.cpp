@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Script Command Sequences
 //
@@ -24,6 +28,7 @@ This file is part of Jedi Knight 2.
 #include "icarus.h"
 
 #include <assert.h>
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 CSequence::CSequence( void )
 {
@@ -81,14 +86,14 @@ void CSequence::Delete( void )
 	//Clear all children
 	if ( m_numChildren > 0 )
 	{
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->SetParent( NULL );
 		}
 	}
 
 	//Clear all held commands
-	for ( bi = m_commands.begin(); bi != m_commands.end(); bi++ )
+	for ( bi = m_commands.begin(); bi != m_commands.end(); ++bi )
 	{
 		delete (*bi);	//Free() handled internally
 	}
@@ -142,7 +147,7 @@ bool CSequence::HasChild( CSequence *sequence )
 {
 	sequence_l::iterator	ci;
 
-	for ( ci = m_children.begin(); ci != m_children.end(); ci++ )
+	for ( ci = m_children.begin(); ci != m_children.end(); ++ci )
 	{
 		if ( (*ci) == sequence )
 			return true;
@@ -276,7 +281,7 @@ void CSequence::RemoveFlag( int flag, bool children )
 	{
 		sequence_l::iterator	si;
 
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->RemoveFlag( flag, true );
 		}
@@ -337,18 +342,30 @@ int CSequence::SaveCommand( CBlock *block )
 	unsigned char	flags;
 	int				numMembers, bID, size;
 	CBlockMember	*bm;
-	
+
+	ojk::SavedGameHelper saved_game(
+		m_owner->GetInterface()->saved_game);
+
 	//Save out the block ID
 	bID = block->GetBlockID();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','L','I','D'), &bID, sizeof ( bID ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('B', 'L', 'I', 'D'),
+		bID);
 
 	//Save out the block's flags
 	flags = block->GetFlags();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','F','L','G'), &flags, sizeof ( flags ) );
+
+	saved_game.write_chunk<uint8_t>(
+		INT_ID('B', 'F', 'L', 'G'),
+		flags);
 
 	//Save out the number of members to read
 	numMembers = block->GetNumMembers();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof ( numMembers ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('B', 'N', 'U', 'M'),
+		numMembers);
 
 	for ( int i = 0; i < numMembers; i++ )
 	{
@@ -356,14 +373,25 @@ int CSequence::SaveCommand( CBlock *block )
 
 		//Save the block id
 		bID = bm->GetID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','I','D'), &bID, sizeof ( bID ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('B', 'M', 'I', 'D'),
+			bID);
 		
 		//Save out the data size
 		size = bm->GetSize();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','S','I','Z'), &size, sizeof( size ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('B', 'S', 'I', 'Z'),
+			size);
 		
 		//Save out the raw data
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','E','M'), bm->GetData(), size );
+        const uint8_t* raw_data = static_cast<const uint8_t*>(bm->GetData());
+
+		saved_game.write_chunk(
+			INT_ID('B', 'M', 'E', 'M'),
+			raw_data,
+			size);
 	}
 
 	return true;
@@ -381,32 +409,52 @@ int CSequence::Save( void )
 	block_l::iterator		bi;
 	int						id;
 
+	ojk::SavedGameHelper saved_game(
+		m_owner->GetInterface()->saved_game);
+
 	//Save the parent (by GUID)
 	id = ( m_parent != NULL ) ? m_parent->GetID() : -1;
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','P','I','D'), &id, sizeof( id ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'P', 'I', 'D'),
+		id);
 
 	//Save the return (by GUID)
 	id = ( m_return != NULL ) ? m_return->GetID() : -1;
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','R','I','D'), &id, sizeof( id ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'R', 'I', 'D'),
+		id);
 	
 	//Save the number of children
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','N','C','H'), &m_numChildren, sizeof( m_numChildren ) );
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'N', 'C', 'H'),
+		m_numChildren);
 
 	//Save out the children (only by GUID)
 	STL_ITERATE( ci, m_children )
 	{
 		id = (*ci)->GetID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','C','H','D'), &id, sizeof( id ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('S', 'C', 'H', 'D'),
+			id);
 	}
 
 	//Save flags
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','F','L','G'), &m_flags, sizeof( m_flags ) );
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'F', 'L', 'G'),
+		m_flags);
 
 	//Save iterations
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','I','T','R'), &m_iterations, sizeof( m_iterations ) );
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'I', 'T', 'R'),
+		m_iterations);
 
 	//Save the number of commands
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','N','M','C'), &m_numCommands, sizeof( m_numCommands ) );
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'N', 'M', 'C'),
+		m_numCommands);
 
 	//Save the commands
 	STL_ITERATE( bi, m_commands )
@@ -425,31 +473,44 @@ Load
 
 int CSequence::Load( void )
 {
-	unsigned char	flags; 
+	unsigned char	flags = 0; 
 	CSequence		*sequence;
 	CBlock			*block;
-	int				id, numMembers;
+	int				id = 0, numMembers = 0;
 	int				i;
 
 	int				bID, bSize;
 	void			*bData;
 
+	ojk::SavedGameHelper saved_game(
+		m_owner->GetInterface()->saved_game);
+
 	//Get the parent sequence
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','P','I','D'), &id, sizeof( id ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'P', 'I', 'D'),
+		id);
+
 	m_parent = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 	
 	//Get the return sequence
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','R','I','D'), &id, sizeof( id ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'R', 'I', 'D'),
+		id);
+
 	m_return = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 
 	//Get the number of children
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','N','C','H'), &m_numChildren, sizeof( m_numChildren ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'N', 'C', 'H'),
+		m_numChildren);
 
 	//Reload all children
 	for ( i = 0; i < m_numChildren; i++ )
 	{
 		//Get the child sequence ID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','C','H','D'), &id, sizeof( id ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('S', 'C', 'H', 'D'),
+			id);
 
 		//Get the desired sequence
 		if ( ( sequence = m_owner->GetSequence( id ) ) == NULL )
@@ -464,46 +525,73 @@ int CSequence::Load( void )
 
 	
 	//Get the sequence flags
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','F','L','G'), &m_flags, sizeof( m_flags ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'F', 'L', 'G'),
+		m_flags);
 
 	//Get the number of iterations
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','I','T','R'), &m_iterations, sizeof( m_iterations ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'I', 'T', 'R'),
+		m_iterations);
 
-	int	numCommands;
+	int	numCommands = 0;
 
 	//Get the number of commands
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','N','M','C'), &numCommands, sizeof( m_numCommands ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'N', 'M', 'C'),
+		numCommands);
 
 	//Get all the commands
 	for ( i = 0; i < numCommands; i++ )
 	{
 		//Get the block ID and create a new container
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','L','I','D'), &id, sizeof( id ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('B', 'L', 'I', 'D'),
+			id);
+
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','F','L','G'), &flags, sizeof( flags ), NULL );
+		saved_game.read_chunk<uint8_t>(
+			INT_ID('B', 'F', 'L', 'G'),
+			flags);
+
 		block->SetFlags( flags );
 
+		numMembers = 0;
+
 		//Get the number of block members
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof( numMembers ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('B', 'N', 'U', 'M'),
+			numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
+			bID = 0;
+
 			//Get the member ID
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','I','D'), &bID, sizeof( bID ), NULL );
-			
+			saved_game.read_chunk<int32_t>(
+				INT_ID('B', 'M', 'I', 'D'),
+				bID);
+
+			bSize = 0;
+
 			//Get the member size
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','S','I','Z'), &bSize, sizeof( bSize ), NULL );
+			saved_game.read_chunk<int32_t>(
+				INT_ID('B', 'S', 'I', 'Z'),
+				bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
 				return false;
 
 			//Get the actual raw data
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','E','M'), bData, bSize, NULL );
+			saved_game.read_chunk(
+				INT_ID('B', 'M', 'E', 'M'),
+				static_cast<uint8_t*>(bData),
+				bSize);
 
 			//Write out the correct type
 			switch ( bID )

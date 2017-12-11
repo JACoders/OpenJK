@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_local.h"
 #include "b_local.h"
@@ -38,8 +42,8 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	{
 		vec3_t angles;
 		vectoangles(forwardVec, angles);
-		angles[PITCH] += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-		angles[YAW]	  += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[YAW]	  += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
 		AngleVectors(angles, forwardVec, vrightVec, up);
 	}
 
@@ -87,7 +91,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 //		// in overcharge mode, so doing double damage
 //		damage *= 2;
 //	}
-	
+
 	//Make it a little easier to hit guys at long range
 	vec3_t shot_mins, shot_maxs;
 	VectorSet( shot_mins, -1, -1, -1 );
@@ -102,7 +106,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		//gi.trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, G2_COLLIDE, 10 );//G2_RETURNONHIT, 0 );
 		gi.trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, G2_COLLIDE, 10 );//G2_RETURNONHIT, 0 );
 
-		if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+		if ( tr.surfaceFlags & SURF_NOIMPACT )
 		{
 			render_impact = qfalse;
 		}
@@ -115,7 +119,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 			VectorCopy( tr.endpos, start );
 			skip = tr.entityNum;
 #ifdef _DEBUG
-			gi.Printf( "BAD! Concussion gun shot somehow traced back and hit the owner!\n" );			
+			gi.Printf( "BAD! Concussion gun shot somehow traced back and hit the owner!\n" );
 #endif
 			continue;
 		}
@@ -135,7 +139,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 
 		traceEnt = &g_entities[tr.entityNum];
 
-		if ( traceEnt //&& traceEnt->NPC 
+		if ( traceEnt //&& traceEnt->NPC
 			&& ( traceEnt->s.weapon == WP_SABER || (traceEnt->client && (traceEnt->client->NPC_class == CLASS_BOBAFETT||traceEnt->client->NPC_class == CLASS_REBORN) ) ) )
 		{//FIXME: need a more reliable way to know we hit a jedi?
 			hitDodged = Jedi_DodgeEvasion( traceEnt, ent, &tr, HL_NONE );
@@ -145,20 +149,20 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		{
 			if ( render_impact )
 			{
-				if (( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage ) 
-					|| !Q_stricmp( traceEnt->classname, "misc_model_breakable" ) 
+				if (( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
+					|| !Q_stricmp( traceEnt->classname, "misc_model_breakable" )
 					|| traceEnt->s.eType == ET_MOVER )
 				{
 					// Create a simple impact type mark that doesn't last long in the world
 					G_PlayEffect( G_EffectIndex( "concussion/alt_hit" ), tr.endpos, tr.plane.normal );
 
-					if ( traceEnt->client && LogAccuracyHit( traceEnt, ent )) 
+					if ( traceEnt->client && LogAccuracyHit( traceEnt, ent ))
 					{//NOTE: hitting multiple ents can still get you over 100% accuracy
 						ent->client->ps.persistant[PERS_ACCURACY_HITS]++;
-					} 
+					}
 
 					int hitLoc = G_GetHitLocFromTrace( &tr, MOD_CONC_ALT );
-					qboolean noKnockBack = (traceEnt->flags&FL_NO_KNOCKBACK);//will be set if they die, I want to know if it was on *before* they died
+					qboolean noKnockBack = (qboolean)((traceEnt->flags&FL_NO_KNOCKBACK) != 0);//will be set if they die, I want to know if it was on *before* they died
 					if ( traceEnt && traceEnt->client && traceEnt->client->NPC_class == CLASS_GALAKMECH )
 					{//hehe
 						G_Damage( traceEnt, ent, ent, forwardVec, tr.endpos, 10, DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, MOD_CONC_ALT, hitLoc );
@@ -200,7 +204,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 						break;
 					}
 				}
-				else 
+				else
 				{
 					 // we only make this mark on things that can't break or move
 					tent = G_TempEntity( tr.endpos, EV_CONC_ALT_MISS );
@@ -256,8 +260,8 @@ static void WP_FireConcussion( gentity_t *ent )
 	{
 		vec3_t angles;
 		vectoangles(forwardVec, angles);
-		angles[PITCH] += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-		angles[YAW]	  += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[YAW]	  += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
 		AngleVectors(angles, forwardVec, vrightVec, up);
 	}
 

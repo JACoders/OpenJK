@@ -1,29 +1,36 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 #ifndef __QCOMMON_H__
 #define __QCOMMON_H__
 
-#include "stringed_ingame.h"
 #include "q_shared.h"
+#include "stringed_ingame.h"
 #include "strippublic.h"
 #include "cm_public.h"
+#include "sys/sys_public.h"
 
 
 // some zone mem debugging stuff
@@ -61,7 +68,11 @@ void MSG_WriteData (msg_t *buf, const void *data, int length);
 
 struct usercmd_s;
 struct entityState_s;
-struct playerState_s;
+
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 
 void MSG_WriteBits( msg_t *msg, int value, int bits );
 
@@ -87,13 +98,13 @@ void MSG_ReadDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s 
 
 void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to
 						   , qboolean force );
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 						 int number );
 void MSG_ReadEntity( msg_t *msg, entityState_t *to);
 void MSG_WriteEntity( msg_t *msg, entityState_t *to, int removeNum);
 
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
-void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
+void MSG_WriteDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to );
+void MSG_ReadDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to );
 
 /*
 ==============================================================
@@ -115,20 +126,13 @@ NET
 #define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
 
 typedef enum {
-	NA_BAD,					// an address lookup failed
-	NA_LOOPBACK,
-} netadrtype_t;
-
-typedef enum {
 	NS_CLIENT,
 	NS_SERVER
 } netsrc_t;
 
-typedef struct {
-	netadrtype_t	type;
-
-	unsigned short	port;
-} netadr_t;
+// For compatibility with shared code
+static inline void NET_Init( void ) {}
+static inline void NET_Shutdown( void ) {}
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
 void		NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
@@ -140,6 +144,12 @@ qboolean	NET_IsLANAddress (netadr_t adr);
 const char	*NET_AdrToString (netadr_t a);
 qboolean	NET_StringToAdr ( const char *s, netadr_t *a);
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
+
+void		Sys_SendPacket( int length, const void *data, netadr_t to );
+//Does NOT parse port numbers, only base addresses.
+qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
+qboolean	Sys_IsLANAddress (netadr_t adr);
+void		Sys_ShowIP(void);
 
 
 #define	MAX_MSGLEN				(1*17408)		// max length of a message, which may
@@ -167,7 +177,7 @@ typedef struct {
 
 	// incoming fragment assembly buffer
 	int			fragmentSequence;
-	int			fragmentLength;	
+	int			fragmentLength;
 	byte		fragmentBuffer[MAX_MSGLEN];
 } netchan_t;
 
@@ -211,16 +221,30 @@ enum svc_ops_e {
 //
 enum clc_ops_e {
 	clc_bad,
-	clc_nop, 		
+	clc_nop,
 	clc_move,				// [[usercmd_t]
 	clc_clientCommand		// [string] message
 };
 
+/*
+==============================================================
+
+VIRTUAL MACHINE
+
+==============================================================
+*/
+
+typedef enum vmSlots_e {
+	VM_GAME=0,
+	VM_CGAME,
+	VM_UI,
+	MAX_VM
+} vmSlots_t;
 
 #define	VMA(x) ((void*)args[x])
 inline float _vmf(intptr_t x)
 {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.i = (int) x;
 	return fi.f;
 }
@@ -416,6 +440,8 @@ issues.
 ==============================================================
 */
 
+#define	MAX_FILE_HANDLES	64
+
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
@@ -429,28 +455,43 @@ char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles
 // the returned files will not include any directories or /
 
 void	FS_FreeFileList( char **filelist );
+//rwwRMG - changed to fileList to not conflict with list type
+
+void FS_Remove( const char *osPath );
+void FS_HomeRemove( const char *homePath );
+
+void FS_Rmdir( const char *osPath, qboolean recursive );
+void FS_HomeRmdir( const char *homePath, qboolean recursive );
+
+qboolean FS_FileExists( const char *file );
 
 char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
 int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
+int		FS_GetModList(  char *listbuf, int bufsize );
 
-fileHandle_t FS_FOpenFileWrite( const char *qpath );
 // will properly create any needed paths and deal with seperater character issues
+fileHandle_t FS_FOpenFileWrite( const char *qpath, qboolean safe = qtrue );
 
 fileHandle_t FS_FOpenFileAppend( const char *filename );	// this was present already, but no public proto
 
-qboolean FS_GetExtendedInfo_FOpenFileRead(const char *filename, char **ppsFilename, int *piOffset);
-//return value is success of opening file, then ppsFilename and piOffset are valid
-
-int		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+int		FS_filelength( fileHandle_t f );
+fileHandle_t FS_SV_FOpenFileWrite( const char *filename );
+int		FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
+void	FS_SV_Rename( const char *from, const char *to, qboolean safe );
+long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
 // if uniqueFILE is true, then a new FILE will be fopened even if the file
 // is found in an already open pak file.  If uniqueFILE is false, you must call
 // FS_FCloseFile instead of fclose, otherwise the pak FILE would be improperly closed
 // It is generally safe to always set uniqueFILE to true, because the majority of
 // file IO goes through FS_ReadFile, which Does The Right Thing already.
 
-int	FS_FileIsInPAK(const char *filename );
 // returns 1 if a file is in the PAK file, otherwise -1
+int	FS_FileIsInPAK(const char *filename );
+static inline int FS_FileIsInPAK( const char *filename, int *checksum )
+{
+	return FS_FileIsInPAK( filename );
+}
 
 int	FS_Write( const void *buffer, int len, fileHandle_t f );
 
@@ -460,7 +501,7 @@ int	FS_Read( void *buffer, int len, fileHandle_t f );
 void	FS_FCloseFile( fileHandle_t f );
 // note: you can't just fclose from another DLL, due to MS libc issues
 
-int		FS_ReadFile( const char *qpath, void **buffer );
+long		FS_ReadFile( const char *qpath, void **buffer );
 // returns the length of the file
 // a null buffer will just return the file length without loading
 // as a quick check for existance. -1 length == not present
@@ -485,7 +526,7 @@ int		FS_FTell( fileHandle_t f );
 
 void	FS_Flush( fileHandle_t f );
 
-void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, callbackFunc_t callback, qboolean allowNonPureFilesOnDisk );
 
 const char *FS_GetCurrentGameDir(bool emptybase=false);
 
@@ -506,6 +547,9 @@ void		FS_DeleteUserGenFile( const char *filename );
 qboolean	FS_MoveUserGenFile  ( const char *filename_src, const char *filename_dst );
 
 qboolean FS_CheckDirTraversal(const char *checkdir);
+void FS_Rename( const char *from, const char *to );
+
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
 
 /*
 ==============================================================
@@ -550,14 +594,15 @@ void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
-void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__((noreturn));
-void 		Com_Quit_f( void );
+void 		NORETURN QDECL Com_Error( int code, const char *fmt, ... );
+void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
-unsigned	Com_BlockChecksum( const void *buffer, int length );
+uint32_t	Com_BlockChecksum( const void *buffer, int length );
 int			Com_Filter(const char *filter, const char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, const char *name, int casesensitive);
 qboolean	Com_SafeMode( void );
+void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
 
 void		Com_StartupVariable( const char *match );
 // checks for and removes command line "+set var arg" constructs
@@ -570,13 +615,14 @@ extern	cvar_t	*com_speeds;
 extern	cvar_t	*com_timescale;
 extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
-extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_homepath;
-
-#ifndef __NO_JK2
-extern	cvar_t	*com_jk2;
+#ifndef _WIN32
+extern	cvar_t	*com_ansiColor;
 #endif
+
+extern	cvar_t	*com_affinity;
+extern	cvar_t	*com_busyWait;
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -592,7 +638,6 @@ extern	int		timeInPVSCheck;
 extern	int		numTraces;
 
 extern	int		com_frameTime;
-extern	int		com_frameMsec;
 
 extern	qboolean	com_errorEntered;
 
@@ -627,34 +672,30 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if t
 
 #ifdef DEBUG_ZONE_ALLOCS
 
-	void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
-	void *_D_S_Malloc ( int iSize, const char *psFile, int iLine );	
-	void  _D_Z_Label  ( const void *pvAddress, const char *pslabel );
+void *_D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
+void *_D_S_Malloc( int iSize, const char *psFile, int iLine );
+void  Z_Label( const void *pvAddress, const char *pslabel );
 
-	#define Z_Malloc(_iSize, _eTag, _bZeroit)	_D_Z_Malloc (_iSize, _eTag, _bZeroit, __FILE__, __LINE__)
-	#define S_Malloc(_iSize)					_D_S_Malloc	(_iSize, __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations	
-	
-	#define Z_Label(_ptr, _label)				_D_Z_Label	(_ptr, _label)
+#define Z_Malloc(iSize, eTag, bZeroit)	_D_Z_Malloc ((iSize), (eTag), (bZeroit), __FILE__, __LINE__)
+#define S_Malloc(iSize)			_D_S_Malloc	((iSize), __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
 
 #else
 
-	void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign = 4);	// return memory NOT zero-filled by default
-	void *S_Malloc	( int iSize );									// NOT 0 filled memory only for small allocations
-
-	#define Z_Label(_ptr, _label)	/* */
+void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
+void *S_Malloc( int iSize );									// NOT 0 filled memory only for small allocations
+#define Z_Label(_ptr, _label)
 
 #endif
 
+void Com_InitZoneMemory(void);
+void Com_InitZoneMemoryVars(void);
 
 void Hunk_Clear( void );
 void Hunk_ClearToMark( void );
 void Hunk_SetMark( void );
 // note the opposite default for 'bZeroIt' in Hunk_Alloc to Z_Malloc, since Hunk_Alloc always used to memset(0)...
 //
-inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue) 
-{
-	return Z_Malloc(size, TAG_HUNKALLOC, bZeroIt);
-}
+inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue);
 
 
 void Com_TouchMemory( void );
@@ -666,10 +707,6 @@ void Com_Frame( void );
 void Com_Shutdown( void );
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);
-
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser);
 
 /*
 ==============================================================
@@ -720,7 +757,7 @@ void CL_FlushMemory( void );
 
 void CL_StartHunkUsers( void );
 
-void Key_KeynameCompletion ( void(*callback)( const char *s ) );
+void Key_KeynameCompletion ( callbackFunc_t callback );
 // for keyname autocompletion
 
 void Key_WriteBindings( fileHandle_t f );
@@ -748,109 +785,24 @@ qboolean SV_GameCommand( void );
 qboolean UI_GameCommand( void );
 
 
-/*
-==============================================================
-
-NON-PORTABLE SYSTEM SERVICES
-
-==============================================================
-*/
-
-typedef enum {
-	AXIS_SIDE,
-	AXIS_FORWARD,
-	AXIS_UP,
-	AXIS_ROLL,
-	AXIS_YAW,
-	AXIS_PITCH,
-	MAX_JOYSTICK_AXIS
-} joystickAxis_t;
-
-typedef enum {
-	SE_NONE,	// evTime is still valid
-	SE_KEY,		// evValue is a key code, evValue2 is the down flag
-	SE_CHAR,	// evValue is an ascii char
-	SE_MOUSE,	// evValue and evValue2 are reletive signed x / y moves
-	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
-	SE_CONSOLE,	// evPtr is a char*
-	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
-} sysEventType_t;
-
-typedef struct {
-	int				evTime;
-	sysEventType_t	evType;
-	int				evValue, evValue2;
-	int				evPtrLength;	// bytes of data pointed to by evPtr, for journaling
-	void			*evPtr;			// this must be manually freed if not NULL
-} sysEvent_t;
-
-sysEvent_t	Sys_GetEvent( void );
-
-void	Sys_Init (void);
-
-#ifdef _WIN32
-	#include <Windows.h>
-	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
-	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
-	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
-	#define Sys_LibraryError() "unknown"
-#endif // linux and mac use SDL in SDL_loadlibrary.h
-
-void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-void	Sys_UnloadDll( void *dllHandle );
-
-char	*Sys_GetCurrentUser( void );
-
-void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
-void	Sys_Quit (void);
-char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
-
-void	Sys_Print( const char *msg );
-
-// Sys_Milliseconds should only be used for profiling purposes,
-// any game related timing information should come from event timestamps
-int		Sys_Milliseconds (void);
-#ifndef _WIN32
-void 	Sys_SetEnv(const char *name, const char *value);
-#endif
-
-
-// the system console is shown when a dedicated server is running
-void	Sys_DisplaySystemConsole( qboolean show );
-
-void	Sys_ShowConsole( int level, qboolean quitOnClose );
-void	Sys_SetErrorText( const char *text );
-
-qboolean	Sys_Mkdir( const char *path );
-char	*Sys_Cwd( void );
-char	*Sys_DefaultCDPath(void);
-void	Sys_SetDefaultInstallPath(const char *path);
-char	*Sys_DefaultInstallPath(void);
-
-#ifdef MACOS_X
-char    *Sys_DefaultAppPath(void);
-#endif
-
-char	*Sys_DefaultHomePath(void);
-const char *Sys_Dirname( char *path );
-const char *Sys_Basename( char *path );
-
-char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
-void	Sys_FreeFileList( char **filelist );
-
-void	Sys_BeginProfiling( void );
-void	Sys_EndProfiling( void );
-
-qboolean Sys_LowPhysicalMemory();
-qboolean Sys_FileOutOfDate( const char *psFinalFileName /* dest */, const char *psDataFileName /* src */ );
-qboolean Sys_CopyFile(const char *lpExistingFileName, const char *lpNewFileName, qboolean bOverwrite);
-
-
 byte*	SCR_GetScreenshot(qboolean *qValid);
+#ifdef JK2_MODE
+void	SCR_SetScreenshot(const byte *pbData, int w, int h);
+byte*	SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
+void	SCR_TempRawImage_CleanUp();
+#endif
 
 inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
+
+// Persistent data store API
+bool PD_Store ( const char *name, const void *data, size_t size );
+const void *PD_Load ( const char *name, size_t *size );
+
+uint32_t ConvertUTF8ToUTF32( char *utf8CurrentChar, char **utf8NextChar );
+
+#include "sys/sys_public.h"
 
 #endif //__QCOMMON_H__

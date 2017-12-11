@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "g_local.h"
 #include "bg_local.h"
 #include "w_saber.h"
@@ -387,7 +409,7 @@ static QINLINE void SetSaberBoxSize(gentity_t *saberent)
 		return;
 	}
 
-	if ( owner->client->saber[1].model && owner->client->saber[1].model[0] )
+	if ( owner->client->saber[1].model[0] )
 	{
 		dualSabers = qtrue;
 	}
@@ -1536,15 +1558,13 @@ qboolean WP_SabersCheckLock( gentity_t *ent1, gentity_t *ent2 )
 	{
 		return qfalse;
 	}
-	if ( ent1->client->saber[1].model
-		&& ent1->client->saber[1].model[0]
+	if ( ent1->client->saber[1].model[0]
 		&& !ent1->client->ps.saberHolstered
 		&& (ent1->client->saber[1].saberFlags&SFL_NOT_LOCKABLE) )
 	{
 		return qfalse;
 	}
-	if ( ent2->client->saber[1].model
-		&& ent2->client->saber[1].model[0]
+	if ( ent2->client->saber[1].model[0]
 		&& !ent2->client->ps.saberHolstered
 		&& (ent2->client->saber[1].saberFlags&SFL_NOT_LOCKABLE) )
 	{
@@ -2668,7 +2688,7 @@ static QINLINE qboolean G_SaberCollide(gentity_t *atk, gentity_t *def, vec3_t at
 	while (i < MAX_SABERS)
 	{
 		j = 0;
-		if (def->client->saber[i].model && def->client->saber[i].model[0])
+		if (def->client->saber[i].model[0])
 		{ //valid saber on the defender
 			bladeInfo_t *blade;
 			vec3_t v, fwd, right, base, tip;
@@ -5144,8 +5164,7 @@ blockStuff:
 					defendStr++;
 				}
 				defendStr += Q_irand(0, otherOwner->client->saber[0].parryBonus );
-				if ( otherOwner->client->saber[1].model
-					&& otherOwner->client->saber[1].model[0]
+				if ( otherOwner->client->saber[1].model[0]
 					&& !otherOwner->client->ps.saberHolstered )
 				{
 					defendStr += Q_irand(0, otherOwner->client->saber[1].parryBonus );
@@ -5159,8 +5178,7 @@ blockStuff:
 #endif
 
 				attackBonus = Q_irand(0, self->client->saber[0].breakParryBonus );
-				if ( self->client->saber[1].model
-					&& self->client->saber[1].model[0]
+				if ( self->client->saber[1].model[0]
 					&& !self->client->ps.saberHolstered )
 				{
 					attackBonus += Q_irand(0, self->client->saber[1].breakParryBonus );
@@ -5357,15 +5375,6 @@ blockStuff:
 	}
 
 	return didHit;
-}
-
-QINLINE int VectorCompare2( const vec3_t v1, const vec3_t v2 ) {
-	if ( v1[0] > v2[0]+0.0001f || v1[0] < v2[0]-0.0001f
-		|| v1[1] > v2[1]+0.0001f || v1[1] < v2[1]-0.0001f
-		|| v1[2] > v2[2]+0.0001f || v1[2] < v2[2]-0.0001f ) {
-		return 0;
-	}
-	return 1;
 }
 
 #define MAX_SABER_SWING_INC 0.33f
@@ -6899,8 +6908,7 @@ qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner
 	if ( other && other->client )
 	{
 		disarmChance += other->client->saber[0].disarmBonus;
-		if ( other->client->saber[1].model
-			&& other->client->saber[1].model[0]
+		if ( other->client->saber[1].model[0]
 			&& !other->client->ps.saberHolstered )
 		{
 			disarmChance += other->client->saber[1].disarmBonus;
@@ -6987,8 +6995,7 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 		if ( other && other->client )
 		{
 			disarmChance += other->client->saber[0].disarmBonus;
-			if ( other->client->saber[1].model
-				&& other->client->saber[1].model[0]
+			if ( other->client->saber[1].model[0]
 				&& !other->client->ps.saberHolstered )
 			{
 				disarmChance += other->client->saber[1].disarmBonus;
@@ -9002,7 +9009,6 @@ nextStep:
 				break;
 			}
 			if (rSaberNum > 0
-				&& self->client->saber[1].model
 				&& self->client->saber[1].model[0]
 				&& self->client->ps.saberHolstered == 1 )
 			{ //don't to saber 2 if it's off
@@ -9016,7 +9022,7 @@ nextStep:
 				VectorCopy(self->client->saber[rSaberNum].blade[rBladeNum].muzzleDir, self->client->saber[rSaberNum].blade[rBladeNum].muzzleDirOld);
 
 				if ( rBladeNum > 0 //more than one blade
-					&& (!self->client->saber[1].model||!self->client->saber[1].model[0])//not using dual blades
+					&& (!self->client->saber[1].model[0])//not using dual blades
 					&& self->client->saber[rSaberNum].numBlades > 1//using a multi-bladed saber
 					&& self->client->ps.saberHolstered == 1 )//
 				{ //don't to extra blades if they're off

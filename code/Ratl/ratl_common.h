@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -28,7 +32,7 @@ This file is part of Jedi Academy.
 //
 // Also included is a safeguarded assert file for all the asserts in RTL.
 //
-// This file is included in EVERY TEMPLATE, so it should be very light in order to 
+// This file is included in EVERY TEMPLATE, so it should be very light in order to
 // reduce compile times.
 //
 //
@@ -64,20 +68,6 @@ This file is part of Jedi Academy.
 #define RATL_COMMON_INC
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// In VC++, Don't Bother With These Warnings
-////////////////////////////////////////////////////////////////////////////////////////
-#if defined(_MSC_VER) && !defined(__MWERKS__)
-	#pragma warning ( disable : 4786 )			// Truncated to 255 characters warning
-	#pragma warning ( disable : 4284 )			// nevamind what this is
-	#pragma warning ( disable : 4100 )			// unreferenced formal parameter
-	#pragma warning ( disable : 4512 )			// unable to generate default operator=
-	#pragma warning ( disable : 4130 )			// logical operation on address of string constant
-	#pragma warning ( disable : 4127 )			// conditional expression is constant
-	#pragma warning ( disable : 4996 )			// This function or variable may be unsafe.
-#endif
-
-
-////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(ASSERT_H_INC)
@@ -107,7 +97,7 @@ inline void *operator new(size_t,TRatlNew *where)
 
 inline void operator delete(void *, TRatlNew *)
 {
-	return; 
+	return;
 }
 
 namespace ratl
@@ -145,7 +135,7 @@ namespace	mem
 	{
 		unsigned char space[16];
 	} __attribute__ ((aligned(16)));
-#endif 
+#endif
 
 	inline void*	cpy( void *dest, const void *src, size_t count )
 	{
@@ -209,7 +199,7 @@ namespace	mem
 
 namespace str
 {
-	inline int		len(const char *src)
+	inline size_t		len(const char *src)
 	{
 		return strlen(src);
 	}
@@ -219,7 +209,7 @@ namespace str
 		strcpy(dest,src);
 	}
 
-	inline void	ncpy(char *dest,const char *src,int destBufferLen)
+	inline void	ncpy(char *dest,const char *src,size_t destBufferLen)
 	{
 		strncpy(dest,src,destBufferLen);
 	}
@@ -229,7 +219,7 @@ namespace str
 		strcat(dest,src);
 	}
 
-	inline void	ncat(char *dest,const char *src,int destBufferLen)
+	inline void	ncat(char *dest,const char *src,size_t destBufferLen)
 	{
 		ncpy(dest+len(dest),src,destBufferLen-len(dest));
 	}
@@ -263,10 +253,6 @@ namespace str
 	{
 		return strtok(s,gap);
 	}
-
-	void	to_upper(char *dest);
-	void	to_lower(char *dest);
-	void	printf(char *dest,const char *formatS, ...);
 }
 
 
@@ -306,12 +292,12 @@ public:
 
 
 
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // The Raven Template Library Base Class
 //
 // This is the base class for all the Raven Template Library container classes like
-// vector_vs and pool_vs.  
+// vector_vs and pool_vs.
 //
 // This class might be a good place to put memory profile code in the future.
 //
@@ -479,7 +465,7 @@ struct ratl_compare
 	float	mCost;
 	int		mHandle;
 
-	bool	operator<(const ratl_compare& t) const	
+	bool	operator<(const ratl_compare& t) const
 	{
 		return (mCost<t.mCost);
 	}
@@ -531,7 +517,7 @@ namespace storage
 		typedef TStorage TArray[SIZE];
 
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -607,15 +593,15 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void construct(TStorage *me,const TValue &v)
 		{
-			new(raw(me)) TValue(v);									
+			new(raw(me)) TValue(v);
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -646,7 +632,7 @@ namespace storage
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
 			return ((TStorage *)s1)-((TStorage *)s2);
-		}	
+		}
 	};
 	template<class T,int SIZE,int MAX_CLASS_SIZE>
 	struct virtual_semantics
@@ -663,7 +649,7 @@ namespace storage
 		};
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -672,11 +658,11 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -707,7 +693,7 @@ namespace storage
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
 			return ((TStorage *)s1)-((TStorage *)s2);
-		}	
+		}
 		template<class CAST_TO>
 		static CAST_TO *verify_alloc(CAST_TO *p)
 		{
@@ -741,7 +727,7 @@ namespace storage
 		typedef bits_true TConstructed;
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -796,10 +782,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
+			return
+				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) -
 				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+		}
 	};
 
 	template<class T,int SIZE,class NODE>
@@ -824,7 +810,7 @@ namespace storage
 		typedef TStorage TArray[SIZE];
 
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -833,15 +819,15 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void construct(TStorage *me,const TValue &v)
 		{
-			new(raw(me)) TValue(v);									
+			new(raw(me)) TValue(v);
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -890,10 +876,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
+			return
+				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) -
 				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+		}
 	};
 	template<class T,int SIZE,int MAX_CLASS_SIZE,class NODE>
 	struct virtual_semantics_node
@@ -916,7 +902,7 @@ namespace storage
 		typedef SNode		TStorage;		// this is what we make our array of
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -925,11 +911,11 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -978,10 +964,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
+			return
+				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) -
 				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+		}
 		template<class CAST_TO>
 		static CAST_TO *verify_alloc(CAST_TO *p)
 		{
@@ -1014,11 +1000,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	// Data
 	////////////////////////////////////////////////////////////////////////////////////
-#ifdef _WIN32
-	typedef typename T					TStorageTraits;
-#else
     typedef T                           TStorageTraits;
-#endif
 	typedef typename T::TArray			TTArray;
 	typedef typename T::TValue			TTValue;
 	typedef typename T::TConstructed	TTConstructed;

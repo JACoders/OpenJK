@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __UI_PUBLIC_H__
 #define __UI_PUBLIC_H__
@@ -33,7 +38,7 @@ typedef struct {
 	void		(*Printf)( const char *fmt, ... );
 
 	// abort the game
-	void		(*Error)( int level, const char *fmt, ... );
+	NORETURN_PTR void	(*Error)( int level, const char *fmt, ... );
 
 	// console variable interaction
 	void		(*Cvar_Set)( const char *name, const char *value );
@@ -56,7 +61,7 @@ typedef struct {
 	int 		(*FS_Write)( const void *buffer, int len, fileHandle_t f );
 	void		(*FS_FCloseFile)( fileHandle_t f );
 	int			(*FS_GetFileList)(  const char *path, const char *extension, char *listbuf, int bufsize );
-	int			(*FS_ReadFile)( const char *name, void **buf );
+	long		(*FS_ReadFile)( const char *name, void **buf );
 	void		(*FS_FreeFile)( void *buf );
 
 	// =========== renderer function calls ================
@@ -92,10 +97,15 @@ typedef struct {
 	// force a screen update, only used during gamestate load
 	void		(*UpdateScreen)( void );
 
+#ifdef JK2_MODE
+	// stuff for savegame screenshots...
+	void		(*PrecacheScreenshot)( void );
+#endif
+
 	//========= model collision ===============
 
 	// R_LerpTag is only valid for md3 models
-	void		(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame, 
+	void		(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
 						 float frac, const char *tagName );
 
 	// =========== sound function calls ===============
@@ -108,7 +118,9 @@ typedef struct {
 
 	// =========== getting save game picture ===============
 	void	(*DrawStretchRaw) (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
-	//qboolean(*SG_GetSaveImage)( const char *psPathlessBaseName, void *pvAddress );
+#ifdef JK2_MODE
+	qboolean(*SG_GetSaveImage)( const char *psPathlessBaseName, void *pvAddress );
+#endif
 	int		(*SG_GetSaveGameComment)(const char *psPathlessBaseName, char *sComment, char *sMapName);
 	qboolean (*SG_GameAllowedToSaveHere)(qboolean inCamera);
 	void (*SG_StoreSaveGameComment)(const char *sComment);
@@ -127,7 +139,7 @@ typedef struct {
 	int			(*Key_GetCatcher)( void );
 	void		(*Key_SetCatcher)( int catcher );
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	qboolean	(*SP_Register)( const char *Package, unsigned char Registration );
 	const char *(*SP_GetStringText)(unsigned short ID);
 	const char *(*SP_GetStringTextString)(const char *Reference);

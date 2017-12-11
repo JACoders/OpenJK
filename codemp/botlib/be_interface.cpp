@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 /*****************************************************************************
  * name:		be_interface.c // bk010221 - FIXME - DEAD code elimination
@@ -5,7 +27,7 @@
  * desc:		bot library interface
  *
  * $Archive: /MissionPack/code/botlib/be_interface.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 16 $
  * $Modtime: 5/16/01 2:36p $
  * $Date: 5/16/01 2:41p $
@@ -119,7 +141,7 @@ qboolean BotLibSetup(char *str)
 int Export_BotLibSetup(void)
 {
 	int		errnum;
-	
+
 	botDeveloper = LibVarGetValue("bot_developer");
   memset( &botlibglobals, 0, sizeof(botlibglobals) ); // bk001207 - init
 	//initialize byte swapping (litte endian etc.)
@@ -145,7 +167,7 @@ int Export_BotLibSetup(void)
 		}
 		else
 			Com_sprintf(logfilename, sizeof(logfilename), "botlib.log");
-	
+
 		Log_Open(logfilename);
 	}
 	//
@@ -622,7 +644,7 @@ int BotExportTest(int parm0, char *parm1, vec3_t parm2, vec3_t parm3)
 		{
 			AAS_ShowFace(face - aasworld.faces);
 		} //end if
-		
+
 		AAS_DrawPlaneCross(bsptrace.endpos,
 									bsptrace.plane.normal,
 									bsptrace.plane.dist + bsptrace.exp_dist,
@@ -708,7 +730,7 @@ static void Init_AAS_Export( aas_export_t *aas ) {
 	aas->AAS_PredictClientMovement = AAS_PredictClientMovement;
 }
 
-  
+
 /*
 ============
 Init_EA_Export

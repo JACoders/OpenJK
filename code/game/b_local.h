@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //B_local.h
 //re-added by MCG
@@ -148,15 +152,8 @@ extern void NPC_DeleteFromFormation (gentity_t *self);
 #define NUM_POSITIONS 30
 
 //NPC spawnflags
-#define SFB_SMALLHULL	1
-
 #define SFB_RIFLEMAN	2
-#define SFB_OLDBORG		2//Borg
 #define SFB_PHASER		4
-#define SFB_GUN			4//Borg
-#define	SFB_TRICORDER	8
-#define	SFB_TASER		8//Borg
-#define	SFB_DRILL		16//Borg
 
 #define	SFB_CINEMATIC	32
 #define	SFB_NOTSOLID	64
@@ -253,7 +250,7 @@ inline qboolean NPC_ClearLOS( const vec3_t end )
 {
 	return G_ClearLOS( NPC, end );
 }
-inline qboolean NPC_ClearLOS( gentity_t *ent ) 
+inline qboolean NPC_ClearLOS( gentity_t *ent )
 {
 	return G_ClearLOS( NPC, ent );
 }
@@ -269,11 +266,11 @@ inline qboolean NPC_ClearLOS( gentity_t *ent, const vec3_t end )
 extern qboolean NPC_ClearShot( gentity_t *ent );
 
 extern int NPC_FindCombatPoint( const vec3_t position, const vec3_t avoidPosition, vec3_t enemyPosition, const int flags, const float avoidDist, const int ignorePoint = -1 );
-extern int NPC_FindCombatPointRetry( const vec3_t position, 
-							 const vec3_t avoidPosition, 
-							 vec3_t enemyPosition, 
-							 int *cpFlags, 
-							 float avoidDist, 
+extern int NPC_FindCombatPointRetry( const vec3_t position,
+							 const vec3_t avoidPosition,
+							 vec3_t enemyPosition,
+							 int *cpFlags,
+							 float avoidDist,
 							 const int ignorePoint );
 
 
@@ -313,8 +310,8 @@ extern qboolean NPC_SetCombatPoint( int combatPointID );
 
 #define	MAX_COMBAT_POINT_CHECK	32
 
-extern int NPC_ValidEnemy( gentity_t *ent );
-extern int NPC_CheckEnemyExt( qboolean checkAlerts = qfalse );
+extern qboolean NPC_ValidEnemy( gentity_t *ent );
+extern qboolean NPC_CheckEnemyExt( qboolean checkAlerts = qfalse );
 extern qboolean NPC_FindPlayer( void );
 extern qboolean NPC_CheckCanAttackExt( void );
 

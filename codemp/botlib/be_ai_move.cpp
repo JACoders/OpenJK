@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 /*****************************************************************************
  * name:		be_ai_move.c
@@ -5,7 +27,7 @@
  * desc:		bot movement AI
  *
  * $Archive: /MissionPack/code/botlib/be_ai_move.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 14 $
  * $Modtime: 4/22/01 8:52a $
  * $Date: 4/22/01 8:52a $
@@ -185,7 +207,7 @@ void BotInitMoveState(int handle, bot_initmove_t *initmove)
 	//
 	ms->moveflags &= ~MFL_ONGROUND;
 	if (initmove->or_moveflags & MFL_ONGROUND) ms->moveflags |= MFL_ONGROUND;
-	ms->moveflags &= ~MFL_TELEPORTED;	
+	ms->moveflags &= ~MFL_TELEPORTED;
 	if (initmove->or_moveflags & MFL_TELEPORTED) ms->moveflags |= MFL_TELEPORTED;
 	ms->moveflags &= ~MFL_WATERJUMP;
 	if (initmove->or_moveflags & MFL_WATERJUMP) ms->moveflags |= MFL_WATERJUMP;
@@ -682,7 +704,7 @@ int BotAvoidSpots(vec3_t origin, aas_reachability_t *reach, bot_avoidspot_t *avo
 		{
 			VectorDistanceSquared(avoidspots[i].origin, reach->end);
 			// if the reachability leads closer to the avoid spot
-			if (squareddist < squaredradius && 
+			if (squareddist < squaredradius &&
 				VectorDistanceSquared(avoidspots[i].origin, reach->start) > squareddist)
 			{
 				type = avoidspots[i].type;
@@ -1523,7 +1545,7 @@ bot_moveresult_t BotTravel_WaterJump(bot_movestate_t *ms, aas_reachability_t *re
 	VectorSubtract(reach->end, ms->origin, dir);
 	VectorCopy(dir, hordir);
 	hordir[2] = 0;
-	dir[2] += 15 + crandom() * 40;
+	dir[2] += 15 + Q_flrand(-1.0f, 1.0f) * 40;
 	//botimport.Print(PRT_MESSAGE, "BotTravel_WaterJump: dir[2] = %f\n", dir[2]);
 	VectorNormalize(dir);
 	dist = VectorNormalize(hordir);
@@ -1561,9 +1583,9 @@ bot_moveresult_t BotFinishTravel_WaterJump(bot_movestate_t *ms, aas_reachability
 	if (!(AAS_PointContents(pnt) & (CONTENTS_LAVA|CONTENTS_SLIME|CONTENTS_WATER))) return result;
 	//swim straight to reachability end
 	VectorSubtract(reach->end, ms->origin, dir);
-	dir[0] += crandom() * 10;
-	dir[1] += crandom() * 10;
-	dir[2] += 70 + crandom() * 10;
+	dir[0] += Q_flrand(-1.0f, 1.0f) * 10;
+	dir[1] += Q_flrand(-1.0f, 1.0f) * 10;
+	dir[2] += 70 + Q_flrand(-1.0f, 1.0f) * 10;
 	//elemantary actions
 	EA_Move(ms->client, dir, 400);
 	//set the ideal view angles
@@ -2039,7 +2061,7 @@ bot_moveresult_t BotTravel_Elevator(bot_movestate_t *ms, aas_reachability_t *rea
 		botimport.Print(PRT_MESSAGE, "bot on elevator\n");
 #endif //DEBUG_ELEVATOR
 		//if vertically not too far from the end point
-		if (abs(ms->origin[2] - reach->end[2]) < sv_maxbarrier->value)
+		if (fabs(ms->origin[2] - reach->end[2]) < sv_maxbarrier->value)
 		{
 #ifdef DEBUG_ELEVATOR
 			botimport.Print(PRT_MESSAGE, "bot moving to end\n");
@@ -3250,7 +3272,7 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 #endif //AVOIDREACH
 			} //end if
 #ifdef DEBUG
-			
+
 			else if (botDeveloper)
 			{
 				botimport.Print(PRT_MESSAGE, "goal not reachable\n");

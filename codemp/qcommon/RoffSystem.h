@@ -1,17 +1,32 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "qcommon/q_shared.h"	//needs to be in here for entityState_t
 #include "server/server.h"
 
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
-using namespace std;
 
 // ROFF Defines
 //-------------------
@@ -19,7 +34,7 @@ using namespace std;
 #define ROFF_NEW_VERSION			2
 #define ROFF_STRING					"ROFF"
 #define ROFF_SAMPLE_RATE			10	// 10hz
-#define ROFF_AUTO_FIX_BAD_ANGLES	// exporter can mess up angles, 
+#define ROFF_AUTO_FIX_BAD_ANGLES	// exporter can mess up angles,
 									//	defining this attempts to detect and fix these problems
 
 
@@ -36,8 +51,8 @@ private:
 	class			CROFF;
 	struct			SROFFEntity;
 
-	typedef	map		<int, CROFF *> TROFFList;
-	typedef vector	<SROFFEntity *> TROFFEntList;
+	typedef	std::map	<int, CROFF *> TROFFList;
+	typedef std::vector	<SROFFEntity *> TROFFEntList;
 
 	TROFFList		mROFFList;				// List of cached roffs
 	int				mID;					// unique ID generator for new roff objects
@@ -55,7 +70,7 @@ private:
 	} TROFFHeader;
 
 	// ROFF Entry, nothing else needs to see this
-	typedef struct tROFFEntry 
+	typedef struct tROFFEntry
 	//-------------------------------
 	{
 		float		mOriginOffset[3];
@@ -74,7 +89,7 @@ private:
 	} TROFF2Header;
 
 	// ROFF Entry, nothing else needs to see this
-	typedef struct tROFF2Entry 
+	typedef struct tROFF2Entry
 	//-------------------------------
 	{
 		float		mOriginOffset[3];
@@ -82,7 +97,7 @@ private:
 		int			mStartNote, mNumNotes;		// note track info
 	} TROFF2Entry;
 
-	// An individual ROFF object, 
+	// An individual ROFF object,
 	//	contains actual rotation/offset information
 	//--------------------------------------
 	class CROFF
@@ -102,9 +117,9 @@ private:
 		qboolean	mUsedByClient;
 		qboolean	mUsedByServer;
 
-		CROFF() 
-		{ 
-			mUsedByClient = mUsedByServer = qfalse; 
+		CROFF()
+		{
+			mUsedByClient = mUsedByServer = qfalse;
 		}
 		CROFF( const char *file, int id );
 		~CROFF();
@@ -112,7 +127,7 @@ private:
 	}; // class CROFF
 
 
-	// The roff system tracks entities that are 
+	// The roff system tracks entities that are
 	//	roffing, so this is the internal structure
 	//	that represents these objects.
 	//--------------------------------------
@@ -143,8 +158,8 @@ private:
 
 	void	ProcessNote(SROFFEntity *roff_ent, char *note);
 
-	void	SetLerp( trajectory_t *tr, 
-					trType_t, vec3_t origin, 
+	void	SetLerp( trajectory_t *tr,
+					trType_t, vec3_t origin,
 					vec3_t delta, int time, int rate );
 
 	qboolean	ClearLerp( SROFFEntity *roff_ent );				// Clears out the angular and position lerp fields

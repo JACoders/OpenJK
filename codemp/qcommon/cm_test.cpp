@@ -1,5 +1,25 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "cm_local.h"
 
@@ -18,7 +38,7 @@ int CM_PointLeafnum_r( const vec3_t p, int num, clipMap_t *local ) {
 	{
 		node = local->nodes + num;
 		plane = node->plane;
-		
+
 		if (plane->type < 3)
 			d = p[plane->type] - plane->dist;
 		else
@@ -128,7 +148,7 @@ void CM_BoxLeafnums_r( leafList_t *ll, int nodenum ) {
 			ll->storeLeafs( ll, nodenum );
 			return;
 		}
-	
+
 		node = &cmg.nodes[nodenum];
 		plane = node->plane;
 
@@ -197,7 +217,7 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 		return 0;
 	}
 
-	if ( model ) 
+	if ( model )
 	{
 		clipm = CM_ClipHandleToModel( model, &local );
 		if (clipm->firstNode != -1)
@@ -209,8 +229,8 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 		{
 			leaf = &clipm->leaf;
 		}
-	} 
-	else 
+	}
+	else
 	{
 		local = &cmg;
 		leafnum = CM_PointLeafnum_r (p, 0, &cmg);
@@ -232,16 +252,9 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 			}
 		}
 
-		if ( i == b->numsides ) 
+		if ( i == b->numsides )
 		{
 			contents |= b->contents;
-			if(cmg.landScape && (contents & CONTENTS_TERRAIN))
-			{
-				if(p[2] < cmg.landScape->GetWaterHeight())
-				{
-					contents |= cmg.landScape->GetWaterContents();
-				}
-			}
 		}
 	}
 
@@ -265,7 +278,7 @@ int	CM_TransformedPointContents( const vec3_t p, clipHandle_t model, const vec3_
 	VectorSubtract (p, origin, p_l);
 
 	// rotate start and end into the models frame of reference
-	if ( model != BOX_MODEL_HANDLE && 
+	if ( model != BOX_MODEL_HANDLE &&
 	(angles[0] || angles[1] || angles[2]) )
 	{
 		AngleVectors (angles, forward, right, up);

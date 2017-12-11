@@ -1,34 +1,42 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // Sequencer Header File
-
 #include "blockstream.h"
 #include "interface.h"
 #include "taskmanager.h"
 #include "sequence.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4786)	//identifier was truncated 
-
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <list>
 #include <vector>
 #include <map>
-#include <algorithm>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-using namespace std;
 
 //Defines
-
 #define SQ_COMMON		0x00000000 	//Common one-pass sequence
 #define	SQ_LOOP			0x00000001 	//Looping sequence
 #define SQ_RETAIN		0x00000002 	//Inside a looping sequence list, retain the information
-#define SQ_AFFECT		0x00000004 	//Affect sequence 
+#define SQ_AFFECT		0x00000004 	//Affect sequence
 #define SQ_RUN			0x00000008	//A run block
 #define SQ_PENDING		0x00000010	//Pending use, don't free when flushing the sequences
 #define SQ_CONDITIONAL	0x00000020	//Conditional statement
@@ -71,8 +79,8 @@ class ICARUS_Instance;
 class CSequencer
 {
 //	typedef	map < int, CSequence * >			sequenceID_m;
-	typedef list < CSequence * >				sequence_l;
-	typedef map < CTaskGroup *, CSequence * >	taskSequence_m;
+	typedef std::list < CSequence * >				sequence_l;
+	typedef std::map < CTaskGroup *, CSequence * >	taskSequence_m;
 
 public:
 
@@ -150,8 +158,6 @@ protected:
 
 	int Prime( CTaskManager *taskManager, CBlock *command );
 
-	void StripExtension( const char *in, char *out );
-
 	int ParseRun( CBlock *block );
 	int ParseLoop( CBlock *block, bstream_t *bstream );
 	int ParseAffect( CBlock *block, bstream_t *bstream );
@@ -165,7 +171,7 @@ protected:
 	CSequence *GetTaskSequence( CTaskGroup *group );
 
 	//Member variables
-	
+
 	ICARUS_Instance		*m_owner;
 	int					m_ownerID;
 
@@ -186,5 +192,5 @@ protected:
 
 	int					m_elseValid;
 	CBlock				*m_elseOwner;
-	vector<bstream_t*>  m_streamsCreated;
+	std::vector<bstream_t*>  m_streamsCreated;
 };

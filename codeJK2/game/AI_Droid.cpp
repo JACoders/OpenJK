@@ -1,24 +1,25 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
 #include "g_headers.h"
-
 	    
 #include "b_local.h"
 
@@ -295,7 +296,7 @@ void NPC_Droid_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, ve
 		pain_chance = NPC_GetPainChance( self, damage );
 
 		// Put it in pain
-		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || random() < pain_chance )	// Spin around in pain? Demp2 always does this
+		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || Q_flrand(0.0f, 1.0f) < pain_chance )	// Spin around in pain? Demp2 always does this
 		{
 			// Health is between 0-30 or was hit by a DEMP2 so pop his head
 			if ( self->health < 30 || mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT )
@@ -356,12 +357,12 @@ void NPC_Droid_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, ve
 
 		self->NPC->scriptFlags &= ~SCF_LOOK_FOR_ENEMIES;
 	}
-	else if ((self->client->NPC_class == CLASS_R2D2))
+	else if (self->client->NPC_class == CLASS_R2D2)
 	{
 
 		pain_chance = NPC_GetPainChance( self, damage );
 
-		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || random() < pain_chance )	// Spin around in pain? Demp2 always does this
+		if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || Q_flrand(0.0f, 1.0f) < pain_chance )	// Spin around in pain? Demp2 always does this
 		{
 			anim = self->client->ps.legsAnim;
 
@@ -558,7 +559,7 @@ void NPC_BSDroid_Default( void )
 	else if ( NPCInfo->localState == LSTATE_DROP )
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
-		ucmd.upmove = crandom() * 64;
+		ucmd.upmove = Q_flrand(-1.0f, 1.0f) * 64;
 	}
 	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{

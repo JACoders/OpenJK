@@ -1,11 +1,33 @@
-#pragma once
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // g_public.h -- game module information visible to server
 
-#define Q3_INFINITE			16777216 
+#pragma once
+
+#include "qcommon/q_shared.h"
+
+#define Q3_INFINITE			16777216
 
 #define	GAME_API_VERSION	1
 
@@ -14,6 +36,7 @@
 // in entityStates (level eType), so the game must explicitly flag
 // special server behaviors
 #define	SVF_NOCLIENT			0x00000001	// don't send entity to clients, even if it has effects
+#define SVF_BROADCASTCLIENTS	0x00000002	// only broadcast to clients specified in r.broadcastClients[clientNum/32]
 #define SVF_BOT					0x00000008	// set if the entity is a bot
 #define SVF_PLAYER_USABLE		0x00000010	// player can use this with the use button
 #define	SVF_BROADCAST			0x00000020	// send to all connected clients
@@ -91,11 +114,10 @@ typedef struct entityShared_s {
 	// entity[ent->s.ownerNum].ownerNum = passEntityNum	(don't interact with other missiles from owner)
 	int			ownerNum;
 
-	// mask of clients that this entity should be broadcast too.  The first 32 clients
-	// are represented by the first array index and the latter 32 clients are represented
-	// by the second array index.
-	int			broadcastClients[2];
-
+	// mask of clients that this entity should be broadcast to
+	// the first 32 clients are represented by the first array index and the latter 32 clients are represented by the
+	//	second array index.
+	uint32_t	broadcastClients[2];
 } entityShared_t;
 
 //bstate.h
@@ -183,7 +205,7 @@ typedef enum //# bSet_e
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
-typedef struct parms_s {	
+typedef struct parms_s {
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 } parms_t;
 
@@ -237,7 +259,7 @@ typedef struct sharedEntity_s {
 	int				next_roff_time; //rww - npc's need to know when they're getting roff'd
 } sharedEntity_t;
 
-#ifdef __cplusplus
+#if !defined(_GAME) && defined(__cplusplus)
 class CSequencer;
 class CTaskManager;
 
@@ -268,7 +290,7 @@ typedef struct T_G_ICARUS_SET_s {
 
 typedef struct T_G_ICARUS_LERP2POS_s {
 	int taskID;
-	int entID; 
+	int entID;
 	vec3_t origin;
 	vec3_t angles;
 	float duration;
@@ -743,7 +765,7 @@ typedef enum gameExportLegacy_e {
 typedef struct gameImport_s {
 	// misc
 	void		(*Print)								( const char *msg, ... );
-	void		(*Error)								( int level, const char *error, ... );
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	int			(*Milliseconds)							( void );
 	void		(*PrecisionTimerStart)					( void **timer );
 	int			(*PrecisionTimerEnd)					( void *timer );
@@ -754,7 +776,7 @@ typedef struct gameImport_s {
 	void		(*SnapVector)							( float *v );
 
 	// cvar
-	void		(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
+	void		(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags );
 	void		(*Cvar_Set)								( const char *var_name, const char *value );
 	void		(*Cvar_Update)							( vmCvar_t *vmCvar );
 	int			(*Cvar_VariableIntegerValue)			( const char *var_name );
@@ -871,7 +893,7 @@ typedef struct gameImport_s {
 	void		(*Nav_FlagAllNodes)						( int newFlag );
 	qboolean	(*Nav_GetPathsCalculated)				( void );
 	void		(*Nav_SetPathsCalculated)				( qboolean newVal );
-	
+
 	// botlib
 	int			(*BotAllocateClient)					( void );
 	void		(*BotFreeClient)						( int clientNum );
@@ -964,7 +986,7 @@ typedef struct gameImport_s {
 	void		(*BotUserCommand)						( int clientNum, usercmd_t *ucmd );
 	void		(*BotUpdateWaypoints)					( int wpnum, wpobject_t **wps );
 	void		(*BotCalculatePaths)					( int rmg );
-	
+
 	// area awareness system
 	int			(*AAS_EnableRoutingArea)				( int areanum, int enable );
 	int			(*AAS_BBoxAreas)						( vec3_t absmins, vec3_t absmaxs, int *areas, int maxareas );
@@ -988,7 +1010,7 @@ typedef struct gameImport_s {
 	int			(*AAS_AlternativeRouteGoals)			( vec3_t start, int startareanum, vec3_t goal, int goalareanum, int travelflags, void *altroutegoals, int maxaltroutegoals, int type );
 	int			(*AAS_PredictRoute)						( void *route, int areanum, vec3_t origin, int goalareanum, int travelflags, int maxareas, int maxtime, int stopevent, int stopcontents, int stoptfl, int stopareanum );
 	int			(*AAS_PointReachabilityAreaIndex)		( vec3_t point );
-	
+
 	// elementary action
 	void		(*EA_Say)								( int client, char *str );
 	void		(*EA_SayTeam)							( int client, char *str );
@@ -1016,7 +1038,7 @@ typedef struct gameImport_s {
 	void		(*EA_EndRegular)						( int client, float thinktime );
 	void		(*EA_GetInput)							( int client, float thinktime, void *input );
 	void		(*EA_ResetInput)						( int client );
-	
+
 	// botlib preprocessor
 	int			(*PC_LoadSource)						( const char *filename );
 	int			(*PC_FreeSource)						( int handle );

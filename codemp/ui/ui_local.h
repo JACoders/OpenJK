@@ -1,7 +1,27 @@
-#pragma once
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+#pragma once
 
 #include "qcommon/q_shared.h"
 #include "rd-common/tr_types.h"
@@ -27,8 +47,6 @@ qboolean UI_FeederSelection( float feederID, int index, itemDef_t *item );
 void UI_Report( void );
 void UI_Load( void );
 void UI_LoadMenus( const char *menuFile, qboolean reset );
-void UI_ShowPostGame( qboolean newHigh );
-void UI_ClearScores( void );
 void UI_LoadArenas( void );
 void UI_LoadForceConfig_List( void );
 
@@ -123,7 +141,6 @@ typedef struct playerInfo_s {
 #define MAX_DEMOS				2048 // 256
 #define MAX_MOVIES				2048 // 256
 #define MAX_Q3PLAYERMODELS		1024 //256
-#define MAX_PLAYERMODELS		512 //32
 
 #define DEMO_DIRECTORY "demos"
 #define DEMO_EXTENSION "dm_"
@@ -238,17 +255,32 @@ typedef struct modInfo_s {
 	const char *modDescr;
 } modInfo_t;
 
+#define SKIN_LENGTH			16
+#define ACTION_BUFFER_SIZE	128
+
+typedef struct {
+	char name[SKIN_LENGTH];
+} skinName_t;
+
+typedef struct {
+	char shader[MAX_QPATH];
+	char actionText[ACTION_BUFFER_SIZE];
+} playerColor_t;
+
 typedef struct playerSpeciesInfo_s {
-	char		Name[64];
+	char		Name[MAX_QPATH];
 	int			SkinHeadCount;
-	char		SkinHeadNames[MAX_PLAYERMODELS][16];
+	int			SkinHeadMax;
+	skinName_t	*SkinHead;
 	int			SkinTorsoCount;
-	char		SkinTorsoNames[MAX_PLAYERMODELS][16];
+	int			SkinTorsoMax;
+	skinName_t	*SkinTorso;
 	int			SkinLegCount;
-	char		SkinLegNames[MAX_PLAYERMODELS][16];
-	char		ColorShader[MAX_PLAYERMODELS][64];
+	int			SkinLegMax;
+	skinName_t	*SkinLeg;
+	int			ColorMax;
 	int			ColorCount;
-	char		ColorActionText[MAX_PLAYERMODELS][128];
+	playerColor_t	*Color;
 } playerSpeciesInfo_t;
 
 typedef struct uiInfo_s {
@@ -275,7 +307,7 @@ typedef struct uiInfo_s {
 	int						teamIndex;
 	int						playerRefresh;
 	int						playerIndex;
-	int						playerNumber; 
+	int						playerNumber;
 	qboolean				teamLeader;
 	char					playerNames[MAX_CLIENTS][MAX_NETNAME];
 	char					teamNames[MAX_CLIENTS][MAX_TEAMNAME];
@@ -342,8 +374,9 @@ typedef struct uiInfo_s {
 
 	qboolean				inGameLoad;
 
+	int						playerSpeciesMax;
 	int						playerSpeciesCount;
-	playerSpeciesInfo_t		playerSpecies[MAX_PLAYERMODELS];
+	playerSpeciesInfo_t		*playerSpecies;
 	int						playerSpeciesIndex;
 
 	short					movesTitleIndex;
@@ -356,7 +389,7 @@ typedef struct uiInfo_s {
 extern uiInfo_t uiInfo;
 
 qboolean	UI_ConsoleCommand( int realTime );
-void		UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
+void		UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader );
 void		UI_FillRect( float x, float y, float width, float height, const float *color );
 char		*UI_Cvar_VariableString( const char *var_name );
 
@@ -378,6 +411,6 @@ qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
 qboolean UI_SaberTypeForSaber( const char *saberName, char *saberType );
 
 
-// new ui 
+// new ui
 
 extern uiImport_t *trap;

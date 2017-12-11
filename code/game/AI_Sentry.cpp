@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -92,8 +96,8 @@ void sentry_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 NPC_Sentry_Pain
 -------------------------
 */
-void NPC_Sentry_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
-{		
+void NPC_Sentry_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
+{
 	NPC_Pain( self, inflictor, other, point, damage, mod );
 
 	if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT )
@@ -102,7 +106,7 @@ void NPC_Sentry_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 		TIMER_Set( self, "attackDelay", Q_irand( 9000, 12000) );
 		self->flags |= FL_SHIELDED;
 		NPC_SetAnim( self, SETANIM_BOTH, BOTH_FLY_SHIELDED, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-		G_SoundOnEnt( self, CHAN_AUTO, "sound/chars/sentry/misc/sentry_pain" );		
+		G_SoundOnEnt( self, CHAN_AUTO, "sound/chars/sentry/misc/sentry_pain" );
 
 		self->NPC->localState = LSTATE_ACTIVE;
 	}
@@ -150,7 +154,7 @@ void Sentry_Fire (void)
 	{
 		NPCInfo->localState = LSTATE_POWERING_UP;
 
-		G_SoundOnEnt( NPC, CHAN_AUTO, "sound/chars/sentry/misc/sentry_shield_open" );		
+		G_SoundOnEnt( NPC, CHAN_AUTO, "sound/chars/sentry/misc/sentry_shield_open" );
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_POWERUP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		TIMER_Set( NPC, "powerup", 250 );
 		return;
@@ -167,17 +171,17 @@ void Sentry_Fire (void)
 	switch( which )
 	{
 	case 0:
-		bolt = NPC->genericBolt1; 
+		bolt = NPC->genericBolt1;
 		break;
 	case 1:
-		bolt = NPC->genericBolt2; 
+		bolt = NPC->genericBolt2;
 		break;
 	case 2:
 	default:
-		bolt = NPC->genericBolt3; 
+		bolt = NPC->genericBolt3;
 	}
 
-	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel, 
+	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel,
 				bolt,
 				&boltMatrix, NPC->currentAngles, NPC->currentOrigin, (cg.time?cg.time:level.time),
 				NULL, NPC->s.modelScale );
@@ -221,7 +225,7 @@ Sentry_MaintainHeight
 -------------------------
 */
 void Sentry_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	NPC->s.loopSound = G_SoundIndex( "sound/chars/sentry/misc/sentry_hover_1_lp" );
@@ -233,7 +237,7 @@ void Sentry_MaintainHeight( void )
 	if ( NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPC->enemy->currentOrigin[2]+NPC->enemy->maxs[2]) - NPC->currentOrigin[2]; 
+		dif = (NPC->enemy->currentOrigin[2]+NPC->enemy->maxs[2]) - NPC->currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 8 )
@@ -373,7 +377,7 @@ void Sentry_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 		NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 
@@ -384,7 +388,7 @@ Sentry_Hunt
 */
 void Sentry_Hunt( qboolean visible, qboolean advance )
 {
-	float	distance, speed;
+	float	speed;
 	vec3_t	forward;
 
 	//If we're not supposed to stand still, pursue the player
@@ -415,7 +419,7 @@ void Sentry_Hunt( qboolean visible, qboolean advance )
 	else
 	{
 		VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = SENTRY_FORWARD_BASE_SPEED + SENTRY_FORWARD_MULTIPLIER * g_spskill->integer;
@@ -498,7 +502,7 @@ void Sentry_AttackDecision( void )
 	}
 
 	// Rate our distance to the target and visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 

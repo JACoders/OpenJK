@@ -1,5 +1,24 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "game/g_public.h"
 #include "Q3_Registers.h"
@@ -65,7 +84,7 @@ void Q3_DeclareVariable( int type, const char *name )
 		varFloats[ name ] = 0.0f;
 		break;
 
-	case TK_STRING:		
+	case TK_STRING:
 		varStrings[ name ] = "NULL";
 		break;
 
@@ -216,7 +235,7 @@ int Q3_SetFloatVariable( const char *name, float value )
 		return VTYPE_FLOAT;
 
 	(*vfi).second = value;
-	
+
 	return true;
 }
 
@@ -276,7 +295,7 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 	{
 		//Save out the map id
 		int	idSize = strlen( ((*vfi).first).c_str() );
-		
+
 		//Save out the real data
 		gi.AppendToSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
 		gi.AppendToSaveGame( 'FIDS', (void *) ((*vfi).first).c_str(), idSize );
@@ -305,7 +324,7 @@ void Q3_VariableSaveStrings( varString_m &smap )
 	{
 		//Save out the map id
 		int	idSize = strlen( ((*vsi).first).c_str() );
-		
+
 		//Save out the real data
 		gi.AppendToSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
 		gi.AppendToSaveGame( 'SIDS', (void *) ((*vsi).first).c_str(), idSize );
@@ -352,7 +371,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
-		
+
 		gi.ReadFromSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
 		gi.ReadFromSaveGame( 'FIDS', &tempBuffer, idSize );
 		tempBuffer[ idSize ] = 0;
@@ -386,7 +405,7 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
-		
+
 		gi.ReadFromSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
 		gi.ReadFromSaveGame( 'SIDS', &tempBuffer, idSize );
 		tempBuffer[ idSize ] = 0;

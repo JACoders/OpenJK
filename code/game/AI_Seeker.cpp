@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "b_local.h"
 #include "g_nav.h"
 #include "../cgame/cg_local.h"
@@ -52,7 +57,7 @@ void NPC_Seeker_Precache(void)
 }
 
 //------------------------------------
-void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	if ( !(self->svFlags & SVF_CUSTOM_GRAVITY ))
 	{
@@ -68,7 +73,7 @@ void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 
 //------------------------------------
 void Seeker_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -82,7 +87,7 @@ void Seeker_MaintainHeight( void )
 			TIMER_Set( NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPC->enemy->currentOrigin[2] +  Q_flrand( NPC->enemy->maxs[2]/2, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2]; 
+			dif = (NPC->enemy->currentOrigin[2] +  Q_flrand( NPC->enemy->maxs[2]/2, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2];
 
 			float	difFactor = 1.0f;
 			if ( NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -173,7 +178,7 @@ void Seeker_Strafe( void )
 	vec3_t	end, right, dir;
 	trace_t	tr;
 
-	if ( random() > 0.7f || !NPC->enemy || !NPC->enemy->client )
+	if ( Q_flrand(0.0f, 1.0f) > 0.7f || !NPC->enemy || !NPC->enemy->client )
 	{
 		// Do a regular style strafe
 		AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
@@ -203,7 +208,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPC->client->ps.velocity[2] += upPush;
 
-			NPCInfo->standTime = level.time + 1000 + random() * 500;
+			NPCInfo->standTime = level.time + 1000 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 	else
@@ -221,7 +226,7 @@ void Seeker_Strafe( void )
 		VectorMA( NPC->enemy->currentOrigin, stDis * side, right, end );
 
 		// then add a very small bit of random in front of/behind the player action
-		VectorMA( end, crandom() * 25, dir, end );
+		VectorMA( end, Q_flrand(-1.0f, 1.0f) * 25, dir, end );
 
 		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
@@ -248,7 +253,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPC->client->ps.velocity[2] += upPush;
 
-			NPCInfo->standTime = level.time + 2500 + random() * 500;
+			NPCInfo->standTime = level.time + 2500 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 }
@@ -256,7 +261,7 @@ void Seeker_Strafe( void )
 //------------------------------------
 void Seeker_Hunt( qboolean visible, qboolean advance )
 {
-	float	distance, speed;
+	float	speed;
 	vec3_t	forward;
 
 	NPC_FaceEnemy( qtrue );
@@ -292,7 +297,7 @@ void Seeker_Hunt( qboolean visible, qboolean advance )
 	else
 	{
 		VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = SEEKER_FORWARD_BASE_SPEED + SEEKER_FORWARD_MULTIPLIER * g_spskill->integer;
@@ -353,7 +358,7 @@ void Seeker_Ranged( qboolean visible, qboolean advance )
 	{
 		Seeker_Hunt( visible, advance );
 	}
-} 
+}
 
 //------------------------------------
 void Seeker_Attack( void )
@@ -362,7 +367,7 @@ void Seeker_Attack( void )
 	Seeker_MaintainHeight();
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
@@ -397,7 +402,7 @@ void Seeker_FindEnemy( void )
 
 	numFound = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( int i = 0 ; i < numFound ; i++ ) 
+	for ( int i = 0 ; i < numFound ; i++ )
 	{
 		ent = entityList[i];
 
@@ -429,7 +434,7 @@ void Seeker_FindEnemy( void )
 	if ( best )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPC->random = random() * 6.3f; // roughly 2pi
+		NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 
 		NPC->enemy = best;
 	}
@@ -442,7 +447,7 @@ void Seeker_FollowPlayer( void )
 
 	float	dis	= DistanceHorizontalSquared( NPC->currentOrigin, g_entities[0].currentOrigin );
 	vec3_t	pt, dir;
-	
+
 	float	minDistSqr = MIN_DISTANCE_SQR;
 
 	if ( NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -485,7 +490,7 @@ void Seeker_FollowPlayer( void )
 		{
 			if ( TIMER_Done( NPC, "seekerhiss" ))
 			{
-				TIMER_Set( NPC, "seekerhiss", 1000 + random() * 1000 );
+				TIMER_Set( NPC, "seekerhiss", 1000 + Q_flrand(0.0f, 1.0f) * 1000 );
 				G_Sound( NPC, G_SoundIndex( "sound/chars/seeker/misc/hiss" ));
 			}
 		}
@@ -522,12 +527,12 @@ void NPC_BSSeeker_Default( void )
 	if ( NPC->random == 0.0f )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPC->random = random() * 6.3f; // roughly 2pi
+		NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 	}
 
 	if ( NPC->enemy && NPC->enemy->health && NPC->enemy->inuse )
 	{
-		if ( NPC->client->NPC_class != CLASS_BOBAFETT 
+		if ( NPC->client->NPC_class != CLASS_BOBAFETT
 			&& ( NPC->enemy->s.number == 0 || ( NPC->enemy->client && NPC->enemy->client->NPC_class == CLASS_SEEKER )) )
 		{
 			//hacked to never take the player as an enemy, even if the player shoots at it

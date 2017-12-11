@@ -1,5 +1,26 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // console.c
 
@@ -15,6 +36,7 @@ console_t	con;
 
 cvar_t		*con_conspeed;
 cvar_t		*con_notifytime;
+cvar_t		*con_opacity; // background alpha multiplier
 cvar_t		*con_autoclear;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
@@ -39,6 +61,16 @@ void Con_ToggleConsole_f (void) {
 
 	Con_ClearNotify ();
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
+}
+
+/*
+===================
+Con_ToggleMenu_f
+===================
+*/
+void Con_ToggleMenu_f( void ) {
+	CL_KeyEvent( A_ESCAPE, qtrue, Sys_Milliseconds() );
+	CL_KeyEvent( A_ESCAPE, qfalse, Sys_Milliseconds() );
 }
 
 /*
@@ -131,7 +163,7 @@ void Con_Clear_f (void) {
 	Con_Bottom();		// go to end
 }
 
-						
+
 /*
 ================
 Con_Dump_f
@@ -217,7 +249,7 @@ void Con_Dump_f (void)
 	FS_FCloseFile( f );
 }
 
-						
+
 /*
 ================
 Con_ClearNotify
@@ -225,13 +257,13 @@ Con_ClearNotify
 */
 void Con_ClearNotify( void ) {
 	int		i;
-	
+
 	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
 		con.times[i] = 0;
 	}
 }
 
-						
+
 
 /*
 ================
@@ -280,7 +312,7 @@ void Con_CheckResize (void)
 			numlines = con.totallines;
 
 		numchars = oldwidth;
-	
+
 		if (con.linewidth < numchars)
 			numchars = con.linewidth;
 
@@ -326,9 +358,12 @@ Con_Init
 void Con_Init (void) {
 	int		i;
 
-	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
-	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
-	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE);
+	con_notifytime = Cvar_Get ("con_notifytime", "3", 0, "How many seconds notify messages should be shown before they fade away");
+	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0, "Console open/close speed");
+	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
+
+	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
+	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
@@ -337,16 +372,33 @@ void Con_Init (void) {
 		historyEditLines[i].widthInChars = g_console_field_width;
 	}
 
-	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f );
-	Cmd_AddCommand( "messagemode", Con_MessageMode_f );
-	Cmd_AddCommand( "messagemode2", Con_MessageMode2_f );
-	Cmd_AddCommand( "messagemode3", Con_MessageMode3_f );
-	Cmd_AddCommand( "messagemode4", Con_MessageMode4_f );
-	Cmd_AddCommand( "clear", Con_Clear_f );
-	Cmd_AddCommand( "condump", Con_Dump_f );
+	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f, "Show/hide console" );
+	Cmd_AddCommand( "togglemenu", Con_ToggleMenu_f, "Show/hide the menu" );
+	Cmd_AddCommand( "messagemode", Con_MessageMode_f, "Global Chat" );
+	Cmd_AddCommand( "messagemode2", Con_MessageMode2_f, "Team Chat" );
+	Cmd_AddCommand( "messagemode3", Con_MessageMode3_f, "Private Chat with Target Player" );
+	Cmd_AddCommand( "messagemode4", Con_MessageMode4_f, "Private Chat with Last Attacker" );
+	Cmd_AddCommand( "clear", Con_Clear_f, "Clear console text" );
+	Cmd_AddCommand( "condump", Con_Dump_f, "Dump console text to file" );
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
 }
 
+/*
+================
+Con_Shutdown
+================
+*/
+void Con_Shutdown(void)
+{
+	Cmd_RemoveCommand("toggleconsole");
+	Cmd_RemoveCommand("togglemenu");
+	Cmd_RemoveCommand("messagemode");
+	Cmd_RemoveCommand("messagemode2");
+	Cmd_RemoveCommand("messagemode3");
+	Cmd_RemoveCommand("messagemode4");
+	Cmd_RemoveCommand("clear");
+	Cmd_RemoveCommand("condump");
+}
 
 /*
 ===============
@@ -405,10 +457,10 @@ void CL_ConsolePrint( const char *txt) {
 	if ( cl_noprint && cl_noprint->integer ) {
 		return;
 	}
-	
+
 	if (!con.initialized) {
-		con.color[0] = 
-		con.color[1] = 
+		con.color[0] =
+		con.color[1] =
 		con.color[2] =
 		con.color[3] = 1.0f;
 		con.linewidth = -1;
@@ -570,13 +622,13 @@ void Con_DrawNotify (void)
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++) 
+			for (x = 0 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
-				strcat(sTemp,va("%c",text[x] & 0xFF));				
+				strcat(sTemp,va("%c",text[x] & 0xFF));
 			}
 			//
 			// and print...
@@ -586,7 +638,7 @@ void Con_DrawNotify (void)
 			v +=  iPixelHeightToAdvance;
 		}
 		else
-		{		
+		{
 			for (x = 0 ; x < con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
@@ -665,6 +717,17 @@ void Con_DrawSolidConsole( float frac ) {
 		y = 0;
 	}
 	else {
+		// draw the background at full opacity only if fullscreen
+		if (frac < 1.0f)
+		{
+			vec4_t con_color;
+			MAKERGBA(con_color, 1.0f, 1.0f, 1.0f, Com_Clamp(0.0f, 1.0f, con_opacity->value));
+			re->SetColor(con_color);
+		}
+		else
+		{
+			re->SetColor(NULL);
+		}
 		SCR_DrawPic( 0, 0, SCREEN_WIDTH, (float) y, cls.consoleShader );
 	}
 
@@ -676,7 +739,7 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH, 
+		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
 	}
 
@@ -697,7 +760,7 @@ void Con_DrawSolidConsole( float frac ) {
 		y -= SMALLCHAR_HEIGHT;
 		rows--;
 	}
-	
+
 	row = con.display;
 
 	if ( con.x == 0 ) {
@@ -712,7 +775,7 @@ void Con_DrawSolidConsole( float frac ) {
 	int iPixelHeightToAdvance = SMALLCHAR_HEIGHT;
 	if (re->Language_IsAsian())
 	{
-		if (!iFontIndexForAsian) 
+		if (!iFontIndexForAsian)
 		{
 			iFontIndexForAsian = re->RegisterFont("ocr_a");
 		}
@@ -725,7 +788,7 @@ void Con_DrawSolidConsole( float frac ) {
 			break;
 		if (con.current - row >= con.totallines) {
 			// past scrollback wrap point
-			continue;	
+			continue;
 		}
 
 		text = con.text + (row % con.totallines)*con.linewidth;
@@ -739,13 +802,13 @@ void Con_DrawSolidConsole( float frac ) {
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++) 
+			for (x = 0 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
-				strcat(sTemp,va("%c",text[x] & 0xFF));				
+				strcat(sTemp,va("%c",text[x] & 0xFF));
 			}
 			//
 			// and print...
@@ -753,7 +816,7 @@ void Con_DrawSolidConsole( float frac ) {
 			re->Font_DrawString(con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*(aesthetics)*/)), con.yadjust*(y), sTemp, g_color_table[currentColor], iFontIndexForAsian, -1, fFontScaleForAsian);
 		}
 		else
-		{		
+		{
 			for (x=0 ; x<con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
@@ -818,7 +881,7 @@ void Con_RunConsole (void) {
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
-	
+
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
 	{

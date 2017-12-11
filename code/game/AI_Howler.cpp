@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "../cgame/cg_camera.h"
@@ -184,7 +188,7 @@ static void Howler_Patrol( void )
 
 	Howler_Attack( 0.0f, qtrue );
 }
- 
+
 /*
 -------------------------
 Howler_Move
@@ -276,12 +280,12 @@ static void Howler_Howl( void )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnts[i] == NPC )
 		{//Skip the rancor ent
 			continue;
 		}
-		
+
 		if ( radiusEnts[i]->client == NULL )
 		{//must be a client
 			continue;
@@ -302,15 +306,15 @@ static void Howler_Howl( void )
 					G_Damage( radiusEnts[i], NPC, NPC, vec3_origin, NPC->currentOrigin, 1, DAMAGE_NO_KNOCKBACK, MOD_IMPACT );
 				}
 			}
-			if ( radiusEnts[i]->health > 0 
+			if ( radiusEnts[i]->health > 0
 				&& radiusEnts[i]->client
 				&& radiusEnts[i]->client->NPC_class != CLASS_RANCOR
-				&& radiusEnts[i]->client->NPC_class != CLASS_ATST 
+				&& radiusEnts[i]->client->NPC_class != CLASS_ATST
 				&& !PM_InKnockDown( &radiusEnts[i]->client->ps ) )
 			{
 				if ( PM_HasAnimation( radiusEnts[i], BOTH_SONICPAIN_START ) )
 				{
-					if ( radiusEnts[i]->client->ps.torsoAnim != BOTH_SONICPAIN_START 
+					if ( radiusEnts[i]->client->ps.torsoAnim != BOTH_SONICPAIN_START
 						&& radiusEnts[i]->client->ps.torsoAnim != BOTH_SONICPAIN_HOLD )
 					{
 						NPC_SetAnim( radiusEnts[i], SETANIM_LEGS, BOTH_SONICPAIN_START, SETANIM_FLAG_NORMAL );
@@ -322,13 +326,13 @@ static void Howler_Howl( void )
 					{//at the end of the sonic pain start or hold anim
 						NPC_SetAnim( radiusEnts[i], SETANIM_LEGS, BOTH_SONICPAIN_HOLD, SETANIM_FLAG_NORMAL );
 						NPC_SetAnim( radiusEnts[i], SETANIM_TORSO, BOTH_SONICPAIN_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-						radiusEnts[i]->client->ps.torsoAnimTimer += 100; 
+						radiusEnts[i]->client->ps.torsoAnimTimer += 100;
 						radiusEnts[i]->client->ps.weaponTime = radiusEnts[i]->client->ps.torsoAnimTimer;
 					}
 				}
 				/*
-				else if ( distSq < halfRadSquared 
-					&& radiusEnts[i]->client->ps.groundEntityNum != ENTITYNUM_NONE 
+				else if ( distSq < halfRadSquared
+					&& radiusEnts[i]->client->ps.groundEntityNum != ENTITYNUM_NONE
 					&& !Q_irand( 0, 10 ) )//FIXME: base on skill
 				{//within range
 					G_Knockdown( radiusEnts[i], NPC, vec3_origin, 500, qfalse );
@@ -371,7 +375,7 @@ static void Howler_Attack( float enemyDist, qboolean howl )
 			VectorScale( fwd, (enemyDist*3.0f), NPC->client->ps.velocity );
 			NPC->client->ps.velocity[2] = 200;
 			NPC->client->ps.groundEntityNum = ENTITYNUM_NONE;
-			
+
 			attackAnim = BOTH_ATTACK1;
 		}
 		else
@@ -443,7 +447,7 @@ static void Howler_Attack( float enemyDist, qboolean howl )
 static void Howler_Combat( void )
 {
 	qboolean	faced = qfalse;
-	float		distance;	
+	float		distance;
 	qboolean	advance = qfalse;
 	if ( NPC->client->ps.groundEntityNum == ENTITYNUM_NONE )
 	{//not on the ground
@@ -473,7 +477,7 @@ static void Howler_Combat( void )
 			return;
 		}
 
-		distance = DistanceHorizontal( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+		distance = DistanceHorizontal( NPC->currentOrigin, NPC->enemy->currentOrigin );
 
 		if ( NPC->enemy && NPC->enemy->client && PM_InKnockDown( &NPC->enemy->client->ps ) )
 		{//get really close to knocked down enemies
@@ -492,7 +496,7 @@ static void Howler_Combat( void )
 			}
 			else if ( TIMER_Done( NPC, "standing" ) )
 			{
-				faced = Howler_Move( 1 );
+				faced = Howler_Move( qtrue );
 			}
 		}
 		else
@@ -522,7 +526,7 @@ static void Howler_Combat( void )
 NPC_Howler_Pain
 -------------------------
 */
-void NPC_Howler_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Howler_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	if ( !self || !self->NPC )
 	{
@@ -617,7 +621,7 @@ void NPC_BSHowler_Default( void )
 				TIMER_Set( NPC, "aggressionDecay", 500 );
 			}
 		}
-		if ( !TIMER_Done( NPC, "flee" ) 
+		if ( !TIMER_Done( NPC, "flee" )
 			&& NPC_BSFlee() )	//this can clear ENEMY
 		{//successfully trying to run away
 			return;
@@ -677,7 +681,7 @@ void NPC_BSHowler_Default( void )
 			if ( !(NPCInfo->last_ucmd.forwardmove)
 				&& !(NPCInfo->last_ucmd.rightmove) )
 			{//stood last frame
-				if ( TIMER_Done( NPC, "walking" ) 
+				if ( TIMER_Done( NPC, "walking" )
 					&& TIMER_Done( NPC, "running" ) )
 				{//not walking or running
 					if ( Q_irand( 0, 2 ) )
@@ -734,7 +738,7 @@ void NPC_BSHowler_Default( void )
 		{
 			gentity_t *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 			NPC->enemy = NULL;
-			gentity_t *newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+			gentity_t *newEnemy = NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse, qfalse );
 			NPC->enemy = sav_enemy;
 			if ( newEnemy && newEnemy != sav_enemy )
 			{//picked up a new enemy!
@@ -760,7 +764,7 @@ void NPC_BSHowler_Default( void )
 			{
 				G_SoundOnEnt( NPC, CHAN_VOICE, va( "sound/chars/howler/idle_hiss%d.mp3", Q_irand( 1, 2 ) ) );
 			}
-			else if ( !TIMER_Done( NPC, "walking" ) 
+			else if ( !TIMER_Done( NPC, "walking" )
 				|| NPCInfo->localState == LSTATE_FLEE )
 			{
 				G_SoundOnEnt( NPC, CHAN_VOICE, va( "sound/chars/howler/howl_talk%d.mp3", Q_irand( 1, 5 ) ) );
@@ -808,7 +812,7 @@ void NPC_BSHowler_Default( void )
 			if ( !(NPCInfo->last_ucmd.forwardmove)
 				&& !(NPCInfo->last_ucmd.rightmove) )
 			{//stood last frame
-				if ( TIMER_Done( NPC, "walking" ) 
+				if ( TIMER_Done( NPC, "walking" )
 					&& TIMER_Done( NPC, "running" ) )
 				{//not walking or running
 					if ( NPCInfo->goalEntity )

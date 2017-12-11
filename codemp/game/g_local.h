@@ -1,7 +1,29 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
 // g_local.h -- local definitions for game module
 
 #include "qcommon/q_shared.h"
@@ -126,7 +148,7 @@ typedef enum {
 
 #define SP_PODIUM_MODEL		"models/mapobjects/podium/podium4.md3"
 
-typedef enum 
+typedef enum
 {
 	HL_NONE = 0,
 	HL_FOOT_RT,
@@ -513,13 +535,13 @@ struct gentity_s {
 	char		*model;
 	char		*model2;
 	int			freetime;			// level.time when the object was freed
-	
+
 	int			eventTime;			// events will be cleared EVENT_VALID_MSEC after set
 	qboolean	freeAfterEvent;
 	qboolean	unlinkAfterEvent;
 
 	qboolean	physicsObject;		// if true, it can be pushed by movers and fall off edges
-									// all game items are physicsObjects, 
+									// all game items are physicsObjects,
 	float		physicsBounce;		// 1.0 = continuous bounce, 0.0 = no bounce
 	int			clipmask;			// brushes with this content value will be collided against
 									// when moving.  items and corpses do not collide against
@@ -784,7 +806,7 @@ typedef struct {//JAPRO - Serverside - Stats
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 typedef struct clientPersistant_s {
-	clientConnected_t	connected;	
+	clientConnected_t	connected;
 	usercmd_t	cmd;				// we would lose angles if not persistant
 
 	usercmd_t	lastCmd;			//eh
@@ -1217,7 +1239,7 @@ struct gclient_s {
 
 #define MAX_INTEREST_POINTS		64
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	char		*target;
@@ -1227,7 +1249,7 @@ typedef struct
 
 #define MAX_COMBAT_POINTS		512
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	int			flags;
@@ -1302,6 +1324,13 @@ typedef struct waypointData_s {
 	char	target4[MAX_QPATH];
 	int		nodeID;
 } waypointData_t;
+
+typedef struct {
+	char	message[MAX_SPAWN_VARS_CHARS];
+	int		count;
+	int		cs_index;
+	vec3_t	origin;
+} locationData_t;
 
 //japro
 typedef struct Warp_s {
@@ -1412,8 +1441,6 @@ typedef struct level_locals_s {
 	vec3_t		intermission_origin;	// also used for spectator spawns
 	vec3_t		intermission_angle;
 
-	qboolean	locationLinked;			// target_locations get linked
-	gentity_t	*locationHead;			// head of the location list
 	int			bodyQueIndex;			// dead bodies
 	gentity_t	*bodyQue[BODY_QUEUE_SIZE];
 	int			portalSequence;
@@ -1492,7 +1519,15 @@ typedef struct level_locals_s {
 		char *infos[MAX_ARENAS];
 	} arenas;
 
+	struct {
+		int num;
+		qboolean linked;
+		locationData_t data[MAX_LOCATIONS];
+	} locations;
+
 	gametype_t	gametype;
+	char		mapname[MAX_QPATH];
+	char		rawmapname[MAX_QPATH];
 } level_locals_t;
 
 
@@ -1520,8 +1555,6 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent);
 int G_ItemUsable(playerState_t *ps, int forcedUse);
 void Cmd_ToggleSaber_f(gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent, int dueltype);
-
-//gentity_t *G_GetDuelWinner(gclient_t *client);
 
 //
 // g_items.c
@@ -2017,6 +2050,7 @@ typedef enum matchPause_e { //OSP: pause
 } matchPause_t;
 
 void Svcmd_ToggleUserinfoValidation_f( void );
+void Svcmd_ToggleAllowVote_f( void );
 
 // g_cvar.c
 #define XCVAR_PROTO

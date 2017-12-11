@@ -1,5 +1,25 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "server.h"
 
@@ -19,7 +39,7 @@ static void SV_Netchan_Encode( client_t *client, msg_t *msg ) {
 	byte key, *string;
         int	srdc, sbit;
 		qboolean soob;
-        
+
 	if ( msg->cursize < SV_ENCODE_START ) {
 		return;
 	}
@@ -27,17 +47,17 @@ static void SV_Netchan_Encode( client_t *client, msg_t *msg ) {
         srdc = msg->readcount;
         sbit = msg->bit;
         soob = msg->oob;
-        
+
         msg->bit = 0;
         msg->readcount = 0;
         msg->oob = qfalse;
-        
+
 	/*reliableAcknowledge =*/ MSG_ReadLong(msg);
 
         msg->oob = soob;
         msg->bit = sbit;
         msg->readcount = srdc;
-        
+
 	string = (byte *)client->lastClientCommandString;
 	index = 0;
 	// xor the client challenge with the netchan sequence number
@@ -47,7 +67,7 @@ static void SV_Netchan_Encode( client_t *client, msg_t *msg ) {
 		if (!string[index])
 			index = 0;
 		if (/*string[index] > 127 ||*/	// eurofix: remove this so we can chat in european languages...	-ste
-			string[index] == '%') 
+			string[index] == '%')
 		{
 			key ^= '.' << (i & 1);
 		}
@@ -80,9 +100,9 @@ static void SV_Netchan_Decode( client_t *client, msg_t *msg ) {
         srdc = msg->readcount;
         sbit = msg->bit;
         soob = msg->oob;
-        
+
         msg->oob = qfalse;
-        
+
         serverId = MSG_ReadLong(msg);
 	messageAcknowledge = MSG_ReadLong(msg);
 	reliableAcknowledge = MSG_ReadLong(msg);
@@ -90,7 +110,7 @@ static void SV_Netchan_Decode( client_t *client, msg_t *msg ) {
         msg->oob = soob;
         msg->bit = sbit;
         msg->readcount = srdc;
-        
+
 	string = (byte *)client->reliableCommands[ reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ];
 	index = 0;
 	//
@@ -100,7 +120,7 @@ static void SV_Netchan_Decode( client_t *client, msg_t *msg ) {
 		if (!string[index])
 			index = 0;
 		if (/*string[index] > 127 || */	// eurofix: remove this so we can chat in european languages...	-ste
-			string[index] == '%') 
+			string[index] == '%')
 		{
 			key ^= '.' << (i & 1);
 		}

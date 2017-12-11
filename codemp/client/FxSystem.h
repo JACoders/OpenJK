@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "client/cl_cgameapi.h"
@@ -12,36 +34,6 @@ extern cvar_t	*fx_freeze;
 extern cvar_t	*fx_countScale;
 extern cvar_t	*fx_nearCull;
 extern cvar_t	*fx_physics;//JAPRO ENGINE
-
-inline void Vector2Clear(vec2_t a)
-{
-	a[0] = 0.0f;
-	a[1] = 0.0f;
-}
-
-inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
-inline void Vector2MA(vec2_t src, float m, vec2_t v, vec2_t dst)
-{
-	dst[0] = src[0] + (m*v[0]);
-	dst[1] = src[1] + (m*v[1]);
-}
-
-inline void Vector2Scale(vec2_t src,float b,vec2_t dst)
-{
-	dst[0] = src[0] * b;
-	dst[1] = src[1] * b;
-}
 
 class SFxHelper
 {
@@ -58,7 +50,7 @@ public:
 #endif
 
 public:
-	SFxHelper(void);
+	SFxHelper();
 
 	inline	int	GetTime(void) { return mTime; }
 	inline	int	GetFrameTime(void) { return mFrameTime; }

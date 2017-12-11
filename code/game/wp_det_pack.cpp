@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_local.h"
 #include "b_local.h"
@@ -44,7 +48,7 @@ void charge_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 	VectorScale( self->maxs, -1, self->mins );
 
 	self->activator = self->owner;
-	self->owner = NULL; 
+	self->owner = NULL;
 
 	self->e_TouchFunc = touchF_NULL;
 	self->e_ThinkFunc = thinkF_NULL;
@@ -54,7 +58,7 @@ void charge_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 }
 
 //---------------------------------------------------------
-static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir ) 
+static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 //---------------------------------------------------------
 {
 	// Chucking a new one
@@ -77,7 +81,7 @@ static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 
 	missile->s.eFlags |= EF_MISSILE_STICK;
 	missile->e_TouchFunc = touchF_charge_stick;
-	
+
 	missile->damage = weaponData[WP_DET_PACK].damage;
 	missile->methodOfDeath = MOD_DETPACK;
 
@@ -121,7 +125,7 @@ void WP_FireDetPack( gentity_t *ent, qboolean alt_fire )
 				{
 					VectorCopy( found->currentOrigin, found->s.origin );
 					found->e_ThinkFunc = thinkF_WP_Explode;
-					found->nextthink = level.time + 100 + random() * 100;
+					found->nextthink = level.time + 100 + Q_flrand(0.0f, 1.0f) * 100;
 					G_Sound( found, G_SoundIndex( "sound/weapons/detpack/warning.wav" ));
 
 					// would be nice if this actually worked?

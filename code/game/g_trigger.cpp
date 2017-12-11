@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -56,7 +61,7 @@ void multi_wait( gentity_t *ent ) {
 // the trigger was just activated
 // ent->activator should be set to the activator so it can be held through a delay
 // so wait for the delay time before firing
-void multi_trigger_run( gentity_t *ent ) 
+void multi_trigger_run( gentity_t *ent )
 {
 	ent->e_ThinkFunc = thinkF_NULL;
 
@@ -68,7 +73,7 @@ void multi_trigger_run( gentity_t *ent )
 	}
 
 	G_UseTargets (ent, ent->activator);
-	if ( ent->noise_index ) 
+	if ( ent->noise_index )
 	{
 		G_Sound( ent->activator, ent->noise_index );
 	}
@@ -78,15 +83,15 @@ void multi_trigger_run( gentity_t *ent )
 		ent->e_ThinkFunc = thinkF_trigger_cleared_fire;
 		ent->nextthink = level.time + ent->speed;
 	}
-	else if ( ent->wait > 0 ) 
+	else if ( ent->wait > 0 )
 	{
 		if ( ent->painDebounceTime != level.time )
 		{//first ent to touch it this frame
 			//ent->e_ThinkFunc = thinkF_multi_wait;
-			ent->nextthink = level.time + ( ent->wait + ent->random * crandom() ) * 1000;
+			ent->nextthink = level.time + ( ent->wait + ent->random * Q_flrand(-1.0f, 1.0f) ) * 1000;
 			ent->painDebounceTime = level.time;
 		}
-	} 
+	}
 	else if ( ent->wait < 0 )
 	{
 		// we can't just remove (self) here, because this is a touch function
@@ -105,14 +110,14 @@ void multi_trigger_run( gentity_t *ent )
 }
 
 
-void multi_trigger( gentity_t *ent, gentity_t *activator ) 
+void multi_trigger( gentity_t *ent, gentity_t *activator )
 {
 	if ( ent->e_ThinkFunc == thinkF_multi_trigger_run )
 	{//already triggered, just waiting to run
 		return;
 	}
 
-	if ( ent->nextthink > level.time ) 
+	if ( ent->nextthink > level.time )
 	{
 		if( ent->spawnflags & 2048 ) // MULTIPLE - allow multiple entities to touch this trigger in a single frame
 		{
@@ -143,7 +148,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 	// if the player has already activated this trigger this frame
 	if( activator && !activator->s.number && ent->aimDebounceTime == level.time )
 	{
-		return;	
+		return;
 	}
 
 	if ( ent->svFlags & SVF_INACTIVE )
@@ -158,7 +163,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		ent->e_ThinkFunc = thinkF_multi_trigger_run;
 		ent->nextthink = level.time + ent->delay;
 		ent->painDebounceTime = level.time;
-		
+
 	}
 	else
 	{
@@ -166,16 +171,16 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 	}
 }
 
-void Use_Multi( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
+void Use_Multi( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	multi_trigger( ent, activator );
 }
 
 extern	int	Pilot_ActivePilotCount(void);
 
-void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace ) 
+void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 {
-	if( !other->client ) 
+	if( !other->client )
 	{
 		return;
 	}
@@ -328,7 +333,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 		*/
 		//other->client->ps.weaponTime = other->client->ps.torsoAnimTimer;
 	}
-	
+
 	if ( self->e_ThinkFunc == thinkF_trigger_cleared_fire )
 	{//We're waiting to fire our target2 first
 		self->nextthink = level.time + self->speed;
@@ -351,9 +356,9 @@ void trigger_cleared_fire (gentity_t *self)
 	G_UseTargets2( self, self->activator, self->target2 );
 	self->e_ThinkFunc = thinkF_NULL;
 	// should start the wait timer now, because the trigger's just been cleared, so we must "wait" from this point
-	if ( self->wait > 0 ) 
+	if ( self->wait > 0 )
 	{
-		self->nextthink = level.time + ( self->wait + self->random * crandom() ) * 1000;
+		self->nextthink = level.time + ( self->wait + self->random * Q_flrand(-1.0f, 1.0f) ) * 1000;
 	}
 }
 
@@ -427,17 +432,17 @@ so, the basic time between firing is a random time between
 
 "soundSet"	Ambient sound set to play when this trigger is activated
 */
-void SP_trigger_multiple( gentity_t *ent ) 
+void SP_trigger_multiple( gentity_t *ent )
 {
 	char	buffer[MAX_QPATH];
 	char	*s;
-	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) ) 
+	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) )
 	{
 		Q_strncpyz( buffer, s, sizeof(buffer) );
 		COM_DefaultExtension( buffer, sizeof(buffer), ".wav");
 		ent->noise_index = G_SoundIndex(buffer);
 	}
-	
+
 	G_SpawnFloat( "wait", "0", &ent->wait );//was 0.5 ... but that means wait can never be zero... we should probably put it back to 0.5, though...
 	G_SpawnFloat( "random", "0", &ent->random );
 	G_SpawnInt( "max_pilots", "2", &ent->lastInAirTime );
@@ -495,11 +500,11 @@ so, the basic time between firing is a random time between
 
 "soundSet"	Ambient sound set to play when this trigger is activated
 */
-void SP_trigger_once( gentity_t *ent ) 
+void SP_trigger_once( gentity_t *ent )
 {
 	char	buffer[MAX_QPATH];
 	char	*s;
-	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) ) 
+	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) )
 	{
 		Q_strncpyz( buffer, s, sizeof(buffer) );
 		COM_DefaultExtension( buffer, sizeof(buffer), ".wav");
@@ -539,7 +544,7 @@ Fires "backwardstarget" when someone moves through it in the opposite direction 
   TODO:
 	count
 */
-void SP_trigger_bidirectional( gentity_t *ent ) 
+void SP_trigger_bidirectional( gentity_t *ent )
 {
 	G_FreeEntity(ent);
 	//FIXME: Implement
@@ -550,13 +555,13 @@ void SP_trigger_bidirectional( gentity_t *ent )
 
 	ent->touch = Touch_Multi;
 	ent->use = Use_Multi;
-	
+
 	InitTrigger( ent );
 	gi.linkentity (ent);
 */
 }
 
-/*QUAKED trigger_location (.1 .5 .1) ? 
+/*QUAKED trigger_location (.1 .5 .1) ?
 When an ent is asked for it's location, it will return this ent's "message" field if it is in it.
   "message" - location name
 
@@ -572,7 +577,7 @@ char *G_GetLocationForEnt( gentity_t *ent )
 
 	while( (found = G_Find(found, FOFS(classname), "trigger_location")) != NULL )
 	{
-		if ( gi.EntityContact( mins, maxs, found ) ) 
+		if ( gi.EntityContact( mins, maxs, found ) )
 		{
 			return found->message;
 		}
@@ -581,7 +586,7 @@ char *G_GetLocationForEnt( gentity_t *ent )
 	return NULL;
 }
 
-void SP_trigger_location( gentity_t *ent ) 
+void SP_trigger_location( gentity_t *ent )
 {
 	if ( !ent->message || !ent->message[0] )
 	{
@@ -626,7 +631,7 @@ trigger_push
 
 ==============================================================================
 */
-#define PUSH_CONVEYOR 32	
+#define PUSH_CONVEYOR 32
 void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if ( self->svFlags & SVF_INACTIVE )
 	{//set by target_deactivate
@@ -651,10 +656,10 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	// if the player has already activated this trigger this frame
 	if( other && !other->s.number && self->aimDebounceTime == level.time )
 	{
-		return;		
+		return;
 	}
-	
-	
+
+
 	if( self->spawnflags & PUSH_CONVEYOR )
 	{   // only push player if he's on the ground
 		if( other->s.groundEntityNum == ENTITYNUM_NONE )
@@ -694,7 +699,7 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if ( other->client->ps.pm_type != PM_NORMAL ) {
 		return;
 	}
-	
+
 	if ( (self->spawnflags&16) )
 	{//relative, dir to it * speed
 		vec3_t dir;
@@ -726,7 +731,7 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	else if ( self->wait > 0 )
 	{
 		self->painDebounceTime = level.time;
-		
+
 	}
 	if( other && !other->s.number )
 	{	// mark that the player has activated this trigger this frame
@@ -743,7 +748,7 @@ AimAtTarget
 Calculate origin2 so the target apogee will be hit
 =================
 */
-void AimAtTarget( gentity_t *self ) 
+void AimAtTarget( gentity_t *self )
 {
 	gentity_t	*ent;
 	vec3_t		origin;
@@ -754,7 +759,7 @@ void AimAtTarget( gentity_t *self )
 	VectorScale ( origin, 0.5, origin );
 
 	ent = G_PickTarget( self->target );
-	if ( !ent ) 
+	if ( !ent )
 	{
 		G_FreeEntity( self );
 		return;
@@ -923,8 +928,8 @@ CONSTANT will push activator in direction of 'target' at constant 'speed'
 NO_DAMAGE the activator won't take falling damage after being pushed
 */
 void SP_target_push( gentity_t *self ) {
-	
-	
+
+
 	if (!self->speed) {
 		self->speed = 1000;
 	}
@@ -940,7 +945,7 @@ void SP_target_push( gentity_t *self ) {
 		VectorCopy( self->s.origin, self->absmax );
 		self->e_ThinkFunc = thinkF_AimAtTarget;
 		self->nextthink = level.time + START_TIME_LINK_ENTS;
-		
+
 	}
 	self->e_UseFunc = useF_Use_target_push;
 }
@@ -958,7 +963,7 @@ trigger_teleport
 #define TTSF_STASIS		8
 #define TTSF_DEAD_OK	16
 void TeleportMover( gentity_t *mover, vec3_t origin, vec3_t diffAngles, qboolean snapAngle );
-void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace ) 
+void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace )
 {
 	gentity_t	*dest;
 
@@ -966,17 +971,17 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 	{//set by target_deactivate
 		return;
 	}
-	
+
 	dest = 	G_PickTarget( self->target );
-	if (!dest) 
+	if (!dest)
 	{
 		gi.Printf ("Couldn't find teleporter destination\n");
 		return;
 	}
 
-	if ( other->client ) 
+	if ( other->client )
 	{
-		if ( other->client->ps.pm_type == PM_DEAD ) 
+		if ( other->client->ps.pm_type == PM_DEAD )
 		{
 			if ( !(self->spawnflags&TTSF_DEAD_OK) )
 			{//dead men can't teleport
@@ -995,7 +1000,7 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 		{//Don't go through if something blocking on the other side
 			return;
 		}
-		
+
 		TeleportPlayer( other, dest->s.origin, dest->s.angles );
 	}
 	//FIXME: check for SVF_NO_TELEPORT
@@ -1054,7 +1059,7 @@ NO_NPCS - NPCs cannot pass through
 STASIS - will play stasis teleport sound and fx instead of starfleet
 DEAD_OK - even if dead, you will teleport
 */
-void SP_trigger_teleport( gentity_t *self ) 
+void SP_trigger_teleport( gentity_t *self )
 {
 	InitTrigger (self);
 
@@ -1118,7 +1123,7 @@ void trigger_hurt_reset (gentity_t *self)
 	self->e_ThinkFunc = thinkF_NULL;
 }
 extern void JET_FlyStart(gentity_t* actor);
-void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) 
+void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 {
 	int		dflags;
 	int		actualDmg = self->damage;
@@ -1127,12 +1132,12 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	{//set by target_deactivate
 		return;
 	}
-	
-	if ( !other->takedamage ) 
+
+	if ( !other->takedamage )
 	{
 		return;
 	}
-	
+
 	if( level.time < self->painDebounceTime + self->wait  ) // normal 'wait' check
 	{
 		if( self->spawnflags & 2048 ) // MULTIPLE - allow multiple entities to touch this trigger in one frame
@@ -1151,7 +1156,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	// if the player has already activated this trigger this frame
 	if( other && !other->s.number && self->aimDebounceTime == level.time )
 	{
-		return;		
+		return;
 	}
 
 
@@ -1179,7 +1184,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	}
 
 	// play sound
-	if ( !(self->spawnflags & 4) ) 
+	if ( !(self->spawnflags & 4) )
 	{
 		G_Sound( other, self->noise_index );
 	}
@@ -1192,7 +1197,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	{
 		dflags = 0;
 	}
-	
+
 	if ( self->delay )
 	{//Increase dmg over time
 		if ( self->attackDebounceTime < self->delay )
@@ -1216,11 +1221,11 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 
 		if ( self->spawnflags & 32 )
 		{//falling death
-			if ( other->NPC && other->client && 
+			if ( other->NPC && other->client &&
 				(other->client->NPC_class == CLASS_BOBAFETT	|| other->client->NPC_class == CLASS_ROCKETTROOPER ))
 			{//boba never falls to his death!
 				//FIXME:  fall through if jetpack broken?
-				JET_FlyStart(other); 
+				JET_FlyStart(other);
 			}
 			else
 			{
@@ -1268,14 +1273,14 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	}
 }
 
-void SP_trigger_hurt( gentity_t *self ) 
+void SP_trigger_hurt( gentity_t *self )
 {
 	char	buffer[MAX_QPATH];
 	char	*s;
 
 	InitTrigger (self);
 
-	if ( !( self->spawnflags & 4 )) 
+	if ( !( self->spawnflags & 4 ))
 	{
 		G_SpawnString( "noise", "sound/world/electro", &s );
 
@@ -1288,7 +1293,7 @@ void SP_trigger_hurt( gentity_t *self )
 	if ( !self->damage ) {
 		self->damage = 5;
 	}
-	
+
 	self->delay *= 1000;
 	self->wait *= 1000;
 
@@ -1345,7 +1350,7 @@ void space_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	other->client->inSpaceIndex = self->s.number;
 }
 
-/*QUAKED trigger_space (.5 .5 .5) ? 
+/*QUAKED trigger_space (.5 .5 .5) ?
 causes human clients to suffocate and have no gravity.
 
 */
@@ -1353,7 +1358,7 @@ void SP_trigger_space(gentity_t *self)
 {
 	InitTrigger(self);
 	self->contents = CONTENTS_TRIGGER;
-	
+
 	//FIXME: implement!!!
 	//self->e_TouchFunc = touchF_space_touch;
 
@@ -1388,7 +1393,7 @@ void shipboundary_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	other->client->ps.vehTurnaroundTime = level.time + self->count;
 }
 
-/*QUAKED trigger_shipboundary (.5 .5 .5) ? 
+/*QUAKED trigger_shipboundary (.5 .5 .5) ?
 causes vehicle to turn toward target and travel in that direction for a set time when hit.
 
 "target"		name of entity to turn toward (can be info_notnull, or whatever).
@@ -1399,7 +1404,7 @@ void SP_trigger_shipboundary(gentity_t *self)
 {
 	InitTrigger(self);
 	self->contents = CONTENTS_TRIGGER;
-	
+
 	if (!self->target || !self->target[0])
 	{
 		G_Error("trigger_shipboundary without a target.");
@@ -1439,7 +1444,7 @@ so, the basic time between firing is a random time between
 void func_timer_think( gentity_t *self ) {
 	G_UseTargets (self, self->activator);
 	// set time before next firing
-	self->nextthink = level.time + 1000 * ( self->wait + crandom() * self->random );
+	self->nextthink = level.time + 1000 * ( self->wait + Q_flrand(-1.0f, 1.0f) * self->random );
 }
 
 void func_timer_use( gentity_t *self, gentity_t *other, gentity_t *activator ) {
@@ -1499,7 +1504,7 @@ ownername - If any, who to calc the distance from- default is the trigger_entdis
 example: target "biessman telsia" will look for the biessman and telsia NPC
 if it finds either of these within distance it will fire.
 
-  todo - 
+  todo -
   add delay, count
   add monster classnames?????
   add LOS to it???
@@ -1539,7 +1544,7 @@ void trigger_entdist_use( gentity_t *self, gentity_t *other, gentity_t *activato
 		found = &g_entities[0];
 
 		if (found)
-		{	
+		{
 			VectorSubtract(owner->currentOrigin, found->currentOrigin, diff);
 			if(VectorLength(diff) < self->count)
 			{
@@ -1562,7 +1567,7 @@ void trigger_entdist_use( gentity_t *self, gentity_t *other, gentity_t *activato
 
 			found = G_Find(found, FOFS(targetname), token);	// Look for the specified NPC
 			if (found)	//Found???
-			{	
+			{
 				VectorSubtract(owner->currentOrigin, found->currentOrigin, diff);
 				if(VectorLength(diff) < self->count)	// Within distance
 				{
@@ -1581,12 +1586,12 @@ void trigger_entdist_use( gentity_t *self, gentity_t *other, gentity_t *activato
 	{
 		// This is the negative target
 		G_UseTargets2 (self, self->activator, self->target2);
-	}	
+	}
 
 
 }
 
-void SP_trigger_entdist( gentity_t *self ) 
+void SP_trigger_entdist( gentity_t *self )
 {
 	G_SpawnInt( "distance", "0", &self->count);
 
@@ -1689,7 +1694,7 @@ void SP_trigger_visible( gentity_t *self )
 
 	if ( self->spawnflags & 128 )
 	{// Make it inactive
-		self->svFlags |= SVF_INACTIVE;	
+		self->svFlags |= SVF_INACTIVE;
 	}
 
 	G_SetOrigin( self, self->s.origin );

@@ -1,27 +1,31 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_servercmds.c -- text commands sent by the server
 
 #include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "cg_lights.h"
 
 
 /*
@@ -42,22 +46,9 @@ void CG_ParseServerinfo( void ) {
 	cgs.timelimit = atoi( Info_ValueForKey( info, "timelimit" ) );
 	cgs.maxclients = 1;
 	mapname = Info_ValueForKey( info, "mapname" );
-	// FIXME: Some sort of fucked up mangling of the string going on..this needs to be addressed ASAP --eez
-	if(!strncmp(mapname, "maps/", 5))
-	{
-		Q_strncpyz( cgs.mapname, mapname, sizeof( cgs.mapname ) );
-	}
-	else if(!strncmp(mapname, "aps/", 5))
-	{
-		// u_u
-		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "m%s", mapname );
-	}
-	else
-	{
-		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
-	}
+	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	const char *p = strrchr(mapname,'/');
-	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
+	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName[0]) );
 	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
@@ -71,32 +62,27 @@ void CG_ParseServerinfo( void ) {
 	{
 		// failed to load SP file, maybe it's one of the ones they renamed?...
 		//
-		if (!stricmp(cgs.stripLevelName[0],"YAVIN_FINAL")
-			||
-			!stricmp(cgs.stripLevelName[0],"YAVIN_SWAMP")
-			)
+		if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN_FINAL") || !Q_stricmp(cgs.stripLevelName[0],"YAVIN_SWAMP"))
 		{
-			strcpy( cgs.stripLevelName[0], "YAVIN_CANYON" );
+			Q_strncpyz( cgs.stripLevelName[0], "YAVIN_CANYON", sizeof(cgs.stripLevelName[0]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[0], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			}
 		}
-		else
-		if (!stricmp(cgs.stripLevelName[0],"YAVIN_TRIAL"))
+		else if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN_TRIAL"))
 		{
-			strcpy( cgs.stripLevelName[0], "YAVIN_TEMPLE" );
+			Q_strncpyz( cgs.stripLevelName[0], "YAVIN_TEMPLE", sizeof(cgs.stripLevelName[0]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[0], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			}
 		}
-		else
-		if (!stricmp(cgs.stripLevelName[0],"VALLEY"))
+		else if (!Q_stricmp(cgs.stripLevelName[0],"VALLEY"))
 		{
-			strcpy( cgs.stripLevelName[0], "ARTUS_TOPSIDE" );
+			Q_strncpyz( cgs.stripLevelName[0], "ARTUS_TOPSIDE", sizeof(cgs.stripLevelName[0]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[0], qfalse))
 			{
 				// failed again, give up for now...
@@ -108,63 +94,62 @@ void CG_ParseServerinfo( void ) {
 	{
 		// additional SP files needed for some levels...
 		//
-		if (!stricmp(cgs.stripLevelName[0],"KEJIM_BASE") ||
-			!stricmp(cgs.stripLevelName[0],"KEJIM_POST")
+		if (!Q_stricmp(cgs.stripLevelName[0],"KEJIM_BASE") ||
+			!Q_stricmp(cgs.stripLevelName[0],"KEJIM_POST")
 			)
 		{
-			strcpy( cgs.stripLevelName[1], "ARTUS_MINE" );
+			Q_strncpyz( cgs.stripLevelName[1], "ARTUS_MINE", sizeof(cgs.stripLevelName[1]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			}
 		}
-		if (!stricmp(cgs.stripLevelName[0],"DOOM_DETENTION") ||
-			!stricmp(cgs.stripLevelName[0],"DOOM_SHIELDS")
+		if (!Q_stricmp(cgs.stripLevelName[0],"DOOM_DETENTION") ||
+			!Q_stricmp(cgs.stripLevelName[0],"DOOM_SHIELDS")
 			)
 		{
-			strcpy( cgs.stripLevelName[1], "DOOM_COMM" );
+			Q_strncpyz( cgs.stripLevelName[1], "DOOM_COMM", sizeof(cgs.stripLevelName[1]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			}
 		}
-		if (!stricmp(cgs.stripLevelName[0],"DOOM_COMM"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"DOOM_COMM"))
 		{
-			strcpy( cgs.stripLevelName[1], "CAIRN_BAY" );
+			Q_strncpyz( cgs.stripLevelName[1], "CAIRN_BAY", sizeof(cgs.stripLevelName[1]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			}
 		}
-		if (!stricmp(cgs.stripLevelName[0],"NS_STARPAD"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"NS_STARPAD"))
 		{
-			strcpy( cgs.stripLevelName[1], "ARTUS_TOPSIDE" );	// for dream sequence...
+			Q_strncpyz( cgs.stripLevelName[1], "ARTUS_TOPSIDE", sizeof(cgs.stripLevelName[1]) );	// for dream sequence...
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			}
 
-			strcpy( cgs.stripLevelName[2], "BESPIN_UNDERCITY" );	// for dream sequence...
+			Q_strncpyz( cgs.stripLevelName[2], "BESPIN_UNDERCITY", sizeof(cgs.stripLevelName[1]) );	// for dream sequence...
 			if (!cgi_SP_Register(cgs.stripLevelName[2], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			} 
 		}
-		if (!stricmp(cgs.stripLevelName[0],"BESPIN_PLATFORM"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"BESPIN_PLATFORM"))
 		{
-			strcpy( cgs.stripLevelName[1], "BESPIN_UNDERCITY" );
+			Q_strncpyz( cgs.stripLevelName[1], "BESPIN_UNDERCITY", sizeof(cgs.stripLevelName[1]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
 			{
 				// failed again, give up for now...
 				//
 			} 
 		}
-
 	}
 }
 
@@ -215,7 +200,7 @@ static void CG_ConfigStringModified( void ) {
 	} else if ( num >= CS_CHARSKINS && num < CS_CHARSKINS+MAX_CHARSKINS ) {
 		cgs.skins[ num-CS_CHARSKINS ] = cgi_R_RegisterSkin( str );
 // Ghoul2 Insert end
-	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_MODELS ) {
+	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
 		if ( str[0] != '*' ) {
 			cgs.sound_precache[ num-CS_SOUNDS] = cgi_S_RegisterSound( str );
 		}
@@ -238,6 +223,58 @@ static void CG_ConfigStringModified( void ) {
 	}
 }
 
+static void CG_CenterPrint_f( void ) {
+	CG_CenterPrint( CG_Argv( 1 ), SCREEN_HEIGHT * 0.25 );
+}
+
+static void CG_Print_f( void ) {
+	CG_Printf( "%s", CG_Argv( 1 ) );
+}
+
+static void CG_CaptionText_f( void ) {
+	sfxHandle_t sound = (sfxHandle_t)atoi( CG_Argv( 2 ) );
+
+	CG_CaptionText( CG_Argv( 1 ), sound >= 0 && sound < MAX_SOUNDS ? cgs.sound_precache[sound] : NULL_SOUND );
+}
+
+static void CG_ScrollText_f( void ) {
+	CG_ScrollText( CG_Argv( 1 ), SCREEN_WIDTH - 16 );
+}
+
+static void CG_LCARSText_f( void ) {
+	CG_Printf( "CG_LCARSText() being called. Tell Ste\n" "String: \"%s\"\n", CG_Argv( 1 ) );
+}
+
+static void CG_ClientLevelShot_f( void ) {
+	// clientLevelShot is sent before taking a special screenshot for
+	// the menu system during development
+	cg.levelShot = qtrue;
+}
+
+typedef struct serverCommand_s {
+	const char	*cmd;
+	void( *func )(void);
+} serverCommand_t;
+
+static int svcmdcmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
+}
+
+/* This array MUST be sorted correctly by alphabetical name field */
+static serverCommand_t	commands[] = {
+	{ "chat",				CG_Print_f },
+	{ "clientLevelShot",	CG_ClientLevelShot_f },
+	{ "cp",					CG_CenterPrint_f },
+	{ "cs",					CG_ConfigStringModified },
+	{ "ct",					CG_CaptionText_f },
+	{ "cts",				CG_CaptionTextStop },
+	{ "lt",					CG_LCARSText_f },
+	{ "print",				CG_Print_f },
+	{ "st",					CG_ScrollText_f },
+};
+
+static const size_t numCommands = ARRAY_LEN( commands );
+
 /*
 =================
 CG_ServerCommand
@@ -247,85 +284,18 @@ Cmd_Argc() / Cmd_Argv()
 =================
 */
 static void CG_ServerCommand( void ) {
-	const char	*cmd;
+	const char		*cmd = CG_Argv( 0 );
+	serverCommand_t	*command = NULL;
 
-	cmd = CG_Argv(0);
-
-	if ( !strcmp( cmd, "cp" ) ) {
-		CG_CenterPrint( CG_Argv(1), SCREEN_HEIGHT * 0.25 );
+	if ( !cmd[0] ) {
+		// server claimed the command
 		return;
 	}
 
-	if ( !strcmp( cmd, "cs" ) ) {
-		CG_ConfigStringModified();
-		return;
-	}
+	command = (serverCommand_t *)Q_LinearSearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 
-	if ( !strcmp( cmd, "print" ) ) {
-		CG_Printf( "%s", CG_Argv(1) );
-		return;
-	}
-
-	if ( !strcmp( cmd, "chat" ) ) {
-		cgi_S_StartLocalSound ( cgs.media.talkSound, CHAN_LOCAL_SOUND );
-		CG_Printf( "%s\n", CG_Argv(1) );
-		return;
-	}
-
-
-	// Scroll text
-	if ( !strcmp( cmd, "st" ) ) 
-	{
-		CG_ScrollText( CG_Argv(1), SCREEN_WIDTH - 16 );
-		return;
-	}
-
-	// Cinematic text
-	if ( !strcmp( cmd, "ct" ) ) 
-	{
-		
-		CG_CaptionText( CG_Argv(1), cgs.sound_precache[atoi(CG_Argv(2))] );
-		return;
-	}
-
-	// Text stop
-	if ( !strcmp( cmd, "cts" ) ) 
-	{
-		CG_CaptionTextStop();
-		return;
-	}
-
-	// Game text spoken by a character
-	if ( !strcmp( cmd, "gt" ) ) 
-	{
-		CG_GameText(SCREEN_HEIGHT * 0.25  );
-		return;
-	}
-
-
-	// Text to appear in center of screen with an LCARS frame around it. 
-	if ( !strcmp( cmd, "lt" ) ) 
-	{
-		CG_Printf("CG_LCARSText() being called. Tell Ste\nString: \"%s\"\n",CG_Argv(1));
-		return;
-	}
-
-	// clientLevelShot is sent before taking a special screenshot for
-	// the menu system during development
-	if ( !strcmp( cmd, "clientLevelShot" ) ) {
-		cg.levelShot = qtrue;
-		return;
-	}
-
-	if ( !strcmp( cmd, "vmsg" ) ) {
-#if 0
-		char snd[MAX_QPATH];
-
-		Com_sprintf(snd, sizeof(snd), 
-			"sound/teamplay/vmsg/%s.wav", CG_Argv(1) );
-		cgi_S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_AUTO, 
-			cgi_S_RegisterSound (snd) );
-#endif
+	if ( command ) {
+		command->func();
 		return;
 	}
 

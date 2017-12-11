@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // Filename:-	cl_mp3.h
@@ -5,11 +27,7 @@
 // (Interface to the rest of the game for the MP3 functions)
 //
 
-#ifndef sfx_t
 #include "snd_local.h"
-#endif
-
-
 
 typedef struct id3v1_1 {
     char id[3];
@@ -23,30 +41,28 @@ typedef struct id3v1_1 {
     char genre;
 } id3v1_1;	// 128 bytes in size
 
-
 extern const char sKEY_MAXVOL[];
 extern const char sKEY_UNCOMP[];
-
 
 // (so far, all these functions are only called from one place in snd_mem.cpp)
 //
 // (filenames are used purely for error reporting, all files should already be loaded before you get here)
 //
 void		MP3_InitCvars			( void );
-sboolean	MP3_IsValid				( const char *psLocalFilename, void *pvData, int iDataLen, sboolean bStereoDesired = qfalse );
-int			MP3_GetUnpackedSize		( const char *psLocalFilename, void *pvData, int iDataLen, sboolean qbIgnoreID3Tag = qfalse, sboolean bStereoDesired = qfalse );
-sboolean	MP3_UnpackRawPCM		( const char *psLocalFilename, void *pvData, int iDataLen, byte *pbUnpackBuffer, sboolean bStereoDesired = qfalse );
-sboolean	MP3Stream_InitPlayingTimeFields( LP_MP3STREAM lpMP3Stream, const char *psLocalFilename, void *pvData, int iDataLen, sboolean bStereoDesired = qfalse);
+qboolean	MP3_IsValid				( const char *psLocalFilename, void *pvData, int iDataLen, qboolean bStereoDesired = qfalse );
+int			MP3_GetUnpackedSize		( const char *psLocalFilename, void *pvData, int iDataLen, qboolean qbIgnoreID3Tag = qfalse, qboolean bStereoDesired = qfalse );
+int			MP3_UnpackRawPCM		( const char *psLocalFilename, void *pvData, int iDataLen, byte *pbUnpackBuffer, qboolean bStereoDesired = qfalse );
+qboolean	MP3Stream_InitPlayingTimeFields( LP_MP3STREAM lpMP3Stream, const char *psLocalFilename, void *pvData, int iDataLen, qboolean bStereoDesired = qfalse);
 float		MP3Stream_GetPlayingTimeInSeconds( LP_MP3STREAM lpMP3Stream );
 float		MP3Stream_GetRemainingTimeInSeconds( LP_MP3STREAM lpMP3Stream );
-sboolean	MP3_FakeUpWAVInfo		( const char *psLocalFilename, void *pvData, int iDataLen, int iUnpackedDataLength, int &format, int &rate, int &width, int &channels, int &samples, int &dataofs, sboolean bStereoDesired = qfalse );
-sboolean	MP3_ReadSpecialTagInfo	( byte *pbLoadedFile, int iLoadedFileLen,
+qboolean	MP3_FakeUpWAVInfo		( const char *psLocalFilename, void *pvData, int iDataLen, int iUnpackedDataLength, int &format, int &rate, int &width, int &channels, int &samples, int &dataofs, qboolean bStereoDesired = qfalse );
+qboolean	MP3_ReadSpecialTagInfo	( byte *pbLoadedFile, int iLoadedFileLen,
 										id3v1_1** ppTAG = NULL, int *piUncompressedSize = NULL, float *pfMaxVol = NULL);
-sboolean	MP3Stream_InitFromFile	( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, const char *psSrcDataFilename, int iMP3UnPackedSize, sboolean bStereoDesired = qfalse );
-int			MP3Stream_Decode		( LP_MP3STREAM lpMP3Stream,  sboolean bDoingMusic );
-sboolean	MP3Stream_SeekTo		( channel_t *ch, float fTimeToSeekTo );
-sboolean	MP3Stream_Rewind		( channel_t *ch );
-sboolean	MP3Stream_GetSamples	( channel_t *ch, int startingSampleNum, int count, short *buf, sboolean bStereo );
+qboolean	MP3Stream_InitFromFile	( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, const char *psSrcDataFilename, int iMP3UnPackedSize, qboolean bStereoDesired = qfalse );
+int			MP3Stream_Decode		( LP_MP3STREAM lpMP3Stream,  qboolean bDoingMusic );
+qboolean	MP3Stream_SeekTo		( channel_t *ch, float fTimeToSeekTo );
+qboolean	MP3Stream_Rewind		( channel_t *ch );
+qboolean	MP3Stream_GetSamples	( channel_t *ch, int startingSampleNum, int count, short *buf, qboolean bStereo );
 
 
 

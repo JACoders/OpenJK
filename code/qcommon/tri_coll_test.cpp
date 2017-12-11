@@ -1,25 +1,25 @@
-/*
-This file is part of Jedi Academy.
-
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
-
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
-*/
-// Copyright 2001-2013 Raven Software
-
 /* Triangle/triangle intersection test routine,
  * by Tomas Moller, 1997.
  * See article "A Fast Triangle-Triangle Intersection Test",
  * Journal of Graphics Tools, 2(2), 1997
+ *
+ *
+ * Copyright (C) 1997 Tomas Möller
+ * Copyright (C) 2000-2013 Raven Software, Inc.
+ * Copyright (C) 2001-2013 Activision, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *
  *
  * int tri_tri_intersect(float V0[3],float V1[3],float V2[3],
  *                         float U0[3],float U1[3],float U2[3])
@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 
 #include "tri_coll_test.h"
 
-/* if USE_EPSILON_TEST is true then we do a check: 
+/* if USE_EPSILON_TEST is true then we do a check:
          if |dv|<EPSILON then dv=0.0;
    else no check is done (which is less robust)
 */
@@ -51,7 +51,7 @@ This file is part of Jedi Academy.
 #define SUB(dest,v1,v2)          \
             dest[0]=v1[0]-v2[0]; \
             dest[1]=v1[1]-v2[1]; \
-            dest[2]=v1[2]-v2[2]; 
+            dest[2]=v1[2]-v2[2];
 
 /* sort so that a<=b */
 #define SORT(a,b)       \
@@ -103,7 +103,7 @@ This file is part of Jedi Academy.
 
 /* this edge to edge test is based on Franlin Antonio's gem:
    "Faster Line Segment Intersection", in Graphics Gems III,
-   pp. 199-202 */ 
+   pp. 199-202 */
 #define EDGE_EDGE_TEST(V0,U0,U1)                      \
   Bx=U0[i0]-U1[i0];                                   \
   By=U0[i1]-U1[i1];                                   \
@@ -116,13 +116,13 @@ This file is part of Jedi Academy.
     e=Ax*Cy-Ay*Cx;                                    \
     if(f>0)                                           \
     {                                                 \
-      if(e>=0 && e<=f) return 1;                      \
+      if(e>=0 && e<=f) return qtrue;                      \
     }                                                 \
     else                                              \
     {                                                 \
-      if(e<=0 && e>=f) return 1;                      \
+      if(e<=0 && e>=f) return qtrue;                      \
     }                                                 \
-  }                                
+  }
 
 #define EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2) \
 {                                              \
@@ -158,7 +158,7 @@ This file is part of Jedi Academy.
   d2=a*V0[i0]+b*V0[i1]+c;                   \
   if(d0*d1>0.0)                             \
   {                                         \
-    if(d0*d2>0.0) return 1;                 \
+    if(d0*d2>0.0) return qtrue;                 \
   }                                         \
 }
 
@@ -174,7 +174,7 @@ qboolean coplanar_tri_tri(vec3_t N,vec3_t V0,vec3_t V1,vec3_t V2,
    A[2]=fabs(N[2]);
    if(A[0]>A[1])
    {
-      if(A[0]>A[2])  
+      if(A[0]>A[2])
       {
           i0=1;      /* A[0] is greatest */
           i1=2;
@@ -190,20 +190,20 @@ qboolean coplanar_tri_tri(vec3_t N,vec3_t V0,vec3_t V1,vec3_t V2,
       if(A[2]>A[1])
       {
           i0=0;      /* A[2] is greatest */
-          i1=1;                                           
+          i1=1;
       }
       else
       {
           i0=0;      /* A[1] is greatest */
           i1=2;
       }
-    }               
-                
+    }
+
     /* test all edges of triangle 1 against the edges of triangle 2 */
     EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2);
     EDGE_AGAINST_TRI_EDGES(V1,V2,U0,U1,U2);
     EDGE_AGAINST_TRI_EDGES(V2,V0,U0,U1,U2);
-                
+
     /* finally, test if tri1 is totally contained in tri2 or vice versa */
     POINT_IN_TRI(V0,U0,U1,U2);
     POINT_IN_TRI(U0,V0,V1,V2);
@@ -248,7 +248,7 @@ qboolean tri_tri_intersect(vec3_t V0,vec3_t V1,vec3_t V2,
   du0du2=du0*du2;
 
   if(du0du1>0.0f && du0du2>0.0f) /* same sign on all of them + not equal 0 ? */
-    return 0;                    /* no intersection occurs */
+    return qfalse;                    /* no intersection occurs */
 
   /* compute plane of triangle (U0,U1,U2) */
   SUB(E1,U1,U0);
@@ -270,9 +270,9 @@ qboolean tri_tri_intersect(vec3_t V0,vec3_t V1,vec3_t V2,
 
   dv0dv1=dv0*dv1;
   dv0dv2=dv0*dv2;
-        
+
   if(dv0dv1>0.0f && dv0dv2>0.0f) /* same sign on all of them + not equal 0 ? */
-    return 0;                    /* no intersection occurs */
+    return qfalse;                    /* no intersection occurs */
 
   /* compute direction of intersection line */
   CROSS(D,N1,N2);
@@ -381,19 +381,19 @@ float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2
 			s = 0;// and see note below
 		}
 
-		if ( s > 1 ) 
+		if ( s > 1 )
 		{
 			done = qfalse;
 			s = 1;// and see note below
 		}
 
-		if ( t < 0 ) 
+		if ( t < 0 )
 		{
 			done = qfalse;
 			t = 0;// and see note below
 		}
 
-		if ( t > 1 ) 
+		if ( t > 1 )
 		{
 			done = qfalse;
 			t = 1;// and see note below
@@ -405,7 +405,7 @@ float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2
 		VectorMA( start2, t, v2, close_pnt2 );
 
 		current_dist = Distance( close_pnt1, close_pnt2 );
-		//now, if none of those if's fired, you are done. 
+		//now, if none of those if's fired, you are done.
 		if ( done )
 		{
 			return current_dist;

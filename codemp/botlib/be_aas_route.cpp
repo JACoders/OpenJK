@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 /*****************************************************************************
  * name:		be_aas_route.c
@@ -5,7 +27,7 @@
  * desc:		AAS
  *
  * $Archive: /MissionPack/code/botlib/be_aas_route.c $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 18 $
  * $Modtime: 12/01/00 1:11p $
  * $Date: 12/01/00 1:11p $
@@ -1751,7 +1773,7 @@ int AAS_AreaRouteToGoalArea(int areanum, vec3_t origin, int goalareanum, int tra
 //===========================================================================
 int AAS_AreaTravelTimeToGoalArea(int areanum, vec3_t origin, int goalareanum, int travelflags)
 {
-	int traveltime, reachnum;
+	int traveltime, reachnum = 0;
 
 	if (AAS_AreaRouteToGoalArea(areanum, origin, goalareanum, travelflags, &traveltime, &reachnum))
 	{
@@ -1767,7 +1789,7 @@ int AAS_AreaTravelTimeToGoalArea(int areanum, vec3_t origin, int goalareanum, in
 //===========================================================================
 int AAS_AreaReachabilityToGoalArea(int areanum, vec3_t origin, int goalareanum, int travelflags)
 {
-	int traveltime, reachnum;
+	int traveltime, reachnum = 0;
 
 	if (AAS_AreaRouteToGoalArea(areanum, origin, goalareanum, travelflags, &traveltime, &reachnum))
 	{
@@ -1992,7 +2014,7 @@ int AAS_RandomGoalArea(int areanum, int travelflags, int *goalareanum, vec3_t go
 	//if the area has no reachabilities
 	if (!AAS_AreaReachability(areanum)) return qfalse;
 	//
-	n = aasworld.numareas * random();
+	n = aasworld.numareas * Q_flrand(0.0f, 1.0f);
 	for (i = 0; i < aasworld.numareas; i++)
 	{
 		if (n <= 0) n = 1;

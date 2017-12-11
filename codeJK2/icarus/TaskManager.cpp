@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Task Manager 
 //
@@ -27,6 +31,7 @@ This file is part of Jedi Knight 2.
 
 
 #include <assert.h>
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
 
@@ -212,7 +217,7 @@ int CTaskManager::Free( void )
 	tasks_l::iterator		ti;
 
 	//Clear out all pending tasks
-	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ti++ )
+	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ++ti )
 	{
 		(*ti)->Free();
 	}
@@ -220,7 +225,7 @@ int CTaskManager::Free( void )
 	m_tasks.clear();
 
 	//Clear out all taskGroups
-	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); gi++ )
+	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); ++gi )
 	{
 		delete (*gi);
 	}
@@ -357,7 +362,7 @@ IsRunning
 
 qboolean CTaskManager::IsRunning( void )
 {
-	return ( m_tasks.empty() == false );
+	return (qboolean)!m_tasks.empty();
 }
 /*
 -------------------------
@@ -404,7 +409,7 @@ int CTaskManager::GetFloat( int entID, CBlock *block, int &memberNum, float &val
 		return (m_owner->GetInterface())->I_GetFloat( entID, type, name, &value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -476,7 +481,7 @@ int CTaskManager::GetVector( int entID, CBlock *block, int &memberNum, vector_t 
 		return (m_owner->GetInterface())->I_GetVector( entID, type, name, value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -614,7 +619,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		}
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max, ret;
@@ -682,11 +687,11 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		{
 			if ( GetFloat( entID, block, memberNum, vval[i] ) == false )
 				return false;
-
-			Com_sprintf( tempBuffer, sizeof( tempBuffer ), "%f %f %f", vval[0], vval[1], vval[2] );
-			*value = (char *) tempBuffer;
 		}
-		
+
+		Com_sprintf( tempBuffer, sizeof( tempBuffer ), "%f %f %f", vval[0], vval[1], vval[2] );
+		*value = (char *) tempBuffer;
+
 		return true;
 	}
 	else if ( ( bm->GetID() == TK_STRING ) || ( bm->GetID() == TK_IDENTIFIER ) )
@@ -926,7 +931,7 @@ int CTaskManager::Completed( int id )
 	taskGroup_v::iterator	tgi;
 
 	//Mark the task as completed
-	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); tgi++ )
+	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); ++tgi )
 	{
 		//If this returns true, then the task was marked properly
 		if ( (*tgi)->MarkTaskComplete( id ) )
@@ -1634,18 +1639,30 @@ int CTaskManager::SaveCommand( CBlock *block )
 	unsigned char	flags;
 	int				numMembers, bID, size;
 	CBlockMember	*bm;
-	
+
+	ojk::SavedGameHelper saved_game(
+		m_owner->GetInterface()->saved_game);
+
 	//Save out the block ID
 	bID = block->GetBlockID();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','L','I','D'), &bID, sizeof ( bID ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('B', 'L', 'I', 'D'),
+		bID);
 
 	//Save out the block's flags
 	flags = block->GetFlags();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','F','L','G'), &flags, sizeof ( flags ) );
+
+	saved_game.write_chunk<uint8_t>(
+		INT_ID('B', 'F', 'L', 'G'),
+		flags);
 
 	//Save out the number of members to read
 	numMembers = block->GetNumMembers();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof ( numMembers ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('B', 'N', 'U', 'M'),
+		numMembers);
 
 	for ( int i = 0; i < numMembers; i++ )
 	{
@@ -1653,14 +1670,25 @@ int CTaskManager::SaveCommand( CBlock *block )
 
 		//Save the block id
 		bID = bm->GetID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','I','D'), &bID, sizeof ( bID ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('B', 'M', 'I', 'D'),
+			bID);
 		
 		//Save out the data size
 		size = bm->GetSize();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','S','I','Z'), &size, sizeof( size ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('B', 'S', 'I', 'Z'),
+			size);
 		
 		//Save out the raw data
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','E','M'), bm->GetData(), size );
+		const uint8_t* raw_data = static_cast<const uint8_t*>(bm->GetData());
+
+		saved_game.write_chunk(
+			INT_ID('B', 'M', 'E', 'M'),
+			raw_data,
+			size);
 	}
 
 	return true;
@@ -1682,12 +1710,20 @@ void CTaskManager::Save( void )
 	int			id, numCommands;
 	int			numWritten;
 
+	ojk::SavedGameHelper saved_game(
+		m_owner->GetInterface()->saved_game);
+
 	//Save the taskmanager's GUID
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','M','I','D'), &m_GUID, sizeof( m_GUID ) );	//FIXME: This can be reconstructed
+	saved_game.write_chunk<int32_t>(
+		INT_ID('T', 'M', 'I', 'D'),
+		m_GUID); //FIXME: This can be reconstructed
 
 	//Save out the number of tasks that will follow
 	int iNumTasks = m_tasks.size();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','S','K','#'), &iNumTasks, sizeof(iNumTasks) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('T', 'S', 'K', '#'),
+		iNumTasks);
 
 	//Save out all the tasks
 	tasks_l::iterator	ti;
@@ -1696,11 +1732,17 @@ void CTaskManager::Save( void )
 	{
 		//Save the GUID
 		id = (*ti)->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','I','D'), &id, sizeof ( id ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'K', 'I', 'D'),
+			id);
 
 		//Save the timeStamp (FIXME: Although, this is going to be worthless if time is not consistent...)
 		timeStamp = (*ti)->GetTimeStamp();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','T','S'), &timeStamp, sizeof ( timeStamp ) );
+
+		saved_game.write_chunk<uint32_t>(
+			INT_ID('T', 'K', 'T', 'S'),
+			timeStamp);
 
 		//Save out the block
 		block = (*ti)->GetBlock();
@@ -1709,14 +1751,22 @@ void CTaskManager::Save( void )
 
 	//Save out the number of task groups
 	int numTaskGroups = m_taskGroups.size();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','#','G'), &numTaskGroups, sizeof( numTaskGroups ) );
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('T', 'G', '#', 'G'),
+		numTaskGroups);
+
 	//Save out the IDs of all the task groups
 	numWritten = 0;
 	taskGroup_v::iterator	tgi;
 	STL_ITERATE( tgi, m_taskGroups )
 	{
 		id = (*tgi)->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','G','#'), &id, sizeof( id ) );		
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'K', 'G', '#'),
+			id);
+
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);
@@ -1727,11 +1777,17 @@ void CTaskManager::Save( void )
 	{
 		//Save out the parent
 		id = ( (*tgi)->GetParent() == NULL ) ? -1 : ((*tgi)->GetParent())->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','G','P'), &id, sizeof( id ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'K', 'G', 'P'),
+			id);
 
 		//Save out the number of commands
 		numCommands = (*tgi)->m_completedTasks.size();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','C'), &numCommands, sizeof( numCommands ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'G', 'N', 'C'),
+			numCommands);
 
 		//Save out the command map
 		CTaskGroup::taskCallback_m::iterator	tci;
@@ -1740,16 +1796,26 @@ void CTaskManager::Save( void )
 		{
 			//Write out the ID
 			id = (*tci).first;
-			(m_owner->GetInterface())->I_WriteSaveData( INT_ID('G','M','I','D'), &id, sizeof( id ) );
+
+			saved_game.write_chunk<int32_t>(
+				INT_ID('G', 'M', 'I', 'D'),
+				id);
 
 			//Write out the state of completion
 			completed = (*tci).second;
-			(m_owner->GetInterface())->I_WriteSaveData( INT_ID('G','M','D','N'), &completed, sizeof( completed ) );
+
+			saved_game.write_chunk<uint8_t>(
+				INT_ID('G', 'M', 'D', 'N'),
+				completed);
 		}
 
 		//Save out the number of completed commands
 		id = (*tgi)->m_numCompleted;
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','D','N'), &id, sizeof( id ) );	//FIXME: This can be reconstructed
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'G', 'D', 'N'),
+			id); //FIXME: This can be reconstructed
+
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);
@@ -1759,7 +1825,10 @@ void CTaskManager::Save( void )
 	{
 		//Save out the currently active group
 		int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','C','G'), &curGroupID, sizeof( curGroupID ) );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'G', 'C', 'G'),
+			curGroupID);
 	}
 
 	//Save out the task group name maps
@@ -1770,22 +1839,30 @@ void CTaskManager::Save( void )
 		name = ((*tmi).first).c_str();
 		
 		//Make sure this is a valid string
-		assert( ( name != NULL ) && ( name[0] != NULL ) );
+		assert( ( name != NULL ) && ( name[0] != '\0' ) );
 
 		int length = strlen( name ) + 1;
 
 		//Save out the string size
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','L'), &length, sizeof ( length ) );
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'G', 'N', 'L'),
+			length);
 
 		//Write out the string
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','S'), (void *) name, length );
+		saved_game.write_chunk(
+			INT_ID('T', 'G', 'N', 'S'),
+			name,
+			length);
 
 		taskGroup = (*tmi).second;
 
 		id = taskGroup->GetGUID();
 
 		//Write out the ID
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','I'), &id, sizeof( id ) );
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'G', 'N', 'I'),
+			id);
+
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);
@@ -1799,22 +1876,29 @@ Load
 
 void CTaskManager::Load( void )
 {
-	unsigned char	flags;
+	unsigned char	flags = 0;
 	CTaskGroup		*taskGroup;
 	CBlock			*block;
 	CTask			*task;
-	uint32_t		timeStamp;
-	bool			completed;
+	uint32_t		timeStamp = 0;
+	bool			completed = false;
 	void			*bData;
-	int				id, numTasks, numMembers;
-	int				bID, bSize;
+	int				id = 0, numTasks = 0, numMembers = 0;
+	int				bID = 0, bSize = 0;
 	int				i;
 
+	ojk::SavedGameHelper saved_game(
+		m_owner->GetInterface()->saved_game);
+
 	//Get the GUID
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','M','I','D'), &m_GUID, sizeof( m_GUID ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('T', 'M', 'I', 'D'),
+		m_GUID);
 
 	//Get the number of tasks to follow
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','S','K','#'), &numTasks, sizeof( numTasks ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('T', 'S', 'K', '#'),
+		numTasks);
 	
 	//Reload all the tasks
 	for ( i = 0; i < numTasks; i++ )
@@ -1824,11 +1908,17 @@ void CTaskManager::Load( void )
 		assert( task );
 
 		//Get the GUID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','I','D'), &id, sizeof( id ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'K', 'I', 'D'),
+			id);
+
 		task->SetGUID( id );
 
 		//Get the time stamp
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','T','S'), &timeStamp, sizeof( timeStamp ), NULL );
+		saved_game.read_chunk<uint32_t>(
+			INT_ID('T', 'K', 'T', 'S'),
+			timeStamp);
+
 		task->SetTimeStamp( timeStamp );
 
 		//
@@ -1836,25 +1926,37 @@ void CTaskManager::Load( void )
 		//
 
 		//Get the block ID and create a new container
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','L','I','D'), &id, sizeof( id ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('B', 'L', 'I', 'D'),
+			id);
+
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','F','L','G'), &flags, sizeof( flags ), NULL );
+		saved_game.read_chunk<uint8_t>(
+			INT_ID('B', 'F', 'L', 'G'),
+			flags);
+
 		block->SetFlags( flags );
 
 		//Get the number of block members
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof( numMembers ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('B', 'N', 'U', 'M'),
+			numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','I','D'), &bID, sizeof( bID ), NULL );
+			saved_game.read_chunk<int32_t>(
+				INT_ID('B', 'M', 'I', 'D'),
+				bID);
 			
 			//Get the member size
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','S','I','Z'), &bSize, sizeof( bSize ), NULL );
+			saved_game.read_chunk<int32_t>(
+				INT_ID('B', 'S', 'I', 'Z'),
+				bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
@@ -1864,7 +1966,10 @@ void CTaskManager::Load( void )
 			}
 
 			//Get the actual raw data
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','E','M'), bData, bSize, NULL );
+			saved_game.read_chunk(
+				INT_ID('B', 'M', 'E', 'M'),
+				static_cast<uint8_t*>(bData),
+				bSize);
 
 			//Write out the correct type
 			switch ( bID )
@@ -1913,9 +2018,11 @@ void CTaskManager::Load( void )
 	}
 
 	//Load the task groups
-	int numTaskGroups;
+	int numTaskGroups = 0;
 	
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','#','G'), &numTaskGroups, sizeof( numTaskGroups ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('T', 'G', '#', 'G'),
+		numTaskGroups);
 
 	if ( numTaskGroups == 0 )
 		return;
@@ -1930,7 +2037,10 @@ void CTaskManager::Load( void )
 		assert( taskGroup );
 
 		//Get this task group's ID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','G','#'), &taskIDs[i], sizeof( taskIDs[i] ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'K', 'G', '#'),
+			taskIDs[i]);
+
 		taskGroup->m_GUID = taskIDs[i];
 		
 		m_taskGroupIDMap[ taskIDs[i] ] = taskGroup;
@@ -1945,50 +2055,69 @@ void CTaskManager::Load( void )
 		assert( taskGroup );
 
 		//Load the parent ID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','G','P'), &id, sizeof( id ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'K', 'G', 'P'),
+			id);
 		
 		if ( id != -1 )
 			taskGroup->m_parent = ( GetTaskGroup( id ) != NULL ) ? GetTaskGroup( id ) : NULL;
 
 		//Get the number of commands in this group
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','C'), &numMembers, sizeof( numMembers ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'G', 'N', 'C'),
+			numMembers);
 
 		//Get each command and its completion state
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the ID
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('G','M','I','D'), &id, sizeof( id ), NULL );
+			saved_game.read_chunk<int32_t>(
+				INT_ID('G', 'M', 'I', 'D'),
+				id);
 
 			//Write out the state of completion
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('G','M','D','N'), &completed, sizeof( completed ), NULL );
+			saved_game.read_chunk<uint8_t>(
+				INT_ID('G', 'M', 'D', 'N'),
+				completed);
 
 			//Save it out
 			taskGroup->m_completedTasks[ id ] = completed;
 		}
 
 		//Get the number of completed tasks
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','D','N'), &taskGroup->m_numCompleted, sizeof( taskGroup->m_numCompleted ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'G', 'D', 'N'),
+			taskGroup->m_numCompleted);
 	}
 
 	//Reload the currently active group
 	int curGroupID;
 
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','C','G'), &curGroupID, sizeof( curGroupID ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('T', 'G', 'C', 'G'),
+		curGroupID);
 
 	//Reload the map entries
 	for ( i = 0; i < numTaskGroups; i++ )
 	{
 		char	name[1024];
-		int		length;
+		int		length = 0;
 		
 		//Get the size of the string
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','L'), &length, sizeof( length ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'G', 'N', 'L'),
+			length);
 
 		//Get the string
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','S'), &name, length, NULL );
+		saved_game.read_chunk(
+			INT_ID('T', 'G', 'N', 'S'),
+			name,
+			length);
 
 		//Get the id
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','I'), &id, sizeof( id ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'G', 'N', 'I'),
+			id);
 
 		taskGroup = GetTaskGroup( id );
 		assert( taskGroup );

@@ -1,8 +1,28 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
-
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
-
 
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
@@ -16,16 +36,21 @@
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 #define	BASEGAME "base"
+#define OPENJKGAME "OpenJK"
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"
 
 #define MAX_TEAMNAME 32
+#define MAX_MASTER_SERVERS      5	// number of supported master servers
 
 #define BASE_COMPAT // some unused and leftover code has been stripped out, but this breaks compatibility
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
+#include "qcommon/q_math.h"
+#include "qcommon/q_color.h"
+#include "qcommon/q_string.h"
 #include "qcommon/disablewarnings.h"
 
 #include "game/teams.h" //npc team stuff
@@ -118,11 +143,6 @@
 	#define idppc	0
 #endif
 
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
-
-
 #include "qcommon/q_platform.h"
 
 #if defined(__linux__)
@@ -133,66 +153,6 @@ float FloatSwap( const float *f );
 	#include <aio.h>
 	#include <signal.h>
 #endif
-
-// ================================================================
-// TYPE DEFINITIONS
-// ================================================================
-
-typedef unsigned char byte;
-typedef unsigned short word;
-typedef unsigned long ulong;
-
-typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
-
-#ifndef min
-	#define min(x,y) ((x)<(y)?(x):(y))
-#endif
-#ifndef max
-	#define max(x,y) ((x)>(y)?(x):(y))
-#endif
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1600)
-
-	#include <stdint.h>
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
-#elif defined (_MSC_VER)
-
-	#include <io.h>
-
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#else // not using MSVC
-
-	#include <stdint.h>
-
-	#define Q_vsnprintf vsnprintf
-
-#endif
-
-// 32 bit field aliasing
-typedef union byteAlias_u {
-	float f;
-	int32_t i;
-	uint32_t ui;
-	qboolean qb;
-	byte b[4];
-	char c[4];
-} byteAlias_t;
-
 typedef union fileBuffer_u {
 	void *v;
 	char *c;
@@ -223,15 +183,7 @@ typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, cli
 #define NULL ((void *)0)
 #endif
 
-#define	MAX_QINT			0x7fffffff
-#define	MIN_QINT			(-MAX_QINT-1)
-
-#define INT_ID( a, b, c, d ) (uint32_t)((((d) & 0xff) << 24) | (((c) & 0xff) << 16) | (((b) & 0xff) << 8) | ((a) & 0xff))
-
-// angle indexes
-#define	PITCH				0		// up / down
-#define	YAW					1		// left / right
-#define	ROLL				2		// fall over
+#define INT_ID( a, b, c, d ) (uint32_t)((((a) & 0xff) << 24) | (((b) & 0xff) << 16) | (((c) & 0xff) << 8) | ((d) & 0xff))
 
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
@@ -383,38 +335,6 @@ void *Hunk_Alloc( int size, ha_pref preference );
 #define CIN_silent	8
 #define CIN_shader	16
 
-/*
-==============================================================
-
-MATHLIB
-
-==============================================================
-*/
-
-
-typedef float	 vec2_t[2],	 vec3_t[3],	 vec4_t[4],	 vec5_t[5];
-typedef int		ivec2_t[2],	ivec3_t[3],	ivec4_t[4],	ivec5_t[5];
-typedef vec3_t vec3pair_t[2], matrix3_t[3];
-
-typedef	int	fixed4_t, fixed8_t, fixed16_t;
-
-#ifndef M_PI
-#define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
-#endif
-
-#if defined(_MSC_VER)
-static __inline long Q_ftol(float f)
-{
-	return (long)f;
-}
-#else
-static inline long Q_ftol(float f)
-{
-	return (long)f;
-}
-#endif
-
-
 typedef enum {
 	BLK_NO,
 	BLK_TIGHT,		// Block only attacks and shots around the saber itself, a bbox of around 12x12x12
@@ -437,8 +357,6 @@ typedef enum {
 	BLOCKED_LOWER_LEFT_PROJ,
 	BLOCKED_TOP_PROJ
 } saberBlockedType_t;
-
-
 
 typedef enum
 {
@@ -648,10 +566,6 @@ typedef struct wpobject_s
 	wpneighbor_t neighbors[MAX_NEIGHBOR_SIZE];
 } wpobject_t;
 
-
-#define NUMVERTEXNORMALS	162
-extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
-
 // all drawing is done to a 640*480 virtual screen size
 // and will be automatically scaled to the real resolution
 #define	SCREEN_WIDTH		640
@@ -669,324 +583,7 @@ extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 #define	GIANTCHAR_WIDTH		32
 #define	GIANTCHAR_HEIGHT	48
 
-typedef enum
-{
-CT_NONE,
-CT_BLACK,
-CT_RED,
-CT_GREEN,
-CT_BLUE,
-CT_YELLOW,
-CT_MAGENTA,
-CT_CYAN,
-CT_WHITE,
-CT_LTGREY,
-CT_MDGREY,
-CT_DKGREY,
-CT_DKGREY2,
-
-CT_VLTORANGE,
-CT_LTORANGE,
-CT_DKORANGE,
-CT_VDKORANGE,
-
-CT_VLTBLUE1,
-CT_LTBLUE1,
-CT_DKBLUE1,
-CT_VDKBLUE1,
-
-CT_VLTBLUE2,
-CT_LTBLUE2,
-CT_DKBLUE2,
-CT_VDKBLUE2,
-
-CT_VLTBROWN1,
-CT_LTBROWN1,
-CT_DKBROWN1,
-CT_VDKBROWN1,
-
-CT_VLTGOLD1,
-CT_LTGOLD1,
-CT_DKGOLD1,
-CT_VDKGOLD1,
-
-CT_VLTPURPLE1,
-CT_LTPURPLE1,
-CT_DKPURPLE1,
-CT_VDKPURPLE1,
-
-CT_VLTPURPLE2,
-CT_LTPURPLE2,
-CT_DKPURPLE2,
-CT_VDKPURPLE2,
-
-CT_VLTPURPLE3,
-CT_LTPURPLE3,
-CT_DKPURPLE3,
-CT_VDKPURPLE3,
-
-CT_VLTRED1,
-CT_LTRED1,
-CT_DKRED1,
-CT_VDKRED1,
-CT_VDKRED,
-CT_DKRED,
-
-CT_VLTAQUA,
-CT_LTAQUA,
-CT_DKAQUA,
-CT_VDKAQUA,
-
-CT_LTPINK,
-CT_DKPINK,
-CT_LTCYAN,
-CT_DKCYAN,
-CT_LTBLUE3,
-CT_BLUE3,
-CT_DKBLUE3,
-
-CT_HUD_GREEN,
-CT_HUD_RED,
-CT_ICON_BLUE,
-CT_NO_AMMO_RED,
-CT_HUD_ORANGE,
-
-CT_MAX
-} ct_table_t;
-
-extern vec4_t colorTable[CT_MAX];
-
-extern	vec4_t		colorBlack;
-extern	vec4_t		colorRed;
-extern	vec4_t		colorGreen;
-extern	vec4_t		colorBlue;
-extern	vec4_t		colorYellow;
-extern	vec4_t		colorOrange;
-extern	vec4_t		colorMagenta;
-extern	vec4_t		colorCyan;
-extern	vec4_t		colorWhite;
-extern	vec4_t		colorLtGrey;
-extern	vec4_t		colorMdGrey;
-extern	vec4_t		colorDkGrey;
-extern	vec4_t		colorLtBlue;
-extern	vec4_t		colorDkBlue;
-
-#define Q_COLOR_ESCAPE	'^'
-#define Q_COLOR_BITS 0xF // was 7
-
-// you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
-#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '9' && *((p)+1) >= '0' )
-// Correct version of the above for Q_StripColor
-#define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) >= '0' && *((p)+1) <= '9') // ^[0-9]
-
-
-#define COLOR_BLACK		'0'
-#define COLOR_RED		'1'
-#define COLOR_GREEN		'2'
-#define COLOR_YELLOW	'3'
-#define COLOR_BLUE		'4'
-#define COLOR_CYAN		'5'
-#define COLOR_MAGENTA	'6'
-#define COLOR_WHITE		'7'
-#define COLOR_ORANGE	'8'
-#define COLOR_GREY		'9'
-#define ColorIndex(c)	( ( (c) - '0' ) & Q_COLOR_BITS )
-
-#define S_COLOR_BLACK	"^0"
-#define S_COLOR_RED		"^1"
-#define S_COLOR_GREEN	"^2"
-#define S_COLOR_YELLOW	"^3"
-#define S_COLOR_BLUE	"^4"
-#define S_COLOR_CYAN	"^5"
-#define S_COLOR_MAGENTA	"^6"
-#define S_COLOR_WHITE	"^7"
-#define S_COLOR_ORANGE	"^8"
-#define S_COLOR_GREY	"^9"
-
-extern vec4_t g_color_table[Q_COLOR_BITS+1];
-
-#define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
-#define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
-
-struct cplane_s;
-
-extern	vec3_t		vec3_origin;
-extern	matrix3_t	axisDefault;
-
-#if idppc
-
-static inline float Q_rsqrt( float number ) {
-		float x = 0.5f * number;
-                float y;
-#ifdef __GNUC__
-                asm("frsqrte %0,%1" : "=f" (y) : "f" (number));
-#else
-		y = __frsqrte( number );
-#endif
-		return y * (1.5f - (x * y * y));
-	}
-
-#ifdef __GNUC__
-static inline float Q_fabs(float x) {
-    float abs_x;
-
-    asm("fabs %0,%1" : "=f" (abs_x) : "f" (x));
-    return abs_x;
-}
-#else
-#define Q_fabs __fabsf
-#endif
-
-#else
-
-float Q_fabs( float f );
-float Q_rsqrt( float f );		// reciprocal square root
-
-#endif // idppc
-
-
-#define SQRTFAST( x ) ( (x) * Q_rsqrt( x ) )
-
-signed char ClampChar( int i );
-signed short ClampShort( int i );
-
-float Q_powf ( float x, int y );
-
-// this isn't a real cheap function to call!
-int DirToByte( vec3_t dir );
-void ByteToDir( int b, vec3_t dir );
-
-//rwwRMG - added math defines
-#define minimum( x, y ) ((x) < (y) ? (x) : (y))
-#define maximum( x, y ) ((x) > (y) ? (x) : (y))
-
-#define DEG2RAD( deg ) ( ((deg)*M_PI) / 180.0f )
-#define RAD2DEG( rad ) ( ((rad)*180.0f) / M_PI )
-
-void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-void		VectorScale( const vec3_t vecIn, float scale, vec3_t vecOut );
-void		VectorScale4( const vec4_t vecIn, float scale, vec4_t vecOut );
-void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
-float		VectorLength( const vec3_t vec );
-float		VectorLengthSquared( const vec3_t vec );
-float		Distance( const vec3_t p1, const vec3_t p2 );
-float		DistanceSquared( const vec3_t p1, const vec3_t p2 );
-void		VectorNormalizeFast( vec3_t vec );
-float		VectorNormalize( vec3_t vec );
-float		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
-void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
-void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
-void		VectorSet( vec3_t vec, float x, float y, float z );
-void		VectorSet4( vec4_t vec, float x, float y, float z, float w );
-void		VectorSet5( vec5_t vec, float x, float y, float z, float w, float u );
-void		VectorClear( vec3_t vec );
-void		VectorClear4( vec4_t vec );
-void		VectorInc( vec3_t vec );
-void		VectorDec( vec3_t vec );
-void		VectorInverse( vec3_t vec );
-void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-float		DotProduct( const vec3_t vec1, const vec3_t vec2 );
-qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
-void		SnapVector( float *v );
-
-#define		VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
-#define		VectorSubtractM( vec1, vec2, vecOut )	((vecOut)[0]=(vec1)[0]-(vec2)[0], (vecOut)[1]=(vec1)[1]-(vec2)[1], (vecOut)[2]=(vec1)[2]-(vec2)[2])
-#define		VectorScaleM( vecIn, scale, vecOut )	((vecOut)[0]=(vecIn)[0]*(scale), (vecOut)[1]=(vecIn)[1]*(scale), (vecOut)[2]=(vecIn)[2]*(scale))
-#define		VectorScale4M( vecIn, scale, vecOut )	((vecOut)[0]=(vecIn)[0]*(scale), (vecOut)[1]=(vecIn)[1]*(scale), (vecOut)[2]=(vecIn)[2]*(scale), (vecOut)[3]=(vecIn)[3]*(scale))
-#define		VectorMAM( vec1, scale, vec2, vecOut )	((vecOut)[0]=(vec1)[0]+(vec2)[0]*(scale), (vecOut)[1]=(vec1)[1]+(vec2)[1]*(scale), (vecOut)[2]=(vec1)[2]+(vec2)[2]*(scale))
-#define		VectorLengthM( vec )					VectorLength( vec )
-#define		VectorLengthSquaredM( vec )				VectorLengthSquared( vec )
-#define		DistanceM( vec )						Distance( vec )
-#define		DistanceSquaredM( p1, p2 )				DistanceSquared( p1, p2 )
-#define		VectorNormalizeFastM( vec )				VectorNormalizeFast( vec )
-#define		VectorNormalizeM( vec )					VectorNormalize( vec )
-#define		VectorNormalize2M( vec, vecOut )		VectorNormalize2( vec, vecOut )
-#define		VectorCopyM( vecIn, vecOut )			((vecOut)[0]=(vecIn)[0], (vecOut)[1]=(vecIn)[1], (vecOut)[2]=(vecIn)[2])
-#define		VectorCopy4M( vecIn, vecOut )			((vecOut)[0]=(vecIn)[0], (vecOut)[1]=(vecIn)[1], (vecOut)[2]=(vecIn)[2], (vecOut)[3]=(vecIn)[3])
-#define		VectorSetM( vec, x, y, z )				((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z))
-#define		VectorSet4M( vec, x, y, z, w )			((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z), (vec)[3]=(w))
-#define		VectorSet5M( vec, x, y, z, w, u )		((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z), (vec)[3]=(w), (vec)[4]=(u))
-#define		VectorClearM( vec )						((vec)[0]=(vec)[1]=(vec)[2]=0)
-#define		VectorClear4M( vec )					((vec)[0]=(vec)[1]=(vec)[2]=(vec)[3]=0)
-#define		VectorIncM( vec )						((vec)[0]+=1.0f, (vec)[1]+=1.0f, (vec)[2]+=1.0f)
-#define		VectorDecM( vec )						((vec)[0]-=1.0f, (vec)[1]-=1.0f, (vec)[2]-=1.0f)
-#define		VectorInverseM( vec )					((vec)[0]=-(vec)[0], (vec)[1]=-(vec)[1], (vec)[2]=-(vec)[2])
-#define		CrossProductM( vec1, vec2, vecOut )		((vecOut)[0]=((vec1)[1]*(vec2)[2])-((vec1)[2]*(v2)[1]), (vecOut)[1]=((vec1)[2]*(vec2)[0])-((vec1)[0]*(vec2)[2]), (vecOut)[2]=((vec1)[0]*(vec2)[1])-((vec1)[1]*(vec2)[0]))
-#define		DotProductM( x, y )						((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
-#define		VectorCompareM( vec1, vec2 )			(!!((vec1)[0]==(vec2)[0] && (vec1)[1]==(vec2)[1] && (vec1)[2]==(vec2)[2]))
-
-// TODO
-#define VectorScaleVector(a,b,c)		(((c)[0]=(a)[0]*(b)[0]),((c)[1]=(a)[1]*(b)[1]),((c)[2]=(a)[2]*(b)[2]))
-#define VectorInverseScaleVector(a,b,c)	((c)[0]=(a)[0]/(b)[0],(c)[1]=(a)[1]/(b)[1],(c)[2]=(a)[2]/(b)[2])
-#define VectorScaleVectorAdd(c,a,b,o)	((o)[0]=(c)[0]+((a)[0]*(b)[0]),(o)[1]=(c)[1]+((a)[1]*(b)[1]),(o)[2]=(c)[2]+((a)[2]*(b)[2]))
-#define VectorAdvance(a,s,b,c)			(((c)[0]=(a)[0] + s * ((b)[0] - (a)[0])),((c)[1]=(a)[1] + s * ((b)[1] - (a)[1])),((c)[2]=(a)[2] + s * ((b)[2] - (a)[2])))
-#define VectorAverage(a,b,c)			(((c)[0]=((a)[0]+(b)[0])*0.5f),((c)[1]=((a)[1]+(b)[1])*0.5f),((c)[2]=((a)[2]+(b)[2])*0.5f))
-#define VectorNegate(a,b)				((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
-
-unsigned ColorBytes3 (float r, float g, float b);
-unsigned ColorBytes4 (float r, float g, float b, float a);
-
-float NormalizeColor( const vec3_t in, vec3_t out );
-
-float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
-void ClearBounds( vec3_t mins, vec3_t maxs );
-float DistanceHorizontal( const vec3_t p1, const vec3_t p2 );
-float DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 );
-void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
-void VectorRotate( const vec3_t in, matrix3_t matrix, vec3_t out );
-int Q_log2(int val);
-
-qboolean Q_isnan(float f);
-float Q_acos(float c);
-float Q_asin(float c);
-
-int		Q_rand( int *seed );
-float	Q_random( int *seed );
-float	Q_crandom( int *seed );
-
-#define random()	((rand () & 0x7fff) / ((float)0x7fff))
-#define crandom()	(2.0 * (random() - 0.5))
-
-void vectoangles( const vec3_t value1, vec3_t angles);
-void AnglesToAxis( const vec3_t angles, matrix3_t axis );
-
-void AxisClear( matrix3_t axis );
-void AxisCopy( matrix3_t in, matrix3_t out );
-
-void SetPlaneSignbits( struct cplane_s *out );
-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-
-double	fmod( double x, double y );
-float	AngleMod(float a);
-float	LerpAngle (float from, float to, float frac);
-float	AngleSubtract( float a1, float a2 );
-void	AnglesSubtract( vec3_t v1, vec3_t v2, vec3_t v3 );
-
-float AngleNormalize360 ( float angle );
-float AngleNormalize180 ( float angle );
-float AngleDelta ( float angle1, float angle2 );
-
-qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
-void RotateAroundDirection( matrix3_t axis, float yaw );
-void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up );
-// perpendicular vector could be replaced by this
-
-//int	PlaneTypeForNormal (vec3_t normal);
-
-void MatrixMultiply(float in1[3][3], float in2[3][3], float out[3][3]);
-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-void PerpendicularVector( vec3_t dst, const vec3_t src );
-void NormalToLatLong( const vec3_t normal, byte bytes[2] ); //rwwRMG - added
-
 //=============================================
-
-int Com_Clampi( int min, int max, int value ); //rwwRMG - added
-float Com_Clamp( float min, float max, float value );
-int Com_AbsClampi( int min, int max, int value );
-float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
@@ -1032,7 +629,7 @@ typedef struct pc_token_s
 
 void	COM_MatchToken( const char**buf_p, char *match );
 
-void SkipBracedSection (const char **program);
+qboolean SkipBracedSection (const char **program, int depth);
 void SkipRestOfLine ( const char **data );
 
 void Parse1DMatrix (const char **buf_p, int x, float *m);
@@ -1063,37 +660,6 @@ typedef enum {
 
 //=============================================
 
-int Q_isprint( int c );
-int Q_islower( int c );
-int Q_isupper( int c );
-int Q_isalpha( int c );
-qboolean Q_isanumber( const char *s );
-qboolean Q_isintegral( float f );
-
-// portable case insensitive compare
-int		Q_stricmp (const char *s1, const char *s2);
-int		Q_strncmp (const char *s1, const char *s2, int n);
-int		Q_stricmpn (const char *s1, const char *s2, int n);
-char	*Q_strlwr( char *s1 );
-char	*Q_strupr( char *s1 );
-char	*Q_strrchr( const char* string, int c );
-
-// buffer size safe library replacements
-void	Q_strncpyz( char *dest, const char *src, int destsize );
-void	Q_strcat( char *dest, int size, const char *src );
-
-const char *Q_stristr( const char *s, const char *find);
-
-// strlen that discounts Quake color sequences
-int Q_PrintStrlen( const char *string );
-// removes color sequences from string
-char *Q_CleanStr( char *string );
-void Q_StripColor(char *text);
-void Q_strstrip( char *string, const char *strip, const char *repl );
-const char *Q_strchrs( const char *string, const char *search );
-
-//=============================================
-
 // 64-bit integers for global rankings interface
 // implemented as a struct for qvm compatibility
 typedef struct qint64_s {
@@ -1107,19 +673,8 @@ typedef struct qint64_s {
 	byte	b7;
 } qint64;
 
-//=============================================
-/*
-short	BigShort(short l);
-short	LittleShort(short l);
-int		BigLong (int l);
-int		LittleLong (int l);
-qint64  BigLong64 (qint64 l);
-qint64  LittleLong64 (qint64 l);
-float	BigFloat (const float *l);
-float	LittleFloat (const float *l);
+int FloatAsInt( float f );
 
-void	Swap_Init (void);
-*/
 char	* QDECL va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
@@ -1139,11 +694,11 @@ qboolean Info_Validate( const char *s );
 qboolean Info_NextPair( const char **s, char *key, char *value );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-#if defined( _GAME ) || defined( _CGAME ) || defined( _UI )
-	void (*Com_Error)( int level, const char *error, ... );
+#if defined( _GAME ) || defined( _CGAME ) || defined( UI_BUILD )
+	NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
 	void (*Com_Printf)( const char *msg, ... );
 #else
-	void QDECL Com_Error( int level, const char *error, ... );
+	void NORETURN QDECL Com_Error( int level, const char *error, ... );
 	void QDECL Com_Printf( const char *msg, ... );
 #endif
 
@@ -1179,6 +734,9 @@ Many variables can be used for cheating purposes, so when cheats is zero,
 #define CVAR_SERVER_CREATED	(0x00002000u)	// cvar was created by a server the client connected to.
 #define CVAR_VM_CREATED		(0x00004000u)	// cvar was created exclusively in one of the VMs.
 #define CVAR_PROTECTED		(0x00008000u)	// prevent modifying this var from VMs or the server
+#define CVAR_NODEFAULT		(0x00010000u)	// do not write to config if matching with default value
+
+#define CVAR_ARCHIVE_ND		(CVAR_ARCHIVE | CVAR_NODEFAULT)
 // These flags are only returned by the Cvar_Flags() function
 #define CVAR_MODIFIED		(0x40000000u)	// Cvar was modified
 #define CVAR_NONEXISTENT	(0x80000000u)	// Cvar doesn't exist.
@@ -1186,6 +744,7 @@ Many variables can be used for cheating purposes, so when cheats is zero,
 // nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s {
 	char			*name;
+	char			*description;
 	char			*string;
 	char			*resetString;		// cvar_restart will reset to this value
 	char			*latchedString;		// for CVAR_LATCH vars
@@ -1227,31 +786,6 @@ COLLISION DETECTION
 
 #include "game/surfaceflags.h"			// shared with the q3map utility
 
-// plane types are used to speed some tests
-// 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
-#define	PLANE_NON_AXIAL	3
-
-
-/*
-=================
-PlaneTypeForNormal
-=================
-*/
-
-#define PlaneTypeForNormal(x) (x[0] == 1.0 ? PLANE_X : (x[1] == 1.0 ? PLANE_Y : (x[2] == 1.0 ? PLANE_Z : PLANE_NON_AXIAL) ) )
-
-// plane_t structure
-// !!! if this is changed, it must be changed in asm code too !!!
-typedef struct cplane_s {
-	vec3_t	normal;
-	float	dist;
-	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
-	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
-	byte	pad[2];
-} cplane_t;
 /*
 Ghoul2 Insert Start
 */
@@ -2272,13 +1806,6 @@ typedef enum {
 #define SAY_CLAN	3
 #define SAY_ADMIN	4
 
-#define QRAND_MAX 32768
-
-void Rand_Init(int seed);
-float flrand(float min, float max);
-int irand(int min, int max);
-int Q_irand(int value1, int value2);
-
 /*
 Ghoul2 Insert Start
 */
@@ -2387,3 +1914,12 @@ enum {
 };
 
 void NET_AddrToString( char *out, size_t size, void *addr );
+
+qboolean Q_InBitflags( const uint32_t *bits, int index, uint32_t bitsPerByte );
+void Q_AddToBitflags( uint32_t *bits, int index, uint32_t bitsPerByte );
+void Q_RemoveFromBitflags( uint32_t *bits, int index, uint32_t bitsPerByte );
+
+typedef int( *cmpFunc_t )(const void *a, const void *b);
+
+void *Q_LinearSearch( const void *key, const void *ptr, size_t count,
+	size_t size, cmpFunc_t cmp );

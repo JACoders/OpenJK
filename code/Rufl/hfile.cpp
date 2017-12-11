@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD USEFUL FUNCTION LIBRARY
@@ -66,7 +70,7 @@ extern bool	HFILEclose(int& handle);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 struct SOpenFile
 {
@@ -78,7 +82,7 @@ struct SOpenFile
 };
 typedef	ratl::handle_pool_vs<SOpenFile, MAX_OPEN_FILES>		TFilePool;
 
-TFilePool&	Pool()
+static TFilePool& Pool()
 {
 	static TFilePool TFP;
 	return TFP;
@@ -135,7 +139,7 @@ hfile::~hfile()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::is_open(void)	const
 {
@@ -147,7 +151,7 @@ bool		hfile::is_open(void)	const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::is_open_for_read(void)	const
 {
@@ -160,7 +164,7 @@ bool		hfile::is_open_for_read(void)	const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::is_open_for_write(void)	const
 {
@@ -174,7 +178,7 @@ bool		hfile::is_open_for_write(void)	const
 
 
 ////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::open(float version, int checksum, bool read)
 {
@@ -220,7 +224,7 @@ bool		hfile::open(float version, int checksum, bool read)
 	// Read The File's Header
 	//------------------------
 	if (read)
-	{		
+	{
 		if (!HFILEread(sfile.mHandle, &sfile.mVersion, sizeof(sfile.mVersion)))
 		{
 			assert("HFILE: Unable To Read File Header"==0);
@@ -265,7 +269,7 @@ bool		hfile::open(float version, int checksum, bool read)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::close()
 {
@@ -294,7 +298,7 @@ bool		hfile::close()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// Searches for the first block with the matching data size, and reads it in. 
+// Searches for the first block with the matching data size, and reads it in.
 ////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::load(void* data, int datasize)
 {
@@ -346,7 +350,7 @@ bool		hfile::load(void* data, int datasize)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////
 bool		hfile::save(void* data, int datasize)
 {

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -63,7 +67,7 @@ Hunter_MaintainHeight
 #define VELOCITY_DECAY	0.85f
 
 void ImperialProbe_MaintainHeight( void )
-{	
+{
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
@@ -75,7 +79,7 @@ void ImperialProbe_MaintainHeight( void )
 	if ( NPC->enemy )
 	{
 		// Find the height difference
-		dif = NPC->enemy->currentOrigin[2] - NPC->currentOrigin[2]; 
+		dif = NPC->enemy->currentOrigin[2] - NPC->currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 8 )
@@ -149,7 +153,7 @@ void ImperialProbe_MaintainHeight( void )
 				ucmd.upmove = -32;
 			}
 			else
-			{ 
+			{
 				if ( NPC->client->ps.velocity[2] )
 				{
 					NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
@@ -220,7 +224,7 @@ void ImperialProbe_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 		NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 
@@ -235,7 +239,7 @@ ImperialProbe_Hunt
 
 void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 {
-	float	distance, speed;
+	float	speed;
 	vec3_t	forward;
 
 	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
@@ -268,7 +272,7 @@ void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 	else
 	{
 		VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = HUNTER_FORWARD_BASE_SPEED + HUNTER_FORWARD_MULTIPLIER * g_spskill->integer;
@@ -288,7 +292,7 @@ void ImperialProbe_FireBlaster(void)
 	mdxaBone_t	boltMatrix;
 
 	//FIXME: use {0, NPC->client->ps.legsYaw, 0}
-	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel, 
+	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel,
 				NPC->genericBolt1,
 				&boltMatrix, NPC->currentAngles, NPC->currentOrigin, (cg.time?cg.time:level.time),
 				NULL, NPC->s.modelScale );
@@ -322,7 +326,7 @@ void ImperialProbe_FireBlaster(void)
 	{
 		missile->damage = 5;
 	}
-	else 
+	else
 	{
 		missile->damage = 10;
 	}
@@ -362,7 +366,7 @@ void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 			delay_max = 1500;
 		}
 
-		TIMER_Set( NPC, "attackDelay", Q_irand( 500, 3000 ) );
+		TIMER_Set( NPC, "attackDelay", Q_irand( delay_min, delay_max ) );
 		ImperialProbe_FireBlaster();
 //		ucmd.buttons |= BUTTON_ATTACK;
 	}
@@ -411,7 +415,7 @@ void ImperialProbe_AttackDecision( void )
 	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_NORMAL);
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 //	distance_e	distRate	= ( distance > MIN_MELEE_RANGE_SQR ) ? DIST_LONG : DIST_MELEE;
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
@@ -438,10 +442,10 @@ void ImperialProbe_AttackDecision( void )
 NPC_BSDroid_Pain
 -------------------------
 */
-void NPC_Probe_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Probe_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	float	pain_chance;
-	
+
 	VectorCopy( self->NPC->lastPathAngles, self->s.angles );
 
 	if ( self->health < 30 || mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT ) // demp2 always messes them up real good
@@ -467,7 +471,7 @@ void NPC_Probe_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, co
 				self->client->moveType = MT_RUNJUMP;
 				self->client->ps.gravity = g_gravity->value*.1;
 			}
-			
+
 			if ( (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT) && other )
 			{
 				vec3_t dir;
@@ -485,16 +489,16 @@ void NPC_Probe_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, co
 			self->client->ps.powerups[PW_SHOCKED] = level.time + 3000;
 
 			self->NPC->localState = LSTATE_DROP;
-		} 
+		}
 	}
 	else
 	{
 		pain_chance = NPC_GetPainChance( self, damage );
 
-		if ( random() < pain_chance )	// Spin around in pain?
+		if ( Q_flrand(0.0f, 1.0f) < pain_chance )	// Spin around in pain?
 		{
 			NPC_SetAnim( self, SETANIM_BOTH, BOTH_PAIN1, SETANIM_FLAG_OVERRIDE);
-		}	
+		}
 	}
 
 	NPC_Pain( self, inflictor, other, point, damage, mod);
@@ -577,8 +581,8 @@ void ImperialProbe_Wait(void)
 
 		if ( trace.fraction != 1.0f )
 		{
-			G_Damage(NPC, NPC->enemy, NPC->enemy, NULL, NULL, 2000, 0,MOD_UNKNOWN); 
-		} 
+			G_Damage(NPC, NPC->enemy, NPC->enemy, NULL, NULL, 2000, 0,MOD_UNKNOWN);
+		}
 	}
 
 	NPC_UpdateAngles( qtrue, qtrue );

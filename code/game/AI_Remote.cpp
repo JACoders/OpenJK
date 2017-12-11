@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -47,7 +51,7 @@ void NPC_Remote_Precache(void)
 NPC_Remote_Pain
 -------------------------
 */
-void NPC_Remote_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Remote_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	SaveNPCGlobals();
 	SetNPCGlobals( self );
@@ -63,7 +67,7 @@ Remote_MaintainHeight
 -------------------------
 */
 void Remote_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -86,7 +90,7 @@ void Remote_MaintainHeight( void )
 			TIMER_Set( NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPC->enemy->currentOrigin[2] +  Q_irand( 0, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2]; 
+			dif = (NPC->enemy->currentOrigin[2] +  Q_irand( 0, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 2 )
@@ -184,7 +188,7 @@ void Remote_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 		NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 
@@ -198,7 +202,7 @@ Remote_Hunt
 */
 void Remote_Hunt( qboolean visible, qboolean advance, qboolean retreat )
 {
-	float	distance, speed;
+	float	speed;
 	vec3_t	forward;
 
 	//If we're not supposed to stand still, pursue the player
@@ -230,7 +234,7 @@ void Remote_Hunt( qboolean visible, qboolean advance, qboolean retreat )
 	else
 	{
 		VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = REMOTE_FORWARD_BASE_SPEED + REMOTE_FORWARD_MULTIPLIER * g_spskill->integer;
@@ -256,7 +260,7 @@ void Remote_Fire (void)
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );
 	VectorCopy( NPC->currentOrigin, muzzle1 );
-	
+
 	VectorSubtract (enemy_org1, muzzle1, delta1);
 
 	vectoangles ( delta1, angleToEnemy1 );
@@ -312,7 +316,7 @@ void Remote_Attack( void )
 	if ( TIMER_Done(NPC,"spin") )
 	{
 		TIMER_Set( NPC, "spin", Q_irand( 250, 1500 ) );
-		NPCInfo->desiredYaw += Q_irand( -200, 200 ); 
+		NPCInfo->desiredYaw += Q_irand( -200, 200 );
 	}
 	// Always keep a good height off the ground
 	Remote_MaintainHeight();
@@ -325,7 +329,7 @@ void Remote_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 //	distance_e	distRate	= ( distance > MIN_MELEE_RANGE_SQR ) ? DIST_LONG : DIST_MELEE;
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	float		idealDist	= MIN_DISTANCE_SQR+(MIN_DISTANCE_SQR*Q_flrand( 0, 1 ));

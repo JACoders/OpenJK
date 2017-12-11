@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
@@ -64,29 +70,29 @@ void SP_target_give( gentity_t *ent ) {
 "wait" seconds to pause before firing targets.
 "random" delay variance, total delay = delay +/- random seconds
 */
-void Think_Target_Delay( gentity_t *ent ) 
+void Think_Target_Delay( gentity_t *ent )
 {
 	G_UseTargets( ent, ent->activator );
 }
 
-void Use_Target_Delay( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
+void Use_Target_Delay( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	ent->nextthink = level.time + ( ent->wait + ent->random * crandom() ) * 1000;
+	ent->nextthink = level.time + ( ent->wait + ent->random * Q_flrand(-1.0f, 1.0f) ) * 1000;
 	ent->e_ThinkFunc = thinkF_Think_Target_Delay;
 	ent->activator = activator;
 }
 
-void SP_target_delay( gentity_t *ent ) 
+void SP_target_delay( gentity_t *ent )
 {
 	// check delay for backwards compatability
-	if ( !G_SpawnFloat( "delay", "0", &ent->wait ) ) 
+	if ( !G_SpawnFloat( "delay", "0", &ent->wait ) )
 	{
 		G_SpawnFloat( "wait", "1", &ent->wait );
 	}
 
-	if ( !ent->wait ) 
+	if ( !ent->wait )
 	{
 		ent->wait = 1;
 	}
@@ -102,7 +108,7 @@ void SP_target_delay( gentity_t *ent )
 
 The activator is given this many points.
 */
-void Use_Target_Score (gentity_t *ent, gentity_t *other, gentity_t *activator) 
+void Use_Target_Score (gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
@@ -123,7 +129,7 @@ void SP_target_score( gentity_t *ent ) {
 "message"	text to print
 If "private", only the activator gets the message.  If no checks, all clients get the message.
 */
-void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator) 
+void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
@@ -283,7 +289,7 @@ void target_laser_think (gentity_t *self) {
 
 	if ( tr.entityNum ) {
 		// hurt it if we can
-		G_Damage ( &g_entities[tr.entityNum], self, self->activator, self->movedir, 
+		G_Damage ( &g_entities[tr.entityNum], self, self->activator, self->movedir,
 			tr.endpos, self->damage, DAMAGE_NO_KNOCKBACK, MOD_ENERGY );
 	}
 
@@ -396,18 +402,18 @@ INACTIVE  Can't be used until activated
   "delay" - Will actually fire this many seconds after being used
   "wait" - Cannot be fired again until this many seconds after the last time it was used
 */
-void target_relay_use_go (gentity_t *self ) 
+void target_relay_use_go (gentity_t *self )
 {
 	G_ActivateBehavior( self, BSET_USE );
-	
-	if ( self->spawnflags & 4 ) 
+
+	if ( self->spawnflags & 4 )
 	{
 		gentity_t	*ent;
 
 		ent = G_PickTarget( self->target );
-		if ( ent && (ent->e_UseFunc != useF_NULL) ) 
+		if ( ent && (ent->e_UseFunc != useF_NULL) )
 		{	// e_UseFunc check can be omitted
-			GEntity_UseFunc( ent, self, self->activator );			
+			GEntity_UseFunc( ent, self, self->activator );
 		}
 		return;
 	}
@@ -415,14 +421,14 @@ void target_relay_use_go (gentity_t *self )
 	G_UseTargets( self, self->activator );
 }
 
-void target_relay_use (gentity_t *self, gentity_t *other, gentity_t *activator) 
+void target_relay_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 {
-	if ( ( self->spawnflags & 1 ) && activator->client ) 
+	if ( ( self->spawnflags & 1 ) && activator->client )
 	{//&& activator->client->ps.persistant[PERS_TEAM] != TEAM_RED ) {
 		return;
 	}
 
-	if ( ( self->spawnflags & 2 ) && activator->client ) 
+	if ( ( self->spawnflags & 2 ) && activator->client )
 	{//&& activator->client->ps.persistant[PERS_TEAM] != TEAM_BLUE ) {
 		return;
 	}
@@ -459,7 +465,7 @@ void target_relay_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 	}
 }
 
-void SP_target_relay (gentity_t *self) 
+void SP_target_relay (gentity_t *self)
 {
 	self->e_UseFunc = useF_target_relay_use;
 	self->wait *= 1000;
@@ -493,7 +499,7 @@ void target_kill_use( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 	else if ( self->spawnflags & 2 ) // electrical
 	{
 		G_Damage ( activator, NULL, NULL, NULL, NULL, 100000, DAMAGE_NO_PROTECTION, MOD_ELECTROCUTE );
-		
+
 		if ( activator->client )
 		{
 			activator->s.powerups |= ( 1 << PW_SHOCKED );
@@ -506,7 +512,7 @@ void target_kill_use( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 	}
 }
 
-void SP_target_kill( gentity_t *self ) 
+void SP_target_kill( gentity_t *self )
 {
 	self->e_UseFunc = useF_target_kill_use;
 }
@@ -524,7 +530,7 @@ void target_location_linkup(gentity_t *ent)
 {
 	int i;
 
-	if (level.locationLinked) 
+	if (level.locationLinked)
 		return;
 
 	level.locationLinked = qtrue;
@@ -576,7 +582,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 	{
 		return;
 	}
-	
+
 	//gi.Printf("target_counter %s used by %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
 	self->count--;
 
@@ -594,7 +600,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 		}
 		return;
 	}
-	
+
 	G_ActivateBehavior( self,BSET_USE );
 
 	if ( self->spawnflags & 128 )
@@ -614,7 +620,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 		self->count = self->max_health;
 		if ( self->bounceCount > 0 )
 		{//-1 means bounce back forever
-			self->bounceCount--; 
+			self->bounceCount--;
 		}
 	}
 }
@@ -685,7 +691,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 		{
 			continue;
 		}
-		
+
 		if (t == self)
 		{
 //				gi.Printf ("WARNING: Entity used itself.\n");
@@ -717,7 +723,7 @@ void scriptrunner_run (gentity_t *self)
 {
 	/*
 	if (self->behaviorSet[BSET_USE])
-	{	
+	{
 		char	newname[MAX_FILENAME_LENGTH];
 
 		sprintf((char *) &newname, "%s/%s", Q3_SCRIPT_DIR, self->behaviorSet[BSET_USE] );
@@ -936,7 +942,7 @@ void set_mission_stats_cvars( void )
 			text,
 			cg_entities[0].gent->client->sess.missionStats.totalSecrets));
 	}
-	else	// Setting ui_stats_secretsfound to 0 will hide the text on screen 
+	else	// Setting ui_stats_secretsfound to 0 will hide the text on screen
 	{
 		gi.cvar_set("ui_stats_secretsfound", "0");
 	}
@@ -1007,13 +1013,13 @@ void target_level_change_use(gentity_t *self, gentity_t *other, gentity_t *activ
 	}
 	else
 	{
-		G_ChangeMap( self->message, self->target, (self->spawnflags&1) );
+		G_ChangeMap( self->message, self->target, (qboolean)((self->spawnflags&1) != 0) );
 	}
 	if (self->count>=0)
 	{
 		gi.cvar_set("tier_storyinfo", va("%i",self->count));
 		if (level.mapname[0] == 't' && level.mapname[2] == '_'
-			&& ( level.mapname[1] == '1' || level.mapname[1] == '2' || level.mapname[1] == '3' ) 
+			&& ( level.mapname[1] == '1' || level.mapname[1] == '2' || level.mapname[1] == '3' )
 			)
 		{
 			char s[2048];
@@ -1056,9 +1062,9 @@ void SP_target_level_change( gentity_t *self )
 		G_Error( "target_level_change with no mapname!\n");
 		return;
 	}
-	
+
 	char *s;
-	if (G_SpawnString( "tier_storyinfo", "", &s )) 
+	if (G_SpawnString( "tier_storyinfo", "", &s ))
 	{
 		if (*s == '+')
 		{
@@ -1084,12 +1090,12 @@ void SP_target_level_change( gentity_t *self )
 			gi.cvar_set("storyhead", level.mapname);	//pass this on to the menu
 		}
 	}
-	if (G_SpawnString( "saber_menu", "", &s )) 
+	if (G_SpawnString( "saber_menu", "", &s ))
 	{
 		gi.cvar_set("saber_menu", s);	//pass this on to the menu
 	}
 
-	if (G_SpawnString( "weapon_menu", "1", &s )) 
+	if (G_SpawnString( "weapon_menu", "1", &s ))
 	{
 		gi.cvar_set("weapon_menu", s);	//pass this on to the menu
 	}
@@ -1186,7 +1192,7 @@ extern	cvar_t	*com_buildScript;
 
 		Q_strncpyz( buffer, s, sizeof(buffer) );
 		COM_DefaultExtension( buffer, sizeof(buffer), ".mp3");
-		
+
 		gi.FS_FOpenFile(buffer, &hFile, FS_READ);
 		if (hFile) {
 			gi.FS_FCloseFile( hFile );
@@ -1214,7 +1220,7 @@ void SP_target_autosave( gentity_t *self )
 }
 
 void target_secret_use(gentity_t *self, gentity_t *other, gentity_t *activator)
-{	 
+{
 	//we'll assume that the activator is the player
 	gclient_t* const client = &level.clients[0];
 	client->sess.missionStats.secretsFound++;
@@ -1237,7 +1243,7 @@ You found a Secret!
 "count" - how many secrets on this level,
           if more than one on a level, be sure they all have the same count!
 */
-void SP_target_secret( gentity_t *self ) 
+void SP_target_secret( gentity_t *self )
 {
 	G_SetOrigin( self, self->s.origin );
 	self->e_UseFunc = useF_target_secret_use;

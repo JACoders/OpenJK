@@ -1,12 +1,31 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "tr_local.h"
 
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 #include "qcommon/matcomp.h"
-
-#ifdef _MSC_VER
-#pragma warning (disable: 4512)	//default assignment operator could not be gened
-#endif
 #include "qcommon/disablewarnings.h"
 
 static	int			r_firstSceneDrawSurf;
@@ -137,7 +156,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 		poly->hShader = hShader;
 		poly->numVerts = numVerts;
 		poly->verts = &backEndData->polyVerts[r_numpolyverts];
-		
+
 		memcpy( poly->verts, &verts[numVerts*j], numVerts * sizeof( *verts ) );
 
 		// done.
@@ -159,7 +178,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 				AddPointToBounds( poly->verts[i].xyz, bounds[0], bounds[1] );
 			}
 			for ( fogIndex = 1 ; fogIndex < tr.world->numfogs ; fogIndex++ ) {
-				fog = &tr.world->fogs[fogIndex]; 
+				fog = &tr.world->fogs[fogIndex];
 				if ( bounds[1][0] >= fog->bounds[0][0]
 					&& bounds[1][1] >= fog->bounds[0][1]
 					&& bounds[1][2] >= fog->bounds[0][2]
@@ -267,13 +286,13 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
  *    none                                                                                      *
  *                                                                                              *
  ************************************************************************************************/
-void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent ) 
+void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent )
 {
 #if 0
 	refEntity_t		*parent;
 #endif
 
-	if ( !tr.registered ) 
+	if ( !tr.registered )
 	{
 		return;
 	}
@@ -291,7 +310,7 @@ void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent )
 	RE_AddRefEntityToScene(&tempEnt);
 #else
 
-	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) 
+	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE )
 	{
 		Com_Error( ERR_DROP, "RE_AddMiniRefEntityToScene: bad reType %i", ent->reType );
 	}
@@ -479,7 +498,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	// Add the decals here because decals add polys and we need to ensure
 	// that the polys are added before the the renderer is prepared
-	if ( !(tr.refdef.rdflags & RDF_NOWORLDMODEL) ) 
+	if ( !(tr.refdef.rdflags & RDF_NOWORLDMODEL) )
 	{
 		R_AddDecals ( );
 	}

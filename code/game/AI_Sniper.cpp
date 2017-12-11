@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -105,7 +109,7 @@ NPC_ST_Pain
 -------------------------
 */
 
-void NPC_Sniper_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod ) 
+void NPC_Sniper_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod )
 {
 	self->NPC->localState = LSTATE_UNDERFIRE;
 
@@ -134,7 +138,7 @@ static void Sniper_HoldPosition( void )
 {
 	NPC_FreeCombatPoint( NPCInfo->combatPoint, qtrue );
 	NPCInfo->goalEntity = NULL;
-	
+
 	/*if ( TIMER_Done( NPC, "stand" ) )
 	{//FIXME: what if can't shoot from this pos?
 		TIMER_Set( NPC, "duck", Q_irand( 2000, 4000 ) );
@@ -154,13 +158,13 @@ static qboolean Sniper_Move( void )
 
 	qboolean	moved = NPC_MoveToGoal( qtrue );
 //	navInfo_t	info;
-	
+
 	//Get the doMove info
 //	NAV_GetLastMove( info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
 	//If we hit our target, then stop and fire!
-//	if ( info.flags & NIF_COLLISION ) 
+//	if ( info.flags & NIF_COLLISION )
 //	{
 //		if ( info.blocker == NPC->enemy )
 //		{
@@ -241,8 +245,8 @@ void NPC_BSSniper_Patrol( void )
 					//NPCInfo->lastAlertID = level.alertEvents[alertEvent].ID;
 					if ( level.alertEvents[alertEvent].level == AEL_DISCOVERED )
 					{
-						if ( level.alertEvents[alertEvent].owner && 
-							level.alertEvents[alertEvent].owner->client && 
+						if ( level.alertEvents[alertEvent].owner &&
+							level.alertEvents[alertEvent].owner->client &&
 							level.alertEvents[alertEvent].owner->health >= 0 &&
 							level.alertEvents[alertEvent].owner->client->playerTeam == NPC->client->enemyTeam )
 						{//an enemy
@@ -270,15 +274,15 @@ void NPC_BSSniper_Patrol( void )
 				//NOTE: stops walking or doing anything else below
 				vec3_t	dir, angles;
 				float	o_yaw, o_pitch;
-				
+
 				VectorSubtract( NPCInfo->investigateGoal, NPC->client->renderInfo.eyePoint, dir );
 				vectoangles( dir, angles );
-				
+
 				o_yaw = NPCInfo->desiredYaw;
 				o_pitch = NPCInfo->desiredPitch;
 				NPCInfo->desiredYaw = angles[YAW];
 				NPCInfo->desiredPitch = angles[PITCH];
-				
+
 				NPC_UpdateAngles( qtrue, qtrue );
 
 				NPCInfo->desiredYaw = o_yaw;
@@ -371,10 +375,10 @@ static void Sniper_CheckMoveState( void )
 	if ( ( NPCInfo->goalEntity != NPC->enemy ) && ( NPCInfo->goalEntity != NULL ) )
 	{
 		//Did we make it?
-		if ( STEER::Reached(NPC, NPCInfo->goalEntity, 16, !!FlyingCreature(NPC)) || 
+		if ( STEER::Reached(NPC, NPCInfo->goalEntity, 16, !!FlyingCreature(NPC)) ||
 			( NPCInfo->squadState == SQUAD_SCOUT && enemyLOS && enemyDist <= 10000 ) )
 		{
-			int	newSquadState = SQUAD_STAND_AND_SHOOT;
+			//int	newSquadState = SQUAD_STAND_AND_SHOOT;
 			//we got where we wanted to go, set timers based on why we were running
 			switch ( NPCInfo->squadState )
 			{
@@ -385,7 +389,7 @@ static void Sniper_CheckMoveState( void )
 				}
 				TIMER_Set( NPC, "duck", (NPC->max_health - NPC->health) * 100 );
 				TIMER_Set( NPC, "hideTime", Q_irand( 3000, 7000 ) );
-				newSquadState = SQUAD_COVER;
+				//newSquadState = SQUAD_COVER;
 				break;
 			case SQUAD_TRANSITION://was heading for a combat point
 				TIMER_Set( NPC, "hideTime", Q_irand( 2000, 4000 ) );
@@ -498,8 +502,8 @@ static void Sniper_CheckFireState( void )
 	}
 
 	//continue to fire on their last position
-	if ( !Q_irand( 0, 1 ) 
-		&& NPCInfo->enemyLastSeenTime 
+	if ( !Q_irand( 0, 1 )
+		&& NPCInfo->enemyLastSeenTime
 		&& level.time - NPCInfo->enemyLastSeenTime < ((5-NPCInfo->stats.aim)*1000) )//FIXME: incorporate skill too?
 	{
 		if ( !VectorCompare( vec3_origin, NPCInfo->enemyLastSeenLocation ) )
@@ -536,7 +540,7 @@ qboolean Sniper_EvaluateShot( int hit )
 	}
 
 	gentity_t *hitEnt = &g_entities[hit];
-	if ( hit == NPC->enemy->s.number 
+	if ( hit == NPC->enemy->s.number
 		|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam )
 		|| ( hitEnt && hitEnt->takedamage && ((hitEnt->svFlags&SVF_GLASS_BRUSH)||hitEnt->health < 40||NPC->s.weapon == WP_EMPLACED_GUN) )
 		|| ( hitEnt && (hitEnt->svFlags&SVF_GLASS_BRUSH)) )
@@ -670,7 +674,7 @@ NPC_BSSniper_Attack
 void Sniper_StartHide( void )
 {
 	int duckTime = Q_irand( 2000, 5000 );
-	
+
 	TIMER_Set( NPC, "duck", duckTime );
 	if ( NPC->client->NPC_class == CLASS_SABOTEUR )
 	{
@@ -852,9 +856,9 @@ void NPC_BSSniper_Attack( void )
 		}
 	}
 
-	if ( TIMER_Done( NPC, "duck" ) 
-		&& TIMER_Done( NPC, "watch" ) 
-		&& (TIMER_Get( NPC, "attackDelay" )-level.time) > 1000 
+	if ( TIMER_Done( NPC, "duck" )
+		&& TIMER_Done( NPC, "watch" )
+		&& (TIMER_Get( NPC, "attackDelay" )-level.time) > 1000
 		&& NPC->attackDebounceTime < level.time )
 	{
 		if ( enemyLOS && (NPCInfo->scriptFlags&SCF_ALT_FIRE) )

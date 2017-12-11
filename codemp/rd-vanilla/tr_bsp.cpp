@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_map.c
 #include "tr_local.h"
 
@@ -16,8 +39,6 @@ static	byte		*fileBase;
 
 int			c_subdivisions;
 int			c_gridVerts;
-
-void R_RMGInit(void);
 
 //===============================================================================
 
@@ -81,7 +102,7 @@ void R_ColorShiftLightingBytes( byte in[4], byte out[4] ) {
 	int shift, r, g, b;
 
 	// shift the color data based on overbright range
-	shift = r_mapOverBrightBits->integer - tr.overbrightBits;
+	shift = Q_max( 0, r_mapOverBrightBits->integer - tr.overbrightBits );
 
 	// shift the data based on overbright range
 	r = in[0] << shift;
@@ -115,7 +136,7 @@ void R_ColorShiftLightingBytes( byte in[3] ) {
 	int shift, r, g, b;
 
 	// shift the color data based on overbright range
-	shift = r_mapOverBrightBits->integer - tr.overbrightBits;
+	shift = Q_max( 0, r_mapOverBrightBits->integer - tr.overbrightBits );
 
 	// shift the data based on overbright range
 	r = in[0] << shift;
@@ -195,7 +216,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 				float g = buf_p[j*3+1];
 				float b = buf_p[j*3+2];
 				float intensity;
-				float out[3];
+				float out[3] = {0.0f, 0.0f, 0.0f};
 
 				intensity = 0.33f * r + 0.685f * g + 0.063f * b;
 
@@ -222,7 +243,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 				image[j*4+3] = 255;
 			}
 		}
-		tr.lightmaps[i] = R_CreateImage( va("*%s/lightmap%d",sMapName,i), image, 
+		tr.lightmaps[i] = R_CreateImage( va("*%s/lightmap%d",sMapName,i), image,
 			LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGBA, qfalse, qfalse, (qboolean)r_ext_compressed_lightmaps->integer, GL_CLAMP );
 	}
 
@@ -282,25 +303,12 @@ static	void R_LoadVisibility( lump_t *l, world_t &worldData ) {
 
 //===============================================================================
 
-qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
-{
-	qhandle_t	shader;
-
-	if ( (shaderNum < 0) || (shaderNum >= worldData.numShaders) ) 
-	{
-		ri->Printf( PRINT_ALL, "Warning: Bad index for R_GetShaderByNum - %i", shaderNum );
-		return(0);
-	}
-	shader = RE_RegisterShader(worldData.shaders[ shaderNum ].shader);
-	return(shader);
-}
-
 /*
 ===============
 ShaderForShaderNum
 ===============
 */
-static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, const byte *lightmapStyles, const byte *vertexStyles, world_t &worldData ) 
+static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, const byte *lightmapStyles, const byte *vertexStyles, world_t &worldData )
 {
 	shader_t	*shader;
 	dshader_t	*dsh;
@@ -319,7 +327,7 @@ static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, cons
 		styles = vertexStyles;
 	}
 
-	if ( r_vertexLight->integer ) 
+	if ( r_vertexLight->integer )
 	{
 		lightmapNum = lightmapsVertex;
 		styles = vertexStyles;
@@ -533,7 +541,7 @@ static void ParseTriSurf( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, in
 		Com_Error(ERR_DROP, "ParseTriSurf: indices > MAX (%d > %d) on misc_model %s", numIndexes, SHADER_MAX_INDEXES, surf->shader->name );
 	}
 
-	tri = (srfTriangles_t *)Hunk_Alloc( sizeof( *tri ) + numVerts * sizeof( tri->verts[0] ) 
+	tri = (srfTriangles_t *)Hunk_Alloc( sizeof( *tri ) + numVerts * sizeof( tri->verts[0] )
 		+ numIndexes * sizeof( tri->indexes[0] ), h_low );
 	tri->surfaceType = SF_TRIANGLES;
 	tri->numVerts = numVerts;
@@ -1355,7 +1363,7 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 	if ( indexLump->filelen % sizeof(*indexes))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 
-	out = (struct msurface_s *)Hunk_Alloc ( count * sizeof(*out), h_low );	
+	out = (struct msurface_s *)Hunk_Alloc ( count * sizeof(*out), h_low );
 
 	worldData.surfaces = out;
 	worldData.numsurfaces = count;
@@ -1492,7 +1500,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 	numNodes = nodeLump->filelen / sizeof(dnode_t);
 	numLeafs = leafLump->filelen / sizeof(dleaf_t);
 
-	out = (struct mnode_s *)Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);	
+	out = (struct mnode_s *)Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);
 
 	worldData.nodes = out;
 	worldData.numnodes = numNodes + numLeafs;
@@ -1506,7 +1514,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 			out->mins[j] = LittleLong (in->mins[j]);
 			out->maxs[j] = LittleLong (in->maxs[j]);
 		}
-	
+
 		p = LittleLong(in->planeNum);
 		out->plane = worldData.planes + p;
 
@@ -1521,7 +1529,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 				out->children[j] = worldData.nodes + numNodes + (-1 - p);
 		}
 	}
-	
+
 	// load leafs
 	inLeaf = (dleaf_t *)(fileBase + leafLump->fileofs);
 	for ( i=0 ; i<numLeafs ; i++, inLeaf++, out++)
@@ -1542,7 +1550,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 		out->firstmarksurface = worldData.marksurfaces +
 			LittleLong(inLeaf->firstLeafSurface);
 		out->nummarksurfaces = LittleLong(inLeaf->numLeafSurfaces);
-	}	
+	}
 
 	// chain decendants
 	R_SetParent (worldData.nodes, NULL);
@@ -1555,10 +1563,10 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 R_LoadShaders
 =================
 */
-static	void R_LoadShaders( lump_t *l, world_t &worldData ) {	
+static	void R_LoadShaders( lump_t *l, world_t &worldData ) {
 	int		i, count;
 	dshader_t	*in, *out;
-	
+
 	in = (dshader_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
@@ -1583,16 +1591,16 @@ R_LoadMarksurfaces
 =================
 */
 static	void R_LoadMarksurfaces (lump_t *l, world_t &worldData)
-{	
+{
 	int		i, j, count;
 	int		*in;
 	msurface_t **out;
-	
+
 	in = (int *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (struct msurface_s **)Hunk_Alloc ( count*sizeof(*out), h_low);	
+	out = (struct msurface_s **)Hunk_Alloc ( count*sizeof(*out), h_low);
 
 	worldData.marksurfaces = out;
 	worldData.nummarksurfaces = count;
@@ -1616,13 +1624,13 @@ static	void R_LoadPlanes( lump_t *l, world_t &worldData ) {
 	dplane_t 	*in;
 	int			count;
 	int			bits;
-	
+
 	in = (dplane_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (struct cplane_s *)Hunk_Alloc ( count*2*sizeof(*out), h_low);	
-	
+	out = (struct cplane_s *)Hunk_Alloc ( count*2*sizeof(*out), h_low);
+
 	worldData.planes = out;
 	worldData.numplanes = count;
 
@@ -1766,8 +1774,8 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 			out->parms = *shader->fogParms;
 		}
 
-		out->colorInt = ColorBytes4 (	out->parms.color[0] * tr.identityLight, 
-										out->parms.color[1] * tr.identityLight, 
+		out->colorInt = ColorBytes4 (	out->parms.color[0] * tr.identityLight,
+										out->parms.color[1] * tr.identityLight,
 										out->parms.color[2] * tr.identityLight, 1.0 );
 		d = out->parms.depthForOpaque < 1 ? 1 : out->parms.depthForOpaque;
 		out->tcScale = 1.0f / ( d * 8 );
@@ -1824,7 +1832,7 @@ void R_LoadLightGrid( lump_t *l, world_t &worldData ) {
 	memcpy( w->lightGridData, (void *)(fileBase + l->fileofs), l->filelen );
 
 	// deal with overbright bits
-	for ( i = 0 ; i < numGridDataElements ; i++ ) 
+	for ( i = 0 ; i < numGridDataElements ; i++ )
 	{
 		for(j=0;j<MAXLIGHTMAPS;j++)
 		{
@@ -1842,6 +1850,9 @@ R_LoadLightGridArray
 */
 void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 	world_t	*w;
+#ifdef Q3_BIG_ENDIAN
+	int		i;
+#endif
 
 	w = &worldData;
 
@@ -1855,6 +1866,11 @@ void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 
 	w->lightGridArray = (unsigned short *)Hunk_Alloc( l->filelen, h_low );
 	memcpy( w->lightGridArray, (void *)(fileBase + l->fileofs), l->filelen );
+#ifdef Q3_BIG_ENDIAN
+	for ( i = 0 ; i < w->numGridArrayElements ; i++ ) {
+		w->lightGridArray[i] = LittleShort(w->lightGridArray[i]);
+	}
+#endif
 }
 
 /*
@@ -1893,7 +1909,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	}
 
 	// only parse the world spawn
-	while ( 1 ) {	
+	while ( 1 ) {
 		// parse key
 		token = COM_ParseExt( &p, qtrue );
 
@@ -2026,7 +2042,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 	{
 		buffer = (byte *)ri->CM_GetCachedMapDiskImage();
 	}
-	else		
+	else
 	{
 		// still needs loading...
 		//
@@ -2038,9 +2054,11 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 	memset( &worldData, 0, sizeof( worldData ) );
 	Q_strncpyz( worldData.name, name, sizeof( worldData.name ) );
+	Q_strncpyz( tr.worldDir, name, sizeof( tr.worldDir ) );
 	Q_strncpyz( worldData.baseName, COM_SkipPath( worldData.name ), sizeof( worldData.name ) );
 
 	COM_StripExtension( worldData.baseName, worldData.baseName, sizeof( worldData.baseName ) );
+	COM_StripExtension( tr.worldDir, tr.worldDir, sizeof( tr.worldDir ) );
 
 	startMarker = (byte *)Hunk_Alloc(0, h_low);
 	c_gridVerts = 0;
@@ -2050,7 +2068,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 	int i = LittleLong (header->version);
 	if ( i != BSP_VERSION ) {
-		Com_Error (ERR_DROP, "RE_LoadWorldMap: %s has wrong version number (%i should be %i)", 
+		Com_Error (ERR_DROP, "RE_LoadWorldMap: %s has wrong version number (%i should be %i)",
 			name, i, BSP_VERSION);
 	}
 
@@ -2080,11 +2098,6 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 		// only set tr.world now that we know the entire level has loaded properly
 		tr.world = &worldData;
-
-		if ( ri->Cvar_VariableIntegerValue( "com_RMG" ) )
-		{
-			R_RMGInit();
-		}
 	}
 
 	if (ri->CM_GetCachedMapDiskImage())

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __B_PUBLIC_H__
 #define __B_PUBLIC_H__
@@ -110,8 +114,9 @@ typedef enum //# movetype_e
 	NUM_MOVETYPES
 } movetype_t;
 
-typedef struct gNPCstats_e
+class gNPCstats_t
 {//Stats, loaded in, and can be set by scripts
+public:
 	//AI
 	int		aggression;			//			"
 	int		aim;				//			"
@@ -132,7 +137,54 @@ typedef struct gNPCstats_e
 	float	yawSpeed;			// 1 - whatever, default is 50
 	int		health;
 	int		acceleration;
-} gNPCstats_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(aggression);
+		saved_game.write<int32_t>(aim);
+		saved_game.write<float>(earshot);
+		saved_game.write<int32_t>(evasion);
+		saved_game.write<int32_t>(hfov);
+		saved_game.write<int32_t>(intelligence);
+		saved_game.write<int32_t>(move);
+		saved_game.write<int32_t>(reactions);
+		saved_game.write<float>(shootDistance);
+		saved_game.write<int32_t>(vfov);
+		saved_game.write<float>(vigilance);
+		saved_game.write<float>(visrange);
+		saved_game.write<int32_t>(moveType);
+		saved_game.write<int32_t>(runSpeed);
+		saved_game.write<int32_t>(walkSpeed);
+		saved_game.write<float>(yawSpeed);
+		saved_game.write<int32_t>(health);
+		saved_game.write<int32_t>(acceleration);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(aggression);
+		saved_game.read<int32_t>(aim);
+		saved_game.read<float>(earshot);
+		saved_game.read<int32_t>(evasion);
+		saved_game.read<int32_t>(hfov);
+		saved_game.read<int32_t>(intelligence);
+		saved_game.read<int32_t>(move);
+		saved_game.read<int32_t>(reactions);
+		saved_game.read<float>(shootDistance);
+		saved_game.read<int32_t>(vfov);
+		saved_game.read<float>(vigilance);
+		saved_game.read<float>(visrange);
+		saved_game.read<int32_t>(moveType);
+		saved_game.read<int32_t>(runSpeed);
+		saved_game.read<int32_t>(walkSpeed);
+		saved_game.read<float>(yawSpeed);
+		saved_game.read<int32_t>(health);
+		saved_game.read<int32_t>(acceleration);
+	}
+}; // gNPCstats_t
 
 // NOTE!!!  If you add any ptr fields into this structure could you please tell me so I can update the load/save code?
 //	so far the only things I've got to cope with are a bunch of gentity_t*'s, but tell me if any more get added -slc
@@ -141,8 +193,10 @@ typedef struct gNPCstats_e
 #define	MAX_ENEMY_POS_LAG	2400
 #define	ENEMY_POS_LAG_INTERVAL	100
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
-typedef struct 
+
+class gNPC_t
 {
+public:
 	//FIXME: Put in playerInfo or something
 	int			timeOfDeath;			//FIXME do we really need both of these
 	gentity_t	*touchedByPlayer;
@@ -289,7 +343,218 @@ typedef struct
 	int			ffireCount;		//sigh... you'd think I'd be able to find a way to do this without having to use 3 int fields, but...
 	int			ffireDebounce;	
 	int			ffireFadeDebounce;
-} gNPC_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(timeOfDeath);
+		saved_game.write<int32_t>(touchedByPlayer);
+		saved_game.write<int32_t>(enemyLastVisibility);
+		saved_game.write<int32_t>(aimTime);
+		saved_game.write<float>(desiredYaw);
+		saved_game.write<float>(desiredPitch);
+		saved_game.write<float>(lockedDesiredYaw);
+		saved_game.write<float>(lockedDesiredPitch);
+		saved_game.write<int32_t>(aimingBeam);
+		saved_game.write<float>(enemyLastSeenLocation);
+		saved_game.write<int32_t>(enemyLastSeenTime);
+		saved_game.write<float>(enemyLastHeardLocation);
+		saved_game.write<int32_t>(enemyLastHeardTime);
+		saved_game.write<int32_t>(lastAlertID);
+		saved_game.write<int32_t>(eFlags);
+		saved_game.write<int32_t>(aiFlags);
+		saved_game.write<int32_t>(currentAmmo);
+		saved_game.write<int32_t>(shotTime);
+		saved_game.write<int32_t>(burstCount);
+		saved_game.write<int32_t>(burstMin);
+		saved_game.write<int32_t>(burstMean);
+		saved_game.write<int32_t>(burstMax);
+		saved_game.write<int32_t>(burstSpacing);
+		saved_game.write<int32_t>(attackHold);
+		saved_game.write<int32_t>(attackHoldTime);
+		saved_game.write<float>(shootAngles);
+		saved_game.write<int32_t>(rank);
+		saved_game.write<int32_t>(behaviorState);
+		saved_game.write<int32_t>(defaultBehavior);
+		saved_game.write<int32_t>(tempBehavior);
+		saved_game.write<int32_t>(ignorePain);
+		saved_game.write<int32_t>(duckDebounceTime);
+		saved_game.write<int32_t>(walkDebounceTime);
+		saved_game.write<int32_t>(enemyCheckDebounceTime);
+		saved_game.write<int32_t>(investigateDebounceTime);
+		saved_game.write<int32_t>(investigateCount);
+		saved_game.write<float>(investigateGoal);
+		saved_game.write<int32_t>(investigateSoundDebounceTime);
+		saved_game.write<int32_t>(greetingDebounceTime);
+		saved_game.write<int32_t>(eventOwner);
+		saved_game.write<int32_t>(coverTarg);
+		saved_game.write<int32_t>(jumpState);
+		saved_game.write<float>(followDist);
+		saved_game.write<int32_t>(tempGoal);
+		saved_game.write<int32_t>(goalEntity);
+		saved_game.write<int32_t>(lastGoalEntity);
+		saved_game.write<int32_t>(eventualGoal);
+		saved_game.write<int32_t>(captureGoal);
+		saved_game.write<int32_t>(defendEnt);
+		saved_game.write<int32_t>(greetEnt);
+		saved_game.write<int32_t>(goalTime);
+		saved_game.write<int32_t>(straightToGoal);
+		saved_game.write<float>(distToGoal);
+		saved_game.write<int32_t>(navTime);
+		saved_game.write<int32_t>(blockingEntNum);
+		saved_game.write<int32_t>(blockedSpeechDebounceTime);
+		saved_game.write<int32_t>(lastSideStepSide);
+		saved_game.write<int32_t>(sideStepHoldTime);
+		saved_game.write<int32_t>(homeWp);
+		saved_game.write<int32_t>(group);
+		saved_game.write<float>(lastPathAngles);
+		saved_game.write<>(stats);
+		saved_game.write<int32_t>(aimErrorDebounceTime);
+		saved_game.write<float>(lastAimErrorYaw);
+		saved_game.write<float>(lastAimErrorPitch);
+		saved_game.write<float>(aimOfs);
+		saved_game.write<int32_t>(currentAim);
+		saved_game.write<int32_t>(currentAggression);
+		saved_game.write<int32_t>(scriptFlags);
+		saved_game.write<int32_t>(desiredSpeed);
+		saved_game.write<int32_t>(currentSpeed);
+		saved_game.write<int8_t>(last_forwardmove);
+		saved_game.write<int8_t>(last_rightmove);
+		saved_game.skip(2);
+		saved_game.write<float>(lastClearOrigin);
+		saved_game.write<int32_t>(consecutiveBlockedMoves);
+		saved_game.write<int32_t>(blockedDebounceTime);
+		saved_game.write<int32_t>(shoveCount);
+		saved_game.write<float>(blockedDest);
+		saved_game.write<int32_t>(combatPoint);
+		saved_game.write<int32_t>(lastFailedCombatPoint);
+		saved_game.write<int32_t>(movementSpeech);
+		saved_game.write<float>(movementSpeechChance);
+		saved_game.write<int32_t>(nextBStateThink);
+		saved_game.write<>(last_ucmd);
+		saved_game.write<int32_t>(combatMove);
+		saved_game.write<int32_t>(goalRadius);
+		saved_game.write<int32_t>(pauseTime);
+		saved_game.write<int32_t>(standTime);
+		saved_game.write<int32_t>(localState);
+		saved_game.write<int32_t>(squadState);
+		saved_game.write<int32_t>(confusionTime);
+		saved_game.write<int32_t>(charmedTime);
+		saved_game.write<int32_t>(controlledTime);
+		saved_game.write<int32_t>(surrenderTime);
+		saved_game.write<float>(enemyLaggedPos);
+		saved_game.write<int32_t>(watchTarget);
+		saved_game.write<int32_t>(ffireCount);
+		saved_game.write<int32_t>(ffireDebounce);
+		saved_game.write<int32_t>(ffireFadeDebounce);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(timeOfDeath);
+		saved_game.read<int32_t>(touchedByPlayer);
+		saved_game.read<int32_t>(enemyLastVisibility);
+		saved_game.read<int32_t>(aimTime);
+		saved_game.read<float>(desiredYaw);
+		saved_game.read<float>(desiredPitch);
+		saved_game.read<float>(lockedDesiredYaw);
+		saved_game.read<float>(lockedDesiredPitch);
+		saved_game.read<int32_t>(aimingBeam);
+		saved_game.read<float>(enemyLastSeenLocation);
+		saved_game.read<int32_t>(enemyLastSeenTime);
+		saved_game.read<float>(enemyLastHeardLocation);
+		saved_game.read<int32_t>(enemyLastHeardTime);
+		saved_game.read<int32_t>(lastAlertID);
+		saved_game.read<int32_t>(eFlags);
+		saved_game.read<int32_t>(aiFlags);
+		saved_game.read<int32_t>(currentAmmo);
+		saved_game.read<int32_t>(shotTime);
+		saved_game.read<int32_t>(burstCount);
+		saved_game.read<int32_t>(burstMin);
+		saved_game.read<int32_t>(burstMean);
+		saved_game.read<int32_t>(burstMax);
+		saved_game.read<int32_t>(burstSpacing);
+		saved_game.read<int32_t>(attackHold);
+		saved_game.read<int32_t>(attackHoldTime);
+		saved_game.read<float>(shootAngles);
+		saved_game.read<int32_t>(rank);
+		saved_game.read<int32_t>(behaviorState);
+		saved_game.read<int32_t>(defaultBehavior);
+		saved_game.read<int32_t>(tempBehavior);
+		saved_game.read<int32_t>(ignorePain);
+		saved_game.read<int32_t>(duckDebounceTime);
+		saved_game.read<int32_t>(walkDebounceTime);
+		saved_game.read<int32_t>(enemyCheckDebounceTime);
+		saved_game.read<int32_t>(investigateDebounceTime);
+		saved_game.read<int32_t>(investigateCount);
+		saved_game.read<float>(investigateGoal);
+		saved_game.read<int32_t>(investigateSoundDebounceTime);
+		saved_game.read<int32_t>(greetingDebounceTime);
+		saved_game.read<int32_t>(eventOwner);
+		saved_game.read<int32_t>(coverTarg);
+		saved_game.read<int32_t>(jumpState);
+		saved_game.read<float>(followDist);
+		saved_game.read<int32_t>(tempGoal);
+		saved_game.read<int32_t>(goalEntity);
+		saved_game.read<int32_t>(lastGoalEntity);
+		saved_game.read<int32_t>(eventualGoal);
+		saved_game.read<int32_t>(captureGoal);
+		saved_game.read<int32_t>(defendEnt);
+		saved_game.read<int32_t>(greetEnt);
+		saved_game.read<int32_t>(goalTime);
+		saved_game.read<int32_t>(straightToGoal);
+		saved_game.read<float>(distToGoal);
+		saved_game.read<int32_t>(navTime);
+		saved_game.read<int32_t>(blockingEntNum);
+		saved_game.read<int32_t>(blockedSpeechDebounceTime);
+		saved_game.read<int32_t>(lastSideStepSide);
+		saved_game.read<int32_t>(sideStepHoldTime);
+		saved_game.read<int32_t>(homeWp);
+		saved_game.read<int32_t>(group);
+		saved_game.read<float>(lastPathAngles);
+		saved_game.read<>(stats);
+		saved_game.read<int32_t>(aimErrorDebounceTime);
+		saved_game.read<float>(lastAimErrorYaw);
+		saved_game.read<float>(lastAimErrorPitch);
+		saved_game.read<float>(aimOfs);
+		saved_game.read<int32_t>(currentAim);
+		saved_game.read<int32_t>(currentAggression);
+		saved_game.read<int32_t>(scriptFlags);
+		saved_game.read<int32_t>(desiredSpeed);
+		saved_game.read<int32_t>(currentSpeed);
+		saved_game.read<int8_t>(last_forwardmove);
+		saved_game.read<int8_t>(last_rightmove);
+		saved_game.skip(2);
+		saved_game.read<float>(lastClearOrigin);
+		saved_game.read<int32_t>(consecutiveBlockedMoves);
+		saved_game.read<int32_t>(blockedDebounceTime);
+		saved_game.read<int32_t>(shoveCount);
+		saved_game.read<float>(blockedDest);
+		saved_game.read<int32_t>(combatPoint);
+		saved_game.read<int32_t>(lastFailedCombatPoint);
+		saved_game.read<int32_t>(movementSpeech);
+		saved_game.read<float>(movementSpeechChance);
+		saved_game.read<int32_t>(nextBStateThink);
+		saved_game.read<>(last_ucmd);
+		saved_game.read<int32_t>(combatMove);
+		saved_game.read<int32_t>(goalRadius);
+		saved_game.read<int32_t>(pauseTime);
+		saved_game.read<int32_t>(standTime);
+		saved_game.read<int32_t>(localState);
+		saved_game.read<int32_t>(squadState);
+		saved_game.read<int32_t>(confusionTime);
+		saved_game.read<int32_t>(charmedTime);
+		saved_game.read<int32_t>(controlledTime);
+		saved_game.read<int32_t>(surrenderTime);
+		saved_game.read<float>(enemyLaggedPos);
+		saved_game.read<int32_t>(watchTarget);
+		saved_game.read<int32_t>(ffireCount);
+		saved_game.read<int32_t>(ffireDebounce);
+		saved_game.read<int32_t>(ffireFadeDebounce);
+	}
+}; // gNPC_t
 
 void G_SquadPathsInit(void);
 void NPC_InitGame( void );

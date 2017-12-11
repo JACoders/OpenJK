@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -88,7 +92,7 @@ void NPC_Grenadier_PlayConfusionSound( gentity_t *self )
 	TIMER_Set( self, "flee", 0 );
 	self->NPC->squadState = SQUAD_IDLE;
 	self->NPC->tempBehavior = BS_DEFAULT;
-	
+
 	//self->NPC->behaviorState = BS_PATROL;
 	G_ClearEnemy( self );//FIXME: or just self->enemy = NULL;?
 
@@ -102,7 +106,7 @@ NPC_ST_Pain
 -------------------------
 */
 
-void NPC_Grenadier_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod ) 
+void NPC_Grenadier_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod )
 {
 	self->NPC->localState = LSTATE_UNDERFIRE;
 
@@ -127,7 +131,7 @@ static void Grenadier_HoldPosition( void )
 {
 	NPC_FreeCombatPoint( NPCInfo->combatPoint, qtrue );
 	NPCInfo->goalEntity = NULL;
-	
+
 	/*if ( TIMER_Done( NPC, "stand" ) )
 	{//FIXME: what if can't shoot from this pos?
 		TIMER_Set( NPC, "duck", Q_irand( 2000, 4000 ) );
@@ -147,13 +151,13 @@ static qboolean Grenadier_Move( void )
 
 	qboolean	moved = NPC_MoveToGoal( qtrue );
 //	navInfo_t	info;
-	
+
 	//Get the doMove info
 //	NAV_GetLastMove( info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
 	//If we hit our target, then stop and fire!
-//	if ( info.flags & NIF_COLLISION ) 
+//	if ( info.flags & NIF_COLLISION )
 //	{
 //		if ( info.blocker == NPC->enemy )
 //		{
@@ -232,8 +236,8 @@ void NPC_BSGrenadier_Patrol( void )
 					//NPCInfo->lastAlertID = level.alertEvents[alertEvent].ID;
 					if ( level.alertEvents[alertEvent].level == AEL_DISCOVERED )
 					{
-						if ( level.alertEvents[alertEvent].owner && 
-							level.alertEvents[alertEvent].owner->client && 
+						if ( level.alertEvents[alertEvent].owner &&
+							level.alertEvents[alertEvent].owner->client &&
 							level.alertEvents[alertEvent].owner->health >= 0 &&
 							level.alertEvents[alertEvent].owner->client->playerTeam == NPC->client->enemyTeam )
 						{//an enemy
@@ -260,15 +264,15 @@ void NPC_BSGrenadier_Patrol( void )
 				//NOTE: stops walking or doing anything else below
 				vec3_t	dir, angles;
 				float	o_yaw, o_pitch;
-				
+
 				VectorSubtract( NPCInfo->investigateGoal, NPC->client->renderInfo.eyePoint, dir );
 				vectoangles( dir, angles );
-				
+
 				o_yaw = NPCInfo->desiredYaw;
 				o_pitch = NPCInfo->desiredPitch;
 				NPCInfo->desiredYaw = angles[YAW];
 				NPCInfo->desiredPitch = angles[PITCH];
-				
+
 				NPC_UpdateAngles( qtrue, qtrue );
 
 				NPCInfo->desiredYaw = o_yaw;
@@ -355,17 +359,17 @@ static void Grenadier_CheckMoveState( void )
 	if ( ( NPCInfo->goalEntity != NPC->enemy ) && ( NPCInfo->goalEntity != NULL ) )
 	{
 		//Did we make it?
-		if ( STEER::Reached(NPC, NPCInfo->goalEntity, 16, !!FlyingCreature(NPC)) || 
+		if ( STEER::Reached(NPC, NPCInfo->goalEntity, 16, !!FlyingCreature(NPC)) ||
 			( NPCInfo->squadState == SQUAD_SCOUT && enemyLOS && enemyDist <= 10000 ) )
 		{
-			int	newSquadState = SQUAD_STAND_AND_SHOOT;
+			//int	newSquadState = SQUAD_STAND_AND_SHOOT;
 			//we got where we wanted to go, set timers based on why we were running
 			switch ( NPCInfo->squadState )
 			{
 			case SQUAD_RETREAT://was running away
 				TIMER_Set( NPC, "duck", (NPC->max_health - NPC->health) * 100 );
 				TIMER_Set( NPC, "hideTime", Q_irand( 3000, 7000 ) );
-				newSquadState = SQUAD_COVER;
+				//newSquadState = SQUAD_COVER;
 				break;
 			case SQUAD_TRANSITION://was heading for a combat point
 				TIMER_Set( NPC, "hideTime", Q_irand( 2000, 4000 ) );
@@ -548,12 +552,12 @@ void NPC_BSGrenadier_Attack( void )
 			}
 		}
 		else if ( InFOV( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 45, 90 ) )
-		{//in front of me 
+		{//in front of me
 			//can we shoot our target?
 			//FIXME: how accurate/necessary is this check?
 			int hit = NPC_ShotEntity( NPC->enemy );
 			gentity_t *hitEnt = &g_entities[hit];
-			if ( hit == NPC->enemy->s.number 
+			if ( hit == NPC->enemy->s.number
 				|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam ) )
 			{
 				VectorCopy( NPC->enemy->currentOrigin, NPCInfo->enemyLastSeenLocation );
@@ -655,13 +659,13 @@ void NPC_BSGrenadier_Attack( void )
 	if ( shoot )
 	{//try to shoot if it's time
 		if ( TIMER_Done( NPC, "attackDelay" ) )
-		{	
+		{
 			if( !(NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 			{
 				WeaponThink( qtrue );
 				TIMER_Set( NPC, "attackDelay", NPCInfo->shotTime-level.time );
 			}
-			
+
 		}
 	}
 }

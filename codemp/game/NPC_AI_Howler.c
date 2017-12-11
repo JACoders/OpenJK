@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 
 // These define the working combat range for these suckers
@@ -50,7 +72,7 @@ void Howler_Patrol( void )
 	{
 		if ( TIMER_Done( NPCS.NPC, "patrolTime" ))
 		{
-			TIMER_Set( NPCS.NPC, "patrolTime", crandom() * 5000 + 5000 );
+			TIMER_Set( NPCS.NPC, "patrolTime", Q_flrand(-1.0f, 1.0f) * 5000 + 5000 );
 		}
 	}
 
@@ -69,7 +91,7 @@ void Howler_Patrol( void )
 		return;
 	}
 }
- 
+
 /*
 -------------------------
 Howler_Move
@@ -114,7 +136,7 @@ void Howler_Attack( void )
 	if ( !TIMER_Exists( NPCS.NPC, "attacking" ))
 	{
 		// Going to do ATTACK1
-		TIMER_Set( NPCS.NPC, "attacking", 1700 + random() * 200 );
+		TIMER_Set( NPCS.NPC, "attacking", 1700 + Q_flrand(0.0f, 1.0f) * 200 );
 		NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_ATTACK1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD );
 
 		TIMER_Set( NPCS.NPC, "attack_dmg", 200 ); // level two damage
@@ -150,7 +172,7 @@ void Howler_Combat( void )
 	// Sometimes I have problems with facing the enemy I'm attacking, so force the issue so I don't look dumb
 	NPC_FaceEnemy( qtrue );
 
-	distance	= DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	advance = (qboolean)( distance > MIN_DISTANCE_SQR ? qtrue : qfalse  );
 
 	if (( advance || NPCS.NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPCS.NPC, "attacking" )) // waiting monsters can't attack
@@ -175,7 +197,7 @@ void Howler_Combat( void )
 NPC_Howler_Pain
 -------------------------
 */
-void NPC_Howler_Pain( gentity_t *self, gentity_t *attacker, int damage ) 
+void NPC_Howler_Pain( gentity_t *self, gentity_t *attacker, int damage )
 {
 	if ( damage >= 10 )
 	{

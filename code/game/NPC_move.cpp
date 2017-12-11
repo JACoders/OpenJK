@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //
 // NPC_move.cpp
@@ -27,8 +31,6 @@ This file is part of Jedi Academy.
 
 extern qboolean NPC_ClearPathToGoal( vec3_t dir, gentity_t *goal );
 extern qboolean NAV_MoveDirSafe( gentity_t *self, usercmd_t *cmd, float distScale = 1.0f );
-
-void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color );
 
 qboolean G_BoundsOverlap(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 extern int GetTime ( int lastTime );
@@ -56,10 +58,10 @@ static qboolean NPC_TryJump();
 
 static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 {//FIXME: if land on enemy, knock him down & jump off again
-	float	targetDist, travelTime, impactDist, bestImpactDist = Q3_INFINITE;//fireSpeed, 
+	float	targetDist, travelTime, impactDist, bestImpactDist = Q3_INFINITE;//fireSpeed,
 	float originalShotSpeed, shotSpeed, speedStep = 50.0f, minShotSpeed = 30.0f, maxShotSpeed = 500.0f;
 	qboolean belowBlocked = qfalse, aboveBlocked = qfalse;
-	vec3_t	targetDir, shotVel, failCase; 
+	vec3_t	targetDir, shotVel, failCase;
 	trace_t	trace;
 	trajectory_t	tr;
 	qboolean	blocked;
@@ -86,7 +88,7 @@ static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 		travelTime = targetDist/shotSpeed;
 		shotVel[2] += travelTime * 0.5 * NPC->client->ps.gravity;
 
-		if ( !hitCount )		
+		if ( !hitCount )
 		{//save the first one as the worst case scenario
 			VectorCopy( shotVel, failCase );
 		}
@@ -101,7 +103,7 @@ static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 			tr.trTime = level.time;
 			travelTime *= 1000.0f;
 			VectorCopy( NPC->currentOrigin, lastPos );
-			
+
 			//This may be kind of wasteful, especially on long throws... use larger steps?  Divide the travelTime into a certain hard number of slices?  Trace just to apex and down?
 			for ( elapsedTime = timeStep; elapsedTime < floor(travelTime)+timeStep; elapsedTime += timeStep )
 			{
@@ -113,7 +115,7 @@ static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 				//FUCK IT, always check for do not enter...
 				gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 				/*
-				if ( testPos[2] < lastPos[2] 
+				if ( testPos[2] < lastPos[2]
 					&& elapsedTime < floor( travelTime ) )
 				{//going down, haven't reached end, ignore botclip
 					gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask );
@@ -153,7 +155,7 @@ static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 						*/
 						break;
 					}
-					else 
+					else
 					{
 						if ( trace.contents & CONTENTS_BOTCLIP )
 						{//hit a do-not-enter brush
@@ -342,7 +344,7 @@ void	 NPC_JumpAnimation()
 {
 	int	jumpAnim = BOTH_JUMP1;
 
-	if ( NPC->client->NPC_class == CLASS_BOBAFETT 
+	if ( NPC->client->NPC_class == CLASS_BOBAFETT
 		|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 		|| NPC->client->NPC_class == CLASS_ROCKETTROOPER
 		||( NPCInfo->rank != RANK_CREWMAN && NPCInfo->rank <= RANK_LT_JG ) )
@@ -371,7 +373,7 @@ void	 NPC_JumpSound()
 	{
 		//FIXME: can I delay the actual jump so that it matches the anim...?
 	}
-	else if ( NPC->client->NPC_class == CLASS_BOBAFETT 
+	else if ( NPC->client->NPC_class == CLASS_BOBAFETT
 		|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 	{
 		// does this really need to be here?
@@ -439,7 +441,7 @@ qboolean NPC_TryJump()
 		TIMER_Set(NPC, "duck", -level.time);
 		return qtrue;
 	}
-	
+
 	if (WithinNormalJumpRange)
 	{
 		ucmd.upmove			= 127;
@@ -520,8 +522,8 @@ qboolean NPC_TryJump()
 				floorPos[1] = NPCInfo->jumpDest[1];
 
 				gi.trace(&mJumpTrace, NPCInfo->jumpDest, NPC->mins, NPC->maxs, floorPos, (NPCInfo->jumpTarget)?(NPCInfo->jumpTarget->s.number):(NPC->s.number), (NPC->clipmask|CONTENTS_BOTCLIP), (EG2_Collision)0, 0);
-				if ((mJumpTrace.fraction<1.0f) && 
-					(!mJumpTrace.allsolid) && 
+				if ((mJumpTrace.fraction<1.0f) &&
+					(!mJumpTrace.allsolid) &&
 					(!mJumpTrace.startsolid))
 				{
 					break;
@@ -535,15 +537,15 @@ qboolean NPC_TryJump()
 
 			// If All Traces Failed, Just Try Going Right Back At The Target Location
 			//------------------------------------------------------------------------
-			if ((mJumpTrace.fraction>=1.0f) || 
-				(mJumpTrace.allsolid) || 
+			if ((mJumpTrace.fraction>=1.0f) ||
+				(mJumpTrace.allsolid) ||
 				(mJumpTrace.startsolid))
 			{
 				VectorCopy(startPos, NPCInfo->jumpDest);
 			}
 		}
 	}
-	
+
 	// Now, Actually Try The Jump To The Dest Target
 	//-----------------------------------------------
 	if (NPC_Jump(NPCInfo->jumpDest, (NPCInfo->jumpTarget)?(NPCInfo->jumpTarget->s.number):(NPC->s.number)))
@@ -610,7 +612,7 @@ qboolean NPC_JumpBackingUp()
 		NPCInfo->jumpBackupTime = 0;
 		return NPC_TryJump();
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -653,7 +655,7 @@ static void NPC_LadderMove( vec3_t dir )
 	//ALSO: Need to be able to get off at top
 	//ALSO: Need to play an anim
 	//ALSO: Need transitionary anims?
-	
+
 	if ( ( dir[2] > 0 ) || ( dir[2] < 0 && NPC->client->ps.groundEntityNum == ENTITYNUM_NONE ) )
 	{
 		//Set our movement direction
@@ -681,7 +683,7 @@ inline qboolean NPC_GetMoveInformation( vec3_t dir, float *distance )
 	//Get our move info
 	VectorSubtract( NPCInfo->goalEntity->currentOrigin, NPC->currentOrigin, dir );
 	*distance = VectorNormalize( dir );
-	
+
 	VectorCopy( NPCInfo->goalEntity->currentOrigin, NPCInfo->blockedTargetPosition );
 
 	return qtrue;
@@ -734,7 +736,7 @@ void G_UcmdMoveForDir( gentity_t *self, usercmd_t *cmd, vec3_t dir )
 
 	/*
 	vec3_t	wishvel;
-	for ( int i = 0 ; i < 3 ; i++ ) 
+	for ( int i = 0 ; i < 3 ; i++ )
 	{
 		wishvel[i] = forward[i]*cmd->forwardmove + right[i]*cmd->rightmove;
 	}
@@ -762,7 +764,7 @@ qboolean NPC_MoveToGoal( qboolean tryStraight ) //FIXME: tryStraight not even us
 #if	AI_TIMERS
 	int	startTime = GetTime(0);
 #endif//	AI_TIMERS
-	
+
 	if ( PM_InKnockDown( &NPC->client->ps ) || ( ( NPC->client->ps.legsAnim >= BOTH_PAIN1 ) && ( NPC->client->ps.legsAnim <= BOTH_PAIN18 ) && NPC->client->ps.legsAnimTimer > 0 ) )
 	{//If taking full body pain, don't move
 		return qtrue;
@@ -819,7 +821,7 @@ qboolean NPC_MoveToGoal( qboolean tryStraight ) //FIXME: tryStraight not even us
 	#if	AI_TIMERS
 		navTime += GetTime( startTime );
 	#endif//	AI_TIMERS
-	return moveSuccess;
+	return (qboolean)moveSuccess;
 }
 
 /*
@@ -834,7 +836,7 @@ qboolean NPC_SlideMoveToGoal( void )
 	float	saveYaw = NPC->client->ps.viewangles[YAW];
 
 	NPCInfo->combatMove = qtrue;
-	
+
 	qboolean ret = NPC_MoveToGoal( qtrue );
 
 	NPCInfo->desiredYaw	= saveYaw;

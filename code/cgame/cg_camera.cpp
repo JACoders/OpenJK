@@ -1,24 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //Client camera controls for cinematics
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"
@@ -35,7 +38,7 @@ void CGCam_FollowDisable( void );
 void CGCam_TrackDisable( void );
 void CGCam_Distance( float distance, qboolean initLerp );
 void CGCam_DistanceDisable( void );
-extern int CG_CalcFOVFromX( float fov_x );
+extern qboolean CG_CalcFOVFromX( float fov_x );
 extern void WP_SaberCatch( gentity_t *self, gentity_t *saber, qboolean switchToSaber );
 
 /*
@@ -78,7 +81,7 @@ void CGCam_Enable( void )
 
 	client_camera.bar_alpha_source = 0.0f;
 	client_camera.bar_alpha_dest = 1.0f;
-	
+
 	client_camera.bar_height_source = 0.0f;
 	client_camera.bar_height_dest = 480/10;
 	client_camera.bar_height = 0.0f;
@@ -139,7 +142,7 @@ void CGCam_Disable( void )
 
 	client_camera.bar_alpha_source = 1.0f;
 	client_camera.bar_alpha_dest = 0.0f;
-	
+
 	client_camera.bar_height_source = 480/10;
 	client_camera.bar_height_dest = 0.0f;
 
@@ -201,7 +204,7 @@ void CGCam_Move( vec3_t dest, float duration )
 	client_camera.info_state |= CAMERA_MOVING;
 
 	VectorCopy( dest, client_camera.origin2 );
-	
+
 	client_camera.move_duration = duration;
 	client_camera.move_time = cg.time;
 }
@@ -243,7 +246,7 @@ void CGCam_Pan( vec3_t dest, vec3_t panDirection, float duration )
 	//FIXME: make the dest an absolute value, and pass in a
 	//panDirection as well.  If a panDirection's axis value is
 	//zero, find the shortest difference for that axis.
-	//Store the delta in client_camera.angles2. 
+	//Store the delta in client_camera.angles2.
 	for( i = 0; i < 3; i++ )
 	{
 		dest[i] = AngleNormalize360( dest[i] );
@@ -301,7 +304,7 @@ void CGCam_Pan( vec3_t dest, vec3_t panDirection, float duration )
 	//VectorCopy( dest, client_camera.angles2 );
 
 	client_camera.info_state |= CAMERA_PANNING;
-	
+
 	client_camera.pan_duration = duration;
 	client_camera.pan_time = cg.time;
 }
@@ -333,10 +336,10 @@ void CGCam_Roll( float	dest, float duration )
 
 	//FIXME/NOTE: this will override current panning!!!
 	client_camera.info_state |= CAMERA_PANNING;
-	
+
 	VectorCopy( client_camera.angles, client_camera.angles2 );
 	client_camera.angles2[2] = AngleDelta( dest, client_camera.angles[2] );
-	
+
 	client_camera.pan_duration = duration;
 	client_camera.pan_time = cg.time;
 }
@@ -415,8 +418,8 @@ void CGCam_SetFade( vec4_t dest )
 {//Instant completion
 	client_camera.info_state &= ~CAMERA_FADING;
 	client_camera.fade_duration = 0;
-	Vector4Copy( dest, client_camera.fade_source );
-	Vector4Copy( dest, client_camera.fade_color );
+	VectorCopy4( dest, client_camera.fade_source );
+	VectorCopy4( dest, client_camera.fade_color );
 }
 
 /*
@@ -433,8 +436,8 @@ void CGCam_Fade( vec4_t source, vec4_t dest, float duration )
 		return;
 	}
 
-	Vector4Copy( source, client_camera.fade_source );
-	Vector4Copy( dest, client_camera.fade_dest );
+	VectorCopy4( source, client_camera.fade_source );
+	VectorCopy4( dest, client_camera.fade_dest );
 
 	client_camera.fade_duration = duration;
 	client_camera.fade_time = cg.time;
@@ -468,8 +471,6 @@ CGCam_Follow
 
 void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 {
-	int len;
-
 	//Clear any previous
 	CGCam_FollowDisable();
 
@@ -482,7 +483,7 @@ void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 	{//Turn off all aiming
 		return;
 	}
-	
+
 	if ( Q_stricmp("NULL", (char *)cameraGroup) == 0 )
 	{//Turn off all aiming
 		return;
@@ -492,10 +493,8 @@ void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 	client_camera.info_state |= CAMERA_FOLLOWING;
 	client_camera.info_state &= ~CAMERA_PANNING;
 
-	len = strlen(cameraGroup);
-	strncpy( client_camera.cameraGroup, cameraGroup, sizeof(client_camera.cameraGroup) );
 	//NULL terminate last char in case they type a name too long
-	client_camera.cameraGroup[len] = 0;
+	Q_strncpyz( client_camera.cameraGroup, cameraGroup, sizeof(client_camera.cameraGroup) );
 
 	if ( speed )
 	{
@@ -697,8 +696,8 @@ void CGCam_FollowUpdate ( void )
 	centity_t	*fromCent = NULL;
 	int			num_subjects = 0, i;
 	qboolean	focused = qfalse;
-	
-	if ( client_camera.cameraGroup && client_camera.cameraGroup[0] )
+
+	if ( client_camera.cameraGroup[0] )
 	{
 		//Stay centered in my cameraGroup, if I have one
 		while( NULL != (from = G_Find(from, FOFS(cameraGroup), client_camera.cameraGroup)))
@@ -723,7 +722,7 @@ void CGCam_FollowUpdate ( void )
 			}
 
 			focused = qfalse;
-			if ( from->client && client_camera.cameraGroupTag && client_camera.cameraGroupTag[0] && fromCent->gent->ghoul2.size() )
+			if ( from->client && client_camera.cameraGroupTag[0] && fromCent->gent->ghoul2.size() )
 			{
 				int newBolt = gi.G2API_AddBolt( &fromCent->gent->ghoul2[from->playerModel], client_camera.cameraGroupTag );
 				if ( newBolt != -1 )
@@ -754,11 +753,11 @@ void CGCam_FollowUpdate ( void )
 				else
 				{
 					VectorCopy(from->currentOrigin, focus[num_subjects]);
-				} 
+				}
 				//FIXME: make a list here of their s.numbers instead so we can do other stuff with the list below
 				if ( from->client )
 				{//Track to their eyes - FIXME: maybe go off a tag?
-					//FIXME: 
+					//FIXME:
 					//Based on FOV and distance to subject from camera, pick the point that
 					//keeps eyes 3/4 up from bottom of screen... what about bars?
 					focus[num_subjects][2] += from->client->ps.viewheight;
@@ -771,7 +770,7 @@ void CGCam_FollowUpdate ( void )
 			num_subjects++;
 		}
 
-		if ( !num_subjects )	// Bad cameragroup 
+		if ( !num_subjects )	// Bad cameragroup
 		{
 #ifndef FINAL_BUILD
 			gi.Printf(S_COLOR_RED"ERROR: Camera Focus unable to locate cameragroup: %s\n", client_camera.cameraGroup);
@@ -810,7 +809,7 @@ void CGCam_FollowUpdate ( void )
 
 	//Get desired angle
 	vectoangles(dir, cameraAngles);
-	
+
 	if ( client_camera.followInitLerp )
 	{//Lerping
 		float frac = cg.frametime/100.0f * client_camera.followSpeed/100.f;
@@ -866,10 +865,10 @@ void CGCam_TrackEntUpdate ( void )
 			reached = qtrue;
 		}
 	}
-	
+
 	if ( trackEnt && reached )
 	{
-		
+
 		if ( trackEnt->target && trackEnt->target[0] )
 		{//Find our next path_corner
 			newTrackEnt = G_Find( NULL, FOFS(targetname), trackEnt->target );
@@ -903,8 +902,8 @@ void CGCam_TrackEntUpdate ( void )
 
 	if ( newTrackEnt )
 	{//Update will lerp this
-		client_camera.info_state |= CAMERA_TRACKING; 
-		client_camera.trackEntNum = newTrackEnt->s.number; 
+		client_camera.info_state |= CAMERA_TRACKING;
+		client_camera.trackEntNum = newTrackEnt->s.number;
 		VectorCopy( newTrackEnt->currentOrigin, client_camera.trackToOrg );
 	}
 
@@ -915,7 +914,7 @@ void CGCam_TrackUpdate ( void )
 {
 	vec3_t		goalVec, curVec, trackPos, vec;
 	float		goalDist, dist;
-	qboolean	slowDown = qfalse;
+	//qboolean	slowDown = qfalse;
 
 	if ( client_camera.nextTrackEntUpdateTime <= cg.time )
 	{
@@ -949,7 +948,7 @@ void CGCam_TrackUpdate ( void )
 			return;
 		}
 		else if ( client_camera.subjectSpeed > 0.05f )
-		{//Don't start moving until subject moves 
+		{//Don't start moving until subject moves
 			VectorSubtract( client_camera.subjectPos, client_camera.origin, vec );
 			dist = VectorNormalize(vec);
 			dot = DotProduct(goalVec, vec);
@@ -976,13 +975,13 @@ void CGCam_TrackUpdate ( void )
 					adjust = (client_camera.distance - dist);//Speed up
 				}
 			}
-			
+
 			//Speed of the focus + our error
 			//desiredSpeed = aimCent->gent->speed + (adjust * cg.frametime/100.0f);//cg.frameInterpolation);
 			desiredSpeed = (adjust);// * cg.frametime/100.0f);//cg.frameInterpolation);
-			
+
 			//self->moveInfo.speed = desiredSpeed;
-			
+
 			//Don't change speeds faster than 10 every 10th of a second
 			float	max_allowed_accel = MAX_ACCEL_PER_FRAME * (cg.frametime/100.0f);
 
@@ -1010,18 +1009,18 @@ void CGCam_TrackUpdate ( void )
 	{
 		//slowDown = qtrue;
 	}
-	
+
 
 	//FIXME: this probably isn't right, round it out more
 	VectorScale( goalVec, cg.frametime/100.0f, goalVec );
 	VectorScale( client_camera.moveDir, (100.0f - cg.frametime)/100.0f, curVec );
 	VectorAdd( goalVec, curVec, client_camera.moveDir );
 	VectorNormalize( client_camera.moveDir );
-	if(slowDown)
+	/*if(slowDown)
 	{
 		VectorMA( client_camera.origin, client_camera.speed * goalDist/100.0f * cg.frametime/100.0f, client_camera.moveDir, trackPos );
 	}
-	else
+	else*/
 	{
 		VectorMA( client_camera.origin, client_camera.speed * cg.frametime/100.0f , client_camera.moveDir, trackPos );
 	}
@@ -1067,7 +1066,7 @@ void CGCam_UpdateFade( void )
 	{
 		if ( client_camera.fade_time + client_camera.fade_duration < cg.time )
 		{
-			Vector4Copy( client_camera.fade_dest, client_camera.fade_color );
+			VectorCopy4( client_camera.fade_dest, client_camera.fade_color );
 			client_camera.info_state &= ~CAMERA_FADING;
 		}
 		else
@@ -1235,7 +1234,7 @@ void CGCam_Update( void )
 			}
 		}
 	}
-	else 
+	else
 	{
 		checkFollow = qtrue;
 	}
@@ -1325,7 +1324,7 @@ void CGCam_DrawWideScreen( void )
 
 		modulate[0] = modulate[1] = modulate[2] = 0.0f;
 		modulate[3] = client_camera.bar_alpha;
-	
+
 		CG_FillRect( cg.refdef.x, cg.refdef.y, 640, client_camera.bar_height, modulate  );
 		CG_FillRect( cg.refdef.x, cg.refdef.y + 480 - client_camera.bar_height, 640, client_camera.bar_height, modulate  );
 	}
@@ -1395,7 +1394,7 @@ void CGCam_UpdateShake( vec3_t origin, vec3_t angles )
 
 	for ( int i = 0; i < 3; i++ )
 	{
-		moveDir[i] = ( crandom() * intensity );
+		moveDir[i] = ( Q_flrand(-1.0f, 1.0f) * intensity );
 	}
 
 	//FIXME: Lerp
@@ -1404,7 +1403,7 @@ void CGCam_UpdateShake( vec3_t origin, vec3_t angles )
 	VectorAdd( origin, moveDir, origin );
 
 	for ( int i = 0; i < 2; i++ ) // Don't do ROLL
-		moveDir[i] = ( crandom() * intensity );
+		moveDir[i] = ( Q_flrand(-1.0f, 1.0f) * intensity );
 
 	//FIXME: Lerp
 
@@ -1474,7 +1473,7 @@ void CGCam_NotetrackProcessFov(const char *addlArg)
 		{
 			t[d++] = addlArg[a++];
 		}
-		// now the contents of t represent our desired fov 
+		// now the contents of t represent our desired fov
 		float newFov = atof(t);
 #ifndef FINAL_BUILD
 		if (cg_roffdebug.integer)
@@ -1816,7 +1815,7 @@ void CGCam_StartRoff( char *roff )
 	CGCam_FollowDisable();
 	CGCam_TrackDisable();
 
-	// Set up the roff state info..we'll hijack the moving and panning code until told otherwise 
+	// Set up the roff state info..we'll hijack the moving and panning code until told otherwise
 	//	...CAMERA_FOLLOWING would be a case that could override this..
 	client_camera.info_state |= CAMERA_MOVING;
 	client_camera.info_state |= CAMERA_PANNING;
@@ -1830,7 +1829,7 @@ void CGCam_StartRoff( char *roff )
 
 	client_camera.info_state |= CAMERA_ROFFING;
 
-	strncpy(client_camera.sRoff,roff,sizeof(client_camera.sRoff));
+	Q_strncpyz(client_camera.sRoff,roff,sizeof(client_camera.sRoff));
 	client_camera.roff_frame = 0;
 	client_camera.next_roff_time = cg.time;	// I can work right away
 }
@@ -1854,7 +1853,7 @@ static void CGCam_StopRoff( void )
 ------------------------------------------------------
 CGCam_Roff
 
-Applies the sampled roff data to the camera and does 
+Applies the sampled roff data to the camera and does
 the lerping itself...this is done because the current
 camera interpolation doesn't seem to work all that
 great when you are adjusting the camera org and angles
@@ -1906,7 +1905,7 @@ static void CGCam_Roff( void )
 
 	if ( cg_developer.integer )
 	{
-		Com_Printf( S_COLOR_GREEN"CamROFF: frame: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n", 
+		Com_Printf( S_COLOR_GREEN"CamROFF: frame: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n",
 					client_camera.roff_frame,
 					org[0], org[1], org[2],
 					ang[0], ang[1], ang[2] );
@@ -1938,7 +1937,7 @@ static void CGCam_Roff( void )
 
 	if ( ++client_camera.roff_frame >= roff->frames )
 	{
-		CGCam_StopRoff();	
+		CGCam_StopRoff();
 		return;
 	}
 

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 /*****************************************************************************
  * name:		be_ai_weight.c
@@ -5,7 +27,7 @@
  * desc:		fuzzy logic
  *
  * $Archive: /MissionPack/code/botlib/be_ai_weight.c $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 3 $
  * $Modtime: 8/06/00 5:25p $
  * $Date: 8/06/00 11:07p $
@@ -60,7 +82,7 @@ int ReadValue(source_t *source, float *value)
 		SourceError(source, "invalid return value %s", token.string);
 		return qfalse;
 	}
-	
+
 	*value = token.floatvalue;
 	return qtrue;
 } //end of the function ReadValue
@@ -607,7 +629,7 @@ float FuzzyWeightUndecided_r(int *inventory, fuzzyseperator_t *fs)
 	if (inventory[fs->index] < fs->value)
 	{
 		if (fs->child) return FuzzyWeightUndecided_r(inventory, fs->child);
-		else return fs->minweight + random() * (fs->maxweight - fs->minweight);
+		else return fs->minweight + Q_flrand(0.0f, 1.0f) * (fs->maxweight - fs->minweight);
 	} //end if
 	else if (fs->next)
 	{
@@ -615,10 +637,10 @@ float FuzzyWeightUndecided_r(int *inventory, fuzzyseperator_t *fs)
 		{
 			//first weight
 			if (fs->child) w1 = FuzzyWeightUndecided_r(inventory, fs->child);
-			else w1 = fs->minweight + random() * (fs->maxweight - fs->minweight);
+			else w1 = fs->minweight + Q_flrand(0.0f, 1.0f) * (fs->maxweight - fs->minweight);
 			//second weight
 			if (fs->next->child) w2 = FuzzyWeight_r(inventory, fs->next->child);
-			else w2 = fs->next->minweight + random() * (fs->next->maxweight - fs->next->minweight);
+			else w2 = fs->next->minweight + Q_flrand(0.0f, 1.0f) * (fs->next->maxweight - fs->next->minweight);
 			//the scale factor
 			if(fs->next->value == MAX_INVENTORYVALUE) // is fs->next the default case?
         		return w2;      // can't interpolate, return default weight
@@ -682,12 +704,12 @@ float FuzzyWeightUndecided(int *inventory, weightconfig_t *wc, int weightnum)
 		if (inventory[s->index] < s->value)
 		{
 			if (s->child) s = s->child;
-			else return s->minweight + random() * (s->maxweight - s->minweight);
+			else return s->minweight + Q_flrand(0.0f, 1.0f) * (s->maxweight - s->minweight);
 		} //end if
 		else
 		{
 			if (s->next) s = s->next;
-			else return s->minweight + random() * (s->maxweight - s->minweight);
+			else return s->minweight + Q_flrand(0.0f, 1.0f) * (s->maxweight - s->minweight);
 		} //end else
 	} //end if
 	return 0;
@@ -708,8 +730,8 @@ void EvolveFuzzySeperator_r(fuzzyseperator_t *fs)
 	else if (fs->type == WT_BALANCE)
 	{
 		//every once in a while an evolution leap occurs, mutation
-		if (random() < 0.01) fs->weight += crandom() * (fs->maxweight - fs->minweight);
-		else fs->weight += crandom() * (fs->maxweight - fs->minweight) * 0.5;
+		if (Q_flrand(0.0f, 1.0f) < 0.01) fs->weight += Q_flrand(-1.0f, 1.0f) * (fs->maxweight - fs->minweight);
+		else fs->weight += Q_flrand(-1.0f, 1.0f) * (fs->maxweight - fs->minweight) * 0.5;
 		//modify bounds if necesary because of mutation
 		if (fs->weight < fs->minweight) fs->minweight = fs->weight;
 		else if (fs->weight > fs->maxweight) fs->maxweight = fs->weight;

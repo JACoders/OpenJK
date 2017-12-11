@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 
 #define	MIN_MELEE_RANGE		640
@@ -42,7 +64,7 @@ static void ATST_PlayEffect( gentity_t *self, const int boltID, const char *fx )
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		trap->G2API_GetBoltMatrix( self->ghoul2, 0, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, 0,
 					boltID,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, level.time,
 					NULL, self->modelScale );
@@ -67,7 +89,7 @@ void G_ATSTCheckPain( gentity_t *self, gentity_t *other, int damage )
 {
 	//int newBolt;
 	//int hitLoc = gPainHitLoc;
-	
+
 	if ( rand() & 1 )
 	{
 		G_SoundOnEnt( self, CHAN_LESS_ATTEN, "sound/chars/atst/atst_damaged1" );
@@ -97,7 +119,7 @@ void G_ATSTCheckPain( gentity_t *self, gentity_t *other, int damage )
 	else if ((hitLoc==HL_ARM_RT) && (self->locationDamage[HL_ARM_RT] > RIGHT_ARM_HEALTH))	// Blow it up?
 	{
 		if (self->locationDamage[hitLoc] >= RIGHT_ARM_HEALTH)
-		{			
+		{
 			newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*flash4" );
 			if ( newBolt != -1 )
 			{
@@ -116,7 +138,7 @@ void G_ATSTCheckPain( gentity_t *self, gentity_t *other, int damage )
 NPC_ATST_Pain
 -------------------------
 */
-void NPC_ATST_Pain(gentity_t *self, gentity_t *attacker, int damage) 
+void NPC_ATST_Pain(gentity_t *self, gentity_t *attacker, int damage)
 {
 	G_ATSTCheckPain( self, attacker, damage );
 	NPC_Pain( self, attacker, damage );
@@ -178,7 +200,7 @@ void ATST_Attack( void )
 {
 	qboolean	altAttack=qfalse;
 	int			blasterTest,chargerTest,weapon;
-	float		distance;	
+	float		distance;
 	distance_e	distRate;
 	qboolean	visible;
 	qboolean	advance;
@@ -192,7 +214,7 @@ void ATST_Attack( void )
 	NPC_FaceEnemy( qtrue );
 
 	// Rate our distance to the target, and our visibilty
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	distRate	= ( distance > MIN_MELEE_RANGE_SQR ) ? DIST_LONG : DIST_MELEE;
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
@@ -225,7 +247,7 @@ void ATST_Attack( void )
 
 		// It has both side weapons
 		if ( blasterTest != -1
-			&& !(blasterTest&TURN_OFF)  
+			&& !(blasterTest&TURN_OFF)
 			&& chargerTest != -1
 			&& !(chargerTest&TURN_OFF))
 		{
@@ -251,7 +273,7 @@ void ATST_Attack( void )
 		{
 			altAttack = qtrue;
 		}
-		else 
+		else
 		{
 			NPC_ChangeWeapon( WP_NONE );
 		}
@@ -320,7 +342,7 @@ void NPC_BSATST_Default( void )
 	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		ATST_Patrol();
-	} 
+	}
 	else
 	{
 		ATST_Idle();

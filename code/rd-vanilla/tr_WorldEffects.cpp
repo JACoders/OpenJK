@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN SOFTWARE - STAR WARS: JK II
@@ -25,18 +29,11 @@ This file is part of Jedi Academy.
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 #include "../server/exe_headers.h"
-#ifdef _MSC_VER
-#pragma warning( disable : 4512 )
-#endif
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Externs & Fwd Decl.
 ////////////////////////////////////////////////////////////////////////////////////////
 extern void			SetViewportAndScissor( void );
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
@@ -95,8 +92,8 @@ inline void VectorCeil(vec3_t in)
 	in[2] = ceilf(in[2]);
 }
 
-inline float	FloatRand(void) 
-{ 
+inline float	FloatRand(void)
+{
 	return ((float)rand() / (float)RAND_MAX);
 }
 
@@ -162,9 +159,9 @@ struct	SVecRange
 
 	inline void Pick(CVec3& V)
 	{
-		V[0] = Q_flrand(mMins[0], mMaxs[0]); 
-		V[1] = Q_flrand(mMins[1], mMaxs[1]); 
-		V[2] = Q_flrand(mMins[2], mMaxs[2]); 
+		V[0] = Q_flrand(mMins[0], mMaxs[0]);
+		V[1] = Q_flrand(mMins[1], mMaxs[1]);
+		V[2] = Q_flrand(mMins[2], mMaxs[2]);
 	}
 	inline void Wrap(CVec3& V)
 	{
@@ -454,9 +451,9 @@ private:
 
 	struct SWeatherZone
 	{
-		static bool	mMarkedOutside;		
+		static bool	mMarkedOutside;
 		uint32_t	*mPointCache;			// malloc block ptr
-		
+
 		int			miPointCacheByteSize;	// size of block
 		SVecRange	mExtents;
 		SVecRange	mSize;
@@ -465,13 +462,13 @@ private:
 		int			mDepth;
 
 		void WriteToDisk( fileHandle_t f )
-		{			
+		{
 			ri.FS_Write(&mMarkedOutside,sizeof(mMarkedOutside),f);
 			ri.FS_Write( mPointCache, miPointCacheByteSize, f );
 		}
 
 		void ReadFromDisk( fileHandle_t f )
-		{			
+		{
 			ri.FS_Read(&mMarkedOutside,sizeof(mMarkedOutside),f);
 			ri.FS_Read( mPointCache, miPointCacheByteSize, f);
 		}
@@ -556,14 +553,14 @@ public:
 		mOutsidePain = 0.0;
 		mCacheInit = false;
 		SWeatherZone::mMarkedOutside = false;
-		
+
 		mFogColor.Clear();
 		mFogColorInt = 0;
 		mFogColorTempActive = false;
 
 		for (int wz=0; wz<mWeatherZones.size(); wz++)
 		{
-			Z_Free(mWeatherZones[wz].mPointCache);
+			R_Free(mWeatherZones[wz].mPointCache);
 			mWeatherZones[wz].mPointCache = 0;
 			mWeatherZones[wz].miPointCacheByteSize = 0;	// not really necessary because of .clear() below, but keeps things together in case stuff changes
 		}
@@ -599,8 +596,8 @@ public:
 			Wz.mExtents.mMins = mins;
 			Wz.mExtents.mMaxs = maxs;
 
-			SnapVectorToGrid(Wz.mExtents.mMins, POINTCACHE_CELL_SIZE); 
-			SnapVectorToGrid(Wz.mExtents.mMaxs, POINTCACHE_CELL_SIZE); 
+			SnapVectorToGrid(Wz.mExtents.mMins, POINTCACHE_CELL_SIZE);
+			SnapVectorToGrid(Wz.mExtents.mMaxs, POINTCACHE_CELL_SIZE);
 
 			Wz.mSize.mMins = Wz.mExtents.mMins;
 			Wz.mSize.mMaxs = Wz.mExtents.mMaxs;
@@ -610,9 +607,9 @@ public:
 			Wz.mWidth		=  (int)(Wz.mSize.mMaxs[0] - Wz.mSize.mMins[0]);
 			Wz.mHeight		=  (int)(Wz.mSize.mMaxs[1] - Wz.mSize.mMins[1]);
 			Wz.mDepth		= ((int)(Wz.mSize.mMaxs[2] - Wz.mSize.mMins[2]) + 31) >> 5;
-			
+
 			Wz.miPointCacheByteSize = (Wz.mWidth * Wz.mHeight * Wz.mDepth) * sizeof(uint32_t);
-			Wz.mPointCache  = (uint32_t *)Z_Malloc( Wz.miPointCacheByteSize, TAG_POINTCACHE, qtrue );
+			Wz.mPointCache  = (uint32_t *)R_Malloc( Wz.miPointCacheByteSize, TAG_POINTCACHE, qtrue );
 		}
 		else
 		{
@@ -638,10 +635,10 @@ public:
 			m_iChecksum			= sv_mapChecksum->integer;
 		}
 	};
-	
+
 	fileHandle_t WriteCachedWeatherFile( void )
 	{
-		fileHandle_t f = ri.FS_FOpenFileWrite( GenCachedWeatherFilename() );
+		fileHandle_t f = ri.FS_FOpenFileWrite( GenCachedWeatherFilename(), qtrue );
 		if (f)
 		{
 			WeatherFileHeader_t WeatherFileHeader;
@@ -701,7 +698,7 @@ public:
 		}
 
 		// all this piece of code does really is fill in the bool "SWeatherZone::mMarkedOutside", plus the mPointCache[] for each zone,
-		//	so we can diskload those. Maybe.		
+		//	so we can diskload those. Maybe.
 		fileHandle_t f = ReadCachedWeatherFile();
 		if ( f )
 		{
@@ -735,7 +732,7 @@ public:
 			f = WriteCachedWeatherFile();
 
 			// Iterate Over All Weather Zones
-			//--------------------------------			
+			//--------------------------------
 			for (int zone=0; zone<mWeatherZones.size(); zone++)
 			{
 				SWeatherZone	wz = mWeatherZones[zone];
@@ -928,10 +925,10 @@ bool R_SetTempGlobalFogColor(vec3_t color)
 			tr.world->fogs[tr.world->globalFog].parms.color[0] = color[0];
 			tr.world->fogs[tr.world->globalFog].parms.color[1] = color[1];
 			tr.world->fogs[tr.world->globalFog].parms.color[2] = color[2];
-			tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 ( 
-												color[0] * tr.identityLight, 
-												color[1] * tr.identityLight, 
-												color[2] * tr.identityLight, 
+			tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 (
+												color[0] * tr.identityLight,
+												color[1] * tr.identityLight,
+												color[2] * tr.identityLight,
 												1.0 );
 		}
 
@@ -1016,7 +1013,7 @@ public:
 
 	SFloatRange	mMass;				// Determines how slowness to accelerate, higher number = slower
 	float		mFrictionInverse;	// How much air friction does this particle have 1.0=none, 0.0=nomove
-	
+
 	int			mParticleCount;
 
 	bool		mWaterParticles;
@@ -1036,7 +1033,7 @@ public:
 
 		// Create The Image
 		//------------------
-		mImage = R_FindImageFile(texturePath, false, false, false, GL_CLAMP);
+		mImage = R_FindImageFile(texturePath, qfalse, qfalse, qfalse, GL_CLAMP);
 		if (!mImage)
 		{
 			Com_Error(ERR_DROP, "CParticleCloud: Could not texture %s", texturePath);
@@ -1120,7 +1117,7 @@ public:
 		mRotation.mMin		= -0.7f;
 		mRotation.mMax		=  0.7f;
 		mRotationChangeTimer.mMin = 500;
-		mRotationChangeTimer.mMin = 2000;
+		mRotationChangeTimer.mMax = 2000;
 
 		mMass.mMin			= 5.0f;
 		mMass.mMax			= 10.0f;
@@ -1339,9 +1336,9 @@ public:
 				if (UseSpawnPlane())
 				{
 					part->mPosition		= mCameraPosition;
-					part->mPosition		-= (mSpawnPlaneNorm* mSpawnPlaneDistance); 
-					part->mPosition		+= (mSpawnPlaneRight*Q_flrand(-mSpawnPlaneSize, mSpawnPlaneSize)); 
-					part->mPosition		+= (mSpawnPlaneUp*   Q_flrand(-mSpawnPlaneSize, mSpawnPlaneSize)); 
+					part->mPosition		-= (mSpawnPlaneNorm* mSpawnPlaneDistance);
+					part->mPosition		+= (mSpawnPlaneRight*Q_flrand(-mSpawnPlaneSize, mSpawnPlaneSize));
+					part->mPosition		+= (mSpawnPlaneUp*   Q_flrand(-mSpawnPlaneSize, mSpawnPlaneSize));
 				}
 
 				// Otherwise, Just Wrap Around To The Other End Of The Range
@@ -1370,7 +1367,7 @@ public:
 				{
 					part->mFlags.set_bit(WFXParticle::FLAG_FADEIN);
 					part->mFlags.clear_bit(WFXParticle::FLAG_FADEOUT);
-				}			
+				}
 
 				// Start A Fade In
 				//-----------------
@@ -1428,7 +1425,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// Render - 
+	// Render -
 	////////////////////////////////////////////////////////////////////////////////////
 	void		Render()
 	{
@@ -1445,36 +1442,18 @@ public:
 
 		// Enable And Disable Things
 		//---------------------------
-		if (mGLModeEnum==GL_POINTS && qglPointParameteriNV)
-		{
-			qglEnable(GL_POINT_SPRITE_NV);
+		qglEnable(GL_TEXTURE_2D);
+		qglDisable(GL_CULL_FACE);
 
-			qglPointSize(mWidth);
-#ifdef WIN32
-			qglPointParameterfEXT( GL_POINT_SIZE_MIN_EXT, 4.0f );
-			qglPointParameterfEXT( GL_POINT_SIZE_MAX_EXT, 2047.0f );
-#else
-			qglPointParameterfEXT( GL_POINT_SIZE_MIN, 4.0f );
-			qglPointParameterfEXT( GL_POINT_SIZE_MAX, 2047.0f );
-#endif
-
-			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_TRUE);
-		}
-		else
-		{
-			qglEnable(GL_TEXTURE_2D);
-			qglDisable(GL_CULL_FACE);
-
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
 
 
-			// Setup Matrix Mode And Translation
-			//-----------------------------------
-			qglMatrixMode(GL_MODELVIEW);
-			qglPushMatrix();
+		// Setup Matrix Mode And Translation
+		//-----------------------------------
+		qglMatrixMode(GL_MODELVIEW);
+		qglPushMatrix();
 
-		}
 
 		// Begin
 		//-------
@@ -1520,16 +1499,10 @@ public:
 				qglColor4f(mColor[0]*part->mAlpha, mColor[1]*part->mAlpha, mColor[2]*part->mAlpha, mColor[3]*part->mAlpha);
 			}
 
-			// Render A Point
-			//----------------
-			if (mGLModeEnum==GL_POINTS)
-			{
-				qglVertex3fv(part->mPosition.v);
-			}
 
 			// Render A Triangle
 			//-------------------
-			else if (mVertexCount==3)
+			if (mVertexCount==3)
 			{
  				qglTexCoord2f(1.0, 0.0);
 				qglVertex3f(part->mPosition[0],
@@ -1540,7 +1513,7 @@ public:
 				qglVertex3f(part->mPosition[0] + mCameraLeft[0],
 							part->mPosition[1] + mCameraLeft[1],
 							part->mPosition[2] + mCameraLeft[2]);
-				
+
 				qglTexCoord2f(0.0, 0.0);
 				qglVertex3f(part->mPosition[0] + mCameraLeftPlusUp[0],
 							part->mPosition[1] + mCameraLeftPlusUp[1],
@@ -1572,22 +1545,14 @@ public:
 				// Left top.
 				qglTexCoord2f( 0.0, 1.0 );
 				qglVertex3f(part->mPosition[0] + mCameraLeftPlusUp[0],
-							part->mPosition[1] + mCameraLeftPlusUp[1], 
+							part->mPosition[1] + mCameraLeftPlusUp[1],
 							part->mPosition[2] + mCameraLeftPlusUp[2] );
 			}
 		}
 		qglEnd();
 
-		if (mGLModeEnum==GL_POINTS)
-		{
-			qglDisable(GL_POINT_SPRITE_NV);
-			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_FALSE);
-		}
-		else
-		{
-			qglEnable(GL_CULL_FACE);
-			qglPopMatrix();
-		}
+		qglEnable(GL_CULL_FACE);
+		qglPopMatrix();
 
 		mParticlesRendered += mParticleCountRender;
 	}
@@ -1628,11 +1593,11 @@ void R_ShutdownWorldEffects(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 void RB_RenderWorldEffects(void)
 {
-	if (!tr.world || 
-		(tr.refdef.rdflags & RDF_NOWORLDMODEL) || 
-		(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) || 
+	if (!tr.world ||
+		(tr.refdef.rdflags & RDF_NOWORLDMODEL) ||
+		(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) ||
 		!mParticleClouds.size() ||
-		ri.CL_IsRunningInGameCinematic()) 
+		ri.CL_IsRunningInGameCinematic())
 	{	//  no world rendering or no world or no particle clouds
 		return;
 	}
@@ -1961,7 +1926,7 @@ void R_WorldEffectCommand(const char *command)
 		nCloud.mFilterMode	= 1;
 		nCloud.mBlendMode	= 1;
 		nCloud.mFade		= 100.0f;
-		
+
 		nCloud.mColor[0]	= 0.34f;
 		nCloud.mColor[1]	= 0.70f;
 		nCloud.mColor[2]	= 0.34f;

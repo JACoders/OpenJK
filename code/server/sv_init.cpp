@@ -1,23 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
 #include "../client/snd_music.h"	// didn't want to put this in snd_local because of rebuild times etc.
@@ -139,7 +142,7 @@ baseline will be transmitted
 */
 void SV_CreateBaseline( void ) {
 	gentity_t			*svent;
-	int				entnum;	
+	int				entnum;
 
 	for ( entnum = 0; entnum < ge->num_entities ; entnum++ ) {
 		svent = SV_GentityNum(entnum);
@@ -181,7 +184,6 @@ void SV_Startup( void ) {
 }
 
 qboolean CM_SameMap(const char *server);
-qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
 
 /*
@@ -207,7 +209,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	SV_ShutdownGameProgs(qtrue);
 
 	Com_Printf ("------ Server Initialization ------\n%s\n", com_version->string);
-	Com_Printf ("Server: %s\n",server);	
+	Com_Printf ("Server: %s\n",server);
 
 	// Moved up from below to help reduce fragmentation
 	if (svs.snapshotEntities)
@@ -221,10 +223,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	if (!CM_SameMap(server))
 	{ //rww - only clear if not loading the same map
-		CM_ClearMap();
-	}
-	else if (CM_HasTerrain())
-	{ //always clear when going between maps with terrain
 		CM_ClearMap();
 	}
 
@@ -266,7 +264,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	re.SVModelInit();
 
-	// allocate the snapshot entities 
+	// allocate the snapshot entities
 	svs.snapshotEntities = (entityState_t *) Z_Malloc (sizeof(entityState_t)*svs.numSnapshotEntities, TAG_CLIENTS, qtrue );
 
 	Music_SetLevelName(server);
@@ -303,7 +301,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	// clear physics interaction links
 	SV_ClearWorld ();
-	
+
 	// media configstring setting should be done during
 	// the loading stage, so connected clients don't have
 	// to load during actual gameplay
@@ -318,10 +316,9 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 		sv.time += 100;
 		re.G2API_SetTime(sv.time,G2T_SV_TIME);
 	}
-#ifndef __NO_JK2
-	if(com_jk2 && !com_jk2->integer)
-#endif
+#ifndef JK2_MODE
 	ge->ConnectNavs(sv_mapname->string, sv_mapChecksum->integer);
+#endif
 
 	// create a baseline for more efficient communications
 	SV_CreateBaseline ();
@@ -330,7 +327,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 		// clear all time counters, because we have reset sv.time
 		svs.clients[i].lastPacketTime = 0;
 		svs.clients[i].lastConnectTime = 0;
-		svs.clients[i].nextSnapshotTime = 0;
 
 		// send the new gamestate to all connected clients
 		if (svs.clients[i].state >= CS_CONNECTED) {
@@ -348,7 +344,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 				// the new gamestate will be sent
 			}
 		}
-	}	
+	}
 
 	// run another frame to allow things to look at all connected clients
 	ge->RunFrame( sv.time );
@@ -372,7 +368,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	Z_Validate();
 	Z_Validate();
 	Z_Validate();
-	
+
 	Com_Printf ("-----------------------------------\n");
 }
 
@@ -431,21 +427,15 @@ to totally exit after returning from this function.
 ==================
 */
 void SV_FinalMessage( const char *message ) {
-	int			i, j;
-	client_t	*cl;
-	
+	client_t *cl = svs.clients;
+
 	SV_SendServerCommand( NULL, "print \"%s\"", message );
 	SV_SendServerCommand( NULL, "disconnect" );
 
 	// send it twice, ignoring rate
-	for ( j = 0 ; j < 2 ; j++ ) {
-		for (i=0, cl = svs.clients ; i < 1 ; i++, cl++) {
-			if (cl->state >= CS_CONNECTED) {
-				// force a snapshot to be sent
-				cl->nextSnapshotTime = -1;
-				SV_SendClientSnapshot( cl );
-			}
-		}
+	if ( cl->state >= CS_CONNECTED ) {
+		SV_SendClientSnapshot( cl );
+		SV_SendClientSnapshot( cl );
 	}
 }
 

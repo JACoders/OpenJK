@@ -1,36 +1,35 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-#ifndef TR_LOCAL_H
-#define TR_LOCAL_H
-
+#pragma once
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
-#include "../rd-common/tr_public.h"
-#include "../rd-common/mdx_format.h"
-#ifdef _WIN32
+#include "tr_common.h"
+#include "tr_public.h"
+#include "mdx_format.h"
 #include "qgl.h"
-#include "glext.h"
-#else
-#include "qgl.h"
-#include "../sdl/sdl_qgl.h"
-#endif
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
@@ -88,7 +87,7 @@ typedef struct {
 	qboolean	areamaskModified;	// qtrue if areamask changed since last scene
 
 	float		floatTime;			// tr.refdef.time / 1000.0
-	
+
 	// text messages for deform text shaders
 //	char		text[MAX_RENDER_STRINGS][MAX_RENDER_STRING_LENGTH];
 
@@ -152,9 +151,9 @@ typedef enum {
 	SS_MIDDLE,
 	SS_MID_OUTSIDE,
 	SS_OUTSIDE,			// outside body parts (i.e. ribs)
-	
+
 	SS_FOG,
-	
+
 	SS_UNDERWATER,		// for items that should be drawn in front of the water plane
 
 	SS_BLEND0,			// regular transparency and filters
@@ -178,8 +177,8 @@ typedef enum {
 	GF_SIN,
 	GF_SQUARE,
 	GF_TRIANGLE,
-	GF_SAWTOOTH, 
-	GF_INVERSE_SAWTOOTH, 
+	GF_SAWTOOTH,
+	GF_INVERSE_SAWTOOTH,
 
 	GF_NOISE,
 	GF_RAND,
@@ -377,7 +376,7 @@ typedef struct {
 	bool			isDetail;
 	byte			index;						// index of stage
 	byte			lightmapStyle;
-	
+
 	textureBundle_t	bundle[NUM_TEXTURE_BUNDLES];
 
 	waveForm_t		rgbWave;
@@ -460,7 +459,7 @@ typedef struct shader_s {
 	int			multitextureEnv;		// 0, GL_MODULATE, GL_ADD (FIXME: put in stage)
 
 	cullType_t	cullType;				// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
-	bool		polygonOffset;			// set for decals and other items that must be offset 
+	bool		polygonOffset;			// set for decals and other items that must be offset
 	bool		noMipMaps;				// for console fonts, 2D elements, etc.
 	bool		noPicMip;				// for images that must always be full resolution
 	bool		noTC;					// for images that don't want to be texture compressed (namely skies)
@@ -471,7 +470,7 @@ typedef struct shader_s {
 	short		numDeforms;
 
 	short		numUnfoggedPasses;
-	shaderStage_t	*stages;		
+	shaderStage_t	*stages;
 
 	float			timeOffset;                                 // current time offset for this shader
 
@@ -560,13 +559,12 @@ SURFACES
 
 // any changes in surfaceType must be mirrored in rb_surfaceTable[]
 typedef enum {
-	SF_BAD, 
+	SF_BAD,
 	SF_SKIP,				// ignore
 	SF_FACE,
 	SF_GRID,
 	SF_TRIANGLES,
 	SF_POLY,
-	SF_TERRAIN,
 	SF_MD3,
 /*
 Ghoul2 Insert Start
@@ -725,7 +723,7 @@ typedef struct mnode_s {
 
 	// node specific
 	cplane_t	*plane;
-	struct mnode_s	*children[2];	
+	struct mnode_s	*children[2];
 
 	// leaf specific
 	int			cluster;
@@ -813,7 +811,7 @@ typedef struct model_s {
 	char		name[MAX_QPATH];
 	modtype_t	type;
 	int			index;				// model = tr.models[model->mod_index]
-	
+
 	int			dataSize;			// just for listing purposes
 	bmodel_t	*bmodel;			// only if type == MOD_BRUSH
 	md3Header_t	*md3[MD3_MAX_LODS];	// only if type == MOD_MESH
@@ -834,7 +832,7 @@ Ghoul2 Insert End
 
 void		R_ModelInit (void);
 model_t		*R_GetModelByHandle( qhandle_t hModel );
-void		R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame, 
+void		R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame,
 					 float frac, const char *tagName );
 void		R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs );
 
@@ -918,7 +916,7 @@ typedef struct {
 typedef struct {
 	int		c_surfaces, c_shaders, c_vertexes, c_indexes, c_totalIndexes;
 	float	c_overDraw;
-	
+
 	int		c_dlightVertexes;
 	int		c_dlightIndexes;
 
@@ -946,14 +944,8 @@ typedef struct {
 	trRefEntity_t	entity2D;	// currentEntity will point at this when doing 2D rendering
 } backEndState_t;
 
-typedef struct srfTerrain_s
-{
-	surfaceType_t			surfaceType;
-	class CTRLandScape		*landscape;
-} srfTerrain_t;
-
 /*
-** trGlobals_t 
+** trGlobals_t
 **
 ** Most renderer globals are defined here.
 ** backend functions should never modify any of these fields,
@@ -979,7 +971,7 @@ typedef struct {
 
 	const byte				*externalVisData;	// from RE_SetWorldVisData, shared with CM_Load
 
-	image_t					*defaultImage;	
+	image_t					*defaultImage;
 	image_t					*scratchImage[NUM_SCRATCH_IMAGES];
 	image_t					*fogImage;
 	image_t					*dlightImage;	// inverse-quare highlight for projective adding
@@ -987,7 +979,7 @@ typedef struct {
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
 	image_t					*screenImage; //reserve us a gl texnum to use with RF_DISTORTION
-	
+
 	// Handle to the Glow Effect Vertex Shader. - AReis
 	GLuint					glowVShader;
 
@@ -1033,6 +1025,7 @@ typedef struct {
 
 	vec3_t					sunLight;			// from the sky shader for this level
 	vec3_t					sunDirection;
+	int						sunSurfaceLight;	// from the sky shader for this level
 	vec3_t					sunAmbient;			// from the sky shader	(only used for John's terrain system)
 
 
@@ -1071,11 +1064,6 @@ typedef struct {
 	float					rangedFog;
 
 	float					distanceCull;
-	srfTerrain_t			landScape;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 int		 R_Images_StartIteration(void);
@@ -1089,6 +1077,7 @@ extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern window_t		window;
 
 
 //
@@ -1123,7 +1112,7 @@ extern cvar_t	*r_primitives;			// "0" = based on compiled vertex array existance
 extern cvar_t	*r_fastsky;				// controls whether sky should be cleared or drawn
 extern cvar_t	*r_drawSun;				// controls drawing of sun quad
 extern cvar_t	*r_dynamiclight;		// dynamic lights enabled/disabled
-extern cvar_t	*r_dlightBacks;			// dlight non-facing surfaces for continuity
+// rjr - removed for hacking extern cvar_t	*r_dlightBacks;			// dlight non-facing surfaces for continuity
 
 extern	cvar_t	*r_norefresh;			// bypasses the ref rendering
 extern	cvar_t	*r_drawentities;		// disable/enable entity rendering
@@ -1234,10 +1223,6 @@ Ghoul2 Insert End
 extern	cvar_t	*r_environmentMapping;
 //====================================================================
 
-// Point sprite stuff.
-extern cvar_t	*r_ext_point_parameters;
-extern cvar_t	*r_ext_nv_point_sprite;
-
 
 void R_SwapBuffers( int );
 
@@ -1251,7 +1236,7 @@ void R_AddLightningBoltSurfaces( trRefEntity_t *e );
 
 void R_AddPolygonSurfaces( void );
 
-void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader, 
+void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader,
 					 int *fogNum, int *dlightMap );
 
 void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fogIndex, int dlightMap );
@@ -1262,7 +1247,7 @@ void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fo
 #define	CULL_OUT	2		// completely outside the clipping planes
 void R_LocalNormalToWorld (const vec3_t local, vec3_t world);
 void R_LocalPointToWorld (const vec3_t local, vec3_t world);
-void R_WorldNormalToEntity (const vec3_t localVec, vec3_t world); 
+void R_WorldNormalToEntity (const vec3_t localVec, vec3_t world);
 int R_CullLocalBox (const vec3_t bounds[2]);
 int R_CullPointAndRadius( const vec3_t pt, float radius );
 int R_CullLocalPointAndRadius( const vec3_t pt, float radius );
@@ -1387,6 +1372,11 @@ shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 void		R_InitShaders( void );
 void		R_ShaderList_f( void );
 
+//
+// tr_arb.c
+//
+void ARB_InitGlowShaders( void );
+
 
 /*
 ====================================================================
@@ -1395,17 +1385,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 
 ====================================================================
 */
-
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-
-void		GLimp_LogComment( const char *comment );
-void		GLimp_Minimize( void );
-
-void		GLimp_SetGamma( unsigned char red[256], 
-						    unsigned char green[256],
-							unsigned char blue[256] );
+static inline void GLimp_LogComment( char *comment ) {}
 
 
 /*
@@ -1425,7 +1405,7 @@ typedef struct stageVars
 
 #define	NUM_TEX_COORDS		(MAXLIGHTMAPS+1)
 
-struct shaderCommands_s 
+struct shaderCommands_s
 {
 	glIndex_t	indexes[SHADER_MAX_INDEXES] QALIGN(16);
 	vec4_t		xyz[SHADER_MAX_VERTEXES] QALIGN(16);
@@ -1458,7 +1438,7 @@ struct shaderCommands_s
 	bool		fading;
 };
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 typedef __declspec(align(16)) shaderCommands_s	shaderCommands_t;
 #else
 typedef shaderCommands_s	shaderCommands_t;
@@ -1493,20 +1473,6 @@ WORLD MAP
 void R_AddBrushModelSurfaces( trRefEntity_t *e );
 void R_AddWorldSurfaces( void );
 
-
-/*
-============================================================
-
-FLARES
-
-============================================================
-*/
-
-void R_ClearFlares( void );
-
-void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t normal, float lightScale );
-void RB_AddDlightFlares( void );
-void RB_RenderFlares (void);
 
 /*
 ============================================================
@@ -1609,9 +1575,6 @@ ANIMATED MODELS
 /*
 Ghoul2 Insert Start
 */
-#ifdef _MSC_VER
-#pragma warning (disable: 4512)	//default assignment operator could not be gened
-#endif
 class CBoneCache;
 
 class CRenderableSurface
@@ -1620,7 +1583,7 @@ public:
 #ifdef _G2_GORE
 	int				ident;
 #else
-	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to 
+	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to
 #endif
  	CBoneCache 		*boneCache;		// pointer to transformed bone list for this surf
 	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
@@ -1646,7 +1609,7 @@ public:
 	}
 #endif
 
-CRenderableSurface():	
+CRenderableSurface():
 	ident(SF_MDX),
 	boneCache(0),
 #ifdef _G2_GORE
@@ -1789,7 +1752,7 @@ typedef struct
 	int			commandId;
 } setModeCommand_t;
 
-typedef struct 
+typedef struct
 {
 	int		commandId;
 	float	x, y;
@@ -1840,19 +1803,16 @@ extern	backEndData_t	*backEndData;
 void *R_GetCommandBuffer( int bytes );
 void RB_ExecuteRenderCommands( const void *data );
 
-void R_InitCommandBuffers( void );
-void R_ShutdownCommandBuffers( void );
-
-void R_SyncRenderThread( void );
+void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 
 void RE_SetColor( const float *rgba );
-void RE_StretchPic ( float x, float y, float w, float h, 
+void RE_StretchPic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2, qhandle_t hShader );
-void RE_RotatePic ( float x, float y, float w, float h, 
+void RE_RotatePic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
-void RE_RotatePic2 ( float x, float y, float w, float h, 
+void RE_RotatePic2 ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
 void RE_RenderWorldEffects(void);
 void RE_LAGoggles( void );
@@ -1877,15 +1837,9 @@ void		Create_Matrix(const float *angle, mdxaBone_t *matrix);
 void		Multiply_3x4Matrix(mdxaBone_t *out,const mdxaBone_t *in2,const mdxaBone_t *in);
 extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
 extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
 /*
 Ghoul2 Insert End
 */
 
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
-
-// tr_subs.cpp
-void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign );
-
-#endif //TR_LOCAL_H

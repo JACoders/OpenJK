@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "qcommon/q_shared.h"
@@ -41,11 +64,10 @@ int			CM_WriteAreaBits( byte *buffer, int area );
 
 //rwwRMG - added:
 bool		CM_GenericBoxCollide(const vec3pair_t abounds, const vec3pair_t bbounds);
-void		CM_HandlePatchCollision(struct traceWork_s *tw, trace_t &trace, const vec3_t tStart, const vec3_t tEnd, class CCMPatch *patch, int checkcount);
 void		CM_CalcExtents(const vec3_t start, const vec3_t end, const struct traceWork_s *tw, vec3pair_t bounds);
 
 // cm_tag.c
-int			CM_LerpTag( orientation_t *tag,  clipHandle_t model, int startFrame, int endFrame, 
+int			CM_LerpTag( orientation_t *tag,  clipHandle_t model, int startFrame, int endFrame,
 					 float frac, const char *tagName );
 
 
@@ -56,7 +78,5 @@ int	CM_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projecti
 // cm_patch.c
 void CM_DrawDebugSurface( void (*drawPoly)(int color, int numPoints, float *points) );
 
-// cm_shader.cpp
-const char *CM_GetShaderText(const char *key);
-void CM_FreeShaderText(void);
-void CM_LoadShaderText(qboolean forceReload);
+// cm_trace.cpp
+bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);

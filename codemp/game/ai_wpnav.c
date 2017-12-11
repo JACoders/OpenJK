@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "g_local.h"
 #include "qcommon/q_shared.h"
 #include "botlib/botlib.h"
@@ -254,7 +277,7 @@ void BotWaypointRender(void)
 			plum = G_TempEntity( gWPArray[i]->origin, EV_SCOREPLUM );
 			plum->r.svFlags |= SVF_BROADCAST;
 			plum->s.time = i;
-			
+
 			n = 0;
 
 			while (n < gWPArray[i]->neighbornum)
@@ -925,7 +948,7 @@ int CanGetToVectorTravel(vec3_t org1, vec3_t moveTo, vec3_t mins, vec3_t maxs)
 				didMove = 1;
 			}
 		}
-		
+
 		if (didMove != 1)
 		{ //stair check
 			vec3_t trFrom;
@@ -2082,7 +2105,7 @@ int LoadPathData(const char *filename)
 
 			nei_num++;
 		}
-		
+
 		while (fileString[i] != ' ')
 		{
 			currentVar[i_cv] = fileString[i];
@@ -3232,7 +3255,7 @@ void BeginAutoPathRoutine(void)
 	}
 
 	G_RMGPathing();
-	
+
 	//rww - Using a faster in-engine version because we're having to wait for this stuff to get done as opposed to just saving it once.
 	trap->BotUpdateWaypoints(gWPNum, gWPArray);
 	trap->BotCalculatePaths(RMG.integer);

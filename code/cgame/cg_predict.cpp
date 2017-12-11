@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_predict.c -- this file generates cg.predicted_player_state by either
 // interpolating between snapshots from the server or locally predicting
@@ -32,11 +37,6 @@ static	pmove_t		cg_pmove;
 static	int			cg_numSolidEntities;
 static	centity_t	*cg_solidEntities[MAX_ENTITIES_IN_SNAPSHOT];
 
-#if MEM_DEBUG
-#include "../smartheap/heapagnt.h"
-#define CG_TRACE_PROFILE (0)
-#endif
-
 /*
 ====================
 CG_BuildSolidList
@@ -46,7 +46,7 @@ of the entities that are actually solid, to make for more
 efficient collision detection
 ====================
 */
-void CG_BuildSolidList( void ) 
+void CG_BuildSolidList( void )
 {
 	int			i;
 	centity_t	*cent;
@@ -60,13 +60,13 @@ void CG_BuildSolidList( void )
 		return;
 	}
 
-	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) 
+	for ( i = 0 ; i < cg.snap->numEntities ; i++ )
 	{
 		if ( cg.snap->entities[ i ].number < ENTITYNUM_WORLD )
 		{
 			cent = &cg_entities[ cg.snap->entities[ i ].number ];
 
-			if ( cent->gent != NULL && cent->gent->s.solid ) 
+			if ( cent->gent != NULL && cent->gent->s.solid )
 			{
 				cg_solidEntities[cg_numSolidEntities] = cent;
 				cg_numSolidEntities++;
@@ -85,7 +85,7 @@ void CG_BuildSolidList( void )
 			((difference[0]*difference[0]) + (difference[1]*difference[1]) + (difference[2]*difference[2])) <= dsquared)
 		{
 			cent->currentValid = qtrue;
-			if ( cent->nextState && cent->nextState->solid ) 
+			if ( cent->nextState && cent->nextState->solid )
 			{
 				cg_solidEntities[cg_numSolidEntities] = cent;
 				cg_numSolidEntities++;
@@ -134,7 +134,7 @@ void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const vec3_t
 			cmodel = cgi_CM_InlineModel( ent->modelindex );
 			VectorCopy( cent->lerpAngles, angles );
 
-			//Hmm... this would cause traces against brush movers to snap at 20fps (as with the third person camera)... 
+			//Hmm... this would cause traces against brush movers to snap at 20fps (as with the third person camera)...
 			//Let's use the lerpOrigin for now and see if it breaks anything...
 			//EvaluateTrajectory( &cent->currentState.pos, cg.snap->serverTime, origin );
 			VectorCopy( cent->lerpOrigin, origin );
@@ -176,18 +176,9 @@ void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const vec3_t
 CG_Trace
 ================
 */
-void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 					 const int skipNumber, const int mask, const EG2_Collision eG2TraceType/*=G2_NOCOLLIDE*/, const int useLod/*=0*/) {
 	trace_t	t;
-#if CG_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2004);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
 
 	cgi_CM_BoxTrace ( &t, start, end, mins, maxs, 0, mask);
 	t.entityNum = t.fraction != 1.0 ? ENTITYNUM_WORLD : ENTITYNUM_NONE;
@@ -217,15 +208,6 @@ int		CG_PointContents( const vec3_t point, int passEntityNum ) {
 	clipHandle_t cmodel;
 	int			contents;
 
-#if CG_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2005);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
 	contents = cgi_CM_PointContents (point, 0);
 
 	for ( i = 0 ; i < cg_numSolidEntities ; i++ ) {
@@ -257,7 +239,7 @@ void CG_SetClientViewAngles( vec3_t angles, qboolean overrideViewEnt )
 {
 	if ( cg.snap->ps.viewEntity <= 0 || cg.snap->ps.viewEntity >= ENTITYNUM_WORLD || overrideViewEnt )
 	{//don't clamp angles when looking through a viewEntity
-		for( int i = 0; i < 3; i++ ) 
+		for( int i = 0; i < 3; i++ )
 		{
 			cg.predicted_player_state.viewangles[i] = angles[i];
 			cg.predicted_player_state.delta_angles[i] = 0;
@@ -294,7 +276,7 @@ qboolean CG_CheckModifyUCmd( usercmd_t *cmd, vec3_t viewangles )
 		overridAngles = qtrue;
 		/*
 		int vehIndex = g_entities[0].owner->client->ps.vehicleIndex;
-		if ( vehIndex != VEHICLE_NONE 
+		if ( vehIndex != VEHICLE_NONE
 			&& (vehicleData[vehIndex].type == VH_FIGHTER || (vehicleData[vehIndex].type == VH_SPEEDER )) )
 		{//in vehicle flight mode
 			float speed = VectorLength( cg.snap->ps.velocity );
@@ -414,7 +396,7 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	}
 
 	// if the next frame is a teleport, we can't lerp to it
-	if ( cg.nextFrameTeleport ) 
+	if ( cg.nextFrameTeleport )
 	{
 		return;
 	}
@@ -423,23 +405,23 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	{
 
 		f = (float)( cg.time - prev->serverTime ) / ( next->serverTime - prev->serverTime );
-		
+
 		i = next->ps.bobCycle;
-		if ( i < prev->ps.bobCycle ) 
+		if ( i < prev->ps.bobCycle )
 		{
 			i += 256;		// handle wraparound
 		}
 		out->bobCycle = prev->ps.bobCycle + f * ( i - prev->ps.bobCycle );
 
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
 			out->origin[i] = prev->ps.origin[i] + f * (next->ps.origin[i] - prev->ps.origin[i] );
-			if ( !grabAngles ) 
+			if ( !grabAngles )
 			{
-				out->viewangles[i] = LerpAngle( 
+				out->viewangles[i] = LerpAngle(
 					prev->ps.viewangles[i], next->ps.viewangles[i], f );
 			}
-			out->velocity[i] = prev->ps.velocity[i] + 
+			out->velocity[i] = prev->ps.velocity[i] +
 				f * (next->ps.velocity[i] - prev->ps.velocity[i] );
 		}
 	}
@@ -449,7 +431,7 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	if (out->groundEntityNum>0)
 	{
 		pent=&cg_entities[out->groundEntityNum];
-		if (pent->currentState.eType == ET_MOVER ) 
+		if (pent->currentState.eType == ET_MOVER )
 
 		{
 			onPlat=true;
@@ -457,8 +439,8 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	}
 
 	if (
-		cg.validPPS && 
-		cg_smoothPlayerPos.value>0.0f && 
+		cg.validPPS &&
+		cg_smoothPlayerPos.value>0.0f &&
 		cg_smoothPlayerPos.value<1.0f &&
 		!onPlat
 		)
@@ -479,7 +461,7 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 
 
 		EvaluateTrajectory( &pent->currentState.pos,cg.snap->serverTime, p1 );
-		if ( cg.nextSnap &&cg.nextSnap->serverTime > cg.snap->serverTime && pent->nextState) 
+		if ( cg.nextSnap &&cg.nextSnap->serverTime > cg.snap->serverTime && pent->nextState)
 		{
 			EvaluateTrajectory( &pent->nextState->pos,cg.nextSnap->serverTime, p2 );
 			lerpTime=float(cg.nextSnap->serverTime - cg.snap->serverTime);
@@ -504,8 +486,8 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 
 		VectorAdd(out->origin,vel,out->origin);
 
-		if (cg.validPPS && 
-			cg_smoothPlayerPlat.value>0.0f && 
+		if (cg.validPPS &&
+			cg_smoothPlayerPlat.value>0.0f &&
 			cg_smoothPlayerPlat.value<1.0f
 			)
 		{
@@ -583,7 +565,7 @@ void CG_TouchTriggerPrediction( void ) {
 		return;
 	}
 
-	spectator = ( cg.predicted_player_state.pm_type == PM_SPECTATOR );
+	spectator = (qboolean)( cg.predicted_player_state.pm_type == PM_SPECTATOR );
 
 	if ( cg.predicted_player_state.pm_type != PM_NORMAL && !spectator ) {
 		return;
@@ -611,7 +593,7 @@ void CG_TouchTriggerPrediction( void ) {
 			continue;
 		}
 
-		cgi_CM_BoxTrace( &trace, cg.predicted_player_state.origin, cg.predicted_player_state.origin, 
+		cgi_CM_BoxTrace( &trace, cg.predicted_player_state.origin, cg.predicted_player_state.origin,
 			cg_pmove.mins, cg_pmove.maxs, cmodel, -1 );
 
 		if ( !trace.startsolid ) {
@@ -692,7 +674,7 @@ void CG_PredictPlayerState( void ) {
 	cg_pmove.trace = CG_Trace;
 	cg_pmove.pointcontents = CG_PointContents;
 	cg_pmove.tracemask = MASK_PLAYERSOLID;
-	cg_pmove.noFootsteps = 0;//( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
+	cg_pmove.noFootsteps = qfalse;//( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
 
 	// save the state before the pmove so we can detect transitions
 	oldPlayerState = cg.predicted_player_state;
@@ -702,7 +684,7 @@ void CG_PredictPlayerState( void ) {
 	current = cgi_GetCurrentCmdNumber();
 
 	if ( current - cmdNum >= CMD_BACKUP ) {
-		return;	
+		return;
 	}
 
 	// get the most recent information we have
@@ -710,7 +692,7 @@ void CG_PredictPlayerState( void ) {
 
 	// we should always be predicting at least one frame
 	if ( cmdNum >= current )	{
-		return;	
+		return;
 	}
 
 	// run cmds
@@ -730,7 +712,7 @@ void CG_PredictPlayerState( void ) {
 				cg.thisFrameTeleport = qfalse;
 			} else {
 				vec3_t	adjusted;
-				CG_AdjustPositionForMover( cg.predicted_player_state.origin, 
+				CG_AdjustPositionForMover( cg.predicted_player_state.origin,
 					cg.predicted_player_state.groundEntityNum, cg.oldTime, adjusted );
 
 				VectorSubtract( oldPlayerState.origin, adjusted, delta );
@@ -768,7 +750,7 @@ void CG_PredictPlayerState( void ) {
 		if ( player_locked ||
 			(ent && !ent->s.number&&ent->aimDebounceTime>level.time) ||
 			(ent && ent->client && ent->client->ps.pm_time && (ent->client->ps.pm_flags&PMF_TIME_KNOCKBACK)) ||
-			(ent && ent->forcePushTime > level.time) ) 
+			(ent && ent->forcePushTime > level.time) )
 		{//lock out player control unless dead
 			//VectorClear( cg_pmove.cmd.angles );
 			cg_pmove.cmd.forwardmove = 0;
@@ -779,15 +761,15 @@ void CG_PredictPlayerState( void ) {
 		CG_CheckModifyUCmd( &cg_pmove.cmd, NULL );
 		//FIXME: prediction on clients in timescale results in jerky positional translation
 		Pmove( &cg_pmove );
-		
+
 		// add push trigger movement effects
 		CG_TouchTriggerPrediction();
 
 	} while ( cmdNum < current );
 
 	// adjust for the movement of the groundentity
-	CG_AdjustPositionForMover( cg.predicted_player_state.origin, 
-		cg.predicted_player_state.groundEntityNum, 
+	CG_AdjustPositionForMover( cg.predicted_player_state.origin,
+		cg.predicted_player_state.groundEntityNum,
 		cg.time, cg.predicted_player_state.origin );
 
 	// fire events and other transition triggered things

@@ -1,7 +1,26 @@
-// Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+// Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
 
 #include "client/client.h" // hi i'm bad
 
@@ -36,7 +55,7 @@ struct	zoneHeader_s		*pNext;
 struct	zoneHeader_s		*pPrev;
 } zoneHeader_t;
 
-typedef struct 
+typedef struct
 {
 	int iMagic;
 
@@ -61,8 +80,8 @@ typedef struct zoneStats_s
 	// I'm keeping these updated on the fly, since it's quicker for cache-pool
 	//	purposes rather than recalculating each time...
 	//
-	int		iSizesPerTag [TAG_COUNT];	
-	int		iCountsPerTag[TAG_COUNT];	
+	int		iSizesPerTag [TAG_COUNT];
+	int		iCountsPerTag[TAG_COUNT];
 
 } zoneStats_t;
 
@@ -80,7 +99,7 @@ zone_t	TheZone = {};
 // Scans through the linked list of mallocs and makes sure no data has been overwritten
 
 void Z_Validate(void)
-{	
+{
 	if(!com_validateZone || !com_validateZone->integer)
 	{
 		return;
@@ -96,7 +115,7 @@ void Z_Validate(void)
 		{
 			Com_Error(ERR_FATAL, "Z_Validate(): Bad block allocation count!");
 			return;
-		}		   
+		}
 		#endif
 
 		if(pMemory->iMagic != ZONE_MAGIC)
@@ -110,11 +129,11 @@ void Z_Validate(void)
 			Com_Error(ERR_FATAL, "Z_Validate(): Corrupt zone tail!");
 			return;
 		}
-		
+
 		pMemory = pMemory->pNext;
 	}
 }
-				
+
 
 
 // static mem blocks to reduce a lot of small zone overhead
@@ -122,13 +141,13 @@ void Z_Validate(void)
 #pragma pack(push)
 #pragma pack(1)
 typedef struct StaticZeroMem_s {
-	zoneHeader_t	Header;	
+	zoneHeader_t	Header;
 //	byte mem[0];
 	zoneTail_t		Tail;
 } StaticZeroMem_t;
 
 typedef struct StaticMem_s {
-	zoneHeader_t	Header;	
+	zoneHeader_t	Header;
 	byte mem[2];
 	zoneTail_t		Tail;
 } StaticMem_t;
@@ -153,7 +172,7 @@ StaticMem_t gNumberString[] = {
 
 qboolean gbMemFreeupOccured = qfalse;
 void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iUnusedAlign /* = 4 */)
-{	
+{
 	gbMemFreeupOccured = qfalse;
 
 	if (iSize == 0)
@@ -171,12 +190,10 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 	zoneHeader_t *pMemory = NULL;
 	while (pMemory == NULL)
 	{
-		#ifdef _WIN32
 		if (gbMemFreeupOccured)
 		{
-			Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
+			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
 		}
-		#endif
 
 		if (bZeroit) {
 			pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );
@@ -225,14 +242,14 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 				continue;
 			}
 
-			// as a last panic measure, dump all the audio memory, but not if we're in the audio loader 
+			// as a last panic measure, dump all the audio memory, but not if we're in the audio loader
 			//	(which is annoying, but I'm not sure how to ensure we're not dumping any memory needed by the sound
 			//	currently being loaded if that was the case)...
 			//
 			// note that this keeps querying until it's freed up as many bytes as the requested size, but freeing
 			//	several small blocks might not mean that one larger one is satisfiable after freeup, however that'll
-			//	just make it go round again and try for freeing up another bunch of blocks until the total is satisfied 
-			//	again (though this will have freed twice the requested amount in that case), so it'll either work 
+			//	just make it go round again and try for freeing up another bunch of blocks until the total is satisfied
+			//	again (though this will have freed twice the requested amount in that case), so it'll either work
 			//	eventually or not free up enough and drop through to the final ERR_DROP. No worries...
 			//
 			extern qboolean gbInsideLoadSound;
@@ -268,7 +285,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 	// Link in
 	pMemory->iMagic	= ZONE_MAGIC;
 	pMemory->eTag	= eTag;
-	pMemory->iSize	= iSize;	
+	pMemory->iSize	= iSize;
 	pMemory->pNext  = TheZone.Header.pNext;
 	TheZone.Header.pNext = pMemory;
 	if (pMemory->pNext)
@@ -286,7 +303,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 	TheZone.Stats.iCurrent += iSize;
 	TheZone.Stats.iCount++;
 	TheZone.Stats.iSizesPerTag	[eTag] += iSize;
-	TheZone.Stats.iCountsPerTag	[eTag]++;	
+	TheZone.Stats.iCountsPerTag	[eTag]++;
 
 	if (TheZone.Stats.iCurrent > TheZone.Stats.iPeak)
 	{
@@ -296,11 +313,27 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 #ifdef DETAILED_ZONE_DEBUG_CODE
 	mapAllocatedZones[pMemory]++;
 #endif
-	
+
 	Z_Validate();	// check for corruption
 
 	void *pvReturnMem = &pMemory[1];
 	return pvReturnMem;
+}
+
+// Special wrapper around Z_Malloc for better separation between the main engine
+// code and the bundled minizip library.
+
+extern "C" Q_EXPORT void* openjk_minizip_malloc(int size);
+extern "C" Q_EXPORT void openjk_minizip_free(void* to_free);
+
+void* openjk_minizip_malloc(int size)
+{
+    return Z_Malloc(size, TAG_MINIZIP, qfalse, 0);
+}
+
+void openjk_minizip_free(void *to_free)
+{
+    Z_Free(to_free);
 }
 
 // used during model cacheing to save an extra malloc, lets us morph the disk-load buffer then
@@ -360,7 +393,7 @@ static void Zone_FreeBlock(zoneHeader_t *pMemory)
 		}
 		free (pMemory);
 
-		
+
 		#ifdef DETAILED_ZONE_DEBUG_CODE
 		// this has already been checked for in execution order, but wtf?
 		int& iAllocCount = mapAllocatedZones[pMemory];
@@ -369,7 +402,7 @@ static void Zone_FreeBlock(zoneHeader_t *pMemory)
 			Com_Error(ERR_FATAL, "Zone_FreeBlock(): Double-freeing block!");
 			return;
 		}
-		iAllocCount--;	
+		iAllocCount--;
 		#endif
 	}
 }
@@ -402,7 +435,7 @@ void Z_Free(void *pvAddress)
 	if (pvAddress == NULL)	// I've put this in as a safety measure because of some bits of #ifdef BSPC stuff	-Ste.
 	{
 		//Com_Error(ERR_FATAL, "Z_Free(): NULL arg");
-		return;		
+		return;
 	}
 
 	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
@@ -418,10 +451,10 @@ void Z_Free(void *pvAddress)
 	//
 	int& iAllocCount = mapAllocatedZones[pMemory];
 	if (iAllocCount <= 0)
-	{			
+	{
 		Com_Error(ERR_FATAL, "Z_Free(): Block already-freed, or not allocated through Z_Malloc!");
 		return;
-	}		   
+	}
 	#endif
 
 	if (pMemory->iMagic != ZONE_MAGIC)
@@ -481,7 +514,7 @@ void *S_Malloc( int iSize ) {
 #ifdef _DEBUG
 static void Z_MemRecoverTest_f(void)
 {
-	// needs to be in _DEBUG only, not good for final game! 
+	// needs to be in _DEBUG only, not good for final game!
 	// fixme: findmeste: Remove this sometime
 	//
 	int iTotalMalloc = 0;
@@ -505,14 +538,14 @@ static void Z_MemRecoverTest_f(void)
 
 static void Z_Stats_f(void)
 {
-	Com_Printf("\nThe zone is using %d bytes (%.2fMB) in %d memory blocks\n", 
-								  TheZone.Stats.iCurrent, 
-									        (float)TheZone.Stats.iCurrent / 1024.0f / 1024.0f, 
+	Com_Printf("\nThe zone is using %d bytes (%.2fMB) in %d memory blocks\n",
+								  TheZone.Stats.iCurrent,
+									        (float)TheZone.Stats.iCurrent / 1024.0f / 1024.0f,
 													  TheZone.Stats.iCount
 				);
 
-	Com_Printf("The zone peaked at %d bytes (%.2fMB)\n", 
-									TheZone.Stats.iPeak, 
+	Com_Printf("The zone peaked at %d bytes (%.2fMB)\n",
+									TheZone.Stats.iPeak,
 									         (float)TheZone.Stats.iPeak / 1024.0f / 1024.0f
 				);
 }
@@ -520,7 +553,7 @@ static void Z_Stats_f(void)
 // Gives a detailed breakdown of the memory blocks in the zone
 
 static void Z_Details_f(void)
-{	
+{
 	Com_Printf("---------------------------------------------------------------------------\n");
 	Com_Printf("%20s %9s\n","Zone Tag","Bytes");
 	Com_Printf("%20s %9s\n","--------","-----");
@@ -531,15 +564,15 @@ static void Z_Details_f(void)
 
 		if (iThisCount)
 		{
-			// can you believe that using %2.2f as a format specifier doesn't bloody work? 
+			// can you believe that using %2.2f as a format specifier doesn't bloody work?
 			//	It ignores the left-hand specifier. Sigh, now I've got to do shit like this...
 			//
 			float	fSize		= (float)(iThisSize) / 1024.0f / 1024.0f;
 			int		iSize		= fSize;
 			int		iRemainder 	= 100.0f * (fSize - floor(fSize));
-			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d average)\n", 
-					    psTagStrings[i], 
-							  iThisSize, 
+			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d average)\n",
+					    psTagStrings[i],
+							  iThisSize,
 								iSize,iRemainder,
 								           iThisCount, iThisSize / iThisCount
 					   );
@@ -570,25 +603,26 @@ void Com_ShutdownZoneMemory(void)
 
 // Initialises the zone memory system
 
-void Com_InitZoneMemory( void ) 
+void Com_InitZoneMemory( void )
 {
-	memset(&TheZone, 0, sizeof(TheZone)); 
+	memset(&TheZone, 0, sizeof(TheZone));
 	TheZone.Header.iMagic = ZONE_MAGIC;
+}
 
-//#ifdef _DEBUG
+void Com_InitZoneMemoryVars( void ) {
+	//#ifdef _DEBUG
 //	com_validateZone = Cvar_Get("com_validateZone", "1", 0);
 //#else
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 //#endif
 
-	Cmd_AddCommand("zone_stats", Z_Stats_f);
-	Cmd_AddCommand("zone_details", Z_Details_f);
+	Cmd_AddCommand("zone_stats", Z_Stats_f, "Prints out zone memory stats" );
+	Cmd_AddCommand("zone_details", Z_Details_f, "Prints out full detailed zone memory info" );
 
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
 #endif
 }
-
 
 
 
@@ -647,7 +681,7 @@ void Com_TouchMemory( void ) {
 		for (i=0; i<j; i+=64){
 			sum += ((int*)pMem)[i];
 		}
-		
+
 		pMemory = pMemory->pNext;
 	}
 

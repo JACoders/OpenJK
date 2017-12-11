@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __G_LOCAL_H__
 #define __G_LOCAL_H__
@@ -124,8 +129,9 @@ enum alertEventLevel_e
 };
 
 // !!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
-typedef struct alertEvent_s
+class alertEvent_t
 {
+public:
 	vec3_t				position;	//Where the event is located
 	float				radius;		//Consideration radius
 	alertEventLevel_e	level;		//Priority level of the event
@@ -135,7 +141,36 @@ typedef struct alertEvent_s
 	float				addLight;	//additional light- makes it more noticable, even in darkness
 	int					ID;			//unique... if get a ridiculous number, this will repeat, but should not be a problem as it's just comparing it to your lastAlertID
 	int					timestamp;	//when it was created
-} alertEvent_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<float>(position);
+		saved_game.write<float>(radius);
+		saved_game.write<int32_t>(level);
+		saved_game.write<int32_t>(type);
+		saved_game.write<int32_t>(owner);
+		saved_game.write<float>(light);
+		saved_game.write<float>(addLight);
+		saved_game.write<int32_t>(ID);
+		saved_game.write<int32_t>(timestamp);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<float>(position);
+		saved_game.read<float>(radius);
+		saved_game.read<int32_t>(level);
+		saved_game.read<int32_t>(type);
+		saved_game.read<int32_t>(owner);
+		saved_game.read<float>(light);
+		saved_game.read<float>(addLight);
+		saved_game.read<int32_t>(ID);
+		saved_game.read<int32_t>(timestamp);
+	}
+}; // alertEvent_t
 
 //
 // this structure is cleared as each map is entered
@@ -158,8 +193,9 @@ typedef struct
 #define	WF_SNOWING	0x00000002	//snowing
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct 
+class level_locals_t
 {
+public:
 	gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
@@ -210,7 +246,52 @@ typedef struct
 
 	int			dmDebounceTime;
 	int			dmBeatTime;
-} level_locals_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(clients);
+		saved_game.write<int32_t>(maxclients);
+		saved_game.write<int32_t>(framenum);
+		saved_game.write<int32_t>(time);
+		saved_game.write<int32_t>(previousTime);
+		saved_game.write<int32_t>(globalTime);
+		saved_game.write<int8_t>(mapname);
+		saved_game.write<int32_t>(locationLinked);
+		saved_game.write<int32_t>(locationHead);
+		saved_game.write<>(alertEvents);
+		saved_game.write<int32_t>(numAlertEvents);
+		saved_game.write<int32_t>(curAlertID);
+		saved_game.write<>(groups);
+		saved_game.write<>(knownAnimFileSets);
+		saved_game.write<int32_t>(numKnownAnimFileSets);
+		saved_game.write<int32_t>(worldFlags);
+		saved_game.write<int32_t>(dmState);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(clients);
+		saved_game.read<int32_t>(maxclients);
+		saved_game.read<int32_t>(framenum);
+		saved_game.read<int32_t>(time);
+		saved_game.read<int32_t>(previousTime);
+		saved_game.read<int32_t>(globalTime);
+		saved_game.read<int8_t>(mapname);
+		saved_game.read<int32_t>(locationLinked);
+		saved_game.read<int32_t>(locationHead);
+		saved_game.read<>(alertEvents);
+		saved_game.read<int32_t>(numAlertEvents);
+		saved_game.read<int32_t>(curAlertID);
+		saved_game.read<>(groups);
+		saved_game.read<>(knownAnimFileSets);
+		saved_game.read<int32_t>(numKnownAnimFileSets);
+		saved_game.read<int32_t>(worldFlags);
+		saved_game.read<int32_t>(dmState);
+	}
+}; // level_locals_t
 
 extern	level_locals_t	level;
 extern	game_export_t	globals;
@@ -553,8 +634,8 @@ typedef struct pscript_s
 	long	length;
 } pscript_t;
 
-typedef	map < string, int, less<string>, allocator<int> >		entlist_t;
-typedef map < string, pscript_t*, less<string>, allocator<pscript_t*> >	bufferlist_t;
+typedef std::map < std::string, int, std::less<std::string>, std::allocator<int> >		entlist_t;
+typedef std::map < std::string, pscript_t*, std::less<std::string>, std::allocator<pscript_t*> >	bufferlist_t;
 
 
 extern char *G_NewString( const char *string );

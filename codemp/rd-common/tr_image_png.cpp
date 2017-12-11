@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "tr_common.h"
 #include <png.h>
 
@@ -117,16 +141,7 @@ struct PNGFileReader
 	~PNGFileReader()
 	{
 		ri->FS_FreeFile (buf);
-
-		if ( info_ptr != NULL )
-		{
-			// Destroys both structs
-			png_destroy_info_struct (png_ptr, &info_ptr);
-		}
-		else if ( png_ptr != NULL )
-		{
-			png_destroy_read_struct (&png_ptr, NULL, NULL);
-		}
+		png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
 	}
 
 	int Read ( byte **data, int *width, int *height )
@@ -222,7 +237,7 @@ struct PNGFileReader
 			ri->Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
 
 			ri->Z_Free (tempData);
-			
+
 			return 0;
 		}
 

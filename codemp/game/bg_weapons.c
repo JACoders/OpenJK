@@ -1,5 +1,25 @@
-// Copyright (C) 2001-2002 Raven Software
-//
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // bg_weapons.c -- part of bg_pmove functionality
 
 #include "qcommon/q_shared.h"
@@ -7,12 +27,12 @@
 #include "bg_local.h"
 
 // Muzzle point table...
-vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] = 
+vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] =
 {//	Fwd,	right,	up.
 	{0,		0,		0	},	// WP_NONE,
 	{0	,	8,		0	},	// WP_STUN_BATON,
 	{0	,	8,		0	},	// WP_MELEE,
-	{8	,	16,		0	},	// WP_SABER,				 
+	{8	,	16,		0	},	// WP_SABER,
 	{12,	6,		-6	},	// WP_BRYAR_PISTOL,
 	{12,	6,		-6	},	// WP_BLASTER,
 	{12,	6,		-6	},	// WP_DISRUPTOR,
@@ -28,7 +48,7 @@ vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] =
 	{12,	6,		-6	},	// WP_BRYAR_OLD,
 };
 
-weaponData_t weaponData[WP_NUM_WEAPONS] = 
+weaponData_t weaponData[WP_NUM_WEAPONS] =
 {
 	{	// WP_NONE
 //		"No Weapon",			//	char	classname[32];		// Spawning name
@@ -355,7 +375,7 @@ weaponData_t weaponData[WP_NUM_WEAPONS] =
 	}
 };
 
-ammoData_t ammoData[AMMO_MAX] = 
+ammoData_t ammoData[AMMO_MAX] =
 {
 	{	// AMMO_NONE
 //		"",				//	char	icon[32];	// Name of ammo icon file

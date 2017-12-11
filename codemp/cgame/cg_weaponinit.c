@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //
 // cg_weaponinit.c -- events and effects dealing with weapons
 #include "cg_local.h"
@@ -28,8 +50,8 @@ void CG_RegisterWeapon( int weaponNum) {
 		return;
 	}
 
-	if ( cgs.wDisable & (1<<weaponNum) )
-		return;
+	//if ( cgs.wDisable & (1<<weaponNum) )
+	//	return;
 
 	memset( weaponInfo, 0, sizeof( *weaponInfo ) );
 	weaponInfo->registered = qtrue;
@@ -79,9 +101,9 @@ void CG_RegisterWeapon( int weaponNum) {
 		weaponNum == WP_ROCKET_LAUNCHER ||
 		weaponNum == WP_CONCUSSION)
 	{
-		strcpy( path, item->view_model );
+		Q_strncpyz( path, item->view_model, sizeof(path) );
 		COM_StripExtension( path, path, sizeof( path ) );
-		strcat( path, "_barrel.md3" );
+		Q_strcat( path, sizeof(path), "_barrel.md3" );
 		weaponInfo->barrelModel = trap->R_RegisterModel( path );
 	}
 	else if (weaponNum == WP_STUN_BATON)
@@ -97,9 +119,9 @@ void CG_RegisterWeapon( int weaponNum) {
 
 	if (weaponNum != WP_SABER)
 	{
-		strcpy( path, item->view_model );
+		Q_strncpyz( path, item->view_model, sizeof(path) );
 		COM_StripExtension( path, path, sizeof( path ) );
-		strcat( path, "_hand.md3" );
+		Q_strcat( path, sizeof(path), "_hand.md3" );
 		weaponInfo->handsModel = trap->R_RegisterModel( path );
 	}
 	else
@@ -465,7 +487,7 @@ void CG_RegisterWeapon( int weaponNum) {
 
 		cgs.effects.rocketShotEffect			= trap->FX_RegisterEffect( "rocket/shot" );
 		cgs.effects.rocketExplosionEffect		= trap->FX_RegisterEffect( "rocket/explosion" );
-	
+
 		trap->R_RegisterShaderNoMip( "gfx/2d/wedge" );
 		trap->R_RegisterShaderNoMip( "gfx/2d/lock" );
 

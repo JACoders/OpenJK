@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN SOFTWARE - STAR WARS: JK II
@@ -52,7 +56,7 @@ This file is part of Jedi Academy.
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Defines 
+// Defines
 ////////////////////////////////////////////////////////////////////////////////////////
 #define		MAX_TROOPS				100
 #define		MAX_ENTS_PER_TROOP		7
@@ -81,9 +85,10 @@ enum
 	SPEECH_PUSHED
 };
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
+extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
 static void HT_Speech( gentity_t *self, int speechType, float failChance )
 {
-	if ( random() < failChance )
+	if ( Q_flrand(0.0f, 1.0f) < failChance )
 	{
 		return;
 	}
@@ -294,7 +299,7 @@ public:
 		assert(actor->NPC->troop==mTroopHandle);
 		int		bestNewLeader=-1;
 		int		numEnts = mActors.size();
-		bool	found = false;
+		//bool	found = false;
 		mTroopReform = true;
 
 		// Find The Actor
@@ -303,7 +308,7 @@ public:
 		{
 			if (mActors[i]==actor)
 			{
-				found = true;
+				//found = true;
 				mActors.erase_swap(i);
 				numEnts --;
 				if (i==0 && !mActors.empty())
@@ -322,19 +327,9 @@ public:
 			MakeActorLeader(bestNewLeader);
 		}
 
-		assert(found);
+		//assert(found);
 		actor->NPC->troop = 0;
 	}
-
-	
-
-
-
-
-
-
-
-
 
 private:
 	////////////////////////////////////////////////////////////////////////////////////
@@ -412,7 +407,7 @@ private:
 		}
 		return val;
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////
 	// Target Visibility
 	//
@@ -441,8 +436,6 @@ private:
 		}
 		return ClampScale(Scale);
 	}
-
-
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Scan For Enemies
@@ -479,7 +472,7 @@ private:
 		SaveNPCGlobals();
 		SetNPCGlobals(scanner);
 
-	
+
 		for (; targetIndex<targetStop; targetIndex++)
 		{
 			target				= &g_entities[targetIndex];
@@ -650,49 +643,49 @@ private:
 			{
 				switch (NextState)
 				{
-				case (TS_ADVANCE_REGROUP) : 
+				case (TS_ADVANCE_REGROUP) :
 					{
 						break;
 					}
-				case (TS_ADVANCE_SEARCH) : 
+				case (TS_ADVANCE_SEARCH) :
 					{
-						HT_Speech(leader, SPEECH_LOOK, 0); 
+						HT_Speech(leader, SPEECH_LOOK, 0);
 						break;
 					}
-				case (TS_ADVANCE_COVER) : 
+				case (TS_ADVANCE_COVER) :
 					{
-						HT_Speech(leader, SPEECH_COVER, 0); 
+						HT_Speech(leader, SPEECH_COVER, 0);
 						NPC_SetAnim(leader, SETANIM_TORSO, TORSO_HANDSIGNAL4, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLDLESS);
 						break;
 					}
-				case (TS_ADVANCE_FORMATION) : 
+				case (TS_ADVANCE_FORMATION) :
 					{
-						HT_Speech(leader, SPEECH_ESCAPING, 0); 
+						HT_Speech(leader, SPEECH_ESCAPING, 0);
 						break;
 					}
 
 
-				case (TS_ATTACK_LINE) : 
+				case (TS_ATTACK_LINE) :
 					{
-						HT_Speech(leader, SPEECH_CHASE, 0); 
+						HT_Speech(leader, SPEECH_CHASE, 0);
 						NPC_SetAnim(leader, SETANIM_TORSO, TORSO_HANDSIGNAL1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLDLESS);
 						break;
 					}
-				case (TS_ATTACK_FLANK) : 
+				case (TS_ATTACK_FLANK) :
 					{
-						HT_Speech(leader, SPEECH_OUTFLANK, 0); 
+						HT_Speech(leader, SPEECH_OUTFLANK, 0);
 						NPC_SetAnim(leader, SETANIM_TORSO, TORSO_HANDSIGNAL3, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLDLESS);
 						break;
 					}
-				case (TS_ATTACK_SURROUND) : 
+				case (TS_ATTACK_SURROUND) :
 					{
-						HT_Speech(leader, SPEECH_GIVEUP, 0); 
+						HT_Speech(leader, SPEECH_GIVEUP, 0);
 						NPC_SetAnim(leader, SETANIM_TORSO, TORSO_HANDSIGNAL2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLDLESS);
 						break;
 					}
-				case (TS_ATTACK_COVER) : 
+				case (TS_ATTACK_COVER) :
 					{
-						HT_Speech(leader, SPEECH_COVER, 0); 
+						HT_Speech(leader, SPEECH_COVER, 0);
 						break;
 					}
 				default:
@@ -712,8 +705,6 @@ private:
 
 // PHASE II - COMPUTE THE NEW FORMATION HEAD, FORWARD, AND RIGHT VECTORS
 //=======================================================================
-		CVec3	PreviousFwd = mFormFwd;
-
 		mFormHead	= leader->currentOrigin;
 		mFormFwd	= (NAV::HasPath(leader))?(NAV::NextPosition(leader)):(mTargetLastKnownPosition);
 		mFormFwd	-= mFormHead;
@@ -746,12 +737,12 @@ private:
 
 			mOrders[0].mPosition = mFormHead;
 
-			gi.trace(&trace, 
-					mActors[0]->currentOrigin, 
-					mActors[0]->mins, 
-					mActors[0]->maxs, 
-					mOrders[0].mPosition.v, 
-					mActors[0]->s.number, 
+			gi.trace(&trace,
+					mActors[0]->currentOrigin,
+					mActors[0]->mins,
+					mActors[0]->maxs,
+					mOrders[0].mPosition.v,
+					mActors[0]->s.number,
 					mActors[0]->clipmask,
 					(EG2_Collision)0,
 					0
@@ -766,7 +757,7 @@ private:
 		{
 			mOrders[0].mPosition = mTargetLastKnownPosition;
 		}
-	
+
 		VectorCopy(mOrders[0].mPosition.v, mActors[0]->pos1);
 
 		CVec3		FormTgtToHead(mFormHead);
@@ -794,7 +785,7 @@ private:
 
 			if (mActors[actorIndex]->NPC->combatPoint!=-1)
 			{
-				NPC_FreeCombatPoint(mActors[actorIndex]->NPC->combatPoint, false);
+				NPC_FreeCombatPoint(mActors[actorIndex]->NPC->combatPoint, qfalse);
 				mActors[actorIndex]->NPC->combatPoint = -1;
 			}
 
@@ -835,12 +826,12 @@ private:
 					int		cpFlags = (CP_HAS_ROUTE|CP_AVOID_ENEMY|CP_CLEAR|CP_COVER|CP_FLANK|CP_APPROACH_ENEMY);
 					float	avoidDist = 128.0f;
 
-					Order.mCombatPoint = NPC_FindCombatPointRetry( 
-											mActors[actorIndex]->currentOrigin, 
-											mActors[actorIndex]->currentOrigin, 
-											mActors[actorIndex]->currentOrigin, 
-											&cpFlags, 
-											avoidDist, 
+					Order.mCombatPoint = NPC_FindCombatPointRetry(
+											mActors[actorIndex]->currentOrigin,
+											mActors[actorIndex]->currentOrigin,
+											mActors[actorIndex]->currentOrigin,
+											&cpFlags,
+											avoidDist,
 											0);
 
 					if (Order.mCombatPoint!=-1 && (cpFlags&CP_CLEAR))
@@ -880,12 +871,12 @@ private:
 				CVec3	OrderUp(Order.mPosition);
 				OrderUp[2] += 10.0f;
 
-				gi.trace(&trace, 
-					Order.mPosition.v, 
-					mActors[actorIndex]->mins, 
-					mActors[actorIndex]->maxs, 
-					OrderUp.v, 
-					mActors[actorIndex]->s.number, 
+				gi.trace(&trace,
+					Order.mPosition.v,
+					mActors[actorIndex]->mins,
+					mActors[actorIndex]->maxs,
+					OrderUp.v,
+					mActors[actorIndex]->s.number,
 					CONTENTS_SOLID|CONTENTS_TERRAIN|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP,
 					(EG2_Collision)0,
 					0);
@@ -895,12 +886,12 @@ private:
 					int		cpFlags = (CP_HAS_ROUTE|CP_AVOID_ENEMY|CP_CLEAR|CP_COVER|CP_FLANK|CP_APPROACH_ENEMY);
 					float	avoidDist = 128.0f;
 
-					Order.mCombatPoint = NPC_FindCombatPointRetry( 
-											mActors[actorIndex]->currentOrigin, 
-											mActors[actorIndex]->currentOrigin, 
-											mActors[actorIndex]->currentOrigin, 
-											&cpFlags, 
-											avoidDist, 
+					Order.mCombatPoint = NPC_FindCombatPointRetry(
+											mActors[actorIndex]->currentOrigin,
+											mActors[actorIndex]->currentOrigin,
+											mActors[actorIndex]->currentOrigin,
+											&cpFlags,
+											avoidDist,
 											0);
 
 					if (Order.mCombatPoint!=-1)
@@ -990,7 +981,7 @@ public:
 				}
 			}
 			LeaderIssueAndUpdateOrders(NextState);
-			
+
 		}
 	}
 
@@ -1024,7 +1015,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	gentity_t*	TrackingTarget()
 	{
@@ -1032,7 +1023,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	gentity_t*	TroopLeader()
 	{
@@ -1040,7 +1031,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	int			TimeSinceSeenTarget()
 	{
@@ -1048,7 +1039,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	CVec3&		TargetVisablePosition()
 	{
@@ -1057,7 +1048,7 @@ public:
 
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	float		FormSpacingFwd()
 	{
@@ -1065,7 +1056,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	gentity_t*	TooCloseToTroopMember(gentity_t* actor)
 	{
@@ -1077,7 +1068,7 @@ public:
 			{
 				return 0;
 			}
-		//	if (mActors[i]->resultspeed<10.0f) 
+		//	if (mActors[i]->resultspeed<10.0f)
 		//	{
 		//		continue;
 		//	}
@@ -1129,7 +1120,7 @@ void		Troop_Initialize()
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Troop_Update()
 {
-	for (TTroopPool::iterator i=mTroops.begin(); i!=mTroops.end(); i++)
+	for (TTroopPool::iterator i=mTroops.begin(); i!=mTroops.end(); ++i)
 	{
 		i->Update();
 	}
@@ -1150,7 +1141,7 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 		TTroopPool::iterator	closestTroop = mTroops.end();
 		trace_t					trace;
 
-		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); iTroop++)
+		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); ++iTroop)
 		{
 			if (iTroop->Team()==actor->client->playerTeam)
 			{
@@ -1159,18 +1150,18 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 				{
 					// Only Join A Troop If You Can See The Leader
 					//---------------------------------------------
-					gi.trace(&trace, 
-						actor->currentOrigin, 
-						actor->mins, 
-						actor->maxs, 
-						iTroop->TroopLeader()->currentOrigin, 
-						actor->s.number, 
+					gi.trace(&trace,
+						actor->currentOrigin,
+						actor->mins,
+						actor->maxs,
+						iTroop->TroopLeader()->currentOrigin,
+						actor->s.number,
 						CONTENTS_SOLID|CONTENTS_TERRAIN|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP,
 						(EG2_Collision)0,
 						0);
 
-					if (!trace.allsolid && 
-						!trace.startsolid && 
+					if (!trace.allsolid &&
+						!trace.startsolid &&
 						(trace.fraction>=1.0f || trace.entityNum==iTroop->TroopLeader()->s.number))
 					{
 						closestDist = curDist;
@@ -1205,10 +1196,10 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 		float					closestDist = 0;
 		TTroopPool::iterator	closestTroop = mTroops.end();
 
-		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); iTroop++)
+		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); ++iTroop)
 		{
 			curDist = iTroop->DistanceSq(actor);
-			if ((curDist<MAX_TROOP_MERGE_DIST2) && 
+			if ((curDist<MAX_TROOP_MERGE_DIST2) &&
 				(!closestDist || curDist<closestDist) &&
 				(mTroops.index_to_handle(iTroop.index())!=actor->NPC->troop))
 			{
@@ -1227,7 +1218,7 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool		Trooper_UpdateSmackAway(gentity_t* actor, gentity_t* target)
 {
@@ -1252,7 +1243,7 @@ bool		Trooper_UpdateSmackAway(gentity_t* actor, gentity_t* target)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Trooper_SmackAway(gentity_t* actor, gentity_t* target)
 {
@@ -1266,7 +1257,7 @@ void		Trooper_SmackAway(gentity_t* actor, gentity_t* target)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool		Trooper_Kneeling(gentity_t* actor)
 {
@@ -1274,7 +1265,7 @@ bool		Trooper_Kneeling(gentity_t* actor)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Trooper_KneelDown(gentity_t* actor)
 {
@@ -1288,7 +1279,7 @@ void		Trooper_KneelDown(gentity_t* actor)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Trooper_StandUp(gentity_t* actor, bool always=false)
 {
@@ -1302,7 +1293,7 @@ void		Trooper_StandUp(gentity_t* actor, bool always=false)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 int			Trooper_CanHitTarget(gentity_t* actor, gentity_t* target, CTroop& troop, float& MuzzleToTargetDistance, CVec3& MuzzleToTarget)
 {
@@ -1360,14 +1351,14 @@ void		Trooper_Think(gentity_t* actor)
 
 		if (actor->NPC->combatPoint!=-1)
 		{
-			traceTgt	= Trooper_CanHitTarget(actor, target, troop, MuzzleToTargetDistance, MuzzleToTarget); 
+			traceTgt	= Trooper_CanHitTarget(actor, target, troop, MuzzleToTargetDistance, MuzzleToTarget);
 			traced		= true;
 			if (traceTgt==target->s.number)
 			{
 				AtPos = true;
 			}
 		}
-		
+
 
 		// Smack!
 		//-------
@@ -1394,7 +1385,7 @@ void		Trooper_Think(gentity_t* actor)
 			//------------------------------------------------
 			if (fleeFrom)
 			{
-				STEER::Flee(actor, fleeFrom->currentOrigin, 1.0f);			
+				STEER::Flee(actor, fleeFrom->currentOrigin, 1.0f);
 				AtPos = false;
 			}
 
@@ -1409,7 +1400,7 @@ void		Trooper_Think(gentity_t* actor)
 
 			// Otherwise, Try To Get To Position
 			//-----------------------------------
-			else 
+			else
 			{
 				Trooper_StandUp(actor, true);
 
@@ -1435,7 +1426,7 @@ void		Trooper_Think(gentity_t* actor)
 		STEER::DeActivate(actor, &ucmd);
 
 
-	
+
 
 		// If There And Target Was Recently Visable
 		//------------------------------------------
@@ -1443,7 +1434,7 @@ void		Trooper_Think(gentity_t* actor)
 		{
 			if (!traced)
 			{
-				traceTgt = Trooper_CanHitTarget(actor, target, troop, MuzzleToTargetDistance, MuzzleToTarget); 
+				traceTgt = Trooper_CanHitTarget(actor, target, troop, MuzzleToTargetDistance, MuzzleToTarget);
 			}
 
 			// Shoot!
@@ -1470,13 +1461,13 @@ void		Trooper_Think(gentity_t* actor)
 
 				// If We Would Have It A Friend, Ask Him To Kneel
 				//------------------------------------------------
-				else if (traceTgt!=ENTITYNUM_NONE && 
-							traceTgt!=ENTITYNUM_WORLD && 
+				else if (traceTgt!=ENTITYNUM_NONE &&
+							traceTgt!=ENTITYNUM_WORLD &&
 							g_entities[traceTgt].client &&
 							g_entities[traceTgt].NPC &&
 							g_entities[traceTgt].client->playerTeam==actor->client->playerTeam &&
 							NPC_IsTrooper(&g_entities[traceTgt]) &&
-							g_entities[traceTgt].resultspeed<1.0f && 
+							g_entities[traceTgt].resultspeed<1.0f &&
 							!(g_entities[traceTgt].NPC->aiFlags & NPCAI_KNEEL))
 				{
 					Trooper_KneelDown(&g_entities[traceTgt]);
@@ -1566,11 +1557,11 @@ void NPC_BehaviorSet_Trooper( int bState )
 bool NPC_IsTrooper(gentity_t* actor)
 {
 	return (
-		actor && 
-		actor->NPC && 
+		actor &&
+		actor->NPC &&
 		actor->s.weapon &&
-		!!(actor->NPC->scriptFlags&SCF_NO_GROUPS)// && 
-//		 !(actor->NPC->scriptFlags&SCF_CHASE_ENEMIES) 
+		!!(actor->NPC->scriptFlags&SCF_NO_GROUPS)// &&
+//		 !(actor->NPC->scriptFlags&SCF_CHASE_ENEMIES)
 		 );
 }
 

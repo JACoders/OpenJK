@@ -1,16 +1,40 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // Filename:-	snd_music.h
 //
 //
 
+#include "qcommon/qcommon.h"
+
 // if you change this enum, you MUST update the #defines below
-typedef enum 
+typedef enum
 {
 //( eBGRNDTRACK_DATABEGIN )			// begin-label for FOR loops
 	//
 	eBGRNDTRACK_EXPLORE = 0,		// for normal walking around
-	eBGRNDTRACK_ACTION,				// for excitement	
+	eBGRNDTRACK_ACTION,				// for excitement
 	eBGRNDTRACK_BOSS,				// (optional) for final encounter
 	eBGRNDTRACK_DEATH,				// (optional) death "flourish"
 	eBGRNDTRACK_ACTIONTRANS0,		// transition from action to explore
@@ -43,14 +67,14 @@ typedef enum
 
 
 void		Music_SetLevelName			( const char *psLevelName );
-sboolean	Music_DynamicDataAvailable	( const char *psDynamicMusicLabel );
+qboolean	Music_DynamicDataAvailable	( const char *psDynamicMusicLabel );
 const char *Music_GetFileNameForState	( MusicState_e eMusicState );
-sboolean	Music_StateIsTransition		( MusicState_e eMusicState );
-sboolean	Music_StateCanBeInterrupted	( MusicState_e eMusicState, MusicState_e eProposedMusicState );
+qboolean	Music_StateIsTransition		( MusicState_e eMusicState );
+qboolean	Music_StateCanBeInterrupted	( MusicState_e eMusicState, MusicState_e eProposedMusicState );
 float		Music_GetRandomEntryTime	( MusicState_e eMusicState );
 
-sboolean	Music_AllowedToTransition	( float fPlayingTimeElapsed, MusicState_e eMusicState, MusicState_e	*peTransition = NULL, float *pfNewTrackEntryTime = NULL);
+qboolean	Music_AllowedToTransition	( float fPlayingTimeElapsed, MusicState_e eMusicState, MusicState_e	*peTransition = NULL, float *pfNewTrackEntryTime = NULL);
 
-const char *Music_BaseStateToString		( MusicState_e eMusicState, sboolean bDebugPrintQuery = qfalse);
+const char *Music_BaseStateToString		( MusicState_e eMusicState, qboolean bDebugPrintQuery = qfalse);
 
 //////////////// eof /////////////////

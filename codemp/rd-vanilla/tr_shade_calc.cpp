@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_shade_calc.c
 
 #include "tr_local.h"
@@ -6,7 +29,7 @@
 
 #define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ Q_ftol( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
 
-static float *TableForFunc( genFunc_t func ) 
+static float *TableForFunc( genFunc_t func )
 {
 	switch ( func )
 	{
@@ -34,7 +57,7 @@ static float *TableForFunc( genFunc_t func )
 **
 ** Evaluates a given waveForm_t, referencing backEnd.refdef.time directly
 */
-static float EvalWaveForm( const waveForm_t *wf ) 
+static float EvalWaveForm( const waveForm_t *wf )
 {
 	float	*table;
 
@@ -120,7 +143,7 @@ void RB_CalcDeformVertexes( deformStage_t *ds )
 		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 )
 		{
 			VectorScale( normal, scale, offset );
-			
+
 			xyz[0] += offset[0];
 			xyz[1] += offset[1];
 			xyz[2] += offset[2];
@@ -134,13 +157,13 @@ void RB_CalcDeformVertexes( deformStage_t *ds )
 		{
 			float off = ( xyz[0] + xyz[1] + xyz[2] ) * ds->deformationSpread;
 
-			scale = WAVEVALUE( table, ds->deformationWave.base, 
+			scale = WAVEVALUE( table, ds->deformationWave.base,
 				ds->deformationWave.amplitude,
 				ds->deformationWave.phase + off,
 				ds->deformationWave.frequency );
 
 			VectorScale( normal, scale, offset );
-			
+
 			xyz[0] += offset[0];
 			xyz[1] += offset[1];
 			xyz[2] += offset[2];
@@ -206,7 +229,7 @@ void RB_CalcBulgeVertexes( deformStage_t *ds )
 		off = (float)( FUNCTABLE_SIZE / (M_PI*2) ) * ( st[0] * ds->bulgeWidth + now );
 
 		scale = tr.sinTable[ off & FUNCTABLE_MASK ] * ds->bulgeHeight;
-			
+
 		xyz[0] += normal[0] * scale;
 		xyz[1] += normal[1] * scale;
 		xyz[2] += normal[2] * scale;
@@ -221,7 +244,7 @@ void RB_CalcBulgeVertexes( deformStage_t *ds )
 	if ( ds->bulgeSpeed == 0.0f && ds->bulgeWidth == 0.0f )
 	{
 		// We don't have a speed and width, so just use height to expand uniformly
-		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 ) 
+		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 )
 		{
 			xyz[0] += normal[0] * ds->bulgeHeight;
 			xyz[1] += normal[1] * ds->bulgeHeight;
@@ -238,12 +261,12 @@ void RB_CalcBulgeVertexes( deformStage_t *ds )
 
 		now = backEnd.refdef.time * ds->bulgeSpeed * 0.001f;
 
-		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, st += 2 * NUM_TEX_COORDS, normal += 4 ) 
+		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, st += 2 * NUM_TEX_COORDS, normal += 4 )
 		{
 			off = (float)( FUNCTABLE_SIZE / (M_PI*2) ) * ( st[0] * ds->bulgeWidth + now );
 
 			scale = tr.sinTable[ off & FUNCTABLE_MASK ] * ds->bulgeHeight;
-				
+
 			xyz[0] += normal[0] * scale;
 			xyz[1] += normal[1] * scale;
 			xyz[2] += normal[2] * scale;
@@ -268,7 +291,7 @@ void RB_CalcMoveVertexes( deformStage_t *ds ) {
 
 	table = TableForFunc( ds->deformationWave.func );
 
-	scale = WAVEVALUE( table, ds->deformationWave.base, 
+	scale = WAVEVALUE( table, ds->deformationWave.base,
 		ds->deformationWave.amplitude,
 		ds->deformationWave.phase,
 		ds->deformationWave.frequency );
@@ -500,7 +523,7 @@ static void Autosprite2Deform( void ) {
 			v2 = xyz + 4 * edgeVerts[j][1];
 
 			VectorSubtract( v1, v2, temp );
-			
+
 			l = DotProduct( temp, temp );
 			if ( l < lengths[0] ) {
 				nums[1] = nums[0];
@@ -528,7 +551,7 @@ static void Autosprite2Deform( void ) {
 		// cross this with the view direction to get minor axis
 		CrossProduct( major, forward, minor );
 		VectorNormalize( minor );
-		
+
 		// re-project the points
 		for ( j = 0 ; j < 2 ; j++ ) {
 			float	l;
@@ -537,7 +560,7 @@ static void Autosprite2Deform( void ) {
 			v2 = xyz + 4 * edgeVerts[nums[j]][1];
 
 			l = 0.5 * sqrt( lengths[j] );
-			
+
 			// we need to see which direction this edge
 			// is used to determine direction of projection
 			for ( k = 0 ; k < 5 ; k++ ) {
@@ -627,16 +650,14 @@ void RB_CalcColorFromEntity( unsigned char *dstColors )
 {
 	int	i;
 	int *pColors = ( int * ) dstColors;
-	int c;
 
 	if ( !backEnd.currentEntity )
 		return;
 
-	c = * ( int * ) backEnd.currentEntity->e.shaderRGBA;
+	const byteAlias_t *ba = (byteAlias_t *)&backEnd.currentEntity->e.shaderRGBA;
 
-	for ( i = 0; i < tess.numVertexes; i++, pColors++ )
-	{
-		*pColors = c;
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		*pColors++ = ba->i;
 	}
 }
 
@@ -648,7 +669,6 @@ void RB_CalcColorFromOneMinusEntity( unsigned char *dstColors )
 	int	i;
 	int *pColors = ( int * ) dstColors;
 	unsigned char invModulate[4];
-	int c;
 
 	if ( !backEnd.currentEntity )
 		return;
@@ -658,11 +678,10 @@ void RB_CalcColorFromOneMinusEntity( unsigned char *dstColors )
 	invModulate[2] = 255 - backEnd.currentEntity->e.shaderRGBA[2];
 	invModulate[3] = 255 - backEnd.currentEntity->e.shaderRGBA[3];	// this trashes alpha, but the AGEN block fixes it
 
-	c = * ( int * ) invModulate;
+	byteAlias_t *ba = (byteAlias_t *)&invModulate;
 
-	for ( i = 0; i < tess.numVertexes; i++, pColors++ )
-	{
-		*pColors = c;
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		*pColors++ = ba->i;
 	}
 }
 
@@ -719,7 +738,7 @@ void RB_CalcWaveColor( const waveForm_t *wf, unsigned char *dstColors )
 	} else {
 		glow = EvalWaveForm( wf ) * tr.identityLight;
 	}
-	
+
 	if ( glow < 0 ) {
 		glow = 0;
 	}
@@ -730,10 +749,10 @@ void RB_CalcWaveColor( const waveForm_t *wf, unsigned char *dstColors )
 	v = Q_ftol( 255 * glow );
 	color[0] = color[1] = color[2] = v;
 	color[3] = 255;
-	v = *(int *)color;
-	
-	for ( i = 0; i < tess.numVertexes; i++, colors++ ) {
-		*colors = v;
+	byteAlias_t *ba = (byteAlias_t *)&color;
+
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		*colors++ = ba->i;
 	}
 }
 
@@ -860,11 +879,11 @@ void RB_CalcFogTexCoords( float *st ) {
 
 	// rotate the gradient vector for this orientation
 	if ( fog->hasSurface ) {
-		fogDepthVector[0] = fog->surface[0] * backEnd.ori.axis[0][0] + 
+		fogDepthVector[0] = fog->surface[0] * backEnd.ori.axis[0][0] +
 			fog->surface[1] * backEnd.ori.axis[0][1] + fog->surface[2] * backEnd.ori.axis[0][2];
-		fogDepthVector[1] = fog->surface[0] * backEnd.ori.axis[1][0] + 
+		fogDepthVector[1] = fog->surface[0] * backEnd.ori.axis[1][0] +
 			fog->surface[1] * backEnd.ori.axis[1][1] + fog->surface[2] * backEnd.ori.axis[1][2];
-		fogDepthVector[2] = fog->surface[0] * backEnd.ori.axis[2][0] + 
+		fogDepthVector[2] = fog->surface[0] * backEnd.ori.axis[2][0] +
 			fog->surface[1] * backEnd.ori.axis[2][1] + fog->surface[2] * backEnd.ori.axis[2][2];
 		fogDepthVector[3] = -fog->surface[3] + DotProduct( backEnd.ori.origin, fog->surface );
 
@@ -893,7 +912,7 @@ void RB_CalcFogTexCoords( float *st ) {
 		s = DotProduct( v, fogDistanceVector ) + fogDistanceVector[3];
 		t = DotProduct( v, fogDepthVector ) + fogDepthVector[3];
 
-		// partially clipped fogs use the T axis		
+		// partially clipped fogs use the T axis
 		if ( eyeOutside ) {
 			if ( t < 1.0 ) {
 				t = 1.0/32;	// point is outside, so no fogging
@@ -919,7 +938,7 @@ void RB_CalcFogTexCoords( float *st ) {
 /*
 ** RB_CalcEnvironmentTexCoords
 */
-void RB_CalcEnvironmentTexCoords( float *st ) 
+void RB_CalcEnvironmentTexCoords( float *st )
 {
 	int			i;
 	float		*v, *normal;
@@ -929,7 +948,7 @@ void RB_CalcEnvironmentTexCoords( float *st )
 	v = tess.xyz[0];
 	normal = tess.normal[0];
 
-	for (i = 0 ; i < tess.numVertexes ; i++, v += 4, normal += 4, st += 2 ) 
+	for (i = 0 ; i < tess.numVertexes ; i++, v += 4, normal += 4, st += 2 )
 	{
 		VectorSubtract (backEnd.ori.viewOrigin, v, viewer);
 		VectorNormalizeFast (viewer);
@@ -1078,7 +1097,7 @@ void RB_CalcSpecularAlpha( unsigned char *alphas ) {
 	for (i = 0 ; i < numVertexes ; i++, v += 4, normal += 4, alphas += 4) {
 		float ilength;
 
-		if (backEnd.currentEntity && 
+		if (backEnd.currentEntity &&
 			(backEnd.currentEntity->e.hModel||backEnd.currentEntity->e.ghoul2) )	//this is a model so we can use world lights instead fake light
 		{
 			VectorCopy (backEnd.currentEntity->lightDir, lightDir);
@@ -1147,7 +1166,7 @@ void RB_CalcDiffuseColor( unsigned char *colors )
 		if ( incoming <= 0 ) {
 			*(int *)&colors[i*4] = ambientLightInt;
 			continue;
-		} 
+		}
 		j = Q_ftol( ambientLight[0] + incoming * directedLight[0] );
 		if ( j > 255 ) {
 			j = 255;
@@ -1218,7 +1237,7 @@ void RB_CalcDiffuseEntityColor( unsigned char *colors )
 		if ( incoming <= 0 ) {
 			*(int *)&colors[i*4] = ambientLightInt;
 			continue;
-		} 
+		}
 		j = ( ambientLight[0] + incoming * directedLight[0] );
 		if ( j > 255 ) {
 			j = 255;
@@ -1347,7 +1366,7 @@ void RB_CalcDisintegrateVertDeform( void )
 	{
 		float	threshold = (backEnd.refdef.time - backEnd.currentEntity->e.endTime) * 0.045f;
 
-		for ( int i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 ) 
+		for ( int i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 )
 		{
 			VectorSubtract( backEnd.currentEntity->e.oldorigin, xyz, temp );
 

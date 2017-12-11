@@ -1,5 +1,25 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "client.h"
 
@@ -28,11 +48,11 @@ static void CL_Netchan_Encode( msg_t *msg ) {
         srdc = msg->readcount;
         sbit = msg->bit;
         soob = msg->oob;
-        
+
         msg->bit = 0;
         msg->readcount = 0;
         msg->oob = (qboolean)0;
-        
+
         serverId = MSG_ReadLong(msg);
 	messageAcknowledge = MSG_ReadLong(msg);
 	reliableAcknowledge = MSG_ReadLong(msg);
@@ -40,7 +60,7 @@ static void CL_Netchan_Encode( msg_t *msg ) {
         msg->oob = (qboolean)soob;
         msg->bit = sbit;
         msg->readcount = srdc;
-        
+
 	string = (byte *)clc.serverCommands[ reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ];
 	index = 0;
 	//
@@ -50,7 +70,7 @@ static void CL_Netchan_Encode( msg_t *msg ) {
 		if (!string[index])
 			index = 0;
 		if (/*string[index] > 127 || */	// eurofix: remove this so we can chat in european languages...	-ste
-			string[index] == '%') 
+			string[index] == '%')
 		{
 			key ^= '.' << (i & 1);
 		}
@@ -80,9 +100,9 @@ static void CL_Netchan_Decode( msg_t *msg ) {
         srdc = msg->readcount;
         sbit = msg->bit;
         soob = msg->oob;
-        
+
         msg->oob = (qboolean)0;
-        
+
 	reliableAcknowledge = MSG_ReadLong(msg);
 
         msg->oob = (qboolean)soob;
@@ -98,7 +118,7 @@ static void CL_Netchan_Decode( msg_t *msg ) {
 		if (!string[index])
 			index = 0;
 		if (/*string[index] > 127 || */	// eurofix: remove this so we can chat in european languages...	-ste
-			string[index] == '%') 
+			string[index] == '%')
 		{
 			key ^= '.' << (i & 1);
 		}

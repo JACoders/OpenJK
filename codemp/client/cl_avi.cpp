@@ -448,17 +448,20 @@ static qboolean CL_CheckFileSize( int bytesToAdd )
     ( afd.numIndices * 16 ) +     // The index
     4;                            // The index size
 
-  // I assume all the operating systems
-  // we target can handle a 2Gb file
-  if( newFileSize > INT_MAX )
+  if ( cl_avi2GBLimit->integer )
   {
-    // Close the current file...
-    CL_CloseAVI( );
+    // I assume all the operating systems
+    // we target can handle a 2Gb file
+    if ( newFileSize > INT_MAX )
+    {
+      // Close the current file...
+      CL_CloseAVI();
 
-    // ...And open a new one
-    CL_OpenAVIForWriting( va( "%s_", afd.fileName ) );
+      // ...And open a new one
+      CL_OpenAVIForWriting( va( "%s_", afd.fileName ) );
 
-    return qtrue;
+      return qtrue;
+    }
   }
 
   return qfalse;

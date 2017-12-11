@@ -1,25 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_functions.h"
 #include "wp_saber.h"
-#include "bg_local.h"	
+#include "bg_local.h"
 #include "../cgame/cg_local.h"
 #include "b_local.h"
 
@@ -86,7 +91,7 @@ void G_MissileReflectEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 
 //-------------------------------------------------------------------------
 static void G_MissileStick( gentity_t *missile, gentity_t *other, trace_t *tr )
-{ 
+{
 	if ( other->NPC || !Q_stricmp( other->classname, "misc_model_breakable" ))
 	{
 		// we bounce off of NPC's and misc model breakables because sticking to them requires too much effort
@@ -103,7 +108,7 @@ static void G_MissileStick( gentity_t *missile, gentity_t *other, trace_t *tr )
 		missile->s.pos.trTime = level.time - 10; // move a bit on the first frame
 
 		// check for stop
-		if ( tr->entityNum >= 0 && tr->entityNum < ENTITYNUM_WORLD && 
+		if ( tr->entityNum >= 0 && tr->entityNum < ENTITYNUM_WORLD &&
 				tr->plane.normal[2] > 0.7 && missile->s.pos.trDelta[2] < 40 ) //this can happen even on very slightly sloped walls, so changed it from > 0 to > 0.7
 		{
 			missile->nextthink = level.time + 100;
@@ -139,7 +144,7 @@ G_ReflectMissile
 ================
 */
 extern gentity_t *Jedi_FindEnemyInCone( gentity_t *self, gentity_t *fallback, float minDot );
-void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward ) 
+void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 {
 	vec3_t	bounce_dir;
 	int		i;
@@ -155,7 +160,7 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	//save the original speed
 	speed = VectorNormalize( missile->s.pos.trDelta );
 
-	if ( ent && owner && owner->client && !owner->client->ps.saberInFlight && 
+	if ( ent && owner && owner->client && !owner->client->ps.saberInFlight &&
 		(owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2 || (owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]>FORCE_LEVEL_1&&!Q_irand( 0, 3 )) ) )
 	{//if high enough defense skill and saber in-hand (100% at level 3, 25% at level 2, 0% at level 1), reflections are perfectly deflected toward an enemy
 		gentity_t *enemy;
@@ -176,8 +181,8 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 			bullseye[2] += Q_irand( -16, 4 );
 			VectorSubtract( bullseye, missile->currentOrigin, bounce_dir );
 			VectorNormalize( bounce_dir );
-			if ( !PM_SaberInParry( owner->client->ps.saberMove ) 
-				&& !PM_SaberInReflect( owner->client->ps.saberMove ) 
+			if ( !PM_SaberInParry( owner->client->ps.saberMove )
+				&& !PM_SaberInReflect( owner->client->ps.saberMove )
 				&& !PM_SaberInIdle( owner->client->ps.saberMove ) )
 			{//a bit more wild
 				if ( PM_SaberInAttack( owner->client->ps.saberMove )
@@ -240,8 +245,8 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 					bounce_dir[i] += Q_flrand( -0.2f, 0.2f );
 				}
 			}
-			if ( !PM_SaberInParry( owner->client->ps.saberMove ) 
-				&& !PM_SaberInReflect( owner->client->ps.saberMove ) 
+			if ( !PM_SaberInParry( owner->client->ps.saberMove )
+				&& !PM_SaberInReflect( owner->client->ps.saberMove )
 				&& !PM_SaberInIdle( owner->client->ps.saberMove ) )
 			{//a bit more wild
 				if ( PM_SaberInAttack( owner->client->ps.saberMove )
@@ -297,7 +302,7 @@ G_BounceRollMissile
 
 ================
 */
-void G_BounceRollMissile( gentity_t *ent, trace_t *trace ) 
+void G_BounceRollMissile( gentity_t *ent, trace_t *trace )
 {
 	vec3_t	velocity, normal;
 	float	dot, speedXY, velocityZ, normalZ;
@@ -331,7 +336,7 @@ void G_BounceRollMissile( gentity_t *ent, trace_t *trace )
 	}
 
 	// check for stop
-	if ( speedXY <= 0 ) 
+	if ( speedXY <= 0 )
 	{
 		G_SetOrigin( ent, trace->endpos );
 		VectorCopy( ent->currentAngles, ent->s.apos.trBase );
@@ -368,7 +373,7 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	dot = DotProduct( velocity, trace->plane.normal );
 	VectorMA( velocity, -2*dot, trace->plane.normal, ent->s.pos.trDelta );
 
-	if ( ent->s.eFlags & EF_BOUNCE_SHRAPNEL ) 
+	if ( ent->s.eFlags & EF_BOUNCE_SHRAPNEL )
 	{
 		VectorScale( ent->s.pos.trDelta, 0.25f, ent->s.pos.trDelta );
 		ent->s.pos.trType = TR_GRAVITY;
@@ -381,7 +386,7 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 			return;
 		}
 	}
-	else if ( ent->s.eFlags & EF_BOUNCE_HALF ) 
+	else if ( ent->s.eFlags & EF_BOUNCE_HALF )
 	{
 		VectorScale( ent->s.pos.trDelta, 0.5, ent->s.pos.trDelta );
 
@@ -428,8 +433,8 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	VectorCopy( ent->currentOrigin, ent->s.pos.trBase );
 	VectorCopy( trace->plane.normal, ent->pos1 );
 
-	if ( ent->s.weapon != WP_SABER 
-		&& ent->s.weapon != WP_THERMAL 
+	if ( ent->s.weapon != WP_SABER
+		&& ent->s.weapon != WP_THERMAL
 		&& ent->e_clThinkFunc != clThinkF_CG_Limb
 		&& ent->e_ThinkFunc != thinkF_LimbThink )
 	{//not a saber, bouncing thermal or limb
@@ -437,7 +442,7 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 		ent->owner = NULL;
 	}
 }
- 
+
 /*
 ================
 G_MissileImpact
@@ -448,7 +453,7 @@ G_MissileImpact
 void NoghriGasCloudThink( gentity_t *self )
 {
 	self->nextthink = level.time + FRAMETIME;
-	
+
 	AddSightEvent( self->owner, self->currentOrigin, 200, AEL_DANGER, 50 );
 
 	if ( self->fx_time < level.time )
@@ -462,7 +467,7 @@ void NoghriGasCloudThink( gentity_t *self )
 	{
 		if ( !Q_irand( 0, 3-g_spskill->integer ) )
 		{
-			G_RadiusDamage( self->currentOrigin, self->owner, Q_irand( 1, 4 ), self->splashRadius, 
+			G_RadiusDamage( self->currentOrigin, self->owner, Q_irand( 1, 4 ), self->splashRadius,
 				self->owner, self->splashMethodOfDeath );
 		}
 	}
@@ -496,15 +501,15 @@ extern qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod
 void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3_t normal, int hitLoc=HL_NONE )
 {
 	// impact damage
-	if ( other->takedamage ) 
+	if ( other->takedamage )
 	{
 		// FIXME: wrong damage direction?
-		if ( ent->damage ) 
+		if ( ent->damage )
 		{
 			vec3_t	velocity;
 
 			EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
-			if ( VectorLength( velocity ) == 0 ) 
+			if ( VectorLength( velocity ) == 0 )
 			{
 				velocity[2] = 1;	// stepped on a grenade
 			}
@@ -533,7 +538,7 @@ void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3
 			}
 
 			G_Damage( other, ent, ent->owner, velocity,
-					impactPos, damage, 
+					impactPos, damage,
 					ent->dflags, ent->methodOfDeath, hitLoc);
 
 			if ( ent->s.weapon == WP_DEMP2 )
@@ -556,13 +561,13 @@ void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3
 	// is it cheaper in bandwidth to just remove this ent and create a new
 	// one, rather than changing the missile into the explosion?
 	//G_FreeEntity(ent);
-	
-	if ( (other->takedamage && other->client ) || (ent->s.weapon == WP_FLECHETTE && other->contents&CONTENTS_LIGHTSABER) ) 
+
+	if ( (other->takedamage && other->client ) || (ent->s.weapon == WP_FLECHETTE && other->contents&CONTENTS_LIGHTSABER) )
 	{
 		G_AddEvent( ent, EV_MISSILE_HIT, DirToByte( normal ) );
 		ent->s.otherEntityNum = other->s.number;
-	} 
-	else 
+	}
+	else
 	{
 		G_AddEvent( ent, EV_MISSILE_MISS, DirToByte( normal ) );
 		ent->s.otherEntityNum = other->s.number;
@@ -588,9 +593,9 @@ void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3
 	G_SetOrigin( ent, impactPos );
 
 	// splash damage (doesn't apply to person directly hit)
-	if ( ent->splashDamage ) 
+	if ( ent->splashDamage )
 	{
-		G_RadiusDamage( impactPos, ent->owner, ent->splashDamage, ent->splashRadius, 
+		G_RadiusDamage( impactPos, ent->owner, ent->splashDamage, ent->splashRadius,
 			other, ent->splashMethodOfDeath );
 	}
 
@@ -627,7 +632,7 @@ static void G_MissileAddAlerts( gentity_t *ent )
 }
 
 //------------------------------------------------------
-void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE ) 
+void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 {
 	gentity_t		*other;
 	vec3_t			diff;
@@ -653,7 +658,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 	{
 		if ( !ent->lastEnemy || ent->lastEnemy == ent->owner )
 		{//a missile that was not reflected or, if so, still is owned by original owner
-			if( LogAccuracyHit( other, ent->owner ) ) 
+			if( LogAccuracyHit( other, ent->owner ) )
 			{
 				ent->owner->client->ps.persistant[PERS_ACCURACY_HITS]++;
 			}
@@ -668,7 +673,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 	}
 	// check for bounce
 	//OR: if the surfaceParm is has a reflect property (magnetic shielding) and the missile isn't an exploding missile
-	qboolean bounce = !!( (!other->takedamage && (ent->s.eFlags&(EF_BOUNCE|EF_BOUNCE_HALF))) || (((trace->surfaceFlags&SURF_FORCEFIELD)||(other->flags&FL_SHIELDED))&&!ent->splashDamage&&!ent->splashRadius&&ent->s.weapon != WP_NOGHRI_STICK) );
+	qboolean bounce = (qboolean)( (!other->takedamage && (ent->s.eFlags&(EF_BOUNCE|EF_BOUNCE_HALF))) || (((trace->surfaceFlags&SURF_FORCEFIELD)||(other->flags&FL_SHIELDED))&&!ent->splashDamage&&!ent->splashRadius&&ent->s.weapon != WP_NOGHRI_STICK) );
 
 	if ( ent->dflags & DAMAGE_HEAVY_WEAP_CLASS )
 	{
@@ -706,10 +711,10 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		}
 	}
 
-	if ( bounce ) 
+	if ( bounce )
 	{
 		// Check to see if there is a bounce count
-		if ( ent->bounceCount ) 
+		if ( ent->bounceCount )
 		{
 			// decrement number of bounces and then see if it should be done bouncing
 			if ( !(--ent->bounceCount) ) {
@@ -724,19 +729,19 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		}
 
 		G_BounceMissile( ent, trace );
-		
-		if ( ent->owner )//&& ent->owner->s.number == 0 ) 
+
+		if ( ent->owner )//&& ent->owner->s.number == 0 )
 		{
 			G_MissileAddAlerts( ent );
 		}
-		G_MissileBounceEffect( ent, trace->endpos, trace->plane.normal, trace->entityNum==ENTITYNUM_WORLD );
+		G_MissileBounceEffect( ent, trace->endpos, trace->plane.normal, (qboolean)(trace->entityNum==ENTITYNUM_WORLD) );
 
 		return;
 	}
-	
+
 	// I would glom onto the EF_BOUNCE code section above, but don't feel like risking breaking something else
-	if ( (!other->takedamage && ( ent->s.eFlags&(EF_BOUNCE_SHRAPNEL) ) ) 
-		|| ((trace->surfaceFlags&SURF_FORCEFIELD)&&!ent->splashDamage&&!ent->splashRadius) ) 
+	if ( (!other->takedamage && ( ent->s.eFlags&(EF_BOUNCE_SHRAPNEL) ) )
+		|| ((trace->surfaceFlags&SURF_FORCEFIELD)&&!ent->splashDamage&&!ent->splashRadius) )
 	{
 		if ( !(other->contents&CONTENTS_LIGHTSABER)
 			|| g_spskill->integer <= 0//on easy, it reflects all shots
@@ -750,17 +755,17 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 			{
 				ent->s.eFlags &= ~EF_BOUNCE_SHRAPNEL;
 			}
-			G_MissileBounceEffect( ent, trace->endpos, trace->plane.normal, trace->entityNum==ENTITYNUM_WORLD );
+			G_MissileBounceEffect( ent, trace->endpos, trace->plane.normal, (qboolean)(trace->entityNum==ENTITYNUM_WORLD) );
 			return;
 		}
 	}
 
 	if ( (!other->takedamage || (other->client && other->health <= 0))
-		&& ent->s.weapon == WP_THERMAL 
+		&& ent->s.weapon == WP_THERMAL
 		&& !ent->alt_fire )
 	{//rolling thermal det - FIXME: make this an eFlag like bounce & stick!!!
 		//G_BounceRollMissile( ent, trace );
-		if ( ent->owner )//&& ent->owner->s.number == 0 ) 
+		if ( ent->owner )//&& ent->owner->s.number == 0 )
 		{
 			G_MissileAddAlerts( ent );
 		}
@@ -769,9 +774,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 	}
 
 	// check for sticking
-	if ( ent->s.eFlags & EF_MISSILE_STICK ) 
+	if ( ent->s.eFlags & EF_MISSILE_STICK )
 	{
-		if ( ent->owner )//&& ent->owner->s.number == 0 ) 
+		if ( ent->owner )//&& ent->owner->s.number == 0 )
 		{
 			//Add the event
 			if ( ent->s.weapon == WP_TRIP_MINE )
@@ -808,11 +813,11 @@ extern bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent);
 			 )
 			&& (!ent->splashDamage || !ent->splashRadius) //this would be cool, though, to "bat" the thermal det away...
 			&& ent->s.weapon != WP_NOGHRI_STICK )//gas bomb, don't reflect
-		{	
+		{
 			//FIXME: take other's owner's FP_SABER_DEFENSE into account here somehow?
-			if (  !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight 
+			if (  !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight
 				|| (InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) &&
-				!WP_DoingMoronicForcedAnimationForForcePowers(other)) )//other->owner->s.number != 0 || 
+				!WP_DoingMoronicForcedAnimationForForcePowers(other)) )//other->owner->s.number != 0 ||
 			{//Jedi cannot block shots from behind!
 				int blockChance = 0;
 				switch ( other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] )
@@ -864,7 +869,7 @@ G_ExplodeMissile
 Explode a missile without an impact
 ================
 */
-void G_ExplodeMissile( gentity_t *ent ) 
+void G_ExplodeMissile( gentity_t *ent )
 {
 	vec3_t		dir;
 	vec3_t		origin;
@@ -889,7 +894,7 @@ void G_ExplodeMissile( gentity_t *ent )
 	ent->freeAfterEvent = qtrue;*/
 
 	// splash damage
-	if ( ent->splashDamage ) 
+	if ( ent->splashDamage )
 	{
 		G_RadiusDamage( ent->currentOrigin, ent->owner, ent->splashDamage, ent->splashRadius, NULL
 			, ent->splashMethodOfDeath );
@@ -908,7 +913,7 @@ void G_RunStuckMissile( gentity_t *ent )
 		{
 			gentity_t *other = &g_entities[ent->s.groundEntityNum];
 
-			if ( (!VectorCompare( vec3_origin, other->s.pos.trDelta ) && other->s.pos.trType != TR_STATIONARY) || 
+			if ( (!VectorCompare( vec3_origin, other->s.pos.trDelta ) && other->s.pos.trType != TR_STATIONARY) ||
 				(!VectorCompare( vec3_origin, other->s.apos.trDelta ) && other->s.apos.trType != TR_STATIONARY) )
 			{//thing I stuck to is moving or rotating now, kill me
 				G_Damage( ent, other, other, NULL, NULL, 99999, 0, MOD_CRUSH );
@@ -940,7 +945,7 @@ int G_GroundTrace( gentity_t *ent, pml_t *pPml )
 	pPml->groundTrace = trace;
 
 	// do something corrective if the trace starts in a solid...
-	if ( trace.allsolid ) 
+	if ( trace.allsolid )
 	{
 		pPml->groundPlane = qfalse;
 		pPml->walking = qfalse;
@@ -948,7 +953,7 @@ int G_GroundTrace( gentity_t *ent, pml_t *pPml )
 	}
 
 	// if the trace didn't hit anything, we are in free fall
-	if ( trace.fraction == 1.0 ) 
+	if ( trace.fraction == 1.0 )
 	{
 		pPml->groundPlane = qfalse;
 		pPml->walking = qfalse;
@@ -956,15 +961,15 @@ int G_GroundTrace( gentity_t *ent, pml_t *pPml )
 	}
 
 	// check if getting thrown off the ground
-	if ( ent->s.pos.trDelta[2] > 0 && DotProduct( ent->s.pos.trDelta, trace.plane.normal ) > 10 ) 
+	if ( ent->s.pos.trDelta[2] > 0 && DotProduct( ent->s.pos.trDelta, trace.plane.normal ) > 10 )
 	{
 		pPml->groundPlane = qfalse;
 		pPml->walking = qfalse;
 		return ENTITYNUM_NONE;
 	}
-	
+
 	// slopes that are too steep will not be considered onground
-	if ( trace.plane.normal[2] < MIN_WALK_NORMAL ) 
+	if ( trace.plane.normal[2] < MIN_WALK_NORMAL )
 	{
 		pPml->groundPlane = qtrue;
 		pPml->walking = qfalse;
@@ -975,7 +980,7 @@ int G_GroundTrace( gentity_t *ent, pml_t *pPml )
 	pPml->walking = qtrue;
 
 	/*
-	if ( ent->s.groundEntityNum == ENTITYNUM_NONE ) 
+	if ( ent->s.groundEntityNum == ENTITYNUM_NONE )
 	{
 		// just hit the ground
 	}
@@ -984,21 +989,21 @@ int G_GroundTrace( gentity_t *ent, pml_t *pPml )
 	return trace.entityNum;
 }
 
-void G_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce ) 
+void G_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce )
 {
 	float	backoff;
 	float	change;
 	int		i;
-	
+
 	backoff = DotProduct (in, normal);
-	
+
 	if ( backoff < 0 ) {
 		backoff *= overbounce;
 	} else {
 		backoff /= overbounce;
 	}
 
-	for ( i=0 ; i<3 ; i++ ) 
+	for ( i=0 ; i<3 ; i++ )
 	{
 		change = normal[i]*backoff;
 		out[i] = in[i] - change;
@@ -1009,11 +1014,11 @@ void G_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce )
 
 G_RollMissile
 
-reworking the rolling object code, 
-still needs to stop bobbling up & down, 
-need to get roll angles right, 
-and need to maybe make the transfer of velocity happen on impacts?  
-Also need bounce sound for bounces off a floor.  
+reworking the rolling object code,
+still needs to stop bobbling up & down,
+need to get roll angles right,
+and need to maybe make the transfer of velocity happen on impacts?
+Also need bounce sound for bounces off a floor.
 Also need to not bounce as much off of enemies
 Also gets stuck inside thrower if looking down when thrown
 
@@ -1042,11 +1047,11 @@ void G_RollMissile( gentity_t *ent )
 	gentity_t	*hitEnt = NULL;
 
 	memset( &objPML, 0, sizeof( objPML ) );
-	
+
 	G_GroundTrace( ent, &objPML );
 
 	objPML.frametime = (level.time - level.previousTime)*0.001;
-	
+
 	numbumps = 4;
 
 	VectorCopy ( ent->s.pos.trDelta, primal_velocity );
@@ -1055,22 +1060,22 @@ void G_RollMissile( gentity_t *ent )
 	endVelocity[2] -= g_gravity->value * objPML.frametime;
 	ent->s.pos.trDelta[2] = ( ent->s.pos.trDelta[2] + endVelocity[2] ) * 0.5;
 	primal_velocity[2] = endVelocity[2];
-	if ( objPML.groundPlane ) 
+	if ( objPML.groundPlane )
 	{//FIXME: never happens!
 		// slide along the ground plane
-		G_ClipVelocity( ent->s.pos.trDelta, objPML.groundTrace.plane.normal, ent->s.pos.trDelta, BUMPCLIP ); 
+		G_ClipVelocity( ent->s.pos.trDelta, objPML.groundTrace.plane.normal, ent->s.pos.trDelta, BUMPCLIP );
 		VectorScale( ent->s.pos.trDelta, 0.9f, ent->s.pos.trDelta );
 	}
 
 	time_left = objPML.frametime;
 
 	// never turn against the ground plane
-	if ( objPML.groundPlane ) 
+	if ( objPML.groundPlane )
 	{
 		numplanes = 1;
 		VectorCopy( objPML.groundTrace.plane.normal, planes[0] );
-	} 
-	else 
+	}
+	else
 	{
 		numplanes = 0;
 	}
@@ -1081,7 +1086,7 @@ void G_RollMissile( gentity_t *ent )
 	numplanes++;
 	*/
 
-	for ( bumpcount = 0; bumpcount < numbumps; bumpcount++ ) 
+	for ( bumpcount = 0; bumpcount < numbumps; bumpcount++ )
 	{
 		// calculate position we are trying to move to
 		VectorMA( ent->currentOrigin, time_left, ent->s.pos.trDelta, end );
@@ -1113,13 +1118,13 @@ void G_RollMissile( gentity_t *ent )
 			return;// qtrue;
 		}
 
-		if ( trace.fraction > 0 ) 
+		if ( trace.fraction > 0 )
 		{
 			// actually covered some distance
 			VectorCopy( trace.endpos, ent->currentOrigin );
 		}
 
-		if ( trace.fraction == 1 ) 
+		if ( trace.fraction == 1 )
 		{
 			 break;		// moved the entire distance
 		}
@@ -1139,7 +1144,7 @@ void G_RollMissile( gentity_t *ent )
 
 		time_left -= time_left * trace.fraction;
 
-		if ( numplanes >= MAX_CLIP_PLANES ) 
+		if ( numplanes >= MAX_CLIP_PLANES )
 		{
 			// this shouldn't really happen
 			VectorClear( ent->s.pos.trDelta );
@@ -1151,15 +1156,15 @@ void G_RollMissile( gentity_t *ent )
 		// out along it, which fixes some epsilon issues with
 		// non-axial planes
 		//
-		for ( i = 0 ; i < numplanes ; i++ ) 
+		for ( i = 0 ; i < numplanes ; i++ )
 		{
-			if ( DotProduct( trace.plane.normal, planes[i] ) > 0.99 ) 
+			if ( DotProduct( trace.plane.normal, planes[i] ) > 0.99 )
 			{
 				VectorAdd( trace.plane.normal, ent->s.pos.trDelta, ent->s.pos.trDelta );
 				break;
 			}
 		}
-		if ( i < numplanes ) 
+		if ( i < numplanes )
 		{
 			continue;
 		}
@@ -1169,7 +1174,7 @@ void G_RollMissile( gentity_t *ent )
 		//
 		// modify velocity so it parallels all of the clip planes
 		//
-		if ( &g_entities[trace.entityNum] != NULL && g_entities[trace.entityNum].client ) 
+		if ( &g_entities[trace.entityNum] != NULL && g_entities[trace.entityNum].client )
 		{//hit a person, bounce off much less
 			bounceAmt = OVERCLIP;
 		}
@@ -1179,16 +1184,16 @@ void G_RollMissile( gentity_t *ent )
 		}
 
 		// find a plane that it enters
-		for ( i = 0 ; i < numplanes ; i++ ) 
+		for ( i = 0 ; i < numplanes ; i++ )
 		{
 			into = DotProduct( ent->s.pos.trDelta, planes[i] );
-			if ( into >= 0.1 ) 
+			if ( into >= 0.1 )
 			{
 				continue;		// move doesn't interact with the plane
 			}
 
 			// see how hard we are hitting things
-			if ( -into > pml.impactSpeed ) 
+			if ( -into > pml.impactSpeed )
 			{
 				pml.impactSpeed = -into;
 			}
@@ -1200,13 +1205,13 @@ void G_RollMissile( gentity_t *ent )
 			G_ClipVelocity( endVelocity, planes[i], endClipVelocity, bounceAmt );
 
 			// see if there is a second plane that the new move enters
-			for ( j = 0 ; j < numplanes ; j++ ) 
+			for ( j = 0 ; j < numplanes ; j++ )
 			{
-				if ( j == i ) 
+				if ( j == i )
 				{
 					continue;
 				}
-				if ( DotProduct( clipVelocity, planes[j] ) >= 0.1 ) 
+				if ( DotProduct( clipVelocity, planes[j] ) >= 0.1 )
 				{
 					continue;		// move doesn't interact with the plane
 				}
@@ -1216,7 +1221,7 @@ void G_RollMissile( gentity_t *ent )
 				G_ClipVelocity( endClipVelocity, planes[j], endClipVelocity, bounceAmt );
 
 				// see if it goes back into the first clip plane
-				if ( DotProduct( clipVelocity, planes[i] ) >= 0 ) 
+				if ( DotProduct( clipVelocity, planes[i] ) >= 0 )
 				{
 					continue;
 				}
@@ -1233,13 +1238,13 @@ void G_RollMissile( gentity_t *ent )
 				VectorScale( dir, d, endClipVelocity );
 
 				// see if there is a third plane the the new move enters
-				for ( k = 0 ; k < numplanes ; k++ ) 
+				for ( k = 0 ; k < numplanes ; k++ )
 				{
-					if ( k == i || k == j ) 
+					if ( k == i || k == j )
 					{
 						continue;
 					}
-					if ( DotProduct( clipVelocity, planes[k] ) >= 0.1 ) 
+					if ( DotProduct( clipVelocity, planes[k] ) >= 0.1 )
 					{
 						continue;		// move doesn't interact with the plane
 					}
@@ -1262,7 +1267,7 @@ void G_RollMissile( gentity_t *ent )
 
 	// don't change velocity if in a timer (FIXME: is this correct?)
 	/*
-	if ( pm->ps->pm_time ) 
+	if ( pm->ps->pm_time )
 	{
 		VectorCopy( primal_velocity, ent->s.pos.trDelta );
 	}
@@ -1277,7 +1282,7 @@ G_RunMissile
 ================
 */
 void G_MoverTouchPushTriggers( gentity_t *ent, vec3_t oldOrg );
-void G_RunMissile( gentity_t *ent ) 
+void G_RunMissile( gentity_t *ent )
 {
 	vec3_t		oldOrg;
 	trace_t		tr;
@@ -1292,7 +1297,7 @@ void G_RunMissile( gentity_t *ent )
 			//in hand
 			vec3_t scAngles = {0};
 			scAngles[YAW] = ent->activator->currentAngles[YAW];
-			gi.G2API_GetBoltMatrix( ent->activator->ghoul2, ent->activator->playerModel, ent->activator->gutBolt, 
+			gi.G2API_GetBoltMatrix( ent->activator->ghoul2, ent->activator->playerModel, ent->activator->gutBolt,
 					&boltMatrix, scAngles, ent->activator->currentOrigin, (cg.time?cg.time:level.time),
 					NULL, ent->activator->s.modelScale );
 			// Storing ent position, bolt position, and bolt axis
@@ -1325,7 +1330,7 @@ void G_RunMissile( gentity_t *ent )
 			{
 				vec3_t	ang, fwdDir, rtDir;
 				float	speed;
-				
+
 				ent->s.apos.trType = TR_INTERPOLATE;
 				VectorSet( ang, 0, ent->s.apos.trBase[1], 0 );
 				AngleVectors( ang, fwdDir, rtDir, NULL );
@@ -1347,23 +1352,23 @@ void G_RunMissile( gentity_t *ent )
 	}
 	else
 	{
-		vec3_t		origin; 
+		vec3_t		origin;
 		EvaluateTrajectory( &ent->s.pos, level.time, origin );
 		// trace a line from the previous position to the current position,
 		// ignoring interactions with the missile owner
-		gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin, 
+		gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin,
 			ent->owner ? ent->owner->s.number : ent->s.number, ent->clipmask, G2_COLLIDE, 10 );
-		
+
 		if ( tr.entityNum != ENTITYNUM_NONE )
 		{
 			gentity_t *other = &g_entities[tr.entityNum];
 			// check for hitting a lightsaber
 			if ( other->contents & CONTENTS_LIGHTSABER )
 			{//hit a lightsaber bbox
-				if ( other->owner 
-					&& other->owner->client 
-					&& !other->owner->client->ps.saberInFlight 
-					&& ( Q_irand( 0, (other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]*other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) ) == 0 
+				if ( other->owner
+					&& other->owner->client
+					&& !other->owner->client->ps.saberInFlight
+					&& ( Q_irand( 0, (other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]*other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) ) == 0
 						|| !InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) ) )//other->owner->s.number == 0 &&
 				{//Jedi cannot block shots from behind!
 					//re-trace from here, ignoring the lightsaber
@@ -1380,7 +1385,7 @@ void G_RunMissile( gentity_t *ent )
 
 	//FIXME: Rolling things hitting G2 polys is weird
 	///////////////////////////////////////////////////////
-//?	if ( tr.fraction != 1 ) 
+//?	if ( tr.fraction != 1 )
 	{
 	// did we hit or go near a Ghoul2 model?
 //		qboolean hitModel = qfalse;
@@ -1409,7 +1414,7 @@ void G_RunMissile( gentity_t *ent )
 	}
 /////////////////////////////////////////////////////////
 
-	if ( tr.startsolid ) 
+	if ( tr.startsolid )
 	{
 		tr.fraction = 0;
 	}
@@ -1425,7 +1430,7 @@ void G_RunMissile( gentity_t *ent )
 	// check think function
 	G_RunThink( ent );
 
-	if ( ent->s.eType != ET_MISSILE ) 
+	if ( ent->s.eType != ET_MISSILE )
 	{
 		return;		// exploded
 	}
@@ -1457,7 +1462,7 @@ void G_RunMissile( gentity_t *ent )
 			if ( ent->s.weapon == WP_TRIP_MINE )
 			{//???
 			}
-			else 
+			else
 			{
 				if ( ent->s.weapon == WP_ROCKET_LAUNCHER && ent->e_ThinkFunc == thinkF_rocketThink )
 				{//homing rocket- run like hell!
@@ -1476,7 +1481,7 @@ void G_RunMissile( gentity_t *ent )
 		}
 	}
 
-	if ( tr.fraction == 1 ) 
+	if ( tr.fraction == 1 )
 	{
 		if ( ent->s.weapon == WP_THERMAL && ent->s.pos.trType == TR_INTERPOLATE )
 		{//a rolling thermal that didn't hit anything
@@ -1486,7 +1491,7 @@ void G_RunMissile( gentity_t *ent )
 	}
 
 	// never explode or bounce on sky
-	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+	if ( tr.surfaceFlags & SURF_NOIMPACT )
 	{
 		G_FreeEntity( ent );
 		return;

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //b_goal.cpp
 #include "b_local.h"
@@ -26,16 +30,16 @@ extern qboolean FlyingCreature( gentity_t *ent );
 SetGoal
 */
 
-void SetGoal( gentity_t *goal, float rating ) 
+void SetGoal( gentity_t *goal, float rating )
 {
 	NPCInfo->goalEntity = goal;
 //	NPCInfo->goalEntityNeed = rating;
 	NPCInfo->goalTime = level.time;
-	if ( goal ) 
+	if ( goal )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: %s @ %s (%f)\n", goal->classname, vtos( goal->currentOrigin), rating );
 	}
-	else 
+	else
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: NONE\n" );
 	}
@@ -46,26 +50,26 @@ void SetGoal( gentity_t *goal, float rating )
 NPC_SetGoal
 */
 
-void NPC_SetGoal( gentity_t *goal, float rating ) 
+void NPC_SetGoal( gentity_t *goal, float rating )
 {
-	if ( goal == NPCInfo->goalEntity ) 
+	if ( goal == NPCInfo->goalEntity )
 	{
 		return;
 	}
 
-	if ( !goal ) 
+	if ( !goal )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_ERROR, "NPC_SetGoal: NULL goal\n" );
 		return;
 	}
 
-	if ( goal->client ) 
+	if ( goal->client )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_ERROR, "NPC_SetGoal: goal is a client\n" );
 		return;
 	}
 
-	if ( NPCInfo->goalEntity ) 
+	if ( NPCInfo->goalEntity )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: push %s\n", NPCInfo->goalEntity->classname );
 		NPCInfo->lastGoalEntity = NPCInfo->goalEntity;
@@ -80,11 +84,11 @@ void NPC_SetGoal( gentity_t *goal, float rating )
 NPC_ClearGoal
 */
 
-void NPC_ClearGoal( void ) 
+void NPC_ClearGoal( void )
 {
 	gentity_t	*goal;
 
-	if ( !NPCInfo->lastGoalEntity ) 
+	if ( !NPCInfo->lastGoalEntity )
 	{
 		SetGoal( NULL, 0.0 );
 		return;
@@ -92,7 +96,7 @@ void NPC_ClearGoal( void )
 
 	goal = NPCInfo->lastGoalEntity;
 	NPCInfo->lastGoalEntity = NULL;
-	if ( goal->inuse && !(goal->s.eFlags & EF_NODRAW) ) 
+	if ( goal->inuse && !(goal->s.eFlags & EF_NODRAW) )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_ClearGoal: pop %s\n", goal->classname );
 		SetGoal( goal, 0 );//, NPCInfo->lastGoalEntityNeed
@@ -149,19 +153,19 @@ ReachedGoal
 
 id removed checks against waypoints and is now checking surfaces
 */
-qboolean ReachedGoal( gentity_t *goal ) 
+qboolean ReachedGoal( gentity_t *goal )
 {
 
-	if ( NPCInfo->aiFlags & NPCAI_TOUCHED_GOAL ) 
+	if ( NPCInfo->aiFlags & NPCAI_TOUCHED_GOAL )
 	{
 		NPCInfo->aiFlags &= ~NPCAI_TOUCHED_GOAL;
 		return qtrue;
 	}
-	return STEER::Reached(NPC, goal, NPCInfo->goalRadius, !!FlyingCreature(NPC));
+	return (qboolean)STEER::Reached(NPC, goal, NPCInfo->goalRadius, FlyingCreature(NPC) != qfalse);
 }
 
 /*
-static gentity_t *UpdateGoal( void ) 
+static gentity_t *UpdateGoal( void )
 
 Id removed a lot of shit here... doesn't seem to handle waypoints independantly of goalentity
 
@@ -170,14 +174,14 @@ In fact, doesn't seem to be any waypoint info on entities at all any more?
 MCG - Since goal is ALWAYS goalEntity, took out a lot of sending goal entity pointers around for no reason
 */
 
-gentity_t *UpdateGoal( void ) 
+gentity_t *UpdateGoal( void )
 {
 	//FIXME: CREED should look at this
 	//		this func doesn't seem to be working correctly for the sand creature
 
 	gentity_t	*goal;
 
-	if ( !NPCInfo->goalEntity ) 
+	if ( !NPCInfo->goalEntity )
 	{
 		return NULL;
 	}
@@ -190,7 +194,7 @@ gentity_t *UpdateGoal( void )
 
 	goal = NPCInfo->goalEntity;
 
-	if ( ReachedGoal( goal ) ) 
+	if ( ReachedGoal( goal ) )
 	{
 		NPC_ReachedGoal();
 		goal = NULL;//so they don't keep trying to move to it

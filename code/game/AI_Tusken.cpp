@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -100,7 +104,7 @@ void NPC_Tusken_PlayConfusionSound( gentity_t *self )
 	TIMER_Set( self, "flee", 0 );
 	self->NPC->squadState = SQUAD_IDLE;
 	self->NPC->tempBehavior = BS_DEFAULT;
-	
+
 	//self->NPC->behaviorState = BS_PATROL;
 	G_ClearEnemy( self );//FIXME: or just self->enemy = NULL;?
 
@@ -114,7 +118,7 @@ NPC_ST_Pain
 -------------------------
 */
 
-void NPC_Tusken_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod ) 
+void NPC_Tusken_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod )
 {
 	self->NPC->localState = LSTATE_UNDERFIRE;
 
@@ -201,8 +205,8 @@ void NPC_BSTusken_Patrol( void )
 					//NPCInfo->lastAlertID = level.alertEvents[alertEvent].ID;
 					if ( level.alertEvents[alertEvent].level == AEL_DISCOVERED )
 					{
-						if ( level.alertEvents[alertEvent].owner && 
-							level.alertEvents[alertEvent].owner->client && 
+						if ( level.alertEvents[alertEvent].owner &&
+							level.alertEvents[alertEvent].owner->client &&
 							level.alertEvents[alertEvent].owner->health >= 0 &&
 							level.alertEvents[alertEvent].owner->client->playerTeam == NPC->client->enemyTeam )
 						{//an enemy
@@ -229,15 +233,15 @@ void NPC_BSTusken_Patrol( void )
 				//NOTE: stops walking or doing anything else below
 				vec3_t	dir, angles;
 				float	o_yaw, o_pitch;
-				
+
 				VectorSubtract( NPCInfo->investigateGoal, NPC->client->renderInfo.eyePoint, dir );
 				vectoangles( dir, angles );
-				
+
 				o_yaw = NPCInfo->desiredYaw;
 				o_pitch = NPCInfo->desiredPitch;
 				NPCInfo->desiredYaw = angles[YAW];
 				NPCInfo->desiredPitch = angles[PITCH];
-				
+
 				NPC_UpdateAngles( qtrue, qtrue );
 
 				NPCInfo->desiredYaw = o_yaw;
@@ -406,7 +410,7 @@ void NPC_BSTusken_Attack( void )
 extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 void Tusken_StaffTrace( void )
 {
-	if ( !NPC->ghoul2.size() 
+	if ( !NPC->ghoul2.size()
 		|| NPC->weaponModel[0] <= 0 )
 	{
 		return;
@@ -425,7 +429,7 @@ void Tusken_StaffTrace( void )
 			vec3_t		mins={-2,-2,-2},maxs={2,2,2};
 			trace_t		trace;
 
-			gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->weaponModel[0], 
+			gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->weaponModel[0],
 						boltIndex,
 						&boltMatrix, angles, NPC->currentOrigin, time,
 						NULL, NPC->s.modelScale );
@@ -443,7 +447,7 @@ void Tusken_StaffTrace( void )
 			if ( trace.fraction < 1.0f && trace.entityNum != lastHit )
 			{//hit something
 				gentity_t *traceEnt = &g_entities[trace.entityNum];
-				if ( traceEnt->takedamage 
+				if ( traceEnt->takedamage
 					&& (!traceEnt->client || traceEnt == NPC->enemy || traceEnt->client->NPC_class != NPC->client->NPC_class) )
 				{//smack
 					int dmg = Q_irand( 5, 10 ) * (g_spskill->integer+1);
@@ -451,7 +455,7 @@ void Tusken_StaffTrace( void )
 					//FIXME: debounce?
 					G_Sound( traceEnt, G_SoundIndex( va( "sound/weapons/tusken_staff/stickhit%d.wav", Q_irand( 1, 4 ) ) ) );
 					G_Damage( traceEnt, NPC, NPC, vec3_origin, trace.endpos, dmg, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
-					if ( traceEnt->health > 0 
+					if ( traceEnt->health > 0
 						&& ( (traceEnt->client&&traceEnt->client->NPC_class==CLASS_JAWA&&!Q_irand(0,1))
 							|| dmg > 19 ) )//FIXME: base on skill!
 					{//do pain on enemy
@@ -476,12 +480,12 @@ qboolean G_TuskenAttackAnimDamage( gentity_t *self )
 		int			end		  = 0;
 		int			start	  = 0;
 		if (!!gi.G2API_GetBoneAnimIndex(&
-					self->ghoul2[self->playerModel], 
-					self->lowerLumbarBone, 
-					level.time, 
-					&current, 
-					&start, 
-					&end, 
+					self->ghoul2[self->playerModel],
+					self->lowerLumbarBone,
+					level.time,
+					&current,
+					&start,
+					&end,
 					NULL,
 					NULL,
 					NULL))
@@ -490,10 +494,10 @@ qboolean G_TuskenAttackAnimDamage( gentity_t *self )
 			//gi.Printf("%f\n", percentComplete);
 			switch (self->client->ps.torsoAnim)
 			{
-			case BOTH_TUSKENATTACK1: return (percentComplete>0.3 && percentComplete<0.7);
-			case BOTH_TUSKENATTACK2: return (percentComplete>0.3 && percentComplete<0.7);
-			case BOTH_TUSKENATTACK3: return (percentComplete>0.1 && percentComplete<0.5);
-			case BOTH_TUSKENLUNGE1:  return (percentComplete>0.3 && percentComplete<0.5);
+			case BOTH_TUSKENATTACK1: return (qboolean)(percentComplete>0.3 && percentComplete<0.7);
+			case BOTH_TUSKENATTACK2: return (qboolean)(percentComplete>0.3 && percentComplete<0.7);
+			case BOTH_TUSKENATTACK3: return (qboolean)(percentComplete>0.1 && percentComplete<0.5);
+			case BOTH_TUSKENLUNGE1:  return (qboolean)(percentComplete>0.3 && percentComplete<0.5);
 			}
 		}
 	}

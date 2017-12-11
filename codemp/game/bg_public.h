@@ -1,7 +1,28 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
 // bg_public.h -- definitions shared by both the server game and client game modules
 
 // because games can change separately from the main system version, we need a
@@ -121,7 +142,7 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 #define CS_LOCATIONS			(CS_G2BONES+MAX_G2BONES)
-#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS) 
+#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS)
 #define CS_EFFECTS				(CS_PARTICLES+MAX_LOCATIONS)
 #define	CS_LIGHT_STYLES			(CS_EFFECTS + MAX_FX)
 
@@ -329,7 +350,7 @@ extern stringID_table_t footstepTypeTable[NUM_FOOTSTEP_TYPES+1];
 //indices for AEV_SABER_SPIN data
 #define	AED_SABER_SPIN_SABERNUM		0
 #define	AED_SABER_SPIN_TYPE			1	//0 = saberspinoff, 1 = saberspin, 2-4 = saberspin1-saberspin3
-#define	AED_SABER_SPIN_PROBABILITY	2	
+#define	AED_SABER_SPIN_PROBABILITY	2
 
 typedef enum
 {//NOTENOTE:  Be sure to update animEventTypeTable and ParseAnimationEvtBlock(...) if you change this enum list!
@@ -339,13 +360,13 @@ typedef enum
 	AEV_EFFECT,		//# animID AEV_EFFECT framenum effectpath boltName chancetoplay
 	AEV_FIRE,		//# animID AEV_FIRE framenum altfire chancetofire
 	AEV_MOVE,		//# animID AEV_MOVE framenum forwardpush rightpush uppush
-	AEV_SOUNDCHAN,  //# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay 
-	AEV_SABER_SWING,  //# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
-	AEV_SABER_SPIN,  //# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
+	AEV_SOUNDCHAN,  //# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay
+	AEV_SABER_SWING,  //# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay
+	AEV_SABER_SPIN,  //# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay
 	AEV_NUM_AEV
 } animEventType_t;
 
-typedef struct animevent_s 
+typedef struct animevent_s
 {
 	animEventType_t	eventType;
 	unsigned short	keyFrame;			//Frame to play event on
@@ -396,7 +417,7 @@ typedef enum {
 } pmtype_t;
 
 typedef enum {
-	WEAPON_READY, 
+	WEAPON_READY,
 	WEAPON_RAISING,
 	WEAPON_DROPPING,
 	WEAPON_FIRING,
@@ -557,7 +578,7 @@ typedef enum {
 	//MAKE SURE STAT_WEAPONS REMAINS 4!!!!
 	//There is a hardcoded reference in msg.cpp to send it in 32 bits -rww
 	STAT_WEAPONS = 4,					// 16 bit fields
-	STAT_ARMOR,				
+	STAT_ARMOR,
 	STAT_DEAD_YAW,					// look this direction when dead (FIXME: get rid of?)
 	STAT_CLIENTS_READY,				// bit mask of clients wishing to exit the intermission (FIXME: configstring?)
 	STAT_MAX_HEALTH,				// health / armor limit, changable by handicap
@@ -1022,7 +1043,7 @@ typedef enum {
 	EV_PUSHFAIL,
 
 	EV_SIEGESPEC,
-	
+
 } entity_event_t;			// There is a maximum of 256 events (8 bits transmission, 2 high bits for uniqueness)
 
 
@@ -1068,7 +1089,7 @@ typedef enum {
 //team task
 typedef enum {
 	TEAMTASK_NONE,
-	TEAMTASK_OFFENSE, 
+	TEAMTASK_OFFENSE,
 	TEAMTASK_DEFENSE,
 	TEAMTASK_PATROL,
 	TEAMTASK_FOLLOW,
@@ -1501,7 +1522,7 @@ typedef struct saberTrail_s {
 
 	// Marks stuff
 	qboolean	haveOldPos[2];
-	vec3_t		oldPos[2];		
+	vec3_t		oldPos[2];
 	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
 								//	..then we'll need the normal to project a mark blob onto the impact point
 } saberTrail_t;
@@ -1617,10 +1638,10 @@ typedef struct saberInfo_s {
 	float			animSpeedScale;							// 1.0 - plays normal attack animations faster/slower
 
 	//done in both cgame and game (BG code)
-	int				kataMove;								// LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	int				lungeAtkMove;							// LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	int				jumpAtkUpMove;							// LS_INVALID - if set, player will execute this move when they jump+attack 
-	int				jumpAtkFwdMove;							// LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	int				kataMove;								// LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	int				lungeAtkMove;							// LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	int				jumpAtkUpMove;							// LS_INVALID - if set, player will execute this move when they jump+attack
+	int				jumpAtkFwdMove;							// LS_INVALID - if set, player will execute this move when they jump+fwd+attack
 	int				jumpAtkBackMove;						// LS_INVALID - if set, player will execute this move when they jump+back+attack
 	int				jumpAtkRightMove;						// LS_INVALID - if set, player will execute this move when they jump+rightattack
 	int				jumpAtkLeftMove;						// LS_INVALID - if set, player will execute this move when they jump+left+attack
@@ -1637,7 +1658,7 @@ typedef struct saberInfo_s {
 	int				bladeStyle2Start;						// 0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
 
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
-	
+
 	//done in cgame (client-side code)
 	int				trailStyle, trailStyle2;				// 0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
 	int				g2MarksShader, g2MarksShader2;			// none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"

@@ -1,5 +1,27 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 
 #include "g_local.h"
 #include "g_ICARUScb.h"
@@ -63,7 +85,7 @@ void G_FindTeams( void ) {
 
 	c = 0;
 	c2 = 0;
-	for ( i=1, e=g_entities+i ; i < level.num_entities ; i++,e++ ){
+	for ( i=MAX_CLIENTS, e=g_entities+i ; i < level.num_entities ; i++,e++ ) {
 		if (!e->inuse)
 			continue;
 		if (!e->team)
@@ -153,15 +175,22 @@ void G_CacheGametype( void )
 		else
 			level.gametype = gt;
 	}
-	else if ( g_gametype.integer < 0 || level.gametype >= GT_MAX_GAME_TYPE )
+	else if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE )
 	{
-		trap->Print( "g_gametype %i is out of range, defaulting to 0\n", level.gametype );
+		trap->Print( "g_gametype %i is out of range, defaulting to 0 (FFA/Deathmatch)\n", g_gametype.integer );
 		level.gametype = GT_FFA;
 	}
 	else
 		level.gametype = atoi( g_gametype.string );
 
 	trap->Cvar_Set( "g_gametype", va( "%i", level.gametype ) );
+	trap->Cvar_Update( &g_gametype );
+}
+
+void G_CacheMapname( const vmCvar_t *mapname )
+{
+	Com_sprintf( level.mapname, sizeof( level.mapname ), "maps/%s.bsp", mapname->string );
+	Com_sprintf( level.rawmapname, sizeof( level.rawmapname ), "maps/%s", mapname->string );
 }
 
 /*
@@ -201,7 +230,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	trap->Print ("------- Game Initialization -------\n");
 	trap->Print ("gamename: %s\n", GAMEVERSION);
-	trap->Print ("gamedate: %s\n", __DATE__);
+	trap->Print ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );
 
@@ -337,14 +366,14 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 
 	// let the server system know where the entites are
-	trap->LocateGameData( (sharedEntity_t *)level.gentities, level.num_entities, sizeof( gentity_t ), 
+	trap->LocateGameData( (sharedEntity_t *)level.gentities, level.num_entities, sizeof( gentity_t ),
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	//Load sabers.cfg data
 	WP_SaberLoadParms();
 
 	NPC_InitGame();
-	
+
 	TIMER_Clear();
 	//
 	//ICARUS INIT START
@@ -367,6 +396,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	InitSiegeMode();
 
 	trap->Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
+	G_CacheMapname( &mapname );
 	trap->Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
 
 	navCalculatePaths	= ( trap->Nav_Load( mapname.string, ckSum.integer ) == qfalse );
@@ -433,7 +463,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else
 	{//loaded
-		//FIXME: if this is from a loadgame, it needs to be sure to write this 
+		//FIXME: if this is from a loadgame, it needs to be sure to write this
 		//out whenever you do a savegame since the edges and routes are dynamic...
 		//OR: always do a navigator.CheckBlockedEdges() on map startup after nav-load/calc-paths
 		//navigator.pathsCalculated = qtrue;//just to be safe?  Does this get saved out?  No... assumed
@@ -675,7 +705,7 @@ void AddTournamentPlayer( void ) {
 			continue;
 		}
 		// never select the dedicated follow or scoreboard clients
-		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD || 
+		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ||
 			client->sess.spectatorClient < 0  ) {
 			continue;
 		}
@@ -706,11 +736,11 @@ void AddTournamentQueue( gclient_t *client )
 {
 	int index;
 	gclient_t *curclient;
-	
+
 	for( index = 0; index < level.maxclients; index++ )
 	{
 		curclient = &level.clients[index];
-		
+
 		if ( curclient->pers.connected != CON_DISCONNECTED )
 		{
 			if ( curclient == client )
@@ -828,7 +858,7 @@ void AddPowerDuelPlayers( void )
 		}
 
 		// never select the dedicated follow or scoreboard clients
-		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD || 
+		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ||
 			client->sess.spectatorClient < 0  ) {
 			continue;
 		}
@@ -1211,7 +1241,7 @@ void CalculateRanks( void ) {
 					level.numNonSpectatorClients++;
 					//nonSpecIndex = i;
 				}
-			
+
 				// decide if this should be auto-followed
 				if ( level.clients[i].pers.connected == CON_CONNECTED )
 				{
@@ -1240,21 +1270,7 @@ void CalculateRanks( void ) {
 	if ( !g_warmup.integer || level.gametype == GT_SIEGE )
 		level.warmupTime = 0;
 
-	/*
-	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && level.gametype == GT_DUEL && !level.warmupTime)
-	{
-		gentity_t *currentWinner = G_GetDuelWinner(&level.clients[nonSpecIndex]);
-
-		if (currentWinner && currentWinner->client)
-		{
-			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
-			currentWinner->client->pers.netname, G_GetStringEdString("MP_SVGAME", "VERSUS"), level.clients[nonSpecIndex].pers.netname));
-		}
-	}
-	*/
-	//NOTE: for now not doing this either. May use later if appropriate.
-
-	qsort( level.sortedClients, level.numConnectedClients, 
+	qsort( level.sortedClients, level.numConnectedClients,
 		sizeof(level.sortedClients[0]), SortRanks );
 
 	// set the rank value for all clients that are connected and not spectators
@@ -1270,7 +1286,7 @@ void CalculateRanks( void ) {
 				cl->ps.persistant[PERS_RANK] = 1;
 			}
 		}
-	} else {	
+	} else {
 		rank = -1;
 		score = 0;
 		for ( i = 0;  i < level.numPlayingClients; i++ ) {
@@ -1386,7 +1402,7 @@ void MoveClientToIntermission( gentity_t *ent ) {
 	memset( ent->client->ps.powerups, 0, sizeof(ent->client->ps.powerups) );
 
 	G_LeaveVehicle( ent, qfalse );
-	
+
 	ent->client->ps.rocketLockIndex = ENTITYNUM_NONE;
 	ent->client->ps.rocketLockTime = 0;
 
@@ -1426,7 +1442,7 @@ void FindIntermissionPoint( void ) {
 	   	if (gSiegeRoundWinningTeam == SIEGETEAM_TEAM1)
 		{
 			ent = G_Find (NULL, FOFS(classname), "info_player_intermission_red");
-			if ( ent && ent->target2 ) 
+			if ( ent && ent->target2 )
 			{
 				G_UseTargets2( ent, ent, ent->target2 );
 			}
@@ -1434,7 +1450,7 @@ void FindIntermissionPoint( void ) {
 	   	else if (gSiegeRoundWinningTeam == SIEGETEAM_TEAM2)
 		{
 			ent = G_Find (NULL, FOFS(classname), "info_player_intermission_blue");
-			if ( ent && ent->target2 ) 
+			if ( ent && ent->target2 )
 			{
 				G_UseTargets2( ent, ent, ent->target2 );
 			}
@@ -1557,7 +1573,7 @@ void DuelResetWinsLosses(void)
 ExitLevel
 
 When the intermission has been exited, the server is either killed
-or moved to a new level based on the "nextmap" cvar 
+or moved to a new level based on the "nextmap" cvar
 
 =============
 */
@@ -1578,7 +1594,7 @@ void ExitLevel (void) {
 				level.changemap = NULL;
 				level.intermissiontime = 0;
 			}
-			return;	
+			return;
 		}
 
 		DuelResetWinsLosses();
@@ -1811,12 +1827,12 @@ void CheckIntermissionExit( void ) {
 		{
 			G_LogPrintf("Duel Results:\n");
 			//G_LogPrintf("Duel Time: %d\n", level.time );
-			G_LogPrintf("winner: %s, score: %d, wins/losses: %d/%d\n", 
+			G_LogPrintf("winner: %s, score: %d, wins/losses: %d/%d\n",
 				level.clients[level.sortedClients[0]].pers.netname,
 				level.clients[level.sortedClients[0]].ps.persistant[PERS_SCORE],
 				level.clients[level.sortedClients[0]].sess.wins,
 				level.clients[level.sortedClients[0]].sess.losses );
-			G_LogPrintf("loser: %s, score: %d, wins/losses: %d/%d\n", 
+			G_LogPrintf("loser: %s, score: %d, wins/losses: %d/%d\n",
 				level.clients[level.sortedClients[1]].pers.netname,
 				level.clients[level.sortedClients[1]].ps.persistant[PERS_SCORE],
 				level.clients[level.sortedClients[1]].sess.wins,
@@ -1851,7 +1867,7 @@ void CheckIntermissionExit( void ) {
 			{
 				if (level.gametype == GT_POWERDUEL)
 				{
-					G_LogPrintf("Power Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n", 
+					G_LogPrintf("Power Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n",
 						level.clients[level.sortedClients[0]].pers.netname,
 						level.clients[level.sortedClients[0]].sess.wins,
 						level.clients[level.sortedClients[0]].sess.losses,
@@ -1865,7 +1881,7 @@ void CheckIntermissionExit( void ) {
 				}
 				else
 				{
-					G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d, kill limit: %d\n", 
+					G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d, kill limit: %d\n",
 						level.clients[level.sortedClients[0]].pers.netname,
 						level.clients[level.sortedClients[0]].sess.wins,
 						level.clients[level.sortedClients[0]].sess.losses,
@@ -1875,14 +1891,14 @@ void CheckIntermissionExit( void ) {
 						fraglimit.integer );
 				}
 			}
-			
+
 			if (level.gametype == GT_POWERDUEL)
 			{
 				if (level.numPlayingClients >= 3 && level.numNonSpectatorClients >= 3)
 				{
 					trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
 					trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
-				}			
+				}
 			}
 			else
 			{
@@ -1893,12 +1909,12 @@ void CheckIntermissionExit( void ) {
 				}
 			}
 
-			return;	
+			return;
 		}
 
 		if ( g_austrian.integer && level.gametype != GT_POWERDUEL )
 		{
-			G_LogPrintf("Duel Tournament Winner: %s wins/losses: %d/%d\n", 
+			G_LogPrintf("Duel Tournament Winner: %s wins/losses: %d/%d\n",
 				level.clients[level.sortedClients[0]].pers.netname,
 				level.clients[level.sortedClients[0]].sess.wins,
 				level.clients[level.sortedClients[0]].sess.losses );
@@ -2023,7 +2039,7 @@ qboolean ScoreIsTied( void ) {
 	if ( level.numPlayingClients < 2 ) {
 		return qfalse;
 	}
-	
+
 	if ( level.gametype >= GT_TEAM ) {
 		return level.teamScores[TEAM_RED] == level.teamScores[TEAM_BLUE];
 	}
@@ -2529,7 +2545,7 @@ void CheckExitRules( void ) {
 					trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s.\n\"",
 													cl->pers.netname,
 													G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")
-													) 
+													)
 											);
 				}
 				return;
@@ -2539,7 +2555,7 @@ void CheckExitRules( void ) {
 
 	if ( level.gametype >= GT_CTF && capturelimit.integer ) {
 
-		if ( level.teamScores[TEAM_RED] >= capturelimit.integer ) 
+		if ( level.teamScores[TEAM_RED] >= capturelimit.integer )
 		{
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
@@ -2635,7 +2651,7 @@ void CheckTournament( void ) {
 				playerState_t *ps1, *ps2;
 				ps1 = &level.clients[level.sortedClients[0]].ps;
 				ps2 = &level.clients[level.sortedClients[1]].ps;
-				trap->SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("%i|%i|!", 
+				trap->SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("%i|%i|!",
 					ps1->stats[STAT_HEALTH], ps2->stats[STAT_HEALTH]));
 			}
 		}
@@ -2783,7 +2799,7 @@ void CheckTournament( void ) {
 
 					if ( g_austrian.integer )
 					{
-						G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n", 
+						G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n",
 							level.clients[level.sortedClients[0]].pers.netname,
 							level.clients[level.sortedClients[0]].sess.wins,
 							level.clients[level.sortedClients[0]].sess.losses,
@@ -2860,6 +2876,7 @@ void CheckTournament( void ) {
 		if ( level.time > level.warmupTime ) {
 			level.warmupTime += 10000;
 			trap->Cvar_Set( "g_restarted", "1" );
+			trap->Cvar_Update( &g_restarted );
 			trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 			level.restarted = qtrue;
 			return;
@@ -3190,12 +3207,12 @@ CheckCvars
 */
 void CheckCvars( void ) {
 	static int lastMod = -1;
-	
+
 	if ( g_password.modificationCount != lastMod ) {
 		char password[MAX_INFO_STRING];
 		char *c = password;
 		lastMod = g_password.modificationCount;
-		
+
 		strcpy( password, g_password.string );
 		while( *c )
 		{
@@ -3257,7 +3274,7 @@ void G_RunThink (gentity_t *ent) {
 	if (thinktime > level.time) {
 		goto runicarus;
 	}
-	
+
 	ent->nextthink = 0;
 	if (!ent->think) {
 		//trap->Error( ERR_DROP, "NULL ent->think");
@@ -3288,7 +3305,7 @@ int gSlowMoDuelTime = 0;
 //#define _G_FRAME_PERFANAL
 
 void NAV_CheckCalcPaths( void )
-{	
+{
 	if ( navCalcPathTime && navCalcPathTime < level.time )
 	{//first time we've ever loaded this map...
 		vmCvar_t	mapname;
@@ -3302,7 +3319,7 @@ void NAV_CheckCalcPaths( void )
 
 		//Calculate all paths
 		NAV_CalculatePaths( mapname.string, ckSum.integer );
-		
+
 		trap->Nav_CalculatePaths(qfalse);
 
 #ifndef FINAL_BUILD
@@ -3310,7 +3327,7 @@ void NAV_CheckCalcPaths( void )
 		{
 			Com_Printf( S_COLOR_RED"Not saving .nav file due to fatal nav errors\n" );
 		}
-		else 
+		else
 #endif
 		if ( trap->Nav_Save( mapname.string, ckSum.integer ) == qfalse )
 		{
@@ -3378,7 +3395,7 @@ void G_RunFrame( int levelTime ) {
 			clEnt = &g_entities[i];
 
 			if (clEnt->inuse && clEnt->client &&
-				clEnt->client->tempSpectate > level.time &&
+				clEnt->client->tempSpectate >= level.time &&
 				clEnt->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
 				ClientRespawn(clEnt);
@@ -3547,14 +3564,14 @@ void G_RunFrame( int levelTime ) {
 		trap->Nav_ClearCheckedNodes();
 
 		//remember last waypoint, clear current one
-		for ( i = 0; i < level.num_entities ; i++) 
+		for ( i = 0; i < level.num_entities ; i++)
 		{
 			ent = &g_entities[i];
 
 			if ( !ent->inuse )
 				continue;
 
-			if ( ent->waypoint != WAYPOINT_NONE 
+			if ( ent->waypoint != WAYPOINT_NONE
 				&& ent->noWaypointTime < level.time )
 			{
 				ent->lastWaypoint = ent->waypoint;
@@ -3685,7 +3702,7 @@ void G_RunFrame( int levelTime ) {
 			if ( !Q_stricmp("func_door", ent->classname) && ent->moverState != MOVER_POS1 )
 			{
 				SetMoverState( ent, MOVER_POS1, level.time );
-				if ( ent->teammaster == ent || !ent->teammaster ) 
+				if ( ent->teammaster == ent || !ent->teammaster )
 				{
 					trap->AdjustAreaPortalState( (sharedEntity_t *)ent, qfalse );
 				}
@@ -3697,10 +3714,10 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		if ( i < MAX_CLIENTS ) 
+		if ( i < MAX_CLIENTS )
 		{
 			G_CheckClientTimeouts ( ent );
-			
+
 			if (ent->client->inSpaceIndex && ent->client->inSpaceIndex != ENTITYNUM_NONE)
 			{ //we're in space, check for suffocating and for exiting
                 gentity_t *spacetrigger = &g_entities[ent->client->inSpaceIndex];
@@ -3708,7 +3725,7 @@ void G_RunFrame( int levelTime ) {
 				if (!spacetrigger->inuse ||
 					!G_PointInBounds(ent->client->ps.origin, spacetrigger->r.absmin, spacetrigger->r.absmax))
 				{ //no longer in space then I suppose
-                    ent->client->inSpaceIndex = 0;					
+                    ent->client->inSpaceIndex = 0;
 				}
 				else
 				{ //check for suffocation
@@ -3788,7 +3805,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						ent->client->ps.jetpackFuel--;
 					}
-					
+
 					if (ent->client->ps.jetpackFuel <= 0)
 					{ //turn it off
 						ent->client->ps.jetpackFuel = 0;
@@ -3835,7 +3852,7 @@ void G_RunFrame( int levelTime ) {
 				if (ent->client->cloakDebReduce < level.time)
 				{
 					ent->client->ps.cloakFuel--;
-					
+
 					if (ent->client->ps.cloakFuel <= 0)
 					{ //turn it off
 						ent->client->ps.cloakFuel = 0;
@@ -4225,7 +4242,7 @@ gameImport_t *trap = NULL;
 Q_EXPORT gameExport_t* QDECL GetModuleAPI( int apiVersion, gameImport_t *import )
 {
 	static gameExport_t ge = {0};
-	
+
 	assert( import );
 	trap = import;
 	Com_Printf	= trap->Print;

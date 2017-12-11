@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -29,7 +33,7 @@ This file is part of Jedi Academy.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -87,7 +91,7 @@ class	hash_pool
 		{
 			if (mem::eql((void*)(&mData[mHandles[handle]]), data, datasize))
 			{
-				return true;						// found 
+				return true;						// found
 			}
 			handle=(handle+1)&(SIZE_HANDLES-1);		// incriment the handle
 
@@ -95,7 +99,7 @@ class	hash_pool
 			mCurrentCollisions ++;
 			mTotalCollisions ++;
 
-			//assert(mCurrentCollisions < 16);		// If We Had 16+ Collisions, Hash May Be Inefficient.  
+			//assert(mCurrentCollisions < 16);		// If We Had 16+ Collisions, Hash May Be Inefficient.
 													// Evaluate SIZE and SIZEHANDLES
 			#endif
 		}
@@ -127,7 +131,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// The Number Of Bytes Allocated
     ////////////////////////////////////////////////////////////////////////////////////
-	int			size()	 const													
+	int			size()	 const
 	{
 		return mDataAlloc;
 	}
@@ -135,7 +139,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Is Empty
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		empty()	 const													
+	bool		empty()	 const
 	{
 		return (mDataAlloc==1);
 	}
@@ -143,7 +147,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Has Enough Space Left For (minimum) Bytes
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		full(int minimum)	 const													
+	bool		full(int minimum)	 const
 	{
 		return ((SIZE - mDataAlloc)<minimum);
 	}

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	g_functions.h
 //
@@ -32,7 +36,7 @@ This file is part of Jedi Academy.
 #undef dieFunc_t
 
 //	void		(*think)(gentity_t *self);
-typedef enum 
+typedef enum
 {
 	thinkF_NULL = 0,
 	//
@@ -41,7 +45,7 @@ typedef enum
 	thinkF_ExplodeDeath,
 	thinkF_RespawnItem,
 	thinkF_G_FreeEntity,
-	thinkF_FinishSpawningItem,	
+	thinkF_FinishSpawningItem,
 	thinkF_locateCamera,
 	thinkF_G_RunObject,
 	thinkF_ReturnToPos1,
@@ -179,7 +183,7 @@ extern void RemoveOwner			( gentity_t *ent );
 extern void MakeOwnerInvis		( gentity_t *ent );
 extern void MakeOwnerEnergy		( gentity_t *ent );
 extern void func_usable_think	( gentity_t *self );
-extern void misc_dlight_think	( gentity_t *ent ); 
+extern void misc_dlight_think	( gentity_t *ent );
 extern void laser_link				( gentity_t *ent );
 extern void blow_chunks_link		( gentity_t *ent );
 extern void health_think			( gentity_t *ent );
@@ -249,7 +253,7 @@ extern void beacon_think			( gentity_t *self );
 //	void		(*clThink)(centity_s *cent);	//Think func for equivalent centity
 typedef enum
 {
-	clThinkF_NULL = 0,	
+	clThinkF_NULL = 0,
 	//
 	clThinkF_CG_DLightThink,
 	clThinkF_CG_MatrixEffect,
@@ -289,7 +293,7 @@ typedef enum
 	blockedF_NULL = 0,
 	//
 	blockedF_Blocked_Door,
-	blockedF_Blocked_Mover	
+	blockedF_Blocked_Mover
 
 } blockedFunc_t;
 
@@ -302,7 +306,7 @@ extern void Blocked_Mover		(gentity_t *self, gentity_t *other);
 
 //	void		(*touch)(gentity_t *self, gentity_t *other, trace_t *trace);
 typedef enum
-{	
+{
 	touchF_NULL = 0,
 	//
 	touchF_Touch_Item,
@@ -437,20 +441,20 @@ typedef enum
 extern void funcBBrushUse			( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void misc_model_use			( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void Use_Item				( gentity_t *self, gentity_t *other, gentity_t *activator);
-extern void Use_Shooter				( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void GoExplodeDeath			( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void Use_BinaryMover			( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void use_wall				( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void Use_Target_Give			( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void Use_Target_Delay		( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void Use_Target_Score		( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void Use_Target_Print		( gentity_t *self, gentity_t *other, gentity_t *activator);					 
-extern void Use_Target_Speaker		( gentity_t *self, gentity_t *other, gentity_t *activator);					 
+extern void Use_Shooter				( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void GoExplodeDeath			( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void Use_BinaryMover			( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void use_wall				( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void Use_Target_Give			( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void Use_Target_Delay		( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void Use_Target_Score		( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void Use_Target_Print		( gentity_t *self, gentity_t *other, gentity_t *activator);
+extern void Use_Target_Speaker		( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_laser_use		( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_relay_use		( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_kill_use			( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_counter_use		( gentity_t *self, gentity_t *other, gentity_t *activator);
-extern void target_random_use		( gentity_t *self, gentity_t *other, gentity_t *activator);							
+extern void target_random_use		( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_scriptrunner_use	( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_gravity_change_use	( gentity_t *self, gentity_t *other, gentity_t *activator);
 extern void target_friction_change_use	( gentity_t *self, gentity_t *other, gentity_t *activator);

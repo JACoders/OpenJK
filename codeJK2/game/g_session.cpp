@@ -1,28 +1,30 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
 
 #include "g_local.h"
 #include "objectives.h"
-
 
 /*
 =======================================================================
@@ -115,7 +117,9 @@ void G_ReadSessionData( gclient_t *client ) {
 	var = va( "session%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i", &client->sess.sessionTeam );
+	int tmp;
+	sscanf( s, "%i", &tmp );
+	client->sess.sessionTeam = (team_t)tmp;
 
 	var = va( "sessionobj%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
@@ -124,11 +128,11 @@ void G_ReadSessionData( gclient_t *client ) {
 	var++;
 	for (i=0;i< MAX_OBJECTIVES; i++)
 	{
-		sscanf( var, "%i %i", 
+		sscanf( var, "%i %i",
 			&client->sess.mission_objectives[i].display,
 			&client->sess.mission_objectives[i].status);
 			var+=4;
-	}	
+	}
 
 	var = va( "missionstats%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );

@@ -1,25 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_localents.c -- every frame, generate renderer commands for locally
 // processed entities, like smoke puffs, gibs, shells, etc.
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 
@@ -118,10 +122,10 @@ or generates more localentities along a trail.
 CG_FragmentBounceSound
 ================
 */
-void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace ) 
+void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace )
 {
 	// half the fragments will make a bounce sounds
-	if ( rand() & 1 ) 
+	if ( rand() & 1 )
 	{
 		sfxHandle_t	s = 0;
 
@@ -145,7 +149,7 @@ void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace )
 		// bouncers only make the sound once...
 		// FIXME: arbitrary...change if it bugs you
 		le->leBounceSoundType = LEBS_NONE;
-	} 
+	}
 	else if ( rand() & 1 )
 	{
 		// we may end up bouncing again, but each bounce reduces the chance of playing the sound again or they may make a lot of noise when they settle
@@ -160,7 +164,7 @@ void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace )
 CG_ReflectVelocity
 ================
 */
-void CG_ReflectVelocity( localEntity_t *le, trace_t *trace ) 
+void CG_ReflectVelocity( localEntity_t *le, trace_t *trace )
 {
 	vec3_t	velocity;
 	float	dot;
@@ -178,9 +182,9 @@ void CG_ReflectVelocity( localEntity_t *le, trace_t *trace )
 	le->pos.trTime = cg.time;
 
 	// check for stop, making sure that even on low FPS systems it doesn't bobble
-	if ( trace->allsolid || 
-		( trace->plane.normal[2] > 0 && 
-		( le->pos.trDelta[2] < 40 || le->pos.trDelta[2] < -cg.frametime * le->pos.trDelta[2] ) ) ) 
+	if ( trace->allsolid ||
+		( trace->plane.normal[2] > 0 &&
+		( le->pos.trDelta[2] < 40 || le->pos.trDelta[2] < -cg.frametime * le->pos.trDelta[2] ) ) )
 	{
 		le->pos.trType = TR_STATIONARY;
 	}
@@ -191,25 +195,25 @@ void CG_ReflectVelocity( localEntity_t *le, trace_t *trace )
 CG_AddFragment
 ================
 */
-void CG_AddFragment( localEntity_t *le ) 
+void CG_AddFragment( localEntity_t *le )
 {
 	vec3_t	newOrigin;
 	trace_t	trace;
 	// used to sink into the ground, but it looks better to maybe just fade them out
 	int		t;
-	
+
 	t = le->endTime - cg.time;
 
-	if ( t < FRAG_FADE_TIME ) 
+	if ( t < FRAG_FADE_TIME )
 	{
 		le->refEntity.renderfx |= RF_ALPHA_FADE;
 		le->refEntity.shaderRGBA[0] = le->refEntity.shaderRGBA[1] = le->refEntity.shaderRGBA[2] = 255;
 		le->refEntity.shaderRGBA[3] = ((float)t / FRAG_FADE_TIME) * 255.0f;
 	}
 
-	if ( le->pos.trType == TR_STATIONARY ) 
+	if ( le->pos.trType == TR_STATIONARY )
 	{
-		if ( !(cgi_CM_PointContents( le->refEntity.origin, 0 ) & CONTENTS_SOLID )) 
+		if ( !(cgi_CM_PointContents( le->refEntity.origin, 0 ) & CONTENTS_SOLID ))
 		{
 			// thing is no longer in solid, so let gravity take it back
 			VectorCopy( le->refEntity.origin, le->pos.trBase );
@@ -228,7 +232,7 @@ void CG_AddFragment( localEntity_t *le )
 
 	le->refEntity.renderfx |= RF_LIGHTING_ORIGIN;
 	VectorCopy( newOrigin, le->refEntity.lightingOrigin );
-	
+
 	// trace a line from previous position to new position
 	CG_Trace( &trace, le->refEntity.origin, NULL, NULL, newOrigin, le->ownerGentNum, CONTENTS_SOLID );
 	if ( trace.fraction == 1.0 ) {
@@ -255,7 +259,7 @@ void CG_AddFragment( localEntity_t *le )
 	// if it is in a nodrop zone, remove it
 	// this keeps gibs from waiting at the bottom of pits of death
 	// and floating levels
-	if ( cgi_CM_PointContents( trace.endpos, 0 ) & CONTENTS_NODROP ) 
+	if ( cgi_CM_PointContents( trace.endpos, 0 ) & CONTENTS_NODROP )
 	{
 		CG_FreeLocalEntity( le );
 		return;
@@ -362,20 +366,20 @@ static void CG_AddPuff( localEntity_t *le ) {
 CG_AddLocalLight
 ================
 */
-static void CG_AddLocalLight( localEntity_t *le ) 
+static void CG_AddLocalLight( localEntity_t *le )
 {
 	// There should be a light if this is being used, but hey...
-	if ( le->light ) 
+	if ( le->light )
 	{
 		float		light;
 
 		light = (float)( cg.time - le->startTime ) / ( le->endTime - le->startTime );
 
-		if ( light < 0.5 ) 
+		if ( light < 0.5 )
 		{
 			light = 1.0;
-		} 
-		else 
+		}
+		else
 		{
 			light = 1.0 - ( light - 0.5 ) * 2;
 		}
@@ -547,7 +551,7 @@ CG_AddLocalEntities
 
 ===================
 */
-void CG_AddLocalEntities( void ) 
+void CG_AddLocalEntities( void )
 {
 	localEntity_t	*le, *next;
 

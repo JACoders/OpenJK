@@ -1,17 +1,30 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-#ifdef _DONETPROFILE_
-#include "INetProfile.h"
-#endif
+This file is part of the OpenJK source code.
 
-// rjr: this is only used when cl_shownet is turned on and the server and client are in the same session
-#include "game/g_public.h"
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+#include "qcommon/q_shared.h"
+#include "qcommon/qcommon.h"
 #include "server/server.h"
-
-extern	cvar_t	*cl_shownet;
-
-
 
 //#define _NEWHUFFTABLE_		// Build "c:\\netchan.bin"
 //#define _USINGNEWHUFFTABLE_		// Build a new frequency table to cut and paste.
@@ -48,7 +61,7 @@ void MSG_Init( msg_t *buf, byte *data, int length ) {
 	{
 		//Check for netf overrides
 		MSG_CheckNETFPSFOverrides(qfalse);
-		
+
 		//Then for psf overrides
 		MSG_CheckNETFPSFOverrides(qtrue);
 
@@ -70,7 +83,7 @@ void MSG_InitOOB( msg_t *buf, byte *data, int length ) {
 	{
 		//Check for netf overrides
 		MSG_CheckNETFPSFOverrides(qfalse);
-		
+
 		//Then for psf overrides
 		MSG_CheckNETFPSFOverrides(qtrue);
 
@@ -114,7 +127,7 @@ void MSG_BeginReadingOOB( msg_t *msg ) {
 =============================================================================
 
 bit functions
-  
+
 =============================================================================
 */
 
@@ -256,7 +269,7 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 		}
 		msg->readcount = (msg->bit>>3)+1;
 	}
-	if ( sgn ) {
+	if ( sgn && bits > 0 && bits < 32 ) {
 		if ( value & ( 1 << ( bits - 1 ) ) ) {
 			value |= -1 ^ ( ( 1 << bits ) - 1 );
 		}
@@ -392,63 +405,63 @@ void MSG_WriteAngle16( msg_t *sb, float f ) {
 // returns -1 if no more characters are available
 int MSG_ReadChar (msg_t *msg ) {
 	int	c;
-	
+
 	c = (signed char)MSG_ReadBits( msg, 8 );
 	if ( msg->readcount > msg->cursize ) {
 		c = -1;
-	}	
-	
+	}
+
 	return c;
 }
 
 int MSG_ReadByte( msg_t *msg ) {
 	int	c;
-	
+
 	c = (unsigned char)MSG_ReadBits( msg, 8 );
 	if ( msg->readcount > msg->cursize ) {
 		c = -1;
-	}	
+	}
 	return c;
 }
 
 int MSG_ReadShort( msg_t *msg ) {
 	int	c;
-	
+
 	c = (short)MSG_ReadBits( msg, 16 );
 	if ( msg->readcount > msg->cursize ) {
 		c = -1;
-	}	
+	}
 
 	return c;
 }
 
 int MSG_ReadLong( msg_t *msg ) {
 	int	c;
-	
+
 	c = MSG_ReadBits( msg, 32 );
 	if ( msg->readcount > msg->cursize ) {
 		c = -1;
-	}	
-	
+	}
+
 	return c;
 }
 
 float MSG_ReadFloat( msg_t *msg ) {
 	byteAlias_t dat;
-	
+
 	dat.i = MSG_ReadBits( msg, 32 );
 	if ( msg->readcount > msg->cursize ) {
 		dat.f = -1;
-	}	
-	
-	return dat.f;	
+	}
+
+	return dat.f;
 }
 
 char *MSG_ReadString( msg_t *msg ) {
 	static char	string[MAX_STRING_CHARS];
 	int		c;
 	unsigned int l;
-	
+
 	l = 0;
 	do {
 		c = MSG_ReadByte(msg);		// use ReadByte so -1 is out of bounds
@@ -469,7 +482,7 @@ char *MSG_ReadString( msg_t *msg ) {
 		string[l] = c;
 		l++;
 	} while (l <= sizeof(string)-1);
-	
+
 	// some bonus protection, shouldn't occur cause server doesn't write such things
 	if (l <= sizeof(string)-1)
 	{
@@ -479,7 +492,7 @@ char *MSG_ReadString( msg_t *msg ) {
 	{
 		string[sizeof(string)-1] = 0;
 	}
-	
+
 	return string;
 }
 
@@ -487,7 +500,7 @@ char *MSG_ReadBigString( msg_t *msg ) {
 	static char	string[BIG_INFO_STRING];
 	int		c;
 	unsigned int l;
-	
+
 	l = 0;
 	do {
 		c = MSG_ReadByte(msg);		// use ReadByte so -1 is out of bounds
@@ -502,9 +515,9 @@ char *MSG_ReadBigString( msg_t *msg ) {
 		string[l] = c;
 		l++;
 	} while (l < sizeof(string)-1);
-	
+
 	string[l] = 0;
-	
+
 	return string;
 }
 
@@ -526,9 +539,9 @@ char *MSG_ReadStringLine( msg_t *msg ) {
 		string[l] = c;
 		l++;
 	} while (l < sizeof(string)-1);
-	
+
 	string[l] = 0;
-	
+
 	return string;
 }
 
@@ -549,11 +562,13 @@ void MSG_ReadData( msg_t *msg, void *data, int len ) {
 =============================================================================
 
 delta functions
-  
+
 =============================================================================
 */
 
-#define	LOG(x) if( cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
+extern	cvar_t	*cl_shownet;
+
+#define	LOG(x) if( cl_shownet && cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
 
 void MSG_WriteDelta( msg_t *msg, int oldV, int newV, int bits ) {
 	if ( oldV == newV ) {
@@ -596,7 +611,7 @@ float MSG_ReadDeltaFloat( msg_t *msg, float oldV ) {
 =============================================================================
 
 delta functions with keys
-  
+
 =============================================================================
 */
 
@@ -611,9 +626,9 @@ uint32_t kbitmask[32] = {
 	0x1FFFFFFF,	0x3FFFFFFF,	0x7FFFFFFF,	0xFFFFFFFF,
 };
 
-void MSG_WriteDeltaKey( msg_t *msg, int key, int oldV, int newV, int bits ) 
+void MSG_WriteDeltaKey( msg_t *msg, int key, int oldV, int newV, int bits )
 {
-	if ( oldV == newV ) 
+	if ( oldV == newV )
 	{
 		MSG_WriteBits( msg, 0, 1 );
 		return;
@@ -727,8 +742,14 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 		to->angles[1] = MSG_ReadDeltaKey( msg, key, from->angles[1], 16);
 		to->angles[2] = MSG_ReadDeltaKey( msg, key, from->angles[2], 16);
 		to->forwardmove = MSG_ReadDeltaKey( msg, key, from->forwardmove, 8);
+		if( to->forwardmove == -128 )
+			to->forwardmove = -127;
 		to->rightmove = MSG_ReadDeltaKey( msg, key, from->rightmove, 8);
+			if( to->rightmove == -128 )
+			to->rightmove = -127;
 		to->upmove = MSG_ReadDeltaKey( msg, key, from->upmove, 8);
+		if( to->upmove == -128 )
+			to->upmove = -127;
 		to->buttons = MSG_ReadDeltaKey( msg, key, from->buttons, 16);
 		to->weapon = MSG_ReadDeltaKey( msg, key, from->weapon, 8);
 
@@ -761,14 +782,14 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 =============================================================================
 
 entityState_t communication
-  
+
 =============================================================================
 */
 
 
 typedef struct netField_s {
 	const char	*name;
-	int		offset;
+	size_t	offset;
 	int		bits;		// 0 = float
 #ifndef FINAL_BUILD
 	unsigned	mCount;
@@ -781,7 +802,7 @@ typedef struct netField_s {
 //rww - Remember to update ext_data/MP/netf_overrides.txt if you change any of this!
 //(for the sake of being consistent)
 
-netField_t	entityStateFields[] = 
+netField_t	entityStateFields[] =
 {
 { NETF(pos.trTime), 32 },
 { NETF(pos.trBase[1]), 0 },
@@ -989,7 +1010,7 @@ If force is not set, then nothing at all will be generated if the entity is
 identical, under the assumption that the in-order delta code will catch it.
 ==================
 */
-void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to, 
+void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to,
 						   qboolean force ) {
 	int			i, lc;
 	int			numFields;
@@ -998,7 +1019,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 	float		fullFloat;
 	int			*fromF, *toF;
 
-	numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+	numFields = (int)ARRAY_LEN( entityStateFields );
 
 	// all fields should be 32 bits to avoid any compiler packing issues
 	// the "number" field is not part of the field list
@@ -1022,8 +1043,6 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 
 	lc = 0;
 	// build the change vector as bytes so it is endian independent
-	// TODO: OPTIMIZE: How about we do this in reverse order so we can
-	// just break out at the first changed field we find?
 	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
@@ -1076,7 +1095,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 					oldsize += FLOAT_INT_BITS;
 			} else {
 				MSG_WriteBits( msg, 1, 1 );
-				if ( trunc == fullFloat && trunc + FLOAT_INT_BIAS >= 0 && 
+				if ( trunc == fullFloat && trunc + FLOAT_INT_BIAS >= 0 &&
 					trunc + FLOAT_INT_BIAS < ( 1 << FLOAT_INT_BITS ) ) {
 					// send as small integer
 					MSG_WriteBits( msg, 0, 1 );
@@ -1112,7 +1131,7 @@ Can go from either a baseline or a previous packet_entity
 ==================
 */
 
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 						 int number) {
 	int			i, lc;
 	int			numFields;
@@ -1126,13 +1145,17 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 		Com_Error( ERR_DROP, "Bad delta entity number: %i", number );
 	}
 
-	startBit = msg->bit;
+	if ( msg->bit == 0 ) {
+		startBit = msg->readcount * 8 - GENTITYNUM_BITS;
+	} else {
+		startBit = ( msg->readcount - 1 ) * 8 + msg->bit - GENTITYNUM_BITS;
+	}
 
 	// check for a remove
 	if ( MSG_ReadBits( msg, 1 ) == 1 ) {
-		Com_Memset( to, 0, sizeof( *to ) );	
+		Com_Memset( to, 0, sizeof( *to ) );
 		to->number = MAX_GENTITIES - 1;
-		if ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) {
+		if ( cl_shownet && ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) ) {
 			Com_Printf( "%3i: #%-3i remove\n", msg->readcount, number );
 		}
 		return;
@@ -1145,12 +1168,15 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 		return;
 	}
 
-	numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+	numFields = (int)ARRAY_LEN(entityStateFields);
 	lc = MSG_ReadByte(msg);
+
+	if ( lc > numFields || lc < 0 )
+		Com_Error( ERR_DROP, "invalid entityState field count (got: %i, expecting: %i)", lc, numFields );
 
 	// shownet 2/3 will interleave with other printed info, -1 will
 	// just print the delta records`
-	if ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) {
+	if ( cl_shownet && ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) ) {
 		print = 1;
 		if (sv.state)
 		{
@@ -1166,17 +1192,10 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 
 	to->number = number;
 
-#ifdef _DONETPROFILE_
-	int startBytes,endBytes;
-#endif
-
 	for ( i = 0, field = entityStateFields ; i < lc ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
 
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( ! MSG_ReadBits( msg, 1 ) ) {
 			// no change
 			*toF = *fromF;
@@ -1184,14 +1203,14 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 			if ( field->bits == 0 ) {
 				// float
 				if ( MSG_ReadBits( msg, 1 ) == 0 ) {
-						*(float *)toF = 0.0f; 
+						*(float *)toF = 0.0f;
 				} else {
 					if ( MSG_ReadBits( msg, 1 ) == 0 ) {
 						// integral float
 						trunc = MSG_ReadBits( msg, FLOAT_INT_BITS );
 						// bias to allow equal parts positive and negative
 						trunc -= FLOAT_INT_BIAS;
-						*(float *)toF = trunc; 
+						*(float *)toF = trunc;
 						if ( print ) {
 							Com_Printf( "%s:%i ", field->name, trunc );
 						}
@@ -1215,10 +1234,6 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField(field->name,endBytes-startBytes);
-#endif
 	}
 	for ( i = lc, field = &entityStateFields[lc] ; i < numFields ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
@@ -1228,7 +1243,11 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 	}
 
 	if ( print ) {
-		endBit = msg->bit;
+		if ( msg->bit == 0 ) {
+			endBit = msg->readcount * 8 - GENTITYNUM_BITS;
+		} else {
+			endBit = ( msg->readcount - 1 ) * 8 + msg->bit - GENTITYNUM_BITS;
+		}
 		Com_Printf( " (%i bits)\n", endBit - startBit  );
 	}
 }
@@ -1254,9 +1273,9 @@ playerState_t communication
 //fields from the normal playerState -mcg
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 
-netField_t	playerStateFields[] = 
+netField_t	playerStateFields[] =
 {
-{ PSF(commandTime), 32 },				
+{ PSF(commandTime), 32 },
 { PSF(origin[1]), 0 },
 { PSF(origin[0]), 0 },
 { PSF(viewangles[1]), 0 },
@@ -1319,7 +1338,7 @@ netField_t	playerStateFields[] =
 { PSF(eventParms[1]), 8 },
 { PSF(fd.forceSide), 2 }, //so we know if we should apply greyed out shaders to dark/light force enlightenment
 { PSF(saberAttackChainCount), 4 },
-{ PSF(pm_type), 8 },					
+{ PSF(pm_type), 8 },
 { PSF(externalEventParm), 8 },
 { PSF(eventParms[0]), -16 },
 { PSF(lookTarget), GENTITYNUM_BITS },
@@ -1412,9 +1431,9 @@ netField_t	playerStateFields[] =
 { PSF(userVec2[2]), 1 }
 };
 
-netField_t	pilotPlayerStateFields[] = 
+netField_t	pilotPlayerStateFields[] =
 {
-{ PSF(commandTime), 32 },				
+{ PSF(commandTime), 32 },
 { PSF(origin[1]), 0 },
 { PSF(origin[0]), 0 },
 { PSF(viewangles[1]), 0 },
@@ -1437,7 +1456,7 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(viewangles[2]), 0 },
 { PSF(externalEvent), 10 },
 { PSF(eventParms[1]), 8 },
-{ PSF(pm_type), 8 },					
+{ PSF(pm_type), 8 },
 { PSF(externalEventParm), 8 },
 { PSF(eventParms[0]), -16 },
 { PSF(weaponChargeSubtractTime), 32 }, //? really need 32 bits??
@@ -1576,9 +1595,9 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(userVec2[2]), 1 }
 };
 
-netField_t	vehPlayerStateFields[] = 
+netField_t	vehPlayerStateFields[] =
 {
-{ PSF(commandTime), 32 },				
+{ PSF(commandTime), 32 },
 { PSF(origin[1]), 0 },
 { PSF(origin[0]), 0 },
 { PSF(viewangles[1]), 0 },
@@ -1617,7 +1636,7 @@ netField_t	vehPlayerStateFields[] =
 { PSF(viewangles[2]), 0 },
 { PSF(externalEvent), 10 },
 { PSF(eventParms[1]), 8 },
-{ PSF(pm_type), 8 },					
+{ PSF(pm_type), 8 },
 { PSF(externalEventParm), 8 },
 { PSF(eventParms[0]), -16 },
 { PSF(vehOrientation[0]), 0 },
@@ -1667,9 +1686,9 @@ netField_t	vehPlayerStateFields[] =
 //The unoptimized way, throw *all* the vehicle stuff into the playerState along with everything else... :(
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 
-netField_t	playerStateFields[] = 
+netField_t	playerStateFields[] =
 {
-{ PSF(commandTime), 32 },				
+{ PSF(commandTime), 32 },
 { PSF(origin[1]), 0 },
 { PSF(origin[0]), 0 },
 { PSF(viewangles[1]), 0 },
@@ -1732,7 +1751,7 @@ netField_t	playerStateFields[] =
 { PSF(eventParms[1]), 8 },
 { PSF(fd.forceSide), 2 }, //so we know if we should apply greyed out shaders to dark/light force enlightenment
 { PSF(saberAttackChainCount), 4 },
-{ PSF(pm_type), 8 },					
+{ PSF(pm_type), 8 },
 { PSF(externalEventParm), 8 },
 { PSF(eventParms[0]), -16 },
 { PSF(lookTarget), GENTITYNUM_BITS },
@@ -1859,13 +1878,13 @@ void MSG_CheckNETFPSFOverrides(qboolean psfOverrides)
 	{ //do PSF overrides instead of NETF
 		fileName = "psf_overrides.txt";
 		bitStorage = &g_psfBitStorage;
-		numFields = sizeof(playerStateFields)/sizeof(playerStateFields[0]);
+		numFields = (int)ARRAY_LEN( playerStateFields );
 	}
 	else
 	{
 		fileName = "netf_overrides.txt";
 		bitStorage = &g_netfBitStorage;
-		numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+		numFields = (int)ARRAY_LEN( entityStateFields );
 	}
 
 	if (*bitStorage)
@@ -1892,7 +1911,7 @@ void MSG_CheckNETFPSFOverrides(qboolean psfOverrides)
 
 	len = FS_FOpenFileRead(va("ext_data/MP/%s", fileName), &f, qfalse);
 
-	if (!f)
+	if (!f || len < 0)
 	{ //silently exit since this file is not needed to proceed.
 		return;
 	}
@@ -2056,7 +2075,6 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 	int				ammobits;
 	int				powerupbits;
 	int				numFields;
-	int				c;
 	netField_t		*field;
 	netField_t		*PSFields = playerStateFields;
 	int				*fromF, *toF;
@@ -2072,13 +2090,11 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		Com_Memset (&dummy, 0, sizeof(dummy));
 	}
 
-	c = msg->cursize;
-
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #ifdef _OPTIMIZED_VEHICLE_NETWORKING
 	if ( isVehiclePS )
 	{//a vehicle playerstate
-		numFields = sizeof( vehPlayerStateFields ) / sizeof( vehPlayerStateFields[0] );
+		numFields = (int)ARRAY_LEN( vehPlayerStateFields );
 		PSFields = vehPlayerStateFields;
 	}
 	else
@@ -2087,18 +2103,18 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			&& (to->eFlags&EF_NODRAW) )
 		{//pilot riding *inside* a vehicle!
 			MSG_WriteBits( msg, 1, 1 );	// Pilot player state
-			numFields = sizeof( pilotPlayerStateFields ) / sizeof( pilotPlayerStateFields[0] ) - 82;
+			numFields = (int)ARRAY_LEN( pilotPlayerStateFields );
 			PSFields = pilotPlayerStateFields;
 		}
 		else
 		{//normal client
 			MSG_WriteBits( msg, 0, 1 );	// Normal player state
-			numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+			numFields = (int)ARRAY_LEN( playerStateFields );
 		}
 	}
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #else// _OPTIMIZED_VEHICLE_NETWORKING
-	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+	numFields = (int)ARRAY_LEN( playerStateFields );
 #endif// _OPTIMIZED_VEHICLE_NETWORKING
 
 	lc = 0;
@@ -2147,7 +2163,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			fullFloat = *(float *)toF;
 			trunc = (int)fullFloat;
 
-			if ( trunc == fullFloat && trunc + FLOAT_INT_BIAS >= 0 && 
+			if ( trunc == fullFloat && trunc + FLOAT_INT_BIAS >= 0 &&
 				trunc + FLOAT_INT_BIAS < ( 1 << FLOAT_INT_BITS ) ) {
 				// send as small integer
 				MSG_WriteBits( msg, 0, 1 );
@@ -2162,7 +2178,6 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			MSG_WriteBits( msg, *toF, field->bits );
 		}
 	}
-	c = msg->cursize - c;
 
 
 	//
@@ -2318,7 +2333,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 
 	// shownet 2/3 will interleave with other printed info, -2 will
 	// just print the delta records
-	if ( cl_shownet->integer >= 2 || cl_shownet->integer == -2 ) {
+	if ( cl_shownet && ( cl_shownet->integer >= 2 || cl_shownet->integer == -2 ) ) {
 		print = 1;
 		Com_Printf( "%3i: playerstate ", msg->readcount );
 	} else {
@@ -2329,7 +2344,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 #ifdef _OPTIMIZED_VEHICLE_NETWORKING
 	if ( isVehiclePS )
 	{//a vehicle playerstate
-		numFields = sizeof( vehPlayerStateFields ) / sizeof( vehPlayerStateFields[0] );
+		numFields = (int)ARRAY_LEN( vehPlayerStateFields );
 		PSFields = vehPlayerStateFields;
 	}
 	else
@@ -2337,24 +2352,23 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 		int isPilot = MSG_ReadBits( msg, 1 );
 		if ( isPilot )
 		{//pilot riding *inside* a vehicle!
-			numFields = sizeof( pilotPlayerStateFields ) / sizeof( pilotPlayerStateFields[0] ) - 82;
+			numFields = (int)ARRAY_LEN( pilotPlayerStateFields );
 			PSFields = pilotPlayerStateFields;
 		}
 		else
 		{//normal client
-			numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+			numFields = (int)ARRAY_LEN( playerStateFields );
 		}
 	}
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #else//_OPTIMIZED_VEHICLE_NETWORKING
-	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+	numFields = (int)ARRAY_LEN( playerStateFields );
 #endif//_OPTIMIZED_VEHICLE_NETWORKING
 
 	lc = MSG_ReadByte(msg);
 
-#ifdef _DONETPROFILE_
-	int startBytes,endBytes;
-#endif
+	if ( lc > numFields || lc < 0 )
+		Com_Error( ERR_DROP, "invalid playerState field count (got: %i, expecting: %i)", lc, numFields );
 
 	for ( i = 0, field = PSFields ; i < lc ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
@@ -2370,9 +2384,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 		}
 #endif
 
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( ! MSG_ReadBits( msg, 1 ) ) {
 			// no change
 			*toF = *fromF;
@@ -2384,7 +2395,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 					trunc = MSG_ReadBits( msg, FLOAT_INT_BITS );
 					// bias to allow equal parts positive and negative
 					trunc -= FLOAT_INT_BIAS;
-					*(float *)toF = trunc; 
+					*(float *)toF = trunc;
 					if ( print ) {
 						Com_Printf( "%s:%i ", field->name, trunc );
 					}
@@ -2403,10 +2414,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField(field->name,endBytes-startBytes);
-#endif
 	}
 	for ( i=lc,field = &PSFields[lc];i<numFields; i++, field++) {
 		fromF = (int *)( (byte *)from + field->offset );
@@ -2416,9 +2423,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 	}
 
 	// read the arrays
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 	if (MSG_ReadBits( msg, 1 ) ) {
 		// parse stats
 		if ( MSG_ReadBits( msg, 1 ) ) {
@@ -2438,15 +2442,8 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_STATS",endBytes-startBytes);
-#endif
 
 		// parse persistant stats
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( MSG_ReadBits( msg, 1 ) ) {
 			LOG("PS_PERSISTANT");
 			bits = MSG_ReadBits (msg, MAX_PERSISTANT);
@@ -2456,15 +2453,8 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_PERSISTANT",endBytes-startBytes);
-#endif
 
 		// parse ammo
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( MSG_ReadBits( msg, 1 ) ) {
 			LOG("PS_AMMO");
 			bits = MSG_ReadBits (msg, MAX_AMMO_TRANSMIT);
@@ -2474,15 +2464,8 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_AMMO",endBytes-startBytes);
-#endif
 
 		// parse powerups
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( MSG_ReadBits( msg, 1 ) ) {
 			LOG("PS_POWERUPS");
 			bits = MSG_ReadBits (msg, MAX_POWERUPS);
@@ -2493,10 +2476,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 			}
 		}
 	}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_POWERUPS",endBytes-startBytes);
-#endif
 
 	if ( print ) {
 		if ( msg->bit == 0 ) {
@@ -2530,7 +2509,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 
 /*
 // New data gathered to tune Q3 to JK2MP. Takes longer to crunch and gain was minimal.
-int msg_hData[256] = 
+int msg_hData[256] =
 {
 	3163878,		// 0
 	473992,			// 1
@@ -3059,7 +3038,7 @@ void MSG_initHuffman() {
 #ifdef _NEWHUFFTABLE_
 	fp=fopen("c:\\netchan.bin", "a");
 #endif // _NEWHUFFTABLE_
-	
+
 	msgInit = qtrue;
 	Huff_Init(&msgHuff);
 	for(i=0;i<256;i++) {
@@ -3125,29 +3104,29 @@ MSG_ReportChangeVectors_f
 Prints out a table from the current statistics for copying to code
 =================
 */
-void MSG_ReportChangeVectors_f( void ) {
 #ifndef FINAL_BUILD
+void MSG_ReportChangeVectors_f( void ) {
 	int			numFields, i;
 	netField_t	*field;
 
-	numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+	numFields = (int)ARRAY_LEN( entityStateFields );
 
 	Com_Printf("Entity State Fields:\n");
-	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ ) 
+	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ )
 	{
 		Com_Printf("%s\t\t%d\n", field->name, field->mCount);
 		field->mCount = 0;
 	}
 
 	Com_Printf("\nPlayer State Fields:\n");
-	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+	numFields = (int)ARRAY_LEN( playerStateFields );
 	for ( i = 0, field = playerStateFields ; i < numFields ; i++, field++ )
 	{
 		Com_Printf("%s\t\t%d\n", field->name, field->mCount);
 		field->mCount = 0;
 	}
 
-#endif	// FINAL_BUILD
 }
+#endif	// FINAL_BUILD
 
 //===========================================================================

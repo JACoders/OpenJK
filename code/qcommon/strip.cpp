@@ -1,46 +1,34 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 // this include must remain at the top of every CPP file
 #include "../server/server.h"
 #include "q_shared.h"
 #include "qcommon.h"
-
-
 #include "stringed_ingame.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4510)	//default ctor could not be generated
-#pragma warning(disable:4511)
-#pragma warning(disable:4512)
-#pragma warning(disable:4610)	//user def ctor required
-#pragma warning(disable:4663)
-
-#pragma warning (push, 3)		//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <string>
 #include <list>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning(disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 
 cvar_t	*sp_language;
 static cvar_t	*sp_show_strip;
@@ -98,7 +86,7 @@ static cvar_t	*sp_leet;
 class cStringPackageID
 {
 private:
-	string	name;
+	std::string	name;
 	byte	reg;
 public:
 	cStringPackageID(const char *in_name, byte in_reg) { name = in_name; reg = in_reg; }
@@ -112,7 +100,7 @@ class cStringPackage
 protected:
 	unsigned char	ID;
 	unsigned char	Registration;
-	string			name;
+	std::string			name;
 	char			*Reference;
 
 public:
@@ -132,7 +120,9 @@ public:
 	const char		*GetName(void) const { return(name.c_str()); }
 
 	virtual bool	UnderstandToken(char *&Data, int &Size, int token, char *data );
+#if 0
 	virtual bool	Load(char *FileName );
+#endif
 	virtual bool	Load(char *Data, int &Size );
 };
 
@@ -141,7 +131,7 @@ class cStringPackageSingle : public cStringPackage
 {
 private:
 	cStringsSingle		Strings[MAX_STRINGS];
-	map<string, int>	ReferenceTable;
+	std::map<std::string, int>	ReferenceTable;
 
 public:
 					cStringPackageSingle(const char *in, unsigned char initID = 0, char *initReference = NULL);
@@ -200,17 +190,17 @@ enum
 };
 
 
-const char *Tokens[TK_END] = 
+const char *Tokens[TK_END] =
 {
 	"TEXT_LANGUAGE1",
-	"TEXT_LANGUAGE2", 
-	"TEXT_LANGUAGE3", 
-	"TEXT_LANGUAGE4", 
-	"TEXT_LANGUAGE5", 
-	"TEXT_LANGUAGE6", 
-	"TEXT_LANGUAGE7", 
-	"TEXT_LANGUAGE8", 
-	"TEXT_LANGUAGE9", 
+	"TEXT_LANGUAGE2",
+	"TEXT_LANGUAGE3",
+	"TEXT_LANGUAGE4",
+	"TEXT_LANGUAGE5",
+	"TEXT_LANGUAGE6",
+	"TEXT_LANGUAGE7",
+	"TEXT_LANGUAGE8",
+	"TEXT_LANGUAGE9",
 	"TEXT_LANGUAGE10",
 	"VERSION",
 	"ID",
@@ -339,7 +329,7 @@ bool ReadData(char *&Data, int &Size, char *Result, int Result_Size)
 	} while(Size > 0 && Result_Size > 0 && *(Data-1) != '\n');
 
 	*pos = 0;
-  
+
 	return true;
 }
 
@@ -387,7 +377,7 @@ void GetLine(char *&Data, int &Size, int &token, char *&data)
 		pos++;
 	}
 	token = FindToken(test_token, true);
-	
+
 	while((*pos) && strchr(" \n\r", *pos))
 	{	// remove white space
 		pos++;
@@ -398,7 +388,7 @@ void GetLine(char *&Data, int &Size, int &token, char *&data)
 		pos++;
 		test_token = save_data;
 		memset(save_data, 0, sizeof(save_data));
-		
+
 		while(((*pos) != '\"' || !strchr("\n\r", (*(pos+1)))) && (*pos))
 		{
 			if ((*pos) == '\\' && (*(pos+1)) == 'n')
@@ -491,9 +481,9 @@ void cStrings::Clear(void)
  * return:
  *
  ************************************************************************************************/
-void cStrings::SetFlags(unsigned int newFlags) 
-{ 
-	Flags = newFlags; 
+void cStrings::SetFlags(unsigned int newFlags)
+{
+	Flags = newFlags;
 }
 
 
@@ -554,7 +544,7 @@ bool cStrings::UnderstandToken(int token, char *data )
 
 /************************************************************************************************
  * Load - Load the given string packet file
- *		
+ *
  * inputs:
  *	buffer to load line in
  *	size of final text string area
@@ -647,7 +637,7 @@ void cStringsSingle::SetText(const char *newText)
 	}
 	strcpy(Dest, newText);
 }
-	
+
 
 // fix problems caused by fucking morons entering clever "rich" chars in to new text files *after* the auto-stripper
 //	removed them all in the first place...
@@ -840,7 +830,7 @@ bool cStringPackage::UnderstandToken(char *&Data, int &Size, int token, char *da
 }
 
 
-
+#if 0
 bool cStringPackage::Load(char *FileName )
 {
 	FILE	*FH;
@@ -863,10 +853,11 @@ bool cStringPackage::Load(char *FileName )
 
 	Load(buffer, Size );
 
-	delete buffer;
+	delete[] buffer;
 
 	return true;
 }
+#endif
 
 bool cStringPackage::Load(char *Data, int &Size )
 {
@@ -915,7 +906,7 @@ cStringsSingle *cStringPackageSingle::FindString(char *ReferenceLookup)
 
 int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 {
-	map<string, int>::iterator	i;
+	std::map<std::string, int>::iterator	i;
 	int							size;
 
 	if (!Reference)
@@ -929,12 +920,12 @@ int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 		return -1;
 	}
 
-	if (strncmp(ReferenceLookup, Reference, size))
+	if (Q_stricmpn(ReferenceLookup, Reference, size))
 	{
 		return -1;
 	}
 
-	i = ReferenceTable.find(string(ReferenceLookup + size + 1));
+	i = ReferenceTable.find(std::string(ReferenceLookup + size + 1));
 	if (i != ReferenceTable.end())
 	{
 		return (*i).second;
@@ -968,7 +959,7 @@ bool cStringPackageSingle::UnderstandToken(char *&Data, int &Size, int token, ch
 				ReferenceLookup = Strings[pos].GetReference();
 				if (ReferenceLookup)
 				{
-					ReferenceTable[string(ReferenceLookup)] = pos;
+					ReferenceTable[std::string(ReferenceLookup)] = pos;
 				}
 			}
 			return true;
@@ -980,8 +971,8 @@ bool cStringPackageSingle::UnderstandToken(char *&Data, int &Size, int token, ch
 
 
 // A map of loaded string packages
-map<string, cStringPackageSingle *>		JK2SP_ListByName;
-map<byte, cStringPackageSingle *>		JK2SP_ListByID;
+std::map<std::string, cStringPackageSingle *>		JK2SP_ListByName;
+std::map<byte, cStringPackageSingle *>		JK2SP_ListByID;
 
 
 // Registration
@@ -1002,7 +993,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 	char											Package[MAX_QPATH];
 	int												size;
 	cStringPackageSingle							*new_sp;
-	map<string, cStringPackageSingle *>::iterator	i;
+	std::map<std::string, cStringPackageSingle *>::iterator	i;
 
 
 	assert(JK2SP_ListByName.size() == JK2SP_ListByID.size());
@@ -1017,7 +1008,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 	}
 	else
 	{
-		
+
 		size = FS_ReadFile(va("strip/%s.sp", Package), (void **)&buffer);
 		if (size == -1)
 		{
@@ -1027,12 +1018,12 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 			}
 			return qfalse;
 		}
-		
+
 		// Create the new string package
 		new_sp = new cStringPackageSingle(Package);
 		new_sp->Load(buffer, size );
 		FS_FreeFile(buffer);
-		
+
 		if (Registration & SP_REGISTER_CLIENT)
 		{
 			Com_DPrintf(S_COLOR_YELLOW "JK2SP_Register: Registered client string package '%s' with ID %02x\n", Package, (int)new_sp->GetID());
@@ -1041,7 +1032,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 		{
 			Com_DPrintf(S_COLOR_YELLOW "JK2SP_Register: Registered string package '%s' with ID %02x\n", Package, (int)new_sp->GetID());
 		}
-		
+
 		// Insert into the name vs package map
 		JK2SP_ListByName[Package] = new_sp;
 		// Insert into the id vs package map
@@ -1058,15 +1049,15 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 // Unload all packages with the relevant registration bits
 void JK2SP_Unload(unsigned char Registration)
 {
-	map<string, cStringPackageSingle *>::iterator	i, next;
-	map<byte, cStringPackageSingle *>::iterator		id;
+	std::map<std::string, cStringPackageSingle *>::iterator	i, next;
+	std::map<byte, cStringPackageSingle *>::iterator		id;
 
 	assert(JK2SP_ListByName.size() == JK2SP_ListByID.size());
 
 	for(i = JK2SP_ListByName.begin(); i != JK2SP_ListByName.end(); i = next)
 	{
 		next = i;
-		next++;
+		++next;
 
 		if ((*i).second->UnRegister(Registration))
 		{
@@ -1085,13 +1076,13 @@ void JK2SP_Unload(unsigned char Registration)
 
 int JK2SP_GetStringID(const char *inReference)
 {
-	map<unsigned char,cStringPackageSingle *>::iterator	i;
+	std::map<unsigned char,cStringPackageSingle *>::iterator	i;
 	int													ID;
 	char Reference[MAX_QPATH];
 	Q_strncpyz(Reference, inReference, MAX_QPATH);
 	Q_strupr(Reference);
 
-	for(i = JK2SP_ListByID.begin(); i != JK2SP_ListByID.end(); i++)
+	for(i = JK2SP_ListByID.begin(); i != JK2SP_ListByID.end(); ++i)
 	{
 		ID = (*i).second->FindStringID(Reference);
 		if (ID >= 0)
@@ -1117,7 +1108,7 @@ cStringsSingle *JK2SP_GetString(unsigned short ID)
 {
 	cStringPackageSingle								*sp;
 	cStringsSingle										*string;
-	map<unsigned char,cStringPackageSingle *>::iterator	i;
+	std::map<unsigned char,cStringPackageSingle *>::iterator	i;
 
 	i = JK2SP_ListByID.find(SP_GET_PACKAGE(ID));
 	if (i == JK2SP_ListByID.end())
@@ -1155,7 +1146,7 @@ cStringsSingle *JK2SP_GetString(const char *Reference)
 const char *JK2SP_GetReferenceText(unsigned short ID, const char *&psPackageName, const char *&psPackageReference, const char *&psText)
 {
 	cStringPackageSingle *sp;
-	map<unsigned char,cStringPackageSingle *>::iterator	i;
+	std::map<unsigned char,cStringPackageSingle *>::iterator	i;
 
 	i = JK2SP_ListByID.find(SP_GET_PACKAGE(ID));
 	if (i == JK2SP_ListByID.end())
@@ -1216,12 +1207,12 @@ const char *JK2SP_GetStringTextString(const char *Reference)
 
 static void JK2SP_UpdateLanguage(void)
 {
-	map<unsigned char, cStringPackageSingle *>::iterator	it;
-	list<cStringPackageID>									sps;
-	list<cStringPackageID>::iterator						spit;
+	std::map<unsigned char, cStringPackageSingle *>::iterator	it;
+	std::list<cStringPackageID>									sps;
+	std::list<cStringPackageID>::iterator						spit;
 
 	// Grab all SP ids
-	for(it = JK2SP_ListByID.begin(); it != JK2SP_ListByID.end(); it++)
+	for(it = JK2SP_ListByID.begin(); it != JK2SP_ListByID.end(); ++it)
 	{
 		sps.push_back(cStringPackageID((*it).second->GetName(), (*it).second->GetRegistration()));
 	}
@@ -1229,9 +1220,9 @@ static void JK2SP_UpdateLanguage(void)
 	JK2SP_Unload(SP_REGISTER_CLIENT | SP_REGISTER_SERVER | SP_REGISTER_MENU | SP_REGISTER_REQUIRED);
 
 	// Reinitialise with new language
-	for(spit = sps.begin(); spit != sps.end(); spit++)
+	for(spit = sps.begin(); spit != sps.end(); ++spit)
 	{
-		JK2SP_Register((*spit).GetName(), (*spit).GetReg());	
+		JK2SP_Register((*spit).GetName(), (*spit).GetReg());
 	}
 	sps.clear();
 }
@@ -1245,7 +1236,7 @@ void JK2SP_Init(void)
 //	Cvar_Set("sp_language", va("%d", SP_LANGUAGE_JAPANESE));	// stetest, do NOT leave in
 
 	JK2SP_UpdateLanguage();
-	sp_language->modified = false;
+	sp_language->modified = qfalse;
 
 	JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
 }
@@ -1257,7 +1248,7 @@ void JK2SP_CheckForLanguageUpdates(void)
 	if (sp_language && sp_language->modified)
 	{
 		JK2SP_UpdateLanguage();	// force language package to reload
-		sp_language->modified = false;
+		sp_language->modified = qfalse;
 	}
 }
 

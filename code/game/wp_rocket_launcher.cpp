@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_local.h"
 #include "b_local.h"
@@ -30,8 +34,8 @@ This file is part of OpenJK.
 void rocketThink( gentity_t *ent )
 //---------------------------------------------------------
 {
-	vec3_t newdir, targetdir, 
-			up={0,0,1}, right; 
+	vec3_t newdir, targetdir,
+			up={0,0,1}, right;
 	vec3_t	org;
 	float dot, dot2;
 
@@ -97,18 +101,18 @@ void rocketThink( gentity_t *ent )
 
 		// a dot of 1.0 means right-on-target.
 		if ( dot < 0.0f )
-		{	
+		{
 			// Go in the direction opposite, start a 180.
 			CrossProduct( ent->movedir, up, right );
 			dot2 = DotProduct( targetdir, right );
 
 			if ( dot2 > 0 )
-			{	
+			{
 				// Turn 45 degrees right.
 				VectorMA( ent->movedir, 0.3f*newDirMult, right, newdir );
 			}
 			else
-			{	
+			{
 				// Turn 45 degrees left.
 				VectorMA(ent->movedir, -0.3f*newDirMult, right, newdir);
 			}
@@ -120,12 +124,12 @@ void rocketThink( gentity_t *ent )
 //			vel *= 0.5f;
 		}
 		else if ( dot < 0.70f )
-		{	
+		{
 			// Still a bit off, so we turn a bit softer
 			VectorMA( ent->movedir, 0.5f*newDirMult, targetdir, newdir );
 		}
 		else
-		{	
+		{
 			// getting close, so turn a bit harder
 			VectorMA( ent->movedir, 0.9f*newDirMult, targetdir, newdir );
 		}
@@ -133,7 +137,7 @@ void rocketThink( gentity_t *ent )
 		// add crazy drunkenness
 		for ( int i = 0; i < 3; i++ )
 		{
-			newdir[i] += crandom() * ent->random * 0.25f;
+			newdir[i] += Q_flrand(-1.0f, 1.0f) * ent->random * 0.25f;
 		}
 
 		// decay the randomness
@@ -236,14 +240,14 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 				dif = 8;
 			}
 
-			// if we are fully locked, always take on the enemy.  
-			//	Also give a slight advantage to higher, but not quite full charges.  
+			// if we are fully locked, always take on the enemy.
+			//	Also give a slight advantage to higher, but not quite full charges.
 			//	Finally, just give any amount of charge a very slight random chance of locking.
-			if ( dif == 8 || random() * dif > 2 || random() > 0.97f )
+			if ( dif == 8 || Q_flrand(0.0f, 1.0f) * dif > 2 || Q_flrand(0.0f, 1.0f) > 0.97f )
 			{
 				missile->enemy = &g_entities[lockEntNum];
 
-				if ( missile->enemy 
+				if ( missile->enemy
 					&& missile->enemy->inuse )//&& DistanceSquared( missile->currentOrigin, missile->enemy->currentOrigin ) < 262144 && InFOV( missile->currentOrigin, missile->enemy->currentOrigin, missile->enemy->client->ps.viewangles, 45, 45 ) )
 				{
 					if ( missile->enemy->client

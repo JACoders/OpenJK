@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -26,7 +30,7 @@ This file is part of Jedi Academy.
 // The base implimention of the Raven Vector object attempts to solve a number of
 // high level problems as efficiently as possible.  Where ever feasible, functions have
 // been included in the .h file so the compiler can inline them.
-// 
+//
 // The vectors define the following operations:
 //  - Construction
 //  - Initialization
@@ -91,7 +95,7 @@ enum	ESide
 	Side_None	= 0,
 	Side_Left	= 1,
 	Side_Right	= 2,
-	Side_In		= 3, 
+	Side_In		= 3,
 	Side_Out	= 4,
 	Side_AllIn	= 5
 };
@@ -113,7 +117,7 @@ public:
 	CVec4()																	{}
 #else
 	CVec4()																	{v[0]=v[1]=v[2]=v[3]=RAVL_VEC_UDF;}		// DEBUG INITIALIZATION
-#endif	
+#endif
 	CVec4(const float val)													{v[0]=val;		v[1]=val;		v[2]=val;		v[3]=val;}
 	CVec4(const float x,const float y,const float z, const float r)			{v[0]=x;		v[1]=y;			v[2]=z;			v[3]=r;}
 	CVec4(const CVec4& t)													{v[0]=t.v[0];	v[1]=t.v[1];	v[2]=t.v[2];	v[3]=t.v[3];}
@@ -210,21 +214,21 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void	Min(const CVec4& t)
 	{
-		if (t.v[0]<v[0])			v[0]=t.v[0];	
-		if (t.v[1]<v[1])			v[1]=t.v[1];	
-		if (t.v[2]<v[2])			v[2]=t.v[2];	
-		if (t.v[3]<v[3])			v[3]=t.v[3];	
+		if (t.v[0]<v[0])			v[0]=t.v[0];
+		if (t.v[1]<v[1])			v[1]=t.v[1];
+		if (t.v[2]<v[2])			v[2]=t.v[2];
+		if (t.v[3]<v[3])			v[3]=t.v[3];
 	}
 	void	Max(const CVec4& t)
 	{
-		if (t.v[0]>v[0])			v[0]=t.v[0];	
-		if (t.v[1]>v[1])			v[1]=t.v[1];	
-		if (t.v[2]>v[2])			v[2]=t.v[2];	
-		if (t.v[3]>v[3])			v[3]=t.v[3];	
+		if (t.v[0]>v[0])			v[0]=t.v[0];
+		if (t.v[1]>v[1])			v[1]=t.v[1];
+		if (t.v[2]>v[2])			v[2]=t.v[2];
+		if (t.v[3]>v[3])			v[3]=t.v[3];
 	}
 	float	MaxElement() const
 	{
-			return v[MaxElementIndex()];	
+			return v[MaxElementIndex()];
 	}
 	int		MaxElementIndex() const;
 
@@ -278,8 +282,8 @@ public:
 	// Vector.  That then becomes the new vector.
 	//
 	// The value returned is the scale of the new vector with respect to the one passed
-	// to the function.  If the scale is less than (1.0) then the new vector is shorter 
-	// than (U).  If the scale is negative, then the vector is going in the opposite 
+	// to the function.  If the scale is less than (1.0) then the new vector is shorter
+	// than (U).  If the scale is negative, then the vector is going in the opposite
 	// direction of (U).
 	//
 	//               _  (U)
@@ -316,7 +320,7 @@ public:
 	//           o _
 	//         /  |\
 	//       /     (this)
-	//     / 
+	//     /
 	// (Start)
 	//
     ////////////////////////////////////////////////////////////////////////////////////
@@ -329,7 +333,7 @@ public:
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Project To Line Seg 
+    // Project To Line Seg
 	//
 	// Same As Project To Line, Except It Will Clamp To Start And Stop
 	////////////////////////////////////////////////////////////////////////////////////
@@ -403,8 +407,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	float	AreaParallelPipid(const CVec4 &A, const CVec4 &B) const
 	{
-		return ((A.v[0]*B.v[1] - A.v[1]*B.v[0]) + 
-			    (B.v[0]*  v[1] -   v[0]*B.v[1]) + 
+		return ((A.v[0]*B.v[1] - A.v[1]*B.v[0]) +
+			    (B.v[0]*  v[1] -   v[0]*B.v[1]) +
 				(  v[0]*A.v[1] - A.v[0]*  v[1]));
 	}
 
@@ -440,10 +444,10 @@ public:
 	//                 ___---/
 	//          ___---/
 	//  (Start)/
-	//  
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	ESide	LRTest(const CVec4 &Start, const CVec4 &End, float Tolerance=0.0) const
-	{	
+	{
 		float Area = AreaParallelPipid(Start, End);
 		if (Area>Tolerance)
 		{
@@ -462,14 +466,14 @@ public:
 	//
 	//  Returns true if the given point is within the circumscribed
 	//  circle of the given ABC Triangle:
-	//         _____  
+	//         _____
 	//        /   B \
 	//      /   /   \ \
 	//     |  /      \ |
 	//     |A---------C|
 	//      \    Pt   /
 	//       \_______/
-	//  
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	bool	PtInCircle(const CVec4 &A, const CVec4 &B, const CVec4 &C) const;
 
@@ -478,14 +482,14 @@ public:
 	// Point In Standard Circle  (True/False)
 	//
 	//  Returns true if the given point is within the Circle
-	//         _____  
+	//         _____
 	//        /     \
 	//      /         \
 	//     |   Circle  |
 	//     |           |
 	//      \    Pt   /
 	//       \_______/
-	//  
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	bool	PtInCircle(const CVec4 &Circle, float Radius) const;
 
@@ -584,7 +588,7 @@ public:
 	CVec3()																	{}
 #else
 	CVec3()																	{v[0]=v[1]=v[2]=RAVL_VEC_UDF;}		// DEBUG INITIALIZATION
-#endif	
+#endif
 	CVec3(const float val)													{v[0]=val;		v[1]=val;		v[2]=val;	}
 	CVec3(const float x,const float y,const float z)						{v[0]=x;		v[1]=y;			v[2]=z;		}
 	CVec3(const CVec3& t)													{v[0]=t.v[0];	v[1]=t.v[1];	v[2]=t.v[2];}
@@ -684,19 +688,19 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void	Min(const CVec3& t)
 	{
-		if (t.v[0]<v[0])			v[0]=t.v[0];	
-		if (t.v[1]<v[1])			v[1]=t.v[1];	
-		if (t.v[2]<v[2])			v[2]=t.v[2];	
+		if (t.v[0]<v[0])			v[0]=t.v[0];
+		if (t.v[1]<v[1])			v[1]=t.v[1];
+		if (t.v[2]<v[2])			v[2]=t.v[2];
 	}
 	void	Max(const CVec3& t)
 	{
-		if (t.v[0]>v[0])			v[0]=t.v[0];	
-		if (t.v[1]>v[1])			v[1]=t.v[1];	
-		if (t.v[2]>v[2])			v[2]=t.v[2];	
+		if (t.v[0]>v[0])			v[0]=t.v[0];
+		if (t.v[1]>v[1])			v[1]=t.v[1];
+		if (t.v[2]>v[2])			v[2]=t.v[2];
 	}
 	float	MaxElement() const
 	{
-			return v[MaxElementIndex()];	
+			return v[MaxElementIndex()];
 	}
 	int		MaxElementIndex() const;
 
@@ -749,8 +753,8 @@ public:
 	// Vector.  That then becomes the new vector.
 	//
 	// The value returned is the scale of the new vector with respect to the one passed
-	// to the function.  If the scale is less than (1.0) then the new vector is shorter 
-	// than (U).  If the scale is negative, then the vector is going in the opposite 
+	// to the function.  If the scale is less than (1.0) then the new vector is shorter
+	// than (U).  If the scale is negative, then the vector is going in the opposite
 	// direction of (U).
 	//
 	//               _  (U)
@@ -787,7 +791,7 @@ public:
 	//           o _
 	//         /  |\
 	//       /     (this)
-	//     / 
+	//     /
 	// (Start)
 	//
     ////////////////////////////////////////////////////////////////////////////////////
@@ -800,7 +804,7 @@ public:
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Project To Line Seg 
+    // Project To Line Seg
 	//
 	// Same As Project To Line, Except It Will Clamp To Start And Stop
 	////////////////////////////////////////////////////////////////////////////////////
@@ -874,8 +878,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	float	AreaParallelPipid(const CVec3 &A, const CVec3 &B) const
 	{
-		return ((A.v[0]*B.v[1] - A.v[1]*B.v[0]) + 
-			    (B.v[0]*  v[1] -   v[0]*B.v[1]) + 
+		return ((A.v[0]*B.v[1] - A.v[1]*B.v[0]) +
+			    (B.v[0]*  v[1] -   v[0]*B.v[1]) +
 				(  v[0]*A.v[1] - A.v[0]*  v[1]));
 	}
 
@@ -911,10 +915,10 @@ public:
 	//                 ___---/
 	//          ___---/
 	//  (Start)/
-	//  
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	ESide	LRTest(const CVec3 &Start, const CVec3 &End, float Tolerance=0.0) const
-	{	
+	{
 		float Area = AreaParallelPipid(Start, End);
 		if (Area>Tolerance)
 		{
@@ -933,14 +937,14 @@ public:
 	//
 	//  Returns true if the given point is within the circumscribed
 	//  circle of the given ABC Triangle:
-	//         _____  
+	//         _____
 	//        /   B \
 	//      /   /   \ \
 	//     |  /      \ |
 	//     |A---------C|
 	//      \    Pt   /
 	//       \_______/
-	//  
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	bool	PtInCircle(const CVec3 &A, const CVec3 &B, const CVec3 &C) const;
 
@@ -949,14 +953,14 @@ public:
 	// Point In Standard Circle  (True/False)
 	//
 	//  Returns true if the given point is within the Circle
-	//         _____  
+	//         _____
 	//        /     \
 	//      /         \
 	//     |   Circle  |
 	//     |           |
 	//      \    Pt   /
 	//       \_______/
-	//  
+	//
 	////////////////////////////////////////////////////////////////////////////////////
 	bool	PtInCircle(const CVec3 &Circle, float Radius) const;
 
@@ -1006,7 +1010,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 
 public:
-	float v[3];	
+	float v[3];
 	static const CVec3 mX;
 	static const CVec3 mY;
 	static const CVec3 mZ;

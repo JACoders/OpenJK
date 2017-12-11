@@ -1,26 +1,28 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // ICARUS Utility functions
 
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
 
 #include "../icarus/instance.h"
 #include "g_local.h"
@@ -32,7 +34,7 @@ ICARUS_Instance		*iICARUS;
 bufferlist_t		ICARUS_BufferList;
 entlist_t			ICARUS_EntList;
 
-extern unsigned Com_BlockChecksum (const void *buffer, int length);
+extern uint32_t Com_BlockChecksum (const void *buffer, int length);
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
 int			ICARUS_entFilter = -1;
@@ -159,7 +161,7 @@ void ICARUS_Shutdown( void )
 	}
 
 	//Clear out all precached scripts
-	for ( ei = ICARUS_BufferList.begin(); ei != ICARUS_BufferList.end(); ei++ )
+	for ( ei = ICARUS_BufferList.begin(); ei != ICARUS_BufferList.end(); ++ei )
 	{
 		gi.Free( (*ei).second->buffer );
 		delete (*ei).second;
@@ -636,7 +638,7 @@ Svcmd_ICARUS_f
 
 void Svcmd_ICARUS_f( void )
 {
-	char	*cmd = gi.argv( 1 );
+	const char *cmd = gi.argv( 1 );
 
 	if ( Q_stricmp( cmd, "log" ) == 0 )
 	{

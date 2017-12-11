@@ -1,36 +1,40 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "client.h"
 #include "client_ui.h"
+#include "qcommon/stringed_ingame.h"
 
 #include "vmachine.h"
-
-int PC_ReadTokenHandle(int handle, struct pc_token_s *pc_token);
 
 intptr_t CL_UISystemCalls( intptr_t *args );
 
 //prototypes
+#ifdef JK2_MODE
+extern qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress );
+#endif
 extern int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName);
 extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
 extern void SG_StoreSaveGameComment(const char *sComment);
@@ -67,16 +71,19 @@ GetClipboardData
 ====================
 */
 static void GetClipboardData( char *buf, int buflen ) {
-	char	*cbd;
+	char	*cbd, *c;
 
-	cbd = Sys_GetClipboardData();
-
+	c = cbd = Sys_GetClipboardData();
 	if ( !cbd ) {
 		*buf = 0;
 		return;
 	}
 
-	Q_strncpyz( buf, cbd, buflen );
+	for ( int i = 0, end = buflen - 1; *c && i < end; i++ )
+	{
+		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
+		buf[i] = ConvertUTF32ToExpectedCharset( utf32 );
+	}
 
 	Z_Free( cbd );
 }
@@ -86,10 +93,10 @@ static void GetClipboardData( char *buf, int buflen ) {
 Key_KeynumToStringBuf
 ====================
 */
-// only ever called by binding-display code, therefore returns non-technical "friendly" names 
+// only ever called by binding-display code, therefore returns non-technical "friendly" names
 //	in any language that don't necessarily match those in the config file...
 //
-void Key_KeynumToStringBuf( int keynum, char *buf, int buflen ) 
+void Key_KeynumToStringBuf( int keynum, char *buf, int buflen )
 {
 	const char *psKeyName = Key_KeynumToString( keynum/*, qtrue */);
 
@@ -122,9 +129,9 @@ void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 FloatAsInt
 ====================
 */
-static int FloatAsInt( float f ) 
+static int FloatAsInt( float f )
 {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = f;
 	return fi.i;
 }
@@ -145,7 +152,7 @@ static int GetConfigString(int index, char *buf, int size)
 		return qfalse;
 
 	Q_strncpyz( buf, cl.gameState.stringData+offset, size);
- 
+
 	return qtrue;
 }
 
@@ -154,7 +161,9 @@ static int GetConfigString(int index, char *buf, int size)
 CL_ShutdownUI
 ====================
 */
+void UI_Shutdown( void );
 void CL_ShutdownUI( void ) {
+	UI_Shutdown();
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_UI );
 	cls.uiStarted = qfalse;
 }
@@ -193,11 +202,8 @@ CL_InitUI
 ====================
 */
 void CL_InitUI( void ) {
-#ifndef __NO_JK2
-	if(com_jk2 && com_jk2->integer)
-	{
-		JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
-	}
+#ifdef JK2_MODE
+	JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
 #endif
 
 	uiimport_t	uii;
@@ -244,14 +250,18 @@ void CL_InitUI( void ) {
 	uii.Language_UsesSpaces		= re.Language_UsesSpaces;
 	uii.AnyLanguage_ReadCharFromString = re.AnyLanguage_ReadCharFromString;
 
-	//uii.SG_GetSaveImage			= SG_GetSaveImage;
+#ifdef JK2_MODE
+	uii.SG_GetSaveImage			= SG_GetSaveImage;
+#endif
 	uii.SG_GetSaveGameComment	= SG_GetSaveGameComment;
 	uii.SG_StoreSaveGameComment = SG_StoreSaveGameComment;
 	uii.SG_GameAllowedToSaveHere= SG_GameAllowedToSaveHere;
 
 	//uii.SCR_GetScreenshot		= SCR_GetScreenshot;
 
-	//uii.DrawStretchRaw			= re.DrawStretchRaw;
+#ifdef JK2_MODE
+	uii.DrawStretchRaw			= re.DrawStretchRaw;
+#endif
 	uii.R_ClearScene			= re.ClearScene;
 	uii.R_AddRefEntityToScene	= re.AddRefEntityToScene;
 	uii.R_AddPolyToScene		=  re.AddPolyToScene;
@@ -263,6 +273,10 @@ void CL_InitUI( void ) {
 	uii.R_SetColor				= re.SetColor;
 	uii.R_DrawStretchPic		= re.DrawStretchPic;
 	uii.UpdateScreen			= SCR_UpdateScreen;
+
+#ifdef JK2_MODE
+	uii.PrecacheScreenshot		= SCR_PrecacheScreenshot;
+#endif
 
 	uii.R_LerpTag				= re.LerpTag;
 
@@ -279,7 +293,7 @@ void CL_InitUI( void ) {
 	uii.Key_ClearStates			= Key_ClearStates;
 	uii.Key_GetCatcher			= Key_GetCatcher;
 	uii.Key_SetCatcher			= Key_SetCatcher;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	uii.SP_Register				= JK2SP_Register;
 	uii.SP_GetStringText		= JK2SP_GetStringText;
 	uii.SP_GetStringTextString  = JK2SP_GetStringTextString;
@@ -293,9 +307,9 @@ void CL_InitUI( void ) {
 
 	uii.GetConfigString			= (void (*)(int, char *, int))GetConfigString;
 
-	uii.Milliseconds			= Sys_Milliseconds;
+	uii.Milliseconds			= Sys_Milliseconds2;
 
-	UI_Init(UI_API_VERSION, &uii, (cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
+	UI_Init(UI_API_VERSION, &uii, (qboolean)(cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
 
 //	uie->UI_Init( UI_API_VERSION, &uii );
 
@@ -312,7 +326,7 @@ qboolean UI_GameCommand( void ) {
 
 
 void CL_GenericMenu_f(void)
-{		
+{
 	const char *arg = Cmd_Argv( 1 );
 
 	if (cls.uiStarted) {
@@ -327,7 +341,7 @@ void CL_EndScreenDissolve_f(void)
 }
 
 void CL_DataPad_f(void)
-{		
+{
 	if (cls.uiStarted && cls.cgameStarted && (cls.state == CA_ACTIVE) ) {
 		UI_SetActiveMenu("datapad",NULL);
 	}
@@ -338,7 +352,7 @@ void CL_DataPad_f(void)
 CL_GetGlConfig
 ====================
 */
-static void CL_GetGlconfig( glconfig_t *config ) 
+static void CL_GetGlconfig( glconfig_t *config )
 {
 	*config = cls.glconfig;
 }
@@ -353,17 +367,17 @@ CL_UISystemCalls
 The ui module is making a system call
 ====================
 */
-intptr_t CL_UISystemCalls( intptr_t *args ) 
+intptr_t CL_UISystemCalls( intptr_t *args )
 {
 
-	switch( args[0] ) 
+	switch( args[0] )
 	{
 	case UI_ERROR:
 		Com_Error( ERR_DROP, "%s", VMA(1) );
 		return 0;
 
 	case UI_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1),(const char *) VMA(2),(const char *) VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *)VMA(1),(const char *) VMA(2),(const char *) VMA(3), args[4] );
 		return 0;
 
 	case UI_CVAR_SET:
@@ -432,7 +446,7 @@ intptr_t CL_UISystemCalls( intptr_t *args )
 
 //	case UI_PC_READ_TOKEN:
 //		return PC_ReadTokenHandle( args[1], VMA(2) );
-		
+
 //	case UI_PC_SOURCE_FILE_AND_LINE:
 //		return PC_SourceFileAndLine( args[1], VMA(2), VMA(3) );
 

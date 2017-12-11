@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	cg_credits.cpp
 //
@@ -31,8 +35,6 @@ This file is part of Jedi Knight 2.
 
 #define MAX_LINE_BYTES 2048
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-
 qhandle_t ghFontHandle = 0;
 float gfFontScale = 1.0f;
 vec4_t gv4Color = {0};
@@ -40,7 +42,7 @@ vec4_t gv4Color = {0};
 struct StringAndSize_t
 {
 	int iStrLenPixels;
-	string str;
+	std::string str;
 
 	StringAndSize_t()
 	{
@@ -84,7 +86,7 @@ struct CreditCard_t
 {
 	int						iTime;
 	StringAndSize_t			strTitle;
-	vector<StringAndSize_t> vstrText;
+	std::vector<StringAndSize_t> vstrText;
 
 	CreditCard_t()
 	{
@@ -96,12 +98,12 @@ struct CreditLine_t
 {
 	int						iLine;
 	StringAndSize_t			strText;
-	vector<StringAndSize_t> vstrText;
+	std::vector<StringAndSize_t> vstrText;
 	bool					bDotted;
 };
 
-typedef list <CreditLine_t>		CreditLines_t;
-typedef list <CreditCard_t>		CreditCards_t;
+typedef std::list <CreditLine_t>		CreditLines_t;
+typedef std::list <CreditCard_t>		CreditCards_t;
 
 struct CreditData_t
 {
@@ -110,16 +112,16 @@ struct CreditData_t
 	CreditCards_t CreditCards;
 	CreditLines_t CreditLines;
 
-	bool Running(void)
+	qboolean Running(void)
 	{
-		return !!( CreditCards.size() || CreditLines.size() );
+		return (qboolean)(CreditCards.size() || CreditLines.size());
 	}
 };
 
 CreditData_t CreditData;
 
 
-static LPCSTR Capitalize(LPCSTR psTest)
+static const char *Capitalize( const char *psTest )
 {
 	static char sTemp[MAX_LINE_BYTES];
 
@@ -137,7 +139,7 @@ static bool CountsAsWhiteSpaceForCaps( char c )
 { 
 	return !!(isspace(c) || c == '-' || c == '.' || c == '(' || c == ')');
 }
-static LPCSTR UpperCaseFirstLettersOnly(LPCSTR psTest)
+static const char *UpperCaseFirstLettersOnly( const char *psTest )
 {
 	static char sTemp[MAX_LINE_BYTES];
 
@@ -180,15 +182,14 @@ static LPCSTR UpperCaseFirstLettersOnly(LPCSTR psTest)
 	return sTemp;
 }
 
-static const char *GetSubString(string &strResult)
+static const char *GetSubString(std::string &strResult)
 {
 	static char sTemp[MAX_LINE_BYTES];
 
 	if (!strlen(strResult.c_str()))
 		return NULL;
 	
-	strncpy(sTemp,strResult.c_str(),sizeof(sTemp)-1);
-	sTemp[sizeof(sTemp)-1]='\0';
+	Q_strncpyz(sTemp,strResult.c_str(),sizeof(sTemp));
 
 	char *psSemiColon = strchr(sTemp,';');
 	if (  psSemiColon)
@@ -214,20 +215,20 @@ static int SortBySurname(const void *elem1, const void *elem2)
 	StringAndSize_t *p1 = (StringAndSize_t *) elem1;
 	StringAndSize_t *p2 = (StringAndSize_t *) elem2;
 
-	LPCSTR psSurName1 = p1->c_str() + (strlen(p1->c_str())-1);
-	LPCSTR psSurName2 = p2->c_str() + (strlen(p2->c_str())-1);
+	const char *psSurName1 = p1->c_str() + (strlen( p1->c_str() ) - 1);
+	const char *psSurName2 = p2->c_str() + (strlen( p2->c_str() ) - 1);
 
 	while (psSurName1 > p1->c_str() && !isspace(*psSurName1)) psSurName1--;
 	while (psSurName2 > p2->c_str() && !isspace(*psSurName2)) psSurName2--;
 	if (isspace(*psSurName1)) psSurName1++;
 	if (isspace(*psSurName2)) psSurName2++;
 		
-	return stricmp(psSurName1, psSurName2);
+	return Q_stricmp(psSurName1, psSurName2);
 }
 
 
 
-void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
+void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color )
 {
 	// could make these into parameters later, but for now...
 	//
@@ -281,7 +282,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 	qboolean bCardsFinished = qfalse;
 	int iLineNumber = 0;
 	const char *psTextParse = psMallocText;
-	while (*psTextParse != NULL)
+	while (*psTextParse != '\0')
 	{
 		// read a line...
 		//	
@@ -308,7 +309,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 				{
 					// yep...
 					//
-					if (!stricmp(sLine, "(#CARD)"))
+					if (!Q_stricmp(sLine, "(#CARD)"))
 					{
 						if (!bCardsFinished)
 						{
@@ -324,21 +325,21 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 						break;
 					}
 					else
-					if (!stricmp(sLine, "(#TITLE)"))
+					if (!Q_stricmp(sLine, "(#TITLE)"))
 					{
 						eMode = eTitle;
 						bCardsFinished = qtrue;
 						break;
 					}
 					else
-					if (!stricmp(sLine, "(#LINE)"))
+					if (!Q_stricmp(sLine, "(#LINE)"))
 					{
 						eMode = eLine;
 						bCardsFinished = qtrue;
 						break;
 					}
 					else
-					if (!stricmp(sLine, "(#DOTENTRY)"))
+					if (!Q_stricmp(sLine, "(#DOTENTRY)"))
 					{
 						eMode = eDotEntry;
 						bCardsFinished = qtrue;
@@ -405,7 +406,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 									CreditLine.iLine	= iLineNumber;
 									CreditLine.bDotted	= true;
 
-					string strResult(sLine);
+					std::string strResult(sLine);
 					const char *p;
 					while ((p=GetSubString(strResult)) != NULL)
 					{
@@ -448,7 +449,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 				{
 					CreditCard_t CreditCard;
 	
-					string strResult(sLine);
+					std::string strResult(sLine);
 					const char *p;
 					while ((p=GetSubString(strResult)) != NULL)
 					{
@@ -471,6 +472,8 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 						CreditData.CreditCards.push_back(CreditCard);
 					}
 				}
+				break;
+				default:
 				break;
 			}
 		}
@@ -553,7 +556,7 @@ qboolean CG_Credits_Draw( void )
 			//
 			iYpos += iFontHeight*2;	// skip blank line then move to main pos
 			//
-			for (int i=0; i<CreditCard.vstrText.size(); i++)
+			for (size_t i=0; i<CreditCard.vstrText.size(); i++)
 			{
 				StringAndSize_t &StringAndSize = CreditCard.vstrText[i];
 				iWidth = StringAndSize.GetPixelLength();
@@ -602,7 +605,7 @@ qboolean CG_Credits_Draw( void )
 					int iYpos = SCREEN_HEIGHT + (CreditLine.iLine * iFontHeight);
 						iYpos-= (int) (fPixelsPerSecond * fSecondsElapsed);
 
-					int iTextLinesThisItem = max(CreditLine.vstrText.size(),1);
+					int iTextLinesThisItem = Q_max( (int)CreditLine.vstrText.size(), 1);
 					if (iYpos + (iTextLinesThisItem * iFontHeight) < 0)
 					{
 						// scrolled off top of screen, so erase it...
@@ -626,7 +629,7 @@ qboolean CG_Credits_Draw( void )
 
 						// now print any dotted members...
 						//
-						for (int i=0; i<CreditLine.vstrText.size(); i++)
+						for (size_t i=0; i<CreditLine.vstrText.size(); i++)
 						{
 							StringAndSize_t &StringAndSize = CreditLine.vstrText[i];
 							iWidth = StringAndSize.GetPixelLength();

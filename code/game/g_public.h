@@ -1,26 +1,31 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __G_PUBLIC_H__
 #define __G_PUBLIC_H__
 // g_public.h -- game module information visible to server
 
-#define	GAME_API_VERSION	8
+#define	GAME_API_VERSION	10
 
 // entity->svFlags
 // the server does not know how to interpret most of the values
@@ -67,7 +72,7 @@ class CRagDollParams;
 //rww - RAGDOLL_END
 
 typedef struct gentity_s gentity_t;
-typedef struct gclient_s gclient_t;
+//typedef struct gclient_s gclient_t;
 
 typedef enum
 {
@@ -81,10 +86,15 @@ typedef enum
 #ifndef GAME_INCLUDE
 
 // the server needs to know enough information to handle collision and snapshot generation
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
+
 
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
-	struct playerState_s	*client;
+	playerState_t	*client;
 	qboolean	inuse;
 	qboolean	linked;				// qfalse if not in any good cluster
 
@@ -112,7 +122,7 @@ struct gentity_s {
 Ghoul2 Insert Start
 */
 	// this marker thing of Jake's is used for memcpy() length calcs, so don't put any ordinary fields (like above)
-	//	below this point or they won't work, and will mess up all sorts of stuff. 
+	//	below this point or they won't work, and will mess up all sorts of stuff.
 	//
 	CGhoul2Info_v	ghoul2;
 /*
@@ -147,7 +157,7 @@ typedef struct {
 	void	(*FlushCamFile)();
 
 	// abort the game
-	void	(*Error)( int, const char *fmt, ... );
+	NORETURN_PTR void	(*Error)( int, const char *fmt, ... );
 
 	// get current time for profiling reasons
 	// this should NOT be used for any game related tasks,
@@ -168,16 +178,13 @@ typedef struct {
 	int		(*FS_Read)( void *buffer, int len, fileHandle_t f );
 	int		(*FS_Write)( const void *buffer, int len, fileHandle_t f );
 	void	(*FS_FCloseFile)( fileHandle_t f );
-	int		(*FS_ReadFile)( const char *name, void **buf );
+	long	(*FS_ReadFile)( const char *name, void **buf );
 	void	(*FS_FreeFile)( void *buf );
 	int		(*FS_GetFileList)(  const char *path, const char *extension, char *listbuf, int bufsize );
 
 	// Savegame handling
 	//
-	qboolean	(*AppendToSaveGame)(unsigned int chid, const void *data, int length);
-
-	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
+	ojk::ISavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc
@@ -214,12 +221,12 @@ typedef struct {
 	void	(*SetBrushModel)( gentity_t *ent, const char *name );
 
 	// collision detection against all linked entities
-	void	(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+	void	(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 			const int passEntityNum, const int contentmask , const EG2_Collision eG2TraceType , const int useLod );
 
 	// point contents against all linked entities
 	int		(*pointcontents)( const vec3_t point, int passEntityNum );
-	// what contents are on the map? 
+	// what contents are on the map?
 	int		(*totalMapContents)();
 
 	qboolean	(*inPVS)( const vec3_t p1, const vec3_t p2 );
@@ -267,7 +274,7 @@ Ghoul2 Insert Start
 	qboolean	(*G2API_SetBoneAnglesMatrix)(CGhoul2Info *ghlInfo, const char *boneName, const mdxaBone_t &matrix, const int flags,
 									  qhandle_t *modelList, int blendTime , int currentTime );
 	void		(*G2API_CopyGhoul2Instance)(CGhoul2Info_v &ghoul2From, CGhoul2Info_v &ghoul2To, int modelIndex );
-	qboolean	(*G2API_SetBoneAnimIndex)(CGhoul2Info *ghlInfo, const int index, const int startFrame, const int endFrame, const int flags, 
+	qboolean	(*G2API_SetBoneAnimIndex)(CGhoul2Info *ghlInfo, const int index, const int startFrame, const int endFrame, const int flags,
 							const float animSpeed, const int currentTime, const float setFrame , const int blendTime );
 
 	qboolean	(*G2API_SetLodBias)(CGhoul2Info *ghlInfo, int lodBias);
@@ -298,7 +305,7 @@ Ghoul2 Insert Start
 	qboolean	(*G2API_AttachEnt)(int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum);
 	void		(*G2API_DetachEnt)(int *boltInfo);
 
-	qboolean	(*G2API_GetBoltMatrix)(CGhoul2Info_v &ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, 
+	qboolean	(*G2API_GetBoltMatrix)(CGhoul2Info_v &ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
 			const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, const vec3_t scale);
 
 	void		(*G2API_ListSurfaces)(CGhoul2Info *ghlInfo);
@@ -387,7 +394,7 @@ typedef struct {
 	// init and shutdown will be called every single level
 	// levelTime will be near zero, while globalTime will be a large number
 	// that can be used to track spectator entry times across restarts
-	void		(*Init)( const char *mapname, const char *spawntarget, int checkSum, const char *entstring, 
+	void		(*Init)( const char *mapname, const char *spawntarget, int checkSum, const char *entstring,
 		int levelTime, int randomSeed, int globalTime, SavedGameJustLoaded_e eSavedGameJustLoaded, qboolean qbLoadTransition );
 	void		(*Shutdown) (void);
 
@@ -423,7 +430,7 @@ typedef struct {
 
 	// The gentities array is allocated in the game dll so it
 	// can vary in size from one game to another.
-	// 
+	//
 	// The size will be fixed when ge->Init() is called
 	// the server can't just use pointer arithmetic on gentities, because the
 	// server's sizeof(struct gentity_s) doesn't equal gentitySize

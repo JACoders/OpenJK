@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_predict.c -- this file generates cg.predictedPlayerState by either
 // interpolating between snapshots from the server or locally predicting
 // ahead the client's movement.
@@ -127,7 +148,7 @@ void CG_BuildSolidList( void ) {
 			((difference[0]*difference[0]) + (difference[1]*difference[1]) + (difference[2]*difference[2])) <= dsquared)
 		{
 			cent->currentValid = qtrue;
-			if ( cent->nextState.solid ) 
+			if ( cent->nextState.solid )
 			{
 				cg_solidEntities[cg_numSolidEntities] = cent;
 				cg_numSolidEntities++;
@@ -182,7 +203,7 @@ static QINLINE qboolean CG_VehicleClipCheck(centity_t *ignored, trace_t *trace)
 			{ //this means we're riding or being ridden by this guy, so don't collide
 				return qfalse;
 			}
-			else 
+			else
 			{//see if I'm hitting one of my own passengers
 				if (otherguy->currentState.eType == ET_PLAYER
 					|| (otherguy->currentState.eType == ET_NPC && otherguy->currentState.NPC_class != CLASS_VEHICLE) )
@@ -199,11 +220,6 @@ static QINLINE qboolean CG_VehicleClipCheck(centity_t *ignored, trace_t *trace)
 	return qtrue;
 }
 
-//rww - I'm disabling this warning for this function. It complains about oldTrace but as you can see it
-//always gets set before use, and I am not wasting CPU memsetting it to shut the compiler up.
-#ifdef _MSC_VER
-#pragma warning(disable : 4701) //local variable may be used without having been initialized
-#endif
 /*
 ====================
 CG_ClipMoveToEntities
@@ -237,7 +253,7 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 			continue;
 		}
 
-		if ( ent->number > MAX_CLIENTS && 
+		if ( ent->number > MAX_CLIENTS &&
 			 (ent->genericenemyindex-MAX_GENTITIES==cg.predictedPlayerState.clientNum || ent->genericenemyindex-MAX_GENTITIES==cg.predictedVehicleState.clientNum) )
 //		if (ent->number > MAX_CLIENTS && cg.snap && ent->genericenemyindex && (ent->genericenemyindex-MAX_GENTITIES) == cg.snap->ps.clientNum)
 		{ //rww - method of keeping objects from colliding in client-prediction (in case of ownership)
@@ -272,7 +288,7 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 
 			cmodel = trap->CM_TempModel( bmins, bmaxs, 0 );
 			VectorCopy( vec3_origin, angles );
-			
+
 			VectorCopy( cent->lerpOrigin, origin );
 		}
 
@@ -348,16 +364,13 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 		}
 	}
 }
-#ifdef _MSC_VER
-#pragma warning(default : 4701) //local variable may be used without having been initialized
-#endif
 
 /*
 ================
 CG_Trace
 ================
 */
-void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 					 int skipNumber, int mask ) {
 	trace_t	t;
 
@@ -374,7 +387,7 @@ void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec
 CG_G2Trace
 ================
 */
-void	CG_G2Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void	CG_G2Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 					 int skipNumber, int mask ) {
 	trace_t	t;
 
@@ -418,7 +431,7 @@ int		CG_PointContents( const vec3_t point, int passEntityNum ) {
 			continue;
 		}
 
-		contents |= trap->CM_TransformedPointContents( point, cmodel, ent->origin, ent->angles );
+		contents |= trap->CM_TransformedPointContents( point, cmodel, cent->lerpOrigin, cent->lerpAngles );
 	}
 
 	return contents;
@@ -476,10 +489,10 @@ static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	for ( i = 0 ; i < 3 ; i++ ) {
 		out->origin[i] = prev->ps.origin[i] + f * (next->ps.origin[i] - prev->ps.origin[i] );
 		if ( !grabAngles ) {
-			out->viewangles[i] = LerpAngle( 
+			out->viewangles[i] = LerpAngle(
 				prev->ps.viewangles[i], next->ps.viewangles[i], f );
 		}
-		out->velocity[i] = prev->ps.velocity[i] + 
+		out->velocity[i] = prev->ps.velocity[i] +
 			f * (next->ps.velocity[i] - prev->ps.velocity[i] );
 	}
 
@@ -528,10 +541,10 @@ static void CG_InterpolateVehiclePlayerState( qboolean grabAngles ) {
 	for ( i = 0 ; i < 3 ; i++ ) {
 		out->origin[i] = prev->vps.origin[i] + f * (next->vps.origin[i] - prev->vps.origin[i] );
 		if ( !grabAngles ) {
-			out->viewangles[i] = LerpAngle( 
+			out->viewangles[i] = LerpAngle(
 				prev->vps.viewangles[i], next->vps.viewangles[i], f );
 		}
-		out->velocity[i] = prev->vps.velocity[i] + 
+		out->velocity[i] = prev->vps.velocity[i] +
 			f * (next->vps.velocity[i] - prev->vps.velocity[i] );
 	}
 
@@ -611,7 +624,7 @@ static void CG_TouchItem( centity_t *cent ) {
 	//	cg.predictedPlayerState.stats[STAT_HOLDABLE_ITEMS] |= (1 << item->giTag);
 	}
 */
-	// Special case for flags.  
+	// Special case for flags.
 	// We don't predict touching our own flag
 	// Make sure the item type is also a flag too
 	if( cgs.gametype == GT_CTF || cgs.gametype == GT_CTY ) {
@@ -911,9 +924,6 @@ extern	vmCvar_t		cg_showVehBounds;
 pmove_t cg_vehPmove;
 qboolean cg_vehPmoveSet = qfalse;
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4701) //local variable may be used without having been initialized
-#endif
 void CG_PredictPlayerState( void ) {
 	int			cmdNum, current, i;
 	playerState_t	oldPlayerState;
@@ -1014,7 +1024,7 @@ void CG_PredictPlayerState( void ) {
 	// the last good position we had
 	cmdNum = current - REAL_CMD_BACKUP + 1;
 	trap->GetUserCmd( cmdNum, &oldestCmd );
-	if ( oldestCmd.serverTime > cg.snap->ps.commandTime 
+	if ( oldestCmd.serverTime > cg.snap->ps.commandTime
 		&& oldestCmd.serverTime < cg.time ) {	// special check for map_restart
 		if ( cg_showMiss.integer ) {
 			trap->Print ("exceeded PACKET_BACKUP on commands\n");
@@ -1027,7 +1037,7 @@ void CG_PredictPlayerState( void ) {
 
 	// get the most recent information we have, even if
 	// the server time is beyond our current cg.time,
-	// because predicted player positions are going to 
+	// because predicted player positions are going to
 	// be ahead of everything else anyway
 	if ( cg.nextSnap && !cg.nextFrameTeleport && !cg.thisFrameTeleport ) {
 		cg.nextSnap->ps.slopeRecalcTime = cg.predictedPlayerState.slopeRecalcTime; //this is the only value we want to maintain seperately on server/client
@@ -1132,7 +1142,7 @@ void CG_PredictPlayerState( void ) {
 				cg.thisFrameTeleport = qfalse;
 			} else {
 				vec3_t	adjusted;
-				CG_AdjustPositionForMover( cg.predictedVehicleState.origin, 
+				CG_AdjustPositionForMover( cg.predictedVehicleState.origin,
 					cg.predictedVehicleState.groundEntityNum, cg.physicsTime, cg.oldTime, adjusted );
 
 				if ( cg_showVehMiss.integer ) {
@@ -1191,7 +1201,7 @@ void CG_PredictPlayerState( void ) {
 				cg.thisFrameTeleport = qfalse;
 			} else {
 				vec3_t	adjusted;
-				CG_AdjustPositionForMover( cg.predictedPlayerState.origin, 
+				CG_AdjustPositionForMover( cg.predictedPlayerState.origin,
 					cg.predictedPlayerState.groundEntityNum, cg.physicsTime, cg.oldTime, adjusted );
 
 				if ( cg_showMiss.integer ) {
@@ -1268,7 +1278,7 @@ void CG_PredictPlayerState( void ) {
 				cg_pmove.ps->fd.saberAnimLevelBase = SS_DUAL;
 			}
 		}
-	
+
 		Pmove (&cg_pmove);
 
 		if (CG_Piloting(cg.predictedPlayerState.m_iVehicleNum) &&
@@ -1321,7 +1331,7 @@ void CG_PredictPlayerState( void ) {
 				x = (veh->currentState.solid)&255;
 				zd = (veh->currentState.solid>>8)&255;
 				zu = (veh->currentState.solid>>15)&255;
-				
+
 				zu -= 32; //I don't quite get the reason for this.
 				zd = -zd;
 
@@ -1347,7 +1357,7 @@ void CG_PredictPlayerState( void ) {
 
 					cg_vehPmoveSet = qtrue;
 				}
-				
+
 				cg_vehPmove.noFootsteps = ( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
 				cg_vehPmove.pmove_fixed = pmove_fixed.integer;
 				cg_vehPmove.pmove_msec = pmove_msec.integer;
@@ -1398,15 +1408,15 @@ void CG_PredictPlayerState( void ) {
 
 	if (CG_Piloting(cg.predictedPlayerState.m_iVehicleNum))
 	{
-		CG_AdjustPositionForMover( cg.predictedVehicleState.origin, 
-			cg.predictedVehicleState.groundEntityNum, 
+		CG_AdjustPositionForMover( cg.predictedVehicleState.origin,
+			cg.predictedVehicleState.groundEntityNum,
 			cg.physicsTime, cg.time, cg.predictedVehicleState.origin );
 	}
 	else
 	{
 		// adjust for the movement of the groundentity
-		CG_AdjustPositionForMover( cg.predictedPlayerState.origin, 
-			cg.predictedPlayerState.groundEntityNum, 
+		CG_AdjustPositionForMover( cg.predictedPlayerState.origin,
+			cg.predictedPlayerState.groundEntityNum,
 			cg.physicsTime, cg.time, cg.predictedPlayerState.origin );
 	}
 
@@ -1462,6 +1472,3 @@ revertES:
 		}
 	}
 }
-#ifdef _MSC_VER
-#pragma warning(default : 4701) //local variable may be used without having been initialized
-#endif

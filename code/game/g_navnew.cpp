@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "../qcommon/q_shared.h"
 #include "../cgame/cg_local.h"
@@ -49,14 +53,14 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 			{
 				diff[2] = 0;
 			}
-			return ( VectorLengthSquared( diff ) <= (radius*radius) );
+			return (qboolean)( VectorLengthSquared( diff ) <= (radius*radius) );
 		}
 		else
 		{//must hit exactly
-			return ( DistanceSquared(dest, point) <= (radius*radius) );
+			return (qboolean)( DistanceSquared(dest, point) <= (radius*radius) );
 		}
 		//There is probably a better way to do this, either by preserving the original
-		//		mins and maxs of the navgoal and doing this check ONLY if the radius 
+		//		mins and maxs of the navgoal and doing this check ONLY if the radius
 		//		is non-zero (like the original implementation) or some boolean to
 		//		tell us to do this check rather than the fake bbox overlap check...
 	}
@@ -91,7 +95,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t &trace, int clipma
 
 	//Offset the step height
 	VectorSet( mins, self->mins[0], self->mins[1], self->mins[2] + STEPSIZE );
-	
+
 	gi.trace( &trace, self->currentOrigin, mins, self->maxs, end, self->s.number, clipmask, (EG2_Collision)0, 0 );
 
 	if ( trace.startsolid&&(trace.contents&CONTENTS_BOTCLIP) )
@@ -119,7 +123,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t &trace, int clipma
 	if ( trace.entityNum < ENTITYNUM_WORLD )
 	{
 		gentity_t	*blocker = &g_entities[trace.entityNum];
-		
+
 		if VALIDSTRING( blocker->classname )
 		{
 			if ( G_EntIsUnlockedDoor( blocker->s.number ) )
@@ -196,7 +200,7 @@ qboolean NAV_DirSafe( gentity_t *self, vec3_t dir, float dist )
 
 	//Offset the step height
 	VectorSet( mins, self->mins[0], self->mins[1], self->mins[2] + STEPSIZE );
-	
+
 	gi.trace( &trace, self->currentOrigin, mins, self->maxs, end, self->s.number, CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 
 	//Do a simple check

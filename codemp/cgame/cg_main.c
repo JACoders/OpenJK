@@ -1,13 +1,33 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
 #include "ui/ui_shared.h"
 // display context for new ui stuff
 displayContextDef_t cgDC;
-
-#include "cg_lights.h"
 
 extern int cgSiegeRoundState;
 extern int cgSiegeRoundTime;
@@ -23,90 +43,6 @@ Ghoul2 Insert End
 
 void CG_InitJetpackGhoul2(void);
 void CG_CleanJetpackGhoul2(void);
-
-vec4_t colorTable[CT_MAX] = 
-{
-	{0, 0, 0, 0},			// CT_NONE
-	{0, 0, 0, 1},			// CT_BLACK
-	{1, 0, 0, 1},			// CT_RED
-	{0, 1, 0, 1},			// CT_GREEN
-	{0, 0, 1, 1},			// CT_BLUE
-	{1, 1, 0, 1},			// CT_YELLOW
-	{1, 0, 1, 1},			// CT_MAGENTA
-	{0, 1, 1, 1},			// CT_CYAN
-	{1, 1, 1, 1},			// CT_WHITE
-	{0.75f, 0.75f, 0.75f, 1},	// CT_LTGREY
-	{0.50f, 0.50f, 0.50f, 1},	// CT_MDGREY
-	{0.25f, 0.25f, 0.25f, 1},	// CT_DKGREY
-	{0.15f, 0.15f, 0.15f, 1},	// CT_DKGREY2
-
-	{0.810f, 0.530f, 0.0f,  1},	// CT_VLTORANGE -- needs values
-	{0.810f, 0.530f, 0.0f,  1},	// CT_LTORANGE
-	{0.610f, 0.330f, 0.0f,  1},	// CT_DKORANGE
-	{0.402f, 0.265f, 0.0f,  1},	// CT_VDKORANGE
-
-	{0.503f, 0.375f, 0.996f, 1},	// CT_VLTBLUE1
-	{0.367f, 0.261f, 0.722f, 1},	// CT_LTBLUE1
-	{0.199f, 0.0f,   0.398f, 1},	// CT_DKBLUE1
-	{0.160f, 0.117f, 0.324f, 1},	// CT_VDKBLUE1
-
-	{0.300f, 0.628f, 0.816f, 1},	// CT_VLTBLUE2 -- needs values
-	{0.300f, 0.628f, 0.816f, 1},	// CT_LTBLUE2
-	{0.191f, 0.289f, 0.457f, 1},	// CT_DKBLUE2
-	{0.125f, 0.250f, 0.324f, 1},	// CT_VDKBLUE2
-
-	{0.796f, 0.398f, 0.199f, 1},	// CT_VLTBROWN1 -- needs values
-	{0.796f, 0.398f, 0.199f, 1},	// CT_LTBROWN1
-	{0.558f, 0.207f, 0.027f, 1},	// CT_DKBROWN1
-	{0.328f, 0.125f, 0.035f, 1},	// CT_VDKBROWN1
-
-	{0.996f, 0.796f, 0.398f, 1},	// CT_VLTGOLD1 -- needs values
-	{0.996f, 0.796f, 0.398f, 1},	// CT_LTGOLD1
-	{0.605f, 0.441f, 0.113f, 1},	// CT_DKGOLD1
-	{0.386f, 0.308f, 0.148f, 1},	// CT_VDKGOLD1
-
-	{0.648f, 0.562f, 0.784f, 1},	// CT_VLTPURPLE1 -- needs values
-	{0.648f, 0.562f, 0.784f, 1},	// CT_LTPURPLE1
-	{0.437f, 0.335f, 0.597f, 1},	// CT_DKPURPLE1
-	{0.308f, 0.269f, 0.375f, 1},	// CT_VDKPURPLE1
-
-	{0.816f, 0.531f, 0.710f, 1},	// CT_VLTPURPLE2 -- needs values
-	{0.816f, 0.531f, 0.710f, 1},	// CT_LTPURPLE2
-	{0.566f, 0.269f, 0.457f, 1},	// CT_DKPURPLE2
-	{0.343f, 0.226f, 0.316f, 1},	// CT_VDKPURPLE2
-
-	{0.929f, 0.597f, 0.929f, 1},	// CT_VLTPURPLE3
-	{0.570f, 0.371f, 0.570f, 1},	// CT_LTPURPLE3
-	{0.355f, 0.199f, 0.355f, 1},	// CT_DKPURPLE3
-	{0.285f, 0.136f, 0.230f, 1},	// CT_VDKPURPLE3
-
-	{0.953f, 0.378f, 0.250f, 1},	// CT_VLTRED1
-	{0.953f, 0.378f, 0.250f, 1},	// CT_LTRED1
-	{0.593f, 0.121f, 0.109f, 1},	// CT_DKRED1
-	{0.429f, 0.171f, 0.113f, 1},	// CT_VDKRED1
-	{.25f, 0, 0, 1},					// CT_VDKRED
-	{.70f, 0, 0, 1},					// CT_DKRED
-
-	{0.717f, 0.902f, 1.0f,   1},		// CT_VLTAQUA
-	{0.574f, 0.722f, 0.804f, 1},		// CT_LTAQUA
-	{0.287f, 0.361f, 0.402f, 1},		// CT_DKAQUA
-	{0.143f, 0.180f, 0.201f, 1},		// CT_VDKAQUA
-
-	{0.871f, 0.386f, 0.375f, 1},		// CT_LTPINK
-	{0.435f, 0.193f, 0.187f, 1},		// CT_DKPINK
-	{	  0,    .5f,    .5f, 1},		// CT_LTCYAN
-	{	  0,   .25f,   .25f, 1},		// CT_DKCYAN
-	{   .179f, .51f,   .92f, 1},		// CT_LTBLUE3
-	{   .199f, .71f,   .92f, 1},		// CT_LTBLUE3
-	{   .5f,   .05f,    .4f, 1},		// CT_DKBLUE3
-
-	{   0.0f,   .613f,  .097f, 1},		// CT_HUD_GREEN
-	{   0.835f, .015f,  .015f, 1},		// CT_HUD_RED
-	{	.567f,	.685f,	1.0f,	.75f},	// CT_ICON_BLUE
-	{	.515f,	.406f,	.507f,	1},		// CT_NO_AMMO_RED
-	{   1.0f,   .658f,  .062f, 1},		// CT_HUD_ORANGE
-
-};
 
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
@@ -439,89 +375,6 @@ int					cg_numpermanents = 0;
 weaponInfo_t		cg_weapons[MAX_WEAPONS];
 itemInfo_t			cg_items[MAX_ITEMS];
 
-
-static void CG_SVRunningChange( void ) {
-	cgs.localServer = sv_running.integer;
-}
-
-static void CG_ForceModelChange( void ) {
-	int i;
-
-	for ( i=0; i<MAX_CLIENTS; i++ ) {
-		const char *clientInfo = CG_ConfigString( CS_PLAYERS+i );
-
-		if ( !VALIDSTRING( clientInfo ) )
-			continue;
-
-		CG_NewClientInfo( i, qtrue );
-	}
-}
-
-static void CG_TeamOverlayChange( void ) {
-	// If team overlay is on, ask for updates from the server.  If its off,
-	// let the server know so we don't receive it
-	if ( cg_drawTeamOverlay.integer > 0 && cgs.gametype >= GT_SINGLE_PLAYER)
-		trap->Cvar_Set( "teamoverlay", "1" );
-	else
-		trap->Cvar_Set( "teamoverlay", "0" );
-}
-
-typedef struct cvarTable_s {
-	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
-	void		(*update)( void );
-	int			cvarFlags;
-} cvarTable_t;
-
-#define XCVAR_DECL
-	#include "cg_xcvar.h"
-#undef XCVAR_DECL
-
-static cvarTable_t cvarTable[] = {
-	#define XCVAR_LIST
-		#include "cg_xcvar.h"
-	#undef XCVAR_LIST
-};
-static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
-
-/*
-=================
-CG_RegisterCvars
-=================
-*/
-void CG_RegisterCvars( void ) {
-	size_t		i;
-	cvarTable_t	*cv = NULL;
-
-	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
-		trap->Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
-		if ( cv->update )
-			cv->update();
-	}
-}
-
-/*
-=================
-CG_UpdateCvars
-=================
-*/
-void CG_UpdateCvars( void ) {
-	size_t		i = 0;
-	cvarTable_t	*cv = NULL;
-
-	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
-		if ( cv->vmCvar ) {
-			int modCount = cv->vmCvar->modificationCount;
-			trap->Cvar_Update( cv->vmCvar );
-			if ( cv->vmCvar->modificationCount != modCount ) {
-				if ( cv->update )
-					cv->update();
-			}
-		}
-	}
-}
-
 int CG_CrosshairPlayer( void ) {
 	if ( cg.time > (cg.crosshairClientTime + 1000) )
 		return -1;
@@ -593,7 +446,7 @@ static void CG_RegisterItemSounds( int itemNum ) {
 
 		len = s-start;
 		if (len >= MAX_QPATH || len < 5) {
-			trap->Error( ERR_DROP, "PrecacheItem: %s has bad precache string", 
+			trap->Error( ERR_DROP, "PrecacheItem: %s has bad precache string",
 				item->classname);
 			return;
 		}
@@ -619,7 +472,7 @@ static void CG_RegisterItemSounds( int itemNum ) {
 
 		len = s-start;
 		if (len >= MAX_QPATH || len < 5) {
-			trap->Error( ERR_DROP, "PrecacheItem: %s has bad precache string", 
+			trap->Error( ERR_DROP, "PrecacheItem: %s has bad precache string",
 				item->classname);
 			return;
 		}
@@ -795,7 +648,7 @@ static void CG_RegisterSounds( void ) {
 	trap->R_RegisterShader( "gfx/effects/saberFlare" );
 
 	trap->R_RegisterShader( "powerups/ysalimarishell" );
-	
+
 	trap->R_RegisterShader( "gfx/effects/forcePush" );
 
 	trap->R_RegisterShader( "gfx/misc/red_dmgshield" );
@@ -1133,7 +986,7 @@ static void CG_RegisterSounds( void ) {
 	// FIXME: only needed with item
 	cgs.media.deploySeeker = trap->S_RegisterSound ("sound/chars/seeker/misc/hiss");
 	cgs.media.medkitSound = trap->S_RegisterSound ("sound/items/use_bacta.wav");
-	
+
 	cgs.media.winnerSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM006" );
 	cgs.media.loserSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM010" );
 }
@@ -1141,7 +994,7 @@ static void CG_RegisterSounds( void ) {
 
 //-------------------------------------
 // CG_RegisterEffects
-// 
+//
 // Handles precaching all effect files
 //	and any shader, model, or sound
 //	files an effect may use.
@@ -1152,11 +1005,11 @@ static void CG_RegisterEffects( void )
 	const char	*effectName;
 	int			i;
 
-	for ( i = 1 ; i < MAX_FX ; i++ ) 
+	for ( i = 1 ; i < MAX_FX ; i++ )
 	{
 		effectName = CG_ConfigString( CS_EFFECTS + i );
 
-		if ( !effectName[0] ) 
+		if ( !effectName[0] )
 		{
 			break;
 		}
@@ -1202,8 +1055,6 @@ static void CG_RegisterGraphics( void ) {
 	int			i;
 	int			breakPoint;
 	char		items[MAX_ITEMS+1];
-	const char	*terrainInfo;
-	int			terrainID;
 
 	static char		*sb_nums[11] = {
 		"gfx/2d/numbers/zero",
@@ -1251,7 +1102,7 @@ static void CG_RegisterGraphics( void ) {
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 	trap->R_ClearScene();
 
-	CG_LoadingString( cgs.mapname );        
+	CG_LoadingString( cgs.mapname );
 
 	trap->R_LoadWorld( cgs.mapname );
 
@@ -1587,7 +1438,7 @@ Ghoul2 Insert Start
 		char			temp[MAX_QPATH];
 
 		bspName = CG_ConfigString( CS_BSP_MODELS+i );
-		if ( !bspName[0] ) 
+		if ( !bspName[0] )
 		{
 			break;
 		}
@@ -1595,7 +1446,7 @@ Ghoul2 Insert Start
 		trap->CM_LoadMap( bspName, qtrue );
 		cgs.inlineDrawModel[breakPoint] = trap->R_RegisterModel( bspName );
 		trap->R_ModelBounds( cgs.inlineDrawModel[breakPoint], mins, maxs );
-		for ( j = 0 ; j < 3 ; j++ ) 
+		for ( j = 0 ; j < 3 ; j++ )
 		{
 			cgs.inlineModelMidpoints[breakPoint][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
 		}
@@ -1609,29 +1460,12 @@ Ghoul2 Insert Start
 				break;
 			}
 			trap->R_ModelBounds( cgs.inlineDrawModel[breakPoint], mins, maxs );
-			for ( j = 0 ; j < 3 ; j++ ) 
+			for ( j = 0 ; j < 3 ; j++ )
 			{
 				cgs.inlineModelMidpoints[breakPoint][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
 			}
 			breakPoint++;
 		}
-	}
-
-//	CG_LoadingString( "Creating terrain" );
-	for(i = 0; i < MAX_TERRAINS; i++)
-	{
-		terrainInfo = CG_ConfigString( CS_TERRAINS + i );
-		if ( !terrainInfo[0] )
-		{
-			break;
-		}
-
-		terrainID = trap->CM_RegisterTerrain(terrainInfo);
-
-		trap->RMG_Init(terrainID, terrainInfo);
-
-		// Send off the terrainInfo to the renderer
-		trap->RE_InitRendererTerrain( terrainInfo );
 	}
 
 	/*
@@ -1700,8 +1534,8 @@ void CG_SiegeCountCvars( void )
 	trap->Cvar_Set( "ui_tm1_cnt",va("%d",CG_GetTeamNonScoreCount(TEAM_RED )));
 	trap->Cvar_Set( "ui_tm2_cnt",va("%d",CG_GetTeamNonScoreCount(TEAM_BLUE )));
 	trap->Cvar_Set( "ui_tm3_cnt",va("%d",CG_GetTeamNonScoreCount(TEAM_SPECTATOR )));
-	
-	// This is because the only way we can match up classes is by the gfx handle. 
+
+	// This is because the only way we can match up classes is by the gfx handle.
 	classGfx[0] = trap->R_RegisterShaderNoMip("gfx/mp/c_icon_infantry");
 	classGfx[1] = trap->R_RegisterShaderNoMip("gfx/mp/c_icon_heavy_weapons");
 	classGfx[2] = trap->R_RegisterShaderNoMip("gfx/mp/c_icon_demolitionist");
@@ -1725,7 +1559,7 @@ void CG_SiegeCountCvars( void )
 
 }
 
-/*																																			
+/*
 =======================
 CG_BuildSpectatorString
 
@@ -1751,7 +1585,7 @@ void CG_BuildSpectatorString(void) {
 }
 
 
-/*																																			
+/*
 ===================
 CG_RegisterClients
 ===================
@@ -1849,7 +1683,7 @@ qboolean CG_Asset_Parse(int handle) {
 	if (Q_stricmp(token.string, "{") != 0) {
 		return qfalse;
 	}
-    
+
 	while ( 1 ) {
 		if (!trap->PC_ReadToken(handle, &token))
 			return qfalse;
@@ -2049,7 +1883,7 @@ void CG_ParseMenu(const char *menuFile) {
 }
 
 
-qboolean CG_Load_Menu(const char **p) 
+qboolean CG_Load_Menu(const char **p)
 {
 
 	char *token;
@@ -2063,7 +1897,7 @@ qboolean CG_Load_Menu(const char **p)
 	while ( 1 ) {
 
 		token = COM_ParseExt((const char **)p, qtrue);
-    
+
 		if (Q_stricmp(token, "}") == 0) {
 			return qtrue;
 		}
@@ -2072,7 +1906,7 @@ qboolean CG_Load_Menu(const char **p)
 			return qfalse;
 		}
 
-		CG_ParseMenu(token); 
+		CG_ParseMenu(token);
 	}
 	return qfalse;
 }
@@ -2190,7 +2024,7 @@ static const char *CG_FeederItemText(float feederID, int index, int column,
 					item = BG_FindItemForPowerup( PW_BLUEFLAG );
 					*handle1 = cg_items[ ITEM_INDEX(item) ].icon;
 				} else {
-					/*	
+					/*
 					if ( info->botSkill > 0 && info->botSkill <= 5 ) {
 						*handle1 = cgs.media.botSkillShaders[ info->botSkill - 1 ];
 					} else if ( info->handicap < 100 ) {
@@ -2236,7 +2070,7 @@ static const char *CG_FeederItemText(float feederID, int index, int column,
 			case 6:
 				if ( sp->ping == -1 ) {
 					return "connecting";
-				} 
+				}
 				return va("%4i", sp->ping);
 			break;
 		}
@@ -2296,27 +2130,25 @@ static int CG_OwnerDrawWidth(int ownerDraw, float scale) {
 	  case CG_BLUE_NAME:
 			return CG_Text_Width(DEFAULT_BLUETEAM_NAME/*cg_blueTeamName.string*/, scale, FONT_MEDIUM);
 			break;
-
-
 	}
 	return 0;
 }
 
 static int CG_PlayCinematic(const char *name, float x, float y, float w, float h) {
-  return trap->CIN_PlayCinematic(name, x, y, w, h, CIN_loop);
+	return trap->CIN_PlayCinematic(name, x, y, w, h, CIN_loop);
 }
 
 static void CG_StopCinematic(int handle) {
-  trap->CIN_StopCinematic(handle);
+	trap->CIN_StopCinematic(handle);
 }
 
 static void CG_DrawCinematic(int handle, float x, float y, float w, float h) {
-  trap->CIN_SetExtents(handle, x, y, w, h);
-  trap->CIN_DrawCinematic(handle);
+	trap->CIN_SetExtents(handle, x, y, w, h);
+	trap->CIN_DrawCinematic(handle);
 }
 
 static void CG_RunCinematicFrame(int handle) {
-  trap->CIN_RunCinematic(handle);
+	trap->CIN_RunCinematic(handle);
 }
 
 /*
@@ -2325,7 +2157,7 @@ CG_LoadMenus();
 
 =================
 */
-void CG_LoadMenus(const char *menuFile) 
+void CG_LoadMenus(const char *menuFile)
 {
 	const char	*token;
 	const char	*p;
@@ -2349,7 +2181,7 @@ void CG_LoadMenus(const char *menuFile)
 		}
 	}
 
-	if ( len >= MAX_MENUDEFFILE ) 
+	if ( len >= MAX_MENUDEFFILE )
 	{
 		trap->FS_Close( f );
 		trap->Error( ERR_DROP, S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE );
@@ -2358,30 +2190,30 @@ void CG_LoadMenus(const char *menuFile)
 	trap->FS_Read( buf, len, f );
 	buf[len] = 0;
 	trap->FS_Close( f );
-	
+
 	p = buf;
 
 	COM_BeginParseSession ("CG_LoadMenus");
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token = COM_ParseExt( &p, qtrue );
-		if( !token || token[0] == 0 || token[0] == '}') 
+		if( !token || token[0] == 0 || token[0] == '}')
 		{
 			break;
 		}
 
-		if ( Q_stricmp( token, "}" ) == 0 ) 
+		if ( Q_stricmp( token, "}" ) == 0 )
 		{
 			break;
 		}
 
-		if (Q_stricmp(token, "loadmenu") == 0) 
+		if (Q_stricmp(token, "loadmenu") == 0)
 		{
-			if (CG_Load_Menu(&p)) 
+			if (CG_Load_Menu(&p))
 			{
 				continue;
-			} 
-			else 
+			}
+			else
 			{
 				break;
 			}
@@ -2397,7 +2229,7 @@ CG_LoadHudMenu();
 
 =================
 */
-void CG_LoadHudMenu() 
+void CG_LoadHudMenu()
 {
 	const char *hudSet;
 
@@ -2411,7 +2243,7 @@ void CG_LoadHudMenu()
 	cgDC.registerModel					= trap->R_RegisterModel;
 	cgDC.modelBounds					= trap->R_ModelBounds;
 	cgDC.fillRect						= &CG_FillRect;
-	cgDC.drawRect						= &CG_DrawRect;   
+	cgDC.drawRect						= &CG_DrawRect;
 	cgDC.drawSides						= &CG_DrawSides;
 	cgDC.drawTopBottom					= &CG_DrawTopBottom;
 	cgDC.clearScene						= trap->R_ClearScene;
@@ -2447,8 +2279,8 @@ void CG_LoadHudMenu()
 	//cgDC.getBindingBuf				= &trap->Key_GetBindingBuf;
 	//cgDC.keynumToStringBuf			= &trap->Key_KeynumToStringBuf;
 	//cgDC.executeText					= &trap->Cmd_ExecuteText;
-	cgDC.Error							= Com_Error; 
-	cgDC.Print							= Com_Printf; 
+	cgDC.Error							= Com_Error;
+	cgDC.Print							= Com_Printf;
 	cgDC.ownerDrawWidth					= &CG_OwnerDrawWidth;
 	//cgDC.Pause						= &CG_Pause;
 	cgDC.registerSound					= trap->S_RegisterSound;
@@ -2458,13 +2290,15 @@ void CG_LoadHudMenu()
 	cgDC.stopCinematic					= &CG_StopCinematic;
 	cgDC.drawCinematic					= &CG_DrawCinematic;
 	cgDC.runCinematicFrame				= &CG_RunCinematicFrame;
-	
+	cgDC.ext.Font_StrLenPixels			= trap->ext.R_Font_StrLenPixels;
+
+
 	Init_Display(&cgDC);
 
 	Menu_Reset();
 
 	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0') 
+	if (hudSet[0] == '\0')
 	{
 		hudSet = "ui/jahud.txt";
 	}
@@ -2621,7 +2455,7 @@ Ghoul2 Insert End
 
 	cg.itemSelect = -1;
 	cg.forceSelect = -1;
-	
+
 	// load a few needed things before we do any screen updates
 	cgs.media.charsetShader		= trap->R_RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
 	cgs.media.whiteShader		= trap->R_RegisterShader( "white" );
@@ -2660,7 +2494,7 @@ Ghoul2 Insert End
 	}
 	i = 0;
 
-	// HUD artwork for cycling inventory,weapons and force powers 
+	// HUD artwork for cycling inventory,weapons and force powers
 	cgs.media.weaponIconBackground		= trap->R_RegisterShaderNoMip( "gfx/hud/background");
 	cgs.media.forceIconBackground		= trap->R_RegisterShaderNoMip( "gfx/hud/background_f");
 	cgs.media.inventoryIconBackground	= trap->R_RegisterShaderNoMip( "gfx/hud/background_i");
@@ -2789,10 +2623,6 @@ Ghoul2 Insert End
 	cg.distanceCull = trap->R_GetDistanceCull();
 
 	CG_ParseEntitiesFromString();
-
-	trap->Cvar_VariableStringBuffer( "rate", buf, sizeof( buf ) );
-	if ( atoi( buf ) == 4000 )
-		trap->Print( "^3WARNING: Default /rate value detected. Suggest typing /rate 25000 for a smoother connection!\n" );
 }
 
 //makes sure returned string is in localized format
@@ -2819,10 +2649,10 @@ void CG_DestroyAllGhoul2(void)
 //	Com_Printf("... CGameside GHOUL2 Cleanup\n");
 	while (i < MAX_GENTITIES)
 	{ //free all dynamically allocated npc client info structs and ghoul2 instances
-		CG_KillCEntityG2(i);	
+		CG_KillCEntityG2(i);
 		i++;
 	}
-	
+
 	//Clean the weapon instances
 	CG_ShutDownG2Weapons();
 
@@ -2853,7 +2683,7 @@ CG_Shutdown
 Called before every level change or subsystem restart
 =================
 */
-void CG_Shutdown( void ) 
+void CG_Shutdown( void )
 {
 	BG_ClearAnimsets(); //free all dynamic allocations made through the engine
 
@@ -2878,7 +2708,7 @@ void CG_Shutdown( void )
 CG_NextForcePower_f
 ===============
 */
-void CG_NextForcePower_f( void ) 
+void CG_NextForcePower_f( void )
 {
 	int current;
 	usercmd_t cmd;
@@ -2925,7 +2755,7 @@ void CG_NextForcePower_f( void )
 CG_PrevForcePower_f
 ===============
 */
-void CG_PrevForcePower_f( void ) 
+void CG_PrevForcePower_f( void )
 {
 	int current;
 	usercmd_t cmd;

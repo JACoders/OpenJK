@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -30,7 +34,7 @@ This file is part of Jedi Academy.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -54,11 +58,7 @@ template <class T>
 class stack_base : public ratl_base
 {
 public:
-#ifdef _WIN32
-	typedef typename T TStorageTraits;
-#else
     typedef T TStorageTraits;
-#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -87,7 +87,7 @@ public:
 	{
 		return mSize;
 	}
-	
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If The Size Is Zero
     ////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ public:
 	TTValue &		push()
 	{
 		assert(!full());
-		mData.construct(mSize);	
+		mData.construct(mSize);
 		mSize++;
 		return mData[mSize-1];
 	}
@@ -130,7 +130,7 @@ public:
 	void push(const TTValue& v)
 	{
 		assert(!full());
-		mData.construct(mSize,v);	
+		mData.construct(mSize,v);
 		mSize++;
 	}
 
@@ -141,7 +141,7 @@ public:
 	{
 		assert(!full());
 		mSize++;
-		return mData.alloc_raw(mSize-1);	
+		return mData.alloc_raw(mSize-1);
 	}
     ////////////////////////////////////////////////////////////////////////////////////
 	// Remove A Value From The stack

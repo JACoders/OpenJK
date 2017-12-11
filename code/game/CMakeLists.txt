@@ -1,12 +1,34 @@
-cmake_minimum_required(VERSION 2.8.8)
+#============================================================================
+# Copyright (C) 2013 - 2015, OpenJK contributors
+#
+# This file is part of the OpenJK source code.
+#
+# OpenJK is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#============================================================================
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(SPGameDefines ${SharedDefines})
-set(SPGameIncludeDirectories "${SPDir}/game")
+set(SPGameDefines ${SharedDefines} "SP_GAME")
+set(SPGameIncludeDirectories
+	${SharedDir}
+	${SPDir}
+	"${SPDir}/game"
+	"${GSLIncludeDirectory}"
+	)
+
 if(WIN32)
 	set(SPGameLibraries "winmm")
 endif(WIN32)
@@ -157,6 +179,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/surfaceflags.h"
 	"${SPDir}/game/teams.h"
 	"${SPDir}/game/weapons.h"
+	"${SPDir}/game/w_local.h"
 	"${SPDir}/game/wp_saber.h"
 	"${SPDir}/game/g_vehicles.h"
 	)
@@ -207,7 +230,6 @@ set(SPGameCGameFiles
 	"${SPDir}/cgame/FxTemplate.cpp"
 	"${SPDir}/cgame/FxUtil.cpp"
 	"${SPDir}/cgame/cg_camera.h"
-	"${SPDir}/cgame/cg_lights.h"
 	"${SPDir}/cgame/animtable.h"
 	"${SPDir}/cgame/cg_headers.h"
 	"${SPDir}/cgame/cg_local.h"
@@ -235,13 +257,26 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/sstring.h"
 	"${SPDir}/qcommon/tags.h"
 	"${SPDir}/qcommon/timing.h"
-	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	"${SPDir}/qcommon/q_platform.h"
+	"${SPDir}/qcommon/ojk_i_saved_game.h"
+	"${SPDir}/qcommon/ojk_saved_game_class_archivers.h"
+	"${SPDir}/qcommon/ojk_saved_game_helper.h"
+	"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+	"${SPDir}/qcommon/ojk_scope_guard.h"
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${SPGameCommonFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
+
+set(SPGameCommonSafeFiles
+	${SharedCommonSafeFiles}
+	"${SharedDir}/qcommon/safe/files.h"
+	"${SharedDir}/qcommon/safe/files.cpp"
+	"${SPDir}/qcommon/safe/memory.h"
+	)
+source_group("common/safe" FILES ${SPGameCommonSafeFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameCommonSafeFiles})
 
 set(SPGameIcarusFiles
 	"${SPDir}/icarus/BlockStream.cpp"
@@ -339,20 +374,34 @@ endif(WIN32)
 
 add_library(${SPGame} SHARED ${SPGameFiles})
 
-if(NOT WIN32)
+# Hide symbols not explicitly marked public.
+set_property(TARGET ${SPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
+if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${SPGame} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif()
 
 if(WIN32)
-	install(TARGETS ${SPGame} RUNTIME DESTINATION "OpenJK")
+	install(TARGETS ${SPGame}
+		RUNTIME
+		DESTINATION "${JKAInstallDir}/OpenJK"
+		COMPONENT ${JKASPClientComponent})
 else(WIN32)
-	install(TARGETS ${SPGame} LIBRARY DESTINATION "OpenJK")
-endif(WIN32)
-set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPGameDefines};${ReleaseDefines}")
-set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPGameDefines};${ReleaseDefines}")
-set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPGameDefines};${ReleaseDefines}")
-set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPGameDefines};${DebugDefines}")
+	if(MakeApplicationBundles AND BuildSPEngine)
+		install(TARGETS ${SPGame}
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	else()
+		install(TARGETS ${SPGame}
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	endif()
+endif()
+
+set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS "${SPGameDefines}")
 set_target_properties(${SPGame} PROPERTIES INCLUDE_DIRECTORIES "${SPGameIncludeDirectories}")
 set_target_properties(${SPGame} PROPERTIES PROJECT_LABEL "SP Game Library")
 # no libraries used

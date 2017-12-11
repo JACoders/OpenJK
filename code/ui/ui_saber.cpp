@@ -1,21 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-//
+
 /*
 =======================================================================
 
@@ -63,18 +67,18 @@ void UI_CacheSaberGlowGraphics( void )
 	purpleSaberCoreShader		= re.RegisterShader( "gfx/effects/sabers/purple_line" );
 }
 
-qboolean UI_ParseLiteral( const char **data, const char *string ) 
+qboolean UI_ParseLiteral( const char **data, const char *string )
 {
 	const char	*token;
 
 	token = COM_ParseExt( data, qtrue );
-	if ( token[0] == 0 ) 
+	if ( token[0] == 0 )
 	{
 		ui.Printf( "unexpected EOF\n" );
 		return qtrue;
 	}
 
-	if ( Q_stricmp( token, string ) ) 
+	if ( Q_stricmp( token, string ) )
 	{
 		ui.Printf( "required string '%s' missing\n", string );
 		return qtrue;
@@ -83,13 +87,13 @@ qboolean UI_ParseLiteral( const char **data, const char *string )
 	return qfalse;
 }
 
-qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *saberData ) 
+qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *saberData )
 {
 	const char	*token;
 	const char	*value;
 	const char	*p;
 
-	if ( !saberName || !saberName[0] ) 
+	if ( !saberName || !saberName[0] )
 	{
 		return qfalse;
 	}
@@ -108,44 +112,44 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, saberName ) ) 
+		if ( !Q_stricmp( token, saberName ) )
 		{
 			break;
 		}
 
 		SkipBracedSection( &p );
 	}
-	if ( !p ) 
+	if ( !p )
 	{
 		COM_EndParseSession(  );
 		return qfalse;
 	}
 
-	if ( UI_ParseLiteral( &p, "{" ) ) 
+	if ( UI_ParseLiteral( &p, "{" ) )
 	{
 		COM_EndParseSession(  );
 		return qfalse;
 	}
-		
+
 	// parse the saber info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			ui.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName );
 			COM_EndParseSession(  );
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
 
-		if ( !Q_stricmp( token, parmname ) ) 
+		if ( !Q_stricmp( token, parmname ) )
 		{
-			if ( COM_ParseString( &p, &value ) ) 
+			if ( COM_ParseString( &p, &value ) )
 			{
 				continue;
 			}
@@ -282,14 +286,14 @@ float UI_SaberBladeRadiusForSaber( const char *saberName, int bladeNum )
 	return radius;
 }
 
-void UI_SaberLoadParms( void ) 
+void UI_SaberLoadParms( void )
 {
 	int			len, totallen, saberExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
 	char		saberExtensionListBuf[2048];			//	The list of file names read in
 
 	//ui.Printf( "UI Parsing *.sab saber definitions\n" );
-	
+
 	ui_saber_parms_parsed = qtrue;
 	UI_CacheSaberGlowGraphics();
 
@@ -302,13 +306,13 @@ void UI_SaberLoadParms( void )
 	fileCnt = ui.FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
 
 	holdChar = saberExtensionListBuf;
-	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 )
 	{
 		saberExtFNLen = strlen( holdChar );
 
 		len = ui.FS_ReadFile( va( "ext_data/sabers/%s", holdChar), (void **) &buffer );
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			ui.Printf( "UI_SaberLoadParms: error reading %s\n", holdChar );
 		}
@@ -318,7 +322,7 @@ void UI_SaberLoadParms( void )
 			{//don't let it end on a } because that should be a stand-alone token
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 			len = COM_Compress( buffer );
 
@@ -388,7 +392,7 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	/*
 	if ( doLight )
 	{//FIXME: RGB combine all the colors of the sabers you're using into one averaged color!
-		cgi_R_AddLightToScene( mid, (length*2.0f) + (random()*8.0f), rgb[0], rgb[1], rgb[2] );
+		cgi_R_AddLightToScene( mid, (length*2.0f) + (Q_flrand(0.0f, 1.0f)*8.0f), rgb[0], rgb[1], rgb[2] );
 	}
 	*/
 
@@ -398,7 +402,7 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	//	refEnts to do each glow blob individually
 	saber.saberLength = length;
 
-	// Jeff, I did this because I foolishly wished to have a bright halo as the saber is unleashed.  
+	// Jeff, I did this because I foolishly wished to have a bright halo as the saber is unleashed.
 	// It's not quite what I'd hoped tho.  If you have any ideas, go for it!  --Pat
 	if (length < lengthMax )
 	{
@@ -412,8 +416,8 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	float radiusRange = radius * 0.075f;
 	float radiusStart = radius-radiusRange;
 
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-	//saber.radius = (2.8f + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+	//saber.radius = (2.8f + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 
 	VectorCopy( origin, saber.origin );
@@ -431,92 +435,92 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.customShader = blade;
 	saber.reType = RT_LINE;
 	radiusStart = radius/3.0f;
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-//	saber.radius = (1.0 + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+//	saber.radius = (1.0 + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 	DC->addRefEntityToScene( &saber );
 }
 
-saber_colors_t TranslateSaberColor( const char *name ) 
+saber_colors_t TranslateSaberColor( const char *name )
 {
-	if ( !Q_stricmp( name, "red" ) ) 
+	if ( !Q_stricmp( name, "red" ) )
 	{
 		return SABER_RED;
 	}
-	if ( !Q_stricmp( name, "orange" ) ) 
+	if ( !Q_stricmp( name, "orange" ) )
 	{
 		return SABER_ORANGE;
 	}
-	if ( !Q_stricmp( name, "yellow" ) ) 
+	if ( !Q_stricmp( name, "yellow" ) )
 	{
 		return SABER_YELLOW;
 	}
-	if ( !Q_stricmp( name, "green" ) ) 
+	if ( !Q_stricmp( name, "green" ) )
 	{
 		return SABER_GREEN;
 	}
-	if ( !Q_stricmp( name, "blue" ) ) 
+	if ( !Q_stricmp( name, "blue" ) )
 	{
 		return SABER_BLUE;
 	}
-	if ( !Q_stricmp( name, "purple" ) ) 
+	if ( !Q_stricmp( name, "purple" ) )
 	{
 		return SABER_PURPLE;
 	}
-	if ( !Q_stricmp( name, "random" ) ) 
+	if ( !Q_stricmp( name, "random" ) )
 	{
 		return ((saber_colors_t)(Q_irand( SABER_ORANGE, SABER_PURPLE )));
 	}
 	return SABER_BLUE;
 }
 
-saberType_t TranslateSaberType( const char *name ) 
+saberType_t TranslateSaberType( const char *name )
 {
-	if ( !Q_stricmp( name, "SABER_SINGLE" ) ) 
+	if ( !Q_stricmp( name, "SABER_SINGLE" ) )
 	{
 		return SABER_SINGLE;
 	}
-	if ( !Q_stricmp( name, "SABER_STAFF" ) ) 
+	if ( !Q_stricmp( name, "SABER_STAFF" ) )
 	{
 		return SABER_STAFF;
 	}
-	if ( !Q_stricmp( name, "SABER_BROAD" ) ) 
+	if ( !Q_stricmp( name, "SABER_BROAD" ) )
 	{
 		return SABER_BROAD;
 	}
-	if ( !Q_stricmp( name, "SABER_PRONG" ) ) 
+	if ( !Q_stricmp( name, "SABER_PRONG" ) )
 	{
 		return SABER_PRONG;
 	}
-	if ( !Q_stricmp( name, "SABER_DAGGER" ) ) 
+	if ( !Q_stricmp( name, "SABER_DAGGER" ) )
 	{
 		return SABER_DAGGER;
 	}
-	if ( !Q_stricmp( name, "SABER_ARC" ) ) 
+	if ( !Q_stricmp( name, "SABER_ARC" ) )
 	{
 		return SABER_ARC;
 	}
-	if ( !Q_stricmp( name, "SABER_SAI" ) ) 
+	if ( !Q_stricmp( name, "SABER_SAI" ) )
 	{
 		return SABER_SAI;
 	}
-	if ( !Q_stricmp( name, "SABER_CLAW" ) ) 
+	if ( !Q_stricmp( name, "SABER_CLAW" ) )
 	{
 		return SABER_CLAW;
 	}
-	if ( !Q_stricmp( name, "SABER_LANCE" ) ) 
+	if ( !Q_stricmp( name, "SABER_LANCE" ) )
 	{
 		return SABER_LANCE;
 	}
-	if ( !Q_stricmp( name, "SABER_STAR" ) ) 
+	if ( !Q_stricmp( name, "SABER_STAR" ) )
 	{
 		return SABER_STAR;
 	}
-	if ( !Q_stricmp( name, "SABER_TRIDENT" ) ) 
+	if ( !Q_stricmp( name, "SABER_TRIDENT" ) )
 	{
 		return SABER_TRIDENT;
 	}
-	if ( !Q_stricmp( name, "SABER_SITH_SWORD" ) ) 
+	if ( !Q_stricmp( name, "SABER_SITH_SWORD" ) )
 	{
 		return SABER_SITH_SWORD;
 	}
@@ -573,7 +577,7 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 			bolt = 0;
 		}
 	}
-	
+
 	DC->g2_GetBoltMatrix( item->ghoul2, saberModel, bolt, &boltMatrix, angles, origin, uiInfo.uiDC.realTime, NULL, vec3_origin );//NULL was cgs.model_draw
 
 	// work the matrix axis stuff into the original axis and origins used.
@@ -581,7 +585,7 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	DC->g2_GiveMeVectorFromMatrix(boltMatrix, NEGATIVE_X, axis[0]);//front (was NEGATIVE_Y, but the md3->glm exporter screws up this tag somethin' awful)
 	DC->g2_GiveMeVectorFromMatrix(boltMatrix, NEGATIVE_Y, axis[1]);//right
 	DC->g2_GiveMeVectorFromMatrix(boltMatrix, POSITIVE_Z, axis[2]);//up
-	
+
 	float scale = DC->xscale;
 
 	if ( tagHack )
@@ -780,19 +784,19 @@ void UI_GetSaberForMenu( char *saber, int saberNum )
 	case 3://MD_SINGLE_STRONG:
 		if ( saberType != SABER_SINGLE )
 		{
-			Q_strncpyz(saber,"single_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"single_1",MAX_QPATH);
 		}
 		break;
 	case 4://MD_DUAL_SABERS:
 		if ( saberType != SABER_SINGLE )
 		{
-			Q_strncpyz(saber,"single_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"single_1",MAX_QPATH);
 		}
 		break;
 	case 5://MD_SABER_STAFF:
 		if ( saberType == SABER_SINGLE || saberType == SABER_NONE )
 		{
-			Q_strncpyz(saber,"dual_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"dual_1",MAX_QPATH);
 		}
 		break;
 	}
@@ -878,7 +882,7 @@ void UI_SaberAttachToChar( itemDef_t *item )
 		//bolt sabers
 		char modelPath[MAX_QPATH];
 		char skinPath[MAX_QPATH];
-		char saber[MAX_QPATH]; 
+		char saber[MAX_QPATH];
 
 		UI_GetSaberForMenu( saber, saberNum );
 

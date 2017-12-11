@@ -1,22 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+
 /*
 =======================================================================
 
@@ -25,8 +29,9 @@ USER INTERFACE MAIN
 =======================================================================
 */
 
-// leave this at the top of all UI_xxxx files for PCH reasons...
-//
+#include <algorithm>
+#include <vector>
+
 #include "../server/exe_headers.h"
 
 #include "ui_local.h"
@@ -41,8 +46,8 @@ USER INTERFACE MAIN
 #include "../game/anims.h"
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
+#include "../qcommon/stringed_ingame.h"
 #include "../qcommon/stv_version.h"
-
 #include "../qcommon/q_shared.h"
 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
@@ -56,11 +61,11 @@ extern qboolean PC_Script_Parse(const char **out);
 
 #define LISTBUFSIZE 10240
 
-static struct 
+static struct
 {
 	char	listBuf[LISTBUFSIZE];			//	The list of file names read in
 
-	// For scrolling through file names 
+	// For scrolling through file names
 	int				currentLine;		//	Index to currentSaveFileComments[] currently highlighted
 	int				saveFileCnt;		//	Number of save files read in
 
@@ -73,9 +78,11 @@ static struct
 #define MAX_SAVELOADFILES	100
 #define MAX_SAVELOADNAME	32
 
-//byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
+#ifdef JK2_MODE
+byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
+#endif
 
-typedef struct 
+typedef struct
 {
 	char *currentSaveFileName;						// file name of savegame
 	char currentSaveFileComments[iSG_COMMENT_SIZE];	// file comment
@@ -131,14 +138,22 @@ static void		UI_UpdateSaberHilt( qboolean secondSaber );
 //static void		UI_UpdateSaberColor( qboolean secondSaber );
 static void		UI_InitWeaponSelect( void );
 static void		UI_WeaponHelpActive( void );
+
+#ifndef JK2_MODE
 static void		UI_UpdateFightingStyle ( void );
 static void		UI_UpdateFightingStyleChoices ( void );
 static void		UI_CalcForceStatus(void);
+#endif // !JK2_MODE
+
 static void		UI_DecrementForcePowerLevel( void );
 static void		UI_DecrementCurrentForcePower ( void );
 static void		UI_ShutdownForceHelp( void );
 static void		UI_ForceHelpActive( void );
+
+#ifndef JK2_MODE
 static void		UI_DemoSetForceLevels( void );
+#endif // !JK2_MODE
+
 static void		UI_RecordForceLevels( void );
 static void		UI_RecordWeapons( void );
 static void		UI_ResetCharacterListBoxes( void );
@@ -200,15 +215,15 @@ const char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 
 #define MAX_MOVES 16
 
-typedef struct 
+typedef struct
 {
-	const char	*title;	
-	const char	*desc;	
+	const char	*title;
+	const char	*desc;
 	const char	*anim;
 	short	sound;
 } datpadmovedata_t;
 
-static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] = 
+static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] =
 {
 {
 // Acrobatics
@@ -339,14 +354,38 @@ uiInfo_t uiInfo;
 static void UI_RegisterCvars( void );
 void UI_Load(void);
 
+static int UI_GetScreenshotFormatForString( const char *str ) {
+	if ( !Q_stricmp(str, "jpg") || !Q_stricmp(str, "jpeg") )
+		return SSF_JPEG;
+	else if ( !Q_stricmp(str, "tga") )
+		return SSF_TGA;
+	else if ( !Q_stricmp(str, "png") )
+		return SSF_PNG;
+	else
+		return -1;
+}
 
-typedef struct {
+static const char *UI_GetScreenshotFormatString( int format )
+{
+	switch ( format )
+	{
+	default:
+	case SSF_JPEG:
+		return "jpg";
+	case SSF_TGA:
+		return "tga";
+	case SSF_PNG:
+		return "png";
+	}
+}
+
+typedef struct cvarTable_s {
 	vmCvar_t	*vmCvar;
 	const char		*cvarName;
 	const char		*defaultString;
-	int			cvarFlags;
+	void		(*update)( void );
+	uint32_t	cvarFlags;
 } cvarTable_t;
-
 
 vmCvar_t	ui_menuFiles;
 vmCvar_t	ui_hudFiles;
@@ -365,48 +404,76 @@ vmCvar_t	ui_char_color_red;
 vmCvar_t	ui_char_color_green;
 vmCvar_t	ui_char_color_blue;
 vmCvar_t	ui_PrecacheModels;
+vmCvar_t	ui_screenshotType;
 
-//JLFCALLOUT MPMOVED
-vmCvar_t	ui_hideAcallout;
-vmCvar_t	ui_hideBcallout;
-vmCvar_t	ui_hideXcallout;
-//END JLFCALLOUT
-
-
-static cvarTable_t cvarTable[] = 
+static void UI_UpdateScreenshot( void )
 {
-	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", CVAR_ARCHIVE },
-	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jahud.txt",CVAR_ARCHIVE}, 
+	qboolean changed = qfalse;
+	// check some things
+	if ( ui_screenshotType.string[0] && isalpha( ui_screenshotType.string[0] ) )
+	{
+		int ssf = UI_GetScreenshotFormatForString( ui_screenshotType.string );
+		if ( ssf == -1 )
+		{
+			ui.Printf( "UI Screenshot Format Type '%s' unrecognised, defaulting to JPEG\n", ui_screenshotType.string );
+			uiInfo.uiDC.screenshotFormat = SSF_JPEG;
+			changed = qtrue;
+		}
+		else
+			uiInfo.uiDC.screenshotFormat = ssf;
+	}
+	else if ( ui_screenshotType.integer < SSF_JPEG || ui_screenshotType.integer > SSF_PNG )
+	{
+		ui.Printf( "ui_screenshotType %i is out of range, defaulting to 0 (JPEG)\n", ui_screenshotType.integer );
+		uiInfo.uiDC.screenshotFormat = SSF_JPEG;
+		changed = qtrue;
+	}
+	else {
+		uiInfo.uiDC.screenshotFormat = atoi( ui_screenshotType.string );
+		changed = qtrue;
+	}
 
-	{ &ui_char_anim,			"ui_char_anim",			"BOTH_WALK1",0}, 
+	if ( changed ) {
+		Cvar_Set( "ui_screenshotType", UI_GetScreenshotFormatString( uiInfo.uiDC.screenshotFormat ) );
+		Cvar_Update( &ui_screenshotType );
+	}
+}
 
-	{ &ui_char_model,			"ui_char_model",		"",0},	//these are filled in by the "g_*" versions on load
-	{ &ui_char_skin_head,		"ui_char_skin_head",	"",0},	//the "g_*" versions are initialized in UI_Init, ui_atoms.cpp
-	{ &ui_char_skin_torso,		"ui_char_skin_torso",	"",0}, 
-	{ &ui_char_skin_legs,		"ui_char_skin_legs",	"",0}, 
+static cvarTable_t cvarTable[] =
+{
+	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", NULL, CVAR_ARCHIVE },
+#ifdef JK2_MODE
+	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jk2hud.txt", NULL, CVAR_ARCHIVE},
+#else
+	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jahud.txt", NULL, CVAR_ARCHIVE},
+#endif
 
-	{ &ui_saber_type,			"ui_saber_type",		"",0},
-	{ &ui_saber,				"ui_saber",				"",0}, 
-	{ &ui_saber2,				"ui_saber2",			"",0}, 
-	{ &ui_saber_color,			"ui_saber_color",		"",0}, 
-	{ &ui_saber2_color,			"ui_saber2_color",		"",0}, 
+	{ &ui_char_anim,			"ui_char_anim",			"BOTH_WALK1", NULL, 0},
 
-	{ &ui_char_color_red,		"ui_char_color_red",	"", 0}, 
-	{ &ui_char_color_green,		"ui_char_color_green",	"", 0}, 
-	{ &ui_char_color_blue,		"ui_char_color_blue",	"", 0}, 
+	{ &ui_char_model,			"ui_char_model",		"", NULL, 0},	//these are filled in by the "g_*" versions on load
+	{ &ui_char_skin_head,		"ui_char_skin_head",	"", NULL, 0},	//the "g_*" versions are initialized in UI_Init, ui_atoms.cpp
+	{ &ui_char_skin_torso,		"ui_char_skin_torso",	"", NULL, 0},
+	{ &ui_char_skin_legs,		"ui_char_skin_legs",	"", NULL, 0},
 
-	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", CVAR_ARCHIVE}, 
-//JLFCALLOUT MPMOVED
-	{ &ui_hideAcallout,		"ui_hideAcallout",	"", 0}, 
-	{ &ui_hideBcallout,		"ui_hideBcallout",	"", 0}, 
-	{ &ui_hideXcallout,		"ui_hideXcallout",	"", 0}, 
-//END JLFCALLOUT
+	{ &ui_saber_type,			"ui_saber_type",		"", NULL, 0},
+	{ &ui_saber,				"ui_saber",				"", NULL, 0},
+	{ &ui_saber2,				"ui_saber2",			"", NULL, 0},
+	{ &ui_saber_color,			"ui_saber_color",		"", NULL, 0},
+	{ &ui_saber2_color,			"ui_saber2_color",		"", NULL, 0},
+
+	{ &ui_char_color_red,		"ui_char_color_red",	"", NULL, 0},
+	{ &ui_char_color_green,		"ui_char_color_green",	"", NULL, 0},
+	{ &ui_char_color_blue,		"ui_char_color_blue",	"", NULL, 0},
+
+	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", NULL, CVAR_ARCHIVE},
+
+	{ &ui_screenshotType,		"ui_screenshotType",	"jpg", UI_UpdateScreenshot, CVAR_ARCHIVE }
 };
 
 #define FP_UPDATED_NONE -1
 #define NOWEAPON -1
 
-static int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
+static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
 
 void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, int iMaxPixelWidth, int style, int iFontIndex);
 int Key_GetCatcher( void );
@@ -417,7 +484,7 @@ void _UI_Refresh( int realtime )
 	static int index;
 	static int	previousTimes[UI_FPS_FRAMES];
 
-	if ( !( Key_GetCatcher() & KEYCATCH_UI ) ) 
+	if ( !( Key_GetCatcher() & KEYCATCH_UI ) )
 	{
 		return;
 	}
@@ -438,27 +505,25 @@ void _UI_Refresh( int realtime )
 
 	previousTimes[index % UI_FPS_FRAMES] = uiInfo.uiDC.frameTime;
 	index++;
-	if ( index > UI_FPS_FRAMES ) 
+	if ( index > UI_FPS_FRAMES )
 	{
 		int i, total;
 		// average multiple frames together to smooth changes out a bit
 		total = 0;
-		for ( i = 0 ; i < UI_FPS_FRAMES ; i++ ) 
+		for ( i = 0 ; i < UI_FPS_FRAMES ; i++ )
 		{
 			total += previousTimes[i];
 		}
-		if ( !total ) 
+		if ( !total )
 		{
 			total = 1;
 		}
 		uiInfo.uiDC.FPS = 1000 * UI_FPS_FRAMES / total;
 	}
 
-
-
 	UI_UpdateCvars();
 
-	if (Menu_Count() > 0) 
+	if (Menu_Count() > 0)
 	{
 		// paint all the menus
 		Menu_PaintAll();
@@ -468,7 +533,7 @@ void _UI_Refresh( int realtime )
 //		UI_BuildServerStatus(qfalse);
 		// refresh find player list
 //		UI_BuildFindPlayerList(qfalse);
-	} 
+	}
 
 	// draw cursor
 	UI_SetColor( NULL );
@@ -481,6 +546,8 @@ void _UI_Refresh( int realtime )
 	}
 }
 
+#define MODSBUFSIZE (MAX_MODS * MAX_QPATH)
+
 /*
 ===============
 UI_LoadMods
@@ -488,13 +555,14 @@ UI_LoadMods
 */
 static void UI_LoadMods() {
 	int		numdirs;
-	char	dirlist[2048];
+	char	dirlist[MODSBUFSIZE];
 	char	*dirptr;
-  char  *descptr;
+	char	*descptr;
 	int		i;
 	int		dirlen;
 
 	uiInfo.modCount = 0;
+
 	numdirs = FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
 	dirptr  = dirlist;
 	for( i = 0; i < numdirs; i++ ) {
@@ -508,7 +576,6 @@ static void UI_LoadMods() {
 			break;
 		}
 	}
-
 }
 
 /*
@@ -532,7 +599,7 @@ Text_PaintChar
 ================
 */
 /*
-static void Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader) 
+static void Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader)
 {
 	float w, h;
 
@@ -586,32 +653,33 @@ Text_PaintWithCursor
 ================
 */
 // iMaxPixelWidth is 0 here for no-limit
-void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, char cursor, int iMaxPixelWidth, int style, int iFontIndex) 
+void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, char cursor, int iMaxPixelWidth, int style, int iFontIndex)
 {
 	Text_Paint(x, y, scale, color, text, iMaxPixelWidth, style, iFontIndex);
 
 	// now print the cursor as well...
 	//
 	char sTemp[1024];
-	int iCopyCount = min((int)strlen(text), cursorPos);
-		iCopyCount = min(iCopyCount,(int)sizeof(sTemp));
+	int iCopyCount = iMaxPixelWidth > 0 ? Q_min( (int)strlen( text ), iMaxPixelWidth ) : (int)strlen( text );
+		iCopyCount = Q_min(iCopyCount, cursorPos);
+		iCopyCount = Q_min(iCopyCount,(int)sizeof(sTemp));
 
 	// copy text into temp buffer for pixel measure...
 	//
 	strncpy(sTemp,text,iCopyCount);
 			sTemp[iCopyCount] = '\0';
-	
+
 	int iNextXpos  = ui.R_Font_StrLenPixels(sTemp, iFontIndex, scale );
 
 	Text_Paint(x+iNextXpos, y, scale, color, va("%c",cursor), iMaxPixelWidth, style|ITEM_TEXTSTYLE_BLINK, iFontIndex);
 }
 
 
-const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *handle) 
+const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *handle)
 {
 	*handle = -1;
 
-	if (feederID == FEEDER_SAVEGAMES) 
+	if (feederID == FEEDER_SAVEGAMES)
 	{
 		if (column==0)
 		{
@@ -622,118 +690,121 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 			return s_savedata[index].currentSaveFileDateTimeString;
 		}
 	}
-	else if (feederID == FEEDER_MOVES) 
+	else if (feederID == FEEDER_MOVES)
 	{
 		return datapadMoveData[uiInfo.movesTitleIndex][index].title;
 	}
-	else if (feederID == FEEDER_MOVES_TITLES) 
+	else if (feederID == FEEDER_MOVES_TITLES)
 	{
 		return datapadMoveTitleData[index];
 	}
-	else if (feederID == FEEDER_PLAYER_SPECIES) 
+	else if (feederID == FEEDER_PLAYER_SPECIES)
 	{
-		return uiInfo.playerSpecies[index].Name;
-	} 
-	else if (feederID == FEEDER_LANGUAGES) 
+		if (index >= 0 && index < uiInfo.playerSpeciesCount)
+		{
+			return uiInfo.playerSpecies[index].Name;
+		}
+	}
+	else if (feederID == FEEDER_LANGUAGES)
 	{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		// FIXME
-		if(com_jk2 && com_jk2->integer)
-			return NULL;
-#endif
+		return NULL;
+#else
 		return SE_GetLanguageName( index );
-	} 
+#endif
+	}
 	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount) 
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
 		{
-			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]));
-			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index];
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name;
 		}
 	}
 	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount) 
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
 		{
-			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index]));
-			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index];
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name;
 		}
 	}
 	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
 	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount) 
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
 		{
-			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]));
-			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index];
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name;
 		}
 	}
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount) 
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount)
 		{
-			*handle = ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorShader[index]);
-			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorShader[index];
+			*handle = ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[index].shader);
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[index].shader;
 		}
 	}
-	else if (feederID == FEEDER_MODS) 
+	else if (feederID == FEEDER_MODS)
 	{
-		if (index >= 0 && index < uiInfo.modCount) 
+		if (index >= 0 && index < uiInfo.modCount)
 		{
-			if (uiInfo.modList[index].modDescr && *uiInfo.modList[index].modDescr) 
+			if (uiInfo.modList[index].modDescr && *uiInfo.modList[index].modDescr)
 			{
 				return uiInfo.modList[index].modDescr;
-			} 
-			else 
+			}
+			else
 			{
 				return uiInfo.modList[index].modName;
 			}
 		}
-	} 
+	}
 
 	return "";
 }
 
-qhandle_t UI_FeederItemImage(float feederID, int index) 
+qhandle_t UI_FeederItemImage(float feederID, int index)
 {
-	if (feederID == FEEDER_PLAYER_SKIN_HEAD) 
+	if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount) 
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
 		{
 			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadIcons[index];
-			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]));
-		}
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_TORSO) 
-	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount) 
-		{
-			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoIcons[index];
-			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index]));
-		}
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_LEGS) 
-	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount) 
-		{
-			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegIcons[index];
-			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]));
-		}
-	} 
-	else if (feederID == FEEDER_COLORCHOICES)
-	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount) 
-		{
-			return ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorShader[index]);
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name));
 		}
 	}
-/*	else if (feederID == FEEDER_ALLMAPS || feederID == FEEDER_MAPS) 
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
+		{
+			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoIcons[index];
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name));
+		}
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
+		{
+			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegIcons[index];
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name));
+		}
+	}
+	else if (feederID == FEEDER_COLORCHOICES)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount)
+		{
+			return ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[index].shader);
+		}
+	}
+/*	else if (feederID == FEEDER_ALLMAPS || feederID == FEEDER_MAPS)
 	{
 		int actual;
 		UI_SelectedMap(index, &actual);
 		index = actual;
-		if (index >= 0 && index < uiInfo.mapCount) 
+		if (index >= 0 && index < uiInfo.mapCount)
 		{
-			if (uiInfo.mapList[index].levelShot == -1) 
+			if (uiInfo.mapList[index].levelShot == -1)
 			{
 				uiInfo.mapList[index].levelShot = trap_R_RegisterShaderNoMip(uiInfo.mapList[index].imageName);
 			}
@@ -757,7 +828,11 @@ static int CreateNextSaveName(char *fileName)
 	// Loop through all the save games and look for the first open name
 	for (i=0;i<MAX_SAVELOADFILES;i++)
 	{
+#ifdef JK2_MODE
+		Com_sprintf( fileName, MAX_SAVELOADNAME, "jkii%02d", i );
+#else
 		Com_sprintf( fileName, MAX_SAVELOADNAME, "jedi_%02d", i );
+#endif
 
 		if (!ui.SG_GetSaveGameComment(fileName, NULL, NULL))
 		{
@@ -780,7 +855,7 @@ static qboolean UI_DeferMenuScript ( const char **args )
 	const char* name;
 
 	// Whats the reason for being deferred?
-	if (!String_Parse(args, &name)) 
+	if (!String_Parse(args, &name))
 	{
 		return qfalse;
 	}
@@ -817,39 +892,39 @@ static qboolean UI_DeferMenuScript ( const char **args )
 UI_RunMenuScript
 ===============
 */
-static qboolean UI_RunMenuScript ( const char **args ) 
+static qboolean UI_RunMenuScript ( const char **args )
 {
 	const char *name, *name2,*mapName,*menuName,*warningMenuName;
 
-	if (String_Parse(args, &name)) 
+	if (String_Parse(args, &name))
 	{
-		if (Q_stricmp(name, "resetdefaults") == 0)		
+		if (Q_stricmp(name, "resetdefaults") == 0)
 		{
 			UI_ResetDefaults();
 		}
-		else if (Q_stricmp(name, "saveControls") == 0) 
+		else if (Q_stricmp(name, "saveControls") == 0)
 		{
-			Controls_SetConfig(qtrue);
-		} 
-		else if (Q_stricmp(name, "loadControls") == 0) 
+			Controls_SetConfig();
+		}
+		else if (Q_stricmp(name, "loadControls") == 0)
 		{
 			Controls_GetConfig();
-		} 
-		else if (Q_stricmp(name, "clearError") == 0) 
+		}
+		else if (Q_stricmp(name, "clearError") == 0)
 		{
 			Cvar_Set("com_errorMessage", "");
-		} 
-		else if (Q_stricmp(name, "ReadSaveDirectory") == 0) 
+		}
+		else if (Q_stricmp(name, "ReadSaveDirectory") == 0)
 		{
 			s_savegame.saveFileCnt = -1;	//force a refresh at drawtime
 //			ReadSaveDirectory();
-		} 
-		else if (Q_stricmp(name, "loadAuto") == 0) 
+		}
+		else if (Q_stricmp(name, "loadAuto") == 0)
 		{
 			Menus_CloseAll();
 			ui.Cmd_ExecuteText( EXEC_APPEND, "load auto\n");	//load game menu
 		}
-		else if (Q_stricmp(name, "loadgame") == 0) 
+		else if (Q_stricmp(name, "loadgame") == 0)
 		{
 			if (s_savedata[s_savegame.currentLine].currentSaveFileName)// && (*s_file_desc_field.field.buffer))
 			{
@@ -860,7 +935,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			s_savegame.currentLine = 0;
 
 		}
-		else if (Q_stricmp(name, "deletegame") == 0) 
+		else if (Q_stricmp(name, "deletegame") == 0)
 		{
 			if (s_savedata[s_savegame.currentLine].currentSaveFileName)	// A line was chosen
 			{
@@ -869,21 +944,21 @@ static qboolean UI_RunMenuScript ( const char **args )
 #endif
 
 				ui.Cmd_ExecuteText( EXEC_NOW, va("wipe %s\n", s_savedata[s_savegame.currentLine].currentSaveFileName));
-				
+
 				if( (s_savegame.currentLine>0) && ((s_savegame.currentLine+1) == s_savegame.saveFileCnt) )
 				{
 					s_savegame.currentLine--;
 					// yeah this is a pretty bad hack
 					// adjust cursor position of listbox so correct item is highlighted
-					UI_AdjustSaveGameListBox( s_savegame.currentLine );			
+					UI_AdjustSaveGameListBox( s_savegame.currentLine );
 				}
-		
+
 //				ReadSaveDirectory();	//refresh
 				s_savegame.saveFileCnt = -1;	//force a refresh at drawtime
 
 			}
 		}
-		else if (Q_stricmp(name, "savegame") == 0) 
+		else if (Q_stricmp(name, "savegame") == 0)
 		{
 			char fileName[MAX_SAVELOADNAME];
 			char description[64];
@@ -910,11 +985,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 			ui.Cmd_ExecuteText( EXEC_APPEND, va("save %s\n", fileName));
 			s_savegame.saveFileCnt = -1;	//force a refresh the next time around
 		}
-		else if (Q_stricmp(name, "LoadMods") == 0) 
+		else if (Q_stricmp(name, "LoadMods") == 0)
 		{
 			UI_LoadMods();
-		} 
-		else if (Q_stricmp(name, "RunMod") == 0) 
+		}
+		else if (Q_stricmp(name, "RunMod") == 0)
 		{
 			if (uiInfo.modList[uiInfo.modIndex].modName)
 			{
@@ -923,26 +998,26 @@ static qboolean UI_RunMenuScript ( const char **args )
 				FS_Restart();
 				Cbuf_ExecuteText( EXEC_APPEND, "vid_restart;" );
 			}
-		} 
-		else if (Q_stricmp(name, "Quit") == 0) 
+		}
+		else if (Q_stricmp(name, "Quit") == 0)
 		{
 			Cbuf_ExecuteText( EXEC_NOW, "quit");
-		} 
-		else if (Q_stricmp(name, "Controls") == 0) 
+		}
+		else if (Q_stricmp(name, "Controls") == 0)
 		{
 			Cvar_Set( "cl_paused", "1" );
 			trap_Key_SetCatcher( KEYCATCH_UI );
 			Menus_CloseAll();
 			Menus_ActivateByName("setup_menu2");
-		} 
-		else if (Q_stricmp(name, "Leave") == 0) 
+		}
+		else if (Q_stricmp(name, "Leave") == 0)
 		{
 			Cbuf_ExecuteText( EXEC_APPEND, "disconnect\n" );
 			trap_Key_SetCatcher( KEYCATCH_UI );
 			Menus_CloseAll();
 			//Menus_ActivateByName("mainMenu");
-		} 
-		else if (Q_stricmp(name, "getvideosetup") == 0) 
+		}
+		else if (Q_stricmp(name, "getvideosetup") == 0)
 		{
 			UI_GetVideoSetup ( );
 		}
@@ -950,27 +1025,27 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_UpdateVideoSetup ( );
 		}
-		else if (Q_stricmp(name, "nextDataPadForcePower") == 0)		
+		else if (Q_stricmp(name, "nextDataPadForcePower") == 0)
 		{
 			ui.Cmd_ExecuteText( EXEC_APPEND, "dpforcenext\n");
 		}
-		else if (Q_stricmp(name, "prevDataPadForcePower") == 0)		
+		else if (Q_stricmp(name, "prevDataPadForcePower") == 0)
 		{
 			ui.Cmd_ExecuteText( EXEC_APPEND, "dpforceprev\n");
 		}
-		else if (Q_stricmp(name, "nextDataPadWeapon") == 0)		
+		else if (Q_stricmp(name, "nextDataPadWeapon") == 0)
 		{
 			ui.Cmd_ExecuteText( EXEC_APPEND, "dpweapnext\n");
 		}
-		else if (Q_stricmp(name, "prevDataPadWeapon") == 0)		
+		else if (Q_stricmp(name, "prevDataPadWeapon") == 0)
 		{
 			ui.Cmd_ExecuteText( EXEC_APPEND, "dpweapprev\n");
 		}
-		else if (Q_stricmp(name, "nextDataPadInventory") == 0)		
+		else if (Q_stricmp(name, "nextDataPadInventory") == 0)
 		{
 			ui.Cmd_ExecuteText( EXEC_APPEND, "dpinvnext\n");
 		}
-		else if (Q_stricmp(name, "prevDataPadInventory") == 0)		
+		else if (Q_stricmp(name, "prevDataPadInventory") == 0)
 		{
 			ui.Cmd_ExecuteText( EXEC_APPEND, "dpinvprev\n");
 		}
@@ -982,34 +1057,24 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 			UI_CheckVid1Data(menuName,warningMenuName);
 		}
-		else if (Q_stricmp(name, "startgame") == 0) 
+		else if (Q_stricmp(name, "startgame") == 0)
 		{
 			Menus_CloseAll();
-			if ( Cvar_VariableIntegerValue("com_demo") )
-			{
-				ui.Cmd_ExecuteText( EXEC_APPEND, "map demo\n");
-			}
-			else
-			{
-#ifndef __NO_JK2
-				if( com_jk2 && com_jk2->integer )
-				{
-					ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
-				}
-				else
+#ifdef JK2_MODE
+			ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
+#else
+			ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
 #endif
-				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
-			}
-		} 
-		else if (Q_stricmp(name, "startmap") == 0) 
+		}
+		else if (Q_stricmp(name, "startmap") == 0)
 		{
 			Menus_CloseAll();
 
 			String_Parse(args, &mapName);
 
 			ui.Cmd_ExecuteText( EXEC_APPEND, va("maptransition %s\n",mapName));
-		} 
-		else if (Q_stricmp(name, "closeingame") == 0) 
+		}
+		else if (Q_stricmp(name, "closeingame") == 0)
 		{
 			trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
 			trap_Key_ClearStates();
@@ -1025,8 +1090,8 @@ static qboolean UI_RunMenuScript ( const char **args )
 			{
 				Menus_ActivateByName("mainhud");
 			}
-		} 
-		else if (Q_stricmp(name, "closedatapad") == 0) 
+		}
+		else if (Q_stricmp(name, "closedatapad") == 0)
 		{
 			trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
 			trap_Key_ClearStates();
@@ -1038,8 +1103,8 @@ static qboolean UI_RunMenuScript ( const char **args )
 			Cvar_Set( "cg_updatedDataPadForcePower2", "0" );
 			Cvar_Set( "cg_updatedDataPadForcePower3", "0" );
 			Cvar_Set( "cg_updatedDataPadObjective", "0" );
-		} 
-		else if (Q_stricmp(name, "closesabermenu") == 0) 
+		}
+		else if (Q_stricmp(name, "closesabermenu") == 0)
 		{
 			// if we're in the saber menu when creating a character, close this down
 			if( !Cvar_VariableIntegerValue( "saber_menu" ) )
@@ -1048,12 +1113,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 				Menus_OpenByName( "characterMenu" );
 			}
 		}
-		else if (Q_stricmp(name, "clearmouseover") == 0) 
+		else if (Q_stricmp(name, "clearmouseover") == 0)
 		{
 			itemDef_t *item;
 			menuDef_t *menu = Menu_GetFocused();
 
-			if (menu) 
+			if (menu)
 			{
 				const char *itemName;
 				String_Parse(args, &itemName);
@@ -1064,16 +1129,16 @@ static qboolean UI_RunMenuScript ( const char **args )
 				}
 			}
 		}
-		else if (Q_stricmp(name, "setMovesListDefault") == 0) 
+		else if (Q_stricmp(name, "setMovesListDefault") == 0)
 		{
 			uiInfo.movesTitleIndex = 2;
 		}
-		else if (Q_stricmp(name, "resetMovesDesc") == 0) 
+		else if (Q_stricmp(name, "resetMovesDesc") == 0)
 		{
 			menuDef_t *menu = Menu_GetFocused();
 			itemDef_t *item;
 
-			if (menu) 
+			if (menu)
 			{
 				item = (itemDef_s *) Menu_FindItemByName(menu, "item_desc");
 				if (item)
@@ -1084,12 +1149,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 						listPtr->cursorPos = 0;
 						listPtr->startPos = 0;
 					}
-					item->cursorPos = 0;					
+					item->cursorPos = 0;
 				}
 			}
 
 		}
-		else if (Q_stricmp(name, "resetMovesList") == 0) 
+		else if (Q_stricmp(name, "resetMovesList") == 0)
 		{
 			menuDef_t *menu;
 			menu = Menus_FindByName("datapadMovesMenu");
@@ -1106,11 +1171,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 			Cvar_Set( "ui_move_desc", " " );
 		}
-//		else if (Q_stricmp(name, "setanisotropicmax") == 0) 
+//		else if (Q_stricmp(name, "setanisotropicmax") == 0)
 //		{
 //			r_ext_texture_filter_anisotropic->value;
 //		}
-		else if (Q_stricmp(name, "setMoveCharacter") == 0) 
+		else if (Q_stricmp(name, "setMoveCharacter") == 0)
 		{
 			itemDef_t *item;
 			menuDef_t *menu;
@@ -1137,11 +1202,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 						uiInfo.moveAnimTime = 0 ;
 						DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
-						Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
-															Cvar_VariableString ( "g_char_model"), 
-															Cvar_VariableString ( "g_char_skin_head"), 
-															Cvar_VariableString ( "g_char_skin_torso"), 
-															Cvar_VariableString ( "g_char_skin_legs") 
+						Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s",
+															Cvar_VariableString ( "g_char_model"),
+															Cvar_VariableString ( "g_char_skin_head"),
+															Cvar_VariableString ( "g_char_skin_torso"),
+															Cvar_VariableString ( "g_char_skin_legs")
 									);
 
 						ItemParse_model_g2skin_go( item, skin );
@@ -1150,59 +1215,59 @@ static qboolean UI_RunMenuScript ( const char **args )
 				}
 			}
 		}
-		else if (Q_stricmp(name, "glCustom") == 0) 
+		else if (Q_stricmp(name, "glCustom") == 0)
 		{
 			Cvar_Set("ui_r_glCustom", "4");
-		} 
-		else if (Q_stricmp(name, "character") == 0) 
+		}
+		else if (Q_stricmp(name, "character") == 0)
 		{
 			UI_UpdateCharacter( qfalse );
 		}
-		else if (Q_stricmp(name, "characterchanged") == 0) 
+		else if (Q_stricmp(name, "characterchanged") == 0)
 		{
 			UI_UpdateCharacter( qtrue );
 		}
-		else if (Q_stricmp(name, "char_skin") == 0) 
+		else if (Q_stricmp(name, "char_skin") == 0)
 		{
 			UI_UpdateCharacterSkin();
 		}
-		else if (Q_stricmp(name, "saber_type") == 0) 
+		else if (Q_stricmp(name, "saber_type") == 0)
 		{
 			UI_UpdateSaberType();
 		}
-		else if (Q_stricmp(name, "saber_hilt") == 0) 
+		else if (Q_stricmp(name, "saber_hilt") == 0)
 		{
 			UI_UpdateSaberHilt( qfalse );
 		}
-		else if (Q_stricmp(name, "saber_color") == 0) 
+		else if (Q_stricmp(name, "saber_color") == 0)
 		{
 //			UI_UpdateSaberColor( qfalse );
 		}
-		else if (Q_stricmp(name, "saber2_hilt") == 0) 
+		else if (Q_stricmp(name, "saber2_hilt") == 0)
 		{
 			UI_UpdateSaberHilt( qtrue );
 		}
-		else if (Q_stricmp(name, "saber2_color") == 0) 
+		else if (Q_stricmp(name, "saber2_color") == 0)
 		{
 //			UI_UpdateSaberColor( qtrue );
 		}
-		else if (Q_stricmp(name, "updatecharcvars") == 0) 
+		else if (Q_stricmp(name, "updatecharcvars") == 0)
 		{
 			UI_UpdateCharacterCvars();
 		}
-		else if (Q_stricmp(name, "getcharcvars") == 0) 
+		else if (Q_stricmp(name, "getcharcvars") == 0)
 		{
 			UI_GetCharacterCvars();
 		}
-		else if (Q_stricmp(name, "updatesabercvars") == 0) 
+		else if (Q_stricmp(name, "updatesabercvars") == 0)
 		{
 			UI_UpdateSaberCvars();
 		}
-		else if (Q_stricmp(name, "getsabercvars") == 0) 
+		else if (Q_stricmp(name, "getsabercvars") == 0)
 		{
 			UI_GetSaberCvars();
 		}
-		else if (Q_stricmp(name, "resetsabercvardefaults") == 0) 
+		else if (Q_stricmp(name, "resetsabercvardefaults") == 0)
 		{
 			// NOTE : ONLY do this if saber menu is set properly (ie. first time we enter this menu)
 			if( !Cvar_VariableIntegerValue( "saber_menu" ) )
@@ -1210,77 +1275,81 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_ResetSaberCvars();
 			}
     	}
-		else if (Q_stricmp(name, "updatefightingstylechoices") == 0) 
+#ifndef JK2_MODE
+		else if (Q_stricmp(name, "updatefightingstylechoices") == 0)
 		{
 			UI_UpdateFightingStyleChoices();
 		}
-		else if (Q_stricmp(name, "initallocforcepower") == 0) 
+#endif // !JK2_MODE
+		else if (Q_stricmp(name, "initallocforcepower") == 0)
 		{
 			const char *forceName;
 			String_Parse(args, &forceName);
 
 			UI_InitAllocForcePowers(forceName);
 		}
-		else if (Q_stricmp(name, "affectforcepowerlevel") == 0) 
+		else if (Q_stricmp(name, "affectforcepowerlevel") == 0)
 		{
 			const char *forceName;
 			String_Parse(args, &forceName);
 
 			UI_AffectForcePowerLevel(forceName);
 		}
-		else if (Q_stricmp(name, "decrementcurrentforcepower") == 0) 
+		else if (Q_stricmp(name, "decrementcurrentforcepower") == 0)
 		{
 			UI_DecrementCurrentForcePower();
 		}
-		else if (Q_stricmp(name, "shutdownforcehelp") == 0) 
+		else if (Q_stricmp(name, "shutdownforcehelp") == 0)
 		{
 			UI_ShutdownForceHelp();
 		}
-		else if (Q_stricmp(name, "forcehelpactive") == 0) 
+		else if (Q_stricmp(name, "forcehelpactive") == 0)
 		{
 			UI_ForceHelpActive();
 		}
-		else if (Q_stricmp(name, "demosetforcelevels") == 0) 
+#ifndef JK2_MODE
+		else if (Q_stricmp(name, "demosetforcelevels") == 0)
 		{
 			UI_DemoSetForceLevels();
 		}
-		else if (Q_stricmp(name, "recordforcelevels") == 0) 
+#endif // !JK2_MODE
+		else if (Q_stricmp(name, "recordforcelevels") == 0)
 		{
 			UI_RecordForceLevels();
 		}
-		else if (Q_stricmp(name, "recordweapons") == 0) 
+		else if (Q_stricmp(name, "recordweapons") == 0)
 		{
 			UI_RecordWeapons();
 		}
-		else if (Q_stricmp(name, "showforceleveldesc") == 0) 
+		else if (Q_stricmp(name, "showforceleveldesc") == 0)
 		{
 			const char *forceName;
 			String_Parse(args, &forceName);
 
 			UI_ShowForceLevelDesc(forceName);
 		}
-		else if (Q_stricmp(name, "resetforcelevels") == 0) 
+		else if (Q_stricmp(name, "resetforcelevels") == 0)
 		{
 			UI_ResetForceLevels();
 		}
-		else if (Q_stricmp(name, "weaponhelpactive") == 0) 
+		else if (Q_stricmp(name, "weaponhelpactive") == 0)
 		{
 			UI_WeaponHelpActive();
 		}
 		// initialize weapon selection screen
-		else if (Q_stricmp(name, "initweaponselect") == 0) 
+		else if (Q_stricmp(name, "initweaponselect") == 0)
 		{
 			UI_InitWeaponSelect();
 		}
-		else if (Q_stricmp(name, "clearweapons") == 0) 
+		else if (Q_stricmp(name, "clearweapons") == 0)
 		{
 			UI_ClearWeapons();
 		}
-		else if (Q_stricmp(name, "stopgamesounds") == 0) 
+		else if (Q_stricmp(name, "stopgamesounds") == 0)
 		{
 			trap_S_StopSounds();
 		}
-		else if (Q_stricmp(name, "loadmissionselectmenu") == 0) 
+		else if (Q_stricmp(name, "loadmissionselectmenu") == 0)
 		{
 			const char *cvarName;
 			String_Parse(args, &cvarName);
@@ -1290,112 +1359,114 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_LoadMissionSelectMenu(cvarName);
 			}
 		}
-		else if (Q_stricmp(name, "calcforcestatus") == 0) 
+#ifndef JK2_MODE
+		else if (Q_stricmp(name, "calcforcestatus") == 0)
 		{
 			UI_CalcForceStatus();
 		}
-		else if (Q_stricmp(name, "giveweapon") == 0) 
+#endif // !JK2_MODE
+		else if (Q_stricmp(name, "giveweapon") == 0)
 		{
 			const char *weaponIndex;
 			String_Parse(args, &weaponIndex);
 			UI_GiveWeapon(atoi(weaponIndex));
 		}
-		else if (Q_stricmp(name, "equipweapon") == 0) 
+		else if (Q_stricmp(name, "equipweapon") == 0)
 		{
 			const char *weaponIndex;
 			String_Parse(args, &weaponIndex);
 			UI_EquipWeapon(atoi(weaponIndex));
 		}
-		else if (Q_stricmp(name, "addweaponselection") == 0) 
+		else if (Q_stricmp(name, "addweaponselection") == 0)
 		{
 			const char *weaponIndex;
 			String_Parse(args, &weaponIndex);
 			if (!weaponIndex)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *ammoIndex;
 			String_Parse(args, &ammoIndex);
 			if (!ammoIndex)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *ammoAmount;
 			String_Parse(args, &ammoAmount);
 			if (!ammoAmount)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *itemName;
 			String_Parse(args, &itemName);
 			if (!itemName)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *litItemName;
 			String_Parse(args, &litItemName);
 			if (!litItemName)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *backgroundName;
 			String_Parse(args, &backgroundName);
 			if (!backgroundName)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *soundfile = NULL;
 			String_Parse(args, &soundfile);
-			
+
 			UI_AddWeaponSelection(atoi(weaponIndex),atoi(ammoIndex),atoi(ammoAmount),itemName,litItemName, backgroundName, soundfile);
 		}
-		else if (Q_stricmp(name, "addthrowweaponselection") == 0) 
+		else if (Q_stricmp(name, "addthrowweaponselection") == 0)
 		{
 			const char *weaponIndex;
 			String_Parse(args, &weaponIndex);
 			if (!weaponIndex)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *ammoIndex;
 			String_Parse(args, &ammoIndex);
 			if (!ammoIndex)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *ammoAmount;
 			String_Parse(args, &ammoAmount);
 			if (!ammoAmount)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *itemName;
 			String_Parse(args, &itemName);
 			if (!itemName)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *litItemName;
 			String_Parse(args, &litItemName);
 			if (!litItemName)
-			{ 
+			{
 				return qfalse;
 			}
 
 			const char *backgroundName;
 			String_Parse(args, &backgroundName);
 			if (!backgroundName)
-			{ 
+			{
 				return qfalse;
 			}
 
@@ -1404,7 +1475,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 			UI_AddThrowWeaponSelection(atoi(weaponIndex),atoi(ammoIndex),atoi(ammoAmount),itemName,litItemName,backgroundName, soundfile);
 		}
-		else if (Q_stricmp(name, "removeweaponselection") == 0) 
+		else if (Q_stricmp(name, "removeweaponselection") == 0)
 		{
 			const char *weaponIndex;
 			String_Parse(args, &weaponIndex);
@@ -1413,75 +1484,81 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_RemoveWeaponSelection(atoi(weaponIndex));
 			}
 		}
-		else if (Q_stricmp(name, "removethrowweaponselection") == 0) 
+		else if (Q_stricmp(name, "removethrowweaponselection") == 0)
 		{
 			UI_RemoveThrowWeaponSelection();
 		}
-		else if (Q_stricmp(name, "normalthrowselection") == 0) 
+		else if (Q_stricmp(name, "normalthrowselection") == 0)
 		{
 			UI_NormalThrowSelection();
 		}
-		else if (Q_stricmp(name, "highlightthrowselection") == 0) 
+		else if (Q_stricmp(name, "highlightthrowselection") == 0)
 		{
 			UI_HighLightThrowSelection();
 		}
-		else if (Q_stricmp(name, "normalweaponselection") == 0) 
+		else if (Q_stricmp(name, "normalweaponselection") == 0)
 		{
 			const char *slotIndex;
 			String_Parse(args, &slotIndex);
 			if (!slotIndex)
-			{ 
+			{
 				return qfalse;
 			}
 
 			UI_NormalWeaponSelection(atoi(slotIndex));
 		}
-		else if (Q_stricmp(name, "highlightweaponselection") == 0) 
+		else if (Q_stricmp(name, "highlightweaponselection") == 0)
 		{
 			const char *slotIndex;
 			String_Parse(args, &slotIndex);
 			if (!slotIndex)
-			{ 
+			{
 				return qfalse;
 			}
 
 			UI_HighLightWeaponSelection(atoi(slotIndex));
 		}
-		else if (Q_stricmp(name, "clearinventory") == 0) 
+		else if (Q_stricmp(name, "clearinventory") == 0)
 		{
 			UI_ClearInventory();
 		}
-		else if (Q_stricmp(name, "giveinventory") == 0) 
+		else if (Q_stricmp(name, "giveinventory") == 0)
 		{
 			const char *inventoryIndex,*amount;
 			String_Parse(args, &inventoryIndex);
 			String_Parse(args, &amount);
 			UI_GiveInventory(atoi(inventoryIndex),atoi(amount));
 		}
-		else if (Q_stricmp(name, "updatefightingstyle") == 0) 
+#ifndef JK2_MODE
+		else if (Q_stricmp(name, "updatefightingstyle") == 0)
 		{
 			UI_UpdateFightingStyle();
 		}
-		else if (Q_stricmp(name, "update") == 0) 
+#endif // !JK2_MODE
+		else if (Q_stricmp(name, "update") == 0)
 		{
-			if (String_Parse(args, &name2)) 
+			if (String_Parse(args, &name2))
 			{
 				UI_Update(name2);
 			}
-			else 
+			else
 			{
 				Com_Printf("update missing cmd\n");
 			}
 		}
-		else if (Q_stricmp(name, "load_quick") == 0) 
+		else if (Q_stricmp(name, "load_quick") == 0)
 		{
+#ifdef JK2_MODE
+			ui.Cmd_ExecuteText(EXEC_APPEND,"load quik\n");
+#else
 			ui.Cmd_ExecuteText(EXEC_APPEND,"load quick\n");
+#endif
 		}
-		else if (Q_stricmp(name, "load_auto") == 0) 
+		else if (Q_stricmp(name, "load_auto") == 0)
 		{
 			ui.Cmd_ExecuteText(EXEC_APPEND,"load *respawn\n");	//death menu, might load a saved game instead if they just loaded on this map
 		}
-		else if (Q_stricmp(name, "decrementforcepowerlevel") == 0) 
+		else if (Q_stricmp(name, "decrementforcepowerlevel") == 0)
 		{
 			UI_DecrementForcePowerLevel();
 		}
@@ -1493,7 +1570,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_ResetCharacterListBoxes();
 		}
-		else 
+		else if ( Q_stricmp( name, "LaunchMP" ) == 0 )
+		{
+			// TODO for MAC_PORT, will only be valid for non-JK2 mode
+		}
+		else
 		{
 			Com_Printf("unknown UI script %s\n", name);
 		}
@@ -1507,7 +1588,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 UI_GetValue
 =================
 */
-static float UI_GetValue(int ownerDraw) 
+static float UI_GetValue(int ownerDraw)
 {
   return 0;
 }
@@ -1541,13 +1622,14 @@ const char *kyleForceStatusSounds[] =
 };
 
 
+#ifndef JK2_MODE
 static void UI_CalcForceStatus(void)
 {
 	float		lightSide,darkSide,total;
 	short		who, index=FW_VERY_LIGHT;
 	qboolean	lukeFlag=qtrue;
 	float		percent;
-	client_t*	cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t*	cl = &svs.clients[0];	// 0 because only ever us as a player
 	char		value[256];
 
 	if (!cl)
@@ -1563,16 +1645,16 @@ static void UI_CalcForceStatus(void)
 
 	memset(value, 0, sizeof(value));
 
-	lightSide = pState->forcePowerLevel[FP_HEAL] + 
+	lightSide = pState->forcePowerLevel[FP_HEAL] +
 		pState->forcePowerLevel[FP_TELEPATHY] +
 		pState->forcePowerLevel[FP_PROTECT] +
 		pState->forcePowerLevel[FP_ABSORB];
-	
-	darkSide = pState->forcePowerLevel[FP_GRIP] + 
+
+	darkSide = pState->forcePowerLevel[FP_GRIP] +
 		pState->forcePowerLevel[FP_LIGHTNING] +
 		pState->forcePowerLevel[FP_RAGE] +
 		pState->forcePowerLevel[FP_DRAIN];
-	
+
 	total = lightSide + darkSide;
 
 	percent = lightSide / total;
@@ -1631,7 +1713,7 @@ static void UI_CalcForceStatus(void)
 			strcpy(value,"sdl");	// Semi-Dark Luke
 		}
 	}
-	else 
+	else
 	{
 		index = FW_VERY_DARK;
 		if ( who<50 )
@@ -1656,46 +1738,47 @@ static void UI_CalcForceStatus(void)
 		DC->startLocalSound(DC->registerSound(kyleForceStatusSounds[index], qfalse), CHAN_VOICE );
 	}
 }
+#endif // !JK2_MODE
 
 /*
 =================
 UI_StopCinematic
 =================
 */
-static void UI_StopCinematic(int handle) 
+static void UI_StopCinematic(int handle)
 {
-	if (handle >= 0) 
+	if (handle >= 0)
 	{
 		trap_CIN_StopCinematic(handle);
-	} 
-	else 
+	}
+	else
 	{
 		handle = abs(handle);
-		if (handle == UI_MAPCINEMATIC) 
+		if (handle == UI_MAPCINEMATIC)
 		{
 			// FIXME - BOB do we need this?
-//			if (uiInfo.mapList[ui_currentMap.integer].cinematic >= 0) 
+//			if (uiInfo.mapList[ui_currentMap.integer].cinematic >= 0)
 //			{
 //				trap_CIN_StopCinematic(uiInfo.mapList[ui_currentMap.integer].cinematic);
 //				uiInfo.mapList[ui_currentMap.integer].cinematic = -1;
 //			}
-		} 
-		else if (handle == UI_NETMAPCINEMATIC) 
+		}
+		else if (handle == UI_NETMAPCINEMATIC)
 		{
 			// FIXME - BOB do we need this?
-//			if (uiInfo.serverStatus.currentServerCinematic >= 0) 
+//			if (uiInfo.serverStatus.currentServerCinematic >= 0)
 //			{
 //				trap_CIN_StopCinematic(uiInfo.serverStatus.currentServerCinematic);
 //				uiInfo.serverStatus.currentServerCinematic = -1;
 //			}
-		} 
-		else if (handle == UI_CLANCINEMATIC) 
+		}
+		else if (handle == UI_CLANCINEMATIC)
 		{
 			// FIXME - BOB do we need this?
 //			int i = UI_TeamIndexFromName(UI_Cvar_VariableString("ui_teamName"));
-//			if (i >= 0 && i < uiInfo.teamCount) 
+//			if (i >= 0 && i < uiInfo.teamCount)
 //			{
-//				if (uiInfo.teamList[i].cinematic >= 0) 
+//				if (uiInfo.teamList[i].cinematic >= 0)
 //				{
 //					trap_CIN_StopCinematic(uiInfo.teamList[i].cinematic);
 //					uiInfo.teamList[i].cinematic = -1;
@@ -1709,14 +1792,14 @@ static void UI_HandleLoadSelection()
 	Cvar_Set("ui_SelectionOK", va("%d",(s_savegame.currentLine < s_savegame.saveFileCnt)) );
 	if (s_savegame.currentLine >= s_savegame.saveFileCnt)
 		return;
-//	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment 
+#ifdef JK2_MODE
+	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment
 
-/*	if (!ui.SG_GetSaveImage(s_savedata[s_savegame.currentLine].currentSaveFileName, &screenShotBuf))
->>>>>>> 1.30
+	if (!ui.SG_GetSaveImage(s_savedata[s_savegame.currentLine].currentSaveFileName, &screenShotBuf))
 	{
-		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); 
+		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4));
 	}
-*/
+#endif
 }
 
 /*
@@ -1724,20 +1807,22 @@ static void UI_HandleLoadSelection()
 UI_FeederCount
 =================
 */
-static int UI_FeederCount(float feederID) 
+static int UI_FeederCount(float feederID)
 {
-	if (feederID == FEEDER_SAVEGAMES ) 
+	if (feederID == FEEDER_SAVEGAMES )
 	{
 		if (s_savegame.saveFileCnt == -1)
 		{
 			ReadSaveDirectory();	//refresh
 			UI_HandleLoadSelection();
+#ifndef JK2_MODE
 			UI_AdjustSaveGameListBox(s_savegame.currentLine);
+#endif
 		}
 		return s_savegame.saveFileCnt;
-	} 
+	}
 	// count number of moves for the current title
-	else if (feederID == FEEDER_MOVES) 
+	else if (feederID == FEEDER_MOVES)
 	{
 		int count=0,i;
 
@@ -1751,34 +1836,34 @@ static int UI_FeederCount(float feederID)
 
 		return count;
 	}
-	else if (feederID == FEEDER_MOVES_TITLES) 
+	else if (feederID == FEEDER_MOVES_TITLES)
 	{
 		return (MD_MOVE_TITLE_MAX);
 	}
-	else if (feederID == FEEDER_MODS) 
+	else if (feederID == FEEDER_MODS)
 	{
 		return uiInfo.modCount;
-	} 
-	else if (feederID == FEEDER_LANGUAGES) 
+	}
+	else if (feederID == FEEDER_LANGUAGES)
 	{
 		return uiInfo.languageCount;
-	} 
-	else if (feederID == FEEDER_PLAYER_SPECIES) 
+	}
+	else if (feederID == FEEDER_PLAYER_SPECIES)
 	{
 		return uiInfo.playerSpeciesCount;
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_HEAD) 
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_TORSO) 
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount;
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_LEGS) 
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount;
-	} 
+	}
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount;
@@ -1792,14 +1877,14 @@ static int UI_FeederCount(float feederID)
 UI_FeederSelection
 =================
 */
-static void UI_FeederSelection(float feederID, int index, itemDef_t *item) 
+static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 {
-	if (feederID == FEEDER_SAVEGAMES) 
+	if (feederID == FEEDER_SAVEGAMES)
 	{
 		s_savegame.currentLine = index;
 		UI_HandleLoadSelection();
-	} 
-	else if (feederID == FEEDER_MOVES) 
+	}
+	else if (feederID == FEEDER_MOVES)
 	{
 		itemDef_t *item;
 		menuDef_t *menu;
@@ -1867,11 +1952,11 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 							Cvar_Set( "ui_move_desc", datapadMoveData[uiInfo.movesTitleIndex][index].desc);
 						}
 
-						Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
-															Cvar_VariableString ( "g_char_model"), 
-															Cvar_VariableString ( "g_char_skin_head"), 
-															Cvar_VariableString ( "g_char_skin_torso"), 
-															Cvar_VariableString ( "g_char_skin_legs") 
+						Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s",
+															Cvar_VariableString ( "g_char_model"),
+															Cvar_VariableString ( "g_char_skin_head"),
+															Cvar_VariableString ( "g_char_skin_torso"),
+															Cvar_VariableString ( "g_char_skin_legs")
 									);
 
 						ItemParse_model_g2skin_go( item, skin );
@@ -1880,8 +1965,8 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 				}
 			}
 		}
-	} 
-	else if (feederID == FEEDER_MOVES_TITLES) 
+	}
+	else if (feederID == FEEDER_MOVES_TITLES)
 	{
 		itemDef_t *item;
 		menuDef_t *menu;
@@ -1905,57 +1990,60 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 			}
 		}
 	}
-	else if (feederID == FEEDER_MODS) 
+	else if (feederID == FEEDER_MODS)
 	{
 		uiInfo.modIndex = index;
-	} 
-	else if (feederID == FEEDER_PLAYER_SPECIES) 
+	}
+	else if (feederID == FEEDER_PLAYER_SPECIES)
 	{
-		uiInfo.playerSpeciesIndex = index;
-	} 
-	else if (feederID == FEEDER_LANGUAGES) 
+		if (index >= 0 && index < uiInfo.playerSpeciesCount)
+		{
+			uiInfo.playerSpeciesIndex = index;
+		}
+	}
+	else if (feederID == FEEDER_LANGUAGES)
 	{
 		uiInfo.languageCountIndex = index;
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_HEAD) 
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
 		{
-			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
 		}
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_TORSO) 
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
 		{
-			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index]);
+			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
 		}
-	} 
-	else if (feederID == FEEDER_PLAYER_SKIN_LEGS) 
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
 		{
-			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]);
+			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
 		}
-	} 
+	}
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
 extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount)
 		{
-			Item_RunScript(item, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorActionText[index]);
+			Item_RunScript(item, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[index].actionText);
 		}
 	}
-/*	else if (feederID == FEEDER_CINEMATICS) 
+/*	else if (feederID == FEEDER_CINEMATICS)
 	{
 		uiInfo.movieIndex = index;
-		if (uiInfo.previewMovie >= 0) 
+		if (uiInfo.previewMovie >= 0)
 		{
 			trap_CIN_StopCinematic(uiInfo.previewMovie);
 		}
 		uiInfo.previewMovie = -1;
-	} 
-	else if (feederID == FEEDER_DEMOS) 
+	}
+	else if (feederID == FEEDER_DEMOS)
 	{
 		uiInfo.demoIndex = index;
 	}
@@ -1965,11 +2053,11 @@ extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
 void Key_KeynumToStringBuf( int keynum, char *buf, int buflen );
 void Key_GetBindingBuf( int keynum, char *buf, int buflen );
 
-static qboolean UI_Crosshair_HandleKey(int flags, float *special, int key) 
+static qboolean UI_Crosshair_HandleKey(int flags, float *special, int key)
 {
-  if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER) 
+  if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER)
   {
-		if (key == A_MOUSE2) 
+		if (key == A_MOUSE2)
 		{
 			uiInfo.currentCrosshair--;
 		} else {
@@ -1981,17 +2069,17 @@ static qboolean UI_Crosshair_HandleKey(int flags, float *special, int key)
 		} else if (uiInfo.currentCrosshair < 0) {
 			uiInfo.currentCrosshair = NUM_CROSSHAIRS - 1;
 		}
-		Cvar_Set("cg_drawCrosshair", va("%d", uiInfo.currentCrosshair)); 
+		Cvar_Set("cg_drawCrosshair", va("%d", uiInfo.currentCrosshair));
 		return qtrue;
 	}
 	return qfalse;
 }
 
 
-static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key) 
+static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key)
 {
 
-	switch (ownerDraw) 
+	switch (ownerDraw)
 	{
 		case UI_CROSSHAIR:
 			UI_Crosshair_HandleKey(flags, special, key);
@@ -2007,33 +2095,33 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 //because the ui can be loaded while the game/cgame are not loaded. So we're going to recreate what we need here.
 #undef MAX_ANIM_FILES
 #define MAX_ANIM_FILES 4
-typedef struct
+class ui_animFileSet_t
 {
+public:
 	char			filename[MAX_QPATH];
 	animation_t		animations[MAX_ANIMATIONS];
-} animFileSet_t;
-static animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
+}; // ui_animFileSet_t
+static ui_animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
 
 int				ui_numKnownAnimFileSets;
 
-qboolean UI_ParseAnimationFile( const char *af_filename ) 
+qboolean UI_ParseAnimationFile( const char *af_filename )
 {
 	const char		*text_p;
 	int			len;
 	int			i;
 	const char		*token;
 	float		fps;
-	int			skip;
 	char		text[80000];
 	int			animNum;
 	animation_t	*animations = ui_knownAnimFileSets[ui_numKnownAnimFileSets].animations;
 
 	len = re.GetAnimationCFG(af_filename, text, sizeof(text));
-	if ( len <= 0 ) 
+	if ( len <= 0 )
 	{
 		return qfalse;
 	}
-	if ( len >= (int)(sizeof( text ) - 1) ) 
+	if ( len >= (int)(sizeof( text ) - 1) )
 	{
 		Com_Error( ERR_FATAL, "UI_ParseAnimationFile: File %s too long\n (%d > %d)", af_filename, len, sizeof( text ) - 1);
 		return qfalse;
@@ -2041,7 +2129,6 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 
 	// parse the text
 	text_p = text;
-	skip = 0;	// quiet the compiler warning
 
 	//FIXME: have some way of playing anims backwards... negative numFrames?
 
@@ -2057,11 +2144,11 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 
 	// read information for each frame
 	COM_BeginParseSession();
-	while(1) 
+	while(1)
 	{
 		token = COM_Parse( &text_p );
 
-		if ( !token || !token[0]) 
+		if ( !token || !token[0])
 		{
 			break;
 		}
@@ -2084,33 +2171,33 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 		}
 
 		token = COM_Parse( &text_p );
-		if ( !token ) 
+		if ( !token )
 		{
 			break;
 		}
 		animations[animNum].firstFrame = atoi( token );
 
 		token = COM_Parse( &text_p );
-		if ( !token ) 
+		if ( !token )
 		{
 			break;
 		}
 		animations[animNum].numFrames = atoi( token );
 
 		token = COM_Parse( &text_p );
-		if ( !token ) 
+		if ( !token )
 		{
 			break;
 		}
 		animations[animNum].loopFrames = atoi( token );
 
 		token = COM_Parse( &text_p );
-		if ( !token ) 
+		if ( !token )
 		{
 			break;
 		}
 		fps = atof( token );
-		if ( fps == 0 ) 
+		if ( fps == 0 )
 		{
 			fps = 1;//Don't allow divide by zero error
 		}
@@ -2137,9 +2224,9 @@ qboolean UI_ParseAnimFileSet( const char *animCFG, int *animFileIndex )
 	int			i;
 	char		*slash;
 
-	Q_strncpyz( strippedName, animCFG, sizeof(strippedName), qtrue);
+	Q_strncpyz( strippedName, animCFG, sizeof(strippedName));
 	slash = strrchr( strippedName, '/' );
-	if ( slash ) 
+	if ( slash )
 	{
 		// truncate modelName to find just the dir not the extension
 		*slash = 0;
@@ -2215,7 +2302,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 		{
 			if (anim->loopFrames == -1)
 			{
-				flags = BONE_ANIM_OVERRIDE_FREEZE;			
+				flags = BONE_ANIM_OVERRIDE_FREEZE;
 			}
 			else
 			{
@@ -2246,6 +2333,8 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 	p = buf;
 	COM_BeginParseSession();
 	species.ColorCount = 0;
+	species.ColorMax = 16;
+	species.Color = (playerColor_t *)malloc(species.ColorMax * sizeof(playerColor_t));
 
 	while ( p )
 	{
@@ -2253,9 +2342,18 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		if ( token[0] == 0 )
 		{
 			COM_EndParseSession(  );
-			return species.ColorCount;
+			return (qboolean)(species.ColorCount != 0);
 		}
-		Q_strncpyz( species.ColorShader[species.ColorCount], token, sizeof(species.ColorShader[0]), qtrue );
+
+		if (species.ColorCount >= species.ColorMax)
+		{
+			species.ColorMax *= 2;
+			species.Color = (playerColor_t *)realloc(species.Color, species.ColorMax * sizeof(playerColor_t));
+		}
+
+		memset(&species.Color[species.ColorCount], 0, sizeof(playerColor_t));
+
+		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH );
 
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
 		if ( token[0] != '{' )
@@ -2264,7 +2362,6 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 			return qfalse;
 		}
 
-		assert(!species.ColorActionText[species.ColorCount][0]);
 		token = COM_ParseExt( &p, qtrue );	//looking for action commands
 		while (token[0] != '}')
 		{
@@ -2273,9 +2370,8 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 				COM_EndParseSession(  );
 				return qfalse;
 			}
-			assert((size_t)species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
-			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), token);
-			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), " ");
+			Q_strcat(species.Color[species.ColorCount].actionText, ACTION_BUFFER_SIZE, token);
+			Q_strcat(species.Color[species.ColorCount].actionText, ACTION_BUFFER_SIZE, " ");
 			token = COM_ParseExt( &p, qtrue );	//looking for action commands or final }
 		}
 		species.ColorCount++;	//next color please
@@ -2290,7 +2386,7 @@ bIsImageFile
 builds path and scans for valid image extentions
 =================
 */
-static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean building)
+static qboolean IsImageFile(const char* dirptr, const char* skinname, qboolean building)
 {
 	char fpath[MAX_QPATH];
 	int f;
@@ -2308,14 +2404,34 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
 		ui.FS_FOpenFile(fpath, &f, FS_READ);
 	}
-	if (f) 
+	if (f)
 	{
 		ui.FS_FCloseFile(f);
 		if ( building ) ui.R_RegisterShaderNoMip(fpath);
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
+}
+
+static void UI_FreeSpecies( playerSpeciesInfo_t *species )
+{
+	free(species->SkinHead);
+	free(species->SkinTorso);
+	free(species->SkinLeg);
+	free(species->Color);
+	memset(species, 0, sizeof(playerSpeciesInfo_t));
+}
+
+void UI_FreeAllSpecies( void )
+{
+	int i;
+
+	for (i = 0; i < uiInfo.playerSpeciesCount; i++)
+	{
+		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
+	}
+	free(uiInfo.playerSpecies);
 }
 
 /*
@@ -2325,59 +2441,101 @@ PlayerModel_BuildList
 */
 static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 {
+	static const size_t DIR_LIST_SIZE = 16384;
+
 	int		numdirs;
-	char	dirlist[2048];
+	size_t	dirListSize = DIR_LIST_SIZE;
+	char	stackDirList[8192];
+	char	*dirlist;
 	char*	dirptr;
 	int		dirlen;
 	int		i;
 	const int building = Cvar_VariableIntegerValue("com_buildscript");
 
+	dirlist = (char *)malloc(DIR_LIST_SIZE);
+	if ( !dirlist )
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Failed to allocate %u bytes of memory for player model "
+			"directory list. Using stack allocated buffer of %u bytes instead.",
+			DIR_LIST_SIZE, sizeof(stackDirList));
+
+		dirlist = stackDirList;
+		dirListSize = sizeof(stackDirList);
+	}
+
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
-	memset(uiInfo.playerSpecies, 0, sizeof (uiInfo.playerSpecies) );
+	uiInfo.playerSpeciesMax = 8;
+	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, 2048 );
+	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, dirListSize );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
-		char	filelist[2048];
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[2048];
+		char fpath[MAX_QPATH];
 
 		dirlen = strlen(dirptr);
-		
-		if (dirlen && dirptr[dirlen-1]=='/') dirptr[dirlen-1]='\0';
+
+		if (dirlen)
+		{
+			if (dirptr[dirlen-1]=='/')
+				dirptr[dirlen-1]='\0';
+		}
+		else
+		{
+			continue;
+		}
 
 		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
 			continue;
-			
-		Com_sprintf(fpath, 2048, "models/players/%s/PlayerChoice.txt", dirptr);
+
+		Com_sprintf(fpath, sizeof(fpath), "models/players/%s/PlayerChoice.txt", dirptr);
 		filelen = ui.FS_FOpenFile(fpath, &f, FS_READ);
 
 		if (f)
-		{ 
-			char buffer[2048];
-			ui.FS_Read(&buffer, filelen, f);
-			ui.FS_FCloseFile(f);
-			buffer[filelen] = 0;	//ensure trailing NULL
-			
-			//record this species
-			Q_strncpyz( uiInfo.playerSpecies[uiInfo.playerSpeciesCount].Name, dirptr, sizeof(uiInfo.playerSpecies[0].Name), qtrue );
+		{
+			char filelist[2048];
+			playerSpeciesInfo_t *species = NULL;
 
-			if (!UI_ParseColorData(buffer,uiInfo.playerSpecies[uiInfo.playerSpeciesCount]))
+			std::vector<char> buffer(filelen + 1);
+			ui.FS_Read(&buffer[0], filelen, f);
+			ui.FS_FCloseFile(f);
+
+			buffer[filelen] = 0;
+
+			//record this species
+			if (uiInfo.playerSpeciesCount >= uiInfo.playerSpeciesMax)
+			{
+				uiInfo.playerSpeciesMax *= 2;
+				uiInfo.playerSpecies = (playerSpeciesInfo_t *)realloc(uiInfo.playerSpecies, uiInfo.playerSpeciesMax*sizeof(playerSpeciesInfo_t));
+			}
+			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
+			memset(species, 0, sizeof(playerSpeciesInfo_t));
+			Q_strncpyz( species->Name, dirptr, MAX_QPATH );
+
+			if (!UI_ParseColorData(buffer.data(),*species))
 			{
 				ui.Printf( "UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath );
 			}
+
+			species->SkinHeadMax = 8;
+			species->SkinTorsoMax = 8;
+			species->SkinLegMax = 8;
+
+			species->SkinHead = (skinName_t *)malloc(species->SkinHeadMax * sizeof(skinName_t));
+			species->SkinTorso = (skinName_t *)malloc(species->SkinTorsoMax * sizeof(skinName_t));
+			species->SkinLeg = (skinName_t *)malloc(species->SkinLegMax * sizeof(skinName_t));
 
 			int		j;
 			char	skinname[64];
 			int		numfiles;
 			int		iSkinParts=0;
 
-			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
+			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, sizeof(filelist) );
 			fileptr  = filelist;
 			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
 			{
@@ -2394,38 +2552,44 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				filelen = strlen(fileptr);
 				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
-				if (bIsImageFile(dirptr, skinname, building))
+				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
 				{ //if it exists
 					if (Q_stricmpn(skinname,"head_",5) == 0)
 					{
-						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadCount < MAX_PLAYERMODELS) 
+						if (species->SkinHeadCount >= species->SkinHeadMax)
 						{
-							Q_strncpyz(uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadNames[uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadCount++], skinname, sizeof(uiInfo.playerSpecies[0].SkinHeadNames[0]), qtrue);
-							iSkinParts |= 1<<0;
+							species->SkinHeadMax *= 2;
+							species->SkinHead = (skinName_t *)realloc(species->SkinHead, species->SkinHeadMax*sizeof(skinName_t));
 						}
+						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH);
+						iSkinParts |= 1<<0;
 					} else
 					if (Q_stricmpn(skinname,"torso_",6) == 0)
 					{
-						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoCount < MAX_PLAYERMODELS) 
+						if (species->SkinTorsoCount >= species->SkinTorsoMax)
 						{
-							Q_strncpyz(uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoNames[uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoCount++], skinname, sizeof(uiInfo.playerSpecies[0].SkinTorsoNames[0]), qtrue);
-							iSkinParts |= 1<<1;
+							species->SkinTorsoMax *= 2;
+							species->SkinTorso = (skinName_t *)realloc(species->SkinTorso, species->SkinTorsoMax*sizeof(skinName_t));
 						}
+						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH);
+						iSkinParts |= 1<<1;
 					} else
 					if (Q_stricmpn(skinname,"lower_",6) == 0)
 					{
-						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegCount < MAX_PLAYERMODELS) 
+						if (species->SkinLegCount >= species->SkinLegMax)
 						{
-							Q_strncpyz(uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegNames[uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegCount++], skinname, sizeof(uiInfo.playerSpecies[0].SkinLegNames[0]), qtrue);
-							iSkinParts |= 1<<2;
+							species->SkinLegMax *= 2;
+							species->SkinLeg = (skinName_t *)realloc(species->SkinLeg, species->SkinLegMax*sizeof(skinName_t));
 						}
+						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
+						iSkinParts |= 1<<2;
 					}
-					
+
 				}
 			}
 			if (iSkinParts != 7)
 			{	//didn't get a skin for each, then skip this model.
-				memset(&uiInfo.playerSpecies[uiInfo.playerSpeciesCount], 0, sizeof(uiInfo.playerSpecies[uiInfo.playerSpeciesCount]));//undo the colors
+				UI_FreeSpecies(species);
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
@@ -2439,13 +2603,23 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 					DC->g2_RemoveGhoul2Model( ghoul2, 0 );
 				}
 			}
-			if (uiInfo.playerSpeciesCount >= MAX_PLAYERMODELS)
-			{
-				return;
-			}
 		}
-	}	
+	}
 
+	if ( dirlist != stackDirList )
+	{
+		free(dirlist);
+	}
+}
+
+/*
+================
+UI_Shutdown
+=================
+*/
+void UI_Shutdown( void )
+{
+	UI_FreeAllSpecies();
 }
 
 /*
@@ -2453,24 +2627,18 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 UI_Init
 =================
 */
-void _UI_Init( qboolean inGameLoad ) 
+void _UI_Init( qboolean inGameLoad )
 {
 	// Get the list of possible languages
-#ifndef __NO_JK2
-	if(com_jk2 && !com_jk2->integer)
-#endif
+#ifndef JK2_MODE
 	uiInfo.languageCount = SE_GetNumLanguages();	// this does a dir scan, so use carefully
-
-	#ifndef __NO_JK2
-	if(com_jk2 && com_jk2->integer)
+#else
+	// sod it, parse every menu strip file until we find a gap in the sequence...
+	//
+	for (int i=0; i<10; i++)
 	{
-		// sod it, parse every menu strip file until we find a gap in the sequence...
-		//
-		for (int i=0; i<10; i++)
-		{
-			if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
-				break;
-		}
+		if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
+			break;
 	}
 #endif
 
@@ -2486,12 +2654,12 @@ void _UI_Init( qboolean inGameLoad )
 	// for 640x480 virtualized screen
 	uiInfo.uiDC.yscale = uiInfo.uiDC.glconfig.vidHeight * (1.0/480.0);
 	uiInfo.uiDC.xscale = uiInfo.uiDC.glconfig.vidWidth * (1.0/640.0);
-	if ( uiInfo.uiDC.glconfig.vidWidth * 480 > uiInfo.uiDC.glconfig.vidHeight * 640 ) 
+	if ( uiInfo.uiDC.glconfig.vidWidth * 480 > uiInfo.uiDC.glconfig.vidHeight * 640 )
 	{
 		// wide screen
 		uiInfo.uiDC.bias = 0.5 * ( uiInfo.uiDC.glconfig.vidWidth - ( uiInfo.uiDC.glconfig.vidHeight * (640.0/480.0) ) );
 	}
-	else 
+	else
 	{
 		// no wide screen
 		uiInfo.uiDC.bias = 0;
@@ -2519,7 +2687,7 @@ void _UI_Init( qboolean inGameLoad )
 	uiInfo.uiDC.ownerDrawVisible	= &UI_OwnerDrawVisible;
 	uiInfo.uiDC.ownerDrawWidth		= &UI_OwnerDrawWidth;
 	uiInfo.uiDC.ownerDrawItem		= &UI_OwnerDraw;
-	uiInfo.uiDC.Print				= &Com_Printf; 
+	uiInfo.uiDC.Print				= &Com_Printf;
 	uiInfo.uiDC.registerSound		= &trap_S_RegisterSound;
 	uiInfo.uiDC.registerModel		= ui.R_RegisterModel;
 	uiInfo.uiDC.clearScene			= &trap_R_ClearScene;
@@ -2558,27 +2726,18 @@ void _UI_Init( qboolean inGameLoad )
 
 	const char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
 
-	if (menuSet == NULL || menuSet[0] == '\0') 
+	if (menuSet == NULL || menuSet[0] == '\0')
 	{
 		menuSet = "ui/menus.txt";
 	}
-	if ( Cvar_VariableIntegerValue("com_demo") )
-	{
-		menuSet = "ui/demo_menus.txt";
-	}
 
+#ifndef JK2_MODE
 	if (inGameLoad)
 	{
-		if ( Cvar_VariableIntegerValue("com_demo") )
-		{
-			UI_LoadMenus("ui/demo_ingame.txt", qtrue);
-		}
-		else
-		{
-			UI_LoadMenus("ui/ingame.txt", qtrue);
-		}
+		UI_LoadMenus("ui/ingame.txt", qtrue);
 	}
-	else 
+	else
+#endif
 	{
 		UI_LoadMenus(menuSet, qtrue);
 	}
@@ -2590,7 +2749,7 @@ void _UI_Init( qboolean inGameLoad )
 	AssetCache();
 
 	uis.debugMode = qfalse;
-	
+
 	// sets defaults for ui temp cvars
 	uiInfo.effectsColor = (int)trap_Cvar_VariableValue("color")-1;
 	if (uiInfo.effectsColor < 0)
@@ -2611,24 +2770,27 @@ void _UI_Init( qboolean inGameLoad )
 
 	uiInfo.uiDC.Assets.nullSound = trap_S_RegisterSound("sound/null", qfalse);
 
+#ifndef JK2_MODE
+	//FIXME hack to prevent error in jk2 by disabling
 	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
+#endif
 
 }
-
 
 /*
 =================
 UI_RegisterCvars
 =================
 */
-static void UI_RegisterCvars( void ) 
+static void UI_RegisterCvars( void )
 {
-	int			i;
-	cvarTable_t	*cv;
+	size_t i = 0;
+	const cvarTable_t *cv = NULL;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) 
-	{
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
 		Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
+		if ( cv->update )
+			cv->update();
 	}
 }
 
@@ -2637,24 +2799,24 @@ static void UI_RegisterCvars( void )
 UI_ParseMenu
 =================
 */
-void UI_ParseMenu(const char *menuFile) 
+void UI_ParseMenu(const char *menuFile)
 {
 	char	*buffer,*holdBuffer,*token2;
 	int len;
 //	pc_token_t token;
 
-	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
+	//Com_DPrintf("Parsing menu file: %s\n", menuFile);
 	len = PC_StartParseSession(menuFile,&buffer);
 
 	holdBuffer = buffer;
 
-	if (len<=0) 
+	if (len<=0)
 	{
 		Com_Printf("UI_ParseMenu: Unable to load menu %s\n", menuFile);
 		return;
 	}
 
-	while ( 1 ) 
+	while ( 1 )
 	{
 
 		token2 = PC_ParseExt();
@@ -2664,43 +2826,43 @@ void UI_ParseMenu(const char *menuFile)
 			break;
 		}
 /*
-		if ( menuCount == MAX_MENUS ) 
+		if ( menuCount == MAX_MENUS )
 		{
-			PC_ParseWarning("Too many menus!");		
+			PC_ParseWarning("Too many menus!");
 			break;
 		}
 */
-		if ( *token2 == '{') 
+		if ( *token2 == '{')
 		{
 			continue;
 		}
-		else if ( *token2 == '}' ) 
+		else if ( *token2 == '}' )
 		{
 			break;
 		}
-		else if (Q_stricmp(token2, "assetGlobalDef") == 0) 
+		else if (Q_stricmp(token2, "assetGlobalDef") == 0)
 		{
-			if (Asset_Parse(&holdBuffer)) 
+			if (Asset_Parse(&holdBuffer))
 			{
 				continue;
-			} 
-			else 
+			}
+			else
 			{
 				break;
 			}
 		}
-		else if (Q_stricmp(token2, "menudef") == 0) 
+		else if (Q_stricmp(token2, "menudef") == 0)
 		{
 			// start a new menu
 			Menu_New(holdBuffer);
 			continue;
 		}
 
-		PC_ParseWarning(va("Invalid keyword '%s'",token2));		
+		PC_ParseWarning(va("Invalid keyword '%s'",token2));
 	}
 
 	PC_EndParseSession(buffer);
-	
+
 }
 
 /*
@@ -2709,10 +2871,10 @@ Load_Menu
 	Load current menu file
 =================
 */
-qboolean Load_Menu(const char **holdBuffer) 
+qboolean Load_Menu(const char **holdBuffer)
 {
 	const char	*token2;
-	
+
 	token2 = COM_ParseExt( holdBuffer, qtrue );
 
 	if (!token2[0])
@@ -2720,12 +2882,12 @@ qboolean Load_Menu(const char **holdBuffer)
 		return qfalse;
 	}
 
-	if (*token2 != '{') 
+	if (*token2 != '{')
 	{
 		return qfalse;
 	}
 
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token2 = COM_ParseExt( holdBuffer, qtrue );
 
@@ -2733,8 +2895,8 @@ qboolean Load_Menu(const char **holdBuffer)
 		{
 			return qfalse;
 		}
-			
-		if ( *token2 == '}' ) 
+
+		if ( *token2 == '}' )
 		{
 			return qtrue;
 		}
@@ -2743,7 +2905,7 @@ qboolean Load_Menu(const char **holdBuffer)
 //		extern void UI_Debug_AddMenuFilePath(const char *);
 //		UI_Debug_AddMenuFilePath(token2);
 //#endif
-		UI_ParseMenu(token2); 
+		UI_ParseMenu(token2);
 
 	}
 	return qfalse;
@@ -2755,7 +2917,7 @@ UI_LoadMenus
 	Load all menus based on the files listed in the data file in menuFile (default "ui/menus.txt")
 =================
 */
-void UI_LoadMenus(const char *menuFile, qboolean reset) 
+void UI_LoadMenus(const char *menuFile, qboolean reset)
 {
 //	pc_token_t token;
 //	int handle;
@@ -2769,19 +2931,19 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 
 	len = ui.FS_ReadFile(menuFile,(void **) &buffer);
 
-	if (len<1) 
+	if (len<1)
 	{
 		Com_Printf( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
 		len = ui.FS_ReadFile("ui/menus.txt",(void **) &buffer);
 
-		if (len<1) 
+		if (len<1)
 		{
 			Com_Error( ERR_FATAL, "%s", va("default menu file not found: ui/menus.txt, unable to continue!\n", menuFile ));
 			return;
 		}
 	}
 
-	if (reset) 
+	if (reset)
 	{
 		Menu_Reset();
 	}
@@ -2789,7 +2951,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 	const char	*token2;
 	holdBuffer = buffer;
 	COM_BeginParseSession();
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token2 = COM_ParseExt( &holdBuffer, qtrue );
 		if (!*token2)
@@ -2797,30 +2959,30 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 			break;
 		}
 
-		if( *token2 == 0 || *token2 == '}')			// End of the menus file 
+		if( *token2 == 0 || *token2 == '}')			// End of the menus file
 		{
 			break;
 		}
 
-		if (*token2 == '{') 
+		if (*token2 == '{')
 		{
 				continue;
 		}
-		else if (Q_stricmp(token2, "loadmenu") == 0) 
+		else if (Q_stricmp(token2, "loadmenu") == 0)
 		{
-			if (Load_Menu(&holdBuffer)) 
+			if (Load_Menu(&holdBuffer))
 			{
 				continue;
-			} 
-			else 
+			}
+			else
 			{
 				break;
 			}
-		} 
+		}
 		else
 		{
 			Com_Printf("Unknown keyword '%s' in menus file %s\n", token2, menuFile);
-		} 
+		}
 	}
 	COM_EndParseSession();
 
@@ -2834,13 +2996,13 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 UI_Load
 =================
 */
-void UI_Load(void) 
+void UI_Load(void)
 {
 	const char *menuSet;
 	char lastName[1024];
 	menuDef_t *menu = Menu_GetFocused();
 
-	if (menu && menu->window.name) 
+	if (menu && menu->window.name)
 	{
 		strcpy(lastName, menu->window.name);
 	}
@@ -2849,27 +3011,22 @@ void UI_Load(void)
 		lastName[0] = 0;
 	}
 
+#ifndef JK2_MODE
 	if (uiInfo.inGameLoad)
 	{
 		menuSet= "ui/ingame.txt";
 	}
-	else 
+	else
+#endif
 	{
 		menuSet= UI_Cvar_VariableString("ui_menuFiles");
 	}
-	if (menuSet == NULL || menuSet[0] == '\0') 
+	if (menuSet == NULL || menuSet[0] == '\0')
 	{
 		menuSet = "ui/menus.txt";
 	}
 
-	if ( Cvar_VariableIntegerValue("com_demo") )
-	{
-		menuSet = "ui/demo_menus.txt";
-	}
-
-
 	String_Init();
-
 
 	UI_LoadMenus(menuSet, qtrue);
 	Menus_CloseAll();
@@ -2881,7 +3038,7 @@ void UI_Load(void)
 Asset_Parse
 =================
 */
-qboolean Asset_Parse(char **buffer) 
+qboolean Asset_Parse(char **buffer)
 {
 	char		*token;
 	const char	*tempStr;
@@ -2894,12 +3051,12 @@ qboolean Asset_Parse(char **buffer)
 		return qfalse;
 	}
 
-	if (*token != '{') 
+	if (*token != '{')
 	{
 		return qfalse;
 	}
-    
-	while ( 1 ) 
+
+	while ( 1 )
 	{
 		token = PC_ParseExt();
 
@@ -2908,7 +3065,7 @@ qboolean Asset_Parse(char **buffer)
 			return qfalse;
 		}
 
-		if (*token == '}') 
+		if (*token == '}')
 		{
 			return qtrue;
 		}
@@ -2933,7 +3090,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "mediumFont") == 0) 
+		if (Q_stricmp(token, "mediumFont") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -2970,8 +3127,8 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-#ifndef __NO_JK2
-		if (Q_stricmp(token, "stripedFile") == 0) 
+#ifdef JK2_MODE
+		if (Q_stricmp(token, "stripedFile") == 0)
 		{
 			if (!PC_ParseStringMem((const char **) &tempStr))
 			{
@@ -2997,7 +3154,7 @@ qboolean Asset_Parse(char **buffer)
 #endif
 
 		// gradientbar
-		if (Q_stricmp(token, "gradientbar") == 0) 
+		if (Q_stricmp(token, "gradientbar") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3009,7 +3166,7 @@ qboolean Asset_Parse(char **buffer)
 		}
 
 		// enterMenuSound
-		if (Q_stricmp(token, "menuEnterSound") == 0) 
+		if (Q_stricmp(token, "menuEnterSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3022,7 +3179,7 @@ qboolean Asset_Parse(char **buffer)
 		}
 
 		// exitMenuSound
-		if (Q_stricmp(token, "menuExitSound") == 0) 
+		if (Q_stricmp(token, "menuExitSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3034,7 +3191,7 @@ qboolean Asset_Parse(char **buffer)
 		}
 
 		// itemFocusSound
-		if (Q_stricmp(token, "itemFocusSound") == 0) 
+		if (Q_stricmp(token, "itemFocusSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3046,7 +3203,7 @@ qboolean Asset_Parse(char **buffer)
 		}
 
 		// menuBuzzSound
-		if (Q_stricmp(token, "menuBuzzSound") == 0) 
+		if (Q_stricmp(token, "menuBuzzSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3058,7 +3215,7 @@ qboolean Asset_Parse(char **buffer)
 		}
 
 		// Chose a force power from the ingame force allocation screen (the one where you get to allocate a force power point)
-		if (Q_stricmp(token, "forceChosenSound") == 0) 
+		if (Q_stricmp(token, "forceChosenSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3072,7 +3229,7 @@ qboolean Asset_Parse(char **buffer)
 
 
 		// Unchose a force power from the ingame force allocation screen (the one where you get to allocate a force power point)
-		if (Q_stricmp(token, "forceUnchosenSound") == 0) 
+		if (Q_stricmp(token, "forceUnchosenSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3084,7 +3241,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveRollSound") == 0) 
+		if (Q_stricmp(token, "datapadmoveRollSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3096,7 +3253,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveJumpSound") == 0) 
+		if (Q_stricmp(token, "datapadmoveJumpSound") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3108,7 +3265,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveSaberSound1") == 0) 
+		if (Q_stricmp(token, "datapadmoveSaberSound1") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3120,7 +3277,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveSaberSound2") == 0) 
+		if (Q_stricmp(token, "datapadmoveSaberSound2") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3132,7 +3289,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveSaberSound3") == 0) 
+		if (Q_stricmp(token, "datapadmoveSaberSound3") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3144,7 +3301,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveSaberSound4") == 0) 
+		if (Q_stricmp(token, "datapadmoveSaberSound4") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3156,7 +3313,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveSaberSound5") == 0) 
+		if (Q_stricmp(token, "datapadmoveSaberSound5") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3168,7 +3325,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "datapadmoveSaberSound6") == 0) 
+		if (Q_stricmp(token, "datapadmoveSaberSound6") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3180,7 +3337,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "cursor") == 0) 
+		if (Q_stricmp(token, "cursor") == 0)
 		{
 			if (PC_ParseString(&tempStr))
 			{
@@ -3191,7 +3348,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "fadeClamp") == 0) 
+		if (Q_stricmp(token, "fadeClamp") == 0)
 		{
 			if (PC_ParseFloat(&uiInfo.uiDC.Assets.fadeClamp))
 			{
@@ -3201,9 +3358,9 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "fadeCycle") == 0) 
+		if (Q_stricmp(token, "fadeCycle") == 0)
 		{
-			if (PC_ParseInt(&uiInfo.uiDC.Assets.fadeCycle)) 
+			if (PC_ParseInt(&uiInfo.uiDC.Assets.fadeCycle))
 			{
 				PC_ParseWarning("Bad 1st parameter for keyword 'fadeCycle'");
 				return qfalse;
@@ -3211,9 +3368,9 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "fadeAmount") == 0) 
+		if (Q_stricmp(token, "fadeAmount") == 0)
 		{
-			if (PC_ParseFloat(&uiInfo.uiDC.Assets.fadeAmount)) 
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.fadeAmount))
 			{
 				PC_ParseWarning("Bad 1st parameter for keyword 'fadeAmount'");
 				return qfalse;
@@ -3221,9 +3378,9 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "shadowX") == 0) 
+		if (Q_stricmp(token, "shadowX") == 0)
 		{
-			if (PC_ParseFloat(&uiInfo.uiDC.Assets.shadowX)) 
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.shadowX))
 			{
 				PC_ParseWarning("Bad 1st parameter for keyword 'shadowX'");
 				return qfalse;
@@ -3231,9 +3388,9 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "shadowY") == 0) 
+		if (Q_stricmp(token, "shadowY") == 0)
 		{
-			if (PC_ParseFloat(&uiInfo.uiDC.Assets.shadowY)) 
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.shadowY))
 			{
 				PC_ParseWarning("Bad 1st parameter for keyword 'shadowY'");
 				return qfalse;
@@ -3241,9 +3398,9 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-		if (Q_stricmp(token, "shadowColor") == 0) 
+		if (Q_stricmp(token, "shadowColor") == 0)
 		{
-			if (PC_ParseColor(&uiInfo.uiDC.Assets.shadowColor)) 
+			if (PC_ParseColor(&uiInfo.uiDC.Assets.shadowColor))
 			{
 				PC_ParseWarning("Bad 1st parameter for keyword 'shadowColor'");
 				return qfalse;
@@ -3255,12 +3412,12 @@ qboolean Asset_Parse(char **buffer)
 		// precaching various sound files used in the menus
 		if (Q_stricmp(token, "precacheSound") == 0)
 		{
-			if (PC_Script_Parse(&tempStr)) 
+			if (PC_Script_Parse(&tempStr))
 			{
 				char *soundFile;
 				do
 				{
-					soundFile = COM_ParseExt(&tempStr, qfalse);	
+					soundFile = COM_ParseExt(&tempStr, qfalse);
 					if (soundFile[0] != 0 && soundFile[0] != ';') {
 						if (!trap_S_RegisterSound( soundFile, qfalse ))
 						{
@@ -3282,47 +3439,28 @@ qboolean Asset_Parse(char **buffer)
 UI_Update
 =================
 */
-static void UI_Update(const char *name) 
+static void UI_Update(const char *name)
 {
 	int	val = trap_Cvar_VariableValue(name);
 
 
-	if (Q_stricmp(name, "s_khz") == 0) 
+	if (Q_stricmp(name, "s_khz") == 0)
 	{
 		ui.Cmd_ExecuteText( EXEC_APPEND, "snd_restart\n" );
 		return;
 	}
 
-	if (Q_stricmp(name, "ui_SetName") == 0) 
+	if (Q_stricmp(name, "ui_SetName") == 0)
 	{
 		Cvar_Set( "name", UI_Cvar_VariableString("ui_Name"));
- 	} 
-	else if (Q_stricmp(name, "ui_setRate") == 0) 
-	{
-		float rate = trap_Cvar_VariableValue("rate");
-		if (rate >= 5000) 
-		{
-			Cvar_Set("cl_maxpackets", "30");
-			Cvar_Set("cl_packetdup", "1");
-		} 
-		else if (rate >= 4000) 
-		{
-			Cvar_Set("cl_maxpackets", "15");
-			Cvar_Set("cl_packetdup", "2");		// favor less prediction errors when there's packet loss
-		} 
-		else 
-		{
-			Cvar_Set("cl_maxpackets", "15");
-			Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
-		}
-	} 
-	else if (Q_stricmp(name, "ui_GetName") == 0) 
+ 	}
+	else if (Q_stricmp(name, "ui_GetName") == 0)
 	{
 		Cvar_Set( "ui_Name", UI_Cvar_VariableString("name"));
- 	} 
-	else if (Q_stricmp(name, "ui_r_colorbits") == 0) 
+ 	}
+	else if (Q_stricmp(name, "ui_r_colorbits") == 0)
 	{
-		switch (val) 
+		switch (val)
 		{
 			case 0:
 				Cvar_SetValue( "ui_r_depthbits", 0 );
@@ -3336,10 +3474,10 @@ static void UI_Update(const char *name)
 				Cvar_SetValue( "ui_r_depthbits", 24 );
 				break;
 		}
-	} 
-	else if (Q_stricmp(name, "ui_r_lodbias") == 0) 
+	}
+	else if (Q_stricmp(name, "ui_r_lodbias") == 0)
 	{
-		switch (val) 
+		switch (val)
 		{
 			case 0:
 				Cvar_SetValue( "ui_r_subdivisions", 4 );
@@ -3352,10 +3490,10 @@ static void UI_Update(const char *name)
 				Cvar_SetValue( "ui_r_subdivisions", 20 );
 				break;
 		}
-	} 
-	else if (Q_stricmp(name, "ui_r_glCustom") == 0) 
+	}
+	else if (Q_stricmp(name, "ui_r_glCustom") == 0)
 	{
-		switch (val) 
+		switch (val)
 		{
 			case 0:	// high quality
 
@@ -3373,7 +3511,7 @@ static void UI_Update(const char *name)
 				Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
 				break;
 
-			case 1: // normal 
+			case 1: // normal
 				Cvar_SetValue( "ui_r_fullScreen", 1 );
 				Cvar_SetValue( "ui_r_subdivisions", 4 );
 				Cvar_SetValue( "ui_r_lodbias", 0 );
@@ -3420,14 +3558,14 @@ static void UI_Update(const char *name)
 				Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_NEAREST" );
 			break;
 		}
-	} 
-	else if (Q_stricmp(name, "ui_mousePitch") == 0) 
+	}
+	else if (Q_stricmp(name, "ui_mousePitch") == 0)
 	{
-		if (val == 0) 
+		if (val == 0)
 		{
 			Cvar_SetValue( "m_pitch", 0.022f );
-		} 
-		else 
+		}
+		else
 		{
 			Cvar_SetValue( "m_pitch", -0.022f );
 		}
@@ -3451,7 +3589,7 @@ static void UI_Update(const char *name)
 AssetCache
 =================
 */
-void AssetCache(void) 
+void AssetCache(void)
 {
 //	int n;
 	uiInfo.uiDC.Assets.scrollBar = ui.R_RegisterShaderNoMip( ASSET_SCROLLBAR );
@@ -3464,9 +3602,9 @@ void AssetCache(void)
 	uiInfo.uiDC.Assets.sliderBar = ui.R_RegisterShaderNoMip( "menu/new/slider" );
 	uiInfo.uiDC.Assets.sliderThumb = ui.R_RegisterShaderNoMip( "menu/new/sliderthumb");
 
-	
+
 	/*
-	for( n = 0; n < NUM_CROSSHAIRS; n++ ) 
+	for( n = 0; n < NUM_CROSSHAIRS; n++ )
 	{
 		uiInfo.uiDC.Assets.crosshairShader[n] = ui.R_RegisterShaderNoMip( va("gfx/2d/crosshair%c", 'a' + n ) );
 	}
@@ -3478,7 +3616,7 @@ void AssetCache(void)
 _UI_DrawSides
 =================
 */
-void _UI_DrawSides(float x, float y, float w, float h, float size) 
+void _UI_DrawSides(float x, float y, float w, float h, float size)
 {
 	size *= uiInfo.uiDC.xscale;
 	trap_R_DrawStretchPic( x, y, size, h, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
@@ -3490,7 +3628,7 @@ void _UI_DrawSides(float x, float y, float w, float h, float size)
 _UI_DrawTopBottom
 =================
 */
-void _UI_DrawTopBottom(float x, float y, float w, float h, float size) 
+void _UI_DrawTopBottom(float x, float y, float w, float h, float size)
 {
 	size *= uiInfo.uiDC.yscale;
 	trap_R_DrawStretchPic( x, y, w, size, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
@@ -3503,7 +3641,7 @@ UI_DrawRect
 Coordinates are 640*480 virtual values
 =================
 */
-void _UI_DrawRect( float x, float y, float width, float height, float size, const float *color ) 
+void _UI_DrawRect( float x, float y, float width, float height, float size, const float *color )
 {
 	trap_R_SetColor( color );
 
@@ -3518,14 +3656,20 @@ void _UI_DrawRect( float x, float y, float width, float height, float size, cons
 UI_UpdateCvars
 =================
 */
-void UI_UpdateCvars( void ) 
+void UI_UpdateCvars( void )
 {
-	int			i;
-	cvarTable_t	*cv;
+	size_t i = 0;
+	const cvarTable_t *cv = NULL;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) 
-	{
-		Cvar_Update( cv->vmCvar );
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
+		if ( cv->vmCvar ) {
+			int modCount = cv->vmCvar->modificationCount;
+			Cvar_Update( cv->vmCvar );
+			if ( cv->vmCvar->modificationCount != modCount ) {
+				if ( cv->update )
+					cv->update();
+			}
+		}
 	}
 }
 
@@ -3534,7 +3678,7 @@ void UI_UpdateCvars( void )
 UI_DrawEffects
 =================
 */
-static void UI_DrawEffects(rectDef_t *rect, float scale, vec4_t color) 
+static void UI_DrawEffects(rectDef_t *rect, float scale, vec4_t color)
 {
 	UI_DrawHandlePic( rect->x, rect->y - 14, 128, 8, 0/*uiInfo.uiDC.Assets.fxBasePic*/ );
 	UI_DrawHandlePic( rect->x + uiInfo.effectsColor * 16 + 8, rect->y - 16, 16, 12, 0/*uiInfo.uiDC.Assets.fxPic[uiInfo.effectsColor]*/ );
@@ -3545,10 +3689,10 @@ static void UI_DrawEffects(rectDef_t *rect, float scale, vec4_t color)
 UI_Version
 =================
 */
-static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontIndex) 
+static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontIndex)
 {
 	int width;
-	
+
 	width = DC->textWidth(Q3_VERSION, scale, 0);
 
 	DC->drawText(rect->x - width, rect->y, scale, color, Q3_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
@@ -3559,18 +3703,17 @@ static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontInde
 UI_DrawKeyBindStatus
 =================
 */
-static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iFontIndex) 
+static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iFontIndex)
 {
-	if (Display_KeyBindPending()) 
+	if (Display_KeyBindPending())
 	{
-#ifndef __NO_JK2
-		if( com_jk2 && com_jk2->integer )
-			Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
-		else
-#endif
+#ifdef JK2_MODE
+		Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
+#else
 		Text_Paint(rect->x, rect->y, scale, color, SE_GetString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
-	} 
-	else 
+#endif
+	}
+	else
 	{
 //		Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_ENTERTOCHANGE"), 0, textStyle, iFontIndex);
 	}
@@ -3581,7 +3724,7 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 UI_DrawKeyBindStatus
 =================
 */
-static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iFontIndex) 
+static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iFontIndex)
 {
 #define MAX_LINES 64
 	char buff[4096];
@@ -3589,7 +3732,7 @@ static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textSt
 	const char *lines[MAX_LINES];
 	int y, numLines=0, i=0;
 
-	y = rect->y;	
+	y = rect->y;
 	Text_Paint(rect->x, y, scale, color, va("GL_VENDOR: %s",uiInfo.uiDC.glconfig.vendor_string), rect->w, textStyle, iFontIndex);
 	y += 15;
 	Text_Paint(rect->x, y, scale, color, va("GL_VERSION: %s: %s", uiInfo.uiDC.glconfig.version_string,uiInfo.uiDC.glconfig.renderer_string), rect->w, textStyle, iFontIndex);
@@ -3607,7 +3750,7 @@ static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textSt
 			*eptr++ = '\0';
 
 		// track start of valid string
-		if (*eptr && *eptr != ' ') 
+		if (*eptr && *eptr != ' ')
 		{
 			lines[numLines++] = eptr;
 			testy+=16;
@@ -3618,7 +3761,7 @@ static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textSt
 	}
 
 	numLines--;
-	while (i < numLines) 
+	while (i < numLines)
 	{
 		Text_Paint(rect->x, y, scale, color, lines[i++], rect->w, textStyle, iFontIndex);
 		y += 16;
@@ -3631,7 +3774,7 @@ UI_DataPad_Inventory
 =================
 */
 /*
-static void UI_DataPad_Inventory(rectDef_t *rect, float scale, vec4_t color, int iFontIndex) 
+static void UI_DataPad_Inventory(rectDef_t *rect, float scale, vec4_t color, int iFontIndex)
 {
 	Text_Paint(rect->x, rect->y, scale, color, "INVENTORY", 0, 1, iFontIndex);
 }
@@ -3642,7 +3785,7 @@ UI_DataPad_ForcePowers
 =================
 */
 /*
-static void UI_DataPad_ForcePowers(rectDef_t *rect, float scale, vec4_t color, int iFontIndex) 
+static void UI_DataPad_ForcePowers(rectDef_t *rect, float scale, vec4_t color, int iFontIndex)
 {
 	Text_Paint(rect->x, rect->y, scale, color, "FORCE POWERS", 0, 1, iFontIndex);
 }
@@ -3663,7 +3806,7 @@ static void UI_DrawCrosshair(rectDef_t *rect, float scale, vec4_t color) {
 UI_OwnerDraw
 =================
 */
-static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle, int iFontIndex) 
+static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle, int iFontIndex)
 {
 	rectDef_t rect;
 
@@ -3672,7 +3815,7 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 	rect.w = w;
 	rect.h = h;
 
-	switch (ownerDraw) 
+	switch (ownerDraw)
 	{
 		case UI_EFFECTS:
 			UI_DrawEffects(&rect, scale, color);
@@ -3705,6 +3848,13 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 
 			int levelshot;
 			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+#ifdef JK2_MODE
+			if (screenShotBuf[0])
+			{
+				ui.DrawStretchRaw( x, y, w, h, SG_SCR_WIDTH, SG_SCR_HEIGHT, screenShotBuf, 0, qtrue );
+			}
+			else
+#endif
 			if (levelshot)
 			{
 				ui.R_DrawStretchPic( x, y, w, h, 0, 0, 1, 1, levelshot );
@@ -3747,21 +3897,21 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 UI_OwnerDrawVisible
 =================
 */
-static qboolean UI_OwnerDrawVisible(int flags) 
+static qboolean UI_OwnerDrawVisible(int flags)
 {
 	qboolean vis = qtrue;
 
-	while (flags) 
+	while (flags)
 	{
-/*		if (flags & UI_SHOW_DEMOAVAILABLE) 
+/*		if (flags & UI_SHOW_DEMOAVAILABLE)
 		{
-			if (!uiInfo.demoAvailable) 
+			if (!uiInfo.demoAvailable)
 			{
 				vis = qfalse;
 			}
 			flags &= ~UI_SHOW_DEMOAVAILABLE;
-		} 
-		else 
+		}
+		else
 */		{
 			flags = 0;
 		}
@@ -3774,7 +3924,7 @@ static qboolean UI_OwnerDrawVisible(int flags)
 Text_Width
 =================
 */
-int Text_Width(const char *text, float scale, int iFontIndex) 
+int Text_Width(const char *text, float scale, int iFontIndex)
 {
 	// temp code until Bob retro-fits all menus to have font specifiers...
 	//
@@ -3790,31 +3940,30 @@ int Text_Width(const char *text, float scale, int iFontIndex)
 UI_OwnerDrawWidth
 =================
 */
-int UI_OwnerDrawWidth(int ownerDraw, float scale) 
+int UI_OwnerDrawWidth(int ownerDraw, float scale)
 {
 //	int i, h, value;
 //	const char *text;
 	const char *s = NULL;
 
 
-	switch (ownerDraw) 
+	switch (ownerDraw)
 	{
 	case UI_KEYBINDSTATUS:
-		if (Display_KeyBindPending()) 
+		if (Display_KeyBindPending())
 		{
-#ifndef __NO_JK2
-			if( com_jk2 && com_jk2->integer )
-				s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
-			else
-#endif
+#ifdef JK2_MODE
+			s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
+#else
 			s = SE_GetString("MENUS_WAITINGFORKEY");
-		} 
-		else 
+#endif
+		}
+		else
 		{
 //			s = ui.SP_GetStringTextString("MENUS_ENTERTOCHANGE");
 		}
 		break;
-	
+
 	// FIXME BOB
 //	case UI_SERVERREFRESHDATE:
 //		s = UI_Cvar_VariableString(va("ui_lastServerRefresh_%i", ui_netSource.integer));
@@ -3823,7 +3972,7 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
       break;
 	}
 
-	if (s) 
+	if (s)
 	{
 		return Text_Width(s, scale, 0);
 	}
@@ -3835,7 +3984,7 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
 Text_Height
 =================
 */
-int Text_Height(const char *text, float scale, int iFontIndex) 
+int Text_Height(const char *text, float scale, int iFontIndex)
 {
 	// temp until Bob retro-fits all menu files with font specifiers...
 	//
@@ -3876,7 +4025,7 @@ void _UI_MouseEvent( int dx, int dy )
 		uiInfo.uiDC.cursory = SCREEN_HEIGHT;
 	}
 
-	if (Menu_Count() > 0) 
+	if (Menu_Count() > 0)
 	{
     //menuDef_t *menu = Menu_GetFocused();
     //Menu_HandleMouseMove(menu, uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory);
@@ -3890,7 +4039,7 @@ void _UI_MouseEvent( int dx, int dy )
 UI_KeyEvent
 =================
 */
-void _UI_KeyEvent( int key, qboolean down ) 
+void _UI_KeyEvent( int key, qboolean down )
 {
 /*	extern qboolean SwallowBadNumLockedKPKey( int iKey );
 	if (SwallowBadNumLockedKPKey(key)){
@@ -3898,22 +4047,22 @@ void _UI_KeyEvent( int key, qboolean down )
 	}
 */
 
-	if (Menu_Count() > 0) 
+	if (Menu_Count() > 0)
 	{
 		menuDef_t *menu = Menu_GetFocused();
-		if (menu) 
+		if (menu)
 		{
 			//DemoEnd();
-			if (key == A_ESCAPE && down && !Menus_AnyFullScreenVisible() && !(menu->window.flags & WINDOW_IGNORE_ESCAPE)) 
+			if (key == A_ESCAPE && down && !Menus_AnyFullScreenVisible() && !(menu->window.flags & WINDOW_IGNORE_ESCAPE))
 			{
 				Menus_CloseAll();
-			} 
-			else 
+			}
+			else
 			{
 				Menu_HandleKey(menu, key, down );
 			}
-		} 
-		else 
+		}
+		else
 		{
 			trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
 			trap_Key_ClearStates();
@@ -3927,7 +4076,7 @@ void _UI_KeyEvent( int key, qboolean down )
 UI_Report
 =================
 */
-void UI_Report(void) 
+void UI_Report(void)
 {
   String_Report();
 }
@@ -3971,6 +4120,9 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
+#ifdef JK2_MODE
+	ui.PrecacheScreenshot();
+#endif
 	Menus_CloseByName("mainhud");
 
 	if (menuID)
@@ -3984,7 +4136,7 @@ void UI_InGameMenu(const char*menuID)
 	ui.Key_SetCatcher( KEYCATCH_UI );
 }
 
-qboolean _UI_IsFullscreen( void ) 
+qboolean _UI_IsFullscreen( void )
 {
 	return Menus_AnyFullScreenVisible();
 }
@@ -4044,7 +4196,7 @@ void Menu_Cache( void )
 UI_UpdateVideoSetup
 
 Copies the temporary user interface version of the video cvars into
-their real counterparts.  This is to create a interface which allows 
+their real counterparts.  This is to create a interface which allows
 you to discard your changes if you did something you didnt want
 =================
 */
@@ -4099,7 +4251,7 @@ void UI_GetVideoSetup ( void )
 	Cvar_Register ( NULL, "ui_r_allowExtensions",		"0", CVAR_ROM );
 //	Cvar_Register ( NULL, "ui_cg_shadows",				"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_modified",				"0", CVAR_ROM );
-	
+
 	// Copy over the real video cvars into their temporary counterparts
 	Cvar_Set ( "ui_r_mode", Cvar_VariableString ( "r_mode" ) );
 	Cvar_Set ( "ui_r_colorbits", Cvar_VariableString ( "r_colorbits" ) );
@@ -4126,7 +4278,7 @@ static void UI_SetSexandSoundForModel(const char* char_model)
 	qboolean	isFemale = qfalse;
 
 	i = ui.FS_FOpenFile(va("models/players/%s/sounds.cfg", char_model), &f, FS_READ);
-	if ( !f ) 
+	if ( !f )
 	{//no?  oh bother.
 		Cvar_Reset("snd");
 		Cvar_Reset("sex");
@@ -4211,9 +4363,10 @@ static void UI_UpdateSaberCvars ( void )
 	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ) );
 }
 
+#ifndef JK2_MODE
 static void UI_UpdateFightingStyleChoices ( void )
 {
-	// 
+	//
 	if (!Q_stricmp("staff",Cvar_VariableString ( "ui_saber_type" )))
 	{
 		Cvar_Set ( "ui_fightingstylesallowed", "0" );
@@ -4227,7 +4380,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 	else
 	{
 		// Get player state
-		client_t	*cl = &svs.clients[0];	// 0 because only ever us as a player	
+		client_t	*cl = &svs.clients[0];	// 0 because only ever us as a player
 		playerState_t	*pState;
 
 		if (cl && cl->gentity && cl->gentity->client)
@@ -4236,15 +4389,15 @@ static void UI_UpdateFightingStyleChoices ( void )
 
 
 			// Knows Fast style?
-			if (pState->saberStylesKnown & (1<<SS_FAST)) 
+			if (pState->saberStylesKnown & (1<<SS_FAST))
 			{
 				// And Medium?
-				if (pState->saberStylesKnown & (1<<SS_MEDIUM)) 
+				if (pState->saberStylesKnown & (1<<SS_MEDIUM))
 				{
 					Cvar_Set ( "ui_fightingstylesallowed", "6" );	// Has FAST and MEDIUM, so can only choose STRONG
 					Cvar_Set ( "ui_newfightingstyle", "2" );		// STRONG
 				}
-				else	
+				else
 				{
 					Cvar_Set ( "ui_fightingstylesallowed", "1" );	// Has FAST, so can choose from MEDIUM and STRONG
 					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
@@ -4254,12 +4407,12 @@ static void UI_UpdateFightingStyleChoices ( void )
 			else if (pState->saberStylesKnown & (1<<SS_MEDIUM))
 			{
 				// And Strong?
-				if (pState->saberStylesKnown & (1<<SS_STRONG)) 
+				if (pState->saberStylesKnown & (1<<SS_STRONG))
 				{
 					Cvar_Set ( "ui_fightingstylesallowed", "4" );	// Has MEDIUM and STRONG, so can only choose FAST
 					Cvar_Set ( "ui_newfightingstyle", "0" );		// FAST
 				}
-				else	
+				else
 				{
 					Cvar_Set ( "ui_fightingstylesallowed", "2" );	// Has MEDIUM, so can choose from FAST and STRONG
 					Cvar_Set ( "ui_newfightingstyle", "0" );		// FAST
@@ -4269,12 +4422,12 @@ static void UI_UpdateFightingStyleChoices ( void )
 			else if (pState->saberStylesKnown & (1<<SS_STRONG))
 			{
 				// And Fast
-				if (pState->saberStylesKnown & (1<<SS_FAST)) 
+				if (pState->saberStylesKnown & (1<<SS_FAST))
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "5" );	// Has STRONG and FAST, so can only take MEDIUM 
+					Cvar_Set ( "ui_fightingstylesallowed", "5" );	// Has STRONG and FAST, so can only take MEDIUM
 					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
 				}
-				else	
+				else
 				{
 					Cvar_Set ( "ui_fightingstylesallowed", "3" );	// Has STRONG, so can choose from FAST and MEDIUM
 					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
@@ -4296,7 +4449,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 			{
 				Cvar_Set ( "ui_currentfightingstyle", "2" );			// STRONG
 			}
-			else 
+			else
 			{
 				Cvar_Set ( "ui_currentfightingstyle", "1" );			// default MEDIUM
 			}
@@ -4309,6 +4462,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 		}
 	}
 }
+#endif // !JK2_MODE
 
 #define MAX_POWER_ENUMS 16
 
@@ -4317,28 +4471,44 @@ typedef struct {
 	short	powerEnum;
 } powerEnum_t;
 
-static powerEnum_t powerEnums[MAX_POWER_ENUMS] = 
+static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 {
+#ifndef JK2_MODE
 	{ "absorb",		FP_ABSORB },
+#endif // !JK2_MODE
+
 	{ "heal",			FP_HEAL },
 	{ "mindtrick",	FP_TELEPATHY },
+
+#ifndef JK2_MODE
 	{ "protect",		FP_PROTECT },
+#endif // !JK2_MODE
 
 				// Core powers
 	{ "jump",			FP_LEVITATION },
 	{ "pull",			FP_PULL },
 	{ "push",			FP_PUSH },
+
+#ifndef JK2_MODE
 	{ "sense",		FP_SEE },
+#endif // !JK2_MODE
+
 	{ "speed",		FP_SPEED },
 	{ "sabdef",		FP_SABER_DEFENSE },
 	{ "saboff",		FP_SABER_OFFENSE },
 	{ "sabthrow",		FP_SABERTHROW },
 
 				// Dark powers
+#ifndef JK2_MODE
 	{ "drain",		FP_DRAIN },
+#endif // !JK2_MODE
+
 	{ "grip",			FP_GRIP },
 	{ "lightning",	FP_LIGHTNING },
+
+#ifndef JK2_MODE
 	{ "rage",			FP_RAGE },
+#endif // !JK2_MODE
 };
 
 
@@ -4362,7 +4532,7 @@ static qboolean UI_GetForcePowerIndex ( const char *forceName, short *forcePower
 	return(qfalse);
 }
 
-// Set the fields for the allocation of force powers (Used by Force Power Allocation screen) 
+// Set the fields for the allocation of force powers (Used by Force Power Allocation screen)
 static void UI_InitAllocForcePowers ( const char *forceName )
 {
 	menuDef_t	*menu;
@@ -4382,30 +4552,28 @@ static void UI_InitAllocForcePowers ( const char *forceName )
 		return;
 	}
 
-	int com_demo = Cvar_VariableIntegerValue( "com_demo" );
-
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	// NOTE: this UIScript can be called outside the running game now, so handle that case
 	// by getting info frim UIInfo instead of PlayerState
-	if( cl && !com_demo )
+	if( cl )
 	{
 		playerState_t*		pState = cl->gentity->client;
 		forcelevel = pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
-	
+
 	char itemName[128];
 	Com_sprintf (itemName, sizeof(itemName), "%s_hexpic", powerEnums[forcePowerI].title);
 	item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
-	
+
 	if (item)
 	{
 		char itemGraphic[128];
-		Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d",forcelevel == 4 ? 3 : forcelevel);
+		Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d",forcelevel >= 4 ? 3 : forcelevel);
 		item->window.background = ui.R_RegisterShaderNoMip(itemGraphic);
 
 		// If maxed out on power - don't allow update
@@ -4425,7 +4593,7 @@ static void UI_InitAllocForcePowers ( const char *forceName )
 	UI_ForcePowerWeaponsButton(qfalse);
 }
 
-// Flip flop between being able to see the text showing the Force Point has or hasn't been allocated (Used by Force Power Allocation screen) 
+// Flip flop between being able to see the text showing the Force Point has or hasn't been allocated (Used by Force Power Allocation screen)
 static void UI_SetPowerTitleText ( qboolean showAllocated )
 {
 	menuDef_t	*menu;
@@ -4472,7 +4640,7 @@ static void UI_SetPowerTitleText ( qboolean showAllocated )
 	}
 }
 
-//. Find weapons button and make active/inactive  (Used by Force Power Allocation screen) 
+//. Find weapons button and make active/inactive  (Used by Force Power Allocation screen)
 static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 {
 	menuDef_t	*menu;
@@ -4514,18 +4682,18 @@ static void UI_SetHexPicLevel( const menuDef_t	*menu,const int forcePowerI,const
 	// Find proper hex picture on menu
 	Com_sprintf (itemName, sizeof(itemName), "%s_hexpic", powerEnums[forcePowerI].title);
 	item = (itemDef_s *) Menu_FindItemByName((menuDef_t	*) menu, itemName);
-	
+
 	// Now give it the proper hex graphic
 	if (item)
 	{
 		char itemGraphic[128];
 		if (goldFlag)
 		{
-			Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d_gold",powerLevel == 4 ? 3 : powerLevel);
+			Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d_gold",powerLevel >= 4 ? 3 : powerLevel);
 		}
 		else
 		{
-			Com_sprintf (itemGraphic, sizeof(itemGraphic),  "gfx/menus/hex_pattern_%d",powerLevel == 4 ? 3 : powerLevel);
+			Com_sprintf (itemGraphic, sizeof(itemGraphic),  "gfx/menus/hex_pattern_%d",powerLevel >= 4 ? 3 : powerLevel);
 		}
 
 		item->window.background = ui.R_RegisterShaderNoMip(itemGraphic);
@@ -4550,7 +4718,7 @@ static void UI_SetHexPicLevel( const menuDef_t	*menu,const int forcePowerI,const
 
 void UI_SetItemVisible(menuDef_t *menu,const char *itemname,qboolean visible);
 
-// if this is the first time into the force power allocation screen, show the INSTRUCTION screen 
+// if this is the first time into the force power allocation screen, show the INSTRUCTION screen
 static void	UI_ForceHelpActive( void )
 {
 	int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
@@ -4563,6 +4731,7 @@ static void	UI_ForceHelpActive( void )
 	}
 }
 
+#ifndef JK2_MODE
 // Set the force levels depending on the level chosen
 static void	UI_DemoSetForceLevels( void )
 {
@@ -4577,7 +4746,7 @@ static void	UI_DemoSetForceLevels( void )
 
 	char	buffer[MAX_STRING_CHARS];
 
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 	playerState_t*		pState = NULL;
 	if( cl )
 	{
@@ -4588,9 +4757,9 @@ static void	UI_DemoSetForceLevels( void )
 	if( Q_stricmp( buffer, "t1_sour")==0 )
 	{// NOTE : always set the uiInfo powers
 		// level 1 in all core powers
-		uiInfo.forcePowerLevel[FP_LEVITATION]=1; 
-		uiInfo.forcePowerLevel[FP_SPEED]=1;		 
-		uiInfo.forcePowerLevel[FP_PUSH]=1;		
+		uiInfo.forcePowerLevel[FP_LEVITATION]=1;
+		uiInfo.forcePowerLevel[FP_SPEED]=1;
+		uiInfo.forcePowerLevel[FP_PUSH]=1;
 		uiInfo.forcePowerLevel[FP_PULL]=1;
 		uiInfo.forcePowerLevel[FP_SEE]=1;
 		uiInfo.forcePowerLevel[FP_SABER_OFFENSE]=1;
@@ -4611,9 +4780,9 @@ static void	UI_DemoSetForceLevels( void )
 	else
 	{
 		// level 3 in all core powers
-		uiInfo.forcePowerLevel[FP_LEVITATION]=3; 
-		uiInfo.forcePowerLevel[FP_SPEED]=3;		 
-		uiInfo.forcePowerLevel[FP_PUSH]=3;		
+		uiInfo.forcePowerLevel[FP_LEVITATION]=3;
+		uiInfo.forcePowerLevel[FP_SPEED]=3;
+		uiInfo.forcePowerLevel[FP_PUSH]=3;
 		uiInfo.forcePowerLevel[FP_PULL]=3;
 		uiInfo.forcePowerLevel[FP_SEE]=3;
 		uiInfo.forcePowerLevel[FP_SABER_OFFENSE]=3;
@@ -4626,27 +4795,28 @@ static void	UI_DemoSetForceLevels( void )
 		uiInfo.forcePowerLevel[FP_GRIP]=2;
 		uiInfo.forcePowerLevel[FP_LIGHTNING]=1;
 		uiInfo.forcePowerLevel[FP_PROTECT]=1;
-				
+
 		// and set the rest to zero
-		
+
 		uiInfo.forcePowerLevel[FP_ABSORB]=0;
 		uiInfo.forcePowerLevel[FP_DRAIN]=0;
-		uiInfo.forcePowerLevel[FP_RAGE]=0;	
+		uiInfo.forcePowerLevel[FP_RAGE]=0;
 	}
 
 	if (pState)
 	{//i am carrying over from a previous level, so get the increased power! (non-core only)
-		uiInfo.forcePowerLevel[FP_HEAL] = max(pState->forcePowerLevel[FP_HEAL], uiInfo.forcePowerLevel[FP_HEAL]);
-		uiInfo.forcePowerLevel[FP_TELEPATHY]=max(pState->forcePowerLevel[FP_TELEPATHY], uiInfo.forcePowerLevel[FP_TELEPATHY]);
-		uiInfo.forcePowerLevel[FP_GRIP]=max(pState->forcePowerLevel[FP_GRIP], uiInfo.forcePowerLevel[FP_GRIP]);
-		uiInfo.forcePowerLevel[FP_LIGHTNING]=max(pState->forcePowerLevel[FP_LIGHTNING], uiInfo.forcePowerLevel[FP_LIGHTNING]);
-		uiInfo.forcePowerLevel[FP_PROTECT]=max(pState->forcePowerLevel[FP_PROTECT], uiInfo.forcePowerLevel[FP_PROTECT]);
-				
-		uiInfo.forcePowerLevel[FP_ABSORB]=max(pState->forcePowerLevel[FP_ABSORB], uiInfo.forcePowerLevel[FP_ABSORB]);
-		uiInfo.forcePowerLevel[FP_DRAIN]=max(pState->forcePowerLevel[FP_DRAIN], uiInfo.forcePowerLevel[FP_DRAIN]);
-		uiInfo.forcePowerLevel[FP_RAGE]=max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
+		uiInfo.forcePowerLevel[FP_HEAL] = Q_max(pState->forcePowerLevel[FP_HEAL], uiInfo.forcePowerLevel[FP_HEAL]);
+		uiInfo.forcePowerLevel[FP_TELEPATHY]=Q_max(pState->forcePowerLevel[FP_TELEPATHY], uiInfo.forcePowerLevel[FP_TELEPATHY]);
+		uiInfo.forcePowerLevel[FP_GRIP]=Q_max(pState->forcePowerLevel[FP_GRIP], uiInfo.forcePowerLevel[FP_GRIP]);
+		uiInfo.forcePowerLevel[FP_LIGHTNING]=Q_max(pState->forcePowerLevel[FP_LIGHTNING], uiInfo.forcePowerLevel[FP_LIGHTNING]);
+		uiInfo.forcePowerLevel[FP_PROTECT]=Q_max(pState->forcePowerLevel[FP_PROTECT], uiInfo.forcePowerLevel[FP_PROTECT]);
+
+		uiInfo.forcePowerLevel[FP_ABSORB]=Q_max(pState->forcePowerLevel[FP_ABSORB], uiInfo.forcePowerLevel[FP_ABSORB]);
+		uiInfo.forcePowerLevel[FP_DRAIN]=Q_max(pState->forcePowerLevel[FP_DRAIN], uiInfo.forcePowerLevel[FP_DRAIN]);
+		uiInfo.forcePowerLevel[FP_RAGE]=Q_max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
 	}
 }
+#endif // !JK2_MODE
 
 // record the force levels into a cvar so when restoring player from map transition
 // the force levels are set up correctly
@@ -4685,7 +4855,7 @@ static void	UI_RecordWeapons( void )
 	}
 
 	const char *s2 = "";
-	
+
 	int wpns = 0;
 	// always add blaster and saber
 	wpns |= (1<<WP_SABER);
@@ -4694,7 +4864,7 @@ static void	UI_RecordWeapons( void )
 	wpns |= (1<< uiInfo.selectedWeapon2);
 	wpns |= (1<< uiInfo.selectedThrowWeapon);
 	s2 = va("%i", wpns );
-	
+
 	Cvar_Set( "demo_playerwpns", s2 );
 
 }
@@ -4735,7 +4905,7 @@ static void UI_ShutdownForceHelp( void )
 		item = (itemDef_s *) Menu_FindItemByName(menu, "absorb_fbutton");
 		item->window.flags |= WINDOW_HASFOCUS;
 
-		if (item->onFocus) 
+		if (item->onFocus)
 		{
 			Item_RunScript(item, item->onFocus);
 		}
@@ -4755,7 +4925,7 @@ static void UI_ShutdownForceHelp( void )
 		}
 
 		// Get player state
-		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 		if (!cl)	// No client, get out
 		{
@@ -4772,15 +4942,15 @@ static void UI_ShutdownForceHelp( void )
 
 		// Update level description
 		Com_sprintf (
-			itemName, 
-			sizeof(itemName), 
-			"%s_level%ddesc", 
+			itemName,
+			sizeof(itemName),
+			"%s_level%ddesc",
 			powerEnums[uiInfo.forcePowerUpdated].title,
 			pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]
 			);
 
 		item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
-		if (item)		
+		if (item)
 		{
 			item->window.flags |= WINDOW_VISIBLE;
 		}
@@ -4795,7 +4965,7 @@ static void UI_ShutdownForceHelp( void )
 
 		Com_sprintf (itemhexName, sizeof(itemhexName), "%s_hexpic", powerEnums[uiInfo.forcePowerUpdated].title);
 		Com_sprintf (itemiconName, sizeof(itemiconName), "%s_iconpic", powerEnums[uiInfo.forcePowerUpdated].title);
-		
+
 		UI_SetItemColor(item,itemhexName,"forecolor",color2);
 		UI_SetItemColor(item,itemiconName,"forecolor",color2);
 	}
@@ -4807,7 +4977,7 @@ static void UI_ShutdownForceHelp( void )
 	}
 }
 
-// Decrement force power level (Used by Force Power Allocation screen) 
+// Decrement force power level (Used by Force Power Allocation screen)
 static void UI_DecrementCurrentForcePower ( void )
 {
 	menuDef_t	*menu;
@@ -4823,20 +4993,18 @@ static void UI_DecrementCurrentForcePower ( void )
 		return;
 	}
 
-	int com_demo = Cvar_VariableIntegerValue( "com_demo" );
-
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 	playerState_t*		pState = NULL;
 	int forcelevel;
 
-	if( cl && !com_demo )
+	if( cl )
 	{
 		pState = cl->gentity->client;
 		forcelevel = pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
 	}
 
@@ -4849,7 +5017,7 @@ static void UI_DecrementCurrentForcePower ( void )
 
 	if (forcelevel>0)
 	{
-		if( pState && !com_demo )
+		if( pState )
 		{
 			pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;	// Decrement it
 			forcelevel = pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
@@ -4860,14 +5028,14 @@ static void UI_DecrementCurrentForcePower ( void )
 			}
 		}
 		else
-		{	// always want this to happen in demo mode
+		{
 			uiInfo.forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;	// Decrement it
 			forcelevel = uiInfo.forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
 		}
 	}
 
 	UI_SetHexPicLevel( menu,uiInfo.forcePowerUpdated,forcelevel,qfalse );
-	
+
 	UI_ShowForceLevelDesc ( powerEnums[uiInfo.forcePowerUpdated].title );
 
 	// We just decremented a field so turn all buttons back on
@@ -4892,7 +5060,7 @@ static void UI_DecrementCurrentForcePower ( void )
 	item = (itemDef_s *) Menu_FindItemByName(menu, "deallocate_fbutton");
 	if (item)
 	{
-		item->window.flags &= ~WINDOW_VISIBLE;	// 
+		item->window.flags &= ~WINDOW_VISIBLE;	//
 
 		// Un-grey-out all icons
 		UI_SetItemColor(item,"hexpic","forecolor",color);
@@ -4911,7 +5079,7 @@ static void UI_DecrementCurrentForcePower ( void )
 
 void Item_MouseEnter(itemDef_t *item, float x, float y);
 
-// Try to increment force power level (Used by Force Power Allocation screen) 
+// Try to increment force power level (Used by Force Power Allocation screen)
 static void UI_AffectForcePowerLevel ( const char *forceName )
 {
 	short forcePowerI=0,i;
@@ -4930,21 +5098,20 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 		return;
 	}
 
-	int com_demo = Cvar_VariableIntegerValue( "com_demo" );
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 	playerState_t*		pState = NULL;
 	int	forcelevel;
-	if( cl && !com_demo)
+	if( cl )
 	{
 		pState = cl->gentity->client;
 		forcelevel = pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
-	
+
 
 	if (forcelevel>2)
 	{	// Too big, can't be incremented
@@ -4956,14 +5123,14 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 
 	uiInfo.forcePowerUpdated = forcePowerI;	// Remember which power was updated
 
-	if( pState && !com_demo )
+	if( pState )
 	{
 		pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]++;	// Increment it
 		pState->forcePowersKnown |= ( 1 << powerEnums[forcePowerI].powerEnum );
 		forcelevel = pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum]++;	// Increment it
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
@@ -5000,8 +5167,8 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 		// Make weapons button active
 		UI_ForcePowerWeaponsButton(qtrue);
 
-		// Make user_info 
-		Cvar_Set ( "ui_forcepower_inc", va("%d",uiInfo.forcePowerUpdated) );		
+		// Make user_info
+		Cvar_Set ( "ui_forcepower_inc", va("%d",uiInfo.forcePowerUpdated) );
 
 		// Just grab an item to hand it to the function.
 		item = (itemDef_s *) Menu_FindItemByName(menu, "deallocate_fbutton");
@@ -5021,7 +5188,7 @@ static void UI_DecrementForcePowerLevel( void )
 {
 	int	forcePowerI = Cvar_VariableIntegerValue( "ui_forcepower_inc" );
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5034,7 +5201,7 @@ static void UI_DecrementForcePowerLevel( void )
 
 }
 
-// Show force level description that matches current player level (Used by Force Power Allocation screen) 
+// Show force level description that matches current player level (Used by Force Power Allocation screen)
 static void UI_ShowForceLevelDesc ( const char *forceName )
 {
 	short forcePowerI=0;
@@ -5047,14 +5214,14 @@ static void UI_ShowForceLevelDesc ( const char *forceName )
 		return;
 	}
 
-	
+
 	if (!UI_GetForcePowerIndex ( forceName, &forcePowerI ))
 	{
 		return;
 	}
 
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5066,22 +5233,22 @@ static void UI_ShowForceLevelDesc ( const char *forceName )
 
 	// Update level description
 	Com_sprintf (
-		itemName, 
-		sizeof(itemName), 
-		"%s_level%ddesc", 
+		itemName,
+		sizeof(itemName),
+		"%s_level%ddesc",
 		powerEnums[forcePowerI].title,
 		pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]
 		);
 
 	item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
-	if (item)		
+	if (item)
 	{
 		item->window.flags |= WINDOW_VISIBLE;
 	}
 
 }
 
-// Reset force level powers screen to what it was before player upgraded them (Used by Force Power Allocation screen) 
+// Reset force level powers screen to what it was before player upgraded them (Used by Force Power Allocation screen)
 static void UI_ResetForceLevels ( void )
 {
 
@@ -5089,7 +5256,7 @@ static void UI_ResetForceLevels ( void )
 	if (uiInfo.forcePowerUpdated!=FP_UPDATED_NONE)
 	{
 		// Get player state
-		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 		if (!cl)	// No client, get out
 		{
@@ -5141,6 +5308,7 @@ static void UI_ResetForceLevels ( void )
 }
 
 
+#ifndef JK2_MODE
 // Set the Players known saber style
 static void UI_UpdateFightingStyle ( void )
 {
@@ -5172,7 +5340,7 @@ static void UI_UpdateFightingStyle ( void )
 	}
 
 	// Get player state
-	client_t	*cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t	*cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	// No client, get out
 	if (cl && cl->gentity && cl->gentity->client)
@@ -5182,9 +5350,10 @@ static void UI_UpdateFightingStyle ( void )
 	}
 	else	// Must be at the beginning of the game so the client hasn't been created, shove data in a cvar
 	{
-		Cvar_Set ( "g_fighting_style", va("%d",saberStyle) );		
+		Cvar_Set ( "g_fighting_style", va("%d",saberStyle) );
 	}
 }
+#endif // !JK2_MODE
 
 static void UI_ResetCharacterListBoxes( void )
 {
@@ -5194,7 +5363,7 @@ static void UI_ResetCharacterListBoxes( void )
 	listBoxDef_t *listPtr;
 
 	menu = Menus_FindByName("characterMenu");
-	
+
 
 	if (menu)
 	{
@@ -5247,7 +5416,7 @@ static void UI_ResetCharacterListBoxes( void )
 static void UI_ClearInventory ( void )
 {
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5270,7 +5439,7 @@ static void UI_ClearInventory ( void )
 static void UI_GiveInventory ( const int itemIndex, const int amount )
 {
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5289,7 +5458,7 @@ static void UI_GiveInventory ( const int itemIndex, const int amount )
 
 }
 
-//. Find weapons allocation screen BEGIN button and make active/inactive 
+//. Find weapons allocation screen BEGIN button and make active/inactive
 static void UI_WeaponAllocBeginButton(qboolean activeFlag)
 {
 	menuDef_t	*menu;
@@ -5301,7 +5470,7 @@ static void UI_WeaponAllocBeginButton(qboolean activeFlag)
 	}
 
 	int weap =	Cvar_VariableIntegerValue( "weapon_menu" );
-	
+
 	// Find begin button
 	itemDef_t	*item;
 	item = Menu_GetMatchingItemByNumber(menu, weap, "beginmission");
@@ -5320,7 +5489,7 @@ static void UI_WeaponAllocBeginButton(qboolean activeFlag)
 	}
 }
 
-// If we have both weapons and the throwable weapon, turn on the begin mission button, 
+// If we have both weapons and the throwable weapon, turn on the begin mission button,
 // otherwise, turn it off
 static void UI_WeaponsSelectionsComplete( void )
 {
@@ -5337,7 +5506,7 @@ static void UI_WeaponsSelectionsComplete( void )
 	}
 }
 
-// if this is the first time into the weapon allocation screen, show the INSTRUCTION screen 
+// if this is the first time into the weapon allocation screen, show the INSTRUCTION screen
 static void	UI_WeaponHelpActive( void )
 {
 	int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
@@ -5378,7 +5547,7 @@ static void UI_InitWeaponSelect( void )
 static void UI_ClearWeapons ( void )
 {
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5393,7 +5562,7 @@ static void UI_ClearWeapons ( void )
 		pState->stats[ STAT_WEAPONS ] = 0;
 
 		pState->weapon = WP_NONE;
-		
+
 	}
 
 }
@@ -5401,7 +5570,7 @@ static void UI_ClearWeapons ( void )
 static void UI_GiveWeapon ( const int weaponIndex )
 {
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5422,7 +5591,7 @@ static void UI_GiveWeapon ( const int weaponIndex )
 static void UI_EquipWeapon ( const int weaponIndex )
 {
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
 	{
@@ -5446,7 +5615,7 @@ static void	UI_LoadMissionSelectMenu( const char *cvarName )
 {
 	int holdLevel = (int)trap_Cvar_VariableValue(cvarName);
 
-	// Figure out which tier menu to load 
+	// Figure out which tier menu to load
 	if ((holdLevel > 0) && (holdLevel < 5))
 	{
 		UI_LoadMenus("ui/tier1.txt",qfalse);
@@ -5563,11 +5732,11 @@ static void	UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, 
 	}
 
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	// NOTE : this UIScript can now be run from outside the game, so don't
 	// return out here, just skip this part
-	if (cl)	
+	if (cl)
 	{
 		// Add weapon
 		if (cl->gentity && cl->gentity->client)
@@ -5589,7 +5758,7 @@ static void	UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, 
 
 	if( soundfile )
 	{
-		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );	
+		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );
 	}
 
 	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
@@ -5667,7 +5836,7 @@ static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
 	}
 
 	// Get player state
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	// NOTE : this UIScript can now be run from outside the game, so don't
 	// return out here, just skip this part
@@ -5710,7 +5879,10 @@ static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
 		uiInfo.selectedWeapon2AmmoIndex = 0;
 	}
 
+#ifndef JK2_MODE
+	//FIXME hack to prevent error in jk2 by disabling
 	DC->startLocalSound(DC->registerSound("sound/interface/weapon_deselect.mp3", qfalse), CHAN_LOCAL );
+#endif
 
 	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
 
@@ -5851,7 +6023,7 @@ static void	UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIn
 
 	// Get player state
 
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	// NOTE : this UIScript can now be run from outside the game, so don't
 	// return out here, just skip this part
@@ -5877,7 +6049,7 @@ static void	UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIn
 
 	if( soundfile )
 	{
-		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );	
+		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );
 	}
 
 	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
@@ -5930,7 +6102,7 @@ static void UI_RemoveThrowWeaponSelection ( void )
 
 	// Get player state
 
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	// NOTE : this UIScript can now be run from outside the game, so don't
 	// return out here, just skip this part
@@ -5966,7 +6138,10 @@ static void UI_RemoveThrowWeaponSelection ( void )
 		uiInfo.weaponThrowButton = NULL;
 	}
 
+#ifndef JK2_MODE
+	//FIXME hack to prevent error in jk2 by disabling
 	DC->startLocalSound(DC->registerSound("sound/interface/weapon_deselect.mp3", qfalse), CHAN_LOCAL );
+#endif
 
 	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
 
@@ -6047,11 +6222,11 @@ static void UI_UpdateCharacterSkin( void )
 		Com_Error( ERR_FATAL, "UI_UpdateCharacterSkin: Could not find item (character) in menu (%s)", menu->window.name);
 	}
 
-	Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
-										Cvar_VariableString ( "ui_char_model"), 
-										Cvar_VariableString ( "ui_char_skin_head"), 
-										Cvar_VariableString ( "ui_char_skin_torso"), 
-										Cvar_VariableString ( "ui_char_skin_legs") 
+	Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s",
+										Cvar_VariableString ( "ui_char_model"),
+										Cvar_VariableString ( "ui_char_skin_head"),
+										Cvar_VariableString ( "ui_char_skin_torso"),
+										Cvar_VariableString ( "ui_char_skin_legs")
 				);
 
 	ItemParse_model_g2skin_go( item, skin );
@@ -6228,6 +6403,7 @@ UI_ResetDefaults
 void UI_ResetDefaults( void )
 {
 	ui.Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
+	Controls_SetDefaults();
 	ui.Cmd_ExecuteText( EXEC_APPEND, "exec default.cfg\n");
 	ui.Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
 }
@@ -6237,7 +6413,7 @@ void UI_ResetDefaults( void )
 UI_SortSaveGames
 =======================
 */
-static int UI_SortSaveGames( const void *A, const void *B ) 
+static int UI_SortSaveGames( const void *A, const void *B )
 {
 
 	const int &a = ((savedata_t*)A)->currentSaveFileDateTime;
@@ -6260,7 +6436,7 @@ UI_AdjustSaveGameListBox
 */
 // Yeah I could get fired for this... in a world of good and bad, this is bad
 // I wish we passed in the menu item to RunScript(), oh well...
-void UI_AdjustSaveGameListBox( int currentLine ) 
+void UI_AdjustSaveGameListBox( int currentLine )
 {
 	menuDef_t *menu;
 	itemDef_t *item;
@@ -6282,11 +6458,11 @@ void UI_AdjustSaveGameListBox( int currentLine )
 			{
 				listPtr->cursorPos = currentLine;
 			}
-			
+
 			item->cursorPos = currentLine;
 		}
 	}
-	
+
 }
 
 /*
@@ -6304,9 +6480,11 @@ void ReadSaveDirectory (void)
 	// Clear out save data
 	memset(s_savedata,0,sizeof(s_savedata));
 	s_savegame.saveFileCnt = 0;
-	Cvar_Set("ui_gameDesc", "" );	// Blank out comment 
+	Cvar_Set("ui_gameDesc", "" );	// Blank out comment
 	Cvar_Set("ui_SelectionOK", "0" );
-	//memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
+#ifdef JK2_MODE
+	memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
+#endif
 
 
 	// Get everything in saves directory
@@ -6314,7 +6492,7 @@ void ReadSaveDirectory (void)
 
 	Cvar_Set("ui_ResumeOK", "0" );
 	holdChar = s_savegame.listBuf;
-	for ( i = 0; i < fileCnt; i++ ) 
+	for ( i = 0; i < fileCnt; i++ )
 	{
 		// strip extension
 		len = strlen( holdChar );
@@ -6330,11 +6508,11 @@ void ReadSaveDirectory (void)
 			else
 			{	// Is this a valid file??? & Get comment of file
 				result = ui.SG_GetSaveGameComment(holdChar, s_savedata[s_savegame.saveFileCnt].currentSaveFileComments, s_savedata[s_savegame.saveFileCnt].currentSaveFileMap);
-				if (result != 0) // ignore Bad save game 
+				if (result != 0) // ignore Bad save game
 				{
 					s_savedata[s_savegame.saveFileCnt].currentSaveFileName = holdChar;
 					s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTime = result;
-					
+
 					struct tm *localTime;
 					localTime = localtime( &result );
 					strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTimeString,asctime( localTime ) );
@@ -6346,7 +6524,7 @@ void ReadSaveDirectory (void)
 				}
 			}
 		}
-		
+
 		holdChar += len + 1;	//move to next item
 	}
 

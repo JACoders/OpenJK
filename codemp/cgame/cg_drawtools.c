@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_drawtools.c -- helper functions called by cg_draw, cg_scoreboard, cg_info, etc
 #include "cg_local.h"
 #include "qcommon/q_shared.h"
@@ -14,10 +35,10 @@ Coordinates are 640*480 virtual values
 */
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color ) {
 	trap->R_SetColor( color );
-	
+
 	CG_DrawTopBottom(x, y, width, height, size);
 	CG_DrawSides(x, y, width, height, size);
-	
+
 	trap->R_SetColor( NULL );
 }
 
@@ -205,12 +226,12 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
 		//
 		vec4_t color;
 		memcpy(color,setColor, sizeof(color));	// de-const it
-		CG_Text_Paint(x, y, 1.0f,	// float scale, 
-						color,		// vec4_t color, 
-						string,		// const char *text, 
-						0.0f,		// float adjust, 
-						0,			// int limit, 
-						shadow ? ITEM_TEXTSTYLE_SHADOWED : 0,	// int style, 
+		CG_Text_Paint(x, y, 1.0f,	// float scale,
+						color,		// vec4_t color,
+						string,		// const char *text,
+						0.0f,		// float adjust,
+						0,			// int limit,
+						shadow ? ITEM_TEXTSTYLE_SHADOWED : 0,	// int style,
 						FONT_MEDIUM		// iMenuFont
 						) ;
 	}
@@ -341,7 +362,7 @@ void CG_TileClear( void ) {
 	w = cgs.glconfig.vidWidth;
 	h = cgs.glconfig.vidHeight;
 
-	if ( cg.refdef.x == 0 && cg.refdef.y == 0 && 
+	if ( cg.refdef.x == 0 && cg.refdef.y == 0 &&
 		cg.refdef.width == w && cg.refdef.height == h ) {
 		return;		// full screen rendering
 	}
@@ -407,32 +428,32 @@ float *CG_FadeColor( int startMsec, int totalMsec ) {
 CG_ColorForHealth
 =================
 */
-void CG_ColorForGivenHealth( vec4_t hcolor, int health ) 
+void CG_ColorForGivenHealth( vec4_t hcolor, int health )
 {
 	// set the color based on health
 	hcolor[0] = 1.0;
-	if ( health >= 100 ) 
+	if ( health >= 100 )
 	{
 		hcolor[2] = 1.0;
-	} 
-	else if ( health < 66 ) 
+	}
+	else if ( health < 66 )
 	{
 		hcolor[2] = 0;
-	} 
-	else 
+	}
+	else
 	{
 		hcolor[2] = ( health - 66 ) / 33.0;
 	}
 
-	if ( health > 60 ) 
+	if ( health > 60 )
 	{
 		hcolor[1] = 1.0;
-	} 
-	else if ( health < 30 ) 
+	}
+	else if ( health < 30 )
 	{
 		hcolor[1] = 0;
-	} 
-	else 
+	}
+	else
 	{
 		hcolor[1] = ( health - 30 ) / 30.0;
 	}
@@ -443,7 +464,7 @@ void CG_ColorForGivenHealth( vec4_t hcolor, int health )
 CG_ColorForHealth
 =================
 */
-void CG_ColorForHealth( vec4_t hcolor ) 
+void CG_ColorForHealth( vec4_t hcolor )
 {
 	int		health;
 	int		count;
@@ -453,7 +474,7 @@ void CG_ColorForHealth( vec4_t hcolor )
 	// be sustained at the current health / armor level
 	health = cg.snap->ps.stats[STAT_HEALTH];
 
-	if ( health <= 0 ) 
+	if ( health <= 0 )
 	{
 		VectorClear( hcolor );	// black
 		hcolor[3] = 1;
@@ -462,7 +483,7 @@ void CG_ColorForHealth( vec4_t hcolor )
 
 	count = cg.snap->ps.stats[STAT_ARMOR];
 	max = health * ARMOR_PROTECTION / ( 1.0 - ARMOR_PROTECTION );
-	if ( max < count ) 
+	if ( max < count )
 	{
 		count = max;
 	}
@@ -480,7 +501,7 @@ Take x,y positions as if 640 x 480 and scales them to the proper resolution
 
 ==============
 */
-void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill) 
+void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill)
 {
 	char	num[16], *ptr;
 	int		l;
@@ -592,9 +613,9 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 }
 
 #include "ui/ui_shared.h"	// for some text style junk
-void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color ) 
+void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color )
 {
-	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff) 
+	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff)
 	//	is dumb, but for now...
 	//
 	int iStyle = 0;
@@ -635,9 +656,9 @@ void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 	CG_Text_Paint(x, y, 1.0, color, str, 0, 0, iStyle, iMenuFont);
 }
 
-void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale) 
+void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale)
 {
-	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff) 
+	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff)
 	//	is dumb, but for now...
 	//
 	int iStyle = 0;

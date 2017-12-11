@@ -1,5 +1,24 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // Interpreted Block Stream Functions
 //
@@ -7,12 +26,6 @@
 
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
-
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4100)  //unref formal parm
-#pragma warning(disable : 4710)  //member not inlined
-#endif
 
 #include <string.h>
 #include "blockstream.h"
@@ -61,7 +74,7 @@ GetInfo
 */
 
 void CBlockMember::GetInfo( int *id, int *size, void **data )
-{	
+{
 	*id = m_id;
 	*size = m_size;
 	*data = m_data;
@@ -103,7 +116,7 @@ ReadMember
 
 int CBlockMember::ReadMember( char **stream, int *streamPos )
 {
-	m_id = *(int *) (*stream + *((int *)streamPos));
+	m_id = LittleLong(*(int *) (*stream + *((int *)streamPos)));
 	*streamPos += sizeof( int );
 
 	if ( m_id == ID_RANDOM )
@@ -116,13 +129,18 @@ int CBlockMember::ReadMember( char **stream, int *streamPos )
 	}
 	else
 	{
-		m_size = *(int *) (*stream + *streamPos);
+		m_size = LittleLong(*(int *) (*stream + *streamPos));
 		*streamPos += sizeof( int );
 		m_data = ICARUS_Malloc( m_size );
 		memcpy( m_data, (*stream + *streamPos), m_size );
+#ifdef Q3_BIG_ENDIAN
+		// only TK_INT, TK_VECTOR and TK_FLOAT has to be swapped, but just in case
+		if (m_size == 4 && m_id != TK_STRING && m_id != TK_IDENTIFIER && m_id != TK_CHAR)
+			*(int *)m_data = LittleLong(*(int *)m_data);
+#endif
 	}
 	*streamPos += m_size;
-	
+
 	return true;
 }
 
@@ -248,7 +266,7 @@ int CBlock::Write( int member_id, const char *member_data )
 	CBlockMember *bMember = new CBlockMember;
 
 	bMember->SetID( member_id );
-	
+
 	bMember->SetData( member_data );
 	bMember->SetSize( strlen(member_data) + 1 );
 
@@ -259,7 +277,7 @@ int CBlock::Write( int member_id, const char *member_data )
 
 int CBlock::Write( int member_id, vector_t member_data )
 {
-	CBlockMember *bMember; 
+	CBlockMember *bMember;
 
 	bMember = new CBlockMember;
 
@@ -302,7 +320,7 @@ int CBlock::Write( int member_id, int member_data )
 int CBlock::Write( CBlockMember *bMember )
 {
 // findme: this is wrong:	bMember->SetSize( sizeof(bMember->GetData()) );
-	
+
 	AddMember( bMember );
 
 	return true;
@@ -477,30 +495,6 @@ float CBlockStream::GetFloat( void )
 	return data;
 }
 
-//	Extension stripping utility
-
-/*
--------------------------
-StripExtension
--------------------------
-*/
-
-void CBlockStream::StripExtension( const char *in, char *out )
-{
-	int		i = strlen(in);
-	
-	while ( (in[i] != '.') && (i >= 0) )
-	 i--;
-
-	if ( i < 0 )
-	{
-		strcpy(out, in);
-		return;
-	}
-
-	strncpy(out, in, i);
-}
-
 /*
 -------------------------
 Free
@@ -526,19 +520,12 @@ Create
 
 int CBlockStream::Create( char *filename )
 {
-	char	newName[MAX_FILENAME_LENGTH], *id_header = IBI_HEADER_ID;
+	char	*id_header = IBI_HEADER_ID;
 	float	version = IBI_VERSION;
-	
-	//Clear the temp string
-	memset(newName, 0, sizeof(newName));
 
 	//Strip the extension and add the BLOCK_EXT extension
-	strcpy((char *) m_fileName, filename);
-	StripExtension( (char *) m_fileName, (char *) &newName );
-	strcat((char *) newName, IBI_EXT);
-
-	//Recover that as the active filename
-	strcpy(m_fileName, newName);
+	COM_StripExtension( filename, m_fileName, sizeof(m_fileName) );
+	COM_DefaultExtension( m_fileName, sizeof(m_fileName), IBI_EXT );
 
 	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{
@@ -583,12 +570,12 @@ int CBlockStream::WriteBlock( CBlock *block )
 	int				numMembers = block->GetNumMembers();
 	unsigned char	flags = block->GetFlags();
 
-	fwrite ( &id, sizeof(id), 1, m_fileHandle ); 
+	fwrite ( &id, sizeof(id), 1, m_fileHandle );
 	fwrite ( &numMembers, sizeof(numMembers), 1, m_fileHandle );
 	fwrite ( &flags, sizeof( flags ), 1, m_fileHandle );
 
 	for ( int i = 0; i < numMembers; i++ )
-	{	
+	{
 		bMember = block->GetMember( i );
 		bMember->WriteMember( m_fileHandle );
 	}
@@ -627,8 +614,8 @@ int CBlockStream::ReadBlock( CBlock *get )
 	if (!BlockAvailable())
 		return false;
 
-	b_id		= GetInteger();
-	numMembers	= GetInteger();
+	b_id		= LittleLong(GetInteger());
+	numMembers	= LittleLong(GetInteger());
 	flags		= (unsigned char) GetChar();
 
 	if (numMembers < 0)
@@ -640,7 +627,7 @@ int CBlockStream::ReadBlock( CBlock *get )
 	// Stream blocks are generally temporary as they
 	// are just used in an initial parsing phase...
 	while ( numMembers-- > 0)
-	{	
+	{
 		bMember = new CBlockMember;
 		bMember->ReadMember( &m_stream, &m_streamPos );
 		get->AddMember( bMember );
@@ -659,7 +646,7 @@ int CBlockStream::Open( char *buffer, long size )
 {
 	char	id_header[IBI_HEADER_ID_LENGTH];
 	float	version;
-	
+
 	Init();
 
 	m_fileSize = size;
@@ -672,6 +659,7 @@ int CBlockStream::Open( char *buffer, long size )
 	}
 
 	version = GetFloat();
+	version = LittleFloat(version);
 
 	//Check for valid header
 	if ( strcmp( id_header, IBI_HEADER_ID ) )

@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_light.c
 
 #include "tr_local.h"
@@ -5,7 +28,7 @@
 #define	DLIGHT_AT_RADIUS		16
 // at the edge of a dlight's influence, this amount of light will be added
 
-#define	DLIGHT_MINIMUM_RADIUS	16		
+#define	DLIGHT_MINIMUM_RADIUS	16
 // never calculate a range less than this to prevent huge light numbers
 
 
@@ -184,7 +207,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 		}
 		data = tr.world->lightGridData + *gridPos;
 
-		if ( data->styles[0] == LS_LSNONE ) 
+		if ( data->styles[0] == LS_LSNONE )
 		{
 			continue;	// ignore samples in walls
 		}
@@ -227,7 +250,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 		VectorMA( direction, factor, normal, direction );
 	}
 
-	if ( totalFactor > 0 && totalFactor < 0.99 ) 
+	if ( totalFactor > 0 && totalFactor < 0.99 )
 	{
 		totalFactor = 1.0 / totalFactor;
 		VectorScale( ent->ambientLight, totalFactor, ent->ambientLight );
@@ -287,7 +310,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	vec3_t			lightDir;
 	vec3_t			lightOrigin;
 
-	// lighting calculations 
+	// lighting calculations
 	if ( ent->lightingCalculated ) {
 		return;
 	}
@@ -306,13 +329,13 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 
 	// if NOWORLDMODEL, only use dynamic lights (menu system, etc)
-	if ( !(refdef->rdflags & RDF_NOWORLDMODEL ) 
+	if ( !(refdef->rdflags & RDF_NOWORLDMODEL )
 		&& tr.world->lightGridData ) {
 		R_SetupEntityLightingGrid( ent );
 	} else {
-		ent->ambientLight[0] = ent->ambientLight[1] = 
+		ent->ambientLight[0] = ent->ambientLight[1] =
 			ent->ambientLight[2] = tr.identityLight * 150;
-		ent->directedLight[0] = ent->directedLight[1] = 
+		ent->directedLight[0] = ent->directedLight[1] =
 			ent->directedLight[2] = tr.identityLight * 150;
 		VectorCopy( tr.sunDirection, ent->lightDir );
 	}
@@ -380,7 +403,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	((byte *)&ent->ambientLightInt)[1] = Q_ftol( ent->ambientLight[1] );
 	((byte *)&ent->ambientLightInt)[2] = Q_ftol( ent->ambientLight[2] );
 	((byte *)&ent->ambientLightInt)[3] = 0xff;
-	
+
 	// transform the direction to local space
 	VectorNormalize( lightDir );
 	ent->lightDir[0] = DotProduct( lightDir, ent->e.axis[0] );
@@ -396,10 +419,9 @@ R_LightForPoint
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir )
 {
 	trRefEntity_t ent;
-	
-	// bk010103 - this segfaults with -nolight maps
+
 	if ( tr.world->lightGridData == NULL )
-	  return qfalse;
+		return qfalse;
 
 	memset(&ent, 0, sizeof(ent));
 	VectorCopy( point, ent.e.origin );

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //rww - rewrite from C++ SP version.
 //This is here only to make porting from SP easier, it's really sort of nasty (being static
 //now). Basically it's slower and takes more memory.
@@ -75,7 +97,7 @@ void TIMER_Clear2( gentity_t *ent )
 
 
 //New C "lookup" func.
-//Returns existing timer in array if 
+//Returns existing timer in array if
 gtimer_t *TIMER_GetNew(int num, const char *identifier)
 {
 	gtimer_t *p = g_timers[num];
@@ -116,9 +138,9 @@ gtimer_t *TIMER_GetExisting(int num, const char *identifier)
 
 		p = p->next;
 	}
-	
+
 	return NULL;
-}	
+}
 
 /*
 -------------------------
@@ -214,8 +236,8 @@ void TIMER_RemoveHelper( int num, gtimer_t *timer )
 -------------------------
 TIMER_Done2
 
-Returns false if timer has been 
-started but is not done...or if 
+Returns false if timer has been
+started but is not done...or if
 timer was never started
 -------------------------
 */

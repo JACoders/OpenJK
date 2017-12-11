@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //seems to be a compiler bug, it doesn't clean out the #ifdefs between dif-compiles
 //or something, so the headers spew errors on these defs from the previous compile.
@@ -148,7 +152,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	/************************************************************************************/
 
 	//Client sets ucmds and such for speed alterations
-	float speedInc, speedIdleDec, speedIdle, speedIdleAccel, speedMin, speedMax;
+	float speedInc, speedIdleDec, speedIdle, /*speedIdleAccel, */speedMin, speedMax;
 	float fWalkSpeedMax;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
 #ifdef _JK2MP
@@ -161,7 +165,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	speedMax = pVeh->m_pVehicleInfo->speedMax;
 
 	speedIdle = pVeh->m_pVehicleInfo->speedIdle;
-	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
+	//speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
 	speedMin = pVeh->m_pVehicleInfo->speedMin;
 
 #ifdef _JK2MP
@@ -182,7 +186,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 	if ( parentPS->speed || parentPS->groundEntityNum == ENTITYNUM_NONE  ||
 		 pVeh->m_ucmd.forwardmove || pVeh->m_ucmd.upmove > 0 )
-	{ 
+	{
 		if ( pVeh->m_ucmd.forwardmove > 0 && speedInc )
 		{
 			parentPS->speed += speedInc;
@@ -229,7 +233,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 		pVeh->m_ucmd.rightmove = 0;
 
-		/*if ( !pVeh->m_pVehicleInfo->strafePerc 
+		/*if ( !pVeh->m_pVehicleInfo->strafePerc
 			|| (!g_speederControlScheme->value && !parent->s.number) )
 		{//if in a strafe-capable vehicle, clear strafing unless using alternate control scheme
 			pVeh->m_ucmd.rightmove = 0;
@@ -272,7 +276,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	/********************************************************************************/
 	/*	BEGIN	Here is where make sure the vehicle is properly oriented.	BEGIN	*/
 	/********************************************************************************/
-	float speed;
+	//float speed;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
 	playerState_t *parentPS, *riderPS;
 
@@ -303,7 +307,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	riderPS = &rider->client->ps;
 #endif
 
-	speed = VectorLength( parentPS->velocity );
+	//speed = VectorLength( parentPS->velocity );
 
 	// If the player is the rider...
 	if ( rider->s.number < MAX_CLIENTS )
@@ -320,7 +324,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	else
 	{
 		float turnSpeed = pVeh->m_pVehicleInfo->turningSpeed;
-		if ( !pVeh->m_pVehicleInfo->turnWhenStopped 
+		if ( !pVeh->m_pVehicleInfo->turnWhenStopped
 			&& !parentPS->speed )//FIXME: or !pVeh->m_ucmd.forwardmove?
 		{//can't turn when not moving
 			//FIXME: or ramp up to max turnSpeed?
@@ -368,18 +372,18 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 // This function makes sure that the vehicle is properly animated.
 static void AnimateVehicle( Vehicle_t *pVeh )
 {
-	animNumber_t Anim = BOTH_STAND1; 
+	animNumber_t Anim = BOTH_STAND1;
 	int iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 	gentity_t *parent = (gentity_t *)pVeh->m_pParentEntity;
 	float fSpeedPercToMax;
 
 	// We're dead (boarding is reused here so I don't have to make another variable :-).
-	if ( parent->health <= 0 ) 
+	if ( parent->health <= 0 )
 	{
 		if ( pVeh->m_iBoarding != -999 )	// Animate the death just once!
 		{
 			pVeh->m_iBoarding = -999;
-			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD; 
+			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
 
 			// FIXME! Why do you keep repeating over and over!!?!?!? Bastard!
 			//Vehicle_SetAnim( parent, SETANIM_LEGS, BOTH_VT_DEATH1, iFlags, iBlend );
@@ -403,16 +407,16 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	// Percentage of maximum speed relative to current speed.
 	//float fSpeed = VectorLength( client->ps.velocity );
-	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax; 
+	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
 
 	// If we're moving...
 	if ( fSpeedPercToMax > 0.0f ) //fSpeedPercToMax >= 0.85f )
-	{  
-		float fYawDelta;
+	{
+		//float fYawDelta;
 
 		iBlend = 300;
 		iFlags = SETANIM_FLAG_OVERRIDE;
-		fYawDelta = pVeh->m_vPrevOrientation[YAW] - pVeh->m_vOrientation[YAW];
+		//fYawDelta = pVeh->m_vPrevOrientation[YAW] - pVeh->m_vOrientation[YAW];
 
 		// NOTE: Mikes suggestion for fixing the stuttering walk (left/right) is to maintain the
 		// current frame between animations. I have no clue how to do this and have to work on other
@@ -420,7 +424,7 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 		// If we're walking (or our speed is less than .275%)...
 		if ( ( pVeh->m_ucmd.buttons & BUTTON_WALKING ) || fSpeedPercToMax < 0.275f )
-		{ 
+		{
 			// Make them lean if we're turning.
 			/*if ( fYawDelta < -0.0001f )
 			{
@@ -464,10 +468,10 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 		}
 		else
 		{
-			//int iChance = Q_irand( 0, 20000 ); 
+			//int iChance = Q_irand( 0, 20000 );
 
 			// Every once in a while buck or do a different idle...
-			iFlags = SETANIM_FLAG_NORMAL | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD; 
+			iFlags = SETANIM_FLAG_NORMAL | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD;
 			iBlend = 600;
 #ifdef _JK2MP
 			if (parent->client->ps.m_iVehicleNum)

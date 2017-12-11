@@ -1,11 +1,31 @@
-// Copyright (C) 2000-2002 Raven Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 /*****************************************************************************
  * name:		cg_siege.c
  *
  * desc:		Clientgame-side module for Siege gametype.
  *
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.5 $
  *
  *****************************************************************************/
@@ -119,17 +139,17 @@ void CG_PrecachePlayersForSiegeTeam(int team)
 			clientInfo_t fake;
 
 			memset(&fake, 0, sizeof(fake));
-			strcpy(fake.modelName, scl->forcedModel);
+			Q_strncpyz(fake.modelName, scl->forcedModel, sizeof(fake.modelName));
 
 			trap->R_RegisterModel(va("models/players/%s/model.glm", scl->forcedModel));
 			if (scl->forcedSkin[0])
 			{
 				trap->R_RegisterSkin(va("models/players/%s/model_%s.skin", scl->forcedModel, scl->forcedSkin));
-				strcpy(fake.skinName, scl->forcedSkin);
+				Q_strncpyz(fake.skinName, scl->forcedSkin, sizeof(fake.modelName));
 			}
 			else
 			{
-				strcpy(fake.skinName, "default");
+				Q_strncpyz(fake.skinName, "default", sizeof(fake.skinName));
 			}
 
 			//precache the sounds for the model...
@@ -159,23 +179,7 @@ void CG_InitSiegeMode(void)
 		goto failure;
 	}
 
-	Com_sprintf(levelname, sizeof(levelname), "%s\0", cgs.mapname);
-
-	i = strlen(levelname)-1;
-
-	while (i > 0 && levelname[i] && levelname[i] != '.')
-	{
-		i--;
-	}
-
-	if (!i)
-	{
-		goto failure;
-	}
-
-	levelname[i] = '\0'; //kill the ".bsp"
-
-	Com_sprintf(levelname, sizeof(levelname), "%s.siege\0", levelname); 
+	Com_sprintf(levelname, sizeof(levelname), "%s.siege", cgs.rawmapname);
 
 	if (!levelname[0])
 	{
@@ -202,7 +206,7 @@ void CG_InitSiegeMode(void)
 		trap->Cvar_VariableStringBuffer("cg_siegeTeam1", buf, 1024);
 		if (buf[0] && Q_stricmp(buf, "none"))
 		{
-			strcpy(team1, buf);
+			Q_strncpyz(team1, buf, sizeof(team1));
 		}
 		else
 		{
@@ -223,7 +227,7 @@ void CG_InitSiegeMode(void)
 		trap->Cvar_VariableStringBuffer("cg_siegeTeam2", buf, 1024);
 		if (buf[0] && Q_stricmp(buf, "none"))
 		{
-			strcpy(team2, buf);
+			Q_strncpyz(team2, buf, sizeof(team2));
 		}
 		else
 		{
@@ -406,7 +410,7 @@ void CG_InitSiegeMode(void)
 					trap->R_RegisterSkin(useSkinName);
 				}
 			}
-			
+
 			j++;
 		}
 		i++;
@@ -757,7 +761,7 @@ void CG_SiegeBriefingDisplay(int team, int dontshow)
 	{ //do up to 16 objectives I suppose
 		//Get the value for this objective on this team
 		//Now set the cvar for the menu to display.
-		
+
 		//primary = (CG_SiegeGetObjectiveFinal(useTeam, i)>-1)?qtrue:qfalse;
 		primary = (CG_SiegeGetObjectiveFinal(useTeam, i)>0)?qtrue:qfalse;
 

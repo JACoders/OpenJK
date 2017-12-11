@@ -1,9 +1,29 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
-
-#define	CGAME_API_VERSION		1
+#define	CGAME_API_VERSION		2
 
 #define	CMD_BACKUP			512//JAPRO - FPS UNLOCK ENGINE	
 #define	CMD_MASK			(CMD_BACKUP - 1)
@@ -425,7 +445,7 @@ typedef enum cgameExportLegacy_e {
 	CG_DRAW_ACTIVE_FRAME,
 	CG_CROSSHAIR_PLAYER,
 	CG_LAST_ATTACKER,
-	CG_KEY_EVENT, 
+	CG_KEY_EVENT,
 	CG_MOUSE_EVENT,
 	CG_EVENT_HANDLING,
 	CG_POINT_CONTENTS,
@@ -456,7 +476,7 @@ typedef enum cgameExportLegacy_e {
 typedef struct cgameImport_s {
 	// common
 	void			(*Print)								( const char *msg, ... );
-	void			(*Error)								( int level, const char *error, ... );
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	void			(*SnapVector)							( float *v );
 	int				(*MemoryRemaining)						( void );
 	void			(*RegisterSharedMemory)					( char *memory );
@@ -470,11 +490,11 @@ typedef struct cgameImport_s {
 	int				(*PrecisionTimerEnd)					( void *timer );
 
 	// cvar
-	void			(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
+	void			(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags );
 	void			(*Cvar_Set)								( const char *var_name, const char *value );
 	void			(*Cvar_Update)							( vmCvar_t *vmCvar );
 	void			(*Cvar_VariableStringBuffer)			( const char *var_name, char *buffer, int bufsize );
-	
+
 	// command
 	void			(*AddCommand)							( const char *cmd_name );
 	int				(*Cmd_Argc)								( void );
@@ -693,6 +713,10 @@ typedef struct cgameImport_s {
 	void			(*G2API_CleanEntAttachments)			( void );
 	qboolean		(*G2API_OverrideServer)					( void *serverInstance );
 	void			(*G2API_GetSurfaceName)					( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf );
+
+	struct {
+		float			(*R_Font_StrLenPixels)					( const char *text, const int iFontIndex, const float scale );
+	} ext;
 } cgameImport_t;
 
 typedef struct cgameExport_s {

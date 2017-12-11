@@ -1,30 +1,29 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //b_spawn.cpp
 //added by MCG
 
-// leave this line at the top for all NPC_xxxx.cpp files...
 #include "g_headers.h"
-
-
-
-
 
 #include "b_local.h"
 #include "anims.h"
@@ -404,18 +403,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
 	switch(team)
 	{
-	// no longer exists
-//	case TEAM_BORG:
-//		break;
-
-//	case TEAM_HIROGEN:
-//		if( Q_stricmp( "hirogenalpha", NPC_type ) == 0 )
-//			return ( 1 << WP_BLASTER);
-		//Falls through
-
-//	case TEAM_KLINGON:
-
-		//NOTENOTE: Falls through
 
 //	case TEAM_IMPERIAL:
 	case TEAM_ENEMY:
@@ -427,8 +414,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 //			return ( 1 << WP_IMPERIAL_BLADE);
 		//NOTENOTE: Falls through if not a knife user
 
-//	case TEAM_SCAVENGERS:
-//	case TEAM_MALON:
 		//FIXME: default weapon in npc config?
 		if ( Q_strncmp( "stofficer", NPC_type, 9 ) == 0 )
 		{
@@ -553,9 +538,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		break;
 
 	case TEAM_PLAYER:
-		
-//		if(spawnflags & SFB_TRICORDER)
-//			return ( 1 << WP_TRICORDER);
 		
 		if(spawnflags & SFB_RIFLEMAN)
 			return ( 1 << WP_REPEATER);
@@ -1063,7 +1045,7 @@ void NPC_Begin (gentity_t *ent)
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	memset( &ucmd, 0, sizeof( ucmd ) );
-	_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+	VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 	
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 
@@ -1240,7 +1222,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	newent->NPC->tempGoal->owner = newent;
 	newent->NPC->tempGoal->svFlags |= SVF_NOCLIENT;
 
-	newent->client = (gclient_s *)G_Alloc (sizeof(gclient_s));
+	newent->client = (gclient_t *)G_Alloc (sizeof(gclient_t));
 	
 	if ( newent->client == NULL ) 
 	{

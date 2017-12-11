@@ -1,21 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-	    
+
 #include "b_local.h"
 #include "g_navigator.h"
 
@@ -46,7 +50,7 @@ gentity_t* NPC_AnimalUpdateLeader(void)
 	gentity_t*	closestLeader = 0;
 	float		closestDist = 0;
 	int			myLeaderNum = 0;
-	
+
 	for (int i=0; i<mPacks.size(); i++)
 	{
 		// Dump Dead Leaders
@@ -114,7 +118,7 @@ gentity_t* NPC_AnimalUpdateLeader(void)
 			{
 				NPC->client->leader = 0;
 			}
-			
+
 			// If My Leader Isn't His Own Leader, Then, Use His Leader
 			//---------------------------------------------------------
 			else if (NPC->client->leader->client->leader!=NPC->client->leader)
@@ -332,10 +336,10 @@ void NPC_BSAnimal_Default( void )
 						//-------------------
 						int		NEXTSUBSTATE = Q_irand(0, 10);
 
-						bool	RandomPathNode = (NEXTSUBSTATE<8); //(NEXTSUBSTATE<9);  
-						bool	PathlessWander = (NEXTSUBSTATE<9); //false;				
+						bool	RandomPathNode = (NEXTSUBSTATE<8); //(NEXTSUBSTATE<9);
+						bool	PathlessWander = (NEXTSUBSTATE<9); //false;
 
-						
+
 
 						// Random Path Node
 						//------------------
@@ -401,7 +405,7 @@ void NPC_BSAnimal_Default( void )
 			}
 		}
 	}
-	STEER::DeActivate(NPC, &ucmd); 
+	STEER::DeActivate(NPC, &ucmd);
 
 	NPC_UpdateAngles( qtrue, qtrue );
 }

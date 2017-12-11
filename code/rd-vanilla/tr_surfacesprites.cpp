@@ -1,27 +1,28 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_surfacesprites.c
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "tr_quicksprite.h"
 #include "tr_WorldEffects.h"
@@ -30,7 +31,7 @@ This file is part of Jedi Academy.
 /////===== Part of the VERTIGON system =====/////
 // The surfacesprites are a simple system.  When a polygon with this shader stage on it is drawn,
 // there are randomly distributed images (defined by the shader stage) placed on the surface.
-// these are capable of doing effects, grass, or simple oriented sprites.  
+// these are capable of doing effects, grass, or simple oriented sprites.
 // They usually stick vertically off the surface, hence the term vertigons.
 
 // The vertigons are applied as part of the renderer backend.  That is, they access OpenGL calls directly.
@@ -38,37 +39,37 @@ This file is part of Jedi Academy.
 
 unsigned char randomindex, randominterval;
 const float randomchart[256] = {
-	0.6554f, 0.6909f, 0.4806f, 0.6218f, 0.5717f, 0.3896f, 0.0677f, 0.7356f, 
-	0.8333f, 0.1105f, 0.4445f, 0.8161f, 0.4689f, 0.0433f, 0.7152f, 0.0336f, 
-	0.0186f, 0.9140f, 0.1626f, 0.6553f, 0.8340f, 0.7094f, 0.2020f, 0.8087f, 
-	0.9119f, 0.8009f, 0.1339f, 0.8492f, 0.9173f, 0.5003f, 0.6012f, 0.6117f, 
-	0.5525f, 0.5787f, 0.1586f, 0.3293f, 0.9273f, 0.7791f, 0.8589f, 0.4985f, 
-	0.0883f, 0.8545f, 0.2634f, 0.4727f, 0.3624f, 0.1631f, 0.7825f, 0.0662f, 
-	0.6704f, 0.3510f, 0.7525f, 0.9486f, 0.4685f, 0.1535f, 0.1545f, 0.1121f, 
-	0.4724f, 0.8483f, 0.3833f, 0.1917f, 0.8207f, 0.3885f, 0.9702f, 0.9200f, 
-	0.8348f, 0.7501f, 0.6675f, 0.4994f, 0.0301f, 0.5225f, 0.8011f, 0.1696f, 
-	0.5351f, 0.2752f, 0.2962f, 0.7550f, 0.5762f, 0.7303f, 0.2835f, 0.4717f, 
-	0.1818f, 0.2739f, 0.6914f, 0.7748f, 0.7640f, 0.8355f, 0.7314f, 0.5288f, 
-	0.7340f, 0.6692f, 0.6813f, 0.2810f, 0.8057f, 0.0648f, 0.8749f, 0.9199f, 
-	0.1462f, 0.5237f, 0.3014f, 0.4994f, 0.0278f, 0.4268f, 0.7238f, 0.5107f, 
-	0.1378f, 0.7303f, 0.7200f, 0.3819f, 0.2034f, 0.7157f, 0.5552f, 0.4887f, 
-	0.0871f, 0.3293f, 0.2892f, 0.4545f, 0.0088f, 0.1404f, 0.0275f, 0.0238f, 
-	0.0515f, 0.4494f, 0.7206f, 0.2893f, 0.6060f, 0.5785f, 0.4182f, 0.5528f, 
-	0.9118f, 0.8742f, 0.3859f, 0.6030f, 0.3495f, 0.4550f, 0.9875f, 0.6900f, 
-	0.6416f, 0.2337f, 0.7431f, 0.9788f, 0.6181f, 0.2464f, 0.4661f, 0.7621f, 
-	0.7020f, 0.8203f, 0.8869f, 0.2145f, 0.7724f, 0.6093f, 0.6692f, 0.9686f, 
-	0.5609f, 0.0310f, 0.2248f, 0.2950f, 0.2365f, 0.1347f, 0.2342f, 0.1668f, 
-	0.3378f, 0.4330f, 0.2775f, 0.9901f, 0.7053f, 0.7266f, 0.4840f, 0.2820f, 
-	0.5733f, 0.4555f, 0.6049f, 0.0770f, 0.4760f, 0.6060f, 0.4159f, 0.3427f, 
-	0.1234f, 0.7062f, 0.8569f, 0.1878f, 0.9057f, 0.9399f, 0.8139f, 0.1407f, 
-	0.1794f, 0.9123f, 0.9493f, 0.2827f, 0.9934f, 0.0952f, 0.4879f, 0.5160f, 
-	0.4118f, 0.4873f, 0.3642f, 0.7470f, 0.0866f, 0.5172f, 0.6365f, 0.2676f, 
-	0.2407f, 0.7223f, 0.5761f, 0.1143f, 0.7137f, 0.2342f, 0.3353f, 0.6880f, 
-	0.2296f, 0.6023f, 0.6027f, 0.4138f, 0.5408f, 0.9859f, 0.1503f, 0.7238f, 
-	0.6054f, 0.2477f, 0.6804f, 0.1432f, 0.4540f, 0.9776f, 0.8762f, 0.7607f, 
-	0.9025f, 0.9807f, 0.0652f, 0.8661f, 0.7663f, 0.2586f, 0.3994f, 0.0335f, 
-	0.7328f, 0.0166f, 0.9589f, 0.4348f, 0.5493f, 0.7269f, 0.6867f, 0.6614f, 
-	0.6800f, 0.7804f, 0.5591f, 0.8381f, 0.0910f, 0.7573f, 0.8985f, 0.3083f, 
+	0.6554f, 0.6909f, 0.4806f, 0.6218f, 0.5717f, 0.3896f, 0.0677f, 0.7356f,
+	0.8333f, 0.1105f, 0.4445f, 0.8161f, 0.4689f, 0.0433f, 0.7152f, 0.0336f,
+	0.0186f, 0.9140f, 0.1626f, 0.6553f, 0.8340f, 0.7094f, 0.2020f, 0.8087f,
+	0.9119f, 0.8009f, 0.1339f, 0.8492f, 0.9173f, 0.5003f, 0.6012f, 0.6117f,
+	0.5525f, 0.5787f, 0.1586f, 0.3293f, 0.9273f, 0.7791f, 0.8589f, 0.4985f,
+	0.0883f, 0.8545f, 0.2634f, 0.4727f, 0.3624f, 0.1631f, 0.7825f, 0.0662f,
+	0.6704f, 0.3510f, 0.7525f, 0.9486f, 0.4685f, 0.1535f, 0.1545f, 0.1121f,
+	0.4724f, 0.8483f, 0.3833f, 0.1917f, 0.8207f, 0.3885f, 0.9702f, 0.9200f,
+	0.8348f, 0.7501f, 0.6675f, 0.4994f, 0.0301f, 0.5225f, 0.8011f, 0.1696f,
+	0.5351f, 0.2752f, 0.2962f, 0.7550f, 0.5762f, 0.7303f, 0.2835f, 0.4717f,
+	0.1818f, 0.2739f, 0.6914f, 0.7748f, 0.7640f, 0.8355f, 0.7314f, 0.5288f,
+	0.7340f, 0.6692f, 0.6813f, 0.2810f, 0.8057f, 0.0648f, 0.8749f, 0.9199f,
+	0.1462f, 0.5237f, 0.3014f, 0.4994f, 0.0278f, 0.4268f, 0.7238f, 0.5107f,
+	0.1378f, 0.7303f, 0.7200f, 0.3819f, 0.2034f, 0.7157f, 0.5552f, 0.4887f,
+	0.0871f, 0.3293f, 0.2892f, 0.4545f, 0.0088f, 0.1404f, 0.0275f, 0.0238f,
+	0.0515f, 0.4494f, 0.7206f, 0.2893f, 0.6060f, 0.5785f, 0.4182f, 0.5528f,
+	0.9118f, 0.8742f, 0.3859f, 0.6030f, 0.3495f, 0.4550f, 0.9875f, 0.6900f,
+	0.6416f, 0.2337f, 0.7431f, 0.9788f, 0.6181f, 0.2464f, 0.4661f, 0.7621f,
+	0.7020f, 0.8203f, 0.8869f, 0.2145f, 0.7724f, 0.6093f, 0.6692f, 0.9686f,
+	0.5609f, 0.0310f, 0.2248f, 0.2950f, 0.2365f, 0.1347f, 0.2342f, 0.1668f,
+	0.3378f, 0.4330f, 0.2775f, 0.9901f, 0.7053f, 0.7266f, 0.4840f, 0.2820f,
+	0.5733f, 0.4555f, 0.6049f, 0.0770f, 0.4760f, 0.6060f, 0.4159f, 0.3427f,
+	0.1234f, 0.7062f, 0.8569f, 0.1878f, 0.9057f, 0.9399f, 0.8139f, 0.1407f,
+	0.1794f, 0.9123f, 0.9493f, 0.2827f, 0.9934f, 0.0952f, 0.4879f, 0.5160f,
+	0.4118f, 0.4873f, 0.3642f, 0.7470f, 0.0866f, 0.5172f, 0.6365f, 0.2676f,
+	0.2407f, 0.7223f, 0.5761f, 0.1143f, 0.7137f, 0.2342f, 0.3353f, 0.6880f,
+	0.2296f, 0.6023f, 0.6027f, 0.4138f, 0.5408f, 0.9859f, 0.1503f, 0.7238f,
+	0.6054f, 0.2477f, 0.6804f, 0.1432f, 0.4540f, 0.9776f, 0.8762f, 0.7607f,
+	0.9025f, 0.9807f, 0.0652f, 0.8661f, 0.7663f, 0.2586f, 0.3994f, 0.0335f,
+	0.7328f, 0.0166f, 0.9589f, 0.4348f, 0.5493f, 0.7269f, 0.6867f, 0.6614f,
+	0.6800f, 0.7804f, 0.5591f, 0.8381f, 0.0910f, 0.7573f, 0.8985f, 0.3083f,
 	0.3188f, 0.8481f, 0.2356f, 0.6736f, 0.4770f, 0.4560f, 0.6266f, 0.4677f
 };
 
@@ -127,7 +128,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 
 	// Adjust for an FOV.  If things look twice as wide on the screen, pretend the shaders have twice the range.
 	// ASSUMPTION HERE IS THAT "standard" fov is the first one rendered.
-	
+
 	if (!standardfovinitialized)
 	{	// This isn't initialized yet.
 		if (backEnd.refdef.fov_x > 50 && backEnd.refdef.fov_x < 135)		// I don't consider anything below 50 or above 135 to be "normal".
@@ -162,7 +163,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 	// Create a set of four right vectors so that vertical sprites aren't always facing the same way.
 	// First generate a HORIZONTAL forward vector (important).
 	CrossProduct(ssViewRight, up, ssfwdvector);
-	
+
 	// Right Zero has a nudge forward (10 degrees).
 	VectorScale(ssViewRight, 0.985f, ssrightvectors[0]);
 	VectorMA(ssrightvectors[0], 0.174f, ssfwdvector, ssrightvectors[0]);
@@ -211,7 +212,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 		targetspeed = r_windSpeed->value;	// Minimum gust delay, in seconds.
 		curWindGust = r_windGust->value;
 	}
-	
+
 	if (targetspeed > 0 && curWindGust)
 	{
 		if (gustLeft > 0)
@@ -256,7 +257,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 //		ang[YAW] += cos(tr.refdef.time*0.01+flrand(-1.0,1.0))*targetspeed*0.5;
 //		ang[PITCH] += sin(tr.refdef.time*0.01+flrand(-1.0,1.0))*targetspeed*0.5;
 	}
-	
+
 	// Get the grass wind vector first
 	AngleVectors(ang, targetWindGrassDir, NULL, NULL);
 	targetWindGrassDir[2]-=1.0;
@@ -270,7 +271,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 	dampfactor = 1.0-r_windDampFactor->value;	// We must exponent the amount LEFT rather than the amount bled off
 	dtime = (float)(backEnd.refdef.time - lastSSUpdateTime) * (1.0/(float)WIND_DAMP_INTERVAL);	// Our dampfactor is geared towards a time interval equal to "1".
 
-	// Note that since there are a finite number of "practical" delta millisecond values possible, 
+	// Note that since there are a finite number of "practical" delta millisecond values possible,
 	// the ratio should be initialized into a chart ultimately.
 	ratio = pow(dampfactor, dtime);
 
@@ -338,7 +339,7 @@ qboolean SSUsingFog=qfalse;
 /////////////////////////////////////////////
 // Vertical surface sprites
 
-static void RB_VerticalSurfaceSprite(vec3_t loc, float width, float height, byte light, 
+static void RB_VerticalSurfaceSprite(vec3_t loc, float width, float height, byte light,
 										byte alpha, float wind, float windidle, vec2_t fog, int hangdown, vec2_t skew, bool flattened)
 {
 	vec3_t loc2, right;
@@ -398,7 +399,7 @@ static void RB_VerticalSurfaceSprite(vec3_t loc, float width, float height, byte
 
 	if ( flattened )
 	{
-		right[0] = sin( DEG2RAD( loc[0] ) ) * width; 
+		right[0] = sin( DEG2RAD( loc[0] ) ) * width;
 		right[1] = cos( DEG2RAD( loc[0] ) ) * height;
 		right[2] = 0.0f;
 	}
@@ -444,8 +445,8 @@ static void RB_VerticalSurfaceSprite(vec3_t loc, float width, float height, byte
 	SQuickSprite.Add(points, color, fog);
 }
 
-static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float height, byte light, 
-												byte alpha, float wind, float windidle, vec2_t fog, 
+static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float height, byte light,
+												byte alpha, float wind, float windidle, vec2_t fog,
 												int hangdown, vec2_t skew, vec2_t winddiff, float windforce, bool flattened)
 {
 	vec3_t loc2, right;
@@ -493,7 +494,7 @@ static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float hei
 
 	if ( flattened )
 	{
-		right[0] = sin( DEG2RAD( loc[0] ) ) * width; 
+		right[0] = sin( DEG2RAD( loc[0] ) ) * width;
 		right[1] = cos( DEG2RAD( loc[0] ) ) * height;
 		right[2] = 0.0f;
 	}
@@ -501,7 +502,7 @@ static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float hei
 	{
 		VectorScale(ssrightvectors[rightvectorcount], width*0.5, right);
 	}
-	
+
 
 	color[0]=light;
 	color[1]=light;
@@ -540,7 +541,7 @@ static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float hei
 	SQuickSprite.Add(points, color, fog);
 }
 
-static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input) 
+static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 {
 	int curindex, curvert;
  	vec3_t dist;
@@ -626,7 +627,7 @@ static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_
 		}
 		tess.SSInitializedWind = qtrue;
 	}
-	
+
 	for (curindex=0; curindex<input->numIndexes-2; curindex+=3)
 	{
 		curvert = input->indexes[curindex];
@@ -747,7 +748,7 @@ static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_
 
 				// total alpha, minus random factor so some things fade out sooner.
 				alphapos = a1*fa + a2*fb + a3*fc;
-				
+
 				// Note that the alpha at this point is a value from 1.0 to 0.0, but represents when to START fading
 				thisspritesfadestart = faderange + (1.0-faderange) * randomchart[randomindex];
 				randomindex += randominterval;
@@ -756,7 +757,7 @@ static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_
 				alpha = 1.0 - ((thisspritesfadestart-alphapos)/faderange);
 				if (alpha > 0.0)
 				{
-					if (alpha > 1.0) 
+					if (alpha > 1.0)
 						alpha=1.0;
 
 					if (SSUsingFog)
@@ -771,7 +772,7 @@ static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_
 						winddiffv[1] = winddiff1[1]*fa + winddiff2[1]*fb + winddiff3[1]*fc;
 						windforce = windforce1*fa + windforce2*fb + windforce3*fc;
 					}
-			
+
 					VectorScale(v1, fa, curpoint);
 					VectorMA(curpoint, fb, v2, curpoint);
 					VectorMA(curpoint, fc, v3, curpoint);
@@ -806,14 +807,14 @@ static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_
 					{
 						if (SSUsingFog)
 						{
-							RB_VerticalSurfaceSpriteWindPoint(curpoint, width, height, (byte)light, (byte)(alpha*255.0), 
+							RB_VerticalSurfaceSpriteWindPoint(curpoint, width, height, (byte)light, (byte)(alpha*255.0),
 										stage->ss->wind, stage->ss->windIdle, fogv, stage->ss->facing, skew,
 										winddiffv, windforce, SURFSPRITE_FLATTENED == stage->ss->surfaceSpriteType);
 						}
 						else
 						{
-							RB_VerticalSurfaceSpriteWindPoint(curpoint, width, height, (byte)light, (byte)(alpha*255.0), 
-										stage->ss->wind, stage->ss->windIdle, NULL, stage->ss->facing, skew, 
+							RB_VerticalSurfaceSpriteWindPoint(curpoint, width, height, (byte)light, (byte)(alpha*255.0),
+										stage->ss->wind, stage->ss->windIdle, NULL, stage->ss->facing, skew,
 										winddiffv, windforce, SURFSPRITE_FLATTENED == stage->ss->surfaceSpriteType);
 						}
 					}
@@ -821,12 +822,12 @@ static void RB_DrawVerticalSurfaceSprites( shaderStage_t *stage, shaderCommands_
 					{
 						if (SSUsingFog)
 						{
-							RB_VerticalSurfaceSprite(curpoint, width, height, (byte)light, (byte)(alpha*255.0), 
+							RB_VerticalSurfaceSprite(curpoint, width, height, (byte)light, (byte)(alpha*255.0),
 										stage->ss->wind, stage->ss->windIdle, fogv, stage->ss->facing, skew, SURFSPRITE_FLATTENED == stage->ss->surfaceSpriteType);
 						}
 						else
 						{
-							RB_VerticalSurfaceSprite(curpoint, width, height, (byte)light, (byte)(alpha*255.0), 
+							RB_VerticalSurfaceSprite(curpoint, width, height, (byte)light, (byte)(alpha*255.0),
 										stage->ss->wind, stage->ss->windIdle, NULL, stage->ss->facing, skew, SURFSPRITE_FLATTENED == stage->ss->surfaceSpriteType);
 						}
 					}
@@ -924,7 +925,7 @@ static void RB_OrientedSurfaceSprite(vec3_t loc, float width, float height, byte
 	SQuickSprite.Add(points, color, fog);
 }
 
-static void RB_DrawOrientedSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input) 
+static void RB_DrawOrientedSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 {
 	int curindex, curvert;
  	vec3_t dist;
@@ -945,7 +946,7 @@ static void RB_DrawOrientedSurfaceSprites( shaderStage_t *stage, shaderCommands_
 	float alpha, alphapos, thisspritesfadestart, light;
 	byte randomindex2;
 	vec2_t fogv;
-	
+
 	float cutdist=stage->ss->fadeMax*rangescalefactor, cutdist2=cutdist*cutdist;
 	float fadedist=stage->ss->fadeDist*rangescalefactor, fadedist2=fadedist*fadedist;
 
@@ -1053,7 +1054,7 @@ static void RB_DrawOrientedSurfaceSprites( shaderStage_t *stage, shaderCommands_
 
 				// total alpha, minus random factor so some things fade out sooner.
 				alphapos = a1*fa + a2*fb + a3*fc;
-				
+
 				// Note that the alpha at this point is a value from 1.0 to 0.0, but represents when to START fading
 				thisspritesfadestart = faderange + (1.0-faderange) * randomchart[randomindex];
 				randomindex += randominterval;
@@ -1064,7 +1065,7 @@ static void RB_DrawOrientedSurfaceSprites( shaderStage_t *stage, shaderCommands_
 				randomindex += randominterval;
 				if (alpha > 0.0)
 				{
-					if (alpha > 1.0) 
+					if (alpha > 1.0)
 						alpha=1.0;
 
 					if (SSUsingFog)
@@ -1199,7 +1200,7 @@ static void RB_EffectSurfaceSprite(vec3_t loc, float width, float height, byte l
 	SQuickSprite.Add(points, color, NULL);
 }
 
-static void RB_DrawEffectSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input) 
+static void RB_DrawEffectSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 {
 	int curindex, curvert;
  	vec3_t dist;
@@ -1220,13 +1221,13 @@ static void RB_DrawEffectSurfaceSprites( shaderStage_t *stage, shaderCommands_t 
 	float width, height;
 	float alpha, alphapos, thisspritesfadestart, light;
 	byte randomindex2;
-	
+
 	float cutdist=stage->ss->fadeMax*rangescalefactor, cutdist2=cutdist*cutdist;
 	float fadedist=stage->ss->fadeDist*rangescalefactor, fadedist2=fadedist*fadedist;
 
 	float fxalpha = stage->ss->fxAlphaEnd - stage->ss->fxAlphaStart;
 	qboolean fadeinout=qfalse;
-	
+
 	assert(cutdist2 != fadedist2);
 	float inv_fadediff = 1.0/(cutdist2-fadedist2);
 
@@ -1356,7 +1357,7 @@ static void RB_DrawEffectSurfaceSprites( shaderStage_t *stage, shaderCommands_t 
 
 				// total alpha, minus random factor so some things fade out sooner.
 				alphapos = a1*fa + a2*fb + a3*fc;
-				
+
 				// Note that the alpha at this point is a value from 1.0f to 0.0, but represents when to START fading
 				thisspritesfadestart = faderange + (1.0-faderange) * randomchart[randomindex2];
 				randomindex2 += randominterval;
@@ -1365,7 +1366,7 @@ static void RB_DrawEffectSurfaceSprites( shaderStage_t *stage, shaderCommands_t 
 				alpha = 1.0f - ((thisspritesfadestart-alphapos)/faderange);
 				if (alpha > 0.0f)
 				{
-					if (alpha > 1.0f) 
+					if (alpha > 1.0f)
 						alpha=1.0f;
 
 					VectorScale(v1, fa, curpoint);
@@ -1436,16 +1437,16 @@ extern void R_WorldToLocal (vec3_t world, vec3_t localVec) ;
 extern float preTransEntMatrix[16], invEntMatrix[16];
 extern void R_InvertMatrix(float *sourcemat, float *destmat);
 
-void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input) 
+void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 {
 	uint32_t	glbits=stage->stateBits;
-	
+
 	R_SurfaceSpriteFrameUpdate();
 
 	//
 	// Check fog
 	//
-	if ( tess.fogNum && tess.shader->fogPass && r_drawfog->value) 
+	if ( tess.fogNum && tess.shader->fogPass && r_drawfog->value)
 	{
 		SSUsingFog = qtrue;
 		SQuickSprite.StartGroup(&stage->bundle[0], glbits, tess.fogNum);
@@ -1469,7 +1470,7 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 
 	//Check if this is a new entity transformation (incl. world entity), and update the appropriate vectors if so.
 	if (backEnd.currentEntity != ssLastEntityDrawn)
-	{	
+	{
 		if (backEnd.currentEntity == &tr.worldEntity)
 		{	// Drawing the world, so our job is dead-easy, in the viewparms
 			VectorCopy(backEnd.viewParms.ori.origin, ssViewOrigin);
@@ -1479,7 +1480,7 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 		else
 		{	// Drawing an entity, so we need to transform the viewparms to the model's coordinate system
 //			R_WorldPointToEntity (backEnd.viewParms.ori.origin, ssViewOrigin);
-			R_WorldNormalToEntity (backEnd.viewParms.ori.axis[1], ssViewRight); 
+			R_WorldNormalToEntity (backEnd.viewParms.ori.axis[1], ssViewRight);
 			R_WorldNormalToEntity (backEnd.viewParms.ori.axis[2], ssViewUp);
 			VectorCopy(backEnd.ori.viewOrigin, ssViewOrigin);
 //			R_WorldToLocal(backEnd.viewParms.ori.axis[1], ssViewRight);

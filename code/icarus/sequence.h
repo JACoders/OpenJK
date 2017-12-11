@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Sequence Header File
 
@@ -24,9 +28,9 @@ This file is part of Jedi Academy.
 class CSequence
 {
 
-	typedef list < CSequence * >	sequence_l;
+	typedef std::list < CSequence * >	sequence_l;
 //	typedef	map	< int, CSequence *> sequenceID_m;
-	typedef list < CBlock * >		block_l;
+	typedef std::list < CBlock * >		block_l;
 
 public:
 
@@ -94,14 +98,14 @@ public:
 		SQ_COMMON		= 0x00000000, 	//Common one-pass sequence
 		SQ_LOOP			= 0x00000001, 	//Looping sequence
 		SQ_RETAIN		= 0x00000002, 	//Inside a looping sequence list, retain the information
-		SQ_AFFECT		= 0x00000004, 	//Affect sequence 
+		SQ_AFFECT		= 0x00000004, 	//Affect sequence
 		SQ_RUN			= 0x00000008,	//A run block
 		SQ_PENDING		= 0x00000010,	//Pending use, don't free when flushing the sequences
 		SQ_CONDITIONAL	= 0x00000020,	//Conditional statement
 		SQ_TASK			= 0x00000040,	//Task block
 	};
 
-	enum 
+	enum
 	{
 		POP_FRONT,
 		POP_BACK,

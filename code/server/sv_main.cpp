@@ -1,26 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
 
 #include "server.h"
 /*
@@ -114,7 +115,7 @@ void SV_AddServerCommand( client_t *client, const char *cmd ) {
 =================
 SV_SendServerCommand
 
-Sends a reliable command string to be interpreted by 
+Sends a reliable command string to be interpreted by
 the client game module: "cp", "print", "chat", etc
 A NULL client will broadcast to all clients
 =================
@@ -124,7 +125,7 @@ void SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	byte		message[MAX_MSGLEN];
 	client_t	*client;
 	int			j;
-	
+
 	message[0] = svc_serverCommand;
 
 	va_start (argptr,fmt);
@@ -199,8 +200,7 @@ void SVC_Status( netadr_t from ) {
 			} else {
 				score = 0;
 			}
-			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
-				score, cl->ping, cl->name);
+			Com_sprintf( player, sizeof( player ), "%i %i \"%s\"\n", score, cl->name );
 			playerLength = strlen(player);
 			if (statusLength + playerLength >= (int)sizeof(status) ) {
 				break;		// can't hold any more
@@ -350,104 +350,41 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		}
 		return;
 	}
-	
+
 	// if we received a sequenced packet from an address we don't reckognize,
 	// send an out of band disconnect packet to it
 	NET_OutOfBandPrint( NS_SERVER, from, "disconnect" );
 }
 
-
-/*
-===================
-SV_CalcPings
-
-Updates the cl->ping variables
-===================
-*/
-void SV_CalcPings (void) {
-	int			i, j;
-	client_t	*cl;
-	int			total, count;
-	int			delta;
-
-	for (i=0 ; i < 1 ; i++) {
-		cl = &svs.clients[i];
-		if ( cl->state != CS_ACTIVE ) {
-			continue;
-		}
-		if ( cl->gentity->svFlags & SVF_BOT ) {
-			continue;
-		}
-
-		total = 0;
-		count = 0;
-		for ( j = 0 ; j < PACKET_BACKUP ; j++ ) {
-			delta = cl->frames[j].messageAcked - cl->frames[j].messageSent;
-			if ( delta >= 0 ) {
-				count++;
-				total += delta;
-			}
-		}
-		if (!count) {
-			cl->ping = 999;
-		} else {
-			cl->ping = total/count;
-			if ( cl->ping > 999 ) {
-				cl->ping = 999;
-			}
-		}
-
-		// let the game dll know about the ping
-		cl->gentity->client->ping = cl->ping;
-	}
-}
-
-/*
-==================
-SV_CheckTimeouts
-
-If a packet has not been received from a client for timeout->integer 
-seconds, drop the conneciton.  Server time is used instead of
-realtime to avoid dropping the local client while debugging.
-
-When a client is normally dropped, the client_t goes into a zombie state
-for a few seconds to make sure any final reliable message gets resent
-if necessary
-==================
-*/
+// If a packet has not been received from a client for timeout->integer seconds, drop the conneciton.
+// Server time is used instead of realtime to avoid dropping the local client while debugging.
+// When a client is normally dropped, the client_t goes into a zombie state for a few seconds to make sure any final
+//	reliable message gets resent if necessary
 void SV_CheckTimeouts( void ) {
-	int		i;
-	client_t	*cl;
-	int			droppoint;
-	int			zombiepoint;
+	client_t *cl = svs.clients;
 
-	droppoint = sv.time - 1000 * sv_timeout->integer;
-	zombiepoint = sv.time - 1000 * sv_zombietime->integer;
+	int droppoint = sv.time - 1000 * sv_timeout->integer;
+	int zombiepoint = sv.time - 1000 * sv_zombietime->integer;
 
-	for (i=0,cl=svs.clients ; i < 1 ; i++,cl++) {
-		// message times may be wrong across a changelevel
-		if (cl->lastPacketTime > sv.time) {
-			cl->lastPacketTime = sv.time;
-		}
+	// message times may be wrong across a changelevel
+	if ( cl->lastPacketTime > sv.time )
+		cl->lastPacketTime = sv.time;
 
-		if (cl->state == CS_ZOMBIE
-		&& cl->lastPacketTime < zombiepoint) {
-			cl->state = CS_FREE;	// can now be reused
-			continue;
-		}
-		if ( cl->state >= CS_CONNECTED && cl->lastPacketTime < droppoint) {
-			// wait several frames so a debugger session doesn't
-			// cause a timeout
-			if ( ++cl->timeoutCount > 5 ) {
-				SV_DropClient (cl, "timed out"); 
-				cl->state = CS_FREE;	// don't bother with zombie state
-			}
-		} else {
-			cl->timeoutCount = 0;
+	if ( cl->state == CS_ZOMBIE && cl->lastPacketTime < zombiepoint ) {
+		cl->state = CS_FREE;	// can now be reused
+		return;
+	}
+
+	if ( cl->state >= CS_CONNECTED && cl->lastPacketTime < droppoint ) {
+		// wait several frames so a debugger session doesn't cause a timeout
+		if ( ++cl->timeoutCount > 5 ) {
+			SV_DropClient( cl, "timed out" );
+			cl->state = CS_FREE; // don't bother with zombie state
 		}
 	}
+	else
+		cl->timeoutCount = 0;
 }
-
 
 /*
 ==================
@@ -468,7 +405,7 @@ This wonderful hack is needed to avoid rendering frames until several camera rel
 have wended their way through the network. The problem is basically that the server asks the
 client where the camera is to decide what entities down to the client. However right after
 certain transitions the client tends to give a wrong answer. CGCam_Disable is one such time/
-When this happens we want to dump all rendered frame until these things have happened, in 
+When this happens we want to dump all rendered frame until these things have happened, in
 order:
 
 0) (This state will mean that we are awaiting state 1)
@@ -583,10 +520,7 @@ void SV_Frame( int msec,float fractionMsec ) {
 	SG_TestSave();	// returns immediately if not active, used for fake-save-every-cycle to test (mainly) Icarus disk code
 
 	// check timeouts
-	SV_CheckTimeouts ();
-
-	// update ping based on the last known frame from all clients
-	SV_CalcPings ();
+	SV_CheckTimeouts();
 
 	// send messages back to the clients
 	SV_SendClientMessages ();

@@ -1,4 +1,27 @@
 /*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+/*
 **	cg_spawn.c
 **
 **	Client-side functions for parsing entity data.
@@ -116,7 +139,11 @@ qboolean CG_SpawnVector( const char *key, const char *defaultString, float *out 
 	qboolean present;
 
 	present = CG_SpawnString( key, defaultString, &s );
-	sscanf( s, "%f %f %f", &out[0], &out[1], &out[2] );
+	if ( sscanf( s, "%f %f %f", &out[0], &out[1], &out[2] ) != 3 ) {
+		trap->Print( "CG_SpawnVector: Failed sscanf on %s (default: %s)\n", key, defaultString );
+		VectorClear( out );
+		return qfalse;
+	}
 	return present;
 }
 /*
@@ -220,19 +247,12 @@ qboolean cg_skyOri = qfalse;
 vec3_t cg_skyOriPos;
 float cg_skyOriScale = 0.0f;
 void SP_misc_skyportal_orient( void ) {
-	vec3_t org;
-	float scale;
+	if( cg_skyOri )
+		trap->Print( S_COLOR_YELLOW "WARNING: multiple misc_skyportal_orients found.\n" );
 
-	if( cg_skyOri ) {
-		trap->Error( ERR_DROP, "ERROR: multiple misc_skyportal_orients found" );
-	}
-
-	CG_SpawnVector( "origin", "0 0 0", org );
-	CG_SpawnFloat( "modelscale", "0", &scale );
-
-	VectorCopy( org, cg_skyOriPos );
-	cg_skyOriScale	= scale;
-	cg_skyOri	= qtrue;
+	cg_skyOri = qtrue;
+	CG_SpawnVector( "origin", "0 0 0", cg_skyOriPos );
+	CG_SpawnFloat( "modelscale", "0", &cg_skyOriScale );
 }
 void SP_misc_weather_zone( void ) {
 	char *model;
@@ -254,13 +274,11 @@ typedef struct spawn_s {
 	void		(*spawn)( void );
 } spawn_t;
 
-/* This array MUST be sorted correctly by alphabetical name field */
-/* for conformity, use lower-case names too */
 spawn_t spawns [] = {
-	{ "misc_model_static",		SP_misc_model_static		  },
-	{ "misc_skyportal",			SP_misc_skyportal		  },
-	{ "misc_skyportal_orient",	SP_misc_skyportal_orient	  },
-	{ "misc_weather_zone",		SP_misc_weather_zone		  },
+	{ "misc_model_static",		SP_misc_model_static		},
+	{ "misc_skyportal",			SP_misc_skyportal			},
+	{ "misc_skyportal_orient",	SP_misc_skyportal_orient	},
+	{ "misc_weather_zone",		SP_misc_weather_zone		},
 };
 
 /*
@@ -316,7 +334,7 @@ void CG_ParseEntityFromSpawnVars( void ) {
 	}
 
 	if( CG_SpawnString( "classname", "", &classname ) ) {
-		s = (spawn_t *)bsearch( classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
+		s = (spawn_t *)Q_LinearSearch( classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
 		if ( s )
 			s->spawn();
 	}

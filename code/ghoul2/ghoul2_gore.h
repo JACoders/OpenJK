@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __GHOUL2_GORE_H
 #define __GHOUL2_GORE_H
@@ -41,8 +45,8 @@ struct GoreTextureCoordinates
 		{
 			if ( tex[i] )
 			{
-				extern int Z_Free(void *pvAddress);
-				Z_Free(tex[i]);
+				extern void R_Free(void *pvAddress);
+				R_Free(tex[i]);
 				tex[i] = 0;
 			}
 		}
@@ -64,8 +68,8 @@ struct SGoreSurface
 	int			mGoreGrowStartTime;
 	int			mGoreGrowEndTime;    // set this to -1 to disable growing
 	//curscale = (curtime-mGoreGrowStartTime)*mGoreGrowFactor + mGoreGrowOffset;
-	float		mGoreGrowFactor;	
-	float		mGoreGrowOffset;	
+	float		mGoreGrowFactor;
+	float		mGoreGrowOffset;
 };
 
 class CGoreSet
@@ -73,7 +77,7 @@ class CGoreSet
 public:
 	int		 mMyGoreSetTag;
 	unsigned char mRefCount;
-	multimap<int,SGoreSurface> mGoreRecords; // a map from surface index
+	std::multimap<int,SGoreSurface> mGoreRecords; // a map from surface index
 	CGoreSet(int tag) : mMyGoreSetTag(tag), mRefCount(0) {}
 	~CGoreSet();
 };
@@ -83,11 +87,6 @@ CGoreSet	*NewGoreSet();
 void		DeleteGoreSet(int goreSetTag);
 
 #endif // _G2_GORE
-
-//rww - RAGDOLL_BEGIN
-#ifdef _MSC_VER
-#pragma warning(disable: 4512)
-#endif
 
 struct SRagDollEffectorCollision
 {
@@ -115,25 +114,25 @@ public:
 
 	int groundEnt;
 
-	virtual void EffectorCollision(const SRagDollEffectorCollision &data) 
+	virtual void EffectorCollision(const SRagDollEffectorCollision &data)
 	{
 		assert(0); // you probably meant to override this
 	}
-	virtual void RagDollBegin() 
+	virtual void RagDollBegin()
 	{
 		assert(0); // you probably meant to override this
 	}
-	virtual void RagDollSettled() 
+	virtual void RagDollSettled()
 	{
 		assert(0); // you probably meant to override this
 	}
 
-	virtual void Collision() 
+	virtual void Collision()
 	{
 		assert(0); // you probably meant to override this
 		// we had a collision, uhh I guess call SetRagDoll RP_DEATH_COLLISION
-	}  
-	
+	}
+
 #ifdef _DEBUG
 	virtual void DebugLine(vec3_t p1,vec3_t p2,int color,bool bbox) {assert(0);}
 #endif
@@ -171,7 +170,7 @@ public:
 	int startFrame;
 	int endFrame;
 
-	int collisionType; // 1 = from a fall, 0 from effectors, this will be going away soon, hence no enum 
+	int collisionType; // 1 = from a fall, 0 from effectors, this will be going away soon, hence no enum
 
 	bool CallRagDollBegin; // a return value, means that we are now begininng ragdoll and the NPC stuff needs to happen
 

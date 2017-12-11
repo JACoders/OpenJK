@@ -1,31 +1,37 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 
 #include "../../code/client/vmachine.h"
-#include "../game/characters.h"
-#include "cg_lights.h"
 
 #include "../../code/qcommon/sstring.h"
+#include "../code/qcommon/ojk_saved_game_helper.h"
+
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
-typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
+typedef std::map< sstring_t, unsigned char, std::less<sstring_t>, std::allocator< unsigned char >  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
@@ -38,7 +44,7 @@ qboolean CG_ConsoleCommand( void );
 void CG_Shutdown( void );
 int CG_GetCameraPos( vec3_t camerapos );
 void UseItem(int itemNum);
-const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight, 
+const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight,
 								const char *psText, int iFontHandle, float fScale,
 								const vec4_t v4Color);
 
@@ -59,7 +65,7 @@ Ghoul2 Insert End
 
 void CG_LoadHudMenu(void);
 int inv_icons[INV_MAX];
-char *inv_names[] =
+const char *inv_names[] =
 {
 "ELECTROBINOCULARS",
 "BACTA CANISTER",
@@ -269,6 +275,7 @@ vmCvar_t	cg_fovViewmodelAdjust;
 vmCvar_t	cg_autoswitch;
 vmCvar_t	cg_simpleItems;
 vmCvar_t	cg_fov;
+vmCvar_t	cg_fovAspectAdjust;
 vmCvar_t	cg_missionstatusscreen;
 vmCvar_t	cg_endcredits;
 vmCvar_t	cg_updatedDataPadForcePower1;
@@ -325,15 +332,16 @@ vmCvar_t	cg_smoothPlayerPlatAccel;
 
 typedef struct {
 	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
+	const char	*cvarName;
+	const char	*defaultString;
 	int			cvarFlags;
 } cvarTable_t;
 
-cvarTable_t		cvarTable[] = {
+static cvarTable_t cvarTable[] = {
 	{ &cg_autoswitch, "cg_autoswitch", "1", CVAR_ARCHIVE },
 	{ &cg_drawGun, "cg_drawGun", "1", CVAR_ARCHIVE },
-	{ &cg_fov, "cg_fov", "80", CVAR_ARCHIVE },//must be 80
+	{ &cg_fov, "cg_fov", "80", CVAR_ARCHIVE },
+	{ &cg_fovAspectAdjust, "cg_fovAspectAdjust", "0", CVAR_ARCHIVE },
 	{ &cg_stereoSeparation, "cg_stereoSeparation", "0.4", CVAR_ARCHIVE  },
 	{ &cg_shadows, "cg_shadows", "1", CVAR_ARCHIVE  },
 
@@ -347,7 +355,7 @@ cvarTable_t		cvarTable[] = {
 	{ &cg_drawCrosshair, "cg_drawCrosshair", "1", CVAR_ARCHIVE },
 	{ &cg_dynamicCrosshair, "cg_dynamicCrosshair", "1", CVAR_ARCHIVE },
 	{ &cg_crosshairIdentifyTarget, "cg_crosshairIdentifyTarget", "1", CVAR_ARCHIVE },
-	{ &cg_crosshairForceHint, "cg_crosshairForceHint", "1", CVAR_ARCHIVE },
+	{ &cg_crosshairForceHint, "cg_crosshairForceHint", "1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART },
 	{ &cg_missionstatusscreen, "cg_missionstatusscreen", "0", CVAR_ROM},
 	{ &cg_endcredits, "cg_endcredits", "0", 0},
 	{ &cg_updatedDataPadForcePower1, "cg_updatedDataPadForcePower1", "0", 0},
@@ -385,15 +393,15 @@ cvarTable_t		cvarTable[] = {
 	{ &cg_noPlayerAnims, "cg_noplayeranims", "0", CVAR_CHEAT },
 	{ &cg_footsteps, "cg_footsteps", "1", CVAR_CHEAT },
 
-	{ &cg_thirdPerson, "cg_thirdPerson", "0", CVAR_USERINFO },
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", 0 },
+	{ &cg_thirdPerson, "cg_thirdPerson", "0", CVAR_SAVEGAME },
+	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", CVAR_ARCHIVE },
 	{ &cg_thirdPersonMaxRange, "cg_thirdPersonMaxRange", "150", 0 },
 	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", 0 },
 	{ &cg_thirdPersonPitchOffset, "cg_thirdPersonPitchOffset", "0", 0 },
 	{ &cg_thirdPersonVertOffset, "cg_thirdPersonVertOffset", "16", 0},
 	{ &cg_thirdPersonCameraDamp, "cg_thirdPersonCameraDamp", "0.3", 0},
 	{ &cg_thirdPersonTargetDamp, "cg_thirdPersonTargetDamp", "0.5", 0},
-	
+
 	{ &cg_thirdPersonHorzOffset, "cg_thirdPersonHorzOffset", "0", 0},
 	{ &cg_thirdPersonAlpha,	"cg_thirdPersonAlpha",	"1.0", CVAR_CHEAT },
 	{ &cg_thirdPersonAutoAlpha,	"cg_thirdPersonAutoAlpha",	"0", 0 },
@@ -410,8 +418,8 @@ cvarTable_t		cvarTable[] = {
 	// but we also reference them here
 
 	{ &cg_paused, "cl_paused", "0", CVAR_ROM },
-	{ &cg_developer, "developer", "", 0 }, 
-	{ &cg_timescale, "timescale", "1", 0 }, 	
+	{ &cg_developer, "developer", "", 0 },
+	{ &cg_timescale, "timescale", "1", 0 },
 	{ &cg_skippingcin, "skippingCinematic", "0", CVAR_ROM},
 	{ &cg_missionInfoCentered, "cg_missionInfoCentered", "1", CVAR_ARCHIVE },
 	{ &cg_missionInfoFlashTime, "cg_missionInfoFlashTime", "10000", 0  },
@@ -432,7 +440,7 @@ Ghoul2 Insert End
 	{ &cg_smoothPlayerPlatAccel, "cg_smoothPlayerPlatAccel", "3.25", 0},
 };
 
-int		cvarTableSize = sizeof( cvarTable ) / sizeof( cvarTable[0] );
+static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
 
 /*
 =================
@@ -440,12 +448,11 @@ CG_RegisterCvars
 =================
 */
 void CG_RegisterCvars( void ) {
-	int			i;
+	size_t		i;
 	cvarTable_t	*cv;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		cgi_Cvar_Register( cv->vmCvar, cv->cvarName,
-			cv->defaultString, cv->cvarFlags );
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
+		cgi_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
 	}
 }
 
@@ -455,18 +462,19 @@ CG_UpdateCvars
 =================
 */
 void CG_UpdateCvars( void ) {
-	int			i;
+	size_t		i;
 	cvarTable_t	*cv;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		cgi_Cvar_Update( cv->vmCvar );
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
+		if ( cv->vmCvar ) {
+			cgi_Cvar_Update( cv->vmCvar );
+		}
 	}
 }
 
-
-int CG_CrosshairPlayer( void ) 
+int CG_CrosshairPlayer( void )
 {
-	if ( cg.time > ( cg.crosshairClientTime + 1000 ) ) 
+	if ( cg.time > ( cg.crosshairClientTime + 1000 ) )
 	{
 		return -1;
 	}
@@ -509,7 +517,7 @@ int CG_GetCameraPos( vec3_t camerapos ) {
 		VectorCopy( cg.refdef.vieworg, camerapos );
 		return 1;
 	}
-	else if (cg.snap && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//implied: !cg.renderingThirdPerson 
+	else if (cg.snap && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//implied: !cg.renderingThirdPerson
 	{//first person saber hack
 		VectorCopy( cg.refdef.vieworg, camerapos );
 		return 1;
@@ -517,38 +525,23 @@ int CG_GetCameraPos( vec3_t camerapos ) {
 	return 0;
 }
 
-void CG_TargetCommand_f( void ) {
-	int		targetNum;
-	char	test[4];
-
-	targetNum = CG_CrosshairPlayer();
-	if (targetNum <= 0) {
-		return;
-	}
-
-	cgi_Argv( 1, test, 4 );	//FIXME: this is now an exec_now command - in case we start using it... JFM
-	cgi_SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
-}
-
-
-
 void CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	cgi_Printf( text );
 }
 
-void CG_Error( const char *msg, ... ) {
+NORETURN void CG_Error( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	cgi_Error( text );
@@ -604,7 +597,7 @@ void CG_RegisterItemSounds( int itemNum ) {
 
 		len = s-start;
 		if (len >= MAX_QPATH || len < 5) {
-			CG_Error( "PrecacheItem: %s has bad precache string", 
+			CG_Error( "PrecacheItem: %s has bad precache string",
 				item->classname);
 			return;
 		}
@@ -738,7 +731,8 @@ static void CG_RegisterSounds( void ) {
 
 	// only register the items that the server says we need
 	char	items[MAX_ITEMS+1];
-	strcpy( items, CG_ConfigString( CS_ITEMS ) );
+	//Raz: Fixed buffer overflow
+	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( items[ i ] == '1' )	//even with sound pooling, don't clutter it for low end machines
@@ -780,12 +774,12 @@ qhandle_t CG_RegisterHeadSkin( const char *headModelName, const char *headSkinNa
 
 	Com_sprintf( hfilename, sizeof( hfilename ), "models/players/%s/head_%s.skin", headModelName, headSkinName );
 	headSkin = cgi_R_RegisterSkin( hfilename );
-	if ( headSkin < 0 ) 
+	if ( headSkin < 0 )
 	{	//have extensions
 		*extensions = qtrue;
 		headSkin = -headSkin;
-	} 
-	else 
+	}
+	else
 	{
 		*extensions = qfalse;	//just to be sure.
 	}
@@ -805,7 +799,7 @@ CG_RegisterClientSkin
 qboolean	CG_RegisterClientSkin( clientInfo_t *ci,
 								  const char *headModelName, const char *headSkinName,
 								  const char *torsoModelName, const char *torsoSkinName,
-								  const char *legsModelName, const char *legsSkinName) 
+								  const char *legsModelName, const char *legsSkinName)
 {
 	char		hfilename[MAX_QPATH];
 	char		tfilename[MAX_QPATH];
@@ -861,7 +855,7 @@ CG_RegisterClientModelname
 qboolean CG_RegisterClientModelname( clientInfo_t *ci,
 									const char *headModelName, const char *headSkinName,
 									const char *torsoModelName, const char *torsoSkinName,
-									const char *legsModelName, const char *legsSkinName ) 
+									const char *legsModelName, const char *legsSkinName )
 {
 /*
 Ghoul2 Insert Start
@@ -876,7 +870,7 @@ Ghoul2 Insert Start
 	}
 	Com_sprintf( filename, sizeof( filename ), "models/players/%s/lower.mdr", legsModelName );
 	ci->legsModel = cgi_R_RegisterModel( filename );
-	if ( !ci->legsModel ) 
+	if ( !ci->legsModel )
 	{//he's not skeletal, try the old way
 		Com_sprintf( filename, sizeof( filename ), "models/players/%s/lower.md3", legsModelName );
 		ci->legsModel = cgi_R_RegisterModel( filename );
@@ -891,11 +885,11 @@ Ghoul2 Insert Start
 	{//You are trying to set one
 		Com_sprintf( filename, sizeof( filename ), "models/players/%s/upper.mdr", torsoModelName );
 		ci->torsoModel = cgi_R_RegisterModel( filename );
-		if ( !ci->torsoModel ) 
+		if ( !ci->torsoModel )
 		{//he's not skeletal, try the old way
 			Com_sprintf( filename, sizeof( filename ), "models/players/%s/upper.md3", torsoModelName );
 			ci->torsoModel = cgi_R_RegisterModel( filename );
-			if ( !ci->torsoModel ) 
+			if ( !ci->torsoModel )
 			{
 				Com_Printf( S_COLOR_RED"Failed to load model file %s\n", filename );
 				return qfalse;
@@ -911,7 +905,7 @@ Ghoul2 Insert Start
 	{//You are trying to set one
 		Com_sprintf( filename, sizeof( filename ), "models/players/%s/head.md3", headModelName );
 		ci->headModel = cgi_R_RegisterModel( filename );
-		if ( !ci->headModel ) 
+		if ( !ci->headModel )
 		{
 			Com_Printf( S_COLOR_RED"Failed to load model file %s\n", filename );
 			return qfalse;
@@ -924,7 +918,7 @@ Ghoul2 Insert Start
 
 
 	// if any skins failed to load, return failure
-	if ( !CG_RegisterClientSkin( ci, headModelName, headSkinName, torsoModelName, torsoSkinName, legsModelName, legsSkinName ) ) 
+	if ( !CG_RegisterClientSkin( ci, headModelName, headSkinName, torsoModelName, torsoSkinName, legsModelName, legsSkinName ) )
 	{
 		//Com_Printf( "Failed to load skin file: %s : %s/%s : %s/%s : %s\n", headModelName, headSkinName, torsoModelName, torsoSkinName, legsModelName, legsSkinName );
 		return qfalse;
@@ -932,7 +926,7 @@ Ghoul2 Insert Start
 
 	//FIXME: for now, uses the legs model dir for anim cfg, but should we set this in some sort of NPCs.cfg?
 	// load the animation file set
-	if ( !G_ParseAnimFileSet( legsModelName, legsModelName, &ci->animFileIndex ) ) 
+	if ( !G_ParseAnimFileSet( legsModelName, legsModelName, &ci->animFileIndex ) )
 	{
 		Com_Printf( S_COLOR_RED"Failed to load animation file set models/players/%s\n", legsModelName );
 		return qfalse;
@@ -955,7 +949,7 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 	char			torsoSkinName[MAX_QPATH];
 	char			legsSkinName[MAX_QPATH];
 
-	if(!ri->legsModelName || !ri->legsModelName[0])
+	if(!ri->legsModelName[0])
 	{//Must have at LEAST a legs model
 		return;
 	}
@@ -963,29 +957,29 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 	Q_strncpyz( legsModelName, ri->legsModelName, sizeof( legsModelName ) );
 	//Legs skin
 	slash = strchr( legsModelName, '/' );
-	if ( !slash ) 
+	if ( !slash )
 	{
 		// modelName didn not include a skin name
 		Q_strncpyz( legsSkinName, "default", sizeof( legsSkinName ) );
-	} 
-	else 
+	}
+	else
 	{
 		Q_strncpyz( legsSkinName, slash + 1, sizeof( legsSkinName ) );
 		// truncate modelName
 		*slash = 0;
 	}
 
-	if(ri->torsoModelName && ri->torsoModelName[0])
+	if(ri->torsoModelName[0])
 	{
 		Q_strncpyz( torsoModelName, ri->torsoModelName, sizeof( torsoModelName ) );
 		//Torso skin
 		slash = strchr( torsoModelName, '/' );
-		if ( !slash ) 
+		if ( !slash )
 		{
 			// modelName didn't include a skin name
 			Q_strncpyz( torsoSkinName, "default", sizeof( torsoSkinName ) );
-		} 
-		else 
+		}
+		else
 		{
 			Q_strncpyz( torsoSkinName, slash + 1, sizeof( torsoSkinName ) );
 			// truncate modelName
@@ -998,17 +992,17 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 	}
 
 	//Head
-	if(ri->headModelName && ri->headModelName[0])
+	if(ri->headModelName[0])
 	{
 		Q_strncpyz( headModelName, ri->headModelName, sizeof( headModelName ) );
 		//Head skin
 		slash = strchr( headModelName, '/' );
-		if ( !slash ) 
+		if ( !slash )
 		{
 			// modelName didn not include a skin name
 			Q_strncpyz( headSkinName, "default", sizeof( headSkinName ) );
-		} 
-		else 
+		}
+		else
 		{
 			Q_strncpyz( headSkinName, slash + 1, sizeof( headSkinName ) );
 			// truncate modelName
@@ -1020,9 +1014,9 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 		headModelName[0] = 0;
 	}
 
-	if ( !CG_RegisterClientModelname( ci, headModelName, headSkinName, torsoModelName, torsoSkinName, legsModelName, legsSkinName) ) 
+	if ( !CG_RegisterClientModelname( ci, headModelName, headSkinName, torsoModelName, torsoSkinName, legsModelName, legsSkinName) )
 	{
-		if ( !CG_RegisterClientModelname( ci, DEFAULT_HEADMODEL, "default", DEFAULT_TORSOMODEL, "default", DEFAULT_LEGSMODEL, "default" ) ) 
+		if ( !CG_RegisterClientModelname( ci, DEFAULT_HEADMODEL, "default", DEFAULT_TORSOMODEL, "default", DEFAULT_LEGSMODEL, "default" ) )
 		{
 			CG_Error( "DEFAULT_MODELS failed to register");
 		}
@@ -1031,7 +1025,7 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 
 //-------------------------------------
 // CG_RegisterEffects
-// 
+//
 // Handles precaching all effect files
 //	and any shader, model, or sound
 //	files an effect may use.
@@ -1045,11 +1039,11 @@ static void CG_RegisterEffects( void )
 	int		i;
 
 	// Register external effects
-	for ( i = 1 ; i < MAX_FX ; i++ ) 
+	for ( i = 1 ; i < MAX_FX ; i++ )
 	{
 		effectName = ( char *)CG_ConfigString( CS_EFFECTS + i );
 
-		if ( !effectName[0] ) 
+		if ( !effectName[0] )
 		{
 			break;
 		}
@@ -1058,11 +1052,11 @@ static void CG_RegisterEffects( void )
 	}
 
 	// Start world effects
-	for ( i = 1 ; i < MAX_WORLD_FX ; i++ ) 
+	for ( i = 1 ; i < MAX_WORLD_FX ; i++ )
 	{
 		effectName = ( char *)CG_ConfigString( CS_WORLD_FX + i );
 
-		if ( !effectName[0] ) 
+		if ( !effectName[0] )
 		{
 			break;
 		}
@@ -1116,42 +1110,42 @@ void CG_RegisterClientModels (int entityNum)
 
 //===================================================================================
 
-forceTicPos_t forceTicPos[] = 
+forceTicPos_t forceTicPos[] =
 {
- 11,  41,  20,  10,	"gfx/hud/force_tick1", NULL_HANDLE,		// Left Top
- 12,  45,  20,  10, "gfx/hud/force_tick2", NULL_HANDLE,
- 14,  49,  20,  10, "gfx/hud/force_tick3", NULL_HANDLE,
- 17,  52,  20,  10, "gfx/hud/force_tick4", NULL_HANDLE,
- 22,  55,  10,  10, "gfx/hud/force_tick5", NULL_HANDLE,
- 28,  57,  10,  20, "gfx/hud/force_tick6", NULL_HANDLE,
- 34,  59,  10,  10,	"gfx/hud/force_tick7", NULL_HANDLE,		// Left bottom
+	{ 11, 41, 20, 10, "gfx/hud/force_tick1", NULL_HANDLE },		// Left Top
+	{ 12, 45, 20, 10, "gfx/hud/force_tick2", NULL_HANDLE },
+	{ 14, 49, 20, 10, "gfx/hud/force_tick3", NULL_HANDLE },
+	{ 17, 52, 20, 10, "gfx/hud/force_tick4", NULL_HANDLE },
+	{ 22, 55, 10, 10, "gfx/hud/force_tick5", NULL_HANDLE },
+	{ 28, 57, 10, 20, "gfx/hud/force_tick6", NULL_HANDLE },
+	{ 34, 59, 10, 10, "gfx/hud/force_tick7", NULL_HANDLE },		// Left bottom
 
- 46,  59, -10,  10, "gfx/hud/force_tick7", NULL_HANDLE,		// Right bottom
- 52,  57, -10,  20, "gfx/hud/force_tick6", NULL_HANDLE,
- 58,  55, -10,  10, "gfx/hud/force_tick5", NULL_HANDLE,
- 63,  52, -20,  10, "gfx/hud/force_tick4", NULL_HANDLE,
- 66,  49, -20,  10, "gfx/hud/force_tick3", NULL_HANDLE,
- 68,  45, -20,  10, "gfx/hud/force_tick2", NULL_HANDLE,
- 69,  41, -20,  10,	"gfx/hud/force_tick1", NULL_HANDLE,		// Right top
+	{ 46, 59, -10, 10, "gfx/hud/force_tick7", NULL_HANDLE },		// Right bottom
+	{ 52, 57, -10, 20, "gfx/hud/force_tick6", NULL_HANDLE },
+	{ 58, 55, -10, 10, "gfx/hud/force_tick5", NULL_HANDLE },
+	{ 63, 52, -20, 10, "gfx/hud/force_tick4", NULL_HANDLE },
+	{ 66, 49, -20, 10, "gfx/hud/force_tick3", NULL_HANDLE },
+	{ 68, 45, -20, 10, "gfx/hud/force_tick2", NULL_HANDLE },
+	{ 69, 41, -20, 10, "gfx/hud/force_tick1", NULL_HANDLE },		// Right top
 };
 
-forceTicPos_t ammoTicPos[] = 
+forceTicPos_t ammoTicPos[] =
 {
- 12,  34,  10,  10, "gfx/hud/ammo_tick7-l", NULL_HANDLE, 	// Bottom
- 13,  28,  10,  10, "gfx/hud/ammo_tick6-l", NULL_HANDLE,
- 15,  23,  10,  10, "gfx/hud/ammo_tick5-l", NULL_HANDLE,
- 19,  19,  10,  10, "gfx/hud/ammo_tick4-l", NULL_HANDLE,
- 23,  15,  10,  10, "gfx/hud/ammo_tick3-l", NULL_HANDLE,
- 29,  12,  10,  10, "gfx/hud/ammo_tick2-l", NULL_HANDLE,
- 34,  11,  10,  10, "gfx/hud/ammo_tick1-l", NULL_HANDLE,
+	{ 12, 34, 10, 10, "gfx/hud/ammo_tick7-l", NULL_HANDLE }, 	// Bottom
+	{ 13, 28, 10, 10, "gfx/hud/ammo_tick6-l", NULL_HANDLE },
+	{ 15, 23, 10, 10, "gfx/hud/ammo_tick5-l", NULL_HANDLE },
+	{ 19, 19, 10, 10, "gfx/hud/ammo_tick4-l", NULL_HANDLE },
+	{ 23, 15, 10, 10, "gfx/hud/ammo_tick3-l", NULL_HANDLE },
+	{ 29, 12, 10, 10, "gfx/hud/ammo_tick2-l", NULL_HANDLE },
+	{ 34, 11, 10, 10, "gfx/hud/ammo_tick1-l", NULL_HANDLE },
 
- 47,  11, -10,  10, "gfx/hud/ammo_tick1-r", NULL_HANDLE,
- 52,  12, -10,  10, "gfx/hud/ammo_tick2-r", NULL_HANDLE,
- 58,  15, -10,  10, "gfx/hud/ammo_tick3-r", NULL_HANDLE,
- 62,  19, -10,  10, "gfx/hud/ammo_tick4-r", NULL_HANDLE,
- 66,  23, -10,  10, "gfx/hud/ammo_tick5-r", NULL_HANDLE,
- 68,  28, -10,  10, "gfx/hud/ammo_tick6-r", NULL_HANDLE,
- 69,  34, -10,  10, "gfx/hud/ammo_tick7-r", NULL_HANDLE,
+	{ 47, 11, -10, 10, "gfx/hud/ammo_tick1-r", NULL_HANDLE },
+	{ 52, 12, -10, 10, "gfx/hud/ammo_tick2-r", NULL_HANDLE },
+	{ 58, 15, -10, 10, "gfx/hud/ammo_tick3-r", NULL_HANDLE },
+	{ 62, 19, -10, 10, "gfx/hud/ammo_tick4-r", NULL_HANDLE },
+	{ 66, 23, -10, 10, "gfx/hud/ammo_tick5-r", NULL_HANDLE },
+	{ 68, 28, -10, 10, "gfx/hud/ammo_tick6-r", NULL_HANDLE },
+	{ 69, 34, -10, 10, "gfx/hud/ammo_tick7-r", NULL_HANDLE },
 };
 
 
@@ -1271,7 +1265,7 @@ static void CG_RegisterGraphics( void ) {
 
 	cg.loadLCARSStage = 5;
 	CG_LoadingString( "game media models" );
-	
+
 	// Chunk models
 	//FIXME: jfm:? bother to conditionally load these if an ent has this material type?
 	for ( i = 0; i < NUM_CHUNK_MODELS; i++ )
@@ -1324,7 +1318,7 @@ static void CG_RegisterGraphics( void ) {
 
 	// battery charge shader when using a gonk
 	cgs.media.batteryChargeShader = cgi_R_RegisterShader( "gfx/2d/battery" );
-	cgi_R_RegisterShader( "gfx/2d/droid_view" );	
+	cgi_R_RegisterShader( "gfx/2d/droid_view" );
 
 	// Load force tics
 	for (i=0;i<MAX_TICS;i++)
@@ -1337,10 +1331,10 @@ static void CG_RegisterGraphics( void ) {
 	memset( cg_weapons, 0, sizeof( cg_weapons ) );
 
 	// only register the items that the server says we need
-	strcpy( items, CG_ConfigString( CS_ITEMS) );
+	Q_strncpyz( items, CG_ConfigString( CS_ITEMS ), sizeof(items) );
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
-		if ( items[ i ] == '1' ) 
+		if ( items[ i ] == '1' )
 		{
 			if (bg_itemlist[i].classname)
 			{
@@ -1377,7 +1371,7 @@ static void CG_RegisterGraphics( void ) {
 	CG_LoadingString("map brushes");
 	// register the inline models
 	cgs.numInlineModels = cgi_CM_NumInlineModels();
-	assert (cgs.numInlineModels < sizeof(cgs.inlineDrawModel)/sizeof(cgs.inlineDrawModel[0]) );
+	assert( cgs.numInlineModels < (int)ARRAY_LEN( cgs.inlineDrawModel ) );
 	for ( i = 1 ; i < cgs.numInlineModels ; i++ ) {
 		char	name[10];
 		vec3_t			mins, maxs;
@@ -1426,12 +1420,12 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
-	for (i=0 ; i<MAX_CLIENTS ; i++) 
+	for (i=0 ; i<MAX_CLIENTS ; i++)
 	{
 		const char		*clientInfo;
 
 		clientInfo = CG_ConfigString( CS_PLAYERS+i );
-		if ( !clientInfo[0] ) 
+		if ( !clientInfo[0] )
 		{
 			continue;
 		}
@@ -1526,7 +1520,7 @@ void CG_StartMusic( qboolean bForceStart ) {
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
 	COM_EndParseSession();
 
-	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
+	cgi_S_StartBackgroundTrack( parm1, parm2, (qboolean)!bForceStart );
 }
 
 /*
@@ -1549,7 +1543,7 @@ int gi_cg_inventorySelect;
 
 static void CG_GameStateReceived( void ) {
 	// clear everything
-	
+
 	extern void CG_ClearAnimSndCache( void );
 	CG_ClearAnimSndCache();	// else sound handles wrong after vid_restart
 
@@ -1557,7 +1551,7 @@ static void CG_GameStateReceived( void ) {
 	iCGResetCount++;
 	if (iCGResetCount == 1)	// this will only equal 1 first time, after each vid_restart it just gets higher.
 	{						//	This non-clear is so the user can vid_restart during scrolling text without losing it.
-		qbVidRestartOccured = qfalse;		
+		qbVidRestartOccured = qfalse;
 	}
 
 	if (!qbVidRestartOccured)
@@ -1586,7 +1580,7 @@ Ghoul2 Insert End
 
 	memset( cg_weapons, 0, sizeof(cg_weapons) );
 	memset( cg_items, 0, sizeof(cg_items) );
-	
+
 	CG_LinkCentsToGents();
 
 	cg.weaponSelect = WP_BRYAR_PISTOL;
@@ -1646,14 +1640,31 @@ Ghoul2 Insert End
 
 void CG_WriteTheEvilCGHackStuff(void)
 {
-	gi.AppendToSaveGame(INT_ID('F','P','S','L'), &cg.forcepowerSelect, sizeof(cg.forcepowerSelect));
-	gi.AppendToSaveGame(INT_ID('I','V','S','L'), &cg.inventorySelect,  sizeof(cg.inventorySelect));
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
 
+	saved_game.write_chunk<int32_t>(
+		INT_ID('F', 'P', 'S', 'L'),
+		::cg.forcepowerSelect);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('I', 'V', 'S', 'L'),
+		::cg.inventorySelect);
 }
+
 void CG_ReadTheEvilCGHackStuff(void)
 {
-	gi.ReadFromSaveGame(INT_ID('F','P','S','L'), (void *)&gi_cg_forcepowerSelect, sizeof(gi_cg_forcepowerSelect), NULL);
-	gi.ReadFromSaveGame(INT_ID('I','V','S','L'), (void *)&gi_cg_inventorySelect,  sizeof(gi_cg_inventorySelect), NULL);
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('F', 'P', 'S', 'L'),
+		::gi_cg_forcepowerSelect);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('I', 'V', 'S', 'L'),
+		::gi_cg_inventorySelect);
+
 	gbUseTheseValuesFromLoadSave = qtrue;
 }
 
@@ -1731,7 +1742,7 @@ void CG_Init( int serverCommandSequence ) {
 	cgs.media.loadTick		= cgi_R_RegisterShaderNoMip( "gfx/hud/load_tick" );
 	cgs.media.loadTickCap	= cgi_R_RegisterShaderNoMip( "gfx/hud/load_tick_cap" );
 
-	static char		*force_icon_files[NUM_FORCE_POWERS] = 
+	static char		*force_icon_files[NUM_FORCE_POWERS] =
 	{
 		"gfx/hud/f_icon_heal",
 		"gfx/hud/f_icon_levitation",
@@ -1766,20 +1777,6 @@ void CG_Init( int serverCommandSequence ) {
 
 	CG_InitConsoleCommands();
 
-	//
-	// the game server will interpret these commands, which will be automatically
-	// forwarded to the server after they are not recognized locally
-	//
-	cgi_AddCommand ("kill");
-	cgi_AddCommand ("give");
-	cgi_AddCommand ("god");
-	cgi_AddCommand ("notarget");
-	cgi_AddCommand ("noclip");
-	cgi_AddCommand ("undying");
-	cgi_AddCommand ("setviewpos");
-	cgi_AddCommand ("setobjective");
-	cgi_AddCommand ("viewobjective");
-
 	cg.missionInfoFlashTime = 0;
 	cg.missionStatusShow = qfalse;
 
@@ -1792,7 +1789,7 @@ CG_Shutdown
 Called before every level change or subsystem restart
 =================
 */
-void CG_Shutdown( void ) 
+void CG_Shutdown( void )
 {
 	in_camera = false;
 	FX_Free();
@@ -1814,7 +1811,7 @@ void CG_DrawNode( vec3_t origin, int type )
 	ex->startTime = cg.time;
 	ex->endTime = ex->startTime + 51;
 	VectorCopy( origin, ex->refEntity.origin );
-		
+
 	ex->refEntity.customShader = cgi_R_RegisterShader( "gfx/misc/nav_node" );
 
 	float	scale = 16.0f;
@@ -1847,7 +1844,7 @@ void CG_DrawNode( vec3_t origin, int type )
 		ex->color[2] = 0;
 		break;
 	}
-	
+
 	ex->radius = scale;
 }
 
@@ -1868,7 +1865,7 @@ void CG_DrawRadius( vec3_t origin, unsigned int radius, int type )
 	ex->startTime = cg.time;
 	ex->endTime = ex->startTime + 51;
 	VectorCopy( origin, ex->refEntity.origin );
-		
+
 	ex->refEntity.customShader = cgi_R_RegisterShader( "gfx/misc/nav_radius" );
 
 	switch ( type )
@@ -1916,7 +1913,7 @@ void CG_DrawEdge( vec3_t start, vec3_t end, int type )
 	case EDGE_NORMAL:
 		FX_AddLine( start, end, 8.0f, 4.0f, 0.0f, 0.5f, 0.5f, 51, cgi_R_RegisterShader( "gfx/misc/nav_line" ), 0 );
 		break;
-	
+
 	case EDGE_BLOCKED:
 		{
 			vec3_t	color = { 255, 255, 0 };
@@ -1960,7 +1957,7 @@ void CG_DrawCombatPoint( vec3_t origin, int type )
 	ex->radius = 8;
 	ex->endTime = ex->startTime + 51;
 	VectorCopy( origin, ex->refEntity.origin );
-		
+
 	ex->refEntity.customShader = cgi_R_RegisterShader( "gfx/misc/nav_cpoint" );
 
 	ex->color[0] = 0;
@@ -2009,7 +2006,7 @@ void CG_DrawAlert( vec3_t origin, float rating )
 // new hud stuff ( mission pack )
 // ==============================
 //
-qboolean CG_Asset_Parse(const char **p) 
+qboolean CG_Asset_Parse(const char **p)
 {
 	const char *token;
 	const char *tempStr;
@@ -2022,12 +2019,12 @@ qboolean CG_Asset_Parse(const char **p)
 		return qfalse;
 	}
 
-	if (Q_stricmp(token, "{") != 0) 
+	if (Q_stricmp(token, "{") != 0)
 	{
 		return qfalse;
 	}
-    
-	while ( 1 ) 
+
+	while ( 1 )
 	{
 		token = COM_ParseExt(p, qtrue);
 		if (!token)
@@ -2035,13 +2032,13 @@ qboolean CG_Asset_Parse(const char **p)
 			return qfalse;
 		}
 
-		if (Q_stricmp(token, "}") == 0) 
+		if (Q_stricmp(token, "}") == 0)
 		{
 			return qtrue;
 		}
 
 		// font
-		if (Q_stricmp(token, "font") == 0) 
+		if (Q_stricmp(token, "font") == 0)
 		{
 /*
 			int pointSize;
@@ -2049,7 +2046,7 @@ qboolean CG_Asset_Parse(const char **p)
 			cgi_UI_Parse_String(tempStr);
 			cgi_UI_Parse_Int(&pointSize);
 
-			if (!tempStr || !pointSize) 
+			if (!tempStr || !pointSize)
 			{
 				return qfalse;
 			}
@@ -2059,9 +2056,9 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// smallFont
-		if (Q_stricmp(token, "smallFont") == 0) 
+		if (Q_stricmp(token, "smallFont") == 0)
 		{
-			if (!COM_ParseString(p, &tempStr) || !COM_ParseInt(p, &pointSize)) 
+			if (!COM_ParseString(p, &tempStr) || !COM_ParseInt(p, &pointSize))
 			{
 				return qfalse;
 			}
@@ -2070,10 +2067,10 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// font
-		if (Q_stricmp(token, "bigfont") == 0) 
+		if (Q_stricmp(token, "bigfont") == 0)
 		{
 			int pointSize;
-			if (!COM_ParseString(p, &tempStr) || !COM_ParseInt(p, &pointSize)) 
+			if (!COM_ParseString(p, &tempStr) || !COM_ParseInt(p, &pointSize))
 			{
 				return qfalse;
 			}
@@ -2082,9 +2079,9 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// gradientbar
-		if (Q_stricmp(token, "gradientbar") == 0) 
+		if (Q_stricmp(token, "gradientbar") == 0)
 		{
-			if (!COM_ParseString(p, &tempStr)) 
+			if (!COM_ParseString(p, &tempStr))
 			{
 				return qfalse;
 			}
@@ -2093,9 +2090,9 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// enterMenuSound
-		if (Q_stricmp(token, "menuEnterSound") == 0) 
+		if (Q_stricmp(token, "menuEnterSound") == 0)
 		{
-			if (!COM_ParseString(p, &tempStr)) 
+			if (!COM_ParseString(p, &tempStr))
 			{
 				return qfalse;
 			}
@@ -2104,9 +2101,9 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// exitMenuSound
-		if (Q_stricmp(token, "menuExitSound") == 0) 
+		if (Q_stricmp(token, "menuExitSound") == 0)
 		{
-			if (!COM_ParseString(p, &tempStr)) 
+			if (!COM_ParseString(p, &tempStr))
 			{
 				return qfalse;
 			}
@@ -2115,9 +2112,9 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// itemFocusSound
-		if (Q_stricmp(token, "itemFocusSound") == 0) 
+		if (Q_stricmp(token, "itemFocusSound") == 0)
 		{
-			if (!COM_ParseString(p, &tempStr)) 
+			if (!COM_ParseString(p, &tempStr))
 			{
 				return qfalse;
 			}
@@ -2126,9 +2123,9 @@ qboolean CG_Asset_Parse(const char **p)
 		}
 
 		// menuBuzzSound
-		if (Q_stricmp(token, "menuBuzzSound") == 0) 
+		if (Q_stricmp(token, "menuBuzzSound") == 0)
 		{
-			if (!COM_ParseString(p, &tempStr)) 
+			if (!COM_ParseString(p, &tempStr))
 			{
 				return qfalse;
 			}
@@ -2136,9 +2133,9 @@ qboolean CG_Asset_Parse(const char **p)
 			continue;
 		}
 
-		if (Q_stricmp(token, "cursor") == 0) 
+		if (Q_stricmp(token, "cursor") == 0)
 		{
-//			if (!COM_ParseString(p, &cgDC.Assets.cursorStr)) 
+//			if (!COM_ParseString(p, &cgDC.Assets.cursorStr))
 //			{
 //				return qfalse;
 //			}
@@ -2146,55 +2143,55 @@ qboolean CG_Asset_Parse(const char **p)
 			continue;
 		}
 
-		if (Q_stricmp(token, "fadeClamp") == 0) 
+		if (Q_stricmp(token, "fadeClamp") == 0)
 		{
-//			if (!COM_ParseFloat(p, &cgDC.Assets.fadeClamp)) 
+//			if (!COM_ParseFloat(p, &cgDC.Assets.fadeClamp))
 //			{
 //				return qfalse;
 //			}
 			continue;
 		}
 
-		if (Q_stricmp(token, "fadeCycle") == 0) 
+		if (Q_stricmp(token, "fadeCycle") == 0)
 		{
-//			if (!COM_ParseInt(p, &cgDC.Assets.fadeCycle)) 
+//			if (!COM_ParseInt(p, &cgDC.Assets.fadeCycle))
 //			{
 //				return qfalse;
 //			}
 			continue;
 		}
 
-		if (Q_stricmp(token, "fadeAmount") == 0) 
+		if (Q_stricmp(token, "fadeAmount") == 0)
 		{
-//			if (!COM_ParseFloat(p, &cgDC.Assets.fadeAmount)) 
+//			if (!COM_ParseFloat(p, &cgDC.Assets.fadeAmount))
 //			{
 //				return qfalse;
 //			}
 			continue;
 		}
 
-		if (Q_stricmp(token, "shadowX") == 0) 
+		if (Q_stricmp(token, "shadowX") == 0)
 		{
-//			if (!COM_ParseFloat(p, &cgDC.Assets.shadowX)) 
+//			if (!COM_ParseFloat(p, &cgDC.Assets.shadowX))
 //			{
 //				return qfalse;
 //			}
 			continue;
 		}
 
-		if (Q_stricmp(token, "shadowY") == 0) 
+		if (Q_stricmp(token, "shadowY") == 0)
 		{
-//			if (!COM_ParseFloat(p, &cgDC.Assets.shadowY)) 
+//			if (!COM_ParseFloat(p, &cgDC.Assets.shadowY))
 //			{
 //				return qfalse;
 //			}
 			continue;
 		}
 
-		if (Q_stricmp(token, "shadowColor") == 0) 
+		if (Q_stricmp(token, "shadowColor") == 0)
 		{
 			/*
-			if (!PC_Color_Parse(handle, &cgDC.Assets.shadowColor)) 
+			if (!PC_Color_Parse(handle, &cgDC.Assets.shadowColor))
 			{
 				return qfalse;
 			}
@@ -2213,19 +2210,19 @@ void cgi_UI_EndParseSession(char *buf);
 CG_ParseMenu();
 =================
 */
-void CG_ParseMenu(const char *menuFile) 
+void CG_ParseMenu(const char *menuFile)
 {
 	char			*token;
 	int				result;
 	char			*buf,*p;
 
-	Com_Printf("Parsing menu file:%s\n", menuFile);
+	Com_Printf("Parsing menu file: %s\n", menuFile);
 
 	result = cgi_UI_StartParseSession((char *) menuFile,&buf);
 
 	if (!result)
 	{
-		Com_Printf("Unable to load hud menu file:%s. Using default ui/testhud.menu.\n", menuFile);
+		Com_Printf("Unable to load hud menu file: %s. Using default ui/testhud.menu.\n", menuFile);
 		result = cgi_UI_StartParseSession("ui/testhud.menu",&buf);
 		if (!result)
 		{
@@ -2235,7 +2232,7 @@ void CG_ParseMenu(const char *menuFile)
 	}
 
 	p = buf;
-	while ( 1 ) 
+	while ( 1 )
 	{
 		cgi_UI_ParseExt(&token);
 
@@ -2260,19 +2257,19 @@ void CG_ParseMenu(const char *menuFile)
 		//	break;
 		//}
 
-//		if ( *token == '}' ) 
+//		if ( *token == '}' )
 //		{
 //			break;
 //		}
 
-		if (Q_stricmp(token, "assetGlobalDef") == 0) 
+		if (Q_stricmp(token, "assetGlobalDef") == 0)
 		{
 			/*
-			if (CG_Asset_Parse(handle)) 
+			if (CG_Asset_Parse(handle))
 			{
 				continue;
-			} 
-			else 
+			}
+			else
 			{
 				break;
 			}
@@ -2280,7 +2277,7 @@ void CG_ParseMenu(const char *menuFile)
 		}
 
 
-		if (Q_stricmp(token, "menudef") == 0) 
+		if (Q_stricmp(token, "menudef") == 0)
 		{
 			// start a new menu
 			cgi_UI_Menu_New(p);
@@ -2297,33 +2294,33 @@ CG_Load_Menu();
 
 =================
 */
-qboolean CG_Load_Menu( const char **p) 
+qboolean CG_Load_Menu( const char **p)
 {
 	const char *token;
 
 	token = COM_ParseExt(p, qtrue);
 
-	if (token[0] != '{') 
+	if (token[0] != '{')
 	{
 		return qfalse;
 	}
 
-	while ( 1 ) 
+	while ( 1 )
 	{
 
 		token = COM_ParseExt(p, qtrue);
-    
-		if (Q_stricmp(token, "}") == 0) 
+
+		if (Q_stricmp(token, "}") == 0)
 		{
 			return qtrue;
 		}
 
-		if ( !token || token[0] == 0 ) 
+		if ( !token || token[0] == 0 )
 		{
 			return qfalse;
 		}
 
-		CG_ParseMenu(token); 
+		CG_ParseMenu(token);
 	}
 	return qfalse;
 }
@@ -2334,7 +2331,7 @@ CG_LoadMenus();
 
 =================
 */
-void CG_LoadMenus(const char *menuFile) 
+void CG_LoadMenus(const char *menuFile)
 {
 	const char	*token;
 	const char	*p;
@@ -2345,28 +2342,28 @@ void CG_LoadMenus(const char *menuFile)
 	start = cgi_Milliseconds();
 
 	len = cgi_FS_FOpenFile( menuFile, &f, FS_READ );
-	if ( !f ) 
+	if ( !f )
 	{
 		//cgi_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );	// what. this would not run
 		cgi_Printf( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );	// the rest at all.. --eez
 		len = cgi_FS_FOpenFile( "ui/jk2hud.txt", &f, FS_READ );
-		if (!f) 
+		if (!f)
 		{
 			cgi_Error( va( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n", menuFile ) );
 		}
 	}
 
-	if ( len >= MAX_MENUDEFFILE ) 
+	if ( len >= MAX_MENUDEFFILE )
 	{
-		cgi_Error( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
 		cgi_FS_FCloseFile( f );
+		cgi_Error( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
 		return;
 	}
 
 	cgi_FS_Read( buf, len, f );
 	buf[len] = 0;
 	cgi_FS_FCloseFile( f );
-	
+
 //	COM_Compress(buf);
 
 //	cgi_UI_Menu_Reset();
@@ -2374,26 +2371,26 @@ void CG_LoadMenus(const char *menuFile)
 	p = buf;
 
 	COM_BeginParseSession();
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token = COM_ParseExt( &p, qtrue );
-		if( !token || token[0] == 0 || token[0] == '}') 
+		if( !token || token[0] == 0 || token[0] == '}')
 		{
 			break;
 		}
 
-		if ( Q_stricmp( token, "}" ) == 0 ) 
+		if ( Q_stricmp( token, "}" ) == 0 )
 		{
 			break;
 		}
 
-		if (Q_stricmp(token, "loadmenu") == 0) 
+		if (Q_stricmp(token, "loadmenu") == 0)
 		{
-			if (CG_Load_Menu(&p)) 
+			if (CG_Load_Menu(&p))
 			{
 				continue;
-			} 
-			else 
+			}
+			else
 			{
 				break;
 			}
@@ -2410,7 +2407,7 @@ CG_LoadHudMenu();
 
 =================
 */
-void CG_LoadHudMenu(void) 
+void CG_LoadHudMenu(void)
 {
 	const char *hudSet;
 /*
@@ -2424,7 +2421,7 @@ void CG_LoadHudMenu(void)
 	cgDC.registerModel = &trap_R_RegisterModel;
 	cgDC.modelBounds = &trap_R_ModelBounds;
 	cgDC.fillRect = &CG_FillRect;
-	cgDC.drawRect = &CG_DrawRect;   
+	cgDC.drawRect = &CG_DrawRect;
 	cgDC.drawSides = &CG_DrawSides;
 	cgDC.drawTopBottom = &CG_DrawTopBottom;
 	cgDC.clearScene = &trap_R_ClearScene;
@@ -2446,8 +2443,8 @@ void CG_LoadHudMenu(void)
 	cgDC.feederItemImage = &CG_FeederItemImage;
 	cgDC.feederItemText = &CG_FeederItemText;
 	cgDC.feederSelection = &CG_FeederSelection;
-	cgDC.Error = &Com_Error; 
-	cgDC.Print = &Com_Printf; 
+	cgDC.Error = &Com_Error;
+	cgDC.Print = &Com_Printf;
 	cgDC.ownerDrawWidth = &CG_OwnerDrawWidth;
 	cgDC.registerSound = &trap_S_RegisterSound;
 	cgDC.startBackgroundTrack = &trap_S_StartBackgroundTrack;
@@ -2456,15 +2453,15 @@ void CG_LoadHudMenu(void)
 	cgDC.stopCinematic = &CG_StopCinematic;
 	cgDC.drawCinematic = &CG_DrawCinematic;
 	cgDC.runCinematicFrame = &CG_RunCinematicFrame;
-*/	
+*/
 //	Init_Display(&cgDC);
 
 //	cgi_UI_String_Init();
 
 //	cgi_UI_Menu_Reset();
-	
+
 	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0') 
+	if (hudSet[0] == '\0')
 	{
 		hudSet = "ui/jk2hud.txt";
 	}
@@ -2486,7 +2483,7 @@ INVENTORY SELECTION
 CG_InventorySelectable
 ===============
 */
-static qboolean CG_InventorySelectable( int index) 
+static qboolean CG_InventorySelectable( int index)
 {
 	if (cg.snap->ps.inventory[index])	// Is there any in the inventory?
 	{
@@ -2522,28 +2519,28 @@ static void SetInventoryTime(void)
 CG_DPPrevInventory_f
 ===============
 */
-void CG_DPPrevInventory_f( void ) 
+void CG_DPPrevInventory_f( void )
 {
 	int		i;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
 
 	const int original = cg.DataPadInventorySelect;
 
-	for ( i = 0 ; i < INV_MAX ; i++ ) 
+	for ( i = 0 ; i < INV_MAX ; i++ )
 	{
 		cg.DataPadInventorySelect--;
 
 		if ((cg.DataPadInventorySelect < INV_ELECTROBINOCULARS) || (cg.DataPadInventorySelect >= INV_MAX))
-		{ 
-			cg.DataPadInventorySelect = (INV_MAX - 1); 
+		{
+			cg.DataPadInventorySelect = (INV_MAX - 1);
 		}
-		
+
 		if ( CG_InventorySelectable( cg.DataPadInventorySelect ) )
-		{	
+		{
 			return;
 		}
 	}
@@ -2555,28 +2552,28 @@ void CG_DPPrevInventory_f( void )
 CG_DPNextInventory_f
 ===============
 */
-void CG_DPNextInventory_f( void ) 
+void CG_DPNextInventory_f( void )
 {
 	int		i;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
 
 	const int original = cg.DataPadInventorySelect;
 
-	for ( i = 0 ; i < INV_MAX ; i++ ) 
+	for ( i = 0 ; i < INV_MAX ; i++ )
 	{
 		cg.DataPadInventorySelect++;
 
 		if ((cg.DataPadInventorySelect < INV_ELECTROBINOCULARS) || (cg.DataPadInventorySelect >= INV_MAX))
-		{ 
-			cg.DataPadInventorySelect = INV_ELECTROBINOCULARS; 
+		{
+			cg.DataPadInventorySelect = INV_ELECTROBINOCULARS;
 		}
 
-		if ( CG_InventorySelectable( cg.DataPadInventorySelect ) && (inv_icons[cg.DataPadInventorySelect])) 
-		{	
+		if ( CG_InventorySelectable( cg.DataPadInventorySelect ) && (inv_icons[cg.DataPadInventorySelect]))
+		{
 			return;
 		}
 	}
@@ -2589,19 +2586,19 @@ void CG_DPNextInventory_f( void )
 CG_NextInventory_f
 ===============
 */
-void CG_NextInventory_f( void ) 
+void CG_NextInventory_f( void )
 {
 	int		i;
 	float	*color;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
 
 	// The first time it's been hit so just show inventory but don't advance in inventory.
-	color = CG_FadeColor( cg.inventorySelectTime, WEAPON_SELECT_TIME );	
-	if ( !color )	
+	color = CG_FadeColor( cg.inventorySelectTime, WEAPON_SELECT_TIME );
+	if ( !color )
 	{
 		SetInventoryTime();
 		return;
@@ -2609,17 +2606,17 @@ void CG_NextInventory_f( void )
 
 	const int original = cg.inventorySelect;
 
-	for ( i = 0 ; i < INV_MAX ; i++ ) 
+	for ( i = 0 ; i < INV_MAX ; i++ )
 	{
 		cg.inventorySelect++;
 
 		if ((cg.inventorySelect < INV_ELECTROBINOCULARS) || (cg.inventorySelect >= INV_MAX))
-		{ 
-			cg.inventorySelect = INV_ELECTROBINOCULARS; 
+		{
+			cg.inventorySelect = INV_ELECTROBINOCULARS;
 		}
 
-		if ( CG_InventorySelectable( cg.inventorySelect ) && (inv_icons[cg.inventorySelect])) 
-		{	
+		if ( CG_InventorySelectable( cg.inventorySelect ) && (inv_icons[cg.inventorySelect]))
+		{
 			cgi_S_StartSound (NULL, 0, CHAN_AUTO, cgs.media.selectSound2 );
 			SetInventoryTime();
 			return;
@@ -2643,19 +2640,19 @@ this func was moved to Cmd_UseInventory_f in g_cmds.cpp
 CG_PrevInventory_f
 ===============
 */
-void CG_PrevInventory_f( void ) 
+void CG_PrevInventory_f( void )
 {
 	int		i;
 	float	*color;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
 
 	// The first time it's been hit so just show inventory but don't advance in inventory.
-	color = CG_FadeColor( cg.inventorySelectTime, WEAPON_SELECT_TIME );	
-	if ( !color )	
+	color = CG_FadeColor( cg.inventorySelectTime, WEAPON_SELECT_TIME );
+	if ( !color )
 	{
 		SetInventoryTime();
 		return;
@@ -2663,17 +2660,17 @@ void CG_PrevInventory_f( void )
 
 	const int original = cg.inventorySelect;
 
-	for ( i = 0 ; i < INV_MAX ; i++ ) 
+	for ( i = 0 ; i < INV_MAX ; i++ )
 	{
 		cg.inventorySelect--;
 
 		if ((cg.inventorySelect < INV_ELECTROBINOCULARS) || (cg.inventorySelect >= INV_MAX))
-		{ 
-			cg.inventorySelect = (INV_MAX - 1); 
+		{
+			cg.inventorySelect = (INV_MAX - 1);
 		}
-		
-		if ( CG_InventorySelectable( cg.inventorySelect ) && (inv_icons[cg.inventorySelect])) 
-		{	
+
+		if ( CG_InventorySelectable( cg.inventorySelect ) && (inv_icons[cg.inventorySelect]))
+		{
 			cgi_S_StartSound (NULL, 0, CHAN_AUTO, cgs.media.selectSound2 );
 			SetInventoryTime();
 			return;
@@ -2723,7 +2720,7 @@ gitem_t *FindInventoryItemTag(int tag)
 	}
 */
 
-	for ( i = 1 ; i < bg_numItems ; i++ ) 
+	for ( i = 1 ; i < bg_numItems ; i++ )
 	{
 		if ( bg_itemlist[i].giTag == tag && bg_itemlist[i].giType == IT_HOLDABLE ) // I guess giTag's aren't unique amongst items..must also make sure it's a holdable
 		{
@@ -2742,7 +2739,7 @@ gitem_t *FindInventoryItemTag(int tag)
 CG_DrawInventorySelect
 ===================
 */
-void CG_DrawInventorySelect( void ) 
+void CG_DrawInventorySelect( void )
 {
 	int				i;
 	int				sideMax,holdCount,iconCnt;
@@ -2750,14 +2747,14 @@ void CG_DrawInventorySelect( void )
 	int				sideLeftIconCnt,sideRightIconCnt;
 	int				count;
 	int				holdX,x,y,pad;
-	int				height;
+	//int				height;
 //	int				tag;
 	float			addX;
 	vec4_t			textColor = { .312f, .75f, .621f, 1.0f };
 	char			text[1024]={0};
 
 	// don't display if dead
-	if ( cg.predicted_player_state.stats[STAT_HEALTH] <= 0 || ( cg.snap->ps.viewEntity > 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )) 
+	if ( cg.predicted_player_state.stats[STAT_HEALTH] <= 0 || ( cg.snap->ps.viewEntity > 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD ))
 	{
 		return;
 	}
@@ -2782,9 +2779,9 @@ void CG_DrawInventorySelect( void )
 
 	// count the number of items owned
 	count = 0;
-	for ( i = 0 ; i < INV_MAX ; i++ ) 
+	for ( i = 0 ; i < INV_MAX ; i++ )
 	{
-		if (CG_InventorySelectable(i) && inv_icons[i]) 
+		if (CG_InventorySelectable(i) && inv_icons[i])
 		{
 			count++;
 		}
@@ -2793,7 +2790,7 @@ void CG_DrawInventorySelect( void )
 	if (!count)
 	{
 		cgi_SP_GetStringTextString("INGAME_EMPTY_INV",text, sizeof(text) );
-		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );	
+		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );
 		x = ( SCREEN_WIDTH - w ) / 2;
 		CG_DrawProportionalString(x, y2 + 22, text, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
 		return;
@@ -2835,7 +2832,7 @@ void CG_DrawInventorySelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
@@ -2858,7 +2855,7 @@ void CG_DrawInventorySelect( void )
 			CG_DrawPic( holdX, y+10, smallIconSize, smallIconSize, inv_icons[i] );
 
 			cgi_R_SetColor(colorTable[CT_ICON_BLUE]);
-			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12, 
+			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12,
 				NUM_FONT_SMALL,qfalse);
 
 			holdX -= (smallIconSize+pad);
@@ -2866,14 +2863,14 @@ void CG_DrawInventorySelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
+	//height = bigIconSize * cg.iconHUDPercent;
 	if (inv_icons[cg.inventorySelect])
 	{
 		cgi_R_SetColor(NULL);
 		CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, inv_icons[cg.inventorySelect] );
 		addX = (float) bigIconSize * .75;
 		cgi_R_SetColor(colorTable[CT_ICON_BLUE]);
-		CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.inventorySelect], 6, 12, 
+		CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.inventorySelect], 6, 12,
 			NUM_FONT_SMALL,qfalse);
 
 		if (inv_names[cg.inventorySelect])
@@ -2886,10 +2883,10 @@ void CG_DrawInventorySelect( void )
 				char itemName[256], data[1024]; // FIXME: do these really need to be this large??  does it matter?
 
 				sprintf( itemName, "INGAME_%s",	item->classname );
-			
+
 				if ( cgi_SP_GetStringTextString( itemName, data, sizeof( data )))
 				{
-					int w = cgi_R_Font_StrLenPixels( data, cgs.media.qhFontSmall, 1.0f );	
+					int w = cgi_R_Font_StrLenPixels( data, cgs.media.qhFontSmall, 1.0f );
 					int x = ( SCREEN_WIDTH - w ) / 2;
 
 					cgi_R_Font_DrawString( x, (SCREEN_HEIGHT - 24), data, textColor, cgs.media.qhFontSmall, -1, 1.0f);
@@ -2897,8 +2894,8 @@ void CG_DrawInventorySelect( void )
 			}
 //			if (tag)
 //			{
-//				CG_DrawProportionalString(320, y + 53, inv_names[cg.inventorySelect], CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);		
-//				CG_DrawProportionalString(320, y + 53, bg_itemlist[i].pickup_name, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);		
+//				CG_DrawProportionalString(320, y + 53, inv_names[cg.inventorySelect], CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
+//				CG_DrawProportionalString(320, y + 53, bg_itemlist[i].pickup_name, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
 //			}
 		}
 	}
@@ -2912,7 +2909,7 @@ void CG_DrawInventorySelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
@@ -2934,7 +2931,7 @@ void CG_DrawInventorySelect( void )
 			CG_DrawPic( holdX, y+10, smallIconSize, smallIconSize, inv_icons[i] );
 
 			cgi_R_SetColor(colorTable[CT_ICON_BLUE]);
-			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12, 
+			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12,
 				NUM_FONT_SMALL,qfalse);
 
 			holdX += (smallIconSize+pad);
@@ -2944,7 +2941,7 @@ void CG_DrawInventorySelect( void )
 
 int cgi_UI_GetItemText(char *menuFile,char *itemName, char *text);
 
-char *inventoryDesc[15] = 
+char *inventoryDesc[15] =
 {
 "NEURO_SAAV_DESC",
 "BACTA_DESC",
@@ -2961,7 +2958,7 @@ char *inventoryDesc[15] =
 CG_DrawDataPadInventorySelect
 ===================
 */
-void CG_DrawDataPadInventorySelect( void ) 
+void CG_DrawDataPadInventorySelect( void )
 {
 	int				i;
 	int				sideMax,holdCount,iconCnt;
@@ -2969,7 +2966,7 @@ void CG_DrawDataPadInventorySelect( void )
 	int				sideLeftIconCnt,sideRightIconCnt;
 	int				count;
 	int				holdX,x,y,pad;
-	int				height;
+	//int				height;
 	float			addX;
 	char			text[1024]={0};
 	vec4_t			textColor = { .312f, .75f, .621f, 1.0f };
@@ -2977,9 +2974,9 @@ void CG_DrawDataPadInventorySelect( void )
 
 	// count the number of items owned
 	count = 0;
-	for ( i = 0 ; i < INV_MAX ; i++ ) 
+	for ( i = 0 ; i < INV_MAX ; i++ )
 	{
-		if (CG_InventorySelectable(i) && inv_icons[i]) 
+		if (CG_InventorySelectable(i) && inv_icons[i])
 		{
 			count++;
 		}
@@ -2989,7 +2986,7 @@ void CG_DrawDataPadInventorySelect( void )
 	if (!count)
 	{
 		cgi_SP_GetStringTextString("INGAME_EMPTY_INV",text, sizeof(text) );
-		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );	
+		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );
 		x = ( SCREEN_WIDTH - w ) / 2;
 		CG_DrawProportionalString(x, 300 + 22, text, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
 		return;
@@ -3034,7 +3031,7 @@ void CG_DrawDataPadInventorySelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
@@ -3057,7 +3054,7 @@ void CG_DrawDataPadInventorySelect( void )
 			CG_DrawPic( holdX, y+10, smallIconSize, smallIconSize, inv_icons[i] );
 
 			cgi_R_SetColor(colorTable[CT_ICON_BLUE]);
-			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12, 
+			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12,
 				NUM_FONT_SMALL,qfalse);
 
 			holdX -= (smallIconSize+pad);
@@ -3065,14 +3062,14 @@ void CG_DrawDataPadInventorySelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
+	//height = bigIconSize * cg.iconHUDPercent;
 	if (inv_icons[cg.DataPadInventorySelect])
 	{
 		cgi_R_SetColor(NULL);
 		CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, inv_icons[cg.DataPadInventorySelect] );
 		addX = (float) bigIconSize * .75;
 		cgi_R_SetColor(colorTable[CT_ICON_BLUE]);
-		CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.DataPadInventorySelect], 6, 12, 
+		CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.DataPadInventorySelect], 6, 12,
 			NUM_FONT_SMALL,qfalse);
 
 		if (inv_names[cg.DataPadInventorySelect])
@@ -3082,8 +3079,8 @@ void CG_DrawDataPadInventorySelect( void )
 
 //			if (tag)
 //			{
-//				CG_DrawProportionalString(320, y + 53, inv_names[cg.inventorySelect], CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);		
-//				CG_DrawProportionalString(320, y + 53, bg_itemlist[i].pickup_name, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);		
+//				CG_DrawProportionalString(320, y + 53, inv_names[cg.inventorySelect], CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
+//				CG_DrawProportionalString(320, y + 53, bg_itemlist[i].pickup_name, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
 //			}
 		}
 	}
@@ -3097,7 +3094,7 @@ void CG_DrawDataPadInventorySelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
@@ -3119,7 +3116,7 @@ void CG_DrawDataPadInventorySelect( void )
 			CG_DrawPic( holdX, y+10, smallIconSize, smallIconSize, inv_icons[i] );
 
 			cgi_R_SetColor(colorTable[CT_ICON_BLUE]);
-			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12, 
+			CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12,
 				NUM_FONT_SMALL,qfalse);
 
 			holdX += (smallIconSize+pad);
@@ -3134,12 +3131,12 @@ void CG_DrawDataPadInventorySelect( void )
 	{
 		cgi_SP_GetStringTextString( va("INGAME_%s",inventoryDesc[cg.DataPadInventorySelect]), text, sizeof(text) );
 
-		if (text)
+		if (text[0])
 		{
 			CG_DisplayBoxedText(70,50,500,300,text,
 														cgs.media.qhFontSmall,
 														0.7f,
-														textColor	
+														textColor
 														);
 		}
 	}
@@ -3165,7 +3162,7 @@ void SetForcePowerTime(void)
 	}
 }
 
-int showPowers[MAX_SHOWPOWERS] = 
+int showPowers[MAX_SHOWPOWERS] =
 {
 	FP_HEAL,
 	FP_SPEED,
@@ -3175,7 +3172,7 @@ int showPowers[MAX_SHOWPOWERS] =
 	FP_GRIP,
 	FP_LIGHTNING
 };
-char *showPowersName[MAX_SHOWPOWERS] = 
+char *showPowersName[MAX_SHOWPOWERS] =
 {
 	"HEAL2",
 	"SPEED2",
@@ -3186,7 +3183,7 @@ char *showPowersName[MAX_SHOWPOWERS] =
 	"LIGHTNING2",
 };
 
-int showDataPadPowers[MAX_DPSHOWPOWERS] = 
+int showDataPadPowers[MAX_DPSHOWPOWERS] =
 {
 	FP_HEAL,
 	FP_LEVITATION,
@@ -3201,7 +3198,7 @@ int showDataPadPowers[MAX_DPSHOWPOWERS] =
 	FP_SABER_OFFENSE,
 };
 
-/*char *showDataPadPowersName[MAX_DPSHOWPOWERS] = 
+/*char *showDataPadPowersName[MAX_DPSHOWPOWERS] =
 {
 	"HEAL2",
 	"JUMP2",
@@ -3228,7 +3225,7 @@ qboolean ForcePower_Valid(int index)
 
 	assert (MAX_SHOWPOWERS == ( sizeof(showPowers)/sizeof(showPowers[0]) ));
 	assert (index < MAX_SHOWPOWERS );	//is this a valid index?
-	if (player->client->ps.forcePowersKnown & (1 << showPowers[index]) && 
+	if (player->client->ps.forcePowersKnown & (1 << showPowers[index]) &&
 		player->client->ps.forcePowerLevel[showPowers[index]])	// Does he have the force power?
 	{
 		return qtrue;
@@ -3242,11 +3239,11 @@ qboolean ForcePower_Valid(int index)
 CG_NextForcePower_f
 ===============
 */
-void CG_NextForcePower_f( void ) 
+void CG_NextForcePower_f( void )
 {
 	int		i;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
@@ -3260,13 +3257,13 @@ void CG_NextForcePower_f( void )
 
 	const int original = cg.forcepowerSelect;
 
-	for ( i = 0; i < MAX_SHOWPOWERS; i++ ) 
+	for ( i = 0; i < MAX_SHOWPOWERS; i++ )
 	{
 		cg.forcepowerSelect++;
 
 		if (cg.forcepowerSelect >= MAX_SHOWPOWERS)
-		{ 
-			cg.forcepowerSelect = 0; 
+		{
+			cg.forcepowerSelect = 0;
 		}
 
 		if (ForcePower_Valid(cg.forcepowerSelect))	// Does he have the force power?
@@ -3284,11 +3281,11 @@ void CG_NextForcePower_f( void )
 CG_PrevForcePower_f
 ===============
 */
-void CG_PrevForcePower_f( void ) 
+void CG_PrevForcePower_f( void )
 {
 	int		i;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
@@ -3302,13 +3299,13 @@ void CG_PrevForcePower_f( void )
 
 	const int original = cg.forcepowerSelect;
 
-	for ( i = 0; i < MAX_SHOWPOWERS; i++ ) 
+	for ( i = 0; i < MAX_SHOWPOWERS; i++ )
 	{
 		cg.forcepowerSelect--;
 
 		if (cg.forcepowerSelect < 0)
-		{ 
-			cg.forcepowerSelect = MAX_SHOWPOWERS - 1; 
+		{
+			cg.forcepowerSelect = MAX_SHOWPOWERS - 1;
 		}
 
 		if (ForcePower_Valid(cg.forcepowerSelect))	// Does he have the force power?
@@ -3327,19 +3324,19 @@ void CG_PrevForcePower_f( void )
 CG_DrawForceSelect
 ===================
 */
-void CG_DrawForceSelect( void ) 
+void CG_DrawForceSelect( void )
 {
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;
-	int		holdX,x,y,pad,length;
+	int		holdX,x,y,pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	char	text[1024]={0};
 
 
 	// don't display if dead
-	if ( cg.predicted_player_state.stats[STAT_HEALTH] <= 0 || ( cg.snap->ps.viewEntity > 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )) 
+	if ( cg.predicted_player_state.stats[STAT_HEALTH] <= 0 || ( cg.snap->ps.viewEntity > 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD ))
 	{
 		return;
 	}
@@ -3404,10 +3401,6 @@ void CG_DrawForceSelect( void )
 	x = 320;
 	y = 425;
 
-	// Background
-	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
-			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
-	
 	i = cg.forcepowerSelect - 1;
 	if (i < 0)
 	{
@@ -3433,7 +3426,7 @@ void CG_DrawForceSelect( void )
 
 		if (force_icons[showPowers[i]])
 		{
-			CG_DrawPic( holdX, y, smallIconSize, smallIconSize, force_icons[showPowers[i]] ); 
+			CG_DrawPic( holdX, y, smallIconSize, smallIconSize, force_icons[showPowers[i]] );
 			holdX -= (smallIconSize+pad);
 		}
 	}
@@ -3477,7 +3470,7 @@ void CG_DrawForceSelect( void )
 	// This only a temp solution.
 	if (cgi_SP_GetStringTextString( va("INGAME_%s",showPowersName[cg.forcepowerSelect]), text, sizeof(text) ))
 	{
-			int w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 1.0f);	
+			int w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 1.0f);
 			int x = ( SCREEN_WIDTH - w ) / 2;
 			cgi_R_Font_DrawString(x, (SCREEN_HEIGHT - 24), text, colorTable[CT_ICON_BLUE], cgs.media.qhFontSmall, -1, 1.0f);
 	}
@@ -3493,7 +3486,7 @@ qboolean ForcePowerDataPad_Valid(int index)
 	gentity_t	*player = &g_entities[0];
 
 	assert (index < MAX_DPSHOWPOWERS);
-	if (player->client->ps.forcePowersKnown & (1 << showDataPadPowers[index]) && 
+	if (player->client->ps.forcePowersKnown & (1 << showDataPadPowers[index]) &&
 		player->client->ps.forcePowerLevel[showDataPadPowers[index]])	// Does he have the force power?
 	{
 		return qtrue;
@@ -3507,25 +3500,25 @@ qboolean ForcePowerDataPad_Valid(int index)
 CG_DPNextForcePower_f
 ===============
 */
-void CG_DPNextForcePower_f( void ) 
+void CG_DPNextForcePower_f( void )
 {
 	int		i;
 	int		original;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
 
 	original = cg.DataPadforcepowerSelect;
 
-	for ( i = 0; i<MAX_DPSHOWPOWERS; i++ ) 
+	for ( i = 0; i<MAX_DPSHOWPOWERS; i++ )
 	{
 		cg.DataPadforcepowerSelect++;
 
 		if (cg.DataPadforcepowerSelect >= MAX_DPSHOWPOWERS)
-		{ 
-			cg.DataPadforcepowerSelect = 0; 
+		{
+			cg.DataPadforcepowerSelect = 0;
 		}
 
 		if (ForcePowerDataPad_Valid(cg.DataPadforcepowerSelect))	// Does he have the force power?
@@ -3542,25 +3535,25 @@ void CG_DPNextForcePower_f( void )
 CG_DPPrevForcePower_f
 ===============
 */
-void CG_DPPrevForcePower_f( void ) 
+void CG_DPPrevForcePower_f( void )
 {
 	int		i;
 	int		original;
 
-	if ( !cg.snap ) 
+	if ( !cg.snap )
 	{
 		return;
 	}
 
 	original = cg.DataPadforcepowerSelect;
 
-	for ( i = 0; i<MAX_DPSHOWPOWERS; i++ ) 
+	for ( i = 0; i<MAX_DPSHOWPOWERS; i++ )
 	{
 		cg.DataPadforcepowerSelect--;
 
 		if (cg.DataPadforcepowerSelect < 0)
-		{ 
-			cg.DataPadforcepowerSelect = MAX_DPSHOWPOWERS-1; 
+		{
+			cg.DataPadforcepowerSelect = MAX_DPSHOWPOWERS-1;
 		}
 
 		if (ForcePowerDataPad_Valid(cg.DataPadforcepowerSelect))	// Does he have the force power?
@@ -3573,7 +3566,7 @@ void CG_DPPrevForcePower_f( void )
 	cg.DataPadforcepowerSelect = original;
 }
 
-char *forcepowerDesc[NUM_FORCE_POWERS] = 
+char *forcepowerDesc[NUM_FORCE_POWERS] =
 {
 "FORCE_HEAL_DESC",
 "FORCE_JUMP_DESC",
@@ -3588,7 +3581,7 @@ char *forcepowerDesc[NUM_FORCE_POWERS] =
 "FORCE_SABER_OFFENSE_DESC",
 };
 
-char *forcepowerLvl1Desc[NUM_FORCE_POWERS] = 
+char *forcepowerLvl1Desc[NUM_FORCE_POWERS] =
 {
 "FORCE_HEAL_LVL1_DESC",
 "FORCE_JUMP_LVL1_DESC",
@@ -3603,7 +3596,7 @@ char *forcepowerLvl1Desc[NUM_FORCE_POWERS] =
 "FORCE_SABER_OFFENSE_LVL1_DESC",
 };
 
-char *forcepowerLvl2Desc[NUM_FORCE_POWERS] = 
+char *forcepowerLvl2Desc[NUM_FORCE_POWERS] =
 {
 "FORCE_HEAL_LVL2_DESC",
 "FORCE_JUMP_LVL2_DESC",
@@ -3618,7 +3611,7 @@ char *forcepowerLvl2Desc[NUM_FORCE_POWERS] =
 "FORCE_SABER_OFFENSE_LVL2_DESC",
 };
 
-char *forcepowerLvl3Desc[NUM_FORCE_POWERS] = 
+char *forcepowerLvl3Desc[NUM_FORCE_POWERS] =
 {
 "FORCE_HEAL_LVL3_DESC",
 "FORCE_JUMP_LVL3_DESC",
@@ -3638,13 +3631,13 @@ char *forcepowerLvl3Desc[NUM_FORCE_POWERS] =
 CG_DrawDataPadForceSelect
 ===================
 */
-void CG_DrawDataPadForceSelect( void ) 
+void CG_DrawDataPadForceSelect( void )
 {
   	gentity_t	*player = &g_entities[0];
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;
-	int		holdX,x,y,pad,length;
+	int		holdX,x,y,pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	char	text[1024]={0};
@@ -3700,10 +3693,6 @@ void CG_DrawDataPadForceSelect( void )
 	x = 320;
 	y = 310;
 
-	// Background
-	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
-			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
-	
 	i = cg.DataPadforcepowerSelect - 1;
 	if (i < 0)
 	{
@@ -3729,7 +3718,7 @@ void CG_DrawDataPadForceSelect( void )
 
 		if (force_icons[showDataPadPowers[i]])
 		{
-			CG_DrawPic( holdX, y, smallIconSize, smallIconSize, force_icons[showDataPadPowers[i]] ); 
+			CG_DrawPic( holdX, y, smallIconSize, smallIconSize, force_icons[showDataPadPowers[i]] );
 		}
 
 		// A new force power
@@ -3737,7 +3726,7 @@ void CG_DrawDataPadForceSelect( void )
 			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[i]) ||
 			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[i]))
 		{
-			CG_DrawPic( holdX, y, smallIconSize, smallIconSize, cgs.media.DPForcePowerOverlay ); 
+			CG_DrawPic( holdX, y, smallIconSize, smallIconSize, cgs.media.DPForcePowerOverlay );
 		}
 
 		if (force_icons[showDataPadPowers[i]])
@@ -3756,8 +3745,8 @@ void CG_DrawDataPadForceSelect( void )
 		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
 			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
 			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]))
-		{			
-			CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2)), bigIconSize, bigIconSize, cgs.media.DPForcePowerOverlay ); 
+		{
+			CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2)), bigIconSize, bigIconSize, cgs.media.DPForcePowerOverlay );
 		}
 	}
 
@@ -3813,18 +3802,18 @@ void CG_DrawDataPadForceSelect( void )
 	{
 		cgi_SP_GetStringTextString( va("INGAME_%s",forcepowerLvl2Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
 	}
-	else 
+	else
 	{
 		cgi_SP_GetStringTextString( va("INGAME_%s",forcepowerLvl3Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
 	}
 
-	if (text)
+	if (text[0])
 	{
 
 		CG_DisplayBoxedText(70,50,500,300,va("%s%s",text,text2),
 													cgs.media.qhFontSmall,
 													0.7f,
-													colorTable[CT_ICON_BLUE]	
+													colorTable[CT_ICON_BLUE]
 													);
 	}
 }

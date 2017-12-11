@@ -1,30 +1,31 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // These utilities are meant for strictly non-player, non-team NPCs.  
 // These functions are in their own file because they are only intended
 // for use with NPCs who's logic has been overriden from the original
 // AI code, and who's code resides in files with the AI_ prefix.
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
 #include "g_headers.h"
-
-
 
 #include "b_local.h"
 #include "g_nav.h"
@@ -92,38 +93,6 @@ int AI_GetGroupSize( gentity_t *ent, int radius )
 		return -1;
 
 	return AI_GetGroupSize( ent->currentOrigin, radius, ent->client->playerTeam, ent );
-}
-
-extern int NAV_FindClosestWaypointForPoint( gentity_t *ent, vec3_t point );
-int AI_ClosestGroupEntityNumToPoint( AIGroupInfo_t &group, vec3_t point )
-{
-	int	markerWP = WAYPOINT_NONE;
-	int	cost, bestCost = Q3_INFINITE;
-	int	closest = ENTITYNUM_NONE;
-	
-	if ( &group == NULL || group.numGroup <= 0 )
-	{
-		return ENTITYNUM_NONE;
-	}
-
-	markerWP = NAV_FindClosestWaypointForPoint( &g_entities[group.member[0].number], point );
-
-	if ( markerWP == WAYPOINT_NONE )
-	{
-		return ENTITYNUM_NONE;
-	}
-
-	for ( int i = 0; i < group.numGroup; i++ )
-	{
-		cost = navigator.GetPathCost( group.member[i].waypoint, markerWP );
-		if ( cost < bestCost )
-		{
-			bestCost = cost;
-			closest = group.member[i].number;
-		}
-	}
-
-	return closest;
 }
 
 void AI_SetClosestBuddy( AIGroupInfo_t *group )
@@ -955,7 +924,7 @@ qboolean AI_RefreshGroup( AIGroupInfo_t *group )
 	//mark this group as not having been run this frame
 	group->processed = qfalse;
 
-	return (group->numGroup>0);
+	return (qboolean)(group->numGroup > 0);
 }
 
 void AI_UpdateGroups( void )
@@ -1102,7 +1071,7 @@ gentity_t *AI_DistributeAttack( gentity_t *attacker, gentity_t *enemy, team_t te
 			continue;
 
 		//Skip the requested avoid ent if present
-		if ( ( radiusEnts[ j ] == enemy ) )
+		if ( radiusEnts[ j ] == enemy )
 			continue;
 
 		//Must be on the same team

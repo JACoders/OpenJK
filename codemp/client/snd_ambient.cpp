@@ -1,11 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // Ambient Sound System (ASS!)
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4710 )	//not inlined
-#endif
 #include "client.h"
 #include "snd_ambient.h"
 #include "snd_local.h"
@@ -37,19 +53,19 @@ static int		parsePos		= 0;
 static char	tempBuffer[1024];
 
 //NOTENOTE: Be sure to change the mirrored code in g_spawn.cpp, and cg_main.cpp
-typedef	map<sstring_t, unsigned char>	namePrecache_m;
+typedef	std::map<sstring_t, unsigned char>	namePrecache_m;
 static namePrecache_m*	pMap = NULL;
 
 // Used for enum / string matching
 static const char	*setNames[NUM_AS_SETS] =
-					{	
+					{
 						"generalSet",
 						"localSet",
 						"bmodelSet",
 					};
 
 // Used for enum / function matching
-static const parseFunc_t 	parseFuncs[NUM_AS_SETS] =	
+static const parseFunc_t 	parseFuncs[NUM_AS_SETS] =
 							{
 								AS_GetGeneralSet,
 								AS_GetLocalSet,
@@ -58,7 +74,7 @@ static const parseFunc_t 	parseFuncs[NUM_AS_SETS] =
 
 // Used for keyword / enum matching
 static const char	*keywordNames[NUM_AS_KEYWORDS]=
-					{	
+					{
 						"timeBetweenWaves",
 						"subWaves",
 						"loopedWave",
@@ -73,8 +89,8 @@ static const char	*keywordNames[NUM_AS_KEYWORDS]=
 
 CSetGroup::CSetGroup(void)
 {
-	m_ambientSets = new vector<ambientSet_t*>;
-	m_setMap = new map<sstring_t, ambientSet_t*>;
+	m_ambientSets = new std::vector<ambientSet_t*>;
+	m_setMap = new std::map<sstring_t, ambientSet_t*>;
 	m_numSets = 0;
 }
 
@@ -93,7 +109,7 @@ Free
 
 void CSetGroup::Free( void )
 {
-	vector < ambientSet_t * >::iterator	ai;
+	std::vector < ambientSet_t * >::iterator	ai;
 
 	for ( ai = m_ambientSets->begin(); ai != m_ambientSets->end(); ++ai )
 	{
@@ -103,8 +119,8 @@ void CSetGroup::Free( void )
 	//Do this in place of clear() so it *really* frees the memory.
 	delete m_ambientSets;
 	delete m_setMap;
-	m_ambientSets = new vector<ambientSet_t*>;
-	m_setMap = new map<sstring_t, ambientSet_t*>;
+	m_ambientSets = new std::vector<ambientSet_t*>;
+	m_setMap = new std::map<sstring_t, ambientSet_t*>;
 
 	m_numSets = 0;
 }
@@ -151,7 +167,7 @@ GetSet
 
 ambientSet_t *CSetGroup::GetSet( const char *name )
 {
-	map < sstring_t, ambientSet_t *>::iterator	mi;
+	std::map < sstring_t, ambientSet_t *>::iterator	mi;
 
 	if ( name == NULL )
 		return NULL;
@@ -274,7 +290,7 @@ static void AS_GetTimeBetweenWaves( ambientSet_t &set )
 		#ifndef FINAL_BUILD
 		Com_Printf(S_COLOR_YELLOW"WARNING: Corrected swapped start / end times in a \"timeBetweenWaves\" keyword\n");
 		#endif
-		
+
 		int swap = startTime;
 		startTime = endTime;
 		endTime = swap;
@@ -300,7 +316,7 @@ static void AS_GetSubWaves( ambientSet_t &set )
 	char	dirBuffer[512], waveBuffer[256], waveName[1024];
 
 	//Get the directory for these sets
-	sscanf( parseBuffer+parsePos, "%s %s", tempBuffer, dirBuffer );	
+	sscanf( parseBuffer+parsePos, "%s %s", tempBuffer, dirBuffer );
 
 	//Move the pointer past these two strings
 	parsePos += ((strlen(keywordNames[SET_KEYWORD_SUBWAVES])+1) + (strlen(dirBuffer)+1));
@@ -321,7 +337,7 @@ static void AS_GetSubWaves( ambientSet_t &set )
 		{
 			//Construct the wave name
 			Com_sprintf( waveName, sizeof(waveName), "sound/%s/%s.wav", dirBuffer, waveBuffer );
-			
+
 			//Place this onto the sound directory name
 
 			//Precache the file at this point and store off the ID instead of the name
@@ -360,7 +376,7 @@ static void AS_GetLoopedWave( ambientSet_t &set )
 
 	//Construct the wave name
 	Com_sprintf( waveName, sizeof(waveName), "sound/%s.wav", waveBuffer );
-	
+
 	//Precache the file at this point and store off the ID instead of the name
 	if ( ( set.loopedWave = S_RegisterSound( waveName ) ) <= 0 )
 	{
@@ -391,10 +407,10 @@ static void AS_GetVolumeRange( ambientSet_t &set )
 		#ifndef FINAL_BUILD
 		Com_Printf(S_COLOR_YELLOW"WARNING: Corrected swapped min / max range in a \"volRange\" keyword\n");
 		#endif
-		
+
 		int swap =	min;
 					min = max;
-						  max = swap;		
+						  max = swap;
 	}
 
 	//Store the data
@@ -595,7 +611,7 @@ Parses an individual set group out of a set file buffer
 -------------------------
 */
 
-static sboolean AS_ParseSet( int setID, CSetGroup *sg )
+static qboolean AS_ParseSet( int setID, CSetGroup *sg )
 {
 	ambientSet_t	*set;
 	const char		*name;
@@ -616,15 +632,15 @@ static sboolean AS_ParseSet( int setID, CSetGroup *sg )
 		if ( Q_strncmp( parseBuffer+parsePos, name, strlen(name) ) == 0 )
 		{
 			//Update the debug info
-			numSets++;	
-			
+			numSets++;
+
 			//Push past the set specifier and on to the name
 			parsePos+=strlen(name)+1;	//Also take the following space out
 
 			//Get the set name (this MUST be first)
 			sscanf( parseBuffer+parsePos, "%s", tempBuffer );
 			AS_SkipLine();
-	
+
 			//Test the string against the precaches
 			if ( tempBuffer[0] )
 			{
@@ -635,7 +651,7 @@ static sboolean AS_ParseSet( int setID, CSetGroup *sg )
 
 			//Create a new set
 			set = sg->AddSet( (const char *) &tempBuffer );
-			
+
 			//Run the function to parse the data out
 			parseFuncs[setID]( *set );
 			continue;
@@ -644,7 +660,7 @@ static sboolean AS_ParseSet( int setID, CSetGroup *sg )
 		//If not found on this line, go down another and check again
 		AS_SkipLine();
 	}
-	
+
 	return qtrue;
 }
 
@@ -657,7 +673,7 @@ Parses the directory information out of the beginning of the file
 */
 
 static void AS_ParseHeader( void )
-{	
+{
 	char	typeBuffer[128];
 	int		keywordID;
 
@@ -705,7 +721,7 @@ Opens and parses a sound set file
 -------------------------
 */
 
-static sboolean AS_ParseFile( const char *filename, CSetGroup *sg )
+static qboolean AS_ParseFile( const char *filename, CSetGroup *sg )
 {
 	//Open the file and read the information from it
 	parseSize = FS_ReadFile( filename, (void **) &parseBuffer );
@@ -954,7 +970,7 @@ static void AS_UpdateCurrentSet( int id )
 			old->masterVolume = MAX_SET_VOLUME;
 			old->fadeTime = cls.realtime;
 		}
-	
+
 		current->masterVolume = 0;
 
 		//Set the fading starts
@@ -969,7 +985,7 @@ static void AS_UpdateCurrentSet( int id )
 -------------------------
 AS_PlayLocalSet
 
-Plays a local set taking volume and subwave playing into account.  
+Plays a local set taking volume and subwave playing into account.
 Alters lastTime to reflect the time updates.
 -------------------------
 */
@@ -979,7 +995,7 @@ static void AS_PlayLocalSet( vec3_t listener_origin, vec3_t origin, ambientSet_t
 	unsigned char	volume;
 	vec3_t			dir;
 	float			volScale, dist, distScale;
-	int				time = cls.realtime;
+	int				time = cl.serverTime;
 
 	//Make sure it's valid
 	if ( set == NULL )
@@ -999,7 +1015,7 @@ static void AS_PlayLocalSet( vec3_t listener_origin, vec3_t origin, ambientSet_t
 	//Check the time to start another one-shot subwave
 	if ( ( time - *lastTime ) < ( ( Q_irand( set->time_start, set->time_end ) ) * 1000 ) )
 		return;
-	
+
 	//Update the time
 	*lastTime = time;
 
@@ -1016,7 +1032,7 @@ static void AS_PlayLocalSet( vec3_t listener_origin, vec3_t origin, ambientSet_t
 -------------------------
 AS_PlayAmbientSet
 
-Plays an ambient set taking volume and subwave playing into account.  
+Plays an ambient set taking volume and subwave playing into account.
 Alters lastTime to reflect the time updates.
 -------------------------
 */
@@ -1038,7 +1054,7 @@ static void AS_PlayAmbientSet( vec3_t origin, ambientSet_t *set, int *lastTime )
 	//Check the time to start another one-shot subwave
 	if ( ( time - *lastTime ) < ( ( Q_irand( set->time_start, set->time_end ) ) * 1000 ) )
 		return;
-	
+
 	//Update the time
 	*lastTime = time;
 
@@ -1063,11 +1079,11 @@ Does maintenance and plays the ambient sets (two if crossfading)
 -------------------------
 */
 
-void S_UpdateAmbientSet ( const char *name, vec3_t origin ) 
+void S_UpdateAmbientSet ( const char *name, vec3_t origin )
 {
 	ambientSet_t	*current, *old;
 	ambientSet_t	*set = aSets->GetSet( name );
-	
+
 	if ( set == NULL )
 		return;
 
@@ -1098,12 +1114,12 @@ int S_AddLocalSet( const char *name, vec3_t listener_origin, vec3_t origin, int 
 	set = aSets->GetSet( name );
 
 	if ( set == NULL )
-		return cls.realtime;
+		return cl.serverTime;
 
 	currentTime = time;
 
 	AS_PlayLocalSet( listener_origin, origin, set, entID, &currentTime );
-	
+
 	return currentTime;
 }
 

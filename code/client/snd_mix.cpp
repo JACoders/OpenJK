@@ -1,28 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // snd_mix.c -- portable code to mix sounds for snd_dma.c
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
 
 #include "snd_local.h"
 
@@ -59,7 +60,7 @@ void S_TransferStereo16 (unsigned long *pbuf, int endtime)
 {
 	int		lpos;
 	int		ls_paintedtime;
-	
+
 	snd_p = (int *) paintbuffer;
 	ls_paintedtime = s_paintedtime;
 
@@ -122,7 +123,7 @@ void S_TransferPaintBuffer(int endtime)
 	{	// general case
 		p = (int *) paintbuffer;
 		count = (endtime - s_paintedtime) * dma.channels;
-		out_mask = dma.samples - 1; 
+		out_mask = dma.samples - 1;
 		out_idx = s_paintedtime * dma.channels & out_mask;
 		step = 3 - dma.channels;
 
@@ -167,9 +168,9 @@ CHANNEL MIXING
 
 ===============================================================================
 */
-static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, int sampleOffset, int bufferOffset ) 
+static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, int sampleOffset, int bufferOffset )
 {
-	portable_samplepair_t	*pSamplesDest;	
+	portable_samplepair_t	*pSamplesDest;
 	int iData;
 
 
@@ -177,8 +178,8 @@ static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, in
 	int iRightVol	= ch->rightvol * snd_vol;
 
 	pSamplesDest	= &paintbuffer[ bufferOffset ];
-	
-	for ( int i=0 ; i<count ; i++ ) 
+
+	for ( int i=0 ; i<count ; i++ )
 	{
 		iData = sfx->pSoundData[ sampleOffset++ ];
 
@@ -188,7 +189,7 @@ static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, in
 }
 
 
-void S_PaintChannelFromMP3( channel_t *ch, const sfx_t *sc, int count, int sampleOffset, int bufferOffset ) 
+void S_PaintChannelFromMP3( channel_t *ch, const sfx_t *sc, int count, int sampleOffset, int bufferOffset )
 {
 	int data;
 	int leftvol, rightvol;
@@ -242,8 +243,8 @@ void ChannelPaint(channel_t *ch, sfx_t *sc, int count, int sampleOffset, int buf
 {
 	switch (sc->eSoundCompressionMethod)
 	{
-		case ct_16:		
-			
+		case ct_16:
+
 			S_PaintChannelFrom16		(ch, sc, count, sampleOffset, bufferOffset);
 			break;
 
@@ -311,7 +312,7 @@ void S_PaintChannels( int endtime ) {
 
 		// paint in the channels.
 		ch = s_channels;
-		for ( i = 0; i < MAX_CHANNELS ; i++, ch++ ) {		
+		for ( i = 0; i < MAX_CHANNELS ; i++, ch++ ) {
 			if ( !ch->thesfx || (ch->leftvol<0.25 && ch->rightvol<0.25 )) {
 				continue;
 			}
@@ -325,7 +326,7 @@ void S_PaintChannels( int endtime ) {
 			sc = ch->thesfx;
 
 			// we might have to make 2 passes if it is
-			//	a looping sound effect and the end of 
+			//	a looping sound effect and the end of
 			//	the sameple is hit...
 			//
 			do
@@ -335,7 +336,7 @@ void S_PaintChannels( int endtime ) {
 				} else {
 					sampleOffset = ltime - ch->startSample;
 				}
-				
+
 				count = end - ltime;
 				if ( sampleOffset + count > sc->iSoundLengthInSamples ) {
 					count = sc->iSoundLengthInSamples - sampleOffset;
@@ -350,7 +351,7 @@ void S_PaintChannels( int endtime ) {
 /* temprem
 		// paint in the looped channels.
 		ch = loop_channels;
-		for ( i = 0; i < numLoopChannels ; i++, ch++ ) {		
+		for ( i = 0; i < numLoopChannels ; i++, ch++ ) {
 			if ( !ch->thesfx || (!ch->leftvol && !ch->rightvol )) {
 				continue;
 			}
@@ -374,7 +375,7 @@ void S_PaintChannels( int endtime ) {
 						count = sc->soundLength - sampleOffset;
 					}
 
-					if ( count > 0 ) 
+					if ( count > 0 )
 					{
 						ChannelPaint(ch, sc, count, sampleOffset, ltime - s_paintedtime);
 						ltime += count;

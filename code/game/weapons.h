@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	weapons.h
 //
@@ -54,7 +59,7 @@ typedef enum //# weapon_e
 
 	// These can never be gotten directly by the player
 	WP_STUN_BATON,		// stupid weapon, should remove
-	
+
 	//NPC weapons
 	WP_BRYAR_PISTOL,	// NPC weapon - player can pick this up, but never starts with them
 
@@ -62,7 +67,7 @@ typedef enum //# weapon_e
 
 	WP_BOT_LASER,		// Probe droid	- Laser blast
 
-	WP_TURRET,			// turret guns 
+	WP_TURRET,			// turret guns
 
 	WP_TIE_FIGHTER,
 
@@ -117,7 +122,7 @@ typedef struct weaponData_s
 	int		energyPerShot;		// Amount of energy used per shot
 	int		fireTime;			// Amount of time between firings
 	int		range;				// Range of weapon
-	
+
 	int		altEnergyPerShot;	// Amount of energy used for alt-fire
 	int		altFireTime;		// Amount of time between alt-firings
 	int		altRange;			// Range of alt-fire
@@ -300,8 +305,8 @@ typedef struct ammoData_s
 
 // ATST Main Gun
 //--------------
-#define ATST_MAIN_VEL				4000	// 
-#define ATST_MAIN_DAMAGE			25		// 
+#define ATST_MAIN_VEL				4000	//
+#define ATST_MAIN_DAMAGE			25		//
 #define ATST_MAIN_SIZE				3		// make it easier to hit things
 
 // ATST Side Gun

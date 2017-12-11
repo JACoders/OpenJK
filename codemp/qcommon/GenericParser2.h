@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #ifdef DEBUG_LINKING
@@ -48,6 +70,7 @@ protected:
 
 public:
 				CGPObject(const char *initName);
+		virtual	~CGPObject( void ) {}
 
 	const char	*GetName(void) { return mName; }
 
@@ -98,7 +121,7 @@ private:
 	CGPGroup			*mParent;
 	bool				mWriteable;
 
-	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList, 
+	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList,
 					   CGPObject **lastObject);
 
 public:
@@ -107,10 +130,10 @@ public:
 
 	CGPGroup	*GetParent(void) { return mParent; }
 	CGPGroup	*GetNext(void) { return (CGPGroup *)mNext; }
-	int			GetNumSubGroups(void); 
+	int			GetNumSubGroups(void);
 	int			GetNumPairs(void);
 
-	void		Clean(void); 
+	void		Clean(void);
 	CGPGroup	*Duplicate(CTextPool **textPool = 0, CGPGroup *initParent = 0);
 
 	void		SetWriteable(const bool writeable) { mWriteable = writeable; }

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #if !defined(FX_UTIL_H_INC)
 	#include "FxUtil.h"
@@ -24,16 +28,18 @@ This file is part of Jedi Knight 2.
 #include "../../code/qcommon/sstring.h"
 typedef sstring_t fxString_t;
 
+#include "../game/genericparser2.h"
+#include "qcommon/safe/string.h"
+
+#include <algorithm>
+
 #ifndef FX_SCHEDULER_H_INC
 #define FX_SCHEDULER_H_INC
-
-using namespace std;
-
 
 #define FX_FILE_PATH	"effects"
 
 #define FX_MAX_TRACE_DIST			WORLD_SIZE
-#define FX_MAX_EFFECTS				128		// how many effects the system can store
+#define FX_MAX_EFFECTS				150		// how many effects the system can store
 #define FX_MAX_EFFECT_COMPONENTS	24		// how many primitives an effect can hold, this should be plenty
 #define FX_MAX_PRIM_NAME			32
 	
@@ -78,13 +84,13 @@ class CMediaHandles
 {
 private:
 
-	vector<int>	mMediaList;
+	std::vector<int>	mMediaList;
 
 public:
 
 	void	AddHandle( int item )	{ mMediaList.push_back( item );	}
 	int		GetHandle()				{ if (mMediaList.size()==0) {return 0;}
-										else {return mMediaList[irand(0,mMediaList.size()-1)];} }
+										else {return mMediaList[irand(0,(int)mMediaList.size()-1)];} }
 
 	void operator=(const CMediaHandles &that );
 };
@@ -267,87 +273,94 @@ public:
 
 	CFxRange		mElasticity;
 
+private:
 
 	// Lower level parsing utilities
-	bool ParseVector( const char *val, vec3_t min, vec3_t max );
-	bool ParseFloat( const char *val, float *min, float *max );
-	bool ParseGroupFlags( const char *val, int *flags );
+	bool ParseVector( const gsl::cstring_view& val, vec3_t min, vec3_t max );
+	bool ParseFloat( const gsl::cstring_view& val, float& min, float& max );
+	bool ParseGroupFlags( const gsl::cstring_view& val, int& flags );
 
 	// Base key processing
 	// Note that these all have their own parse functions in case it becomes important to do certain kinds
 	//	of validation specific to that type.
-	bool ParseMin( const char *val );
-	bool ParseMax( const char *val );
-	bool ParseDelay( const char *val );
-	bool ParseCount( const char *val );
-	bool ParseLife( const char *val );
-	bool ParseElasticity( const char *val );
-	bool ParseFlags( const char *val );
-	bool ParseSpawnFlags( const char *val );
+	bool ParseMin( const gsl::cstring_view& val );
+	bool ParseMax( const gsl::cstring_view& val );
+	bool ParseDelay( const gsl::cstring_view& val );
+	bool ParseCount( const gsl::cstring_view& val );
+	bool ParseLife( const gsl::cstring_view& val );
+	bool ParseElasticity( const gsl::cstring_view& val );
+	bool ParseFlags( const gsl::cstring_view& val );
+	bool ParseSpawnFlags( const gsl::cstring_view& val );
 
-	bool ParseOrigin1( const char *val );
-	bool ParseOrigin2( const char *val );
-	bool ParseRadius( const char *val );
-	bool ParseHeight( const char *val );
-	bool ParseRotation( const char *val );
-	bool ParseRotationDelta( const char *val );
-	bool ParseAngle( const char *val );
-	bool ParseAngleDelta( const char *val );
-	bool ParseVelocity( const char *val );
-	bool ParseAcceleration( const char *val );
-	bool ParseGravity( const char *val );
-	bool ParseDensity( const char *val );
-	bool ParseVariance( const char *val );
+	bool ParseOrigin1( const gsl::cstring_view& val );
+	bool ParseOrigin2( const gsl::cstring_view& val );
+	bool ParseRadius( const gsl::cstring_view& val );
+	bool ParseHeight( const gsl::cstring_view& val );
+	bool ParseRotation( const gsl::cstring_view& val );
+	bool ParseRotationDelta( const gsl::cstring_view& val );
+	bool ParseAngle( const gsl::cstring_view& val );
+	bool ParseAngleDelta( const gsl::cstring_view& val );
+	bool ParseVelocity( const gsl::cstring_view& val );
+	bool ParseAcceleration( const gsl::cstring_view& val );
+	bool ParseGravity( const gsl::cstring_view& val );
+	bool ParseDensity( const gsl::cstring_view& val );
+	bool ParseVariance( const gsl::cstring_view& val );
 
+	/// Case insensitive map from cstring_view to Value
+	template< typename Value >
+	using StringViewIMap = std::map< gsl::cstring_view, Value, Q::CStringViewILess >;
+	using ParseMethod = bool ( CPrimitiveTemplate::* )( const gsl::cstring_view& );
 	// Group type processing
-	bool ParseRGB( CGPGroup *grp );
-	bool ParseAlpha( CGPGroup *grp );
-	bool ParseSize( CGPGroup *grp );
-	bool ParseSize2( CGPGroup *grp );
-	bool ParseLength( CGPGroup *grp );
+	bool ParseGroup( const CGPGroup& grp, const StringViewIMap< ParseMethod >& parseMethods, gsl::czstring name );
+	bool ParseRGB( const CGPGroup& grp );
+	bool ParseAlpha( const CGPGroup& grp );
+	bool ParseSize( const CGPGroup& grp );
+	bool ParseSize2( const CGPGroup& grp );
+	bool ParseLength( const CGPGroup& grp );
 
-	bool ParseModels( CGPValue *grp );
-	bool ParseShaders( CGPValue *grp );
-	bool ParseSounds( CGPValue *grp );
+	bool ParseModels( const CGPProperty& grp );
+	bool ParseShaders( const CGPProperty& grp );
+	bool ParseSounds( const CGPProperty& grp );
 
-	bool ParseImpactFxStrings( CGPValue *grp );
-	bool ParseDeathFxStrings( CGPValue *grp );
-	bool ParseEmitterFxStrings( CGPValue *grp );
-	bool ParsePlayFxStrings( CGPValue *grp );
+	bool ParseImpactFxStrings( const CGPProperty& grp );
+	bool ParseDeathFxStrings( const CGPProperty& grp );
+	bool ParseEmitterFxStrings( const CGPProperty& grp );
+	bool ParsePlayFxStrings( const CGPProperty& grp );
 
 	// Group keys
-	bool ParseRGBStart( const char *val );
-	bool ParseRGBEnd( const char *val );
-	bool ParseRGBParm( const char *val );
-	bool ParseRGBFlags( const char *val );
+	bool ParseRGBStart( const gsl::cstring_view& val );
+	bool ParseRGBEnd( const gsl::cstring_view& val );
+	bool ParseRGBParm( const gsl::cstring_view& val );
+	bool ParseRGBFlags( const gsl::cstring_view& val );
 
-	bool ParseAlphaStart( const char *val );
-	bool ParseAlphaEnd( const char *val );
-	bool ParseAlphaParm( const char *val );
-	bool ParseAlphaFlags( const char *val );
+	bool ParseAlphaStart( const gsl::cstring_view& val );
+	bool ParseAlphaEnd( const gsl::cstring_view& val );
+	bool ParseAlphaParm( const gsl::cstring_view& val );
+	bool ParseAlphaFlags( const gsl::cstring_view& val );
 
-	bool ParseSizeStart( const char *val );
-	bool ParseSizeEnd( const char *val );
-	bool ParseSizeParm( const char *val );
-	bool ParseSizeFlags( const char *val );
+	bool ParseSizeStart( const gsl::cstring_view& val );
+	bool ParseSizeEnd( const gsl::cstring_view& val );
+	bool ParseSizeParm( const gsl::cstring_view& val );
+	bool ParseSizeFlags( const gsl::cstring_view& val );
 
-	bool ParseSize2Start( const char *val );
-	bool ParseSize2End( const char *val );
-	bool ParseSize2Parm( const char *val );
-	bool ParseSize2Flags( const char *val );
+	bool ParseSize2Start( const gsl::cstring_view& val );
+	bool ParseSize2End( const gsl::cstring_view& val );
+	bool ParseSize2Parm( const gsl::cstring_view& val );
+	bool ParseSize2Flags( const gsl::cstring_view& val );
 
-	bool ParseLengthStart( const char *val );
-	bool ParseLengthEnd( const char *val );
-	bool ParseLengthParm( const char *val );
-	bool ParseLengthFlags( const char *val );
+	bool ParseLengthStart( const gsl::cstring_view& val );
+	bool ParseLengthEnd( const gsl::cstring_view& val );
+	bool ParseLengthParm( const gsl::cstring_view& val );
+	bool ParseLengthFlags( const gsl::cstring_view& val );
 
 
 public:
 
 	CPrimitiveTemplate();
+	CPrimitiveTemplate( const CPrimitiveTemplate& rhs );
 	~CPrimitiveTemplate()	{};
 
-	bool ParsePrimitive( CGPGroup *grp );
+	bool ParsePrimitive( const CGPGroup& grp );
 
 	void operator=(const CPrimitiveTemplate &that);
 };
@@ -362,16 +375,189 @@ struct SEffectTemplate
 	bool	mCopy;
 	char	mEffectName[MAX_QPATH];					// is this extraneous??
 	int		mPrimitiveCount;
-	CPrimitiveTemplate	*mPrimitives[FX_MAX_EFFECT_COMPONENTS];	 
+	CPrimitiveTemplate	*mPrimitives[FX_MAX_EFFECT_COMPONENTS];
 
-	bool operator == (const char * name) const 
+	bool operator == (const char * name) const
 	{
-		return !stricmp( mEffectName, name );
+		return !Q_stricmp( mEffectName, name );
 	}
 	void operator=(const SEffectTemplate &that);
 };
 
+template<typename T, int N>
+class PoolAllocator
+{
+public:
+	PoolAllocator()
+		: pool (new T[N])
+		, freeAndAllocated (new int[N])
+		, numFree (N)
+		, highWatermark (0)
+	{
+		for ( int i = 0; i < N; i++ )
+		{
+			freeAndAllocated[i] = i;
+		}
+	}
 
+	T *Alloc()
+	{
+		if ( numFree == 0 )
+		{
+			return NULL;
+		}
+
+		T *ptr = new (&pool[freeAndAllocated[0]]) T;
+
+		std::rotate (freeAndAllocated, freeAndAllocated + 1, freeAndAllocated + N);
+		numFree--;
+
+		highWatermark = Q_max(highWatermark, N - numFree);
+
+		return ptr;
+	}
+
+	void TransferTo ( PoolAllocator<T, N>& allocator )
+	{
+		allocator.freeAndAllocated = freeAndAllocated;
+		allocator.highWatermark = highWatermark;
+		allocator.numFree = numFree;
+		allocator.pool = pool;
+
+		highWatermark = 0;
+		numFree = N;
+		freeAndAllocated = NULL;
+		pool = NULL;
+	}
+
+	bool OwnsPtr ( const T *ptr ) const
+	{
+		return ptr >= pool && ptr < (pool + N);
+	}
+
+	void Free ( T *ptr )
+	{
+		for ( int i = numFree; i < N; i++ )
+		{
+			T *p = &pool[freeAndAllocated[i]];
+
+			if ( p == ptr )
+			{
+				if ( i > numFree )
+				{
+					std::rotate (freeAndAllocated + numFree, freeAndAllocated + i, freeAndAllocated + i + 1);
+				}
+
+				p->~T();
+				numFree++;
+
+				break;
+			}
+		}
+	}
+
+	int GetHighWatermark() const { return highWatermark; }
+
+	~PoolAllocator()
+	{
+		for ( int i = numFree; i < N; i++ )
+		{
+			T *p = &pool[freeAndAllocated[i]];
+
+			p->~T();
+		}
+
+		delete [] freeAndAllocated;
+		delete [] pool;
+	}
+
+private:
+	PoolAllocator ( const PoolAllocator<T, N>& );
+	PoolAllocator& operator = ( const PoolAllocator<T, N>& );
+
+	T *pool;
+
+	// The first 'numFree' elements are the indexes of the free slots.
+	// The remaining elements are the indexes of the allocated slots.
+	int *freeAndAllocated;
+	int numFree;
+
+	int highWatermark;
+};
+
+template<typename T, int N>
+class PagedPoolAllocator
+{
+	public:
+		PagedPoolAllocator ()
+			: numPages (1)
+			, pages (new PoolAllocator<T, N>[1]())
+		{
+		}
+
+		T *Alloc ()
+		{
+			T *ptr = NULL;
+			for ( int i = 0; i < numPages && ptr == NULL; i++ )
+			{
+				ptr = pages[i].Alloc ();
+			}
+
+			if ( ptr == NULL )
+			{
+				PoolAllocator<T, N> *newPages = new PoolAllocator<T, N>[numPages + 1] ();
+				for ( int i = 0; i < numPages; i++ )
+				{
+					pages[i].TransferTo (newPages[i]);
+				}
+
+				delete[] pages;
+				pages = newPages;
+
+				ptr = pages[numPages].Alloc ();
+				if ( ptr == NULL )
+				{
+					return NULL;
+				}
+
+				numPages++;
+			}
+
+			return ptr;
+		}
+
+		void Free ( T *ptr )
+		{
+			for ( int i = 0; i < numPages; i++ )
+			{
+				if ( pages[i].OwnsPtr (ptr) )
+				{
+					pages[i].Free (ptr);
+					break;
+				}
+			}
+		}
+
+		int GetHighWatermark () const
+		{
+			int total = 0;
+			for ( int i = 0; i < numPages; i++ )
+			{
+				total += pages[i].GetHighWatermark ();
+			}
+
+			return total;
+		}
+
+		~PagedPoolAllocator ()
+		{
+			delete[] pages;
+		}
+
+	private:
+		int numPages;
+		PoolAllocator<T, N> *pages;
+};
 
 //-----------------------------------------------------------------
 //
@@ -397,17 +583,12 @@ private:
 		int		mClientID;		// FIXME: redundant??
 		vec3_t	mOrigin;
 		vec3_t	mAxis[3];
-
-		bool operator <= (const int time) const 
-		{
-			return mStartTime <= time;
-		}
 	};
 
 	// this makes looking up the index based on the string name much easier
-	typedef map<fxString_t, int>				TEffectID;
+	typedef std::map<fxString_t, int>			TEffectID;
 
-	typedef list<SScheduledEffect*>			TScheduledEffect;
+	typedef std::list<SScheduledEffect*>			TScheduledEffect;
 
 	// Effects
 	SEffectTemplate		mEffectTemplates[FX_MAX_EFFECTS];
@@ -416,14 +597,15 @@ private:
 	// List of scheduled effects that will need to be created at the correct time.
 	TScheduledEffect	mFxSchedule;
 
+	PagedPoolAllocator<SScheduledEffect, 1024> mScheduledEffectsPool;
 
 	// Private function prototypes
 	SEffectTemplate *GetNewEffectTemplate( int *id, const char *file );
 
 	void	AddPrimitiveToEffect( SEffectTemplate *fx, CPrimitiveTemplate *prim );
-	int		ParseEffect( const char *file, CGPGroup *base );
+	int		ParseEffect( const char *file, const CGPGroup& base );
 
-	void	CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t axis[3], int lateTime );
+	void	CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime );
 	void	CreateEffect( CPrimitiveTemplate *fx, int clientID, int lateTime );
 
 public:
@@ -446,7 +628,7 @@ public:
 
 	void	AddScheduledEffects( void );								// call once per CGame frame
 
-	int		NumScheduledFx()	{ return mFxSchedule.size();	}
+	int		NumScheduledFx()	{ return (int)mFxSchedule.size();	}
 	void	Clean(bool bRemoveTemplates = true, int idToPreserve = 0);	// clean out the system
 
 	// FX Override functions

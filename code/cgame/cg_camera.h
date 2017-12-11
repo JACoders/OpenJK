@@ -1,23 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-#ifndef __CG_CAMERA__
-#define __CG_CAMERA__
+#pragma once
 
 //
 // cg_camera.cpp
@@ -50,7 +54,7 @@ typedef struct camera_s
 	//Position / Facing information
 	vec3_t	origin;
 	vec3_t	angles;
-	
+
 	vec3_t	origin2;
 	vec3_t	angles2;
 
@@ -97,7 +101,7 @@ typedef struct camera_s
 	float	bar_alpha_source;
 	float	bar_alpha_dest;
 	float	bar_time;
-	
+
 	float	bar_height_source;
 	float	bar_height_dest;
 	float	bar_height;
@@ -125,9 +129,9 @@ typedef struct camera_s
 
 
 	// ROFF information
-	char	sRoff[MAX_QPATH];	// name of a cached roff 
+	char	sRoff[MAX_QPATH];	// name of a cached roff
 	int		roff_frame;		// current frame in the roff data
-	int		next_roff_time;	// time when it's ok to apply the next roff frame 
+	int		next_roff_time;	// time when it's ok to apply the next roff frame
 
 } camera_t;
 
@@ -166,5 +170,3 @@ void CGCam_StartRoff( char *roff );
 
 void CGCam_Smooth( float intensity, int duration );
 void CGCam_UpdateSmooth( vec3_t origin, vec3_t angles );
-
-#endif	//__CG_CAMERA__

@@ -1,24 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Concussion Rifle Weapon
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"
@@ -74,19 +77,19 @@ static vec3_t WHITE	={1.0f,1.0f,1.0f};
 void FX_ConcAltShot( vec3_t start, vec3_t end )
 {
 	//"concussion/beam"
-	FX_AddLine( -1, start, end, 0.1f, 10.0f, 0.0f, 
+	FX_AddLine( -1, start, end, 0.1f, 10.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							WHITE, WHITE, 0.0f,
-							175, cgi_R_RegisterShader( "gfx/effects/blueLine" ), 
+							175, cgi_R_RegisterShader( "gfx/effects/blueLine" ),
 							0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 
 	vec3_t	BRIGHT={0.75f,0.5f,1.0f};
 
 	// add some beef
-	FX_AddLine( -1, start, end, 0.1f, 7.0f, 0.0f, 
+	FX_AddLine( -1, start, end, 0.1f, 7.0f, 0.0f,
 						1.0f, 0.0f, 0.0f,
 						BRIGHT, BRIGHT, 0.0f,
-						150, cgi_R_RegisterShader( "gfx/misc/whiteline2" ), 
+						150, cgi_R_RegisterShader( "gfx/misc/whiteline2" ),
 						0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 }
 
@@ -105,7 +108,7 @@ void FX_ConcAltMiss( vec3_t origin, vec3_t normal )
 	VectorCopy( c1, c2 );
 	c1[2] += 4;
 	c2[2] += 12;
-	
+
 	VectorAdd( origin, normal, pos );
 	pos[2] += 28;
 

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // ICARUS Interface header file
@@ -16,7 +38,7 @@ typedef struct interface_export_s
 	sharedEntity_t *(*I_GetEntityByName)( const char *name );		//Polls the engine for the sequencer of the entity matching the name passed
 	unsigned int			(*I_GetTime)( void );							//Gets the current time
 	unsigned int			(*I_GetTimeScale)(void );
-	int 			(*I_PlaySound)( int taskID, int entID, const char *name, const char *channel );	
+	int 			(*I_PlaySound)( int taskID, int entID, const char *name, const char *channel );
 	void			(*I_Lerp2Pos)( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	void			(*I_Lerp2Origin)( int taskID, int entID, vec3_t origin, float duration );
 	void			(*I_Lerp2Angles)( int taskID, int entID, vec3_t angles, float duration );
@@ -55,7 +77,7 @@ typedef struct interface_export_s
 
 	//Save / Load functions
 
-	int				(*I_WriteSaveData)( unsigned long chid, void *data, int length );
+	int				(*I_WriteSaveData)( unsigned long chid, const void *data, int length );
 	// Below changed by BTO (VV). Visual C++ 7.1 compiler no longer allows default args on function pointers. Ack.
 	int				(*I_ReadSaveData)( unsigned long chid, void *address, int length /* , void **addressptr = NULL */ );
 	int				(*I_LinkEntity)( int entID, CSequencer *sequencer, CTaskManager *taskManager );

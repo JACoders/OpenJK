@@ -1,28 +1,32 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #define ITEM_TYPE_TEXT				0		// simple text
-#define ITEM_TYPE_BUTTON			1		// button, basically text with a border 
-#define ITEM_TYPE_RADIOBUTTON		2		// toggle button, may be grouped 
+#define ITEM_TYPE_BUTTON			1		// button, basically text with a border
+#define ITEM_TYPE_RADIOBUTTON		2		// toggle button, may be grouped
 #define ITEM_TYPE_CHECKBOX			3		// check box
 #define ITEM_TYPE_EDITFIELD			4		// editable text, associated with a cvar
 #define ITEM_TYPE_COMBO				5		// drop down list
-#define ITEM_TYPE_LISTBOX			6		// scrollable list  
+#define ITEM_TYPE_LISTBOX			6		// scrollable list
 #define ITEM_TYPE_MODEL				7		// model
 #define ITEM_TYPE_OWNERDRAW			8		// owner draw, name specs what it is
 #define ITEM_TYPE_NUMERICFIELD		9		// editable text, associated with a cvar
@@ -44,17 +48,17 @@ This file is part of Jedi Academy.
 #define ITEM_TEXTSTYLE_OUTLINED 4         // drop shadow ( need a color for this )
 #define ITEM_TEXTSTYLE_OUTLINESHADOWED 5  // drop shadow ( need a color for this )
 #define ITEM_TEXTSTYLE_SHADOWEDMORE 6         // drop shadow ( need a color for this )
-                          
+
 #define WINDOW_BORDER_NONE 0              // no border
 #define WINDOW_BORDER_FULL 1              // full border based on border color ( single pixel )
 #define WINDOW_BORDER_HORZ 2              // horizontal borders only
-#define WINDOW_BORDER_VERT 3              // vertical borders only 
+#define WINDOW_BORDER_VERT 3              // vertical borders only
 #define WINDOW_BORDER_KCGRADIENT 4        // horizontal border using the gradient bars
-  
+
 #define WINDOW_STYLE_EMPTY 0              // no background
 #define WINDOW_STYLE_FILLED 1             // filled with background color
-#define WINDOW_STYLE_GRADIENT 2           // gradient bar based on background color 
-#define WINDOW_STYLE_SHADER   3           // gradient bar based on background color 
+#define WINDOW_STYLE_GRADIENT 2           // gradient bar based on background color
+#define WINDOW_STYLE_SHADER   3           // gradient bar based on background color
 #define WINDOW_STYLE_TEAMCOLOR 4          // team color
 #define WINDOW_STYLE_CINEMATIC 5          // cinematic
 
@@ -78,9 +82,9 @@ This file is part of Jedi Academy.
 #define FEEDER_BLUETEAM_LIST				0x06			// blue team members
 #define FEEDER_PLAYER_LIST					0x07			// players
 #define FEEDER_TEAM_LIST					0x08			// team members for team voting
-#define FEEDER_MODS							0x09			// 
-#define FEEDER_DEMOS 						0x0a			// 
-#define FEEDER_SCOREBOARD					0x0b			// 
+#define FEEDER_MODS							0x09			//
+#define FEEDER_DEMOS 						0x0a			//
+#define FEEDER_SCOREBOARD					0x0b			//
 #define FEEDER_Q3HEADS		 				0x0c			// model heads
 #define FEEDER_SERVERSTATUS					0x0d			// server status
 #define FEEDER_FINDPLAYER					0x0e			// find player
@@ -92,7 +96,7 @@ This file is part of Jedi Academy.
 #define FEEDER_COLORCHOICES					0x14			// special hack to feed text/actions from playerchoice.txt in species folder
 #define FEEDER_MOVES						0x15			// moves for the data pad moves screen
 #define FEEDER_MOVES_TITLES					0x16			// move titles for the data pad moves screen
-#define FEEDER_LANGUAGES					0x17			// the list of languages 
+#define FEEDER_LANGUAGES					0x17			// the list of languages
 
 
 #define UI_VERSION				200

@@ -1,20 +1,35 @@
-// Task Manager 
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+// Task Manager
 //
 //	-- jweier
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-// this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
 
-
-
 #include <assert.h>
+#include "server/server.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
-
-#include "server/server.h"
 
 /*
 =================================================
@@ -56,7 +71,7 @@ Free
 
 void CTask::Free( void )
 {
-	//NOTENOTE: The block is not consumed by the task, it is the sequencer's job to clean blocks up	
+	//NOTENOTE: The block is not consumed by the task, it is the sequencer's job to clean blocks up
 	delete this;
 }
 
@@ -115,7 +130,7 @@ Add
 int CTaskGroup::Add( CTask *task )
 {
 	m_completedTasks[ task->GetGUID() ] = false;
-	return TASK_OK;	
+	return TASK_OK;
 }
 
 /*
@@ -210,7 +225,7 @@ int CTaskManager::Free( void )
 	{
 		delete (*gi);
 	}
-	
+
 	m_taskGroups.clear();
 	m_taskGroupNameMap.clear();
 	m_taskGroupIDMap.clear();
@@ -225,9 +240,9 @@ Flush
 */
 
 int CTaskManager::Flush( void )
-{	
+{
 	//FIXME: Rewrite
-	
+
 	return true;
 }
 
@@ -248,10 +263,10 @@ CTaskGroup *CTaskManager::AddTaskGroup( const char *name )
 	if ( tgni != m_taskGroupNameMap.end() )
 	{
 		group = (*tgni).second;
-		
+
 		//Clear it and just move on
 		group->Init();
-		
+
 		return group;
 	}
 
@@ -386,13 +401,13 @@ int CTaskManager::GetFloat( int entID, CBlock *block, int &memberNum, float &val
 		if ( type != TK_FLOAT )
 		{
 			(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Get() call tried to return a non-FLOAT parameter!\n" );
-			return false; 
+			return false;
 		}
 
 		return (m_owner->GetInterface())->I_GetFloat( entID, type, name, &value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -415,7 +430,7 @@ int CTaskManager::GetFloat( int entID, CBlock *block, int &memberNum, float &val
 	}
 
 	CBlockMember	*bm	= block->GetMember( memberNum );
-	
+
 	if ( bm->GetID() == TK_INT )
 	{
 		value = (float) (*(int *) block->GetMemberData( memberNum++ ));
@@ -464,7 +479,7 @@ int CTaskManager::GetVector( int entID, CBlock *block, int &memberNum, vector_t 
 		return (m_owner->GetInterface())->I_GetVector( entID, type, name, value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -497,7 +512,7 @@ int CTaskManager::GetVector( int entID, CBlock *block, int &memberNum, vector_t 
 			(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Unable to find tag \"%s\" for ent %i!\n", tagName, entID );
 //			assert(0);
 			return TASK_FAILED;
-		}		
+		}
 
 		return true;
 	}
@@ -557,7 +572,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 				(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Get() parameter \"%s\" could not be found!\n", name );
 				return false;
 			}
-			
+
 			return true;
 			break;
 
@@ -567,14 +582,14 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 
 				if ( (m_owner->GetInterface())->I_GetFloat( entID, type, name, &temp ) == false )
 				{
-					(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Get() parameter \"%s\" could not be found!\n", name );	
+					(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Get() parameter \"%s\" could not be found!\n", name );
 					return false;
 				}
 
 				Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f", temp );
 				*value = (char *) tempBuffer;
 			}
-			
+
 			return true;
 			break;
 
@@ -584,14 +599,14 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 
 				if ( (m_owner->GetInterface())->I_GetVector( entID, type, name, vval )  == false )
 				{
-					(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Get() parameter \"%s\" could not be found!\n", name );	
+					(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Get() parameter \"%s\" could not be found!\n", name );
 					return false;
 				}
 
 				Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
 				*value = (char *) tempBuffer;
 			}
-			
+
 			return true;
 			break;
 
@@ -602,7 +617,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		}
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max, ret;
@@ -670,11 +685,11 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		{
 			if ( GetFloat( entID, block, memberNum, vval[i] ) == false )
 				return false;
-
-			Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
-			*value = (char *) tempBuffer;
 		}
-		
+
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
+		*value = (char *) tempBuffer;
+
 		return true;
 	}
 	else if ( ( bm->GetID() == TK_STRING ) || ( bm->GetID() == TK_IDENTIFIER ) )
@@ -683,7 +698,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 
 		return true;
 	}
-	
+
 	//TODO: Emit warning
 	assert( 0 );
 	(m_owner->GetInterface())->I_DPrintf( WL_WARNING, "Unexpected value; expected type STRING\n" );
@@ -722,16 +737,16 @@ int	CTaskManager::Go( void )
 			(m_owner->GetInterface())->I_DPrintf( WL_ERROR, "Invalid task found in Go()!\n" );
 			return TASK_FAILED;
 		}
-	
+
 		//If this hasn't been stamped, do so
 		if ( task->GetTimeStamp() == 0 )
 			task->SetTimeStamp( ( m_owner->GetInterface())->I_GetTime() );
-			
+
 		//Switch and call the proper function
 		switch( task->GetID() )
 		{
 		case ID_WAIT:
-			
+
 			Wait( task, completed );
 
 			//Push it to consider it again on the next frame if not complete
@@ -746,7 +761,7 @@ int	CTaskManager::Go( void )
 			break;
 
 		case ID_WAITSIGNAL:
-			
+
 			WaitSignal( task, completed );
 
 			//Push it to consider it again on the next frame if not complete
@@ -759,7 +774,7 @@ int	CTaskManager::Go( void )
 			Completed( task->GetGUID() );
 
 			break;
-		
+
 		case ID_PRINT:	//print( STRING )
 			Print( task );
 			break;
@@ -825,10 +840,10 @@ int	CTaskManager::Go( void )
 
 		task->Free();
 	}
-	
+
 	//FIXME: A command surge limiter could be implemented at this point to be sure a script doesn't
 	//		 execute too many commands in one cycle.  This may, however, cause timing errors to surface.
-	
+
 	return TASK_OK;
 }
 
@@ -1015,14 +1030,14 @@ CTask *CTaskManager::PopTask( int flag )
 	case POP_FRONT:
 		task = m_tasks.front();
 		m_tasks.pop_front();
-		
+
 		return task;
 		break;
 
 	case POP_BACK:
 		task = m_tasks.back();
 		m_tasks.pop_back();
-		
+
 		return task;
 		break;
 	}
@@ -1062,7 +1077,7 @@ CBlock *CTaskManager::GetCurrentTask( void )
 int CTaskManager::Wait( CTask *task, bool &completed  )
 {
 	CBlockMember	*bm;
-	CBlock			*block = task->GetBlock();	
+	CBlock			*block = task->GetBlock();
 	char			*sVal;
 	float			dwtime;
 	int				memberNum = 0;
@@ -1115,7 +1130,7 @@ int CTaskManager::Wait( CTask *task, bool &completed  )
 		{
 			ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, dwtime ) );
 		}
-		
+
 		if ( task->GetTimeStamp() == (m_owner->GetInterface())->I_GetTime() )
 		{
 			//Print out the debug info
@@ -1187,7 +1202,7 @@ int CTaskManager::Print( CTask *task )
 	(m_owner->GetInterface())->I_CenterPrint( sVal );
 
 	Completed( task->GetGUID() );
-	
+
 	return TASK_OK;
 }
 
@@ -1211,7 +1226,7 @@ int CTaskManager::Sound( CTask *task )
 	//Only instantly complete if the user has requested it
 	if( (m_owner->GetInterface())->I_PlaySound( task->GetGUID(), m_ownerID, sVal2, sVal ) )
 		Completed( task->GetGUID() );
-	
+
 	return TASK_OK;
 }
 
@@ -1256,7 +1271,7 @@ int CTaskManager::Rotate( CTask *task )
 
 	(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d rotate( <%f,%f,%f>, %d); [%d]", m_ownerID, vector[0], vector[1], vector[2], (int) duration, task->GetTimeStamp() );
 	(m_owner->GetInterface())->I_Lerp2Angles( task->GetGUID(), m_ownerID, vector, duration );
-	
+
 	return TASK_OK;
 }
 
@@ -1273,12 +1288,12 @@ int CTaskManager::Remove( CTask *task )
 	int		memberNum = 0;
 
 	ICARUS_VALIDATE( Get( m_ownerID, block, memberNum, &sVal ) );
-	
+
 	(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d remove(\"%s\"); [%d]", m_ownerID, sVal, task->GetTimeStamp() );
 	(m_owner->GetInterface())->I_Remove( m_ownerID, sVal );
 
 	Completed( task->GetGUID() );
-	
+
 	return TASK_OK;
 }
 
@@ -1303,7 +1318,7 @@ int CTaskManager::Camera( CTask *task )
 	switch ( (int) type )
 	{
 	case TYPE_PAN:
-		
+
 		ICARUS_VALIDATE( GetVector( m_ownerID, block, memberNum, vector ) );
 		ICARUS_VALIDATE( GetVector( m_ownerID, block, memberNum, vector2 ) );
 
@@ -1314,7 +1329,7 @@ int CTaskManager::Camera( CTask *task )
 		break;
 
 	case TYPE_ZOOM:
-		
+
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal ) );
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal2 ) );
 
@@ -1353,7 +1368,7 @@ int CTaskManager::Camera( CTask *task )
 		break;
 
 	case TYPE_TRACK:
-		
+
 		ICARUS_VALIDATE( Get( m_ownerID, block, memberNum, &sVal ) );
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal ) );
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal2 ) );
@@ -1366,7 +1381,7 @@ int CTaskManager::Camera( CTask *task )
 
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal ) );
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal2 ) );
-		
+
 		(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d camera( DISTANCE, %f, %f); [%d]", m_ownerID, fVal, fVal2, task->GetTimeStamp() );
 		ie->I_CameraDistance( fVal, fVal2 );
 		break;
@@ -1378,7 +1393,7 @@ int CTaskManager::Camera( CTask *task )
 
 		ICARUS_VALIDATE( GetVector( m_ownerID, block, memberNum, vector2 ) );
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal2 ) );
-		
+
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal3 ) );
 
 		(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d camera( FADE, <%f %f %f>, %f, <%f %f %f>, %f, %f); [%d]", m_ownerID, vector[0], vector[1], vector[2], fVal, vector2[0], vector2[1], vector2[2], fVal2, fVal3, task->GetTimeStamp() );
@@ -1401,7 +1416,7 @@ int CTaskManager::Camera( CTask *task )
 		(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d camera( DISABLE ); [%d]", m_ownerID, task->GetTimeStamp() );
 		ie->I_CameraDisable();
 		break;
-	
+
 	case TYPE_SHAKE:
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal ) );
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, fVal2 ) );
@@ -1436,8 +1451,8 @@ int CTaskManager::Move( CTask *task )
 	if ( GetVector( m_ownerID, block, memberNum, vector2 ) == false )
 	{
 		ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, duration ) );
-		
-		
+
+
 		(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d move( <%f %f %f>, %f ); [%d]", m_ownerID, vector[0], vector[1], vector[2], duration, task->GetTimeStamp() );
 		(m_owner->GetInterface())->I_Lerp2Pos( task->GetGUID(), m_ownerID, vector, NULL, duration );
 
@@ -1446,10 +1461,10 @@ int CTaskManager::Move( CTask *task )
 
 	//Get the duration and make the call
 	ICARUS_VALIDATE( GetFloat( m_ownerID, block, memberNum, duration ) );
-	
+
 	(m_owner->GetInterface())->I_DPrintf( WL_DEBUG, "%4d move( <%f %f %f>, <%f %f %f>, %f ); [%d]", m_ownerID, vector[0], vector[1], vector[2], vector2[0], vector2[1], vector2[2], duration, task->GetTimeStamp() );
 	(m_owner->GetInterface())->I_Lerp2Pos( task->GetGUID(), m_ownerID, vector, vector2, duration );
-	
+
 	return TASK_OK;
 }
 
@@ -1622,7 +1637,7 @@ int CTaskManager::SaveCommand( CBlock *block )
 	unsigned char	flags;
 	int				numMembers, bID, size;
 	CBlockMember	*bm;
-	
+
 	//Save out the block ID
 	bID = block->GetBlockID();
 	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','L','I','D'), &bID, sizeof ( bID ) );
@@ -1642,11 +1657,11 @@ int CTaskManager::SaveCommand( CBlock *block )
 		//Save the block id
 		bID = bm->GetID();
 		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','I','D'), &bID, sizeof ( bID ) );
-		
+
 		//Save out the data size
 		size = bm->GetSize();
 		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','S','I','Z'), &size, sizeof( size ) );
-		
+
 		//Save out the raw data
 		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','E','M'), bm->GetData(), size );
 	}
@@ -1680,7 +1695,7 @@ void CTaskManager::Save( void )
 
 	//Save out all the tasks
 	tasks_l::iterator	ti;
-	
+
 	STL_ITERATE( ti, m_tasks )
 	{
 		//Save the GUID
@@ -1705,7 +1720,7 @@ void CTaskManager::Save( void )
 	STL_ITERATE( tgi, m_taskGroups )
 	{
 		id = (*tgi)->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( 'TKG#', &id, sizeof( id ) );		
+		(m_owner->GetInterface())->I_WriteSaveData( 'TKG#', &id, sizeof( id ) );
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);
@@ -1724,7 +1739,7 @@ void CTaskManager::Save( void )
 
 		//Save out the command map
 		CTaskGroup::taskCallback_m::iterator	tci;
-		
+
 		STL_ITERATE( tci, (*tgi)->m_completedTasks )
 		{
 			//Write out the ID
@@ -1757,7 +1772,7 @@ void CTaskManager::Save( void )
 	STL_ITERATE( tmi, m_taskGroupNameMap )
 	{
 		name = ((*tmi).first).c_str();
-		
+
 		//Make sure this is a valid string
 		assert( ( name != NULL ) && ( name[0] != NULL ) );
 
@@ -1805,7 +1820,7 @@ void CTaskManager::Load( void )
 
 	//Get the number of tasks to follow
 	(m_owner->GetInterface())->I_ReadSaveData( 'TSK#', &numTasks, sizeof( numTasks ) );
-	
+
 	//Reload all the tasks
 	for ( int i = 0; i < numTasks; i++ )
 	{
@@ -1828,21 +1843,21 @@ void CTaskManager::Load( void )
 		//Get the block ID and create a new container
 		(m_owner->GetInterface())->I_ReadSaveData( 'BLID', &id, sizeof( id ) );
 		block = new CBlock;
-		
+
 		block->Create( id );
-		
+
 		//Read the block's flags
 		(m_owner->GetInterface())->I_ReadSaveData( 'BFLG', &flags, sizeof( flags ) );
 		block->SetFlags( flags );
 
 		//Get the number of block members
 		(m_owner->GetInterface())->I_ReadSaveData( 'BNUM', &numMembers, sizeof( numMembers ) );
-		
+
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
 			(m_owner->GetInterface())->I_ReadSaveData( 'BMID', &bID, sizeof( bID ) );
-			
+
 			//Get the member size
 			(m_owner->GetInterface())->I_ReadSaveData( 'BSIZ', &bSize, sizeof( bSize ) );
 
@@ -1892,11 +1907,11 @@ void CTaskManager::Load( void )
 				assert( 0 );
 				break;
 			}
-			
+
 			//Get rid of the temp memory
 			ICARUS_Free( bData );
 		}
-		
+
 		task->SetBlock( block );
 
 		STL_INSERT( m_tasks, task );
@@ -1904,7 +1919,7 @@ void CTaskManager::Load( void )
 
 	//Load the task groups
 	int numTaskGroups;
-	
+
 	(m_owner->GetInterface())->I_ReadSaveData( 'TG#G', &numTaskGroups, sizeof( numTaskGroups ) );
 
 	if ( numTaskGroups == 0 )
@@ -1922,7 +1937,7 @@ void CTaskManager::Load( void )
 		//Get this task group's ID
 		(m_owner->GetInterface())->I_ReadSaveData( 'TKG#', &taskIDs[i], sizeof( taskIDs[i] ) );
 		taskGroup->m_GUID = taskIDs[i];
-		
+
 		m_taskGroupIDMap[ taskIDs[i] ] = taskGroup;
 
 		STL_INSERT( m_taskGroups, taskGroup );
@@ -1936,7 +1951,7 @@ void CTaskManager::Load( void )
 
 		//Load the parent ID
 		(m_owner->GetInterface())->I_ReadSaveData( 'TKGP', &id, sizeof( id ) );
-		
+
 		if ( id != -1 )
 			taskGroup->m_parent = ( GetTaskGroup( id ) != NULL ) ? GetTaskGroup( id ) : NULL;
 
@@ -1970,7 +1985,7 @@ void CTaskManager::Load( void )
 	{
 		char	name[1024];
 		int		length;
-		
+
 		//Get the size of the string
 		(m_owner->GetInterface())->I_ReadSaveData( 'TGNL', &length, sizeof( length ) );
 

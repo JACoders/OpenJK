@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "cg_local.h"
 
 // this file is only included when building a dll
@@ -24,13 +30,13 @@ extern void CG_PreInit();
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
-extern "C" Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
+extern "C" Q_EXPORT void QDECL dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg, ... ) ) {
 	Q_syscall = syscallptr;
 	CG_PreInit();
 }
 
 inline int PASSFLOAT( float x ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = x;
 	return fi.i;
 }
@@ -39,8 +45,10 @@ void	cgi_Printf( const char *fmt ) {
 	Q_syscall( CG_PRINT, fmt );
 }
 
-void	cgi_Error( const char *fmt ) {
+NORETURN void	cgi_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
+	// shut up GCC warning about returning functions, because we know better
+	exit(1);
 }
 
 int		cgi_Milliseconds( void ) {
@@ -221,9 +229,7 @@ qhandle_t cgi_R_RegisterSkin( const char *name ) {
 }
 
 qhandle_t cgi_R_RegisterShader( const char *name ) {
-	qhandle_t hShader = Q_syscall( CG_R_REGISTERSHADER, name );
-	assert (hShader);
-	return  hShader;
+	return Q_syscall( CG_R_REGISTERSHADER, name );
 }
 
 qhandle_t cgi_R_RegisterShaderNoMip( const char *name ) {
@@ -248,12 +254,12 @@ int cgi_R_Font_HeightPixels(const int iFontIndex, const float scale /*= 1.0f*/) 
 
 qboolean cgi_Language_IsAsian( void )
 {
-	return Q_syscall( CG_LANGUAGE_ISASIAN );
+	return (qboolean)Q_syscall( CG_LANGUAGE_ISASIAN );
 }
 
 qboolean cgi_Language_UsesSpaces(void)
 {
-	return Q_syscall( CG_LANGUAGE_USESSPACES );
+	return (qboolean)Q_syscall( CG_LANGUAGE_USESSPACES );
 }
 
 unsigned int cgi_AnyLanguage_ReadCharFromString( const char **ppText, qboolean *pbIsTrailingPunctuation /* = NULL */ )
@@ -352,11 +358,11 @@ void		cgi_GetCurrentSnapshotNumber( int *snapshotNumber, int *serverTime ) {
 }
 
 qboolean	cgi_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
-	return Q_syscall( CG_GETSNAPSHOT, snapshotNumber, snapshot );
+	return (qboolean)Q_syscall( CG_GETSNAPSHOT, snapshotNumber, snapshot );
 }
 
 qboolean	cgi_GetServerCommand( int serverCommandNumber ) {
-	return Q_syscall( CG_GETSERVERCOMMAND, serverCommandNumber );
+	return (qboolean)Q_syscall( CG_GETSERVERCOMMAND, serverCommandNumber );
 }
 
 int			cgi_GetCurrentCmdNumber( void ) {
@@ -364,7 +370,7 @@ int			cgi_GetCurrentCmdNumber( void ) {
 }
 
 qboolean	cgi_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
-	return Q_syscall( CG_GETUSERCMD, cmdNumber, ucmd );
+	return (qboolean)Q_syscall( CG_GETUSERCMD, cmdNumber, ucmd );
 }
 
 void		cgi_SetUserCmdValue( int stateValue, float sensitivityScale, float mPitchOverride, float mYawOverride ) {
@@ -523,13 +529,6 @@ int cgi_SP_GetStringTextString(const char *text, char *buffer, int bufferLength)
 int cgi_SP_GetStringText(int ID, char *buffer, int bufferLength)
 {
 	return Q_syscall( CG_SP_GETSTRINGTEXT, ID, buffer, bufferLength );
-}
-
-int cgi_EndGame(void)
-{
-//extern void CMD_CGCam_Disable( void );
-	//CMD_CGCam_Disable();	//can't do it here because it will draw the hud when we're out of camera
-	return Q_syscall( CG_SENDCONSOLECOMMAND, "cam_disable; set nextmap disconnect; cinematic outcast\n" );
 }
 
 /*

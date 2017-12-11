@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: mhead.c,v 1.7 1999/10/19 07:13:09 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -68,7 +68,7 @@ int head_info(unsigned char *buf, unsigned int n, MPEG_HEAD * h)
 {
    int framebytes;
    int mpeg25_flag;
-  
+
    if (n > 10000)
       n = 10000;		/* limit scan for free format */
 
@@ -174,8 +174,8 @@ int head_info3(unsigned char *buf, unsigned int n, MPEG_HEAD *h, int *br, unsign
 	unsigned int pBuf = 0;
 
 	// jdw insertion...
-   while ((pBuf < n) && !((buf[pBuf] == 0xFF) && 
-          ((buf[pBuf+1] & 0xF0) == 0xF0 || (buf[pBuf+1] & 0xF0) == 0xE0))) 
+   while ((pBuf < n) && !((buf[pBuf] == 0xFF) &&
+          ((buf[pBuf+1] & 0xF0) == 0xF0 || (buf[pBuf+1] & 0xF0) == 0xE0)))
    {
 		pBuf++;
    }
@@ -190,16 +190,16 @@ int head_info3(unsigned char *buf, unsigned int n, MPEG_HEAD *h, int *br, unsign
 int head_info2(unsigned char *buf, unsigned int n, MPEG_HEAD * h, int *br)
 {
 	int framebytes;
-	
+
 	/*---  return br (in bits/sec) in addition to frame bytes ---*/
-	
+
 	*br = 0;
 	/*-- assume fail --*/
 	framebytes = head_info(buf, n, h);
-	
+
 	if (framebytes == 0)
-		return 0; 
-	
+		return 0;
+
 	switch (h->option)
 	{
 		case 1:	/* layer III */
@@ -209,13 +209,13 @@ int head_info2(unsigned char *buf, unsigned int n, MPEG_HEAD * h, int *br)
 			else
 			{
 				if (h->id)		// mpeg1
-					
+
 					*br = 1000 * framebytes * mp_sr20_table[h->id][h->sr_index] / (144 * 20);
 				else
 				{			// mpeg2
-					
+
 					if ((h->sync & 1) == 0)	//  flags mpeg25
-						
+
 						*br = 500 * framebytes * mp_sr20_table[h->id][h->sr_index] / (72 * 20);
 					else
 						*br = 1000 * framebytes * mp_sr20_table[h->id][h->sr_index] / (72 * 20);
@@ -246,8 +246,8 @@ int head_info2(unsigned char *buf, unsigned int n, MPEG_HEAD * h, int *br)
 
 			return 0;	// fuck knows what this is, but it ain't one of ours...
 	}
-		
-		
+
+
 	return framebytes;
 }
 /*--------------------------------------------------------------*/

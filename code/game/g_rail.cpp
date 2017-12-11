@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN SOFTWARE - STAR WARS: JK II
@@ -35,6 +39,7 @@ This file is part of Jedi Academy.
 // Externs & Fwd Decl.
 ////////////////////////////////////////////////////////////////////////////////////////
 extern void		G_SoundAtSpot( vec3_t org, int soundIndex, qboolean broadcast );
+extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
 
 class	CRailTrack;
 class	CRailLane;
@@ -104,7 +109,7 @@ public:
 		mMaxs						= ent->maxs;
 		mStartTime					= ent->delay + level.time;
 		mGridCellSize				= (ent->radius!=0.0f)?(ent->radius):(1.0f);
-		mVertical					= (ent->s.angles[1]==90.0f || ent->s.angles[1]==270.0f);	
+		mVertical					= (ent->s.angles[1]==90.0f || ent->s.angles[1]==270.0f);
 		mNegative					= (ent->s.angles[1]==180.0f || ent->s.angles[1]==270.0f);	// From Maxs To Mins
 		mWAxis						= (mVertical)?(0):(1);
 		mHAxis						= (mVertical)?(1):(0);
@@ -112,7 +117,7 @@ public:
 
 		mRow						= 0;
 		mNextUpdateTime				= 0;
-	
+
 		mCenterLocked				= false;
 
 		SnapVectorToGrid(mMins);
@@ -235,7 +240,7 @@ public:
 
 	int			mRow;
 	int			mNumMoversPerRow;
-	
+
 	int			mNextUpdateTime;
 	int			mNextUpdateDelay;
 	int			mStartTime;
@@ -636,7 +641,7 @@ void	Rail_Update()
 				// Is It Active, And Has The Sound Already Played On It?
 				//--------------------------------------------------------
    			 	if (mover.Active() && !mover.mSoundPlayed)
-				{ 
+				{
  					VectorAdd(mover.mEnt->currentOrigin, mover.mOriginOffset.v, moverOrigin);
  					VectorSubtract(moverOrigin, player->currentOrigin, playerToMover);
 					playerToMover[2]		= 0.0f;
@@ -673,15 +678,15 @@ void	Rail_Update()
 
 							// Otherwise It Is A Support
 							//---------------------------
-							else 
-							{ 
+							else
+							{
 								wooshSound = mWooshSup[Q_irand(0, mWooshSup.size()-1)];
 							}
 						}
 
 						// All Other Entities Play At A Fraction Of Their Normal Range
 						//-------------------------------------------------------------
- 						else 
+ 						else
 						{
 							// Scale The Play Pos By The Square Of The Distance
 							//--------------------------------------------------
@@ -707,8 +712,8 @@ void	Rail_Update()
 
 							// Small Building
 							//----------------
-							else 
-							{ 
+							else
+							{
 								wooshSound = mWooshSml[Q_irand(0, mWooshSml.size()-1)];
 							}
 						}
@@ -803,7 +808,7 @@ void	CRailTrack::Update()
 		{
 			continue;
 		}
-	
+
 
 		// Restrict It To A Lane
 		//-----------------------

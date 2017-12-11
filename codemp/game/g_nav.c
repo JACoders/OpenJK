@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "b_local.h"
 #include "g_nav.h"
 
@@ -88,18 +110,18 @@ void NPC_Blocked( gentity_t *self, gentity_t *blocker )
 	}
 
 	//Debutrap->Print( d_npcai, DEBUG_LEVEL_WARNING, "%s: Excuse me, %s %s!\n", self->targetname, blocker->classname, blocker->targetname );
-	
+
 	//If we're being blocked by the player, say something to them
 	if ( ( blocker->s.number >= 0 && blocker->s.number < MAX_CLIENTS ) && ( ( blocker->client->playerTeam == self->client->playerTeam ) ) )
 	{
-		//guys in formation are not trying to get to a critical point, 
+		//guys in formation are not trying to get to a critical point,
 		//don't make them yell at the player (unless they have an enemy and
 		//are in combat because BP thinks it sounds cool during battle)
 		//NOTE: only imperials, misc crewmen and hazard team have these wav files now
 		//G_AddVoiceEvent( self, Q_irand(EV_BLOCKED1, EV_BLOCKED3), 0 );
 	}
 
-	self->NPC->blockedSpeechDebounceTime = level.time + MIN_BLOCKED_SPEECH_TIME + ( random() * 4000 );
+	self->NPC->blockedSpeechDebounceTime = level.time + MIN_BLOCKED_SPEECH_TIME + ( Q_flrand(0.0f, 1.0f) * 4000 );
 	self->NPC->blockingEntNum = blocker->s.number;
 }
 
@@ -125,7 +147,7 @@ void NPC_SetMoveGoal( gentity_t *ent, vec3_t point, int radius, qboolean isNavGo
 	//Copy the origin
 	//VectorCopy( point, ent->NPC->goalPoint );	//FIXME: Make it use this, and this alone!
 	VectorCopy( point, ent->NPC->tempGoal->r.currentOrigin );
-	
+
 	//Copy the mins and maxs to the tempGoal
 	VectorCopy( ent->r.mins, ent->NPC->tempGoal->r.mins );
 	VectorCopy( ent->r.mins, ent->NPC->tempGoal->r.maxs );
@@ -190,7 +212,7 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 			return ( DistanceSquared(dest, point) <= (radius*radius) );
 		}
 		//There is probably a better way to do this, either by preserving the original
-		//		mins and maxs of the navgoal and doing this check ONLY if the radius 
+		//		mins and maxs of the navgoal and doing this check ONLY if the radius
 		//		is non-zero (like the original implementation) or some boolean to
 		//		tell us to do this check rather than the fake bbox overlap check...
 	}
@@ -247,7 +269,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 		VectorCopy( pmins, mins );
 		VectorCopy( pmaxs, maxs );
 	}
-	
+
 	if ( self->client || ( self->flags & FL_NAVGOAL ) )
 	{
 		//Clients can step up things, or if this is a navgoal check, a client will be using this info
@@ -255,7 +277,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 
 		//don't let box get inverted
 		if ( mins[2] > maxs[2] )
-		{	
+		{
 			mins[2] = maxs[2];
 		}
 	}
@@ -269,18 +291,18 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 			clipmask &= ~CONTENTS_BOTCLIP;
 			trap->Trace( &trace, point, mins, maxs, self->r.currentOrigin, self->parent->s.number, (clipmask|CONTENTS_MONSTERCLIP)&~CONTENTS_BODY, qfalse, 0, 0 );
 		}
-		
+
 		if ( trace.startsolid || trace.allsolid )
 		{
 			return qfalse;
 		}
-		
+
 		//Made it
 		if ( trace.fraction == 1.0 )
 		{
 			return qtrue;
 		}
-		
+
 		if ( okToHitEntNum != ENTITYNUM_NONE && trace.entityNum == okToHitEntNum )
 		{
 			return qtrue;
@@ -500,7 +522,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t *trace, int clipma
 
 	//Offset the step height
 	VectorSet( mins, self->r.mins[0], self->r.mins[1], self->r.mins[2] + STEPSIZE );
-	
+
 	trap->Trace( trace, self->r.currentOrigin, mins, self->r.maxs, end, self->s.number, clipmask, qfalse, 0, 0 );
 
 	if ( trace->startsolid&&(trace->contents&CONTENTS_BOTCLIP) )
@@ -528,7 +550,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t *trace, int clipma
 	if ( trace->entityNum < ENTITYNUM_WORLD )
 	{
 		gentity_t	*blocker = &g_entities[trace->entityNum];
-		
+
 		if ( VALIDSTRING( blocker->classname ) )
 		{
 			if ( G_EntIsUnlockedDoor( blocker->s.number ) )
@@ -563,7 +585,7 @@ static qboolean NAV_TestBypass( gentity_t *self, float yaw, float blocked_dist, 
 
 	AngleVectors( avoidAngles, block_test, NULL, NULL );
 	VectorMA( self->r.currentOrigin, blocked_dist, block_test, block_pos );
-		
+
 	if ( NAVDEBUG_showCollision )
 	{
 		G_DrawEdge( self->r.currentOrigin, block_pos, EDGE_BLOCKED );
@@ -573,7 +595,7 @@ static qboolean NAV_TestBypass( gentity_t *self, float yaw, float blocked_dist, 
 	if ( NAV_CheckAhead( self, block_pos, &tr, ( self->clipmask & ~CONTENTS_BODY )|CONTENTS_BOTCLIP ) )
 	{
 		VectorCopy( block_test, movedir );
-		
+
 		return qtrue;
 	}
 
@@ -586,7 +608,7 @@ NAV_Bypass
 -------------------------
 */
 
-qboolean NAV_Bypass( gentity_t *self, gentity_t *blocker, vec3_t blocked_dir, float blocked_dist, vec3_t movedir ) 
+qboolean NAV_Bypass( gentity_t *self, gentity_t *blocker, vec3_t blocked_dir, float blocked_dist, vec3_t movedir )
 {
 	float dot, yaw, avoidRadius, arcAngle;
 	vec3_t	right;
@@ -603,7 +625,7 @@ qboolean NAV_Bypass( gentity_t *self, gentity_t *blocker, vec3_t blocked_dir, fl
 	yaw = vectoyaw( blocked_dir );
 
 	//Get the avoid radius
-	avoidRadius = sqrt( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) + 
+	avoidRadius = sqrt( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) +
 						sqrt( ( self->r.maxs[0] * self->r.maxs[0] ) + ( self->r.maxs[1] * self->r.maxs[1] ) );
 
 	//See if we're inside our avoidance radius
@@ -669,7 +691,7 @@ NAV_MoveBlocker
 qboolean NAV_MoveBlocker( gentity_t *self, vec3_t shove_dir )
 {
 	//FIXME: This is a temporary method for making blockers move
-	
+
 	//FIXME: This will, of course, push blockers off of cliffs, into walls and all over the place
 
 	vec3_t	temp_dir, forward;
@@ -765,7 +787,7 @@ qboolean NAV_StackedCanyon( gentity_t *self, gentity_t *blocker, vec3_t pathDir 
 	PerpendicularVector( perp, pathDir );
 	CrossProduct( pathDir, perp, cross );
 
-	avoidRadius =	sqrt( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) + 
+	avoidRadius =	sqrt( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) +
 					sqrt( ( self->r.maxs[0] * self->r.maxs[0] ) + ( self->r.maxs[1] * self->r.maxs[1] ) );
 
 	VectorMA( blocker->r.currentOrigin, avoidRadius, cross, test );
@@ -840,7 +862,7 @@ qboolean NAV_ResolveEntityCollision( gentity_t *self, gentity_t *blocker, vec3_t
 	//Make sure an actual collision is going to happen
 //	if ( NAV_PredictCollision( self, blocker, movedir, blocked_dir ) == qfalse )
 //		return qtrue;
-	
+
 	//See if we can get around the blocker at all (only for player!)
 	if ( blocker->s.number >= 0 && blocker->s.number < MAX_CLIENTS )
 	{
@@ -949,7 +971,7 @@ qboolean NAV_AvoidCollision( gentity_t *self, gentity_t *goal, navInfo_t *info )
 			return qfalse;
 
 		VectorCopy( movedir, info->direction );
-		
+
 		return qtrue;
 	}
 
@@ -980,7 +1002,7 @@ int NAV_TestBestNode( gentity_t *self, int startID, int endID, qboolean failEdge
 
 	//Offset the step height
 	VectorSet( mins, self->r.mins[0], self->r.mins[1], self->r.mins[2] + STEPSIZE );
-	
+
 	trap->Trace( &trace, self->r.currentOrigin, mins, self->r.maxs, end, self->s.number, clipmask, qfalse, 0, 0 );
 
 	if ( trace.startsolid&&(trace.contents&CONTENTS_BOTCLIP) )
@@ -1015,7 +1037,7 @@ int NAV_TestBestNode( gentity_t *self, int startID, int endID, qboolean failEdge
 	if ( trace.entityNum < ENTITYNUM_WORLD )
 	{
 		gentity_t	*blocker = &g_entities[trace.entityNum];
-		
+
 		if VALIDSTRING( blocker->classname )
 		{//special case: doors are architecture, but are dynamic, like entitites
 			if ( G_EntIsUnlockedDoor( blocker->s.number ) )
@@ -1069,7 +1091,7 @@ int NAV_TestBestNode( gentity_t *self, int startID, int endID, qboolean failEdge
 			}
 		}
 	}
-	//path is blocked 
+	//path is blocked
 	//use the fallback choice
 	return startID;
 }
@@ -1154,7 +1176,7 @@ int	NAV_MoveToGoal( gentity_t *self, navInfo_t *info )
 			G_DrawNode( neworigin, NODE_GOAL );
 			G_DrawNode( self->NPC->goalEntity->r.currentOrigin, NODE_START );
 		}
-		
+
 		return WAYPOINT_NONE;
 	}
 
@@ -1280,7 +1302,7 @@ void SP_waypoint ( gentity_t *ent )
 
 		VectorSet(ent->r.mins, -15, -15, DEFAULT_MINS_2);
 		VectorSet(ent->r.maxs, 15, 15, DEFAULT_MAXS_2);
-		
+
 		ent->r.contents = CONTENTS_TRIGGER;
 		ent->clipmask = MASK_DEADSOLID;
 
@@ -1462,7 +1484,7 @@ targetname - name you would use in script when setting a navgoal (like so:)
 You CANNOT set a radius on these navgoals, they are touch-reach ONLY
 */
 void SP_waypoint_navgoal_2( gentity_t *ent )
-{	
+{
 	VectorSet( ent->r.mins, -2, -2, -24 );
 	VectorSet( ent->r.maxs, 2, 2, 32 );
 	ent->s.origin[2] += 0.125;
@@ -1527,11 +1549,11 @@ void Svcmd_Nav_f( void )
 		if ( Q_stricmp( cmd, "all" ) == 0 )
 		{
 			NAVDEBUG_showNodes = !NAVDEBUG_showNodes;
-			
+
 			//NOTENOTE: This causes the two states to sync up if they aren't already
-			NAVDEBUG_showCollision = NAVDEBUG_showNavGoals = 
-			NAVDEBUG_showCombatPoints = NAVDEBUG_showEnemyPath = 
-			NAVDEBUG_showEdges = NAVDEBUG_showRadius = NAVDEBUG_showNodes;		
+			NAVDEBUG_showCollision = NAVDEBUG_showNavGoals =
+			NAVDEBUG_showCombatPoints = NAVDEBUG_showEnemyPath =
+			NAVDEBUG_showEdges = NAVDEBUG_showRadius = NAVDEBUG_showNodes;
 		}
 		else if ( Q_stricmp( cmd, "nodes" ) == 0 )
 		{
@@ -1877,7 +1899,7 @@ void NAV_ShowDebugInfo( void )
 		int	nearestNode = trap->Nav_GetNearestNode( (sharedEntity_t *)&g_entities[0], g_entities[0].waypoint, NF_ANY, WAYPOINT_NONE );
 		int	testNode = trap->Nav_GetBestNode( nearestNode, NAVDEBUG_curGoal, NODE_NONE );
 		vec3_t	dest, start;
-		
+
 		nearestNode = NAV_TestBestNode( &g_entities[0], nearestNode, testNode, qfalse );
 
 		//Show the connection

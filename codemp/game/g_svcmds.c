@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // this file holds commands that can be executed by the server console, but not remote clients
 
@@ -9,7 +30,7 @@
 ==============================================================================
 
 PACKET FILTERING
- 
+
 
 You can add or remove addresses from the filter list with:
 
@@ -149,7 +170,7 @@ qboolean G_FilterPacket( char *from ) {
 			break;
 		i++, p++;
 	}
-	
+
 	in = m.ui;
 
 	for ( i=0; i<numIPFilters; i++ ) {
@@ -179,7 +200,7 @@ void AddIP( char *str ) {
 		}
 		numIPFilters++;
 	}
-	
+
 	if ( !StringToFilter( str, &ipFilters[i] ) )
 		ipFilters[i].compare = 0xFFFFFFFFu;
 
@@ -1583,6 +1604,7 @@ svcmd_t svcmds[] = {
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
 	{ "toggleAdmin",				Svcmd_ToggleAdmin_f,				qfalse },
+  { "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },
 	{ "toggleEmotes",				Svcmd_ToggleEmotes_f,				qfalse },
 
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
@@ -1607,7 +1629,7 @@ qboolean	ConsoleCommand( void ) {
 
 	trap->Argv( 0, cmd, sizeof( cmd ) );
 
-	command = (svcmd_t *)bsearch( cmd, svcmds, numsvcmds, sizeof( svcmds[0] ), svcmdcmp );
+	command = (svcmd_t *)Q_LinearSearch( cmd, svcmds, numsvcmds, sizeof( svcmds[0] ), svcmdcmp );
 	if ( !command )
 		return qfalse;
 

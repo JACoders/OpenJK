@@ -1,26 +1,32 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_roff.h"
 #include "Q3_Interface.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
+#include "qcommon/ojk_saved_game_helper.h"
+
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
 int			num_roffs = 0;
@@ -264,11 +270,11 @@ static qboolean G_ValidRoff( roff_hdr2_t *header )
 {
 	if ( !strncmp( header->mHeader, "ROFF", 4 ))
 	{
-		if ( header->mCount > 0 && header->mVersion == ROFF_VERSION2 )
+		if ( LittleLong(header->mVersion) == ROFF_VERSION2 && LittleLong(header->mCount) > 0 )
 		{
 			return qtrue;
 		}
-		else if ( header->mVersion == ROFF_VERSION && ((roff_hdr_t*)header)->mCount > 0.0f )
+		else if ( LittleLong(header->mVersion) == ROFF_VERSION && LittleFloat(((roff_hdr_t*)header)->mCount) > 0.0f )
 		{ // version 1 defines the count as a float, so we best do the count check as a float or we'll get bogus results
 			return qtrue;
 		}
@@ -288,13 +294,15 @@ static void G_FreeRoff(int index)
 static qboolean G_InitRoff( char *file, unsigned char *data )
 {
 	roff_hdr_t *header = (roff_hdr_t *)data;
-	int	count = (int)header->mCount;
+	int	count;
 	int i;
 
 	roffs[num_roffs].fileName = G_NewString( file );
 
-	if ( header->mVersion == ROFF_VERSION )
+	if ( LittleLong(header->mVersion) == ROFF_VERSION )
 	{
+		count = (int)LittleFloat(header->mCount);
+
 		// We are Old School(tm)
 		roffs[num_roffs].type = 1;
 
@@ -315,30 +323,39 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 			move_rotate_t *roff_data = ( move_rotate_t *)&header[1];
 
 			// Copy all of the goods into our ROFF cache
-			for ( int i = 0; i < count; i++, roff_data++, mem++ )
+			for ( i = 0; i < count; i++, roff_data++, mem++ )
 			{
 				// Copy just the delta position and orientation which can be applied to anything at a later point
+#ifdef Q3_BIG_ENDIAN
+				mem->origin_delta[0] = LittleFloat(roff_data->origin_delta[0]);
+				mem->origin_delta[1] = LittleFloat(roff_data->origin_delta[1]);
+				mem->origin_delta[2] = LittleFloat(roff_data->origin_delta[2]);
+				mem->rotate_delta[0] = LittleFloat(roff_data->rotate_delta[0]);
+				mem->rotate_delta[1] = LittleFloat(roff_data->rotate_delta[1]);
+				mem->rotate_delta[2] = LittleFloat(roff_data->rotate_delta[2]);
+#else
 				VectorCopy( roff_data->origin_delta, mem->origin_delta );
 				VectorCopy( roff_data->rotate_delta, mem->rotate_delta );
+#endif
 			}
 			return qtrue;
 		}
 	}
-	else if ( header->mVersion == ROFF_VERSION2 )
+	else if ( LittleLong(header->mVersion) == ROFF_VERSION2 )
 	{
 		// Version 2.0, heck yeah!
 		roff_hdr2_t *hdr = (roff_hdr2_t *)data;
-		count = hdr->mCount;
+		count = LittleLong(hdr->mCount);
 
 		roffs[num_roffs].frames	= count;
-		roffs[num_roffs].data	= (void *) G_Alloc( count * sizeof( move_rotate2_t ));		
+		roffs[num_roffs].data	= (void *) G_Alloc( count * sizeof( move_rotate2_t ));
 		move_rotate2_t *mem		= (move_rotate2_t *)roffs[num_roffs].data;
 
 		if ( mem )
 		{
-			roffs[num_roffs].mFrameTime			= hdr->mFrameRate;
-			roffs[num_roffs].mLerp				= 1000 / hdr->mFrameRate;
-			roffs[num_roffs].mNumNoteTracks		= hdr->mNumNotes;
+			roffs[num_roffs].mFrameTime			= LittleLong(hdr->mFrameRate);
+			roffs[num_roffs].mLerp				= 1000 / LittleLong(hdr->mFrameRate);
+			roffs[num_roffs].mNumNoteTracks		= LittleLong(hdr->mNumNotes);
 
 			if (roffs[num_roffs].mFrameTime < 50)
 			{
@@ -354,14 +371,23 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 			// Copy all of the goods into our ROFF cache
 			for ( i = 0; i < count; i++ )
 			{
+#ifdef Q3_BIG_ENDIAN
+				mem[i].origin_delta[0] = LittleFloat(roff_data[i].origin_delta[0]);
+				mem[i].origin_delta[1] = LittleFloat(roff_data[i].origin_delta[1]);
+				mem[i].origin_delta[2] = LittleFloat(roff_data[i].origin_delta[2]);
+				mem[i].rotate_delta[0] = LittleFloat(roff_data[i].rotate_delta[0]);
+				mem[i].rotate_delta[1] = LittleFloat(roff_data[i].rotate_delta[1]);
+				mem[i].rotate_delta[2] = LittleFloat(roff_data[i].rotate_delta[2]);
+#else
 				VectorCopy( roff_data[i].origin_delta, mem[i].origin_delta );
 				VectorCopy( roff_data[i].rotate_delta, mem[i].rotate_delta );
+#endif
 
-				mem[i].mStartNote = roff_data[i].mStartNote;
-				mem[i].mNumNotes = roff_data[i].mNumNotes;
+				mem[i].mStartNote = LittleLong(roff_data[i].mStartNote);
+				mem[i].mNumNotes = LittleLong(roff_data[i].mNumNotes);
 			}
 
-			if ( hdr->mNumNotes )
+			if ( LittleLong(hdr->mNumNotes) )
 			{
 				int		size;
 				char	*ptr, *start;
@@ -369,18 +395,18 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 				ptr = start = (char *)&roff_data[i];
 				size = 0;
 
-				for( i = 0; i < hdr->mNumNotes; i++ )
+				for( i = 0; i < LittleLong(hdr->mNumNotes); i++ )
 				{
 					size += strlen(ptr) + 1;
 					ptr += strlen(ptr) + 1;
 				}
 
 				// ? Get rid of dynamic memory ?
-				roffs[num_roffs].mNoteTrackIndexes = new char *[hdr->mNumNotes];
+				roffs[num_roffs].mNoteTrackIndexes = new char *[LittleLong(hdr->mNumNotes)];
 				ptr = roffs[num_roffs].mNoteTrackIndexes[0] = new char[size];
 				memcpy(roffs[num_roffs].mNoteTrackIndexes[0], start, size);
 
-				for( i = 1; i < hdr->mNumNotes; i++ )
+				for( i = 1; i < LittleLong(hdr->mNumNotes); i++ )
 				{
 					ptr += strlen(ptr) + 1;
 					roffs[num_roffs].mNoteTrackIndexes[i] = ptr;
@@ -390,7 +416,7 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 		}
 	}
 
-	return false;
+	return qfalse;
 }
 
 //-------------------------------------------------------
@@ -483,7 +509,7 @@ void G_Roff( gentity_t *ent )
 	{
 		return;
 	}
-	
+
 	if ( ent->next_roff_time > level.time )
 	{// either I don't think or it's just not time to have me think yet
 		return;
@@ -520,7 +546,7 @@ void G_Roff( gentity_t *ent )
 #ifdef _DEBUG
 	if ( g_developer->integer )
 	{
-		Com_Printf( S_COLOR_GREEN"ROFF dat: num: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n", 
+		Com_Printf( S_COLOR_GREEN"ROFF dat: num: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n",
 					ent->roff_ctr,
 					org[0], org[1], org[2],
 					ang[0], ang[1], ang[2] );
@@ -623,18 +649,30 @@ void G_Roff( gentity_t *ent )
 
 void G_SaveCachedRoffs()
 {
-	int i, len;
+	int i, len = 0;
+
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
 
 	// Write out the number of cached ROFFs
-	gi.AppendToSaveGame( INT_ID('R','O','F','F'), (void *)&num_roffs, sizeof(num_roffs) );
+	saved_game.write_chunk<int32_t>(
+		INT_ID('R', 'O', 'F', 'F'),
+		::num_roffs);
 
 	// Now dump out the cached ROFF file names in order so they can be loaded on the other end
 	for ( i = 0; i < num_roffs; i++ )
 	{
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
 		len = strlen( roffs[i].fileName ) + 1;
-		gi.AppendToSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len) );
-		gi.AppendToSaveGame( INT_ID('R','S','T','R'), (void *)roffs[i].fileName, len );
+
+		saved_game.write_chunk<int32_t>(
+			INT_ID('S', 'L', 'E', 'N'),
+			len);
+
+		saved_game.write_chunk(
+			INT_ID('R', 'S', 'T', 'R'),
+			roffs[i].fileName,
+			len);
 	}
 }
 
@@ -647,17 +685,34 @@ void G_SaveCachedRoffs()
 
 void G_LoadCachedRoffs()
 {
-	int		i, count, len;
+	int		i, count = 0, len = 0;
 	char	buffer[MAX_QPATH];
 
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
 	// Get the count of goodies we need to revive
-	gi.ReadFromSaveGame( INT_ID('R','O','F','F'), (void *)&count, sizeof(count), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('R', 'O', 'F', 'F'),
+		count);
 
 	// Now bring 'em back to life
 	for ( i = 0; i < count; i++ )
 	{
-		gi.ReadFromSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len), NULL );
-		gi.ReadFromSaveGame( INT_ID('R','S','T','R'), (void *)(buffer), len, NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('S', 'L', 'E', 'N'),
+			len);
+
+		if (len < 0 || static_cast<size_t>(len) >= sizeof(buffer))
+		{
+			::G_Error("invalid length for RSTR string in save game: %d bytes\n", len);
+		}
+
+		saved_game.read_chunk(
+			INT_ID('R', 'S', 'T', 'R'),
+			buffer,
+			len);
+
 		G_LoadRoff( buffer );
 	}
 }

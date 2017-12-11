@@ -1,9 +1,6 @@
 #ifdef COMPILE_ME
-#ifdef _MSC_VER
-#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
-#endif
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -24,7 +21,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: csbtL3.c,v 1.2 1999/10/19 07:13:08 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -41,7 +38,7 @@ layer III
 void sbt_mono_L3(float *sample, short *pcm, int ch)
 {
 	int i;
-	
+
 	ch = 0;
 	for (i = 0; i < 18; i++)
 	{
@@ -50,13 +47,13 @@ void sbt_mono_L3(float *sample, short *pcm, int ch)
 		sample += 32;
 		pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 32) & 511;
 		pcm += 32;
-	}	
+	}
 }
 /*------------------------------------------------------------*/
 void sbt_dual_L3(float *sample, short *pcm, int ch)
 {
 	int i;
-	
+
 	if (ch == 0)
 	{
 		for (i = 0; i < 18; i++)
@@ -87,7 +84,7 @@ void sbt_dual_L3(float *sample, short *pcm, int ch)
 void sbt16_mono_L3(float *sample, short *pcm, int ch)
 {
 	int i;
-	
+
 	ch = 0;
 	for (i = 0; i < 18; i++)
 	{
@@ -124,7 +121,7 @@ void sbt16_dual_L3(float *sample, short *pcm, int ch)
 		   pMP3Stream->vb2_ptr = (pMP3Stream->vb2_ptr - 16) & 255;
 		   pcm += 32;
 	   }
-   }   
+   }
 }
 /*------------------------------------------------------------*/
 /*---------------- 8 pt sbt's  -------------------------------*/
@@ -132,7 +129,7 @@ void sbt16_dual_L3(float *sample, short *pcm, int ch)
 void sbt8_mono_L3(float *sample, short *pcm, int ch)
 {
 	int i;
-	
+
 	ch = 0;
 	for (i = 0; i < 18; i++)
 	{
@@ -147,7 +144,7 @@ void sbt8_mono_L3(float *sample, short *pcm, int ch)
 void sbt8_dual_L3(float *sample, short *pcm, int ch)
 {
 	int i;
-	
+
 	if (ch == 0)
 	{
 		for (i = 0; i < 18; i++)
@@ -177,7 +174,7 @@ void sbt8_dual_L3(float *sample, short *pcm, int ch)
 void sbtB_mono_L3(float *sample, unsigned char *pcm, int ch)
 {
 	int i;
-	
+
 	ch = 0;
 	for (i = 0; i < 18; i++)
 	{
@@ -192,7 +189,7 @@ void sbtB_mono_L3(float *sample, unsigned char *pcm, int ch)
 void sbtB_dual_L3(float *sample, unsigned char *pcm, int ch)
 {
 	int i;
-	
+
 	if (ch == 0)
 	{
 		for (i = 0; i < 18; i++)
@@ -223,7 +220,7 @@ void sbtB_dual_L3(float *sample, unsigned char *pcm, int ch)
 void sbtB16_mono_L3(float *sample, unsigned char *pcm, int ch)
 {
 	int i;
-	
+
 	ch = 0;
 	for (i = 0; i < 18; i++)
 	{
@@ -238,7 +235,7 @@ void sbtB16_mono_L3(float *sample, unsigned char *pcm, int ch)
 void sbtB16_dual_L3(float *sample, unsigned char *pcm, int ch)
 {
 	int i;
-	
+
 	if (ch == 0)
 	{
 		for (i = 0; i < 18; i++)
@@ -268,7 +265,7 @@ void sbtB16_dual_L3(float *sample, unsigned char *pcm, int ch)
 void sbtB8_mono_L3(float *sample, unsigned char *pcm, int ch)
 {
 	int i;
-	
+
 	ch = 0;
 	for (i = 0; i < 18; i++)
 	{
@@ -283,7 +280,7 @@ void sbtB8_mono_L3(float *sample, unsigned char *pcm, int ch)
 void sbtB8_dual_L3(float *sample, unsigned char *pcm, int ch)
 {
 	int i;
-	
+
 	if (ch == 0)
 	{
 		for (i = 0; i < 18; i++)

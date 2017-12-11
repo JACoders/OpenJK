@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 //NOTENOTE: The enums and tables in this file will obviously bitch if they are included multiple times, don't do that
@@ -22,7 +44,7 @@ typedef enum //# setType_e
 	SET_PARM15,//## %s="" # Set entity parm15
 	SET_PARM16,//## %s="" # Set entity parm16
 
-	// NOTE!!! If you add any other SET_xxxxxxSCRIPT types, make sure you update the 'case' statements in 
+	// NOTE!!! If you add any other SET_xxxxxxSCRIPT types, make sure you update the 'case' statements in
 	//	ICARUS_InterrogateScript() (game/g_ICARUS.cpp), or the script-precacher won't find them.
 
 	//# #sep Scripts and other file paths
@@ -42,7 +64,7 @@ typedef enum //# setType_e
 	SET_FFDEATHSCRIPT,//## %s="NULL" !!"W:\game\base\scripts\!!#*.txt" # Script to run when player kills a teammate
 	SET_MINDTRICKSCRIPT,//## %s="NULL" !!"W:\game\base\scripts\!!#*.txt" # Script to run when player kills a teammate
 	SET_VIDEO_PLAY,//## %s="filename" !!"W:\game\base\video\!!#*.roq" # Play a video (inGame)
-	SET_CINEMATIC_SKIPSCRIPT, //## %s="filename" !!"W:\game\base\scripts\!!#*.txt" # Script to run when skipping the running cinematic 
+	SET_CINEMATIC_SKIPSCRIPT, //## %s="filename" !!"W:\game\base\scripts\!!#*.txt" # Script to run when skipping the running cinematic
 
 	//# #sep Standard strings
 	SET_ENEMY,//## %s="NULL" # Set enemy by targetname
@@ -84,7 +106,7 @@ typedef enum //# setType_e
 	SET_ORIGIN,//## %v="0.0 0.0 0.0" # Set origin explicitly or with TAG
 	SET_ANGLES,//## %v="0.0 0.0 0.0" # Set angles explicitly or with TAG
 	SET_TELEPORT_DEST,//## %v="0.0 0.0 0.0" # Set origin here as soon as the area is clear
-	
+
 	//# #sep floats
 	SET_XVELOCITY,//## %f="0.0" # Velocity along X axis
 	SET_YVELOCITY,//## %f="0.0" # Velocity along Y axis
@@ -239,7 +261,7 @@ typedef enum //# setType_e
 	SET_TACTICAL_HIDE,		//## %t="TACTICAL" # Hide tactical info on mission objectives screen
 	SET_OBJECTIVE_CLEARALL,	//## # Force all objectives to be hidden
 /*
-	SET_OBJECTIVEFOSTER,	
+	SET_OBJECTIVEFOSTER,
 */
 	SET_MISSIONSTATUSTEXT,	//## %t="STATUSTEXT" # Text to appear in mission status screen
 	SET_MENU_SCREEN,//## %t="MENUSCREENS" # Brings up specified menu screen
@@ -251,7 +273,7 @@ typedef enum //# setType_e
 
 	//# #eol
 	SET_
-} setType_t;	
+} setType_t;
 
 #ifdef __cplusplus
 

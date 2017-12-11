@@ -1,11 +1,31 @@
-// Copyright (C) 2000-2002 Raven Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 /*****************************************************************************
  * name:		g_saga.c
  *
  * desc:		Game-side module for Siege gametype.
  *
- * $Author: Rich Whitehouse $ 
+ * $Author: Rich Whitehouse $
  * $Revision: 1.6 $
  *
  *****************************************************************************/
@@ -696,7 +716,7 @@ void SiegeRoundComplete(int winningteam, int winningclient)
 			LogExit( "Objectives completed" );
 			return;
 		}
-		
+
 		if (originalWinningClient == ENTITYNUM_NONE)
 		{ //oh well, just find something active and use it then.
             int i = 0;
@@ -780,7 +800,7 @@ void G_ValidateSiegeClassForTeam(gentity_t *ent, int team)
 		if (newClassIndex != -1)
 		{ //ok, let's find it in the global class array
 			ent->client->siegeClass = BG_SiegeFindClassIndexByName(stm->classes[newClassIndex]->name);
-			strcpy(ent->client->sess.siegeClass, stm->classes[newClassIndex]->name);
+			Q_strncpyz( ent->client->sess.siegeClass, stm->classes[newClassIndex]->name, sizeof( ent->client->sess.siegeClass ));
 		}
 	}
 }
@@ -1165,9 +1185,9 @@ void SP_info_siege_objective (gentity_t *ent)
 	ent->r.svFlags |= SVF_BROADCAST;
 
 	G_SpawnString( "icon", "", &s );
-	
+
 	if (s && s[0])
-	{ 
+	{
 		// We have an icon, so index it now.  We are reusing the genericenemyindex
 		// variable rather than adding a new one to the entity state.
 		ent->s.genericenemyindex = G_IconIndex(s);
@@ -1193,7 +1213,7 @@ void SiegeIconUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	}
 }
 
-/*QUAKED info_siege_radaricon (1 0 1) (-16 -16 -24) (16 16 32) ? 
+/*QUAKED info_siege_radaricon (1 0 1) (-16 -16 -24) (16 16 32) ?
 Used to arbitrarily display radar icons at placed location. Can be used
 to toggle on and off.
 
@@ -1376,7 +1396,7 @@ static void SiegeItemRespawnOnOriginalSpot(gentity_t *ent, gentity_t *carrier)
 	SiegeItemRespawnEffect(ent, ent->pos1);
 	G_SetOrigin(ent, ent->pos1);
 	SiegeItemRemoveOwner(ent, carrier);
-	
+
 	// Stop the item from flashing on the radar
 	ent->s.time2 = 0;
 }
@@ -1457,16 +1477,16 @@ void SiegeItemThink(gentity_t *ent)
 					VectorCopy(carrier->client->ps.origin, TracePoint);
 					TracePoint[2] += 30;
 					trap->Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask, qfalse, 0, 0);
-					
+
 					if(tr.startsolid)
-					{//hmm, well that didn't work. try one last time with the item back 
+					{//hmm, well that didn't work. try one last time with the item back
 						//away from where the dude was facing (in case the carrier was
 						//close to something they were attacking.)
 						vec3_t fwd;
 						AngleVectors(carrier->client->ps.viewangles,fwd, NULL, NULL);
 						VectorMA(TracePoint, -30, fwd, TracePoint);
 						trap->Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask, qfalse, 0, 0);
-						
+
 						if(tr.startsolid)
 						{
 							SiegeItemRespawnOnOriginalSpot(ent, carrier);
@@ -1480,7 +1500,7 @@ void SiegeItemThink(gentity_t *ent)
 				{//we're good at the player's origin
 					G_SetOrigin(ent, carrier->client->ps.origin);
 				}
-				
+
 
 				//G_SetOrigin(ent, carrier->client->ps.origin);
 				ent->epVelocity[0] = Q_irand(-80, 80);
@@ -1501,7 +1521,7 @@ void SiegeItemThink(gentity_t *ent)
 		SiegeItemRespawnEffect(ent, ent->pos1);
 		G_SetOrigin(ent, ent->pos1);
 		ent->genericValue9 = 0;
-		
+
 		// stop flashing on radar
 		ent->s.time2 = 0;
 	}
@@ -1573,8 +1593,8 @@ void SiegeItemTouch( gentity_t *self, gentity_t *other, trace_t *trace )
 	{ //fire the target for pickup, if it's set to fire every time, or set to only fire the first time and the first time has not yet occured.
 		G_UseTargets2(self, self, self->target2);
 		self->genericValue5 = 1; //mark it as having been picked up
-	}	
-	
+	}
+
 	// time2 set to -1 will blink the item on the radar indefinately
 	self->s.time2 = 0xFFFFFFFF;
 }
@@ -1648,7 +1668,7 @@ void SiegeItemUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	if (ent->paintarget && ent->paintarget[0])
 	{ //want to be on this guy's origin now then
 		gentity_t *targ = G_Find (NULL, FOFS(targetname), ent->paintarget);
-		
+
 		if (targ && targ->inuse)
 		{
 			//perform a startsolid check to make sure the seige item doesn't get stuck
@@ -1662,9 +1682,9 @@ void SiegeItemUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 			{//bad spawning area, try again with the trace up a bit.
 				TracePoint[2] += 30;
 				trap->Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask, qfalse, 0, 0);
-				
+
 				if(tr.startsolid)
-				{//hmm, well that didn't work. try one last time with the item back 
+				{//hmm, well that didn't work. try one last time with the item back
 					//away from where the dude was facing (in case the carrier was
 					//close to something they were attacking.)
 					vec3_t fwd;
@@ -1678,7 +1698,7 @@ void SiegeItemUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 					}
 					VectorMA(TracePoint, -30, fwd, TracePoint);
 					trap->Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask, qfalse, 0, 0);
-					
+
 					if(tr.startsolid)
 					{//crap, that's all we got.  just spawn at the defualt location.
 						return;
@@ -1782,7 +1802,7 @@ void SP_misc_siege_item (gentity_t *ent)
 
 	G_SpawnInt("teamnotouch", "0", &ent->genericValue6);
 	G_SpawnInt("teamnocomplete", "0", &ent->genericValue7);
-	
+
 	//Get default physics values.
 	G_SpawnFloat("mass", "0.09", &ent->mass);
 	G_SpawnFloat("gravity", "3.0", &ent->radius);
@@ -1810,14 +1830,14 @@ void SP_misc_siege_item (gentity_t *ent)
 	}
 
 	G_SpawnString( "icon", "", &s );
-	
+
 	if (s && s[0])
-	{ 
+	{
 		// We have an icon, so index it now.  We are reusing the genericenemyindex
 		// variable rather than adding a new one to the entity state.
 		ent->s.genericenemyindex = G_IconIndex(s);
 	}
-	
+
 	ent->s.modelindex = G_ModelIndex(ent->model);
 
 	//Is the model a ghoul2 model?
@@ -1929,7 +1949,7 @@ void G_SiegeClientExData(gentity_t *msgTarg)
 			trap->InPVS(msgTarg->client->ps.origin, ent->client->ps.origin))
 		{ //another client in the same pvs, send his jive
             if (count)
-			{ //append a seperating space if we are not the first in the list
+			{ //append a separating space if we are not the first in the list
 				Q_strcat(str, sizeof(str), " ");
 			}
 			else

@@ -1,5 +1,26 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // cl_scrn.c -- master for refresh, status bar, console, chat, notify, etc
 
@@ -96,8 +117,8 @@ static void SCR_DrawChar( int x, int y, float size, int ch ) {
 	size2 = 0.0625;
 
 	re->DrawStretchPic( ax, ay, aw, ah,
-					   fcol, frow, 
-					   fcol + size, frow + size2, 
+					   fcol, frow,
+					   fcol + size, frow + size2,
 					   cls.charSetShader );
 }
 
@@ -133,10 +154,10 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 
 	size2 = 0.0625;
 
-	re->DrawStretchPic( x * con.xadjust, y * con.yadjust, 
-						SMALLCHAR_WIDTH * con.xadjust, SMALLCHAR_HEIGHT * con.yadjust, 
-					   fcol, frow, 
-					   fcol + size, frow + size2, 
+	re->DrawStretchPic( x * con.xadjust, y * con.yadjust,
+						SMALLCHAR_WIDTH * con.xadjust, SMALLCHAR_HEIGHT * con.yadjust,
+					   fcol, frow,
+					   fcol + size, frow + size2,
 					   cls.charSetShader );
 }
 
@@ -271,7 +292,7 @@ static int SCR_Strlen( const char *str ) {
 
 /*
 ** SCR_GetBigStringWidth
-*/ 
+*/
 int	SCR_GetBigStringWidth( const char *str ) {
 	return SCR_Strlen( str ) * BIGCHAR_WIDTH;
 }
@@ -301,7 +322,9 @@ void SCR_DrawDemoRecording( void ) {
 	if ( clc.spDemoRecording ) {
 		return;
 	}
-
+	if (!cl_drawRecording->integer) {
+		return;
+	}
 	pos = FS_FTell( clc.demofile );
 	if (cg_demoRecordMsg->integer > 2)//JAPRO ENGINE
 		Com_sprintf( string, sizeof(string), "RECORDING %s: %ik", clc.demoName, pos / 1024 );
@@ -370,7 +393,7 @@ void SCR_DrawDebugGraph (void)
 	x = 0;
 	y = 480;
 	re->SetColor( g_color_table[0] );
-	re->DrawStretchPic(x, y - cl_graphheight->integer, 
+	re->DrawStretchPic(x, y - cl_graphheight->integer,
 		w, cl_graphheight->integer, 0, 0, 0, 0, cls.whiteShader );
 	re->SetColor( NULL );
 
@@ -379,7 +402,7 @@ void SCR_DrawDebugGraph (void)
 		i = (current-1-a+1024) & 1023;
 		v = values[i].value;
 		v = v * cl_graphscale->integer + cl_graphshift->integer;
-		
+
 		if (v < 0)
 			v += cl_graphheight->integer * (1+(int)(-v / cl_graphheight->integer));
 		h = (int)v % cl_graphheight->integer;
@@ -418,16 +441,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	re->BeginFrame( stereoFrame );
 
 	qboolean uiFullscreen = (qboolean)(cls.uiStarted && UIVM_IsFullscreen());
-
-	// wide aspect ratio screens need to have the sides cleared
-	// unless they are displaying game renderings
-	if ( uiFullscreen || (cls.state != CA_ACTIVE && cls.state != CA_CINEMATIC) ) {
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			re->SetColor( g_color_table[0] );
-			re->DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, cls.whiteShader );
-			re->SetColor( NULL );
-		}
-	}
 
 	if ( !cls.uiStarted ) {
 		Com_DPrintf("draw screen without UI loaded\n");

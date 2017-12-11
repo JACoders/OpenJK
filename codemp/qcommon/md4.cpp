@@ -1,14 +1,39 @@
-/* GLOBAL.H - RSAREF types and constants */
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+/*
+	mdfour.c
+
+	An implementation of MD4 designed for use in the samba SMB
+	authentication protocol
+
+	Copyright (C) 1997-1998  Andrew Tridgell
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+	See the GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to:
+
+		Free Software Foundation, Inc.
+		59 Temple Place - Suite 330
+		Boston, MA  02111-1307, USA
+
+	$Id: mdfour.c,v 1.1 2002/08/23 22:03:27 abster Exp $
+*/
 
 #include "q_shared.h"
 #include "qcommon.h"
 
-struct mdfour {
+typedef struct mdfour_s {
 	uint32_t A, B, C, D;
 	uint32_t totalN;
-};
+} mdfour_ctx;
 
 
 /* NOTE: This code makes no attempt to be fast!
@@ -16,7 +41,7 @@ struct mdfour {
    It assumes that an int is at least 32 bits long
 */
 
-static struct mdfour *m;
+static  mdfour_ctx *m;
 
 #define F(X,Y,Z) (((X)&(Y)) | ((~(X))&(Z)))
 #define G(X,Y,Z) (((X)&(Y)) | ((X)&(Z)) | ((Y)&(Z)))
@@ -93,7 +118,7 @@ static void copy4(byte *out,uint32_t x)
 	out[3] = (x>>24)&0xFF;
 }
 
-void mdfour_begin(struct mdfour *md)
+void mdfour_begin(mdfour_ctx *md)
 {
 	md->A = 0x67452301;
 	md->B = 0xefcdab89;
@@ -130,7 +155,7 @@ static void mdfour_tail(byte *in, int n)
 	}
 }
 
-static void mdfour_update(struct mdfour *md, byte *in, int n)
+static void mdfour_update(mdfour_ctx *md, byte *in, int n)
 {
 	uint32_t M[16];
 
@@ -150,7 +175,7 @@ static void mdfour_update(struct mdfour *md, byte *in, int n)
 }
 
 
-static void mdfour_result(struct mdfour *md, byte *out)
+static void mdfour_result(mdfour_ctx *md, byte *out)
 {
 	m = md;
 
@@ -162,7 +187,7 @@ static void mdfour_result(struct mdfour *md, byte *out)
 
 static void mdfour(byte *out, byte *in, int n)
 {
-	struct mdfour md;
+	mdfour_ctx md;
 	mdfour_begin(&md);
 	mdfour_update(&md, in, n);
 	mdfour_result(&md, out);
@@ -170,13 +195,13 @@ static void mdfour(byte *out, byte *in, int n)
 
 //===================================================================
 
-unsigned Com_BlockChecksum (const void *buffer, int length)
+uint32_t Com_BlockChecksum (const void *buffer, int length)
 {
 	int				digest[4];
-	unsigned	val;
+	uint32_t	val;
 
 	mdfour( (byte *)digest, (byte *)buffer, length );
-	
+
 	val = digest[0] ^ digest[1] ^ digest[2] ^ digest[3];
 
 	return val;

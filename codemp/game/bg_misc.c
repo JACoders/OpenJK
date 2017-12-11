@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // bg_misc.c -- both games misc functions, all completely stateless
 
 #include "qcommon/q_shared.h"
@@ -9,11 +30,11 @@
 	#include "g_local.h"
 #elif defined(_CGAME)
 	#include "cgame/cg_local.h"
-#elif defined(_UI)
+#elif defined(UI_BUILD)
 	#include "ui/ui_local.h"
 #endif
 
-const char *bgToggleableSurfaces[BG_NUM_TOGGLEABLE_SURFACES] = 
+const char *bgToggleableSurfaces[BG_NUM_TOGGLEABLE_SURFACES] =
 {
 	"l_arm_key",					//0
 	"torso_canister1",
@@ -92,7 +113,7 @@ const int bgToggleableSurfaceDebris[BG_NUM_TOGGLEABLE_SURFACES] =
 	-1
 };
 
-const char	*bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS] = 
+const char	*bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS] =
 {
 	"*att_attack",
 	"*att_primary",
@@ -265,7 +286,7 @@ const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS] = {
 //rww - not putting @ in front of these because
 //we don't need them in a cgame StringEd lookup.
 //Let me know if this causes problems, pat.
-char *forceMasteryLevels[NUM_FORCE_MASTERY_LEVELS] = 
+char *forceMasteryLevels[NUM_FORCE_MASTERY_LEVELS] =
 {
 	"MASTERY0",	//"Uninitiated",	// FORCE_MASTERY_UNINITIATED,
 	"MASTERY1",	//"Initiate",		// FORCE_MASTERY_INITIATE,
@@ -312,7 +333,7 @@ int bgForcePowerCost[NUM_FORCE_POWERS][NUM_FORCE_POWER_LEVELS] = //0 == neutral
 	//NUM_FORCE_POWERS
 };
 
-int forcePowerSorted[NUM_FORCE_POWERS] = 
+int forcePowerSorted[NUM_FORCE_POWERS] =
 { //rww - always use this order when drawing force powers for any reason
 	FP_TELEPATHY,
 	FP_HEAL,
@@ -446,7 +467,7 @@ qboolean BG_FileExists(const char *fileName)
 		trap->FS_Open(fileName, &fh, FS_READ);
 	#elif _CGAME
 		trap->FS_Open(fileName, &fh, FS_READ);
-	#elif _UI
+	#elif UI_BUILD
 		trap->FS_Open(fileName, &fh, FS_READ);
 	#endif
 		if (fh > 0)
@@ -455,7 +476,7 @@ qboolean BG_FileExists(const char *fileName)
 			trap->FS_Close(fh);
 		#elif _CGAME
 			trap->FS_Close(fh);
-		#elif _UI
+		#elif UI_BUILD
 			trap->FS_Close(fh);
 		#endif
 			return qtrue;
@@ -531,7 +552,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	int allowedPoints = 0;
 	int usedPoints = 0;
 	int countDown = 0;
-	
+
 	int final_Side;
 	int final_Powers[NUM_FORCE_POWERS] = {0};
 
@@ -656,7 +677,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 		int attemptedCycles = 0;
 		int powerCycle = 2;
 		int minPow = 0;
-		
+
 		if (freeSaber)
 		{
 			minPow = 1;
@@ -828,10 +849,10 @@ An item fires all of its targets when it is picked up.  If the toucher can't car
 "count" override quantity or duration on most items.
 */
 
-gitem_t	bg_itemlist[] = 
+gitem_t	bg_itemlist[] =
 {
 	{
-		NULL,				// classname	
+		NULL,				// classname
 		NULL,				// pickup_sound
 		{	NULL,			// world_model[0]
 			NULL,			// world_model[1]
@@ -855,11 +876,11 @@ gitem_t	bg_itemlist[] =
 Instant shield pickup, restores 25
 */
 	{
-		"item_shield_sm_instant", 
+		"item_shield_sm_instant",
 		"sound/player/pickupshield.wav",
         { "models/map_objects/mp/psd_sm.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/mp/small_shield",
 /* pickup *///	"Shield Small",
 		25,
@@ -874,11 +895,11 @@ Instant shield pickup, restores 25
 Instant shield pickup, restores 100
 */
 	{
-		"item_shield_lrg_instant", 
+		"item_shield_lrg_instant",
 		"sound/player/pickupshield.wav",
         { "models/map_objects/mp/psd.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/mp/large_shield",
 /* pickup *///	"Shield Large",
 		100,
@@ -895,9 +916,9 @@ Instant medpack pickup, heals 25
 	{
 		"item_medpak_instant",
 		"sound/player/pickuphealth.wav",
-        { "models/map_objects/mp/medpac.md3", 
+        { "models/map_objects/mp/medpac.md3",
 		0, 0, 0 },
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_medkit",
 /* pickup *///	"Medpack",
 		25,
@@ -917,11 +938,11 @@ Instant medpack pickup, heals 25
 30 seconds of seeker drone
 */
 	{
-		"item_seeker", 
+		"item_seeker",
 		"sound/weapons/w_pkup.wav",
-		{ "models/items/remote.md3", 
+		{ "models/items/remote.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_seeker",
 /* pickup *///	"Seeker Drone",
 		120,
@@ -936,11 +957,11 @@ Instant medpack pickup, heals 25
 Portable shield
 */
 	{
-		"item_shield", 
+		"item_shield",
 		"sound/weapons/w_pkup.wav",
-		{ "models/map_objects/mp/shield.md3", 
+		{ "models/map_objects/mp/shield.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_shieldwall",
 /* pickup *///	"Forcefield",
 		120,
@@ -957,9 +978,9 @@ Bacta canister pickup, heals 25 on use
 	{
 		"item_medpac",	//should be item_bacta
 		"sound/weapons/w_pkup.wav",
-		{ "models/map_objects/mp/bacta.md3", 
+		{ "models/map_objects/mp/bacta.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_bacta",
 /* pickup *///	"Bacta Canister",
 		25,
@@ -976,9 +997,9 @@ Big bacta canister pickup, heals 50 on use
 	{
 		"item_medpac_big",	//should be item_bacta
 		"sound/weapons/w_pkup.wav",
-		{ "models/items/big_bacta.md3", 
+		{ "models/items/big_bacta.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_big_bacta",
 /* pickup *///	"Bacta Canister",
 		25,
@@ -993,11 +1014,11 @@ Big bacta canister pickup, heals 50 on use
 These will be standard equipment on the player - DO NOT PLACE
 */
 	{
-		"item_binoculars", 
+		"item_binoculars",
 		"sound/weapons/w_pkup.wav",
-		{ "models/items/binoculars.md3", 
+		{ "models/items/binoculars.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_zoom",
 /* pickup *///	"Binoculars",
 		60,
@@ -1012,11 +1033,11 @@ These will be standard equipment on the player - DO NOT PLACE
 Sentry gun inventory pickup.
 */
 	{
-		"item_sentry_gun", 
+		"item_sentry_gun",
 		"sound/weapons/w_pkup.wav",
-		{ "models/items/psgun.glm", 
+		{ "models/items/psgun.glm",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_sentrygun",
 /* pickup *///	"Sentry Gun",
 		120,
@@ -1031,11 +1052,11 @@ Sentry gun inventory pickup.
 Do not place.
 */
 	{
-		"item_jetpack", 
+		"item_jetpack",
 		"sound/weapons/w_pkup.wav",
 		{ "models/items/psgun.glm", //FIXME: no model
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_jetpack",
 /* pickup *///	"Sentry Gun",
 		120,
@@ -1050,11 +1071,11 @@ Do not place.
 Do not place. For siege classes ONLY.
 */
 	{
-		"item_healthdisp", 
+		"item_healthdisp",
 		"sound/weapons/w_pkup.wav",
 		{ "models/map_objects/mp/bacta.md3", //replace me
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_healthdisp",
 /* pickup *///	"Sentry Gun",
 		120,
@@ -1069,11 +1090,11 @@ Do not place. For siege classes ONLY.
 Do not place. For siege classes ONLY.
 */
 	{
-		"item_ammodisp", 
+		"item_ammodisp",
 		"sound/weapons/w_pkup.wav",
 		{ "models/map_objects/mp/bacta.md3", //replace me
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_ammodisp",
 /* pickup *///	"Sentry Gun",
 		120,
@@ -1088,11 +1109,11 @@ Do not place. For siege classes ONLY.
 Do not place. For siege classes ONLY.
 */
 	{
-		"item_eweb_holdable", 
+		"item_eweb_holdable",
 		"sound/interface/shieldcon_empty",
 		{ "models/map_objects/hoth/eweb_model.glm",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_eweb",
 /* pickup *///	"Sentry Gun",
 		120,
@@ -1107,11 +1128,11 @@ Do not place. For siege classes ONLY.
 30 seconds of seeker drone
 */
 	{
-		"item_cloak", 
+		"item_cloak",
 		"sound/weapons/w_pkup.wav",
 		{ "models/items/psgun.glm", //FIXME: no model
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_cloak",
 /* pickup *///	"Seeker Drone",
 		120,
@@ -1128,9 +1149,9 @@ Adds one rank to all Force powers temporarily. Only light jedi can use.
 	{
 		"item_force_enlighten_light",
 		"sound/player/enlightenment.wav",
-		{ "models/map_objects/mp/jedi_enlightenment.md3", 
+		{ "models/map_objects/mp/jedi_enlightenment.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/mpi_jlight",
 /* pickup *///	"Light Force Enlightenment",
 		25,
@@ -1147,9 +1168,9 @@ Adds one rank to all Force powers temporarily. Only dark jedi can use.
 	{
 		"item_force_enlighten_dark",
 		"sound/player/enlightenment.wav",
-		{ "models/map_objects/mp/dk_enlightenment.md3", 
+		{ "models/map_objects/mp/dk_enlightenment.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/mpi_dklight",
 /* pickup *///	"Dark Force Enlightenment",
 		25,
@@ -1166,9 +1187,9 @@ Unlimited Force Pool for a short time.
 	{
 		"item_force_boon",
 		"sound/player/boon.wav",
-		{ "models/map_objects/mp/force_boon.md3", 
+		{ "models/map_objects/mp/force_boon.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/mpi_fboon",
 /* pickup *///	"Force Boon",
 		25,
@@ -1185,9 +1206,9 @@ A small lizard carried on the player, which prevents the possessor from using an
 	{
 		"item_ysalimari",
 		"sound/player/ysalimari.wav",
-		{ "models/map_objects/mp/ysalimari.md3", 
+		{ "models/map_objects/mp/ysalimari.md3",
 		0, 0, 0} ,
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/mpi_ysamari",
 /* pickup *///	"Ysalamiri",
 		25,
@@ -1199,18 +1220,18 @@ A small lizard carried on the player, which prevents the possessor from using an
 	},
 
 	//
-	// WEAPONS 
+	// WEAPONS
 	//
 
 /*QUAKED weapon_stun_baton (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 Don't place this
 */
 	{
-		"weapon_stun_baton", 
+		"weapon_stun_baton",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/stun_baton/baton_w.glm", 
+        { "models/weapons2/stun_baton/baton_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/stun_baton/baton.md3", 
+/* view */		"models/weapons2/stun_baton/baton.md3",
 /* icon */		"gfx/hud/w_icon_stunbaton",
 /* pickup *///	"Stun Baton",
 		100,
@@ -1225,11 +1246,11 @@ Don't place this
 Don't place this
 */
 	{
-		"weapon_melee", 
+		"weapon_melee",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/stun_baton/baton_w.glm", 
+        { "models/weapons2/stun_baton/baton_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/stun_baton/baton.md3", 
+/* view */		"models/weapons2/stun_baton/baton.md3",
 /* icon */		"gfx/hud/w_icon_melee",
 /* pickup *///	"Stun Baton",
 		100,
@@ -1244,7 +1265,7 @@ Don't place this
 Don't place this
 */
 	{
-		"weapon_saber", 
+		"weapon_saber",
 		"sound/weapons/w_pkup.wav",
         { "models/weapons2/saber/saber_w.glm",
 		0, 0, 0},
@@ -1263,12 +1284,12 @@ Don't place this
 Don't place this
 */
 	{
-		//"weapon_bryar_pistol", 
-		"weapon_blaster_pistol", 
+		//"weapon_bryar_pistol",
+		"weapon_blaster_pistol",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/blaster_pistol/blaster_pistol_w.glm",//"models/weapons2/briar_pistol/briar_pistol_w.glm", 
+        { "models/weapons2/blaster_pistol/blaster_pistol_w.glm",//"models/weapons2/briar_pistol/briar_pistol_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/blaster_pistol/blaster_pistol.md3",//"models/weapons2/briar_pistol/briar_pistol.md3", 
+/* view */		"models/weapons2/blaster_pistol/blaster_pistol.md3",//"models/weapons2/briar_pistol/briar_pistol.md3",
 /* icon */		"gfx/hud/w_icon_blaster_pistol",//"gfx/hud/w_icon_rifle",
 /* pickup *///	"Bryar Pistol",
 		100,
@@ -1282,11 +1303,11 @@ Don't place this
 /*QUAKED weapon_concussion_rifle (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_concussion_rifle", 
+		"weapon_concussion_rifle",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/concussion/c_rifle_w.glm", 
+        { "models/weapons2/concussion/c_rifle_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/concussion/c_rifle.md3", 
+/* view */		"models/weapons2/concussion/c_rifle.md3",
 /* icon */		"gfx/hud/w_icon_c_rifle",//"gfx/hud/w_icon_rifle",
 /* pickup *///	"Concussion Rifle",
 		50,
@@ -1301,11 +1322,11 @@ Don't place this
 Don't place this
 */
 	{
-		"weapon_bryar_pistol", 
+		"weapon_bryar_pistol",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/briar_pistol/briar_pistol_w.glm", 
+        { "models/weapons2/briar_pistol/briar_pistol_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/briar_pistol/briar_pistol.md3", 
+/* view */		"models/weapons2/briar_pistol/briar_pistol.md3",
 /* icon */		"gfx/hud/w_icon_briar",//"gfx/hud/w_icon_rifle",
 /* pickup *///	"Bryar Pistol",
 		100,
@@ -1319,11 +1340,11 @@ Don't place this
 /*QUAKED weapon_blaster (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_blaster", 
+		"weapon_blaster",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/blaster_r/blaster_w.glm", 
+        { "models/weapons2/blaster_r/blaster_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/blaster_r/blaster.md3", 
+/* view */		"models/weapons2/blaster_r/blaster.md3",
 /* icon */		"gfx/hud/w_icon_blaster",
 /* pickup *///	"E11 Blaster Rifle",
 		100,
@@ -1339,9 +1360,9 @@ Don't place this
 	{
 		"weapon_disruptor",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/disruptor/disruptor_w.glm", 
+        { "models/weapons2/disruptor/disruptor_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/disruptor/disruptor.md3", 
+/* view */		"models/weapons2/disruptor/disruptor.md3",
 /* icon */		"gfx/hud/w_icon_disruptor",
 /* pickup *///	"Tenloss Disruptor Rifle",
 		100,
@@ -1357,9 +1378,9 @@ Don't place this
 	{
 		"weapon_bowcaster",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/bowcaster/bowcaster_w.glm", 
+        { "models/weapons2/bowcaster/bowcaster_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/bowcaster/bowcaster.md3", 
+/* view */		"models/weapons2/bowcaster/bowcaster.md3",
 /* icon */		"gfx/hud/w_icon_bowcaster",
 /* pickup *///	"Wookiee Bowcaster",
 		100,
@@ -1373,11 +1394,11 @@ Don't place this
 /*QUAKED weapon_repeater (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_repeater", 
+		"weapon_repeater",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/heavy_repeater/heavy_repeater_w.glm", 
+        { "models/weapons2/heavy_repeater/heavy_repeater_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/heavy_repeater/heavy_repeater.md3", 
+/* view */		"models/weapons2/heavy_repeater/heavy_repeater.md3",
 /* icon */		"gfx/hud/w_icon_repeater",
 /* pickup *///	"Imperial Heavy Repeater",
 		100,
@@ -1392,11 +1413,11 @@ Don't place this
 NOTENOTE This weapon is not yet complete.  Don't place it.
 */
 	{
-		"weapon_demp2", 
+		"weapon_demp2",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/demp2/demp2_w.glm", 
+        { "models/weapons2/demp2/demp2_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/demp2/demp2.md3", 
+/* view */		"models/weapons2/demp2/demp2.md3",
 /* icon */		"gfx/hud/w_icon_demp2",
 /* pickup *///	"DEMP2",
 		100,
@@ -1410,11 +1431,11 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 /*QUAKED weapon_flechette (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_flechette", 
+		"weapon_flechette",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/golan_arms/golan_arms_w.glm", 
+        { "models/weapons2/golan_arms/golan_arms_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/golan_arms/golan_arms.md3", 
+/* view */		"models/weapons2/golan_arms/golan_arms.md3",
 /* icon */		"gfx/hud/w_icon_flechette",
 /* pickup *///	"Golan Arms Flechette",
 		100,
@@ -1430,9 +1451,9 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 	{
 		"weapon_rocket_launcher",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/merr_sonn/merr_sonn_w.glm", 
+        { "models/weapons2/merr_sonn/merr_sonn_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/merr_sonn/merr_sonn.md3", 
+/* view */		"models/weapons2/merr_sonn/merr_sonn.md3",
 /* icon */		"gfx/hud/w_icon_merrsonn",
 /* pickup *///	"Merr-Sonn Missile System",
 		3,
@@ -1448,9 +1469,9 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 	{
 		"ammo_thermal",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/thermal/thermal_pu.md3", 
+        { "models/weapons2/thermal/thermal_pu.md3",
 		"models/weapons2/thermal/thermal_w.glm", 0, 0},
-/* view */		"models/weapons2/thermal/thermal.md3", 
+/* view */		"models/weapons2/thermal/thermal.md3",
 /* icon */		"gfx/hud/w_icon_thermal",
 /* pickup *///	"Thermal Detonators",
 		4,
@@ -1464,11 +1485,11 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 /*QUAKED ammo_tripmine (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"ammo_tripmine", 
+		"ammo_tripmine",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/laser_trap/laser_trap_pu.md3", 
+        { "models/weapons2/laser_trap/laser_trap_pu.md3",
 		"models/weapons2/laser_trap/laser_trap_w.glm", 0, 0},
-/* view */		"models/weapons2/laser_trap/laser_trap.md3", 
+/* view */		"models/weapons2/laser_trap/laser_trap.md3",
 /* icon */		"gfx/hud/w_icon_tripmine",
 /* pickup *///	"Trip Mines",
 		3,
@@ -1482,10 +1503,10 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 /*QUAKED ammo_detpack (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"ammo_detpack", 
+		"ammo_detpack",
 		"sound/weapons/w_pkup.wav",
         { "models/weapons2/detpack/det_pack_pu.md3", "models/weapons2/detpack/det_pack_proj.glm", "models/weapons2/detpack/det_pack_w.glm", 0},
-/* view */		"models/weapons2/detpack/det_pack.md3", 
+/* view */		"models/weapons2/detpack/det_pack.md3",
 /* icon */		"gfx/hud/w_icon_detpack",
 /* pickup *///	"Det Packs",
 		3,
@@ -1503,7 +1524,7 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 		"sound/weapons/w_pkup.wav",
         { "models/weapons2/thermal/thermal_w.glm", "models/weapons2/thermal/thermal_pu.md3",
 		0, 0 },
-/* view */		"models/weapons2/thermal/thermal.md3", 
+/* view */		"models/weapons2/thermal/thermal.md3",
 /* icon */		"gfx/hud/w_icon_thermal",
 /* pickup *///	"Thermal Detonator",
 		4,
@@ -1517,11 +1538,11 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 /*QUAKED weapon_trip_mine (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_trip_mine", 
+		"weapon_trip_mine",
 		"sound/weapons/w_pkup.wav",
         { "models/weapons2/laser_trap/laser_trap_w.glm", "models/weapons2/laser_trap/laser_trap_pu.md3",
 		0, 0},
-/* view */		"models/weapons2/laser_trap/laser_trap.md3", 
+/* view */		"models/weapons2/laser_trap/laser_trap.md3",
 /* icon */		"gfx/hud/w_icon_tripmine",
 /* pickup *///	"Trip Mine",
 		3,
@@ -1535,10 +1556,10 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 /*QUAKED weapon_det_pack (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_det_pack", 
+		"weapon_det_pack",
 		"sound/weapons/w_pkup.wav",
         { "models/weapons2/detpack/det_pack_proj.glm", "models/weapons2/detpack/det_pack_pu.md3", "models/weapons2/detpack/det_pack_w.glm", 0},
-/* view */		"models/weapons2/detpack/det_pack.md3", 
+/* view */		"models/weapons2/detpack/det_pack.md3",
 /* icon */		"gfx/hud/w_icon_detpack",
 /* pickup *///	"Det Pack",
 		3,
@@ -1552,11 +1573,11 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 /*QUAKED weapon_emplaced (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */
 	{
-		"weapon_emplaced", 
+		"weapon_emplaced",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/blaster_r/blaster_w.glm", 
+        { "models/weapons2/blaster_r/blaster_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/blaster_r/blaster.md3", 
+/* view */		"models/weapons2/blaster_r/blaster.md3",
 /* icon */		"gfx/hud/w_icon_blaster",
 /* pickup *///	"Emplaced Gun",
 		50,
@@ -1570,11 +1591,11 @@ NOTENOTE This weapon is not yet complete.  Don't place it.
 
 //NOTE: This is to keep things from messing up because the turret weapon type isn't real
 	{
-		"weapon_turretwp", 
+		"weapon_turretwp",
 		"sound/weapons/w_pkup.wav",
-        { "models/weapons2/blaster_r/blaster_w.glm", 
+        { "models/weapons2/blaster_r/blaster_w.glm",
 		0, 0, 0},
-/* view */		"models/weapons2/blaster_r/blaster.md3", 
+/* view */		"models/weapons2/blaster_r/blaster.md3",
 /* icon */		"gfx/hud/w_icon_blaster",
 /* pickup *///	"Turret Gun",
 		50,
@@ -1595,9 +1616,9 @@ Don't place this
 	{
 		"ammo_force",
 		"sound/player/pickupenergy.wav",
-        { "models/items/energy_cell.md3", 
+        { "models/items/energy_cell.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/w_icon_blaster",
 /* pickup *///	"Force??",
 		100,
@@ -1614,9 +1635,9 @@ Ammo for the Bryar and Blaster pistols.
 	{
 		"ammo_blaster",
 		"sound/player/pickupenergy.wav",
-        { "models/items/energy_cell.md3", 
+        { "models/items/energy_cell.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/i_icon_battery",
 /* pickup *///	"Blaster Pack",
 		100,
@@ -1633,9 +1654,9 @@ Ammo for Tenloss Disruptor, Wookie Bowcaster, and the Destructive Electro Magnet
 	{
 		"ammo_powercell",
 		"sound/player/pickupenergy.wav",
-        { "models/items/power_cell.md3", 
+        { "models/items/power_cell.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/mp/ammo_power_cell",
 /* pickup *///	"Power Cell",
 		100,
@@ -1652,9 +1673,9 @@ Ammo for Imperial Heavy Repeater and the Golan Arms Flechette
 	{
 		"ammo_metallic_bolts",
 		"sound/player/pickupenergy.wav",
-        { "models/items/metallic_bolts.md3", 
+        { "models/items/metallic_bolts.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/mp/ammo_metallic_bolts",
 /* pickup *///	"Metallic Bolts",
 		100,
@@ -1671,9 +1692,9 @@ Ammo for Merr-Sonn portable missile launcher
 	{
 		"ammo_rockets",
 		"sound/player/pickupenergy.wav",
-        { "models/items/rockets.md3", 
+        { "models/items/rockets.md3",
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/mp/ammo_rockets",
 /* pickup *///	"Rockets",
 		3,
@@ -1693,7 +1714,7 @@ dispensing ability
 		"sound/player/pickupenergy.wav",
         { "models/items/battery.md3",  //replace me
 		0, 0, 0},
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/mp/ammo_rockets", //replace me
 /* pickup *///	"Rockets",
 		0,
@@ -1715,7 +1736,7 @@ Only in CTF games
 		NULL,
         { "models/flags/r_flag.md3",
 		"models/flags/r_flag_ysal.md3", 0, 0 },
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/mpi_rflag",
 /* pickup *///	"Red Flag",
 		0,
@@ -1734,7 +1755,7 @@ Only in CTF games
 		NULL,
         { "models/flags/b_flag.md3",
 		"models/flags/b_flag_ysal.md3", 0, 0 },
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"gfx/hud/mpi_bflag",
 /* pickup *///	"Blue Flag",
 		0,
@@ -1757,7 +1778,7 @@ Only in One Flag CTF games
 		NULL,
         { "models/flags/n_flag.md3",
 		0, 0, 0 },
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"icons/iconf_neutral1",
 /* pickup *///	"Neutral Flag",
 		0,
@@ -1773,7 +1794,7 @@ Only in One Flag CTF games
 		"sound/player/pickupenergy.wav",
         { "models/powerups/orb/r_orb.md3",
 		0, 0, 0 },
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"icons/iconh_rorb",
 /* pickup *///	"Red Cube",
 		0,
@@ -1789,7 +1810,7 @@ Only in One Flag CTF games
 		"sound/player/pickupenergy.wav",
         { "models/powerups/orb/b_orb.md3",
 		0, 0, 0 },
-/* view */		NULL,			
+/* view */		NULL,
 /* icon */		"icons/iconh_borb",
 /* pickup *///	"Blue Cube",
 		0,
@@ -1808,7 +1829,7 @@ int		bg_numItems = sizeof(bg_itemlist) / sizeof(bg_itemlist[0]) - 1;
 
 float vectoyaw( const vec3_t vec ) {
 	float	yaw;
-	
+
 	if (vec[YAW] == 0 && vec[PITCH] == 0) {
 		yaw = 0;
 	} else {
@@ -1951,8 +1972,8 @@ gitem_t	*BG_FindItemForPowerup( powerup_t pw ) {
 	int		i;
 
 	for ( i = 0 ; i < bg_numItems ; i++ ) {
-		if ( (bg_itemlist[i].giType == IT_POWERUP || 
-					bg_itemlist[i].giType == IT_TEAM) && 
+		if ( (bg_itemlist[i].giType == IT_POWERUP ||
+					bg_itemlist[i].giType == IT_TEAM) &&
 			bg_itemlist[i].giTag == pw ) {
 			return &bg_itemlist[i];
 		}
@@ -1990,7 +2011,7 @@ BG_FindItemForWeapon
 */
 gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 	gitem_t	*it;
-	
+
 	for ( it = bg_itemlist + 1 ; it->classname ; it++) {
 		if ( it->giType == IT_WEAPON && it->giTag == weapon ) {
 			return it;
@@ -2009,7 +2030,7 @@ BG_FindItemForAmmo
 */
 gitem_t	*BG_FindItemForAmmo( ammo_t ammo ) {
 	gitem_t	*it;
-	
+
 	for ( it = bg_itemlist + 1 ; it->classname ; it++) {
 		if ( it->giType == IT_AMMO && it->giTag == ammo ) {
 			return it;
@@ -2028,7 +2049,7 @@ BG_FindItem
 */
 gitem_t	*BG_FindItem( const char *classname ) {
 	gitem_t	*it;
-	
+
 	for ( it = bg_itemlist + 1 ; it->classname ; it++ ) {
 		if ( !Q_stricmp( it->classname, classname) )
 			return it;
@@ -2258,7 +2279,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		{//force powers and saber only
 			if ( item->giType != IT_TEAM //not a flag
 				&& item->giType != IT_ARMOR//not shields
-				&& (item->giType != IT_WEAPON 
+				&& (item->giType != IT_WEAPON
 									|| item->giTag != WP_SABER)//not a saber
 				&& (item->giType != IT_HOLDABLE || item->giTag != HI_SEEKER)//not a seeker
 				&& (item->giType != IT_POWERUP || item->giTag == PW_YSALAMIRI) )//not a force pick-up
@@ -2269,7 +2290,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		else if ( ps->trueNonJedi )
 		{//can't pick up force powerups
 			if ( (item->giType == IT_POWERUP && item->giTag != PW_YSALAMIRI) //if a powerup, can only can pick up ysalamiri
-				|| (item->giType == IT_HOLDABLE && item->giTag == HI_SEEKER)//if holdable, cannot pick up seeker 
+				|| (item->giType == IT_HOLDABLE && item->giTag == HI_SEEKER)//if holdable, cannot pick up seeker
 				|| (item->giType == IT_WEAPON && item->giTag == WP_SABER ) )//or if it's a saber
 			{
 				return qfalse;
@@ -2446,7 +2467,7 @@ void BG_EvaluateTrajectory( const trajectory_t *tr, int atTime, vec3_t result ) 
 		VectorMA( tr->trBase, deltaTime, tr->trDelta, result );
 		break;
 	case TR_NONLINEAR_STOP:
-		if ( atTime > tr->trTime + tr->trDuration ) 
+		if ( atTime > tr->trTime + tr->trDuration )
 		{
 			atTime = tr->trTime + tr->trDuration;
 		}
@@ -2532,7 +2553,7 @@ void BG_EvaluateTrajectoryDelta( const trajectory_t *tr, int atTime, vec3_t resu
 	}
 }
 
-char *eventnames[] = {
+const char *eventnames[] = {
 	"EV_NONE",
 
 	"EV_CLIENTJOIN",
@@ -2590,7 +2611,7 @@ char *eventnames[] = {
 	"EV_TEAM_POWER",
 
 	"EV_SCREENSHAKE",
-	
+
 	"EV_LOCALTIMER",
 
 	"EV_USE",			// +Use key
@@ -2918,7 +2939,7 @@ qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team
 				{//too short to be "blue"
 					Q_strcat(skinName, MAX_QPATH, "_blue");
 				}
-				else 
+				else
 				{
 					char	*start = &skinName[len-4];
 					if ( Q_strncmp( "blue", start, 4 ) != 0 )
@@ -3260,10 +3281,10 @@ int BG_ModelCache(const char *modelName, const char *skinName)
 {
 	#ifdef _GAME
 		void *g2 = NULL;
-	
+
 		if ( VALIDSTRING( skinName ) )
 			trap->R_RegisterSkin( skinName );
-	
+
 		//I could hook up a precache ghoul2 function, but oh well, this works
 		trap->G2API_InitGhoul2Model( &g2, modelName, 0, 0, 0, 0, 0 );
 		//now get rid of it
@@ -3292,7 +3313,7 @@ int BG_ModelCache(const char *modelName, const char *skinName)
 	#define MAX_POOL_SIZE	3000000 //1024000
 #elif defined(_CGAME) //don't need as much for cgame stuff. 2mb will be fine.
 	#define MAX_POOL_SIZE	2048000
-#elif defined(_UI) //And for the ui the only thing we'll be using this for anyway is allocating anim data for g2 menu models
+#elif defined(UI_BUILD) //And for the ui the only thing we'll be using this for anyway is allocating anim data for g2 menu models
 	#define MAX_POOL_SIZE	512000
 #endif
 
