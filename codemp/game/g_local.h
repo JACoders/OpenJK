@@ -267,6 +267,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define FT_JK2PULLROLL		  (1<<12)
 #define FT_NODRAINABSORB	  (1<<13)
 #define FT_GRIPDURINGROLL	  (1<<14)
+#define FT_WEAKPULL			  (1<<15)
 
 //Saber tweaks
 #define	ST_NO_MP_SABERLERP		(1<<0)

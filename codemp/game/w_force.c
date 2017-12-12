@@ -3153,7 +3153,10 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		return;
 	}
 
-	WP_ForcePowerStart( self, powerUse, 0 );
+	if (powerUse == FP_PULL && g_tweakForce.integer & FT_WEAKPULL)
+		WP_ForcePowerStart( self, powerUse, 60 );
+	else
+		WP_ForcePowerStart( self, powerUse, 0 );
 
 	//make sure this plays and that you cannot press fire for about 1 second after this
 	if ( pull )
@@ -3207,8 +3210,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 	if (pull)
 	{
-		powerLevel = self->client->ps.fd.forcePowerLevel[FP_PULL];
-		pushPower = 256*self->client->ps.fd.forcePowerLevel[FP_PULL];
+		if (g_tweakForce.integer & FT_WEAKPULL) {
+			powerLevel = FORCE_LEVEL_1;
+			pushPower = 64*FORCE_LEVEL_1;
+		}
+		else {
+			powerLevel = self->client->ps.fd.forcePowerLevel[FP_PULL];
+			pushPower = 256*self->client->ps.fd.forcePowerLevel[FP_PULL];
+		}
 	}
 	else
 	{
@@ -3730,7 +3739,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					push_list[x]->client->pushEffectTime = level.time + 600;
 
 					if ((g_tweakForce.integer & FT_PULLSTRENGTH) && pull) {
-						push_list[x]->client->ps.velocity[0] += pushDir[0]*pushPowerMod;
+						push_list[x]->client->ps.velocity[0] += pushDir[0]*pushPowerMod; //FT_WEAKPULL?
 						push_list[x]->client->ps.velocity[1] += pushDir[1]*pushPowerMod;
 					}
 					else {
