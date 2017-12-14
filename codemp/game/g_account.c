@@ -4490,7 +4490,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
     sqlite3_stmt * stmt;
 	int row = 1, style, page = 1, start = 0;
 	char msg[1024-128] = {0}, styleString[16] = {0}, input1[32], input2[32], username[40];
-	int score, golds, silvers, bronzes, count;
+	int score, count;
 	float rank, percentile;
 
 	if (trap->Argc() > 3) {
@@ -4543,18 +4543,27 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	if (style == -1) {
-		sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
+		sql = "SELECT username, SUM(entries/rank) AS score, SUM(rank) as rank, SUM((entries - CAST(rank AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
+			"GROUP BY username "
+			"ORDER BY score DESC LIMIT ?, 10";
+
+		//sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, start));
 	}
 	else {
-		sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
+		sql = "SELECT username, SUM(entries/rank) AS score, SUM(rank) as rank, SUM((entries - CAST(rank AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
+			"WHERE style = ? "
+			"GROUP BY username "
+			"ORDER BY score DESC LIMIT ?, 10";
+
+		//sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, style));
 		CALL_SQLITE (bind_int (stmt, 2, start));
 	}
 	
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
+	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Count \n\"", styleString));
 
 	while (1) {
 		int s;
@@ -4565,15 +4574,12 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 			score = sqlite3_column_int(stmt, 1);
 			rank = sqlite3_column_int(stmt, 2);
 			percentile = sqlite3_column_int(stmt, 3);
-			golds = sqlite3_column_int(stmt, 4);
-			silvers = sqlite3_column_int(stmt, 5);
-			bronzes = sqlite3_column_int(stmt, 6);
-			count = sqlite3_column_int(stmt, 7);
+			count = sqlite3_column_int(stmt, 4);
 
 			rank = (float)rank/(float)count;
 			percentile = (float)percentile/(float)count;
 
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, count);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 				msg[0] = '\0';
