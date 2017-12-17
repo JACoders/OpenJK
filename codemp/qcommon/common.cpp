@@ -34,10 +34,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #endif
 
-#ifdef USE_AIO
-#include <pthread.h>
-#endif
-
 FILE *debuglogfile;
 fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
@@ -130,31 +126,7 @@ to the appropriate place.
 A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
 */
-#ifdef USE_AIO
-class autolock
-{
-	pthread_mutex_t *lock_;
-
-public:
-	autolock(pthread_mutex_t *lock )
-		: lock_(lock)
-	{
-		pthread_mutex_lock( lock );
-	}
-	~autolock()
-	{
-		pthread_mutex_unlock( lock_ );
-	}
-};
-
-static pthread_mutex_t printfLock;
-static pthread_mutex_t pushLock;
-#endif
 void QDECL Com_Printf( const char *fmt, ... ) {
-#ifdef USE_AIO
-	autolock autolock( &printfLock );
-#endif
-
 	static qboolean opening_qconsole = qfalse;
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -726,11 +698,7 @@ journaled file
 
 #define	MAX_PUSHED_EVENTS	            1024
 // bk001129 - init, also static
-#ifdef USE_AIO
-#define THREADACCESS volatile
-#else
 #define THREADACCESS
-#endif
 static THREADACCESS int		com_pushedEventsHead = 0;
 static THREADACCESS int             com_pushedEventsTail = 0;
 // bk001129 - static
@@ -830,10 +798,6 @@ Com_PushEvent
 =================
 */
 void Com_PushEvent( sysEvent_t *event ) {
-#ifdef USE_AIO
-	autolock autolock( &pushLock );
-#endif
-
 	sysEvent_t		*ev;
 	static int printedWarning = 0;
 
@@ -865,14 +829,9 @@ Com_GetEvent
 =================
 */
 sysEvent_t	Com_GetEvent( void ) {
-	{
-#ifdef USE_AIO
-		autolock autolock( &pushLock );
-#endif
-		if ( com_pushedEventsHead > com_pushedEventsTail ) {
-			com_pushedEventsTail++;
-			return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
-		}
+	if ( com_pushedEventsHead > com_pushedEventsTail ) {
+		com_pushedEventsTail++;
+		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
 	}
 	return Com_GetRealEvent();
 }
@@ -967,14 +926,6 @@ int Com_EventLoop( void ) {
 			}
 			Cbuf_AddText( "\n" );
 			break;
-#ifdef USE_AIO
-		case SE_AIO_FCLOSE:
-			{
-				extern void	FS_FCloseAio( int handle );
-				FS_FCloseAio( ev.evValue );
-				break;
-			}
-#endif
 		}
 
 		// free any block data
@@ -1183,17 +1134,6 @@ void Com_Init( char *commandLine ) {
 
 	try
 	{
-#ifdef USE_AIO
-		{
-			pthread_mutexattr_t attr;
-
-			pthread_mutexattr_init( &attr );
-			pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
-			pthread_mutex_init( &printfLock, &attr );
-			pthread_mutex_init( &pushLock, &attr );
-		}
-#endif
-
 		// initialize the weak pseudo-random number generator for use later.
 		Com_InitRand();
 

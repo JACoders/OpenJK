@@ -145,14 +145,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/q_platform.h"
 
-#if defined(__linux__)
-	#define USE_AIO
-#endif
-
-#if defined(USE_AIO)
-	#include <aio.h>
-	#include <signal.h>
-#endif
 typedef union fileBuffer_u {
 	void *v;
 	char *c;
