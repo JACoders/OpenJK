@@ -30,6 +30,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************/
 
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 #include "qcommon/qcommon.h"
 
 #ifndef DEDICATED
@@ -263,8 +269,28 @@ typedef struct qfile_us {
 } qfile_ut;
 
 typedef struct fileHandleData_s {
+	fileHandleData_s() :
+			handleFiles({}),
+			handleSync(qfalse),
+			handleAsync(qfalse),
+			writerThread(nullptr),
+			closed(qfalse),
+			fileSize(0),
+			zipFilePos(0),
+			zipFileLen(0),
+			zipFile(qfalse) {
+		ospath[0] = '\0';
+		name[0] = '\0';
+	}
 	qfile_ut	handleFiles;
 	qboolean	handleSync;
+	qboolean	handleAsync;
+	std::thread	*writerThread;
+	std::mutex	writeLock;
+	std::condition_variable	cv;
+	std::deque<std::vector<byte> > writes;
+	qboolean	closed;
+	char		ospath[MAX_OSPATH];
 	int			fileSize;
 	int			zipFilePos;
 	int			zipFileLen;
@@ -312,6 +338,22 @@ FILE*		missingFiles = NULL;
 #    define __func__ "(unknown)"
 #  endif
 #endif
+
+static void FS_ResetFileHandleData( fileHandleData_t *f ) {
+	f->handleFiles = {};
+	f->handleSync = qfalse;
+	f->handleAsync = qfalse;
+	assert(f->writerThread == nullptr);
+	f->writerThread = nullptr;
+	f->writes.clear();
+	f->closed = qfalse;
+	f->ospath[0] = '\0';
+	f->fileSize = 0;
+	f->zipFilePos = 0;
+	f->zipFileLen = 0;
+	f->zipFile = qfalse;
+	f->name[0] = '\0';
+}
 
 /*
 ==============
@@ -382,7 +424,7 @@ static fileHandle_t FS_HandleForFile(void) {
 	int		i;
 
 	for ( i = 1 ; i < MAX_FILE_HANDLES ; i++ ) {
-		if ( fsh[i].handleFiles.file.o == NULL ) {
+		if ( fsh[i].handleAsync == qfalse && fsh[i].handleFiles.file.o == NULL ) {
 			return i;
 		}
 	}
@@ -811,6 +853,7 @@ fileHandle_t FS_SV_FOpenFileWrite( const char *filename ) {
 	Q_strncpyz( fsh[f].name, filename, sizeof( fsh[f].name ) );
 
 	fsh[f].handleSync = qfalse;
+	fsh[f].handleAsync = qfalse;
 	if (!fsh[f].handleFiles.file.o) {
 		f = 0;
 	}
@@ -849,6 +892,7 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 
 	fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
 	fsh[f].handleSync = qfalse;
+	fsh[f].handleAsync = qfalse;
 	if (!fsh[f].handleFiles.file.o)
 	{
 		// NOTE TTimo on non *nix systems, fs_homepath == fs_basepath, might want to avoid
@@ -865,6 +909,7 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 
 			fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
 			fsh[f].handleSync = qfalse;
+			fsh[f].handleAsync = qfalse;
 		}
 
 		if ( !fsh[f].handleFiles.file.o )
@@ -886,6 +931,7 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 
 		fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
 		fsh[f].handleSync = qfalse;
+		fsh[f].handleAsync = qfalse;
 
 		if ( !fsh[f].handleFiles.file.o )
 		{
@@ -970,6 +1016,17 @@ void FS_Rename( const char *from, const char *to ) {
 	}
 }
 
+void FS_FCloseAio( int handle ) {
+	fileHandle_t f = (fileHandle_t) handle;
+	if ( f < 1 || f >= MAX_FILE_HANDLES ) {
+		Com_Error( ERR_FATAL, "FCloseAio called with invalid handle %d\n", f );
+	}
+	fsh[f].writerThread->join();
+	delete fsh[f].writerThread;
+	fsh[f].writerThread = nullptr;
+	FS_ResetFileHandleData( &fsh[f] );
+}
+
 /*
 ==============
 FS_FCloseFile
@@ -997,15 +1054,73 @@ void FS_FCloseFile( fileHandle_t f ) {
 		if ( fsh[f].handleFiles.unique ) {
 			unzClose( fsh[f].handleFiles.file.z );
 		}
-		Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
+		FS_ResetFileHandleData( &fsh[f] );
 		return;
 	}
 
 	// we didn't find it as a pak, so close it as a unique file
 	if (fsh[f].handleFiles.file.o) {
-		fclose (fsh[f].handleFiles.file.o);
+		if ( fsh[f].handleAsync ) {
+			// queue the file to be closed after all pending operations are completed.
+			{
+				std::lock_guard<std::mutex> l( fsh[f].writeLock );
+				fsh[f].closed = qtrue;
+			}
+			fsh[f].cv.notify_one();
+			return;
+		} else {
+			fclose (fsh[f].handleFiles.file.o);
+		}
 	}
-	Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
+	FS_ResetFileHandleData( &fsh[f] );
+}
+
+extern void Com_PushEvent( sysEvent_t *event );
+void FS_AsyncWriterThread( fileHandle_t h ) {
+	fileHandleData_t *f = &fsh[h];
+	if ( !FS_CreatePath( f->ospath ) ) {
+		f->handleFiles.file.o = fopen( f->ospath, "wb" );
+	}
+	if ( f->handleFiles.file.o == nullptr ) {
+		Com_Printf( "Warning: failed to open file %s\n", f->name );
+		return;
+	}
+	while ( qtrue ) {
+		std::vector<byte> write;
+		{
+			std::unique_lock<std::mutex> l( f->writeLock );
+			while ( f->writes.empty() && !f->closed ) {
+				f->cv.wait( l );
+			}
+			if ( f->closed && f->writes.empty() ) {
+				break;
+			}
+			write = std::move(f->writes.front());
+			f->writes.pop_front();
+		}
+		fwrite( &write[0], 1, write.size(), f->handleFiles.file.o );
+	}
+	fclose( f->handleFiles.file.o );
+	sysEvent_t event;
+	Com_Memset( &event, 0, sizeof( event ) );
+	event.evType = SE_AIO_FCLOSE;
+	event.evValue = h;
+	Com_PushEvent( &event );
+}
+
+fileHandle_t FS_FOpenFileWriteAsync( const char *filename, qboolean safe ) {
+	fileHandle_t f = FS_HandleForFile();
+	Q_strncpyz(fsh[f].ospath, FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename ), MAX_OSPATH );
+
+	if ( fs_debug->integer ) {
+		Com_Printf( "FS_FOpenFileWriteAsync: %s\n", fsh[f].ospath );
+	}
+
+	Q_strncpyz( fsh[f].name, filename, sizeof( fsh[f].name ) );
+	fsh[f].handleAsync = qtrue;
+	// spawn writer thread
+	fsh[f].writerThread = new std::thread( FS_AsyncWriterThread, f );
+	return f;
 }
 
 /*
@@ -1045,6 +1160,7 @@ fileHandle_t FS_FOpenFileWrite( const char *filename, qboolean safe ) {
 	Q_strncpyz( fsh[f].name, filename, sizeof( fsh[f].name ) );
 
 	fsh[f].handleSync = qfalse;
+	fsh[f].handleAsync = qfalse;
 	if (!fsh[f].handleFiles.file.o) {
 		f = 0;
 	}
@@ -1085,6 +1201,7 @@ fileHandle_t FS_FOpenFileAppend( const char *filename ) {
 
 	fsh[f].handleFiles.file.o = fopen( ospath, "ab" );
 	fsh[f].handleSync = qfalse;
+	fsh[f].handleAsync = qfalse;
 	if (!fsh[f].handleFiles.file.o) {
 		f = 0;
 	}
@@ -1683,31 +1800,40 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 		return 0;
 	}
 
-	f = FS_FileForHandle(h);
-
 	buf = (byte *)buffer;
 
-	remaining = len;
-	tries = 0;
-	while (remaining) {
-		block = remaining;
-		written = fwrite (buf, 1, block, f);
-		if (written == 0) {
-			if (!tries) {
-				tries = 1;
-			} else {
-				Com_Printf( "FS_Write: 0 bytes written to file %d (%s)\n", h, fsh[h].name );
+	if ( fsh[h].handleAsync ) {
+		{
+			std::lock_guard<std::mutex> l( fsh[h].writeLock );
+			fsh[h].writes.emplace_back( buf, buf + len );
+		}
+		fsh[h].cv.notify_one();
+		return len;
+	} else {
+		f = FS_FileForHandle( h );
+
+		remaining = len;
+		tries = 0;
+		while (remaining) {
+			block = remaining;
+			written = fwrite (buf, 1, block, f);
+			if (written == 0) {
+				if (!tries) {
+					tries = 1;
+				} else {
+					Com_Printf( "FS_Write: 0 bytes written to file %d (%s)\n", h, fsh[h].name );
+					return 0;
+				}
+			}
+
+			if (written == -1) {
+				Com_Printf( "FS_Write: -1 bytes written to file %d (%s)\n", h, fsh[h].name );
 				return 0;
 			}
-		}
 
-		if (written == -1) {
-			Com_Printf( "FS_Write: -1 bytes written to file %d (%s)\n", h, fsh[h].name );
-			return 0;
+			remaining -= written;
+			buf += written;
 		}
-
-		remaining -= written;
-		buf += written;
 	}
 	if ( fsh[h].handleSync ) {
 		fflush( f );
@@ -3968,6 +4094,7 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
 		fsh[*f].fileSize = r;
 	}
 	fsh[*f].handleSync = sync;
+	fsh[*f].handleAsync = qfalse;
 
 	return r;
 }

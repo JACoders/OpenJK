@@ -34,6 +34,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #endif
 
+#include <mutex>
+
 FILE *debuglogfile;
 fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
@@ -126,7 +128,10 @@ to the appropriate place.
 A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
 */
+std::recursive_mutex printfLock;
 void QDECL Com_Printf( const char *fmt, ... ) {
+	std::lock_guard<std::recursive_mutex> l( printfLock );
+
 	static qboolean opening_qconsole = qfalse;
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -797,7 +802,10 @@ void Com_InitPushEvent( void ) {
 Com_PushEvent
 =================
 */
+std::mutex pushLock;
 void Com_PushEvent( sysEvent_t *event ) {
+	std::lock_guard<std::mutex> l( pushLock );
+
 	sysEvent_t		*ev;
 	static int printedWarning = 0;
 
@@ -829,9 +837,12 @@ Com_GetEvent
 =================
 */
 sysEvent_t	Com_GetEvent( void ) {
-	if ( com_pushedEventsHead > com_pushedEventsTail ) {
-		com_pushedEventsTail++;
-		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
+	{
+		std::lock_guard<std::mutex> l( pushLock );
+		if ( com_pushedEventsHead > com_pushedEventsTail ) {
+			com_pushedEventsTail++;
+			return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
+		}
 	}
 	return Com_GetRealEvent();
 }
@@ -926,6 +937,12 @@ int Com_EventLoop( void ) {
 			}
 			Cbuf_AddText( "\n" );
 			break;
+		case SE_AIO_FCLOSE:
+			{
+				extern void	FS_FCloseAio( int handle );
+				FS_FCloseAio( ev.evValue );
+				break;
+			}
 		}
 
 		// free any block data

@@ -1690,7 +1690,7 @@ void SV_RecordDemo( client_t *cl, char *demoName ) {
 	Q_strncpyz( cl->demo.demoName, demoName, sizeof( cl->demo.demoName ) );
 	Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION );
 	Com_Printf( "recording to %s.\n", name );
-	cl->demo.demofile = FS_FOpenFileWrite( name );
+	cl->demo.demofile = FS_FOpenFileWriteAsync( name );
 	if ( !cl->demo.demofile ) {
 		Com_Printf ("ERROR: couldn't open.\n");
 		return;
