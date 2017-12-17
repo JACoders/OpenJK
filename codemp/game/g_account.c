@@ -1269,7 +1269,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int tim
 	}
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "SELECT id, duration_ms FROM LocalRun  WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
+	sql = "SELECT id, duration_ms FROM LocalRun WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 2, style));
@@ -1291,7 +1291,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int tim
     }
 	CALL_SQLITE (finalize(stmt));
 	
-	sql = "UPDATE LocalRun SET rank = ?, entries = ? last_update = ? WHERE id = ?";//Save rank into row
+	sql = "UPDATE LocalRun SET rank = ?, entries = ?, last_update = ? WHERE id = ?";//Save rank into row
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, rank));
 	CALL_SQLITE (bind_int (stmt, 2, count));
