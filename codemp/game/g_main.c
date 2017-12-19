@@ -3887,7 +3887,7 @@ void G_RunFrame( int levelTime ) {
 #if _retardedsabertest
 				if (sv_saberFPS.integer > 0) {
 					const int savedLevelTime = level.time;
-					const int timeDelta = max((1000 / sv_saberFPS.integer), 1);
+					const int timeDelta = Q_max((1000 / sv_saberFPS.integer), 1);
 
 					while (level.saberUpdateDebounceTime < savedLevelTime ) {
 						WP_SaberPositionUpdate(ent, &ent->client->pers.cmd); //Wew ok, so this is where sv_fps controls saber?
@@ -4504,13 +4504,13 @@ static void G_AddBox( vec3_t mins, vec3_t maxs ) {
 	// z must be between -255 and 223 (corner case if all are at limit, so use 222 to avoid that issue)
 	//fuck, i dont care if its predicted i want to make huge ceilings without entity limit errors
 	vec3_t singleMins, singleMaxs;
-	int xylen = min(maxs[0] - mins[0], maxs[1] - mins[1]);//min( min( 510, maxs[0] - mins[0] ), maxs[1] - mins[1] );
+	int xylen = Q_min(maxs[0] - mins[0], maxs[1] - mins[1]);//min( min( 510, maxs[0] - mins[0] ), maxs[1] - mins[1] );
 	int zlen =  maxs[2] - mins[2];//min( 444, maxs[2] - mins[2] );
-	for ( singleMins[0] = mins[0]; ; singleMins[0] += min( xylen, max( 0, maxs[0] - xylen - singleMins[0] ) ) ) {
+	for ( singleMins[0] = mins[0]; ; singleMins[0] += Q_min( xylen, Q_max( 0, maxs[0] - xylen - singleMins[0] ) ) ) {
 		singleMaxs[0] = singleMins[0] + xylen;
-		for ( singleMins[1] = mins[1]; ; singleMins[1] += min( xylen, max( 0, maxs[1] - xylen - singleMins[1] ) ) ) {
+		for ( singleMins[1] = mins[1]; ; singleMins[1] += Q_min( xylen, Q_max( 0, maxs[1] - xylen - singleMins[1] ) ) ) {
 			singleMaxs[1] = singleMins[1] + xylen;
-			for ( singleMins[2] = mins[2]; ; singleMins[2] += min( zlen, max( 0, maxs[2] - zlen - singleMins[2] ) ) ) {
+			for ( singleMins[2] = mins[2]; ; singleMins[2] += Q_min( zlen, Q_max( 0, maxs[2] - zlen - singleMins[2] ) ) ) {
 				singleMaxs[2] = singleMins[2] + zlen;
 				G_AddSingleBox( singleMins, singleMaxs );
 				if ( singleMins[2] + zlen >= maxs[2] ) {
@@ -4571,8 +4571,8 @@ static void G_SpawnHoleFixes( void ) {
 			if ( !ended ) {
 				// fix so mins is actually mins and maxs is actually maxs
 				for (i = 0; i < 3; i++) {
-					int temp = max( mins[i], maxs[i] ); //this should be float? double?
-					mins[i] = min( mins[i], maxs[i] );
+					int temp = Q_max( mins[i], maxs[i] ); //this should be float? double?
+					mins[i] = Q_min( mins[i], maxs[i] );
 					maxs[i] = temp;
 				}
 				G_AddBox( mins, maxs );
