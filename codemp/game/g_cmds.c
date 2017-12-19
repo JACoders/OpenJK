@@ -39,6 +39,9 @@ extern void AddIP( char *str );
 qboolean G_SaberModelSetup(gentity_t *ent);
 extern vmCvar_t	d_saberSPStyleDamage;
 
+void DeletePlayerProjectiles(gentity_t *ent);
+void ResetPlayerTimers(gentity_t *ent, qboolean print);
+
 /*
 ==================
 DeathmatchScoreboardMessage
@@ -406,11 +409,11 @@ int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecti
 	return -1;
 }
 
-qboolean QINLINE ClientIsIgnored(const int selfID, const int targetID) {
+QINLINE qboolean ClientIsIgnored(const int selfID, const int targetID) {
 	return (qboolean) (selfID != targetID && ((level.clients[selfID].sess.ignore ^ 0xFFFFFFFF) == 0 || (level.clients[selfID].sess.ignore & (1 << targetID))));
 }
 
-qboolean QINLINE ClientIgnore(const int selfID, const int targetID) {
+QINLINE qboolean ClientIgnore(const int selfID, const int targetID) {
 	qboolean ignored;
 	const int targetFlag = (1 << targetID);
 	if (level.clients[selfID].sess.ignore & targetFlag) {
@@ -423,7 +426,7 @@ qboolean QINLINE ClientIgnore(const int selfID, const int targetID) {
 	return ignored;
 }
 
-qboolean QINLINE ClientIgnoreAll(const int selfID) {
+QINLINE qboolean ClientIgnoreAll(const int selfID) {
 	qboolean ignoredAll;
 	if (level.clients[selfID].sess.ignore ^ 0xFFFFFFFF) {
 		level.clients[selfID].sess.ignore = 0xFFFFFFFF;
@@ -656,7 +659,7 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
 }
 
-void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
+QINLINE void DeletePlayerProjectiles(gentity_t *ent) {
 	int i;
 	for (i=MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
 		if (g_entities[i].inuse && g_entities[i].s.eType == ET_MISSILE && (g_entities[i].r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
@@ -666,7 +669,7 @@ void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
 	}
 }
 
-void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
+QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 {
 	qboolean wasReset = qfalse;;
 

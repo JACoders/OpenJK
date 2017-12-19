@@ -4327,7 +4327,7 @@ void ClientSpawn(gentity_t *ent) {
 }
 
 //[JAPRO - Serverside - All - Ignore subfunction - Start]
-void QINLINE ClientRemoveIgnore(const int targetID) {
+QINLINE void ClientRemoveIgnore(const int targetID) {
 	int i;
 	for (i = 0; i < level.maxclients; ++i) {
 		if (level.clients[i].pers.connected == CON_CONNECTED) {

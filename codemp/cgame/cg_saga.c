@@ -434,7 +434,7 @@ failure:
 	siege_valid = 0;
 }
 
-static char QINLINE *CG_SiegeObjectiveBuffer(int team, int objective)
+static QINLINE char *CG_SiegeObjectiveBuffer(int team, int objective)
 {
 	static char buf[8192];
 	char teamstr[1024];

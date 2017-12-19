@@ -1656,7 +1656,7 @@ Try and use an entity in the world, directly ahead of us
 
 #define USE_DISTANCE	64.0f
 
-void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print);
+void ResetPlayerTimers(gentity_t *ent, qboolean print);
 extern void Touch_Button(gentity_t *ent, gentity_t *other, trace_t *trace );
 extern qboolean gSiegeRoundBegun;
 static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};

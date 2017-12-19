@@ -4672,7 +4672,7 @@ float BotWeaponCanLead(bot_state_t *bs)
 }
 
 //offset the desired view angles with aim leading in mind
-QINLINE float G_GetAnimPoint(gentity_t *self);
+float G_GetAnimPoint(gentity_t *self);
 void BotAimLeading(bot_state_t *bs, vec3_t headlevel, float leadAmount)
 {
 	int x;
