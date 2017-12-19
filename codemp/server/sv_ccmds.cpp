@@ -1619,6 +1619,24 @@ void SV_StopRecord_f( void ) {
 	SV_StopRecordDemo( cl );
 }
 
+void SV_RenameDemo_f(void) {
+	char		from[MAX_OSPATH];
+	char		to[MAX_OSPATH];
+
+	if (Cmd_Argc() != 3) {
+		return;
+	}
+
+	Com_sprintf(from, sizeof(from), "demos/%s.dm_%d", Cmd_Argv(1), PROTOCOL_VERSION);
+	Com_sprintf(to, sizeof(to), "demos/%s.dm_%d", Cmd_Argv(2), PROTOCOL_VERSION); //DEMO_EXTENSION
+
+	if (FS_CheckDirTraversal(from) || FS_CheckDirTraversal(to)) {
+		return;
+	}
+
+	FS_Rename(from, to);
+}
+
 /*
 ====================
 SV_RenameDemo_f
@@ -1691,7 +1709,8 @@ void SV_RecordDemo( client_t *cl, char *demoName ) {
 
 	// open the demo file
 	Q_strncpyz( cl->demo.demoName, demoName, sizeof( cl->demo.demoName ) );
-	Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION );
+	Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION ); //Should use DEMO_EXTENSION
+
 	Com_Printf( "recording to %s.\n", name );
 	cl->demo.demofile = FS_FOpenFileWriteAsync( name );
 	if ( !cl->demo.demofile ) {
@@ -1976,7 +1995,7 @@ static void SV_Record_f( void ) {
 	if ( Cmd_Argc() >= 2 ) {
 		s = Cmd_Argv( 1 );
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
-		Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+		Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION ); //Should use DEMO_EXTENSION
 	} else {
 		// timestamp the file
 		SV_DemoFilename( demoName, sizeof( demoName ) );
@@ -2045,7 +2064,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("weapontoggle", SV_WeaponToggle_f, "Toggle g_weaponDisable bits" );
 	Cmd_AddCommand ("svrecord", SV_Record_f, "Record a server-side demo" );
 	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f, "Stop recording a server-side demo" );
-	Cmd_AddCommand ("svrenamedemo", SV_RenameDemo_f, "Rename a server-side demo" );
+	Cmd_AddCommand ("svrenamedemo", SV_RenameDemo_f, "Rename a server-side demo");
 	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f, "Reloads banlist from file" );
 	Cmd_AddCommand ("sv_listbans", SV_ListBans_f, "Lists bans" );
 	Cmd_AddCommand ("sv_banaddr", SV_BanAddr_f, "Bans a user" );
