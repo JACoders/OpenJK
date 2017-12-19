@@ -771,7 +771,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		return 0;
 	}
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchOurFlag function reached point a, Enemy Flag is %i\n", enemy_flag);
 #endif
 
@@ -790,7 +790,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	else 
 		enemyTeam = TEAM_FREE; //racemode ctf crashfix?
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchOurFlag function reached point b, Enemy Flag is %i\n", enemy_flag);
 #endif
 
@@ -827,7 +827,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		}
 	}
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchOurFlag function reached point c, Enemy Flag is %i\n", enemy_flag);
 #endif
 
@@ -871,7 +871,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	else
 		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_CAPTURED_FLAG); 
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchOurFlag function reached point d, Enemy Flag is %i\n", enemy_flag);
 #endif
 
@@ -910,7 +910,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		}
 	}
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchOurFlag function reached point e, Enemy Flag is %i\n", enemy_flag);
 #endif
 
@@ -918,7 +918,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	CalculateRanks();
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchOurFlag function exited at end, Enemy Flag is %i\n", enemy_flag);
 #endif
 
@@ -933,7 +933,7 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	gentity_t*	enemy;
 	float		enemyDist, dist;
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchEnemyFlag called \n");
 #endif
 
@@ -976,7 +976,7 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 			// possible recursion is hidden in this, but
 			// infinite recursion wont happen, because we cant
 			// have a < b and b < a at the same time
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchEnemyFlag returned at point 1, team %i, ourflag %i\n", team, ourFlag);
 #endif
 			return Team_TouchOurFlag( ent, enemy, team );
@@ -1028,7 +1028,7 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	cl->pers.teamState.flagsince = level.time;
 	Team_TakeFlagSound( ent, team );
 
-#ifdef _DEBUGCTFCRASH
+#if _DEBUGCTFCRASH
 	G_SecurityLogPrintf("Team_TouchEnemyFlag returned at emd, team %i, ourflag %i\n", team, ourFlag);
 #endif
 

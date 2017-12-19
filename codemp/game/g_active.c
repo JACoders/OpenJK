@@ -4878,7 +4878,7 @@ void ClientThink_real( gentity_t *ent ) {
 					ent->client->ps.commandTime = level.time-100;
 					msec = 100;
 				}
-				else if ( ent->m_pVehicle->m_ucmd.serverTime > level.time + 200 ) { //stop speedup cheating for vehicles
+				else if ( ent->m_pVehicle->m_ucmd.serverTime > level.time + 200 ) { //stop speedup cheating for vehicles japro
 					ent->m_pVehicle->m_ucmd.serverTime = level.time + 200;
 					//trap->Print("serverTime <<<<<\n" );
 				}

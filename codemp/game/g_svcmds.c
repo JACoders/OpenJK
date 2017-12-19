@@ -925,11 +925,12 @@ static bitInfo_T forceTweaks[] = {
 	{"Fast grip runspeed"},//8
 	{"Push/pull items"},//9
 	{"Smaller Drain COF"},//10
-	{"JK2 push/pull knockdown"},//10
-	{"JK2 style knockdown getup"},//11
-	{"Allow push/pull during roll like JK2"},//12
-	{"Force drain does not give forcepoints to players using force absorb"},//12
-	{"Allow grip during roll"}//12
+	{"JK2 push/pull knockdown"},//11
+	{"JK2 style knockdown getup"},//12
+	{"Allow push/pull during roll like JK2"},//13
+	{"Force drain does not give forcepoints to players using force absorb"},//14
+	{"Allow grip during roll"},//15
+	{"Weak force pull"}//16
 };
 static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
 

@@ -198,6 +198,7 @@ XCVAR_DEF( g_blueDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //
 XCVAR_DEF( g_yellowDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
 XCVAR_DEF( g_redDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
 XCVAR_DEF( g_redDFADamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) 
+XCVAR_DEF( g_saberDmgDelay_Hit,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO FORCE
 XCVAR_DEF( g_tweakForce,				"0",			CVU_TweakForce,		CVAR_ARCHIVE,									qtrue )

@@ -1332,6 +1332,11 @@ static void SV_ForceToggle_f( void ) {
 	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
 	int i, val;
 	char *s;
+	const char *disablestrings[] =
+	{
+		"Enabled",
+		"Disabled"
+	};
 
 	// make sure server is running
 	if( !com_sv_running->integer ) {
@@ -1340,9 +1345,8 @@ static void SV_ForceToggle_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
-			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
-			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], disablestrings[!(bits & (1<<i))]);
 		}
 		Com_Printf( "Example usage: forcetoggle 3(toggles PUSH)\n" );
 		return;
@@ -1366,9 +1370,8 @@ static void SV_ForceToggle_f( void ) {
 		}
 	}
 	else {
-		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
-			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
-			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], disablestrings[!(bits & (1<<i))]);
 		}
 		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 	}
