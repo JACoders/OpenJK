@@ -1638,7 +1638,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int newRank_self, int oldRank_se
 		CALL_SQLITE (bind_int (stmt, 4, newRank_self));
 
 		if (oldRank_self != -1)
-			CALL_SQLITE (bind_int (stmt, 4, oldRank_self));
+			CALL_SQLITE (bind_int (stmt, 5, oldRank_self));
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
