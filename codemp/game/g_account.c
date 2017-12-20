@@ -4551,7 +4551,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	if (style == -1) {
-		sql = "SELECT username, SUM(entries/rank) AS score, SUM(rank) as rank, SUM((entries - CAST(rank-1 AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
+		sql = "SELECT username, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS score, SUM(rank) as rank, SUM((entries - CAST(rank-1 AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
 			"GROUP BY username "
 			"ORDER BY score DESC LIMIT ?, 10";
 
@@ -4560,7 +4560,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 		CALL_SQLITE (bind_int (stmt, 1, start));
 	}
 	else {
-		sql = "SELECT username, SUM(entries/rank) AS score, SUM(rank) as rank, SUM((entries - CAST(rank-1 AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
+		sql = "SELECT username, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS score, SUM(rank) as rank, SUM((entries - CAST(rank-1 AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
 			"WHERE style = ? "
 			"GROUP BY username "
 			"ORDER BY score DESC LIMIT ?, 10";
