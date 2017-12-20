@@ -1522,6 +1522,7 @@ void SV_RebuildRaceRanks_f( void );
 #if 0
 void G_TestAddRace( void );
 #endif
+void Svcmd_AccountIPLock_f( void );
 
 
 /* This array MUST be sorted correctly by alphabetical name field */
@@ -1559,6 +1560,7 @@ svcmd_t svcmds[] = {
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "gametype",					Svcmd_ChangeGametype_f,				qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
+	{ "iplock",						Svcmd_AccountIPLock_f,				qfalse },
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 
 	{ "pause",						SV_Pause_f,							qfalse },

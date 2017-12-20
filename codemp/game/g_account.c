@@ -1622,9 +1622,8 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int oldRank_self, int newRank_self
 
 static void G_UpdateOtherLocalRun(sqlite3 * db, int newRank_self, int oldRank_self, int style_self, char *coursename_self, int time) {
 	char * sql;
-    sqlite3_stmt * stmt;
+	sqlite3_stmt * stmt;
 	int s;
-
 	
 	if (oldRank_self == -1) //First attempt
 		sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? and rank >= ?";
@@ -2910,6 +2909,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0}, enteredKey[32];
 	char *p = NULL;
 	gclient_t	*cl;
+	qboolean iplock = qtrue;
 
 	if (!ent->client)
 		return;
@@ -2977,7 +2977,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		CALL_SQLITE (finalize(stmt));
 	}
 
-	sql = "SELECT password, lastip FROM LocalAccount WHERE username = ?";
+	sql = "SELECT password, lastip, iplock FROM LocalAccount WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
@@ -2987,6 +2987,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
         if (s == SQLITE_ROW) {
 			Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
 			lastip = sqlite3_column_int(stmt, 1);
+			iplock = (qboolean)sqlite3_column_int(stmt, 2);
             row++;
         }
         else if (s == SQLITE_DONE)
@@ -3012,6 +3013,12 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 	if ((count > 0) && lastip && ip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
 		trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account. You are only allowed one account.\n\"");
+		CALL_SQLITE (close(db));
+		return;
+	}
+
+	if (iplock && lastip != ip) {
+		trap->SendServerCommand(ent-g_entities, "print \"Your account is locked to a different IP address.\n\"");
 		CALL_SQLITE (close(db));
 		return;
 	}
@@ -3421,6 +3428,7 @@ void Svcmd_AccountInfo_f(void)
 	char username[16], timeStr[64] = {0}, buf[MAX_STRING_CHARS-64] = {0};
 	int row = 0, lastlogin;
 	unsigned int lastip;
+	int s;
 
 	if (trap->Argc() != 2) {
 		trap->Print( "Usage: /accountInfo <username>\n");
@@ -3442,33 +3450,17 @@ void Svcmd_AccountInfo_f(void)
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
-    while (1) {
-        int s;
-        s = sqlite3_step(stmt);
-        if (s == SQLITE_ROW) {
-			lastlogin = sqlite3_column_int(stmt, 0);
-			lastip = sqlite3_column_int(stmt, 1);
-            row++;
-        }
-        else if (s == SQLITE_DONE)
-            break;
-        else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
-			break;
-        }
+    s = sqlite3_step(stmt);
+    if (s == SQLITE_ROW) {
+		lastlogin = sqlite3_column_int(stmt, 0);
+		lastip = sqlite3_column_int(stmt, 1);
+    }
+    else if (s != SQLITE_DONE){
+        fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
     }
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
-
-	if (row == 0) { //no account found, or more than 1 account with same name, problem
-		trap->Print( "Account not found!\n");
-		return;
-	}
-	else if (row > 1) {
-		trap->Print( "ERROR: Multiple accounts found!\n");
-		return;
-	}
 
 	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
@@ -3477,6 +3469,66 @@ void Svcmd_AccountInfo_f(void)
 	Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
 
 	trap->Print( "%s", buf);
+}
+
+void Svcmd_AccountIPLock_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[16];
+	qboolean iplock = qfalse;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /iplock <username>\n");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+	
+	if (!CheckUserExists(username)) {
+		trap->Print( "User does not exist!\n");
+		return;
+	}
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT iplock FROM LocalAccount WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	
+    s = sqlite3_step(stmt);
+    if (s == SQLITE_ROW) {
+		iplock = (qboolean)sqlite3_column_int(stmt, 0);
+    }
+    else if (s != SQLITE_DONE){
+        fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+    }
+	CALL_SQLITE (finalize(stmt));
+
+	if (iplock) 
+		sql = "UPDATE LocalAccount SET iplock = 0 WHERE username = ?";
+	else 
+		sql = "UPDATE LocalAccount SET iplock = 1 WHERE username = ?";
+
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_DONE) {
+		if (iplock)
+			trap->Print( "IP unlocked.\n");
+		else
+			trap->Print( "IP locked.\n");
+    }
+    else {
+        fprintf (stderr, "ERROR: SQL Update Failed.\n");//Trap print?
+    }
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
 }
 
 void Svcmd_DBInfo_f(void)
@@ -5490,7 +5542,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
-		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
+		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, iplock UNSIGNED TINYINT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
