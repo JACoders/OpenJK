@@ -1468,13 +1468,12 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
 	
+		IntegerToRaceName(player->client->ps.stats[STAT_MOVEMENTSTYLE], styleStr, sizeof(styleStr));
+		TimeToString((int)(time*1000), timeStr, sizeof(timeStr), qfalse);
+		Q_strncpyz(playerName, player->client->pers.netname, sizeof(playerName));
+		Q_StripColor(playerName);
+	
 		if (!valid) {
-			IntegerToRaceName(player->client->ps.stats[STAT_MOVEMENTSTYLE], styleStr, sizeof(styleStr));
-			TimeToString((int)(time*1000), timeStr, sizeof(timeStr), qfalse);
-
-			Q_strncpyz(playerName, player->client->pers.netname, sizeof(playerName));
-			Q_StripColor(playerName);
-
 			PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse);
 		}
 		else {
