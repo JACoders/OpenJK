@@ -2620,12 +2620,99 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 }
 #endif
 
+void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs) { 
+	if (duration_ms > (60*60*1000)) { //thanks, eternal
+		int hours, minutes, seconds, milliseconds; 
+		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
+		minutes = (int)((duration_ms / (1000*60)) % 60);
+		seconds = (int)(duration_ms / 1000) % 60;
+		milliseconds = duration_ms % 1000; 
+		if (noMs)
+			Com_sprintf(timeStr, strSize, "%i:%02i:%02i", hours, minutes, seconds);
+		else
+			Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
+	}
+	else if (duration_ms > (60*1000)) {
+		int minutes, seconds, milliseconds;
+		minutes = (int)((duration_ms / (1000*60)) % 60);
+		seconds = (int)(duration_ms / 1000) % 60;
+		milliseconds = duration_ms % 1000; 
+		if (noMs)
+			Com_sprintf(timeStr, strSize, "%i:%02i", minutes, seconds);
+		else
+			Com_sprintf(timeStr, strSize, "%i:%02i.%03i", minutes, seconds, milliseconds);
+	}
+	else {
+		if (noMs)
+			Q_strncpyz(timeStr, va("%.0f", ((float)duration_ms * 0.001)), strSize);
+		else
+			Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
+	}
+}
+
+void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid) {
+	int nameColor;
+
+	nameColor = 7 - (clientNum % 8);//sad hack
+	if (nameColor < 2)
+		nameColor = 2;
+	else if (nameColor > 7 || nameColor == 5)
+		nameColor = 7;
+
+	if (message) {
+		if (!valid){
+			trap->SendServerCommand( -1, va("print \"^3%-16s^1 completed in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (wr) {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (pb) {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (PB)^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (loggedin) {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+		else {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^2 completed in ^3%-12s^2 max:^3%-10i^2 avg:^3%-10i^2 style:^3%-10s^2 by ^%i%s^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+	}
+	else {
+		if (!valid) {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (wr) {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(WR)^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (pb) {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(PB)^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (loggedin) {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+		else {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^2 max:^3%-10i^2 avg:^3%-10i^2 style:^3%-10s^2 by ^%i%s^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+	}
+
+
+}
+
 void StripWhitespace(char *s);
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
-	char		string[1024] = {0}, info[1024] = {0}, courseName[40];
-	int i, course = 0, newRank = -1, rowToDelete = 9;
-	qboolean duplicate = qfalse;
+	char		string[1024] = {0}, info[1024] = {0}, courseName[40], timeStr[32] = {0}, styleString[32] = {0};
+	int i, course = 0, newRank = -1, rowToDelete = 9, nameColor;
+	qboolean duplicate = qfalse, personalBest = qfalse;
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -2652,6 +2739,13 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	Q_strlwr(courseName);
 	Q_CleanStr(courseName);
+
+	nameColor = 7 - (clientNum % 8);//sad hack
+	if (nameColor < 2)
+		nameColor = 2;
+	else if (nameColor > 7 || nameColor == 5)
+		nameColor = 7;
+	IntegerToRaceName(style, styleString, sizeof(styleString));
 
 	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username, courseName, duration_ms, topspeed, average, style, rawtime);
 
@@ -2682,6 +2776,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				duplicate = qtrue;
 			}
 			else {
+				TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
+				PrintRaceTime(username, message, styleString, topspeed, average, timeStr, clientNum, qfalse, qfalse, qtrue, qtrue);
 				//trap->Print("This user already has a faster time!!\n");
 				return;
 			}
@@ -2741,9 +2837,10 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
 		else 
 			PlayActualGlobalSound("sound/chars/rosh/misc/taunt1");
+		personalBest = qtrue;
 
 		if (cl->pers.recordingDemo) {
-			char styleString[16] = {0};
+			//char styleString[16] = {0};
 			char mapCourse[MAX_QPATH] = {0};
 
 			Q_strncpyz(mapCourse, courseName, sizeof(mapCourse));
@@ -2751,7 +2848,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			Q_strstrip( mapCourse, "\n\r;:.?*<>|\\/\"", NULL );
 
 			//trap->SendServerCommand( clientNum, "chat \"RECORDING PENDING STOP, HIGHSCORE\"");
-			IntegerToRaceName(style, styleString, sizeof(styleString));
+			//IntegerToRaceName(style, styleString, sizeof(styleString));
 			if (cl) {
 				cl->pers.stopRecordingTime = level.time + 2000;
 				cl->pers.keepDemo = qtrue;
@@ -2772,6 +2869,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					//rowToDelete = i; ?
 
 					//trap->Print("Found in cach, updating cache and writing to file %i", duration_ms);
+					personalBest = qtrue;
 #if _NEWRACERANKING
 					G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, i, 0, 0);//We dont know what the newrank should be..
 #else
@@ -2811,6 +2909,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 						if (duration_ms < oldBest) { //our time we just recorded is faster, so log it
 							PersonalBests[style][i].duration_ms = duration_ms;
 							//trap->Print("Time not found in cache, time in DB is slower, adding time just recorded: %i\n", duration_ms);
+							personalBest = qtrue;
 #if _NEWRACERANKING
 							G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, 0, 0, db); //We dont know newrank or oldrank
 #else
@@ -2830,6 +2929,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					else { //No time found in database, so record the time we just recorded 
 						PersonalBests[style][i].duration_ms = duration_ms;
 						//trap->Print("Time not found in cache or DB, adding time just recorded: %i\n", duration_ms);
+						personalBest = qtrue;
 #if _NEWRACERANKING
 						G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, -1, 0, db); //No old rank in database and we dont know newrank
 #else
@@ -2853,6 +2953,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			}
 		}
 	}
+
+	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
+	PrintRaceTime(username, message, styleString, topspeed, average, timeStr, clientNum, (qboolean)(newRank == 0), personalBest, qtrue, qtrue);
 	//DebugWriteToDB("G_AddRaceTime");
 }
 
@@ -4433,36 +4536,6 @@ void Cmd_PersonalBest_f(gentity_t *ent) { //loda fixme bugged, always finds in c
 	//DebugWriteToDB("Cmd_PersonalBest_f");
 }
 
-void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs) { 
-	if (duration_ms > (60*60*1000)) { //thanks, eternal
-		int hours, minutes, seconds, milliseconds; 
-		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
-		minutes = (int)((duration_ms / (1000*60)) % 60);
-		seconds = (int)(duration_ms / 1000) % 60;
-		milliseconds = duration_ms % 1000; 
-		if (noMs)
-			Com_sprintf(timeStr, strSize, "%i:%02i:%02i", hours, minutes, seconds);
-		else
-			Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
-	}
-	else if (duration_ms > (60*1000)) {
-		int minutes, seconds, milliseconds;
-		minutes = (int)((duration_ms / (1000*60)) % 60);
-		seconds = (int)(duration_ms / 1000) % 60;
-		milliseconds = duration_ms % 1000; 
-		if (noMs)
-			Com_sprintf(timeStr, strSize, "%i:%02i", minutes, seconds);
-		else
-			Com_sprintf(timeStr, strSize, "%i:%02i.%03i", minutes, seconds, milliseconds);
-	}
-	else {
-		if (noMs)
-			Q_strncpyz(timeStr, va("%.0f", ((float)duration_ms * 0.001)), strSize);
-		else
-			Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
-	}
-}
-
 void Cmd_NotCompleted_f(gentity_t *ent) {
 	int i, style, course;
 	char styleString[16] = {0}, username[16] = {0};
@@ -4550,7 +4623,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
     sqlite3_stmt * stmt;
 	int row = 1, style, page = 1, start = 0;
 	char msg[1024-128] = {0}, styleString[16] = {0}, input1[32], input2[32], username[40];
-	int score, count;
+	int score, count, golds, silvers, bronzes;
 	float rank, percentile;
 
 	if (trap->Argc() > 3) {
@@ -4603,7 +4676,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	if (style == -1) {
-		sql = "SELECT username, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS score, SUM(rank) as rank, SUM((entries - CAST(rank-1 AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
+		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 			"GROUP BY username "
 			"ORDER BY score DESC LIMIT ?, 10";
 
@@ -4612,7 +4685,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 		CALL_SQLITE (bind_int (stmt, 1, start));
 	}
 	else {
-		sql = "SELECT username, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS score, SUM(rank) as rank, SUM((entries - CAST(rank-1 AS float))/entries) AS percentile, COUNT(*) as count FROM LocalRun "
+		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 			"WHERE style = ? "
 			"GROUP BY username "
 			"ORDER BY score DESC LIMIT ?, 10";
@@ -4622,8 +4695,8 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 		CALL_SQLITE (bind_int (stmt, 1, style));
 		CALL_SQLITE (bind_int (stmt, 2, start));
 	}
-	
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Count \n\"", styleString));
+
+	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
 
 	while (1) {
 		int s;
@@ -4634,12 +4707,12 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 			score = sqlite3_column_int(stmt, 1);
 			rank = sqlite3_column_int(stmt, 2);
 			percentile = sqlite3_column_int(stmt, 3);
-			count = sqlite3_column_int(stmt, 4);
+			golds = sqlite3_column_int(stmt, 4);
+			silvers = sqlite3_column_int(stmt, 5);
+			bronzes = sqlite3_column_int(stmt, 6);
+			count = sqlite3_column_int(stmt, 7);
 
-			rank = (float)rank/(float)count;
-			percentile = (float)percentile/(float)count;
-
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, count);
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 				msg[0] = '\0';
