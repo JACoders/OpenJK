@@ -2711,7 +2711,7 @@ void StripWhitespace(char *s);
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char		string[1024] = {0}, info[1024] = {0}, courseName[40], timeStr[32] = {0}, styleString[32] = {0};
-	int i, course = 0, newRank = -1, rowToDelete = 9, nameColor;
+	int i, course = 0, newRank = -1, rowToDelete = 9;
 	qboolean duplicate = qfalse, personalBest = qfalse;
 	sqlite3 * db;
     char * sql;
@@ -2740,11 +2740,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	Q_strlwr(courseName);
 	Q_CleanStr(courseName);
 
-	nameColor = 7 - (clientNum % 8);//sad hack
-	if (nameColor < 2)
-		nameColor = 2;
-	else if (nameColor > 7 || nameColor == 5)
-		nameColor = 7;
 	IntegerToRaceName(style, styleString, sizeof(styleString));
 
 	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username, courseName, duration_ms, topspeed, average, style, rawtime);
@@ -4705,8 +4700,8 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 			char *tmpMsg = NULL;
 			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
 			score = sqlite3_column_int(stmt, 1);
-			rank = sqlite3_column_int(stmt, 2);
-			percentile = sqlite3_column_int(stmt, 3);
+			rank = sqlite3_column_double(stmt, 2);
+			percentile = sqlite3_column_double(stmt, 3);
 			golds = sqlite3_column_int(stmt, 4);
 			silvers = sqlite3_column_int(stmt, 5);
 			bronzes = sqlite3_column_int(stmt, 6);
