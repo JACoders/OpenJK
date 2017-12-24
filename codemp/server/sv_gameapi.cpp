@@ -1542,6 +1542,9 @@ static int SV_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex
 }
 
 static void SV_G2API_CopySpecificGhoul2Model( void *g2From, int modelFrom, void *g2To, int modelTo ) {
+	if ( !g2From || !g2To ) {
+		return;
+	}
 	re->G2API_CopySpecificG2Model( *((CGhoul2Info_v *)g2From), modelFrom, *((CGhoul2Info_v *)g2To), modelTo );
 }
 
