@@ -196,17 +196,15 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
-void CG_LoadHud_f( void )
-{
-	const char *hudSet;
-
-	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0')
-	{
+void CG_LoadHud_f( void ) {
+	const char *hudSet = cg_hudFiles.string;
+	if ( hudSet[0] == '\0' ) {
 		hudSet = "ui/jahud.txt";
 	}
 
-	CG_LoadMenus(hudSet);
+	//cgi_UI_String_Init();
+	//cgi_UI_Menu_Reset();
+	CG_LoadMenus( hudSet );
 }
 
 typedef struct {
