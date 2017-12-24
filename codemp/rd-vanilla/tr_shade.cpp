@@ -229,8 +229,8 @@ void R_BindAnimatedImage( textureBundle_t *bundle ) {
 	int		index;
 
 	if ( bundle->isVideoMap ) {
-		ri->CIN_RunCinematic(bundle->videoMapHandle);
-		ri->CIN_UploadCinematic(bundle->videoMapHandle);
+		ri.CIN_RunCinematic(bundle->videoMapHandle);
+		ri.CIN_UploadCinematic(bundle->videoMapHandle);
 		return;
 	}
 
