@@ -1870,6 +1870,4 @@ void R_AddDecals( void );
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 
-extern refimport_t *ri;
-
 qboolean ShaderHashTableExists(void);

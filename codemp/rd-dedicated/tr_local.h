@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 typedef unsigned int GLuint;
 
 #include "qcommon/qfiles.h"
+#include "rd-common/tr_common.h"
 #include "rd-common/tr_public.h"
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
@@ -1851,7 +1852,5 @@ typedef struct decalPoly_s
 	polyVert_t			verts[MAX_VERTS_ON_DECAL_POLY];
 
 } decalPoly_t;
-
-extern refimport_t *ri;
 
 qboolean ShaderHashTableExists(void);
