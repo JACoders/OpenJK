@@ -89,13 +89,13 @@ qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffe
 		return qtrue;	
 	}
 
-	int len = ri->FS_ReadFile(path, ppFileBuffer);
+	int len = ri.FS_ReadFile(path, ppFileBuffer);
 	if ( len == -1 || *ppFileBuffer == NULL )
 	{
 		return qfalse;
 	}
 
-	ri->Printf( PRINT_DEVELOPER, "C_LoadFile(): Loaded %s from disk\n", pFileName );
+	ri.Printf( PRINT_DEVELOPER, "C_LoadFile(): Loaded %s from disk\n", pFileName );
 
 	return qtrue;
 }
@@ -132,7 +132,7 @@ void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *p
 		pFile->iAllocSize = iSize;
 		Q_strncpyz(pFile->path, sModelName, sizeof(pFile->path));
 
-		if( ri->FS_FileIsInPAK( sModelName, &iChecksum ) )
+		if( ri.FS_FileIsInPAK( sModelName, &iChecksum ) )
 			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
 
 		*bAlreadyFound = qfalse;
@@ -172,17 +172,17 @@ void CModelCacheManager::DeleteAll( void )
  */
 void CModelCacheManager::DumpNonPure( void )
 {
-	ri->Printf( PRINT_DEVELOPER,  "CCacheManager::DumpNonPure():\n");
+	ri.Printf( PRINT_DEVELOPER,  "CCacheManager::DumpNonPure():\n");
 
 	for ( auto it = files.begin(); it != files.end(); /* empty */ )
 	{
 		int iChecksum;
-		int iInPak = ri->FS_FileIsInPAK( it->path, &iChecksum );
+		int iInPak = ri.FS_FileIsInPAK( it->path, &iChecksum );
 
 		if( iInPak == -1 || iChecksum != it->iPAKChecksum )
 		{
 			/* Erase the file because it doesn't match the checksum */
-			ri->Printf( PRINT_DEVELOPER, "Dumping none pure model \"%s\"", it->path );
+			ri.Printf( PRINT_DEVELOPER, "Dumping none pure model \"%s\"", it->path );
 
 			if( it->pDiskImage )
 				Z_Free( it->pDiskImage );
@@ -195,7 +195,7 @@ void CModelCacheManager::DumpNonPure( void )
 		}
 	}
 
-	ri->Printf( PRINT_DEVELOPER, "CCacheManager::DumpNonPure(): Ok\n");	
+	ri.Printf( PRINT_DEVELOPER, "CCacheManager::DumpNonPure(): Ok\n");	
 }
 
 CModelCacheManager::AssetCache::iterator CModelCacheManager::FindAsset( const char *path )
@@ -234,7 +234,7 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 {
 	qboolean bAtLeastOneModelFreed	= qfalse;
 
-	ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd():\n");
+	ri.Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd():\n");
 
 	for ( auto it = files.begin(); it != files.end(); /* empty */ )
 	{
@@ -247,7 +247,7 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 
 		if( bDeleteThis )
 		{
-			ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "Dumping \"%s\"", it->path);
+			ri.Printf( PRINT_DEVELOPER, S_COLOR_GREEN "Dumping \"%s\"", it->path);
 			if( it->pDiskImage )
 			{
 				Z_Free( it->pDiskImage );
@@ -262,7 +262,7 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 		}
 	}
 
-	ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd(): Ok\n");	
+	ri.Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd(): Ok\n");	
 
 	return bAtLeastOneModelFreed;
 }

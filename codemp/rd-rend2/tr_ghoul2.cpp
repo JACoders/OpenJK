@@ -89,7 +89,7 @@ static CRenderableSurface *AllocGhoul2RenderableSurface()
 {
 	if ( currentRenderSurfIndex >= MAX_RENDERABLE_SURFACES )
 	{
-		ri->Error( ERR_DROP, "AllocRenderableSurface: Reached maximum number of Ghoul2 renderable surfaces (%d)", MAX_RENDERABLE_SURFACES );
+		ri.Error( ERR_DROP, "AllocRenderableSurface: Reached maximum number of Ghoul2 renderable surfaces (%d)", MAX_RENDERABLE_SURFACES );
 		return NULL;
 	}
 
@@ -1928,7 +1928,7 @@ static void G2_TransformGhoulBones(
 	ghoul2.mBoneCache->mUnsquash=false;
 
 	// master smoothing control
-	if (HackadelicOnClient && smooth && !ri->Cvar_VariableIntegerValue("dedicated"))
+	if (HackadelicOnClient && smooth && !ri.Cvar_VariableIntegerValue("dedicated"))
 	{
 		ghoul2.mBoneCache->mLastTouch = ghoul2.mBoneCache->mLastLastTouch;
 
@@ -3869,7 +3869,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 	
 	qboolean bAlreadyFound = qfalse;
 	mdxm = (mdxmHeader_t*)CModelCache->Allocate(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
-	mod->data.glm = (mdxmData_t *)ri->Hunk_Alloc (sizeof (mdxmData_t), h_low);
+	mod->data.glm = (mdxmData_t *)ri.Hunk_Alloc (sizeof (mdxmData_t), h_low);
 	mod->data.glm->header = mdxm;
 
 	//RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
@@ -3880,7 +3880,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 	{
 		// horrible new hackery, if !bAlreadyFound then we've just done a
 		// tag-morph, so we need to set the bool reference passed into this
-		// function to true, to tell the caller NOT to do an ri->FS_Freefile
+		// function to true, to tell the caller NOT to do an ri.FS_Freefile
 		// since we've hijacked that memory block...
 		//
 		// Aaaargh. Kill me now...
@@ -4026,7 +4026,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 	// Make a copy on the GPU
 	lod = (mdxmLOD_t *)((byte *)mdxm + mdxm->ofsLODs);
 
-	mod->data.glm->vboModels = (mdxmVBOModel_t *)ri->Hunk_Alloc (sizeof (mdxmVBOModel_t) * mdxm->numLODs, h_low);
+	mod->data.glm->vboModels = (mdxmVBOModel_t *)ri.Hunk_Alloc (sizeof (mdxmVBOModel_t) * mdxm->numLODs, h_low);
 	for ( l = 0; l < mdxm->numLODs; l++ )
 	{
 		mdxmVBOModel_t *vboModel = &mod->data.glm->vboModels[l];
@@ -4051,11 +4051,11 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vec3_t *bitangentsf;
 
 		// +1 to add total vertex count
-		int *baseVertexes = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
-		int *indexOffsets = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * mdxm->numSurfaces);
+		int *baseVertexes = (int *)ri.Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
+		int *indexOffsets = (int *)ri.Hunk_AllocateTempMemory (sizeof (int) * mdxm->numSurfaces);
 
 		vboModel->numVBOMeshes = mdxm->numSurfaces;
-		vboModel->vboMeshes = (mdxmVBOMesh_t *)ri->Hunk_Alloc (sizeof (mdxmVBOMesh_t) * mdxm->numSurfaces, h_low);
+		vboModel->vboMeshes = (mdxmVBOMesh_t *)ri.Hunk_Alloc (sizeof (mdxmVBOMesh_t) * mdxm->numSurfaces, h_low);
 		vboMeshes = vboModel->vboMeshes;
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
@@ -4074,8 +4074,8 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		baseVertexes[mdxm->numSurfaces] = numVerts;
 
-		tangentsf = (vec3_t *)ri->Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);
-		bitangentsf = (vec3_t *)ri->Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);;
+		tangentsf = (vec3_t *)ri.Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);
+		bitangentsf = (vec3_t *)ri.Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);;
 
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
@@ -4085,7 +4085,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		dataSize += numVerts * sizeof (*tangents);
 
 		// Allocate and write to memory
-		data = (byte *)ri->Hunk_AllocateTempMemory (dataSize);
+		data = (byte *)ri.Hunk_AllocateTempMemory (dataSize);
 
 		verts = (vec3_t *)(data + stride);
 		ofsPosition = stride;
@@ -4248,9 +4248,9 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		VBO_t *vbo = R_CreateVBO (data, dataSize, VBO_USAGE_STATIC);
 
-		ri->Hunk_FreeTempMemory (data);
-		ri->Hunk_FreeTempMemory (tangentsf);
-		ri->Hunk_FreeTempMemory (bitangentsf);
+		ri.Hunk_FreeTempMemory (data);
+		ri.Hunk_FreeTempMemory (tangentsf);
+		ri.Hunk_FreeTempMemory (bitangentsf);
 
 		vbo->offsets[ATTR_INDEX_POSITION] = ofsPosition;
 		vbo->offsets[ATTR_INDEX_NORMAL] = ofsNormals;
@@ -4274,7 +4274,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->sizes[ATTR_INDEX_TANGENT] = sizeof(*tangents);
 
 		// Fill in the index buffer
-		glIndex_t *indices = (glIndex_t *)ri->Hunk_AllocateTempMemory (sizeof (glIndex_t) * numTriangles * 3);
+		glIndex_t *indices = (glIndex_t *)ri.Hunk_AllocateTempMemory (sizeof (glIndex_t) * numTriangles * 3);
 		glIndex_t *index = indices;
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
@@ -4302,7 +4302,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		IBO_t *ibo = R_CreateIBO ((byte *)indices, sizeof (glIndex_t) * numTriangles * 3, VBO_USAGE_STATIC);
 
-		ri->Hunk_FreeTempMemory (indices);
+		ri.Hunk_FreeTempMemory (indices);
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 
@@ -4323,8 +4323,8 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vboModel->vbo = vbo;
 		vboModel->ibo = ibo;
 
-		ri->Hunk_FreeTempMemory (indexOffsets);
-		ri->Hunk_FreeTempMemory (baseVertexes);
+		ri.Hunk_FreeTempMemory (indexOffsets);
+		ri.Hunk_FreeTempMemory (baseVertexes);
 
 		lod = (mdxmLOD_t *)((byte *)lod + lod->ofsEnd);
 	}
@@ -4617,7 +4617,7 @@ qboolean R_LoadMDXA(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		// horrible new hackery, if !bAlreadyFound then we've just done a
 		// tag-morph, so we need to set the bool reference passed into this
 		// function to true, to tell the caller NOT to do an
-		// ri->FS_Freefile since we've hijacked that memory block...
+		// ri.FS_Freefile since we've hijacked that memory block...
 		//
 		// Aaaargh. Kill me now...
 		//

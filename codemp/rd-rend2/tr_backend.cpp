@@ -45,7 +45,7 @@ void GL_Bind( image_t *image ) {
 	int texnum;
 
 	if ( !image ) {
-		ri->Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
+		ri.Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
 		texnum = tr.defaultImage->texnum;
 	} else {
 		texnum = image->texnum;
@@ -78,7 +78,7 @@ void GL_SelectTexture( int unit )
 	}
 
 	if (!(unit >= 0 && unit <= 31))
-		ri->Error( ERR_DROP, "GL_SelectTexture: unit = %i", unit );
+		ri.Error( ERR_DROP, "GL_SelectTexture: unit = %i", unit );
 
 	qglActiveTexture( GL_TEXTURE0 + unit );
 
@@ -226,7 +226,7 @@ void GL_State( uint32_t stateBits )
 				srcFactor = GL_SRC_ALPHA_SATURATE;
 				break;
 			default:
-				ri->Error( ERR_DROP, "GL_State: invalid src blend state bits" );
+				ri.Error( ERR_DROP, "GL_State: invalid src blend state bits" );
 				break;
 			}
 
@@ -257,7 +257,7 @@ void GL_State( uint32_t stateBits )
 				dstFactor = GL_ONE_MINUS_DST_ALPHA;
 				break;
 			default:
-				ri->Error( ERR_DROP, "GL_State: invalid dst blend state bits" );
+				ri.Error( ERR_DROP, "GL_State: invalid dst blend state bits" );
 				break;
 			}
 
@@ -916,8 +916,8 @@ static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings 
 		{
 			int oldtmu = glState.currenttmu;
 			GL_SelectTexture(binding.slot);
-			ri->CIN_RunCinematic(binding.videoMapHandle - 1);
-			ri->CIN_UploadCinematic(binding.videoMapHandle - 1);
+			ri.CIN_RunCinematic(binding.videoMapHandle - 1);
+			ri.CIN_UploadCinematic(binding.videoMapHandle - 1);
 			GL_SelectTexture(oldtmu);
 		}
 		else
@@ -1420,7 +1420,7 @@ void	RB_SetGL2D (void) {
 	GL_Cull(CT_TWO_SIDED);
 
 	// set time for 2D shaders
-	backEnd.refdef.time = ri->Milliseconds();
+	backEnd.refdef.time = ri.Milliseconds();
 	backEnd.refdef.floatTime = backEnd.refdef.time * 0.001f;
 
 	// reset color scaling
@@ -1457,7 +1457,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	start = 0;
 	if ( r_speeds->integer ) {
-		start = ri->Milliseconds();
+		start = ri.Milliseconds();
 	}
 
 	// make sure rows and cols are powers of 2
@@ -1466,14 +1466,14 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	for ( j = 0 ; ( 1 << j ) < rows ; j++ ) {
 	}
 	if ( ( 1 << i ) != cols || ( 1 << j ) != rows) {
-		ri->Error (ERR_DROP, "Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
+		ri.Error (ERR_DROP, "Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
 	}
 
 	RE_UploadCinematic (cols, rows, data, client, dirty);
 
 	if ( r_speeds->integer ) {
-		end = ri->Milliseconds();
-		ri->Printf( PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
+		end = ri.Milliseconds();
+		ri.Printf( PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
 	}
 
 	// FIXME: HUGE hack
@@ -2250,7 +2250,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-	start = ri->Milliseconds();
+	start = ri.Milliseconds();
 
 	image = tr.images;
 	for ( i=0 ; i < tr.numImages; i++, image = image->poolNext ) {
@@ -2281,8 +2281,8 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-	end = ri->Milliseconds();
-	ri->Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
+	end = ri.Milliseconds();
+	ri.Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 
 }
 
@@ -2381,7 +2381,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		long sum = 0;
 		unsigned char *stencilReadback;
 
-		stencilReadback = (unsigned char *)ri->Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
+		stencilReadback = (unsigned char *)ri.Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
 		qglReadPixels( 0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, stencilReadback );
 
 		for ( i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++ ) {
@@ -2389,7 +2389,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		}
 
 		backEnd.pc.c_overDraw += sum;
-		ri->Hunk_FreeTempMemory( stencilReadback );
+		ri.Hunk_FreeTempMemory( stencilReadback );
 	}
 
 	if (!backEnd.framePostProcessed)
@@ -2411,8 +2411,8 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		tr.numFramesToCapture--;
 		if ( !tr.numFramesToCapture )
 		{
-			ri->Printf( PRINT_ALL, "Frames captured\n" );
-			ri->FS_FCloseFile(tr.debugFile);
+			ri.Printf( PRINT_ALL, "Frames captured\n" );
+			ri.FS_FCloseFile(tr.debugFile);
 			tr.debugFile = 0;
 		}
 	}
@@ -2427,7 +2427,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
-	ri->WIN_Present( &window );
+	ri.WIN_Present( &window );
 
 	backEnd.framePostProcessed = qfalse;
 	backEnd.projection2D = qfalse;
@@ -2705,7 +2705,7 @@ RB_ExecuteRenderCommands
 void RB_ExecuteRenderCommands( const void *data ) {
 	int		t1, t2;
 
-	t1 = ri->Milliseconds ();
+	t1 = ri.Milliseconds ();
 
 	while ( 1 ) {
 		data = PADP(data, sizeof(void *));
@@ -2766,7 +2766,7 @@ void RB_ExecuteRenderCommands( const void *data ) {
 				RB_EndSurface();
 
 			// stop rendering
-			t2 = ri->Milliseconds ();
+			t2 = ri.Milliseconds ();
 			backEnd.pc.msec = t2 - t1;
 			return;
 		}

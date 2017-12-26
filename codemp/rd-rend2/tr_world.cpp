@@ -633,7 +633,7 @@ static mnode_t *R_PointInLeaf( const vec3_t p ) {
 	cplane_t	*plane;
 	
 	if ( !tr.world ) {
-		ri->Error (ERR_DROP, "R_PointInLeaf: bad model");
+		ri.Error (ERR_DROP, "R_PointInLeaf: bad model");
 	}
 
 	node = tr.world->nodes;
@@ -675,14 +675,14 @@ qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask ) {
 	int		leafnum;
 	int		cluster;
 
-	leafnum = ri->CM_PointLeafnum (p1);
-	cluster = ri->CM_LeafCluster (leafnum);
+	leafnum = ri.CM_PointLeafnum (p1);
+	cluster = ri.CM_LeafCluster (leafnum);
 
 	//agh, the damn snapshot mask doesn't work for this
-	mask = (byte *) ri->CM_ClusterPVS (cluster);
+	mask = (byte *) ri.CM_ClusterPVS (cluster);
 
-	leafnum = ri->CM_PointLeafnum (p2);
-	cluster = ri->CM_LeafCluster (leafnum);
+	leafnum = ri.CM_PointLeafnum (p2);
+	cluster = ri.CM_LeafCluster (leafnum);
 	if ( mask && (!(mask[cluster>>3] & (1<<(cluster&7)) ) ) )
 		return qfalse;
 
@@ -724,7 +724,7 @@ static void R_MarkLeaves( void )
 		{
 			if (tr.visClusters[i] != tr.visClusters[tr.visIndex] && r_showcluster->integer)
 			{
-				ri->Printf(PRINT_ALL, "found cluster:%i  area:%i  index:%i\n",
+				ri.Printf(PRINT_ALL, "found cluster:%i  area:%i  index:%i\n",
 					cluster, leaf->area, i);
 			}
 
@@ -740,7 +740,7 @@ static void R_MarkLeaves( void )
 	if ( r_showcluster->modified || r_showcluster->integer ) {
 		r_showcluster->modified = qfalse;
 		if ( r_showcluster->integer ) {
-			ri->Printf( PRINT_ALL, "cluster:%i  area:%i\n", cluster, leaf->area );
+			ri.Printf( PRINT_ALL, "cluster:%i  area:%i\n", cluster, leaf->area );
 		}
 	}
 

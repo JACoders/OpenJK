@@ -126,7 +126,7 @@ void GL_TextureMode( const char *string ) {
 
 
 	if ( i == 6 ) {
-		ri->Printf (PRINT_ALL, "bad filter name\n");
+		ri.Printf (PRINT_ALL, "bad filter name\n");
 		return;
 	}
 
@@ -135,7 +135,7 @@ void GL_TextureMode( const char *string ) {
 	
 	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 	{
-		ri->Cvar_SetValue ("r_ext_texture_filter_anisotropic", glConfig.maxTextureFilterAnisotropy);
+		ri.Cvar_SetValue ("r_ext_texture_filter_anisotropic", glConfig.maxTextureFilterAnisotropy);
 	}
 
 	// change all the existing mipmap texture objects
@@ -218,7 +218,7 @@ void R_ImageList_f( void ) {
 	const char *sizeSuffix;
 	image_t *image = tr.images;
 
-	ri->Printf(PRINT_ALL, "\n      -w-- -h-- type  -size- --name-------\n");
+	ri.Printf(PRINT_ALL, "\n      -w-- -h-- type  -size- --name-------\n");
 
 	for ( i = 0 ; i < tr.numImages ; i++, image = image->poolNext )
 	{
@@ -301,15 +301,15 @@ void R_ImageList_f( void ) {
 
 		float printSize = GetReadableSize(estSize, &sizeSuffix); 
 
-		ri->Printf(PRINT_ALL, "%4i: %4ix%4i %s %7.2f%s %s\n", i, image->uploadWidth, image->uploadHeight, format, printSize, sizeSuffix, image->imgName);
+		ri.Printf(PRINT_ALL, "%4i: %4ix%4i %s %7.2f%s %s\n", i, image->uploadWidth, image->uploadHeight, format, printSize, sizeSuffix, image->imgName);
 		estTotalSize += estSize;
 	}
 
 	float printSize = GetReadableSize(estTotalSize, &sizeSuffix);
 
-	ri->Printf (PRINT_ALL, " ---------\n");
-	ri->Printf (PRINT_ALL, " approx %i bytes (%.2f%s)\n", estTotalSize, printSize, sizeSuffix);
-	ri->Printf (PRINT_ALL, " %i total images\n\n", tr.numImages );
+	ri.Printf (PRINT_ALL, " ---------\n");
+	ri.Printf (PRINT_ALL, " approx %i bytes (%.2f%s)\n", estTotalSize, printSize, sizeSuffix);
+	ri.Printf (PRINT_ALL, " %i total images\n\n", tr.numImages );
 }
 
 //=======================================================================
@@ -336,7 +336,7 @@ static void ResampleTexture( byte *in, int inwidth, int inheight, byte *out,
 	byte	*pix1, *pix2, *pix3, *pix4;
 
 	if (outwidth>2048)
-		ri->Error(ERR_DROP, "ResampleTexture: max width");
+		ri.Error(ERR_DROP, "ResampleTexture: max width");
 								
 	fracstep = inwidth*0x10000/outwidth;
 
@@ -1319,7 +1319,7 @@ static void R_MipMap2( byte *in, int inWidth, int inHeight ) {
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = (unsigned int *)ri->Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (unsigned int *)ri.Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	inWidthMask = inWidth - 1;
 	inHeightMask = inHeight - 1;
@@ -1354,7 +1354,7 @@ static void R_MipMap2( byte *in, int inWidth, int inHeight ) {
 	}
 
 	Com_Memcpy( in, temp, outWidth * outHeight * 4 );
-	ri->Hunk_FreeTempMemory( temp );
+	ri.Hunk_FreeTempMemory( temp );
 }
 
 
@@ -1366,7 +1366,7 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = (byte *)ri->Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (byte *)ri.Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	for ( i = 0 ; i < outHeight ; i++ ) {
 		byte *outbyte = temp + (  i          * outWidth ) * 4;
@@ -1396,7 +1396,7 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 	}
 
 	Com_Memcpy( in, temp, outWidth * outHeight * 4 );
-	ri->Hunk_FreeTempMemory( temp );
+	ri.Hunk_FreeTempMemory( temp );
 }
 
 /*
@@ -1632,7 +1632,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 		int finalwidth, finalheight;
 		//int startTime, endTime;
 
-		//startTime = ri->Milliseconds();
+		//startTime = ri.Milliseconds();
 
 		finalwidth = scaled_width << r_imageUpsample->integer;
 		finalheight = scaled_height << r_imageUpsample->integer;
@@ -1649,7 +1649,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 			finalheight >>= 1;
 		}
 
-		*resampledBuffer = (byte *)ri->Hunk_AllocateTempMemory( finalwidth * finalheight * 4 );
+		*resampledBuffer = (byte *)ri.Hunk_AllocateTempMemory( finalwidth * finalheight * 4 );
 
 		if (scaled_width != width || scaled_height != height)
 		{
@@ -1690,9 +1690,9 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 		}
 
 
-		//endTime = ri->Milliseconds();
+		//endTime = ri.Milliseconds();
 
-		//ri->Printf(PRINT_ALL, "upsampled %dx%d to %dx%d in %dms\n", width, height, scaled_width, scaled_height, endTime - startTime);
+		//ri.Printf(PRINT_ALL, "upsampled %dx%d to %dx%d in %dms\n", width, height, scaled_width, scaled_height, endTime - startTime);
 
 		*data = *resampledBuffer;
 		width = scaled_width;
@@ -1701,7 +1701,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 	else if ( scaled_width != width || scaled_height != height ) {
 		if (data && resampledBuffer)
 		{
-			*resampledBuffer = (byte *)ri->Hunk_AllocateTempMemory( scaled_width * scaled_height * 4 );
+			*resampledBuffer = (byte *)ri.Hunk_AllocateTempMemory( scaled_width * scaled_height * 4 );
 			ResampleTexture (*data, width, height, *resampledBuffer, scaled_width, scaled_height);
 			*data = *resampledBuffer;
 		}
@@ -2110,7 +2110,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, int fla
 		RawImage_ScaleToPower2(&data, &width, &height, &scaled_width, &scaled_height, type, flags, &resampledBuffer);
 	}
 
-	scaledBuffer = (byte *)ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
+	scaledBuffer = (byte *)ri.Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	//
 	// scan the texture for each channel's max values
@@ -2229,9 +2229,9 @@ done:
 	GL_CheckErrors();
 
 	if ( scaledBuffer != 0 )
-		ri->Hunk_FreeTempMemory( scaledBuffer );
+		ri.Hunk_FreeTempMemory( scaledBuffer );
 	if ( resampledBuffer != 0 )
-		ri->Hunk_FreeTempMemory( resampledBuffer );
+		ri.Hunk_FreeTempMemory( resampledBuffer );
 }
 
 
@@ -2356,7 +2356,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 	int         glWrapClampMode;
 
 	if (strlen(name) >= MAX_QPATH ) {
-		ri->Error (ERR_DROP, "R_CreateImage: \"%s\" is too long", name);
+		ri.Error (ERR_DROP, "R_CreateImage: \"%s\" is too long", name);
 	}
 	if ( !strncmp( name, "*lightmap", 9 ) ) {
 		isLightmap = qtrue;
@@ -2502,7 +2502,7 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 
 	RawImage_ScaleToPower2(&pic, &width, &height, &scaled_width, &scaled_height, image->type, image->flags, &resampledBuffer);
 
-	scaledBuffer = (byte *)ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
+	scaledBuffer = (byte *)ri.Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	GL_SelectTexture( image->TMU );
 	GL_Bind(image);	
@@ -2564,9 +2564,9 @@ done:
 	GL_CheckErrors();
 
 	if ( scaledBuffer != 0 )
-		ri->Hunk_FreeTempMemory( scaledBuffer );
+		ri.Hunk_FreeTempMemory( scaledBuffer );
 	if ( resampledBuffer != 0 )
-		ri->Hunk_FreeTempMemory( resampledBuffer );
+		ri.Hunk_FreeTempMemory( resampledBuffer );
 }
 
 static void R_CreateNormalMap ( const char *name, byte *pic, int width, int height, int flags )
@@ -2661,7 +2661,7 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 				}
 			}
 			
-			ri->Free(blurPic);
+			ri.Free(blurPic);
 			
 			YCoCgAtoRGBA(pic, pic, width, height);
 		}
@@ -2701,7 +2701,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 			// the white image can be used with any set of parms, but other mismatches are errors
 			if ( strcmp( name, "*white" ) ) {
 				if ( image->flags != flags ) {
-					ri->Printf( PRINT_DEVELOPER, "WARNING: reused image %s with mixed flags (%i vs %i)\n", name, image->flags, flags );
+					ri.Printf( PRINT_DEVELOPER, "WARNING: reused image %s with mixed flags (%i vs %i)\n", name, image->flags, flags );
 				}
 			}
 			return image;
@@ -2842,7 +2842,7 @@ static void R_CreateFogImage( void ) {
 	float	d;
 	float	borderColor[4];
 
-	data = (byte *)ri->Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
+	data = (byte *)ri.Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
 
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {
@@ -2859,7 +2859,7 @@ static void R_CreateFogImage( void ) {
 	// the border color at the edges.  OpenGL 1.2 has clamp-to-edge, which does
 	// what we want.
 	tr.fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, IMGTYPE_COLORALPHA, IMGFLAG_CLAMPTOEDGE, 0 );
-	ri->Hunk_FreeTempMemory( data );
+	ri.Hunk_FreeTempMemory( data );
 
 	borderColor[0] = 1.0;
 	borderColor[1] = 1.0;
@@ -3218,13 +3218,13 @@ void R_SetColorMappings( void ) {
 	tr.identityLightByte = 255 * tr.identityLight;
 
 	if ( r_intensity->value <= 1 ) {
-		ri->Cvar_Set( "r_intensity", "1" );
+		ri.Cvar_Set( "r_intensity", "1" );
 	}
 
 	if ( r_gamma->value < 0.5f ) {
-		ri->Cvar_Set( "r_gamma", "0.5" );
+		ri.Cvar_Set( "r_gamma", "0.5" );
 	} else if ( r_gamma->value > 3.0f ) {
-		ri->Cvar_Set( "r_gamma", "3.0" );
+		ri.Cvar_Set( "r_gamma", "3.0" );
 	}
 
 	g = r_gamma->value;
@@ -3266,7 +3266,7 @@ void R_SetColorMappings( void ) {
 
 	if ( glConfig.deviceSupportsGamma )
 	{
-		ri->WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
+		ri.WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
 	}
 }
 

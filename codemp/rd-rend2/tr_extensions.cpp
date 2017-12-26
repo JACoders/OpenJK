@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 
-#define GL_GetProcAddress ri->GL_GetProcAddress
+#define GL_GetProcAddress ri.GL_GetProcAddress
 
 // Drawing commands
 PFNGLDRAWRANGEELEMENTSPROC qglDrawRangeElements;
@@ -448,7 +448,7 @@ void GLimp_InitCoreFunctions()
 		Q_strncpyz( version, (const char *) qglGetString (GL_SHADING_LANGUAGE_VERSION), sizeof( version ) );
 		sscanf(version, "%d.%d", &glRefConfig.glslMajorVersion, &glRefConfig.glslMinorVersion);
 
-		ri->Printf(PRINT_ALL, "...using GLSL version %s\n", version);
+		ri.Printf(PRINT_ALL, "...using GLSL version %s\n", version);
 	}
 
 	// Framebuffer and renderbuffers
@@ -523,16 +523,16 @@ void GLimp_InitExtensions()
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+			ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		ri->Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// Memory info
@@ -555,11 +555,11 @@ void GLimp_InitExtensions()
 		if (r_ext_compressed_textures->integer)
 			glRefConfig.textureCompression |= TCR_LATC;
 
-		ri->Printf(PRINT_ALL, result[r_ext_compressed_textures->integer ? 1 : 0], extension);
+		ri.Printf(PRINT_ALL, result[r_ext_compressed_textures->integer ? 1 : 0], extension);
 	}
 	else
 	{
-		ri->Printf(PRINT_ALL, result[2], extension);
+		ri.Printf(PRINT_ALL, result[2], extension);
 	}
 
 	// GL_ARB_texture_compression_bptc
@@ -569,11 +569,11 @@ void GLimp_InitExtensions()
 		if (r_ext_compressed_textures->integer >= 2)
 			glRefConfig.textureCompression |= TCR_BPTC;
 
-		ri->Printf(PRINT_ALL, result[(r_ext_compressed_textures->integer >= 2) ? 1 : 0], extension);
+		ri.Printf(PRINT_ALL, result[(r_ext_compressed_textures->integer >= 2) ? 1 : 0], extension);
 	}
 	else
 	{
-		ri->Printf(PRINT_ALL, result[2], extension);
+		ri.Printf(PRINT_ALL, result[2], extension);
 	}
 
 	// GL_ARB_texture_storage
@@ -589,11 +589,11 @@ void GLimp_InitExtensions()
 
 		glRefConfig.immutableTextures = loaded;
 
-		ri->Printf(PRINT_ALL, result[loaded], extension);
+		ri.Printf(PRINT_ALL, result[loaded], extension);
 	}
 	else
 	{
-		ri->Printf(PRINT_ALL, result[2], extension);
+		ri.Printf(PRINT_ALL, result[2], extension);
 	}
 
 	// GL_ARB_buffer_storage
@@ -613,11 +613,11 @@ void GLimp_InitExtensions()
 		}
 
 		glRefConfig.immutableBuffers = loaded;
-		ri->Printf(PRINT_ALL, result[loaded], extension);
+		ri.Printf(PRINT_ALL, result[loaded], extension);
 	}
 	else
 	{
-		ri->Printf(PRINT_ALL, result[2], extension);
+		ri.Printf(PRINT_ALL, result[2], extension);
 	}
 
 	// GL_ARB_debug_output
@@ -639,7 +639,7 @@ void GLimp_InitExtensions()
 		}
 
 		glRefConfig.debugContext = loaded;
-		ri->Printf(PRINT_ALL, result[loaded], extension);
+		ri.Printf(PRINT_ALL, result[loaded], extension);
 	}
 
 	// GL_ARB_timer_query
@@ -654,7 +654,7 @@ void GLimp_InitExtensions()
 
 		glRefConfig.timerQuery = loaded;
 
-		ri->Printf(PRINT_ALL, result[loaded], extension);
+		ri.Printf(PRINT_ALL, result[loaded], extension);
 	}
 
 	// use float lightmaps?

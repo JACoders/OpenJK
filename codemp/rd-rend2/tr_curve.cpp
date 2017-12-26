@@ -387,13 +387,13 @@ srfBspSurface_t *R_CreateSurfaceGridMesh(int width, int height,
 	size = (width * height - 1) * sizeof( srfVert_t ) + sizeof( *grid );
 
 #ifdef PATCH_STITCHING
-	grid = /*ri->Hunk_Alloc*/ (srfBspSurface_t *)Z_Malloc( size, TAG_GRIDMESH );
+	grid = /*ri.Hunk_Alloc*/ (srfBspSurface_t *)Z_Malloc( size, TAG_GRIDMESH );
 	Com_Memset(grid, 0, size);
 
-	grid->widthLodError = /*ri->Hunk_Alloc*/ (float *)Z_Malloc( width * 4, TAG_GRIDMESH );
+	grid->widthLodError = /*ri.Hunk_Alloc*/ (float *)Z_Malloc( width * 4, TAG_GRIDMESH );
 	Com_Memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = /*ri->Hunk_Alloc*/ (float *)Z_Malloc( height * 4, TAG_GRIDMESH );
+	grid->heightLodError = /*ri.Hunk_Alloc*/ (float *)Z_Malloc( height * 4, TAG_GRIDMESH );
 	Com_Memcpy( grid->heightLodError, errorTable[1], height * 4 );
 
 	grid->numIndexes = numIndexes;
@@ -403,21 +403,21 @@ srfBspSurface_t *R_CreateSurfaceGridMesh(int width, int height,
 	grid->numVerts = (width * height);
 	grid->verts = (srfVert_t *)Z_Malloc(grid->numVerts * sizeof(srfVert_t), TAG_GRIDMESH);
 #else
-	grid = ri->Hunk_Alloc( size );
+	grid = ri.Hunk_Alloc( size );
 	Com_Memset(grid, 0, size);
 
-	grid->widthLodError = ri->Hunk_Alloc( width * 4 );
+	grid->widthLodError = ri.Hunk_Alloc( width * 4 );
 	Com_Memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = ri->Hunk_Alloc( height * 4 );
+	grid->heightLodError = ri.Hunk_Alloc( height * 4 );
 	Com_Memcpy( grid->heightLodError, errorTable[1], height * 4 );
 
 	grid->numIndexes = numIndexes;
-	grid->indexes = (glIndex_t *)ri->Hunk_Alloc(grid->numIndexes * sizeof(glIndex_t), h_low);
+	grid->indexes = (glIndex_t *)ri.Hunk_Alloc(grid->numIndexes * sizeof(glIndex_t), h_low);
 	Com_Memcpy(grid->indexes, indexes, numIndexes * sizeof(glIndex_t));
 
 	grid->numVerts = (width * height);
-	grid->verts = ri->Hunk_Alloc(grid->numVerts * sizeof(srfVert_t), h_low);
+	grid->verts = ri.Hunk_Alloc(grid->numVerts * sizeof(srfVert_t), h_low);
 #endif
 
 	grid->width = width;

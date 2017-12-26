@@ -86,8 +86,8 @@ void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
 	if ( bundle->isVideoMap ) {
 		int oldtmu = glState.currenttmu;
 		GL_SelectTexture(tmu);
-		ri->CIN_RunCinematic(bundle->videoMapHandle);
-		ri->CIN_UploadCinematic(bundle->videoMapHandle);
+		ri.CIN_RunCinematic(bundle->videoMapHandle);
+		ri.CIN_UploadCinematic(bundle->videoMapHandle);
 		GL_SelectTexture(oldtmu);
 		return;
 	}
@@ -286,7 +286,7 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 			break;
 
 		default:
-			ri->Error( ERR_DROP, "ERROR: unknown texmod '%d' in shader '%s'", bundle->texMods[tm].type, tess.shader->name );
+			ri.Error( ERR_DROP, "ERROR: unknown texmod '%d' in shader '%s'", bundle->texMods[tm].type, tess.shader->name );
 			break;
 		}
 
@@ -720,7 +720,7 @@ static void CaptureDrawData(const shaderCommands_t *input, shaderStage_t *stage,
 				glState.currentVBO->vertexesVBO,
 				glState.currentIBO->indexesVBO,
 				numIndexes / 3);
-		ri->FS_Write(data, strlen(data), tr.debugFile);
+		ri.FS_Write(data, strlen(data), tr.debugFile);
 	}
 	else
 	{
@@ -736,7 +736,7 @@ static void CaptureDrawData(const shaderCommands_t *input, shaderStage_t *stage,
 				glState.currentVBO->vertexesVBO,
 				glState.currentIBO->indexesVBO,
 				input->numIndexes / 3);
-		ri->FS_Write(data, strlen(data), tr.debugFile);
+		ri.FS_Write(data, strlen(data), tr.debugFile);
 	}
 }
 
@@ -1907,10 +1907,10 @@ void RB_EndSurface( void ) {
 	}
 
 	if (input->indexes[SHADER_MAX_INDEXES-1] != 0) {
-		ri->Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_INDEXES hit");
+		ri.Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_INDEXES hit");
 	}	
 	if (input->xyz[SHADER_MAX_VERTEXES-1][0] != 0) {
-		ri->Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_VERTEXES hit");
+		ri.Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_VERTEXES hit");
 	}
 
 	if ( tess.shader == tr.shadowShader ) {

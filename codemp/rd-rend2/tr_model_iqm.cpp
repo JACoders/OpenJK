@@ -163,7 +163,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 
 	LL( header->version );
 	if( header->version != IQM_VERSION ) {
-		ri->Printf(PRINT_WARNING, "R_LoadIQM: %s is a unsupported IQM version (%d), only version %d is supported.\n",
+		ri.Printf(PRINT_WARNING, "R_LoadIQM: %s is a unsupported IQM version (%d), only version %d is supported.\n",
 				mod_name, header->version, IQM_VERSION);
 		return qfalse;
 	}
@@ -201,7 +201,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 
 	// check ioq3 joint limit
 	if ( header->num_joints > IQM_MAX_JOINTS ) {
-		ri->Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %d joints (%d).\n",
+		ri.Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %d joints (%d).\n",
 				mod_name, IQM_MAX_JOINTS, header->num_joints);
 		return qfalse;
 	}
@@ -339,14 +339,14 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 		// check ioq3 limits
 		if ( mesh->num_vertexes >= SHADER_MAX_VERTEXES ) 
 		{
-			ri->Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %i verts on %s (%i).\n",
+			ri.Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %i verts on %s (%i).\n",
 				  mod_name, SHADER_MAX_VERTEXES-1, meshName[0] ? meshName : "a surface",
 				  mesh->num_vertexes );
 			return qfalse;
 		}
 		if ( mesh->num_triangles*3 >= SHADER_MAX_INDEXES ) 
 		{
-			ri->Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %i triangles on %s (%i).\n",
+			ri.Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %i triangles on %s (%i).\n",
 				  mod_name, ( SHADER_MAX_INDEXES / 3 ) - 1, meshName[0] ? meshName : "a surface",
 				  mesh->num_triangles );
 			return qfalse;
@@ -363,7 +363,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 	}
 
 	if( header->num_poses != header->num_joints && header->num_poses != 0 ) {
-		ri->Printf(PRINT_WARNING, "R_LoadIQM: %s has %d poses and %d joints, must have the same number or 0 poses\n",
+		ri.Printf(PRINT_WARNING, "R_LoadIQM: %s has %d poses and %d joints, must have the same number or 0 poses\n",
 			  mod_name, header->num_poses, header->num_joints );
 		return qfalse;
 	}
@@ -483,7 +483,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 	}
 
 	mod->type = MOD_IQM;
-	iqmData = (iqmData_t *)ri->Hunk_Alloc( size, h_low );
+	iqmData = (iqmData_t *)ri.Hunk_Alloc( size, h_low );
 	mod->data.iqm = iqmData;
 
 	// fill header
@@ -866,7 +866,7 @@ void R_AddIQMSurfaces( trRefEntity_t *ent, int entityNum ) {
 	     || (ent->e.frame < 0)
 	     || (ent->e.oldframe >= data->num_frames)
 	     || (ent->e.oldframe < 0) ) {
-		ri->Printf( PRINT_DEVELOPER, "R_AddIQMSurfaces: no such frame %d to %d for '%s'\n",
+		ri.Printf( PRINT_DEVELOPER, "R_AddIQMSurfaces: no such frame %d to %d for '%s'\n",
 			   ent->e.oldframe, ent->e.frame,
 			   tr.currentModel->name );
 		ent->e.frame = 0;

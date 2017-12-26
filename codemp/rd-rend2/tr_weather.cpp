@@ -78,7 +78,7 @@ void R_ShutdownWeatherSystem()
 	}
 	else
 	{
-		ri->Printf(PRINT_DEVELOPER,
+		ri.Printf(PRINT_DEVELOPER,
 			"Weather system shutdown requested, but it is already shut down.\n");
 	}
 }
