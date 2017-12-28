@@ -765,7 +765,7 @@ static void CG_RegisterSounds( void ) {
 	if ( cgs.gametype >= GT_TEAM || com_buildScript.integer ) {
 
 #ifdef JK2AWARDS
-		cgs.media.captureAwardSound = trap_S_RegisterSound("sound/chars/protocol/misc/capture.wav");
+		cgs.media.captureAwardSound = trap->S_RegisterSound("sound/chars/protocol/misc/capture.wav");
 #endif
 		cgs.media.redLeadsSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM046");
 		cgs.media.blueLeadsSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM045");
@@ -815,15 +815,15 @@ static void CG_RegisterSounds( void ) {
 
 	cgs.media.crackleSound = trap->S_RegisterSound( "sound/effects/energy_crackle.wav" );
 #ifdef JK2AWARDS
-	cgs.media.firstImpressiveSound = trap_S_RegisterSound("sound/chars/protocol/misc/first_impressive.wav");
-	cgs.media.impressiveSound = trap_S_RegisterSound("sound/chars/protocol/misc/impressive.wav");
-	cgs.media.firstExcellentSound = trap_S_RegisterSound("sound/chars/protocol/misc/first_excellent.wav");
-	cgs.media.excellentSound = trap_S_RegisterSound("sound/chars/protocol/misc/excellent.wav");
-	cgs.media.firstHumiliationSound = trap_S_RegisterSound("sound/chars/protocol/misc/first_gauntlet.wav");
-	cgs.media.humiliationSound = trap_S_RegisterSound("sound/chars/protocol/misc/humiliation.wav");
-	cgs.media.deniedSound = trap_S_RegisterSound("sound/chars/protocol/misc/denied.wav");
-	cgs.media.defendSound = trap_S_RegisterSound("sound/chars/protocol/misc/defense.wav");
-	cgs.media.assistSound = trap_S_RegisterSound("sound/chars/protocol/misc/assist.wav");
+	cgs.media.firstImpressiveSound = trap->S_RegisterSound("sound/chars/protocol/misc/first_impressive.wav");
+	cgs.media.impressiveSound = trap->S_RegisterSound("sound/chars/protocol/misc/impressive.wav");
+	cgs.media.firstExcellentSound = trap->S_RegisterSound("sound/chars/protocol/misc/first_excellent.wav");
+	cgs.media.excellentSound = trap->S_RegisterSound("sound/chars/protocol/misc/excellent.wav");
+	cgs.media.firstHumiliationSound = trap->S_RegisterSound("sound/chars/protocol/misc/first_gauntlet.wav");
+	cgs.media.humiliationSound = trap->S_RegisterSound("sound/chars/protocol/misc/humiliation.wav");
+	cgs.media.deniedSound = trap->S_RegisterSound("sound/chars/protocol/misc/denied.wav");
+	cgs.media.defendSound = trap->S_RegisterSound("sound/chars/protocol/misc/defense.wav");
+	cgs.media.assistSound = trap->S_RegisterSound("sound/chars/protocol/misc/assist.wav");
 #endif
 
 	/*
