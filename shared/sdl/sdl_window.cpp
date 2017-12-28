@@ -47,6 +47,8 @@ cvar_t *r_allowSoftwareGL;
 cvar_t	*r_fullscreen = 0;
 cvar_t	*r_noborder;
 cvar_t	*r_centerWindow;
+cvar_t	*vid_xpos;
+cvar_t	*vid_ypos;
 cvar_t	*r_customwidth;
 cvar_t	*r_customheight;
 cvar_t	*r_swapInterval;
@@ -410,8 +412,11 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 	{
 		x = ( desktopMode.w / 2 ) - ( glConfig->vidWidth / 2 );
 		y = ( desktopMode.h / 2 ) - ( glConfig->vidHeight / 2 );
+	} else {
+		x = vid_xpos->integer;
+		y = vid_ypos->integer;
 	}
-
+	
 	// Destroy existing state if it exists
 	if( opengl_context != NULL )
 	{
@@ -742,7 +747,9 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	// Window cvars
 	r_fullscreen		= Cvar_Get( "r_fullscreen",			"1",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_noborder			= Cvar_Get( "r_noborder",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
-	r_centerWindow		= Cvar_Get( "r_centerWindow",		"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_centerWindow		= Cvar_Get( "r_centerWindow",		"1",		CVAR_ARCHIVE_ND|CVAR_LATCH );
+	vid_xpos			= Cvar_Get( "vid_xpos",				"3",		CVAR_ARCHIVE_ND|CVAR_LATCH );
+	vid_ypos			= Cvar_Get( "vid_ypos",				"22",		CVAR_ARCHIVE_ND|CVAR_LATCH );
 	r_customwidth		= Cvar_Get( "r_customwidth",		"1440",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_customheight		= Cvar_Get( "r_customheight",		"1080",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_swapInterval		= Cvar_Get( "r_swapInterval",		"0",		CVAR_ARCHIVE_ND );

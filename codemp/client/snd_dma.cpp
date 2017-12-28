@@ -1553,7 +1553,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 		return;
 	}
 
-	if ( com_minimized->integer ) {
+	if ( com_minimized->integer || com_unfocused->integer ) { //entchannel != CHAN_MUSIC ?
 		return;
 	}
 

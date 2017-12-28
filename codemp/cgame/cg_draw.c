@@ -5228,9 +5228,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		hShader = cgs.media.crosshairShader[ cg_drawCrosshair.integer % NUM_CROSSHAIRS ];
 	}
 
-	chX = x + cg.refdef.x + 0.5 * (640 - w);
-	chY = y + cg.refdef.y + 0.5 * (480 - h);
-	trap->R_DrawStretchPic( chX, chY, w, h, 0, 0, 1, 1, hShader );
+	chX = x + cg.refdef.x + 0.5 * (SCREEN_WIDTH - w * cgs.widthRatioCoef);
+	chY = y + cg.refdef.y + 0.5 * (SCREEN_HEIGHT - h);
+	trap->R_DrawStretchPic( chX, chY, w * cgs.widthRatioCoef, h, 0, 0, 1, 1, hShader );
 
 	//draw a health bar directly under the crosshair if we're looking at something
 	//that takes damage
@@ -5394,8 +5394,8 @@ void CG_SaberClashFlare( void )
 	VectorSet4( color, 0.8f, 0.8f, 0.8f, 1.0f );
 	trap->R_SetColor( color );
 
-	CG_DrawPic( x - ( v * 300 ), y - ( v * 300 ),
-				v * 600, v * 600,
+	CG_DrawPic( x - ( v * 300 ) * cgs.widthRatioCoef, y - ( v * 300 ),
+				v * 600 * cgs.widthRatioCoef, v * 600,
 				trap->R_RegisterShader( "gfx/effects/saberFlare" ));
 }
 

@@ -1044,6 +1044,10 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 		GL_Bind(image);
 	}
 
+	if (r_smartpicmip && r_smartpicmip->integer && Q_stricmpn(name, "textures/", 9)) {
+		allowPicmip = qfalse;
+	}
+
 	Upload32( (unsigned *)pic,	format,
 								(qboolean)image->mipmap,
 								allowPicmip,
