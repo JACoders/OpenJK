@@ -90,7 +90,7 @@ XCVAR_DEF( cg_zoomFov,							"40.0",					NULL,					CVAR_ARCHIVE ) //doesn't do a
 XCVAR_DEF( cg_fovAspectAdjust,					"1",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_fovViewmodel,						"80",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_fovViewmodelAdjust,				"1",					NULL,					CVAR_ARCHIVE )
-XCVAR_DEF( cl_ratioFix,							"1",					CG_Set2DRatio(),		CVAR_ARCHIVE )
+XCVAR_DEF( cl_ratioFix,							"1",					CG_Set2DRatio,		CVAR_ARCHIVE )
 #if 0
 XCVAR_DEF( cg_fpls,								"0",					NULL,					CVAR_NONE )
 #endif

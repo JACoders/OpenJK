@@ -1727,6 +1727,7 @@ void CG_NextInventory_f(void);
 void CG_PrevInventory_f(void);
 void CG_NextForcePower_f(void);
 void CG_PrevForcePower_f(void);
+void CG_Set2DRatio(void);
 
 //
 // cg_view.c
