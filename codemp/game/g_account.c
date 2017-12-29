@@ -4673,7 +4673,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 	if (style == -1) {
 		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 			"GROUP BY username "
-			"ORDER BY score DESC LIMIT ?, 10";
+			"ORDER BY score DESC, rank DESC LIMIT ?, 10";
 
 		//sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -4683,7 +4683,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 			"WHERE style = ? "
 			"GROUP BY username "
-			"ORDER BY score DESC LIMIT ?, 10";
+			"ORDER BY score DESC, rank DESC LIMIT ?, 10";
 
 		//sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
