@@ -1285,8 +1285,13 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK ) {
 		// pass unknown strings to the game
 		if (!u->name && sv.state == SS_GAME && (cl->state == CS_ACTIVE || cl->state == CS_PRIMED)) {
 			// strip \r \n and ;
-			if ( sv_filterCommands->integer )
-				Cmd_Args_Sanitize();
+			if ( sv_filterCommands->integer ) {
+				Cmd_Args_Sanitize( MAX_CVAR_VALUE_STRING, "\n\r", "  " );
+				if ( sv_filterCommands->integer == 2 ) {
+					// also strip ';' for callvote
+					Cmd_Args_Sanitize( MAX_CVAR_VALUE_STRING, ";", " " );
+				}
+			}
 			GVM_ClientCommand( cl - svs.clients );
 		}
 	}
@@ -1329,18 +1334,21 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// but not other people
 	// We don't do this when the client hasn't been active yet since its
 	// normal to spam a lot of commands when downloading
-	if ( !com_cl_running->integer && cl->state >= CS_ACTIVE && sv_floodProtect->integer) {
+	if ( !com_cl_running->integer &&
+		cl->state >= CS_ACTIVE &&
+		sv_floodProtect->integer )
+	{
 		const int floodTime = (sv_floodProtect->integer == 1) ? 1000 : sv_floodProtect->integer;
-		if (svs.time < (cl->lastReliableTime + floodTime)) {
+		if ( svs.time < (cl->lastReliableTime + floodTime) ) {
 			// ignore any other text messages from this client but let them keep playing
 			// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
-			clientOk = qfalse;		
+			clientOk = qfalse;
 		}
 		else {
-			cl->lastReliableTime = svs.time;	
+			cl->lastReliableTime = svs.time;
 		}
-		if (sv_floodProtectSlow->integer) {
-			cl->lastReliableTime = svs.time;		
+		if ( sv_floodProtectSlow->integer ) {
+			cl->lastReliableTime = svs.time;
 		}
 	}
 
@@ -1422,9 +1430,14 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	for ( i = 0 ; i < cmdCount ; i++ ) {
 		cmd = &cmds[i];
 		MSG_ReadDeltaUsercmdKey( msg, key, oldcmd, cmd );
-		if ( sv_legacyFixForceSelect->integer && (cmd->forcesel == FP_LEVITATION || cmd->forcesel >= NUM_FORCE_POWERS) )
-		{
-			cmd->forcesel = 0xFFu;
+		if ( sv_legacyFixes->integer ) {
+			// block "charge jump" and other nonsense
+			if ( cmd->forcesel == FP_LEVITATION || cmd->forcesel >= NUM_FORCE_POWERS ) {
+				cmd->forcesel = 0xFFu;
+			}
+
+			// affects speed calculation
+			cmd->angles[ROLL] = 0;
 		}
 		oldcmd = cmd;
 	}

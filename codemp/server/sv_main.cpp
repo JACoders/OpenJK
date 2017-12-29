@@ -63,11 +63,11 @@ cvar_t	*sv_floodProtect;
 cvar_t	*sv_floodProtectSlow;
 cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
 cvar_t	*sv_needpass;
-cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
+cvar_t	*sv_filterCommands; // strict filtering on commands (1: strip ['\r', '\n'], 2: also strip ';')
 cvar_t	*sv_autoDemo;
 cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
-cvar_t	*sv_legacyFixForceSelect;
+cvar_t	*sv_legacyFixes;
 cvar_t	*sv_banFile;
 
 serverBan_t serverBans[SERVER_MAXBANS];

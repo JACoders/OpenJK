@@ -322,31 +322,15 @@ int WeaponAttackAnim[WP_NUM_WEAPONS] =
 	BOTH_ATTACK1//WP_TURRET,
 };
 
-qboolean BG_FileExists(const char *fileName)
-{
-	if (fileName && fileName[0])
-	{
-		int fh = 0;
-	#ifdef _GAME
-		trap->FS_Open(fileName, &fh, FS_READ);
-	#elif _CGAME
-		trap->FS_Open(fileName, &fh, FS_READ);
-	#elif UI_BUILD
-		trap->FS_Open(fileName, &fh, FS_READ);
-	#endif
-		if (fh > 0)
-		{
-		#ifdef _GAME
-			trap->FS_Close(fh);
-		#elif _CGAME
-			trap->FS_Close(fh);
-		#elif UI_BUILD
-			trap->FS_Close(fh);
-		#endif
+qboolean BG_FileExists( const char *fileName ) {
+	if ( fileName && fileName[0] ) {
+		fileHandle_t f = NULL_FILE;
+		trap->FS_Open( fileName, &f, FS_READ );
+		if ( f > 0 ) {
+			trap->FS_Close( f );
 			return qtrue;
 		}
 	}
-
 	return qfalse;
 }
 

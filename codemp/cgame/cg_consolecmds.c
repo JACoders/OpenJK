@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_local.h"
 #include "game/bg_saga.h"
+#include "ui/ui_shared.h"
 
 /*
 =================
@@ -271,6 +272,17 @@ static void CG_SiegeCompleteCvarUpdate_f(void)
 	CG_SiegeBriefingDisplay(SIEGETEAM_TEAM2, 1);
 }
 
+static void CG_LoadHud_f( void ) {
+	const char *hudSet = cg_hudFiles.string;
+	if ( hudSet[0] == '\0' ) {
+		hudSet = "ui/jahud.txt";
+	}
+
+	String_Init();
+	Menu_Reset();
+	CG_LoadMenus( hudSet );
+}
+
 typedef struct consoleCommand_s {
 	const char	*cmd;
 	void		(*func)(void);
@@ -290,6 +302,7 @@ static consoleCommand_t	commands[] = {
 	{ "invnext",					CG_NextInventory_f },
 	{ "invprev",					CG_PrevInventory_f },
 	{ "loaddeferred",				CG_LoadDeferredPlayers },
+	{ "loadhud",					CG_LoadHud_f },
 	{ "nextframe",					CG_TestModelNextFrame_f },
 	{ "nextskin",					CG_TestModelNextSkin_f },
 	{ "prevframe",					CG_TestModelPrevFrame_f },
