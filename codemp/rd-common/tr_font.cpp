@@ -1550,7 +1550,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	if (iFontHandle & STYLE_DROPSHADOW)
 		if (iFontHandle & STYLE_DROPSHADOW)
 		{
-			if (ri->Cvar_VariableIntegerValue("cl_coloredTextShadows")) {
+			if (ri.Cvar_VariableIntegerValue("cl_coloredTextShadows")) {
 				int i = 0, r = 0;
 				char dropShadowText[1024];
 				const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
