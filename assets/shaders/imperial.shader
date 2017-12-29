@@ -1,3 +1,5 @@
+//Shader fix by TnG, adapted to Eternaljk by Art
+
 textures/impdetention/lightnew
 {
 	q3map_surfacelight	1200
@@ -6003,16 +6005,20 @@ models/map_objects/imperial/consoleface_01
 
 models/map_objects/imperial/airpure
 {
-	q3map_nolightmap
+    {
+        map $lightmap
+        rgbGen identity
+    }
     {
         map models/map_objects/imperial/airpure
-        rgbGen lightingDiffuse
+        blendFunc GL_DST_COLOR GL_ZERO
+        rgbGen identity
     }
     {
         map models/map_objects/imperial/airpure_glw
         blendFunc GL_ONE GL_ONE
         glow
-        rgbGen wave sin 0.5 0.35 0 0.6
+        rgbGen identity
     }
 }
 
