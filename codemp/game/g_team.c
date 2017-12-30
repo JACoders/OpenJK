@@ -608,7 +608,7 @@ void Team_ReturnFlagSound( gentity_t *ent, int team ) {
 	gentity_t	*te;
 
 	if (ent == NULL) {
-		trap->Print ("Warning:  NULL passed to Team_ReturnFlagSound\n");
+		//trap->Print ("Warning:  NULL passed to Team_ReturnFlagSound\n");
 		return;
 	}
 
