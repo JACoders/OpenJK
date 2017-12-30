@@ -7935,7 +7935,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		if (g_tweakWeapons.integer & WT_REPEATER_ALT_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Increased repeater alt damage\n");
 		if (g_tweakWeapons.integer & WT_FLECHETTE_SPRD)
-			Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flechette prim spread\n");
+			Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flechette primary spread\n");
 		if (g_tweakWeapons.integer & WT_FLECHETTE_ALT_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Decreased flechette alt damage\n");
 		if (g_tweakWeapons.integer & WT_FLECHETTE_ALT_SPRD)
@@ -8270,10 +8270,10 @@ void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
-void Cmd_PersonalBest_f( gentity_t *ent);
+//void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
 void Cmd_MapEnts_f( gentity_t *self);
-void Cmd_NotCompleted_f( gentity_t *ent );
+//void Cmd_NotCompleted_f( gentity_t *ent );
 #if _TESTBSP
 void Cmd_TestBSP_f( gentity_t *ent );
 #endif
@@ -8339,7 +8339,7 @@ command_t commands[] = {
 	{ "amvictory",			Cmd_EmoteVictory_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },
 
-	{ "best",				Cmd_PersonalBest_f,			CMD_NOINTERMISSION },
+	//{ "best",				Cmd_PersonalBest_f,			CMD_NOINTERMISSION },
 	{ "blink",				Cmd_Blink_f,				CMD_NOINTERMISSION },//change for admin?
 
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
@@ -8400,7 +8400,7 @@ command_t commands[] = {
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 
-	{ "notcompleted",		Cmd_NotCompleted_f,			CMD_NOINTERMISSION },
+	//{ "notcompleted",		Cmd_NotCompleted_f,			CMD_NOINTERMISSION },
 
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
