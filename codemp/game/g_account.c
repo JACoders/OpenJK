@@ -13,7 +13,7 @@
 
 #define LOCAL_DB_PATH "japro/data.db"
 //#define GLOBAL_DB_PATH sv_globalDBPath.string
-#define MAX_TMP_RACELOG_SIZE 80 * 1024
+//#define MAX_TMP_RACELOG_SIZE 80 * 1024
 
 #define CALL_SQLITE(f) {                                        \
         int i;                                                  \
@@ -3093,7 +3093,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
-				if (duration_ms < sqlite3_column_int(stmt, 0)) { //We are faster than this time..
+				if (duration_ms < sqlite3_column_int(stmt, 0)) { //We are faster than this time... If we dont find anything newrank stays -1
 					newRank = i;
 					break;
 				}
@@ -3110,6 +3110,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 		if (newRank == 0) { //We wern't faster than any times, so set our rank to count (+ 1) ? -- loda checkme
 			newRank = oldCount + 1;
+		}
+		if (newRank == -1) {//We didnt find any times, so we are first -- ?
+			newRank = 1;
 		}
 
 		if (oldRank == -1) {
