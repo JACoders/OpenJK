@@ -129,8 +129,6 @@ cvar_t *cl_afkTimeUnfocused;
 
 cvar_t *cl_logChat;
 
-cvar_t	*cl_idrive;
-
 int		cl_unfocusedTime;
 
 vec3_t cl_windVec;

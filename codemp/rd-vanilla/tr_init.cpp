@@ -1631,7 +1631,7 @@ void R_Register( void )
 	r_drawworld							= ri.Cvar_Get( "r_drawworld",						"1",						CVAR_CHEAT, "" );
 	r_drawfog							= ri.Cvar_Get( "r_drawfog",						"2",						CVAR_ARCHIVE_ND, "" );
 	r_lightmap							= ri.Cvar_Get( "r_lightmap",						"0",						CVAR_ARCHIVE_ND, "" );
-	r_distanceCull						= ri->Cvar_Get( "r_distanceCull",					"0",						CVAR_ARCHIVE_ND, "" );
+	r_distanceCull						= ri.Cvar_Get( "r_distanceCull",					"0",						CVAR_ARCHIVE_ND, "" );
 	r_portalOnly						= ri.Cvar_Get( "r_portalOnly",						"0",						CVAR_CHEAT, "" );
 	r_skipBackEnd						= ri.Cvar_Get( "r_skipBackEnd",					"0",						CVAR_CHEAT, "" );
 	r_measureOverdraw					= ri.Cvar_Get( "r_measureOverdraw",				"0",						CVAR_NONE, "" );
