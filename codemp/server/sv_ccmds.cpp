@@ -1619,6 +1619,13 @@ void SV_StopRecord_f( void ) {
 	SV_StopRecordDemo( cl );
 }
 
+/*
+====================
+SV_RenameDemo_f
+
+rename a demo, deleting the destination file if it already exists
+====================
+*/
 void SV_RenameDemo_f(void) {
 	char		from[MAX_OSPATH];
 	char		to[MAX_OSPATH];
@@ -1635,42 +1642,6 @@ void SV_RenameDemo_f(void) {
 	}
 
 	FS_Rename(from, to);
-}
-
-/*
-====================
-SV_RenameDemo_f
-
-rename a demo, deleting the destination file if it already exists
-====================
-*/
-void SV_RenameDemo_f( void ) {
-	//Make sure the files are demos.. to prevent abuse
-	//Dont allow going up a directory?
-	//char tempName[MAX_QPATH] = {0};
-	char		*from;
-	char		*to;
-
-	if (Cmd_Argc() != 3) {
-		return;
-	}
-
-	from = Cmd_Argv( 1 );
-	to = Cmd_Argv( 2 );
-
-	if (!COM_CompareExtension(from, ".dm_26") || !COM_CompareExtension(to, ".dm_26")) //Sourc or des file is not a demo, so stop this.
-		return; 
-
-	//If destination already exists, rename it to -temp
-	//Rename sourc to destination
-	//Check if all is ok
-	//Delete temp
-
-	//Com_Printf("RENAMEDEMO: Source: %s, Dest: %s\n", from, to);
-
-	//FS_Rename( to, tempName );
-	FS_Rename( from, to );
-	//FS_Remove ( tempName );
 }
 
 /*
