@@ -192,19 +192,33 @@ void CG_ParseServerinfo( void ) {
 
 	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
 
+	cgs.svfps = atoi( Info_ValueForKey( info, "sv_fps" ) );
 	cgs.isJAPlus = qfalse;
 	cgs.isJAPro = qfalse;
 	cgs.cinfo = 0;
 	cgs.jcinfo = 0;
 	cgs.restricts = 0;
-	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14 )) {	//uag :s - yes its fatz
+	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14 ) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {	//uag :s - yes its fatz
 		cgs.isJAPlus = qtrue;
 		cgs.cinfo = atoi (Info_ValueForKey (info, "jp_cinfo" ));//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
+		trap->Cvar_Set("ui_isJAPro", "0");
 	} 
 	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
 		cgs.isJAPro = qtrue;
-		cgs.jcinfo= atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+		cgs.jcinfo = atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+		trap->Cvar_Set("ui_isJAPro", "1");
+
+		cgs.hookpull = atoi (Info_ValueForKey (info, "g_hookStrength" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+		if (cgs.hookpull == 0)
+			cgs.hookpull = 800;
+
+		//
+
 	}
+
+	if (!cgs.isJAPro && !cgs.isJAPlus) //gay hack for base
+		trap->Cvar_Set("ui_isJAPro", "0");
+
 	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 
 	mapname = Info_ValueForKey( info, "mapname" );
@@ -1617,6 +1631,7 @@ int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
 }
 
+/* This array MUST be sorted correctly by alphabetical name field */
 static serverCommand_t	commands[] = {
 	{ "chat",				CG_Chat_f },
 	{ "clientLevelShot",	CG_ClientLevelShot_f },

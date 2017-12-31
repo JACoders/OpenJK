@@ -1,74 +1,18 @@
-version: 1.0.{build}
-
-branches:
-  except:
-    - release/1.0
-
-clone_depth: 1
-shallow_clone: true
-
-#do not build on tags
-skip_tags: true
-
-os: Visual Studio 2013
-
-environment:
-  VisualStudioVersion: "12.0"
-  CMAKE_GENERATOR: "Visual Studio 12 2013"
-
-matrix:
-  fast_finish: false #finish build once one of the jobs fails
-
-platform:
-  - Win32
-  - x64
-
-configuration:
-  - Debug
-  - Release
-
-init:
-  - ps: $env:SHORT_COMMIT_HASH=$env:appveyor_repo_commit.substring(0,8)
-  - ps: Update-AppveyorBuild -Version "1.0-git-$env:SHORT_COMMIT_HASH"
-  - ps: $env:ARTIFACT_FILE="openjk-$(Get-Date -UFormat "%Y-%m-%d")-$env:SHORT_COMMIT_HASH-windows.zip"
-  - echo "Artifact file='%ARTIFACT_FILE%'"
-  - cmake --version
-  - msbuild /version
-
-clone_folder: C:\projects\OpenJK
-
-#scripts to run before build
+version: 1.1.{build}
+configuration: Release
 before_build:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
-  - echo "Generator='%CMAKE_GENERATOR%'"
-  - echo "Platform='%Platform%'"
-  - if exist build rmdir /q /s build #remove build dir
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_INSTALL_PREFIX=install -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
-  - ls
-
+- cmd: cmake -G "Visual Studio 14 2015" -T v140_xp -D MSVC_RUNTIME=static -DCMAKE_INSTALL_PREFIX=./install -DCMAKE_BUILD_TYPE=RELEASE -DBuildMPGame=OFF -DBuildMPDed=OFF -DBuildMPCGame=OFF .
 build:
+  project: OpenJK.sln
   parallel: true
-  project: C:\projects\OpenJK\build\OpenJK.sln
-  verbosity: normal
-
+  verbosity: minimal
 after_build:
-  - cmake --build . --target INSTALL --config %CONFIGURATION%
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - 7z a %ARTIFACT_FILE% %APPVEYOR_BUILD_FOLDER%/build/install/JediAcademy/*
-  - 7z l %ARTIFACT_FILE% # list files in the zip file
-
+- cmd: msbuild /p:Configuration=Release /p:Platform=Win32 install.vcxproj
 artifacts:
-  - path: openjk-*-windows.zip
-    name: OpenJK Jedi Academy ZIP
-    type: zip
-
-deploy_script:
-  - ps: $key = $env:DeploymentKey
-  - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----" + "`n"
-  - ps: for ($i = 0; $i -lt $key.Length / 64; $i++) { $min = [math]::min(64, $key.Length - ($i * 64)); $fileContent += $key.substring($i*64, $min) + "`n"; }
-  - ps: $fileContent += "-----END RSA PRIVATE KEY-----" + "`n"
-  - ps: Set-Content C:\users\appveyor\.ssh\id_rsa $fileContent
-  - scripts/appveyor/deploy.bat %ARTIFACT_FILE%
+- path: install/JediAcademy/
+  name: eternal-japro-v{build}-win32-x86-portable
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: 3kZBt3AHOOQnurs3NowjhHDQzC/6bzmNNg8jnlnDM7Puk+gq9qeEDHSHg3ZRcinP
+  artifact: Release

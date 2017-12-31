@@ -27,10 +27,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#define PRODUCT_NAME			"openjk"
+#define PRODUCT_NAME			"eternaljk"
 
-#define CLIENT_WINDOW_TITLE "OpenJK (MP)"
-#define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
+#define CLIENT_WINDOW_TITLE "EternalJK (MP)"
+#define CLIENT_CONSOLE_TITLE "EternalJK Console (MP)"
 #define HOMEPATH_NAME_UNIX "openjk"
 #define HOMEPATH_NAME_WIN "OpenJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
@@ -358,6 +358,12 @@ typedef enum
 	SABER_GREEN,
 	SABER_BLUE,
 	SABER_PURPLE,
+	SABER_RGB,
+	SABER_FLAME1,
+	SABER_ELEC1,
+	SABER_FLAME2,
+	SABER_ELEC2,
+	SABER_BLACK,
 	NUM_SABER_COLORS
 } saber_colors_t;
 
@@ -1790,7 +1796,7 @@ typedef enum {
 #define	MAX_GLOBAL_SERVERS			2048
 #define	MAX_OTHER_SERVERS			128
 #define MAX_PINGREQUESTS			32
-#define MAX_SERVERSTATUSREQUESTS	16
+#define MAX_SERVERSTATUSREQUESTS	MAX_PINGREQUESTS
 
 #define SAY_ALL		0
 #define SAY_TEAM	1

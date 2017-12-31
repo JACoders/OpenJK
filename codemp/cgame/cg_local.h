@@ -422,6 +422,8 @@ typedef struct clientInfo_s {
 
 	int			superSmoothTime; //do crazy amount of smoothing
 
+	vec3_t			rgb1, rgb2;
+
 } clientInfo_t;
 
 //rww - cheap looping sound struct
@@ -1249,6 +1251,30 @@ typedef struct cgMedia_s {
 	qhandle_t	blueSaberCoreShader;
 	qhandle_t	purpleSaberGlowShader;
 	qhandle_t	purpleSaberCoreShader;
+
+	qhandle_t	rgbSaberGlowShader;
+	qhandle_t	rgbSaberCoreShader;
+
+	qhandle_t	rgbSaberGlow2Shader;
+	qhandle_t	rgbSaberCore2Shader;
+	qhandle_t	rgbSaberTrail2Shader;
+
+	qhandle_t	rgbSaberGlow3Shader;
+	qhandle_t	rgbSaberCore3Shader;
+	qhandle_t	rgbSaberTrail3Shader;
+
+	qhandle_t	rgbSaberGlow4Shader;
+	qhandle_t	rgbSaberCore4Shader;
+	qhandle_t	rgbSaberTrail4Shader;
+
+	qhandle_t	rgbSaberGlow5Shader;
+	qhandle_t	rgbSaberCore5Shader;
+	qhandle_t	rgbSaberTrail5Shader;
+
+	qhandle_t	blackSaberGlowShader;
+	qhandle_t	blackSaberCoreShader;
+	qhandle_t	blackBlurShader;
+
 	qhandle_t	saberBlurShader;
 	qhandle_t	swordTrailShader;
 
@@ -1346,6 +1372,7 @@ typedef struct cgMedia_s {
 	qhandle_t	enlightenmentShader;
 	qhandle_t	invulnerabilityShader;
 
+#define JK2AWARDS
 #ifdef JK2AWARDS
 	// medals shown during gameplay
 	qhandle_t	medalImpressive;
@@ -1386,11 +1413,15 @@ typedef struct cgMedia_s {
 	sfxHandle_t oneFragSound;
 
 #ifdef JK2AWARDS
+	sfxHandle_t firstImpressiveSound;
 	sfxHandle_t impressiveSound;
+	sfxHandle_t firstExcellentSound;
 	sfxHandle_t excellentSound;
-	sfxHandle_t deniedSound;
+	sfxHandle_t firstHumiliationSound;
 	sfxHandle_t humiliationSound;
+	sfxHandle_t deniedSound;
 	sfxHandle_t defendSound;
+	sfxHandle_t assistSound;
 #endif
 
 	/*
@@ -1702,13 +1733,19 @@ typedef struct cgs_s {
 	int				redflag, blueflag;		// flag status from configstrings
 	int				flagStatus;
 
-	int				cinfo;
-	int				jcinfo;
-	int				restricts;
-	qboolean		isJAPro;
-	qboolean		isJAPlus;
+//[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - Start]
+	int			cinfo;
+	int			jcinfo;
+	int			restricts;//make this a short?
+	qboolean	isJAPro;
+	qboolean	isJAPlus;
+	int			svfps;
+	qboolean	takenscreenshot;
+	int			hookpull;
+//[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - End]
 
 	qboolean  newHud;
+	float widthRatioCoef;
 
 	//
 	// locally derived information from gamestate
@@ -1724,8 +1761,8 @@ typedef struct cgs_s {
 
 	clientInfo_t	clientinfo[MAX_CLIENTS];
 
-	int cursorX;
-	int cursorY;
+	float cursorX;
+	float cursorY; 
 	qboolean eventHandling;
 	qboolean mouseCaptured;
 	qboolean sizingHud;
@@ -1798,6 +1835,7 @@ void CG_NextInventory_f(void);
 void CG_PrevInventory_f(void);
 void CG_NextForcePower_f(void);
 void CG_PrevForcePower_f(void);
+void CG_Set2DRatio(void);
 
 //
 // cg_view.c

@@ -3490,7 +3490,7 @@ void FS_Startup( const char *gameName ) {
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
 	fs_cdpath = Cvar_Get ("fs_cdpath", "", CVAR_INIT|CVAR_PROTECTED, "(Read Only) Location for development files" );
 	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT|CVAR_PROTECTED, "(Read Only) Location for game files" );
-	fs_basegame = Cvar_Get ("fs_basegame", "", CVAR_INIT );
+	fs_basegame = Cvar_Get ("fs_basegame", "eternaljk", CVAR_INIT );
 	homePath = Sys_DefaultHomePath();
 	if (!homePath || !homePath[0]) {
 		homePath = fs_basepath->string;
@@ -3703,6 +3703,14 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 
 	checksum = fs_checksumFeed;
 	numPaks = 0;
+
+	for (search = fs_searchpaths; search; search = search->next) {
+		if (search->pack && search->pack->checksum == -1342311474) {
+			search->pack->referenced = 7;
+			break;
+		}
+	}
+
 	for (nFlags = FS_CGAME_REF; nFlags; nFlags = nFlags >> 1) {
 		if (nFlags & FS_GENERAL_REF) {
 			// add a delimter between must haves and general refs
@@ -3712,7 +3720,7 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 			info[strlen(info)] = '@';
 			info[strlen(info)] = ' ';
 		}
-		for ( search = fs_searchpaths ; search ; search = search->next ) {
+		while(search) {
 			// is the element a pak file and has it been referenced based on flag?
 			if ( search->pack && (search->pack->referenced & nFlags)) {
 
@@ -3729,7 +3737,11 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 				}
 				checksum ^= search->pack->pure_checksum;
 				numPaks++;
+				if (search->pack && search->pack->checksum == 1767559464) {
+					break;
+				}
 			}
+			search = search->next;
 		}
 		if (fs_fakeChkSum != 0) {
 			// only added if a non-pure file is referenced

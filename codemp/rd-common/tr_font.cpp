@@ -1547,16 +1547,44 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	}
 
 	// Draw a dropshadow if required
-	if(iFontHandle & STYLE_DROPSHADOW)
-	{
-		offset = Round(curfont->GetPointSize() * fScale * 0.075f);
+	if (iFontHandle & STYLE_DROPSHADOW)
+		if (iFontHandle & STYLE_DROPSHADOW)
+		{
+			if (ri.Cvar_VariableIntegerValue("cl_coloredTextShadows")) {
+				int i = 0, r = 0;
+				char dropShadowText[1024];
+				const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
 
-		const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, rgba?rgba[3]:1.0f};
+				offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
-		gbInShadow = qtrue;
-		RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
-		gbInShadow = qfalse;
-	}
+				//^blah stuff confuses shadows, so parse it out first
+				while (psText[i] && r < 1024) {
+					if (psText[i] == '^') {
+						if ((i < 1 || psText[i - 1] != '^') &&
+							(!psText[i + 1] || psText[i + 1] != '^')) { //If char before or after ^ is ^ then it prints ^ instead of accepting a colorcode
+							i += 2;
+						}
+					}
+
+					dropShadowText[r] = psText[i];
+					r++;
+					i++;
+				}
+				dropShadowText[r] = 0;
+
+				RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+			}
+			else
+			{
+				const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
+
+				offset = Round(curfont->GetPointSize() * fScale * 0.075f);
+
+				gbInShadow = qtrue;
+				RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				gbInShadow = qfalse;
+			}
+		}
 
 	RE_SetColor( rgba );
 

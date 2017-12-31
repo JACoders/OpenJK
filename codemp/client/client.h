@@ -272,6 +272,7 @@ typedef struct serverInfo_s {
 	int			netType;
 	int			gameType;
 	int		  	clients;
+	int			filterBots;
 	int		  	maxClients;
 	int			minPing;
 	int			maxPing;
@@ -304,6 +305,8 @@ typedef struct clientStatic_s {
 
 	int			lastDrawTime;//Loda - com_renderfps
 
+	int			afkTime;
+
 	int			numlocalservers;
 	serverInfo_t	localServers[MAX_OTHER_SERVERS];
 
@@ -330,6 +333,11 @@ typedef struct clientStatic_s {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
+	float		ratioFix;
+
+	struct {
+		fileHandle_t	chat;
+	} log;
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768
@@ -351,6 +359,7 @@ typedef struct console_s {
 
 	float	displayFrac;	// aproaches finalFrac at scr_conspeed
 	float	finalFrac;		// 0.0 to 1.0 lines of console to display
+	float	tempFrac;
 
 	int		vislines;		// in scanlines
 
@@ -419,6 +428,7 @@ extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_allowDownload;
 extern	cvar_t	*cl_allowAltEnter;
+extern	cvar_t	*cl_allowEnterCompletion;
 extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
 
@@ -428,6 +438,15 @@ extern	cvar_t	*cl_consoleUseScanCode;
 extern  cvar_t  *cl_lanForcePackets;
 
 extern	cvar_t	*cl_drawRecording;
+
+extern cvar_t	*cl_colorString;
+extern cvar_t	*cl_colorStringCount;
+extern cvar_t	*cl_colorStringRandom;
+
+extern cvar_t	*cl_logChat;
+
+extern cvar_t	*cl_afkTime;
+extern cvar_t	*cl_afkTimeUnfocused;
 
 //=================================================
 
@@ -468,7 +487,16 @@ void CL_InitRef( void );
 
 int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen );
 
+void CL_RandomizeColors(const char*, char*);
+void CL_Afk_f(void);
+
+void CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...);
+
 qboolean CL_CheckPaused(void);
+
+extern int		cl_nameModifiedTime;
+extern int		cl_unfocusedTime;
+extern qboolean cl_afkName;
 
 //
 // cl_input
@@ -529,6 +557,13 @@ void Con_Top( void );
 void Con_Bottom( void );
 void Con_Close( void );
 
+void Con_SetFrac(const float conFrac);
+void Con_Copy(void);
+void Con_CopyLink(void);
+
+#ifdef _WIN32
+extern qboolean con_alert;
+#endif
 
 //
 // cl_scrn.c
@@ -546,6 +581,7 @@ void	SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader
 void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );
 
 void	SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noColorEscape );			// draws a string with embedded color control characters with fade
+void	SCR_DrawStringExt2(float x, float y, float charWidth, float charHeight, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape); //from jaMME
 void	SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, qboolean noColorEscape );	// ignores embedded color control characters
 void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape );
 void	SCR_DrawSmallChar( int x, int y, int ch );

@@ -21,12 +21,21 @@ case "${host}" in
 	(i?86-linux-gnu)
 		set -- \
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/linux-i686.cmake \
+			-D BuildMPDed=OFF \
 			"$@"
 		;;
-
-	(native)
+	(macosx-universal-clang)
+		set -- \
+			-D BuildMPDed=OFF \
+			"$@"
 		;;
-
+	(native)
+		if [ -n "${deploy}" ]; then
+			set -- \
+				-D BuildMPDed=OFF \
+				"$@"
+		fi
+		;;
 	(*)
 		set +x
 		echo "Error: don't know how to cross-compile for ${host} host"
@@ -36,13 +45,48 @@ esac
 
 set -- -D CMAKE_BUILD_TYPE="$flavour" "$@"
 
-# Build JK2, so that the CI build is testing everything
 ( cd build && cmake \
-	-D BuildJK2SPEngine=ON \
-	-D BuildJK2SPGame=ON \
-	-D BuildJK2SPRdVanilla=ON \
 	-D CMAKE_INSTALL_PREFIX=/prefix \
 	"$@" .. )
 make -C build
 make -C build install DESTDIR=$(pwd)/build/DESTDIR
-( cd $(pwd)/build/DESTDIR && find . -ls )
+
+if [ x"${host}" = xi686-linux-gnu ]; then
+	arch="i686"
+else
+	arch="x86_64"
+fi
+
+case "${host}" in
+	(macosx-universal-clang)
+		( cd $(pwd)/assets && \
+			zip -r japro3ui-assets.pk3 * && \
+			mv japro3ui-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/openjk.x86_64.app/Contents/MacOS/japro/ && \
+			cd ../build/DESTDIR/prefix/JediAcademy/openjk.x86_64.app/Contents/MacOS/eternaljk/ && \
+			wget http://upsgaming.com/files/japro3.pk3 && \
+			cd ../../../ && \
+			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
+			mv eternaljk-macos-"${arch}".tar.gz /Users/travis/build/eternalcodes/EternalJK/ && \
+			cd ../../../ && \
+			find . -ls )
+		;;
+	(i?86-linux-gnu|native)
+		if [ -n "${deploy}" ]; then
+			( cd $(pwd)/assets && \
+				zip -r japro3ui-assets.pk3 * && \
+				mv japro3ui-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
+				cd ../build/DESTDIR/prefix/JediAcademy/eternaljk && \
+				wget http://upsgaming.com/files/japro3.pk3 && \
+				cd ../ && \
+				tar czvf eternaljk-linux-"${arch}".tar.gz * && \
+				mv eternaljk-linux-"${arch}".tar.gz /home/travis/build/eternalcodes/EternalJK/ && \
+				cd ../../ && \
+				find . -ls )
+		else
+			( cd $(pwd)/build/DESTDIR && find . -ls )
+		fi
+		;;
+	(*)
+		( cd $(pwd)/build/DESTDIR && find . -ls )
+		;;
+esac

@@ -37,6 +37,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_local.h"
 #include "sys/sys_loadlib.h"
 
+cvar_t *cl_name;
+
 cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
@@ -85,6 +87,7 @@ cvar_t	*cl_motdString;
 
 cvar_t	*cl_allowDownload;
 cvar_t	*cl_allowAltEnter;
+cvar_t	*cl_allowEnterCompletion;
 cvar_t	*cl_conXOffset;
 cvar_t	*cl_inGameVideo;
 
@@ -113,7 +116,22 @@ cvar_t	*cl_consoleUseScanCode;
 
 cvar_t  *cl_lanForcePackets;
 
-cvar_t	*cl_drawRecording;
+cvar_t	*cl_coloredTextShadows;
+
+cvar_t *cl_drawRecording;
+
+cvar_t *cl_colorString;
+cvar_t *cl_colorStringCount;
+cvar_t *cl_colorStringRandom;
+
+cvar_t *cl_afkTime;
+cvar_t *cl_afkTimeUnfocused;
+
+cvar_t *cl_logChat;
+
+cvar_t	*cl_idrive;
+
+int		cl_unfocusedTime;
 
 vec3_t cl_windVec;
 
@@ -1247,6 +1265,18 @@ void CL_Vid_Restart_f( void ) {
 
 /*
 =================
+CL_Fs_Restart_f
+
+Restart the filesystem
+=================
+*/
+
+void CL_Fs_Restart_f( void ) {
+	FS_Restart( clc.checksumFeed );
+}
+
+/*
+=================
 CL_Snd_Restart_f
 
 Restart the sound subsystem
@@ -1658,7 +1688,8 @@ CL_InitServerInfo
 */
 void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->adr = *address;
-	server->clients = 0;
+	//server->clients = 0;
+	//server->filterBots = 0;
 	server->hostName[0] = '\0';
 	server->mapName[0] = '\0';
 	server->maxClients = 0;
@@ -2133,6 +2164,40 @@ void CL_CheckUserinfo( void ) {
 
 }
 
+qboolean cl_afkName;
+static const char *afkPrefix = "[AFK]";
+static const size_t afkPrefixLen = strlen(afkPrefix);
+
+static void CL_GetAfk(void) {
+	if (!Q_strncmp(cl_name->string, afkPrefix, afkPrefixLen)) {
+		cl_afkName = qtrue;
+	}
+	else {
+		cl_afkName = qfalse;
+	}
+}
+
+int cl_nameModifiedTime = 0;
+static int lastModifiedColors = 0;
+static int lastModifiedName = 0;
+static void CL_CheckCvarUpdate(void) {
+	if (lastModifiedColors != cl_colorString->modificationCount) {
+		// recalculate cl_colorStringCount
+		lastModifiedColors = cl_colorString->modificationCount;
+		int count = cl_colorString->integer;
+		count = count - ((count >> 1) & 0x55555555);
+		count = (count & 0x33333333) + ((count >> 2) & 0x33333333);
+		count = (((count + (count >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
+		Cvar_Set("cl_colorStringCount", va("%i", count));
+	}
+
+	if (lastModifiedName != cl_name->modificationCount) {
+		lastModifiedName = cl_name->modificationCount;
+		cl_nameModifiedTime = cls.realtime;
+		CL_GetAfk();
+	}
+}
+
 /*
 ==================
 CL_Frame
@@ -2145,6 +2210,8 @@ extern void SE_CheckForLanguageUpdates(void);
 void CL_Frame ( int msec ) {
 	qboolean render = qfalse;
 	qboolean takeVideoFrame = qfalse;
+
+	CL_CheckCvarUpdate();
 
 	if ( !com_cl_running->integer ) {
 		return;
@@ -2310,6 +2377,7 @@ void CL_InitRenderer( void ) {
 
 	cls.whiteShader = re->RegisterShader( "white" );
 	cls.consoleShader = re->RegisterShader( "console" );
+	cls.ratioFix = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
 	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 	g_consoleField.widthInChars = g_console_field_width;
 }
@@ -2378,7 +2446,7 @@ static IHeapAllocator *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
-#define DEFAULT_RENDER_LIBRARY "rd-vanilla"
+#define DEFAULT_RENDER_LIBRARY "rd-eternaljk"
 
 void CL_InitRef( void ) {
 	static refimport_t ri;
@@ -2637,6 +2705,248 @@ static void CL_AddFavorite_f( void ) {
 	}
 }
 
+void CL_Afk_f(void) {
+	char name[MAX_TOKEN_CHARS];
+	Cvar_VariableStringBuffer("name", name, sizeof(name));
+	if (cls.realtime - cl_nameModifiedTime <= 5000)Com_Printf("You must wait 5 seconds before changing your name again.\n");
+	else {
+		if (cl_afkName) {
+			Cvar_Set("name", name + afkPrefixLen);
+		}
+		else {
+			Cvar_Set("name", va("%s%s", afkPrefix, name));
+		}
+	}
+}
+
+typedef struct bitInfo_S {
+	const char	*string;
+} bitInfo_t;
+
+static bitInfo_t colors[] = {
+	{ "^0BLACK" },
+	{ "^1RED" },
+	{ "^2GREEN" },
+	{ "^3YELLOW" },
+	{ "^4BLUE" },
+	{ "^5CYAN" },
+	{ "^6MAGENTA" },
+	{ "^7WHITE" },
+	{ "^8ORANGE" },
+	{ "^9GRAY" }
+};
+
+static void CL_ColorString_f(void) {
+	if (Cmd_Argc() == 1) {
+		int i = 0;
+		for (i = 0; i < 10; i++) {
+			if ((cl_colorString->integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", i, colors[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", i, colors[i].string);
+			}
+		}
+		return;
+	}
+	else if (Cmd_Argc() == 2) {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << 10) - 1;
+		
+		Cmd_ArgvBuffer(1, arg, sizeof(arg));
+		index = atoi(arg);
+
+		if (index == -1) {
+			Cvar_Set("cl_colorString", "0");
+			Com_Printf("colorString: All colors are now ^1disabled\n");
+			return;
+		}
+
+		if (index == 10) {
+			Cvar_Set("cl_colorString", "1023");
+			Com_Printf("colorString: All colors are now ^2enabled\n");
+			return;
+		}
+
+		if (index < 0 || index >= 10) {
+			Com_Printf("colorString: Invalid range: %i [0, %i]\n", index, 9);
+			return;
+		}
+
+		Cvar_Set("cl_colorString", va("%i", (1 << index) ^ (cl_colorString->integer & mask)));
+
+		Com_Printf("%s %s^7\n", colors[index].string, ((cl_colorString->integer & (1 << index))
+			? "^2Enabled" : "^1Disabled"));
+	}
+	else {
+		char arg[8] = { 0 };
+		int i, argc, index[10], bits = 0;
+		const uint32_t mask = (1 << 10) - 1;
+
+		if ((argc = Cmd_Argc() - 1) > 10) {
+			Com_Printf("colorString: More than 10 arguments were entered");
+			return;
+		}
+
+		for (i = 0; i < argc; i++) {
+			Cmd_ArgvBuffer(i+1, arg, sizeof(arg));
+			index[i] = atoi(arg);
+
+			if (index[i] < 0 || index[i] >= 10) {
+				Com_Printf("colorString: Invalid range: %i [0, %i]\n", index[i], 9);
+				return;
+			}
+
+			if ((bits & mask) & (1 << index[i])) {
+				Com_Printf("colorString: %s ^7was entered more than once\n", colors[index[i]].string);
+				return;
+			}
+
+			bits = (1 << index[i]) ^ (bits & mask);
+		}
+
+		Cvar_Set("cl_colorString", va("%i", bits));
+
+		for (i = 0; i < 10; i++) {
+			if ((cl_colorString->integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", i, colors[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", i, colors[i].string);
+			}
+		}
+	}
+}
+
+void CL_RandomizeColors(const char* in, char *out) {
+	int count = cl_colorStringCount->integer;
+	int i, random, j = 0, store = 0;
+	const char *p = in;
+	char *s = out, c;
+	
+	while ((c = *p++)) {
+		if (c == '^' && *p != '\0' && *p >= '0' && *p <= '9') {
+			*s++ = c;
+			*s++ = *p++;
+			c = *p++;
+			store = 0;
+		}
+		else if (count == 1) {
+			if (store == 0) {
+				for (i = 0; i < 10; i++) {
+					if ((cl_colorString->integer & (1 << i))) {
+						store = i;
+						*s++ = '^';
+						*s++ = i + '0';
+						break;
+					}
+				}
+			}
+		}
+		else if (store != (random = irand(1, count*(store == 0
+			? 1 : cl_colorStringRandom->integer))) && random <= count) {
+			for (i = 0; i < 10; i++) {
+				if ((cl_colorString->integer & (1 << i)) && (random - 1) == j++) {
+					store = random;
+					*s++ = '^';
+					*s++ = i + '0';
+				}
+			}
+			j = 0;
+		}
+		*s++ = c;
+	}
+	*s = '\0';
+}
+
+static void CL_ColorName_f(void) {
+	char name[MAX_TOKEN_CHARS];
+	char coloredName[MAX_TOKEN_CHARS];
+	int storebits = cl_colorString->integer;
+	int storebitcount = cl_colorStringCount->integer;
+
+	if (cls.realtime - cl_nameModifiedTime <= 5000) {
+		Com_Printf("You must wait 5 seconds before changing your name again.\n");
+		return;
+	}
+
+	Cvar_VariableStringBuffer("name", name, sizeof(name));
+	Q_StripColor(name);
+	if (Cmd_Argc() == 1) {
+		CL_RandomizeColors(name, coloredName);
+		Cvar_Set("name", va("%s", coloredName));
+		return;
+	}
+	else if (Cmd_Argc() == 2) {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << 10) - 1;
+
+		Cmd_ArgvBuffer(1, arg, sizeof(arg));
+		index = atoi(arg);
+
+		if (index == -1) {
+			Cvar_Set("name", va("%s", name));
+			return;
+		}
+
+		if (index == 10) {
+			cl_colorString->integer = 1023;
+			cl_colorStringCount->integer = 10;
+			CL_RandomizeColors(name, coloredName);
+			Cvar_Set("name", va("%s", coloredName));
+			cl_colorString->integer = storebits;
+			cl_colorStringCount->integer = storebitcount;
+			return;
+		}
+
+		if (index < 0 || index >= 10) {
+			Com_Printf("colorName: Invalid range: %i [0, %i]\n", index, 9);
+			return;
+		}
+
+		cl_colorStringCount->integer = 1;
+		cl_colorString->integer = 0;
+		cl_colorString->integer = (1 << index) ^ (cl_colorString->integer & mask);
+	}
+	else {
+		char arg[8] = { 0 };
+		int i, argc, index[10], bits = 0;
+		const uint32_t mask = (1 << 10) - 1;
+
+		if ((argc = Cmd_Argc() - 1) > 10) {
+			Com_Printf("colorName: More than 10 arguments were entered");
+			return;
+		}
+
+		for (i = 0; i < argc; i++) {
+			Cmd_ArgvBuffer(i + 1, arg, sizeof(arg));
+			index[i] = atoi(arg);
+
+			if (index[i] < 0 || index[i] >= 10) {
+				Com_Printf("colorName: Invalid range: %i [0, %i]\n", index[i], 9);
+				return;
+			}
+
+			if ((bits & mask) & (1 << index[i])) {
+				Com_Printf("colorName: %s ^7was entered more than once\n", colors[index[i]].string);
+				return;
+			}
+
+			bits = (1 << index[i]) ^ (bits & mask);
+		}
+
+		cl_colorStringCount->integer = argc;
+		cl_colorString->integer = bits;
+	}
+
+	CL_RandomizeColors(name, coloredName);
+	Cvar_Set("name", va("%s", coloredName));
+	cl_colorString->integer = storebits;
+	cl_colorStringCount->integer = storebitcount;
+}
+
 #define G2_VERT_SPACE_CLIENT_SIZE 256
 
 /*
@@ -2752,6 +3062,7 @@ void CL_Init( void ) {
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE_ND, "Allow downloading custom paks from server");
 	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE_ND, "Enables use of ALT+ENTER keyboard combo to toggle fullscreen" );
+	cl_allowEnterCompletion = Cvar_Get("cl_allowEnterCompletion", "1", CVAR_ARCHIVE, "Enables autocomplete when pressing enter");
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE_ND );
 
@@ -2799,7 +3110,7 @@ void CL_Init( void ) {
 	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE, "Use native console key detection" );
 
 	// userinfo
-	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE_ND, "Player name" );
+	cl_name = Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE_ND, "Player name" );
 	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE, "Data rate" );
 	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE, "Client snapshots per second" );
 	Cvar_Get ("model", DEFAULT_MODEL"/default", CVAR_USERINFO | CVAR_ARCHIVE, "Player model" );
@@ -2825,6 +3136,18 @@ void CL_Init( void ) {
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE_ND );
 
+	cl_coloredTextShadows = Cvar_Get("cl_coloredTextShadows", "0", CVAR_ARCHIVE, "Toggled colored text shadows");
+
+	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE, "Minutes to autorename to afk, 0 to disable");
+	cl_afkTimeUnfocused = Cvar_Get("cl_afkTimeUnfocused", "1", CVAR_ARCHIVE, "Minutes to autorename to afk while unfocused/minimized");
+	cl_unfocusedTime = 0;
+
+	cl_colorString = Cvar_Get("cl_colorString", "0", CVAR_ARCHIVE, "Bit value of selected colors in colorString");
+	cl_colorStringCount = Cvar_Get("cl_colorStringCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
+	cl_colorStringRandom = Cvar_Get("cl_colorStringRandom", "2", CVAR_ARCHIVE, "Randomness of the colors changing, higher numbers are less random");
+
+	cl_logChat = Cvar_Get("cl_logChat", "1", CVAR_ARCHIVE, "Toggle chat logs");
+
 	//
 	// register our commands
 	//
@@ -2839,6 +3162,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f, "Prints the userinfo variables" );
 	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f, "Restart sound" );
 	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f, "Restart the renderer - or change the resolution" );
+	Cmd_AddCommand ("fs_restart", CL_Fs_Restart_f, "Restart the filesystem" );
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f, "Disconnect from current server" );
 	Cmd_AddCommand ("cinematic", CL_PlayCinematic_f, "Play a cinematic video" );
 	Cmd_AddCommand ("connect", CL_Connect_f, "Connect to a server" );
@@ -2855,6 +3179,10 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("forcepowers", CL_SetForcePowers_f );
 	Cmd_AddCommand ("video", CL_Video_f, "Record demo to avi" );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f, "Stop avi recording" );
+
+	Cmd_AddCommand("afk", CL_Afk_f, "Rename to or from afk");
+	Cmd_AddCommand("colorstring", CL_ColorString_f, "Color say text");
+	Cmd_AddCommand("colorname", CL_ColorName_f, "Color name");
 
 	CL_InitRef();
 
@@ -2909,6 +3237,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("clientinfo");
 	Cmd_RemoveCommand ("snd_restart");
 	Cmd_RemoveCommand ("vid_restart");
+	Cmd_RemoveCommand ("fs_restart");
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("record");
 	Cmd_RemoveCommand ("demo");
@@ -2930,6 +3259,10 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("video");
 	Cmd_RemoveCommand ("videostop");
 
+	Cmd_RemoveCommand("afk");
+	Cmd_RemoveCommand("colorstring");
+	Cmd_RemoveCommand("colorname");
+
 	CL_ShutdownInput();
 	Con_Shutdown();
 
@@ -2944,6 +3277,27 @@ void CL_Shutdown( void ) {
 
 }
 
+void QDECL CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...) {
+	va_list argptr;
+	char string[1024] = { 0 };
+	size_t len;
+	time_t rawtime;
+	time(&rawtime);
+	
+	strftime(string, sizeof(string), "[%Y-%m-%d] [%H:%M:%S] ", gmtime(&rawtime));
+
+	len = strlen(string);
+
+	va_start(argptr, fmt);
+	Q_vsnprintf(string + len, sizeof(string) - len, fmt, argptr);
+	va_end(argptr);
+
+	if (!fileHandle)
+		return;
+
+	FS_Write(string, strlen(string), fileHandle);
+}
+
 qboolean CL_ConnectedToRemoteServer( void ) {
 	return (qboolean)( com_sv_running && !com_sv_running->integer && cls.state >= CA_CONNECTED && !clc.demoplaying );
 }
@@ -2951,8 +3305,13 @@ qboolean CL_ConnectedToRemoteServer( void ) {
 static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 	if (server) {
 		if (info) {
-			server->clients = atoi(Info_ValueForKey(info, "clients"));
-			Q_strncpyz(server->hostName,Info_ValueForKey(info, "hostname"), MAX_NAME_LENGTH);
+			char * filteredHostName = Info_ValueForKey(info, "hostname");
+			if (Q_stricmp(filteredHostName, "")) { 
+				Q_strstrip(filteredHostName, "\xac\x82\xe2\xa2\x80", NULL);
+				while (*filteredHostName == '\x20' || *filteredHostName == '\x2e') *filteredHostName++;
+			}
+			//server->clients = atoi(Info_ValueForKey(info, "clients"));
+			Q_strncpyz(server->hostName, filteredHostName, MAX_NAME_LENGTH);
 			Q_strncpyz(server->mapName, Info_ValueForKey(info, "mapname"), MAX_NAME_LENGTH);
 			server->maxClients = atoi(Info_ValueForKey(info, "sv_maxclients"));
 			Q_strncpyz(server->game,Info_ValueForKey(info, "game"), MAX_NAME_LENGTH);
@@ -2995,6 +3354,37 @@ static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 	}
 }
 
+void CL_SetServerFakeInfoByAddress(netadr_t from, int clients, int bots) {
+	int i;
+
+	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
+		if (NET_CompareAdr(from, cls.localServers[i].adr)) {
+			if (clients != -1) {
+				cls.localServers[i].clients = clients;
+				cls.localServers[i].filterBots = bots;
+			}
+		}
+	}
+
+	for (i = 0; i < MAX_GLOBAL_SERVERS; i++) {
+		if (NET_CompareAdr(from, cls.globalServers[i].adr)) {
+			if (clients != -1) {
+				cls.globalServers[i].clients = clients;
+				cls.globalServers[i].filterBots = bots;
+			}
+		}
+	}
+
+	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
+		if (NET_CompareAdr(from, cls.favoriteServers[i].adr)) {
+			if (clients != -1) {
+				cls.favoriteServers[i].clients = clients;
+				cls.favoriteServers[i].filterBots = bots;
+			}
+		}
+	}
+}
+
 /*
 ===================
 CL_ServerInfoPacket
@@ -3012,6 +3402,11 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	prot = atoi( Info_ValueForKey( infoString, "protocol" ) );
 	if ( prot != PROTOCOL_VERSION ) {
 		Com_DPrintf( "Different protocol info packet: %s\n", infoString );
+		return;
+	}
+
+	// if this is an MB2 server, ignore it
+	if (!Q_stricmp(Info_ValueForKey(infoString, "game"), "mbii")) {
 		return;
 	}
 
@@ -3162,6 +3557,7 @@ int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int ma
 			serverStatus->retrieved = qfalse;
 			serverStatus->time = 0;
 			serverStatus->startTime = Com_Milliseconds();
+			NET_OutOfBandPrint(NS_CLIENT, to, "getinfo");
 			NET_OutOfBandPrint( NS_CLIENT, to, "getstatus" );
 			return qfalse;
 		}
@@ -3174,6 +3570,7 @@ int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int ma
 		serverStatus->retrieved = qfalse;
 		serverStatus->startTime = Com_Milliseconds();
 		serverStatus->time = 0;
+		NET_OutOfBandPrint(NS_CLIENT, to, "getinfo");
 		NET_OutOfBandPrint( NS_CLIENT, to, "getstatus" );
 		return qfalse;
 	}
@@ -3190,7 +3587,10 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	char	info[MAX_INFO_STRING];
 	int		i, l, score, ping;
 	int		len;
+	int		bots;
 	serverStatus_t *serverStatus;
+
+	CL_SetServerFakeInfoByAddress(from, -1, -1);
 
 	serverStatus = NULL;
 	for (i = 0; i < MAX_SERVERSTATUSREQUESTS; i++) {
@@ -3246,24 +3646,34 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 		Com_Printf("\nPlayers:\n");
 		Com_Printf("num: score: ping: name:\n");
 	}
+
+	bots = 0;
 	for (i = 0, s = MSG_ReadStringLine( msg ); *s; s = MSG_ReadStringLine( msg ), i++) {
 
 		len = strlen(serverStatus->string);
 		Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\%s", s);
 
+		score = ping = 0;
+		sscanf(s, "%d %d", &score, &ping);
+		s = strchr(s, ' ');
+		if (s)
+			s = strchr(s+1, ' ');
+		if (s)
+			s++;
+		else
+			s = "unknown";
+
+		if (ping == 0) {
+			bots++;
+		}
+
 		if (serverStatus->print) {
-			score = ping = 0;
-			sscanf(s, "%d %d", &score, &ping);
-			s = strchr(s, ' ');
-			if (s)
-				s = strchr(s+1, ' ');
-			if (s)
-				s++;
-			else
-				s = "unknown";
 			Com_Printf("%-2d   %-3d    %-3d   %s\n", i, score, ping, s );
 		}
 	}
+
+	CL_SetServerFakeInfoByAddress(from, i, bots);
+
 	len = strlen(serverStatus->string);
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\");
 
@@ -3656,6 +4066,16 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 						cl_pinglist[j].start = Sys_Milliseconds();
 						cl_pinglist[j].time = 0;
 						NET_OutOfBandPrint( NS_CLIENT, cl_pinglist[j].adr, "getinfo xxx" );
+
+						serverStatus_t *serverStatus = CL_GetServerStatus(cl_pinglist[j].adr);
+						serverStatus->address = cl_pinglist[j].adr;
+						serverStatus->print = qfalse;
+						serverStatus->pending = qtrue;
+						serverStatus->retrieved = qfalse;
+						serverStatus->startTime = Com_Milliseconds();
+						serverStatus->time = 0;
+						NET_OutOfBandPrint(NS_CLIENT, cl_pinglist[j].adr, "getstatus");
+
 						slots++;
 					}
 				}
@@ -3741,4 +4161,3 @@ CL_ShowIP_f
 void CL_ShowIP_f(void) {
 	Sys_ShowIP();
 }
-

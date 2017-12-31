@@ -455,7 +455,7 @@ void CL_SystemInfoChanged( void ) {
 	// check pure server string
 	s = Info_ValueForKey( systemInfo, "sv_paks" );
 	t = Info_ValueForKey( systemInfo, "sv_pakNames" );
-	FS_PureServerSetLoadedPaks( s, t );
+	//FS_PureServerSetLoadedPaks( s, t );
 
 	s = Info_ValueForKey( systemInfo, "sv_referencedPaks" );
 	t = Info_ValueForKey( systemInfo, "sv_referencedPakNames" );

@@ -636,6 +636,34 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.blueSaberCoreShader		= trap->R_RegisterShader( "gfx/effects/sabers/blue_line" );
 	cgs.media.purpleSaberGlowShader		= trap->R_RegisterShader( "gfx/effects/sabers/purple_glow" );
 	cgs.media.purpleSaberCoreShader		= trap->R_RegisterShader( "gfx/effects/sabers/purple_line" );
+	cgs.media.rgbSaberGlowShader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBglow1" );
+	cgs.media.rgbSaberCoreShader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBcore1" );
+
+	//Flame 1
+	cgs.media.rgbSaberGlow2Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBglow2" );
+	cgs.media.rgbSaberCore2Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBcore2" );
+	cgs.media.rgbSaberTrail2Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBtrail2" );
+
+	//Electric 1
+	cgs.media.rgbSaberGlow3Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBglow3" );
+	cgs.media.rgbSaberCore3Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBcore3" );
+	cgs.media.rgbSaberTrail3Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBtrail3" );
+
+	//Flame 2
+	cgs.media.rgbSaberGlow4Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBglow4" );
+	cgs.media.rgbSaberCore4Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBcore4" );
+	cgs.media.rgbSaberTrail4Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBtrail4" );
+
+	//Electric 2
+	cgs.media.rgbSaberGlow5Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBglow5" );
+	cgs.media.rgbSaberCore5Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBcore5" );
+	cgs.media.rgbSaberTrail5Shader		= trap->R_RegisterShader( "gfx/effects/sabers/swordTrail" );
+
+	//Black
+	cgs.media.blackSaberGlowShader		= trap->R_RegisterShader( "gfx/effects/sabers/blackglow" );
+	cgs.media.blackSaberCoreShader		= trap->R_RegisterShader( "gfx/effects/sabers/blackcore" );
+	cgs.media.blackBlurShader			= trap->R_RegisterShader( "gfx/effects/sabers/blacktrail" );
+
 	cgs.media.saberBlurShader			= trap->R_RegisterShader( "gfx/effects/sabers/saberBlur" );
 	cgs.media.swordTrailShader			= trap->R_RegisterShader( "gfx/effects/sabers/swordTrail" );
 
@@ -739,7 +767,7 @@ static void CG_RegisterSounds( void ) {
 	if ( cgs.gametype >= GT_TEAM || com_buildScript.integer ) {
 
 #ifdef JK2AWARDS
-		cgs.media.captureAwardSound = trap->S_RegisterSound( "sound/teamplay/flagcapture_yourteam.wav" );
+		cgs.media.captureAwardSound = trap->S_RegisterSound("sound/chars/protocol/misc/capture.wav");
 #endif
 		cgs.media.redLeadsSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM046");
 		cgs.media.blueLeadsSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM045");
@@ -789,11 +817,15 @@ static void CG_RegisterSounds( void ) {
 
 	cgs.media.crackleSound = trap->S_RegisterSound( "sound/effects/energy_crackle.wav" );
 #ifdef JK2AWARDS
-	cgs.media.impressiveSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM025" );
-	cgs.media.excellentSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM053" );
-	cgs.media.deniedSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM017" );
-	cgs.media.humiliationSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM019" );
-	cgs.media.defendSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM024" );
+	cgs.media.firstImpressiveSound = trap->S_RegisterSound("sound/chars/protocol/misc/first_impressive.wav");
+	cgs.media.impressiveSound = trap->S_RegisterSound("sound/chars/protocol/misc/impressive.wav");
+	cgs.media.firstExcellentSound = trap->S_RegisterSound("sound/chars/protocol/misc/first_excellent.wav");
+	cgs.media.excellentSound = trap->S_RegisterSound("sound/chars/protocol/misc/excellent.wav");
+	cgs.media.firstHumiliationSound = trap->S_RegisterSound("sound/chars/protocol/misc/first_gauntlet.wav");
+	cgs.media.humiliationSound = trap->S_RegisterSound("sound/chars/protocol/misc/humiliation.wav");
+	cgs.media.deniedSound = trap->S_RegisterSound("sound/chars/protocol/misc/denied.wav");
+	cgs.media.defendSound = trap->S_RegisterSound("sound/chars/protocol/misc/defense.wav");
+	cgs.media.assistSound = trap->S_RegisterSound("sound/chars/protocol/misc/assist.wav");
 #endif
 
 	/*
@@ -2380,6 +2412,18 @@ void CG_TransitionPermanent(void)
 Ghoul2 Insert End
 */
 
+/*
+======================
+CG_Set2DRatio
+======================
+*/
+void CG_Set2DRatio(void) {
+	if (cl_ratioFix.integer)
+		cgs.widthRatioCoef = (float)(SCREEN_WIDTH * cgs.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cgs.glconfig.vidWidth);
+	else
+		cgs.widthRatioCoef = 1.0f;
+}
+
 extern playerState_t *cgSendPS[MAX_GENTITIES]; //is not MAX_CLIENTS because NPCs exceed MAX_CLIENTS
 void CG_PmoveClientPointerUpdate();
 
@@ -2551,6 +2595,7 @@ Ghoul2 Insert End
 	trap->GetGlconfig( &cgs.glconfig );
 	cgs.screenXScale = cgs.glconfig.vidWidth / 640.0;
 	cgs.screenYScale = cgs.glconfig.vidHeight / 480.0;
+	CG_Set2DRatio();
 
 	// get the gamestate from the client system
 	trap->GetGameState( &cgs.gameState );

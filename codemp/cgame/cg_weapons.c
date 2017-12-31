@@ -846,10 +846,20 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 
 	AnglesToAxis( angles, hand.axis );
 
-	if ( cg_fovViewmodel.integer )
+	if ( cg_fovViewmodel.integer ) //need this to play nice with +zoom
 	{
-		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
-		float fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
+		float fracDistFOV, fracWeapFOV;
+		if ( cg_fovAspectAdjust.integer ) {
+			// Based on LordHavoc's code for Darkplaces
+			// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
+			const float baseAspect = 0.75f; // 3/4
+			const float aspect = (float)cgs.glconfig.vidWidth/(float)cgs.glconfig.vidHeight;
+			const float desiredFov = cgFov;
+
+			cgFov = atan( tan( desiredFov*M_PI / 360.0f ) * baseAspect*aspect )*360.0f / M_PI;
+		}
+		fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
+		fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
 		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
 	}
 

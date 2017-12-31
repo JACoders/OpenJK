@@ -1,0 +1,91 @@
+Desann
+{
+	name			"Retribution"
+	saberType		SABER_SINGLE
+	saberModel		"models/weapons2/saber_desann/saber_w.glm"
+	soundLoop		"sound/weapons/saber/saberhum2.wav"
+	saberLength	40
+	saberColor		red
+}
+
+Luke
+{
+	name			"Skywalker"
+	saberType		SABER_SINGLE
+	saberModel		"models/weapons2/saber_luke/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberonquick.wav"
+	soundLoop		"sound/weapons/saber/saberhum5.wav"
+	soundOff		"sound/weapons/saber/saberoffquick.wav"
+	saberLength	40
+	saberColor		random
+}
+
+Reborn
+{
+	name			"Reborn"
+	saberType		SABER_SINGLE
+	saberModel		"models/weapons2/saber_reborn/saber_w.glm"
+	soundOn		"sound/weapons/saber/enemy_saber_on.wav"
+	soundLoop		"sound/weapons/saber/saberhum4.wav"
+	soundOff		"sound/weapons/saber/enemy_saber_off.wav"
+	saberLength	40
+	saberColor		random
+}
+
+Training
+{
+	name			"Training"
+	saberType		SABER_SINGLE
+	saberModel		"models/weapons2/saber_reborn/saber_w.glm"
+	soundOn		"sound/weapons/saber/enemy_saber_on.wav"
+	soundLoop		"sound/weapons/saber/saberhum4.wav"
+	soundOff		"sound/weapons/saber/enemy_saber_off.wav"
+	saberLength	40
+	saberColor		random
+	damageScale	0.25
+}
+
+gaffi
+{
+	name				"Gaffi stick"
+	saberType			SABER_STAFF
+	saberModel			"models/weapons2/tusken_staff/tusken_staff.glm"
+	saberLength		32 //wat
+	twohanded			1
+	throwable			0
+	saberStyle			staff
+	onInWater			1
+	singleBladeStyle	staff
+	singleBladeThrowable	0
+	noWallMarks		1
+	noDlight			1
+	noBlade			1
+	noClashFlare		1
+	trailStyle			1
+	noManualDeactivate	1
+
+	tauntAnim			BOTH_TUSKENTAUNT1
+	flourishAnim		BOTH_TUSKENTAUNT1
+	gloatAnim			BOTH_TUSKENTAUNT1
+
+	spinsound		"sound/weapons/sword/swing4.mp3"
+
+	soundOn		"sound/weapons/knife/knifeon.mp3"
+	soundLoop		none
+
+	swingSound1	"sound/weapons/sword/swing1.mp3"
+	swingSound2	"sound/weapons/sword/swing2.mp3"
+	swingSound3	"sound/weapons/sword/swing3.mp3"
+
+	hitSound1	"sound/weapons/sword/stab1.mp3"
+	hitSound2	"sound/weapons/sword/stab2.mp3"
+	hitSound3	"sound/weapons/sword/stab3.mp3"
+
+	knockbackScale	4
+	damageScale	0.5
+	alwaysBlock	1
+	lockBonus		2
+	parryBonus		2
+	disarmBonus	2
+	breakParryBonus	2
+}

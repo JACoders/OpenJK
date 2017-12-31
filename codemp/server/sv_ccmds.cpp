@@ -1619,6 +1619,24 @@ void SV_StopRecord_f( void ) {
 	SV_StopRecordDemo( cl );
 }
 
+void SV_RenameDemo_f(void) {
+	char		from[MAX_OSPATH];
+	char		to[MAX_OSPATH];
+
+	if (Cmd_Argc() != 3) {
+		return;
+	}
+
+	Com_sprintf(from, sizeof(from), "demos/%s.dm_%d", Cmd_Argv(1), PROTOCOL_VERSION);
+	Com_sprintf(to, sizeof(to), "demos/%s.dm_%d", Cmd_Argv(2), PROTOCOL_VERSION); //DEMO_EXTENSION
+
+	if (FS_CheckDirTraversal(from) || FS_CheckDirTraversal(to)) {
+		return;
+	}
+
+	FS_Rename(from, to);
+}
+
 /*
 ====================
 SV_RenameDemo_f

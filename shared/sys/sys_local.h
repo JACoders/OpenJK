@@ -34,6 +34,9 @@ qboolean	Sys_GetPacket( netadr_t *net_from, msg_t *net_message );
 char		*Sys_ConsoleInput( void );
 void 		Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 void		Sys_SigHandler( int signal );
+#ifdef _WIN32
+extern void	GLimp_Alert(void);
+#endif
 #ifndef _WIN32
 void		Sys_AnsiColorPrint( const char *msg );
 #endif

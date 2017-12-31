@@ -85,6 +85,9 @@ static void UI_UpdateScreenshot( void )
 	}
 }
 
+static void CVU_StrafeHelper (void) {
+	trap->Cvar_Set( "cg_strafeHelperActiveColor", va("%i %i %i %i", ui_sha_r.integer, ui_sha_g.integer, ui_sha_b.integer, ui_sha_a.integer) );
+}
 
 //
 // Cvar table
@@ -101,6 +104,13 @@ typedef struct cvarTable_s {
 #define XCVAR_DECL
 	#include "ui_xcvar.h"
 #undef XCVAR_DECL
+
+void UI_Set2DRatio(void) {
+	if (cl_ratioFix.integer)
+		uiInfo.uiDC.widthRatioCoef = (float)(SCREEN_WIDTH * uiInfo.uiDC.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * uiInfo.uiDC.glconfig.vidWidth);
+	else
+		uiInfo.uiDC.widthRatioCoef = 1.0f;
+}
 
 static const cvarTable_t uiCvarTable[] = {
 	#define XCVAR_LIST

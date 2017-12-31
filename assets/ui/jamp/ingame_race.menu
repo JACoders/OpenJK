@@ -1,0 +1,439 @@
+//-----------------------------------------
+// MOVE MENU
+//-----------------------------------------
+{
+	menuDef 
+	{
+		name					racemenu
+		visible					0
+		fullScreen				0
+		outOfBoundsClick
+		rect					262 352 238 88
+		focusColor				1 1 1 1
+
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 238 88
+			backcolor			0 0 .35 .9
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			text				JKA
+			type				1
+			rect				2 4 50 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move jka" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				PJK
+			type				1
+				
+			rect				2 24 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move pjk" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				QW
+			type				1
+			rect				2 44 50 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move qw" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				WSW
+			type				1
+			rect				2 64 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move wsw" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				Q3
+			type				1
+			rect				52 4 50 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move q3" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				CPM
+			type				1
+			rect				52 24 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move cpm" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				RJQ3
+			type				1
+			rect				52 44 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move rjq3" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				RJCPM
+			type				1
+			rect				52 64 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move rjcpm" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				Siege
+			type				1	
+			rect				102 4 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move siege" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				Swoop
+			type				1	
+			rect				102 24 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move swoop" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				JetPack
+			type				1	
+			rect				102 44 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move jetpack" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				Jump
+			type				0	
+			rect				152 4 28 20  
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			.6 .6 .6 1
+			visible				1
+		}
+		
+		itemDef 
+		{
+			text				1
+			type				1	
+			rect				182 4 14 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			7
+			textaligny			-1
+			font				3
+			textscale			.82
+			forecolor			.75 .75 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd jump 1" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				2
+			type				1	
+			rect				196 4 14 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			7
+			textaligny			-1     
+			font				3
+			textscale			.82
+			forecolor			.75 .75 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd jump 2" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				3
+			type				1	
+			rect				210 4 14 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			7
+			textaligny			-1   
+			font				3
+			textscale			.82
+			forecolor			.75 .75 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd jump 3" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				RocketChange
+			type				1	
+			rect				152 24 78 20  
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			.9 0 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd rocketChange" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				Practice
+			type				1	
+			rect				152 44 42 20  
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			.8 0 .8 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd practice" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				/
+			type				0	
+			rect				196 44 4 20 
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 1 1 1
+			visible				1 
+		}
+		
+		itemDef 
+		{
+			text				Hide
+			type				1	
+			rect				202 44 24 20  
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			0 .7 .7 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd hide" ; 
+				uiScript		closeingame 
+			}
+		}
+
+		itemDef 
+		{
+			text				JKASP
+			type				1
+			rect				102 64 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move sp" ; 
+				uiScript		closeingame 
+			}
+		}
+		
+		itemDef 
+		{
+			text				"RACE!"
+			type				1	
+			rect				161 64 62 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			31
+			textaligny			-4
+			font				2
+			textscale			.95
+			forecolor			0 1 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd race" ; 
+				uiScript		closeingame 
+			}
+		}
+	}
+}

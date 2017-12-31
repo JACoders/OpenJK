@@ -50,6 +50,10 @@ char *UI_Cvar_VariableString( const char *name ) {
 	return s;
 }
 
+static void UI_Modversion_f(void) {
+	trap->Print("^5Your ui version of the mod was compiled on %s at %s\n", __DATE__, __TIME__);
+}
+
 static void	UI_Cache_f( void ) {
 	Display_CacheAll();
 	if ( trap->Cmd_Argc() == 2 ) {
@@ -86,8 +90,9 @@ int cmdcmp( const void *a, const void *b ) {
 static consoleCommand_t	commands[] = {
 	{ "ui_cache",			UI_Cache_f },
 	{ "ui_load",			UI_Load },
+	{ "ui_modversion",		UI_Modversion_f },
 	{ "ui_openmenu",		UI_OpenMenu_f },
-	{ "ui_opensiegemenu",	UI_OpenSiegeMenu_f },
+	{ "ui_opensiegemenu",		UI_OpenSiegeMenu_f },
 	{ "ui_report",			UI_Report },
 };
 

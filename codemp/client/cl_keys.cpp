@@ -392,7 +392,7 @@ EDIT FIELDS
 =============================================================================
 */
 
-
+extern vec4_t chatColour;
 /*
 ===================
 Field_Draw
@@ -448,7 +448,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		SCR_DrawSmallStringExt( x, y, str, color, qfalse, noColorEscape );
 	} else {
 		// draw big string with drop shadow
-		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
+		SCR_DrawStringExt2(x*cls.ratioFix, y, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, str, chatColour, qfalse, noColorEscape); 
 	}
 
 	// draw the cursor
@@ -470,7 +470,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		} else {
 			str[0] = cursorChar;
 			str[1] = 0;
-			SCR_DrawBigString( x + ( edit->cursor - prestep - i ) * size, y, str, 1.0, qfalse );
+			SCR_DrawStringExt2((x + (edit->cursor - prestep - i)*size)*cls.ratioFix, y, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, str, chatColour, qfalse, qfalse); 
 		}
 	}
 }
@@ -588,9 +588,18 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'c' - 'a' + 1 ) {	// ctrl-c clears the field
+	if ( ch == 'z' - 'a' + 1 ) {	// ctrl-z clears the field
 		Field_Clear( edit );
 		return;
+	}
+
+	if (ch == 'c' - 'a' + 1) {	// ctrl-c copies latest link or ip from console
+		Con_CopyLink();
+		return;
+	}
+
+	if (ch == 's' - 'a' + 1) {	// ctrl-s copies console to clipboard
+		Con_Copy();
 	}
 
 	len = strlen( edit->buffer );
@@ -678,8 +687,9 @@ void Console_Key( int key ) {
 			Com_sprintf( g_consoleField.buffer, sizeof( g_consoleField.buffer ), "%s", temp );
 			g_consoleField.cursor--;
 		}
-	//	else
-	//		Field_AutoComplete( &g_consoleField );
+
+		if (cl_allowEnterCompletion->integer)
+			Field_AutoComplete(&g_consoleField, qtrue);
 
 		// print executed command
 		Com_Printf( "%c%s\n", CONSOLE_PROMPT_CHAR, g_consoleField.buffer );
@@ -805,6 +815,7 @@ In game talk message
 */
 void Message_Key( int key ) {
 	char buffer[MAX_STRING_CHARS] = {0};
+	char coloredString[MAX_EDIT_LINE] = { 0 };
 
 	if ( key == A_ESCAPE ) {
 		Key_SetCatcher( Key_GetCatcher() & ~KEYCATCH_MESSAGE );
@@ -814,9 +825,10 @@ void Message_Key( int key ) {
 
 	if ( key == A_ENTER || key == A_KP_ENTER ) {
 		if ( chatField.buffer[0] && cls.state == CA_ACTIVE ) {
-				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer );
-			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer );
-			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
+			CL_RandomizeColors(chatField.buffer, coloredString);
+				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer);
+			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer);
+			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", coloredString );
 
 			CL_AddReliableCommand( buffer, qfalse );
 		}
@@ -1315,10 +1327,31 @@ void CL_KeyDownEvent( int key, unsigned time )
 
 	// console key is hardcoded, so the user can never unbind it
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
+		Con_SetFrac(0.5f);
+		if (key == A_CONSOLE) {
+			if (kg.keys[A_CTRL].down)
+				Con_SetFrac(1.0f);
+			else if (kg.keys[A_SHIFT].down)
+				Con_SetFrac(0.25f);
+		}
 		Con_ToggleConsole_f();
 		Key_ClearStates ();
 		return;
 	}
+
+	/*if (kg.keys[A_CTRL].down && key == A_CONSOLE) {
+		Con_SetFrac(1.0f);
+		Con_ToggleConsole_f();
+		Key_ClearStates();
+		return;
+	}
+
+	if (kg.keys[A_SHIFT].down && key == A_CONSOLE) {
+		Con_SetFrac(0.25f);
+		Con_ToggleConsole_f();
+		Key_ClearStates();
+		return;
+	}*/
 
 	// keys can still be used for bound actions
 	if ( cls.state == CA_CINEMATIC && !Key_GetCatcher() ) {
