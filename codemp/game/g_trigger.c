@@ -1355,7 +1355,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		//We are still recording a demo that we want to keep?
 		//Stop and rename it
 		//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
-		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
+		//trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
+		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
 		player->client->pers.recordingDemo = qfalse;
 	}
 
@@ -1424,6 +1425,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	}
 }
 
+void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid);
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize);
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMS);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
@@ -1442,7 +1444,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 	multi_trigger(trigger, player);
 
 	if (player->client->pers.stats.startTime) {
-		char style[32] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
+		char styleStr[32] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = GetTimeMS() - player->client->pers.stats.startTime;
 		int average, restrictions = 0, nameColor = 7;
@@ -1486,96 +1488,16 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);//Just play it in jka physics for now...
 		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
-
-
-		//
-
-		IntegerToRaceName(player->client->ps.stats[STAT_MOVEMENTSTYLE], style, sizeof(style));
-		//
-
-		/*
-		if (player->client->ps.stats[STAT_RACEMODE]) {
-			if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SIEGE)
-				Q_strncpyz(style, "siege", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JKA)
-				Q_strncpyz(style, "jka", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_QW)
-				Q_strncpyz(style, "qw", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_CPM)
-				Q_strncpyz(style, "cpm", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_Q3)
-				Q_strncpyz(style, "q3", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_PJK)
-				Q_strncpyz(style, "pjk", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_WSW)
-				Q_strncpyz(style, "wsw", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3)
-				Q_strncpyz(style, "rjq3", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)
-				Q_strncpyz(style, "rjcpm", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SWOOP)
-				Q_strncpyz(style, "swoop", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JETPACK)
-				Q_strncpyz(style, "jetpack", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SPEED)
-				Q_strncpyz(style, "speed", sizeof(style));
-		}
-		else if (g_movementStyle.integer == MV_SIEGE)
-			Q_strncpyz(style, "siege", sizeof(style));
-		else if (g_movementStyle.integer == MV_JKA)
-			Q_strncpyz(style, "jka", sizeof(style));
-		else if (g_movementStyle.integer == MV_QW)
-			Q_strncpyz(style, "qw", sizeof(style));
-		else if (g_movementStyle.integer == MV_CPM)
-			Q_strncpyz(style, "cpm", sizeof(style));
-		else if (g_movementStyle.integer == MV_Q3)
-			Q_strncpyz(style, "q3", sizeof(style));
-		else if (g_movementStyle.integer == MV_PJK)
-			Q_strncpyz(style, "pjk", sizeof(style));
-		else if (g_movementStyle.integer == MV_WSW)
-			Q_strncpyz(style, "wsw", sizeof(style));
-		else if (g_movementStyle.integer == MV_RJQ3)
-			Q_strncpyz(style, "rjq3", sizeof(style));
-		else if (g_movementStyle.integer == MV_RJCPM)
-			Q_strncpyz(style, "rjcpm", sizeof(style));
-		else if (g_movementStyle.integer == MV_SPEED)
-			Q_strncpyz(style, "speed", sizeof(style));
-
-			*/
-
-		/*
-		if (time >= 60.0f) { //LODA FIXME, make this use the 
-			int minutes, seconds, milliseconds;
-
-			minutes = (int)time / 60;
-			seconds = (int)time % 60;
-			milliseconds = ((int)(time*1000)%1000); //milliseconds = fmodf(time, milliseconds);
-			Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%03i", minutes, seconds, milliseconds);
-		}
-		else
-			Q_strncpyz(timeStr, va("%.3f", time), sizeof(timeStr));
-			*/
-
+	
+		IntegerToRaceName(player->client->ps.stats[STAT_MOVEMENTSTYLE], styleStr, sizeof(styleStr));
 		TimeToString((int)(time*1000), timeStr, sizeof(timeStr), qfalse);
-
 		Q_strncpyz(playerName, player->client->pers.netname, sizeof(playerName));
 		Q_StripColor(playerName);
-		nameColor = 7 - (player->client->ps.clientNum % 8);//sad hack
-		if (nameColor < 2)
-			nameColor = 2;
-		else if (nameColor > 7 || nameColor == 5)
-			nameColor = 7;
-
-		if (trigger->message) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s%s completed in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
-				trigger->message, c, timeStr, c, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), c, average, c, style, c, nameColor, playerName));
+	
+		if (!valid) {
+			PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse);
 		}
 		else {
-			//Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
-				c, timeStr, c, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), c, average, c, style, c, nameColor, playerName));
-		}
-		if (valid) {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
 			char *p = NULL;
 			Q_strncpyz(strIP, player->client->sess.IP, sizeof(strIP));
@@ -1584,6 +1506,9 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				*p = 0;
 			if (player->client->pers.userName[0]) { //omg
 				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
+			}
+			else {
+				PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qtrue);
 			}
 		}
 

@@ -5731,7 +5731,8 @@ void G_RunClient( gentity_t *ent ) {
 
 		if (ent->client->pers.keepDemo) {
 			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED (timeout), HIGHSCORE\"");
-			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
+			//trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
+			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
 		}
 		else {
 			//trap->SendServerCommand( ent-g_entities, va("chat \"RECORDING STOPPED for client %i\"", ent->client->ps.clientNum));
