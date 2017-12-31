@@ -1525,9 +1525,9 @@ void G_GetRaceInfo(int *oldRank_self, int *newRank_self, int *oldCount, int *new
 
 static int G_GetSeason() {
 
-	//We want 4 month seasons.
+	//We want 4 month seasons?
 
-	return 0;
+	return 1;
 }
 
 static void G_UpdateOurLocalRun(sqlite3 * db, int oldRank_self, int newRank_self, int style_self, char *username_self, char *coursename_self, 
