@@ -2471,12 +2471,6 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 	trap->LinkEntity( (sharedEntity_t *)self );
 }
 #else
-#define MAX_JEDIMASTER_DISTANCE	2500
-#define MAX_JEDIMASTER_FOV		100
-
-#define MAX_SIGHT_DISTANCE		1500
-#define MAX_SIGHT_FOV			100
-
 void G_UpdateClientBroadcasts(gentity_t *self) {
 	int i;
 	gentity_t *other;
