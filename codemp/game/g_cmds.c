@@ -644,6 +644,7 @@ void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
 	}
 }
 
+void G_UpdatePlaytime(int null, char *username, int seconds );
 void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 {
 	qboolean wasReset = qfalse;;
@@ -652,20 +653,6 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		return;
 	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag)
 		wasReset = qtrue;
-
-	ent->client->pers.stats.startLevelTime = 0;
-	ent->client->pers.stats.startTime = 0;
-	ent->client->pers.stats.topSpeed = 0;
-	ent->client->pers.stats.displacement = 0;
-	ent->client->pers.stats.displacementSamples = 0;
-	ent->client->pers.stats.startTimeFlag = 0;
-	ent->client->pers.stats.topSpeedFlag = 0;
-	ent->client->pers.stats.displacementFlag = 0;
-	ent->client->pers.stats.displacementFlagSamples = 0;
-	ent->client->ps.stats[STAT_JUMPTIME] = 0;
-	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
-
-	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
 
 	if (ent->client->sess.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
@@ -687,7 +674,31 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 			ent->client->ps.jetpackFuel = 100;
 			Jetpack_Off(ent);
 		}
+
+		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
+			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+				ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
+			}
+			if (ent->client->pers.stats.racetime >= 60) {
+				G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
+				ent->client->pers.stats.racetime = 0.0f;
+			}
+		}
 	}
+
+	ent->client->pers.stats.startLevelTime = 0;
+	ent->client->pers.stats.startTime = 0;
+	ent->client->pers.stats.topSpeed = 0;
+	ent->client->pers.stats.displacement = 0;
+	ent->client->pers.stats.displacementSamples = 0;
+	ent->client->pers.stats.startTimeFlag = 0;
+	ent->client->pers.stats.topSpeedFlag = 0;
+	ent->client->pers.stats.displacementFlag = 0;
+	ent->client->pers.stats.displacementFlagSamples = 0;
+	ent->client->ps.stats[STAT_JUMPTIME] = 0;
+	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
+
+	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
 
 	if (wasReset && print)
 		//trap->SendServerCommand( ent-g_entities, "print \"Timer reset!\n\""); //console spam is bad

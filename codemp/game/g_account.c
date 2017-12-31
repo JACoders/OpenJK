@@ -2988,12 +2988,35 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 }
 #endif
 
+void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s;
+	qboolean newDB;
 
+	if (!db) {
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
+		newDB = qtrue;
+	}
 
+	Com_Printf("Adding %i seconds to %s\n", seconds, username);
 
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "UPDATE LocalAccount SET racetime = racetime + ? WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_int (stmt, 1, seconds));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
 
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Update Failed.\n");//trap print?
+	}
 
-
+	CALL_SQLITE (finalize(stmt));
+	if (newDB) {
+		CALL_SQLITE (close(db));
+	}
+}
 
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
@@ -3004,7 +3027,10 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
     sqlite3_stmt * stmt;
 	int s;
 	int oldBest, oldRank, newRank = -1;
+	gclient_t	*cl;
 	const int season = G_GetSeason();
+
+	cl = &level.clients[clientNum];
 
 	time( &rawtime );
 	localtime( &rawtime );
@@ -3066,7 +3092,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	}
 
 	if (personalBest) {
-		gclient_t	*cl;
 		int oldCount, newCount;
 		int i = 1; //1st place is rank 1
 
@@ -3127,7 +3152,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 		G_UpdateOurLocalRun(db, oldRank, newRank, style, username, coursename, duration_ms, topspeed, average, rawtime, newCount);//Update our race list
 
-		cl = &level.clients[clientNum];
 		if (cl->pers.recordingDemo) {
 			char mapCourse[MAX_QPATH] = {0};
 
@@ -3144,6 +3168,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 	}
 
+	cl->pers.stats.racetime += (duration_ms*0.001f);
+	if (cl->pers.stats.racetime > 60.0f) { //Avoid spamming the db
+		G_UpdatePlaytime(0, username, (int)(cl->pers.stats.racetime+0.5f));
+		cl->pers.stats.racetime = 0.0f;
+	}
+	
 	CALL_SQLITE (close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
@@ -3216,6 +3246,11 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 	if (Q_stricmp(ent->client->pers.userName, "")) {
 		trap->SendServerCommand(ent-g_entities, "print \"You are already logged in!\n\"");
+		return;
+	}
+
+	if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+		trap->SendServerCommand(ent-g_entities, "print \"You can not login during a race!\n\"");
 		return;
 	}
 
@@ -3558,7 +3593,7 @@ void Svcmd_Register_f(void)
 	localtime( &rawtime );
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, 0)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, racetime, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, 0)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
@@ -3987,7 +4022,15 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 }
 
 void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove login status.
-	if (Q_stricmp(ent->client->pers.userName, "")) {
+	if (ent->client->pers.userName && ent->client->pers.userName[0]) {
+		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+			ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
+		}
+		if (ent->client->pers.stats.racetime >= 1) {
+			G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
+			ent->client->pers.stats.racetime = 0.0f;
+		}
+
 		Q_strncpyz(ent->client->pers.userName, "", sizeof(ent->client->pers.userName));
 		trap->SendServerCommand(ent-g_entities, "print \"Logged out.\n\"");
 	}
@@ -5977,9 +6020,8 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	//use transactions
 	//COUNT_CHANGES off
 
-
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
-		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, iplock UNSIGNED TINYINT)";
+		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, iplock UNSIGNED TINYINT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));

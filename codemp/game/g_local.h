@@ -780,6 +780,8 @@ typedef struct {//JAPRO - Serverside - Stats
 	int	teamEnergizeGiven;
 	int	enemyDrainDamage;
 	int teamDrainDamage;
+
+	float racetime;
 } stats_t;
 
 // client data that stays across multiple respawns, but is cleared
