@@ -3934,7 +3934,7 @@ void G_RunFrame( int levelTime ) {
 					}
 				}
 				if (ent->client->pers.stats.startTime) {
-					float xyspeed;
+					float xyspeed = 0.0f;
 					if (ent->client->ps.m_iVehicleNum) {
 						gentity_t *currentVeh = &g_entities[ent->client->ps.m_iVehicleNum];
 
@@ -4553,7 +4553,7 @@ static void G_SpawnHoleFixes( void ) {
 		COM_BeginParseSession( filename );
 		while ( !ended ) {
 			for ( i = 0; i < 3; i++ ) {
-				char *token = COM_ParseExt( cursor, qtrue );
+				char *token = COM_ParseExt( (const char **)cursor, qtrue );
 				if (!token || !*token) {
 					ended = qtrue;
 					break;
@@ -4561,7 +4561,7 @@ static void G_SpawnHoleFixes( void ) {
 				mins[i] = atof( token );
 			}
 			for ( i = 0; i < 3; i++ ) {
-				char *token = COM_ParseExt( cursor, qtrue );
+				char *token = COM_ParseExt( (const char **)cursor, qtrue );
 				if ( !token || !*token ) {
 					ended = qtrue;
 					break;

@@ -2074,103 +2074,10 @@ Determines whether this client should be broadcast to any other clients.
 A client is broadcast when another client is using force sight or is
 ==================
 */
-#define MAX_JEDIMASTER_DISTANCE	2500
-#define MAX_JEDIMASTER_FOV		100
-
-#define MAX_SIGHT_DISTANCE		1500
-#define MAX_SIGHT_FOV			100
-
-static void G_UpdateForceSightBroadcasts ( gentity_t *self )
-{
-	int i;
-
-	// Any clients with force sight on should see this client
-	for ( i = 0; i < level.numConnectedClients; i ++ )
-	{
-		gentity_t *ent = &g_entities[level.sortedClients[i]];
-		float	  dist;
-		vec3_t	  angles;
-	
-		if ( ent == self )
-			continue;
-
-		if (!g_removeSpectatorPortals.integer || ent->client->sess.sessionTeam != TEAM_SPECTATOR) // Setting is off, or they are not in spec. (this is only skipped if setting is on and they are in spec)
-		{
-			// Not using force sight so we shouldnt broadcast to this one
-			if ( !(ent->client->ps.fd.forcePowersActive & (1<<FP_SEE) ) )
-				continue;
-
-			VectorSubtract( self->client->ps.origin, ent->client->ps.origin, angles );
-			dist = VectorLengthSquared ( angles );
-			vectoangles ( angles, angles );
-
-			// Too far away then just forget it
-			if ( dist > MAX_SIGHT_DISTANCE * MAX_SIGHT_DISTANCE )
-				continue;
-		
-			// If not within the field of view then forget it
-			if ( !InFieldOfVision ( ent->client->ps.viewangles, MAX_SIGHT_FOV, angles ) )
-				continue;
-				//break; //why is this break and not continue?
-		}
-		// Turn on the broadcast bit for the master and since there is only one
-		// master we are done
-		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
-		//break; //wait what, this isnt master this is force sight, there could be way more than one user why does it break
-	}
-}
-
-static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
-{
-	int i;
-
-	// Not jedi master mode then nothing to do
-	if ( level.gametype != GT_JEDIMASTER )
-	{
-		return;
-	}
-
-	// This client isnt the jedi master so it shouldnt broadcast
-	if ( !self->client->ps.isJediMaster )
-	{
-		return;
-	}
-
-	// Broadcast ourself to all clients within range
-	for ( i = 0; i < level.numConnectedClients; i ++ )
-	{
-		gentity_t *ent = &g_entities[level.sortedClients[i]];
-		float	  dist;
-		vec3_t	  angles;
-
-		if ( ent == self )
-		{
-			continue;
-		}
-
-		VectorSubtract( self->client->ps.origin, ent->client->ps.origin, angles );
-		dist = VectorLengthSquared ( angles );
-		vectoangles ( angles, angles );
-
-		// Too far away then just forget it
-		if ( dist > MAX_JEDIMASTER_DISTANCE * MAX_JEDIMASTER_DISTANCE )
-		{
-			continue;
-		}
-		
-		// If not within the field of view then forget it
-		if ( !InFieldOfVision ( ent->client->ps.viewangles, MAX_JEDIMASTER_FOV, angles ) )
-		{
-			continue;
-		}
-
-		// Turn on the broadcast bit for the master and since there is only one
-		// master we are done
-		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
-		//why not break here, since there actually is only one master?... the fuck is this
-		break;
-	}
-}
+static const float maxJediMasterDistance = 2500.0f * 2500.0f; // x^2, optimisation
+static const float maxJediMasterFOV = 100.0f;
+static const float maxForceSightDistance = Square(1500.0f) * 1500.0f; // x^2, optimisation
+static const float maxForceSightFOV = 100.0f;
 
 #if _ANTIWALLHACK
 
@@ -2346,14 +2253,15 @@ static qboolean SE_RenderPlayerPoints( qboolean isCrouching, const vec3_t player
 
 static void GetCameraPosition(const gentity_t *self, vec3_t cameraOrigin) {
 	vec3_t forward;
-	int thirdPerson = 1, thirdPersonRange = 80, thirdPersonVertOffset = 16;
+	int thirdPersonRange = 80, thirdPersonVertOffset = 16;
+	// int thirdPerson = 1;
 
 	AngleVectors( self->client->ps.viewangles, forward, NULL, NULL );
 	VectorNormalize( forward );
 
 	//Lets see if they have japro, then get the thirdpersonvertoffset and thirdpersonrange.  otherwise just use defaults of 16 and 80.
 	if (self->client->pers.isJAPRO) {
-		thirdPerson = self->client->pers.thirdPerson;
+		// thirdPerson = self->client->pers.thirdPerson;
 		thirdPersonRange = self->client->pers.thirdPersonRange;
 		thirdPersonVertOffset = self->client->pers.thirdPersonVertOffset;
 	}
@@ -2490,11 +2398,6 @@ qboolean G_EntityOccluded( const gentity_t *self, const gentity_t *other ) {
 	return qfalse;
 }
 
-static const float maxJediMasterDistance = 2500.0f * 2500.0f; // x^2, optimisation
-static const float maxJediMasterFOV = 100.0f;
-static const float maxForceSightDistance = Square( 1500.0f ) * 1500.0f; // x^2, optimisation
-static const float maxForceSightFOV = 100.0f;
-
 void G_UpdateClientBroadcasts( gentity_t *self ) {
 	int i;
 	gentity_t *other;
@@ -2522,25 +2425,41 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 			continue;
 		}
 
-		VectorSubtract( self->client->ps.origin, other->client->ps.origin, angles );
-		dist = VectorLengthSquared( angles );
-		vectoangles( angles, angles );
-
-		// broadcast jedi master to everyone if we are in distance/field of view
-		if ( level.gametype == GT_JEDIMASTER && self->client->ps.isJediMaster ) {
-			if ( dist < maxJediMasterDistance
-				&& InFieldOfVision( other->client->ps.viewangles, maxJediMasterFOV, angles ) )
-			{
+		if (g_removeSpectatorPortals.integer && other->client->sess.sessionTeam == TEAM_SPECTATOR) {
+			send = qtrue;
+		}
+		else if (g_antiWallhack.integer && other->client->ps.duelInProgress && self->client->ps.duelInProgress && other->client->ps.duelIndex == self->client->ps.clientNum && self->client->ps.duelIndex == other->client->ps.clientNum) {
+			if (G_EntityOccluded(self, other)) {
+				other->r.svFlags |= SVF_NOTSINGLECLIENT;
+				other->r.singleClient = self->client->ps.clientNum;
+				continue;
+			}
+			else {
+				other->r.svFlags &= ~SVF_NOTSINGLECLIENT;
 				send = qtrue;
 			}
 		}
+		else {
+			VectorSubtract(self->client->ps.origin, other->client->ps.origin, angles);
+			dist = VectorLengthSquared(angles);
+			vectoangles(angles, angles);
 
-		// broadcast this client to everyone using force sight if we are in distance/field of view
-		if ( (other->client->ps.fd.forcePowersActive & (1 << FP_SEE)) ) {
-			if ( dist < maxForceSightDistance
-				&& InFieldOfVision( other->client->ps.viewangles, maxForceSightFOV, angles ) )
-			{
-				send = qtrue;
+			// broadcast jedi master to everyone if we are in distance/field of view
+			if (level.gametype == GT_JEDIMASTER && self->client->ps.isJediMaster) {
+				if (dist < maxJediMasterDistance
+					&& InFieldOfVision(other->client->ps.viewangles, maxJediMasterFOV, angles))
+				{
+					send = qtrue;
+				}
+			}
+
+			// broadcast this client to everyone using force sight if we are in distance/field of view
+			if ((other->client->ps.fd.forcePowersActive & (1 << FP_SEE))) {
+				if (dist < maxForceSightDistance
+					&& InFieldOfVision(other->client->ps.viewangles, maxForceSightFOV, angles))
+				{
+					send = qtrue;
+				}
 			}
 		}
 
@@ -2552,16 +2471,67 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 	trap->LinkEntity( (sharedEntity_t *)self );
 }
 #else
-void G_UpdateClientBroadcasts(gentity_t *self)
-{
-	// Clear all the broadcast bits for this client
-	memset(self->r.broadcastClients, 0, sizeof(self->r.broadcastClients));
+#define MAX_JEDIMASTER_DISTANCE	2500
+#define MAX_JEDIMASTER_FOV		100
 
-	// The jedi master is broadcast to everyone in range
-	G_UpdateJediMasterBroadcasts(self);
+#define MAX_SIGHT_DISTANCE		1500
+#define MAX_SIGHT_FOV			100
 
-	// Anyone with force sight on should see this client
-	G_UpdateForceSightBroadcasts(self);
+void G_UpdateClientBroadcasts(gentity_t *self) {
+	int i;
+	gentity_t *other;
+
+	// we are always sent to ourselves
+	// we are always sent to other clients if we are in their PVS
+	// if we are not in their PVS, we must set the broadcastClients bit field
+	// if we do not wish to be sent to any particular entity, we must set the broadcastClients bit field and the
+	//	SVF_BROADCASTCLIENTS bit flag
+	self->r.broadcastClients[0] = 0u;
+	self->r.broadcastClients[1] = 0u;
+
+	for (i = 0, other = g_entities; i < MAX_CLIENTS; i++, other++) {
+		qboolean send = qfalse;
+		float dist;
+		vec3_t angles;
+
+		if (!other->inuse || other->client->pers.connected != CON_CONNECTED) {
+			// no need to compute visibility for non-connected clients
+			continue;
+		}
+
+		if (other == self) {
+			// we are always sent to ourselves anyway, this is purely an optimisation
+			continue;
+		}
+
+		VectorSubtract(self->client->ps.origin, other->client->ps.origin, angles);
+		dist = VectorLengthSquared(angles);
+		vectoangles(angles, angles);
+
+		// broadcast jedi master to everyone if we are in distance/field of view
+		if (level.gametype == GT_JEDIMASTER && self->client->ps.isJediMaster) {
+			if (dist < maxJediMasterDistance
+				&& InFieldOfVision(other->client->ps.viewangles, maxJediMasterFOV, angles))
+			{
+				send = qtrue;
+			}
+		}
+
+		// broadcast this client to everyone using force sight if we are in distance/field of view
+		if ((other->client->ps.fd.forcePowersActive & (1 << FP_SEE))) {
+			if (dist < maxForceSightDistance
+				&& InFieldOfVision(other->client->ps.viewangles, maxForceSightFOV, angles))
+			{
+				send = qtrue;
+			}
+		}
+
+		if (send) {
+			Q_AddToBitflags(self->r.broadcastClients, i, 32);
+		}
+	}
+
+	trap->LinkEntity((sharedEntity_t *)self);
 }
 #endif
 
@@ -3643,7 +3613,7 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
-	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP) { //Ok,, this should be like every frame, right??
+	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && ((g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP)) { //Ok,, this should be like every frame, right??
 		client->sess.movementStyle = g_movementStyle.integer;
 	}
 	client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;

@@ -2923,8 +2923,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 	if ((self->client && self->client->NPC_class != CLASS_VEHICLE) &&
 		(self->health != -999 || meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && //:^)
-		(self->health <= GIB_HEALTH && g_dismember.integer >= 103 && meansOfDeath != MOD_SUICIDE && meansOfDeath != MOD_TEAM_CHANGE) || 
-		((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104)
+		((self->health <= GIB_HEALTH && g_dismember.integer >= 103 && meansOfDeath != MOD_SUICIDE && meansOfDeath != MOD_TEAM_CHANGE) || 
+			((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104))
 		)//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
 	{
 		

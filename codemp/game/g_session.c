@@ -93,8 +93,8 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.juniorAdmin ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.fullAdmin ) );
 
-	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.sayteammod ) );
-	Q_strcat( s, sizeof( s ), va( "%s", (int)client->sess.clanpass ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sayteammod ) );
+	Q_strcat( s, sizeof( s ), va( "%s", client->sess.clanpass ) );
 
 	var = va( "session%i", client - level.clients );
 

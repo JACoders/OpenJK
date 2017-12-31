@@ -13004,7 +13004,7 @@ void PmoveSingle (pmove_t *pmove) {
 		else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.
 			//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
 		}
-	#else if _CGAME
+	#elif _CGAME
 		else if ((cgs.jcinfo & JAPRO_CINFO_HIGHFPSFIX) && ((pml.msec < 4) || (pml.msec > 25))) {
 		}
 	#endif

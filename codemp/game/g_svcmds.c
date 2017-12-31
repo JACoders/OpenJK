@@ -1152,7 +1152,7 @@ void Svcmd_ToggleStartingItems_f( void ) {
 		}
 
 		if (index == -1) {
-			for (index = 0; index < MAX_SABER_TWEAKS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+			for (index = 0; index < MAX_STARTING_ITEMS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
 				trap->Cvar_Set("g_startingItems", va("%i", (1 << index) ^ (g_startingItems.integer & mask)));
 				trap->Cvar_Update(&g_startingItems);
 				trap->Print("%s %s^7\n", startingItems[index].string, ((g_startingItems.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));

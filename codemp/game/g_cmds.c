@@ -3204,8 +3204,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 				//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].voteTimeoutUntil);
 				if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
 					//trap->Print("Found clients IP in array!\n");
-					const int voteTimeout = voteFloodProtect[j].failCount+1 * 1000*g_voteTimeout.integer;
-
 					if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > trap->Milliseconds())) { //compare this to something other than level.time ?
 						//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
 						char timeStr[32];
@@ -3413,7 +3411,6 @@ void Cmd_Vote_f( gentity_t *ent ) {
 
 		for (i=0; i<MAX_CLIENTS; i++)
 		{//Build a list of clients
-			char *tmpMsg = NULL;
 			if (!g_entities[i].inuse)
 				continue;
 
@@ -5069,7 +5066,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 				} 
 
 
-				if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
+				if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
 				{
 					if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 						return;
@@ -5290,7 +5287,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
             return; 
         } 
 
-		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5350,7 +5347,7 @@ void Cmd_Amkick_f(gentity_t *ent)
 			return; 
         } 
 
-		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5392,7 +5389,7 @@ void Cmd_Amban_f(gentity_t *ent)
 			return; 
         } 
 
-		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5445,7 +5442,7 @@ void Cmd_Ammap_f(gentity_t *ent)
 		gtype = atoi(gametype);
 
 		{
-			char				unsortedMaps[4096], buf[512] = {0};
+			char				unsortedMaps[4096];
 			char*				possibleMapName;
 			int					numMaps;
 			const unsigned int  MAX_MAPS = 512;
@@ -7252,7 +7249,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)  
 			return; 
 
-		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin)))//He has admin
 		{	
 			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 			{
@@ -7314,7 +7311,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 		else//Amtele other player to origin
 		{
-			if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
+			if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin)))//He has admin
 			{	
 				if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 				{
@@ -7347,7 +7344,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2)
 			return;
 
-		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin)))//He has admin
 		{	
 			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 			{

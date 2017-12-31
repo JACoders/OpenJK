@@ -3814,7 +3814,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
-	int row = 0, lastlogin = 0, s, highscores = 0, course, style, numGolds = 0, numSilvers = 0, numBronzes = 0;
+	int row = 0, lastlogin = 0, s, course, style, numGolds = 0, numSilvers = 0, numBronzes = 0;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
 	char goldStr[128] = {0}, silverStr[128] = {0}, bronzeStr[128] = {0}, styleStr[16] = {0};
@@ -4161,9 +4161,9 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					unsigned short topspeed, average;
 					unsigned short style;
 					unsigned int end_time;
-					int garbage;
+					// int garbage;
 
-					garbage = sqlite3_column_int(stmt, 0); //cn i just delete this, it seemed to throw off the order..??
+					// garbage = sqlite3_column_int(stmt, 0); //cn i just delete this, it seemed to throw off the order..??
 					username = (char*)sqlite3_column_text(stmt, 1); 
 					course = (char*)sqlite3_column_text(stmt, 2); //again, not needed
 					duration_ms = sqlite3_column_int(stmt, 3);

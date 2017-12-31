@@ -2323,9 +2323,11 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	s = Info_ValueForKey( userinfo, "cg_displayNetSettings" );
 	if (Q_stricmp(s, "")) { //if s is set
+		char tmp[MAX_INFO_VALUE];
 		char * pch;
 		int i = 0;
-		pch = strtok (s, " ");
+		Q_strncpyz(tmp, s, sizeof(tmp));
+		pch = strtok (tmp, " ");
 		while (pch != NULL) {
 			if (i == 0)
 				client->pers.maxPackets = atoi(pch);
@@ -2358,9 +2360,11 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
 	if (Q_stricmp(s, "")) { //if s is set
+		char tmp[MAX_INFO_VALUE];
 		char * pch;
 		int i = 0;
-		pch = strtok (s, " ");
+		Q_strncpyz(tmp, s, sizeof(tmp));
+		pch = strtok (tmp, " ");
 		while (pch != NULL) {
 			if (i == 0)
 				client->pers.thirdPerson = atoi(pch);
