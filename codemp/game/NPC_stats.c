@@ -3591,6 +3591,7 @@ void NPC_LoadParms( void )
 		else
 		{
 			if ( totallen + len >= MAX_NPC_DATA_SIZE ) {
+				trap->FS_Close( f );
 				trap->Error( ERR_DROP, "NPC extensions (*.npc) are too large" );
 			}
 			trap->FS_Read(npcParseBuffer, len, f);

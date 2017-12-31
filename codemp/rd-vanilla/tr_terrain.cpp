@@ -214,7 +214,7 @@ void CTRPatch::SetVisibility(bool visCheck)
 		else
 		{
 			// Set the visibility of the patch
-			misVisible = !ri->CM_CullWorldBox(backEnd.viewParms.frustum, GetBounds());
+			misVisible = !ri.CM_CullWorldBox(backEnd.viewParms.frustum, GetBounds());
 		}
 	}
 	else
@@ -505,7 +505,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 	CGPGroup		*basegroup, *classes, *items;
 
 	Com_sprintf(terrainDef, MAX_QPATH, "ext_data/RMG/%s.terrain", td);
-	ri->Printf( PRINT_ALL, "R_Terrain: Loading and parsing terrainDef %s.....\n", td);
+	ri.Printf( PRINT_ALL, "R_Terrain: Loading and parsing terrainDef %s.....\n", td);
 
 	mWaterShader = NULL;
 	mFlatShader  = NULL_HANDLE;
@@ -515,7 +515,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 		Com_sprintf(terrainDef, MAX_QPATH, "ext_data/arioche/%s.terrain", td);
 		if(!Com_ParseTextFile(terrainDef, parse))
 		{
-			ri->Printf( PRINT_ALL, "Could not open %s\n", terrainDef);
+			ri.Printf( PRINT_ALL, "Could not open %s\n", terrainDef);
 			return;
 		}
 	}
@@ -867,7 +867,7 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	memset(this, 0, sizeof(*this));
 
 	// Sets up the common aspects of the terrain
-	common = ri->CM_RegisterTerrain(configstring, false);
+	common = ri.CM_RegisterTerrain(configstring, false);
 	SetCommon(common);
 
 	tr.landScape.landscape = this;
@@ -899,14 +899,14 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	// Calculate texture coords (not projected - real)
 	CalculateTextureCoords();
 
-	ri->Printf( PRINT_ALL, "R_Terrain: Creating renderer patches.....\n");
+	ri.Printf( PRINT_ALL, "R_Terrain: Creating renderer patches.....\n");
 	// Initialise all terrain patches
 	mTRPatches = (CTRPatch *)Z_Malloc(sizeof(CTRPatch) * common->GetBlockCount(), TAG_R_TERRAIN);
 
 	mSortedCount = 2 * common->GetBlockCount();
 	mSortedPatches = (TPatchInfo *)Z_Malloc(sizeof(TPatchInfo) * mSortedCount, TAG_R_TERRAIN);
 
-	ri->CM_TerrainPatchIterate(common, InitRendererPatches, this);
+	ri.CM_TerrainPatchIterate(common, InitRendererPatches, this);
 
 	// Calculate shaders dependent on the .terrain file
 	CalculateShaders();
@@ -998,11 +998,11 @@ void RE_InitRendererTerrain( const char *info )
 
 	if ( !info || !info[0] )
 	{
-		ri->Printf( PRINT_ALL, "RE_RegisterTerrain: NULL name\n" );
+		ri.Printf( PRINT_ALL, "RE_RegisterTerrain: NULL name\n" );
 		return;
 	}
 
-	ri->Printf( PRINT_ALL, "R_Terrain: Creating RENDERER data.....\n");
+	ri.Printf( PRINT_ALL, "R_Terrain: Creating RENDERER data.....\n");
 
 	// Create and register a new landscape structure
 	/*ls = */new CTRLandScape(info);
@@ -1013,10 +1013,10 @@ void R_TerrainInit(void)
 	tr.landScape.surfaceType = SF_TERRAIN;
 	tr.landScape.landscape = NULL;
 
-	r_terrainTessellate = ri->Cvar_Get("r_terrainTessellate", "3", CVAR_CHEAT);
-	r_drawTerrain = ri->Cvar_Get("r_drawTerrain", "1", CVAR_CHEAT);
-	r_showFrameVariance = ri->Cvar_Get("r_showFrameVariance", "0", 0);
-	r_terrainWaterOffset = ri->Cvar_Get("r_terrainWaterOffset", "0", 0);
+	r_terrainTessellate = ri.Cvar_Get("r_terrainTessellate", "3", CVAR_CHEAT);
+	r_drawTerrain = ri.Cvar_Get("r_drawTerrain", "1", CVAR_CHEAT);
+	r_showFrameVariance = ri.Cvar_Get("r_showFrameVariance", "0", 0);
+	r_terrainWaterOffset = ri.Cvar_Get("r_terrainWaterOffset", "0", 0);
 
 	tr.distanceCull = 6000;
 	tr.distanceCullSquared = tr.distanceCull * tr.distanceCull;
@@ -1026,11 +1026,11 @@ void R_TerrainShutdown(void)
 {
 	CTRLandScape	*ls;
 
-//	ri->Printf( PRINT_ALL, "R_Terrain: Shutting down RENDERER terrain.....\n");
+//	ri.Printf( PRINT_ALL, "R_Terrain: Shutting down RENDERER terrain.....\n");
 	ls = tr.landScape.landscape;
 	if(ls)
 	{
-		ri->CM_ShutdownTerrain(0);
+		ri.CM_ShutdownTerrain(0);
 		delete ls;
 		tr.landScape.landscape = NULL;
 	}

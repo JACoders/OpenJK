@@ -722,11 +722,8 @@ static void G_SpewEntList(void)
 	char className[MAX_STRING_CHARS];
 	gentity_t *ent;
 	char *str;
-#ifdef FINAL_BUILD
-	#define VM_OR_FINAL_BUILD
-#endif
 
-#ifndef VM_OR_FINAL_BUILD
+#ifdef _DEBUG
 	fileHandle_t fh;
 	trap->FS_Open("entspew.txt", &fh, FS_WRITE);
 #endif
@@ -754,7 +751,7 @@ static void G_SpewEntList(void)
 
 				str = va("TEMPENT %4i: EV %i\n", ent->s.number, ent->s.eType-ET_EVENTS);
 				Com_Printf(str);
-#ifndef VM_OR_FINAL_BUILD
+#ifdef _DEBUG
 				if (fh)
 				{
 					trap->FS_Write(str, strlen(str), fh);
@@ -772,7 +769,7 @@ static void G_SpewEntList(void)
 			}
 			str = va("ENT %4i: Classname %s\n", ent->s.number, className);
 			Com_Printf(str);
-#ifndef VM_OR_FINAL_BUILD
+#ifdef _DEBUG
 			if (fh)
 			{
 				trap->FS_Write(str, strlen(str), fh);
@@ -785,7 +782,7 @@ static void G_SpewEntList(void)
 
 	str = va("TempEnt count: %i\nTempEnt ST: %i\nNPC count: %i\nProjectile count: %i\n", numTempEnt, numTempEntST, numNPC, numProjectile);
 	Com_Printf(str);
-#ifndef VM_OR_FINAL_BUILD
+#ifdef _DEBUG
 	if (fh)
 	{
 		trap->FS_Write(str, strlen(str), fh);

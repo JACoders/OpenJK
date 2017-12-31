@@ -105,11 +105,11 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 		// didn't find it? Error
 		//assert(0);
 #ifdef _DEBUG
-		ri->Printf( PRINT_ALL, "WARNING: Failed to add bone %s\n", boneName);
+		ri.Printf( PRINT_ALL, "WARNING: Failed to add bone %s\n", boneName);
 #endif
 
 #ifdef _RAG_PRINT_TEST
-		ri->Printf( PRINT_ALL, "WARNING: Failed to add bone %s\n", boneName);
+		ri.Printf( PRINT_ALL, "WARNING: Failed to add bone %s\n", boneName);
 #endif
 		return -1;
 	}
@@ -137,7 +137,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 	}
 
 #ifdef _RAG_PRINT_TEST
-	ri->Printf( PRINT_ALL, "New bone added for %s\n", boneName);
+	ri.Printf( PRINT_ALL, "New bone added for %s\n", boneName);
 #endif
 	// ok, we didn't find an existing bone of that name, or an empty slot. Lets add an entry
 	tempBone.boneNumber = x;
@@ -2693,11 +2693,11 @@ int ragTraceCount = 0;
 void Rag_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, const int passEntityNum, const int contentmask, const EG2_Collision eG2TraceType, const int useLod )
 {
 #ifdef _DEBUG
-	int ragPreTrace = ri->Milliseconds();
+	int ragPreTrace = ri.Milliseconds();
 #endif
-	if ( ri->CGVMLoaded() )
+	if ( ri.CGVMLoaded() )
 	{
-		ragCallbackTraceLine_t *callData = (ragCallbackTraceLine_t *)ri->GetSharedMemory();
+		ragCallbackTraceLine_t *callData = (ragCallbackTraceLine_t *)ri.GetSharedMemory();
 
 		VectorCopy(start, callData->start);
 		VectorCopy(end, callData->end);
@@ -2706,7 +2706,7 @@ void Rag_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const v
 		callData->ignore = passEntityNum;
 		callData->mask = contentmask;
 
-		ri->CGVM_RagCallback( RAG_CALLBACK_TRACELINE );
+		ri.CGVM_RagCallback( RAG_CALLBACK_TRACELINE );
 
 		*results = callData->tr;
 	}
@@ -2714,12 +2714,12 @@ void Rag_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const v
 	{
 		results->entityNum = ENTITYNUM_NONE;
 		//SV_Trace(results, start, mins, maxs, end, passEntityNum, contentmask, eG2TraceType, useLod);
-		ri->CM_BoxTrace(results, start, end, mins, maxs, 0, contentmask, 0);
+		ri.CM_BoxTrace(results, start, end, mins, maxs, 0, contentmask, 0);
 		results->entityNum = results->fraction != 1.0 ? ENTITYNUM_WORLD : ENTITYNUM_NONE;
 	}
 
 #ifdef _DEBUG
-	int ragPostTrace = ri->Milliseconds();
+	int ragPostTrace = ri.Milliseconds();
 
 	ragTraceTime += (ragPostTrace - ragPreTrace);
 	if (results->startsolid)
@@ -2890,24 +2890,24 @@ static inline bool G2_ApplyRealBonePhysics(boneInfo_t &bone, SRagEffector &e, CR
 #ifdef _DEBUG_BONE_NAMES
 static inline void G2_RagDebugBox(vec3_t mins, vec3_t maxs, int duration)
 {
-	if ( !ri->CGVMLoaded() )
+	if ( !ri.CGVMLoaded() )
 		return;
 
-	ragCallbackDebugBox_t *callData = (ragCallbackDebugBox_t *)ri->GetSharedMemory();
+	ragCallbackDebugBox_t *callData = (ragCallbackDebugBox_t *)ri.GetSharedMemory();
 
 	callData->duration = duration;
 	VectorCopy(mins, callData->mins);
 	VectorCopy(maxs, callData->maxs);
 
-	ri->CGVM_RagCallback( RAG_CALLBACK_DEBUGBOX );
+	ri.CGVM_RagCallback( RAG_CALLBACK_DEBUGBOX );
 }
 
 static inline void G2_RagDebugLine(vec3_t start, vec3_t end, int time, int color, int radius)
 {
-	if ( !ri->CGVMLoaded() )
+	if ( !ri.CGVMLoaded() )
 		return;
 
-	ragCallbackDebugLine_t *callData = (ragCallbackDebugLine_t *)ri->GetSharedMemory();
+	ragCallbackDebugLine_t *callData = (ragCallbackDebugLine_t *)ri.GetSharedMemory();
 
 	VectorCopy(start, callData->start);
 	VectorCopy(end, callData->end);
@@ -2915,7 +2915,7 @@ static inline void G2_RagDebugLine(vec3_t start, vec3_t end, int time, int color
 	callData->color = color;
 	callData->radius = radius;
 
-	ri->CGVM_RagCallback( RAG_CALLBACK_DEBUGLINE );
+	ri.CGVM_RagCallback( RAG_CALLBACK_DEBUGLINE );
 }
 #endif
 
@@ -3048,15 +3048,15 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 					{
 						//SRagDollEffectorCollision args(e.currentOrigin,tr);
 						//params->EffectorCollision(args);
-						if ( ri->CGVMLoaded() )
+						if ( ri.CGVMLoaded() )
 						{ //make a callback and see if the cgame wants to help us out
-							ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri->GetSharedMemory();
+							ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri.GetSharedMemory();
 
 							VectorCopy(e.currentOrigin, callData->bonePos);
 							callData->entNum = params->me;
 							callData->solidCount = bone.solidCount;
 
-							ri->CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
+							ri.CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
 						}
 					}
 				}
@@ -3075,15 +3075,15 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 					//SRagDollEffectorCollision args(e.currentOrigin,tr);
 					//args.useTracePlane=true;
 					//params->EffectorCollision(args);
-					if ( ri->CGVMLoaded() )
+					if ( ri.CGVMLoaded() )
 					{ //make a callback and see if the cgame wants to help us out
-						ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri->GetSharedMemory();
+						ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri.GetSharedMemory();
 
 						VectorCopy(e.currentOrigin, callData->bonePos);
 						callData->entNum = params->me;
 						callData->solidCount = bone.solidCount;
 
-						ri->CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
+						ri.CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
 					}
 				}
 			}
@@ -3168,15 +3168,15 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 						//SRagDollEffectorCollision args(e.currentOrigin,tr);
 						//args.useTracePlane=true;
 						//params->EffectorCollision(args);
-						if ( ri->CGVMLoaded() )
+						if ( ri.CGVMLoaded() )
 						{ //make a callback and see if the cgame wants to help us out
-							ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri->GetSharedMemory();
+							ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri.GetSharedMemory();
 
 							VectorCopy(e.currentOrigin, callData->bonePos);
 							callData->entNum = params->me;
 							callData->solidCount = bone.solidCount;
 
-							ri->CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
+							ri.CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
 						}
 					}
 				}
@@ -3203,15 +3203,15 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 							//SRagDollEffectorCollision args(e.currentOrigin,tr);
 							//args.useTracePlane=true;
 							//params->EffectorCollision(args);
-							if ( ri->CGVMLoaded() )
+							if ( ri.CGVMLoaded() )
 							{ //make a callback and see if the cgame wants to help us out
-								ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri->GetSharedMemory();
+								ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri.GetSharedMemory();
 
 								VectorCopy(e.currentOrigin, callData->bonePos);
 								callData->entNum = params->me;
 								callData->solidCount = bone.solidCount;
 
-								ri->CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
+								ri.CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
 							}
 						}
 					}
@@ -3354,7 +3354,7 @@ void G2_RagPrintMatrix(mdxaBone_t *mat)
 		n++;
 	}
 	strcat(x, "\n");
-	ri->Printf( PRINT_ALL, x);
+	ri.Printf( PRINT_ALL, x);
 }
 #endif
 
@@ -3716,7 +3716,7 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 				VectorCopy(basePos, goalSpot);
 				goalSpot[2] = (params->position[2]-23)-testMins[2];
 #endif
-				//ri->Printf( PRINT_ALL, "%i: %f %f %f\n", bone.boneNumber, basePos[0], basePos[1], basePos[2]);
+				//ri.Printf( PRINT_ALL, "%i: %f %f %f\n", bone.boneNumber, basePos[0], basePos[1], basePos[2]);
 			}
 			else
 			{ //if deep in solid want to try to rise up out of solid before hinting back to base
@@ -3810,7 +3810,7 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 		{
 			bone.solidCount++;
 #if 0
-			if ( ri->CGVMLoaded() && bone.solidCount > 8 )
+			if ( ri.CGVMLoaded() && bone.solidCount > 8 )
 			{ //make a callback and see if the cgame wants to help us out
 				Rag_Trace(&solidTr, params->position, testMins, testMaxs, e.currentOrigin, ignoreNum, RAG_MASK, G2_NOCOLLIDE, 0);
 
@@ -3819,13 +3819,13 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 					(solidTr.plane.normal[2] < 0.1f || solidTr.plane.normal[2] > -0.1f))// && //don't do anything against flat around
 				//	e.currentOrigin[2] > pelvisPos[2])
 				{
-					ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri->GetSharedMemory();
+					ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)ri.GetSharedMemory();
 
 					VectorCopy(e.currentOrigin, callData->bonePos);
 					callData->entNum = params->me;
 					callData->solidCount = bone.solidCount;
 
-					ri->CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
+					ri.CGVM_RagCallback( RAG_CALLBACK_BONEINSOLID );
 				}
 			}
 #endif
@@ -3838,7 +3838,7 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 
 				assert(debugBoneName);
 
-				ri->Printf( PRINT_ALL, "High bone (%s, %i) solid count: %i\n", debugBoneName, bone.boneNumber, bone.solidCount);
+				ri.Printf( PRINT_ALL, "High bone (%s, %i) solid count: %i\n", debugBoneName, bone.boneNumber, bone.solidCount);
 
 				VectorAdd(e.currentOrigin, testMins, absmin);
 				VectorAdd(e.currentOrigin, testMaxs, absmax);
@@ -3935,17 +3935,17 @@ static float AngleNormZero(float theta)
 
 static inline void G2_BoneSnap(CGhoul2Info_v &ghoul2V, boneInfo_t &bone, CRagDollUpdateParams *params)
 {
-	if ( !ri->CGVMLoaded() || !params )
+	if ( !ri.CGVMLoaded() || !params )
 	{
 		return;
 	}
 
-	ragCallbackBoneSnap_t *callData = (ragCallbackBoneSnap_t *)ri->GetSharedMemory();
+	ragCallbackBoneSnap_t *callData = (ragCallbackBoneSnap_t *)ri.GetSharedMemory();
 
 	callData->entNum = params->me;
 	strcpy(callData->boneName, G2_Get_Bone_Name(&ghoul2V[0], ghoul2V[0].mBlist, bone.boneNumber));
 
-	ri->CGVM_RagCallback( RAG_CALLBACK_BONESNAP );
+	ri.CGVM_RagCallback( RAG_CALLBACK_BONESNAP );
 }
 
 static void G2_RagDollSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int frameNum,const vec3_t currentOrg,bool limitAngles,CRagDollUpdateParams *params)

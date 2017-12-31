@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../rd-common/tr_public.h"
 #include "../rd-common/tr_font.h"
 
-extern refimport_t *ri;
+extern refimport_t ri;
 
 /*
 ================================================================================
