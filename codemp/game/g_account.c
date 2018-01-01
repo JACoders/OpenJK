@@ -1306,7 +1306,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
     }
 	CALL_SQLITE (finalize(stmt));
 
-	i = 0; // AH HA
+	i = 1; // AH HA ha
 
 	sql = "SELECT id, MIN(duration_ms) AS duration FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC"; //assume just one per person to speed this up..
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -3263,7 +3263,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 		CALL_SQLITE (finalize(stmt));
 
-		i = 0;
+		i = 1; //oh no no
 
 		//Get global rank, could union this with previous query maybe
 		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC";
