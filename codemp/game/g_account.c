@@ -3263,6 +3263,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 		CALL_SQLITE (finalize(stmt));
 
+		i = 0;
+
 		//Get global rank, could union this with previous query maybe
 		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
