@@ -2673,9 +2673,8 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs)
 	}
 }
 
-void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid) {
+void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean sr, qboolean spb, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid) {
 	int nameColor;
-
 
 	if (wr) //Play the sound
 		PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
@@ -2697,8 +2696,16 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
 				message, timeStr, topspeed, average, style, nameColor, username));
 		}
+		else if (sr) {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR)^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
 		else if (pb) {
 			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (PB)^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (spb) {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SPB)^7\n\"",
 				message, timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (loggedin) {
@@ -2719,8 +2726,16 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(WR)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
+		else if (sr) {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(SR)^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
 		else if (pb) {
 			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(PB)^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (spb) {
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(SPB)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (loggedin) {
@@ -2732,7 +2747,6 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 	}
-
 
 }
 
@@ -3021,12 +3035,12 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char	string[1024] = {0}, info[1024] = {0}, coursename[40], timeStr[32] = {0}, styleString[32] = {0};
-	qboolean personalBest = qfalse;
+	qboolean seasonPB = qfalse, globalPB = qfalse, WR = qfalse;
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
-	int oldBest, oldRank, newRank = -1;
+	int oldBest, oldRank, newRank = -1, globalOldBest, globalOldRank, globalNewRank;
 	gclient_t	*cl;
 	const int season = G_GetSeason();
 
@@ -3060,42 +3074,69 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-	sql = "SELECT MIN(duration_ms), rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ?";
+	sql = "SELECT MIN(duration_ms), rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? "
+		"UNION ALL SELECT MIN(duration_ms), rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, coursename, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, style));
 	CALL_SQLITE (bind_int (stmt, 4, season));
+	CALL_SQLITE (bind_text (stmt, 5, username, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 6, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 7, style));
 
 	s = sqlite3_step(stmt);
 
 	if (s == SQLITE_ROW) {
 		oldBest = sqlite3_column_int(stmt, 0);
 		oldRank = sqlite3_column_int(stmt, 1);
-		CALL_SQLITE (finalize(stmt));
 
 		//trap->Print("Oldbest, Duration_ms: %i, %i\n", oldBest, duration_ms);
 
 		if (oldBest) {// We found a time in the database
 			if (duration_ms < oldBest) { //our time we just recorded is faster, so log it			
-				personalBest = qtrue;
+				seasonPB = qtrue;
 			}
 		}
 		else { //No time found in database, so record the time we just recorded 
-			personalBest = qtrue;
+			seasonPB = qtrue;
 			oldRank = -1;
 		}
 	}
 	else if (s != SQLITE_DONE) {
-		CALL_SQLITE (finalize(stmt));
 		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
 	}
 
-	if (personalBest) {
-		int oldCount, newCount;
-		int i = 1; //1st place is rank 1
+	s = sqlite3_step(stmt);
 
-		sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ? AND season = ?";
+	if (s == SQLITE_ROW) {
+		globalOldBest = sqlite3_column_int(stmt, 0);
+		globalOldRank = sqlite3_column_int(stmt, 1);
+
+		//trap->Print("Oldbest, Duration_ms: %i, %i\n", oldBest, duration_ms);
+
+		if (globalOldBest) {// We found a time in the database
+			if (duration_ms < globalOldBest) { //our time we just recorded is faster, so log it			
+				globalPB = qtrue;
+			}
+		}
+		else { //No time found in database, so record the time we just recorded 
+			globalPB = qtrue;
+			globalOldRank = -1;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+	}
+	CALL_SQLITE (finalize(stmt));
+
+
+	if (seasonPB) {
+		int oldCount, newCount;// oldSeasonCount, newSeasonCount;
+		int i = 1; //1st place is rank 1
+		int oldWR;
+
+		sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ? AND season = ?"; //entries ?
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, style));
@@ -3110,6 +3151,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 		CALL_SQLITE (finalize(stmt));
 
+		//Get season rank
 		sql = "SELECT duration_ms FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
@@ -3118,6 +3160,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
+				newRank = 0;
 				if (duration_ms < sqlite3_column_int(stmt, 0)) { //We are faster than this time... If we dont find anything newrank stays -1
 					newRank = i;
 					break;
@@ -3132,6 +3175,24 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			}
 		}
 		CALL_SQLITE (finalize(stmt));
+
+		//Cheap WR query needed
+		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE coursename = ? AND style = ?"; //entries ?
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			oldWR = sqlite3_column_int(stmt, 0);
+		}
+		else if (s != SQLITE_DONE) {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (duration_ms < oldWR || !oldWR) {
+			WR = qtrue;
+		}
 
 		if (newRank == 0) { //We wern't faster than any times, so set our rank to count (+ 1) ? -- loda checkme
 			newRank = oldCount + 1;
@@ -3177,7 +3238,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	CALL_SQLITE (close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
-	PrintRaceTime(username, message, styleString, topspeed, average, timeStr, clientNum, (qboolean)(newRank == 1), personalBest, qtrue, qtrue); //Need to get gold medal status for this fixme loda
+	PrintRaceTime(username, message, styleString, topspeed, average, timeStr, clientNum, (qboolean)(newRank == 1), seasonPB, WR, globalPB, qtrue, qtrue); //Need to get gold medal status for this fixme loda
 	//DebugWriteToDB("G_AddRaceTime");
 }
 
@@ -3225,6 +3286,7 @@ void G_TestAddRace() {
 //to cut down on database size, there should be a cleanup on every mapload or.. every week..or...?
 //which removes any time not in the top 100 of its category AND more than 1 week old?
 
+void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern ?
 void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip somehow
 	sqlite3 * db;
     char * sql;
@@ -3246,11 +3308,6 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 	if (Q_stricmp(ent->client->pers.userName, "")) {
 		trap->SendServerCommand(ent-g_entities, "print \"You are already logged in!\n\"");
-		return;
-	}
-
-	if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
-		trap->SendServerCommand(ent-g_entities, "print \"You can not login during a race!\n\"");
 		return;
 	}
 
@@ -3371,7 +3428,12 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		localtime( &rawtime );
 
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
-		trap->SendServerCommand(ent-g_entities, "print \"Login sucessful.\n\"");
+		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+			ResetPlayerTimers(ent, qtrue);
+			trap->SendServerCommand(ent-g_entities, "print \"Login sucessful. Time reset.\n\"");
+		}
+		else
+			trap->SendServerCommand(ent-g_entities, "print \"Login sucessful.\n\"");
 
 		if (!ip) //meh
 			ip = lastip;
@@ -4919,7 +4981,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 		page = 100;
 	start = (page - 1) * 10;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
 	if (style == -1) {
 		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 			"GROUP BY username "
