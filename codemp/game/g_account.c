@@ -1310,7 +1310,6 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 2, style));
-	CALL_SQLITE (bind_int (stmt, 3, season));
     while (1) {
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
