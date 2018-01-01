@@ -1308,7 +1308,8 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 
 	i = 1; // AH HA ha
 
-	sql = "SELECT id, MIN(duration_ms) AS duration FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC"; //assume just one per person to speed this up..
+	//We dont want to count slower season entries in their global scoring, just their fastest season entry.  So either set rank to 0 for "unranked" seasons.  Or ignore it later.
+	sql = "SELECT id, MIN(duration_ms) AS duration FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC"; 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 2, style));
@@ -1702,27 +1703,28 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 	}
 	CALL_SQLITE (finalize(stmt));
 
+	if (globalNewRank_self) { //Dont update other peoples global ranks if our run was not a global personal best...
+		if (globalOldRank_self == -1) //Our first attempt overall
+			sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND season = ? AND rank >= ?";
+		else
+			sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND season = ? AND rank >= ? AND rank < ?";
 
-	if (globalOldRank_self == -1) //Our first attempt overall
-		sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND season = ? AND rank >= ?";
-	else
-		sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND season = ? AND rank >= ? AND rank < ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_int (stmt, 1, time));
+		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style_self));
+		CALL_SQLITE (bind_int (stmt, 4, season));
+		CALL_SQLITE (bind_int (stmt, 5, globalNewRank_self));
 
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_int (stmt, 1, time));
-	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 3, style_self));
-	CALL_SQLITE (bind_int (stmt, 4, season));
-	CALL_SQLITE (bind_int (stmt, 5, globalNewRank_self));
+		if (globalOldRank_self != -1)
+			CALL_SQLITE (bind_int (stmt, 6, globalOldRank_self));
 
-	if (globalOldRank_self != -1)
-		CALL_SQLITE (bind_int (stmt, 6, globalOldRank_self));
-
-	s = sqlite3_step(stmt);
-	if (s != SQLITE_DONE) {
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		}
+		CALL_SQLITE (finalize(stmt));
 	}
-	CALL_SQLITE (finalize(stmt));
 
 
 
@@ -3315,6 +3317,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 		else {
 			global_newCount = global_oldCount;
+		}
+
+		//If this isnt our best time of all seasons, set rank to 0 so we wont get it in global queries.
+		if (!globalPB) {
+			global_newRank = 0;
 		}
 
 		if ((season_newRank != season_oldRank || global_newRank != global_oldRank)) { //Do this before messing with out race list rank - does this affect count?
