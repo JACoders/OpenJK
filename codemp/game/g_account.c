@@ -3092,7 +3092,17 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 		newDB = qtrue;
 	}
 
-	Com_Printf("Adding %i seconds to %s\n", seconds, username);
+	{
+		int i;
+		gclient_t	*cl;
+
+		for (i=0;  i<level.numPlayingClients; i++) {
+			cl = &level.clients[level.sortedClients[i]];
+			
+			if (cl && (cl->sess.fullAdmin || cl->sess.juniorAdmin))
+				trap->SendServerCommand(cl->ps.clientNum, va("chat \"[Adding %i seconds of playtime to %s - %i]\n\"", seconds, username, newDB));
+		}
+	}
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET racetime = racetime + ? WHERE username = ?";
@@ -4174,7 +4184,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		CALL_SQLITE (finalize(stmt));
 	}
 
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, ?)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, racetime, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, ?)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));

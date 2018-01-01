@@ -5794,9 +5794,9 @@ void G_RunClient( gentity_t *ent ) {
 	// force client updates if they're not sending packets at roughly 4hz
 
 	if (ent->client->pers.recordingDemo) { //(ent->client->ps.pm_flags & PMF_FOLLOW) ?
-		if (ent->client->pers.noFollow || ent->client->pers.practice || sv_cheats.integer || !ent->client->pers.userName[0] || !ent->client->sess.raceMode || !ent->client->pers.stats.startTime || (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
-			|| (ent->client->lastHereTime < level.time - 30000) ||
-			(level.time - ent->client->pers.stats.startTime > 240*60*1000)) // just give up on races longer than 4 hours lmao
+		if (ent->client->pers.noFollow || ent->client->pers.practice || sv_cheats.integer || !ent->client->pers.userName[0] || !ent->client->sess.raceMode || !ent->client->pers.stats.startTime || (ent->client->sess.sessionTeam == TEAM_SPECTATOR) ||
+			((ent->client->lastHereTime < level.time - 30000) && (level.time - ent->client->pers.demoStoppedTime > 10000)) ||
+			(trap->Milliseconds() - ent->client->pers.stats.startTime > 240*60*1000)) // just give up on races longer than 4 hours lmao
 		{
 			//Their demo is bad, dont keep telling game to keep it
 		}
@@ -5806,10 +5806,10 @@ void G_RunClient( gentity_t *ent ) {
 
 	if (ent->client->pers.recordingDemo && (ent->client->pers.stopRecordingTime < level.time)) {
 		ent->client->pers.recordingDemo = qfalse;
+		ent->client->pers.demoStoppedTime = level.time;
 
 		if (ent->client->pers.keepDemo) {
 			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED (timeout), HIGHSCORE\"");
-			//trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
 			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
 		}
 		else {

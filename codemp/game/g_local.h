@@ -858,6 +858,7 @@ typedef struct clientPersistant_s {
 	qboolean	keepDemo;//japro autodemo for defrag... :S
 	qboolean	showChatCP;
 	qboolean	showCenterCP;
+	int			demoStoppedTime;
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
