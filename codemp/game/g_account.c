@@ -1527,7 +1527,7 @@ static int G_GetSeason() {
 
 	//We want 4 month seasons?
 
-	return 1;
+	return 2;
 }
 
 static void G_UpdateOurLocalRun(sqlite3 * db, int oldRank_self, int newRank_self, int style_self, char *username_self, char *coursename_self, 
