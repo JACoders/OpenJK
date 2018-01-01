@@ -321,7 +321,7 @@ void Seeker_Fire( void )
 	// move a bit forward in the direction we shall shoot in so that the bolt doesn't poke out the other side of the seeker
 	VectorMA( NPCS.NPC->r.currentOrigin, 15, dir, muzzle );
 
-	missile = CreateMissile( muzzle, dir, 1000, 10000, NPCS.NPC, qfalse );
+	missile = CreateMissileNew( muzzle, dir, 1000, 10000, NPCS.NPC, qfalse, qfalse, qfalse );
 
 	G_PlayEffectID( G_EffectIndex("blaster/muzzle_flash"), NPCS.NPC->r.currentOrigin, dir );
 

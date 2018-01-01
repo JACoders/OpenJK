@@ -135,7 +135,7 @@ XCVAR_DEF( cg_stats,							"0",					NULL,					CVAR_NONE )
 XCVAR_DEF( cg_teamChatBeep,						"1",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_teamChatsOnly,					"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPerson,						"0",					NULL,					CVAR_ARCHIVE )
-XCVAR_DEF( cg_thirdPersonAlpha,					"1.0",					NULL,					CVAR_CHEAT )
+XCVAR_DEF( cg_thirdPersonAlpha,					"1.0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPersonAngle,					"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPersonCameraDamp,			"0.3",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPersonHorzOffset,			"0",					NULL,					CVAR_ARCHIVE )
@@ -166,7 +166,7 @@ XCVAR_DEF( r_autoMapW,							"128",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( r_autoMapH,							"128",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( sv_running,							"0",					CG_SVRunningChange,		CVAR_ROM )
 XCVAR_DEF( teamoverlay,							"0",					NULL,					CVAR_ROM|CVAR_USERINFO )
-XCVAR_DEF( timescale,							"1",					NULL,					CVAR_CHEAT )
+XCVAR_DEF( timescale,							"1",					NULL,					CVAR_NONE )
 XCVAR_DEF( ui_about_gametype,					"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_about_fraglimit,					"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_about_capturelimit,				"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
@@ -195,4 +195,18 @@ XCVAR_DEF( ui_tm2_c5_cnt,						"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm2_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm3_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_isJAPro,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
+
+//Gameplay
+
+//Movement
+XCVAR_DEF( cg_jumpHeight,						"0",					NULL,					CVAR_ARCHIVE )
+XCVAR_DEF( cp_pluginDisable,					"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
+//XCVAR_DEF( cg_movementStyle,					"1",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
+
+XCVAR_DEF( cl_commandsize,						"64",					NULL,					CVAR_ARCHIVE ) //Loda - FPS UNLOCK client modcode
+
+//centermuzzle
+
+//Other
+
 #undef XCVAR_DEF

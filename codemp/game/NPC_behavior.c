@@ -211,8 +211,8 @@ void Disappear(gentity_t *self)
 void MakeOwnerInvis (gentity_t *self);
 void BeamOut (gentity_t *self)
 {
-//	gentity_t *tent = G_Spawn();
-
+//	gentity_t *tent = G_Spawn(qtrue);
+	
 /*
 	tent->owner = self;
 	tent->think = MakeOwnerInvis;

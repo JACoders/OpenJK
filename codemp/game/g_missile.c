@@ -80,9 +80,14 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 		VectorScale( bounce_dir, DotProduct( forward, missile_dir ), bounce_dir );
 		VectorNormalize( bounce_dir );
 	}
-	for ( i = 0; i < 3; i++ )
-	{
-		bounce_dir[i] += RandFloat( -0.2f, 0.2f );
+
+	if (g_tweakForce.integer & FT_FIX_PROJ_PUSH) { // feature from base_enhanced where missile reflects in direction you are a
+		VectorCopy(forward, bounce_dir);
+		for (i = 0; i < 3; i++)
+			bounce_dir[i] += RandFloat(-0.1f, 0.1f); 
+	} else { // original behaviour
+		for (i = 0; i < 3; i++)
+			bounce_dir[i] += RandFloat(-0.2f, 0.2f);
 	}
 
 	VectorNormalize( bounce_dir );
@@ -178,7 +183,10 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	}
 	else if ( ent->flags & FL_BOUNCE_HALF )
 	{
-		VectorScale( ent->s.pos.trDelta, 0.65f, ent->s.pos.trDelta );
+		if (ent->s.weapon == WP_REPEATER && g_tweakWeapons.integer & WT_ROCKET_MORTAR)
+			VectorScale( ent->s.pos.trDelta, 0.4f, ent->s.pos.trDelta );
+		else
+			VectorScale( ent->s.pos.trDelta, 0.65f, ent->s.pos.trDelta );
 		// check for stop
 		if ( trace->plane.normal[2] > 0.2 && VectorLength( ent->s.pos.trDelta ) < 40 )
 		{
@@ -292,7 +300,7 @@ void G_BounceProjectile( vec3_t start, vec3_t impact, vec3_t dir, vec3_t endout 
 	VectorMA(impact, 8192, newv, endout);
 }
 
-
+/*
 //-----------------------------------------------------------------------------
 gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 							gentity_t *owner, qboolean altFire)
@@ -300,14 +308,18 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 {
 	gentity_t	*missile;
 
-	missile = G_Spawn();
-
+	missile = G_Spawn(qfalse);
+	
 	missile->nextthink = level.time + life;
 	missile->think = G_FreeEntity;
 	missile->s.eType = ET_MISSILE;
 	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	missile->parent = owner;
 	missile->r.ownerNum = owner->s.number;
+
+	//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	missile->s.owner = owner->s.number;
+	//
 
 	if (altFire)
 	{
@@ -318,6 +330,9 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 	missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2
 	missile->target_ent = NULL;
 
+	if (owner->client && owner->client->sess.raceMode)
+		missile->s.pos.trTime -= MISSILE_PRESTEP_TIME;//this be why rocketjump fucks up at high speed
+
 	SnapVector(org);
 	VectorCopy( org, missile->s.pos.trBase );
 	VectorScale( dir, vel, missile->s.pos.trDelta );
@@ -326,6 +341,76 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 
 	return missile;
 }
+
+*/
+
+//[JAPRO - Serverside - Weapons - Add missile inheritance function - Start]
+//-----------------------------------------------------------------------------
+gentity_t *CreateMissileNew( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire, qboolean inheritance, qboolean unlagged)
+//-----------------------------------------------------------------------------
+{
+	gentity_t	*missile;
+	float newVel = vel;
+	vec3_t newDir;
+
+	VectorCopy(dir, newDir);
+
+	missile = G_Spawn(qfalse);
+
+	missile->nextthink = level.time + life;
+	missile->think = G_FreeEntity;
+	missile->s.eType = ET_MISSILE;
+	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	missile->parent = owner;
+	missile->r.ownerNum = owner->s.number;
+
+	//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	missile->s.owner = owner->s.number;
+	//
+
+	if (altFire)
+		missile->s.eFlags |= EF_ALT_FIRING;
+
+	missile->s.pos.trType = TR_LINEAR;
+
+	if (owner->client && owner->client->sess.raceMode) {
+		missile->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;//this be why rocketjump fucks up at high speed
+	}
+	else if (g_unlagged.integer & UNLAGGED_PROJ_NUDGE && owner->client) {
+		int amount = owner->client->ps.ping * 0.9;
+
+		if (amount > 135)
+			amount = 135;
+		else if (amount < 0) //dunno
+			amount = 0;
+
+		missile->s.pos.trTime = level.time - amount; //fixmer;
+	}
+	else {
+		missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2 - do unlagged stuff here?
+	}
+
+	missile->target_ent = NULL;
+
+	SnapVector(org);
+	VectorCopy( org, missile->s.pos.trBase );
+
+	if (inheritance && owner->client) {
+		if (g_fullInheritance.integer) {
+			VectorMA(newDir, g_projectileInheritance.value/vel, owner->client->ps.velocity, newDir);
+		}
+		else {
+			newVel = newVel + DotProduct(newDir, owner->client->ps.velocity)*g_projectileInheritance.value;
+		}
+	}
+
+	VectorScale( newDir, newVel, missile->s.pos.trDelta );
+	VectorCopy( org, missile->r.currentOrigin);
+	SnapVector(missile->s.pos.trDelta);
+
+	return missile;
+}
+//[JAPRO - Serverside - Weapons - Add missile inheritance function - End]
 
 void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 {
@@ -357,8 +442,13 @@ void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 G_MissileImpact
 ================
 */
+qboolean WP_CheckSaberDimension( gentity_t *self,  gentity_t *other);
 void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlock );
 void WP_flechette_alt_blow( gentity_t *ent );
+#if _GRAPPLE
+void Weapon_HookThink (gentity_t *ent);
+void Weapon_HookFree (gentity_t *ent);
+#endif
 void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	gentity_t		*other;
 	qboolean		hitClient = qfalse;
@@ -367,12 +457,24 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	other = &g_entities[trace->entityNum];
 
 	// check for bounce
-	if ( !other->takedamage &&
+	if ( other->takedamage &&
 		(ent->bounceCount > 0 || ent->bounceCount == -5) &&
-		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) ) {
-		G_BounceMissile( ent, trace );
-		G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
-		return;
+		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) &&
+		(g_tweakWeapons.integer & WT_ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime > level.time - 300)) 
+	{ //if its a direct hit and first 500ms of mortar, bounce off player.
+			G_BounceMissile( ent, trace );
+			G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
+			return;
+	}
+	else if ( !other->takedamage &&
+		(ent->bounceCount > 0 || ent->bounceCount == -5) &&
+		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) ) { //only on the first bounce vv
+		if (!(g_tweakWeapons.integer & WT_ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime < level.time - 1000))//give this mortar a 1 second 'fuse' until its armed
+		{
+			G_BounceMissile( ent, trace );
+			G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
+			return;
+		}
 	}
 	else if (ent->neverFree && ent->s.weapon == WP_SABER && (ent->flags & FL_BOUNCE_HALF))
 	{ //this is a knocked-away saber
@@ -395,6 +497,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		{
 			ent->flags &= ~FL_BOUNCE_SHRAPNEL;
 		}
+		//trap->Print("Shrapnel is still there\n");
 		return;
 	}
 
@@ -507,7 +610,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		ent->methodOfDeath != MOD_CONC_ALT &&
 		other->client->ps.saberBlockTime < level.time &&
 		!isKnockedSaber &&
-		WP_SaberCanBlock(other, ent->r.currentOrigin, 0, 0, qtrue, 0))
+		WP_SaberCanBlock(other, ent->r.currentOrigin, 0, 0, qtrue, 0)) //loda fixme, add check for dimensions for blocking here?
 	{ //only block one projectile per 200ms (to prevent giant swarms of projectiles being blocked)
 		vec3_t fwd;
 		gentity_t *te;
@@ -576,6 +679,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->methodOfDeath != MOD_REPEATER_ALT &&
 			ent->methodOfDeath != MOD_FLECHETTE_ALT_SPLASH &&
 			ent->methodOfDeath != MOD_CONC &&
+			(g_entities[ent->r.ownerNum].s.bolt1 == other->s.bolt1) &&//loda fixme, this stops missiles deflecting, but they still dont passthrough...
 			ent->methodOfDeath != MOD_CONC_ALT /*&&
 			otherOwner->client->ps.saberBlockTime < level.time*/)
 		{ //for now still deflect even if saberBlockTime >= level.time because it hit the actual saber
@@ -650,6 +754,46 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		return;
 	}
 
+//JAPRO - Serverside - Flag punting - Start
+	if (g_allowFlagThrow.integer && !other->takedamage && other->s.eType == ET_ITEM)
+	{
+		vec3_t velocity;
+
+		if (ent->s.weapon == WP_REPEATER && (ent->s.eFlags & EF_ALT_FIRING))
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 0.7f, other->s.pos.trDelta );
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+		else if (ent->s.weapon == WP_ROCKET_LAUNCHER && (ent->s.eFlags & EF_ALT_FIRING))
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 2.5f, other->s.pos.trDelta );
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+		else if (ent->s.weapon == WP_ROCKET_LAUNCHER)
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 0.9f, other->s.pos.trDelta );
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+		else if (ent->s.weapon == WP_THERMAL)
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 0.9f, other->s.pos.trDelta ); //tweak?
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+	}
+//JAPRO - Serverside - Flag punting - End
+
 	// impact damage
 	if (other->takedamage && !isKnockedSaber) {
 		// FIXME: wrong damage direction?
@@ -664,6 +808,28 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
 			if ( VectorLength( velocity ) == 0 ) {
 				velocity[2] = 1;	// stepped on a grenade
+			}
+
+			//damage falloff option, assumes bullet lifetime is 10,000 (default)
+			if ((g_tweakWeapons.integer & WT_NO_SPREAD) &&
+				((ent->s.weapon == WP_BLASTER && (ent->s.eFlags & EF_ALT_FIRING)) ||
+				(ent->s.weapon == WP_REPEATER && !(ent->s.eFlags & EF_ALT_FIRING))	
+				))
+			{ //If the weapon has spread, just reduce damage based on distance for nospread tweak.  This should probably be accompanied with the damagenumber setting so you can keep track of your dmg..
+				float lifetime = (10000 - ent->nextthink + level.time) * 0.001;
+				//float scale = powf(2, -lifetime);
+				float scale = -1.5 * lifetime + 1;
+
+				scale += 0.1f; //offset it a bit so super close shots dont get affected at all
+
+				if (scale < 0.2f)
+					scale = 0.2f;
+				else if (scale > 1.0f) 
+					scale = 1.0f;
+
+				ent->damage *= scale;
+
+				//trap->SendServerCommand(-1, va("chat \"Missile has been alive for %.2f s new dmg is %i scale is %.2f\n\"", lifetime, ent->damage, scale));
 			}
 
 			if (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_FLECHETTE ||
@@ -762,6 +928,89 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			}
 		}
 	}
+
+#if _GRAPPLE//_GRAPPLE
+		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
+		//gentity_t *nent;
+		vec3_t v;
+
+		/*
+		nent = G_Spawn(qtrue);
+		nent->freeAfterEvent = qtrue;
+		nent->s.weapon = WP_BRYAR_PISTOL;//WP_GRAPPLING_HOOK; -- idk what this is
+		nent->s.saberInFlight = qtrue;
+		nent->s.owner = ent->s.owner;
+		*/
+
+		ent->enemy = NULL;
+		ent->s.otherEntityNum = -1;
+		ent->s.groundEntityNum = -1;
+
+		if ( other->s.eType == ET_MOVER || (other->client && !( other->s.eFlags & EF_DEAD ) ) ) {
+			if ( other->client ) {
+				//G_AddEvent( nent, EV_MISSILE_HIT, DirToByte( trace->plane.normal ) );							//Event
+
+				if (!ent->s.hasLookTarget) {
+					G_PlayEffectID( G_EffectIndex("tusken/hit"), trace->endpos, trace->plane.normal );
+				}
+				ent->s.hasLookTarget = qtrue;
+
+				ent->enemy = other;
+				other->s.otherEntityNum = ent->parent->s.number;
+
+				v[0] = other->r.currentOrigin[0];// + (other->r.mins[0] + other->r.maxs[0]) * 0.5;
+				v[1] = other->r.currentOrigin[1];// + (other->r.mins[1] + other->r.maxs[1]) * 0.5;
+				v[2] = other->r.currentOrigin[2] + (other->r.mins[2] + other->r.maxs[2]) * 0.5;
+
+				SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
+				ent->s.otherEntityNum = ent->enemy->s.clientNum;
+				other->s.otherEntityNum = ent->parent->s.clientNum;
+			} else {
+				if ( !strcmp(other->classname, "func_rotating") || !strcmp(other->classname, "func_pendulum") ) {
+					Weapon_HookFree(ent);	// don't work
+					return;
+				}
+				ent->s.otherEntityNum = other->s.number;
+				ent->s.groundEntityNum = other->s.number;
+				VectorCopy(trace->endpos, v);
+				//G_AddEvent( nent, EV_MISSILE_MISS, 0); //DirToByte( trace->plane.normal ) );				//Event
+				if (!ent->s.hasLookTarget) {
+					G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
+				}
+				ent->s.hasLookTarget = qtrue;
+			}
+		} else {
+			VectorCopy(trace->endpos, v);
+			//G_AddEvent( nent, EV_MISSILE_MISS, 0);//DirToByte( trace->plane.normal ) );						//Event
+			if (!ent->s.hasLookTarget) {
+				G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
+			}
+			ent->s.hasLookTarget = qtrue;
+		}
+
+		VectorCopy(trace->plane.normal, ent->s.angles);
+		SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
+
+		// change over to a normal entity right at the point of impact
+		//nent->s.eType = ET_GENERAL;
+		ent->s.eType = ET_MISSILE;
+
+		G_SetOrigin( ent, v );
+		//G_SetOrigin( nent, v );
+
+		ent->think = Weapon_HookThink;
+		ent->nextthink = level.time + FRAMETIME;
+
+		VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc);
+		VectorSubtract( ent->r.currentOrigin, ent->parent->client->ps.origin, v );
+
+		trap->LinkEntity( (sharedEntity_t *)ent );
+		//trap->LinkEntity( (sharedEntity_t *)nent );
+
+		return;
+	}
+#endif
+
 killProj:
 	// is it cheaper in bandwidth to just remove this ent and create a new
 	// one, rather than changing the missile into the explosion?
@@ -827,6 +1076,12 @@ void G_RunMissile( gentity_t *ent ) {
 	// get current position
 	BG_EvaluateTrajectory( &ent->s.pos, level.time, origin );
 
+
+	//If its a rocket, and older than 500ms, make it solid to the shooter.
+	if ((g_tweakWeapons.integer & WT_SOLID_ROCKET) && (ent->s.weapon == WP_ROCKET_LAUNCHER) && (!ent->raceModeShooter) && (ent->nextthink - level.time < 9500)) {
+		ent->r.ownerNum = ENTITYNUM_WORLD;
+	}
+
 	// if this missile bounced off an invulnerability sphere
 	if ( ent->target_ent ) {
 		passent = ent->target_ent->s.number;
@@ -845,9 +1100,9 @@ void G_RunMissile( gentity_t *ent ) {
 		}
 	}
 	// trace a line from the previous position to the current position
-	if (d_projectileGhoul2Collision.integer)
+	if (d_projectileGhoul2Collision.integer == 1) //JAPRO - Serverside - Weapons - New Hitbox Option
 	{
-		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+		JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 
 		if (tr.fraction != 1.0 && tr.entityNum < ENTITYNUM_WORLD)
 		{
@@ -867,12 +1122,12 @@ void G_RunMissile( gentity_t *ent ) {
 	}
 	else
 	{
-		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, 0, 0 );
 	}
 
 	if ( tr.startsolid || tr.allsolid ) {
 		// make sure the tr.entityNum is set to the entity we're stuck in
-		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, passent, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, passent, ent->clipmask, qfalse, 0, 0 );
 		tr.fraction = 0;
 	}
 	else {
@@ -895,7 +1150,7 @@ void G_RunMissile( gentity_t *ent ) {
 
 		VectorCopy(ent->r.currentOrigin, lowerOrg);
 		lowerOrg[2] -= 1;
-		trap->Trace( &trG, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, lowerOrg, passent, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &trG, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, lowerOrg, passent, ent->clipmask, qfalse, 0, 0 );
 
 		VectorCopy(trG.endpos, groundSpot);
 
@@ -909,86 +1164,69 @@ void G_RunMissile( gentity_t *ent ) {
 		}
 	}
 
-	if ( tr.fraction != 1) {
-		// never explode or bounce on sky
-		if ( tr.surfaceFlags & SURF_NOIMPACT ) {
-			// If grapple, reset owner
-			if (ent->parent && ent->parent->client && ent->parent->client->hook == ent) {
-				ent->parent->client->hook = NULL;
-			}
-
-			if ((ent->s.weapon == WP_SABER && ent->isSaberEntity) || isKnockedSaber)
-			{
-				G_RunThink( ent );
-				return;
-			}
-			else if (ent->s.weapon != G2_MODEL_PART)
-			{
-				G_FreeEntity( ent );
-				return;
-			}
-		}
-
-#if 0 //will get stomped with missile impact event...
-		if (ent->s.weapon > WP_NONE && ent->s.weapon < WP_NUM_WEAPONS &&
-			(tr.entityNum < MAX_CLIENTS || g_entities[tr.entityNum].s.eType == ET_NPC))
-		{ //player or NPC, try making a mark on him
-			/*
-			gentity_t *evEnt = G_TempEntity(ent->r.currentOrigin, EV_GHOUL2_MARK);
-
-			evEnt->s.owner = tr.entityNum; //the entity the mark should be placed on
-			evEnt->s.weapon = ent->s.weapon; //the weapon used (to determine mark type)
-			VectorCopy(ent->r.currentOrigin, evEnt->s.origin); //the point of impact
-
-			//origin2 gets the predicted trajectory-based position.
-			BG_EvaluateTrajectory( &ent->s.pos, level.time, evEnt->s.origin2 );
-
-			//If they are the same, there will be problems.
-			if (VectorCompare(evEnt->s.origin, evEnt->s.origin2))
-			{
-				evEnt->s.origin2[2] += 2; //whatever, at least it won't mess up.
-			}
-			*/
-			//ok, let's try adding it to the missile ent instead (tempents bad!)
-			G_AddEvent(ent, EV_GHOUL2_MARK, 0);
-
-			//copy current pos to s.origin, and current projected traj to origin2
-			VectorCopy(ent->r.currentOrigin, ent->s.origin);
-			BG_EvaluateTrajectory( &ent->s.pos, level.time, ent->s.origin2 );
-
-			//the index for whoever we are hitting
-			ent->s.otherEntityNum = tr.entityNum;
-
-			if (VectorCompare(ent->s.origin, ent->s.origin2))
-			{
-				ent->s.origin2[2] += 2.0f; //whatever, at least it won't mess up.
-			}
-		}
-#else
-		if (ent->s.weapon > WP_NONE && ent->s.weapon < WP_NUM_WEAPONS &&
-			(tr.entityNum < MAX_CLIENTS || g_entities[tr.entityNum].s.eType == ET_NPC))
-		{ //player or NPC, try making a mark on him
-			//copy current pos to s.origin, and current projected traj to origin2
-			VectorCopy(ent->r.currentOrigin, ent->s.origin);
-			BG_EvaluateTrajectory( &ent->s.pos, level.time, ent->s.origin2 );
-
-			if (VectorCompare(ent->s.origin, ent->s.origin2))
-			{
-				ent->s.origin2[2] += 2.0f; //whatever, at least it won't mess up.
-			}
-		}
-#endif
-
-		G_MissileImpact( ent, &tr );
-
-		if (tr.entityNum == ent->s.otherEntityNum)
-		{ //if the impact event other and the trace ent match then it's ok to do the g2 mark
-			ent->s.trickedentindex = 1;
-		}
-
-		if ( ent->s.eType != ET_MISSILE && ent->s.weapon != G2_MODEL_PART )
+	if (tr.fraction != 1) { //Hit something maybe
+		qboolean skip = qfalse;
+	
+		gentity_t *other = &g_entities[tr.entityNum]; //Check to see if we hit a lightsaber and they are in another dimension, if so dont do the hit code..
+		if (other && other->r.contents & CONTENTS_LIGHTSABER)
 		{
-			return;		// exploded
+			gentity_t *otherOwner = &g_entities[other->r.ownerNum];
+			gentity_t *owner = &g_entities[ent->r.ownerNum];
+			/*
+			if (owner->s.bolt1 && !otherOwner->s.bolt1)//We are dueling/racing and they are not
+				skip = qtrue;
+			else if (!owner->s.bolt1 && otherOwner->s.bolt1)//They are dueling/racing and we are not
+				skip = qtrue;
+			*/
+			if (owner->s.bolt1 != otherOwner->s.bolt1) //Dont impact if its from another dimension
+				skip = qtrue;
+		}
+	
+		if ( tr.fraction != 1 && !skip) {
+		
+			// never explode or bounce on sky
+			if ( tr.surfaceFlags & SURF_NOIMPACT ) {
+				// If grapple, reset owner
+				if (ent->parent && ent->parent->client && ent->parent->client->hook == ent) {
+					ent->parent->client->hook = NULL;
+				}
+
+				if ((ent->s.weapon == WP_SABER && ent->isSaberEntity) || isKnockedSaber)
+				{
+					G_RunThink( ent );
+					return;
+				}
+				else if (ent->s.weapon != G2_MODEL_PART)
+				{
+					G_FreeEntity( ent );
+					return;
+				}
+			}
+
+			if (ent->s.weapon > WP_NONE && ent->s.weapon < WP_NUM_WEAPONS &&
+				(tr.entityNum < MAX_CLIENTS || g_entities[tr.entityNum].s.eType == ET_NPC))
+			{ //player or NPC, try making a mark on him
+				//copy current pos to s.origin, and current projected traj to origin2
+				VectorCopy(ent->r.currentOrigin, ent->s.origin);
+				BG_EvaluateTrajectory( &ent->s.pos, level.time, ent->s.origin2 );
+
+				if (VectorCompare(ent->s.origin, ent->s.origin2))
+				{
+					ent->s.origin2[2] += 2.0f; //whatever, at least it won't mess up.
+				}
+			}
+
+			G_MissileImpact( ent, &tr );
+
+			if (tr.entityNum == ent->s.otherEntityNum)
+			{ //if the impact event other and the trace ent match then it's ok to do the g2 mark
+				ent->s.trickedentindex = 1;
+			}
+
+			if ( ent->s.eType != ET_MISSILE && ent->s.weapon != G2_MODEL_PART )
+			{
+				return;		// exploded
+			}
 		}
 	}
 
@@ -1020,12 +1258,117 @@ passthrough:
 			}
 		}
 	}
-
 	// check think function after bouncing
 	G_RunThink( ent );
 }
 
+#if _GRAPPLE//_GRAPPLE
+void StandardSetBodyAnim(gentity_t *self, int anim, int flags, int body);
+gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
+	float vel = g_hookSpeed.integer;
+	gentity_t	*hook;
+	//gentity_t *missile;
 
+	VectorNormalize (dir);
+
+	vel = vel + DotProduct(dir, self->client->ps.velocity)*g_hookInheritance.value; //Inheritence scale
+
+	if (vel < 250)
+		vel = 250;
+
+	hook = G_Spawn(qtrue);
+	hook->classname = "laserTrap";
+	hook->nextthink = level.time + 30000;
+	hook->think = Weapon_HookFree;
+	hook->s.eType = ET_MISSILE;
+	hook->s.clientNum = self->s.clientNum;
+	hook->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	hook->s.weapon = WP_BRYAR_PISTOL;//WP_GRAPPLING_HOOK;
+	hook->r.ownerNum = self->s.number;
+	hook->methodOfDeath = MOD_STUN_BATON;//MOD_GRAPPLE
+	hook->clipmask = MASK_SHOT;
+	hook->parent = self;
+
+	hook->s.owner = self->s.number;
+
+	hook->s.pos.trType = TR_LINEAR;
+	hook->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;
+	hook->s.otherEntityNum = -1;
+	hook->s.groundEntityNum = -1;
+
+	hook->s.saberInFlight = qtrue;
+
+	//hook->target_ent = NULL; // ???
+
+	VectorCopy( start, hook->s.pos.trBase );
+
+	if ( self->client->pers.haste )
+		VectorScale( dir, vel * 1.3, hook->s.pos.trDelta );
+	else 
+		VectorScale( dir, vel, hook->s.pos.trDelta );
+
+	SnapVector( hook->s.pos.trDelta );			// save net bandwidth
+	VectorCopy (start, hook->r.currentOrigin);
+
+	self->client->hook = hook;
+
+	//hm.
+	G_Sound( self, CHAN_AUTO, G_SoundIndex( "sound/weapons/melee/swing2.wav" ) );
+	StandardSetBodyAnim(self, BOTH_FORCEPUSH, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, SETANIM_TORSO);
+	//G_AddEvent( hook, EV_FIRE_WEAPON, 0 );
+
+	return hook;
+}
+#endif
+
+
+
+/*
+//-----------------------------------------------------------------------------
+gentity_t *fire_grapple( gentity_t *self, vec3_t org, vec3_t dir )
+//-----------------------------------------------------------------------------
+{
+	gentity_t	*missile;
+
+	missile = G_Spawn(qfalse);
+	
+	missile->nextthink = level.time + 5000;
+	missile->think = G_FreeEntity;
+	missile->s.eType = ET_MISSILE;
+	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+
+		missile->classname = "hook";
+	//missile->parent = owner;
+	//missile->r.ownerNum = owner->s.number;
+
+	//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	//missile->s.owner = owner->s.number;
+	//
+
+	missile->s.pos.trType = TR_LINEAR;
+	missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2
+	missile->target_ent = NULL;
+
+	//if (owner->client && owner->client->sess.raceMode)
+		missile->s.pos.trTime -= MISSILE_PRESTEP_TIME;//this be why rocketjump fucks up at high speed
+
+	SnapVector(org);
+	VectorCopy( org, missile->s.pos.trBase );
+	VectorScale( dir, 555, missile->s.pos.trDelta );
+	VectorCopy( org, missile->r.currentOrigin);
+	SnapVector(missile->s.pos.trDelta);
+
+	Com_Printf("ass\n");
+
+	self->client->hook = missile;
+
+	Com_Printf("Missile made\n");
+
+	return missile;
+}
+
+
+*/
 //=============================================================================
 
 

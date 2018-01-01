@@ -357,6 +357,10 @@ int BotDoChat(bot_state_t *bs, char *section, int always)
 	int getthisline;
 	gentity_t *cobject;
 
+//[JAPRO - Serverside - All - Add bot_nochat]
+	if (bot_nochat.integer)
+		return 0;
+
 	if (!bs->canChat)
 	{
 		return 0;

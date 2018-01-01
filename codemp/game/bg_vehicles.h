@@ -372,7 +372,7 @@ typedef struct vehicleInfo_s {
 
 #define	VFOFS(x) offsetof(vehicleInfo_t, x)
 
-#define MAX_VEHICLES	16	//sigh... no more than 64 individual vehicles
+#define MAX_VEHICLES	32	//sigh... no more than 64 individual vehicles
 #define VEHICLE_BASE	0
 #define VEHICLE_NONE	-1
 
@@ -611,6 +611,7 @@ typedef struct Vehicle_s
 
 	// the last time this vehicle fired a turbo burst
 	int			m_iTurboTime;
+	int			m_iGravTime;
 
 	//how long it should drop like a rock for after freed from SUSPEND
 	int			m_iDropTime;

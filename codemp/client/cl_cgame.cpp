@@ -62,11 +62,11 @@ qboolean CL_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
 
 	// the usercmd has been overwritten in the wrapping
 	// buffer because it is too far out of date
-	if ( cmdNumber <= cl.cmdNumber - (REAL_CMD_MASK + 1)) {
+	if ( cmdNumber <= cl.cmdNumber - (REAL_CMD_MASK +1) ) { //Originaly CMD_BACKUP, but CMD_BACKUP is just CMD_MASK+1, //Loda - FPS UNLOCK ENGINE
 		return qfalse;
 	}
 
-	*ucmd = cl.cmds[ cmdNumber & REAL_CMD_MASK];
+	*ucmd = cl.cmds[ cmdNumber & REAL_CMD_MASK ];//Loda - FPS UNLOCK ENGINE
 
 	return qtrue;
 }
@@ -794,10 +794,10 @@ void CL_SetCGameTime( void ) {
 			tn = 900;
 		}
 #else
-		if (tn<-1000) {
-			tn = -1000;
-		} else if (tn>200) {
-			tn = 200;
+		if (tn<-2000) {//JAPRO ENGINE
+			tn = -2000;
+		} else if (tn>2000) {
+			tn = 2000;
 		}
 #endif
 

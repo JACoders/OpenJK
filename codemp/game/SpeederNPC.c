@@ -22,6 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #ifdef _GAME //including game headers on cgame is FORBIDDEN ^_^
 	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
 #endif
 
 #include "bg_public.h"
@@ -159,10 +161,64 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 #endif
 					}
 				}
+				//trap->Print("Alt fire boost\n");
 				parentPS->speed = pVeh->m_pVehicleInfo->turboSpeed;	// Instantly Jump To Turbo Speed
 			}
 		}
 	}
+
+
+
+
+#if 1
+
+		if ( (pVeh->m_pPilot &&	(pVeh->m_ucmd.buttons & BUTTON_ATTACK) && pVeh->m_pVehicleInfo->turboSpeed)
+		/*||
+		(parentPS && parentPS->electrifyTime > curTime && pVeh->m_pVehicleInfo->turboSpeed)*/ //make them go!
+		)
+	{
+		if ((pVeh->m_pPilot->playerState &&
+			  pVeh->m_pPilot->playerState->stats[STAT_RACEMODE] &&
+			  pVeh->m_pPilot->playerState->stats[STAT_MOVEMENTSTYLE] == MV_SWOOP &&
+			  (pVeh->m_pPilot->playerState->weapon == WP_MELEE ||
+			  (pVeh->m_pPilot->playerState->weapon == WP_SABER && BG_SabersOff( pVeh->m_pPilot->playerState ) ))) )
+		{
+			if ((curTime - pVeh->m_iGravTime)>pVeh->m_pVehicleInfo->turboRecharge)
+			{
+				pVeh->m_iGravTime = (curTime + pVeh->m_pVehicleInfo->turboDuration);
+				if (pVeh->m_pVehicleInfo->iTurboStartFX)
+				{
+					int i;
+					for (i=0; (i<MAX_VEHICLE_EXHAUSTS && pVeh->m_iExhaustTag[i]!=-1); i++)
+					{
+#ifdef _GAME
+						if (pVeh->m_pParentEntity &&
+							pVeh->m_pParentEntity->ghoul2 &&
+							pVeh->m_pParentEntity->playerState)
+						{ //fine, I'll use a tempent for this, but only because it's played only once at the start of a turbo.
+							vec3_t boltOrg, boltDir;
+							mdxaBone_t boltMatrix;
+
+							VectorSet(boltDir, 0.0f, pVeh->m_pParentEntity->playerState->viewangles[YAW], 0.0f);
+
+							trap->G2API_GetBoltMatrix(pVeh->m_pParentEntity->ghoul2, 0, pVeh->m_iExhaustTag[i], &boltMatrix, boltDir, pVeh->m_pParentEntity->playerState->origin, level.time, NULL, pVeh->m_pParentEntity->modelScale);
+							BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltOrg);
+							BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltDir);
+							G_PlayEffectID(pVeh->m_pVehicleInfo->iTurboStartFX, boltOrg, boltDir);
+						}
+#endif
+					}
+				}
+				//trap->Print("Prim fire boost\n");
+				parentPS->gravity = 1;// = pVeh->m_pVehicleInfo->turboSpeed;	// Instantly Jump To Turbo Speed
+				parentPS->velocity[2] += 50; //RACESWOOP
+			}
+		}
+	}
+#endif
+
+
+
 
 	// Slide Breaking
 	if (pVeh->m_ulFlags&VEH_SLIDEBREAKING)
@@ -199,6 +255,25 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 			parentPS->eFlags &= ~EF_JETPACK_ACTIVE;
 		}
 	}
+
+#if 1
+	if ( curTime < pVeh->m_iGravTime )
+	{
+		parentPS->gravity = 1.0f;
+		if (parentPS)
+		{
+			parentPS->eFlags |= EF_JETPACK_ACTIVE;
+		}
+	}
+	else
+	{
+		//parentPS->gravity = 800.0f;
+		if (parentPS)
+		{
+			parentPS->eFlags &= ~EF_JETPACK_ACTIVE;
+		}
+	}
+#endif
 
 
 	speedIdle = pVeh->m_pVehicleInfo->speedIdle;
@@ -261,6 +336,18 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	{
 		parentPS->speed *= (pVeh->m_fTimeModifier/60.0f);
 	}
+
+	/*
+	{
+		const float xyspeed = sqrt(parentPS->velocity[0] * parentPS->velocity[0] + parentPS->velocity[1] * parentPS->velocity[1]);
+		if (xyspeed < 700) {
+			parentPS->speed = 700;
+			pVeh->m_pVehicleInfo->acceleration = 50;
+		}
+		else
+			pVeh->m_pVehicleInfo->acceleration = 5;
+	}
+	*/
 
 
 	/********************************************************************************/

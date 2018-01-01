@@ -52,7 +52,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 		VectorCopy(ent->r.currentOrigin, ground);
 		ground[2] -= 0.1f;
 
-		trap->Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ground, ent->s.number, ent->clipmask, qfalse, 0, 0);
+		JP_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ground, ent->s.number, ent->clipmask, qfalse, 0, 0);
 
 		if (tr.fraction == 1.0f)
 		{
@@ -84,7 +84,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 	{ //nothing to do if we have no velocity even after gravity.
 		if (ent->touch)
 		{ //call touch if we're in something
-			trap->Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
+			JP_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
 			if (tr.startsolid || tr.allsolid)
 			{
 				ent->touch(ent, &g_entities[tr.entityNum], &tr);
@@ -142,7 +142,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 			//Now add the projected positional difference into the result
 			VectorAdd(boneOrg, trajDif, projectedBoneOrg);
 
-			trap->Trace(&tr, boneOrg, tMins, tMaxs, projectedBoneOrg, ent->s.number, ent->clipmask, qfalse, 0, 0);
+			JP_Trace(&tr, boneOrg, tMins, tMaxs, projectedBoneOrg, ent->s.number, ent->clipmask, qfalse, 0, 0);
 
 			if (tr.fraction != 1.0 || tr.startsolid || tr.allsolid)
 			{ //we've hit something
@@ -190,7 +190,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 	//If we didn't collide with any bolts projectedOrigin will still be the original desired
 	//projected position so all is well. If we did then projectedOrigin will be modified
 	//to provide us with a relative position which does not place the bolt in a solid.
-	trap->Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, projectedOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
+	JP_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, projectedOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
 
 	if (tr.startsolid || tr.allsolid)
 	{ //can't go anywhere from here

@@ -91,6 +91,115 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	WAVE_AMPLITUDE	1
 #define	WAVE_FREQUENCY	0.4
 
+//[JAPRO - Clientside - All - Define JAPLUS cinfo bits]
+#define JAPLUS_CINFO_FLIPKICK			(1<<0)	//Allow player flipkicking
+#define JAPLUS_CINFO_FIXROLL1			(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
+#define JAPLUS_CINFO_FIXROLL2			(1<<2)	//Grip whilst rolling + chainable rolls
+#define JAPLUS_CINFO_FIXROLL3			(1<<3)	//Long roll + breakable
+#define JAPLUS_CINFO_YELLOWDFA			(1<<4)	//improve yellow dfa
+#define JAPLUS_CINFO_HEADSLIDE			(1<<5)	//jp_slideonplayer set
+#define JAPLUS_CINFO_SPATTACKS			(1<<6)	//allow sp attacks
+#define JAPLUS_CINFO_NEWDFA				(1<<7)	//new close range dfa
+#define JAPLUS_CINFO_MODELSCALE			(1<<8)	//allow modelscale
+#define JAPLUS_CINFO_DMGSPEEDSCALE		(1<<9)	//allow damage speed scale for modelscale
+#define JAPLUS_CINFO_MACROSCAN1			(1<<10)	//macroscan 1
+#define JAPLUS_CINFO_MACROSCAN2			(1<<11)	//macroscan 2
+#define JAPLUS_CINFO_JK2DFA				(1<<12)	//jk2 dfa
+#define JAPLUS_CINFO_NOKATA				(1<<13)	//no kata
+#define JAPLUS_CINFO_NO_AUTO_REPLIER	(1<<14)	//no auto replier
+#define JAPLUS_CINFO_GLA_ANIMS			(1<<15)	//new gla anims
+#define JAPLUS_CINFO_LEDGEGRAB			(1<<16)	//Ledgegrab allowed
+#define JAPLUS_CINFO_ALTDIM				(1<<17)	//Any jp_altdim is set
+
+//[JAPRO - Clientside - All - Jcinfo bitvalues
+#define JAPRO_CINFO_FLIPKICK		(1<<0)	//Allow player flipkicking (normal style)
+#define JAPRO_CINFO_FIXROLL1		(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
+#define JAPRO_CINFO_FIXROLL2		(1<<2)	//Grip whilst rolling + chainable rolls
+#define JAPRO_CINFO_FIXROLL3		(1<<3)	//Long roll + breakable
+#define JAPRO_CINFO_YELLOWDFA		(1<<4)	//improve yellow dfa
+#define JAPRO_CINFO_HEADSLIDE		(1<<5)	//jp_slideonplayer set
+#define JAPRO_CINFO_FIXSIDEKICK		(1<<6)	//allow flipkick with slow sidekick style
+#define JAPRO_CINFO_FASTGRIP		(1<<7)	//0.8grip speed instead of 0.4
+#define JAPRO_CINFO_BACKSLASH		(1<<8)	//unlock backslash aim
+#define JAPRO_CINFO_REDDFA			(1<<9)	//unlock DFA aim
+#define JAPRO_CINFO_BHOP1			(1<<10)	//force bhop only mode
+#define JAPRO_CINFO_LG				(1<<11)	//Lightning Gun 
+#define JAPRO_CINFO_JETPACK			(1<<12)	//jetpack physics
+#define JAPRO_CINFO_UNLAGGEDPROJ	(1<<13)	//allow unlagged
+#define JAPRO_CINFO_SCREENSHAKE		(1<<14)	//remove screenshake
+#define JAPRO_CINFO_FORCECOMBO		(1<<15)	//allow forcecombo
+#define JAPRO_CINFO_UNLAGGEDHITSCAN	(1<<16)	//allow unlagged hitscan
+#define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
+#define JAPRO_CINFO_GUNROLL			(1<<18)	//allow grun roll
+#define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
+#define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //No aim backslash
+#define JAPRO_CINFO_HIGHFPSFIX		(1<<21) //unused
+#define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
+#define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
+#define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
+#define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
+#define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
+#define JAPRO_CINFO_ROLLCANCEL		(1<<27) //jk2 1.02 rollcancel move
+#define JAPRO_CINFO_NOREDCHAIN		(1<<28) //no red chains 1.02
+#define JAPRO_CINFO_PROJSNIPER		(1<<29)
+#define	JAPRO_CINFO_JAPLUSGRAPPLE	(1<<30)
+#define	JAPRO_CINFO_EASIERBACKSLASH	(1<<31)
+
+//ja+ stuff
+#define JAPRO_PLUGIN_NEWDRAINEFX		(1<<0)
+#define JAPRO_PLUGIN_DUELSEEOTHERS		(1<<1)
+#define JAPRO_PLUGIN_ENDDUELROTATION	(1<<2) 
+#define JAPRO_PLUGIN_BLACKSABERSDISABLE	(1<<3)
+#define JAPRO_PLUGIN_AUTOREPLYDISABLE	(1<<4) 
+#define JAPRO_PLUGIN_NEWFORCEEFFECT		(1<<5) 
+#define JAPRO_PLUGIN_NEWDEATHMSG_DISABLE (1<<6)
+#define JAPRO_PLUGIN_NEWSIGHTEFFECT		(1<<7) 
+#define JAPRO_PLUGIN_NOALTDIMEFFECT		(1<<8)
+#define JAPRO_PLUGIN_HOLSTEREDSABER		(1<<9) 
+#define JAPRO_PLUGIN_LEDGEGRAB			(1<<10)
+#define JAPRO_PLUGIN_NEWDFAPRIM			(1<<11) 
+#define JAPRO_PLUGIN_NEWDFAALT			(1<<12) 
+#define JAPRO_PLUGIN_NOSPCARTWHEEL		(1<<13)
+#define JAPRO_PLUGIN_ALLOWLIBCURL		(1<<14)
+
+//ja++ stuff
+#define JAPRO_PLUGIN_NOKATA				(1<<15) // don't allow katas
+#define JAPRO_PLUGIN_NOBUTTERFLY		(1<<16) // don't allow butterflies
+#define JAPRO_PLUGIN_NOSTAB				(1<<17) // don't allow backstab/rollstab
+#define JAPRO_PLUGIN_NODFA				(1<<18) // don't allow DFAs
+
+//japro stuff
+#define JAPRO_PLUGIN_BHOP			(1<<19)	//
+#define JAPRO_PLUGIN_NOROLL			(1<<20)	//
+#define JAPRO_PLUGIN_NOCART			(1<<21)	//
+#define JAPRO_PLUGIN_JAWARUN		(1<<22)	//
+#define JAPRO_PLUGIN_NODUELTELE		(1<<23)	//
+#define JAPRO_PLUGIN_NOCENTERCP		(1<<24)	//
+#define JAPRO_PLUGIN_CHATBOXCP		(1<<25)	//
+#define JAPRO_PLUGIN_NODMGNUMBERS	(1<<26)	//
+#define JAPRO_PLUGIN_CENTERMUZZLE	(1<<27)	//
+
+#define _SPPHYSICS 1
+typedef enum //movementstyle enum
+{
+	MV_SIEGE,
+	MV_JKA,
+	MV_QW,
+	MV_CPM,
+	MV_Q3,
+	MV_PJK,
+	MV_WSW,
+	MV_RJQ3,
+	MV_RJCPM,
+	MV_SWOOP,
+	MV_JETPACK,
+	MV_SPEED,
+#if _SPPHYSICS
+	MV_SP,
+#endif
+	MV_NUMSTYLES,
+} movementStyle_e;
+
 typedef enum {
 	FOOTSTEP_STONEWALK,
 	FOOTSTEP_STONERUN,
@@ -640,6 +749,7 @@ typedef struct score_s {
 	int				defendCount;
 	int				assistCount;
 	int				captures;
+	int				deaths; //JAPRO - Scoreboard Deaths
 	qboolean	perfect;
 	int				team;
 } score_t;

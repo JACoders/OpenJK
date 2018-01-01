@@ -4248,6 +4248,7 @@ static void CG_DrawDisconnect( void ) {
 	usercmd_t	cmd;
 	const char		*s;
 	int			w;  // bk010215 - FIXME char message[1024];
+	const int REAL_CMD_BACKUP = (cl_commandsize.integer >= 4 && cl_commandsize.integer <= 512 ) ? (cl_commandsize.integer) : (CMD_BACKUP); //Loda - FPS UNLOCK
 
 	if (cg.mMapChange)
 	{
@@ -4262,7 +4263,7 @@ static void CG_DrawDisconnect( void ) {
 	}
 
 	// draw the phone jack if we are completely past our buffers
-	cmdNum = trap->GetCurrentCmdNumber() - CMD_BACKUP + 1;
+	cmdNum = trap->GetCurrentCmdNumber() - REAL_CMD_BACKUP + 1;
 	trap->GetUserCmd( cmdNum, &cmd );
 	if ( cmd.serverTime <= cg.snap->ps.commandTime
 		|| cmd.serverTime > cg.time ) {	// special check for map_restart // bk 0102165 - FIXME

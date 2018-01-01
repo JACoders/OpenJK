@@ -225,7 +225,7 @@ bool CParticle::UpdateOrigin(void)
 	new_origin[2] = mOrigin1[2] + (theFxHelper.mRealTime * mVel[2]);// + (theFxHelper.mHalfRealTimeSq * mVel[2]);
 
 	// Only perform physics if this object is tagged to do so
-	if ( (mFlags & FX_APPLY_PHYSICS) && !(mFlags & FX_PLAYER_VIEW) )
+	if (((mFlags & FX_APPLY_PHYSICS) || (fx_physics->integer > 1)) && !(mFlags & FX_PLAYER_VIEW))//JAPRO ENGINE
 	{
 		if ( mFlags & FX_EXPENSIVE_PHYSICS )
 		{

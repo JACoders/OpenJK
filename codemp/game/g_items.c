@@ -200,8 +200,8 @@ void ShieldGoSolid(gentity_t *self)
 		ShieldRemove(self);
 		return;
 	}
-
-	trap->Trace (&tr, self->r.currentOrigin, self->r.mins, self->r.maxs, self->r.currentOrigin, self->s.number, CONTENTS_BODY, qfalse, 0, 0 );
+	
+	JP_Trace (&tr, self->r.currentOrigin, self->r.mins, self->r.maxs, self->r.currentOrigin, self->s.number, CONTENTS_BODY, qfalse, 0, 0 );
 	if(tr.startsolid)
 	{	// gah, we can't activate yet
 		self->nextthink = level.time + 200;
@@ -236,6 +236,8 @@ void ShieldGoNotSolid(gentity_t *self)
 	self->s.eFlags |= EF_NODRAW;
 	// nextthink needs to have a large enough interval to avoid excess accumulation of Activate messages
 	self->nextthink = level.time + 200;
+	if (g_raceMode.integer) //sad hack ahoy
+		self->nextthink = level.time + 1000;
 	self->think = ShieldGoSolid;
 	self->takedamage = qfalse;
 	trap->LinkEntity((sharedEntity_t *)self);
@@ -263,7 +265,7 @@ void ShieldTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	}
 	else
 	{//let the person who dropped the shield through
-		if (self->parent && self->parent->s.number == other->s.number)
+		if ((self->parent && self->parent->s.number == other->s.number) || (other->client && other->client->sess.raceMode))
 		{
 			ShieldGoNotSolid(self);
 		}
@@ -284,7 +286,7 @@ void CreateShield(gentity_t *ent)
 	// trace upward to find height of shield
 	VectorCopy(ent->r.currentOrigin, end);
 	end[2] += MAX_SHIELD_HEIGHT;
-	trap->Trace (&tr, ent->r.currentOrigin, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace (&tr, ent->r.currentOrigin, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	height = (int)(MAX_SHIELD_HEIGHT * tr.fraction);
 
 	// use angles to find the proper axis along which to align the shield
@@ -310,10 +312,10 @@ void CreateShield(gentity_t *ent)
 	// positive trace
 	VectorCopy(ent->r.currentOrigin, start);
 	start[2] += (height>>1);
-	trap->Trace (&tr, start, 0, 0, posTraceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace (&tr, start, 0, 0, posTraceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	posWidth = MAX_SHIELD_HALFWIDTH * tr.fraction;
 	// negative trace
-	trap->Trace (&tr, start, 0, 0, negTraceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace (&tr, start, 0, 0, negTraceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	negWidth = MAX_SHIELD_HALFWIDTH * tr.fraction;
 
 	// kef -- monkey with dimensions and place origin in center
@@ -366,7 +368,7 @@ void CreateShield(gentity_t *ent)
 	ent->touch = ShieldTouch;
 
 	// see if we're valid
-	trap->Trace (&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, CONTENTS_BODY, qfalse, 0, 0 );
+	JP_Trace (&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, CONTENTS_BODY, qfalse, 0, 0 ); 
 
 	if (tr.startsolid)
 	{	// Something in the way!
@@ -423,17 +425,17 @@ qboolean PlaceShield(gentity_t *playerent)
 	AngleVectors (playerent->client->ps.viewangles, fwd, NULL, NULL);
 	fwd[2] = 0;
 	VectorMA(playerent->client->ps.origin, SHIELD_PLACEDIST, fwd, dest);
-	trap->Trace (&tr, playerent->client->ps.origin, mins, maxs, dest, playerent->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace (&tr, playerent->client->ps.origin, mins, maxs, dest, playerent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	if (tr.fraction > 0.9)
 	{//room in front
 		VectorCopy(tr.endpos, pos);
 		// drop to floor
 		VectorSet( dest, pos[0], pos[1], pos[2] - 4096 );
-		trap->Trace( &tr, pos, mins, maxs, dest, playerent->s.number, MASK_SOLID, qfalse, 0, 0 );
+		JP_Trace( &tr, pos, mins, maxs, dest, playerent->s.number, MASK_SOLID, qfalse, 0, 0 );
 		if ( !tr.startsolid && !tr.allsolid )
 		{
 			// got enough room so place the portable shield
-			shield = G_Spawn();
+			shield = G_Spawn(qtrue);
 
 			// Figure out what direction the shield is facing.
 			if (fabs(fwd[0]) > fabs(fwd[1]))
@@ -632,7 +634,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 			VectorCopy( target->r.currentOrigin, org );
 		}
 
-		trap->Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+		JP_Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( !tr.allsolid && !tr.startsolid && ( tr.fraction == 1.0 || tr.entityNum == target->s.number ))
 		{
@@ -688,7 +690,7 @@ void pas_adjust_enemy( gentity_t *ent )
 			VectorCopy( ent->enemy->r.currentOrigin, org );
 		}
 
-		trap->Trace( &tr, org2, NULL, NULL, org, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+		JP_Trace( &tr, org2, NULL, NULL, org, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( tr.allsolid || tr.startsolid || tr.fraction < 0.9f || tr.entityNum == ent->s.number )
 		{
@@ -1074,7 +1076,7 @@ void ItemUse_Sentry( gentity_t *ent )
 	fwdorg[1] = ent->client->ps.origin[1] + fwd[1]*64;
 	fwdorg[2] = ent->client->ps.origin[2] + fwd[2]*64;
 
-	sentry = G_Spawn();
+	sentry = G_Spawn(qtrue);
 
 	sentry->classname = "sentryGun";
 	sentry->s.modelindex = G_ModelIndex("models/items/psgun.glm"); //replace ASAP
@@ -1420,7 +1422,7 @@ void ItemUse_UseDisp(gentity_t *ent, int type)
 		vec3_t fwd, pos;
 		gentity_t	*te;
 
-		eItem = G_Spawn();
+		eItem = G_Spawn(qtrue);
 		eItem->r.ownerNum = ent->s.number;
 		eItem->classname = item->classname;
 
@@ -1672,7 +1674,7 @@ void EWebFire(gentity_t *owner, gentity_t *eweb)
 	VectorMA(p, -16.0f, d, bPoint);
 
 	//create the missile
-	missile = CreateMissile( bPoint, d, 1200.0f, 10000, owner, qfalse );
+	missile = CreateMissileNew( bPoint, d, 1200.0f, 10000, owner, qfalse, qfalse, qfalse );
 
 	missile->classname = "generic_proj";
 	missile->s.weapon = WP_TURRET;
@@ -1709,7 +1711,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 
 	p[2] += 4.0f;
 
-	trap->Trace(&tr, owner->client->ps.origin, owner->r.mins, owner->r.maxs, p, owner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+	JP_Trace(&tr, owner->client->ps.origin, owner->r.mins, owner->r.maxs, p, owner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (!tr.startsolid && !tr.allsolid && tr.fraction == 1.0f)
 	{ //all clear, we can move there
@@ -1717,7 +1719,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 
 		VectorCopy(p, pDown);
 		pDown[2] -= 7.0f;
-		trap->Trace(&tr, p, owner->r.mins, owner->r.maxs, pDown, owner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+		JP_Trace(&tr, p, owner->r.mins, owner->r.maxs, pDown, owner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		if (!tr.startsolid && !tr.allsolid)
 		{
@@ -1905,7 +1907,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 
 	VectorMA(s, 48.0f, fwd, pos);
 
-	trap->Trace(&tr, s, mins, maxs, pos, spawner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+	JP_Trace(&tr, s, mins, maxs, pos, spawner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.allsolid || tr.startsolid || tr.fraction != 1.0f)
 	{ //can't spawn here, we are in solid
@@ -1913,7 +1915,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 		return NULL;
 	}
 
-	ent = G_Spawn();
+	ent = G_Spawn(qtrue);
 
 	ent->clipmask = MASK_PLAYERSOLID;
 	ent->r.contents = MASK_PLAYERSOLID;
@@ -1925,7 +1927,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 
 	VectorCopy(pos, downPos);
 	downPos[2] -= 18.0f;
-	trap->Trace(&tr, pos, mins, maxs, downPos, spawner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+	JP_Trace(&tr, pos, mins, maxs, downPos, spawner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.startsolid || tr.allsolid || tr.fraction == 1.0f || tr.entityNum < ENTITYNUM_WORLD)
 	{ //didn't hit ground.
@@ -2116,7 +2118,7 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 		}
 
 		// if not line of sight, no sound
-		trap->Trace( &tr, client->ps.origin, NULL, NULL, ent->s.pos.trBase, ENTITYNUM_NONE, CONTENTS_SOLID, qfalse, 0, 0 );
+		JP_Trace( &tr, client->ps.origin, NULL, NULL, ent->s.pos.trBase, ENTITYNUM_NONE, CONTENTS_SOLID, qfalse, 0, 0 );
 		if ( tr.fraction != 1.0 ) {
 			continue;
 		}
@@ -2341,6 +2343,14 @@ void RespawnItem( gentity_t *ent ) {
 			;
 	}
 
+	if (g_tweakForce.integer & FT_PUSHPULLITEMS)
+	{
+		VectorCopy(ent->origOrigin, ent->s.origin);
+		VectorCopy(ent->origOrigin, ent->s.pos.trBase);
+		VectorCopy(ent->origOrigin, ent->s.apos.trBase);
+		VectorCopy(ent->origOrigin, ent->r.currentOrigin);
+	}
+
 	ent->r.contents = CONTENTS_TRIGGER;
 	//ent->s.eFlags &= ~EF_NODRAW;
 	ent->s.eFlags &= ~(EF_NODRAW | EF_ITEMPLACEHOLDER);
@@ -2389,6 +2399,18 @@ qboolean CheckItemCanBePickedUpByNPC( gentity_t *item, gentity_t *pickerupper )
 	return qfalse;
 }
 
+void ResetItem( gentity_t *ent ) { //PushPullItems
+	VectorCopy(ent->origOrigin, ent->s.origin);
+	VectorCopy(ent->origOrigin, ent->s.pos.trBase);
+	VectorCopy(ent->origOrigin, ent->s.apos.trBase);
+	VectorCopy(ent->origOrigin, ent->r.currentOrigin);
+
+	trap->LinkEntity ((sharedEntity_t *)ent);
+
+	ent->think = RespawnItem;
+	ent->nextthink = level.time + 30000;
+}
+
 /*
 ===============
 Touch_Item
@@ -2414,6 +2436,11 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	{
 		return;
 	}
+
+//JAPRO - Serverside - Flagthrow - Debounce time to stop flag from being picked up immediatly after throwing - Start
+	if (g_allowFlagThrow.integer && (ent->item->giTag == PW_REDFLAG || ent->item->giTag == PW_BLUEFLAG || ent->item->giTag == PW_NEUTRALFLAG) && other->client->lastThrowTime + 1000 > level.time)
+		return;
+//JAPRO - Serverside - Flagthrow - Debounce time to stop flag from being picked up immediatly after throwing - End
 
 	if (ent->item->giType == IT_WEAPON &&
 		ent->s.powerups &&
@@ -2693,7 +2720,7 @@ Spawns an item and tosses it forward
 gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	gentity_t	*dropped;
 
-	dropped = G_Spawn();
+	dropped = G_Spawn(qtrue);
 
 	dropped->s.eType = ET_ITEM;
 	dropped->s.modelindex = item - bg_itemlist;	// store item number in modelindex
@@ -2718,7 +2745,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
 	dropped->flags |= FL_BOUNCE_HALF;
-	if ((level.gametype == GT_CTF || level.gametype == GT_CTY) && item->giType == IT_TEAM) { // Special case for CTF flags
+	if (((level.gametype == GT_CTF || level.gametype == GT_CTY) || ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
@@ -2744,6 +2771,13 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 		dropped->s.eFlags |= EF_DROPPEDWEAPON;
 	}
 
+//JAPRO - Serverside - Flagthrow - Physics bounce - Start
+	if (g_allowFlagThrow.integer && item->giType == IT_TEAM)
+	{
+		dropped->physicsBounce = 0.6f;
+	}
+//JAPRO - Serverside - Flagthrow - Physics bounce - End
+
 	vectoangles(velocity, dropped->s.angles);
 	dropped->s.angles[PITCH] = 0;
 
@@ -2759,6 +2793,13 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	{
 		dropped->s.angles[ROLL] = -90;
 	}
+
+//JAPRO - Serverside - Flaghtrow - Correct angle drop - Start
+	if (g_allowFlagThrow.integer && item->giType == IT_TEAM)
+	{
+		dropped->s.angles[ROLL] = 0;
+	}
+//JAPRO - Serverside - Flaghtrow - Correct angle drop - End
 
 	dropped->physicsObject = qtrue;
 
@@ -2780,14 +2821,47 @@ gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle ) {
 
 	VectorCopy( ent->s.apos.trBase, angles );
 	angles[YAW] += angle;
-	angles[PITCH] = 0;	// always forward
+
+	if (!g_allowFlagThrow.integer || item->giType != IT_TEAM)
+		angles[PITCH] = 0;	// always forward
 
 	AngleVectors( angles, velocity, NULL, NULL );
-	VectorScale( velocity, 150, velocity );
-	velocity[2] += 200 + Q_flrand(-1.0f, 1.0f) * 50;
 
+	if (g_allowFlagThrow.integer && item->giType == IT_TEAM)
+	{
+		velocity[0] += 0.25 * ent->client->ps.velocity[0];
+		velocity[1] += 0.25 * ent->client->ps.velocity[1];
+		velocity[2] += 0.5 * ent->client->ps.velocity[2];
+	}
+	else
+	{
+		VectorScale( velocity, 150, velocity );
+		velocity[2] += 200 + Q_flrand(-1.0f, 1.0f) * 50;	
+	}
+	
 	return LaunchItem( item, ent->s.pos.trBase, velocity );
 }
+
+gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, qboolean forced ) {
+	vec3_t	velocity;
+	vec3_t	angles;
+
+	VectorCopy( ent->s.apos.trBase, angles );
+	
+	if (forced) //Conced by nitron thermal or something.. dont let people just aim straight up or down to avoid the effects of this
+		angles[PITCH] = 0;
+
+	AngleVectors( angles, velocity, NULL, NULL );
+
+	VectorScale( velocity, 625, velocity );
+
+	velocity[0] += 0.25 * ent->client->ps.velocity[0];
+	velocity[1] += 0.25 * ent->client->ps.velocity[1];
+	velocity[2] += 50 + 0.5 * ent->client->ps.velocity[2];
+	
+	return LaunchItem( item, ent->s.pos.trBase, velocity );
+}
+
 
 
 /*
@@ -2803,6 +2877,58 @@ void Use_Item( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 
 //======================================================================
 
+
+qboolean G_FreeAmmoEntity( gitem_t *item ) {
+	qboolean freeEntity = qfalse;
+	int wDisable = g_weaponDisable.integer;
+	int startingWeapons = g_startingWeapons.integer;
+
+	switch(item->giTag)
+	{
+		case AMMO_BLASTER: 
+			if ((wDisable & (1 << WP_BRYAR_OLD)) && (wDisable & (1 << WP_BLASTER)) && !(startingWeapons & (1 << WP_BRYAR_OLD)) && !(startingWeapons & (1 << WP_BLASTER))) {
+				freeEntity = qtrue;
+			}
+			break;
+		case AMMO_POWERCELL: 
+			if ((wDisable & (1 << WP_DISRUPTOR)) && (wDisable & (1 << WP_BOWCASTER)) && !(startingWeapons & (1 << WP_DISRUPTOR)) && !(startingWeapons & (1 << WP_BOWCASTER))) {
+				freeEntity = qtrue;
+			}
+			break;
+		case AMMO_METAL_BOLTS:
+			if ((wDisable & (1 << WP_REPEATER)) && (wDisable & (1 << WP_FLECHETTE)) && !(startingWeapons & (1 << WP_REPEATER)) && !(startingWeapons & (1 << WP_FLECHETTE))) {
+				freeEntity = qtrue;
+			}
+			break;
+		case AMMO_ROCKETS:
+			if ((wDisable & (1 << WP_ROCKET_LAUNCHER)) && !(startingWeapons & (1 << WP_ROCKET_LAUNCHER))) {
+				freeEntity = qtrue;
+			}
+			break;
+		case AMMO_THERMAL:
+			if ((wDisable & (1 << WP_THERMAL)) && !(startingWeapons & (1 << WP_THERMAL))) {
+				freeEntity = qtrue;
+			}
+			break;
+		case AMMO_TRIPMINE:
+			if ((wDisable & (1 << WP_TRIP_MINE)) && !(startingWeapons & (1 << WP_TRIP_MINE))) {
+				freeEntity = qtrue;
+			}
+			break;
+		case AMMO_DETPACK:
+			if ((wDisable & (1 << WP_DET_PACK)) && !(startingWeapons & (1 << WP_DET_PACK))) {
+				freeEntity = qtrue;
+			}
+			break;
+		default:
+			freeEntity = qtrue;
+			break;
+	}
+	return freeEntity;
+	//if (freeEntity) {
+		//G_FreeEntity( ent );
+	//}
+}
 /*
 ================
 FinishSpawningItem
@@ -2830,23 +2956,10 @@ void FinishSpawningItem( gentity_t *ent ) {
 
 	if (level.gametype != GT_JEDIMASTER)
 	{
-		if (HasSetSaberOnly())
-		{
-			if (ent->item->giType == IT_AMMO)
-			{
+		if ((ent->item->giType != IT_AMMO) && (HasSetSaberOnly() && ent->item->giType == IT_HOLDABLE)) {
+			if (ent->item->giTag == HI_SEEKER || ent->item->giTag == HI_SHIELD || ent->item->giTag == HI_SENTRY_GUN) {
 				G_FreeEntity( ent );
 				return;
-			}
-
-			if (ent->item->giType == IT_HOLDABLE)
-			{
-				if (ent->item->giTag == HI_SEEKER ||
-					ent->item->giTag == HI_SHIELD ||
-					ent->item->giTag == HI_SENTRY_GUN)
-				{
-					G_FreeEntity( ent );
-					return;
-				}
 			}
 		}
 	}
@@ -2897,32 +3010,43 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (level.gametype != GT_CTF &&
-		level.gametype != GT_CTY &&
-		ent->item->giType == IT_TEAM)
-	{
-		int killMe = 0;
-
-		switch (ent->item->giTag)
-		{
-		case PW_REDFLAG:
-			killMe = 1;
-			break;
-		case PW_BLUEFLAG:
-			killMe = 1;
-			break;
-		case PW_NEUTRALFLAG:
-			killMe = 1;
-			break;
-		default:
-			break;
-		}
-
-		if (killMe)
-		{
+	/*
+	if (level.gametype != GT_CTF &&	level.gametype != GT_CTY &&	ent->item->giType == IT_TEAM) {
+		if (ent->item->giTag == PW_BLUEFLAG || ent->item->giTag == PW_REDFLAG) {//always remove red/blu flags if not ctf/cty
 			G_FreeEntity( ent );
 			return;
 		}
+	}
+	*/
+	//Check if we should remove the flags.
+
+	if (ent->item->giType == IT_TEAM) {
+
+		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
+			VectorCopy(ent->s.origin, level.neutralFlagOrigin);
+			level.neutralFlag = qtrue;
+			if (!g_rabbit.integer || (level.gametype != GT_FFA && level.gametype != GT_TEAM)) {
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+		else if (ent->item->giTag == PW_REDFLAG) {
+			VectorCopy(ent->s.origin, level.redFlagOrigin);
+			level.redFlag = qtrue;
+			if (level.gametype != GT_CTF &&	level.gametype != GT_CTY) {
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+		else if (ent->item->giTag == PW_BLUEFLAG) {
+			VectorCopy(ent->s.origin, level.blueFlagOrigin);
+			level.blueFlag = qtrue;
+			if (level.gametype != GT_CTF &&	level.gametype != GT_CTY) {
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+
 	}
 
 	VectorSet (ent->r.mins, -8, -8, -0);
@@ -2957,7 +3081,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 		ent->r.maxs[2] -= 0.1f;
 
 		VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-		trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+		JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 		if ( tr.startsolid ) {
 			trap->Print ("FinishSpawningItem: %s startsolid at %s\n", ent->classname, vtos(ent->s.origin));
 			G_FreeEntity( ent );
@@ -2993,6 +3117,12 @@ void FinishSpawningItem( gentity_t *ent ) {
 		return;
 	}
 	*/
+
+	if (!ent->spawnedBefore) //pushpullitems
+	{
+		ent->spawnedBefore = qtrue;
+		VectorCopy(tr.endpos, ent->origOrigin);
+	}
 
 	trap->LinkEntity ((sharedEntity_t *)ent);
 }
@@ -3126,20 +3256,29 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 		wDisable = g_weaponDisable.integer;
 	}
 
+	/*
 	if (item->giType == IT_WEAPON &&
 		wDisable &&
 		(wDisable & (1 << item->giTag)))
 	{
+		//save the entity here somehow so it can be respawned?
+
 		if (level.gametype != GT_JEDIMASTER)
 		{
 			G_FreeEntity( ent );
 			return;
 		}
 	}
+	*/
 
 	RegisterItem( item );
 	if ( G_ItemDisabled(item) )
 		return;
+
+	if (ent->spawnedBefore)//PushPullItems
+	{
+		VectorCopy(ent->origOrigin, ent->s.origin);
+	}
 
 	ent->item = item;
 	// some movers spawn on the second frame, so delay item
@@ -3148,6 +3287,30 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 	ent->think = FinishSpawningItem;
 
 	ent->physicsBounce = 0.50;		// items are bouncy
+
+	if (level.gametype != GT_JEDIMASTER)
+	{
+		if (item->giType == IT_WEAPON && wDisable && (wDisable & (1 << item->giTag))) {
+			ent->think = 0;
+			ent->nextthink = 0;
+			ent->s.eFlags |= EF_NODRAW;
+			//ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+			ent->r.svFlags |= SVF_NOCLIENT;
+			ent->r.contents = 0;
+			//ent->inuse = qfalse;
+			return;
+		}
+		else if (item->giType == IT_AMMO && wDisable && G_FreeAmmoEntity(item)) {
+			ent->think = 0;
+			ent->nextthink = 0;
+			ent->s.eFlags |= EF_NODRAW;
+			//ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+			ent->r.svFlags |= SVF_NOCLIENT;
+			ent->r.contents = 0;
+			//ent->inuse = qfalse;
+			return;
+		}
+	}
 
 	if ( item->giType == IT_POWERUP ) {
 		G_SoundIndex( "sound/items/respawn1" );
@@ -3244,7 +3407,7 @@ void G_RunItem( gentity_t *ent ) {
 	} else {
 		mask = MASK_PLAYERSOLID & ~CONTENTS_BODY;//MASK_SOLID;
 	}
-	trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, mask, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, mask, qfalse, 0, 0 );
 
 	VectorCopy( tr.endpos, ent->r.currentOrigin );
 

@@ -99,6 +99,16 @@ cvar_t	*cl_framerate;
 cvar_t	*cl_enableGuid;
 cvar_t	*cl_guidServerUniq;
 
+cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
+cvar_t	*m_repeatDelay;//JAPRO ENGINE
+cvar_t	*m_repeat;//JAPRO ENGINE
+
+#ifdef TESTY
+cvar_t	*cl_test;//JAPRO ENGINE
+cvar_t	*cl_testAngle;//JAPRO ENGINE
+#endif
+cvar_t	*cl_idrive; //JAPRO ENGINE
+
 cvar_t	*cl_autolodscale;
 
 cvar_t	*cl_consoleKeys;
@@ -118,8 +128,6 @@ cvar_t *cl_afkTime;
 cvar_t *cl_afkTimeUnfocused;
 
 cvar_t *cl_logChat;
-
-cvar_t	*cl_idrive;
 
 int		cl_unfocusedTime;
 
@@ -2199,7 +2207,6 @@ static float avgFrametime=0.0;
 extern void SE_CheckForLanguageUpdates(void);
 void CL_Frame ( int msec ) {
 	qboolean render = qfalse;
-
 	qboolean takeVideoFrame = qfalse;
 
 	CL_CheckCvarUpdate();
@@ -2208,9 +2215,9 @@ void CL_Frame ( int msec ) {
 		return;
 	}
 
-	if ( (com_renderfps->integer <= 0) || ((cls.realtime >= cls.lastDrawTime + (1000 / com_renderfps->integer))) ) {
+	if ((com_renderfps->integer <= 0) || ((cls.realtime >= cls.lastDrawTime + (1000 / com_renderfps->integer)))) {
 		render = qtrue;
-		cls.lastDrawTime = cls.realtime;	
+		cls.lastDrawTime = cls.realtime;
 	}
 
 	SE_CheckForLanguageUpdates();	// will take zero time to execute unless language changes, then will reload strings.
@@ -3086,6 +3093,12 @@ void CL_Init( void ) {
 
 	cl_drawRecording = Cvar_Get("cl_drawRecording", "1", CVAR_ARCHIVE);
 
+	cg_demoRecordMsg = Cvar_Get ("cg_demoRecordMsg", "3", CVAR_ARCHIVE);//JAPRO ENGINE
+
+	m_repeatDelay = Cvar_Get( "m_repeatDelay",	"800",	CVAR_ARCHIVE );
+	m_repeat = Cvar_Get( "m_repeat",	"0",	CVAR_INTERNAL );
+	Cvar_CheckRange( m_repeatDelay, 0, 5000, qtrue );
+
 	// enable the ja_guid player identifier in userinfo by default in OpenJK
 	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE_ND, "Enable GUID userinfo identifier" );
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE_ND, "Use a unique guid value per server" );
@@ -3179,7 +3192,7 @@ void CL_Init( void ) {
 
 	G2VertSpaceClient = new CMiniHeap (G2_VERT_SPACE_CLIENT_SIZE * 1024);
 
-	CL_GenerateQKey();
+	CL_GenerateQKey(); //loda fixme, malware warning!
 	CL_UpdateGUID( NULL, 0 );
 
 //	Com_Printf( "----- Client Initialization Complete -----\n" );
@@ -3242,7 +3255,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
 	Cmd_RemoveCommand ("video");
-	Cmd_RemoveCommand ("stopvideo");
+	Cmd_RemoveCommand ("videostop");
 
 	Cmd_RemoveCommand("afk");
 	Cmd_RemoveCommand("colorstring");

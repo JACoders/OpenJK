@@ -34,11 +34,14 @@ level_locals_t	level;
 int		eventClearTime = 0;
 static int navCalcPathTime = 0;
 extern int fatalErrors;
+qboolean BG_CanJetpack(playerState_t *ps);
 
 int killPlayerTimer = 0;
 
 gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
+
+int	dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
 
 qboolean gDuelExit = qfalse;
 
@@ -127,6 +130,37 @@ sharedBuffer_t gSharedBuffer;
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
 
+void SetGametypeFuncSolids (void) {
+	int i;
+	gentity_t *ent;
+
+	for (i = 0; i < level.num_entities; i++) {
+		ent = &g_entities[i];
+		if (ent->inuse) {
+			if (ent->s.eType == ET_MOVER && ent->spawnflags & 512) {				
+				if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //Make nonsolid/invis
+					ent->r.contents = 0;
+					ent->r.svFlags |= SVF_NOCLIENT;
+					ent->s.eFlags |= EF_NODRAW;
+				}
+				else { //Make solid/vis
+					ent->r.contents = CONTENTS_SOLID;
+					ent->r.svFlags &= ~SVF_NOCLIENT;
+					ent->s.eFlags &= ~EF_NODRAW;
+				}			
+			}
+			else if (ent->r.contents == CONTENTS_TRIGGER && ent->spawnflags & 8192) {		
+				if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //Make nonsolid/invis
+					ent->flags |= FL_INACTIVE;
+				}
+				else {
+					ent->flags &= ~FL_INACTIVE;
+				}
+			}
+		}
+	}
+}
+
 void G_CacheGametype( void )
 {
 	// check some things
@@ -165,10 +199,13 @@ G_InitGame
 
 ============
 */
+void InitGameAccountStuff(void);
+void G_SpawnWarpLocationsFromCfg(void);
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
 void SP_info_jedimaster_start( gentity_t *ent );
+static void G_SpawnHoleFixes( void );
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
@@ -208,6 +245,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.time = levelTime;
 	level.startTime = levelTime;
 
+#if _retardedsabertest
+	level.saberUpdateDebounceTime = levelTime; //JAPRO, stop this from started at 0 i guess though just incase
+#endif
+
 	level.follow1 = level.follow2 = -1;
 
 	level.snd_fry = G_SoundIndex("sound/player/fry.wav");	// FIXME standing in lava / slime
@@ -231,7 +272,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
 	G_LogPrintf( "------------------------------------------------------------\n" );
-	G_LogPrintf( "InitGame: %s\n", serverinfo );
+	G_LogPrintf( "InitGame: %s^7\n", serverinfo );
 
 	if ( g_securityLog.integer )
 	{
@@ -248,7 +289,53 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	else
 		trap->Print( "Not logging security events to disk.\n" );
 
+	if ( g_duelLog.integer )
+	{
+		if ( g_duelLog.integer == 1 )
+			trap->FS_Open( DUEL_LOG, &level.duelLog, FS_APPEND );
+		else if ( g_duelLog.integer == 2 )
+			trap->FS_Open( DUEL_LOG, &level.duelLog, FS_APPEND_SYNC );
 
+		if ( level.duelLog )
+			trap->Print( "Logging to "DUEL_LOG"\n" );
+		else
+			trap->Print( "WARNING: Couldn't open logfile: "DUEL_LOG"\n" );
+	}
+
+	if ( g_raceLog.integer )
+	{
+		if ( g_raceLog.integer == 1 )
+			trap->FS_Open( RACE_LOG, &level.raceLog, FS_APPEND );
+		else if ( g_raceLog.integer == 2 )
+			trap->FS_Open( RACE_LOG, &level.raceLog, FS_APPEND_SYNC );
+
+		if ( level.raceLog )
+			trap->Print( "Logging to "RACE_LOG"\n" );
+		else
+			trap->Print( "WARNING: Couldn't open logfile: "RACE_LOG"\n" );
+	}
+
+	trap->FS_Open( FAIL_RACE_LOG, &level.failRaceLog, FS_APPEND_SYNC );
+	if ( level.failRaceLog )
+		trap->Print( "Logging to "FAIL_RACE_LOG"\n" );
+	else
+		trap->Print( "WARNING: Couldn't open logfile: "FAIL_RACE_LOG"\n" );
+
+#if _STATLOG //useless
+	trap->FS_Open( TEMP_STAT_LOG, &level.tempStatLog, FS_APPEND_SYNC );
+	if ( level.tempStatLog )
+		trap->Print( "Logging to "TEMP_STAT_LOG"\n" );
+	else
+		trap->Print( "WARNING: Couldn't open logfile: "TEMP_STAT_LOG"\n" );
+#endif
+
+	trap->FS_Open( PLAYER_LOG, &level.playerLog, FS_APPEND_SYNC );
+	if ( level.playerLog )
+		trap->Print( "Logging to "PLAYER_LOG"\n" );
+	else
+		trap->Print( "WARNING: Couldn't open logfile: "PLAYER_LOG"\n" );
+
+	
 	G_LogWeaponInit();
 
 	G_CacheGametype();
@@ -316,6 +403,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
+
+	//setup the warp functionality, and database stuff - japro
+	G_SpawnWarpLocationsFromCfg();
+	G_SpawnHoleFixes();
+	InitGameAccountStuff();
+	SetGametypeFuncSolids();
 
 	// general initialization
 	G_FindTeams();
@@ -390,6 +483,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	if (level.gametype == GT_SIEGE)
 	{ //just get these configstrings registered now...
+		
 		while (i < MAX_CUSTOM_SIEGE_SOUNDS)
 		{
 			if (!bg_customSiegeSoundNames[i])
@@ -399,9 +493,32 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
 			i++;
 		}
+		
+		/*
+		for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
+		{
+			if (!bg_customSiegeSoundNames[i])
+			{
+				break;
+			}
+			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
+		*/
 	}
 
-	if ( level.gametype == GT_JEDIMASTER ) {
+	/*
+	if (g_allowVGS.integer) {
+		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
+		{
+			if (!bg_customVGSSoundNames[i])
+			{
+				break;
+			}
+			G_SoundIndex((char *)bg_customVGSSoundNames[i]);
+		}
+	}
+	*/
+
+	if ( level.gametype == GT_JEDIMASTER ) { 
 		gentity_t *ent = NULL;
 		int i=0;
 		for ( i=0, ent=g_entities; i<level.num_entities; i++, ent++ ) {
@@ -418,15 +535,15 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				return;
 			}
 
-			ent = G_Spawn();
+			ent = G_Spawn(qtrue);
 			G_SetOrigin( ent, spawnpoint->s.origin );
 			SP_info_jedimaster_start( ent );
 		}
 	}
 }
 
-
-
+void G_AddSimpleStatsToFile();
+void G_AddSimpleStatsToDB();
 /*
 =================
 G_ShutdownGame
@@ -435,6 +552,10 @@ G_ShutdownGame
 void G_ShutdownGame( int restart ) {
 	int i = 0;
 	gentity_t *ent;
+
+	//This is for the previous map, so do this here, not in initgame so cl->pers stuff does not get cleared.
+	G_AddSimpleStatsToFile();//Add previous maps stats from memory to file.
+	G_AddSimpleStatsToDB();//Add previous maps stats from file to database.  (use file incase database cant be written to, so the stats wont be lost.. we can just add them later).
 
 //	trap->Print ("==== ShutdownGame ====\n");
 
@@ -497,6 +618,34 @@ void G_ShutdownGame( int restart ) {
 		G_SecurityLogPrintf( "ShutdownGame\n\n" );
 		trap->FS_Close( level.security.log );
 		level.security.log = 0;
+	}
+
+
+	if ( level.duelLog ) {
+		trap->FS_Close( level.duelLog );
+		level.duelLog = 0;
+	}
+
+	if ( level.raceLog ) {
+		trap->FS_Close( level.raceLog );
+		level.raceLog = 0;
+	}
+
+	if ( level.failRaceLog ) {
+		trap->FS_Close( level.failRaceLog );
+		level.failRaceLog = 0;
+	}
+
+#if _STATLOG
+	if ( level.tempStatLog ) {
+		trap->FS_Close( level.tempStatLog );
+		level.tempStatLog = 0;
+	}
+#endif
+
+	if ( level.playerLog ) {
+		trap->FS_Close( level.playerLog );
+		level.playerLog = 0;
 	}
 
 	// write all the client session data so we can get it back
@@ -572,7 +721,7 @@ void AddTournamentPlayer( void ) {
 	level.warmupTime = -1;
 
 	// set them to free-for-all team
-	SetTeam( &g_entities[ nextInLine - level.clients ], "f" );
+	SetTeam( &g_entities[ nextInLine - level.clients ], "f", qfalse );
 }
 
 /*
@@ -623,7 +772,7 @@ void RemoveTournamentLoser( void ) {
 	}
 
 	// make them a spectator
-	SetTeam( &g_entities[ clientNum ], "s" );
+	SetTeam( &g_entities[ clientNum ], "s", qfalse );
 }
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec)
@@ -725,7 +874,7 @@ void AddPowerDuelPlayers( void )
 	level.warmupTime = -1;
 
 	// set them to free-for-all team
-	SetTeam( &g_entities[ nextInLine - level.clients ], "f" );
+	SetTeam( &g_entities[ nextInLine - level.clients ], "f", qfalse );
 
 	//Call recursively until everyone is in
 	AddPowerDuelPlayers();
@@ -767,7 +916,7 @@ void RemovePowerDuelLosers(void)
 	i = 0;
 	while (i < remNum)
 	{ //set them all to spectator
-		SetTeam( &g_entities[ remClients[i] ], "s" );
+		SetTeam( &g_entities[ remClients[i] ], "s" , qfalse);
 		i++;
 	}
 
@@ -810,11 +959,11 @@ void RemoveDuelDrawLoser(void)
 
 	if (clFailure != 2)
 	{
-		SetTeam( &g_entities[ level.sortedClients[clFailure] ], "s" );
+		SetTeam( &g_entities[ level.sortedClients[clFailure] ], "s" , qfalse);
 	}
 	else
 	{ //we could be more elegant about this, but oh well.
-		SetTeam( &g_entities[ level.sortedClients[1] ], "s" );
+		SetTeam( &g_entities[ level.sortedClients[1] ], "s" , qfalse);
 	}
 }
 
@@ -837,7 +986,7 @@ void RemoveTournamentWinner( void ) {
 	}
 
 	// make them a spectator
-	SetTeam( &g_entities[ clientNum ], "s" );
+	SetTeam( &g_entities[ clientNum ], "s" , qfalse);
 }
 
 /*
@@ -1067,6 +1216,7 @@ void CalculateRanks( void ) {
 	level.numNonSpectatorClients = 0;
 	level.numPlayingClients = 0;
 	level.numVotingClients = 0;		// don't count bots
+	level.numRealVotingClients = 0;
 
 	for ( i = 0; i < ARRAY_LEN(level.numteamVotingClients); i++ ) {
 		level.numteamVotingClients[i] = 0;
@@ -1075,6 +1225,14 @@ void CalculateRanks( void ) {
 		if ( level.clients[i].pers.connected != CON_DISCONNECTED ) {
 			level.sortedClients[level.numConnectedClients] = i;
 			level.numConnectedClients++;
+
+			if (g_tweakVote.integer & TV_ONLY_COUNT_VOTERS) {
+				if ( level.clients[i].pers.connected == CON_CONNECTED ) {
+					if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
+						level.numRealVotingClients++;
+					}
+				}
+			}
 
 			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{
@@ -1892,6 +2050,169 @@ qboolean ScoreIsTied( void ) {
 	return a == b;
 }
 
+const char *int_to_string(int i, char *buf, size_t bufSize) {
+	Com_sprintf(buf, bufSize, "%i", i);
+	return buf;
+}
+
+void PrintStats(int client) {
+	int			i, j = 0, gametype = level.gametype;
+	char		msg[1024-128] = {0}, numbuf[16] = {0};
+	char		lKills[32], lDeaths[32], lNet[32], lDmgGiven[32], lDmgTaken[32], lDmgNet[32], lDmgPerDeath[32], lTK[32], lCaptures[32], lReturns[32], lFragCarrier[32], lAccuracy[32], lTE[32], lTH[32], lDrain[32], lName[32], whitespace[32];
+	qboolean	showAccuracy = qtrue, showTeamPowers = qtrue, showDrain = qtrue;
+	gclient_t	*cl;
+
+	if (gametype != GT_CTF && gametype != GT_TEAM)
+		return;
+	if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))
+		showAccuracy = qfalse;
+	if ((g_forcePowerDisable.integer & (1<<FP_TEAM_HEAL)) && (g_forcePowerDisable.integer & (1<<FP_TEAM_FORCE))) //TE and TH are disabled
+		showTeamPowers = qfalse;
+	if ((g_forcePowerDisable.integer & (1<<FP_DRAIN)) || !g_friendlyFire.integer) //Team Drain is disabled
+		showDrain = qfalse;
+
+	Q_strncpyz(msg, "\n"S_COLOR_CYAN, sizeof(msg));
+
+	Q_strncpyz(whitespace, "   ", sizeof(whitespace));
+	Q_strncpyz(lKills, va("Kills%s", whitespace), sizeof(lKills));
+	Q_strncpyz(lDeaths, va("Deaths%s", whitespace), sizeof(lDeaths));
+	Q_strncpyz(lNet, va("Net%s", whitespace), sizeof(lNet));
+	Q_strncpyz(lDmgGiven, va("Dmg Given%s", whitespace), sizeof(lDmgGiven));
+	Q_strncpyz(lDmgTaken, va("Dmg Taken%s", whitespace), sizeof(lDmgTaken));
+	Q_strncpyz(lDmgNet, va("Net Dmg%s", whitespace), sizeof(lDmgNet));
+	Q_strncpyz(lDmgPerDeath, va("Dmg/Death%s", whitespace), sizeof(lDmgPerDeath));
+	if (level.gametype == GT_TEAM && g_friendlyFire.integer)
+		Q_strncpyz(lTK, va("Team Dmgs%s", whitespace), sizeof(lTK));
+	if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
+		Q_strncpyz(lCaptures, va("Caps%s", whitespace), sizeof(lCaptures));
+		Q_strncpyz(lReturns, va("Rets%s", whitespace), sizeof(lReturns));
+		Q_strncpyz(lFragCarrier, va("Carrier Kills%s", whitespace), sizeof(lFragCarrier));
+	}
+	if (showAccuracy)
+		Q_strncpyz(lAccuracy, va("Acc%s", whitespace), sizeof(lAccuracy));
+	if (showTeamPowers) {
+		Q_strncpyz(lTE, va("T Energize%s", whitespace), sizeof(lTE));
+		Q_strncpyz(lTH, va("T Heal%s", whitespace), sizeof(lTH));
+	}
+	if (showDrain) {
+		Q_strncpyz(lDrain, va("Drain Acc%s", whitespace), sizeof(lDrain));
+	}
+	Q_strncpyz(lName, va("Name%s\n", whitespace), sizeof(lName));
+
+	Q_strcat(msg, sizeof(msg), lKills);
+	Q_strcat(msg, sizeof(msg), lDeaths);
+	Q_strcat(msg, sizeof(msg), lNet);
+	Q_strcat(msg, sizeof(msg), lDmgGiven);
+	Q_strcat(msg, sizeof(msg), lDmgTaken);
+	Q_strcat(msg, sizeof(msg), lDmgNet);
+	Q_strcat(msg, sizeof(msg), lDmgPerDeath);
+	if (level.gametype == GT_TEAM)
+		Q_strcat (msg, sizeof(msg), lTK);
+	if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
+		Q_strcat(msg, sizeof(msg), lCaptures);
+		Q_strcat(msg, sizeof(msg), lReturns);
+		Q_strcat(msg, sizeof(msg), lFragCarrier);
+	}
+	if (showAccuracy)
+		Q_strcat(msg, sizeof(msg), lAccuracy);
+	if (showTeamPowers) {
+		Q_strcat(msg, sizeof(msg), lTE);
+		Q_strcat(msg, sizeof(msg), lTH);
+	}
+	if (showDrain) {
+		Q_strcat(msg, sizeof(msg), lDrain);
+	}
+	Q_strcat(msg, sizeof(msg), lName);
+
+	//Conditional label shit here:
+	//If ctf, ungroup suicides from deaths, otherwise just count them as deaths.
+	//If TFFA and showdrains , add drainratio
+	//If TFFA and teampowers, add TE/TH 
+	//If showaccuracy, show accuracy
+	//If CTF, show caps, returns, carrier kills
+
+	for (i=0; i<MAX_CLIENTS; i++)
+	{//Build a list of clients
+		char *tmpMsg = NULL;
+		char partialTmpMsg[1024-128] = {0}, partialTmpMsg2[32] = {0};
+		if (!g_entities[i].inuse)
+			continue;
+
+		cl = &level.clients[i];
+		if (cl->pers.netname[0] && /*!(cl->ps.pm_flags & PMF_FOLLOW) &&*/ (cl->sess.sessionTeam != TEAM_SPECTATOR) && !(level.gametype >= GT_TEAM && cl->sess.sessionTeam == TEAM_FREE)) //sad
+		{
+			float accuracy = 0, dmgPerDeath = cl->pers.stats.damageGiven, drainRatio = 0;
+
+			j++;
+			if (j%2)
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), S_COLOR_YELLOW);
+			else 
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), S_COLOR_GREEN);
+
+			if(showAccuracy && cl->accuracy_shots) 
+				accuracy = 100.0f * (float)cl->accuracy_hits / (float)cl->accuracy_shots;
+			if (cl->ps.persistant[PERS_KILLED]) 
+				dmgPerDeath = cl->pers.stats.damageGiven / cl->ps.persistant[PERS_KILLED];
+			if (cl->pers.stats.enemyDrainDamage + cl->pers.stats.teamDrainDamage)
+				drainRatio = 100.0f * (float)cl->pers.stats.enemyDrainDamage / (float)(cl->pers.stats.enemyDrainDamage + cl->pers.stats.teamDrainDamage);
+
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lKills), int_to_string((level.gametype == GT_CTF) ? cl->pers.stats.kills : cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides, numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDeaths), int_to_string((level.gametype == GT_CTF) ? cl->ps.persistant[PERS_KILLED] - cl->ps.fd.suicides : cl->ps.persistant[PERS_KILLED], numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lNet), int_to_string((level.gametype == GT_CTF) ? cl->pers.stats.kills - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides :cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides - cl->ps.persistant[PERS_KILLED], numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgGiven), int_to_string(cl->pers.stats.damageGiven, numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgTaken), int_to_string(cl->pers.stats.damageTaken, numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgNet), int_to_string(cl->pers.stats.damageGiven - cl->pers.stats.damageTaken - cl->pers.stats.teamDamageGiven, numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgPerDeath), int_to_string(dmgPerDeath, numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);	
+			if (level.gametype == GT_TEAM && g_friendlyFire.integer) {
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTK), int_to_string(cl->pers.stats.teamDamageGiven, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			}
+			else if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lCaptures), int_to_string(cl->pers.teamState.captures, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lReturns), int_to_string(cl->pers.teamState.flagrecovery, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lFragCarrier), int_to_string(cl->pers.teamState.fragcarrier, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+
+			}	
+			if (showAccuracy) {
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lAccuracy), int_to_string(accuracy, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			}
+			if (showTeamPowers) {
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTE), int_to_string(cl->pers.stats.teamEnergizeGiven, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTH), int_to_string(cl->pers.stats.teamHealGiven, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			}
+			if (showDrain) {
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDrain), int_to_string(drainRatio, numbuf, sizeof(numbuf)));
+				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			}	
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lName), cl->pers.netname);
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), "\n");
+
+			tmpMsg = partialTmpMsg;
+
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand(client, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+		}
+	}
+	trap->SendServerCommand(client, va("print \"%s\n\"", msg));
+}
+
 /*
 =================
 CheckExitRules
@@ -2002,6 +2323,7 @@ void CheckExitRules( void ) {
 					Com_Printf("POWERDUEL WIN CONDITION: Timelimit hit (1)\n");
 				}
 				LogExit( "Timelimit hit." );
+				PrintStats(-1);//JAPRO STATS
 				return;
 			}
 		}
@@ -2149,6 +2471,7 @@ void CheckExitRules( void ) {
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (1)\n");
 			}
 			LogExit( sKillLimit );
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 
@@ -2159,8 +2482,34 @@ void CheckExitRules( void ) {
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (2)\n");
 			}
 			LogExit( sKillLimit );
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
+
+		//Mercy rule start
+		if ((g_mercyRule.value > 0.0f) && (fraglimit.integer > 5) && ((level.teamScores[TEAM_RED] > fraglimit.integer * 0.5f) || (level.teamScores[TEAM_BLUE] > fraglimit.integer * 0.5f))) {
+			if ((level.teamScores[TEAM_RED] - level.teamScores[TEAM_BLUE]) > (g_mercyRule.value * fraglimit.integer)) { //Red team is beating red bad
+				trap->SendServerCommand( -1, va("print \"Red %s (Mercy rule)\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
+				if (d_powerDuelPrint.integer)
+				{
+					Com_Printf("POWERDUEL WIN CONDITION: Kill limit (1)\n");
+				}
+				LogExit( sKillLimit );
+				PrintStats(-1);//JAPRO STATS
+				return;
+			}
+			if ((level.teamScores[TEAM_BLUE] - level.teamScores[TEAM_RED]) > (g_mercyRule.value * fraglimit.integer)) { //Blue team is beating red bad
+				trap->SendServerCommand( -1, va("print \"Blue %s (Mercy rule)\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
+				if (d_powerDuelPrint.integer)
+				{
+					Com_Printf("POWERDUEL WIN CONDITION: Kill limit (2)\n");
+				}
+				LogExit( sKillLimit );
+				PrintStats(-1);//JAPRO STATS
+				return;
+			}
+		}
+		//Mercy rule end
 
 		for ( i=0 ; i< sv_maxclients.integer ; i++ ) {
 			cl = level.clients + i;
@@ -2211,6 +2560,7 @@ void CheckExitRules( void ) {
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 
@@ -2218,6 +2568,7 @@ void CheckExitRules( void ) {
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 	}
@@ -2244,7 +2595,7 @@ void G_RemoveDuelist(int team)
 		if (ent->inuse && ent->client && ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
 			ent->client->sess.duelTeam == team)
 		{
-			SetTeam(ent, "s");
+			SetTeam(ent, "s", qfalse);
 		}
         i++;
 	}
@@ -2553,6 +2904,62 @@ void G_KickAllBots(void)
 	}
 }
 
+void SetFailedCallVoteIP(char *ClientIP) {
+	int i;
+
+	if (!ClientIP[0]) {
+		//trap->Print("Empty client ip bug!\n");
+		return;
+	}
+
+	if (!g_voteTimeout.integer) //no point if thers no timeout specified
+		return;
+
+	//trap->Print("Client failed a vote! Setting his IP in the array!\n");
+	for (i=0; i<voteFloodProtectSize; i++) { //Set
+		if (!Q_stricmp(voteFloodProtect[i].ip, ClientIP)) { //Found us in the array, so update our votetime
+			//voteFloodProtect[i].lastVoteTime = level.time;
+			voteFloodProtect[i].failCount++;
+			voteFloodProtect[i].voteTimeoutUntil = trap->Milliseconds() + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
+			voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			//trap->Print("Found client in the array, updating his vote fail time\n");
+			break;
+		}
+		if (!voteFloodProtect[i].ip[0]) { //Not found our IP in array, add it
+			Q_strncpyz(voteFloodProtect[i].ip, ClientIP, sizeof(voteFloodProtect[i].ip));
+			//voteFloodProtect[i].lastVoteTime = level.time;
+			voteFloodProtect[i].failCount++;
+			voteFloodProtect[i].voteTimeoutUntil = trap->Milliseconds() + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
+			voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			//trap->Print("Client not in array, adding him and his IP( %s, %i)\n", voteFloodProtect[i].ip, voteFloodProtect[i].voteTimeoutUntil);
+			break;
+		}
+	}
+}
+
+static void VotePassed( void ) {
+	gentity_t *ent;
+	gentity_t *te;
+	int i;
+
+	//trap->Print("Delay is %i\n", level.voteExecuteDelay);
+	if (!Q_stricmp(level.voteString, "")) //No command to execute if its a poll
+		trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
+	else
+		trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
+	G_LogPrintf ( "%s (%s^7)\n", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean );
+	level.voteExecuteTime = level.time + level.voteExecuteDelay;
+
+	if (level.voteExecuteDelay >= 5000) {
+		for (i = 0; i < level.numConnectedClients; i++) {
+			ent = &g_entities[level.sortedClients[i]];
+			te = G_TempEntity( ent->client->ps.origin, EV_SIEGESPEC );
+			te->s.time = level.voteExecuteTime;
+			te->s.owner = ent->s.number;
+		}
+	}
+}
+
 /*
 ==================
 CheckVote
@@ -2565,9 +2972,10 @@ void CheckVote( void ) {
 
 		if (level.votingGametype)
 		{
-			if (level.gametype != level.votingGametypeTo)
+			if (!(g_tweakVote.integer & TV_FIX_GAMETYPEMAP) && level.gametype != level.votingGametypeTo)
 			{ //If we're voting to a different game type, be sure to refresh all the map stuff
-				const char *nextMap = G_RefreshNextMap(level.votingGametypeTo, qtrue);
+				//const char *nextMap = G_RefreshNextMap(level.votingGametypeTo, qtrue);
+				const char *nextMap = G_GetDefaultMap(level.votingGametypeTo);
 
 				if (level.votingGametypeTo == GT_SIEGE)
 				{ //ok, kick all the bots, cause the aren't supported!
@@ -2620,19 +3028,40 @@ void CheckVote( void ) {
 	if ( !level.voteTime ) {
 		return;
 	}
-	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) {
-		trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+	if ( level.time-level.voteTime >= VOTE_TIME || ((level.voteYes + level.voteNo == 0) && Q_stricmp(level.voteString, "")) ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
+		if (g_tweakVote.integer & TV_ONLY_COUNT_VOTERS) {
+			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
+				VotePassed();
+			}
+			else {
+				trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+				G_LogPrintf ( "%s (%s^7)\n", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean );
+				//level.lastVoteFailTime = level.time;
+				SetFailedCallVoteIP(level.callVoteIP);
+			}
+		}
+		else { //Fail if it expires and not g_tweakVote
+			trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+			G_LogPrintf ( "%s (%s^7)\n", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean );
+		}
 	}
 	else {
-		if ( level.voteYes > level.numVotingClients/2 ) {
-			// execute the command, then remove the vote
-			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
-			level.voteExecuteTime = level.time + level.voteExecuteDelay;
+		int numClients = level.numVotingClients;
+		if (g_tweakVote.integer & TV_ONLY_COUNT_VOTERS) {
+			numClients = level.numRealVotingClients;
+		}
+
+		if ( level.voteYes > numClients/2 ) {
+			VotePassed(); // execute the command, then remove the vote
 		}
 
 		// same behavior as a timeout
-		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
-			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+		else if ( level.voteNo >= (numClients+1)/2 ) {
+			trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+			G_LogPrintf ( "%s (%s^7)\n", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean );
+			//level.lastVoteFailTime = level.time;
+			SetFailedCallVoteIP(level.callVoteIP);
+		}
 
 		else // still waiting for a majority
 			return;
@@ -2803,6 +3232,19 @@ void CheckCvars( void ) {
 	}
 }
 
+static void DropVoteTimeouts(void) { //doesnt need to be checked every frame but w/e..
+	int i;
+	for (i=0; i<voteFloodProtectSize; i++) { //Set
+		if (voteFloodProtect[i].ip[0]) { //Found an slot
+			if ((voteFloodProtect[i].failCount > 0) && (voteFloodProtect[i].nextDropTime < trap->Milliseconds())) {
+				voteFloodProtect[i].failCount--;
+				voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			}
+		}
+		else break;
+	}
+}
+
 /*
 =============
 G_RunThink
@@ -2810,8 +3252,20 @@ G_RunThink
 Runs thinking code for this frame if necessary
 =============
 */
+void proxMineThink( gentity_t *ent ); //OSP: pause
 void G_RunThink (gentity_t *ent) {
 	float	thinktime;
+
+	//OSP: pause
+	//	If paused, push nextthink
+	if ( level.pause.state != PAUSE_NONE && !ent->raceModeShooter) { //i dont think this could affect racers.. well maybe their rockets ? shit
+		if ( ent - g_entities >= sv_maxclients.integer && ent->nextthink > level.time ) //loda - why is this sv_maxclients, shouldnt it be MAX_CLIENTS?
+			ent->nextthink += level.time - level.previousTime;
+
+		// special case, mines need update here
+		if ( ent->think == proxMineThink && ent->genericValue15 > level.time )
+			ent->genericValue15 += level.time - level.previousTime;
+	}
 
 	thinktime = ent->nextthink;
 	if (thinktime <= 0) {
@@ -2826,6 +3280,7 @@ void G_RunThink (gentity_t *ent) {
 		//trap->Error( ERR_DROP, "NULL ent->think");
 		goto runicarus;
 	}
+
 	ent->think (ent);
 
 runicarus:
@@ -2908,6 +3363,7 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 
 void G_RunFrame( int levelTime ) {
 	int			i;
+	int			j;
 	gentity_t	*ent;
 #ifdef _G_FRAME_PERFANAL
 	int			iTimer_ItemRun = 0;
@@ -2921,6 +3377,13 @@ void G_RunFrame( int levelTime ) {
 	void		*timer_GameChecks;
 	void		*timer_Queues;
 #endif
+
+	static int lastMsgTime = 0;//OSP: pause
+
+	if ((unsigned int)levelTime > (1<<31)) {
+		trap->Print ("Auto quitting server %i\n", levelTime);
+		trap->SendConsoleCommand( EXEC_APPEND, "quit\n");
+	}
 
 	if (level.gametype == GT_SIEGE &&
 		g_siegeRespawn.integer &&
@@ -3009,6 +3472,82 @@ void G_RunFrame( int levelTime ) {
 	level.previousTime = level.time;
 	level.time = levelTime;
 
+
+
+
+	//OSP: pause
+	//loda - defrag uses trap_milliseconds instead of level.time so this shouldnt interfere?... avg/max depends on level.time though?
+	if ( level.pause.state != PAUSE_NONE ) {
+		static int lastCSTime = 0;
+		int dt = level.time - level.previousTime;
+
+		// compensate for timelimit and warmup time
+		if ( level.warmupTime > 0 )
+			level.warmupTime += dt;
+		level.startTime += dt;
+
+		// floor start time to avoid time flipering
+		if ( (level.time - level.startTime) % 1000 >= 500 )
+			level.startTime += (level.time - level.startTime) % 1000;
+
+		// initial CS update time, needed!
+		if ( !lastCSTime )
+			lastCSTime = level.time;
+
+		// client needs to do the same, just adjust the configstrings periodically
+		// i can't see a way around this mess without requiring a client mod.
+		if ( lastCSTime < level.time - 500 ) {
+			lastCSTime += 500;
+			trap->SetConfigstring( CS_LEVEL_START_TIME, va( "%i", level.startTime ) );
+			if ( level.warmupTime > 0 )
+				trap->SetConfigstring( CS_WARMUP, va( "%i", level.warmupTime ) );
+		}
+	}
+	if ( level.pause.state == PAUSE_PAUSED ) {
+		if ( lastMsgTime < level.time - 500 ) {
+
+			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
+				if (!g_entities[j].inuse)
+					continue;
+				if (!level.clients[j].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+					trap->SendServerCommand( j, va("cp \"Match has been paused.\n%.0f seconds remaining\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			}	
+			//trap->SendServerCommand( -1, va("cp \"Match has been paused.\n%.0f seconds remaining\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			lastMsgTime = level.time;
+		}
+
+		if ( level.time > level.pause.time - (g_unpauseTime.integer * 1000) )
+			level.pause.state = PAUSE_UNPAUSING;
+	}
+	else if ( level.pause.state == PAUSE_UNPAUSING ) {
+		if ( lastMsgTime < level.time - 500 ) {
+			
+			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
+				if (!g_entities[j].inuse)
+					continue;
+				if (!level.clients[j].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+					trap->SendServerCommand( j, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			}	
+			//trap->SendServerCommand( -1, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			lastMsgTime = level.time;
+		}
+
+		else if ( level.time > level.pause.time ) {
+			level.pause.state = PAUSE_NONE;
+			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
+				if (!g_entities[j].inuse)
+					continue;
+				if (!level.clients[j].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+					trap->SendServerCommand( i, "cp \"Fight!\n\"" );
+			}	
+			//trap->SendServerCommand( -1, "cp \"Fight!\n\"" );
+		}
+	}
+
+
+
+
+
 	if (g_allowNPC.integer)
 	{
 		NAV_CheckCalcPaths();
@@ -3063,6 +3602,7 @@ void G_RunFrame( int levelTime ) {
 	//
 	ent = &g_entities[0];
 	for (i=0 ; i<level.num_entities ; i++, ent++) {
+
 		if ( !ent->inuse ) {
 			continue;
 		}
@@ -3108,8 +3648,26 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
+		/*if ( !(g_unlagged.integer & UNLAGGED_PROJ_REC) && (ent->s.eType == ET_MISSILE) ) {//loda fixme?
+			G_RunMissile( ent );
+			continue;
+		}*/
+
+		/*
 		if ( ent->s.eType == ET_MISSILE ) {
 			G_RunMissile( ent );
+			continue;
+		}
+		*/
+
+		if ( ent->s.eType == ET_MISSILE ) {
+			//OSP: pause
+			if ( level.pause.state == PAUSE_NONE || ent->raceModeShooter) //loda - fixme - Or the shoother is in racemode... this does not take into account what they were at time of firing :/
+				G_RunMissile( ent );
+			else {// During a pause, gotta keep track of stuff in the air
+				ent->s.pos.trTime += level.time - level.previousTime;
+				G_RunThink( ent );
+			}
 			continue;
 		}
 
@@ -3256,12 +3814,34 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;
 				}
 			}
-			else if (ent->client->ps.jetpackFuel < 100)
+			else if ((!g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->ps.jetpackFuel < 100)
 			{ //recharge jetpack
 				if (ent->client->jetPackDebRecharge < level.time)
 				{
 					ent->client->ps.jetpackFuel++;
 					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;
+				}
+			}
+			else if (g_tweakJetpack.integer && !ent->client->sess.raceMode && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&ent->client->ps))
+			{ //using jetpack, drain fuel
+				if (ent->client->jetPackDebReduce < level.time)
+				{
+					ent->client->ps.jetpackFuel -= 6;
+					
+					if (ent->client->ps.jetpackFuel <= 0)
+					{ //turn it off
+						ent->client->ps.jetpackFuel = 0;
+						//Jetpack_Off(ent);
+					}
+					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;//Defuel rate
+				}
+			}
+			else if (ent->client->ps.jetpackFuel < 100)
+			{ //recharge jetpack
+				if (ent->client->jetPackDebRecharge < level.time)
+				{
+					ent->client->ps.jetpackFuel += 4;
+					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;//Refuel rate
 				}
 			}
 
@@ -3304,8 +3884,70 @@ void G_RunFrame( int levelTime ) {
 			if((!level.intermissiontime)&&!(ent->client->ps.pm_flags&PMF_FOLLOW) && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
 				WP_ForcePowersUpdate(ent, &ent->client->pers.cmd );
+#if _retardedsabertest
+				if (sv_saberFPS.integer > 0) {
+					const int savedLevelTime = level.time;
+					const int timeDelta = Q_max((1000 / sv_saberFPS.integer), 1);
+
+					while (level.saberUpdateDebounceTime < savedLevelTime ) {
+						WP_SaberPositionUpdate(ent, &ent->client->pers.cmd); //Wew ok, so this is where sv_fps controls saber?
+
+						//G_RunThink( ent );
+						//G_RunClient( ent );
+
+						trap->Print("Msec: %i, level.time: %i, stime: %i, pos: %.0f, %.0f, %.0f\n", timeDelta, level.time, ent->client->saber[0].blade[0].trail.lastTime, ent->client->saber[0].blade[0].trail.tip[0], ent->client->saber[0].blade[0].trail.tip[1], ent->client->saber[0].blade[0].trail.tip[2]);
+						level.saberUpdateDebounceTime += timeDelta;
+						level.time += timeDelta;
+						//Why is the saber position not getting updated, is it a trap->linkEntity problem where that only happens every sv_fps ?
+
+						//Well this is just getting called like x times in a row, all at once.. if the collision is anim based then its not going to do anything? the checks need to be spread out?
+						//but how to do that without locking up server
+						//or find where in w_saber.c the speed of the saber swing is..? dunno
+						//but wait.. the checks are spread out.. thats exactly what 'faking' level.time here is doing.. idk
+
+						//Actually i think the problem is the saber position is got from "G2API_GetBoltMatrix" trap call, which is maybe only updated every sv_fps ?
+						//So how to update G2API_GetBoltMatrix more often?
+					}
+					level.time = savedLevelTime;
+				}
+				else {
+					WP_SaberPositionUpdate(ent, &ent->client->pers.cmd); //Wew ok, so this is where sv_fps controls saber?
+				}
+#else
 				WP_SaberPositionUpdate(ent, &ent->client->pers.cmd);
+#endif
 				WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
+
+				if (level.gametype == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.
+					if (ent->client->pers.stats.startTimeFlag) {
+						const float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);//Is this before snapvector??
+						ent->client->pers.stats.displacementFlag += xyspeed/sv_fps.value;
+						ent->client->pers.stats.displacementFlagSamples++;
+
+						if (xyspeed > ent->client->pers.stats.topSpeedFlag)
+							ent->client->pers.stats.topSpeedFlag = xyspeed;
+					}
+					else {
+						ent->client->pers.stats.displacementFlag = 0;
+						ent->client->pers.stats.topSpeedFlag = 0;
+						ent->client->pers.stats.displacementFlagSamples = 0;
+					}
+				}
+				if (ent->client->pers.stats.startTime) {
+					float xyspeed = 0.0f;
+					if (ent->client->ps.m_iVehicleNum) {
+						gentity_t *currentVeh = &g_entities[ent->client->ps.m_iVehicleNum];
+
+						if (currentVeh->client)
+							xyspeed = sqrt(currentVeh->client->ps.velocity[0] * currentVeh->client->ps.velocity[0] + currentVeh->client->ps.velocity[1] * currentVeh->client->ps.velocity[1]);
+					}
+					else
+						xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
+					ent->client->pers.stats.displacement += xyspeed/sv_fps.value;
+					ent->client->pers.stats.displacementSamples++;
+					if (xyspeed > ent->client->pers.stats.topSpeed)
+						ent->client->pers.stats.topSpeed = xyspeed; //uhh, round?           
+				}	
 			}
 
 			if (g_allowNPC.integer)
@@ -3336,6 +3978,37 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		G_RunThink( ent );
+
+	//unlagged - backward reconciliation #2
+	// NOW run the missiles, with all players backward-reconciled
+	// to the positions they were in exactly 50ms ago, at the end
+	// of the last server frame
+	
+	/*
+	if (g_unlagged.integer & UNLAGGED_PROJ_REC)
+	{
+		G_TimeShiftAllClients( level.previousTime, NULL );
+
+		ent = &g_entities[0];
+		for (i=0 ; i<level.num_entities ; i++, ent++) {
+			if ( !ent->inuse ) {
+				continue;
+			}
+
+			// temporary entities don't think
+			if ( ent->freeAfterEvent ) {
+				continue;
+			}
+
+			if ( ent->s.eType == ET_MISSILE ) {
+				G_RunMissile( ent );
+			}
+		}
+
+		G_UnTimeShiftAllClients( NULL );
+	}
+//unlagged - backward reconciliation #2
+*/
 
 		if (g_allowNPC.integer)
 		{
@@ -3396,6 +4069,9 @@ void G_RunFrame( int levelTime ) {
 	// for tracking changes
 	CheckCvars();
 
+	//
+	DropVoteTimeouts();
+
 #ifdef _G_FRAME_PERFANAL
 	iTimer_GameChecks = trap->PrecisionTimer_End(timer_GameChecks);
 #endif
@@ -3432,6 +4108,13 @@ void G_RunFrame( int levelTime ) {
 		iTimer_GameChecks,
 		iTimer_Queues);
 #endif
+
+//unlagged - backward reconciliation #4
+	// record the time at the end of this frame - it should be about
+	// the time the next frame begins - when the server starts
+	// accepting commands from connected clients
+	level.frameStartTime = trap->Milliseconds();
+//unlagged - backward reconciliation #4
 
 	g_LastFrameTime = level.time;
 }
@@ -3771,4 +4454,137 @@ Q_EXPORT intptr_t vmMain( int command, intptr_t arg0, intptr_t arg1, intptr_t ar
 	}
 
 	return -1;
+}
+
+static void G_AddSingleBox( vec3_t mins, vec3_t maxs ) {
+	gentity_t *ent = G_Spawn(qtrue);
+	ent->r.contents = CONTENTS_SOLID;
+	VectorAverage( mins, maxs, ent->r.currentOrigin );
+	VectorSubtract( mins, ent->r.currentOrigin, ent->r.mins );
+	VectorSubtract( maxs, ent->r.currentOrigin, ent->r.maxs );
+	VectorCopy( ent->r.currentOrigin, ent->s.origin );
+	VectorCopy( ent->s.origin, ent->s.pos.trBase );
+	ent->s.pos.trType = TR_STATIONARY;
+	trap->LinkEntity( (sharedEntity_t *)ent );
+	// needs to be solid during link for solid calculation
+	ent->r.contents = CONTENTS_PLAYERCLIP;
+
+	//Check if its a box only for racemode players?
+	//Set some flag
+	//Check Later in collision tests.. idk?
+
+	{
+		int x, zd, zu;
+		vec3_t bmins, bmaxs;
+		// encoded bbox
+		x = (ent->s.solid & 255);
+		zd = ((ent->s.solid>>8) & 255);
+		zu = ((ent->s.solid>>16) & 255) - 32;
+
+		bmins[0] = bmins[1] = -x;
+		bmaxs[0] = bmaxs[1] = x;
+		bmins[2] = -zd;
+		bmaxs[2] = zu;
+		
+		if ( developer.integer ) {
+			Com_Printf( "Loaded box entity %d\n", ent->s.number );
+			Com_Printf( "mins   %f %f %f\norigin %f %f %f\nmaxs   %f %f %f\nsolid: %d\nbmins   %f %f %f\nbmaxs   %f %f %f\n",
+				ent->r.mins[0], ent->r.mins[1], ent->r.mins[2],
+				ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2],
+				ent->r.maxs[0], ent->r.maxs[1], ent->r.maxs[2],
+				ent->s.solid,
+				bmins[0], bmins[1], bmins[2],
+				bmaxs[0], bmaxs[1], bmaxs[2] );
+		}
+	}
+}
+
+static void G_AddBox( vec3_t mins, vec3_t maxs ) {
+	// restrictions on clientside prediction - x,y must be equal and symmetric, and must be <= 255
+	// z must be between -255 and 223 (corner case if all are at limit, so use 222 to avoid that issue)
+	//fuck, i dont care if its predicted i want to make huge ceilings without entity limit errors
+	vec3_t singleMins, singleMaxs;
+	int xylen = Q_min(maxs[0] - mins[0], maxs[1] - mins[1]);//min( min( 510, maxs[0] - mins[0] ), maxs[1] - mins[1] );
+	int zlen =  maxs[2] - mins[2];//min( 444, maxs[2] - mins[2] );
+	for ( singleMins[0] = mins[0]; ; singleMins[0] += Q_min( xylen, Q_max( 0, maxs[0] - xylen - singleMins[0] ) ) ) {
+		singleMaxs[0] = singleMins[0] + xylen;
+		for ( singleMins[1] = mins[1]; ; singleMins[1] += Q_min( xylen, Q_max( 0, maxs[1] - xylen - singleMins[1] ) ) ) {
+			singleMaxs[1] = singleMins[1] + xylen;
+			for ( singleMins[2] = mins[2]; ; singleMins[2] += Q_min( zlen, Q_max( 0, maxs[2] - zlen - singleMins[2] ) ) ) {
+				singleMaxs[2] = singleMins[2] + zlen;
+				G_AddSingleBox( singleMins, singleMaxs );
+				if ( singleMins[2] + zlen >= maxs[2] ) {
+					break;
+				}
+			}
+			if ( singleMins[1] + xylen >= maxs[1] ) {
+				break;
+			}
+		}
+		if ( singleMins[0] + xylen >= maxs[0] ) {
+			break;
+		}
+	}
+}
+
+static void G_SpawnHoleFixes( void ) {
+	char mapname[MAX_QPATH], filename[MAX_QPATH];
+	int len;
+	fileHandle_t f;
+	char info[1024] = {0};
+
+	trap->GetServerinfo(info, sizeof(info));
+	Com_sprintf( mapname, sizeof(mapname), "%s", Info_ValueForKey(info, "mapname") );
+	// note: only / is replaced with _
+	Q_strstrip( mapname, "/\n\r;:.?*<>|\\\"", "_" );
+	Com_sprintf( filename, sizeof(filename), "%s_holes.cfg", mapname );
+	len = trap->FS_Open( filename, &f, FS_READ );
+	if ( len != -1 ) {
+		// read mins, maxs out of file
+		char **cursor;
+		char *text = (char *) calloc(len + 1, 1);
+		int i;
+		vec3_t mins;
+		vec3_t maxs;
+		qboolean ended = qfalse;
+		cursor = &text;
+		trap->FS_Read( text, len, f );
+		// read contents, parse out values
+		COM_BeginParseSession( filename );
+		while ( !ended ) {
+			for ( i = 0; i < 3; i++ ) {
+				char *token = COM_ParseExt( (const char **)cursor, qtrue );
+				if (!token || !*token) {
+					ended = qtrue;
+					break;
+				}
+				mins[i] = atof( token );
+			}
+			for ( i = 0; i < 3; i++ ) {
+				char *token = COM_ParseExt( (const char **)cursor, qtrue );
+				if ( !token || !*token ) {
+					ended = qtrue;
+					break;
+				}
+				maxs[i] = atof( token );
+			}
+			if ( !ended ) {
+				// fix so mins is actually mins and maxs is actually maxs
+				for (i = 0; i < 3; i++) {
+					int temp = Q_max( mins[i], maxs[i] ); //this should be float? double?
+					mins[i] = Q_min( mins[i], maxs[i] );
+					maxs[i] = temp;
+				}
+				G_AddBox( mins, maxs );
+				Com_Printf( "Loaded box entity %f %f %f %f %f %f from file %s\n",
+					mins[0], mins[1], mins[2],
+					maxs[0], maxs[1], maxs[2],
+					filename );
+			}
+		}
+		free( text );
+		trap->FS_Close( f );
+	} else {
+		Com_Printf( "Failed to open file %s\n", filename );
+	}
 }

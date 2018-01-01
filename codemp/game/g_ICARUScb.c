@@ -1921,7 +1921,7 @@ static qboolean Q3_SetTeleportDest( int entID, vec3_t org )
 	{
 		if ( SpotWouldTelefrag2( teleEnt, org ) )
 		{
-			gentity_t *teleporter = G_Spawn();
+			gentity_t *teleporter = G_Spawn(qtrue);
 
 			G_SetOrigin( teleporter, org );
 			teleporter->r.ownerNum = teleEnt->s.number;
@@ -1970,6 +1970,7 @@ static void Q3_SetOrigin( int entID, vec3_t origin )
 		ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 
 		ent->client->ps.eFlags ^= EF_TELEPORT_BIT;
+		G_ResetTrail( ent );//unlagged
 
 //		G_KillBox (ent);
 	}
@@ -5138,7 +5139,7 @@ static qboolean Q3_SetSolid( int entID, qboolean solid)
 		ent->r.contents = CONTENTS_BODY;
 		if ( SpotWouldTelefrag2( ent, ent->r.currentOrigin ) )
 		{
-			gentity_t *solidifier = G_Spawn();
+			gentity_t *solidifier = G_Spawn(qtrue);
 
 			solidifier->r.ownerNum = ent->s.number;
 

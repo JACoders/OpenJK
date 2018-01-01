@@ -42,12 +42,19 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef _GAME
 	extern void G_CheapWeaponFire(int entNum, int ev);
 	extern qboolean TryGrapple(gentity_t *ent); //g_cmds.c
-#endif // _GAME
+#elif defined _CGAME
+	void PM_CosbyBot();
+	extern int cg_dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Dueling
+#endif
 
 extern qboolean BG_FullBodyTauntAnim( int anim );
 extern float PM_WalkableGroundDistance(void);
 extern qboolean PM_GroundSlideOkay( float zNormal );
 extern saberInfo_t *BG_MySaber( int clientNum, int saberNum );
+
+#ifdef _GAME
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+#endif
 
 pmove_t		*pm;
 pml_t		pml;
@@ -190,6 +197,81 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	840
 };
 
+static int GetFlipkick(playerState_t *ps) {
+	//if (!ps) //?
+		//return;
+	#if _GAME
+		if (ps->duelInProgress) {
+			if (dueltypes[ps->clientNum] == 0) { //NF.. man this sucks.. fucks up JA+ nf duels
+				return 0;
+			}
+		}
+		return g_flipKick.integer;
+#else
+		if (cgs.isJAPro) {
+			if (ps->duelInProgress) {
+				if (cg_dueltypes[ps->clientNum] == 1) { //NF 
+					return 0;
+				}
+			}
+			if (cgs.jcinfo & JAPRO_CINFO_FLIPKICK) { 
+				if (cgs.jcinfo & JAPRO_CINFO_FIXSIDEKICK)
+					return 3;
+				return 2; //1 ans 2 are the same thing clientside...hmm
+			}
+		}
+		if (cgs.isJAPlus && (cgs.cinfo & JAPLUS_CINFO_FLIPKICK))
+			return 1;
+
+		return 0;
+#endif
+}
+
+static int GetFixRoll(playerState_t *ps) {
+	//If we are dueling saber only and duels are SP damages and FFA is mp damages..
+		//return 0
+	//If we are dueling force and duels are MP damages and FFA is sp damages
+		//return 3 ?
+
+	//Problem: client does not know what damages are set..
+	//Would have to network this.. if we want to let servers do jk2 roll in NF duels, or shortroll in FF duels..
+
+#if _GAME
+		if (ps->stats[STAT_RACEMODE])
+			return 3;
+		if (ps->duelInProgress) {
+			if (dueltypes[ps->clientNum] == 0) { //NF 
+				return 0;
+			}
+			if (dueltypes[ps->clientNum] == 1) { //FF
+				return 3;
+			}
+		}
+		return g_fixRoll.integer;
+#else
+		if (cgs.isJAPro) {
+			if (ps->stats[STAT_RACEMODE])
+				return 3;
+			if (ps->duelInProgress) {
+				if (cg_dueltypes[ps->clientNum] == 1) { //NF 
+					return 0;
+				}
+				if (cg_dueltypes[ps->clientNum] == 2) { //FF
+					return 3;
+				}
+			}
+		}
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))
+			return 1;
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL2) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL2))
+			return 2;
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL3) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL3))
+			return 3;
+		return 0;
+#endif
+}
+
+
 //rww - Get a pointer to the bgEntity by the index
 bgEntity_t *PM_BGEntForNum( int num )
 {
@@ -258,6 +340,21 @@ qboolean BG_KnockDownable(playerState_t *ps)
 	return qtrue;
 }
 
+qboolean BG_CanJetpack(playerState_t *ps)
+{
+	if (!(ps->stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
+		return qfalse;
+	if (ps->jetpackFuel < 10)
+		return qfalse;
+	if (BG_SaberInSpecial(ps->saberMove))
+		return qfalse;
+	if (BG_InRoll(ps, ps->legsAnim))
+		return qfalse;
+	if (BG_InSpecialJump(ps->legsAnim))
+		return qfalse;	
+	return qtrue;
+}
+
 //hacky assumption check, assume any client non-humanoid is a rocket trooper
 static QINLINE qboolean PM_IsRocketTrooper(void)
 {
@@ -271,6 +368,37 @@ static QINLINE qboolean PM_IsRocketTrooper(void)
 	*/
 
 	return qfalse;
+}
+
+int PM_GetMovePhysics(void)
+{
+	//if (!pm || !pm->ps)
+		//return 1;
+#if _GAME
+	if (pm->ps->stats[STAT_RACEMODE])
+		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
+	else if ((g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP)
+		return (g_movementStyle.integer);
+	else if (g_movementStyle.integer < 0)
+		return 0;
+	else if (g_movementStyle.integer >= MV_NUMSTYLES)
+		return 1;
+#else
+	if (!cgs.isJAPro)
+		return 1;
+	return pm->ps->stats[STAT_MOVEMENTSTYLE];
+	/*
+	else if (pm->ps->stats[STAT_RACEMODE])
+		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
+	else if (cgs.jcinfo & JAPRO_CINFO_CPM)
+		return 3;
+	else if (cgs.jcinfo & JAPRO_CINFO_HL2)
+		return 2;
+	else if (cgs.jcinfo & JAPRO_CINFO_NOSTRAFE)
+		return 0;
+		*/
+#endif
+	return 1;
 }
 
 int PM_GetSaberStance(void)
@@ -762,6 +890,20 @@ void PM_HoverTrace( void )
 	{
 		int traceContents;
 		float minNormal = pVeh->m_pVehicleInfo->maxSlope;
+		float realMinNormal = 0.5f;
+		int curTime;
+#ifdef _GAME
+		curTime = level.time;
+#else
+		curTime = pm->cmd.serverTime;
+#endif
+
+		if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, let it climb steeper things because this is annoying. RACESWOOP
+			minNormal = 0.5f; //Max slope steepness before it stops hovoring you up - used to be 0.65
+			realMinNormal = 0.7f; //Max slope steepness before you are unable to climb it at all - used to be 0.5
+			//Before, any slope that you could climb up, you could also hovor boost up..?
+			//now you can only hovor boost up slopes that you could already climb before? and you can now climb steeper slopes than before?
+		}
 
 		point[0] = pm->ps->origin[0];
 		point[1] = pm->ps->origin[1];
@@ -778,8 +920,8 @@ void PM_HoverTrace( void )
 			traceContents |= (CONTENTS_WATER|CONTENTS_SLIME|CONTENTS_LAVA);
 		}
 		pm->trace( trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, traceContents );
-		if (trace->plane.normal[0] > 0.5f || trace->plane.normal[0] < -0.5f ||
-			trace->plane.normal[1] > 0.5f || trace->plane.normal[1] < -0.5f)
+		if ((trace->plane.normal[0] > realMinNormal || trace->plane.normal[0] < -realMinNormal ||
+			trace->plane.normal[1] > realMinNormal || trace->plane.normal[1] < -realMinNormal) && (!pVeh->m_iGravTime || curTime >= pVeh->m_iGravTime))
 		{ //steep slanted hill, don't go up it.
 			float d = fabs(trace->plane.normal[0]);
 			float e = fabs(trace->plane.normal[1]);
@@ -927,7 +1069,10 @@ void PM_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce ) {
 	float	change;
 	float	oldInZ;
 	int		i;
-
+	
+	//pass in entitynum of hit entity?
+	//dotproduct instead of clipvelocity to the normal?
+	
 	if ( (pm->ps->pm_flags&PMF_STUCK_TO_WALL) )
 	{//no sliding!
 		VectorCopy( in, out );
@@ -969,8 +1114,7 @@ Handles both ground friction and water friction
 static void PM_Friction( void ) {
 	vec3_t	vec;
 	float	*vel;
-	float	speed, newspeed, control;
-	float	drop;
+	float	speed, newspeed, control, drop, realfriction = pm_friction;
 	bgEntity_t *pEnt = NULL;
 
 	vel = pm->ps->velocity;
@@ -998,6 +1142,9 @@ static void PM_Friction( void ) {
 	{
 		pEnt = pm_entSelf;
 	}
+
+	if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 6 || PM_GetMovePhysics() == 8)
+		realfriction = 8.0f;
 
 	// apply ground friction, even if on ladder
 	if (pm_flying != FLY_VEHICLE &&
@@ -1044,7 +1191,7 @@ static void PM_Friction( void ) {
 				// if getting knocked back, no friction
 				if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
 					control = speed < pm_stopspeed ? pm_stopspeed : speed;
-					drop += control*pm_friction*pml.frametime;
+					drop += control*realfriction*pml.frametime;
 				}
 			}
 		}
@@ -1066,7 +1213,20 @@ static void PM_Friction( void ) {
 	// If on a client then there is no friction
 	else if ( pm->ps->groundEntityNum < MAX_CLIENTS )
 	{
-		drop = 0;
+#ifdef _GAME
+		if (g_slideOnPlayer.integer)
+#else
+		if (cgs.isJAPro) {
+			if (cgs.jcinfo & JAPRO_CINFO_HEADSLIDE)
+				drop = 0;
+		}
+		else if (cgs.isJAPlus) {
+			if (cgs.cinfo & JAPLUS_CINFO_HEADSLIDE)
+				drop = 0;
+		}
+		else
+#endif
+			drop = 0;
 	}
 
 	if ( pm->ps->pm_type == PM_SPECTATOR || pm->ps->pm_type == PM_FLOAT )
@@ -1081,6 +1241,13 @@ static void PM_Friction( void ) {
 		}
 	}
 
+#ifdef _GAME
+	if (pm->ps->pm_type != PM_SPECTATOR && (pm->ps->powerups[PW_REDFLAG] || pm->ps->powerups[PW_BLUEFLAG] || pm->ps->powerups[PW_NEUTRALFLAG])) {
+		if ( !pml.groundTrace.contents )
+			drop = speed*g_flagDrag.value*0.1*pml.frametime;
+	}
+#endif
+
 	// scale the velocity
 	newspeed = speed - drop;
 	if (newspeed < 0) {
@@ -1091,6 +1258,32 @@ static void PM_Friction( void ) {
 	VectorScale( vel, newspeed, vel );
 }
 
+void PM_AirAccelerate (vec3_t wishdir, float wishspeed, float accel)
+{
+        int		i;
+        float	addspeed, accelspeed, currentspeed, wishspd = wishspeed;
+                
+		if (pm->ps->pm_type == PM_DEAD)
+			return;
+		if (pm->ps->pm_flags & PMF_TIME_WATERJUMP)
+			return;
+        
+        if (wishspd > 30)
+                wishspd = 30;
+
+        currentspeed = DotProduct (pm->ps->velocity, wishdir);
+        addspeed = wishspd - currentspeed;// See how much to add
+        if (addspeed <= 0)// If not adding any, done.
+                return;
+
+        accelspeed = accel * wishspeed * pml.frametime * 4.0f;// QUAKECLASSIC: accelspeed = accel * wishspeed * pmove->frametime * pmove->friction;
+        
+        if (accelspeed > addspeed) // Cap it
+                accelspeed = addspeed;
+        
+        for (i=0 ; i<3 ; i++)// Adjust pmove vel.
+               pm->ps->velocity[i] += accelspeed*wishdir[i];        
+}
 
 /*
 ==============
@@ -1101,10 +1294,7 @@ Handles user intended acceleration
 */
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
-	if (pm->gametype != GT_SIEGE
-		|| pm->ps->m_iVehicleNum
-		|| pm->ps->clientNum >= MAX_CLIENTS
-		|| pm->ps->pm_type != PM_NORMAL)
+	if ((PM_GetMovePhysics() != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
 	{ //standard method, allows "bunnyhopping" and whatnot
 		int			i;
 		float		addspeed, accelspeed, currentspeed;
@@ -1154,7 +1344,34 @@ static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 	}
 }
 
+void CPM_PM_Aircontrol (pmove_t *pm, vec3_t wishdir, float wishspeed )
+{
+	float	zspeed, speed, dot, k;
+	int		i;
 
+	if ( (pm->ps->movementDir && pm->ps->movementDir !=4) || wishspeed == 0.0) 
+		return; // can't control movement if not moveing forward or backward
+
+	zspeed = pm->ps->velocity[2];
+	pm->ps->velocity[2] = 0;
+	speed = VectorNormalize(pm->ps->velocity);
+
+	dot = DotProduct(pm->ps->velocity,wishdir);
+	k = 32; 
+	k *= 150.0f*dot*dot*pml.frametime;//cpm_pm_aircontrol
+	
+	
+	if (dot > 0) {	// we can't change direction while slowing down
+		for (i=0; i < 2; i++)
+			pm->ps->velocity[i] = pm->ps->velocity[i]*speed + wishdir[i]*k;
+		VectorNormalize(pm->ps->velocity);
+	}
+	
+	for (i=0; i < 2; i++) 
+		pm->ps->velocity[i] *=speed;
+
+	pm->ps->velocity[2] = zspeed;
+}
 
 /*
 ============
@@ -1172,6 +1389,12 @@ static float PM_CmdScale( usercmd_t *cmd ) {
 	int		umove = 0; //cmd->upmove;
 			//don't factor upmove into scaling speed
 
+#if _SPPHYSICS
+	if (PM_GetMovePhysics() == MV_SP) {
+		umove = cmd->upmove;
+	}
+#endif
+
 	max = abs( cmd->forwardmove );
 	if ( abs( cmd->rightmove ) > max ) {
 		max = abs( cmd->rightmove );
@@ -1183,8 +1406,7 @@ static float PM_CmdScale( usercmd_t *cmd ) {
 		return 0;
 	}
 
-	total = sqrt( (float)(cmd->forwardmove * cmd->forwardmove
-		+ cmd->rightmove * cmd->rightmove + umove * umove) );
+	total = sqrt((float)(cmd->forwardmove * cmd->forwardmove + cmd->rightmove * cmd->rightmove + umove * umove));
 	scale = (float)pm->ps->speed * max / ( 127.0 * total );
 
 	return scale;
@@ -1258,6 +1480,9 @@ qboolean PM_ForceJumpingUp(void)
 	{
 		return qfalse;
 	}
+
+	if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8))
+		return qfalse;
 
 	if (!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{
@@ -1541,7 +1766,8 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 						}
 					}
 				}
-				ucmd->forwardmove = 0;
+				if (!pmove_fixed.integer && !ps->stats[STAT_RACEMODE])//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
+					ucmd->forwardmove = 0;
 				return qtrue;
 			}
 		}
@@ -1618,7 +1844,37 @@ qboolean PM_AdjustAngleForWallJump( playerState_t *ps, usercmd_t *ucmd, qboolean
 			return qfalse;
 			break;
 		}
-		if ( pm->debugMelee )
+//[JAPRO - Serverside + Clientside - Physics - Change g_debugmelee 1 so that it has kungfu moves but keeps normal wallgrab.  Create g_debugmelee 2 for kung fu moves and infinite wallgrab - Start]
+#ifdef _GAME
+		if (1) //uhhh
+#else
+		if (cgs.isJAPlus || cgs.isJAPro)
+#endif
+		{
+			if ( pm->debugMelee > 1)
+			{//uber-skillz
+				if ( ucmd->upmove > 0 )
+				{//hold on until you let go manually
+					if ( BG_InReboundHold( ps->legsAnim ) )
+					{//keep holding
+						if ( ps->legsTimer < 150 )
+						{
+							ps->legsTimer = 150;
+						}
+					}
+					else
+					{//if got to hold part of anim, play hold anim
+						if ( ps->legsTimer <= 300 )
+						{
+							ps->saberHolstered = 2;
+							PM_SetAnim( SETANIM_BOTH, BOTH_FORCEWALLRELEASE_FORWARD+(ps->legsAnim-BOTH_FORCEWALLHOLD_FORWARD), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+							ps->legsTimer = ps->torsoTimer = 150;
+						}
+					}
+				}
+			}
+		}
+		else if ( pm->debugMelee )
 		{//uber-skillz
 			if ( ucmd->upmove > 0 )
 			{//hold on until you let go manually
@@ -1640,6 +1896,7 @@ qboolean PM_AdjustAngleForWallJump( playerState_t *ps, usercmd_t *ucmd, qboolean
 				}
 			}
 		}
+//[JAPRO - Serverside + Clientside - Physics - Change g_debugmelee 1 so that it has kungfu moves but keeps normal wallgrab.  Create g_debugmelee 2 for kung fu moves and infinite wallgrab - End]
 		VectorMA( ps->origin, dist, checkDir, traceTo );
 		pm->trace( &trace, ps->origin, mins, maxs, traceTo, ps->clientNum, MASK_PLAYERSOLID );
 		if ( //ucmd->upmove <= 0 &&
@@ -1757,6 +2014,20 @@ PM_CheckJump
 static qboolean PM_CheckJump( void )
 {
 	qboolean allowFlips = qtrue;
+	bgEntity_t	*kickedEnt;//JAPRO - Serverside - Allow npcs to be flipkicked
+	int movestyle;
+
+//JAPRO - Serverside - Set up client to check for lastkicktime flood protect - Start
+#ifdef _GAME
+    gclient_t *client = NULL;
+    {
+		int clientNum = pm->ps->clientNum;
+		if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+			client = g_entities[clientNum].client;
+		}
+	}
+#endif
+//JAPRO - Serverside - Set up client to check for lastkicktime flood protect - End
 
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{
@@ -1769,6 +2040,8 @@ static qboolean PM_CheckJump( void )
 		}
 	}
 
+	movestyle = PM_GetMovePhysics();
+
 	if (pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
 		pm->ps->forceHandExtend == HANDEXTEND_PRETHROWN ||
 		pm->ps->forceHandExtend == HANDEXTEND_POSTTHROWN)
@@ -1780,6 +2053,13 @@ static qboolean PM_CheckJump( void )
 	{ //there's no actual jumping while we jetpack
 		return qfalse;
 	}
+
+#ifdef _GAME
+	if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+		return qfalse;
 
 	//Don't allow jump until all buttons are up
 	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
@@ -1887,6 +2167,22 @@ static qboolean PM_CheckJump( void )
 		pm->ps->forceJumpFlip = qfalse;
 		return qtrue;
 	}
+
+#if _GAME
+	if (g_showJumpSpot.integer) {
+		if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) == 0 && pm->cmd.upmove>=10) {
+			vec3_t start;
+			vec3_t end;
+			VectorCopy(pm->ps->origin, end);
+			VectorCopy(pm->ps->origin, start);
+			start[2] -= 64;
+			end[2] += 256;
+
+			G_TestLine(start, end, 0x00000ff, 60000);
+		}
+	}
+#endif
+
 #if METROID_JUMP
 	if ( pm->waterlevel < 2 )
 	{
@@ -1895,17 +2191,41 @@ static qboolean PM_CheckJump( void )
 			if ( PM_ForceJumpingUp() )
 			{//holding jump in air
 				float curHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
+				float realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];
+				if (movestyle == 2 || movestyle == 5) { //If we have forcejump rampjump, we should be able to jump higher
+					realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / (float)JUMP_VELOCITY);
+					//Com_Printf("Max Jump Height %.1f\n", realForceJumpHeight);
+				}
 				//check for max force jump level and cap off & cut z vel
 				if ( ( curHeight<=forceJumpHeight[0] ||//still below minimum jump height
-						(pm->ps->fd.forcePower&&pm->cmd.upmove>=10) ) &&////still have force power available and still trying to jump up
-					curHeight < forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] &&
+						(pm->ps->fd.forcePower&&pm->cmd.upmove>=10) ) &&////still have force power available and still trying to jump up 
+					curHeight < realForceJumpHeight &&
 					pm->ps->fd.forceJumpZStart)//still below maximum jump height
 				{//can still go up
+#ifdef _CGAME
+					if (cg_jumpHeight.integer && curHeight + (pm->ps->velocity[2] * (float)cg.frametime / 1000.0f) > cg_jumpHeight.integer) //idk
+						trap->SendConsoleCommand("-moveup\n");
+#endif
 					if ( curHeight > forceJumpHeight[0] )
 					{//passed normal jump height  *2?
 						if ( !(pm->ps->fd.forcePowersActive&(1<<FP_LEVITATION)) )//haven't started forcejump yet
 						{
-							//start force jump
+//JAPRO - Serverside - OnlyBhop - Start
+#ifdef _GAME
+							if ((g_onlyBhop.integer == 1) || ((g_onlyBhop.integer > 1) && client->pers.onlyBhop) || client->ps.stats[STAT_ONLYBHOP])
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && cg_onlyBhop.integer) || pm->ps->stats[STAT_ONLYBHOP]))
+							if (cgs.isJAPro)
+#endif
+							{
+								pm->cmd.upmove = 0;
+								return qfalse;
+							}
+							else
+//JAPRO - Serverside - OnlyBhop - End
+							{
+								//start force jump
 							pm->ps->fd.forcePowersActive |= (1<<FP_LEVITATION);
 							pm->ps->fd.forceJumpSound = 1;
 							//play flip
@@ -1988,6 +2308,7 @@ static qboolean PM_CheckJump( void )
 								}
 							}
 						}
+					}
 						else
 						{ //jump is already active (the anim has started)
 							if ( pm->ps->legsTimer < 1 )
@@ -2023,12 +2344,23 @@ static qboolean PM_CheckJump( void )
 						}
 					}
 
-					//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
-					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
-					pm->ps->velocity[2] /= 10;
-					pm->ps->velocity[2] += JUMP_VELOCITY;
+					if (movestyle == 2 || movestyle == 5) {//Forcejump rampjump
+						//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
+						float realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / (float)JUMP_VELOCITY);
+						
+						pm->ps->velocity[2] = (realForceJumpHeight-curHeight)/realForceJumpHeight*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
+						pm->ps->velocity[2] /= 10;//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
+
+						pm->ps->velocity[2] += pm->ps->stats[STAT_LASTJUMPSPEED];
+					}
+					else {
+						pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
+						pm->ps->velocity[2] /= 10;
+						pm->ps->velocity[2] += JUMP_VELOCITY;
+					}
 					pm->ps->pm_flags |= PMF_JUMP_HELD;
 				}
+				/*
 				else if ( curHeight > forceJumpHeight[0] && curHeight < forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] - forceJumpHeight[0] )
 				{//still have some headroom, don't totally stop it
 					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
@@ -2036,18 +2368,21 @@ static qboolean PM_CheckJump( void )
 						pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
+				*/
 				else
 				{
-					//pm->ps->velocity[2] = 0;
-					//rww - changed for the sake of balance in multiplayer
-
-					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
+					if ( pm->ps->velocity[2] > JUMP_VELOCITY) //Also add a check for pjk/wsw? 
+						//At the end of a forcejump, if we are still going up super fast we dont want to immediately slow down.. would take like 5000 speed rampjump for this to show up though
 					{
-						pm->ps->velocity[2] = JUMP_VELOCITY;
+							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
-				pm->cmd.upmove = 0;
-				return qfalse;
+				if (movestyle != MV_QW && movestyle != MV_CPM && movestyle != MV_Q3 && movestyle != MV_PJK && movestyle != MV_WSW && movestyle != MV_RJQ3 && movestyle != MV_RJCPM) {
+					{
+						pm->cmd.upmove = 0; // change this to allow hold to jump?
+						return qfalse;
+					}
+				}
 			}
 		}
 	}
@@ -2059,12 +2394,19 @@ static qboolean PM_CheckJump( void )
 		return qfalse;
 	}
 
+	if (movestyle == MV_PJK && pm->ps->stats[STAT_JUMPTIME] > 375) //400 = Just jumped.  Should probably floodprotect all styles but w.e.
+		return qfalse;
+
 	// must wait for jump to be released
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD )
 	{
-		// clear upmove so cmdscale doesn't lower running speed
-		pm->cmd.upmove = 0;
-		return qfalse;
+		// clear upmove so cmdscale doesn't lower running speed - LODA FIXME - no idea what this does lol
+		if (movestyle != MV_QW && movestyle != MV_CPM && movestyle != MV_Q3 && movestyle != MV_PJK && movestyle != MV_WSW && movestyle != MV_RJQ3 && movestyle != MV_RJCPM)
+		{
+			pm->cmd.upmove = 0;
+			return qfalse;
+		}
+		//hold to jump?
 	}
 
 	if ( pm->ps->gravity <= 0 )
@@ -2089,12 +2431,30 @@ static qboolean PM_CheckJump( void )
 		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE) &&
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
+		(movestyle != 3) &&
+		(movestyle != 4) &&
+		(movestyle != 6) &&
+		(movestyle != 7) &&
+		(movestyle != 8) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
 		qboolean allowWallRuns = qtrue;
 		qboolean allowWallFlips = qtrue;
-	//	qboolean allowFlips = qtrue;
+	//	qboolean allowFlips = qtrue; //loda fixme, why is this commented
 		qboolean allowWallGrabs = qtrue;
+
+#ifdef _GAME
+		if (pm->ps->stats[STAT_ONLYBHOP])
+#else
+		if (cgs.isJAPro && pm->ps->stats[STAT_ONLYBHOP])
+#endif
+		{
+			allowWallRuns = qfalse;
+			allowWallFlips = qfalse;
+			allowFlips = qfalse;
+			allowWallGrabs = qfalse;
+		}
+
 		if ( pm->ps->weapon == WP_SABER )
 		{
 			saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
@@ -2156,14 +2516,40 @@ static qboolean PM_CheckJump( void )
 						anim = BOTH_WALL_RUN_RIGHT;
 					}
 				}
+//JAPRO - Serverside + Clientside - Sidekick options - Start
 				else if ( pm->cmd.forwardmove == 0 )
-				{//wall-flip
-					if ( allowWallFlips )
-					{
-						vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-						anim = BOTH_WALL_FLIP_RIGHT;
-					}
+				{//wall-flip japro
+					#ifdef _GAME
+						if ((g_flipKick.integer < 2) && allowWallFlips)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_RIGHT;
+						}
+						else if ((g_flipKick.integer == 2) && allowWallFlips && (client->lastKickTime + 50 < level.time))
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_RIGHT;
+							client->lastKickTime = level.time;
+						}
+						else if ((g_flipKick.integer > 2) && allowWallFlips && pm->ps->legsAnim != BOTH_WALL_FLIP_RIGHT && pm->ps->legsAnim != BOTH_WALL_FLIP_LEFT)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_RIGHT;
+						}
+					#else
+						if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_FIXSIDEKICK) && allowWallFlips && pm->ps->legsAnim != BOTH_WALL_FLIP_RIGHT && pm->ps->legsAnim != BOTH_WALL_FLIP_LEFT)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_RIGHT;
+						}
+						else if (allowWallFlips)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_RIGHT;
+						}
+					#endif
 				}
+//JAPRO - Serverside + Clientside - Sidekick options - End
 			}
 			else if ( pm->cmd.rightmove < 0 && pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
 			{//strafing left
@@ -2175,14 +2561,40 @@ static qboolean PM_CheckJump( void )
 						anim = BOTH_WALL_RUN_LEFT;
 					}
 				}
+//JAPRO - Serverside + Clientside - Sidekick options - Start
 				else if ( pm->cmd.forwardmove == 0 )
-				{//wall-flip
-					if ( allowWallFlips )
-					{
-						vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-						anim = BOTH_WALL_FLIP_LEFT;
-					}
+				{//wall-flip japro
+					#ifdef _GAME
+						if ((g_flipKick.integer < 2) && allowWallFlips)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_LEFT;
+						}
+						else if ((g_flipKick.integer == 2) && allowWallFlips && (client->lastKickTime + 50 < level.time))
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_LEFT;
+							client->lastKickTime = level.time;
+						}
+						else if ((g_flipKick.integer > 2) && allowWallFlips && pm->ps->legsAnim != BOTH_WALL_FLIP_LEFT && pm->ps->legsAnim != BOTH_WALL_FLIP_RIGHT)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_LEFT;
+						}
+					#else
+						if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_FIXSIDEKICK) && allowWallFlips && pm->ps->legsAnim != BOTH_WALL_FLIP_LEFT && pm->ps->legsAnim != BOTH_WALL_FLIP_RIGHT)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_LEFT;
+						}
+						else if (allowWallFlips)
+						{
+							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+							anim = BOTH_WALL_FLIP_LEFT;
+						}
+					#endif
 				}
+//JAPRO - Serverside + Clientside - Sidekick options - End
 			}
 			else if ( pm->cmd.forwardmove < 0 && !(pm->cmd.buttons&BUTTON_ATTACK) )
 			{//backflip
@@ -2201,7 +2613,28 @@ static qboolean PM_CheckJump( void )
 				vec3_t	idealNormal={0}, wallNormal={0};
 				trace_t	trace;
 				qboolean doTrace = qfalse;
-				int contents = MASK_SOLID;//MASK_PLAYERSOLID;
+//JAPRO - Serverside + Clientside - Re add flipkick sidekick - Start
+				int contents;// = MASK_SOLID;//MASK_PLAYERSOLID;
+
+				if (GetFlipkick(pm->ps) > 0)
+					contents = MASK_PLAYERSOLID;
+				else 
+					contents = MASK_SOLID;
+/*
+#ifdef _GAME
+				if (g_flipKick.integer > 0)
+					contents = MASK_PLAYERSOLID;//MASK_PLAYERSOLID;
+				else
+					contents = MASK_SOLID;
+
+#else
+				if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK))
+					contents = MASK_PLAYERSOLID;//MASK_PLAYERSOLID; 
+				else 
+					contents = MASK_SOLID;//MASK_PLAYERSOLID; 
+#endif
+*/
+//JAPRO - Serverside + Clientside - Re add flipkick sidekick - End
 
 				VectorSet(mins, pm->mins[0],pm->mins[1],0);
 				VectorSet(maxs, pm->maxs[0],pm->maxs[1],24);
@@ -2271,15 +2704,25 @@ static qboolean PM_CheckJump( void )
 							VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
 						}
 
-						/*
+//JAPRO - Serverside + Clientside - Re add flipkick - Start
 						if ( doTrace && anim != BOTH_WALL_RUN_LEFT && anim != BOTH_WALL_RUN_RIGHT )
 						{
-							if (trace.entityNum < MAX_CLIENTS)
+							kickedEnt = PM_BGEntForNum(trace.entityNum);
+/*
+#ifdef _GAME
+							if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC))
+#else
+							if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
+#endif
+*/
+
+							if ((trace.entityNum < MAX_CLIENTS) || (GetFlipkick(pm->ps) && kickedEnt->s.eType == ET_NPC))
+
 							{
 								pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
 							}
 						}
-						*/
+//JAPRO - Serverside + Clientside - Re add flipkick - End
 
 						//up
 						if ( vertPush )
@@ -2434,8 +2877,9 @@ static qboolean PM_CheckJump( void )
 					return qfalse;
 				}
 			}
-			/*
-			else if ( pm->cmd.forwardmove > 0 //pushing forward
+
+#if 1
+			else if ( pm->cmd.forwardmove > 0 //pushing forward -- this is used for forward flipkicks i guess
 				&& pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1
 				&& pm->ps->velocity[2] > 200
 				&& PM_GroundDistance() <= 80 //unfortunately we do not have a happy ground timer like SP (this would use up more bandwidth if we wanted prediction workign right), so we'll just use the actual ground distance.
@@ -2456,118 +2900,139 @@ static qboolean PM_CheckJump( void )
 				VectorSubtract( pm->ps->origin, traceto, idealNormal );
 				VectorNormalize( idealNormal );
 
-				if ( trace.fraction < 1.0f )
-				{//there is a wall there
-					int parts = SETANIM_LEGS;
+//JAPRO - Serverside + Clientside - Re add flipkick and flipkickable npcs- Start
+				kickedEnt = PM_BGEntForNum(trace.entityNum);
 
-					pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
-					VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
-					pm->ps->velocity[2] += 128;
+				if (GetFlipkick(pm->ps) >= 1) {
+					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || (kickedEnt->s.eType == ET_NPC)) && (pm->ps->stats[STAT_DASHTIME] <= 0)) //ass
+					//Dont allow frontkicking within 200ms of being frontkicked?
 
-					if ( !pm->ps->weaponTime )
-					{
-						parts = SETANIM_BOTH;
-					}
-					PM_SetAnim( parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+//JAPRO - Serverside + Clientside - Re add flipkick and flipkickable npcs- End
+					{//there is a wall there
+						int parts = SETANIM_LEGS;
 
-					pm->ps->legsTimer -= 600; //I force this anim to play to the end to prevent landing on your head and suddenly flipping over.
+						pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
+						VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
+						pm->ps->velocity[2] += 128;
+
+						if ( !pm->ps->weaponTime )
+							parts = SETANIM_BOTH;
+
+						PM_SetAnim( parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+
+#ifdef _GAME
+						if (g_flipKick.integer > 2)
+							pm->ps->legsTimer = 0;
+						else 
+#endif
+							pm->ps->legsTimer -= 600; //I force this anim to play to the end to prevent landing on your head and suddenly flipping over.
 											  //It is a bit too long at the end though, so I'll just shorten it.
 
-					PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-					pm->cmd.upmove = 0;
-					pm->ps->fd.forceJumpSound = 1;
-					BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
+						PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
+						pm->cmd.upmove = 0;
+						pm->ps->fd.forceJumpSound = 1;
+						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 
-					if (trace.entityNum < MAX_CLIENTS)
-					{
+//JAPRO - Serverside + Clientside - Re add flipkick - Start
+						//if ((trace.entityNum < MAX_CLIENTS) || (GetFlipkick(pm->ps) && kickedEnt->s.eType == ET_NPC)) //well we already tested for this
+
+/*
+#ifdef _GAME
+						if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC))
+#else
+						if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
+#endif	
+*/
 						pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
 					}
+//JAPRO - Serverside + Clientside - Re add flipkick - End
 				}
 			}
-			*/
-			else if ( pm->cmd.forwardmove > 0 //pushing forward
-				&& pm->ps->fd.forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
-				&& pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1
+//JAPRO - Serverside + Clientside - Re add flipkick - End
+#endif
+
+#if 1
+			else if ( pm->cmd.forwardmove > 0 //pushing forward -- this is used for wallruns i guess?
+				//&& pm->ps->fd.forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period //JAPRO - Serverside + Clientside - Allow wallrun in rage recovery
+				&& pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 
 				&& PM_WalkableGroundDistance() <= 80 //unfortunately we do not have a happy ground timer like SP (this would use up more bandwidth if we wanted prediction workign right), so we'll just use the actual ground distance.
 				&& (pm->ps->legsAnim == BOTH_JUMP1 || pm->ps->legsAnim == BOTH_INAIR1 ) )//not in a flip or spin or anything
 			{//run up wall, flip backwards
-				if ( allowWallRuns )
-				{
+				if ( allowWallRuns ) {
 					//FIXME: have to be moving... make sure it's opposite the wall... or at least forward?
 					int wallWalkAnim = BOTH_WALL_FLIP_BACK1;
 					int parts = SETANIM_LEGS;
 					int contents = MASK_SOLID;//MASK_PLAYERSOLID;//CONTENTS_SOLID;
-					//qboolean kick = qtrue;
-					if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 )
-					{
+					//qboolean kick = qtrue;//JAPRO - Serverside + Clientside - Re add flipkick
+					vec3_t fwd, traceto, mins, maxs, fwdAngles;
+					trace_t	trace;
+					vec3_t	idealNormal;
+					bgEntity_t *traceEnt;
+
+					if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 ) {
 						wallWalkAnim = BOTH_FORCEWALLRUNFLIP_START;
 						parts = SETANIM_BOTH;
-						//kick = qfalse;
+						//kick = qfalse;//JAPRO - Serverside + Clientside - Re add flipkick
 					}
-					else
-					{
+					else {
 						if ( !pm->ps->weaponTime )
-						{
 							parts = SETANIM_BOTH;
-						}
 					}
-					//if ( PM_HasAnimation( pm->gent, wallWalkAnim ) )
-					if (1) //sure, we have it! Because I SAID SO.
-					{
-						vec3_t fwd, traceto, mins, maxs, fwdAngles;
-						trace_t	trace;
-						vec3_t	idealNormal;
-						bgEntity_t *traceEnt;
 
-						VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
-						VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
-						VectorSet(fwdAngles, 0, pm->ps->viewangles[YAW], 0.0f);
+					VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
+					VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
+					VectorSet(fwdAngles, 0, pm->ps->viewangles[YAW], 0.0f);
 
-						AngleVectors( fwdAngles, fwd, NULL, NULL );
-						VectorMA( pm->ps->origin, 32, fwd, traceto );
+					AngleVectors( fwdAngles, fwd, NULL, NULL );
+					VectorMA( pm->ps->origin, 32, fwd, traceto );
 
-						pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents );//FIXME: clip brushes too?
-						VectorSubtract( pm->ps->origin, traceto, idealNormal );
-						VectorNormalize( idealNormal );
-						traceEnt = PM_BGEntForNum(trace.entityNum);
-
-						if ( trace.fraction < 1.0f
-							&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
-						{//there is a wall there
-							pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
-							if ( wallWalkAnim == BOTH_FORCEWALLRUNFLIP_START )
-							{
-								pm->ps->velocity[2] = forceJumpStrength[FORCE_LEVEL_3]/2.0f;
-							}
-							else
-							{
-								VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
-								pm->ps->velocity[2] += 150.0f;
-							}
-							//animate me
-							PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-	//						pm->ps->pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
-							//again with the flags!
-							//G_SoundOnEnt( pm->gent, CHAN_BODY, "sound/weapons/force/jump.wav" );
-							//yucky!
-							PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-							pm->cmd.upmove = 0;
-							pm->ps->fd.forceJumpSound = 1;
-							BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
-
-							//kick if jumping off an ent
-							/*
-							if ( kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC) )
-							{ //kick that thang!
-								pm->ps->forceKickFlip = traceEnt->s.number+1;
-							}
-							*/
-							pm->cmd.rightmove = pm->cmd.forwardmove= 0;
+					pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents );//FIXME: clip brushes too?
+					VectorSubtract( pm->ps->origin, traceto, idealNormal );
+					VectorNormalize( idealNormal );
+					traceEnt = PM_BGEntForNum(trace.entityNum);
+						
+					if ( trace.fraction < 1.0f && ((trace.entityNum < ENTITYNUM_WORLD && traceEnt && traceEnt->s.solid != SOLID_BMODEL) || DotProduct(trace.plane.normal,idealNormal) > 0.7))
+					{//there is a wall there
+						pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
+						if ( wallWalkAnim == BOTH_FORCEWALLRUNFLIP_START )
+						{
+							pm->ps->velocity[2] = forceJumpStrength[FORCE_LEVEL_3]/2.0f;
 						}
+						else
+						{
+							VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
+							pm->ps->velocity[2] += 150.0f;
+						}
+						PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD ); //animate me
+						PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
+						pm->cmd.upmove = 0;
+						pm->ps->fd.forceJumpSound = 1;
+						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
+//JAPRO - Serverside + Clientside - Re add flipkick - Start
+#if 0
+						if (GetFlipkick(pm->ps) >= 1) {
+/*
+#ifdef _GAME
+						if (g_flipKick.integer >= 1) {
+#else
+						if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK)) {
+#endif
+*/
+							if (kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC)) {
+								pm->ps->forceKickFlip = traceEnt->s.number+1;
+								trap->SendServerCommand( -1, va("chat \"SPOT TWO Flipkick by %s, at time %i, his time %i, last kick time is %i, diff is %i\n\"", client->pers.netname, level.time, client->pers.cmd.serverTime, client->lastKickedByTime, client->lastKickedByTime - level.time));
+							}
+						}
+#endif
+//JAPRO - Serverside + Clientside - Re add flipkick - End
+							pm->cmd.rightmove = pm->cmd.forwardmove= 0;
 					}
 				}
 			}
-			else if ( (!BG_InSpecialJump( legsAnim )//not in a special jump anim
+
+#endif 
+
+			else if ( (!BG_InSpecialJump( legsAnim )//not in a special jump anim 
 						||BG_InReboundJump( legsAnim )//we're already in a rebound
 						||BG_InBackFlip( legsAnim ) )//a backflip (needed so you can jump off a wall behind you)
 					//&& pm->ps->velocity[2] <= 0
@@ -2654,35 +3119,38 @@ static qboolean PM_CheckJump( void )
 		}
 	}
 
-	/*
-	if ( pm->cmd.upmove > 0
-		&& (pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE)
-		&& !PM_IsRocketTrooper()
-		&& (pm->ps->weaponTime > 0||pm->cmd.buttons&BUTTON_ATTACK) )
-	{//okay, we just jumped and we're in an attack
-		if ( !BG_InRoll( pm->ps, pm->ps->legsAnim )
-			&& !PM_InKnockDown( pm->ps )
-			&& !BG_InDeathAnim(pm->ps->legsAnim)
-			&& !BG_FlippingAnim( pm->ps->legsAnim )
-			&& !PM_SpinningAnim( pm->ps->legsAnim )
-			&& !BG_SaberInSpecialAttack( pm->ps->torsoAnim )
-			&& ( BG_SaberInAttack( pm->ps->saberMove ) ) )
-		{//not in an anim we shouldn't interrupt
-			//see if it's not too late to start a special jump-attack
-			float animLength = PM_AnimLength( 0, (animNumber_t)pm->ps->torsoAnim );
-			if ( animLength - pm->ps->torsoTimer < 500 )
-			{//just started the saberMove
-				//check for special-case jump attacks
-				if ( pm->ps->fd.saberAnimLevel == FORCE_LEVEL_2 )
-				{//using medium attacks
-					if (PM_GroundDistance() < 32 &&
-						!BG_InSpecialJump(pm->ps->legsAnim))
-					{ //FLIP AND DOWNWARD ATTACK
-						//trace_t tr;
-
-						//if (PM_SomeoneInFront(&tr))
-						{
-							PM_SetSaberMove(PM_SaberFlipOverAttackMove());
+#ifdef _GAME
+	if ((g_tweakSaber.integer & ST_JK2RDFA) && !pm->ps->stats[STAT_RACEMODE])
+#else
+	if (((cgs.isJAPro && !pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA))))
+#endif
+	{
+		if ( pm->cmd.upmove > 0 
+			&& (pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE)
+			&& !PM_IsRocketTrooper()
+			&& (pm->ps->weaponTime > 0||pm->cmd.buttons&BUTTON_ATTACK) )
+		{//okay, we just jumped and we're in an attack
+			if ( !BG_InRoll( pm->ps, pm->ps->legsAnim )
+				&& !PM_InKnockDown( pm->ps )
+				&& !BG_InDeathAnim(pm->ps->legsAnim)
+				&& !BG_FlippingAnim( pm->ps->legsAnim )
+				&& !PM_SpinningAnim( pm->ps->legsAnim )
+				&& !BG_SaberInSpecialAttack( pm->ps->torsoAnim )
+				&& ( BG_SaberInAttack( pm->ps->saberMove ) ) )
+			{//not in an anim we shouldn't interrupt
+				//see if it's not too late to start a special jump-attack
+				float animLength = PM_AnimLength( 0, (animNumber_t)pm->ps->torsoAnim );
+				if ( animLength - pm->ps->torsoTimer < 500 )
+				{//just started the saberMove
+					//check for special-case jump attacks
+					if ( pm->ps->fd.saberAnimLevel == FORCE_LEVEL_3 )
+					{//using strong attacks
+						if ( pm->cmd.forwardmove > 0 && //going forward
+							(pm->cmd.buttons & BUTTON_ATTACK) && //must be holding attack still
+							PM_GroundDistance() < 32 &&
+							!BG_InSpecialJump(pm->ps->legsAnim))
+						{//strong attack: jump-hack
+							PM_SetSaberMove( PM_SaberJumpAttackMove() );
 							pml.groundPlane = qfalse;
 							pml.walking = qfalse;
 							pm->ps->pm_flags |= PMF_JUMP_HELD;
@@ -2693,36 +3161,62 @@ static qboolean PM_CheckJump( void )
 						}
 					}
 				}
-				else if ( pm->ps->fd.saberAnimLevel == FORCE_LEVEL_3 )
-				{//using strong attacks
-					if ( pm->cmd.forwardmove > 0 && //going forward
-						(pm->cmd.buttons & BUTTON_ATTACK) && //must be holding attack still
-						PM_GroundDistance() < 32 &&
-						!BG_InSpecialJump(pm->ps->legsAnim))
-					{//strong attack: jump-hack
-						PM_SetSaberMove( PM_SaberJumpAttackMove() );
-						pml.groundPlane = qfalse;
-						pml.walking = qfalse;
-						pm->ps->pm_flags |= PMF_JUMP_HELD;
-						pm->ps->groundEntityNum = ENTITYNUM_NONE;
-						VectorClear(pml.groundTrace.plane.normal);
-
-						pm->ps->weaponTime = pm->ps->torsoTimer;
-					}
-				}
 			}
 		}
 	}
-	*/
+
 	if ( pm->ps->groundEntityNum == ENTITYNUM_NONE )
 	{
 		return qfalse;
 	}
 	if ( pm->cmd.upmove > 0 )
 	{//no special jumps
-		pm->ps->velocity[2] = JUMP_VELOCITY;
-		PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-		pm->ps->pm_flags |= PMF_JUMP_HELD;
+		if (movestyle == 2 || movestyle == 3 || movestyle == 4 || movestyle == 5 || movestyle == 6 || movestyle == 7 || movestyle == 8)
+		{
+			vec3_t hVel;
+			float added, xyspeed, realjumpvelocity = JUMP_VELOCITY;
+			
+			if (movestyle == 6)
+				realjumpvelocity = 280.0f;
+			else if (movestyle == 3 || movestyle == 4 || movestyle == 7 || movestyle == 8)
+				realjumpvelocity = 270.0f;
+
+			hVel[0] = pm->ps->velocity[0];
+			hVel[1] = pm->ps->velocity[1];
+			hVel[2] = 0;
+			xyspeed = sqrt(hVel[0] * hVel[0] + hVel[1] * hVel[1]);
+			added = -DotProduct(hVel, pml.groundTrace.plane.normal);
+			pm->ps->velocity[2] = realjumpvelocity;
+
+			if (added > (xyspeed * 0.5))
+				added = (xyspeed * 0.5);//Sad sanity check hack
+
+			if (added > 0) {
+				if (movestyle == 2 || movestyle == 5)
+					pm->ps->velocity[2] += (added * 0.75f); //Forcejump rampjump initial upspeed
+				else if ((movestyle == 6))
+					pm->ps->velocity[2] += (added * 0.75f);//Make rampjump weaker for wsw since no speedloss
+				else
+					pm->ps->velocity[2] += (added * 1.25f); //Make rampjump stronger for cpm/q3
+			}
+			else if (pm->ps->stats[STAT_JUMPTIME] > 0) { //DOUBLEJUMP DOUBLE JUMP
+				pm->ps->velocity[2] += 100.0f;
+				pm->ps->pm_flags &= ~PMF_JUMP_HELD;
+			}
+
+#if 0
+			{
+				gentity_t *gent = (gentity_t *)pm_entSelf;
+				trap->SendServerCommand(gent-g_entities, va("chat \"XYSPEED: %.2f, ZSPEED: %.2f, ADDED: %.2f, JUMPTIME: %i\n\"", xyspeed, pm->ps->velocity[2], added, pm->ps->stats[STAT_JUMPTIME]));
+			}
+#endif
+
+			pm->ps->stats[STAT_JUMPTIME] = 401; //The fuck? Great to know
+			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
+
+		}
+		else
+			pm->ps->velocity[2] = JUMP_VELOCITY;
 	}
 
 	//Jumping
@@ -3097,27 +3591,26 @@ static void PM_AirMove( void ) {
 		else
 		{
 			float controlMod = 1.0f;
+			vec3_t	vfwd, vrt;
+			vec3_t	vAngles;
+			float speed = pm->ps->speed;
+			float strafeSpeed = 0;
+
 			if ( pml.groundPlane )
 			{//on a slope of some kind, shouldn't have much control and should slide a lot
 				controlMod = pml.groundTrace.plane.normal[2];
 			}
 
-			vec3_t	vfwd, vrt;
-			vec3_t	vAngles;
-
 			VectorCopy( pVeh->m_vOrientation, vAngles );
 			vAngles[ROLL] = 0;//since we're a hovercraft, we really don't want to stafe up into the air if we're banking
 			AngleVectors( vAngles, vfwd, vrt, NULL );
-
-			float speed = pm->ps->speed;
-			float strafeSpeed = 0;
 
 			if ( fmove < 0 )
 			{//going backwards
 				if ( speed < 0 )
 				{//speed is negative, but since our command is reverse, make speed positive
 					speed = fabs( speed );
-					/*
+					
 					if ( pml.groundPlane )
 					{//on a slope, still have some control
 						speed = fabs( speed );
@@ -3126,7 +3619,7 @@ static void PM_AirMove( void ) {
 					{//can't reverse in air
 						speed = 0;
 					}
-					*/
+					
 				}
 				else if ( speed > 0 )
 				{//trying to move back but speed is still positive, so keep moving forward (we'll slow down eventually)
@@ -3167,7 +3660,7 @@ static void PM_AirMove( void ) {
 					{//alternate control scheme: can strafe
 						if ( smove )
 						{
-							/*
+							
 							if ( fmove > 0 )
 							{//actively accelerating
 								strafeSpeed = pm->ps->speed;
@@ -3176,7 +3669,7 @@ static void PM_AirMove( void ) {
 							{//not stepping on accelerator, only strafe based on magnitude of current forward velocity
 								strafeSpeed = fabs(DotProduct( pm->ps->velocity, vfwd ));
 							}
-							*/
+							
 							strafeSpeed = ((float)(smove))/127.0f;
 						}
 					}
@@ -3214,6 +3707,20 @@ static void PM_AirMove( void ) {
             VectorScale(wishvel, 2.0f, wishvel);
 		}
 	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{ //reduced air control while not jetting
+		for ( i = 0 ; i < 2 ; i++ )
+		{
+			wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
+		}
+		wishvel[2] = 0;
+
+        VectorScale(wishvel, 0.9f, wishvel);
+	}
 	else
 	{
 		for ( i = 0 ; i < 2 ; i++ )
@@ -3228,6 +3735,19 @@ static void PM_AirMove( void ) {
 	wishspeed *= scale;
 
 	accelerate = pm_airaccelerate;
+
+#if _SPPHYSICS
+	if (PM_GetMovePhysics() == MV_SP) {
+		accelerate = 4.0f;
+
+		//SP Air Decel ?
+		if ((DotProduct(pm->ps->velocity, wishdir)) < 0.0f)
+		{//Encourage deceleration away from the current velocity
+			wishspeed *= 1.35f;//pm_airDecelRate
+		}
+	}
+#endif
+
 	if ( pVeh && pVeh->m_pVehicleInfo->type == VH_SPEEDER )
 	{//speeders have more control in air
 		//in mid-air
@@ -3238,7 +3758,40 @@ static void PM_AirMove( void ) {
 		}
 	}
 	// not on ground, so little effect on velocity
-	PM_Accelerate (wishdir, wishspeed, accelerate);
+	if (PM_GetMovePhysics() == 2)
+		PM_AirAccelerate(wishdir, wishspeed, 0.7f);//pm_qw_airaccel
+	else if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 8))
+	{
+		float		accel;
+		float		wishspeed2;
+
+		wishspeed2 = wishspeed;
+		if (DotProduct(pm->ps->velocity, wishdir) < 0)
+			accel = 2.5f;//cpm_pm_airstopaccelerate 
+		else
+			accel = pm_airaccelerate;
+
+		if ((((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 8)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) {
+			if (wishspeed > 30.0f)//cpm_pm_wishspeed
+				wishspeed = 30.0f;	
+			accel = 70.0f;//cpm_pm_strafeaccelerate
+		}
+
+		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
+		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
+	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{
+		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
+	}
+	else // movement style is 0 or 1
+	{
+		PM_Accelerate(wishdir, wishspeed, accelerate);
+	}
 
 	// we may have a ground plane that is very steep, even
 	// though we don't have a groundentity
@@ -3265,6 +3818,358 @@ static void PM_AirMove( void ) {
 	}
 }
 
+static void PM_DodgeMove(int forward, int right)
+{
+	vec3_t dodgedir;
+	const int DODGE_SPEED = pm->ps->speed * 1.25f;
+	static const int DODGE_JUMP_SPEED = 180;
+
+	VectorMA( vec3_origin, right, pml.right, dodgedir );
+	VectorMA( dodgedir, forward, pml.forward, dodgedir );
+	VectorNormalize( dodgedir );
+	VectorScale( dodgedir, DODGE_SPEED, dodgedir );
+
+	VectorCopy( dodgedir, pm->ps->velocity );
+
+	pm->ps->velocity[2] = DODGE_JUMP_SPEED; 
+}
+
+static void PM_DashMove(void)
+{
+	vec3_t dashdir, view;
+	const int DASH_SPEED = pm->ps->speed * (1.9f / 1.28f); //475... ayy 
+	static const int DASH_JUMP_SPEED = 280;
+	float xyspeed;
+
+	xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] +  pm->ps->velocity[1] * pm->ps->velocity[1]);
+
+	VectorCopy(pml.forward, view);
+	view[2] = 0; //I guess this is really pitch angle
+
+	VectorMA(vec3_origin, 1, view, dashdir);
+	VectorNormalize( dashdir );
+
+	if(xyspeed <= DASH_SPEED)
+		VectorScale(dashdir, DASH_SPEED, dashdir);
+	else
+		VectorScale(dashdir, xyspeed, dashdir);
+
+	VectorCopy(dashdir, pm->ps->velocity);
+
+	pm->ps->velocity[2] = DASH_JUMP_SPEED;
+	pm->ps->stats[STAT_JUMPTIME] = 401;
+}
+
+static void PM_CheckDash(void)
+{
+	static const int DASH_DELAY = 800;
+
+	if (pm->ps->groundEntityNum == ENTITYNUM_NONE)
+		return;
+
+	if (pm->ps->stats[STAT_HEALTH] <= 0) {
+		return;
+	}
+
+	if (pm->ps->weaponTime > 0)
+		return;
+
+	if (PM_GetMovePhysics() != 6)
+		return;
+
+	if (pm->ps->stats[STAT_DASHTIME] > 0)
+		return;
+
+	pm->ps->stats[STAT_DASHTIME] = DASH_DELAY;
+
+	//PM_AddEvent( EV_FALL );
+
+	if (pm->cmd.buttons & BUTTON_WALKING) { //Dodge move
+		if (pm->cmd.forwardmove > 0) {//W
+			if (pm->cmd.rightmove > 0) //D
+				PM_DodgeMove(1, 1);
+			else if (pm->cmd.rightmove < 0) //A
+				PM_DodgeMove(1, -1);
+			else 
+				PM_DodgeMove(1, 0);
+		}
+		else if (pm->cmd.forwardmove < 0) {//S
+			if (pm->cmd.rightmove > 0) //D
+				PM_DodgeMove(-1, 1);
+			else if (pm->cmd.rightmove < 0) //A
+				PM_DodgeMove(-1, -1);
+			else
+				PM_DodgeMove(-1, 0);
+		}
+		else {
+			if (pm->cmd.rightmove > 0) //D
+				PM_DodgeMove(0, 1);
+			else if (pm->cmd.rightmove < 0) //A
+				PM_DodgeMove(0, -1);
+		}
+	}
+	else { //Dash move
+		PM_DashMove(); //Dont care what wasd keys they press, due to pussers.
+	}
+}
+
+static void PlayerTouchWall(int nbTestDir, float maxZnormal, vec3_t *normal) //loda fixme, this does not detect some walls...
+{
+	vec3_t min, max, dir;
+	int i, j;
+	trace_t trace;
+	float dist = 1.0;
+
+	#define M_TWOPI	6.28318530717958647692
+
+	for(i = 0;i < nbTestDir;i++) {
+		dir[0] = pm->ps->origin[0] + ( pm->maxs[0]*cos( ( M_TWOPI/nbTestDir )*i ) + pm->ps->velocity[0] * 0.015f );
+		dir[1] = pm->ps->origin[1] + ( pm->maxs[1]*sin( ( M_TWOPI/nbTestDir )*i ) + pm->ps->velocity[1] * 0.015f );
+		dir[2] = pm->ps->origin[2];
+
+		for(j = 0;j < 2; j++) {
+			min[j] = pm->mins[j];
+			max[j] = pm->maxs[j];
+		}
+		min[2] = max[2] = 0;
+		//VectorScale(dir, 1.002f, dir); // ditching this fixes walljump not registering on some surfaces.. could it be vectorScale fucks with the sign somehow??
+
+		pm->trace(&trace, pm->ps->origin, min, max, dir, pm->ps->clientNum, CONTENTS_SOLID);
+
+		if(trace.allsolid)
+			return;
+
+		if(trace.fraction == 1)
+			continue; // no wall in this direction
+	
+		if(trace.surfaceFlags & (SURF_SKY))
+			continue;
+
+		if(trace.entityNum > 0) {//!= entitynum_none? or entitynum_world ?
+			bgEntity_t *bgEnt = PM_BGEntForNum(trace.entityNum);
+			if (bgEnt && (bgEnt->s.eType == ET_PLAYER))
+					continue;
+		}
+
+		if(trace.fraction > 0) {
+			if(dist > trace.fraction && fabs( trace.plane.normal[2]) < maxZnormal) {
+				dist = trace.fraction;
+				VectorCopy(trace.plane.normal, *normal);
+			}
+		}
+	}
+}
+
+static void PM_CheckWallJump( void )//loda fixme, wip
+{
+	vec3_t normal;
+	float hspeed;
+	static const int WJ_DELAY = 1600;
+	static const int DODGE_SPEED = 380;
+	static const int MIN_WJSPEED = 200;
+	static const int WJ_UPSPEED = 370;
+	static const float WJ_BOUNCEFACTOR = 0.5;//0.3?
+	static const int DASH_DELAY = 800;
+	trace_t trace;
+	vec3_t point;
+	vec3_t xyspeed;
+
+	if (pm->ps->groundEntityNum != ENTITYNUM_NONE)//Wut? this should be entitynum_none?
+		return;//only in air?
+	//hm... needs a slight delay after dash i guess... idk
+
+	if (pm->ps->weaponTime > 0)
+		return;
+
+	//if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) > 128)//(forceJumpHeightMax[FORCE_LEVEL_3]-(BG_ForceWallJumpStrength()/2.0f)))
+		//return; //This means if we are more than 128 above our jump, abort..?
+
+	//if (PM_ForceJumpingUp())//only for bhops loda fixme, uh use forcejumpZstartheight to only do this if we are bhop height :S?
+		//return;
+
+	if (PM_GetMovePhysics() != 6)
+		return;
+
+	if (pm->ps->stats[STAT_WJTIME] > 0)
+		return;
+
+	if (pm->ps->stats[STAT_DASHTIME] > (DASH_DELAY - 100))
+		return;
+
+	point[0] = pm->ps->origin[0];
+	point[1] = pm->ps->origin[1];
+	point[2] = pm->ps->origin[2] - STEPSIZE;
+
+	// don't walljump if our height is smaller than a step 
+	// unless the player is moving faster than dash speed and upwards
+	xyspeed[0] = pm->ps->velocity[0];
+	xyspeed[1] = pm->ps->velocity[1];
+	xyspeed[2] = 0;
+
+	hspeed = VectorLength(xyspeed);
+
+	pm->trace(&trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, CONTENTS_SOLID);
+		
+	if((hspeed > DODGE_SPEED && pm->ps->velocity[2] > 8) || (trace.fraction == 1) || /*(!ISWALKABLEPLANE(&trace.plane)*/ !trace.startsolid)
+	{
+		float oldupvelocity = pm->ps->velocity[2];
+
+		VectorClear(normal);
+		PlayerTouchWall( 12, 0.3f, &normal ); //0.7 ? still fucking broken
+		if(!VectorLength(normal))
+			return;
+
+		//dont do this if we arnt touching a wall... FIXME?
+
+		pm->ps->velocity[2] = 0;
+
+		//hspeed = VectorNormalize(xyspeed); //why
+		
+		PM_ClipVelocity( pm->ps->velocity, normal, pm->ps->velocity, 1.0005f );
+		VectorMA( pm->ps->velocity, WJ_BOUNCEFACTOR, normal, pm->ps->velocity );
+
+		if( hspeed < MIN_WJSPEED )
+			hspeed = MIN_WJSPEED;
+
+		VectorNormalize( pm->ps->velocity );
+
+		VectorScale( pm->ps->velocity, hspeed, pm->ps->velocity );
+		pm->ps->velocity[2] = ( oldupvelocity > WJ_UPSPEED ) ? oldupvelocity : WJ_UPSPEED; // jal: if we had a faster upwards speed, keep it
+				
+		pm->ps->stats[STAT_WJTIME] = WJ_DELAY;
+		
+		//PM_AddEvent( EV_FALL );
+#ifdef _GAME
+		G_PlayEffect( EFFECT_LANDING_SAND, trace.endpos, trace.plane.normal );//Should be spot on wall, and wallnormal, a better, predicted way to do this?
+#endif
+
+	/*
+#ifdef _GAME
+{
+    gclient_t *client = NULL;
+	int clientNum = pm->ps->clientNum;
+	if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+		client = g_entities[clientNum].client;
+	}
+	if (client->pers.practice)
+		pm->ps->stats[STAT_JUMPTIME] = 401;
+}
+#endif
+	*/
+	}
+}
+
+#if _GRAPPLE
+
+
+static void PM_GetGrappleAnim( void ) {
+	vec3_t  facingFwd, facingRight, facingAngles;
+	int	anim = -1;
+	float dotR, dotF;
+
+	//Set anims from raz0r
+	VectorSet(facingAngles, 0, pm->ps->viewangles[YAW], 0);
+
+	AngleVectors(facingAngles, facingFwd, facingRight, NULL);
+	dotR = DotProduct(facingRight, pm->ps->velocity);
+	dotF = DotProduct(facingFwd, pm->ps->velocity);
+
+	if (fabsf(dotR) > fabsf(dotF) * 1.5f) {
+		if (dotR > 150) {
+			anim = BOTH_FORCEJUMPRIGHT1;
+		}
+		else if (dotR < -150) {
+			anim = BOTH_FORCEJUMPLEFT1;
+		}
+	}
+	else {
+		if (dotF > 150) {
+			anim = BOTH_FORCEJUMP1;
+		}
+		else if (dotF < -150) {
+			anim = BOTH_FORCEJUMPBACK1;
+		}
+	}
+	if (anim != -1) {
+		int parts = SETANIM_BOTH;
+		if (pm->ps->weaponTime) {//FIXME: really only care if we're in a saber attack anim...
+			parts = SETANIM_LEGS;
+		}
+
+		PM_SetAnim(parts, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+	}
+}
+
+static void PM_GrappleMove( void ) {
+	vec3_t vel, v;
+	float vlen;
+#if _GAME
+	int pullSpeed = g_hookStrength.integer;
+#else
+	int pullSpeed = 800;
+#endif
+
+	VectorScale(pml.forward, -16, v);
+	VectorAdd(pm->ps->lastHitLoc, v, v);
+	VectorSubtract(v, pm->ps->origin, vel);
+	//if( pm->ps->pm_flags & PMF_GRAPPLE_PULL_QUAKE2 ) {
+		vel[2] = vel[2] - pm->ps->viewheight - 4;
+	//}
+	vlen = VectorLength(vel);
+	VectorNormalize( vel );
+
+	if (vlen <= 100)
+		VectorScale(vel, ( pullSpeed / 100.0 )  * vlen, vel);
+	else
+		VectorScale(vel, pullSpeed, vel);
+
+	VectorCopy(vel, pm->ps->velocity);
+
+	pml.groundPlane = qfalse;
+
+	PM_GetGrappleAnim();
+}
+
+/*
+===================
+PM_GrappleMoveTarzan
+
+===================
+*/
+static void PM_GrappleMoveTarzan( void ) {
+	vec3_t vel;
+	float vlen;
+#if _GAME
+	int pullSpeed = g_hookStrength.integer;
+	int pullStrength1 = g_hookStrength1.integer;
+	int pullStrength2 = g_hookStrength2.integer;
+#else
+	int pullSpeed = 800;
+	int pullStrength1 = 20;//20;
+	int pullStrength2 = 40;//40;
+#endif
+
+	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
+	vlen = VectorLength(vel);
+	VectorNormalize( vel );
+
+	if (vlen < ( pullSpeed / 2 ) )
+		PM_Accelerate(vel, 2 * vlen, vlen * ( pullStrength2 / (float)pullSpeed ) );
+	else
+		PM_Accelerate(vel, pullSpeed, pullStrength1);
+
+	if ( vel[2] > 0.5f && pml.walking ) {
+		pml.walking = qfalse;
+		//PM_ForceLegsAnim( BOTH_JUMP1  ); //LEGS_JUMP
+	}
+
+	pml.groundPlane = qfalse;
+
+	PM_GetGrappleAnim();
+	
+}
+#endif
+
 /*
 ===================
 PM_WalkMove
@@ -3280,8 +4185,9 @@ static void PM_WalkMove( void ) {
 	float		scale;
 	usercmd_t	cmd;
 	float		accelerate;
-	float		vel;
+	float		vel, realaccelerate = pm_accelerate, realduckscale = pm_duckScale;
 	qboolean	npcMovement = qfalse;
+	
 
 	if ( pm->waterlevel > 2 && DotProduct( pml.forward, pml.groundTrace.plane.normal ) > 0 ) {
 		// begin swimming
@@ -3302,6 +4208,20 @@ static void PM_WalkMove( void ) {
 			return;
 		}
 	}
+
+	if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 8)
+		realaccelerate = 15.0f;
+	else if (PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 7)
+		realduckscale = 0.25f;
+	else if (PM_GetMovePhysics() == 6) {
+		realaccelerate = 12.0f;
+		realduckscale = 0.3125f;
+	}
+#if _SPPHYSICS
+	else if (PM_GetMovePhysics() == MV_SP) {
+		realaccelerate = 12.0f;
+	}
+#endif
 
 	PM_Friction ();
 
@@ -3375,15 +4295,15 @@ static void PM_WalkMove( void ) {
 
 	// clamp the speed lower if ducking
 	if ( pm->ps->pm_flags & PMF_DUCKED ) {
-		if ( wishspeed > pm->ps->speed * pm_duckScale ) {
-			wishspeed = pm->ps->speed * pm_duckScale;
+		if ( wishspeed > pm->ps->speed * realduckscale ) {
+			wishspeed = pm->ps->speed * realduckscale;
 		}
 	}
 	else if ( (pm->ps->pm_flags & PMF_ROLLING) && !BG_InRoll(pm->ps, pm->ps->legsAnim) &&
 		!PM_InRollComplete(pm->ps, pm->ps->legsAnim))
 	{
-		if ( wishspeed > pm->ps->speed * pm_duckScale ) {
-			wishspeed = pm->ps->speed * pm_duckScale;
+		if ( wishspeed > pm->ps->speed * realduckscale ) {
+			wishspeed = pm->ps->speed * realduckscale;
 		}
 	}
 
@@ -3406,11 +4326,11 @@ static void PM_WalkMove( void ) {
 	}
 	else if ( ( pml.groundTrace.surfaceFlags & SURF_SLICK ) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK )
 	{
-		accelerate = pm_airaccelerate;
+		accelerate = pm_airaccelerate; //this should be changed for QW and other stuff, but whatever, already done
 	}
 	else
 	{
-		accelerate = pm_accelerate;
+		accelerate = realaccelerate;
 	}
 
 	PM_Accelerate (wishdir, wishspeed, accelerate);
@@ -3428,10 +4348,17 @@ static void PM_WalkMove( void ) {
 	//Com_Printf("velocity = %1.1f %1.1f %1.1f\n", pm->ps->velocity[0], pm->ps->velocity[1], pm->ps->velocity[2]);
 	//Com_Printf("velocity1 = %1.1f\n", VectorLength(pm->ps->velocity));
 
-	if ( ( pml.groundTrace.surfaceFlags & SURF_SLICK ) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK )
-	{
-		pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
+	if ((pml.groundTrace.surfaceFlags & SURF_SLICK) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK) {
+#ifdef _GAME
+		if ((g_fixSlidePhysics.integer == 1) && (pm->ps->clientNum >= MAX_CLIENTS)) { //Fix slide physics for NPCS (inbasejka, npcs will accel to ~340 on slick surfaces for no reason)
+		}
+		else if (g_fixSlidePhysics.integer > 1 && !pm->ps->stats[STAT_RACEMODE]) { //Fix Slide Physics for everything not in racemode
+		}
+		else
+#endif
+			pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
 	}
+
 
 	vel = VectorLength(pm->ps->velocity);
 
@@ -3539,7 +4466,7 @@ static void PM_NoclipMove( void ) {
 	wishspeed = VectorNormalize(wishdir);
 	wishspeed *= scale;
 
-	PM_Accelerate( wishdir, wishspeed, pm_accelerate );
+	PM_Accelerate( wishdir, wishspeed, pm_accelerate );//dont care about CPM movement when in noclip so whatever
 
 	// move
 	VectorMA (pm->ps->origin, pml.frametime, pm->ps->velocity, pm->ps->origin);
@@ -3570,22 +4497,63 @@ static int PM_TryRoll( void )
 	int		anim = -1;
 	vec3_t fwd, right, traceto, mins, maxs, fwdAngles;
 
-	if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim )
-		|| BG_SpinningSaberAnim( pm->ps->legsAnim )
-		|| PM_SaberInStart( pm->ps->saberMove ) )
-	{//attacking or spinning (or, if player, starting an attack)
-		if ( PM_CanRollFromSoulCal( pm->ps ) )
-		{//hehe
-		}
-		else
+#ifdef _GAME
+	    gclient_t *client = NULL;
 		{
+			int clientNum = pm->ps->clientNum;
+			if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+				client = g_entities[clientNum].client;
+			}
+		}
+
+		if (client && client->pers.noRoll)
+#else
+		//eternal todo: cgame
+		//if (cgs.isJAPro && cg_noRoll.integer)
+		if (cgs.isJAPro)
+#endif
+		{
+			return 0;
+		}
+
+#ifdef _GAME
+	if (!(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL)) {
+#else
+	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL)) {
+#endif
+		if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
+			|| BG_SpinningSaberAnim( pm->ps->legsAnim ) 
+			|| PM_SaberInStart( pm->ps->saberMove ) )
+		{//attacking or spinning (or, if player, starting an attack)
+			if ( PM_CanRollFromSoulCal( pm->ps ) )
+			{//hehe
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	}
+	else {
+		if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
+			|| BG_SpinningSaberAnim( pm->ps->legsAnim ))
+		{//attacking or spinning (or, if player, starting an attack)
 			return 0;
 		}
 	}
 
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) ||
+#ifdef _GAME
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(g_tweakWeapons.integer & WT_ALLOW_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
+#else
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(cgs.jcinfo & JAPRO_CINFO_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
+#endif
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
+		(PM_GetMovePhysics() == 3) ||
+		(PM_GetMovePhysics() == 4) ||
+		(PM_GetMovePhysics() == 6) ||
+		(PM_GetMovePhysics() == 7) ||
+		(PM_GetMovePhysics() == 8) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;
@@ -3691,6 +4659,7 @@ static void PM_CrashLandEffect( void )
 	}
 }
 #endif
+
 /*
 =================
 PM_CrashLand
@@ -3724,6 +4693,14 @@ static void PM_CrashLand( void ) {
 
 	delta = vel + t * acc;
 	delta = delta*delta * 0.0001;
+
+#if _SPPHYSICS
+	if (pm->ps->fd.forceJumpZStart && ((int)pm->ps->origin[2] >= (int)pm->ps->fd.forceJumpZStart) && PM_GetMovePhysics() == MV_SP) {
+		//trap->Print("cutting speed in half\n");
+		pm->ps->velocity[0] *= 0.5f;
+		pm->ps->velocity[1] *= 0.5f;
+	}
+#endif
 
 #ifdef _GAME
 	PM_CrashLandEffect();
@@ -3965,6 +4942,11 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
+	if (((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8)) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2] + 1)) {
+		if (1 > (sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1])))//No xyvel
+			pm->ps->velocity[2] = -vel; //OVERBOUNCE OVER BOUNCE
+	}
+
 	// start footstep cycle over
 	pm->ps->bobCycle = 0;
 }
@@ -4038,6 +5020,13 @@ static void PM_GroundTraceMissed( void ) {
 		//rww - also don't use SETANIM_FLAG_HOLD, it will cause the legs to float around a bit before going into
 		//a proper anim even when on the ground.
 		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE);
+	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{//Jetpacking with new jetpack
 	}
 	//If the anim is choke3, act like we just went into the air because we aren't in a float
 	else if ( pm->ps->groundEntityNum != ENTITYNUM_NONE || (pm->ps->legsAnim) == BOTH_CHOKE3 )
@@ -4118,6 +5107,9 @@ static void PM_GroundTrace( void ) {
 		if (pEnt && pEnt->s.NPC_class == CLASS_VEHICLE)
 		{
 			minNormal = pEnt->m_pVehicle->m_pVehicleInfo->maxSlope;
+			if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, RACESWOOP
+				minNormal = 0.5f; //Max slope steepness before it stops hovoring you up, used to be 0.65
+			}
 		}
 	}
 
@@ -4135,6 +5127,18 @@ static void PM_GroundTrace( void ) {
 	}
 
 	if (pm->ps->pm_type == PM_FLOAT || pm->ps->pm_type == PM_JETPACK)
+	{
+		PM_GroundTraceMissed();
+		pml.groundPlane = qfalse;
+		pml.walking = qfalse;
+		return;
+	}
+
+#ifdef _GAME
+	if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
 	{
 		PM_GroundTraceMissed();
 		pml.groundPlane = qfalse;
@@ -4197,6 +5201,82 @@ static void PM_GroundTrace( void ) {
 			Com_Printf("%i:Land\n", c_pmove);
 		}
 
+		//trap->SendServerCommand( -1, va("cp \"Steep landed with z vel: %f\nnormal: %f, %f, %f\n\"", pm->ps->velocity[2], trace.plane.normal[0], trace.plane.normal[1], trace.plane.normal[2] ));
+		//trap->SendServerCommand( -1, va("cp \"Previous Z Vel: %f\nCurrent Z Vel: %f\"", pml.previous_velocity[2], pm->ps->velocity[2]));
+
+		//When we land, if our Z velocity is unusually low, its probably going to result in a nospeeded ramp
+		//If we compare our previous z velocity to our current z velocity, if they are close very, it probably messed up somehow..
+		//Since they should be very different since we just hit the ground.
+		//So if they are very close, its probably a missed ramp somehow.. so redo the clipvelocity thing here :/
+		//Ideally this could be debugged further back and fixed at the source of the problem..
+
+		//Have a pmove var "clipped" , set it to qfalse at start of every frame.
+		//When clipvelocity is called near "wsw rampjump", set clipped to qtrue.
+		//Right here, if clipped is qfalse, do a clipvelocity ?
+		//Seems like a better solution
+
+		if (trace.plane.normal[0] != 0.0f || trace.plane.normal[1] != 0.0f || trace.plane.normal[2] != 1.0f) { //Its actually a ramp
+			if (pm->ps->stats[STAT_RACEMODE] && !pml.clipped) {
+				if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) { //Only change our xy speed if we hit a downramp in wsw
+					vec3_t oldVel, clipped_velocity, newVel;
+					float oldSpeed, newSpeed;
+
+					VectorCopy(pm->ps->velocity, oldVel);
+					oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
+
+					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP 1
+
+					VectorCopy(clipped_velocity, newVel);
+					newVel[2] = 0;
+					newSpeed = newVel[0] * newVel[0] + newVel[1] * newVel[1]; 
+
+					if (newSpeed > oldSpeed)
+						VectorCopy(clipped_velocity, pm->ps->velocity);
+				}
+				else {
+					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
+				}
+/*				
+#ifdef _GAME
+				{
+					int i;
+					gentity_t *specEnt = (gentity_t *)pm_entSelf;
+
+					trap->SendServerCommand( pm->ps->clientNum, "chat \"^0nospeed ramp fixed!\"");
+					for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
+						if (!g_entities[i].inuse)
+							continue;
+						if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == specEnt->client->ps.clientNum))
+							trap->SendServerCommand(i, "chat \"^0nospeed ramp fixed!\"");
+					}
+				}			
+#endif
+*/			
+			}
+
+#if 0
+			//if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
+				/*
+#ifdef _GAME
+				{
+					int i;
+					gentity_t *specEnt = (gentity_t *)pm_entSelf;
+
+					trap->SendServerCommand( pm->ps->clientNum, "chat \"nospeed ramp corrected!\"");
+					for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
+						if (!g_entities[i].inuse)
+							continue;
+						if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == specEnt->client->ps.clientNum))
+							trap->SendServerCommand(i, "chat \"nospeed ramp corrected!\"");
+					}
+				}
+#endif
+				*/
+				//PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
+			//}
+#endif
+		}
+		
 		PM_CrashLand();
 
 #ifdef _GAME
@@ -4503,6 +5583,19 @@ static void PM_CheckDuck (void)
 				pm->ps->pm_flags &= ~PMF_ROLLING;
 			}
 		}
+#ifdef _GAME
+		else if ((pm->ps->pm_flags & PMF_ROLLING) && dmflags.integer & DF_NO_CROUCHFIX)
+#else
+		else if ((pm->ps->pm_flags & PMF_ROLLING) && cgs.dmflags & DF_NO_CROUCHFIX)
+#endif
+		{
+			trace_t	trace;
+			// try to stand up
+			pm->maxs[2] = pm->ps->standheight;//DEFAULT_MAXS_2;
+			pm->trace(&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+			if (!trace.allsolid)
+				pm->ps->pm_flags &= ~PMF_ROLLING;
+		}
 		else if (pm->cmd.upmove < 0 ||
 			pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
 			pm->ps->forceHandExtend == HANDEXTEND_PRETHROWN ||
@@ -4517,6 +5610,19 @@ static void PM_CheckDuck (void)
 				if ( PM_CanStand() ) {
 					pm->maxs[2] = pm->ps->standheight;
 					pm->ps->pm_flags &= ~PMF_DUCKED;
+				}
+#ifdef _GAME
+				else if ((pm->ps->pm_flags & PMF_DUCKED) && dmflags.integer & DF_NO_CROUCHFIX)
+#else
+				else if ((pm->ps->pm_flags & PMF_DUCKED) && cgs.dmflags & DF_NO_CROUCHFIX)
+#endif
+				{
+					trace_t	trace;
+					// try to stand up
+					pm->maxs[2] = pm->ps->standheight;//DEFAULT_MAXS_2;
+					pm->trace(&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+					if (!trace.allsolid)
+						pm->ps->pm_flags &= ~PMF_DUCKED;
 				}
 			}
 		}
@@ -4594,7 +5700,6 @@ qboolean PM_WalkingAnim( int anim )
 	}
 	return qfalse;
 }
-
 qboolean PM_RunningAnim( int anim )
 {
 	switch ( (anim) )
@@ -4612,6 +5717,13 @@ qboolean PM_RunningAnim( int anim )
 	case BOTH_RUNSTRAFE_LEFT1:	//# Sidestep left: should loop
 	case BOTH_RUNSTRAFE_RIGHT1:	//# Sidestep right: should loop
 		return qtrue;
+	case BOTH_RUN4:
+#ifdef _GAME
+		return qtrue;
+#else
+		if (cgs.isJAPro)
+			return qtrue;
+#endif
 		break;
 	}
 	return qfalse;
@@ -4802,6 +5914,23 @@ qboolean PM_AdjustStandAnimForSlope( void )
 	int		destAnim;
 	int		legsAnim;
 	#define SLOPERECALCVAR pm->ps->slopeRecalcTime //this is purely convenience
+
+
+
+#ifdef _GAME
+    gclient_t *client = NULL;
+    {
+		int clientNum = pm->ps->clientNum;
+		if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+			client = g_entities[clientNum].client;
+		}
+	}
+	if (!g_LegDangle.integer && client && client->pers.isJAPRO)
+#else
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_LEGDANGLE)) // Loda fixme, maybe give clients option to choose? idk why they would want to..
+#endif
+		return qfalse;
+
 
 	if (!pm->ghoul2)
 	{ //probably just changed models and not quite in sync yet
@@ -5171,11 +6300,21 @@ static void PM_Footsteps( void ) {
 	int			old;
 	int			setAnimFlags = 0;
 
-	if ( (PM_InSaberAnim( (pm->ps->legsAnim) ) && !BG_SpinningSaberAnim( (pm->ps->legsAnim) ))
-		|| (pm->ps->legsAnim) == BOTH_STAND1
-		|| (pm->ps->legsAnim) == BOTH_STAND1TO2
-		|| (pm->ps->legsAnim) == BOTH_STAND2TO1
-		|| (pm->ps->legsAnim) == BOTH_STAND2
+#ifdef _GAME
+    gclient_t *client = NULL;
+    {
+		int clientNum = pm->ps->clientNum;
+		if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+			client = g_entities[clientNum].client;
+		}
+	}
+#endif
+
+	if ( (PM_InSaberAnim( (pm->ps->legsAnim) ) && !BG_SpinningSaberAnim( (pm->ps->legsAnim) )) 
+		|| (pm->ps->legsAnim) == BOTH_STAND1 
+		|| (pm->ps->legsAnim) == BOTH_STAND1TO2 
+		|| (pm->ps->legsAnim) == BOTH_STAND2TO1 
+		|| (pm->ps->legsAnim) == BOTH_STAND2 
 		|| (pm->ps->legsAnim) == BOTH_SABERFAST_STANCE
 		|| (pm->ps->legsAnim) == BOTH_SABERSLOW_STANCE
 		|| (pm->ps->legsAnim) == BOTH_BUTTON_HOLD
@@ -5309,11 +6448,65 @@ static void PM_Footsteps( void ) {
 
 		bobmove = 0.5;	// ducked characters bob much faster
 
-		if ( ( (PM_RunningAnim( pm->ps->legsAnim )&&VectorLengthSquared(pm->ps->velocity)>=40000/*200*200*/) || PM_CanRollFromSoulCal( pm->ps ) ) &&
-			!BG_InRoll(pm->ps, pm->ps->legsAnim) )
-		{//roll!
-			rolled = PM_TryRoll();
+//[JAPRO - Serverside + Clientside - Physics - Add roll types - Start]
+		
+		{
+
+			if ((GetFixRoll(pm->ps) > 1 && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps))) ||
+				((GetFixRoll(pm->ps) == 1) && (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=30000)) ||
+				(PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000) )
+				rolled = PM_TryRoll();
+
+/*
+#ifdef _GAME
+			if ((g_fixRoll.integer > 1) && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps)))
+			{
+				rolled = PM_TryRoll();
+			}
+			else if ((g_fixRoll.integer == 1) && (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=30000))
+			{
+				rolled = PM_TryRoll();
+			}
+			else if (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000)
+			{
+				rolled = PM_TryRoll();
+			}
+#else
+			if (cgs.isJAPro )
+			{
+				if ((cgs.jcinfo & JAPRO_CINFO_FIXROLL3 || cgs.jcinfo & JAPRO_CINFO_FIXROLL2) && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps)))
+				{
+					rolled = PM_TryRoll();
+				}
+				else if ((cgs.jcinfo & JAPRO_CINFO_FIXROLL1) && (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=30000))
+				{
+					rolled = PM_TryRoll();
+				}
+				else if (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000)
+				{
+					rolled = PM_TryRoll();
+				}
+			}
+			else if (cgs.isJAPlus) 
+			{
+				if ((cgs.cinfo & JAPLUS_CINFO_FIXROLL3 || cgs.cinfo & JAPLUS_CINFO_FIXROLL2) && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps)))
+				{
+					rolled = PM_TryRoll();
+				}
+				else if (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=30000)
+				{
+					rolled = PM_TryRoll();
+				}
+			}
+			else if (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000)
+			{
+				rolled = PM_TryRoll();
+			}
+#endif
+			*/
 		}
+//[JAPRO - Serverside + Clientside - Physics - Add roll types - End]
+
 		if ( !rolled )
 		{ //if the roll failed or didn't attempt, do standard crouching anim stuff.
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
@@ -5443,35 +6636,101 @@ static void PM_Footsteps( void ) {
 				case SS_STAFF:
 					if ( pm->ps->saberHolstered > 1 )
 					{//saber off
-						desiredAnim = BOTH_RUNBACK1;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK1;
 					}
 					else
 					{
 						//desiredAnim = BOTH_RUNBACK_STAFF;
 						//hmm.. stuff runback anim is pretty messed up for some reason.
-						desiredAnim = BOTH_RUNBACK2;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK2;
 					}
 					break;
 				case SS_DUAL:
 					if ( pm->ps->saberHolstered > 1 )
 					{//sabers off
-						desiredAnim = BOTH_RUNBACK1;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK1;
 					}
 					else
 					{
 						//desiredAnim = BOTH_RUNBACK_DUAL;
 						//and so is the dual
-						desiredAnim = BOTH_RUNBACK2;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK2;
 					}
 					break;
 				default:
 					if ( pm->ps->saberHolstered )
 					{//saber off
-						desiredAnim = BOTH_RUNBACK1;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK1;
 					}
 					else
 					{
-						desiredAnim = BOTH_RUNBACK2;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK2;
 					}
 					break;
 				}
@@ -5494,20 +6753,64 @@ static void PM_Footsteps( void ) {
 				case SS_STAFF:
 					if ( pm->ps->saberHolstered > 1 )
 					{//blades off
-						desiredAnim = BOTH_RUN1;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN1;
 					}
 					else if ( pm->ps->saberHolstered == 1 )
 					{//1 blade on
-						desiredAnim = BOTH_RUN2;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN2;
 					}
 					else
 					{
 						if (pm->ps->fd.forcePowersActive & (1<<FP_SPEED))
 						{
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
 							desiredAnim = BOTH_RUN1;
 						}
 						else
 						{
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
 							desiredAnim = BOTH_RUN_STAFF;
 						}
 					}
@@ -5515,25 +6818,80 @@ static void PM_Footsteps( void ) {
 				case SS_DUAL:
 					if ( pm->ps->saberHolstered > 1 )
 					{//blades off
-						desiredAnim = BOTH_RUN1;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN1;
 					}
 					else if ( pm->ps->saberHolstered == 1 )
 					{//1 saber on
-						desiredAnim = BOTH_RUN2;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+						desiredAnim = BOTH_RUN1;
 					}
 					else
 					{
-						desiredAnim = BOTH_RUN_DUAL;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN_DUAL;
 					}
 					break;
 				default:
 					if ( pm->ps->saberHolstered )
 					{//saber off
-						desiredAnim = BOTH_RUN1;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN1;
 					}
 					else
 					{
-						desiredAnim = BOTH_RUN2;
+#ifdef _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN2;
 					}
 					break;
 				}
@@ -5859,7 +7217,19 @@ void PM_FinishWeaponChange( void ) {
 	}
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
-	pm->ps->weaponTime += 250;
+#ifdef _GAME
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakSaber.integer & ST_FIXED_SABERSWITCH) && weapon == WP_SABER) {//fix saber switch glitch if we want
+		pm->ps->weaponTime += 1250;
+		((gentity_t *)pm_entSelf)->client->saberDelayCount += 1000; //Ait.. this is the delay past 250 that is added, we wil subract this from weapontime later when checking forcepower use
+		//saberDelay can never be negative. Saber delay can never be more than weapontime-250.
+	}
+	else if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & WT_FAST_WEAPONSWITCH))
+		pm->ps->weaponTime += 25;
+	else
+		pm->ps->weaponTime += 250;
+#else
+		pm->ps->weaponTime += 250;
+#endif
 }
 
 #ifdef _GAME
@@ -6015,6 +7385,9 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 	qboolean	charging = qfalse,
 				altFire = qfalse;
 
+	if (pm->ps->stats[STAT_RACEMODE])
+		return qfalse;
+
 	if ( vehicleRocketLock )
 	{
 		if ( (pm->cmd.buttons&(BUTTON_ATTACK|BUTTON_ALT_ATTACK)) )
@@ -6093,9 +7466,17 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 			if ( (pm->cmd.buttons & BUTTON_ALT_ATTACK)
 				&& pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] >= weaponData[pm->ps->weapon].altEnergyPerShot )
 			{
+#ifdef _GAME
+				if (!(g_tweakWeapons.integer & WT_ROCKET_MORTAR) || pm->ps->stats[STAT_RACEMODE]) {
+					PM_RocketLock(2048,qfalse);
+					charging = qtrue;
+				}
+				altFire = qtrue;
+#else
 				PM_RocketLock(2048,qfalse);
 				charging = qtrue;
 				altFire = qtrue;
+#endif
 			}
 			break;
 
@@ -6189,7 +7570,10 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 			{
 				if (pm->ps->weaponChargeSubtractTime < pm->cmd.serverTime)
 				{
-					pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].altChargeSub;
+#ifdef _GAME
+					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & WT_INFINITE_AMMO))
+#endif
+						pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].altChargeSub;
 					pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].altChargeSubTime;
 				}
 			}
@@ -6227,7 +7611,10 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 			{
 				if (pm->ps->weaponChargeSubtractTime < pm->cmd.serverTime)
 				{
-					pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].chargeSub;
+#ifdef _GAME
+					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & WT_INFINITE_AMMO))
+#endif
+						pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].chargeSub;
 					pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].chargeSubTime;
 				}
 			}
@@ -6790,8 +8177,14 @@ static void PM_Weapon( void )
 		//we now go into a weapon raise anim after every force hand extend.
 		//this is so that my holster-view-weapon-when-hand-extend stuff works.
 		pm->ps->weaponstate = WEAPON_RAISING;
+#ifdef _GAME
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & WT_FAST_WEAPONSWITCH))
+		pm->ps->weaponTime += 25;
+	else
 		pm->ps->weaponTime += 250;
-
+#else
+		pm->ps->weaponTime += 250;
+#endif
 		pm->ps->forceHandExtend = HANDEXTEND_NONE;
 	}
 	else if (pm->ps->forceHandExtend != HANDEXTEND_NONE)
@@ -6994,12 +8387,41 @@ static void PM_Weapon( void )
 		}
 	}
 
-	if (pm->ps->duelInProgress)
+if (pm->ps->duelInProgress)
 	{
-		pm->cmd.weapon = WP_SABER;
-		pm->ps->weapon = WP_SABER;
+#ifdef _CGAME
+		if (cg_dueltypes[pm->ps->clientNum] > 2) {
+			if (cg_dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (cg_dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2; //gunduel 1
+				pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			}
+		}
+#else
+		if (dueltypes[pm->ps->clientNum] > 2) {
+			if (dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
+				pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+			}
+		}
+#endif
+		else {//Japro - gun duels start
+			pm->cmd.weapon = WP_SABER;
+			pm->ps->weapon = WP_SABER;
+		}
 
-		if (pm->ps->duelTime >= pm->cmd.serverTime)
+		if (pm->ps->duelTime >= pm->cmd.serverTime)//gun duel - why isnt this working?
 		{
 			pm->cmd.upmove = 0;
 			pm->cmd.forwardmove = 0;
@@ -7166,8 +8588,37 @@ static void PM_Weapon( void )
 
 	if (pm->ps->isJediMaster || pm->ps->duelInProgress || pm->ps->trueJedi)
 	{
-		pm->cmd.weapon = WP_SABER;
-		pm->ps->weapon = WP_SABER;
+#ifdef _CGAME
+		if (cg_dueltypes[pm->ps->clientNum] > 2) {
+			if (cg_dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (cg_dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2; //gunduel 2
+				pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			}
+		}
+#else
+		if (dueltypes[pm->ps->clientNum] > 2) {
+			if (dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
+				pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+			}
+		}
+#endif
+		else {
+			pm->cmd.weapon = WP_SABER;
+			pm->ps->weapon = WP_SABER;
+		}
 
 		if (pm->ps->isJediMaster || pm->ps->trueJedi)
 		{
@@ -7180,13 +8631,20 @@ static void PM_Weapon( void )
 	// take an ammo away if not infinite
 	if ( pm->ps->weapon != WP_NONE &&
 		pm->ps->weapon == pm->cmd.weapon &&
+#ifdef _GAME
+		!(g_tweakWeapons.integer & WT_INFINITE_AMMO) &&
+#endif
 		(pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING) )
 	{
 		if ( pm->ps->clientNum < MAX_CLIENTS && pm->ps->ammo[ weaponData[pm->ps->weapon].ammoIndex ] != -1 )
 		{
 			// enough energy to fire this weapon?
 			if (pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].energyPerShot &&
-				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot)
+				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot
+#ifdef _GAME 
+				&& (!(g_tweakWeapons.integer & WT_STAKE_GUN) || (pm->ps->weapon != WP_FLECHETTE)) //I guess we have to make the stake gun 
+#endif
+				)
 			{ //the weapon is out of ammo essentially because it cannot fire primary or secondary, so do the switch
 			  //regardless of if the player is attacking or not
 				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
@@ -7429,18 +8887,6 @@ static void PM_Weapon( void )
 			G_CheapWeaponFire(pm->ps->clientNum, EV_FIRE_WEAPON);
 		}
 #endif
-		/*
-		addTime = weaponData[WP_EMPLACED_GUN].fireTime;
-		pm->ps->weaponTime += addTime;
-		if ( (pm->cmd.buttons & BUTTON_ALT_ATTACK) )
-		{
-			PM_AddEvent( EV_ALT_FIRE );
-		}
-		else
-		{
-			PM_AddEvent( EV_FIRE_WEAPON );
-		}
-		*/
 		return;
 	}
 
@@ -7611,12 +9057,28 @@ static void PM_Weapon( void )
 		PM_StartTorsoAnim( WeaponAttackAnim[pm->ps->weapon] );
 	}
 
-	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
+	if (pm->cmd.buttons & BUTTON_ALT_ATTACK)
 	{
+#ifdef _GAME
+		if (g_tweakWeapons.integer & WT_INFINITE_AMMO)
+			amount = 0;
+		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & WT_ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
+			amount = 1;//JAPRO mortar meh
+		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & WT_STAKE_GUN)
+			amount = 0;//Detonating stakes shouldnt take ammo
+		else
+#endif
 		amount = weaponData[pm->ps->weapon].altEnergyPerShot;
 	}
 	else
 	{
+#ifdef _GAME
+		if (g_tweakWeapons.integer & WT_INFINITE_AMMO)
+			amount = 0;
+		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & WT_STAKE_GUN)
+			amount = 10;//5 ammo per stake? eh
+		else
+#endif
 		amount = weaponData[pm->ps->weapon].energyPerShot;
 	}
 
@@ -7628,12 +9090,19 @@ static void PM_Weapon( void )
 		// enough energy to fire this weapon?
 		if ((pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] - amount) >= 0)
 		{
-			pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= amount;
+#ifdef _GAME
+			if (!pm->ps->stats[STAT_RACEMODE])
+#endif
+				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= amount;
 		}
 		else	// Not enough energy
 		{
 			// Switch weapons
+#ifdef _GAME
+			if ((pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted) && (pm->ps->weapon != WP_FLECHETTE || !(g_tweakWeapons.integer & WT_STAKE_GUN)))
+#else
 			if (pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted)
+#endif
 			{
 				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
 				if (pm->ps->weaponTime < 500)
@@ -7645,56 +9114,52 @@ static void PM_Weapon( void )
 		}
 	}
 
-	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK ) 	{
-		//if ( pm->ps->weapon == WP_BRYAR_PISTOL && pm->gametype != GT_SIEGE )
-		if (0)
-		{ //kind of a hack for now
-			PM_AddEvent( EV_FIRE_WEAPON );
-			addTime = weaponData[pm->ps->weapon].fireTime;
-		}
-		else if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode != 1)
-		{
-			PM_AddEvent( EV_FIRE_WEAPON );
-			addTime = weaponData[pm->ps->weapon].fireTime;
-		}
-		else
-		{
-			if (pm->ps->weapon != WP_MELEE ||
-				!pm->ps->m_iVehicleNum)
-			{ //do not fire melee events at all when on vehicle
-				PM_AddEvent( EV_ALT_FIRE );
-			}
-			addTime = weaponData[pm->ps->weapon].altFireTime;
-		}
+	if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->weapon == WP_DISRUPTOR)) {
+		addTime = 600;
 	}
 	else {
-		if (pm->ps->weapon != WP_MELEE ||
-			!pm->ps->m_iVehicleNum)
-		{ //do not fire melee events at all when on vehicle
-			PM_AddEvent( EV_FIRE_WEAPON );
+		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK ) 	{
+			if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode != 1) {
+				PM_AddEvent( EV_FIRE_WEAPON );
+				addTime = weaponData[pm->ps->weapon].fireTime;
+			}
+			else {
+				if (pm->ps->weapon != WP_MELEE || !pm->ps->m_iVehicleNum)
+					PM_AddEvent( EV_ALT_FIRE );
+#ifdef _GAME
+				if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & WT_STUN_SHOCKLANCE)
+					addTime = 1500;
+				else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & WT_ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
+					addTime = 3000;
+				else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & WT_IMPACT_NITRON))
+					addTime = 2000;
+				else
+#endif
+					addTime = weaponData[pm->ps->weapon].altFireTime;
+			}
 		}
-		addTime = weaponData[pm->ps->weapon].fireTime;
-		if ( pm->gametype == GT_SIEGE && pm->ps->weapon == WP_DET_PACK )
-		{	// were far too spammy before?  So says Rick.
-			addTime *= 2;
+		else {
+			if (pm->ps->weapon != WP_MELEE || !pm->ps->m_iVehicleNum)
+				PM_AddEvent( EV_FIRE_WEAPON );
+#ifdef _GAME
+			if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & WT_SLOW_SNIPER)//Sad hack to make instagib more playable
+				addTime = 1500;
+			else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & WT_STUN_LG)
+				addTime = 50;
+			else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & WT_IMPACT_NITRON))
+				addTime = 2000;
+			else
+#endif
+			addTime = weaponData[pm->ps->weapon].fireTime;
+			if ( pm->gametype == GT_SIEGE && pm->ps->weapon == WP_DET_PACK )
+				addTime *= 2;
 		}
 	}
-
-	/*
-	if ( pm->ps->powerups[PW_HASTE] ) {
-		addTime /= 1.3;
-	}
-	*/
 
 	if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
-	{
 		addTime *= 0.75;
-	}
 	else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
-	{
 		addTime *= 1.5;
-	}
-
 	pm->ps->weaponTime += addTime;
 }
 
@@ -7797,6 +9262,38 @@ static void PM_DropTimers( void ) {
 			pm->ps->torsoTimer = 0;
 		}
 	}
+
+	if (pm->ps->stats[STAT_DASHTIME] > pml.msec)//JAPRO dodge/dash/wj
+		pm->ps->stats[STAT_DASHTIME] -= pml.msec;
+	else if (pm->ps->stats[STAT_DASHTIME] > 0)
+		pm->ps->stats[STAT_DASHTIME] = 0;
+
+	if (pm->ps->stats[STAT_WJTIME] > pml.msec)//JAPRO dodge/dash/wj
+		pm->ps->stats[STAT_WJTIME] -= pml.msec;
+	else if (pm->ps->stats[STAT_WJTIME] > 0)
+		pm->ps->stats[STAT_WJTIME] = 0;
+
+	if (pm->ps->stats[STAT_JUMPTIME] > pml.msec)
+		pm->ps->stats[STAT_JUMPTIME] -= pml.msec;
+	else if (pm->ps->stats[STAT_JUMPTIME] > 0)
+		pm->ps->stats[STAT_JUMPTIME] = 0;
+
+#ifdef _GAME
+	if (g_tweakSaber.integer & ST_FIXED_SABERSWITCH) {
+		if (((gentity_t *)pm_entSelf)->client->saberDelayCount > 0) {
+			((gentity_t *)pm_entSelf)->client->saberDelayCount -= pml.msec;
+			((gentity_t *)pm_entSelf)->client->saberDelay = 1000;
+		}
+		if (((gentity_t *)pm_entSelf)->client->saberDelayCount <= 0) {
+			((gentity_t *)pm_entSelf)->client->saberDelayCount = 0;
+			((gentity_t *)pm_entSelf)->client->saberDelay = 0;
+		}
+	}
+	else {
+		((gentity_t *)pm_entSelf)->client->saberDelayCount = 0;
+		((gentity_t *)pm_entSelf)->client->saberDelay = 0;
+	}
+#endif
 }
 
 // Following function is stateless (at the moment). And hoisting it out
@@ -8082,7 +9579,7 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 			pmove->cmd.upmove <= 0 && !pmove->cmd.forwardmove && !pmove->cmd.rightmove*/)
 		{
 			// We just pressed the alt-fire key
-			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD )
+			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD && pmove->ps->pm_type != PM_NOCLIP && !pm->ps->stats[STAT_RACEMODE])
 			{
 				// not already zooming, so do it now
 				pmove->ps->zoomMode = 1;
@@ -8224,9 +9721,31 @@ void BG_CmdForRoll( playerState_t *ps, int anim, usercmd_t *pCmd )
 	switch ( (anim) )
 	{
 	case BOTH_ROLL_F:
+//[JAPRO - Serverside - Physics - Roll start/stop move - Start]
+
+		if (GetFixRoll(ps) > 2 && pCmd->forwardmove < 0)
+			break;
 		pCmd->forwardmove = 127;
 		pCmd->rightmove = 0;
 		break;
+
+		/*
+#ifdef _GAME
+		if (g_fixRoll.integer > 2 && pCmd->forwardmove < 0) 
+			break;
+		pCmd->forwardmove = 127;
+		pCmd->rightmove = 0;
+		break;
+#else
+		if (((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL3) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL3)) && (pCmd->forwardmove < 0)) 
+			break;
+		pCmd->forwardmove = 127;
+		pCmd->rightmove = 0;
+		break;
+#endif
+		*/
+
+//[JAPRO - Serverside - Physics - Roll start/stop move - End]
 	case BOTH_ROLL_B:
 		pCmd->forwardmove = -127;
 		pCmd->rightmove = 0;
@@ -8386,12 +9905,31 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 		ps->speed *= 0.75f;
 	}
 
-	if (ps->fd.forcePowersActive & (1 << FP_GRIP))
-	{
-		ps->speed *= 0.4f;
+//[JAPRO - Serverside + Clientside - Force - Add fast grip option - Start]
+	if (ps->fd.forcePowersActive & (1 << FP_GRIP)) {
+#ifdef _GAME
+		if (g_tweakForce.integer & FT_FASTGRIP)
+#else
+		if (cgs.isJAPlus || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FASTGRIP))
+#endif
+			ps->speed *= 0.8f;
+		else
+			ps->speed *= 0.4f;
 	}
+//[JAPRO - Serverside + Clientside - Force - Add fast grip option - End]
 
-	if (ps->fd.forcePowersActive & (1 << FP_SPEED))
+//JAPRO - Serverside - Force Combo - Start
+#ifdef _GAME
+ 	if ((g_tweakForce.integer & FT_FORCECOMBO) && ps->fd.forcePowersActive & (1 << FP_SPEED) && ps->fd.forcePowersActive & (1 << FP_RAGE))
+#else
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_FORCECOMBO) && ps->fd.forcePowersActive & (1 << FP_SPEED) && ps->fd.forcePowersActive & (1 << FP_RAGE))
+#endif
+	{
+		ps->speed *= 2.2f;
+	}
+//JAPRO - Serverside - Force Combo - End
+
+	else if (ps->fd.forcePowersActive & (1 << FP_SPEED))
 	{
 		ps->speed *= 1.7f;
 	}
@@ -8478,7 +10016,137 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 		}
 	}
 
-	if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50 )
+	/*
+#ifdef _GAME
+	if (g_fixRoll.integer > 2)//fixroll 3
+#else
+	if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL3) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL3))//fixroll3
+#endif
+	*/
+
+
+	if (GetFixRoll(ps) > 2)
+	{
+		if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50.0f )
+		{ //can't roll unless you're able to move normally
+			if ((ps->legsAnim) == BOTH_ROLL_B)
+			{ //backwards roll is pretty fast, should also be slower
+				ps->speed = ps->legsTimer/2.5f;
+			}
+			else
+			{
+				if ( ps->legsTimer <= 800 )
+				{
+					if ( ps->legsTimer <= 100 )
+					{
+						if ( (pm->cmd.forwardmove < 0) )
+						{
+							ps->speed = ps->legsTimer/20.0f;
+						}
+						else
+						{
+							ps->speed = ps->legsTimer/5.0f;
+						}
+					}
+					else
+					{
+						if ( pm->cmd.forwardmove < 0 )
+							ps->speed = ps->legsTimer/20.0f;
+						else
+							ps->speed = ps->legsTimer/1.5;
+					}
+				}
+				else
+				{
+					ps->speed = ps->legsTimer/1.5;
+				}
+			}
+		}
+	}
+/*
+#ifdef _GAME
+	else if (g_fixRoll.integer == 2)//fixroll 2
+#else
+	else if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL2) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL2))//fixroll2
+#endif
+	*/
+
+	else if (GetFixRoll(ps) == 2)
+	{
+		if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50 )
+		{ //can't roll unless you're able to move normally
+			if ((ps->legsAnim) == BOTH_ROLL_B)
+			{ //backwards roll is pretty fast, should also be slower
+				if (ps->legsTimer > 800)
+				{
+					ps->speed = ps->legsTimer/2.5;
+				}
+				else
+				{
+					ps->speed = ps->legsTimer/6.0;//450;
+				}
+			}
+			else
+			{
+				if (ps->legsTimer > 800)
+				{
+					ps->speed = ps->legsTimer/1.5;//450;
+				}
+				else
+				{
+					ps->speed = ps->legsTimer/5.0;//450;
+				}
+			}
+			if (ps->speed > 600)
+			{
+				ps->speed = 600;
+			}
+			//Automatically slow down as the roll ends.
+		}
+	}
+
+/*
+#ifdef _GAME
+	else if (g_fixRoll.integer == 1)//fixroll 1
+#else
+	else if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))//fixroll1
+#endif
+*/
+
+	else if (GetFixRoll(ps) == 1)
+	{
+		if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50 )
+		{ //can't roll unless you're able to move normally
+			if ((ps->legsAnim) == BOTH_ROLL_B)
+			{ //backwards roll is pretty fast, should also be slower
+				if (ps->legsTimer > 800)
+				{
+					ps->speed = ps->legsTimer/2.5;
+				}
+				else
+				{
+					ps->speed = ps->legsTimer/6.0;//450;
+				}
+			}
+			else
+			{
+				if (ps->legsTimer > 800)
+				{
+					ps->speed = ps->legsTimer/1.5;//450;
+				}
+				else
+				{
+					ps->speed = ps->legsTimer/5.0;//450;
+				}
+			}
+			if (ps->speed > 600)
+			{
+				ps->speed = 600;
+			}
+			//Automatically slow down as the roll ends.
+		}
+	}
+	else if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50 ) //base / fixroll 0
 	{ //can't roll unless you're able to move normally
 		if ((ps->legsAnim) == BOTH_ROLL_B)
 		{ //backwards roll is pretty fast, should also be slower
@@ -8509,17 +10177,19 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 		//Automatically slow down as the roll ends.
 	}
 
-	saber = BG_MySaber( ps->clientNum, 0 );
-	if ( saber
-		&& saber->moveSpeedScale != 1.0f )
-	{
-		ps->speed *= saber->moveSpeedScale;
-	}
-	saber = BG_MySaber( ps->clientNum, 1 );
-	if ( saber
-		&& saber->moveSpeedScale != 1.0f )
-	{
-		ps->speed *= saber->moveSpeedScale;
+	if (!ps->stats[STAT_RACEMODE]) {
+		saber = BG_MySaber( ps->clientNum, 0 );
+		if ( saber 
+			&& saber->moveSpeedScale != 1.0f )
+		{
+			ps->speed *= saber->moveSpeedScale;
+		}
+		saber = BG_MySaber( ps->clientNum, 1 );
+		if ( saber 
+			&& saber->moveSpeedScale != 1.0f )
+		{
+			ps->speed *= saber->moveSpeedScale;
+		}
 	}
 }
 
@@ -9614,6 +11284,20 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 			{//still on ground?
 				vec3_t yawAngles, backDir;
 
+
+#ifdef _GAME
+			gclient_t *client = NULL;
+			{
+				int clientNum = pm->ps->clientNum;
+				if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+						client = g_entities[clientNum].client;
+				}
+			}
+	
+			if (client && client->lastKickTime + 50 < level.time) //japro serverside flood protect on staff dfa, use the same debouncer as flipkick i guess
+#endif
+				{
+
 				//push backwards some?
 				VectorSet( yawAngles, 0, pm->ps->viewangles[YAW]+180, 0 );
 				AngleVectors( yawAngles, backDir, 0, 0 );
@@ -9628,6 +11312,16 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 				PM_AddEvent(EV_JUMP);
 				//G_SoundOnEnt( ent, CHAN_BODY, "sound/weapons/force/jump.wav" );
 				ucmd->upmove = 0; //clear any actual jump command
+
+#ifdef _GAME
+				if (client) {
+					client->lastKickTime = level.time;
+				}
+#endif
+
+				}
+
+
 			}
 		}
 		ucmd->forwardmove = ucmd->rightmove = ucmd->upmove = 0;
@@ -10170,6 +11864,11 @@ void PM_MoveForKata(usercmd_t *ucmd)
 	}
 }
 
+static QINLINE float bg_roundfloat(float n)
+{
+	return (n < 0.0f) ? ceilf(n - 0.5f) : floorf(n + 0.5f);
+}
+
 void PmoveSingle (pmove_t *pmove) {
 	qboolean stiffenedUp = qfalse;
 	float gDist = 0;
@@ -10260,8 +11959,18 @@ void PmoveSingle (pmove_t *pmove) {
 		{ //flipover medium stance attack
 			if (pm->ps->legsTimer < 1600 && pm->ps->legsTimer > 900)
 			{
-				pm->ps->viewangles[YAW] += pml.frametime*240.0f;
-				PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+//[JAPRO - Serverside - Saber - Tweak yellow dfa - Start]
+#ifdef _GAME
+				if (!(g_tweakSaber.integer & ST_FIXYELLOWDFA))
+#else
+				if (!((cgs.cinfo & JAPLUS_CINFO_YELLOWDFA) || (cgs.jcinfo & JAPRO_CINFO_YELLOWDFA)))
+#endif
+
+				{
+					pm->ps->viewangles[YAW] += pml.frametime*240.0f;
+					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+				}
+//[JAPRO - Serverside - Saber - Tweak yellow dfa - Start]
 			}
 		}
 		stiffenedUp = qtrue;
@@ -10362,15 +12071,39 @@ void PmoveSingle (pmove_t *pmove) {
 				}
 				pm->ps->forceHandExtend = HANDEXTEND_TAUNT;
 				pm->ps->forceHandExtendTime = pm->cmd.serverTime + 100;
-			}
-			if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
-			{
 				stiffenedUp = qtrue;
-				PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+//[JAPRO - Serverside +clientside - Physics - Unlock bow movement/turning- Start]
+#ifdef CGAME
+				if (cgs.isJAPlus || cgs.isJAPro)
+				{
+				}
+				else
+				{
+					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+				}
+#endif
 				pm->cmd.rightmove = 0;
 				pm->cmd.upmove = 0;
 				pm->cmd.forwardmove = 0;
 				pm->cmd.buttons = 0;
+			}
+			else if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
+			{
+#ifdef CGAME
+				if (cgs.isJAPlus || cgs.isJAPro)
+				{
+				}
+				else
+				{
+					stiffenedUp = qtrue;
+					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+					pm->cmd.rightmove = 0;
+					pm->cmd.upmove = 0;
+					pm->cmd.forwardmove = 0;
+					pm->cmd.buttons = 0;
+				}
+#endif
+//[JAPRO - Serverside +clientside - Physics - Unlock bow movement/turning- End]
 			}
 		}
 	}
@@ -10550,6 +12283,10 @@ void PmoveSingle (pmove_t *pmove) {
 		pml.msec = 200;
 	}
 
+#ifdef _GAME
+	((gentity_t *)pm_entSelf)->client->pmoveMsec = pml.msec;
+#endif
+
 	/*
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{
@@ -10623,12 +12360,26 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_AdjustAngleForWallRunUp( pm->ps, &pm->cmd, qtrue );
 	PM_AdjustAngleForWallRun( pm->ps, &pm->cmd, qtrue );
 
-	if (pm->ps->saberMove == LS_A_JUMP_T__B_ || pm->ps->saberMove == LS_A_LUNGE ||
-		pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK ||
-		pm->ps->saberMove == LS_A_BACKSTAB)
-	{
+//[JAPRO - Serverside + Clientside - Saber - Spin Red DFA , Spin Backslash - Start]
+	if (pm->ps->saberMove == LS_A_BACKSTAB)
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
-	}
+
+#ifdef _GAME
+	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(g_tweakSaber.integer & ST_SPINREDDFA))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+	else if ((pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK)  && !(g_tweakSaber.integer & ST_SPINBACKSLASH))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+	else if	(pm->ps->saberMove == LS_A_LUNGE && (!(g_tweakSaber.integer & ST_JK2LUNGE) || pm->ps->stats[STAT_RACEMODE]))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+#else
+	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(cgs.jcinfo & JAPRO_CINFO_REDDFA))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+	else if (pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK && !(cgs.jcinfo & JAPRO_CINFO_BACKSLASH))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+	else if (pm->ps->saberMove == LS_A_LUNGE && (!(cgs.jcinfo & JAPRO_CINFO_JK2LUNGE)) || pm->ps->stats[STAT_RACEMODE])
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+#endif
+//[JAPRO - Serverside + Clientside - Saber - Spin Red DFA , Spin Backslash - End]
 
 #if 0
 	if ((pm->ps->legsAnim) == BOTH_KISSER1LOOP ||
@@ -10700,9 +12451,14 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 	}
 
-	if (pm->ps->pm_type == PM_FREEZE) {
+#ifdef _GAME
+	if (pm->ps->pm_type == PM_FREEZE && (g_emotesDisable.integer == ((1 << E_ALL) - 1))) {//Sad hack loda fixme
 		return;		// no movement at all
 	}
+#else
+	if (pm->ps->pm_type == PM_FREEZE)
+		return;		// no movement at all
+#endif
 
 	if ( pm->ps->pm_type == PM_INTERMISSION || pm->ps->pm_type == PM_SPINTERMISSION) {
 		return;		// no movement at all
@@ -10729,10 +12485,24 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->ps->gravity *= 0.25f;
 		}
 	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{
+		savedGravity = pm->ps->gravity;
+		pm->ps->gravity *= 0.01f;
+	}
 	else if (gPMDoSlowFall)
 	{
 		savedGravity = pm->ps->gravity;
 		pm->ps->gravity *= 0.5;
+	}
+
+	if (pm->cmd.buttons & BUTTON_DASH) { //JAPRO DASH
+		PM_CheckDash();
+		PM_CheckWallJump();
 	}
 
 	//if we're in jetpack mode then see if we should be jetting around
@@ -10816,6 +12586,63 @@ void PmoveSingle (pmove_t *pmove) {
 			}
 		}
 	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{
+		if (pm->cmd.rightmove > 0)
+			PM_ContinueLegsAnim(BOTH_INAIRRIGHT1);
+		else if (pm->cmd.rightmove < 0)
+            PM_ContinueLegsAnim(BOTH_INAIRLEFT1);
+		else if (pm->cmd.forwardmove > 0)
+			PM_ContinueLegsAnim(BOTH_INAIR1);
+		else if (pm->cmd.forwardmove < 0)
+			PM_ContinueLegsAnim(BOTH_INAIRBACK1);
+		else
+			PM_ContinueLegsAnim(BOTH_INAIR1);
+		if (pm->cmd.rightmove || pm->cmd.forwardmove) {//Directional thrust vector
+			if (pm->ps->velocity[2] < -512)
+				pm->ps->velocity[2] += 8.0f;
+			else if (pm->ps->velocity[2] < -256)
+				pm->ps->velocity[2] += 6.0f;
+			else if (pm->ps->velocity[2] < -128)
+				pm->ps->velocity[2] += 5.0f;
+			else if (pm->ps->velocity[2] < -64)
+				pm->ps->velocity[2] += 4.0f;
+			else if (pm->ps->velocity[2] < 0)
+				pm->ps->velocity[2] += 3.0f;
+			else if (pm->ps->velocity[2] < 128)
+				pm->ps->velocity[2] += 2.0f;
+			else if (pm->ps->velocity[2] < 256)
+				pm->ps->velocity[2] += 1.0f;
+			else
+				pm->ps->velocity[2] += 0.5f;
+			pm->ps->eFlags |= EF_JETPACK_FLAMING;
+		}
+		else { //Strong "up jet"
+			if (pm->ps->velocity[2] < -512)
+				pm->ps->velocity[2] += 12.0f;
+			else if (pm->ps->velocity[2] < -256)
+				pm->ps->velocity[2] += 10.0f;
+			else if (pm->ps->velocity[2] < -128)
+				pm->ps->velocity[2] += 8.0f;
+			else if (pm->ps->velocity[2] < -64)
+				pm->ps->velocity[2] += 7.0f;
+			else if (pm->ps->velocity[2] < 0)
+				pm->ps->velocity[2] += 5.0f;
+			else if (pm->ps->velocity[2] < 128)
+				pm->ps->velocity[2] += 4.0f;
+			else if (pm->ps->velocity[2] < 256)
+				pm->ps->velocity[2] += 3.0f;
+			else if (pm->ps->velocity[2] < 512)
+				pm->ps->velocity[2] += 2.0f;
+			else
+				pm->ps->velocity[2] += 1.0f;
+			pm->ps->eFlags |= EF_JETPACK_FLAMING;
+		}
+	}
 
 	if (pm->ps->clientNum >= MAX_CLIENTS &&
 		pm_entSelf && pm_entSelf->m_pVehicle)
@@ -10889,10 +12716,14 @@ void PmoveSingle (pmove_t *pmove) {
 			pEnt->s.NPC_class != CLASS_VEHICLE) //don't bounce on vehicles
 		{ //this is actually an NPC, let's try to bounce of its head to make sure we can't just stand around on top of it.
 			if (pm->ps->velocity[2] < 270)
-			{ //try forcing velocity up and also force him to jump
-				pm->ps->velocity[2] = 270; //seems reasonable
-				pm->cmd.upmove = 127;
-			}
+
+
+				if (!GetFlipkick(pm->ps))
+				{ //try forcing velocity up and also force him to jump
+					pm->ps->velocity[2] = 270; //seems reasonable
+					if (pm->ps->clientNum < MAX_CLIENTS) //Fixes a crash that happens when npcs bounce on other npcs heads with g_flipkick 0 ...?
+						pm->cmd.upmove = 127; //Probably this is why it was crashing, trying to send this on an npc...?
+				}
 		}
 #ifdef _GAME
 		else if ( !pm->ps->zoomMode &&
@@ -11037,8 +12868,7 @@ void PmoveSingle (pmove_t *pmove) {
 	}
 	else
 	{ //don't even run physics on a player if he's on a vehicle - he goes where the vehicle goes
-		if (pm->ps->pm_type == PM_FLOAT
-			||pm_flying == FLY_NORMAL)
+		if (pm->ps->pm_type == PM_FLOAT	|| pm_flying == FLY_NORMAL)
 		{
 			PM_FlyMove ();
 		}
@@ -11048,6 +12878,33 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 		else
 		{
+
+#if _GRAPPLE
+#if _GAME
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (g_allowGrapple.integer == 1)) {
+				//Com_Printf("Flags are %i\n", pm->ps->pm_flags);
+				PM_GrappleMoveTarzan();
+			} 		
+		
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (g_allowGrapple.integer > 1)) {
+				PM_GrappleMove();
+				PM_AirMove();// We can wiggle a bit
+			} 
+			else
+#else
+
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && !(cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
+				PM_GrappleMoveTarzan();
+			} 
+
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
+				PM_GrappleMove();
+				PM_AirMove();// We can wiggle a bit
+			} 
+			else
+#endif
+
+#endif
 			if (pm->ps->pm_flags & PMF_TIME_WATERJUMP) {
 				PM_WaterJumpMove();
 			} else if ( pm->waterlevel > 1 ) {
@@ -11132,11 +12989,48 @@ void PmoveSingle (pmove_t *pmove) {
 	// entering / leaving water splashes
 	PM_WaterEvents();
 
-	// snap velocity to integer coordinates to save network bandwidth
-	if ( !pm->pmove_float )
-		trap->SnapVector( pm->ps->velocity );
+	//Walbug fix start, if getting stuck w/o noclip is even possible.  This should maybe be after round float? im not sure..
+	if ((pm->ps->persistant[PERS_TEAM] != TEAM_SPECTATOR) && pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLengthSquared(pm->ps->velocity) > VectorLengthSquared(pml.previous_velocity)))
+			VectorClear(pm->ps->velocity); //Their velocity is increasing while their origin is not moving (wallbug), so prevent this..
+	//Wallbug fix end
 
+	if (pm->ps->persistant[PERS_TEAM] == TEAM_SPECTATOR) {
+		trap->SnapVector( pm->ps->velocity ); 
+	}
+	else {
+		if (pm->ps->stats[STAT_RACEMODE] || pm->pmove_float > 1) //japro fix racemode fps
+			pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
+	#ifdef _GAME
+		else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.
+			//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
+		}
+	#elif _CGAME
+		else if ((cgs.jcinfo & JAPRO_CINFO_HIGHFPSFIX) && ((pml.msec < 4) || (pml.msec > 25))) {
+		}
+	#endif
+		else if (!pm->pmove_float) {
+			/*
+			bgEntity_t *veh;	
+			veh = pm_entSelf;
+
+			if (veh->m_pVehicle && veh->m_pVehicle->m_pPilot && veh->m_pVehicle->m_pPilot->playerState && veh->m_pVehicle->m_pPilot->playerState->stats[STAT_RACEMODE]) {
+			}
+			else
+			*/
+			trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
+		}
+	}
+	
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
+	{
+		pm->ps->gravity = savedGravity;
+	}
+
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
 	{
 		pm->ps->gravity = savedGravity;
 	}
@@ -11198,6 +13092,12 @@ void Pmove (pmove_t *pmove) {
 
 	pmove->ps->pmove_framecount = (pmove->ps->pmove_framecount+1) & ((1<<PS_PMOVEFRAMECOUNTBITS)-1);
 
+	if (pmove->ps->stats[STAT_RACEMODE] /*pm->ps->clientNum < MAX_CLIENTS*/) {//racemode only?
+		pmove->cmd.angles[ROLL] = 0;
+		pmove->ps->viewangles[ROLL] = 0;
+		pmove->ps->delta_angles[ROLL] = 0;
+	}
+
 	// chop the move up if it is too long, to prevent framerate
 	// dependent behavior
 	while ( pmove->ps->commandTime != finalTime ) {
@@ -11205,7 +13105,12 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 
-		if ( pmove->pmove_fixed ) {
+		if (pmove->ps->stats[STAT_RACEMODE]) {
+			if ( msec > 8 ) {
+				msec = 8;
+			}
+		}
+		else if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}

@@ -754,6 +754,8 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 		to->weapon = MSG_ReadDeltaKey( msg, key, from->weapon, 8);
 
 		to->forcesel = MSG_ReadDeltaKey( msg, key, from->forcesel, 8);
+		if (to->forcesel == 1 || to->forcesel >= 18)
+			to->forcesel = 0xFF;
 		to->invensel = MSG_ReadDeltaKey( msg, key, from->invensel, 8);
 
 		to->generic_cmd = MSG_ReadDeltaKey( msg, key, from->generic_cmd, 8);
@@ -768,6 +770,8 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 		to->weapon = from->weapon;
 
 		to->forcesel = from->forcesel;
+		if (to->forcesel == 1 || to->forcesel >= 18)
+			to->forcesel = 0xFF;
 		to->invensel = from->invensel;
 
 		to->generic_cmd = from->generic_cmd;

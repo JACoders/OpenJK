@@ -812,7 +812,6 @@ cvar_t	*cl_run;
 
 cvar_t	*cl_anglespeedkey;
 
-
 /*
 ================
 CL_AdjustAngles
@@ -898,12 +897,12 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	side = 0;
 	up = 0;
 
-	if (cl_idrive->integer) {
+	if (cl_idrive->integer && !cl_test->integer) {
 		float s1, s2;
 
 		if (in_strafe.active) {
-			s1 = CL_KeyState(&in_right);
-			s2 = CL_KeyState(&in_left);
+			s1 = CL_KeyState (&in_right);
+			s2 = CL_KeyState (&in_left);
 			if (s1 && s2) {
 				if (in_right.downtime > in_left.downtime)
 					s2 = 0;
@@ -914,8 +913,8 @@ void CL_KeyMove( usercmd_t *cmd ) {
 			side -= movespeed * s2;
 		}
 
-		s1 = CL_KeyState(&in_moveright);
-		s2 = CL_KeyState(&in_moveleft);
+		s1 = CL_KeyState (&in_moveright);
+		s2 = CL_KeyState (&in_moveleft);
 		if (s1 && s2) {
 			if (in_moveright.downtime > in_moveleft.downtime)
 				s2 = 0;
@@ -925,8 +924,8 @@ void CL_KeyMove( usercmd_t *cmd ) {
 		side += movespeed * s1;
 		side -= movespeed * s2;
 
-		s1 = CL_KeyState(&in_up);
-		s2 = CL_KeyState(&in_down);
+		s1 = CL_KeyState (&in_up);
+		s2 = CL_KeyState (&in_down);
 		if (s1 && s2) {
 			if (in_up.downtime > in_down.downtime)
 				s2 = 0;
@@ -935,9 +934,9 @@ void CL_KeyMove( usercmd_t *cmd ) {
 		}
 		up += movespeed * s1;
 		up -= movespeed * s2;
-
-		s1 = CL_KeyState(&in_forward);
-		s2 = CL_KeyState(&in_back);
+	
+		s1 = CL_KeyState (&in_forward);
+		s2 = CL_KeyState (&in_back);
 		if (s1 && s2) {
 			if (in_forward.downtime > in_back.downtime)
 				s2 = 0;
@@ -945,31 +944,48 @@ void CL_KeyMove( usercmd_t *cmd ) {
 				s1 = 0;
 		}
 		forward += movespeed * s1;
-		forward -= movespeed * s2;
+		forward -= movespeed * s2;		
 
-		cmd->forwardmove = ClampChar(forward);
-		cmd->rightmove = ClampChar(side);
-		cmd->upmove = ClampChar(up);
+		cmd->forwardmove = ClampChar( forward );
+		cmd->rightmove = ClampChar( side );
+		cmd->upmove = ClampChar( up );
 	}
 	else {
-		if (in_strafe.active) {
-			side += movespeed * CL_KeyState(&in_right);
-			side -= movespeed * CL_KeyState(&in_left);
+		int left, right;
+
+		if ( in_strafe.active ) {
+			side += movespeed * CL_KeyState (&in_right);
+			side -= movespeed * CL_KeyState (&in_left);
 		}
 
-		side += movespeed * CL_KeyState(&in_moveright);
-		side -= movespeed * CL_KeyState(&in_moveleft);
+		side += movespeed * CL_KeyState (&in_moveright);
+#if TESTY
+		left = side;
+#endif
+		side -= movespeed * CL_KeyState (&in_moveleft);
+#if TESTY
+		right = -side;
+#endif
 
-		up += movespeed * CL_KeyState(&in_up);
-		up -= movespeed * CL_KeyState(&in_down);
+		up += movespeed * CL_KeyState (&in_up);
+		up -= movespeed * CL_KeyState (&in_down);
 
-		forward += movespeed * CL_KeyState(&in_forward);
-		forward -= movespeed * CL_KeyState(&in_back);
+		forward += movespeed * CL_KeyState (&in_forward);
+		forward -= movespeed * CL_KeyState (&in_back);
+	
+		cmd->forwardmove = ClampChar( forward );
+		cmd->rightmove = ClampChar( side );
+		cmd->upmove = ClampChar( up );
 
-		cmd->forwardmove = ClampChar(forward);
-		cmd->rightmove = ClampChar(side);
-		cmd->upmove = ClampChar(up);
-
+#if TESTY
+		if (cl_test->integer == 1 && left == 127 && right == 0) {
+			cmd->rightmove = 127;
+		}
+		if (cl_test->integer == 2 && left == 127 && right == 0 && forward == 127) {
+			cmd->rightmove = 127;
+			cmd->forwardmove = 0;
+		}
+#endif
 	}
 }
 /*
@@ -1325,6 +1341,12 @@ void CL_FinishMove( usercmd_t *cmd ) {
 		cl.cgameViewAngleForceTime = 0;
 	}
 
+#if TESTY
+	if (cl_test->integer && cl_testAngle->value && cl_testAngle->value < 90.0f && cl_testAngle->value > -90.0f) {
+		cl.viewangles[YAW] -= cl_testAngle->value; //JAPRO ENGINE
+	}
+#endif
+
 	if ( cl_crazyShipControls )
 	{
 		float pitchSubtract, pitchDelta, yawDelta;
@@ -1478,8 +1500,8 @@ void CL_CreateNewCommands( void ) {
 
 	// generate a command for this frame
 	cl.cmdNumber++;
-	cmdNum = cl.cmdNumber & REAL_CMD_MASK;
-	cl.cmds[cmdNum] = CL_CreateCmd();
+	cmdNum = cl.cmdNumber & REAL_CMD_MASK;//Loda - FPS UNLOCK ENGINE
+	cl.cmds[cmdNum] = CL_CreateCmd ();
 }
 
 /*
@@ -1528,8 +1550,8 @@ qboolean CL_ReadyToSendPacket( void ) {
 	}
 
 	// check for exceeding cl_maxpackets
-	if ( cl_maxpackets->integer < 20 ) {
-		Cvar_Set( "cl_maxpackets", "20" );
+	if ( cl_maxpackets->integer < 15 ) {
+		Cvar_Set( "cl_maxpackets", "15" );
 	}
 	else if ( cl_maxpackets->integer > 1000 ) {
 		Cvar_Set( "cl_maxpackets", "1000" );
@@ -1620,7 +1642,7 @@ void CL_WritePacket( void ) {
 		Com_Printf("MAX_PACKET_USERCMDS\n");
 	}
 	if ( count >= 1 ) {
-		const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);
+		const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);//Loda - FPS UNLOCK ENGINE
 
 		if ( cl_showSend->integer ) {
 			Com_Printf( "(%i)", count );
@@ -1647,7 +1669,7 @@ void CL_WritePacket( void ) {
 
 		// write all the commands, including the predicted command
 		for ( i = 0 ; i < count ; i++ ) {
-			j = (cl.cmdNumber - count + i + 1) & REAL_CMD_MASK;
+			j = (cl.cmdNumber - count + i + 1) & REAL_CMD_MASK;//Loda - FPS UNLOCK ENGINE
 			cmd = &cl.cmds[j];
 			MSG_WriteDeltaUsercmdKey (&buf, key, oldcmd, cmd);
 			oldcmd = cmd;
@@ -1840,7 +1862,11 @@ void CL_InitInput( void ) {
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
 
-	cl_idrive = Cvar_Get("cl_idrive", "0", 0);
+#if TESTY
+	cl_test = Cvar_Get ("cl_test", "0", 0);//JAPRO ENGINE
+	cl_testAngle = Cvar_Get ("cl_testAngle", "0", 0);//JAPRO ENGINE
+#endif
+	cl_idrive = Cvar_Get ("cl_idrive", "0", 0);//JAPRO ENGINE
 }
 
 /*

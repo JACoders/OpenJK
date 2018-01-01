@@ -76,10 +76,15 @@ void SV_GetChallenge( netadr_t from ) {
 
 	// Prevent using getchallenge as an amplifier
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
+		Com_DPrintf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
+		return;
+	}
+
+	// Allow getchallenge to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
 		return;
 	}
 
@@ -585,7 +590,9 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 	// call the game begin function
 	GVM_ClientBegin( client - svs.clients );
 
-	SV_BeginAutoRecordDemos();
+	if (sv_autoDemo->integer == 1) { //Bots dont trigger this so whatever
+		SV_BeginAutoRecordDemos();
+	}	
 }
 
 /*
@@ -949,6 +956,8 @@ const char *SV_GetStringEdString(char *refSection, char *refName);
 static void SV_Disconnect_f( client_t *cl ) {
 //	SV_DropClient( cl, "disconnected" );
 	SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","DISCONNECTED") );
+
+	//If there are no humans... stop the bot demo..? how to stop sum1 from abusing this by recon spamming.
 }
 
 /*
@@ -1334,22 +1343,49 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// but not other people
 	// We don't do this when the client hasn't been active yet since its
 	// normal to spam a lot of commands when downloading
-	if ( !com_cl_running->integer &&
-		cl->state >= CS_ACTIVE &&
-		sv_floodProtect->integer )
-	{
+	if (!com_cl_running->integer && cl->state >= CS_ACTIVE && sv_floodProtect->integer) {
 		const int floodTime = (sv_floodProtect->integer == 1) ? 1000 : sv_floodProtect->integer;
-		if ( svs.time < (cl->lastReliableTime + floodTime) ) {
-			// ignore any other text messages from this client but let them keep playing
-			// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
-			clientOk = qfalse;
+
+		if (sv_newfloodProtect->integer > 1) {
+			if (!Q_stricmp(s, "score")) {
+				if (svs.time < (cl->lastReliableTime[1] + floodTime))
+					clientOk = qfalse;
+				else
+					cl->lastReliableTime[1] = svs.time;
+			}
+			else if (!Q_strncmp(s, "say ", 4)) {
+				if (svs.time < (cl->lastReliableTime[2] + floodTime))
+					clientOk = qfalse;
+				else
+					cl->lastReliableTime[2] = svs.time;
+			}
+			else if (!Q_stricmp(s, "kill")) {
+				if (svs.time < (cl->lastReliableTime[3] + floodTime))
+					clientOk = qfalse;
+				else
+					cl->lastReliableTime[3] = svs.time;
+			}
+			else {
+				if (svs.time < (cl->lastReliableTime[0] + floodTime))
+					clientOk = qfalse;
+				else
+					cl->lastReliableTime[0] = svs.time;
+			}
 		}
 		else {
-			cl->lastReliableTime = svs.time;
+			if (svs.time < (cl->lastReliableTime[0] + floodTime)) {
+				// ignore any other text messages from this client but let them keep playing
+				// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
+				clientOk = qfalse;
+			}
+			else {
+				cl->lastReliableTime[0] = svs.time;
+			}
+			if (sv_newfloodProtect->integer) {
+				cl->lastReliableTime[0] = svs.time;
+			}
 		}
-		if ( sv_floodProtectSlow->integer ) {
-			cl->lastReliableTime = svs.time;
-		}
+
 	}
 
 	SV_ExecuteClientCommand( cl, s, clientOk );

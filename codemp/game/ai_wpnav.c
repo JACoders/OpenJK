@@ -2040,7 +2040,7 @@ int LoadPathData(const char *filename)
 
 	if (!f)
 	{
-		trap->Print(S_COLOR_YELLOW "Bot route data not found for %s\n", filename);
+		trap->Print(S_COLOR_YELLOW "Bot route data not found for %s^7\n", filename);
 		return 2;
 	}
 

@@ -31,6 +31,8 @@ displayContextDef_t cgDC;
 
 extern int cgSiegeRoundState;
 extern int cgSiegeRoundTime;
+
+int cg_dueltypes[MAX_CLIENTS];//JAPRO - Clientside - Fullforce Duels
 /*
 Ghoul2 Insert Start
 */
@@ -2486,6 +2488,7 @@ Ghoul2 Insert End
 
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( cg_weapons, 0, sizeof(cg_weapons) );
+	memset( cg_dueltypes, 0, sizeof(cg_dueltypes) );//JAPRO - Clientside - Fullforce Duels
 
 	cg.clientNum = clientNum;
 

@@ -874,6 +874,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 		{
 			count = Round(prim->mSpawnCount.GetVal());
 		}
+
 		// Make sure we have at least one particle after scaling
 		if(prim->mSpawnCount.GetMin() >= 1.0f && count < 1)
 		{

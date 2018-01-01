@@ -1399,7 +1399,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 		}
 	}
 
-	newent = G_Spawn();
+	newent = G_Spawn(qtrue);
 
 	if ( newent == NULL )
 	{
@@ -1420,9 +1420,9 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	//newent->client = (gclient_s *)G_Alloc (sizeof(gclient_s));
 	G_CreateFakeClient(newent->s.number, &newent->client);
 
-	newent->NPC->tempGoal = G_Spawn();
-
-	if ( newent->NPC->tempGoal == NULL )
+	newent->NPC->tempGoal = G_Spawn(qtrue);
+	
+	if ( newent->NPC->tempGoal == NULL ) 
 	{
 		newent->NPC = NULL;
 		goto finish;
@@ -1536,7 +1536,11 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 		newent->client->NPC_class = CLASS_VEHICLE;
 		if ( g_vehicleInfo[iVehIndex].type == VH_FIGHTER )
 		{//FIXME: EXTERN!!!
-			newent->flags |= (FL_NO_KNOCKBACK|FL_SHIELDED|FL_DMG_BY_HEAVY_WEAP_ONLY);//don't get pushed around, blasters bounce off, only damage from heavy weaps
+			if (g_tweakWeapons.integer & WT_ANTI_VEHICLE) {
+				newent->flags |= (FL_NO_KNOCKBACK);
+			}
+			else
+				newent->flags |= (FL_NO_KNOCKBACK|FL_SHIELDED|FL_DMG_BY_HEAVY_WEAP_ONLY);//don't get pushed around, blasters bounce off, only damage from heavy weaps
 		}
 		//WTF?!!! Ships spawning in pointing straight down!
 		//set them up to start landed
@@ -1942,7 +1946,7 @@ extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
 void NPC_Precache ( gentity_t *spawner );
 void NPC_PrecacheType( char *NPC_type )
 {
-	gentity_t *fakespawner = G_Spawn();
+	gentity_t *fakespawner = G_Spawn(qtrue);
 	if ( fakespawner )
 	{
 		fakespawner->NPC_type = NPC_type;
@@ -3952,9 +3956,10 @@ NPC_Spawn_f
 
 gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle )
 {
-	gentity_t		*NPCspawner = G_Spawn();
+	gentity_t		*NPCspawner = G_Spawn(qtrue);
 	vec3_t			forward, end;
 	trace_t			trace;
+	gentity_t		*ourVehicle;
 
 	if(!NPCspawner)
 	{
@@ -4095,7 +4100,9 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 		NPC_Wampa_Precache();
 	}
 
-	return (NPC_Spawn_Do( NPCspawner ));
+	ourVehicle = (NPC_Spawn_Do( NPCspawner ));
+
+	return ourVehicle;
 }
 
 void NPC_Spawn_f( gentity_t *ent )
@@ -4103,6 +4110,7 @@ void NPC_Spawn_f( gentity_t *ent )
 	char	npc_type[1024];
 	char	targetname[1024];
 	qboolean	isVehicle = qfalse;
+	int i = 0;
 
 	trap->Argv(2, npc_type, 1024);
 	if ( Q_stricmp( "vehicle", npc_type ) == 0 )
@@ -4115,6 +4123,18 @@ void NPC_Spawn_f( gentity_t *ent )
 	{
 		trap->Argv(3, targetname, 1024);
 	}
+
+	while (npc_type[i]) {
+		npc_type[i] = tolower(npc_type[i]);
+		i++;
+	}
+
+	if (Q_stricmp("ragnos", npc_type) == 0) //Sad hack, but even tho spawning ragnos is fixed, it will still crash people when it starts doing stuff
+		return;
+	if (Q_stricmp("saber_droid", npc_type) == 0)
+		return;
+	if (Q_stricmp("saber_droid_training", npc_type) == 0) 
+		return;
 
 	NPC_SpawnType( ent, npc_type, targetname, isVehicle );
 }
@@ -4264,6 +4284,31 @@ qboolean	showBBoxes = qfalse;
 void Cmd_NPC_f( gentity_t *ent )
 {
 	char	cmd[1024];
+
+	if (!ent->client)
+		return;
+
+	if (ent->client->sess.fullAdmin)//Logged in as full admin
+	{
+		if (!(g_fullAdminLevel.integer & (1 << A_NPC)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (npc).\n\"" );
+			return;
+		}
+	}
+	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+	{
+		if (!(g_juniorAdminLevel.integer & (1 << A_NPC)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (npc).\n\"" );
+			return;
+		}
+	}
+	else if (!sv_cheats.integer)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (npc).\n\"" );//replaces "Cheats are not enabled on this server." msg
+		return;
+	}
 
 	trap->Argv( 1, cmd, 1024 );
 

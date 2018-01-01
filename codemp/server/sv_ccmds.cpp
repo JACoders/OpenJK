@@ -272,8 +272,8 @@ static void SV_MapRestart_f( void ) {
 	}
 
 	// check for changes in variables that can't just be restarted
-	// check for maxclients change
-	if ( sv_maxclients->modified || sv_gametype->modified ) {
+	// check for maxclients change 
+	if ( sv_maxclients->modified || sv_gametype->modified ) { // why does it do this? especially for maxclients.. seems useless?
 		char	mapname[MAX_QPATH];
 
 		Com_Printf( "variable change -- restarting.\n" );
@@ -460,6 +460,21 @@ static void SV_Kick_f( void ) {
 					continue;
 				}
 				if( cl->netchan.remoteAddress.type != NA_BOT ) {
+					continue;
+				}
+				SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
+				cl->lastPacketTime = svs.time;	// in case there is a funny zombie
+			}
+		}
+		else if ( !Q_stricmp(Cmd_Argv(1), "allplayingbots") ) {
+			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
+				if ( !cl->state ) {
+					continue;
+				}
+				if( cl->netchan.remoteAddress.type != NA_BOT ) {
+					continue;
+				}
+				if (!Q_stricmp(cl->name, "RECORDER")) {
 					continue;
 				}
 				SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
@@ -1317,6 +1332,11 @@ static void SV_ForceToggle_f( void ) {
 	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
 	int i, val;
 	char *s;
+	const char *disablestrings[] =
+	{
+		"Enabled",
+		"Disabled"
+	};
 
 	// make sure server is running
 	if( !com_sv_running->integer ) {
@@ -1325,9 +1345,8 @@ static void SV_ForceToggle_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
-			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
-			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], disablestrings[!(bits & (1<<i))]);
 		}
 		Com_Printf( "Example usage: forcetoggle 3(toggles PUSH)\n" );
 		return;
@@ -1351,9 +1370,8 @@ static void SV_ForceToggle_f( void ) {
 		}
 	}
 	else {
-		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
-			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
-			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], disablestrings[!(bits & (1<<i))]);
 		}
 		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 	}
@@ -1601,6 +1619,13 @@ void SV_StopRecord_f( void ) {
 	SV_StopRecordDemo( cl );
 }
 
+/*
+====================
+SV_RenameDemo_f
+
+rename a demo, deleting the destination file if it already exists
+====================
+*/
 void SV_RenameDemo_f(void) {
 	char		from[MAX_OSPATH];
 	char		to[MAX_OSPATH];
@@ -1658,7 +1683,7 @@ void SV_RecordDemo( client_t *cl, char *demoName ) {
 	Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION ); //Should use DEMO_EXTENSION
 
 	Com_Printf( "recording to %s.\n", name );
-	cl->demo.demofile = FS_FOpenFileWrite( name );
+	cl->demo.demofile = FS_FOpenFileWriteAsync( name );
 	if ( !cl->demo.demofile ) {
 		Com_Printf ("ERROR: couldn't open.\n");
 		return;
@@ -1712,8 +1737,11 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	strftime( folderTreeDate, sizeof( folderTreeDate ), "%Y/%m/%d", timeinfo );
 	Q_strncpyz( demoPlayerName, cl->name, sizeof( demoPlayerName ) );
 	Q_CleanStr( demoPlayerName );
-	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s",
-			cl - svs.clients, demoPlayerName, Cvar_VariableString( "mapname" ), date );
+	if (sv_autoDemo->integer == 2)
+		Com_sprintf( demoFileName, sizeof( demoFileName ), "%s %s", Cvar_VariableString( "mapname" ), date );
+	else
+	  Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s",
+			  cl - svs.clients, demoPlayerName, Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
@@ -1802,13 +1830,41 @@ static int SV_FindLeafFolders( const char *baseFolder, char *result, int maxResu
 // starts demo recording on all active clients
 void SV_BeginAutoRecordDemos() {
 	if ( sv_autoDemo->integer ) {
-		for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
-			if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
-				if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
-					SV_AutoRecordDemo( client );
+		if (sv_autoDemo->integer == 2) { //Record a bot in spec named "RECORDER" only (to be used with cvar that networks spectators all player info)
+			int humans = 0;
+
+			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+				if ( client->state == CS_ACTIVE && client->netchan.remoteAddress.type != NA_BOT ) {
+					humans++;
+				}
+			}
+
+			if (humans >= 1) { //mm.. stop demos of only bots being started when map_restart calls this 
+				for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+					if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
+						if ( client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER") ) { //Only record a bot named RECORDER who is in spectate
+
+							//client->gentity->playerState->fd.forcePowersActive
+							//client->gentity->r.broadcastClients 
+
+							//client->gentity->playerState->
+
+							SV_AutoRecordDemo( client );
+							break;
+						}
+					}
 				}
 			}
 		}
+		else if (sv_autoDemo->integer == 1) { //Normal autodemo behaviour, record 1 demo for everyone
+			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+				if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
+					if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+						SV_AutoRecordDemo( client );
+					}
+				}
+			}
+    }
 		if ( sv_autoDemoMaxMaps->integer > 0 && sv.demosPruned == qfalse ) {
 			char autorecordDirList[500 * MAX_OSPATH], tmpFileList[5 * MAX_OSPATH];
 			int autorecordDirListCount = SV_FindLeafFolders( "demos/autorecord", autorecordDirList, 500, MAX_OSPATH );
@@ -1852,6 +1908,7 @@ static void SV_Record_f( void ) {
 	int			i;
 	char		*s;
 	client_t	*cl;
+	//int			len;
 
 	if ( svs.clients == NULL ) {
 		Com_Printf( "cannot record server demo - null svs.clients\n" );

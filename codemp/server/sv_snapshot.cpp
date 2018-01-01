@@ -453,6 +453,16 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
+		if (sv_autoDemo->integer == 2) //How find out how to only add all entities for the bot named RECORDER, not all bots? what entities can we still exclude?
+		{
+			sharedEntity_t *ent2;
+			ent2 = SV_GentityNum(frame->ps.clientNum);
+			if (ent2->r.svFlags & SVF_BOT && ent2->playerState->pm_type == PM_SPECTATOR) {
+				SV_AddEntToSnapshot( svEnt, ent, eNums );
+				continue;
+			}
+		}
+
 		// ignore if not touching a PV leaf
 		// check area
 		if ( !CM_AreasConnected( clientarea, svEnt->areanum ) ) {
@@ -818,9 +828,16 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
-	if ( sv_autoDemo->integer && !client->demo.demorecording ) {
-		if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
-			SV_BeginAutoRecordDemos();
+	if ( !client->demo.demorecording ) { //dont think this needs to be done with singledemo option
+		if (sv_autoDemo->integer == 2) {
+			if (client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER")) {
+				SV_BeginAutoRecordDemos();
+			}
+		}
+		else if (sv_autoDemo->integer == 1) {
+			if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+				SV_BeginAutoRecordDemos();
+			}
 		}
 	}
 

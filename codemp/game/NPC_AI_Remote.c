@@ -264,7 +264,7 @@ void Remote_Fire (void)
 	vectoangles ( delta1, angleToEnemy1 );
 	AngleVectors (angleToEnemy1, forward, vright, up);
 
-	missile = CreateMissile( NPCS.NPC->r.currentOrigin, forward, 1000, 10000, NPCS.NPC, qfalse );
+	missile = CreateMissileNew( NPCS.NPC->r.currentOrigin, forward, 1000, 10000, NPCS.NPC, qfalse, qfalse, qfalse );
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), NPCS.NPC->r.currentOrigin, forward );
 

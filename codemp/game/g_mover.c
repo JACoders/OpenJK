@@ -513,9 +513,21 @@ void G_RunMover( gentity_t *ent ) {
 		return;
 	}
 
+	/*
 	// if stationary at one of the positions, don't move anything
 	if ( ent->s.pos.trType != TR_STATIONARY || ent->s.apos.trType != TR_STATIONARY ) {
 		G_MoverTeam( ent );
+	}*/
+
+	// if stationary at one of the positions, don't move anything
+	if ( ent->s.pos.trType != TR_STATIONARY || ent->s.apos.trType != TR_STATIONARY ) {
+		//OSP: pause
+		if ( level.pause.state == PAUSE_NONE ) {
+			G_MoverTeam( ent );
+		}
+		else {
+			ent->s.pos.trTime += level.time - level.previousTime;
+		}
 	}
 
 	// check think function
@@ -890,7 +902,8 @@ void LockDoors(gentity_t *const ent)
 Use_BinaryMover
 ================
 */
-void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
+//extern float forceJumpHeight[NUM_FORCE_POWER_LEVELS]; //great
+void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 {
 	if ( !ent->use )
 	{//I cannot be used anymore, must be a door with a wait of -1 that's opened.
@@ -915,6 +928,68 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		return;
 	}
 
+#if 1
+	if (activator->client &&
+		activator->client->sess.raceMode && 
+		(!other || !(other->spawnflags & 4)) && 
+		!(ent->spawnflags & 256) && //Let mapmaker bypass this...
+		((ent->pos2[2] - ent->pos1[2]) > 128) &&
+		(activator->client->ps.origin[2] < (ent->r.absmax[2] + 96)) &&
+		(activator->client->ps.origin[2] > (ent->r.absmax[2] - 96)) ) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..
+	{ //Turn this ele into a jumppad.  Also only do this if the trigger was not a use button
+		float height, time, strength;
+
+		//No good way to get bottom origin of the mover..? Could be weird geometry... so just assume the top of the ele model in starting position is the "bottom" of the ele.
+		/*
+		float jumpHeight;
+			
+		switch (activator->client->sess.movementStyle)
+		{
+			case 0://Siege
+			case 1://JKA
+			case 2://QW
+				jumpHeight = forceJumpHeight[activator->client->ps.fd.forcePowerLevel[FP_LEVITATION]];
+				break;
+			case 3://CPM
+			case 4://Q3
+				jumpHeight = 64;//whatever
+				break;
+			case 5://PJK
+				jumpHeight = forceJumpHeight[activator->client->ps.fd.forcePowerLevel[FP_LEVITATION]];
+				break;
+			case 6://WSW
+				jumpHeight = 72;//whatever
+				break;
+			case 7://RJQ3
+			case 8://RJCPM
+				jumpHeight = 260;//whatever
+				break;
+			default:
+				jumpHeight = 0;
+				break;
+		}
+		*/
+
+		//ent->damage = 0; //Temp
+
+		//trap->Print("assumed ele starting height: %.2f, pos1: %2f, pos2: %2f, Our Height: %.2f\n", ent->r.absmax[2], ent->pos1[2], ent->pos2[2], activator->client->ps.origin[2]); //Lets assume the ele starts there...
+		
+		height = ent->pos2[2] - ent->pos1[2] + 64; //Send them up a lil higher just to be safe
+		time = sqrt(height / (.5f * g_gravity.value));
+		if (!time)
+			return; //bua ?
+		strength = (height / time) * 2.0f;
+
+		activator->client->ps.velocity[0] = activator->client->ps.velocity[1] = 0; //reset our xyspeed... meh
+		if (strength > activator->client->ps.velocity[2]); //Only apply the jumppad if it would speed them up
+			activator->client->ps.velocity[2] = strength;
+	
+		//trap->Print("Height: %.2f, time: %.2fstrength: %.2f\n", height, time, strength);
+
+		return;
+	}
+#endif
+
 	G_ActivateBehavior(ent,BSET_USE);
 
 	ent->enemy = other;
@@ -929,7 +1004,6 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		Use_BinaryMover_Go(ent);
 	}
 }
-
 
 
 /*
@@ -968,7 +1042,7 @@ void InitMover( gentity_t *ent )
 	float		light;
 	vec3_t		color;
 	qboolean	lightSet, colorSet;
-
+	
 	// if the "model2" key is set, use a seperate model
 	// for drawing, but clip against the brushes
 	if ( ent->model2 )
@@ -982,7 +1056,6 @@ void InitMover( gentity_t *ent )
 			ent->s.modelindex2 = G_ModelIndex( ent->model2 );
 		}
 	}
-
 	// if the "color" or "light" keys are set, setup constantLight
 	lightSet = G_SpawnFloat( "light", "100", &light );
 	colorSet = G_SpawnVector( "color", "1 1 1", color );
@@ -1007,7 +1080,6 @@ void InitMover( gentity_t *ent )
 		}
 		ent->s.constantLight = r | ( g << 8 ) | ( b << 16 ) | ( i << 24 );
 	}
-
 	ent->use = Use_BinaryMover;
 	ent->reached = Reached_BinaryMover;
 
@@ -1024,7 +1096,6 @@ void InitMover( gentity_t *ent )
 	ent->s.eType = ET_MOVER;
 	VectorCopy( ent->pos1, ent->r.currentOrigin );
 	trap->LinkEntity( (sharedEntity_t *)ent );
-
 	InitMoverTrData( ent );
 }
 
@@ -1055,7 +1126,6 @@ void Blocked_Door( gentity_t *ent, gentity_t *other )
 	if ( ent->spawnflags & MOVER_CRUSHER ) {
 		return;		// crushers don't reverse
 	}
-
 	// reverse direction
 	Use_BinaryMover( ent, ent, other );
 	if(relock)
@@ -1100,7 +1170,7 @@ static void Touch_DoorTriggerSpectator( gentity_t *ent, gentity_t *other, trace_
 		tr.fraction == 1.0f &&
 		tr.entityNum == ENTITYNUM_NONE)
 	{
-		TeleportPlayer( other, origin, doorangles );
+		TeleportPlayer( other, origin, doorangles, qfalse );
 	}
 }
 
@@ -1113,7 +1183,9 @@ void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace )
 {
 	gentity_t *relockEnt = NULL;
 
-	if ( other->client && other->client->sess.sessionTeam == TEAM_SPECTATOR )
+	//JAPRO LODA FIXME FOR DOORS THAT DONT HAVE TRIGGER MULTIPLES, DITCH THE DELAY HERE IF OTHER IS IN RACEMODE??????
+
+	if ( other->client && other->client->sess.sessionTeam == TEAM_SPECTATOR ) 
 	{
 		// if the door is not open and not opening
 		if ( ent->parent->moverState != MOVER_1TO2 &&
@@ -1234,7 +1306,7 @@ void Think_SpawnNewDoorTrigger( gentity_t *ent )
 	mins[best] -= 120;
 
 	// create a trigger with this size
-	other = G_Spawn ();
+	other = G_Spawn(qtrue);
 	VectorCopy (mins, other->r.mins);
 	VectorCopy (maxs, other->r.maxs);
 	other->parent = ent;
@@ -1456,6 +1528,7 @@ void SP_func_door (gentity_t *ent)
 	abs_movedir[2] = fabs( ent->movedir[2] );
 	VectorSubtract( ent->r.maxs, ent->r.mins, size );
 	distance = DotProduct( abs_movedir, size ) - lip;
+
 	VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
 
 	// if "start_open", reverse position 1 and 2
@@ -1564,7 +1637,7 @@ void SpawnPlatTrigger( gentity_t *ent ) {
 
 	// the middle trigger will be a thin trigger just
 	// above the starting position
-	trigger = G_Spawn();
+	trigger = G_Spawn(qtrue);
 	trigger->touch = Touch_PlatCenterTrigger;
 	trigger->r.contents = CONTENTS_TRIGGER;
 	trigger->parent = ent;

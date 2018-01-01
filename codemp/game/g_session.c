@@ -66,6 +66,9 @@ void G_WriteClientSessionData( gclient_t *client )
 			IP[i] = 1;
 	}
 
+	if (!IP[0])
+		Q_strncpyz( IP, "IP", sizeof( IP ) ); //sad hack. i think this is what was messing up session data.. since scanf was skipping right past it
+
 	// Make sure there is no space on the last entry
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sessionTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorNum ) );
@@ -80,11 +83,24 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.duelTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.siegeDesiredTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%s ", siegeClass ) );
-	Q_strcat( s, sizeof( s ), va( "%s", IP ) );
+	Q_strcat( s, sizeof( s ), va( "%s ", IP ) );
+
+	Q_strcat( s, sizeof( s ), va( "%u ", client->sess.ignore ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.sawMOTD ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.raceMode ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.movementStyle ) );
+
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.juniorAdmin ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.fullAdmin ) );
+
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sayteammod ) );
+	Q_strcat( s, sizeof( s ), va( "%s", client->sess.clanpass ) );
 
 	var = va( "session%i", client - level.clients );
 
 	trap->Cvar_Set( var, s );
+
+	//trap->Print("WRITING: %s, Session: %s\n", var, s);
 }
 
 /*
@@ -98,12 +114,14 @@ void G_ReadSessionData( gclient_t *client )
 {
 	char			s[MAX_CVAR_VALUE_STRING] = {0};
 	const char		*var;
-	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader;
+	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader, tempSawMOTD, tempRaceMode, tempJRAdmin, tempFullAdmin;
 
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s",
+	//trap->Print("READING: %s, Session: %s\n", var, s);
+
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i %i %s",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -117,12 +135,27 @@ void G_ReadSessionData( gclient_t *client )
 		&client->sess.duelTeam,
 		&client->sess.siegeDesiredTeam,
 		client->sess.siegeClass,
-		client->sess.IP
+		client->sess.IP,
+		&client->sess.ignore, //[JAPRO - Serverside - All - Ignore]
+		&tempSawMOTD,
+		&tempRaceMode, 
+		&client->sess.movementStyle,
+		&tempJRAdmin,
+		&tempFullAdmin,
+		&client->sess.sayteammod,
+		client->sess.clanpass
 		);
 
 	client->sess.sessionTeam	= (team_t)tempSessionTeam;
 	client->sess.spectatorState	= (spectatorState_t)tempSpectatorState;
 	client->sess.teamLeader		= (qboolean)tempTeamLeader;
+	client->sess.sawMOTD		= (qboolean)tempSawMOTD;
+	client->sess.raceMode		= (qboolean)tempRaceMode;
+	client->sess.juniorAdmin	= (qboolean)tempJRAdmin; //lets see if this works now
+	client->sess.fullAdmin		= (qboolean)tempFullAdmin;
+
+	if (client->sess.movementStyle == 0)
+		client->sess.movementStyle = 1;//Sad fucking hack to stop it defaulting to siege if player never joined game previous round.. Dunno man
 
 	// convert back to spaces from unused chars, as session data is written that way.
 	for ( i=0; client->sess.siegeClass[i]; i++ )
@@ -199,8 +232,8 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			case GT_HOLOCRON:
 			case GT_JEDIMASTER:
 			case GT_SINGLE_PLAYER:
-				if ( g_maxGameClients.integer > 0 &&
-					level.numNonSpectatorClients >= g_maxGameClients.integer ) {
+				if (!isBot && (!g_maxGameClients.integer || (g_maxGameClients.integer > 0 && //loda fixme - this should fix clients showing ingame when they really arnt , when first connect?
+					level.numNonSpectatorClients >= g_maxGameClients.integer))) {
 					sess->sessionTeam = TEAM_SPECTATOR;
 				} else {
 					sess->sessionTeam = TEAM_FREE;
@@ -241,6 +274,8 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	AddTournamentQueue(client);
 
 	sess->siegeClass[0] = 0;
+
+	sess->ignore = 0;//[JAPRO - Serverside - All - Ignore]
 
 	G_WriteClientSessionData( client );
 }

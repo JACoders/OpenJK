@@ -147,6 +147,142 @@ const char	*bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS] =
 	NULL
 };
 
+//vgs
+const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS] = {
+	"*attack_attack",
+	"*attack_attackwait",
+	"*attack_base",
+	"*attack_chase",
+	"*attack_disrupt",
+	"*attack_flag",
+	"*attack_generator",
+	"*attack_reinforce",
+	"*attack_sensors",
+	"*attack_turrets",
+	"*attack_vehicle",
+	"*base_clear",
+	"*base_enemyinbase",
+	"*base_retake",
+	"*base_secure",
+	"*command_acknowledged",
+	"*command_assignment",
+	"*command_completed",
+	"*command_declined",
+	"*defend_base",
+	"*defend_entrances",
+	"*defend_flag",
+	"*defend_flagcarrier",
+	"*defend_generator",
+	"*defend_me",
+	"*defend_reinforce",
+	"*defend_sensors",
+	"*defend_turrets",
+	"*defend_vehicle",
+	"*enemy_disarray",
+	"*enemy_generator",
+	"*enemy_sensors",
+	"*enemy_turrets",
+	"*enemy_vehicle",
+	"*flag_defend",
+	"*flag_giveme",
+	"*flag_ihave",
+	"*flag_iretrieve",
+	"*flag_retrieve",
+	"*flag_secure",
+	"*flag_take",
+	"*compliment_awesome",
+	"*compliment_goodgame",
+	"*compliment_greatshot",
+	"*compliment_nicemove",
+	"*compliment_yourock",
+	"*respond_anytime",
+	"*respond_dontknow",
+	"*respond_respondwait",
+	"*respond_thanks",
+	"*taunt_aww",
+	"*taunt_brag",
+	"*taunt_learn",
+	"*taunt_obnoxious",
+	"*taunt_sarcasm",
+	"*global_bye",
+	"*global_hi",
+	"*global_no",
+	"*global_ooops",
+	"*global_quiet",
+	"*global_shazbot",
+	"*global_whoohoo",
+	"*global_yes",
+	"*need_cover",
+	"*need_driver",
+	"*need_escort",
+	"*need_holdvehicle",
+	"*need_ride",
+	"*need_support",
+	"*need_vehicleready",
+	"*need_whereto",
+	"*repair_generator",
+	"*repair_sensors",
+	"*repair_turrets",
+	"*repair_vehicle",
+	"*selfattack_attack",
+	"*selfattack_base",
+	"*selfattack_flag",
+	"*selfattack_generator",
+	"*selfattack_sensors",
+	"*selfattack_turrets",
+	"*selfattack_vehicle",
+	"*selfdefend_base",
+	"*selfdefend_defend",
+	"*selfdefend_flag",
+	"*selfdefend_generator",
+	"*selfdefend_sensors",
+	"*selfdefend_turrets",
+	"*selfdefend_vehicle",
+	"*selfrepair_base",
+	"*selfrepair_generator",
+	"*selfrepair_sensors",
+	"*selfrepair_turrets",
+	"*selfrepair_vehicle",
+	"*selftask_cover",
+	"*selftask_defenses",
+	"*selftask_deploysensors",
+	"*selftask_deployturrets",
+	"*selftask_forcefield",
+	"*selftask_onit",
+	"*selftask_vehicle",
+	"*upgradeself_generator",
+	"*upgradeself_sensor",
+	"*upgradeself_turret",
+	"*target_acquiered",
+	"*target_base",
+	"*target_destroyed",
+	"*target_fireonmy",
+	"*target_flag",
+	"*target_need",
+	"*target_sensors",
+	"*target_turret",
+	"*target_vehicle",
+	"*target_wait",
+	"*upgrade_generator",
+	"*upgrade_sensor",
+	"*upgrade_turret",
+	"*warn_enemies",
+	"*warn_vehicle",
+	"*team_anytime",
+	"*team_basesecure",
+	"*team_ceasefire",
+	"*team_dontknow",
+	"*team_help",
+	"*team_move",
+	"*team_no",
+	"*team_sorry",
+	"*team_thanks",
+	"*team_wait",
+	"*team_yes",
+	NULL
+};
+//vgs
+
 //rww - not putting @ in front of these because
 //we don't need them in a cgame StringEd lookup.
 //Let me know if this causes problems, pat.
@@ -466,6 +602,11 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	//Set the maximum allowed points used based on the max rank level, and count the points actually used.
 	allowedPoints = forceMasteryPoints[maxRank];
 
+#ifdef _GAME
+	//if (g_fixWeaponForcePoints.integer && g_weaponDisable.integer != 524279)
+		//allowedPoints += 2;
+#endif
+
 	i = 0;
 	while (i < NUM_FORCE_POWERS)
 	{ //if this power doesn't match the side we're on, then 0 it now.
@@ -636,10 +777,12 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	  //If jump is disabled, down-cap it to level 1. Otherwise don't do a thing.
 		if (fpDisabled & (1 << FP_LEVITATION))
 			final_Powers[FP_LEVITATION] = 1;
+//[JAPRO - Serverside - Saber - Fix Block/attack Level defaulting to highest - Start]
 		if (fpDisabled & (1 << FP_SABER_OFFENSE))
-			final_Powers[FP_SABER_OFFENSE] = 3;
+			final_Powers[FP_SABER_OFFENSE] = 1;
 		if (fpDisabled & (1 << FP_SABER_DEFENSE))
-			final_Powers[FP_SABER_DEFENSE] = 3;
+			final_Powers[FP_SABER_DEFENSE] = 0; //should this be 0..
+//[JAPRO - Serverside - Saber - Fix Block/attack Level defaulting to highest - End]
 	}
 
 	if (final_Powers[FP_SABER_OFFENSE] < 1)
@@ -647,6 +790,13 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 		final_Powers[FP_SABER_DEFENSE] = 0;
 		final_Powers[FP_SABERTHROW] = 0;
 	}
+
+//[JAPRO - Serverside - Saber - Allow server to cap block level - End]
+#ifdef _GAME
+	if (g_maxSaberDefense.integer && (final_Powers[FP_SABER_DEFENSE] > g_maxSaberDefense.integer))//my block is middle[2], forced max is 2, 
+		final_Powers[FP_SABER_DEFENSE] = g_maxSaberDefense.integer;
+#endif
+//[JAPRO - Serverside - Saber - Allow server to cap block level - End]
 
 	//We finally have all the force powers legalized and stored locally.
 	//Put them all into the string and return the result. We already have
@@ -1698,6 +1848,12 @@ qboolean BG_HasYsalamiri(int gametype, playerState_t *ps)
 	return qfalse;
 }
 
+//JAPRO - Serverside - Fullforce Dueling - Start
+#ifndef _GAME
+extern int cg_dueltypes[MAX_CLIENTS];
+#endif
+//JAPRO - Serverside - Fullforce Dueling - End
+
 qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t power)
 {
 	if (BG_HasYsalamiri(gametype, ps))
@@ -1720,17 +1876,44 @@ qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t
 		return qfalse;
 	}
 
-	if (ps->duelInProgress)
-	{
-		if (power != FP_SABER_OFFENSE && power != FP_SABER_DEFENSE && /*power != FP_SABERTHROW &&*/
-			power != FP_LEVITATION)
+//JAPRO - Serverside - Add fullforce duels - Start
+#ifdef _GAME
+	if (ps->duelInProgress) // consider duel types.
 		{
-			if (!ps->saberLockFrame || power != FP_PUSH)
-			{
-				return qfalse;
+			switch (dueltypes[ps->clientNum]) {
+			case 1: //force duel
+				break;
+			case 0: //normal duel
+			default:
+					if (power != FP_SABER_OFFENSE && power != FP_SABER_DEFENSE && power != FP_LEVITATION)
+					{
+						if (!ps->saberLockFrame || power != FP_PUSH)
+						{
+							return qfalse;
+						}
+					}
+				break;
 			}
 		}
+#elif defined _CGAME
+	if (ps->duelInProgress) // consider duel types.
+	{
+		switch ( cg_dueltypes[ps->clientNum]) {
+					case 0: //normal duel
+			if (power != FP_SABER_OFFENSE && power != FP_SABER_DEFENSE && power != FP_LEVITATION)
+			{
+				if (!ps->saberLockFrame || power != FP_PUSH)
+				{
+					return qfalse;
+				}
+			}
+			break;
+		case 1: //force duel
+			break;
+		}
 	}
+#endif
+//JAPRO - Serverside - Add fullforce duels - End
 
 	if (ps->saberLockFrame || ps->saberLockTime > time)
 	{
@@ -1869,16 +2052,40 @@ grabbing them easier
 */
 qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTime ) {
 	vec3_t		origin;
+	gitem_t *gitem;
 
 	BG_EvaluateTrajectory( &item->pos, atTime, origin );
 
+	if (item->modelindex < 1 || item->modelindex >= bg_numItems) {
+		Com_Error(ERR_DROP, "BG_CanItemBeGrabbed: index out of range");
+	}
+
+	gitem = &bg_itemlist[item->modelindex];
+
+	// if it is a flag
+	if ((gitem->giTag == PW_REDFLAG || gitem->giTag == PW_BLUEFLAG || gitem->giTag == PW_NEUTRALFLAG)
+#if defined(QAGAME)
+		&& g_fixFlagHitbox.integer
+#elif defined(CGAME)
+		&& cgs.isJAPro
+#endif
+		) {//Flag hitbox
+			if (ps->origin[0] - origin[0] > 52
+			   || ps->origin[0] - origin[0] < -52
+			   || ps->origin[1] - origin[1] > 52
+			   || ps->origin[1] - origin[1] < -52
+			   || ps->origin[2] - origin[2] > 68
+			   || ps->origin[2] - origin[2] < -36) {
+				return qfalse;
+			}
+	}
 	// we are ignoring ducked differences here
-	if ( ps->origin[0] - origin[0] > 44
+	else if (ps->origin[0] - origin[0] > 44
 		|| ps->origin[0] - origin[0] < -50
 		|| ps->origin[1] - origin[1] > 36
 		|| ps->origin[1] - origin[1] < -36
 		|| ps->origin[2] - origin[2] > 36
-		|| ps->origin[2] - origin[2] < -36 ) {
+		|| ps->origin[2] - origin[2] < -36) {
 		return qfalse;
 	}
 
@@ -2081,6 +2288,8 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		{ //no picking stuff up while in a duel, no matter what the type is
 			return qfalse;
 		}
+		if (ps->stats[STAT_RACEMODE] && item && (item->giTag != PW_YSALAMIRI) && (item->giTag != PW_FORCE_BOON)) // no picking up shit in racemode?
+			return qfalse;
 	}
 	else
 	{//safety return since below code assumes a non-null ps
@@ -2155,20 +2364,32 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		return qtrue;	// powerups are always picked up
 
 	case IT_TEAM: // team items, such as flags
-		if( gametype == GT_CTF || gametype == GT_CTY ) {
+		if( gametype == GT_CTF || gametype == GT_CTY)
+		{//JAPRO RABBIT
 			// ent->modelindex2 is non-zero on items if they are dropped
 			// we need to know this because we can pick up our dropped flag (and return it)
 			// but we can't pick up our flag at base
-			if (ps->persistant[PERS_TEAM] == TEAM_RED) {
+			if (ps && ps->persistant[PERS_TEAM] == TEAM_RED) {
 				if (item->giTag == PW_BLUEFLAG ||
 					(item->giTag == PW_REDFLAG && ent->modelindex2) ||
 					(item->giTag == PW_REDFLAG && ps->powerups[PW_BLUEFLAG]) )
 					return qtrue;
-			} else if (ps->persistant[PERS_TEAM] == TEAM_BLUE) {
+			} else if (ps && ps->persistant[PERS_TEAM] == TEAM_BLUE) {
 				if (item->giTag == PW_REDFLAG ||
 					(item->giTag == PW_BLUEFLAG && ent->modelindex2) ||
 					(item->giTag == PW_BLUEFLAG && ps->powerups[PW_REDFLAG]) )
 					return qtrue;
+			} 
+		}
+		else if (gametype == GT_FFA || gametype == GT_TEAM)
+		{
+			if (ps->persistant[PERS_TEAM] == TEAM_FREE || ps->persistant[PERS_TEAM] == TEAM_BLUE || ps->persistant[PERS_TEAM] == TEAM_RED)
+			{
+				if (item->giTag == PW_NEUTRALFLAG)
+				{
+					if (ps && !ps->duelInProgress)//if we are not dueling, ok grab it!?
+						return qtrue;
+				}
 			}
 		}
 
@@ -2798,12 +3019,12 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 	s->forcePowersActive = ps->fd.forcePowersActive;
 
 	if (ps->duelInProgress)
-	{
 		s->bolt1 = 1;
-	}
-	else
-	{
-		s->bolt1 = 0;
+	else {
+		if (ps->stats[STAT_RACEMODE])
+			s->bolt1 = 2;
+		else
+			s->bolt1 = 0;
 	}
 
 	s->otherEntityNum2 = ps->emplacedIndex;

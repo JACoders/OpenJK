@@ -504,6 +504,8 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 	ent->client->ps.fd.forceDrainEntNum = ENTITYNUM_NONE;
 	ent->client->ps.fd.forceDrainTime = 0;
 
+	ent->client->didGlitchKick = qfalse;
+
 	i = 0;
 	while (i < NUM_FORCE_POWERS)
 	{
@@ -542,6 +544,9 @@ extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
 
 int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forcePower)
 {
+	//if (other && other->client && other->client->pers.raceMode)
+		//return 0;
+
 	if (other && other->client && BG_HasYsalamiri(level.gametype, &other->client->ps))
 	{
 		return 0;
@@ -552,16 +557,43 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
-	//Dueling fighters cannot use force powers on others, with the exception of force push when locked with each other
-	if (attacker && attacker->client && attacker->client->ps.duelInProgress)
-	{
+	if (other && other->client && other->client->noclip)//Japro fix noclip abuse
 		return 0;
+	if (attacker && attacker->client && attacker->client->noclip)//Japro fix noclip abuse
+		return 0;
+	if (attacker && attacker->client && attacker->client->sess.raceMode)//not needed?
+		return 0;
+	if (other && other->client && other->client->sess.raceMode)//fix having forcepowers used on you when in racemode
+		return 0;
+	if (g_godChat.integer && level.gametype == GT_FFA) {
+		if (attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK)) //Dont let people in chat use force ever
+			return 0;
+		if (other && other->client && (other->client->ps.eFlags & EF_TALK) && (other->client->pers.lastChatTime + 3000) < level.time)  //Only god chat them 3 seconds after their chatbox goes up to prevent some abuse :/
+			return 0;
 	}
 
-	if (other && other->client && other->client->ps.duelInProgress)
-	{
-		return 0;
+//JAPRO - Serverside - Fullforce Duels - Start
+	//Dueling fighters cannot use force powers on others, with the exception of force push when locked with each other
+	if (attacker && attacker->client && attacker->client->ps.duelInProgress ) {
+		//// is the other player in a duel too?
+		if (other && other->client && other->client->ps.duelInProgress ) {
+			//// yes both players are dueling -- with each other? 
+			if ( dueltypes[attacker->client->ps.clientNum] == 1 && other->s.number == attacker->client->ps.duelIndex ) {
+				//force duel
+				//return 1; //wonderful, im a retard
+			}
+			else
+				//normal & melee duel
+				return 0;
+		} else {
+			//not in a duel
+			return 0;
+		}
 	}
+
+	else if (other && other->client && other->client->ps.duelInProgress ) //Attacker is not dueling, but Other is, so dont let them use force on him
+		return 0;
+//JAPRO - Serverside - Fullforce Duels - End
 
 	if (forcePower == FP_GRIP)
 	{
@@ -585,15 +617,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		}
 	}
 
-	if (other && other->client &&
-		(forcePower == FP_PUSH ||
-		forcePower == FP_PULL))
+//[JAPRO - Serverside - Force - Allow push/pull on knocked down players - Start]
+	if (!(g_tweakForce.integer & FT_PUSHPULLKD) && other && other->client && (forcePower == FP_PUSH ||	forcePower == FP_PULL))
 	{
 		if (BG_InKnockDown(other->client->ps.legsAnim))
-		{
 			return 0;
-		}
 	}
+//[JAPRO - Serverside - Force - Allow push/pull on knocked down players - End]
 
 	if (other && other->client && other->s.eType == ET_NPC &&
 		other->s.NPC_class == CLASS_VEHICLE)
@@ -619,8 +649,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 
 qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int overrideAmt )
 {
-	int	drain = overrideAmt ? overrideAmt :
+	int drain = overrideAmt ? overrideAmt :
 				forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower];
+
+	if (self->client->ps.stats[STAT_ONLYBHOP]) {
+		if ((forcePower == FP_SPEED) || (forcePower == FP_RAGE))
+			return qfalse;
+	}
 
 	if (self->client->ps.fd.forcePowersActive & (1 << forcePower))
 	{ //we're probably going to deactivate it..
@@ -658,6 +693,9 @@ qboolean WP_ForcePowerInUse( gentity_t *self, forcePowers_t forcePower )
 
 qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 {
+	if (self->client && self->client->sess.raceMode)
+		return qfalse;
+	
 	if (BG_HasYsalamiri(level.gametype, &self->client->ps))
 	{
 		return qfalse;
@@ -803,15 +841,51 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		return -1;
 	}
 
+	if ((g_tweakForce.integer & FT_GRIPABSORB) && atPower == FP_GRIP)//JAPRO - Serverside - Force - Stop failed grips from giving forcepoints to reciever.. why does this work
+		return -1;
+
+//[JAPRO - Serverside - Saber - Tweak force lightning - Start]
 	if (!atdAbsLevel)
 	{ //looks like attacker doesn't have any absorb power
-		return -1;
+		if (g_fixLightning.integer && atPower == FP_LIGHTNING)
+		{
+			addTot = (atForceSpent);
+
+			if (addTot < 1 && atForceSpent >= 1)
+			{
+				addTot = 1;
+			}
+
+			attacked->client->ps.fd.forcePower += addTot;
+			if (attacked->client->ps.fd.forcePower > 100)
+			{
+				attacked->client->ps.fd.forcePower = 100;
+			}
+			return -1;
+		}
+		else return -1;
 	}
 
 	if (!(attacked->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)))
 	{ //absorb is not active
-		return -1;
+		if (g_fixLightning.integer && atPower == FP_LIGHTNING)
+		{
+			addTot = (atForceSpent);
+
+			if (addTot < 1 && atForceSpent >= 1)
+			{
+				addTot = 1;
+			}
+			attacked->client->ps.fd.forcePower += addTot;
+			if (attacked->client->ps.fd.forcePower > 100)
+			{
+			attacked->client->ps.fd.forcePower = 100;
+			}
+			return -1;
+		}
+		else return -1;
 	}
+//[JAPRO - Serverside - Saber - Tweak force lightning - End]
 
 	//Subtract absorb power level from the offensive force power
 	getLevel = atPowerLevel;
@@ -826,9 +900,10 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 	addTot = (atForceSpent/3)*attacked->client->ps.fd.forcePowerLevel[FP_ABSORB];
 
 	if (addTot < 1 && atForceSpent >= 1)
-	{
 		addTot = 1;
-	}
+	if (OnSameTeam(attacked, attacker))
+		addTot *= g_teamAbsorbScale.value;
+
 	attacked->client->ps.fd.forcePower += addTot;
 	if (attacked->client->ps.fd.forcePower > attacked->client->ps.fd.forcePowerMax)
 	{
@@ -1023,6 +1098,7 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 		duration = overrideAmt;
 		overrideAmt = 0;
 		self->client->ps.fd.forcePowersActive |= ( 1 << forcePower );
+		self->client->ps.fd.forceDrainTime = level.time;
 		//self->client->ps.activeForcePass = self->client->ps.fd.forcePowerLevel[FP_DRAIN];
 		break;
 	case FP_SEE:
@@ -1228,15 +1304,15 @@ void ForceTeamHeal( gentity_t *self )
 
 	if (numpl == 1)
 	{
-		healthadd = 50;
+		healthadd = 50 * g_teamHealScale.value;
 	}
 	else if (numpl == 2)
 	{
-		healthadd = 33;
+		healthadd = 33 * g_teamHealScale.value;
 	}
 	else
 	{
-		healthadd = 25;
+		healthadd = 25 * g_teamHealScale.value;
 	}
 
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_HEAL] = level.time + 2000;
@@ -1267,6 +1343,8 @@ void ForceTeamHeal( gentity_t *self )
 
 			WP_AddToClientBitflags(te, pl[i]);
 			//Now cramming it all into one event.. doing this many g_sound events at once was a Bad Thing.
+
+			self->client->pers.stats.teamHealGiven += healthadd;
 		}
 		i++;
 	}
@@ -1333,15 +1411,15 @@ void ForceTeamForceReplenish( gentity_t *self )
 
 	if (numpl == 1)
 	{
-		poweradd = 50;
+		poweradd = 50 * g_teamEnergizeScale.value;
 	}
 	else if (numpl == 2)
 	{
-		poweradd = 33;
+		poweradd = 33 * g_teamEnergizeScale.value;
 	}
 	else
 	{
-		poweradd = 25;
+		poweradd = 25 * g_teamEnergizeScale.value;
 	}
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_FORCE] = level.time + 2000;
 
@@ -1367,6 +1445,8 @@ void ForceTeamForceReplenish( gentity_t *self )
 		WP_AddToClientBitflags(te, pl[i]);
 		//Now cramming it all into one event.. doing this many g_sound events at once was a Bad Thing.
 
+		self->client->pers.stats.teamEnergizeGiven += poweradd;
+		
 		i++;
 	}
 }
@@ -1386,10 +1466,21 @@ void ForceGrip( gentity_t *self )
 		return;
 	}
 
-	if (self->client->ps.weaponTime > 0)
+//[JAPRO - Serverside - Force - Allow grip while in getup - Start]
+	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
-		return;
+		if (g_fixGetups.integer && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B))
+		{
+		}
+		else if ((g_tweakForce.integer & FT_GRIPDURINGROLL) && ((self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B || self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L))) //ahh what the fuck.. i think this is the only case.. FF duels?
+		{
+		}
+		else 
+		{
+			return;
+		}
 	}
+//[JAPRO - Serverside - Force - Allow grip while in getup - End]
 
 	if (self->client->ps.fd.forceGripUseTime > level.time)
 	{
@@ -1408,7 +1499,7 @@ void ForceGrip( gentity_t *self )
 	tto[1] = tfrom[1] + fwd[1]*MAX_GRIP_DISTANCE;
 	tto[2] = tfrom[2] + fwd[2]*MAX_GRIP_DISTANCE;
 
-	trap->Trace(&tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+	JP_Trace(&tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if ( tr.fraction != 1.0 &&
 		tr.entityNum != ENTITYNUM_NONE &&
@@ -1525,15 +1616,20 @@ void ForceProtect( gentity_t *self )
 		return;
 	}
 
+//JAPRO - Serverside - Allow force combos - Start
 	// Make sure to turn off Force Rage and Force Absorb.
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
+	if (!(g_tweakForce.integer & FT_FORCECOMBO))
 	{
-		WP_ForcePowerStop( self, FP_RAGE );
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
+		{
+			WP_ForcePowerStop( self, FP_RAGE );
+		}
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
+		{
+			WP_ForcePowerStop( self, FP_ABSORB );
+		}
 	}
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
-	{
-		WP_ForcePowerStop( self, FP_ABSORB );
-	}
+//JAPRO - Serverside - Allow force combos - End
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1561,15 +1657,19 @@ void ForceAbsorb( gentity_t *self )
 		return;
 	}
 
-	// Make sure to turn off Force Rage and Force Protection.
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
-	{
-		WP_ForcePowerStop( self, FP_RAGE );
+//JAPRO - Serverside - Allow force combos - Start
+	if (!(g_tweakForce.integer & FT_FORCECOMBO))
+	{// Make sure to turn off Force Rage and Force Protection.
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
+		{
+			WP_ForcePowerStop( self, FP_RAGE );
+		}
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
+		{
+			WP_ForcePowerStop( self, FP_PROTECT );
+		}
 	}
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
-	{
-		WP_ForcePowerStop( self, FP_PROTECT );
-	}
+//JAPRO - Serverside - Allow force combos - End
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1607,15 +1707,20 @@ void ForceRage( gentity_t *self )
 		return;
 	}
 
-	// Make sure to turn off Force Protection and Force Absorb.
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
+//JAPRO - Serverside - Allow force combos - Start
+	//Make sure to turn off Force Protection and Force Absorb.
+	if (!(g_tweakForce.integer & FT_FORCECOMBO))
 	{
-		WP_ForcePowerStop( self, FP_PROTECT );
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
+		{
+			WP_ForcePowerStop( self, FP_PROTECT );
+		}
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
+		{
+			WP_ForcePowerStop( self, FP_ABSORB );
+		}
 	}
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
-	{
-		WP_ForcePowerStop( self, FP_ABSORB );
-	}
+//JAPRO - Serverside - Allow force combos - End
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1645,7 +1750,7 @@ void ForceLightning( gentity_t *self )
 		return;
 	}
 
-	if (self->client->ps.weaponTime > 0)
+	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
 		return;
 	}
@@ -1691,9 +1796,15 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 			}
 			if (ForcePowerUsableOn(self, traceEnt, FP_LIGHTNING))
 			{
-				int	dmg = Q_irand(1,2); //Q_irand( 1, 3 );
-
+//[JAPRO - Serverside - Saber - Tweak force lightning - Start]
+				int	dmg;
 				int modPowerLevel = -1;
+
+				if (g_fixLightning.integer > 1)//2,3 has nerfed dmg
+					dmg = 1;
+				else
+					dmg = Q_irand(1,2);
+//[JAPRO - Serverside - Saber - Tweak force lightning - End]	
 
 				if (traceEnt->client)
 				{
@@ -1723,7 +1834,10 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					&& self->client->ps.fd.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_2 )
 				{//2-handed lightning
 					//jackin' 'em up, Palpatine-style
-					dmg *= 2;
+//[JAPRO - Serverside - Saber - Tweak force lightning - Start]
+					if (g_fixLightning.integer < 3)//0,1,2 has buffed melee dmg
+						dmg *= 2;
+//[JAPRO - Serverside - Saber - Tweak force lightning - End]
 				}
 
 				if (dmg)
@@ -1848,7 +1962,7 @@ void ForceShootLightning( gentity_t *self )
 			}
 
 			//Now check and see if we can actually hit it
-			trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 			if ( tr.fraction < 1.0f && tr.entityNum != traceEnt->s.number )
 			{//must have clear LOS
 				continue;
@@ -1861,8 +1975,8 @@ void ForceShootLightning( gentity_t *self )
 	else
 	{//trace-line
 		VectorMA( self->client->ps.origin, 2048, forward, end );
-
-		trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+		
+		JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.entityNum == ENTITYNUM_NONE || tr.fraction == 1.0 || tr.allsolid || tr.startsolid )
 		{
 			return;
@@ -1885,7 +1999,7 @@ void ForceDrain( gentity_t *self )
 		return;
 	}
 
-	if (self->client->ps.weaponTime > 0)
+	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0) //saberDelay can never be negative. Saber delay can never be more than weapontime-250.  saberdelay will be 0 if fixed saberswitch is off.
 	{
 		return;
 	}
@@ -1919,7 +2033,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
-		if ( traceEnt->client && (!OnSameTeam(self, traceEnt) || g_friendlyFire.integer) && self->client->ps.fd.forceDrainTime < level.time && traceEnt->client->ps.fd.forcePower )
+		if ( traceEnt->client && (!OnSameTeam(self, traceEnt) || g_friendlyFire.integer) && /*self->client->ps.fd.forceDrainTime < level.time &&*/ traceEnt->client->ps.fd.forcePower )
 		{//an enemy or object
 			if (!traceEnt->client && traceEnt->s.eType == ET_NPC)
 			{ //g2animent
@@ -1932,6 +2046,8 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 			{
 				int modPowerLevel = -1;
 				int	dmg = 0; //Q_irand( 1, 3 );
+				int dmg2 = 0;
+
 				if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_1)
 				{
 					dmg = 2; //because it's one-shot
@@ -1942,12 +2058,19 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 				}
 				else if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_3)
 				{
+#if _draintest
+					dmg = g_forceDrainDamage.integer;//4
+#else
 					dmg = 4;
+#endif
 				}
 
 				if (traceEnt->client)
 				{
-					modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 1);
+					if (g_tweakForce.integer & FT_NODRAINABSORB)
+						modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 0);
+					else
+						modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 1);
 				}
 
 				if (modPowerLevel != -1)
@@ -1970,10 +2093,20 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 				if (dmg)
 				{
 					traceEnt->client->ps.fd.forcePower -= (dmg);
+					dmg2 = dmg;
+
 				}
 				if (traceEnt->client->ps.fd.forcePower < 0)
 				{
 					traceEnt->client->ps.fd.forcePower = 0;
+					dmg2 = 0;
+				}
+
+				if (g_gametype.integer >= GT_TEAM) {
+					if (self->client->sess.sessionTeam == traceEnt->client->sess.sessionTeam) 
+						self->client->pers.stats.teamDrainDamage += dmg2;
+					else
+						self->client->pers.stats.enemyDrainDamage += dmg2;
 				}
 
 				if (self->client->ps.stats[STAT_HEALTH] < self->client->ps.stats[STAT_MAX_HEALTH] &&
@@ -1987,7 +2120,19 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					self->client->ps.stats[STAT_HEALTH] = self->health;
 				}
 
-				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + 800; //don't let the client being drained get force power back right away
+#if _draintest
+				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainTargetRegenDelay.integer;//800 //don't let the client being drained get force power back right away
+#else
+				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + 800;//don't let the client being drained get force power back right away
+#endif
+
+				//JAPRO - Serverside - Fixkillcredit - Start
+				if (dmg && g_fixKillCredit.integer) {
+					traceEnt->client->ps.otherKiller = self->s.number;
+					traceEnt->client->ps.otherKillerTime = level.time + 2000;
+					traceEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+				}
+				//JAPRO - Serverside - Fixkillcredit - End
 
 				//Drain the standard amount since we just drained someone else
 
@@ -2051,14 +2196,22 @@ int ForceShootDrain( gentity_t *self )
 
 	if ( self->client->ps.fd.forcePowerLevel[FP_DRAIN] > FORCE_LEVEL_2 )
 	{//arc
-		vec3_t	center, mins, maxs, dir, ent_org, size, v;
-		float	radius = MAX_DRAIN_DISTANCE, dot, dist;
+		vec3_t	center, mins, maxs, dir, ent_org, size, v, behind;
+		float	radius = MAX_DRAIN_DISTANCE, dot, dist, cof;
 		gentity_t	*entityList[MAX_GENTITIES];
 		int			iEntityList[MAX_GENTITIES];
 		int		e, numListedEntities, i;
 
 		VectorCopy( self->client->ps.origin, center );
-		for ( i = 0 ; i < 3 ; i++ )
+		VectorCopy( self->client->ps.origin, behind );
+
+		if (g_tweakForce.integer & FT_FIXDRAINCOF) {
+			VectorMA( behind, -16, forward, behind ); //Push it behind us a bit to stop problem of missing drains when we are right up against someone
+			center[2] += 8; //So the drain origin point was actually lower than the comparison point on the target, meaning the min/max drain offset viewangles were not equal.
+			behind[2] += 8;
+		}
+
+		for ( i = 0 ; i < 3 ; i++ ) 
 		{
 			mins[i] = center[i] - radius;
 			maxs[i] = center[i] + radius;
@@ -2112,12 +2265,25 @@ int ForceShootDrain( gentity_t *self )
 			VectorSubtract( traceEnt->r.absmax, traceEnt->r.absmin, size );
 			VectorMA( traceEnt->r.absmin, 0.5, size, ent_org );
 
+			if (g_tweakForce.integer & FT_FIXDRAINCOF) {
+				cof = 0.1;
+				VectorSubtract( ent_org, behind, dir );
+				VectorNormalize( dir );
+				if ( (dot = DotProduct( dir, forward )) < 0.8 ) {//test if they are infront of us
+					continue;
+				}
+			}
+			else {
+				cof = 0.5;
+			}
+
 			//see if they're in front of me
 			//must be within the forward cone
 			VectorSubtract( ent_org, center, dir );
 			VectorNormalize( dir );
-			if ( (dot = DotProduct( dir, forward )) < 0.5 )
+			if ( (dot = DotProduct( dir, forward )) < cof ) { //test if they are in cone
 				continue;
+			}
 
 			//must be close enough
 			dist = VectorLength( v );
@@ -2133,7 +2299,7 @@ int ForceShootDrain( gentity_t *self )
 			}
 
 			//Now check and see if we can actually hit it
-			trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 			if ( tr.fraction < 1.0f && tr.entityNum != traceEnt->s.number )
 			{//must have clear LOS
 				continue;
@@ -2147,8 +2313,8 @@ int ForceShootDrain( gentity_t *self )
 	else
 	{//trace-line
 		VectorMA( self->client->ps.origin, 2048, forward, end );
-
-		trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+		
+		JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.entityNum == ENTITYNUM_NONE || tr.fraction == 1.0 || tr.allsolid || tr.startsolid || !g_entities[tr.entityNum].client || !g_entities[tr.entityNum].inuse )
 		{
 			return 0;
@@ -2163,7 +2329,11 @@ int ForceShootDrain( gentity_t *self )
 
 	BG_ForcePowerDrain( &self->client->ps, FP_DRAIN, 5 ); //used to be 1, but this did, too, anger the God of Balance.
 
-	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + 500;
+#if _draintest
+	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainSelfRegenDelay.integer;//500; //oh, interesting	
+#else
+	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + 500;//oh, interesting	
+#endif
 
 	return gotOneOrMore;
 }
@@ -2598,7 +2768,7 @@ void ForceTelepathy(gentity_t *self)
 		return;
 	}
 
-	if (self->client->ps.weaponTime > 0)
+	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
 		return;
 	}
@@ -2910,6 +3080,9 @@ float forcePushPullRadius[NUM_FORCE_POWER_LEVELS] =
 };
 //rwwFIXMEFIXME: incorporate this into the below function? Currently it's only being used by jedi AI
 
+#if 1
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+#endif
 extern void Touch_Button(gentity_t *ent, gentity_t *other, trace_t *trace );
 void ForceThrow( gentity_t *self, qboolean pull )
 {
@@ -2939,7 +3112,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 	visionArc = 0;
 
-	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE && (self->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN || !G_InGetUpAnim(&self->client->ps)))
+	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE && ((self->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN || !G_InGetUpAnim(&self->client->ps)) || (g_tweakForce.integer & FT_JK2GETUPS)))
 	{
 		return;
 	}
@@ -2949,10 +3122,21 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		return;
 	}
 
-	if (self->client->ps.weaponTime > 0)
+//[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
+	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
-		return;
+		if ((g_fixGetups.integer > 1) && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B))
+		{
+			//Getting up and allowed to pull
+		}
+		else if ((g_tweakForce.integer & FT_JK2PULLROLL) && (self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L || self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B))
+		{
+			//Rolling and allowed to pull.
+		}
+		else 
+			return;
 	}
+//[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
 
 	if ( self->health <= 0 )
 	{
@@ -2990,7 +3174,10 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		return;
 	}
 
-	WP_ForcePowerStart( self, powerUse, 0 );
+	if (powerUse == FP_PULL && g_tweakForce.integer & FT_WEAKPULL)
+		WP_ForcePowerStart( self, powerUse, 60 );
+	else
+		WP_ForcePowerStart( self, powerUse, 0 );
 
 	//make sure this plays and that you cannot press fire for about 1 second after this
 	if ( pull )
@@ -3044,8 +3231,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 	if (pull)
 	{
-		powerLevel = self->client->ps.fd.forcePowerLevel[FP_PULL];
-		pushPower = 256*self->client->ps.fd.forcePowerLevel[FP_PULL];
+		if (g_tweakForce.integer & FT_WEAKPULL) {
+			powerLevel = FORCE_LEVEL_1;
+			pushPower = 64*FORCE_LEVEL_1;
+		}
+		else {
+			powerLevel = self->client->ps.fd.forcePowerLevel[FP_PULL];
+			pushPower = 256*self->client->ps.fd.forcePowerLevel[FP_PULL];
+		}
 	}
 	else
 	{
@@ -3076,7 +3269,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		tto[1] = tfrom[1] + fwd[1]*radius/2;
 		tto[2] = tfrom[2] + fwd[2]*radius/2;
 
-		trap->Trace(&tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+		JP_Trace(&tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		if (tr.fraction != 1.0 &&
 			tr.entityNum != ENTITYNUM_NONE)
@@ -3120,6 +3313,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 		e = 0;
 
+		if (g_unlagged.integer & UNLAGGED_PUSHPULL) //Only unlag the in FOV check since effects of pull are movement based and we dont want to pull someone who not LOS
+			G_TimeShiftAllClients( self->client->pers.cmd.serverTime, self, qfalse );
+
 		while (e < numListedEntities)
 		{
 			ent = &g_entities[entityList[e]];
@@ -3136,7 +3332,21 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			{
 				if (ent->client)
 				{
-					VectorCopy(ent->client->ps.origin, thispush_org);
+					//Com_Printf("ent %i : Ent ps origin: %.2f %.2f %.2f ... Ent r origin: %.2f %.2f %.2f\n", 
+						//ent->client->ps.clientNum, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2], ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2]);
+					if (ent != self && (g_unlagged.integer & UNLAGGED_PUSHPULL) && !(ent->r.svFlags & SVF_BOT) && (ent->s.eType != ET_NPC))
+						VectorCopy(ent->r.currentOrigin, thispush_org);
+					else
+						VectorCopy(ent->client->ps.origin, thispush_org);
+
+#if 1
+					if (g_unlagged.integer & (1<<3)) //debug 
+					{
+						G_TestLine(self->client->ps.origin, ent->r.currentOrigin, 0x00ff00, 5000); //check trace.fraction? ehh trace.startsolid or whatever?
+						G_TestLine(self->client->ps.origin, ent->client->ps.origin, 0x0000ff, 5000); //check trace.fraction? ehh trace.startsolid or whatever?
+					}
+#endif
+
 				}
 				else
 				{
@@ -3176,6 +3386,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			}
 			e++;
 		}
+		if ( g_unlagged.integer & UNLAGGED_PUSHPULL )
+			G_UnTimeShiftAllClients( self, qfalse );
 	}
 
 	for ( e = 0 ; e < numListedEntities ; e++ )
@@ -3195,7 +3407,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			continue;
 		if (ent == self)
 			continue;
-		if (ent->client && OnSameTeam(ent, self))
+		if (ent->client && OnSameTeam(ent, self) && !g_friendlyFire.integer)//JAPRO - Allow push/pull teammates when friendlyfire is on
 		{
 			continue;
 		}
@@ -3301,14 +3513,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		}
 
 		//really should have a clear LOS to this thing...
-		trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+		JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.fraction < 1.0f && tr.entityNum != ent->s.number )
 		{//must have clear LOS
 			//try from eyes too before you give up
 			vec3_t eyePoint;
 			VectorCopy(self->client->ps.origin, eyePoint);
 			eyePoint[2] += self->client->ps.viewheight;
-			trap->Trace( &tr, eyePoint, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, eyePoint, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 			if ( tr.fraction < 1.0f && tr.entityNum != ent->s.number )
 			{
@@ -3482,8 +3694,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					{
 						dirLen = VectorLength(pushDir);
 
-						if (BG_KnockDownable(&push_list[x]->client->ps) &&
-							dirLen <= (64*((modPowerLevel - otherPushPower)-1)))
+						if (BG_KnockDownable(&push_list[x]->client->ps) && 
+							((!(g_tweakForce.integer & FT_JK2KNOCKDOWN) && (dirLen <= (64*((modPowerLevel - otherPushPower)-1)))) || ((g_tweakForce.integer & FT_JK2KNOCKDOWN) && (dirLen <= 128))) )  
 						{ //can only do a knockdown if fairly close
 							push_list[x]->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 							push_list[x]->client->ps.forceHandExtendTime = level.time + 700;
@@ -3530,7 +3742,12 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 
 					push_list[x]->client->ps.otherKiller = self->s.number;
-					push_list[x]->client->ps.otherKillerTime = level.time + 5000;
+//JAPRO - Serverside - Fixkillcredit - Start
+					if (g_fixKillCredit.integer)
+						push_list[x]->client->ps.otherKillerTime = level.time + 2000;
+					else
+						push_list[x]->client->ps.otherKillerTime = level.time + 5000;
+//JAPRO - Serverside - Fixkillcredit - End
 					push_list[x]->client->ps.otherKillerDebounceTime = level.time + 100;
 
 					pushPowerMod -= (dirLen*0.7);
@@ -3542,8 +3759,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					//fullbody push effect
 					push_list[x]->client->pushEffectTime = level.time + 600;
 
-					push_list[x]->client->ps.velocity[0] = pushDir[0]*pushPowerMod;
-					push_list[x]->client->ps.velocity[1] = pushDir[1]*pushPowerMod;
+					if ((g_tweakForce.integer & FT_PULLSTRENGTH) && pull) {
+						push_list[x]->client->ps.velocity[0] += pushDir[0]*pushPowerMod; //FT_WEAKPULL?
+						push_list[x]->client->ps.velocity[1] += pushDir[1]*pushPowerMod;
+					}
+					else {
+						push_list[x]->client->ps.velocity[0] = pushDir[0]*pushPowerMod;
+						push_list[x]->client->ps.velocity[1] = pushDir[1]*pushPowerMod;
+					}
 
 					if ((int)push_list[x]->client->ps.velocity[2] == 0)
 					{ //if not going anywhere vertically, boost them up a bit
@@ -3556,7 +3779,10 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 					else
 					{
-						push_list[x]->client->ps.velocity[2] = pushDir[2]*pushPowerMod;
+						if ((g_tweakForce.integer & FT_PULLSTRENGTH) && pull)
+							push_list[x]->client->ps.velocity[2] += pushDir[2]*pushPowerMod;
+						else
+							push_list[x]->client->ps.velocity[2] = pushDir[2]*pushPowerMod;
 					}
 				}
 			}
@@ -3567,9 +3793,71 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				}
 				else
 				{
-					G_ReflectMissile( self, push_list[x], forward );
+					//Okay, dont do this is the owner of missile is in racemode. (rocketjump mode)
+					if (g_raceMode.integer) {
+						gentity_t *owner = &g_entities[push_list[x]->r.ownerNum];
+						if (owner->client && owner->client->sess.raceMode) {
+						}
+						else 
+							G_ReflectMissile( self, push_list[x], forward );
+					}
+					else
+						G_ReflectMissile( self, push_list[x], forward );
 				}
 			}
+//JAPRO - Serverside - Flag push/pull physics - Start
+			else if (g_allowFlagThrow.integer && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && push_list[x]->s.modelindex2 != 0)
+			{
+				if ( pull )
+				{//pull the item
+
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					VectorScale( forward, -325.0f, push_list[x]->s.pos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+				else 
+				{
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					VectorScale( forward, 325.0f, push_list[x]->s.pos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+			}
+//JAPRO - Serverside - Flag push/pull physics - End
+//JAPRO - Serverside - Item push/pull physics - Start
+			else if ( (g_tweakForce.integer & FT_PUSHPULLITEMS) && !(push_list[x]->s.eFlags & EF_NODRAW) && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
+			{
+				push_list[x]->nextthink = level.time + 30000;
+				push_list[x]->think = ResetItem;//incase it falls off a cliff
+				if ( pull )
+				{//pull the item
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					push_list[x]->s.apos.trType = TR_GRAVITY;
+					VectorScale( forward, -650.0f, push_list[x]->s.pos.trDelta );
+					VectorScale( forward, -650.0f, push_list[x]->s.apos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					push_list[x]->s.apos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.apos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+				else 
+				{
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					push_list[x]->s.apos.trType = TR_GRAVITY;
+					VectorScale( forward, 650.0f, push_list[x]->s.pos.trDelta );
+					VectorScale( forward, 650.0f, push_list[x]->s.apos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					push_list[x]->s.apos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.apos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+			}
+//JAPRO - Serverside - Item push/pull physics - End
 			else if ( !Q_stricmp( "func_static", push_list[x]->classname ) )
 			{//force-usable func_static
 				if ( !pull && (push_list[x]->spawnflags&1/*F_PUSH*/) )
@@ -3788,7 +4076,11 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		}
 		else
 		{
+#if _draintest
+			self->client->ps.fd.forcePowerDebounce[FP_DRAIN] = level.time + g_forceDrainRestartDelay.integer;//1500;
+#else
 			self->client->ps.fd.forcePowerDebounce[FP_DRAIN] = level.time + 1500;
+#endif
 		}
 
 		if (self->client->ps.forceHandExtend == HANDEXTEND_FORCE_HOLD)
@@ -3829,8 +4121,8 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 	}
 
 	VectorSubtract(gripEnt->client->ps.origin, self->client->ps.origin, a);
-
-	trap->Trace(&tr, self->client->ps.origin, NULL, NULL, gripEnt->client->ps.origin, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+	
+	JP_Trace(&tr, self->client->ps.origin, NULL, NULL, gripEnt->client->ps.origin, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	gripLevel = WP_AbsorbConversion(gripEnt, gripEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_GRIP, self->client->ps.fd.forcePowerLevel[FP_GRIP], forcePowerNeeded[self->client->ps.fd.forcePowerLevel[FP_GRIP]][FP_GRIP]);
 
@@ -3858,9 +4150,7 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		return;
 	}
 
-	if (tr.fraction != 1.0f &&
-		tr.entityNum != gripEnt->s.number /*&&
-		gripLevel < FORCE_LEVEL_3*/)
+	if (!(g_tweakForce.integer & FT_JK2GRIP) && tr.fraction != 1.0f && tr.entityNum != gripEnt->s.number)
 	{
 		WP_ForcePowerStop(self, forcePower);
 		return;
@@ -3882,6 +4172,12 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		{
 			WP_ForcePowerStop(self, forcePower);
 		}
+		if (g_fixKillCredit.integer)//JAPRO fixkillcredit
+		{
+			gripEnt->client->ps.otherKiller = self->s.number;
+			gripEnt->client->ps.otherKillerTime = level.time + 2000;
+			gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+		}
 		return;
 	}
 
@@ -3896,9 +4192,14 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 			gripEnt->client->ps.forceGripMoveInterval = level.time + 300; //only update velocity every 300ms, so as to avoid heavy bandwidth usage
 		}
 
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - Start
 		gripEnt->client->ps.otherKiller = self->s.number;
-		gripEnt->client->ps.otherKillerTime = level.time + 5000;
+		if (g_fixKillCredit.integer)
+			gripEnt->client->ps.otherKillerTime = level.time + 2000;
+		else
+			gripEnt->client->ps.otherKillerTime = level.time + 5000;
 		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - End
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -3929,9 +4230,14 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 	{
 		gripEnt->client->ps.fd.forceGripBeingGripped = level.time + 1000;
 
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - Start
 		gripEnt->client->ps.otherKiller = self->s.number;
-		gripEnt->client->ps.otherKillerTime = level.time + 5000;
+		if (g_fixKillCredit.integer)
+			gripEnt->client->ps.otherKillerTime = level.time + 2000;
+		else
+			gripEnt->client->ps.otherKillerTime = level.time + 5000;
 		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - End
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -4181,7 +4487,11 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		break;
 	case FP_SPEED:
 		//This is handled in PM_WalkMove and PM_StepSlideMove
-		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS
+		if (self->client->ps.stats[STAT_ONLYBHOP]) {
+			WP_ForcePowerStop( self, forcePower );
+			break;
+		}
+		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS  
 			&& self->client->holdingObjectiveItem < ENTITYNUM_WORLD )
 		{
 			if ( g_entities[self->client->holdingObjectiveItem].genericValue15 )
@@ -4229,6 +4539,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		if (self->health < 1)
 		{
 			WP_ForcePowerStop(self, forcePower);
+			break;
+		}
+		if (self->client->ps.stats[STAT_ONLYBHOP]) {
+			WP_ForcePowerStop( self, forcePower );
 			break;
 		}
 		if (self->client->ps.forceRageDrainTime < level.time)
@@ -4371,6 +4685,10 @@ int WP_DoSpecificPower( gentity_t *self, usercmd_t *ucmd, forcePowers_t forcepow
 	int powerSucceeded;
 
 	powerSucceeded = 1;
+
+	//OSP: pause
+	if ( level.pause.state != PAUSE_NONE && self->client && !self->client->sess.raceMode ) //racemode cant use force anyway so... eh..
+		return 0;
 
 	// OVERRIDEFIXME
 	if ( !WP_ForcePowerAvailable( self, forcepower, 0 ) )
@@ -4968,7 +5286,7 @@ qboolean G_SpecialRollGetup(gentity_t *self)
 
 void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 {
-	int			i, holo, holoregen;
+	int			i;//, holo, holoregen;
 	int			prepower = 0;
 	//see if any force powers are running
 	if ( !self )
@@ -4989,6 +5307,9 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	{
 		return;
 	}
+
+	if (!self->NPC && self->client->ps.fd.forcePowerSelected == FP_LEVITATION)
+		self->client->ps.fd.forcePowerSelected = 0;
 
 	/*
 	if (self->client->ps.fd.saberAnimLevel > self->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE])
@@ -5069,13 +5390,13 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 			{
 				self->client->ps.forceHandExtend = HANDEXTEND_NONE;
 			}
-			else if (G_SpecialRollGetup(self))
+			else if (G_SpecialRollGetup(self) && !(g_tweakForce.integer & FT_JK2GETUPS))
 			{
 				self->client->ps.forceHandExtend = HANDEXTEND_NONE;
 			}
 			else
 			{ //hmm.. ok.. no more getting up on your own, you've gotta push something, unless..
-				if ((level.time-self->client->ps.forceHandExtendTime) > 4000)
+				if (((level.time - self->client->ps.forceHandExtendTime) > 4000) || (g_tweakForce.integer & FT_JK2GETUPS))
 				{ //4 seconds elapsed, I guess they're too dumb to push something to get up!
 					if (self->client->pers.cmd.upmove &&
 						self->client->ps.fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1)
@@ -5083,6 +5404,11 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						G_PreDefSound(self->client->ps.origin, PDSOUND_FORCEJUMP);
 						self->client->ps.forceDodgeAnim = 2;
 						self->client->ps.forceHandExtendTime = level.time + 500;
+
+						if (g_tweakForce.integer & FT_JK2GETUPS) {
+							self->client->ps.forceHandExtendTime += 300; //Bring this up to 800 like in jk2
+							self->client->ps.velocity[2] = 300;
+						}
 
 						//self->client->ps.velocity[2] = 400;
 					}
@@ -5092,6 +5418,11 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						self->client->ps.forceDodgeAnim = 3;
 						self->client->ps.forceHandExtendTime = level.time + 500;
 						self->client->ps.velocity[2] = 300;
+
+						if (g_tweakForce.integer & FT_JK2GETUPS) {
+							self->client->ps.forceHandExtendTime += 100; //Bring this up to 600 like in jk2
+							self->client->ps.velocity[2] = 200;
+						}
 					}
 					else
 					{
@@ -5258,14 +5589,17 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->ps.fd.forceGripCripple = 1;
 
 		//keep the saber off during this period
-		if (self->client->ps.weapon == WP_SABER && !self->client->ps.saberHolstered)
+//[JAPRO - Serverside - Force - Fix Saber in grip - Start]
+		if (!g_fixSaberInGrip.integer && self->client->ps.weapon == WP_SABER && !self->client->ps.saberHolstered) 
 		{
 			Cmd_ToggleSaber_f(self);
 		}
+//[JAPRO - Serverside - Force - Fix Saber in grip - End]
 	}
 	else
 	{
 		self->client->ps.fd.forceGripCripple = 0;
+		self->client->didGlitchKick = qfalse;
 	}
 
 	if (self->client->ps.fd.forceJumpSound)
@@ -5417,10 +5751,57 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	if ( !(self->client->ps.fd.forcePowersActive & (1<<FP_LIGHTNING)) )
 		self->client->force.lightningDebounce = level.time;
 
-	if ( (!self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN)) &&
-			!self->client->ps.saberInFlight && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
+	if ( (!self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN)) && //whats up with fp_drain being mentioned here
+			!self->client->ps.saberInFlight && (self->client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SPEED) && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
 	{//when not using the force, regenerate at 1 point per half second
-		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time )
+		int overrideAmt = 0, debounce = Q_max(g_forceRegenTime.integer, 1), holo = 0;
+
+		if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)	{
+			if ( self->client->ps.powerups[PW_FORCE_BOON] )
+				overrideAmt = 6;
+			else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
+				overrideAmt = 4;
+		}
+		else {
+			while (holo < NUM_FORCE_POWERS) {
+				if (self->client->ps.holocronsCarried[holo])
+					overrideAmt++;
+				holo++;
+			}
+		}
+
+		//When should it be other than g_forceregentime ?
+		if (level.gametype == GT_SIEGE) {
+			if ( self->client->holdingObjectiveItem && g_entities[self->client->holdingObjectiveItem].inuse && g_entities[self->client->holdingObjectiveItem].genericValue15 )
+				debounce = 7000;
+			else if (self->client->siegeClass != -1 && (bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_FASTFORCEREGEN)))
+				debounce = Q_max(g_forceRegenTime.integer*0.2, 1); //if this is siege and our player class has the fast force regen ability, then recharge with 1/5th the usual delay
+		}
+		else {
+			if ( level.gametype == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE ) {
+				if ( duel_fraglimit.integer )
+					debounce = Q_max(g_forceRegenTime.integer * (0.6 + (.3 * (float)self->client->sess.wins / (float)duel_fraglimit.integer)), 1);
+				else
+					debounce = Q_max(g_forceRegenTime.integer*0.7, 1);
+			}
+			else if (self->client->ps.stats[STAT_RACEMODE]) {
+				debounce = 25;//Hardcoded regentime of 25ms for racers.. idk.. 25 is lowest you can go without horribly broken cartwheel climb
+			}
+			else if (self->client->ps.duelInProgress) {
+				if (dueltypes[self->client->ps.clientNum] == 0)//NF Duel
+					debounce = Q_max(g_saberDuelForceRegenTime.integer, 1);
+				else if (dueltypes[self->client->ps.clientNum] == 1)//FF Duel
+					debounce = Q_max(g_forceDuelForceRegenTime.integer, 1);
+			}
+		}
+
+		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time ) {
+			WP_ForcePowerRegenerate(self, overrideAmt);
+			self->client->ps.fd.forcePowerRegenDebounceTime += debounce;
+		}
+
+#if 0
+		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time ) //it might be a good idea to do all the conditional stuff outside of this loop and come up with the set number to regen here?
 		{
 			if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)
 			{
@@ -5463,10 +5844,23 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					else
 						self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_forceRegenTime.integer*0.7, 1);
 				}
-				else
-					self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_forceRegenTime.integer, 1);
+				else if (self->client->ps.stats[STAT_RACEMODE])
+					self->client->ps.fd.forcePowerRegenDebounceTime += 25;//Hardcoded regentime of 25ms for racers.. idk.. 25 is lowest you can go without horribly broken cartwheel climb
+				else {
+					if (self->client->ps.duelInProgress) {
+						if (dueltypes[self->client->ps.clientNum] == 0)//NF Duel
+							self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_saberDuelForceRegenTime.integer, 1);
+						else if (dueltypes[self->client->ps.clientNum] == 1)//FF Duel
+							self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_forceDuelForceRegenTime.integer, 1);
+						else 
+							self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_forceRegenTime.integer, 1);
+					}
+					else
+						self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_forceRegenTime.integer, 1);
+				}
 			}
 		}
+#endif
 	}
 	else
 	{

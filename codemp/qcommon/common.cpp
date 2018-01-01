@@ -34,6 +34,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #endif
 
+#include <mutex>
+
 FILE *debuglogfile;
 fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
@@ -57,8 +59,6 @@ cvar_t	*com_optvehtrace;
 cvar_t	*com_G2Report;
 #endif
 
-cvar_t *com_renderfps;
-
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_bootlogo;
@@ -66,12 +66,12 @@ cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_cameraMode;
 cvar_t  *com_homepath;
+cvar_t	*com_renderfps;
+cvar_t	*cl_commandsize;//Loda - FPS UNLOCK ENGINE
 #ifndef _WIN32
 cvar_t	*com_ansiColor = NULL;
 #endif
 cvar_t	*com_busyWait;
-
-cvar_t	*cl_commandsize;
 
 cvar_t *com_affinity;
 
@@ -128,10 +128,13 @@ to the appropriate place.
 A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
 */
+std::recursive_mutex printfLock;
 void QDECL Com_Printf( const char *fmt, ... ) {
+	std::lock_guard<std::recursive_mutex> l( printfLock );
+
+	static qboolean opening_qconsole = qfalse;
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-	static qboolean opening_qconsole = qfalse;
 
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -199,7 +202,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	}
 #endif
 }
-
 
 /*
 ================
@@ -700,8 +702,11 @@ journaled file
 */
 
 #define	MAX_PUSHED_EVENTS	            1024
-static int		com_pushedEventsHead = 0;
-static int             com_pushedEventsTail = 0;
+// bk001129 - init, also static
+#define THREADACCESS
+static THREADACCESS int		com_pushedEventsHead = 0;
+static THREADACCESS int             com_pushedEventsTail = 0;
+// bk001129 - static
 static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 
 /*
@@ -797,7 +802,10 @@ void Com_InitPushEvent( void ) {
 Com_PushEvent
 =================
 */
+std::mutex pushLock;
 void Com_PushEvent( sysEvent_t *event ) {
+	std::lock_guard<std::mutex> l( pushLock );
+
 	sysEvent_t		*ev;
 	static int printedWarning = 0;
 
@@ -829,9 +837,12 @@ Com_GetEvent
 =================
 */
 sysEvent_t	Com_GetEvent( void ) {
-	if ( com_pushedEventsHead > com_pushedEventsTail ) {
-		com_pushedEventsTail++;
-		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
+	{
+		std::lock_guard<std::mutex> l( pushLock );
+		if ( com_pushedEventsHead > com_pushedEventsTail ) {
+			com_pushedEventsTail++;
+			return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
+		}
 	}
 	return Com_GetRealEvent();
 }
@@ -926,6 +937,12 @@ int Com_EventLoop( void ) {
 			}
 			Cbuf_AddText( "\n" );
 			break;
+		case SE_AIO_FCLOSE:
+			{
+				extern void	FS_FCloseAio( int handle );
+				FS_FCloseAio( ev.evValue );
+				break;
+			}
 		}
 
 		// free any block data
@@ -1217,7 +1234,7 @@ void Com_Init( char *commandLine ) {
 		//
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 
-		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT | CVAR_SYSTEMINFO );
+		com_timescale = Cvar_Get ("timescale", "1", 0 );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 
@@ -1238,6 +1255,9 @@ void Com_Init( char *commandLine ) {
 #ifndef _WIN32
 		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE_ND );
 #endif
+
+		com_renderfps = Cvar_Get("com_renderfps", "0", CVAR_ARCHIVE);
+		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);//Loda - FPS UNLOCK ENGINE
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);

@@ -528,9 +528,13 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 							hitEnt->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 						}
 
-						hitEnt->client->ps.otherKiller = pEnt->s.number;
-						hitEnt->client->ps.otherKillerTime = pm->cmd.serverTime + 5000;
-						hitEnt->client->ps.otherKillerDebounceTime = pm->cmd.serverTime + 100;
+//JAPRO - Serverside - Remove otherkiller info from everything but g_damage (which will cover everything) if fixkillcredit is on - Start
+						if (!g_fixKillCredit.integer) {
+							hitEnt->client->ps.otherKiller = pEnt->s.number;
+							hitEnt->client->ps.otherKillerTime = pm->cmd.serverTime + 5000;
+							hitEnt->client->ps.otherKillerDebounceTime = pm->cmd.serverTime + 100;
+						}
+//JAPRO - Serverside - Remove otherkiller info from everything but g_damage (which will cover everything) if fixkillcredit is on - End
 
 						//add my velocity into his to force him along in the correct direction from impact
 						VectorAdd(hitEnt->client->ps.velocity, pm->ps->velocity, hitEnt->client->ps.velocity);
@@ -707,11 +711,11 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 		VectorMA( pm->ps->origin, time_left, pm->ps->velocity, end );
 
 		// see if we can make it there
-		pm->trace ( &trace, pm->ps->origin, pm->mins, pm->maxs, end, pm->ps->clientNum, pm->tracemask);
+		pm->trace ( &trace, pm->ps->origin, pm->mins, pm->maxs, end, pm->ps->clientNum, pm->tracemask); //Normal player tracemask is SOLID,PLAYERCLIP,BODY,TERRAIN
 
 		if (trace.allsolid) {
 			// entity is completely trapped in another solid
-			pm->ps->velocity[2] = 0;	// don't build up falling damage, but allow sideways acceleration
+			pm->ps->velocity[2] = 0;	// don't build up falling damage, but allow sideways acceleration. wallbug!?
 			return qtrue;
 		}
 
@@ -734,7 +738,8 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 			if (pEnt && pEnt->s.eType == ET_NPC && pEnt->s.NPC_class == CLASS_VEHICLE &&
 				pEnt->m_pVehicle)
 			{ //do vehicle impact stuff then
-				PM_VehicleImpact(pEnt, &trace);
+				if (!pEnt->playerState->stats[STAT_RACEMODE])
+					PM_VehicleImpact(pEnt, &trace);
 			}
 		}
 #ifdef _GAME
@@ -885,6 +890,31 @@ void PM_StepSlideMove( qboolean gravity ) {
 	qboolean	isGiant = qfalse;
 	bgEntity_t	*pEnt;
 	qboolean skipStep = qfalse;
+	int NEW_STEPSIZE = STEPSIZE;
+
+	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 4 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 6 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 8) {
+		if (pm->ps->velocity[2] > 0 && pm->cmd.upmove > 0) {
+			int jumpHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
+
+			if (jumpHeight > 48)
+				jumpHeight = 48;
+			else if (jumpHeight < 22)
+				jumpHeight = 22;
+
+			NEW_STEPSIZE = 48 - jumpHeight + 22;
+
+			//trap->SendServerCommand(-1, va("print \"new stepsize: %i, expected max end height: %i\n\"", NEW_STEPSIZE, NEW_STEPSIZE + (int)(pm->ps->origin[2] - pm->ps->fd.forceJumpZStart)));
+			
+			//This means that we can always clip things up to 48 units tall, if we are moving up when we hit it and from a bhop..
+			//It means we can sometimes clip things up to 70 units tall, if we hit it in right part of jump
+			//Should it be higher..? some of the things in q3 are 56 units tall..
+
+			//NEW_STEPSIZE = 46;
+			//Make stepsize equal to.. our current 48 - our current jumpheight ?
+		}
+		else 
+			NEW_STEPSIZE = 22;
+	}
 
 	VectorCopy (pm->ps->origin, start_o);
 	VectorCopy (pm->ps->velocity, start_v);
@@ -895,7 +925,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	}
 
 	if ( PM_SlideMove( gravity ) == 0 ) {
-		return;		// we got exactly where we wanted to go first try
+		return;		// we got exactly where we wanted to go first try, nospeed ramp returns here maybe	
 	}
 
 	pEnt = pm_entSelf;
@@ -910,7 +940,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	}
 
 	VectorCopy(start_o, down);
-	down[2] -= STEPSIZE;
+	down[2] -= NEW_STEPSIZE;
 	pm->trace (&trace, start_o, pm->mins, pm->maxs, down, pm->ps->clientNum, pm->tracemask);
 	VectorSet(up, 0, 0, 1);
 	// never step up when you still have up velocity
@@ -942,12 +972,12 @@ void PM_StepSlideMove( qboolean gravity ) {
 		}
 		else
 		{
-			up[2] += STEPSIZE;
+			up[2] += NEW_STEPSIZE;
 		}
 	}
 	else
 	{
-		up[2] += STEPSIZE;
+		up[2] += NEW_STEPSIZE;
 	}
 
 	// test the player position if they were a stepheight higher
@@ -956,7 +986,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 		if ( pm->debugLevel ) {
 			Com_Printf("%i:bend can't step\n", c_pmove);
 		}
-		return;		// can't step up
+		return;		// can't step up, nospeed ramp returns here maybe
 	}
 
 	stepSize = trace.endpos[2] - start_o[2];
@@ -965,6 +995,8 @@ void PM_StepSlideMove( qboolean gravity ) {
 	VectorCopy (start_v, pm->ps->velocity);
 
 	PM_SlideMove( gravity );
+
+	pml.clipped = qtrue; //nospeed ramp fix, if we made it to this point there wont be a nospeed ramp
 
 	// push down the final amount
 	VectorCopy (pm->ps->origin, down);
@@ -1028,10 +1060,28 @@ void PM_StepSlideMove( qboolean gravity ) {
 		else
 		{
 			VectorCopy (trace.endpos, pm->ps->origin);
-			if ( pm->stepSlideFix )
+			if (pm->stepSlideFix)
 			{
-				if ( trace.fraction < 1.0 ) {
-					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
+				if (trace.fraction < 1.0) {
+					if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) { //Make Warsow Rampjump not slow down your XY speed
+						vec3_t oldVel, clipped_velocity, newVel;
+						float oldSpeed, newSpeed;
+
+						VectorCopy(pm->ps->velocity, oldVel);
+						oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
+
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP 3
+
+						VectorCopy(clipped_velocity, newVel);
+						newVel[2] = 0;
+						newSpeed = newVel[0] * newVel[0] + newVel[1] * newVel[1]; 
+
+						if (newSpeed > oldSpeed)
+							VectorCopy(clipped_velocity, pm->ps->velocity);
+					}
+					else {
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
+					}
 				}
 			}
 		}
@@ -1047,7 +1097,25 @@ void PM_StepSlideMove( qboolean gravity ) {
 	if ( !pm->stepSlideFix )
 	{
 		if ( trace.fraction < 1.0 ) {
-			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
+			if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) {
+				vec3_t oldVel, clipped_velocity, newVel;
+				float oldSpeed, newSpeed;
+
+				VectorCopy(pm->ps->velocity, oldVel);
+				oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
+
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP 2
+
+				VectorCopy(clipped_velocity, newVel);
+				newVel[2] = 0;
+				newSpeed = newVel[0] * newVel[0] + newVel[1] * newVel[1]; 
+
+				if (newSpeed > oldSpeed)
+					VectorCopy(clipped_velocity, pm->ps->velocity);
+			}
+			else {
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
+			}
 		}
 	}
 

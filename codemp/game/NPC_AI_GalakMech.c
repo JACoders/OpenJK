@@ -769,7 +769,7 @@ void NPC_BSGM_Attack( void )
 				NPCS.NPC->s.loopSound = G_SoundIndex( "sound/weapons/galak/lasercutting.wav" );
 				if ( !NPCS.NPCInfo->coverTarg )
 				{//for moving looping sound at end of trace
-					NPCS.NPCInfo->coverTarg = G_Spawn();
+					NPCS.NPCInfo->coverTarg = G_Spawn(qtrue);
 					if ( NPCS.NPCInfo->coverTarg )
 					{
 						G_SetOrigin( NPCS.NPCInfo->coverTarg, NPCS.NPC->client->renderInfo.muzzlePoint );

@@ -290,6 +290,36 @@ const char *G_RefreshNextMap(int gametype, qboolean forced)
 	return Info_ValueForKey( level.arenas.infos[desiredMap], "map" );
 }
 
+//rww - auto-obtain nextmap. I could've sworn Q3 had something like this, but I guess not.
+const char *G_GetDefaultMap(int gametype)
+{
+    const char* mapName = 0;
+
+    switch (gametype)
+    {
+    case GT_FFA:
+       mapName = "mp/ffa3";
+       break;
+    case GT_DUEL:
+    case GT_POWERDUEL:
+        mapName = "mp/duel1";
+        break;
+    case GT_TEAM:
+        mapName = "mp/ffa3";
+        break;
+    case GT_SIEGE:
+        mapName = "mp/siege_hoth";
+        break;
+    case GT_CTF:
+       mapName = "mp/ctf3";            
+       break;
+    default:
+        break;
+    }
+
+    return mapName;
+}
+
 /*
 ===============
 G_LoadArenas
@@ -629,6 +659,18 @@ void G_CheckMinimumPlayers( void ) {
 	humanplayers = G_CountHumanPlayers( -1 );
 	botplayers = G_CountBotPlayers(	-1 );
 
+	if ( (humanplayers + botplayers) < bot_minplayers.integer //bot_maxbots from raz0r
+		&& (!bot_maxbots.integer || (humanplayers + botplayers) < bot_maxbots.integer) ) {
+		G_AddRandomBot( -1 );
+	}
+	else if ( ((humanplayers + botplayers) > bot_minplayers.integer && botplayers)
+		|| (botplayers > bot_maxbots.integer && botplayers && bot_maxbots.integer) ) {
+		// try to remove spectators first
+		if ( !G_RemoveRandomBot( TEAM_SPECTATOR ) )
+			G_RemoveRandomBot( -1 );
+	}
+
+	/*
 	if ((humanplayers+botplayers) < minplayers)
 	{
 		G_AddRandomBot(-1);
@@ -641,7 +683,7 @@ void G_CheckMinimumPlayers( void ) {
 			// just remove the bot that is playing
 			G_RemoveRandomBot(-1);
 		}
-	}
+	}*/
 
 	/*
 	if (level.gametype >= GT_TEAM) {
@@ -1019,7 +1061,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 		}
 
 		bot->client->sess.sessionTeam = TEAM_SPECTATOR;
-		SetTeam(bot, "s");
+		SetTeam(bot, "s", qfalse);
 	}
 	else
 	{
@@ -1044,6 +1086,7 @@ void Svcmd_AddBot_f( void ) {
 	char			altname[MAX_TOKEN_CHARS];
 	char			string[MAX_TOKEN_CHARS];
 	char			team[MAX_TOKEN_CHARS];
+	int				botplayers;
 
 	// are bots enabled?
 	if ( !trap->Cvar_VariableIntegerValue( "bot_enable" ) ) {
@@ -1054,6 +1097,12 @@ void Svcmd_AddBot_f( void ) {
 	trap->Argv( 1, name, sizeof( name ) );
 	if ( !name[0] ) {
 		trap->Print( "Usage: Addbot <botname> [skill 1-5] [team] [msec delay] [altname]\n" );
+		return;
+	}
+
+	botplayers = G_CountBotPlayers(	-1 );
+
+	if (bot_maxbots.integer && botplayers >= bot_maxbots.integer) {
 		return;
 	}
 

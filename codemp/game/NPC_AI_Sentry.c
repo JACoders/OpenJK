@@ -195,7 +195,7 @@ void Sentry_Fire (void)
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), muzzle, forward );
 
-	missile = CreateMissile( muzzle, forward, 1600, 10000, NPCS.NPC, qfalse );
+	missile = CreateMissileNew( muzzle, forward, 1600, 10000, NPCS.NPC, qfalse, qfalse, qfalse );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;

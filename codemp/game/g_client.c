@@ -37,6 +37,7 @@ void WP_SaberAddG2Model( gentity_t *saberent, const char *saberModel, qhandle_t 
 void WP_SaberRemoveG2Model( gentity_t *saberent );
 extern qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel );
 extern qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int *saberAnimLevel );
+void G_AddPlayerLog(char *name, char *ip, char *guid);
 
 forcedata_t Client_Force[MAX_CLIENTS];
 
@@ -602,6 +603,27 @@ qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest )
 	return qfalse;
 }
 
+qboolean SpotWouldTelefrag3( vec3_t spot ) {
+	int			i, num;
+	int			touch[MAX_GENTITIES];
+	gentity_t	*hit;
+	vec3_t		mins, maxs;
+
+	VectorAdd( spot, playerMins, mins );
+	VectorAdd( spot, playerMaxs, maxs );
+	num = trap->EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
+
+	for (i=0 ; i<num ; i++) {
+		hit = &g_entities[touch[i]];
+		if ( hit->client && hit->client->ps.stats[STAT_HEALTH] > 0 ) {
+			return qtrue;
+		}
+
+	}
+
+	return qfalse;
+}
+
 /*
 ================
 SelectNearestDeathmatchSpawnPoint
@@ -998,7 +1020,8 @@ BODYQUE
 =======================================================================
 */
 
-#define BODY_SINK_TIME		30000//45000
+//[JAPRO - Serverside - All - Corpse Removal Time]
+#define BODY_SINK_TIME		1000 * g_corpseRemovalTime.integer
 
 /*
 ===============
@@ -1011,7 +1034,7 @@ void InitBodyQue (void) {
 
 	level.bodyQueIndex = 0;
 	for (i=0; i<BODY_QUEUE_SIZE ; i++) {
-		ent = G_Spawn();
+		ent = G_Spawn(qtrue);
 		ent->classname = "bodyque";
 		ent->neverFree = qtrue;
 		level.bodyQue[i] = ent;
@@ -1066,7 +1089,7 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 		return qfalse;
 	}
 
-	if (ent->client && (ent->client->ps.eFlags & EF_DISINTEGRATION))
+	if (ent->client && ((ent->client->ps.eFlags & EF_DISINTEGRATION) || (ent->client->ps.eFlags & EF_NODRAW)))
 	{ //for now, just don't spawn a body if you got disint'd
 		return qfalse;
 	}
@@ -1220,6 +1243,7 @@ ClientRespawn
 */
 void SiegeRespawn(gentity_t *ent);
 void ClientRespawn( gentity_t *ent ) {
+
 	MaintainBodyQueue(ent);
 
 	if (gEscaping || level.gametype == GT_POWERDUEL)
@@ -1937,6 +1961,98 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	}
 }
 
+//JAPRO - Serverside - Same player names fix - Start
+static QINLINE qboolean IsColorCode(const char *s) {
+	return (qboolean) (*s == '^' && '0' <= *(s+1) && *(s+1) <= '9');
+}
+
+/*
+static void StripColors(const char *s, char *out) {
+	while (*s) {
+		if (IsColorCode(s)) s += 2;
+		else {
+			*out = *s;
+			out += 1;
+			s += 1;
+		}
+	}
+	*out = 0;
+}
+*/
+
+void StripWhitespace(char *s)
+{
+  char* i = s;
+  char* j = s;
+  while(*j != 0)
+  {
+    *i = *j++;
+    if(*i != ' ')
+      i++;
+  }
+  *i = 0;
+}
+
+static qboolean ClientNameEquals(const char *n1, const char *n2) {
+	char o1[MAX_NETNAME];
+	char o2[MAX_NETNAME];
+	//StripColors(n1, o1);
+	//StripColors(n2, o2);
+	Q_strncpyz(o1, n1, MAX_NETNAME);
+	Q_strncpyz(o2, n2, MAX_NETNAME);
+
+	Q_CleanStr(o1);
+	Q_CleanStr(o2);
+	StripWhitespace(o1);
+	StripWhitespace(o2);
+
+	return (qboolean) (Q_stricmp(o1, o2) == 0);
+}
+
+static qboolean ClientNameInUse(const char *netname, int ignore) {
+	int i;
+	for (i = 0; i < level.maxclients; ++i) {
+		if (i != ignore
+			&& level.clients[i].pers.connected != CON_DISCONNECTED
+			&& ClientNameEquals(level.clients[i].pers.netname, netname)) {
+				return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+static void CheckDuplicateName(int clientNum) {
+	char *netname = level.clients[clientNum].pers.netname;
+	//char userinfo[MAX_INFO_STRING]; 
+	if (ClientNameInUse(netname, clientNum)) {
+		char bufname[MAX_NETNAME];
+		int num = 0;
+		int len = strlen(netname);
+		// make room for a number
+		// assuming a number will be 2 digits in length
+		// format will be like "%s ^7[%d]"
+
+		if (len > 28) netname[28] = 0;
+		do {
+			// move the new name to the buffer, since we shouldn't read and write in same location
+			Com_sprintf(bufname, MAX_NETNAME, "%s^7[%d]", netname, num);
+		} 
+		while (num++ < level.maxclients && ClientNameInUse(bufname, clientNum));
+		{
+			char	userinfo[MAX_INFO_STRING]; 
+
+			Q_strncpyz(netname, bufname, MAX_NETNAME);// move bufname back to netname
+			trap->GetUserinfo(clientNum, userinfo, sizeof(userinfo)); 
+			Info_SetValueForKey(userinfo, "name", bufname);
+			trap->SetUserinfo(clientNum, userinfo); 
+			ClientUserinfoChanged(clientNum); 
+		}
+
+
+	}
+}
+//JAPRO - Serverside - Same player names fix - End
+
 
 
 
@@ -2112,7 +2228,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	int team=TEAM_FREE, health=100, maxHealth=100, teamLeader;
 	const char *s=NULL;
 	char *value=NULL, userinfo[MAX_INFO_STRING], buf[MAX_INFO_STRING], oldClientinfo[MAX_INFO_STRING], model[MAX_QPATH],
-		forcePowers[DEFAULT_FORCEPOWERS_LEN], oldname[MAX_NETNAME], className[MAX_QPATH], color1[16], color2[16];
+		forcePowers[DEFAULT_FORCEPOWERS_LEN], oldname[MAX_NETNAME], className[MAX_QPATH], color1[16], color2[16], cp_sbRGB1[16], cp_sbRGB2[16];
 	qboolean modelChanged = qfalse;
 	gender_t gender = GENDER_MALE;
 
@@ -2137,6 +2253,157 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	if ( !atoi( s ) )	client->pers.predictItemPickup = qfalse;
 	else				client->pers.predictItemPickup = qtrue;
 
+//JAPRO - Serverside - Get Clients Mod version, if any - Start
+	s = Info_ValueForKey( userinfo, "cjp_client" );
+	if ( !strcmp( s, "1.4JAPRO" ) ) {
+		client->pers.isJAPRO = qtrue;
+	} else {
+		client->pers.isJAPRO = qfalse;
+	}
+
+	s = Info_ValueForKey( userinfo, "cp_pluginDisable" );
+	if (atoi(s) & JAPRO_PLUGIN_JAWARUN)
+		client->pers.JAWARUN = qtrue;
+	else
+		client->pers.JAWARUN = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_BHOP)
+		client->pers.onlyBhop = qtrue;
+	else
+		client->pers.onlyBhop = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NOROLL)
+		client->pers.noRoll = qtrue;
+	else
+		client->pers.noRoll = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NOCART)
+		client->pers.noCartwheel = qtrue;
+	else
+		client->pers.noCartwheel = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_CENTERMUZZLE)
+		client->pers.centerMuzzle = qtrue;
+	else
+		client->pers.centerMuzzle = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NOCENTERCP)
+		client->pers.showCenterCP = qfalse;
+	else
+		client->pers.showCenterCP = qtrue;
+
+	if (atoi(s) & JAPRO_PLUGIN_CHATBOXCP)
+		client->pers.showChatCP = qtrue;
+	else
+		client->pers.showChatCP = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NODMGNUMBERS)
+		client->pers.noDamageNumbers = qtrue;
+	else
+		client->pers.noDamageNumbers = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NODUELTELE)
+		client->pers.noDuelTele = qtrue;
+	else
+		client->pers.noDuelTele = qfalse;
+
+	s = Info_ValueForKey( userinfo, "rate" );
+	client->pers.rate = atoi(s);
+	if (client->pers.rate > 90000)
+		client->pers.rate = 90000;
+	else if (client->pers.rate < 0)
+		client->pers.rate = 0;
+
+	s = Info_ValueForKey( userinfo, "snaps" );
+	client->pers.snaps = atoi(s);
+	if (client->pers.snaps > 1000)
+		client->pers.snaps = 1000;
+	else if (client->pers.snaps < 0)
+		client->pers.snaps = 0;
+
+	s = Info_ValueForKey( userinfo, "cg_displayNetSettings" );
+	if (Q_stricmp(s, "")) { //if s is set
+		char tmp[MAX_INFO_VALUE];
+		char * pch;
+		int i = 0;
+		Q_strncpyz(tmp, s, sizeof(tmp));
+		pch = strtok (tmp, " ");
+		while (pch != NULL) {
+			if (i == 0)
+				client->pers.maxPackets = atoi(pch);
+			else if (i == 1)
+				client->pers.timenudge = atoi(pch);
+			else if (i == 2)
+				client->pers.maxFPS = atoi(pch);
+			else 
+				break;
+			pch = strtok (NULL, " ");
+			i++;
+		}
+	}
+	else {
+		s = Info_ValueForKey( userinfo, "com_MaxFPS" );
+		if (!atoi(s)) {
+			s = Info_ValueForKey( userinfo, "cg_displayMaxFPS" );
+			client->pers.maxFPS = atoi(s);
+		}
+		else {
+			client->pers.maxFPS = atoi(s);
+		}
+
+		s = Info_ValueForKey( userinfo, "cl_timenudge" );
+		client->pers.timenudge = atoi(s);
+
+		s = Info_ValueForKey( userinfo, "cl_maxPackets" );
+		client->pers.maxPackets = atoi(s);
+	}
+
+	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
+	if (Q_stricmp(s, "")) { //if s is set
+		char tmp[MAX_INFO_VALUE];
+		char * pch;
+		int i = 0;
+		Q_strncpyz(tmp, s, sizeof(tmp));
+		pch = strtok (tmp, " ");
+		while (pch != NULL) {
+			if (i == 0)
+				client->pers.thirdPerson = atoi(pch);
+			else if (i == 1)
+				client->pers.thirdPersonRange = atoi(pch);
+			else if (i == 2)
+				client->pers.thirdPersonVertOffset = atoi(pch);
+			else 
+				break;
+			pch = strtok (NULL, " ");
+			i++;
+		}
+	}
+	else {
+		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
+		client->pers.thirdPerson = atoi(s);
+
+		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
+		client->pers.thirdPersonRange = atoi(s);
+
+		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonVertOffset" );
+		client->pers.thirdPersonVertOffset = atoi(s);
+	}
+
+	if (client->pers.timenudge > 200)
+		client->pers.timenudge = 200;
+	else if (client->pers.timenudge < -1200)
+		client->pers.timenudge = -1200;
+	if (client->pers.maxPackets > 1000)
+		client->pers.maxPackets = 1000;
+	else if (client->pers.maxPackets < 0)
+		client->pers.maxPackets = 0;
+	if (client->pers.maxFPS > 1000)
+		client->pers.maxFPS = 1000;
+	else if (client->pers.maxFPS < 0)
+		client->pers.maxFPS = 0;
+
+//JAPRO - Serverside - Get Clients Mod version, if any - End
+
 	// set name
 	Q_strncpyz( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey( userinfo, "name" );
@@ -2144,7 +2411,11 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strncpyz( client->pers.netname_nocolor, client->pers.netname, sizeof( client->pers.netname_nocolor ) );
 	Q_StripColor( client->pers.netname_nocolor );
 
-	if ( client->sess.sessionTeam == TEAM_SPECTATOR && client->sess.spectatorState == SPECTATOR_SCOREBOARD ) {
+	if (!g_allowSamePlayerNames.integer)//JAPRO - Serverside - Same player name fix
+		CheckDuplicateName(clientNum);
+
+	if ( client->sess.sessionTeam == TEAM_SPECTATOR && client->sess.spectatorState == SPECTATOR_SCOREBOARD )
+	{
 		Q_strncpyz( client->pers.netname, "scoreboard", sizeof( client->pers.netname ) );
 		Q_strncpyz( client->pers.netname_nocolor, "scoreboard", sizeof( client->pers.netname_nocolor ) );
 	}
@@ -2306,6 +2577,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	// colors
 	Q_strncpyz( color1, Info_ValueForKey( userinfo, "color1" ), sizeof( color1 ) );
 	Q_strncpyz( color2, Info_ValueForKey( userinfo, "color2" ), sizeof( color2 ) );
+	Q_strncpyz( cp_sbRGB1, Info_ValueForKey( userinfo, "cp_sbRGB1" ), sizeof(cp_sbRGB1) );//rgbsabers
+	Q_strncpyz( cp_sbRGB2, Info_ValueForKey( userinfo, "cp_sbRGB2" ), sizeof(cp_sbRGB2) );//rgbsabers
 
 	// gender hints
 	s = Info_ValueForKey( userinfo, "sex" );
@@ -2330,6 +2603,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strcat( buf, sizeof( buf ), va( "st2\\%s\\", client->pers.saber2 ) );
 	Q_strcat( buf, sizeof( buf ), va( "c1\\%s\\", color1 ) );
 	Q_strcat( buf, sizeof( buf ), va( "c2\\%s\\", color2 ) );
+	Q_strcat( buf, sizeof(buf), va( "c3\\%s\\", cp_sbRGB1 ) );//rgbsabers
+	Q_strcat( buf, sizeof(buf), va( "c4\\%s\\", cp_sbRGB2 ) );//rgbsabers
 	Q_strcat( buf, sizeof( buf ), va( "hc\\%i\\", client->pers.maxHealth ) );
 	if ( ent->r.svFlags & SVF_BOT )
 		Q_strcat( buf, sizeof( buf ), va( "skill\\%s\\", Info_ValueForKey( userinfo, "skill" ) ) );
@@ -2456,8 +2731,17 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		if ( g_antiFakePlayer.integer )
 		{// patched, check for > g_maxConnPerIP connections from same IP
 			int count=0, i=0;
+			char strIP[NET_ADDRSTRMAXLEN] = {0}; //not sure man..
+			char *p = NULL;
+
+			Q_strncpyz(strIP, tmpIP, sizeof(strIP));
+			p = strchr(strIP, ':');
+			if (p)
+				*p = 0;
+
 			for ( i=0; i<sv_maxclients.integer; i++ )
 			{
+				//trap->Print("Theirs: %s, ours: %s\n", strIP, level.clients[i].sess.IP);
 				#if 0
 					if ( level.clients[i].pers.connected != CON_DISCONNECTED && i != clientNum )
 					{
@@ -2471,13 +2755,14 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 						}
 					}
 				#else
-					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
+					if ( CompareIPs( strIP, level.clients[i].sess.IP ) )
 						count++;
 				#endif
 			}
-			if ( count > g_maxConnPerIP.integer )
+			if ( count > g_maxConnPerIP.integer ) //>= ?
 			{
 			//	client->pers.connected = CON_DISCONNECTED;
+				//trap->Print("Too may connections\n");
 				return "Too many connections from the same IP";
 			}
 		}
@@ -2489,6 +2774,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		// so lets just fix up anything that should happen on a disconnect
 		ClientDisconnect( clientNum );
 	}
+
+	ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
 
 	// they can connect
 	client = &level.clients[ clientNum ];
@@ -2556,8 +2843,12 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	if ( firstTime )
-		Q_strncpyz( client->sess.IP, tmpIP, sizeof( client->sess.IP ) );
+	Q_strncpyz(client->sess.IP, tmpIP, sizeof( client->sess.IP )); //always do this i guess? might solve issue of blank IP strings..
+	if ( firstTime ) {//loda fixme
+		//Q_strncpyz( client->sess.IP, tmpIP, sizeof( client->sess.IP ) );
+		if (g_playerLog.integer && ent && ent->client && !isBot)
+			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
+	}
 
 	G_LogPrintf( "ClientConnect: %i [%s] (%s) \"%s^7\"\n", clientNum, tmpIP, guid, client->pers.netname );
 
@@ -2577,6 +2868,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	te = G_TempEntity( vec3_origin, EV_CLIENTJOIN );
 	te->r.svFlags |= SVF_BROADCAST;
 	te->s.eventParm = clientNum;
+
+	if (firstTime)
+		ent->client->sess.movementStyle = 1;//default to JKA style 
 
 	// for statistics
 //	client->areabits = areabits;
@@ -2668,7 +2962,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	ent->playerState = &ent->client->ps;
 
 	client->pers.connected = CON_CONNECTED;
-	client->pers.enterTime = level.time;
+	if (client->pers.teamState.state == TEAM_BEGIN) //For some reason this is being called when you are spectating a player and they leave/spec.  So dont reset your time in that case..
+		client->pers.enterTime = level.time; 
 	client->pers.teamState.state = TEAM_BEGIN;
 
 	// save eflags around this, because changing teams will
@@ -2719,11 +3014,32 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	modelname = Info_ValueForKey (userinfo, "model");
 	SetupGameGhoul2Model(ent, modelname, NULL);
 
+	if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
+		G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
+
+	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
+		client->sess.raceMode = qtrue;
+	else if (g_raceMode.integer && (level.gametype == GT_TEAM || level.gametype == GT_CTF) && client->sess.sessionTeam == TEAM_FREE)
+		client->sess.raceMode = qtrue;
+	if (client->sess.sessionTeam != TEAM_FREE && client->sess.sessionTeam != TEAM_SPECTATOR)
+		client->sess.raceMode = qfalse;
+	else if (!g_raceMode.integer) 
+		client->sess.raceMode = qfalse;
+
+	if (client->sess.raceMode) 
+		client->ps.stats[STAT_RACEMODE] = 1;
+	else
+		client->ps.stats[STAT_RACEMODE] = 0;
+
+
+	client->pers.noFollow = qfalse;
+	ent->r.svFlags &= ~SVF_SINGLECLIENT;
+
 	if ( ent->ghoul2 && ent->client )
 		ent->client->renderInfo.lastG2 = NULL; //update the renderinfo bolts next update.
 
 	if ( level.gametype == GT_POWERDUEL && client->sess.sessionTeam != TEAM_SPECTATOR && client->sess.duelTeam == DUELTEAM_FREE )
-		SetTeam( ent, "s" );
+		SetTeam( ent, "s", qfalse);
 	else
 	{
 		if ( level.gametype == GT_SIEGE && (!gSiegeRoundBegun || gSiegeRoundEnded) )
@@ -2742,6 +3058,28 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 	// count current clients and rank for scoreboard
 	CalculateRanks();
+
+	if (client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.sawMOTD == qfalse)
+	{
+		//char arg1[MAX_STRING_TOKENS];
+
+		if (client->pers.isJAPRO == qfalse)
+			trap->SendServerCommand( ent-g_entities, va("print \"^1You do not have the client plugin. Download at www.upsgaming.com\n\"" ) );
+
+		//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
+		if (Q_stricmp(g_consoleMOTD.string, ""))
+			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", g_consoleMOTD.string));
+
+		if (Q_stricmp(g_centerMOTD.string, "")) {
+			strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string )));
+			ent->client->csTimeLeft = g_centerMOTDTime.integer;
+		}
+
+		if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
+			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
+
+		ent->client->sess.sawMOTD = qtrue;
+	}
 
 	G_ClearClientLog(clientNum);
 }
@@ -3077,6 +3415,119 @@ tryTorso:
 #endif
 }
 
+void GiveClientItems(gclient_t *client) {
+	client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
+	client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
+
+	//dont trust uses g_startingItems input, so do this. could loop it.
+	if (!client->sess.raceMode) {
+		if (g_startingItems.integer & (1 << HI_SEEKER))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SEEKER);
+		if (g_startingItems.integer & (1 << HI_SHIELD))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SHIELD);
+		if (g_startingItems.integer & (1 << HI_MEDPAC))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC);
+		if (g_startingItems.integer & (1 << HI_MEDPAC_BIG))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC_BIG);
+		if (g_startingItems.integer & (1 << HI_BINOCULARS))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_BINOCULARS);
+		if (g_startingItems.integer & (1 << HI_SENTRY_GUN))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SENTRY_GUN);
+		if (g_startingItems.integer & (1 << HI_JETPACK))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_JETPACK);
+		if (g_startingItems.integer & (1 << HI_AMMODISP))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_AMMODISP);
+		if (g_startingItems.integer & (1 << HI_EWEB))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_EWEB);
+		if (g_startingItems.integer & (1 << HI_CLOAK))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_CLOAK);
+		if (g_startingItems.integer & (1 << HI_HEALTHDISP))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_HEALTHDISP);
+	}
+}
+
+void GiveClientWeapons(gclient_t *client) {
+
+	if (client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
+		client->ps.stats[STAT_WEAPONS] = (1 << WP_SABER);
+	else
+		client->ps.stats[STAT_WEAPONS] = 0;
+
+	client->ps.ammo[AMMO_BLASTER] = 0;
+	client->ps.ammo[AMMO_POWERCELL] = 0;
+	client->ps.ammo[AMMO_METAL_BOLTS] = 0;
+	client->ps.ammo[AMMO_ROCKETS] = 0;
+	client->ps.ammo[AMMO_DETPACK] = 0;
+	client->ps.ammo[AMMO_TRIPMINE] = 0;
+	client->ps.ammo[AMMO_THERMAL] = 0;
+
+	//I guess this could be cleaned up a ton, but that trusts the user to not put a retarded value for g_startingWeapons ?
+
+				if (g_startingWeapons.integer & (1 << WP_STUN_BATON))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_STUN_BATON);
+				if (g_startingWeapons.integer & (1 << WP_MELEE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_MELEE);
+				if (g_startingWeapons.integer & (1 << WP_BRYAR_PISTOL))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL);
+				if (g_startingWeapons.integer & (1 << WP_BLASTER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BLASTER);
+				if (g_startingWeapons.integer & (1 << WP_DISRUPTOR))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DISRUPTOR);
+				if (g_startingWeapons.integer & (1 << WP_BOWCASTER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BOWCASTER);
+				if (g_startingWeapons.integer & (1 << WP_REPEATER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_REPEATER);
+				if (g_startingWeapons.integer & (1 << WP_DEMP2))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DEMP2);
+				if (g_startingWeapons.integer & (1 << WP_FLECHETTE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_FLECHETTE);
+				if (g_startingWeapons.integer & (1 << WP_ROCKET_LAUNCHER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER);
+				if (g_startingWeapons.integer & (1 << WP_CONCUSSION))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_CONCUSSION);
+				if (g_startingWeapons.integer & (1 << WP_THERMAL))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_THERMAL);
+				if (g_startingWeapons.integer & (1 << WP_TRIP_MINE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_TRIP_MINE);
+				if (g_startingWeapons.integer & (1 << WP_DET_PACK))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DET_PACK);
+				if (g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_OLD);
+
+				if (!(g_startingWeapons.integer & (1 << 0))) { //oh right, startingWeapons bit 1 gives more ammo
+					if (g_startingWeapons.integer & (1 << WP_BLASTER) || g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
+						client->ps.ammo[AMMO_BLASTER] = 300;
+					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER) || g_startingWeapons.integer & (1 << WP_DEMP2))
+						client->ps.ammo[AMMO_POWERCELL] = 200;
+					if (g_startingWeapons.integer & (1 << WP_REPEATER) || g_startingWeapons.integer & (1 << WP_FLECHETTE) || g_startingWeapons.integer & (1 << WP_CONCUSSION))
+						client->ps.ammo[AMMO_METAL_BOLTS] = 200;
+					if (g_startingWeapons.integer & (1 << WP_ROCKET_LAUNCHER))
+						client->ps.ammo[AMMO_ROCKETS] = 2;
+					if (g_startingWeapons.integer & (1 << WP_DET_PACK))
+						client->ps.ammo[AMMO_DETPACK] = 1;
+					if (g_startingWeapons.integer & (1 << WP_TRIP_MINE))
+						client->ps.ammo[AMMO_TRIPMINE] = 1;
+					if (g_startingWeapons.integer & (1 << WP_THERMAL))
+						client->ps.ammo[AMMO_THERMAL] = 1;
+				}
+				else {
+					if (g_startingWeapons.integer & (1 << WP_BLASTER) || g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
+						client->ps.ammo[AMMO_BLASTER] = 600;
+					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER) || g_startingWeapons.integer & (1 << WP_DEMP2))
+						client->ps.ammo[AMMO_POWERCELL] = 600;
+					if (g_startingWeapons.integer & (1 << WP_REPEATER) || g_startingWeapons.integer & (1 << WP_FLECHETTE) || g_startingWeapons.integer & (1 << WP_CONCUSSION))
+						client->ps.ammo[AMMO_METAL_BOLTS] = 600;
+					if (g_startingWeapons.integer & (1 << WP_ROCKET_LAUNCHER))
+						client->ps.ammo[AMMO_ROCKETS] = 25;
+					if (g_startingWeapons.integer & (1 << WP_DET_PACK))
+						client->ps.ammo[AMMO_DETPACK] = 10;
+					if (g_startingWeapons.integer & (1 << WP_TRIP_MINE))
+						client->ps.ammo[AMMO_TRIPMINE] = 10;
+					if (g_startingWeapons.integer & (1 << WP_THERMAL))
+						client->ps.ammo[AMMO_THERMAL] = 10;
+				}
+}
+
 /*
 ===========
 ClientSpawn
@@ -3230,6 +3681,12 @@ void ClientSpawn(gentity_t *ent) {
 				spawnPoint = SelectSpawnPoint (
 					client->ps.origin,
 					spawn_origin, spawn_angles, client->sess.sessionTeam, !!(ent->r.svFlags & SVF_BOT) );
+
+				if (g_duelRespawn.integer && level.gametype == GT_FFA && VectorLength(client->pers.respawnLocation) && !SpotWouldTelefrag3(client->pers.respawnLocation)) {
+					VectorCopy(client->pers.respawnLocation, spawn_origin);
+					spawn_angles[YAW] = client->pers.respawnAngle;
+				}//sad hack
+
 			}
 		}
 	}
@@ -3242,6 +3699,8 @@ void ClientSpawn(gentity_t *ent) {
 	gameFlags = ent->client->mGameFlags & ( PSG_VOTED | PSG_TEAMVOTED);
 
 	// clear everything but the persistant data
+
+	G_ResetTrail( ent );//unlagged
 
 	saved = client->pers;
 	savedSess = client->sess;
@@ -3347,7 +3806,12 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{
-		maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+		//maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+		maxHealth = 100;//i dont think we want handicap to work..?
+		if (g_showHealth.integer)
+			ent->maxHealth = 100;//JAPRO , kay...
+		else 
+			ent->maxHealth = 0;
 	}
 	client->pers.maxHealth = maxHealth;//atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth ) {
@@ -3389,10 +3853,24 @@ void ClientSpawn(gentity_t *ent) {
 		wDisable = g_weaponDisable.integer;
 	}
 
+	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
+		client->sess.raceMode = qtrue;
+	else if (g_raceMode.integer && (level.gametype == GT_TEAM || level.gametype == GT_CTF) && client->sess.sessionTeam == TEAM_FREE)
+		client->sess.raceMode = qtrue;
+	if (client->sess.sessionTeam != TEAM_FREE && client->sess.sessionTeam != TEAM_SPECTATOR)
+		client->sess.raceMode = qfalse;
+	else if (!g_raceMode.integer) 
+		client->sess.raceMode = qfalse;
 
+	if (client->sess.raceMode) 
+		client->ps.stats[STAT_RACEMODE] = 1;
+	else
+		client->ps.stats[STAT_RACEMODE] = 0;
 
-	if ( level.gametype != GT_HOLOCRON
-		&& level.gametype != GT_JEDIMASTER
+	client->savedJumpLevel = 0;//rabbit
+
+	if ( level.gametype != GT_HOLOCRON 
+		&& level.gametype != GT_JEDIMASTER 
 		&& !HasSetSaberOnly()
 		&& !AllForceDisabled( g_forcePowerDisable.integer )
 		&& g_jediVmerc.integer )
@@ -3431,7 +3909,7 @@ void ClientSpawn(gentity_t *ent) {
 				{//using force but not on right team, switch him over
 					const char *teamName = TeamName( forceTeam );
 					//client->sess.sessionTeam = forceTeam;
-					SetTeam( ent, (char *)teamName );
+					SetTeam( ent, (char *)teamName, qfalse );
 					return;
 				}
 			}
@@ -3469,8 +3947,10 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{//jediVmerc is incompatible with this gametype, turn it off!
-		trap->Cvar_Set( "g_jediVmerc", "0" );
-		trap->Cvar_Update( &g_jediVmerc );
+		if (g_jediVmerc.integer) {
+			trap->Cvar_Set( "g_jediVmerc", "0" );
+		  trap->Cvar_Update( &g_jediVmerc );
+		}
 		if (level.gametype == GT_HOLOCRON)
 		{
 			//always get free saber level 1 in holocron
@@ -3480,23 +3960,25 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			if (client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE])
 			{
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//these are precached in g_items, ClearRegisteredItems()
+				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (level.gametype == GT_SIEGE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//these are precached in g_items, ClearRegisteredItems()
 			}
 			else
 			{ //if you don't have saber attack rank then you don't get a saber
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (level.gametype == GT_SIEGE))
+					client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
 			}
 		}
 
-		if (level.gametype != GT_SIEGE)
-		{
-			if (!wDisable || !(wDisable & (1 << WP_BRYAR_PISTOL)))
-			{
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL );
+		if (level.gametype != GT_SIEGE) {
+			if (client->sess.raceMode) {
+				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
+				client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR); //give them disruptor not pistol, since pistol fucks dyn crosshair/strafehelper 
+				client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+				client->ps.ammo[AMMO_POWERCELL] = 300;
 			}
-			else if (level.gametype == GT_JEDIMASTER)
-			{
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL );
+			else { //loda fixme.. this can just be set?
+				GiveClientWeapons(client);
 			}
 		}
 
@@ -3510,14 +3992,19 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			client->ps.weapon = WP_SABER;
 		}
-		else if (client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL))
+		else if (client->sess.sessionTeam != TEAM_SPECTATOR)//huh, stop this weird scope in spec, Loda fixme, this should be a fix to the scope itself
 		{
-			client->ps.weapon = WP_BRYAR_PISTOL;
+			int weap;
+
+			for (weap = 16; weap >= 1; weap--) {//From 16 downto 1
+				if (client->ps.stats[STAT_WEAPONS] & (1 << weap)) {//We have it
+					client->ps.weapon = weap;//Set their weapon to the highest one they have, if saber not enabled.
+					break;
+				}
+			}
 		}
-		else
-		{
-			client->ps.weapon = WP_MELEE;
-		}
+		if (!client->ps.weapon)//Fall back to melee if they dont have anything I guess, so we dont fallback to pistol later
+				client->ps.weapon = WP_MELEE;
 	}
 
 	/*
@@ -3603,8 +4090,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{
-		client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
-		client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
+		GiveClientItems(client);
 	}
 
 	if (level.gametype == GT_SIEGE &&
@@ -3631,7 +4117,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 
 // nmckenzie: DESERT_SIEGE... or well, siege generally.  This was over-writing the max value, which was NOT good for siege.
-	if ( inSiegeWithClass == qfalse )
+	if (!g_startingWeapons.integer && inSiegeWithClass == qfalse)
 	{
 		client->ps.ammo[AMMO_BLASTER] = 100; //ammoData[AMMO_BLASTER].max; //100 seems fair.
 	}
@@ -3824,6 +4310,9 @@ void ClientSpawn(gentity_t *ent) {
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
+
+	client->pers.haste = qfalse; //reset this upon respawn i guess
+
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;
 	ClientThink( ent-g_entities, NULL );
@@ -3840,6 +4329,17 @@ void ClientSpawn(gentity_t *ent) {
 	trap->ICARUS_FreeEnt( (sharedEntity_t *)ent );
 	trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
 }
+
+//[JAPRO - Serverside - All - Ignore subfunction - Start]
+QINLINE void ClientRemoveIgnore(const int targetID) {
+	int i;
+	for (i = 0; i < level.maxclients; ++i) {
+		if (level.clients[i].pers.connected == CON_CONNECTED) {
+			level.clients[i].sess.ignore &= ~(1 << targetID);
+		}
+	}
+}
+//[JAPRO - Serverside - All - Ignore subfunction - End]
 
 
 /*
@@ -3895,9 +4395,13 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 	}
 }
 
+void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
+void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);
+
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
+	gentity_t	*attacker;//JAPRO - Serverside - Fixkillcredit
 	int			i;
 
 	// cleanup if we are kicking a bot that
@@ -3908,6 +4412,30 @@ void ClientDisconnect( int clientNum ) {
 	if ( !ent->client || ent->client->pers.connected == CON_DISCONNECTED ) {
 		return;
 	}
+
+//JAPRO - Serverside - Stop those pesky reconnect whores - Start
+	if (g_fixKillCredit.integer > 1 && ent->client && (ent->health > 0) && !(ent->r.svFlags & SVF_BOT) && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	{
+		attacker = &g_entities[ent->client->ps.otherKiller];
+		if (attacker->client) {
+			trap->SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
+			trap->SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
+			AddScore( attacker, ent->r.currentOrigin, 1 );
+			G_AddSimpleStat(attacker, ent, 1);
+			attacker->client->pers.stats.kills++;//JAPRO STATS
+		}	
+	}
+
+	if (ent->client && ent->client->ps.duelInProgress) {
+		gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
+
+		if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {
+			//Trying to dodge the duel, no no no
+			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
+		}
+	}
+
+//JAPRO - Serverside - Stop those pesky reconnect whores - End
 
 	i = 0;
 
@@ -3933,6 +4461,21 @@ void ClientDisconnect( int clientNum ) {
 	i = 0;
 
 	G_LeaveVehicle( ent, qtrue );
+
+	if (ent->client->ourSwoopNum) {
+		gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
+
+		/*
+		if (ent->client->ps.m_iVehicleNum) { //If we are in a vehicle, properly eject from it?
+			if (ourSwoop && ourSwoop->m_pVehicle && ourSwoop->client && ourSwoop->s.NPC_class == CLASS_VEHICLE && ourSwoop->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
+				ourSwoop->m_pVehicle->m_pVehicleInfo->Eject( ourSwoop->m_pVehicle, (bgEntity_t *)ent, qtrue );
+			}			
+		}
+		*/
+
+		G_FreeEntity( ourSwoop );
+		ent->client->ourSwoopNum = 0;
+	}
 
 	if ( ent->client->ewebIndex )
 	{
@@ -4032,6 +4575,8 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	G_ClearClientLog(clientNum);
+
+	ClientRemoveIgnore(clientNum);//JAPRO IGNORE
 }
 
 

@@ -265,6 +265,11 @@ void SP_trigger_shipboundary(gentity_t *self);
 void SP_trigger_hyperspace(gentity_t *self);
 void SP_trigger_asteroid_field(gentity_t *self);
 
+void SP_trigger_timer_start(gentity_t *self);//JAPRO Timers
+void SP_trigger_timer_checkpoint(gentity_t *self);
+void SP_trigger_timer_stop(gentity_t *self);
+void SP_trigger_newpush (gentity_t *ent);
+
 void SP_target_remove_powerups( gentity_t *ent );
 void SP_target_give (gentity_t *ent);
 void SP_target_delay (gentity_t *ent);
@@ -287,6 +292,8 @@ void SP_target_deactivate (gentity_t *self);
 void SP_target_level_change( gentity_t *self );
 void SP_target_play_music( gentity_t *self );
 void SP_target_push (gentity_t *ent);
+
+void SP_target_restrict (gentity_t *ent);//JAPRO Onlybhop
 
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
@@ -463,9 +470,13 @@ void SP_gametype_item ( gentity_t* ent )
 				{
 					item = BG_FindItem("team_CTF_redflag");
 				}
-				else
-				{ //blue
+				else if (team == TEAM_BLUE)
+				{ 
 					item = BG_FindItem("team_CTF_blueflag");
+				}
+				else
+				{
+					item = BG_FindItem("team_CTF_neutralflag");//RABBIT
 				}
 			}
 		}
@@ -476,6 +487,10 @@ void SP_gametype_item ( gentity_t* ent )
 		else if (strstr(ent->targetname, "blue_flag"))
 		{
 			item = BG_FindItem("team_CTF_blueflag");
+		}
+		else if (strstr(ent->targetname, "neutral_flag"))//rabbit?
+		{
+			item = BG_FindItem("team_CTF_neutralflag");
 		}
 		else
 		{
@@ -494,6 +509,10 @@ void SP_gametype_item ( gentity_t* ent )
 void SP_emplaced_gun( gentity_t *ent );
 
 spawn_t	spawns[] = {
+	{ "df_trigger_checkpoint",				SP_trigger_timer_checkpoint },//JAPRO TIMERS
+	{ "df_trigger_finish",					SP_trigger_timer_stop },//JAPRO TIMERS
+	{ "df_trigger_start",					SP_trigger_timer_start },//JAPRO TIMERS
+
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
 	{ "func_breakable",						SP_func_breakable },
@@ -654,6 +673,9 @@ spawn_t	spawns[] = {
 	{ "target_random",						SP_target_random },
 	{ "target_relay",						SP_target_relay },
 	{ "target_remove_powerups",				SP_target_remove_powerups },
+
+	{"target_restrict",						SP_target_restrict},//JAPRO Onlybhop
+
 	{ "target_score",						SP_target_score },
 	{ "target_screenshake",					SP_target_screenshake },
 	{ "target_scriptrunner",				SP_target_scriptrunner },
@@ -671,6 +693,9 @@ spawn_t	spawns[] = {
 	{ "trigger_hyperspace",					SP_trigger_hyperspace },
 	{ "trigger_lightningstrike",			SP_trigger_lightningstrike },
 	{ "trigger_multiple",					SP_trigger_multiple },
+
+	{ "trigger_newpush",					SP_trigger_newpush },
+
 	{ "trigger_once",						SP_trigger_once },
 	{ "trigger_push",						SP_trigger_push },
 	{ "trigger_shipboundary",				SP_trigger_shipboundary },
@@ -893,7 +918,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	static char *gametypeNames[] = {"ffa", "holocron", "jedimaster", "duel", "powerduel", "single", "team", "siege", "ctf", "cty"};
 
 	// get the next free entity
-	ent = G_Spawn();
+	ent = G_Spawn(qtrue);
 
 	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
 		G_ParseField( level.spawnVars[i][0], level.spawnVars[i][1], ent );
@@ -1604,7 +1629,7 @@ void G_SpawnEntitiesFromString( qboolean inSubBSP ) {
 	if( g_entities[ENTITYNUM_WORLD].behaviorSet[BSET_SPAWN] && g_entities[ENTITYNUM_WORLD].behaviorSet[BSET_SPAWN][0] )
 	{//World has a spawn script, but we don't want the world in ICARUS and running scripts,
 		//so make a scriptrunner and start it going.
-		gentity_t *script_runner = G_Spawn();
+		gentity_t *script_runner = G_Spawn(qtrue);
 		if ( script_runner )
 		{
 			script_runner->behaviorSet[BSET_USE] = g_entities[ENTITYNUM_WORLD].behaviorSet[BSET_SPAWN];

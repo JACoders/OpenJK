@@ -311,7 +311,7 @@ void ImperialProbe_FireBlaster(void)
 		AngleVectors (NPCS.NPC->r.currentAngles, forward, vright, up);
 	}
 
-	missile = CreateMissile( muzzle1, forward, 1600, 10000, NPCS.NPC, qfalse );
+	missile = CreateMissileNew( muzzle1, forward, 1600, 10000, NPCS.NPC, qfalse, qfalse, qfalse );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;

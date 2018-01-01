@@ -1,6 +1,6 @@
 # EternalJK
 
-This fork focuses on the UI Library and Client Engine modifications. It currently officially supports the jaPRO cgame mod.
+This fork focuses on the jaPRO integration and Client Engine modifications.
 
 If you have any suggestions or would like to submit a bug report, please post them in [issues] (https://github.com/eternalcodes/EternalJK/issues).
 
@@ -18,7 +18,7 @@ Installing and running EternalJK:
 
 1. [Download the latest release](https://github.com/eternalcodes/EternalJK/releases).
 2. Extract the file into the Jedi Academy `GameData` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData/`.
-3. Run openjk.x86.exe (Rename to jamp.exe for better steam support)
+3. Run eternaljk.x86.exe (Rename to jamp.exe for better steam support)
 
 ## For Developers
 
@@ -33,5 +33,5 @@ Installing and running EternalJK:
 * [eternal](https://github.com/eternalcodes)
 
 ## Contributors 
-* [invert](https://github.com/Xethioz)
+* [bucky](https://github.com/Bucky21659)
 * [loda](https://github.com/videoP)

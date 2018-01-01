@@ -161,8 +161,8 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	VectorMA( start, -START_DIS, dir, org ); // dumb....
 	G_PlayEffectID( ent->genericValue13, org, dir );
 
-	bolt = G_Spawn();
-
+	bolt = G_Spawn(qtrue);
+	
 	//use a custom shot effect
 	bolt->s.otherEntityNum2 = ent->genericValue14;
 	//use a custom impact effect
@@ -738,7 +738,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	vec3_t		org;
 	int			t;
 
-	gentity_t *top = G_Spawn();
+	gentity_t *top = G_Spawn(qtrue);
 	if ( !top )
 	{
 		return qfalse;

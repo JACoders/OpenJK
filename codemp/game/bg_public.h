@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	MAX_SPAWN_VARS_CHARS	4096
 
 
-#define	GAME_VERSION		"basejka-1"
+#define	GAME_VERSION			"basejka-1"
 
 #define DEFAULT_SABER			"Kyle"
 #define DEFAULT_SABER_STAFF		"dual_1"
@@ -69,7 +69,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define	SCORE_NOT_PRESENT	-9999	// for the CS_SCORES[12] when only one player is present
 
-#define	VOTE_TIME			30000	// 30 seconds before vote times out
+#define	VOTE_TIME			30000 //+ (g_tweakVote.integer * 30000)// 30 seconds before vote times out, //japro- Now look at this sad hack
 
 #define DEFAULT_MINS_2		-24
 #define DEFAULT_MAXS_2		40
@@ -171,8 +171,10 @@ typedef enum {
 #define BG_NUM_TOGGLEABLE_SURFACES 31
 
 #define MAX_CUSTOM_SIEGE_SOUNDS 30
+#define MAX_CUSTOM_VGS_SOUNDS 131//vgs
 
 extern const char *bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS];
+extern const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS];//vgs
 
 extern const char *bgToggleableSurfaces[BG_NUM_TOGGLEABLE_SURFACES];
 extern const int bgToggleableSurfaceDebris[BG_NUM_TOGGLEABLE_SURFACES];
@@ -459,6 +461,11 @@ extern int bgForcePowerCost[NUM_FORCE_POWERS][NUM_FORCE_POWER_LEVELS];
 #define PMF_SCOREBOARD		8192	// spectate as a scoreboard
 #define PMF_STUCK_TO_WALL	16384	// grabbing a wall
 
+#define _GRAPPLE 1
+#if _GRAPPLE
+#define PMF_GRAPPLE	32768
+#endif
+
 #define	PMF_ALL_TIMES	(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK)
 
 #define	MAXTOUCH	32
@@ -574,7 +581,14 @@ typedef enum {
 	STAT_ARMOR,
 	STAT_DEAD_YAW,					// look this direction when dead (FIXME: get rid of?)
 	STAT_CLIENTS_READY,				// bit mask of clients wishing to exit the intermission (FIXME: configstring?)
-	STAT_MAX_HEALTH					// health / armor limit, changable by handicap
+	STAT_MAX_HEALTH,				// health / armor limit, changable by handicap
+	STAT_DASHTIME,				
+	STAT_LASTJUMPSPEED,
+	STAT_RACEMODE,
+	STAT_ONLYBHOP,
+	STAT_MOVEMENTSTYLE,
+	STAT_JUMPTIME,
+	STAT_WJTIME
 } statIndex_t;
 
 
@@ -1201,6 +1215,7 @@ qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 #define	DF_NO_FALLING			8
 #define DF_FIXED_FOV			16
 #define	DF_NO_FOOTSTEPS			32
+#define DF_NO_CROUCHFIX			256 //Match JA+ I guess.
 
 //rwwRMG - added in CONTENTS_TERRAIN
 // content masks
@@ -1243,7 +1258,6 @@ typedef enum {
 	ET_BODY,
 	ET_TERRAIN,
 	ET_FX,
-
 	ET_EVENTS				// any of the EV_* events can be added freestanding
 							// by setting eType to ET_EVENTS + eventNum
 							// this avoids having to set eFlags and eventNum

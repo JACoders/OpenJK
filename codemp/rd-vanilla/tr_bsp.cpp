@@ -1954,6 +1954,8 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 		}
  		if (!Q_stricmp(keyname, "distanceCull")) {
 			sscanf(value, "%f", &tr.distanceCull );
+			if (r_distanceCull && r_distanceCull->value)
+				tr.distanceCull = r_distanceCull->value;
 			continue;
 		}
 		// check for a different grid size

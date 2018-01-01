@@ -193,11 +193,15 @@ TELEPORTERS
 
 =================================================================================
 */
-
-void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
+void DeletePlayerProjectiles(gentity_t *ent);
+#if _GRAPPLE
+void Weapon_HookFree (gentity_t *ent);
+#endif
+void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean keepVel ) {
 	gentity_t	*tent;
 	qboolean	isNPC = qfalse;
 	qboolean	noAngles;
+
 	if (player->s.eType == ET_NPC)
 	{
 		isNPC = qtrue;
@@ -215,6 +219,11 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 		tent->s.clientNum = player->s.clientNum;
 	}
 
+#if _GRAPPLE
+	if (player->client && player->client->hook)
+		Weapon_HookFree(player->client->hook);
+#endif
+
 	// unlink to make sure it can't possibly interfere with G_KillBox
 	trap->UnlinkEntity ((sharedEntity_t *)player);
 
@@ -224,7 +233,10 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	// spit the player out
 	if ( !noAngles ) {
 		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
-		VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
+		if (keepVel)
+			VectorScale( player->client->ps.velocity, pm->xyspeed, player->client->ps.velocity );
+		else
+			VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
 		player->client->ps.pm_time = 160;		// hold time
 		player->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 
@@ -234,6 +246,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 
 	// toggle the teleport bit so the client knows to not lerp
 	player->client->ps.eFlags ^= EF_TELEPORT_BIT;
+	G_ResetTrail( player );//unlagged
 
 	// kill anything at the destination
 	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
@@ -253,7 +266,111 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		trap->LinkEntity ((sharedEntity_t *)player);
 	}
+
+	if (player->client->sess.raceMode) {
+		//player->client->ps.powerups[PW_YSALAMIRI] = 0; //Fuck
+		if (player->client->sess.movementStyle == 7 || player->client->sess.movementStyle == 8) //Get rid of their rockets when they tele/noclip..?
+			DeletePlayerProjectiles(player);
+	}
 }
+
+void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern?
+//JAPRO - Serverside - New teleport Function - Start
+void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor, qboolean race ) {
+	gentity_t	*tent;
+	qboolean wasNoClip = qfalse;
+	vec3_t neworigin;
+
+	if (!player || !player->client)
+		return;
+	if (BG_InRoll(&player->client->ps, player->s.legsAnim))//is this crashing? if ps is null or something?
+		return;
+
+#if _GRAPPLE
+	if (player->client && player->client->hook)
+		Weapon_HookFree(player->client->hook);
+#endif
+
+	neworigin[0] = origin[0];
+	neworigin[1] = origin[1];
+	neworigin[2] = origin[2];
+
+	if (player->client->noclip)
+		wasNoClip = qtrue;
+
+	player->client->noclip = qtrue;
+	ResetPlayerTimers(player, qtrue);
+	player->client->ps.fd.forceJumpZStart = -65536; //maybe this will fix that annoying overbounce tele shit
+
+	if (droptofloor) {
+		trace_t tr;
+		vec3_t down, mins, maxs;
+		VectorSet(mins, -15, -15, DEFAULT_MINS_2);
+		VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
+
+		VectorCopy(origin, down);//Drop them to floor so they cant abuse?
+		down[2] -= 32768;
+		JP_Trace(&tr, origin, mins, maxs, down, player->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
+		neworigin[2] = (int)tr.endpos[2];//Why does it crash without casting to int? wtf
+	}
+
+	// use temp events at source and destination to prevent the effect
+	// from getting dropped by a second player event
+	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR && !race) {
+		tent = G_TempEntity( player->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
+		tent->s.clientNum = player->s.clientNum;
+
+		tent = G_TempEntity( neworigin, EV_PLAYER_TELEPORT_IN );
+		tent->s.clientNum = player->s.clientNum;
+	}
+
+	// unlink to make sure it can't possibly interfere with G_KillBox
+	trap->UnlinkEntity ((sharedEntity_t *)player);
+
+	if (player->client->ps.m_iVehicleNum) {	
+		gentity_t *currentVeh = &g_entities[player->client->ps.m_iVehicleNum];
+		if (currentVeh->client) {
+			currentVeh->m_pVehicle->m_iTurboTime = 0;
+			currentVeh->m_pVehicle->m_iGravTime = 0;
+			VectorCopy ( neworigin, currentVeh->client->ps.origin );
+			currentVeh->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
+			VectorClear(currentVeh->client->ps.velocity);
+			currentVeh->client->ps.speed = 0; //stop it from sliding after we tele
+		}
+		VectorCopy(angles, currentVeh->m_pVehicle->m_vOrientation);
+	}
+	else {
+		VectorCopy ( neworigin, player->client->ps.origin );
+		player->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
+		VectorClear(player->client->ps.velocity);
+	}
+
+	// toggle the teleport bit so the client knows to not lerp
+	player->client->ps.eFlags ^= EF_TELEPORT_BIT;
+	G_ResetTrail( player );//unlagged
+
+	// kill anything at the destination
+	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		G_KillBox (player);
+	}
+
+	// set angles
+	SetClientViewAngle( player, angles );
+
+	// save results of pmove
+	BG_PlayerStateToEntityState( &player->client->ps, &player->s, qtrue );
+
+	// use the precise origin for linking
+	VectorCopy( player->client->ps.origin, player->r.currentOrigin );
+
+	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		trap->LinkEntity ((sharedEntity_t *)player);
+	}
+
+	if (!wasNoClip)
+		player->client->noclip = qfalse;
+}
+//JAPRO - Serverside - New teleport Function - End
 
 
 /*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)
@@ -414,7 +531,7 @@ void misc_model_breakable_gravity_init( gentity_t *ent, qboolean dropToFloor )
 		top[2] += 1;
 		VectorCopy( ent->r.currentOrigin, bottom );
 		bottom[2] = MIN_WORLD_COORD;
-		trap->Trace( &tr, top, ent->r.mins, ent->r.maxs, bottom, ent->s.number, MASK_NPCSOLID, qfalse, 0, 0 );
+		JP_Trace( &tr, top, ent->r.mins, ent->r.maxs, bottom, ent->s.number, MASK_NPCSOLID, qfalse, 0, 0 );
 		if ( !tr.allsolid && !tr.startsolid && tr.fraction < 1.0 )
 		{
 			G_SetOrigin( ent, tr.endpos );
@@ -699,7 +816,7 @@ void G_PortalifyEntities(gentity_t *ent)
 		{
 			trace_t tr;
 
-			trap->Trace(&tr, ent->s.origin, vec3_origin, vec3_origin, scan->r.currentOrigin, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
+			JP_Trace(&tr, ent->s.origin, vec3_origin, vec3_origin, scan->r.currentOrigin, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
 
 			if (tr.fraction == 1.0 || (tr.entityNum == scan->s.number && tr.entityNum != ENTITYNUM_NONE && tr.entityNum != ENTITYNUM_WORLD))
 			{
@@ -1072,7 +1189,7 @@ void SP_misc_holocron(gentity_t *ent)
 	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-	trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 	if ( tr.startsolid )
 	{
 		trap->Print ("SP_misc_holocron: misc_holocron startsolid at %s\n", vtos(ent->s.origin));
@@ -1575,7 +1692,7 @@ void SP_misc_ammo_floor_unit(gentity_t *ent)
 	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-	trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 	if ( tr.startsolid )
 	{
 		trap->Print ("SP_misc_ammo_floor_unit: misc_ammo_floor_unit startsolid at %s\n", vtos(ent->s.origin));
@@ -1670,7 +1787,7 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-	trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 	if ( tr.startsolid )
 	{
 		trap->Print ("SP_misc_shield_floor_unit: misc_shield_floor_unit startsolid at %s\n", vtos(ent->s.origin));
@@ -2140,7 +2257,7 @@ gentity_t *CreateNewDamageBox( gentity_t *ent )
 
 	//We do not want the client to have any real knowledge of the entity whatsoever. It will only
 	//ever be used on the server.
-	dmgBox = G_Spawn();
+	dmgBox = G_Spawn(qtrue);
 	dmgBox->classname = "dmg_box";
 
 	dmgBox->r.svFlags = SVF_USE_CURRENT_ORIGIN;
@@ -2820,7 +2937,7 @@ void maglock_link( gentity_t *self )
 	VectorMA( self->s.origin, 128, forward, end );
 	VectorMA( self->s.origin, -4, forward, start );
 
-	trap->Trace( &trace, start, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace( &trace, start, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 	if ( trace.allsolid || trace.startsolid )
 	{
@@ -2941,7 +3058,7 @@ void faller_think(gentity_t *ent)
 
 void misc_faller_create( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
-	gentity_t *faller = G_Spawn();
+	gentity_t *faller = G_Spawn(qtrue);
 
 	faller->genericValue10 = G_SoundIndex("sound/player/fallsplat");
 	faller->genericValue9 = G_SoundIndex("sound/chars/stofficer1/misc/falling1");

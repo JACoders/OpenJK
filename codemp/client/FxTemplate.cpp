@@ -727,8 +727,7 @@ bool CPrimitiveTemplate::ParseFlags( const char *val )
 		{
 			return true;
 		}
-
-			 if ( !Q_stricmp( flag[i], "useModel" ))
+		if ( !Q_stricmp( flag[i], "useModel" ))
 			mFlags |= FX_ATTACHED_MODEL;
 		else if ( !Q_stricmp( flag[i], "useBBox" ))
 			mFlags |= FX_USE_BBOX;

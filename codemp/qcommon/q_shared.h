@@ -1379,6 +1379,11 @@ typedef struct siegePers_s
 
 #define BUTTON_FORCE_DRAIN		2048
 
+#define BUTTON_GRAPPLE			4096
+#define BUTTON_DASH				8192
+#define BUTTON_JETPACK			16384
+#define BUTTON_TARGET			32768
+
 // Here's an interesting bit.  The bots in TA used buttons to do additional gestures.
 // I ripped them out because I didn't want too many buttons given the fact that I was already adding some for JK2.
 // We can always add some back in if we want though.
@@ -1796,6 +1801,8 @@ typedef enum {
 #define SAY_ALL		0
 #define SAY_TEAM	1
 #define SAY_TELL	2
+#define SAY_CLAN	3
+#define SAY_ADMIN	4
 
 /*
 Ghoul2 Insert Start

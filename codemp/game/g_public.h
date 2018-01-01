@@ -62,6 +62,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define SVF_NO_COMBAT_SOUNDS	0x20000000	// No combat sounds
 #define SVF_NO_EXTRA_SOUNDS		0x40000000	// No extra or jedi sounds
 
+//JAPRO - Serverside - Admin - Start
+//#define SVF_JUNIORADMIN			0x00010000	// client has admin privs
+//#define SVF_FULLADMIN			0x00200000
+//JAPRO - Serverside - Admin - End
+
 //rww - ghoul2 trace flags
 #define G2TRFLAG_DOGHOULTRACE	0x00000001 //do the ghoul2 trace
 #define G2TRFLAG_HITCORPSES		0x00000002 //will try g2 collision on the ent even if it's EF_DEAD
