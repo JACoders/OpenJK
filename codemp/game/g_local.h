@@ -425,7 +425,8 @@ typedef enum {
 	E_SLEEP,
 	E_SABERFLIP,
 	E_SLAP,
-	E_SIGNAL, //Group them all here, running out of space in this :s
+	E_SIGNAL,
+//	E_SHEEV,//Group them all here, running out of space in this :s
 	E_ALL
 } emote_type_t;
 

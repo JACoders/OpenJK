@@ -2929,7 +2929,8 @@ qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *a
 	}
 	trap->FS_Close( fp );
 
-	if ( !G_DoesMapSupportGametype( arg2, level.gametype ) ) {
+	if ( !G_DoesMapSupportGametype( arg2, level.gametype ) /*&& !(g_tweakVote.integer & TV_FIX_GAMETYPEMAP)*/ ) { //new TV for check arena file for matching gametype?
+		//Logic, this is not needed because we have live update gametype?
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME" ) ) );
 		return qfalse;
 	}
@@ -6475,6 +6476,21 @@ static void Cmd_EmotePoint_f(gentity_t *ent)
 	DoEmote(ent, BOTH_STAND5TOAIM, qtrue, qfalse, SETANIM_BOTH);
 }
 
+/*
+static void Cmd_EmoteSheev_f(gentity_t *ent) {
+	if (g_emotesDisable.integer & (1 << E_SHEEV)) {
+		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
+		return;
+	}
+	DoEmote(ent, BOTH_GETUP_BROLL_L, qfalse, qfalse, SETANIM_BOTH);
+	//Play sound
+	//Turn them around
+	//Launch them
+	//Turn them back
+	//Stop it from moving them in the standard way
+}
+*/
+
 static void Cmd_EmoteSignal1_f(gentity_t *ent) {
 	if (g_emotesDisable.integer & (1 << E_SIGNAL)) {
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
@@ -8331,6 +8347,7 @@ command_t commands[] = {
 	{ "amrename",			Cmd_Amrename_f,				CMD_NOINTERMISSION },
 	{ "amrun",				Cmd_AmRun_f,				CMD_NOINTERMISSION},//EMOTE
 	{ "amsay",				Cmd_Amsay_f,				0 },
+//	{ "amsheev",			Cmd_EmoteSheev_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsignal",			Cmd_EmoteSignal1_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsignal2",			Cmd_EmoteSignal2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsignal3",			Cmd_EmoteSignal3_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
