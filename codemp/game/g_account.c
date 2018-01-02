@@ -5811,9 +5811,9 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	if (style == -1)
-		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
 	else
-		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	if (style == -1) {
