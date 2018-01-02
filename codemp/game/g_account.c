@@ -165,7 +165,7 @@ int CheckUserExists(char *username) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int row = 0;
+	int row = 0, s;
 
 	//load fixme replace this with simple select count
 
@@ -175,7 +175,6 @@ int CheckUserExists(char *username) {
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
     while (1) {
-        int s;
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
             row++;
@@ -704,7 +703,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
     char * sql;
     sqlite3_stmt * stmt;
 	char input[32], username[32], msg[1024-128] = {0}, typeString[32];
-	int rank, count, type, i = 0, TS;
+	int rank, count, type, i = 0, TS, s;
 	int minimumCount = g_eloMinimumDuels.integer;
 	
 	if (!ent->client)
@@ -760,7 +759,6 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 	trap->SendServerCommand(ent-g_entities, va("print \"Topscore results for %s duels:\n    ^5Username           Skill        TS        Count\n\"", typeString));
 	
     while (1) {
-        int s;
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
 			char *tmpMsg = NULL;
@@ -3495,7 +3493,6 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
     while (1) {
-        int s;
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
 			Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
@@ -3590,7 +3587,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int row = 0;
+    int row = 0, s;
 	char username[16], enteredPassword[16], newPassword[16], password[16];
 
 	if (trap->Argc() != 4) {
@@ -3624,7 +3621,6 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	CALL_SQLITE (bind_text (stmt, 1, ent->client->pers.userName, -1, SQLITE_STATIC));
 	
     while (1) {
-        int s;
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
 			Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
@@ -4451,6 +4447,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	{
 		char styleStr[16] = {0}, rankStr[8];
 		char msg[1024-128] = {0};
+		int s;
 		row = 0;
 		//Recent races
 		sql = "SELECT coursename, style, rank, season_rank, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY end_time DESC LIMIT ?, 5";
@@ -4460,7 +4457,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	
 		trap->SendServerCommand(ent-g_entities, "print \"Recent Races:\n    ^5Course                      Style      Rank    Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
 		while (1) {
-			int s;
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
@@ -4499,6 +4495,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	{
 		char opponent[16], result[16], type[16];
 		char msg[1024-128] = {0};
+		int s;
 		row = 0;
 		//Recent duels
 		sql = "SELECT winner, loser, type, end_time FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 5";
@@ -4509,7 +4506,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	
 		trap->SendServerCommand(ent-g_entities, "print \"Recent Duels:\n    ^5Opponent         Result   Type        Date\n\"");
 		while (1) {
-			int s;
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
@@ -5119,6 +5115,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	char msg[1024-128] = {0}, styleString[16] = {0}, input1[32], input2[32], username[40];
 	int score, count, golds, silvers, bronzes;
 	float rank, percentile;
+	int s;
 
 	if (trap->Argc() > 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
@@ -5193,7 +5190,6 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
 
 	while (1) {
-		int s;
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
 			char *tmpMsg = NULL;
@@ -5679,7 +5675,6 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		
 		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
 		while (1) {
-			int s;
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
@@ -5705,6 +5700,100 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 	}
+}
+
+
+void Cmd_DFTodo_f(gentity_t *ent) {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int s, page = 1, start, row = 1, style = -1;
+	char msg[1024-128] = {0}, styleStr[16], input[16], username[16], timeStr[64], dateStr[64];
+	const int args = trap->Argc();
+
+	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+
+	if (args == 1) { //dftodo - our own all styles, page 1
+	}
+	else if (args == 2) {//dftodo style OR page
+		trap->Argv(1, input, sizeof(input));
+		style = RaceNameToInteger(input);
+		if (style < 0 || atoi(input)) { //fucks siege, i guess racenametointeger just shouldnt accept numbers to make this type of interface possible
+			style = -1;
+			page = atoi(input);
+		}
+	}
+	else if (args == 3) { //dftodo style AND page
+		trap->Argv(1, input, sizeof(input));
+		style = RaceNameToInteger(input);
+		if (style < 0) {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
+			return;
+		}
+		trap->Argv(2, input, sizeof(input));
+		page = atoi(input);
+	}
+	else { 
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
+		return;
+	}
+
+	if (page < 0 || page > 100) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
+		return;
+	}
+
+	start = (page - 1) * 10;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	if (style == -1)
+		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY (entries - entries / rank) desc LIMIT ?, 10";
+	else
+		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? AND style = ? ORDER BY (entries - entries / rank) desc LIMIT ?, 10";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	if (style == -1) {
+		CALL_SQLITE (bind_int (stmt, 2, start));
+	}
+	else {
+		CALL_SQLITE (bind_int (stmt, 2, style));
+		CALL_SQLITE (bind_int (stmt, 3, start));
+	}
+
+	
+	trap->SendServerCommand(ent-g_entities, "print \"Races to do:\n    ^5Course                      Style      Rank    Entries      Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			char *tmpMsg = NULL;
+			IntegerToRaceName(sqlite3_column_int(stmt, 1), styleStr, sizeof(styleStr));
+			TimeToString(sqlite3_column_int(stmt, 4), timeStr, sizeof(timeStr), qfalse);
+			getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr)); 			
+
+			tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-7i ^3%-12i ^3%-12s %s\n", row+start, sqlite3_column_text(stmt, 0), styleStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), timeStr, dateStr);
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+			row++;
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+		}
+	}
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+
 }
 
 #if 0
