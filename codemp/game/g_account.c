@@ -4458,7 +4458,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, start));
 	
-		trap->SendServerCommand(ent-g_entities, "print \"Recent Races:\n    ^5Course                    Style      Rank    Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
+		trap->SendServerCommand(ent-g_entities, "print \"Recent Races:\n    ^5Course                      Style      Rank    Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
 		while (1) {
 			int s;
 			s = sqlite3_step(stmt);
@@ -4475,7 +4475,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 					Com_sprintf(rankStr, sizeof(rankStr), "^3%i^7", sqlite3_column_int(stmt, 3));
 				
 
-				tmpMsg = va("^5%2i^3: ^3%-25s ^3%-10s ^3%-11s ^3%-12s %s\n", row+start, sqlite3_column_text(stmt, 0), styleStr, rankStr, timeStr, dateStr);
+				tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-11s ^3%-12s %s\n", row+start, sqlite3_column_text(stmt, 0), styleStr, rankStr, timeStr, dateStr);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
@@ -4501,7 +4501,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		char msg[1024-128] = {0};
 		row = 0;
 		//Recent duels
-		sql = "SELECT winner, loser, type FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 5";
+		sql = "SELECT winner, loser, type, end_time FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 5";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
@@ -4513,9 +4513,8 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
-				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
 				IntegerToDuelType(sqlite3_column_int(stmt, 2), type, sizeof(type));
-				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
 				
 				if (!Q_stricmp((char*)sqlite3_column_text(stmt, 0), username)) { //They are winner
 					Com_sprintf(opponent, sizeof(opponent), "^3%s^7", (char*)sqlite3_column_text(stmt, 1));
