@@ -5692,7 +5692,8 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		sqlite3_stmt * stmt;
 		int row = 1;
 		int s;
-		char dateStr[64] = {0};
+		char dateStr[64] = {0}, dateStrColored[64] = {0};
+		time_t	rawtime;
 
 		//Com_Printf("doing sql query %s %i\n", courseName, style);
 
@@ -5721,7 +5722,10 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		CALL_SQLITE (bind_text (stmt, 1, courseNameFull, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, style));
 		CALL_SQLITE (bind_int (stmt, 3, start));
-		
+
+		time( &rawtime );
+		localtime( &rawtime );
+
 		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
 		while (1) {
 			s = sqlite3_step(stmt);
@@ -5729,7 +5733,13 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 				char *tmpMsg = NULL;
 				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
 				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", row+start, sqlite3_column_text(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStr);
+				if (rawtime - sqlite3_column_int(stmt, 4) < 60*60*24) { //Today
+					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
+				}
+				else {
+					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
+				}
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", row+start, sqlite3_column_text(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStrColored);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
