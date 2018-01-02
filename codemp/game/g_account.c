@@ -4389,7 +4389,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     sqlite3_stmt * stmt;
 	char username[16], pageStr[8];
 	char timeStr[64] = {0}, dateStr[64] = {0};
-	int s, page = 1, start, lastlogin = 0, row = 1;
+	int s, page = 1, start, lastlogin = 0, row = 0;
 
 	if (trap->Argc() != 2 && trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username> <page (optional)>\n\"");
