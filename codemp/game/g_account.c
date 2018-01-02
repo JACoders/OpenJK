@@ -3337,7 +3337,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 		G_UpdateOurLocalRun(db, season_oldRank, season_newRank, global_oldRank, global_newRank, style, username, coursename, duration_ms, topspeed, average, rawtime, season_newCount, global_newCount);//Update our race list
 
-		if (cl->pers.recordingDemo) {
+		if (cl->pers.recordingDemo && globalPB) {
 			char mapCourse[MAX_QPATH] = {0};
 
 			Q_strncpyz(mapCourse, coursename, sizeof(mapCourse));
@@ -4389,7 +4389,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     sqlite3_stmt * stmt;
 	char username[16], pageStr[8];
 	char timeStr[64] = {0}, dateStr[64] = {0};
-	int s, page = 1, start, lastlogin = 0, row = 0;
+	int s, page = 1, start, lastlogin = 0, row = 1;
 
 	if (trap->Argc() != 2 && trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username> <page (optional)>\n\"");
@@ -4445,10 +4445,18 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	}
 
 	{
+		char msg[1024-128] = {0};
+
+		getDateTime(lastlogin, timeStr, sizeof(timeStr));
+		Q_strncpyz(msg, va("   ^5Last login: ^2%s\n", timeStr), sizeof(msg));
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+	}
+
+	{
 		char styleStr[16] = {0}, rankStr[8];
 		char msg[1024-128] = {0};
 		int s;
-		row = 0;
+		row = 1;
 		//Recent races
 		sql = "SELECT coursename, style, rank, season_rank, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY end_time DESC LIMIT ?, 5";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -4496,7 +4504,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		char opponent[16], result[16], type[16];
 		char msg[1024-128] = {0};
 		int s;
-		row = 0;
+		row = 1;
 		//Recent duels
 		sql = "SELECT winner, loser, type, end_time FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 5";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -4542,15 +4550,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	}
 
 	CALL_SQLITE (close(db));
-
-	{
-		char msg[1024-128] = {0};
-
-		getDateTime(lastlogin, timeStr, sizeof(timeStr));
-		Q_strncpyz(msg, va("   ^5Last login: ^2%s\n", timeStr), sizeof(msg));
-		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
-	}
-
 	//DebugWriteToDB("Cmd_Stats_f");
 }
 
@@ -5751,9 +5750,9 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	if (style == -1)
-		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY (entries - entries / rank) desc LIMIT ?, 10";
+		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
 	else
-		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? AND style = ? ORDER BY (entries - entries / rank) desc LIMIT ?, 10";
+		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	if (style == -1) {
