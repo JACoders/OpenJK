@@ -5660,6 +5660,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	if (g_raceMode.integer) {
 		Q_strncpyz(buf, "   ^3Defrag commands: ", sizeof(buf));
+		Q_strcat(buf, sizeof(buf), "dfTodo ");
 		Q_strcat(buf, sizeof(buf), "dfTop10 ");
 		Q_strcat(buf, sizeof(buf), "dfTopRank ");
 		Q_strcat(buf, sizeof(buf), "notCompleted ");
@@ -8277,6 +8278,7 @@ void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFRecent_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
+void Cmd_DFTodo_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
@@ -8372,6 +8374,7 @@ command_t commands[] = {
 
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
 	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
+	{ "dfTodo",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 	{ "dftopRank",			Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
 
