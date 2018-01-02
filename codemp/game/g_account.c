@@ -5310,27 +5310,27 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		//fix that by just making race times go to database immediately and forgetting this stupid manual caching system
 
 		if (style == -1) {
-			sql = "SELECT username, coursename, style, duration_ms, end_time FROM LocalRun ORDER BY end_time DESC LIMIT 10";
+			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 ORDER BY end_time DESC LIMIT 10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Time         Date\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"");
 		}
 		else {
-			sql = "SELECT username, coursename, style, duration_ms, end_time FROM LocalRun WHERE style = ? ORDER BY end_time DESC LIMIT 10";
+			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT 10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_int (stmt, 1, style));
 			IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
-			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Time         Date\n\"", inputStyleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"", inputStyleString));
 		}
 		
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
-				TimeToString(sqlite3_column_int(stmt, 3), timeStr, sizeof(timeStr), qfalse);
-				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				TimeToString(sqlite3_column_int(stmt, 4), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr));
 				IntegerToRaceName(sqlite3_column_int(stmt, 2), styleStr, sizeof(styleStr));
 
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-12s %s\n", row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, timeStr, dateStr);
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-8i ^3%-12s %s\n", row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, sqlite3_column_int(stmt, 3), timeStr, dateStr);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
