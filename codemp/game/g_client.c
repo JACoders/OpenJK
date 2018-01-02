@@ -4422,7 +4422,7 @@ void ClientDisconnect( int clientNum ) {
 			if (ent->client->sess.raceMode) {
 				ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
 			}
-			if (ent->client->pers.stats.racetime >= 1) {
+			if (ent->client->pers.stats.racetime >= 1.0f) {
 				G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
 				ent->client->pers.stats.racetime = 0.0f;
 			}

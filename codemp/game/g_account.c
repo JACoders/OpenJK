@@ -3128,7 +3128,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 
 	{
 		int i;
-		gclient_t	*cl;
+		//gclient_t	*cl;
 
 
 
@@ -3138,11 +3138,11 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 				continue;
 			player = &g_entities[i];
 			if (player->client && (player->client->sess.fullAdmin || player->client->sess.juniorAdmin))
-				trap->SendServerCommand(player-g_entities, va("chat \",Adding %i seconds of playtime to %s - %i\n\"", seconds, username, newDB));
+				trap->SendServerCommand(player-g_entities, va("chat \"Adding %i seconds of playtime to %s - %i\n\"", seconds, username, newDB));
 
 		}
 
-				Com_Printf("ASS\n");
+		/*
 
 		for (i=0;  i<level.numPlayingClients; i++) {
 			cl = &level.clients[level.sortedClients[i]];
@@ -3150,6 +3150,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 			if (cl && (cl->sess.fullAdmin || cl->sess.juniorAdmin))
 				trap->SendServerCommand(cl->ps.clientNum, va("chat \"Adding %i seconds of playtime to %s - %i\n\"", seconds, username, newDB));
 		}
+		*/
 	}
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -4260,7 +4261,7 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
 			ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
 		}
-		if (ent->client->pers.stats.racetime >= 1) {
+		if (ent->client->pers.stats.racetime >= 1.0f) {
 			G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
 			ent->client->pers.stats.racetime = 0.0f;
 		}
