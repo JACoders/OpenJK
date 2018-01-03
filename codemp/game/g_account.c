@@ -3138,7 +3138,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 				continue;
 			player = &g_entities[i];
 			if (player->client && (player->client->sess.fullAdmin || player->client->sess.juniorAdmin))
-				trap->SendServerCommand(player-g_entities, va("chat \"Adding %i seconds of playtime to %s - %i\n\"", seconds, username, newDB));
+				trap->SendServerCommand(player-g_entities, va("chat \"Adding %i seconds of playtime to %s - %i\"", seconds, username, newDB));
 
 		}
 
@@ -5218,6 +5218,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
 	if (style == -1) {
 		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+			"WHERE rank != 0 "
 			"GROUP BY username "
 			"ORDER BY score DESC, rank DESC LIMIT ?, 10";
 
@@ -5227,7 +5228,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	}
 	else {
 		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-			"WHERE style = ? "
+			"WHERE rank != 0 AND style = ? "
 			"GROUP BY username "
 			"ORDER BY score DESC, rank DESC LIMIT ?, 10";
 
@@ -5701,6 +5702,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE ? AND style = ?";
 		sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+		//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
 		s = sqlite3_step(stmt);
@@ -5718,7 +5720,8 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 
 		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
 		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
-		sql = "SELECT username, min(duration_ms), topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC LIMIT ?,10";
+		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
+		sql = "SELECT username, MIN(duration_ms), topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, courseNameFull, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, style));
