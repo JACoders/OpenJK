@@ -1663,49 +1663,6 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 		CALL_SQLITE (finalize(stmt));
 	}
 
-/*
-
-	if (oldRank_self != -1) {//Not our first attempt
-		//delete old record.. here?
-
-		//Update entry
-
-		sql = "DELETE FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?"; //loda fixme cheaper to update?
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, style_self));
-		s = sqlite3_step(stmt);
-		if (s != SQLITE_DONE)
-			trap->Print( "Error: Could not write to database: %i.\n", s);
-		CALL_SQLITE (finalize(stmt));
-	}
-
-	//Add new record to db here?
-	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-    CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 3, duration_ms_self));
-	CALL_SQLITE (bind_int (stmt, 4, topspeed_self));
-	CALL_SQLITE (bind_int (stmt, 5, average_self));
-	CALL_SQLITE (bind_int (stmt, 6, style_self));
-	CALL_SQLITE (bind_int (stmt, 7, end_time_self));
-	CALL_SQLITE (bind_int (stmt, 8, newRank_self));
-	s = sqlite3_step(stmt);
-	if (s != SQLITE_DONE) {
-		char string[1024] = {0};
-
-		Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, end_time_self);
-		trap->FS_Write( string, strlen( string ), level.failRaceLog );
-
-		trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
-
-	}
-	CALL_SQLITE (finalize(stmt));
-
-	*/
-
 }
 
 static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seasonOldRank_self, int globalNewRank_self, int globalOldRank_self, int style_self, char *coursename_self, int time) {
@@ -3406,7 +3363,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	cl->pers.stats.racetime += (duration_ms*0.001f);
 	if (cl->pers.stats.racetime > 60.0f) { //Avoid spamming the db
-		G_UpdatePlaytime(0, username, (int)(cl->pers.stats.racetime+0.5f));
+		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime+0.5f));
 		cl->pers.stats.racetime = 0.0f;
 	}
 	
@@ -5701,8 +5658,8 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE ? AND style = ?";
-		sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
-		//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+		sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
 		s = sqlite3_step(stmt);
