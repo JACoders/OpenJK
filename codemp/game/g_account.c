@@ -2803,35 +2803,35 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 	}
 	else {
 		if (!valid) {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
+			trap->SendServerCommand( -1, va("print \"^1Completed in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (wr) {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(WR)^7\n\"",
+			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (sr) {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(SR)^7\n\"",
+			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (pb) {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(PB)^7\n\"",
+			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (PB)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (spb) {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5(SPB)^7\n\"",
+			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SPB)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (loggedin) {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^7\n\"",
+			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else {
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s^2 max:^3%-10i^2 avg:^3%-10i^2 style:^3%-10s^2 by ^%i%s^7\n\"",
+			Com_Printf("ASSc\n");
+			trap->SendServerCommand( -1, va("print \"^2Completed in ^3%-12s^2 max:^3%-10i^2 avg:^3%-10i^2 style:^3%-10s^2 by ^%i%s^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 	}
-
 }
 
 void StripWhitespace(char *s);
@@ -5380,7 +5380,8 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 void Cmd_DFTop10_f(gentity_t *ent) {
 	const int args = trap->Argc();
 	char input1[40], input2[32], input3[32], courseName[40] = {0}, courseNameFull[40] = {0}, msg[1024-128] = {0}, timeStr[32], styleString[16] = {0};
-	int i, style = -1, course = -1, page = 1, start;
+	int i, style = -1, page = 1, start;
+	qboolean partialCourseName = qtrue;
 
 	if (args == 1) { //Dftop10  - current map JKA, only 1 course on map.  Or if there are multiple courses, display them all.
 		if (level.numCourses == 0) { //No course on this map, so error.
@@ -5396,6 +5397,9 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			}
 			return;
 		}
+		else {
+			partialCourseName = qfalse;
+		}
 		style = 1;
 	}
 	else if (args == 2) {//CPM - current map cpm, only 1 course on map
@@ -5407,7 +5411,9 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			style = 1;
 			Q_strncpyz(courseName, input1, sizeof(courseName));
 		}
-
+		else if (level.numCourses == 1) { //What if its a style, then we use course=0 ?
+			partialCourseName = qfalse;
+		}
 	}
 	else if (args == 3) { //dftop10 dash1 cpm - search for dash1 exact match(?) in memory, if not then fallback to SQL query.  cpm style.
 		//Get 2nd arg as course
@@ -5460,9 +5466,16 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	Q_CleanStr(courseName);
 	IntegerToRaceName(style, styleString, sizeof(styleString));
 
-	if (!Q_stricmp(courseName, "")) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
-		return;
+	if (!partialCourseName) {
+		char info[1024] = {0};
+		trap->GetServerinfo(info, sizeof(info));
+		Q_strncpyz(courseNameFull, Info_ValueForKey( info, "mapname" ), sizeof(courseNameFull));
+	}
+	else {
+		if (!Q_stricmp(courseName, "")) {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+			return;
+		}
 	}
 
 	{ //See if course is found in database and print it then..?
@@ -5474,27 +5487,31 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		char dateStr[64] = {0}, dateStrColored[64] = {0};
 		time_t	rawtime;
 
-		//Com_Printf("doing sql query %s %i\n", courseName, style);
-
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE ? AND style = ?";
-		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
-		//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
-		sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY entries DESC LIMIT 1";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-		s = sqlite3_step(stmt);
-		if (s == SQLITE_ROW) {
-			Q_strncpyz(courseNameFull, (char*)sqlite3_column_text(stmt, 0), sizeof(courseNameFull));
-		}
-		else {
-			//Com_Printf("fail 4\n");
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+
+		if (partialCourseName) { //Course e
+			//Com_Printf("doing sql query %s %i\n", courseName, style);
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE ? AND style = ?";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY entries DESC LIMIT 1";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				//Check if it actually has text, if not return.  then we can use cheaper (MAX) entries query above //loda fixme
+				Q_strncpyz(courseNameFull, (char*)sqlite3_column_text(stmt, 0), sizeof(courseNameFull));
+			}
+			else {
+				//Com_Printf("fail 4\n");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
 			CALL_SQLITE (finalize(stmt));
-			CALL_SQLITE (close(db));
-			return;
+
 		}
-		CALL_SQLITE (finalize(stmt));
 
 		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
 		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
