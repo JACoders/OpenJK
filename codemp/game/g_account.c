@@ -182,7 +182,7 @@ int CheckUserExists(char *username) {
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (CheckUserExists).\n");//Trap print?
 			break;
         }
     }
@@ -302,7 +302,7 @@ int GetDuelCount(char *username, int type, int end_time, sqlite3 * db) {
 		count = sqlite3_column_int(stmt, 0);
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (GetDuelCount).\n");//trap print?
 	}
 
 	CALL_SQLITE (finalize(stmt));
@@ -333,7 +333,7 @@ float GetDuelElo( char *username, int type, int end_time, sqlite3 * db) {
 		elo = sqlite3_column_double(stmt, 0);
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (GetDuelElo).\n");//trap print?
 	}
 
 	if (elo == -999.0f) {//This needs to just be done to check if its null
@@ -379,7 +379,7 @@ void UpdatePlayerRating(char *username, int type, qboolean winner, float newElo,
 	s = sqlite3_step(stmt);
 
 	if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Update Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Update Failed (UpdatePlayeRating).\n");//trap print?
 	}
 
 	CALL_SQLITE (finalize(stmt));
@@ -564,7 +564,7 @@ void SV_RebuildElo_f() {
             break;
 		}
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (SV_RebuildElo_f).\n");//Trap print?
 			break;
         }
     }
@@ -725,7 +725,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
             break;
 		}
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DuelTop10_f).\n");//Trap print?
 			break;
         }
     }
@@ -969,14 +969,6 @@ void WriteToTmpRaceLog(char *string, size_t stringSize) {
 }
 #endif
 
-/*
-void PrintCompletedRace(qboolean valid, char *netname, char *username, int rank, char *removeduser) {//JAPRO Timers
-	trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
-		c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
-
-}
-*/
-
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 	switch(style) {
 		case 0: Q_strncpyz(styleString, "siege", styleStringSize); break;
@@ -1012,7 +1004,7 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	if (s == SQLITE_DONE)
 		trap->Print("Cleaned up racetimes\n");
 	else 
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (CleanupLocalRun): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	//loda fixme, maybe remake table or something.. ?
@@ -1039,14 +1031,14 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	if (s == SQLITE_ROW)
 		season_count = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 1).\n");//trap print?
 	}
 
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_ROW)
 		global_count = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 2).\n");//trap print?
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1067,7 +1059,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 3).\n");//Trap print?
 			break;
         }
     }
@@ -1092,7 +1084,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 4).\n");//Trap print?
 			break;
         }
     }
@@ -1108,7 +1100,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	CALL_SQLITE (bind_int (stmt, 6, id));
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (G_GetRaceScore): %i.\n", s);
 	CALL_SQLITE (finalize(stmt));
 
 }
@@ -1146,7 +1138,7 @@ void SV_RebuildRaceRanks_f() {
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (SV_RebuildRaceRanks_f).\n");//Trap print?
 			break;
         }
     }
@@ -1199,7 +1191,7 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 		CALL_SQLITE (bind_int (stmt, 3, style_self));
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
+			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 1): %i.\n", s); //Write to race error log
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1227,7 +1219,7 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 			Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, season, end_time_self);
 			trap->FS_Write( string, strlen( string ), level.failRaceLog );
 
-			trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
+			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 2): %i.\n", s); //Write to race error log
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1252,7 +1244,7 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 			Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, season, end_time_self);
 			trap->FS_Write( string, strlen( string ), level.failRaceLog );
 
-			trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
+			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 3): %i.\n", s); //Write to race error log
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1284,7 +1276,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE) {
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 1): %i.\n", s);
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1306,7 +1298,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 2): %i.\n", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1322,7 +1314,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 3): %i.\n", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1337,7 +1329,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 4): %i.\n", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1486,7 +1478,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Update Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Update Failed (G_UpdatePlaytime).\n");//trap print?
 	}
 
 	CALL_SQLITE (finalize(stmt));
@@ -1568,7 +1560,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 1).\n");//trap print?
 	}
 
 	s = sqlite3_step(stmt);
@@ -1590,7 +1582,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 2).\n");//trap print?
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1612,7 +1604,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			season_oldCount = sqlite3_column_int(stmt, 0);
 		}
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 3).\n");//trap print?
 		}
 
 		s = sqlite3_step(stmt);
@@ -1620,7 +1612,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			global_oldCount = sqlite3_column_int(stmt, 0);
 		}
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 4).\n");//trap print?
 		}
 
 		CALL_SQLITE (finalize(stmt));
@@ -1644,7 +1636,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 5).\n");//Trap print?
 				break;
 			}
 		}
@@ -1670,7 +1662,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 6).\n");//Trap print?
 				break;
 			}
 		}
@@ -1856,7 +1848,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		if (s == SQLITE_ROW)
 			count = sqlite3_column_int(stmt, 0);
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACLogin_f 1).\n");//trap print?
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
 			return;
@@ -1880,7 +1872,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACLogin_f 2).\n");//Trap print?
 			break;
         }
     }
@@ -1947,7 +1939,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		s = sqlite3_step(stmt);
 
 		if (s != SQLITE_DONE)
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			trap->Print( "Error: Could not write to database (Cmd_ACLogin_f 3): %i.\n", s);
 
 		CALL_SQLITE (finalize(stmt));
 
@@ -2076,7 +2068,7 @@ void Svcmd_ChangePass_f(void)
 	if (s == SQLITE_DONE)
 			trap->Print( "Password changed.\n");
 	else
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_ChangePass_f): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2116,7 +2108,7 @@ void Svcmd_ClearIP_f(void)
 	if (s == SQLITE_DONE)
 		trap->Print( "IP Cleared.\n");
 	else
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_ClearIP_f): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2168,7 +2160,7 @@ void Svcmd_Register_f(void)
 	if (s == SQLITE_DONE)
 		trap->Print( "Account created.\n");
 	else
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_Register_f): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2208,7 +2200,7 @@ void Svcmd_DeleteAccount_f(void)
 		if (s == SQLITE_DONE)
 			trap->Print( "Account deleted.\n");
 		else 
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			trap->Print( "Error: Could not write to database (Svcmd_DeleteAccount_f): %i.\n", s);
 		CALL_SQLITE (finalize(stmt));
 	}
 	else 
@@ -2220,7 +2212,7 @@ void Svcmd_DeleteAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_DeleteAccount_f): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2270,7 +2262,7 @@ void Svcmd_RenameAccount_f(void)
 		if (s == SQLITE_DONE)
 			trap->Print( "Account renamed.\n");
 		else 
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 1): %i.\n", s);
 		CALL_SQLITE (finalize(stmt));
 	}
 	else 
@@ -2283,7 +2275,7 @@ void Svcmd_RenameAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 2): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 
@@ -2294,7 +2286,7 @@ void Svcmd_RenameAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 3): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 
@@ -2305,7 +2297,7 @@ void Svcmd_RenameAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 4): %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2347,7 +2339,7 @@ void Svcmd_AccountInfo_f(void)
 		lastip = sqlite3_column_int(stmt, 1);
     }
     else if (s != SQLITE_DONE){
-        fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+        fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_AccountInfo_f).\n");//Trap print?
     }
 
 	CALL_SQLITE (finalize(stmt));
@@ -2395,7 +2387,7 @@ void Svcmd_AccountIPLock_f(void) {
 		iplock = (qboolean)sqlite3_column_int(stmt, 0);
     }
     else if (s != SQLITE_DONE){
-        fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+        fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_AccountIPLock_f 1).\n");//Trap print?
     }
 	CALL_SQLITE (finalize(stmt));
 
@@ -2414,7 +2406,7 @@ void Svcmd_AccountIPLock_f(void) {
 			trap->Print( "IP locked.\n");
     }
     else {
-        fprintf (stderr, "ERROR: SQL Update Failed.\n");//Trap print?
+        fprintf (stderr, "ERROR: SQL Update Failed (Svcmd_AccountIPLock_f 2).\n");//Trap print?
     }
 
 	CALL_SQLITE (finalize(stmt));
@@ -2436,7 +2428,7 @@ void Svcmd_DBInfo_f(void)
     if (s == SQLITE_ROW)
 		numAccounts = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_DBInfo_f 1).\n");//Trap print?
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 		return;
@@ -2450,7 +2442,7 @@ void Svcmd_DBInfo_f(void)
     if (s == SQLITE_ROW)
 		numRaces = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_DBInfo_f 2).\n");//Trap print?
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 		return;
@@ -2463,7 +2455,7 @@ void Svcmd_DBInfo_f(void)
     if (s == SQLITE_ROW)
 		numDuels = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_DBInfo_f 3).\n");//Trap print?
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 		return;
@@ -2549,7 +2541,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 			}
 		}
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACRegister_f 1).\n");//trap print?
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
 			return;
@@ -2573,7 +2565,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 	}
 	else
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		trap->Print( "Error: Could not write to database (Cmd_ACRegister_f 2): %i.\n", s);
 
 
 	CALL_SQLITE (finalize(stmt));
@@ -2643,7 +2635,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            fprintf (stderr, "ERROR: SQL Select Failed (Cmd_Stats_f 1).\n");//Trap print?
 			break;
         }
     }
@@ -2706,7 +2698,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_Stats_f 2).\n");//Trap print?
 				break;
 			}
 		}
@@ -3429,7 +3421,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		else if (s == SQLITE_DONE)
 			break;
 		else {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTopRank_f).\n");//Trap print?
 			break;
 		}
 	}
@@ -3508,7 +3500,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFRecent_f).\n");//Trap print?
 				break;
 			}
 		}
@@ -3516,57 +3508,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
-}
-
-	//Go through memory and print all maps?, keeping track of how many
-	//Go through database and print maps until total count printed is 10 ?
-
-	//For each course in level.numCourses, and for each style in
-/*
-	for (course = 0; course < level.numCourses; course++) { //For each course
-		Q_strncpyz(msg, "", sizeof(msg));
-		printed = qfalse;
-		for (style = 0; style < MV_NUMSTYLES; style++) { //For each style
-			found = qfalse;
-			for (i=0; i<10; i++) {
-				if (!Q_stricmp(HighScores[course][style][i].end_time, "Just Now")) {
-					found = qtrue;
-					break;
-				}
-				else if (!HighScores[course][style][i].username || (HighScores[course][style][i].username && !HighScores[course][style][i].username[0])) { //End
-					found = qfalse;
-					break;
-				}
-			}
-
-			if (!found) {
-				if (!printed) {
-					Q_strcat(msg, sizeof(msg), va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", 
-						j + 1, HighScores[course][style][i].username, styleString, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time));
-					printed = qtrue;
-					j++;
-				}
-				else {
-					//Q_strcat(msg, sizeof(msg), ":");
-				}
-				//Q_strcat(msg, sizeof(msg), va("<%i, %i>", found, printed));
-				//Q_strcat(msg, sizeof(msg), "-");
-				IntegerToRaceName(style, styleString, sizeof(styleString));
-				Q_strcat(msg, sizeof(msg), va(" ^5%-6s", styleString));
-			}
-			else
-			{
-				if (printed)
-					Q_strcat(msg, sizeof(msg), "       ");
-			}
-		}
-		if (printed) {
-			Q_strcat(msg, sizeof(msg), "\n");
-			trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
-		}
 	}
-*/
-
 
 
 }
@@ -3743,7 +3685,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTop10_f).\n");//Trap print?
 				break;
 			}
 		}
@@ -3837,7 +3779,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 		else if (s == SQLITE_DONE)
 			break;
 		else {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTodo_f).\n");//Trap print?
 			break;
 		}
 	}
@@ -3848,6 +3790,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 
 }
 
+#if !_NEWRACERANKING
 void Cmd_DFRefresh_f(gentity_t *ent) {
 	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) {
@@ -3865,11 +3808,10 @@ void Cmd_DFRefresh_f(gentity_t *ent) {
 		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (dfRefresh).\n\"" );
 		return;
 	}
-#if !_NEWRACERANKING
 	G_AddToDBFromFile(); //From file to db
-#endif
 	//BuildMapHighscores(); //From db, built to memory
 }
+#endif
 
 void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? conditional open/close issue??
 	int			i;
@@ -4022,7 +3964,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 							Com_sprintf(strUser, sizeof(strUser), "^3%s^7", (char*)sqlite3_column_text(stmt, 0));
 					}
 					else if (s != SQLITE_DONE) {
-						fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+						fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACWhois_f).\n");//trap print?
 						CALL_SQLITE (finalize(stmt));
 						CALL_SQLITE (close(db));
 						return;

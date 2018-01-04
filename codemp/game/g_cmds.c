@@ -5810,10 +5810,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "amRename "); 
 		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
 			Q_strcat(buf, sizeof(buf), "amRename"); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
-			Q_strcat(buf, sizeof(buf), "dfRefresh "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
-			Q_strcat(buf, sizeof(buf), "dfRefresh"); 
+		//if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
+			//Q_strcat(buf, sizeof(buf), "dfRefresh "); 
+		//else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
+			//Q_strcat(buf, sizeof(buf), "dfRefresh"); 
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 		buf[0] = '\0';
 	}
@@ -8296,7 +8296,7 @@ void Cmd_DFRecent_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTodo_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
-void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
+//void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 //void Cmd_PersonalBest_f( gentity_t *ent);
@@ -8390,7 +8390,7 @@ command_t commands[] = {
 	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
-	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
+	//{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
 	{ "dfTodo",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 	{ "dftopRank",			Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
