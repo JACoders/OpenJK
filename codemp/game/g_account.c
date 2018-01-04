@@ -3090,7 +3090,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 	char * sql;
 	sqlite3_stmt * stmt;
 	int s;
-	qboolean newDB;
+	qboolean newDB = qfalse;
 
 	if (!db) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
@@ -3376,7 +3376,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	}
 
 	cl->pers.stats.racetime += (duration_ms*0.001f);
-	if (cl->pers.stats.racetime > 60.0f) { //Avoid spamming the db
+	if (cl->pers.stats.racetime > 120.0f) { //Avoid spamming the db
 		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime+0.5f));
 		cl->pers.stats.racetime = 0.0f;
 	}

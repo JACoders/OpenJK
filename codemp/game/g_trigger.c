@@ -1383,7 +1383,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	//Update playtime if needed
 	if (player->client->sess.raceMode && player->client->pers.userName[0] && player->client->pers.stats.startTime) {
 		player->client->pers.stats.racetime += ((GetTimeMS() - player->client->pers.stats.startTime)*0.001f);
-		if (player->client->pers.stats.racetime > 60.0f) { //Avoid spamming the db
+		if (player->client->pers.stats.racetime > 120.0f) { //Avoid spamming the db
 			G_UpdatePlaytime(0, player->client->pers.userName, (int)(player->client->pers.stats.racetime+0.5f));
 			player->client->pers.stats.racetime = 0.0f;
 		}
