@@ -1,0 +1,10 @@
+head,models/players/default/orange
+torso,models/players/default/orange
+hips,models/players/default/orange
+l_arm,models/players/default/orange
+l_hand,models/players/default/orange
+r_arm,models/players/default/orange
+r_hand,models/players/default/orange
+l_leg,models/players/default/orange
+r_leg,models/players/default/orange
+head_accessories,models/players/default/gray

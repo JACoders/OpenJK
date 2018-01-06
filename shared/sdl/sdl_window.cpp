@@ -748,9 +748,9 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	r_fullscreen		= Cvar_Get( "r_fullscreen",			"1",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_noborder			= Cvar_Get( "r_noborder",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_centerWindow		= Cvar_Get( "r_centerWindow",		"1",		CVAR_ARCHIVE_ND|CVAR_LATCH );
-	vid_xpos			= Cvar_Get( "vid_xpos",				"3",		CVAR_ARCHIVE_ND|CVAR_LATCH );
-	vid_ypos			= Cvar_Get( "vid_ypos",				"22",		CVAR_ARCHIVE_ND|CVAR_LATCH );
-	r_customwidth		= Cvar_Get( "r_customwidth",		"1440",		CVAR_ARCHIVE|CVAR_LATCH );
+	vid_xpos			= Cvar_Get( "vid_xpos",				"12",		CVAR_ARCHIVE_ND|CVAR_LATCH );
+	vid_ypos			= Cvar_Get( "vid_ypos",				"36",		CVAR_ARCHIVE_ND|CVAR_LATCH );
+	r_customwidth		= Cvar_Get( "r_customwidth",		"1920",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_customheight		= Cvar_Get( "r_customheight",		"1080",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_swapInterval		= Cvar_Get( "r_swapInterval",		"0",		CVAR_ARCHIVE_ND );
 	r_stereo			= Cvar_Get( "r_stereo",				"0",		CVAR_ARCHIVE_ND|CVAR_LATCH );

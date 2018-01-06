@@ -355,7 +355,7 @@
 			type				ITEM_TYPE_EDITFIELD
 			text				"Default Male Model:"
 			cvar				cg_defaultModel
-			rect				425 151 160 20
+			rect				415 151 160 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			118
 			textaligny			0
@@ -374,9 +374,9 @@
 		{
 			name				defaultFemale
 			type				ITEM_TYPE_EDITFIELD
-			text				"Default Female Model:"
+			text				"Default Female:"
 			cvar				cg_defaultFemaleModel
-			rect				425 171 160 20
+			rect				415 171 160 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			118
 			textaligny			0

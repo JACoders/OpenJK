@@ -1,0 +1,10 @@
+head,models/players/default/red
+torso,models/players/default/red
+hips,models/players/default/red
+l_arm,models/players/default/red
+l_hand,models/players/default/red
+r_arm,models/players/default/red
+r_hand,models/players/default/red
+l_leg,models/players/default/red
+r_leg,models/players/default/red
+head_accessories,models/players/default/gray

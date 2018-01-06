@@ -1,0 +1,10 @@
+head,models/players/default/blue
+torso,models/players/default/blue
+hips,models/players/default/blue
+l_arm,models/players/default/blue
+l_hand,models/players/default/blue
+r_arm,models/players/default/blue
+r_hand,models/players/default/blue
+l_leg,models/players/default/blue
+r_leg,models/players/default/blue
+head_accessories,models/players/default/gray
