@@ -1551,7 +1551,7 @@ void R_Register( void )
 	// latched and archived variables
 	//
 	r_allowExtensions					= ri.Cvar_Get( "r_allowExtensions",				"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
-	r_ext_compressed_textures			= ri.Cvar_Get( "r_ext_compress_textures",			"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_ext_compressed_textures			= ri.Cvar_Get( "r_ext_compress_textures",			"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_ext_compressed_lightmaps			= ri.Cvar_Get( "r_ext_compress_lightmaps",			"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_ext_preferred_tc_method			= ri.Cvar_Get( "r_ext_preferred_tc_method",		"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_ext_gamma_control					= ri.Cvar_Get( "r_ext_gamma_control",				"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
@@ -1559,7 +1559,7 @@ void R_Register( void )
 	r_ext_compiled_vertex_array			= ri.Cvar_Get( "r_ext_compiled_vertex_array",		"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_ext_texture_env_add				= ri.Cvar_Get( "r_ext_texture_env_add",			"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_ext_texture_filter_anisotropic	= ri.Cvar_Get( "r_ext_texture_filter_anisotropic",	"16",						CVAR_ARCHIVE_ND, "" );
-	r_gammaShaders						= ri.Cvar_Get( "r_gammaShaders",					"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_gammaShaders						= ri.Cvar_Get( "r_gammaShaders",					"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "Set gamma using pixel shaders inside the game window only." );
 	r_environmentMapping				= ri.Cvar_Get( "r_environmentMapping",				"1",						CVAR_ARCHIVE_ND, "" );
 	r_DynamicGlow						= ri.Cvar_Get( "r_DynamicGlow",					"0",						CVAR_ARCHIVE_ND, "" );
 	r_DynamicGlowPasses					= ri.Cvar_Get( "r_DynamicGlowPasses",				"5",						CVAR_ARCHIVE_ND, "" );
@@ -1570,6 +1570,8 @@ void R_Register( void )
 	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH, "" );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
+	r_smartpicmip						= ri.Cvar_Get( "r_smartpicmip",						"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "Separate picmip setting for models." );
+	ri.Cvar_CheckRange( r_smartpicmip, 0, 16, qtrue );
 	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH, "" );
 	r_detailTextures					= ri.Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_texturebits						= ri.Cvar_Get( "r_texturebits",					"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
@@ -1635,7 +1637,7 @@ void R_Register( void )
 	r_portalOnly						= ri.Cvar_Get( "r_portalOnly",						"0",						CVAR_CHEAT, "" );
 	r_skipBackEnd						= ri.Cvar_Get( "r_skipBackEnd",					"0",						CVAR_CHEAT, "" );
 	r_measureOverdraw					= ri.Cvar_Get( "r_measureOverdraw",				"0",						CVAR_NONE, "" );
-	r_lodscale							= ri.Cvar_Get( "r_lodscale",						"5",						CVAR_NONE, "" );
+	r_lodscale							= ri.Cvar_Get( "r_lodscale",						"5",						CVAR_ARCHIVE_ND, "" );
 	r_norefresh							= ri.Cvar_Get( "r_norefresh",						"0",						CVAR_CHEAT, "" );
 	r_drawentities						= ri.Cvar_Get( "r_drawentities",					"1",						CVAR_CHEAT, "" );
 	r_ignore							= ri.Cvar_Get( "r_ignore",							"1",						CVAR_CHEAT, "" );

@@ -388,7 +388,7 @@ void SCR_DrawDemoRecording( void ) {
 	{
 		char	string2[32];
 		Com_sprintf(string2, sizeof(string2), "%i", 1000 / cls.frametime);
-		SCR_DrawStringExt2(SCREEN_WIDTH - 128 - strlen(string2)*(8.0f / 2.0f)*ratio, 2.0f, 8.0f*ratio, 8.0f, string2, g_color_table[7], qtrue, qfalse);
+		SCR_DrawStringExt2(SCREEN_WIDTH - 128 - strlen(string2), 2.0f, 8.0f*ratio, 8.0f, string2, g_color_table[7], qtrue, qfalse);
 	}
 
 	if ( !clc.demorecording ) {

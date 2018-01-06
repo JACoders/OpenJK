@@ -840,9 +840,12 @@
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
+			cvarTest			"ui_isJAPro"
+			showCvar
+			{ "1" }
 			visible				0
-			cvartest			"ui_about_gametype"
-			showcvar			{ "6", "7", "8", "9" }
+			//cvartest			"ui_about_gametype"
+			//showcvar			{ "6", "7", "8", "9" }
 		}
 		
 		itemDef 
