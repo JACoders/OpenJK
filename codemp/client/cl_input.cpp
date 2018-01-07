@@ -897,7 +897,7 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	side = 0;
 	up = 0;
 
-	if (cl_idrive->integer && !cl_test->integer) {
+	if (cl_idrive->integer) {
 		float s1, s2;
 
 		if (in_strafe.active) {
