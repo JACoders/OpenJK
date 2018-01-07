@@ -405,7 +405,6 @@ extern	cvar_t	*m_forward;
 extern	cvar_t	*m_side;
 extern	cvar_t	*m_filter;
 
-extern	cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
 extern	cvar_t	*cl_idrive;//JAPRO ENGINE
 extern	cvar_t	*cl_commandsize;//JAPRO ENGINE
 
