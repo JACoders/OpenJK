@@ -15,7 +15,7 @@ case "${host}" in
 		export CXX=${host}-g++
 		set -- \
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/${host}.cmake \
-			-D BuildMPCGame=OFF
+			-D BuildMPCGame=OFF \
 			"$@"
 		;;
 
@@ -58,8 +58,8 @@ fi
 case "${host}" in
 	(macosx-universal-clang)
 		( cd $(pwd)/assets && \
-			zip -r japro-macos-"${arch}".pk3 * && \
-			mv japro-macos-"${arch}".pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
+			zip -r japro-assets.pk3 * && \
+			mv japro-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
 			cd ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/ && \
 			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
 			mv eternaljk-macos-"${arch}".tar.gz /Users/travis/build/eternalcodes/EternalJK/ && \
@@ -69,8 +69,8 @@ case "${host}" in
 	(i?86-linux-gnu|native)
 		if [ -n "${deploy}" ]; then
 			( cd $(pwd)/assets && \
-				zip -r japro-linux-"${arch}".pk3 * && \
-				mv japro-linux-"${arch}".pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
+				zip -r japro-assets.pk3 * && \
+				mv japro-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
 				cd ../build/DESTDIR/prefix/JediAcademy/ && \
 				tar czvf eternaljk-linux-"${arch}".tar.gz * && \
 				mv eternaljk-linux-"${arch}".tar.gz /home/travis/build/eternalcodes/EternalJK/ && \
