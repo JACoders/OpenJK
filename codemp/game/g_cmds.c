@@ -669,6 +669,7 @@ QINLINE void DeletePlayerProjectiles(gentity_t *ent) {
 	}
 }
 
+void G_UpdatePlaytime(int null, char *username, int seconds );
 QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 {
 	qboolean wasReset = qfalse;;
@@ -677,20 +678,6 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 		return;
 	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag)
 		wasReset = qtrue;
-
-	ent->client->pers.stats.startLevelTime = 0;
-	ent->client->pers.stats.startTime = 0;
-	ent->client->pers.stats.topSpeed = 0;
-	ent->client->pers.stats.displacement = 0;
-	ent->client->pers.stats.displacementSamples = 0;
-	ent->client->pers.stats.startTimeFlag = 0;
-	ent->client->pers.stats.topSpeedFlag = 0;
-	ent->client->pers.stats.displacementFlag = 0;
-	ent->client->pers.stats.displacementFlagSamples = 0;
-	ent->client->ps.stats[STAT_JUMPTIME] = 0;
-	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
-
-	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
 
 	if (ent->client->sess.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
@@ -712,7 +699,31 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 			ent->client->ps.jetpackFuel = 100;
 			Jetpack_Off(ent);
 		}
+
+		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
+			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+				ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
+			}
+			if (ent->client->pers.stats.racetime > 120.0f) {
+				G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
+				ent->client->pers.stats.racetime = 0.0f;
+			}
+		}
 	}
+
+	ent->client->pers.stats.startLevelTime = 0;
+	ent->client->pers.stats.startTime = 0;
+	ent->client->pers.stats.topSpeed = 0;
+	ent->client->pers.stats.displacement = 0;
+	ent->client->pers.stats.displacementSamples = 0;
+	ent->client->pers.stats.startTimeFlag = 0;
+	ent->client->pers.stats.topSpeedFlag = 0;
+	ent->client->pers.stats.displacementFlag = 0;
+	ent->client->pers.stats.displacementFlagSamples = 0;
+	ent->client->ps.stats[STAT_JUMPTIME] = 0;
+	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
+
+	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
 
 	if (wasReset && print)
 		//trap->SendServerCommand( ent-g_entities, "print \"Timer reset!\n\""); //console spam is bad
@@ -2899,7 +2910,8 @@ qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *a
 	}
 	trap->FS_Close( fp );
 
-	if ( !G_DoesMapSupportGametype( arg2, level.gametype ) ) {
+	if ( !G_DoesMapSupportGametype( arg2, level.gametype ) /*&& !(g_tweakVote.integer & TV_FIX_GAMETYPEMAP)*/ ) { //new TV for check arena file for matching gametype?
+		//Logic, this is not needed because we have live update gametype?
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME" ) ) );
 		return qfalse;
 	}
@@ -5673,6 +5685,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	if (g_raceMode.integer) {
 		Q_strncpyz(buf, "   ^3Defrag commands: ", sizeof(buf));
+		Q_strcat(buf, sizeof(buf), "dfTodo ");
 		Q_strcat(buf, sizeof(buf), "dfTop10 ");
 		Q_strcat(buf, sizeof(buf), "dfTopRank ");
 		Q_strcat(buf, sizeof(buf), "notCompleted ");
@@ -5821,10 +5834,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "amRename "); 
 		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
 			Q_strcat(buf, sizeof(buf), "amRename"); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
-			Q_strcat(buf, sizeof(buf), "dfRefresh "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
-			Q_strcat(buf, sizeof(buf), "dfRefresh"); 
+		//if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
+			//Q_strcat(buf, sizeof(buf), "dfRefresh "); 
+		//else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
+			//Q_strcat(buf, sizeof(buf), "dfRefresh"); 
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 		buf[0] = '\0';
 	}
@@ -6486,6 +6499,21 @@ static void Cmd_EmotePoint_f(gentity_t *ent)
 	}
 	DoEmote(ent, BOTH_STAND5TOAIM, qtrue, qfalse, SETANIM_BOTH);
 }
+
+/*
+static void Cmd_EmoteSheev_f(gentity_t *ent) {
+	if (g_emotesDisable.integer & (1 << E_SHEEV)) {
+		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
+		return;
+	}
+	DoEmote(ent, BOTH_GETUP_BROLL_L, qfalse, qfalse, SETANIM_BOTH);
+	//Play sound
+	//Turn them around
+	//Launch them
+	//Turn them back
+	//Stop it from moving them in the standard way
+}
+*/
 
 static void Cmd_EmoteSignal1_f(gentity_t *ent) {
 	if (g_emotesDisable.integer & (1 << E_SIGNAL)) {
@@ -8290,8 +8318,9 @@ void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFRecent_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
+void Cmd_DFTodo_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
-void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
+//void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 //void Cmd_PersonalBest_f( gentity_t *ent);
@@ -8342,6 +8371,7 @@ command_t commands[] = {
 	{ "amrename",			Cmd_Amrename_f,				CMD_NOINTERMISSION },
 	{ "amrun",				Cmd_AmRun_f,				CMD_NOINTERMISSION},//EMOTE
 	{ "amsay",				Cmd_Amsay_f,				0 },
+//	{ "amsheev",			Cmd_EmoteSheev_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsignal",			Cmd_EmoteSignal1_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsignal2",			Cmd_EmoteSignal2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsignal3",			Cmd_EmoteSignal3_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
@@ -8384,7 +8414,8 @@ command_t commands[] = {
 	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
-	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
+	//{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
+	{ "dfTodo",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 	{ "dftopRank",			Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
 

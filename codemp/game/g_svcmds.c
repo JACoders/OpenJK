@@ -1532,7 +1532,9 @@ void Svcmd_RenameAccount_f( void );
 void Svcmd_ClearIP_f( void );
 void Svcmd_DBInfo_f( void );
 #if _ELORANKING
+#if 0
 void G_TestAddDuel( void );
+#endif
 void SV_RebuildElo_f( void );
 #endif
 #if 1//NEWRACERANKING
@@ -1550,7 +1552,7 @@ svcmd_t svcmds[] = {
 
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
 
-#if _ELORANKING
+#if 0
 	{ "addDuel",					G_TestAddDuel,						qfalse },
 #endif
 

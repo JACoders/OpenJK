@@ -447,7 +447,8 @@ typedef enum {
 	E_SLEEP,
 	E_SABERFLIP,
 	E_SLAP,
-	E_SIGNAL, //Group them all here, running out of space in this :s
+	E_SIGNAL,
+//	E_SHEEV,//Group them all here, running out of space in this :s
 	E_ALL
 } emote_type_t;
 
@@ -802,6 +803,8 @@ typedef struct {//JAPRO - Serverside - Stats
 	int	teamEnergizeGiven;
 	int	enemyDrainDamage;
 	int teamDrainDamage;
+
+	float racetime;
 } stats_t;
 
 // client data that stays across multiple respawns, but is cleared
@@ -878,6 +881,7 @@ typedef struct clientPersistant_s {
 	qboolean	keepDemo;//japro autodemo for defrag... :S
 	qboolean	showChatCP;
 	qboolean	showCenterCP;
+	int			demoStoppedTime;
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];

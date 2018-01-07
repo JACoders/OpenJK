@@ -4398,6 +4398,7 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
 void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);
 
+void G_UpdatePlaytime(int null, char *username, int seconds );
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
@@ -4414,7 +4415,7 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 //JAPRO - Serverside - Stop those pesky reconnect whores - Start
-	if (g_fixKillCredit.integer > 1 && ent->client && (ent->health > 0) && !(ent->r.svFlags & SVF_BOT) && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	if (g_fixKillCredit.integer > 1 && (ent->health > 0) && !(ent->r.svFlags & SVF_BOT) && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 	{
 		attacker = &g_entities[ent->client->ps.otherKiller];
 		if (attacker->client) {
@@ -4426,12 +4427,22 @@ void ClientDisconnect( int clientNum ) {
 		}	
 	}
 
-	if (ent->client && ent->client->ps.duelInProgress) {
+	if (ent->client->ps.duelInProgress) {
 		gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
 
 		if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {
 			//Trying to dodge the duel, no no no
 			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
+		}
+	}
+
+	if (ent->client->pers.userName && ent->client->pers.userName[0]) {
+		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+			ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
+		}
+		if (ent->client->pers.stats.racetime > 120.0f) {
+			G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
+			ent->client->pers.stats.racetime = 0.0f;
 		}
 	}
 

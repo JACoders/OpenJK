@@ -1329,6 +1329,7 @@ static QINLINE int GetTimeMS() {
 }
 
 //void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex );
+void G_UpdatePlaytime(int null, char *username, int seconds );
 void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	int lessTime;
 
@@ -1355,9 +1356,9 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		//We are still recording a demo that we want to keep?
 		//Stop and rename it
 		//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
-		//trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
 		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
 		player->client->pers.recordingDemo = qfalse;
+		player->client->pers.demoStoppedTime = level.time;
 	}
 
 	if ((sv_autoRaceDemo.integer) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && player->client->sess.raceMode && !sv_cheats.integer && player->client->pers.userName[0]) {
@@ -1369,6 +1370,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		else { //Check if we should "restart" the demo
 			if (!player->client->lastStartTime || (level.time - player->client->lastStartTime > 5000)) {
 				player->client->pers.recordingDemo = qtrue;
+				player->client->pers.demoStoppedTime = level.time;
 				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
 				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
 			}
@@ -1399,6 +1401,15 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	how often is pers.cmd.serverTime updated? every client frame? maybe it should use trap->milliseconds then.. :/
 	*/
 
+	//Update playtime if needed
+	if (player->client->sess.raceMode && player->client->pers.userName[0] && player->client->pers.stats.startTime) {
+		player->client->pers.stats.racetime += ((GetTimeMS() - player->client->pers.stats.startTime)*0.001f);
+		if (player->client->pers.stats.racetime > 120.0f) { //Avoid spamming the db
+			G_UpdatePlaytime(0, player->client->pers.userName, (int)(player->client->pers.stats.racetime+0.5f));
+			player->client->pers.stats.racetime = 0.0f;
+		}
+	}
+
 	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
 	player->client->pers.stats.startTime = GetTimeMS();
 	lessTime = InterpolateTouchTime(player, trigger);
@@ -1425,7 +1436,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	}
 }
 
-void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid);
+void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean sr, qboolean spb, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid);
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize);
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMS);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
@@ -1495,7 +1506,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		Q_StripColor(playerName);
 	
 		if (!valid) {
-			PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse);
+			PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse);
 		}
 		else {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -1508,7 +1519,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
 			}
 			else {
-				PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qtrue);
+				PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qtrue);
 			}
 		}
 
