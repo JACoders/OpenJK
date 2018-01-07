@@ -31,7 +31,6 @@ cvar_t	*fx_freeze;
 #endif
 cvar_t	*fx_countScale;
 cvar_t	*fx_nearCull;
-cvar_t	*fx_physics;//JAPRO ENGINE
 
 #define DEFAULT_EXPLOSION_RADIUS	512
 

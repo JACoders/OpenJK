@@ -99,14 +99,6 @@ cvar_t	*cl_framerate;
 cvar_t	*cl_enableGuid;
 cvar_t	*cl_guidServerUniq;
 
-cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
-cvar_t	*m_repeatDelay;//JAPRO ENGINE
-cvar_t	*m_repeat;//JAPRO ENGINE
-
-#ifdef TESTY
-cvar_t	*cl_test;//JAPRO ENGINE
-cvar_t	*cl_testAngle;//JAPRO ENGINE
-#endif
 cvar_t	*cl_idrive; //JAPRO ENGINE
 
 cvar_t	*cl_autolodscale;
@@ -3093,12 +3085,6 @@ void CL_Init( void ) {
 
 	cl_drawRecording = Cvar_Get("cl_drawRecording", "1", CVAR_ARCHIVE);
 
-	cg_demoRecordMsg = Cvar_Get ("cg_demoRecordMsg", "3", CVAR_ARCHIVE);//JAPRO ENGINE
-
-	m_repeatDelay = Cvar_Get( "m_repeatDelay",	"800",	CVAR_ARCHIVE );
-	m_repeat = Cvar_Get( "m_repeat",	"0",	CVAR_INTERNAL );
-	Cvar_CheckRange( m_repeatDelay, 0, 5000, qtrue );
-
 	// enable the ja_guid player identifier in userinfo by default in OpenJK
 	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE_ND, "Enable GUID userinfo identifier" );
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE_ND, "Use a unique guid value per server" );
@@ -3255,7 +3241,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
 	Cmd_RemoveCommand ("video");
-	Cmd_RemoveCommand ("videostop");
+	Cmd_RemoveCommand ("stopvideo");
 
 	Cmd_RemoveCommand("afk");
 	Cmd_RemoveCommand("colorstring");

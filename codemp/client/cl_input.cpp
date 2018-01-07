@@ -951,21 +951,13 @@ void CL_KeyMove( usercmd_t *cmd ) {
 		cmd->upmove = ClampChar( up );
 	}
 	else {
-		int left, right;
-
 		if ( in_strafe.active ) {
 			side += movespeed * CL_KeyState (&in_right);
 			side -= movespeed * CL_KeyState (&in_left);
 		}
 
 		side += movespeed * CL_KeyState (&in_moveright);
-#if TESTY
-		left = side;
-#endif
 		side -= movespeed * CL_KeyState (&in_moveleft);
-#if TESTY
-		right = -side;
-#endif
 
 		up += movespeed * CL_KeyState (&in_up);
 		up -= movespeed * CL_KeyState (&in_down);
@@ -976,16 +968,6 @@ void CL_KeyMove( usercmd_t *cmd ) {
 		cmd->forwardmove = ClampChar( forward );
 		cmd->rightmove = ClampChar( side );
 		cmd->upmove = ClampChar( up );
-
-#if TESTY
-		if (cl_test->integer == 1 && left == 127 && right == 0) {
-			cmd->rightmove = 127;
-		}
-		if (cl_test->integer == 2 && left == 127 && right == 0 && forward == 127) {
-			cmd->rightmove = 127;
-			cmd->forwardmove = 0;
-		}
-#endif
 	}
 }
 /*
@@ -1340,12 +1322,6 @@ void CL_FinishMove( usercmd_t *cmd ) {
 		cl.viewangles[YAW] = cl.cgameViewAngleForce[YAW];
 		cl.cgameViewAngleForceTime = 0;
 	}
-
-#if TESTY
-	if (cl_test->integer && cl_testAngle->value && cl_testAngle->value < 90.0f && cl_testAngle->value > -90.0f) {
-		cl.viewangles[YAW] -= cl_testAngle->value; //JAPRO ENGINE
-	}
-#endif
 
 	if ( cl_crazyShipControls )
 	{
@@ -1862,10 +1838,6 @@ void CL_InitInput( void ) {
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
 
-#if TESTY
-	cl_test = Cvar_Get ("cl_test", "0", 0);//JAPRO ENGINE
-	cl_testAngle = Cvar_Get ("cl_testAngle", "0", 0);//JAPRO ENGINE
-#endif
 	cl_idrive = Cvar_Get ("cl_idrive", "0", 0);//JAPRO ENGINE
 }
 

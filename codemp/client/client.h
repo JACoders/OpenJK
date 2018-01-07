@@ -40,8 +40,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define QKEY_FILE "jakey"
 #define QKEY_SIZE 2048
 
-#define TESTY 1
-
 // Wind
 extern vec3_t cl_windVec;
 
@@ -408,12 +406,6 @@ extern	cvar_t	*m_side;
 extern	cvar_t	*m_filter;
 
 extern	cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
-extern	cvar_t	*m_repeatDelay;//JAPRO ENGINE
-extern	cvar_t	*m_repeat;//JAPRO ENGINE
-#ifdef TESTY
-extern	cvar_t	*cl_test;//JAPRO ENGINE
-extern	cvar_t	*cl_testAngle;//JAPRO ENGINE
-#endif
 extern	cvar_t	*cl_idrive;//JAPRO ENGINE
 extern	cvar_t	*cl_commandsize;//JAPRO ENGINE
 
