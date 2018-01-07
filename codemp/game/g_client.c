@@ -3064,7 +3064,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		//char arg1[MAX_STRING_TOKENS];
 
 		if (client->pers.isJAPRO == qfalse)
-			trap->SendServerCommand( ent-g_entities, va("print \"^1You do not have the client plugin. Download at www.upsgaming.com\n\"" ) );
+			trap->SendServerCommand( ent-g_entities, va("print \"^1You do not have the client plugin. Download at www.playja.pro\n\"" ) );
 
 		//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
 		if (Q_stricmp(g_consoleMOTD.string, ""))

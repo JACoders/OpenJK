@@ -5832,7 +5832,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (ent->client->pers.isJAPRO)
 		trap->SendServerCommand( ent-g_entities, "print \"   ^2You are using the client plugin recommended by the server.\n\"" ); 
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"   ^1You do not have the client plugin. Download at www.upsgaming.com\n\"" ); 
+		trap->SendServerCommand( ent-g_entities, "print \"   ^1You do not have the client plugin. Download at www.playja.pro\n\"" ); 
 
 }
 //[JAPRO - Serverside - All - Aminfo Function - End]

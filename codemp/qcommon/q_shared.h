@@ -31,12 +31,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define CLIENT_WINDOW_TITLE "EternalJK (MP)"
 #define CLIENT_CONSOLE_TITLE "EternalJK Console (MP)"
-#define HOMEPATH_NAME_UNIX "openjk"
-#define HOMEPATH_NAME_WIN "OpenJK"
+#define HOMEPATH_NAME_UNIX "eternaljk"
+#define HOMEPATH_NAME_WIN "EternalJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 #define	BASEGAME "base"
-#define OPENJKGAME "OpenJK"
+#define ETERNALJKGAME "EternalJK"
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"

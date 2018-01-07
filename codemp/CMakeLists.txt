@@ -701,9 +701,10 @@ endif(BuildMPDed)
 		set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
 	endif()
 
-	if(BuildMPCGame)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-	endif()
+	# Temporarily exclude cgame from Windows install until japro is completely imported
+	#if(BuildMPCGame)
+	#	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
+	#endif()
 
 	if(BuildMPUI)
 		set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
