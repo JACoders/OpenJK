@@ -9,9 +9,9 @@ shift 2
 
 if [[ "${host}" == macosx-universal-clang ]]; then
 	cd ~
-	curl -O https://www.libsdl.org/release/SDL2-2.0.4.tar.gz
-	tar xzf SDL2-2.0.4.tar.gz
-	cd SDL2-2.0.4/Xcode/SDL
+	curl -O https://www.libsdl.org/release/SDL2-2.0.7.tar.gz
+	tar xzf SDL2-2.0.7.tar.gz
+	cd SDL2-2.0.7/Xcode/SDL
 	sed -i -e 's/@rpath//g' SDL.xcodeproj/project.pbxproj
 	xcodebuild ARCHS="i386 x86_64" ONLY_ACTIVE_ARCH=NO -configuration Release
 	mkdir -p ~/Library/Frameworks/
