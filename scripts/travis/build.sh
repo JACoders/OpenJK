@@ -57,10 +57,7 @@ fi
 
 case "${host}" in
 	(macosx-universal-clang)
-		( cd $(pwd)/assets && \
-			zip -r japro-assets.pk3 * && \
-			mv japro-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
-			cd ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/ && \
+		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/ && \
 			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
 			mv eternaljk-macos-"${arch}".tar.gz /Users/travis/build/eternalcodes/EternalJK/ && \
 			cd ../../../ && \
@@ -68,10 +65,7 @@ case "${host}" in
 		;;
 	(i?86-linux-gnu|native)
 		if [ -n "${deploy}" ]; then
-			( cd $(pwd)/assets && \
-				zip -r japro-assets.pk3 * && \
-				mv japro-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
-				cd ../build/DESTDIR/prefix/JediAcademy/ && \
+			( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
 				tar czvf eternaljk-linux-"${arch}".tar.gz * && \
 				mv eternaljk-linux-"${arch}".tar.gz /home/travis/build/eternalcodes/EternalJK/ && \
 				cd ../../ && \

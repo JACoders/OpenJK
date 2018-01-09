@@ -87,7 +87,7 @@ if(NOT ZIP_EXECUTABLE)
   endif()
   
   if(ZIP_EXECUTABLE)
-    set(ZIP_COMMAND "${ZIP_EXECUTABLE}" -r "<ARCHIVE>" . -i<FILES>)
+    set(ZIP_COMMAND "${ZIP_EXECUTABLE}" -r "<ARCHIVE>" <FILES>)
   endif()
 endif()
 

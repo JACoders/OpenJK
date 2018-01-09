@@ -696,20 +696,23 @@ if(BuildMPDed)
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)
 
-	set(GameLibsBuilt)
-	if(BuildMPGame)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
+set(GameLibsBuilt)
+if(BuildMPGame)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
+endif()
+
+# Temporarily exclude cgame from Windows install until japro is completely imported
+if(NOT WIN32)
+	if(BuildMPCGame)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
 	endif()
+endif()
 
-	# Temporarily exclude cgame from Windows install until japro is completely imported
-	#if(BuildMPCGame)
-	#	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-	#endif()
+if(BuildMPUI)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
+endif()
 
-	if(BuildMPUI)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
-	endif()
-
+include(InstallZIP)
 if(WIN32)
 set(GameLibFullPaths)
 	if(MSVC)
@@ -725,15 +728,23 @@ set(GameLibFullPaths)
 				${CMAKE_BINARY_DIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
 		endforeach(GameLib)
 	endif()
-
-	include(InstallZIP)
-	add_zip_command(${AssetsPk3}
-		FILES ${GameLibFullPaths} ${CMAKE_SOURCE_DIR}/assets/*
+	add_zip_command(${BinsPk3}
+		FILES ${GameLibFullPaths} ${CMAKE_SOURCE_DIR}/assets/bins/*
 		DEPENDS "${GameLibsBuilt}")
-	add_custom_target(Assets
+	add_custom_target(Bins
 		ALL
-		DEPENDS ${AssetsPk3})
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
+		DEPENDS ${BinsPk3})
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BinsPk3}
 		DESTINATION "${JKAInstallDir}/eternaljk"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
+
+add_zip_command(japro-assets.pk3
+	FILES ${CMAKE_SOURCE_DIR}/assets/japro/*)
+add_custom_target(Assets
+	ALL
+	DEPENDS japro-assets.pk3)
+install(FILES
+		${CMAKE_CURRENT_BINARY_DIR}/japro-assets.pk3
+	DESTINATION "${JKAInstallDir}/eternaljk"
+	COMPONENT ${JKAMPCoreComponent})
