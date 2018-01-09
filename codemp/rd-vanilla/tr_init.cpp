@@ -1602,7 +1602,7 @@ void R_Register( void )
 	// rjr - removed for hacking
 //	r_dlightBacks						= ri.Cvar_Get( "r_dlightBacks",					"1",						CVAR_CHEAT, "" );
 	r_finish							= ri.Cvar_Get( "r_finish",							"0",						CVAR_ARCHIVE_ND, "" );
-	r_textureMode						= ri.Cvar_Get( "r_textureMode",					"GL_LINEAR_MIPMAP_NEAREST",	CVAR_ARCHIVE, "" );
+	r_textureMode						= ri.Cvar_Get( "r_textureMode",					"GL_LINEAR_MIPMAP_LINEAR",	CVAR_ARCHIVE, "" );
 	r_markcount							= ri.Cvar_Get( "r_markcount",						"100",						CVAR_ARCHIVE_ND, "" );
 	r_gamma								= ri.Cvar_Get( "r_gamma",							"1",						CVAR_ARCHIVE_ND, "" );
 	r_facePlaneCull						= ri.Cvar_Get( "r_facePlaneCull",					"1",						CVAR_ARCHIVE_ND, "" );
