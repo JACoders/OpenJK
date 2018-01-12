@@ -74,6 +74,20 @@ case "${host}" in
 			( cd $(pwd)/build/DESTDIR && find . -ls )
 		fi
 		;;
+	(i686-w64-mingw32)
+		if [ -n "${deploy}" ]; then
+			( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
+				zip -r eternaljk-win32-portable.zip * && \
+				mv eternaljk-win32-portable.zip /home/travis/build/eternalcodes/EternalJK/ && \
+				cd eternaljk/ && \
+				zip -r ejk-japro-pk3only.zip * && \
+				mv ejk-japro-pk3only.zip /home/travis/build/eternalcodes/EternalJK/ && \
+				cd ../../../ && \
+				find . -ls )
+		else
+			( cd $(pwd)/build/DESTDIR && find . -ls )
+		fi
+		;;
 	(*)
 		( cd $(pwd)/build/DESTDIR && find . -ls )
 		;;

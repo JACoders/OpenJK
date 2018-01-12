@@ -13,7 +13,7 @@ env:
 - host=native deploy=true
 - flavour=Debug
 - host=i686-linux-gnu deploy=true
-- host=i686-w64-mingw32
+- host=i686-w64-mingw32 deploy=true
 - host=x86_64-w64-mingw32
 matrix:
   include:
@@ -27,6 +27,7 @@ deploy:
     api_key:
       secure: QSn2a8ihR2v15vVESJ6AkyV/WM4yLB1hLw7UoNG9DICce+Ge7Ih5jn9WWjXddeJX2cpKzIzNZDC2NVXejcahfuw2UTdaauQ60u6EOZ/C+TXH2cYLhpYzLNDu2pJY4LggcDt3xPTbvIHaNT4iYaFy3org40DmElMXpKz8qGaCC236oAV9zZbhLkWEz28rRNQF4yTxSg7kttLOTp+WdO0DxIJAraCbUgfXfabpCY5/m2sNAIUegpwz2oT8VNJ0Cg33kp2ND6341pQlN+fzv89hqw+vqzy2ZCvGcKSpZ6thEZGpxabULRqm8pDPClJNjnxwQ1P4MLNX76kkfXiPXiI932c/oOLHZP5VAyN1+Xhvrsbed+nPS8kwgXfN27aQ1IMSBMMfn2nyNvn0dV+wcbAU9T+GID/I8R+YRWfeyqr+v1fYrZlf4OP7ttNFXI0oFCObv4/TnxAsQodKJoudnSqEvh/yVQX2g+82oPrK6v/UjOlxQPEZQJK0bIPFwWA9vqBPLDUCf+ZIonGAFrDWSEwVRUGItdBjhMWFOau4vWlnZz6OwHT0TSV0DLQmFSWOXaV8An6Ss/1KdVOP13nG/ISJVhAVlpnuut8GIIOvzxupRgUG1YoqFGhJlp/2rGjl766TM/dmUN6CYmnAqi9YWlypuMbU2IzGFsg9uS46LI0GaKs=
     file: ./eternaljk-linux-x86_64.tar.gz
+    skip_cleanup: true
     on:
       tags: true
       condition: -n "${deploy}" && "${host}" = native
@@ -34,6 +35,7 @@ deploy:
     api_key:
       secure: QSn2a8ihR2v15vVESJ6AkyV/WM4yLB1hLw7UoNG9DICce+Ge7Ih5jn9WWjXddeJX2cpKzIzNZDC2NVXejcahfuw2UTdaauQ60u6EOZ/C+TXH2cYLhpYzLNDu2pJY4LggcDt3xPTbvIHaNT4iYaFy3org40DmElMXpKz8qGaCC236oAV9zZbhLkWEz28rRNQF4yTxSg7kttLOTp+WdO0DxIJAraCbUgfXfabpCY5/m2sNAIUegpwz2oT8VNJ0Cg33kp2ND6341pQlN+fzv89hqw+vqzy2ZCvGcKSpZ6thEZGpxabULRqm8pDPClJNjnxwQ1P4MLNX76kkfXiPXiI932c/oOLHZP5VAyN1+Xhvrsbed+nPS8kwgXfN27aQ1IMSBMMfn2nyNvn0dV+wcbAU9T+GID/I8R+YRWfeyqr+v1fYrZlf4OP7ttNFXI0oFCObv4/TnxAsQodKJoudnSqEvh/yVQX2g+82oPrK6v/UjOlxQPEZQJK0bIPFwWA9vqBPLDUCf+ZIonGAFrDWSEwVRUGItdBjhMWFOau4vWlnZz6OwHT0TSV0DLQmFSWOXaV8An6Ss/1KdVOP13nG/ISJVhAVlpnuut8GIIOvzxupRgUG1YoqFGhJlp/2rGjl766TM/dmUN6CYmnAqi9YWlypuMbU2IzGFsg9uS46LI0GaKs=
     file: ./eternaljk-linux-i686.tar.gz
+    skip_cleanup: true
     on:
       tags: true
       condition: -n "${deploy}" && "${host}" = i686-linux-gnu
@@ -45,3 +47,13 @@ deploy:
     on:
       tags: true
       condition: -n "${deploy}" && "${host}" = macosx-universal-clang
+  - provider: releases
+    api_key:
+      secure: QSn2a8ihR2v15vVESJ6AkyV/WM4yLB1hLw7UoNG9DICce+Ge7Ih5jn9WWjXddeJX2cpKzIzNZDC2NVXejcahfuw2UTdaauQ60u6EOZ/C+TXH2cYLhpYzLNDu2pJY4LggcDt3xPTbvIHaNT4iYaFy3org40DmElMXpKz8qGaCC236oAV9zZbhLkWEz28rRNQF4yTxSg7kttLOTp+WdO0DxIJAraCbUgfXfabpCY5/m2sNAIUegpwz2oT8VNJ0Cg33kp2ND6341pQlN+fzv89hqw+vqzy2ZCvGcKSpZ6thEZGpxabULRqm8pDPClJNjnxwQ1P4MLNX76kkfXiPXiI932c/oOLHZP5VAyN1+Xhvrsbed+nPS8kwgXfN27aQ1IMSBMMfn2nyNvn0dV+wcbAU9T+GID/I8R+YRWfeyqr+v1fYrZlf4OP7ttNFXI0oFCObv4/TnxAsQodKJoudnSqEvh/yVQX2g+82oPrK6v/UjOlxQPEZQJK0bIPFwWA9vqBPLDUCf+ZIonGAFrDWSEwVRUGItdBjhMWFOau4vWlnZz6OwHT0TSV0DLQmFSWOXaV8An6Ss/1KdVOP13nG/ISJVhAVlpnuut8GIIOvzxupRgUG1YoqFGhJlp/2rGjl766TM/dmUN6CYmnAqi9YWlypuMbU2IzGFsg9uS46LI0GaKs=
+    file: 
+      - ./eternaljk-win32-portable.zip
+      - ./ejk-japro-pk3only.zip
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: -n "${deploy}" && "${host}" = i686-w64-mingw32

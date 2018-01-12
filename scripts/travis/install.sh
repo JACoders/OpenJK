@@ -8,6 +8,7 @@ flavour="$2"
 shift 2
 
 if [[ "${host}" == macosx-universal-clang ]]; then
+	brew install p7zip
 	cd ~
 	curl -O https://www.libsdl.org/release/SDL2-2.0.7.tar.gz
 	tar xzf SDL2-2.0.7.tar.gz
@@ -31,7 +32,7 @@ case "${host}" in
 esac
 
 sudo apt-get update -qq
-sudo apt-get -q -y install cmake dpkg
+sudo apt-get -q -y install cmake dpkg p7zip-full
 
 case "${host}" in
 	(native)
@@ -52,7 +53,7 @@ case "${host}" in
 		# way, and also Java because that would be upgraded and is
 		# quite large.
 		sudo apt-get -q -y install \
-			libgles2-mesa-dev:i386 libgl1-mesa-dev:i386 libglu1-mesa-dev:i386 \
+			libgles2-mesa-dev:i386 libgl1-mesa-dev:i386 libglu1-mesa-dev:i386 libpulse-dev:i386 libglib2.0-dev:i386 \
 			libsdl2-2.0-0:i386 libsdl2-dev:i386 libjpeg-turbo8-dev:i386 zlib1g-dev:i386 libc6-dev:i386 \
 			libpng12-dev:i386 \
 			g++-multilib g++-4.8-multilib gcc-4.8-multilib \
