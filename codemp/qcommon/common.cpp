@@ -1234,7 +1234,7 @@ void Com_Init( char *commandLine ) {
 		//
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 
-		com_timescale = Cvar_Get ("timescale", "1", 0 );
+		com_timescale = Cvar_Get ("timescale", "1", CVAR_SYSTEMINFO);
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 
