@@ -4250,6 +4250,8 @@ static void CG_DrawDisconnect( void ) {
 	int			w;  // bk010215 - FIXME char message[1024];
 	const int REAL_CMD_BACKUP = (cl_commandsize.integer >= 4 && cl_commandsize.integer <= 512 ) ? (cl_commandsize.integer) : (CMD_BACKUP); //Loda - FPS UNLOCK
 
+	if (cgs.localServer || cg.demoPlayback) return;
+
 	if (cg.mMapChange)
 	{
 		s = CG_GetStringEdString("MP_INGAME", "SERVER_CHANGING_MAPS");	// s = "Server Changing Maps";
@@ -4302,7 +4304,7 @@ static void CG_DrawLagometer( void ) {
 	int		color;
 	float	vscale;
 
-	if ( !cg_lagometer.integer || cgs.localServer ) {
+	if ( !cg_lagometer.integer || cgs.localServer || cg.demoPlayback) {
 		CG_DrawDisconnect();
 		return;
 	}
