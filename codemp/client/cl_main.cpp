@@ -56,7 +56,6 @@ cvar_t	*cl_maxpackets;
 cvar_t	*cl_packetdup;
 cvar_t	*cl_timeNudge;
 cvar_t	*cl_showTimeDelta;
-cvar_t	*cl_freezeDemo;
 
 cvar_t	*cl_shownet;
 cvar_t	*cl_showSend;
@@ -2099,7 +2098,7 @@ void CL_CheckTimeout( void ) {
 	//
 	if ( ( !CL_CheckPaused() || !sv_paused->integer )
 		&& cls.state >= CA_CONNECTED && cls.state != CA_CINEMATIC
-	    && cls.realtime - clc.lastPacketTime > cl_timeout->value*1000) {
+	    && cls.realtime - clc.lastPacketTime > cl_timeout->integer*1000) {
 		if (++cl.timeoutcount > 5) {	// timeoutcount saves debugger
 			const char *psTimedOut = SE_GetString("MP_SVGAME_SERVER_CONNECTION_TIMED_OUT");
 			Com_Printf ("\n%s\n",psTimedOut);
@@ -2264,7 +2263,9 @@ void CL_Frame ( int msec ) {
 
 	// if we haven't gotten a packet in a long time,
 	// drop the connection
-	CL_CheckTimeout();
+	if (!clc.demoplaying) {
+		CL_CheckTimeout();
+	}
 
 	// send intentions now
 	CL_SendCmd();
@@ -3017,7 +3018,6 @@ void CL_Init( void ) {
 	cl_shownet = Cvar_Get ("cl_shownet", "0", CVAR_TEMP );
 	cl_showSend = Cvar_Get ("cl_showSend", "0", CVAR_TEMP );
 	cl_showTimeDelta = Cvar_Get ("cl_showTimeDelta", "0", CVAR_TEMP );
-	cl_freezeDemo = Cvar_Get ("cl_freezeDemo", "0", CVAR_TEMP );
 	rcon_client_password = Cvar_Get ("rconPassword", "", CVAR_TEMP, "Password for remote console access" );
 	cl_activeAction = Cvar_Get( "activeAction", "", CVAR_TEMP );
 

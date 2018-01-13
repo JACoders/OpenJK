@@ -373,8 +373,8 @@ Set up argc/argv for the given command
 ===================
 */
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
-	char	*s;
-	char	*cmd;
+	const char *s;
+	const char *cmd;
 	static char bigConfigString[BIG_INFO_STRING];
 
 	// if we have irretrievably lost a reliable command, drop the connection
@@ -735,6 +735,8 @@ CL_SetCGameTime
 ==================
 */
 void CL_SetCGameTime( void ) {
+	qboolean demoFreezed;
+
 	// getting a valid frame message ends the connection process
 	if ( cls.state != CA_ACTIVE ) {
 		if ( cls.state != CA_PRIMED ) {
@@ -777,8 +779,10 @@ void CL_SetCGameTime( void ) {
 
 	// get our current view of time
 
-	if ( clc.demoplaying && cl_freezeDemo->integer ) {
-		// cl_freezeDemo is used to lock a demo in place for single frame advances
+	demoFreezed = (qboolean)(clc.demoplaying && com_timescale->value == 0.0f);
+	if (demoFreezed) {
+		// \timescale 0 is used to lock a demo in place for single frame advances
+		cl.serverTimeDelta -= cls.frametime;
 	} else
 	{
 		// cl_timeNudge is a user adjustable cvar that allows more
