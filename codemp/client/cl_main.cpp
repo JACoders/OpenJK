@@ -3122,8 +3122,8 @@ void CL_Init( void ) {
 
 	cl_coloredTextShadows = Cvar_Get("cl_coloredTextShadows", "0", CVAR_ARCHIVE, "Toggled colored text shadows");
 
-	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE, "Minutes to autorename to afk, 0 to disable");
-	cl_afkTimeUnfocused = Cvar_Get("cl_afkTimeUnfocused", "1", CVAR_ARCHIVE, "Minutes to autorename to afk while unfocused/minimized");
+	cl_afkTime = Cvar_Get("cl_afkTime", "10", CVAR_ARCHIVE, "Minutes to autorename to afk, 0 to disable");
+	cl_afkTimeUnfocused = Cvar_Get("cl_afkTimeUnfocused", "5", CVAR_ARCHIVE, "Minutes to autorename to afk while unfocused/minimized");
 	cl_unfocusedTime = 0;
 
 	cl_colorString = Cvar_Get("cl_colorString", "0", CVAR_ARCHIVE, "Bit value of selected colors in colorString");
