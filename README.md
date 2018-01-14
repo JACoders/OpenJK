@@ -2,7 +2,7 @@
 
 This fork focuses on the jaPRO integration and Client Engine modifications.
 
-If you have any suggestions or would like to submit a bug report, please post them in [issues] (https://github.com/eternalcodes/EternalJK/issues).
+If you have any suggestions or would like to submit a bug report, please post them in [issues](https://github.com/eternalcodes/EternalJK/issues).
 
 [![Website](https://img.shields.io/badge/website-japro-brightgreen.svg)](http://playja.pro) [![Fork](https://img.shields.io/badge/repository-japro%20game%20library-blue.svg)](https://github.com/videoP/jaPRO)
 
