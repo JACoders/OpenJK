@@ -1997,7 +1997,7 @@ gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 		}
 	}
 
-	Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon);
+	Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon); //This caused a crash once (wp_blaster)
 	return NULL;
 }
 

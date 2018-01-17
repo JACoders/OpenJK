@@ -1384,6 +1384,8 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 	else if (nameColor > 7 || nameColor == 5)
 		nameColor = 7;
 
+	//SR + PB can exist at same time n should be printed as such
+
 	if (message) {
 		if (!valid){
 			trap->SendServerCommand( -1, va("print \"^3%-16s^1 completed in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
@@ -1391,6 +1393,10 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 		}
 		else if (wr) {
 			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
+				message, timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (sr && pb) {
+			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR+PB)^7\n\"",
 				message, timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (sr) {
@@ -1421,6 +1427,10 @@ void PrintRaceTime(char *username, char *message, char *style, int topspeed, int
 		}
 		else if (wr) {
 			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
+				timeStr, topspeed, average, style, nameColor, username));
+		}
+		else if (sr && pb) {
+			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR+PB)^7\n\"",
 				timeStr, topspeed, average, style, nameColor, username));
 		}
 		else if (sr) {
@@ -3736,7 +3746,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 		return;
 	}
 
-	if (page < 0 || page > 100) {
+	if (page < 1 || page > 100) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
 		return;
 	}
