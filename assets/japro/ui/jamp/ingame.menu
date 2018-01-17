@@ -134,9 +134,7 @@
 			text				@MENUS_JOIN
 			cvarTest			"ui_isJAPro"
 			showCvar 
-			{ 
-				"0" 
-			}
+			{ "0" }
 			rect				75 0 70 32
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_FILLED
@@ -170,9 +168,7 @@
 			text				@MENUS_JOIN
 			cvarTest			"ui_isJAPro"
 			showCvar 
-			{ 
-				"1" 
-			}
+			{ "1" }
 			rect				75 0 70 32
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_FILLED
@@ -570,12 +566,9 @@
 			text				@MENUS_CALL_VOTE
 			type				1
 			style				WINDOW_STYLE_FILLED
-			cvarTest			"ui_singleplayeractive"
-			disableCvar 
-			{ 
-				"1" 
-			}
-
+			cvarTest			"ui_isJAPro"
+			showCvar 
+			{ "0" }
 			rect				495 0 70 32
 			font				2
 			textscale			.8
@@ -590,6 +583,40 @@
 			{ 
 				play			"sound/interface/button1.wav" ;
 				open			ingame_callvote 
+			}
+			mouseenter 
+			{ 
+				show			callvoteButton
+			}
+			mouseexit 
+			{ 
+				hide			callvoteButton
+			}
+		}
+
+		itemDef 
+		{
+			name				callvoteJAPro
+			text				@MENUS_CALL_VOTE
+			type				1
+			style				WINDOW_STYLE_FILLED
+			cvarTest			"ui_isJAPro"
+			showCvar 
+			{ "1" }
+			rect				495 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_callvote_japro 
 			}
 			mouseenter 
 			{ 
