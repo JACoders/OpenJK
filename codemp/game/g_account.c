@@ -3065,32 +3065,32 @@ int RaceNameToInteger(char *style) {
 	Q_strlwr(style);
 	Q_CleanStr(style);
 
-	if (!Q_stricmp(style, "siege") || !Q_stricmp(style, "0"))
+	if (!Q_stricmp(style, "siege"))
 		return 0;
-	if (!Q_stricmp(style, "jka") || !Q_stricmp(style, "jk3") || !Q_stricmp(style, "1"))
+	if (!Q_stricmp(style, "jka") || !Q_stricmp(style, "jk3"))
 		return 1;
-	if (!Q_stricmp(style, "hl2") || !Q_stricmp(style, "hl1") || !Q_stricmp(style, "hl") || !Q_stricmp(style, "qw") || !Q_stricmp(style, "2"))
+	if (!Q_stricmp(style, "hl2") || !Q_stricmp(style, "hl1") || !Q_stricmp(style, "hl") || !Q_stricmp(style, "qw"))
 		return 2;
-	if (!Q_stricmp(style, "cpm") || !Q_stricmp(style, "cpma") || !Q_stricmp(style, "3"))
+	if (!Q_stricmp(style, "cpm") || !Q_stricmp(style, "cpma"))
 		return 3;
-	if (!Q_stricmp(style, "q3") || !Q_stricmp(style, "q3") || !Q_stricmp(style, "4"))
+	if (!Q_stricmp(style, "q3") || !Q_stricmp(style, "q3"))
 		return 4;
-	if (!Q_stricmp(style, "pjk") || !Q_stricmp(style, "5"))
+	if (!Q_stricmp(style, "pjk"))
 		return 5;
-	if (!Q_stricmp(style, "wsw") || !Q_stricmp(style, "warsow") || !Q_stricmp(style, "6"))
+	if (!Q_stricmp(style, "wsw") || !Q_stricmp(style, "warsow"))
 		return 6;
-	if (!Q_stricmp(style, "rjq3") || !Q_stricmp(style, "q3rj") || !Q_stricmp(style, "7"))
+	if (!Q_stricmp(style, "rjq3") || !Q_stricmp(style, "q3rj"))
 		return 7;
-	if (!Q_stricmp(style, "rjcpm") || !Q_stricmp(style, "cpmrj") || !Q_stricmp(style, "8"))
+	if (!Q_stricmp(style, "rjcpm") || !Q_stricmp(style, "cpmrj"))
 		return 8;
-	if (!Q_stricmp(style, "swoop") || !Q_stricmp(style, "9"))
+	if (!Q_stricmp(style, "swoop"))
 		return 9;
-	if (!Q_stricmp(style, "jetpack") || !Q_stricmp(style, "10"))
+	if (!Q_stricmp(style, "jetpack"))
 		return 10;
-	if (!Q_stricmp(style, "speed") || !Q_stricmp(style, "ctf") || !Q_stricmp(style, "11"))
+	if (!Q_stricmp(style, "speed") || !Q_stricmp(style, "ctf"))
 		return 11;
 #if _SPPHYSICS
-	if (!Q_stricmp(style, "sp") || !Q_stricmp(style, "singleplayer") || !Q_stricmp(style, "12"))
+	if (!Q_stricmp(style, "sp") || !Q_stricmp(style, "singleplayer"))
 		return 12;
 #endif
 	return -1;
@@ -3325,21 +3325,31 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 
 #if 1//NEWRACERANKING
 void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
 	int row = 1, style, page = 1, start = 0;
 	char msg[1024-128] = {0}, styleString[16] = {0}, input1[32], input2[32], username[40];
 	int score, count, golds, silvers, bronzes;
 	float rank, percentile;
-	int s;
-
-	if (trap->Argc() > 3) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
-		return;
+	const int args = trap->Argc();
+	
+	if (args == 1) { //dftoprank
+		style = -1;
+		Q_strncpyz(styleString, "all styles", sizeof(styleString));
 	}
+	else if (args == 2) { //Either /dftoprank cpm or /dftoprank 2
+		trap->Argv(1, input1, sizeof(input1));
 
-	if (trap->Argc() == 3) {
+		if (atoi(input1)) {//its a page
+			page = atoi(input1);
+			Q_strncpyz(styleString, "all styles", sizeof(styleString));
+			style = -1;
+		}
+		else {
+			style = RaceNameToInteger(input1);
+			IntegerToRaceName(style, styleString, sizeof(styleString));
+			Q_strcat(styleString, sizeof(styleString), " style");
+		}
+	}
+	else if (args == 3) {
 		trap->Argv(1, input1, sizeof(input1));
 		trap->Argv(2, input2, sizeof(input2));
 		style = RaceNameToInteger(input1);
@@ -3355,23 +3365,9 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 
 		page = atoi(input2);
 	}
-	else if (trap->Argc() == 2) { //Either /dftoprank cpm or /dftoprank 2
-		trap->Argv(1, input1, sizeof(input1));
-
-		if (atoi(input1)) {//its a page
-			page = atoi(input1);
-			Q_strncpyz(styleString, "all styles", sizeof(styleString));
-			style = -1;
-		}
-		else {
-			style = RaceNameToInteger(input1);
-			IntegerToRaceName(style, styleString, sizeof(styleString));
-			Q_strcat(styleString, sizeof(styleString), " style");
-		}
-	}
-	else { //dftoprank
-		style = -1;
-		Q_strncpyz(styleString, "all styles", sizeof(styleString));
+	else {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+		return;
 	}
 
 	if (page < 1 || page > 100) {
@@ -3382,87 +3378,120 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		page = 100;
 	start = (page - 1) * 10;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
-	if (style == -1) {
-		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-			"WHERE rank != 0 "
-			"GROUP BY username "
-			"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
 
-		//sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int (stmt, 1, start));
-	}
-	else {
-		sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-			"WHERE rank != 0 AND style = ? "
-			"GROUP BY username "
-			"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
+		if (style == -1) {
+			sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				"WHERE rank != 0 "
+				"GROUP BY username "
+				"ORDER BY score DESC, rank DESC LIMIT ?, 10";
 
-		//sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int (stmt, 1, style));
-		CALL_SQLITE (bind_int (stmt, 2, start));
-	}
-
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
-
-	while (1) {
-		s = sqlite3_step(stmt);
-		if (s == SQLITE_ROW) {
-			char *tmpMsg = NULL;
-			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
-			score = sqlite3_column_int(stmt, 1);
-			rank = sqlite3_column_double(stmt, 2);
-			percentile = sqlite3_column_double(stmt, 3);
-			golds = sqlite3_column_int(stmt, 4);
-			silvers = sqlite3_column_int(stmt, 5);
-			bronzes = sqlite3_column_int(stmt, 6);
-			count = sqlite3_column_int(stmt, 7);
-
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
-			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
-				msg[0] = '\0';
-			}
-			Q_strcat(msg, sizeof(msg), tmpMsg);
-			row++;
+			//sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, start));
 		}
-		else if (s == SQLITE_DONE)
-			break;
 		else {
-			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTopRank_f).\n");//Trap print?
-			break;
-		}
-	}
-	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+			sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				"WHERE rank != 0 AND style = ? "
+				"GROUP BY username "
+				"ORDER BY score DESC, rank DESC LIMIT ?, 10";
 
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
+			//sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, style));
+			CALL_SQLITE (bind_int (stmt, 2, start));
+		}
+
+		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
+
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
+				score = sqlite3_column_int(stmt, 1);
+				rank = sqlite3_column_double(stmt, 2);
+				percentile = sqlite3_column_double(stmt, 3);
+				golds = sqlite3_column_int(stmt, 4);
+				silvers = sqlite3_column_int(stmt, 5);
+				bronzes = sqlite3_column_int(stmt, 6);
+				count = sqlite3_column_int(stmt, 7);
+
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTopRank_f).\n");//Trap print?
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+
+	}
 }
 #endif
 
 
 void Cmd_DFRecent_f(gentity_t *ent) {
 	const int args = trap->Argc();
-	int style = -1;
-	char input1[40], inputStyleString[16];
+	int style = -1, page = 1, start = 0;
+	char input1[40], input2[16], inputStyleString[16];
 
 	if (args == 1) { //dfRecent  - All styles
 	}
-	else if (args == 2) {//dfRecent <style>
+	else if (args == 2) {//dfRecent <style> or dfrecent <page>
 		trap->Argv(1, input1, sizeof(input1));
-		style = RaceNameToInteger(input1);
-		if (style < 0) { //Invalid style
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)>.  This displays recent records for the specified style.\n\"");
-			return;
+
+		if (atoi(input1)) {//its a page
+			page = atoi(input1);
+			style = -1;
+		}
+		else {
+			style = RaceNameToInteger(input1);
+			if (style < 0) { //Invalid style
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
+				return;
+			}
 		}
 	}
+	else if (args == 3) {
+		trap->Argv(1, input1, sizeof(input1));
+		trap->Argv(2, input2, sizeof(input2));
+		style = RaceNameToInteger(input1);
+
+		if (style < 0) {//Fuckup
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
+			return;
+		}
+		page = atoi(input2);
+	}
 	else {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)>.  This displays recent records for the specified style.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page(optional)>.  This displays recent records for the specified style.\n\"");
 		return;
 	}
 
+	if (page < 1 || page > 100) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page(optional)>.  This displays recent records for the specified style.\n\"");
+		return;
+	}
+	else if (page > 100)
+		page = 100;
+	start = (page - 1) * 10;
 
 	{
 		sqlite3 * db;
@@ -3479,14 +3508,16 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		//fix that by just making race times go to database immediately and forgetting this stupid manual caching system
 
 		if (style == -1) {
-			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 ORDER BY end_time DESC LIMIT 10";
+			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 ORDER BY end_time DESC LIMIT ?,10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, start));
 			trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"");
 		}
 		else {
-			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT 10";
+			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT ?,10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_int (stmt, 1, style));
+			CALL_SQLITE (bind_int (stmt, 2, start));
 			IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
 			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"", inputStyleString));
 		}
@@ -3499,7 +3530,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 				getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr));
 				IntegerToRaceName(sqlite3_column_int(stmt, 2), styleStr, sizeof(styleStr));
 
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-8i ^3%-12s %s\n", row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, sqlite3_column_int(stmt, 3), timeStr, dateStr);
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-8i ^3%-12s %s\n", start+row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, sqlite3_column_int(stmt, 3), timeStr, dateStr);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
