@@ -988,7 +988,7 @@ void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 	}
 }
 
-void CleanupLocalRun() { //loda fixme, there really has to be a better way to do this. -Delete from table localrun, all but fastest time, grouped by username, coursename, style.. HOW?
+void CleanupLocalRun() { //This should never actually change anything since we insert/update properly, but just to be safe..
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -1183,12 +1183,14 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 	//Insert it +1 (including ourself)
 
 	//If it is our best time of all seasons (if globalNewRank_self), we need to make our other season entries set to rank=0 !!!!
+	//This also needs to update lastupdatetime for the website!
 	if (globalNewRank_self && globalOldRank_self) { //And globalOldRankSelf ? - We dont want to update other rows if we dont have any other rows
-		sql = "UPDATE LocalRun SET rank = 0 WHERE username = ? AND coursename = ? AND style = ?";
+		sql = "UPDATE LocalRun SET rank = 0, last_update = ? WHERE username = ? AND coursename = ? AND style = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, style_self));
+		CALL_SQLITE (bind_int (stmt, 1, end_time_self));
+		CALL_SQLITE (bind_text (stmt, 2, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 3, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 4, style_self));
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
 			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 1): %i.\n", s); //Write to race error log
