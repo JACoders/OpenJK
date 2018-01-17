@@ -375,7 +375,7 @@ endif(WIN32)
 add_library(${SPGame} SHARED ${SPGameFiles})
 
 # Hide symbols not explicitly marked public.
-set_property(TARGET ${SPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+ojk_add_compile_options(${SPGame} "${OPENJK_VISIBILITY_FLAGS}")
 
 if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files

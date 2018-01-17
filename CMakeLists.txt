@@ -317,6 +317,21 @@ if (NOT ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL ""))
 	set(SharedDefines ${SharedDefines} "SOURCE_DATE=\"${source_date}\"")
 endif()
 
+# ojk_add_compile_options(<target> <options>)
+# Should be used to add compiler options on a per-target
+# basis while cmake_minimum_required is set to version
+# below 2.8.12.
+function(ojk_add_compile_options Target Options)
+    if (ARGN)
+        message(SEND_ERROR "Too many arguments for ojk_add_compile_option")
+    endif()
+
+    if (COMMAND target_compile_options)
+        target_compile_options(${Target} PRIVATE ${Options})
+    else()
+        set_property(TARGET ${Target} APPEND_STRING PROPERTY COMPILE_FLAGS " ${Options}")
+    endif()
+endfunction(ojk_add_compile_options)
 
 
 # Files shared across all projects
