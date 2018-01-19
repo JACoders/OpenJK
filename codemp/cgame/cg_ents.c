@@ -2472,7 +2472,7 @@ static void CG_Missile( centity_t *cent ) {
 			}
 			else
 			{
-				trap->G2API_InitGhoul2Model(&cent->ghoul2, "models/weapons2/saber/saber_w.glm", 0, 0, 0, 0, 0);
+				trap->G2API_InitGhoul2Model(&cent->ghoul2, DEFAULT_SABER_MODEL, 0, 0, 0, 0, 0);
 			}
 			return;
 		}
