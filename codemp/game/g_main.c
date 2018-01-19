@@ -4520,6 +4520,8 @@ static void G_SpawnHoleFixes( void ) {
 	Com_sprintf( mapname, sizeof(mapname), "%s", Info_ValueForKey(info, "mapname") );
 	// note: only / is replaced with _
 	Q_strstrip( mapname, "/\n\r;:.?*<>|\\\"", "_" );
+	Q_strlwr(mapname);
+	Q_CleanStr(mapname);
 	Com_sprintf( filename, sizeof(filename), "%s_holes.cfg", mapname );
 	len = trap->FS_Open( filename, &f, FS_READ );
 	if ( len != -1 ) {

@@ -3347,6 +3347,10 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		}
 		else {
 			style = RaceNameToInteger(input1);
+			if (style < 0) {//Fuckup
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+				return;
+			}
 			IntegerToRaceName(style, styleString, sizeof(styleString));
 			Q_strcat(styleString, sizeof(styleString), " style");
 		}
@@ -3357,7 +3361,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		style = RaceNameToInteger(input1);
 
 		if (style < 0) {//Fuckup
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
 			return;
 		}
 		else {
@@ -3368,12 +3372,12 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		page = atoi(input2);
 	}
 	else {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
 		return;
 	}
 
 	if (page < 1 || page > 100) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
 		return;
 	}
 	else if (page > 100)
@@ -3649,6 +3653,8 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		char info[1024] = {0};
 		trap->GetServerinfo(info, sizeof(info));
 		Q_strncpyz(courseNameFull, Info_ValueForKey( info, "mapname" ), sizeof(courseNameFull));
+		Q_strlwr(courseNameFull);
+		Q_CleanStr(courseNameFull);
 	}
 	else {
 		if (!Q_stricmp(courseName, "")) {
