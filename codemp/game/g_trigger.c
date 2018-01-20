@@ -1318,7 +1318,9 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
-	if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
+	//if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
+		//return;
+	if (player->client->pers.stats.startTime) //Instead of floodprotect, dont let player start a timer if they already have one.  Mapmakers should then put reset timers over the start area.
 		return;
 	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
 		return;
