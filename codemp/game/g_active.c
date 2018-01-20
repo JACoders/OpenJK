@@ -5830,11 +5830,14 @@ void G_RunClient( gentity_t *ent ) {
 			if (ent->client->lastCmdTime < (level.time - 250)) { //Force 250ms updaterate for racers?
 				forceUpdateRate = qtrue;
 			}
-			else {
-				G_TouchTriggersWithTrace( ent );
-				//if (ent->client->lastCmdTime < (level.time - 50)) { //This is cool but it doesnt prevent timenudge warp abuse bypassing triggers
-				//G_TouchTriggersLerped( ent ); 
-				//}
+			if (ent->client->lastCmdTime < (level.time - (1000/sv_fps.integer))) {
+				G_TouchTriggers( ent ); //They have bad FPS, so also check if they are in trigger here.
+			}
+			G_TouchTriggersWithTrace( ent ); //
+
+			//Do AFKTime here, subtract it from racetime and clear it when racetime is added.
+			if (level.time - ent->client->lastHereTime > 10000) { //They have been AFK for more than 10 seconds
+				ent->client->afkDuration += 1000/sv_fps.integer;
 			}
 
 			/*

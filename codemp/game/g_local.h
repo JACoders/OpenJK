@@ -1032,6 +1032,7 @@ struct gclient_s {
 	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
 	int			inactivityTime;		// kick players when time > this
 	int			lastHereTime;		//japro to optimize bots / autorecord
+	int			afkDuration;
 	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
 	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
 	int			ourSwoopNum;		//for swoop movementstyle
@@ -1190,7 +1191,8 @@ struct gclient_s {
 	short		noKnockdownStreak; //pseudo random knockdowns option
 	short		totalDamage;
 	int			lastDamageTime;
-	int			lastStartTime; //for autodemo floodprotect
+	//int			lastStartTime; //for autodemo floodprotect
+	int			lastInStartTrigger;
 	//int			numStakes;
 
 #if _GRAPPLE

@@ -1734,7 +1734,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 	}
 
-	cl->pers.stats.racetime += (duration_ms*0.001f);
+	cl->pers.stats.racetime += (duration_ms*0.001f) - cl->afkDuration*0.001f;
+	cl->afkDuration = 0;
 	if (cl->pers.stats.racetime > 120.0f) { //Avoid spamming the db
 		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime+0.5f));
 		cl->pers.stats.racetime = 0.0f;
@@ -2589,7 +2590,8 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove login status.
 	if (ent->client->pers.userName && ent->client->pers.userName[0]) {
 		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
-			ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
+			ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime)*0.001f - ent->client->afkDuration*0.001f;
+			ent->client->afkDuration = 0;
 		}
 		if (ent->client->pers.stats.racetime >= 1.0f) {
 			G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));

@@ -677,7 +677,8 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 
 		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
 			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
-				ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime) * 0.001f;
+				ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime)*0.001f - ent->client->afkDuration*0.001f;
+				ent->client->afkDuration = 0;
 			}
 			if (ent->client->pers.stats.racetime > 120.0f) {
 				G_UpdatePlaytime(0, ent->client->pers.userName, (int)(ent->client->pers.stats.racetime+0.5f));
