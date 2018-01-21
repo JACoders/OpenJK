@@ -358,6 +358,8 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define TV_ONLY_COUNT_VOTERS		(1<<9)
 #define TV_FIX_GAMETYPEMAP			(1<<10)
 
+#define RS_TIMER_START				(1<<0)
+
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
 void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims );
@@ -1607,6 +1609,7 @@ gentity_t	*G_PlayEffectID(const int fxID, vec3_t org, vec3_t ang);
 gentity_t *G_ScreenShake(vec3_t org, gentity_t *target, float intensity, int duration, qboolean global);
 void	G_MuteSound( int entnum, int channel );
 void	G_Sound( gentity_t *ent, int channel, int soundIndex );
+void	G_RaceSound( gentity_t *ent, int channel, int soundIndex, int racesound );//bad
 void	G_SoundAtLoc( vec3_t loc, int channel, int soundIndex );
 void	G_EntitySound( gentity_t *ent, int channel, int soundIndex );
 void	TryUse( gentity_t *ent );

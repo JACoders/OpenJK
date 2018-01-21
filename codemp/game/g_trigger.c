@@ -59,7 +59,7 @@ void multi_trigger_run( gentity_t *ent )
 	G_UseTargets (ent, ent->activator);
 	if ( ent->noise_index )
 	{
-		if (ent->classname && !Q_stricmp( "df_trigger_finish", ent->classname))//JAPRO FIXME, we dont want to do this if its a df_trigger_finish, since it spams ?
+		if (ent->classname && (!Q_stricmp( "df_trigger_start", ent->classname) || !Q_stricmp( "df_trigger_finish", ent->classname)))//JAPRO FIXME, we dont want to do this if its a df_trigger_finish, since it spams ?
 		{
 		}
 		else
@@ -1354,7 +1354,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		//We are still recording a demo that we want to keep? -shouldn't ever happen?
 		//Stop and rename it
 		//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
-		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
+		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 10;svrenamedemo temp/%s races/%s\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
 		player->client->pers.recordingDemo = qfalse;
 		player->client->pers.demoStoppedTime = level.time;
 	}
@@ -1374,7 +1374,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 				player->client->pers.recordingDemo = qtrue;
 				player->client->pers.demoStoppedTime = level.time;
 				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
-				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
+				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 5;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
+				//trap->SendConsoleCommand( EXEC_APPEND, va("svrecord temp/%s %i\n", player->client->pers.userName, player->client->ps.clientNum));
 			}
 		}
 	}
@@ -1391,7 +1392,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts.  Move this up here, so swoops can activate it for proper swoop teleporting?
 
 	if (trigger->noise_index) //Only play on leaving trigger..?
-		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
+		G_RaceSound( player, CHAN_AUTO, trigger->noise_index, RS_TIMER_START );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
 	player->client->pers.startLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //use level.previousTime?
 	//trap->SendServerCommand( player-g_entities, va("chat \"startlag: %i\"", player->client->pers.startLag));

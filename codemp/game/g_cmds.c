@@ -4361,18 +4361,20 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			}
 			if (g_duelStartHealth.integer)
 			{
-				ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
 				ent->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
-				challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
 				challenged->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
 
 				if (dueltype == WP_ROCKET_LAUNCHER || dueltype == WP_CONCUSSION) { //Give more health in rocket duels etc
-					challenged->health *= 2;
-					ent->health *= 2;
+					challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
+					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
 				}
 				else if (dueltype == 20) { //All
-					challenged->health *= 3;
-					ent->health *= 3;
+					challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
+					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
+				}
+				else {
+					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
+					challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
 				}
 			}
 			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax; //max force power too!
