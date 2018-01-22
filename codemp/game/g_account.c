@@ -3754,7 +3754,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
     char * sql;
     sqlite3_stmt * stmt;
 	int s, page = 1, start, row = 1, style = -1;
-	char msg[1024-128] = {0}, styleStr[16], input[16], username[16], timeStr[64], dateStr[64];
+	char msg[1024-128] = {0}, styleStr[16], input[16], username[16], mapname[40] = {0}, timeStr[64], dateStr[64];
 	const int args = trap->Argc();
 
 	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
@@ -3763,54 +3763,101 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 	}
 	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
 
-	if (args == 1) { //dftodo - our own all styles, page 1
+	if (args == 1) { //dftodo - our own all styles, all maps, page 1
 	}
-	else if (args == 2) {//dftodo style OR page
+	else if (args == 2) {//dftodo style OR page OR mapname
 		trap->Argv(1, input, sizeof(input));
 		style = RaceNameToInteger(input);
-		if (style < 0 || atoi(input)) { //fucks siege, i guess racenametointeger just shouldnt accept numbers to make this type of interface possible
+		if (style < 0 || atoi(input)) { //its page
 			style = -1;
 			page = atoi(input);
+			if (!page) { //its not style or page, must be mapname
+				page = 1;
+				Q_strncpyz(mapname, input, sizeof(mapname));
+			}
 		}
 	}
-	else if (args == 3) { //dftodo style AND page
+	else if (args == 3) { //dftodo style AND page -OR- style AND map - OR map AND page - yikes
+		trap->Argv(1, input, sizeof(input));
+		style = RaceNameToInteger(input);
+		if (style < 0) { //dftodo map and page
+			trap->Argv(1, input, sizeof(input));
+			Q_strncpyz(mapname, input, sizeof(mapname));
+
+			trap->Argv(2, input, sizeof(input));
+			page = atoi(input); //style and page
+		}
+		else { //dftodo style and page or style and map
+			trap->Argv(2, input, sizeof(input));
+			page = atoi(input); //style and page
+			if (!page) { //style and map
+				page = 1;
+				trap->Argv(2, input, sizeof(input));
+				Q_strncpyz(mapname, input, sizeof(mapname));
+			}
+		}
+	}
+	else if (args == 4) {//dftodo <style> <map> <page>
 		trap->Argv(1, input, sizeof(input));
 		style = RaceNameToInteger(input);
 		if (style < 0) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <map (optional)> <page (optional)>\n\"");
 			return;
 		}
+
 		trap->Argv(2, input, sizeof(input));
+		Q_strncpyz(mapname, input, sizeof(mapname));
+
+		trap->Argv(3, input, sizeof(input));
 		page = atoi(input);
 	}
 	else { 
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <map (optional)> <page (optional)>\n\"");
 		return;
 	}
 
 	if (page < 1 || page > 100) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <page (optional)>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <map (optional)> <page (optional)>\n\"");
 		return;
 	}
 
 	start = (page - 1) * 10;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	if (style == -1)
-		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
-	else
-		sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+	if (style == -1) {
+		if (mapname[0])
+			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND instr(coursename, ?) > 0 ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+		else
+			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+	}
+	else {
+		if (mapname[0])
+			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? AND instr(coursename, ?) > 0 ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+		else
+			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+	}
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	if (style == -1) {
-		CALL_SQLITE (bind_int (stmt, 2, start));
+		if (mapname[0]) {
+			CALL_SQLITE (bind_text (stmt, 2, mapname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 3, start));
+		}
+		else
+			CALL_SQLITE (bind_int (stmt, 2, start));
 	}
 	else {
-		CALL_SQLITE (bind_int (stmt, 2, style));
-		CALL_SQLITE (bind_int (stmt, 3, start));
+		if (mapname[0]) {
+			CALL_SQLITE (bind_int (stmt, 2, style));
+			CALL_SQLITE (bind_text (stmt, 3, mapname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 4, start));
+		}
+		else {
+			CALL_SQLITE (bind_int (stmt, 2, style));
+			CALL_SQLITE (bind_int (stmt, 3, start));
+		}
 	}
 
-	
 	trap->SendServerCommand(ent-g_entities, "print \"Races to do:\n    ^5Course                      Style      Rank    Entries      Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
 	while (1) {
 		s = sqlite3_step(stmt);
