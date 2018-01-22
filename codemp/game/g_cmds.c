@@ -5627,7 +5627,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "logout ");
 	Q_strcat(buf, sizeof(buf), "changepassword ");
 	Q_strcat(buf, sizeof(buf), "stats ");
-	Q_strcat(buf, sizeof(buf), "top10 ");
+	Q_strcat(buf, sizeof(buf), "top ");
 	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -5664,11 +5664,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	if (g_raceMode.integer) {
 		Q_strncpyz(buf, "   ^3Defrag commands: ", sizeof(buf));
-		Q_strcat(buf, sizeof(buf), "dfTodo ");
-		Q_strcat(buf, sizeof(buf), "dfTop10 ");
-		Q_strcat(buf, sizeof(buf), "dfTopRank ");
-		Q_strcat(buf, sizeof(buf), "notCompleted ");
-		Q_strcat(buf, sizeof(buf), "best ");
+		Q_strcat(buf, sizeof(buf), "rTodo ");
+		Q_strcat(buf, sizeof(buf), "rBest ");
+		Q_strcat(buf, sizeof(buf), "rRank ");
+		Q_strcat(buf, sizeof(buf), "rLatest ");
 		if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
 			Q_strcat(buf, sizeof(buf), "race ");
 		if (level.gametype == GT_FFA) {
@@ -8392,11 +8391,13 @@ command_t commands[] = {
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
 	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
+	/*
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
 	//{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
 	{ "dfTodo",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 	{ "dftopRank",			Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
+	*/
 
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "engage_fullforceduel",	Cmd_ForceDuel_f,		CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels
@@ -8442,8 +8443,16 @@ command_t commands[] = {
 	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "printstats",			Cmd_PrintStats_f,			CMD_NOINTERMISSION },
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
+
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
+
+	{ "rlatest",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
+
 	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},
+
+	{ "rrank",				Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
+	{ "rtop",				Cmd_DFTop10_f,				CMD_NOINTERMISSION },
+	{ "rworst",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },
 
 	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
@@ -8474,7 +8483,7 @@ command_t commands[] = {
 	{ "throwflag",			Cmd_Throwflag_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 
 #if _ELORANKING
-	{ "top10",				Cmd_DuelTop10_f,			CMD_NOINTERMISSION },
+	{ "top",				Cmd_DuelTop10_f,			CMD_NOINTERMISSION },
 #endif
 
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
