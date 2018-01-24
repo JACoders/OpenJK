@@ -547,8 +547,9 @@ static void ProjectDlightTexture2( void ) {
 			VectorSubtract( posa, posb,e1);
 			VectorSubtract( posc, posb,e2);
 			CrossProduct(e1,e2,normal);
-// rjr - removed for hacking 			if ( (!r_dlightBacks->integer && DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f) || // backface
-			if ( DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f || // backface
+// rjr - removed for hacking 
+			if ( (!r_dlightBacks->integer && DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f) || // backface
+			//if ( DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f || // backface
 				DotProduct(normal,normal) < 1E-8f) // junk triangle
 			{
 				continue;

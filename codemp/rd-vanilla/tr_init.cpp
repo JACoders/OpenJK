@@ -53,7 +53,8 @@ cvar_t	*r_inGameVideo;
 cvar_t	*r_fastsky;
 cvar_t	*r_drawSun;
 cvar_t	*r_dynamiclight;
-// rjr - removed for hacking cvar_t	*r_dlightBacks;
+// rjr - removed for hacking
+cvar_t	*r_dlightBacks;
 
 cvar_t	*r_lodbias;
 cvar_t	*r_lodscale;
@@ -1570,8 +1571,7 @@ void R_Register( void )
 	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH, "" );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
-	r_smartpicmip						= ri.Cvar_Get( "r_smartpicmip",						"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "Separate picmip setting for models." );
-	ri.Cvar_CheckRange( r_smartpicmip, 0, 16, qtrue );
+	r_smartpicmip						= ri.Cvar_Get( "r_smartpicmip",						"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "Applies r_picmip setting to map textures only." );
 	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH, "" );
 	r_detailTextures					= ri.Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_texturebits						= ri.Cvar_Get( "r_texturebits",					"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
@@ -1600,7 +1600,7 @@ void R_Register( void )
 	r_drawSun							= ri.Cvar_Get( "r_drawSun",						"0",						CVAR_ARCHIVE_ND, "" );
 	r_dynamiclight						= ri.Cvar_Get( "r_dynamiclight",					"1",						CVAR_ARCHIVE, "" );
 	// rjr - removed for hacking
-//	r_dlightBacks						= ri.Cvar_Get( "r_dlightBacks",					"1",						CVAR_CHEAT, "" );
+	r_dlightBacks						= ri.Cvar_Get( "r_dlightBacks",					"1",						CVAR_ARCHIVE_ND, "dlight non-facing surfaces for continuity" );
 	r_finish							= ri.Cvar_Get( "r_finish",							"0",						CVAR_ARCHIVE_ND, "" );
 	r_textureMode						= ri.Cvar_Get( "r_textureMode",					"GL_LINEAR_MIPMAP_LINEAR",	CVAR_ARCHIVE, "" );
 	r_markcount							= ri.Cvar_Get( "r_markcount",						"100",						CVAR_ARCHIVE_ND, "" );

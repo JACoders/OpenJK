@@ -29,8 +29,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define PRODUCT_NAME			"eternaljk"
 
-#define CLIENT_WINDOW_TITLE "EternalJK (MP)"
-#define CLIENT_CONSOLE_TITLE "EternalJK Console (MP)"
+#define CLIENT_WINDOW_TITLE "EternalJK"
+#define CLIENT_CONSOLE_TITLE "EternalJK Console"
 #define HOMEPATH_NAME_UNIX "eternaljk"
 #define HOMEPATH_NAME_WIN "EternalJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
