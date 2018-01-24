@@ -2508,7 +2508,7 @@
 			type				ITEM_TYPE_YESNO
 			text				@MENUS_FREE_LOOK
 			cvar				"cl_freelook"
-			rect				220 61 300 20
+			rect				220 41 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2523,6 +2523,44 @@
 				play			"sound/interface/button1.wav" ; 
 			}
 		
+			mouseenter 
+			{ 
+				show			highlight1
+			}
+
+			mouseexit 
+			{ 
+				hide			highlight1
+			}			
+		}
+		
+		itemDef 
+		{
+			name				mousejoystick
+			group				joycontrols
+			type				ITEM_TYPE_MULTI
+			text				"Raw Input:"
+			cvar				"in_mouse"
+			cvarFloatList
+			{
+				"On (Default)"		1
+				"Off (JAMP.exe)"	2
+			}
+			rect				220 61 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible			0 
+			descText			"Toggle raw mouse input"
+			action
+			{
+				play			"sound/interface/button1.wav";
+				exec			"in_restart"
+			}
+
 			mouseenter 
 			{ 
 				show			highlight2
