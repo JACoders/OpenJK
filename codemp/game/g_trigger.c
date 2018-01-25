@@ -1335,7 +1335,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
 		return;
-	if (level.time - player->client->lastInStartTrigger <= 500) { //We were last in the trigger within 5000ms ago.., //goal, make this negative edge ?
+	if (level.time - player->client->lastInStartTrigger <= 300) { //We were last in the trigger within 300ms ago.., //goal, make this negative edge ?
 		player->client->lastInStartTrigger = level.time;
 		return;
 	}
