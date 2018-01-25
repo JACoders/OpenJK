@@ -2024,6 +2024,7 @@ int LoadPathData(const char *filename)
 	if (len >= 524288)
 	{
 		trap->Print(S_COLOR_RED "Route file exceeds maximum length\n");
+		trap->FS_Close( f );
 		return 0;
 	}
 

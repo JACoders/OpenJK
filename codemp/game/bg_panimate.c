@@ -2359,6 +2359,7 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 		len = trap->FS_Open( filename, &f, FS_READ );
 		if ( (len <= 0) || (len >= sizeof( BGPAFtext ) - 1) ) 
 		{
+			trap->FS_Close( f );
 			if (dynAlloc)
 			{
 				BG_AnimsetFree(animset);

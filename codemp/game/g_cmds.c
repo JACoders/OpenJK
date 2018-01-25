@@ -5664,30 +5664,27 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	if (g_raceMode.integer) {
 		Q_strncpyz(buf, "   ^3Defrag commands: ", sizeof(buf));
-		Q_strcat(buf, sizeof(buf), "rTodo ");
-		Q_strcat(buf, sizeof(buf), "rBest ");
-		Q_strcat(buf, sizeof(buf), "rRank ");
+		Q_strcat(buf, sizeof(buf), "rTop ");
 		Q_strcat(buf, sizeof(buf), "rLatest ");
-		if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
+		Q_strcat(buf, sizeof(buf), "rRank ");
+		Q_strcat(buf, sizeof(buf), "rWorst ");
+		if (g_raceMode.integer > 1) 
 			Q_strcat(buf, sizeof(buf), "race ");
-		if (level.gametype == GT_FFA) {
-			Q_strcat(buf, sizeof(buf), "jump ");
-			Q_strcat(buf, sizeof(buf), "movementStyle ");
-			Q_strcat(buf, sizeof(buf), "rocketChange ");
-			Q_strcat(buf, sizeof(buf), "hide ");
-			Q_strcat(buf, sizeof(buf), "practice ");
-			Q_strcat(buf, sizeof(buf), "launch ");
-			Q_strcat(buf, sizeof(buf), "warpList ");
-			Q_strcat(buf, sizeof(buf), "warp ");
-			if (g_allowRaceTele.integer) {
-				Q_strcat(buf, sizeof(buf), "amTele ");
-				Q_strcat(buf, sizeof(buf), "amTelemark ");
-				if (g_allowRaceTele.integer > 1)
-					Q_strcat(buf, sizeof(buf), "noclip ");
-			}
+		Q_strcat(buf, sizeof(buf), "jump ");
+		Q_strcat(buf, sizeof(buf), "move ");
+		Q_strcat(buf, sizeof(buf), "rocketChange ");
+		Q_strcat(buf, sizeof(buf), "hide ");
+		Q_strcat(buf, sizeof(buf), "practice ");
+		Q_strcat(buf, sizeof(buf), "launch ");
+		Q_strcat(buf, sizeof(buf), "warpList ");
+		Q_strcat(buf, sizeof(buf), "warp ");
+		if (g_allowRaceTele.integer) {
+			Q_strcat(buf, sizeof(buf), "amTele ");
+			Q_strcat(buf, sizeof(buf), "amTelemark ");
+			if (g_allowRaceTele.integer > 1)
+				Q_strcat(buf, sizeof(buf), "noclip ");
 		}
-		if (g_movementStyle.integer == 6 || level.gametype == GT_FFA)
-			Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
+		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 	}
 
@@ -8416,7 +8413,7 @@ command_t commands[] = {
 	{ "ignore",				Cmd_Ignore_f,				0 },//[JAPRO - Serverside - All - Ignore]
 	{ "jetpack",			Cmd_Jetpack_f,				CMD_NOINTERMISSION|CMD_ALIVE },
 
-	{ "jump",				Cmd_JumpChange_f,			CMD_NOINTERMISSION|CMD_ALIVE},
+	{ "jump",				Cmd_JumpChange_f,			CMD_NOINTERMISSION|CMD_ALIVE}, //cmd_alive not needed but i think it resets on joingame cuz forcepoints?
 
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
@@ -8431,7 +8428,7 @@ command_t commands[] = {
 	
 	{ "mapents",			Cmd_MapEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "modversion",			Cmd_ModVersion_f,			0 },
-	{ "move",				Cmd_MovementStyle_f,		CMD_NOINTERMISSION|CMD_ALIVE},
+	{ "move",				Cmd_MovementStyle_f,		CMD_NOINTERMISSION},
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 

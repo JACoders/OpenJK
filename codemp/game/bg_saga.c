@@ -762,10 +762,13 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 
 	len = trap->FS_Open( filename, &f, FS_READ );
 
-	if (!f || len >= 4096)
-	{
+	if (!f) {
 		return;
 	}
+	if (len >= 4096) {
+		trap->FS_Close( f );
+ 		return;
+ 	}
 
 	trap->FS_Read( classInfo, len, f );
 
@@ -1245,10 +1248,13 @@ void BG_SiegeParseTeamFile(const char *filename)
 
 	len = trap->FS_Open(filename, &f, FS_READ);
 
-	if (!f || len >= 2048)
-	{
+	if (!f) {
 		return;
 	}
+	if (len >= 2048) {
+		trap->FS_Close( f );
+ 		return;
+ 	}
 
 	trap->FS_Read( teamInfo, len, f );
 	trap->FS_Close( f );

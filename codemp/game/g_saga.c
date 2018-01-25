@@ -151,10 +151,13 @@ void InitSiegeMode(void)
 
 	len = trap->FS_Open(levelname, &f, FS_READ);
 
-	if (!f || len >= MAX_SIEGE_INFO_SIZE)
-	{
+	if (!f) {
 		goto failure;
 	}
+	if (len >= MAX_SIEGE_INFO_SIZE) {
+		trap->FS_Close( f );
+ 		goto failure;
+ 	}
 
 	trap->FS_Read(siege_info, len, f);
 
