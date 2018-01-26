@@ -295,7 +295,6 @@
 	clanpass	
 	clansay	
 	clanwhois 	 
-	dftop10	
 	engage_fullforceduel	
 	engage_gunduel	
 	hide		
@@ -311,7 +310,11 @@
 	nudge	
 	practice	
 	printstats	
-	race		
+	race	
+	rTop
+	rLatest
+	rWorst
+	rRank
 	register	
 	rocketchange		
 	say_team_mod		
