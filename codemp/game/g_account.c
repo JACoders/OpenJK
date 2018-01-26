@@ -3111,11 +3111,11 @@ int SeasonToInteger(char *season) {
 	if (!Q_stricmp(season, "s2"))
 		return 2;
 	if (!Q_stricmp(season, "s3"))
-		return 2;
+		return 3;
 	if (!Q_stricmp(season, "s4"))
-		return 2;
+		return 4;
 	if (!Q_stricmp(season, "s5"))
-		return 2;
+		return 5;
 	return -1;
 }
 
@@ -3348,7 +3348,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 
 #if 1//NEWRACERANKING
 void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
-	int style = -1, season = -1, page = 1, start = 0, i, input;
+	int style = -1, season = -1, page = -1, start = 0, i, input;
 	char styleString[16] = {0}, inputString[32];
 	const int args = trap->Argc();
 
@@ -3373,9 +3373,15 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 				continue;
 			}
 		}
-		input = atoi(inputString);
-		if (input > 0)
-			page = input;
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <season (optional - example: s1)> <style (optional)> <page (optional)>.  This displays the rankings for the specified season and style.\n\"");
+		return;
 	}
 
 	if (style == -1) {
@@ -3386,6 +3392,8 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		Q_strcat(styleString, sizeof(styleString), " style");
 	}
 
+	if (page < 1)
+		page = 1;
 	if (page > 1000)
 		page = 1000;
 	start = (page - 1) * 10;
@@ -3483,49 +3491,39 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 #endif
 
 void Cmd_DFRecent_f(gentity_t *ent) {
+	int style = -1, page = -1, start = 0, input, i;
+	char inputString[16], styleString[16];
 	const int args = trap->Argc();
-	int style = -1, page = 1, start = 0;
-	char input1[40], input2[16], inputStyleString[16];
 
-	if (args == 1) { //dfRecent  - All styles
+	if (args > 3) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
+		return;
 	}
-	else if (args == 2) {//dfRecent <style> or dfrecent <page>
-		trap->Argv(1, input1, sizeof(input1));
 
-		if (atoi(input1)) {//its a page
-			page = atoi(input1);
-			style = -1;
-		}
-		else {
-			style = RaceNameToInteger(input1);
-			if (style < 0) { //Invalid style
-				trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
-				return;
+	for (i = 1; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
 			}
 		}
-	}
-	else if (args == 3) {
-		trap->Argv(1, input1, sizeof(input1));
-		trap->Argv(2, input2, sizeof(input2));
-		style = RaceNameToInteger(input1);
-
-		if (style < 0) {//Fuckup
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
-			return;
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
 		}
-		page = atoi(input2);
-	}
-	else {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page(optional)>.  This displays recent records for the specified style.\n\"");
-		return;
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
+		return; //Arg doesnt match any expected values so error.
 	}
 
-	if (page < 1 || page > 100) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page(optional)>.  This displays recent records for the specified style.\n\"");
-		return;
-	}
-	else if (page > 100)
-		page = 100;
+	if (page < 1)
+		page = 1;
+	if (page > 1000)
+		page = 1000;
 	start = (page - 1) * 10;
 
 	{
@@ -3553,8 +3551,8 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_int (stmt, 1, style));
 			CALL_SQLITE (bind_int (stmt, 2, start));
-			IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
-			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"", inputStyleString));
+			IntegerToRaceName(style, styleString, sizeof(styleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"", styleString));
 		}
 		
 		while (1) {
@@ -3594,6 +3592,10 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	char input1[40], input2[32], input3[32], courseName[40] = {0}, courseNameFull[40] = {0}, msg[1024-128] = {0}, timeStr[32], styleString[16] = {0};
 	int i, style = -1, page = 1, start;
 	qboolean partialCourseName = qtrue;
+
+	//special case for if only 1 course on map.. aoh no
+	//dftop10 (coursename always first) style, season, page can be any order
+
 
 	if (args == 1) { //Dftop10  - current map JKA, only 1 course on map.  Or if there are multiple courses, display them all.
 		if (level.numCourses == 0) { //No course on this map, so error.
@@ -3776,7 +3778,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 }
 
 
-void Cmd_DFTodo_f(gentity_t *ent) {
+void Cmd_DFTodo_f(gentity_t *ent) { //Redo this with loop-arg structure? Coursename is a problem though, cuz can't validate it until later..
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
