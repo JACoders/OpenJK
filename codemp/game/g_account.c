@@ -1282,21 +1282,21 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 	}
 	CALL_SQLITE (finalize(stmt));
 
+	//Should not care about what season we update if its a global pb ?
 	if (globalNewRank_self) { //Dont update other peoples global ranks if our run was not a global personal best...
 		if (globalOldRank_self == -1) //Our first attempt overall
-			sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND season = ? AND rank >= ?";
+			sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND rank >= ?";
 		else
-			sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND season = ? AND rank >= ? AND rank < ?";
+			sql = "UPDATE LocalRun SET rank = rank + 1, last_update = ? WHERE coursename = ? and style = ? AND rank >= ? AND rank < ?";
 
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, time));
 		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 3, style_self));
-		CALL_SQLITE (bind_int (stmt, 4, season));
-		CALL_SQLITE (bind_int (stmt, 5, globalNewRank_self));
+		CALL_SQLITE (bind_int (stmt, 4, globalNewRank_self));
 
 		if (globalOldRank_self != -1)
-			CALL_SQLITE (bind_int (stmt, 6, globalOldRank_self));
+			CALL_SQLITE (bind_int (stmt, 5, globalOldRank_self));
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
