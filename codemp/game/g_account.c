@@ -3363,12 +3363,15 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 			input = SeasonToInteger(inputString);
 			if (input != -1) {
 				season = input;
+				continue;
 			}
 		}
 		if (style == -1) {
 			input = RaceNameToInteger(inputString);
-			if (input != -1)
+			if (input != -1) {
 				style = input;
+				continue;
+			}
 		}
 		input = atoi(inputString);
 		if (input > 0)
