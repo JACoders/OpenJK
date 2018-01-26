@@ -3100,6 +3100,25 @@ int RaceNameToInteger(char *style) {
 	return -1;
 }
 
+int SeasonToInteger(char *season) {
+	Q_strlwr(season);
+	Q_CleanStr(season);
+
+	//Todo - Do this dynamically
+
+	if (!Q_stricmp(season, "s1"))
+		return 1;
+	if (!Q_stricmp(season, "s2"))
+		return 2;
+	if (!Q_stricmp(season, "s3"))
+		return 2;
+	if (!Q_stricmp(season, "s4"))
+		return 2;
+	if (!Q_stricmp(season, "s5"))
+		return 2;
+	return -1;
+}
+
 void remove_all_chars(char* str, char c) {
     char *pr = str, *pw = str;
     while (*pr) {
@@ -3329,93 +3348,99 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 
 #if 1//NEWRACERANKING
 void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
-	int row = 1, style, page = 1, start = 0;
-	char msg[1024-128] = {0}, styleString[16] = {0}, input1[32], input2[32], username[40];
-	int score, count, golds, silvers, bronzes;
-	float rank, percentile;
+	int style = -1, season = -1, page = 1, start = 0, i, input;
+	char styleString[16] = {0}, inputString[32];
 	const int args = trap->Argc();
-	
-	if (args == 1) { //dftoprank
-		style = -1;
+
+	if (args > 4) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <season (optional - example: s1)> <style (optional)> <page (optional)>.  This displays the rankings for the specified season and style.\n\"");
+		return;
+	}
+
+	for (i = 1; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (season == -1) {
+			input = SeasonToInteger(inputString);
+			if (input != -1) {
+				season = input;
+			}
+		}
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1)
+				style = input;
+		}
+		input = atoi(inputString);
+		if (input > 0)
+			page = input;
+	}
+
+	if (style == -1) {
 		Q_strncpyz(styleString, "all styles", sizeof(styleString));
 	}
-	else if (args == 2) { //Either /dftoprank cpm or /dftoprank 2
-		trap->Argv(1, input1, sizeof(input1));
-
-		if (atoi(input1)) {//its a page
-			page = atoi(input1);
-			Q_strncpyz(styleString, "all styles", sizeof(styleString));
-			style = -1;
-		}
-		else {
-			style = RaceNameToInteger(input1);
-			if (style < 0) {//Fuckup
-				trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
-				return;
-			}
-			IntegerToRaceName(style, styleString, sizeof(styleString));
-			Q_strcat(styleString, sizeof(styleString), " style");
-		}
-	}
-	else if (args == 3) {
-		trap->Argv(1, input1, sizeof(input1));
-		trap->Argv(2, input2, sizeof(input2));
-		style = RaceNameToInteger(input1);
-
-		if (style < 0) {//Fuckup
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
-			return;
-		}
-		else {
-			IntegerToRaceName(style, styleString, sizeof(styleString));
-			Q_strcat(styleString, sizeof(styleString), " style");
-		}
-
-		page = atoi(input2);
-	}
 	else {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
-		return;
+		IntegerToRaceName(style, styleString, sizeof(styleString));
+		Q_strcat(styleString, sizeof(styleString), " style");
 	}
 
-	if (page < 1 || page > 100) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
-		return;
-	}
-	else if (page > 100)
-		page = 100;
+	if (page > 1000)
+		page = 1000;
 	start = (page - 1) * 10;
 
 	{
 		sqlite3 * db;
 		char * sql;
 		sqlite3_stmt * stmt;
-		int s;
+		int s, score, count, golds, silvers, bronzes, row = 1;
+		float rank, percentile;
+		char msg[1024-128] = {0}, username[40];
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
 		if (style == -1) {
-			sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-				"WHERE rank != 0 "
-				"GROUP BY username "
-				"ORDER BY score DESC, rank DESC LIMIT ?, 10";
-
-			//sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_int (stmt, 1, start));
+			if (season == -1) {
+				sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+					"WHERE rank != 0 "
+					"GROUP BY username "
+					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+				CALL_SQLITE (bind_int (stmt, 1, start));
+			}
+			else {
+				sql = "SELECT username, CAST(1+ SUM((season_entries/CAST(season_rank AS FLOAT)) + (season_entries-season_rank))/2 AS INT) AS score, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+					"WHERE season = ? "
+					"GROUP BY username "
+					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+				CALL_SQLITE (bind_int (stmt, 1, season));
+				CALL_SQLITE (bind_int (stmt, 2, start));
+			}
 		}
 		else {
-			sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-				"WHERE rank != 0 AND style = ? "
-				"GROUP BY username "
-				"ORDER BY score DESC, rank DESC LIMIT ?, 10";
-
-			//sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_int (stmt, 1, style));
-			CALL_SQLITE (bind_int (stmt, 2, start));
+			if (season == -1) {
+				sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+					"WHERE rank != 0 AND style = ? "
+					"GROUP BY username "
+					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+				CALL_SQLITE (bind_int (stmt, 1, style));
+				CALL_SQLITE (bind_int (stmt, 2, start));
+			}
+			else {
+				sql = "SELECT username, CAST(1+ SUM((season_entries/CAST(season_rank AS FLOAT)) + (season_entries-season_rank))/2 AS INT) AS score, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+					"WHERE season = ? AND style = ? "
+					"GROUP BY username "
+					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+				CALL_SQLITE (bind_int (stmt, 1, season));
+				CALL_SQLITE (bind_int (stmt, 2, style));
+				CALL_SQLITE (bind_int (stmt, 3, start));
+			}
 		}
 
-		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
+		if (season == -1)
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
+		else
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s season %i:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString, season));
 
 		while (1) {
 			s = sqlite3_step(stmt);
@@ -3453,7 +3478,6 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	}
 }
 #endif
-
 
 void Cmd_DFRecent_f(gentity_t *ent) {
 	const int args = trap->Argc();
