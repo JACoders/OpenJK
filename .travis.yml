@@ -85,3 +85,7 @@ matrix:
             - libjpeg-turbo8-dev
             - zlib1g-dev
             - libpng12-dev
+
+    # clang
+    - os: osx
+      compiler: clang
