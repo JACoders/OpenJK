@@ -23,7 +23,7 @@ matrix:
             - zlib1g-dev
             - libpng12-dev
       env:
-        - ""
+        - flavour=Release
         - flavour=Debug
     
     # i686 gcc build
