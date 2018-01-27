@@ -2,22 +2,80 @@ language: cpp
 sudo: required
 dist: trusty
 
-install:
-  - ./scripts/travis/install.sh "${host:-native}" "${flavour:-Release}" $opts
-
 script:
   - ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
 
-compiler: gcc
-env:
-  - ""
-  - flavour=Debug
-  - host=i686-linux-gnu
-  - host=i686-w64-mingw32
-  - host=x86_64-w64-mingw32
+addons:
+  apt:
+    packages:
+      - cmake
+      - dpkg
 
-# One extra build with clang, its warnings are often better
 matrix:
   include:
+    # x64
+    - compiler: gcc
+      addons:
+        apt:
+          packages:
+            - libsdl2-dev
+            - libjpeg-turbo8-dev
+            - zlib1g-dev
+            - libpng12-dev
+      env:
+        - ""
+        - flavour=Debug
+    
+    # i686 gcc build
+    - compiler: gcc
+      addons:
+        apt:
+          packages:
+            - oracle-java7-installer-
+            - oracle-java8-installer-
+            - libglib2.0-dev-
+            - libglu1-mesa-dev-
+            - libgl1-mesa-dev:i386
+            - libpulse-dev:i386
+            - libglu1-mesa-dev:i386
+            - libsdl2-dev:i386
+            - libjpeg-turbo8-dev:i386
+            - zlib1g-dev:i386
+            - libc6-dev:i386
+            - libpng12-dev:i386
+            - g++-multilib
+            - g++-4.8-multilib
+            - gcc-4.8-multilib
+            - g++
+            - g++-4.8
+            - gcc
+            - gcc-4.8
+            - cpp
+            - cpp-4.8
+      env: host=i686-linux-gnu
+            
+    # x64 mingw32
+    - compiler: gcc
+      addons:
+        apt:
+          packages:
+            - g++-mingw-w64-x86-64
+      env: host=x86_64-w64-mingw32
+      
+    # i686 mingw32
+    - compiler: gcc
+      addons:
+        apt:
+          packages:
+            - g++-mingw-w64-i686
+      env: host=i686-linux-gnu
+      
+    # clang
     - compiler: clang
-      env: ""
+      addons:
+        apt:
+          packages:
+            - libsdl2-dev
+            - libjpeg-turbo8-dev
+            - zlib1g-dev
+            - libpng12-dev
