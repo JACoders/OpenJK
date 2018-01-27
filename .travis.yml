@@ -31,10 +31,6 @@ matrix:
       addons:
         apt:
           packages:
-            - oracle-java7-installer-
-            - oracle-java8-installer-
-            - libglib2.0-dev-
-            - libglu1-mesa-dev-
             - libgl1-mesa-dev:i386
             - libpulse-dev:i386
             - libglu1-mesa-dev:i386
@@ -68,7 +64,7 @@ matrix:
         apt:
           packages:
             - g++-mingw-w64-i686
-      env: host=i686-linux-gnu
+      env: host=i686-w64-mingw32
       
     # clang
     - compiler: clang
