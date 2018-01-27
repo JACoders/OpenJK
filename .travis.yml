@@ -13,7 +13,7 @@ addons:
 
 matrix:
   include:
-    # x64
+    # x64 Debug
     - compiler: gcc
       addons:
         apt:
@@ -22,9 +22,18 @@ matrix:
             - libjpeg-turbo8-dev
             - zlib1g-dev
             - libpng12-dev
-      env:
-        - flavour=Release
-        - flavour=Debug
+      env: flavour=Debug
+      
+    # x64 Release
+    - compiler: gcc
+      addons:
+        apt:
+          packages:
+            - libsdl2-dev
+            - libjpeg-turbo8-dev
+            - zlib1g-dev
+            - libpng12-dev
+      env: flavour=Release
     
     # i686 gcc build
     - compiler: gcc
