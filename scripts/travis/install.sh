@@ -25,7 +25,7 @@ sudo apt-get -q -y install cmake dpkg
 case "${host}" in
 	(native)
 		# upgrade some relevant libraries to vaguely modern versions
-		sudo apt-get -q -y install libsdl2-dev libjpeg-turbo8-dev zlib1g-dev libpng12-dev
+		sudo apt-get -q -y install libegl1-mesa-dev libgles2-mesa-dev libsdl2-dev libjpeg-turbo8-dev zlib1g-dev libpng12-dev
 		;;
 
 	(i686-w64-mingw32)
