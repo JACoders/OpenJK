@@ -2,93 +2,42 @@ language: cpp
 sudo: required
 dist: trusty
 
-script:
-  - ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
+script: ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
   
-install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install zlib libpng sdl2 --universal; fi
-
-addons:
-  apt:
-    packages:
-      - cmake
-      - dpkg
+install: ./scripts/travis/install "${host:-native}" $opts
 
 matrix:
   include:
-    # x64 Release
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - libsdl2-dev
-            - libjpeg-turbo8-dev
-            - zlib1g-dev
-            - libpng12-dev
+    # Linux x64 Release
+    - os: linux
+      compiler: gcc
       env: flavour=Release
       
     # macOS
     - os: osx
       compiler: clang
+      env: host=osx
       
-    # x64 Debug
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - libsdl2-dev
-            - libjpeg-turbo8-dev
-            - zlib1g-dev
-            - libpng12-dev
+    # Linux x64 Debug
+    - os: linux
+      compiler: gcc
       env: flavour=Debug
     
-    # i686 gcc build
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - libglib2.0-dev:i386
-            - libgl1-mesa-dev:i386
-            - libpulse-dev:i386
-            - libglu1-mesa-dev:i386
-            - libsdl2-dev:i386
-            - libjpeg-turbo8-dev:i386
-            - zlib1g-dev:i386
-            - libc6-dev:i386
-            - libpng12-dev:i386
-            - g++-multilib
-            - g++-4.8-multilib
-            - gcc-4.8-multilib
-            - g++
-            - g++-4.8
-            - gcc
-            - gcc-4.8
-            - cpp
-            - cpp-4.8
+    # Linux i686 gcc
+    - os: linux
+      compiler: gcc
       env: host=i686-linux-gnu
             
-    # x64 mingw32
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - g++-mingw-w64-x86-64
+    # Linux x64 mingw32
+    - os: linux
+      compiler: gcc
       env: host=x86_64-w64-mingw32
       
-    # i686 mingw32
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - g++-mingw-w64-i686
+    # Linux i686 mingw32
+    - os: linux
+      compiler: gcc
       env: host=i686-w64-mingw32
       
-    # clang
-    - compiler: clang
-      addons:
-        apt:
-          packages:
-            - libsdl2-dev
-            - libjpeg-turbo8-dev
-            - zlib1g-dev
-            - libpng12-dev
+    # Linux clang
+    - os: linux
+      compiler: clang
