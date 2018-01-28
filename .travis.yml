@@ -11,12 +11,10 @@ matrix:
     # Linux x64 Release
     - os: linux
       compiler: gcc
-      env: flavour=Release
       
     # macOS
     - os: osx
       compiler: clang
-      env: host=osx
       
     # Linux x64 Debug
     - os: linux
