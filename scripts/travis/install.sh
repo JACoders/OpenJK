@@ -39,23 +39,23 @@ case "${host}" in
 
 	(i?86-linux-gnu)
 		${APT_INSTALL} \
-        	libglib2.0-dev:i386 \
-            libgl1-mesa-dev:i386 \
-            libpulse-dev:i386 \
-            libglu1-mesa-dev:i386 \
-            libsdl2-dev:i386 \
-            libjpeg-turbo8-dev:i386 \
-            zlib1g-dev:i386 \
-            libc6-dev:i386 \
-            libpng12-dev:i386 \
-            g++-multilib \
-            g++-4.8-multilib \
-            gcc-4.8-multilib \
-            g++ \
-            g++-4.8 \
-            gcc \
-            gcc-4.8 \
-            cpp \
-            cpp-4.8
+			libglib2.0-dev:i386 \
+			libgl1-mesa-dev:i386 \
+			libpulse-dev:i386 \
+			libglu1-mesa-dev:i386 \
+			libsdl2-dev:i386 \
+			libjpeg-turbo8-dev:i386 \
+			zlib1g-dev:i386 \
+			libc6-dev:i386 \
+			libpng12-dev:i386 \
+			g++-multilib \
+			g++-4.8-multilib \
+			gcc-4.8-multilib \
+			g++ \
+			g++-4.8 \
+			gcc \
+			gcc-4.8 \
+			cpp \
+			cpp-4.8
 		;;
 esac
