@@ -4,7 +4,7 @@ dist: trusty
 
 script: ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
   
-install: ./scripts/travis/install "${host:-native}" $opts
+install: ./scripts/travis/install.sh "${host:-native}" $opts
 
 matrix:
   include:
