@@ -4,6 +4,9 @@ dist: trusty
 
 script:
   - ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
+  
+install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install zlib libpng sdl2 --universal; fi
 
 addons:
   apt:
@@ -13,17 +16,6 @@ addons:
 
 matrix:
   include:
-    # x64 Debug
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - libsdl2-dev
-            - libjpeg-turbo8-dev
-            - zlib1g-dev
-            - libpng12-dev
-      env: flavour=Debug
-      
     # x64 Release
     - compiler: gcc
       addons:
@@ -34,6 +26,21 @@ matrix:
             - zlib1g-dev
             - libpng12-dev
       env: flavour=Release
+      
+    # macOS
+    - os: osx
+      compiler: clang
+      
+    # x64 Debug
+    - compiler: gcc
+      addons:
+        apt:
+          packages:
+            - libsdl2-dev
+            - libjpeg-turbo8-dev
+            - zlib1g-dev
+            - libpng12-dev
+      env: flavour=Debug
     
     # i686 gcc build
     - compiler: gcc
@@ -85,7 +92,3 @@ matrix:
             - libjpeg-turbo8-dev
             - zlib1g-dev
             - libpng12-dev
-
-    # clang
-    - os: osx
-      compiler: clang
