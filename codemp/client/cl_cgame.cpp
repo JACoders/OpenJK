@@ -791,6 +791,9 @@ void CL_SetCGameTime( void ) {
 		int tn;
 
 		tn = cl_timeNudge->integer;
+
+		if (cl.snap.ps.pm_type == PM_SPECTATOR && tn < 0)
+			tn = 0; // JAPRO ENGINE - disable negative timenudge when spectating
 #ifdef _DEBUG
 		if (tn<-900) {
 			tn = -900;
