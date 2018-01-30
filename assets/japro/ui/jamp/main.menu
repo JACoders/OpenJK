@@ -262,7 +262,7 @@
 			{ 			
 				play			"sound/interface/button1.wav" ; 
 				close			all ; 
-				open			joinserver 
+				open			multiplayermenu 
 			}
 		}
 
