@@ -284,7 +284,7 @@ void R_Splash()
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
 */
-	if ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth) < 1.0f) {
+	if ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth) >= 1.0f) {
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	} else { //assuming 16:9 for now
 		pImage = R_FindImageFile( "menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP);
