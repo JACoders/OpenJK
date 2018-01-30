@@ -3173,8 +3173,8 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 				return qtrue;
 			}
 		}
-		// mouse hit
-		if (key == A_MOUSE1 || key == A_MOUSE2) {
+		// left click
+		if (key == A_MOUSE1) {
 			if (item->window.flags & WINDOW_LB_LEFTARROW) {
 				listPtr->startPos--;
 				if (listPtr->startPos < 0) {
@@ -3220,6 +3220,24 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 			}
 			return qtrue;
 		}
+		// right click
+		if (key == A_MOUSE2) { // for context popupmenus
+			if (listPtr->rightClick) {
+				{//highlight it first
+					int prePos = item->cursorPos;
+
+					item->cursorPos = listPtr->cursorPos;
+
+					if (!DC->feederSelection(item->special, item->cursorPos, item))
+					{
+						item->cursorPos = listPtr->cursorPos = prePos;
+					}
+				}
+				Item_RunScript(item, listPtr->rightClick);
+			}
+			return qtrue;
+		}
+
 		if ( key == A_HOME || key == A_KP_7) {
 			// home
 			listPtr->startPos = 0;
@@ -7904,6 +7922,18 @@ qboolean ItemParse_doubleClick( itemDef_t *item, int handle ) {
 	return qtrue;
 }
 
+qboolean ItemParse_rightClick(itemDef_t *item, int handle) {
+	listBoxDef_t *listPtr;
+
+	Item_ValidateTypeData(item);
+	listPtr = item->typeData.listbox;
+
+	if (!listPtr || !PC_Script_Parse(handle, &listPtr->rightClick)) {
+		return qfalse;
+	}
+	return qtrue;
+}
+
 qboolean ItemParse_onFocus( itemDef_t *item, int handle ) {
 	if (!PC_Script_Parse(handle, &item->onFocus)) {
 		return qfalse;
@@ -8382,6 +8412,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"decoration",		ItemParse_decoration,		NULL	},
 	{"disableCvar",		ItemParse_disableCvar,		NULL	},
 	{"doubleclick",		ItemParse_doubleClick,		NULL	},
+	{"rightClick",		ItemParse_rightClick,		NULL	},
 	{"elementheight",	ItemParse_elementheight,	NULL	},
 	{"elementtype",		ItemParse_elementtype,		NULL	},
 	{"elementwidth",	ItemParse_elementwidth,		NULL	},

@@ -929,6 +929,11 @@
 			//	close			joinserver
 				//open		forcealloc 
 			}
+			rightClick
+			{
+				play		"sound/interface/button1.wav" ;  
+				open		serverinfo_popmenu
+			}
 		}
 
 		// DATE AND TIME	
