@@ -284,7 +284,11 @@ void R_Splash()
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
 */
-	pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+	if ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth) >= 1.0f) {
+		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+	} else { //assuming 16:9 for now
+		pImage = R_FindImageFile( "menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP);
+	}
 	extern void	RB_SetGL2D (void);
 	RB_SetGL2D();
 	if (pImage )
@@ -293,12 +297,12 @@ void R_Splash()
 	}
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
-	const int width = 640;
-	const int height = 480;
-	const float x1 = 320 - width / 2;
-	const float x2 = 320 + width / 2;
-	const float y1 = 240 - height / 2;
-	const float y2 = 240 + height / 2;
+	const int width = SCREEN_WIDTH;
+	const int height = SCREEN_HEIGHT;
+	const float x1 = (SCREEN_WIDTH / 2) - width / 2;
+	const float x2 = (SCREEN_WIDTH / 2) + width / 2;
+	const float y1 = (SCREEN_HEIGHT / 2) - height / 2;
+	const float y2 = (SCREEN_HEIGHT / 2) + height / 2;
 
 
 	qglBegin (GL_TRIANGLE_STRIP);

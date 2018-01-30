@@ -9126,10 +9126,12 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 		index = actual;
 		if (index >= 0 && index < uiInfo.q3HeadCount)
 		{
-			trap->Cvar_Set( "model", uiInfo.q3HeadNames[index]);	//standard model
-			trap->Cvar_Set ( "char_color_red", "255" );			//standard colors
-			trap->Cvar_Set ( "char_color_green", "255" );
-			trap->Cvar_Set ( "char_color_blue", "255" );
+			trap->Cvar_Set( "model", uiInfo.q3HeadNames[index]);	
+			if (uiSkinColor != 3) {	// standard model
+				trap->Cvar_Set("char_color_red", "255");	//standard colors
+				trap->Cvar_Set("char_color_green", "255");
+				trap->Cvar_Set("char_color_blue", "255");
+			}
 		}
 	}
 	else if (feederID == FEEDER_MOVES)
