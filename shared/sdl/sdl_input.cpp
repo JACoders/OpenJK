@@ -612,7 +612,7 @@ void IN_Init( void *windowData )
 	// mouse variables
 	in_mouse = Cvar_Get( "in_mouse", "1", CVAR_ARCHIVE );
 	in_nograb = Cvar_Get( "in_nograb", "0", CVAR_ARCHIVE_ND );
-	in_mouserepeat = Cvar_Get("in_mouserepeat", "0", CVAR_ARCHIVE_ND);
+	in_mouserepeat = Cvar_Get("in_mouserepeat", "0", CVAR_ARCHIVE);
 
 	SDL_StartTextInput( );
 

@@ -1152,21 +1152,21 @@
 		// BACK BUTTON	
 		itemDef 
 		{
-			name				back
+			name				backbutton
+			group				fade_buttons
 			text				@MENUS_BACK
 			descText			@MENUS_BACKUP_ONE_MENU
 			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24  
 			font				3
 			textscale			1.1
-			textstyle			0
-			style				WINDOW_STYLE_FILLED
-			rect				59 444 130 24  
-			textalign			1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
 			textalignx			65
 			textaligny			-1
-			textalign			ITEM_ALIGN_CENTER
-			visible				1 
 			forecolor			1 .682 0 1
+			visible				1
 			action 
 			{ 
 				play			"sound/interface/esc.wav" ; 

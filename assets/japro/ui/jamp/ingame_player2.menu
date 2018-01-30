@@ -173,15 +173,29 @@
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
 			rect				15 80 160 24
-			forecolor			.549 .854 1 1
-			text				@MENUS_COLOR
+			forecolor			1 .682 0 1
+			text				"COLORS" //@MENUS_COLOR
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
 			textaligny			-1
 			font				3
 			textscale 			1
 			visible 			1
-			decoration
+			//decoration
+			mouseEnter
+			{ 
+				show			color_glow
+			}
+			mouseExit 
+			{ 
+				hide			color_glow
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				show			tints
+				hide			tints2
+			}
 		}
 
 		itemDef
@@ -206,7 +220,311 @@
 				play			"sound/interface/choose_color.wav"
 			}
 		}
+		
+		itemDef 
+		{
+			name				rgb
+			group				none
+			text				"RGB"
+			descText			"Customized RGB colors"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				160 80 160 24
+			//font				2
+			textscale			1
+			textaligny			-1
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
 
+			mouseEnter 
+			{ 
+				show			rgb_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgb_glow
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				show			tints2
+				hide			tints
+				
+			//	setitemcolor	standard forecolor 1 .682 0 1
+			//	setitemcolor	rgb forecolor 1 1 1 1
+			}
+		}
+		itemDef 
+		{
+			name				rgbred
+			group				tints2
+			type				ITEM_TYPE_SLIDER
+			text				"Red: "
+			cvarfloat			"ui_char_color_red" 50 0 255
+			rect				0 104 175 18
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			70
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible			0
+			// appearance_slot	3
+			descText			"Red component in RGB colors"
+			
+			mouseEnter 
+			{ 
+				show			rgbred_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgbred_glow
+			}	
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbgreen
+			group				tints2
+			type				ITEM_TYPE_SLIDER
+			text				"Green: "
+			cvarfloat			"ui_char_color_green" 50 0 255
+			rect				0 124 175 18
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			70
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible			0
+			// appearance_slot	3
+			descText			"Green component in RGB colors"
+
+			mouseEnter 
+			{ 
+				show			rgbgreen_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgbgreen_glow
+			}	
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbblue
+			group				tints2
+			type				ITEM_TYPE_SLIDER
+			text				"Blue: "
+			cvarfloat			"ui_char_color_blue" 50 0 255
+			rect				0 144 175 18
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			70
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible			0
+			// appearance_slot	3
+			descText			"Blue component in RGB colors"
+			
+			mouseEnter 
+			{ 
+				show			rgbblue_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgbblue_glow
+			}	
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbred_value
+			group				tints2
+			type 				ITEM_TYPE_EDITFIELD
+			style 0			
+			text				"R:"
+			cvar 				"ui_char_color_red"
+			maxchars			10
+			maxPaintChars 		10 
+			rect 				197 104 100 18
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx 			15
+			textaligny 			-2
+			font				4
+			textscale			1
+			forecolor			1 1 1 1
+			outlinecolor 		1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 			1
+			bordercolor 		0 0 0 0
+			visible 			0
+			descText			"Red component Value"
+			mouseEnter 
+			{ 
+				show			rgbred_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgbred_glow
+			}	
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbgreen_value
+			group				tints2
+			type 				ITEM_TYPE_EDITFIELD
+			style 0			
+			text				"G:"
+			cvar 				"ui_char_color_green"
+			maxchars 			10
+			maxPaintChars 		10 
+			rect 				197 124 100 18
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx 			15
+			textaligny 			-2
+			font				4
+			textscale			1
+			forecolor			1 1 1 1
+			outlinecolor 		1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 			1
+			bordercolor			0 0 0 0
+			visible 			0
+			descText			"Green component Value"
+			mouseEnter 
+			{ 
+				show			rgbgreen_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgbgreen_glow
+			}	
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbblue_value
+			group				tints2
+			type 				ITEM_TYPE_EDITFIELD
+			style 0			
+			text				"B:"
+			cvar 				"ui_char_color_blue"
+			maxchars 			10
+			maxPaintChars 			10 
+			rect 				197 144 100 18
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx 			15
+			textaligny 			-2
+			font				4
+			textscale			1
+			forecolor			1 1 1 1
+			outlinecolor 			1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 				1
+			bordercolor 			0 0 0 0
+			visible 			0
+			descText			"Blue component Value"
+			mouseEnter 
+			{ 
+				show			rgbblue_glow
+			}
+			mouseExit 
+			{ 
+				hide			rgbblue_glow
+			}	
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				color_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				10 80 90 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				rgb_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				145 82 65 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef
+		{
+			name				rgbred_glow
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				0 104 300 18
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef
+		{
+			name				rgbgreen_glow
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				0 124 300 18
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef
+		{
+			name				rgbblue_glow
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				0 144 300 18
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+		
 ///////////////////////
 //APPEARANCE
 //////////////////////
