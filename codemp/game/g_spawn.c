@@ -337,6 +337,8 @@ void SP_reference_tag ( gentity_t *ent );
 
 void SP_misc_weapon_shooter( gentity_t *self );
 
+void SP_misc_cubemap( gentity_t *ent );
+
 void SP_NPC_spawner( gentity_t *self );
 
 void SP_NPC_Vehicle( gentity_t *self);
@@ -364,6 +366,7 @@ void SP_NPC_Tie_Pilot( gentity_t *self );
 void SP_NPC_Ugnaught( gentity_t *self );
 void SP_NPC_Jawa( gentity_t *self );
 void SP_NPC_Gran( gentity_t *self );
+void SP_NPC_Human_Merc( gentity_t *self );
 void SP_NPC_Rodian( gentity_t *self );
 void SP_NPC_Weequay( gentity_t *self );
 void SP_NPC_Trandoshan( gentity_t *self );
@@ -415,6 +418,7 @@ void SP_waypoint_navgoal_4 (gentity_t *ent);
 void SP_waypoint_navgoal_2 (gentity_t *ent);
 void SP_waypoint_navgoal_1 (gentity_t *ent);
 
+void SP_CreateWind( gentity_t *ent );
 void SP_CreateSpaceDust( gentity_t *ent );
 void SP_CreateSnow( gentity_t *ent );
 void SP_CreateRain( gentity_t *ent );

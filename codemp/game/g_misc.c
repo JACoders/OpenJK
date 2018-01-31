@@ -2788,6 +2788,71 @@ void SP_fx_runner( gentity_t *ent )
 	trap->LinkEntity( (sharedEntity_t *)ent );
 }
 
+/*QUAKED fx_wind (0 .5 .8) (-16 -16 -16) (16 16 16) NORMAL CONSTANT GUSTING SWIRLING x  FOG LIGHT_FOG
+Generates global wind forces
+
+NORMAL    creates a random light global wind
+CONSTANT  forces all wind to go in a specified direction
+GUSTING   causes random gusts of wind
+SWIRLING  causes random swirls of wind
+
+"angles" the direction for constant wind
+"speed"  the speed for constant wind
+*/
+void SP_CreateWind( gentity_t *ent )
+{
+	char	temp[256];
+
+	// Normal Wind
+	//-------------
+	if ( ent->spawnflags & 1 )
+	{
+		G_EffectIndex( "*wind" );
+	}
+
+	// Constant Wind
+	//---------------
+	if ( ent->spawnflags & 2 )
+	{
+		vec3_t	windDir;
+		AngleVectors( ent->s.angles, windDir, 0, 0 );
+		G_SpawnFloat( "speed", "500", &ent->speed );
+		VectorScale( windDir, ent->speed, windDir );
+
+		Com_sprintf( temp, sizeof(temp), "*constantwind ( %f %f %f )", windDir[0], windDir[1], windDir[2] );
+		G_EffectIndex( temp );
+	}
+
+	// Gusting Wind
+	//--------------
+	if ( ent->spawnflags & 4 )
+	{
+		G_EffectIndex( "*gustingwind" );
+	}
+
+	// Swirling Wind
+	//---------------
+	/*if ( ent->spawnflags & 8 )
+	{
+		G_EffectIndex( "*swirlingwind" );
+	}*/
+
+
+	// MISTY FOG
+	//===========
+	if ( ent->spawnflags & 32 )
+	{
+		G_EffectIndex( "*fog" );
+	}
+
+	// MISTY FOG
+	//===========
+	if ( ent->spawnflags & 64 )
+	{
+		G_EffectIndex( "*light_fog" );
+	}
+}
+
 /*QUAKED fx_spacedust (1 0 0) (-16 -16 -16) (16 16 16)
 This world effect will spawn space dust globally into the level.
 
@@ -3775,4 +3840,9 @@ Determines a region to check for weather contents - will significantly reduce lo
 void SP_misc_weather_zone( gentity_t *ent )
 {
 	G_FreeEntity(ent);
+}
+
+void SP_misc_cubemap( gentity_t *ent )
+{
+	G_FreeEntity( ent );
 }
