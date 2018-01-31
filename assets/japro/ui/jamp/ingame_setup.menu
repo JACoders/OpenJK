@@ -3024,6 +3024,7 @@
 			{ 
 				@MENUS_OFF 0  
 				@MENUS_ON 1
+				"Shader" 3
 				"Mirror" 2
 			}
 			rect				220 203 300 20
@@ -3648,12 +3649,15 @@
 		
 		itemDef 
 		{	
-			name				hit
+			name				race
 			group				sound
       		type				ITEM_TYPE_MULTI
-			text				"Hit Sounds:"
-			cvar				"cg_hitsounds"
-			cvarFloatList		{ "None (Default)" 0 "Quake 3" 1 "Legions: Overdrive" 2 "Warsow" 3 "Tribes: Ascend" 4 }
+			cvarTest			"ui_isJAPro"
+			showCvar 
+			{ "1" }
+			text				"Race Sounds:"
+			cvar				"cg_raceSounds"
+			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				220 143 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -3662,7 +3666,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Set the type of hit sounds."
+			descText			"Toggle race start/finish sounds on jaPRO courses."
 			mouseenter			{ show highlight6 }
 			mouseexit			{ hide highlight6 } 
 			action				{ play "sound/interface/button1" }
@@ -3670,12 +3674,12 @@
 		
 		itemDef 
 		{	
-			name				roll
+			name				hit
 			group				sound
       		type				ITEM_TYPE_MULTI
-			text				"Roll Sounds:"
-			cvar				"cg_rollSounds"
-			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 }
+			text				"Hit Sounds:"
+			cvar				"cg_hitsounds"
+			cvarFloatList		{ "None (Default)" 0 "Quake 3" 1 "Legions: Overdrive" 2 "Warsow" 3 "Tribes: Ascend" 4 }
 			rect				220 163 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -3684,7 +3688,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Set when roll sounds should be played."
+			descText			"Set the type of hit sounds."
 			mouseenter			{ show highlight7 }
 			mouseexit			{ hide highlight7 } 
 			action				{ play "sound/interface/button1" }
@@ -3714,12 +3718,12 @@
 		
 		itemDef 
 		{	
-			name				chat
+			name				roll
 			group				sound
       		type				ITEM_TYPE_MULTI
-			text				"Chat Sound:"
-			cvar				"cg_chatSounds"
-			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
+			text				"Roll Sounds:"
+			cvar				"cg_rollSounds"
+			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 }
 			rect				220 203 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -3728,9 +3732,31 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle the chat beep notification."
+			descText			"Set when roll sounds should be played."
 			mouseenter			{ show highlight9 }
 			mouseexit			{ hide highlight9 } 
+			action				{ play "sound/interface/button1" }
+		}
+		
+		itemDef 
+		{	
+			name				chat
+			group				sound
+      		type				ITEM_TYPE_MULTI
+			text				"Chat Sound:"
+			cvar				"cg_chatSounds"
+			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
+			rect				220 223 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			120
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle the chat beep notification."
+			mouseenter			{ show highlight10 }
+			mouseexit			{ hide highlight10 } 
 			action				{ play "sound/interface/button1" }
 		}
 
