@@ -1336,10 +1336,6 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 		CALL_SQLITE (finalize(stmt));
 	}
 
-
-
-
-
 }
 
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs) { 

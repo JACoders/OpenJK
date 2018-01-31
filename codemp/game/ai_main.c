@@ -6700,7 +6700,7 @@ int NewBotAI_GetAltCharge(bot_state_t *bs)
 void NewBotAI_GetAttack(bot_state_t *bs)
 {
 	int weapon;
-	const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
+	//const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
 
 	weapon = NewBotAI_GetWeapon(bs);
 	BotSelectWeapon(bs->client, weapon);
@@ -6834,7 +6834,7 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 		}
 	}
 	else { //FF Combat movement
-		const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
+		//const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
 		gentity_t *saber;
 		qboolean crouch = qfalse;
 
@@ -7218,7 +7218,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_RAGE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_RAGE))) {
-		if ((bs->cur_ps.weapon > WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) {
+		if ((bs->cur_ps.weapon > WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) { //Need line of sight
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_RAGE;
 			useTheForce = qtrue;
 		}

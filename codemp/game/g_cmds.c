@@ -6636,7 +6636,8 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 
 	if (style >= 0) {
 		ent->client->sess.movementStyle = style;
-		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+			AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 
 		if (ent->client->ourSwoopNum) {
 
