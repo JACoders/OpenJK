@@ -16,7 +16,8 @@ qboolean BG_CanJetpack(playerState_t *ps);
 
 int killPlayerTimer = 0;
 
-gentity_t		g_entities[MAX_GENTITIES];
+gentity_t		g_entities[MAX_ENTITIESTOTAL];
+gentity_t		*g_logicalents = &g_entities[MAX_GENTITIES]; // Quicker access xD
 gclient_t		g_clients[MAX_CLIENTS];
 
 int	dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
@@ -3267,7 +3268,7 @@ void G_RunThink (gentity_t *ent) {
 	ent->think (ent);
 
 runicarus:
-	if ( ent->inuse )
+	if (ent->inuse && !ent->isLogical)
 	{
 		SaveNPCGlobals();
 		if(NPCS.NPCInfo == NULL && ent->NPC != NULL)
@@ -3998,6 +3999,17 @@ void G_RunFrame( int levelTime ) {
 			ClearNPCGlobals();
 		}
 	}
+
+	// Process logical entities
+	ent = &g_entities[MAX_GENTITIES];
+	for (i = 0; i<level.num_logicalents; i++, ent++) {
+		if (!ent->inuse) {
+			continue;
+		}
+		// Logical entities only think, nothing else
+		G_RunThink(ent);
+	}
+
 #ifdef _G_FRAME_PERFANAL
 	iTimer_ItemRun = trap->PrecisionTimer_End(timer_ItemRun);
 #endif

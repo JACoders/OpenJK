@@ -667,6 +667,7 @@ struct gentity_s {
 
 	// OpenJK add
 	int			useDebounceTime;	// for cultist_destroyer
+	qboolean	isLogical;		// Determines if this ent is logical or not
 };
 
 #define DAMAGEREDIRECT_HEAD		1
@@ -1343,6 +1344,7 @@ typedef struct level_locals_s {
 	struct gentity_s	*gentities;
 	int			gentitySize;
 	int			num_entities;		// current number, <= MAX_GENTITIES
+	int			num_logicalents;	// current numner of logical ents, > MAX_GENTIIES, <= MAX_LOGICALENTS
 
 	int			warmupTime;			// restart match at this time
 
@@ -1603,10 +1605,11 @@ void	G_SetAngles( gentity_t *ent, vec3_t angles );
 
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (qboolean essential);
-gentity_t *G_TempEntity( vec3_t origin, int event );
+gentity_t	*G_SpawnLogical(void);
+gentity_t	*G_TempEntity( vec3_t origin, int event );
 gentity_t	*G_PlayEffect(int fxID, vec3_t org, vec3_t ang);
 gentity_t	*G_PlayEffectID(const int fxID, vec3_t org, vec3_t ang);
-gentity_t *G_ScreenShake(vec3_t org, gentity_t *target, float intensity, int duration, qboolean global);
+gentity_t	*G_ScreenShake(vec3_t org, gentity_t *target, float intensity, int duration, qboolean global);
 void	G_MuteSound( int entnum, int channel );
 void	G_Sound( gentity_t *ent, int channel, int soundIndex );
 void	G_RaceSound( gentity_t *ent, int channel, int soundIndex, int racesound );//bad
@@ -2005,7 +2008,8 @@ int BotAIStartFrame( int time );
 
 
 extern	level_locals_t	level;
-extern	gentity_t		g_entities[MAX_GENTITIES];
+extern gentity_t		g_entities[MAX_ENTITIESTOTAL];
+extern gentity_t		*g_logicalents;
 
 #define	FOFS(x) offsetof(gentity_t, x)
 
