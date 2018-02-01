@@ -770,6 +770,17 @@ int main ( int argc, char* argv[] )
 
 	Com_Init (commandLine);
 
+#ifndef DEDICATED
+	SDL_version compiled;
+	SDL_version linked;
+
+	SDL_VERSION( &compiled );
+	SDL_GetVersion( &linked );
+
+	Com_Printf( "SDL Version Compiled: %d.%d.%d\n", compiled.major, compiled.minor, compiled.patch );
+	Com_Printf( "SDL Version Linked: %d.%d.%d\n", linked.major, linked.minor, linked.patch );
+#endif
+
 	NET_Init();
 
 	// main game loop
