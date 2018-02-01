@@ -2510,8 +2510,7 @@ static void Cmd_VGSCommand_f(gentity_t *ent)
 		return;
 	}
 
-	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR ||
-		ent->client->tempSpectate >= level.time)
+	if (g_allowVGS.integer < 2 && (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->tempSpectate >= level.time))
 	{
 		trap->SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOICECHATASSPEC")));
 		return;
@@ -2546,7 +2545,7 @@ static void Cmd_VGSCommand_f(gentity_t *ent)
 		return;
 	}
 
-	te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND);
+	te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND); //Does this fully work from spec?
 	te->s.groundEntityNum = ent->s.number;
 	te->s.eventParm = G_SoundIndex((char *)bg_customVGSSoundNames[i]);
 	te->r.svFlags |= SVF_BROADCAST;

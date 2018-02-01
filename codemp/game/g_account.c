@@ -1464,7 +1464,8 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
 		newDB = qtrue;
 	}
-
+	
+	/*
 	{
 		int i;
 		gentity_t *player;
@@ -1477,6 +1478,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 
 		}
 	}
+	*/
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET racetime = racetime + ? WHERE username = ?";
@@ -3349,7 +3351,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	const int args = trap->Argc();
 
 	if (args > 4) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <season (optional - example: s1)> <style (optional)> <page (optional)>.  This displays the rankings for the specified season and style.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rRank <season (optional - example: s1)> <style (optional)> <page (optional)>.  This displays the rankings for the specified season and style.\n\"");
 		return;
 	}
 
@@ -3376,7 +3378,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 				continue;
 			}
 		}
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTopRank <season (optional - example: s1)> <style (optional)> <page (optional)>.  This displays the rankings for the specified season and style.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rRank <season (optional - example: s1)> <style (optional)> <page (optional)>.  This displays the rankings for the specified season and style.\n\"");
 		return;
 	}
 
@@ -3488,11 +3490,12 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 
 void Cmd_DFRecent_f(gentity_t *ent) {
 	int style = -1, page = -1, start = 0, input, i;
-	char inputString[16], styleString[16];
+	char inputString[16], inputStyleString[16];
+	qboolean showSeasons = qfalse;
 	const int args = trap->Argc();
 
-	if (args > 3) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
+	if (args > 4) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rLatest <style (optional)> <include seasons (optional - example: s) <page (optional)>.  This displays recent records for the specified style.\n\"");
 		return;
 	}
 
@@ -3505,6 +3508,12 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 				continue;
 			}
 		}
+		if (!showSeasons) {
+			if (!Q_stricmp(inputString, "s")) {
+				showSeasons = qtrue;
+				continue;
+			}
+		}
 		if (page == -1) {
 			input = atoi(inputString);
 			if (input > 0) {
@@ -3512,7 +3521,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 				continue;
 			}
 		}
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)> <page (optional)>.  This displays recent records for the specified style.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rLatest <style (optional)> <include seasons (optional - example: s) <page (optional)>.  This displays recent records for the specified style.\n\"");
 		return; //Arg doesnt match any expected values so error.
 	}
 
@@ -3527,28 +3536,30 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		char * sql;
 		sqlite3_stmt * stmt;
 		int row = 1;
-		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, msg[128] = {0};
+		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, rankStr[16] = {0}, msg[128] = {0};
 		int s;
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-		//Problem - this ignores recent times on current map since they are not yet in database
-		//fix by searching that first (will ignore non top10 recent times on current map)
-		//fix that by just making race times go to database immediately and forgetting this stupid manual caching system
-
 		if (style == -1) {
-			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 ORDER BY end_time DESC LIMIT ?,10";
+			if (showSeasons)
+				sql = "SELECT username, coursename, style, rank, duration_ms, end_time, season_rank FROM LocalRun ORDER BY end_time DESC LIMIT ?,10";
+			else
+				sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 ORDER BY end_time DESC LIMIT ?,10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_int (stmt, 1, start));
 			trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"");
 		}
 		else {
-			sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT ?,10";
+			if (showSeasons)
+				sql = "SELECT username, coursename, style, rank, duration_ms, end_time, season_rank FROM LocalRun WHERE style = ? ORDER BY end_time DESC LIMIT ?,10";
+			else
+				sql = "SELECT username, coursename, style, rank duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT ?,10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_int (stmt, 1, style));
 			CALL_SQLITE (bind_int (stmt, 2, start));
-			IntegerToRaceName(style, styleString, sizeof(styleString));
-			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"", styleString));
+			IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Rank     Time         Date\n\"", inputStyleString));
 		}
 		
 		while (1) {
@@ -3559,7 +3570,16 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 				getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr));
 				IntegerToRaceName(sqlite3_column_int(stmt, 2), styleStr, sizeof(styleStr));
 
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-8i ^3%-12s %s\n", start+row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, sqlite3_column_int(stmt, 3), timeStr, dateStr);
+				if (showSeasons) {	//If rank == 0, put season rank in yellow, else put rank in green
+					if (sqlite3_column_int(stmt, 3))
+						Com_sprintf(rankStr, sizeof(rankStr), "^2%i^7", sqlite3_column_int(stmt, 3));
+					else
+						Com_sprintf(rankStr, sizeof(rankStr), "^3%i^7", sqlite3_column_int(stmt, 6));
+				}
+				else
+					Com_sprintf(rankStr, sizeof(rankStr), "^2%i^7", sqlite3_column_int(stmt, 3));
+
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-8s ^3%-12s %s\n", start+row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, rankStr, timeStr, dateStr);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
@@ -3596,7 +3616,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	if (args == 1) { //Dftop10  - current map JKA, only 1 course on map.  Or if there are multiple courses, display them all.
 		if (level.numCourses == 0) { //No course on this map, so error.
 			//Com_Printf("fail 1\n");
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 			return;
 		}
 		if (level.numCourses > 1) { //
@@ -3634,7 +3654,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		style = RaceNameToInteger(input2);
 		if (style < 0) { //Invalid style
 			//Com_Printf("fail 2\n");
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 			return;
 		}
 
@@ -3651,12 +3671,12 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		style = RaceNameToInteger(input2);
 		if (style < 0) { //Invalid style
 			//Com_Printf("fail 2\n");
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 			return;
 		}
 		page = atoi(input3);
 		if (page < 1 || page > 100) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 			return;
 		}
 
@@ -3665,7 +3685,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	}
 	else { //Error, print usage
 		//Com_Printf("fail 3\n");
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 		return;
 	}
 
@@ -3685,7 +3705,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	}
 	else {
 		if (!Q_stricmp(courseName, "")) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 			return;
 		}
 	}
@@ -3717,7 +3737,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			}
 			else {
 				//Com_Printf("fail 4\n");
-				trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 				CALL_SQLITE (finalize(stmt));
 				CALL_SQLITE (close(db));
 				return;
@@ -3826,7 +3846,7 @@ void Cmd_DFTodo_f(gentity_t *ent) { //Redo this with loop-arg structure? Coursen
 		trap->Argv(1, input, sizeof(input));
 		style = RaceNameToInteger(input);
 		if (style < 0) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <map (optional)> <page (optional)>\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <style (optional)> <map (optional)> <page (optional)>\n\"");
 			return;
 		}
 
@@ -3837,12 +3857,12 @@ void Cmd_DFTodo_f(gentity_t *ent) { //Redo this with loop-arg structure? Coursen
 		page = atoi(input);
 	}
 	else { 
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <map (optional)> <page (optional)>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <style (optional)> <map (optional)> <page (optional)>\n\"");
 		return;
 	}
 
 	if (page < 1 || page > 100) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfTodo <style (optional)> <map (optional)> <page (optional)>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <style (optional)> <map (optional)> <page (optional)>\n\"");
 		return;
 	}
 
