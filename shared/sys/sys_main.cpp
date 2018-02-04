@@ -481,22 +481,24 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 	if ( !libHandle )
 #endif
 	{
-		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
-		if ( !unpackResult.succeeded )
-		{
-			if ( Sys_DLLNeedsUnpacking() )
+		if (Cvar_VariableIntegerValue("fs_loadpakdlls")) {
+			UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
+			if (!unpackResult.succeeded)
 			{
-				FreeUnpackDLLResult(&unpackResult);
-				Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
-				return NULL;
+				if (Sys_DLLNeedsUnpacking())
+				{
+					FreeUnpackDLLResult(&unpackResult);
+					Com_DPrintf("Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename);
+					return NULL;
+				}
 			}
-		}
-		else
-		{
-			libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
-		}
+			else
+			{
+				libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
+			}
 
-		FreeUnpackDLLResult(&unpackResult);
+			FreeUnpackDLLResult(&unpackResult);
+		}
 
 		if ( !libHandle )
 		{
@@ -561,22 +563,24 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 	if ( !libHandle )
 #endif
 	{
-		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
-		if ( !unpackResult.succeeded )
-		{
-			if ( Sys_DLLNeedsUnpacking() )
+		if (Cvar_VariableIntegerValue("fs_loadpakdlls")) {
+			UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
+			if (!unpackResult.succeeded)
 			{
-				FreeUnpackDLLResult(&unpackResult);
-				Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
-				return NULL;
+				if (Sys_DLLNeedsUnpacking())
+				{
+					FreeUnpackDLLResult(&unpackResult);
+					Com_DPrintf("Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename);
+					return NULL;
+				}
 			}
-		}
-		else
-		{
-			libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
-		}
+			else
+			{
+				libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
+			}
 
-		FreeUnpackDLLResult(&unpackResult);
+			FreeUnpackDLLResult(&unpackResult);
+		}
 
 		if ( !libHandle )
 		{

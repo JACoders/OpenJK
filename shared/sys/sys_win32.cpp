@@ -505,18 +505,15 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
 	UnpackDLLResult result = {};
 	void *data;
-	long len = FS_ReadFile(name, &data);
+	long len = FS_ReadDLLInPAK(name, &data);
 
 	if (len >= 1)
 	{
-		if (FS_FileIsInPAK(name, NULL) == 1)
+		char *tempFileName;
+		if ( FS_WriteToTemporaryFile(data, len, &tempFileName) )
 		{
-			char *tempFileName;
-			if ( FS_WriteToTemporaryFile(data, len, &tempFileName) )
-			{
-				result.tempDLLPath = tempFileName;
-				result.succeeded = true;
-			}
+			result.tempDLLPath = tempFileName;
+			result.succeeded = true;
 		}
 	}
 

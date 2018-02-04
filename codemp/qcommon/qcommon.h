@@ -622,6 +622,7 @@ long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFI
 
 int		FS_FileIsInPAK(const char *filename, int *pChecksum );
 // returns 1 if a file is in the PAK file, otherwise -1
+long	FS_ReadDLLInPAK(const char *filename, void **buffer);
 
 qboolean FS_FindPureDLL(const char *name);
 
