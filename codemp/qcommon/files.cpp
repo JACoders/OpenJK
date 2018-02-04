@@ -250,6 +250,7 @@ static cvar_t		*fs_cdpath;
 static cvar_t		*fs_copyfiles;
 static cvar_t		*fs_gamedirvar;
 static cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
+static cvar_t		*fs_loadpakdlls;
 static searchpath_t	*fs_searchpaths;
 static int			fs_readCount;			// total bytes read
 static int			fs_loadCount;			// total files read
@@ -2012,6 +2013,112 @@ int	FS_FileIsInPAK(const char *filename, int *pChecksum ) {
 	return -1;
 }
 
+long FS_ReadDLLInPAK(const char *filename, void **buffer) {
+	searchpath_t	*search;
+	pack_t			*pak;
+	fileInPack_t	*pakFile;
+	long			hash = 0;
+	fileHandle_t	file;
+	byte*			buf = NULL;
+	long			len = 0;
+
+	FS_AssertInitialised();
+
+	if (!filename) {
+		Com_Error(ERR_FATAL, "FS_ReadDLLInPAK: NULL 'filename' parameter passed\n");
+	}
+
+	// qpaths are not supposed to have a leading slash
+	if (filename[0] == '/' || filename[0] == '\\') {
+		filename++;
+	}
+
+	// make absolutely sure that it can't back up the path.
+	// The searchpaths do guarantee that something will always
+	// be prepended, so we don't need to worry about "c:" or "//limbo"
+	if (strstr(filename, "..") || strstr(filename, "::")) {
+		return len;
+	}
+
+	//
+	// search through the path, one element at a time
+	//
+
+	file = FS_HandleForFile();
+	fsh[file].handleFiles.unique = qfalse;
+
+	for (search = fs_searchpaths; search; search = search->next) {
+		qboolean breakSearch = qfalse;
+		if (search->pack) {
+			hash = FS_HashFileName(filename, search->pack->hashSize);
+		}
+		// is the element a pak file?
+		if (search->pack && search->pack->hashTable[hash]) {
+			// disregard if it doesn't match one of the allowed pure pak files
+			if (!FS_PakIsPure(search->pack)) {
+				continue;
+			}
+
+			// look through all the pak file elements
+			pak = search->pack;
+			pakFile = pak->hashTable[hash];
+			do {
+				// case and separator insensitive comparisons
+				if (!FS_FilenameCompare(pakFile->name, filename)) {
+					fsh[file].handleFiles.file.z = pak->handle;
+					Q_strncpyz(fsh[file].name, filename, sizeof(fsh[file].name));
+					fsh[file].zipFile = qtrue;
+
+					// set the file position in the zip file (also sets the current file info)
+					unzSetOffset(fsh[file].handleFiles.file.z, pakFile->pos);
+
+					// open the file in the zip
+					unzOpenCurrentFile(fsh[file].handleFiles.file.z);
+
+					fsh[file].zipFilePos = pakFile->pos;
+					fsh[file].zipFileLen = pakFile->len;
+
+					if (fs_debug->integer) {
+						Com_Printf("FS_ReadDLLInPAK: %s (found in '%s')\n",
+							filename, pak->pakFilename);
+					}
+
+					len = pakFile->len;
+					breakSearch = qtrue;
+					break;
+				}
+				pakFile = pakFile->next;
+			} while (pakFile != NULL);
+		}
+		if (breakSearch) break;
+	}
+
+	if (file == 0) {
+		if (buffer) {
+			*buffer = NULL;
+		}
+	}
+
+	if (!buffer) {
+		FS_FCloseFile(file);
+		return len;
+	}
+
+	fs_loadCount++;
+
+	buf = (byte*)Z_Malloc(len + 1, TAG_FILESYS, qfalse);
+	buf[len] = '\0';	// because we're not calling Z_Malloc with optional trailing 'bZeroIt' bool
+	*buffer = buf;
+
+	FS_Read(buf, len, file);
+
+	// guarantee that it will have a trailing 0 for string operations
+	buf[len] = 0;
+	FS_FCloseFile(file);
+
+	return len;
+}
+
 /*
 ============
 FS_ReadFile
@@ -3008,6 +3115,7 @@ FS_Which_f
 void FS_Which_f( void ) {
 	searchpath_t	*search;
 	char		*filename;
+	qboolean	isDLL;
 
 	filename = Cmd_Argv(1);
 
@@ -3028,9 +3136,11 @@ void FS_Which_f( void ) {
 		return;
 	}
 
+	isDLL = FS_IsExt(filename, ".dll", strlen(filename));
+
 	// just wants to see if file is there
 	for ( search=fs_searchpaths; search; search=search->next ) {
-		if ( search->pack ) {
+		if ( search->pack && ( !isDLL || (isDLL && Cvar_VariableIntegerValue("fs_loadpakdlls")))) {
 			long hash = FS_HashFileName( filename, search->pack->hashSize );
 
 			// is the element a pak file?
@@ -3499,6 +3609,12 @@ void FS_Startup( const char *gameName ) {
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO, "Mod directory" );
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
+
+#ifdef _WIN32
+	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "1", CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
+#else
+	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "0", CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
+#endif
 
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
