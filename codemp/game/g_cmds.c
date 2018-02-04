@@ -5667,6 +5667,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "rLatest ");
 		Q_strcat(buf, sizeof(buf), "rRank ");
 		Q_strcat(buf, sizeof(buf), "rWorst ");
+		Q_strcat(buf, sizeof(buf), "rHardest ");
 		if (g_raceMode.integer > 1) 
 			Q_strcat(buf, sizeof(buf), "race ");
 		Q_strcat(buf, sizeof(buf), "jump ");
@@ -8292,6 +8293,7 @@ void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFRecent_f( gentity_t *ent );
+void Cmd_DFHardest_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTodo_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
@@ -8443,6 +8445,7 @@ command_t commands[] = {
 
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 
+	{ "rhardest",			Cmd_DFHardest_f,			CMD_NOINTERMISSION },
 	{ "rlatest",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
 
 	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},
