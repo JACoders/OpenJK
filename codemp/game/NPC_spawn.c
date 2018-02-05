@@ -3022,56 +3022,6 @@ void SP_NPC_Human_Merc( gentity_t *self )
 	SP_NPC_spawner( self );
 }
 
-/*QUAKED NPC_Human_Merc(1 0 0) (-16 -16 -24) (16 16 40) BOWCASTER REPEATER FLECHETTE CONCUSSION DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
-100 health, blaster rifle
-
-BOWCASTER - Starts with a Bowcaster
-REPEATER - Starts with a Repeater
-FLECHETTE - Starts with a Flechette gun
-CONCUSSION - Starts with a Concussion Rifle
-
-If you want them to start with any other kind of weapon, make a spawnscript for them that sets their weapon.
-
-"message" - turns on his key surface.  This is the name of the key you get when you walk over his body.  This must match the "message" field of the func_security_panel you want this key to open.  Set to "goodie" to have him carrying a goodie key that player can use to operate doors with "GOODIE" spawnflag.  NOTE: this overrides all the weapon spawnflags
-
-DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
-CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
-NOTSOLID - Starts not solid
-STARTINSOLID - Don't try to fix if spawn in solid
-SHY - Spawner is shy
-*/
-void SP_NPC_Human_Merc( gentity_t *self )
-{
-	if ( !self->NPC_type )
-	{
-		/*if ( self->message )
-		{
-			self->NPC_type = "human_merc_key";
-		}
-		else */if ( (self->spawnflags & 1) )
-		{
-			self->NPC_type = "human_merc_bow";
-		}
-		else if ( (self->spawnflags & 2) )
-		{
-			self->NPC_type = "human_merc_rep";
-		}
-		else if ( (self->spawnflags & 4) )
-		{
-			self->NPC_type = "human_merc_flc";
-		}
-		else if ( (self->spawnflags & 8) )
-		{
-			self->NPC_type = "human_merc_cnc";
-		}
-		else
-		{
-			self->NPC_type = "human_merc";
-		}
-	}
-	SP_NPC_spawner( self );
-}
-
 /*QUAKED NPC_Stormtrooper(1 0 0) (-16 -16 -24) (16 16 40) OFFICER COMMANDER ALTOFFICER ROCKET DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 30 health, blaster
 
