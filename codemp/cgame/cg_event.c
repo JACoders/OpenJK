@@ -1328,7 +1328,7 @@ const char *cg_stringEdVGSTable[MAX_CUSTOM_VGS_SOUNDS] = {
 	"VGS_GLOBAL_OOOPS",
 	"VGS_GLOBAL_QUIET",
 	"VGS_GLOBAL_SHAZBOT",
-	"VGS_GLOBAL_WHOOHOO",
+	"VGS_GLOBAL_WOOHOO",
 	"VGS_GLOBAL_YES",
 	"VGS_NEED_COVER",
 	"VGS_NEED_DRIVER",
@@ -1365,13 +1365,13 @@ const char *cg_stringEdVGSTable[MAX_CUSTOM_VGS_SOUNDS] = {
 	"VGS_SELFTASK_DEFENSES",
 	"VGS_SELFTASK_DEPLOYSENSORS",
 	"VGS_SELFTASK_DEPLOYTURRETS",
-	"VGS_SELFTASK_FORCEFIELD",
+	"VGS_SELFTASK_FORCEFIELDS",
 	"VGS_SELFTASK_ONIT",
 	"VGS_SELFTASK_VEHICLE",
 	"VGS_UPGRADESELF_GENERATOR",
 	"VGS_UPGRADESELF_SENSOR",
 	"VGS_UPGRADESELF_TURRET",
-	"VGS_TARGET_ACQUIERED",
+	"VGS_TARGET_ACQUIRED",
 	"VGS_TARGET_BASE",
 	"VGS_TARGET_DESTROYED",
 	"VGS_TARGET_FIREONMY",
@@ -1443,7 +1443,7 @@ static qboolean isGlobalVGS(const char *s) {
 		return qtrue;
 	if (!Q_stricmp(s, "*global_shazbot"))
 		return qtrue;
-	if (!Q_stricmp(s, "*global_whoohoo"))
+	if (!Q_stricmp(s, "*global_woohoo"))
 		return qtrue;
 	if (!Q_stricmp(s, "*global_yes"))
 		return qtrue;

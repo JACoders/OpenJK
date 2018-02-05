@@ -51,13 +51,13 @@ REFERENCE           VGS_COMMAND_ACKNOWLEDGED
 LANG_ENGLISH        "[VCA] Acknowledged."
 
 REFERENCE           VGS_COMMAND_ASSIGNMENT
-LANG_ENGLISH        "[VCC] Completed."
+LANG_ENGLISH        "[VCW] What's my assignment?"
 
 REFERENCE           VGS_COMMAND_COMPLETED
-LANG_ENGLISH        "[VCD] Declined."
+LANG_ENGLISH        "[VCC] Completed."
 
 REFERENCE           VGS_COMMAND_DECLINED
-LANG_ENGLISH        "[VCW] What's my assignment?"
+LANG_ENGLISH        "[VCD] Declined."
 
 REFERENCE           VGS_DEFEND_BASE
 LANG_ENGLISH        "[VDB] Defend our base!"
@@ -185,7 +185,7 @@ LANG_ENGLISH        "[VGQ] Quiet!"
 REFERENCE           VGS_GLOBAL_SHAZBOT
 LANG_ENGLISH        "[VGS] Shazbot!"
 
-REFERENCE           VGS_GLOBAL_WHOOHOO
+REFERENCE           VGS_GLOBAL_WOOHOO
 LANG_ENGLISH        "[VGW] Woohoo!"
 
 REFERENCE           VGS_GLOBAL_YES
@@ -296,7 +296,7 @@ LANG_ENGLISH        "[VSTS] I'm deploying sensors."
 REFERENCE           VGS_SELFTASK_DEPLOYTURRETS
 LANG_ENGLISH        "[VSTT] I'm deploying turrets."
 
-REFERENCE           VGS_SELFTASK_FORCEFIELD
+REFERENCE           VGS_SELFTASK_FORCEFIELDS
 LANG_ENGLISH        "[VSTF] I'll deploy forcefields."
 
 REFERENCE           VGS_SELFTASK_ONIT
@@ -306,15 +306,15 @@ REFERENCE           VGS_SELFTASK_VEHICLE
 LANG_ENGLISH        "[VSTV] I'll get a vehicle ready."
 
 REFERENCE           VGS_UPGRADESELF_GENERATOR
-LANG_ENGLISH        "[VUG] Upgrade our generator!"
+LANG_ENGLISH        "[VSUG] I'll upgrade our generator."
 
 REFERENCE           VGS_UPGRADESELF_SENSOR
-LANG_ENGLISH        "[VUS] Upgrade our sensors!"
+LANG_ENGLISH        "[VSUS] I'll upgrade our sensors."
 
 REFERENCE           VGS_UPGRADESELF_TURRET
-LANG_ENGLISH        "[VUT] Upgrade our base turrets!"
+LANG_ENGLISH        "[VSUT] I'll upgrade our base turrets."
 
-REFERENCE           VGS_TARGET_ACQUIERED
+REFERENCE           VGS_TARGET_ACQUIRED
 LANG_ENGLISH        "[VTA] Target acquired."
 
 REFERENCE           VGS_TARGET_BASE
@@ -345,13 +345,13 @@ REFERENCE           VGS_TARGET_WAIT
 LANG_ENGLISH        "[VTW] Wait! I'll be in range soon."
 
 REFERENCE           VGS_UPGRADE_GENERATOR
-LANG_ENGLISH        "[VSUG] I'll upgrade our generator."
+LANG_ENGLISH        "[VUG] Upgrade our generator!"
 
 REFERENCE           VGS_UPGRADE_SENSOR
-LANG_ENGLISH        "[VSUS] I'll upgrade our sensors."
+LANG_ENGLISH        "[VUS] Upgrade our sensors!"
 
 REFERENCE           VGS_UPGRADE_TURRET
-LANG_ENGLISH        "[VSUT] I'll upgrade our base turrets."
+LANG_ENGLISH        "[VUT] Upgrade our base turrets!"
 
 REFERENCE           VGS_WARN_ENEMIES
 LANG_ENGLISH        "[VWE] Incoming hostiles!"

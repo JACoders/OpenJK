@@ -3983,7 +3983,7 @@
 			action
 			{
 				disable			self_task_grp	1
-				exec			"vgs_cmd selftask_base"
+				exec			"vgs_cmd selftask_cover"
 				hide			self_task_grp
 				show			main
 				close			all
@@ -4033,7 +4033,7 @@
 			action
 			{
 				disable			self_task_grp	1
-				exec			"vgs_cmd selftask_forcefield"
+				exec			"vgs_cmd selftask_forcefields"
 				hide			self_task_grp
 				show			main
 				close			all
@@ -4217,7 +4217,7 @@
 		{
 			name				slfu_03
 			group				self_upgrade_grp
-			rect				10 95 160 15	
+			rect				10 85 160 15	
 			type				ITEM_TYPE_BUTTON
 			text				"T: Turrets"
 			textalign			ITEM_ALIGN_LEFT		
@@ -4279,7 +4279,7 @@
 			action
 			{
 				disable			target_grp	1
-				exec			"vgs_cmd target_acquiered"
+				exec			"vgs_cmd target_acquired"
 				hide			target_grp
 				show			main
 				close			all
