@@ -189,7 +189,7 @@ const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS] = {
 	"*global_ooops",
 	"*global_quiet",
 	"*global_shazbot",
-	"*global_whoohoo",
+	"*global_woohoo",
 	"*global_yes",
 	"*need_cover",
 	"*need_driver",
