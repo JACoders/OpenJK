@@ -1266,6 +1266,140 @@ const char	*cg_stringEdVoiceChatTable[MAX_CUSTOM_SIEGE_SOUNDS] =
 	NULL
 };
 
+const char *cg_stringEdVGSTable[MAX_CUSTOM_VGS_SOUNDS] = {
+	"VGS_ATTACK_ATTACK",
+	"VGS_ATTACK_ATTACKWAIT",
+	"VGS_ATTACK_BASE",
+	"VGS_ATTACK_CHASE",
+	"VGS_ATTACK_DISRUPT",
+	"VGS_ATTACK_FLAG",
+	"VGS_ATTACK_GENERATOR",
+	"VGS_ATTACK_REINFORCE",
+	"VGS_ATTACK_SENSORS",
+	"VGS_ATTACK_TURRETS",
+	"VGS_ATTACK_VEHICLE",
+	"VGS_BASE_CLEAR",
+	"VGS_BASE_ENEMYINBASE",
+	"VGS_BASE_RETAKE",
+	"VGS_BASE_SECURE",
+	"VGS_COMMAND_ACKNOWLEDGED",
+	"VGS_COMMAND_ASSIGNMENT",
+	"VGS_COMMAND_COMPLETED",
+	"VGS_COMMAND_DECLINED",
+	"VGS_DEFEND_BASE",
+	"VGS_DEFEND_ENTRANCES",
+	"VGS_DEFEND_FLAG",
+	"VGS_DEFEND_FLAGCARRIER",
+	"VGS_DEFEND_GENERATOR",
+	"VGS_DEFEND_ME",
+	"VGS_DEFEND_REINFORCE",
+	"VGS_DEFEND_SENSORS",
+	"VGS_DEFEND_TURRETS",
+	"VGS_DEFEND_VEHICLE",
+	"VGS_ENEMY_DISARRAY",
+	"VGS_ENEMY_GENERATOR",
+	"VGS_ENEMY_SENSORS",
+	"VGS_ENEMY_TURRETS",
+	"VGS_ENEMY_VEHICLE",
+	"VGS_FLAG_DEFEND",
+	"VGS_FLAG_GIVEME",
+	"VGS_FLAG_IHAVE",
+	"VGS_FLAG_IRETRIEVE",
+	"VGS_FLAG_RETRIEVE",
+	"VGS_FLAG_SECURE",
+	"VGS_FLAG_TAKE",
+	"VGS_COMPLIMENT_AWESOME",
+	"VGS_COMPLIMENT_GOODGAME",
+	"VGS_COMPLIMENT_GREATSHOT",
+	"VGS_COMPLIMENT_NICEMOVE",
+	"VGS_COMPLIMENT_YOUROCK",
+	"VGS_RESPOND_ANYTIME",
+	"VGS_RESPOND_DONTKNOW",
+	"VGS_RESPOND_RESPONDWAIT",
+	"VGS_RESPOND_THANKS",
+	"VGS_TAUNT_AWW",
+	"VGS_TAUNT_BRAG",
+	"VGS_TAUNT_LEARN",
+	"VGS_TAUNT_OBNOXIOUS",
+	"VGS_TAUNT_SARCASM",
+	"VGS_GLOBAL_BYE",
+	"VGS_GLOBAL_HI",
+	"VGS_GLOBAL_NO",
+	"VGS_GLOBAL_OOOPS",
+	"VGS_GLOBAL_QUIET",
+	"VGS_GLOBAL_SHAZBOT",
+	"VGS_GLOBAL_WHOOHOO",
+	"VGS_GLOBAL_YES",
+	"VGS_NEED_COVER",
+	"VGS_NEED_DRIVER",
+	"VGS_NEED_ESCORT",
+	"VGS_NEED_HOLDVEHICLE",
+	"VGS_NEED_RIDE",
+	"VGS_NEED_SUPPORT",
+	"VGS_NEED_VEHICLEREADY",
+	"VGS_NEED_WHERETO",
+	"VGS_REPAIR_GENERATOR",
+	"VGS_REPAIR_SENSORS",
+	"VGS_REPAIR_TURRETS",
+	"VGS_REPAIR_VEHICLE",
+	"VGS_SELFATTACK_ATTACK",
+	"VGS_SELFATTACK_BASE",
+	"VGS_SELFATTACK_FLAG",
+	"VGS_SELFATTACK_GENERATOR",
+	"VGS_SELFATTACK_SENSORS",
+	"VGS_SELFATTACK_TURRETS",
+	"VGS_SELFATTACK_VEHICLE",
+	"VGS_SELFDEFEND_BASE",
+	"VGS_SELFDEFEND_DEFEND",
+	"VGS_SELFDEFEND_FLAG",
+	"VGS_SELFDEFEND_GENERATOR",
+	"VGS_SELFDEFEND_SENSORS",
+	"VGS_SELFDEFEND_TURRETS",
+	"VGS_SELFDEFEND_VEHICLE",
+	"VGS_SELFREPAIR_BASE",
+	"VGS_SELFREPAIR_GENERATOR",
+	"VGS_SELFREPAIR_SENSORS",
+	"VGS_SELFREPAIR_TURRETS",
+	"VGS_SELFREPAIR_VEHICLE",
+	"VGS_SELFTASK_COVER",
+	"VGS_SELFTASK_DEFENSES",
+	"VGS_SELFTASK_DEPLOYSENSORS",
+	"VGS_SELFTASK_DEPLOYTURRETS",
+	"VGS_SELFTASK_FORCEFIELD",
+	"VGS_SELFTASK_ONIT",
+	"VGS_SELFTASK_VEHICLE",
+	"VGS_UPGRADESELF_GENERATOR",
+	"VGS_UPGRADESELF_SENSOR",
+	"VGS_UPGRADESELF_TURRET",
+	"VGS_TARGET_ACQUIERED",
+	"VGS_TARGET_BASE",
+	"VGS_TARGET_DESTROYED",
+	"VGS_TARGET_FIREONMY",
+	"VGS_TARGET_FLAG",
+	"VGS_TARGET_NEED",
+	"VGS_TARGET_SENSORS",
+	"VGS_TARGET_TURRET",
+	"VGS_TARGET_VEHICLE",
+	"VGS_TARGET_WAIT",
+	"VGS_UPGRADE_GENERATOR",
+	"VGS_UPGRADE_SENSOR",
+	"VGS_UPGRADE_TURRET",
+	"VGS_WARN_ENEMIES",
+	"VGS_WARN_VEHICLE",
+	"VGS_TEAM_ANYTIME",
+	"VGS_TEAM_BASESECURE",
+	"VGS_TEAM_CEASEFIRE",
+	"VGS_TEAM_DONTKNOW",
+	"VGS_TEAM_HELP",
+	"VGS_TEAM_MOVE",
+	"VGS_TEAM_NO",
+	"VGS_TEAM_SORRY",
+	"VGS_TEAM_THANKS",
+	"VGS_TEAM_WAIT",
+	"VGS_TEAM_YES",
+	NULL
+};
+
 //stupid way of figuring out what string to use for voice chats
 const char *CG_GetStringForVoiceSound(const char *s)
 {
@@ -1281,7 +1415,39 @@ const char *CG_GetStringForVoiceSound(const char *s)
 		i++;
 	}
 
+	i = 0;
+	while (i < MAX_CUSTOM_VGS_SOUNDS)
+	{
+		if (bg_customVGSSoundNames[i] &&
+			!Q_stricmp(bg_customVGSSoundNames[i], s))
+		{ //get the matching reference name
+			assert(cg_stringEdVGSTable[i]);
+			return CG_GetStringEdString("VGS", (char *)cg_stringEdVGSTable[i]);
+		}
+		i++;
+	}
+
 	return "voice chat";
+}
+
+static qboolean isGlobalVGS(const char *s) {
+	if (!Q_stricmp(s, "*global_bye"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_hi"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_no"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_oops"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_quiet"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_shazbot"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_whoohoo"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_yes"))
+		return qtrue;
+	return qfalse;
 }
 
 /*
@@ -3149,13 +3315,13 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			{
 				if (clientNum != cg.predictedPlayerState.clientNum)
 				{ //play on the head as well to simulate hearing in radio and in world
-					if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
+					if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM] || isGlobalVGS(s)) //Also check for PMF_FOLLOW and treat that like spec!
 					{ //don't hear it if this person is on the other team, but they can still
 						//hear it in the world spot.
 						trap->S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_MENU1, sfx);
 					}
 				}
-				if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
+				if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM] || isGlobalVGS(s)) //put it to console or.. just not at all?
 				{ //add to the chat box
 					//hear it in the world spot.
 					char vchatstr[1024] = {0};

@@ -987,15 +987,16 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		case UIMENU_VOICECHAT:
 			// trap->Cvar_Set( "cl_paused", "1" );
 			// No chatin non-siege games.
-
-			if (trap->Cvar_VariableValue( "g_gametype" ) < GT_TEAM)//loda fixme?
-			{
-				return;
-			}
-
 			trap->Key_SetCatcher( KEYCATCH_UI );
 			Menus_CloseAll();
-			Menus_ActivateByName("ingame_voicechat");
+
+			if (trap->Cvar_VariableValue("g_gametype") < GT_TEAM || trap->Cvar_VariableValue("ui_voicechat")) {
+				Menus_ActivateByName("ingame_vgs");
+			}
+			else {
+				Menus_ActivateByName("ingame_voicechat");
+			}
+
 			return;
 		case UIMENU_CLOSEALL:
 			Menus_CloseAll();
@@ -3690,6 +3691,942 @@ static qboolean UI_Chat_Tactical_HandleKey(int key)
 	return (qtrue);
 }
 
+static qboolean UI_VGS_Main_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "global");
+	}
+	else if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "attack");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "defend");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "repair");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "base");
+	}
+	else if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "command");
+	}
+	else if ((key == A_LOW_E) || (key == A_CAP_E)) {
+		item = Menu_FindItemByName(menu, "enemy");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "flag");
+	}
+	else if ((key == A_LOW_N) || (key == A_CAP_N)) {
+		item = Menu_FindItemByName(menu, "need");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "self");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "target");
+	}
+	else if ((key == A_LOW_U) || (key == A_CAP_U)) {
+		item = Menu_FindItemByName(menu, "upgrade");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "warning");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "team");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Global_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "compliment");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "respond");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "taunt");
+	}
+	else if ((key == A_LOW_Y) || (key == A_CAP_Y)) {
+		item = Menu_FindItemByName(menu, "glb_01");
+	}
+	else if ((key == A_LOW_N) || (key == A_CAP_N)) {
+		item = Menu_FindItemByName(menu, "glb_02");
+	}
+	else if ((key == A_LOW_H) || (key == A_CAP_H)) {
+		item = Menu_FindItemByName(menu, "glb_03");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "glb_04");
+	}
+	else if ((key == A_LOW_O) || (key == A_CAP_O)) {
+		item = Menu_FindItemByName(menu, "glb_05");
+	}
+	else if ((key == A_LOW_Q) || (key == A_CAP_Q)) {
+		item = Menu_FindItemByName(menu, "glb_06");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "glb_07");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "glb_08");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Compliment_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "cmp_01");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "cmp_02");
+	}
+	else if ((key == A_LOW_N) || (key == A_CAP_N)) {
+		item = Menu_FindItemByName(menu, "cmp_03");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "cmp_04");
+	}
+	else if ((key == A_LOW_Y) || (key == A_CAP_Y)) {
+		item = Menu_FindItemByName(menu, "cmp_05");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Respond_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "rpd_01");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "rpd_02");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "rpd_03");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "rpd_04");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Taunt_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "tnt_01");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "tnt_02");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "tnt_03");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "tnt_04");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "tnt_05");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Attack_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "att_01");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "att_02");
+	}
+	else if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "att_03");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "att_04");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "att_05");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "att_06");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "att_07");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "att_08");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "att_09");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "att_10");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "att_11");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Defend_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "def_01");
+	}
+	else if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "def_02");
+	}
+	else if ((key == A_LOW_E) || (key == A_CAP_E)) {
+		item = Menu_FindItemByName(menu, "def_03");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "def_04");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "def_05");
+	}
+	else if ((key == A_LOW_M) || (key == A_CAP_M)) {
+		item = Menu_FindItemByName(menu, "def_06");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "def_07");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "def_08");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "def_09");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "def_10");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Repair_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "rep_01");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "rep_02");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "rep_03");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "rep_04");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Base_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "base_01");
+	}
+	else if ((key == A_LOW_E) || (key == A_CAP_E)) {
+		item = Menu_FindItemByName(menu, "base_02");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "base_03");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "base_04");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Command_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "cmd_01");
+	}
+	else if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "cmd_02");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "cmd_03");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "cmd_04");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Enemy_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "emy_01");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "emy_02");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "emy_03");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "emy_04");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "emy_05");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Flag_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "flg_01");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "flg_02");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "flg_03");
+	}
+	else if ((key == A_LOW_Q) || (key == A_CAP_Q)) {
+		item = Menu_FindItemByName(menu, "flg_04");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "flg_05");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "flg_06");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "flg_07");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Need_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "need_01");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "need_02");
+	}
+	else if ((key == A_LOW_E) || (key == A_CAP_E)) {
+		item = Menu_FindItemByName(menu, "need_03");
+	}
+	else if ((key == A_LOW_H) || (key == A_CAP_H)) {
+		item = Menu_FindItemByName(menu, "need_04");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "need_05");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "need_06");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "need_07");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "need_08");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Self_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "selfattack");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "selfdefend");
+	}
+	else if ((key == A_LOW_R) || (key == A_CAP_R)) {
+		item = Menu_FindItemByName(menu, "selfrepair");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "selftask");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_SelfAttack_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "slfa_01");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "slfa_02");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "slfa_03");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "slfa_04");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "slfa_05");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "slfa_06");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "slfa_07");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_SelfDefend_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "slfd_01");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "slfd_02");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "slfd_03");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "slfd_04");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "slfd_05");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "slfd_06");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "slfd_07");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_SelfRepair_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "slfr_01");
+	}
+	else if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "slfr_02");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "slfr_03");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "slfr_04");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "slfr_05");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_SelfTask_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "slft_01");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "slft_02");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "slft_03");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "slft_04");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "slft_05");
+	}
+	else if ((key == A_LOW_O) || (key == A_CAP_O)) {
+		item = Menu_FindItemByName(menu, "slft_06");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "slft_07");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_SelfUpgrade_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "slfu_01");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "slfu_02");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "slfu_03");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Target_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "tgt_01");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "tgt_02");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "tgt_03");
+	}
+	else if ((key == A_LOW_F) || (key == A_CAP_F)) {
+		item = Menu_FindItemByName(menu, "tgt_04");
+	}
+	else if ((key == A_LOW_M) || (key == A_CAP_M)) {
+		item = Menu_FindItemByName(menu, "tgt_05");
+	}
+	else if ((key == A_LOW_N) || (key == A_CAP_N)) {
+		item = Menu_FindItemByName(menu, "tgt_06");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "tgt_07");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "tgt_08");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "tgt_09");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "tgt_10");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Upgrade_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_G) || (key == A_CAP_G)) {
+		item = Menu_FindItemByName(menu, "upgd_01");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "upgd_02");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "upgd_03");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Warning_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_E) || (key == A_CAP_E)) {
+		item = Menu_FindItemByName(menu, "warn_01");
+	}
+	else if ((key == A_LOW_V) || (key == A_CAP_V)) {
+		item = Menu_FindItemByName(menu, "warn_02");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
+static qboolean UI_VGS_Team_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	if ((key == A_LOW_Y) || (key == A_CAP_Y)) {
+		item = Menu_FindItemByName(menu, "team_01");
+	}
+	else if ((key == A_LOW_N) || (key == A_CAP_N)) {
+		item = Menu_FindItemByName(menu, "team_02");
+	}
+	else if ((key == A_LOW_A) || (key == A_CAP_A)) {
+		item = Menu_FindItemByName(menu, "team_03");
+	}
+	else if ((key == A_LOW_B) || (key == A_CAP_B)) {
+		item = Menu_FindItemByName(menu, "team_04");
+	}
+	else if ((key == A_LOW_C) || (key == A_CAP_C)) {
+		item = Menu_FindItemByName(menu, "team_05");
+	}
+	else if ((key == A_LOW_D) || (key == A_CAP_D)) {
+		item = Menu_FindItemByName(menu, "team_06");
+	}
+	else if ((key == A_LOW_H) || (key == A_CAP_H)) {
+		item = Menu_FindItemByName(menu, "team_07");
+	}
+	else if ((key == A_LOW_M) || (key == A_CAP_M)) {
+		item = Menu_FindItemByName(menu, "team_08");
+	}
+	else if ((key == A_LOW_S) || (key == A_CAP_S)) {
+		item = Menu_FindItemByName(menu, "team_09");
+	}
+	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
+		item = Menu_FindItemByName(menu, "team_10");
+	}
+	else if ((key == A_LOW_W) || (key == A_CAP_W)) {
+		item = Menu_FindItemByName(menu, "team_11");
+	}
+	else {
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+	}
+
+	return (qtrue);
+}
+
 static qboolean UI_GameType_HandleKey(int flags, float *special, int key, qboolean resetMap) {
 	if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER) {
 		int oldCount = UI_MapCountByGameType(qtrue);
@@ -4205,6 +5142,52 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 	case UI_CHAT_TACTICAL:
 		return UI_Chat_Tactical_HandleKey(key);
 		break;
+	case UI_VGS_MAIN:
+		return UI_VGS_Main_HandleKey(key);
+	case UI_VGS_GLOBAL:
+		return UI_VGS_Global_HandleKey(key);
+	case UI_VGS_COMPLIMENT:
+		return UI_VGS_Compliment_HandleKey(key);
+	case UI_VGS_RESPOND:
+		return UI_VGS_Respond_HandleKey(key);
+	case UI_VGS_TAUNT:
+		return UI_VGS_Taunt_HandleKey(key);
+	case UI_VGS_ATTACK:
+		return UI_VGS_Attack_HandleKey(key);
+	case UI_VGS_DEFEND:
+		return UI_VGS_Defend_HandleKey(key);
+	case UI_VGS_REPAIR:
+		return UI_VGS_Repair_HandleKey(key);
+	case UI_VGS_BASE:
+		return UI_VGS_Base_HandleKey(key);
+	case UI_VGS_COMMAND:
+		return UI_VGS_Command_HandleKey(key);
+	case UI_VGS_ENEMY:
+		return UI_VGS_Enemy_HandleKey(key);
+	case UI_VGS_FLAG:
+		return UI_VGS_Flag_HandleKey(key);
+	case UI_VGS_NEED:
+		return UI_VGS_Need_HandleKey(key);
+	case UI_VGS_SELF:
+		return UI_VGS_Self_HandleKey(key);
+	case UI_VGS_SELFATTACK:
+		return UI_VGS_SelfAttack_HandleKey(key);
+	case UI_VGS_SELFDEFEND:
+		return UI_VGS_SelfDefend_HandleKey(key);
+	case UI_VGS_SELFREPAIR:
+		return UI_VGS_SelfRepair_HandleKey(key);
+	case UI_VGS_SELFTASK:
+		return UI_VGS_SelfTask_HandleKey(key);
+	case UI_VGS_SELFUPGRADE:
+		return UI_VGS_SelfUpgrade_HandleKey(key);
+	case UI_VGS_TARGET:
+		return UI_VGS_Target_HandleKey(key);
+	case UI_VGS_UPGRADE:
+		return UI_VGS_Upgrade_HandleKey(key);
+	case UI_VGS_WARNING:
+		return UI_VGS_Warning_HandleKey(key);
+	case UI_VGS_TEAM:
+		return UI_VGS_Team_HandleKey(key);
 	case UI_FORCE_RANK_HEAL:
 	case UI_FORCE_RANK_LEVITATION:
 	case UI_FORCE_RANK_SPEED:

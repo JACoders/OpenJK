@@ -2972,7 +2972,6 @@ void SP_NPC_Rebel( gentity_t *self)
 //=============================================================================================
 //ENEMIES
 //=============================================================================================
-
 /*QUAKED NPC_Human_Merc(1 0 0) (-16 -16 -24) (16 16 40) BOWCASTER REPEATER FLECHETTE CONCUSSION DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 100 health, blaster rifle
 
@@ -3956,7 +3955,7 @@ NPC_Spawn_f
 
 gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle )
 {
-	gentity_t		*NPCspawner = G_Spawn(qtrue);
+	gentity_t		*NPCspawner = G_SpawnLogical();
 	vec3_t			forward, end;
 	trace_t			trace;
 	gentity_t		*ourVehicle;
@@ -4003,7 +4002,10 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	//set the yaw so that they face away from player
 	NPCspawner->s.angles[1] = ent->client->ps.viewangles[1];
 
-	trap->LinkEntity((sharedEntity_t *)NPCspawner);
+	//LOOK AT THIS! JKG does not have this LinkEntity line.  Should it just be commented out, or conditional, or?
+	//If the spawner has script_targetname it wont be logical and we might want this?
+	if (!NPCspawner->isLogical)
+		trap->LinkEntity((sharedEntity_t *)NPCspawner);
 
 	NPCspawner->NPC_type = G_NewString( npc_type );
 

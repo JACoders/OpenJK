@@ -5729,7 +5729,7 @@ void G_RunClient( gentity_t *ent ) {
 
 		if (ent->client->pers.keepDemo) {
 			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED (timeout), HIGHSCORE\"");
-			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
+			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 10;svrenamedemo temp/%s races/%s\n", ent->s.number, ent->client->pers.oldDemoName, ent->client->pers.demoName));
 		}
 		else {
 			//trap->SendServerCommand( ent-g_entities, va("chat \"RECORDING STOPPED for client %i\"", ent->client->ps.clientNum));
@@ -5746,11 +5746,14 @@ void G_RunClient( gentity_t *ent ) {
 			if (ent->client->lastCmdTime < (level.time - 250)) { //Force 250ms updaterate for racers?
 				forceUpdateRate = qtrue;
 			}
-			else {
-				G_TouchTriggersWithTrace( ent );
-				//if (ent->client->lastCmdTime < (level.time - 50)) { //This is cool but it doesnt prevent timenudge warp abuse bypassing triggers
-				//G_TouchTriggersLerped( ent ); 
-				//}
+			if (ent->client->lastCmdTime < (level.time - (1000/sv_fps.integer))) {
+				G_TouchTriggers( ent ); //They have bad FPS, so also check if they are in trigger here.
+			}
+			G_TouchTriggersWithTrace( ent ); //
+
+			//Do AFKTime here, subtract it from racetime and clear it when racetime is added.
+			if (level.time - ent->client->lastHereTime > 10000) { //They have been AFK for more than 10 seconds
+				ent->client->afkDuration += 1000/sv_fps.integer;
 			}
 
 			/*

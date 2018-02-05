@@ -373,10 +373,11 @@ static const char *gcmds[] = {
 	"teamtask",
 	"teamvote",
 	"tell",
+	"vgs_cmd",
 	"voice_cmd",
 	"vote",
 	"where",
-	"zoom"
+	"zoom",
 };
 static const size_t numgcmds = ARRAY_LEN( gcmds );
 

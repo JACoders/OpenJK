@@ -302,6 +302,38 @@ void Svcmd_ListIP_f (void)
 
 /*
 ===================
+Svcmd_EntityInfo_f
+===================
+*/
+void	Svcmd_EntityInfo_f(void) {
+	int totalents;
+	int inuse;
+	int i;
+	gentity_t *e;
+
+	inuse = 0;
+	for (e = &g_entities[0], i = 0; i < level.num_entities; e++, i++) {
+		if (e->inuse) {
+			inuse++;
+		}
+	}
+	trap->Print("Normal entity slots in use: %i/%i (%i slots allocated)\n", inuse, MAX_GENTITIES, level.num_entities);
+	totalents = inuse;
+
+	inuse = 0;
+	for (e = &g_entities[MAX_GENTITIES], i = 0; i < level.num_logicalents; e++, i++) {
+		if (e->inuse) {
+			inuse++;
+		}
+	}
+	trap->Print("Logical entity slots in use: %i/%i (%i slots allocated)\n", inuse, MAX_LOGICENTITIES, level.num_logicalents);
+	totalents += inuse;
+	trap->Print("Total entity count: %i/%i\n", totalents, MAX_ENTITIESTOTAL);
+}
+
+
+/*
+===================
 Svcmd_EntityList_f
 ===================
 */
@@ -1574,6 +1606,7 @@ svcmd_t svcmds[] = {
 	{ "DBInfo",						Svcmd_DBInfo_f,						qfalse },
 	{ "deleteAccount",				Svcmd_DeleteAccount_f,				qfalse },
 
+	{ "entityinfo",					Svcmd_EntityInfo_f,					qfalse },
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "gametype",					Svcmd_ChangeGametype_f,				qfalse },

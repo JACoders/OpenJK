@@ -3268,7 +3268,7 @@ void QDECL CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...) {
 	time_t rawtime;
 	time(&rawtime);
 	
-	strftime(string, sizeof(string), "[%Y-%m-%d] [%H:%M:%S] ", gmtime(&rawtime));
+	strftime(string, sizeof(string), "[%Y-%m-%d] [%H:%M:%S] ", localtime(&rawtime));
 
 	len = strlen(string);
 

@@ -306,6 +306,10 @@ typedef struct playerEntity_s {
 #define	MAX_CUSTOM_SOUNDS	40 //rww - Note that for now these must all be the same, because of the way I am
 							   //cycling through them and comparing for custom sounds.
 
+#define DEFAULT_FEMALE_SOUNDPATH "chars/mp_generic_female/misc"//"chars/tavion/misc"
+
+#define DEFAULT_MALE_SOUNDPATH "chars/mp_generic_male/misc"//"chars/kyle/misc"
+
 typedef struct clientInfo_s {
 	qboolean		infoValid;
 
@@ -1525,6 +1529,9 @@ typedef struct cgMedia_s {
 
 	// For vehicles only now
 	sfxHandle_t	noAmmoSound;
+
+	sfxHandle_t		maleVGSSounds[MAX_CUSTOM_VGS_SOUNDS];//vgs
+	sfxHandle_t		femaleVGSSounds[MAX_CUSTOM_VGS_SOUNDS];//vgs
 
 } cgMedia_t;
 

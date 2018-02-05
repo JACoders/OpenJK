@@ -1,0 +1,396 @@
+VERSION             "1"
+CONFIG              "W:\bin\stringed.cfg"
+FILENOTES           ""
+
+REFERENCE           VGS_ATTACK_ATTACK
+LANG_ENGLISH        "[VAA] Attack!"
+
+REFERENCE           VGS_ATTACK_ATTACKWAIT
+LANG_ENGLISH        "[VAW] Wait for my signal before attacking!"
+
+REFERENCE           VGS_ATTACK_BASE
+LANG_ENGLISH        "[VAB] Attack the enemy base!"
+
+REFERENCE           VGS_ATTACK_CHASE
+LANG_ENGLISH        "[VAC] Chase the enemy flag carrier!"
+
+REFERENCE           VGS_ATTACK_DISRUPT
+LANG_ENGLISH        "[VAD] Disrupt the enemy defense!"
+
+REFERENCE           VGS_ATTACK_FLAG
+LANG_ENGLISH        "[VAF] Get the enemy flag!"
+
+REFERENCE           VGS_ATTACK_GENERATOR
+LANG_ENGLISH        "[VAG] Destroy the enemy generator!"
+
+REFERENCE           VGS_ATTACK_REINFORCE
+LANG_ENGLISH        "[VAR] Reinforce the offense!"
+
+REFERENCE           VGS_ATTACK_SENSORS
+LANG_ENGLISH        "[VAS] Destroy enemy sensors!"
+
+REFERENCE           VGS_ATTACK_TURRETS
+LANG_ENGLISH        "[VAT] Destroy enemy turrets!"
+
+REFERENCE           VGS_ATTACK_VEHICLE
+LANG_ENGLISH        "[VAV] Destroy the enemy vehicle!"
+
+REFERENCE           VGS_BASE_CLEAR
+LANG_ENGLISH        "[VBC] Our base is clear."
+
+REFERENCE           VGS_BASE_ENEMYINBASE
+LANG_ENGLISH        "[VBE] The enemy is in our base."
+
+REFERENCE           VGS_BASE_RETAKE
+LANG_ENGLISH        "[VBR] Retake our base!"
+
+REFERENCE           VGS_BASE_SECURE
+LANG_ENGLISH        "[VBS] Secure our base!"
+
+REFERENCE           VGS_COMMAND_ACKNOWLEDGED
+LANG_ENGLISH        "[VCA] Acknowledged."
+
+REFERENCE           VGS_COMMAND_ASSIGNMENT
+LANG_ENGLISH        "[VCC] Completed."
+
+REFERENCE           VGS_COMMAND_COMPLETED
+LANG_ENGLISH        "[VCD] Declined."
+
+REFERENCE           VGS_COMMAND_DECLINED
+LANG_ENGLISH        "[VCW] What's my assignment?"
+
+REFERENCE           VGS_DEFEND_BASE
+LANG_ENGLISH        "[VDB] Defend our base!"
+
+REFERENCE           VGS_DEFEND_ENTRANCES
+LANG_ENGLISH        "[VDE] Defend the entrances!"
+
+REFERENCE           VGS_DEFEND_FLAG
+LANG_ENGLISH        "[VDF] Defend our flag!"
+
+REFERENCE           VGS_DEFEND_FLAGCARRIER
+LANG_ENGLISH        "[VDC] Defend the flag carrier!"
+
+REFERENCE           VGS_DEFEND_GENERATOR
+LANG_ENGLISH        "[VDG] Defend our generator!"
+
+REFERENCE           VGS_DEFEND_ME
+LANG_ENGLISH        "[VDM] Cover me!"
+
+REFERENCE           VGS_DEFEND_REINFORCE
+LANG_ENGLISH        "[VDR] Reinforce our defense!"
+
+REFERENCE           VGS_DEFEND_SENSORS
+LANG_ENGLISH        "[VDS] Defend our sensors!"
+
+REFERENCE           VGS_DEFEND_TURRETS
+LANG_ENGLISH        "[VDT] Defend our turrets!"
+
+REFERENCE           VGS_DEFEND_VEHICLE
+LANG_ENGLISH        "[VDV] Defend our vehicle!"
+
+REFERENCE           VGS_ENEMY_DISARRAY
+LANG_ENGLISH        "[VED] The enemy is in disarray."
+
+REFERENCE           VGS_ENEMY_GENERATOR
+LANG_ENGLISH        "[VEG] The enemy generator is destroyed."
+
+REFERENCE           VGS_ENEMY_SENSORS
+LANG_ENGLISH        "[VES] The enemy sensors are destroyed."
+
+REFERENCE           VGS_ENEMY_TURRETS
+LANG_ENGLISH        "[VET] The enemy turrets are destroyed."
+
+REFERENCE           VGS_ENEMY_VEHICLE
+LANG_ENGLISH        "[VEV] The enemy vehicle is destroyed."
+
+REFERENCE           VGS_FLAG_DEFEND
+LANG_ENGLISH        "[VFD] Defend our flag!"
+
+REFERENCE           VGS_FLAG_GIVEME
+LANG_ENGLISH        "[VFG] Give me the flag!"
+
+REFERENCE           VGS_FLAG_IHAVE
+LANG_ENGLISH        "[VFF] I have the flag!"
+
+REFERENCE           VGS_FLAG_IRETRIEVE
+LANG_ENGLISH        "[VFQ] I'll retrieve our flag!"
+
+REFERENCE           VGS_FLAG_RETRIEVE
+LANG_ENGLISH        "[VFR] Retrieve our flag!"
+
+REFERENCE           VGS_FLAG_SECURE
+LANG_ENGLISH        "[VFS] Our flag is secure."
+
+REFERENCE           VGS_FLAG_TAKE
+LANG_ENGLISH        "[VFT] Take the flag from me!"
+
+REFERENCE           VGS_COMPLIMENT_AWESOME
+LANG_ENGLISH        "[VGCA] Awesome!"
+
+REFERENCE           VGS_COMPLIMENT_GOODGAME
+LANG_ENGLISH        "[VGCG] Good game."
+
+REFERENCE           VGS_COMPLIMENT_GREATSHOT
+LANG_ENGLISH        "[VGCS] Great shot!"
+
+REFERENCE           VGS_COMPLIMENT_NICEMOVE
+LANG_ENGLISH        "[VGCN] Nice move!"
+
+REFERENCE           VGS_COMPLIMENT_YOUROCK
+LANG_ENGLISH        "[VGCY] You rock!"
+
+REFERENCE           VGS_RESPOND_ANYTIME
+LANG_ENGLISH        "[VGRA] Any time."
+
+REFERENCE           VGS_RESPOND_DONTKNOW
+LANG_ENGLISH        "[VGRD] I don't know."
+
+REFERENCE           VGS_RESPOND_RESPONDWAIT
+LANG_ENGLISH        "[VGRW] Wait."
+
+REFERENCE           VGS_RESPOND_THANKS
+LANG_ENGLISH        "[VGRT] Thanks."
+
+REFERENCE           VGS_TAUNT_AWW
+LANG_ENGLISH        "[VGTA] Aww, that's too bad!"
+
+REFERENCE           VGS_TAUNT_BRAG
+LANG_ENGLISH        "[VGTG] I am the greatest!"
+
+REFERENCE           VGS_TAUNT_LEARN
+LANG_ENGLISH        "[VGTW] When will you learn?"
+
+REFERENCE           VGS_TAUNT_OBNOXIOUS
+LANG_ENGLISH        "[VGTB] Is that the best you can do?"
+
+REFERENCE           VGS_TAUNT_SARCASM
+LANG_ENGLISH        "[VGTT] THAT was graceful!"
+
+REFERENCE           VGS_GLOBAL_BYE
+LANG_ENGLISH        "[VGB] Bye."
+
+REFERENCE           VGS_GLOBAL_HI
+LANG_ENGLISH        "[VGH] Hi."
+
+REFERENCE           VGS_GLOBAL_NO
+LANG_ENGLISH        "[VGN] No."
+
+REFERENCE           VGS_GLOBAL_OOOPS
+LANG_ENGLISH        "[VGO] Ooops."
+
+REFERENCE           VGS_GLOBAL_QUIET
+LANG_ENGLISH        "[VGQ] Quiet!"
+
+REFERENCE           VGS_GLOBAL_SHAZBOT
+LANG_ENGLISH        "[VGS] Shazbot!"
+
+REFERENCE           VGS_GLOBAL_WHOOHOO
+LANG_ENGLISH        "[VGW] Woohoo!"
+
+REFERENCE           VGS_GLOBAL_YES
+LANG_ENGLISH        "[VGY] Yes."
+
+REFERENCE           VGS_NEED_COVER
+LANG_ENGLISH        "[VNC] Need covering fire."
+
+REFERENCE           VGS_NEED_DRIVER
+LANG_ENGLISH        "[VND] I need a driver."
+
+REFERENCE           VGS_NEED_ESCORT
+LANG_ENGLISH        "[VNE] I need an escort."
+
+REFERENCE           VGS_NEED_HOLDVEHICLE
+LANG_ENGLISH        "[VNH] Hold that vehicle! I'm coming!"
+
+REFERENCE           VGS_NEED_RIDE
+LANG_ENGLISH        "[VNR] I need a ride!"
+
+REFERENCE           VGS_NEED_SUPPORT
+LANG_ENGLISH        "[VNS] I need support!"
+
+REFERENCE           VGS_NEED_VEHICLEREADY
+LANG_ENGLISH        "[VNV] Vehicle ready. Need a ride?"
+
+REFERENCE           VGS_NEED_WHERETO
+LANG_ENGLISH        "[VNW] Where to?"
+
+REFERENCE           VGS_REPAIR_GENERATOR
+LANG_ENGLISH        "[VRG] Repair our generator!"
+
+REFERENCE           VGS_REPAIR_SENSORS
+LANG_ENGLISH        "[VRS] Repair our sensors!"
+
+REFERENCE           VGS_REPAIR_TURRETS
+LANG_ENGLISH        "[VRT] Repair our turrets!"
+
+REFERENCE           VGS_REPAIR_VEHICLE
+LANG_ENGLISH        "[VRV] Repair the vehicle!"
+
+REFERENCE           VGS_SELFATTACK_ATTACK
+LANG_ENGLISH        "[VSAA] I will attack."
+
+REFERENCE           VGS_SELFATTACK_BASE
+LANG_ENGLISH        "[VSAB] I will attack the enemy base."
+
+REFERENCE           VGS_SELFATTACK_FLAG
+LANG_ENGLISH        "[VSAF] I'll go for the enemy flag."
+
+REFERENCE           VGS_SELFATTACK_GENERATOR
+LANG_ENGLISH        "[VSAG] I'll attack the enemy generator."
+
+REFERENCE           VGS_SELFATTACK_SENSORS
+LANG_ENGLISH        "[VSAS] I'll attack the enemy sensors."
+
+REFERENCE           VGS_SELFATTACK_TURRETS
+LANG_ENGLISH        "[VSAT] I'll attack the enemy turrets."
+
+REFERENCE           VGS_SELFATTACK_VEHICLE
+LANG_ENGLISH        "[VSAV] I'll attack the enemy vehicle."
+
+REFERENCE           VGS_SELFDEFEND_BASE
+LANG_ENGLISH        "[VSDB] I will defend our base."
+
+REFERENCE           VGS_SELFDEFEND_DEFEND
+LANG_ENGLISH        "[VSDD] I will defend."
+
+REFERENCE           VGS_SELFDEFEND_FLAG
+LANG_ENGLISH        "[VSDF] I will defend our flag."
+
+REFERENCE           VGS_SELFDEFEND_GENERATOR
+LANG_ENGLISH        "[VSDG] I'll defend our generator."
+
+REFERENCE           VGS_SELFDEFEND_SENSORS
+LANG_ENGLISH        "[VSDS] I'll defend our sensors."
+
+REFERENCE           VGS_SELFDEFEND_TURRETS
+LANG_ENGLISH        "[VSDT] I'll defend our turrets."
+
+REFERENCE           VGS_SELFDEFEND_VEHICLE
+LANG_ENGLISH        "[VSDV] I'll defend our vehicle."
+
+REFERENCE           VGS_SELFREPAIR_BASE
+LANG_ENGLISH        "[VSRB] I'll repair our base."
+
+REFERENCE           VGS_SELFREPAIR_GENERATOR
+LANG_ENGLISH        "[VSRG] I'll repair our generator."
+
+REFERENCE           VGS_SELFREPAIR_SENSORS
+LANG_ENGLISH        "[VSRS] I'll repair our sensors."
+
+REFERENCE           VGS_SELFREPAIR_TURRETS
+LANG_ENGLISH        "[VSRT] I'll repair our turrets."
+
+REFERENCE           VGS_SELFREPAIR_VEHICLE
+LANG_ENGLISH        "[VSRV] I'll repair the vehicle."
+
+REFERENCE           VGS_SELFTASK_COVER
+LANG_ENGLISH        "[VSTC] I'll cover you."
+
+REFERENCE           VGS_SELFTASK_DEFENSES
+LANG_ENGLISH        "[VSTD] I'll set up defenses."
+
+REFERENCE           VGS_SELFTASK_DEPLOYSENSORS
+LANG_ENGLISH        "[VSTS] I'm deploying sensors."
+
+REFERENCE           VGS_SELFTASK_DEPLOYTURRETS
+LANG_ENGLISH        "[VSTT] I'm deploying turrets."
+
+REFERENCE           VGS_SELFTASK_FORCEFIELD
+LANG_ENGLISH        "[VSTF] I'll deploy forcefields."
+
+REFERENCE           VGS_SELFTASK_ONIT
+LANG_ENGLISH        "[VSTO] I'm on it."
+
+REFERENCE           VGS_SELFTASK_VEHICLE
+LANG_ENGLISH        "[VSTV] I'll get a vehicle ready."
+
+REFERENCE           VGS_UPGRADESELF_GENERATOR
+LANG_ENGLISH        "[VUG] Upgrade our generator!"
+
+REFERENCE           VGS_UPGRADESELF_SENSOR
+LANG_ENGLISH        "[VUS] Upgrade our sensors!"
+
+REFERENCE           VGS_UPGRADESELF_TURRET
+LANG_ENGLISH        "[VUT] Upgrade our base turrets!"
+
+REFERENCE           VGS_TARGET_ACQUIERED
+LANG_ENGLISH        "[VTA] Target acquired."
+
+REFERENCE           VGS_TARGET_BASE
+LANG_ENGLISH        "[VTB] Target the enemy base! I'm in position."
+
+REFERENCE           VGS_TARGET_DESTROYED
+LANG_ENGLISH        "[VTD] Target destroyed."
+
+REFERENCE           VGS_TARGET_FIREONMY
+LANG_ENGLISH        "[VTM] Fire on my target!"
+
+REFERENCE           VGS_TARGET_FLAG
+LANG_ENGLISH        "[VTF] Target the enemy flag! I'm in position."
+
+REFERENCE           VGS_TARGET_NEED
+LANG_ENGLISH        "[VTN] I need a target painted!"
+
+REFERENCE           VGS_TARGET_SENSORS
+LANG_ENGLISH        "[VTS] Target the sensors! I'm in position."
+
+REFERENCE           VGS_TARGET_TURRET
+LANG_ENGLISH        "[VTT] Target the turret! I'm in position."
+
+REFERENCE           VGS_TARGET_VEHICLE
+LANG_ENGLISH        "[VTV] Target the vehicle! I'm in position."
+
+REFERENCE           VGS_TARGET_WAIT
+LANG_ENGLISH        "[VTW] Wait! I'll be in range soon."
+
+REFERENCE           VGS_UPGRADE_GENERATOR
+LANG_ENGLISH        "[VSUG] I'll upgrade our generator."
+
+REFERENCE           VGS_UPGRADE_SENSOR
+LANG_ENGLISH        "[VSUS] I'll upgrade our sensors."
+
+REFERENCE           VGS_UPGRADE_TURRET
+LANG_ENGLISH        "[VSUT] I'll upgrade our base turrets."
+
+REFERENCE           VGS_WARN_ENEMIES
+LANG_ENGLISH        "[VWE] Incoming hostiles!"
+
+REFERENCE           VGS_WARN_VEHICLE
+LANG_ENGLISH        "[VWV] Incoming enemy vehicle!"
+
+REFERENCE           VGS_TEAM_ANYTIME
+LANG_ENGLISH        "[VVA] Anytime."
+
+REFERENCE           VGS_TEAM_BASESECURE
+LANG_ENGLISH        "[VVB] Is our base secure?"
+
+REFERENCE           VGS_TEAM_CEASEFIRE
+LANG_ENGLISH        "[VVC] Cease fire!"
+
+REFERENCE           VGS_TEAM_DONTKNOW
+LANG_ENGLISH        "[VVD] I don't know."
+
+REFERENCE           VGS_TEAM_HELP
+LANG_ENGLISH        "[VVH] Help!"
+
+REFERENCE           VGS_TEAM_MOVE
+LANG_ENGLISH        "[VVM] Move!"
+
+REFERENCE           VGS_TEAM_NO
+LANG_ENGLISH        "[VVN] No."
+
+REFERENCE           VGS_TEAM_SORRY
+LANG_ENGLISH        "[VVS] Sorry."
+
+REFERENCE           VGS_TEAM_THANKS
+LANG_ENGLISH        "[VVT] Thanks."
+
+REFERENCE           VGS_TEAM_WAIT
+LANG_ENGLISH        "[VVW] Wait."
+
+REFERENCE           VGS_TEAM_YES
+LANG_ENGLISH        "[VVY] Yes."
+
+
+ENDMARKER
