@@ -588,7 +588,7 @@ void CL_InitCGame( void ) {
 	if (cl_logChat->integer)
 		CL_OpenLog("cl_chat.log", &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
 	else
-		Com_Printf("Not logging chat to disk.\n");
+		Com_DPrintf("Not logging chat to disk.\n");
 }
 
 

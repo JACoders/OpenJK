@@ -30,13 +30,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/game_version.h"
 
 
-int g_console_field_width = 78;
 
 console_t	con;
 
 cvar_t		*con_conspeed;
 cvar_t		*con_notifytime;
 cvar_t		*con_opacity; // background alpha multiplier
+cvar_t		*con_scale;
 cvar_t		*con_autoclear;
 cvar_t		*con_notifyname;
 cvar_t		*con_notifyconnect;
@@ -59,7 +59,6 @@ void Con_ToggleConsole_f (void) {
 
 	if( con_autoclear->integer )
 		Field_Clear( &g_consoleField );
-	g_consoleField.widthInChars = g_console_field_width - 9;
 
 	Con_ClearNotify ();
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
@@ -426,19 +425,13 @@ void Con_CheckResize (void)
 	int		i, j, width, oldwidth, oldtotallines, numlines, numchars;
 	short	tbuf[CON_TEXTSIZE];
 
-//	width = (SCREEN_WIDTH / SMALLCHAR_WIDTH) - 2;
-	width = (cls.glconfig.vidWidth / SMALLCHAR_WIDTH) - 2;
-
-	if (width == con.linewidth)
-		return;
-
-
-	if (width < 1)			// video hasn't been initialized yet
+	if (cls.glconfig.vidWidth <=0.0f) // video hasn't been initialized yet
 	{
 		con.xadjust = 1;
 		con.yadjust = 1;
-		width = DEFAULT_CONSOLE_WIDTH;
-		con.linewidth = width;
+		con.charWidth = SMALLCHAR_WIDTH;
+		con.charHeight = SMALLCHAR_HEIGHT;
+		con.linewidth = DEFAULT_CONSOLE_WIDTH;
 		con.totallines = CON_TEXTSIZE / con.linewidth;
 		for(i=0; i<CON_TEXTSIZE; i++)
 		{
@@ -447,6 +440,22 @@ void Con_CheckResize (void)
 	}
 	else
 	{
+		float scale = (con_scale && con_scale->value > 0.0f) ? con_scale->value : 1.0f;
+		
+		width = (cls.glconfig.vidWidth / (scale * SMALLCHAR_WIDTH)) - 2;
+		
+		if (width == con.linewidth)
+			return;
+		
+		con.charWidth = scale * SMALLCHAR_WIDTH;
+		con.charHeight = scale * SMALLCHAR_HEIGHT;
+		
+		g_consoleField.widthInChars = width;
+		for (i = 0; i < COMMAND_HISTORY; i++) {
+			historyEditLines[i].widthInChars = width;
+			
+		}
+
 		// on wide screens, we will center the text
 		con.xadjust = 640.0f / cls.glconfig.vidWidth;
 		con.yadjust = 480.0f / cls.glconfig.vidHeight;
@@ -511,16 +520,17 @@ void Con_Init (void) {
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0, "Console open/close speed");
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
+	con_scale = Cvar_Get("con_scale", "1.0", CVAR_ARCHIVE_ND, "Console character scale");
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 	con_notifyname = Cvar_Get("con_notifyname", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
 	con_notifyconnect = Cvar_Get("con_notifyconnect", "0", CVAR_NONE, "Notifies you when someone connects to the server");
 
 	Field_Clear( &g_consoleField );
-	g_consoleField.widthInChars = g_console_field_width;
+	g_consoleField.widthInChars = DEFAULT_CONSOLE_WIDTH;
 	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
 		Field_Clear( &historyEditLines[i] );
-		historyEditLines[i].widthInChars = g_console_field_width;
+		historyEditLines[i].widthInChars = DEFAULT_CONSOLE_WIDTH;
 	}
 
 	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f, "Show/hide console" );
@@ -745,23 +755,23 @@ void Con_DrawInput (void) {
 		return;
 	}
 
-	y = con.vislines - ( SMALLCHAR_HEIGHT * (re->Language_IsAsian() ? 1.5 : 2) );
+	y = con.vislines - ( con.charHeight * (re->Language_IsAsian() ? 1.5 : 2) );
 
 	Com_RealTime(&now);
 	Com_sprintf(ts, sizeof(ts), "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
 
 	re->SetColor(g_color_table[ColorIndex(COLOR_GREEN)]);
 	for (x = 0; x<8; x++) {
-		SCR_DrawSmallChar(con.xadjust + (x + 1) * SMALLCHAR_WIDTH, y, ts[x]);
+		SCR_DrawSmallChar(con.xadjust + (x + 1) * con.charWidth, y, ts[x]);
 	}
 	x = 9;
 
 	re->SetColor( con.color );
 
-	SCR_DrawSmallChar( (int)(con.xadjust + (x+1) * SMALLCHAR_WIDTH), y, CONSOLE_PROMPT_CHAR );
+	SCR_DrawSmallChar( (int)(con.xadjust + (x+1) * con.charWidth), y, CONSOLE_PROMPT_CHAR );
 
-	Field_Draw( &g_consoleField, (int)(con.xadjust + (x+2) * SMALLCHAR_WIDTH), y,
-				SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
+	Field_Draw( &g_consoleField, (int)(con.xadjust + (x+2) * con.charWidth), y,
+				SCREEN_WIDTH - 3 * con.charWidth, qtrue, qtrue );
 }
 
 
@@ -834,7 +844,7 @@ void Con_DrawNotify (void)
 			//
 			// and print...
 			//
-			re->Font_DrawString(cl_conXOffset->integer + con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*aesthetics*/)), con.yadjust*(v), sTemp, g_color_table[currentColor], iFontIndex, -1, fFontScale);
+			re->Font_DrawString(cl_conXOffset->integer + con.xadjust*(con.xadjust + (1*con.charWidth/*aesthetics*/)), con.yadjust*(v), sTemp, g_color_table[currentColor], iFontIndex, -1, fFontScale);
 
 			v +=  iPixelHeightToAdvance;
 		}
@@ -852,10 +862,10 @@ void Con_DrawNotify (void)
 				{
 					cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
 				}
-				SCR_DrawSmallChar((int)(cl_conXOffset->integer + con.xadjust + (x + 1 - 9)*SMALLCHAR_WIDTH), v, text[x] & 0xff);
+				SCR_DrawSmallChar((int)(cl_conXOffset->integer + con.xadjust + (x + 1 - 9)*con.charWidth), v, text[x] & 0xff);
 			}
 
-			v += SMALLCHAR_HEIGHT;
+			v += con.charHeight;
 		}
 	}
 
@@ -942,8 +952,8 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
-			(lines-(SMALLCHAR_HEIGHT*2+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
+		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * con.charWidth,
+			(lines-(con.charHeight*2+con.charHeight/2)), JK_VERSION[x] );
 	}
 
 	// Draw time and date
@@ -956,15 +966,15 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen(ts);
 
 	for (x = 0; x<i; x++) {
-		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x) * SMALLCHAR_WIDTH, lines - (SMALLCHAR_HEIGHT + SMALLCHAR_HEIGHT / 2), ts[x]);
+		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x) * con.charWidth, lines - (con.charHeight + con.charHeight / 2), ts[x]);
 	}
 
 
 	// draw the text
 	con.vislines = lines;
-	rows = (lines-SMALLCHAR_WIDTH)/SMALLCHAR_WIDTH;		// rows of text to draw
+	rows = (lines-con.charWidth)/con.charWidth;		// rows of text to draw
 
-	y = lines - (SMALLCHAR_HEIGHT*3);
+	y = lines - (con.charHeight*3);
 
 	// draw from the bottom up
 	if (con.display != con.current)
@@ -972,8 +982,8 @@ void Con_DrawSolidConsole( float frac ) {
 	// draw arrows to show the buffer is backscrolled
 		re->SetColor( console_color );
 		for (x=0 ; x<con.linewidth ; x+=4)
-			SCR_DrawSmallChar( (int) (con.xadjust + (x+1)*SMALLCHAR_WIDTH), y, '^' );
-		y -= SMALLCHAR_HEIGHT;
+			SCR_DrawSmallChar( (int) (con.xadjust + (x+1)*con.charWidth), y, '^' );
+		y -= con.charHeight;
 		rows--;
 	}
 
@@ -988,7 +998,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 	static int iFontIndexForAsian = 0;
 	const float fFontScaleForAsian = 0.75f*con.yadjust;
-	int iPixelHeightToAdvance = SMALLCHAR_HEIGHT;
+	int iPixelHeightToAdvance = con.charHeight;
 	if (re->Language_IsAsian())
 	{
 		if (!iFontIndexForAsian)
@@ -1029,7 +1039,7 @@ void Con_DrawSolidConsole( float frac ) {
 			//
 			// and print...
 			//
-			re->Font_DrawString(con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*(aesthetics)*/)), con.yadjust*(y), sTemp, g_color_table[currentColor], iFontIndexForAsian, -1, fFontScaleForAsian);
+			re->Font_DrawString(con.xadjust*(con.xadjust + (1*con.charWidth/*(aesthetics)*/)), con.yadjust*(y), sTemp, g_color_table[currentColor], iFontIndexForAsian, -1, fFontScaleForAsian);
 		}
 		else
 		{
@@ -1042,7 +1052,7 @@ void Con_DrawSolidConsole( float frac ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					re->SetColor( g_color_table[currentColor] );
 				}
-				SCR_DrawSmallChar(  (int) (con.xadjust + (x+1)*SMALLCHAR_WIDTH), y, text[x] & 0xff );
+				SCR_DrawSmallChar(  (int) (con.xadjust + (x+1)*con.charWidth), y, text[x] & 0xff );
 			}
 		}
 	}
