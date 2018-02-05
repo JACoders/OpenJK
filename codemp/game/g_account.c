@@ -1402,24 +1402,24 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 
 	if (valid) {
 		if (wr) {
-			Q_strncpyz(awardString, "(WR)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(WR)", sizeof(awardString));
 		}
 		else if (sr && pb) {
-			Q_strncpyz(awardString, "(SR+PB)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(SR+PB)", sizeof(awardString));
 		}
 		else if (sr) {
-			Q_strncpyz(awardString, "(SR)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(SR)", sizeof(awardString));
 		}
 		else if (pb) {
-			Q_strncpyz(awardString, "(PB)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(PB)", sizeof(awardString));
 		}
 		else if (spb) {
-			Q_strncpyz(awardString, "(SPB)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(SPB)", sizeof(awardString));
 		}
 	}
 
-	trap->SendServerCommand( -1, va("print \"%s in ^3%-12s^%i max:^3%-10i^%i avg:^3%-10i^%i style:^3%-10s^%i by ^%i%s^7\n\"",
-				messageStr, timeStr, color, topspeed, color, average, color, style, color, nameColor, nameStr));
+	trap->SendServerCommand( -1, va("print \"%s in ^3%-12s^%i max:^3%-10i^%i avg:^3%-10i^%i style:^3%-10s^%i by ^%i%s %s^7\n\"",
+				messageStr, timeStr, color, topspeed, color, average, color, style, color, nameColor, nameStr, awardString));
 
 	//SR + PB can exist at same time n should be printed as such
 
@@ -3540,7 +3540,7 @@ void Cmd_DFHardest_f(gentity_t *ent) {
 
 	//Should this also only show results that you don't have a time on?
 
-	if (args > 4) {
+	if (args > 4) {//5 for 'me'
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rHardest <style (optional)> <current season (optional - example: s) <page (optional)>.  This displays hardest completed courses for the specified style.\n\"");
 		return;
 	}
@@ -3560,6 +3560,14 @@ void Cmd_DFHardest_f(gentity_t *ent) {
 				continue;
 			}
 		}
+		/*
+		if (!me) {
+			if (!Q_stricmp(inputString, "me")) {
+				me = qtrue;
+				continue;
+			}
+		}
+		*/
 		if (page == -1) {
 			input = atoi(inputString);
 			if (input > 0) {
@@ -3570,6 +3578,18 @@ void Cmd_DFHardest_f(gentity_t *ent) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rHardest <style (optional)> <include seasons (optional - example: s) <page (optional)>.  This displays hardest completed courses for the specified style.\n\"");
 		return; //Arg doesnt match any expected values so error.
 	}
+
+	/*
+	if (me) {
+		if (!ent->client->pers.userName[0]) { //Not logged in
+			trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+			return;
+		}
+		Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+		Q_strlwr(username);
+		Q_CleanStr(username);
+	}
+	*/
 
 	if (style == -1) {
 		Q_strncpyz(inputStyleString, "all styles", sizeof(inputStyleString));
