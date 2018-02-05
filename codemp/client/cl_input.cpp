@@ -1823,7 +1823,6 @@ static const cmdList_t inputCmds[] =
 	{ "useGivenForce", "Use specified force power", IN_UseGivenForce, NULL },
 	{ "automap_button", "Show/hide automap", IN_AutoMapButton, NULL },
 	{ "automap_toggle", "Show/hide radar", IN_AutoMapToggle, NULL },
-	{ "vgs", "Open VGS chat menu", IN_VGSButton, NULL },
 	{ "voicechat", "Open voice chat menu", IN_VoiceChatButton, NULL },
 	{ NULL, NULL, NULL, NULL }
 };

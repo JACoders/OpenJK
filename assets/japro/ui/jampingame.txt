@@ -41,5 +41,6 @@
 	loadMenu { "ui/jamp/ingame_spectator.menu"		}
 	loadMenu { "ui/jamp/ingame_account.menu"		}
 	loadMenu { "ui/jamp/password_request.menu"		}
+	loadMenu { "ui/jamp/ingame_vgs.menu"			}
 }
 
