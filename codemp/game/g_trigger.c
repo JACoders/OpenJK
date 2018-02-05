@@ -80,7 +80,7 @@ void multi_trigger_run( gentity_t *ent )
 	G_UseTargets (ent, ent->activator);
 	if ( ent->noise_index )
 	{
-		if (ent->classname && !Q_stricmp( "df_trigger_finish", ent->classname))//JAPRO FIXME, we dont want to do this if its a df_trigger_finish, since it spams ?
+		if (ent->classname && (!Q_stricmp( "df_trigger_start", ent->classname) || !Q_stricmp( "df_trigger_finish", ent->classname)))//JAPRO FIXME, we dont want to do this if its a df_trigger_finish, since it spams ?
 		{
 		}
 		else
@@ -1291,17 +1291,26 @@ qboolean InTrigger(vec3_t interpOrigin, gentity_t *trigger)
 int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 { //We know that last client frame, they were not touching the flag, but now they are.  Last client frame was pmoveMsec ms ago, so we only want to interp inbetween that range.
 	vec3_t	interpOrigin, delta;
-	int lessTime = 0;
+	int lessTime = -1;
+
+	qboolean touched = qfalse;
+	qboolean inTrigger;
 
 	VectorCopy(activator->client->ps.origin, interpOrigin);
 	VectorScale(activator->s.pos.trDelta, 0.001f, delta);//Delta is how much they travel in 1 ms.
 
-	VectorSubtract(interpOrigin, delta, interpOrigin);//Do it once before we loop
+	//VectorSubtract(interpOrigin, delta, interpOrigin);//Do it once before we loop
 
-	while (InTrigger(interpOrigin, trigger)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
+	//We know that..we should start in the trigger.  If not, we probably are on the other side of the trigger and 'warped' past it.  
+	//So if we start outside of trigger, we should keep going until we hit trigger then keep going until we exit it again.
+	while ((inTrigger = InTrigger(interpOrigin, trigger)) || !touched) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
+		if (inTrigger)
+			touched = qtrue;
+
 		lessTime++; //Add one more ms to be subtracted
 		VectorSubtract(interpOrigin, delta, interpOrigin); //Keep Rewinding position by a tiny bit, that corresponds with 1ms precision (delta*0.001), since delta is per second.
-		if (lessTime >= activator->client->pmoveMsec || lessTime >= 8) { //activator->client->pmoveMsec
+		//if (lessTime >= activator->client->pmoveMsec || lessTime >= 8) { //activator->client->pmoveMsec
+		if (lessTime >= 250) {
 			break; //In theory, this should never happen, but just incase stop it here.
 		}
 	}
@@ -1339,27 +1348,39 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
-	if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
-		return;
-	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
-		return;
 	if (player->s.eType == ET_NPC)
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE && player->client->ps.pm_type != PM_JETPACK)
 		return;
 	if (player->client->sess.raceMode && player->client->sess.movementStyle == MV_SWOOP && !player->client->ps.m_iVehicleNum) //Dont start the timer for swoop racers if they dont have a swoop
 		return;
+	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
+		return;
+	if (level.time - player->client->lastInStartTrigger <= 300) { //We were last in the trigger within 300ms ago.., //goal, make this negative edge ?
+		player->client->lastInStartTrigger = level.time;
+		return;
+	}
+	else {
+		player->client->lastInStartTrigger = level.time;
+	}
+	//if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
+		//return;
+	//if (player->client->pers.stats.startTime) //Instead of floodprotect, dont let player start a timer if they already have one.  Mapmakers should then put reset timers over the start area.
+		//return;
+
 
 	//trap->Print("Actual trigger touch! time: %i\n", GetTimeMS());
 
 	if (player->client->pers.recordingDemo && player->client->pers.keepDemo) {
-		//We are still recording a demo that we want to keep?
+		//We are still recording a demo that we want to keep? -shouldn't ever happen?
 		//Stop and rename it
 		//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
-		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo temp/%s races/%s\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
+		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 10;svrenamedemo temp/%s races/%s\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
 		player->client->pers.recordingDemo = qfalse;
 		player->client->pers.demoStoppedTime = level.time;
 	}
+
+	//in rename demo, also make sure demo is stopped before renaming? that way we dont have to have the ;wait 20; here
 
 	if ((sv_autoRaceDemo.integer) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && player->client->sess.raceMode && !sv_cheats.integer && player->client->pers.userName[0]) {
 		if (!player->client->pers.recordingDemo) { //Start the new demo
@@ -1368,15 +1389,19 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 			trap->SendConsoleCommand( EXEC_APPEND, va("svrecord temp/%s %i\n", player->client->pers.userName, player->client->ps.clientNum));
 		}
 		else { //Check if we should "restart" the demo
-			if (!player->client->lastStartTime || (level.time - player->client->lastStartTime > 5000)) {
+			//if (!player->client->lastStartTime || (level.time - player->client->lastStartTime > 5000)) {
+			if (!player->client->pers.stats.startTime || (GetTimeMS() - player->client->pers.stats.startTime > 5000)) { //we can just use starttime ?
+
 				player->client->pers.recordingDemo = qtrue;
 				player->client->pers.demoStoppedTime = level.time;
 				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
-				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
+				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 5;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
+				//trap->SendConsoleCommand( EXEC_APPEND, va("svrecord temp/%s %i\n", player->client->pers.userName, player->client->ps.clientNum));
 			}
 		}
 	}
-	player->client->lastStartTime = level.time;
+
+	//player->client->lastStartTime = level.time;
 	player->client->pers.keepDemo = qfalse;
 
 	if (player->client->ps.m_iVehicleNum) { //We are in a vehicle, so use the trigger on that instead maybe? or both..
@@ -1387,8 +1412,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts.  Move this up here, so swoops can activate it for proper swoop teleporting?
 
-	if (trigger->noise_index) 
-		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
+	if (trigger->noise_index) //Only play on leaving trigger..?
+		G_RaceSound( player, CHAN_AUTO, trigger->noise_index, RS_TIMER_START );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
 	player->client->pers.startLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //use level.previousTime?
 	//trap->SendServerCommand( player-g_entities, va("chat \"startlag: %i\"", player->client->pers.startLag));
@@ -1403,40 +1428,45 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 	//Update playtime if needed
 	if (player->client->sess.raceMode && player->client->pers.userName[0] && player->client->pers.stats.startTime) {
-		player->client->pers.stats.racetime += ((GetTimeMS() - player->client->pers.stats.startTime)*0.001f);
+		player->client->pers.stats.racetime += (GetTimeMS() - player->client->pers.stats.startTime)*0.001f - player->client->afkDuration*0.001f;
+		player->client->afkDuration = 0;
 		if (player->client->pers.stats.racetime > 120.0f) { //Avoid spamming the db
 			G_UpdatePlaytime(0, player->client->pers.userName, (int)(player->client->pers.stats.racetime+0.5f));
 			player->client->pers.stats.racetime = 0.0f;
 		}
 	}
 
-	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
-	player->client->pers.stats.startTime = GetTimeMS();
 	lessTime = InterpolateTouchTime(player, trigger);
-	player->client->pers.stats.startTime -= lessTime;
+
+	if (player->client->ps.stats[STAT_RACEMODE]) {
+		player->client->ps.duelTime = level.time - lessTime;//player->client->pers.stats.startTime;//level.time;
+		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
+		player->client->ps.stats[STAT_ARMOR] = 25;
+
+		if ((GetTimeMS() - player->client->pers.stats.startTime > 2000)) {
+			//Floodprotect the prints
+			if (!player->client->pers.userName[0]) //In racemode but not logged in
+				trap->SendServerCommand(player-g_entities, "cp \"^3Warning: You are not logged in!\n\n\n\n\n\n\n\n\n\n\"");
+			else if (player->client->pers.noFollow)
+				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: times are not valid while hidden!\n\n\n\n\n\n\n\n\n\n\""); //Since times wont be saved if they arnt logged in anyway
+			else if (player->client->pers.practice)
+				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: times are not valid in practice mode!\n\n\n\n\n\n\n\n\n\n\""); //Since times wont be saved if they arnt logged in anyway
+		}
+	}
+
+	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
+	player->client->pers.stats.startTime = GetTimeMS() - lessTime;
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
 	player->client->pers.stats.displacementSamples = 0;
 
+
 	//if (player->r.svFlags & SVF_JUNIORADMIN)
 		//trap->SendServerCommand(player-g_entities, va("cp \"Starting lag: %i\n 2: %i\n 3: %i\n\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, GetTimeMS() - player->client->pers.cmd.serverTime));
 
-	if (player->client->ps.stats[STAT_RACEMODE]) {
-		player->client->ps.duelTime = level.time - lessTime;//player->client->pers.stats.startTime;//level.time;
-
-		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
-		player->client->ps.stats[STAT_ARMOR] = 25;
-
-		if (!player->client->pers.userName[0]) //In racemode but not logged in
-			trap->SendServerCommand(player-g_entities, "cp \"^3Warning: You are not logged in!\n\n\n\n\n\n\n\n\n\n\"");
-		else if (player->client->pers.noFollow)
-			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: times are not valid while hidden!\n\n\n\n\n\n\n\n\n\n\""); //Since times wont be saved if they arnt logged in anyway
-		else if (player->client->pers.practice)
-			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: times are not valid in practice mode!\n\n\n\n\n\n\n\n\n\n\""); //Since times wont be saved if they arnt logged in anyway
-	}
 }
 
-void PrintRaceTime(char *username, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean sr, qboolean spb, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid);
+void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean sr, qboolean spb, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid);
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize);
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMS);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
@@ -1462,6 +1492,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		qboolean valid = qfalse;
 		const int endLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
+		const int lessTime = InterpolateTouchTime(player, trigger);
 
 		if (diffLag > 0) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
@@ -1474,7 +1505,9 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		
 		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
 
-		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
+		if (lessTime < 16) //Don't really trust this yet, max possible is 250.
+			time -= lessTime;
+
 		time /= 1000.0f;
 		if (time < 0.001f)
 			time = 0.001f;
@@ -1506,7 +1539,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		Q_StripColor(playerName);
 	
 		if (!valid) {
-			PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse);
+			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse);
 		}
 		else {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -1519,7 +1552,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
 			}
 			else {
-				PrintRaceTime(playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qtrue);
+				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qtrue);
 			}
 		}
 

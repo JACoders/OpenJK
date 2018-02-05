@@ -7279,7 +7279,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_RAGE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_RAGE))) {
-		if ((bs->cur_ps.weapon > WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) {
+		if ((bs->cur_ps.weapon > WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) { //Need line of sight
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_RAGE;
 			useTheForce = qtrue;
 		}

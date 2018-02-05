@@ -380,6 +380,8 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define TV_ONLY_COUNT_VOTERS		(1<<9)
 #define TV_FIX_GAMETYPEMAP			(1<<10)
 
+#define RS_TIMER_START				(1<<0)
+
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
 void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims );
@@ -687,6 +689,7 @@ struct gentity_s {
 
 	// OpenJK add
 	int			useDebounceTime;	// for cultist_destroyer
+	qboolean	isLogical;		// Determines if this ent is logical or not
 };
 
 #define DAMAGEREDIRECT_HEAD		1
@@ -1054,6 +1057,7 @@ struct gclient_s {
 	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
 	int			inactivityTime;		// kick players when time > this
 	int			lastHereTime;		//japro to optimize bots / autorecord
+	int			afkDuration;
 	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
 	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
 	int			ourSwoopNum;		//for swoop movementstyle
@@ -1212,7 +1216,8 @@ struct gclient_s {
 	short		noKnockdownStreak; //pseudo random knockdowns option
 	short		totalDamage;
 	int			lastDamageTime;
-	int			lastStartTime; //for autodemo floodprotect
+	//int			lastStartTime; //for autodemo floodprotect
+	int			lastInStartTrigger;
 	//int			numStakes;
 
 #if _GRAPPLE
@@ -1368,6 +1373,7 @@ typedef struct level_locals_s {
 	struct gentity_s	*gentities;
 	int			gentitySize;
 	int			num_entities;		// current number, <= MAX_GENTITIES
+	int			num_logicalents;	// current numner of logical ents, > MAX_GENTIIES, <= MAX_LOGICALENTS
 
 	int			warmupTime;			// restart match at this time
 
@@ -1632,12 +1638,14 @@ void	G_SetAngles( gentity_t *ent, vec3_t angles );
 
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (qboolean essential);
-gentity_t *G_TempEntity( vec3_t origin, int event );
+gentity_t	*G_SpawnLogical(void);
+gentity_t	*G_TempEntity( vec3_t origin, int event );
 gentity_t	*G_PlayEffect(int fxID, vec3_t org, vec3_t ang);
 gentity_t	*G_PlayEffectID(const int fxID, vec3_t org, vec3_t ang);
-gentity_t *G_ScreenShake(vec3_t org, gentity_t *target, float intensity, int duration, qboolean global);
+gentity_t	*G_ScreenShake(vec3_t org, gentity_t *target, float intensity, int duration, qboolean global);
 void	G_MuteSound( int entnum, int channel );
 void	G_Sound( gentity_t *ent, int channel, int soundIndex );
+void	G_RaceSound( gentity_t *ent, int channel, int soundIndex, int racesound );//bad
 void	G_SoundAtLoc( vec3_t loc, int channel, int soundIndex );
 void	G_EntitySound( gentity_t *ent, int channel, int soundIndex );
 void	TryUse( gentity_t *ent );
@@ -2033,7 +2041,8 @@ int BotAIStartFrame( int time );
 
 
 extern	level_locals_t	level;
-extern	gentity_t		g_entities[MAX_GENTITIES];
+extern gentity_t		g_entities[MAX_ENTITIESTOTAL];
+extern gentity_t		*g_logicalents;
 
 #define	FOFS(x) offsetof(gentity_t, x)
 

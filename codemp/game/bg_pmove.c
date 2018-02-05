@@ -1187,7 +1187,7 @@ static void PM_Friction( void ) {
 	{
 		// apply ground friction
 		if ( pm->waterlevel <= 1 ) {
-			if ( pml.walking && !(pml.groundTrace.surfaceFlags & SURF_SLICK) ) {
+			if ( pml.walking && !(pml.groundTrace.surfaceFlags & SURF_SLICK) ) { //Slick style here potentially
 				// if getting knocked back, no friction
 				if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
 					control = speed < pm_stopspeed ? pm_stopspeed : speed;
@@ -3191,6 +3191,8 @@ static qboolean PM_CheckJump( void )
 			if (added > (xyspeed * 0.5))
 				added = (xyspeed * 0.5);//Sad sanity check hack
 
+			//Dont apply if added is quite small (prevent circlejump rampjump?)
+
 			if (added > 0) {
 				if (movestyle == 2 || movestyle == 5)
 					pm->ps->velocity[2] += (added * 0.75f); //Forcejump rampjump initial upspeed
@@ -4324,7 +4326,7 @@ static void PM_WalkMove( void ) {
 	{
 		accelerate = pm_vehicleaccelerate;
 	}
-	else if ( ( pml.groundTrace.surfaceFlags & SURF_SLICK ) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK )
+	else if ( ( pml.groundTrace.surfaceFlags & SURF_SLICK ) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK ) //slickstyle
 	{
 		accelerate = pm_airaccelerate; //this should be changed for QW and other stuff, but whatever, already done
 	}

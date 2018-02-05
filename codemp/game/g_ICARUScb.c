@@ -1921,7 +1921,7 @@ static qboolean Q3_SetTeleportDest( int entID, vec3_t org )
 	{
 		if ( SpotWouldTelefrag2( teleEnt, org ) )
 		{
-			gentity_t *teleporter = G_Spawn(qtrue);
+			gentity_t *teleporter = G_SpawnLogical();
 
 			G_SetOrigin( teleporter, org );
 			teleporter->r.ownerNum = teleEnt->s.number;

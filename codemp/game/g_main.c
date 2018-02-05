@@ -38,7 +38,8 @@ qboolean BG_CanJetpack(playerState_t *ps);
 
 int killPlayerTimer = 0;
 
-gentity_t		g_entities[MAX_GENTITIES];
+gentity_t		g_entities[MAX_ENTITIESTOTAL];
+gentity_t		*g_logicalents = &g_entities[MAX_GENTITIES]; // Quicker access xD
 gclient_t		g_clients[MAX_CLIENTS];
 
 int	dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
@@ -505,15 +506,16 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		*/
 	}
 
-	while (i < MAX_CUSTOM_VGS_SOUNDS)
-	{
-		if (!bg_customVGSSoundNames[i])
+	
+	if (g_allowVGS.integer) {
+		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
 		{
 			break;
 		}
 		G_SoundIndex((char *)bg_customVGSSoundNames[i]);
 		i++;
 	}
+	
 
 	if ( level.gametype == GT_JEDIMASTER ) {
 		gentity_t *ent = NULL;
@@ -3281,7 +3283,7 @@ void G_RunThink (gentity_t *ent) {
 	ent->think (ent);
 
 runicarus:
-	if ( ent->inuse )
+	if (ent->inuse && !ent->isLogical)
 	{
 		SaveNPCGlobals();
 		if(NPCS.NPCInfo == NULL && ent->NPC != NULL)
@@ -4012,6 +4014,17 @@ void G_RunFrame( int levelTime ) {
 			ClearNPCGlobals();
 		}
 	}
+
+	// Process logical entities
+	ent = &g_entities[MAX_GENTITIES];
+	for (i = 0; i<level.num_logicalents; i++, ent++) {
+		if (!ent->inuse) {
+			continue;
+		}
+		// Logical entities only think, nothing else
+		G_RunThink(ent);
+	}
+
 #ifdef _G_FRAME_PERFANAL
 	iTimer_ItemRun = trap->PrecisionTimer_End(timer_ItemRun);
 #endif
@@ -4534,6 +4547,8 @@ static void G_SpawnHoleFixes( void ) {
 	Com_sprintf( mapname, sizeof(mapname), "%s", Info_ValueForKey(info, "mapname") );
 	// note: only / is replaced with _
 	Q_strstrip( mapname, "/\n\r;:.?*<>|\\\"", "_" );
+	Q_strlwr(mapname);
+	Q_CleanStr(mapname);
 	Com_sprintf( filename, sizeof(filename), "%s_holes.cfg", mapname );
 	len = trap->FS_Open( filename, &f, FS_READ );
 	if ( len != -1 ) {

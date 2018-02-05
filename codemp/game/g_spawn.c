@@ -211,6 +211,7 @@ field_t fields[] = {
 
 typedef struct spawn_s {
 	const char	*name;
+	qboolean	logical;
 	void		(*spawn)(gentity_t *ent);
 } spawn_t;
 
@@ -366,6 +367,7 @@ void SP_NPC_Tie_Pilot( gentity_t *self );
 void SP_NPC_Ugnaught( gentity_t *self );
 void SP_NPC_Jawa( gentity_t *self );
 void SP_NPC_Gran( gentity_t *self );
+void SP_NPC_Human_Merc( gentity_t *self );
 void SP_NPC_Rodian( gentity_t *self );
 void SP_NPC_Weequay( gentity_t *self );
 void SP_NPC_Trandoshan( gentity_t *self );
@@ -509,205 +511,205 @@ void SP_gametype_item ( gentity_t* ent )
 void SP_emplaced_gun( gentity_t *ent );
 
 spawn_t	spawns[] = {
-	{ "df_trigger_checkpoint",				SP_trigger_timer_checkpoint },//JAPRO TIMERS
-	{ "df_trigger_finish",					SP_trigger_timer_stop },//JAPRO TIMERS
-	{ "df_trigger_start",					SP_trigger_timer_start },//JAPRO TIMERS
+	{ "df_trigger_checkpoint",			qfalse,			SP_trigger_timer_checkpoint },//JAPRO TIMERS
+	{ "df_trigger_finish",				qfalse,			SP_trigger_timer_stop },//JAPRO TIMERS
+	{ "df_trigger_start",				qfalse,			SP_trigger_timer_start },//JAPRO TIMERS
 
-	{ "emplaced_gun",						SP_emplaced_gun },
-	{ "func_bobbing",						SP_func_bobbing },
-	{ "func_breakable",						SP_func_breakable },
-	{ "func_button",						SP_func_button },
-	{ "func_door",							SP_func_door },
-	{ "func_glass",							SP_func_glass },
-	{ "func_group",							SP_info_null },
-	{ "func_pendulum",						SP_func_pendulum },
-	{ "func_plat",							SP_func_plat },
-	{ "func_rotating",						SP_func_rotating },
-	{ "func_static",						SP_func_static },
-	{ "func_timer",							SP_func_timer }, // rename trigger_timer?
-	{ "func_train",							SP_func_train },
-	{ "func_usable",						SP_func_usable },
-	{ "func_wall",							SP_func_wall },
-	{ "fx_rain",							SP_CreateRain },
-	{ "fx_runner",							SP_fx_runner },
-	{ "fx_snow",							SP_CreateSnow },
-	{ "fx_spacedust",						SP_CreateSpaceDust },
-	{ "fx_wind",							SP_CreateWind },
-	{ "gametype_item",						SP_gametype_item },
-	{ "info_camp",							SP_info_camp },
-	{ "info_jedimaster_start",				SP_info_jedimaster_start },
-	{ "info_notnull",						SP_info_notnull }, // use target_position instead
-	{ "info_null",							SP_info_null },
-	{ "info_player_deathmatch",				SP_info_player_deathmatch },
-	{ "info_player_duel",					SP_info_player_duel },
-	{ "info_player_duel1",					SP_info_player_duel1 },
-	{ "info_player_duel2",					SP_info_player_duel2 },
-	{ "info_player_intermission",			SP_info_player_intermission },
-	{ "info_player_intermission_blue",		SP_info_player_intermission_blue },
-	{ "info_player_intermission_red",		SP_info_player_intermission_red },
-	{ "info_player_siegeteam1",				SP_info_player_siegeteam1 },
-	{ "info_player_siegeteam2",				SP_info_player_siegeteam2 },
-	{ "info_player_start",					SP_info_player_start },
-	{ "info_player_start_blue",				SP_info_player_start_blue },
-	{ "info_player_start_red",				SP_info_player_start_red },
-	{ "info_siege_decomplete",				SP_info_siege_decomplete },
-	{ "info_siege_objective",				SP_info_siege_objective },
-	{ "info_siege_radaricon",				SP_info_siege_radaricon },
-	{ "item_botroam",						SP_item_botroam },
-	{ "light",								SP_light },
-	{ "misc_ammo_floor_unit",				SP_misc_ammo_floor_unit },
-	{ "misc_bsp",							SP_misc_bsp },
-	{ "misc_cubemap",						SP_misc_cubemap },
-	{ "misc_faller",						SP_misc_faller },
-	{ "misc_G2model",						SP_misc_G2model },
-	{ "misc_holocron",						SP_misc_holocron },
-	{ "misc_maglock",						SP_misc_maglock },
-	{ "misc_model",							SP_misc_model },
-	{ "misc_model_ammo_power_converter",	SP_misc_model_ammo_power_converter },
-	{ "misc_model_breakable",				SP_misc_model_breakable },
-	{ "misc_model_health_power_converter",	SP_misc_model_health_power_converter },
-	{ "misc_model_shield_power_converter",	SP_misc_model_shield_power_converter },
-	{ "misc_model_static",					SP_misc_model_static },
-	{ "misc_portal_camera",					SP_misc_portal_camera },
-	{ "misc_portal_surface",				SP_misc_portal_surface },
-	{ "misc_shield_floor_unit",				SP_misc_shield_floor_unit },
-	{ "misc_siege_item",					SP_misc_siege_item },
-	{ "misc_skyportal",						SP_misc_skyportal },
-	{ "misc_skyportal_orient",				SP_misc_skyportal_orient },
-	{ "misc_teleporter_dest",				SP_misc_teleporter_dest },
-	{ "misc_turret",						SP_misc_turret },
-	{ "misc_turretG2",						SP_misc_turretG2 },
-	{ "misc_weapon_shooter",				SP_misc_weapon_shooter },
-	{ "misc_weather_zone",					SP_misc_weather_zone },
-	{ "npc_alora",							SP_NPC_Alora },
-	{ "npc_bartender",						SP_NPC_Bartender },
-	{ "npc_bespincop",						SP_NPC_BespinCop },
-	{ "npc_colombian_emplacedgunner",		SP_NPC_ShadowTrooper },
-	{ "npc_colombian_rebel",				SP_NPC_Reborn },
-	{ "npc_colombian_soldier",				SP_NPC_Reborn },
-	{ "npc_cultist",						SP_NPC_Cultist },
-	{ "npc_cultist_commando",				SP_NPC_Cultist_Commando },
-	{ "npc_cultist_destroyer",				SP_NPC_Cultist_Destroyer },
-	{ "npc_cultist_saber",					SP_NPC_Cultist_Saber },
-	{ "npc_cultist_saber_powers",			SP_NPC_Cultist_Saber_Powers },
-	{ "npc_desann",							SP_NPC_Desann },
-	{ "npc_droid_atst",						SP_NPC_Droid_ATST },
-	{ "npc_droid_gonk",						SP_NPC_Droid_Gonk },
-	{ "npc_droid_interrogator",				SP_NPC_Droid_Interrogator },
-	{ "npc_droid_mark1",					SP_NPC_Droid_Mark1 },
-	{ "npc_droid_mark2",					SP_NPC_Droid_Mark2 },
-	{ "npc_droid_mouse",					SP_NPC_Droid_Mouse },
-	{ "npc_droid_probe",					SP_NPC_Droid_Probe },
-	{ "npc_droid_protocol",					SP_NPC_Droid_Protocol },
-	{ "npc_droid_r2d2",						SP_NPC_Droid_R2D2 },
-	{ "npc_droid_r5d2",						SP_NPC_Droid_R5D2 },
-	{ "npc_droid_remote",					SP_NPC_Droid_Remote },
-	{ "npc_droid_seeker",					SP_NPC_Droid_Seeker },
-	{ "npc_droid_sentry",					SP_NPC_Droid_Sentry },
-	{ "npc_galak",							SP_NPC_Galak },
-	{ "npc_gran",							SP_NPC_Gran },
-	{ "npc_human_merc",						SP_NPC_Human_Merc },
-	{ "npc_imperial",						SP_NPC_Imperial },
-	{ "npc_impworker",						SP_NPC_ImpWorker },
-	{ "npc_jan",							SP_NPC_Jan },
-	{ "npc_jawa",							SP_NPC_Jawa },
-	{ "npc_jedi",							SP_NPC_Jedi },
-	{ "npc_kyle",							SP_NPC_Kyle },
-	{ "npc_lando",							SP_NPC_Lando },
-	{ "npc_luke",							SP_NPC_Luke },
-	{ "npc_manuel_vergara_rmg",				SP_NPC_Desann },
-	{ "npc_minemonster",					SP_NPC_MineMonster },
-	{ "npc_monmothma",						SP_NPC_MonMothma },
-	{ "npc_monster_claw",					SP_NPC_Monster_Claw },
-	{ "npc_monster_fish",					SP_NPC_Monster_Fish },
-	{ "npc_monster_flier2",					SP_NPC_Monster_Flier2 },
-	{ "npc_monster_glider",					SP_NPC_Monster_Glider },
-	{ "npc_monster_howler",					SP_NPC_Monster_Howler },
-	{ "npc_monster_lizard",					SP_NPC_Monster_Lizard },
-	{ "npc_monster_murjj",					SP_NPC_Monster_Murjj },
-	{ "npc_monster_rancor",					SP_NPC_Monster_Rancor },
-	{ "npc_monster_swamp",					SP_NPC_Monster_Swamp },
-	{ "npc_monster_wampa",					SP_NPC_Monster_Wampa },
-	{ "npc_morgankatarn",					SP_NPC_MorganKatarn },
-	{ "npc_noghri",							SP_NPC_Noghri },
-	{ "npc_prisoner",						SP_NPC_Prisoner },
-	{ "npc_rebel",							SP_NPC_Rebel },
-	{ "npc_reborn",							SP_NPC_Reborn },
-	{ "npc_reborn_new",						SP_NPC_Reborn_New },
-	{ "npc_reelo",							SP_NPC_Reelo },
-	{ "npc_rodian",							SP_NPC_Rodian },
-	{ "npc_shadowtrooper",					SP_NPC_ShadowTrooper },
-	{ "npc_snowtrooper",					SP_NPC_Snowtrooper },
-	{ "npc_spawner",						SP_NPC_spawner },
-	{ "npc_stormtrooper",					SP_NPC_Stormtrooper },
-	{ "npc_stormtrooperofficer",			SP_NPC_StormtrooperOfficer },
-	{ "npc_swamptrooper",					SP_NPC_SwampTrooper },
-	{ "npc_tavion",							SP_NPC_Tavion },
-	{ "npc_tavion_new",						SP_NPC_Tavion_New },
-	{ "npc_tie_pilot",						SP_NPC_Tie_Pilot },
-	{ "npc_trandoshan",						SP_NPC_Trandoshan },
-	{ "npc_tusken",							SP_NPC_Tusken },
-	{ "npc_ugnaught",						SP_NPC_Ugnaught },
-	{ "npc_vehicle",						SP_NPC_Vehicle },
-	{ "npc_weequay",						SP_NPC_Weequay },
-	{ "path_corner",						SP_path_corner },
-	{ "point_combat",						SP_point_combat },
-	{ "ref_tag",							SP_reference_tag },
-	{ "ref_tag_huge",						SP_reference_tag },
-	{ "shooter_blaster",					SP_shooter_blaster },
-	{ "target_activate",					SP_target_activate },
-	{ "target_counter",						SP_target_counter },
-	{ "target_deactivate",					SP_target_deactivate },
-	{ "target_delay",						SP_target_delay },
-	{ "target_escapetrig",					SP_target_escapetrig },
-	{ "target_give",						SP_target_give },
-	{ "target_interest",					SP_target_interest },
-	{ "target_kill",						SP_target_kill },
-	{ "target_laser",						SP_target_laser },
-	{ "target_level_change",				SP_target_level_change },
-	{ "target_location",					SP_target_location },
-	{ "target_play_music",					SP_target_play_music },
-	{ "target_position",					SP_target_position },
-	{ "target_print",						SP_target_print },
-	{ "target_push",						SP_target_push },
-	{ "target_random",						SP_target_random },
-	{ "target_relay",						SP_target_relay },
-	{ "target_remove_powerups",				SP_target_remove_powerups },
+	{ "emplaced_gun",					qfalse,			SP_emplaced_gun },
+	{ "func_bobbing",					qfalse,			SP_func_bobbing },
+	{ "func_breakable",					qfalse,			SP_func_breakable },
+	{ "func_button",					qfalse,			SP_func_button },
+	{ "func_door",						qfalse,			SP_func_door },
+	{ "func_glass",						qfalse,			SP_func_glass },
+	{ "func_group",						qfalse,			SP_info_null },
+	{ "func_pendulum",					qfalse,			SP_func_pendulum },
+	{ "func_plat",						qfalse,			SP_func_plat },
+	{ "func_rotating",					qfalse,			SP_func_rotating },
+	{ "func_static",					qfalse,			SP_func_static },
+	{ "func_timer",						qfalse,			SP_func_timer }, // rename trigger_timer?
+	{ "func_train",						qfalse,			SP_func_train },
+	{ "func_usable",					qfalse,			SP_func_usable },
+	{ "func_wall",						qfalse,			SP_func_wall },
+	{ "fx_rain",						qtrue,			SP_CreateRain },
+	{ "fx_runner",						qfalse,			SP_fx_runner },
+	{ "fx_snow",						qtrue,			SP_CreateSnow },
+	{ "fx_spacedust",					qtrue,			SP_CreateSpaceDust },
+	{ "fx_wind",						qfalse,			SP_CreateWind },
+	{ "gametype_item",					qfalse,			SP_gametype_item },
+	{ "info_camp",						qtrue,			SP_info_camp },
+	{ "info_jedimaster_start",			qtrue,			SP_info_jedimaster_start },
+	{ "info_notnull",					qtrue,			SP_info_notnull }, // use target_position instead
+	{ "info_null",						qtrue,			SP_info_null },
+	{ "info_player_deathmatch",			qtrue,			SP_info_player_deathmatch },
+	{ "info_player_duel",				qtrue,			SP_info_player_duel },
+	{ "info_player_duel1",				qtrue,			SP_info_player_duel1 },
+	{ "info_player_duel2",				qtrue,			SP_info_player_duel2 },
+	{ "info_player_intermission",		qtrue,		SP_info_player_intermission },
+	{ "info_player_intermission_blue",	qtrue,		SP_info_player_intermission_blue },
+	{ "info_player_intermission_red",	qtrue,		SP_info_player_intermission_red },
+	{ "info_player_siegeteam1",			qtrue,		SP_info_player_siegeteam1 },
+	{ "info_player_siegeteam2",			qtrue,		SP_info_player_siegeteam2 },
+	{ "info_player_start",				qtrue,		SP_info_player_start },
+	{ "info_player_start_blue",			qtrue,		SP_info_player_start_blue },
+	{ "info_player_start_red",			qtrue,		SP_info_player_start_red },
+	{ "info_siege_decomplete",			qtrue,		SP_info_siege_decomplete },
+	{ "info_siege_objective",			qtrue,		SP_info_siege_objective },
+	{ "info_siege_radaricon",			qtrue,		SP_info_siege_radaricon },
+	{ "item_botroam",					qtrue,		SP_item_botroam },
+	{ "light",							qfalse,		SP_light },
+	{ "misc_ammo_floor_unit",			qfalse,		SP_misc_ammo_floor_unit },
+	{ "misc_bsp",						qfalse,	SP_misc_bsp },
+	{ "misc_cubemap",					qfalse,	SP_misc_cubemap },
+	{ "misc_faller",					qfalse,	SP_misc_faller },
+	{ "misc_G2model",					qfalse,	SP_misc_G2model },
+	{ "misc_holocron",					qfalse,	SP_misc_holocron },
+	{ "misc_maglock",					qfalse,	SP_misc_maglock },
+	{ "misc_model",						qfalse,	SP_misc_model },
+	{ "misc_model_ammo_power_converter",qfalse,	SP_misc_model_ammo_power_converter },
+	{ "misc_model_breakable",			qfalse,	SP_misc_model_breakable },
+	{ "misc_model_health_power_converter",qfalse,	SP_misc_model_health_power_converter },
+	{ "misc_model_shield_power_converter",qfalse,	SP_misc_model_shield_power_converter },
+	{ "misc_model_static",				qtrue,	SP_misc_model_static },
+	{ "misc_portal_camera",				qfalse,	SP_misc_portal_camera },
+	{ "misc_portal_surface",			qfalse,	SP_misc_portal_surface },
+	{ "misc_shield_floor_unit",			qfalse,	SP_misc_shield_floor_unit },
+	{ "misc_siege_item",				qfalse,	SP_misc_siege_item },
+	{ "misc_skyportal",					qfalse,	SP_misc_skyportal },
+	{ "misc_skyportal_orient",			qfalse,	SP_misc_skyportal_orient },
+	{ "misc_teleporter_dest",			qfalse,	SP_misc_teleporter_dest },  //surely this is logical?
+	{ "misc_turret",					qfalse,	SP_misc_turret },
+	{ "misc_turretG2",					qfalse,	SP_misc_turretG2 },
+	{ "misc_weapon_shooter",			qfalse,	SP_misc_weapon_shooter },
+	{ "misc_weather_zone",				qfalse,	SP_misc_weather_zone },
+	{ "npc_alora",						qtrue,	SP_NPC_Alora },
+	{ "npc_bartender",					qtrue,	SP_NPC_Bartender },
+	{ "npc_bespincop",					qtrue,	SP_NPC_BespinCop },
+	{ "npc_colombian_emplacedgunner",	qtrue,	SP_NPC_ShadowTrooper },
+	{ "npc_colombian_rebel",			qtrue,	SP_NPC_Reborn },
+	{ "npc_colombian_soldier",			qtrue,	SP_NPC_Reborn },
+	{ "npc_cultist",					qtrue,	SP_NPC_Cultist },
+	{ "npc_cultist_commando",			qtrue,	SP_NPC_Cultist_Commando },
+	{ "npc_cultist_destroyer",			qtrue,	SP_NPC_Cultist_Destroyer },
+	{ "npc_cultist_saber",				qtrue,	SP_NPC_Cultist_Saber },
+	{ "npc_cultist_saber_powers",		qtrue,	SP_NPC_Cultist_Saber_Powers },
+	{ "npc_desann",						qtrue,	SP_NPC_Desann },
+	{ "npc_droid_atst",					qtrue,	SP_NPC_Droid_ATST },
+	{ "npc_droid_gonk",					qtrue,	SP_NPC_Droid_Gonk },
+	{ "npc_droid_interrogator",			qtrue,	SP_NPC_Droid_Interrogator },
+	{ "npc_droid_mark1",				qtrue,	SP_NPC_Droid_Mark1 },
+	{ "npc_droid_mark2",				qtrue,	SP_NPC_Droid_Mark2 },
+	{ "npc_droid_mouse",				qtrue,	SP_NPC_Droid_Mouse },
+	{ "npc_droid_probe",				qtrue,	SP_NPC_Droid_Probe },
+	{ "npc_droid_protocol",				qtrue,	SP_NPC_Droid_Protocol },
+	{ "npc_droid_r2d2",					qtrue,	SP_NPC_Droid_R2D2 },
+	{ "npc_droid_r5d2",					qtrue,	SP_NPC_Droid_R5D2 },
+	{ "npc_droid_remote",				qtrue,	SP_NPC_Droid_Remote },
+	{ "npc_droid_seeker",				qtrue,	SP_NPC_Droid_Seeker },
+	{ "npc_droid_sentry",				qtrue,	SP_NPC_Droid_Sentry },
+	{ "npc_galak",						qtrue,	SP_NPC_Galak },
+	{ "npc_gran",						qtrue,	SP_NPC_Gran },
+	{ "npc_human_merc",					qtrue,	SP_NPC_Human_Merc },
+	{ "npc_imperial",					qtrue,	SP_NPC_Imperial },
+	{ "npc_impworker",					qtrue,	SP_NPC_ImpWorker },
+	{ "npc_jan",						qtrue,	SP_NPC_Jan },
+	{ "npc_jawa",						qtrue,	SP_NPC_Jawa },
+	{ "npc_jedi",						qtrue,	SP_NPC_Jedi },
+	{ "npc_kyle",						qtrue,	SP_NPC_Kyle },
+	{ "npc_lando",						qtrue,	SP_NPC_Lando },
+	{ "npc_luke",						qtrue,	SP_NPC_Luke },
+	{ "npc_manuel_vergara_rmg",			qtrue,	SP_NPC_Desann },
+	{ "npc_minemonster",				qtrue,	SP_NPC_MineMonster },
+	{ "npc_monmothma",					qtrue,	SP_NPC_MonMothma },
+	{ "npc_monster_claw",				qtrue,	SP_NPC_Monster_Claw },
+	{ "npc_monster_fish",				qtrue,	SP_NPC_Monster_Fish },
+	{ "npc_monster_flier2",				qtrue,	SP_NPC_Monster_Flier2 },
+	{ "npc_monster_glider",				qtrue,	SP_NPC_Monster_Glider },
+	{ "npc_monster_howler",				qtrue,	SP_NPC_Monster_Howler },
+	{ "npc_monster_lizard",				qtrue,	SP_NPC_Monster_Lizard },
+	{ "npc_monster_murjj",				qtrue,	SP_NPC_Monster_Murjj },
+	{ "npc_monster_rancor",				qtrue,	SP_NPC_Monster_Rancor },
+	{ "npc_monster_swamp",				qtrue,	SP_NPC_Monster_Swamp },
+	{ "npc_monster_wampa",				qtrue,	SP_NPC_Monster_Wampa },
+	{ "npc_morgankatarn",				qtrue,	SP_NPC_MorganKatarn },
+	{ "npc_noghri",						qtrue,	SP_NPC_Noghri },
+	{ "npc_prisoner",					qtrue,	SP_NPC_Prisoner },
+	{ "npc_rebel",						qtrue,	SP_NPC_Rebel },
+	{ "npc_reborn",						qtrue,	SP_NPC_Reborn },
+	{ "npc_reborn_new",					qtrue,	SP_NPC_Reborn_New },
+	{ "npc_reelo",						qtrue,	SP_NPC_Reelo },
+	{ "npc_rodian",						qtrue,	SP_NPC_Rodian },
+	{ "npc_shadowtrooper",				qtrue,	SP_NPC_ShadowTrooper },
+	{ "npc_snowtrooper",				qtrue,	SP_NPC_Snowtrooper },
+	{ "npc_spawner",					qtrue,	SP_NPC_spawner },
+	{ "npc_stormtrooper",				qtrue,	SP_NPC_Stormtrooper },
+	{ "npc_stormtrooperofficer",		qtrue,	SP_NPC_StormtrooperOfficer },
+	{ "npc_swamptrooper",				qtrue,	SP_NPC_SwampTrooper },
+	{ "npc_tavion",						qtrue,	SP_NPC_Tavion },
+	{ "npc_tavion_new",					qtrue,	SP_NPC_Tavion_New },
+	{ "npc_tie_pilot",					qtrue,	SP_NPC_Tie_Pilot },
+	{ "npc_trandoshan",					qtrue,	SP_NPC_Trandoshan },
+	{ "npc_tusken",						qtrue,	SP_NPC_Tusken },
+	{ "npc_ugnaught",					qtrue,	SP_NPC_Ugnaught },
+	{ "npc_vehicle",					qtrue,	SP_NPC_Vehicle },
+	{ "npc_weequay",					qtrue,	SP_NPC_Weequay },
+	{ "path_corner",					qtrue,	SP_path_corner },
+	{ "point_combat",					qtrue,	SP_point_combat },
+	{ "ref_tag",						qtrue,	SP_reference_tag },
+	{ "ref_tag_huge",					qtrue,	SP_reference_tag },
+	{ "shooter_blaster",				qtrue,	SP_shooter_blaster },
+	{ "target_activate",				qtrue,	SP_target_activate },
+	{ "target_counter",					qtrue,	SP_target_counter },
+	{ "target_deactivate",				qtrue,	SP_target_deactivate },
+	{ "target_delay",					qtrue,	SP_target_delay },
+	{ "target_escapetrig",				qtrue,	SP_target_escapetrig },
+	{ "target_give",					qtrue,	SP_target_give },
+	{ "target_interest",				qtrue,	SP_target_interest },
+	{ "target_kill",					qtrue,	SP_target_kill },
+	{ "target_laser",					qfalse,	SP_target_laser },
+	{ "target_level_change",			qtrue,	SP_target_level_change },
+	{ "target_location",				qtrue,	SP_target_location },
+	{ "target_play_music",				qtrue,	SP_target_play_music },
+	{ "target_position",				qtrue,	SP_target_position },
+	{ "target_print",					qtrue,	SP_target_print },
+	{ "target_push",					qtrue,	SP_target_push },
+	{ "target_random",					qtrue,	SP_target_random },
+	{ "target_relay",					qtrue,	SP_target_relay },
+	{ "target_remove_powerups",			qtrue,	SP_target_remove_powerups },
 
-	{"target_restrict",						SP_target_restrict},//JAPRO Onlybhop
+	{"target_restrict",					qtrue,	SP_target_restrict},//JAPRO Onlybhop
 
-	{ "target_score",						SP_target_score },
-	{ "target_screenshake",					SP_target_screenshake },
-	{ "target_scriptrunner",				SP_target_scriptrunner },
-	{ "target_siege_end",					SP_target_siege_end },
-	{ "target_speaker",						SP_target_speaker },
-	{ "target_teleporter",					SP_target_teleporter },
-	{ "team_CTF_blueplayer",				SP_team_CTF_blueplayer },
-	{ "team_CTF_bluespawn",					SP_team_CTF_bluespawn },
-	{ "team_CTF_redplayer",					SP_team_CTF_redplayer },
-	{ "team_CTF_redspawn",					SP_team_CTF_redspawn },
-	{ "terrain",							SP_terrain },
-	{ "trigger_always",						SP_trigger_always },
-	{ "trigger_asteroid_field",				SP_trigger_asteroid_field },
-	{ "trigger_hurt",						SP_trigger_hurt },
-	{ "trigger_hyperspace",					SP_trigger_hyperspace },
-	{ "trigger_lightningstrike",			SP_trigger_lightningstrike },
-	{ "trigger_multiple",					SP_trigger_multiple },
+	{ "target_score",					qtrue,	SP_target_score },
+	{ "target_screenshake",				qtrue,	SP_target_screenshake },
+	{ "target_scriptrunner",			qfalse,	SP_target_scriptrunner },
+	{ "target_siege_end",				qfalse,	SP_target_siege_end },
+	{ "target_speaker",					qfalse,	SP_target_speaker },
+	{ "target_teleporter",				qtrue,	SP_target_teleporter },
+	{ "team_CTF_blueplayer",			qtrue,	SP_team_CTF_blueplayer },
+	{ "team_CTF_bluespawn",				qtrue,	SP_team_CTF_bluespawn },
+	{ "team_CTF_redplayer",				qtrue,	SP_team_CTF_redplayer },
+	{ "team_CTF_redspawn",				qtrue,	SP_team_CTF_redspawn },
+	{ "terrain",						qfalse,	SP_terrain },
+	{ "trigger_always",					qfalse,	SP_trigger_always },  //surely triggers besides push and teleport can be logical?
+	{ "trigger_asteroid_field",			qfalse,	SP_trigger_asteroid_field },
+	{ "trigger_hurt",					qfalse,	SP_trigger_hurt },
+	{ "trigger_hyperspace",				qfalse,	SP_trigger_hyperspace },
+	{ "trigger_lightningstrike",		qfalse,	SP_trigger_lightningstrike },
+	{ "trigger_multiple",				qfalse,	SP_trigger_multiple },
 
-	{ "trigger_newpush",					SP_trigger_newpush },
+	{ "trigger_newpush",				qfalse,	SP_trigger_newpush },
 
-	{ "trigger_once",						SP_trigger_once },
-	{ "trigger_push",						SP_trigger_push },
-	{ "trigger_shipboundary",				SP_trigger_shipboundary },
-	{ "trigger_space",						SP_trigger_space },
-	{ "trigger_teleport",					SP_trigger_teleport },
-	{ "waypoint",							SP_waypoint },
-	{ "waypoint_navgoal",					SP_waypoint_navgoal },
-	{ "waypoint_navgoal_1",					SP_waypoint_navgoal_1 },
-	{ "waypoint_navgoal_2",					SP_waypoint_navgoal_2 },
-	{ "waypoint_navgoal_4",					SP_waypoint_navgoal_4 },
-	{ "waypoint_navgoal_8",					SP_waypoint_navgoal_8 },
-	{ "waypoint_small",						SP_waypoint_small },
+	{ "trigger_once",					qfalse,	SP_trigger_once },
+	{ "trigger_push",					qfalse,	SP_trigger_push },
+	{ "trigger_shipboundary",			qfalse,	SP_trigger_shipboundary },
+	{ "trigger_space",					qfalse,	SP_trigger_space },
+	{ "trigger_teleport",				qfalse,	SP_trigger_teleport },
+	{ "waypoint",						qtrue,	SP_waypoint },
+	{ "waypoint_navgoal",				qtrue,	SP_waypoint_navgoal },
+	{ "waypoint_navgoal_1",				qtrue,	SP_waypoint_navgoal_1 },
+	{ "waypoint_navgoal_2",				qtrue,	SP_waypoint_navgoal_2 },
+	{ "waypoint_navgoal_4",				qtrue,	SP_waypoint_navgoal_4 },
+	{ "waypoint_navgoal_8",				qtrue,	SP_waypoint_navgoal_8 },
+	{ "waypoint_small",					qtrue,	SP_waypoint_small },
 };
 
 /*
@@ -720,6 +722,27 @@ returning qfalse if not found
 */
 static int spawncmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((spawn_t*)b)->name );
+}
+
+qboolean G_IsLogicalEntity(const char *classname) {
+	spawn_t	*s;
+
+	if (!classname) {
+		return qfalse;
+	}
+
+	s = (spawn_t *)bsearch( classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
+	if (s)
+	{// found it
+		if (s->logical) {
+			return qtrue;
+		}
+		else {
+			return qfalse;
+		}
+	}
+
+	return qfalse;
 }
 
 qboolean G_CallSpawn( gentity_t *ent ) {
@@ -917,8 +940,31 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	char		*s, *value, *gametypeName;
 	static char *gametypeNames[] = {"ffa", "holocron", "jedimaster", "duel", "powerduel", "single", "team", "siege", "ctf", "cty"};
 
-	// get the next free entity
-	ent = G_Spawn(qtrue);
+	G_SpawnString("classname", NULL, &value);
+	if (!value) {
+		return;	// Dont even bother spawning an ent without a classname
+	}
+	if (G_IsLogicalEntity(value)) {
+		// Check if the entity wants to be nonlogical anyway
+		G_SpawnInt("nological", "0", &i);
+		if (i) {				// Despite it being a logical entity, it wants to be nonlogical
+			ent = G_Spawn(qtrue);	// possibly because it wants to use icarus for example
+		}
+		else {
+			G_SpawnString("script_targetname", NULL, &value); //Always make entities with script_targetnames non logical (???)
+			if (value) {
+				ent = G_Spawn(qtrue);
+			}
+			else {
+				// Get the next free logical entity
+				ent = G_SpawnLogical();
+			}
+		}
+	}
+	else {
+		// Get the next free normal entity
+		ent = G_Spawn(qtrue);
+	}
 
 	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
 		G_ParseField( level.spawnVars[i][0], level.spawnVars[i][1], ent );
@@ -972,16 +1018,18 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 		G_FreeEntity( ent );
 	}
 
-	//Tag on the ICARUS scripting information only to valid recipients
-	if ( trap->ICARUS_ValidEnt( (sharedEntity_t *)ent ) )
-	{
-		trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
-
-		if ( ent->classname && ent->classname[0] )
+	if (!ent->isLogical) {
+		//Tag on the ICARUS scripting information only to valid recipients
+		if ( trap->ICARUS_ValidEnt( (sharedEntity_t *)ent ) )
 		{
-			if ( Q_strncmp( "NPC_", ent->classname, 4 ) != 0 )
-			{//Not an NPC_spawner (rww - probably don't even care for MP, but whatever)
-				G_ActivateBehavior( ent, BSET_SPAWN );
+			trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
+
+			if ( ent->classname && ent->classname[0] )
+			{
+				if ( Q_strncmp( "NPC_", ent->classname, 4 ) != 0 )
+				{//Not an NPC_spawner (rww - probably don't even care for MP, but whatever)
+					G_ActivateBehavior( ent, BSET_SPAWN );
+				}
 			}
 		}
 	}

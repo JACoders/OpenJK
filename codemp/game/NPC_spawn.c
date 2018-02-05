@@ -2972,6 +2972,55 @@ void SP_NPC_Rebel( gentity_t *self)
 //=============================================================================================
 //ENEMIES
 //=============================================================================================
+/*QUAKED NPC_Human_Merc(1 0 0) (-16 -16 -24) (16 16 40) BOWCASTER REPEATER FLECHETTE CONCUSSION DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+100 health, blaster rifle
+
+BOWCASTER - Starts with a Bowcaster
+REPEATER - Starts with a Repeater
+FLECHETTE - Starts with a Flechette gun
+CONCUSSION - Starts with a Concussion Rifle
+
+If you want them to start with any other kind of weapon, make a spawnscript for them that sets their weapon.
+
+"message" - turns on his key surface.  This is the name of the key you get when you walk over his body.  This must match the "message" field of the func_security_panel you want this key to open.  Set to "goodie" to have him carrying a goodie key that player can use to operate doors with "GOODIE" spawnflag.  NOTE: this overrides all the weapon spawnflags
+
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Human_Merc( gentity_t *self )
+{
+	if ( !self->NPC_type )
+	{
+		/*if ( self->message )
+		{
+			self->NPC_type = "human_merc_key";
+		}
+		else */if ( (self->spawnflags & 1) )
+		{
+			self->NPC_type = "human_merc_bow";
+		}
+		else if ( (self->spawnflags & 2) )
+		{
+			self->NPC_type = "human_merc_rep";
+		}
+		else if ( (self->spawnflags & 4) )
+		{
+			self->NPC_type = "human_merc_flc";
+		}
+		else if ( (self->spawnflags & 8) )
+		{
+			self->NPC_type = "human_merc_cnc";
+		}
+		else
+		{
+			self->NPC_type = "human_merc";
+		}
+	}
+	SP_NPC_spawner( self );
+}
 
 /*QUAKED NPC_Human_Merc(1 0 0) (-16 -16 -24) (16 16 40) BOWCASTER REPEATER FLECHETTE CONCUSSION DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 100 health, blaster rifle
@@ -3956,7 +4005,7 @@ NPC_Spawn_f
 
 gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle )
 {
-	gentity_t		*NPCspawner = G_Spawn(qtrue);
+	gentity_t		*NPCspawner = G_SpawnLogical();
 	vec3_t			forward, end;
 	trace_t			trace;
 	gentity_t		*ourVehicle;
@@ -4003,7 +4052,10 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	//set the yaw so that they face away from player
 	NPCspawner->s.angles[1] = ent->client->ps.viewangles[1];
 
-	trap->LinkEntity((sharedEntity_t *)NPCspawner);
+	//LOOK AT THIS! JKG does not have this LinkEntity line.  Should it just be commented out, or conditional, or?
+	//If the spawner has script_targetname it wont be logical and we might want this?
+	if (!NPCspawner->isLogical)
+		trap->LinkEntity((sharedEntity_t *)NPCspawner);
 
 	NPCspawner->NPC_type = G_NewString( npc_type );
 
