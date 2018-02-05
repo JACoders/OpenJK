@@ -1021,6 +1021,22 @@ static void CG_RegisterSounds( void ) {
 
 	cgs.media.winnerSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM006" );
 	cgs.media.loserSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM010" );
+
+	if (cgs.isJAPro) { //and g_allowvgs? or let that be toggled without fucking with this..?
+		const char	*s;
+		char		soundName[1024];
+		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++) {
+			s = bg_customVGSSoundNames[i];
+			if (!s) {
+				break;
+			}
+			Com_sprintf(soundName, sizeof(soundName), "%s", s + 1);
+			COM_StripExtension(soundName, soundName, sizeof(soundName));
+			
+			cgs.media.maleVGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName));
+			cgs.media.femaleVGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName));
+		}
+	}
 }
 
 

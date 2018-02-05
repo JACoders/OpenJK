@@ -505,20 +505,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		*/
 	}
 
-	/*
-	if (g_allowVGS.integer) {
-		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
+	while (i < MAX_CUSTOM_VGS_SOUNDS)
+	{
+		if (!bg_customVGSSoundNames[i])
 		{
-			if (!bg_customVGSSoundNames[i])
-			{
-				break;
-			}
-			G_SoundIndex((char *)bg_customVGSSoundNames[i]);
+			break;
 		}
+		G_SoundIndex((char *)bg_customVGSSoundNames[i]);
+		i++;
 	}
-	*/
 
-	if ( level.gametype == GT_JEDIMASTER ) { 
+	if ( level.gametype == GT_JEDIMASTER ) {
 		gentity_t *ent = NULL;
 		int i=0;
 		for ( i=0, ent=g_entities; i<level.num_entities; i++, ent++ ) {

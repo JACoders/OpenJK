@@ -196,6 +196,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 	int			numCExSounds = 0;
 	int			numCJediSounds = 0;
 	int			numCSiegeSounds = 0;
+	int			numCVGSSounds = 0;
 	int			numCDuelSounds = 0;
 	char		lSoundName[MAX_QPATH];
 
@@ -275,6 +276,15 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		}
 	}
 
+	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
+	{
+		if (!bg_customVGSSoundNames[i])
+		{
+			numCVGSSounds = i;
+			break;
+		}
+	}
+
     if (cgs.gametype == GT_DUEL
 		|| cgs.gametype == GT_POWERDUEL
 		|| com_buildScript.integer)
@@ -315,6 +325,14 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		{ //npc only
 			return ci->jediSounds[i];
 		}
+	}
+
+	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++) {
+		if (i < numCVGSSounds && !strcmp(lSoundName, bg_customVGSSoundNames[i]))
+			if (ci->gender == GENDER_FEMALE)
+				return cgs.media.femaleVGSSounds[i];
+			else
+				return cgs.media.maleVGSSounds[i];
 	}
 
 	//trap->Error( ERR_DROP, "Unknown custom sound: %s", lSoundName );
@@ -822,8 +840,6 @@ int CG_G2EvIndexForModel(void *g2, int animIndex)
 	return evtIndex;
 }
 
-#define DEFAULT_FEMALE_SOUNDPATH "chars/mp_generic_female/misc"//"chars/tavion/misc"
-#define DEFAULT_MALE_SOUNDPATH "chars/mp_generic_male/misc"//"chars/kyle/misc"
 void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 {
 	fileHandle_t f;

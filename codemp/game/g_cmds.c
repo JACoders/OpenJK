@@ -8499,8 +8499,8 @@ command_t commands[] = {
 #endif
 
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
-	{ "vgs_cmd",			Cmd_VGSCommand_f,			CMD_NOINTERMISSION },//vgs
-	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },
+	{ "vgs_cmd",			Cmd_VGSCommand_f,			CMD_NOINTERMISSION },
+	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
 	{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },

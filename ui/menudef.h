@@ -345,6 +345,8 @@
 //extra, for patch
 #define UI_JEDI_NONJEDI 289
 
+#define UI_VGS				290
+
 #define UI_CHAT_MAIN		291
 #define UI_CHAT_ATTACK		292
 #define UI_CHAT_DEFEND		293
