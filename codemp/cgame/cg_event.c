@@ -1430,6 +1430,26 @@ const char *CG_GetStringForVoiceSound(const char *s)
 	return "voice chat";
 }
 
+static qboolean isGlobalVGS(const char *s) {
+	if (!Q_stricmp(s, "*global_bye"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_hi"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_no"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_oops"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_quiet"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_shazbot"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_whoohoo"))
+		return qtrue;
+	if (!Q_stricmp(s, "*global_yes"))
+		return qtrue;
+	return qfalse;
+}
+
 /*
 ==============
 CG_EntityEvent
@@ -3295,13 +3315,13 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			{
 				if (clientNum != cg.predictedPlayerState.clientNum)
 				{ //play on the head as well to simulate hearing in radio and in world
-					if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
+					if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM] || isGlobalVGS(s)) //Also check for PMF_FOLLOW and treat that like spec!
 					{ //don't hear it if this person is on the other team, but they can still
 						//hear it in the world spot.
 						trap->S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_MENU1, sfx);
 					}
 				}
-				if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
+				if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM] || isGlobalVGS(s)) //put it to console or.. just not at all?
 				{ //add to the chat box
 					//hear it in the world spot.
 					char vchatstr[1024] = {0};

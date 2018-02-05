@@ -329,7 +329,10 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 
 	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++) {
 		if (i < numCVGSSounds && !strcmp(lSoundName, bg_customVGSSoundNames[i]))
-			return ci->VGSSounds[i];
+			if (ci->gender == GENDER_FEMALE)
+				return cgs.media.femaleVGSSounds[i];
+			else
+				return cgs.media.maleVGSSounds[i];
 	}
 
 	//trap->Error( ERR_DROP, "Unknown custom sound: %s", lSoundName );
@@ -837,8 +840,6 @@ int CG_G2EvIndexForModel(void *g2, int animIndex)
 	return evtIndex;
 }
 
-#define DEFAULT_FEMALE_SOUNDPATH "chars/mp_generic_female/misc"//"chars/tavion/misc"
-#define DEFAULT_MALE_SOUNDPATH "chars/mp_generic_male/misc"//"chars/kyle/misc"
 void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 {
 	fileHandle_t f;
@@ -948,47 +949,6 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			else
 			{
 				ci->sounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
-			}
-		}
-	}
-
-	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
-	{
-		s = bg_customVGSSoundNames[i];
-		if (!s)
-		{
-			break;
-		}
-
-		Com_sprintf(soundName, sizeof(soundName), "%s", s + 1);
-		COM_StripExtension(soundName, soundName, sizeof(soundName));
-		//strip the extension because we might want .mp3's
-
-		ci->VGSSounds[i] = 0;
-		// if the model didn't load use the sounds of the default model
-		if (soundpath[0])
-		{
-			ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/chars/%s/misc/%s", soundpath, soundName));
-			if (!ci->VGSSounds[i])
-				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", soundpath, soundName));
-		}
-		else
-		{
-			if (modelloaded)
-			{
-				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/chars/%s/misc/%s", dir, soundName));
-			}
-		}
-
-		if (!ci->VGSSounds[i])
-		{ //failed the load, try one out of the generic path
-			if (isFemale)
-			{
-				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName));
-			}
-			else
-			{
-				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName));
 			}
 		}
 	}
