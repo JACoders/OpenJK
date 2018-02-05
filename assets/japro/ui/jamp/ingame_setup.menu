@@ -4457,7 +4457,7 @@
 			group				network
 			type				ITEM_TYPE_NUMERICFIELD
 			text				"Time Nudge:"
-			cvar				"cg_timeNudge"
+			cvar				"cl_timeNudge"
 			rect				220 183 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
