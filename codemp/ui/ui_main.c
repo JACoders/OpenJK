@@ -4262,6 +4262,9 @@ static qboolean UI_VGS_Self_HandleKey(int key) {
 	else if ((key == A_LOW_T) || (key == A_CAP_T)) {
 		item = Menu_FindItemByName(menu, "selftask");
 	}
+	else if ((key == A_LOW_U) || (key == A_CAP_U)) {
+		item = Menu_FindItemByName(menu, "selfupgrade");
+	}
 	else {
 		return (qfalse);
 	}
