@@ -173,6 +173,7 @@
 			{
 				hide			title_small_background
 				show			title_big_background
+				disable			main	1
 				hide			compliment_grp
 				hide			respond_grp
 				hide			taunt_grp
@@ -816,11 +817,12 @@
 		itemDef 
 		{
 			name				cancel
-			group				none
+			group				main
 			rect				10 325 160 15
 			type				ITEM_TYPE_BUTTON
 			text				@MENUS_VC_CANCEL
-			textalign			ITEM_ALIGN_CENTER		
+			textalign			ITEM_ALIGN_CENTER
+			ownerdraw			UI_VGS_MAIN
 			textalignx			80
 			textaligny			-3
 			font				2
