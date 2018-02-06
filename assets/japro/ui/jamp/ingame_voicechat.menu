@@ -121,6 +121,7 @@
 			{
 				hide			title_small_background
 				show			title_big_background
+				disable			main	1
 				hide			def_grp
 				hide			req_grp
 				hide			rep_grp
@@ -292,11 +293,12 @@
 		itemDef 
 		{
 			name				cancel
-			group				none
+			group				main
 			rect				10 235 160 20
 			type				ITEM_TYPE_BUTTON
 			text				@MENUS_VC_CANCEL
-			textalign			ITEM_ALIGN_CENTER		
+			textalign			ITEM_ALIGN_CENTER
+			ownerdraw			UI_CHAT_MAIN			
 			textalignx			80
 			textaligny			-2    
 			font				2
