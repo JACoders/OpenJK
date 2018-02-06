@@ -993,7 +993,7 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 				Menus_CloseAll();
 				Menus_ActivateByName("ingame_vgs");
 			}
-			else if (!trap->Cvar_VariableValue("g_gametype") < GT_TEAM) {
+			else if (trap->Cvar_VariableValue("g_gametype") >= GT_TEAM) {
 				trap->Key_SetCatcher(KEYCATCH_UI);
 				Menus_CloseAll();
 				Menus_ActivateByName("ingame_voicechat");

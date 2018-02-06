@@ -153,7 +153,7 @@ XCVAR_DEF( ui_sha_b,						"0",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL 
 XCVAR_DEF( ui_sha_a,						"200",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_username,						"",						NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_password,						"",						NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
-XCVAR_DEF( ui_voicechat,					"1",					NULL,				CVAR_ARCHIVE )
+XCVAR_DEF( ui_vgs,							"1",					NULL,				CVAR_ARCHIVE )
 XCVAR_DEF( ui_isJAPro,						"0",					NULL,				CVAR_INTERNAL|CVAR_ROM )
 
 #undef XCVAR_DEF
