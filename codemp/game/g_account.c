@@ -1396,7 +1396,7 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 		Com_sprintf(nameStr, sizeof(nameStr), "%s", playername);
 
 	if (message)
-		Com_sprintf(messageStr, sizeof(messageStr), "^3%s^%i completed", message, color);
+		Com_sprintf(messageStr, sizeof(messageStr), "^3%-16s^%i completed", message, color);
 	else
 		Com_sprintf(messageStr, sizeof(messageStr), "^%iCompleted", color);
 
