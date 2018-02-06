@@ -588,7 +588,7 @@ void CL_InitCGame( void ) {
 	if (cl_logChat->integer)
 		CL_OpenLog("cl_chat.log", &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
 	else
-		Com_Printf("Not logging chat to disk.\n");
+		Com_DPrintf("Not logging chat to disk.\n");
 }
 
 
@@ -791,6 +791,9 @@ void CL_SetCGameTime( void ) {
 		int tn;
 
 		tn = cl_timeNudge->integer;
+
+		if (tn < 0 && (cl.snap.ps.pm_type == PM_SPECTATOR || cl.snap.ps.pm_flags & PMF_FOLLOW))
+			tn = 0; // JAPRO ENGINE - disable negative timenudge when spectating
 #ifdef _DEBUG
 		if (tn<-900) {
 			tn = -900;

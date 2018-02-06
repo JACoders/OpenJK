@@ -2369,8 +2369,6 @@ void CL_InitRenderer( void ) {
 	cls.whiteShader = re->RegisterShader( "white" );
 	cls.consoleShader = re->RegisterShader( "console" );
 	cls.ratioFix = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
-	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
-	g_consoleField.widthInChars = g_console_field_width;
 }
 
 /*
@@ -3130,7 +3128,7 @@ void CL_Init( void ) {
 	cl_colorStringCount = Cvar_Get("cl_colorStringCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
 	cl_colorStringRandom = Cvar_Get("cl_colorStringRandom", "2", CVAR_ARCHIVE, "Randomness of the colors changing, higher numbers are less random");
 
-	cl_logChat = Cvar_Get("cl_logChat", "1", CVAR_ARCHIVE, "Toggle chat logs");
+	cl_logChat = Cvar_Get("cl_logChat", "0", CVAR_ARCHIVE, "Toggle engine chat logs");
 
 	//
 	// register our commands

@@ -190,6 +190,7 @@ typedef struct listBoxDef_s {
 	int numColumns;
 	columnInfo_t columnInfo[MAX_LB_COLUMNS];
 	const char *doubleClick;
+	const char *rightClick;
 	qboolean notselectable;
 	//JLF MPMOVED
 	qboolean	scrollhidden;
