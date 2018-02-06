@@ -987,14 +987,20 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		case UIMENU_VOICECHAT:
 			// trap->Cvar_Set( "cl_paused", "1" );
 			// No chatin non-siege games.
-			trap->Key_SetCatcher( KEYCATCH_UI );
-			Menus_CloseAll();
 
-			if (trap->Cvar_VariableValue("g_gametype") < GT_TEAM || trap->Cvar_VariableValue("ui_voicechat")) {
-				Menus_ActivateByName("ingame_vgs");
-			}
-			else {
+			if (!ui_isJAPro.integer) {
+				if (trap->Cvar_VariableValue("g_gametype") < GT_TEAM) {
+					return;
+				}
+
+				trap->Key_SetCatcher(KEYCATCH_UI);
+				Menus_CloseAll();
 				Menus_ActivateByName("ingame_voicechat");
+			}
+			else if (trap->Cvar_VariableValue("ui_voicechat")) {
+				trap->Key_SetCatcher(KEYCATCH_UI);
+				Menus_CloseAll();
+				Menus_ActivateByName("ingame_vgs");
 			}
 
 			return;
