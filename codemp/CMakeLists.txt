@@ -524,7 +524,6 @@ if(BuildMPEngine)
 			"${MPDir}/win32/icon.ico"
 			"${MPDir}/win32/resource.h"
 			"${MPDir}/win32/openjk.rc"
-			"${SharedDir}/sys/win_manifest.manifest"
 			)
 
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
