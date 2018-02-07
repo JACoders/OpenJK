@@ -136,14 +136,16 @@ else()
 	endif()
 endif()
 
-message("Architecture is ${Architecture}")
+message(STATUS "Architecture is ${Architecture}")
 
-
+if(WIN32 AND CMAKE_VERSION VERSION_LESS "3.4")
+message(WARNING "Building on Windows platform with CMake version less than 3.4 is deprecated. Manifest file will fail to be included.")
+endif()
 
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-message("Git revision is ${GIT_SHA1}")
+message(STATUS "Git revision is ${GIT_SHA1}")
 
 
 
@@ -287,7 +289,7 @@ else()
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
-	message("No build type selected, default to RELEASE")
+	message(STATUS "No build type selected, default to RELEASE")
 	set(CMAKE_BUILD_TYPE "RELEASE")
 endif()
 

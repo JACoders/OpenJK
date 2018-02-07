@@ -323,6 +323,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineWin32Files
 			"${SPDir}/win32/resource.h"
 			"${SPDir}/win32/winquake.rc"
+			"${SharedDir}/sys/win_manifest.manifest"
 			)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
