@@ -2366,8 +2366,10 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		Q_strncpyz(tmp, s, sizeof(tmp));
 		pch = strtok (tmp, " ");
 		while (pch != NULL) {
-			if (i == 0)
+			if (i == 0) {
 				client->pers.thirdPerson = atoi(pch);
+				client->ps.userInt1 = !client->pers.thirdPerson;
+			}
 			else if (i == 1)
 				client->pers.thirdPersonRange = atoi(pch);
 			else if (i == 2)
