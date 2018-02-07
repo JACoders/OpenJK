@@ -75,7 +75,8 @@ void G_VehicleSpawn( gentity_t *self )
 
 	VectorCopy( self->r.currentOrigin, self->s.origin );
 
-	trap->LinkEntity( (sharedEntity_t *)self );
+	if (!self->isLogical)
+		trap->LinkEntity( (sharedEntity_t *)self ); //Why this?
 
 	if ( !self->count )
 	{
