@@ -451,6 +451,8 @@ clientkilled:
 
 	// we don't know what it was
 	trap->Print( "%s %s\n", targetName, (char *)CG_GetStringEdString("MP_INGAME", "DIED_GENERIC") );
+
+	//loda fixme- add mod_team_change support so can see if someone joined spec
 }
 
 //==========================================================================

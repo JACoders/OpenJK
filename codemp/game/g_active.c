@@ -3605,9 +3605,9 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 	
-	if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SWOOP)
+	/*if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SWOOP)//Is this really needed..
 		ucmd->serverTime = ((ucmd->serverTime + 7) / 8) * 8;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
-	else if (pmove_fixed.integer || client->pers.pmoveFixed)
+	else*/if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
 	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && ((g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP)) { //Ok,, this should be like every frame, right??
@@ -4119,7 +4119,7 @@ void ClientThink_real( gentity_t *ent ) {
 				{
 					client->ps.gravity = g_gravity.value;
 					if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
-						client->ps.gravity = 800.0f;
+						client->ps.gravity = 750.0f; //Match 125fps gravity here since we are using decimal precision for Zvel now
 				}
 			}
 		}
