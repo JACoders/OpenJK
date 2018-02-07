@@ -2,8 +2,8 @@ language: cpp
 sudo: required
 dist: trusty
 
-install:
-  - ./scripts/travis/install.sh "${host:-native}" "${flavour:-Release}" $opts
+install: ./scripts/travis/install.sh "${host:-native}" $opts
+script: ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
 
 script:
 - ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts

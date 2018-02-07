@@ -4,8 +4,7 @@ set -e
 set -x
 
 host="$1"
-flavour="$2"
-shift 2
+shift 1
 
 if [[ "${host}" == macosx-universal-clang ]]; then
 	brew install p7zip
@@ -24,15 +23,12 @@ else
 # these builds anyway.
 : | sudo tee /etc/apt/sources.list.d/google-chrome.list
 
-# do this before apt-get update
-case "${host}" in
-	(i?86-linux-gnu)
-		sudo dpkg --add-architecture i386
-		;;
-esac
+sudo apt-get update -yq
 
 sudo apt-get update -qq
 sudo apt-get -q -y install cmake dpkg p7zip-full
+
+${APT_INSTALL} cmake
 
 case "${host}" in
 	(native)
@@ -41,11 +37,11 @@ case "${host}" in
 		;;
 
 	(i686-w64-mingw32)
-		sudo apt-get -q -y install g++-mingw-w64-i686
+		${APT_INSTALL} g++-mingw-w64-i686
 		;;
 
 	(x86_64-w64-mingw32)
-		sudo apt-get -q -y install g++-mingw-w64-x86-64
+		${APT_INSTALL} g++-mingw-w64-x86-64
 		;;
 
 	(i?86-linux-gnu)
@@ -56,8 +52,15 @@ case "${host}" in
 			libgles2-mesa-dev:i386 libgl1-mesa-dev:i386 libglu1-mesa-dev:i386 libpulse-dev:i386 libglib2.0-dev:i386 \
 			libsdl2-2.0-0:i386 libsdl2-dev:i386 libjpeg-turbo8-dev:i386 zlib1g-dev:i386 libc6-dev:i386 \
 			libpng12-dev:i386 \
-			g++-multilib g++-4.8-multilib gcc-4.8-multilib \
-			g++ g++-4.8 gcc gcc-4.8 cpp cpp-4.8
+			g++-multilib \
+			g++-4.8-multilib \
+			gcc-4.8-multilib \
+			g++ \
+			g++-4.8 \
+			gcc \
+			gcc-4.8 \
+			cpp \
+			cpp-4.8
 		;;
 esac
 fi
