@@ -506,7 +506,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		*/
 	}
 
-	
+	/*
 	if (g_allowVGS.integer) {
 		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
 		{
@@ -515,6 +515,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		G_SoundIndex((char *)bg_customVGSSoundNames[i]);
 		i++;
 	}
+	*/
 	
 
 	if ( level.gametype == GT_JEDIMASTER ) {
