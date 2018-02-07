@@ -662,7 +662,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
 		ent->client->pers.haste = qfalse;
 		//}
-		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..? Do this for every style..
 			DeletePlayerProjectiles(ent);
 		}
 
@@ -6635,6 +6635,18 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	style = RaceNameToInteger(mStyle);
 
 	if (style >= 0) {
+
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else {
+			if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+				DeletePlayerProjectiles(ent);
+			}
+			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+		}
+
 		ent->client->sess.movementStyle = style;
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
@@ -6677,13 +6689,6 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		if (style == MV_SPEED) {
 			ent->client->ps.fd.forcePower = 50;
 		}
-
-		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
-			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
-			ResetPlayerTimers(ent, qtrue);
-		}
-		else
-			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 	}
 	else
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, or sp>.\n\"" );
