@@ -505,7 +505,14 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
 	UnpackDLLResult result = {};
 	void *data;
-	long len = FS_ReadDLLInPAK(name, &data);
+	long len;
+	
+	if (Cvar_VariableIntegerValue("fs_loadpakdlls")) {
+		FS_ReadDLLInPAK(name, &data);
+	}
+	else {
+		FS_ReadFile(name, &data);
+	}
 
 	if (len >= 1)
 	{

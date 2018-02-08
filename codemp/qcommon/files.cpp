@@ -3610,11 +3610,7 @@ void FS_Startup( const char *gameName ) {
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 
-#ifdef _WIN32
 	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "1", CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
-#else
-	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "0", CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
-#endif
 
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
