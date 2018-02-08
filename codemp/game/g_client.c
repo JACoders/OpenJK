@@ -2383,6 +2383,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	else {
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
 		client->pers.thirdPerson = atoi(s);
+		client->ps.userInt1 = !client->pers.thirdPerson;
 
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
 		client->pers.thirdPersonRange = atoi(s);
