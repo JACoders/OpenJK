@@ -2368,7 +2368,6 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		while (pch != NULL) {
 			if (i == 0) {
 				client->pers.thirdPerson = atoi(pch);
-				client->ps.userInt1 = !client->pers.thirdPerson;
 			}
 			else if (i == 1)
 				client->pers.thirdPersonRange = atoi(pch);
@@ -2383,7 +2382,6 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	else {
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
 		client->pers.thirdPerson = atoi(s);
-		client->ps.userInt1 = !client->pers.thirdPerson;
 
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
 		client->pers.thirdPersonRange = atoi(s);
