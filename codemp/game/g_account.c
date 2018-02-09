@@ -2188,7 +2188,7 @@ void Svcmd_Register_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip(username, "\n\r;:.?*<>!#$&'()*+-@=`~{}|\\/\"", NULL);
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
@@ -2307,7 +2307,7 @@ void Svcmd_RenameAccount_f(void)
 
 	Q_strlwr(newUsername);
 	Q_CleanStr(newUsername);
-	Q_strstrip( newUsername, "\n\r;:.?*<>|\\/\"", NULL );
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	if (CheckUserExists(newUsername)) {
 		trap->Print( "ERROR: Desired username already exists.\n");
@@ -2559,7 +2559,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip(username, "\n\r;:.?*<>!#$&'()*+-@=`~{}|\\/\"", NULL);
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
