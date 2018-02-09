@@ -3810,7 +3810,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			return;
 		}
 		if (level.numCourses > 1) { //
-			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /dftop10 <coursename> <style (optional)> <page (optional)>.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /rTop <coursename> <style (optional)> <page (optional)>.\n\"");
 			for (i = 0; i < level.numCourses; i++) { //32 max
 				if (level.courseName[i] && level.courseName[i][0])
 					trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i+1, level.courseName[i]));
