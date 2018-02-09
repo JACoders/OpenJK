@@ -2188,10 +2188,17 @@ void Svcmd_Register_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip( username, "\n\r;:.?*<>|\\/\"", NULL );
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()*+-@=`~{}|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
+	if (!username[0]) {
+		return;
+	}
+	if (!Q_stricmp(username, password)) {
+		trap->Print("Username and password cannot be the same\n");
+		return;
+	}
 	if (CheckUserExists(username)) {
 		trap->Print( "User already exists!\n");
 		return;
@@ -2537,7 +2544,6 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		return;
 	}
 		
-
 	if (trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /register <username> <password>\n\"");
 		return;
@@ -2553,15 +2559,17 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip( username, "\n\r;:.?*<>|\\/\"", NULL );
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()*+-@=`~{}|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
+	if (!username[0]) {
+		return;
+	}
 	if (!Q_stricmp(username, password)) {
 		trap->SendServerCommand(ent-g_entities, "print \"Username and password cannot be the same\n\"");
 		return;
 	}
-
 	if (CheckUserExists(username)) {
 		trap->SendServerCommand(ent-g_entities, "print \"This account name has already been taken!\n\"");
 		return;
