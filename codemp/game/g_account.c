@@ -3802,6 +3802,188 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 }
 
 void Cmd_DFTop10_f(gentity_t *ent) {
+	int style = -1, page = -1, season = -1, start = 0, input, i;
+	char inputString[40], inputStyleString[16];
+	char partialCourseName[40] = {0}, fullCourseName[40] = {0};
+	const int args = trap->Argc();
+	qboolean enteredCourseName = qtrue;
+
+	if (args > 5) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+		return;
+	}
+
+	//Get mapname. 
+	//How to tell if mapname is specified -- If its a map with only 1 course, we have to check. Otherwise we can assume 1st arg is mapname.
+		//It will always be the first arg.
+		//If the first arg doesnt match the pattern of style/season/page, we can assume it is mapname.
+		//This means we cant search for 
+
+	if (level.numCourses == 1) { //Test if 1st arg is not mapname, in which case we have partialcoursename = qfalse
+		if (args == 1)
+			enteredCourseName = qfalse;
+		else {
+			trap->Argv(1, inputString, sizeof(inputString));
+			if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
+				enteredCourseName = qfalse; //Use current mapname as coursename
+			}
+		}
+
+		if (enteredCourseName) {
+			trap->Argv(1, partialCourseName, sizeof(partialCourseName)); //Use arg1 as coursename
+		}
+	}
+
+	//Go through args 2-x, if we have a specified mapname, or 1-x if we dont
+	for (i = (enteredCourseName ? 2 : 1) ; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
+			}
+		}
+		if (season == -1) {
+			input = SeasonToInteger(inputString);
+			if (input != -1) {
+				season = input;
+				continue;
+			}
+		}
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+		return; //Arg doesnt match any expected values so error.
+	}
+
+	if (style == -1)
+		style = 1;
+	IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
+	Q_strcat(inputStyleString, sizeof(inputStyleString), " style");
+
+	if (page < 1)
+		page = 1;
+	if (page > 1000)
+		page = 1000;
+	start = (page - 1) * 10;
+
+	Q_strlwr(partialCourseName);
+	Q_CleanStr(partialCourseName);
+
+	if (!enteredCourseName) {
+		char info[1024] = {0};
+		trap->GetServerinfo(info, sizeof(info));
+		Q_strncpyz(fullCourseName, Info_ValueForKey( info, "mapname" ), sizeof(fullCourseName));
+		Q_strlwr(fullCourseName);
+		Q_CleanStr(fullCourseName);
+	}
+
+	//Com_Printf("Style %i, page %i, season %i, map %s, fullmap %s\n", style, page, season, partialCourseName, fullCourseName);
+
+	{ //See if course is found in database and print it then..?
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int row = 1;
+		int s;
+		char dateStr[64] = {0}, dateStrColored[64] = {0}, timeStr[32], msg[1024-128] = {0};
+		time_t	rawtime;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		if (enteredCourseName) { //Course e
+			//Com_Printf("doing sql query %s %i\n", courseName, style);
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE %?%";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY LENGTH(coursename) ASC, entries DESC LIMIT 1";
+			sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY entries DESC LIMIT 1";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, partialCourseName, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				//Check if it actually has text, if not return.  then we can use cheaper (MAX) entries query above //loda fixme
+				Q_strncpyz(fullCourseName, (char*)sqlite3_column_text(stmt, 0), sizeof(fullCourseName));
+			}
+			else {
+				//Com_Printf("fail 4\n");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+			CALL_SQLITE (finalize(stmt));
+
+		}
+
+		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
+		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
+		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
+		if (season == -1)
+			sql = "SELECT username, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT ?, 10";
+		else 
+			sql = "SELECT username, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT ?, 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, fullCourseName, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style));
+
+		if (season == -1) {
+			CALL_SQLITE (bind_int (stmt, 3, start));
+		}
+		else {
+			CALL_SQLITE (bind_int (stmt, 3, season));
+			CALL_SQLITE (bind_int (stmt, 4, start));
+		}
+
+		time( &rawtime );
+		localtime( &rawtime );
+
+		if (season == -1)
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString));
+		else
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style season %i:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString, season));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				if (rawtime - sqlite3_column_int(stmt, 4) < 60*60*24) { //Today
+					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
+				}
+				else {
+					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
+				}
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", row+start, sqlite3_column_text(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStrColored);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTop10_f).\n");//Trap print?
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+}
+
+#if 0
+void Cmd_DFTop10_f(gentity_t *ent) {
 	const int args = trap->Argc();
 	char input1[40], input2[32], input3[32], courseName[40] = {0}, courseNameFull[40] = {0}, msg[1024-128] = {0}, timeStr[32], styleString[16] = {0};
 	int i, style = -1, page = 1, start;
@@ -3990,7 +4172,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		CALL_SQLITE (close(db));
 	}
 }
-
+#endif
 
 void Cmd_DFTodo_f(gentity_t *ent) { //Redo this with loop-arg structure? Coursename is a problem though, cuz can't validate it until later..
 	sqlite3 * db;
