@@ -622,38 +622,9 @@ void CL_ConsolePrint( const char *txt) {
 		skipnotify = qtrue;
 		txt += 12;
 	}
-
-	if (con.x == 9) {
-		if (txt[0] == '*') {
-			char *txtc;
-
-			skipnotify = qtrue;
-			txt += 1;
-
-			txtc = va("%s", txt);
-			Q_StripColor(txtc);
-			CL_LogPrintf(cls.log.chat, va("%s", txtc));
-			if (!Q_strrchr(txtc, ':') == '0') { // i feel sick just looking at this
-				if (con_notifyname->string != "0" && Q_stristr(Q_strrchr(txtc, ':'), con_notifyname->string)) {
-					stampColor = COLOR_CYAN;
-#ifdef _WIN32
-					con_alert = qtrue;
-#endif
-				}
-			}
-			else stampColor = COLOR_WHITE;
-		}
-		else if (txt[0] == ']') stampColor = COLOR_GREEN;
-		else if (cls.state == CA_ACTIVE && (Q_stristr(txt, SE_GetString("MP_SVGAME_PLCONNECT")) || Q_stristr(txt, SE_GetString("MP_SVGAME_DISCONNECTED")))) {
-			stampColor = COLOR_YELLOW;
-			if (con_notifyconnect->integer) {
-#ifdef _WIN32
-				con_alert = qtrue;
-#endif
-				Cvar_Set("con_notifyconnect", "0");
-			}
-		}
-		else stampColor = COLOR_GREY;
+	if (txt[0] == '*') {
+		skipnotify = qtrue;
+		txt += 1;
 	}
 
 	if (!con.initialized) {

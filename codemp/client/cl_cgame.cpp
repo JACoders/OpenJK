@@ -372,6 +372,10 @@ CL_GetServerCommand
 Set up argc/argv for the given command
 ===================
 */
+
+extern cvar_t	*con_notifyconnect;
+extern cvar_t	*con_notifyname;
+
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	const char *s;
 	const char *cmd;
@@ -477,6 +481,39 @@ rescan:
 		Con_Close();
 		// take a special screenshot next frame
 		Cbuf_AddText( "wait ; wait ; wait ; wait ; screenshot levelshot\n" );
+		return qtrue;
+	}
+
+	if (!strcmp(cmd, "chat") || !strcmp(cmd, "teamchat")) {
+		char chat[MAX_SAY_TEXT+2];
+		int i, l;
+
+		s = Cmd_Argv(1);
+		Com_sprintf(chat, sizeof(chat), "%s\n", s);
+		Q_StripColor(chat);
+		
+		//Remove escape char from name
+		l = 0;
+		for (i = 0; chat[i]; i++) {
+			if (chat[i] == '\x19')
+				continue;
+			chat[l++] = chat[i];
+		}
+		chat[l] = '\0';
+
+		CL_LogPrintf(cls.log.chat, chat);
+
+		if (strcmp(con_notifyname->string, "0") && Q_stristr(Q_strrchr(s, ':'), con_notifyname->string)) {
+			con_alert = qtrue;
+		}
+		return qtrue;
+	}
+
+	if (!strcmp(cmd, "print")) {
+		s = Cmd_Argv(1);
+		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("@@@PLCONNECT"))) {
+			con_alert = qtrue;
+		}
 		return qtrue;
 	}
 
