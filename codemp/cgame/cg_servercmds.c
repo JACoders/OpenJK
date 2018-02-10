@@ -201,23 +201,15 @@ void CG_ParseServerinfo( void ) {
 	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14 ) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {	//uag :s - yes its fatz
 		cgs.isJAPlus = qtrue;
 		cgs.cinfo = atoi (Info_ValueForKey (info, "jp_cinfo" ));//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
-		trap->Cvar_Set("ui_isJAPro", "0");
+		cgs.hookpull = 800;
 	} 
 	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
 		cgs.isJAPro = qtrue;
 		cgs.jcinfo = atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
-		trap->Cvar_Set("ui_isJAPro", "1");
-
 		cgs.hookpull = atoi (Info_ValueForKey (info, "g_hookStrength" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
-		if (cgs.hookpull == 0)
-			cgs.hookpull = 800;
-
-		//
-
+		//if (cgs.hookpull == 0)
+			//cgs.hookpull = 800;
 	}
-
-	if (!cgs.isJAPro && !cgs.isJAPlus) //gay hack for base
-		trap->Cvar_Set("ui_isJAPro", "0");
 
 	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 
