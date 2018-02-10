@@ -6632,6 +6632,15 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
+	//Do alive check here so they can see style list?
+	if ((ent->health <= 0
+			|| ent->client->tempSpectate >= level.time
+			|| ent->client->sess.sessionTeam == TEAM_SPECTATOR) )
+	{
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
+		return;
+	}
+
 	if (!g_raceMode.integer) {
 		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gamemode!\n\"");
 		return;
