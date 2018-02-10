@@ -3865,7 +3865,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 				continue;
 			}
 		}
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays highscores for the specified course.\n\"");
 		return; //Arg doesnt match any expected values so error.
 	}
 
@@ -3920,7 +3920,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			}
 			else {
 				//Com_Printf("fail 4\n");
-				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays highscores for the specified course.\n\"");
 				CALL_SQLITE (finalize(stmt));
 				CALL_SQLITE (close(db));
 				return;
