@@ -3819,19 +3819,26 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		//If the first arg doesnt match the pattern of style/season/page, we can assume it is mapname.
 		//This means we cant search for 
 
-	if (level.numCourses == 1) { //Test if 1st arg is not mapname, in which case we have partialcoursename = qfalse
-		if (args == 1)
-			enteredCourseName = qfalse;
-		else {
-			trap->Argv(1, inputString, sizeof(inputString));
-			if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
-				enteredCourseName = qfalse; //Use current mapname as coursename
-			}
+	if (args == 1)
+		enteredCourseName = qfalse;
+	else {
+		trap->Argv(1, inputString, sizeof(inputString));
+		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
+			enteredCourseName = qfalse; //Use current mapname as coursename
 		}
+	}
 
-		if (enteredCourseName) {
-			trap->Argv(1, partialCourseName, sizeof(partialCourseName)); //Use arg1 as coursename
+	if (enteredCourseName) {
+		trap->Argv(1, partialCourseName, sizeof(partialCourseName)); //Use arg1 as coursename
+	}
+
+	if (!enteredCourseName && level.numCourses > 1) {
+		trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /rTop <coursename> <style (optional)> <season (optional - example: s1)> <page (optional)>.\n\"");
+		for (i = 0; i < level.numCourses; i++) { //32 max
+			if (level.courseName[i] && level.courseName[i][0])
+				trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i+1, level.courseName[i]));
 		}
+		return;
 	}
 
 	//Go through args 2-x, if we have a specified mapname, or 1-x if we dont
@@ -3913,7 +3920,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			}
 			else {
 				//Com_Printf("fail 4\n");
-				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
 				CALL_SQLITE (finalize(stmt));
 				CALL_SQLITE (close(db));
 				return;
