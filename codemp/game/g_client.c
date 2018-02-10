@@ -2333,6 +2333,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		while (pch != NULL) {
 			if (i == 0) {
 				client->pers.thirdPerson = atoi(pch);
+				client->ps.userInt1 = !client->pers.thirdPerson;
 			}
 			else if (i == 1)
 				client->pers.thirdPersonRange = atoi(pch);
@@ -2347,6 +2348,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	else {
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
 		client->pers.thirdPerson = atoi(s);
+		client->ps.userInt1 = !client->pers.thirdPerson;
 
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
 		client->pers.thirdPersonRange = atoi(s);
@@ -3015,6 +3017,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
 
+	client->ps.userInt1 = !client->pers.thirdPerson;
 
 	client->pers.noFollow = qfalse;
 	ent->r.svFlags &= ~SVF_SINGLECLIENT;
@@ -3850,6 +3853,8 @@ void ClientSpawn(gentity_t *ent) {
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
+
+	client->ps.userInt1 = !client->pers.thirdPerson;//Have to also do this anywhere that .ps gets reset (respawns?)
 
 	client->savedJumpLevel = 0;//rabbit
 

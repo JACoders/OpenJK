@@ -3712,8 +3712,6 @@ void ClientThink_real( gentity_t *ent ) {
 			client->ps.fd.forcePowerLevel[FP_LEVITATION] = 3;
 	}
 
-	client->ps.userInt1 = !client->pers.thirdPerson; //Do this all the time since they can reset .ps without changing userinfo
-
 	//
 	// check for exiting intermission
 	//

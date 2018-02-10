@@ -92,6 +92,20 @@ static void CVU_Bhop(void) {
 }
 
 /*
+static void CVU_ShowHealth(void) {
+	int i, health = 0;
+	if (g_showHealth.integer)
+		health = 100;
+
+	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
+		if (!g_entities[i].inuse)
+			continue;
+		g_entities[i].maxHealth = health;
+	}
+}
+*/
+
+/*
 static void CVU_FastGrip(void) {
 	g_fastGrip.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_FASTGRIP) : (jcinfo.integer &= ~JAPRO_CINFO_FASTGRIP);
