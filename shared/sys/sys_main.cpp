@@ -561,24 +561,22 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 	if ( !libHandle )
 #endif
 	{
-		if (Cvar_VariableIntegerValue("fs_loadpakdlls")) {
-			UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
-			if (!unpackResult.succeeded)
+		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
+		if (!unpackResult.succeeded)
+		{
+			if (Sys_DLLNeedsUnpacking())
 			{
-				if (Sys_DLLNeedsUnpacking())
-				{
-					FreeUnpackDLLResult(&unpackResult);
-					Com_DPrintf("Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename);
-					return NULL;
-				}
+				FreeUnpackDLLResult(&unpackResult);
+				Com_DPrintf("Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename);
+				return NULL;
 			}
-			else
-			{
-				libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
-			}
-
-			FreeUnpackDLLResult(&unpackResult);
 		}
+		else
+		{
+			libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
+		}
+
+		FreeUnpackDLLResult(&unpackResult);
 
 		if ( !libHandle )
 		{
