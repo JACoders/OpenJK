@@ -3452,25 +3452,25 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		sqlite3 * db;
 		char * sql;
 		sqlite3_stmt * stmt;
-		int s, score, count, golds, silvers, bronzes, row = 1;
+		int s, oldscore, newscore, count, golds, silvers, bronzes, row = 1;
 		float rank, percentile;
 		char msg[1024-128] = {0}, username[40];
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
 		if (style == -1) {
 			if (season == -1) {
-				sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE rank != 0 "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, start));
 			}
 			else {
-				sql = "SELECT username, CAST(1+ SUM((season_entries/CAST(season_rank AS FLOAT)) + (season_entries-season_rank))/2 AS INT) AS score, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(season_entries-season_rank) AS newscore, CAST(SUM(season_entries/CAST(season_rank AS FLOAT)) AS INT) AS oldscore, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE season = ? "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, season));
 				CALL_SQLITE (bind_int (stmt, 2, start));
@@ -3478,19 +3478,19 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		}
 		else {
 			if (season == -1) {
-				sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE rank != 0 AND style = ? "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, style));
 				CALL_SQLITE (bind_int (stmt, 2, start));
 			}
 			else {
-				sql = "SELECT username, CAST(1+ SUM((season_entries/CAST(season_rank AS FLOAT)) + (season_entries-season_rank))/2 AS INT) AS score, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(season_entries-season_rank) AS newscore, CAST(SUM(season_entries/CAST(season_rank AS FLOAT)) AS INT) AS oldscore, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE season = ? AND style = ? "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, season));
 				CALL_SQLITE (bind_int (stmt, 2, style));
@@ -3508,15 +3508,16 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
 				Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
-				score = sqlite3_column_int(stmt, 1);
-				rank = sqlite3_column_double(stmt, 2);
-				percentile = sqlite3_column_double(stmt, 3);
-				golds = sqlite3_column_int(stmt, 4);
-				silvers = sqlite3_column_int(stmt, 5);
-				bronzes = sqlite3_column_int(stmt, 6);
-				count = sqlite3_column_int(stmt, 7);
+				newscore = sqlite3_column_int(stmt, 1);
+				oldscore = sqlite3_column_int(stmt, 2);
+				rank = sqlite3_column_double(stmt, 3);
+				percentile = sqlite3_column_double(stmt, 4);
+				golds = sqlite3_column_int(stmt, 5);
+				silvers = sqlite3_column_int(stmt, 6);
+				bronzes = sqlite3_column_int(stmt, 7);
+				count = sqlite3_column_int(stmt, 8);
 
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, (int)(1+((oldscore+newscore)*0.5f)), (count ? ((float)oldscore/(float)count) : oldscore), rank, percentile, golds, silvers, bronzes, count);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
