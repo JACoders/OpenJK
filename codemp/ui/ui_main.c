@@ -902,6 +902,7 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 	if (Menu_Count() > 0) {
 		vec3_t v;
 		v[0] = v[1] = v[2] = 0;
+		char info[MAX_INFO_VALUE];
 		switch ( menu ) {
 		case UIMENU_NONE:
 			trap->Key_SetCatcher( trap->Key_GetCatcher() & ~KEYCATCH_UI );
@@ -950,12 +951,20 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			Menus_ActivateByName("endofgame");
 			return;
 		case UIMENU_INGAME:
-			trap->Cvar_Set( "cl_paused", "1" );
-			trap->Key_SetCatcher( KEYCATCH_UI );
-			UI_BuildPlayerList();
-			Menus_CloseAll();
-			Menus_ActivateByName("ingame");
-			return;
+            info[0] = '\0';
+            trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
+            if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
+                trap->Cvar_Set("ui_isJAPro", "1");
+            }
+            else {
+                trap->Cvar_Set("ui_isJAPro", "0");
+            }
+            trap->Cvar_Set( "cl_paused", "1" );
+            trap->Key_SetCatcher( KEYCATCH_UI );
+            UI_BuildPlayerList();
+            Menus_CloseAll();
+            Menus_ActivateByName("ingame");
+            return;
 		case UIMENU_PLAYERCONFIG:
 			// trap->Cvar_Set( "cl_paused", "1" );
 			trap->Key_SetCatcher( KEYCATCH_UI );
@@ -988,7 +997,9 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			// trap->Cvar_Set( "cl_paused", "1" );
 			// No chatin non-siege games.
 
-			if (ui_isJAPro.integer && trap->Cvar_VariableValue("ui_vgs")) {
+			info[0] = '\0';
+			trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
+			if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5) && trap->Cvar_VariableValue("ui_vgs")) {
 				trap->Key_SetCatcher(KEYCATCH_UI);
 				Menus_CloseAll();
 				Menus_ActivateByName("ingame_vgs");
