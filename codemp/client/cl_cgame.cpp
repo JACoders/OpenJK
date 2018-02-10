@@ -484,7 +484,7 @@ rescan:
 		return qtrue;
 	}
 
-	if (!strcmp(cmd, "chat")) {
+	if (!strcmp(cmd, "chat") || !strcmp(cmd, "tchat")) {
 		char chat[MAX_SAY_TEXT+2];
 		int i, l;
 
@@ -503,15 +503,19 @@ rescan:
 
 		CL_LogPrintf(cls.log.chat, chat);
 
-		if (strcmp(con_notifyname->string, "0") && Q_stristr(Q_strrchr(s, ':'), con_notifyname->string)) {
+		if (con_notifyname->integer == -1) {
 			con_alert = qtrue;
 		}
+		else if (strcmp(con_notifyname->string, "0") && Q_stristr(Q_strrchr(s, ':'), con_notifyname->string)) {
+			con_alert = qtrue;
+		}
+
 		return qtrue;
 	}
 
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
-		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("MP_SVGAME_PLCONNECT"))) {
+		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("MP_SVGAME_PLCONNECT"))) { //Works on disconnect but not connect?
 			con_alert = qtrue;
 		}
 		return qtrue;
