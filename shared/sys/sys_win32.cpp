@@ -507,11 +507,11 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 	void *data;
 	long len;
 	
-	if (Cvar_VariableIntegerValue("fs_loadpakdlls")) {
-		FS_ReadDLLInPAK(name, &data);
+	if (Cvar_VariableIntegerValue("fs_loadpakdlls") == 1) {
+		len = FS_ReadDLLInPAK(name, &data);
 	}
 	else {
-		FS_ReadFile(name, &data);
+		len = FS_ReadFile(name, &data);
 	}
 
 	if (len >= 1)
