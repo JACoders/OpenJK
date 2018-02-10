@@ -484,7 +484,7 @@ rescan:
 		return qtrue;
 	}
 
-	if (!strcmp(cmd, "chat") || !strcmp(cmd, "teamchat")) {
+	if (!strcmp(cmd, "chat")) {
 		char chat[MAX_SAY_TEXT+2];
 		int i, l;
 
@@ -511,7 +511,7 @@ rescan:
 
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
-		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("@@@PLCONNECT"))) {
+		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("MP_SVGAME_PLCONNECT"))) {
 			con_alert = qtrue;
 		}
 		return qtrue;
