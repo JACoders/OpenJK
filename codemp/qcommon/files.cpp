@@ -3061,6 +3061,9 @@ void FS_Path_f( void ) {
 	searchpath_t	*s;
 	int				i;
 
+	if (!fs_debug->integer)
+		return;
+
 	Com_Printf ("Current search path:\n");
 	for (s = fs_searchpaths; s; s = s->next) {
 		if (s->pack) {
