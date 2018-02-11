@@ -644,8 +644,17 @@ void CL_InitCGame( void ) {
 	// clear anything that got printed
 	Con_ClearNotify ();
 
-	if (cl_logChat->integer)
-		CL_OpenLog("cl_chat.log", &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
+	if (cl_logChat->integer) {
+		struct tm		*newtime;
+		time_t			rawtime;
+		char			logname[24];
+
+		time(&rawtime);
+		newtime = localtime(&rawtime);
+		strftime(logname, 26, "chatlogs/%b-%y.log", newtime);
+
+		CL_OpenLog(logname, &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
+	}
 	else
 		Com_DPrintf("Not logging chat to disk.\n");
 }
