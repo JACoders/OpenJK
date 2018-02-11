@@ -40,6 +40,7 @@ cvar_t		*con_scale;
 cvar_t		*con_autoclear;
 cvar_t		*con_notifywords;
 cvar_t		*con_notifyconnect;
+cvar_t		*con_notifyvote;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
@@ -526,6 +527,7 @@ void Con_Init (void) {
 #ifdef _WIN32
 	con_notifywords = Cvar_Get("con_notifywords", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
 	con_notifyconnect = Cvar_Get("con_notifyconnect", "0", CVAR_NONE, "Notifies you when someone connects to the server");
+	con_notifyvote = Cvar_Get("con_notifyvote", "0", CVAR_NONE, "Notifies you when someone calls a vote");
 #endif
 
 	Field_Clear( &g_consoleField );

@@ -375,6 +375,7 @@ Set up argc/argv for the given command
 
 extern cvar_t	*con_notifyconnect;
 extern cvar_t	*con_notifywords;
+extern cvar_t	*con_notifyvote;
 
 #define	MAX_NOTIFYWORDS 8
 extern char	notifyWords[MAX_NOTIFYWORDS][32];
@@ -529,6 +530,10 @@ rescan:
 #ifdef _WIN32
 		if (con_notifyconnect->integer && Q_stristr(s, "@@@PLCONNECT")) { //Works on disconnect but not connect?
 			con_alert = qtrue;
+		}
+		if (con_notifyvote->integer && Q_stristr(s, "@@@PLCALLEDVOTE")) { //Works on disconnect but not connect?
+			con_alert = qtrue;
+			Com_Printf("CV found\n");
 		}
 #endif
 		return qtrue;
