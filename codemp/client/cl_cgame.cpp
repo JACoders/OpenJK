@@ -650,7 +650,7 @@ void CL_InitCGame( void ) {
 
 		time(&rawtime);
 		newtime = localtime(&rawtime);
-		strftime(logname, sizeof(logname), "chatlogs/%b-%y.log", newtime);
+		strftime(logname, sizeof(logname), "chatlogs/cl_%y-%b.log", newtime);
 
 		CL_OpenLog(logname, &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
 	}
