@@ -374,7 +374,10 @@ Set up argc/argv for the given command
 */
 
 extern cvar_t	*con_notifyconnect;
-extern cvar_t	*con_notifyname;
+extern cvar_t	*con_notifywords;
+
+#define	MAX_NOTIFYWORDS 8
+extern char	notifyWords[MAX_NOTIFYWORDS][32];
 
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	const char *s;
@@ -503,11 +506,17 @@ rescan:
 
 		CL_LogPrintf(cls.log.chat, chat);
 
-		if (con_notifyname->integer == -1) {
+		if (con_notifywords->integer == -1) {
 			con_alert = qtrue;
 		}
-		else if (strcmp(con_notifyname->string, "0") && Q_stristr(Q_strrchr(s, ':'), con_notifyname->string)) {
-			con_alert = qtrue;
+		else if (strcmp(con_notifywords->string, "0")) {
+			int i;
+			for (i=0; i<MAX_NOTIFYWORDS; i++) {
+				if (strcmp(notifyWords[i], "") && Q_stristr(Q_strrchr(s, ':'), notifyWords[i])) {
+					con_alert = qtrue;
+					break;
+				}
+			}
 		}
 
 		return qtrue;
