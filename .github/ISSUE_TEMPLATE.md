@@ -1,9 +1,6 @@
-Reporting a bug? Please make sure you've given the following information - thanks!
+Reporting a bug? Please make sure you've given the following information in detail - thanks!
 
 **Operating system and version:**
-
-
-**Is this for single player or multiplayer?**
 
 
 **Description of the bug (and if possible, steps to reproduce the bug):**
