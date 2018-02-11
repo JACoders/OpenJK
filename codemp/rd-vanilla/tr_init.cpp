@@ -288,6 +288,8 @@ void R_Splash()
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	} else { //assuming 16:9 for now
 		pImage = R_FindImageFile( "menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP);
+		if (!pImage)
+			pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
 	extern void	RB_SetGL2D (void);
 	RB_SetGL2D();
