@@ -1414,9 +1414,6 @@ void GfxInfo_f( void )
 	int fullscreen = ri.Cvar_VariableIntegerValue("r_fullscreen");
 	int noborder = ri.Cvar_VariableIntegerValue("r_noborder");
 
-	if (!r_verbose->integer)
-		return;
-
 	ri.Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	ri.Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri.Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
@@ -1802,7 +1799,8 @@ void R_Init( void ) {
 
 	RestoreGhoul2InfoArray();
 	// print info
-	GfxInfo_f();
+	if (r_verbose->integer)
+		GfxInfo_f();
 
 //	ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
