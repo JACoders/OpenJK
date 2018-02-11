@@ -523,8 +523,10 @@ void Con_Init (void) {
 	con_scale = Cvar_Get("con_scale", "1.0", CVAR_ARCHIVE_ND, "Console character scale");
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
+#ifdef _WIN32
 	con_notifywords = Cvar_Get("con_notifywords", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
 	con_notifyconnect = Cvar_Get("con_notifyconnect", "0", CVAR_NONE, "Notifies you when someone connects to the server");
+#endif
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = DEFAULT_CONSOLE_WIDTH;
