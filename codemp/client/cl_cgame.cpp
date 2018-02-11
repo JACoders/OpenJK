@@ -527,7 +527,7 @@ rescan:
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
 #ifdef _WIN32
-		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("MP_SVGAME_PLCONNECT"))) { //Works on disconnect but not connect?
+		if (con_notifyconnect->integer && Q_stristr(s, "@@@PLCONNECT")) { //Works on disconnect but not connect?
 			con_alert = qtrue;
 		}
 #endif
