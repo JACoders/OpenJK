@@ -528,10 +528,10 @@ rescan:
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
 #ifdef _WIN32
-		if (con_notifyconnect->integer && Q_stristr(s, "@@@PLCONNECT")) { //Works on disconnect but not connect?
+		if (con_notifyconnect->integer && Q_stristr(s, "@@@PLCONNECT")) {
 			con_alert = qtrue;
 		}
-		if (con_notifyvote->integer && Q_stristr(s, "@@@PLCALLEDVOTE")) { //Works on disconnect but not connect?
+		if (con_notifyvote->integer && Q_stristr(s, "@@@PLCALLEDVOTE")) {
 			con_alert = qtrue;
 		}
 #endif
