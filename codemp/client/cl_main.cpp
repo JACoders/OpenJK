@@ -2176,8 +2176,8 @@ static void CL_GetAfk(void) {
 	}
 }
 
+#ifdef _WIN32
 extern cvar_t	*con_notifywords;
-//const short		MAX_NOTIFYWORDS = 8;
 #define			MAX_NOTIFYWORDS 8
 char			notifyWords[MAX_NOTIFYWORDS][32];
 
@@ -2221,11 +2221,14 @@ static void CL_PrintNotificationWords() {
 	}
 }
 */
+#endif
 
 int cl_nameModifiedTime = 0;
 static int lastModifiedColors = 0;
 static int lastModifiedName = 0;
+#ifdef _WIN32
 static int lastModifiedNotifyName = 0;
+#endif
 static void CL_CheckCvarUpdate(void) {
 	if (lastModifiedColors != cl_colorString->modificationCount) {
 		// recalculate cl_colorStringCount
@@ -2242,12 +2245,13 @@ static void CL_CheckCvarUpdate(void) {
 		cl_nameModifiedTime = cls.realtime;
 		CL_GetAfk();
 	}
-
+#ifdef _WIN32
 	if (lastModifiedNotifyName != con_notifywords->modificationCount) {
 		lastModifiedNotifyName = con_notifywords->modificationCount;
 		CL_UpdateNotificationWords();
 		//CL_PrintNotificationWords();
 	}
+#endif
 }
 
 /*

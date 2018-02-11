@@ -506,6 +506,7 @@ rescan:
 
 		CL_LogPrintf(cls.log.chat, chat);
 
+#ifdef _WIN32
 		if (con_notifywords->integer == -1) {
 			con_alert = qtrue;
 		}
@@ -518,15 +519,18 @@ rescan:
 				}
 			}
 		}
+#endif
 
 		return qtrue;
 	}
 
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
+#ifdef _WIN32
 		if (con_notifyconnect->integer && Q_stristr(s, SE_GetString("MP_SVGAME_PLCONNECT"))) { //Works on disconnect but not connect?
 			con_alert = qtrue;
 		}
+#endif
 		return qtrue;
 	}
 
