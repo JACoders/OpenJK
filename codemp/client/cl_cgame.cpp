@@ -533,7 +533,6 @@ rescan:
 		}
 		if (con_notifyvote->integer && Q_stristr(s, "@@@PLCALLEDVOTE")) { //Works on disconnect but not connect?
 			con_alert = qtrue;
-			Com_Printf("CV found\n");
 		}
 #endif
 		return qtrue;
@@ -647,11 +646,11 @@ void CL_InitCGame( void ) {
 	if (cl_logChat->integer) {
 		struct tm		*newtime;
 		time_t			rawtime;
-		char			logname[24];
+		char			logname[32];
 
 		time(&rawtime);
 		newtime = localtime(&rawtime);
-		strftime(logname, 26, "chatlogs/%b-%y.log", newtime);
+		strftime(logname, sizeof(logname), "chatlogs/%b-%y.log", newtime);
 
 		CL_OpenLog(logname, &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
 	}
