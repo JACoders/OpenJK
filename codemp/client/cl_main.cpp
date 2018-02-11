@@ -2176,9 +2176,56 @@ static void CL_GetAfk(void) {
 	}
 }
 
+extern cvar_t	*con_notifywords;
+//const short		MAX_NOTIFYWORDS = 8;
+#define			MAX_NOTIFYWORDS 8
+char			notifyWords[MAX_NOTIFYWORDS][32];
+
+static void CL_AddNotificationName(char *str) {
+	int i;
+
+	//Com_Printf("Adding %s\n", str);
+	for (i = 0; i<MAX_NOTIFYWORDS; i++) {
+		//Com_Printf("Slot is %s", notifyWords[i]);
+		if (!strcmp(notifyWords[i], "")) {
+			//Com_Printf("Copying to %i\n", i);
+			Q_strncpyz(notifyWords[i], str, sizeof(notifyWords[i]));
+			return;
+		}
+	}
+	//Error, max words
+}
+
+static void CL_UpdateNotificationWords(void) {
+	char * pch;
+	char words[MAX_CVAR_VALUE_STRING];
+
+	Q_strncpyz(words, con_notifywords->string, sizeof(words));
+	memset(notifyWords, 0, sizeof(notifyWords));
+	pch = strtok(words, " ");
+	while (pch != NULL) {
+		CL_AddNotificationName(pch);
+		pch = strtok(NULL, " ");
+	}
+}
+/*
+//debug
+static void CL_PrintNotificationWords() {
+	int i;
+
+	for (i = 0; i<MAX_NOTIFYWORDS; i++) {
+		if (strcmp(notifyWords[i], "")) {
+			Com_Printf("Notification word: %s\n", notifyWords[i]);
+		}
+		else break;
+	}
+}
+*/
+
 int cl_nameModifiedTime = 0;
 static int lastModifiedColors = 0;
 static int lastModifiedName = 0;
+static int lastModifiedNotifyName = 0;
 static void CL_CheckCvarUpdate(void) {
 	if (lastModifiedColors != cl_colorString->modificationCount) {
 		// recalculate cl_colorStringCount
@@ -2194,6 +2241,12 @@ static void CL_CheckCvarUpdate(void) {
 		lastModifiedName = cl_name->modificationCount;
 		cl_nameModifiedTime = cls.realtime;
 		CL_GetAfk();
+	}
+
+	if (lastModifiedNotifyName != con_notifywords->modificationCount) {
+		lastModifiedNotifyName = con_notifywords->modificationCount;
+		CL_UpdateNotificationWords();
+		//CL_PrintNotificationWords();
 	}
 }
 
