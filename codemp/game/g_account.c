@@ -1952,7 +1952,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	}
 
 	if (iplock && lastip != ip) {
-		trap->SendServerCommand(ent-g_entities, "print \"Your account is locked to a different IP address.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"This account is locked to a different IP address.\n\"");
 		CALL_SQLITE (close(db));
 		return;
 	}
@@ -3870,7 +3870,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		return; //Arg doesnt match any expected values so error.
 	}
 
-	if (style == -1)
+	if (style == -1) //Default to JKA style
 		style = 1;
 	IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
 	Q_strcat(inputStyleString, sizeof(inputStyleString), " style");
