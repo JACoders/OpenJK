@@ -1347,7 +1347,7 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 		const int floodTime = (sv_floodProtect->integer == 1) ? 1000 : sv_floodProtect->integer;
 
 		if (sv_newfloodProtect->integer > 1) {
-			if (!Q_stricmp(s, "score")) {
+			if (!Q_strncmp(s, "score", 6)) {
 				if (svs.time < (cl->lastReliableTime[1] + floodTime))
 					clientOk = qfalse;
 				else
@@ -1359,7 +1359,7 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 				else
 					cl->lastReliableTime[2] = svs.time;
 			}
-			else if (!Q_stricmp(s, "kill")) {
+			else if (!Q_strncmp(s, "kill", 5)) {
 				if (svs.time < (cl->lastReliableTime[3] + floodTime))
 					clientOk = qfalse;
 				else
