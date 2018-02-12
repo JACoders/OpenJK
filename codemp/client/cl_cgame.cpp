@@ -379,6 +379,8 @@ extern cvar_t	*con_notifyvote;
 
 #define	MAX_NOTIFYWORDS 8
 extern char	notifyWords[MAX_NOTIFYWORDS][32];
+extern int stampColor;
+
 
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	const char *s;
@@ -511,30 +513,38 @@ rescan:
 		if (con_notifywords->integer == -1) {
 			con_alert = qtrue;
 		}
-		else if (strcmp(con_notifywords->string, "0")) {
+		else
+#endif
+		if (strcmp(con_notifywords->string, "0")) {
 			int i;
 			for (i=0; i<MAX_NOTIFYWORDS; i++) {
 				if (strcmp(notifyWords[i], "") && Q_stristr(Q_strrchr(s, ':'), notifyWords[i])) {
+					stampColor = COLOR_CYAN;
+#ifdef _WIN32
 					con_alert = qtrue;
+#endif
 					break;
 				}
 			}
 		}
-#endif
 
 		return qtrue;
 	}
 
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
-#ifdef _WIN32
 		if (con_notifyconnect->integer && Q_stristr(s, "@@@PLCONNECT")) {
+			stampColor = COLOR_YELLOW;
+#ifdef _WIN32
 			con_alert = qtrue;
+#endif
 		}
 		if (con_notifyvote->integer && Q_stristr(s, "@@@PLCALLEDVOTE")) {
+			stampColor = COLOR_ORANGE;
+#ifdef _WIN32
 			con_alert = qtrue;
-		}
 #endif
+		}
 		return qtrue;
 	}
 
