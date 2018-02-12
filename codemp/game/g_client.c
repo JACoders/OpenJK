@@ -2308,33 +2308,19 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			i++;
 		}
 	}
-	else {
-		s = Info_ValueForKey( userinfo, "com_MaxFPS" );
-		if (!atoi(s)) {
-			s = Info_ValueForKey( userinfo, "cg_displayMaxFPS" );
-			client->pers.maxFPS = atoi(s);
-		}
-		else {
-			client->pers.maxFPS = atoi(s);
-		}
-
-		s = Info_ValueForKey( userinfo, "cl_timenudge" );
-		client->pers.timenudge = atoi(s);
-
-		s = Info_ValueForKey( userinfo, "cl_maxPackets" );
-		client->pers.maxPackets = atoi(s);
-	}
 
 	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
 	if (Q_stricmp(s, "")) { //if s is set
+		char strTemp[64] = {0};
+		int encodedRange;
+		int encodedOffset;
+
 		char * pch;
 		int i = 0;
 		pch = strtok (s, " ");
 		while (pch != NULL) {
-			if (i == 0) {
-				client->pers.thirdPerson = atoi(pch);
-				client->ps.userInt1 = !client->pers.thirdPerson;
-			}
+			if (i == 0)
+				client->pers.thirdPerson = (qboolean)atoi(pch);
 			else if (i == 1)
 				client->pers.thirdPersonRange = atoi(pch);
 			else if (i == 2)
@@ -2344,17 +2330,20 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			pch = strtok (NULL, " ");
 			i++;
 		}
-	}
-	else {
-		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
-		client->pers.thirdPerson = atoi(s);
-		client->ps.userInt1 = !client->pers.thirdPerson;
 
-		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
-		client->pers.thirdPersonRange = atoi(s);
+		encodedRange = client->pers.thirdPersonRange;
+		encodedOffset = client->pers.thirdPersonVertOffset;
+		//Use negative if 1st person.  Clamp to -32765, 32765 range.
+		if (encodedRange > 325) //max 1625 - abs max 327
+			encodedRange = 325;
+		if (encodedOffset > 64) //max 256 - abs max 67..?
+			encodedOffset = 64;
+		if (!client->pers.thirdPerson)
+			encodedRange = -encodedRange;
 
-		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonVertOffset" );
-		client->pers.thirdPersonVertOffset = atoi(s);
+		Com_sprintf( strTemp, 128, "%i%02i", encodedRange, encodedOffset );
+		client->pers.cameraSettings = atoi(strTemp);
+		client->ps.persistant[PERS_CAMERA_SETTINGS] = client->pers.cameraSettings; //This gets reset on clientbegin ? damn
 	}
 
 	if (client->pers.timenudge > 200)
@@ -3017,7 +3006,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
 
-	client->ps.userInt1 = !client->pers.thirdPerson;
+	client->ps.persistant[PERS_CAMERA_SETTINGS] = client->pers.cameraSettings;
 
 	client->pers.noFollow = qfalse;
 	ent->r.svFlags &= ~SVF_SINGLECLIENT;
@@ -3853,8 +3842,6 @@ void ClientSpawn(gentity_t *ent) {
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
-
-	client->ps.userInt1 = !client->pers.thirdPerson;//Have to also do this anywhere that .ps gets reset (respawns?)
 
 	client->savedJumpLevel = 0;//rabbit
 
