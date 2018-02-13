@@ -594,8 +594,9 @@ static void Con_Linefeed (qboolean skipnotify)
 	if (con.display == con.current)
 		con.display++;
 	con.current++;
+
 	for(i=0; i<con.linewidth; i++)
-		con.text[(con.current%con.totallines)*con.linewidth+i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
+		con.text[(con.current%con.totallines)*con.linewidth+i] = (ColorIndex(COLOR_WHITE)<<8) | ' '; //Spacing between timestamp and text, and other spaces
 }
 
 /*
