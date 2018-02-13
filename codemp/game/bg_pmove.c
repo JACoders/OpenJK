@@ -13047,12 +13047,14 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 
-		if (pmove->ps->stats[STAT_RACEMODE]) {
+		/*
+		if (pmove->ps->stats[STAT_RACEMODE]) { //Using float now
 			if ( msec > 8 ) {
 				msec = 8;
 			}
 		}
-		else if ( pmove->pmove_fixed ) {
+		else*/
+		if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}
