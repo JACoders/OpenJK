@@ -6676,13 +6676,9 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			ent->client->ourSwoopNum = 0;
 		}
 
-		if (style == MV_RJQ3 || style == MV_RJCPM) {
-			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
-		}
-		else {
-			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
-			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
-		}
+		ent->client->ps.ammo[AMMO_POWERCELL] = 0;
+		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+		ent->client->ps.weapon = WP_MELEE; //dont really understand this
 
 		if (style == MV_SWOOP) {
 			SpawnRaceSwoop(ent);
