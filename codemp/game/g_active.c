@@ -3685,18 +3685,14 @@ void ClientThink_real( gentity_t *ent ) {
 		if (movementStyle == MV_RJCPM || movementStyle == MV_RJQ3) {
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
 			ent->client->ps.ammo[AMMO_ROCKETS] = 2;
-			client->ps.ammo[AMMO_POWERCELL] = 0;
 			if (ent->health > 0)
 				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
 		}
 		else {
 			client->ps.ammo[AMMO_POWERCELL] = 300;
-			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 
 			if (movementStyle == MV_SIEGE || movementStyle == MV_JKA || movementStyle == MV_QW || movementStyle == MV_PJK || movementStyle == MV_SP || movementStyle == MV_SPEED || movementStyle == MV_JETPACK) {
 				ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR) + (1 << WP_STUN_BATON);
-				ent->client->ps.ammo[AMMO_ROCKETS] = 0;
-				client->ps.ammo[AMMO_POWERCELL] = 300;
 			}
 			else {
 				ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
