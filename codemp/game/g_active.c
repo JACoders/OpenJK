@@ -3680,15 +3680,30 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	} // Godchat end
 
-	if (ent && ent->client && ((ent->client->sess.movementStyle == 7) || (ent->client->sess.movementStyle == 8)) && ent->health > 0) {
-		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
-		ent->client->ps.ammo[AMMO_ROCKETS] = 2;
-	}
-	else if (ent && ent->client && ent->client->sess.raceMode) {
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
-		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
-		if (ent->client->sess.movementStyle == MV_JETPACK) //always give jetpack style a jetpack, and non jetpack styles no jetpack, maybe this should just be in clientspawn ?
+	if (ent && ent->client && ent->client->sess.raceMode) {
+		const int movementStyle = ent->client->sess.movementStyle;
+		if (movementStyle == MV_RJCPM || movementStyle == MV_RJQ3) {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
+			ent->client->ps.ammo[AMMO_ROCKETS] = 2;
+			client->ps.ammo[AMMO_POWERCELL] = 0;
+			if (ent->health > 0)
+				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
+		}
+		else {
+			client->ps.ammo[AMMO_POWERCELL] = 300;
+			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+
+			if (movementStyle == MV_SIEGE || movementStyle == MV_JKA || movementStyle == MV_QW || movementStyle == MV_PJK || movementStyle == MV_SP || movementStyle == MV_SPEED || movementStyle == MV_JETPACK) {
+				ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR) + (1 << WP_STUN_BATON);
+				ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+				client->ps.ammo[AMMO_POWERCELL] = 300;
+			}
+			else {
+				ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
+			}
+		}
+
+		if (movementStyle == MV_JETPACK) //always give jetpack style a jetpack, and non jetpack styles no jetpack, maybe this should just be in clientspawn ?
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 		else
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); 
