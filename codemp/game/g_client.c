@@ -3420,6 +3420,9 @@ void GiveClientItems(gclient_t *client) {
 		if (g_startingItems.integer & (1 << HI_HEALTHDISP))
 			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_HEALTHDISP);
 	}
+	else {
+		client->ps.stats[STAT_HOLDABLE_ITEMS] = ( 1 << HI_BINOCULARS);
+	}
 }
 
 void GiveClientWeapons(gclient_t *client) {
