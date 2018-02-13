@@ -3945,13 +3945,8 @@ void ClientSpawn(gentity_t *ent) {
 		}
 
 		if (level.gametype != GT_SIEGE) {
-			if (client->sess.raceMode) {
-				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR); //give them disruptor not pistol, since pistol fucks dyn crosshair/strafehelper 
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
-				client->ps.ammo[AMMO_POWERCELL] = 300;
-			}
-			else { //loda fixme.. this can just be set?
+			if (!client->sess.raceMode)
+			{ //loda fixme.. this can just be set?
 				GiveClientWeapons(client);
 			}
 		}
