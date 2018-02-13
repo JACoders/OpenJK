@@ -2764,7 +2764,8 @@ static void CL_AddFavorite_f( void ) {
 void CL_Afk_f(void) {
 	char name[MAX_TOKEN_CHARS];
 	Cvar_VariableStringBuffer("name", name, sizeof(name));
-	if (cls.realtime - cl_nameModifiedTime <= 5000)Com_Printf("You must wait 5 seconds before changing your name again.\n");
+	if (cls.realtime - cl_nameModifiedTime <= 5000)
+		Com_Printf("You must wait 5 seconds before changing your name again.\n");
 	else {
 		if (cl_afkName) {
 			Cvar_Set("name", name + afkPrefixLen);
