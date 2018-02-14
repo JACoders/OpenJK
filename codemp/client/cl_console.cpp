@@ -205,11 +205,18 @@ void Con_Copy(void) {
 
 	// write the remaining lines
 	buffer[bufferlen - 1] = 0;
-	for (; l <= con.current; l++)
+	for (; l < con.current; l++)
 	{
 		line = con.text + (l%con.totallines)*con.linewidth;
-		for (i = 0; i<con.linewidth; i++)
+
+		buffer[0] = '[';
+		for (i = 1; i<TIMESTAMP_LENGTH-1; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
 			buffer[i] = (char)(line[i] & 0xff);
+		buffer[TIMESTAMP_LENGTH-1] = ']';
+		buffer[TIMESTAMP_LENGTH] = ' ';
+		for (i = TIMESTAMP_LENGTH+1; i<con.linewidth; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
+			buffer[i] = (char)(line[i-1] & 0xff); //i-1 instead of i, does this fuck up the end?
+
 		for (x = con.linewidth - 1; x >= 0; x--)
 		{
 			if (buffer[x] == ' ')
