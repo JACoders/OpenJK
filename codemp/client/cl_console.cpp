@@ -530,7 +530,7 @@ void Con_Init (void) {
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
 	con_scale = Cvar_Get("con_scale", "1.0", CVAR_ARCHIVE_ND, "Console character scale");
-	Cvar_CheckRange(con_conspeed, 0.2, 10.0f, qfalse);
+	Cvar_CheckRange(con_scale, 0.2, 10.0f, qfalse);
 
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
