@@ -209,11 +209,11 @@ void Con_Copy(void) {
 	{
 		line = con.text + (l%con.totallines)*con.linewidth;
 
-		buffer[0] = '[';
+		buffer[0] = '[';//this was a space
 		for (i = 1; i<TIMESTAMP_LENGTH-1; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
 			buffer[i] = (char)(line[i] & 0xff);
-		buffer[TIMESTAMP_LENGTH-1] = ']';
-		buffer[TIMESTAMP_LENGTH] = ' ';
+		buffer[TIMESTAMP_LENGTH-1] = ']';//this was a space
+		buffer[TIMESTAMP_LENGTH] = ' ';//add a new space
 		for (i = TIMESTAMP_LENGTH+1; i<con.linewidth; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
 			buffer[i] = (char)(line[i-1] & 0xff); //i-1 instead of i, does this fuck up the end?
 
@@ -530,6 +530,8 @@ void Con_Init (void) {
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
 	con_scale = Cvar_Get("con_scale", "1.0", CVAR_ARCHIVE_ND, "Console character scale");
+	Cvar_CheckRange(con_conspeed, 0.2, 10.0f, qfalse);
+
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 	con_notifywords = Cvar_Get("con_notifywords", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
