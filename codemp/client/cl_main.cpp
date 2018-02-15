@@ -1178,6 +1178,16 @@ void CL_ResetPureClientAtServer( void ) {
 	CL_AddReliableCommand( "vdr", qfalse );
 }
 
+void CL_Mod_Restart_f(void) {
+
+	if (Cmd_Argc() != 2) {
+		Com_Printf("Usage: loadmod <folder name>\n");
+		return;
+	}
+	Cvar_Set("fs_game", Cmd_Argv(1));
+	CL_Vid_Restart_f();
+}
+
 /*
 =================
 CL_Vid_Restart_f
@@ -3144,6 +3154,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f, "Prints the userinfo variables" );
 	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f, "Restart sound" );
 	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f, "Restart the renderer - or change the resolution" );
+	Cmd_AddCommand ("loadmod", CL_Mod_Restart_f, "Restart the renderer (with specified mod folder) - or change the resolution");
 	Cmd_AddCommand ("fs_restart", CL_Fs_Restart_f, "Restart the filesystem" );
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f, "Disconnect from current server" );
 	Cmd_AddCommand ("cinematic", CL_PlayCinematic_f, "Play a cinematic video" );
