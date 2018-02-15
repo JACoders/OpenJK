@@ -686,6 +686,9 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
 		ent->client->pers.haste = qfalse;
+		ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
+		ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
+		ent->client->ps.stats[STAT_ARMOR] = 25;
 		//}
 		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..? Do this for every style..
 			DeletePlayerProjectiles(ent);
@@ -722,7 +725,6 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.displacementFlag = 0;
 	ent->client->pers.stats.displacementFlagSamples = 0;
 	ent->client->ps.stats[STAT_JUMPTIME] = 0;
-	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
 
 	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
 
