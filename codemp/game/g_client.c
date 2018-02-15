@@ -2706,14 +2706,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		if ( g_antiFakePlayer.integer )
 		{// patched, check for > g_maxConnPerIP connections from same IP
 			int count=0, i=0;
-			char strIP[NET_ADDRSTRMAXLEN] = {0}; //not sure man..
-			char *p = NULL;
-
-			Q_strncpyz(strIP, tmpIP, sizeof(strIP));
-			p = strchr(strIP, ':');
-			if (p)
-				*p = 0;
-
 			for ( i=0; i<sv_maxclients.integer; i++ )
 			{
 				//trap->Print("Theirs: %s, ours: %s\n", strIP, level.clients[i].sess.IP);
@@ -2730,7 +2722,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 						}
 					}
 				#else
-					if ( CompareIPs( strIP, level.clients[i].sess.IP ) )
+					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
 						count++;
 				#endif
 			}
@@ -4130,8 +4122,12 @@ void ClientSpawn(gentity_t *ent) {
 	//Do per-spawn force power initialization
 	WP_SpawnInitForcePowers( ent );
 
+
+	if (client->sess.raceMode) {
+		ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] = 100;
+	}
 	// health will count down towards max_health
-	if (level.gametype == GT_SIEGE &&
+	else if (level.gametype == GT_SIEGE &&
 		client->siegeClass != -1 &&
 		bgSiegeClasses[client->siegeClass].starthealth)
 	{ //class specifies a start health, so use it
@@ -4227,7 +4223,7 @@ void ClientSpawn(gentity_t *ent) {
 			client->ps.weaponstate = WEAPON_RAISING;
 			client->ps.weaponTime = client->ps.torsoTimer;
 
-			if (g_spawnInvulnerability.integer)
+			if (g_spawnInvulnerability.integer && !ent->client->sess.raceMode)
 			{
 				ent->client->ps.eFlags |= EF_INVULNERABLE;
 				ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
