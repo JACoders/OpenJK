@@ -1444,7 +1444,6 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 		newDB = qtrue;
 	}
 	
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET racetime = racetime + ? WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, seconds));
