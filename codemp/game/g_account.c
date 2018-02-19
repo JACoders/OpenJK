@@ -2237,7 +2237,7 @@ void Svcmd_RenameAccount_f(void)
 		CALL_SQLITE (finalize(stmt));
 	}
 	else 
-		trap->Print( "User does not exist, renaming in highscores and duels anyway.\n");
+		trap->Print( "User does not exist, renaming in races and duels anyway.\n");
 
 	sql = "UPDATE LocalRun SET username = ? WHERE username = ?";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
