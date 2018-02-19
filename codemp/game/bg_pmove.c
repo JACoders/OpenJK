@@ -9116,7 +9116,7 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
-	if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->weapon == WP_DISRUPTOR)) {
+	if (pm->ps->stats[STAT_RACEMODE] && ((pm->ps->weapon == WP_DISRUPTOR) || (pm->ps->weapon == WP_STUN_BATON))) {
 		addTime = 600;
 	}
 	else {
