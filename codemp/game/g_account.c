@@ -4603,7 +4603,7 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	fLen = trap->FS_Open(filename, &f, FS_READ);
 
 	if (!f) {
-		Com_Printf ("Couldn't load tele locations from %s\n", filename);
+		//Com_Printf ("Couldn't load tele locations from %s\n", filename);
 		return;
 	}
 	if (fLen >= MAX_FILESIZE) {

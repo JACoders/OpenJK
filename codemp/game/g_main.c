@@ -4583,6 +4583,6 @@ static void G_SpawnHoleFixes( void ) {
 		free( text );
 		trap->FS_Close( f );
 	} else {
-		Com_Printf( "Failed to open file %s\n", filename );
+		//Com_Printf( "Failed to open file %s\n", filename );
 	}
 }
