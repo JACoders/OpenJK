@@ -2079,8 +2079,7 @@ void SP_trigger_hurt( gentity_t *self ) {
 	if ( ! (self->spawnflags & 1) ) {
 		trap->LinkEntity ((sharedEntity_t *)self);
 	}
-	else if (self->r.linked)
-	{
+	else if (self->r.linked) {
 		trap->UnlinkEntity((sharedEntity_t *)self);
 	}
 }
