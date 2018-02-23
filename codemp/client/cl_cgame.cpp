@@ -491,23 +491,25 @@ rescan:
 	}
 
 	if (!strcmp(cmd, "chat") || !strcmp(cmd, "tchat")) {
-		char chat[MAX_SAY_TEXT+2];
-		int i, l;
+		if (cl_logChat->integer) {
+			char chat[MAX_SAY_TEXT + 20];
+			int i, l;
 
-		s = Cmd_Argv(1);
-		Com_sprintf(chat, sizeof(chat), "%s\n", s);
-		Q_StripColor(chat);
+			s = Cmd_Argv(1);
+			Com_sprintf(chat, sizeof(chat), "%s\n", s);
+			Q_StripColor(chat);
 		
-		//Remove escape char from name
-		l = 0;
-		for (i = 0; chat[i]; i++) {
-			if (chat[i] == '\x19')
-				continue;
-			chat[l++] = chat[i];
-		}
-		chat[l] = '\0';
+			//Remove escape char from name
+			l = 0;
+			for (i = 0; chat[i]; i++) {
+				if (chat[i] == '\x19')
+					continue;
+				chat[l++] = chat[i];
+			}
+			chat[l] = '\0';
 
-		CL_LogPrintf(cls.log.chat, chat);
+			CL_LogPrintf(cls.log.chat, chat);
+		}
 
 #ifdef _WIN32
 		if (con_notifywords->integer == -1) {
@@ -586,7 +588,8 @@ void CL_ShutdownCGame( void ) {
 
 	CL_UnbindCGame();
 
-	CL_LogPrintf(cls.log.chat, "End logging\n------------------------------------------------------------\n\n");
+	if (cl_logChat->integer)
+		CL_LogPrintf(cls.log.chat, "End logging\n------------------------------------------------------------\n\n");
 	CL_CloseLog(&cls.log.chat);
 }
 
