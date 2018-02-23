@@ -492,7 +492,7 @@ rescan:
 
 	if (!strcmp(cmd, "chat") || !strcmp(cmd, "tchat")) {
 		if (cl_logChat->integer) {
-			char chat[MAX_SAY_TEXT + 20];
+			char chat[MAX_NETNAME + MAX_SAY_TEXT + 12];
 			int i, l;
 
 			s = Cmd_Argv(1);
