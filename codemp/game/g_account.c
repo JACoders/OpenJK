@@ -4376,12 +4376,12 @@ void Cmd_DFPopular_f(gentity_t *ent) {
 					CALL_SQLITE (bind_int (stmt, 2, start));
 				}
 				else { //User, season
-					sql = "SELECT T1.coursename, T1.style, T1.entries "
-								"FROM (SELECT coursename, style, entries FROM LocalRun WHERE season = ? GROUP BY coursename, style) T1 "
+					sql = "SELECT T1.coursename, T1.style, T1.season_entries "
+								"FROM (SELECT coursename, style, season_entries FROM LocalRun WHERE season = ? GROUP BY coursename, style) T1 "
 									"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE season = ? AND username = ? GROUP BY coursename, style) T2 "
 									"ON T1.coursename = T2.coursename AND T1.style = T2.style "
 								"WHERE T2.coursename IS NULL OR T2.style IS NULL "
-					"ORDER BY entries DESC LIMIT ?, 10";
+					"ORDER BY season_entries DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_int (stmt, 1, season));
 					CALL_SQLITE (bind_int (stmt, 2, season));
@@ -4396,7 +4396,7 @@ void Cmd_DFPopular_f(gentity_t *ent) {
 					CALL_SQLITE (bind_int (stmt, 1, start));
 				}
 				else { //Season
-					sql = "SELECT coursename, style, entries FROM LocalRun WHERE season = ? GROUP BY coursename, style ORDER BY entries DESC LIMIT ?, 10";
+					sql = "SELECT coursename, style, season_entries FROM LocalRun WHERE season = ? GROUP BY coursename, style ORDER BY season_entries DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_int (stmt, 1, season));
 					CALL_SQLITE (bind_int (stmt, 2, start));
@@ -4419,12 +4419,12 @@ void Cmd_DFPopular_f(gentity_t *ent) {
 					CALL_SQLITE (bind_int (stmt, 4, start));
 				}
 				else { //Style, user, season
-					sql = "SELECT T1.coursename, T1.style, T1.entries "
-								"FROM (SELECT coursename, style, entries FROM LocalRun WHERE style = ? AND season = ? GROUP BY coursename, style) T1 "
+					sql = "SELECT T1.coursename, T1.style, T1.season_entries "
+								"FROM (SELECT coursename, style, season_entries FROM LocalRun WHERE style = ? AND season = ? GROUP BY coursename, style) T1 "
 									"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE style = ? AND season = ? AND username = ? GROUP BY coursename, style) T2 "
 									"ON T1.coursename = T2.coursename AND T1.style = T2.style "
 								"WHERE T2.coursename IS NULL OR T2.style IS NULL "
-					"ORDER BY entries DESC LIMIT ?, 10";
+					"ORDER BY season_entries DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_int (stmt, 1, style));
 					CALL_SQLITE (bind_int (stmt, 2, season));
@@ -4442,7 +4442,7 @@ void Cmd_DFPopular_f(gentity_t *ent) {
 					CALL_SQLITE (bind_int (stmt, 2, start));
 				}
 				else { //Style, season
-					sql = "SELECT coursename, style, entries FROM LocalRun WHERE style = ? AND season = ? GROUP BY coursename, style ORDER BY entries DESC LIMIT ?, 10";
+					sql = "SELECT coursename, style, season_entries FROM LocalRun WHERE style = ? AND season = ? GROUP BY coursename, style ORDER BY season_entries DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_int (stmt, 1, style));
 					CALL_SQLITE (bind_int (stmt, 2, season));
