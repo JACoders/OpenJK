@@ -4290,6 +4290,201 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 
 }
 
+void Cmd_DFPopular_f(gentity_t *ent) {
+	const int args = trap->Argc();
+	int style = -1, page = -1, season = -1, start = 0, i, input;
+	char styleString[16] = {0}, inputString[32], username[16];
+	qboolean enteredUsername = qfalse;
+
+	if (args > 5) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rPopular <style (optional)> <season (optional - example: s1)> <me (optional)> <page (optional)>\n\"");
+		return;
+	}
+
+	for (i = 1 ; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
+			}
+		}
+		if (season == -1) {
+			input = SeasonToInteger(inputString);
+			if (input != -1) {
+				season = input;
+				continue;
+			}
+		}
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}
+		if (!enteredUsername) {
+			if (!Q_stricmp(inputString, "me")) {
+				Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+				enteredUsername = qtrue;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rPopular <style (optional)> <season (optional - example: s1)> <me (optional)> <page (optional)>\n\"");
+		return; //Arg doesnt match any expected values so error.
+	}
+
+	if (enteredUsername && (!ent->client->pers.userName || !ent->client->pers.userName[0])) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	if (style == -1) {
+		Q_strncpyz(styleString, "all styles", sizeof(styleString));
+	}
+	else {
+		IntegerToRaceName(style, styleString, sizeof(styleString));
+		Q_strcat(styleString, sizeof(styleString), " style");
+	}
+
+	if (page < 1)
+		page = 1;
+	if (page > 1000)
+		page = 1000;
+	start = (page - 1) * 10;
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		char msg[1024-128] = {0}, styleStr[16];
+		int s, row = 1;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+		if (style == -1) {
+			if (enteredUsername) {
+				if (season == -1) { //User
+					sql = "SELECT T1.coursename, T1.style, T1.entries "
+								"FROM (SELECT coursename, style, entries FROM LocalRun GROUP BY coursename, style) T1 "
+									"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? GROUP BY coursename, style) T2 "
+									"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+								"WHERE T2.coursename IS NULL OR T2.style IS NULL "
+					"ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 2, start));
+				}
+				else { //User, season
+					sql = "SELECT T1.coursename, T1.style, T1.entries "
+								"FROM (SELECT coursename, style, entries FROM LocalRun WHERE season = ? GROUP BY coursename, style) T1 "
+									"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE season = ? AND username = ? GROUP BY coursename, style) T2 "
+									"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+								"WHERE T2.coursename IS NULL OR T2.style IS NULL "
+					"ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, season));
+					CALL_SQLITE (bind_int (stmt, 2, season));
+					CALL_SQLITE (bind_text (stmt, 3, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 4, start));
+				}
+			}
+			else {
+				if (season == -1) {
+					sql = "SELECT coursename, style, entries FROM LocalRun GROUP BY coursename, style ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, start));
+				}
+				else { //Season
+					sql = "SELECT coursename, style, entries FROM LocalRun WHERE season = ? GROUP BY coursename, style ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, season));
+					CALL_SQLITE (bind_int (stmt, 2, start));
+				}
+			}	
+		}
+		else {
+			if (enteredUsername) {
+				if (season == -1) { //Style, user
+					sql = "SELECT T1.coursename, T1.style, T1.entries "
+								"FROM (SELECT coursename, style, entries FROM LocalRun WHERE style = ? GROUP BY coursename, style) T1 "
+									"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE style = ? AND username = ? GROUP BY coursename, style) T2 "
+									"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+								"WHERE T2.coursename IS NULL OR T2.style IS NULL "
+					"ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, style));
+					CALL_SQLITE (bind_int (stmt, 2, style));
+					CALL_SQLITE (bind_text (stmt, 3, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 4, start));
+				}
+				else { //Style, user, season
+					sql = "SELECT T1.coursename, T1.style, T1.entries "
+								"FROM (SELECT coursename, style, entries FROM LocalRun WHERE style = ? AND season = ? GROUP BY coursename, style) T1 "
+									"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE style = ? AND season = ? AND username = ? GROUP BY coursename, style) T2 "
+									"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+								"WHERE T2.coursename IS NULL OR T2.style IS NULL "
+					"ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, style));
+					CALL_SQLITE (bind_int (stmt, 2, season));
+					CALL_SQLITE (bind_int (stmt, 3, style));
+					CALL_SQLITE (bind_int (stmt, 4, season));
+					CALL_SQLITE (bind_text (stmt, 5, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 6, start));
+				}
+			}
+			else {
+				if (season == -1) { //Style
+					sql = "SELECT coursename, style, entries FROM LocalRun WHERE style = ? GROUP BY coursename, style ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, style));
+					CALL_SQLITE (bind_int (stmt, 2, start));
+				}
+				else { //Style, season
+					sql = "SELECT coursename, style, entries FROM LocalRun WHERE style = ? AND season = ? GROUP BY coursename, style ORDER BY entries DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_int (stmt, 1, style));
+					CALL_SQLITE (bind_int (stmt, 2, season));
+					CALL_SQLITE (bind_int (stmt, 3, start));
+				}
+			}
+		}
+
+		if (season == -1)
+			trap->SendServerCommand(ent-g_entities, va("print \"Most popular courses for %s:\n    ^5Course                      Style      Entries\n\"", styleString));
+		else
+			trap->SendServerCommand(ent-g_entities, va("print \"Most popular courses for %s season %i:\n    ^5Course                      Style      Entries\n\"", styleString, season));
+
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				IntegerToRaceName(sqlite3_column_int(stmt, 1), styleStr, sizeof(styleStr));
+
+				tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s %i\n", row+start, sqlite3_column_text(stmt, 0), styleStr, sqlite3_column_int(stmt, 2));
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTodo_f)", s);
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
+
+}
+
 #if !_NEWRACERANKING
 void Cmd_DFRefresh_f(gentity_t *ent) {
 	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin

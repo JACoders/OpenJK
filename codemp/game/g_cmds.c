@@ -8311,6 +8311,7 @@ void Cmd_DFHardest_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTodo_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
+void Cmd_DFPopular_f( gentity_t *ent );
 //void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
@@ -8464,6 +8465,7 @@ command_t commands[] = {
 
 	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 
+	{ "rpopular",			Cmd_DFPopular_f,			CMD_NOINTERMISSION },
 	{ "rrank",				Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
 	{ "rtop",				Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 	{ "rworst",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },
