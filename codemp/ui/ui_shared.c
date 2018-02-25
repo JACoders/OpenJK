@@ -3300,6 +3300,27 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 	return qfalse;
 }
 
+qboolean Item_YesNoBitmask_HandleKey(itemDef_t *item, int key) {
+	if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS && item->cvar)
+	{
+		if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3)
+		{
+			//Goal - Toggle the (1<<Value) bit on item->cvar. Value = atoi(item->cvarTest)
+			int mask = DC->getCVarValue(item->cvar);
+			int value = item->cvarTest ? atoi(item->cvarTest) : 0;
+			int newMask = mask;
+	
+			newMask ^= (1 << value);
+
+			DC->setCVar(item->cvar, va("%i", newMask));
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+
+}
+
 qboolean Item_YesNo_HandleKey(itemDef_t *item, int key) {
   if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS && item->cvar)
 	{
@@ -3992,7 +4013,8 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down) {
 		return qfalse;
 		break;
 	case ITEM_TYPE_CHECKBOX:
-		return qfalse;
+		return Item_YesNoBitmask_HandleKey(item, key);
+		//return qfalse;
 		break;
 	case ITEM_TYPE_EDITFIELD:
 	case ITEM_TYPE_NUMERICFIELD:
@@ -4762,6 +4784,48 @@ void Item_TextField_Paint(itemDef_t *item) {
 	} else {
 		DC->drawText(item->textRect.x + item->textRect.w + offset, item->textRect.y, item->textscale, newColor, buff + editPtr->paintOffset, 0, item->window.rect.w, item->textStyle,item->iMenuFont);
 	}
+}
+
+void Item_YesNoBitmask_Paint(itemDef_t *item) {
+	char	sYES[20];
+	char	sNO[20];
+	vec4_t color;
+	int mask, value;
+	const char *yesnovalue;
+
+	mask = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
+	value = (item->cvarTest) ? atoi(item->cvarTest) : 0;
+
+	trap->SE_GetStringTextString("MENUS_YES", sYES, sizeof(sYES));
+	trap->SE_GetStringTextString("MENUS_NO", sNO, sizeof(sNO));
+
+	//JLFYESNO MPMOVED
+	if (item->invertYesNo)
+		yesnovalue = (!(mask & 1<<value)) ? sYES : sNO;
+	else
+		yesnovalue = ((mask & 1<<value) != 0) ? sYES : sNO;
+
+	Item_TextColor(item, &color);
+	if (item->text)
+	{
+		Item_Text_Paint(item);
+		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, color, yesnovalue, 0, 0, item->textStyle, item->iMenuFont);
+	}
+	else
+	{
+		DC->drawText(item->textRect.x, item->textRect.y, item->textscale, color, yesnovalue, 0, 0, item->textStyle, item->iMenuFont);
+	}
+
+	/* JLF ORIGINAL CODE
+	if (item->text) {
+	Item_Text_Paint(item);
+	//		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, (value != 0) ? sYES : sNO, 0, 0, item->textStyle);
+	DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, (value != 0) ? sYES : sNO, 0, 0, item->textStyle,item->iMenuFont);
+	} else {
+	//		DC->drawText(item->textRect.x, item->textRect.y, item->textscale, newColor, (value != 0) ? sYES : sNO, 0, 0, item->textStyle);
+	DC->drawText(item->textRect.x, item->textRect.y, item->textscale, newColor, (value != 0) ? sYES : sNO, 0, 0, item->textStyle,item->iMenuFont);
+	}
+	*/
 }
 
 void Item_YesNo_Paint(itemDef_t *item) {
@@ -6520,6 +6584,7 @@ void Item_Paint(itemDef_t *item)
 	case ITEM_TYPE_RADIOBUTTON:
 		break;
 	case ITEM_TYPE_CHECKBOX:
+		Item_YesNoBitmask_Paint(item);
 		break;
 	case ITEM_TYPE_EDITFIELD:
 	case ITEM_TYPE_NUMERICFIELD:
