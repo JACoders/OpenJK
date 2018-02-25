@@ -4545,9 +4545,9 @@ static int PM_TryRoll( void )
 	}
 
 #ifdef _GAME
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(g_tweakWeapons.integer & WT_ALLOW_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(g_tweakWeapons.integer & WT_ALLOW_GUNROLL) || pm->ps->stats[STAT_RACEMODE]) && (pm->ps->weapon != WP_STUN_BATON || !pm->ps->stats[STAT_RACEMODE])) ||
 #else
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(cgs.jcinfo & JAPRO_CINFO_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(cgs.jcinfo & JAPRO_CINFO_GUNROLL) || pm->ps->stats[STAT_RACEMODE]) && (pm->ps->weapon != WP_STUN_BATON || !pm->ps->stats[STAT_RACEMODE])) ||
 #endif
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
@@ -9116,7 +9116,7 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
-	if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->weapon == WP_DISRUPTOR)) {
+	if (pm->ps->stats[STAT_RACEMODE] && ((pm->ps->weapon == WP_DISRUPTOR) || (pm->ps->weapon == WP_STUN_BATON))) {
 		addTime = 600;
 	}
 	else {
@@ -13000,8 +13000,8 @@ void PmoveSingle (pmove_t *pmove) {
 		trap->SnapVector( pm->ps->velocity ); 
 	}
 	else {
-		if (pm->ps->stats[STAT_RACEMODE] || pm->pmove_float > 1) //japro fix racemode fps
-			pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
+		if (pm->ps->stats[STAT_RACEMODE] || pm->pmove_float > 1) {//japro fix racemode fps
+		}
 	#ifdef _GAME
 		else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.
 			//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
@@ -13107,12 +13107,14 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 
-		if (pmove->ps->stats[STAT_RACEMODE]) {
+		/*
+		if (pmove->ps->stats[STAT_RACEMODE]) { //Using float now
 			if ( msec > 8 ) {
 				msec = 8;
 			}
 		}
-		else if ( pmove->pmove_fixed ) {
+		else*/
+		if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}

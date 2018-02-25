@@ -851,9 +851,10 @@ typedef struct clientPersistant_s {
 	int			timenudge;
 	int			maxFPS;
 	int			maxPackets;
-	int			thirdPerson;
+	qboolean	thirdPerson;
 	int			thirdPersonRange;
 	int			thirdPersonVertOffset;
+	short		cameraSettings; //Hold this here to network to player.. damn
 
 	//int			aimSamples[64];//japro anti yawspeed?
 	//int			aimCount;

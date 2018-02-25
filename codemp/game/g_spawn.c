@@ -576,7 +576,7 @@ spawn_t	spawns[] = {
 	{ "misc_siege_item",				qfalse,	SP_misc_siege_item },
 	{ "misc_skyportal",					qfalse,	SP_misc_skyportal },
 	{ "misc_skyportal_orient",			qfalse,	SP_misc_skyportal_orient },
-	{ "misc_teleporter_dest",			qfalse,	SP_misc_teleporter_dest },  //surely this is logical?
+	{ "misc_teleporter_dest",			qtrue,	SP_misc_teleporter_dest },  //surely this is logical?
 	{ "misc_turret",					qfalse,	SP_misc_turret },
 	{ "misc_turretG2",					qfalse,	SP_misc_turretG2 },
 	{ "misc_weapon_shooter",			qfalse,	SP_misc_weapon_shooter },

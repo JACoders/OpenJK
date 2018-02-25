@@ -3605,9 +3605,9 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 	
-	if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SWOOP)
+	/*if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SWOOP)//Is this really needed..
 		ucmd->serverTime = ((ucmd->serverTime + 7) / 8) * 8;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
-	else if (pmove_fixed.integer || client->pers.pmoveFixed)
+	else*/if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
 	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && ((g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP)) { //Ok,, this should be like every frame, right??
@@ -3680,15 +3680,26 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	} // Godchat end
 
-	if (ent && ent->client && ((ent->client->sess.movementStyle == 7) || (ent->client->sess.movementStyle == 8)) && ent->health > 0) {
-		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
-		ent->client->ps.ammo[AMMO_ROCKETS] = 2;
-	}
-	else if (ent && ent->client && ent->client->sess.raceMode) {
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
-		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
-		if (ent->client->sess.movementStyle == MV_JETPACK) //always give jetpack style a jetpack, and non jetpack styles no jetpack, maybe this should just be in clientspawn ?
+	if (ent && ent->client && ent->client->sess.raceMode) {
+		const int movementStyle = ent->client->sess.movementStyle;
+		if (movementStyle == MV_RJCPM || movementStyle == MV_RJQ3) {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
+			ent->client->ps.ammo[AMMO_ROCKETS] = 2;
+			if (ent->health > 0)
+				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
+		}
+		else {
+			client->ps.ammo[AMMO_POWERCELL] = 300;
+
+			if (movementStyle == MV_SIEGE || movementStyle == MV_JKA || movementStyle == MV_QW || movementStyle == MV_PJK || movementStyle == MV_SP || movementStyle == MV_SPEED || movementStyle == MV_JETPACK) {
+				ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR) + (1 << WP_STUN_BATON);
+			}
+			else {
+				ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
+			}
+		}
+
+		if (movementStyle == MV_JETPACK) //always give jetpack style a jetpack, and non jetpack styles no jetpack, maybe this should just be in clientspawn ?
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 		else
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); 
@@ -4119,7 +4130,7 @@ void ClientThink_real( gentity_t *ent ) {
 				{
 					client->ps.gravity = g_gravity.value;
 					if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
-						client->ps.gravity = 800.0f;
+						client->ps.gravity = 750.0f; //Match 125fps gravity here since we are using decimal precision for Zvel now
 				}
 			}
 		}
