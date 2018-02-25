@@ -3306,13 +3306,13 @@ qboolean Item_YesNoBitmask_HandleKey(itemDef_t *item, int key) {
 		if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3)
 		{
 			//Goal - Toggle the (1<<Value) bit on item->cvar. Value = atoi(item->cvarTest)
-			int mask = DC->getCVarValue(item->cvar);
-			int value = item->cvarTest ? atoi(item->cvarTest) : 0;
-			int newMask = mask;
+			int value = DC->getCVarValue(item->cvar);
+			int mask = item->bitMask ? atoi(item->bitMask) : 0;
+			int newValue = value;
 	
-			newMask ^= (1 << value);
+			newValue ^= (1 << mask);
 
-			DC->setCVar(item->cvar, va("%i", newMask));
+			DC->setCVar(item->cvar, va("%i", newValue));
 			return qtrue;
 		}
 	}
@@ -4793,17 +4793,17 @@ void Item_YesNoBitmask_Paint(itemDef_t *item) {
 	int mask, value;
 	const char *yesnovalue;
 
-	mask = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
-	value = (item->cvarTest) ? atoi(item->cvarTest) : 0;
+	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
+	mask = (item->bitMask) ? atoi(item->bitMask) : 0;
 
 	trap->SE_GetStringTextString("MENUS_YES", sYES, sizeof(sYES));
 	trap->SE_GetStringTextString("MENUS_NO", sNO, sizeof(sNO));
 
 	//JLFYESNO MPMOVED
 	if (item->invertYesNo)
-		yesnovalue = (!(mask & 1<<value)) ? sYES : sNO;
+		yesnovalue = (!(value & 1<<mask)) ? sYES : sNO;
 	else
-		yesnovalue = ((mask & 1<<value) != 0) ? sYES : sNO;
+		yesnovalue = ((value & 1<<mask) != 0) ? sYES : sNO;
 
 	Item_TextColor(item, &color);
 	if (item->text)
@@ -8056,6 +8056,13 @@ qboolean ItemParse_special( itemDef_t *item, int handle ) {
 	return qtrue;
 }
 
+qboolean ItemParse_bitMask(itemDef_t *item, int handle) {
+	if (!PC_String_Parse(handle, &item->bitMask)) {
+		return qfalse;
+	}
+	return qtrue;
+}
+
 qboolean ItemParse_cvarTest( itemDef_t *item, int handle ) {
 	if (!PC_String_Parse(handle, &item->cvarTest)) {
 		return qfalse;
@@ -8464,6 +8471,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"asset_shader",	ItemParse_asset_shader,		NULL	},
 	{"backcolor",		ItemParse_backcolor,		NULL	},
 	{"background",		ItemParse_background,		NULL	},
+	{ "bitMask",		ItemParse_bitMask,			NULL	}, //Added
 	{"border",			ItemParse_border,			NULL	},
 	{"bordercolor",		ItemParse_bordercolor,		NULL	},
 	{"bordersize",		ItemParse_bordersize,		NULL	},

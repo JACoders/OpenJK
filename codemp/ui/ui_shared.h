@@ -322,6 +322,8 @@ typedef struct itemDef_s {
 	int			xoffset;
 
 	qboolean disabledHidden;				// hide the item when 'disabled' is true (for generic image items)
+	const char	*bitMask;
+
 } itemDef_t;
 
 typedef struct menuDef_s {
