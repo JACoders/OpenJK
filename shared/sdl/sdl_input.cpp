@@ -949,8 +949,10 @@ static void IN_ProcessEvents( void )
 	if (in_mouserepeat->integer) {
 		if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_X1))
 			Sys_QueEvent(0, SE_KEY, A_MOUSE4, qtrue, 0, NULL);
-		if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_X2))
-			Sys_QueEvent(0, SE_KEY, A_MOUSE5, qtrue, 0, NULL);
+		if (in_mouserepeat->integer != 2) { //don't spam mouse5
+			if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_X2))
+				Sys_QueEvent(0, SE_KEY, A_MOUSE5, qtrue, 0, NULL);
+		}
 	}
 
 }

@@ -6625,7 +6625,7 @@ static void PM_Footsteps( void ) {
 #endif
 			else if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
-#ifndef BASE_COMPAT
+#ifdef BASE_COMPAT
 				if( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_RUNBACK1;
@@ -6634,115 +6634,115 @@ static void PM_Footsteps( void ) {
 				{
 #endif
 				switch (pm->ps->fd.saberAnimLevel)
-				{
-				case SS_STAFF:
-					if ( pm->ps->saberHolstered > 1 )
-					{//saber off
-#ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
-#else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
-#endif
-							desiredAnim = BOTH_RUNBACK1;
-					}
-					else
 					{
-						//desiredAnim = BOTH_RUNBACK_STAFF;
-						//hmm.. stuff runback anim is pretty messed up for some reason.
+					case SS_STAFF:
+						if ( pm->ps->saberHolstered > 1 )
+						{//saber off
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUNBACK2;
-					}
-					break;
-				case SS_DUAL:
-					if ( pm->ps->saberHolstered > 1 )
-					{//sabers off
+								desiredAnim = BOTH_RUNBACK1;
+						}
+						else
+						{
+							//desiredAnim = BOTH_RUNBACK_STAFF;
+							//hmm.. stuff runback anim is pretty messed up for some reason.
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUNBACK1;
-					}
-					else
-					{
-						//desiredAnim = BOTH_RUNBACK_DUAL;
-						//and so is the dual
+								desiredAnim = BOTH_RUNBACK2;
+						}
+						break;
+					case SS_DUAL:
+						if ( pm->ps->saberHolstered > 1 )
+						{//sabers off
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUNBACK2;
-					}
-					break;
-				default:
-					if ( pm->ps->saberHolstered )
-					{//saber off
+								desiredAnim = BOTH_RUNBACK1;
+						}
+						else
+						{
+							//desiredAnim = BOTH_RUNBACK_DUAL;
+							//and so is the dual
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUNBACK1;
-					}
-					else
-					{
+								desiredAnim = BOTH_RUNBACK2;
+						}
+						break;
+					default:
+						if ( pm->ps->saberHolstered )
+						{//saber off
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUNBACK2;
+								desiredAnim = BOTH_RUNBACK1;
+						}
+						else
+						{
+#ifdef _GAME
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
+#endif
+								desiredAnim = BOTH_RUNBACK2;
+						}
+						break;
 					}
-					break;
-				}
-#ifndef BASE_COMPAT
+#ifdef BASE_COMPAT
 				}
 #endif
 			}
 			else
 			{
-#ifndef BASE_COMPAT					// FIXME: this doesn't break base compatibility at all, remove #ifndef
+#ifdef BASE_COMPAT					// FIXME: this doesn't break base compatibility at all, remove #ifndef
 				if ( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_RUN1;
@@ -6750,154 +6750,154 @@ static void PM_Footsteps( void ) {
 				else
 				{
 #endif
-				switch (pm->ps->fd.saberAnimLevel)
-				{
-				case SS_STAFF:
-					if ( pm->ps->saberHolstered > 1 )
-					{//blades off
-#ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
-#else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
-#endif
-							desiredAnim = BOTH_RUN1;
-					}
-					else if ( pm->ps->saberHolstered == 1 )
-					{//1 blade on
-#ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
-#else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
-#endif
-							desiredAnim = BOTH_RUN2;
-					}
-					else
+					switch (pm->ps->fd.saberAnimLevel)
 					{
-						if (pm->ps->fd.forcePowersActive & (1<<FP_SPEED))
-						{
+					case SS_STAFF:
+						if ( pm->ps->saberHolstered > 1 )
+						{//blades off
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
+#endif
+								desiredAnim = BOTH_RUN1;
+						}
+						else if ( pm->ps->saberHolstered == 1 )
+						{//1 blade on
+#ifdef _GAME
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
+#endif
+								desiredAnim = BOTH_RUN2;
+						}
 						else
+						{
+							if (pm->ps->fd.forcePowersActive & (1<<FP_SPEED))
+							{
+#ifdef _GAME
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
+#endif
+								desiredAnim = BOTH_RUN1;
+							}
+							else
+							{
+#ifdef _GAME
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
+#endif
+								desiredAnim = BOTH_RUN_STAFF;
+							}
+						}
+						break;
+					case SS_DUAL:
+						if ( pm->ps->saberHolstered > 1 )
+						{//blades off
+#ifdef _GAME
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
+#endif
+								desiredAnim = BOTH_RUN1;
+						}
+						else if ( pm->ps->saberHolstered == 1 )
+						{//1 saber on
+#ifdef _GAME
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
+#else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
 							desiredAnim = BOTH_RUN1;
 						}
 						else
 						{
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUN_STAFF;
+								desiredAnim = BOTH_RUN_DUAL;
 						}
-					}
-					break;
-				case SS_DUAL:
-					if ( pm->ps->saberHolstered > 1 )
-					{//blades off
+						break;
+					default:
+						if ( pm->ps->saberHolstered )
+						{//saber off
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-							desiredAnim = BOTH_RUN1;
-					}
-					else if ( pm->ps->saberHolstered == 1 )
-					{//1 saber on
+								desiredAnim = BOTH_RUN1;
+						}
+						else
+						{
 #ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
+							if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+								desiredAnim = BOTH_RUN4;
+							else
 #else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
+							//eternal todo: cgame
+							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							if (cgs.isJAPro)
+								desiredAnim = BOTH_RUN4;
+							else
 #endif
-						desiredAnim = BOTH_RUN1;
+								desiredAnim = BOTH_RUN2;
+						}
+						break;
 					}
-					else
-					{
-#ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
-#else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
-#endif
-							desiredAnim = BOTH_RUN_DUAL;
-					}
-					break;
-				default:
-					if ( pm->ps->saberHolstered )
-					{//saber off
-#ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
-#else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
-#endif
-							desiredAnim = BOTH_RUN1;
-					}
-					else
-					{
-#ifdef _GAME
-						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
-							desiredAnim = BOTH_RUN4;
-						else
-#else
-						//eternal todo: cgame
-						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-						if (cgs.isJAPro)
-							desiredAnim = BOTH_RUN4;
-						else
-#endif
-							desiredAnim = BOTH_RUN2;
-					}
-					break;
-				}
-#ifndef BASE_COMPAT
+#ifdef BASE_COMPAT
 				}
 #endif
 			}
@@ -6907,7 +6907,7 @@ static void PM_Footsteps( void ) {
 			bobmove = 0.2f;	// walking bobs slow
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
-#ifndef BASE_COMPAT // fixme, doesn't break base compat if enabled (I tested this to be sure)
+#ifdef BASE_COMPAT // fixme, doesn't break base compat if enabled (I tested this to be sure)
 				if( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_WALKBACK1;
@@ -6915,48 +6915,48 @@ static void PM_Footsteps( void ) {
 				else
 				{
 #endif
-				switch (pm->ps->fd.saberAnimLevel)
-				{
-				case SS_STAFF:
-					if ( pm->ps->saberHolstered > 1 )
+					switch (pm->ps->fd.saberAnimLevel)
 					{
-						desiredAnim = BOTH_WALKBACK1;
+					case SS_STAFF:
+						if ( pm->ps->saberHolstered > 1 )
+						{
+							desiredAnim = BOTH_WALKBACK1;
+						}
+						else if ( pm->ps->saberHolstered )
+						{
+							desiredAnim = BOTH_WALKBACK2;
+						}
+						else
+						{
+							desiredAnim = BOTH_WALKBACK_STAFF;
+						}
+						break;
+					case SS_DUAL:
+						if ( pm->ps->saberHolstered > 1 )
+						{
+							desiredAnim = BOTH_WALKBACK1;
+						}
+						else if ( pm->ps->saberHolstered )
+						{
+							desiredAnim = BOTH_WALKBACK2;
+						}
+						else
+						{
+							desiredAnim = BOTH_WALKBACK_DUAL;
+						}
+						break;
+					default:
+						if ( pm->ps->saberHolstered )
+						{
+							desiredAnim = BOTH_WALKBACK1;
+						}
+						else
+						{
+							desiredAnim = BOTH_WALKBACK2;
+						}
+						break;
 					}
-					else if ( pm->ps->saberHolstered )
-					{
-						desiredAnim = BOTH_WALKBACK2;
-					}
-					else
-					{
-						desiredAnim = BOTH_WALKBACK_STAFF;
-					}
-					break;
-				case SS_DUAL:
-					if ( pm->ps->saberHolstered > 1 )
-					{
-						desiredAnim = BOTH_WALKBACK1;
-					}
-					else if ( pm->ps->saberHolstered )
-					{
-						desiredAnim = BOTH_WALKBACK2;
-					}
-					else
-					{
-						desiredAnim = BOTH_WALKBACK_DUAL;
-					}
-					break;
-				default:
-					if ( pm->ps->saberHolstered )
-					{
-						desiredAnim = BOTH_WALKBACK1;
-					}
-					else
-					{
-						desiredAnim = BOTH_WALKBACK2;
-					}
-					break;
-				}
-#ifndef BASE_COMPAT
+#ifdef BASE_COMPAT
 				}
 #endif
 			}
@@ -6970,7 +6970,7 @@ static void PM_Footsteps( void ) {
 				{
 					desiredAnim = BOTH_WALK1;
 				}
-#ifndef BASE_COMPAT
+#ifdef BASE_COMPAT
 				else if ( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_WALK1;
