@@ -511,6 +511,8 @@ rescan:
 			CL_LogPrintf(cls.log.chat, chat);
 		}
 
+		stampColor = COLOR_WHITE;
+
 #ifdef _WIN32
 		if (con_notifywords->integer == -1) {
 			con_alert = qtrue;
@@ -535,15 +537,17 @@ rescan:
 
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
-		if (con_notifyconnect->integer && Q_stristr(s, "@@@PLCONNECT")) {
+		if (Q_stristr(s, "@@@PLCONNECT") || Q_stristr(s, "@@@DISCONNECT")) {
 			stampColor = COLOR_YELLOW;
 #ifdef _WIN32
+		if (con_notifyconnect->integer)
 			con_alert = qtrue;
 #endif
 		}
-		if (con_notifyvote->integer && Q_stristr(s, "@@@PLCALLEDVOTE")) {
+		if (Q_stristr(s, "@@@PLCALLEDVOTE")) {
 			stampColor = COLOR_ORANGE;
 #ifdef _WIN32
+		if (con_notifyvote->integer)
 			con_alert = qtrue;
 #endif
 		}
