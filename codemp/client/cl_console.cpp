@@ -750,7 +750,7 @@ void Con_DrawInput (void) {
 	for (x = 0; x<TIMESTAMP_LENGTH-1; x++) {
 		SCR_DrawSmallChar(con.xadjust + (x + 1) * con.charWidth, y, ts[x]);
 	}
-	x = TIMESTAMP_LENGTH-1; //Move this over
+	x = TIMESTAMP_LENGTH;
 
 	re->SetColor( con.color );
 
