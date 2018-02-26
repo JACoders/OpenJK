@@ -4921,7 +4921,8 @@ static const char *g_bindCommands[] = {
 	"lowjump",
 	"flipkick",
 	"kill",
-	"spot"
+	"spot",
+	"weaplast"
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)

@@ -2002,6 +2002,14 @@ gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 		}
 	}
 
+#ifdef _GAME
+	//Debug this crash
+	Com_Printf("BG_FindItemForWeapon crash\n"); 
+	Svcmd_GameMem_f();
+	if (it->classname)
+		Com_Printf("Last classname %s type %i, tag %i, end: %i\n", it->classname, it->giType, it->giTag, it);
+#endif
+
 	Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon); //This caused a crash once (wp_blaster)
 	return NULL;
 }

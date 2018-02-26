@@ -122,6 +122,11 @@ unsigned int ip_to_int (const char * ip) {
     return v;
 }
 
+void G_ErrorPrint( const char *fmt, int s ) {
+	trap->SendServerCommand( -1, va("print \"%s %i\n\"", fmt, s) );
+	G_SecurityLogPrintf(fmt);
+}
+
 /*
 static void CleanStrin(char &string) {
 	
@@ -182,7 +187,7 @@ int CheckUserExists(char *username) {
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (CheckUserExists).\n");//Trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (CheckUserExists)", s);
 			break;
         }
     }
@@ -302,7 +307,7 @@ int GetDuelCount(char *username, int type, int end_time, sqlite3 * db) {
 		count = sqlite3_column_int(stmt, 0);
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (GetDuelCount).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (GetDuelCount)", s);
 	}
 
 	CALL_SQLITE (finalize(stmt));
@@ -333,7 +338,7 @@ float GetDuelElo( char *username, int type, int end_time, sqlite3 * db) {
 		elo = sqlite3_column_double(stmt, 0);
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (GetDuelElo).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (GetDuelElo)", s);
 	}
 
 	if (elo == -999.0f) {//This needs to just be done to check if its null
@@ -379,7 +384,7 @@ void UpdatePlayerRating(char *username, int type, qboolean winner, float newElo,
 	s = sqlite3_step(stmt);
 
 	if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Update Failed (UpdatePlayeRating).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Update Failed (UpdatePlayerRating)", s);
 	}
 
 	CALL_SQLITE (finalize(stmt));
@@ -415,6 +420,7 @@ void G_AddDuelToDB(char *winner, char *loser, int type, int duration, int winner
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
+	int s;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
@@ -427,7 +433,10 @@ void G_AddDuelToDB(char *winner, char *loser, int type, int duration, int winner
 	CALL_SQLITE (bind_int (stmt, 5, winner_hp));
 	CALL_SQLITE (bind_int (stmt, 6, winner_shield));
 	CALL_SQLITE (bind_int (stmt, 7, end_time));
-	CALL_SQLITE_EXPECT (step (stmt), DONE); //wtf ?
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Insert Failed (G_AddDuelToDB)", s);
+	}
 
 	CALL_SQLITE (finalize(stmt));
 
@@ -544,14 +553,16 @@ void SV_RebuildElo_f() {
 	int time1 = trap->Milliseconds();
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
 	sql = "UPDATE LocalDuel SET winner_elo = -999, loser_elo = -999, odds = 0";//Save rank into row - use null
     //sql = "DELETE FROM DuelRanks";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Update Failed (SV_RebuildElo_f 1)", s);
+	}
 	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "SELECT winner, loser, type, id, end_time from LocalDuel ORDER BY end_time ASC";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	
@@ -564,7 +575,7 @@ void SV_RebuildElo_f() {
             break;
 		}
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (SV_RebuildElo_f).\n");//Trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildElo_f 2)", s);
 			break;
         }
     }
@@ -725,7 +736,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
             break;
 		}
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DuelTop10_f).\n");//Trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DuelTop10_f)", s);
 			break;
         }
     }
@@ -1004,7 +1015,7 @@ void CleanupLocalRun() { //This should never actually change anything since we i
 	if (s == SQLITE_DONE)
 		trap->Print("Cleaned up racetimes\n");
 	else 
-		trap->Print( "Error: Could not write to database (CleanupLocalRun): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Delete Failed (CleanupLocalRun)", s);
 
 	CALL_SQLITE (finalize(stmt));
 	//loda fixme, maybe remake table or something.. ?
@@ -1031,14 +1042,14 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	if (s == SQLITE_ROW)
 		season_count = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 1).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (G_GetRaceScore 1)", s);
 	}
 
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_ROW)
 		global_count = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 2).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (G_GetRaceScore 2)", s);
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1059,7 +1070,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 3).\n");//Trap print?
+            G_ErrorPrint("ERROR: SQL Select Failed (G_GetRaceScore 3)", s);
 			break;
         }
     }
@@ -1084,7 +1095,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (G_GetRaceScore 4).\n");//Trap print?
+            G_ErrorPrint("ERROR: SQL Select Failed (G_GetRaceScore 4)", s);
 			break;
         }
     }
@@ -1100,7 +1111,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	CALL_SQLITE (bind_int (stmt, 6, id));
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database (G_GetRaceScore): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (G_GetRaceScore 5)", s);
 	CALL_SQLITE (finalize(stmt));
 
 }
@@ -1138,7 +1149,7 @@ void SV_RebuildRaceRanks_f() {
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (SV_RebuildRaceRanks_f).\n");//Trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildRaceRanks_f)", s);
 			break;
         }
     }
@@ -1193,7 +1204,7 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 		CALL_SQLITE (bind_int (stmt, 4, style_self));
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 1): %i.\n", s); //Write to race error log
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateOurLocalRun 1)", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1221,7 +1232,7 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 			Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, season, end_time_self);
 			trap->FS_Write( string, strlen( string ), level.failRaceLog );
 
-			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 2): %i.\n", s); //Write to race error log
+			G_ErrorPrint("ERROR: SQL Insert Failed (G_UpdateOurLocalRun 2)", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1246,7 +1257,7 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int seasonOldRank_self, int season
 			Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, season, end_time_self);
 			trap->FS_Write( string, strlen( string ), level.failRaceLog );
 
-			trap->Print( "Error: Could not write to database (G_UpdateOurLocalRun 3): %i.\n", s); //Write to race error log
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateOurLocalRun 3)", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1278,7 +1289,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE) {
-		trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 1): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateOtherLocalRun)", s);
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1300,7 +1311,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 2): %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateOtherLocalRun 2)", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1316,7 +1327,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 3): %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateOtherLocalRun 3)", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1331,7 +1342,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database (G_UpdateOtherLocalRun 4): %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateOtherLocalRun 4)", s);
 		}
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -1420,82 +1431,6 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 
 	trap->SendServerCommand( -1, va("print \"%s in ^3%-12s^%i max:^3%-10i^%i avg:^3%-10i^%i style:^3%-10s^%i by ^%i%s %s^7\n\"",
 				messageStr, timeStr, color, topspeed, color, average, color, style, color, nameColor, nameStr, awardString));
-
-	//SR + PB can exist at same time n should be printed as such
-
-	//god damn this code..
-
-	//print ingamename (username) if possible?
-	/*
-	if (message) {
-		if (!valid){
-			trap->SendServerCommand( -1, va("print \"^3%-16s^1 completed in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (wr) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (sr && pb) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR+PB)^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (sr) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR)^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (pb) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (PB)^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (spb) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SPB)^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (loggedin) {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^5 completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-		else {
-			trap->SendServerCommand( -1, va("print \"^3%-16s^2 completed in ^3%-12s^2 max:^3%-10i^2 avg:^3%-10i^2 style:^3%-10s^2 by ^%i%s^7\n\"",
-				message, timeStr, topspeed, average, style, nameColor, username));
-		}
-	}
-	else {
-		if (!valid) {
-			trap->SendServerCommand( -1, va("print \"^1Completed in ^3%-12s^1 max:^3%-10i^1 avg:^3%-10i^1 style:^3%-10s^1 by ^%i%s^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (wr) {
-			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (WR)^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (sr && pb) {
-			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR+PB)^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (sr) {
-			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SR)^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (pb) {
-			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (PB)^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (spb) {
-			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^5 (SPB)^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else if (loggedin) {
-			trap->SendServerCommand( -1, va("print \"^5Completed in ^3%-12s^5 max:^3%-10i^5 avg:^3%-10i^5 style:^3%-10s^5 by ^%i%s^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-		else {
-			trap->SendServerCommand( -1, va("print \"^2Completed in ^3%-12s^2 max:^3%-10i^2 avg:^3%-10i^2 style:^3%-10s^2 by ^%i%s^7\n\"",
-				timeStr, topspeed, average, style, nameColor, username));
-		}
-	}
-	*/
 }
 
 void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
@@ -1509,22 +1444,6 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 		newDB = qtrue;
 	}
 	
-	/*
-	{
-		int i;
-		gentity_t *player;
-		for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
-			if (!g_entities[i].inuse)
-				continue;
-			player = &g_entities[i];
-			if (player->client && (player->client->sess.fullAdmin || player->client->sess.juniorAdmin))
-				trap->SendServerCommand(player-g_entities, va("chat \"Adding %i seconds of playtime to %s - %i\"", seconds, username, newDB));
-
-		}
-	}
-	*/
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET racetime = racetime + ? WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, seconds));
@@ -1532,7 +1451,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Update Failed (G_UpdatePlaytime).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Update Failed (G_UpdatePlaytime)", s);
 	}
 
 	CALL_SQLITE (finalize(stmt));
@@ -1614,7 +1533,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 1).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 1)", s);
 	}
 
 	s = sqlite3_step(stmt);
@@ -1636,7 +1555,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 	}
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 2).\n");//trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 2)", s);
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1658,7 +1577,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			season_oldCount = sqlite3_column_int(stmt, 0);
 		}
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 3).\n");//trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 3)", s);
 		}
 
 		s = sqlite3_step(stmt);
@@ -1666,7 +1585,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			global_oldCount = sqlite3_column_int(stmt, 0);
 		}
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 4).\n");//trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 4)", s);
 		}
 
 		CALL_SQLITE (finalize(stmt));
@@ -1690,7 +1609,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 5).\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 5)", s);
 				break;
 			}
 		}
@@ -1716,7 +1635,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed (G_AddRaceTime 6).\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 6)", s);
 				break;
 			}
 		}
@@ -1903,7 +1822,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		if (s == SQLITE_ROW)
 			count = sqlite3_column_int(stmt, 0);
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACLogin_f 1).\n");//trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACLogin_f 1)", s);
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
 			return;
@@ -1927,7 +1846,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACLogin_f 2).\n");//Trap print?
+            G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACLogin_f 2)", s);
 			break;
         }
     }
@@ -1940,7 +1859,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		return;
 	}
 	else if (row > 1) { // More than 1 account found
-		trap->Print("ERROR: Multiple accounts with same accountname!\n");
+		trap->Print("WARNING: Multiple accounts with same name!\n");
 		CALL_SQLITE (close(db));
 		return;
 	}
@@ -1952,7 +1871,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	}
 
 	if (iplock && lastip != ip) {
-		trap->SendServerCommand(ent-g_entities, "print \"Your account is locked to a different IP address.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"This account is locked to a different IP address.\n\"");
 		CALL_SQLITE (close(db));
 		return;
 	}
@@ -1994,7 +1913,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		s = sqlite3_step(stmt);
 
 		if (s != SQLITE_DONE)
-			trap->Print( "Error: Could not write to database (Cmd_ACLogin_f 3): %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (Cmd_ACLogin_f 3)", s);
 
 		CALL_SQLITE (finalize(stmt));
 
@@ -2053,7 +1972,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+            G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ChangePassword_f 1)", s);
 			break;
         }
     }
@@ -2067,14 +1986,11 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, ent->client->pers.userName, -1, SQLITE_STATIC));
-		//CALL_SQLITE_EXPECT (step (stmt), DONE);
-
 		s = sqlite3_step(stmt);
-
 		if (s == SQLITE_DONE)
 			trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\""); //loda fixme check if this executed
 		else
-			trap->Print( "Error: Could not write to database: %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (Cmd_ChangePassword_f 2)", s);
 
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -2117,13 +2033,11 @@ void Svcmd_ChangePass_f(void)
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
-	//CALL_SQLITE_EXPECT (step (stmt), DONE);
-
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_DONE)
 			trap->Print( "Password changed.\n");
 	else
-		trap->Print( "Error: Could not write to database (Svcmd_ChangePass_f): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_ChangePass_f)", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2156,14 +2070,12 @@ void Svcmd_ClearIP_f(void)
 	sql = "UPDATE LocalAccount SET lastip = 0 WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	//CALL_SQLITE_EXPECT (step (stmt), DONE);
-
 	s = sqlite3_step(stmt);
 
 	if (s == SQLITE_DONE)
 		trap->Print( "IP Cleared.\n");
 	else
-		trap->Print( "Error: Could not write to database (Svcmd_ClearIP_f): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_ClearIP_f)", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2188,10 +2100,17 @@ void Svcmd_Register_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip( username, "\n\r;:.?*<>|\\/\"", NULL );
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
+	if (!username[0]) {
+		return;
+	}
+	if (!Q_stricmp(username, password)) {
+		trap->Print("Username and password cannot be the same\n");
+		return;
+	}
 	if (CheckUserExists(username)) {
 		trap->Print( "User already exists!\n");
 		return;
@@ -2207,15 +2126,12 @@ void Svcmd_Register_f(void)
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
 	CALL_SQLITE (bind_int (stmt, 4, rawtime));
-
-   //CALL_SQLITE_EXPECT (step (stmt), DONE);
-	
 	s = sqlite3_step(stmt);
 
 	if (s == SQLITE_DONE)
 		trap->Print( "Account created.\n");
 	else
-		trap->Print( "Error: Could not write to database (Svcmd_Register_f): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Insert Failed (Svcmd_Register_f)", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2255,7 +2171,7 @@ void Svcmd_DeleteAccount_f(void)
 		if (s == SQLITE_DONE)
 			trap->Print( "Account deleted.\n");
 		else 
-			trap->Print( "Error: Could not write to database (Svcmd_DeleteAccount_f): %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Delete Failed (Svcmd_DeleteAccount_f 1)", s);
 		CALL_SQLITE (finalize(stmt));
 	}
 	else 
@@ -2267,9 +2183,9 @@ void Svcmd_DeleteAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database (Svcmd_DeleteAccount_f): %i.\n", s);
-
+		G_ErrorPrint("ERROR: SQL Delete Failed (Svcmd_DeleteAccount_f 2)", s);
 	CALL_SQLITE (finalize(stmt));
+
 	CALL_SQLITE (close(db));
 }
 
@@ -2300,7 +2216,7 @@ void Svcmd_RenameAccount_f(void)
 
 	Q_strlwr(newUsername);
 	Q_CleanStr(newUsername);
-	Q_strstrip( newUsername, "\n\r;:.?*<>|\\/\"", NULL );
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	if (CheckUserExists(newUsername)) {
 		trap->Print( "ERROR: Desired username already exists.\n");
@@ -2317,11 +2233,11 @@ void Svcmd_RenameAccount_f(void)
 		if (s == SQLITE_DONE)
 			trap->Print( "Account renamed.\n");
 		else 
-			trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 1): %i.\n", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_RenameAccount_f 1)", s);
 		CALL_SQLITE (finalize(stmt));
 	}
 	else 
-		trap->Print( "User does not exist, renaming in highscores and duels anyway.\n");
+		trap->Print( "User does not exist, renaming in races and duels anyway.\n");
 
 	sql = "UPDATE LocalRun SET username = ? WHERE username = ?";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -2330,7 +2246,7 @@ void Svcmd_RenameAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 2): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_RenameAccount_f 2)", s);
 
 	CALL_SQLITE (finalize(stmt));
 
@@ -2341,7 +2257,7 @@ void Svcmd_RenameAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 3): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_RenameAccount_f 3)", s);
 
 	CALL_SQLITE (finalize(stmt));
 
@@ -2352,7 +2268,7 @@ void Svcmd_RenameAccount_f(void)
     
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database (Svcmd_RenameAccount_f 4): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_RenameAccount_f 4)", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -2394,7 +2310,7 @@ void Svcmd_AccountInfo_f(void)
 		lastip = sqlite3_column_int(stmt, 1);
     }
     else if (s != SQLITE_DONE){
-        fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_AccountInfo_f).\n");//Trap print?
+        G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountInfo_f)", s);
     }
 
 	CALL_SQLITE (finalize(stmt));
@@ -2442,7 +2358,7 @@ void Svcmd_AccountIPLock_f(void) {
 		iplock = (qboolean)sqlite3_column_int(stmt, 0);
     }
     else if (s != SQLITE_DONE){
-        fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_AccountIPLock_f 1).\n");//Trap print?
+        G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountIPLock_f 1)", s);
     }
 	CALL_SQLITE (finalize(stmt));
 
@@ -2461,7 +2377,7 @@ void Svcmd_AccountIPLock_f(void) {
 			trap->Print( "IP locked.\n");
     }
     else {
-        fprintf (stderr, "ERROR: SQL Update Failed (Svcmd_AccountIPLock_f 2).\n");//Trap print?
+        G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_AccountIPLock_f 2)", s);
     }
 
 	CALL_SQLITE (finalize(stmt));
@@ -2483,7 +2399,7 @@ void Svcmd_DBInfo_f(void)
     if (s == SQLITE_ROW)
 		numAccounts = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_DBInfo_f 1).\n");//Trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_DBInfo_f 1)", s);
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 		return;
@@ -2497,7 +2413,7 @@ void Svcmd_DBInfo_f(void)
     if (s == SQLITE_ROW)
 		numRaces = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_DBInfo_f 2).\n");//Trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_DBInfo_f 2)", s);
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 		return;
@@ -2510,7 +2426,7 @@ void Svcmd_DBInfo_f(void)
     if (s == SQLITE_ROW)
 		numDuels = sqlite3_column_int(stmt, 0);
 	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed (Svcmd_DBInfo_f 3).\n");//Trap print?
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_DBInfo_f 3)", s);
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 		return;
@@ -2537,7 +2453,6 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		return;
 	}
 		
-
 	if (trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /register <username> <password>\n\"");
 		return;
@@ -2553,15 +2468,17 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip( username, "\n\r;:.?*<>|\\/\"", NULL );
+	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
+	if (!username[0]) {
+		return;
+	}
 	if (!Q_stricmp(username, password)) {
 		trap->SendServerCommand(ent-g_entities, "print \"Username and password cannot be the same\n\"");
 		return;
 	}
-
 	if (CheckUserExists(username)) {
 		trap->SendServerCommand(ent-g_entities, "print \"This account name has already been taken!\n\"");
 		return;
@@ -2596,7 +2513,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 			}
 		}
 		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACRegister_f 1).\n");//trap print?
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACRegister_f 1)", s);
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
 			return;
@@ -2611,8 +2528,6 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
 	CALL_SQLITE (bind_int (stmt, 4, rawtime));
 	CALL_SQLITE (bind_int64 (stmt, 5, ip));
-    //CALL_SQLITE_EXPECT (step (stmt), DONE);
-
 	s = sqlite3_step(stmt);
 
 	if (s == SQLITE_DONE) {
@@ -2620,7 +2535,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 	}
 	else
-		trap->Print( "Error: Could not write to database (Cmd_ACRegister_f 2): %i.\n", s);
+		G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_ACRegister_f 1)", s);
 
 
 	CALL_SQLITE (finalize(stmt));
@@ -2691,7 +2606,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
         else if (s == SQLITE_DONE)
             break;
         else {
-            fprintf (stderr, "ERROR: SQL Select Failed (Cmd_Stats_f 1).\n");//Trap print?
+            G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 1)", s);
 			break;
         }
     }
@@ -2754,7 +2669,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_Stats_f 2).\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 2)", s);
 				break;
 			}
 		}
@@ -2804,7 +2719,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 3)", s);
 				break;
 			}
 		}
@@ -3444,25 +3359,25 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		sqlite3 * db;
 		char * sql;
 		sqlite3_stmt * stmt;
-		int s, score, count, golds, silvers, bronzes, row = 1;
+		int s, oldscore, newscore, count, golds, silvers, bronzes, row = 1;
 		float rank, percentile;
 		char msg[1024-128] = {0}, username[40];
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //Needs to select only top entry from each person not all seasons
 		if (style == -1) {
 			if (season == -1) {
-				sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE rank != 0 "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, start));
 			}
 			else {
-				sql = "SELECT username, CAST(1+ SUM((season_entries/CAST(season_rank AS FLOAT)) + (season_entries-season_rank))/2 AS INT) AS score, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(season_entries-season_rank) AS newscore, CAST(SUM(season_entries/CAST(season_rank AS FLOAT)) AS INT) AS oldscore, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE season = ? "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, season));
 				CALL_SQLITE (bind_int (stmt, 2, start));
@@ -3470,19 +3385,19 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		}
 		else {
 			if (season == -1) {
-				sql = "SELECT username, CAST(1+ SUM((entries/CAST(rank AS FLOAT)) + (entries-rank))/2 AS INT) AS score, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE rank != 0 AND style = ? "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, style));
 				CALL_SQLITE (bind_int (stmt, 2, start));
 			}
 			else {
-				sql = "SELECT username, CAST(1+ SUM((season_entries/CAST(season_rank AS FLOAT)) + (season_entries-season_rank))/2 AS INT) AS score, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
+				sql = "SELECT username, SUM(season_entries-season_rank) AS newscore, CAST(SUM(season_entries/CAST(season_rank AS FLOAT)) AS INT) AS oldscore, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 					"WHERE season = ? AND style = ? "
 					"GROUP BY username "
-					"ORDER BY score DESC, rank DESC LIMIT ?, 10";
+					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_int (stmt, 1, season));
 				CALL_SQLITE (bind_int (stmt, 2, style));
@@ -3500,15 +3415,16 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
 				Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
-				score = sqlite3_column_int(stmt, 1);
-				rank = sqlite3_column_double(stmt, 2);
-				percentile = sqlite3_column_double(stmt, 3);
-				golds = sqlite3_column_int(stmt, 4);
-				silvers = sqlite3_column_int(stmt, 5);
-				bronzes = sqlite3_column_int(stmt, 6);
-				count = sqlite3_column_int(stmt, 7);
+				newscore = sqlite3_column_int(stmt, 1);
+				oldscore = sqlite3_column_int(stmt, 2);
+				rank = sqlite3_column_double(stmt, 3);
+				percentile = sqlite3_column_double(stmt, 4);
+				golds = sqlite3_column_int(stmt, 5);
+				silvers = sqlite3_column_int(stmt, 6);
+				bronzes = sqlite3_column_int(stmt, 7);
+				count = sqlite3_column_int(stmt, 8);
 
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, (int)(1+((oldscore+newscore)*0.5f)), (count ? ((float)oldscore/(float)count) : oldscore), rank, percentile, golds, silvers, bronzes, count);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
@@ -3519,7 +3435,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTopRank_f).\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTopRank_f)", s);
 				break;
 			}
 		}
@@ -3655,7 +3571,7 @@ void Cmd_DFHardest_f(gentity_t *ent) {
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFRecent_f).\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFHardest_f)", s);
 				break;
 			}
 		}
@@ -3780,7 +3696,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFRecent_f).\n");//Trap print?
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFRecent_f)", s);
 				break;
 			}
 		}
@@ -3793,6 +3709,199 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 
 }
 
+void Cmd_DFTop10_f(gentity_t *ent) {
+	int style = -1, page = -1, season = -1, start = 0, input, i;
+	char inputString[40], inputStyleString[16];
+	char partialCourseName[40] = {0}, fullCourseName[40] = {0};
+	const int args = trap->Argc();
+	qboolean enteredCourseName = qtrue;
+
+	if (args > 5) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays the top10 for the specified course.\n\"");
+		return;
+	}
+
+	//Get mapname. 
+	//How to tell if mapname is specified -- If its a map with only 1 course, we have to check. Otherwise we can assume 1st arg is mapname.
+		//It will always be the first arg.
+		//If the first arg doesnt match the pattern of style/season/page, we can assume it is mapname.
+		//This means we cant search for 
+
+	if (args == 1)
+		enteredCourseName = qfalse;
+	else {
+		trap->Argv(1, inputString, sizeof(inputString));
+		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
+			enteredCourseName = qfalse; //Use current mapname as coursename
+		}
+	}
+
+	if (enteredCourseName) {
+		trap->Argv(1, partialCourseName, sizeof(partialCourseName)); //Use arg1 as coursename
+	}
+
+	if (!enteredCourseName && level.numCourses > 1) {
+		trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /rTop <coursename> <style (optional)> <season (optional - example: s1)> <page (optional)>.\n\"");
+		for (i = 0; i < level.numCourses; i++) { //32 max
+			if (level.courseName[i] && level.courseName[i][0])
+				trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i+1, level.courseName[i]));
+		}
+		return;
+	}
+
+	//Go through args 2-x, if we have a specified mapname, or 1-x if we dont
+	for (i = (enteredCourseName ? 2 : 1) ; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
+			}
+		}
+		if (season == -1) {
+			input = SeasonToInteger(inputString);
+			if (input != -1) {
+				season = input;
+				continue;
+			}
+		}
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays highscores for the specified course.\n\"");
+		return; //Arg doesnt match any expected values so error.
+	}
+
+	if (style == -1) //Default to JKA style
+		style = 1;
+	IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
+	Q_strcat(inputStyleString, sizeof(inputStyleString), " style");
+
+	if (page < 1)
+		page = 1;
+	if (page > 1000)
+		page = 1000;
+	start = (page - 1) * 10;
+
+	Q_strlwr(partialCourseName);
+	Q_CleanStr(partialCourseName);
+
+	if (!enteredCourseName) {
+		char info[1024] = {0};
+		trap->GetServerinfo(info, sizeof(info));
+		Q_strncpyz(fullCourseName, Info_ValueForKey( info, "mapname" ), sizeof(fullCourseName));
+		Q_strlwr(fullCourseName);
+		Q_CleanStr(fullCourseName);
+	}
+
+	//Com_Printf("Style %i, page %i, season %i, map %s, fullmap %s\n", style, page, season, partialCourseName, fullCourseName);
+
+	{ //See if course is found in database and print it then..?
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int row = 1;
+		int s;
+		char dateStr[64] = {0}, dateStrColored[64] = {0}, timeStr[32], msg[1024-128] = {0};
+		time_t	rawtime;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		if (enteredCourseName) { //Course e
+			//Com_Printf("doing sql query %s %i\n", courseName, style);
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE %?%";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY LENGTH(coursename) ASC, entries DESC LIMIT 1";
+			sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY entries DESC LIMIT 1";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, partialCourseName, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				//Check if it actually has text, if not return.  then we can use cheaper (MAX) entries query above //loda fixme
+				Q_strncpyz(fullCourseName, (char*)sqlite3_column_text(stmt, 0), sizeof(fullCourseName));
+			}
+			else if (s == SQLITE_DONE) {
+				//Com_Printf("fail 4\n");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays highscores for the specified course.\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTop10_f)", s);
+				return;
+			}
+			CALL_SQLITE (finalize(stmt));
+
+		}
+
+		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
+		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
+		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
+		if (season == -1)
+			sql = "SELECT username, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT ?, 10";
+		else 
+			sql = "SELECT username, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT ?, 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, fullCourseName, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style));
+
+		if (season == -1) {
+			CALL_SQLITE (bind_int (stmt, 3, start));
+		}
+		else {
+			CALL_SQLITE (bind_int (stmt, 3, season));
+			CALL_SQLITE (bind_int (stmt, 4, start));
+		}
+
+		time( &rawtime );
+		localtime( &rawtime );
+
+		if (season == -1)
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString));
+		else
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style season %i:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString, season));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				if (rawtime - sqlite3_column_int(stmt, 4) < 60*60*24) { //Today
+					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
+				}
+				else {
+					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
+				}
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", row+start, sqlite3_column_text(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStrColored);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTop10_f)", s);
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+}
+
+#if 0
 void Cmd_DFTop10_f(gentity_t *ent) {
 	const int args = trap->Argc();
 	char input1[40], input2[32], input3[32], courseName[40] = {0}, courseNameFull[40] = {0}, msg[1024-128] = {0}, timeStr[32], styleString[16] = {0};
@@ -3810,7 +3919,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			return;
 		}
 		if (level.numCourses > 1) { //
-			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /dftop10 <coursename> <style (optional)> <page (optional)>.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /rTop <coursename> <style (optional)> <page (optional)>.\n\"");
 			for (i = 0; i < level.numCourses; i++) { //32 max
 				if (level.courseName[i] && level.courseName[i][0])
 					trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i+1, level.courseName[i]));
@@ -3982,15 +4091,13 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		CALL_SQLITE (close(db));
 	}
 }
+#endif
 
-
-void Cmd_DFTodo_f(gentity_t *ent) { //Redo this with loop-arg structure? Coursename is a problem though, cuz can't validate it until later..
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	int s, page = 1, start, row = 1, style = -1;
-	char msg[1024-128] = {0}, styleStr[16], input[16], username[16], mapname[40] = {0}, timeStr[64], dateStr[64];
+void Cmd_DFTodo_f(gentity_t *ent) {
 	const int args = trap->Argc();
+	int style = -1, page = -1, start = 0, i, input;
+	char styleString[16] = {0}, inputString[32], partialCourseName[40], username[16];
+	qboolean enteredCoursename = qfalse;
 
 	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
@@ -3998,129 +4105,188 @@ void Cmd_DFTodo_f(gentity_t *ent) { //Redo this with loop-arg structure? Coursen
 	}
 	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
 
-	if (args == 1) { //dftodo - our own all styles, all maps, page 1
-	}
-	else if (args == 2) {//dftodo style OR page OR mapname
-		trap->Argv(1, input, sizeof(input));
-		style = RaceNameToInteger(input);
-		if (style < 0 || atoi(input)) { //its page
-			style = -1;
-			page = atoi(input);
-			if (!page) { //its not style or page, must be mapname
-				page = 1;
-				Q_strncpyz(mapname, input, sizeof(mapname));
-			}
-		}
-	}
-	else if (args == 3) { //dftodo style AND page -OR- style AND map - OR map AND page - yikes
-		trap->Argv(1, input, sizeof(input));
-		style = RaceNameToInteger(input);
-		if (style < 0) { //dftodo map and page
-			trap->Argv(1, input, sizeof(input));
-			Q_strncpyz(mapname, input, sizeof(mapname));
-
-			trap->Argv(2, input, sizeof(input));
-			page = atoi(input); //style and page
-		}
-		else { //dftodo style and page or style and map
-			trap->Argv(2, input, sizeof(input));
-			page = atoi(input); //style and page
-			if (!page) { //style and map
-				page = 1;
-				trap->Argv(2, input, sizeof(input));
-				Q_strncpyz(mapname, input, sizeof(mapname));
-			}
-		}
-	}
-	else if (args == 4) {//dftodo <style> <map> <page>
-		trap->Argv(1, input, sizeof(input));
-		style = RaceNameToInteger(input);
-		if (style < 0) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <style (optional)> <map (optional)> <page (optional)>\n\"");
-			return;
-		}
-
-		trap->Argv(2, input, sizeof(input));
-		Q_strncpyz(mapname, input, sizeof(mapname));
-
-		trap->Argv(3, input, sizeof(input));
-		page = atoi(input);
-	}
-	else { 
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <style (optional)> <map (optional)> <page (optional)>\n\"");
+	if (args > 4) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <map (optional)> <style (optional)> <page (optional)>\n\"");
 		return;
 	}
 
-	if (page < 1 || page > 100) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <style (optional)> <map (optional)> <page (optional)>\n\"");
-		return;
+	for (i = 1 ; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
+			}
+		}
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}
+		if (!enteredCoursename) {
+			input = SeasonToInteger(inputString);
+			Q_strncpyz(partialCourseName, inputString, sizeof(partialCourseName));
+			enteredCoursename = qtrue;
+			continue;
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays highscores for the specified course.\n\"");
+		return; //Arg doesnt match any expected values so error.
 	}
 
+	if (style == -1) {
+		Q_strncpyz(styleString, "all styles", sizeof(styleString));
+	}
+	else {
+		IntegerToRaceName(style, styleString, sizeof(styleString));
+		Q_strcat(styleString, sizeof(styleString), " style");
+	}
+
+	if (page < 1)
+		page = 1;
+	if (page > 1000)
+		page = 1000;
 	start = (page - 1) * 10;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	if (style == -1) {
-		if (mapname[0])
-			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND instr(coursename, ?) > 0 ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
-		else
-			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
-	}
-	else {
-		if (mapname[0])
-			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? AND instr(coursename, ?) > 0 ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
-		else
-			sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
-	}
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	if (style == -1) {
-		if (mapname[0]) {
-			CALL_SQLITE (bind_text (stmt, 2, mapname, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 3, start));
-		}
-		else
-			CALL_SQLITE (bind_int (stmt, 2, start));
-	}
-	else {
-		if (mapname[0]) {
-			CALL_SQLITE (bind_int (stmt, 2, style));
-			CALL_SQLITE (bind_text (stmt, 3, mapname, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 4, start));
-		}
-		else {
-			CALL_SQLITE (bind_int (stmt, 2, style));
-			CALL_SQLITE (bind_int (stmt, 3, start));
-		}
-	}
+	Q_strlwr(partialCourseName);
+	Q_CleanStr(partialCourseName);
 
-	trap->SendServerCommand(ent-g_entities, "print \"Races to do:\n    ^5Course                      Style      Rank    Entries      Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
-	while (1) {
-		s = sqlite3_step(stmt);
-		if (s == SQLITE_ROW) {
-			char *tmpMsg = NULL;
-			IntegerToRaceName(sqlite3_column_int(stmt, 1), styleStr, sizeof(styleStr));
-			TimeToString(sqlite3_column_int(stmt, 4), timeStr, sizeof(timeStr), qfalse);
-			getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr)); 			
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		char msg[1024-128] = {0}, timeStr[64], dateStr[64], styleStr[16], rankStr[16];
+		int s, row = 1;
 
-			tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-7i ^3%-12i ^3%-12s %s\n", row+start, sqlite3_column_text(stmt, 0), styleStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), timeStr, dateStr);
-			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
-				msg[0] = '\0';
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+		if (style == -1) {
+			if (enteredCoursename) {
+				//sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND instr(coursename, ?) > 0 ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+				sql = "SELECT * FROM "
+						"(SELECT coursename, style, rank, entries, duration_ms, end_time "
+							"FROM LocalRun WHERE rank != 0 AND username = ? AND instr(coursename, ?) > 0 "
+						"UNION ALL "
+						"SELECT T1.coursename, T1.style, T1.entries AS rank, T1.entries, 0 AS duration_ms, 0 AS end_time "
+							"FROM "
+								"(SELECT coursename, style, entries FROM LocalRun WHERE instr(coursename, ?) > 0 GROUP BY coursename, style) T1 "
+								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? AND instr(coursename, ?) > 0 GROUP BY coursename, style) T2 "
+								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
+					"ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_text (stmt, 2, partialCourseName, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_text (stmt, 3, partialCourseName, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_text (stmt, 4, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_text (stmt, 5, partialCourseName, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 6, start));
 			}
-			Q_strcat(msg, sizeof(msg), tmpMsg);
-			row++;
+			else {
+				//sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+				sql = "SELECT * FROM "
+						"(SELECT coursename, style, rank, entries, duration_ms, end_time "
+							"FROM LocalRun WHERE rank != 0 AND username = ? "
+						"UNION ALL "
+						"SELECT T1.coursename, T1.style, T1.entries AS rank, T1.entries, 0 AS duration_ms, 0 AS end_time "
+							"FROM "
+								"(SELECT coursename, style, entries FROM LocalRun GROUP BY coursename, style) T1 "
+								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? GROUP BY coursename, style) T2 "
+								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
+					"ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 3, start));
+			}	
 		}
-		else if (s == SQLITE_DONE)
-			break;
 		else {
-			fprintf (stderr, "ERROR: SQL Select Failed (Cmd_DFTodo_f).\n");//Trap print?
-			break;
+			if (enteredCoursename) {
+				//sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? AND instr(coursename, ?) > 0 ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+				sql = "SELECT * FROM "
+						"(SELECT coursename, style, rank, entries, duration_ms, end_time "
+							"FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? AND instr(coursename, ?) > 0 "
+						"UNION ALL "
+						"SELECT T1.coursename, T1.style, T1.entries AS rank, T1.entries, 0 AS duration_ms, 0 AS end_time "
+							"FROM "
+								"(SELECT coursename, style, entries FROM LocalRun WHERE style = ? AND instr(coursename, ?) > 0 GROUP BY coursename, style) T1 "
+								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? AND style = ? AND instr(coursename, ?) > 0 GROUP BY coursename, style) T2 "
+								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
+					"ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 2, style));
+					CALL_SQLITE (bind_text (stmt, 3, partialCourseName, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 4, style));
+					CALL_SQLITE (bind_text (stmt, 5, partialCourseName, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_text (stmt, 6, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 7, style));
+					CALL_SQLITE (bind_text (stmt, 8, partialCourseName, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 9, start));
+			}
+			else {
+				//sql = "SELECT coursename, style, rank, entries, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND username = ? AND style = ? ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+				sql = "SELECT * FROM "
+						"(SELECT coursename, style, rank, entries, duration_ms, end_time "
+							"FROM LocalRun WHERE rank != 0 AND username = ? AND style = ?"
+						"UNION ALL "
+						"SELECT T1.coursename, T1.style, T1.entries AS rank, T1.entries, 0 AS duration_ms, 0 AS end_time "
+							"FROM "
+								"(SELECT coursename, style, entries FROM LocalRun WHERE style = ? GROUP BY coursename, style) T1 "
+								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? AND style = ? GROUP BY coursename, style) T2 "
+								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
+							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
+					"ORDER BY (entries - entries / rank) DESC LIMIT ?, 10";
+					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 2, style));
+					CALL_SQLITE (bind_int (stmt, 3, style));
+					CALL_SQLITE (bind_text (stmt, 4, username, -1, SQLITE_STATIC));
+					CALL_SQLITE (bind_int (stmt, 5, style));
+					CALL_SQLITE (bind_int (stmt, 6, start));
+			}
 		}
-	}
-	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
-	CALL_SQLITE (finalize(stmt));
 
-	CALL_SQLITE (close(db));
+		trap->SendServerCommand(ent-g_entities, va("print \"Most improvable scores for %s:\n    ^5Course                      Style      Rank    Entries      Time         Date\n\"", styleString)); //Color rank yellow for global, normal for season -fixme match race print scheme
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				IntegerToRaceName(sqlite3_column_int(stmt, 1), styleStr, sizeof(styleStr));
+				if (sqlite3_column_int(stmt, 5)) {
+					Q_strncpyz(rankStr, va("%i", sqlite3_column_int(stmt, 2)), sizeof(rankStr));
+					TimeToString(sqlite3_column_int(stmt, 4), timeStr, sizeof(timeStr), qfalse);
+					getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr)); 
+				}
+				else {
+					Q_strncpyz(rankStr, "N/A", sizeof(rankStr));
+					Q_strncpyz(timeStr, "N/A", sizeof(timeStr));
+					Q_strncpyz(dateStr, "N/A", sizeof(dateStr));
+				}
+
+				tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-7s ^3%-12i ^3%-12s %s\n", row+start, sqlite3_column_text(stmt, 0), styleStr, rankStr, sqlite3_column_int(stmt, 3), timeStr, dateStr);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTodo_f)", s);
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
 
 }
 
@@ -4298,7 +4464,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 							Com_sprintf(strUser, sizeof(strUser), "^3%s^7", (char*)sqlite3_column_text(stmt, 0));
 					}
 					else if (s != SQLITE_DONE) {
-						fprintf (stderr, "ERROR: SQL Select Failed (Cmd_ACWhois_f).\n");//trap print?
+						G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACWhois_f)", s);
 						CALL_SQLITE (finalize(stmt));
 						CALL_SQLITE (close(db));
 						return;
@@ -4352,6 +4518,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
+	int s;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
@@ -4363,7 +4530,9 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
 		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, iplock UNSIGNED TINYINT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Create Failed (InitGameAccountStuff 1)", s);
 	CALL_SQLITE (finalize(stmt));
 
 #if 1//NEWRACERANKING
@@ -4374,13 +4543,17 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 		"average UNSIGNED SMALLINT, style UNSIGNED TINYINT, end_time UNSIGNED INTEGER)";
 #endif
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Create Failed (InitGameAccountStuff 2)", s);
 	CALL_SQLITE (finalize(stmt));
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, winner VARCHAR(16), loser VARCHAR(16), duration UNSIGNED SMALLINT, "
 		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INTEGER, winner_elo DECIMAL(6,2), loser_elo DECIMAL(6,2), odds DECIMAL(9,2))";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Create Failed (InitGameAccountStuff 3)", s);
 	CALL_SQLITE (finalize(stmt));
 
 #if _ELORANKING

@@ -1395,12 +1395,13 @@ usercmd_t CL_CreateCmd( void ) {
 
 	CL_CmdButtons( &cmd );
 
-	if (!cl.serverTime)cls.afkTime = cls.realtime;
+	if (!cl.serverTime)
+		cls.afkTime = cls.realtime;
 	else if (cl_afkTime->integer > 0) {
-		if (cmd.buttons != 0 && !(cmd.buttons & BUTTON_TALK)) {
+		if (cmd.buttons != 0 && !(cmd.buttons & BUTTON_TALK)) { //why cmd.buttons and why button_talk ??
 			cls.afkTime = cls.realtime;
 			if (cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
-				CL_Afk_f();
+				CL_Afk_f(); //Make this set instead of toggle
 			}
 		}
 		else if ((cl_unfocusedTime && cls.realtime - cl_unfocusedTime >= cl_afkTimeUnfocused->value * 60000) ||

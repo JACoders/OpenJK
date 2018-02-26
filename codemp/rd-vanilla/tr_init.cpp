@@ -1799,7 +1799,8 @@ void R_Init( void ) {
 
 	RestoreGhoul2InfoArray();
 	// print info
-	GfxInfo_f();
+	if (r_verbose->integer)
+		GfxInfo_f();
 
 //	ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }

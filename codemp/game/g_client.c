@@ -2341,33 +2341,21 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			i++;
 		}
 	}
-	else {
-		s = Info_ValueForKey( userinfo, "com_MaxFPS" );
-		if (!atoi(s)) {
-			s = Info_ValueForKey( userinfo, "cg_displayMaxFPS" );
-			client->pers.maxFPS = atoi(s);
-		}
-		else {
-			client->pers.maxFPS = atoi(s);
-		}
-
-		s = Info_ValueForKey( userinfo, "cl_timenudge" );
-		client->pers.timenudge = atoi(s);
-
-		s = Info_ValueForKey( userinfo, "cl_maxPackets" );
-		client->pers.maxPackets = atoi(s);
-	}
 
 	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
 	if (Q_stricmp(s, "")) { //if s is set
 		char tmp[MAX_INFO_VALUE];
+		char strTemp[64] = {0};
+		int encodedRange;
+		int encodedOffset;
+
 		char * pch;
 		int i = 0;
 		Q_strncpyz(tmp, s, sizeof(tmp));
 		pch = strtok (tmp, " ");
 		while (pch != NULL) {
 			if (i == 0)
-				client->pers.thirdPerson = atoi(pch);
+				client->pers.thirdPerson = (qboolean)atoi(pch);
 			else if (i == 1)
 				client->pers.thirdPersonRange = atoi(pch);
 			else if (i == 2)
@@ -2377,16 +2365,20 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			pch = strtok (NULL, " ");
 			i++;
 		}
-	}
-	else {
-		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
-		client->pers.thirdPerson = atoi(s);
 
-		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
-		client->pers.thirdPersonRange = atoi(s);
+		encodedRange = client->pers.thirdPersonRange;
+		encodedOffset = client->pers.thirdPersonVertOffset;
+		//Use negative if 1st person.  Clamp to -32765, 32765 range.
+		if (encodedRange > 325) //max 1625 - abs max 327
+			encodedRange = 325;
+		if (encodedOffset > 64) //max 256 - abs max 67..?
+			encodedOffset = 64;
+		if (!client->pers.thirdPerson)
+			encodedRange = -encodedRange;
 
-		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonVertOffset" );
-		client->pers.thirdPersonVertOffset = atoi(s);
+		Com_sprintf( strTemp, 128, "%i%02i", encodedRange, encodedOffset );
+		client->pers.cameraSettings = atoi(strTemp);
+		client->ps.persistant[PERS_CAMERA_SETTINGS] = client->pers.cameraSettings; //This gets reset on clientbegin ? damn
 	}
 
 	if (client->pers.timenudge > 200)
@@ -2731,14 +2723,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		if ( g_antiFakePlayer.integer )
 		{// patched, check for > g_maxConnPerIP connections from same IP
 			int count=0, i=0;
-			char strIP[NET_ADDRSTRMAXLEN] = {0}; //not sure man..
-			char *p = NULL;
-
-			Q_strncpyz(strIP, tmpIP, sizeof(strIP));
-			p = strchr(strIP, ':');
-			if (p)
-				*p = 0;
-
 			for ( i=0; i<sv_maxclients.integer; i++ )
 			{
 				//trap->Print("Theirs: %s, ours: %s\n", strIP, level.clients[i].sess.IP);
@@ -2755,7 +2739,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 						}
 					}
 				#else
-					if ( CompareIPs( strIP, level.clients[i].sess.IP ) )
+					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
 						count++;
 				#endif
 			}
@@ -3031,6 +3015,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
 
+	client->ps.persistant[PERS_CAMERA_SETTINGS] = client->pers.cameraSettings;
 
 	client->pers.noFollow = qfalse;
 	ent->r.svFlags &= ~SVF_SINGLECLIENT;
@@ -3443,6 +3428,9 @@ void GiveClientItems(gclient_t *client) {
 			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_CLOAK);
 		if (g_startingItems.integer & (1 << HI_HEALTHDISP))
 			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_HEALTHDISP);
+	}
+	else {
+		client->ps.stats[STAT_HOLDABLE_ITEMS] = ( 1 << HI_BINOCULARS);
 	}
 }
 
@@ -3971,13 +3959,8 @@ void ClientSpawn(gentity_t *ent) {
 		}
 
 		if (level.gametype != GT_SIEGE) {
-			if (client->sess.raceMode) {
-				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR); //give them disruptor not pistol, since pistol fucks dyn crosshair/strafehelper 
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
-				client->ps.ammo[AMMO_POWERCELL] = 300;
-			}
-			else { //loda fixme.. this can just be set?
+			if (!client->sess.raceMode)
+			{ //loda fixme.. this can just be set?
 				GiveClientWeapons(client);
 			}
 		}
@@ -4158,8 +4141,12 @@ void ClientSpawn(gentity_t *ent) {
 	//Do per-spawn force power initialization
 	WP_SpawnInitForcePowers( ent );
 
+
+	if (client->sess.raceMode) {
+		ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] = 100;
+	}
 	// health will count down towards max_health
-	if (level.gametype == GT_SIEGE &&
+	else if (level.gametype == GT_SIEGE &&
 		client->siegeClass != -1 &&
 		bgSiegeClasses[client->siegeClass].starthealth)
 	{ //class specifies a start health, so use it
@@ -4255,7 +4242,7 @@ void ClientSpawn(gentity_t *ent) {
 			client->ps.weaponstate = WEAPON_RAISING;
 			client->ps.weaponTime = client->ps.torsoTimer;
 
-			if (g_spawnInvulnerability.integer)
+			if (g_spawnInvulnerability.integer && !ent->client->sess.raceMode)
 			{
 				ent->client->ps.eFlags |= EF_INVULNERABLE;
 				ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;

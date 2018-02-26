@@ -806,12 +806,12 @@ static void IN_ProcessEvents( void )
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 			return;
-	#ifdef _WIN32
+#ifdef _WIN32
 	if (com_unfocused->integer == 1 && con_alert == qtrue) {
 		GLimp_Alert();
 		con_alert = qfalse;
 	}
-	#endif
+#endif
 
 	while( SDL_PollEvent( &e ) )
 	{
@@ -919,9 +919,9 @@ static void IN_ProcessEvents( void )
 						Cvar_SetValue( "com_unfocused", 1 );
 						SNDDMA_Activate( qfalse );
 						cl_unfocusedTime = cls.realtime;
-						#ifdef _WIN32
+#ifdef _WIN32
 						con_alert = qfalse;
-						#endif
+#endif
 						Cbuf_ExecuteText(EXEC_NOW, "+button1");
 						break;
 					}

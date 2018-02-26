@@ -38,10 +38,12 @@ cvar_t		*con_notifytime;
 cvar_t		*con_opacity; // background alpha multiplier
 cvar_t		*con_scale;
 cvar_t		*con_autoclear;
-cvar_t		*con_notifyname;
+cvar_t		*con_notifywords;
 cvar_t		*con_notifyconnect;
+cvar_t		*con_notifyvote;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
+#define TIMESTAMP_LENGTH 9
 
 vec4_t	console_color = {0.509f, 0.609f, 0.847f, 1.0f};
 
@@ -203,11 +205,18 @@ void Con_Copy(void) {
 
 	// write the remaining lines
 	buffer[bufferlen - 1] = 0;
-	for (; l <= con.current; l++)
+	for (; l < con.current; l++)
 	{
 		line = con.text + (l%con.totallines)*con.linewidth;
-		for (i = 0; i<con.linewidth; i++)
+
+		buffer[0] = '[';//this was a space
+		for (i = 1; i<TIMESTAMP_LENGTH-1; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
 			buffer[i] = (char)(line[i] & 0xff);
+		buffer[TIMESTAMP_LENGTH-1] = ']';//this was a space
+		buffer[TIMESTAMP_LENGTH] = ' ';//add a new space
+		for (i = TIMESTAMP_LENGTH+1; i<con.linewidth; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
+			buffer[i] = (char)(line[i-1] & 0xff); //i-1 instead of i, does this fuck up the end?
+
 		for (x = con.linewidth - 1; x >= 0; x--)
 		{
 			if (buffer[x] == ' ')
@@ -521,10 +530,13 @@ void Con_Init (void) {
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
 	con_scale = Cvar_Get("con_scale", "1.0", CVAR_ARCHIVE_ND, "Console character scale");
+	Cvar_CheckRange(con_scale, 0.2, 10.0f, qfalse);
+
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
-	con_notifyname = Cvar_Get("con_notifyname", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
+	con_notifywords = Cvar_Get("con_notifywords", "0", CVAR_ARCHIVE, "Notifies you when defined words are mentioned");
 	con_notifyconnect = Cvar_Get("con_notifyconnect", "0", CVAR_NONE, "Notifies you when someone connects to the server");
+	con_notifyvote = Cvar_Get("con_notifyvote", "0", CVAR_NONE, "Notifies you when someone calls a vote");
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = DEFAULT_CONSOLE_WIDTH;
@@ -566,11 +578,11 @@ void Con_Shutdown(void)
 Con_Linefeed
 ===============
 */
-static int stampColor = COLOR_GREY;
+int stampColor = COLOR_GREY;
 static void Con_Linefeed (qboolean skipnotify)
 {
 	int		i;
-	char	timetxt[9];
+	char	timetxt[TIMESTAMP_LENGTH];
 	qtime_t now;
 
 	// mark time for transparent overlay
@@ -584,15 +596,16 @@ static void Con_Linefeed (qboolean skipnotify)
 
 	Com_RealTime(&now);
 	Com_sprintf(timetxt, sizeof(timetxt), "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
-	for (i = 0; i<8; i++)
+	for (i = 0; i<TIMESTAMP_LENGTH-1; i++)
 		con.text[(con.current%con.totallines)*con.linewidth + i] = (ColorIndex(stampColor) << 8) | timetxt[i];
 
-	con.x = 9;
+	con.x = TIMESTAMP_LENGTH;
 	if (con.display == con.current)
 		con.display++;
 	con.current++;
+
 	for(i=0; i<con.linewidth; i++)
-		con.text[(con.current%con.totallines)*con.linewidth+i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
+		con.text[(con.current%con.totallines)*con.linewidth+i] = (ColorIndex(COLOR_WHITE)<<8) | ' '; //Spacing between timestamp and text, and other spaces
 }
 
 /*
@@ -622,38 +635,9 @@ void CL_ConsolePrint( const char *txt) {
 		skipnotify = qtrue;
 		txt += 12;
 	}
-
-	if (con.x == 9) {
-		if (txt[0] == '*') {
-			char *txtc;
-
-			skipnotify = qtrue;
-			txt += 1;
-
-			txtc = va("%s", txt);
-			Q_StripColor(txtc);
-			CL_LogPrintf(cls.log.chat, va("%s", txtc));
-			if (!Q_strrchr(txtc, ':') == '0') { // i feel sick just looking at this
-				if (con_notifyname->string != "0" && Q_stristr(Q_strrchr(txtc, ':'), con_notifyname->string)) {
-					stampColor = COLOR_CYAN;
-#ifdef _WIN32
-					con_alert = qtrue;
-#endif
-				}
-			}
-			else stampColor = COLOR_WHITE;
-		}
-		else if (txt[0] == ']') stampColor = COLOR_GREEN;
-		else if (cls.state == CA_ACTIVE && (Q_stristr(txt, SE_GetString("MP_SVGAME_PLCONNECT")) || Q_stristr(txt, SE_GetString("MP_SVGAME_DISCONNECTED")))) {
-			stampColor = COLOR_YELLOW;
-			if (con_notifyconnect->integer) {
-#ifdef _WIN32
-				con_alert = qtrue;
-#endif
-				Cvar_Set("con_notifyconnect", "0");
-			}
-		}
-		else stampColor = COLOR_GREY;
+	if (txt[0] == '*') {
+		skipnotify = qtrue;
+		txt += 1;
 	}
 
 	if (!con.initialized) {
@@ -662,7 +646,7 @@ void CL_ConsolePrint( const char *txt) {
 		con.color[2] =
 		con.color[3] = 1.0f;
 		con.linewidth = -1;
-		con.x = 9;
+		con.x = TIMESTAMP_LENGTH;
 		Con_CheckResize ();
 		con.initialized = qtrue;
 	}
@@ -678,8 +662,8 @@ void CL_ConsolePrint( const char *txt) {
 		}
 
 		// count word length
-		if ((l < 0 ? l = 0, true : false) || (l + 1 == con.linewidth - 9))
-			while (l < con.linewidth - 9) {
+		if ((l < 0 ? l = 0, true : false) || (l + 1 == con.linewidth - TIMESTAMP_LENGTH))
+			while (l < con.linewidth - TIMESTAMP_LENGTH) {
 				if ( txt[l] <= ' ') {
 					break;
 				}
@@ -687,7 +671,7 @@ void CL_ConsolePrint( const char *txt) {
 			}
 
 		// word wrap
-		if (l != con.linewidth - 9 && con.x + l >= con.linewidth) {
+		if (l != con.linewidth - TIMESTAMP_LENGTH && con.x + l >= con.linewidth) {
 			Con_Linefeed(skipnotify);
 		}
 
@@ -700,7 +684,7 @@ void CL_ConsolePrint( const char *txt) {
 			Con_Linefeed (skipnotify);
 			break;
 		case '\r':
-			con.x = 9;
+			con.x = TIMESTAMP_LENGTH;
 			break;
 		default:	// display character and advance
 			y = con.current % con.totallines;
@@ -727,6 +711,8 @@ void CL_ConsolePrint( const char *txt) {
 		// -NERVE - SMF
 			con.times[con.current % NUM_CON_TIMES] = cls.realtime;
 	}
+
+	stampColor = COLOR_GREY;
 }
 
 
@@ -748,7 +734,7 @@ Draw the editline after a ] prompt
 */
 void Con_DrawInput (void) {
 	int		y, x = 0;
-	char ts[9];
+	char ts[TIMESTAMP_LENGTH];
 	qtime_t	now;
 
 	if ( cls.state != CA_DISCONNECTED && !(Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
@@ -761,14 +747,14 @@ void Con_DrawInput (void) {
 	Com_sprintf(ts, sizeof(ts), "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
 
 	re->SetColor(g_color_table[ColorIndex(COLOR_GREEN)]);
-	for (x = 0; x<8; x++) {
+	for (x = 0; x<TIMESTAMP_LENGTH-1; x++) {
 		SCR_DrawSmallChar(con.xadjust + (x + 1) * con.charWidth, y, ts[x]);
 	}
-	x = 9;
+	x = TIMESTAMP_LENGTH;
 
 	re->SetColor( con.color );
 
-	SCR_DrawSmallChar( (int)(con.xadjust + (x+1) * con.charWidth), y, CONSOLE_PROMPT_CHAR );
+	SCR_DrawSmallChar( (int)(con.xadjust + (x+1) * con.charWidth), y, CONSOLE_PROMPT_CHAR ); //Add space?
 
 	Field_Draw( &g_consoleField, (int)(con.xadjust + (x+2) * con.charWidth), y,
 				SCREEN_WIDTH - 3 * con.charWidth, qtrue, qtrue );
@@ -833,7 +819,7 @@ void Con_DrawNotify (void)
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 9 ; x < con.linewidth ; x++)
+			for (x = TIMESTAMP_LENGTH; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
@@ -850,7 +836,7 @@ void Con_DrawNotify (void)
 		}
 		else
 		{
-			for (x = 9 ; x < con.linewidth ; x++) {
+			for (x = TIMESTAMP_LENGTH; x < con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
 				}
@@ -862,7 +848,7 @@ void Con_DrawNotify (void)
 				{
 					cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
 				}
-				SCR_DrawSmallChar((int)(cl_conXOffset->integer + con.xadjust + (x + 1 - 9)*con.charWidth), v, text[x] & 0xff);
+				SCR_DrawSmallChar((int)(cl_conXOffset->integer + con.xadjust + (x + 1 - TIMESTAMP_LENGTH)*con.charWidth), v, text[x] & 0xff);
 			}
 
 			v += con.charHeight;
@@ -887,7 +873,7 @@ void Con_DrawNotify (void)
 			chattext = SE_GetString("MP_SVGAME", "SAY");
 		}
 
-		SCR_DrawStringExt2(8 * cls.ratioFix, v, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, chattext, chatColour, qfalse, qfalse);
+		SCR_DrawStringExt2((TIMESTAMP_LENGTH-1) * cls.ratioFix, v, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, chattext, chatColour, qfalse, qfalse);
 		skip = strlen(chattext) + 1;
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
@@ -990,7 +976,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 	row = con.display;
 
-	if ( con.x == 9 ) {
+	if ( con.x == TIMESTAMP_LENGTH) {
 		row--;
 	}
 

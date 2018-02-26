@@ -372,6 +372,16 @@ CL_GetServerCommand
 Set up argc/argv for the given command
 ===================
 */
+
+extern cvar_t	*con_notifyconnect;
+extern cvar_t	*con_notifywords;
+extern cvar_t	*con_notifyvote;
+
+#define	MAX_NOTIFYWORDS 8
+extern char	notifyWords[MAX_NOTIFYWORDS][32];
+extern int stampColor;
+
+
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	const char *s;
 	const char *cmd;
@@ -480,6 +490,70 @@ rescan:
 		return qtrue;
 	}
 
+	if (!strcmp(cmd, "chat") || !strcmp(cmd, "tchat")) {
+		if (cl_logChat->integer) {
+			char chat[MAX_NETNAME + MAX_SAY_TEXT + 12];
+			int i, l;
+
+			s = Cmd_Argv(1);
+			Com_sprintf(chat, sizeof(chat), "%s\n", s);
+			Q_StripColor(chat);
+		
+			//Remove escape char from name
+			l = 0;
+			for (i = 0; chat[i]; i++) {
+				if (chat[i] == '\x19')
+					continue;
+				chat[l++] = chat[i];
+			}
+			chat[l] = '\0';
+
+			CL_LogPrintf(cls.log.chat, chat);
+		}
+
+		stampColor = COLOR_WHITE;
+
+#ifdef _WIN32
+		if (con_notifywords->integer == -1) {
+			con_alert = qtrue;
+		}
+		else
+#endif
+		if (strcmp(con_notifywords->string, "0")) {
+			int i;
+			for (i=0; i<MAX_NOTIFYWORDS; i++) {
+				if (strcmp(notifyWords[i], "") && Q_stristr(Q_strrchr(s, ':'), notifyWords[i])) {
+					stampColor = COLOR_CYAN;
+#ifdef _WIN32
+					con_alert = qtrue;
+#endif
+					break;
+				}
+			}
+		}
+
+		return qtrue;
+	}
+
+	if (!strcmp(cmd, "print")) {
+		s = Cmd_Argv(1);
+		if (Q_stristr(s, "@@@PLCONNECT") || Q_stristr(s, "@@@DISCONNECT")) {
+			stampColor = COLOR_YELLOW;
+#ifdef _WIN32
+		if (con_notifyconnect->integer)
+			con_alert = qtrue;
+#endif
+		}
+		if (Q_stristr(s, "@@@PLCALLEDVOTE")) {
+			stampColor = COLOR_ORANGE;
+#ifdef _WIN32
+		if (con_notifyvote->integer)
+			con_alert = qtrue;
+#endif
+		}
+		return qtrue;
+	}
+
 	// we may want to put a "connect to other server" command here
 
 	// cgame can now act on the command
@@ -518,7 +592,8 @@ void CL_ShutdownCGame( void ) {
 
 	CL_UnbindCGame();
 
-	CL_LogPrintf(cls.log.chat, "End logging\n------------------------------------------------------------\n\n");
+	if (cl_logChat->integer)
+		CL_LogPrintf(cls.log.chat, "End logging\n------------------------------------------------------------\n\n");
 	CL_CloseLog(&cls.log.chat);
 }
 
@@ -585,8 +660,17 @@ void CL_InitCGame( void ) {
 	// clear anything that got printed
 	Con_ClearNotify ();
 
-	if (cl_logChat->integer)
-		CL_OpenLog("cl_chat.log", &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
+	if (cl_logChat->integer) {
+		struct tm		*newtime;
+		time_t			rawtime;
+		char			logname[32];
+
+		time(&rawtime);
+		newtime = localtime(&rawtime);
+		strftime(logname, sizeof(logname), "chatlogs/cl_%y-%b.log", newtime);
+
+		CL_OpenLog(logname, &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
+	}
 	else
 		Com_DPrintf("Not logging chat to disk.\n");
 }
