@@ -6297,6 +6297,7 @@ int PM_LegsSlopeBackTransition(int desiredAnim)
 PM_Footsteps
 ===============
 */
+#define FixedRunAnim
 static void PM_Footsteps( void ) {
 	float		bobmove;
 	int			old;
@@ -6625,8 +6626,8 @@ static void PM_Footsteps( void ) {
 #endif
 			else if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
-#ifdef BASE_COMPAT
-				if( pm->ps->weapon != WP_SABER )
+#ifdef FixedRunAnim
+				if( pm->ps->weapon != WP_SABER || pm->ps->saberInFlight )
 				{
 					desiredAnim = BOTH_RUNBACK1;
 				}
@@ -6736,14 +6737,14 @@ static void PM_Footsteps( void ) {
 						}
 						break;
 					}
-#ifdef BASE_COMPAT
+#ifdef FixedRunAnim
 				}
 #endif
 			}
 			else
 			{
-#ifdef BASE_COMPAT					// FIXME: this doesn't break base compatibility at all, remove #ifndef
-				if ( pm->ps->weapon != WP_SABER )
+#ifdef FixedRunAnim					// FIXME: this doesn't break base compatibility at all, remove #ifndef
+				if ( pm->ps->weapon != WP_SABER || pm->ps->saberInFlight )
 				{
 					desiredAnim = BOTH_RUN1;
 				}
@@ -6897,7 +6898,7 @@ static void PM_Footsteps( void ) {
 						}
 						break;
 					}
-#ifdef BASE_COMPAT
+#ifdef FixedRunAnim
 				}
 #endif
 			}
@@ -6907,8 +6908,8 @@ static void PM_Footsteps( void ) {
 			bobmove = 0.2f;	// walking bobs slow
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
-#ifdef BASE_COMPAT // fixme, doesn't break base compat if enabled (I tested this to be sure)
-				if( pm->ps->weapon != WP_SABER )
+#ifdef FixedRunAnim // fixme, doesn't break base compat if enabled (I tested this to be sure)
+				if( pm->ps->weapon != WP_SABER || pm->ps->saberInFlight )
 				{
 					desiredAnim = BOTH_WALKBACK1;
 				}
@@ -6956,7 +6957,7 @@ static void PM_Footsteps( void ) {
 						}
 						break;
 					}
-#ifdef BASE_COMPAT
+#ifdef FixedRunAnim
 				}
 #endif
 			}
@@ -6970,7 +6971,7 @@ static void PM_Footsteps( void ) {
 				{
 					desiredAnim = BOTH_WALK1;
 				}
-#ifdef BASE_COMPAT
+#ifdef FixedRunAnim
 				else if ( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_WALK1;
