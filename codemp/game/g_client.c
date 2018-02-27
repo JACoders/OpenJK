@@ -2344,6 +2344,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
 	if (Q_stricmp(s, "")) { //if s is set
+		char tmp[MAX_INFO_VALUE];
 		char strTemp[64] = {0};
 		int encodedRange;
 		int encodedOffset;
