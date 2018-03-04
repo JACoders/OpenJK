@@ -12027,7 +12027,7 @@ void PmoveSingle (pmove_t *pmove) {
 				pm->cmd.rightmove = 0;
 				pm->cmd.upmove = 0;
 				pm->cmd.forwardmove = 0;
-				pm->cmd.buttons = 0;
+				//pm->cmd.buttons = 0; //let chatbox show in meditate
 			}
 			else if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
 			{
@@ -12057,7 +12057,7 @@ void PmoveSingle (pmove_t *pmove) {
         pm->cmd.rightmove = 0;
 		pm->cmd.upmove = 0;
 		pm->cmd.forwardmove = 0;
-		pm->cmd.buttons = 0;
+		//pm->cmd.buttons = 0;
 	}
 	else if (pm->ps->legsAnim == BOTH_FORCELAND1 ||
 		pm->ps->legsAnim == BOTH_FORCELANDBACK1 ||
