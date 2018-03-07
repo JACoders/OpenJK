@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -109,6 +109,11 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
 extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 
 /**
+   \brief Return true if the application is running on Android TV
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
+
+/**
    See the official Android developer guide for more information:
    http://developer.android.com/guide/topics/data/data-storage.html
 */
@@ -170,6 +175,25 @@ typedef enum
 
 
 /**
+ *  \brief WinRT Device Family
+ */
+typedef enum
+{
+    /** \brief Unknown family  */
+    SDL_WINRT_DEVICEFAMILY_UNKNOWN,
+
+    /** \brief Desktop family*/
+    SDL_WINRT_DEVICEFAMILY_DESKTOP,
+
+    /** \brief Mobile family (for example smartphone) */
+    SDL_WINRT_DEVICEFAMILY_MOBILE,
+
+    /** \brief XBox family */
+    SDL_WINRT_DEVICEFAMILY_XBOX,
+} SDL_WinRT_DeviceFamily;
+
+
+/**
  *  \brief Retrieves a WinRT defined path on the local file system
  *
  *  \note Documentation on most app-specific path types on WinRT
@@ -202,6 +226,13 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
  *      supported where.
  */
 extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
+
+/**
+ *  \brief Detects the device family of WinRT plattform on runtime
+ *
+ *  \return Device family
+ */
+extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
 #endif /* __WINRT__ */
 
