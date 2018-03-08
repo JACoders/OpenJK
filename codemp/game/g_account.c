@@ -1318,12 +1318,13 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 	//loda this can be combined with above query probably
 	if (seasonOldRank_self == -1) { //First attempt  
-		sql = "UPDATE LocalRun SET season_entries = season_entries + 1 WHERE coursename = ? AND style = ? AND season = ?";
+		sql = "UPDATE LocalRun SET season_entries = season_entries + 1, last_update = ? WHERE coursename = ? AND style = ? AND season = ?";
 	//+1 count for all, +1 rank only if affected
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style_self));
-		CALL_SQLITE (bind_int (stmt, 3, season));
+		CALL_SQLITE (bind_int (stmt, 1, time));
+		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style_self));
+		CALL_SQLITE (bind_int (stmt, 4, season));
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
@@ -1334,11 +1335,12 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 
 
 	if (globalOldRank_self == -1) { //First attempt  
-		sql = "UPDATE LocalRun SET entries = entries + 1 WHERE coursename = ? AND style = ?";
+		sql = "UPDATE LocalRun SET entries = entries + 1, last_update = ? WHERE coursename = ? AND style = ?";
 	//+1 count for all, +1 rank only if affected
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		CALL_SQLITE (bind_int (stmt, 1, time));
+		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style_self));
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {

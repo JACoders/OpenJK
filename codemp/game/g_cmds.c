@@ -5680,6 +5680,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "rRank ");
 		Q_strcat(buf, sizeof(buf), "rWorst ");
 		Q_strcat(buf, sizeof(buf), "rHardest ");
+		Q_strcat(buf, sizeof(buf), "rPopular ");
 		if (g_raceMode.integer > 1) 
 			Q_strcat(buf, sizeof(buf), "race ");
 		Q_strcat(buf, sizeof(buf), "jump ");
