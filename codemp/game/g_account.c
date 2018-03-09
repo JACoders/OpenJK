@@ -1381,13 +1381,15 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs)
 	}
 }
 
-void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean sr, qboolean spb, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid) {
+void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank) {
 	int nameColor, color;
 	char awardString[16] = {0}, messageStr[64] = {0}, nameStr[32] = {0};
 
-	if (wr) //Play the sound
+	//TODO print rank increase
+
+	if (global_newRank == 1) //WR, Play the sound
 		PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
-	else if (pb)
+	else if (global_newRank > 0) //PB
 		PlayActualGlobalSound("sound/chars/rosh/misc/taunt1");
 
 	nameColor = 7 - (clientNum % 8);//sad hack
@@ -1414,20 +1416,35 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 		Com_sprintf(messageStr, sizeof(messageStr), "^%iCompleted", color);
 
 	if (valid) {
-		if (wr) {
-			Q_strncpyz(awardString, "^5(WR)", sizeof(awardString));
+		if (global_newRank == 1) {
+			if (global_oldRank > 0)
+				Q_strncpyz(awardString, va("^5(WR +%i)", global_oldRank - global_newRank), sizeof(awardString));
+			else
+				Q_strncpyz(awardString, "^5(WR)", sizeof(awardString));
 		}
-		else if (sr && pb) {
-			Q_strncpyz(awardString, "^5(SR+PB)", sizeof(awardString));
+		else if (season_newRank == 1 && global_newRank > 0) {
+			if (global_oldRank > 0)
+				Q_strncpyz(awardString, va("^5(SR+PB +%i)", global_oldRank - global_newRank), sizeof(awardString));
+			else
+				Q_strncpyz(awardString, "^5(SR+PB)", sizeof(awardString));
 		}
-		else if (sr) {
-			Q_strncpyz(awardString, "^5(SR)", sizeof(awardString));
+		else if (season_newRank == 1) {
+			if (season_oldRank > 0)
+				Q_strncpyz(awardString, va("^5(SR +%i)", season_oldRank - season_newRank), sizeof(awardString));
+			else
+				Q_strncpyz(awardString, "^5(SR)", sizeof(awardString));
 		}
-		else if (pb) {
-			Q_strncpyz(awardString, "^5(PB)", sizeof(awardString));
+		else if (global_newRank > 0) {
+			if (global_oldRank > 0)
+				Q_strncpyz(awardString, va("^5(PB +%i)", global_oldRank - global_newRank), sizeof(awardString));
+			else
+				Q_strncpyz(awardString, "^5(PB)", sizeof(awardString));
 		}
-		else if (spb) {
-			Q_strncpyz(awardString, "^5(SPB)", sizeof(awardString));
+		else if (season_newRank > 0) {
+			if (season_oldRank > 0)
+				Q_strncpyz(awardString, va("^5(SPB +%i)", season_oldRank - season_newRank), sizeof(awardString));
+			else
+				Q_strncpyz(awardString, "^5(SPB)", sizeof(awardString));
 		}
 	}
 
@@ -1707,7 +1724,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	CALL_SQLITE (close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
-	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, (qboolean)(season_newRank == 1), seasonPB, (qboolean)(global_newRank == 1), globalPB, qtrue, qtrue);
+	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank);
 	//DebugWriteToDB("G_AddRaceTime");
 }
 
