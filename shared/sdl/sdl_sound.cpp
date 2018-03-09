@@ -86,8 +86,8 @@ static void SNDDMA_AudioCallback(void *userdata, Uint8 *stream, int len)
 
 static struct
 {
-	Uint16	enumFormat;
-	char		*stringFormat;
+	Uint16		enumFormat;
+	const char	*stringFormat;
 } formatToStringTable[ ] =
 {
 	{ AUDIO_U8,     "AUDIO_U8" },
@@ -95,10 +95,14 @@ static struct
 	{ AUDIO_U16LSB, "AUDIO_U16LSB" },
 	{ AUDIO_S16LSB, "AUDIO_S16LSB" },
 	{ AUDIO_U16MSB, "AUDIO_U16MSB" },
-	{ AUDIO_S16MSB, "AUDIO_S16MSB" }
+	{ AUDIO_S16MSB, "AUDIO_S16MSB" },
+	{ AUDIO_S32LSB, "AUDIO_S32LSB" },
+	{ AUDIO_S32MSB, "AUDIO_S32MSB" },
+	{ AUDIO_F32LSB, "AUDIO_F32LSB" },
+	{ AUDIO_F32MSB, "AUDIO_F32MSB" }
 };
 
-static int formatToStringTableSize = ARRAY_LEN( formatToStringTable );
+static const size_t formatToStringTableSize = ARRAY_LEN( formatToStringTable );
 
 /*
 ===============
@@ -107,12 +111,11 @@ SNDDMA_PrintAudiospec
 */
 static void SNDDMA_PrintAudiospec(const char *str, const SDL_AudioSpec *spec)
 {
-	int		i;
-	char	*fmt = NULL;
+	const char	*fmt = NULL;
 
-	Com_Printf("%s:\n", str);
+	Com_Printf( "%s:\n", str );
 
-	for( i = 0; i < formatToStringTableSize; i++ ) {
+	for( size_t i = 0; i < formatToStringTableSize; i++ ) {
 		if( spec->format == formatToStringTable[ i ].enumFormat ) {
 			fmt = formatToStringTable[ i ].stringFormat;
 		}
@@ -121,7 +124,7 @@ static void SNDDMA_PrintAudiospec(const char *str, const SDL_AudioSpec *spec)
 	if( fmt ) {
 		Com_Printf( "  Format:   %s\n", fmt );
 	} else {
-		Com_Printf( "  Format:   " S_COLOR_RED "UNKNOWN\n");
+		Com_Printf( "  Format:   " S_COLOR_RED "UNKNOWN (%d)\n", (int)spec->format);
 	}
 
 	Com_Printf( "  Freq:     %d\n", (int) spec->freq );
