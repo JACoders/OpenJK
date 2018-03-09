@@ -1381,11 +1381,13 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs)
 	}
 }
 
-void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank) {
+void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank, float addedScore) {
 	int nameColor, color;
-	char awardString[16] = {0}, messageStr[64] = {0}, nameStr[32] = {0};
+	char awardString[28] = {0}, messageStr[64] = {0}, nameStr[32] = {0};
 
 	//TODO print rank increase
+
+	Com_Printf("SOldrank %i SNewrank %i GOldrank %i GNewrank %i Addscore %.1f\n", season_oldRank, season_newRank, global_oldRank, global_newRank, addedScore);
 
 	if (global_newRank == 1) //WR, Play the sound
 		PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
@@ -1416,36 +1418,31 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 		Com_sprintf(messageStr, sizeof(messageStr), "^%iCompleted", color);
 
 	if (valid) {
-		if (global_newRank == 1) {
-			if (global_oldRank > 0)
-				Q_strncpyz(awardString, va("^5(WR +%i)", global_oldRank - global_newRank), sizeof(awardString));
-			else
-				Q_strncpyz(awardString, "^5(WR)", sizeof(awardString));
+		if (global_newRank == 1) { //was 1 when it shouldnt have been.. ?
+			Q_strncpyz(awardString, "^5(WR)", sizeof(awardString));
 		}
 		else if (season_newRank == 1 && global_newRank > 0) {
-			if (global_oldRank > 0)
-				Q_strncpyz(awardString, va("^5(SR+PB +%i)", global_oldRank - global_newRank), sizeof(awardString));
-			else
-				Q_strncpyz(awardString, "^5(SR+PB)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(SR+PB)", sizeof(awardString));
 		}
 		else if (season_newRank == 1) {
-			if (season_oldRank > 0)
-				Q_strncpyz(awardString, va("^5(SR +%i)", season_oldRank - season_newRank), sizeof(awardString));
-			else
-				Q_strncpyz(awardString, "^5(SR)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(SR)", sizeof(awardString));
 		}
 		else if (global_newRank > 0) {
-			if (global_oldRank > 0)
-				Q_strncpyz(awardString, va("^5(PB +%i)", global_oldRank - global_newRank), sizeof(awardString));
-			else
-				Q_strncpyz(awardString, "^5(PB)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(PB)", sizeof(awardString));
 		}
 		else if (season_newRank > 0) {
-			if (season_oldRank > 0)
-				Q_strncpyz(awardString, va("^5(SPB +%i)", season_oldRank - season_newRank), sizeof(awardString));
-			else
-				Q_strncpyz(awardString, "^5(SPB)", sizeof(awardString));
+			Q_strncpyz(awardString, "^5(SPB)", sizeof(awardString));
 		}
+
+		if (global_newRank > 0) { //Print global rank increased, global score added
+			if (global_newRank != global_oldRank)
+				Q_strcat(awardString, sizeof(awardString), va(" (%i->%i +%.1f)", global_oldRank, global_newRank, addedScore));
+		}
+		else if (season_newRank > 0) {//Print season rank increased, global score added
+			if (season_newRank != season_oldRank)
+			Q_strcat(awardString, sizeof(awardString), va(" (%i->%i +%.1f)", season_oldRank, season_newRank, addedScore));
+		}
+
 	}
 
 	trap->SendServerCommand( -1, va("print \"%s in ^3%-12s^%i max:^3%-10i^%i avg:^3%-10i^%i style:^3%-10s^%i by ^%i%s %s^7\n\"",
@@ -1488,7 +1485,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
-	int season_oldBest, season_oldRank, season_newRank = -1, global_oldBest, global_oldRank, global_newRank;
+	int season_oldBest, season_oldRank, season_newRank = -1, global_oldBest, global_oldRank, global_newRank = -1;
+	float addedScore;
 	gclient_t	*cl;
 	const int season = G_GetSeason();
 
@@ -1644,7 +1642,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
-				global_newRank = 0; //Make sure this doesnt reset a set newrank, but it wont since we break after setting
+				global_newRank = 0; //Make sure this doesnt reset a set newrank, but it wont since we break after setting --  what?
 				if (duration_ms < sqlite3_column_int(stmt, 0)) { //We are faster than this time... If we dont find anything newrank stays -1
 					global_newRank = i;
 					break;
@@ -1712,7 +1710,17 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				Com_sprintf(cl->pers.demoName, sizeof(cl->pers.demoName), "%s/%s-%s-%s", cl->pers.userName, cl->pers.userName, mapCourse, styleString); //TODO, change this to %s/%s-%s-%s so its puts in individual players folder
 			}
 		}
+
+		//For print
+		if (global_newRank > 0) {
+			addedScore = ((global_newCount / (float)global_newRank) + (global_newCount - global_newRank)) * 0.5f - ((global_oldCount / (float)global_oldRank) + (global_oldCount - global_oldRank)) * 0.5f;
+		}
+		else if (season_newRank > 0) {
+			addedScore = ((season_newCount / (float)season_newRank) + (season_newCount - season_newRank)) * 0.5f - ((season_oldCount / (float)season_oldRank) + (season_oldCount - season_oldRank)) * 0.5f;
+		}
+
 	}
+	//else.. set ranks to 0 for print, nothing to update
 
 	cl->pers.stats.racetime += (duration_ms*0.001f) - cl->afkDuration*0.001f;
 	cl->afkDuration = 0;
@@ -1724,7 +1732,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	CALL_SQLITE (close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
-	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank);
+	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank, addedScore);
 	//DebugWriteToDB("G_AddRaceTime");
 }
 
