@@ -1435,12 +1435,20 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 		}
 
 		if (global_newRank > 0) { //Print global rank increased, global score added
-			if (global_newRank != global_oldRank)
-				Q_strcat(awardString, sizeof(awardString), va(" (%i->%i +%.1f)", global_oldRank, global_newRank, addedScore));
+			if (global_newRank != global_oldRank) {//Can be from -1 to #.  What do we do in this case..
+				if (global_oldRank > 0)
+					Q_strcat(awardString, sizeof(awardString), va(" (%i->%i +%.1f)", global_oldRank, global_newRank, addedScore));
+				else
+					Q_strcat(awardString, sizeof(awardString), va(" (%i +%.1f)", global_newRank, addedScore));
+			}
 		}
 		else if (season_newRank > 0) {//Print season rank increased, global score added
-			if (season_newRank != season_oldRank)
-			Q_strcat(awardString, sizeof(awardString), va(" (%i->%i +%.1f)", season_oldRank, season_newRank, addedScore));
+			if (season_newRank != season_oldRank) {
+				if (season_oldRank > 0)
+					Q_strcat(awardString, sizeof(awardString), va(" (%i->%i +%.1f)", season_oldRank, season_newRank, addedScore));
+				else
+					Q_strcat(awardString, sizeof(awardString), va(" (%i +%.1f)", season_newRank, addedScore));
+			}
 		}
 
 	}
@@ -1485,7 +1493,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
-	int season_oldBest, season_oldRank, season_newRank = -1, global_oldBest, global_oldRank, global_newRank = -1;
+	int season_oldBest, season_oldRank, season_newRank = -1, global_oldBest, global_oldRank, global_newRank = -1; //Changed newrank to be -1 ??
 	float addedScore;
 	gclient_t	*cl;
 	const int season = G_GetSeason();
@@ -1713,10 +1721,14 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 		//For print
 		if (global_newRank > 0) {
-			addedScore = ((global_newCount / (float)global_newRank) + (global_newCount - global_newRank)) * 0.5f - ((global_oldCount / (float)global_oldRank) + (global_oldCount - global_oldRank)) * 0.5f;
+			addedScore = ((global_newCount / (float)global_newRank) + (global_newCount - global_newRank)) * 0.5f; //Add new score
+			if (global_oldRank > 0)
+				addedScore -= ((global_oldCount / (float)global_oldRank) + (global_oldCount - global_oldRank)) * 0.5f; //Subtract old score, if there was one
 		}
 		else if (season_newRank > 0) {
-			addedScore = ((season_newCount / (float)season_newRank) + (season_newCount - season_newRank)) * 0.5f - ((season_oldCount / (float)season_oldRank) + (season_oldCount - season_oldRank)) * 0.5f;
+			addedScore = ((season_newCount / (float)season_newRank) + (season_newCount - season_newRank)) * 0.5f;
+			if (season_oldRank > 0)
+				addedScore -= ((season_oldCount / (float)season_oldRank) + (season_oldCount - season_oldRank)) * 0.5f;
 		}
 
 	}
@@ -3898,9 +3910,9 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		localtime( &rawtime );
 
 		if (season == -1)
-			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString));
 		else
-			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style season %i:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString, season));
+			trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s season %i:\n    ^5Username           Time         Topspeed    Average      Date\n\"", fullCourseName, inputStyleString, season));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
