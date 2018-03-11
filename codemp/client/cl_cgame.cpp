@@ -520,14 +520,17 @@ rescan:
 		else
 #endif
 		if (strcmp(con_notifywords->string, "0")) {
-			int i;
-			for (i=0; i<MAX_NOTIFYWORDS; i++) {
-				if (strcmp(notifyWords[i], "") && Q_stristr(Q_strrchr(s, ':'), notifyWords[i])) {
-					stampColor = COLOR_CYAN;
+			char *text = Q_strrchr(s, ':');
+			if (text) {
+				int i;
+				for (i=0; i<MAX_NOTIFYWORDS; i++) {
+					if (strcmp(notifyWords[i], "") && Q_stristr(text, notifyWords[i])) {
+						stampColor = COLOR_CYAN;
 #ifdef _WIN32
-					con_alert = qtrue;
+						con_alert = qtrue;
 #endif
-					break;
+						break;
+					}
 				}
 			}
 		}
