@@ -220,6 +220,9 @@ const char *Q_stristr( const char *s, const char *find )
 	char c, sc;
 	size_t len;
 
+	if (!s)
+		return;
+
 	if ((c = *find++) != 0)
 	{
 		if (c >= 'a' && c <= 'z')
