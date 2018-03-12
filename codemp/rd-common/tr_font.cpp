@@ -1572,10 +1572,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				}
 				dropShadowText[r] = 0;
 
-				if (cl_ratioFix->integer == 1)
-					RE_Font_DrawString(ox + offset * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)), oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
-				else 
-					RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 			}
 			else
 			{
@@ -1584,10 +1581,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
 				gbInShadow = qtrue;
-				if (cl_ratioFix->integer == 1)
-					RE_Font_DrawString(ox + offset * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)), oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
-				else
-					RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 				gbInShadow = qfalse;
 			}
 		}
