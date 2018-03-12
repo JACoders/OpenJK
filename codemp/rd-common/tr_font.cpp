@@ -1623,7 +1623,11 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			break;
 		case 32:						// Space
 			pLetter = curfont->GetLetter(' ');
-			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+			if (cl_ratioFix->integer == 1)
+				fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+			else
+				fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+
 			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) ) ? qtrue : qfalse; // yeuch
 			break;
 		case '_':	// has a special word-break usage if in Thai (and followed by a thai char), and should not be displayed, else treat as normal
