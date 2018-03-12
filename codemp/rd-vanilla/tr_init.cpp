@@ -169,6 +169,7 @@ cvar_t	*r_debugSort;
 cvar_t	*r_marksOnTriangleMeshes;
 
 cvar_t	*r_aspectCorrectFonts;
+cvar_t	*cl_ratioFix;
 
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
@@ -286,9 +287,9 @@ void R_Splash()
 */
 	if ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth) >= 1.0f) {
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
-	} else { //assuming 16:9 for now
-		pImage = R_FindImageFile( "menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP);
-		if (!pImage)
+	} else { 
+		pImage = R_FindImageFile( "menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP); //assuming 16:9 for now
+		if (!pImage || !cl_ratioFix->integer)
 			pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
 	extern void	RB_SetGL2D (void);
@@ -1667,6 +1668,7 @@ void R_Register( void )
 	r_shadowRange						= ri.Cvar_Get( "r_shadowRange",					"1000",						CVAR_NONE, "" );
 	r_marksOnTriangleMeshes				= ri.Cvar_Get( "r_marksOnTriangleMeshes",			"0",						CVAR_ARCHIVE_ND, "" );
 	r_aspectCorrectFonts				= ri.Cvar_Get( "r_aspectCorrectFonts",				"0",						CVAR_ARCHIVE, "" );
+	cl_ratioFix							= ri.Cvar_Get( "cl_ratioFix",						"1",						CVAR_ARCHIVE, "" );
 	r_maxpolys							= ri.Cvar_Get( "r_maxpolys",						XSTRING( DEFAULT_MAX_POLYS ),		CVAR_NONE, "" );
 	r_maxpolyverts						= ri.Cvar_Get( "r_maxpolyverts",					XSTRING( DEFAULT_MAX_POLYVERTS ),	CVAR_NONE, "" );
 /*
