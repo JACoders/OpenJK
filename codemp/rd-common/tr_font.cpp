@@ -1390,7 +1390,7 @@ float RE_Font_StrLenPixelsNew( const char *psText, const int iFontHandle, const 
 
 			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
 
-			if ( r_aspectCorrectFonts->integer == 1 ) {
+			if ( r_aspectCorrectFonts->integer == 1 || cl_ratioFix->integer == 1 ) {
 				fValue *= ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
 			}
 			else if ( r_aspectCorrectFonts->integer == 2 ) {
@@ -1572,7 +1572,10 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				}
 				dropShadowText[r] = 0;
 
-				RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				if (cl_ratioFix->integer == 1)
+					RE_Font_DrawString(ox + offset * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)), oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				else 
+					RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 			}
 			else
 			{
@@ -1581,7 +1584,10 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
 				gbInShadow = qtrue;
-				RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				if (cl_ratioFix->integer == 1)
+					RE_Font_DrawString(ox + offset * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)), oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				else
+					RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 				gbInShadow = qfalse;
 			}
 		}
@@ -1672,18 +1678,33 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 					fy += 3.0f; // I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
 				}
 
-				RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
-								(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
-								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
-								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
-								pLetter->s,						// float s1
-								pLetter->t,						// float t1
-								pLetter->s2,					// float s2
-								pLetter->t2,					// float t2
-								//lastcolour.c,
-								hShader							// qhandle_t hShader
-								);
-				if ( r_aspectCorrectFonts->integer == 1 ) {
+				if (cl_ratioFix->integer == 1) {
+					RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+									(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
+									curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)),	// float w
+									curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
+									pLetter->s,						// float s1
+									pLetter->t,						// float t1
+									pLetter->s2,					// float s2
+									pLetter->t2,					// float t2
+									//lastcolour.c,
+									hShader							// qhandle_t hShader
+									);
+				}
+				else {
+					RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+						(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
+						curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
+						curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
+						pLetter->s,						// float s1
+						pLetter->t,						// float t1
+						pLetter->s2,					// float s2
+						pLetter->t2,					// float t2
+														//lastcolour.c,
+						hShader							// qhandle_t hShader
+					);
+				}
+				if ( r_aspectCorrectFonts->integer == 1  || cl_ratioFix->integer == 1 ) {
 					fx += fAdvancePixels
 						* ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
 				}
