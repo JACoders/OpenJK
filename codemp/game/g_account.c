@@ -4220,7 +4220,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? AND instr(coursename, ?) > 0 GROUP BY coursename, style) T2 "
 								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
 							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
-					"ORDER BY (entries-((entries/rank)+(entries-rank)/2)) DESC LIMIT ?, 10";
+					"ORDER BY (entries-((entries/cast(rank as float))+(entries-rank)/2.0)) DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 					CALL_SQLITE (bind_text (stmt, 2, partialCourseName, -1, SQLITE_STATIC));
@@ -4241,7 +4241,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? GROUP BY coursename, style) T2 "
 								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
 							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
-					"ORDER BY (entries-((entries/rank)+(entries-rank)/2)) DESC LIMIT ?, 10";
+					"ORDER BY (entries-((entries/cast(rank as float))+(entries-rank)/2.0)) DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 					CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
@@ -4261,7 +4261,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? AND style = ? AND instr(coursename, ?) > 0 GROUP BY coursename, style) T2 "
 								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
 							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
-					"ORDER BY (entries-((entries/rank)+(entries-rank)/2)) DESC LIMIT ?, 10";
+					"ORDER BY (entries-((entries/cast(rank as float))+(entries-rank)/2.0)) DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 					CALL_SQLITE (bind_int (stmt, 2, style));
@@ -4285,7 +4285,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 								"LEFT JOIN (SELECT coursename, style FROM LocalRun WHERE username = ? AND style = ? GROUP BY coursename, style) T2 "
 								"ON T1.coursename = T2.coursename AND T1.style = T2.style "
 							"WHERE T2.coursename IS NULL OR T2.style IS NULL) "	
-					"ORDER BY (entries-((entries/rank)+(entries-rank)/2)) DESC LIMIT ?, 10";
+					"ORDER BY (entries-((entries/cast(rank as float))+(entries-rank)/2.0)) DESC LIMIT ?, 10";
 					CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 					CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 					CALL_SQLITE (bind_int (stmt, 2, style));
