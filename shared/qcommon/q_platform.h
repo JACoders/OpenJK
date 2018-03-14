@@ -179,6 +179,33 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#endif
 
 	#define DLL_EXT ".so"
+
+// Haiku
+#elif defined(__HAIKU__)
+
+	#include <endian.h>
+
+	#define OS_STRING "haiku"
+
+	#define QINLINE inline
+
+	#define PATH_SEP '/'
+
+	#if !defined(ARCH_STRING)
+		#error ARCH_STRING should be defined by the build system
+	#endif
+
+	#if defined(__x86_64__)
+		#define idx64
+	#endif
+
+	#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+		#define Q3_BIG_ENDIAN
+	#else
+		#define Q3_LITTLE_ENDIAN
+	#endif
+
+	#define DLL_EXT ".so"
 #endif
 
 #if (defined( _MSC_VER ) && (_MSC_VER < 1900)) || (defined(__GNUC__))

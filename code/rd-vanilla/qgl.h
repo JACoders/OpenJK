@@ -45,6 +45,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #	if defined(__FX__)
 #		include <GL/fxmesa.h>
 #	endif
+#elif defined( __HAIKU__ )
+#	include <GL/gl.h>
 #else
 #	include <gl.h>
 #endif
