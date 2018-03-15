@@ -7,7 +7,7 @@
 	g_allowFlagThrow	0  //Allow use of /throwflag command.
 	g_fixCTFScores		0  //Tweak CTF score amounts.
 	g_fixFlagHitbox		0  	
-	g_rabbit			0  
+	g_rabbit			0 //1=normal rabit, 2=sniper rabbit
 
 #### Saber
 	g_tweakSaber			0	//Configured with /tweakSaber command.

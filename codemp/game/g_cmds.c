@@ -6617,7 +6617,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, or sp>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, or slick>.\n\"" );
 		return;
 	}
 
@@ -6663,7 +6663,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			ResetPlayerTimers(ent, qtrue);
 		}
 		else {
-			if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+			if (ent->client->sess.movementStyle == MV_RJQ3 || ent->client->sess.movementStyle == MV_RJCPM) { //Get rid of their rockets when they tele/noclip..?
 				DeletePlayerProjectiles(ent);
 			}
 			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
@@ -6709,7 +6709,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		}
 	}
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, or sp>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, or slick>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 
@@ -8058,6 +8058,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Warsow style movement\n");
 	else if (g_movementStyle.integer == MV_SP)
 		Q_strcat(buf, sizeof(buf), "   ^5SP style movement\n");
+	else if (g_movementStyle.integer == MV_SLICK)
+		Q_strcat(buf, sizeof(buf), "   ^5Slick style movement\n");
 	if (g_fixRoll.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Tweaked roll\n"); // idk what the fuck this actually does to roll
 	else if (g_fixRoll.integer == 2)

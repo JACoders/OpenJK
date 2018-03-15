@@ -3692,7 +3692,7 @@ void ClientThink_real( gentity_t *ent ) {
 	else*/if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
-	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP) { //Ok,, this should be like every frame, right??
+	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && (g_movementStyle.integer >= MV_SIEGE && g_movementStyle.integer <= MV_WSW) || g_movementStyle.integer == MV_SP || g_movementStyle.integer == MV_SLICK) { //Ok,, this should be like every frame, right??
 		client->sess.movementStyle = g_movementStyle.integer;
 	}
 	client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;

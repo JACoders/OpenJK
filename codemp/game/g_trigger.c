@@ -1518,7 +1518,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		Q_StripColor(playerName);
 	
 		if (!valid) {
-			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, 0, 0, 0);
+			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, 0, 0, 0);
 		}
 		else {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -1528,10 +1528,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			if (p)
 				*p = 0;
 			if (player->client->pers.userName[0]) { //omg
-				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
+				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
 			}
 			else {
-				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qtrue, 0, 0, 0);
+				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qtrue, 0, 0, 0);
 			}
 		}
 
@@ -1592,9 +1592,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 			*/
 
 		if (player->client->pers.showCenterCP)
-			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 		if (player->client->pers.showChatCP)
-			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 		
 		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
 			if (!g_entities[i].inuse)
@@ -1603,9 +1603,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 			{
 				//if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
 				if (level.clients[i].pers.showCenterCP)
-					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 				if (level.clients[i].pers.showChatCP)
-					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 			}
 		}
 

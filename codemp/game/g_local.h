@@ -1278,6 +1278,7 @@ typedef enum //movementstyle enum
 #if _SPPHYSICS
 	MV_SP,
 #endif
+	MV_SLICK,
 	MV_NUMSTYLES,
 } movementStyle_e;
 

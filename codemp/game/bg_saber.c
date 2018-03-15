@@ -2310,6 +2310,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 	{
 		saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
 		saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
+		const int moveStyle = PM_GetMovePhysics();
 
 		if ( saber1
 			&& saber1->jumpAtkRightMove != LS_INVALID )
@@ -2361,7 +2362,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 		else if (saber2 && (saber2->saberFlags&SFL_NO_CARTWHEELS))//no reason not to use else if, no point in setting it twice
 			allowCartwheels = qfalse;
-		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 7 || PM_GetMovePhysics() == 8) {
+		else if (moveStyle == MV_CPM || moveStyle == MV_Q3 || moveStyle == MV_RJQ3 || moveStyle == MV_RJCPM || moveStyle == MV_SLICK) {
 			allowCartwheels = qfalse;
 			noSpecials = qtrue;
 		}
