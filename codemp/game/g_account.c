@@ -3699,7 +3699,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 			if (showSeasons)
 				sql = "SELECT username, coursename, style, rank, duration_ms, end_time, season_rank FROM LocalRun WHERE style = ? ORDER BY end_time DESC LIMIT ?,10";
 			else
-				sql = "SELECT username, coursename, style, rank duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT ?,10";
+				sql = "SELECT username, coursename, style, rank, duration_ms, end_time FROM LocalRun WHERE rank != 0 AND style = ? ORDER BY end_time DESC LIMIT ?,10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_int (stmt, 1, style));
 			CALL_SQLITE (bind_int (stmt, 2, start));
@@ -4654,36 +4654,13 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					Q_strncpyz(strHidden, "^7^7", sizeof(strHidden));
 				}
 				else {
+					char strStyleName[16] = {0};
 					Q_strncpyz(strRace, (cl->sess.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
 					Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
 
-					if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)  //should use integertoracename ?
-						Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
-						Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
-						Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 3)
-						Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 4)
-						Q_strncpyz(strStyle, "^7q3^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 5)
-						Q_strncpyz(strStyle, "^7pjk^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
-						Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
-						Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
-						Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 9)
-						Q_strncpyz(strStyle, "^7swoop^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 10)
-						Q_strncpyz(strStyle, "^7jetpack^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 11)
-						Q_strncpyz(strStyle, "^7speed^7", sizeof(strStyle));
-					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 12)
-						Q_strncpyz(strStyle, "^7sp^7", sizeof(strStyle));
-
+					Q_strncpyz(strStyle, "^7", sizeof(strStyle));
+					IntegerToRaceName(cl->ps.stats[STAT_MOVEMENTSTYLE],strStyleName, sizeof(strStyleName));
+					Q_strcat(strStyle, sizeof(strStyle), va("%s^7", strStyleName));
 				}
 			}
 

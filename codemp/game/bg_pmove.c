@@ -5209,7 +5209,8 @@ static void PM_GroundTrace( void ) {
 
 		if (trace.plane.normal[0] != 0.0f || trace.plane.normal[1] != 0.0f || trace.plane.normal[2] != 1.0f) { //Its actually a ramp
 			if (pm->ps->stats[STAT_RACEMODE] && !pml.clipped) {
-				if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) { //Only change our xy speed if we hit a downramp in wsw
+				int moveStyle = PM_GetMovePhysics();
+				if (moveStyle == MV_WSW || moveStyle == MV_SLICK) { //Only change our xy speed if we hit a downramp in wsw
 					vec3_t oldVel, clipped_velocity, newVel;
 					float oldSpeed, newSpeed;
 
