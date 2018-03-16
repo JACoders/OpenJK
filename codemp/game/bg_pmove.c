@@ -1170,7 +1170,7 @@ static void PM_Friction( void ) {
 	{
 		// apply ground friction
 		if ( pm->waterlevel <= 1 ) {
-			if ( pml.walking && !(pml.groundTrace.surfaceFlags & SURF_SLICK) && moveStyle != MV_SLICK ) { //Slick style here potentially
+			if ( pml.walking && !(pml.groundTrace.surfaceFlags & SURF_SLICK) && (moveStyle != MV_SLICK || (pm->cmd.buttons & BUTTON_WALKING))) { //Slick style here potentially
 				// if getting knocked back, no friction
 				if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
 					control = speed < pm_stopspeed ? pm_stopspeed : speed;
