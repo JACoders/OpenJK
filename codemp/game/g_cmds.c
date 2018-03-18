@@ -667,7 +667,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 			ent->client->ps.stats[STAT_ARMOR] = 25;
 		}
 		//}
-		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..? Do this for every style..
+		if (ent->client->sess.movementStyle == MV_RJQ3 || ent->client->sess.movementStyle == MV_RJCPM) { //Get rid of their rockets when they tele/noclip..? Do this for every style..
 			DeletePlayerProjectiles(ent);
 		}
 

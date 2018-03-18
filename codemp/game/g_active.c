@@ -3357,6 +3357,8 @@ qboolean CanGrapple( gentity_t *ent ) {
 		return qfalse;
 	if (ent->client->ps.duelInProgress)
 		return qfalse;
+	if (ent->client->jetPackOn)
+		return qfalse;
 	if (!BG_SaberInIdle(ent->client->ps.saberMove))
 		return qfalse;
 	if (BG_InRoll(&ent->client->ps, ent->client->ps.legsAnim))

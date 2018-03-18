@@ -1388,7 +1388,7 @@ void PrintRaceTime(char *username, char *playername, char *message, char *style,
 
 	//TODO print rank increase
 
-	Com_Printf("SOldrank %i SNewrank %i GOldrank %i GNewrank %i Addscore %.1f\n", season_oldRank, season_newRank, global_oldRank, global_newRank, addedScore);
+	//Com_Printf("SOldrank %i SNewrank %i GOldrank %i GNewrank %i Addscore %.1f\n", season_oldRank, season_newRank, global_oldRank, global_newRank, addedScore);
 
 	if (global_newRank == 1) //WR, Play the sound
 		PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
