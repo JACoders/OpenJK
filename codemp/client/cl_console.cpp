@@ -210,12 +210,12 @@ void Con_Copy(void) {
 		line = con.text + (l%con.totallines)*con.linewidth;
 
 		buffer[0] = '[';//this was a space
-		for (i = 1; i<TIMESTAMP_LENGTH-1; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
-			buffer[i] = (char)(line[i] & 0xff);
-		buffer[TIMESTAMP_LENGTH-1] = ']';//this was a space
-		buffer[TIMESTAMP_LENGTH] = ' ';//add a new space
+		for (i = 0; i<TIMESTAMP_LENGTH; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
+			buffer[i+1] = (char)(line[i] & 0xff);
+		buffer[TIMESTAMP_LENGTH] = ']';//this was a space
+		buffer[TIMESTAMP_LENGTH+1] = ' ';//add a new space
 		for (i = TIMESTAMP_LENGTH+1; i<con.linewidth; i++) //Add [ and ] brackets around timestamp.  0 and timestamp_length ?
-			buffer[i] = (char)(line[i-1] & 0xff); //i-1 instead of i, does this fuck up the end?
+			buffer[i+1] = (char)(line[i-1] & 0xff); //i-1 instead of i, does this fuck up the end?
 
 		for (x = con.linewidth - 1; x >= 0; x--)
 		{
