@@ -3356,6 +3356,24 @@ qboolean CanGrapple( gentity_t *ent ) {
 		return qfalse;
 	if (ent->client->ps.duelInProgress)
 		return qfalse;
+	if (!BG_SaberInIdle(ent->client->ps.saberMove))
+		return qfalse;
+	if (BG_InRoll(&ent->client->ps, ent->client->ps.legsAnim))
+		return qfalse;
+	if (BG_InSpecialJump(ent->client->ps.legsAnim))
+		return qfalse;	
+	return qtrue;
+}
+
+qboolean CanFireGrapple( gentity_t *ent ) {
+	if (!ent || !ent->client)
+		return qfalse;
+	if (!g_allowGrapple.integer && !ent->client->sess.raceMode)
+		return qfalse;
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle != MV_JETPACK)
+		return qfalse;
+	if (ent->client->ps.duelInProgress)
+		return qfalse;
 	if (ent->client->jetPackOn)
 		return qfalse;
 	if (!BG_SaberInIdle(ent->client->ps.saberMove))
@@ -4901,7 +4919,7 @@ void ClientThink_real( gentity_t *ent ) {
 				ent->client->ps.pm_type != PM_DEAD &&
 				!ent->client->hookHasBeenFired &&
 				(ent->client->hookFireTime < level.time - g_hookFloodProtect.integer) &&
-				CanGrapple(ent))
+				CanFireGrapple(ent))
 		{
 			Weapon_GrapplingHook_Fire( ent );
 			ent->client->hookHasBeenFired = qtrue;

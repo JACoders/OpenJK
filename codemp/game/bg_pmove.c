@@ -4128,14 +4128,20 @@ static void PM_GrappleMoveTarzan( void ) {
 	vec3_t vel;
 	float vlen;
 #if _GAME
-	int pullSpeed = g_hookStrength.integer;
-	int pullStrength1 = g_hookStrength1.integer;
-	int pullStrength2 = g_hookStrength2.integer;
+	int pullSpeed = 800;
+	int pullStrength1 = 20;
+	int pullStrength2 = 40; //Constant these for racemode
 #else
 	int pullSpeed = 800;
 	int pullStrength1 = 20;//20;
 	int pullStrength2 = 40;//40;
 #endif
+
+	if (!pm->ps->stats[STAT_RACEMODE]) {
+		pullSpeed = g_hookStrength.integer;
+		pullStrength1 = g_hookStrength1.integer;
+		pullStrength2 = g_hookStrength2.integer;
+	}
 
 	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
 	vlen = VectorLength(vel);
@@ -12816,14 +12822,13 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 		noAnimate = qtrue;
 	}
-
 	if (pm_entSelf->s.NPC_class!=CLASS_VEHICLE
 		&&pm->ps->m_iVehicleNum)
 	{//don't even run physics on a player if he's on a vehicle - he goes where the vehicle goes
 	}
 	else
 	{ //don't even run physics on a player if he's on a vehicle - he goes where the vehicle goes
-		if (pm->ps->pm_type == PM_FLOAT	|| pm_flying == FLY_NORMAL)
+		if (pm->ps->pm_type == PM_FLOAT || pm_flying == FLY_NORMAL)
 		{
 			PM_FlyMove ();
 		}
@@ -12837,7 +12842,6 @@ void PmoveSingle (pmove_t *pmove) {
 #if _GRAPPLE
 #if _GAME
 			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && ((g_allowGrapple.integer == 1) || pm->ps->stats[STAT_RACEMODE])) {
-				//Com_Printf("Flags are %i\n", pm->ps->pm_flags);
 				PM_GrappleMoveTarzan();
 			} 			
 			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (g_allowGrapple.integer > 1)) {
@@ -12848,7 +12852,7 @@ void PmoveSingle (pmove_t *pmove) {
 			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (!(cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE) || pm->ps->stats[STAT_RACEMODE])) {
 				PM_GrappleMoveTarzan();
 			} 
-			else if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
 				PM_GrappleMove();
 			} 
 #endif
