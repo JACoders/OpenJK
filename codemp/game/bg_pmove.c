@@ -3759,10 +3759,17 @@ static void PM_AirMove( void ) {
 		else
 			accel = pm_airaccelerate;
 
-		if ((((moveStyle == MV_CPM) || (moveStyle == MV_PJK) || moveStyle == MV_WSW) || (moveStyle == MV_RJCPM) || (moveStyle == MV_SLICK)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) {
-			if (wishspeed > 30.0f)//cpm_pm_wishspeed
-				wishspeed = 30.0f;	
-			accel = 70.0f;//cpm_pm_strafeaccelerate
+		if (pm->ps->movementDir == 2 || pm->ps->movementDir == 6) {
+			if (moveStyle == MV_CPM || moveStyle == MV_PJK || moveStyle == MV_WSW || moveStyle == MV_RJCPM) {
+				if (wishspeed > 30.0f)//cpm_pm_wishspeed
+					wishspeed = 30.0f;	
+				accel = 70.0f;//cpm_pm_strafeaccelerate
+			}
+			else if (moveStyle == MV_SLICK) {
+				if (wishspeed > 30.0f)//cpm_pm_wishspeed
+					wishspeed = 30.0f;	
+				accel = g_gravity.value;//cpm_pm_strafeaccelerate - 100 in slick
+			}
 		}
 
 		PM_Accelerate (wishdir, wishspeed, accel); // change dis?

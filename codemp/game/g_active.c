@@ -4232,7 +4232,7 @@ void ClientThink_real( gentity_t *ent ) {
 				{
 					client->ps.gravity = g_gravity.value;
 					if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
-						client->ps.gravity = 750.0f; //Match 125fps gravity here since we are using decimal precision for Zvel now
+						client->ps.gravity = 750; //Match 125fps gravity here since we are using decimal precision for Zvel now
 				}
 			}
 		}
