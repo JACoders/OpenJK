@@ -12840,11 +12840,9 @@ void PmoveSingle (pmove_t *pmove) {
 				//Com_Printf("Flags are %i\n", pm->ps->pm_flags);
 				PM_GrappleMoveTarzan();
 			} 			
-			else if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (g_allowGrapple.integer > 1)) {
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (g_allowGrapple.integer > 1)) {
 				PM_GrappleMove();
-				PM_AirMove();// We can wiggle a bit
-			} 
-			else
+			}
 #else
 
 			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (!(cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE) || pm->ps->stats[STAT_RACEMODE])) {
@@ -12852,9 +12850,7 @@ void PmoveSingle (pmove_t *pmove) {
 			} 
 			else if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
 				PM_GrappleMove();
-				PM_AirMove();// We can wiggle a bit
 			} 
-			else
 #endif
 
 #endif
