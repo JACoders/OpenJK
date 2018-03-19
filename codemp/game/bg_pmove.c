@@ -3768,7 +3768,7 @@ static void PM_AirMove( void ) {
 			else if (moveStyle == MV_SLICK) {
 				if (wishspeed > 30.0f)//cpm_pm_wishspeed
 					wishspeed = 30.0f;	
-				accel = g_gravity.value;//cpm_pm_strafeaccelerate - 100 in slick
+				accel = 100.0f;//cpm_pm_strafeaccelerate - 100 in slick
 			}
 		}
 
