@@ -3350,10 +3350,9 @@ void Weapon_HookThink (gentity_t *ent);
 qboolean CanGrapple( gentity_t *ent ) {
 	if (!ent || !ent->client)
 		return qfalse;
-	//if (!g_allowGrapple.integer)
-	if (!g_allowGrapple.integer)
+	if (!g_allowGrapple.integer && !ent->client->sess.raceMode)
 		return qfalse;
-	if (ent->client->sess.raceMode)
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle != MV_JETPACK)
 		return qfalse;
 	if (ent->client->ps.duelInProgress)
 		return qfalse;

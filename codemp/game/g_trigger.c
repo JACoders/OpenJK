@@ -1197,7 +1197,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 
 	style = player->client->sess.movementStyle;
 
-	if (style == MV_SLICK)
+	if (style == MV_SLICK || style == MV_JETPACK)
 		return qfalse;//temp
 
 	if (((style == MV_RJQ3) || (style == MV_RJCPM)) && g_knockback.value != 1000.0f)
