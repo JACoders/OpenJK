@@ -4354,7 +4354,10 @@ static void PM_WalkMove( void ) {
 		}
 		else
 #endif
-			pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
+			if (pm->ps->stats[STAT_RACEMODE])
+				pm->ps->velocity[2] -= 800 * pml.frametime; //Use 800 as gravity instead of 750 if racemode - fixes sliding down slick slopes like lappen
+			else
+				pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
 	}
 
 
