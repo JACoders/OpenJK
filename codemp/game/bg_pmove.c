@@ -4134,23 +4134,23 @@ PM_GrappleMoveTarzan
 static void PM_GrappleMoveTarzan( void ) {
 	vec3_t vel;
 	float vlen;
-#if _GAME
 	int pullSpeed = 800;
 	int pullStrength1 = 20;
-	int pullStrength2 = 40; //Constant these for racemode
-#else
-	int pullSpeed = 800;
-	int pullStrength1 = 20;//20;
-	int pullStrength2 = 40;//40;
-#endif
+	int pullStrength2 = 40;
 
+#if _GAME
 	if (!pm->ps->stats[STAT_RACEMODE]) {
 		pullSpeed = g_hookStrength.integer;
 		pullStrength1 = g_hookStrength1.integer;
 		pullStrength2 = g_hookStrength2.integer;
 	}
+#else
+	if (!pm->ps->stats[STAT_RACEMODE]) {
+		pullSpeed = cgs.hookpull;
+	}
+#endif
 
-	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
+	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel); //Lasthitloc gets bugged?
 	vlen = VectorLength(vel);
 	VectorNormalize( vel );
 

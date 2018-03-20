@@ -909,7 +909,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	}
 
 #if _GRAPPLE//_GRAPPLE
-		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
+	if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
 		//gentity_t *nent;
 		vec3_t v;
 
@@ -983,7 +983,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc);
 		VectorSubtract( ent->r.currentOrigin, ent->parent->client->ps.origin, v );
 
-		trap->LinkEntity( (sharedEntity_t *)ent );
+		trap->LinkEntity( (sharedEntity_t *)ent ); //BROADCAST? so it wont get fucked by PVS?
 		//trap->LinkEntity( (sharedEntity_t *)nent );
 
 		return;

@@ -4536,9 +4536,6 @@ void Weapon_HookFree (gentity_t *ent)
 
 void Weapon_HookThink (gentity_t *ent)
 {
-	//vec3_t		chainvec, velpart;
-	//float		force, chainlen;
-
 	if ( ent->enemy ) {
 		if ( ent->enemy->client ) {
 			vec3_t v;
@@ -4558,7 +4555,8 @@ void Weapon_HookThink (gentity_t *ent)
 		}
 	}
 
-	VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.hyperSpaceAngles );
+	//VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.hyperSpaceAngles ); //wtf- not used. should be for hook angles?
+	VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc );
 	ent->nextthink = level.time + FRAMETIME;
 }
 #endif
