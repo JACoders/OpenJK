@@ -39,9 +39,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define	GAME_VERSION			"basejka-1"
 
-#define DEFAULT_SABER			"Kyle"
+#define DEFAULT_SABER			"Arbiter"
 #define DEFAULT_SABER_STAFF		"dual_1"
-#define DEFAULT_SABER_MODEL		"models/weapons2/saber/saber_w.glm"
+#define DEFAULT_SABER_MODEL		"models/weapons2/saber_1/saber_1.glm"
 #define	DEFAULT_MODEL			"kyle"
 #define DEFAULT_MODEL_FEMALE	"jan"
 

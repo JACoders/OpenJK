@@ -6403,6 +6403,11 @@ static void PM_Footsteps( void ) {
 				{
 					PM_ContinueLegsAnim( BOTH_CROUCH1IDLE );
 				}
+#ifdef FixedRunAnim
+				if ((pm->ps->saberInFlight) && (pm->ps->torsoAnim != BOTH_CROUCH1IDLE)) {
+					PM_SetAnim(SETANIM_TORSO, BOTH_CROUCH1IDLE, setAnimFlags);
+				}
+#endif
 			} else {
 				if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode == 1)
 				{
@@ -6521,6 +6526,11 @@ static void PM_Footsteps( void ) {
 				{
 					PM_ContinueLegsAnim( BOTH_CROUCH1WALKBACK );
 				}
+#ifdef FixedRunAnim
+				if ((pm->ps->saberInFlight) && (pm->ps->torsoAnim != BOTH_CROUCH1WALKBACK)) {
+					PM_SetAnim(SETANIM_TORSO, BOTH_CROUCH1WALKBACK, setAnimFlags);
+				}
+#endif
 			}
 			else {
 				if ((pm->ps->legsAnim) != BOTH_CROUCH1WALK)
@@ -6531,6 +6541,11 @@ static void PM_Footsteps( void ) {
 				{
 					PM_ContinueLegsAnim( BOTH_CROUCH1WALK );
 				}
+#ifdef FixedRunAnim
+				if ((pm->ps->saberInFlight) && (pm->ps->torsoAnim != BOTH_CROUCH1WALK)) {
+					PM_SetAnim(SETANIM_TORSO, BOTH_CROUCH1WALK, setAnimFlags);
+				}
+#endif
 			}
 		}
 		else
@@ -6560,6 +6575,11 @@ static void PM_Footsteps( void ) {
 			{
 				PM_ContinueLegsAnim( BOTH_CROUCH1WALKBACK );
 			}
+#ifdef FixedRunAnim
+			if ((pm->ps->saberInFlight) && (pm->ps->torsoAnim != BOTH_CROUCH1WALKBACK)) {
+				PM_SetAnim(SETANIM_TORSO, BOTH_CROUCH1WALKBACK, setAnimFlags);
+			}
+#endif
 		}
 		else
 		{
@@ -6571,6 +6591,11 @@ static void PM_Footsteps( void ) {
 			{
 				PM_ContinueLegsAnim( BOTH_CROUCH1WALK );
 			}
+#ifdef FixedRunAnim
+			if ((pm->ps->saberInFlight) && (pm->ps->torsoAnim != BOTH_CROUCH1WALK)) {
+				PM_SetAnim(SETANIM_TORSO, BOTH_CROUCH1WALK, setAnimFlags);
+			}
+#endif
 		}
 	}
 	else
@@ -6972,7 +6997,7 @@ static void PM_Footsteps( void ) {
 					desiredAnim = BOTH_WALK1;
 				}
 #ifdef FixedRunAnim
-				else if ( pm->ps->weapon != WP_SABER )
+				else if ( pm->ps->weapon != WP_SABER || pm->ps->saberInFlight )
 				{
 					desiredAnim = BOTH_WALK1;
 				}
@@ -7036,6 +7061,13 @@ static void PM_Footsteps( void ) {
 			{
 				PM_ContinueLegsAnim(ires);
 			}
+
+#ifdef FixedRunAnim
+			if ((pm->ps->saberInFlight) && ((pm->ps->torsoAnim) != desiredAnim && ires == desiredAnim)) { //silly hack for predicted walking anims while disarmed
+				PM_SetAnim(SETANIM_TORSO, desiredAnim, setAnimFlags);
+			}
+#endif
+
 		}
 	}
 
