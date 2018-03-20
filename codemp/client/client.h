@@ -330,7 +330,7 @@ typedef struct clientStatic_s {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
-	float		ratioFix;
+	float		widthRatioCoef;
 
 	struct {
 		fileHandle_t	chat;

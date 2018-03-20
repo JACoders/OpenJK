@@ -82,7 +82,7 @@ Con_MessageMode_f
 ================
 */
 void Con_MessageMode_f (void) {	//yell
-	float ratio = (cls.ratioFix ? cls.ratioFix : 1.0f);
+	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	chat_playerNum = -1;
 	chat_team = qfalse;
 	Field_Clear( &chatField );
@@ -97,7 +97,7 @@ Con_MessageMode2_f
 ================
 */
 void Con_MessageMode2_f (void) {	//team chat
-	float ratio = (cls.ratioFix ? cls.ratioFix : 1.0f);
+	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	chat_playerNum = -1;
 	chat_team = qtrue;
 	Field_Clear( &chatField );
@@ -112,7 +112,7 @@ Con_MessageMode3_f
 */
 void Con_MessageMode3_f (void)
 {		//target chat
-	float ratio = (cls.ratioFix ? cls.ratioFix : 1.0f);
+	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
@@ -137,7 +137,7 @@ Con_MessageMode4_f
 */
 void Con_MessageMode4_f (void)
 {	//attacker
-	float ratio = (cls.ratioFix ? cls.ratioFix : 1.0f);
+	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
@@ -873,7 +873,7 @@ void Con_DrawNotify (void)
 			chattext = SE_GetString("MP_SVGAME", "SAY");
 		}
 
-		SCR_DrawStringExt2((TIMESTAMP_LENGTH-1) * cls.ratioFix, v, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, chattext, chatColour, qfalse, qfalse);
+		SCR_DrawStringExt2((TIMESTAMP_LENGTH-1) * cls.widthRatioCoef, v, BIGCHAR_WIDTH*cls.widthRatioCoef, BIGCHAR_HEIGHT, chattext, chatColour, qfalse, qfalse);
 		skip = strlen(chattext) + 1;
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );

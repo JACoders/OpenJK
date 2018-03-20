@@ -107,6 +107,7 @@ cvar_t	*cl_consoleUseScanCode;
 
 cvar_t  *cl_lanForcePackets;
 
+cvar_t	*cl_ratioFix;
 cvar_t	*cl_coloredTextShadows;
 
 cvar_t *cl_drawRecording;
@@ -2435,7 +2436,10 @@ void CL_InitRenderer( void ) {
 
 	cls.whiteShader = re->RegisterShader( "white" );
 	cls.consoleShader = re->RegisterShader( "console" );
-	cls.ratioFix = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
+	if (cl_ratioFix->integer)
+		cls.widthRatioCoef = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
+	else
+		cls.widthRatioCoef = 1.0f;
 }
 
 /*
@@ -3185,6 +3189,8 @@ void CL_Init( void ) {
 
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE_ND );
+
+	cl_ratioFix = Cvar_Get("cl_ratioFix", "1", CVAR_ARCHIVE, "Widescreen aspect ratio correction");
 
 	cl_coloredTextShadows = Cvar_Get("cl_coloredTextShadows", "0", CVAR_ARCHIVE, "Toggled colored text shadows");
 
