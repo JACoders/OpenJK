@@ -2253,38 +2253,42 @@ void G2API_CopySpecificG2Model(CGhoul2Info_v &ghoul2From, int modelFrom, CGhoul2
 	   //might have been a bug in the reconstruct checking which has since been
 	   //mangled and probably fixed. -rww
 
-	// assume we actually have a model to copy from
-	if (ghoul2From.size() > modelFrom)
+	// have we real ghoul2 models yet?
+	if (&ghoul2From && &ghoul2To)
 	{
-		// if we don't have enough models on the to side, resize us so we do
-		if (ghoul2To.size() <= modelTo)
+		// assume we actually have a model to copy from
+		if (ghoul2From.size() > modelFrom)
 		{
-			assert (modelTo < 5);
-			ghoul2To.resize(modelTo + 1);
-#if 0
-			forceReconstruct = qtrue;
-#endif
-		}
-		// do the copy
-
-		if (ghoul2To.IsValid() && ghoul2To.size() >= modelTo)
-		{ //remove the bonecache before we stomp over this instance.
-			if (ghoul2To[modelTo].mBoneCache)
+			// if we don't have enough models on the to side, resize us so we do
+			if (ghoul2To.size() <= modelTo)
 			{
-				RemoveBoneCache(ghoul2To[modelTo].mBoneCache);
-				ghoul2To[modelTo].mBoneCache = 0;
+				assert(modelTo < 5);
+				ghoul2To.resize(modelTo + 1);
+#if 0
+				forceReconstruct = qtrue;
+#endif
 			}
-		}
-		ghoul2To[modelTo] = ghoul2From[modelFrom];
+			// do the copy
+
+			if (ghoul2To.IsValid() && ghoul2To.size() >= modelTo)
+			{ //remove the bonecache before we stomp over this instance.
+				if (ghoul2To[modelTo].mBoneCache)
+				{
+					RemoveBoneCache(ghoul2To[modelTo].mBoneCache);
+					ghoul2To[modelTo].mBoneCache = 0;
+				}
+			}
+			ghoul2To[modelTo] = ghoul2From[modelFrom];
 
 #if 0
-		if (forceReconstruct)
-		{ //rww - we should really do this shouldn't we? If we don't mark a reconstruct after this,
-		  //and we do a GetBoltMatrix in the same frame, it doesn't reconstruct the skeleton and returns
-		  //a completely invalid matrix
-			ghoul2To[0].mSkelFrameNum = 0;
-		}
+			if (forceReconstruct)
+			{ //rww - we should really do this shouldn't we? If we don't mark a reconstruct after this,
+			  //and we do a GetBoltMatrix in the same frame, it doesn't reconstruct the skeleton and returns
+			  //a completely invalid matrix
+				ghoul2To[0].mSkelFrameNum = 0;
+			}
 #endif
+		}
 	}
 }
 
