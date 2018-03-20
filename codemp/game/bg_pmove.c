@@ -4556,11 +4556,12 @@ static int PM_TryRoll( void )
 #endif
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
-		(moveStyle == 3) ||
-		(moveStyle == 4) ||
-		(moveStyle == 6) ||
-		(moveStyle == 7) ||
-		(moveStyle == 8) ||
+		(moveStyle == MV_CPM) ||
+		(moveStyle == MV_Q3) ||
+		(moveStyle == MV_WSW) ||
+		(moveStyle == MV_RJQ3) ||
+		(moveStyle == MV_RJCPM) ||
+		(moveStyle == MV_SLICK) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;
