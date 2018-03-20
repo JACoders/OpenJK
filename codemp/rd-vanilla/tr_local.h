@@ -1056,6 +1056,8 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
+
+	float					widthRatioCoef;
 } trGlobals_t;
 
 struct glconfigExt_t

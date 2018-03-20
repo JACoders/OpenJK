@@ -218,7 +218,7 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 			s += 2;
 			continue;
 		}
-		SCR_DrawChar( xx+2*cls.ratioFix, y+2, size, *s );
+		SCR_DrawChar( xx+2*cls.widthRatioCoef, y+2, size, *s );
 		xx += size;
 		s++;
 	}
@@ -380,7 +380,7 @@ SCR_DrawDemoRecording
 */
 
 void SCR_DrawDemoRecording( void ) {
-	const float	ratio = cls.ratioFix;
+	const float	ratio = cls.widthRatioCoef;
 	char	string[1024];
 	int		pos, xpos, ypos;
 

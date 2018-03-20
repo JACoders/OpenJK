@@ -272,6 +272,13 @@ bool g_bTextureRectangleHack = false;
 void RE_SetLightStyle(int style, int color);
 void RE_GetBModelVerts( int bmodelIndex, vec3_t *verts, vec3_t normal );
 
+void R_Set2DRatio(void) {
+	if (cl_ratioFix->integer)
+		tr.widthRatioCoef = ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+	else
+		tr.widthRatioCoef = 1.0f;
+}
+
 void R_Splash()
 {
 	image_t *pImage;
@@ -1780,6 +1787,7 @@ void R_Init( void ) {
 		RE_SetLightStyle(i, -1);
 	}
 	InitOpenGL();
+	R_Set2DRatio();
 
 	R_InitImages();
 	R_InitShaders(qfalse);
