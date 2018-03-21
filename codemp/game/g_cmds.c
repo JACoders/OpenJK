@@ -6657,16 +6657,25 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	style = RaceNameToInteger(mStyle);
 
 	if (style >= 0) {
-
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
-			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
+			if (style == MV_WSW)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.  Use +button13 for dash.\n\"");
+			else if (style == MV_JETPACK)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.  Use +button12 for grapple, +button14 for jetpack.\n\"");
+			else
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
 			ResetPlayerTimers(ent, qtrue);
 		}
 		else {
 			if (ent->client->sess.movementStyle == MV_RJQ3 || ent->client->sess.movementStyle == MV_RJCPM) { //Get rid of their rockets when they tele/noclip..?
 				DeletePlayerProjectiles(ent);
 			}
-			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+			if (style == MV_WSW)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.  Use +button13 for dash.\n\"");
+			else if (style == MV_JETPACK)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.  Use +button12 for grapple, +button14 for jetpack.\n\"");
+			else 
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 		}
 
 		ent->client->sess.movementStyle = style;
