@@ -12,6 +12,7 @@ If you have any suggestions or would like to submit a bug report, please post th
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
+
 ## For players
 
 Installing and running EternalJK:
