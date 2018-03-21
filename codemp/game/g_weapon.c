@@ -4556,7 +4556,7 @@ void Weapon_HookThink (gentity_t *ent)
 	}
 
 	//VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.hyperSpaceAngles ); //wtf- not used. should be for hook angles?
-	VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc );
+	VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc ); //snapvector this?
 	ent->nextthink = level.time + FRAMETIME;
 }
 #endif

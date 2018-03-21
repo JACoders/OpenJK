@@ -2041,9 +2041,9 @@ static qboolean PM_CheckJump( void )
 	}
 
 #ifdef _GAME
-	if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 		return qfalse;
 
@@ -3696,9 +3696,9 @@ static void PM_AirMove( void ) {
 		}
 	}
 #ifdef _GAME
-	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{ //reduced air control while not jetting
 		for ( i = 0 ; i < 2 ; i++ )
@@ -3776,9 +3776,9 @@ static void PM_AirMove( void ) {
 		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
 	}
 #ifdef _GAME
-	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{
 		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
@@ -5031,9 +5031,9 @@ static void PM_GroundTraceMissed( void ) {
 		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE);
 	}
 #ifdef _GAME
-	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{//Jetpacking with new jetpack
 	}
@@ -5144,9 +5144,9 @@ static void PM_GroundTrace( void ) {
 	}
 
 #ifdef _GAME
-	if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{
 		PM_GroundTraceMissed();
@@ -12458,9 +12458,9 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 	}
 #ifdef _GAME
-	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{
 		savedGravity = pm->ps->gravity;
@@ -12559,9 +12559,9 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 	}
 #ifdef _GAME
-	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{
 		if (pm->cmd.rightmove > 0)
@@ -12991,9 +12991,9 @@ void PmoveSingle (pmove_t *pmove) {
 	}
 
 #ifdef _GAME
-	else if (g_tweakJetpack.integer && !pm->ps->stats[STAT_RACEMODE] && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
-	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #endif
 	{
 		pm->ps->gravity = savedGravity;
