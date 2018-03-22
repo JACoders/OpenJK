@@ -262,9 +262,9 @@
 		{
 			name				rgbred
 			group				tints2
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Red: "
-			cvarfloat			"ui_char_color_red" 50 0 255
+			cvarint				"ui_char_color_red" 50 0 255
 			rect				0 104 175 18
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			70
@@ -294,9 +294,9 @@
 		{
 			name				rgbgreen
 			group				tints2
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Green: "
-			cvarfloat			"ui_char_color_green" 50 0 255
+			cvarint				"ui_char_color_green" 50 0 255
 			rect				0 124 175 18
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			70
@@ -326,9 +326,9 @@
 		{
 			name				rgbblue
 			group				tints2
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Blue: "
-			cvarfloat			"ui_char_color_blue" 50 0 255
+			cvarint				"ui_char_color_blue" 50 0 255
 			rect				0 144 175 18
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			70
@@ -358,12 +358,12 @@
 		{
 			name				rgbred_value
 			group				tints2
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 0			
 			text				"R:"
 			cvar 				"ui_char_color_red"
-			maxchars			10
-			maxPaintChars 		10 
+			maxchars			3
+			maxPaintChars 		3
 			rect 				197 104 100 18
 			textalign			ITEM_ALIGN_RIGHT		
 			textalignx 			15
@@ -395,12 +395,12 @@
 		{
 			name				rgbgreen_value
 			group				tints2
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 0			
 			text				"G:"
 			cvar 				"ui_char_color_green"
-			maxchars 			10
-			maxPaintChars 		10 
+			maxchars 			3
+			maxPaintChars 		3
 			rect 				197 124 100 18
 			textalign			ITEM_ALIGN_RIGHT		
 			textalignx 			15
@@ -432,12 +432,12 @@
 		{
 			name				rgbblue_value
 			group				tints2
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 0			
 			text				"B:"
 			cvar 				"ui_char_color_blue"
-			maxchars 			10
-			maxPaintChars 			10 
+			maxchars 			3
+			maxPaintChars 		3 
 			rect 				197 144 100 18
 			textalign			ITEM_ALIGN_RIGHT		
 			textalignx 			15

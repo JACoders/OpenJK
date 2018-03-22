@@ -261,10 +261,10 @@
 			action 
 			{
 				play			"sound/interface/choose_saber.wav"
-				setcvar		ui_saber_type	"staff"
+				setcvar			ui_saber_type	"staff"
 				uiScript  		"saber_type"
-				setcvar		ui_saber		"dual_1"
-				setcvar		ui_saber2		"none"
+				setcvar			ui_saber		"dual_1"
+				setcvar			ui_saber2		"none"
 				uiScript  		"saber_hilt"
 				uiScript  		"saber_color"
 				uiScript  		"saber2_hilt"
@@ -740,9 +740,9 @@
 		{
 			name				red_bar
 			group				rgbcolormenu
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Red "
-			cvarfloat			"ui_sab1_r" 255 1 255
+			cvarint				"ui_sab1_r" 255 1 255
 			rect				58 80 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -763,7 +763,7 @@
 		{
 			name				red
 			group				rgbcolormenu
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
@@ -788,9 +788,9 @@
 		{
 			name				green_bar
 			group				rgbcolormenu
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Green"
-			cvarfloat			"ui_sab1_g" 255 1 255
+			cvarint			"ui_sab1_g" 255 1 255
 			rect				58 100 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -811,7 +811,7 @@
 		{
 			name				green
 			group				rgbcolormenu
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
@@ -836,9 +836,9 @@
 		{
 			name				blue_bar
 			group				rgbcolormenu
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Blue "
-			cvarfloat			"ui_sab1_b" 255 1 255
+			cvarint			"ui_sab1_b" 255 1 255
 			rect				58 120 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -859,7 +859,7 @@
 		{
 			name				blue
 			group				rgbcolormenu
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
@@ -947,9 +947,9 @@
 		{
 			name				red_bar
 			group				rgbcolormenu
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Red "
-			cvarfloat			"ui_sab2_r" 255 1 255
+			cvarint				"ui_sab2_r" 255 1 255
 			rect				265 80 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -972,7 +972,7 @@
 		{
 			name				red
 			group				rgbcolormenu
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
@@ -999,9 +999,9 @@
 		{
 			name				green_bar
 			group				rgbcolormenu
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Green"
-			cvarfloat			"ui_sab2_g" 255 1 255
+			cvarint			"ui_sab2_g" 255 1 255
 			rect				265 100 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -1024,7 +1024,7 @@
 		{
 			name				green
 			group				rgbcolormenu
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
@@ -1051,9 +1051,9 @@
 		{
 			name				blue_bar
 			group				rgbcolormenu
-			type				ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_INTSLIDER
 			text				"Blue "
-			cvarfloat			"ui_sab2_b" 255 1 255
+			cvarint				"ui_sab2_b" 255 1 255
 			rect				265 120 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -1076,7 +1076,7 @@
 		{
 			name				blue
 			group				rgbcolormenu
-			type 				ITEM_TYPE_EDITFIELD
+			type 				ITEM_TYPE_NUMERICFIELD
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
