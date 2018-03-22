@@ -290,6 +290,7 @@ static qboolean CL_G2API_GetBoltMatrix_NoRecNoRot( void *ghoul2, const int model
 		return qfalse;
 	}
 
+	re->G2API_BoltMatrixReconstruction( qfalse );
 	re->G2API_BoltMatrixSPMethod( qtrue );
 	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
@@ -513,12 +514,17 @@ static qboolean CL_G2API_GetBoneFrame(
 }
 
 static void CL_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
-	if ( !ghoul2 ) {
+	if ( !ghoul2 )
+	{
+		fillBuf[0] = '\0';
 		return;
 	}
 
 	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
-	strcpy( fillBuf, tmp );
+	if ( tmp )
+		strcpy( fillBuf, tmp );
+	else
+		fillBuf[0] = '\0';
 }
 
 static int CL_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex ) {
@@ -1130,134 +1136,106 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return CL_SE_GetStringTextString( (const char *)VMA(1), (char *)VMA(2), args[3] );
 
 	case UI_G2_LISTSURFACES:
-		re->G2API_ListSurfaces( (CGhoul2Info *) args[1] );
+		CL_G2API_ListModelSurfaces( VMA(1) );
 		return 0;
 
 	case UI_G2_LISTBONES:
-		re->G2API_ListBones( (CGhoul2Info *) args[1], args[2]);
+		CL_G2API_ListModelBones( VMA(1), args[2]);
 		return 0;
 
 	case UI_G2_HAVEWEGHOULMODELS:
-		return re->G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)args[1]) );
+		return CL_G2API_HaveWeGhoul2Models( VMA(1) );
 
 	case UI_G2_SETMODELS:
-		re->G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)args[1]),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		CL_G2API_SetGhoul2ModelIndexes( VMA(1),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
 		return 0;
 
 	case UI_G2_GETBOLT:
-		return re->G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case UI_G2_GETBOLT_NOREC:
-		re->G2API_BoltMatrixReconstruction( qfalse );//gG2_GBMNoReconstruct = qtrue;
-		return re->G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix_NoReconstruct(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case UI_G2_GETBOLT_NOREC_NOROT:
-		// cgame reconstructs bolt matrix, why is this different?
-		re->G2API_BoltMatrixReconstruction( qfalse );//gG2_GBMNoReconstruct = qtrue;
-		re->G2API_BoltMatrixSPMethod( qtrue );//gG2_GBMUseSPMethod = qtrue;
-		return re->G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix_NoRecNoRot(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case UI_G2_INITGHOUL2MODEL:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		return	re->G2API_InitGhoul2Model((CGhoul2Info_v **)VMA(1), (const char *)VMA(2), args[3], (qhandle_t) args[4], (qhandle_t) args[5], args[6], args[7]);
+		return CL_G2API_InitGhoul2Model((void **)VMA(1), (const char *)VMA(2), args[3], (qhandle_t) args[4], (qhandle_t) args[5], args[6], args[7]);
 
 	case UI_G2_COLLISIONDETECT:
 	case UI_G2_COLLISIONDETECTCACHE:
 		return 0; //not supported for ui
 
 	case UI_G2_ANGLEOVERRIDE:
-		return re->G2API_SetBoneAngles(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), (float *)VMA(4), args[5], (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8], (qhandle_t *)VMA(9), args[10], args[11] );
+		return CL_G2API_SetBoneAngles(VMA(1), args[2], (const char *)VMA(3), (float *)VMA(4), args[5], (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8], (qhandle_t *)VMA(9), args[10], args[11] );
 
 	case UI_G2_CLEANMODELS:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		re->G2API_CleanGhoul2Models((CGhoul2Info_v **)VMA(1));
-		//	re->G2API_CleanGhoul2Models((CGhoul2Info_v **)args[1]);
+		CL_G2API_CleanGhoul2Models((void **)VMA(1));
 		return 0;
 
 	case UI_G2_PLAYANIM:
-		return re->G2API_SetBoneAnim(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], args[5], args[6], VMF(7), args[8], VMF(9), args[10]);
+		return CL_G2API_SetBoneAnim(VMA(1), args[2], (const char *)VMA(3), args[4], args[5], args[6], VMF(7), args[8], VMF(9), args[10]);
 
 	case UI_G2_GETBONEANIM:
-		{
-			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			int modelIndex = args[10];
-
-			return re->G2API_GetBoneAnim(g2, modelIndex, (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9));
-		}
+		return CL_G2API_GetBoneAnim(VMA(1), (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9), args[10]);
 
 	case UI_G2_GETBONEFRAME:
-		{ //rwwFIXMEFIXME: Just make a G2API_GetBoneFrame func too. This is dirty.
-			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			int modelIndex = args[6];
-			int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
-			float fDontCare1 = 0;
-
-			return re->G2API_GetBoneAnim(g2, modelIndex, (const char*)VMA(2), args[3], (float *)VMA(4), &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, (int *)VMA(5));
-		}
+		return CL_G2API_GetBoneFrame(VMA(1), (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), args[6]);
 
 	case UI_G2_GETGLANAME:
-		//	return (int)G2API_GetGLAName(*((CGhoul2Info_v *)VMA(1)), args[2]);
-		{
-			char *point = ((char *)VMA(3));
-			char *local;
-			local = re->G2API_GetGLAName(*((CGhoul2Info_v *)args[1]), args[2]);
-			if (local)
-			{
-				strcpy(point, local);
-			}
-		}
+		CL_G2API_GetGLAName( VMA(1), args[2], (char *)VMA(3) );
 		return 0;
 
 	case UI_G2_COPYGHOUL2INSTANCE:
-		return (int)re->G2API_CopyGhoul2Instance(*((CGhoul2Info_v *)args[1]), *((CGhoul2Info_v *)args[2]), args[3]);
+		return (int)CL_G2API_CopyGhoul2Instance(VMA(1), VMA(2), args[3]);
 
 	case UI_G2_COPYSPECIFICGHOUL2MODEL:
-		re->G2API_CopySpecificG2Model(*((CGhoul2Info_v *)args[1]), args[2], *((CGhoul2Info_v *)args[3]), args[4]);
+		CL_G2API_CopySpecificGhoul2Model(VMA(1), args[2], VMA(3), args[4]);
 		return 0;
 
 	case UI_G2_DUPLICATEGHOUL2INSTANCE:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		re->G2API_DuplicateGhoul2Instance(*((CGhoul2Info_v *)args[1]), (CGhoul2Info_v **)VMA(2));
+		CL_G2API_DuplicateGhoul2Instance(VMA(1), (void **)VMA(2));
 		return 0;
 
 	case UI_G2_HASGHOUL2MODELONINDEX:
-		return (int)re->G2API_HasGhoul2ModelOnIndex((CGhoul2Info_v **)VMA(1), args[2]);
-		//return (int)G2API_HasGhoul2ModelOnIndex((CGhoul2Info_v **)args[1], args[2]);
+		return (int)CL_G2API_HasGhoul2ModelOnIndex(VMA(1), args[2]);
 
 	case UI_G2_REMOVEGHOUL2MODEL:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		return (int)re->G2API_RemoveGhoul2Model((CGhoul2Info_v **)VMA(1), args[2]);
-		//return (int)G2API_RemoveGhoul2Model((CGhoul2Info_v **)args[1], args[2]);
+		return (int)CL_G2API_RemoveGhoul2Model(VMA(1), args[2]);
 
 	case UI_G2_ADDBOLT:
-		return re->G2API_AddBolt(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
+		return CL_G2API_AddBolt(VMA(1), args[2], (const char *)VMA(3));
 
 	case UI_G2_SETBOLTON:
-		re->G2API_SetBoltInfo(*((CGhoul2Info_v *)args[1]), args[2], args[3]);
+		CL_G2API_SetBoltInfo(VMA(1), args[2], args[3]);
 		return 0;
 
 	case UI_G2_SETROOTSURFACE:
-		return re->G2API_SetRootSurface(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
+		return CL_G2API_SetRootSurface(VMA(1), args[2], (const char *)VMA(3));
 
 	case UI_G2_SETSURFACEONOFF:
-		return re->G2API_SetSurfaceOnOff(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), /*(const int)VMA(3)*/args[3]);
+		return CL_G2API_SetSurfaceOnOff(VMA(1), (const char *)VMA(2), args[3]);
 
 	case UI_G2_SETNEWORIGIN:
-		return re->G2API_SetNewOrigin(*((CGhoul2Info_v *)args[1]), /*(const int)VMA(2)*/args[2]);
+		return CL_G2API_SetNewOrigin(VMA(1), args[2]);
 
 	case UI_G2_GETTIME:
-		return re->G2API_GetTime(0);
+		return CL_G2API_GetTime();
 
 	case UI_G2_SETTIME:
-		re->G2API_SetTime(args[1], args[2]);
+		CL_G2API_SetTime(args[1], args[2]);
 		return 0;
 
 	case UI_G2_SETRAGDOLL:
@@ -1269,42 +1247,20 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		break;
 
 	case UI_G2_SETBONEIKSTATE:
-		return re->G2API_SetBoneIKState(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
+		return CL_G2API_SetBoneIKState(VMA(1), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
 
 	case UI_G2_IKMOVE:
-		return re->G2API_IKMove(*((CGhoul2Info_v *)args[1]), args[2], (sharedIKMoveParams_t *)VMA(3));
+		return CL_G2API_IKMove(VMA(1), args[2], (sharedIKMoveParams_t *)VMA(3));
 
 	case UI_G2_GETSURFACENAME:
-		{ //Since returning a pointer in such a way to a VM seems to cause MASSIVE FAILURE<tm>, we will shove data into the pointer the vm passes instead
-			char *point = ((char *)VMA(4));
-			char *local;
-			int modelindex = args[3];
-
-			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-
-			local = re->G2API_GetSurfaceName(g2, modelindex, args[2]);
-			if (local)
-			{
-				strcpy(point, local);
-			}
-		}
-
+		CL_G2API_GetSurfaceName( (void *)args[1], args[2], args[3], (char *)VMA( 4 ) );
 		return 0;
-	case UI_G2_SETSKIN:
-		{
-			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			int modelIndex = args[2];
 
-			return re->G2API_SetSkin(g2, modelIndex, args[3], args[4]);
-		}
+	case UI_G2_SETSKIN:
+		return CL_G2API_SetSkin(VMA(1), args[2], args[3], args[4]);
 
 	case UI_G2_ATTACHG2MODEL:
-		{
-			CGhoul2Info_v *g2From = ((CGhoul2Info_v *)args[1]);
-			CGhoul2Info_v *g2To = ((CGhoul2Info_v *)args[3]);
-
-			return re->G2API_AttachG2Model(*g2From, args[2], *g2To, args[4], args[5]);
-		}
+		return CL_G2API_AttachG2Model(VMA(1), args[2], VMA(3), args[4], args[5]);
 
 	default:
 		Com_Error( ERR_DROP, "Bad UI system trap: %ld", (long int) args[0] );
