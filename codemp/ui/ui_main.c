@@ -949,26 +949,26 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			Menus_ActivateByName("endofgame");
 			return;
 		case UIMENU_INGAME:
-            info[0] = '\0';
-            trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
+			info[0] = '\0';
+			trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
 			if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {
 				trap->Cvar_Set("ui_isJAPro", "0");
 				trap->Cvar_Set("ui_isBase", "0");
 			}
 			else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
-                trap->Cvar_Set("ui_isJAPro", "1");
+				trap->Cvar_Set("ui_isJAPro", "1");
 				trap->Cvar_Set("ui_isBase", "0");
-            }
+			}
 			else {
 				trap->Cvar_Set("ui_isJAPro", "0");
 				trap->Cvar_Set("ui_isBase", "1");
 			}
-            trap->Cvar_Set( "cl_paused", "1" );
-            trap->Key_SetCatcher( KEYCATCH_UI );
-            UI_BuildPlayerList();
-            Menus_CloseAll();
-            Menus_ActivateByName("ingame");
-            return;
+			trap->Cvar_Set( "cl_paused", "1" );
+			trap->Key_SetCatcher( KEYCATCH_UI );
+			UI_BuildPlayerList();
+			Menus_CloseAll();
+			Menus_ActivateByName("ingame");
+			return;
 		case UIMENU_PLAYERCONFIG:
 			// trap->Cvar_Set( "cl_paused", "1" );
 			trap->Key_SetCatcher( KEYCATCH_UI );

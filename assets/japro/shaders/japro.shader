@@ -172,32 +172,142 @@ gfx/effects/grapple_line
     }
 }
 
-gfx/effects/raceShader
+gfx/hud/jk2hudleft
 {
-    q3map_nolightmap
+	nopicmip
     {
-        map textures/colors/red
-        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
-        depthWrite
-        rgbGen lightingDiffuse
-        alphaGen wave sin 0.1 0.1 0.1 0.1
+        map gfx/hud/static5
+        blendFunc GL_ONE GL_ONE
+        rgbGen wave inversesawtooth 0 1.5 1.4 1
+        tcMod scroll 0 1
     }
     {
-        map textures/colors/blue
+        map gfx/hud/static8
         blendFunc GL_ONE GL_ONE
-        rgbGen wave sin 0.9 0.1 0.1 0.1
+        rgbGen vertex
+    }
+    {
+        map gfx/hud/jk2hudleft
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
     }
 }
 
-gfx/effects/duelShader
+gfx/hud/jk2hudleft_innerframe
 {
+	nopicmip
     {
-        map gfx/effects/plasma
-        blendFunc GL_DST_COLOR GL_ONE
-        rgbGen entity
-        tcGen environment
-        tcMod scroll 0.3 0.2
-        tcMod turb 0.6 0.3 0 0.2
+        map gfx/hud/jk2hudleft_innerframe
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/prong_off
+{
+	nopicmip
+	cull	disable
+    {
+        map gfx/hud/prong_off
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/prong_on_weap
+{
+	nopicmip
+    {
+        map gfx/hud/prong_on_w
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/prong_on_item
+{
+	nopicmip
+    {
+        map gfx/hud/prong_on_i
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/prong_on_force
+{
+	nopicmip
+    {
+        map gfx/hud/prong_on_f
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/jk2hudrightframe
+{
+	nopicmip
+    {
+        map gfx/hud/static5
+        blendFunc GL_ONE GL_ONE
+        rgbGen wave inversesawtooth 0 1.5 1.4 1
+        tcMod scroll 0 1
+    }
+    {
+        map gfx/hud/static9
+        blendFunc GL_ONE GL_ONE
+        rgbGen vertex
+    }
+    {
+        map gfx/hud/jk2hudrightframe
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/jk2hudright_innerframe
+{
+	nopicmip
+    {
+        map gfx/hud/jk2hudright_innerframe
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen vertex
+    }
+}
+
+gfx/hud/saber_stylesfast
+{
+	nopicmip
+	nomipmaps
+	cull	disable
+    {
+        map gfx/hudjk2/saber_stylesfast
+        blendFunc GL_ONE GL_ONE
+        rgbGen vertex
+    }
+}
+
+gfx/hud/saber_stylesmed
+{
+	nopicmip
+	nomipmaps
+	cull	disable
+    {
+        map gfx/hud/saber_stylesmed
+        blendFunc GL_ONE GL_ONE
+        rgbGen vertex
+    }
+}
+
+gfx/hud/saber_stylesstrong
+{
+	nopicmip
+	nomipmaps
+	cull	disable
+    {
+        map gfx/hud/saber_stylesstrong
+        blendFunc GL_ONE GL_ONE
+        rgbGen vertex
     }
 }
 
