@@ -364,6 +364,8 @@
 			forecolor			.615 .615 .956 1
 			visible				1
 			descText			"Lets you specify the default male playermodel."
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 1 }
 			action
 			{
 				play			"sound/interface/button1.wav" ;
@@ -385,6 +387,8 @@
 			forecolor			.615 .615 .956 1
 			visible				1
 			descText			"Lets you specify the default female playermodel."
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 1 }
 			action
 			{
 				play			"sound/interface/button1.wav" ;
@@ -411,6 +415,8 @@
 			forecolor			.615 .615 .956 1
 			visible				1
 			descText			@MENUS_DEFERS_LOADING_OF_NEW
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 1 }
 			action
 			{
 				play			"sound/interface/button1.wav" ;
@@ -437,6 +443,8 @@
 			forecolor			.615 .615 .956 1
 			visible				1
 			descText			@MENUS_FORCE_ALL_PLAYER_MODELS
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 1 }
 			action
 			{
 				play			"sound/interface/button1.wav" ;
@@ -458,7 +466,7 @@
 			forecolor			.615 .615 .956 1
 			visible				1
 			descText			"Lets you force playermodel for allies."
-			cvarTest			cg_forceModel
+			cvarTest			ui_RGBSkin //cg_forceModel
 			hideCvar			{ 1 }
 			action
 			{
@@ -481,7 +489,7 @@
 			forecolor			.615 .615 .956 1
 			visible				1
 			descText			"Lets you force playermodel for enemies."
-			cvarTest			cg_forceModel
+			cvarTest			ui_RGBSkin //cg_forceModel
 			hideCvar			{ 1 }
 			action
 			{
@@ -489,6 +497,172 @@
 			}
 		}
 		
+		itemDef 
+		{
+			name				rgbred
+			type				ITEM_TYPE_INTSLIDER
+			text				"R:"
+			cvarint				"ui_char_color_red" 50 0 255
+			rect				450 154 100 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			0
+			textaligny			-2
+			font 				4
+			textscale 			1
+			forecolor			1 1 1 1
+			visible				1
+			// appearance_slot	3
+			descText			"Red component in RGB colors"
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 0 }
+			
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbgreen
+			type				ITEM_TYPE_INTSLIDER
+			text				"G:"
+			cvarint				"ui_char_color_green" 50 0 255
+			rect				450 174 100 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			0
+			textaligny			-2
+			font 				4
+			textscale 			1
+			forecolor			1 1 1 1
+			visible				1
+			// appearance_slot	3
+			descText			"Green component in RGB colors"
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 0 }
+
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbblue
+			type				ITEM_TYPE_INTSLIDER
+			text				"B:"
+			cvarint				"ui_char_color_blue" 50 0 255
+			rect				450 194 100 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			0
+			textaligny			-2
+			font 				4
+			textscale 			1
+			forecolor			1 1 1 1
+			visible				1
+			descText			"Blue component in RGB colors"
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 0 }
+			
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbred_value
+			type 				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar 				"ui_char_color_red"
+			maxchars			3
+			maxPaintChars 		3
+			rect 				563 154 20 20
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx 			0
+			textaligny 			-2
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			outlinecolor 		1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 			1
+			bordercolor 		0 0 0 0
+			visible 			1
+			descText			"Red component Value"
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 0 }
+			
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbgreen_value
+			type 				ITEM_TYPE_EDITFIELD
+			style 0			
+			text				""
+			cvar 				"ui_char_color_green"
+			maxchars 			3
+			maxPaintChars 		3
+			rect 				563 174 20 20
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx 			0
+			textaligny 			-2
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			outlinecolor 		1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 			1
+			bordercolor			0 0 0 0
+			visible 			1
+			descText			"Green component Value"
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 0 }
+			
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{
+			name				rgbblue_value
+			type 				ITEM_TYPE_EDITFIELD
+			style 0			
+			text				""
+			cvar 				"ui_char_color_blue"
+			maxchars 			3
+			maxPaintChars 		3 
+			rect 				563 194 20 20
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx 			0
+			textaligny 			-2
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			outlinecolor 			1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 				1
+			bordercolor 			0 0 0 0
+			visible 			1
+			descText			"Blue component Value"
+			cvarTest			ui_RGBSkin
+			hideCvar			{ 0 }
+			
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
 //------------------------------------------------------------------------------------------------
 //	Saber Setup
 //------------------------------------------------------------------------------------------------
