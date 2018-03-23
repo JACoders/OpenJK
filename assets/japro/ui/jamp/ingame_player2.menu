@@ -172,7 +172,7 @@
 			group				none
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				15 80 160 24
+			rect				15 80 100 24
 			forecolor			1 .682 0 1
 			text				"COLORS" //@MENUS_COLOR
 			textalign			ITEM_ALIGN_LEFT
@@ -229,7 +229,7 @@
 			descText			"Customized RGB colors"
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				160 80 160 24
+			rect				160 80 100 24
 			//font				2
 			textscale			1
 			textaligny			-1
