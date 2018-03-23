@@ -582,9 +582,11 @@
 			group				none
 			text				"RGB Colors"
 			descText			"customize your sabers"
+			cvarTest			ui_isBase
+			hideCvar			{ 1 }
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				15 160 160 24
+			rect				15 160 160 16
 			font				4
 			textscale			1
 			textstyle			0
@@ -595,13 +597,11 @@
 			visible			1
 			mouseEnter 
 			{ 
-				setitemcolor		rgbsetupbutton forecolor 1 1 1 1
-				setitemcolor		rgbsetupbutton bordercolor .66 .66 1 1
+				show			rgbsetupbutton_glow
 			}
 			mouseExit 
 			{ 
-				setitemcolor		rgbsetupbutton forecolor .75 .75 .75 1
-				setitemcolor		rgbsetupbutton bordercolor .33 .33 .5 1
+				hide				rgbsetupbutton_glow
 			}	  	  
 			action 
 			{
@@ -616,6 +616,7 @@
 				hide			hiltbut1
 				hide			hiltbut2
 				hide			hiltbut_staves
+				hide			rgbsetupbutton_glow
 				hide			rgbsetupbutton
 				show 			rgbcolormenu
 				show			slide_box3
@@ -624,6 +625,18 @@
 				setcvar 		ui_saber2_color	 "rgb"
 
 			}
+		}
+		
+		itemDef 
+		{
+			name				rgbsetupbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				15 160 180 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
 		}
 
 
@@ -1322,6 +1335,8 @@
 			background			"gfx/menus/saber_icon_black"
 			forecolor			.75 .75 .75 1
 			descText			"black blade"
+			cvarTest			ui_isBase
+			hideCvar			{ 1 }
 			border				1
 			bordersize			1
 			bordercolor			.33 .33 .5 1
@@ -1577,6 +1592,8 @@
 			background			"gfx/menus/saber_icon_black"
 			forecolor			.75 .75 .75 1
 			descText			"black blade"
+			cvarTest			ui_isBase
+			hideCvar			{ 1 }
 			border				1
 			bordersize			1
 			bordercolor			.33 .33 .5 1
