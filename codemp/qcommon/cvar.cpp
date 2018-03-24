@@ -685,13 +685,13 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, uint32_t defaultFlag
 			var->modificationCount++;
 			return var;
 		}
-		/*
+#ifndef TECH
 		if ( (var->flags & CVAR_CHEAT) && !cvar_cheats->integer )
 		{
 			Com_Printf ("%s is cheat protected.\n", var_name);
 			return var;
 		}
-		*/
+#endif
 	}
 	else
 	{

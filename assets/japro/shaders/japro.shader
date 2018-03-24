@@ -83,26 +83,26 @@ gfx/2d/numbers/two
 	cull twosided
 	nopicmip
     {
-        	map gfx/2d/numbers/two
-       	 blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/two
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
     }
 }
 
 gfx/2d/numbers/three
 {
 	nopicmip
-    {
-        	map gfx/2d/numbers/three
+	{
+	map gfx/2d/numbers/three
 	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
-    }
+	}
 }
 
 gfx/2d/numbers/four
 {
 	nopicmip
     {
-       	 map gfx/2d/numbers/four
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/four
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
     }
 }
 
@@ -110,8 +110,8 @@ gfx/2d/numbers/five
 {
 	nopicmip
     {
-        	map gfx/2d/numbers/five
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        map gfx/2d/numbers/five
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
     }
 }
 
@@ -120,7 +120,7 @@ gfx/2d/numbers/six
 	nopicmip
     {
        	map gfx/2d/numbers/six
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
     }
 }
 
@@ -128,8 +128,8 @@ gfx/2d/numbers/seven
 {
 	nopicmip
     {
-        	map gfx/2d/numbers/seven
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        map gfx/2d/numbers/seven
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
     }
 }
 
@@ -281,7 +281,7 @@ gfx/hud/saber_stylesfast
 	nomipmaps
 	cull	disable
     {
-        map gfx/hudjk2/saber_stylesfast
+        map gfx/hud/saber_stylesfast
         blendFunc GL_ONE GL_ONE
         rgbGen vertex
     }

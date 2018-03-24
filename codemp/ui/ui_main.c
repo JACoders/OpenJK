@@ -7471,6 +7471,11 @@ static void UI_RunMenuScript(char **args)
 		} else if (Q_stricmp(name, "closeingame") == 0) {
 			trap->Key_SetCatcher( trap->Key_GetCatcher() & ~KEYCATCH_UI );
 			trap->Key_ClearStates();
+			if (uiSkinColor == 3) { //is custom RGB skin
+				trap->Cvar_Set("char_color_red", UI_Cvar_VariableString("ui_char_color_red"));
+				trap->Cvar_Set("char_color_green", UI_Cvar_VariableString("ui_char_color_green"));
+				trap->Cvar_Set("char_color_blue", UI_Cvar_VariableString("ui_char_color_blue"));
+			}
 			trap->Cvar_Set( "cl_paused", "0" );
 			Menus_CloseAll();
 		} else if (Q_stricmp(name, "voteMap") == 0) {

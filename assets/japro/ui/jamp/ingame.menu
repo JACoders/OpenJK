@@ -262,6 +262,7 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav" ;
+				uiScript		getcharcvars
 				open			ingame_player 
 			} 
 			mouseenter 
