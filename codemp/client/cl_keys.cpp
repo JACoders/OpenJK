@@ -530,6 +530,27 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 		return;
 	}
 
+#if 1
+	// ctrl backspace is del
+	if ((key == A_BACKSPACE) && kg.keys[A_CTRL].down) {
+		while (edit->cursor > 0) {
+			len = strlen(edit->buffer);
+			//Com_Printf("Deleting %c\n", (char)edit->buffer[edit->cursor - 1]);
+
+			if (edit->buffer[edit->cursor-1] == ' ' && edit->buffer[edit->cursor-2] != ' ') //Idk, break if its a space (unless its a group of spaces?)
+				break;
+
+			memmove(edit->buffer + edit->cursor - 1, edit->buffer + edit->cursor, len + 1 - edit->cursor);
+			edit->cursor--;
+			if (edit->cursor < edit->scroll)
+			{
+				edit->scroll--;
+			}
+		}
+		return;
+	}
+#endif
+	
 	key = tolower( key );
 	len = strlen( edit->buffer );
 
