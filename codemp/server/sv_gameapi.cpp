@@ -1595,7 +1595,7 @@ static int SV_G2API_Ghoul2Size( void *ghlInfo ) {
 }
 
 static int SV_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
-	if ( !ghoul2 ) return 0;
+	if ( !ghoul2 ) return -1;
 	return re->G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
 }
 
