@@ -3928,10 +3928,15 @@ void ClientThink_real( gentity_t *ent ) {
 				killJetFlags = qfalse;
 			}
 
-//JAPRO - Serverside - jetpack - Effects - Start
+//JAPRO - Serverside - jetpack - Effects - Start - Do this in pmove now..
+			/*
 			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&client->ps))
 			{
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
+				killJetFlags = qfalse;
+			}
+			*/
+			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && client->ps.eFlags & EF_JETPACK_ACTIVE) {
 				killJetFlags = qfalse;
 			}
 //JAPRO - Serverside - jetpack - Effects - End

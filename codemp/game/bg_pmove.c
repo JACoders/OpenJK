@@ -2040,12 +2040,9 @@ static qboolean PM_CheckJump( void )
 		return qfalse;
 	}
 
-#ifdef _GAME
-	if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	if (pm->ps->eFlags & EF_JETPACK_ACTIVE) { //New Jetpack
 		return qfalse;
+	}
 
 	//Don't allow jump until all buttons are up
 	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
@@ -3695,11 +3692,7 @@ static void PM_AirMove( void ) {
             VectorScale(wishvel, 2.0f, wishvel);
 		}
 	}
-#ifdef _GAME
-	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{ //reduced air control while not jetting
 		for ( i = 0 ; i < 2 ; i++ )
 		{
@@ -3775,11 +3768,7 @@ static void PM_AirMove( void ) {
 		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
 		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
 	}
-#ifdef _GAME
-	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (!pm->ps->pm_type == PM_JETPACK && pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
 	}
@@ -5030,11 +5019,7 @@ static void PM_GroundTraceMissed( void ) {
 		//a proper anim even when on the ground.
 		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE);
 	}
-#ifdef _GAME
-	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{//Jetpacking with new jetpack
 	}
 	//If the anim is choke3, act like we just went into the air because we aren't in a float
@@ -5142,12 +5127,7 @@ static void PM_GroundTrace( void ) {
 		pml.walking = qfalse;
 		return;
 	}
-
-#ifdef _GAME
-	if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		PM_GroundTraceMissed();
 		pml.groundPlane = qfalse;
@@ -12443,6 +12423,31 @@ void PmoveSingle (pmove_t *pmove) {
 	// set mins, maxs, and viewheight
 	PM_CheckDuck ();
 
+	//New Jetpack - I dont know.
+	//Set eflags jetpack
+	//Check jetpack eflags
+
+#ifdef _GAME
+	if (g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) {
+#else
+	if (cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) {
+#endif
+
+		if (!pm->cmd.upmove || pm->ps->jetpackFuel == 0) { //Hold to use (spacebar)
+			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
+		}
+		else if (pm->cmd.upmove > 0 && pm->ps->groundEntityNum == ENTITYNUM_NONE && !(pmove->ps->pm_flags & PMF_JUMP_HELD) && BG_CanJetpack(pm->ps)) { //Pressing jump, while in air
+			//Also dont let them jetpack if going down from a bhop?
+			gDist = PM_GroundDistance();
+
+			if (pm->ps->velocity[2] > 0 || gDist > JETPACK_HOVER_HEIGHT) //Going up or super high off ground - this needs to be improved - base on last jump time or?
+				pm->ps->eFlags |= EF_JETPACK_ACTIVE;
+			//Com_Printf("Setting jetpack\n");
+		}
+		//Downjet?
+	}
+
+
 	if (pm->ps->pm_type == PM_JETPACK)
 	{
 		gDist = PM_GroundDistance();
@@ -12457,11 +12462,7 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->ps->gravity *= 0.25f;
 		}
 	}
-#ifdef _GAME
-	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		savedGravity = pm->ps->gravity;
 		pm->ps->gravity *= 0.01f;
@@ -12558,11 +12559,7 @@ void PmoveSingle (pmove_t *pmove) {
 			}
 		}
 	}
-#ifdef _GAME
-	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		if (pm->cmd.rightmove > 0)
 			PM_ContinueLegsAnim(BOTH_INAIRRIGHT1);
@@ -12989,12 +12986,7 @@ void PmoveSingle (pmove_t *pmove) {
 	{
 		pm->ps->gravity = savedGravity;
 	}
-
-#ifdef _GAME
-	else if ((g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#else
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif
+	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		pm->ps->gravity = savedGravity;
 	}

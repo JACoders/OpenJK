@@ -671,13 +671,19 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 			DeletePlayerProjectiles(ent);
 		}
 
+/* //already done every frame ?
+#if _GRAPPLE
+		if (ent->client->sess.movementStyle == MV_SLICK && ent->client->hook)
+			Weapon_HookFree(ent->client->hook);
+#endif
+*/
 		if (ent->client->sess.movementStyle == MV_SPEED) {
 			ent->client->ps.fd.forcePower = 50;
 		}
 
 		if (ent->client->sess.movementStyle == MV_JETPACK) {
 			ent->client->ps.jetpackFuel = 100;
-			Jetpack_Off(ent);
+			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
 		}
 
 		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
@@ -5628,7 +5634,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (!ent || !ent->client)
 		return;
 
-	Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
+	Q_strncpyz(buf, va("^5 Hi there, %s^5. This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig" );
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -6659,9 +6665,11 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	if (style >= 0) {
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
 			if (style == MV_WSW)
-				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.  Use +button13 for dash.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button13 for dash.\n\"");
 			else if (style == MV_JETPACK)
-				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.  Use +button12 for grapple, +button14 for jetpack.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button12 for grapple, +button14 for jetpack.\n\"");
+			else if (style == MV_SWOOP)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +attack for gravboost, +altattack for speedboost.\n\"");
 			else
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
 			ResetPlayerTimers(ent, qtrue);
@@ -6671,16 +6679,17 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 				DeletePlayerProjectiles(ent);
 			}
 			if (style == MV_WSW)
-				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.  Use +button13 for dash.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button13 for dash.\n\"");
 			else if (style == MV_JETPACK)
-				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.  Use +button12 for grapple, +button14 for jetpack.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button12 for grapple, +button14 for jetpack.\n\"");
+			else if (style == MV_SWOOP)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +attack for gravboost, +altattack for speedboost.\n\"");
 			else 
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 		}
 
 		ent->client->sess.movementStyle = style;
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-			AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 
 		if (ent->client->ourSwoopNum) {
 

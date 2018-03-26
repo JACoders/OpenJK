@@ -3807,7 +3807,7 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;
 				}
 			}
-			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&ent->client->ps))
+			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->ps.eFlags & EF_JETPACK_ACTIVE)
 			{ //using jetpack, drain fuel
 				if (ent->client->jetPackDebReduce < level.time)
 				{
