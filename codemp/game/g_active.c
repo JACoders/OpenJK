@@ -3936,7 +3936,7 @@ void ClientThink_real( gentity_t *ent ) {
 				killJetFlags = qfalse;
 			}
 			*/
-			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && client->ps.eFlags & EF_JETPACK_ACTIVE) {
+			else if ((g_tweakJetpack.integer || client->sess.raceMode) && client->ps.eFlags & EF_JETPACK_ACTIVE) {
 				killJetFlags = qfalse;
 			}
 //JAPRO - Serverside - jetpack - Effects - End

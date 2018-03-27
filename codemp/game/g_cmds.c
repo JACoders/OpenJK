@@ -683,7 +683,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 
 		if (ent->client->sess.movementStyle == MV_JETPACK) {
 			ent->client->ps.jetpackFuel = 100;
-			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
+			ent->client->ps.eFlags &= ~EF_JETPACK_ACTIVE;
 		}
 
 		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
@@ -8435,7 +8435,7 @@ command_t commands[] = {
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
-	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
+	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	CMD_ALIVE },
 
 	/*
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },

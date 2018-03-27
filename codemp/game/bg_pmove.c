@@ -3768,7 +3768,7 @@ static void PM_AirMove( void ) {
 		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
 		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
 	}
-	else if (!pm->ps->pm_type == PM_JETPACK && pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (pm->ps->pm_type != PM_JETPACK && pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
 	}
@@ -5127,7 +5127,7 @@ static void PM_GroundTrace( void ) {
 		pml.walking = qfalse;
 		return;
 	}
-	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
 	{
 		PM_GroundTraceMissed();
 		pml.groundPlane = qfalse;
