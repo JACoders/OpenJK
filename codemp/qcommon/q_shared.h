@@ -1853,7 +1853,7 @@ typedef struct siegePers_s
 
 #define BUTTON_GRAPPLE			4096
 #define BUTTON_DASH				8192
-#define BUTTON_JETPACK			16384
+//#define BUTTON_JETPACK			16384
 #define BUTTON_TARGET			32768
 
 // Here's an interesting bit.  The bots in TA used buttons to do additional gestures.

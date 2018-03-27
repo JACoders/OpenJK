@@ -4485,7 +4485,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	}
 }
 
-#ifndef FINAL_BUILD
+#if 1 //#ifndef FINAL_BUILD
 extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 
 void Cmd_DebugSetSaberMove_f(gentity_t *self)
@@ -4504,6 +4504,9 @@ void Cmd_DebugSetSaberMove_f(gentity_t *self)
 	{
 		return;
 	}
+
+	if (!self->client->sess.fullAdmin && !self->client->sess.fullAdmin)
+		return;
 
 	self->client->ps.saberMove = atoi(arg);
 	self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
@@ -8432,7 +8435,7 @@ command_t commands[] = {
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
-	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
+	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
 	/*
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
