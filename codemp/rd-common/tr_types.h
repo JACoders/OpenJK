@@ -75,6 +75,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define RF_FORCEPOST		0x200000 //force it to post-render -rww
 
+#define	RF_GAY				0x300000 //RGB brightskins
+
 // refdef flags
 #define RDF_NOWORLDMODEL	1		// used for player configuration screen
 #define RDF_HYPERSPACE		4		// teleportation effect
