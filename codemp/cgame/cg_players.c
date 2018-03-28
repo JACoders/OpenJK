@@ -10634,7 +10634,7 @@ stillDoSaber:
 
 				if (subLen <= 1024)
 				{
-					legs.renderfx |= RF_RGB_TINT;
+					legs.renderfx |= RF_FULLBRIGHT;
 				}
 			}
 		}
