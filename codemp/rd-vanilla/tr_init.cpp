@@ -112,6 +112,7 @@ cvar_t	*r_DynamicGlowIntensity;
 cvar_t	*r_DynamicGlowSoft;
 cvar_t	*r_DynamicGlowWidth;
 cvar_t	*r_DynamicGlowHeight;
+cvar_t	*r_DynamicGlowScale;
 
 cvar_t	*r_smartpicmip;
 
@@ -737,6 +738,16 @@ static void GLimp_InitExtensions( void )
 		g_bDynamicGlowSupported = true;
 		// this would overwrite any achived setting gwg
 		// ri.Cvar_Set( "r_DynamicGlow", "1" );
+
+		// Set dynamic glow texture size.
+		if (!r_DynamicGlowWidth->integer || !r_DynamicGlowHeight->integer) { //these can still be used as overrides but they must both be set to something > 0
+			tr.dynamicGlowWidth = (glConfig.vidWidth * r_DynamicGlowScale->value);
+			tr.dynamicGlowHeight = (glConfig.vidHeight * r_DynamicGlowScale->value);
+		} else {
+			tr.dynamicGlowWidth = r_DynamicGlowWidth->integer;
+			tr.dynamicGlowHeight = r_DynamicGlowHeight->integer;
+		}
+		Com_Printf("DynamicGlowWidth = %i\nDynamicGlowHeight = %i\n", tr.dynamicGlowWidth, tr.dynamicGlowHeight);
 	}
 	else
 	{
@@ -1581,8 +1592,9 @@ void R_Register( void )
 	r_DynamicGlowDelta					= ri.Cvar_Get( "r_DynamicGlowDelta",				"0.8f",						CVAR_ARCHIVE_ND, "" );
 	r_DynamicGlowIntensity				= ri.Cvar_Get( "r_DynamicGlowIntensity",			"1.13f",					CVAR_ARCHIVE_ND, "" );
 	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",				"1",						CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
-	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_DynamicGlowScale					= ri.Cvar_Get( "r_DynamicGlowScale",				"0.5",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH, "" );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_smartpicmip						= ri.Cvar_Get( "r_smartpicmip",						"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "Applies r_picmip setting to map textures only." );

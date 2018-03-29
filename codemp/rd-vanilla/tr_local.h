@@ -1058,6 +1058,9 @@ typedef struct trGlobals_s {
 	float					distanceCull;
 
 	float					widthRatioCoef;
+
+	int						dynamicGlowWidth;
+	int						dynamicGlowHeight;
 } trGlobals_t;
 
 struct glconfigExt_t
@@ -1179,6 +1182,7 @@ extern cvar_t	*r_DynamicGlowIntensity;
 extern cvar_t	*r_DynamicGlowSoft;
 extern cvar_t	*r_DynamicGlowWidth;
 extern cvar_t	*r_DynamicGlowHeight;
+extern cvar_t	*r_DynamicGlowScale;
 
 extern cvar_t	*r_smartpicmip;
 
