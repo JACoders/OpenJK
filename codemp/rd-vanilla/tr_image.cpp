@@ -1540,6 +1540,19 @@ void	R_InitImages( void ) {
 	R_SetColorMappings();
 
 	// create default texture and white texture
+
+	// Set dynamic glow texture size.
+	if (!r_DynamicGlowWidth->integer || !r_DynamicGlowHeight->integer)
+	{ //these can still be used as overrides but they must both be set to something > 0
+		tr.dynamicGlowWidth = (glConfig.vidWidth * r_DynamicGlowScale->value);
+		tr.dynamicGlowHeight = (glConfig.vidHeight * r_DynamicGlowScale->value);
+	}
+	else {
+		tr.dynamicGlowWidth = r_DynamicGlowWidth->integer;
+		tr.dynamicGlowHeight = r_DynamicGlowHeight->integer;
+	}
+	Com_Printf("DynamicGlowWidth = %i\nDynamicGlowHeight = %i\n", tr.dynamicGlowWidth, tr.dynamicGlowHeight);
+
 	R_CreateBuiltinImages();
 
 	R_SetGammaCorrectionLUT();
