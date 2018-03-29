@@ -334,6 +334,14 @@ qboolean BG_CanJetpack(playerState_t *ps)
 	return qtrue;
 }
 
+qboolean QINLINE BG_IsNewJetpacking(playerState_t *ps) {
+	if (pm_entSelf->m_pVehicle)
+		return qfalse;
+	if (pm->ps->eFlags & EF_JETPACK_ACTIVE)
+		return qtrue;
+	return qfalse;
+}
+
 //hacky assumption check, assume any client non-humanoid is a rocket trooper
 qboolean QINLINE PM_IsRocketTrooper(void)
 {
@@ -2040,7 +2048,7 @@ static qboolean PM_CheckJump( void )
 		return qfalse;
 	}
 
-	if (pm->ps->eFlags & EF_JETPACK_ACTIVE) { //New Jetpack
+	if (BG_IsNewJetpacking(pm->ps)) { //New Jetpack
 		return qfalse;
 	}
 
@@ -3692,7 +3700,7 @@ static void PM_AirMove( void ) {
             VectorScale(wishvel, 2.0f, wishvel);
 		}
 	}
-	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{ //reduced air control while not jetting
 		for ( i = 0 ; i < 2 ; i++ )
 		{
@@ -3768,7 +3776,7 @@ static void PM_AirMove( void ) {
 		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
 		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
 	}
-	else if (pm->ps->pm_type != PM_JETPACK && pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (pm->ps->pm_type != PM_JETPACK && BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
 		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
 	}
@@ -5019,7 +5027,7 @@ static void PM_GroundTraceMissed( void ) {
 		//a proper anim even when on the ground.
 		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE);
 	}
-	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{//Jetpacking with new jetpack
 	}
 	//If the anim is choke3, act like we just went into the air because we aren't in a float
@@ -5127,7 +5135,7 @@ static void PM_GroundTrace( void ) {
 		pml.walking = qfalse;
 		return;
 	}
-	if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
 		PM_GroundTraceMissed();
 		pml.groundPlane = qfalse;
@@ -12423,25 +12431,21 @@ void PmoveSingle (pmove_t *pmove) {
 	// set mins, maxs, and viewheight
 	PM_CheckDuck ();
 
-	//New Jetpack - I dont know.
-	//Set eflags jetpack
-	//Check jetpack eflags
-
 #ifdef _GAME
-	if (g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE]) {
+	if (!pm_entSelf->m_pVehicle && (g_tweakJetpack.integer || pm->ps->stats[STAT_RACEMODE])) {
 #else
-	if (cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE]) {
+	if (!pm_entSelf->m_pVehicle && (cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE])) {
 #endif
-
 		if (!pm->cmd.upmove || pm->ps->jetpackFuel == 0) { //Hold to use (spacebar)
 			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
 		}
-		else if (pm->cmd.upmove > 0 && pm->ps->groundEntityNum == ENTITYNUM_NONE && !(pmove->ps->pm_flags & PMF_JUMP_HELD) && BG_CanJetpack(pm->ps)) { //Pressing jump, while in air
+		else if (pm->ps->pm_type == PM_NORMAL && pm->cmd.upmove > 0 && pm->ps->groundEntityNum == ENTITYNUM_NONE && !(pmove->ps->pm_flags & PMF_JUMP_HELD) && BG_CanJetpack(pm->ps)) { //Pressing jump, while in air
 			//Also dont let them jetpack if going down from a bhop?
 			gDist = PM_GroundDistance();
 
-			if (pm->ps->velocity[2] > 0 || gDist > JETPACK_HOVER_HEIGHT) //Going up or super high off ground - this needs to be improved - base on last jump time or?
+			if (pm->ps->velocity[2] > 0 || gDist > JETPACK_HOVER_HEIGHT) {//Going up or super high off ground - this needs to be improved - base on last jump time or?
 				pm->ps->eFlags |= EF_JETPACK_ACTIVE;
+			}
 			//Com_Printf("Setting jetpack\n");
 		}
 		//Downjet?
@@ -12462,7 +12466,7 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->ps->gravity *= 0.25f;
 		}
 	}
-	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
 		savedGravity = pm->ps->gravity;
 		pm->ps->gravity *= 0.01f;
@@ -12559,7 +12563,7 @@ void PmoveSingle (pmove_t *pmove) {
 			}
 		}
 	}
-	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
 		if (pm->cmd.rightmove > 0)
 			PM_ContinueLegsAnim(BOTH_INAIRRIGHT1);
@@ -12986,7 +12990,7 @@ void PmoveSingle (pmove_t *pmove) {
 	{
 		pm->ps->gravity = savedGravity;
 	}
-	else if (pm->ps->eFlags & EF_JETPACK_ACTIVE) //New Jetpack
+	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
 		pm->ps->gravity = savedGravity;
 	}

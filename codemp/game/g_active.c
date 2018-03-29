@@ -3923,7 +3923,7 @@ void ClientThink_real( gentity_t *ent ) {
 			//End
 			else if (client->jetPackOn)
 			{
-				client->ps.pm_type = PM_JETPACK;
+				client->ps.pm_type = PM_JETPACK; //terrible to set this here where it cant be predicted?
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
 				killJetFlags = qfalse;
 			}

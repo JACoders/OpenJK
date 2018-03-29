@@ -4505,7 +4505,7 @@ void Cmd_DebugSetSaberMove_f(gentity_t *self)
 		return;
 	}
 
-	if (!self->client->sess.fullAdmin && !self->client->sess.fullAdmin)
+	if (!self->client->sess.fullAdmin || !self->client->sess.juniorAdmin)
 		return;
 
 	self->client->ps.saberMove = atoi(arg);
@@ -5679,7 +5679,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (g_allowGrapple.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (grapple) ");
 	if (g_tweakJetpack.integer) 
-		Q_strcat(buf, sizeof(buf), "+button14 (jetpack) ");
+		Q_strcat(buf, sizeof(buf), "double jump (jetpack) ");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	if (g_raceMode.integer) {
@@ -6670,7 +6670,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			if (style == MV_WSW)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button13 for dash.\n\"");
 			else if (style == MV_JETPACK)
-				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button12 for grapple, +button14 for jetpack.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button12 for grapple, double jump for jetpack.\n\"");
 			else if (style == MV_SWOOP)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +attack for gravboost, +altattack for speedboost.\n\"");
 			else
@@ -6684,7 +6684,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			if (style == MV_WSW)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button13 for dash.\n\"");
 			else if (style == MV_JETPACK)
-				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button12 for grapple, +button14 for jetpack.\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button12 for grapple, double jump for jetpack.\n\"");
 			else if (style == MV_SWOOP)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +attack for gravboost, +altattack for speedboost.\n\"");
 			else 
