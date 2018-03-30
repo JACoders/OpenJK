@@ -911,6 +911,7 @@ Any testing variables will be reset to the safe values
 ============
 */
 void Cvar_SetCheatState( void ) {
+#ifndef TECH
 	cvar_t	*var;
 
 	// set all default vars to the safe value
@@ -928,6 +929,7 @@ void Cvar_SetCheatState( void ) {
 			}
 		}
 	}
+#endif
 }
 
 /*

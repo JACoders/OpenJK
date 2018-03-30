@@ -895,7 +895,7 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
 	float projectedRadius;
 	int lod;
 
-	if ( currentModel->numLods < 2 )
+	if ( currentModel->numLods < 2 || ent->e.renderfx & RF_NOLOD )
 	{	// model has only 1 LOD level, skip computations and bias
 		return(0);
 	}

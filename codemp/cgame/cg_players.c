@@ -10575,6 +10575,10 @@ stillDoSaber:
 		legs.shaderRGBA[2] = 0;
 		legs.renderfx |= RF_MINLIGHT;
 	}
+	
+	if (cg.snap->ps.clientNum == cent->currentState.number) {
+		legs.renderfx |= RF_NOLOD;
+	}
 
 	if (cg.snap->ps.duelInProgress /*&& cent->currentState.number != cg.snap->ps.clientNum*/)
 	{ //I guess go ahead and glow your own client too in a duel
