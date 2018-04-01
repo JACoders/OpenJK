@@ -500,6 +500,7 @@ static qboolean CL_G2API_GetBoltMatrix_NoReconstruct( void *ghoul2, const int mo
 
 static qboolean CL_G2API_GetBoltMatrix_NoRecNoRot( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
 	if ( !ghoul2 ) return qfalse;
+	// Intentionally not setting bolt matrix reconstruction state per original code comments
 	re->G2API_BoltMatrixSPMethod( qtrue );
 	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
@@ -640,7 +641,7 @@ static int CL_G2API_Ghoul2Size( void *ghlInfo ) {
 }
 
 static int CL_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
-	if ( !ghoul2 ) return 0;
+	if ( !ghoul2 ) return -1;
 	return re->G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
 }
 
@@ -1473,121 +1474,121 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_G2_LISTSURFACES:
-		CL_G2API_ListModelSurfaces( (void *)args[1] );
+		CL_G2API_ListModelSurfaces( VMA(1) );
 		return 0;
 
 	case CG_G2_LISTBONES:
-		CL_G2API_ListModelBones( (void *)args[1], args[2]);
+		CL_G2API_ListModelBones( VMA(1), args[2]);
 		return 0;
 
 	case CG_G2_HAVEWEGHOULMODELS:
-		return CL_G2API_HaveWeGhoul2Models( (void *)args[1] );
+		return CL_G2API_HaveWeGhoul2Models( VMA(1) );
 
 	case CG_G2_SETMODELS:
-		CL_G2API_SetGhoul2ModelIndexes( (void *)args[1],(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		CL_G2API_SetGhoul2ModelIndexes( VMA(1), (qhandle_t *)VMA(2), (qhandle_t *)VMA(3) );
 		return 0;
 
 	case CG_G2_GETBOLT:
-		return CL_G2API_GetBoltMatrix((void *)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case CG_G2_GETBOLT_NOREC:
-		return CL_G2API_GetBoltMatrix_NoReconstruct((void *)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix_NoReconstruct(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case CG_G2_GETBOLT_NOREC_NOROT:
-		return CL_G2API_GetBoltMatrix_NoRecNoRot((void *)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix_NoRecNoRot(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case CG_G2_INITGHOUL2MODEL:
 		return CL_G2API_InitGhoul2Model((void **)VMA(1), (const char *)VMA(2), args[3], (qhandle_t) args[4], (qhandle_t) args[5], args[6], args[7]);
 
 	case CG_G2_SETSKIN:
-		return CL_G2API_SetSkin( (void *)args[1], args[2], args[3], args[4] );
+		return CL_G2API_SetSkin( VMA(1), args[2], args[3], args[4] );
 
 	case CG_G2_COLLISIONDETECT:
-		CL_G2API_CollisionDetect ( (CollisionRecord_t*)VMA(1), (void *)args[2], (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
+		CL_G2API_CollisionDetect ( (CollisionRecord_t*)VMA(1), VMA(2), (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
 		return 0;
 
 	case CG_G2_COLLISIONDETECTCACHE:
-		CL_G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), (void *)args[2], (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
+		CL_G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), VMA(2), (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
 		return 0;
 
 	case CG_G2_ANGLEOVERRIDE:
-		return CL_G2API_SetBoneAngles( (void *)args[1], args[2], (const char *)VMA(3), (float *)VMA(4), args[5], args[6], args[7], args[8], (qhandle_t *)VMA(9), args[10], args[11] );
+		return CL_G2API_SetBoneAngles( VMA(1), args[2], (const char *)VMA(3), (float *)VMA(4), args[5], args[6], args[7], args[8], (qhandle_t *)VMA(9), args[10], args[11] );
 
 	case CG_G2_CLEANMODELS:
 		CL_G2API_CleanGhoul2Models( (void **)VMA(1) );
 		return 0;
 
 	case CG_G2_PLAYANIM:
-		return CL_G2API_SetBoneAnim( (void *)args[1], args[2], (const char *)VMA(3), args[4], args[5], args[6], VMF(7), args[8], VMF(9), args[10] );
+		return CL_G2API_SetBoneAnim( VMA(1), args[2], (const char *)VMA(3), args[4], args[5], args[6], VMF(7), args[8], VMF(9), args[10] );
 
 	case CG_G2_GETBONEANIM:
-		return CL_G2API_GetBoneAnim( (void *)args[1], (const char *)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9), args[10] );
+		return CL_G2API_GetBoneAnim( VMA(1), (const char *)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9), args[10] );
 
 	case CG_G2_GETBONEFRAME:
-		return CL_G2API_GetBoneFrame( (void *)args[1], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), args[6] );
+		return CL_G2API_GetBoneFrame( VMA(1), (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), args[6] );
 
 	case CG_G2_GETGLANAME:
-		CL_G2API_GetGLAName( (void *)args[1], args[2], (char *)VMA(3) );
+		CL_G2API_GetGLAName( VMA(1), args[2], (char *)VMA(3) );
 		return 0;
 
 	case CG_G2_COPYGHOUL2INSTANCE:
-		return CL_G2API_CopyGhoul2Instance( (void *)args[1], (void *)args[2], args[3] );
+		return CL_G2API_CopyGhoul2Instance( VMA(1), VMA(2), args[3] );
 
 	case CG_G2_COPYSPECIFICGHOUL2MODEL:
-		CL_G2API_CopySpecificGhoul2Model( (void *)args[1], args[2], (void *)args[3], args[4] );
+		CL_G2API_CopySpecificGhoul2Model( VMA(1), args[2], VMA(3), args[4] );
 		return 0;
 
 	case CG_G2_DUPLICATEGHOUL2INSTANCE:
-		CL_G2API_DuplicateGhoul2Instance( (void *)args[1], (void **)VMA(2) );
+		CL_G2API_DuplicateGhoul2Instance( VMA(1), (void **)VMA(2) );
 		return 0;
 
 	case CG_G2_HASGHOUL2MODELONINDEX:
-		return CL_G2API_HasGhoul2ModelOnIndex( (void *)VMA(1), args[2]);
+		return CL_G2API_HasGhoul2ModelOnIndex( VMA(1), args[2]);
 
 	case CG_G2_REMOVEGHOUL2MODEL:
-		return CL_G2API_RemoveGhoul2Model( (void *)VMA(1), args[2]);
+		return CL_G2API_RemoveGhoul2Model( VMA(1), args[2]);
 
 	case CG_G2_SKINLESSMODEL:
-		return CL_G2API_SkinlessModel( (void *)VMA(1), args[2] );
+		return CL_G2API_SkinlessModel( VMA(1), args[2] );
 
 	case CG_G2_GETNUMGOREMARKS:
-		return CL_G2API_GetNumGoreMarks( (void *)VMA(1), args[2] );
+		return CL_G2API_GetNumGoreMarks( VMA(1), args[2] );
 
 	case CG_G2_ADDSKINGORE:
-		CL_G2API_AddSkinGore( (void *)args[1], (SSkinGoreData *)VMA(2));
+		CL_G2API_AddSkinGore( VMA(1), (SSkinGoreData *)VMA(2));
 		return 0;
 
 	case CG_G2_CLEARSKINGORE:
-		CL_G2API_ClearSkinGore ( (void *)args[1] );
+		CL_G2API_ClearSkinGore ( VMA(1) );
 		return 0;
 
 	case CG_G2_SIZE:
-		return CL_G2API_Ghoul2Size ( (void *)args[1] );
+		return CL_G2API_Ghoul2Size ( VMA(1) );
 
 	case CG_G2_ADDBOLT:
-		return CL_G2API_AddBolt( (void *)args[1], args[2], (const char *)VMA(3));
+		return CL_G2API_AddBolt( VMA(1), args[2], (const char *)VMA(3));
 
 	case CG_G2_ATTACHENT:
-		return CL_G2API_AttachEnt( (int*)VMA(1), (void *)args[2], args[3], args[4], args[5] );
+		return CL_G2API_AttachEnt( (int*)VMA(1), VMA(2), args[3], args[4], args[5] );
 
 	case CG_G2_SETBOLTON:
-		CL_G2API_SetBoltInfo( (void *)args[1], args[2], args[3] );
+		CL_G2API_SetBoltInfo( VMA(1), args[2], args[3] );
 		return 0;
 
 	case CG_G2_SETROOTSURFACE:
-		return CL_G2API_SetRootSurface( (void *)args[1], args[2], (const char *)VMA(3));
+		return CL_G2API_SetRootSurface( VMA(1), args[2], (const char *)VMA(3));
 
 	case CG_G2_SETSURFACEONOFF:
-		return CL_G2API_SetSurfaceOnOff( (void *)args[1], (const char *)VMA(2), args[3]);
+		return CL_G2API_SetSurfaceOnOff( VMA(1), (const char *)VMA(2), args[3]);
 
 	case CG_G2_SETNEWORIGIN:
-		return CL_G2API_SetNewOrigin( (void *)args[1], args[2]);
+		return CL_G2API_SetNewOrigin( VMA(1), args[2]);
 
 	case CG_G2_DOESBONEEXIST:
-		return CL_G2API_DoesBoneExist( (void *)args[1], args[2], (const char *)VMA(3));
+		return CL_G2API_DoesBoneExist( VMA(1), args[2], (const char *)VMA(3));
 
 	case CG_G2_GETSURFACERENDERSTATUS:
-		return CL_G2API_GetSurfaceRenderStatus( (void *)args[1], args[2], (const char *)VMA(3));
+		return CL_G2API_GetSurfaceRenderStatus( VMA(1), args[2], (const char *)VMA(3));
 
 	case CG_G2_GETTIME:
 		return CL_G2API_GetTime();
@@ -1597,48 +1598,48 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_G2_ABSURDSMOOTHING:
-		CL_G2API_AbsurdSmoothing( (void *)args[1], (qboolean)args[2]);
+		CL_G2API_AbsurdSmoothing( VMA(1), (qboolean)args[2]);
 		return 0;
 
 
 	case CG_G2_SETRAGDOLL:
-		CL_G2API_SetRagDoll( (void *)args[1], (sharedRagDollParams_t *)VMA(2) );
+		CL_G2API_SetRagDoll( VMA(1), (sharedRagDollParams_t *)VMA(2) );
 		return 0;
 
 	case CG_G2_ANIMATEG2MODELS:
-		CL_G2API_AnimateG2Models( (void *)args[1], args[2], (sharedRagDollUpdateParams_t *)VMA(3) );
+		CL_G2API_AnimateG2Models( VMA(1), args[2], (sharedRagDollUpdateParams_t *)VMA(3) );
 		return 0;
 
 		//additional ragdoll options -rww
 	case CG_G2_RAGPCJCONSTRAINT:
-		return CL_G2API_RagPCJConstraint( (void *)args[1], (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4));
+		return CL_G2API_RagPCJConstraint( VMA(1), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4));
 
 	case CG_G2_RAGPCJGRADIENTSPEED:
-		return CL_G2API_RagPCJGradientSpeed( (void *)args[1], (const char *)VMA(2), VMF(3));
+		return CL_G2API_RagPCJGradientSpeed( VMA(1), (const char *)VMA(2), VMF(3));
 
 	case CG_G2_RAGEFFECTORGOAL:
-		return CL_G2API_RagEffectorGoal( (void *)args[1], (const char *)VMA(2), (float *)VMA(3));
+		return CL_G2API_RagEffectorGoal( VMA(1), (const char *)VMA(2), (float *)VMA(3));
 
 	case CG_G2_GETRAGBONEPOS:
-		return CL_G2API_GetRagBonePos( (void *)args[1], (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4), (float *)VMA(5), (float *)VMA(6));
+		return CL_G2API_GetRagBonePos( VMA(1), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4), (float *)VMA(5), (float *)VMA(6));
 
 	case CG_G2_RAGEFFECTORKICK:
-		return CL_G2API_RagEffectorKick( (void *)args[1], (const char *)VMA(2), (float *)VMA(3));
+		return CL_G2API_RagEffectorKick( VMA(1), (const char *)VMA(2), (float *)VMA(3));
 
 	case CG_G2_RAGFORCESOLVE:
-		return CL_G2API_RagForceSolve( (void *)args[1], (qboolean)args[2]);
+		return CL_G2API_RagForceSolve( VMA(1), (qboolean)args[2]);
 
 	case CG_G2_SETBONEIKSTATE:
-		return CL_G2API_SetBoneIKState( (void *)args[1], args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
+		return CL_G2API_SetBoneIKState( VMA(1), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
 
 	case CG_G2_IKMOVE:
-		return CL_G2API_IKMove( (void *)args[1], args[2], (sharedIKMoveParams_t *)VMA(3));
+		return CL_G2API_IKMove( VMA(1), args[2], (sharedIKMoveParams_t *)VMA(3));
 
 	case CG_G2_REMOVEBONE:
-		return CL_G2API_RemoveBone( (void *)args[1], (const char *)VMA(2), args[3] );
+		return CL_G2API_RemoveBone( VMA(1), (const char *)VMA(2), args[3] );
 
 	case CG_G2_ATTACHINSTANCETOENTNUM:
-		CL_G2API_AttachInstanceToEntNum( (void *)args[1], args[2], (qboolean)args[3]);
+		CL_G2API_AttachInstanceToEntNum( VMA(1), args[2], (qboolean)args[3]);
 		return 0;
 
 	case CG_G2_CLEARATTACHEDINSTANCE:
@@ -1650,10 +1651,10 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_G2_OVERRIDESERVER:
-		return CL_G2API_OverrideServer( (void *)args[1] );
+		return CL_G2API_OverrideServer( VMA(1) );
 
 	case CG_G2_GETSURFACENAME:
-		CL_G2API_GetSurfaceName( (void *)args[1], args[2], args[3], (char *)VMA(4) );
+		CL_G2API_GetSurfaceName( VMA(1), args[2], args[3], (char *)VMA(4) );
 		return 0;
 
 	case CG_SP_GETSTRINGTEXTSTRING:
