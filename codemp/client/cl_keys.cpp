@@ -539,6 +539,12 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 
 			if (edit->buffer[edit->cursor-1] == ' ' && edit->buffer[edit->cursor-2] != ' ') //Idk, break if its a space (unless its a group of spaces?)
 				break;
+			if (edit->buffer[edit->cursor - 1] == '/' && edit->buffer[edit->cursor - 2] != '/') //Idk, break if its a space (unless its a group of spaces?)
+				break;
+			if (edit->buffer[edit->cursor - 1] == '_' && edit->buffer[edit->cursor - 2] != '_') //Idk, break if its a space (unless its a group of spaces?)
+				break;
+			if (edit->buffer[edit->cursor - 1] == '-' && edit->buffer[edit->cursor - 2] != '-') //Idk, break if its a space (unless its a group of spaces?)
+				break;
 
 			memmove(edit->buffer + edit->cursor - 1, edit->buffer + edit->cursor, len + 1 - edit->cursor);
 			edit->cursor--;
