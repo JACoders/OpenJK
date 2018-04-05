@@ -852,11 +852,11 @@ void Message_Key( int key ) {
 
 	if ( key == A_ENTER || key == A_KP_ENTER ) {
 		if ( chatField.buffer[0] && cls.state == CA_ACTIVE ) {
+			Q_strstrip(chatField.buffer, "\"%", "'/");//Replace % with / and " with '
 			CL_RandomizeColors(chatField.buffer, coloredString);
 				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer);
 			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer);
 			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", coloredString );
-
 			CL_AddReliableCommand( buffer, qfalse );
 		}
 		Key_SetCatcher( Key_GetCatcher() & ~KEYCATCH_MESSAGE );
