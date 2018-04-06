@@ -870,12 +870,13 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
-		if (chat_team)
-		{
+		if (chat_playerNum != -1) {
+			chattext = "Say Priv:";
+		}
+		else if (chat_team)	{
 			chattext = SE_GetString("MP_SVGAME", "SAY_TEAM");
 		}
-		else
-		{
+		else {
 			chattext = SE_GetString("MP_SVGAME", "SAY");
 		}
 
