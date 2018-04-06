@@ -119,7 +119,13 @@ void Con_MessageMode3_f (void)
 		return;
 	}
 
-	chat_playerNum = CGVM_CrosshairPlayer();
+	if (cl.snap.ps.pm_flags & PMF_FOLLOW) { //Send to the person we are spectating instead
+		chat_playerNum = cl.snap.ps.clientNum;
+	}
+	else {
+		chat_playerNum = CGVM_CrosshairPlayer();
+	}
+
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
 		return;
