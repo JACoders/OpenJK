@@ -1381,7 +1381,7 @@ static float PM_CmdScale( usercmd_t *cmd ) {
 			//don't factor upmove into scaling speed
 
 #if _SPPHYSICS
-	if (PM_GetMovePhysics() == MV_SP) {
+	if (PM_GetMovePhysics() == MV_SP) { //Oh no..
 		umove = cmd->upmove;
 	}
 #endif

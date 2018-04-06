@@ -4181,7 +4181,7 @@ void Cmd_DFTodo_f(gentity_t *ent) {
 			enteredCoursename = qtrue;
 			continue;
 		}
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rTop <course (if needed)> <style (optional)> <season (optional - example: s1)> <page (optional)>.  This displays highscores for the specified course.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rWorst <map (optional)> <style (optional)> <page (optional)>\n\"");
 		return; //Arg doesnt match any expected values so error.
 	}
 
