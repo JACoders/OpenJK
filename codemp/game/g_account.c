@@ -654,95 +654,120 @@ void IntegerToDuelType(int type, char *typeString, size_t typeStringSize) {
 }
 
 void Cmd_DuelTop10_f(gentity_t *ent) {
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	char input[32], username[32], msg[1024-128] = {0}, typeString[32];
-	int rank, count, type, i = 0, TS, s;
-	int minimumCount = g_eloMinimumDuels.integer;
-	
-	if (!ent->client)
-		return;
+	char username[32], typeString[32], inputString[32];
+	const int args = trap->Argc();
+	int type = -1, page = -1, start = 0, input, i, minimumCount = g_eloMinimumDuels.integer;
 
-	if (trap->Argc() != 2) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype>\n\"");
+	if (args <= 1 || args > 3) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype> <page>\n\"");
 		return;
 	}
 
-	trap->Argv(1, input, sizeof(input));
+	for (i = 1; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (type == -1) {
+			input = DuelTypeToInteger(inputString);
+			if (input != -1) {
+				type = input;
+				continue;
+			}
+		}
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype> <page>\n\"");
+		return;
+	}
 
-	type = DuelTypeToInteger(input);
 	if (type == -1) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype> <page>\n\"");
 		return;
 	}
+
+	IntegerToDuelType(type, typeString, sizeof(typeString));
+	if (page < 1)
+		page = 1;
+	if (page > 1000)
+		page = 1000;
+	start = (page - 1) * 10;
 
 	if (minimumCount < 0)
 		minimumCount = 0;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int rank, count, TS, s, row = 1;
+		char msg[1024-128] = {0};
 
-	//We dont need to select from loser since we know a users highscore will always be from a winning duel.  And we can ignore users who have never won a duel(?)
-	//How to get count?
-	//sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, odds, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
-	sql = "SELECT D1.username, elo, 100-ROUND(100*(win_ts + loss_ts)/(win_count+loss_count), 0) AS TS, win_count+loss_count AS count "
-			"FROM ((SELECT username, type, elo FROM ((SELECT winner AS username, type, ROUND(winner_elo,0) AS elo, end_time FROM LocalDuel WHERE type = ? "
-			"UNION ALL SELECT loser AS username, type, ROUND(loser_elo,0) AS elo, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC)) GROUP BY username ORDER BY elo DESC) AS D1 "
-			"INNER JOIN (SELECT winner AS username2, COUNT(*) AS win_count, SUM(odds) AS win_ts FROM LocalDuel WHERE type = ? GROUP BY username2) AS D2 "
-			"ON D1.username = D2.username2) "
-			"INNER JOIN (SELECT loser AS username3, COUNT(*) AS loss_count, SUM(1-odds) AS loss_ts FROM LocalDuel WHERE type = ? GROUP BY username3) AS D3 "
-			"ON D1.username = D3.username3 ORDER BY elo desc LIMIT 10";
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-	//loda fixme
-	/*
-	sql = "SELECT username, rank, count, TSSUM \
-		FROM DuelRanks WHERE type = ? AND count > ? \
-		GROUP BY username ORDER BY rank DESC LIMIT 10";
-	*/
+		//We dont need to select from loser since we know a users highscore will always be from a winning duel.  And we can ignore users who have never won a duel(?)
+		//How to get count?
+		//sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, odds, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
+		sql = "SELECT D1.username, elo, 100-ROUND(100*(win_ts + loss_ts)/(win_count+loss_count), 0) AS TS, win_count+loss_count AS count "
+				"FROM ((SELECT username, type, elo FROM ((SELECT winner AS username, type, ROUND(winner_elo,0) AS elo, end_time FROM LocalDuel WHERE type = ? "
+				"UNION ALL SELECT loser AS username, type, ROUND(loser_elo,0) AS elo, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC)) GROUP BY username ORDER BY elo DESC) AS D1 "
+				"INNER JOIN (SELECT winner AS username2, COUNT(*) AS win_count, SUM(odds) AS win_ts FROM LocalDuel WHERE type = ? GROUP BY username2) AS D2 "
+				"ON D1.username = D2.username2) "
+				"INNER JOIN (SELECT loser AS username3, COUNT(*) AS loss_count, SUM(1-odds) AS loss_ts FROM LocalDuel WHERE type = ? GROUP BY username3) AS D3 "
+				"ON D1.username = D3.username3 ORDER BY elo desc LIMIT ?, 10";
 
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_int (stmt, 1, type));
-	CALL_SQLITE (bind_int (stmt, 2, type));
-	CALL_SQLITE (bind_int (stmt, 3, type));
-	CALL_SQLITE (bind_int (stmt, 4, type));
+		//loda fixme
+		/*
+		sql = "SELECT username, rank, count, TSSUM \
+			FROM DuelRanks WHERE type = ? AND count > ? \
+			GROUP BY username ORDER BY rank DESC LIMIT 10";
+		*/
 
-	//CALL_SQLITE (bind_int (stmt, 2, type));
-	//CALL_SQLITE (bind_int (stmt, 3, minimumCount));
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_int (stmt, 1, type));
+		CALL_SQLITE (bind_int (stmt, 2, type));
+		CALL_SQLITE (bind_int (stmt, 3, type));
+		CALL_SQLITE (bind_int (stmt, 4, type));
+		CALL_SQLITE (bind_int (stmt, 5, page));
 
-	IntegerToDuelType(type, typeString, sizeof(typeString));
+		//CALL_SQLITE (bind_int (stmt, 2, type));
+		//CALL_SQLITE (bind_int (stmt, 3, minimumCount));
 
-	trap->SendServerCommand(ent-g_entities, va("print \"Topscore results for %s duels:\n    ^5Username           Skill        TS        Count\n\"", typeString));
+		trap->SendServerCommand(ent-g_entities, va("print \"Topscore results for %s duels:\n    ^5Username           Skill        TS        Count\n\"", typeString));
 	
-    while (1) {
-        s = sqlite3_step(stmt);
-        if (s == SQLITE_ROW) {
-			char *tmpMsg = NULL;
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
 
-			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
-			rank = sqlite3_column_int(stmt, 1);
-			count = sqlite3_column_int(stmt, 2);
-			TS = sqlite3_column_int(stmt, 3);
+				Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
+				rank = sqlite3_column_int(stmt, 1);
+				count = sqlite3_column_int(stmt, 2);
+				TS = sqlite3_column_int(stmt, 3);
 
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", i + 1, username, rank, count, TS);
-			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
-				msg[0] = '\0';
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", start+row, username, rank, count, TS);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
 			}
-			Q_strcat(msg, sizeof(msg), tmpMsg);
-			i++;
-        }
-        else if (s == SQLITE_DONE) {
-			trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
-            break;
+			else if (s == SQLITE_DONE) {
+				trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+				break;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DuelTop10_f)", s);
+				break;
+			}
 		}
-        else {
-			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DuelTop10_f)", s);
-			break;
-        }
-    }
 
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
 }
 #endif
 

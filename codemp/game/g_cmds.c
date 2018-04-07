@@ -8486,7 +8486,7 @@ command_t commands[] = {
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 
-	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION|CMD_ALIVE},
+	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION },
 	{ "printstats",			Cmd_PrintStats_f,			CMD_NOINTERMISSION },
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 
