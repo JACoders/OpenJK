@@ -3821,7 +3821,7 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;//Defuel rate
 				}
 			}
-			else if (ent->client->ps.jetpackFuel < 100)
+			else if (ent->client->ps.jetpackFuel < 100 && ent->client->jetPackDebReduce < level.time - 250) //Add delay until it starts regen
 			{ //recharge jetpack
 				if (ent->client->jetPackDebRecharge < level.time)
 				{
