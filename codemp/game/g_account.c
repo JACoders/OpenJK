@@ -3123,7 +3123,7 @@ int RaceNameToInteger(char *style) {
 	if (!Q_stricmp(style, "slick"))
 		return 13;
 	if (!Q_stricmp(style, "botcpm"))
-		return 13;
+		return 14;
 	return -1;
 }
 
