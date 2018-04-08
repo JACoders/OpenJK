@@ -4181,8 +4181,8 @@ void ClientThink_real( gentity_t *ent ) {
 		client->ps.speed = g_speed.value;
 		if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
 			client->ps.speed = 250.0f;
-		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 2 || client->ps.stats[STAT_MOVEMENTSTYLE] == 3 || client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6 || client->ps.stats[STAT_MOVEMENTSTYLE] == 7 || client->ps.stats[STAT_MOVEMENTSTYLE] == 8) {//qw is 320 too
-			if (client->sess.movementStyle == 2 || client->sess.movementStyle == 3 || client->sess.movementStyle == 4 || client->sess.movementStyle == 6 || client->sess.movementStyle == 7 || client->sess.movementStyle == 8) {  //loda double check idk...
+		if (client->ps.stats[STAT_MOVEMENTSTYLE] == MV_QW || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_CPM || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_Q3 || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_WSW || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3 || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_BOTCPM) {//qw is 320 too
+			if (client->sess.movementStyle == MV_QW || client->sess.movementStyle == MV_CPM || client->sess.movementStyle == MV_Q3 || client->sess.movementStyle == MV_WSW || client->sess.movementStyle == MV_RJQ3 || client->sess.movementStyle == MV_RJCPM || client->sess.movementStyle == MV_BOTCPM) {  //loda double check idk...
 				client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
 				if (client->pers.haste)
 					client->ps.speed *= 1.3f;

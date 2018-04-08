@@ -3840,7 +3840,7 @@ weapChecks:
 						if ((newmove != LS_A_JUMP_T__B_) || !(g_tweakSaber.integer & ST_REDDFAFIX))
 #endif
 						{
-							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f))
+							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_JKA || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_QW || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_PJK) && (pm->ps->velocity[2] == 280.0f))
 							{
 								trace_t tr;
 								vec3_t down;
