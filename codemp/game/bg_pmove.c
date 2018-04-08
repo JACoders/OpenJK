@@ -12456,7 +12456,7 @@ void PmoveSingle (pmove_t *pmove) {
 		if (!pm->cmd.upmove || pm->ps->jetpackFuel == 0) { //Hold to use (spacebar) newjetpack new jetpack
 			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
 		}
-		else if (pm->ps->pm_type == PM_NORMAL && pm->cmd.upmove > 0 && pm->ps->groundEntityNum == ENTITYNUM_NONE && !(pmove->ps->pm_flags & PMF_JUMP_HELD) && BG_CanJetpack(pm->ps)) { //Pressing jump, while in air
+		else if (pm->ps->pm_type == PM_NORMAL && pm->cmd.upmove && pm->ps->groundEntityNum == ENTITYNUM_NONE && !(pmove->ps->pm_flags & PMF_JUMP_HELD) && BG_CanJetpack(pm->ps)) { //Pressing jump, while in air
 			//Also dont let them jetpack if going down from a bhop?
 			gDist = PM_GroundDistance();
 
