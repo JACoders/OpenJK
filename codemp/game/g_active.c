@@ -4192,7 +4192,12 @@ void ClientThink_real( gentity_t *ent ) {
 			client->ps.speed *= 1.7f;
 			if (client->ps.fd.forcePower > 50)
 				client->ps.fd.forcePower = 50;
+		}/*
+		else if (client->ps.eFlags & EF_JETPACK_ACTIVE) {//newjetpack2
+			client->ps.speed *= 2.0f;
 		}
+		*/
+
 
 		//Check for a siege class speed multiplier
 		if (level.gametype == GT_SIEGE &&

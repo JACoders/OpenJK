@@ -3702,13 +3702,14 @@ static void PM_AirMove( void ) {
 	}
 	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{ //reduced air control while not jetting
+		//REDO THIS NEWJETPACK2. FM3 scales by 2.2f (spacetrooper, genosian) or 1.75f not 0.9f.  Do we want to just adjust basespeed instead? More air control kinda crosses into grapples function
 		for ( i = 0 ; i < 2 ; i++ )
 		{
 			wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
 		}
 		wishvel[2] = 0;
 
-        VectorScale(wishvel, 0.9f, wishvel);
+        VectorScale(wishvel, 1.75f, wishvel);
 	}
 	else
 	{
@@ -3776,10 +3777,12 @@ static void PM_AirMove( void ) {
 		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
 		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
 	}
-	else if (pm->ps->pm_type != PM_JETPACK && BG_IsNewJetpacking(pm->ps)) //New Jetpack
+	/*
+	else if (pm->ps->pm_type != PM_JETPACK && BG_IsNewJetpacking(pm->ps)) //New Jetpack //newjetpack2
 	{
 		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
 	}
+	*/
 	else // movement style is 0 or 1
 	{
 		PM_Accelerate(wishdir, wishspeed, accelerate);
@@ -5029,6 +5032,18 @@ static void PM_GroundTraceMissed( void ) {
 	}
 	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{//Jetpacking with new jetpack
+		//NEWJETPACK2
+
+		int jetpackanim = BOTH_FORCEINAIR1;
+		if (pm->cmd.rightmove<0)
+			jetpackanim = BOTH_FORCEJUMPLEFT1;// left
+		if (pm->cmd.rightmove>0)
+			jetpackanim = BOTH_FORCEJUMPRIGHT1;// right
+		if (pm->cmd.forwardmove>0)
+			jetpackanim = BOTH_FORCEJUMP1;// forwards
+		if (pm->cmd.forwardmove<0)
+			jetpackanim = BOTH_FORCEJUMPBACK1;// backwards
+		PM_SetAnim(SETANIM_LEGS, jetpackanim, SETANIM_FLAG_OVERRIDE);
 	}
 	//If the anim is choke3, act like we just went into the air because we aren't in a float
 	else if ( pm->ps->groundEntityNum != ENTITYNUM_NONE || (pm->ps->legsAnim) == BOTH_CHOKE3 ) 
@@ -12436,7 +12451,7 @@ void PmoveSingle (pmove_t *pmove) {
 #else
 	if (!pm_entSelf->m_pVehicle && (cgs.jcinfo & JAPRO_CINFO_JETPACK || pm->ps->stats[STAT_RACEMODE])) {
 #endif
-		if (!pm->cmd.upmove || pm->ps->jetpackFuel == 0) { //Hold to use (spacebar)
+		if (!pm->cmd.upmove || pm->ps->jetpackFuel == 0) { //Hold to use (spacebar) newjetpack new jetpack
 			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
 		}
 		else if (pm->ps->pm_type == PM_NORMAL && pm->cmd.upmove > 0 && pm->ps->groundEntityNum == ENTITYNUM_NONE && !(pmove->ps->pm_flags & PMF_JUMP_HELD) && BG_CanJetpack(pm->ps)) { //Pressing jump, while in air
@@ -12469,7 +12484,7 @@ void PmoveSingle (pmove_t *pmove) {
 	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
 		savedGravity = pm->ps->gravity;
-		pm->ps->gravity *= 0.01f;
+		pm->ps->gravity *= 0.01f; //0.05 in FM3
 	}
 	else if (gPMDoSlowFall)
 	{
@@ -12565,6 +12580,37 @@ void PmoveSingle (pmove_t *pmove) {
 	}
 	else if (BG_IsNewJetpacking(pm->ps)) //New Jetpack
 	{
+		//Redo this NEWJETPACK2
+		//FM3 is +18 if going up slower than 324 and holding jump
+		//FM3 is -6 if falling slower than 1200 and holding crouch (downjet)
+		//Jetpack gets shut off when close to ground in FM3 (<16)
+		//Jetpack upspeed is capped at 324, fallspeed is capped at -1200
+		const int MAX_FALL_SPEED = -1200;
+		const int MAX_JETPACK_VEL_UP = 324;
+		float gDist2 = gDist;
+
+		if (pm->cmd.upmove > 0 && pm->ps->velocity[2] < MAX_JETPACK_VEL_UP)	{//**??^^ unlock upward vel
+			pm->ps->velocity[2] += 18.0f;
+			pm->ps->eFlags |= EF_JETPACK_FLAMING; //going up
+		}
+		else if (pm->cmd.upmove < 0 && pm->ps->velocity[2] > MAX_FALL_SPEED) { //**?? max fall speed
+			pm->ps->velocity[2] -= 12.0f;
+			pm->ps->eFlags |= EF_JETPACK_FLAMING;
+			gDist2 = PM_GroundDistance(); //Have to get this since we dont do it when holding crouch normally
+		}
+
+		if (pm->ps->velocity[2] < MAX_FALL_SPEED) {
+			pm->ps->velocity[2] = MAX_FALL_SPEED;
+		}
+		else if (pm->ps->velocity[2] > MAX_JETPACK_VEL_UP) {
+			pm->ps->velocity[2] = MAX_JETPACK_VEL_UP;
+		}
+
+		if (gDist2 <  16) {//** changed this so jetpack shuts off on ground
+			pm->ps->eFlags &= ~EF_JETPACK_ACTIVE;
+		}
+
+		/*
 		if (pm->cmd.rightmove > 0)
 			PM_ContinueLegsAnim(BOTH_INAIRRIGHT1);
 		else if (pm->cmd.rightmove < 0)
@@ -12615,6 +12661,11 @@ void PmoveSingle (pmove_t *pmove) {
 				pm->ps->velocity[2] += 1.0f;
 			pm->ps->eFlags |= EF_JETPACK_FLAMING;
 		}
+		*/
+
+
+
+
 	}
 
 	if (pm->ps->clientNum >= MAX_CLIENTS &&

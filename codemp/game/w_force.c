@@ -4142,6 +4142,7 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 	}
 
 	Jetpack_Off(gripEnt); //make sure the guy being gripped has his jetpack off.
+	//loda fixme NEWJETPACK2
 
 	if (gripLevel == FORCE_LEVEL_1)
 	{

@@ -730,7 +730,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 		CALL_SQLITE (bind_int (stmt, 2, type));
 		CALL_SQLITE (bind_int (stmt, 3, type));
 		CALL_SQLITE (bind_int (stmt, 4, type));
-		CALL_SQLITE (bind_int (stmt, 5, page));
+		CALL_SQLITE (bind_int (stmt, 5, start));
 
 		//CALL_SQLITE (bind_int (stmt, 2, type));
 		//CALL_SQLITE (bind_int (stmt, 3, minimumCount));
