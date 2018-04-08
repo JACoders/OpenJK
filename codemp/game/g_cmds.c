@@ -6626,7 +6626,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, or slick>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, slick, or botcpm>.\n\"" );
 		return;
 	}
 
@@ -6673,6 +6673,8 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button12 for grapple, double jump for jetpack.\n\"");
 			else if (style == MV_SWOOP)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +attack for gravboost, +altattack for speedboost.\n\"");
+			else if (style == MV_BOTCPM)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button14 for strafebot.\n\"");
 			else
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
 			ResetPlayerTimers(ent, qtrue);
@@ -6687,6 +6689,8 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button12 for grapple, double jump for jetpack.\n\"");
 			else if (style == MV_SWOOP)
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +attack for gravboost, +altattack for speedboost.\n\"");
+			else if (style == MV_BOTCPM)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button14 for strafebot.\n\"");
 			else 
 				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 		}
@@ -6730,7 +6734,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		}
 	}
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, or slick>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, slick, or botcpm>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 

@@ -873,7 +873,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	int NEW_STEPSIZE = STEPSIZE;
 	const int moveStyle = PM_GetMovePhysics();
 
-	if (moveStyle == MV_CPM || moveStyle == MV_Q3 || moveStyle == MV_WSW || moveStyle == MV_RJQ3 || moveStyle == MV_RJCPM || moveStyle == MV_SLICK) {
+	if (moveStyle == MV_CPM || moveStyle == MV_Q3 || moveStyle == MV_WSW || moveStyle == MV_RJQ3 || moveStyle == MV_RJCPM || moveStyle == MV_SLICK || moveStyle == MV_BOTCPM) {
 		if (pm->ps->velocity[2] > 0 && pm->cmd.upmove > 0) {
 			int jumpHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
 

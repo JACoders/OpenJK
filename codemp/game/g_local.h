@@ -1279,7 +1279,8 @@ typedef enum //movementstyle enum
 	MV_SP,
 #endif
 	MV_SLICK,
-	MV_NUMSTYLES,
+	MV_BOTCPM,
+	MV_NUMSTYLES
 } movementStyle_e;
 
 typedef enum
