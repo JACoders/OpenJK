@@ -189,7 +189,7 @@ int R_ComputeLOD( trRefEntity_t *ent ) {
 	md3Frame_t *frame;
 	int lod;
 
-	if ( tr.currentModel->numLods < 2 )
+	if ( tr.currentModel->numLods < 2 || ent->e.renderfx & RF_NOLOD )
 	{
 		// model has only 1 LOD level, skip computations and bias
 		lod = 0;

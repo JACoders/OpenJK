@@ -77,6 +77,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define	RF_FULLBRIGHT		0x400000 //RGB brightskins
 
+#define RF_NOLOD			0x800000 //for local player
+
 // refdef flags
 #define RDF_NOWORLDMODEL	1		// used for player configuration screen
 #define RDF_HYPERSPACE		4		// teleportation effect
