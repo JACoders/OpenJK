@@ -871,7 +871,7 @@ void Con_DrawNotify (void)
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
 		if (chat_playerNum != -1) {
-			chattext = "Say Priv:";
+			chattext = "Whisper:";
 		}
 		else if (chat_team)	{
 			chattext = SE_GetString("MP_SVGAME", "SAY_TEAM");
