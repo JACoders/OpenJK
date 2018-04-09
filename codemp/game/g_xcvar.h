@@ -75,6 +75,7 @@ XCVAR_DEF( g_forceBasedTeams,			"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVA
 XCVAR_DEF( g_forceClientUpdateRate,		"250",			NULL,				CVAR_NONE,										qfalse )
 XCVAR_DEF( g_forceDodge,				"1",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_forcePowerDisable,			"0",			CVU_ForceDisable,	CVAR_SERVERINFO|CVAR_ARCHIVE/*|CVAR_LATCH*/,		qtrue )
+XCVAR_DEF( g_forcePowerDisableFFA,		"0",			NULL,				CVAR_ARCHIVE/*|CVAR_LATCH*/,					qtrue )
 XCVAR_DEF( g_forceRegenTime,			"200",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_forceRespawn,				"60",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_fraglimitVoteCorrection,	"1",			NULL,				CVAR_ARCHIVE,									qtrue )

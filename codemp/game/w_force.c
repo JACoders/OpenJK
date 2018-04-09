@@ -698,6 +698,10 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 		return qfalse;
 	}
 
+	if (!self->client->ps.duelInProgress && (g_forcePowerDisableFFA.integer & (1<<forcePower))) {
+		return qfalse;//If we are not in a duel, and FFA power cvar disables it, return qfalse
+	}
+
 	if (!BG_CanUseFPNow(level.gametype, &self->client->ps, level.time, forcePower))
 	{
 		return qfalse;
