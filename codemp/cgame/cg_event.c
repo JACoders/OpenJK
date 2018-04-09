@@ -1433,21 +1433,13 @@ const char *CG_GetStringForVoiceSound(const char *s)
 }
 
 static qboolean isGlobalVGS(const char *s) {
-	if (!Q_stricmp(s, "*global_bye"))
+	if (!Q_stricmpn(s, "*global_", 8))
 		return qtrue;
-	if (!Q_stricmp(s, "*global_hi"))
+	if (!Q_stricmpn(s, "*compliment_", 12))
 		return qtrue;
-	if (!Q_stricmp(s, "*global_no"))
+	if (!Q_stricmpn(s, "*respond_", 9))
 		return qtrue;
-	if (!Q_stricmp(s, "*global_oops"))
-		return qtrue;
-	if (!Q_stricmp(s, "*global_quiet"))
-		return qtrue;
-	if (!Q_stricmp(s, "*global_shazbot"))
-		return qtrue;
-	if (!Q_stricmp(s, "*global_woohoo"))
-		return qtrue;
-	if (!Q_stricmp(s, "*global_yes"))
+	if (!Q_stricmpn(s, "*taunt_", 7))
 		return qtrue;
 	return qfalse;
 }
