@@ -195,6 +195,7 @@ void CG_ParseServerinfo( void ) {
 	cgs.svfps = atoi( Info_ValueForKey( info, "sv_fps" ) );
 	cgs.isJAPlus = qfalse;
 	cgs.isJAPro = qfalse;
+	cgs.isBaseEnhanced = qfalse;
 	cgs.cinfo = 0;
 	cgs.jcinfo = 0;
 	cgs.restricts = 0;
@@ -209,6 +210,10 @@ void CG_ParseServerinfo( void ) {
 		cgs.hookpull = atoi (Info_ValueForKey (info, "g_hookStrength" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 		//if (cgs.hookpull == 0)
 			//cgs.hookpull = 800;
+	}
+	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "base_enhanced", 13)
+	|| (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "base_entranced", 14))) {
+		cgs.isBaseEnhanced = qtrue;
 	}
 
 	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]

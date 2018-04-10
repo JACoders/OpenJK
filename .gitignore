@@ -175,5 +175,4 @@ pip-log.txt
 ## Unix
 #############
 *.o
-*.so
-build2/
+

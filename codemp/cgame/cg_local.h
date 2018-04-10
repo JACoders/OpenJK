@@ -1746,6 +1746,7 @@ typedef struct cgs_s {
 	int			restricts;//make this a short?
 	qboolean	isJAPro;
 	qboolean	isJAPlus;
+	qboolean	isBaseEnhanced;
 	int			svfps;
 	qboolean	takenscreenshot;
 	int			hookpull;
