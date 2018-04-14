@@ -681,7 +681,7 @@ Ghoul2 Insert Start
 				}
 
 				G2API_CollisionDetect(&clip->trace.G2CollisionMap[0], *((CGhoul2Info_v *)touch->s.ghoul2),
-					touch->s.angles, touch->s.origin, svs.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->traceFlags, clip->useLod);
+					touch->s.angles, touch->s.origin, sv.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->traceFlags, clip->useLod);
 
 				// set our new trace record size
 
@@ -757,11 +757,11 @@ Ghoul2 Insert Start
 				touch->s.NPC_class == CLASS_VEHICLE &&
 				touch->m_pVehicle)
 			{ //for vehicles cache the transform data.
-				re->G2API_CollisionDetectCache(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, svs.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
+				re->G2API_CollisionDetectCache(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
 			}
 			else
 			{
-				re->G2API_CollisionDetect(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, svs.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
+				re->G2API_CollisionDetect(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
 			}
 
 			tN = 0;
