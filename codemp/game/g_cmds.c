@@ -521,7 +521,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "ammo" ) )
 	{
-		int num = 999;
+		int num = 300;
 		if ( argc == 3 )
 			num = Com_Clampi( 0, 999, atoi( args ) );
 		for ( i=AMMO_BLASTER; i<AMMO_MAX; i++ )

@@ -107,7 +107,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define SLIDER_HEIGHT 16.0
 #define SLIDER_THUMB_WIDTH 12.0
 #define SLIDER_THUMB_HEIGHT 20.0
-#define	NUM_CROSSHAIRS			9
+#define	NUM_CROSSHAIRS 10
 
 enum {
 	SSF_JPEG = 0,

@@ -83,7 +83,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define NUM_FONT_SMALL	2
 #define NUM_FONT_CHUNKY	3
 
-#define	NUM_CROSSHAIRS		9
+#define	NUM_CROSSHAIRS	10
 
 #define TEAM_OVERLAY_MAXNAME_WIDTH	32
 #define TEAM_OVERLAY_MAXLOCATION_WIDTH	64

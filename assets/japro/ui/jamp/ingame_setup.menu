@@ -1326,7 +1326,7 @@
 			font 				4
 			textscale 			1
 			forecolor		.615 .615 .956 1
-			cvarFloatList		{  @MENUS_CUSTOM 4 "Lowest" 3 @MENUS_LOW 2 @MENUS_MEDIUM 1 @MENUS_HIGH 0 }
+			cvarFloatList		{  "Very Low" 3 @MENUS_LOW 2 @MENUS_MEDIUM 1 @MENUS_HIGH 0 }
 			descText			@MENUS_ADJUST_THE_NUMBER_OF
 			cvar				"ui_geometricdetail"
 
@@ -1363,7 +1363,7 @@
 			font 				4
 			textscale 			1
 			forecolor		.615 .615 .956 1
-			cvarFloatList		{ @MENUS_CUSTOM 4 @MENUS_LOW 3 @MENUS_MEDIUM 2 @MENUS_HIGH 1 @MENUS_VERY_HIGH 0 }
+			cvarFloatList		{ @MENUS_LOW 3 @MENUS_MEDIUM 2 @MENUS_HIGH 1 @MENUS_VERY_HIGH 0 }
 			descText			@MENUS_SELECT_THE_RESOLUTION
 			cvar				"ui_r_picmip"
 
