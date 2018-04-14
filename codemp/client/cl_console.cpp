@@ -110,8 +110,7 @@ void Con_MessageMode2_f (void) {	//team chat
 Con_MessageMode3_f
 ================
 */
-void Con_MessageMode3_f (void)
-{		//target chat
+void Con_MessageMode3_f (void) {	//target chat
 	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	if (!cls.cgameStarted)
 	{
@@ -132,7 +131,7 @@ void Con_MessageMode3_f (void)
 	}
 	chat_team = qfalse;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 30 / ratio;
+	chatField.widthInChars = 26 / ratio;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
