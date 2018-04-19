@@ -1787,7 +1787,8 @@ PrintMatches
 ===============
 */
 char *Cmd_DescriptionString( const char *cmd_name );
-extern void UIVM_ListCvar( int numSpaces );
+extern void UIVM_ListCvar( const char *cvarName, int numSpaces );
+
 static void PrintMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
 		const char *description = Cmd_DescriptionString( s );
@@ -1795,8 +1796,7 @@ static void PrintMatches( const char *s ) {
 		char nmVer[MAX_STRING_CHARS] = { 0 };
 		Cvar_VariableStringBuffer( "nm_ver", nmVer, sizeof( nmVer ) );
 		if ( VALIDSTRING( nmVer ) ) {
-			Cvar_Set( "cl_cvarInfo", s );
-			UIVM_ListCvar( 6 );
+			UIVM_ListCvar( s, 6 );
 		}
 		else if ( VALIDSTRING( description ) )
 			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );
@@ -1860,8 +1860,7 @@ static void PrintCvarMatches( const char *s ) {
 		char nmVer[MAX_STRING_CHARS] = { 0 };
 		Cvar_VariableStringBuffer( "nm_ver" , nmVer, sizeof( nmVer ) );
 		if ( VALIDSTRING( nmVer ) ) {
-			Cvar_Set( "cl_cvarInfo", s );
-			UIVM_ListCvar( 6 );
+			UIVM_ListCvar( s, 6 );
 		}
 		else if ( VALIDSTRING( description ) )
 			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );

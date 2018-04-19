@@ -135,15 +135,15 @@ void UIVM_PostConnect( void ) {
 	}
 }
 
-void UIVM_ListCvar( int numSpaces ) {
+void UIVM_ListCvar( const char *cvarName, int numSpaces ) {
 	if ( uivm->isLegacy ) {
-		VM_Call( uivm, UI_LIST_CVAR, numSpaces );
+		VM_Call( uivm, UI_LIST_CVAR, reinterpret_cast< intptr_t >( cvarName ), numSpaces );
 	}
 }
 
-void UIVM_EnterCvar( void ) {
+void UIVM_EnterCvar( const char *cvarName ) {
 	if ( uivm->isLegacy ) {
-		VM_Call( uivm, UI_ENTER_CVAR );
+		VM_Call( uivm, UI_ENTER_CVAR, reinterpret_cast< intptr_t >( cvarName ) );
 	}
 }
 

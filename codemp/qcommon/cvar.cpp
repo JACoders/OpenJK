@@ -573,7 +573,8 @@ Cvar_Print
 Prints the value, default, and latched string of the given variable
 ============
 */
-extern void UIVM_EnterCvar( void );
+extern void UIVM_EnterCvar( const char *cvarName );
+
 void Cvar_Print( cvar_t *v ) {
 	Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, v->name, v->string );
 
@@ -592,8 +593,7 @@ void Cvar_Print( cvar_t *v ) {
 	char nmVer[MAX_STRING_CHARS] = { 0 };
 	Cvar_VariableStringBuffer( "nm_ver", nmVer, sizeof( nmVer ) );
 	if ( VALIDSTRING( nmVer ) ) {
-		Cvar_Set( "cl_cvarInfo", v->name );
-		UIVM_EnterCvar( );
+		UIVM_EnterCvar( v->name );
 	}
 	else if ( v->description )
 		Com_Printf( "%s\n", v->description );
@@ -1211,7 +1211,8 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 Cvar_List_f
 ============
 */
-extern void UIVM_ListCvar( int numSpaces );
+extern void UIVM_ListCvar( const char *cvarName, int numSpaces );
+
 void Cvar_List_f( void ) {
 	cvar_t *var = NULL;
 	int i = 0;
@@ -1244,8 +1245,7 @@ void Cvar_List_f( void ) {
 		Com_Printf( "\n" );
 
 		if (VALIDSTRING(nmVer)) {
-			Cvar_Set("cl_cvarInfo", var->name);
-			UIVM_ListCvar( 10 );
+			UIVM_ListCvar( var->name, 10 );
 		}
 	}
 
