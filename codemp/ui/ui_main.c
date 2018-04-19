@@ -6541,6 +6541,10 @@ static void UI_UpdateSaberCvars ( void )
 	colorI = TranslateSaberColor( UI_Cvar_VariableString ( "ui_saber2_color" ) );
 	trap->Cvar_Set ( "color2", va("%d",colorI) );
 	trap->Cvar_Set ( "g_saber2_color", UI_Cvar_VariableString ( "ui_saber2_color" ));
+
+	if (!ui_isBase.integer) {
+		trap->Cmd_ExecuteText(EXEC_APPEND, va("saber %s %s", ui_saber.string, ui_saber2.string));
+	}
 }
 
 // More hard coded goodness for the menus.
