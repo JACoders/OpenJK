@@ -186,7 +186,9 @@ char *Cvar_DescriptionString( const cvar_t *var, qboolean enter = qfalse )
 
 	// give UI a chance to fill description
 	description[0] = '\0';
+#ifndef DEDICATED
 	UIVM_CvarHelp( var->name, enter, &description[0], sizeof( description ) );
+#endif
 
 	if ( !VALIDSTRING( description ) && VALIDSTRING( var->description ) ) {
 		// UI didn't write anything, but we have an engine description for this cvar instead

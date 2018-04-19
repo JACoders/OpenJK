@@ -768,7 +768,9 @@ char *Cmd_DescriptionString( const cmd_function_t *cmd )
 
 	// give UI a chance to fill description
 	description[0] = '\0';
+#ifndef DEDICATED
 	UIVM_CommandHelp( cmd->name, &description[0], sizeof( description ) );
+#endif
 
 	if ( !VALIDSTRING( description ) && VALIDSTRING( cmd->description ) ) {
 		// UI didn't write anything, but we have an engine description for this command instead
