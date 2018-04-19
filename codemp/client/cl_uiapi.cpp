@@ -129,6 +129,25 @@ void UIVM_DrawConnectScreen( qboolean overlay ) {
 	uie->DrawConnectScreen( overlay );
 }
 
+void UIVM_PostConnect( void ) {
+	if ( uivm->isLegacy ) {
+		VM_Call( uivm, UI_POST_CONNECT );
+	}
+}
+
+void UIVM_ListCvar( int numSpaces ) {
+	if ( uivm->isLegacy ) {
+		VM_Call( uivm, UI_LIST_CVAR, numSpaces );
+	}
+}
+
+void UIVM_EnterCvar( void ) {
+	if ( uivm->isLegacy ) {
+		VM_Call( uivm, UI_ENTER_CVAR );
+	}
+}
+
+
 //
 // ui syscalls
 //	only used by legacy mods!

@@ -887,6 +887,7 @@ bool CmdSort( const cmd_function_t *cmd1, const cmd_function_t *cmd2 )
 Cmd_List_f
 ============
 */
+extern void UIVM_ListCvar( int numSpaces );
 static void Cmd_List_f (void)
 {
 	const cmd_function_t	*cmd = NULL;
@@ -909,6 +910,9 @@ static void Cmd_List_f (void)
 		j++;
 	}
 
+	char nmVer[MAX_STRING_CHARS] = { 0 };
+	Cvar_VariableStringBuffer("nm_ver", nmVer, sizeof(nmVer));
+
 	// sort list alphabetically
 	std::sort( cmds.begin(), cmds.end(), CmdSort );
 
@@ -918,7 +922,12 @@ static void Cmd_List_f (void)
 		++itr )
 	{
 		cmd = (*itr);
-		if ( VALIDSTRING( cmd->description ) )
+		if (VALIDSTRING(nmVer)) {
+			Com_Printf(" %s\n", cmd->name);
+			Cvar_Set("cl_cvarInfo", cmd->name);
+			UIVM_ListCvar( 1 );
+		}
+		else if ( VALIDSTRING( cmd->description ) )
 			Com_Printf( " %s" S_COLOR_GREEN " - %s" S_COLOR_WHITE "\n", cmd->name, cmd->description );
 		else
 			Com_Printf( " %s\n", cmd->name );

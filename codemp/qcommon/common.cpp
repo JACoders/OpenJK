@@ -1787,11 +1787,18 @@ PrintMatches
 ===============
 */
 char *Cmd_DescriptionString( const char *cmd_name );
+extern void UIVM_ListCvar( int numSpaces );
 static void PrintMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
 		const char *description = Cmd_DescriptionString( s );
 		Com_Printf( S_COLOR_GREY "Cmd   " S_COLOR_WHITE "%s\n", s );
-		if ( VALIDSTRING( description ) )
+		char nmVer[MAX_STRING_CHARS] = { 0 };
+		Cvar_VariableStringBuffer( "nm_ver", nmVer, sizeof( nmVer ) );
+		if ( VALIDSTRING( nmVer ) ) {
+			Cvar_Set( "cl_cvarInfo", s );
+			UIVM_ListCvar( 6 );
+		}
+		else if ( VALIDSTRING( description ) )
 			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );
 	}
 }
@@ -1850,7 +1857,13 @@ static void PrintCvarMatches( const char *s ) {
 		const char *description = Cvar_DescriptionString( s );
 		Com_TruncateLongString( value, Cvar_VariableString( s ) );
 		Com_Printf( S_COLOR_GREY "Cvar  " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", s, value );
-		if ( VALIDSTRING( description ) )
+		char nmVer[MAX_STRING_CHARS] = { 0 };
+		Cvar_VariableStringBuffer( "nm_ver" , nmVer, sizeof( nmVer ) );
+		if ( VALIDSTRING( nmVer ) ) {
+			Cvar_Set( "cl_cvarInfo", s );
+			UIVM_ListCvar( 6 );
+		}
+		else if ( VALIDSTRING( description ) )
 			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );
 	}
 }
