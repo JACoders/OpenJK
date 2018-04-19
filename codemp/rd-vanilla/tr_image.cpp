@@ -1551,7 +1551,9 @@ void	R_InitImages( void ) {
 		tr.dynamicGlowWidth = r_DynamicGlowWidth->integer;
 		tr.dynamicGlowHeight = r_DynamicGlowHeight->integer;
 	}
+#ifdef TECH
 	Com_Printf("DynamicGlowWidth = %i\nDynamicGlowHeight = %i\n", tr.dynamicGlowWidth, tr.dynamicGlowHeight);
+#endif
 
 	R_CreateBuiltinImages();
 
