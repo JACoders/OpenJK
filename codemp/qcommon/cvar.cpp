@@ -178,14 +178,37 @@ void Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize 
 Cvar_DescriptionString
 ============
 */
-char *Cvar_DescriptionString( const char *var_name )
-{
-	cvar_t *var;
+void UIVM_CvarHelp( const char *cvarName, qboolean enter, char *helpBuffer, size_t helpBufferSize );
 
-	var = Cvar_FindVar( var_name );
-	if ( !var || !VALIDSTRING( var->description ) )
+char *Cvar_DescriptionString( const cvar_t *var, qboolean enter = qfalse )
+{
+	static char description[MAX_STRING_CHARS];
+
+	// give UI a chance to fill description
+	description[0] = '\0';
+	UIVM_CvarHelp( var->name, enter, &description[0], sizeof( description ) );
+
+	if ( !VALIDSTRING( description ) && VALIDSTRING( var->description ) ) {
+		// UI didn't write anything, but we have an engine description for this cvar instead
+		Q_strncpyz( description, var->description, sizeof( description ) );
+	}
+
+	if ( !VALIDSTRING( description ) ) {
+		return ""; // neither UI nor the cvar table contained a description
+	}
+
+	return &description[0];
+}
+
+char *Cvar_DescriptionString( const char *var_name, qboolean enter = qfalse )
+{
+	const cvar_t *var = Cvar_FindVar( var_name );
+
+	if ( !var ) {
 		return "";
-	return var->description;
+	}
+
+	return Cvar_DescriptionString( var, enter );
 }
 
 /*
@@ -573,8 +596,6 @@ Cvar_Print
 Prints the value, default, and latched string of the given variable
 ============
 */
-extern void UIVM_EnterCvar( const char *cvarName );
-
 void Cvar_Print( cvar_t *v ) {
 	Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, v->name, v->string );
 
@@ -590,13 +611,10 @@ void Cvar_Print( cvar_t *v ) {
 	if ( v->latchedString )
 		Com_Printf( "     latched = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"\n", v->latchedString );
 
-	char nmVer[MAX_STRING_CHARS] = { 0 };
-	Cvar_VariableStringBuffer( "nm_ver", nmVer, sizeof( nmVer ) );
-	if ( VALIDSTRING( nmVer ) ) {
-		UIVM_EnterCvar( v->name );
-	}
-	else if ( v->description )
-		Com_Printf( "%s\n", v->description );
+	const char *description = Cvar_DescriptionString( v, qtrue );
+
+	if ( description )
+		Com_Printf( "%s\n", description );
 }
 
 /*
@@ -1211,8 +1229,6 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 Cvar_List_f
 ============
 */
-extern void UIVM_ListCvar( const char *cvarName, int numSpaces );
-
 void Cvar_List_f( void ) {
 	cvar_t *var = NULL;
 	int i = 0;
@@ -1241,12 +1257,12 @@ void Cvar_List_f( void ) {
 		Com_Printf( S_COLOR_WHITE " %s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, var->name, var->string );
 		if ( var->latchedString )
 			Com_Printf( ", latched = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, var->latchedString );
-
 		Com_Printf( "\n" );
 
-		if (VALIDSTRING(nmVer)) {
-			UIVM_ListCvar( var->name, 10 );
-		}
+		const char *description = Cvar_DescriptionString( var );
+
+		if ( VALIDSTRING( description ) )
+			Com_Printf( "          " S_COLOR_GREEN "%s" S_COLOR_WHITE "\n", description );
 	}
 
 	Com_Printf( "\n%i total cvars\n", i );

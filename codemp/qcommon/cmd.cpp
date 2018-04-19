@@ -760,13 +760,37 @@ void Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot ) {
 Cmd_DescriptionString
 ============
 */
+extern void UIVM_CommandHelp( const char *commandName, char *helpBuffer, size_t helpBufferSize );
+
+char *Cmd_DescriptionString( const cmd_function_t *cmd )
+{
+	static char description[MAX_STRING_CHARS];
+
+	// give UI a chance to fill description
+	description[0] = '\0';
+	UIVM_CommandHelp( cmd->name, &description[0], sizeof( description ) );
+
+	if ( !VALIDSTRING( description ) && VALIDSTRING( cmd->description ) ) {
+		// UI didn't write anything, but we have an engine description for this command instead
+		Q_strncpyz( description, cmd->description, sizeof( description ) );
+	}
+
+	if ( !VALIDSTRING( description ) ) {
+		return ""; // neither UI nor the cmd table contained a description
+	}
+
+	return &description[0];
+}
+
 char *Cmd_DescriptionString( const char *cmd_name )
 {
 	const cmd_function_t *cmd = Cmd_FindCommand( cmd_name );
 
-	if ( !cmd || !VALIDSTRING( cmd->description ) )
+	if ( !cmd ) {
 		return "";
-	return cmd->description;
+	}
+
+	return Cmd_DescriptionString( cmd );
 }
 
 /*
@@ -887,8 +911,6 @@ bool CmdSort( const cmd_function_t *cmd1, const cmd_function_t *cmd2 )
 Cmd_List_f
 ============
 */
-extern void UIVM_ListCvar( const char *cvarName, int numSpaces );
-
 static void Cmd_List_f (void)
 {
 	const cmd_function_t	*cmd = NULL;
@@ -911,9 +933,6 @@ static void Cmd_List_f (void)
 		j++;
 	}
 
-	char nmVer[MAX_STRING_CHARS] = { 0 };
-	Cvar_VariableStringBuffer("nm_ver", nmVer, sizeof(nmVer));
-
 	// sort list alphabetically
 	std::sort( cmds.begin(), cmds.end(), CmdSort );
 
@@ -923,12 +942,10 @@ static void Cmd_List_f (void)
 		++itr )
 	{
 		cmd = (*itr);
-		if (VALIDSTRING(nmVer)) {
-			Com_Printf(" %s\n", cmd->name);
-			UIVM_ListCvar( cmd->name, 1 );
-		}
-		else if ( VALIDSTRING( cmd->description ) )
-			Com_Printf( " %s" S_COLOR_GREEN " - %s" S_COLOR_WHITE "\n", cmd->name, cmd->description );
+		const char *description = Cmd_DescriptionString( cmd );
+
+		if ( VALIDSTRING( description ) )
+			Com_Printf( " %s" S_COLOR_GREEN " - %s" S_COLOR_WHITE "\n", cmd->name, description );
 		else
 			Com_Printf( " %s\n", cmd->name );
 	}

@@ -30,8 +30,8 @@ void		UIVM_SetActiveMenu		( uiMenuCommand_t menu );
 qboolean	UIVM_ConsoleCommand		( int realTime );
 void		UIVM_DrawConnectScreen	( qboolean overlay );
 void		UIVM_PostConnect		( void );
-void		UIVM_ListCvar			( const char *cvarName, int numSpaces );
-void		UIVM_EnterCvar			( const char *cvarName );
+void		UIVM_CvarHelp			( const char *cvarName, qboolean enter, char *helpBuffer, size_t helpBufferSize );
+void		UIVM_CommandHelp		( const char *commandName, char *helpBuffer, size_t helpBufferSize );
 
 void CL_BindUI( void );
 void CL_UnbindUI( void );

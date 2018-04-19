@@ -135,15 +135,15 @@ void UIVM_PostConnect( void ) {
 	}
 }
 
-void UIVM_ListCvar( const char *cvarName, int numSpaces ) {
+void UIVM_CvarHelp( const char *cvarName, qboolean enter, char *helpBuffer, size_t helpBufferSize ) {
 	if ( uivm->isLegacy ) {
-		VM_Call( uivm, UI_LIST_CVAR, reinterpret_cast< intptr_t >( cvarName ), numSpaces );
+		VM_Call( uivm, UI_CVAR_HELP, reinterpret_cast< intptr_t >( cvarName ), enter, reinterpret_cast< intptr_t >( helpBuffer ), helpBufferSize );
 	}
 }
 
-void UIVM_EnterCvar( const char *cvarName ) {
+void UIVM_CommandHelp( const char *commandName, char *helpBuffer, size_t helpBufferSize ) {
 	if ( uivm->isLegacy ) {
-		VM_Call( uivm, UI_ENTER_CVAR, reinterpret_cast< intptr_t >( cvarName ) );
+		VM_Call( uivm, UI_CMD_HELP, reinterpret_cast< intptr_t >( commandName ), reinterpret_cast< intptr_t >( helpBuffer ), helpBufferSize );
 	}
 }
 
