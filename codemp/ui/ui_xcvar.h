@@ -157,5 +157,8 @@ XCVAR_DEF( ui_vgs,							"1",					NULL,				CVAR_ARCHIVE )
 XCVAR_DEF( ui_isJAPro,						"0",					NULL,				CVAR_INTERNAL|CVAR_ROM )
 XCVAR_DEF( ui_isBase,						"0",					NULL,				CVAR_INTERNAL|CVAR_ROM )
 XCVAR_DEF( ui_RGBSkin,						"0",					NULL,				CVAR_INTERNAL|CVAR_ROM )
+XCVAR_DEF( cg_strafeHelper,					"0",					NULL,				CVAR_ARCHIVE_ND )
+XCVAR_DEF( cg_stylePlayer,					"0",					NULL,				CVAR_ARCHIVE )
+XCVAR_DEF( cg_speedometerSettings,			"0",					NULL,				CVAR_ARCHIVE )
 
 #undef XCVAR_DEF

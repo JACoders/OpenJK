@@ -11362,6 +11362,11 @@ void UI_Init( qboolean inGameLoad ) {
 
 	trap->Cvar_Set("ui_actualNetGameType", va("%d", ui_netGametype.integer));
 	trap->Cvar_Update(&ui_actualNetGametype);
+
+	//console cmd autocompletion
+	trap->ext.AddCommand("strafehelper");
+	trap->ext.AddCommand("stylePlayer");
+	trap->ext.AddCommand("speedometer");
 }
 
 #define	UI_FPS_FRAMES	4

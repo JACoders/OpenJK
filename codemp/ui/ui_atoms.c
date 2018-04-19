@@ -54,6 +54,228 @@ static void UI_Modversion_f(void) {
 	trap->Print("^5Your ui version of the mod was compiled on %s at %s\n", __DATE__, __TIME__);
 }
 
+qboolean cgameLoaded() {
+	uiClientState_t cstate;
+
+	trap->GetClientState(&cstate);
+
+	if (cstate.connState > CA_CONNECTED) {
+		return qtrue;
+	}
+	else {
+		return qfalse;
+	}
+}
+
+typedef struct bitInfo_S {
+	const char	*string;
+} bitInfo_t;
+
+
+static bitInfo_t strafeTweaks[] = {
+	{ "Original style" },
+	{ "Updated style" },
+	{ "Cgaz style" },
+	{ "Warsow style" },
+	{ "Sound" },
+	{ "W" },
+	{ "WA" },
+	{ "WD" },
+	{ "A" },
+	{ "D" },
+	{ "Rear" },
+	{ "Center" },
+	{ "Accel bar" },
+	{ "Weze style" },
+	{ "Line Crosshair" }
+};
+static const int MAX_STRAFEHELPER_TWEAKS = ARRAY_LEN(strafeTweaks);
+
+void UI_StrafeHelper_f(void) {
+
+	if (cgameLoaded()) {
+		Com_Printf("cgame loaded, but it's not jaPRO?\n");
+		return;
+	}
+
+	if (trap->Cmd_Argc() == 1) {
+		int i = 0;
+		for (i = 0; i < MAX_STRAFEHELPER_TWEAKS; i++) {
+			if ((cg_strafeHelper.integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", i, strafeTweaks[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", i, strafeTweaks[i].string);
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_STRAFEHELPER_TWEAKS) - 1;
+
+		trap->Cmd_Argv(1, arg, sizeof(arg));
+		index = atoi(arg);
+
+		if (index < 0 || index >= MAX_STRAFEHELPER_TWEAKS) {
+			Com_Printf("strafeHelper: Invalid range: %i [0, %i]\n", index, MAX_STRAFEHELPER_TWEAKS - 1);
+			return;
+		}
+
+		if ((index == 0 || index == 1 || index == 2 || index == 3 || index == 13))
+		{ //Radio button these options
+			int groupMask = (1 << 0) + (1 << 1) + (1 << 2) + (1 << 3) + (1 << 13);
+			int value = cg_strafeHelper.integer;
+
+			groupMask &= ~(1 << index);
+			value &= ~(groupMask);
+			value ^= (1 << index);
+
+			trap->Cvar_Set("cg_strafeHelper", va("%i", value));
+		}
+		else {
+			trap->Cvar_Set("cg_strafeHelper", va("%i", (1 << index) ^ (cg_strafeHelper.integer & mask)));
+		}
+		trap->Cvar_Update(&cg_strafeHelper);
+
+		Com_Printf("%s %s^7\n", strafeTweaks[index].string, ((cg_strafeHelper.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled"));
+	}
+}
+
+
+static bitInfo_t playerStyles[] = {
+	{ "Fullbright skins" },
+	{ "Private duel shell" },
+	{ "Hide duelers if in FFA" },
+	{ "Hide racers if in FFA" },
+	{ "Hide non racers if racer" },
+	{ "Hide racers if racer" },
+	{ "VFX racers 1" },
+	{ "VFX duelers 1" },
+	{ "VFX am alt dim 1" },
+	{ "Hide non duelers" },
+	{ "Hide ysal shell" },
+	{ "LOD player model" },
+	{ "Fade corpses immediately" },
+	{ "Disable corpse fading SFX" },
+};
+static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
+
+void UI_StylePlayer_f(void) {
+
+	if (cgameLoaded()) {
+		Com_Printf("cgame loaded, but it's not jaPRO?\n");
+		return;
+	}
+
+	if (trap->Cmd_Argc() == 1) {
+		int i = 0, display = 0;
+
+		for (i = 0; i < MAX_PLAYERSTYLES; i++) {
+			if ((cg_stylePlayer.integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", display, playerStyles[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", display, playerStyles[i].string);
+			}
+			display++;
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index, index2, n = 0;
+		const uint32_t mask = (1 << MAX_PLAYERSTYLES) - 1;
+
+		trap->Cmd_Argv(1, arg, sizeof(arg));
+		index = atoi(arg);
+		index2 = index;
+
+		if (index2 < 0 || index2 >= MAX_PLAYERSTYLES) {
+			Com_Printf("style: Invalid range: %i [0, %i]\n", index2, MAX_PLAYERSTYLES - 1);
+			return;
+		}
+
+		trap->Cvar_Set("cg_stylePlayer", va("%i", (1 << index2) ^ (cg_stylePlayer.integer & mask)));
+		trap->Cvar_Update(&cg_stylePlayer);
+
+		Com_Printf("%s %s^7\n", playerStyles[index2].string, ((cg_stylePlayer.integer & (1 << index2))
+			? "^2Enabled" : "^1Disabled"));
+	}
+}
+
+
+static bitInfo_t speedometerSettings[] = {
+	{ "Disable speedometer" },
+	{ "Pre-speed display" },
+	{ "Jump height display" },
+	{ "Jump distance display" },
+	{ "Vertical speed indicator" },
+	{ "Accel meter" },
+	{ "Speed graph" },
+	{ "Display speed in kilometers instead of units" },
+	{ "Display speed in imperial miles instead of units" },
+};
+static const int MAX_SPEEDOMETER_SETTINGS = ARRAY_LEN(speedometerSettings);
+
+void UI_SpeedometerSettings_f(void) {
+
+	if (cgameLoaded()) {
+		Com_Printf("cgame loaded, but it's not jaPRO?\n");
+		return;
+	}
+
+	if (trap->Cmd_Argc() == 1) {
+		int i = 0, display = 0;
+
+		for (i = 0; i < MAX_SPEEDOMETER_SETTINGS; i++) {
+			if ((cg_speedometerSettings.integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", display, speedometerSettings[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", display, speedometerSettings[i].string);
+			}
+			display++;
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index, index2;
+		const uint32_t mask = (1 << MAX_SPEEDOMETER_SETTINGS) - 1;
+
+		trap->Cmd_Argv(1, arg, sizeof(arg));
+		index = atoi(arg);
+		index2 = index;
+
+		if (index2 < 0 || index2 >= MAX_SPEEDOMETER_SETTINGS) {
+			Com_Printf("style: Invalid range: %i [0, %i]\n", index2, MAX_SPEEDOMETER_SETTINGS - 1);
+			return;
+		}
+
+		if ((index == 6 || index == 7))
+		{ //Radio button these options
+			int groupMask = (1 << 6) + (1 << 7);
+			int value = cg_speedometerSettings.integer;
+
+			groupMask &= ~(1 << index);
+			value &= ~(groupMask);
+			value ^= (1 << index);
+
+			trap->Cvar_Set("cg_speedometerSettings", va("%i", value));
+		}
+		else {
+			trap->Cvar_Set("cg_speedometerSettings", va("%i", (1 << index) ^ (cg_speedometerSettings.integer & mask)));
+		}
+		trap->Cvar_Update(&cg_speedometerSettings);
+
+		Com_Printf("%s %s^7\n", speedometerSettings[index2].string, ((cg_speedometerSettings.integer & (1 << index2))
+			? "^2Enabled" : "^1Disabled"));
+	}
+}
+
 static void	UI_Cache_f( void ) {
 	Display_CacheAll();
 	if ( trap->Cmd_Argc() == 2 ) {
@@ -91,8 +313,11 @@ static consoleCommand_t	commands[] = {
 	{ "ui_cache",			UI_Cache_f },
 	{ "ui_load",			UI_Load },
 	{ "ui_modversion",		UI_Modversion_f },
+	{ "strafeHelper",		UI_StrafeHelper_f },
+	{ "stylePlayer",		UI_StylePlayer_f },
+	{ "speedometer",		UI_SpeedometerSettings_f },
 	{ "ui_openmenu",		UI_OpenMenu_f },
-	{ "ui_opensiegemenu",		UI_OpenSiegeMenu_f },
+	{ "ui_opensiegemenu",	UI_OpenSiegeMenu_f },
 	{ "ui_report",			UI_Report },
 };
 
