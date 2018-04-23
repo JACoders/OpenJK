@@ -3504,6 +3504,7 @@ void Item_TextField_Paste( itemDef_t *item ) {
 }
 #endif
 
+extern qboolean Item_HandleAccept(itemDef_t * item);
 qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 	char buff[2048];
 	int len;

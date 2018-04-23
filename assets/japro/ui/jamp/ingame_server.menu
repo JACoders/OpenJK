@@ -1062,6 +1062,12 @@
 		descColor				1 .682 0 .8
 		descAlignment				ITEM_ALIGN_CENTER		
 		popup
+		
+		onAccept
+		{ 
+			play			"sound/interface/button1.wav"
+			close			password_popmenu
+		}
 
 		onESC 
 		{ 
@@ -1126,6 +1132,13 @@
 			visible				1
 			border				1
 			bordercolor			.79 .64 .22 1
+			
+			accept
+			{ 
+				play			"sound/interface/button1.wav"
+				close			password_popmenu
+			}
+			
 			mouseenter 
 			{ 
 				setitemcolor	passwordEntry backcolor .25 .25 .25 .75 
