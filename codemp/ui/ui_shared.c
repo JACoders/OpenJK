@@ -4446,6 +4446,12 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 		case A_KP_ENTER:
 		case A_ENTER:
 			if (item) {
+				if (menu->onAccept) {
+					itemDef_t it;
+					it.parent = menu;
+					Item_RunScript(&it, menu->onAccept);
+				}
+
 				if (item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD) {
 					item->cursorPos = 0;
 					g_editingField = qtrue;
@@ -8645,7 +8651,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 
 		// enough to hold an IPv6 address plus null
 		if ( editField->maxChars < 48 ) {
-			Com_Printf( "Extended create favorite address edit field length to hold an IPv6 address\n" );
+			//Com_Printf( "Extended create favorite address edit field length to hold an IPv6 address\n" );
 			editField->maxChars = 48;
 		}
 	}
@@ -8659,7 +8665,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 				editField->maxPaintChars = editField->maxChars;
 			}
 
-			Com_Printf( "Extended player name field using cvar %s to %d characters\n", item->cvar, MAX_NAME_LENGTH );
+			//Com_Printf( "Extended player name field using cvar %s to %d characters\n", item->cvar, MAX_NAME_LENGTH );
 			editField->maxChars = MAX_NAME_LENGTH;
 		}
 	}
@@ -8681,7 +8687,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 			multiPtr->cvarList[multiPtr->count] = String_Alloc("@MENUS_VERY_HIGH");
 			multiPtr->cvarValue[multiPtr->count] = 44;
 			multiPtr->count++;
-			Com_Printf( "Extended sound quality field to contain very high setting.\n");
+			//Com_Printf( "Extended sound quality field to contain very high setting.\n");
 		}
 	}
 }
