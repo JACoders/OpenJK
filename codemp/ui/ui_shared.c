@@ -3667,7 +3667,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 		}
 
 	//	if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE)  {
-		if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE || (key == A_MOUSE1 && !Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) )) {
+		if (((key == A_ENTER || key == A_KP_ENTER) && !Item_HandleAccept(item)) || key == A_ESCAPE || (key == A_MOUSE1 && !Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory))) {
 			DC->setOverstrikeMode( qfalse );
 			return qfalse;
 		}
@@ -8055,6 +8055,13 @@ qboolean ItemParse_mouseExitText( itemDef_t *item, int handle ) {
 	return qtrue;
 }
 
+qboolean ItemParse_accept(itemDef_t *item, int handle) {
+	if (!PC_Script_Parse(handle, &item->accept)) {
+		return qfalse;
+	}
+	return qtrue;
+}
+
 qboolean ItemParse_action( itemDef_t *item, int handle ) {
 	if (!PC_Script_Parse(handle, &item->action)) {
 		return qfalse;
@@ -8507,7 +8514,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"asset_shader",	ItemParse_asset_shader,		NULL	},
 	{"backcolor",		ItemParse_backcolor,		NULL	},
 	{"background",		ItemParse_background,		NULL	},
-	{ "bitMask",		ItemParse_bitMask,			NULL	}, //Added
+	{"bitMask",			ItemParse_bitMask,			NULL	}, //Added
 	{"border",			ItemParse_border,			NULL	},
 	{"bordercolor",		ItemParse_bordercolor,		NULL	},
 	{"bordersize",		ItemParse_bordersize,		NULL	},
@@ -8524,6 +8531,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"disableCvar",		ItemParse_disableCvar,		NULL	},
 	{"doubleclick",		ItemParse_doubleClick,		NULL	},
 	{"rightClick",		ItemParse_rightClick,		NULL	},
+	{"accept",			ItemParse_accept,			NULL	},
 	{"elementheight",	ItemParse_elementheight,	NULL	},
 	{"elementtype",		ItemParse_elementtype,		NULL	},
 	{"elementwidth",	ItemParse_elementwidth,		NULL	},
