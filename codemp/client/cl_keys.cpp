@@ -1412,7 +1412,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 		if ( !(Key_GetCatcher() & KEYCATCH_UI) ) {
 			if ( cls.state == CA_ACTIVE && !clc.demoplaying )
 				UIVM_SetActiveMenu( UIMENU_INGAME );
-			else if (!clc.demoplaying) { //JAPRO ENGINE, stop escape in demo from fucking you to main menu
+			else if (clc.demoplaying) { //JAPRO ENGINE, stop escape in demo from fucking you to main menu
+				UIVM_SetActiveMenu(UIMENU_INGAME);
+			}
+			else {
 				CL_Disconnect_f();
 				S_StopAllSounds();
 				UIVM_SetActiveMenu( UIMENU_MAIN );
