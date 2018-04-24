@@ -3469,7 +3469,7 @@
 				@MENUS_ON 1
 			}
 			cvarTest			cg_hudFiles
-			hideCvar			{ 0 }
+			showCvar			{ 1 } 
 			rect				220 243 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
