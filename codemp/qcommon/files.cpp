@@ -251,6 +251,7 @@ static cvar_t		*fs_copyfiles;
 static cvar_t		*fs_gamedirvar;
 static cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
 static cvar_t		*fs_loadpakdlls;
+static cvar_t		*fs_globalcfg;
 static searchpath_t	*fs_searchpaths;
 static int			fs_readCount;			// total bytes read
 static int			fs_loadCount;			// total files read
@@ -3140,7 +3141,7 @@ void FS_Which_f( void ) {
 
 	// just wants to see if file is there
 	for ( search=fs_searchpaths; search; search=search->next ) {
-		if ( search->pack && ( !isDLL || (isDLL && Cvar_VariableIntegerValue("fs_loadpakdlls")))) {
+		if (search->pack && (!isDLL || fs_loadpakdlls->integer)) {
 			long hash = FS_HashFileName( filename, search->pack->hashSize );
 
 			// is the element a pak file?
@@ -3218,6 +3219,12 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		if ( sp->dir && Sys_PathCmp(sp->dir->path, path) && !Q_stricmp(sp->dir->gamedir, dir)) {
 			return;			// we've already got this one
 		}
+	}
+
+	//cancer
+	if (fs_globalcfg->integer && fs_gamedirvar->modified) {
+		if (Q_stricmp(dir, BASEGAME) && Q_stricmp(dir, ETERNALJKGAME))
+			return;
 	}
 
 	Q_strncpyz( fs_gamedir, dir, sizeof( fs_gamedir ) );
@@ -3611,6 +3618,7 @@ void FS_Startup( const char *gameName ) {
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 
 	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "1", CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
+	fs_globalcfg = Cvar_Get("fs_globalcfg", "1", CVAR_PROTECTED, "Only read/write files from base and EternalJK folders");
 
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
