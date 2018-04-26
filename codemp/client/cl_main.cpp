@@ -575,6 +575,35 @@ void CL_PlayDemo_f( void ) {
 	clc.firstDemoFrameSkipped = qfalse;
 }
 
+void CL_DelDemo_f(void) {
+	char		name[MAX_OSPATH], extension[32];
+	char		*arg;
+
+	if (Cmd_Argc() < 2) {
+		Com_Printf("deletedemo <demoname>\n");
+		return;
+	}
+
+	// open the demo file
+	arg = Cmd_Args();
+
+	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
+	if (!Q_stricmp(arg + strlen(arg) - strlen(extension), extension)) {
+		Com_sprintf(name, sizeof(name), "demos/%s", arg);
+	}
+	else {
+		Com_sprintf(name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
+	}
+
+	if (!FS_FileExists(name)) {
+		Com_Printf("^1Can't find demofile %s\n", name);
+	}
+	else {
+		FS_HomeRemove(name);
+		Com_Printf("^3Deleted demofile %s\n", name);
+	}
+}
+
 
 /*
 ====================
@@ -3228,6 +3257,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("fs_referencedList", CL_ReferencedPK3List_f, "Lists referenced pak files" );
 	Cmd_AddCommand ("model", CL_SetModel_f, "Set the player model" );
 	Cmd_AddCommand ("forcepowers", CL_SetForcePowers_f );
+	Cmd_AddCommand ("userinfo", CL_Clientinfo_f);
 	Cmd_AddCommand ("video", CL_Video_f, "Record demo to avi" );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f, "Stop avi recording" );
 
@@ -3292,6 +3322,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("record");
 	Cmd_RemoveCommand ("demo");
+	Cmd_RemoveCommand ("deletedemo");
 	Cmd_RemoveCommand ("cinematic");
 	Cmd_RemoveCommand ("stoprecord");
 	Cmd_RemoveCommand ("connect");
