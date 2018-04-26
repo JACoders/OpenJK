@@ -507,7 +507,13 @@ static void CL_CompleteDemoName( char *args, int argNum )
 	if( argNum == 2 )
 	{
 		char demoExt[16];
+		char demoExt2[16];
 
+		//this might be weird if someone has a bunch of 1.01 demos and one 1.00 demo, or vice versa
+		//need to check for both extensions @ the same time somehow
+		Com_sprintf(demoExt2, sizeof(demoExt2), ".dm_%d", PROTOCOL_LEGACY);
+		Field_CompleteFilename("demos", demoExt2, qfalse , qtrue);
+		
 		Com_sprintf(demoExt, sizeof(demoExt), ".dm_%d", PROTOCOL_VERSION);
 		Field_CompleteFilename( "demos", demoExt, qtrue, qtrue );
 	}
@@ -584,15 +590,29 @@ void CL_DelDemo_f(void) {
 		return;
 	}
 
-	// open the demo file
 	arg = Cmd_Args();
 
-	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
+	//look for the old protocol first
+	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_LEGACY);
 	if (!Q_stricmp(arg + strlen(arg) - strlen(extension), extension)) {
 		Com_sprintf(name, sizeof(name), "demos/%s", arg);
 	}
 	else {
-		Com_sprintf(name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
+		Com_sprintf(name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_LEGACY);
+	}
+
+	if (!FS_FileExists(name)) {//start over w/ normal protocol idk
+		Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
+		if (!Q_stricmp(arg + strlen(arg) - strlen(extension), extension)) {
+			Com_sprintf(name, sizeof(name), "demos/%s", arg);
+		}
+		else {
+			Com_sprintf(name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
+		}
+	}
+
+	if (!FS_FileExists(name)) { //couldn't find a file with either extension?
+		Com_sprintf(name, sizeof(name), "demos/%s", arg); //strip the extension, if they see either extension in the error box then they probably did something dumb
 	}
 
 	if (!FS_FileExists(name)) {
@@ -3122,6 +3142,11 @@ void CL_Init( void ) {
 
 	rconAddress = Cvar_Get ("rconAddress", "", 0, "Alternate server address to remotely access via rcon protocol");
 
+
+	//Static cvars for UI
+	Cvar_Get("com_protocol", va("%i", PROTOCOL_VERSION), CVAR_ROM, "1.01 protocol");
+	Cvar_Get("com_legacyprotocol", va("%i", PROTOCOL_LEGACY), CVAR_ROM, "1.00 protocol");
+
 	cl_yawspeed = Cvar_Get ("cl_yawspeed", "140", CVAR_ARCHIVE_ND );
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE_ND );
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE_ND );
@@ -3236,6 +3261,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("record", CL_Record_f, "Record a demo" );
 	Cmd_AddCommand ("demo", CL_PlayDemo_f, "Playback a demo" );
 	Cmd_SetCommandCompletionFunc( "demo", CL_CompleteDemoName );
+	Cmd_AddCommand("playdemo", CL_PlayDemo_f, "Playback a demo"); //source engine inspired alias
+	Cmd_SetCommandCompletionFunc("playdemo", CL_CompleteDemoName);
 	Cmd_AddCommand("deletedemo", CL_DelDemo_f, "Delete a demo");
 	Cmd_SetCommandCompletionFunc("deletedemo", CL_CompleteDemoName);
 	Cmd_AddCommand ("stoprecord", CL_StopRecord_f, "Stop recording a demo" );
@@ -3324,6 +3351,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("record");
 	Cmd_RemoveCommand ("demo");
+	Cmd_RemoveCommand ("playdemo");
 	Cmd_RemoveCommand ("deletedemo");
 	Cmd_RemoveCommand ("cinematic");
 	Cmd_RemoveCommand ("stoprecord");

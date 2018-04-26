@@ -1286,7 +1286,7 @@ qboolean FS_IsDemoExt(const char *filename, int namelen)
 	{
 		int protocol = atoi(ext_test + ARRAY_LEN(DEMO_EXTENSION));
 
-		if(protocol == PROTOCOL_VERSION)
+		if(protocol == PROTOCOL_VERSION || protocol == PROTOCOL_LEGACY)
 			return qtrue;
 	}
 
@@ -3617,8 +3617,8 @@ void FS_Startup( const char *gameName ) {
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 
-	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "1", CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
-	fs_globalcfg = Cvar_Get("fs_globalcfg", "1", CVAR_PROTECTED, "Only read/write files from base and EternalJK folders");
+	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "1", CVAR_NORESTART|CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
+	fs_globalcfg = Cvar_Get("fs_globalcfg", "1", CVAR_NORESTART|CVAR_PROTECTED, "Only read/write files from base and EternalJK folders");
 
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {

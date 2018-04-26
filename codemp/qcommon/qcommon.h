@@ -211,7 +211,8 @@ PROTOCOL
 ==============================================================
 */
 
-#define	PROTOCOL_VERSION	26
+#define	PROTOCOL_VERSION	26 //1.01
+#define	PROTOCOL_LEGACY		25 //1.00
 
 #define	UPDATE_SERVER_NAME			"updatejk3.ravensoft.com"
 #define MASTER_SERVER_NAME			"masterjk3.ravensoft.com"
