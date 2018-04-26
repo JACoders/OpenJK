@@ -13,7 +13,7 @@
 		outOfBoundsClick	
 		focusColor				1 1 1 1								// Focus color for text and items
 		descX					320
-		descY					424
+		descY					426
 		descScale				1
 		descColor				1 .682 0 .8
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -1181,7 +1181,7 @@
 			mouseEnter 
 			{ 
 				show			button_glow 
-				setitemrect		button_glow	30 441 190 30
+				setitemrect		button_glow	30 442 190 30
 			}
 			mouseExit 
 			{ 
@@ -1202,7 +1202,7 @@
 			font				3
 			textscale			1.1
 			textalign			ITEM_ALIGN_CENTER
-			textstyle			0
+			textstyle			3
 			textalignx			65
 			textaligny			-1
 			forecolor			1 .682 0 1
@@ -1211,7 +1211,7 @@
 			mouseEnter 
 			{ 
 				show			button_glow 
-				setitemrect		button_glow	235 441 190 30
+				setitemrect		button_glow	222 442 190 30
 			}
 			mouseExit 
 			{ 
@@ -1234,7 +1234,7 @@
 			type				ITEM_TYPE_BUTTON
 			font				3
 			textscale			1
-			textstyle			0
+			textstyle			3
 			style				WINDOW_STYLE_FILLED
 			rect				455 444 200 32
 			textalign			1
@@ -1254,7 +1254,7 @@
 			mouseEnter 
 			{ 
 				show			button_glow 
-				setitemrect		button_glow	425 441 190 30
+				setitemrect		button_glow	425 442 190 30
 			}
 			mouseExit 
 			{ 
@@ -1263,30 +1263,6 @@
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -7351,6 +7351,10 @@ static void UI_RunMenuScript(char **args)
 			trap->Cmd_ExecuteText( EXEC_APPEND, "vid_restart;" );
 		} else if (Q_stricmp(name, "RunDemo") == 0) {
 			trap->Cmd_ExecuteText( EXEC_APPEND, va("demo \"%s\"\n", uiInfo.demoList[uiInfo.demoIndex]));
+		} else if (Q_stricmp(name, "DeleteDemo") == 0) {
+			trap->Cmd_ExecuteText(EXEC_NOW, va("deletedemo \"%s\"\n", uiInfo.demoList[uiInfo.demoIndex]));
+			UI_LoadDemos();
+			//i kinda wanted to reset the listbox selection too =/
 		} else if (Q_stricmp(name, "Quake3") == 0) {
 			trap->Cvar_Set( "fs_game", "");
 			trap->Cmd_ExecuteText( EXEC_APPEND, "vid_restart;" );

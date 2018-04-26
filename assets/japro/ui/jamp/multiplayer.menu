@@ -445,7 +445,7 @@
 			name				rules_button
 			group				none
 			text				@MENUS_RULES
-			descText			@MENUS_RULES_DESC
+			//descText			@MENUS_RULES_DESC
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
 			rect				225 331 190 36 
@@ -466,11 +466,11 @@
 			{ 
 				hide			button_glow 
 			}	  	  
-		      	action 
+			action 
 			{ 
 				play			"sound/interface/button1.wav" ; 
-				close			multiplayermenu ; 
-				open			rulesMenu 
+				//close			multiplayermenu ; 
+				//open			rulesMenu 
 			}
 		}
 		
@@ -499,7 +499,7 @@
 			mouseEnter 
 			{ 
 				show			button_glow 
-				setitemrect		button_glow	30 441 190 30
+				setitemrect		button_glow	30 442 190 30
 			}
 			mouseExit 
 			{ 
@@ -528,7 +528,7 @@
 			font				3
 			textscale			1.1
 			textalign			ITEM_ALIGN_CENTER
-			textstyle			0
+			textstyle			3
 			textalignx			65
 			textaligny			-1
 			forecolor			1 .682 0 1
@@ -537,7 +537,7 @@
 			mouseEnter 
 			{ 
 				show			button_glow 
-				setitemrect		button_glow	225 441 190 30
+				setitemrect		button_glow	225 442 190 30
 			}
 			mouseExit 
 			{ 

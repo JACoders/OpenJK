@@ -3236,6 +3236,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("record", CL_Record_f, "Record a demo" );
 	Cmd_AddCommand ("demo", CL_PlayDemo_f, "Playback a demo" );
 	Cmd_SetCommandCompletionFunc( "demo", CL_CompleteDemoName );
+	Cmd_AddCommand("deletedemo", CL_DelDemo_f, "Delete a demo");
+	Cmd_SetCommandCompletionFunc("deletedemo", CL_CompleteDemoName);
 	Cmd_AddCommand ("stoprecord", CL_StopRecord_f, "Stop recording a demo" );
 	Cmd_AddCommand ("configstrings", CL_Configstrings_f, "Prints the configstrings list" );
 	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f, "Prints the userinfo variables" );
@@ -3338,6 +3340,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("fs_referencedList");
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
+	Cmd_RemoveCommand ("userinfo");
 	Cmd_RemoveCommand ("video");
 	Cmd_RemoveCommand ("stopvideo");
 

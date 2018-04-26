@@ -10,7 +10,7 @@
 		visible					MENU_TRUE							// Visible on open
 		focusColor				1 1 1 1								// Focus color for text and items
 		descX					320
-		descY					424
+		descY					426
 		descScale				1
 		descColor				1 .682 0 .8
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -355,7 +355,7 @@
 			name				backButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				10 444 200 32
+			rect				30 442 190 30
 			background			"gfx/menus/menu_buttonback"			
 			forecolor			1 1 1 1
 			decoration
@@ -370,7 +370,7 @@
 			type				ITEM_TYPE_BUTTON
 			font				3
 			textscale			1.1
-			textstyle			0
+			textstyle			3
 			style				WINDOW_STYLE_FILLED
 			rect				59 444 130 24  
 			textalign			1
@@ -401,7 +401,7 @@
 			name				exitgamebutton_glow
 			group				mods
 			style				WINDOW_STYLE_SHADER
-			rect				255 444 130 24
+			rect				222 442 190 30
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			visible			0
@@ -420,7 +420,7 @@
 			font				3
 			textscale			1.1
 			textalign			ITEM_ALIGN_CENTER
-			textstyle			0
+			textstyle			3
 			textalignx			65
 			textaligny			-1
 			forecolor			1 .682 0 1
@@ -485,6 +485,13 @@
 			forecolor			.615 .615 .956 1
 			backcolor			0 0 .6 .5
 			visible				1
+			
+			/*rightClick
+			{ //afraid it might be too easy to delete stuff accidentally
+				play			"sound/interface/button1.wav" ; 
+				open			demo_delete
+			}*/
+			
 			doubleclick
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -495,10 +502,53 @@
 
 		itemDef 
 		{
+			name				deleteButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				45 398 175 30
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				delete
+			text				"DELETE DEMO"
+			descText			"Delete selected demo file."
+			type				ITEM_TYPE_BUTTON
+			font				3
+			textscale			1
+			style				WINDOW_STYLE_EMPTY
+			rect				60 400 150 30
+			textalignx			75						// Center
+			textaligny			1
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				open			demo_delete
+			}
+			mouseEnter 
+			{ 
+				show			deleteButton
+			}
+			mouseExit 
+			{
+				hide			deleteButton
+			}	  	  
+
+		}
+
+		itemDef 
+		{
 			name				beginButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				245 390 150 30
+			rect				445 398 150 30
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -514,7 +564,7 @@
 			font				3
 			textscale			1
 			style				WINDOW_STYLE_EMPTY
-			rect				245 390 150 30
+			rect				445 400 150 30
 			textalignx			75						// Center
 			textaligny			1
 			textalign			ITEM_ALIGN_CENTER

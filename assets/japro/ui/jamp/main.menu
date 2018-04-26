@@ -487,7 +487,7 @@
 			font				3
 			textscale			1.1
 			textalign			ITEM_ALIGN_CENTER
-			textstyle			0
+			textstyle			4
 			textalignx			65
 			textaligny			-1
 			forecolor			1 .682 0 1
@@ -496,7 +496,7 @@
 			mouseEnter 
 			{ 
 				show			button_glow 
-				setitemrect		button_glow	215 440 210 32
+				setitemrect		button_glow	222 442 210 32
 			}
 			mouseExit 
 			{ 

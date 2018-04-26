@@ -1,0 +1,197 @@
+// VIDEO WARNING
+{
+	menuDef 
+	{
+		name					"demo_delete"
+		visible					0
+		fullScreen				0				// MENU_TRUE			
+		rect					0 0 640 480
+		focusColor				1 1 1 1				// Focus color for text and items
+		outOfBoundsClick							// this closes the window if it gets a click out of the rectangle					// In miliseconds
+		descX					320
+		descY					434
+		descScale				1
+		descColor				.79 .64 .22 .7			// Focus color for text and items
+		descAlignment			ITEM_ALIGN_CENTER		
+		popup
+		
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" ; 
+			close				"demo_delete" ;
+		}
+
+		itemDef 
+		{
+			name				warn_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				145 135 350 250
+			background			"gfx/menus/menu_boxred"					// Frame
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		
+		itemDef 
+		{
+			name				delete_confirmation_title
+			group				none
+			text				@MENUS_WARNING
+			rect				120 165 310 20
+			font				2
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			200
+			textaligny			-3
+			forecolor			1 .682 0 1
+      		visible				1 
+      		decoration 
+		}
+
+
+		itemDef 
+		{
+			name				delete_confirmation_text1
+			group				none
+			text				"Files deleted in-game"
+			rect				210 220 220 20
+			textalign			ITEM_ALIGN_CENTER
+			text2aligny			18
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			.79 .64 .22 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				delete_confirmation_text2
+			group				none
+			text				"cannot be recovered!"
+			rect				210 240 220 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			.79 .64 .22 1
+			visible				1
+		}
+
+		itemDef 
+		{
+			name				delete_confirmation_text3
+			group				none
+			text				@MENUS_VID_RESTART3
+			rect				210 295 220 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			.79 .64 .22 1
+			visible				1
+		}
+
+// CANCEL button
+		itemDef 
+		{
+			name				delete_confirmation_no_button
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				180 350 120 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0 
+		}
+
+		itemDef 
+		{
+			name				delete_confirmation_no
+			group				none
+			text				"Cancel"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				180 350 120 24 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			-3
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			action 
+			{
+				play			"sound/interface/esc.wav" ; 
+				close			"demo_delete" ;
+			}
+
+			mouseEnter 
+			{ 
+				show		delete_confirmation_no_button
+			}
+
+			mouseExit 
+			{ 
+				hide		delete_confirmation_no_button
+			}	  	  
+		}
+
+// OK button
+		itemDef 
+		{
+			name				delete_confirmation_yes_button
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				340 350 120 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				delete_confirmation_yes
+			group				none
+			text				"OK"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 350 120 24 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			-3
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+
+				uiScript		DeleteDemo ;
+				close			demo_delete
+			}
+			mouseEnter 
+			{ 
+				show		delete_confirmation_yes_button
+			}
+			mouseExit 
+			{ 
+				hide		delete_confirmation_yes_button			
+			}	  	  
+		}
+	
+	}	
+}
+
+
+
+
+
+
