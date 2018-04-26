@@ -100,6 +100,8 @@ cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cl_idrive; //JAPRO ENGINE
 
+cvar_t *protocolswitch;
+
 cvar_t	*cl_autolodscale;
 
 cvar_t	*cl_consoleKeys;
@@ -281,7 +283,7 @@ Begins recording a demo from the current position
 */
 static char		demoName[MAX_QPATH];	// compiler bug workaround
 void CL_Record_f( void ) {
-	char		name[MAX_OSPATH];
+	char		name[MAX_OSPATH], extension[32];
 	byte		bufData[MAX_MSGLEN];
 	msg_t	buf;
 	int			i;
@@ -308,19 +310,25 @@ void CL_Record_f( void ) {
 	}
 
 	// sync 0 doesn't prevent recording, so not forcing it off .. everyone does g_sync 1 ; record ; g_sync 0 ..
-	if ( NET_IsLocalAddress( clc.serverAddress ) && !Cvar_VariableValue( "g_synchronousClients" ) ) {
+	//^kill yourself
+	/*if ( NET_IsLocalAddress( clc.serverAddress ) && !Cvar_VariableValue( "g_synchronousClients" ) ) {
 		Com_Printf (S_COLOR_YELLOW "WARNING: You should set 'g_synchronousClients 1' for smoother demo recording\n");
-	}
+	}*/
+
+	if (protocolswitch->integer != 2)
+		Com_sprintf(extension, sizeof(extension), "dm_%d", PROTOCOL_VERSION);
+	else
+		Com_sprintf(extension, sizeof(extension), "dm_%d", PROTOCOL_LEGACY);
 
 	if ( Cmd_Argc() == 2 ) {
 		s = Cmd_Argv(1);
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
-		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+		Com_sprintf(name, sizeof(name), "demos/%s.%s", demoName, extension);
 	} else {
 		// timestamp the file
 		CL_DemoFilename( demoName, sizeof( demoName ) );
 
-		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+		Com_sprintf(name, sizeof(name), "demos/%s.%s", demoName, extension);
 
 		if ( FS_FileExists( name ) ) {
 			Com_Printf( "Record: Couldn't create a file\n");
@@ -545,11 +553,29 @@ void CL_PlayDemo_f( void ) {
 
 	CL_Disconnect( qtrue );
 
-	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
-	if ( !Q_stricmp( arg + strlen(arg) - strlen(extension), extension ) ) {
-		Com_sprintf (name, sizeof(name), "demos/%s", arg);
-	} else {
-		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
+
+	//could probably be alot cleaner
+	//look for the old protocol first
+	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_LEGACY);
+	if (!Q_stricmp(arg + strlen(arg) - strlen(extension), extension)) {
+		Com_sprintf(name, sizeof(name), "demos/%s", arg);
+	}
+	else {
+		Com_sprintf(name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_LEGACY);
+	}
+
+	if (!FS_FileExists(name)) {//start over w/ normal protocol idk
+		Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
+		if (!Q_stricmp(arg + strlen(arg) - strlen(extension), extension)) {
+			Com_sprintf(name, sizeof(name), "demos/%s", arg);
+		}
+		else {
+			Com_sprintf(name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
+		}
+	}
+
+	if (!FS_FileExists(name)) { //couldn't find a file with either extension?
+		Com_sprintf(name, sizeof(name), "demos/%s", arg); //strip the extension, if they see either extension in the error box then they probably did something dumb
 	}
 
 	FS_FOpenFileRead( name, &clc.demofile, qtrue );
@@ -1616,10 +1642,16 @@ void CL_CheckForResend( void ) {
 	int		port;
 	char	info[MAX_INFO_STRING];
 	char	data[MAX_INFO_STRING+10];
+	qboolean localserver = qfalse;
 
 	// don't send anything if playing back a demo
 	if ( clc.demoplaying ) {
 		return;
+	}
+
+	if (Cvar_VariableIntegerValue("sv_running") != 0) {
+		protocolswitch->integer = 1;
+		localserver = qtrue;
 	}
 
 	// resend if we haven't gotten a reply yet
@@ -1639,6 +1671,11 @@ void CL_CheckForResend( void ) {
 	case CA_CONNECTING:
 		// requesting a challenge
 
+		if (!localserver) {
+			protocolswitch->integer = 0; //reset this here, just to be safe?
+			NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getinfo"); //request serverinfo so we know what protocol to use
+		}
+
 		// The challenge request shall be followed by a client challenge so no malicious server can hijack this connection.
 		Com_sprintf(data, sizeof(data), "getchallenge %d", clc.challenge);
 
@@ -1646,11 +1683,22 @@ void CL_CheckForResend( void ) {
 		break;
 
 	case CA_CHALLENGING:
+		if (protocolswitch->integer == 0 && !localserver) {//stall if we somehow got here before the response to our "getinfo" request
+			Com_Printf("^3no protocol set, stalling\n");
+			break;
+		}
+
 		// sending back the challenge
 		port = (int) Cvar_VariableValue ("net_qport");
 
 		Q_strncpyz( info, Cvar_InfoString( CVAR_USERINFO ), sizeof( info ) );
-		Info_SetValueForKey( info, "protocol", va("%i", PROTOCOL_VERSION ) );
+		if (protocolswitch->integer != 2 || localserver)
+			Info_SetValueForKey(info, "protocol", va("%i", PROTOCOL_VERSION));
+		else
+			Info_SetValueForKey(info, "protocol", va("%i", PROTOCOL_LEGACY));
+
+		Com_DPrintf("^3set protocol %s\n", Info_ValueForKey(info, "protocol"));
+			
 		Info_SetValueForKey( info, "qport", va("%i", port ) );
 		Info_SetValueForKey( info, "challenge", va("%i", clc.challenge ) );
 
@@ -3142,6 +3190,7 @@ void CL_Init( void ) {
 
 	rconAddress = Cvar_Get ("rconAddress", "", 0, "Alternate server address to remotely access via rcon protocol");
 
+	protocolswitch = Cvar_Get("protocolswitch", "0", CVAR_ROM | CVAR_INTERNAL, "Sets protocol based on server info response");
 
 	//Static cvars for UI
 	Cvar_Get("com_protocol", va("%i", PROTOCOL_VERSION), CVAR_ROM, "1.01 protocol");
@@ -3513,9 +3562,20 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 
 	// if this isn't the correct protocol version, ignore it
 	prot = atoi( Info_ValueForKey( infoString, "protocol" ) );
-	if ( prot != PROTOCOL_VERSION ) {
-		Com_DPrintf( "Different protocol info packet: %s\n", infoString );
-		return;
+		if ((prot != PROTOCOL_VERSION) && (prot != PROTOCOL_LEGACY)) { //so we don't just ignore 1.00 servers?
+			Com_Printf("Different protocol info packet: %s\n", infoString);
+			return;
+		}
+
+	//multiprotocol "support"
+	if (cls.state == CA_CONNECTING && NET_CompareAdr(from, clc.serverAddress) && !Cvar_VariableIntegerValue("sv_running"))
+	{
+		if (prot == PROTOCOL_VERSION) {
+			protocolswitch->integer = 1;
+		}
+		if (prot == PROTOCOL_LEGACY) {
+			protocolswitch->integer = 2;
+		}
 	}
 
 	// if this is an MB2 server, ignore it

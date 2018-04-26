@@ -3818,16 +3818,25 @@ The string has a specific order, "cgame ui @ ref1 ref2 ref3 ..."
 const char *FS_ReferencedPakPureChecksums( void ) {
 	static char	info[BIG_INFO_STRING];
 	searchpath_t	*search;
-	int nFlags, numPaks, checksum;
+	int nFlags, numPaks, checksum, lastPack, refPacks;
 
 	info[0] = 0;
 
 	checksum = fs_checksumFeed;
 	numPaks = 0;
 
+	
+	if (Cvar_VariableIntegerValue("protocolswitch") != 2) {
+		lastPack = -1342311474; //assets3.pk3
+		refPacks = 7;
+	} else {
+		lastPack = -1239421272; //assets2.pk3
+		refPacks = 6;
+	}
+
 	for (search = fs_searchpaths; search; search = search->next) {
-		if (search->pack && search->pack->checksum == -1342311474) {
-			search->pack->referenced = 7;
+		if (search->pack && search->pack->checksum == lastPack) {
+			search->pack->referenced = refPacks;
 			break;
 		}
 	}

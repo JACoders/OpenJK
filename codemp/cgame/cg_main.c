@@ -2621,7 +2621,8 @@ Ghoul2 Insert End
 	// check version
 	s = CG_ConfigString( CS_GAME_VERSION );
 	if ( strcmp( s, GAME_VERSION ) ) {
-		trap->Error( ERR_DROP, "Client/Server game mismatch: %s/%s", GAME_VERSION, s );
+		//trap->Error( ERR_DROP, "Client/Server game mismatch: %s/%s", GAME_VERSION, s );
+		Com_Printf("Client/Server game mismatch: %s/%s\n", GAME_VERSION, s); //LOL?
 	}
 
 	s = CG_ConfigString( CS_LEVEL_START_TIME );
