@@ -33,6 +33,9 @@
         }                                                       \
     }   
 
+#define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<0)
+#define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<1)
+
 #if 0
 typedef struct RaceRecord_s {
 	char				username[16];
@@ -1829,7 +1832,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0}, enteredKey[32];
 	char *p = NULL;
 	gclient_t	*cl;
-	qboolean iplock = qtrue;
+	int flags = 0;
 
 	if (!ent->client)
 		return;
@@ -1897,7 +1900,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		CALL_SQLITE (finalize(stmt));
 	}
 
-	sql = "SELECT password, lastip, iplock FROM LocalAccount WHERE username = ?";
+	sql = "SELECT password, lastip, flags FROM LocalAccount WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
@@ -1906,7 +1909,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
         if (s == SQLITE_ROW) {
 			Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
 			lastip = sqlite3_column_int(stmt, 1);
-			iplock = (qboolean)sqlite3_column_int(stmt, 2);
+			flags = (qboolean)sqlite3_column_int(stmt, 2);
             row++;
         }
         else if (s == SQLITE_DONE)
@@ -1930,13 +1933,13 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		return;
 	}
 
-	if ((count > 0) && lastip && ip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
+	if (!(flags & JAPRO_ACCOUNTFLAG_TRUSTED) && (count > 0) && lastip && ip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
 		trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account. You are only allowed one account.\n\"");
 		CALL_SQLITE (close(db));
 		return;
 	}
 
-	if (iplock && lastip != ip) {
+	if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip != ip) {
 		trap->SendServerCommand(ent-g_entities, "print \"This account is locked to a different IP address.\n\"");
 		CALL_SQLITE (close(db));
 		return;
@@ -2397,7 +2400,7 @@ void Svcmd_AccountIPLock_f(void) {
     sqlite3_stmt * stmt;
 	int s;
 	char username[16];
-	qboolean iplock = qfalse;
+	int flags = 0;
 
 	if (trap->Argc() != 2) {
 		trap->Print( "Usage: /iplock <username>\n");
@@ -2415,29 +2418,29 @@ void Svcmd_AccountIPLock_f(void) {
 	}
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT iplock FROM LocalAccount WHERE username = ?";
+	sql = "SELECT flags FROM LocalAccount WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
     s = sqlite3_step(stmt);
     if (s == SQLITE_ROW) {
-		iplock = (qboolean)sqlite3_column_int(stmt, 0);
+		flags = (qboolean)sqlite3_column_int(stmt, 0);
     }
     else if (s != SQLITE_DONE){
         G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountIPLock_f 1)", s);
     }
 	CALL_SQLITE (finalize(stmt));
 
-	if (iplock) 
-		sql = "UPDATE LocalAccount SET iplock = 0 WHERE username = ?";
+	if (flags & JAPRO_ACCOUNTFLAG_IPLOCK) 
+		sql = "UPDATE LocalAccount SET flags = 0 WHERE username = ?"; //loda redo this
 	else 
-		sql = "UPDATE LocalAccount SET iplock = 1 WHERE username = ?";
+		sql = "UPDATE LocalAccount SET flags = 1 WHERE username = ?";
 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_DONE) {
-		if (iplock)
+		if (flags & JAPRO_ACCOUNTFLAG_IPLOCK) 
 			trap->Print( "IP unlocked.\n");
 		else
 			trap->Print( "IP locked.\n");
@@ -4778,7 +4781,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	//COUNT_CHANGES off
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
-		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, iplock UNSIGNED TINYINT)";
+		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, flags UNSIGNED TINYINT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
