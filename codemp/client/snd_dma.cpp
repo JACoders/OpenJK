@@ -1125,7 +1125,7 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 			else if ( ch->entnum == entnum && S_CheckChannelStomp( ch->entchannel, entchannel ) )
 			{
 				// always override sound from same entity
-				if ( s_show->integer == 1 && ch->thesfx ) {
+				if ( (s_show->integer == 1 || s_show->integer == 4) && ch->thesfx ) {
 					Com_Printf( S_COLOR_YELLOW"...overrides %s\n", ch->thesfx->sSoundName );
 					ch->thesfx = 0;	//just to clear the next error msg
 				}
@@ -1150,7 +1150,7 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 		}
 	}
 
-	if ( s_show->integer == 1 && firstToDie->thesfx ) {
+	if ( (s_show->integer == 1 || s_show->integer == 4) && firstToDie->thesfx ) {
 		Com_Printf( S_COLOR_RED"***kicking %s\n", firstToDie->thesfx->sSoundName );
 	}
 
@@ -1187,7 +1187,7 @@ channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 		if ( ch->entnum == entnum && S_CheckChannelStomp( ch->entchannel, entchannel ) )
 		{
 			// always override sound from same entity
-			if ( s_show->integer == 1 && ch->thesfx ) {
+			if ( (s_show->integer == 1 || s_show->integer == 4) && ch->thesfx ) {
 				Com_Printf( S_COLOR_YELLOW"...overrides %s\n", ch->thesfx->sSoundName );
 				ch->thesfx = 0;	//just to clear the next error msg
 			}
@@ -1320,7 +1320,7 @@ channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 
 	if (ch_firstToDie->bPlaying)
 	{
-		if (s_show->integer == 1  && ch_firstToDie->thesfx )
+		if ( (s_show->integer == 1 || s_show->integer == 4)  && ch_firstToDie->thesfx )
 		{
 			Com_Printf(S_COLOR_RED"***kicking %s\n", ch_firstToDie->thesfx->sSoundName );
 		}

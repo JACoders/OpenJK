@@ -3190,7 +3190,7 @@ void CL_Init( void ) {
 
 	rconAddress = Cvar_Get ("rconAddress", "", 0, "Alternate server address to remotely access via rcon protocol");
 
-	protocolswitch = Cvar_Get("protocolswitch", "0", CVAR_ROM | CVAR_INTERNAL, "Sets protocol based on server info response");
+	protocolswitch = Cvar_Get("protocolswitch", "0", CVAR_ROM|CVAR_INTERNAL|CVAR_PROTECTED|CVAR_NORESTART, "Sets protocol based on server info response");
 
 	//Static cvars for UI
 	Cvar_Get("com_protocol", va("%i", PROTOCOL_VERSION), CVAR_ROM, "1.01 protocol");

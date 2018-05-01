@@ -5681,7 +5681,12 @@ static void UI_Update(const char *name) {
 		return;
 	}
 
-	if ( !Q_stricmp( name, "ui_SetName" ) ) {
+	if ( !Q_stricmp( name, "ui_GetName" ) ) {
+		char buf[MAX_NETNAME] = {0};
+		Q_strncpyz( buf, UI_Cvar_VariableString( "name" ), sizeof( buf ) );
+		trap->Cvar_Set( "ui_Name", buf );
+	}
+	else if ( !Q_stricmp( name, "ui_SetName" ) ) {
 		char buf[MAX_NETNAME] = {0};
 		Q_strncpyz( buf, UI_Cvar_VariableString( "ui_Name" ), sizeof( buf ) );
 		trap->Cvar_Set( "name", buf );
@@ -5698,11 +5703,6 @@ static void UI_Update(const char *name) {
 			trap->Cvar_Set("cl_maxpackets", "15");
 			trap->Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
 		}
-	}
-	else if ( !Q_stricmp( name, "ui_GetName" ) ) {
-		char buf[MAX_NETNAME] = {0};
-		Q_strncpyz( buf, UI_Cvar_VariableString( "name" ), sizeof( buf ) );
-		trap->Cvar_Set( "ui_Name", buf );
 	}
 	else if (Q_stricmp(name, "ui_r_colorbits") == 0)
 	{
