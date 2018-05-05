@@ -303,7 +303,7 @@ endif(WIN32)
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS "${JK2SPGameDefines}")
 
 # Hide symbols not explicitly marked public.
-set_property(TARGET ${JK2SPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+ojk_add_compile_options(${JK2SPGame} "${OPENJK_VISIBILITY_FLAGS}")
 
 set_target_properties(${JK2SPGame} PROPERTIES INCLUDE_DIRECTORIES "${JK2SPGameIncludeDirectories}")
 set_target_properties(${JK2SPGame} PROPERTIES PROJECT_LABEL "JK2 SP Game Library")
