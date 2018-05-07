@@ -579,6 +579,12 @@ if(BuildMPEngine)
 	endif(WIN32)
 
 	if(MakeApplicationBundles)
+		install(CODE "
+			include(BundleUtilities)
+			set(BU_CHMOD_BUNDLE_ITEMS ON)
+			fixup_bundle(\"${CMAKE_BINARY_DIR}/${MPEngine}.app\" \"\" \"\")
+			"
+			COMPONENT Runtime)
 		install(TARGETS ${MPEngine}
 			BUNDLE
 			DESTINATION ${JKAInstallDir}
