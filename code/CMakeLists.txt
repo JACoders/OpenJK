@@ -401,6 +401,12 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		endif(WIN32)
 
 		if(MakeApplicationBundles)
+			install(CODE "
+				include(BundleUtilities)
+				set(BU_CHMOD_BUNDLE_ITEMS ON)
+				fixup_bundle(\"${CMAKE_BINARY_DIR}/${ProjectName}.app\" \"\" \"\")
+				"
+				COMPONENT Runtime)
 			install(TARGETS ${ProjectName}
 				BUNDLE
 				DESTINATION ${InstallDir}
