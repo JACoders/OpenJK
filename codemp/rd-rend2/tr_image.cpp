@@ -2896,8 +2896,7 @@ static void R_CreateEnvBrdfLUT(void) {
 
 		for (unsigned x = 0; x < LUT_WIDTH; ++x)
 		{
-			float const gloss = (x + 0.5f) / LUT_WIDTH;
-			float const roughness = powf(1.0f - gloss, 2.0f);
+			float const roughness = (x + 0.5f) / LUT_WIDTH;
 			float const m = roughness * roughness;
 			float const m2 = m * m;
 
