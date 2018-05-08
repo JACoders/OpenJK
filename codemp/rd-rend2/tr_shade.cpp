@@ -1359,6 +1359,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
+	bool renderToCubemap = tr.renderCubeFbo && glState.currentFBO == tr.renderCubeFbo;
+	// HACK: SomaZ: Not sure why this is needed, but fixes sunlight and shadows in cubemaps
+	if (renderToCubemap)
+		cullType = CT_TWO_SIDED;
+
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 
