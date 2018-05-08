@@ -3114,18 +3114,6 @@ void RE_LoadWorldMap( const char *name ) {
 		ri.Error(ERR_DROP, "ERROR: attempted to redundantly load world map");
 	}
 
-	world_t *world = R_LoadBSP(name);
-	if (world == nullptr)
-	{
-		// clear tr.world so the next/ try will not look at the partially
-		// loaded version
-		tr.world = nullptr;
-		return;
-	}
-
-	tr.worldMapLoaded = qtrue;
-	tr.world = world;
-
 	// set default map light scale
 	tr.mapLightScale  = 1.0f;
 	tr.sunShadowScale = 0.5f;
@@ -3146,6 +3134,18 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.toneMinAvgMaxLevel[0] = -8.0f;
 	tr.toneMinAvgMaxLevel[1] = -2.0f;
 	tr.toneMinAvgMaxLevel[2] = 0.0f;
+
+	world_t *world = R_LoadBSP(name);
+	if (world == nullptr)
+	{
+		// clear tr.world so the next/ try will not look at the partially
+		// loaded version
+		tr.world = nullptr;
+		return;
+	}
+
+	tr.worldMapLoaded = qtrue;
+	tr.world = world;
 
 	// Render all cubemaps
 	if (r_cubeMapping->integer && tr.numCubemaps)
