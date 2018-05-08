@@ -3121,7 +3121,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_MUTE_SOUND");
 		if (cg_entities[es->trickedentindex2].currentState.eFlags & EF_SOUNDTRACKER)
 		{
-			cg_entities[es->trickedentindex2].currentState.eFlags -= EF_SOUNDTRACKER;
+			cg_entities[es->trickedentindex2].currentState.eFlags &= ~EF_SOUNDTRACKER;
 		}
 		trap->S_MuteSound(es->trickedentindex2, es->trickedentindex);
 		CG_S_StopLoopingSound(es->trickedentindex2, -1);

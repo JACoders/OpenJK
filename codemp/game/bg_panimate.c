@@ -1589,25 +1589,21 @@ and anim number. Obviously does not take things like the length of the
 anim while force speeding (as an example) and whatnot into account.
 =============
 */
-int BG_AnimLength( int index, animNumber_t anim )
-{
-	if (anim >= MAX_ANIMATIONS)
-	{
-		return -1;
+int BG_AnimLength( int index, animNumber_t anim ) {
+	if ( (int)anim < 0 || anim >= MAX_ANIMATIONS ) {
+		return 0;
 	}
 
-	return bgAllAnims[index].anims[anim].numFrames * fabs((float)(bgAllAnims[index].anims[anim].frameLerp));
+	return bgAllAnims[index].anims[anim].numFrames * fabs( (float)(bgAllAnims[index].anims[anim].frameLerp) );
 }
 
 //just use whatever pm->animations is
-int PM_AnimLength( int index, animNumber_t anim )
-{
-	if (anim >= MAX_ANIMATIONS || !pm->animations)
-	{
-		return -1;
+int PM_AnimLength( int index, animNumber_t anim ) {
+	if ( !pm->animations || (int)anim < 0 || anim >= MAX_ANIMATIONS ) {
+		return 0;
 	}
 
-	return pm->animations[anim].numFrames * fabs((float)(pm->animations[anim].frameLerp));
+	return pm->animations[anim].numFrames * fabs( (float)(pm->animations[anim].frameLerp) );
 }
 
 void PM_DebugLegsAnim(int anim)
@@ -2379,6 +2375,7 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 		len = trap->FS_Open( filename, &f, FS_READ );
 		if ( (len <= 0) || (len >= sizeof( BGPAFtext ) - 1) )
 		{
+			trap->FS_Close( f );
 			if (dynAlloc)
 			{
 				BG_AnimsetFree(animset);

@@ -1,5 +1,5 @@
 #============================================================================
-# Copyright (C) 2013 - 2015, OpenJK contributors
+# Copyright (C) 2013 - 2018, OpenJK contributors
 #
 # This file is part of the OpenJK source code.
 #
@@ -529,6 +529,7 @@ if(BuildMPEngine)
 			"${MPDir}/win32/icon.ico"
 			"${MPDir}/win32/resource.h"
 			"${MPDir}/win32/openjk.rc"
+			"${SharedDir}/sys/win_manifest.manifest"
 			)
 
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
@@ -583,6 +584,12 @@ if(BuildMPEngine)
 	endif(WIN32)
 
 	if(MakeApplicationBundles)
+		install(CODE "
+			include(BundleUtilities)
+			set(BU_CHMOD_BUNDLE_ITEMS ON)
+			fixup_bundle(\"${CMAKE_BINARY_DIR}/${MPEngine}.app\" \"\" \"\")
+			"
+			COMPONENT Runtime)
 		install(TARGETS ${MPEngine}
 			BUNDLE
 			DESTINATION ${JKAInstallDir}

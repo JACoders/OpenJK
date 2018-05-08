@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,7 +110,9 @@ typedef enum
     SDL_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
     SDL_WINDOW_FULLSCREEN_DESKTOP = ( SDL_WINDOW_FULLSCREEN | 0x00001000 ),
     SDL_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
-    SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported */
+    SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported.
+                                                     On macOS NSHighResolutionCapable must be set true in the
+                                                     application's Info.plist for this to have any effect. */
     SDL_WINDOW_MOUSE_CAPTURE = 0x00004000,      /**< window has mouse captured (unrelated to INPUT_GRABBED) */
     SDL_WINDOW_ALWAYS_ON_TOP = 0x00008000,      /**< window should always be above others */
     SDL_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
@@ -470,7 +472,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *  If the window is created with any of the SDL_WINDOW_OPENGL or
  *  SDL_WINDOW_VULKAN flags, then the corresponding LoadLibrary function
  *  (SDL_GL_LoadLibrary or SDL_Vulkan_LoadLibrary) is called and the
- *  corrensponding UnloadLibrary function is called by SDL_DestroyWindow().
+ *  corresponding UnloadLibrary function is called by SDL_DestroyWindow().
  *
  *  If SDL_WINDOW_VULKAN is specified and there isn't a working Vulkan driver,
  *  SDL_CreateWindow() will fail because SDL_Vulkan_LoadLibrary() will fail.

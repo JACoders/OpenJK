@@ -73,8 +73,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define STAT_MINUS			10	// num frame for '-' stats digit
 
 #define	ICON_SIZE			48
-#define	CHAR_WIDTH			32
-#define	CHAR_HEIGHT			48
 #define	TEXT_ICON_SPACE		4
 
 #define	CHARSMALL_WIDTH		16

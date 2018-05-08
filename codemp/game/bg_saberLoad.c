@@ -2281,12 +2281,13 @@ void WP_SaberLoadParms( void )
 
 		len = trap->FS_Open( va( "ext_data/sabers/%s", holdChar ), &f, FS_READ );
 
-		if ( len == -1 ) {
+		if ( !f ) {
 			Com_Printf( "WP_SaberLoadParms: error reading file: %s\n", holdChar );
 			continue;
 		}
 
 		if ( (totallen + len+1) >= MAX_SABER_DATA_SIZE ) {
+			trap->FS_Close( f );
 #ifdef UI_BUILD
 			Com_Error( ERR_FATAL, "WP_SaberLoadParms: Saber extensions (*.sab) are too large!\nRan out of space before reading %s", holdChar );
 #else
