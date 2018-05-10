@@ -13074,6 +13074,27 @@ void PmoveSingle (pmove_t *pmove) {
 	}
 }
 
+qboolean BG_InRollFixed( playerState_t *ps, int anim )
+{
+	switch ( (anim) )
+	{
+	case BOTH_ROLL_F:
+	case BOTH_ROLL_B:
+	case BOTH_ROLL_R:
+	case BOTH_ROLL_L:
+		if ( ps->legsTimer > 0 )
+		{
+			return qtrue;
+		}
+		break;
+	}
+	
+	if (anim >= MAX_TOTALANIMATIONS)
+		return qtrue;
+
+	return qfalse;
+}
+
 
 /*
 ================
@@ -13117,14 +13138,13 @@ void Pmove (pmove_t *pmove) {
 		int		msec;
 
 		msec = finalTime - pmove->ps->commandTime;
-
-		/*
-		if (pmove->ps->stats[STAT_RACEMODE]) { //Using float now
+		if (pmove->ps->stats[STAT_RACEMODE] && BG_InRollFixed(pm->ps, pm->ps->legsAnim)) { //Using float now
 			if ( msec > 8 ) {
 				msec = 8;
 			}
+			//Com_Printf("Chopping\n");
 		}
-		else*/
+		else
 		if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
