@@ -343,6 +343,15 @@ enum
 	ATTR_INDEX_MAX
 };
 
+enum
+{
+	XFB_VAR_POSITION,
+	XFB_VAR_VELOCITY,
+
+	XFB_VAR_COUNT
+};
+static const int NO_XFB_VARS = 0;
+
 typedef struct image_s {
 	char		imgName[MAX_QPATH];		// game path, including extension
 	int			width, height;				// source image
@@ -1244,14 +1253,15 @@ struct UniformData
 	//char data[1];
 };
 
-// shaderProgram_t represents a pair of one
-// GLSL vertex and one GLSL fragment shader
+// shaderProgram_t represents a collection of GLSL shaders which form a
+// GLSL shader program
 typedef struct shaderProgram_s
 {
 	char *name;
 
 	GLuint program;
 	uint32_t attribs; // vertex array attributes
+	uint32_t xfbVariables; // transform feedback variables
 
 	// uniform parameters
 	GLint *uniforms;
@@ -2269,6 +2279,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t dglowDownsample;
 	shaderProgram_t dglowUpsample;
 	shaderProgram_t spriteShader[SSDEF_COUNT];
+	shaderProgram_t weatherUpdateShader;
 	shaderProgram_t weatherShader;
 
 	// -----------------------------------------

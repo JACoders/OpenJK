@@ -551,20 +551,28 @@ static void GLSL_BindShaderInterface( shaderProgram_t *program )
 		"attr_Normal2",  // ATTR_INDEX_NORMAL2
 	};
 
+	static const char *xfbVarNames[XFB_VAR_COUNT] = {
+		"xfb_Position",
+		"xfb_Velocity",
+	};
+
 	static const char *shaderOutputNames[] = {
 		"out_Color",  // Color output
 		"out_Glow",  // Glow output
 	};
 
 	const uint32_t attribs = program->attribs;
-	for ( int attribIndex = 0; attribIndex < ATTR_INDEX_MAX; ++attribIndex )
+	if (attribs != 0)
 	{
-		if ( !(attribs & (1u << attribIndex)) )
+		for ( int attribIndex = 0; attribIndex < ATTR_INDEX_MAX; ++attribIndex )
 		{
-			continue;
-		}
+			if ( !(attribs & (1u << attribIndex)) )
+			{
+				continue;
+			}
 
-		qglBindAttribLocation(program->program, attribIndex, shaderInputNames[attribIndex]);
+			qglBindAttribLocation(program->program, attribIndex, shaderInputNames[attribIndex]);
+		}
 	}
 
 	for ( int outputIndex = 0; outputIndex < ARRAY_LEN(shaderOutputNames); ++outputIndex )
@@ -572,6 +580,23 @@ static void GLSL_BindShaderInterface( shaderProgram_t *program )
 		qglBindFragDataLocation(program->program, outputIndex, shaderOutputNames[outputIndex]);
 	}
 
+	const uint32_t xfbVars = program->xfbVariables;
+	if (xfbVars != 0)
+	{
+		size_t activeXfbVarsCount = 0;
+		const char *activeXfbVarNames[XFB_VAR_COUNT] = {};
+
+		for (uint32_t xfbVarIndex = 0; xfbVarIndex < XFB_VAR_COUNT; ++xfbVarIndex)
+		{
+			if ((xfbVars & (1u << xfbVarIndex)) != 0)
+			{
+				activeXfbVarNames[activeXfbVarsCount++] = xfbVarNames[xfbVarIndex];
+			}
+		}
+
+		qglTransformFeedbackVaryings(
+			program->program, activeXfbVarsCount, activeXfbVarNames, GL_INTERLEAVED_ATTRIBS);
+	}
 }
 
 GLenum ToGLShaderType( GPUShaderType type )
@@ -601,12 +626,15 @@ class ShaderProgramBuilder
 		ShaderProgramBuilder();
 		~ShaderProgramBuilder();
 
-		ShaderProgramBuilder( const ShaderProgramBuilder& ) = delete;
-		ShaderProgramBuilder& operator=( const ShaderProgramBuilder& ) = delete;
+		ShaderProgramBuilder(const ShaderProgramBuilder&) = delete;
+		ShaderProgramBuilder& operator=(const ShaderProgramBuilder&) = delete;
 
-		void Start( const char *name, const uint32_t attribs );
-		bool AddShader( const GPUShaderDesc& shaderDesc, const char *extra );
-		bool Build( shaderProgram_t *program );
+		void Start(
+			const char *name,
+			const uint32_t attribs,
+			const uint32_t xfbVariables);
+		bool AddShader(const GPUShaderDesc& shaderDesc, const char *extra);
+		bool Build(shaderProgram_t *program);
 
 	private:
 		static const size_t MAX_SHADER_SOURCE_LEN = 16384;
@@ -615,6 +643,7 @@ class ShaderProgramBuilder
 
 		const char *name;
 		uint32_t attribs;
+		uint32_t xfbVariables;
 		GLuint program;
 		GLuint shaderNames[GPUSHADER_TYPE_COUNT];
 		size_t numShaderNames;
@@ -640,11 +669,15 @@ ShaderProgramBuilder::~ShaderProgramBuilder()
 	}
 }
 
-void ShaderProgramBuilder::Start( const char *name, const uint32_t attribs )
+void ShaderProgramBuilder::Start(
+	const char *name,
+	const uint32_t attribs,
+	const uint32_t xfbVariables)
 {
 	this->program = qglCreateProgram();
 	this->name = name;
 	this->attribs = attribs;
+	this->xfbVariables = xfbVariables;
 }
 
 bool ShaderProgramBuilder::AddShader( const GPUShaderDesc& shaderDesc, const char *extra )
@@ -744,10 +777,11 @@ static bool GLSL_LoadGPUShader(
 	shaderProgram_t *program,
 	const char *name,
 	const uint32_t attribs,
+	const uint32_t xfbVariables,
 	const GLcharARB *extra,
 	const GPUProgramDesc& programDesc)
 {
-	builder.Start(name, attribs);
+	builder.Start(name, attribs, xfbVariables);
 	for ( int i = 0; i < programDesc.numShaders; ++i )
 	{
 		const GPUShaderDesc& shaderDesc = programDesc.shaders[i];
@@ -1296,7 +1330,7 @@ static int GLSL_LoadGPUProgramGeneric(
 		if (i & GENERICDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
-		if (!GLSL_LoadGPUShader(builder, &tr.genericShader[i], "generic", attribs,
+		if (!GLSL_LoadGPUShader(builder, &tr.genericShader[i], "generic", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load generic shader!");
@@ -1353,7 +1387,7 @@ static int GLSL_LoadGPUProgramFogPass(
 		if (i & FOGDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
-		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], "fogpass", attribs,
+		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], "fogpass", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load fogpass shader!");
@@ -1389,7 +1423,7 @@ static int GLSL_LoadGPUProgramDLight(
 		if (i & DLIGHTDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
-		if (!GLSL_LoadGPUShader(builder, &tr.dlightShader[i], "dlight", attribs,
+		if (!GLSL_LoadGPUShader(builder, &tr.dlightShader[i], "dlight", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load dlight shader!");
@@ -1532,7 +1566,7 @@ static int GLSL_LoadGPUProgramLightAll(
 		if (i & LIGHTDEF_USE_GLOW_BUFFER)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");
 
-		if (!GLSL_LoadGPUShader(builder, &tr.lightallShader[i], "lightall", attribs,
+		if (!GLSL_LoadGPUShader(builder, &tr.lightallShader[i], "lightall", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load lightall shader!");
@@ -1565,13 +1599,14 @@ static int GLSL_LoadGPUProgramBasic(
 	shaderProgram_t *shaderProgram,
 	const char *programName,
 	const GPUProgramDesc& programFallback,
-	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0)
+	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0,
+	const uint32_t xfbVariables = NO_XFB_VARS)
 {
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource(programName, allocator, programFallback);
-	if (!GLSL_LoadGPUShader(builder, shaderProgram, programName, attribs,
+	if (!GLSL_LoadGPUShader(builder, shaderProgram, programName, attribs, xfbVariables,
 			nullptr, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load %s shader!", programName);
@@ -1616,7 +1651,7 @@ static int GLSL_LoadGPUProgramDepthFill(
 		ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0;
 
 	extradefines[0] = '\0';
-	if (!GLSL_LoadGPUShader(builder, &tr.shadowmapShader, "shadowfill", attribs,
+	if (!GLSL_LoadGPUShader(builder, &tr.shadowmapShader, "shadowfill", attribs, NO_XFB_VARS,
 			nullptr, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load shadowfill shader!");
@@ -1642,7 +1677,7 @@ static int GLSL_LoadGPUProgramPShadow(
 	extradefines[0] = '\0';
 	Q_strcat(extradefines, sizeof(extradefines), "#define USE_PCF\n#define USE_DISCARD\n");
 
-	if (!GLSL_LoadGPUShader(builder, &tr.pshadowShader, "pshadow", attribs,
+	if (!GLSL_LoadGPUShader(builder, &tr.pshadowShader, "pshadow", attribs, NO_XFB_VARS,
 			extradefines, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load pshadow shader!");
@@ -1745,7 +1780,7 @@ static int GLSL_LoadGPUProgramCalcLuminanceLevel(
 			Q_strcat(extradefines, sizeof(extradefines), "#define FIRST_PASS\n");
 
 		if (!GLSL_LoadGPUShader(builder, &tr.calclevels4xShader[i], "calclevels4x", attribs,
-				extradefines, *programDesc))
+				NO_XFB_VARS, extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load calclevels4x shader!");
 		}
@@ -1791,7 +1826,7 @@ static int GLSL_LoadGPUProgramShadowMask(
 		extradefines, sizeof(extradefines),
 		va("#define r_shadowCascadeZFar %f\n", r_shadowCascadeZFar->value));
 
-	if (!GLSL_LoadGPUShader(builder, &tr.shadowmaskShader, "shadowmask", attribs,
+	if (!GLSL_LoadGPUShader(builder, &tr.shadowmaskShader, "shadowmask", attribs, NO_XFB_VARS,
 			extradefines, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load shadowmask shader!");
@@ -1876,7 +1911,7 @@ static int GLSL_LoadGPUProgramDepthBlur(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_HORIZONTAL_BLUR\n");
 
 
-		if (!GLSL_LoadGPUShader(builder, &tr.depthBlurShader[i], "depthBlur", attribs,
+		if (!GLSL_LoadGPUShader(builder, &tr.depthBlurShader[i], "depthBlur", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load depthBlur shader!");
@@ -1912,13 +1947,13 @@ static int GLSL_LoadGPUProgramGaussianBlur(
 	Q_strcat (extradefines, sizeof (extradefines), "#define BLUR_X");
 
 	if (!GLSL_LoadGPUShader(builder, &tr.gaussianBlurShader[0], "gaussian_blur", attribs,
-			extradefines, *programDesc))
+			NO_XFB_VARS, extradefines, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load gaussian_blur (X-direction) shader!");
 	}
 
 	if (!GLSL_LoadGPUShader(builder, &tr.gaussianBlurShader[1], "gaussian_blur", attribs,
-			nullptr, *programDesc))
+			NO_XFB_VARS, nullptr, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load gaussian_blur (Y-direction) shader!");
 	}
@@ -1998,7 +2033,7 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 					"#define ALPHA_TEST\n");
 
 		shaderProgram_t *program = tr.spriteShader + i;
-		if (!GLSL_LoadGPUShader(builder, program, "surface_sprites", attribs,
+		if (!GLSL_LoadGPUShader(builder, program, "surface_sprites", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load surface sprites shader!");
@@ -2026,6 +2061,18 @@ static int GLSL_LoadGPUProgramWeather(
 
 	GLSL_InitUniforms(&tr.weatherShader);
 	GLSL_FinishGPUShader(&tr.weatherShader);
+
+	GLSL_LoadGPUProgramBasic(
+		builder,
+		scratchAlloc,
+		&tr.weatherUpdateShader,
+		"weatherUpdate",
+		fallback_weatherUpdateProgram,
+		ATTR_POSITION | ATTR_COLOR,
+		XFB_VAR_POSITION | XFB_VAR_VELOCITY);
+
+	GLSL_InitUniforms(&tr.weatherUpdateShader);
+	GLSL_FinishGPUShader(&tr.weatherUpdateShader);
 
 	return 1;
 }
@@ -2164,10 +2211,12 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < 2; i++)
 		GLSL_DeleteGPUShader(&tr.depthBlurShader[i]);
 
+	GLSL_DeleteGPUShader(&tr.weatherUpdateShader);
+	GLSL_DeleteGPUShader(&tr.weatherShader);
+
 	glState.currentProgram = 0;
 	qglUseProgram(0);
 }
-
 
 void GLSL_BindProgram(shaderProgram_t * program)
 {
