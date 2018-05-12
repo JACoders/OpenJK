@@ -941,6 +941,20 @@ static void RB_BindAndUpdateUniformBlocks(
 	}
 }
 
+static void RB_SetRenderState(const RenderState& renderState)
+{
+	GL_Cull(renderState.cullType);
+	GL_State(renderState.stateBits);
+	GL_DepthRange(
+		renderState.depthRange.minDepth,
+		renderState.depthRange.maxDepth);
+
+	if (renderState.transformFeedback)
+	{
+		qglBeginTransformFeedback(GL_POINTS);
+	}
+}
+
 static void RB_DrawItems(
 	int numDrawItems,
 	const DrawItem *drawItems,
@@ -950,10 +964,9 @@ static void RB_DrawItems(
 	{
 		const DrawItem& drawItem = drawItems[drawOrder[i]];
 
-		GL_Cull(drawItem.cullType);
-		GL_State(drawItem.stateBits);
-		GL_DepthRange(drawItem.depthRange.minDepth, drawItem.depthRange.maxDepth);
-		if ( drawItem.ibo != nullptr )
+		RB_SetRenderState(drawItem.renderState);
+
+		if (drawItem.ibo != nullptr)
 			R_BindIBO(drawItem.ibo);
 
 		GLSL_BindProgram(drawItem.program);
@@ -1002,6 +1015,11 @@ static void RB_DrawItems(
 				assert(!"Invalid or unhandled draw type");
 				break;
 			}
+		}
+
+		if (drawItem.renderState.transformFeedback)
+		{
+			qglEndTransformFeedback();
 		}
 	}
 }

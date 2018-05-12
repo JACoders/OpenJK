@@ -3493,11 +3493,18 @@ struct DrawCommand
 	} params;
 };
 
-struct DrawItem
+struct RenderState
 {
+	DepthRange depthRange;
 	uint32_t stateBits;
 	uint32_t cullType; // this is stupid
-	DepthRange depthRange;
+
+	bool transformFeedback;
+};
+
+struct DrawItem
+{
+	RenderState renderState;
 
 	IBO_t *ibo;
 	shaderProgram_t *program;

@@ -130,11 +130,11 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
 	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 
-	item.stateBits =
+	item.renderState.stateBits =
 		GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
-	item.cullType = CT_FRONT_SIDED;
+	item.renderState.cullType = CT_FRONT_SIDED;
+	item.renderState.depthRange = { 0.0f, 1.0f };
 	item.program = &tr.weatherShader;
-	item.depthRange = { 0.0f, 1.0f };
 
 	vertexAttribute_t attribs[2] = {};
 	attribs[0].index = ATTR_INDEX_POSITION;
