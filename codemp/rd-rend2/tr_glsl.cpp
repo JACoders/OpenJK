@@ -2211,6 +2211,19 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < 2; i++)
 		GLSL_DeleteGPUShader(&tr.depthBlurShader[i]);
 
+	GLSL_DeleteGPUShader(&tr.testcubeShader);
+	GLSL_DeleteGPUShader(&tr.prefilterEnvMapShader);
+
+	for (i = 0; i < 2; ++i)
+		GLSL_DeleteGPUShader(&tr.gaussianBlurShader[i]);
+
+	GLSL_DeleteGPUShader(&tr.glowCompositeShader);
+	GLSL_DeleteGPUShader(&tr.dglowDownsample);
+	GLSL_DeleteGPUShader(&tr.dglowUpsample);
+
+	for (i = 0; i < SSDEF_COUNT; ++i)
+		GLSL_DeleteGPUShader(&tr.spriteShader[i]);
+
 	GLSL_DeleteGPUShader(&tr.weatherUpdateShader);
 	GLSL_DeleteGPUShader(&tr.weatherShader);
 
