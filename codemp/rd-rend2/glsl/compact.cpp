@@ -99,27 +99,33 @@ int main( int argc, char *argv[] )
 		return EXIT_FAILURE;
 	}
 
-	if ( args.size() < 3 )
+	if ( args.size() < 4 )
 	{
-		// 0 = exe, 1 = outfile, 2+ = glsl files
+		// 0 = exe, 1 = cpp file, 2 = h file, 2+ = glsl files
 		return EXIT_FAILURE;
 	}
 
-	std::string& outFile = args[1];
-	StringList glslFiles(args.begin() + 2, args.end());
+	std::string& shadersCppFile = args[1];
+	std::string& shadersHeaderFile = args[2];
+	StringList glslFiles(args.begin() + 3, args.end());
 
-	std::cout << "Outputting to " << outFile << '\n';
+	std::cout << "Outputting to '" << shadersCppFile << "' and '" << shadersHeaderFile << "'\n";
 
 	Allocator allocator(512 * 1024);
 
-	std::ostringstream ss;
+	std::ostringstream cppStream;
+	std::ostringstream headerStream;
 	std::string line;
 
-	ss << "#include \"tr_local.h\"\n\n";
+	headerStream << "// This file is auto-generated. DO NOT EDIT BY HAND\n";
+	headerStream << "#pragma once\n\n";
+	headerStream << "#include \"tr_local.h\"\n\n";
+
+	cppStream << "// This file is auto-generated. DO NOT EDIT BY HAND\n";
+	cppStream << "#include \"tr_local.h\"\n\n";
 	for ( StringList::const_iterator it = glslFiles.begin();
 			it != glslFiles.end(); ++it )
 	{
-
 		// Get shader name from file name
 		if ( !EndsWith(*it, ".glsl") )
 		{
@@ -155,45 +161,59 @@ int main( int argc, char *argv[] )
 			GPUShaderDesc& shaderDesc = programDesc.shaders[i];
 			const char *suffix = GetShaderSuffix(shaderDesc.type);
 
-			ss << "const char *fallback_" + shaderName + suffix + " = \"";
+			cppStream << "const char *fallback_" + shaderName + suffix + " = \"";
 
 			const char *lineStart = shaderDesc.source;
 			const char *lineEnd = strchr(lineStart, '\n');
 			while ( lineEnd )
 			{
 				line.assign(lineStart, lineEnd - lineStart);
-				ss << Escape(line);
-				ss << "\\n\"\n\"";
+				cppStream << Escape(line);
+				cppStream << "\\n\"\n\"";
 
 				lineStart = lineEnd + 1;
 				lineEnd = strchr(lineStart, '\n');
 			}
 
 			line.assign(lineStart);
-			ss << Escape(line) << "\";\n";
+			cppStream << Escape(line) << "\";\n";
 		}
 
-		ss << "GPUShaderDesc fallback_" << shaderName << "Shaders[] = {\n";
+		cppStream << "GPUShaderDesc fallback_" << shaderName << "Shaders[] = {\n";
 		for ( size_t i = 0, numShaders = programDesc.numShaders; i < numShaders; ++i )
 		{
 			GPUShaderDesc& shaderDesc = programDesc.shaders[i];
 			const char *suffix = GetShaderSuffix(shaderDesc.type);
 
-			ss << "  { " << ToString(shaderDesc.type) << ", "
+			cppStream << "  { " << ToString(shaderDesc.type) << ", "
 						"fallback_" << shaderName << suffix << ", "
 						<< shaderDesc.firstLineNumber << " },\n";
 		}
-		ss << "};\n";
+		cppStream << "};\n";
 
-		ss << "extern const GPUProgramDesc fallback_" << shaderName << "Program = { "
+		cppStream << "extern const GPUProgramDesc fallback_" << shaderName << "Program = { "
 			<< programDesc.numShaders << ", fallback_" << shaderName << "Shaders };\n\n";
+
+		headerStream << "extern const GPUProgramDesc fallback_" << shaderName << "Program;\n";
 	}
 
-	std::ofstream ofs(outFile.c_str());
-	if ( !ofs )
+	std::ofstream cppFile(shadersCppFile);
+	if ( !cppFile )
 	{
-		std::cerr << "Could not create file " << outFile << '\n';
+		std::cerr << "Could not create file '" << shadersCppFile << "'\n";
+	}
+	else
+	{
+		cppFile << cppStream.str();
 	}
 
-	ofs << ss.str();
+	std::ofstream headerFile(shadersHeaderFile);
+	if (!headerFile)
+	{
+		std::cerr << "Could not create file '" << shadersHeaderFile << "'\n";
+	}
+	else
+	{
+		headerFile << headerStream.str();
+	}
 }

@@ -22,30 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_glsl.c
 #include "tr_local.h"
 #include "tr_allocator.h"
+#include "glsl_shaders.h"
 
 void GLSL_BindNullProgram(void);
-
-extern const GPUProgramDesc fallback_bokehProgram;
-extern const GPUProgramDesc fallback_calclevels4xProgram;
-extern const GPUProgramDesc fallback_depthblurProgram;
-extern const GPUProgramDesc fallback_prefilterEnvMapProgram;
-extern const GPUProgramDesc fallback_dlightProgram;
-extern const GPUProgramDesc fallback_down4xProgram;
-extern const GPUProgramDesc fallback_fogpassProgram;
-extern const GPUProgramDesc fallback_gaussian_blurProgram;
-extern const GPUProgramDesc fallback_genericProgram;
-extern const GPUProgramDesc fallback_lightallProgram;
-extern const GPUProgramDesc fallback_pshadowProgram;
-extern const GPUProgramDesc fallback_shadowfillProgram;
-extern const GPUProgramDesc fallback_shadowmaskProgram;
-extern const GPUProgramDesc fallback_ssaoProgram;
-extern const GPUProgramDesc fallback_texturecolorProgram;
-extern const GPUProgramDesc fallback_tonemapProgram;
-extern const GPUProgramDesc fallback_dglow_downsampleProgram;
-extern const GPUProgramDesc fallback_dglow_upsampleProgram;
-extern const GPUProgramDesc fallback_surface_spritesProgram;
-extern const GPUProgramDesc fallback_weatherProgram;
-
 
 const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
 	{ 10, "SurfaceSprite", sizeof(SurfaceSpriteBlock) }
