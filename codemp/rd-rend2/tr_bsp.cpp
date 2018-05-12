@@ -1906,7 +1906,7 @@ static void R_CreateWorldVBOs( world_t *worldData )
 
 	int             startTime, endTime;
 
-	startTime = ri->Milliseconds();
+	startTime = ri.Milliseconds();
 
 	// count surfaces
 	numSortedSurfaces = 0;
@@ -2015,11 +2015,11 @@ static void R_CreateWorldVBOs( world_t *worldData )
 			numSurfaces++;
 		}
 
-		ri->Printf(PRINT_ALL, "...calculating world VBO %d ( %i verts %i tris )\n", k, numVerts, numIndexes / 3);
+		ri.Printf(PRINT_ALL, "...calculating world VBO %d ( %i verts %i tris )\n", k, numVerts, numIndexes / 3);
 
 		// create arrays
-		verts = (packedVertex_t *)ri->Hunk_AllocateTempMemory(numVerts * sizeof(packedVertex_t)); 
-		indexes = (glIndex_t *)ri->Hunk_AllocateTempMemory(numIndexes * sizeof(glIndex_t)); 
+		verts = (packedVertex_t *)ri.Hunk_AllocateTempMemory(numVerts * sizeof(packedVertex_t)); 
+		indexes = (glIndex_t *)ri.Hunk_AllocateTempMemory(numIndexes * sizeof(glIndex_t)); 
 
 		// set up indices and copy vertices
 		numVerts = 0;
@@ -2112,16 +2112,16 @@ static void R_CreateWorldVBOs( world_t *worldData )
 			bspSurf->ibo = ibo;
 		}
 
-		ri->Hunk_FreeTempMemory(indexes);
-		ri->Hunk_FreeTempMemory(verts);
+		ri.Hunk_FreeTempMemory(indexes);
+		ri.Hunk_FreeTempMemory(verts);
 
 		k++;
 	}
 
 	Z_Free(surfacesSorted);
 
-	endTime = ri->Milliseconds();
-	ri->Printf(PRINT_ALL, "world VBOs calculation time = %5.2f seconds\n", (endTime - startTime) / 1000.0);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "world VBOs calculation time = %5.2f seconds\n", (endTime - startTime) / 1000.0);
 }
 
 /*
@@ -3071,7 +3071,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 
 	int startTime, endTime;
 
-	startTime = ri->Milliseconds();
+	startTime = ri.Milliseconds();
 
 	numWorldSurfaces = worldData->numWorldSurfaces;
 
@@ -3205,23 +3205,23 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 
 	// Allocate merged surfaces
 	worldData->mergedSurfaces =
-		(msurface_t *)ri->Hunk_Alloc(
+		(msurface_t *)ri.Hunk_Alloc(
 			sizeof(*worldData->mergedSurfaces) * numMergedSurfaces, h_low);
 	worldData->mergedSurfacesViewCount =
-		(int *)ri->Hunk_Alloc(
+		(int *)ri.Hunk_Alloc(
 			sizeof(*worldData->mergedSurfacesViewCount) * numMergedSurfaces, h_low);
 	worldData->mergedSurfacesDlightBits =
-		(int *)ri->Hunk_Alloc(
+		(int *)ri.Hunk_Alloc(
 			sizeof(*worldData->mergedSurfacesDlightBits) * numMergedSurfaces, h_low);
 	worldData->mergedSurfacesPshadowBits =
-		(int *)ri->Hunk_Alloc(
+		(int *)ri.Hunk_Alloc(
 			sizeof(*worldData->mergedSurfacesPshadowBits) * numMergedSurfaces, h_low);
 	worldData->numMergedSurfaces = numMergedSurfaces;
 	
 	// view surfaces are like mark surfaces, except negative ones represent merged surfaces
 	// -1 represents 0, -2 represents 1, and so on
 	worldData->viewSurfaces =
-		(int *)ri->Hunk_Alloc(
+		(int *)ri.Hunk_Alloc(
 			sizeof(*worldData->viewSurfaces) * worldData->nummarksurfaces, h_low);
 
 	// copy view surfaces into mark surfaces
@@ -3284,7 +3284,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 		}
 
 		// create ibo
-		ibo = tr.ibos[tr.numIBOs++] = (IBO_t*)ri->Hunk_Alloc(sizeof(*ibo), h_low);
+		ibo = tr.ibos[tr.numIBOs++] = (IBO_t*)ri.Hunk_Alloc(sizeof(*ibo), h_low);
 		memset(ibo, 0, sizeof(*ibo));
 		numIboIndexes = 0;
 
@@ -3316,7 +3316,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 			break;
 		}
 
-		vboSurf = (srfBspSurface_t *)ri->Hunk_Alloc(sizeof(*vboSurf), h_low);
+		vboSurf = (srfBspSurface_t *)ri.Hunk_Alloc(sizeof(*vboSurf), h_low);
 		memset(vboSurf, 0, sizeof(*vboSurf));
 		vboSurf->surfaceType = SF_VBO_MESH;
 
@@ -3379,9 +3379,9 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 		mergedSurf++;
 	}
 
-	endTime = ri->Milliseconds();
+	endTime = ri.Milliseconds();
 
-	ri->Printf(PRINT_ALL, "Processed %d surfaces into %d merged, %d unmerged in %5.2f seconds\n", 
+	ri.Printf(PRINT_ALL, "Processed %d surfaces into %d merged, %d unmerged in %5.2f seconds\n", 
 		numWorldSurfaces, numMergedSurfaces, numUnmergedSurfaces, (endTime - startTime) / 1000.0f);
 
 	// reset viewcounts
@@ -3737,7 +3737,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 		R_MergeLeafSurfaces(worldData);
 	}
 
-	worldData->dataSize = (const byte *)ri->Hunk_Alloc(0, h_low) - startMarker;
+	worldData->dataSize = (const byte *)ri.Hunk_Alloc(0, h_low) - startMarker;
 
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();
