@@ -250,7 +250,7 @@ R_AddConvolveCubemapsCmd
 
 =============
 */
-void	R_AddConvolveCubemapCmd( int cubemap ) {
+void	R_AddConvolveCubemapCmd( int cubemap , int cubeSide ) {
 	convolveCubemapCommand_t	*cmd;
 	
 	cmd = (convolveCubemapCommand_t *)R_GetCommandBuffer( sizeof( *cmd ));
@@ -260,6 +260,7 @@ void	R_AddConvolveCubemapCmd( int cubemap ) {
 	cmd->commandId = RC_CONVOLVECUBEMAP;
 	
 	cmd->cubemap = cubemap;
+	cmd->cubeSide = cubeSide;
 }
 
 /*

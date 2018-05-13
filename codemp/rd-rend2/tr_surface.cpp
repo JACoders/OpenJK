@@ -247,6 +247,12 @@ void RB_InstantQuad(vec4_t quadVerts[4])
 	RB_InstantQuad2(quadVerts, texCoords);
 }
 
+void RB_InstantTriangle() 
+{
+	qglDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+
 
 /*
 ==============

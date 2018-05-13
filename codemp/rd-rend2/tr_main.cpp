@@ -2812,7 +2812,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 	}
 }
 
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene )
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, qboolean bounce )
 {
 	refdef_t refdef;
 	viewParms_t	parms;
@@ -2894,7 +2894,9 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene )
 	parms.viewportHeight = tr.renderCubeFbo->height;
 	parms.isPortal = qfalse;
 	parms.isMirror = qtrue;
-	parms.flags =  VPF_NOVIEWMODEL | VPF_NOCUBEMAPS | VPF_NOPOSTPROCESS;
+	parms.flags =  VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS;
+	if (!bounce)
+		parms.flags |= VPF_NOCUBEMAPS;
 
 	parms.fovX = 90;
 	parms.fovY = 90;

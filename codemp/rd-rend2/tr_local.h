@@ -2541,7 +2541,7 @@ void R_RenderView( viewParms_t *parms );
 void R_RenderDlightCubemaps(const refdef_t *fd);
 void R_RenderPshadowMaps(const refdef_t *fd);
 void R_RenderSunShadowMaps(const refdef_t *fd, int level);
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene );
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, qboolean bounce);
 
 void R_AddMD3Surfaces( trRefEntity_t *e, int entityNum );
 void R_AddNullModelSurfaces( trRefEntity_t *e, int entityNum );
@@ -2781,8 +2781,8 @@ void RB_StageIteratorSky( void );
 void RB_AddQuadStamp( vec3_t origin, vec3_t left, vec3_t up, float color[4] );
 void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, float color[4], float s1, float t1, float s2, float t2 );
 void RB_InstantQuad( vec4_t quadVerts[4] );
-//void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4], vec4_t color, shaderProgram_t *sp, vec2_t invTexRes);
 void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4]);
+void RB_InstantTriangle();
 
 void RB_ShowImages( void );
 
@@ -3243,6 +3243,7 @@ typedef struct capShadowmapCommand_s {
 typedef struct convolveCubemapCommand_s {
 	int commandId;
 	int cubemap;
+	int cubeSide;
 } convolveCubemapCommand_t;
 
 typedef struct postProcessCommand_s {
@@ -3367,7 +3368,7 @@ void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 void R_AddCapShadowmapCmd( int dlight, int cubeSide );
-void R_AddConvolveCubemapCmd( int cubemap );
+void R_AddConvolveCubemapCmd( int cubemap , int cubeSide );
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );

@@ -2726,7 +2726,6 @@ static void R_AssignCubemapsToWorldSurfaces(world_t *worldData)
 
 static void R_RenderAllCubemaps(void)
 {
-	int i, j;
 	GLenum cubemapFormat = GL_RGBA8;
 
 	if ( r_hdr->integer )
@@ -2734,21 +2733,30 @@ static void R_RenderAllCubemaps(void)
 		cubemapFormat = GL_RGBA16F;
 	}
 
-	for (i = 0; i < tr.numCubemaps; i++)
+	int numberOfBounces = 1;
+	for (int k = 0; k <= numberOfBounces; k++)
 	{
-		tr.cubemaps[i] = R_CreateImage (va ("*cubeMap%d", i), NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, cubemapFormat);
-	}
-	
-	for (i = 0; i < tr.numCubemaps; i++)
-	{
-		for (j = 0; j < 6; j++)
+		qboolean bounce = qboolean(k != 0);
+		for (int i = 0; i < tr.numCubemaps; i++)
 		{
-			RE_ClearScene();
-			R_RenderCubemapSide(i, j, qfalse);
-			R_IssuePendingRenderCommands();
-			R_InitNextFrame();
+			if (!bounce)
+				tr.cubemaps[i] = R_CreateImage(va("*cubeMap%d", i), NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, cubemapFormat);
+
+			for (int j = 0; j < 6; j++)
+			{
+				RE_ClearScene();
+				R_RenderCubemapSide(i, j, qfalse, bounce);
+				R_IssuePendingRenderCommands();
+				R_InitNextFrame();
+			}
+			for (int j = 0; j < 6; j++)
+			{
+				RE_ClearScene();
+				R_AddConvolveCubemapCmd(i, j);
+				R_IssuePendingRenderCommands();
+				R_InitNextFrame();
+			}
 		}
-		R_AddConvolveCubemapCmd(i);
 	}
 }
 

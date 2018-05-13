@@ -514,8 +514,8 @@ void RB_BeginDrawingView (void) {
 		// FIXME: hack for cubemap testing
 		if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 		{
-			//qglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
-			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
+			image_t *cubemap = tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex];
+			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
 		}
 	}
 
@@ -1834,21 +1834,8 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	image_t *cubemap = tr.cubemaps[cmd->cubemap];
 
-	if (!cubemap)
+	if (!cubemap || !cmd)
 		return (const void *)(cmd + 1);
-
-	vec4_t quadVerts[4];
-	vec2_t texCoords[4];
-
-	VectorSet4(quadVerts[0], -1, 1, 0, 1);
-	VectorSet4(quadVerts[1], 1, 1, 0, 1);
-	VectorSet4(quadVerts[2], 1, -1, 0, 1);
-	VectorSet4(quadVerts[3], -1, -1, 0, 1);
-
-	texCoords[0][0] = 0; texCoords[0][1] = 0;
-	texCoords[1][0] = 1; texCoords[1][1] = 0;
-	texCoords[2][0] = 1; texCoords[2][1] = 1;
-	texCoords[3][0] = 0; texCoords[3][1] = 1;
 
 	FBO_Bind(tr.preFilterEnvMapFbo);
 	GL_BindToTMU(cubemap, TB_CUBEMAP);
@@ -1864,14 +1851,12 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 		height = height / 2.0;
 		qglViewport(0, 0, width, height);
 		qglScissor(0, 0, width, height);
-		for (int cubemapSide = 0; cubemapSide < 6; cubemapSide++)
-		{
-			vec4_t viewInfo;
-			VectorSet4(viewInfo, cubemapSide, level, CUBE_MAP_MIPS, (level / (float)CUBE_MAP_MIPS));
-			GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
-			RB_InstantQuad2(quadVerts, texCoords);
-			qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemapSide, level, 0, 0, 0, 0, width, height);
-		}
+
+		vec4_t viewInfo;
+		VectorSet4(viewInfo, cmd->cubeSide, level, CUBE_MAP_MIPS, (level / (float)CUBE_MAP_MIPS));
+		GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
+		RB_InstantTriangle();
+		qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, level, 0, 0, 0, 0, width, height);
 	}
 
 	return (const void *)(cmd + 1);
@@ -2109,20 +2094,6 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 	RB_ShadowFinish();		
 }
 
-static void RB_GenerateMipmapsForCubemapFaceRender()
-{
-	if ( tr.renderCubeFbo == NULL || backEnd.viewParms.targetFbo != tr.renderCubeFbo )
-	{
-		return;
-	}
-
-	FBO_Bind(NULL);
-	GL_SelectTexture(TB_CUBEMAP);
-	GL_BindToTMU(tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex], TB_CUBEMAP);
-	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-	GL_SelectTexture(0);
-}
-
 static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSurfs )
 {
 	if ( backEnd.refdef.rdflags & RDF_NOWORLDMODEL )
@@ -2217,8 +2188,6 @@ static const void *RB_DrawSurfs( const void *data ) {
 	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
 
 	RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);
-
-	RB_GenerateMipmapsForCubemapFaceRender();
 
 	return (const void *)(cmd + 1);
 }

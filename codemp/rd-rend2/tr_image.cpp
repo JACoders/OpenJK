@@ -3183,12 +3183,12 @@ void R_CreateBuiltinImages( void ) {
 				IMGFLAG_CLAMPTOEDGE |
 				IMGFLAG_MIPMAP |
 				IMGFLAG_CUBEMAP,
-			rgbFormat);
+			hdrFormat);
 
 		tr.prefilterEnvMapImage = R_CreateImage(
 			"*prefilterEnvMapFbo", NULL, CUBE_MAP_SIZE / 2, CUBE_MAP_SIZE / 2,
 			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-			rgbFormat);
+			hdrFormat);
 	}
 }
 
