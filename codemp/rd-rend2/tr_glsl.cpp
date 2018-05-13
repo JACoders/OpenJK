@@ -2080,14 +2080,12 @@ static int GLSL_LoadGPUProgramWeather(
 	GLSL_InitUniforms(&tr.weatherShader);
 	GLSL_FinishGPUShader(&tr.weatherShader);
 
-	const char *extradefines = "#define DO_PARTICLE_UPDATE\n";
-	GLSL_LoadGPUProgramBasicWithDefinitions(
+	GLSL_LoadGPUProgramBasic(
 		builder,
 		scratchAlloc,
 		&tr.weatherUpdateShader,
 		"weatherUpdate",
 		fallback_weatherUpdateProgram,
-		extradefines,
 		ATTR_POSITION | ATTR_COLOR,
 		(1u << XFB_VAR_POSITION) | (1u << XFB_VAR_VELOCITY));
 
