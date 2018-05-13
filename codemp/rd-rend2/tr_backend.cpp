@@ -980,8 +980,6 @@ static void RB_DrawItems(
 	{
 		const DrawItem& drawItem = drawItems[drawOrder[i]];
 
-		RB_SetRenderState(drawItem.renderState);
-
 		if (drawItem.ibo != nullptr)
 			R_BindIBO(drawItem.ibo);
 
@@ -995,6 +993,8 @@ static void RB_DrawItems(
 		RB_BindTransformFeedbackBuffer(drawItem.transformFeedbackBuffer);
 
 		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
+
+		RB_SetRenderState(drawItem.renderState);
 
 		switch ( drawItem.draw.type )
 		{

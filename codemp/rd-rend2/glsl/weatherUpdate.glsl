@@ -11,8 +11,9 @@ out vec3 var_Velocity;
 
 void main()
 {
-	var_Position = attr_Position;
-	var_Position.z -= 0.05;
-
 	var_Velocity = attr_Color;
+	var_Position = attr_Position + var_Velocity * 10.0;
+
+	if (var_Position.z < -200.0)
+		var_Position.z = 3000.0;
 }

@@ -1,9 +1,13 @@
 /*[Vertex]*/
 in vec3 attr_Position;
+in vec3 attr_Color;  // velocity
+
+out vec3 var_Velocity;
 
 void main()
 {
 	gl_Position = vec4(attr_Position, 1.0);
+	var_Velocity = attr_Color;
 }
 
 /*[Geometry]*/
@@ -12,6 +16,8 @@ layout(triangle_strip, max_vertices = 4) out;
 
 uniform mat4 u_ModelViewProjectionMatrix;
 uniform vec3 u_ViewOrigin;
+
+in vec3 var_Velocity[];
 
 void main()
 {

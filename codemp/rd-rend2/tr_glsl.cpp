@@ -2075,7 +2075,7 @@ static int GLSL_LoadGPUProgramWeather(
 		&tr.weatherShader,
 		"weather",
 		fallback_weatherProgram,
-		ATTR_POSITION);
+		ATTR_POSITION | ATTR_COLOR);
 
 	GLSL_InitUniforms(&tr.weatherShader);
 	GLSL_FinishGPUShader(&tr.weatherShader);
@@ -2089,7 +2089,7 @@ static int GLSL_LoadGPUProgramWeather(
 		fallback_weatherUpdateProgram,
 		extradefines,
 		ATTR_POSITION | ATTR_COLOR,
-		XFB_VAR_POSITION | XFB_VAR_VELOCITY);
+		(1u << XFB_VAR_POSITION) | (1u << XFB_VAR_VELOCITY));
 
 	GLSL_InitUniforms(&tr.weatherUpdateShader);
 	GLSL_FinishGPUShader(&tr.weatherUpdateShader);
