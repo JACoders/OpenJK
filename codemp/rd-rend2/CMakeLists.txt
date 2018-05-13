@@ -127,8 +127,14 @@ find_package(OpenGL REQUIRED)
 set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OPENGL_INCLUDE_DIR})
 set(MPRend2Libraries ${MPRend2Libraries} ${OPENGL_LIBRARIES})
 
-source_group("renderer" FILES ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
-set(MPRend2Files ${MPRend2Files} ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
+source_group("renderer"
+	FILES
+	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
+set(MPRend2Files
+	${MPRend2Files}
+	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
 
 set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OpenJKLibDir})
 add_library(${MPRend2} SHARED ${MPRend2Files})
@@ -164,17 +170,24 @@ set_property(TARGET ${MPRend2} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILI
 set_target_properties(${MPRend2} PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 set_target_properties(${MPRend2} PROPERTIES PROJECT_LABEL "MP Rend2 Renderer")
 target_link_libraries(${MPRend2} ${MPRend2Libraries})
+target_include_directories(${MPRend2} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # GLSL shader file generator
 add_executable(compact_glsl
 	${MPDir}/rd-rend2/glsl/compact.cpp
 	${MPDir}/rd-rend2/tr_allocator.cpp
 	${MPDir}/rd-rend2/tr_allocator.h
-	${MPDir}/rd-rend2/tr_glsl_parse.cpp
-	)
+	${MPDir}/rd-rend2/tr_glsl_parse.cpp)
 set_target_properties(compact_glsl PROPERTIES COMPILE_DEFINITIONS "GLSL_BUILDTOOL")
 set_target_properties(compact_glsl PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
-	COMMAND compact_glsl ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp ${MPRend2GLSLFiles}
-	DEPENDS compact_glsl ${MPRend2GLSLFiles})
+	OUTPUT
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+	COMMAND
+		compact_glsl
+			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+			${MPRend2GLSLFiles}
+	DEPENDS
+		compact_glsl ${MPRend2GLSLFiles})

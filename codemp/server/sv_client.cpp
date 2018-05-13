@@ -1336,15 +1336,21 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// normal to spam a lot of commands when downloading
 	if ( !com_cl_running->integer &&
 		cl->state >= CS_ACTIVE &&
-		sv_floodProtect->integer &&
-		svs.time < cl->nextReliableTime ) {
-		// ignore any other text messages from this client but let them keep playing
-		// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
-		clientOk = qfalse;
+		sv_floodProtect->integer )
+	{
+		const int floodTime = (sv_floodProtect->integer == 1) ? 1000 : sv_floodProtect->integer;
+		if ( svs.time < (cl->lastReliableTime + floodTime) ) {
+			// ignore any other text messages from this client but let them keep playing
+			// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
+			clientOk = qfalse;
+		}
+		else {
+			cl->lastReliableTime = svs.time;
+		}
+		if ( sv_floodProtectSlow->integer ) {
+			cl->lastReliableTime = svs.time;
+		}
 	}
-
-	// don't allow another command for one second
-	cl->nextReliableTime = svs.time + 1000;
 
 	SV_ExecuteClientCommand( cl, s, clientOk );
 

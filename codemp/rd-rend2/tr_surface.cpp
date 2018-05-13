@@ -481,6 +481,7 @@ static qboolean RB_SurfaceVbo(
 		VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndexes, int firstIndex,
 		int minIndex, int maxIndex, int dlightBits, int pshadowBits, qboolean shaderCheck)
 {
+	int i, mergeForward, mergeBack;
 	GLvoid *firstIndexOffset, *lastIndexOffset;
 
 	if (!vbo || !ibo)
@@ -501,8 +502,82 @@ static qboolean RB_SurfaceVbo(
 	tess.dlightBits |= dlightBits;
 	tess.pshadowBits |= pshadowBits;
 
+	// merge this into any existing multidraw primitives
+	mergeForward = -1;
+	mergeBack = -1;
 	firstIndexOffset = BUFFER_OFFSET(firstIndex * sizeof(glIndex_t));
 	lastIndexOffset  = BUFFER_OFFSET((firstIndex + numIndexes) * sizeof(glIndex_t));
+
+	if (r_mergeMultidraws->integer)
+	{
+		i = 0;
+
+		if (r_mergeMultidraws->integer == 1)
+		{
+			// lazy merge, only check the last primitive
+			if (tess.multiDrawPrimitives)
+			{
+				i = tess.multiDrawPrimitives - 1;
+			}
+		}
+
+		for (; i < tess.multiDrawPrimitives; i++)
+		{
+			if (tess.multiDrawLastIndex[i] == firstIndexOffset)
+			{
+				mergeBack = i;
+			}
+
+			if (lastIndexOffset == tess.multiDrawFirstIndex[i])
+			{
+				mergeForward = i;
+			}
+		}
+	}
+
+	if (mergeBack != -1 && mergeForward == -1)
+	{
+		tess.multiDrawNumIndexes[mergeBack] += numIndexes;
+		tess.multiDrawLastIndex[mergeBack]   = tess.multiDrawFirstIndex[mergeBack] + tess.multiDrawNumIndexes[mergeBack];
+		tess.multiDrawMinIndex[mergeBack] = MIN(tess.multiDrawMinIndex[mergeBack], minIndex);
+		tess.multiDrawMaxIndex[mergeBack] = MAX(tess.multiDrawMaxIndex[mergeBack], maxIndex);
+		backEnd.pc.c_multidrawsMerged++;
+	}
+	else if (mergeBack == -1 && mergeForward != -1)
+	{
+		tess.multiDrawNumIndexes[mergeForward] += numIndexes;
+		tess.multiDrawFirstIndex[mergeForward]  = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[mergeForward]   = tess.multiDrawFirstIndex[mergeForward] + tess.multiDrawNumIndexes[mergeForward];
+		tess.multiDrawMinIndex[mergeForward] = MIN(tess.multiDrawMinIndex[mergeForward], minIndex);
+		tess.multiDrawMaxIndex[mergeForward] = MAX(tess.multiDrawMaxIndex[mergeForward], maxIndex);
+		backEnd.pc.c_multidrawsMerged++;
+	}
+	else if (mergeBack != -1 && mergeForward != -1)
+	{
+		tess.multiDrawNumIndexes[mergeBack] += numIndexes + tess.multiDrawNumIndexes[mergeForward];
+		tess.multiDrawLastIndex[mergeBack]   = tess.multiDrawFirstIndex[mergeBack] + tess.multiDrawNumIndexes[mergeBack];
+		tess.multiDrawMinIndex[mergeBack] = MIN(tess.multiDrawMinIndex[mergeBack], MIN(tess.multiDrawMinIndex[mergeForward], minIndex));
+		tess.multiDrawMaxIndex[mergeBack] = MAX(tess.multiDrawMaxIndex[mergeBack], MAX(tess.multiDrawMaxIndex[mergeForward], maxIndex));
+		tess.multiDrawPrimitives--;
+
+		if (mergeForward != tess.multiDrawPrimitives)
+		{
+			tess.multiDrawNumIndexes[mergeForward] = tess.multiDrawNumIndexes[tess.multiDrawPrimitives];
+			tess.multiDrawFirstIndex[mergeForward] = tess.multiDrawFirstIndex[tess.multiDrawPrimitives];
+		}
+		backEnd.pc.c_multidrawsMerged += 2;
+	}
+	else if (mergeBack == -1 && mergeForward == -1)
+	{
+		tess.multiDrawNumIndexes[tess.multiDrawPrimitives] = numIndexes;
+		tess.multiDrawFirstIndex[tess.multiDrawPrimitives] = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[tess.multiDrawPrimitives] = (glIndex_t *)lastIndexOffset;
+		tess.multiDrawMinIndex[tess.multiDrawPrimitives] = minIndex;
+		tess.multiDrawMaxIndex[tess.multiDrawPrimitives] = maxIndex;
+		tess.multiDrawPrimitives++;
+	}
+
+	backEnd.pc.c_multidraws++;
 
 	tess.numIndexes  += numIndexes;
 	tess.numVertexes += numVerts;
@@ -2111,10 +2186,10 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	samplerBindingsWriter.AddAnimatedImage(&firstStage->bundle[0], TB_COLORMAP);
 
 	DrawItem item = {};
-	item.stateBits = firstStage->stateBits;
-	item.cullType = CT_TWO_SIDED;
+	item.renderState.stateBits = firstStage->stateBits;
+	item.renderState.cullType = CT_TWO_SIDED;
+	item.renderState.depthRange = DepthRange{0.0f, 1.0f};
 	item.program = program;
-	item.depthRange = DepthRange{0.0f, 1.0f};
 	item.ibo = surf->ibo;
 	tess.externalIBO = surf->ibo;
 

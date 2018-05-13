@@ -64,6 +64,9 @@ static GLenum GetGLBufferUsage ( vboUsage_t usage )
 		case VBO_USAGE_DYNAMIC:
 			return GL_STREAM_DRAW;
 
+		case VBO_USAGE_XFB:
+			return GL_STREAM_COPY;
+
 		default:
 			ri.Error (ERR_FATAL, "bad vboUsage_t given: %i", usage);
 			return GL_INVALID_OPERATION;

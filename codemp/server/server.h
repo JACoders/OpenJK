@@ -168,7 +168,7 @@ typedef struct client_s {
 	int				downloadSendTime;	// time we last got an ack from the client
 
 	int				deltaMessage;		// frame last client usercmd message
-	int				nextReliableTime;	// svs.time when another reliable command will be allowed
+	int				lastReliableTime;	// svs.time when reliable command was last received
 	int				lastPacketTime;		// svs.time when packet was last received
 	int				lastConnectTime;	// svs.time when connection started
 	int				nextSnapshotTime;	// send another snapshot when svs.time >= nextSnapshotTime
@@ -264,6 +264,7 @@ extern	cvar_t	*sv_maxPing;
 extern	cvar_t	*sv_gametype;
 extern	cvar_t	*sv_pure;
 extern	cvar_t	*sv_floodProtect;
+extern	cvar_t	*sv_floodProtectSlow;
 extern	cvar_t	*sv_lanForceRate;
 extern	cvar_t	*sv_needpass;
 extern	cvar_t	*sv_filterCommands;

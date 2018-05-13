@@ -453,9 +453,9 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	samplerBindingsWriter.AddStaticImage(image, TB_DIFFUSEMAP);
 
 	DrawItem item = {};
-	item.cullType = CT_TWO_SIDED;
+	item.renderState.cullType = CT_TWO_SIDED;
+	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, tess.shader);
 	item.program = sp;
-	item.depthRange = RB_GetDepthRange(backEnd.currentEntity, tess.shader);
 	item.ibo = backEndData->currentFrame->dynamicIbo;
 	item.numAttributes = vertexArrays.numVertexArrays;
 	item.attributes = ojkAllocArray<vertexAttribute_t>(

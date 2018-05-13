@@ -1886,7 +1886,7 @@ void CalculateWeightGoals(void)
 
 				if (gWPArray[i]->flags & WPFLAG_GOALPOINT)
 				{
-					gWPArray[i]->flags -= WPFLAG_GOALPOINT;
+					gWPArray[i]->flags &= ~WPFLAG_GOALPOINT;
 				}
 			}
 
@@ -2047,6 +2047,7 @@ int LoadPathData(const char *filename)
 	if (len >= 524288)
 	{
 		trap->Print(S_COLOR_RED "Route file exceeds maximum length\n");
+		trap->FS_Close( f );
 		return 0;
 	}
 
@@ -3709,11 +3710,11 @@ int AcceptBotCommand(char *cmd, gentity_t *pl)
 			{
 				if (gWPArray[i]->flags & WPFLAG_ONEWAY_FWD)
 				{
-					gWPArray[i]->flags -= WPFLAG_ONEWAY_FWD;
+					gWPArray[i]->flags &= ~WPFLAG_ONEWAY_FWD;
 				}
 				if (gWPArray[i]->flags & WPFLAG_ONEWAY_BACK)
 				{
-					gWPArray[i]->flags -= WPFLAG_ONEWAY_BACK;
+					gWPArray[i]->flags &= ~WPFLAG_ONEWAY_BACK;
 				}
 			}
 

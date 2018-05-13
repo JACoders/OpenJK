@@ -341,10 +341,10 @@ void GL_VertexAttribPointers(
 	for ( int i = 0; i < numAttributes; i++ )
 	{
 		vertexAttribute_t& attrib = attributes[i];
+		vertexAttribute_t& currentAttrib = glState.currentVaoAttribs[attrib.index];
 
 		newAttribs |= (1 << attrib.index);
-		if ( memcmp(&glState.currentVaoAttribs[attrib.index], &attrib,
-					sizeof(glState.currentVaoAttribs[attrib.index])) == 0 )
+		if (memcmp(&currentAttrib, &attrib, sizeof(currentAttrib)) == 0)
 		{
 			// No change
 			continue;
@@ -368,9 +368,11 @@ void GL_VertexAttribPointers(
 				attrib.stride,
 				BUFFER_OFFSET(attrib.offset));
 		}
-		qglVertexAttribDivisor(attrib.index, attrib.stepRate);
 
-		glState.currentVaoAttribs[attrib.index] = attrib;
+		if (currentAttrib.stepRate != attrib.stepRate)
+			qglVertexAttribDivisor(attrib.index, attrib.stepRate);
+
+		currentAttrib = attrib;
 	}
 
 	uint32_t diff = newAttribs ^ glState.vertexAttribsState;
@@ -941,6 +943,34 @@ static void RB_BindAndUpdateUniformBlocks(
 	}
 }
 
+static void RB_SetRenderState(const RenderState& renderState)
+{
+	GL_Cull(renderState.cullType);
+	GL_State(renderState.stateBits);
+	GL_DepthRange(
+		renderState.depthRange.minDepth,
+		renderState.depthRange.maxDepth);
+
+	if (renderState.transformFeedback)
+	{
+		qglEnable(GL_RASTERIZER_DISCARD);
+		qglBeginTransformFeedback(GL_POINTS);
+	}
+}
+
+static void RB_BindTransformFeedbackBuffer(VBO_t *buffer)
+{
+	if (glState.currentXFBBO != buffer)
+	{
+		if (buffer != nullptr)
+			qglBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer->vertexesVBO);
+		else
+			qglBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
+
+		glState.currentXFBBO = buffer;
+	}
+}
+
 static void RB_DrawItems(
 	int numDrawItems,
 	const DrawItem *drawItems,
@@ -950,10 +980,9 @@ static void RB_DrawItems(
 	{
 		const DrawItem& drawItem = drawItems[drawOrder[i]];
 
-		GL_Cull(drawItem.cullType);
-		GL_State(drawItem.stateBits);
-		GL_DepthRange(drawItem.depthRange.minDepth, drawItem.depthRange.maxDepth);
-		if ( drawItem.ibo != nullptr )
+		RB_SetRenderState(drawItem.renderState);
+
+		if (drawItem.ibo != nullptr)
 			R_BindIBO(drawItem.ibo);
 
 		GLSL_BindProgram(drawItem.program);
@@ -963,6 +992,7 @@ static void RB_DrawItems(
 		RB_BindAndUpdateUniformBlocks(
 			drawItem.numUniformBlockBindings,
 			drawItem.uniformBlockBindings);
+		RB_BindTransformFeedbackBuffer(drawItem.transformFeedbackBuffer);
 
 		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
 
@@ -1002,6 +1032,12 @@ static void RB_DrawItems(
 				assert(!"Invalid or unhandled draw type");
 				break;
 			}
+		}
+
+		if (drawItem.renderState.transformFeedback)
+		{
+			qglEndTransformFeedback();
+			qglDisable(GL_RASTERIZER_DISCARD);
 		}
 	}
 }

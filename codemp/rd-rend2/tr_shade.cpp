@@ -1016,10 +1016,10 @@ static void ForwardDlight( const shaderCommands_t *input,  VertexArraysPropertie
 
 		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
 		// where they aren't rendered
-		item.stateBits = stateBits;
-		item.cullType = cullType;
+		item.renderState.stateBits = stateBits;
+		item.renderState.cullType = cullType;
+		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.program = sp;
-		item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
@@ -1185,10 +1185,10 @@ static void RB_FogPass( shaderCommands_t *input, const fog_t *fog, const VertexA
 		stateBits |= GLS_DEPTHFUNC_EQUAL;
 
 	DrawItem item = {};
-	item.stateBits = stateBits;
-	item.cullType = cullType;
+	item.renderState.stateBits = stateBits;
+	item.renderState.cullType = cullType;
+	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 	item.program = sp;
-	item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	item.numAttributes = vertexArrays->numVertexArrays;
@@ -1688,10 +1688,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		CaptureDrawData(input, pStage, index, stage);
 
 		DrawItem item = {};
-		item.stateBits = stateBits;
-		item.cullType = cullType;
+		item.renderState.stateBits = stateBits;
+		item.renderState.cullType = cullType;
+		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.program = sp;
-		item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
@@ -1746,9 +1746,9 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
 
 	DrawItem item = {};
-	item.cullType = cullType;
+	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
+	item.renderState.cullType = cullType;
 	item.program = sp;
-	item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	item.numAttributes = vertexArrays->numVertexArrays;
