@@ -953,7 +953,21 @@ static void RB_SetRenderState(const RenderState& renderState)
 
 	if (renderState.transformFeedback)
 	{
+		qglEnable(GL_RASTERIZER_DISCARD);
 		qglBeginTransformFeedback(GL_POINTS);
+	}
+}
+
+static void RB_BindTransformFeedbackBuffer(VBO_t *buffer)
+{
+	if (glState.currentXFBBO != buffer)
+	{
+		if (buffer != nullptr)
+			qglBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer->vertexesVBO);
+		else
+			qglBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
+
+		glState.currentXFBBO = buffer;
 	}
 }
 
@@ -978,6 +992,7 @@ static void RB_DrawItems(
 		RB_BindAndUpdateUniformBlocks(
 			drawItem.numUniformBlockBindings,
 			drawItem.uniformBlockBindings);
+		RB_BindTransformFeedbackBuffer(drawItem.transformFeedbackBuffer);
 
 		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
 
@@ -1022,6 +1037,7 @@ static void RB_DrawItems(
 		if (drawItem.renderState.transformFeedback)
 		{
 			qglEndTransformFeedback();
+			qglDisable(GL_RASTERIZER_DISCARD);
 		}
 	}
 }

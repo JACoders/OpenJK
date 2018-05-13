@@ -408,7 +408,8 @@ typedef struct {
 typedef enum
 {
 	VBO_USAGE_STATIC,
-	VBO_USAGE_DYNAMIC
+	VBO_USAGE_DYNAMIC,
+	VBO_USAGE_XFB
 } vboUsage_t;
 
 typedef struct VBO_s
@@ -2020,6 +2021,7 @@ typedef struct glstate_s {
 	FBO_t          *currentFBO;
 	VBO_t          *currentVBO;
 	IBO_t          *currentIBO;
+	VBO_t		   *currentXFBBO;
 	matrix_t        modelview;
 	matrix_t        projection;
 	matrix_t		modelviewProjection;
@@ -3517,6 +3519,8 @@ struct DrawItem
 
 	uint32_t numUniformBlockBindings;
 	UniformBlockBinding *uniformBlockBindings;
+
+	VBO_t *transformFeedbackBuffer;
 
 	UniformData *uniformData;
 

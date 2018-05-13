@@ -552,8 +552,8 @@ static void GLSL_BindShaderInterface( shaderProgram_t *program )
 	};
 
 	static const char *xfbVarNames[XFB_VAR_COUNT] = {
-		"xfb_Position",
-		"xfb_Velocity",
+		"var_Position",
+		"var_Velocity",
 	};
 
 	static const char *shaderOutputNames[] = {
@@ -751,6 +751,7 @@ bool ShaderProgramBuilder::Build( shaderProgram_t *shaderProgram )
 
 	shaderProgram->program = program;
 	shaderProgram->attribs = attribs;
+	shaderProgram->xfbVariables = xfbVariables;
 
 	GLSL_BindShaderInterface(shaderProgram);
 	GLSL_LinkProgram(shaderProgram->program);
@@ -866,6 +867,9 @@ void GLSL_FinishGPUShader(shaderProgram_t *program)
 void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData )
 {
 	UniformData *data = uniformData;
+	if (data == nullptr)
+		return;
+
 	while ( data->index != UNIFORM_COUNT )
 	{
 		switch ( uniformsInfo[data->index].type )
@@ -1593,6 +1597,35 @@ static int GLSL_LoadGPUProgramLightAll(
 	return numPrograms;
 }
 
+static int GLSL_LoadGPUProgramBasicWithDefinitions(
+	ShaderProgramBuilder& builder,
+	Allocator& scratchAlloc,
+	shaderProgram_t *shaderProgram,
+	const char *programName,
+	const GPUProgramDesc& programFallback,
+	const char *extraDefines,
+	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0,
+	const uint32_t xfbVariables = NO_XFB_VARS)
+{
+	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
+
+	const GPUProgramDesc *programDesc =
+		LoadProgramSource(programName, allocator, programFallback);
+	if (!GLSL_LoadGPUShader(
+			builder,
+			shaderProgram,
+			programName,
+			attribs,
+			xfbVariables,
+			extraDefines,
+			*programDesc))
+	{
+		ri.Error(ERR_FATAL, "Could not load %s shader!", programName);
+	}
+
+	return 1;
+}
+
 static int GLSL_LoadGPUProgramBasic(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc,
@@ -1602,19 +1635,16 @@ static int GLSL_LoadGPUProgramBasic(
 	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0,
 	const uint32_t xfbVariables = NO_XFB_VARS)
 {
-	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
-
-	const GPUProgramDesc *programDesc =
-		LoadProgramSource(programName, allocator, programFallback);
-	if (!GLSL_LoadGPUShader(builder, shaderProgram, programName, attribs, xfbVariables,
-			nullptr, *programDesc))
-	{
-		ri.Error(ERR_FATAL, "Could not load %s shader!", programName);
-	}
-
-	return 1;
+	return GLSL_LoadGPUProgramBasicWithDefinitions(
+		builder,
+		scratchAlloc,
+		shaderProgram,
+		programName,
+		programFallback,
+		nullptr,
+		attribs,
+		xfbVariables);
 }
-
 
 static int GLSL_LoadGPUProgramTextureColor(
 	ShaderProgramBuilder& builder,
@@ -1642,20 +1672,13 @@ static int GLSL_LoadGPUProgramDepthFill(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
 {
-	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
-
-	char extradefines[1200];
-	const GPUProgramDesc *programDesc =
-		LoadProgramSource("shadowfill", allocator, fallback_shadowfillProgram);
-	const uint32_t attribs =
-		ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0;
-
-	extradefines[0] = '\0';
-	if (!GLSL_LoadGPUShader(builder, &tr.shadowmapShader, "shadowfill", attribs, NO_XFB_VARS,
-			nullptr, *programDesc))
-	{
-		ri.Error(ERR_FATAL, "Could not load shadowfill shader!");
-	}
+	GLSL_LoadGPUProgramBasic(
+		builder,
+		scratchAlloc,
+		&tr.shadowmapShader,
+		"shadowfill",
+		fallback_shadowfillProgram,
+		ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0);
 
 	GLSL_InitUniforms(&tr.shadowmapShader);
 	GLSL_FinishGPUShader(&tr.shadowmapShader);
@@ -1667,21 +1690,16 @@ static int GLSL_LoadGPUProgramPShadow(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
 {
-	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
+	const char *extradefines = "#define USE_PCF\n#define USE_DISCARD\n";
 
-	char extradefines[1200];
-	const GPUProgramDesc *programDesc =
-		LoadProgramSource("pshadow", allocator, fallback_pshadowProgram);
-	const uint32_t attribs = ATTR_POSITION | ATTR_NORMAL;
-
-	extradefines[0] = '\0';
-	Q_strcat(extradefines, sizeof(extradefines), "#define USE_PCF\n#define USE_DISCARD\n");
-
-	if (!GLSL_LoadGPUShader(builder, &tr.pshadowShader, "pshadow", attribs, NO_XFB_VARS,
-			extradefines, *programDesc))
-	{
-		ri.Error(ERR_FATAL, "Could not load pshadow shader!");
-	}
+	GLSL_LoadGPUProgramBasicWithDefinitions(
+		builder,
+		scratchAlloc,
+		&tr.pshadowShader,
+		"pshadow",
+		fallback_pshadowProgram,
+		extradefines,
+		ATTR_POSITION | ATTR_NORMAL);
 
 	GLSL_InitUniforms(&tr.pshadowShader);
 
@@ -2057,24 +2075,26 @@ static int GLSL_LoadGPUProgramWeather(
 		&tr.weatherShader,
 		"weather",
 		fallback_weatherProgram,
-		ATTR_POSITION | ATTR_COLOR);
+		ATTR_POSITION);
 
 	GLSL_InitUniforms(&tr.weatherShader);
 	GLSL_FinishGPUShader(&tr.weatherShader);
 
-	GLSL_LoadGPUProgramBasic(
+	const char *extradefines = "#define DO_PARTICLE_UPDATE\n";
+	GLSL_LoadGPUProgramBasicWithDefinitions(
 		builder,
 		scratchAlloc,
 		&tr.weatherUpdateShader,
 		"weatherUpdate",
 		fallback_weatherUpdateProgram,
+		extradefines,
 		ATTR_POSITION | ATTR_COLOR,
 		XFB_VAR_POSITION | XFB_VAR_VELOCITY);
 
 	GLSL_InitUniforms(&tr.weatherUpdateShader);
 	GLSL_FinishGPUShader(&tr.weatherUpdateShader);
 
-	return 1;
+	return 2;
 }
 
 void GLSL_LoadGPUShaders()
