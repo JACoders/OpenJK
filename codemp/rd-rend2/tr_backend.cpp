@@ -341,10 +341,10 @@ void GL_VertexAttribPointers(
 	for ( int i = 0; i < numAttributes; i++ )
 	{
 		vertexAttribute_t& attrib = attributes[i];
+		vertexAttribute_t& currentAttrib = glState.currentVaoAttribs[attrib.index];
 
 		newAttribs |= (1 << attrib.index);
-		if ( memcmp(&glState.currentVaoAttribs[attrib.index], &attrib,
-					sizeof(glState.currentVaoAttribs[attrib.index])) == 0 )
+		if (memcmp(&currentAttrib, &attrib, sizeof(currentAttrib)) == 0)
 		{
 			// No change
 			continue;
@@ -368,9 +368,11 @@ void GL_VertexAttribPointers(
 				attrib.stride,
 				BUFFER_OFFSET(attrib.offset));
 		}
-		qglVertexAttribDivisor(attrib.index, attrib.stepRate);
 
-		glState.currentVaoAttribs[attrib.index] = attrib;
+		if (currentAttrib.stepRate != attrib.stepRate)
+			qglVertexAttribDivisor(attrib.index, attrib.stepRate);
+
+		currentAttrib = attrib;
 	}
 
 	uint32_t diff = newAttribs ^ glState.vertexAttribsState;
