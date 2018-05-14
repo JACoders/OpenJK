@@ -521,7 +521,7 @@ vec3 CalcIBLContribution(
 )
 {
 #if defined(USE_CUBEMAP)
-	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(1.0 - roughness, NE)).rgb;
+	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
 
 	vec3 R = reflect(E, N);
 

@@ -8,7 +8,7 @@ void main()
 {
 	vec2 position = vec2(2.0 * float(gl_VertexID & 2) - 1.0, 4.0 * float(gl_VertexID & 1) - 1.0);
 	gl_Position = vec4(position, 0.0, 1.0);
-	vec2 screenCoords = gl_Position.xy / gl_Position.w;
+	vec2 screenCoords = gl_Position.xy;
 	var_ScreenTex = screenCoords * 0.5 + 0.5;
 }
 
