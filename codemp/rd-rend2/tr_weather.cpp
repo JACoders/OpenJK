@@ -42,15 +42,15 @@ namespace
 
 	void GenerateRainModel( weatherSystem_t& ws )
 	{
-		static const int MAX_RAIN_VERTICES = 1000;
+		static const int MAX_RAIN_VERTICES = 5000;
 		rainVertex_t rainVertices[MAX_RAIN_VERTICES];
 
 		for ( int i = 0; i < MAX_RAIN_VERTICES; ++i )
 		{
 			rainVertex_t& vertex = rainVertices[i];
-			vertex.position[0] = Q_flrand(-1000.0f, 1000.0f);
-			vertex.position[1] = Q_flrand(-1000.0f, 1000.0f);
-			vertex.position[2] = Q_flrand(-1000.0f, 1000.0f);
+			vertex.position[0] = Q_flrand(-1000.0f, 3000.0f);
+			vertex.position[1] = Q_flrand(-1000.0f, 3000.0f);
+			vertex.position[2] = Q_flrand(-1000.0f, 3000.0f);
 			vertex.velocity[0] = Q_flrand(-2.0f, 2.0f);
 			vertex.velocity[1] = Q_flrand(-2.0f, 2.0f);
 			vertex.velocity[2] = Q_flrand(-20.0f, 0.0f);
@@ -99,6 +99,18 @@ namespace
 		item.attributes = ojkAllocArray<vertexAttribute_t>(
 			*backEndData->perFrameMemory, numAttribs);
 		memcpy(item.attributes, attribs, sizeof(*item.attributes) * numAttribs);
+
+		UniformDataWriter uniformDataWriter;
+		uniformDataWriter.Start(&tr.weatherUpdateShader);
+
+		const vec2_t mapZExtents = {
+			tr.world->bmodels[0].bounds[0][2],
+			tr.world->bmodels[0].bounds[1][2]
+		};
+		uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
+		uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
+		item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+
 		item.draw.type = DRAW_COMMAND_ARRAYS;
 		item.draw.numInstances = 1;
 		item.draw.primitiveType = GL_POINTS;
@@ -177,11 +189,9 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	UniformDataWriter uniformDataWriter;
 	uniformDataWriter.Start(&tr.weatherShader);
 	uniformDataWriter.SetUniformMatrix4x4(
-		UNIFORM_MODELVIEWPROJECTIONMATRIX,
-		glState.modelviewProjection);
+		UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 	uniformDataWriter.SetUniformVec3(
-		UNIFORM_VIEWORIGIN,
-		backEnd.viewParms.ori.origin);
+		UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 	const vec2_t mapZExtents = { -3000.0, 9000.0 };
 	uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
 	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
