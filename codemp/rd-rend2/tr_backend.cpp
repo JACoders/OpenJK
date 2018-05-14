@@ -1880,8 +1880,9 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	int width = cubemap->width;
 	int height = cubemap->height;
+	float roughnessMips = (float)CUBE_MAP_MIPS - 4.0f;
 
-	for (int level = 1; level <= CUBE_MAP_MIPS; level++)
+	for (float level = 1.0f; level <= CUBE_MAP_MIPS; level++)
 	{
 		width = width / 2.0;
 		height = height / 2.0;
@@ -1889,7 +1890,7 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 		qglScissor(0, 0, width, height);
 
 		vec4_t viewInfo;
-		VectorSet4(viewInfo, cmd->cubeSide, level, CUBE_MAP_MIPS, (level / (float)CUBE_MAP_MIPS));
+		VectorSet4(viewInfo, cmd->cubeSide, level, roughnessMips, level / roughnessMips);
 		GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
 		RB_InstantTriangle();
 		qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, level, 0, 0, 0, 0, width, height);

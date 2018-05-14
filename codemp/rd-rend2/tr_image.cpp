@@ -1976,23 +1976,35 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 {
 	int dataFormat, dataType;
 
-	switch(internalFormat)
+	switch (internalFormat)
 	{
-		case GL_DEPTH_COMPONENT:
-		case GL_DEPTH_COMPONENT16:
-		case GL_DEPTH_COMPONENT24:
-		case GL_DEPTH_COMPONENT32:
-			dataFormat = GL_DEPTH_COMPONENT;
-			dataType = GL_UNSIGNED_BYTE;
-			break;
-		case GL_RGBA16F:
-			dataFormat = GL_RGBA;
-			dataType = GL_HALF_FLOAT;
-			break;
-		default:
-			dataFormat = GL_RGBA;
-			dataType = GL_UNSIGNED_BYTE;
-			break;
+	case GL_DEPTH_COMPONENT:
+	case GL_DEPTH_COMPONENT16:
+	case GL_DEPTH_COMPONENT24:
+	case GL_DEPTH_COMPONENT32:
+		dataFormat = GL_DEPTH_COMPONENT;
+		dataType = GL_UNSIGNED_BYTE;
+		break;
+	case GL_RG16F:
+		dataFormat = GL_RG;
+		dataType = GL_HALF_FLOAT;
+		break;
+	case GL_RGBA16F:
+		dataFormat = GL_RGBA;
+		dataType = GL_HALF_FLOAT;
+		break;
+	case GL_RG32F:
+		dataFormat = GL_RG;
+		dataType = GL_FLOAT;
+		break;
+	case GL_RGBA32F:
+		dataFormat = GL_RGBA;
+		dataType = GL_FLOAT;
+		break;
+	default:
+		dataFormat = GL_RGBA;
+		dataType = GL_UNSIGNED_BYTE;
+		break;
 	}
 
 	if ( subtexture )
@@ -2569,6 +2581,155 @@ done:
 		ri.Hunk_FreeTempMemory( resampledBuffer );
 }
 
+#define GAMMA 2.2f
+#define INV_GAMMA 1.0 / GAMMA
+
+void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
+{
+	image_t	*image;
+	char	diffuseName[MAX_QPATH];
+	char	specularName[MAX_QPATH];
+	int		width, height, rmoWidth, rmoHeight;
+	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
+	long	hash;
+
+	if (!name) {
+		return;
+	}
+
+	COM_StripExtension(name, diffuseName, MAX_QPATH);
+	Q_strcat(diffuseName, MAX_QPATH, "_diffuse");
+
+	COM_StripExtension(name, specularName, MAX_QPATH);
+	Q_strcat(specularName, MAX_QPATH, "_spec");
+
+	//
+	// see if the images are already loaded
+	//
+	hash = generateHashValue(diffuseName);
+	for (image = hashTable[hash]; image; image = image->next) {
+		if (!strcmp(diffuseName, image->imgName)) {
+			stage->bundle[TB_COLORMAP].image[0] = image;
+			// check for specular map
+			hash = generateHashValue(specularName);
+			for (image = hashTable[hash]; image; image = image->next) {
+				if (!strcmp(specularName, image->imgName)) {
+					stage->bundle[TB_SPECULARMAP].image[0] = image;
+					return;
+				}
+			}
+		}
+	}
+
+	//
+	// load the pics from disk
+	//
+	R_LoadImage(name, &baseColorPic, &width, &height);
+	if (baseColorPic == NULL) {
+		return;
+	}
+	R_LoadImage(rmoName, &rmoPic, &rmoWidth, &rmoHeight);
+	if (rmoPic == NULL) {
+		return;
+	}
+
+	if (width != rmoWidth || height != rmoHeight)
+	{
+		ri.Printf(PRINT_ALL, "WARNING: Can't build Specular Map for %s (different texture sizes for baseColor and rmo)\n", name);
+		return;
+	}
+
+	specGlossPic = (byte *)Z_Malloc(width * height * 4, TAG_TEMP_WORKSPACE, qfalse);
+	diffusePic = (byte *)Z_Malloc(width * height * 4, TAG_TEMP_WORKSPACE, qfalse);
+
+	float baseSpecular;
+
+	switch (type)
+	{
+	case SPEC_RMOS:
+	case SPEC_MOSR:
+		baseSpecular = 0.08f;
+		break;
+	default:
+		baseSpecular = 0.04f;
+		break;
+	}
+
+	for (int i = 0; i < width * height * 4; i += 4)
+	{
+		const float aoStrength = 0.5f;
+		float roughness, gloss, metalness, specular_variance, ao;
+
+		switch (type)
+		{
+		case SPEC_RMO:
+		case SPEC_RMOS:
+		{
+			roughness = ByteToFloat(rmoPic[i + 0]);
+			gloss = (1.0 - roughness) + (0.04 * roughness);
+			metalness = ByteToFloat(rmoPic[i + 1]);
+			ao = ByteToFloat(rmoPic[i + 2]);
+			ao += (1.0 - ao) * (1.0 - aoStrength);
+			specular_variance = ByteToFloat(rmoPic[i + 3]);
+		}
+		break;
+		case SPEC_MOXR:
+		case SPEC_MOSR:
+		{
+			metalness = ByteToFloat(rmoPic[i + 0]);
+			ao = ByteToFloat(rmoPic[i + 1]);
+			ao += (1.0 - ao) * (1.0 - aoStrength);
+			specular_variance = ByteToFloat(rmoPic[i + 2]);
+			roughness = ByteToFloat(rmoPic[i + 3]);
+			gloss = (1.0 - roughness) + (0.04 * roughness);
+		}
+		break;
+		// should never reach this
+		default:
+		{
+			specular_variance = 1.0f;
+			metalness = 0.0f;
+			gloss = 0.02f;
+			ao = 1.0f;
+		}
+		break;
+		}
+
+		float baseColor[4];
+		// remove gamma correction because we want to work in linear space
+		baseColor[0] = pow(ByteToFloat(baseColorPic[i + 0]), GAMMA);
+		baseColor[1] = pow(ByteToFloat(baseColorPic[i + 1]), GAMMA);
+		baseColor[2] = pow(ByteToFloat(baseColorPic[i + 2]), GAMMA);
+		// don't remove gamma correction in alpha because this is data, not color
+		baseColor[3] = ByteToFloat(baseColorPic[i + 3]);
+
+		baseSpecular *= specular_variance;
+
+		// diffuse Color = baseColor * (1.0 - metalness) 
+		// also gamma correct again
+		diffusePic[i + 0] = FloatToByte(pow(baseColor[0] * (1.0f - metalness) * ao, INV_GAMMA));
+		diffusePic[i + 1] = FloatToByte(pow(baseColor[1] * (1.0f - metalness) * ao, INV_GAMMA));
+		diffusePic[i + 2] = FloatToByte(pow(baseColor[2] * (1.0f - metalness) * ao, INV_GAMMA));
+		diffusePic[i + 3] = FloatToByte(baseColor[3]);
+
+		// specular Color = mix(baseSpecular, baseColor, metalness)
+		// also gamma correct again
+		specGlossPic[i + 0] = FloatToByte(pow(baseSpecular * (1.0f - metalness) + baseColor[0] * metalness, INV_GAMMA));
+		specGlossPic[i + 1] = FloatToByte(pow(baseSpecular * (1.0f - metalness) + baseColor[1] * metalness, INV_GAMMA));
+		specGlossPic[i + 2] = FloatToByte(pow(baseSpecular * (1.0f - metalness) + baseColor[2] * metalness, INV_GAMMA));
+		// don't remove gamma correction in alpha because this is data, not color
+		specGlossPic[i + 3] = FloatToByte(gloss);
+	}
+
+	stage->bundle[TB_COLORMAP].image[0] = R_CreateImage(diffuseName, diffusePic, width, height, IMGTYPE_COLORALPHA, flags, 0);
+	stage->bundle[TB_SPECULARMAP].image[0] = R_CreateImage(specularName, specGlossPic, width, height, IMGTYPE_COLORALPHA, flags, 0);
+
+	Z_Free(diffusePic);
+	Z_Free(specGlossPic);
+	Z_Free(baseColorPic);
+	Z_Free(rmoPic);
+}
+
 static void R_CreateNormalMap ( const char *name, byte *pic, int width, int height, int flags )
 {
 	char normalName[MAX_QPATH];
@@ -2883,7 +3044,7 @@ static void R_CreateEnvBrdfLUT(void) {
 	if (!r_cubeMapping->integer)
 		return;
 
-	uint16_t data[LUT_WIDTH][LUT_HEIGHT][4];
+	uint16_t data[LUT_WIDTH][LUT_HEIGHT][2];
 
 	unsigned const numSamples = 1024;
 
@@ -2939,8 +3100,6 @@ static void R_CreateEnvBrdfLUT(void) {
 
 			data[y][x][0] = FloatToHalf(scale);
 			data[y][x][1] = FloatToHalf(bias);
-			data[y][x][2] = 0.0f;
-			data[y][x][3] = 0.0f;
 		}
 	}
 
@@ -2951,7 +3110,7 @@ static void R_CreateEnvBrdfLUT(void) {
 		LUT_HEIGHT,
 		IMGTYPE_COLORALPHA,
 		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-		GL_RGBA16F);
+		GL_RG16F);
 }
 
 /*

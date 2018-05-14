@@ -671,14 +671,9 @@ void main()
   #endif
 	specular *= u_SpecularScale;
 
-	// diffuse is actually base color, and red of specular is metalness
-	const vec3 DIELECTRIC_SPECULAR = vec3(0.04);
-	const vec3 METAL_DIFFUSE       = vec3(0.0);
-
-	float metalness = specular.r;
-	float roughness = max(specular.a, 0.02);
-	specular.rgb = mix(DIELECTRIC_SPECULAR, diffuse.rgb,   metalness);
-	diffuse.rgb  = mix(diffuse.rgb,         METAL_DIFFUSE, metalness);
+	// energy conservation
+	diffuse.rgb *= vec3(1.0) - specular.rgb;
+	float roughness = max(1.0 - specular.a, 0.02);
 
 	vec3  H  = normalize(L + E);
 	float NE = abs(dot(N, E)) + 1e-5;

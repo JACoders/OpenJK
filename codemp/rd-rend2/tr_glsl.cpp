@@ -359,7 +359,7 @@ static size_t GLSL_GetShaderHeader(
 
 	if (r_cubeMapping->integer)
 	{
-		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%d)\n", CUBE_MAP_MIPS));
+		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_MIPS - 4));
 	}
 
 	if (extra)
