@@ -25,5 +25,5 @@ void main()
 	var_Position.z -= 800.0 * 0.16;
 
 	if (var_Position.z < u_MapZExtents.x)
-		var_Position = NewParticlePosition()
+		var_Position = NewParticlePosition();
 }

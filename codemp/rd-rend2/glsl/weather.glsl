@@ -1,4 +1,6 @@
 /*[Vertex]*/
+uniform vec2 u_ZoneOffset;
+
 in vec3 attr_Position;
 in vec3 attr_Color;  // velocity
 
@@ -6,7 +8,10 @@ out vec3 var_Velocity;
 
 void main()
 {
-	gl_Position = vec4(attr_Position, 1.0);
+	gl_Position = vec4(
+		attr_Position.xy + u_ZoneOffset,
+		attr_Position.z,
+		1.0);
 	var_Velocity = attr_Color;
 }
 

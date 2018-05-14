@@ -22,6 +22,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_local.h"
 #include <utility>
 
+struct LocalWeatherZone
+{
+	unsigned vboLastUpdateFrame;
+	VBO_t *lastVBO;
+	VBO_t *vbo;
+	int numVertices;
+};
+
 struct weatherSystem_t
 {
 	VBO_t *lastVBO;
@@ -193,6 +201,10 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	uniformDataWriter.SetUniformVec3(
 		UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 	const vec2_t mapZExtents = { -3000.0, 9000.0 };
+	uniformDataWriter.SetUniformVec2(
+		UNIFORM_ZONEOFFSET,
+		backEnd.viewParms.ori.origin[0],
+		backEnd.viewParms.ori.origin[1]);
 	uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
 	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
 	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);

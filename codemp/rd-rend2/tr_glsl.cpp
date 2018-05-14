@@ -133,6 +133,7 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
 	{ "u_MapZExtents",			GLSL_VEC2, 1 },
+	{ "u_ZoneOffset",			GLSL_VEC2, 1 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
