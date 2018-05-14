@@ -3027,8 +3027,7 @@ static void R_RenderAllCubemaps(void)
 		cubemapFormat = GL_RGBA16F;
 	}
 
-	int numberOfBounces = 1;
-	for (int k = 0; k <= numberOfBounces; k++)
+	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		qboolean bounce = qboolean(k != 0);
 		for (int i = 0; i < tr.numCubemaps; i++)
