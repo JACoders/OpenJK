@@ -591,13 +591,11 @@ RB_SurfaceBSPTriangles
 =============
 */
 static void RB_SurfaceBSPTriangles( srfBspSurface_t *srf ) {
-#if 0
 	if( RB_SurfaceVbo (srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
-#endif
 
 	RB_SurfaceVertsAndIndexes(srf->numVerts, srf->verts, srf->numIndexes,
 			srf->indexes, srf->dlightBits, srf->pshadowBits);
