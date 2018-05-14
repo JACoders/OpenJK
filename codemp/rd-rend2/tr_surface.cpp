@@ -1722,13 +1722,11 @@ RB_SurfaceFace
 ==============
 */
 static void RB_SurfaceBSPFace( srfBspSurface_t *srf ) {
-#if 0
 	if( RB_SurfaceVbo(srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
-#endif
 
 	RB_SurfaceVertsAndIndexes(srf->numVerts, srf->verts, srf->numIndexes,
 			srf->indexes, srf->dlightBits, srf->pshadowBits);
@@ -1792,13 +1790,11 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 	int     pshadowBits;
 	//int		*vDlightBits;
 
-#if 0
 	if( RB_SurfaceVbo (srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
-#endif
 
 	dlightBits = srf->dlightBits;
 	tess.dlightBits |= dlightBits;
