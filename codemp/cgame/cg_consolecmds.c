@@ -273,9 +273,17 @@ static void CG_SiegeCompleteCvarUpdate_f(void)
 }
 
 void CG_LoadHud_f( void ) {
-	const char *hudSet = cg_hudFiles.string;
-	if ( hudSet[0] == '\0' ) {
-		hudSet = "ui/jahud.txt";
+	const char *hudSet;
+
+	if (cg_hudFiles.integer > 2) {
+		hudSet = "ui/elegance_hud.txt";
+	}
+	else {
+		hudSet = cg_hudFiles.string;
+		if ( hudSet[0] == '\0' )
+		{
+			hudSet = "ui/jahud.txt";
+		}
 	}
 
 	String_Init();

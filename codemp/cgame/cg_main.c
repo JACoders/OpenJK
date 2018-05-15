@@ -2217,10 +2217,10 @@ void CG_LoadMenus(const char *menuFile)
 
 	if ( !f )
 	{
-		if( Q_isanumber( menuFile ) ) // cg_hudFiles 1
+		/*if( Q_isanumber( menuFile ) ) //kys
 			trap->Print( S_COLOR_GREEN "hud menu file skipped, using default\n" );
-		else
-			trap->Print( S_COLOR_YELLOW "hud menu file not found: %s, using default\n", menuFile );
+		else*/
+			//trap->Print( S_COLOR_YELLOW "hud menu file not found: %s, using default\n", menuFile ); // shhhh, it's ok, don't worry
 
 		len = trap->FS_Open( "ui/jahud.txt", &f, FS_READ );
 		if (!f)
@@ -2345,10 +2345,15 @@ void CG_LoadHudMenu()
 
 	Menu_Reset();
 
-	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0')
-	{
-		hudSet = "ui/jahud.txt";
+	if (cg_hudFiles.integer > 2) {
+		hudSet = "ui/elegance_hud.txt";
+	}
+	else {
+		hudSet = cg_hudFiles.string;
+		if (hudSet[0] == '\0')
+		{
+			hudSet = "ui/jahud.txt";
+		}
 	}
 
 	CG_LoadMenus(hudSet);
@@ -2442,8 +2447,9 @@ void CG_Set2DRatio(void) {
 
 extern void CG_LoadHud_f(void);
 void CG_UpdateHUD(void) {
-	if (cg.snap && !Q_isanumber(cg_hudFiles.string))
+	if (cg.snap && cg_hudFiles.integer != 1 && cg_hudFiles.integer != 2)
 		CG_LoadHud_f();
+
 	return;
 }
 

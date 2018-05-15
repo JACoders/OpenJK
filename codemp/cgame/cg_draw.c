@@ -1328,7 +1328,7 @@ void CG_DrawHUD(centity_t	*cent)
 	int	scoreBias;
 	char scoreBiasStr[16];
 
-	if (cg_hudFiles.integer)
+	if (cg_hudFiles.integer == 1)
 	{
 		int x = 0;
 		int y = SCREEN_HEIGHT-80;

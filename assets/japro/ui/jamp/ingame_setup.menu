@@ -3398,6 +3398,7 @@
 				@MENUS_OFF 0  
 				@MENUS_ON 1
 				"JK2 HUD" 2
+				"Elegance HUD" 3
 			}
 			rect				220 223 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
