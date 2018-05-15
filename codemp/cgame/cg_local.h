@@ -1844,6 +1844,7 @@ void CG_PrevInventory_f(void);
 void CG_NextForcePower_f(void);
 void CG_PrevForcePower_f(void);
 void CG_Set2DRatio(void);
+void CG_UpdateHUD(void);
 
 //
 // cg_view.c

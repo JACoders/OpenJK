@@ -272,7 +272,7 @@ static void CG_SiegeCompleteCvarUpdate_f(void)
 	CG_SiegeBriefingDisplay(SIEGETEAM_TEAM2, 1);
 }
 
-static void CG_LoadHud_f( void ) {
+void CG_LoadHud_f( void ) {
 	const char *hudSet = cg_hudFiles.string;
 	if ( hudSet[0] == '\0' ) {
 		hudSet = "ui/jahud.txt";

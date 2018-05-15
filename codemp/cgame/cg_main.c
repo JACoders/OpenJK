@@ -2440,6 +2440,13 @@ void CG_Set2DRatio(void) {
 		cgs.widthRatioCoef = 1.0f;
 }
 
+extern void CG_LoadHud_f(void);
+void CG_UpdateHUD(void) {
+	if (cg.snap && !Q_isanumber(cg_hudFiles.string))
+		CG_LoadHud_f();
+	return;
+}
+
 extern playerState_t *cgSendPS[MAX_GENTITIES]; //is not MAX_CLIENTS because NPCs exceed MAX_CLIENTS
 void CG_PmoveClientPointerUpdate();
 
