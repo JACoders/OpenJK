@@ -1898,7 +1898,7 @@
 			name				vidrestart_background
 			group				vidrestart
 			style				WINDOW_STYLE_SHADER
-			rect				210 41 302 252	
+			rect				210 41 351 287
 			background			"gfx/menus/menu_boxred"					// Frame
 			forecolor			1 1 1 1
 			visible			0
@@ -1914,7 +1914,7 @@
 			rect				210 100 300 20
 			textalign			ITEM_ALIGN_CENTER
 			text2aligny			18
-			textalignx			150
+			textalignx			176
 			font				2
 			textscale			1        
 			forecolor			1 1 0 1
@@ -1929,7 +1929,7 @@
 			text				@MENUS_VID_RESTART3
 			rect				210 160 256 20
 			textalign			ITEM_ALIGN_CENTER
-			textalignx			150
+			textalignx			176
 			font				2
 			textscale			1        
 			forecolor			1 1 0 1
@@ -1942,7 +1942,7 @@
 		{
 			name			vidrestart_yes_button
 			style			WINDOW_STYLE_SHADER
-			rect			367 241 120 32 
+			rect			392 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -1958,7 +1958,7 @@
 			text				@MENUS_YES
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				367 241 120 32 
+			rect				392 256 120 32 
 			font				2
 			textscale			1        
 			textalign			ITEM_ALIGN_CENTER
@@ -1966,7 +1966,7 @@
 			textaligny			0
 			descText			@MENUS_APPLY_CHANGES_AND_THEN
 			forecolor			1 .682 0 1
-			visible			-1
+			visible				-1
 			// appearance_slot		5
 
 			action 
@@ -1991,7 +1991,7 @@
 		{
 			name			vidrestart_no_button
 			style			WINDOW_STYLE_SHADER
-			rect			240 241 120 32 
+			rect			240 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -2007,12 +2007,12 @@
 			text				@MENUS_NO
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				240 241 120 32 
+			rect				240 256 120 32 
 			font				2
 			textscale			1        
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
-			textaligny			-1
+			textaligny			0
 			descText			@MENUS_DO_NOT_APPLY_CHANGES
 			forecolor			1 .682 0 1
 			visible			0
@@ -3391,14 +3391,14 @@
 			name				simple
 			group				hud
       		type				ITEM_TYPE_MULTI
-			text				"Simple HUD:"
+			text				"HUD:"
 			cvar				"cg_hudFiles"	
 			cvarFloatList		
 			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-				"JK2 HUD" 2
-				"Elegance HUD" 3
+				"BaseJKA (Default)" 0  
+				"Simple HUD" 1
+				"Jedi Outcast" 2
+				"Elegance" 3
 			}
 			rect				220 223 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -3408,66 +3408,10 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display simple HUD."
+			descText			"Toggle HUD used in-game."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight10 }
 			mouseexit			{ hide highlight10 }
-		}
-		
-		itemDef 
-		{			
-			name				tint
-			group				hud
-      		type				ITEM_TYPE_MULTI
-			text				"Tint HUD:"
-			cvar				"cg_tintHud"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			cvarTest			cg_hudFiles
-			hideCvar			{ 1 }
-			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight11 }
-			mouseexit			{ hide highlight11 }
-		}
-		
-		itemDef 
-		{			
-			name				score_line
-			group				hud
-      		type				ITEM_TYPE_MULTI
-			text				"Player Score on HUD:"
-			cvar				"cg_drawScore"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			cvarTest			cg_hudFiles
-			hideCvar			{ 1 }
-			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to display your personal score on the HUD."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight12 }
-			mouseexit			{ hide highlight12 }
 		}
 		
 		itemDef 
@@ -3492,10 +3436,66 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Color gradients for simple HUD that change depending on health/ammo/force status."
+			descText			"Recolors simple HUD based on current amount of health/ammo/force."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight11 }
 			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
+		{			
+			name				score_line
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Player Score on HUD:"
+			cvar				"cg_drawScore"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 1 }
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display your personal score on the HUD."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
+		{			
+			name				tint
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Tint HUD:"
+			cvar				"cg_tintHud"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 1, 3 }
+			rect				220 263 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 }
 		}
 		
 		
@@ -3716,7 +3716,7 @@
       		type				ITEM_TYPE_MULTI
 			text				"Jump Sounds:"
 			cvar				"cg_jumpSounds"
-			cvarFloatList		{ "None (Default)" 0 "Always" 1 "Only play for other clients" 2 }
+			cvarFloatList		{ "None (Default)" 0 "Always" 1 "Only play for other clients" 2 "Only play for local client" 3 }
 			rect				220 183 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -3738,7 +3738,7 @@
       		type				ITEM_TYPE_MULTI
 			text				"Roll Sounds:"
 			cvar				"cg_rollSounds"
-			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 }
+			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 "Only play for local client" 3 }
 			rect				220 203 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -4554,7 +4554,7 @@
 			name				vidrestart_background
 			group				defaults
 			style				WINDOW_STYLE_SHADER
-			rect				210 41 352 252		
+			rect				210 41 352 287		
 			background			"gfx/menus/menu_boxred"					// Frame
 			forecolor			1 1 1 1
 			visible			0
@@ -4584,7 +4584,7 @@
 			rect				210 101 352 20
 			text2aligny			20
 			font				2
-			textscale			.9
+			textscale			1
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			forecolor			1 .682 0 1
@@ -4600,7 +4600,7 @@
 			rect				210 131 352 20
 			text2aligny			20
 			font				2
-			textscale			.9
+			textscale			1
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			forecolor			1 .682 0 1
@@ -4629,7 +4629,7 @@
 			name			default_yes_button
 			group			default_glow
 			style			WINDOW_STYLE_SHADER
-			rect			430 241 120 32 
+			rect			430 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -4645,7 +4645,7 @@
 			text				@MENUS_YES
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				430 241 120 32 
+			rect				430 256 120 32 
 			font				2
 			textscale			1
 			textalign			ITEM_ALIGN_CENTER
@@ -4679,7 +4679,7 @@
 			name			default_no_button
 			group			default_glow
 			style			WINDOW_STYLE_SHADER
-			rect			220 241 120 32 
+			rect			220 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -4695,7 +4695,7 @@
 			text				@MENUS_NO
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				220 241 120 32 
+			rect				220 256 120 32 
 			font				2
 			textscale			1
 			textalign			ITEM_ALIGN_CENTER

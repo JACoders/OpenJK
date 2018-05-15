@@ -11916,8 +11916,13 @@ static void UI_StartServerRefresh(qboolean full)
 			trap->Cmd_ExecuteText( EXEC_NOW, va( "globalservers %d %s full empty\n", ui_netSource.integer-1, ptr));
 		}
 		else {
-			trap->Cmd_ExecuteText( EXEC_NOW, va( "globalservers %d %d full empty\n", ui_netSource.integer-1, (int)trap->Cvar_VariableValue( "com_protocol" ) ) );
-			trap->Cmd_ExecuteText( EXEC_NOW, va( "globalservers %d %d full empty\n", ui_netSource.integer-1, (int)trap->Cvar_VariableValue( "com_legacyprotocol" ) ) );
+			if (strlen(UI_Cvar_VariableString("com_protocol")) && strlen(UI_Cvar_VariableString("com_legacyprotocol"))) { //ETJK
+				trap->Cmd_ExecuteText(EXEC_NOW, va("globalservers %d %d full empty\n", ui_netSource.integer - 1, (int)trap->Cvar_VariableValue("com_protocol")));
+				trap->Cmd_ExecuteText(EXEC_NOW, va("globalservers %d %d full empty\n", ui_netSource.integer - 1, (int)trap->Cvar_VariableValue("com_legacyprotocol")));
+			}
+			else { 
+				trap->Cmd_ExecuteText(EXEC_NOW, va("globalservers %d %d full empty\n", ui_netSource.integer - 1, (int)trap->Cvar_VariableValue("protocol")));
+			}
 		}
 	}
 }
