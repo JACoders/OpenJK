@@ -11928,6 +11928,48 @@ static void UI_StartServerRefresh(qboolean full)
 }
 
 /*
+=================
+UI_CvarHelp
+=================
+*/
+
+typedef struct helpDescription_s {
+	char	*cvarName;
+	char	*descriptionShort;
+	char	*descriptionLong;
+} helpDescription_t;
+
+static helpDescription_t cvarHelp[] = {
+	#define XDOCS_CVAR_HELP
+	#define DEFAULT_FORMAT_CALLBACK
+	#define SIMPLE_FORMAT_CALLBACK
+		#include "ui_xdocs.h"
+	#undef SIMPLE_FORMAT_CALLBACK
+	#undef DEFAULT_FORMAT_CALLBACK
+	#undef XDOCS_CVAR_HELP
+	{ NULL, NULL, NULL }
+};
+static const size_t cvarHelpSize = ARRAY_LEN(cvarHelp);
+
+static int xDocsCmp(const void *a, const void *b) {
+	return Q_stricmp((const char *)a, ((helpDescription_t*)b)->cvarName);
+}
+
+static void UI_CvarHelp(const char *cvarName, qboolean enter, char *helpBuffer, size_t helpBufferSize) {
+	helpDescription_t *xDocs;
+
+	xDocs = (helpDescription_t *)Q_LinearSearch(cvarName, cvarHelp, cvarHelpSize, sizeof(cvarHelp[0]), xDocsCmp);
+
+	if (!xDocs)
+		return;
+
+	if (enter)
+		Com_sprintf(helpBuffer, helpBufferSize, "%s\n%s", xDocs->descriptionShort, xDocs->descriptionLong);
+	else //what shows up in autocomplete/cvarlist, cmds only use this
+		Com_sprintf(helpBuffer, helpBufferSize, "%s", xDocs->descriptionShort);
+}
+
+/*
 ============
 GetModuleAPI
 ============
@@ -11961,6 +12003,7 @@ Q_EXPORT uiExport_t* QDECL GetModuleAPI( int apiVersion, uiImport_t *import )
 	uie.ConsoleCommand		= UI_ConsoleCommand;
 	uie.DrawConnectScreen	= UI_DrawConnectScreen;
 	uie.MenuReset			= Menu_Reset;
+	uie.CvarHelp			= UI_CvarHelp;
 
 	return &uie;
 }

@@ -138,13 +138,21 @@ void UIVM_PostConnect( void ) {
 void UIVM_CvarHelp( const char *cvarName, qboolean enter, char *helpBuffer, size_t helpBufferSize ) {
 	if ( uivm->isLegacy ) {
 		VM_Call( uivm, UI_CVAR_HELP, reinterpret_cast< intptr_t >( cvarName ), enter, reinterpret_cast< intptr_t >( helpBuffer ), helpBufferSize );
+		return;
 	}
+	VMSwap v(uivm);
+
+	uie->CvarHelp(cvarName, enter, helpBuffer, helpBufferSize);
 }
 
 void UIVM_CommandHelp( const char *commandName, char *helpBuffer, size_t helpBufferSize ) {
 	if ( uivm->isLegacy ) {
 		VM_Call( uivm, UI_CMD_HELP, reinterpret_cast< intptr_t >( commandName ), reinterpret_cast< intptr_t >( helpBuffer ), helpBufferSize );
+		return;
 	}
+	VMSwap v(uivm);
+
+	uie->CvarHelp(commandName, qfalse, helpBuffer, helpBufferSize);
 }
 
 
