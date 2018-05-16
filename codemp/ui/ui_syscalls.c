@@ -459,14 +459,14 @@ void UISyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul
 
 void UISyscall_AddCommand( const char *cmd_name )
 {
-	// TODO warn developer only
-	Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.AddCommand() is only supported with OpenJK mod API!\n" );
+	if (trap->Cvar_VariableValue("developer") > 0)
+		Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.AddCommand() is only supported with OpenJK mod API!\n" );
 }
 
 void UISyscall_RemoveCommand( const char *cmd_name )
 {
-	// TODO warn developer only
-	Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.RemoveCommand() is only supported with OpenJK mod API!\n" );
+	if (trap->Cvar_VariableValue("developer") > 0)
+		Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.RemoveCommand() is only supported with OpenJK mod API!\n" );
 }
 
 NORETURN void QDECL UI_Error( int level, const char *error, ... ) {
