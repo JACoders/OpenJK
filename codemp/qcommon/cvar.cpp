@@ -817,7 +817,8 @@ void Cvar_Server_Set( const char *var_name, const char *value )
 		if(!(flags & (CVAR_SYSTEMINFO | CVAR_SERVER_CREATED | CVAR_USER_CREATED)))
 		{
 			if ( !FindLegacyCvar( var_name ) ) {
-				Com_Printf("*" S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", var_name, value);
+				if (Q_strncmp(var_name, "fs_game", 7))
+					Com_Printf("*" S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", var_name, value);
 				return;
 			}
 		}

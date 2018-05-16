@@ -314,7 +314,10 @@ void UpdateForceUsed()
 	uiForceRank = uiMaxRank;
 
 	uiForceUsed = 0;
-	uiForceAvailable = forceMasteryPoints[uiForceRank];
+	if (uiMaxRank <= MAX_FORCE_RANK)
+		uiForceAvailable = forceMasteryPoints[uiForceRank];
+	else
+		uiForceAvailable = 156;
 
 	// Make sure that we have one freebie in jump.
 	if (uiForcePowersRank[FP_LEVITATION]<1)
@@ -583,7 +586,10 @@ void UI_ReadLegalForce(void)
 		c++;
 	}
 	uiForceUsed = 0;
-	uiForceAvailable = forceMasteryPoints[uiForceRank];
+	if (uiMaxRank <= MAX_FORCE_RANK)
+		uiForceAvailable = forceMasteryPoints[uiForceRank];
+	else
+		uiForceAvailable = 156;
 	gTouchedForce = qtrue;
 
 	for (c=0;fcfString[i]&&c<NUM_FORCE_POWERS;c++,i++)
@@ -988,7 +994,7 @@ qboolean UI_ForceMaxRank_HandleKey(int flags, float *special, int key, int num, 
 
     num = i;
 
-	uiMaxRank = num;
+//	uiMaxRank = num; //this apparently needs to be something dumb sometimes
 
 	trap->Cvar_Set( "g_maxForceRank", va("%i", num));
 
@@ -1300,7 +1306,10 @@ void UI_ForceConfigHandle( int oldindex, int newindex )
 		c++;
 	}
 	uiForceUsed = 0;
-	uiForceAvailable = forceMasteryPoints[uiForceRank];
+	if (uiMaxRank <= MAX_FORCE_RANK)
+		uiForceAvailable = forceMasteryPoints[uiForceRank];
+	else
+		uiForceAvailable = 156;
 	gTouchedForce = qtrue;
 
 	for (c=0;fcfBuffer[i]&&c<NUM_FORCE_POWERS;c++,i++)

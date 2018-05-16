@@ -1898,7 +1898,7 @@
 			name				vidrestart_background
 			group				vidrestart
 			style				WINDOW_STYLE_SHADER
-			rect				210 41 302 252	
+			rect				210 41 351 287
 			background			"gfx/menus/menu_boxred"					// Frame
 			forecolor			1 1 1 1
 			visible			0
@@ -1914,7 +1914,7 @@
 			rect				210 100 300 20
 			textalign			ITEM_ALIGN_CENTER
 			text2aligny			18
-			textalignx			150
+			textalignx			176
 			font				2
 			textscale			1        
 			forecolor			1 1 0 1
@@ -1929,7 +1929,7 @@
 			text				@MENUS_VID_RESTART3
 			rect				210 160 256 20
 			textalign			ITEM_ALIGN_CENTER
-			textalignx			150
+			textalignx			176
 			font				2
 			textscale			1        
 			forecolor			1 1 0 1
@@ -1942,7 +1942,7 @@
 		{
 			name			vidrestart_yes_button
 			style			WINDOW_STYLE_SHADER
-			rect			367 241 120 32 
+			rect			392 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -1958,7 +1958,7 @@
 			text				@MENUS_YES
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				367 241 120 32 
+			rect				392 256 120 32 
 			font				2
 			textscale			1        
 			textalign			ITEM_ALIGN_CENTER
@@ -1966,7 +1966,7 @@
 			textaligny			0
 			descText			@MENUS_APPLY_CHANGES_AND_THEN
 			forecolor			1 .682 0 1
-			visible			-1
+			visible				-1
 			// appearance_slot		5
 
 			action 
@@ -1991,7 +1991,7 @@
 		{
 			name			vidrestart_no_button
 			style			WINDOW_STYLE_SHADER
-			rect			240 241 120 32 
+			rect			240 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -2007,12 +2007,12 @@
 			text				@MENUS_NO
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				240 241 120 32 
+			rect				240 256 120 32 
 			font				2
 			textscale			1        
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
-			textaligny			-1
+			textaligny			0
 			descText			@MENUS_DO_NOT_APPLY_CHANGES
 			forecolor			1 .682 0 1
 			visible			0
@@ -2537,14 +2537,10 @@
 		{			
 			name				ysalshell
 			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				"Draw Ysal Shell:"
-			cvar				"cg_drawYsalShell"
-			cvarFloatList
-			{
-				@MENUS_OFF 0
-				@MENUS_ON 1
-			}
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Hide Ysal Shell:"
+			cvar				"cg_stylePlayer"
+			bitMask				"10"
 			rect				220 103 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2563,15 +2559,10 @@
 		{			
 			name				duelshell
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+      		type				ITEM_TYPE_CHECKBOX
 			text				"Draw Duel Shell:"
-			cvar				"cg_drawDuelShell"
-			cvarFloatList
-			{
-				@MENUS_OFF 0
-				@MENUS_ON 1
-				"On (No color)" 2
-			}
+			cvar				"cg_stylePlayer"
+			bitMask				"1"
 			rect				220 123 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2694,15 +2685,10 @@
 		{			
 			name				drawduelers
 			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				"Draw Duelers:"
-			cvar				"cg_drawDuelers"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-				"On + New Effect" 2
-			}
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Hide Duelers:"
+			cvar				"cg_stylePlayer"
+			bitMask				"2"
 			rect				220 223 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2716,19 +2702,15 @@
 			mouseenter			{ show highlight10 }
 			mouseexit			{ hide highlight10 }
 		}
-
+		
 		itemDef 
 		{			
-			name				drawnonduelers
+			name				drawracersinffa
 			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				"Draw Non-Duelers:"
-			cvar				"cg_drawNonDuelers"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Hide Racers in FFA:"
+			cvar				"cg_stylePlayer"
+			bitMask				"3"
 			rect				220 243 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2737,7 +2719,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display other players in private duels."
+			descText			"Toggle to display racers outside of race mode."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight11 }
 			mouseexit			{ hide highlight11 }
@@ -2745,17 +2727,12 @@
 		
 		itemDef 
 		{			
-			name				drawracers
+			name				hidenonracersifracer
 			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				"Draw Racers:"
-			cvar				"cg_drawRacers"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				"Only outside race mode" 1
-				@MENUS_ON 2
-			}
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Hide non racers if racer:"
+			cvar				"cg_stylePlayer"	
+			bitMask				"4"
 			rect				220 263 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2764,10 +2741,32 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display racers."
+			descText			"Toggle to display other players in race mode."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight12 }
 			mouseexit			{ hide highlight12 }
+		}
+		
+		itemDef 
+		{			
+			name				hideracersifracer
+			group				visuals
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Hide racers if racer:"
+			cvar				"cg_stylePlayer"	
+			bitMask				"5"
+			rect				220 283 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display other racers in race mode."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight13 }
+			mouseexit			{ hide highlight13 }
 		}
 		
 		itemDef 
@@ -2835,16 +2834,12 @@
 		
 		itemDef 
 		{			
-			name				corpsefx
+			name				corpsefadeinstant
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
-			text				"Corpse Effects:"
-			cvar				"cg_corpseEffects"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1 
-			}
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Fade corpses immediately:"
+			cvar				"cg_stylePlayer"	
+			bitMask				"12"
 			rect				220 63 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2853,10 +2848,32 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display corpse effects."
+			descText			"Toggle to fade corpses immediately after player respawn."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight2 }
 			mouseexit			{ hide highlight2 }
+		}
+		
+		itemDef 
+		{			
+			name				corpsefx
+			group				morevisuals
+      		type				ITEM_TYPE_CHECKBOX
+			text				"Disable Corpse Fade Effects:"
+			cvar				"cg_stylePlayer"	
+			bitMask				"13"
+			rect				220 83 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display corpse fading effects."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
 		}
 		
 		itemDef 
@@ -2866,7 +2883,7 @@
       		type				ITEM_TYPE_NUMERICFIELD
 			text				"Flesh Sparks:"
 			cvar				"cg_fleshSparks"	
-			rect				220 83 300 20
+			rect				220 103 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2876,8 +2893,8 @@
 			visible				0
 			descText			"Adjust the number of flesh sparks."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight3 }
-			mouseexit			{ hide highlight3 }
+			mouseenter			{ show highlight4 }
+			mouseexit			{ hide highlight4 }
 		}
 		
 		itemDef 
@@ -2892,7 +2909,7 @@
 				@MENUS_OFF		0
 				@MENUS_ON		1
 			}
-			rect				220 103 300 20
+			rect				220 123 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2902,8 +2919,8 @@
 			visible				0
 			descText			@MENUS_RENDER_ICONS_FOR_ITEMS
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight4 }
-			mouseexit			{ hide highlight4 }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
 		}
 		
 		itemDef 
@@ -2918,7 +2935,7 @@
 				@MENUS_OFF 0  
 				@MENUS_ON 1 
 			}
-			rect				220 123 300 20
+			rect				220 143 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2928,8 +2945,8 @@
 			visible				0
 			descText			@MENUS_TOGGLE_TO_DISPLAY_SCORCH
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight5 }
-			mouseexit			{ hide highlight5 }
+			mouseenter			{ show highlight6 }
+			mouseexit			{ hide highlight6 }
 		}
 		
 		itemDef 
@@ -2947,7 +2964,7 @@
 				"Also replace misc_models with box/hitbox model" 3
 				"Also remove misc_models" 4
 			}
-			rect				220 143 300 20
+			rect				220 163 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2957,8 +2974,8 @@
 			visible				0
 			descText			"Toggle the effects."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight6 }
-			mouseexit			{ hide highlight6 }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
 		}
 		
 		itemDef 
@@ -2973,7 +2990,7 @@
 				@MENUS_OFF 0  
 				@MENUS_ON 1
 			}
-			rect				220 163 300 20
+			rect				220 183 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2983,8 +3000,8 @@
 			visible				0
 			descText			"Toggle to disable teleport effects."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight7 }
-			mouseexit			{ hide highlight7 }
+			mouseenter			{ show highlight8 }
+			mouseexit			{ hide highlight8 }
 		}
 		
 		itemDef 
@@ -2999,7 +3016,7 @@
 				@MENUS_OFF 0
 				@MENUS_ON 1
 			}
-			rect				220 183 300 20
+			rect				220 203 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3009,8 +3026,8 @@
 			visible				0
 			descText			"Toggle remaps."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight8 }
-			mouseexit			{ hide highlight8 }
+			mouseenter			{ show highlight9 }
+			mouseexit			{ hide highlight9 }
 		}
 		
 		itemDef 
@@ -3027,7 +3044,7 @@
 				"Shader" 3
 				"Mirror" 2
 			}
-			rect				220 203 300 20
+			rect				220 223 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3037,8 +3054,8 @@
 			visible				0
 			descText			"Toggle to display saber trail."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight9 }
-			mouseexit			{ hide highlight9 }
+			mouseenter			{ show highlight10 }
+			mouseexit			{ hide highlight10 }
 		}
 		
 		itemDef 
@@ -3053,7 +3070,7 @@
 				@MENUS_OFF 0
 				@MENUS_ON 1
 			}
-			rect				220 223 300 20
+			rect				220 243 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3063,8 +3080,8 @@
 			visible				0
 			descText			"Toggle to draw speed trail."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight10 }
-			mouseexit			{ hide highlight10 }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
 		}
 		
 		itemDef 
@@ -3079,7 +3096,7 @@
 				@MENUS_OFF 0
 				@MENUS_ON 1
 			}
-			rect				220 243 300 20
+			rect				220 263 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3089,15 +3106,15 @@
 			visible				0
 			descText			"Toggle to draw hit box."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight11 }
-			mouseexit			{ hide highlight11 }
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 }
 		}
 		
 		itemDef 
 		{
 			name				done2button_glow
 			style				WINDOW_STYLE_SHADER
-			rect				260 265 200 16
+			rect				260 285 200 16
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 0.5 0.5 1
 			visible				0
@@ -3110,7 +3127,7 @@
 			group				morevisuals
       		type				ITEM_TYPE_BUTTON
 			text				"Done"
-			rect				260 263 200 20
+			rect				260 283 200 20
 	   		textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
@@ -3193,14 +3210,10 @@
 		{			
 			name				speedgraph
 			group				hud
-      		type				ITEM_TYPE_MULTI
+      		type				ITEM_TYPE_CHECKBOX
 			text				"Speed Graph:"
-			cvar				"cg_speedGraph"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
+			cvar				"cg_speedometerSettings"	
+			bitMask				"6"
 			rect				220 83 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -3378,13 +3391,14 @@
 			name				simple
 			group				hud
       		type				ITEM_TYPE_MULTI
-			text				"Simple HUD:"
+			text				"HUD:"
 			cvar				"cg_hudFiles"	
 			cvarFloatList		
 			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-				"JK2 HUD" 2
+				"BaseJKA (Default)" 0  
+				"Simple HUD" 1
+				"Jedi Outcast" 2
+				"Elegance" 3
 			}
 			rect				220 223 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -3394,66 +3408,10 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display simple HUD."
+			descText			"Toggle HUD used in-game."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight10 }
 			mouseexit			{ hide highlight10 }
-		}
-		
-		itemDef 
-		{			
-			name				tint
-			group				hud
-      		type				ITEM_TYPE_MULTI
-			text				"Tint HUD:"
-			cvar				"cg_tintHud"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			cvarTest			cg_hudFiles
-			hideCvar			{ 1 }
-			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight11 }
-			mouseexit			{ hide highlight11 }
-		}
-		
-		itemDef 
-		{			
-			name				score_line
-			group				hud
-      		type				ITEM_TYPE_MULTI
-			text				"Player Score on HUD:"
-			cvar				"cg_drawScore"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			cvarTest			cg_hudFiles
-			hideCvar			{ 1 }
-			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to display your personal score on the HUD."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight12 }
-			mouseexit			{ hide highlight12 }
 		}
 		
 		itemDef 
@@ -3478,10 +3436,66 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Color gradients for simple HUD that change depending on health/ammo/force status."
+			descText			"Recolors simple HUD based on current amount of health/ammo/force."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight11 }
 			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
+		{			
+			name				score_line
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Player Score on HUD:"
+			cvar				"cg_drawScore"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 1 }
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display your personal score on the HUD."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
+		{			
+			name				tint
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Tint HUD:"
+			cvar				"cg_tintHud"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 1, 3 }
+			rect				220 263 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 }
 		}
 		
 		
@@ -3702,7 +3716,7 @@
       		type				ITEM_TYPE_MULTI
 			text				"Jump Sounds:"
 			cvar				"cg_jumpSounds"
-			cvarFloatList		{ "None (Default)" 0 "Always" 1 "Only play for other clients" 2 }
+			cvarFloatList		{ "None (Default)" 0 "Always" 1 "Only play for other clients" 2 "Only play for local client" 3 }
 			rect				220 183 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -3724,7 +3738,7 @@
       		type				ITEM_TYPE_MULTI
 			text				"Roll Sounds:"
 			cvar				"cg_rollSounds"
-			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 }
+			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 "Only play for local client" 3 }
 			rect				220 203 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -4332,8 +4346,8 @@
 			cvar				"cl_allowDownload"
 			cvarFloatList		
 			{ 
-				@MENUS_ON	 	0
-				@MENUS_OFF 		1
+				@MENUS_ON	 	1
+				@MENUS_OFF 		0
 			}
 			rect				220 83 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -4540,7 +4554,7 @@
 			name				vidrestart_background
 			group				defaults
 			style				WINDOW_STYLE_SHADER
-			rect				210 41 352 252		
+			rect				210 41 352 287		
 			background			"gfx/menus/menu_boxred"					// Frame
 			forecolor			1 1 1 1
 			visible			0
@@ -4570,7 +4584,7 @@
 			rect				210 101 352 20
 			text2aligny			20
 			font				2
-			textscale			.9
+			textscale			1
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			forecolor			1 .682 0 1
@@ -4586,7 +4600,7 @@
 			rect				210 131 352 20
 			text2aligny			20
 			font				2
-			textscale			.9
+			textscale			1
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			forecolor			1 .682 0 1
@@ -4615,7 +4629,7 @@
 			name			default_yes_button
 			group			default_glow
 			style			WINDOW_STYLE_SHADER
-			rect			430 241 120 32 
+			rect			430 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -4631,7 +4645,7 @@
 			text				@MENUS_YES
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				430 241 120 32 
+			rect				430 256 120 32 
 			font				2
 			textscale			1
 			textalign			ITEM_ALIGN_CENTER
@@ -4665,7 +4679,7 @@
 			name			default_no_button
 			group			default_glow
 			style			WINDOW_STYLE_SHADER
-			rect			220 241 120 32 
+			rect			220 256 120 32 
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor		1 1 1 1
 			decoration
@@ -4681,7 +4695,7 @@
 			text				@MENUS_NO
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				220 241 120 32 
+			rect				220 256 120 32 
 			font				2
 			textscale			1
 			textalign			ITEM_ALIGN_CENTER

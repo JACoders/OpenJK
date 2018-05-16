@@ -393,6 +393,7 @@ typedef struct uiExport_s {
 	qboolean	(*ConsoleCommand)		( int realTime );
 	void		(*DrawConnectScreen)	( qboolean overlay );
 	void		(*MenuReset)			( void );
+	void		(*CvarHelp)				(const char *cvarName, qboolean enter, char *helpBuffer, size_t helpBufferSize);
 } uiExport_t;
 
 //linking of ui library

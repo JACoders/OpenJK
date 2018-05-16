@@ -1,5 +1,5 @@
 #============================================================================
-# Copyright (C) 2013 - 2015, OpenJK contributors
+# Copyright (C) 2013 - 2018, OpenJK contributors
 #
 # This file is part of the OpenJK source code.
 #
@@ -82,6 +82,7 @@ set(MPUIUIFiles
 	"${MPDir}/ui/ui_public.h"
 	"${MPDir}/ui/ui_shared.h"
 	"${MPDir}/ui/ui_xcvar.h"
+	"${MPDir}/ui/ui_xdocs.h"
 	)
 source_group("ui" FILES ${MPUIUIFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIUIFiles})

@@ -598,7 +598,10 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 
 	//final_Powers now contains all the stuff from the string
 	//Set the maximum allowed points used based on the max rank level, and count the points actually used.
-	allowedPoints = forceMasteryPoints[maxRank];
+	if (maxRank <= MAX_FORCE_RANK)
+		allowedPoints = forceMasteryPoints[maxRank];
+	else
+		allowedPoints = 156;
 
 #ifdef _GAME
 	//if (g_fixWeaponForcePoints.integer && g_weaponDisable.integer != 524279)

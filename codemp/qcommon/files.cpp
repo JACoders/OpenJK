@@ -3221,12 +3221,6 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		}
 	}
 
-	//cancer
-	if (fs_globalcfg->integer && fs_gamedirvar->modified) {
-		if (Q_stricmp(dir, BASEGAME) && Q_stricmp(dir, ETERNALJKGAME))
-			return;
-	}
-
 	Q_strncpyz( fs_gamedir, dir, sizeof( fs_gamedir ) );
 
 	// find all pak files in this directory
@@ -3613,12 +3607,20 @@ void FS_Startup( const char *gameName ) {
 		homePath = fs_basepath->string;
 	}
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED, "(Read/Write) Location for user generated files" );
-	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO, "Mod directory" );
+
+#ifndef DEDICATED
+	//cancer?
+	fs_globalcfg = Cvar_Get("fs_globalcfg", "1", CVAR_ARCHIVE/* | CVAR_LATCH*/ | CVAR_NORESTART | CVAR_PROTECTED, "Only read/write files from base and EternalJK folders (requires filesystem restart)");
+
+	if (fs_globalcfg->integer)
+		fs_gamedirvar = Cvar_Get ("fs_basegame", "eternaljk", CVAR_INIT );//?
+	else
+#endif
+		fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO, "Mod directory" );
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 
 	fs_loadpakdlls = Cvar_Get("fs_loadpakdlls", "1", CVAR_NORESTART|CVAR_PROTECTED, "Toggle loading DLLs from pk3 files");
-	fs_globalcfg = Cvar_Get("fs_globalcfg", "1", CVAR_NORESTART|CVAR_PROTECTED, "Only read/write files from base and EternalJK folders");
 
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {

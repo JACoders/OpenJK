@@ -879,6 +879,7 @@ Sets the usercmd_t based on key states
 void CL_KeyMove( usercmd_t *cmd ) {
 	int		movespeed;
 	int		forward, side, up;
+	float	s1, s2;
 
 	//
 	// adjust for speed key / running
@@ -897,78 +898,63 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	side = 0;
 	up = 0;
 
-	if (cl_idrive->integer) {
-		float s1, s2;
-
-		if (in_strafe.active) {
-			s1 = CL_KeyState (&in_right);
-			s2 = CL_KeyState (&in_left);
+	if (in_strafe.active) {
+		s1 = CL_KeyState(&in_right);
+		s2 = CL_KeyState(&in_left);
+		if (cl_idrive->integer && cl_idrive->integer != 2) {
 			if (s1 && s2) {
 				if (in_right.downtime > in_left.downtime)
 					s2 = 0;
 				if (in_right.downtime < in_left.downtime)
 					s1 = 0;
 			}
-			side += movespeed * s1;
-			side -= movespeed * s2;
 		}
+		side += movespeed * s1;
+		side -= movespeed * s2;
+	}
 
-		s1 = CL_KeyState (&in_moveright);
-		s2 = CL_KeyState (&in_moveleft);
+	s1 = CL_KeyState(&in_moveright);
+	s2 = CL_KeyState(&in_moveleft);
+	if (cl_idrive->integer && cl_idrive->integer != 2) {
 		if (s1 && s2) {
 			if (in_moveright.downtime > in_moveleft.downtime)
 				s2 = 0;
 			if (in_moveright.downtime < in_moveleft.downtime)
 				s1 = 0;
 		}
-		side += movespeed * s1;
-		side -= movespeed * s2;
+	}
+	side += movespeed * s1;
+	side -= movespeed * s2;
 
-		s1 = CL_KeyState (&in_up);
-		s2 = CL_KeyState (&in_down);
+	s1 = CL_KeyState (&in_up);
+	s2 = CL_KeyState (&in_down);
+	if (cl_idrive->integer || cl_idrive->integer == 2) {
 		if (s1 && s2) {
 			if (in_up.downtime > in_down.downtime)
 				s2 = 0;
 			if (in_up.downtime < in_down.downtime)
 				s1 = 0;
 		}
-		up += movespeed * s1;
-		up -= movespeed * s2;
-	
-		s1 = CL_KeyState (&in_forward);
-		s2 = CL_KeyState (&in_back);
+	}
+	up += movespeed * s1;
+	up -= movespeed * s2;
+
+	s1 = CL_KeyState (&in_forward);
+	s2 = CL_KeyState (&in_back);
+	if (cl_idrive->integer && cl_idrive->integer != 2) {
 		if (s1 && s2) {
 			if (in_forward.downtime > in_back.downtime)
 				s2 = 0;
 			if (in_forward.downtime < in_back.downtime)
 				s1 = 0;
 		}
-		forward += movespeed * s1;
-		forward -= movespeed * s2;		
-
-		cmd->forwardmove = ClampChar( forward );
-		cmd->rightmove = ClampChar( side );
-		cmd->upmove = ClampChar( up );
 	}
-	else {
-		if ( in_strafe.active ) {
-			side += movespeed * CL_KeyState (&in_right);
-			side -= movespeed * CL_KeyState (&in_left);
-		}
+	forward += movespeed * s1;
+	forward -= movespeed * s2;		
 
-		side += movespeed * CL_KeyState (&in_moveright);
-		side -= movespeed * CL_KeyState (&in_moveleft);
-
-		up += movespeed * CL_KeyState (&in_up);
-		up -= movespeed * CL_KeyState (&in_down);
-
-		forward += movespeed * CL_KeyState (&in_forward);
-		forward -= movespeed * CL_KeyState (&in_back);
-	
-		cmd->forwardmove = ClampChar( forward );
-		cmd->rightmove = ClampChar( side );
-		cmd->upmove = ClampChar( up );
-	}
+	cmd->forwardmove = ClampChar( forward );
+	cmd->rightmove = ClampChar( side );
+	cmd->upmove = ClampChar( up );
 }
 /*
 =================
@@ -1839,7 +1825,7 @@ void CL_InitInput( void ) {
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
 
-	cl_idrive = Cvar_Get ("cl_idrive", "0", 0);//JAPRO ENGINE
+	cl_idrive = Cvar_Get ("cl_idrive", "0", CVAR_ARCHIVE);//JAPRO ENGINE
 }
 
 /*
