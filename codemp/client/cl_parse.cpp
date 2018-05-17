@@ -477,7 +477,7 @@ void CL_SystemInfoChanged( void ) {
 				continue;
 			}
 
-			if(!FS_FilenameCompare(value, BASEGAME))
+			if (!FS_FilenameCompare(value, BASEGAME) || !FS_FilenameCompare(value, "OpenJK"))
 			{
 				Q_strncpyz(value, "", sizeof(value));
 			}
