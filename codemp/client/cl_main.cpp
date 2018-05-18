@@ -3579,7 +3579,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	}
 
 	// if this is an MB2 server, ignore it
-	if (!Q_stricmp(Info_ValueForKey(infoString, "game"), "mbii")) {
+	if (!Q_stricmp(Info_ValueForKey(infoString, "game"), "mbii") && Q_stricmp(Cvar_VariableString("fs_game"), "mbii")) {
 		return;
 	}
 
