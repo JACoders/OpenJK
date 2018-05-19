@@ -47,7 +47,7 @@ namespace
 	const float CHUNK_SIZE = 2000.0f;
 	const float HALF_CHUNK_SIZE = CHUNK_SIZE * 0.5f;
 	const int CHUNK_COUNT = 9;  // in 3x3 arrangement
-	const int RAIN_VERTEX_COUNT = 5000;
+	const int RAIN_VERTEX_COUNT = 50000;
 
 	struct rainVertex_t
 	{
