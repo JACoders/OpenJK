@@ -38,6 +38,7 @@ struct weatherSystem_t
 	int numVertices;
 
 	srfWeather_t weatherSurface;
+	vertexAttribute_t attribsTemplate[2];
 };
 
 namespace
@@ -71,6 +72,20 @@ namespace
 		ws.vbo = R_CreateVBO((byte *)rainVertices, sizeof(rainVertices), VBO_USAGE_XFB);
 		ws.numVertices = MAX_RAIN_VERTICES;
 		ws.vboLastUpdateFrame = 0;
+
+		ws.attribsTemplate[0].index = ATTR_INDEX_POSITION;
+		ws.attribsTemplate[0].numComponents = 3;
+		ws.attribsTemplate[0].offset = offsetof(rainVertex_t, position);
+		ws.attribsTemplate[0].stride = sizeof(rainVertex_t);
+		ws.attribsTemplate[0].type = GL_FLOAT;
+		ws.attribsTemplate[0].vbo = nullptr;
+
+		ws.attribsTemplate[1].index = ATTR_INDEX_COLOR;
+		ws.attribsTemplate[1].numComponents = 3;
+		ws.attribsTemplate[1].offset = offsetof(rainVertex_t, velocity);
+		ws.attribsTemplate[1].stride = sizeof(rainVertex_t);
+		ws.attribsTemplate[1].type = GL_FLOAT;
+		ws.attribsTemplate[1].vbo = nullptr;
 	}
 
 	void RB_SimulateWeather(weatherSystem_t& ws)
@@ -200,36 +215,22 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 
 	DrawItem item = {};
 
-	SamplerBindingsWriter samplerBindingsWriter;
-	item.samplerBindings = samplerBindingsWriter.Finish(
-		*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
-
 	item.renderState.stateBits =
 		GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	item.renderState.cullType = CT_FRONT_SIDED;
 	item.renderState.depthRange = { 0.0f, 1.0f };
 	item.program = &tr.weatherShader;
 
-	vertexAttribute_t attribs[2] = {};
-	attribs[0].index = ATTR_INDEX_POSITION;
-	attribs[0].numComponents = 3;
-	attribs[0].offset = offsetof(rainVertex_t, position);
-	attribs[0].stride = sizeof(rainVertex_t);
-	attribs[0].type = GL_FLOAT;
-	attribs[0].vbo = ws.vbo;
-
-	attribs[1].index = ATTR_INDEX_COLOR;
-	attribs[1].numComponents = 3;
-	attribs[1].offset = offsetof(rainVertex_t, velocity);
-	attribs[1].stride = sizeof(rainVertex_t);
-	attribs[1].type = GL_FLOAT;
-	attribs[1].vbo = ws.vbo;
-
-	const size_t numAttribs = ARRAY_LEN(attribs);
+	const size_t numAttribs = ARRAY_LEN(ws.attribsTemplate);
 	item.numAttributes = numAttribs;
 	item.attributes = ojkAllocArray<vertexAttribute_t>(
 		*backEndData->perFrameMemory, numAttribs);
-	memcpy(item.attributes, attribs, sizeof(*item.attributes) * numAttribs);
+	memcpy(
+		item.attributes,
+		ws.attribsTemplate,
+		sizeof(*item.attributes) * numAttribs);
+	item.attributes[0].vbo = ws.vbo;
+	item.attributes[1].vbo = ws.vbo;
 
 	item.draw.type = DRAW_COMMAND_ARRAYS;
 	item.draw.numInstances = 1;
