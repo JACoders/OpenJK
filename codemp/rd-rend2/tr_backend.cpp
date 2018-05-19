@@ -958,16 +958,21 @@ static void RB_SetRenderState(const RenderState& renderState)
 	}
 }
 
-static void RB_BindTransformFeedbackBuffer(VBO_t *buffer)
+static void RB_BindTransformFeedbackBuffer(const bufferBinding_t& binding)
 {
-	if (glState.currentXFBBO != buffer)
+	if (memcmp(&glState.currentXFBBO, &binding, sizeof(binding)) != 0)
 	{
-		if (buffer != nullptr)
-			qglBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer->vertexesVBO);
+		if (binding.vbo != nullptr)
+			qglBindBufferRange(
+				GL_TRANSFORM_FEEDBACK_BUFFER,
+				0,
+				binding.vbo->vertexesVBO,
+				binding.offset,
+				binding.size);
 		else
 			qglBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
 
-		glState.currentXFBBO = buffer;
+		glState.currentXFBBO = binding;
 	}
 }
 
@@ -979,8 +984,6 @@ static void RB_DrawItems(
 	for ( int i = 0; i < numDrawItems; ++i )
 	{
 		const DrawItem& drawItem = drawItems[drawOrder[i]];
-
-		RB_SetRenderState(drawItem.renderState);
 
 		if (drawItem.ibo != nullptr)
 			R_BindIBO(drawItem.ibo);
@@ -995,6 +998,8 @@ static void RB_DrawItems(
 		RB_BindTransformFeedbackBuffer(drawItem.transformFeedbackBuffer);
 
 		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
+
+		RB_SetRenderState(drawItem.renderState);
 
 		switch ( drawItem.draw.type )
 		{

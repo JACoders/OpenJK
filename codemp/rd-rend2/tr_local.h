@@ -1247,6 +1247,7 @@ typedef enum
 
 	UNIFORM_FX_VOLUMETRIC_BASE,
 	UNIFORM_MAPZEXTENTS,
+	UNIFORM_ZONEOFFSET,
 
 	UNIFORM_COUNT
 } uniform_t;
@@ -2004,6 +2005,13 @@ struct vertexAttribute_t
 	int stepRate;
 };
 
+struct bufferBinding_t
+{
+	VBO_t *vbo;
+	int offset;
+	int size;
+};
+
 // the renderer front end should never modify glstate_t
 typedef struct glstate_s {
 	int			currenttextures[NUM_TEXTURE_BUNDLES];
@@ -2027,7 +2035,7 @@ typedef struct glstate_s {
 	FBO_t          *currentFBO;
 	VBO_t          *currentVBO;
 	IBO_t          *currentIBO;
-	VBO_t		   *currentXFBBO;
+	bufferBinding_t currentXFBBO;
 	matrix_t        modelview;
 	matrix_t        projection;
 	matrix_t		modelviewProjection;
@@ -2555,6 +2563,7 @@ extern cvar_t	*r_dynamicGlowWidth;
 extern cvar_t	*r_dynamicGlowHeight;
 
 extern cvar_t	*r_debugContext;
+extern cvar_t	*r_debugWeather;
 
 //====================================================================
 
@@ -3529,7 +3538,7 @@ struct DrawItem
 	uint32_t numUniformBlockBindings;
 	UniformBlockBinding *uniformBlockBindings;
 
-	VBO_t *transformFeedbackBuffer;
+	bufferBinding_t transformFeedbackBuffer;
 
 	UniformData *uniformData;
 

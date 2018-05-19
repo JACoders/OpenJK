@@ -133,6 +133,7 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
 	{ "u_MapZExtents",			GLSL_VEC2, 1 },
+	{ "u_ZoneOffset",			GLSL_VEC2, 1 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
@@ -2075,21 +2076,19 @@ static int GLSL_LoadGPUProgramWeather(
 		&tr.weatherShader,
 		"weather",
 		fallback_weatherProgram,
-		ATTR_POSITION);
+		ATTR_POSITION | ATTR_COLOR);
 
 	GLSL_InitUniforms(&tr.weatherShader);
 	GLSL_FinishGPUShader(&tr.weatherShader);
 
-	const char *extradefines = "#define DO_PARTICLE_UPDATE\n";
-	GLSL_LoadGPUProgramBasicWithDefinitions(
+	GLSL_LoadGPUProgramBasic(
 		builder,
 		scratchAlloc,
 		&tr.weatherUpdateShader,
 		"weatherUpdate",
 		fallback_weatherUpdateProgram,
-		extradefines,
 		ATTR_POSITION | ATTR_COLOR,
-		XFB_VAR_POSITION | XFB_VAR_VELOCITY);
+		(1u << XFB_VAR_POSITION) | (1u << XFB_VAR_VELOCITY));
 
 	GLSL_InitUniforms(&tr.weatherUpdateShader);
 	GLSL_FinishGPUShader(&tr.weatherUpdateShader);
