@@ -370,6 +370,13 @@ typedef struct image_s {
 	struct image_s *poolNext;
 } image_t;
 
+typedef struct cubemap_s {
+	char name[MAX_QPATH];
+	vec3_t origin;
+	float parallaxRadius;
+	image_t *image;
+} cubemap_t;
+
 typedef struct dlight_s {
 	vec3_t	origin;
 	vec3_t	color;				// range from 0.0 to 1.0, should be color normalized
@@ -2202,7 +2209,7 @@ typedef struct trGlobals_s {
 	image_t					*whiteImage;			// full of 0xff
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
-	image_t                 *shadowCubemaps[MAX_DLIGHTS];
+	cubemap_t               *shadowCubemaps[MAX_DLIGHTS];
 	
 
 	image_t					*renderImage;
@@ -2262,8 +2269,7 @@ typedef struct trGlobals_s {
 	vec2i_t					lightmapsPerAtlasSide;
 
 	int                     numCubemaps;
-	vec3_t                  *cubemapOrigins;
-	image_t                 **cubemaps;
+	cubemap_t               *cubemaps;
 
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	model_t					*currentModel;

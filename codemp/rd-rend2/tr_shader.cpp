@@ -1652,7 +1652,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if (!Q_stricmp(token, "roughness"))
 		{
-			float roughness;
 			token = COM_ParseExt(text, qfalse);
 			if (token[0] == 0)
 			{
