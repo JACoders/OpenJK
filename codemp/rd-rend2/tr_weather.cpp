@@ -21,6 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_weather.h"
 #include "tr_local.h"
 #include <utility>
+#include <vector>
 
 struct LocalWeatherZone
 {
@@ -43,8 +44,10 @@ struct weatherSystem_t
 
 namespace
 {
-	const float ZONE_SIZE = 2000.0f;
-	const float HALF_ZONE_SIZE = ZONE_SIZE * 0.5f;
+	const float CHUNK_SIZE = 2000.0f;
+	const float HALF_CHUNK_SIZE = CHUNK_SIZE * 0.5f;
+	const int CHUNK_COUNT = 9;  // in 3x3 arrangement
+	const int RAIN_VERTEX_COUNT = 5000;
 
 	struct rainVertex_t
 	{
@@ -54,23 +57,27 @@ namespace
 
 	void GenerateRainModel( weatherSystem_t& ws )
 	{
-		static const int MAX_RAIN_VERTICES = 5000;
-		rainVertex_t rainVertices[MAX_RAIN_VERTICES];
+		std::vector<rainVertex_t> rainVertices(RAIN_VERTEX_COUNT * CHUNK_COUNT);
 
-		for ( int i = 0; i < MAX_RAIN_VERTICES; ++i )
+		for ( int i = 0; i < rainVertices.size(); ++i )
 		{
 			rainVertex_t& vertex = rainVertices[i];
-			vertex.position[0] = Q_flrand(-HALF_ZONE_SIZE, HALF_ZONE_SIZE);
-			vertex.position[1] = Q_flrand(-HALF_ZONE_SIZE, HALF_ZONE_SIZE);
-			vertex.position[2] = Q_flrand(-HALF_ZONE_SIZE, HALF_ZONE_SIZE);
+			vertex.position[0] = Q_flrand(-HALF_CHUNK_SIZE, HALF_CHUNK_SIZE);
+			vertex.position[1] = Q_flrand(-HALF_CHUNK_SIZE, HALF_CHUNK_SIZE);
+			vertex.position[2] = Q_flrand(-HALF_CHUNK_SIZE, HALF_CHUNK_SIZE);
 			vertex.velocity[0] = Q_flrand(-2.0f, 2.0f);
 			vertex.velocity[1] = Q_flrand(-2.0f, 2.0f);
 			vertex.velocity[2] = Q_flrand(-20.0f, 0.0f);
 		}
 
-		ws.lastVBO = R_CreateVBO(nullptr, sizeof(rainVertices), VBO_USAGE_XFB);
-		ws.vbo = R_CreateVBO((byte *)rainVertices, sizeof(rainVertices), VBO_USAGE_XFB);
-		ws.numVertices = MAX_RAIN_VERTICES;
+		ws.lastVBO = R_CreateVBO(
+			nullptr,
+			sizeof(rainVertex_t) * rainVertices.size(),
+			VBO_USAGE_XFB);
+		ws.vbo = R_CreateVBO(
+			(byte *)rainVertices.data(),
+			sizeof(rainVertex_t) * rainVertices.size(),
+			VBO_USAGE_XFB);
 		ws.vboLastUpdateFrame = 0;
 
 		ws.attribsTemplate[0].index = ATTR_INDEX_POSITION;
@@ -101,30 +108,21 @@ namespace
 		VBO_t *lastRainVBO = ws.vbo;
 		VBO_t *rainVBO = ws.lastVBO;
 
-		vertexAttribute_t attribs[2] = {};
-		attribs[0].index = ATTR_INDEX_POSITION;
-		attribs[0].numComponents = 3;
-		attribs[0].offset = offsetof(rainVertex_t, position);
-		attribs[0].stride = sizeof(rainVertex_t);
-		attribs[0].type = GL_FLOAT;
-		attribs[0].vbo = lastRainVBO;
-		attribs[1].index = ATTR_INDEX_COLOR;
-		attribs[1].numComponents = 3;
-		attribs[1].offset = offsetof(rainVertex_t, velocity);
-		attribs[1].stride = sizeof(rainVertex_t);
-		attribs[1].type = GL_FLOAT;
-		attribs[1].vbo = lastRainVBO;
-
-		const size_t numAttribs = ARRAY_LEN(attribs);
-
 		DrawItem item = {};
 		item.renderState.transformFeedback = true;
 		item.transformFeedbackBuffer = {rainVBO, 0, rainVBO->vertexesSize};
 		item.program = &tr.weatherUpdateShader;
+
+		const size_t numAttribs = ARRAY_LEN(ws.attribsTemplate);
 		item.numAttributes = numAttribs;
 		item.attributes = ojkAllocArray<vertexAttribute_t>(
 			*backEndData->perFrameMemory, numAttribs);
-		memcpy(item.attributes, attribs, sizeof(*item.attributes) * numAttribs);
+		memcpy(
+			item.attributes,
+			ws.attribsTemplate,
+			sizeof(*item.attributes) * numAttribs);
+		item.attributes[0].vbo = lastRainVBO;
+		item.attributes[1].vbo = lastRainVBO;
 
 		UniformDataWriter uniformDataWriter;
 		uniformDataWriter.Start(&tr.weatherUpdateShader);
@@ -141,7 +139,7 @@ namespace
 		item.draw.type = DRAW_COMMAND_ARRAYS;
 		item.draw.numInstances = 1;
 		item.draw.primitiveType = GL_POINTS;
-		item.draw.params.arrays.numVertices = ws.numVertices;
+		item.draw.params.arrays.numVertices = RAIN_VERTEX_COUNT * CHUNK_COUNT;
 
 		// This is a bit dodgy. Push this towards the front of the queue so we
 		// guarantee this happens before the actual drawing
@@ -205,12 +203,6 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 
 	RB_EndSurface();
 
-	// Get look direction
-	// Determine which zones would be visible
-	// Update simulation in these zones -
-	//   can do this in one go
-	// Render zones
-
 	RB_SimulateWeather(ws);
 
 	DrawItem item = {};
@@ -235,16 +227,17 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	item.draw.type = DRAW_COMMAND_ARRAYS;
 	item.draw.numInstances = 1;
 	item.draw.primitiveType = GL_POINTS;
-	item.draw.params.arrays.numVertices = ws.numVertices;
+	item.draw.params.arrays.numVertices = RAIN_VERTEX_COUNT;
 
 	const float *viewOrigin = backEnd.viewParms.ori.origin;
 	float centerZoneOffsetX =
-		std::floor((backEnd.viewParms.ori.origin[0] / ZONE_SIZE) + 0.5f) * ZONE_SIZE;
+		std::floor((viewOrigin[0] / CHUNK_SIZE) + 0.5f) * CHUNK_SIZE;
 	float centerZoneOffsetY =
-		std::floor((backEnd.viewParms.ori.origin[1] / ZONE_SIZE) + 0.5f) * ZONE_SIZE;
+		std::floor((viewOrigin[1] / CHUNK_SIZE) + 0.5f) * CHUNK_SIZE;
+	int chunkIndex = 0;
 	for (int y = -1; y <= 1; ++y)
 	{
-		for (int x = -1; x <= 1; ++x)
+		for (int x = -1; x <= 1; ++x, ++chunkIndex)
 		{
 			UniformDataWriter uniformDataWriter;
 			uniformDataWriter.Start(&tr.weatherShader);
@@ -254,10 +247,12 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 				UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 			uniformDataWriter.SetUniformVec2(
 				UNIFORM_ZONEOFFSET,
-				centerZoneOffsetX + x * ZONE_SIZE,
-				centerZoneOffsetY + y * ZONE_SIZE);
+				centerZoneOffsetX + x * CHUNK_SIZE,
+				centerZoneOffsetY + y * CHUNK_SIZE);
 			uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
 			item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+
+			item.draw.params.arrays.firstVertex = RAIN_VERTEX_COUNT * chunkIndex;
 
 			uint32_t key = RB_CreateSortKey(item, 15, SS_SEE_THROUGH);
 			RB_AddDrawItem(backEndData->currentPass, key, item);
