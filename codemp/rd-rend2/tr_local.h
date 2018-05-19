@@ -2556,6 +2556,7 @@ extern cvar_t	*r_dynamicGlowWidth;
 extern cvar_t	*r_dynamicGlowHeight;
 
 extern cvar_t	*r_debugContext;
+extern cvar_t	*r_debugWeather;
 
 //====================================================================
 

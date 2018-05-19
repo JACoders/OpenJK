@@ -265,6 +265,7 @@ cvar_t	*r_dynamicGlowWidth;
 cvar_t	*r_dynamicGlowHeight;
 
 cvar_t *r_debugContext;
+cvar_t *r_debugWeather;
 
 cvar_t	*r_aspectCorrectFonts;
 
@@ -1436,6 +1437,7 @@ void R_Register( void )
 	r_dynamicGlowHeight					= ri.Cvar_Get( "r_dynamicGlowHeight",		"240",		CVAR_ARCHIVE|CVAR_LATCH, "" );
 
 	r_debugContext						= ri.Cvar_Get( "r_debugContext",			"0",		CVAR_LATCH, "" );
+	r_debugWeather						= ri.Cvar_Get( "r_debugWeather",			"0",		CVAR_ARCHIVE, "" );
 
 	r_picmip = ri.Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );

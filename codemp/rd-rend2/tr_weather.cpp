@@ -180,7 +180,7 @@ void R_AddWeatherSurfaces()
 {
 	assert(tr.weatherSystem);
 
-	if (false)
+	if (r_debugWeather->integer)
 	{
 		R_AddDrawSurf(
 			(surfaceType_t *)&tr.weatherSystem->weatherSurface,
