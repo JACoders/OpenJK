@@ -73,41 +73,6 @@ static GLenum GetGLBufferUsage ( vboUsage_t usage )
 	}
 }
 
-#if 0
-struct Attribute
-{
-	int index;
-	GLenum type;
-	int numElements;
-	qboolean normalised;
-	int offset;
-	int stride;
-	int stream;
-};
-
-const int MAX_ATTRIBUTES = 8;
-struct VertexFormat
-{
-	Attribute attributes[MAX_ATTRIBUTES];
-	int numAttributes;
-};
-
-const int MAX_VERTEX_STREAMS = 2;
-struct VertexArrayObject
-{
-	GLuint vao;
-	IBO_t *ibo;
-	VBO_t *vbos[MAX_VERTEX_STREAMS];
-	int numStreams;
-	VertexFormat format;
-};
-
-VertexArrayObject *R_GetVertexArrayObject( const VertexFormat& format )
-{
-	return nullptr;
-}
-#endif
-
 /*
 ============
 R_CreateVBO

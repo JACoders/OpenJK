@@ -22,7 +22,7 @@ void main()
 {
 	var_Velocity = attr_Color;
 	var_Position = attr_Position;
-	var_Position.z -= 800.0 * 0.16;
+	var_Position.z -= 600.0 * 0.16;
 
 	if (var_Position.z < u_MapZExtents.x)
 		var_Position = NewParticlePosition();

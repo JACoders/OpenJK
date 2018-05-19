@@ -42,6 +42,9 @@ struct weatherSystem_t
 
 namespace
 {
+	const float ZONE_SIZE = 2000.0f;
+	const float HALF_ZONE_SIZE = ZONE_SIZE * 0.5f;
+
 	struct rainVertex_t
 	{
 		vec3_t position;
@@ -56,9 +59,9 @@ namespace
 		for ( int i = 0; i < MAX_RAIN_VERTICES; ++i )
 		{
 			rainVertex_t& vertex = rainVertices[i];
-			vertex.position[0] = Q_flrand(-1000.0f, 3000.0f);
-			vertex.position[1] = Q_flrand(-1000.0f, 3000.0f);
-			vertex.position[2] = Q_flrand(-1000.0f, 3000.0f);
+			vertex.position[0] = Q_flrand(-HALF_ZONE_SIZE, HALF_ZONE_SIZE);
+			vertex.position[1] = Q_flrand(-HALF_ZONE_SIZE, HALF_ZONE_SIZE);
+			vertex.position[2] = Q_flrand(-HALF_ZONE_SIZE, HALF_ZONE_SIZE);
 			vertex.velocity[0] = Q_flrand(-2.0f, 2.0f);
 			vertex.velocity[1] = Q_flrand(-2.0f, 2.0f);
 			vertex.velocity[2] = Q_flrand(-20.0f, 0.0f);
@@ -101,7 +104,7 @@ namespace
 
 		DrawItem item = {};
 		item.renderState.transformFeedback = true;
-		item.transformFeedbackBuffer = rainVBO;
+		item.transformFeedbackBuffer = {rainVBO, 0, rainVBO->vertexesSize};
 		item.program = &tr.weatherUpdateShader;
 		item.numAttributes = numAttribs;
 		item.attributes = ojkAllocArray<vertexAttribute_t>(
@@ -112,8 +115,9 @@ namespace
 		uniformDataWriter.Start(&tr.weatherUpdateShader);
 
 		const vec2_t mapZExtents = {
-			tr.world->bmodels[0].bounds[0][2],
-			tr.world->bmodels[0].bounds[1][2]
+			-1000.0f, 1000.0f
+			//tr.world->bmodels[0].bounds[0][2],
+			//tr.world->bmodels[0].bounds[1][2]
 		};
 		uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
 		uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
@@ -186,6 +190,12 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 
 	RB_EndSurface();
 
+	// Get look direction
+	// Determine which zones would be visible
+	// Update simulation in these zones -
+	//   can do this in one go
+	// Render zones
+
 	RB_SimulateWeather(ws);
 
 	DrawItem item = {};
@@ -193,21 +203,6 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	SamplerBindingsWriter samplerBindingsWriter;
 	item.samplerBindings = samplerBindingsWriter.Finish(
 		*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
-
-	UniformDataWriter uniformDataWriter;
-	uniformDataWriter.Start(&tr.weatherShader);
-	uniformDataWriter.SetUniformMatrix4x4(
-		UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-	uniformDataWriter.SetUniformVec3(
-		UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
-	const vec2_t mapZExtents = { -3000.0, 9000.0 };
-	uniformDataWriter.SetUniformVec2(
-		UNIFORM_ZONEOFFSET,
-		backEnd.viewParms.ori.origin[0],
-		backEnd.viewParms.ori.origin[1]);
-	uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
-	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
-	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 
 	item.renderState.stateBits =
 		GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
@@ -241,6 +236,30 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	item.draw.primitiveType = GL_POINTS;
 	item.draw.params.arrays.numVertices = ws.numVertices;
 
-	uint32_t key = RB_CreateSortKey(item, 15, SS_SEE_THROUGH);
-	RB_AddDrawItem(backEndData->currentPass, key, item);
+	const float *viewOrigin = backEnd.viewParms.ori.origin;
+	float centerZoneOffsetX =
+		std::floor((backEnd.viewParms.ori.origin[0] / ZONE_SIZE) + 0.5f) * ZONE_SIZE;
+	float centerZoneOffsetY =
+		std::floor((backEnd.viewParms.ori.origin[1] / ZONE_SIZE) + 0.5f) * ZONE_SIZE;
+	for (int y = -1; y <= 1; ++y)
+	{
+		for (int x = -1; x <= 1; ++x)
+		{
+			UniformDataWriter uniformDataWriter;
+			uniformDataWriter.Start(&tr.weatherShader);
+			uniformDataWriter.SetUniformMatrix4x4(
+				UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+			uniformDataWriter.SetUniformVec3(
+				UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
+			uniformDataWriter.SetUniformVec2(
+				UNIFORM_ZONEOFFSET,
+				centerZoneOffsetX + x * ZONE_SIZE,
+				centerZoneOffsetY + y * ZONE_SIZE);
+			uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
+			item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+
+			uint32_t key = RB_CreateSortKey(item, 15, SS_SEE_THROUGH);
+			RB_AddDrawItem(backEndData->currentPass, key, item);
+		}
+	}
 }
