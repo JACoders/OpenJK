@@ -23,14 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <utility>
 #include <vector>
 
-struct LocalWeatherZone
-{
-	unsigned vboLastUpdateFrame;
-	VBO_t *lastVBO;
-	VBO_t *vbo;
-	int numVertices;
-};
-
 struct weatherSystem_t
 {
 	VBO_t *lastVBO;
