@@ -1398,7 +1398,7 @@ typedef struct {
 	int			scissorX, scissorY, scissorWidth, scissorHeight;
 	FBO_t		*targetFbo;
 	int         targetFboLayer;
-	int         targetFboCubemapIndex;
+	cubemap_t   *targetFboCubemap;
 	float		fovX, fovY;
 	float		projectionMatrix[16];
 	cplane_t	frustum[5];
@@ -2209,8 +2209,7 @@ typedef struct trGlobals_s {
 	image_t					*whiteImage;			// full of 0xff
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
-	cubemap_t               *shadowCubemaps[MAX_DLIGHTS];
-	
+	cubemap_t               shadowCubemaps[MAX_DLIGHTS];
 
 	image_t					*renderImage;
 	image_t					*glowImage;
@@ -2239,6 +2238,7 @@ typedef struct trGlobals_s {
 	FBO_t					*sunRaysFbo;
 	FBO_t					*depthFbo;
 	FBO_t					*pshadowFbos[MAX_DRAWN_PSHADOWS];
+	FBO_t					*shadowCubeFbo;
 	FBO_t					*textureScratchFbo[2];
 	FBO_t                   *quarterFbo[2];
 	FBO_t					*calcLevelsFbo;
@@ -3314,7 +3314,6 @@ typedef enum {
 	RC_VIDEOFRAME,
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
-	RC_CAPSHADOWMAP,
 	RC_CONVOLVECUBEMAP,
 	RC_POSTPROCESS,
 	RC_BEGIN_TIMED_BLOCK,

@@ -224,26 +224,6 @@ void	R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	cmd->viewParms = tr.viewParms;
 }
 
-
-/*
-=============
-R_AddCapShadowmapCmd
-
-=============
-*/
-void	R_AddCapShadowmapCmd( int map, int cubeSide ) {
-	capShadowmapCommand_t	*cmd;
-
-	cmd = (capShadowmapCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
-	if ( !cmd ) {
-		return;
-	}
-	cmd->commandId = RC_CAPSHADOWMAP;
-
-	cmd->map = map;
-	cmd->cubeSide = cubeSide;
-}
-
 /*
 =============
 R_AddConvolveCubemapsCmd

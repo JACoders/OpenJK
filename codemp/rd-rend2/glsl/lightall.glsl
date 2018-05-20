@@ -343,6 +343,7 @@ uniform vec4 u_EnableTextures;
 #if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING)
 uniform vec3 u_DirectedLight;
 uniform vec3 u_AmbientLight;
+uniform samplerCubeShadow u_ShadowMap2;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
@@ -499,6 +500,50 @@ float CalcLightAttenuation(float point, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
+#if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING) && defined(USE_DSHADOWS)
+#define DEPTH_MAX_ERROR 0.000000059604644775390625
+
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+	vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+	vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+	vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+	);
+
+float pcfShadow(samplerCubeShadow depthMap, vec3 L, float distance)
+{
+	float shadow = 0.0;
+	int samples = 20;
+	float diskRadius = 128.0/512.0;
+	for (int i = 0; i < samples; ++i)
+	{
+		shadow += texture(depthMap, vec4(L + sampleOffsetDirections[i] * diskRadius, distance));
+	}
+	shadow /= float(samples);
+	return shadow;
+}
+
+float getLightDepth(vec3 Vec, float f)
+{
+	vec3 AbsVec = abs(Vec);
+	float Z = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
+
+	const float n = 1.0;
+
+	float NormZComp = (f + n) / (f - n) - 2 * f*n / (Z* (f - n));
+
+	return ((NormZComp + 1.0) * 0.5) - DEPTH_MAX_ERROR;
+}
+
+float getShadowValue(vec4 light)
+{
+	float distance = getLightDepth(light.xyz, sqrt(light.w));
+	return pcfShadow(u_ShadowMap2, light.xyz, distance);
+}
+#endif
+
 vec2 GetParallaxOffset(in vec2 texCoords, in vec3 E, in mat3 tangentToWorld )
 {
 #if defined(USE_PARALLAXMAP)
@@ -629,6 +674,13 @@ void main()
 	lightColor	= u_DirectedLight * var_Color.rgb;
 	ambientColor = u_AmbientLight * var_Color.rgb;
 	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
+
+    #if defined(USE_DSHADOWS)
+	  if (var_LightDir.w > 0.0) {
+	    attenuation *= getShadowValue(var_LightDir);
+	  }
+    #endif
+
   #elif defined(USE_LIGHT_VERTEX)
 	lightColor	= var_Color.rgb;
 	ambientColor = vec3 (0.0);

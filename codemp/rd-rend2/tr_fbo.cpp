@@ -513,6 +513,20 @@ void FBO_Init(void)
 	}
 #endif
 
+	if (r_dlightMode->integer >= 2)
+	{
+		tr.shadowCubeFbo = FBO_Create("_shadowCubeFbo", PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
+		FBO_Bind(tr.shadowCubeFbo);
+
+		FBO_CreateBuffer(tr.shadowCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
+
+		qglDrawBuffer(GL_NONE);
+
+		FBO_SetupDrawBuffers();
+
+		R_CheckFBO(tr.shadowCubeFbo);
+	}
+
 	if (tr.sunShadowDepthImage[0] != NULL)
 	{
 		for ( i = 0; i < 3; i++)

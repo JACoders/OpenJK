@@ -516,8 +516,13 @@ void RB_BeginDrawingView (void) {
 		// FIXME: hack for cubemap testing
 		if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 		{
-			image_t *cubemap = tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex].image;
+			image_t *cubemap = backEnd.viewParms.targetFboCubemap->image;
 			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
+		}
+		else if (tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo)
+		{
+			image_t *cubemap = backEnd.viewParms.targetFboCubemap->image;
+			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
 		}
 	}
 
@@ -2462,45 +2467,6 @@ static const void	*RB_SwapBuffers( const void *data ) {
 
 /*
 =============
-RB_CapShadowMap
-
-=============
-*/
-static const void *RB_CaptureShadowMap(const void *data)
-{
-	const capShadowmapCommand_t *cmd = (const capShadowmapCommand_t *)data;
-
-	// finish any 2D drawing if needed
-	if(tess.numIndexes)
-		RB_EndSurface();
-
-	if (cmd->map != -1)
-	{
-		GL_SelectTexture(0);
-		if (cmd->cubeSide != -1)
-		{
-			if (tr.shadowCubemaps[cmd->map] != NULL)
-			{
-				GL_Bind(tr.shadowCubemaps[cmd->map]->image);
-				qglCopyTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, 0, 0, 0, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE );
-			}
-		}
-		else
-		{
-			if (tr.pshadowMaps[cmd->map] != NULL)
-			{
-				GL_Bind(tr.pshadowMaps[cmd->map]);
-				qglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE );
-			}
-		}
-	}
-
-	return (const void *)(cmd + 1);
-}
-
-
-/*
-=============
 RB_PostProcess
 
 =============
@@ -2768,9 +2734,6 @@ void RB_ExecuteRenderCommands( const void *data ) {
 			break;
 		case RC_CLEARDEPTH:
 			data = RB_ClearDepth(data);
-			break;
-		case RC_CAPSHADOWMAP:
-			data = RB_CaptureShadowMap(data);
 			break;
 		case RC_CONVOLVECUBEMAP:
 			data = RB_PrefilterEnvMap( data );

@@ -1001,7 +1001,7 @@ static void ForwardDlight( const shaderCommands_t *input,  VertexArraysPropertie
 		uniformDataWriter.SetUniformVec4(UNIFORM_ENABLETEXTURES, enableTextures);
 
 		if (r_dlightMode->integer >= 2)
-			samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[l]->image, TB_SHADOWMAP);
+			samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[l].image, TB_SHADOWMAP2);
 
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
