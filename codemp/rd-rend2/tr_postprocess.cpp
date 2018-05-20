@@ -321,7 +321,7 @@ void RB_SunRays(FBO_t *srcFbo, vec4i_t srcBox, FBO_t *dstFbo, vec4i_t dstBox)
 	// From RB_DrawSun()
 	{
 		float dist;
-		matrix_t trans, model, mvp;
+		matrix_t trans, model;
 
 		Matrix16Translation( backEnd.viewParms.ori.origin, trans );
 		Matrix16Multiply( backEnd.viewParms.world.modelViewMatrix, trans, model );
