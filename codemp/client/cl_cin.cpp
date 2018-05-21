@@ -1176,7 +1176,7 @@ redump:
 		case	ZA_SOUND_MONO:
 			if (!cinTable[currentHandle].silent) {
 				ssize = RllDecodeMonoToStereo( framedata, sbuf, cinTable[currentHandle].RoQFrameSize, 0, (unsigned short)cinTable[currentHandle].roq_flags);
-                S_RawSamples( ssize, 22050, 2, 1, (byte *)sbuf, s_volume->value, 1 );
+                S_RawSamples( ssize, 22050, 2, 1, (byte *)sbuf, s_volume->value*volume->value, 1 );
 			}
 			break;
 		case	ZA_SOUND_STEREO:
@@ -1186,7 +1186,7 @@ redump:
 					s_rawend = s_soundtime;
 				}
 				ssize = RllDecodeStereoToStereo( framedata, sbuf, cinTable[currentHandle].RoQFrameSize, 0, (unsigned short)cinTable[currentHandle].roq_flags);
-                S_RawSamples( ssize, 22050, 2, 2, (byte *)sbuf, s_volume->value, 1 );
+                S_RawSamples( ssize, 22050, 2, 2, (byte *)sbuf, s_volume->value*volume->value, 1 );
 			}
 			break;
 		case	ROQ_QUAD_INFO:

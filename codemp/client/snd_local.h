@@ -217,6 +217,7 @@ extern	dma_t	dma;
 extern	portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 portable_samplepair_t *S_GetRawSamplePointer();	// TA added this, but it just returns the s_rawsamples[] array above. Oh well...
 
+extern cvar_t	*volume;
 extern cvar_t	*s_volume;
 extern cvar_t	*s_volumeVoice;
 extern cvar_t	*s_nosound;
