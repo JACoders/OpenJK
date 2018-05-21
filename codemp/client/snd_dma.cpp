@@ -450,8 +450,12 @@ void S_Init( void ) {
 	Com_Printf("\n------- sound initialization -------\n");
 
 	s_volume = Cvar_Get ("s_volume", "0.5", CVAR_ARCHIVE, "Volume" );
+	Cvar_CheckRange(s_volume, 0, 1, qfalse);
 	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE, "Volume for voice channels" );
+	Cvar_CheckRange(s_volumeVoice, 0, 1, qfalse);
 	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE, "Music Volume" );
+	Cvar_CheckRange(s_musicVolume, 0, 1, qfalse);
+
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
 	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
 	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE_ND);
