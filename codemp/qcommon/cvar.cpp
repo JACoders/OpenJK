@@ -275,7 +275,7 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 			if( !Q_isintegral( valuef ) )
 			{
 				if( warn )
-					Com_Printf( "WARNING: cvar '%s' must be integral", var->name );
+					Com_Printf( "%s must be integral", var->name );
 
 				valuef = (int)valuef;
 				changed = qtrue;
@@ -285,7 +285,7 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 	else
 	{
 		if( warn )
-			Com_Printf( "WARNING: cvar '%s' must be numeric", var->name );
+			Com_Printf( "%' must be numeric", var->name );
 
 		valuef = atof( var->resetString );
 		changed = qtrue;
@@ -298,12 +298,12 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 			if( changed )
 				Com_Printf( " and is" );
 			else
-				Com_Printf( "WARNING: cvar '%s'", var->name );
+				Com_Printf( "Attempted to set %s", var->name );
 
 			if( Q_isintegral( var->min ) )
-				Com_Printf( " out of range (min %d)", (int)var->min );
+				Com_Printf( " out of range (min %d)\n", (int)var->min );
 			else
-				Com_Printf( " out of range (min %f)", var->min );
+				Com_Printf( " out of range (min %f)\n", var->min );
 		}
 
 		valuef = var->min;
@@ -316,12 +316,12 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 			if( changed )
 				Com_Printf( " and is" );
 			else
-				Com_Printf( "WARNING: cvar '%s'", var->name );
+				Com_Printf("Attempted to set '%s'", var->name);
 
 			if( Q_isintegral( var->max ) )
-				Com_Printf( " out of range (max %d)", (int)var->max );
+				Com_Printf( " out of range (max %d)\n", (int)var->max );
 			else
-				Com_Printf( " out of range (max %f)", var->max );
+				Com_Printf( " out of range (max %f)\n", var->max );
 		}
 
 		valuef = var->max;
@@ -331,19 +331,9 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 	if( changed )
 	{
 		if( Q_isintegral( valuef ) )
-		{
 			Com_sprintf( s, sizeof( s ), "%d", (int)valuef );
-
-			if( warn )
-				Com_Printf( ", setting to %d\n", (int)valuef );
-		}
 		else
-		{
 			Com_sprintf( s, sizeof( s ), "%f", valuef );
-
-			if( warn )
-				Com_Printf( ", setting to %f\n", valuef );
-		}
 
 		return s;
 	}
