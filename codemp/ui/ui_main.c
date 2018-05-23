@@ -5674,10 +5674,14 @@ static void UI_StartSkirmish(qboolean next) {
 
 static void UI_Update(const char *name) {
 	int	val = trap->Cvar_VariableValue(name);
+	char ver[64];
+
+	trap->Cvar_VariableStringBuffer("version", ver, sizeof(ver));
 
 	if (Q_stricmp(name, "s_khz") == 0)
 	{
-		trap->Cmd_ExecuteText( EXEC_APPEND, "snd_restart\n" );
+		if (!Q_stricmpn(ver, "JAmp: v1.0.1.0 win-x86 Oct 24 2003", 35))
+			trap->Cmd_ExecuteText( EXEC_APPEND, "snd_restart\n" );
 		return;
 	}
 
