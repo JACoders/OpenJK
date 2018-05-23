@@ -1750,6 +1750,7 @@ typedef struct cgs_s {
 	int			svfps;
 	qboolean	takenscreenshot;
 	int			hookpull;
+	int			protocolswitch;
 //[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - End]
 
 	qboolean  newHud;
