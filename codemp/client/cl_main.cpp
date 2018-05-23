@@ -1650,7 +1650,7 @@ void CL_CheckForResend( void ) {
 	}
 
 	if (Cvar_VariableIntegerValue("sv_running") != 0) {
-		protocolswitch->integer = 1;
+		Cvar_Set("protocolswitch", "1");
 		localserver = qtrue;
 	}
 
@@ -1672,7 +1672,7 @@ void CL_CheckForResend( void ) {
 		// requesting a challenge
 
 		if (!localserver) {
-			protocolswitch->integer = 0; //reset this here, just to be safe?
+			Cvar_Set("protocolswitch", "0"); //reset this here, just to be safe?
 			NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getinfo"); //request serverinfo so we know what protocol to use
 		}
 
@@ -3568,13 +3568,13 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 		}
 
 	//multiprotocol "support"
-	if (cls.state == CA_CONNECTING && NET_CompareAdr(from, clc.serverAddress) && !Cvar_VariableIntegerValue("sv_running"))
+	if ((cls.state == CA_CONNECTING || cls.state == CA_CHALLENGING) && NET_CompareAdr(from, clc.serverAddress) && !Cvar_VariableIntegerValue("sv_running"))
 	{
 		if (prot == PROTOCOL_VERSION) {
-			protocolswitch->integer = 1;
+			Cvar_Set("protocolswitch", "1");
 		}
-		if (prot == PROTOCOL_LEGACY) {
-			protocolswitch->integer = 2;
+		else if (prot == PROTOCOL_LEGACY) {
+			Cvar_Set("protocolswitch", "2");
 		}
 	}
 
