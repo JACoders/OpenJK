@@ -22,6 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_local.h"
 #include <utility>
 #include <vector>
+#include <cmath>
+
 
 struct weatherSystem_t
 {

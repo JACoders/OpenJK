@@ -256,6 +256,10 @@ static qboolean GetGLFunction ( GLFuncType& glFunction, const char *glFunctionSt
 	return qtrue;
 }
 
+#ifndef WIN32 // [M] there's no __stdcall on linux
+#define __stdcall
+#endif
+
 static void __stdcall GLimp_OnError(GLenum source, GLenum type, GLuint id, GLenum severity,
 									GLsizei length, const GLchar *message, const void *userParam)
 {
