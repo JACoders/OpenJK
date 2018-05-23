@@ -133,7 +133,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 			#define ARCH_STRING "x86"
 		#elif defined(__x86_64__)
 			#define ARCH_STRING "x86_64"
-		#elif
+		#else
 			#error Cannot identify ARCH_STRING, it should be defined by the build system
 		#endif
 	#endif
