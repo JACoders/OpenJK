@@ -176,7 +176,7 @@ cvar_t		*volume;
 cvar_t		*s_volume;
 cvar_t		*s_volumeVoice;
 cvar_t		*s_testsound;
-//cvar_t		*s_khz;
+cvar_t		*s_khz;
 cvar_t		*s_allowDynamicMusic;
 cvar_t		*s_show;
 cvar_t		*s_mixahead;
@@ -459,7 +459,7 @@ void S_Init( void ) {
 	Cvar_CheckRange(s_musicVolume, 0, 1, qfalse);
 
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
-	//s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
+	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
 	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE_ND);
 	s_mixahead = Cvar_Get ("s_mixahead", "0.2", CVAR_ARCHIVE);
 
