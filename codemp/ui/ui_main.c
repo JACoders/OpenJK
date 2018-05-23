@@ -6547,7 +6547,7 @@ static void UI_UpdateSaberCvars ( void )
 	trap->Cvar_Set ( "g_saber2_color", UI_Cvar_VariableString ( "ui_saber2_color" ));
 
 	if (!ui_isBase.integer) {
-		trap->Cmd_ExecuteText(EXEC_APPEND, va("saber %s %s", ui_saber.string, ui_saber2.string));
+		trap->Cmd_ExecuteText(EXEC_APPEND, va("cmd saber %s %s", ui_saber.string, ui_saber2.string));
 	}
 }
 
