@@ -774,6 +774,10 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 				cullFront = !cullFront;
 
 			cullType = (cullFront ? CT_FRONT_SIDED : CT_BACK_SIDED);
+
+			// FIXME: SomaZ: Not sure why this is needed, but fixes sunlight and shadows in cubemaps
+			if ( tr.renderCubeFbo && glState.currentFBO == tr.renderCubeFbo)
+				cullType = CT_TWO_SIDED;
 		}
 	}
 
@@ -1358,11 +1362,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
-
-	bool renderToCubemap = tr.renderCubeFbo && glState.currentFBO == tr.renderCubeFbo;
-	// HACK: SomaZ: Not sure why this is needed, but fixes sunlight and shadows in cubemaps
-	if (renderToCubemap)
-		cullType = CT_TWO_SIDED;
 
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);

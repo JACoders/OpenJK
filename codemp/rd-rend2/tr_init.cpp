@@ -1485,6 +1485,7 @@ void R_Register( void )
 	r_parallaxMapping = ri.Cvar_Get( "r_parallaxMapping", "0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_cubeMapping = ri.Cvar_Get( "r_cubeMapping", "0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_cubeMappingBounces = ri.Cvar_Get("r_cubeMappingBounces", "0", CVAR_ARCHIVE | CVAR_LATCH, "");
+	ri.Cvar_CheckRange(r_cubeMappingBounces, 0, 2, qfalse);
 	r_baseNormalX = ri.Cvar_Get( "r_baseNormalX", "1.0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_baseNormalY = ri.Cvar_Get( "r_baseNormalY", "1.0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_baseParallax = ri.Cvar_Get( "r_baseParallax", "0.05", CVAR_ARCHIVE | CVAR_LATCH, "" );

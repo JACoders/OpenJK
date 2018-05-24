@@ -505,18 +505,18 @@ float CalcLightAttenuation(float point, float normDist)
 
 vec3 sampleOffsetDirections[20] = vec3[]
 (
-	vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
-	vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-	vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
-	vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
-	vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+	vec3(1.0, 1.0, 1.0), vec3(1.0, -1.0, 1.0), vec3(-1.0, -1.0, 1.0), vec3(-1.0, 1.0, 1.0),
+	vec3(1.0, 1.0, -1.0), vec3(1.0, -1.0, -1.0), vec3(-1.0, -1.0, -1.0), vec3(-1.0, 1.0, -1.0),
+	vec3(1.0, 1.0, 0.0), vec3(1.0, -1.0, 0.0), vec3(-1.0, -1.0, 0.0), vec3(-1.0, 1.0, 0.0),
+	vec3(1.0, 0.0, 1.0), vec3(-1.0, 0.0, 1.0), vec3(1.0, 0.0, -1.0), vec3(-1.0, 0.0, -1.0),
+	vec3(0.0, 1.0, 1.0), vec3(0.0, -1.0, 1.0), vec3(0.0, -1.0, -1.0), vec3(0.0, 1.0, -1.0)
 	);
 
-float pcfShadow(samplerCubeShadow depthMap, vec3 L, float distance)
+float pcfShadow(in samplerCubeShadow depthMap, in vec3 L, in float distance)
 {
 	float shadow = 0.0;
 	int samples = 20;
-	float diskRadius = 128.0/512.0;
+	float diskRadius = 0.25;
 	for (int i = 0; i < samples; ++i)
 	{
 		shadow += texture(depthMap, vec4(L + sampleOffsetDirections[i] * diskRadius, distance));
@@ -525,7 +525,7 @@ float pcfShadow(samplerCubeShadow depthMap, vec3 L, float distance)
 	return shadow;
 }
 
-float getLightDepth(vec3 Vec, float f)
+float getLightDepth(in vec3 Vec, in float f)
 {
 	vec3 AbsVec = abs(Vec);
 	float Z = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
@@ -537,7 +537,7 @@ float getLightDepth(vec3 Vec, float f)
 	return ((NormZComp + 1.0) * 0.5) - DEPTH_MAX_ERROR;
 }
 
-float getShadowValue(vec4 light)
+float getShadowValue(in vec4 light)
 {
 	float distance = getLightDepth(light.xyz, sqrt(light.w));
 	return pcfShadow(u_ShadowMap2, light.xyz, distance);

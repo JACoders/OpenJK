@@ -2884,7 +2884,7 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	{
 		RE_BeginScene(&refdef);
 
-		if(r_sunlightMode->integer && r_depthPrepass->value && ((r_forceSun->integer) || tr.sunShadows))
+		if(r_sunlightMode->integer && r_depthPrepass->value && (r_forceSun->integer || tr.sunShadows))
 		{
 			R_RenderSunShadowMaps(&refdef, 0);
 			R_RenderSunShadowMaps(&refdef, 1);
@@ -2917,7 +2917,7 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 
 	VectorCopy( refdef.vieworg, parms.pvsOrigin );
 
-	if (r_sunlightMode->integer && r_depthPrepass->value && ((r_forceSun->integer) || tr.sunShadows))
+	if (r_sunlightMode->integer && r_depthPrepass->value && (r_forceSun->integer || tr.sunShadows))
 	{
 		parms.flags |= VPF_USESUNLIGHT;
 	}

@@ -2946,7 +2946,7 @@ void R_LoadEnvironmentJson(const char *baseName)
 	const char *environmentArrayJson;
 	int filelen, i;
 
-	Com_sprintf(filename, MAX_QPATH, "cubemaps/%s/env.json", baseName);
+	Com_sprintf(filename, sizeof(filename), "cubemaps/%s/env.json", baseName);
 
 	filelen = ri.FS_ReadFile(filename, &buffer.v);
 	if (!buffer.c)
@@ -3121,7 +3121,7 @@ static void R_RenderAllCubemaps()
 		for (int i = 0; i < tr.numCubemaps; i++)		
     {
 			if (!bounce)
-				tr.cubemaps[i] = R_CreateImage(
+				tr.cubemaps[i].image = R_CreateImage(
 			    va("*cubeMap%d", i),
 			    NULL,
 			    CUBE_MAP_SIZE,

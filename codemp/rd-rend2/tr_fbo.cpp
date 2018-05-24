@@ -520,7 +520,6 @@ void FBO_Init(void)
 
 		FBO_CreateBuffer(tr.shadowCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
 
-		qglDrawBuffer(GL_NONE);
 		qglReadBuffer(GL_NONE);
 
 		FBO_SetupDrawBuffers();

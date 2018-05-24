@@ -80,18 +80,18 @@ void main()
 	vec2 vector = (var_ScreenTex - vec2(0.5)) * 2.0;
 	// from http://www.codinglabs.net/article_physically_based_rendering.aspx
 
-	vec3 normal = normalize(vec3(-vector.x, -vector.y, -1));
+	vec3 normal = normalize(vec3(-vector.x, -vector.y, -1.0));
 	
 	if (cubeFace == 0)
-		normal = normalize(vec3(1, -vector.y, -vector.x));
+		normal = normalize(vec3(1.0, -vector.y, -vector.x));
 	else if (cubeFace == 1)
-		normal = normalize(vec3(-1, -vector.y, vector.x));
+		normal = normalize(vec3(-1.0, -vector.y, vector.x));
 	else if (cubeFace == 2)
-		normal = normalize(vec3(vector.x, 1, vector.y));
+		normal = normalize(vec3(vector.x, 1.0, vector.y));
 	else if (cubeFace == 3)
-		normal = normalize(vec3(vector.x, -1, -vector.y));
+		normal = normalize(vec3(vector.x, -1.0, -vector.y));
 	else if (cubeFace == 4)
-		normal = normalize(vec3(vector.x, -vector.y, 1)); 
+		normal = normalize(vec3(vector.x, -vector.y, 1.0)); 
 
 	float roughness = u_ViewInfo.w;
 

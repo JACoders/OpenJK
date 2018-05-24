@@ -2587,9 +2587,6 @@ done:
 		ri.Hunk_FreeTempMemory( resampledBuffer );
 }
 
-#define GAMMA 2.2f
-#define INV_GAMMA 1.0 / GAMMA
-
 void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
 {
 	image_t	*image;
@@ -2604,11 +2601,11 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 		return;
 	}
 
-	COM_StripExtension(name, diffuseName, MAX_QPATH);
-	Q_strcat(diffuseName, MAX_QPATH, "_diffuse");
+	COM_StripExtension(name, diffuseName, sizeof(diffuseName));
+	Q_strcat(diffuseName, sizeof(diffuseName), "_diffuse");
 
-	COM_StripExtension(name, specularName, MAX_QPATH);
-	Q_strcat(specularName, MAX_QPATH, "_spec");
+	COM_StripExtension(name, specularName, sizeof(specularName));
+	Q_strcat(specularName, sizeof(specularName), "_spec");
 
 	//
 	// see if the images are already loaded
@@ -2639,16 +2636,22 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	//
 	R_LoadImage(name, &baseColorPic, &width, &height);
 	if (baseColorPic == NULL) {
+		Z_Free(baseColorPic);
 		return;
 	}
+
 	R_LoadImage(rmoName, &rmoPic, &rmoWidth, &rmoHeight);
 	if (rmoPic == NULL) {
+		Z_Free(baseColorPic);
+		Z_Free(rmoPic);
 		return;
 	}
 
 	if (width != rmoWidth || height != rmoHeight)
 	{
 		ri.Printf(PRINT_ALL, "WARNING: Can't build Specular Map for %s (different texture sizes for baseColor and rmo)\n", name);
+		Z_Free(baseColorPic);
+		Z_Free(rmoPic);
 		return;
 	}
 
@@ -2704,9 +2707,9 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 
 		float baseColor[4];
 		// remove gamma correction because we want to work in linear space
-		baseColor[0] = pow(ByteToFloat(baseColorPic[i + 0]), GAMMA);
-		baseColor[1] = pow(ByteToFloat(baseColorPic[i + 1]), GAMMA);
-		baseColor[2] = pow(ByteToFloat(baseColorPic[i + 2]), GAMMA);
+		baseColor[0] = RGBtosRGB(ByteToFloat(baseColorPic[i + 0]));
+		baseColor[1] = RGBtosRGB(ByteToFloat(baseColorPic[i + 1]));
+		baseColor[2] = RGBtosRGB(ByteToFloat(baseColorPic[i + 2]));
 		// don't remove gamma correction in alpha because this is data, not color
 		baseColor[3] = ByteToFloat(baseColorPic[i + 3]);
 
@@ -2715,16 +2718,16 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 		// diffuse Color = baseColor * (1.0 - metalness) 
 		// also gamma correct again
 		// FIXME: AO should be handled in shader because it should only affect the ambient lighting
-		diffusePic[i + 0] = FloatToByte(pow(baseColor[0] * (1.0f - metalness) * ao, INV_GAMMA));
-		diffusePic[i + 1] = FloatToByte(pow(baseColor[1] * (1.0f - metalness) * ao, INV_GAMMA));
-		diffusePic[i + 2] = FloatToByte(pow(baseColor[2] * (1.0f - metalness) * ao, INV_GAMMA));
+		diffusePic[i + 0] = FloatToByte(sRGBtoRGB(baseColor[0] * (1.0f - metalness) * ao));
+		diffusePic[i + 1] = FloatToByte(sRGBtoRGB(baseColor[1] * (1.0f - metalness) * ao));
+		diffusePic[i + 2] = FloatToByte(sRGBtoRGB(baseColor[2] * (1.0f - metalness) * ao));
 		diffusePic[i + 3] = FloatToByte(baseColor[3]);
 
 		// specular Color = mix(baseSpecular, baseColor, metalness)
 		// also gamma correct again
-		specGlossPic[i + 0] = FloatToByte(pow(baseSpecular * (1.0f - metalness) + baseColor[0] * metalness, INV_GAMMA));
-		specGlossPic[i + 1] = FloatToByte(pow(baseSpecular * (1.0f - metalness) + baseColor[1] * metalness, INV_GAMMA));
-		specGlossPic[i + 2] = FloatToByte(pow(baseSpecular * (1.0f - metalness) + baseColor[2] * metalness, INV_GAMMA));
+		specGlossPic[i + 0] = FloatToByte(sRGBtoRGB(baseSpecular * (1.0f - metalness) + baseColor[0] * metalness));
+		specGlossPic[i + 1] = FloatToByte(sRGBtoRGB(baseSpecular * (1.0f - metalness) + baseColor[1] * metalness));
+		specGlossPic[i + 2] = FloatToByte(sRGBtoRGB(baseSpecular * (1.0f - metalness) + baseColor[2] * metalness));
 		// don't remove gamma correction in alpha because this is data, not color
 		specGlossPic[i + 3] = FloatToByte(gloss);
 	}
@@ -2747,8 +2750,8 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 	
 	normalFlags = (flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
 	
-	COM_StripExtension(name, normalName, MAX_QPATH);
-	Q_strcat(normalName, MAX_QPATH, "_n");
+	COM_StripExtension(name, normalName, sizeof(normalName));
+	Q_strcat(normalName, sizeof(normalName), "_n");
 	
 	// find normalmap in case it's there
 	normalImage = R_FindImageFile(normalName, IMGTYPE_NORMAL, normalFlags);
