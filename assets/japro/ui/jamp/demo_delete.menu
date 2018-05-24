@@ -46,8 +46,8 @@
 			textalignx			200
 			textaligny			-3
 			forecolor			1 .682 0 1
-      		visible				1 
-      		decoration 
+	  		visible				1 
+	  		decoration 
 		}
 
 
@@ -61,7 +61,7 @@
 			text2aligny			18
 			textalignx			110
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			.79 .64 .22 1
 			visible				1
 			decoration
@@ -76,7 +76,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			110
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			.79 .64 .22 1
 			visible				1
 		}
@@ -90,7 +90,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			110
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			.79 .64 .22 1
 			visible				1
 		}
@@ -117,7 +117,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				180 350 120 24 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			-3
@@ -163,7 +163,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				340 350 120 24 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			-3

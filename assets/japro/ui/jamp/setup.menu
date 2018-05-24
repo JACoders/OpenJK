@@ -431,15 +431,15 @@
 			style				WINDOW_STYLE_SHADER
 			background			"gfx/menus/menu_blendbox"
 			text				@MENUS_SETUP_OPTIONS
-      		rect				100 164 440 16
+	  		rect				100 164 440 16
 			font				3
 			textscale			0.7
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			225
 			textaligny			-1	
 			forecolor			.549 .854 1 1
-      		visible			1 
-      		decoration 
+	  		visible			1 
+	  		decoration 
 		}
 
 		// video1 button
@@ -1012,12 +1012,12 @@
 //----------------------------------------------------------------------------------------------
 		itemDef 
 		{
-		   	name 			graphics				
+				name 			graphics				
 			group 			video
 			text			@MENUS_VIDEO_QUALITY
-	   		type 			ITEM_TYPE_MULTI	
+				type 			ITEM_TYPE_MULTI	
 			rect			260 188 340 14
-	   		textalign		ITEM_ALIGN_RIGHT
+				textalign		ITEM_ALIGN_RIGHT
 			textalignx		174
 			textaligny		0
 			font 			4
@@ -1026,7 +1026,7 @@
 			forecolor			.615 .615 .956 1
 			descText		@MENUS_SELECT_PRESET_GRAPHIC
 
-	   		visible 		1
+				visible 		1
 
 			cvar 			"ui_r_glCustom"
 			cvarFloatList 
@@ -1060,7 +1060,7 @@
 		{	
 			name				video_mode
 			group				video
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_VIDEO_MODE
 			cvarFloatList			{  @MENUS_640_X_480 3 @MENUS_800_X_600 4  @MENUS_1024_X_768 6 @MENUS_1152_X_864 7  @MENUS_1280_X_1024 8  @MENUS_1600_X_1200 9  @MENUS_2048_X_1536 10 @MENUS_2400_X_600 12 }
 			cvar				"ui_r_mode"
@@ -1343,7 +1343,7 @@
 		{	
  			name				video_sync
 			group				video
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_VIDEO_SYNC
 			cvar				"r_swapInterval"
 			cvarFloatList		
@@ -1352,7 +1352,7 @@
 				@MENUS_ON 	1 
 			}
 			rect				260 328 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1454,7 +1454,7 @@
 			text2aligny			18
 			textalignx			145
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			1 1 0 1
 			visible			0
 			decoration
@@ -1469,7 +1469,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			145
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			1 1 0 1
 			visible			0
 		}
@@ -1497,7 +1497,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				467 384 120 32 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			0
@@ -1543,7 +1543,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				275 384 120 32 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			-1
@@ -1645,7 +1645,7 @@
 		{	
  			name				dynamic_light
 			group				video2
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_DYNAMIC_LIGHTS
 			cvar				"r_dynamiclight"
 			cvarFloatList		
@@ -1654,7 +1654,7 @@
 				@MENUS_ON 	1 
 			}
 			rect				260 300 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1680,7 +1680,7 @@
 		{	
 			name				dynamic_glow
 			group				video2
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_DYNAMIC_GLOW
 			cvar				r_dynamicglow
 			cvarFloatList		
@@ -1689,7 +1689,7 @@
 				@MENUS_ON 	1 
 			}
 			rect				260 314 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1715,7 +1715,7 @@
 		{	
 			name				light_flares
 			group				video2
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_LIGHT_FLARES
 			cvar				r_flares
 			cvarFloatList		
@@ -1724,7 +1724,7 @@
 				@MENUS_ON 	1 
 			}
 			rect				260 328 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1750,7 +1750,7 @@
 		{	
 			name				wall_marks
 			group				video2
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_WALL_MARKS
 			cvar				cg_marks
 			cvarFloatList		
@@ -1759,7 +1759,7 @@
 				@MENUS_ON 	1 
 			}
 			rect				260 342 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1788,7 +1788,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				@MENUS_ANISOTROPIC_FILTERING
 			cvarTest			r_ext_texture_filter_anisotropic_avail
-			disableCvar			{ 0 }     
+			disableCvar			{ 0 }	 
 			cvarfloat				r_ext_texture_filter_anisotropic 1 .5 16
 			rect				260 356 340 14
 			textalign			ITEM_ALIGN_RIGHT
@@ -1829,7 +1829,7 @@
 		{	
 			name				advancedvideo
 			group				video2
-      		type					ITEM_TYPE_BUTTON
+	  		type					ITEM_TYPE_BUTTON
 			text				@MENUS_SHOW_DRIVER_INFO
 			rect				260 384 340 14
 			textalign			ITEM_ALIGN_CENTER
@@ -1870,7 +1870,7 @@
 			text				@MENUS_EFFECTS_VOLUME
 			cvarfloat			"s_volume" 0 0 1
 			rect				260 188 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1901,7 +1901,7 @@
 			text				@MENUS_MUSIC_VOLUME
 			cvarfloat			"s_musicvolume" 0 0 1
 			rect				260 216 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1932,7 +1932,7 @@
 			text				@MENUS_VOICE_VOLUME
 			cvarfloat			"s_volumeVoice" 0 0 1
 			rect				260 244 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -1959,7 +1959,7 @@
 		{	
 			name				sound_quality
 			group				sound
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_SOUND_QUALITY
 			cvar				"s_khz"
 			cvarFloatList		
@@ -1968,7 +1968,7 @@
 				@MENUS_HIGH 	22 
 			}
 			rect				260 272 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2007,7 +2007,7 @@
 			}
 			text				@MENUS_EAX
 			rect				260 300 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2054,12 +2054,12 @@
 		{	
 			name				draw_crosshair
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_DRAW_CROSSHAIR
 			cvar				"cg_drawcrosshair"
 			cvarFloatList			{  @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				260 188 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2086,12 +2086,12 @@
 		{	
 			name				identifytarget
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_IDENTIFY_TARGET
 			cvar				cg_drawCrosshairNames
 			cvarFloatList			{  @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				260 202 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2117,12 +2117,12 @@
 		{	
 			name				forcemodels
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_FORCE_PLAYER_MODELS
 			cvar				"cg_forceModel"
 			cvarFloatList			{  @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				260 216 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2148,12 +2148,12 @@
 		{	
 			name				defermodels
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_DEFER_PLAYER_MODELS
 			cvar				"cg_deferPlayers"
 			cvarFloatList			{  @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				260 230 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2180,7 +2180,7 @@
 		{	
 			name				teamchatsonly
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_TEAM_CHATS_ONLY
 			cvar				"cg_teamChatsOnly"
 			cvarFloatList		
@@ -2189,7 +2189,7 @@
 				@MENUS_YES	1
 			}
 			rect				260 244 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2215,12 +2215,12 @@
 		{	
 			name				simpleitems
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_SIMPLE_ITEMS
 			cvar				"cg_simpleItems"
 			cvarFloatList			{  @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				260 258 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2246,12 +2246,12 @@
 		{	
 			name				teamoverlay
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_TEAM_OVERLAY
 			cvar				"cg_drawTeamOverlay"
 			cvarFloatList			{  @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				260 272 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2278,7 +2278,7 @@
 		{	
 			name				weaponswayon
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_VIEW_SWAYING
 			descText			@MENUS_VIEW_SWAYING_DESC
 			cvar				"ui_disableWeaponSway"
@@ -2293,7 +2293,7 @@
 				"0"
 			}
 			rect				260 286 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2322,7 +2322,7 @@
 		{	
 			name				weaponswayoff
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_VIEW_SWAYING
 			descText			@MENUS_VIEW_SWAYING_DESC
 			cvar				"ui_disableWeaponSway"
@@ -2337,7 +2337,7 @@
 				"0"
 			}
 			rect				260 286 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2366,7 +2366,7 @@
 		{	
 			name				allowdownload
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_ALLOW_DOWNLOADS
 			descText			@MENUS_ALLOW_DOWNLOADS_INFO
 			cvar				"cl_allowDownload"
@@ -2376,7 +2376,7 @@
 				@MENUS_ON 		1
 			}
 			rect				260 300 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2401,7 +2401,7 @@
 		{	
 			name				footsteps
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_FOOTSTEPS
 			desctext			@MENUS_FOOTSTEPS_DESC
 			cvar				"cg_footsteps"
@@ -2413,7 +2413,7 @@
 				@MENUS_SOUNDS_EFFECTS_GRAPHICS	3
 			}
 			rect				260 314 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4					
@@ -2438,13 +2438,13 @@
 		{	
 			name				text
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_TEXT
 			cvar				"se_language"
 			feeder				40
 			cvarStrList			feeder
 			rect				260 328 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2470,18 +2470,18 @@
 		{	
 			name				voice
 			group				options
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_VOICE
 			cvar				"s_language"
 			cvarStrList		
 			{ 
-				English   english
+				English	english
 				@MENUS_LANG_FRENCH  francais
-				Deutsch   deutsch
-				"Español"   espanol
+				Deutsch	deutsch
+				"Español"	espanol
 			}
 			rect				260 342 340 14
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			174
 			textaligny			0
 			font 				4
@@ -2515,7 +2515,7 @@
 			rect				260 356 340 14 
 			textaligny			0
 			font 				4
-			textscale 			1       
+			textscale 			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			160
 			descText			@MENUS_SET_LANGUAGE_INFO
@@ -2541,7 +2541,7 @@
 
 //----------------------------------------------------------------------------------------------
 //
-//   MOD GAME MENU specific stuff
+//	MOD GAME MENU specific stuff
 //
 //----------------------------------------------------------------------------------------------
 		itemDef 
@@ -2639,7 +2639,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			170
 			font				2
-			textscale			1    
+			textscale			1	
 			forecolor			1 .682 0 1
 			visible				0
 			decoration
@@ -2671,7 +2671,7 @@
 			textalignx			170
 			text2aligny			20
 			font				2
-			textscale			.9   
+			textscale			.9	
 			forecolor			1 .682 0 1
 			visible				0
 			decoration
@@ -2686,7 +2686,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			170
 			font				2
-			textscale			1    
+			textscale			1	
 			forecolor			1 .682 0 1
 			visible				0
 			decoration

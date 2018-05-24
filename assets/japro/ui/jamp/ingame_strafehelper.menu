@@ -65,7 +65,7 @@
 		{
 			name				CutoffReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				242 4 30 20
 			font 				4
@@ -118,7 +118,7 @@
 		{
 			name				RedReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				242 24 30 20
 			font 				4
@@ -171,7 +171,7 @@
 		{
 			name				GreenReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				242 44 30 20
 			font 				4
@@ -224,7 +224,7 @@
 		{
 			name				BlueReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				242 64 30 20
 			font 				4
@@ -277,7 +277,7 @@
 		{
 			name				ActiveAlphaReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				242 84 30 20
 			font 				4
@@ -330,7 +330,7 @@
 		{
 			name				InactiveAlphaReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				242 104 30 20
 			font 				4
@@ -349,7 +349,7 @@
 			name				advancedHighlight
 			group				strafeHelper
 			style				WINDOW_STYLE_SHADER
-			rect				10 124 262 20   
+			rect				10 124 262 20	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -360,7 +360,7 @@
 		{
 			name				advancedButton
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Advanced Options"
 			rect				10 124 262 20
 			textalign			ITEM_ALIGN_CENTER
@@ -430,8 +430,8 @@
 			textalignx			145
 			textaligny			1
 			forecolor			.549 .854 1 1
-	      	visible				1 
-      		decoration 
+		  	visible				1 
+	  		decoration 
 		}
 		
 		itemDef
@@ -473,7 +473,7 @@
 		{
 			name				FPSReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				246 24 30 20
 			font 				4
@@ -526,7 +526,7 @@
 		{
 			name				PrecisionReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				246 44 30 20
 			font 				4
@@ -579,7 +579,7 @@
 		{
 			name				OffsetReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				246 64 30 20
 			font 				4
@@ -632,7 +632,7 @@
 		{
 			name				InvertOffsetReset
  			group				strafeHelper
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				246 84 30 20
 			font 				4

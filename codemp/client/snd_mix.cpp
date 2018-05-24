@@ -376,8 +376,8 @@ void S_PaintChannels( int endtime ) {
 	int		sampleOffset;
 	int	normal_vol,voice_vol;
 
-	snd_vol = normal_vol = s_volume->value*256;
-	voice_vol  = (int)(s_volumeVoice->value*256);
+	snd_vol = normal_vol = (s_volume->value*volume->value)*256;
+	voice_vol  = (int)((s_volumeVoice->value*volume->value )*256);
 
 //Com_Printf ("%i to %i\n", s_paintedtime, endtime);
 	while ( s_paintedtime < endtime ) {

@@ -204,11 +204,11 @@ void UI_UpdateClientForcePowers(const char *teamArg)
 	{
 		if (teamArg && teamArg[0])
 		{
-			trap->Cmd_ExecuteText( EXEC_APPEND, va("forcechanged \"%s\"\n", teamArg) );
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("cmd forcechanged \"%s\"\n", teamArg) );
 		}
 		else
 		{
-			trap->Cmd_ExecuteText( EXEC_APPEND, "forcechanged\n" );
+			trap->Cmd_ExecuteText( EXEC_APPEND, "cmd forcechanged\n" );
 		}
 	}
 

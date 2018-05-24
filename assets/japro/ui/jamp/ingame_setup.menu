@@ -832,12 +832,12 @@
 		//----------------------------------------------------------------------------------------------
 		itemDef 
 		{
-		   	name 			graphics				
+				name 			graphics				
 			group 			video
 			text			@MENUS_VIDEO_QUALITY
-	   		type 			ITEM_TYPE_MULTI	
+				type 			ITEM_TYPE_MULTI	
 			rect			220 43 300 20
-	   		textalign		ITEM_ALIGN_RIGHT
+				textalign		ITEM_ALIGN_RIGHT
 			textalignx		165
 			textaligny		0
 			font 			4
@@ -846,7 +846,7 @@
 			forecolor		.615 .615 .956 1
 			descText		@MENUS_SELECT_PRESET_GRAPHIC
 
-	   		visible 		0
+				visible 		0
 
 			cvar 			"ui_r_glCustom"
 			cvarFloatList 
@@ -879,7 +879,7 @@
 		{	
 			name				aspect_ratio
 			group				video
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Aspect Ratio:"
 			cvarFloatList		
 			{ "Desktop Resolution" -1 
@@ -915,7 +915,7 @@
 		{	
 			name				aspect_ratio
 			group				video
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Aspect Ratio:"
 			cvarFloatList		
 			{ "Desktop Resolution" -1
@@ -952,7 +952,7 @@
 		{	
 			name				resolution
 			group				video
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
 			cvarFloatList		
 			{
@@ -1004,7 +1004,7 @@
 		{	
 			name				resolution
 			group				video
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
 			cvarFloatList
 			{
@@ -1053,7 +1053,7 @@
 		{	
 			name				resolution
 			group				video
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
 			cvarFloatList
 			{
@@ -1104,7 +1104,7 @@
 		{	
 			name				resolution
 			group				video
-      		type				ITEM_TYPE_TEXT
+	  		type				ITEM_TYPE_TEXT
 			text				"Resolution:"
 			rect				220 83 170 20
 			textalign			ITEM_ALIGN_RIGHT
@@ -1128,7 +1128,7 @@
 		{	
 			name				customResolutionWidth
 			group				video
-      		type				ITEM_TYPE_NUMERICFIELD
+	  		type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"ui_r_customWidth"
 			rect				392 83 26 20
@@ -1155,7 +1155,7 @@
 		{	
 			name				customResolutionCross
 			group				video
-      		type				ITEM_TYPE_TEXT
+	  		type				ITEM_TYPE_TEXT
 			text				"X"
 			rect				420 83 8 20
 			textalign			ITEM_ALIGN_LEFT
@@ -1173,7 +1173,7 @@
 		{	
 			name				customResolutionHeight
 			group				video
-      		type				ITEM_TYPE_NUMERICFIELD
+	  		type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"ui_r_customHeight"
 			rect				432 83 26 20
@@ -1428,7 +1428,7 @@
 			type				ITEM_TYPE_MULTI
 			text				@MENUS_ANISOTROPIC_FILTERING
 			cvarTest			r_ext_texture_filter_anisotropic_avail
-			disableCvar			{ 0 }     
+			disableCvar			{ 0 }	 
 			rect				220 223 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -1493,7 +1493,7 @@
 		{			
 			name				VIDEO_SYNC
 			group				video
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_VIDEO_SYNC
 			cvar				"r_swapInterval"	
 			cvarFloatList		
@@ -1502,7 +1502,7 @@
 				@MENUS_ON 1 
 			}
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -1530,7 +1530,7 @@
 		{			
 			name				MAX_FPS
 			group				video
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Max FPS:"
 			cvar				"com_maxfps"	
 			cvarFloatList		
@@ -1552,7 +1552,7 @@
 				"500" 500
 			}
 			rect				220 283 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -1593,10 +1593,10 @@
 		{			
 			name				advancedvideobutton
 			group				video
-      		type				ITEM_TYPE_BUTTON
+	  		type				ITEM_TYPE_BUTTON
 			text				"Advanced Video Options"
 			rect				260 303 200 20
-	   		textalign			ITEM_ALIGN_CENTER
+				textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
 			font 				4
@@ -1674,12 +1674,12 @@
 		//----------------------------------------------------------------------------------------------
 		itemDef 
 		{
-		   	name 				subdivisions				
+				name 				subdivisions				
 			group 				advancedvideo
 			text				"Subdivisions:"
-	   		type 				ITEM_TYPE_SLIDER	
+				type 				ITEM_TYPE_SLIDER	
 			rect				220 83 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -1687,7 +1687,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Adjust subdivisions."
-	   		visible 			0
+				visible 			0
 			cvarFloat			"ui_r_subdivisions" 4 4 80
 			mouseenter			{ show highlight3 }
 			mouseexit			{ hide highlight3 }
@@ -1703,12 +1703,12 @@
 		
 		itemDef 
 		{
-		   	name 				lodbias				
+				name 				lodbias				
 			group 				advancedvideo
 			text				"Lodbias:"
-	   		type 				ITEM_TYPE_MULTI	
+				type 				ITEM_TYPE_MULTI	
 			rect				220 103 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -1716,7 +1716,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Adjust lodbias."
-	   		visible 			0
+				visible 			0
 			cvar				"ui_r_lodbias"
 			cvarFloatList		{ 0 0 1 1 2 2 3 3 }
 			mouseenter			{ show highlight4 }
@@ -1732,12 +1732,12 @@
 		
 		itemDef 
 		{
-		   	name 				picmip			
+				name 				picmip			
 			group 				advancedvideo
 			text				"Picmip:"
-	   		type 				ITEM_TYPE_NUMERICFIELD
+				type 				ITEM_TYPE_NUMERICFIELD
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -1745,7 +1745,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Adjust picmip."
-	   		visible 			0
+				visible 			0
 			cvar				"ui_r_picmip_custom"
 			mouseenter			{ show highlight5 }
 			mouseexit			{ hide highlight5 }
@@ -1761,12 +1761,12 @@
 		
 		itemDef 
 		{
-		   	name 				texturefilter		
+				name 				texturefilter		
 			group 				advancedvideo
 			text				"Texture Filter:"
-	   		type 				ITEM_TYPE_MULTI
+				type 				ITEM_TYPE_MULTI
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -1774,7 +1774,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Adjust texture filter."
-	   		visible 			0
+				visible 			0
 			cvar				"ui_r_textureMode"
 			cvarStrList
 			{
@@ -1865,10 +1865,10 @@
 		{			
 			name				done
 			group				advancedvideo
-      		type				ITEM_TYPE_BUTTON
+	  		type				ITEM_TYPE_BUTTON
 			text				"Done"
 			rect				260 243 200 20
-	   		textalign			ITEM_ALIGN_CENTER
+				textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
 			font 				4
@@ -1916,7 +1916,7 @@
 			text2aligny			18
 			textalignx			176
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			1 1 0 1
 			visible			0
 			decoration
@@ -1931,7 +1931,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			font				2
-			textscale			1        
+			textscale			1		
 			forecolor			1 1 0 1
 			visible			0
 		}
@@ -1960,7 +1960,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				392 256 120 32 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			0
@@ -2009,7 +2009,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				240 256 120 32 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			0
@@ -2114,7 +2114,7 @@
 		{			
 			name				dynamic_light
 			group				lighting
-      			type				ITEM_TYPE_MULTI
+	  			type				ITEM_TYPE_MULTI
 			text				@MENUS_DYNAMIC_LIGHTS
 			cvar				"r_dynamiclight"	
 			cvarFloatList		
@@ -2123,7 +2123,7 @@
 				@MENUS_ON 1 
 			}
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2151,7 +2151,7 @@
 		{			
 			name				dynamic_glow
 			group				lighting
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Dynamic Glow:"
 			cvar				"r_DynamicGlow"	
 			cvarFloatList		
@@ -2160,7 +2160,7 @@
 				@MENUS_ON 1 
 			}
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2188,7 +2188,7 @@
 		{			
 			name				light_flares
 			group				lighting
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_LIGHT_FLARES
 			cvar				"r_flares"	
 			cvarFloatList		
@@ -2197,7 +2197,7 @@
 				@MENUS_ON 1 
 			}
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2225,7 +2225,7 @@
 		{			
 			name				fastsky
 			group				lighting
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Fast Sky:"
 			cvar				"r_fastsky"	
 			cvarFloatList		
@@ -2234,7 +2234,7 @@
 				@MENUS_ON 1 
 			}
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2273,10 +2273,10 @@
 		{			
 			name				advancedlightingbutton
 			group				lighting
-      		type				ITEM_TYPE_BUTTON
+	  		type				ITEM_TYPE_BUTTON
 			text				"Advanced Lighting Options"
 			rect				260 243 200 20
-	   		textalign			ITEM_ALIGN_CENTER
+				textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
 			font 				4
@@ -2302,12 +2302,12 @@
 		//----------------------------------------------------------------------------------------------
 		itemDef 
 		{
-		   	name 				intensity				
+				name 				intensity				
 			group 				advancedlighting
 			text				"Intensity:"
-	   		type 				ITEM_TYPE_SLIDER	
+				type 				ITEM_TYPE_SLIDER	
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2315,7 +2315,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Adjust intensity."
-	   		visible 			0
+				visible 			0
 			cvarFloat			"ui_r_intensity" 1 1 3
 			mouseenter			{ show highlight5 }
 			mouseexit			{ hide highlight5 }
@@ -2329,12 +2329,12 @@
 		
 		itemDef 
 		{
-		   	name 				vertex				
+				name 				vertex				
 			group 				advancedlighting
 			text				"Vertex Lighting:"
-	   		type 				ITEM_TYPE_MULTI	
+				type 				ITEM_TYPE_MULTI	
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2342,7 +2342,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Toggle Vertex Lighting."
-	   		visible 			0
+				visible 			0
 			cvar				"ui_r_vertexLight"
 			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
 			mouseenter			{ show highlight6 }
@@ -2357,12 +2357,12 @@
 		
 		itemDef 
 		{
-		   	name 				fullbright				
+				name 				fullbright				
 			group 				advancedlighting
 			text				"Full Bright:"
-	   		type 				ITEM_TYPE_MULTI	
+				type 				ITEM_TYPE_MULTI	
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2370,7 +2370,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Toggle Full Bright."
-	   		visible 			0
+				visible 			0
 			cvar				"ui_r_fullBright"
 			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
 			mouseenter			{ show highlight7 }
@@ -2384,12 +2384,12 @@
 		
 		itemDef 
 		{
-		   	name 				lightmap				
+				name 				lightmap				
 			group 				advancedlighting
 			text				"Light Map:"
-	   		type 				ITEM_TYPE_MULTI	
+				type 				ITEM_TYPE_MULTI	
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2397,7 +2397,7 @@
 			style				WINDOW_STYLE_FILLED
 			forecolor			.615 .615 .956 1
 			descText			"Toggle Full Bright."
-	   		visible 			0
+				visible 			0
 			cvar				"ui_r_lightMap"
 			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
 			mouseenter			{ show highlight8 }
@@ -2424,10 +2424,10 @@
 		{			
 			name				done3
 			group				advancedlighting
-      		type				ITEM_TYPE_BUTTON
+	  		type				ITEM_TYPE_BUTTON
 			text				"Done"
 			rect				260 243 200 20
-	   		textalign			ITEM_ALIGN_CENTER
+				textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
 			font 				4
@@ -2456,7 +2456,7 @@
 		{			
 			name				shadows
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Shadows:"
 			cvar				"cg_shadows"	
 			cvarFloatList		
@@ -2467,7 +2467,7 @@
 				"Light Stencil" 3
 			}
 			rect				220 43 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2484,7 +2484,7 @@
 		{			
 			name				blood
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Blood:"
 			cvar				"cg_blood"	
 			cvarFloatList		
@@ -2494,7 +2494,7 @@
 				"On + Gibs" 2
 			}
 			rect				220 63 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2511,7 +2511,7 @@
 		{			
 			name				showabsorb
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Always Show Absorb:"
 			cvar				"cg_alwaysShowAbsorb"	
 			cvarFloatList		
@@ -2520,7 +2520,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 83 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2537,12 +2537,12 @@
 		{			
 			name				ysalshell
 			group				visuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Hide Ysal Shell:"
 			cvar				"cg_stylePlayer"
 			bitMask				"10"
 			rect				220 103 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2559,12 +2559,12 @@
 		{			
 			name				duelshell
 			group				visuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Draw Duel Shell:"
 			cvar				"cg_stylePlayer"
 			bitMask				"1"
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2581,11 +2581,11 @@
 		{			
 			name				flagalpha
 			group				visuals
-      		type				ITEM_TYPE_SLIDER
+	  		type				ITEM_TYPE_SLIDER
 			text				"Flag Opacity:"
 			cvarFloat			"cg_thirdPersonFlagAlpha" 1 0 1
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2602,7 +2602,7 @@
 		{			
 			name				screenshake
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Screen Shake:"
 			cvar				"cg_screenShake"
 			cvarFloatList
@@ -2612,7 +2612,7 @@
 				"While taking damage only." 1
 			}
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2629,7 +2629,7 @@
 		{			
 			name				drawgun
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw Gun:"
 			cvar				"cg_drawGun"
 			cvarFloatList
@@ -2641,7 +2641,7 @@
 				"Also remove idle drift animation." 4
 			}
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2658,7 +2658,7 @@
 		{			
 			name				playernames
 			group				visuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw Player Names:"
 			cvar				"cg_drawPlayerNames"	
 			cvarFloatList		
@@ -2668,7 +2668,7 @@
 				"On + Health Bar" 2
 			}
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2685,12 +2685,12 @@
 		{			
 			name				drawduelers
 			group				visuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Hide Duelers:"
 			cvar				"cg_stylePlayer"
 			bitMask				"2"
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2707,12 +2707,12 @@
 		{			
 			name				drawracersinffa
 			group				visuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Hide Racers in FFA:"
 			cvar				"cg_stylePlayer"
 			bitMask				"3"
 			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2729,12 +2729,12 @@
 		{			
 			name				hidenonracersifracer
 			group				visuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Hide non racers if racer:"
 			cvar				"cg_stylePlayer"	
 			bitMask				"4"
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2751,12 +2751,12 @@
 		{			
 			name				hideracersifracer
 			group				visuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Hide racers if racer:"
 			cvar				"cg_stylePlayer"	
 			bitMask				"5"
 			rect				220 283 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2784,10 +2784,10 @@
 		{			
 			name				morevisualsbutton
 			group				visuals
-      		type				ITEM_TYPE_BUTTON
+	  		type				ITEM_TYPE_BUTTON
 			text				"More Visual Options"
 			rect				260 303 200 20
-	   		textalign			ITEM_ALIGN_CENTER
+				textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
 			font 				4
@@ -2815,11 +2815,11 @@
 		{			
 			name				consoleopacity
 			group				morevisuals
-      		type				ITEM_TYPE_SLIDER
+	  		type				ITEM_TYPE_SLIDER
 			text				"Console Opacity:"
 			cvarFloat			"con_opacity" 1 0 1
 			rect				220 43 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2836,12 +2836,12 @@
 		{			
 			name				corpsefadeinstant
 			group				morevisuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Fade corpses immediately:"
 			cvar				"cg_stylePlayer"	
 			bitMask				"12"
 			rect				220 63 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2858,12 +2858,12 @@
 		{			
 			name				corpsefx
 			group				morevisuals
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Disable Corpse Fade Effects:"
 			cvar				"cg_stylePlayer"	
 			bitMask				"13"
 			rect				220 83 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2880,11 +2880,11 @@
 		{			
 			name				fleshsparks
 			group				morevisuals
-      		type				ITEM_TYPE_NUMERICFIELD
+	  		type				ITEM_TYPE_NUMERICFIELD
 			text				"Flesh Sparks:"
 			cvar				"cg_fleshSparks"	
 			rect				220 103 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2901,7 +2901,7 @@
 		{	
 			name				simpleitems
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_SIMPLE_ITEMS
 			cvar				"cg_simpleItems"
 			cvarFloatList		
@@ -2910,7 +2910,7 @@
 				@MENUS_ON		1
 			}
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2927,7 +2927,7 @@
 		{			
 			name				wall_marks
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_WALL_MARKS
 			cvar				"cg_marks"	
 			cvarFloatList		
@@ -2936,7 +2936,7 @@
 				@MENUS_ON 1 
 			}
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2953,7 +2953,7 @@
 		{			
 			name				nofx
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"No Effects:"
 			cvar				"cg_noFX"
 			cvarFloatList
@@ -2965,7 +2965,7 @@
 				"Also remove misc_models" 4
 			}
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -2982,7 +2982,7 @@
 		{			
 			name				telefx
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"No Teleport Effects:"
 			cvar				"cg_noTeleFX"	
 			cvarFloatList		
@@ -2991,7 +2991,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3008,7 +3008,7 @@
 		{			
 			name				remaps
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Remaps:"
 			cvar				"cg_remaps"
 			cvarFloatList
@@ -3017,7 +3017,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3034,7 +3034,7 @@
 		{			
 			name				sabertrail
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Saber Trail:"
 			cvar				"cg_saberTrail"	
 			cvarFloatList		
@@ -3045,7 +3045,7 @@
 				"Mirror" 2
 			}
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3062,7 +3062,7 @@
 		{			
 			name				speedtrail
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Speed Trail:"
 			cvar				"cg_speedTrail"
 			cvarFloatList
@@ -3071,7 +3071,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3088,7 +3088,7 @@
 		{			
 			name				drawhitbox
 			group				morevisuals
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw Hit Box:"
 			cvar				"cg_drawHitBox"
 			cvarFloatList
@@ -3097,7 +3097,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3125,10 +3125,10 @@
 		{			
 			name				done2
 			group				morevisuals
-      		type				ITEM_TYPE_BUTTON
+	  		type				ITEM_TYPE_BUTTON
 			text				"Done"
 			rect				260 283 200 20
-	   		textalign			ITEM_ALIGN_CENTER
+				textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
 			font 				4
@@ -3156,7 +3156,7 @@
 		{			
 			name				drawfps
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw FPS:"
 			cvar				"cg_drawFPS"	
 			cvarFloatList		
@@ -3166,7 +3166,7 @@
 				"On + Small Text" 2
 			}
 			rect				220 43 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3183,7 +3183,7 @@
 		{			
 			name				drawtimer
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw Timer:"
 			cvar				"cg_drawTimer"	
 			cvarFloatList		
@@ -3193,7 +3193,7 @@
 				"On + Small Text" 2
 			}
 			rect				220 63 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3210,12 +3210,12 @@
 		{			
 			name				speedgraph
 			group				hud
-      		type				ITEM_TYPE_CHECKBOX
+	  		type				ITEM_TYPE_CHECKBOX
 			text				"Speed Graph:"
 			cvar				"cg_speedometerSettings"	
 			bitMask				"6"
 			rect				220 83 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3232,7 +3232,7 @@
 		{			
 			name				lagometer
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Lagometer:"
 			cvar				"cg_lagometer"	
 			cvarFloatList		
@@ -3243,7 +3243,7 @@
 				"On - Background" 3
 			}
 			rect				220 103 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3260,7 +3260,7 @@
 		{			
 			name				killmessage
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Kill Message:"
 			cvar				"cg_killMessage"	
 			cvarFloatList		
@@ -3269,7 +3269,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3286,7 +3286,7 @@
 		{			
 			name				smallscoreboard
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Small Scoreboard:"
 			cvar				"cg_smallScoreboard"	
 			cvarFloatList		
@@ -3295,7 +3295,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3312,7 +3312,7 @@
 		{			
 			name				drawenemyinfo
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw Enemy Info:"
 			cvar				"cg_drawEnemyInfo"	
 			cvarFloatList		
@@ -3321,7 +3321,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3338,7 +3338,7 @@
 		{
 			name				teamoverlay
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_TEAM_OVERLAY
 			cvar				"cg_drawTeamOverlay"	
 			cvarFloatList		
@@ -3347,7 +3347,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3364,7 +3364,7 @@
 		{
 			name				radar
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Draw Radar:"
 			cvar				"cg_drawRadar"	
 			cvarFloatList		
@@ -3373,7 +3373,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3390,7 +3390,7 @@
 		{			
 			name				simple
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"HUD:"
 			cvar				"cg_hudFiles"	
 			cvarFloatList		
@@ -3401,7 +3401,7 @@
 				"Elegance" 3
 			}
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3418,7 +3418,7 @@
 		{			
 			name				gradient
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Simple HUD Gradient:"
 			cvar				"cg_hudColors"	
 			cvarFloatList		
@@ -3429,7 +3429,7 @@
 			cvarTest			cg_hudFiles
 			showCvar			{ 1 } 
 			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3446,7 +3446,7 @@
 		{			
 			name				score_line
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Player Score on HUD:"
 			cvar				"cg_drawScore"	
 			cvarFloatList		
@@ -3457,7 +3457,7 @@
 			cvarTest			cg_hudFiles
 			hideCvar			{ 1 }
 			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3474,7 +3474,7 @@
 		{			
 			name				tint
 			group				hud
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Tint HUD:"
 			cvar				"cg_tintHud"	
 			cvarFloatList		
@@ -3485,7 +3485,7 @@
 			cvarTest			cg_hudFiles
 			hideCvar			{ 1, 3 }
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3512,7 +3512,7 @@
 			text				@MENUS_EFFECTS_VOLUME
 			cvarfloat			"s_volume" 0 0 1
 			rect				220 63 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3544,7 +3544,7 @@
 			text				@MENUS_MUSIC_VOLUME
 			cvarfloat			"s_musicvolume" 0 0 1
 			rect				220 83 282 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3604,7 +3604,7 @@
 			text				@MENUS_VOICE_VOLUME
 			cvarfloat			"s_volumeVoice" 0 0 1
 			rect				220 103 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3631,12 +3631,12 @@
 		{	
 			name				sound_quality
 			group				sound
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_SOUND_QUALITY
 			cvar				"s_khz"
 			cvarFloatList		{ @MENUS_LOW 11  @MENUS_HIGH 22 @MENUS_VERY_HIGH 44 }
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3666,7 +3666,7 @@
 		{	
 			name				race
 			group				sound
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			cvarTest			"ui_isJAPro"
 			showCvar 
 			{ "1" }
@@ -3674,7 +3674,7 @@
 			cvar				"cg_raceSounds"
 			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3691,12 +3691,12 @@
 		{	
 			name				hit
 			group				sound
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Hit Sounds:"
 			cvar				"cg_hitsounds"
 			cvarFloatList		{ "None (Default)" 0 "Quake 3" 1 "Legions: Overdrive" 2 "Warsow" 3 "Tribes: Ascend" 4 }
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3713,12 +3713,12 @@
 		{	
 			name				jump
 			group				sound
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Jump Sounds:"
 			cvar				"cg_jumpSounds"
 			cvarFloatList		{ "None (Default)" 0 "Always" 1 "Only play for other clients" 2 "Only play for local client" 3 }
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3735,12 +3735,12 @@
 		{	
 			name				roll
 			group				sound
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Roll Sounds:"
 			cvar				"cg_rollSounds"
 			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 "Only play for local client" 3 }
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3757,12 +3757,12 @@
 		{	
 			name				chat
 			group				sound
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Chat Sound:"
 			cvar				"cg_chatSounds"
 			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3784,7 +3784,7 @@
 			cvarFloatList		{  @MENUS_OFF 0 @MENUS_ON 1 }
 			text				@MENUS_EAX
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
 			font 				4
@@ -3826,13 +3826,13 @@
 		{	
 			name				text
 			group				sound
-	      	type				ITEM_TYPE_MULTI
+		  	type				ITEM_TYPE_MULTI
 			text				@MENUS_TEXT
 			cvar				"se_language"
 			feeder				40
 			cvarStrList			feeder
 			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3854,18 +3854,18 @@
 		{	
 			name				voice
 			group				sound
-	      	type				ITEM_TYPE_MULTI
+		  	type				ITEM_TYPE_MULTI
 			text				@MENUS_VOICE
 			cvar				"s_language"
 			cvarStrList		
 			{ 
 				English  			english
 				@MENUS_LANG_FRENCH  francais
-				Deutsch   			deutsch
+				Deutsch				deutsch
 				"Español" 			espanol
 			}
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3900,7 +3900,7 @@
 			style				WINDOW_STYLE_EMPTY
 			rect				365 293 120 32 
 			font				2
-			textscale			1        
+			textscale			1		
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			0
@@ -3935,7 +3935,7 @@
 		{			
 			name				drawcrosshair
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"@MENUS_DRAW_CROSSHAIR"
 			cvar				"cg_drawcrosshair"	
 			cvarFloatList		
@@ -3952,7 +3952,7 @@
 				"On (9)" 9
 			}
 			rect				220 43 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3969,7 +3969,7 @@
 		{			
 			name				identifytarget
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_IDENTIFY_TARGET
 			cvar				"cg_drawCrosshairNames"	
 			cvarFloatList		
@@ -3978,7 +3978,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 63 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -3995,7 +3995,7 @@
 		{			
 			name				dynamiccrosshair
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Dynamic Crosshair"
 			cvar				"cg_dynamicCrosshair"	
 			cvarFloatList		
@@ -4004,7 +4004,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 83 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4021,7 +4021,7 @@
 		{			
 			name				dynamiccrosshairprecision
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Dynamic Crosshair Precision:
 			cvar				"cg_dynamicCrosshairPrecision"	
 			cvarFloatList		
@@ -4030,7 +4030,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 103 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4047,7 +4047,7 @@
 		{			
 			name				leadindicator
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Lead Indicator:"
 			cvar				"cg_leadIndicator"	
 			cvarFloatList		
@@ -4056,7 +4056,7 @@
 				"Automatic" 1
 			}
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4073,11 +4073,11 @@
 		{			
 			name				simulatedprojectiles
 			group				options
-      		type				ITEM_TYPE_NUMERICFIELD
+	  		type				ITEM_TYPE_NUMERICFIELD
 			text				"Simulated Projectiles:"
 			cvar				"cg_simulatedProjectiles"
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4094,7 +4094,7 @@
 		{			
 			name				autokill
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Auto Kill When Falling:"
 			cvar				"cg_autoKillWhenFalling"	
 			cvarFloatList		
@@ -4103,7 +4103,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4120,7 +4120,7 @@
 		{			
 			name				autodemo
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Auto Record Demo:"
 			cvar				"cg_autoRecordDemo"	
 			cvarFloatList		
@@ -4129,7 +4129,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4146,7 +4146,7 @@
 		{			
 			name				autorace
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Auto Record Race:"
 			cvar				"cg_autoRecordRaceDemo"	
 			cvarFloatList		
@@ -4155,7 +4155,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4172,7 +4172,7 @@
 		{			
 			name				autoscreen
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Auto Screenshot:"
 			cvar				"cg_autoScreenshot"	
 			cvarFloatList		
@@ -4181,7 +4181,7 @@
 				@MENUS_ON 1
 			}
 			rect				220 223 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4198,7 +4198,7 @@
 		{	
 			name				drawrecording
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				"Demo Recording Message:"
 			desctext			"Toggle to show RECORDING message when recording demos."
 			cvar				"cl_drawRecording"
@@ -4211,7 +4211,7 @@
 				"Original message. (default)"			1
 			}
 			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4					
@@ -4230,7 +4230,7 @@
 		{	
 			name				weaponswayon
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_VIEW_SWAYING
 			descText			@MENUS_VIEW_SWAYING_DESC
 			cvar				"ui_disableWeaponSway"
@@ -4245,7 +4245,7 @@
 				"0"
 			}
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4267,7 +4267,7 @@
 		{
 			name				weaponswayoff
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_VIEW_SWAYING
 			descText			@MENUS_VIEW_SWAYING_DESC
 			cvar				"ui_disableWeaponSway"
@@ -4282,7 +4282,7 @@
 				"0"
 			}
 			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4304,7 +4304,7 @@
 		{	
 			name				footsteps
 			group				options
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_FOOTSTEPS
 			desctext			@MENUS_FOOTSTEPS_DESC
 			cvar				"cg_footsteps"
@@ -4316,7 +4316,7 @@
 				@MENUS_SOUNDS_EFFECTS_GRAPHICS	3
 			}
 			rect				220 283 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4					
@@ -4340,7 +4340,7 @@
 		{
 			name				allowdownload
 			group				network
-      		type				ITEM_TYPE_MULTI
+	  		type				ITEM_TYPE_MULTI
 			text				@MENUS_ALLOW_DOWNLOADS
 			descText			@MENUS_ALLOW_DOWNLOADS_INFO
 			cvar				"cl_allowDownload"
@@ -4350,7 +4350,7 @@
 				@MENUS_OFF 		0
 			}
 			rect				220 83 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4370,7 +4370,7 @@
 			text				"Max Packets:"
 			cvar				"ui_cl_maxpackets"
 			rect				220 103 200 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4411,7 +4411,7 @@
 			text				"Packetdup:"
 			cvar				"cl_packetdup"
 			rect				220 123 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4432,7 +4432,7 @@
 			text				"Snaps:"
 			cvar				"snaps"
 			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4453,7 +4453,7 @@
 			text				"Rate:"
 			cvar				"rate"
 			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4474,7 +4474,7 @@
 			text				"Time Nudge:"
 			cvar				"cl_timeNudge"
 			rect				220 183 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4495,7 +4495,7 @@
 			text				"Time Nudge Duration:"
 			cvar				"cl_timeNudgeDuration"
 			rect				220 203 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
 			font 				4
@@ -4568,7 +4568,7 @@
 			text				@MENUS_WARNING
 			rect				210 61 352 20
 			font				2
-			textscale			1    
+			textscale			1	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			forecolor			1 .682 0 1
@@ -4615,7 +4615,7 @@
 			text				@MENUS_VID_RESTART3
 			rect				220 191 352 20
 			font				2
-			textscale			1    
+			textscale			1	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			176
 			forecolor			1 .682 0 1
@@ -4710,7 +4710,7 @@
 			{ 
 				play			"sound/interface/button1"
 				uiscript 		clearmouseover	default_no
-				hide		    	defaults
+				hide				defaults
 				hide			default_glow
 				close			all
 				open			ingame_setup

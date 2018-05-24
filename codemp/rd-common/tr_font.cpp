@@ -1391,11 +1391,11 @@ float RE_Font_StrLenPixelsNew( const char *psText, const int iFontHandle, const 
 			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
 
 			if ( r_aspectCorrectFonts->integer == 1 || cl_ratioFix->integer == 1 ) {
-				fValue *= ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+				fValue *= tr.widthRatioCoef;
 			}
 			else if ( r_aspectCorrectFonts->integer == 2 || cl_ratioFix->integer == 2 ) { // ?? duno
 				fValue = ceilf(
-					fValue * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth))
+					fValue * tr.widthRatioCoef
 				);
 			}
 			thisLineWidth += curfont->mbRoundCalcs
@@ -1704,11 +1704,11 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				}
 				if ( r_aspectCorrectFonts->integer == 1  || cl_ratioFix->integer == 1 ) {
 					fx += fAdvancePixels
-						* ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+						* tr.widthRatioCoef;
 				}
 				else if ( r_aspectCorrectFonts->integer == 2 || cl_ratioFix->integer == 2 ) { // xD
 					fx += ceilf( fAdvancePixels
-						* ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)) );
+						* tr.widthRatioCoef );
 				}
 				else {
 					fx += fAdvancePixels;

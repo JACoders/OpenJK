@@ -477,7 +477,14 @@ void CL_SystemInfoChanged( void ) {
 				continue;
 			}
 
-			if(!FS_FilenameCompare(value, BASEGAME))
+			if (!FS_FilenameCompare(value, "OpenJK"))
+				Q_strncpyz(value, BASEGAME, sizeof(BASEGAME));
+
+			if (cls.state < CA_ACTIVE && Cvar_VariableIntegerValue("fs_globalcfg")) {
+				Cbuf_ExecuteText(EXEC_APPEND, va("execq %s.cfg\n", value));
+			}
+
+			if (!FS_FilenameCompare(value, BASEGAME))
 			{
 				Q_strncpyz(value, "", sizeof(value));
 			}

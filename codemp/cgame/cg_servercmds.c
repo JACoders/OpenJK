@@ -193,6 +193,7 @@ void CG_ParseServerinfo( void ) {
 	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
 
 	cgs.svfps = atoi( Info_ValueForKey( info, "sv_fps" ) );
+	cgs.protocolswitch = 0;
 	cgs.isJAPlus = qfalse;
 	cgs.isJAPro = qfalse;
 	cgs.isBaseEnhanced = qfalse;
@@ -216,6 +217,12 @@ void CG_ParseServerinfo( void ) {
 		cgs.isBaseEnhanced = qtrue;
 	}
 
+
+	if (atoi(Info_ValueForKey(info, "protocol")) < 26)
+		cgs.protocolswitch = 2;
+	else
+		cgs.protocolswitch = 1;
+		
 	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 
 	mapname = Info_ValueForKey( info, "mapname" );

@@ -8680,23 +8680,36 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 	}
 
 	if ( item->type == ITEM_TYPE_MULTI && item->window.name && !Q_stricmp( item->window.name, "sound_quality") ) {
-		multiDef_t *multiPtr = item->typeData.multi;
-		int i;
-		qboolean found = qfalse;
-		for( i = 0; i < multiPtr->count; i++ )
-		{
-			if ( multiPtr->cvarValue[i] == 44 )
+		char ver[64];
+		trap->Cvar_VariableStringBuffer("version", ver, sizeof(ver));
+
+		if (!Q_stricmpn(ver, "JAmp: v1.0.1.0 win-x86 Oct 24 2003", 35)) {
+			multiDef_t *multiPtr = item->typeData.multi;
+			int i;
+			qboolean found = qfalse;
+			for( i = 0; i < multiPtr->count; i++ )
 			{
-				found = qtrue;
-				break;
+				if ( multiPtr->cvarValue[i] == 44 )
+				{
+					found = qtrue;
+					break;
+				}
+			}
+			if ( !found && multiPtr->count < MAX_MULTI_CVARS )
+			{
+				multiPtr->cvarList[multiPtr->count] = String_Alloc("@MENUS_VERY_HIGH");
+				multiPtr->cvarValue[multiPtr->count] = 44;
+				multiPtr->count++;
+				Com_Printf( "Extended sound quality field to contain very high setting.\n" );
 			}
 		}
-		if ( !found && multiPtr->count < MAX_MULTI_CVARS )
+		else if (item->parent)
 		{
-			multiPtr->cvarList[multiPtr->count] = String_Alloc("@MENUS_VERY_HIGH");
-			multiPtr->cvarValue[multiPtr->count] = 44;
-			multiPtr->count++;
-			//Com_Printf( "Extended sound quality field to contain very high setting.\n");
+			menuDef_t *parent = (menuDef_t *)item->parent;
+			VectorSet4(parent->disableColor, 0.5f, 0.5f, 0.5f, 1.0f);
+			item->disabled = item->disabledHidden = qtrue;
+			// Just in case it had focus
+			item->window.flags &= ~WINDOW_MOUSEOVER;
 		}
 	}
 }

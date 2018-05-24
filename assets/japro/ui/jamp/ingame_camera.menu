@@ -228,7 +228,7 @@
 		{
 			name				fovReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 44 30 20
 			font 				4
@@ -281,7 +281,7 @@
 		{
 			name				gunFovReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 64 30 20
 			font 				4
@@ -334,7 +334,7 @@
 		{
 			name				zoomFovReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 84 30 20
 			font 				4
@@ -387,7 +387,7 @@
 		{
 			name				rangeReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 104 30 20
 			font 				4
@@ -437,7 +437,7 @@
 		{
 			name				angleReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 124 30 20
 			font 				4
@@ -487,7 +487,7 @@
 		{
 			name				pitchReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 144 30 20
 			font 				4
@@ -537,7 +537,7 @@
 		{
 			name				vertReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 164 30 20
 			font 				4
@@ -587,7 +587,7 @@
 		{
 			name				horzReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 184 30 20
 			font 				4
@@ -637,7 +637,7 @@
 		{
 			name				dampReset
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 204 30 20
 			font 				4
@@ -686,7 +686,7 @@
 		{
 			name				dampReset2
  			group				camera
-     		type				ITEM_TYPE_BUTTON
+	 		type				ITEM_TYPE_BUTTON
 			text				"Reset"
 			rect				226 224 30 20
 			font 				4

@@ -194,7 +194,11 @@ void CG_DrawInformation( void ) {
 
 		{	// display global MOTD at bottom (mirrors ui_main UI_DrawConnectScreen
 			char motdString[1024];
-			trap->Cvar_VariableStringBuffer( "cl_motdString", motdString, sizeof( motdString ) );
+
+			if (cgs.protocolswitch == 2)
+				Com_sprintf(motdString, sizeof(motdString), "1.01 update for Jedi Academy is now available online. Please update your game.");
+			else
+				trap->Cvar_VariableStringBuffer( "cl_motdString", motdString, sizeof( motdString ) );
 
 			if (motdString[0])
 			{

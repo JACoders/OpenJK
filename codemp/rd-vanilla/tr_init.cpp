@@ -278,6 +278,9 @@ void R_Set2DRatio(void) {
 		tr.widthRatioCoef = ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
 	else
 		tr.widthRatioCoef = 1.0f;
+
+	if (tr.widthRatioCoef > 1)
+		tr.widthRatioCoef = 1.0f;
 }
 
 void R_Splash()

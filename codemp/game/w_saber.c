@@ -66,6 +66,7 @@ float RandFloat( float min, float max ) {
 	return ((randActual * (max - min)) / randMax) + min;
 }
 
+#define DEBUG_SABER_BOX 
 #ifdef DEBUG_SABER_BOX
 void	G_DebugBoxLines(vec3_t mins, vec3_t maxs, int duration)
 {

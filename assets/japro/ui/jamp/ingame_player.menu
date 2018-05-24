@@ -337,7 +337,7 @@
 			{ 
 				setitemcolor		custom	forecolor	.5 .5 .5 1
 			}	  	  
-	     		action 
+		 		action 
 			{ 
 				play			"sound/interface/button1.wav" 
 				uiScript				updateForceStatus
@@ -764,7 +764,7 @@
 			{ 
 				setitemcolor		saber	forecolor	.5 .5 .5 1
 			}	  	  
-	     		action 
+		 		action 
 			{ 
 				play			"sound/interface/button1.wav" 
 				close			ingame_player 
