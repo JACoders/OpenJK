@@ -3107,22 +3107,31 @@ static void R_AssignCubemapsToWorldSurfaces(world_t *worldData)
 }
 
 
-static void R_RenderAllCubemaps(void)
+static void R_RenderAllCubemaps()
 {
 	GLenum cubemapFormat = GL_RGBA8;
-
-	if ( r_hdr->integer )
+	if (r_hdr->integer)
 	{
 		cubemapFormat = GL_RGBA16F;
 	}
-
+  
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		qboolean bounce = qboolean(k != 0);
-		for (int i = 0; i < tr.numCubemaps; i++)
-		{
+		for (int i = 0; i < tr.numCubemaps; i++)		
+    {
 			if (!bounce)
-				tr.cubemaps[i].image = R_CreateImage(va("*cubeMap%d", i), NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, cubemapFormat);
+				tr.cubemaps[i] = R_CreateImage(
+			    va("*cubeMap%d", i),
+			    NULL,
+			    CUBE_MAP_SIZE,
+			    CUBE_MAP_SIZE,
+			    IMGTYPE_COLORALPHA,
+			    IMGFLAG_NO_COMPRESSION |
+				  IMGFLAG_CLAMPTOEDGE |
+				  IMGFLAG_MIPMAP |
+				  IMGFLAG_CUBEMAP,
+			    cubemapFormat);
 
 			for (int j = 0; j < 6; j++)
 			{
