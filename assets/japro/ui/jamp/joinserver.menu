@@ -121,15 +121,15 @@
 			style				WINDOW_STYLE_SHADER
 			background			"gfx/menus/menu_blendbox"
 			text				@MENUS_JOIN_A_GAME_IN_PROGRESS
-      			rect				50 4 540 16
+	  			rect				50 4 540 16
 			font				3
 			textscale			0.7
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			270
 			textaligny			-1	
 			forecolor			.549 .854 1 1
-      			visible				1 
-      			decoration 
+	  			visible				1 
+	  			decoration 
 		}
 
 		itemDef 
@@ -908,7 +908,7 @@
 			backcolor			0.25 0.25 0.8 .25		//Background color of listbox
 			outlinecolor			1 1 1 .25			//Highlight when item is selected.
 			visible				1
-			columns				5 2 40 258   270 40 104  388 5 64  450 20 100  560 20 47
+			columns				5 2 40 258	270 40 104  388 5 64  450 20 100  560 20 47
 
 
 

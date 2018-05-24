@@ -918,7 +918,7 @@
 		itemDef 
 		{
 			name				mappreview
-            group				grpCallVote
+			group				grpCallVote
 			style				0	
 			ownerdraw			UI_MAPPREVIEW
 			rect				-260 14 250 188

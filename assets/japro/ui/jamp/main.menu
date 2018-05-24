@@ -38,7 +38,7 @@
 			"sound/interface/sub_select.wav" ;
 		}
 	}
-							   
+								
 	menuDef 
 	{
 		name					"main"

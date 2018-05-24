@@ -34,7 +34,7 @@
 			rect				2 4 50 20
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -55,7 +55,7 @@
 			rect				2 24 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -75,7 +75,7 @@
 			rect				2 44 50 20
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -95,7 +95,7 @@
 			rect				2 64 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -115,7 +115,7 @@
 			rect				52 4 50 20
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -135,7 +135,7 @@
 			rect				52 24 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -155,7 +155,7 @@
 			rect				52 44 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -175,7 +175,7 @@
 			rect				52 64 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -195,7 +195,7 @@
 			rect				102 4 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -215,7 +215,7 @@
 			rect				102 24 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -235,7 +235,7 @@
 			rect				102 44 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -255,7 +255,7 @@
 			rect				152 4 28 20  
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			.6 .6 .6 1
@@ -289,7 +289,7 @@
 			rect				196 4 14 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			7
-			textaligny			-1     
+			textaligny			-1	 
 			font				3
 			textscale			.82
 			forecolor			.75 .75 0 1
@@ -309,7 +309,7 @@
 			rect				210 4 14 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			7
-			textaligny			-1   
+			textaligny			-1	
 			font				3
 			textscale			.82
 			forecolor			.75 .75 0 1
@@ -329,7 +329,7 @@
 			rect				152 24 78 20  
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			.9 0 0 1
@@ -349,7 +349,7 @@
 			rect				152 44 42 20  
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			.8 0 .8 1
@@ -369,7 +369,7 @@
 			rect				196 44 4 20 
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 1 1 1
@@ -383,7 +383,7 @@
 			rect				202 44 24 20  
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			0 .7 .7 1
@@ -403,7 +403,7 @@
 			rect				102 64 50 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			25
-			textaligny			1     
+			textaligny			1	 
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1

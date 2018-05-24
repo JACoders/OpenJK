@@ -141,7 +141,7 @@
 			text				"VGS"			
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -873,7 +873,7 @@
 			text				"Global"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -1234,7 +1234,7 @@
 			text				"Compliment"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -1382,7 +1382,7 @@
 			text				"Respond"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -1505,7 +1505,7 @@
 			text				"Taunt"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -1653,7 +1653,7 @@
 			text				"Attack"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -1951,7 +1951,7 @@
 			text				"Defend"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -2224,7 +2224,7 @@
 			text				"Repair"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -2347,7 +2347,7 @@
 			text				"Base"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -2470,7 +2470,7 @@
 			text				"Command"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -2593,7 +2593,7 @@
 			text				"Enemy"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -2741,7 +2741,7 @@
 			text				"Flag"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -2939,7 +2939,7 @@
 			text				"Need"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -3162,7 +3162,7 @@
 			text				"Self"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -3415,7 +3415,7 @@
 			text				"Self Attack"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -3613,7 +3613,7 @@
 			text				"Self Defend"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -3811,7 +3811,7 @@
 			text				"Self Repair"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -3959,7 +3959,7 @@
 			text				"Self Task"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -4157,7 +4157,7 @@
 			text				"Self Upgrade"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -4255,7 +4255,7 @@
 			text				"Target"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -4528,7 +4528,7 @@
 			text				"Upgrade"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -4626,7 +4626,7 @@
 			text				"Warning"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1
@@ -4699,7 +4699,7 @@
 			text				"Very Quick"
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.8
 			forecolor			.549 .854 1 1

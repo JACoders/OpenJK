@@ -453,15 +453,15 @@
 			style				WINDOW_STYLE_SHADER
 			background			"gfx/menus/menu_blendbox"
 			text				@MENUS_DEMOS
-      			rect				100 164 440 16
+	  			rect				100 164 440 16
 			font				3
 			textscale			0.7
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			225
 			textaligny			-2	
 			forecolor			.549 .854 1 1
-      			visible				1 
-      			decoration 
+	  			visible				1 
+	  			decoration 
 		}
 
 		itemDef 

@@ -431,15 +431,15 @@
 			style				WINDOW_STYLE_SHADER
 			background			"gfx/menus/menu_blendbox"
 			text				@MENUS_CONFIGURE_CONTROLS
-      			rect				100 164 440 16
+	  			rect				100 164 440 16
 			font				3
 			textscale			0.7
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			225
 			textaligny			-1
 			forecolor			.549 .854 1 1
-      			visible				1 
-  	    		decoration 
+	  			visible				1 
+  				decoration 
 		}
 
 		// movement  button
@@ -3178,7 +3178,7 @@
 		itemDef 
 		{
 			group				othercontrols
-	      	type				ITEM_TYPE_MULTI
+		  	type				ITEM_TYPE_MULTI
 			text				@MENUS_AUTO_SWITCH
 			cvar				"cg_autoswitch"
 			cvarFloatList
@@ -3929,7 +3929,7 @@
 			name				keyBindStatus
 			group				none
 			ownerdraw			250		// UI_KEYBINDSTATUS
-			text				@MENUS_BLANK_1      
+			text				@MENUS_BLANK_1	  
 			rect				375 434 0 0
 			textStyle			0
 			font				4
@@ -3944,7 +3944,7 @@
 		{
 			name				slider_message
 			group				none
-			text				@MENUS_MOVE_THE_SLIDER_TO_INCREASE      
+			text				@MENUS_MOVE_THE_SLIDER_TO_INCREASE	  
 			rect				375 434 0 0
 			textStyle			0
 			font				4

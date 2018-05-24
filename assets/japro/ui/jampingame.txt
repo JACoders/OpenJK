@@ -16,7 +16,7 @@
 	loadMenu { "ui/jamp/ingame_join_japro.menu"		}
 
 	loadMenu { "ui/jamp/ingame_leave.menu"			}
- 	loadMenu { "ui/jamp/ingame.menu"			}
+	loadMenu { "ui/jamp/ingame.menu"			}
 	loadMenu { "ui/jamp/ingame_player.menu"			}
 	loadMenu { "ui/jamp/ingame_player2.menu"		}
 	loadMenu { "ui/jamp/ingame_playerforce.menu"		}

@@ -813,7 +813,7 @@
 			backcolor			0.25 0.25 0.8 .25		//Background color of listbox
 			outlinecolor			1 1 1 .25			//Highlight when item is selected.
 			visible				1
-			columns				5 2 40 258   270 40 104  388 5 64  450 20 100  560 20 47
+			columns				5 2 40 258	270 40 104  388 5 64  450 20 100  560 20 47
 
 
 
@@ -1108,8 +1108,8 @@
 			textalignx			110
 			textaligny			1
 			forecolor			.549 .854 1 1
-	      		visible			1 
-      			decoration 
+		  		visible			1 
+	  			decoration 
 		}
 
 		itemDef 
@@ -1267,8 +1267,8 @@
 			textalignx			110
 			textaligny			1
 			forecolor			.549 .854 1 1
-	      		visible			1 
-      			decoration 
+		  		visible			1 
+	  			decoration 
 		}
 
 		itemDef 
@@ -1483,8 +1483,8 @@
 			textalignx			170
 			textaligny			1
 			forecolor			.549 .854 1 1
-      			visible				1 
-      			decoration 
+	  			visible				1 
+	  			decoration 
 		}
 
 		//---------------------------------------------
@@ -1508,9 +1508,9 @@
 			bordercolor			.5 .5 .5 1
 			notselectable
 			visible				1
-			columns				4	 2   40  148
-								50   40  50
-								100   40  45
+			columns				4	 2	40  148
+								50	40  50
+								100	40  45
 								150  40  165
 		}
 

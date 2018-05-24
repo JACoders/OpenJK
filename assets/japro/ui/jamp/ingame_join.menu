@@ -33,7 +33,7 @@
 			name				button1
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 4 124 30   
+			rect				2 4 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -45,7 +45,7 @@
 			name				button1odd
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 14 124 30   
+			rect				2 14 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -57,7 +57,7 @@
 			name				button2
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 34 124 30   
+			rect				2 34 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -69,7 +69,7 @@
 			name				button2odd
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 44 124 30   
+			rect				2 44 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -81,7 +81,7 @@
 			name				button3
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 64 124 30   
+			rect				2 64 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -93,7 +93,7 @@
 			name				button3odd
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 74 124 30   
+			rect				2 74 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -105,7 +105,7 @@
 			name				button4
 			group				buttons
 			style				WINDOW_STYLE_SHADER
-			rect				2 94 124 30   
+			rect				2 94 124 30	
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -121,10 +121,10 @@
 			text				@MENUS_AUTO_TEAM
 			type				1
 			style				2	
-			rect				2 4 124 30   
+			rect				2 4 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -159,10 +159,10 @@
 			text				@MENUS_TEAM_RED
 			type				1
 			style				2	
-			rect				2 34 124 30   
+			rect				2 34 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			1 0.2 0.2 1
@@ -197,10 +197,10 @@
 			text				@MENUS_TEAM_BLUE
 			type				1
 			style				2	
-			rect				2 64 124 30   
+			rect				2 64 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			0.2 0.2 1 1
@@ -236,10 +236,10 @@
 			text				@MP_INGAME_JOIN_SINGLE
 			type				1
 			style				2	
-			rect				2 34 124 30   
+			rect				2 34 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			1 0.2 0.2 1
@@ -271,10 +271,10 @@
 			text				@MP_INGAME_JOIN_DOUBLE
 			type				1
 			style				2	
-			rect				2 64 124 30   
+			rect				2 64 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			0.2 0.2 1 1
@@ -307,10 +307,10 @@
 			text				@MENUS_SPECTATE
 			type				1
 			style				2	
-			rect				2 94 124 30   
+			rect				2 94 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -348,10 +348,10 @@
 			text				@MENUS_JOIN_GAME
 			type				1
 			style				2	
-			rect				2 34 124 30   
+			rect				2 34 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -387,10 +387,10 @@
 			text				@MENUS_SPECTATE
 			type				1
 			style				2	
-			rect				2 64 124 30    
+			rect				2 64 124 30	
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
-			textaligny			0     
+			textaligny			0	 
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1

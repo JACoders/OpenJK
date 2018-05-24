@@ -5,7 +5,7 @@
 //	Allows player to start a game or join one in progress
 //
 //----------------------------------------------------------------------------------------------
-{							   
+{								
 	menuDef 
 	{
 		name					"multiplayermenu"
@@ -284,19 +284,19 @@
 		
 		itemDef 
 		{
-      			name				title
+	  			name				title
 			group				none
-      			text				@MENUS_START_PLAYING
+	  			text				@MENUS_START_PLAYING
 			style				WINDOW_STYLE_EMPTY
-    	  		rect				225 164 190 16
+		  		rect				225 164 190 16
 			font				3
 			textscale			.7
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			95
 			textaligny			-1
 			forecolor			.549 .854 1 1
-     	 		visible				1 
-      			decoration 
+	 	 		visible				1 
+	  			decoration 
 		}
 
 		// QUICK START
@@ -396,7 +396,7 @@
 			{ 
 				hide			button_glow 
 			}	  	  
-		      	action 
+			  	action 
 			{ 
 				play			"sound/interface/button1.wav" ; 
 				close			multiplayermenu ; 
@@ -431,7 +431,7 @@
 			{ 
 				hide			button_glow 
 			}	  	  
-		      	action 
+			  	action 
 			{ 
 				play			"sound/interface/button1.wav" ; 
 				close			multiplayermenu ; 

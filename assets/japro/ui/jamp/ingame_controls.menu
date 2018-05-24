@@ -1133,7 +1133,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1        
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		1
@@ -1167,7 +1167,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1       
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		2
@@ -1201,7 +1201,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1        
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		2
@@ -1235,7 +1235,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1       
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0 
 			// appearance_slot		3
@@ -1371,7 +1371,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1       
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		4
@@ -1406,7 +1406,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1       
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		5
@@ -1440,7 +1440,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1        
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		6
@@ -1474,7 +1474,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1       
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible			0
 			// appearance_slot		6
@@ -2938,7 +2938,7 @@
 		{
 			name				other2
 			group				othercontrols
-	      		type				ITEM_TYPE_MULTI
+		  		type				ITEM_TYPE_MULTI
 			text				@MENUS_AUTO_SWITCH
 			cvar				"cg_autoswitch"
 			cvarFloatList		
@@ -3177,7 +3177,7 @@
 			textalignx			151
 			textaligny			0
 			font				4
-			textscale			1       
+			textscale			1		
 			forecolor			.615 .615 .956 1
 			visible				0
 			descText			@MENUS_CHANGES_VIEW_BETWEEN
@@ -3785,7 +3785,7 @@
 		{
 			name				slider_message
 			group				none
-			text				@MENUS_MOVE_THE_SLIDER_TO_INCREASE      
+			text				@MENUS_MOVE_THE_SLIDER_TO_INCREASE	  
 			rect				275 310 0 0
 			textStyle			0
 			font				2

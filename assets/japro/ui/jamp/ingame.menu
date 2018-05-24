@@ -33,7 +33,7 @@
 			"sound/interface/sub_select.wav" ;
 		}
 	}
-							   
+								
 	menuDef 
 	{
 		name					"ingame"
@@ -142,7 +142,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          	35
+			textalignx		  	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -176,7 +176,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          	35
+			textalignx		  	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -207,7 +207,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	35
+			textalignx		 	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -252,7 +252,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	35
+			textalignx		 	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -298,7 +298,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	35
+			textalignx		 	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -343,7 +343,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	35
+			textalignx		 	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -390,7 +390,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          	35
+			textalignx		  	35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -438,7 +438,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
+			textalignx		  35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -481,7 +481,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
+			textalignx		  35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -529,7 +529,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
+			textalignx		  35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -575,7 +575,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
+			textalignx		  35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -609,7 +609,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
+			textalignx		  35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -652,7 +652,7 @@
 			textscale			.8
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
+			textalignx		  35
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -698,7 +698,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
+			textalignx		 	25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -741,7 +741,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          25
+			textalignx		  25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -784,7 +784,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          25
+			textalignx		  25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -829,7 +829,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
+			textalignx		 	25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -875,7 +875,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
+			textalignx		 	25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -918,7 +918,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
+			textalignx		 	25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
@@ -963,7 +963,7 @@
 			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
+			textalignx		 	25
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0

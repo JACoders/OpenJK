@@ -89,7 +89,7 @@
 			text				@MENUS_VC_TITLE			
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -112,7 +112,7 @@
 			textalign			ITEM_ALIGN_LEFT	
 			ownerdraw			UI_CHAT_MAIN
 			textalignx			4
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -145,7 +145,7 @@
 			textalign			ITEM_ALIGN_LEFT		
 			ownerdraw			UI_CHAT_MAIN
 			textalignx			4
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -176,7 +176,7 @@
 			textalign			ITEM_ALIGN_LEFT		
 			ownerdraw			UI_CHAT_MAIN
 			textalignx			4
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -207,7 +207,7 @@
 			textalign			ITEM_ALIGN_LEFT		
 			ownerdraw			UI_CHAT_MAIN
 			textalignx			4
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -238,7 +238,7 @@
 			textalign			ITEM_ALIGN_LEFT		
 			ownerdraw			UI_CHAT_MAIN
 			textalignx			4
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -269,7 +269,7 @@
 			textalign			ITEM_ALIGN_LEFT		
 			ownerdraw			UI_CHAT_MAIN
 			textalignx			4
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -300,7 +300,7 @@
 			textalign			ITEM_ALIGN_CENTER
 			ownerdraw			UI_CHAT_MAIN			
 			textalignx			80
-			textaligny			-2    
+			textaligny			-2	
 			font				2
 			textscale			1
 			forecolor			1 .682 0 1
@@ -333,7 +333,7 @@
 			text				@MENUS_ATTACK_TITLE
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -350,7 +350,7 @@
 			text				@MENUS_VC_ATT_PRIMARY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -375,7 +375,7 @@
 			text				@MENUS_VC_ATT_SECONDARY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -400,7 +400,7 @@
 			text				@MENUS_VC_ATT_POSITION
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -431,7 +431,7 @@
 			text				@MENUS_DEFEND_TITLE
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -448,7 +448,7 @@
 			text				@MENUS_VC_DEF_PRIMARY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -473,7 +473,7 @@
 			text				@MENUS_VC_DEF_SECONDARY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -498,7 +498,7 @@
 			text				@MENUS_VC_DEF_POSITION
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -523,7 +523,7 @@
 			text				@MENUS_VC_DEF_GUNS
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -554,7 +554,7 @@
 			text				@MENUS_REQUEST_TITLE
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -571,7 +571,7 @@
 			text				@MENUS_VC_REQ_ASSIST
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -596,7 +596,7 @@
 			text				@MENUS_VC_REQ_MEDIC
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -621,7 +621,7 @@
 			text				@MENUS_VC_REQ_SUPPLY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -646,7 +646,7 @@
 			text				@MENUS_VC_REQ_TECH
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -671,7 +671,7 @@
 			text				@MENUS_VC_REQ_HVY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -696,7 +696,7 @@
 			text				@MENUS_VC_REQ_DEMO
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -727,7 +727,7 @@
 			text				@MENUS_REPLY_TITLE
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -744,7 +744,7 @@
 			text				@MENUS_VC_REPLY_YES
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -769,7 +769,7 @@
 			text				@MENUS_VC_REPLY_NO
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -794,7 +794,7 @@
 			text				@MENUS_VC_REPLY_COMING
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -819,7 +819,7 @@
 			text				@MENUS_VC_REPLY_GO
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -844,7 +844,7 @@
 			text				@MENUS_VC_REPLY_STAY
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -875,7 +875,7 @@
 			text				@MENUS_SPOTTED_TITLE
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -892,7 +892,7 @@
 			text				@MENUS_VC_SPOT_DEF
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -917,7 +917,7 @@
 			text				@MENUS_VC_SPOT_TROOP
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -942,7 +942,7 @@
 			text				@MENUS_VC_SPOT_SNIPER
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -967,7 +967,7 @@
 			text				@MENUS_VC_SPOT_EMPLACED
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -992,7 +992,7 @@
 			text				@MENUS_VC_SPOT_AIR
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -1023,7 +1023,7 @@
 			text				@MENUS_TACTICS_TITLE
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			90
-			textaligny			2    
+			textaligny			2	
 			font				3
 			textscale			.9
 			forecolor			.549 .854 1 1
@@ -1040,7 +1040,7 @@
 			text				@MENUS_VC_TAC_COVER
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -1065,7 +1065,7 @@
 			text				@MENUS_VC_TAC_HOLD
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -1090,7 +1090,7 @@
 			text				@MENUS_VC_TAC_FOLLOW
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -1115,7 +1115,7 @@
 			text				@MENUS_VC_TAC_FALLBACK
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -1140,7 +1140,7 @@
 			text				@MENUS_VC_TAC_TOGETHER
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1
@@ -1165,7 +1165,7 @@
 			text				@MENUS_VC_TAC_SPLIT
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
-			textaligny			12    
+			textaligny			12	
 			font				4
 			textscale			1
 			forecolor			1 .682 0 1

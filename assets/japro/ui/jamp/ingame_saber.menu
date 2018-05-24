@@ -757,7 +757,7 @@
 			text				"Red "
 			cvarint				"ui_sab1_r" 255 1 255
 			rect				58 80 105 18
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
 			textaligny			-4
 			font 				2
@@ -805,7 +805,7 @@
 			text				"Green"
 			cvarint			"ui_sab1_g" 255 1 255
 			rect				58 100 105 18
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
 			textaligny			-4
 			font 				2
@@ -853,7 +853,7 @@
 			text				"Blue "
 			cvarint			"ui_sab1_b" 255 1 255
 			rect				58 120 105 18
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
 			textaligny			-4
 			font 				2
@@ -964,7 +964,7 @@
 			text				"Red "
 			cvarint				"ui_sab2_r" 255 1 255
 			rect				265 80 105 18
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
 			textaligny			-4
 			font 				2
@@ -1016,7 +1016,7 @@
 			text				"Green"
 			cvarint			"ui_sab2_g" 255 1 255
 			rect				265 100 105 18
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
 			textaligny			-4
 			font 				2
@@ -1068,7 +1068,7 @@
 			text				"Blue "
 			cvarint				"ui_sab2_b" 255 1 255
 			rect				265 120 105 18
-	   		textalign			ITEM_ALIGN_RIGHT
+				textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
 			textaligny			-4
 			font 				2
@@ -1227,7 +1227,7 @@
 			action 
 			{
 				play			"sound/interface/choose_blade.wav"
-				setcvar 		ui_saber_color   "orange"
+				setcvar 		ui_saber_color	"orange"
 			}
 		}
 
@@ -1258,7 +1258,7 @@
 			action 
 			{
 				play			"sound/interface/choose_blade.wav"
-				setcvar 		ui_saber_color   "purple"
+				setcvar 		ui_saber_color	"purple"
 			}
 		}
 
