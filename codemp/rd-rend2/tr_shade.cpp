@@ -1676,9 +1676,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			samplerBindingsWriter.AddStaticImage(cubemap->image, TB_CUBEMAP);
 			samplerBindingsWriter.AddStaticImage(tr.envBrdfImage, TB_ENVBRDFMAP);
 
-			vec[0] = tr.cubemaps[input->cubemapIndex - 1].origin[0] - backEnd.viewParms.ori.origin[0];
-			vec[1] = tr.cubemaps[input->cubemapIndex - 1].origin[1] - backEnd.viewParms.ori.origin[1];
-			vec[2] = tr.cubemaps[input->cubemapIndex - 1].origin[2] - backEnd.viewParms.ori.origin[2];
+			vec[0] = cubemap->origin[0] - backEnd.viewParms.ori.origin[0];
+			vec[1] = cubemap->origin[1] - backEnd.viewParms.ori.origin[1];
+			vec[2] = cubemap->origin[2] - backEnd.viewParms.ori.origin[2];
 			vec[3] = 1.0f;
 
 			VectorScale4(vec, 1.0f / cubemap->parallaxRadius, vec);
