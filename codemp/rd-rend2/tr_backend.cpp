@@ -1878,7 +1878,7 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	RB_SetGL2D();
 
-	image_t *cubemap = tr.cubemaps[cmd->cubemap].image;
+	image_t *cubemap = cmd->cubemap->image;
 
 	if (!cubemap || !cmd)
 		return (const void *)(cmd + 1);

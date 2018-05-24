@@ -3015,7 +3015,7 @@ void R_LoadCubemapEntities(char *cubemapEntityName)
 
 	// count cubemaps
 	numCubemaps = 0;
-	while (R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
+	while(R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
 	{
 		int i;
 
@@ -3031,10 +3031,9 @@ void R_LoadCubemapEntities(char *cubemapEntityName)
 
 	tr.numCubemaps = numCubemaps;
 	tr.cubemaps = (cubemap_t *)ri.Hunk_Alloc(tr.numCubemaps * sizeof(*tr.cubemaps), h_low);
-	memset(tr.cubemaps, 0, tr.numCubemaps * sizeof(*tr.cubemaps));
 
 	numCubemaps = 0;
-	while (R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
+	while(R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
 	{
 		int i;
 		char name[MAX_QPATH];
@@ -3135,7 +3134,7 @@ static void R_RenderAllCubemaps(void)
 			for (int j = 0; j < 6; j++)
 			{
 				RE_ClearScene();
-				R_AddConvolveCubemapCmd(i, j);
+				R_AddConvolveCubemapCmd(&tr.cubemaps[i], j);
 				R_IssuePendingRenderCommands();
 				R_InitNextFrame();
 			}

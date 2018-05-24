@@ -1218,49 +1218,49 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			break;
 		}
 		//
-		// map <name>
+		// map <name> or clampmap <name>
 		//
-		else if (!Q_stricmp(token, "map"))
+		else if ( !Q_stricmp( token, "map" ) || (!Q_stricmp(token, "clampmap")))
 		{
-			token = COM_ParseExt(text, qfalse);
-			if (!token[0])
+			int flags = !Q_stricmp(token, "clampmap") ? IMGFLAG_CLAMPTOEDGE : IMGFLAG_NONE;
+			
+			token = COM_ParseExt( text, qfalse );
+			if ( !token[0] )
 			{
-				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'map' keyword in shader '%s'\n", shader.name);
+				ri.Printf( PRINT_WARNING, "WARNING: missing parameter for 'map' keyword in shader '%s'\n", shader.name);
 				return qfalse;
 			}
 
-			if (!Q_stricmp(token, "$whiteimage"))
+			if ( !Q_stricmp( token, "$whiteimage" ) )
 			{
 				stage->bundle[0].image[0] = tr.whiteImage;
 				continue;
 			}
-			else if (!Q_stricmp(token, "$lightmap"))
+			else if ( !Q_stricmp( token, "$lightmap" ) )
 			{
 				stage->bundle[0].isLightmap = qtrue;
-				if (shader.lightmapIndex[0] < 0 || shader.lightmapIndex[0] >= tr.numLightmaps) {
+				if ( shader.lightmapIndex[0] < 0 || shader.lightmapIndex[0] >= tr.numLightmaps ) {
 #ifndef FINAL_BUILD
-					ri.Printf(PRINT_ALL, S_COLOR_RED "Lightmap requested but none avilable for shader '%s'\n", shader.name);
+					ri.Printf (PRINT_ALL, S_COLOR_RED "Lightmap requested but none avilable for shader '%s'\n", shader.name);
 #endif
 					stage->bundle[0].image[0] = tr.whiteImage;
-				}
-				else {
+				} else {
 					stage->bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[0]];
 				}
 				continue;
 			}
-			else if (!Q_stricmp(token, "$deluxemap"))
+			else if ( !Q_stricmp( token, "$deluxemap" ) )
 			{
 				if (!tr.worldDeluxeMapping)
 				{
-					ri.Printf(PRINT_WARNING, "WARNING: shader '%s' wants a deluxe map in a map compiled without them\n", shader.name);
+					ri.Printf( PRINT_WARNING, "WARNING: shader '%s' wants a deluxe map in a map compiled without them\n", shader.name );
 					return qfalse;
 				}
 
 				stage->bundle[0].isLightmap = qtrue;
-				if (shader.lightmapIndex[0] < 0 || shader.lightmapIndex[0] >= tr.numLightmaps) {
+				if ( shader.lightmapIndex[0] < 0 || shader.lightmapIndex[0] >= tr.numLightmaps ) {
 					stage->bundle[0].image[0] = tr.whiteImage;
-				}
-				else {
+				} else {
 					stage->bundle[0].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
 				}
 				continue;
@@ -1268,7 +1268,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else
 			{
 				imgType_t type = IMGTYPE_COLORALPHA;
-				int flags = IMGFLAG_NONE;
 
 				if (!shader.noMipMaps)
 					flags |= IMGFLAG_MIPMAP;
@@ -1288,9 +1287,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				Q_strncpyz(bufferBaseColorTextureName, token, sizeof(bufferBaseColorTextureName));
 				stage->bundle[0].image[0] = R_FindImageFile(bufferBaseColorTextureName, type, flags);
 
-				if (!stage->bundle[0].image[0])
+				if ( !stage->bundle[0].image[0] )
 				{
-					ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name);
+					ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
 					return qfalse;
 				}
 
@@ -1399,43 +1398,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
-		// clampmap <name>
-		//
-		else if (!Q_stricmp(token, "clampmap"))
-		{
-			imgType_t type = IMGTYPE_COLORALPHA;
-			int flags = IMGFLAG_CLAMPTOEDGE;
-
-			token = COM_ParseExt(text, qfalse);
-			if (!token[0])
-			{
-				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'clampmap' keyword in shader '%s'\n", shader.name);
-				return qfalse;
-			}
-
-			if (!shader.noMipMaps)
-				flags |= IMGFLAG_MIPMAP;
-
-			if (!shader.noPicMip)
-				flags |= IMGFLAG_PICMIP;
-
-			if (shader.noTC)
-				flags |= IMGFLAG_NO_COMPRESSION;
-
-			if (r_genNormalMaps->integer)
-				flags |= IMGFLAG_GENNORMALMAP;
-
-			if (r_srgb->integer)
-				flags |= IMGFLAG_SRGB;
-
-			stage->bundle[0].image[0] = R_FindImageFile(token, type, flags);
-			if (!stage->bundle[0].image[0])
-			{
-				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name);
-				return qfalse;
-			}
-		}
-		//
 		// animMap <frequency> <image1> .... <imageN>
 		//
 		else if ( !Q_stricmp( token, "animMap" ) || !Q_stricmp( token, "clampanimMap" ) || !Q_stricmp( token, "oneshotanimMap" ) )
@@ -1459,7 +1421,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					break;
 				}
 				num = stage->bundle[0].numImageAnimations;
-				if (num < MAX_IMAGE_ANIMATIONS) {
+				if ( num < MAX_IMAGE_ANIMATIONS ) {
 					imgType_t imgtype = IMGTYPE_COLORALPHA;
 					int flags = type == ANIMMAP_CLAMP ? IMGFLAG_CLAMPTOEDGE : IMGFLAG_NONE;
 

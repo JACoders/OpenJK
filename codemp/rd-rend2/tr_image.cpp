@@ -2598,6 +2598,7 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	int		width, height, rmoWidth, rmoHeight;
 	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
 	long	hash;
+	qboolean foundDiffuse, foundSpecular = qfalse;
 
 	if (!name) {
 		return;
@@ -2616,16 +2617,22 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	for (image = hashTable[hash]; image; image = image->next) {
 		if (!strcmp(diffuseName, image->imgName)) {
 			stage->bundle[TB_COLORMAP].image[0] = image;
-			// check for specular map
-			hash = generateHashValue(specularName);
-			for (image = hashTable[hash]; image; image = image->next) {
-				if (!strcmp(specularName, image->imgName)) {
-					stage->bundle[TB_SPECULARMAP].image[0] = image;
-					return;
-				}
-			}
+			foundDiffuse = qtrue;
+			break;
 		}
 	}
+	// check for specular map
+	hash = generateHashValue(specularName);
+	for (image = hashTable[hash]; image; image = image->next) {
+		if (!strcmp(specularName, image->imgName)) {
+			stage->bundle[TB_SPECULARMAP].image[0] = image;
+			foundSpecular = qtrue;
+			break;
+		}
+	}
+
+	if (foundDiffuse && foundSpecular)
+		return;
 
 	//
 	// load the pics from disk
@@ -2670,35 +2677,29 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 		{
 		case SPEC_RMO:
 		case SPEC_RMOS:
-		{
 			roughness = ByteToFloat(rmoPic[i + 0]);
 			gloss = (1.0 - roughness) + (0.04 * roughness);
 			metalness = ByteToFloat(rmoPic[i + 1]);
 			ao = ByteToFloat(rmoPic[i + 2]);
 			ao += (1.0 - ao) * (1.0 - aoStrength);
 			specular_variance = ByteToFloat(rmoPic[i + 3]);
-		}
-		break;
+			break;
 		case SPEC_MOXR:
 		case SPEC_MOSR:
-		{
 			metalness = ByteToFloat(rmoPic[i + 0]);
 			ao = ByteToFloat(rmoPic[i + 1]);
 			ao += (1.0 - ao) * (1.0 - aoStrength);
 			specular_variance = ByteToFloat(rmoPic[i + 2]);
 			roughness = ByteToFloat(rmoPic[i + 3]);
 			gloss = (1.0 - roughness) + (0.04 * roughness);
-		}
-		break;
+			break;
 		// should never reach this
 		default:
-		{
 			specular_variance = 1.0f;
 			metalness = 0.0f;
 			gloss = 0.02f;
 			ao = 1.0f;
-		}
-		break;
+			break;
 		}
 
 		float baseColor[4];
@@ -2713,6 +2714,7 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 
 		// diffuse Color = baseColor * (1.0 - metalness) 
 		// also gamma correct again
+		// FIXME: AO should be handled in shader because it should only affect the ambient lighting
 		diffusePic[i + 0] = FloatToByte(pow(baseColor[0] * (1.0f - metalness) * ao, INV_GAMMA));
 		diffusePic[i + 1] = FloatToByte(pow(baseColor[1] * (1.0f - metalness) * ao, INV_GAMMA));
 		diffusePic[i + 2] = FloatToByte(pow(baseColor[2] * (1.0f - metalness) * ao, INV_GAMMA));

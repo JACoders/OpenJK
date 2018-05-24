@@ -738,9 +738,9 @@ typedef enum
 
 enum specularType
 {
-	SPEC_NONE,	// no specular found
-	SPEC_RMO,	// calculate spec from rmo  texture with a specular of 0.04 for dielectric materials
-	SPEC_RMOS,	// calculate spec from rmos texture with a specular of 0.0 - 0.08 from input
+	SPEC_NONE,  // no specular found
+	SPEC_RMO,   // calculate spec from rmo  texture with a specular of 0.04 for dielectric materials
+	SPEC_RMOS,  // calculate spec from rmos texture with a specular of 0.0 - 0.08 from input
 	SPEC_MOXR,  // calculate spec from moxr texture with a specular of 0.04 for dielectric materials
 	SPEC_MOSR,  // calculate spec from mosr texture with a specular of 0.0 - 0.08 from input
 };
@@ -3279,9 +3279,9 @@ typedef struct capShadowmapCommand_s {
 } capShadowmapCommand_t;
 
 typedef struct convolveCubemapCommand_s {
-	int commandId;
-	int cubemap;
-	int cubeSide;
+	int			commandId;
+	cubemap_t	*cubemap;
+	int			cubeSide;
 } convolveCubemapCommand_t;
 
 typedef struct postProcessCommand_s {
@@ -3405,7 +3405,7 @@ void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 void R_AddCapShadowmapCmd( int dlight, int cubeSide );
-void R_AddConvolveCubemapCmd( int cubemap , int cubeSide );
+void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubeSide);
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );
