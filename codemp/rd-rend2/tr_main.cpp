@@ -2820,7 +2820,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 	}
 }
 
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, qboolean bounce )
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce )
 {
 	refdef_t refdef;
 	viewParms_t	parms;

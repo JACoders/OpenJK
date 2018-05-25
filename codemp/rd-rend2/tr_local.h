@@ -2579,7 +2579,7 @@ void R_RenderView( viewParms_t *parms );
 void R_RenderDlightCubemaps(const refdef_t *fd);
 void R_RenderPshadowMaps(const refdef_t *fd);
 void R_RenderSunShadowMaps(const refdef_t *fd, int level);
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, qboolean bounce);
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce);
 
 void R_AddMD3Surfaces( trRefEntity_t *e, int entityNum );
 void R_AddNullModelSurfaces( trRefEntity_t *e, int entityNum );

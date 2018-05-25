@@ -2587,6 +2587,20 @@ done:
 		ri.Hunk_FreeTempMemory( resampledBuffer );
 }
 
+bool R_GetLoadedImage(const char *name, image_t *outImage) {
+	long	hash;
+	image_t	*image;
+
+	hash = generateHashValue(name);
+	for (image = hashTable[hash]; image; image = image->next) {
+		if (!strcmp(name, image->imgName)) {
+			outImage = image;
+			return true;
+		}
+	}
+	return false;
+}
+
 void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
 {
 	image_t	*image;
@@ -2595,7 +2609,7 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	int		width, height, rmoWidth, rmoHeight;
 	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
 	long	hash;
-	qboolean foundDiffuse, foundSpecular = qfalse;
+	bool	foundDiffuse, foundSpecular = false;
 
 	if (!name) {
 		return;
@@ -2607,30 +2621,16 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	COM_StripExtension(name, specularName, sizeof(specularName));
 	Q_strcat(specularName, sizeof(specularName), "_spec");
 
-	//
-	// see if the images are already loaded
-	//
-	hash = generateHashValue(diffuseName);
-	for (image = hashTable[hash]; image; image = image->next) {
-		if (!strcmp(diffuseName, image->imgName)) {
-			stage->bundle[TB_COLORMAP].image[0] = image;
-			foundDiffuse = qtrue;
-			break;
-		}
-	}
-	// check for specular map
-	hash = generateHashValue(specularName);
-	for (image = hashTable[hash]; image; image = image->next) {
-		if (!strcmp(specularName, image->imgName)) {
-			stage->bundle[TB_SPECULARMAP].image[0] = image;
-			foundSpecular = qtrue;
-			break;
-		}
-	}
+	////
+	//// see if the images are already loaded
+	////
+	foundDiffuse = R_GetLoadedImage(diffuseName, stage->bundle[TB_COLORMAP].image[0]);
+	foundSpecular = R_GetLoadedImage(specularName, stage->bundle[TB_SPECULARMAP].image[0]);
 
-	if (foundDiffuse && foundSpecular)
+	if (foundDiffuse && foundSpecular) {
+		ri.Printf(PRINT_DEVELOPER, "WARNING: reused Diffuse and Specular images for %s\n", name);
 		return;
-
+	}
 	//
 	// load the pics from disk
 	//
@@ -2705,7 +2705,7 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 			break;
 		}
 
-		float baseColor[4];
+		vec4_t baseColor;
 		// remove gamma correction because we want to work in linear space
 		baseColor[0] = RGBtosRGB(ByteToFloat(baseColorPic[i + 0]));
 		baseColor[1] = RGBtosRGB(ByteToFloat(baseColorPic[i + 1]));

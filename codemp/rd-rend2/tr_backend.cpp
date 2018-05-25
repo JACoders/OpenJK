@@ -1880,7 +1880,7 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	image_t *cubemap = cmd->cubemap->image;
 
-	if (!cubemap || !cmd)
+	if (!cubemap)
 		return (const void *)(cmd + 1);
 
 	FBO_Bind(tr.preFilterEnvMapFbo);

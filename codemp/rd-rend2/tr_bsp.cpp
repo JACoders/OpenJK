@@ -3117,7 +3117,7 @@ static void R_RenderAllCubemaps()
   
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
-		qboolean bounce = qboolean(k != 0);
+		bool bounce = k != 0;
 		for (int i = 0; i < tr.numCubemaps; i++)		
     {
 			if (!bounce)
