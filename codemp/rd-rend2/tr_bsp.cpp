@@ -3549,7 +3549,6 @@ static uint32_t UpdateHash( const char *text, uint32_t hash )
 	return (hash ^ (hash >> 10) ^ (hash >> 20));
 }
 
-
 static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 	const srfBspSurface_t *bspSurf,
 	float density)

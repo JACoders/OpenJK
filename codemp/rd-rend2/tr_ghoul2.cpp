@@ -3953,15 +3953,8 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		CModelCache->StoreShaderRequest(mod_name, &surfInfo->shader[0], &surfInfo->shaderIndex);		
 
-	// [Monsterovich] gcc throws an error here and Idk why but my custom code works!
-	// error: the value of 'surfInfo' is not usable in a constant expression
-	#ifndef WIN32
-	#undef offsetof
-	#define offsetof(type, member) ((size_t)((char *)&(*(type *)0).member - (char *)&(*(type *)0)))
-	#endif
-
 		// find the next surface
-		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + offsetof (mdxmSurfHierarchy_t, childIndexes[surfInfo->numChildren]) );
+		surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfInfo + offsetof(mdxmSurfHierarchy_t, childIndexes) + sizeof(int) * surfInfo->numChildren);
 	}
 	
 	// swap all the LOD's	(we need to do the middle part of this even for intel, because of shader reg and err-check)

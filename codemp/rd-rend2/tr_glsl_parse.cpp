@@ -42,7 +42,7 @@ Block *FindBlock( const char *name, Block *blocks, size_t numBlocks )
 }
 
 // [M] strncpy_s is not present on linux and VS only function
-#ifndef WIN32
+#if !defined(_WIN32)
 void strncpy_s( char *dest, size_t destSize, const char *src, size_t srcSize )
 {
 	// This isn't really a safe version, but I know the inputs to expect.

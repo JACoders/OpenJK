@@ -59,7 +59,7 @@ void R_AddEdgeDef( int i1, int i2, int facing ) {
 }
 
 void R_RenderShadowEdges( void ) {
-#if 0
+#if 1
 	int		i;
 	int		numTris;
 
@@ -88,8 +88,8 @@ void R_RenderShadowEdges( void ) {
 		qglVertex3fv( tess.xyz[ i1 + tess.numVertexes ] );
 		qglEnd();
 	}
-#else
-#if 0
+//#else
+#if 1
 	int		c, c2;
 	int		j, k;
 	int		i2;
