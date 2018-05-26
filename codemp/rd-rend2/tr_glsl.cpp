@@ -339,20 +339,11 @@ static size_t GLSL_GetShaderHeader(
 						0x0104/* GL_ADD */,
 						GL_REPLACE));
 
-				// [Monsterovich] The shader string is fucked up. I got this from error.
-				/*
-						#define ALPHA_TEST_GT0 1
-						#define ALPHA_TEST_LT128 2
-						#define ALPHA_TEST_GE128 3
-						#d
-						efine ALPHA_TEST_GE192 4
-				*/
-				// What is going on? O_O?
 	Q_strcat(dest, size,
 					 va("#define ALPHA_TEST_GT0 %d\n"
 						"#define ALPHA_TEST_LT128 %d\n" 
 						"#define ALPHA_TEST_GE128 %d\n"
-						"/*lol*/\n#define ALPHA_TEST_GE192 %d\n\n",
+						"#define ALPHA_TEST_GE192 %d\n",
 						ALPHA_TEST_GT0,
 						ALPHA_TEST_LT128,
 						ALPHA_TEST_GE128,
@@ -377,10 +368,6 @@ static size_t GLSL_GetShaderHeader(
 		Q_strcat(dest, size, extra);
 	}
 
-	// OK we added a lot of stuff but if we do something bad in the GLSL
-	// shaders then we want the proper line so we have to reset the line
-	// counting
-	// [Monsterovich] The same thing here but I think that \n is just missing somewhere. 
 	Q_strcat(dest, size, va("\n#line %d\n", firstLineNumber - 1));
 
 	return strlen(dest);
