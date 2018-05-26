@@ -11,7 +11,6 @@ set(MPRend2IncludeDirectories
 	)
 
 
-
 set(MPRend2Files
 	"${MPDir}/rd-rend2/iqm.h"
 	"${MPDir}/rd-rend2/glext.h"
