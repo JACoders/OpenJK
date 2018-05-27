@@ -257,7 +257,6 @@ static qboolean GetGLFunction ( GLFuncType& glFunction, const char *glFunctionSt
 }
 
 
-
 static void QCALL GLimp_OnError(GLenum source, GLenum type, GLuint id, GLenum severity,
 									GLsizei length, const GLchar *message, const void *userParam)
 {
