@@ -368,6 +368,9 @@ static size_t GLSL_GetShaderHeader(
 		Q_strcat(dest, size, extra);
 	}
 
+	// OK we added a lot of stuff but if we do something bad in the GLSL
+	// shaders then we want the proper line so we have to reset the line
+	// counting
 	Q_strcat(dest, size, va("\n#line %d\n", firstLineNumber - 1));
 
 	return strlen(dest);

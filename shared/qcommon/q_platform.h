@@ -129,13 +129,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 	// [M] Define it, define it now! DEWIT.
 	#if !defined(ARCH_STRING)
-		#if defined(__i386__)
-			#define ARCH_STRING "x86"
-		#elif defined(__x86_64__)
-			#define ARCH_STRING "x86_64"
-		#else
-			#error Cannot identify ARCH_STRING, it should be defined by the build system
-		#endif
+		#error ARCH_STRING should be defined by the build system
 	#endif
 
 	#if defined(__x86_64__)
