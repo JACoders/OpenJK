@@ -776,9 +776,9 @@ static void R_RotateForViewer(orientationr_t *ori, viewParms_t *viewParms)
 	vec3_t	origin;
 
 	*ori = {};
-	tr.ori.axis[0][0] = 1;
-	tr.ori.axis[1][1] = 1;
-	tr.ori.axis[2][2] = 1;
+	ori->axis[0][0] = 1.0f;
+	ori->axis[1][1] = 1.0f;
+	ori->axis[2][2] = 1.0f;
 	VectorCopy(viewParms->ori.origin, ori->viewOrigin);
 
 	// transform by the camera placement
@@ -1071,7 +1071,7 @@ void R_SetupProjectionZ(viewParms_t *dest)
 R_SetupProjectionOrtho
 ===============
 */
-void R_SetupProjectionOrtho(viewParms_t *dest, vec3_t viewBounds[2])
+void R_SetupProjectionOrtho(viewParms_t *dest, const vec3_t viewBounds[2])
 {
 	float xmin, xmax, ymin, ymax, znear, zfar;
 	//viewParms_t *dest = &tr.viewParms;
@@ -2006,29 +2006,32 @@ static void R_AddEntitySurfaces(const trRefdef_t *refdef)
 R_GenerateDrawSurfs
 ====================
 */
-static void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
+void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
 	R_AddWorldSurfaces(viewParms, refdef);
 
 	R_AddPolygonSurfaces(refdef);
 
-	// set the projection matrix with the minimum zfar
-	// now that we have the world bounded
-	// this needs to be done before entities are
-	// added, because they use the projection
-	// matrix for lod calculation
-
-	// dynamically compute far clip plane distance
-	if (!(tr.viewParms.flags & VPF_SHADOWMAP))
+	if ((viewParms->flags & VPF_ORTHOGRAPHIC) == 0)
 	{
-		R_SetFarClip(viewParms, refdef);
-	}
+		// set the projection matrix with the minimum zfar
+		// now that we have the world bounded
+		// this needs to be done before entities are
+		// added, because they use the projection
+		// matrix for lod calculation
 
-	// we know the size of the clipping volume. Now set the rest of the projection matrix.
-	R_SetupProjectionZ(viewParms);
+		// dynamically compute far clip plane distance
+		if (!(tr.viewParms.flags & VPF_SHADOWMAP))
+		{
+			R_SetFarClip(viewParms, refdef);
+		}
+
+		// we know the size of the clipping volume. Now set the rest of the projection matrix.
+		R_SetupProjectionZ(viewParms);
+	}
 
 	R_AddEntitySurfaces(refdef);
 
-	if ( !(tr.viewParms.flags & VPF_SHADOWMAP) )
+	if ( !(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW)) )
 	{
 		R_AddWeatherSurfaces();
 	}
@@ -2154,7 +2157,7 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
-		shadowParms.flags = (viewParmFlags_t)(VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL);
+		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL;
 		shadowParms.zFar = tr.refdef.dlights[i].radius;
 		shadowParms.zNear = 1.0f;
 
@@ -2211,10 +2214,62 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 	}
 }
 
+void R_SetOrientationOriginAndAxis(
+	orientationr_t& orientation,
+	const vec3_t origin,
+	const vec3_t left,
+	const vec3_t forward,
+	const vec3_t up)
+{
+	VectorCopy(origin, orientation.origin);
+	VectorCopy(left, orientation.axis[0]);
+	VectorCopy(forward, orientation.axis[1]);
+	VectorCopy(up, orientation.axis[2]);
+}
+
+void R_SetOrientationOriginAndAxis(
+	orientationr_t& orientation,
+	const vec3_t origin,
+	const matrix3_t axis)
+{
+	R_SetOrientationOriginAndAxis(orientation, origin, axis[0], axis[1], axis[2]);
+}
+
+void R_SetupViewParmsForOrthoRendering(
+	int viewportWidth,
+	int viewportHeight,
+	FBO_t *fbo,
+	viewParmFlags_t viewParmFlags,
+	const orientationr_t& orientation,
+	const vec3_t viewBounds[2])
+{
+	viewParms_t& viewParms = tr.viewParms;
+
+	viewParms = {};
+	viewParms.viewportWidth  = viewportWidth;
+	viewParms.viewportHeight = viewportHeight;
+	viewParms.flags = viewParmFlags;
+	viewParms.targetFbo = fbo;
+	viewParms.zFar = viewBounds[1][0];
+	VectorCopy(orientation.origin, viewParms.ori.origin);
+	for (int i = 0; i < 3; ++i)
+		VectorCopy(orientation.axis[i], viewParms.ori.axis[i]);
+
+	VectorCopy(orientation.origin, viewParms.pvsOrigin);
+
+	tr.viewCount++;
+
+	viewParms.frameSceneNum = tr.frameSceneNum;
+	viewParms.frameCount = tr.frameCount;
+
+	tr.viewCount++;
+
+	R_RotateForViewer(&tr.ori, &viewParms);
+	R_SetupProjectionOrtho(&viewParms, viewBounds);
+}
 
 void R_RenderPshadowMaps(const refdef_t *fd)
 {
-	viewParms_t		shadowParms;
 	int i;
 
 	// first, make a list of shadows
@@ -2429,117 +2484,35 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 	// next, render shadowmaps
 	for ( i = 0; i < tr.refdef.num_pshadows; i++)
 	{
-		int firstDrawSurf;
 		pshadow_t *shadow = &tr.refdef.pshadows[i];
-		int j;
 
-		Com_Memset( &shadowParms, 0, sizeof( shadowParms ) );
+		orientationr_t orientation;
+		R_SetOrientationOriginAndAxis(orientation, shadow->lightOrigin, shadow->lightViewAxis);
 
-		shadowParms.viewportX = 0;
-		shadowParms.viewportY = 0;
-		shadowParms.viewportWidth = PSHADOW_MAP_SIZE;
-		shadowParms.viewportHeight = PSHADOW_MAP_SIZE;
-		shadowParms.isPortal = qfalse;
-		shadowParms.isMirror = qfalse;
+		const float viewRadius = shadow->viewRadius;
+		vec3_t shadowViewBounds[2];
+		VectorSet(shadowViewBounds[0], -viewRadius, -viewRadius, 0.0f);
+		VectorSet(shadowViewBounds[1], viewRadius, viewRadius, shadow->lightRadius);
 
-		shadowParms.fovX = 90;
-		shadowParms.fovY = 90;
+		R_SetupViewParmsForOrthoRendering(
+			PSHADOW_MAP_SIZE,
+			PSHADOW_MAP_SIZE,
+			tr.pshadowFbos[i],
+			VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL,
+			orientation,
+			shadowViewBounds);
 
-		shadowParms.targetFbo = tr.pshadowFbos[i];
-
-		shadowParms.flags = (viewParmFlags_t)( VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL );
-		shadowParms.zFar = shadow->lightRadius;
-
-		VectorCopy(shadow->lightOrigin, shadowParms.ori.origin);
-		
-		VectorCopy(shadow->lightViewAxis[0], shadowParms.ori.axis[0]);
-		VectorCopy(shadow->lightViewAxis[1], shadowParms.ori.axis[1]);
-		VectorCopy(shadow->lightViewAxis[2], shadowParms.ori.axis[2]);
-
+		const int firstDrawSurf = tr.refdef.numDrawSurfs;
+		for (int j = 0; j < shadow->numEntities; j++)
 		{
-			tr.viewCount++;
-
-			tr.viewParms = shadowParms;
-			tr.viewParms.frameSceneNum = tr.frameSceneNum;
-			tr.viewParms.frameCount = tr.frameCount;
-
-			firstDrawSurf = tr.refdef.numDrawSurfs;
-
-			tr.viewCount++;
-
-			// set viewParms.world
-			R_RotateForViewer(&tr.ori, &tr.viewParms);
-
-			{
-				float xmin, xmax, ymin, ymax, znear, zfar;
-				viewParms_t *dest = &tr.viewParms;
-				vec3_t pop;
-
-				xmin = ymin = -shadow->viewRadius;
-				xmax = ymax = shadow->viewRadius;
-				znear = 0;
-				zfar = shadow->lightRadius;
-
-				dest->projectionMatrix[0] = 2 / (xmax - xmin);
-				dest->projectionMatrix[4] = 0;
-				dest->projectionMatrix[8] = (xmax + xmin) / (xmax - xmin);
-				dest->projectionMatrix[12] =0;
-
-				dest->projectionMatrix[1] = 0;
-				dest->projectionMatrix[5] = 2 / (ymax - ymin);
-				dest->projectionMatrix[9] = ( ymax + ymin ) / (ymax - ymin);	// normally 0
-				dest->projectionMatrix[13] = 0;
-
-				dest->projectionMatrix[2] = 0;
-				dest->projectionMatrix[6] = 0;
-				dest->projectionMatrix[10] = 2 / (zfar - znear);
-				dest->projectionMatrix[14] = 0;
-
-				dest->projectionMatrix[3] = 0;
-				dest->projectionMatrix[7] = 0;
-				dest->projectionMatrix[11] = 0;
-				dest->projectionMatrix[15] = 1;
-
-				VectorScale(dest->ori.axis[1],  1.0f, dest->frustum[0].normal);
-				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[0].normal, pop);
-				dest->frustum[0].dist = DotProduct(pop, dest->frustum[0].normal);
-
-				VectorScale(dest->ori.axis[1], -1.0f, dest->frustum[1].normal);
-				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[1].normal, pop);
-				dest->frustum[1].dist = DotProduct(pop, dest->frustum[1].normal);
-
-				VectorScale(dest->ori.axis[2],  1.0f, dest->frustum[2].normal);
-				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[2].normal, pop);
-				dest->frustum[2].dist = DotProduct(pop, dest->frustum[2].normal);
-
-				VectorScale(dest->ori.axis[2], -1.0f, dest->frustum[3].normal);
-				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[3].normal, pop);
-				dest->frustum[3].dist = DotProduct(pop, dest->frustum[3].normal);
-
-				VectorScale(dest->ori.axis[0], -1.0f, dest->frustum[4].normal);
-				VectorMA(dest->ori.origin, -shadow->lightRadius, dest->frustum[4].normal, pop);
-				dest->frustum[4].dist = DotProduct(pop, dest->frustum[4].normal);
-
-				for (j = 0; j < 5; j++)
-				{
-					dest->frustum[j].type = PLANE_NON_AXIAL;
-					SetPlaneSignbits (&dest->frustum[j]);
-				}
-
-				dest->flags |= VPF_FARPLANEFRUSTUM;
-			}
-
-			for (j = 0; j < shadow->numEntities; j++)
-			{
-				int entityNum = shadow->entityNums[j];
-				trRefEntity_t *ent = tr.refdef.entities + entityNum;
-				R_AddEntitySurface(&tr.refdef, ent, entityNum);
-			}
-
-			R_SortAndSubmitDrawSurfs(
-				tr.refdef.drawSurfs + firstDrawSurf,
-				tr.refdef.numDrawSurfs - firstDrawSurf);
+			int entityNum = shadow->entityNums[j];
+			trRefEntity_t *ent = tr.refdef.entities + entityNum;
+			R_AddEntitySurface(&tr.refdef, ent, entityNum);
 		}
+
+		R_SortAndSubmitDrawSurfs(
+			tr.refdef.drawSurfs + firstDrawSurf,
+			tr.refdef.numDrawSurfs - firstDrawSurf);
 	}
 }
 
@@ -2759,65 +2732,27 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		//ri.Printf(PRINT_ALL, "fovx %f fovy %f xmin %f xmax %f ymin %f ymax %f\n", fd->fov_x, fd->fov_y, xmin, xmax, ymin, ymax);
 	}
 
+	orientationr_t orientation = {};
+	R_SetOrientationOriginAndAxis(orientation, lightOrigin, lightViewAxis);
 
-	{
-		viewParms_t shadowParms = {};
-		shadowParms.viewportX = 0;
-		shadowParms.viewportY = 0;
-		shadowParms.viewportWidth  = tr.sunShadowFbo[level]->width;
-		shadowParms.viewportHeight = tr.sunShadowFbo[level]->height;
-		shadowParms.isPortal = qfalse;
-		shadowParms.isMirror = qfalse;
-		shadowParms.fovX = 90;
-		shadowParms.fovY = 90;
+	R_SetupViewParmsForOrthoRendering(
+		tr.sunShadowFbo[level]->width,
+		tr.sunShadowFbo[level]->height,
+		tr.sunShadowFbo[level],
+		VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL,
+		orientation,
+		lightviewBounds);
 
-		shadowParms.targetFbo = tr.sunShadowFbo[level];
+	const int firstDrawSurf = tr.refdef.numDrawSurfs;
+	R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
+	R_SortAndSubmitDrawSurfs(
+		tr.refdef.drawSurfs + firstDrawSurf,
+		tr.refdef.numDrawSurfs - firstDrawSurf);
 
-		shadowParms.flags = (viewParmFlags_t)(
-			VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL);
-		shadowParms.zFar = lightviewBounds[1][0];
-		shadowParms.zNear = r_znear->value;
-
-		VectorCopy(lightOrigin, shadowParms.ori.origin);
-		
-		VectorCopy(lightViewAxis[0], shadowParms.ori.axis[0]);
-		VectorCopy(lightViewAxis[1], shadowParms.ori.axis[1]);
-		VectorCopy(lightViewAxis[2], shadowParms.ori.axis[2]);
-
-		VectorCopy(lightOrigin, shadowParms.pvsOrigin);
-
-		{
-			tr.viewCount++;
-
-			tr.viewParms = shadowParms;
-			tr.viewParms.frameSceneNum = tr.frameSceneNum;
-			tr.viewParms.frameCount = tr.frameCount;
-
-			int firstDrawSurf = tr.refdef.numDrawSurfs;
-
-			tr.viewCount++;
-
-			// set viewParms.world
-			R_RotateForViewer(&tr.ori, &tr.viewParms);
-
-			R_SetupProjectionOrtho(&tr.viewParms, lightviewBounds);
-
-			R_AddWorldSurfaces(&tr.viewParms, &tr.refdef);
-
-			R_AddPolygonSurfaces(&tr.refdef);
-
-			R_AddEntitySurfaces(&tr.refdef);
-
-			R_SortAndSubmitDrawSurfs(
-				tr.refdef.drawSurfs + firstDrawSurf,
-				tr.refdef.numDrawSurfs - firstDrawSurf);
-
-			Matrix16Multiply(
-				tr.viewParms.projectionMatrix,
-				tr.viewParms.world.modelViewMatrix,
-				tr.refdef.sunShadowMvp[level]);
-		}
-	}
+	Matrix16Multiply(
+		tr.viewParms.projectionMatrix,
+		tr.viewParms.world.modelViewMatrix,
+		tr.refdef.sunShadowMvp[level]);
 }
 
 void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce )

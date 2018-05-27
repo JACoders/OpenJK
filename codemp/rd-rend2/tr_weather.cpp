@@ -89,6 +89,45 @@ namespace
 		ws.attribsTemplate[1].vbo = nullptr;
 	}
 
+	void GenerateDepthMap()
+	{
+		vec3_t mapSize;
+		VectorSubtract(
+			tr.world->bmodels[0].bounds[0], 
+			tr.world->bmodels[0].bounds[1],
+			mapSize);
+		mapSize[2] = 0.0f;
+
+		const vec3_t left = {0.0f, 1.0f, 0.0f};
+		const vec3_t up = {0.0f, 0.0f, 1.0f};
+		const vec3_t forward = {1.0f, 0.0f, 0.0f};
+
+		matrix3_t viewAxes;
+		vec3_t viewOrigin;
+		VectorMA(tr.world->bmodels[0].bounds[0], 0.5f, mapSize, viewOrigin);
+
+		orientationr_t orientation;
+		R_SetOrientationOriginAndAxis(orientation, viewOrigin, left, forward, up);
+
+		R_SetupViewParmsForOrthoRendering(
+			tr.weatherDepthFbo->width,
+			tr.weatherDepthFbo->height,
+			tr.weatherDepthFbo,
+			VPF_DEPTHCLAMP | VPF_DEPTHSHADOW | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL,
+			orientation,
+			tr.world->bmodels[0].bounds);
+
+		const int firstDrawSurf = tr.refdef.numDrawSurfs;
+
+		RE_ClearScene();
+		R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
+		R_SortAndSubmitDrawSurfs(
+			tr.refdef.drawSurfs + firstDrawSurf,
+			tr.refdef.numDrawSurfs - firstDrawSurf);
+		R_IssuePendingRenderCommands();
+		R_InitNextFrame();
+	}
+
 	void RB_SimulateWeather(weatherSystem_t& ws)
 	{
 		if (ws.vboLastUpdateFrame == backEndData->realFrameNumber)
@@ -145,18 +184,23 @@ namespace
 	}
 }
 
+void R_InitWeatherForMap()
+{
+	GenerateRainModel(*tr.weatherSystem);
+	GenerateDepthMap();
+}
+
 void R_InitWeatherSystem()
 {
 	Com_Printf("Initializing weather system\n");
 	tr.weatherSystem =
 		(weatherSystem_t *)Z_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
-	GenerateRainModel(*tr.weatherSystem);
 	tr.weatherSystem->weatherSurface.surfaceType = SF_WEATHER;
 }
 
 void R_ShutdownWeatherSystem()
 {
-	if ( tr.weatherSystem )
+	if (tr.weatherSystem != nullptr)
 	{
 		Com_Printf("Shutting down weather system\n");
 

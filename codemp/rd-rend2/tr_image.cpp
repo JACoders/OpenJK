@@ -3350,6 +3350,15 @@ void R_CreateBuiltinImages( void ) {
 			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
 			hdrFormat);
 	}
+
+	tr.weatherDepthImage = R_CreateImage(
+		"*weatherDepth",
+		nullptr,
+		1024,
+		1024,
+		IMGTYPE_COLORALPHA,
+		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+		GL_DEPTH_COMPONENT24);
 }
 
 
