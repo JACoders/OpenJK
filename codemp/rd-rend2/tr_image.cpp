@@ -2587,7 +2587,7 @@ done:
 		ri.Hunk_FreeTempMemory( resampledBuffer );
 }
 
-bool R_GetLoadedImage(const char *name, image_t *outImage, int flags) {
+image_t* R_GetLoadedImage(const char *name, int flags) {
 	long	hash;
 	image_t	*image;
 
@@ -2600,11 +2600,10 @@ bool R_GetLoadedImage(const char *name, image_t *outImage, int flags) {
 					ri.Printf(PRINT_DEVELOPER, "WARNING: reused image %s with mixed flags (%i vs %i)\n", name, image->flags, flags);
 				}
 			}
-			outImage = image;
-			return true;
+			return image;
 		}
 	}
-	return false;
+	return NULL;
 }
 
 void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
@@ -2615,7 +2614,6 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	int		width, height, rmoWidth, rmoHeight;
 	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
 	long	hash;
-	bool	foundDiffuse, foundSpecular = false;
 
 	if (!name) {
 		return;
@@ -2630,10 +2628,10 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	////
 	//// see if the images are already loaded
 	////
-	foundDiffuse = R_GetLoadedImage(diffuseName, stage->bundle[TB_COLORMAP].image[0], flags);
-	foundSpecular = R_GetLoadedImage(specularName, stage->bundle[TB_SPECULARMAP].image[0], flags);
+	stage->bundle[TB_COLORMAP].image[0] = R_GetLoadedImage(diffuseName, flags);
+	stage->bundle[TB_SPECULARMAP].image[0] = R_GetLoadedImage(specularName, flags);
 
-	if (foundDiffuse && foundSpecular) {
+	if (stage->bundle[TB_COLORMAP].image[0] != NULL && stage->bundle[TB_SPECULARMAP].image[0] != NULL) {
 		ri.Printf(PRINT_DEVELOPER, "WARNING: reused Diffuse and Specular images for %s\n", name);
 		return;
 	}
@@ -2867,7 +2865,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		return NULL;
 	}
 
-	if (R_GetLoadedImage(name, image, flags))
+	if ((image = R_GetLoadedImage(name, flags)) != NULL)
 		return image;
 
 	//
