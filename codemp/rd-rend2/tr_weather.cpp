@@ -109,6 +109,16 @@ namespace
 		orientationr_t orientation;
 		R_SetOrientationOriginAndAxis(orientation, viewOrigin, left, forward, up);
 
+		refdef_t refdef = {};
+		refdef.width = tr.weatherDepthFbo->width;
+		refdef.height = tr.weatherDepthFbo->height;
+		VectorCopy(orientation.origin, refdef.vieworg);
+		for (int i = 0; i < 3; ++i)
+			VectorCopy(orientation.axis[i], refdef.viewaxis[i]);
+
+		RE_BeginScene(&refdef);
+		RE_ClearScene();
+
 		R_SetupViewParmsForOrthoRendering(
 			tr.weatherDepthFbo->width,
 			tr.weatherDepthFbo->height,
@@ -119,13 +129,13 @@ namespace
 
 		const int firstDrawSurf = tr.refdef.numDrawSurfs;
 
-		RE_ClearScene();
 		R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
 		R_SortAndSubmitDrawSurfs(
 			tr.refdef.drawSurfs + firstDrawSurf,
 			tr.refdef.numDrawSurfs - firstDrawSurf);
 		R_IssuePendingRenderCommands();
 		R_InitNextFrame();
+		RE_EndScene();
 	}
 
 	void RB_SimulateWeather(weatherSystem_t& ws)
