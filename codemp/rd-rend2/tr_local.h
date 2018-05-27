@@ -412,6 +412,17 @@ typedef struct {
 	float		modelMatrix[16];
 } orientationr_t;
 
+void R_SetOrientationOriginAndAxis(
+	orientationr_t& orientation,
+	const vec3_t origin,
+	const vec3_t left,
+	const vec3_t forward,
+	const vec3_t up);
+void R_SetOrientationOriginAndAxis(
+	orientationr_t& orientation,
+	const vec3_t origin,
+	const matrix3_t axis);
+
 typedef enum
 {
 	VBO_USAGE_STATIC,
@@ -1287,23 +1298,6 @@ typedef struct shaderProgram_s
 	uint32_t uniformBlocks;
 } shaderProgram_t;
 
-struct technique_t
-{
-	shaderProgram_t *depthPrepass;
-	shaderProgram_t *shadow;
-	shaderProgram_t *forward;
-};
-
-struct EntityCullInfo
-{
-	uint32_t frustumMask;
-};
-
-struct WorkingScene
-{
-	EntityCullInfo entityCullInfo[MAX_REFENTITIES];
-};
-
 // trRefdef_t holds everything that comes in refdef_t,
 // as well as the locally generated scene information
 typedef struct {
@@ -1371,8 +1365,7 @@ typedef struct {
 	float		surface[4];
 } fog_t;
 
-typedef enum {
-	VPF_NONE            = 0x00,
+enum viewParmFlag_t {
 	VPF_NOVIEWMODEL     = 0x01, // Don't render the view model
 	VPF_SHADOWMAP       = 0x02, // Rendering to shadow map
 	VPF_DEPTHSHADOW     = 0x04, // Rendering depth-only
@@ -1382,7 +1375,8 @@ typedef enum {
 	VPF_FARPLANEFRUSTUM = 0x40, // Use far clipping plane
 	VPF_NOCUBEMAPS      = 0x80, // Don't render cubemaps
 	VPF_NOPOSTPROCESS	= 0x100
-} viewParmFlags_t;
+};
+using viewParmFlags_t = uint32_t;
 
 typedef struct {
 	orientationr_t	ori;
@@ -2229,8 +2223,8 @@ typedef struct trGlobals_s {
 	image_t                 *renderCubeImage;
 	image_t                 *prefilterEnvMapImage;
 	image_t					*envBrdfImage;
-	
 	image_t					*textureDepthImage;
+	image_t					*weatherDepthImage;
 
 	FBO_t					*renderFbo;
 	FBO_t					*glowFboScaled[6];
@@ -2249,6 +2243,7 @@ typedef struct trGlobals_s {
 	FBO_t					*hdrDepthFbo;
 	FBO_t                   *renderCubeFbo;
 	FBO_t					*preFilterEnvMapFbo;
+	FBO_t					*weatherDepthFbo;
 
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
@@ -2572,6 +2567,16 @@ extern cvar_t	*r_debugContext;
 extern cvar_t	*r_debugWeather;
 
 //====================================================================
+
+void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef );
+void R_SetupViewParmsForOrthoRendering(
+	int viewportWidth,
+	int viewportHeight,
+	FBO_t *fbo,
+	viewParmFlags_t viewParmsFlags,
+	const orientationr_t& orientation,
+	const vec3_t viewBounds[2]);
+void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs );
 
 void R_SwapBuffers( int );
 

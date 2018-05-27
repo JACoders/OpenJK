@@ -41,7 +41,8 @@ Block *FindBlock( const char *name, Block *blocks, size_t numBlocks )
 	return nullptr;
 }
 
-#if defined(__clang__)
+// [M] strncpy_s is not present on linux and VS only function
+#if !defined(_WIN32)
 void strncpy_s( char *dest, size_t destSize, const char *src, size_t srcSize )
 {
 	// This isn't really a safe version, but I know the inputs to expect.
@@ -51,6 +52,7 @@ void strncpy_s( char *dest, size_t destSize, const char *src, size_t srcSize )
 		memset(dest + len, 0, destSize - len);
 }
 #endif
+
 
 }
 

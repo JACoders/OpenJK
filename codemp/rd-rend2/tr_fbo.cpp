@@ -236,13 +236,15 @@ R_AttachFBOTexture2D
 */
 void R_AttachFBOTexture2D(int target, int texId, int index)
 {
-	if(target != GL_TEXTURE_2D && (target < GL_TEXTURE_CUBE_MAP_POSITIVE_X || target > GL_TEXTURE_CUBE_MAP_NEGATIVE_Z))
+	if (target != GL_TEXTURE_2D &&
+		(target < GL_TEXTURE_CUBE_MAP_POSITIVE_X ||
+		 target > GL_TEXTURE_CUBE_MAP_NEGATIVE_Z))
 	{
 		ri.Printf(PRINT_WARNING, "R_AttachFBOTexture2D: invalid target %i\n", target);
 		return;
 	}
 
-	if(index < 0 || index >= glRefConfig.maxColorAttachments)
+	if (index < 0 || index >= glRefConfig.maxColorAttachments)
 	{
 		ri.Printf(PRINT_WARNING, "R_AttachFBOTexture2D: invalid attachment index %i\n", index);
 		return;
@@ -652,6 +654,20 @@ void FBO_Init(void)
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.preFilterEnvMapFbo);
+	}
+
+	if (tr.weatherDepthImage != nullptr)
+	{
+		tr.weatherDepthFbo = FBO_Create(
+			"_weatherDepthFbo",
+			tr.weatherDepthImage->width,
+			tr.weatherDepthImage->height);
+
+		FBO_Bind(tr.weatherDepthFbo);
+		R_AttachFBOTextureDepth(tr.weatherDepthImage->texnum);
+		FBO_SetupDrawBuffers();
+
+		R_CheckFBO(tr.weatherDepthFbo);
 	}
 
 	GL_CheckErrors();
