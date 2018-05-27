@@ -516,8 +516,13 @@ void RB_BeginDrawingView (void) {
 		// FIXME: hack for cubemap testing
 		if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 		{
-			//qglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
-			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
+			image_t *cubemap = backEnd.viewParms.targetFboCubemap->image;
+			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
+		}
+		else if (tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo)
+		{
+			image_t *cubemap = backEnd.viewParms.targetFboCubemap->image;
+			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
 		}
 	}
 
@@ -1873,23 +1878,10 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	RB_SetGL2D();
 
-	image_t *cubemap = tr.cubemaps[cmd->cubemap];
+	image_t *cubemap = cmd->cubemap->image;
 
 	if (!cubemap)
 		return (const void *)(cmd + 1);
-
-	vec4_t quadVerts[4];
-	vec2_t texCoords[4];
-
-	VectorSet4(quadVerts[0], -1, 1, 0, 1);
-	VectorSet4(quadVerts[1], 1, 1, 0, 1);
-	VectorSet4(quadVerts[2], 1, -1, 0, 1);
-	VectorSet4(quadVerts[3], -1, -1, 0, 1);
-
-	texCoords[0][0] = 0; texCoords[0][1] = 0;
-	texCoords[1][0] = 1; texCoords[1][1] = 0;
-	texCoords[2][0] = 1; texCoords[2][1] = 1;
-	texCoords[3][0] = 0; texCoords[3][1] = 1;
 
 	FBO_Bind(tr.preFilterEnvMapFbo);
 	GL_BindToTMU(cubemap, TB_CUBEMAP);
@@ -1898,21 +1890,20 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	int width = cubemap->width;
 	int height = cubemap->height;
+	float roughnessMips = (float)CUBE_MAP_MIPS - 4.0f;
 
 	for (int level = 1; level <= CUBE_MAP_MIPS; level++)
 	{
-		width = width / 2.0;
-		height = height / 2.0;
+		width = width / 2;
+		height = height / 2;
 		qglViewport(0, 0, width, height);
 		qglScissor(0, 0, width, height);
-		for (int cubemapSide = 0; cubemapSide < 6; cubemapSide++)
-		{
-			vec4_t viewInfo;
-			VectorSet4(viewInfo, cubemapSide, level, CUBE_MAP_MIPS, (level / (float)CUBE_MAP_MIPS));
-			GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
-			RB_InstantQuad2(quadVerts, texCoords);
-			qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemapSide, level, 0, 0, 0, 0, width, height);
-		}
+
+		vec4_t viewInfo;
+		VectorSet4(viewInfo, cmd->cubeSide, level, roughnessMips, level / roughnessMips);
+		GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
+		RB_InstantTriangle();
+		qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, level, 0, 0, 0, 0, width, height);
 	}
 
 	return (const void *)(cmd + 1);
@@ -2079,14 +2070,32 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 		!backEnd.colorMask[3]);
 	backEnd.depthFill = qfalse;
 
+	
 	if (tr.msaaResolveFbo)
 	{
-		// If we're using multisampling, resolve the depth first
-		FBO_FastBlit(
-			tr.renderFbo, NULL,
-			tr.msaaResolveFbo, NULL,
-			GL_DEPTH_BUFFER_BIT,
-			GL_NEAREST);
+		if (backEnd.viewParms.targetFbo == tr.renderCubeFbo && tr.msaaResolveFbo)
+		{
+			// If we're using multisampling and rendering a cubemap, resolve the depth to correct size first
+			vec4i_t frameBox;
+			frameBox[0] = backEnd.viewParms.viewportX;
+			frameBox[1] = backEnd.viewParms.viewportY;
+			frameBox[2] = backEnd.viewParms.viewportWidth;
+			frameBox[3] = backEnd.viewParms.viewportHeight;
+			FBO_FastBlit(
+				tr.renderCubeFbo, frameBox,
+				tr.msaaResolveFbo, frameBox,
+				GL_DEPTH_BUFFER_BIT,
+				GL_NEAREST);
+		}
+		else
+		{
+			// If we're using multisampling, resolve the depth first
+			FBO_FastBlit(
+				tr.renderFbo, NULL,
+				tr.msaaResolveFbo, NULL,
+				GL_DEPTH_BUFFER_BIT,
+				GL_NEAREST);
+		}
 	}
 	else if (tr.renderFbo == NULL)
 	{
@@ -2134,20 +2143,6 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	// darken down any stencil shadows
 	RB_ShadowFinish();		
-}
-
-static void RB_GenerateMipmapsForCubemapFaceRender()
-{
-	if ( tr.renderCubeFbo == NULL || backEnd.viewParms.targetFbo != tr.renderCubeFbo )
-	{
-		return;
-	}
-
-	FBO_Bind(NULL);
-	GL_SelectTexture(TB_CUBEMAP);
-	GL_BindToTMU(tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex], TB_CUBEMAP);
-	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-	GL_SelectTexture(0);
 }
 
 static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSurfs )
@@ -2244,8 +2239,6 @@ static const void *RB_DrawSurfs( const void *data ) {
 	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
 
 	RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);
-
-	RB_GenerateMipmapsForCubemapFaceRender();
 
 	return (const void *)(cmd + 1);
 }
@@ -2475,45 +2468,6 @@ static const void	*RB_SwapBuffers( const void *data ) {
 
 	return (const void *)(cmd + 1);
 }
-
-/*
-=============
-RB_CapShadowMap
-
-=============
-*/
-static const void *RB_CaptureShadowMap(const void *data)
-{
-	const capShadowmapCommand_t *cmd = (const capShadowmapCommand_t *)data;
-
-	// finish any 2D drawing if needed
-	if(tess.numIndexes)
-		RB_EndSurface();
-
-	if (cmd->map != -1)
-	{
-		GL_SelectTexture(0);
-		if (cmd->cubeSide != -1)
-		{
-			if (tr.shadowCubemaps[cmd->map] != NULL)
-			{
-				GL_Bind(tr.shadowCubemaps[cmd->map]);
-				qglCopyTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, 0, 0, 0, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE );
-			}
-		}
-		else
-		{
-			if (tr.pshadowMaps[cmd->map] != NULL)
-			{
-				GL_Bind(tr.pshadowMaps[cmd->map]);
-				qglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE );
-			}
-		}
-	}
-
-	return (const void *)(cmd + 1);
-}
-
 
 /*
 =============
@@ -2784,9 +2738,6 @@ void RB_ExecuteRenderCommands( const void *data ) {
 			break;
 		case RC_CLEARDEPTH:
 			data = RB_ClearDepth(data);
-			break;
-		case RC_CAPSHADOWMAP:
-			data = RB_CaptureShadowMap(data);
 			break;
 		case RC_CONVOLVECUBEMAP:
 			data = RB_PrefilterEnvMap( data );

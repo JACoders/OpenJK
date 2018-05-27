@@ -774,6 +774,10 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 				cullFront = !cullFront;
 
 			cullType = (cullFront ? CT_FRONT_SIDED : CT_BACK_SIDED);
+
+			// FIXME: SomaZ: Not sure why this is needed, but fixes sunlight and shadows in cubemaps
+			if ( tr.renderCubeFbo && glState.currentFBO == tr.renderCubeFbo)
+				cullType = CT_TWO_SIDED;
 		}
 	}
 
@@ -1001,7 +1005,7 @@ static void ForwardDlight( const shaderCommands_t *input,  VertexArraysPropertie
 		uniformDataWriter.SetUniformVec4(UNIFORM_ENABLETEXTURES, enableTextures);
 
 		if (r_dlightMode->integer >= 2)
-			samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[l], TB_SHADOWMAP);
+			samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[l].image, TB_SHADOWMAP2);
 
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
@@ -1666,16 +1670,17 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		if ( enableCubeMaps )
 		{
 			vec4_t vec;
+			cubemap_t *cubemap = &tr.cubemaps[input->cubemapIndex - 1];
 
-			samplerBindingsWriter.AddStaticImage(tr.cubemaps[input->cubemapIndex - 1], TB_CUBEMAP);
+			samplerBindingsWriter.AddStaticImage(cubemap->image, TB_CUBEMAP);
 			samplerBindingsWriter.AddStaticImage(tr.envBrdfImage, TB_ENVBRDFMAP);
 
-			vec[0] = tr.cubemapOrigins[input->cubemapIndex - 1][0] - backEnd.viewParms.ori.origin[0];
-			vec[1] = tr.cubemapOrigins[input->cubemapIndex - 1][1] - backEnd.viewParms.ori.origin[1];
-			vec[2] = tr.cubemapOrigins[input->cubemapIndex - 1][2] - backEnd.viewParms.ori.origin[2];
+			vec[0] = cubemap->origin[0] - backEnd.viewParms.ori.origin[0];
+			vec[1] = cubemap->origin[1] - backEnd.viewParms.ori.origin[1];
+			vec[2] = cubemap->origin[2] - backEnd.viewParms.ori.origin[2];
 			vec[3] = 1.0f;
 
-			VectorScale4(vec, 1.0f / 1000.0f, vec);
+			VectorScale4(vec, 1.0f / cubemap->parallaxRadius, vec);
 
 			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
 		}

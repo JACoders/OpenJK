@@ -224,33 +224,13 @@ void	R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	cmd->viewParms = tr.viewParms;
 }
 
-
-/*
-=============
-R_AddCapShadowmapCmd
-
-=============
-*/
-void	R_AddCapShadowmapCmd( int map, int cubeSide ) {
-	capShadowmapCommand_t	*cmd;
-
-	cmd = (capShadowmapCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
-	if ( !cmd ) {
-		return;
-	}
-	cmd->commandId = RC_CAPSHADOWMAP;
-
-	cmd->map = map;
-	cmd->cubeSide = cubeSide;
-}
-
 /*
 =============
 R_AddConvolveCubemapsCmd
 
 =============
 */
-void	R_AddConvolveCubemapCmd( int cubemap ) {
+void	R_AddConvolveCubemapCmd( cubemap_t *cubemap , int cubeSide ) {
 	convolveCubemapCommand_t	*cmd;
 	
 	cmd = (convolveCubemapCommand_t *)R_GetCommandBuffer( sizeof( *cmd ));
@@ -260,6 +240,7 @@ void	R_AddConvolveCubemapCmd( int cubemap ) {
 	cmd->commandId = RC_CONVOLVECUBEMAP;
 	
 	cmd->cubemap = cubemap;
+	cmd->cubeSide = cubeSide;
 }
 
 /*

@@ -513,6 +513,17 @@ void FBO_Init(void)
 	}
 #endif
 
+	if (r_dlightMode->integer >= 2)
+	{
+		tr.shadowCubeFbo = FBO_Create("_shadowCubeFbo", PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
+
+		FBO_Bind(tr.shadowCubeFbo);
+		FBO_CreateBuffer(tr.shadowCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
+		FBO_SetupDrawBuffers();
+
+		R_CheckFBO(tr.shadowCubeFbo);
+	}
+
 	if (tr.sunShadowDepthImage[0] != NULL)
 	{
 		for ( i = 0; i < 3; i++)
@@ -624,7 +635,7 @@ void FBO_Init(void)
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X, tr.renderCubeImage->texnum, 0);
 		glState.currentFBO->colorImage[0] = tr.renderCubeImage;
 		glState.currentFBO->colorBuffers[0] = tr.renderCubeImage->texnum;
-		FBO_CreateBuffer(tr.renderCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
+		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderCubeFbo);

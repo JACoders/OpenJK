@@ -343,6 +343,7 @@ uniform vec4 u_EnableTextures;
 #if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING)
 uniform vec3 u_DirectedLight;
 uniform vec3 u_AmbientLight;
+uniform samplerCubeShadow u_ShadowMap2;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
@@ -499,6 +500,50 @@ float CalcLightAttenuation(float point, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
+#if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING) && defined(USE_DSHADOWS)
+#define DEPTH_MAX_ERROR 0.000000059604644775390625
+
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1.0, 1.0, 1.0), vec3(1.0, -1.0, 1.0), vec3(-1.0, -1.0, 1.0), vec3(-1.0, 1.0, 1.0),
+	vec3(1.0, 1.0, -1.0), vec3(1.0, -1.0, -1.0), vec3(-1.0, -1.0, -1.0), vec3(-1.0, 1.0, -1.0),
+	vec3(1.0, 1.0, 0.0), vec3(1.0, -1.0, 0.0), vec3(-1.0, -1.0, 0.0), vec3(-1.0, 1.0, 0.0),
+	vec3(1.0, 0.0, 1.0), vec3(-1.0, 0.0, 1.0), vec3(1.0, 0.0, -1.0), vec3(-1.0, 0.0, -1.0),
+	vec3(0.0, 1.0, 1.0), vec3(0.0, -1.0, 1.0), vec3(0.0, -1.0, -1.0), vec3(0.0, 1.0, -1.0)
+	);
+
+float pcfShadow(in samplerCubeShadow depthMap, in vec3 L, in float distance)
+{
+	float shadow = 0.0;
+	int samples = 20;
+	float diskRadius = 0.25;
+	for (int i = 0; i < samples; ++i)
+	{
+		shadow += texture(depthMap, vec4(L + sampleOffsetDirections[i] * diskRadius, distance));
+	}
+	shadow /= float(samples);
+	return shadow;
+}
+
+float getLightDepth(in vec3 Vec, in float f)
+{
+	vec3 AbsVec = abs(Vec);
+	float Z = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
+
+	const float n = 1.0;
+
+	float NormZComp = (f + n) / (f - n) - 2 * f*n / (Z* (f - n));
+
+	return ((NormZComp + 1.0) * 0.5) - DEPTH_MAX_ERROR;
+}
+
+float getShadowValue(in vec4 light)
+{
+	float distance = getLightDepth(light.xyz, sqrt(light.w));
+	return pcfShadow(u_ShadowMap2, light.xyz, distance);
+}
+#endif
+
 vec2 GetParallaxOffset(in vec2 texCoords, in vec3 E, in mat3 tangentToWorld )
 {
 #if defined(USE_PARALLAXMAP)
@@ -521,7 +566,7 @@ vec3 CalcIBLContribution(
 )
 {
 #if defined(USE_CUBEMAP)
-	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(1.0 - roughness, NE)).rgb;
+	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
 
 	vec3 R = reflect(E, N);
 
@@ -629,6 +674,13 @@ void main()
 	lightColor	= u_DirectedLight * var_Color.rgb;
 	ambientColor = u_AmbientLight * var_Color.rgb;
 	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
+
+    #if defined(USE_DSHADOWS)
+	  if (var_LightDir.w > 0.0) {
+	    attenuation *= getShadowValue(var_LightDir);
+	  }
+    #endif
+
   #elif defined(USE_LIGHT_VERTEX)
 	lightColor	= var_Color.rgb;
 	ambientColor = vec3 (0.0);
@@ -671,14 +723,9 @@ void main()
   #endif
 	specular *= u_SpecularScale;
 
-	// diffuse is actually base color, and red of specular is metalness
-	const vec3 DIELECTRIC_SPECULAR = vec3(0.04);
-	const vec3 METAL_DIFFUSE       = vec3(0.0);
-
-	float metalness = specular.r;
-	float roughness = max(specular.a, 0.02);
-	specular.rgb = mix(DIELECTRIC_SPECULAR, diffuse.rgb,   metalness);
-	diffuse.rgb  = mix(diffuse.rgb,         METAL_DIFFUSE, metalness);
+	// energy conservation
+	diffuse.rgb *= vec3(1.0) - specular.rgb;
+	float roughness = max(1.0 - specular.a, 0.02);
 
 	vec3  H  = normalize(L + E);
 	float NE = abs(dot(N, E)) + 1e-5;

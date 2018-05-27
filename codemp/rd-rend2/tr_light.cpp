@@ -502,7 +502,7 @@ int R_CubemapForPoint( const vec3_t point )
 			vec3_t diff;
 			float length;
 
-			VectorSubtract(point, tr.cubemapOrigins[i], diff);
+			VectorSubtract(point, tr.cubemaps[i].origin, diff);
 			length = DotProduct(diff, diff);
 
 			if (shortest > length)

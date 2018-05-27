@@ -112,7 +112,7 @@ static void ClearGlobalShader(void)
 		stages[i].specularScale[0] = 
 		stages[i].specularScale[1] =
 		stages[i].specularScale[2] = r_baseSpecular->value;
-		stages[i].specularScale[3] = 0.9;
+		stages[i].specularScale[3] = 0.1;
 	}
 
 	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;
@@ -1197,6 +1197,10 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	unsigned blendDstBits = 0;
 	unsigned depthFuncBits = 0;
 	qboolean depthMaskExplicit = qfalse;
+	char bufferPackedTextureName[MAX_QPATH];
+	char bufferBaseColorTextureName[MAX_QPATH];
+	int  buildSpecFromPacked = SPEC_NONE;
+	qboolean foundBaseColor = qfalse;
 
 	stage->active = qtrue;
 
@@ -1214,14 +1218,16 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			break;
 		}
 		//
-		// map <name>
+		// map <name> or clampmap <name>
 		//
-		else if ( !Q_stricmp( token, "map" ) )
+		else if ( !Q_stricmp( token, "map" ) || (!Q_stricmp(token, "clampmap")))
 		{
+			int flags = !Q_stricmp(token, "clampmap") ? IMGFLAG_CLAMPTOEDGE : IMGFLAG_NONE;
+			
 			token = COM_ParseExt( text, qfalse );
 			if ( !token[0] )
 			{
-				ri.Printf( PRINT_WARNING, "WARNING: missing parameter for 'map' keyword in shader '%s'\n", shader.name );
+				ri.Printf( PRINT_WARNING, "WARNING: missing parameter for 'map' keyword in shader '%s'\n", shader.name);
 				return qfalse;
 			}
 
@@ -1262,7 +1268,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else
 			{
 				imgType_t type = IMGTYPE_COLORALPHA;
-				int flags = IMGFLAG_NONE;
 
 				if (!shader.noMipMaps)
 					flags |= IMGFLAG_MIPMAP;
@@ -1273,46 +1278,39 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				if (shader.noTC)
 					flags |= IMGFLAG_NO_COMPRESSION;
 
-				if (stage->type == ST_NORMALMAP || stage->type == ST_NORMALPARALLAXMAP)
-				{
-					type = IMGTYPE_NORMAL;
-					flags |= IMGFLAG_NOLIGHTSCALE;
+				if (r_genNormalMaps->integer)
+					flags |= IMGFLAG_GENNORMALMAP;
 
-					if (stage->type == ST_NORMALPARALLAXMAP)
-						type = IMGTYPE_NORMALHEIGHT;
-				}
-				else
-				{
-					if (r_genNormalMaps->integer)
-						flags |= IMGFLAG_GENNORMALMAP;
+				if (r_srgb->integer)
+					flags |= IMGFLAG_SRGB;
 
-					if (r_srgb->integer)
-						flags |= IMGFLAG_SRGB;
-				}
-
-				stage->bundle[0].image[0] = R_FindImageFile( token, type, flags );
+				Q_strncpyz(bufferBaseColorTextureName, token, sizeof(bufferBaseColorTextureName));
+				stage->bundle[0].image[0] = R_FindImageFile(bufferBaseColorTextureName, type, flags);
 
 				if ( !stage->bundle[0].image[0] )
 				{
 					ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
 					return qfalse;
 				}
+
+				foundBaseColor = qtrue;
 			}
 		}
 		//
-		// clampmap <name>
+		// normalMap <name> or normalHeightMap <name>
 		//
-		else if ( !Q_stricmp( token, "clampmap" ) )
+		else if (!Q_stricmp(token, "normalMap") || !Q_stricmp(token, "normalHeightMap"))
 		{
-			imgType_t type = IMGTYPE_COLORALPHA;
-			int flags = IMGFLAG_CLAMPTOEDGE;
+			imgType_t type = !Q_stricmp(token, "normalHeightMap") ? IMGTYPE_NORMALHEIGHT : IMGTYPE_NORMAL;
 
-			token = COM_ParseExt( text, qfalse );
-			if ( !token[0] )
+			token = COM_ParseExt(text, qfalse);
+			if (!token[0])
 			{
-				ri.Printf( PRINT_WARNING, "WARNING: missing parameter for 'clampmap' keyword in shader '%s'\n", shader.name );
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'normalMap' keyword in shader '%s'\n", shader.name);
 				return qfalse;
 			}
+
+			int flags = IMGFLAG_NONE;
 
 			if (!shader.noMipMaps)
 				flags |= IMGFLAG_MIPMAP;
@@ -1323,30 +1321,81 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			if (shader.noTC)
 				flags |= IMGFLAG_NO_COMPRESSION;
 
-			if (stage->type == ST_NORMALMAP || stage->type == ST_NORMALPARALLAXMAP)
+			flags |= IMGFLAG_NOLIGHTSCALE;
+			stage->bundle[TB_NORMALMAP].image[0] = R_FindImageFile(token, type, flags);
+
+			if (!stage->bundle[TB_NORMALMAP].image[0])
 			{
-				type = IMGTYPE_NORMAL;
-				flags |= IMGFLAG_NOLIGHTSCALE;
-
-				if (stage->type == ST_NORMALPARALLAXMAP)
-					type = IMGTYPE_NORMALHEIGHT;
-			}
-			else
-			{
-				if (r_genNormalMaps->integer)
-					flags |= IMGFLAG_GENNORMALMAP;
-
-				if (r_srgb->integer)
-					flags |= IMGFLAG_SRGB;
-			}
-
-
-			stage->bundle[0].image[0] = R_FindImageFile( token, type, flags );
-			if ( !stage->bundle[0].image[0] )
-			{
-				ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
+				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name);
 				return qfalse;
 			}
+
+			VectorSet4(stage->normalScale, r_baseNormalX->value, r_baseNormalY->value, 1.0f, r_baseParallax->value);
+		}
+		//
+		// specMap <name> || specularMap <name>
+		//
+		else if (!Q_stricmp(token, "specMap") || !Q_stricmp(token, "specularMap"))
+		{
+			imgType_t type = IMGTYPE_COLORALPHA;
+
+			token = COM_ParseExt(text, qfalse);
+			if (!token[0])
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'specularMap' keyword in shader '%s'\n", shader.name);
+				return qfalse;
+			}
+
+			int flags = IMGFLAG_NONE;
+
+			if (!shader.noMipMaps)
+				flags |= IMGFLAG_MIPMAP;
+
+			if (!shader.noPicMip)
+				flags |= IMGFLAG_PICMIP;
+
+			if (shader.noTC)
+				flags |= IMGFLAG_NO_COMPRESSION;
+
+			flags |= IMGFLAG_NOLIGHTSCALE;
+
+			stage->bundle[TB_SPECULARMAP].image[0] = R_FindImageFile(token, type, flags);
+
+			if (!stage->bundle[TB_SPECULARMAP].image[0])
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name);
+				return qfalse;
+			}
+
+			VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+		}
+		//
+		// rmoMap <name> || rmosMap <name>
+		//
+		else if (!Q_stricmp(token, "rmoMap") || !Q_stricmp(token, "rmosMap"))
+		{
+			token = COM_ParseExt(text, qfalse);
+			if (!token[0])
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'rmoMap' keyword in shader '%s'\n", shader.name);
+				return qfalse;
+			}
+			buildSpecFromPacked = !Q_stricmp(token, "rmosMap") ? SPEC_RMOS : SPEC_RMO;
+			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
+		}
+		//
+		// moxrMap <name> || mosrMap <name>
+		//
+		else if (!Q_stricmp(token, "moxrMap") || !Q_stricmp(token, "mosrMap"))
+		{
+			token = COM_ParseExt(text, qfalse);
+			if (!token[0])
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'moxrMap' keyword in shader '%s'\n", shader.name);
+				return qfalse;
+			}
+			buildSpecFromPacked = !Q_stricmp(token, "mosrMap") ? SPEC_MOSR : SPEC_MOXR;
+			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
 		// animMap <frequency> <image1> .... <imageN>
@@ -1388,22 +1437,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					if (shader.noTC)
 						flags |= IMGFLAG_NO_COMPRESSION;
 
-					if ( stage->type == ST_NORMALMAP || stage->type == ST_NORMALPARALLAXMAP )
-					{
-						imgtype = IMGTYPE_NORMAL;
-						flags |= IMGFLAG_NOLIGHTSCALE;
+					if (r_genNormalMaps->integer)
+						flags |= IMGFLAG_GENNORMALMAP;
 
-						if ( stage->type == ST_NORMALPARALLAXMAP )
-							imgtype = IMGTYPE_NORMALHEIGHT;
-					}
-					else
-					{
-						if ( r_genNormalMaps->integer )
-							flags |= IMGFLAG_GENNORMALMAP;
-
-						if ( r_srgb->integer )
-							flags |= IMGFLAG_SRGB;
-					}
+					if (r_srgb->integer)
+						flags |= IMGFLAG_SRGB;
 
 					stage->bundle[0].image[num] = R_FindImageFile( token, imgtype, flags );
 					if ( !stage->bundle[0].image[num] )
@@ -1523,46 +1561,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 		}
 		//
-		// stage <type>
-		//
-		else if(!Q_stricmp(token, "stage"))
-		{
-			token = COM_ParseExt(text, qfalse);
-			if(token[0] == 0)
-			{
-				ri.Printf(PRINT_WARNING, "WARNING: missing parameters for stage in shader '%s'\n", shader.name);
-				continue;
-			}
-
-			if(!Q_stricmp(token, "diffuseMap"))
-			{
-				stage->type = ST_DIFFUSEMAP;
-			}
-			else if(!Q_stricmp(token, "normalMap") || !Q_stricmp(token, "bumpMap"))
-			{
-				stage->type = ST_NORMALMAP;
-				VectorSet4(stage->normalScale, r_baseNormalX->value, r_baseNormalY->value, 1.0f, r_baseParallax->value);
-			}
-			else if(!Q_stricmp(token, "normalParallaxMap") || !Q_stricmp(token, "bumpParallaxMap"))
-			{
-				if (r_parallaxMapping->integer)
-					stage->type = ST_NORMALPARALLAXMAP;
-				else
-					stage->type = ST_NORMALMAP;
-					VectorSet4(stage->normalScale, r_baseNormalX->value, r_baseNormalY->value, 1.0f, r_baseParallax->value);
-			}
-			else if(!Q_stricmp(token, "specularMap"))
-			{
-				stage->type = ST_SPECULARMAP;
-				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
-			}
-			else
-			{
-				ri.Printf(PRINT_WARNING, "WARNING: unknown stage parameter '%s' in shader '%s'\n", token, shader.name);
-				continue;
-			}
-		}
-		//
 		// specularReflectance <value>
 		//
 		else if (!Q_stricmp(token, "specularreflectance"))
@@ -1610,6 +1608,20 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 
 			stage->specularScale[3] = Com_Clamp( 0.0f, 1.0f, atof( token ) );
+		}
+		//
+		// roughness <value>
+		//
+		else if (!Q_stricmp(token, "roughness"))
+		{
+			token = COM_ParseExt(text, qfalse);
+			if (token[0] == 0)
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for roughness in shader '%s'\n", shader.name);
+				continue;
+			}
+
+			stage->specularScale[3] = Com_Clamp(0.0f, 1.0f, 1.0 - atof(token));
 		}
 		//
 		// parallaxDepth <value>
@@ -2007,6 +2019,27 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			ri.Printf( PRINT_WARNING, "WARNING: unknown parameter '%s' in shader '%s'\n", token, shader.name );
 			return qfalse;
 		}
+	}
+
+	//
+	// build specular and diffuse if albedo and packed textures were found
+	//
+	if (foundBaseColor && buildSpecFromPacked != SPEC_NONE)
+	{
+		int flags = IMGFLAG_NONE;
+
+		if (!shader.noMipMaps)
+			flags |= IMGFLAG_MIPMAP;
+
+		if (!shader.noPicMip)
+			flags |= IMGFLAG_PICMIP;
+
+		if (shader.noTC)
+			flags |= IMGFLAG_NO_COMPRESSION;
+
+		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked);
+
+		VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	//
@@ -2921,21 +2954,20 @@ static void ComputeVertexAttribs(void)
 	}
 }
 
-static void CollapseStagesToLightall(shaderStage_t *diffuse, 
-	shaderStage_t *normal, shaderStage_t *specular, shaderStage_t *lightmap, 
-	qboolean useLightVector, qboolean useLightVertex, qboolean parallax, qboolean tcgen)
+static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightmap,
+	qboolean useLightVector, qboolean useLightVertex, qboolean tcgen)
 {
 	int defs = 0;
 
-	//ri.Printf(PRINT_ALL, "shader %s has diffuse %s", shader.name, diffuse->bundle[0].image[0]->imgName);
+	//ri.Printf(PRINT_ALL, "shader %s has diffuse %s", shader.name, stage->bundle[0].image[0]->imgName);
 
 	// reuse diffuse, mark others inactive
-	diffuse->type = ST_GLSL;
+	stage->type = ST_GLSL;
 
 	if (lightmap)
 	{
 		//ri.Printf(PRINT_ALL, ", lightmap");
-		diffuse->bundle[TB_LIGHTMAP] = lightmap->bundle[0];
+		stage->bundle[TB_LIGHTMAP] = lightmap->bundle[0];
 		defs |= LIGHTDEF_USE_LIGHTMAP;
 	}
 	else if (useLightVector)
@@ -2950,72 +2982,72 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 	if (r_deluxeMapping->integer && tr.worldDeluxeMapping && lightmap)
 	{
 		//ri.Printf(PRINT_ALL, ", deluxemap");
-		diffuse->bundle[TB_DELUXEMAP] = lightmap->bundle[0];
-		diffuse->bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
+		stage->bundle[TB_DELUXEMAP] = lightmap->bundle[0];
+		stage->bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
 	}
 
 	if (r_normalMapping->integer)
 	{
 		image_t *diffuseImg;
-		if (normal)
+		if (stage->bundle[TB_NORMALMAP].image[0])
 		{
-			//ri.Printf(PRINT_ALL, ", normalmap %s", normal->bundle[0].image[0]->imgName);
-			diffuse->bundle[TB_NORMALMAP] = normal->bundle[0];
-			if (parallax && r_parallaxMapping->integer)
+			if (stage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT && r_parallaxMapping->integer)
 				defs |= LIGHTDEF_USE_PARALLAXMAP;
-
-			VectorCopy4(normal->normalScale, diffuse->normalScale);
+			//ri.Printf(PRINT_ALL, ", normalmap %s", stage->bundle[TB_NORMALMAP].image[0]->imgName);
 		}
-		else if ((lightmap || useLightVector || useLightVertex) && (diffuseImg = diffuse->bundle[TB_DIFFUSEMAP].image[0]))
+		else if ((lightmap || useLightVector || useLightVertex) && (diffuseImg = stage->bundle[TB_DIFFUSEMAP].image[0]) != NULL)
 		{
 			char normalName[MAX_QPATH];
 			image_t *normalImg;
 			int normalFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
+			qboolean parallax = qfalse;
 
-			COM_StripExtension( diffuseImg->imgName, normalName, sizeof( normalName ) );
-			Q_strcat( normalName, sizeof( normalName ), "_n" );
+			// try a normalheight image first
+			COM_StripExtension(diffuseImg->imgName, normalName, sizeof(normalName));
+			Q_strcat(normalName, sizeof(normalName), "_nh");
 
-			normalImg = R_FindImageFile(normalName, IMGTYPE_NORMAL, normalFlags);
+			normalImg = R_FindImageFile(normalName, IMGTYPE_NORMALHEIGHT, normalFlags);
 
 			if (normalImg)
 			{
-				diffuse->bundle[TB_NORMALMAP] = diffuse->bundle[0];
-				diffuse->bundle[TB_NORMALMAP].numImageAnimations = 0;
-				diffuse->bundle[TB_NORMALMAP].image[0] = normalImg;
+				parallax = qtrue;
+			}
+			else
+			{
+				// try a normal image ("_n" suffix)
+				normalName[strlen(normalName) - 1] = '\0';
+				normalImg = R_FindImageFile(normalName, IMGTYPE_NORMAL, normalFlags);
+			}
+
+			if (normalImg)
+			{
+				stage->bundle[TB_NORMALMAP] = stage->bundle[0];
+				stage->bundle[TB_NORMALMAP].numImageAnimations = 0;
+				stage->bundle[TB_NORMALMAP].image[0] = normalImg;
 
 				if (parallax && r_parallaxMapping->integer)
 					defs |= LIGHTDEF_USE_PARALLAXMAP;
 
-				VectorSet4(diffuse->normalScale, r_baseNormalX->value, r_baseNormalY->value, 1.0f, r_baseParallax->value);
+				VectorSet4(stage->normalScale, r_baseNormalX->value, r_baseNormalY->value, 1.0f, r_baseParallax->value);
 			}
 		}
 	}
 
-	if (r_specularMapping->integer)
-	{
-		if (specular)
-		{
-			//ri.Printf(PRINT_ALL, ", specularmap %s", specular->bundle[0].image[0]->imgName);
-			diffuse->bundle[TB_SPECULARMAP] = specular->bundle[0];
-			VectorCopy4(specular->specularScale, diffuse->specularScale);
-		}
-	}
-
-	if (tcgen || diffuse->bundle[0].numTexMods)
+	if (tcgen || stage->bundle[0].numTexMods)
 	{
 		defs |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
 	}
 
-	if (diffuse->glow)
+	if (stage->glow)
 		defs |= LIGHTDEF_USE_GLOW_BUFFER;
 
-	if (diffuse->alphaTestType != ALPHA_TEST_NONE)
+	if (stage->alphaTestType != ALPHA_TEST_NONE)
 		defs |= LIGHTDEF_USE_ALPHA_TEST;
 
 	//ri.Printf(PRINT_ALL, ".\n");
 
-	diffuse->glslShaderGroup = tr.lightallShader;
-	diffuse->glslShaderIndex = defs;
+	stage->glslShaderGroup = tr.lightallShader;
+	stage->glslShaderIndex = defs;
 }
 
 
@@ -3155,7 +3187,7 @@ static qboolean CollapseStagesToGLSL(void)
 		for (i = 0; i < MAX_SHADER_STAGES; i++)
 		{
 			shaderStage_t *pStage = &stages[i];
-			shaderStage_t *diffuse, *normal, *specular, *lightmap;
+			shaderStage_t *diffuse, *lightmap;
 			qboolean parallax, tcgen, diffuselit, vertexlit;
 
 			if (!pStage->active)
@@ -3170,9 +3202,7 @@ static qboolean CollapseStagesToGLSL(void)
 				continue;
 
 			diffuse  = pStage;
-			normal   = NULL;
 			parallax = qfalse;
-			specular = NULL;
 			lightmap = NULL;
 
 
@@ -3189,28 +3219,6 @@ static qboolean CollapseStagesToGLSL(void)
 
 				switch(pStage2->type)
 				{
-					case ST_NORMALMAP:
-						if (!normal)
-						{
-							normal = pStage2;
-						}
-						break;
-
-					case ST_NORMALPARALLAXMAP:
-						if (!normal)
-						{
-							normal = pStage2;
-							parallax = qtrue;
-						}
-						break;
-
-					case ST_SPECULARMAP:
-						if (!specular)
-						{
-							specular = pStage2;
-						}
-						break;
-
 					case ST_COLORMAP:
 						if (pStage2->bundle[0].tcGen >= TCGEN_LIGHTMAP &&
 							pStage2->bundle[0].tcGen <= TCGEN_LIGHTMAP3 &&
@@ -3248,7 +3256,7 @@ static qboolean CollapseStagesToGLSL(void)
 				vertexlit = qtrue;
 			}
 
-			CollapseStagesToLightall(diffuse, normal, specular, lightmap, diffuselit, vertexlit, parallax, tcgen);
+			CollapseStagesToLightall(diffuse, lightmap, diffuselit, vertexlit, tcgen);
 		}
 
 		// deactivate lightmap stages
@@ -3266,30 +3274,6 @@ static qboolean CollapseStagesToGLSL(void)
 				pStage->active = qfalse;
 			}
 		}
-	}
-
-	// deactivate normal and specular stages
-	for (i = 0; i < MAX_SHADER_STAGES; i++)
-	{
-		shaderStage_t *pStage = &stages[i];
-
-		if (!pStage->active)
-			continue;
-
-		if (pStage->type == ST_NORMALMAP)
-		{
-			pStage->active = qfalse;
-		}
-
-		if (pStage->type == ST_NORMALPARALLAXMAP)
-		{
-			pStage->active = qfalse;
-		}
-
-		if (pStage->type == ST_SPECULARMAP)
-		{
-			pStage->active = qfalse;
-		}			
 	}
 
 	// remove inactive stages

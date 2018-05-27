@@ -522,7 +522,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 		{
 			for (j = 0; j < 6; j++)
 			{
-				R_RenderCubemapSide(i, j, qtrue);
+				R_RenderCubemapSide(i, j, qtrue, false);
 			}
 		}
 	}
@@ -539,6 +539,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 	parms.viewportWidth = tr.refdef.width;
 	parms.viewportHeight = tr.refdef.height;
 	parms.isPortal = qfalse;
+	parms.zNear = r_znear->value;
 
 	parms.fovX = tr.refdef.fov_x;
 	parms.fovY = tr.refdef.fov_y;

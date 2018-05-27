@@ -370,6 +370,13 @@ typedef struct image_s {
 	struct image_s *poolNext;
 } image_t;
 
+typedef struct cubemap_s {
+	char name[MAX_QPATH];
+	vec3_t origin;
+	float parallaxRadius;
+	image_t *image;
+} cubemap_t;
+
 typedef struct dlight_s {
 	vec3_t	origin;
 	vec3_t	color;				// range from 0.0 to 1.0, should be color normalized
@@ -726,11 +733,17 @@ typedef enum
 	// material shader stage types
 	ST_COLORMAP = 0,			// vanilla Q3A style shader treatening
 	ST_DIFFUSEMAP = 0,          // treat color and diffusemap the same
-	ST_NORMALMAP,
-	ST_NORMALPARALLAXMAP,
-	ST_SPECULARMAP,
 	ST_GLSL
 } stageType_t;
+
+enum specularType
+{
+	SPEC_NONE,  // no specular found
+	SPEC_RMO,   // calculate spec from rmo  texture with a specular of 0.04 for dielectric materials
+	SPEC_RMOS,  // calculate spec from rmos texture with a specular of 0.0 - 0.08 from input
+	SPEC_MOXR,  // calculate spec from moxr texture with a specular of 0.04 for dielectric materials
+	SPEC_MOSR,  // calculate spec from mosr texture with a specular of 0.0 - 0.08 from input
+};
 
 enum AlphaTestType
 {
@@ -1385,7 +1398,7 @@ typedef struct {
 	int			scissorX, scissorY, scissorWidth, scissorHeight;
 	FBO_t		*targetFbo;
 	int         targetFboLayer;
-	int         targetFboCubemapIndex;
+	cubemap_t   *targetFboCubemap;
 	float		fovX, fovY;
 	float		projectionMatrix[16];
 	cplane_t	frustum[5];
@@ -2196,8 +2209,7 @@ typedef struct trGlobals_s {
 	image_t					*whiteImage;			// full of 0xff
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
-	image_t                 *shadowCubemaps[MAX_DLIGHTS];
-	
+	cubemap_t               shadowCubemaps[MAX_DLIGHTS];
 
 	image_t					*renderImage;
 	image_t					*glowImage;
@@ -2226,6 +2238,7 @@ typedef struct trGlobals_s {
 	FBO_t					*sunRaysFbo;
 	FBO_t					*depthFbo;
 	FBO_t					*pshadowFbos[MAX_DRAWN_PSHADOWS];
+	FBO_t					*shadowCubeFbo;
 	FBO_t					*textureScratchFbo[2];
 	FBO_t                   *quarterFbo[2];
 	FBO_t					*calcLevelsFbo;
@@ -2256,8 +2269,7 @@ typedef struct trGlobals_s {
 	vec2i_t					lightmapsPerAtlasSide;
 
 	int                     numCubemaps;
-	vec3_t                  *cubemapOrigins;
-	image_t                 **cubemaps;
+	cubemap_t               *cubemaps;
 
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	model_t					*currentModel;
@@ -2505,6 +2517,7 @@ extern  cvar_t  *r_specularMapping;
 extern  cvar_t  *r_deluxeMapping;
 extern  cvar_t  *r_parallaxMapping;
 extern  cvar_t  *r_cubeMapping;
+extern  cvar_t  *r_cubeMappingBounces;
 extern  cvar_t  *r_baseNormalX;
 extern  cvar_t  *r_baseNormalY;
 extern  cvar_t  *r_baseParallax;
@@ -2566,7 +2579,7 @@ void R_RenderView( viewParms_t *parms );
 void R_RenderDlightCubemaps(const refdef_t *fd);
 void R_RenderPshadowMaps(const refdef_t *fd);
 void R_RenderSunShadowMaps(const refdef_t *fd, int level);
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene );
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce);
 
 void R_AddMD3Surfaces( trRefEntity_t *e, int entityNum );
 void R_AddNullModelSurfaces( trRefEntity_t *e, int entityNum );
@@ -2806,8 +2819,8 @@ void RB_StageIteratorSky( void );
 void RB_AddQuadStamp( vec3_t origin, vec3_t left, vec3_t up, float color[4] );
 void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, float color[4], float s1, float t1, float s2, float t2 );
 void RB_InstantQuad( vec4_t quadVerts[4] );
-//void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4], vec4_t color, shaderProgram_t *sp, vec2_t invTexRes);
 void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4]);
+void RB_InstantTriangle();
 
 void RB_ShowImages( void );
 
@@ -3266,8 +3279,9 @@ typedef struct capShadowmapCommand_s {
 } capShadowmapCommand_t;
 
 typedef struct convolveCubemapCommand_s {
-	int commandId;
-	int cubemap;
+	int			commandId;
+	cubemap_t	*cubemap;
+	int			cubeSide;
 } convolveCubemapCommand_t;
 
 typedef struct postProcessCommand_s {
@@ -3300,7 +3314,6 @@ typedef enum {
 	RC_VIDEOFRAME,
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
-	RC_CAPSHADOWMAP,
 	RC_CONVOLVECUBEMAP,
 	RC_POSTPROCESS,
 	RC_BEGIN_TIMED_BLOCK,
@@ -3392,7 +3405,7 @@ void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 void R_AddCapShadowmapCmd( int dlight, int cubeSide );
-void R_AddConvolveCubemapCmd( int cubemap );
+void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubeSide);
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );
@@ -3433,6 +3446,7 @@ void RE_AddDecalToScene ( qhandle_t shader, const vec3_t origin, const vec3_t di
 void R_AddDecals( void );
 
 image_t	*R_FindImageFile( const char *name, imgType_t type, int flags );
+void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type);
 qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);

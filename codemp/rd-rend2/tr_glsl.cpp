@@ -360,7 +360,7 @@ static size_t GLSL_GetShaderHeader(
 
 	if (r_cubeMapping->integer)
 	{
-		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%d)\n", CUBE_MAP_MIPS));
+		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_MIPS - 4));
 	}
 
 	if (extra)
@@ -1504,6 +1504,9 @@ static int GLSL_LoadGPUProgramLightAll(
 				case LIGHTDEF_USE_LIGHT_VECTOR:
 				{
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VECTOR\n");
+					if (r_dlightMode->integer >= 2)
+						Q_strcat(extradefines, sizeof(extradefines), "#define USE_DSHADOWS\n");
+
 					break;
 				}
 
@@ -1586,8 +1589,9 @@ static int GLSL_LoadGPUProgramLightAll(
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_DELUXEMAP,   TB_DELUXEMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SPECULARMAP, TB_SPECULARMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP,   TB_SHADOWMAP);
+		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP2,  TB_SHADOWMAP2);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_CUBEMAP,     TB_CUBEMAP);
-		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_ENVBRDFMAP, TB_ENVBRDFMAP);
+		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_ENVBRDFMAP,  TB_ENVBRDFMAP);
 		qglUseProgram(0);
 
 		GLSL_FinishGPUShader(&tr.lightallShader[i]);

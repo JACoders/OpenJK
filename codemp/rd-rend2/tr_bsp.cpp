@@ -22,6 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_map.c
 
 #include "tr_local.h"
+
+#define JSON_IMPLEMENTATION
+#include "json.h"
+#undef JSON_IMPLEMENTATION
+
 #include "tr_cache.h"
 #include <vector>
 
@@ -2928,7 +2933,80 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 	return qtrue;
 }
 
-static void R_LoadCubemapEntities(const char *cubemapEntityName)
+void R_LoadEnvironmentJson(const char *baseName)
+{
+	char filename[MAX_QPATH];
+
+	union {
+		char *c;
+		void *v;
+	} buffer;
+	char *bufferEnd;
+
+	const char *environmentArrayJson;
+	int filelen, i;
+
+	Com_sprintf(filename, sizeof(filename), "cubemaps/%s/env.json", baseName);
+
+	filelen = ri.FS_ReadFile(filename, &buffer.v);
+	if (!buffer.c)
+		return;
+	bufferEnd = buffer.c + filelen;
+
+	ri.Printf(PRINT_ALL, "Loaded Enviroment JSON: %s\n", filename);
+
+	if (JSON_ValueGetType(buffer.c, bufferEnd) != JSONTYPE_OBJECT)
+	{
+		ri.Printf(PRINT_ALL, "Bad %s: does not start with a object\n", filename);
+		ri.FS_FreeFile(buffer.v);
+		return;
+	}
+	//-----------------------------CUBEMAPS------------------------------------
+	environmentArrayJson = JSON_ObjectGetNamedValue(buffer.c, bufferEnd, "Cubemaps");
+	if (!environmentArrayJson)
+	{
+		ri.Printf(PRINT_ALL, "Bad %s: no Cubemaps\n", filename);
+		ri.FS_FreeFile(buffer.v);
+		return;
+	}
+
+	if (JSON_ValueGetType(environmentArrayJson, bufferEnd) != JSONTYPE_ARRAY)
+	{
+		ri.Printf(PRINT_ALL, "Bad %s: Cubemaps not an array\n", filename);
+		ri.FS_FreeFile(buffer.v);
+		return;
+	}
+
+	tr.numCubemaps = JSON_ArrayGetIndex(environmentArrayJson, bufferEnd, NULL, 0);
+	tr.cubemaps = (cubemap_t *)ri.Hunk_Alloc(tr.numCubemaps * sizeof(*tr.cubemaps), h_low);
+
+	for (i = 0; i < tr.numCubemaps; i++)
+	{
+		cubemap_t *cubemap = &tr.cubemaps[i];
+		const char *cubemapJson, *keyValueJson, *indexes[3];
+		int j;
+
+		cubemapJson = JSON_ArrayGetValue(environmentArrayJson, bufferEnd, i);
+
+		keyValueJson = JSON_ObjectGetNamedValue(cubemapJson, bufferEnd, "Name");
+		if (!JSON_ValueGetString(keyValueJson, bufferEnd, cubemap->name, MAX_QPATH))
+			cubemap->name[0] = '\0';
+
+		keyValueJson = JSON_ObjectGetNamedValue(cubemapJson, bufferEnd, "Position");
+		JSON_ArrayGetIndex(keyValueJson, bufferEnd, indexes, 3);
+		for (j = 0; j < 3; j++)
+			cubemap->origin[j] = JSON_ValueGetFloat(indexes[j], bufferEnd);
+
+		cubemap->parallaxRadius = 1000.0f;
+		keyValueJson = JSON_ObjectGetNamedValue(cubemapJson, bufferEnd, "Radius");
+		if (keyValueJson)
+			cubemap->parallaxRadius = JSON_ValueGetFloat(keyValueJson, bufferEnd);
+	}
+
+	ri.FS_FreeFile(buffer.v);
+}
+
+void R_LoadCubemapEntities(char *cubemapEntityName)
 {
 	char spawnVarChars[2048];
 	int numSpawnVars;
@@ -2952,33 +3030,44 @@ static void R_LoadCubemapEntities(const char *cubemapEntityName)
 		return;
 
 	tr.numCubemaps = numCubemaps;
-	tr.cubemapOrigins = (vec3_t *)ri.Hunk_Alloc( tr.numCubemaps * sizeof(*tr.cubemapOrigins), h_low);
-	tr.cubemaps = (image_t **)ri.Hunk_Alloc( tr.numCubemaps * sizeof(*tr.cubemaps), h_low);
+	tr.cubemaps = (cubemap_t *)ri.Hunk_Alloc(tr.numCubemaps * sizeof(*tr.cubemaps), h_low);
 
 	numCubemaps = 0;
 	while(R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
 	{
 		int i;
+		char name[MAX_QPATH];
 		qboolean isCubemap = qfalse;
-		qboolean positionSet = qfalse;
+		qboolean originSet = qfalse;
 		vec3_t origin;
+		float parallaxRadius = 1000.0f;
 
+		name[0] = '\0';
 		for (i = 0; i < numSpawnVars; i++)
 		{
 			if (!Q_stricmp(spawnVars[i][0], "classname") && !Q_stricmp(spawnVars[i][1], cubemapEntityName))
 				isCubemap = qtrue;
 
+			if (!Q_stricmp(spawnVars[i][0], "name"))
+				Q_strncpyz(name, spawnVars[i][1], MAX_QPATH);
+
 			if (!Q_stricmp(spawnVars[i][0], "origin"))
 			{
 				sscanf(spawnVars[i][1], "%f %f %f", &origin[0], &origin[1], &origin[2]);
-				positionSet = qtrue;
+				originSet = qtrue;
+			}
+			else if (!Q_stricmp(spawnVars[i][0], "radius"))
+			{
+				sscanf(spawnVars[i][1], "%f", &parallaxRadius);
 			}
 		}
 
-		if (isCubemap && positionSet)
+		if (isCubemap && originSet)
 		{
-			//ri.Printf(PRINT_ALL, "cubemap at %f %f %f\n", origin[0], origin[1], origin[2]);
-			VectorCopy(origin, tr.cubemapOrigins[numCubemaps]);
+			cubemap_t *cubemap = &tr.cubemaps[numCubemaps];
+			Q_strncpyz(cubemap->name, name, MAX_QPATH);
+			VectorCopy(origin, cubemap->origin);
+			cubemap->parallaxRadius = parallaxRadius;
 			numCubemaps++;
 		}
 	}
@@ -3026,31 +3115,39 @@ static void R_RenderAllCubemaps()
 		cubemapFormat = GL_RGBA16F;
 	}
 
-	for (int i = 0; i < tr.numCubemaps; i++)
+	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
-		tr.cubemaps[i] = R_CreateImage(
-			va("*cubeMap%d", i),
-			NULL,
-			CUBE_MAP_SIZE,
-			CUBE_MAP_SIZE,
-			IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION |
-				IMGFLAG_CLAMPTOEDGE |
-				IMGFLAG_MIPMAP |
-				IMGFLAG_CUBEMAP,
-			cubemapFormat);
-	}
-	
-	for (int i = 0; i < tr.numCubemaps; i++)
-	{
-		for (int j = 0; j < 6; j++)
+		bool bounce = k != 0;
+		for (int i = 0; i < tr.numCubemaps; i++)		
 		{
-			RE_ClearScene();
-			R_RenderCubemapSide(i, j, qfalse);
-			R_IssuePendingRenderCommands();
-			R_InitNextFrame();
+			if (!bounce)
+				tr.cubemaps[i].image = R_CreateImage(
+					va("*cubeMap%d", i),
+					NULL,
+					CUBE_MAP_SIZE,
+					CUBE_MAP_SIZE,
+					IMGTYPE_COLORALPHA,
+					IMGFLAG_NO_COMPRESSION |
+					IMGFLAG_CLAMPTOEDGE |
+					IMGFLAG_MIPMAP |
+					IMGFLAG_CUBEMAP,
+					cubemapFormat);
+
+			for (int j = 0; j < 6; j++)
+			{
+				RE_ClearScene();
+				R_RenderCubemapSide(i, j, qfalse, bounce);
+				R_IssuePendingRenderCommands();
+				R_InitNextFrame();
+			}
+			for (int j = 0; j < 6; j++)
+			{
+				RE_ClearScene();
+				R_AddConvolveCubemapCmd(&tr.cubemaps[i], j);
+				R_IssuePendingRenderCommands();
+				R_InitNextFrame();
+			}
 		}
-		R_AddConvolveCubemapCmd(i);
 	}
 }
 
@@ -3725,7 +3822,14 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	// load cubemaps
 	if (r_cubeMapping->integer)
 	{
-		R_LoadCubemapEntities("misc_cubemap");
+		// Try loading an env.json file first
+		R_LoadEnvironmentJson(worldData->baseName);
+
+		if (!tr.numCubemaps)
+		{
+			R_LoadCubemapEntities("misc_cubemap");
+		}
+
 		if (!tr.numCubemaps)
 		{
 			// use deathmatch spawn points as cubemaps
@@ -3769,18 +3873,6 @@ void RE_LoadWorldMap( const char *name ) {
 		ri.Error(ERR_DROP, "ERROR: attempted to redundantly load world map");
 	}
 
-	world_t *world = R_LoadBSP(name);
-	if (world == nullptr)
-	{
-		// clear tr.world so the next/ try will not look at the partially
-		// loaded version
-		tr.world = nullptr;
-		return;
-	}
-
-	tr.worldMapLoaded = qtrue;
-	tr.world = world;
-
 	// set default map light scale
 	tr.mapLightScale  = 1.0f;
 	tr.sunShadowScale = 0.5f;
@@ -3801,6 +3893,18 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.toneMinAvgMaxLevel[0] = -8.0f;
 	tr.toneMinAvgMaxLevel[1] = -2.0f;
 	tr.toneMinAvgMaxLevel[2] = 0.0f;
+
+	world_t *world = R_LoadBSP(name);
+	if (world == nullptr)
+	{
+		// clear tr.world so the next/ try will not look at the partially
+		// loaded version
+		tr.world = nullptr;
+		return;
+	}
+
+	tr.worldMapLoaded = qtrue;
+	tr.world = world;
 
 	// Render all cubemaps
 	if (r_cubeMapping->integer && tr.numCubemaps)

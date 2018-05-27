@@ -6,8 +6,10 @@ out vec2 var_ScreenTex;
 
 void main()
 {
-	gl_Position = attr_Position;
-	var_ScreenTex = attr_TexCoord0.xy;
+	vec2 position = vec2(2.0 * float(gl_VertexID & 2) - 1.0, 4.0 * float(gl_VertexID & 1) - 1.0);
+	gl_Position = vec4(position, 0.0, 1.0);
+	vec2 screenCoords = gl_Position.xy;
+	var_ScreenTex = screenCoords * 0.5 + 0.5;
 }
 
 /*[Fragment]*/
@@ -78,17 +80,18 @@ void main()
 	vec2 vector = (var_ScreenTex - vec2(0.5)) * 2.0;
 	// from http://www.codinglabs.net/article_physically_based_rendering.aspx
 
-    vec3 normal = normalize( vec3(vector.xy, 1) );
-    if(cubeFace==2)
-        normal = normalize( vec3(vector.x,  1, -vector.y) );
-    else if(cubeFace==3)
-        normal = normalize( vec3(vector.x, -1,  vector.y) );
-    else if(cubeFace==0)
-        normal = normalize( vec3(  1, vector.y,-vector.x) );
-    else if(cubeFace==1)
-        normal = normalize( vec3( -1, vector.y, vector.x) );
-    else if(cubeFace==5)
-        normal = normalize( vec3(-vector.x, vector.y, -1) );
+	vec3 normal = normalize(vec3(-vector.x, -vector.y, -1.0));
+	
+	if (cubeFace == 0)
+		normal = normalize(vec3(1.0, -vector.y, -vector.x));
+	else if (cubeFace == 1)
+		normal = normalize(vec3(-1.0, -vector.y, vector.x));
+	else if (cubeFace == 2)
+		normal = normalize(vec3(vector.x, 1.0, vector.y));
+	else if (cubeFace == 3)
+		normal = normalize(vec3(vector.x, -1.0, -vector.y));
+	else if (cubeFace == 4)
+		normal = normalize(vec3(vector.x, -vector.y, 1.0)); 
 
 	float roughness = u_ViewInfo.w;
 
