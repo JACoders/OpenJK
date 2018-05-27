@@ -127,7 +127,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 	#define PATH_SEP '/'
 
-	// [M] Define it, define it now! DEWIT.
 	#if !defined(ARCH_STRING)
 		#error ARCH_STRING should be defined by the build system
 	#endif
