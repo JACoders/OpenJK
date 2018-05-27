@@ -2757,12 +2757,9 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 
 void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce )
 {
-	refdef_t refdef;
-	viewParms_t	parms;
+	refdef_t refdef = {};
 	float oldColorScale = tr.refdef.colorScale;
 
-	memset( &refdef, 0, sizeof( refdef ) );
-	refdef.rdflags = 0;
 	VectorCopy(tr.cubemaps[cubemapIndex].origin, refdef.vieworg);
 
 	switch(cubemapSide)
@@ -2805,16 +2802,6 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 			break;
 	}
 
-	refdef.fov_x = 90;
-	refdef.fov_y = 90;
-
-	refdef.x = 0;
-	refdef.y = 0;
-	refdef.width = tr.renderCubeFbo->width;
-	refdef.height = tr.renderCubeFbo->height;
-
-	refdef.time = 0;
-
 	if (!subscene)
 	{
 		RE_BeginScene(&refdef);
@@ -2829,13 +2816,9 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 
 	tr.refdef.colorScale = 1.0f;
 
-	Com_Memset( &parms, 0, sizeof( parms ) );
-
-	parms.viewportX = 0;
-	parms.viewportY = 0;
+	viewParms_t	parms = {};
 	parms.viewportWidth = tr.renderCubeFbo->width;
 	parms.viewportHeight = tr.renderCubeFbo->height;
-	parms.isPortal = qfalse;
 	parms.isMirror = qtrue;
 	parms.flags =  VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS;
 	if (!bounce)
