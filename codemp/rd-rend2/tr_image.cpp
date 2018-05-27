@@ -2608,12 +2608,10 @@ image_t* R_GetLoadedImage(const char *name, int flags) {
 
 void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
 {
-	image_t	*image;
 	char	diffuseName[MAX_QPATH];
 	char	specularName[MAX_QPATH];
 	int		width, height, rmoWidth, rmoHeight;
 	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
-	long	hash;
 
 	if (!name) {
 		return;
@@ -2859,7 +2857,6 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 	image_t	*image;
 	int		width, height;
 	byte	*pic;
-	long	hash;
 
 	if (!name) {
 		return NULL;
