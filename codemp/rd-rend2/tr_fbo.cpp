@@ -516,12 +516,9 @@ void FBO_Init(void)
 	if (r_dlightMode->integer >= 2)
 	{
 		tr.shadowCubeFbo = FBO_Create("_shadowCubeFbo", PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
+
 		FBO_Bind(tr.shadowCubeFbo);
-
 		FBO_CreateBuffer(tr.shadowCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
-
-		qglReadBuffer(GL_NONE);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.shadowCubeFbo);
