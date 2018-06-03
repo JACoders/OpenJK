@@ -2528,7 +2528,11 @@ const void *RB_PostProcess(const void *data)
 		srcBox[1] = tr.screenSsaoImage->height - srcBox[1];
 		srcBox[3] = -srcBox[3];
 
-		FBO_Blit(tr.screenSsaoFbo, srcBox, NULL, srcFbo, dstBox, NULL, NULL, GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO);
+		int blendMode = GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO;
+		if (r_ssao->integer == 2)
+			blendMode = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO;
+
+		FBO_Blit(tr.screenSsaoFbo, srcBox, NULL, srcFbo, dstBox, NULL, NULL, blendMode);
 	}
 
 	if (r_dynamicGlow->integer)
