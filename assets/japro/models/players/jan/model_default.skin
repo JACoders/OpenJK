@@ -10,8 +10,8 @@ hipsa_cap_r_leg_off,models/players/stormtrooper/caps.tga
 hipsa_torso,models/players/jan/torso.tga
 hipsa_cap_l_leg_off,models/players/stormtrooper/caps.tga
 torso,models/players/jan/legs.tga
-torsoa,models/players/jan/torso.tga
-torsoa_augment,models/players/jan/torso.tga
+torsoa,*off
+torsoa_augment,*off
 r_arma,models/players/jan/torso.tga
 r_arma_cap_r_hand_off,models/players/stormtrooper/caps.tga
 r_arma_cap_torso_off,models/players/stormtrooper/caps.tga
@@ -40,7 +40,7 @@ r_armb_cap_r_hand_off,models/players/stormtrooper/caps.tga
 r_armb_cap_torso_off,models/players/stormtrooper/caps.tga
 r_handb,models/players/jan/accesories.tga
 r_handb_cap_r_arm_off,models/players/stormtrooper/caps.tga
-torsob_comp,models/players/jan/accesories.tga
+torsob_comp,*off
 torsob_vest,models/players/jan/vest.tga
 torsob_cap_r_arm_off,models/players/stormtrooper/caps.tga
 torsob_cap_l_arm_off,models/players/stormtrooper/caps.tga
