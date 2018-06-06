@@ -2612,6 +2612,7 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	char	specularName[MAX_QPATH];
 	int		width, height, rmoWidth, rmoHeight;
 	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
+	image_t *image;
 
 	if (!name) {
 		return;
@@ -2623,16 +2624,23 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	COM_StripExtension(name, specularName, sizeof(specularName));
 	Q_strcat(specularName, sizeof(specularName), "_spec");
 
-	////
-	//// see if the images are already loaded
-	////
-	stage->bundle[TB_COLORMAP].image[0] = R_GetLoadedImage(diffuseName, flags);
-	stage->bundle[TB_SPECULARMAP].image[0] = R_GetLoadedImage(specularName, flags);
+	//
+	// see if the images are already loaded
+	//
+	image = R_GetLoadedImage(diffuseName, flags);
+	if (image != NULL)
+	{
+		stage->bundle[TB_COLORMAP].image[0] = image;
 
-	if (stage->bundle[TB_COLORMAP].image[0] != NULL && stage->bundle[TB_SPECULARMAP].image[0] != NULL) {
-		ri.Printf(PRINT_DEVELOPER, "WARNING: reused Diffuse and Specular images for %s\n", name);
-		return;
+		image = R_GetLoadedImage(specularName, flags);
+		if (image != NULL)
+		{
+			stage->bundle[TB_SPECULARMAP].image[0] = R_GetLoadedImage(specularName, flags);
+			ri.Printf(PRINT_DEVELOPER, "WARNING: reused Diffuse and Specular images for %s\n", name);
+			return;
+		}
 	}
+
 	//
 	// load the pics from disk
 	//
