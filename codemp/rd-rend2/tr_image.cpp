@@ -2693,14 +2693,14 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 			metalness = ByteToFloat(rmoPic[i + 1]);
 			ao = ByteToFloat(rmoPic[i + 2]);
 			ao += (1.0 - ao) * (1.0 - aoStrength);
-			specular_variance = ByteToFloat(rmoPic[i + 3]);
+			specular_variance = (type == SPEC_RMOS) ? ByteToFloat(rmoPic[i + 3]) : 1.0f;
 			break;
 		case SPEC_MOXR:
 		case SPEC_MOSR:
 			metalness = ByteToFloat(rmoPic[i + 0]);
 			ao = ByteToFloat(rmoPic[i + 1]);
 			ao += (1.0 - ao) * (1.0 - aoStrength);
-			specular_variance = ByteToFloat(rmoPic[i + 2]);
+			specular_variance = (type == SPEC_MOSR) ? ByteToFloat(rmoPic[i + 2]) : 1.0f;
 			roughness = ByteToFloat(rmoPic[i + 3]);
 			gloss = (1.0 - roughness) + (0.04 * roughness);
 			break;
@@ -2715,27 +2715,27 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 
 		vec4_t baseColor;
 		// remove gamma correction because we want to work in linear space
-		baseColor[0] = RGBtosRGB(ByteToFloat(baseColorPic[i + 0]));
-		baseColor[1] = RGBtosRGB(ByteToFloat(baseColorPic[i + 1]));
-		baseColor[2] = RGBtosRGB(ByteToFloat(baseColorPic[i + 2]));
+		baseColor[0] = sRGBtoRGB(ByteToFloat(baseColorPic[i + 0]));
+		baseColor[1] = sRGBtoRGB(ByteToFloat(baseColorPic[i + 1]));
+		baseColor[2] = sRGBtoRGB(ByteToFloat(baseColorPic[i + 2]));
 		// don't remove gamma correction in alpha because this is data, not color
 		baseColor[3] = ByteToFloat(baseColorPic[i + 3]);
 
-		baseSpecular *= specular_variance;
+		specular_variance *= baseSpecular;
 
 		// diffuse Color = baseColor * (1.0 - metalness) 
 		// also gamma correct again
 		// FIXME: AO should be handled in shader because it should only affect the ambient lighting
-		diffusePic[i + 0] = FloatToByte(sRGBtoRGB(baseColor[0] * (1.0f - metalness) * ao));
-		diffusePic[i + 1] = FloatToByte(sRGBtoRGB(baseColor[1] * (1.0f - metalness) * ao));
-		diffusePic[i + 2] = FloatToByte(sRGBtoRGB(baseColor[2] * (1.0f - metalness) * ao));
+		diffusePic[i + 0] = FloatToByte(RGBtosRGB(baseColor[0] * (1.0f - metalness) * ao));
+		diffusePic[i + 1] = FloatToByte(RGBtosRGB(baseColor[1] * (1.0f - metalness) * ao));
+		diffusePic[i + 2] = FloatToByte(RGBtosRGB(baseColor[2] * (1.0f - metalness) * ao));
 		diffusePic[i + 3] = FloatToByte(baseColor[3]);
 
 		// specular Color = mix(baseSpecular, baseColor, metalness)
 		// also gamma correct again
-		specGlossPic[i + 0] = FloatToByte(sRGBtoRGB(baseSpecular * (1.0f - metalness) + baseColor[0] * metalness));
-		specGlossPic[i + 1] = FloatToByte(sRGBtoRGB(baseSpecular * (1.0f - metalness) + baseColor[1] * metalness));
-		specGlossPic[i + 2] = FloatToByte(sRGBtoRGB(baseSpecular * (1.0f - metalness) + baseColor[2] * metalness));
+		specGlossPic[i + 0] = FloatToByte(RGBtosRGB(specular_variance * (1.0f - metalness) + baseColor[0] * metalness));
+		specGlossPic[i + 1] = FloatToByte(RGBtosRGB(specular_variance * (1.0f - metalness) + baseColor[1] * metalness));
+		specGlossPic[i + 2] = FloatToByte(RGBtosRGB(specular_variance * (1.0f - metalness) + baseColor[2] * metalness));
 		// don't remove gamma correction in alpha because this is data, not color
 		specGlossPic[i + 3] = FloatToByte(gloss);
 	}
