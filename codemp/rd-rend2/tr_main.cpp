@@ -2217,13 +2217,13 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 void R_SetOrientationOriginAndAxis(
 	orientationr_t& orientation,
 	const vec3_t origin,
-	const vec3_t left,
 	const vec3_t forward,
+	const vec3_t left,
 	const vec3_t up)
 {
 	VectorCopy(origin, orientation.origin);
-	VectorCopy(left, orientation.axis[0]);
-	VectorCopy(forward, orientation.axis[1]);
+	VectorCopy(forward, orientation.axis[0]);
+	VectorCopy(left, orientation.axis[1]);
 	VectorCopy(up, orientation.axis[2]);
 }
 

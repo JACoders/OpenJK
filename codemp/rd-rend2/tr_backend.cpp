@@ -2580,6 +2580,11 @@ const void *RB_PostProcess(const void *data)
 	if (1)
 		RB_BokehBlur(NULL, srcBox, NULL, dstBox, backEnd.refdef.blurFactor);
 
+	if (r_debugWeather->integer == 2)
+	{
+		FBO_BlitFromTexture(tr.weatherDepthImage, NULL, NULL, NULL, nullptr, NULL, NULL, 0);
+	}
+
 	if (0 && r_sunlightMode->integer)
 	{
 		vec4i_t dstBox;

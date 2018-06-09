@@ -415,8 +415,8 @@ typedef struct {
 void R_SetOrientationOriginAndAxis(
 	orientationr_t& orientation,
 	const vec3_t origin,
-	const vec3_t left,
 	const vec3_t forward,
+	const vec3_t left,
 	const vec3_t up);
 void R_SetOrientationOriginAndAxis(
 	orientationr_t& orientation,

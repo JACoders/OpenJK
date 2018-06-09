@@ -92,26 +92,44 @@ namespace
 	void GenerateDepthMap()
 	{
 		vec3_t mapSize;
+		vec3_t halfMapSize;
 		VectorSubtract(
 			tr.world->bmodels[0].bounds[0], 
 			tr.world->bmodels[0].bounds[1],
 			mapSize);
+		VectorScale(mapSize, -0.5f, halfMapSize);
 		mapSize[2] = 0.0f;
 
+		const vec3_t forward = {0.0f, 0.0f, -1.0f};
 		const vec3_t left = {0.0f, 1.0f, 0.0f};
-		const vec3_t up = {0.0f, 0.0f, 1.0f};
-		const vec3_t forward = {1.0f, 0.0f, 0.0f};
+		const vec3_t up = {1.0f, 0.0f, 0.0f};
 
-		matrix3_t viewAxes;
 		vec3_t viewOrigin;
-		VectorMA(tr.world->bmodels[0].bounds[0], 0.5f, mapSize, viewOrigin);
+		VectorMA(tr.world->bmodels[0].bounds[1], 0.5f, mapSize, viewOrigin);
+
+		ri.Printf(PRINT_ALL, "Rendering weather depth from (%.f %.f %.f)\n",
+				viewOrigin[0], viewOrigin[1], viewOrigin[2]);
 
 		orientationr_t orientation;
-		R_SetOrientationOriginAndAxis(orientation, viewOrigin, left, forward, up);
+		R_SetOrientationOriginAndAxis(orientation, viewOrigin, forward, left, up);
 
 		refdef_t refdef = {};
+		VectorCopy(orientation.origin, refdef.vieworg);
+		for (int i = 0; i < 3; ++i)
+			VectorCopy(orientation.axis[i], refdef.viewaxis[i]);
+
 		RE_BeginScene(&refdef);
 		RE_ClearScene();
+
+		const vec3_t viewBounds[2] = {
+			{ 0.0f, -halfMapSize[0], -halfMapSize[1] },
+			{ halfMapSize[2] * 2.0f, halfMapSize[0], halfMapSize[1] }
+		};
+		ri.Printf(
+			PRINT_ALL,
+			"Weather view bounds (%f %f %f) (%f %f %f)\n",
+			viewBounds[0][0], viewBounds[0][1], viewBounds[0][2],
+			viewBounds[1][0], viewBounds[1][1], viewBounds[1][2]);
 
 		R_SetupViewParmsForOrthoRendering(
 			tr.weatherDepthFbo->width,
@@ -119,7 +137,7 @@ namespace
 			tr.weatherDepthFbo,
 			VPF_DEPTHCLAMP | VPF_DEPTHSHADOW | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL,
 			orientation,
-			tr.world->bmodels[0].bounds);
+			viewBounds);
 
 		const int firstDrawSurf = tr.refdef.numDrawSurfs;
 
