@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  *
  *****************************************************************************/
+#include "sdl/sdl_sound.h"
 #include "snd_local.h"
 #include "snd_mp3.h"
 #include "snd_music.h"
@@ -437,8 +438,6 @@ void S_SoundInfo_f(void) {
 	Com_Printf("----------------------\n" );
 }
 
-
-
 /*
 ================
 S_Init
@@ -624,7 +623,7 @@ void S_Init( void ) {
 	else
 	{
 #endif
-		r = SNDDMA_Init();
+		r = SNDDMA_Init(s_khz->integer);
 
 		if ( r ) {
 			s_soundStarted = 1;
