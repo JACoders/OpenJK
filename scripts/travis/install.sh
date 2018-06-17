@@ -28,28 +28,32 @@ case "${host}" in
 		;;
 esac
 
-sudo apt-get update -qq
-sudo apt-get -q -y install cmake dpkg p7zip-full
+sudo apt-get update -yq
+
+# This is what Travis does using the apt-addon.
+APT_INSTALL='sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install'
+
+${APT_INSTALL} cmake dpkg p7zip-full
 
 case "${host}" in
 	(native)
 		# upgrade some relevant libraries to vaguely modern versions
-		sudo apt-get -q -y install libsdl2-dev libjpeg-turbo8-dev zlib1g-dev libpng12-dev libegl1-mesa-dev libgles2-mesa-dev
+		${APT_INSTALL} libsdl2-dev libjpeg-turbo8-dev zlib1g-dev libpng12-dev libegl1-mesa-dev libgles2-mesa-dev
 		;;
 
 	(i686-w64-mingw32)
-		sudo apt-get -q -y install g++-mingw-w64-i686
+		${APT_INSTALL} g++-mingw-w64-i686
 		;;
 
 	(x86_64-w64-mingw32)
-		sudo apt-get -q -y install g++-mingw-w64-x86-64
+		${APT_INSTALL} g++-mingw-w64-x86-64
 		;;
 
 	(i?86-linux-gnu)
 		# Install x86 libraries; remove anything that gets in the 
 		# way, and also Java because that would be upgraded and is
 		# quite large.
-		sudo apt-get -q -y install \
+		${APT_INSTALL} \
 			libgles2-mesa-dev:i386 libgl1-mesa-dev:i386 libglu1-mesa-dev:i386 libpulse-dev:i386 libglib2.0-dev:i386 \
 			libsdl2-2.0-0:i386 libsdl2-dev:i386 libjpeg-turbo8-dev:i386 zlib1g-dev:i386 libc6-dev:i386 \
 			libpng12-dev:i386 \
