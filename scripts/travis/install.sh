@@ -8,15 +8,12 @@ flavour="$2"
 shift 2
 
 if [[ "${host}" == macosx-universal-clang ]]; then
+	curl -O https://www.libsdl.org/release/SDL2-2.0.8.dmg
+	sudo hdiutil attach SDL2-2.0.8.dmg
+	sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
+	sudo hdiutil detach /Volumes/SDL2
+	rm -f SDL2-2.0.8.dmg
 	brew install p7zip
-	cd ~
-	curl -O https://www.libsdl.org/release/SDL2-2.0.7.tar.gz
-	tar xzf SDL2-2.0.7.tar.gz
-	cd SDL2-2.0.7/Xcode/SDL
-	sed -i -e 's/@rpath//g' SDL.xcodeproj/project.pbxproj
-	xcodebuild ARCHS="i386 x86_64" ONLY_ACTIVE_ARCH=NO -configuration Release
-	mkdir -p ~/Library/Frameworks/
-	ln -s `pwd`/build/Release/SDL2.framework ~/Library/Frameworks/
 else
 
 # travis-ci's Ubuntu 14.04 image provides an apt source for Chrome,
