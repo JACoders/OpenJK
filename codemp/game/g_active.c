@@ -806,8 +806,24 @@ void P_DamageFeedback( gentity_t *player ) {
 		P_SetTwitchInfo(client);
 		player->pain_debounce_time = level.time + 700;
 		
-		if (g_stopHealthESP.integer)
+		if (g_stopHealthESP.integer == 1)
 			G_AddEvent( player, EV_PAIN, 50 ); //anti ESP here?
+		else if (g_stopHealthESP.integer > 1) 
+		{
+			int hp = player->health;
+			char* pain;
+
+			if (hp <= 25)
+				pain = "*pain25.wav";
+			else if (hp <= 50)
+				pain = "*pain50.wav";
+			else if (hp <= 75)
+				pain = "*pain75.wav";
+			else
+				pain = "*pain100.wav";
+			
+			G_EntitySound(player, CHAN_VOICE, G_SoundIndex(pain));
+		}
 		else
 			G_AddEvent( player, EV_PAIN, player->health ); //anti ESP here?
 		client->ps.damageEvent++;
