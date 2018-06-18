@@ -11,17 +11,16 @@ script:
 compiler: gcc
 env:
 - host=native deploy=true
-- flavour=Debug
-- host=i686-linux-gnu deploy=true
-- host=i686-w64-mingw32
 - host=x86_64-w64-mingw32
+- host=i686-w64-mingw32
+- host=i686-linux-gnu deploy=true
 matrix:
   include:
-  - compiler: clang
-    env: ''
   - os: osx
     compiler: clang
     env: host=macosx-universal-clang deploy=true
+  - compiler: clang
+    env: ''
 deploy:
   - provider: releases
     api_key:

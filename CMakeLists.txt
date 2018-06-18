@@ -68,7 +68,9 @@ if(WIN32)
 endif()
 
 if(APPLE)
-  set(UseInternalJPEGDefault ON)
+  set(UseInternalJPEGDefault   ON)
+  set(UseInternalOpenALDefault ON)
+  set(UseInternalPNGDefault    ON)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "BSD")
