@@ -13008,8 +13008,9 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_WaterEvents();
 
 	//Walbug fix start, if getting stuck w/o noclip is even possible.  This should maybe be after round float? im not sure..
-	if ((pm->ps->persistant[PERS_TEAM] != TEAM_SPECTATOR) && pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLengthSquared(pm->ps->velocity) > VectorLengthSquared(pml.previous_velocity)))
+	if ((pm->ps->persistant[PERS_TEAM] != TEAM_SPECTATOR) && pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) /*&& (VectorLengthSquared(pm->ps->velocity) > VectorLengthSquared(pml.previous_velocity))*/)
 			VectorClear(pm->ps->velocity); //Their velocity is increasing while their origin is not moving (wallbug), so prevent this..
+	//To fix rocket wallbug, since that gets applied elsewhere, just always reset vel if origins dont match?
 	//Wallbug fix end
 
 	if (pm->ps->persistant[PERS_TEAM] == TEAM_SPECTATOR) {
@@ -13136,13 +13137,12 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 		if (pmove->ps->stats[STAT_RACEMODE] && BG_InRollFixed(pmove->ps, pmove->ps->legsAnim)) { //Using float now
-			if ( msec > pmove->pmove_msec ) {
-				msec = pmove->pmove_msec;
+			if ( msec > 8 ) {
+				msec = 8;
 			}
 			//Com_Printf("Chopping\n");
 		}
-		else
-		if ( pmove->pmove_fixed ) {
+		else if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}

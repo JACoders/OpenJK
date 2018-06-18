@@ -5021,7 +5021,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			VectorScale (dir, g_knockback.value * (float)knockback / mass, kvel);
 		}
-		VectorAdd (targ->client->ps.velocity, kvel, targ->client->ps.velocity);
+		VectorAdd (targ->client->ps.velocity, kvel, targ->client->ps.velocity); //wallbug?
 
 		if (attacker && attacker->client && attacker != targ)
 		{
