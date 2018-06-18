@@ -17,7 +17,6 @@ case "${host}" in
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/${host}.cmake \
 			"$@"
 		;;
-
 	(i?86-linux-gnu)
 		set -- \
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/linux-i686.cmake \
@@ -44,7 +43,10 @@ case "${host}" in
 		;;
 esac
 
-set -- -D CMAKE_BUILD_TYPE="$flavour" "$@"
+set -- \
+-D CMAKE_BUILD_TYPE="$flavour" \
+-D BuildMPCGame=OFF \
+"$@"
 
 ( cd build && cmake \
 	-D CMAKE_INSTALL_PREFIX=/prefix \
@@ -60,40 +62,29 @@ fi
 
 case "${host}" in
 	(macosx-universal-clang)
-		if [ -n "${deploy}" ]; then
 		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
 			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
-			mv eternaljk-macos-"${arch}".tar.gz /Users/travis/build/eternalcodes/EternalJK/ && \
+			mv eternaljk-macos-"${arch}".tar.gz $(pwd)/../../../../ && \
 			cd ../../ && \
 			find . -ls )
-		else
-		( cd $(pwd)/build/DESTDIR && find . -ls )
-		fi
 		;;
 	(i?86-linux-gnu|native)
-		if [ -n "${deploy}" ]; then
 		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
-				tar czvf eternaljk-linux-"${arch}".tar.gz * && \
-				mv eternaljk-linux-"${arch}".tar.gz /home/travis/build/eternalcodes/EternalJK/ && \
-				cd ../../ && \
-				find . -ls )
-		else
-		( cd $(pwd)/build/DESTDIR && find . -ls )
-		fi
+			cp $(pwd)/../../../../assets/bins/cgamex86_64.so eternaljk/
+			tar czvf eternaljk-linux-"${arch}".tar.gz * && \
+			mv eternaljk-linux-"${arch}".tar.gz $(pwd)/../../../../ && \
+			cd ../../ && \
+			find . -ls )
 		;;
 	(i686-w64-mingw32)
-		if [ -n "${deploy}" ]; then
-			( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
-				zip -r eternaljk-win32-portable.zip * && \
-				mv eternaljk-win32-portable.zip /home/travis/build/eternalcodes/EternalJK/ && \
-				cd eternaljk/ && \
-				zip -r ejk-japro-pk3only.zip * && \
-				mv ejk-japro-pk3only.zip /home/travis/build/eternalcodes/EternalJK/ && \
-				cd ../../../ && \
-				find . -ls )
-		else
-		( cd $(pwd)/build/DESTDIR && find . -ls )
-		fi
+		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
+			zip -r eternaljk-win32-portable.zip * && \
+			mv eternaljk-win32-portable.zip $(pwd)/../../../../ && \
+			cd eternaljk/ && \
+			zip -r ejk-japro-pk3only.zip * && \
+			mv ejk-japro-pk3only.zip $(pwd)/../../../../ && \
+			cd ../../../ && \
+			find . -ls )
 		;;
 	(*)
 		( cd $(pwd)/build/DESTDIR && find . -ls )
