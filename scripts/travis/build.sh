@@ -15,10 +15,8 @@ case "${host}" in
 		export CXX=${host}-g++
 		set -- \
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/${host}.cmake \
-			-D BuildMPCGame=OFF \
 			"$@"
 		;;
-
 	(i?86-linux-gnu)
 		set -- \
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/linux-i686.cmake \
@@ -26,12 +24,15 @@ case "${host}" in
 		;;
 	(macosx-universal-clang)
 		set -- \
+			-D CMAKE_OSX_SYSROOT="" \
+			-D OPENGL_INCLUDE_DIR=/System/Library/Frameworks/OpenGL.framework \
+			-D OPENGL_gl_LIBRARY=/System/Library/Frameworks/OpenGL.framework \
+			-D OPENGL_glu_LIBRARY=/System/Library/Frameworks/OpenGL.framework \
 			"$@"
 		;;
 	(native)
 		if [ -n "${deploy}" ]; then
 			set -- \
-			-D BuildMPCGame=OFF \
 				"$@"
 		fi
 		;;
@@ -42,7 +43,10 @@ case "${host}" in
 		;;
 esac
 
-set -- -D CMAKE_BUILD_TYPE="$flavour" "$@"
+set -- \
+-D CMAKE_BUILD_TYPE="$flavour" \
+-D BuildMPCGame=OFF \
+"$@"
 
 ( cd build && cmake \
 	-D CMAKE_INSTALL_PREFIX=/prefix \
@@ -58,37 +62,30 @@ fi
 
 case "${host}" in
 	(macosx-universal-clang)
-		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/ && \
+		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
+			cp $(pwd)/../../../../assets/bins/cgamex86_64.dylib eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
 			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
-			mv eternaljk-macos-"${arch}".tar.gz /Users/travis/build/eternalcodes/EternalJK/ && \
-			cd ../../../ && \
+			mv eternaljk-macos-"${arch}".tar.gz $(pwd)/../../../../ && \
+			cd ../../ && \
 			find . -ls )
 		;;
 	(i?86-linux-gnu|native)
-		if [ -n "${deploy}" ]; then
-			( cp /home/travis/build/eternalcodes/EternalJK/assets/bins-linux/cgamex86_64.so $(pwd)/build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
-				cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
-				tar czvf eternaljk-linux-"${arch}".tar.gz * && \
-				mv eternaljk-linux-"${arch}".tar.gz /home/travis/build/eternalcodes/EternalJK/ && \
-				cd ../../ && \
-				find . -ls )
-		else
-			( cd $(pwd)/build/DESTDIR && find . -ls )
-		fi
+		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
+			cp $(pwd)/../../../../assets/bins/cgamex86_64.so eternaljk/ && \
+			tar czvf eternaljk-linux-"${arch}".tar.gz * && \
+			mv eternaljk-linux-"${arch}".tar.gz $(pwd)/../../../../ && \
+			cd ../../ && \
+			find . -ls )
 		;;
 	(i686-w64-mingw32)
-		if [ -n "${deploy}" ]; then
-			( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
-				zip -r eternaljk-win32-portable.zip * && \
-				mv eternaljk-win32-portable.zip /home/travis/build/eternalcodes/EternalJK/ && \
-				cd eternaljk/ && \
-				zip -r ejk-japro-pk3only.zip * && \
-				mv ejk-japro-pk3only.zip /home/travis/build/eternalcodes/EternalJK/ && \
-				cd ../../../ && \
-				find . -ls )
-		else
-			( cd $(pwd)/build/DESTDIR && find . -ls )
-		fi
+		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
+			zip -r eternaljk-win32-portable.zip * && \
+			mv eternaljk-win32-portable.zip $(pwd)/../../../../ && \
+			cd eternaljk/ && \
+			zip -r ejk-japro-pk3only.zip * && \
+			mv ejk-japro-pk3only.zip $(pwd)/../../../../../ && \
+			cd ../../../ && \
+			find . -ls )
 		;;
 	(*)
 		( cd $(pwd)/build/DESTDIR && find . -ls )
