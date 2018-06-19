@@ -1026,7 +1026,9 @@ BodySink
 After sitting around for five seconds, fall into the ground and disappear
 =============
 */
+extern void BodyRid(gentity_t *ent);
 void BodySink( gentity_t *ent ) {
+	/*
 	if ( level.time - ent->timestamp > BODY_SINK_TIME + 2500 ) {
 		// the body ques are never actually freed, they are just unlinked
 		trap->UnlinkEntity( (sharedEntity_t *)ent );
@@ -1038,6 +1040,11 @@ void BodySink( gentity_t *ent ) {
 
 	G_AddEvent(ent, EV_BODYFADE, 0);
 	ent->nextthink = level.time + 18000;
+	*/
+
+	G_AddEvent(ent, EV_BODYFADE, 69);
+	ent->think = BodyRid;
+	ent->nextthink = level.time + 4000;
 	ent->takedamage = qfalse;
 }
 

@@ -810,14 +810,13 @@ void P_DamageFeedback( gentity_t *player ) {
 			G_AddEvent( player, EV_PAIN, 50 ); //anti ESP here?
 		else if (g_stopHealthESP.integer > 1) 
 		{
-			int hp = player->health;
 			char* pain;
 
-			if (hp <= 25)
+			if (player->health <= 25)
 				pain = "*pain25.wav";
-			else if (hp <= 50)
+			else if (player->health <= 50)
 				pain = "*pain50.wav";
-			else if (hp <= 75)
+			else if (player->health <= 75)
 				pain = "*pain75.wav";
 			else
 				pain = "*pain100.wav";
