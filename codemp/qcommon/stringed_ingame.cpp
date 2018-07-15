@@ -1176,8 +1176,8 @@ void SE_Init(void)
 #endif
 
 	se_language = Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
-	se_debug = Cvar_Get("se_debug", "0", 0);
-	sp_leet = Cvar_Get("sp_leet", "0", CVAR_ROM );
+	se_debug = Cvar_Get("se_debug", "0", CVAR_NONE);
+	sp_leet = Cvar_Get("sp_leet", "0", CVAR_NONE);
 
 	// if doing a buildscript, load all languages...
 	//
