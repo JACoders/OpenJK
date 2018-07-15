@@ -1244,7 +1244,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 		ASSIGN_WITH_ROUNDING( m_AsianGlyph.height,		pGlyph->height );
 		ASSIGN_WITH_ROUNDING( m_AsianGlyph.horizAdvance,pGlyph->horizAdvance );
 //		m_AsianGlyph.horizOffset	= /*Round*/( m_fAltSBCSFontScaleFactor * pGlyph->horizOffset );
-		ASSIGN_WITH_ROUNDING( m_AsianGlyph.width,		pGlyph->width );
+		ASSIGN_WITH_ROUNDING( m_AsianGlyph.width,		pGlyph->width*tr.widthRatioCoef );
 
 		pGlyph = &m_AsianGlyph;
 	}
