@@ -160,6 +160,24 @@ char *Sys_DefaultHomePath( void )
 	Com_Printf( "Portable install requested, skipping homepath support\n" );
 	return NULL;
 #else
+	if ( Cvar_VariableIntegerValue( "fs_portable" ) )
+	{
+		Com_Printf("fs_portable enabled, skipping fs_homepath support\n");
+
+		if (Cvar_VariableIntegerValue("fs_portable") == 2)
+			return NULL;
+
+		FILE *ftest = fopen(va("%s/w", Sys_DefaultInstallPath()), "w");
+		
+		if (ftest) {
+			fclose(ftest);
+			remove(va("%s/w", Sys_DefaultInstallPath()));
+			return NULL;
+		}
+		else
+			Com_Printf("fs_portable write test failed, using fs_homepath\n");
+	}
+
 	if ( !homePath[0] )
 	{
 		TCHAR homeDirectory[MAX_PATH];

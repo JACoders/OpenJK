@@ -1684,8 +1684,10 @@ void CL_CheckForResend( void ) {
 
 	case CA_CHALLENGING:
 		if (protocolswitch->integer == 0 && !localserver) {//stall if we somehow got here before the response to our "getinfo" request
-			Com_Printf("^3no protocol set, stalling\n");
-			break;
+			//Com_Printf("^3no protocol set, stalling\n"); //this would make sense but the request isn't always sent in some cases with poor connection, some servers are also configured to refuse getinfo requests for some reason
+			//break; //just going to assume servers are 1.01 because it's not like there's enough 1.00 servers for this to really matter
+			Com_Printf("^3no response to server getinfo request, assuming protocol 26\n");
+			Cvar_Set("protocolswitch", "1");
 		}
 
 		// sending back the challenge
