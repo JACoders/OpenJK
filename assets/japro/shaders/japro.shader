@@ -10,8 +10,7 @@ bloodExplosion		// spurt of blood at point of impact
 }
 
 bloodTrail
-{
-		
+{		
 	nopicmip			// make sure a border remains
 	entityMergable		// allow all the sprites to be merged together
 	{
@@ -66,8 +65,8 @@ gfx/2d/numbers/zero
 {
 	nopicmip
 	{
-			map gfx/2d/numbers/zero
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/zero
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
 
@@ -75,8 +74,8 @@ gfx/2d/numbers/one
 {
 	nopicmip
 	{
-	  	map gfx/2d/numbers/one
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/one
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
 
@@ -121,7 +120,7 @@ gfx/2d/numbers/six
 {
 	nopicmip
 	{
-			map gfx/2d/numbers/six
+		map gfx/2d/numbers/six
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
