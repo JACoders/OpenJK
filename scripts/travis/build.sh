@@ -46,7 +46,7 @@ esac
 
 set -- \
 -D CMAKE_BUILD_TYPE="$flavour" \
--D BuildMPCGame=ON \
+-D BuildMPCGame=OFF \
 "$@"
 
 ( cd build && cmake \
