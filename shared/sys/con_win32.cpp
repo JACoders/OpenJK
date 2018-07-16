@@ -50,6 +50,9 @@ static int qconsole_cursor;
 static HANDLE qconsole_hout;
 static HANDLE qconsole_hin;
 
+static FILE *stdinptr, *stdoutptr, *stderrptr;
+static qboolean never_detach;
+
 /*
 ==================
 CON_ColorCharToAttrib
@@ -190,6 +193,9 @@ static void CON_Show( void )
 	CHAR_INFO line[ MAX_EDIT_LINE ];
 	WORD attrib;
 
+	if( !GetConsoleWindow() )
+		return;
+
 	GetConsoleScreenBufferInfo( qconsole_hout, &binfo );
 
 	// if we're in the middle of printf, don't bother writing the buffer
@@ -270,6 +276,7 @@ CON_Shutdown
 void CON_Shutdown( void )
 {
 	CON_Hide( );
+	SetConsoleCtrlHandler( CON_CtrlHandler, FALSE );
 	SetConsoleMode( qconsole_hin, qconsole_orig_mode );
 	SetConsoleCursorInfo( qconsole_hout, &qconsole_orig_cursorinfo );
 	SetConsoleTextAttribute( qconsole_hout, qconsole_attrib );
@@ -286,6 +293,20 @@ void CON_Init( void )
 {
 	CONSOLE_SCREEN_BUFFER_INFO info;
 	int i;
+
+#ifndef DEDICATED
+	if( AttachConsole( ATTACH_PARENT_PROCESS ) ) {
+		// started from console
+		stdinptr = freopen( "CONIN$", "r", stdin );
+		stdoutptr = freopen( "CONOUT$", "w", stdout );
+		stderrptr = freopen( "CONOUT$", "w", stderr );
+		never_detach = qtrue;
+	}
+#endif
+
+#ifdef _DEBUG
+	never_detach = qtrue;
+#endif
 
 	// handle Ctrl-C or other console termination
 	SetConsoleCtrlHandler( CON_CtrlHandler, TRUE );
@@ -309,7 +330,11 @@ void CON_Init( void )
 	qconsole_attrib = info.wAttributes;
 	qconsole_backgroundAttrib = qconsole_attrib & (BACKGROUND_BLUE|BACKGROUND_GREEN|BACKGROUND_RED|BACKGROUND_INTENSITY);
 
+#ifdef DEDICATED
 	SetConsoleTitle(CLIENT_WINDOW_TITLE " Dedicated Server Console");
+#else
+	SetConsoleTitle(CLIENT_WINDOW_TITLE " Console");
+#endif
 
 	// initialize history
 	for( i = 0; i < QCONSOLE_HISTORY; i++ )
@@ -317,6 +342,53 @@ void CON_Init( void )
 
 	// set text color to white
 	SetConsoleTextAttribute( qconsole_hout, CON_ColorCharToAttrib( COLOR_WHITE ) );
+}
+
+/*
+==================
+CON_CreateConsoleWindow
+==================
+*/
+void CON_CreateConsoleWindow(void) {
+	if (!GetConsoleWindow()) {
+		CON_Shutdown();
+
+		if (AllocConsole()) {
+			stdinptr = freopen("CONIN$", "r", stdin);
+			stdoutptr = freopen("CONOUT$", "w", stdout);
+			stderrptr = freopen("CONOUT$", "w", stderr);
+		}
+
+		CON_Init();
+	}
+}
+
+/*
+==================
+CON_DeleteConsoleWindow
+==================
+*/
+void CON_DeleteConsoleWindow(void) {
+	if (GetConsoleWindow() && !never_detach) {
+		CON_Shutdown();
+
+		if (stdinptr)
+			fclose(stdinptr);
+
+		if (stdoutptr)
+			fclose(stdoutptr);
+
+		if (stderrptr)
+			fclose(stderrptr);
+
+		if (FreeConsole()) {
+			freopen("CONIN$", "r", stdin);
+			freopen("CONOUT$", "w", stdout);
+			freopen("CONOUT$", "w", stderr);
+		}
+
+		CON_Init();
+	}
 }
 
 /*
@@ -547,6 +619,9 @@ CON_Print
 */
 void CON_Print( const char *msg )
 {
+	if ( !GetConsoleWindow() )
+		return;
+
 	CON_Hide( );
 
 	CON_WindowsColorPrint( msg );

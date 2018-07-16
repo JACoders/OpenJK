@@ -348,7 +348,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineSysFiles
 			${SPEngineSysFiles}
 			"${SharedDir}/sys/sys_win32.cpp"
-			"${SharedDir}/sys/con_passive.cpp"
+			"${SharedDir}/sys/con_win32.cpp"
 			)
 	else()
 		set(SPEngineSysFiles

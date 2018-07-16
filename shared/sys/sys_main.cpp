@@ -739,6 +739,9 @@ int main ( int argc, char* argv[] )
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
 	Sys_PlatformInit();
+#if defined(_DEBUG) && !defined(DEDICATED)
+	CON_CreateConsoleWindow();
+#endif
 	CON_Init();
 
 	// get the initial time base

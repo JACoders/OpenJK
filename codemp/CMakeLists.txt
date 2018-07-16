@@ -533,7 +533,7 @@ if(BuildMPEngine)
 		set(MPEngineSysFiles
 			${MPEngineSysFiles}
 			"${SharedDir}/sys/sys_win32.cpp"
-			"${SharedDir}/sys/con_passive.cpp"
+			"${SharedDir}/sys/con_win32.cpp"
 			)
 	else(WIN32)
 		set(MPEngineSysFiles
