@@ -2169,7 +2169,7 @@ void Svcmd_Register_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+	Q_strstrip(username, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
@@ -2537,7 +2537,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+	Q_strstrip(username, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	Q_CleanStr(password);
 
