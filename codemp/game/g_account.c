@@ -2285,7 +2285,7 @@ void Svcmd_RenameAccount_f(void)
 
 	Q_strlwr(newUsername);
 	Q_CleanStr(newUsername);
-	Q_strstrip(username, "\n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+	Q_strstrip(username, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
 	if (CheckUserExists(newUsername)) {
 		trap->Print( "ERROR: Desired username already exists.\n");
