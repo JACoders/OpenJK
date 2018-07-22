@@ -378,6 +378,7 @@ static QINLINE qboolean PM_IsRocketTrooper(void)
 	return qfalse;
 }
 
+int PM_GetMovePhysics(void);
 QINLINE int PM_GetMovePhysics(void)
 {
 	//if (!pm || !pm->ps)
