@@ -258,6 +258,11 @@ if(BuildMPEngine OR BuildMPDed)
 
 		${SharedCommonFiles}
 		)
+		
+		if(MSVC) #dunno how to do this for other compilers
+			set_source_files_properties(${MPDir}/qcommon/cm_polylib.cpp PROPERTIES COMPILE_FLAGS /arch:IA32)
+		endif(MSVC)
+		
 	if(WIN32)
 		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles})
 	endif(WIN32)
@@ -533,7 +538,7 @@ if(BuildMPEngine)
 		set(MPEngineSysFiles
 			${MPEngineSysFiles}
 			"${SharedDir}/sys/sys_win32.cpp"
-			"${SharedDir}/sys/con_passive.cpp"
+			"${SharedDir}/sys/con_win32.cpp"
 			)
 	else(WIN32)
 		set(MPEngineSysFiles

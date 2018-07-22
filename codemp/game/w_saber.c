@@ -2264,6 +2264,7 @@ static QINLINE int G_GetAttackDamage(gentity_t *self, int minDmg, int maxDmg, fl
 }
 
 //Get the point in the animation and return a percentage of the current point in the anim between 0 and the total anim length (0.0f - 1.0f)
+float G_GetAnimPoint(gentity_t *self);
 QINLINE float G_GetAnimPoint(gentity_t *self)
 {
 	int speedDif = 0;

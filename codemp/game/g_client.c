@@ -1048,7 +1048,9 @@ BodySink
 After sitting around for five seconds, fall into the ground and disappear
 =============
 */
+extern void BodyRid(gentity_t *ent);
 void BodySink( gentity_t *ent ) {
+	/*
 	if ( level.time - ent->timestamp > BODY_SINK_TIME + 2500 ) {
 		// the body ques are never actually freed, they are just unlinked
 		trap->UnlinkEntity( (sharedEntity_t *)ent );
@@ -1060,6 +1062,11 @@ void BodySink( gentity_t *ent ) {
 
 	G_AddEvent(ent, EV_BODYFADE, 0);
 	ent->nextthink = level.time + 18000;
+	*/
+
+	G_AddEvent(ent, EV_BODYFADE, 69);
+	ent->think = BodyRid;
+	ent->nextthink = level.time + 4000;
 	ent->takedamage = qfalse;
 }
 
@@ -2341,6 +2348,9 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			i++;
 		}
 	}
+	else {
+		client->pers.timenudge = Q3_INFINITE;//Not set..
+	}
 
 	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
 	if (Q_stricmp(s, "")) { //if s is set
@@ -2381,7 +2391,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->ps.persistant[PERS_CAMERA_SETTINGS] = client->pers.cameraSettings; //This gets reset on clientbegin ? damn
 	}
 
-	if (client->pers.timenudge > 200)
+	if (client->pers.timenudge > 200 && client->pers.timenudge != Q3_INFINITE)
 		client->pers.timenudge = 200;
 	else if (client->pers.timenudge < -1200)
 		client->pers.timenudge = -1200;

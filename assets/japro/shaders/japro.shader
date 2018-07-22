@@ -10,12 +10,12 @@ bloodExplosion		// spurt of blood at point of impact
 }
 
 bloodTrail
-{
+{		
 	nopicmip			// make sure a border remains
 	entityMergable		// allow all the sprites to be merged together
 	{
 		//clampmap gfx/misc/blood.tga
-			clampmap gfx/damage/blood_spurt.tga
+		clampmap gfx/damage/blood_spurt.tga
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 		rgbGen		vertex
 		alphaGen	vertex
@@ -37,6 +37,7 @@ bloodMark
 gfx/effects/sabers/RGBGlow
 {	
 	nopicmip
+	notc
 	cull	twosided
 	{
 		map gfx/effects/sabers/RGBGlow
@@ -50,6 +51,7 @@ gfx/effects/sabers/RGBGlow
 gfx/effects/sabers/RGBCore
 {
 	nopicmip
+	notc
 	cull	twosided
 	{
 		map gfx/effects/sabers/RGBCore
@@ -63,8 +65,8 @@ gfx/2d/numbers/zero
 {
 	nopicmip
 	{
-	  	map gfx/2d/numbers/zero
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/zero
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
 
@@ -72,8 +74,8 @@ gfx/2d/numbers/one
 {
 	nopicmip
 	{
-	 	map gfx/2d/numbers/one
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/one
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
 
@@ -118,7 +120,7 @@ gfx/2d/numbers/six
 {
 	nopicmip
 	{
-	  	map gfx/2d/numbers/six
+		map gfx/2d/numbers/six
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }

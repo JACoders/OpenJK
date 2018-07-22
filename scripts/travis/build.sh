@@ -24,6 +24,7 @@ case "${host}" in
 		;;
 	(macosx-universal-clang)
 		set -- \
+			-D BuildMPDed=OFF \
 			-D CMAKE_OSX_SYSROOT="" \
 			-D OPENGL_INCLUDE_DIR=/System/Library/Frameworks/OpenGL.framework \
 			-D OPENGL_gl_LIBRARY=/System/Library/Frameworks/OpenGL.framework \

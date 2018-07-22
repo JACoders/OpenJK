@@ -895,7 +895,8 @@ static bitInfo_T saberTweaks[] = {
 	{"Remove red DFA Boost"},//14
 	{"Make red DFA cost 0 forcepoints"},//15
 	{"Remove all backslash restrictions"},//16
-	{"Allow Sabergun"}//17
+	{"Allow Sabergun"},//17
+	{"Allow fast style change for single saber"}//17
 };
 static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
 
@@ -1152,7 +1153,7 @@ static bitInfo_T startingItems[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Ammo Dispenser"},//9
 	{"E-WEB"},//10
 	{"Cloak"},//11
-	{"Ability to toggle jetpack"}//11
+	{"Ability to toggle /jetpack"}//11
 };
 static const int MAX_STARTING_ITEMS = ARRAY_LEN( startingItems );
 

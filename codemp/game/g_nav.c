@@ -1306,7 +1306,8 @@ void SP_waypoint ( gentity_t *ent )
 		ent->r.contents = CONTENTS_TRIGGER;
 		ent->clipmask = MASK_DEADSOLID;
 
-		trap->LinkEntity( (sharedEntity_t *)ent );
+		if (!ent->isLogical)
+			trap->LinkEntity( (sharedEntity_t *)ent );
 
 		ent->count = -1;
 		ent->classname = "waypoint";
@@ -1347,7 +1348,8 @@ void SP_waypoint_small (gentity_t *ent)
 		ent->r.contents = CONTENTS_TRIGGER;
 		ent->clipmask = MASK_DEADSOLID;
 
-		trap->LinkEntity( (sharedEntity_t *)ent );
+		if (!ent->isLogical)
+			trap->LinkEntity( (sharedEntity_t *)ent );
 
 		ent->count = -1;
 		ent->classname = "waypoint";

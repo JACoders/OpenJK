@@ -33,7 +33,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 
 # Customizable options
-option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" ON)
+option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
 
 option(BuildMPEngine "Whether to create projects for the MP client (eternaljk.exe)" ON)
 option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-eternaljk_x86.dll)" ON)
@@ -192,10 +192,8 @@ if(MSVC)
 	set(SharedDefines ${SharedDefines} "_CRT_NONSTDC_NO_DEPRECATE")
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 	
 	# Configure MSVC Runtime
 	include(MSVCRuntime)
