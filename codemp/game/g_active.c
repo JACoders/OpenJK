@@ -4341,6 +4341,7 @@ void ClientThink_real( gentity_t *ent ) {
 			trap->SendServerCommand( duelAgainst-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
 			*/
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - Start]
+			//Show ranked, elo change? kms
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
 				if (dueltypes[ent->client->ps.clientNum] == 0) {//Saber
@@ -5307,13 +5308,15 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_SABERATTACKCYCLE:
-			int delay = 300;
-			if (g_tweakSaber.integer & ST_FASTCYCLE) {
-				if (!(ent->client->saber[0].singleBladeStyle || (ent->client->saber[1].model && ent->client->saber[1].model[0])))//Single
-					delay = 100;
+			{
+				int delay = 300;
+				if (g_tweakSaber.integer & ST_FASTCYCLE) {
+					if (!(ent->client->saber[0].singleBladeStyle || (ent->client->saber[1].model && ent->client->saber[1].model[0])))//Single
+						delay = 100;
+				}
+				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - delay) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
+					break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
 			}
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - delay) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
-				break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
 			Cmd_SaberAttackCycle_f(ent);
 			break;

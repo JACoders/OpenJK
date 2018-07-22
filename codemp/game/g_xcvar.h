@@ -322,7 +322,7 @@ XCVAR_DEF( g_showJumpSpot,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 #define _ELORANKING 1
 #if _ELORANKING
-XCVAR_DEF( g_eloRanking,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloRanking,					"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_eloNewUserCutoff,				"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloProvisionalCutoff,			"10",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloProvisionalChangeBig,		"2",			NULL,				CVAR_ARCHIVE,									qfalse )

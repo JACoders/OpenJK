@@ -4326,7 +4326,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 					//Saber Duel
 					G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
 					G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
-					if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					if (g_eloRanking.integer && ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					else
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
@@ -4334,7 +4334,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 				case	1://FF Duel
 					G_AddEvent(ent, EV_PRIVATE_DUEL, 2);
 					G_AddEvent(challenged, EV_PRIVATE_DUEL, 2);
-					if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					if (g_eloRanking.integer && ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					else
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
@@ -4342,7 +4342,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 				default://Gun duel
 					G_AddEvent(ent, EV_PRIVATE_DUEL, dueltypes[ent->client->ps.clientNum]);
 					G_AddEvent(challenged, EV_PRIVATE_DUEL, dueltypes[challenged->client->ps.clientNum]);
-					if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					if (g_eloRanking.integer && ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					else
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
