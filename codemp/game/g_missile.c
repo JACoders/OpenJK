@@ -930,7 +930,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	}
 
 #if _GRAPPLE//_GRAPPLE
-		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
+	if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
 		//gentity_t *nent;
 		vec3_t v;
 
@@ -1004,7 +1004,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc);
 		VectorSubtract( ent->r.currentOrigin, ent->parent->client->ps.origin, v );
 
-		trap->LinkEntity( (sharedEntity_t *)ent );
+		trap->LinkEntity( (sharedEntity_t *)ent ); //BROADCAST? so it wont get fucked by PVS?
 		//trap->LinkEntity( (sharedEntity_t *)nent );
 
 		return;
@@ -1265,20 +1265,28 @@ passthrough:
 #if _GRAPPLE//_GRAPPLE
 void StandardSetBodyAnim(gentity_t *self, int anim, int flags, int body);
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
-	float vel = g_hookSpeed.integer;
+	float vel = 2400.0f;
+	float inheritance = 0.5f;
+	int lifetime = 1000;
 	gentity_t	*hook;
 	//gentity_t *missile;
 
+	if (!self->client->sess.raceMode) {
+		inheritance = g_hookInheritance.value;
+		vel = g_hookSpeed.integer;
+		lifetime = 30000;
+	}
+
 	VectorNormalize (dir);
 
-	vel = vel + DotProduct(dir, self->client->ps.velocity)*g_hookInheritance.value; //Inheritence scale
+	vel = vel + DotProduct(dir, self->client->ps.velocity)*inheritance; //Inheritence scale - Hardcode this in racemode
 
 	if (vel < 250)
 		vel = 250;
 
 	hook = G_Spawn(qtrue);
 	hook->classname = "laserTrap";
-	hook->nextthink = level.time + 30000;
+	hook->nextthink = level.time + lifetime; //Dont let it go super far in racemode?
 	hook->think = Weapon_HookFree;
 	hook->s.eType = ET_MISSILE;
 	hook->s.clientNum = self->s.clientNum;

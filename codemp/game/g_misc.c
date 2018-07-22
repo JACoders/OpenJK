@@ -312,6 +312,8 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		down[2] -= 32768;
 		JP_Trace(&tr, origin, mins, maxs, down, player->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 		neworigin[2] = (int)tr.endpos[2];//Why does it crash without casting to int? wtf
+
+		player->client->lastInStartTrigger = level.time;
 	}
 
 	// use temp events at source and destination to prevent the effect

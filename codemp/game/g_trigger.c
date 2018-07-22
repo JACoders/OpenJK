@@ -1218,9 +1218,12 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 
 	style = player->client->sess.movementStyle;
 
+	if (style == MV_JETPACK)
+		return qfalse;//temp
+
 	if (((style == MV_RJQ3) || (style == MV_RJCPM)) && g_knockback.value != 1000.0f)
 		return qfalse;
-	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK && style != MV_SWOOP) { //Ignore forcejump restrictions if in onlybhop movement modes
+	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK && style != MV_SWOOP && style != MV_JETPACK && style != MV_SLICK && style != MV_BOTCPM) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
 			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 1!\n\n\n\n\n\n\n\n\n\n\"");
@@ -1466,7 +1469,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 }
 
-void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, qboolean sr, qboolean spb, qboolean wr, qboolean pb, qboolean loggedin, qboolean valid);
+void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank, float addedScore);
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize);
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMS);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
@@ -1528,7 +1531,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				Q_strncpyz( c, S_COLOR_GREEN, sizeof(c) );
 		}
 
-		if (valid && (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1) && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
+		if (valid && (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JKA) && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
 			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);//Just play it in jka physics for now...
 		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
@@ -1539,7 +1542,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		Q_StripColor(playerName);
 	
 		if (!valid) {
-			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse);
+			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, 0, 0, 0);
 		}
 		else {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -1549,10 +1552,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			if (p)
 				*p = 0;
 			if (player->client->pers.userName[0]) { //omg
-				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
+				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
 			}
 			else {
-				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, qtrue);
+				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qtrue, 0, 0, 0);
 			}
 		}
 
@@ -1613,9 +1616,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 			*/
 
 		if (player->client->pers.showCenterCP)
-			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 		if (player->client->pers.showChatCP)
-			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 		
 		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
 			if (!g_entities[i].inuse)
@@ -1624,9 +1627,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 			{
 				//if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
 				if (level.clients[i].pers.showCenterCP)
-					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 				if (level.clients[i].pers.showChatCP)
-					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)floorf(player->client->pers.stats.topSpeed + 0.5f)));
+					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 			}
 		}
 
@@ -2100,8 +2103,7 @@ void SP_trigger_hurt( gentity_t *self ) {
 	if ( ! (self->spawnflags & 1) ) {
 		trap->LinkEntity ((sharedEntity_t *)self);
 	}
-	else if (self->r.linked)
-	{
+	else if (self->r.linked) {
 		trap->UnlinkEntity((sharedEntity_t *)self);
 	}
 }

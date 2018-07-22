@@ -2041,7 +2041,7 @@ tryJetPack:
 	//if we got here, we didn't actually use anything else, so try to toggle jetpack if we are in the air, or if it is already on
 	if (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK))
 	{
-		if ((!g_tweakJetpack.integer || ent->client->sess.raceMode) && (ent->client->jetPackOn || ent->client->ps.groundEntityNum == ENTITYNUM_NONE))
+		if (!g_tweakJetpack.integer && !ent->client->sess.raceMode && (ent->client->jetPackOn || ent->client->ps.groundEntityNum == ENTITYNUM_NONE))
 		{
 			ItemUse_Jetpack(ent);
 			return;
@@ -2182,7 +2182,8 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 			VectorCopy(trace.endpos, neworg);
 			neworg[2] -= self->r.mins[2];
 			G_SetOrigin(self, neworg);
-			trap->LinkEntity((sharedEntity_t *)self);
+			if (!self->isLogical) //Waypoint can do this
+				trap->LinkEntity((sharedEntity_t *)self);
 
 			return G_CheckInSolid(self, qfalse);
 		}

@@ -3814,7 +3814,7 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;
 				}
 			}
-			else if ((!g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->ps.jetpackFuel < 100)
+			else if (!g_tweakJetpack.integer && !ent->client->sess.raceMode && ent->client->ps.jetpackFuel < 100)
 			{ //recharge jetpack
 				if (ent->client->jetPackDebRecharge < level.time)
 				{
@@ -3822,11 +3822,11 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;
 				}
 			}
-			else if (g_tweakJetpack.integer && !ent->client->sess.raceMode && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&ent->client->ps))
+			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->ps.eFlags & EF_JETPACK_ACTIVE)
 			{ //using jetpack, drain fuel
 				if (ent->client->jetPackDebReduce < level.time)
 				{
-					ent->client->ps.jetpackFuel -= 6;
+					ent->client->ps.jetpackFuel -= 5;
 					
 					if (ent->client->ps.jetpackFuel <= 0)
 					{ //turn it off
@@ -3836,11 +3836,11 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;//Defuel rate
 				}
 			}
-			else if (ent->client->ps.jetpackFuel < 100)
+			else if (ent->client->ps.jetpackFuel < 100 && ent->client->jetPackDebReduce < level.time - 250) //Add delay until it starts regen
 			{ //recharge jetpack
 				if (ent->client->jetPackDebRecharge < level.time)
 				{
-					ent->client->ps.jetpackFuel += 4;
+					ent->client->ps.jetpackFuel += 3;
 					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;//Refuel rate
 				}
 			}
@@ -4598,6 +4598,6 @@ static void G_SpawnHoleFixes( void ) {
 		free( text );
 		trap->FS_Close( f );
 	} else {
-		Com_Printf( "Failed to open file %s\n", filename );
+		//Com_Printf( "Failed to open file %s\n", filename );
 	}
 }

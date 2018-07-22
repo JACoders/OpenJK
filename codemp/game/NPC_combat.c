@@ -2488,7 +2488,8 @@ void SP_point_combat( gentity_t *self )
 
 	self->s.origin[2] += 0.125;
 	G_SetOrigin(self, self->s.origin);
-	trap->LinkEntity((sharedEntity_t *)self);
+	if (!self->isLogical)
+		trap->LinkEntity((sharedEntity_t *)self);
 
 	if ( G_CheckInSolid( self, qtrue ) )
 	{

@@ -879,7 +879,8 @@ PM_StepSlideMove
 
 ==================
 */
-void PM_StepSlideMove( qboolean gravity ) {
+int PM_GetMovePhysics(void);
+void PM_StepSlideMove( qboolean gravity ) { 
 	vec3_t		start_o, start_v;
 	vec3_t		down_o, down_v;
 	trace_t		trace;
@@ -891,8 +892,9 @@ void PM_StepSlideMove( qboolean gravity ) {
 	bgEntity_t	*pEnt;
 	qboolean skipStep = qfalse;
 	int NEW_STEPSIZE = STEPSIZE;
+	const int moveStyle = PM_GetMovePhysics();
 
-	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 4 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 6 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 8) {
+	if (moveStyle == MV_CPM || moveStyle == MV_Q3 || moveStyle == MV_WSW || moveStyle == MV_RJQ3 || moveStyle == MV_RJCPM || moveStyle == MV_SLICK || moveStyle == MV_BOTCPM) {
 		if (pm->ps->velocity[2] > 0 && pm->cmd.upmove > 0) {
 			int jumpHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
 
@@ -1063,7 +1065,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 			if (pm->stepSlideFix)
 			{
 				if (trace.fraction < 1.0) {
-					if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) { //Make Warsow Rampjump not slow down your XY speed
+					if (moveStyle == MV_WSW || moveStyle == MV_SLICK) { //Make Warsow Rampjump not slow down your XY speed
 						vec3_t oldVel, clipped_velocity, newVel;
 						float oldSpeed, newSpeed;
 
@@ -1097,7 +1099,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	if ( !pm->stepSlideFix )
 	{
 		if ( trace.fraction < 1.0 ) {
-			if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) {
+			if (moveStyle == MV_WSW || moveStyle == MV_SLICK) {
 				vec3_t oldVel, clipped_velocity, newVel;
 				float oldSpeed, newSpeed;
 

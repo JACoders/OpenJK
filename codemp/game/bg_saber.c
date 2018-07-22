@@ -2333,6 +2333,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 	{
 		saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
 		saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
+		const int moveStyle = PM_GetMovePhysics();
 
 		if ( saber1
 			&& saber1->jumpAtkRightMove != LS_INVALID )
@@ -2384,7 +2385,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 		else if (saber2 && (saber2->saberFlags&SFL_NO_CARTWHEELS))//no reason not to use else if, no point in setting it twice
 			allowCartwheels = qfalse;
-		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 7 || PM_GetMovePhysics() == 8) {
+		else if (moveStyle == MV_CPM || moveStyle == MV_Q3 || moveStyle == MV_RJQ3 || moveStyle == MV_RJCPM || moveStyle == MV_SLICK || moveStyle == MV_BOTCPM) {
 			allowCartwheels = qfalse;
 			noSpecials = qtrue;
 		}
@@ -3862,7 +3863,7 @@ weapChecks:
 						if ((newmove != LS_A_JUMP_T__B_) || !(g_tweakSaber.integer & ST_REDDFAFIX))
 #endif
 						{
-							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f))
+							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_JKA || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_QW || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_PJK) && (pm->ps->velocity[2] == 280.0f))
 							{
 								trace_t tr;
 								vec3_t down;

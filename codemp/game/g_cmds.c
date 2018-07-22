@@ -692,17 +692,23 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 			ent->client->ps.stats[STAT_ARMOR] = 25;
 		}
 		//}
-		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..? Do this for every style..
+		if (ent->client->sess.movementStyle == MV_RJQ3 || ent->client->sess.movementStyle == MV_RJCPM) { //Get rid of their rockets when they tele/noclip..? Do this for every style..
 			DeletePlayerProjectiles(ent);
 		}
 
+/* //already done every frame ?
+#if _GRAPPLE
+		if (ent->client->sess.movementStyle == MV_SLICK && ent->client->hook)
+			Weapon_HookFree(ent->client->hook);
+#endif
+*/
 		if (ent->client->sess.movementStyle == MV_SPEED) {
 			ent->client->ps.fd.forcePower = 50;
 		}
 
 		if (ent->client->sess.movementStyle == MV_JETPACK) {
 			ent->client->ps.jetpackFuel = 100;
-			Jetpack_Off(ent);
+			ent->client->ps.eFlags &= ~EF_JETPACK_ACTIVE;
 		}
 
 		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
@@ -1075,17 +1081,46 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 	}
 
 	if ( client->sess.sessionTeam == TEAM_RED ) {
-		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
-			client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEREDTEAM")) );
+		if (client->sess.raceMode) 
+			trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEREDTEAM")) );
+		else
+			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEREDTEAM")) );
 	} else if ( client->sess.sessionTeam == TEAM_BLUE ) {
-		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
-		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBLUETEAM")));
+		if (client->sess.raceMode) 
+			trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBLUETEAM")));
+		else
+			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBLUETEAM")));
 	} else if ( client->sess.sessionTeam == TEAM_SPECTATOR && oldTeam != TEAM_SPECTATOR ) {
-		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
-		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHESPECTATORS")));
+		if (client->sess.raceMode) 
+			trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHESPECTATORS")));
+		else
+			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHESPECTATORS")));
 	} else if ( client->sess.sessionTeam == TEAM_FREE ) {
-		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
-		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
+		if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
+		{
+			/*
+			gentity_t *currentWinner = G_GetDuelWinner(client);
+
+			if (currentWinner && currentWinner->client)
+			{
+				trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
+				currentWinner->client->pers.netname, G_GetStringEdString("MP_SVGAME", "VERSUS"), client->pers.netname));
+			}
+			else
+			{
+				trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+				client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
+			}
+			*/
+			//NOTE: Just doing a vs. once it counts two players up
+		}
+		else
+		{
+			if (client->sess.raceMode) 
+				trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
+			else
+				trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
+		}
 	}
 
 	G_LogPrintf( "ChangeTeam: %i [%s] (%s) \"%s^7\" %s -> %s\n", (int)(client - level.clients), client->sess.IP, client->pers.guid, client->pers.netname, TeamName( oldTeam ), TeamName( client->sess.sessionTeam ) );
@@ -4335,26 +4370,26 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 					//Saber Duel
 					G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
 					G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
-					if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					if (g_eloRanking.integer && ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					else
-						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
+						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					break;
 				case	1://FF Duel
 					G_AddEvent(ent, EV_PRIVATE_DUEL, 2);
 					G_AddEvent(challenged, EV_PRIVATE_DUEL, 2);
-					if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					if (g_eloRanking.integer && ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					else
-						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
+						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					break;
 				default://Gun duel
 					G_AddEvent(ent, EV_PRIVATE_DUEL, dueltypes[ent->client->ps.clientNum]);
 					G_AddEvent(challenged, EV_PRIVATE_DUEL, dueltypes[challenged->client->ps.clientNum]);
-					if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					if (g_eloRanking.integer && ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					else
-						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
+						trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 					break;
 			}
 						
@@ -4494,7 +4529,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	}
 }
 
-#ifndef FINAL_BUILD
+#if 1 //#ifndef FINAL_BUILD
 extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 
 void Cmd_DebugSetSaberMove_f(gentity_t *self)
@@ -4513,6 +4548,9 @@ void Cmd_DebugSetSaberMove_f(gentity_t *self)
 	{
 		return;
 	}
+
+	if (!self->client->sess.fullAdmin || !self->client->sess.juniorAdmin)
+		return;
 
 	self->client->ps.saberMove = atoi(arg);
 	self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
@@ -5644,7 +5682,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (!ent || !ent->client)
 		return;
 
-	Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
+	Q_strncpyz(buf, va("^5 Hi there, %s^5. This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig" );
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -5686,7 +5724,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (g_allowGrapple.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (grapple) ");
 	if (g_tweakJetpack.integer) 
-		Q_strcat(buf, sizeof(buf), "+button14 (jetpack) ");
+		Q_strcat(buf, sizeof(buf), "double jump (jetpack) ");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	if (g_raceMode.integer) {
@@ -5696,6 +5734,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "rRank ");
 		Q_strcat(buf, sizeof(buf), "rWorst ");
 		Q_strcat(buf, sizeof(buf), "rHardest ");
+		Q_strcat(buf, sizeof(buf), "rPopular ");
 		if (g_raceMode.integer > 1) 
 			Q_strcat(buf, sizeof(buf), "race ");
 		Q_strcat(buf, sizeof(buf), "jump ");
@@ -6632,7 +6671,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, or sp>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, slick, or botcpm>.\n\"" );
 		return;
 	}
 
@@ -6672,21 +6711,37 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	style = RaceNameToInteger(mStyle);
 
 	if (style >= 0) {
-
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
-			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
+			if (style == MV_WSW)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button13 for dash.\n\"");
+			else if (style == MV_JETPACK)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button12 for grapple, double jump for jetpack.\n\"");
+			else if (style == MV_SWOOP)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +attack for gravboost, +altattack for speedboost.\n\"");
+			else if (style == MV_BOTCPM)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset. Use +button14 for strafebot.\n\"");
+			else
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
 			ResetPlayerTimers(ent, qtrue);
 		}
 		else {
-			if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+			if (ent->client->sess.movementStyle == MV_RJQ3 || ent->client->sess.movementStyle == MV_RJCPM) { //Get rid of their rockets when they tele/noclip..?
 				DeletePlayerProjectiles(ent);
 			}
-			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+			if (style == MV_WSW)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button13 for dash.\n\"");
+			else if (style == MV_JETPACK)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button12 for grapple, double jump for jetpack.\n\"");
+			else if (style == MV_SWOOP)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +attack for gravboost, +altattack for speedboost.\n\"");
+			else if (style == MV_BOTCPM)
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated. Use +button14 for strafebot.\n\"");
+			else 
+				trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 		}
 
 		ent->client->sess.movementStyle = style;
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-			AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 
 		if (ent->client->ourSwoopNum) {
 
@@ -6724,7 +6779,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		}
 	}
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, or sp>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, speed, sp, slick, or botcpm>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 
@@ -8073,6 +8128,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Warsow style movement\n");
 	else if (g_movementStyle.integer == MV_SP)
 		Q_strcat(buf, sizeof(buf), "   ^5SP style movement\n");
+	else if (g_movementStyle.integer == MV_SLICK)
+		Q_strcat(buf, sizeof(buf), "   ^5Slick style movement\n");
 	if (g_fixRoll.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Tweaked roll\n"); // idk what the fuck this actually does to roll
 	else if (g_fixRoll.integer == 2)
@@ -8335,6 +8392,7 @@ void Cmd_DFHardest_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTodo_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
+void Cmd_DFPopular_f( gentity_t *ent );
 //void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
@@ -8426,7 +8484,7 @@ command_t commands[] = {
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
-	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
+	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	CMD_ALIVE },
 
 	/*
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
@@ -8477,7 +8535,7 @@ command_t commands[] = {
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 
-	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION|CMD_ALIVE},
+	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION },
 	{ "printstats",			Cmd_PrintStats_f,			CMD_NOINTERMISSION },
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 
@@ -8488,6 +8546,7 @@ command_t commands[] = {
 
 	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 
+	{ "rpopular",			Cmd_DFPopular_f,			CMD_NOINTERMISSION },
 	{ "rrank",				Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
 	{ "rtop",				Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 	{ "rworst",				Cmd_DFTodo_f,				CMD_NOINTERMISSION },

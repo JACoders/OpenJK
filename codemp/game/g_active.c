@@ -827,23 +827,20 @@ void P_DamageFeedback( gentity_t *player ) {
 		P_SetTwitchInfo(client);
 		player->pain_debounce_time = level.time + 700;
 		
-		if (g_stopHealthESP.integer)
+		if (g_stopHealthESP.integer == 1)
+			G_AddEvent( player, EV_PAIN, 50 ); //anti ESP here?
+		else if (g_stopHealthESP.integer > 1) 
 		{
-			int hp = player->health;
 			char* pain;
 
-			if (hp <= 25) {
+			if (player->health <= 25)
 				pain = "*pain25.wav";
-			}
-			else if (hp <= 50) {
+			else if (player->health <= 50)
 				pain = "*pain50.wav";
-			}
-			else if (hp <= 75) {
+			else if (player->health <= 75)
 				pain = "*pain75.wav";
-			}
-			else {
+			else
 				pain = "*pain100.wav";
-			}
 			
 			G_EntitySound(player, CHAN_VOICE, G_SoundIndex(pain));
 		}
@@ -2028,7 +2025,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 			ItemUse_Sentry(ent);
 			break;
 		case EV_USE_ITEM7: //jetpack
-			if (!g_tweakJetpack.integer || ent->client->sess.raceMode)
+			if (!g_tweakJetpack.integer && !ent->client->sess.raceMode)
 				ItemUse_Jetpack(ent);
 			break;
 		case EV_USE_ITEM8: //health disp
@@ -3287,12 +3284,31 @@ void Weapon_HookThink (gentity_t *ent);
 qboolean CanGrapple( gentity_t *ent ) {
 	if (!ent || !ent->client)
 		return qfalse;
-	//if (!g_allowGrapple.integer)
-	if (!g_allowGrapple.integer)
+	if (!g_allowGrapple.integer && !ent->client->sess.raceMode)
 		return qfalse;
-	if (ent->client->sess.raceMode)
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle != MV_JETPACK)
 		return qfalse;
 	if (ent->client->ps.duelInProgress)
+		return qfalse;
+	if (!BG_SaberInIdle(ent->client->ps.saberMove))
+		return qfalse;
+	if (BG_InRoll(&ent->client->ps, ent->client->ps.legsAnim))
+		return qfalse;
+	if (BG_InSpecialJump(ent->client->ps.legsAnim))
+		return qfalse;	
+	return qtrue;
+}
+
+qboolean CanFireGrapple( gentity_t *ent ) { // Adapt for new hold-to-use jetpack?
+	if (!ent || !ent->client)
+		return qfalse;
+	if (!g_allowGrapple.integer && !ent->client->sess.raceMode)
+		return qfalse;
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle != MV_JETPACK)
+		return qfalse;
+	if (ent->client->ps.duelInProgress)
+		return qfalse;
+	if (ent->client->jetPackOn)
 		return qfalse;
 	if (!BG_SaberInIdle(ent->client->ps.saberMove))
 		return qfalse;
@@ -3629,7 +3645,7 @@ void ClientThink_real( gentity_t *ent ) {
 	else*/if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
-	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && ((g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP)) { //Ok,, this should be like every frame, right??
+	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && (g_movementStyle.integer >= MV_SIEGE && g_movementStyle.integer <= MV_WSW) || g_movementStyle.integer == MV_SP || g_movementStyle.integer == MV_SLICK) { //Ok,, this should be like every frame, right??
 		client->sess.movementStyle = g_movementStyle.integer;
 	}
 	client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;
@@ -3841,15 +3857,20 @@ void ClientThink_real( gentity_t *ent ) {
 			//End
 			else if (client->jetPackOn)
 			{
-				client->ps.pm_type = PM_JETPACK;
+				client->ps.pm_type = PM_JETPACK; //terrible to set this here where it cant be predicted?
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
 				killJetFlags = qfalse;
 			}
 
-//JAPRO - Serverside - jetpack - Effects - Start
-			else if (g_tweakJetpack.integer && !ent->client->sess.raceMode && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&client->ps))
+//JAPRO - Serverside - jetpack - Effects - Start - Do this in pmove now..
+			/*
+			else if ((g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&client->ps))
 			{
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
+				killJetFlags = qfalse;
+			}
+			*/
+			else if ((g_tweakJetpack.integer || client->sess.raceMode) && client->ps.eFlags & EF_JETPACK_ACTIVE) {
 				killJetFlags = qfalse;
 			}
 //JAPRO - Serverside - jetpack - Effects - End
@@ -4093,8 +4114,8 @@ void ClientThink_real( gentity_t *ent ) {
 		client->ps.speed = g_speed.value;
 		if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
 			client->ps.speed = 250.0f;
-		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 2 || client->ps.stats[STAT_MOVEMENTSTYLE] == 3 || client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6 || client->ps.stats[STAT_MOVEMENTSTYLE] == 7 || client->ps.stats[STAT_MOVEMENTSTYLE] == 8) {//qw is 320 too
-			if (client->sess.movementStyle == 2 || client->sess.movementStyle == 3 || client->sess.movementStyle == 4 || client->sess.movementStyle == 6 || client->sess.movementStyle == 7 || client->sess.movementStyle == 8) {  //loda double check idk...
+		if (client->ps.stats[STAT_MOVEMENTSTYLE] == MV_QW || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_CPM || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_Q3 || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_WSW || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3 || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM || client->ps.stats[STAT_MOVEMENTSTYLE] == MV_BOTCPM) {//qw is 320 too
+			if (client->sess.movementStyle == MV_QW || client->sess.movementStyle == MV_CPM || client->sess.movementStyle == MV_Q3 || client->sess.movementStyle == MV_WSW || client->sess.movementStyle == MV_RJQ3 || client->sess.movementStyle == MV_RJCPM || client->sess.movementStyle == MV_BOTCPM) {  //loda double check idk...
 				client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
 				if (client->pers.haste)
 					client->ps.speed *= 1.3f;
@@ -4149,7 +4170,7 @@ void ClientThink_real( gentity_t *ent ) {
 				{
 					client->ps.gravity = g_gravity.value;
 					if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
-						client->ps.gravity = 750.0f; //Match 125fps gravity here since we are using decimal precision for Zvel now
+						client->ps.gravity = 750; //Match 125fps gravity here since we are using decimal precision for Zvel now
 				}
 			}
 		}
@@ -4238,6 +4259,7 @@ void ClientThink_real( gentity_t *ent ) {
 			trap->SendServerCommand( duelAgainst-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
 			*/
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - Start]
+			//Show ranked, elo change? kms
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
 				if (dueltypes[ent->client->ps.clientNum] == 0) {//Saber
@@ -4835,7 +4857,7 @@ void ClientThink_real( gentity_t *ent ) {
 				ent->client->ps.pm_type != PM_DEAD &&
 				!ent->client->hookHasBeenFired &&
 				(ent->client->hookFireTime < level.time - g_hookFloodProtect.integer) &&
-				CanGrapple(ent))
+				CanFireGrapple(ent))
 		{
 			Weapon_GrapplingHook_Fire( ent );
 			ent->client->hookHasBeenFired = qtrue;
@@ -5142,7 +5164,7 @@ void ClientThink_real( gentity_t *ent ) {
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) &&
 				G_ItemUsable(&ent->client->ps, HI_JETPACK) )
 			{
-				if (!g_tweakJetpack.integer || ent->client->sess.raceMode) {//JAPRO - Remove old jetpack
+				if (!g_tweakJetpack.integer && !ent->client->sess.raceMode) {//JAPRO - Remove old jetpack
 					ItemUse_Jetpack(ent);
 					G_AddEvent(ent, EV_USE_ITEM0+HI_JETPACK, 0);
 				}
@@ -5203,16 +5225,13 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_SABERATTACKCYCLE:
-			if (ent->client->saber[0].singleBladeStyle) { //Staff or half staff
-				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //style dependant..? ent->client->ps.fd.saberAnimLevel
-					break;
-			}
-			else if (ent->client->saber[1].model && ent->client->saber[1].model[0]) {//Duals or half duals
-				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //style dependant..? ent->client->ps.fd.saberAnimLevel
-					break;
-			}
-			else { //Single
-				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
+			{
+				int delay = 300;
+				if (g_tweakSaber.integer & ST_FASTCYCLE) {
+					if (!(ent->client->saber[0].singleBladeStyle || (ent->client->saber[1].model && ent->client->saber[1].model[0])))//Single
+						delay = 100;
+				}
+				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - delay) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
 					break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
 			}
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
