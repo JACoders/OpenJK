@@ -3053,6 +3053,25 @@ typedef enum tauntTypes_e
 
 void G_SetTauntAnim( gentity_t *ent, int taunt )
 {
+
+#if 1 //ass
+	if (g_emotesDisable.integer & (1 << E_BASEDUEL)) { //block flourish/gloat/bow/meditate outside of duelmode or while moving
+		if (ent->client->pers.cmd.upmove ||
+			ent->client->pers.cmd.forwardmove ||
+			ent->client->pers.cmd.rightmove)
+		{ //hack, don't do while moving
+			return;
+		}
+		if ( taunt != TAUNT_TAUNT )
+		{//normal taunt always allowed
+			if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
+			{//no taunts unless in Duel
+				return;
+			}
+		}
+	}
+#endif
+
 	BG_ClearRocketLock(&ent->client->ps);// fix: rocket lock bug
 
 	if ( ent->client->ps.torsoTimer < 1 

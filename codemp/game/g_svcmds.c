@@ -1479,7 +1479,8 @@ static bitInfo_T emoteDisables[] = {
 	{"Sleep"},//17
 	{"Saberflip"},//18
 	{"Slap"},//19
-	{"Signal"}//20
+	{"Signal"},//20
+	{"Taunt/Flourish/Bow/Meditate outside of duel or while moving"},//20
 };
 static const int MAX_EMOTE_DISABLES = ARRAY_LEN( emoteDisables );
 
