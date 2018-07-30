@@ -2003,7 +2003,8 @@ gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 	if (it->classname)
 		Com_Printf("Last classname %s type %i, tag %i, end: %i\n", it->classname, it->giType, it->giTag, it);
 
-	Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon); //This caused a crash once (wp_blaster)
+	//Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon); //This caused a crash once (wp_blaster)
+	trap->SendServerCommand(-1, va("print \"Something bad happened. The server would normally have crashed right now. 'BG_FindItemForWeapon: Couldn't find item for weapon %i'\n\"", weapon));
 	return NULL;
 }
 

@@ -12059,6 +12059,7 @@ void PmoveSingle (pmove_t *pmove) {
 					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 				}
 #endif
+				//if emotedisable baseduel, lock player view here like in basejk
 				pm->cmd.rightmove = 0;
 				pm->cmd.upmove = 0;
 				pm->cmd.forwardmove = 0;
@@ -12066,6 +12067,7 @@ void PmoveSingle (pmove_t *pmove) {
 			}
 			else if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
 			{
+			//if emotedisable baseduel, lock player here like in basejk
 #ifdef CGAME
 				if (cgs.isJAPlus || cgs.isJAPro)
 				{
@@ -12197,8 +12199,6 @@ void PmoveSingle (pmove_t *pmove) {
 
 	PM_CmdForSaberMoves(&pm->cmd);
 
-	BG_AdjustClientSpeed(pm->ps, &pm->cmd, pm->cmd.serverTime);
-
 	if ( pm->ps->stats[STAT_HEALTH] <= 0 ) {
 		pm->tracemask &= ~CONTENTS_BODY;	// corpses can fly through bodies
 	}
@@ -12208,6 +12208,8 @@ void PmoveSingle (pmove_t *pmove) {
 	if ( abs( pm->cmd.forwardmove ) > 64 || abs( pm->cmd.rightmove ) > 64 ) {
 		pm->cmd.buttons &= ~BUTTON_WALKING;
 	}
+
+	BG_AdjustClientSpeed(pm->ps, &pm->cmd, pm->cmd.serverTime); //move this down 2 blocks
 
 	// set the talk balloon flag
 	if ( pm->cmd.buttons & BUTTON_TALK ) {
@@ -13124,11 +13126,11 @@ void Pmove (pmove_t *pmove) {
 
 	pmove->ps->pmove_framecount = (pmove->ps->pmove_framecount+1) & ((1<<PS_PMOVEFRAMECOUNTBITS)-1);
 
-	if (pmove->ps->stats[STAT_RACEMODE] /*pm->ps->clientNum < MAX_CLIENTS*/) {//racemode only?
+	//if (pmove->ps->stats[STAT_RACEMODE] /*pm->ps->clientNum < MAX_CLIENTS*/) {//racemode only?
 		pmove->cmd.angles[ROLL] = 0;
 		pmove->ps->viewangles[ROLL] = 0;
 		pmove->ps->delta_angles[ROLL] = 0;
-	}
+	//}
 
 	// chop the move up if it is too long, to prevent framerate
 	// dependent behavior
