@@ -3376,6 +3376,190 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 }
 #endif
 
+void Cmd_DFFind_f(gentity_t *ent) {
+	int style = -1, season = -1, input, i;
+	char inputString[40], inputStyleString[16], username[16];
+	char partialCourseName[40] = {0}, fullCourseName[40] = {0};
+	const int args = trap->Argc();
+	qboolean enteredCourseName = qtrue;
+
+	if (args > 5 || args < 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.  This displays the players best time.\n\"");
+		return;
+	}
+
+	//Always assume 1st arg is username
+	trap->Argv(1, username, sizeof(username));
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	//Get mapname.
+	//How to tell if mapname is specified -- If its a map with only 1 course, we have to check. Otherwise we can assume 2nd arg is mapname.
+		//It will always be the 2nd arg.
+		//If the 2nd arg doesnt match the pattern of style/season/page, we can assume it is mapname.
+		//This means we cant search for
+
+	if (args == 2) //rFind <username>
+		enteredCourseName = qfalse;
+	else {
+		trap->Argv(2, inputString, sizeof(inputString));
+		//use strtol isntead of atoi maybe - partial coursename can start with number
+		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1)) {//If arg1 is style or season
+			enteredCourseName = qfalse; //Use current mapname as coursename
+		}
+	}
+
+	if (enteredCourseName) {
+		trap->Argv(2, partialCourseName, sizeof(partialCourseName)); //Use arg1 as coursename
+	}
+
+	if (!enteredCourseName) {
+		if (!level.numCourses) {
+			trap->SendServerCommand(ent-g_entities, "print \"This map has no courses, you must specify one of the following with /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.\n\"");
+			return;
+		}
+		else if (level.numCourses > 1) { //uhhhh
+			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.\n\"");
+			for (i = 0; i < level.numCourses; i++) { //32 max
+				if (level.courseName[i] && level.courseName[i][0])
+					trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i+1, level.courseName[i]));
+			}
+			return;
+		}
+	}
+
+	//Go through args 3-x, if we have a specified mapname, or 1-x if we dont
+	for (i = (enteredCourseName ? 3 : 2) ; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
+			}
+		}
+		if (season == -1) {
+			input = SeasonToInteger(inputString);
+			if (input != -1) {
+				season = input;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.  This displays the players best time.\n\"");
+		return; //Arg doesnt match any expected values so error.
+	}
+
+	if (style == -1) //Default to JKA style
+		style = 1;
+	IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
+	Q_strcat(inputStyleString, sizeof(inputStyleString), " style");
+
+	Q_strlwr(partialCourseName);
+	Q_CleanStr(partialCourseName);
+
+	if (!enteredCourseName) {
+		char info[1024] = {0};
+		trap->GetServerinfo(info, sizeof(info));
+		Q_strncpyz(fullCourseName, Info_ValueForKey( info, "mapname" ), sizeof(fullCourseName));
+		Q_strlwr(fullCourseName);
+		Q_CleanStr(fullCourseName);
+	}
+
+	{ //See if course is found in database and print it then..?
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+		char dateStr[64] = {0}, dateStrColored[64] = {0}, timeStr[32], msg[1024-128] = {0};
+		time_t	rawtime;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		if (enteredCourseName) { //Course e
+			//Com_Printf("doing sql query %s %i\n", courseName, style);
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE %?%";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY LENGTH(coursename) ASC, entries DESC LIMIT 1";
+			sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(replace(coursename, ' ', ''), ?) > 0 ORDER BY entries DESC LIMIT 1";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, partialCourseName, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				//Check if it actually has text, if not return.  then we can use cheaper (MAX) entries query above //loda fixme
+				Q_strncpyz(fullCourseName, (char*)sqlite3_column_text(stmt, 0), sizeof(fullCourseName));
+			}
+			else if (s == SQLITE_DONE) {
+				//Com_Printf("fail 4\n");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.  This displays the players best time.\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTop10_f)", s);
+				return;
+			}
+			CALL_SQLITE (finalize(stmt));
+
+		}
+
+		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
+		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
+		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
+		if (season == -1)
+			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+		else 
+			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, fullCourseName, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style));
+
+		if (season != -1) {
+			CALL_SQLITE (bind_int (stmt, 4, season));
+		}
+
+		time( &rawtime );
+		localtime( &rawtime );
+
+		if (season == -1)
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString));
+		else
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s season %i:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString, season));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				TimeToString(sqlite3_column_int(stmt, 0), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
+				if (rawtime - sqlite3_column_int(stmt, 3) < 60*60*24) { //Today
+					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
+				}
+				else {
+					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
+				}
+				tmpMsg = va("    ^3%-12s ^3%-11i ^3%-12i %s\n", timeStr, sqlite3_column_int(stmt, 1), sqlite3_column_int(stmt, 2), dateStrColored);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFFind_f)", s);
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+}
+
 #if 1//NEWRACERANKING
 void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	int style = -1, season = -1, page = -1, start = 0, i, input;
@@ -3794,11 +3978,11 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		return;
 	}
 
-	//Get mapname. 
+	//Get mapname.
 	//How to tell if mapname is specified -- If its a map with only 1 course, we have to check. Otherwise we can assume 1st arg is mapname.
 		//It will always be the first arg.
 		//If the first arg doesnt match the pattern of style/season/page, we can assume it is mapname.
-		//This means we cant search for 
+		//This means we cant search for
 
 	if (args == 1)
 		enteredCourseName = qfalse;

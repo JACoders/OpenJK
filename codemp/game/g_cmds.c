@@ -8343,6 +8343,7 @@ void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFRecent_f( gentity_t *ent );
+void Cmd_DFFind_f( gentity_t *ent );
 void Cmd_DFHardest_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTodo_f( gentity_t *ent );
@@ -8496,6 +8497,7 @@ command_t commands[] = {
 
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 
+	{ "rfind",				Cmd_DFFind_f,			CMD_NOINTERMISSION },
 	{ "rhardest",			Cmd_DFHardest_f,			CMD_NOINTERMISSION },
 	{ "rlatest",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
 
