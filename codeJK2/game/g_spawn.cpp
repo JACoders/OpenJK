@@ -39,7 +39,7 @@ char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 #include "../../code/qcommon/sstring.h"
 
 //NOTENOTE: Be sure to change the mirrored code in cgmain.cpp
-typedef std::map< sstring_t, unsigned char, std::less<sstring_t>, std::allocator< unsigned char >  >	namePrecache_m;
+typedef std::map< sstring_t, unsigned char, std::less<sstring_t> >	namePrecache_m;
 namePrecache_m	*as_preCacheMap;
 
 qboolean	G_SpawnString( const char *key, const char *defaultString, char **out ) {
