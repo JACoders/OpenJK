@@ -2068,7 +2068,7 @@ void PrintStats(int client) {
 	Q_strncpyz(lDmgNet, va("Net Dmg%s", whitespace), sizeof(lDmgNet));
 	Q_strncpyz(lDmgPerDeath, va("Dmg/Death%s", whitespace), sizeof(lDmgPerDeath));
 	if (level.gametype == GT_TEAM && g_friendlyFire.integer)
-		Q_strncpyz(lTK, va("Team Dmgs%s", whitespace), sizeof(lTK));
+		Q_strncpyz(lTK, va("Team Dmg%s", whitespace), sizeof(lTK)); //Should be just "Team Dmg"
 	if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
 		Q_strncpyz(lCaptures, va("Caps%s", whitespace), sizeof(lCaptures));
 		Q_strncpyz(lReturns, va("Rets%s", whitespace), sizeof(lReturns));

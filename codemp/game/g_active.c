@@ -2074,6 +2074,7 @@ A client is broadcast when another client is using force sight or is
 #define MAX_SIGHT_DISTANCE		1500
 #define MAX_SIGHT_FOV			100
 
+#if !_ANTIWALLHACK
 static void G_UpdateForceSightBroadcasts ( gentity_t *self )
 {
 	int i;
@@ -2165,6 +2166,7 @@ static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
 		break;
 	}
 }
+#endif
 
 #if _ANTIWALLHACK
 

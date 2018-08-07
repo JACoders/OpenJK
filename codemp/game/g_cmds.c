@@ -7889,7 +7889,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber Duel Force regen time: ^2%i\n", g_saberDuelForceRegenTime.integer));
 	if (g_forceDuelForceRegenTime.integer != g_forceRegenTime.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Force Duel Force regen time: ^2%i\n", g_forceDuelForceRegenTime.integer));
-	Q_strcat(buf, sizeof(buf), va("   ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No"));
+	Q_strcat(buf, sizeof(buf), va("   ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No")); //Only print if changed?
 	if (!(dmflags.integer & DF_NO_FALLING) && g_maxFallDmg.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Fall damage capped at^3: ^2%i\n", g_maxFallDmg.integer));
 	if (g_fixKillCredit.integer == 1)
