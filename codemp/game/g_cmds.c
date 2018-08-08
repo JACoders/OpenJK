@@ -8362,6 +8362,9 @@ void Cmd_TestBSP_f( gentity_t *ent );
 #if _ELORANKING
 void Cmd_DuelTop10_f( gentity_t *ent );
 #endif
+void Cmd_CreateTeam_f( gentity_t *ent );
+void Cmd_JoinTeam_f( gentity_t *ent );
+void Cmd_ListTeam_f( gentity_t *ent );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -8430,9 +8433,14 @@ command_t commands[] = {
 
 	{ "changepassword",		Cmd_ChangePassword_f,		CMD_NOINTERMISSION },
 
+	{ "clancreate",			Cmd_CreateTeam_f,			CMD_NOINTERMISSION },
+	{ "clanjoin",			Cmd_JoinTeam_f,				CMD_NOINTERMISSION },
+	{ "clanlist",			Cmd_ListTeam_f,				CMD_NOINTERMISSION },
+
 	{ "clanpass",			Cmd_Clanpass_f,				CMD_NOINTERMISSION },
 	{ "clansay",			Cmd_Clansay_f,				0 },
 	{ "clanwhois",			Cmd_Clanwhois_f,			0 },
+
 	{ "debugBMove_Back",	Cmd_BotMoveBack_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Forward",	Cmd_BotMoveForward_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
