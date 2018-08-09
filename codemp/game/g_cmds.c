@@ -8367,6 +8367,7 @@ void Cmd_JoinTeam_f( gentity_t *ent );
 void Cmd_ListTeam_f( gentity_t *ent );
 void Cmd_InviteTeam_f( gentity_t *ent );
 void Cmd_InfoTeam_f( gentity_t *ent );
+void Cmd_AdminTeam_f( gentity_t *ent );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -8435,6 +8436,7 @@ command_t commands[] = {
 
 	{ "changepassword",		Cmd_ChangePassword_f,		CMD_NOINTERMISSION },
 
+	{ "clanadmin",			Cmd_AdminTeam_f,			CMD_NOINTERMISSION },
 	{ "clancreate",			Cmd_CreateTeam_f,			CMD_NOINTERMISSION },
 	{ "claninfo",			Cmd_InfoTeam_f,				CMD_NOINTERMISSION },
 	{ "claninvite",			Cmd_InviteTeam_f,			CMD_NOINTERMISSION },

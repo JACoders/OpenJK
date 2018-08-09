@@ -2757,7 +2757,7 @@ void Cmd_JoinTeam_f( gentity_t *ent ) {
 		if (count > 0)
 			sql = "UPDATE LocalTeamAccount SET flags = 0 WHERE team = ? AND account = ?";
 		else 
-			sql = "INSERT INTO LocalTeamAccount (team, account) VALUES (?, ?)"; //Replace
+			sql = "INSERT INTO LocalTeamAccount (team, account, flags) VALUES (?, ?, 0)"; //Replace
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
@@ -3159,6 +3159,182 @@ void Cmd_InviteTeam_f( gentity_t *ent ) {
 		CALL_SQLITE (close(db));
 	}
 
+}
+
+void Cmd_AdminTeam_f( gentity_t *ent ) {
+	char command[16], username[16], teamname[16];
+	//Get sub command
+		//kick
+		//private
+		//longname
+		//tags
+	//Do action
+
+	const int args = trap->Argc();
+	if (args < 3 || args > 4) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+		return; 
+	}
+
+	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+
+	trap->Argv(2, command, sizeof(command));
+	Q_strlwr(command);
+	Q_CleanStr(command);
+
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT flags FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			int flags = sqlite3_column_int(stmt, 0);
+			if (!(flags & JAPRO_ACCOUNTTEAMFLAG_OWNER)) {
+				trap->SendServerCommand(ent-g_entities, "print \"You are not the clan leader!\n\"");//no permission
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"You are not the clan leader!\n\"");//not even in the clan - lmao
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_AdminTeam_f 1)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (!Q_stricmp(command, "kick")) {
+			char player[16];
+
+			if (args < 4) {
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			trap->Argv(3, player, sizeof(player));
+			Q_strlwr(player);
+			Q_CleanStr(player);
+			Q_strstrip(player, "\n\r", NULL);
+
+			sql = "DELETE FROM LocalTeamAccount WHERE team = ? AND account = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, player, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Player removed.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 2)", s);
+			CALL_SQLITE (finalize(stmt));
+
+		}
+		else if (!Q_stricmp(command, "private")) {
+			sql = "UPDATE LocalTeam SET flags = ? WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, JAPRO_TEAMFLAG_PRIVATE));
+			CALL_SQLITE (bind_text (stmt, 2, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Clan made private.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 3)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (!Q_stricmp(command, "public")) {
+			sql = "UPDATE LocalTeam SET flags = 0 WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Clan made public.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 4)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (!Q_stricmp(command, "longname")) {
+			char longname[24];
+
+			if (args < 4) {
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			trap->Argv(3, longname, sizeof(longname));
+			//Q_strlwr(longname);
+			//Q_CleanStr(longname);
+			//Q_strstrip(username, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+			Q_strstrip(longname, "\n\r", NULL);
+
+			sql = "UPDATE LocalTeam SET longname = ? WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, longname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Longname set.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 5)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (!Q_stricmp(command, "tag")) {
+			char tags[16];
+
+			if (args < 4) {
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			trap->Argv(3, tags, sizeof(tags));
+			//Q_strlwr(tags);
+			//Q_CleanStr(tags);
+			Q_strstrip(tags, "\n\r", NULL);
+
+			sql = "UPDATE LocalTeam SET tag = ? WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, tags, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Tag set.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 6)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+		}
+
+		CALL_SQLITE (close(db));
+
+	}
 }
 
 void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
