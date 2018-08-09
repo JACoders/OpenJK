@@ -3227,12 +3227,12 @@ void Cmd_InfoTeam_f( gentity_t *ent ) {
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-		sql = "SELECT account FROM LocalTeamAccount WHERE team = ? LIMIT ?, 10";
+		sql = "SELECT username, ROUND(SUM((entries/rank + entries-rank))/2,0) AS score FROM LocalRun WHERE rank != 0 AND username IN (SELECT account FROM LocalTeamAccount WHERE team = ? AND (flags & 2 != 2)) GROUP BY username ORDER BY score DESC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, start));
 
-		trap->SendServerCommand(ent-g_entities, va("print \"clanInfo %s:\n    ^5Name\n\"", teamname));
+		trap->SendServerCommand(ent-g_entities, va("print \"clanInfo %s:\n    ^5Name               Score\n\"", teamname));
 	
 		while (1) {
 			s = sqlite3_step(stmt);
@@ -3241,7 +3241,7 @@ void Cmd_InfoTeam_f( gentity_t *ent ) {
 
 				Q_strncpyz(playername, (char*)sqlite3_column_text(stmt, 0), sizeof(playername));
 
-				tmpMsg = va("^5%2i^3: ^3%-18s\n", start+row, playername);
+				tmpMsg = va("^5%2i^3: ^3%-18s %i\n", start+row, playername, sqlite3_column_int(stmt, 1));
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
@@ -3294,7 +3294,7 @@ void Cmd_ListTeam_f( gentity_t *ent ) { //Should i bother to cache player stats 
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-		sql = "SELECT name FROM LocalTeam LIMIT ?, 10";
+		sql = "SELECT name FROM LocalTeam LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, start));
 
@@ -3334,7 +3334,7 @@ void Cmd_InviteTeam_f( gentity_t *ent ) {
 	char username[16], teamname[16], invitee[16];
 		
 	if (trap->Argc() != 3) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanInvite <player> <clan>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanInvite <clan> <player>\n\"");
 		return;
 	}
 
@@ -3344,8 +3344,8 @@ void Cmd_InviteTeam_f( gentity_t *ent ) {
 	}
 
 	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
-	trap->Argv(1, invitee, sizeof(invitee));
-	trap->Argv(2, teamname, sizeof(teamname));
+	trap->Argv(1, teamname, sizeof(teamname));
+	trap->Argv(2, invitee, sizeof(invitee));
 
 	Q_strlwr(teamname);
 	Q_CleanStr(teamname);
@@ -3360,6 +3360,11 @@ void Cmd_InviteTeam_f( gentity_t *ent ) {
 	//Confirm im clan leader
 	//Make sure they are not already in the clan
 	//Create invite
+
+	if (!CheckUserExists(invitee)) {
+		trap->Print( "User does not exist!\n");
+		return;
+	}
 
 	{
 		sqlite3 * db;
@@ -4507,7 +4512,7 @@ void Cmd_DFFind_f(gentity_t *ent) {
 				return;
 			}
 			else {
-				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFTop10_f)", s);
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFFind_f)", s);
 				return;
 			}
 			CALL_SQLITE (finalize(stmt));
