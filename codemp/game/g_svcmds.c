@@ -1560,6 +1560,10 @@ void G_TestAddRace( void );
 #endif
 void Svcmd_AccountIPLock_f( void );
 
+void Svcmd_ClanJoin_f( void );
+void Svcmd_ClanKick_f( void );
+void Svcmd_ClanCreate_f( void );
+void Svcmd_ClanDelete_f( void );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
@@ -1587,6 +1591,12 @@ svcmd_t svcmds[] = {
 
 	{ "checkfields",				G_CheckFields,						qfalse },
 	{ "checkspawns",				G_CheckSpawns,						qfalse },
+
+	{ "clancreate",					Svcmd_ClanCreate_f,					qfalse },
+	{ "clandelete",					Svcmd_ClanDelete_f,					qfalse },
+	{ "clanjoin",					Svcmd_ClanJoin_f,					qfalse },
+	{ "clankick",					Svcmd_ClanKick_f,					qfalse },
+
 
 	{ "clearIP",					Svcmd_ClearIP_f,					qfalse },
 	{ "DBInfo",						Svcmd_DBInfo_f,						qfalse },

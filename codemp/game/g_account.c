@@ -174,7 +174,7 @@ void DebugWriteToDB(char *entrypoint) {
 }
 */
 
-int CheckUserExists(char *username) {
+int CheckUserExists(char *username) { //make this accept existing DB so we dont have to open/close it
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -2510,6 +2510,310 @@ void Svcmd_DBInfo_f(void)
 	CALL_SQLITE (close(db));
 
 	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.\n", numAccounts, numRaces, numDuels);
+}
+
+void Svcmd_ClanDelete_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /clanDelete <clan>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "Clan does not exist!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanDelete_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "DELETE FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "Clan deleted.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Delete Failed (Svcmd_ClanDelete_f 2)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_ClanCreate_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /clanCreate <clan>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count > 0) {
+			trap->Print( "Clan already exists!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanCreate_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "INSERT INTO LocalTeam (name, flags) VALUES (?, 1)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "Clan created.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Insert Failed (Svcmd_ClanCreate_f 2)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_ClanKick_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[16], teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 3) {
+		trap->Print( "Usage: /clanKick <clan> <username>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	trap->Argv(2, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	if (!CheckUserExists(username)) {
+		trap->Print( "This user does not exist!\n");
+		return;
+	}
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "Clan does not exist!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanKick_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "User is not in this clan!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanKick_f 2)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+	
+
+	sql = "DELETE FROM LocalTeamAccount WHERE team = ? AND account = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "User removed from clan.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Delete Failed (Svcmd_ClanKick_f 3)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_ClanJoin_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[16], teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 3) {
+		trap->Print( "Usage: /clanJoin <clan> <username>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	trap->Argv(2, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	if (!CheckUserExists(username)) {
+		trap->Print( "This user does not exist!\n");
+		return;
+	}
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "Clan does not exist.\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanJoin_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count > 0) {
+			trap->Print( "User is already in this clan!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanJoin_f 2)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+	
+
+	sql = "INSERT INTO LocalTeamAccount (team, account, flags) VALUES (?, ?, 0)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "User added to clan.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Insert Failed (Svcmd_ClanJoin_f 3)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
 }
 
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
