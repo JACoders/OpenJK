@@ -3227,7 +3227,7 @@ void Cmd_InfoTeam_f( gentity_t *ent ) {
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-		sql = "SELECT username, ROUND(SUM((entries/rank + entries-rank))/2,0) AS score FROM LocalRun WHERE rank != 0 AND username IN (SELECT account FROM LocalTeamAccount WHERE team = ? AND (flags & 2 != 2)) GROUP BY username ORDER BY score DESC LIMIT ?, 10";
+		sql = "SELECT username, ROUND(SUM((entries/CAST(rank AS FLOAT) + entries-rank))/2,0) AS score FROM LocalRun WHERE rank != 0 AND username IN (SELECT account FROM LocalTeamAccount WHERE team = ? AND (flags & 2 != 2)) GROUP BY username ORDER BY score DESC LIMIT ?, 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, start));
@@ -3294,11 +3294,15 @@ void Cmd_ListTeam_f( gentity_t *ent ) { //Should i bother to cache player stats 
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-		sql = "SELECT name FROM LocalTeam LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
+		sql = "SELECT T.name AS name, TA.count AS count, T.flags AS flags FROM "
+				"(SELECT name, flags From LocalTeam) AS T "
+				"INNER JOIN "
+				"(SELECT team, COUNT(*) AS count From LocalTeamAccount GROUP BY team) AS TA "
+				"ON T.name = TA.team ORDER BY count DESC LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, start));
 
-		trap->SendServerCommand(ent-g_entities, "print \"Clanlist:\n    ^5Name\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Clanlist:\n    ^5Name               Members\n\"");
 	
 		while (1) {
 			s = sqlite3_step(stmt);
@@ -3307,7 +3311,7 @@ void Cmd_ListTeam_f( gentity_t *ent ) { //Should i bother to cache player stats 
 
 				Q_strncpyz(teamname, (char*)sqlite3_column_text(stmt, 0), sizeof(teamname));
 
-				tmpMsg = va("^5%2i^3: ^3%-18s\n", start+row, teamname);
+				tmpMsg = va("^5%2i^3: ^3%-18s %i\n", start+row, teamname, sqlite3_column_int(stmt, 1)); //Use flags eventually to highlight leader?
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';

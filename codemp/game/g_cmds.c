@@ -5651,6 +5651,18 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
+	if (g_allowRegistration.integer > 1) {
+		Q_strncpyz(buf, "   ^3Clan commands: ", sizeof(buf));
+		Q_strcat(buf, sizeof(buf), "clanList ");
+		Q_strcat(buf, sizeof(buf), "clanInfo ");
+		Q_strcat(buf, sizeof(buf), "clanJoin ");
+		Q_strcat(buf, sizeof(buf), "clanAdmin ");
+		if (g_allowRegistration.integer > 2)
+			Q_strcat(buf, sizeof(buf), "clanCreate ");
+		Q_strcat(buf, sizeof(buf), "clanInvite");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
+	}
+
 	Q_strncpyz(buf, "   ^3Chat commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "ignore ");
 	Q_strcat(buf, sizeof(buf), "clanPass ");
