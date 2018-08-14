@@ -3080,6 +3080,96 @@ void Cmd_JoinTeam_f( gentity_t *ent ) {
 
 }
 
+void Cmd_LeaveTeam_f( gentity_t *ent ) {
+	char username[16], teamname[16];
+		
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanLeave <name>\n\"");
+		return;
+	}
+
+	if (!Q_stricmp(ent->client->pers.userName, "")) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	Q_strstrip(teamname, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 0;
+		qboolean inviteOnly = qfalse;
+		int count;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT flags FROM LocalTeam WHERE name = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan does not exist!\n\""); //You already own a team
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 1)", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			count = sqlite3_column_int(stmt, 0);
+			if (count == 0) {
+				trap->SendServerCommand(ent-g_entities, "print \"You are not in this clan!\n\""); //You already own a team - optional?
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 2)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "DELETE FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan left.\n\"");
+		}
+		else
+			G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_JoinTeam_f 3)", s);
+
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
+
+}
+
 void Cmd_CreateTeam_f( gentity_t *ent ) {
 	char username[16], teamname[16];
 
@@ -3297,7 +3387,7 @@ void Cmd_ListTeam_f( gentity_t *ent ) { //Should i bother to cache player stats 
 		sql = "SELECT T.name AS name, TA.count AS count, T.flags AS flags FROM "
 				"(SELECT name, flags From LocalTeam) AS T "
 				"INNER JOIN "
-				"(SELECT team, COUNT(*) AS count From LocalTeamAccount GROUP BY team) AS TA "
+				"(SELECT team, COUNT(*) AS count From LocalTeamAccount WHERE (flags & 2 != 2) GROUP BY team) AS TA "
 				"ON T.name = TA.team ORDER BY count DESC LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, start));

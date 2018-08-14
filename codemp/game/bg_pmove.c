@@ -12340,18 +12340,19 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_AdjustAngleForWallRun( pm->ps, &pm->cmd, qtrue );
 
 //[JAPRO - Serverside + Clientside - Saber - Spin Red DFA , Spin Backslash - Start]
-	if (pm->ps->saberMove == LS_A_BACKSTAB)
-		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
-
 #ifdef _GAME
-	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(g_tweakSaber.integer & ST_SPINREDDFA))
+	if (pm->ps->saberMove == LS_A_BACKSTAB && !(g_tweakSaber.integer & ST_SPINBACKSLASH))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+	else if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(g_tweakSaber.integer & ST_SPINREDDFA))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 	else if ((pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK)  && !(g_tweakSaber.integer & ST_SPINBACKSLASH))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 	else if	(pm->ps->saberMove == LS_A_LUNGE && (!(g_tweakSaber.integer & ST_JK2LUNGE) || pm->ps->stats[STAT_RACEMODE]))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 #else
-	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(cgs.jcinfo & JAPRO_CINFO_REDDFA))
+	if (pm->ps->saberMove == LS_A_BACKSTAB && !(cgs.jcinfo & JAPRO_CINFO_BACKSLASH))
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+	else if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(cgs.jcinfo & JAPRO_CINFO_REDDFA))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 	else if (pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK && !(cgs.jcinfo & JAPRO_CINFO_BACKSLASH))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
