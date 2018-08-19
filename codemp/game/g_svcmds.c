@@ -816,7 +816,8 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Projectile Sniper"},//27
 	{"No Spread"},//28
 	{"Slow sniper fire rate"},//29
-	{"Make rockets solid for their owners"}//29
+	{"Make rockets solid for their owners"},//29
+	{"Lower max damage for pistol alt fire"}//29
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 
@@ -1262,7 +1263,7 @@ static const int MAX_ADMIN_OPTIONS = ARRAY_LEN( adminOptions );
 
 void Svcmd_ToggleAdmin_f( void ) {
 	if ( trap->Argc() == 1 ) {
-		trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+		trap->Print("Usage: toggleAdmin <admin level (full or junior)> <admin option>\n");
 		return;
 	}
 	else if ( trap->Argc() == 2 ) {
@@ -1275,7 +1276,7 @@ void Svcmd_ToggleAdmin_f( void ) {
 		else if ( !Q_stricmp(arg1, "f") || !Q_stricmp(arg1, "full"))
 			level = 1;
 		else {
-			trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+			trap->Print("Usage: toggleAdmin <admin level (full or junior)> <admin option>\n");
 			return;
 		}
 
@@ -1310,7 +1311,7 @@ void Svcmd_ToggleAdmin_f( void ) {
 		else if ( !Q_stricmp(arg1, "f") || !Q_stricmp(arg1, "full"))
 			level = 1;
 		else {
-			trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+			trap->Print("Usage: toggleAdmin <admin level (full or junior)> <admin option>\n");
 			return;
 		}
 		trap->Argv( 2, arg2, sizeof(arg2) );

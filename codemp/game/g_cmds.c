@@ -6767,7 +6767,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 		return;
 	}
 
-	if (VectorLength(ent->client->ps.velocity)) {
+	if (ent->client->ps.groundEntityNum == ENTITYNUM_NONE || VectorLength(ent->client->ps.velocity)) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
 		return;
 	}
