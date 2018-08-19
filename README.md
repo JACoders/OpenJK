@@ -8,7 +8,7 @@ If you have any suggestions or would like to submit a bug report, please post th
 
 ## License
 
-[![License](https://img.shields.io/github/license/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
+[![License](https://img.shields.io/github/license/eternalcodes/EternalJK.svg)](https://github.com/eternalcodes/EternalJK/blob/master/LICENSE.txt)
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
@@ -24,10 +24,9 @@ Installing and running EternalJK:
 ## For Developers
 
 ### Contributing to EternalJK
-* [Fork](https://github.com/JACoders/OpenJK/fork) the OpenJK project on GitHub
-* Add a remote to this fork
-* Create a new branch using this branch and make your changes
-* Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (eternalcodes/master)
+* [Fork](https://github.com/eternalcodes/EternalJK/fork) the EternalJK project on GitHub
+* Create a new branch on your fork and make your changes
+* Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (eternaljk/master)
 
 ## Maintainers
 
