@@ -2011,7 +2011,8 @@ gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 		Com_Printf("Last classname %s type %i, tag %i, end: %i\n", it->classname, it->giType, it->giTag, it);
 #endif
 
-	Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon); //This caused a crash once (wp_blaster)
+	//Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon); //This caused a crash once (wp_blaster)
+	Com_Error( ERR_FATAL, "Couldn't find item for weapon %i", weapon);
 	return NULL;
 }
 

@@ -2095,6 +2095,100 @@ static const float maxJediMasterFOV = 100.0f;
 static const float maxForceSightDistance = Square(1500.0f) * 1500.0f; // x^2, optimisation
 static const float maxForceSightFOV = 100.0f;
 
+#if !_ANTIWALLHACK
+static void G_UpdateForceSightBroadcasts ( gentity_t *self )
+{
+	int i;
+
+	// Any clients with force sight on should see this client
+	for ( i = 0; i < level.numConnectedClients; i ++ )
+	{
+		gentity_t *ent = &g_entities[level.sortedClients[i]];
+		float	  dist;
+		vec3_t	  angles;
+	
+		if ( ent == self )
+			continue;
+
+		if (!g_removeSpectatorPortals.integer || ent->client->sess.sessionTeam != TEAM_SPECTATOR) // Setting is off, or they are not in spec. (this is only skipped if setting is on and they are in spec)
+		{
+			// Not using force sight so we shouldnt broadcast to this one
+			if ( !(ent->client->ps.fd.forcePowersActive & (1<<FP_SEE) ) )
+				continue;
+
+			VectorSubtract( self->client->ps.origin, ent->client->ps.origin, angles );
+			dist = VectorLengthSquared ( angles );
+			vectoangles ( angles, angles );
+
+			// Too far away then just forget it
+			if ( dist > maxForceSightDistance * maxForceSightDistance )
+				continue;
+		
+			// If not within the field of view then forget it
+			if ( !InFieldOfVision ( ent->client->ps.viewangles, maxForceSightFOV, angles ) )
+				continue;
+				//break; //why is this break and not continue?
+		}
+		// Turn on the broadcast bit for the master and since there is only one
+		// master we are done
+		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
+		//break; //wait what, this isnt master this is force sight, there could be way more than one user why does it break
+	}
+}
+
+static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
+{
+	int i;
+
+	// Not jedi master mode then nothing to do
+	if ( level.gametype != GT_JEDIMASTER )
+	{
+		return;
+	}
+
+	// This client isnt the jedi master so it shouldnt broadcast
+	if ( !self->client->ps.isJediMaster )
+	{
+		return;
+	}
+
+	// Broadcast ourself to all clients within range
+	for ( i = 0; i < level.numConnectedClients; i ++ )
+	{
+		gentity_t *ent = &g_entities[level.sortedClients[i]];
+		float	  dist;
+		vec3_t	  angles;
+
+		if ( ent == self )
+		{
+			continue;
+		}
+
+		VectorSubtract( self->client->ps.origin, ent->client->ps.origin, angles );
+		dist = VectorLengthSquared ( angles );
+		vectoangles ( angles, angles );
+
+		// Too far away then just forget it
+		if ( dist > maxJediMasterDistance * maxJediMasterDistance )
+		{
+			continue;
+		}
+		
+		// If not within the field of view then forget it
+		if ( !InFieldOfVision ( ent->client->ps.viewangles, maxJediMasterFOV, angles ) )
+		{
+			continue;
+		}
+
+		// Turn on the broadcast bit for the master and since there is only one
+		// master we are done
+		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
+		//why not break here, since there actually is only one master?... the fuck is this
+		break;
+	}
+}
+#endif
+
 #if _ANTIWALLHACK
 
 /*
@@ -2987,6 +3081,25 @@ typedef enum tauntTypes_e
 
 void G_SetTauntAnim( gentity_t *ent, int taunt )
 {
+
+#if 1 //ass
+	if (g_emotesDisable.integer & (1 << E_BASEDUEL)) { //block flourish/gloat/bow/meditate outside of duelmode or while moving
+		if (ent->client->pers.cmd.upmove ||
+			ent->client->pers.cmd.forwardmove ||
+			ent->client->pers.cmd.rightmove)
+		{ //hack, don't do while moving
+			return;
+		}
+		if ( taunt != TAUNT_TAUNT )
+		{//normal taunt always allowed
+			if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
+			{//no taunts unless in Duel
+				return;
+			}
+		}
+	}
+#endif
+
 	BG_ClearRocketLock(&ent->client->ps);// fix: rocket lock bug
 
 	if ( ent->client->ps.torsoTimer < 1 

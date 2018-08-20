@@ -930,6 +930,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	}
 
 #if _GRAPPLE//_GRAPPLE
+	//Grapple hook crash here somewhere?
 	if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
 		//gentity_t *nent;
 		vec3_t v;

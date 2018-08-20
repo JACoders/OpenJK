@@ -36,6 +36,11 @@
 #define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<0)
 #define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<1)
 
+#define JAPRO_ACCOUNTTEAMFLAG_OWNER		(1<<0)
+#define JAPRO_ACCOUNTTEAMFLAG_PENDING	(1<<1)
+
+#define JAPRO_TEAMFLAG_PRIVATE		(1<<0)
+
 #if 0
 typedef struct RaceRecord_s {
 	char				username[16];
@@ -169,7 +174,7 @@ void DebugWriteToDB(char *entrypoint) {
 }
 */
 
-int CheckUserExists(char *username) {
+int CheckUserExists(char *username) { //make this accept existing DB so we dont have to open/close it
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -662,7 +667,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 	int type = -1, page = -1, start = 0, input, i, minimumCount = g_eloMinimumDuels.integer;
 
 	if (args <= 1 || args > 3) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype> <page>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <dueltype> <page>\n\"");
 		return;
 	}
 
@@ -682,12 +687,12 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 				continue;
 			}
 		}
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype> <page>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <dueltype> <page>\n\"");
 		return;
 	}
 
 	if (type == -1) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top10 <dueltype> <page>\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <dueltype> <page>\n\"");
 		return;
 	}
 
@@ -2507,6 +2512,310 @@ void Svcmd_DBInfo_f(void)
 	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.\n", numAccounts, numRaces, numDuels);
 }
 
+void Svcmd_ClanDelete_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /clanDelete <clan>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "Clan does not exist!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanDelete_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "DELETE FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "Clan deleted.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Delete Failed (Svcmd_ClanDelete_f 2)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_ClanCreate_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /clanCreate <clan>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count > 0) {
+			trap->Print( "Clan already exists!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanCreate_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "INSERT INTO LocalTeam (name, flags) VALUES (?, 1)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "Clan created.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Insert Failed (Svcmd_ClanCreate_f 2)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_ClanKick_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[16], teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 3) {
+		trap->Print( "Usage: /clanKick <clan> <username>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	trap->Argv(2, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	if (!CheckUserExists(username)) {
+		trap->Print( "This user does not exist!\n");
+		return;
+	}
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "Clan does not exist!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanKick_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "User is not in this clan!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanKick_f 2)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+	
+
+	sql = "DELETE FROM LocalTeamAccount WHERE team = ? AND account = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "User removed from clan.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Delete Failed (Svcmd_ClanKick_f 3)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_ClanJoin_f(void) {
+	sqlite3 * db;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[16], teamname[16];
+	int flags = 0;
+	int count = 0;
+
+	if (trap->Argc() != 3) {
+		trap->Print( "Usage: /clanJoin <clan> <username>\n");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	trap->Argv(2, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	if (!CheckUserExists(username)) {
+		trap->Print( "This user does not exist!\n");
+		return;
+	}
+
+	sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count == 0) {
+			trap->Print( "Clan does not exist.\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanJoin_f 1)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+		if (count > 0) {
+			trap->Print( "User is already in this clan!\n");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ClanJoin_f 2)", s);
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+	
+
+	sql = "INSERT INTO LocalTeamAccount (team, account, flags) VALUES (?, ?, 0)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->Print( "User added to clan.\n");
+	}
+	else
+		G_ErrorPrint("ERROR: SQL Insert Failed (Svcmd_ClanJoin_f 3)", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
@@ -2604,7 +2913,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 	}
 	else
-		G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_ACRegister_f 1)", s);
+		G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_ACRegister_f 2)", s);
 
 
 	CALL_SQLITE (finalize(stmt));
@@ -2629,6 +2938,806 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 	}
 	else
 		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
+}
+
+void Cmd_JoinTeam_f( gentity_t *ent ) {
+	char username[16], teamname[16];
+
+	if (g_allowRegistration.integer < 2) { //?
+		trap->SendServerCommand(ent-g_entities, "print \"This server does not allow you to join a clan.\n\"");
+		return;
+	}
+		
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanJoin <name>\n\"");
+		return;
+	}
+
+	if (!Q_stricmp(ent->client->pers.userName, "")) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	Q_strstrip(teamname, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	//get team_id and user_id
+	//make sure user is not already in a team?
+	//make sure user does not already own a team?
+	//make sure team is public or there is invite? (entry in LocalTeamAccount with flag_PENDING)
+	//insert into LocalTeamAccount with team_id and user_id
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 0;
+		qboolean inviteOnly = qfalse;
+		int count;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT flags FROM LocalTeam WHERE name = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			int flags = sqlite3_column_int(stmt, 0);
+			if (flags & JAPRO_TEAMFLAG_PRIVATE) {
+				inviteOnly = qtrue;
+			}
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan does not exist!\n\""); //You already own a team
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 1)", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (inviteOnly) {
+			sql = "SELECT flags FROM LocalTeamAccount WHERE team = ? AND account = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				int flags = sqlite3_column_int(stmt, 0);
+				if (!(flags & JAPRO_ACCOUNTTEAMFLAG_PENDING)) {
+					trap->SendServerCommand(ent-g_entities, "print \"You are already in this clan!\n\"");//Already in this clan?
+					CALL_SQLITE (finalize(stmt));
+					CALL_SQLITE (close(db));
+					return;
+				}
+				else {
+					count = 1; //They do have a row
+				}
+			}
+			else if (s == SQLITE_DONE) {
+				trap->SendServerCommand(ent-g_entities, "print \"This clan is invite-only!\n\"");//Not yet invited
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 1)", s);
+			}
+			CALL_SQLITE (finalize(stmt));
+		}
+		else {
+			sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				count = sqlite3_column_int(stmt, 0);
+				if (count > 0) {
+					trap->SendServerCommand(ent-g_entities, "print \"You are already in this clan!\n\""); //You already own a team - optional?
+					CALL_SQLITE (finalize(stmt));
+					CALL_SQLITE (close(db));
+					return;
+				}
+			}
+			else if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 2)", s);
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+			CALL_SQLITE (finalize(stmt));
+		}
+
+		if (count > 0)
+			sql = "UPDATE LocalTeamAccount SET flags = 0 WHERE team = ? AND account = ?";
+		else 
+			sql = "INSERT INTO LocalTeamAccount (team, account, flags) VALUES (?, ?, 0)"; //Replace
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan joined.\n\"");//Not yet invited
+		}
+		else
+			G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_JoinTeam_f 3)", s);
+
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
+
+}
+
+void Cmd_LeaveTeam_f( gentity_t *ent ) {
+	char username[16], teamname[16];
+		
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanLeave <name>\n\"");
+		return;
+	}
+
+	if (!Q_stricmp(ent->client->pers.userName, "")) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	Q_strstrip(teamname, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 0;
+		qboolean inviteOnly = qfalse;
+		int count;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT flags FROM LocalTeam WHERE name = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan does not exist!\n\""); //You already own a team
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 1)", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+	
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			count = sqlite3_column_int(stmt, 0);
+			if (count == 0) {
+				trap->SendServerCommand(ent-g_entities, "print \"You are not in this clan!\n\""); //You already own a team - optional?
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 2)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "DELETE FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan left.\n\"");
+		}
+		else
+			G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_JoinTeam_f 3)", s);
+
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
+
+}
+
+void Cmd_CreateTeam_f( gentity_t *ent ) {
+	char username[16], teamname[16];
+
+	if (g_allowRegistration.integer < 3) { //?
+		trap->SendServerCommand(ent-g_entities, "print \"This server does not allow team creation.\n\"");
+		return;
+	}
+		
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanCreate <name>\n\"");
+		return;
+	}
+
+	if (!Q_stricmp(ent->client->pers.userName, "")) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+	trap->Argv(1, teamname, sizeof(teamname));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	Q_strstrip(teamname, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 0;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT COUNT(*) FROM LocalTeam WHERE name = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_ROW) {
+			int count = sqlite3_column_int(stmt, 0);
+			if (count > 0) {
+				trap->SendServerCommand(ent-g_entities, "print \"This clan already exists.\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_CreateTeam_f 1)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE account = ?"; //AND FLAGS = OWNER, fixme
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_ROW) {
+			int count;
+			count = sqlite3_column_int(stmt, 0);
+			if (count > 0) {
+				trap->SendServerCommand(ent-g_entities, "print \"You are already in a clan.\n\""); //You already own a team
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_CreateTeam_f 2)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "INSERT INTO LocalTeam (name, flags) VALUES (?, 0)";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE) {
+		}
+		else
+			G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_CreateTeam_f 4)", s);
+
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "INSERT INTO LocalTeamAccount (team, account, flags) VALUES (?, ?, ?)";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, JAPRO_ACCOUNTTEAMFLAG_OWNER)); //1, JAPRO_ACCOUNTTEAMFLAG_OWNER
+
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Clan created.\n\"");
+		}
+		else
+			G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_CreateTeam_f 6)", s);
+
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
+}
+
+
+void Cmd_InfoTeam_f( gentity_t *ent ) {
+	char teamname[16], pageStr[8];
+	int page = 1, start;
+	const int args = trap->Argc();
+
+	if (args != 2 && args != 3) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanInfo <clan> <page (optional)>\n\"");
+		return;
+	}
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	Q_strstrip(teamname, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	if (trap->Argc() == 3) {
+		trap->Argv(2, pageStr, sizeof(pageStr));
+		page = atoi(pageStr);
+
+		if (page < 1 || page > 100) {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanInfo <clan> <page (optional)>\n\"");
+			return;
+		}
+	}
+
+	start = (page - 1) * 10;
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 1;
+		char msg[1024-128] = {0}, playername[16] = {0};
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT username, ROUND(SUM((entries/CAST(rank AS FLOAT) + entries-rank))/2,0) AS score FROM LocalRun WHERE rank != 0 AND username IN (SELECT account FROM LocalTeamAccount WHERE team = ? AND (flags & 2 != 2)) GROUP BY username ORDER BY score DESC LIMIT ?, 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, start));
+
+		trap->SendServerCommand(ent-g_entities, va("print \"clanInfo %s:\n    ^5Name               Score\n\"", teamname));
+	
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+
+				Q_strncpyz(playername, (char*)sqlite3_column_text(stmt, 0), sizeof(playername));
+
+				tmpMsg = va("^5%2i^3: ^3%-18s %i\n", start+row, playername, sqlite3_column_int(stmt, 1));
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE) {
+				trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+				break;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_InfoTeam_f)", s);
+				break;
+			}
+		}
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+}
+
+void Cmd_ListTeam_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
+	char pageStr[8];
+	int page = 1, start;
+
+	if (trap->Argc() != 1 && trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanList <page (optional)>\n\"");
+		return;
+	}
+
+	if (trap->Argc() == 2) {
+		trap->Argv(1, pageStr, sizeof(pageStr));
+		page = atoi(pageStr);
+
+		if (page < 1 || page > 100) {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanList <page (optional)>\n\"");
+			return;
+		}
+	}
+
+	start = (page - 1) * 10;
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 1;
+		char msg[1024-128] = {0}, teamname[16] = {0};
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT T.name AS name, TA.count AS count, T.flags AS flags FROM "
+				"(SELECT name, flags From LocalTeam) AS T "
+				"INNER JOIN "
+				"(SELECT team, COUNT(*) AS count From LocalTeamAccount WHERE (flags & 2 != 2) GROUP BY team) AS TA "
+				"ON T.name = TA.team ORDER BY count DESC LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_int (stmt, 1, start));
+
+		trap->SendServerCommand(ent-g_entities, "print \"Clanlist:\n    ^5Name               Members\n\"");
+	
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+
+				Q_strncpyz(teamname, (char*)sqlite3_column_text(stmt, 0), sizeof(teamname));
+
+				tmpMsg = va("^5%2i^3: ^3%-18s %i\n", start+row, teamname, sqlite3_column_int(stmt, 1)); //Use flags eventually to highlight leader?
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE) {
+				trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+				break;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_TeamList_f)", s);
+				break;
+			}
+		}
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+}
+
+void Cmd_InviteTeam_f( gentity_t *ent ) {
+	char username[16], teamname[16], invitee[16];
+		
+	if (trap->Argc() != 3) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanInvite <clan> <player>\n\"");
+		return;
+	}
+
+	if (!Q_stricmp(ent->client->pers.userName, "")) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+	trap->Argv(1, teamname, sizeof(teamname));
+	trap->Argv(2, invitee, sizeof(invitee));
+
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+	Q_strstrip(teamname, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	Q_strlwr(invitee);
+	Q_CleanStr(invitee);
+	Q_strstrip(invitee, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+
+	//Confirm clan exists
+	//Confirm it is private
+	//Confirm im clan leader
+	//Make sure they are not already in the clan
+	//Create invite
+
+	if (!CheckUserExists(invitee)) {
+		trap->Print( "User does not exist!\n");
+		return;
+	}
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s, row = 0;
+		qboolean inviteOnly = qfalse;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT flags FROM LocalTeam WHERE name = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+	
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			int flags = sqlite3_column_int(stmt, 0);
+			if (!(flags & JAPRO_TEAMFLAG_PRIVATE)) {
+				trap->SendServerCommand(ent-g_entities, "print \"This clan is public!\n\""); //You already own a team
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"This clan does not exist!\n\""); //You already own a team
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_JoinTeam_f 1)", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "SELECT flags FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			int flags = sqlite3_column_int(stmt, 0);
+			if (!(flags & JAPRO_ACCOUNTTEAMFLAG_OWNER)) {
+				trap->SendServerCommand(ent-g_entities, "print \"You are not the clan leader!\n\"");//no permission
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"You are not the clan leader!\n\"");//not even in the clan - lmao
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_InviteTeam_f 2)", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+
+
+		sql = "SELECT COUNT(*) FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, invitee, -1, SQLITE_STATIC));
+
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			int count = sqlite3_column_int(stmt, 0);
+			if (count > 0) {
+				trap->SendServerCommand(ent-g_entities, "print \"Recepient is already in the clan!\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_InviteTeam_f 3)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "INSERT INTO LocalTeamAccount (team, account, flags) VALUES (?, ?, ?)";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, invitee, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, JAPRO_ACCOUNTTEAMFLAG_PENDING));
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"Invite sent.\n\"");
+		}
+		else
+			G_ErrorPrint("ERROR: SQL Insert Failed (Cmd_InviteTeam_f 4)", s);
+
+		CALL_SQLITE (finalize(stmt));
+
+		CALL_SQLITE (close(db));
+	}
+
+}
+
+void Cmd_AdminTeam_f( gentity_t *ent ) {
+	char command[16], username[16], teamname[16];
+	//Get sub command
+		//kick
+		//private
+		//longname
+		//tags
+	//Do action
+
+	const int args = trap->Argc();
+	if (args < 3 || args > 4) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+		return; 
+	}
+
+	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+	Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+
+	trap->Argv(1, teamname, sizeof(teamname));
+	Q_strlwr(teamname);
+	Q_CleanStr(teamname);
+
+	trap->Argv(2, command, sizeof(command));
+	Q_strlwr(command);
+	Q_CleanStr(command);
+
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		sql = "SELECT flags FROM LocalTeamAccount WHERE team = ? AND account = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			int flags = sqlite3_column_int(stmt, 0);
+			if (!(flags & JAPRO_ACCOUNTTEAMFLAG_OWNER)) {
+				trap->SendServerCommand(ent-g_entities, "print \"You are not the clan leader!\n\"");//no permission
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, "print \"You are not the clan leader!\n\"");//not even in the clan - lmao
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_AdminTeam_f 1)", s);
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (!Q_stricmp(command, "kick")) {
+			char player[16];
+
+			if (args < 4) {
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			trap->Argv(3, player, sizeof(player));
+			Q_strlwr(player);
+			Q_CleanStr(player);
+			Q_strstrip(player, "\n\r", NULL);
+
+			sql = "DELETE FROM LocalTeamAccount WHERE team = ? AND account = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, player, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Player removed.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 2)", s);
+			CALL_SQLITE (finalize(stmt));
+
+		}
+		else if (!Q_stricmp(command, "private")) {
+			sql = "UPDATE LocalTeam SET flags = ? WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, JAPRO_TEAMFLAG_PRIVATE));
+			CALL_SQLITE (bind_text (stmt, 2, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Clan made private.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 3)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (!Q_stricmp(command, "public")) {
+			sql = "UPDATE LocalTeam SET flags = 0 WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Clan made public.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 4)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (!Q_stricmp(command, "longname")) {
+			char longname[24];
+
+			if (args < 4) {
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			trap->Argv(3, longname, sizeof(longname));
+			//Q_strlwr(longname);
+			//Q_CleanStr(longname);
+			//Q_strstrip(username, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
+			Q_strstrip(longname, "\n\r", NULL);
+
+			sql = "UPDATE LocalTeam SET longname = ? WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, longname, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Longname set.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 5)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (!Q_stricmp(command, "tag")) {
+			char tags[16];
+
+			if (args < 4) {
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			trap->Argv(3, tags, sizeof(tags));
+			//Q_strlwr(tags);
+			//Q_CleanStr(tags);
+			Q_strstrip(tags, "\n\r", NULL);
+
+			sql = "UPDATE LocalTeam SET tag = ? WHERE name = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, tags, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, teamname, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE)
+				trap->SendServerCommand(ent-g_entities, "print \"Tag set.\n\"");//eh, maybe check if they were even in the team b4 printing this
+			else 
+				G_ErrorPrint("ERROR: SQL Delete Failed (Cmd_AdminTeam_f 6)", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanAdmin <clan> <kick/private/public/longname/tag> <text (optional)>\n\"");
+		}
+
+		CALL_SQLITE (close(db));
+
+	}
 }
 
 void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
@@ -3376,6 +4485,190 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 }
 #endif
 
+void Cmd_DFFind_f(gentity_t *ent) {
+	int style = -1, season = -1, input, i;
+	char inputString[40], inputStyleString[16], username[16];
+	char partialCourseName[40] = {0}, fullCourseName[40] = {0};
+	const int args = trap->Argc();
+	qboolean enteredCourseName = qtrue;
+
+	if (args > 5 || args < 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.  This displays the players best time.\n\"");
+		return;
+	}
+
+	//Always assume 1st arg is username
+	trap->Argv(1, username, sizeof(username));
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	//Get mapname.
+	//How to tell if mapname is specified -- If its a map with only 1 course, we have to check. Otherwise we can assume 2nd arg is mapname.
+		//It will always be the 2nd arg.
+		//If the 2nd arg doesnt match the pattern of style/season/page, we can assume it is mapname.
+		//This means we cant search for
+
+	if (args == 2) //rFind <username>
+		enteredCourseName = qfalse;
+	else {
+		trap->Argv(2, inputString, sizeof(inputString));
+		//use strtol isntead of atoi maybe - partial coursename can start with number
+		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1)) {//If arg1 is style or season
+			enteredCourseName = qfalse; //Use current mapname as coursename
+		}
+	}
+
+	if (enteredCourseName) {
+		trap->Argv(2, partialCourseName, sizeof(partialCourseName)); //Use arg1 as coursename
+	}
+
+	if (!enteredCourseName) {
+		if (!level.numCourses) {
+			trap->SendServerCommand(ent-g_entities, "print \"This map has no courses, you must specify one of the following with /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.\n\"");
+			return;
+		}
+		else if (level.numCourses > 1) { //uhhhh
+			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.\n\"");
+			for (i = 0; i < level.numCourses; i++) { //32 max
+				if (level.courseName[i] && level.courseName[i][0])
+					trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i+1, level.courseName[i]));
+			}
+			return;
+		}
+	}
+
+	//Go through args 3-x, if we have a specified mapname, or 1-x if we dont
+	for (i = (enteredCourseName ? 3 : 2) ; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (style == -1) {
+			input = RaceNameToInteger(inputString);
+			if (input != -1) {
+				style = input;
+				continue;
+			}
+		}
+		if (season == -1) {
+			input = SeasonToInteger(inputString);
+			if (input != -1) {
+				season = input;
+				continue;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.  This displays the players best time.\n\"");
+		return; //Arg doesnt match any expected values so error.
+	}
+
+	if (style == -1) //Default to JKA style
+		style = 1;
+	IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
+	Q_strcat(inputStyleString, sizeof(inputStyleString), " style");
+
+	Q_strlwr(partialCourseName);
+	Q_CleanStr(partialCourseName);
+
+	if (!enteredCourseName) {
+		char info[1024] = {0};
+		trap->GetServerinfo(info, sizeof(info));
+		Q_strncpyz(fullCourseName, Info_ValueForKey( info, "mapname" ), sizeof(fullCourseName));
+		Q_strlwr(fullCourseName);
+		Q_CleanStr(fullCourseName);
+	}
+
+	{ //See if course is found in database and print it then..?
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+		char dateStr[64] = {0}, dateStrColored[64] = {0}, timeStr[32], msg[1024-128] = {0};
+		time_t	rawtime;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+		if (enteredCourseName) { //Course e
+			//Com_Printf("doing sql query %s %i\n", courseName, style);
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE %?%";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT coursename, MAX(entries) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
+			//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 ORDER BY LENGTH(coursename) ASC, entries DESC LIMIT 1";
+			sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(replace(coursename, ' ', ''), ?) > 0 ORDER BY entries DESC LIMIT 1";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, partialCourseName, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				//Check if it actually has text, if not return.  then we can use cheaper (MAX) entries query above //loda fixme
+				Q_strncpyz(fullCourseName, (char*)sqlite3_column_text(stmt, 0), sizeof(fullCourseName));
+			}
+			else if (s == SQLITE_DONE) {
+				//Com_Printf("fail 4\n");
+				trap->SendServerCommand(ent-g_entities, "print \"Usage: /rFind <username> <mapname (optional)> <season (optional - example: s1)> <style (optional)>.  This displays the players best time.\n\"");
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+				return;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFFind_f)", s);
+				return;
+			}
+			CALL_SQLITE (finalize(stmt));
+
+		}
+
+		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
+		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
+		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
+		if (season == -1)
+			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+		else 
+			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, fullCourseName, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style));
+
+		if (season != -1) {
+			CALL_SQLITE (bind_int (stmt, 4, season));
+		}
+
+		time( &rawtime );
+		localtime( &rawtime );
+
+		if (season == -1)
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString));
+		else
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s season %i:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString, season));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				TimeToString(sqlite3_column_int(stmt, 0), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
+				if (rawtime - sqlite3_column_int(stmt, 3) < 60*60*24) { //Today
+					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
+				}
+				else {
+					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
+				}
+				tmpMsg = va("    ^3%-12s ^3%-11i ^3%-12i %s\n", timeStr, sqlite3_column_int(stmt, 1), sqlite3_column_int(stmt, 2), dateStrColored);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_DFFind_f)", s);
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+}
+
 #if 1//NEWRACERANKING
 void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 	int style = -1, season = -1, page = -1, start = 0, i, input;
@@ -3794,11 +5087,11 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		return;
 	}
 
-	//Get mapname. 
+	//Get mapname.
 	//How to tell if mapname is specified -- If its a map with only 1 course, we have to check. Otherwise we can assume 1st arg is mapname.
 		//It will always be the first arg.
 		//If the first arg doesnt match the pattern of style/season/page, we can assume it is mapname.
-		//This means we cant search for 
+		//This means we cant search for
 
 	if (args == 1)
 		enteredCourseName = qfalse;
@@ -4807,6 +6100,20 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)
 		G_ErrorPrint("ERROR: SQL Create Failed (InitGameAccountStuff 3)", s);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "CREATE TABLE IF NOT EXISTS LocalTeam(id INTEGER PRIMARY KEY, name VARCHAR(16), tag VARCHAR(16), longname VARCHAR(24), flags UNSIGNED TINYINT)";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Create Failed (InitGameAccountStuff 4)", s);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "CREATE TABLE IF NOT EXISTS LocalTeamAccount(id INTEGER PRIMARY KEY, team VARCHAR(16), account VARCHAR(16), flags UNSIGNED TINYINT)";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Create Failed (InitGameAccountStuff 5)", s);
 	CALL_SQLITE (finalize(stmt));
 
 #if _ELORANKING
