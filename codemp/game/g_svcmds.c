@@ -1609,9 +1609,6 @@ svcmd_t svcmds[] = {
 
 	{ "changepassword",				Svcmd_ChangePass_f,					qfalse },
 
-	{ "checkfields",				G_CheckFields,						qfalse },
-	{ "checkspawns",				G_CheckSpawns,						qfalse },
-
 	{ "clancreate",					Svcmd_ClanCreate_f,					qfalse },
 	{ "clandelete",					Svcmd_ClanDelete_f,					qfalse },
 	{ "clanjoin",					Svcmd_ClanJoin_f,					qfalse },
