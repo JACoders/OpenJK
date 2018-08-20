@@ -252,6 +252,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define	WT_NO_SPREAD			(1<<27)
 #define WT_SLOW_SNIPER			(1<<28)
 #define WT_SOLID_ROCKET			(1<<29)
+#define WT_NERFED_PISTOL		(1<<30)
 
 //wt_halt 
 //wt_hook
@@ -451,6 +452,7 @@ typedef enum {
 	E_SABERFLIP,
 	E_SLAP,
 	E_SIGNAL,
+	E_BASEDUEL,
 //	E_SHEEV,//Group them all here, running out of space in this :s
 	E_ALL
 } emote_type_t;

@@ -118,7 +118,7 @@
 #### Race/Accounts 
 	g_raceMode					0	//0=Noracemode, 1=forcedracemode, 2=player can toggle race mode with /racecommand.
 	g_allowRaceTele				0//1=Allow amtele in racemode. 2=Also allow noclip.
-	g_allowRegistration			1	
+	g_allowRegistration			1=Allow registration. 2=also allow clan joining. 3=also allow clan creation
 	sv_pluginKey				0	
 	g_forceLogin				0//Force players to login in order to be ingame.
 

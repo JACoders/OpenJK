@@ -279,7 +279,12 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire )
 
 		if (count > 1)
 		{
-			damage *= (count*1.7);
+			if (count > 4 && (g_tweakWeapons.integer & WT_NERFED_PISTOL)) {
+				damage *= 7; //70 dmg
+			}
+			else {
+				damage *= (count*1.7);
+			}
 		}
 		else
 		{
@@ -4450,12 +4455,12 @@ static void WP_FireLightningGun( gentity_t *ent )
 static void WP_FireShockLance( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage = 60 * g_weaponDamageScale.value;
+	int			damage = 55 * g_weaponDamageScale.value;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	trace_t		tr;
 	gentity_t	*traceEnt, *tent;
-	float		shotRange = 256;
+	float		shotRange = 240;
 	int			ignore;
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up

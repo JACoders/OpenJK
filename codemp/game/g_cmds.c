@@ -5696,6 +5696,18 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
+	if (g_allowRegistration.integer > 1) {
+		Q_strncpyz(buf, "   ^3Clan commands: ", sizeof(buf));
+		Q_strcat(buf, sizeof(buf), "clanList ");
+		Q_strcat(buf, sizeof(buf), "clanInfo ");
+		Q_strcat(buf, sizeof(buf), "clanJoin ");
+		Q_strcat(buf, sizeof(buf), "clanAdmin ");
+		if (g_allowRegistration.integer > 2)
+			Q_strcat(buf, sizeof(buf), "clanCreate ");
+		Q_strcat(buf, sizeof(buf), "clanInvite");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
+	}
+
 	Q_strncpyz(buf, "   ^3Chat commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "ignore ");
 	Q_strcat(buf, sizeof(buf), "clanPass ");
@@ -6800,7 +6812,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 		return;
 	}
 
-	if (VectorLength(ent->client->ps.velocity)) {
+	if (ent->client->ps.groundEntityNum == ENTITYNUM_NONE || VectorLength(ent->client->ps.velocity)) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
 		return;
 	}
@@ -7934,7 +7946,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber Duel Force regen time: ^2%i\n", g_saberDuelForceRegenTime.integer));
 	if (g_forceDuelForceRegenTime.integer != g_forceRegenTime.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Force Duel Force regen time: ^2%i\n", g_forceDuelForceRegenTime.integer));
-	Q_strcat(buf, sizeof(buf), va("   ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No"));
+	Q_strcat(buf, sizeof(buf), va("   ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No")); //Only print if changed?
 	if (!(dmflags.integer & DF_NO_FALLING) && g_maxFallDmg.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Fall damage capped at^3: ^2%i\n", g_maxFallDmg.integer));
 	if (g_fixKillCredit.integer == 1)
@@ -8388,6 +8400,7 @@ void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFRecent_f( gentity_t *ent );
+void Cmd_DFFind_f( gentity_t *ent );
 void Cmd_DFHardest_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTodo_f( gentity_t *ent );
@@ -8406,6 +8419,12 @@ void Cmd_TestBSP_f( gentity_t *ent );
 #if _ELORANKING
 void Cmd_DuelTop10_f( gentity_t *ent );
 #endif
+void Cmd_CreateTeam_f( gentity_t *ent );
+void Cmd_JoinTeam_f( gentity_t *ent );
+void Cmd_ListTeam_f( gentity_t *ent );
+void Cmd_InviteTeam_f( gentity_t *ent );
+void Cmd_InfoTeam_f( gentity_t *ent );
+void Cmd_AdminTeam_f( gentity_t *ent );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -8474,9 +8493,17 @@ command_t commands[] = {
 
 	{ "changepassword",		Cmd_ChangePassword_f,		CMD_NOINTERMISSION },
 
+	{ "clanadmin",			Cmd_AdminTeam_f,			CMD_NOINTERMISSION },
+	{ "clancreate",			Cmd_CreateTeam_f,			CMD_NOINTERMISSION },
+	{ "claninfo",			Cmd_InfoTeam_f,				CMD_NOINTERMISSION },
+	{ "claninvite",			Cmd_InviteTeam_f,			CMD_NOINTERMISSION },
+	{ "clanjoin",			Cmd_JoinTeam_f,				CMD_NOINTERMISSION },
+	{ "clanlist",			Cmd_ListTeam_f,				CMD_NOINTERMISSION },
+
 	{ "clanpass",			Cmd_Clanpass_f,				CMD_NOINTERMISSION },
 	{ "clansay",			Cmd_Clansay_f,				0 },
 	{ "clanwhois",			Cmd_Clanwhois_f,			0 },
+
 	{ "debugBMove_Back",	Cmd_BotMoveBack_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Forward",	Cmd_BotMoveForward_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
@@ -8541,6 +8568,7 @@ command_t commands[] = {
 
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 
+	{ "rfind",				Cmd_DFFind_f,			CMD_NOINTERMISSION },
 	{ "rhardest",			Cmd_DFHardest_f,			CMD_NOINTERMISSION },
 	{ "rlatest",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
 

@@ -837,7 +837,8 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Projectile Sniper"},//27
 	{"No Spread"},//28
 	{"Slow sniper fire rate"},//29
-	{"Make rockets solid for their owners"}//29
+	{"Make rockets solid for their owners"},//29
+	{"Lower max damage for pistol alt fire"}//29
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 
@@ -1283,7 +1284,7 @@ static const int MAX_ADMIN_OPTIONS = ARRAY_LEN( adminOptions );
 
 void Svcmd_ToggleAdmin_f( void ) {
 	if ( trap->Argc() == 1 ) {
-		trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+		trap->Print("Usage: toggleAdmin <admin level (full or junior)> <admin option>\n");
 		return;
 	}
 	else if ( trap->Argc() == 2 ) {
@@ -1296,7 +1297,7 @@ void Svcmd_ToggleAdmin_f( void ) {
 		else if ( !Q_stricmp(arg1, "f") || !Q_stricmp(arg1, "full"))
 			level = 1;
 		else {
-			trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+			trap->Print("Usage: toggleAdmin <admin level (full or junior)> <admin option>\n");
 			return;
 		}
 
@@ -1331,7 +1332,7 @@ void Svcmd_ToggleAdmin_f( void ) {
 		else if ( !Q_stricmp(arg1, "f") || !Q_stricmp(arg1, "full"))
 			level = 1;
 		else {
-			trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+			trap->Print("Usage: toggleAdmin <admin level (full or junior)> <admin option>\n");
 			return;
 		}
 		trap->Argv( 2, arg2, sizeof(arg2) );
@@ -1500,7 +1501,8 @@ static bitInfo_T emoteDisables[] = {
 	{"Sleep"},//17
 	{"Saberflip"},//18
 	{"Slap"},//19
-	{"Signal"}//20
+	{"Signal"},//20
+	{"Taunt/Flourish/Bow/Meditate outside of duel or while moving"},//20
 };
 static const int MAX_EMOTE_DISABLES = ARRAY_LEN( emoteDisables );
 
@@ -1578,6 +1580,10 @@ void G_TestAddRace( void );
 #endif
 void Svcmd_AccountIPLock_f( void );
 
+void Svcmd_ClanJoin_f( void );
+void Svcmd_ClanKick_f( void );
+void Svcmd_ClanCreate_f( void );
+void Svcmd_ClanDelete_f( void );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
@@ -1602,6 +1608,11 @@ svcmd_t svcmds[] = {
 	{ "botlist",					Svcmd_BotList_f,					qfalse },
 
 	{ "changepassword",				Svcmd_ChangePass_f,					qfalse },
+
+	{ "clancreate",					Svcmd_ClanCreate_f,					qfalse },
+	{ "clandelete",					Svcmd_ClanDelete_f,					qfalse },
+	{ "clanjoin",					Svcmd_ClanJoin_f,					qfalse },
+	{ "clankick",					Svcmd_ClanKick_f,					qfalse },
 
 	{ "clearIP",					Svcmd_ClearIP_f,					qfalse },
 	{ "DBInfo",						Svcmd_DBInfo_f,						qfalse },
