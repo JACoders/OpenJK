@@ -3732,6 +3732,7 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 		return;
 	}
 
+	if (!alt_fire) { //Only check to remove our 11th oldest detpack when we are placing one
 	//limit to 10 placed at any one time
 	//see how many there are now
 	while ( (found = G_Find( found, FOFS(classname), "detpack" )) != NULL )
@@ -3783,6 +3784,7 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 		{
 			break;
 		}
+	}
 	}
 
 	if ( alt_fire  )
