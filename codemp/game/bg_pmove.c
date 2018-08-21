@@ -8656,7 +8656,12 @@ if (pm->ps->duelInProgress)
 	}
 
 	if ( pm->ps->weaponTime > 0 ) {
-		return;
+		//This is the saddest hack we have seen yet
+		if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_JETPACK && pm->ps->weapon == WP_DET_PACK && pm->ps->hasDetPackPlanted && /*!(pm->cmd.buttons & BUTTON_ATTACK) &&*/ pm->cmd.buttons & BUTTON_ALT_ATTACK) {
+		}
+		else {
+			return;
+		}
 	}
 
 	if (pm->ps->weapon == WP_DISRUPTOR &&

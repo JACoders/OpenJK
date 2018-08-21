@@ -3681,7 +3681,10 @@ void BlowDetpacks(gentity_t *ent)
 			{
 				VectorCopy( found->r.currentOrigin, found->s.origin );
 				found->think = DetPackBlow;
-				found->nextthink = level.time + 100 + random() * 200;
+				if (ent->client->sess.raceMode)
+					found->nextthink = level.time + 100; //No randomness to racemode detpacks?
+				else
+					found->nextthink = level.time + 100 + random() * 200;
 				G_Sound( found, CHAN_BODY, G_SoundIndex("sound/weapons/detpack/warning.wav") );
 			}
 		}
@@ -3726,65 +3729,71 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 	int			lowestTimeStamp;
 	int			removeMe;
 	int			i;
+	int			maxCount = 9;
 
 	if ( !ent || !ent->client )
 	{
 		return;
 	}
 
-	if (!alt_fire) { //Only check to remove our 11th oldest detpack when we are placing one
-	//limit to 10 placed at any one time
-	//see how many there are now
-	while ( (found = G_Find( found, FOFS(classname), "detpack" )) != NULL )
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle == MV_JETPACK)
 	{
-		if ( found->parent != ent )
-		{
-			continue;
-		}
-		foundDetPacks[trapcount++] = found->s.number;
+		maxCount = 0;
 	}
-	//now remove first ones we find until there are only 9 left
-	found = NULL;
-	trapcount_org = trapcount;
-	lowestTimeStamp = level.time;
-	while ( trapcount > 9 )
-	{
-		removeMe = -1;
-		for ( i = 0; i < trapcount_org; i++ )
+
+	if (!alt_fire) { //Only check to remove our 11th oldest detpack when we are placing one
+		//limit to 10 placed at any one time
+		//see how many there are now
+		while ( (found = G_Find( found, FOFS(classname), "detpack" )) != NULL )
 		{
-			if ( foundDetPacks[i] == ENTITYNUM_NONE )
+			if ( found->parent != ent )
 			{
 				continue;
 			}
-			found = &g_entities[foundDetPacks[i]];
-			if ( found->setTime < lowestTimeStamp )
-			{
-				removeMe = i;
-				lowestTimeStamp = found->setTime;
-			}
+			foundDetPacks[trapcount++] = found->s.number;
 		}
-		if ( removeMe != -1 )
+		//now remove first ones we find until there are only maxCount left
+		found = NULL;
+		trapcount_org = trapcount;
+		lowestTimeStamp = level.time;
+		while ( trapcount > maxCount )
 		{
-			//remove it... or blow it?
-			if ( &g_entities[foundDetPacks[removeMe]] == NULL )
+			removeMe = -1;
+			for ( i = 0; i < trapcount_org; i++ )
 			{
-				break;
+				if ( foundDetPacks[i] == ENTITYNUM_NONE )
+				{
+					continue;
+				}
+				found = &g_entities[foundDetPacks[i]];
+				if ( found->setTime < lowestTimeStamp )
+				{
+					removeMe = i;
+					lowestTimeStamp = found->setTime;
+				}
+			}
+			if ( removeMe != -1 )
+			{
+				//remove it... or blow it?
+				if ( &g_entities[foundDetPacks[removeMe]] == NULL )
+				{
+					break;
+				}
+				else
+				{
+					if (!CheatsOn())
+					{ //Let them have unlimited if cheats are enabled
+						G_FreeEntity( &g_entities[foundDetPacks[removeMe]] );
+					}
+				}
+				foundDetPacks[removeMe] = ENTITYNUM_NONE;
+				trapcount--;
 			}
 			else
 			{
-				if (!CheatsOn())
-				{ //Let them have unlimited if cheats are enabled
-					G_FreeEntity( &g_entities[foundDetPacks[removeMe]] );
-				}
+				break;
 			}
-			foundDetPacks[removeMe] = ENTITYNUM_NONE;
-			trapcount--;
 		}
-		else
-		{
-			break;
-		}
-	}
 	}
 
 	if ( alt_fire  )
@@ -5539,7 +5548,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 
 	if (ent->client && ent->client->pers.amfreeze)
 		return;
-	if (ent->client && ent->client->sess.raceMode && !((ent->client->sess.movementStyle == 7) || (ent->client->sess.movementStyle == 8)))
+	if (ent->client && ent->client->sess.raceMode && !((ent->client->sess.movementStyle == MV_RJQ3) || (ent->client->sess.movementStyle == MV_RJCPM) || (ent->client->sess.movementStyle == MV_JETPACK)))
 		return;	
 
 	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked

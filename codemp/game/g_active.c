@@ -3825,6 +3825,12 @@ void ClientThink_real( gentity_t *ent ) {
 			if (ent->health > 0)
 				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
 		}
+		else if (movementStyle == MV_JETPACK) {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DET_PACK);
+			ent->client->ps.ammo[AMMO_DETPACK] = 1;
+			if (ent->health > 0)
+				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
+		}
 		else {
 			client->ps.ammo[AMMO_POWERCELL] = 300;
 
