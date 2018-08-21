@@ -973,6 +973,9 @@ void G_Kill( gentity_t *ent ) {
 		return;
 	}
 
+	if (ent->client && ent->client->sess.raceMode)
+		DeletePlayerProjectiles(ent); //Not sure how ppl could realisticly abuse this.. but might as well add it
+
 	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) &&
 		level.numPlayingClients > 1 && !level.warmupTime)
 	{
@@ -1003,8 +1006,6 @@ Cmd_Kill_f
 */
 void Cmd_Kill_f( gentity_t *ent ) {
 	G_Kill( ent );
-	if (ent->client && ent->client->sess.raceMode)
-		DeletePlayerProjectiles(ent); //Not sure how ppl could realisticly abuse this.. but might as well add it
 }
 
 void Cmd_KillOther_f( gentity_t *ent )
