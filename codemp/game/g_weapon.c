@@ -1773,7 +1773,7 @@ void stakeExplode( gentity_t *self )
 		G_RadiusDamage( self->r.currentOrigin, self->activator, self->splashDamage, self->splashRadius, self, self, self->methodOfDeath/*MOD_LT_SPLASH*/ );
 	G_AddEvent( self, EV_MISSILE_MISS, 0);
 
-	G_PlayEffect(EFFECT_EXPLOSION_DETPACK, self->r.currentOrigin, self->s.pos.trDelta);
+	G_PlayEffect(EFFECT_EXPLOSION_FLECHETTE, self->r.currentOrigin, self->s.pos.trDelta);
 
 	self->think = G_FreeEntity;
 	self->nextthink = level.time;
@@ -1836,9 +1836,9 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->clipmask = MASK_SHOT;
 	stake->s.solid = SOLID_BBOX;
 
-	stake->splashDamage = 50;
+	stake->splashDamage = 45;
 	stake->splashRadius = 128;
-	stake->damage = 50;
+	stake->damage = 45;
 	stake->methodOfDeath = MOD_TRIP_MINE_SPLASH;
 
 	stake->takedamage = qtrue;
@@ -3634,9 +3634,7 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 
 	VectorSet( bolt->r.mins, -2, -2, -2 );
 	VectorSet( bolt->r.maxs, 2, 2, 2 );
-
-	bolt->health = 1;
-	bolt->takedamage = qtrue;
+	
 	bolt->pain = DetPackPain;
 	bolt->die = DetPackDie;
 
@@ -3647,7 +3645,16 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 	G_SetOrigin(bolt, start);
 	bolt->s.pos.trType = TR_GRAVITY;
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale(dir, 300, bolt->s.pos.trDelta );
+
+	if (self->client->sess.raceMode) { //put contents=mask_shot here?
+		VectorScale(dir, 300, bolt->s.pos.trDelta );
+		VectorAdd(bolt->s.pos.trDelta, self->client->ps.velocity, bolt->s.pos.trDelta);
+	}
+	else {
+		bolt->health = 1;
+		bolt->takedamage = qtrue;
+		VectorScale(dir, 300, bolt->s.pos.trDelta );
+	}
 	bolt->s.pos.trTime = level.time;
 
 	bolt->s.apos.trType = TR_GRAVITY;
