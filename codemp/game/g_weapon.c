@@ -2031,7 +2031,7 @@ static void WP_FireStakeGun( gentity_t *ent )
 	stake->setTime = level.time;//remember when we placed it
 
 	//move it
-	VectorScale( forward, 3072*g_projectileVelocityScale.value, stake->s.pos.trDelta );
+	VectorScale( forward, 3000*g_projectileVelocityScale.value, stake->s.pos.trDelta );
 
 	trap->LinkEntity((sharedEntity_t *)stake);
 }
