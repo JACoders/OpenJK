@@ -816,8 +816,8 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Projectile Sniper"},//27
 	{"No Spread"},//28
 	{"Slow sniper fire rate"},//29
-	{"Make rockets solid for their owners"},//29
-	{"Lower max damage for pistol alt fire"}//29
+	{"Make rockets solid for their owners"},//30
+	{"Lower max damage for pistol alt fire"}//31
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 

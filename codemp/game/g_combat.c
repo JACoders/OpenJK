@@ -4809,16 +4809,16 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				break;
 			case MOD_BRYAR_PISTOL:
 			case MOD_BRYAR_PISTOL_ALT:
-				damage *= 5;
+				damage *= 4;
 				break;
 			case MOD_BLASTER:
 				damage *= 5;
 				break;
 			case MOD_DISRUPTOR:
-				damage *= 1;
+				damage *= 0.9f;
 				break;
 			case MOD_DISRUPTOR_SNIPER:
-				damage *= 1;
+				damage *= 0.9f;
 				break;
 			case MOD_BOWCASTER:
 				damage *= 5;

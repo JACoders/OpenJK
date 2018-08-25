@@ -8055,6 +8055,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher alt fire is replaced with redeemer\n");
 		if (g_tweakWeapons.integer & WT_ALLOW_GUNROLL)
 			Q_strcat(buf, sizeof(buf), "   ^5Gunroll enabled\n");
+		if (g_tweakWeapons.integer & WT_NERFED_PISTOL)
+			Q_strcat(buf, sizeof(buf), "   ^5Lower max damage on pistol alt fire\n");
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 
