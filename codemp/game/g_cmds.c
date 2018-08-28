@@ -7921,7 +7921,6 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Healthbars visible for all players\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
-
 	//Saber changes
 	Q_strncpyz(buf, " ^3Saber Changes:\n", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage^3: ^2%s\n", (d_saberSPStyleDamage.integer) ? "SP" : "MP"));
@@ -8177,6 +8176,11 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			if (g_teamEnergizeScale.value != 1.0f)
 				Q_strcat(buf, sizeof(buf), va("   ^5Team energize scale: ^2%.2f\n", g_teamEnergizeScale.value));
 		}
+		if (g_tweakForce.integer & FT_NERFED_WEAPPULL)
+			Q_strcat(buf, sizeof(buf), "   ^5Nerfed weapon pull distance\n");
+		if (g_tweakForce.integer & FT_WEAPON_PULLRESIST)
+			Q_strcat(buf, sizeof(buf), "   ^5Pull resistance when shooting/charging weapons\n");
+
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 	buf[0] = '\0';

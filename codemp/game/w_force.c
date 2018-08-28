@@ -2917,28 +2917,33 @@ qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE)
 	{
-		return 0;
+		return qfalse;
 	}
 
 	if (self->client->ps.weaponTime > 0)
 	{
-		return 0;
+		if (!g_tweakForce.integer & FT_WEAPON_PULLRESIST) { //|| self->client->ps.weapon == WP_SABER
+			//Sadly check their weapon i guess
+			return qfalse;
+		}
 	}
 
 	if ( self->health <= 0 )
 	{
-		return 0;
+		return qfalse;
 	}
 
 	if ( self->client->ps.powerups[PW_DISINT_4] > level.time )
 	{
-		return 0;
+		return qfalse;
 	}
 
 	if (self->client->ps.weaponstate == WEAPON_CHARGING ||
 		self->client->ps.weaponstate == WEAPON_CHARGING_ALT)
 	{ //don't autodefend when charging a weapon
-		return 0;
+		if (!g_tweakForce.integer & FT_WEAPON_PULLRESIST) {
+			return qfalse;
+		}
 	}
 
 	if (level.gametype == GT_SIEGE &&
@@ -2955,7 +2960,7 @@ qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 		if (a > 60.0f || a < -60.0f)
 		{ //if facing more than 60 degrees away they cannot defend
-			return 0;
+			return qfalse;
 		}
 	}
 
@@ -2970,15 +2975,15 @@ qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 	if ( !WP_ForcePowerUsable( self, powerUse ) )
 	{
-		return 0;
+		return qfalse;
 	}
 
 	if (self->client->ps.groundEntityNum == ENTITYNUM_NONE)
 	{ //you cannot counter a push/pull if you're in the air
-		return 0;
+		return qfalse;
 	}
 
-	return 1;
+	return qtrue;
 }
 
 qboolean G_InGetUpAnim(playerState_t *ps)
@@ -3633,7 +3638,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				if ( pull )
 				{
 					int weaponPullDist = 256;
-					if (g_tweakWeapons.integer & FT_NERFED_WEAPPULL)
+					if (g_tweakForce.integer & FT_NERFED_WEAPPULL) //And they are not in dark rage? && !(push_list[x]->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
 						weaponPullDist = 96;
 
 					VectorSubtract( self->client->ps.origin, thispush_org, pushDir );
