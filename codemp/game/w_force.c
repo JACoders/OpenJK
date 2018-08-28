@@ -3632,9 +3632,13 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				//shove them
 				if ( pull )
 				{
+					int weaponPullDist = 256;
+					if (g_tweakWeapons.integer & FT_NERFED_WEAPPULL)
+						weaponPullDist = 96;
+
 					VectorSubtract( self->client->ps.origin, thispush_org, pushDir );
 
-					if (push_list[x]->client && VectorLength(pushDir) <= 256)
+					if (push_list[x]->client && VectorLength(pushDir) <= weaponPullDist) //LODA
 					{
 						int randfact = 0;
 

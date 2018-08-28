@@ -943,7 +943,8 @@ static bitInfo_T forceTweaks[] = {
 	{"Allow push/pull during roll like JK2"},//13
 	{"Force drain does not give forcepoints to players using force absorb"},//14
 	{"Allow grip during roll"},//15
-	{"Weak force pull"}//16
+	{"Weak force pull"},//16
+	{"Nerfed weapon pull distance"}//17
 };
 static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
 

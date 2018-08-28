@@ -9142,6 +9142,14 @@ if (pm->ps->duelInProgress)
 		addTime *= 0.75;
 	else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
 		addTime *= 1.5;
+
+#if _GAME
+	if (pm->ps->stats[STAT_RACEMODE]) {
+		if (((gentity_t *)pm_entSelf)->client->pers.haste)
+			addTime /= 1.3;
+	}
+#endif
+
 	pm->ps->weaponTime += addTime;
 }
 
