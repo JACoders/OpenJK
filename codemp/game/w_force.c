@@ -2911,39 +2911,23 @@ void GEntity_UseFunc( gentity_t *self, gentity_t *other, gentity_t *activator )
 	GlobalUse(self, other, activator);
 }
 
-qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
+int CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 {
 	int powerUse = 0;
 
 	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE)
 	{
-		return qfalse;
-	}
-
-	if (self->client->ps.weaponTime > 0)
-	{
-		if (!g_tweakForce.integer & FT_WEAPON_PULLRESIST) { //|| self->client->ps.weapon == WP_SABER
-			//Sadly check their weapon i guess
-			return qfalse;
-		}
+		return 0;
 	}
 
 	if ( self->health <= 0 )
 	{
-		return qfalse;
+		return 0;
 	}
 
 	if ( self->client->ps.powerups[PW_DISINT_4] > level.time )
 	{
-		return qfalse;
-	}
-
-	if (self->client->ps.weaponstate == WEAPON_CHARGING ||
-		self->client->ps.weaponstate == WEAPON_CHARGING_ALT)
-	{ //don't autodefend when charging a weapon
-		if (!g_tweakForce.integer & FT_WEAPON_PULLRESIST) {
-			return qfalse;
-		}
+		return 0;
 	}
 
 	if (level.gametype == GT_SIEGE &&
@@ -2960,7 +2944,7 @@ qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 		if (a > 60.0f || a < -60.0f)
 		{ //if facing more than 60 degrees away they cannot defend
-			return qfalse;
+			return 0;
 		}
 	}
 
@@ -2975,15 +2959,26 @@ qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 	if ( !WP_ForcePowerUsable( self, powerUse ) )
 	{
-		return qfalse;
+		return 0;
 	}
 
 	if (self->client->ps.groundEntityNum == ENTITYNUM_NONE)
 	{ //you cannot counter a push/pull if you're in the air
-		return qfalse;
+		return 0;
 	}
 
-	return qtrue;
+	if (self->client->ps.weaponTime > 0)
+	{
+		return -1;
+	}
+
+	if (self->client->ps.weaponstate == WEAPON_CHARGING ||
+		self->client->ps.weaponstate == WEAPON_CHARGING_ALT)
+	{ //don't autodefend when charging a weapon
+		return -1;
+	}
+
+	return 1;
 }
 
 qboolean G_InGetUpAnim(playerState_t *ps)
@@ -3554,6 +3549,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				int otherPushPower = push_list[x]->client->ps.fd.forcePowerLevel[powerUse];
 				qboolean canPullWeapon = qtrue;
 				float dirLen = 0;
+				const int CanCounter = CanCounterThrow(push_list[x], self, pull);
 
 				if ( g_debugMelee.integer )
 				{
@@ -3570,7 +3566,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				if (push_list[x]->client->pers.cmd.forwardmove ||
 					push_list[x]->client->pers.cmd.rightmove)
 				{ //if you are moving, you get one less level of defense
-					otherPushPower--;
+					otherPushPower--; //LODA
 
 					if (otherPushPower < 0)
 					{
@@ -3578,59 +3574,66 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 				}
 
-				if (otherPushPower && CanCounterThrow(push_list[x], self, pull))
-				{
-					if ( pull )
+				if (otherPushPower) {
+					if (CanCounter > 0)
 					{
-						G_Sound( push_list[x], CHAN_BODY, G_SoundIndex( "sound/weapons/force/pull.wav" ) );
-						push_list[x]->client->ps.forceHandExtend = HANDEXTEND_FORCEPULL;
-						push_list[x]->client->ps.forceHandExtendTime = level.time + 400;
-					}
-					else
-					{
-						G_Sound( push_list[x], CHAN_BODY, G_SoundIndex( "sound/weapons/force/push.wav" ) );
-						push_list[x]->client->ps.forceHandExtend = HANDEXTEND_FORCEPUSH;
-						push_list[x]->client->ps.forceHandExtendTime = level.time + 1000;
-					}
-					push_list[x]->client->ps.powerups[PW_DISINT_4] = push_list[x]->client->ps.forceHandExtendTime + 200;
-
-					if (pull)
-					{
-						push_list[x]->client->ps.powerups[PW_PULL] = push_list[x]->client->ps.powerups[PW_DISINT_4];
-					}
-					else
-					{
-						push_list[x]->client->ps.powerups[PW_PULL] = 0;
-					}
-
-					//Make a counter-throw effect
-
-					if (otherPushPower >= modPowerLevel)
-					{
-						pushPowerMod = 0;
-						canPullWeapon = qfalse;
-					}
-					else
-					{
-						int powerDif = (modPowerLevel - otherPushPower);
-
-						if (powerDif >= 3)
+						if ( pull )
 						{
-							pushPowerMod -= pushPowerMod*0.2;
+							G_Sound( push_list[x], CHAN_BODY, G_SoundIndex( "sound/weapons/force/pull.wav" ) );
+							push_list[x]->client->ps.forceHandExtend = HANDEXTEND_FORCEPULL;
+							push_list[x]->client->ps.forceHandExtendTime = level.time + 400;
 						}
-						else if (powerDif == 2)
+						else
 						{
-							pushPowerMod -= pushPowerMod*0.4;
+							G_Sound( push_list[x], CHAN_BODY, G_SoundIndex( "sound/weapons/force/push.wav" ) );
+							push_list[x]->client->ps.forceHandExtend = HANDEXTEND_FORCEPUSH;
+							push_list[x]->client->ps.forceHandExtendTime = level.time + 1000;
 						}
-						else if (powerDif == 1)
+						push_list[x]->client->ps.powerups[PW_DISINT_4] = push_list[x]->client->ps.forceHandExtendTime + 200;
+
+						if (pull)
 						{
-							pushPowerMod -= pushPowerMod*0.8;
+							push_list[x]->client->ps.powerups[PW_PULL] = push_list[x]->client->ps.powerups[PW_DISINT_4];
+						}
+						else
+						{
+							push_list[x]->client->ps.powerups[PW_PULL] = 0;
 						}
 
-						if (pushPowerMod < 0)
+						//Make a counter-throw effect
+
+						if (otherPushPower >= modPowerLevel)
 						{
 							pushPowerMod = 0;
+							canPullWeapon = qfalse;
 						}
+						else
+						{
+							int powerDif = (modPowerLevel - otherPushPower);
+
+							if (powerDif >= 3)
+							{
+								pushPowerMod -= pushPowerMod*0.2;
+							}
+							else if (powerDif == 2)
+							{
+								pushPowerMod -= pushPowerMod*0.4;
+							}
+							else if (powerDif == 1)
+							{
+								pushPowerMod -= pushPowerMod*0.8;
+							}
+
+							if (pushPowerMod < 0)
+							{
+								pushPowerMod = 0;
+							}
+						}
+					}
+					else if (CanCounter == -1) {
+						//What if they are already absorbing tho?
+						if (g_tweakForce.integer & FT_WEAPON_PULLRESIST) //The only reason we cant counter is because of our weapon fire/charge, so weaken the pull/push strength
+							pushPowerMod *= 0.5f;
 					}
 				}
 

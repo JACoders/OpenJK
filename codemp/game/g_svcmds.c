@@ -944,7 +944,8 @@ static bitInfo_T forceTweaks[] = {
 	{"Force drain does not give forcepoints to players using force absorb"},//14
 	{"Allow grip during roll"},//15
 	{"Weak force pull"},//16
-	{"Nerfed weapon pull distance"}//17
+	{"Nerfed weapon pull distance"},//17
+	{"Force resistance while firing/charging weapon"}//18
 };
 static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
 
