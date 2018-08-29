@@ -2969,7 +2969,10 @@ int CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 	if (self->client->ps.weaponTime > 0)
 	{
-		return -1;
+		if (self->client->ps.weapon == WP_SABER || self->client->ps.weapon == WP_MELEE) 
+			return 0;
+		else
+			return -1;
 	}
 
 	if (self->client->ps.weaponstate == WEAPON_CHARGING ||
@@ -3523,7 +3526,6 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		{
 			int modPowerLevel = powerLevel;
 
-	
 			if (push_list[x]->client)
 			{
 				modPowerLevel = WP_AbsorbConversion(push_list[x], push_list[x]->client->ps.fd.forcePowerLevel[FP_ABSORB], self, powerUse, powerLevel, forcePowerNeeded[self->client->ps.fd.forcePowerLevel[powerUse]][powerUse]);
