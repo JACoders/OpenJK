@@ -860,22 +860,22 @@ void Svcmd_ToggleTweakWeapons_f( void ) {
 
 static bitInfo_T saberTweaks[] = { 
 	{"Skip saber interpolate for MP dmgs"},//1
-	{"JK2 1.02 Style Damage System"},//2
+	{"JK2 1.02 style damage system"},//2
 	{"Reduced saberblock for MP damages"},//3
 	{"Reduce saberdrops for MP damages"},//4
 	{"Allow rollcancel for saber swings"},//5
-	{"Remove chainable swings from red stance"},//6
+	{"JK2 1.02 style swings"},//6
 	{"Fixed saberswitch"},//7
 	{"No aim backslash"},//8
 	{"JK2 red DFA"},//9
 	{"Fix yellow DFA"},//10
 	{"Spin red DFA"},//11
 	{"Spin backslash"},//12
-	{"JK2 Lunge"},//13
+	{"JK2 lunge"},//13
 	{"Remove red DFA Boost"},//14
 	{"Make red DFA cost 0 forcepoints"},//15
 	{"Remove all backslash restrictions"},//16
-	{"Allow Sabergun"},//17
+	{"Allow sabergun"},//17
 	{"Allow fast style change for single saber"}//17
 };
 static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
@@ -1107,7 +1107,7 @@ void Svcmd_ToggleStartingWeapons_f( void ) {
 			for (index = 0; index < MAX_STARTING_WEAPONS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
 				trap->Cvar_Set("g_startingWeapons", va("%i", (1 << index) ^ (g_startingWeapons.integer & mask)));
 				trap->Cvar_Update(&g_startingWeapons);
-				trap->Print("%s %s^7\n", saberTweaks[index].string, ((g_startingWeapons.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+				trap->Print("%s %s^7\n", startingWeapons[index].string, ((g_startingWeapons.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
 				CVU_StartingWeapons();
 			}
 		} //DM End: New -1 toggle all options.

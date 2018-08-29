@@ -2969,10 +2969,10 @@ int CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 
 	if (self->client->ps.weaponTime > 0)
 	{
-		if (self->client->ps.weapon == WP_SABER || self->client->ps.weapon == WP_MELEE) 
-			return 0;
-		else
+		if (self->client->ps.weapon == WP_STUN_BATON || self->client->ps.weapon > WP_SABER) 
 			return -1;
+		else
+			return 0;
 	}
 
 	if (self->client->ps.weaponstate == WEAPON_CHARGING ||
@@ -3613,6 +3613,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 						{
 							int powerDif = (modPowerLevel - otherPushPower);
 
+							//Really dont know what type of person would write it this way
 							if (powerDif >= 3)
 							{
 								pushPowerMod -= pushPowerMod*0.2;

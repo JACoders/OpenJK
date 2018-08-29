@@ -9987,7 +9987,14 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 			ps->speed *= 0.85f;
 			break;
 		case FORCE_LEVEL_3:
-			ps->speed *= 0.55f;
+#if _GAME
+			if (g_tweakSaber.integer & ST_NO_REDCHAIN && !ps->stats[STAT_RACEMODE])
+#else
+			if (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN && !cg.predictedPlayerState.stats[STAT_RACEMODE])
+#endif
+				ps->speed *= 0.70f;
+			else
+				ps->speed *= 0.55f;
 			break;
 		default:
 			break;
