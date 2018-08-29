@@ -3641,8 +3641,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				if ( pull )
 				{
 					int weaponPullDist = 256;
-					if (g_tweakForce.integer & FT_NERFED_WEAPPULL) //And they are not in dark rage? && !(push_list[x]->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
-						weaponPullDist = 96;
+					if (g_tweakForce.integer & FT_NERFED_WEAPPULL && !(push_list[x]->client->ps.fd.forcePowersActive & (1 << FP_RAGE))) //And they are not in dark rage?
+						weaponPullDist = 128;
 
 					VectorSubtract( self->client->ps.origin, thispush_org, pushDir );
 
