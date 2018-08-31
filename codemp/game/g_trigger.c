@@ -12,6 +12,12 @@ void InitTrigger( gentity_t *self ) {
 	if (self->model && self->model[0] == '*') { //Feature from Lugormod - Logical triggers without model key using mins/maxs instead
 		trap->SetBrushModel( (sharedEntity_t *)self, self->model );
 	}
+	//Check for .md3 or .glm model ?
+	else {
+		G_SpawnVector("mins", "-8 -8 -8", self->r.mins);
+		G_SpawnVector("maxs", "8 8 8", self->r.maxs);
+	}
+
 	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap->SetBrushModel
 	self->r.svFlags = SVF_NOCLIENT; //whats this? triggers are not networked to clients then?
 
