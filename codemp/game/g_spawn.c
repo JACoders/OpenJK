@@ -299,6 +299,7 @@ void SP_target_play_music( gentity_t *self );
 void SP_target_push (gentity_t *ent);
 
 void SP_target_restrict (gentity_t *ent);//JAPRO Onlybhop
+void SP_team_KOTH (gentity_t *ent);//JAPRO koth
 
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
@@ -693,6 +694,9 @@ spawn_t	spawns[] = {
 	{ "team_CTF_bluespawn",				qtrue,	SP_team_CTF_bluespawn },
 	{ "team_CTF_redplayer",				qtrue,	SP_team_CTF_redplayer },
 	{ "team_CTF_redspawn",				qtrue,	SP_team_CTF_redspawn },
+
+	{"team_KOTH",						qtrue,	SP_team_KOTH},//JAPRO KOTH
+
 	{ "terrain",						qfalse,	SP_terrain },
 	{ "trigger_always",					qfalse,	SP_trigger_always },  //surely triggers besides push and teleport can be logical?
 	{ "trigger_asteroid_field",			qfalse,	SP_trigger_asteroid_field },
