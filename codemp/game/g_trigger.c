@@ -1838,8 +1838,221 @@ void SP_trigger_KOTH(gentity_t *self)//JAPRO Newpush
 	}
 	*/
 
-	//self->touch = NewPush;
+	self->touch = Touch_KOTH;
 	trap->LinkEntity ((sharedEntity_t *)self);
+}
+
+void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace ) 
+{
+	if( !other->client ) 
+	{
+		return;
+	}
+
+	if ( self->flags & FL_INACTIVE )
+	{//set by target_deactivate
+		return;
+	}
+
+	if( self->alliedTeam )
+	{
+		if ( other->client->sess.sessionTeam != self->alliedTeam )
+		{
+			return;
+		}
+	}
+
+// moved to just above multi_trigger because up here it just checks if the trigger is not being touched
+// we want it to check any conditions set on the trigger, if one of those isn't met, the trigger is considered to be "cleared"
+//	if ( self->e_ThinkFunc == thinkF_trigger_cleared_fire )
+//	{//We're waiting to fire our target2 first
+//		self->nextthink = level.time + self->speed;
+//		return;
+//	}
+
+//JAPRO - Serverside - Allow/disallow use button/trigger for duelers - Start
+	if (other->client->ps.duelInProgress && (g_allowUseInDuel.integer >= 2))//Loda fixme, make this spawnflags 5 for button? or should it block all triggers?
+		return;
+	if ((self->spawnflags & 4) && other->client->ps.duelInProgress && !g_allowUseInDuel.integer)
+		return;
+//JAPRO - Serverside - Allow/disallow use button/trigger for duelers - End
+
+	if ((self->spawnflags & 4) && (other->client->ps.powerups[PW_NEUTRALFLAG] && g_rabbit.integer))
+		return;
+
+	if ( self->spawnflags & 1 )
+	{
+		if ( other->s.eType == ET_NPC )
+		{
+			return;
+		}
+	}
+	else
+	{
+		if ( self->spawnflags & 16 )
+		{//NPCONLY
+			if ( other->NPC == NULL )
+			{
+				return;
+			}
+		}
+
+		if ( self->NPC_targetname && self->NPC_targetname[0] )
+		{
+			if ( other->script_targetname && other->script_targetname[0] )
+			{
+				if ( Q_stricmp( self->NPC_targetname, other->script_targetname ) != 0 )
+				{//not the right guy to fire me off
+					return;
+				}
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
+	if ( self->spawnflags & 2 )
+	{//FACING
+		vec3_t	forward;
+
+		AngleVectors( other->client->ps.viewangles, forward, NULL, NULL );
+
+		if ( DotProduct( self->movedir, forward ) < 0.5 )
+		{//Not Within 45 degrees
+			return;
+		}
+	}
+
+	if ( self->spawnflags & 4 )
+	{//USE_BUTTON
+		if( !( other->client->pers.cmd.buttons & BUTTON_USE ) )
+		{//not pressing use button
+			return;
+		}
+
+		if ((other->client->ps.weaponTime > 0 && other->client->ps.torsoAnim != BOTH_BUTTON_HOLD && other->client->ps.torsoAnim != BOTH_CONSOLE1) || other->health < 1 ||
+			(other->client->ps.pm_flags & PMF_FOLLOW) || other->client->sess.sessionTeam == TEAM_SPECTATOR ||
+			other->client->ps.forceHandExtend != HANDEXTEND_NONE)
+		{ //player has to be free of other things to use.
+			return;
+		}
+
+		if (self->genericValue7)
+		{ //we have to be holding the use key in this trigger for x milliseconds before firing
+			if (level.gametype == GT_SIEGE &&
+				self->idealclass && self->idealclass[0])
+			{ //only certain classes can activate it
+				if (!other ||
+					!other->client ||
+					other->client->siegeClass < 0)
+				{ //no class
+					return;
+				}
+
+				if (!G_NameInTriggerClassList(bgSiegeClasses[other->client->siegeClass].name, self->idealclass))
+				{ //wasn't in the list
+					return;
+				}
+			}
+
+			if (!G_PointInBounds( other->client->ps.origin, self->r.absmin, self->r.absmax ))
+			{
+				return;
+			}
+			else if (other->client->isHacking != self->s.number && other->s.number < MAX_CLIENTS )
+			{ //start the hack
+				other->client->isHacking = self->s.number;
+				VectorCopy(other->client->ps.viewangles, other->client->hackingAngles);
+				other->client->ps.hackingTime = level.time + self->genericValue7;
+				other->client->ps.hackingBaseTime = self->genericValue7;
+				if (other->client->ps.hackingBaseTime > 60000)
+				{ //don't allow a bit overflow
+					other->client->ps.hackingTime = level.time + 60000;
+					other->client->ps.hackingBaseTime = 60000;
+				}
+				return;
+			}
+			else if (other->client->ps.hackingTime < level.time)
+			{ //finished with the hack, reset the hacking values and let it fall through
+				other->client->isHacking = 0; //can't hack a client
+				other->client->ps.hackingTime = 0;
+			}
+			else
+			{ //hack in progress
+				return;
+			}
+		}
+	}
+
+	if ( self->spawnflags & 8 )
+	{//FIRE_BUTTON
+		if( !( other->client->pers.cmd.buttons & BUTTON_ATTACK ) &&
+			!( other->client->pers.cmd.buttons & BUTTON_ALT_ATTACK ) )
+		{//not pressing fire button or altfire button
+			return;
+		}
+	}
+
+	if ( self->radius )
+	{
+		vec3_t	eyeSpot;
+
+		//Only works if your head is in it, but we allow leaning out
+		//NOTE: We don't use CalcEntitySpot SPOT_HEAD because we don't want this
+		//to be reliant on the physical model the player uses.
+		VectorCopy(other->client->ps.origin, eyeSpot);
+		eyeSpot[2] += other->client->ps.viewheight;
+
+		if ( G_PointInBounds( eyeSpot, self->r.absmin, self->r.absmax ) )
+		{
+			if( !( other->client->pers.cmd.buttons & BUTTON_ATTACK ) &&
+				!( other->client->pers.cmd.buttons & BUTTON_ALT_ATTACK ) )
+			{//not attacking, so hiding bonus
+				/*
+				//FIXME:  should really have sound events clear the hiddenDist
+				other->client->hiddenDist = self->radius;
+				//NOTE: movedir HAS to be normalized!
+				if ( VectorLength( self->movedir ) )
+				{//They can only be hidden from enemies looking in this direction
+					VectorCopy( self->movedir, other->client->hiddenDir );
+				}
+				else
+				{
+					VectorClear( other->client->hiddenDir );
+				}
+				*/
+				//Not using this, at least not yet.
+			}
+		}
+	}
+
+	if ( self->spawnflags & 4 )
+	{//USE_BUTTON
+		if (other->client->sess.raceMode && other->client->sess.movementStyle == MV_JETPACK && VectorLengthSquared(other->client->ps.velocity))
+			return;
+		if (other->client->sess.raceMode && other->client->sess.movementStyle == MV_SWOOP && other->client->ps.m_iVehicleNum)
+			return;
+		if (other->client->ps.torsoAnim != BOTH_BUTTON_HOLD &&
+			other->client->ps.torsoAnim != BOTH_CONSOLE1)
+		{
+			G_SetAnim( other, NULL, SETANIM_TORSO, BOTH_BUTTON_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+		}
+		else
+		{
+			other->client->ps.torsoTimer = 500;
+		}
+		other->client->ps.weaponTime = other->client->ps.torsoTimer;
+	}
+	
+	if ( self->think == trigger_cleared_fire )
+	{//We're waiting to fire our target2 first
+		self->nextthink = level.time + self->speed;
+		return;
+	}
+
+	multi_trigger( self, other );
 }
 
 
