@@ -135,6 +135,9 @@ field_t fields[] = {
 	{ "lostenemyscript",		FOFS( behaviorSet[BSET_LOSTENEMY] ),	F_STRING },//name of script to run
 	{ "message",				FOFS( message ),						F_STRING },
 	{ "mindtrickscript",		FOFS( behaviorSet[BSET_MINDTRICK] ),	F_STRING },//name of script to run
+
+	//Add mins/maxs here for logical trigger_multiples?
+
 	{ "model",					FOFS( model ),							F_STRING },
 	{ "model2",					FOFS( model2 ),							F_STRING },
 	{ "npc_target",				FOFS( NPC_target ),						F_STRING },
@@ -696,7 +699,7 @@ spawn_t	spawns[] = {
 	{ "trigger_hurt",					qfalse,	SP_trigger_hurt },
 	{ "trigger_hyperspace",				qfalse,	SP_trigger_hyperspace },
 	{ "trigger_lightningstrike",		qfalse,	SP_trigger_lightningstrike },
-	{ "trigger_multiple",				qfalse,	SP_trigger_multiple },
+	{ "trigger_multiple",				qtrue,	SP_trigger_multiple }, //Make this logical, but if it has a *model then we have to make it non-logical
 
 	{ "trigger_newpush",				qfalse,	SP_trigger_newpush },
 
@@ -967,18 +970,30 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	}
 	if (G_IsLogicalEntity(value)) {
 		// Check if the entity wants to be nonlogical anyway
-		G_SpawnInt("nological", "0", &i);
-		if (i) {				// Despite it being a logical entity, it wants to be nonlogical
-			ent = G_Spawn(qtrue);	// possibly because it wants to use icarus for example
-		}
-		else {
-			G_SpawnString("script_targetname", NULL, &value); //Always make entities with script_targetnames non logical (???)
-			if (value) {
+
+		if (!Q_stricmp(value, "trigger_multiple")) { //Set trigger_multiples as logical earlier
+			G_SpawnString("model", NULL, &value);
+			if(value[0] == '*')  { //If trigger has a *model flag, make it non-logical.  we can use mins/maxs to size it
 				ent = G_Spawn(qtrue);
 			}
 			else {
-				// Get the next free logical entity
 				ent = G_SpawnLogical();
+			}
+		}
+		else {
+			G_SpawnInt("nological", "0", &i);
+			if (i) {				// Despite it being a logical entity, it wants to be nonlogical
+				ent = G_Spawn(qtrue);	// possibly because it wants to use icarus for example
+			}
+			else {
+				G_SpawnString("script_targetname", NULL, &value); //Always make entities with script_targetnames non logical (???)
+				if (value) {
+					ent = G_Spawn(qtrue);
+				}
+				else {
+					// Get the next free logical entity
+					ent = G_SpawnLogical();
+				}
 			}
 		}
 	}

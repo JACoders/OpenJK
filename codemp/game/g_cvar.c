@@ -265,7 +265,7 @@ static void RemoveWeaponsFromMap(void) {
 				ent->r.contents = 0;
 				//ent->inuse = qfalse;
 			}
-			else if (ent->item->giType == IT_AMMO && wDisable && G_FreeAmmoEntity(ent->item)) {
+			else if ((ent->item->giType == IT_AMMO) && wDisable && G_FreeAmmoEntity(ent->item)) {
 				ent->think = 0;
 				ent->nextthink = 0;
 				ent->s.eFlags |= EF_NODRAW;
