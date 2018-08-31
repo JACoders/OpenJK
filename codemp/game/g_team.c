@@ -1475,8 +1475,5 @@ Targets will be fired when someone spawns in on them.
 void SP_team_CTF_bluespawn(gentity_t *ent) {
 }
 
-void SP_team_KOTH(gentity_t *ent) {
-	//Nothing really happens here, koth is just game logic for now
-}
 
 

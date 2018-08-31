@@ -1802,7 +1802,7 @@ void SP_target_restrict(gentity_t *self)//JAPRO Onlybhop
 		self->use = Use_target_restrict_on;
 }
 
-void SP_trigger_newpush(gentity_t *self)//JAPRO Onlybhop
+void SP_trigger_newpush(gentity_t *self)//JAPRO Newpush
 {
 	char	*s;
 	InitTrigger(self);
@@ -1817,6 +1817,25 @@ void SP_trigger_newpush(gentity_t *self)//JAPRO Onlybhop
 	self->touch = NewPush;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }
+
+void SP_trigger_KOTH(gentity_t *self)//JAPRO Newpush
+{
+	//char	*s;
+	InitTrigger(self);
+
+	/*
+	if ( G_SpawnString( "noise", "", &s ) ) {
+		if (s && s[0])
+			self->noise_index = G_SoundIndex(s);
+		else
+			self->noise_index = 0;
+	}
+	*/
+
+	//self->touch = NewPush;
+	trap->LinkEntity ((sharedEntity_t *)self);
+}
+
 
 /*
 ==============================================================================

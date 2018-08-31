@@ -274,6 +274,7 @@ void SP_trigger_timer_start(gentity_t *self);//JAPRO Timers
 void SP_trigger_timer_checkpoint(gentity_t *self);
 void SP_trigger_timer_stop(gentity_t *self);
 void SP_trigger_newpush (gentity_t *ent);
+void SP_trigger_KOTH (gentity_t *ent);//JAPRO koth
 
 void SP_target_remove_powerups( gentity_t *ent );
 void SP_target_give (gentity_t *ent);
@@ -299,7 +300,6 @@ void SP_target_play_music( gentity_t *self );
 void SP_target_push (gentity_t *ent);
 
 void SP_target_restrict (gentity_t *ent);//JAPRO Onlybhop
-void SP_team_KOTH (gentity_t *ent);//JAPRO koth
 
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
@@ -694,16 +694,16 @@ spawn_t	spawns[] = {
 	{ "team_CTF_bluespawn",				qtrue,	SP_team_CTF_bluespawn },
 	{ "team_CTF_redplayer",				qtrue,	SP_team_CTF_redplayer },
 	{ "team_CTF_redspawn",				qtrue,	SP_team_CTF_redspawn },
-
-	{"team_KOTH",						qtrue,	SP_team_KOTH},//JAPRO KOTH
-
 	{ "terrain",						qfalse,	SP_terrain },
 	{ "trigger_always",					qfalse,	SP_trigger_always },  //surely triggers besides push and teleport can be logical?
 	{ "trigger_asteroid_field",			qfalse,	SP_trigger_asteroid_field },
 	{ "trigger_hurt",					qfalse,	SP_trigger_hurt },
 	{ "trigger_hyperspace",				qfalse,	SP_trigger_hyperspace },
+
+	{ "trigger_KOTH",					qfalse,	SP_trigger_KOTH},//JAPRO KOTH
+
 	{ "trigger_lightningstrike",		qfalse,	SP_trigger_lightningstrike },
-	{ "trigger_multiple",				qtrue,	SP_trigger_multiple }, //Make this logical, but if it has a *model then we have to make it non-logical
+	{ "trigger_multiple",				qfalse,	SP_trigger_multiple },
 
 	{ "trigger_newpush",				qfalse,	SP_trigger_newpush },
 
@@ -974,30 +974,18 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	}
 	if (G_IsLogicalEntity(value)) {
 		// Check if the entity wants to be nonlogical anyway
-
-		if (!Q_stricmp(value, "trigger_multiple")) { //Set trigger_multiples as logical earlier
-			G_SpawnString("model", NULL, &value);
-			if(value[0] == '*')  { //If trigger has a *model flag, make it non-logical.  we can use mins/maxs to size it
+		G_SpawnInt("nological", "0", &i);
+		if (i) {				// Despite it being a logical entity, it wants to be nonlogical
+			ent = G_Spawn(qtrue);	// possibly because it wants to use icarus for example
+		}
+		else {
+			G_SpawnString("script_targetname", NULL, &value); //Always make entities with script_targetnames non logical (???)
+			if (value) {
 				ent = G_Spawn(qtrue);
 			}
 			else {
+				// Get the next free logical entity
 				ent = G_SpawnLogical();
-			}
-		}
-		else {
-			G_SpawnInt("nological", "0", &i);
-			if (i) {				// Despite it being a logical entity, it wants to be nonlogical
-				ent = G_Spawn(qtrue);	// possibly because it wants to use icarus for example
-			}
-			else {
-				G_SpawnString("script_targetname", NULL, &value); //Always make entities with script_targetnames non logical (???)
-				if (value) {
-					ent = G_Spawn(qtrue);
-				}
-				else {
-					// Get the next free logical entity
-					ent = G_SpawnLogical();
-				}
 			}
 		}
 	}
