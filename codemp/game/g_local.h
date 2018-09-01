@@ -791,6 +791,8 @@ typedef struct {//JAPRO - Serverside - Stats
 	int teamDrainDamage;
 
 	float racetime;
+
+	int kothTime;
 } stats_t;
 
 // client data that stays across multiple respawns, but is cleared
@@ -1488,6 +1490,8 @@ typedef struct level_locals_s {
 #if _retardedsabertest
 	int			saberUpdateDebounceTime; //why not
 #endif
+
+	int			kothTime; //JAPRO KOTH
 
 	//int			lastVoteFailTime;
 //JAPRO - Serverside - Amlockteam - End

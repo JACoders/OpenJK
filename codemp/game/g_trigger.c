@@ -1824,43 +1824,43 @@ void SP_trigger_newpush(gentity_t *self)//JAPRO Newpush
 	trap->LinkEntity ((sharedEntity_t *)self);
 }
 
-void SP_trigger_KOTH(gentity_t *self)//JAPRO Newpush
-{
-	//char	*s;
-	InitTrigger(self);
-
-	/*
-	if ( G_SpawnString( "noise", "", &s ) ) {
-		if (s && s[0])
-			self->noise_index = G_SoundIndex(s);
-		else
-			self->noise_index = 0;
-	}
-	*/
-
-	self->touch = Touch_KOTH;
-	trap->LinkEntity ((sharedEntity_t *)self);
-}
-
 void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace ) 
 {
-	if( !other->client ) 
-	{
+	if( !other->client )
+		return;
+	if (other->s.eType == ET_NPC)
+		return;
+	if (self->flags & FL_INACTIVE) //set by target_deactivate
+		return;
+	if (level.gametype != GT_TEAM)
+		return;
+	if (other->client->ps.duelInProgress)
+		return;
+	if (other->client->sess.raceMode)
+		return;
+	if (!g_KOTH.integer)
+		return;
+
+	if (GetTimeMS() - other->client->pers.stats.startTime < 100) {//Some built in floodprotect per player?
 		return;
 	}
+	other->client->pers.stats.startTime = GetTimeMS();
 
-	if ( self->flags & FL_INACTIVE )
-	{//set by target_deactivate
-		return;
+	if (other->client->sess.sessionTeam == TEAM_RED)
+		level.kothTime += 100; //Add in the actual diff so it doesnt hurt low fps players?   //+= (GetTimeMS - startTime)
+	else if (other->client->sess.sessionTeam == TEAM_BLUE)
+		level.kothTime -= 100;
+
+	if (level.kothTime > 2000) {
+		trap->SendServerCommand( -1, "chat \"Red Scored\"");
+		level.kothTime = 0;
+	}
+	else if (level.kothTime < -2000) {
+		trap->SendServerCommand( -1, "chat \"Blue Scored\"");
+		level.kothTime = 0;
 	}
 
-	if( self->alliedTeam )
-	{
-		if ( other->client->sess.sessionTeam != self->alliedTeam )
-		{
-			return;
-		}
-	}
+#if 0
 
 // moved to just above multi_trigger because up here it just checks if the trigger is not being touched
 // we want it to check any conditions set on the trigger, if one of those isn't met, the trigger is considered to be "cleared"
@@ -2052,9 +2052,30 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 		return;
 	}
 
+#endif
+
 	multi_trigger( self, other );
 }
 
+void SP_trigger_KOTH(gentity_t *self)//JAPRO Newpush
+{
+	//char	*s;
+	InitTrigger(self);
+
+	/*
+	if ( G_SpawnString( "noise", "", &s ) ) {
+		if (s && s[0])
+			self->noise_index = G_SoundIndex(s);
+		else
+			self->noise_index = 0;
+	}
+	*/
+
+	Com_Printf("Spawned koth\n");
+
+	self->touch = Touch_KOTH;
+	trap->LinkEntity ((sharedEntity_t *)self);
+}
 
 /*
 ==============================================================================
