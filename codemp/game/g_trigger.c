@@ -1826,6 +1826,7 @@ void SP_trigger_newpush(gentity_t *self)//JAPRO Newpush
 
 void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace ) 
 {
+	const int touchTime = GetTimeMS();
 	if( !other->client )
 		return;
 	if (other->s.eType == ET_NPC)
@@ -1841,22 +1842,41 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 	if (!g_KOTH.integer)
 		return;
 
-	if (GetTimeMS() - other->client->pers.stats.startTime < 100) {//Some built in floodprotect per player?
+	if (touchTime - other->client->pers.stats.startTime < 100) {//Some built in floodprotect per player?
 		return;
 	}
-	other->client->pers.stats.startTime = GetTimeMS();
+
+	//Get time since we were last in trigger.. If we were outside of a trigger previously, reset it.. how to tell this
 
 	if (other->client->sess.sessionTeam == TEAM_RED)
-		level.kothTime += 100; //Add in the actual diff so it doesnt hurt low fps players?   //+= (GetTimeMS - startTime)
+		level.kothTime += touchTime - other->client->pers.stats.kothTime; //Add in the actual diff so it doesnt hurt low fps players?   //+= (GetTimeMS - kothTime)
 	else if (other->client->sess.sessionTeam == TEAM_BLUE)
-		level.kothTime -= 100;
+		level.kothTime -= touchTime - other->client->pers.stats.kothTime; //But when they exit the trigger... this falls apart
+
+	other->client->pers.stats.kothTime = touchTime;
+
+	/* //racetimer example
+	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
+		return;
+	if (level.time - player->client->lastInStartTrigger <= 300) { //We were last in the trigger within 300ms ago.., //goal, make this negative edge ?
+		player->client->lastInStartTrigger = level.time;
+		return;
+	}
+	else {
+		player->client->lastInStartTrigger = level.time;
+	}
+	*/
 
 	if (level.kothTime > 2000) {
+		AddTeamScore(other->s.pos.trBase, TEAM_RED, 1, qfalse);
 		trap->SendServerCommand( -1, "chat \"Red Scored\"");
+		CalculateRanks();
 		level.kothTime = 0;
 	}
 	else if (level.kothTime < -2000) {
+		AddTeamScore(other->s.pos.trBase, TEAM_BLUE, 1, qfalse);
 		trap->SendServerCommand( -1, "chat \"Blue Scored\"");
+		CalculateRanks();
 		level.kothTime = 0;
 	}
 
