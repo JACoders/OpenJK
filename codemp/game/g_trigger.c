@@ -1212,19 +1212,19 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK && style != MV_SWOOP && style != MV_JETPACK && style != MV_SLICK && style != MV_BOTCPM) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1 || player->client->ps.powerups[PW_YSALAMIRI]) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1 || player->client->ps.powerups[PW_YSALAMIRI] > 0) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 1!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
 		}
 		else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 2 || player->client->ps.powerups[PW_YSALAMIRI]) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 2 || player->client->ps.powerups[PW_YSALAMIRI] > 0) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 2!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
 		}
 		else if (restrictions & (1 << 2)) {//flags 4 = only jump3
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 3 || player->client->ps.powerups[PW_YSALAMIRI]) { //Also dont allow ysal in FJ specified courses..?
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 3 || player->client->ps.powerups[PW_YSALAMIRI] > 0) { //Also dont allow ysal in FJ specified courses..?
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 3!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
@@ -1849,9 +1849,9 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 	//Get time since we were last in trigger.. If we were outside of a trigger previously, reset it.. how to tell this
 
 	if (other->client->sess.sessionTeam == TEAM_RED)
-		level.kothTime += touchTime - other->client->pers.stats.kothTime; //Add in the actual diff so it doesnt hurt low fps players?   //+= (GetTimeMS - kothTime)
+		level.kothTime += 100;//touchTime - other->client->pers.stats.kothTime; //Add in the actual diff so it doesnt hurt low fps players?   //+= (GetTimeMS - kothTime)
 	else if (other->client->sess.sessionTeam == TEAM_BLUE)
-		level.kothTime -= touchTime - other->client->pers.stats.kothTime; //But when they exit the trigger... this falls apart
+		level.kothTime -= 100;//touchTime - other->client->pers.stats.kothTime; //But when they exit the trigger... this falls apart
 
 	other->client->pers.stats.kothTime = touchTime;
 
