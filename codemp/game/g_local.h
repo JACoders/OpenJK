@@ -1205,6 +1205,7 @@ struct gclient_s {
 	int			lastDamageTime;
 	//int			lastStartTime; //for autodemo floodprotect
 	int			lastInStartTrigger;
+	int			kothDebounce;
 	//int			numStakes;
 
 #if _GRAPPLE

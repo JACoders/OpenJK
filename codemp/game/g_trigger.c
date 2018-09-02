@@ -1350,9 +1350,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		player->client->lastInStartTrigger = level.time;
 		return;
 	}
-	else {
-		player->client->lastInStartTrigger = level.time;
-	}
+	player->client->lastInStartTrigger = level.time;
+
 	//if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		//return;
 	//if (player->client->pers.stats.startTime) //Instead of floodprotect, dont let player start a timer if they already have one.  Mapmakers should then put reset timers over the start area.
@@ -1826,7 +1825,7 @@ void SP_trigger_newpush(gentity_t *self)//JAPRO Newpush
 
 void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace ) 
 {
-	const int touchTime = GetTimeMS();
+	const int nowTime = GetTimeMS();
 	int addTime;
 
 	if( !other->client )
@@ -1846,26 +1845,23 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 	if (level.startTime > (level.time - 1000*20)) //Dont enable for first 20 seconds of map
 		return;
 
-	if (touchTime - other->client->pers.stats.startTime < 100) {//Some built in floodprotect per player?
+	if (nowTime - other->client->kothDebounce < 100) {//Some built in floodprotect per player?
 		return;
 	}
+	other->client->kothDebounce = nowTime;
 
-	//Get time since we were last in trigger.. If we were outside of a trigger previously, reset it.. how to tell this
-	//if their last servercmd is more recent than their kothTime, it means they are coming into koth for first time, so set it to 0.
-
-	if (other->client->pers.cmd.serverTime > other->client->pers.stats.kothTime)
-		other->client->pers.stats.kothTime = touchTime;//or 0 ?
-
-	addTime = touchTime - other->client->pers.stats.kothTime;
-	if (addTime > 200)
+	addTime = nowTime - other->client->pers.stats.kothTime;
+	if (addTime > 200) {
+		//Com_Printf("Add time is %i\n", addTime);
 		addTime = 200;
+	}
 
 	if (other->client->sess.sessionTeam == TEAM_RED)
 		level.kothTime += addTime;
 	else if (other->client->sess.sessionTeam == TEAM_BLUE)
 		level.kothTime -= addTime;
 
-	other->client->pers.stats.kothTime = touchTime;
+	other->client->pers.stats.kothTime = nowTime;
 
 	if (level.kothTime > 3000) {
 		AddTeamScore(other->s.pos.trBase, TEAM_RED, 1, qfalse);
