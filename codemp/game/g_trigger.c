@@ -1827,11 +1827,15 @@ void SP_trigger_newpush(gentity_t *self)//JAPRO Newpush
 void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace ) 
 {
 	const int touchTime = GetTimeMS();
+	int addTime;
+
 	if( !other->client )
 		return;
 	if (other->s.eType == ET_NPC)
 		return;
 	if (self->flags & FL_INACTIVE) //set by target_deactivate
+		return;
+	if (!g_KOTH.integer)
 		return;
 	if (level.gametype != GT_TEAM)
 		return;
@@ -1839,7 +1843,7 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 		return;
 	if (other->client->sess.raceMode)
 		return;
-	if (!g_KOTH.integer)
+	if (level.startTime > (level.time - 1000*20)) //Dont enable for first 20 seconds of map
 		return;
 
 	if (touchTime - other->client->pers.stats.startTime < 100) {//Some built in floodprotect per player?
@@ -1847,35 +1851,31 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 	}
 
 	//Get time since we were last in trigger.. If we were outside of a trigger previously, reset it.. how to tell this
+	//if their last servercmd is more recent than their kothTime, it means they are coming into koth for first time, so set it to 0.
+
+	if (other->client->pers.cmd.serverTime > other->client->pers.stats.kothTime)
+		other->client->pers.stats.kothTime = touchTime;//or 0 ?
+
+	addTime = touchTime - other->client->pers.stats.kothTime;
+	if (addTime > 200)
+		addTime = 200;
 
 	if (other->client->sess.sessionTeam == TEAM_RED)
-		level.kothTime += 100;//touchTime - other->client->pers.stats.kothTime; //Add in the actual diff so it doesnt hurt low fps players?   //+= (GetTimeMS - kothTime)
+		level.kothTime += addTime;
 	else if (other->client->sess.sessionTeam == TEAM_BLUE)
-		level.kothTime -= 100;//touchTime - other->client->pers.stats.kothTime; //But when they exit the trigger... this falls apart
+		level.kothTime -= addTime;
 
 	other->client->pers.stats.kothTime = touchTime;
 
-	/* //racetimer example
-	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
-		return;
-	if (level.time - player->client->lastInStartTrigger <= 300) { //We were last in the trigger within 300ms ago.., //goal, make this negative edge ?
-		player->client->lastInStartTrigger = level.time;
-		return;
-	}
-	else {
-		player->client->lastInStartTrigger = level.time;
-	}
-	*/
-
-	if (level.kothTime > 2000) {
+	if (level.kothTime > 3000) {
 		AddTeamScore(other->s.pos.trBase, TEAM_RED, 1, qfalse);
-		trap->SendServerCommand( -1, "chat \"Red Scored\"");
+		//trap->SendServerCommand( -1, "chat \"Red Scored\"");
 		CalculateRanks();
 		level.kothTime = 0;
 	}
-	else if (level.kothTime < -2000) {
+	else if (level.kothTime < -3000) {
 		AddTeamScore(other->s.pos.trBase, TEAM_BLUE, 1, qfalse);
-		trap->SendServerCommand( -1, "chat \"Blue Scored\"");
+		//trap->SendServerCommand( -1, "chat \"Blue Scored\"");
 		CalculateRanks();
 		level.kothTime = 0;
 	}
