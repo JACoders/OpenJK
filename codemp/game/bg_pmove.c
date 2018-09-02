@@ -9138,10 +9138,12 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
-	if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
-		addTime *= 0.75;
-	else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
-		addTime *= 1.5;
+	if (!(g_tweakForce.integer & FT_NORAGEFIRERATE) || pm->ps->weapon == WP_MELEE || pm->ps->weapon == WP_SABER) {
+		if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
+			addTime *= 0.75;
+		else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
+			addTime *= 1.5;
+	}
 
 #if _GAME
 	if (pm->ps->stats[STAT_RACEMODE]) {

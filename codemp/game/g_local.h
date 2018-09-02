@@ -271,6 +271,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define FT_WEAKPULL			  (1<<15)
 #define FT_NERFED_WEAPPULL	  (1<<16)
 #define FT_WEAPON_PULLRESIST  (1<<17)
+#define FT_NORAGEFIRERATE	  (1<<18)
 
 //Saber tweaks
 #define	ST_NO_MP_SABERLERP		(1<<0)

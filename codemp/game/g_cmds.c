@@ -8180,6 +8180,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Nerfed weapon pull distance\n");
 		if (g_tweakForce.integer & FT_WEAPON_PULLRESIST)
 			Q_strcat(buf, sizeof(buf), "   ^5Pull resistance when shooting/charging weapons\n");
+		if (g_tweakForce.integer & FT_NORAGEFIRERATE)
+			Q_strcat(buf, sizeof(buf), "   ^5Dark rage does not affect weapon firerate\n");
 
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
