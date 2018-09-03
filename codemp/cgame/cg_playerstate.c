@@ -316,7 +316,7 @@ CG_CheckLocalSounds
 ==================
 */
 void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
-	int			highScore, health, armor, reward;
+	int			highScore, health, armor, reward, oldhealth, oldarmor;//JAPRO - Clientside - Hitsounds
 #ifdef JK2AWARDS
 	sfxHandle_t sfx;
 #endif
@@ -330,29 +330,25 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	if ( ps->persistant[PERS_HITS] > ops->persistant[PERS_HITS] ) {
 		armor  = ps->persistant[PERS_ATTACKEE_ARMOR] & 0xff;
 		health = ps->persistant[PERS_ATTACKEE_ARMOR] >> 8;
+		oldhealth = ops->persistant[PERS_ATTACKEE_ARMOR] >> 8;//JAPRO - Clientside - Hitsounds
+		oldarmor  = ops->persistant[PERS_ATTACKEE_ARMOR] & 0xff;//JAPRO - Clientside - Hitsounds
 
-		if (armor > health/2)
-		{	// We also hit shields along the way, so consider them "pierced".
-//			trap->S_StartLocalSound( cgs.media.shieldPierceSound, CHAN_LOCAL_SOUND );
-		}
-		else
-		{	// Shields didn't really stand in our way.
-//			trap->S_StartLocalSound( cgs.media.hitSound, CHAN_LOCAL_SOUND );
-		}
-
-		//FIXME: Hit sounds?
-		/*
-		if (armor > 50 ) {
-			trap->S_StartLocalSound( cgs.media.hitSoundHighArmor, CHAN_LOCAL_SOUND );
-		} else if (armor || health > 100) {
-			trap->S_StartLocalSound( cgs.media.hitSoundLowArmor, CHAN_LOCAL_SOUND );
-		} else {
+//JAPRO - Clientside - Hitsounds Start
+		if (cg_hitsounds.integer == 1)
 			trap->S_StartLocalSound( cgs.media.hitSound, CHAN_LOCAL_SOUND );
-		}
-		*/
-	} else if ( ps->persistant[PERS_HITS] < ops->persistant[PERS_HITS] ) {
-		//trap->S_StartLocalSound( cgs.media.hitTeamSound, CHAN_LOCAL_SOUND );
+		else if (cg_hitsounds.integer == 2)
+			trap->S_StartLocalSound( cgs.media.hitSound2, CHAN_LOCAL_SOUND ); 
+		else if (cg_hitsounds.integer == 3)
+			trap->S_StartLocalSound( cgs.media.hitSound3, CHAN_LOCAL_SOUND ); 
+		else if (cg_hitsounds.integer > 3)
+			trap->S_StartLocalSound( cgs.media.hitSound4, CHAN_LOCAL_SOUND ); 
+		
 	}
+	else if ( ps->persistant[PERS_HITS] < ops->persistant[PERS_HITS] ) {
+		if (cg_hitsounds.integer)
+		trap->S_StartLocalSound( cgs.media.hitTeamSound, CHAN_LOCAL_SOUND );
+	}
+//JAPRO - Clientside - Hitsounds End
 
 	// health changes of more than -3 should make pain sounds
 	if (cg_oldPainSounds.integer)
@@ -374,51 +370,97 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 #ifdef JK2AWARDS
 	// reward sounds
 	reward = qfalse;
-	if (ps->persistant[PERS_CAPTURES] != ops->persistant[PERS_CAPTURES]) {
-		pushReward(cgs.media.captureAwardSound, cgs.media.medalCapture, ps->persistant[PERS_CAPTURES]);
-		reward = qtrue;
-		//Com_Printf("capture\n");
-	}
-	if (ps->persistant[PERS_IMPRESSIVE_COUNT] != ops->persistant[PERS_IMPRESSIVE_COUNT]) {
-		sfx = cgs.media.impressiveSound;
+	if (cg_drawRewards.integer) {
+		if (ps->persistant[PERS_CAPTURES] != ops->persistant[PERS_CAPTURES]) {
+			pushReward(cgs.media.captureAwardSound, cgs.media.medalCapture, ps->persistant[PERS_CAPTURES]);
+			reward = qtrue;
+			//Com_Printf("capture\n");
 
-		pushReward(sfx, cgs.media.medalImpressive, ps->persistant[PERS_IMPRESSIVE_COUNT]);
-		reward = qtrue;
-		//Com_Printf("impressive\n");
-	}
-	if (ps->persistant[PERS_EXCELLENT_COUNT] != ops->persistant[PERS_EXCELLENT_COUNT]) {
-		sfx = cgs.media.excellentSound;
-		pushReward(sfx, cgs.media.medalExcellent, ps->persistant[PERS_EXCELLENT_COUNT]);
-		reward = qtrue;
-		//Com_Printf("excellent\n");
-	}
-	if (ps->persistant[PERS_GAUNTLET_FRAG_COUNT] != ops->persistant[PERS_GAUNTLET_FRAG_COUNT]) {
-		sfx = cgs.media.humiliationSound;
-		pushReward(sfx, cgs.media.medalGauntlet, ps->persistant[PERS_GAUNTLET_FRAG_COUNT]);
-		reward = qtrue;
-		//Com_Printf("gauntlet frag\n");
-	}
-	if (ps->persistant[PERS_DEFEND_COUNT] != ops->persistant[PERS_DEFEND_COUNT]) {
-		pushReward(cgs.media.defendSound, cgs.media.medalDefend, ps->persistant[PERS_DEFEND_COUNT]);
-		reward = qtrue;
-		//Com_Printf("defend\n");
-	}
-	if (ps->persistant[PERS_ASSIST_COUNT] != ops->persistant[PERS_ASSIST_COUNT]) {
-		//pushReward(cgs.media.assistSound, cgs.media.medalAssist, ps->persistant[PERS_ASSIST_COUNT]);
-		//reward = qtrue;
-		//Com_Printf("assist\n");
-	}
-	// if any of the player event bits changed
-	if (ps->persistant[PERS_PLAYEREVENTS] != ops->persistant[PERS_PLAYEREVENTS]) {
-		if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_DENIEDREWARD) !=
-				(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_DENIEDREWARD)) {
-			trap->S_StartLocalSound( cgs.media.deniedSound, CHAN_ANNOUNCER );
+			if (ps->persistant[PERS_CAPTURES] > 1)
+				Com_Printf("[skipnotify]Capture %i!\n", ps->persistant[PERS_CAPTURES]);
+			else
+				Com_Printf("[skipnotify]Capture!\n");
 		}
-		else if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_GAUNTLETREWARD) !=
-				(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_GAUNTLETREWARD)) {
-			trap->S_StartLocalSound( cgs.media.humiliationSound, CHAN_ANNOUNCER );
+		if (ps->persistant[PERS_IMPRESSIVE_COUNT] != ops->persistant[PERS_IMPRESSIVE_COUNT]) {
+			if (cg_drawRewards.integer == 1) {
+				sfx = cgs.media.impressiveSound;
+				pushReward(sfx, cgs.media.medalImpressive, ps->persistant[PERS_IMPRESSIVE_COUNT]);
+			}
+			else if (cg_drawRewards.integer == 2) {
+				sfx = cgs.media.impressiveSoundQ3;
+				pushReward(sfx, cgs.media.medalImpressiveQ3, ps->persistant[PERS_IMPRESSIVE_COUNT]);
+			}
+			reward = qtrue;
+			//Com_Printf("impressive\n");
+
+			if (ps->persistant[PERS_IMPRESSIVE_COUNT] > 1)
+				Com_Printf("[skipnotify]Impressive! %i\n", ps->persistant[PERS_IMPRESSIVE_COUNT]);
+			else
+				Com_Printf("[skipnotify]Impressive!\n");
 		}
-		reward = qtrue;
+		if (ps->persistant[PERS_EXCELLENT_COUNT] != ops->persistant[PERS_EXCELLENT_COUNT]) {
+			if (cg_drawRewards.integer == 1) {
+				sfx = cgs.media.excellentSound;
+				pushReward(sfx, cgs.media.medalExcellent, ps->persistant[PERS_EXCELLENT_COUNT]);
+			}
+			else if (cg_drawRewards.integer == 2) {
+				sfx = cgs.media.excellentSoundQ3;
+				pushReward(sfx, cgs.media.medalExcellentQ3, ps->persistant[PERS_EXCELLENT_COUNT]);
+			}
+			reward = qtrue;
+			//Com_Printf("excellent\n");
+
+			if (ps->persistant[PERS_IMPRESSIVE_COUNT] > 1)
+				Com_Printf("[skipnotify]Ace! %i\n", ps->persistant[PERS_EXCELLENT_COUNT]);
+			else
+				Com_Printf("[skipnotify]Ace!\n");
+		}
+		if (ps->persistant[PERS_GAUNTLET_FRAG_COUNT] != ops->persistant[PERS_GAUNTLET_FRAG_COUNT]) {
+			if (cg_drawRewards.integer == 1) {
+				sfx = cgs.media.humiliationSound;
+				pushReward(sfx, cgs.media.medalGauntlet, ps->persistant[PERS_GAUNTLET_FRAG_COUNT]);
+			}
+			else if (cg_drawRewards.integer == 2) {
+				sfx = cgs.media.humiliationSoundQ3;
+				pushReward(sfx, cgs.media.medalGauntletQ3, ps->persistant[PERS_GAUNTLET_FRAG_COUNT]);
+			}
+			reward = qtrue;
+			//Com_Printf("gauntlet frag\n");
+		}
+		if (ps->persistant[PERS_DEFEND_COUNT] != ops->persistant[PERS_DEFEND_COUNT]) {
+			pushReward(cgs.media.defendSound, cgs.media.medalDefend, ps->persistant[PERS_DEFEND_COUNT]);
+			reward = qtrue;
+			//Com_Printf("defend\n");
+
+			if (ps->persistant[PERS_DEFEND_COUNT] > 1)
+				Com_Printf("[skipnotify]Defense! %i\n", ps->persistant[PERS_DEFEND_COUNT]);
+			else
+				Com_Printf("[skipnotify]Defense!\n");
+		}
+		if (ps->persistant[PERS_ASSIST_COUNT] != ops->persistant[PERS_ASSIST_COUNT]) { //this one was disabled?
+			pushReward(cgs.media.assistSound, cgs.media.medalAssist, ps->persistant[PERS_ASSIST_COUNT]);
+			reward = qtrue;
+			//Com_Printf("assist\n");
+
+			if (ps->persistant[PERS_ASSIST_COUNT] > 1)
+				Com_Printf("[skipnotify]Tactician! %i\n", ps->persistant[PERS_ASSIST_COUNT]);
+			else
+				Com_Printf("[skipnotify]Tactician!\n");
+		}
+		// if any of the player event bits changed
+		if (!cgs.isJAPlus) {
+			if (ps->persistant[PERS_PLAYEREVENTS] != ops->persistant[PERS_PLAYEREVENTS]) {
+				if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_DENIEDREWARD) !=
+					(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_DENIEDREWARD)) {
+					trap->S_StartLocalSound( cgs.media.deniedSound, CHAN_ANNOUNCER );
+				}
+				else if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_GAUNTLETREWARD) !=
+					(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_GAUNTLETREWARD)) {
+					trap->S_StartLocalSound( cgs.media.humiliationSound, CHAN_ANNOUNCER );
+				}
+				reward = qtrue;
+			}
+		}
 	}
 #else
 	reward = qfalse;
@@ -459,6 +501,8 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 		if ( !( cg.timelimitWarnings & 4 ) && msec > ( cgs.timelimit * 60 + 2 ) * 1000 ) {
 			cg.timelimitWarnings |= 1 | 2 | 4;
 			//trap->S_StartLocalSound( cgs.media.suddenDeathSound, CHAN_ANNOUNCER );
+			//trap->S_StartLocalSound( cgs.media.oneFragSound, CHAN_ANNOUNCER ); //overtime 
+			trap->S_StartLocalSound( cgs.media.tiedLeadSound, CHAN_ANNOUNCER );
 		}
 		else if ( !( cg.timelimitWarnings & 2 ) && msec > (cgs.timelimit - 1) * 60 * 1000 ) {
 			cg.timelimitWarnings |= 1 | 2;
@@ -539,6 +583,9 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 	// smooth the ducking viewheight change
 	if ( ps->viewheight != ops->viewheight ) {
 		cg.duckChange = ps->viewheight - ops->viewheight;
+		if ( cg_instantDuck.integer )
+			cg.duckTime = cg.time - DUCK_TIME;
+		else
 		cg.duckTime = cg.time;
 	}
 }

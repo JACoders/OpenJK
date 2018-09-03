@@ -288,6 +288,52 @@ char *Q_CleanStr( char *string ) {
 	return string;
 }
 
+char *Q_CleanAsciiStr(char *string) {
+	char*	d;
+	char*	s;
+	int		c;
+
+	s = string;
+	d = string;
+	while ((c = *s) != 0) {
+		/*if (Q_IsColorString(s)) {
+		s++;
+		}
+		else*/ if (c >= 0x20 && c <= 0x7E) {
+			*d++ = c;
+		}
+	s++;
+	}
+	*d = '\0';
+
+	return string;
+}
+
+void Q_CleanString(char *string) {
+	qboolean doPass = qtrue;
+	char *r, *w; // read, write
+
+	while (doPass) {
+		doPass = qfalse;
+		r = w = string;
+		while (*r) {
+			if (Q_IsColorStringExt(r)) {
+				doPass = qtrue;
+				r += 2;
+			}
+			else {
+				// Avoid writing the same data over itself
+				if (w != r)
+					*w = *r;
+				w++, r++;
+			}
+		}
+		// Add trailing NUL byte if string has shortened
+		if (w < r)
+			*w = '\0';
+	}
+}
+
 /*
 ==================
 Q_StripColor

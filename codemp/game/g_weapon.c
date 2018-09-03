@@ -3718,7 +3718,6 @@ void BlowDetpacks(gentity_t *ent)
 			{
 				VectorCopy( found->r.currentOrigin, found->s.origin );
 				found->think = DetPackBlow;
-					found->nextthink = level.time + 100 + Q_flrand(0.0f, 1.0f) * 200;
 				if (ent->client->sess.raceMode)
 					found->nextthink = level.time + 100; //No randomness to racemode detpacks?
 				else

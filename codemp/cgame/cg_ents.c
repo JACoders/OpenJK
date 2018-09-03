@@ -292,6 +292,10 @@ CG_EntityEffects
 Add continuous entity effects, like local entity emission and lighting
 ==================
 */
+#if _DRAWTRIGGERS
+void CG_DoGlass( vec3_t verts[4], vec3_t normal, vec3_t dmgPt, vec3_t dmgDir, float dmgRadius, int maxShards );
+#endif
+
 static void CG_EntityEffects( centity_t *cent ) {
 
 	if( !cent ) return;
@@ -356,6 +360,48 @@ static void CG_EntityEffects( centity_t *cent ) {
 		i = (float) ((cl >> 24) & 0xFF) * 4.0;
 		trap->R_AddLightToScene( cent->lerpOrigin, i, r, g, b );
 	}
+
+#if _DRAWTRIGGERS
+	if (cg_drawTriggers.integer) {
+		clipHandle_t 	cmodel;
+
+		if ( cent->currentState.solid == SOLID_BMODEL ) 
+		{
+			cmodel = cgs.inlineDrawModel[cent->currentState.modelindex];
+		}
+		else 
+		{
+			cmodel = cgs.gameModels[cent->currentState.modelindex];
+		}
+
+		//cmodel = trap->CM_InlineModel( cent->currentState.modelindex );
+
+		if (cmodel) { //entity is a bmodel i guess
+			{
+				vec3_t		verts[24], normal;
+				int i;
+				//Com_Printf("modelindex %i\n", cent->currentState.modelindex);
+
+				if (cg_drawTriggers.integer > 1 && cent->currentState.modelindex >= MAX_CLIENTS) {
+					trap->R_GetBModelVerts(cgs.inlineDrawModel[cent->currentState.modelindex], verts, normal);
+					for (i=0; i<24; i++) {
+						if (verts[i] && verts[i+1])
+							CG_TestLine( verts[i], verts[i+1], 1, COLOR_RED, 1 );
+
+						if (cg_drawTriggers.integer > 2)
+							CG_DoGlass(verts, normal, verts[0], normal, 256, 20);
+					}
+				}
+
+				/*if (cent->currentState.modelindex > 0 && cent->currentState.modelindex)
+					trap->R_GetBModelVerts(cent->currentState.modelindex, verts, normal);
+				for (i=0; i<2; i++) {
+					CG_TestLine( verts[0], verts[1], 1, COLOR_RED, 1 );
+				}*/
+			}
+		}
+	}
+#endif
 
 }
 
@@ -530,9 +576,10 @@ void CG_SetGhoul2Info( refEntity_t *ent, centity_t *cent)
 // create 8 new points on screen around a model so we can see it's bounding box
 void CG_CreateBBRefEnts(entityState_t *s1, vec3_t origin )
 {
-/*
+ 
 //g2r
-#if _DEBUG
+//#if _DEBUG
+#if 0
 	refEntity_t		point[8];
 	int				i;
 	vec3_t			angles = {0,0,0};
@@ -593,7 +640,6 @@ void CG_CreateBBRefEnts(entityState_t *s1, vec3_t origin )
 		trap->R_AddRefEntityToScene (&point[i]);
 	}
 #endif
-	*/
 }
 
 // write in the axis and stuff
@@ -873,6 +919,20 @@ static void CG_General( centity_t *cent ) {
 		return;
 	}
 
+	if (cent->currentState.eType == ET_BODY) {
+		if (cg.predictedPlayerState.duelInProgress && (cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES)) {
+			// never show corpses in duels
+			return;
+		}
+
+			// check if we want to fade bodies instantly
+			// note, the server delays the EV_BODYFADE by quite some time so we will handle it all ourselves
+			if ((cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES) && cent->bodyFadeTime == 0) {
+			cent->bodyFadeTime = cg.time + 5000;
+			
+		}
+	}
+
 	if (cent->ghoul2 && !cent->currentState.modelGhoul2 && cent->currentState.eType != ET_BODY &&
 		cent->currentState.number >= MAX_CLIENTS)
 	{ //this is a bad thing
@@ -1045,6 +1105,11 @@ static void CG_General( centity_t *cent ) {
 
 		if (dismember_settings < 2 && (cent->currentState.modelGhoul2 == G2_MODELPART_HEAD || cent->currentState.modelGhoul2 == G2_MODELPART_WAIST))
 		{ //dismember settings are not high enough to display decaps and torso slashes
+			return;
+		}
+
+		if (cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES) {
+			// no bodies, so no limbs :^)
 			return;
 		}
 
@@ -1492,7 +1557,10 @@ Ghoul2 Insert End
 			cent->dustTrailTime = cg.time;
 		}
 
-		CG_Disintegration(cent, &ent);
+		if (!(cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES)) {
+			// don't bother with disentegrating bodies that we've already told to fade
+			CG_Disintegration(cent, &ent);
+		}
 		return;
 	}
 	else if (cent->currentState.eType == ET_BODY)
@@ -1502,7 +1570,7 @@ Ghoul2 Insert End
 			qboolean lightSide = (cent->teamPowerType != 0) ? qtrue : qfalse;
 			vec3_t hitLoc, tempAng;
 			float tempLength;
-			int curTimeDif = ((cg.time + 60000) - cent->bodyFadeTime);
+			int curTimeDif = ((cg.time + ((cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES) ? 5000 : BODY_FADE_TIME)) - cent->bodyFadeTime);
 			int tMult = curTimeDif*0.08;
 
 			ent.renderfx |= RF_FORCE_ENT_ALPHA;
@@ -1539,10 +1607,12 @@ Ghoul2 Insert End
 					cent->dustTrailTime = cg.time;
 					if (lightSide)
 					{
+						//if (cg_corpseEffects.integer)//JAPRO - Clientside - Give option to remove laggy corpse removal effects
 						trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/force/see.wav") );
 					}
 					else
 					{
+						//if (cg_corpseEffects.integer)//JAPRO - Clientside - Give option to remove laggy corpse removal effects
 						trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/force/lightning") );
 					}
 				}
@@ -1571,10 +1641,12 @@ Ghoul2 Insert End
 
 			if (lightSide)
 			{ //might be temporary, dunno.
+				//if (cg_corpseEffects.integer)//JAPRO - Clientside - Give option to remove laggy corpse removal effects
 				ent.customShader = cgs.media.playerShieldDamage;
 			}
 			else
 			{
+				//if (cg_corpseEffects.integer)//JAPRO - Clientside - Give option to remove laggy corpse removal effects
 				ent.customShader = cgs.media.redSaberGlowShader;
 			}
 
@@ -1585,43 +1657,46 @@ Ghoul2 Insert End
 			*/
 
 			trap->R_AddRefEntityToScene( &ent );
+			//if (cg_corpseEffects.integer)//JAPRO - Clientside - Give option to remove laggy corpse removal effects
 			ent.renderfx &= ~RF_DISINTEGRATE2;
 			ent.customShader = 0;
 
 			if (curTimeDif < 3400)
 			{
-				if (lightSide)
-				{
-					if (curTimeDif < 2200
-						&& cg.frametime > 0
-						&& ((cg.frametime < 50 && cg.time % 50 <= cg.frametime)
-							|| cg.frametime >= 50))  //probably temporary 
+				if (!(cg_stylePlayer.integer & JAPRO_STYLE_NOFADESFX)) {//JAPRO - Clientside - Give option to remove laggy corpse removal effects
+					if (lightSide)
 					{
-						trap->S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/saber/saberhum1.wav"));
-					}
-				}
-				else
-				{ //probably temporary as well
-					ent.renderfx |= RF_RGB_TINT;
-					ent.shaderRGBA[0] = 255;
-					ent.shaderRGBA[1] = ent.shaderRGBA[2] = 0;
-					ent.shaderRGBA[3] = 255;
-					if ( rand() & 1 )
-					{
-						ent.customShader = cgs.media.electricBodyShader;
+						if (curTimeDif < 2200
+							&& cg.frametime > 0  //JAPRO - Clientside - Fix loud body disentegration sound.
+							&& ((cg.frametime < 100 && cg.time % 100 <= cg.frametime)
+								|| cg.frametime >= 100))
+						{ //probably temporary
+							trap->S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/saber/saberhum1.wav"));
+						}
 					}
 					else
-					{
-						ent.customShader = cgs.media.electricBody2Shader;
+					{ //probably temporary as well
+						ent.renderfx |= RF_RGB_TINT;
+						ent.shaderRGBA[0] = 255;
+						ent.shaderRGBA[1] = ent.shaderRGBA[2] = 0;
+						ent.shaderRGBA[3] = 255;
+						if ( rand() & 1 )
+						{
+								ent.customShader = cgs.media.electricBodyShader;
+						}
+						else
+						{
+								ent.customShader = cgs.media.electricBody2Shader;
+						}
+						if ((Q_flrand(0.0f, 1.0f) > 0.9f)
+							&& cg.frametime > 0 //JAPRO - Clientside - Fix loud body disentegration sound.
+							&& ((cg.frametime < 100 && cg.time % 100 <= cg.frametime)
+								|| cg.frametime >= 100))
+						{
+							trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
+						}
+						trap->R_AddRefEntityToScene( &ent );
 					}
-					if ((Q_flrand(0.0f, 1.0f) > 0.9f)
-						&& cg.frametime > 0
-						&& ((cg.frametime < 50 && cg.time % 50 <= cg.frametime)
-							|| cg.frametime >= 50))
-					{
-						trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
-					}
-					trap->R_AddRefEntityToScene( &ent );
 				}
 			}
 
@@ -1630,6 +1705,10 @@ Ghoul2 Insert End
 		else
 		{
 			cent->dustTrailTime = 0;
+			if ((cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES)) {
+				// this body has faded already, bail
+				return;
+			}
 		}
 	}
 
@@ -1641,7 +1720,26 @@ Ghoul2 Insert End
 	}
 
 	// add to refresh list
-	trap->R_AddRefEntityToScene (&ent);
+	if (!cent->currentState.modelGhoul2 && cg_noFX.integer > 2) {
+		vec3_t newAngles;
+
+		ent.hModel = trap->R_RegisterModel("models/map_objects/mp/dk_blck.md3");
+		ent.modelScale[0] = ent.modelScale[1] = ent.modelScale[2] = 3.2f;
+
+		newAngles[0] = 65;
+		newAngles[1] = 45;
+		newAngles[2] = 0;
+
+		AnglesToAxis(newAngles, ent.axis);
+
+		ent.origin[0] -= 40;
+		ent.origin[1] -= 40;
+		ent.origin[2] -= 24;
+
+		ScaleModelAxis(&ent);
+	}
+	if (cent->currentState.modelGhoul2 || cg_noFX.integer <= 3)
+		trap->R_AddRefEntityToScene (&ent);
 
 	if (cent->bolt3 == 999)
 	{ //this is an in-flight saber being rendered manually
@@ -1904,6 +2002,21 @@ static void CG_Item( centity_t *cent ) {
 	if ( es->modelindex >= bg_numItems ) {
 		trap->Error( ERR_DROP, "Bad item index %i on entity", es->modelindex );
 	}
+
+//JAPRO - Clientside - Ignore items while dueling since we cant pick them up - Start
+	/*
+	if (cg.snap && cg.snap->ps.duelInProgress)
+	{
+			return;
+	}
+	*/
+	
+	if (cg.predictedPlayerState.duelInProgress)
+		return;
+	if (cg.predictedPlayerState.stats[STAT_RACEMODE])
+		return;
+
+//JAPRO - Clientside - Ignore items while dueling since we cant pick them up - End
 
 /*
 Ghoul2 Insert Start
@@ -2278,7 +2391,7 @@ Ghoul2 Insert End
 	else
 	{	// add to refresh list  -- normal item
 		if (item->giType == IT_TEAM &&
-			(item->giTag == PW_REDFLAG || item->giTag == PW_BLUEFLAG))
+			(item->giTag == PW_REDFLAG || item->giTag == PW_BLUEFLAG || item->giTag == PW_NEUTRALFLAG))
 		{
 			ent.modelScale[0] = 0.7f;
 			ent.modelScale[1] = 0.7f;
@@ -2428,6 +2541,200 @@ static void CG_DistortionTrail( centity_t *cent )
 }
 */
 
+void CG_GrappleEndpoint( centity_t *ent, vec3_t startPos ) {
+	refEntity_t		model;
+	memset( &model, 0, sizeof( model ) );
+
+	ent->currentState.angles[0] = -ent->currentState.angles[0];
+	ent->currentState.angles[1] = -ent->currentState.angles[1];
+	ent->currentState.angles[2] = -ent->currentState.angles[2];
+
+	VectorMA(startPos, -4, ent->currentState.angles, startPos);
+
+	model.reType = RT_MODEL;
+	VectorCopy( startPos, model.lightingOrigin );
+	VectorCopy( startPos, model.origin );
+
+	model.hModel = cgs.media.grappleModel;
+		
+	if ( ent->currentState.apos.trType != TR_INTERPOLATE ) {
+		if ( VectorNormalize2( ent->currentState.pos.trDelta, model.axis[0] ) == 0 ) {
+			VectorNormalize2( ent->currentState.angles, model.axis[0] ); //Its hit the wall.
+		}
+		
+		if ( ent->currentState.pos.trType != TR_STATIONARY ) { // spin as it moves
+			if ( ent->currentState.eFlags & EF_MISSILE_STICK )
+				RotateAroundDirection( model.axis, cg.time * 0.5f );//Did this so regular missiles don't get broken
+			else
+				RotateAroundDirection( model.axis, cg.time * 0.25f );//JFM:FLOAT FIX
+		} 
+		else {
+			if ( ent->currentState.eFlags & EF_MISSILE_STICK )
+				RotateAroundDirection( model.axis, (float)ent->currentState.pos.trTime * 0.5f );
+			else
+				RotateAroundDirection( model.axis, (float)ent->currentState.time );
+		}
+	}
+	else		
+		AnglesToAxis( ent->lerpAngles, model.axis );
+
+		trap->R_AddRefEntityToScene( &model );
+}
+
+void CG_GrappleStartpoint( centity_t *ent, vec3_t startPos ) {
+	refEntity_t		model;
+	memset( &model, 0, sizeof( model ) );
+
+
+		model.reType = RT_SABER_GLOW;
+		VectorCopy( startPos, model.lightingOrigin );
+		VectorCopy( startPos, model.origin );
+
+		model.customShader = cgs.media.redSaberGlowShader;
+		model.shaderRGBA[0] = model.shaderRGBA[1] = model.shaderRGBA[2] = model.shaderRGBA[3] = 0xff;
+
+		//model.renderfx;
+
+		//AnglesToAxis( ent->currentState.apos.trBase, model.axis );
+
+
+		// convert direction of travel into axis
+		
+		//AnglesToAxis( ent->currentState.angles, model.axis );
+
+		//model.hModel = cgs.media.grappleModel;
+
+		trap->R_AddRefEntityToScene( &model );
+
+
+}
+
+void CG_GrappleTrail( centity_t *ent ) {
+	vec3_t			color;//, angles;
+	entityState_t	*es;// *ees;
+	centity_t		*enemy;
+//	vec3_t			*temp, temp2, temp3;
+	refEntity_t		beam;
+	clientInfo_t	*ci;
+
+	es = &ent->currentState;
+
+	memset( &beam, 0, sizeof( beam ) );
+
+	/*
+	if ( es->otherEntityNum >= 0 && es->otherEntityNum < cg.snap->numEntities ) {
+		if ( es->otherEntityNum == cg.predictedPlayerState.clientNum ) {
+			Com_Printf("1\n");
+			VectorCopy( cg.predictedPlayerState.origin, beam.oldorigin );
+		} else {
+			Com_Printf("2\n");
+			enemy = &cg_entities[ es->otherEntityNum ];
+			ees = &enemy->currentState;
+			BG_EvaluateTrajectory( &ees->pos, cg.time, beam.oldorigin );
+		}
+	} else {
+	*/
+		//Com_Printf("3\n");
+		VectorCopy( ent->lerpOrigin, beam.oldorigin );
+	//}
+
+	//we need moar japro servers in the world
+	if (cg_entities[cg.clientNum].currentState.bolt1 == 1) {
+		return; //assuming we'll never grapple in a duel
+	}
+
+	if ( es->clientNum >= 0 && es->clientNum < MAX_CLIENTS ) {
+		mdxaBone_t	boltMatrix;
+		vec3_t		G2Angles, handPos;
+	
+		enemy = &cg_entities[ es->clientNum ];
+
+		if (enemy->ghoul2) {
+			VectorSet(G2Angles, 0, pm->ps->viewangles[YAW], 0);
+
+			trap->G2API_GetBoltMatrix( enemy->ghoul2, 0, 1,	&boltMatrix, G2Angles, enemy->currentState.pos.trBase, enemy->currentState.apos.trTime, NULL, enemy->modelScale );
+			handPos[0] = boltMatrix.matrix[0][3];
+			handPos[1] = boltMatrix.matrix[1][3];
+			handPos[2] = boltMatrix.matrix[2][3];
+
+			VectorCopy(handPos, beam.origin);
+		}
+		else {
+			VectorCopy(enemy->currentState.pos.trBase, beam.origin);
+			beam.origin[2] += 24;
+		}
+	}
+	else {
+		return;//idk
+	}
+
+	ent->trailTime = cg.time;
+
+	beam.radius = 1;
+
+	beam.reType = RT_LINE;//RT_RAIL_CORE;
+	beam.customShader = cgs.media.grappleShader;
+	//beam.customShader = cgs.media.grappleShader;//cgs.media.railCoreShader;
+
+	//beam.shaderTexCoord[0] = 0.1f;
+	//beam.shaderTexCoord[1] = 1.0f;
+
+
+	ci = &cgs.clientinfo[ es->clientNum ];
+
+	//if( cgs.valkyrMode )
+		//CG_GetTrippyColor( es->clientNum * 700, 3000, color );
+	//else
+		//VectorCopy( ci->color, color );
+
+	color[0] = 1; 
+	color[1] = 0;
+	color[2] = 0;
+
+	beam.shaderRGBA[0] = color[0] * 255;
+	beam.shaderRGBA[1] = color[1] * 192;
+	beam.shaderRGBA[2] = color[2] * 192;
+	beam.shaderRGBA[3] = 0xff;
+
+	trap->R_AddRefEntityToScene( &beam );
+
+	
+	CG_GrappleEndpoint(ent, beam.oldorigin);
+	CG_GrappleStartpoint(ent, beam.origin);
+
+	return;
+
+	/*
+	VectorCopy( beam.oldorigin, temp2 );
+
+	memset (&beam, 0, sizeof(beam));
+	beam.reType = RT_SPRITE;
+	beam.radius = 10 + crandom();
+
+	angles[YAW] = 0;
+	angles[PITCH] = 0;
+	angles[ROLL] = crandom() * 10;
+	AnglesToAxis( angles, beam.axis );
+
+	beam.customShader = cgs.media.viewPainShader;//cgs.media.grapple_flare;
+
+	VectorSubtract( temp2, cg.refdef.vieworg, temp3 );
+	VectorNormalize( temp3 );
+	VectorScale( temp3, 16, temp3 );
+	VectorSubtract( temp2, temp3, beam.origin );
+	VectorCopy( beam.origin, beam.oldorigin);
+	
+	trap->R_AddRefEntityToScene( &beam );
+
+	// add dynamic light
+	trap->R_AddLightToScene( temp2, 50 + crandom()*2, color[0], color[1] * .5, color[2] );
+
+
+	//CG_TestLine(beam.origin, beam.oldorigin, 50, 0x0000ff, 2);
+	*/
+}
+
+
 /*
 ===============
 CG_Missile
@@ -2439,7 +2746,65 @@ static void CG_Missile( centity_t *cent ) {
 	const weaponInfo_t		*weapon;
 //	int	col;
 
+	//
+	centity_t *owner = &cg_entities[cent->currentState.owner]; //this relies on server mod setting .owner in createmissile, along with r.ownerNum
+	//Com_Printf("Owner is %i, we are %i, his bolt1 is %i, ours is %i\n", cent->currentState.owner, cg.clientNum, owner->currentState.bolt1, cg_entities[cg.clientNum].currentState.bolt1);
+
+	if (cent->currentState.weapon == WP_BRYAR_PISTOL && cent->currentState.saberInFlight && cgs.isJAPro) {
+		CG_GrappleTrail(cent);
+		return;
+	}
+
+	if (cg.clientNum != owner->currentState.number) { //Never skip our own projectiles
+		if (cg_entities[cg.clientNum].currentState.bolt1 == 0) {// We are in FFA mode
+			if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDEDUELERS1) && owner->currentState.bolt1 == 1) //It belongs to a dueler
+				return;
+			if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDERACERS1) && owner->currentState.bolt1 == 2) //It belongs to a racer
+				return;
+		}
+		else if (cg_entities[cg.clientNum].currentState.bolt1 == 1) {// We are dueling
+			if (owner->currentState.bolt1 != 1) //Only draw stuff from other duelers (should be only our duel partner but whatever for now..)
+				return;
+		}
+		else if (cg_entities[cg.clientNum].currentState.bolt1 == 2) {// We are in race mode
+			if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDEDUELERS1) && owner->currentState.bolt1 == 1) //It belongs to a dueler
+				return;
+			if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDERACERS3) && owner->currentState.bolt1 == 2) //It belongs to a racer
+				return;
+			if (cg_stylePlayer.integer & JAPRO_STYLE_HIDERACERS2)
+				return;
+		}
+	}
+	//
+
 	s1 = &cent->currentState;
+#if _GRAPPLE
+	//[Grapple]
+	if (cgs.isJAPlus && s1->weapon == WP_STUN_BATON) {
+		int			clientNum = (cent->currentState.otherEntityNum == cg.snap->ps.clientNum) ? cg.predictedPlayerState.clientNum : cent->currentState.otherEntityNum;
+		vec3_t		rHandPos;
+		mdxaBone_t	boltMatrix;
+		vec3_t pos;
+
+		//Don't show grapple in duels
+		if (cg.predictedPlayerState.duelInProgress)
+			return;
+
+		cg_entities[clientNum].bolt1 = s1->number;
+
+		trap->G2API_GetBoltMatrix(cg_entities[clientNum].ghoul2, 0, cgs.clientinfo[clientNum].bolt_rhand, &boltMatrix, cg_entities[clientNum].turAngles, cg_entities[clientNum].lerpOrigin, cg.time, cgs.gameModels, cg_entities[clientNum].modelScale);
+
+		rHandPos[0] = boltMatrix.matrix[0][3];
+		rHandPos[1] = boltMatrix.matrix[1][3];
+		rHandPos[2] = boltMatrix.matrix[2][3];
+
+		BG_EvaluateTrajectory(&s1->pos, cg.time, pos);
+
+		CG_TestLine(rHandPos, pos, 1, 6, 1);
+		return;
+	}
+	//[/Grapple]
+#endif
 	if ( s1->weapon > WP_NUM_WEAPONS && s1->weapon != G2_MODEL_PART ) {
 		s1->weapon = 0;
 	}
@@ -3085,6 +3450,7 @@ CG_CalcEntityLerpPositions
 
 ===============
 */
+/*
 void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	qboolean goAway = qfalse;
 
@@ -3129,77 +3495,103 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		CG_InterpolateEntityPosition( cent );
 		goAway = qtrue;
 	}
-	else
+//JAPRO - Clientside - Unlagged - Start
+	else if (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_UNLAGGED)
 	{
 		// just use the current frame and evaluate as best we can
+		BG_EvaluateTrajectory( &cent->currentState.pos, cg.time + cent->currentState.eventParm, cent->lerpOrigin );
+		BG_EvaluateTrajectory( &cent->currentState.apos, cg.time + cent->currentState.eventParm, cent->lerpAngles );
+		//Com_Printf("eventparm: %i\n",  cent->currentState.eventParm);
+	}
+//JAPRO - Clientside - Unlagged - End
+	else
+	{
 		BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
 		BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
 	}
-
-#if 0
-	if (cent->hasRagOffset && cent->ragOffsetTime < cg.time)
-	{ //take all of the offsets from last frame and normalize the total direction and add it in
-		vec3_t slideDir;
-		vec3_t preOffset;
-		vec3_t addedOffset;
-		vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
-		vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
-		trace_t tr;
-
-		//VectorSubtract(cent->lerpOrigin, callData->bonePos, slideDir);
-		VectorCopy(cent->ragOffsets, slideDir);
-		VectorNormalize(slideDir);
-
-		//Store it in case we want to go back
-		VectorCopy(cent->lerpOriginOffset, preOffset);
-
-		//just add a little at a time
-		VectorMA(cent->lerpOriginOffset, 0.4f, slideDir, cent->lerpOriginOffset);
-
-		if (VectorLength(cent->lerpOriginOffset) > 10.0f)
-		{ //don't go too far away
-			VectorCopy(preOffset, cent->lerpOriginOffset);
-		}
-		else
-		{
-			//Let's trace there to make sure we can make it
-			VectorAdd(cent->lerpOrigin, cent->lerpOriginOffset, addedOffset);
-			CG_Trace(&tr, cent->lerpOrigin, playerMins, playerMaxs, addedOffset, cent->currentState.number, MASK_PLAYERSOLID);
-
-			if (tr.startsolid || tr.allsolid || tr.fraction != 1.0f)
-			{ //can't get there
-				VectorCopy(preOffset, cent->lerpOriginOffset);
-			}
-			else
-			{
-				/*
-				if (cent->lerpOriginOffset[2] > 4.0f)
-				{ //don't go too far off the ground
-					cent->lerpOriginOffset[2] = 4.0f;
-				}
-				*/
-				//I guess I just don't want this happening.
-				cent->lerpOriginOffset[2] = 0.0f;
-			}
-		}
-
-		//done with this bit
-		cent->hasRagOffset = qfalse;
-		VectorClear(cent->ragOffsets);
-		cent->ragOffsetTime = cg.time + 50;
-	}
-
-	//See if we should add in the offset for ragdoll
-	if (cent->isRagging && ((cent->currentState.eFlags & EF_DEAD) || (cent->currentState.eFlags & EF_RAG)))
-	{
-		VectorAdd(cent->lerpOrigin, cent->lerpOriginOffset, cent->lerpOrigin);
-	}
-#endif
 
 	if (goAway)
 	{
 		return;
 	}
+
+	// adjust for riding a mover if it wasn't rolled into the predicted
+	// player state
+	if ( cent->currentState.number != cg.clientNum ) {
+		CG_AdjustPositionForMover( cent->lerpOrigin, cent->currentState.groundEntityNum, 
+		cg.snap->serverTime, cg.time, cent->lerpOrigin );
+	}
+}*/
+
+void CG_CalcEntityLerpPositions( centity_t *cent ) {
+	// if this player does not want to see extrapolated players
+	//if ( /*!cg_smoothClients.integer ||*/ cgs.isJAPro)
+	//{
+		// make sure the clients use TR_INTERPOLATE
+		if ( (cent->currentState.number != cg.clientNum && cent->currentState.number < MAX_CLIENTS) || cent->currentState.eType == ET_NPC ) {
+			cent->currentState.pos.trType = TR_INTERPOLATE;
+			cent->nextState.pos.trType = TR_INTERPOLATE;
+		}
+	//}
+
+	if (cg.predictedPlayerState.m_iVehicleNum && cg.predictedPlayerState.m_iVehicleNum == cent->currentState.number && cent->currentState.eType == ET_NPC && cent->currentState.NPC_class == CLASS_VEHICLE)
+	{ //special case for vehicle we are riding
+		centity_t *veh = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
+
+		if (veh->currentState.owner == cg.predictedPlayerState.clientNum)
+		{ //only do this if the vehicle is pilotted by this client and predicting properly
+			BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
+			BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
+			return;
+		}
+	}
+
+	if ( cent->interpolate && cent->currentState.pos.trType == TR_INTERPOLATE )
+	{
+		CG_InterpolateEntityPosition( cent );
+		return;
+	}
+
+	// first see if we can interpolate between two snaps for
+	// linear extrapolated clients
+	if ( cent->interpolate && cent->currentState.pos.trType == TR_LINEAR_STOP
+		&& ((cent->currentState.number != cg.clientNum && cent->currentState.number < MAX_CLIENTS) || cent->currentState.eType == ET_NPC) ) {
+		CG_InterpolateEntityPosition( cent );
+		return;
+	}
+
+	if (cent->interpolate && cent->currentState.eType == ET_NPC && cent->currentState.NPC_class == CLASS_VEHICLE)
+	{
+		CG_InterpolateEntityPosition( cent );
+		return;
+	}
+
+//JAPRO - Clientside - Unlagged Timenudge Extrapolation - Start
+	// interpolating failed (probably no nextSnap), so extrapolate this can also happen if the teleport bit is flipped, but that won't be noticeable
+	if ( cent->currentState.number < MAX_CLIENTS &&	cent->currentState.clientNum != cg.predictedPlayerState.clientNum )
+	{
+#if 0//_DEBUGTIMENUDGE
+		if (!cg_smoothTimenudge.integer)
+			cent->currentState.pos.trType = TR_LINEAR_STOP;//was tr_linear_stop, but that was jerky? huh
+		else
+#endif
+			cent->currentState.pos.trType = TR_LINEAR;
+		cent->currentState.pos.trTime = cg.snap->serverTime;
+		if (cgs.svfps)
+			cent->currentState.pos.trDuration = 1000 / cgs.svfps;
+		else
+			cent->currentState.pos.trDuration = 50;
+#ifdef _DEBUGTIMENUDGE
+		if (cl_timenudgeDuration.integer > 0)
+			cent->currentState.pos.trDuration = cl_timenudgeDuration.integer;
+#endif
+		//cg.time - cg.frame->serverTime ) / (cg.nextFrame->serverTime - cg.frame->serverTime), cg_latestSnapshotTime
+	}
+//JAPRO - Clientside - Unlagged Timenudge Extrapolation - End
+
+
+	BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
+	BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
 
 	// adjust for riding a mover if it wasn't rolled into the predicted
 	// player state
@@ -3292,8 +3684,20 @@ CG_AddCEntity
 */
 static void CG_AddCEntity( centity_t *cent ) {
 	// event-only entities will have been dealt with already
+
+#if _DRAWTRIGGERS
+	//Com_Printf("Entity: %.2f\n", cent->currentState.mins);
+#endif
+
 	if ( cent->currentState.eType >= ET_EVENTS ) {
 		return;
+	}
+
+	if (cg_noFX.integer) {//Japro, disable fx and speakers if we want
+		if (cent->currentState.eType == ET_FX)
+			return;
+		if (cg_noFX.integer == 2 && cent->currentState.eType == ET_SPEAKER)
+			return;
 	}
 
 	if (cg.predictedPlayerState.pm_type == PM_INTERMISSION)
@@ -3519,6 +3923,21 @@ void CG_AddPacketEntities( qboolean isPortal ) {
 				//if we were to add the vehicle after the pilot, the pilot's bolt would lag a frame behind.
 				continue;
 			}
+			else if ( cg.nextSnap && (cent->nextState.eType == ET_MISSILE || cent->nextState.eType == ET_GENERAL) ) { //loda
+				// transition it immediately and add it
+				CG_TransitionEntity( cent );
+				cent->interpolate = qtrue;
+			}
+			CG_AddCEntity( cent );
+		}
+	}
+
+	// add each entity sent over by the server - loda
+	for ( num = 0 ; num < cg.snap->numEntities ; num++ ) {
+		cent = &cg_entities[ cg.snap->entities[ num ].number ];
+//unlagged - early transitioning
+		if ( !cg.nextSnap || cent->nextState.eType != ET_MISSILE && cent->nextState.eType != ET_GENERAL ) {
+//unlagged - early transitioning
 			CG_AddCEntity( cent );
 		}
 	}
@@ -3786,5 +4205,51 @@ void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha )
 		apArgs.p[0][vec[0]] = apArgs.p[1][vec[0]] = apArgs.p[2][vec[0]] = apArgs.p[3][vec[0]] = maxs[vec[0]];
 
 		trap->FX_AddPoly( &apArgs );
+	}
+}
+
+void CG_CubeOutline( vec3_t mins, vec3_t maxs, int time, unsigned int color, float alpha )
+{
+	vec3_t	point1, point2, point3, point4;
+	int		vec[3];
+	int		axis, i;
+
+	for ( axis = 0, vec[0] = 0, vec[1] = 1, vec[2] = 2; axis < 3; axis++, vec[0]++, vec[1]++, vec[2]++ )
+	{
+		for ( i = 0; i < 3; i++ )
+		{
+			if ( vec[i] > 2 )
+			{
+				vec[i] = 0;
+			}
+		}
+
+		point1[vec[1]] = mins[vec[1]];
+		point1[vec[2]] = mins[vec[2]];
+
+		point2[vec[1]] = mins[vec[1]];
+		point2[vec[2]] = maxs[vec[2]];
+
+		point3[vec[1]] = maxs[vec[1]];
+		point3[vec[2]] = maxs[vec[2]];
+		
+		point4[vec[1]] = maxs[vec[1]];
+		point4[vec[2]] = mins[vec[2]];
+
+		//- face
+		point1[vec[0]] = point2[vec[0]] = point3[vec[0]] = point4[vec[0]] = mins[vec[0]];
+
+		CG_TestLine( point1, point2, time, color, 1 );
+		CG_TestLine( point2, point3, time, color, 1 );
+		CG_TestLine( point1, point4, time, color, 1 );
+		CG_TestLine( point4, point3, time, color, 1 );
+
+		//+ face
+		point1[vec[0]] = point2[vec[0]] = point3[vec[0]] = point4[vec[0]] = maxs[vec[0]];
+
+		CG_TestLine( point1, point2, time, color, 1 );
+		CG_TestLine( point2, point3, time, color, 1 );
+		CG_TestLine( point1, point4, time, color, 1 );
+		CG_TestLine( point4, point1, time, color, 1 );
 	}
 }

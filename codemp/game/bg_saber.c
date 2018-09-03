@@ -2409,9 +2409,9 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			}
 		}
 #else
-		/*if (cgs.isJAPro && cg_noCartwheel.integer) {
+		if (cgs.isJAPro && (cp_pluginDisable.integer & JAPRO_PLUGIN_NOCART)) {
 			allowCartwheels = qfalse;
-		}*/ //eternal todo: cgame
+		}
 #endif
 	}
 
@@ -2590,7 +2590,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 #ifdef _GAME
 				(!(g_tweakSaber.integer & ST_JK2RDFA) || pm->ps->stats[STAT_RACEMODE])
 #else
-				((cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_JK2DFA) || pm->ps->stats[STAT_RACEMODE])) || (cgs.isJAPlus && !(cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
+				((cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_JK2DFA) || pm->ps->stats[STAT_RACEMODE])) || (cgs.isJAPlus && !(cgs.jcinfo & JAPLUS_CINFO_JK2DFA)) || (!cgs.isJAPlus && !cgs.isJAPro))
 #endif
 				&& !noSpecials&&
 				pm->ps->fd.saberAnimLevel == SS_STRONG &&
@@ -2756,6 +2756,16 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			//prediction values. Under laggy conditions this will cause the appearance of rapid swing
 			//sequence changes.
 
+
+#if 0
+#ifdef _GAME
+		if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakSaber.integer & ST_NO_REDCHAIN))
+#elif _CGAME
+		if (cgs.isJAPro && !cg.predictedPlayerState.stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN))
+#endif
+				newmove = PM_irand_timesync(LS_A_TL2BR, LS_A_T2B);
+			else
+#endif
 			newmove = LS_A_T2B; //decided we don't like random attacks when idle, use an overhead instead.
 		}
 	}

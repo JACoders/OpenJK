@@ -713,11 +713,8 @@ if(BuildMPGame)
 	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
 endif()
 
-# Temporarily exclude cgame from Windows install until japro is completely imported
-if(NOT WIN32)
-	if(BuildMPCGame)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-	endif()
+if(BuildMPCGame)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
 endif()
 
 if(BuildMPUI)
@@ -740,15 +737,6 @@ set(GameLibFullPaths)
 				${CMAKE_BINARY_DIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
 		endforeach(GameLib)
 	endif()
-	add_zip_command(${BinsPk3}
-		FILES ${GameLibFullPaths} ${CMAKE_SOURCE_DIR}/assets/bins/*
-		DEPENDS "${GameLibsBuilt}")
-	add_custom_target(Bins
-		ALL
-		DEPENDS ${BinsPk3})
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BinsPk3}
-		DESTINATION "${JKAInstallDir}/eternaljk"
-		COMPONENT ${JKAMPCoreComponent})
 endif()
 
 add_zip_command(japro-assets.pk3

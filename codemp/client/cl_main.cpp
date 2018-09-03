@@ -2321,10 +2321,27 @@ static void CL_PrintNotificationWords() {
 }
 */
 
+static void CL_UpdateWidescreen(void) {
+	if (cl_ratioFix->integer)
+		cls.widthRatioCoef = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
+	else
+		cls.widthRatioCoef = 1.0f;
+
+	//setting console shader here
+	cls.consoleShader = 0;
+	if (cls.widthRatioCoef >= 0.74f && cls.widthRatioCoef <= 0.76f)
+		cls.consoleShader = re->RegisterShader("console_16_9");
+	if (!cls.consoleShader)
+		cls.consoleShader = re->RegisterShader("console");
+}
+
+
+
 int cl_nameModifiedTime = 0;
 static int lastModifiedColors = 0;
 static int lastModifiedName = 0;
 static int lastModifiedNotifyName = 0;
+static int widescreenModificationCount = 0;
 static void CL_CheckCvarUpdate(void) {
 	if (lastModifiedColors != cl_colorString->modificationCount) {
 		// recalculate cl_colorStringCount
@@ -2345,6 +2362,10 @@ static void CL_CheckCvarUpdate(void) {
 		lastModifiedNotifyName = con_notifywords->modificationCount;
 		CL_UpdateNotificationWords();
 		//CL_PrintNotificationWords();
+	}
+	if (widescreenModificationCount != cl_ratioFix->modificationCount) {
+		widescreenModificationCount = cl_ratioFix->modificationCount;
+		CL_UpdateWidescreen();
 	}
 }
 
@@ -2528,11 +2549,8 @@ void CL_InitRenderer( void ) {
 	cls.charSetShader = re->RegisterShaderNoMip("gfx/2d/charsgrid_med");
 
 	cls.whiteShader = re->RegisterShader( "white" );
-	cls.consoleShader = re->RegisterShader( "console" );
-	if (cl_ratioFix->integer)
-		cls.widthRatioCoef = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
-	else
-		cls.widthRatioCoef = 1.0f;
+
+	CL_UpdateWidescreen();
 }
 
 /*
@@ -3290,8 +3308,6 @@ void CL_Init( void ) {
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE_ND );
 
 	cl_ratioFix = Cvar_Get("cl_ratioFix", "1", CVAR_ARCHIVE, "Widescreen aspect ratio correction");
-
-	cl_coloredTextShadows = Cvar_Get("cl_coloredTextShadows", "0", CVAR_ARCHIVE, "Toggled colored text shadows");
 
 	cl_afkTime = Cvar_Get("cl_afkTime", "10", CVAR_ARCHIVE, "Minutes to autorename to afk, 0 to disable");
 	cl_afkTimeUnfocused = Cvar_Get("cl_afkTimeUnfocused", "5", CVAR_ARCHIVE, "Minutes to autorename to afk while unfocused/minimized");

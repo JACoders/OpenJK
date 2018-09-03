@@ -26,7 +26,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_local.h"
 
-
+static void CG_CheckClientCheckpoints(void);
+static void CG_AddStrafeTrails(void);
+#define _LOGTRAILS 1
+#if _LOGTRAILS
+static void CG_LogStrafeTrail(void);
+#endif
+static void CG_LastWeapon(void);
 
 /*
 ==================
@@ -70,7 +76,7 @@ CG_TransitionEntity
 cent->nextState is moved to cent->currentState and events are fired
 ===============
 */
-static void CG_TransitionEntity( centity_t *cent ) {
+void CG_TransitionEntity( centity_t *cent ) {
 	cent->currentState = cent->nextState;
 	cent->currentValid = qtrue;
 
@@ -140,6 +146,25 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 		// check for events
 		CG_CheckEvents( cent );
 	}
+
+//JAPRO - Clientside - Autorecord Demo - Start
+	if ( cg_autoRecordDemo.integer && (1<<cgs.gametype) && cg.warmup <= 0 && !cg.demoPlayback )
+	{
+		time_t rawtime;
+		char timeBuf[256] = {0}, buf[256] = {0}, mapname[MAX_QPATH] = {0};
+
+		time( &rawtime );
+		strftime( timeBuf, sizeof( timeBuf ), "%Y-%m-%d_%H-%M-%S", gmtime( &rawtime ) );
+		Q_strncpyz( mapname, cgs.mapname + 5, sizeof( mapname ) );
+		COM_StripExtension( mapname, mapname, sizeof( mapname ) );
+		Com_sprintf( buf, sizeof( buf ), "%s_%s_%s_%s", timeBuf, gametypeStringShort[cgs.gametype], mapname, cgs.clientinfo[cg.clientNum].name );
+		Q_strstrip( buf, "\n\r;:?*<>|\"\\/ ", NULL );
+		Q_CleanStr( buf );
+		cg.recording = qtrue;
+		trap->SendConsoleCommand( va( "stoprecord; record %s\n", buf ) );
+	}
+//JAPRO - Clientside - Autorecord Demo - End
+
 }
 
 
@@ -275,6 +300,13 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 
 	// sort out solid entities
 	CG_BuildSolidList();
+
+	CG_CheckClientCheckpoints();
+	CG_AddStrafeTrails();
+#if _LOGTRAILS
+	CG_LogStrafeTrail();
+#endif
+	CG_LastWeapon();
 }
 
 
@@ -440,3 +472,368 @@ void CG_ProcessSnapshots( void ) {
 
 }
 
+static qboolean InBox(vec3_t interpOrigin, clientCheckpoint_t clientCheckpoint)
+{
+	if (clientCheckpoint.x1 <= interpOrigin[0] && interpOrigin[0] <= clientCheckpoint.x2 && 
+		clientCheckpoint.y1 <= interpOrigin[1] && interpOrigin[1] <= clientCheckpoint.y2 && 
+		clientCheckpoint.z1 <= interpOrigin[2] && interpOrigin[2] <= clientCheckpoint.z2)
+		return qtrue;
+	return qfalse;
+}
+
+int InterpolateTouchTime(vec3_t position, vec3_t velocity, clientCheckpoint_t clientCheckpoint)
+{ //We know that last client frame, they were not touching the flag, but now they are.  Last client frame was pmoveMsec ms ago, so we only want to interp inbetween that range.
+	vec3_t	interpOrigin, delta;
+	int lessTime = 0;
+	int serverFrametime = cgs.svfps ? (1000 / cgs.svfps) : 50;
+
+	VectorCopy(position, interpOrigin);
+	VectorScale(velocity, 0.001f, delta);//Delta is how much they travel in 1 ms.
+
+	VectorSubtract(interpOrigin, delta, interpOrigin);//Do it once before we loop
+
+	while (InBox(interpOrigin, clientCheckpoint)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
+		lessTime++; //Add one more ms to be subtracted
+		VectorSubtract(interpOrigin, delta, interpOrigin); //Keep Rewinding position by a tiny bit, that corresponds with 1ms precision (delta*0.001), since delta is per second.
+		if (lessTime >= serverFrametime) { //activator->client->pmoveMsec
+			break; //In theory, this should never happen, but just incase stop it here.
+		}
+	}
+
+	//Com_Printf("Interpolated back by %i\n", lessTime);
+	return lessTime;
+}
+
+static void CheckTouchingCheckpoint(clientCheckpoint_t clientCheckpoint) {
+	float time;
+
+	if (cg.time - cg.lastCheckPointPrintTime < 1000)
+		return;
+	if (!InBox(cg.snap->ps.origin, clientCheckpoint))
+		return;
+
+	time = (cg.snap->serverTime - cg.snap->ps.duelTime); //Use snapshot time instead right?
+	time -= InterpolateTouchTime(cg.snap->ps.origin, cg.snap->ps.velocity, clientCheckpoint);//Other is the trigger_multiple that set this off
+	time /= 1000.0f;
+
+	if (time < 0.001f)
+		time = 0.001f;
+
+	if (cg.displacementSamples)
+		CG_CenterPrint(va("^2%.3fs^4, avg ^2%i^4u, max ^2%.0f^4u\n\n\n\n\n\n\n\n\n\n", time, cg.displacement/cg.displacementSamples, cg.maxSpeed), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
+	else
+		CG_CenterPrint( va("^2%.3fs^4\n\n\n\n\n\n\n\n\n\n", time), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
+	cg.lastCheckPointPrintTime = cg.time;
+}
+
+static void CG_CheckClientCheckpoints(void) {
+	int i;
+
+	if (!cg.snap)
+		return;
+	if (!cg.snap->ps.stats[STAT_RACEMODE] || !cg.snap->ps.duelTime)
+		return;
+
+	for (i=0; i<MAX_CLIENT_CHECKPOINTS; i++) { //optimize this..?
+		if (cg.clientCheckpoints[i].isSet)
+			CheckTouchingCheckpoint(cg.clientCheckpoints[i]);
+	}
+}
+
+
+
+
+
+
+
+
+static unsigned int GetTrailColorByClientNum(int clientNum) {
+	if (cgs.clientinfo[clientNum].team == TEAM_RED) {
+		switch (clientNum % 9) {
+			case 0: return 0xFF1493;
+			case 1: return 0xB22222;
+			case 2: return 0xDC143C;
+			case 3: return 0xFF7F50;
+			case 4: return 0xFF0000;
+			case 5: return 0xFFA500;
+			case 6: return 0x8B0000;
+			case 7: return 0xD2691E;
+			case 8: return 0xCD5C5C;
+			default: return 0xCD5C5C;
+		}
+	}
+	else if (cgs.clientinfo[clientNum].team == TEAM_BLUE) {
+		switch (clientNum % 9) {
+			case 0: return 0x00FFFF;
+			case 1: return 0x7FFFD4;
+			case 2: return 0x00DED1;
+			case 3: return 0x00BFFF;
+			case 4: return 0x0000FF;
+			case 5: return 0x008B8B;
+			case 6: return 0x483D8B;
+			case 7: return 0x191970;
+			case 8: return 0x87CEFA;
+			default: return 0x87CEFA;
+		}
+	}
+	else {
+		switch (clientNum) {
+			case 0: return 0xFFFF00;
+			case 1: return 0xFF00FF;
+			case 2: return 0x66CCCC;
+			case 3: return 0x663366;
+			case 4: return 0xCC6633;
+			case 5: return 0x66FF00;
+			case 6: return 0xFFFFFF;
+			case 7: return 0x00CC33;
+			case 8: return 0x99FFFF;
+			case 9: return 0xCC66FF;
+			case 10: return 0x330066;
+			case 11: return 0xFFFF00;
+			case 12: return 0xFFFF00;
+			case 13: return 0xFFFF00;
+			case 14: return 0xFFFF00;
+			case 15: return 0xFFFF00;
+			case 16: return 0xFFFF00;
+			case 17: return 0xFFFF00;
+			case 18: return 0xFFFF00;
+			case 19: return 0xFFFF00;
+			default: return 0xFF9900;
+		}
+	}
+}
+
+#if _NEWTRAILS
+void CG_StrafeTrailLine( vec3_t start, vec3_t end, int time, int clientNum, int number) {
+	strafeTrail_t	*trail;
+	unsigned int color = GetTrailColorByClientNum(clientNum);
+	int SVFPS = cg_strafeTrailFPS.integer;
+
+	if (SVFPS < 1)
+		SVFPS = 1;
+	else if (SVFPS > 1000)
+		SVFPS = 1000;
+
+	trail = CG_AllocStrafeTrail();
+
+	trail->endTime = cg.time + time;
+	trail->clientNum = clientNum+1;
+	VectorCopy(start, trail->start);
+	VectorCopy(end, trail->end);
+	//trail->radius = radius;
+	trail->color = color;
+
+	cg.drawingStrafeTrails |= (1 << clientNum);
+
+	if (cg_scorePlums.integer && (number > 0) && (number % SVFPS == 0)) {//oh this is stupid, assume sv_fps is 30 on servers that create it i guess.
+		localEntity_t	*le;
+		refEntity_t		*re;
+		vec3_t			angles;
+
+		le = CG_AllocLocalEntity();
+		le->leFlags = clientNum + 1;
+		le->leType = LE_SCOREPLUM;
+		le->startTime = cg.time;
+		le->endTime = cg.time + 60*60*1000;
+		le->lifeRate = 0;
+
+		le->color[0] = color & 0xff;
+		color >>= 8;
+		le->color[1] = color & 0xff;
+		color >>= 8;
+		le->color[2] = color & 0xff;
+
+		//le->color[3] = 1.0;
+
+		le->color[0] /= 255;
+		le->color[1] /= 255;
+		le->color[2] /= 255;
+		
+		//le->color[0] = le->color[1] = le->color[2] = le->color[3] = 1.0;
+		le->radius = number / SVFPS;
+
+		VectorCopy( end, le->pos.trBase );
+		le->pos.trBase[2] += 8;
+
+		re = &le->refEntity;
+		re->reType = RT_SPRITE;
+		re->radius = 16;
+
+		VectorClear(angles);
+		AnglesToAxis( angles, re->axis );
+	}
+}
+#else
+
+void CG_StrafeTrailLine( vec3_t start, vec3_t end, int time, float radius, int clientNum) {
+	localEntity_t	*le;
+	refEntity_t		*re;
+
+	unsigned int color = GetTrailColorByClientNum(clientNum);
+
+	le = CG_AllocLocalEntity();
+	le->leType = LE_LINE;
+	le->startTime = cg.time;
+	le->endTime = cg.time + time;
+	le->lifeRate = 1.0 / ( le->endTime - le->startTime );
+	le->leFlags = clientNum;
+
+	re = &le->refEntity;
+	VectorCopy( start, re->origin );
+	VectorCopy( end, re->oldorigin);
+	re->shaderTime = cg.time / 1000.0f;
+
+	re->reType = RT_LINE;
+	re->radius = 0.5*radius;
+	re->customShader = cgs.media.whiteShader; //trap->R_RegisterShaderNoMip("textures/colombia/canvas_doublesided");
+
+	re->shaderTexCoord[0] = re->shaderTexCoord[1] = 1.0f;
+
+	if (color==0)
+	{
+		re->shaderRGBA[0] = re->shaderRGBA[1] = re->shaderRGBA[2] = re->shaderRGBA[3] = 0xff;
+	}
+	else
+	{
+		//color = CGDEBUG_SaberColor( color );
+		re->shaderRGBA[0] = color & 0xff;
+		color >>= 8;
+		re->shaderRGBA[1] = color & 0xff;
+		color >>= 8;
+		re->shaderRGBA[2] = color & 0xff;
+//		color >>= 8;
+//		re->shaderRGBA[3] = color & 0xff;
+		re->shaderRGBA[3] = 0xff;
+	}
+
+	le->color[3] = 1.0;
+
+	//re->renderfx |= RF_DEPTHHACK;
+}
+#endif
+
+static void CG_AddStrafeTrails(void) {
+	int i, time;
+
+	if (!cg_strafeTrailPlayers.integer)
+		return;
+	if (cg_strafeTrailLife.value <= 0.0f)
+		return;
+	if (cgs.restricts & RESTRICT_STRAFETRAIL)
+		return;
+
+	time = cg_strafeTrailLife.value * 1000;
+	if (time <= 0)
+		time = 1;
+	else if (time > 60*1000*60)
+		time = 60*60;
+
+	for (i=0; i<MAX_CLIENTS; i++) {
+		if (cg_strafeTrailPlayers.integer & (1<<i)) {
+			centity_t *player = &cg_entities[i];
+			vec3_t diff = {0};
+
+			if (CG_IsMindTricked(player->currentState.trickedentindex,
+				player->currentState.trickedentindex2,
+				player->currentState.trickedentindex3,
+				player->currentState.trickedentindex4,
+				i))
+				continue;
+
+			if (cg_strafeTrailRacersOnly.integer && (!player->playerState->stats[STAT_RACEMODE] || !player->playerState->duelTime))
+			{
+				continue;
+			}
+
+			VectorSubtract(player->lerpOrigin, player->lastOrigin, diff);
+			if (VectorLengthSquared(diff) < 192*192) {
+				CG_StrafeTrailLine( player->lerpOrigin, player->lastOrigin, time, i, 0 );
+			}
+			VectorCopy( player->lerpOrigin, player->lastOrigin );
+		}
+	}
+}
+
+#if _LOGTRAILS
+static void CG_LogStrafeTrail(void) {
+	if (Q_stricmp("0", cg_logStrafeTrail.string) && cg.snap->ps.stats[11] && cg.snap->ps.duelTime) {
+		centity_t *player = &cg_entities[cg.snap->ps.clientNum];
+		vec3_t diff;
+		char *str;
+		char input[MAX_QPATH], fileName[MAX_QPATH];
+
+		//Com_Printf("logging1 to %s\n", cg_logStrafeTrail.string);
+	
+		//VectorSubtract(player->lerpOrigin, player->lastOrigin, diff);
+		//if (VectorLengthSquared(diff) < 192*192) {
+
+		//store last position, if its equal then dont do this shit.
+		//store some huge string and just append to it here, or use buffered..?
+
+		if (!VectorCompare(player->lastOrigin, player->lerpOrigin) && VectorLengthSquared(diff) < 192*192) {
+
+
+			Q_strncpyz( input, cg_logStrafeTrail.string, sizeof(input) );
+
+			Q_strstrip( input, "\n\r;:?*<>|\"\\/ ", NULL );
+			Q_CleanStr( input );
+			Q_strlwr(fileName);//dat linux
+
+			Com_sprintf(fileName, sizeof(fileName), "strafetrails/%s.cfg", input);
+			//Q_strcat(fileName, sizeof(fileName), ".cfg");
+
+			if (!cg.loggingStrafeTrail) {
+				trap->FS_Open(fileName, &cg.strafeTrailFileHandle, FS_APPEND);
+			}
+			else { //Filename exists
+				if (Q_stricmp(cg.logStrafeTrailFilename, fileName)) { //If we changed filename.. close old file?
+					trap->FS_Close(cg.strafeTrailFileHandle);
+				}
+			}
+
+			Q_strncpyz(cg.logStrafeTrailFilename, fileName, sizeof(cg.logStrafeTrailFilename));
+	
+			//Com_Printf("logging2 to %s\n", cg.japro.logStrafeTrailFilename);
+
+			str = va("%i %i %i\n", (int)cg.snap->ps.origin[0], (int)cg.snap->ps.origin[1], (int)cg.snap->ps.origin[2]);
+
+			if (cg.strafeTrailFileHandle) {
+				trap->FS_Write(str, strlen(str), cg.strafeTrailFileHandle);
+			}
+			cg.loggingStrafeTrail  = qtrue;
+		}
+
+		VectorCopy( player->lerpOrigin, player->lastOrigin );
+		return;
+	}	
+	
+	if (cg.loggingStrafeTrail && (!Q_stricmp("0", cg_logStrafeTrail.string) || (cg.snap->ps.stats[11] && !cg.snap->ps.duelTime)))
+	{
+		//Com_Printf("closing to %s\n", cg.japro.logStrafeTrailFilename);
+		trap->FS_Close(cg.strafeTrailFileHandle);
+		cg.loggingStrafeTrail = qfalse;
+	}
+	
+	//}
+}
+#endif
+
+static QINLINE void CG_LastWeapon(void) { //Called by CG_SetNextSnap, dunno if need to use snap or can use predicted..
+	if (!cg.snap)
+		return;
+	if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR)
+		return;
+	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
+		return;
+
+	if (!cg.lastWeaponSelect[0])
+		cg.lastWeaponSelect[0] = cg.predictedPlayerState.weapon;
+	if (!cg.lastWeaponSelect[1])
+		cg.lastWeaponSelect[1] = cg.predictedPlayerState.weapon;
+
+	if (cg.lastWeaponSelect[0] != cg.predictedPlayerState.weapon) { //Current does not match selected
+		cg.lastWeaponSelect[1] = cg.lastWeaponSelect[0]; //Set last to current
+		cg.lastWeaponSelect[0] = cg.predictedPlayerState.weapon; //Set current to selected
+	}
+
+}

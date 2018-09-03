@@ -285,7 +285,8 @@ static void CG_CalcIdealThirdPersonViewTarget(void)
 	}
 
 	// Add in the new viewheight
-	cameraFocusLoc[2] += cg.snap->ps.viewheight;
+	//cameraFocusLoc[2] += cg.snap->ps.viewheight; //36 = standing, 12 = crouching.
+	cameraFocusLoc[2] += cg.predictedPlayerState.viewheight;//Proper prediction
 
 	// Add in a vertical offset from the viewpoint, which puts the actual target above the head, regardless of angle.
 //	VectorMA(cameraFocusLoc, thirdPersonVertOffset, cameraup, cameraIdealTarget);
@@ -295,6 +296,16 @@ static void CG_CalcIdealThirdPersonViewTarget(void)
 
 	{
 		float vertOffset = cg_thirdPersonVertOffset.value;
+
+		if (cgs.isJAPro && cg.predictedPlayerState.pm_flags & PMF_FOLLOW && cg_specCameraMode.integer) {
+			vertOffset = cg.predictedPlayerState.persistant[PERS_CAMERA_SETTINGS];
+			if (vertOffset < 0)
+				vertOffset = -vertOffset;
+			//Leave only last 2 digits
+			vertOffset = (int)vertOffset % 100;
+			if (vertOffset < 1)
+				vertOffset = cg_thirdPersonVertOffset.value;
+		}
 
 		if (cg.snap && cg.snap->ps.m_iVehicleNum)
 		{
@@ -353,6 +364,49 @@ CG_CalcTargetThirdPersonViewLocation
 static void CG_CalcIdealThirdPersonViewLocation(void)
 {
 	float thirdPersonRange = cg_thirdPersonRange.value;
+	float newThirdPersonRange;// = cg_thirdPersonRange.value;
+	int f;
+
+	if (cgs.isJAPro && cg.predictedPlayerState.pm_flags & PMF_FOLLOW && cg_specCameraMode.integer) {
+		thirdPersonRange = cg.predictedPlayerState.persistant[PERS_CAMERA_SETTINGS];
+		if (thirdPersonRange < 0)
+			thirdPersonRange = -thirdPersonRange;
+		//Chop off end two digits
+		thirdPersonRange /= 100;
+		if (thirdPersonRange < 1)
+			thirdPersonRange = cg_thirdPersonRange.value;
+	}
+
+//JAPRO - Clientside - Allow for +zoom - Start
+		if ( cg.zoomed ) {
+			f = ( cg.time - cg.zoomTime ) / (float)ZOOM_OUT_TIME;
+			if ( f > 1.0 )
+			{
+				if (cg_zoomFov.integer < 1)
+					newThirdPersonRange = thirdPersonRange * thirdPersonRange;
+				else if (cg_zoomFov.integer > 176)
+					newThirdPersonRange = thirdPersonRange * thirdPersonRange / 176;
+				else
+					newThirdPersonRange = thirdPersonRange * thirdPersonRange / cg_zoomFov.integer;
+			} 
+			else
+			{
+				if (cg_zoomFov.integer < 1)
+					newThirdPersonRange = thirdPersonRange * thirdPersonRange;
+				else if (cg_zoomFov.integer > 176)
+					newThirdPersonRange = thirdPersonRange * thirdPersonRange / 176;
+				else
+					newThirdPersonRange = thirdPersonRange * thirdPersonRange / cg_zoomFov.integer;
+			}
+		} else {
+			f = ( cg.time - cg.zoomTime ) / (float)ZOOM_OUT_TIME;
+			if ( f > 1.0 ) {
+				newThirdPersonRange = thirdPersonRange;
+			} else {
+				newThirdPersonRange = thirdPersonRange;
+			}
+		}		
+//JAPRO - Clientside - Allow for +zoom - End
 
 	if (cg.snap && cg.snap->ps.m_iVehicleNum)
 	{
@@ -360,10 +414,10 @@ static void CG_CalcIdealThirdPersonViewLocation(void)
 		if (veh->m_pVehicle &&
 			veh->m_pVehicle->m_pVehicleInfo->cameraOverride)
 		{ //override the range with what the vehicle wants it to be
-			thirdPersonRange = veh->m_pVehicle->m_pVehicleInfo->cameraRange;
+			newThirdPersonRange = veh->m_pVehicle->m_pVehicleInfo->cameraRange;
 			if ( veh->playerState->hackingTime )
 			{
-				thirdPersonRange += fabs(((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * 100.0f;
+				newThirdPersonRange += fabs(((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * 100.0f;
 			}
 		}
 	}
@@ -374,10 +428,10 @@ static void CG_CalcIdealThirdPersonViewLocation(void)
 		&& cg_entities[cg.snap->ps.lookTarget].currentState.NPC_class == CLASS_RANCOR )//only possibility for now, may add Wampa and sand creature later
 	{//stay back
 		//thirdPersonRange = 180.0f;
-		thirdPersonRange = 120.0f;
+		newThirdPersonRange = 120.0f;
 	}
 
-	VectorMA(cameraIdealTarget, -(thirdPersonRange), camerafwd, cameraIdealLoc);
+	VectorMA(cameraIdealTarget, -(newThirdPersonRange), camerafwd, cameraIdealLoc);
 }
 
 
@@ -422,7 +476,11 @@ static void CG_ResetThirdPersonViewDamp(void)
 		VectorCopy(trace.endpos, cameraCurLoc);
 	}
 
-	cameraLastFrame = cg.time;
+	if (cg_smoothCamera.integer != 1)
+		cameraLastFrame = cg.predictedPlayerState.commandTime;
+	else
+		cameraLastFrame = cg.time;
+
 	cameraLastYaw = cameraFocusAngles[YAW];
 	cameraStiffFactor = 0.0f;
 }
@@ -622,7 +680,6 @@ CG_OffsetThirdPersonView
 
 ===============
 */
-extern vmCvar_t cg_thirdPersonHorzOffset;
 extern qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh );
 static void CG_OffsetThirdPersonView( void )
 {
@@ -815,7 +872,10 @@ static void CG_OffsetThirdPersonView( void )
 	// ...and of course we should copy the new view location to the proper spot too.
 	VectorCopy(cameraCurLoc, cg.refdef.vieworg);
 
-	cameraLastFrame=cg.time;
+	if (cg_smoothCamera.integer != 1)
+		cameraLastFrame = cg.predictedPlayerState.commandTime;
+	else
+		cameraLastFrame = cg.time;
 }
 
 void CG_GetVehicleCamPos( vec3_t camPos )
@@ -965,7 +1025,35 @@ static void CG_OffsetFirstPersonView( void ) {
 		VectorMA( angles, kickPerc, cg.kick_angles, angles );
 	}
 	// add angles based on damage kick
-	if ( cg.damageTime ) {
+
+//JAPRO - Clientside - Remove Screenshake if allowed - Start
+	if (cgs.isJAPro)
+	{
+		if (!(cgs.jcinfo & JAPRO_CINFO_SCREENSHAKE))
+		{
+		}	
+		else if ( cg.damageTime ) {
+			ratio = cg.time - cg.damageTime;
+			if ( ratio < DAMAGE_DEFLECT_TIME ) 
+			{
+				ratio /= DAMAGE_DEFLECT_TIME;
+				angles[PITCH] += ratio * cg.v_dmg_pitch;
+				angles[ROLL] += ratio * cg.v_dmg_roll;
+			} else 
+			{
+				ratio = 1.0 - ( ratio - DAMAGE_DEFLECT_TIME ) / DAMAGE_RETURN_TIME;
+				if ( ratio > 0 ) 
+				{
+					angles[PITCH] += ratio * cg.v_dmg_pitch;
+					angles[ROLL] += ratio * cg.v_dmg_roll;
+				}
+			}
+		}
+	}
+	else if (!cg_screenShake.integer)
+	{
+	}
+	else if ( cg.damageTime ) {
 		ratio = cg.time - cg.damageTime;
 		if ( ratio < DAMAGE_DEFLECT_TIME ) {
 			ratio /= DAMAGE_DEFLECT_TIME;
@@ -979,6 +1067,7 @@ static void CG_OffsetFirstPersonView( void ) {
 			}
 		}
 	}
+//JAPRO - Clientside - Remove Screenshake if allowed - End
 
 	// add pitch based on fall kick
 #if 0
@@ -1126,6 +1215,91 @@ static void CG_OffsetFighterView( void )
 }
 //======================================================================
 
+void CG_ZoomDown_f( void ) { 
+	if ( cg.zoomed ) {
+		return;
+	}
+	cg.zoomed = qtrue;
+	cg.zoomTime = cg.time;
+}
+
+void CG_ZoomUp_f( void ) { 
+	if ( !cg.zoomed ) {
+		return;
+	}
+	cg.zoomed = qfalse;
+	cg.zoomTime = cg.time;
+}
+
+
+
+/*
+====================
+CG_CalcFovFromX
+
+Calcs Y FOV from given X FOV
+====================
+*/
+qboolean CG_CalcFOVFromX( float fov_x ) 
+{
+	float	x;
+//	float	phase;
+//	float	v;
+//	int		contents;
+	float	fov_y;
+	qboolean	inwater;
+
+	if ( cg_fovAspectAdjust.integer ) {
+		// Based on LordHavoc's code for Darkplaces
+		// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
+		const float baseAspect = 0.75f; // 3/4
+		const float aspect = (float)cgs.glconfig.vidWidth/(float)cgs.glconfig.vidHeight;
+		const float desiredFov = fov_x;
+
+		fov_x = atan( tan( desiredFov*M_PI / 360.0f ) * baseAspect*aspect )*360.0f / M_PI;
+	}
+
+	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
+	fov_y = atan2( cg.refdef.height, x );
+	fov_y = fov_y * 360 / M_PI;
+
+	// there's a problem with this, it only takes the leafbrushes into account, not the entity brushes,
+	//	so if you give slime/water etc properties to a func_door area brush in order to move the whole water 
+	//	level up/down this doesn't take into account the door position, so warps the view the whole time
+	//	whether the water is up or not. Fortunately there's only one slime area in Trek that you can be under,
+	//	so lose it...
+#if 0
+/*
+	// warp if underwater
+	contents = CG_PointContents( cg.refdef.vieworg, -1 );
+	if ( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
+		phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
+		v = WAVE_AMPLITUDE * sin( phase );
+		fov_x += v;
+		fov_y -= v;
+		inwater = qtrue;
+	}
+	else {
+		inwater = qfalse;
+	}
+*/
+#else
+	inwater = qfalse;
+#endif
+
+
+	// set it
+	cg.refdef.fov_x = fov_x;
+	cg.refdef.fov_y = fov_y;
+
+#ifdef USE_WIDECSREEN
+	if(cg.widescreen)
+		cg.refdef.fov_x *= 1.125f;
+#endif
+
+	return (inwater);
+}
+
 /*
 ====================
 CG_CalcFov
@@ -1137,7 +1311,7 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 #define	WAVE_FREQUENCY	0.4
 float zoomFov; //this has to be global client-side
 
-static int CG_CalcFov( void ) {
+static qboolean CG_CalcFov( void ) {
 	float	x;
 	float	phase;
 	float	v;
@@ -1150,9 +1324,9 @@ static int CG_CalcFov( void ) {
 	{
 		cgFov = 1;
 	}
-	if (cgFov > 130)
+	if (cgFov > 140)//JAPRO - Clientside - Raise FOV Limit
 	{
-		cgFov = 130;
+		cgFov = 140;
 	}
 
 	if ( cg.predictedPlayerState.pm_type == PM_INTERMISSION ) {
@@ -1160,7 +1334,7 @@ static int CG_CalcFov( void ) {
 		fov_x = 80;//90;
 	} else {
 		// user selectable
-		if ( cgs.dmflags & DF_FIXED_FOV ) {
+		if ( 0 ) { //cgs.dmflags & DF_FIXED_FOV ) {
 			// dmflag to prevent wide fov for all clients
 			fov_x = 80;//90;
 		} else {
@@ -1226,16 +1400,43 @@ static int CG_CalcFov( void ) {
 			}
 			fov_x = zoomFov;
 		}
+		//JAPRO - Clientside - Allow for +zoom - Start
+		else if ( cg.zoomed ) {
+			f = ( cg.time - cg.zoomTime ) / (float)ZOOM_OUT_TIME;
+			if ( f > 1.0 )
+			{
+				if (cg_zoomFov.integer < 1)
+					fov_x = 1;
+				else if (cg_zoomFov.integer > 176)
+					fov_x = 176;
+				else
+					fov_x = cg_zoomFov.integer;
+			} 
+			else
+			{
+				if (cg_zoomFov.integer < 1)
+					fov_x = fov_x + f * ( 1 - fov_x );
+				else if (cg_zoomFov.integer > 178)
+					fov_x = fov_x + f * ( 178 - fov_x );
+				else
+					fov_x = fov_x + f * ( cg_zoomFov.integer - fov_x );
+			}
+		}
 		else
 		{
 			zoomFov = 80;
-
-			f = ( cg.time - cg.predictedPlayerState.zoomTime ) / ZOOM_OUT_TIME;
+			f = ( cg.time - cg.zoomTime ) / (float)ZOOM_OUT_TIME;
 			if ( f <= 1.0 )
 			{
-				fov_x = cg.predictedPlayerState.zoomFov + f * ( fov_x - cg.predictedPlayerState.zoomFov );
+				if (cg_zoomFov.integer < 1)
+					fov_x = cg_zoomFov.integer + f * ( fov_x - 1 );
+				else if (cg_zoomFov.integer > 176)
+					fov_x = cg_zoomFov.integer + f * ( fov_x - 176 );
+				else
+					fov_x = cg_zoomFov.integer + f * ( fov_x - cg_zoomFov.integer );
 			}
 		}
+		//JAPRO - Clientside - Allow for +zoom - End
 	}
 
 	if ( cg_fovAspectAdjust.integer ) {
@@ -1269,15 +1470,24 @@ static int CG_CalcFov( void ) {
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
 
-	if (cg.predictedPlayerState.zoomMode)
+//JAPRO - Clientside - Zoomfov Sensitivity changing - Start
+	if (cg_scopeSensitivity.value > 0 && cg.predictedPlayerState.zoomMode)
+	{
+		cg.zoomSensitivity = (zoomFov/cgFov) * cg_scopeSensitivity.value;
+	}
+	else if (cg.predictedPlayerState.zoomMode)
 	{
 		cg.zoomSensitivity = zoomFov/cgFov;
 	}
+
 	else if ( !cg.zoomed ) {
 		cg.zoomSensitivity = 1;
-	} else {
+	} else if (cg_zoomSensitivity.value <= 0){
 		cg.zoomSensitivity = cg.refdef.fov_y / 75.0;
+	} else {
+		cg.zoomSensitivity = cg_zoomSensitivity.value;
 	}
+//JAPRO - Clientside - Zoomfov Sensitivity changing - End
 
 	return inwater;
 }
@@ -1635,6 +1845,11 @@ static int CG_CalcViewValues( void ) {
 			{
 				CG_OffsetThirdPersonView();
 			}
+		} else if (ps->pm_type == PM_SPECTATOR && cg_spectatorCameraDamp.integer) {
+			//swag
+			CG_UpdateThirdPersonTargetDamp();
+			CG_OffsetThirdPersonView();
+			//CG_UpdateThirdPersonCameraDamp();
 		} else {
 			// offset for local bobbing and kicks
 			CG_OffsetFirstPersonView();
@@ -1742,7 +1957,7 @@ void CG_DrawSkyBoxPortal(const char *cstr)
 	if ( cg.predictedPlayerState.pm_type == PM_INTERMISSION )
 	{
 		// if in intermission, use a fixed value
-		fov_x = cg_fov.value;
+		fov_x = 80;//90
 	}
 	else
 	{
@@ -1778,11 +1993,33 @@ void CG_DrawSkyBoxPortal(const char *cstr)
 				fov_x = zoomFov + f * ( fov_x - zoomFov);
 			}
 		}
+		//JAPRO - Clientside - Allow for +zoom - Start
+		if (cg.zoomed) {
+			f = (cg.time - cg.zoomTime) / (float)ZOOM_OUT_TIME;
+			if (f > 1.0)
+			{
+				if (cg_zoomFov.integer < 1)
+					fov_x = 1;
+				else if (cg_zoomFov.integer > 176)
+					fov_x = 176;
+				else
+					fov_x = cg_zoomFov.integer;
+			}
+			else
+			{
+				if (cg_zoomFov.integer < 1)
+					fov_x = fov_x + f * (1 - fov_x);
+				else if (cg_zoomFov.integer > 178)
+					fov_x = fov_x + f * (178 - fov_x);
+				else
+					fov_x = fov_x + f * (cg_zoomFov.integer - fov_x);
+			}
+		}
+		//JAPRO - Clientside - Allow for +zoom - End
 	}
 
-	if ( cg_fovAspectAdjust.integer ) { //this needs to happen for +zoom
-		// Based on LordHavoc's code for Darkplaces
-		// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
+
+	if ( cg_fovAspectAdjust.integer ) {
 		const float baseAspect = 0.75f; // 3/4
 		const float aspect = (float)cgs.glconfig.vidWidth / (float)cgs.glconfig.vidHeight;
 		const float desiredFov = fov_x;
@@ -2312,6 +2549,102 @@ void CG_DrawAutoMap(void)
 	trap->R_RenderScene( &refdef );
 }
 
+QINLINE void CG_DoAsync( void ) {
+	if ( cg.doVstrTime && cg.time > cg.doVstrTime) {
+		trap->SendConsoleCommand(cg.doVstr);
+		cg.doVstrTime = 0;
+	}
+	if (!(cgs.restricts & RESTRICT_FLIPKICKBIND)) {	//Now flipkick time
+
+		//Need to decouple frames from kick i guess.
+
+		//If we are on kick 1, check to see if our cvar for it is above frames.  If so , kick and increment kickcount.
+		
+		//Increment
+		if (cg.numFKFrames > cg_fkDuration.integer) {
+			trap->SendConsoleCommand("-moveup\n");
+			cg.numFKFrames = 0;
+			cg.numJumps = 0;
+		}
+		else if (cg.numFKFrames) {
+			if (cg.numJumps == 1) {
+				if (cg.numFKFrames > cg_fkFirstJumpDuration.integer) {
+					trap->SendConsoleCommand("-moveup\n");
+					cg.numJumps++;
+				}
+			}
+			else if (cg.numJumps == 2) {
+				if (cg.numFKFrames > cg_fkSecondJumpDelay.integer) {
+					trap->SendConsoleCommand("+moveup\n");
+					cg.numJumps++;
+				}
+			}
+			else if (cg.numFKFrames % 2) {//1,3,5
+				trap->SendConsoleCommand("+moveup\n");
+				cg.numJumps++;
+			}
+			else {//2,4,6
+				trap->SendConsoleCommand("-moveup\n");
+				cg.numJumps++;
+			}
+			cg.numFKFrames++;
+		}
+	}
+}
+
+int thirdPersonModificationCount = -1;
+int	thirdPersonRangeModificationCount = -1;
+int	thirdPersonVertOffsetModificationCount = -1;
+int	maxPacketsModificationCount = -1;
+int timeNudgeModificationCount = -1;
+int	maxFPSModificationCount = -1;
+
+QINLINE void CG_UpdateNetUserinfo(void) {
+	//Have to find a new place to auto update cjp_client
+	if (cg.time > cg.userinfoUpdateDebounce) {
+		qboolean updateDisplay = qfalse, updateNet = qfalse;
+
+		if (thirdPersonModificationCount != cg_thirdPerson.modificationCount) {
+			updateDisplay = qtrue;
+		}
+		else if (thirdPersonRangeModificationCount != cg_thirdPersonRange.modificationCount) {
+			updateDisplay = qtrue;
+		}
+		else if (thirdPersonVertOffsetModificationCount != cg_thirdPersonVertOffset.modificationCount) {
+			updateDisplay = qtrue;
+		}
+
+		if (maxFPSModificationCount != com_maxFPS.modificationCount) {
+			updateNet = qtrue;
+		}
+		else if (timeNudgeModificationCount != cl_timeNudge.modificationCount) {
+			updateNet = qtrue;
+		}
+		else if (maxPacketsModificationCount != cl_maxPackets.modificationCount) {
+			updateNet = qtrue;
+		}
+
+		if (updateDisplay) {
+			thirdPersonModificationCount = cg_thirdPerson.modificationCount;
+			thirdPersonRangeModificationCount = cg_thirdPersonRange.modificationCount;
+			thirdPersonVertOffsetModificationCount = cg_thirdPersonVertOffset.modificationCount;
+			trap->Cvar_Set("cg_displayCameraPosition", va("%i %i %i", cg_thirdPerson.integer, cg_thirdPersonRange.integer, cg_thirdPersonVertOffset.integer));
+			//Com_Printf("^1Updating display\n");
+
+			cg.userinfoUpdateDebounce = cg.time + 1000 * 8; //every 8s
+		}
+		if (updateNet) {
+			maxPacketsModificationCount = cl_maxPackets.modificationCount;
+			timeNudgeModificationCount = cl_timeNudge.modificationCount;
+			maxFPSModificationCount = com_maxFPS.modificationCount;
+			trap->Cvar_Set("cg_displayNetSettings", va("%i %i %i", cl_maxPackets.integer, cl_timeNudge.integer, com_maxFPS.integer));
+			//Com_Printf("^1Updating net\n");
+
+			cg.userinfoUpdateDebounce = cg.time + 1000 * 8; //every 8s
+		}
+	}
+}
+
 //=========================================================================
 
 /*
@@ -2411,8 +2744,12 @@ extern qboolean PM_InKnockDown( playerState_t *ps );
 
 extern qboolean cgQueueLoad;
 extern void CG_ActualLoadDeferredPlayers( void );
+void CG_DrawPhysicsFPS();//japro
 
 static int cg_siegeClassIndex = -2;
+#if _NEWTRAILS
+void	CG_AddAllStrafeTrails( void );
+#endif
 
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 	int		inwater;
@@ -2436,22 +2773,25 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	cg.time = serverTime;
 	cg.demoPlayback = demoPlayback;
 
-	if (cg.snap && ui_myteam.integer != cg.snap->ps.persistant[PERS_TEAM])
-	{
-		trap->Cvar_Set ( "ui_myteam", va("%i", cg.snap->ps.persistant[PERS_TEAM]) );
-	}
-	if (cgs.gametype == GT_SIEGE &&
-		cg.snap &&
-		cg_siegeClassIndex != cgs.clientinfo[cg.snap->ps.clientNum].siegeIndex)
-	{
-		cg_siegeClassIndex = cgs.clientinfo[cg.snap->ps.clientNum].siegeIndex;
-		if (cg_siegeClassIndex == -1)
+	if (cg.snap) {
+		if (ui_myteam.integer != cg.snap->ps.persistant[PERS_TEAM])
 		{
-			trap->Cvar_Set("ui_mySiegeClass", "<none>");
+			if (!(cg.snap->ps.pm_flags & PMF_FOLLOW || cg.snap->ps.pm_type == PM_SPECTATOR))
+				trap->Cvar_Set ( "ui_myteam", va("%i", cg.snap->ps.persistant[PERS_TEAM]) );
+			else if (ui_myteam.integer != 3)
+				trap->Cvar_Set("ui_myteam", "3");
 		}
-		else
+		if (cgs.gametype == GT_SIEGE && cg_siegeClassIndex != cgs.clientinfo[cg.snap->ps.clientNum].siegeIndex)
 		{
-			trap->Cvar_Set("ui_mySiegeClass", bgSiegeClasses[cg_siegeClassIndex].name);
+			cg_siegeClassIndex = cgs.clientinfo[cg.snap->ps.clientNum].siegeIndex;
+			if (cg_siegeClassIndex == -1)
+			{
+				trap->Cvar_Set("ui_mySiegeClass", "<none>");
+			}
+			else
+			{
+				trap->Cvar_Set("ui_mySiegeClass", bgSiegeClasses[cg_siegeClassIndex].name);
+			}
 		}
 	}
 
@@ -2512,6 +2852,36 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		return;
 	}
 
+	//japro restrictions in racemode
+	if (cgs.isJAPro) {
+		if (cg.snap && cg.snap->ps.stats[STAT_RACEMODE] && !(cg.predictedPlayerState.pm_flags & PMF_FOLLOW) && (cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_SPECTATOR)) {
+			if (cgs.restricts & RESTRICT_YAW) {
+				char yawBuf[64];
+				char yawString[16] = { 0 };
+
+				yawString[0] = 'c';
+				yawString[1] = 'l';
+				yawString[2] = '_';
+				yawString[3] = 'y';
+				yawString[4] = 'a';
+				yawString[5] = 'w';
+				yawString[6] = 's';
+				yawString[7] = 'p';
+				yawString[8] = 'e';
+				yawString[9] = 'e';
+				yawString[10] = 'd';
+				yawString[11] = '\0';
+
+				trap->Cvar_VariableStringBuffer(yawString, yawBuf, sizeof(yawBuf));
+
+				if (atoi(yawBuf) != 140)
+					trap->Cvar_Set(yawString, "140");
+			}
+		}
+	}
+	//end
+
+
 	// let the client system know what our weapon and zoom settings are
 	if (cg.snap && cg.snap->ps.saberLockTime > cg.time)
 	{
@@ -2569,7 +2939,20 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_PredictPlayerState();
 
 	// decide on third person view
-	cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0);
+	if (cgs.isJAPro && cg.predictedPlayerState.pm_flags & PMF_FOLLOW && cg_specCameraMode.integer) {
+		if (cg.predictedPlayerState.persistant[PERS_CAMERA_SETTINGS] > 0)
+			cg.renderingThirdPerson = qtrue;
+		else if (cg.predictedPlayerState.persistant[PERS_CAMERA_SETTINGS] < 0)
+			cg.renderingThirdPerson = qfalse;
+		else
+			cg.renderingThirdPerson = cg_thirdPerson.integer;
+
+		if (cg.snap->ps.stats[STAT_HEALTH] <= 0)
+			cg.renderingThirdPerson = qtrue;
+	}
+	else {
+		cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0);
+	}
 
 	if (cg.snap->ps.stats[STAT_HEALTH] > 0)
 	{
@@ -2583,13 +2966,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 			cg.predictedPlayerState.forceHandExtend == HANDEXTEND_KNOCKDOWN || cg.predictedPlayerState.fallingToDeath ||
 			cg.predictedPlayerState.m_iVehicleNum || PM_InKnockDown(&cg.predictedPlayerState))
 		{
-#if 0
-			if (cg_fpls.integer && cg.predictedPlayerState.weapon == WP_SABER)
+			if (!cg_thirdPerson.integer && cg_fpls.integer && (cg.predictedPlayerState.weapon == WP_SABER || cg.predictedPlayerState.weapon == WP_MELEE))
 			{ //force to first person for fpls
 				cg.renderingThirdPerson = 0;
 			}
 			else
-#endif
 			{
 				cg.renderingThirdPerson = 1;
 			}
@@ -2649,6 +3030,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_AddPacketEntities(qfalse);			// adter calcViewValues, so predicted player state is correct
 		CG_AddMarks();
 		CG_AddLocalEntities();
+#if _NEWTRAILS
+		if (cg.drawingStrafeTrails) {
+			CG_AddAllStrafeTrails();
+		}
+#endif
+
+		//Add strafetrail seperate function here - loda fixme meme
 	}
 	CG_AddViewWeapon( &cg.predictedPlayerState );
 
@@ -2704,6 +3092,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		}
 		cg.oldTime = cg.time;
 		CG_AddLagometerFrameInfo();
+		CG_AddSpeedGraphFrameInfo();
 	}
 	if (timescale.value != cg_timescaleFadeEnd.value) {
 		if (timescale.value < cg_timescaleFadeEnd.value) {
@@ -2725,6 +3114,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_DrawActive( stereoView );
 
 	CG_DrawAutoMap();
+
+	CG_DoAsync();
+
+	if (cgs.isJAPro)
+		CG_UpdateNetUserinfo();
 
 	if ( cg_stats.integer ) {
 		trap->Print( "cg.clientFrame:%i\n", cg.clientFrame );

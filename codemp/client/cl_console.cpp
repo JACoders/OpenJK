@@ -82,12 +82,10 @@ Con_MessageMode_f
 ================
 */
 void Con_MessageMode_f (void) {	//yell
-	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	chat_playerNum = -1;
 	chat_team = qfalse;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 30 / ratio;
-
+	chatField.widthInChars = 30 / cls.widthRatioCoef;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
@@ -97,11 +95,10 @@ Con_MessageMode2_f
 ================
 */
 void Con_MessageMode2_f (void) {	//team chat
-	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	chat_playerNum = -1;
 	chat_team = qtrue;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 25 / ratio;
+	chatField.widthInChars = 25 / cls.widthRatioCoef;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
@@ -111,7 +108,6 @@ Con_MessageMode3_f
 ================
 */
 void Con_MessageMode3_f (void) {	//target chat
-	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
@@ -131,7 +127,7 @@ void Con_MessageMode3_f (void) {	//target chat
 	}
 	chat_team = qfalse;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 26 / ratio;
+	chatField.widthInChars = 26 / cls.widthRatioCoef;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
@@ -142,7 +138,6 @@ Con_MessageMode4_f
 */
 void Con_MessageMode4_f (void)
 {	//attacker
-	float ratio = (cls.widthRatioCoef ? cls.widthRatioCoef : 1.0f);
 	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
@@ -156,7 +151,8 @@ void Con_MessageMode4_f (void)
 	}
 	chat_team = qfalse;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 30 / ratio;
+	chatField.widthInChars = 30 / cls.widthRatioCoef;
+
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 

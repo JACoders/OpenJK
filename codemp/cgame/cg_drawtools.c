@@ -87,6 +87,43 @@ void CG_GetColorForHealth( int health, int armor, vec4_t hcolor ) {
 	}
 }
 
+void CG_GetColorForForce( int forcepoints, vec4_t hcolor ) {
+	int		count;
+	int		max;
+
+	// calculate the total points of damage that can
+	// be sustained at the current health / armor level
+	if ( forcepoints <= 0 ) {
+		VectorClear( hcolor );	// black
+		hcolor[3] = 1;
+		return;
+	}
+	count = forcepoints;
+	max = 100;
+	if ( max < count ) {
+		count = max;
+	}
+
+	// set the color based on health
+	hcolor[2] = 1.0;
+	hcolor[3] = 1.0;
+	if ( forcepoints >= 100 ) {
+		hcolor[0] = 1.0;
+	} else if ( forcepoints < 66 ) {
+		hcolor[0] = 0;
+	} else {
+		hcolor[0] = ( forcepoints - 66 ) / 33.0;
+	}
+
+	if ( forcepoints > 60 ) {
+		hcolor[1] = 1.0;
+	} else if ( forcepoints < 30 ) {
+		hcolor[1] = 0;
+	} else {
+		hcolor[1] = ( forcepoints - 30 ) / 30.0;
+	}
+}
+
 /*
 ================
 CG_DrawSides
@@ -175,7 +212,7 @@ CG_DrawChar
 Coordinates and size in 640*480 virtual screen size
 ===============
 */
-void CG_DrawChar( int x, int y, int width, int height, int ch ) {
+void CG_DrawChar( float x, float y, float width, float height, int ch ) {
 	int row, col;
 	float frow, fcol;
 	float size;
@@ -216,7 +253,7 @@ Coordinates are at 640 by 480 virtual resolution
 ==================
 */
 #include "ui/menudef.h"	// for "ITEM_TEXTSTYLE_SHADOWED"
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars )
+void CG_DrawStringExt( float x, float y, const char *string, const float *setColor, qboolean forceColor, qboolean shadow, float charWidth, float charHeight, int maxChars )
 {
 	if (trap->R_Language_IsAsian())
 	{
@@ -251,7 +288,7 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
 					s += 2;
 					continue;
 				}
-				CG_DrawChar( xx + 2, y + 2, charWidth, charHeight, *s );
+				CG_DrawChar( xx + 2 * cgs.widthRatioCoef, y + 2, charWidth, charHeight, *s );
 				xx += charWidth;
 				s++;
 			}
@@ -279,28 +316,28 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
 	}
 }
 
-void CG_DrawBigString( int x, int y, const char *s, float alpha ) {
+void CG_DrawBigString( float x, float y, const char *s, float alpha ) {
 	float	color[4];
 
 	color[0] = color[1] = color[2] = 1.0;
 	color[3] = alpha;
-	CG_DrawStringExt( x, y, s, color, qfalse, qtrue, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0 );
+	CG_DrawStringExt( x, y, s, color, qfalse, qtrue, BIGCHAR_WIDTH * cgs.widthRatioCoef, BIGCHAR_HEIGHT, 0 );
 }
 
-void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color ) {
-	CG_DrawStringExt( x, y, s, color, qtrue, qtrue, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0 );
+void CG_DrawBigStringColor( float x, float y, const char *s, vec4_t color ) {
+	CG_DrawStringExt( x, y, s, color, qtrue, qtrue, BIGCHAR_WIDTH * cgs.widthRatioCoef, BIGCHAR_HEIGHT, 0 );
 }
 
-void CG_DrawSmallString( int x, int y, const char *s, float alpha ) {
+void CG_DrawSmallString( float x, float y, const char *s, float alpha ) {
 	float	color[4];
 
 	color[0] = color[1] = color[2] = 1.0;
 	color[3] = alpha;
-	CG_DrawStringExt( x, y, s, color, qfalse, qfalse, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, 0 );
+	CG_DrawStringExt( x, y, s, color, qfalse, qfalse, SMALLCHAR_WIDTH * cgs.widthRatioCoef, SMALLCHAR_HEIGHT, 0 );
 }
 
-void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color ) {
-	CG_DrawStringExt( x, y, s, color, qtrue, qfalse, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, 0 );
+void CG_DrawSmallStringColor( float x, float y, const char *s, vec4_t color ) {
+	CG_DrawStringExt( x, y, s, color, qtrue, qfalse, SMALLCHAR_WIDTH * cgs.widthRatioCoef, SMALLCHAR_HEIGHT, 0 );
 }
 
 /*
@@ -499,7 +536,7 @@ Take x,y positions as if 640 x 480 and scales them to the proper resolution
 
 ==============
 */
-void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill)
+void CG_DrawNumField (float x, float y, int width, int value,float charWidth,float charHeight,int style,qboolean zeroFill)
 {
 	char	num[16], *ptr;
 	int		l;
@@ -611,7 +648,7 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 }
 
 #include "ui/ui_shared.h"	// for some text style junk
-void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color )
+void CG_DrawProportionalString( float x, float y, const char* str, int style, vec4_t color )
 {
 	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff)
 	//	is dumb, but for now...
@@ -654,7 +691,7 @@ void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 	CG_Text_Paint(x, y, 1.0, color, str, 0, 0, iStyle, iMenuFont);
 }
 
-void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale)
+void CG_DrawScaledProportionalString( float x, float y, const char* str, int style, vec4_t color, float scale)
 {
 	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff)
 	//	is dumb, but for now...

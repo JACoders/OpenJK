@@ -269,6 +269,8 @@ XCVAR_DEF( g_startingItems,				"0",			CVU_StartingItems,	CVAR_ARCHIVE,									q
 XCVAR_DEF( g_screenShake,				"0",			CVU_ScreenShake,	CVAR_ARCHIVE,									qtrue ) //should be g_forceScreenShake
 XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_allowSaberSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_singleStyleSwitchDelay,	"100",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_saberStyleSwitchDelay,		"300",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowTeamSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_godChat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )

@@ -117,7 +117,7 @@ void CG_RegisterWeapon( int weaponNum) {
 		weaponInfo->barrelModel = 0;
 	}
 
-	if (weaponNum != WP_SABER)
+	if (weaponNum != WP_SABER && weaponNum != WP_MELEE)
 	{
 		Q_strncpyz( path, item->view_model, sizeof(path) );
 		COM_StripExtension( path, path, sizeof( path ) );
@@ -143,7 +143,13 @@ void CG_RegisterWeapon( int weaponNum) {
 		//trap->R_RegisterShader( "gfx/effects/stunPass" );
 		trap->FX_RegisterEffect( "stunBaton/flesh_impact" );
 
-		if (weaponNum == WP_STUN_BATON)
+		if (weaponNum == WP_STUN_BATON && (cgs.isJAPro) && cgs.jcinfo & JAPRO_CINFO_LG)
+		{
+			trap->S_RegisterSound( "sound/weapons/baton/idle.wav" );
+			weaponInfo->flashSound[0] = trap->S_RegisterSound( "sound/weapons/lightning/lg_hum.wav" );
+			weaponInfo->altFlashSound[0] = trap->S_RegisterSound( "sound/weapons/baton/fire.mp3" );
+		}
+		else if (weaponNum == WP_STUN_BATON)
 		{
 			trap->S_RegisterSound( "sound/weapons/baton/idle.wav" );
 			weaponInfo->flashSound[0] = trap->S_RegisterSound( "sound/weapons/baton/fire.mp3" );

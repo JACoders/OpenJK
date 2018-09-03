@@ -1490,26 +1490,26 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	// test code only
 //	if (GetLanguageEnum() == eTaiwanese)
 //	{
-//		psText = "Wp:¶}·F§a ¿p·G´µ¡A§Æ±æ§A¹³¥L­Ì»¡ªº¤@¼Ë¦æ¡C";
+//		psText = "Wp:ï¿½}ï¿½Fï¿½a ï¿½pï¿½Gï¿½ï¿½ï¿½Aï¿½Æ±ï¿½Aï¿½ï¿½ï¿½Lï¿½Ì»ï¿½ï¿½ï¿½ï¿½@ï¿½Ë¦ï¿½C";
 //	}
 //	else
 //	if (GetLanguageEnum() == eChinese)
 //	{
-//		//psText = "Ó¶±øÕ½³¡II  Ô¼º²?ÄªÁÖË¹  ÈÎÎñÊ§°Ü  ÄãÒªÌ×ÓÃ»­ÃæÉè¶¨µÄ±ä¸üÂð£¿  Ô¤Éè,S3 Ñ¹Ëõ,DXT1 Ñ¹Ëõ,DXT5 Ñ¹Ëõ,16 Bit,32 Bit";
-//		psText = "Ó¶±øÕ½³¡II";
+//		//psText = "Ó¶ï¿½ï¿½Õ½ï¿½ï¿½II  Ô¼ï¿½ï¿½?Äªï¿½ï¿½Ë¹  ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½  ï¿½ï¿½Òªï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½è¶¨ï¿½Ä±ï¿½ï¿½ï¿½ï¿½  Ô¤ï¿½ï¿½,S3 Ñ¹ï¿½ï¿½,DXT1 Ñ¹ï¿½ï¿½,DXT5 Ñ¹ï¿½ï¿½,16 Bit,32 Bit";
+//		psText = "Ó¶ï¿½ï¿½Õ½ï¿½ï¿½II";
 //	}
 //	else
 //	if (GetLanguageEnum() == eThai)
 //	{
-//		//psText = "ÁÒµÃ°Ò¹¼ÅÔµÀÑ³±ìÍØµÊÒË¡ÃÃÁÃËÑÊÊÓËÃÑºÍÑ¡¢ÃÐä·Â·Õèãªé¡Ñº¤ÍÁ¾ÔÇàµÍÃì";
-//		psText = "ÁÒµÃ°Ò¹¼ÅÔµ";
-//		psText = "ÃËÑÊÊÓËÃÑº";
-//		psText = "ÃËÑÊÊÓËÃÑº   ÍÒ_¡Ô¹_¤ÍÃì·_1415";
+//		//psText = "ï¿½ÒµÃ°Ò¹ï¿½ï¿½Ôµï¿½Ñ³ï¿½ï¿½ï¿½Øµï¿½ï¿½Ë¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñºï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Ñºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+//		psText = "ï¿½ÒµÃ°Ò¹ï¿½ï¿½Ôµ";
+//		psText = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñº";
+//		psText = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñº   ï¿½ï¿½_ï¿½Ô¹_ï¿½ï¿½ï¿½ï¿½_1415";
 //	}
 //	else
 //	if (GetLanguageEnum() == eKorean)
 //	{
-//		psText = "Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+//		psText = "Wp:ï¿½ï¿½Å¸ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½Ö¸ï¿½. ï¿½×µï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ´ï¿½ï¿½ ï¿½×°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Ú´ï¿½.";
 //	}
 //	else
 //	if (GetLanguageEnum() == eJapanese)
@@ -1521,14 +1521,14 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	else
 //	if (GetLanguageEnum() == eRussian)
 //	{
-////		//psText = "Íà âåðøèíå õîëìà ñòîèò ñòàðûé äîì ñ ïðèâèäåíèÿìè è áàøíÿ ñ âîëøåáíûìè ÷àñàìè."
-//		psText = "Íà âåðøèíå õîëìà ñòîèò";
+////		//psText = "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½."
+//		psText = "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½";
 //	}
 //	else
 //	if (GetLanguageEnum() == ePolish)
 //	{
-//		psText = "za³o¿ony w 1364 roku, jest najstarsz¹ polsk¹ uczelni¹ i nale¿y...";
-//		psText = "za³o¿ony nale¿y";
+//		psText = "zaï¿½oï¿½ony w 1364 roku, jest najstarszï¿½ polskï¿½ uczelniï¿½ i naleï¿½y...";
+//		psText = "zaï¿½oï¿½ony naleï¿½y";
 //	}
 
 
@@ -1548,43 +1548,42 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 
 	// Draw a dropshadow if required
 	if (iFontHandle & STYLE_DROPSHADOW)
-		if (iFontHandle & STYLE_DROPSHADOW)
-		{
-			if (ri.Cvar_VariableIntegerValue("cl_coloredTextShadows")) {
-				int i = 0, r = 0;
-				char dropShadowText[1024];
-				const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
+	{
+		if (cl_coloredTextShadows->integer) {
+			int i = 0, r = 0;
+			char dropShadowText[1024];
+			const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
 
-				offset = Round(curfont->GetPointSize() * fScale * 0.075f);
+			offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
-				//^blah stuff confuses shadows, so parse it out first
-				while (psText[i] && r < 1024) {
-					if (psText[i] == '^') {
-						if ((i < 1 || psText[i - 1] != '^') &&
-							(!psText[i + 1] || psText[i + 1] != '^')) { //If char before or after ^ is ^ then it prints ^ instead of accepting a colorcode
-							i += 2;
-						}
+			//^blah stuff confuses shadows, so parse it out first
+			while (psText[i] && r < 1024) {
+				if (psText[i] == '^') {
+					if ((i < 1 || psText[i - 1] != '^') &&
+						(!psText[i + 1] || psText[i + 1] != '^')) { //If char before or after ^ is ^ then it prints ^ instead of accepting a colorcode
+						i += 2;
 					}
-
-					dropShadowText[r] = psText[i];
-					r++;
-					i++;
 				}
-				dropShadowText[r] = 0;
 
-				RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+				dropShadowText[r] = psText[i];
+				r++;
+				i++;
 			}
-			else
-			{
-				const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
+			dropShadowText[r] = 0;
 
-				offset = Round(curfont->GetPointSize() * fScale * 0.075f);
-
-				gbInShadow = qtrue;
-				RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
-				gbInShadow = qfalse;
-			}
+			RE_Font_DrawString(ox + offset, oy + offset, dropShadowText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 		}
+		else
+		{
+			const vec4_t v4DKGREY2 = { 0.15f, 0.15f, 0.15f, rgba ? rgba[3] : 1.0f };
+
+			offset = Round(curfont->GetPointSize() * fScale * 0.075f);
+
+			gbInShadow = qtrue;
+			RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+			gbInShadow = qfalse;
+		}
+	}
 
 	RE_SetColor( rgba );
 
@@ -1617,10 +1616,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			break;
 		case 32:						// Space
 			pLetter = curfont->GetLetter(' ');
-			if (cl_ratioFix->integer == 1 || cl_ratioFix->integer == 2)
-				fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale * tr.widthRatioCoef;
-			else
-				fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale * tr.widthRatioCoef;
 
 			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) ) ? qtrue : qfalse; // yeuch
 			break;
@@ -1676,32 +1672,18 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 					fy += 3.0f; // I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
 				}
 
-				if (cl_ratioFix->integer == 1 || cl_ratioFix->integer == 2) {
-					RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
-									(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
-									curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale * tr.widthRatioCoef,	// float w
-									curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
-									pLetter->s,						// float s1
-									pLetter->t,						// float t1
-									pLetter->s2,					// float s2
-									pLetter->t2,					// float t2
-									//lastcolour.c,
-									hShader							// qhandle_t hShader
-									);
-				}
-				else {
-					RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
-						(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
-						curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
-						curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
-						pLetter->s,						// float s1
-						pLetter->t,						// float t1
-						pLetter->s2,					// float s2
-						pLetter->t2,					// float t2
-														//lastcolour.c,
-						hShader							// qhandle_t hShader
-					);
-				}
+				RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+								(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
+								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale * tr.widthRatioCoef,	// float w
+								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
+								pLetter->s,						// float s1
+								pLetter->t,						// float t1
+								pLetter->s2,					// float s2
+								pLetter->t2,					// float t2
+								//lastcolour.c,
+								hShader							// qhandle_t hShader
+								);
+
 				if ( r_aspectCorrectFonts->integer == 1  || cl_ratioFix->integer == 1 ) {
 					fx += fAdvancePixels
 						* tr.widthRatioCoef;

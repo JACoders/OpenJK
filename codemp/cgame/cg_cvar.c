@@ -23,6 +23,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_local.h"
 
+int strafeHelperActiveColorModificationCount = -1;//japro
+int enginePatchModificationCount = -1; //japro
+
 //
 // Cvar callbacks
 //
@@ -53,6 +56,116 @@ static void CG_TeamOverlayChange( void ) {
 		trap->Cvar_Set( "teamoverlay", "0" );
 }
 
+void CG_Set2DRatio(void) {
+	if (cl_ratioFix.integer) // shared with UI module
+		cgs.widthRatioCoef = (float)(SCREEN_WIDTH * cgs.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cgs.glconfig.vidWidth);
+	else
+		cgs.widthRatioCoef = 1.0f;
+}
+
+extern void CG_LoadHud_f(void);
+static void CG_UpdateHUD(void) {
+	if (cg.snap && cg_hudFiles.integer != 1 && cg_hudFiles.integer != 2)
+		CG_LoadHud_f();
+	else
+		return;
+}
+
+//Strafehelper colors
+static void CG_StrafeHelperActiveColorChange(void) {
+	if (sscanf(cg_strafeHelperActiveColor.string, "%f %f %f %f", &cg.strafeHelperActiveColor[0], &cg.strafeHelperActiveColor[1], &cg.strafeHelperActiveColor[2], &cg.strafeHelperActiveColor[3]) != 4) {
+		cg.strafeHelperActiveColor[0] = 0;
+		cg.strafeHelperActiveColor[1] = 255;
+		cg.strafeHelperActiveColor[2] = 0;
+		cg.strafeHelperActiveColor[3] = 200;
+	}
+
+	if (cg.strafeHelperActiveColor[0] < 0)
+		cg.strafeHelperActiveColor[0] = 0;
+	else if (cg.strafeHelperActiveColor[0] > 255)
+		cg.strafeHelperActiveColor[0] = 255;
+
+	if (cg.strafeHelperActiveColor[1] < 0)
+		cg.strafeHelperActiveColor[1] = 0;
+	else if (cg.strafeHelperActiveColor[1] > 255)
+		cg.strafeHelperActiveColor[1] = 255;
+
+	if (cg.strafeHelperActiveColor[2] < 0)
+		cg.strafeHelperActiveColor[2] = 0;
+	else if (cg.strafeHelperActiveColor[2] > 255)
+		cg.strafeHelperActiveColor[2] = 255;
+
+	if (cg.strafeHelperActiveColor[3] < 25)
+		cg.strafeHelperActiveColor[3] = 25;
+	else if (cg.strafeHelperActiveColor[3] > 255)
+		cg.strafeHelperActiveColor[3] = 255;
+
+	trap->Cvar_Set("ui_sha_r", va("%f", cg.strafeHelperActiveColor[0]));
+	trap->Cvar_Set("ui_sha_g", va("%f", cg.strafeHelperActiveColor[1]));
+	trap->Cvar_Set("ui_sha_b", va("%f", cg.strafeHelperActiveColor[2]));
+	trap->Cvar_Set("ui_sha_a", va("%f", cg.strafeHelperActiveColor[3]));
+
+	cg.strafeHelperActiveColor[0] /= 255.0f;
+	cg.strafeHelperActiveColor[1] /= 255.0f;
+	cg.strafeHelperActiveColor[2] /= 255.0f;
+	cg.strafeHelperActiveColor[3] /= 255.0f;
+
+	//Com_Printf("New color is %f, %f, %f, %f\n", cg.strafeHelperActiveColor[0], cg.strafeHelperActiveColor[1], cg.strafeHelperActiveColor[2], cg.strafeHelperActiveColor[3]);
+}
+
+//#ifndef __linux__
+#ifdef WIN32
+#include "windows.h"
+#define PATCH(addr, value, type) { type patch = value; MemoryPatch((void *)addr, (void *)&patch, sizeof(type)); }
+void MemoryPatch(void *address, void *patch, size_t size)
+{
+	DWORD protect;
+
+	VirtualProtect(address, size, PAGE_READWRITE, &protect);
+	memcpy_s(address, size, patch, size);
+	VirtualProtect(address, size, protect, &protect);
+}
+
+static void CG_MemoryPatchChange(void) {
+	char buf[128] = { 0 };
+	trap->Cvar_VariableStringBuffer("version", buf, sizeof(buf));
+
+	if (Q_stricmp(buf, "JAmp: v1.0.1.0 win-x86 Oct 24 2003")) { //Its not the original exe i guess, so cancel the patch
+																//Com_Printf("Engine patching canceled because you are not using the base .exe\n");
+		return;
+	}
+
+	if (cg_engineModifications.integer > 0) { //Patch
+		Com_Printf("Engine patches applied\n");
+		PATCH(0x41CA05, 0x9090, unsigned short); // record patch		--Fixed in OPENJK
+		PATCH(0x41CA1D, 0xEB, byte); // record patch					--Fixed in OPENJK
+		PATCH(0x41A404, 0xEB, byte); // maxpackets patch				--Fixed in OPENJK
+		PATCH(0x41A412, 0xEB, byte); // maxpackets patch				--Fixed in OPENJK
+		PATCH(0x41D9B8, 0xB8, byte); // noCD patch						--Loda fixme
+		PATCH(0x45DE61, 0xB8, byte); // noCD patch						--fixme
+		PATCH(0x52C329, 0xB8, byte); // noCD patch						--fixme
+		PATCH(0x414B78, 0xEB, byte); // timenudge patch					--Fixed in OPENJK+
+		PATCH(0x414B84, 0xEB, byte); // timenudge patch					--Fixed in OPENJK+
+		PATCH(0x48904b, 0x9090, unsigned short); // r_we patch			--Fixed in OPENJK
+		PATCH(0x41DACB, 0x03, byte); // black screen connect failure patch
+	}
+	else //Unpatch
+	{
+		Com_Printf("Engine patches removed\n");
+		PATCH(0x41CA05, 0x7418, unsigned short); // record unpatch*******	
+		PATCH(0x41CA1D, 0x7A, byte); // record unpatch******
+		PATCH(0x41A404, 0x7D, byte); // maxpackets unpatch
+		PATCH(0x41A412, 0x7E, byte); // maxpackets unpatch
+		PATCH(0x41D9B8, 0xE8, byte); // noCD unpatch
+		PATCH(0x45DE61, 0xE8, byte); // noCD unpatch
+		PATCH(0x52C329, 0xE8, byte); // noCD unpatch
+		PATCH(0x414B78, 0x7D, byte); // timenudge unpatch
+		PATCH(0x414B84, 0x7E, byte); // timenudge unpatch
+		PATCH(0x48904b, 0x7440, unsigned short); // r_we unpatch*******
+		PATCH(0x41DACB, 0x01, byte); // black screen connect failure unpatch
+	}
+}
+#endif
 
 //
 // Cvar table

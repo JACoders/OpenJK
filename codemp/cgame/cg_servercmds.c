@@ -37,7 +37,6 @@ CG_ParseScores
 
 =================
 */
-#define SCORE_OFFSET (14)
 static void CG_ParseScores( void ) {
 	int		i, powerups, readScores, scoreOffset;//JAPRO - Clientside - Scoreboard Deaths
 
@@ -59,7 +58,7 @@ static void CG_ParseScores( void ) {
 	memset( cg.scores, 0, sizeof( cg.scores ) );
 	for ( i=0; i<readScores; i++ ) {
 //JAPRO - Clientside - Scoreboard Deaths - Start
-		if (cgs.isJAPlus || cgs.isJAPro) {
+		if ((cgs.isJAPlus && (!Q_stricmp(cjp_client.string, "1.4JAPRO"))) || cgs.isJAPro) {
 			scoreOffset = 15;
 			cg.scores[i].deaths = atoi(CG_Argv(i * scoreOffset + 18));
 		}
@@ -139,6 +138,7 @@ void CG_ParseServerinfo( void ) {
 	const char *info = NULL;
 	char *mapname;
 	int i, value;
+	char restrictString[16] = { 0 };
 
 	info = CG_ConfigString( CS_SERVERINFO );
 
@@ -146,6 +146,8 @@ void CG_ParseServerinfo( void ) {
 	cgs.stepSlideFix = atoi( Info_ValueForKey( info, "g_stepSlideFix" ) );
 
 	cgs.noSpecMove = atoi( Info_ValueForKey( info, "g_noSpecMove" ) );
+
+	trap->Cvar_Set("bg_fighterAltControl", Info_ValueForKey( info, "bg_fighterAltControl" ));
 
 	cgs.siegeTeamSwitch = atoi( Info_ValueForKey( info, "g_siegeTeamSwitch" ) );
 
@@ -190,17 +192,28 @@ void CG_ParseServerinfo( void ) {
 		cg.timelimitWarnings &= ~(1|2);
 	cgs.timelimit = i;
 
+	/*
+	Q_strncpyz(cgs.gamename, Info_ValueForKey(info, "gamename"), sizeof(cgs.gamename));//[JAPRO - Clientside - All - Add gamename variable to get mod name from server]
+
+	cgs.cinfo= atoi ( Info_ValueForKey ( info, "jp_cinfo" ) );//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
+	cgs.jcinfo= atoi ( Info_ValueForKey ( info, "jcinfo" ) );//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+	*/
+
 	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
 
 	cgs.svfps = atoi( Info_ValueForKey( info, "sv_fps" ) );
-	cgs.protocolswitch = 0;
 	cgs.isJAPlus = qfalse;
 	cgs.isJAPro = qfalse;
+	cgs.isOJKAlt = qfalse;
 	cgs.isBaseEnhanced = qfalse;
+	cgs.legacyProtocol = qfalse;
 	cgs.cinfo = 0;
 	cgs.jcinfo = 0;
 	cgs.restricts = 0;
-	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14 ) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {	//uag :s - yes its fatz
+	if (/*!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) //apparently "JA+ Enhanced" exists.
+	||*/!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+", 3)
+	|| !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14)
+	|| !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {	//uag :s - yes its fatz
 		cgs.isJAPlus = qtrue;
 		cgs.cinfo = atoi (Info_ValueForKey (info, "jp_cinfo" ));//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
 		cgs.hookpull = 800;
@@ -209,21 +222,36 @@ void CG_ParseServerinfo( void ) {
 		cgs.isJAPro = qtrue;
 		cgs.jcinfo = atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 		cgs.hookpull = atoi (Info_ValueForKey (info, "g_hookStrength" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+		trap->Cvar_Set("cjp_client", "1.4JAPRO");
 		//if (cgs.hookpull == 0)
 			//cgs.hookpull = 800;
+	}
+	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "smU", 3))
+	{
+		cgs.isOJKAlt = qtrue;
 	}
 	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "base_enhanced", 13)
 	|| (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "base_entranced", 14))) {
 		cgs.isBaseEnhanced = qtrue;
 	}
 
-
+	//multiversion "support"
 	if (atoi(Info_ValueForKey(info, "protocol")) < 26)
-		cgs.protocolswitch = 2;
-	else
-		cgs.protocolswitch = 1;
+		cgs.legacyProtocol = qtrue; //v1.00
 		
-	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+
+	restrictString[0] = 'r';
+	restrictString[1] = 'e';
+	restrictString[2] = 's';
+	restrictString[3] = 't';
+	restrictString[4] = 'r';
+	restrictString[5] = 'i';
+	restrictString[6] = 'c';
+	restrictString[7] = 't';
+	restrictString[8] = 's';
+	restrictString[9] = '\0';
+
+	cgs.restricts = atoi (Info_ValueForKey (info, restrictString ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 
 	mapname = Info_ValueForKey( info, "mapname" );
 	//rww - You must do this one here, Info_ValueForKey always uses the same memory pointer.
@@ -231,10 +259,6 @@ void CG_ParseServerinfo( void ) {
 
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	Com_sprintf( cgs.rawmapname, sizeof( cgs.rawmapname ), "maps/%s", mapname );
-//	Q_strncpyz( cgs.redTeam, Info_ValueForKey( info, "g_redTeam" ), sizeof(cgs.redTeam) );
-//	trap->Cvar_Set("g_redTeam", cgs.redTeam);
-//	Q_strncpyz( cgs.blueTeam, Info_ValueForKey( info, "g_blueTeam" ), sizeof(cgs.blueTeam) );
-//	trap->Cvar_Set("g_blueTeam", cgs.blueTeam);
 
 	trap->Cvar_Set ( "ui_about_gametype", va("%i", cgs.gametype ) );
 	trap->Cvar_Set ( "ui_about_fraglimit", va("%i", cgs.fraglimit ) );
@@ -386,7 +410,8 @@ void CG_ShaderStateChanged(void) {
 				strncpy(timeOffset, t, o-t);
 				timeOffset[o-t] = 0;
 				o++;
-				trap->R_RemapShader( originalShader, newShader, timeOffset );
+				if (cg_remaps.integer)//JAPRO - Clientside - Allow noremaps
+					trap->R_RemapShader( originalShader, newShader, timeOffset );
 			}
 		} else {
 			break;
@@ -1099,6 +1124,9 @@ static void CG_MapRestart( void ) {
 	//FIXME: trap->FX_Reset?
 
 	CG_InitLocalEntities();
+#if _NEWTRAILS
+	CG_InitStrafeTrails();
+#endif
 	CG_InitMarkPolys();
 	CG_KillCEntityInstances();
 
@@ -1117,12 +1145,29 @@ static void CG_MapRestart( void ) {
 
 	trap->S_ClearLoopingSounds();
 
+	cgs.takenscreenshot = qfalse;//japro
+
 	// we really should clear more parts of cg here and stop sounds
 
 	// play the "fight" sound if this is a restart without warmup
 	if ( cg.warmup == 0 && cgs.gametype != GT_SIEGE && cgs.gametype != GT_POWERDUEL/* && cgs.gametype == GT_DUEL */) {
 		trap->S_StartLocalSound( cgs.media.countFightSound, CHAN_ANNOUNCER );
 		CG_CenterPrint( CG_GetStringEdString("MP_SVGAME", "BEGIN_DUEL"), 120, GIANTCHAR_WIDTH*2 );
+	}
+
+	if (cg_autoRecordDemo.integer && cg.recording && (1 << cgs.gametype) && cg.warmup <= 0 && !cg.demoPlayback) {
+		time_t rawtime;
+		char timeBuf[256] = { 0 }, buf[256] = { 0 }, mapname[MAX_QPATH] = { 0 };
+			
+		time(&rawtime);
+		strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d_%H-%M-%S", gmtime(&rawtime));
+		Q_strncpyz(mapname, cgs.mapname + 5, sizeof(mapname));
+		COM_StripExtension(mapname, mapname, sizeof(mapname));
+		Com_sprintf(buf, sizeof(buf), "%s_%s_%s_%s", timeBuf, gametypeStringShort[cgs.gametype], mapname, cgs.clientinfo[cg.clientNum].name);
+		Q_strstrip(buf, "\n\r;:?*<>|\"\\/ ", NULL);
+		Q_CleanStr(buf);
+		cg.recording = qtrue;
+		trap->SendConsoleCommand(va("stoprecord; record %s\n", buf));
 	}
 	/*
 	if (cg_singlePlayerActive.integer) {
@@ -1544,12 +1589,19 @@ static void CG_Chat_f( void ) {
 
 	if ( !strcmp( cmd, "chat" ) ) {
 		if ( !cg_teamChatsOnly.integer ) {
-			if( cg_chatBeep.integer )
+			if ( cg_chatSounds.integer )//JAPRO - Clientside - Chatsounds option
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			trap->Cmd_Argv( 1, text, sizeof( text ) );
 			CG_RemoveChatEscapeChar( text );
-			CG_ChatBox_AddString( text );
-			trap->Print( "*%s\n", text );
+			if (cg_chatBox.integer) {
+				CG_ChatBox_AddString( text );
+				trap->Print( "*%s\n", text );
+			}
+			else {
+				trap->Print("%s\n", text);
+			}
+			Q_CleanString( text );
+			CG_LogPrintf(cg.log.chat, va("%s\n", text));
 		}
 	}
 	else if ( !strcmp( cmd, "lchat" ) ) {
@@ -1569,21 +1621,30 @@ static void CG_Chat_f( void ) {
 			if ( loc[0] == '@' )
 				trap->SE_GetStringTextString( loc+1, loc, sizeof( loc ) );
 
-			if( cg_chatBeep.integer )
+			if ( cg_chatSounds.integer )//JAPRO - Clientside - Chatsounds option
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 			CG_RemoveChatEscapeChar( text );
 			CG_ChatBox_AddString( text );
 			trap->Print( "*%s\n", text );
+			Q_CleanString( text );
+			CG_LogPrintf(cg.log.chat, va("%s\n", text));
 		}
 	}
 	else if ( !strcmp( cmd, "tchat" ) ) {
-		if( cg_teamChatBeep.integer )
+		if( cg_chatSounds.integer )//JAPRO - Clientside - Chatsounds option
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		trap->Cmd_Argv( 1, text, sizeof( text ) );
 		CG_RemoveChatEscapeChar( text );
-		CG_ChatBox_AddString( text );
-		trap->Print( "*%s\n", text );
+		if (cg_chatBox.integer) {
+			CG_ChatBox_AddString( text );
+			trap->Print( "*%s\n", text );
+		}
+		else {
+			trap->Print( "%s\n", text );
+		}
+		Q_CleanString( text );
+		CG_LogPrintf(cg.log.chat, va("%s\n", text));
 	}
 	else if ( !strcmp( cmd, "ltchat" ) ) {
 		char	name[MAX_NETNAME]={0},	loc[MAX_STRING_CHARS]={0},
@@ -1601,12 +1662,14 @@ static void CG_Chat_f( void ) {
 		if ( loc[0] == '@' )
 			trap->SE_GetStringTextString( loc+1, loc, sizeof( loc ) );
 
-		if( cg_teamChatBeep.integer )
+		if( cg_chatSounds.integer )//JAPRO - Clientside - Chatsounds option
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 		CG_RemoveChatEscapeChar( text );
 		CG_ChatBox_AddString( text );
 		trap->Print( "*%s\n", text );
+		Q_CleanString( text );
+		CG_LogPrintf(cg.log.chat, va("%s\n", text));
 	}
 }
 
@@ -1616,7 +1679,8 @@ static void CG_RemapShader_f( void ) {
 
 		trap->Cmd_Argv( 1, shader1, sizeof( shader1 ) );
 		trap->Cmd_Argv( 2, shader2, sizeof( shader2 ) );
-		trap->R_RemapShader( shader1, shader2, CG_Argv( 3 ) );
+		if ( cg_remaps.integer )//JAPRO - Clientside - Allow noremaps
+			trap->R_RemapShader( shader1, shader2, CG_Argv( 3 ) );
 	}
 }
 
@@ -1635,7 +1699,6 @@ int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
 }
 
-/* This array MUST be sorted correctly by alphabetical name field */
 static serverCommand_t	commands[] = {
 	{ "chat",				CG_Chat_f },
 	{ "clientLevelShot",	CG_ClientLevelShot_f },

@@ -839,8 +839,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	// Increase the team's score
 	AddTeamScore(ent->s.pos.trBase, other->client->sess.sessionTeam, 1, qtrue);
-//	Team_ForceGesture(other->client->sess.sessionTeam);
-	//rww - don't really want to do this now. Mainly because performing a gesture disables your upper torso animations until it's done and you can't fire
 
 	other->client->pers.teamState.captures++;
 	other->client->rewardTime = level.time + REWARD_SPRITE_TIME;

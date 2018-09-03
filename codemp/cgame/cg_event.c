@@ -325,9 +325,17 @@ clientkilled:
 			s = va("%s %s", sKilledStr, targetName );
 		}
 		//if (!(cg_singlePlayerActive.integer && cg_cameraOrbit.integer)) {
-			CG_CenterPrint( s, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
+			if (cg_killMessage.integer == 1)//JAPRO - Clientside - Toggle Kill award message
+				CG_CenterPrintMultiKill( s, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
+			else if (cg_killMessage.integer > 1)//JAPRO - Clientside - Toggle Kill award message
+				CG_CenterPrintMultiKill( s, SCREEN_HEIGHT * 0.10, BIGCHAR_WIDTH );
 		//}
 		// print the text message as well
+
+			//if (cg_killBeep.integer == 1)
+				//trap->S_StartLocalSound( cgs.media.killSound, CHAN_LOCAL_SOUND );
+			//else if (cg_killBeep.integer == 2)
+				//trap->S_StartLocalSound( cgs.media.hitSound2, CHAN_LOCAL_SOUND ); 
 	}
 
 	// check for double client messages
@@ -451,8 +459,6 @@ clientkilled:
 
 	// we don't know what it was
 	trap->Print( "%s %s\n", targetName, (char *)CG_GetStringEdString("MP_INGAME", "DIED_GENERIC") );
-
-	//loda fixme- add mod_team_change support so can see if someone joined spec
 }
 
 //==========================================================================
@@ -659,8 +665,8 @@ static void CG_ItemPickup( int itemNum ) {
 
 	//rww - print pickup messages
 	if (bg_itemlist[itemNum].classname && bg_itemlist[itemNum].classname[0] &&
-		(bg_itemlist[itemNum].giType != IT_TEAM || (bg_itemlist[itemNum].giTag != PW_REDFLAG && bg_itemlist[itemNum].giTag != PW_BLUEFLAG)) )
-	{ //don't print messages for flags, they have their own pickup event broadcasts
+		(bg_itemlist[itemNum].giType != IT_TEAM || (bg_itemlist[itemNum].giTag != PW_REDFLAG && bg_itemlist[itemNum].giTag != PW_BLUEFLAG && bg_itemlist[itemNum].giTag != PW_NEUTRALFLAG)) )
+	{ //don't print messages for flags, they have their own pickup event broadcasts - add neutral
 		char	text[1024];
 		char	upperKey[1024];
 
@@ -1444,6 +1450,17 @@ static qboolean isGlobalVGS(const char *s) {
 	return qfalse;
 }
 
+static qboolean CG_ProximityCheck(vec3_t pos1, vec3_t pos2) { //Returns qtrue if two vectors are within 32 of eachother in every way?
+	int i;
+	for (i = 0; i <= 2; i++) {
+		if (pos1[i] < (pos2[i] - 32))
+			return qfalse;
+		if (pos1[i] > (pos2[i] + 32))
+			return qfalse;
+	}
+	return qtrue;
+}
+
 /*
 ==============
 CG_EntityEvent
@@ -1452,8 +1469,12 @@ An entity has an event value
 also called by CG_CheckPlayerstateEvents
 ==============
 */
+extern int cg_dueltypes[MAX_CLIENTS];//JAPRO - Clientside - Fullforce Duels
+void CG_GibPlayer( vec3_t playerOrigin );
+
 #define	DEBUGNAME(x) if(cg_debugEvents.integer){trap->Print(x"\n");}
 extern void CG_ChatBox_AddString(char *chatStr); //cg_draw.c
+void CG_SpotIcon( int client, vec3_t org );
 void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	entityState_t	*es;
 	int				event;
@@ -1467,8 +1488,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	es = &cent->currentState;
 	event = es->event & ~EV_EVENT_BITS;
 
-	if ( cg_debugEvents.integer ) {
+	if ( cg_debugEvents.integer == 1 ) {
 		trap->Print( "ent:%3i  event:%3i ", es->number, event );
+	}
+	else if (cg_debugEvents.integer) {
+		trap->Print( "ent:%3i  clientNum:%3i  event:%3i ", es->clientNum, es->number, event );
 	}
 
 	if ( !event ) {
@@ -1539,6 +1563,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_FOOTSTEP:
 		DEBUGNAME("EV_FOOTSTEP");
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		if (cg_footsteps.integer) {
 			footstep_t	soundType;
 			switch( es->eventParm )
@@ -1624,6 +1652,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		{
 			break;
 		}
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
 		DoFall(cent, es, clientNum);
 		break;
 	case EV_STEP_4:
@@ -1696,18 +1726,27 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			break;
 		}
 
+//JAPRO - Clientside - Fullforce Duels - Start
 		if (es->eventParm)
 		{ //starting the duel
-			if (es->eventParm == 2)
-			{
-				CG_CenterPrint( CG_GetStringEdString("MP_SVGAME", "BEGIN_DUEL"), 120, GIANTCHAR_WIDTH*2 );
-				trap->S_StartLocalSound( cgs.media.countFightSound, CHAN_ANNOUNCER );
-			}
-			else
-			{
-				trap->S_StartBackgroundTrack( "music/mp/duel.mp3", "music/mp/duel.mp3", qfalse );
+			//if (es->eventParm == 2)
+			//if (es->eventParm == 5) //RoAR mod NOTE: OH! Found it.
+			//{
+				//CG_CenterPrint( CG_GetStringEdString("MP_SVGAME", "BEGIN_DUEL"), 120, GIANTCHAR_WIDTH*2 );				
+				//trap->S_StartLocalSound( cgs.media.countFightSound, CHAN_ANNOUNCER );
+			//}
+			//else
+			{ // signalling duel type with parameter number. Also, for clients in duel, start duel music
+				cg_dueltypes[es->number] = es->eventParm; // set dueltype for partner #1//Why - 1  you fucks gun duel
+				if (!(cg.snap->ps.duelInProgress))
+				{ // turn off any current looping sounds
+					trap->S_ClearLoopingSounds();
+				}
+				if (cg_duelMusic.integer)
+					trap->S_StartBackgroundTrack( "music/mp/duel.mp3", "music/mp/duel.mp3", qfalse );
 			}
 		}
+//JAPRO - Clientside - Fullforce Duels - End
 		else
 		{ //ending the duel
 			CG_StartMusic(qtrue);
@@ -1716,7 +1755,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_JUMP:
 		DEBUGNAME("EV_JUMP");
-		if (cg_jumpSounds.integer)
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+		if (cg_jumpSounds.integer == 1)//JAPRO - Clientside - Add jumpsounds 2 option
+		{
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
+		}
+		else if (cg_jumpSounds.integer == 2 && cg.snap->ps.clientNum != es->number)
+		{
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
+		}
+		else if (cg_jumpSounds.integer > 2 && cg.snap->ps.clientNum == es->number)
 		{
 			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
 		}
@@ -1727,12 +1776,26 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		{
 			break;
 		}
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
 		if (es->eventParm)
 		{ //fall-roll-in-one event
 			DoFall(cent, es, clientNum);
 		}
 
-		trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
+		if (cg_rollSounds.integer == 1)//JAPRO - Clientside - Add rollsounds options
+		{
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
+		}
+		else if (cg_rollSounds.integer == 2 && cg.snap->ps.clientNum != es->number)
+		{
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
+		}
+		else if (cg_rollSounds.integer > 2 && cg.snap->ps.clientNum == es->number)
+		{
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
+		}
+
 		trap->S_StartSound( NULL, es->number, CHAN_BODY, cgs.media.rollSound  );
 
 		//FIXME: need some sort of body impact on ground sound and maybe kick up some dust?
@@ -1746,6 +1809,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			if ( cg_noTaunt.integer )
 				break;
 
+			if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+				break;
+
+			/*
 			if ( cgs.gametype != GT_DUEL
 				&& cgs.gametype != GT_POWERDUEL
 				&& es->eventParm == TAUNT_TAUNT )
@@ -1753,22 +1820,28 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				soundIndex = CG_CustomSound( es->number, "*taunt.wav" );
 			}
 			else
+			*/
 			{
 				switch ( es->eventParm )
 				{
 				case TAUNT_TAUNT:
 				default:
-					if ( Q_irand( 0, 1 ) )
-					{
-						soundIndex = CG_CustomSound( es->number, va("*anger%d.wav", Q_irand(1,3)) );
+					if ( Q_irand( 0, 1 ) ) { //use razors taunt system so it also plays taunt.wav 
+						int num = Q_irand( 0, 3 );
+						if ( num )
+							soundIndex = CG_CustomSound( es->number, va( "*anger%d.wav", num ) );
+						if ( !num || !soundIndex )
+							soundIndex = CG_CustomSound( es->number, "*taunt.wav" );
 					}
-					else
-					{
-						soundIndex = CG_CustomSound( es->number, va("*taunt%d.wav", Q_irand(1,3)) );
-						if ( !soundIndex )
-						{
-							soundIndex = CG_CustomSound( es->number, va("*anger%d.wav", Q_irand(1,3)) );
+					else {
+						int num = Q_irand( 0, 3 );
+						if ( num ) {
+							soundIndex = CG_CustomSound( es->number, va("*taunt%d.wav", Q_irand(1,3)) );
+							if ( !soundIndex )
+								soundIndex = CG_CustomSound( es->number, va("*anger%d.wav", Q_irand(1,3)) );
 						}
+						if ( !num || !soundIndex )
+							soundIndex = CG_CustomSound( es->number, "*taunt.wav" );
 					}
 					break;
 				case TAUNT_BOW:
@@ -2012,6 +2085,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_ITEM_PICKUP:
 		DEBUGNAME("EV_ITEM_PICKUP");
+		if (cg.snap && cg.snap->ps.duelInProgress) { //Not in duels we dont
+			break;
+		}
 		{
 			gitem_t	*item;
 			int		index;
@@ -2088,6 +2164,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_GLOBAL_ITEM_PICKUP:
 		DEBUGNAME("EV_GLOBAL_ITEM_PICKUP");
+		if (cg.snap && cg.snap->ps.duelInProgress) { //Not in duels
+			break;
+		}
 		{
 			gitem_t	*item;
 			int		index;
@@ -2112,6 +2191,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_VEH_FIRE:
 		DEBUGNAME("EV_VEH_FIRE");
+		if (cg.snap && cg.snap->ps.duelInProgress) { //Not in duels
+			break;
+		}
 		{
 			centity_t *veh = &cg_entities[es->owner];
 			CG_VehMuzzleFireFX(veh, es);
@@ -2123,6 +2205,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	case EV_NOAMMO:
 		DEBUGNAME("EV_NOAMMO");
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
+
 //		trap->S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.noAmmoSound );
 		if ( es->number == cg.snap->ps.clientNum )
 		{
@@ -2171,6 +2257,15 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_CHANGE_WEAPON:
 		DEBUGNAME("EV_CHANGE_WEAPON");
+		/*
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		*/
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
+
 		{
 			int weapon = es->eventParm;
 			weaponInfo_t *weaponInfo;
@@ -2193,6 +2288,15 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_FIRE_WEAPON:
 		DEBUGNAME("EV_FIRE_WEAPON");
+		/*
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		*/
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
+
 		if (cent->currentState.number >= MAX_CLIENTS && cent->currentState.eType != ET_NPC)
 		{ //special case for turret firing
 			vec3_t gunpoint, gunangle;
@@ -2256,6 +2360,14 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_ALT_FIRE:
 		DEBUGNAME("EV_ALT_FIRE");
+		/*
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		*/
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
 
 		if (cent->currentState.weapon == WP_EMPLACED_GUN)
 		{ //don't do anything for emplaced stuff
@@ -2285,6 +2397,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_SABER_ATTACK:
 		DEBUGNAME("EV_SABER_ATTACK");
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		{
 			qhandle_t swingSound = trap->S_RegisterSound(va("sound/weapons/saber/saberhup%i.wav", Q_irand(1, 8)));
 			clientInfo_t *client = NULL;
@@ -2317,6 +2433,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				&& es->otherEntityNum2 < ENTITYNUM_NONE )
 			{//we have a specific person who is causing this effect, see if we should override it with any custom saber effects/sounds
 				clientInfo_t *client = NULL;
+
+				if ( cg.snap->ps.duelInProgress && es->otherEntityNum2 != cg.snap->ps.clientNum && es->otherEntityNum2 != cg.snap->ps.duelIndex )
+					break;
+
 				if ( cg_entities[es->otherEntityNum2].currentState.eType == ET_NPC )
 				{
 					client = cg_entities[es->otherEntityNum2].npcClient;
@@ -2370,13 +2490,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				{
 					fxDir[1] = 1;
 				}
-				trap->S_StartSound(es->origin, es->number, CHAN_AUTO, hitSound );
-				trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-				trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-				trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-				trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-				trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-				trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+				if (cg_fleshSparks.integer > 1) {
+					trap->S_StartSound(es->origin, es->number, CHAN_AUTO, hitSound );
+					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+				}
+				if (cg_fleshSparks.integer > 0)
+					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+				
 			}
 			else if (es->eventParm)
 			{ //hit a person
@@ -2389,17 +2513,22 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				trap->S_StartSound(es->origin, es->number, CHAN_AUTO, hitSound );
 				if ( es->eventParm == 3 )
 				{	// moderate or big hits.
-					trap->FX_PlayEffectID( hitPersonSmallFxID, es->origin, fxDir, -1, -1, qfalse );
+					if (cg_fleshSparks.integer > 3)
+						trap->FX_PlayEffectID( hitPersonSmallFxID, es->origin, fxDir, -1, -1, qfalse );
 				}
 				else if ( es->eventParm == 2 )
 				{	// this is for really big hits.
-					trap->FX_PlayEffectID( hitPersonMidFxID, es->origin, fxDir, -1, -1, qfalse );
+					if (cg_fleshSparks.integer > 2)
+						trap->FX_PlayEffectID( hitPersonMidFxID, es->origin, fxDir, -1, -1, qfalse );
 				}
 				else
 				{	// this should really just be done in the effect itself, no?
-					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
-					trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					if (cg_fleshSparks.integer > 4)
+						trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					if (cg_fleshSparks.integer > 5)
+						trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
+					if (cg_fleshSparks.integer > 6)
+						trap->FX_PlayEffectID( hitPersonFxID, es->origin, fxDir, -1, -1, qfalse );
 				}
 			}
 			else
@@ -2447,6 +2576,18 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_SABER_BLOCK:
 		DEBUGNAME("EV_SABER_BLOCK");
 		{
+			// For Bucky
+			// NoVe: Duel Isolation: Saber Block Effects
+			// NOTE: otherEntityNum2 is the blocked entity
+			if (!cgs.legacyProtocol //don't block event on 1.00, things are weird when client 0 is involved there..
+				&& cg.predictedPlayerState.duelInProgress
+				&& es->otherEntityNum2 != cg.predictedPlayerState.clientNum
+				&& es->otherEntityNum2 != cg.predictedPlayerState.duelIndex
+				&& cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR)
+				break;
+			// ^ NoVe: Duel Isolation: Saber Block Effects
+
+ 
 			if (es->eventParm)
 			{ //saber block
 				int			blockFXID = cgs.effects.mSaberBlock;
@@ -2540,6 +2681,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_SABER_UNHOLSTER:
 		DEBUGNAME("EV_SABER_UNHOLSTER");
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		{
 			clientInfo_t *ci = NULL;
 
@@ -2601,40 +2746,54 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_DISRUPTOR_MAIN_SHOT:
 		DEBUGNAME("EV_DISRUPTOR_MAIN_SHOT");
-		if (cent->currentState.eventParm != cg.snap->ps.clientNum ||
-			cg.renderingThirdPerson)
-		{ //h4q3ry
-			CG_GetClientWeaponMuzzleBoltPoint(cent->currentState.eventParm, cent->currentState.origin2);
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
 		}
-		else
+		if (!(cgs.jcinfo & JAPRO_CINFO_PROJSNIPER) && (!(cgs.jcinfo & JAPRO_CINFO_UNLAGGEDHITSCAN) || (cent->currentState.eventParm != cg.snap->ps.clientNum) || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR || !cg_simulatedHitscan.integer))//loda
 		{
-			if (cg.lastFPFlashPoint[0] ||cg.lastFPFlashPoint[1] || cg.lastFPFlashPoint[2])
-			{ //get the position of the muzzle flash for the first person weapon model from the last frame
-				VectorCopy(cg.lastFPFlashPoint, cent->currentState.origin2);
+			if (cent->currentState.eventParm != cg.snap->ps.clientNum || cg.renderingThirdPerson)
+			{ //h4q3ry
+				CG_GetClientWeaponMuzzleBoltPoint(cent->currentState.eventParm, cent->currentState.origin2);
 			}
+			else
+			{
+				if (cg.lastFPFlashPoint[0] ||cg.lastFPFlashPoint[1] || cg.lastFPFlashPoint[2])
+				{ //get the position of the muzzle flash for the first person weapon model from the last frame
+					VectorCopy(cg.lastFPFlashPoint, cent->currentState.origin2);
+				}
+			}
+			FX_DisruptorMainShot( cent->currentState.origin2, cent->lerpOrigin );
 		}
-		FX_DisruptorMainShot( cent->currentState.origin2, cent->lerpOrigin );
 		break;
 
 	case EV_DISRUPTOR_SNIPER_SHOT:
 		DEBUGNAME("EV_DISRUPTOR_SNIPER_SHOT");
-		if (cent->currentState.eventParm != cg.snap->ps.clientNum ||
-			cg.renderingThirdPerson)
-		{ //h4q3ry
-			CG_GetClientWeaponMuzzleBoltPoint(cent->currentState.eventParm, cent->currentState.origin2);
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
 		}
-		else
+		if (!(cgs.jcinfo & JAPRO_CINFO_PROJSNIPER) && (!(cgs.jcinfo & JAPRO_CINFO_UNLAGGEDHITSCAN) || (cent->currentState.eventParm != cg.snap->ps.clientNum) || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR || !cg_simulatedHitscan.integer))//loda
 		{
-			if (cg.lastFPFlashPoint[0] ||cg.lastFPFlashPoint[1] || cg.lastFPFlashPoint[2])
-			{ //get the position of the muzzle flash for the first person weapon model from the last frame
-				VectorCopy(cg.lastFPFlashPoint, cent->currentState.origin2);
+			if (cent->currentState.eventParm != cg.snap->ps.clientNum ||
+				cg.renderingThirdPerson)
+			{ //h4q3ry
+				CG_GetClientWeaponMuzzleBoltPoint(cent->currentState.eventParm, cent->currentState.origin2);
 			}
+			else
+			{
+				if (cg.lastFPFlashPoint[0] ||cg.lastFPFlashPoint[1] || cg.lastFPFlashPoint[2])
+				{ //get the position of the muzzle flash for the first person weapon model from the last frame
+					VectorCopy(cg.lastFPFlashPoint, cent->currentState.origin2);
+				}
+			}
+			FX_DisruptorAltShot( cent->currentState.origin2, cent->lerpOrigin, cent->currentState.shouldtarget );
 		}
-		FX_DisruptorAltShot( cent->currentState.origin2, cent->lerpOrigin, cent->currentState.shouldtarget );
 		break;
 
 	case EV_DISRUPTOR_SNIPER_MISS:
 		DEBUGNAME("EV_DISRUPTOR_SNIPER_MISS");
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
 		ByteToDir( es->eventParm, dir );
 		if (es->weapon)
 		{ //primary
@@ -2648,6 +2807,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_DISRUPTOR_HIT:
 		DEBUGNAME("EV_DISRUPTOR_HIT");
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
 		ByteToDir( es->eventParm, dir );
 		if (es->weapon)
 		{ //client
@@ -2661,6 +2823,16 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_DISRUPTOR_ZOOMSOUND:
 		DEBUGNAME("EV_DISRUPTOR_ZOOMSOUND");
+
+		/*
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		*/
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		if (es->number == cg.snap->ps.clientNum)
 		{
 			if (cg.snap->ps.zoomMode)
@@ -2745,6 +2917,14 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_SCREENSHAKE:
 		DEBUGNAME("EV_SCREENSHAKE");
+
+		//Only happens from rancor and map shit.. just ignore if in duel?
+
+
+		if (cg.snap && cg.snap->ps.duelInProgress) {
+			break;
+		}
+
 		if (!es->modelindex || cg.predictedPlayerState.clientNum == es->modelindex-1)
 		{
 			CGCam_Shake(es->angles[0], es->time);
@@ -2858,6 +3038,13 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	case EV_PLAYER_TELEPORT_IN:
 		DEBUGNAME("EV_PLAYER_TELEPORT_IN");
+
+		if (cg_noTeleFX.integer)
+			break;
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		{
 			trace_t tr;
 			vec3_t playerMins = {-15, -15, DEFAULT_MINS_2+8};
@@ -2885,6 +3072,13 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_PLAYER_TELEPORT_OUT:
 		DEBUGNAME("EV_PLAYER_TELEPORT_OUT");
+
+		if (cg_noTeleFX.integer)
+			break;
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		{
 			trace_t tr;
 			vec3_t playerMins = {-15, -15, DEFAULT_MINS_2+8};
@@ -2916,6 +3110,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_ITEM_RESPAWN:
 		DEBUGNAME("EV_ITEM_RESPAWN");
+		if (cg.predictedPlayerState.duelInProgress)
+			break;
 		cent->miscTime = cg.time;	// scale up from this
 		trap->S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.respawnSound );
 		break;
@@ -2927,7 +3123,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_SCOREPLUM:
 		DEBUGNAME("EV_SCOREPLUM");
-		CG_ScorePlum( cent->currentState.otherEntityNum, cent->lerpOrigin, cent->currentState.time );
+		if (cgs.isJAPro && cent->currentState.eventParm == 1)
+			CG_SpotIcon( cent->currentState.otherEntityNum, cent->lerpOrigin );
+		else
+			CG_ScorePlum( cent->currentState.otherEntityNum, cent->lerpOrigin, cent->currentState.time );
 		break;
 
 	case EV_CTFMESSAGE:
@@ -2942,6 +3141,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			break;
 		}
 
+		if ((cg_stylePlayer.integer & JAPRO_STYLE_NOBODIES)) {
+			// we handle the timing locally if we don't want bodies
+			return;
+		}
+		
 		if (cent->ghoul2 && trap->G2_HaveWeGhoul2Models(cent->ghoul2))
 		{
 			//turn the inside of the face off, to avoid showing the mouth when we start alpha fading the corpse
@@ -2949,6 +3153,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 
 		cent->bodyFadeTime = cg.time + 60000;
+		//cent->bodyFadeTime = cg.time + BODY_FADE_TIME;
 		break;
 
 	//
@@ -3019,6 +3224,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	case EV_CONC_ALT_IMPACT:
 		DEBUGNAME("EV_CONC_ALT_IMPACT");
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		if (!(cgs.jcinfo & JAPRO_CINFO_PROJSNIPER) && (!(cgs.jcinfo & JAPRO_CINFO_UNLAGGEDHITSCAN) || (cent->currentState.eventParm != cg.snap->ps.clientNum) || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR || !cg_simulatedHitscan.integer))//loda
 		{
 			float dist;
 			float shotDist = VectorNormalize(es->angles);
@@ -3047,6 +3256,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_MISSILE_HIT:
 		DEBUGNAME("EV_MISSILE_HIT");
+
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+
 		ByteToDir( es->eventParm, dir );
 		if ( es->emplacedOwner )
 		{//hack: this is an index to a custom effect to use
@@ -3061,6 +3275,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		else
 		{
+			if (es->weapon == WP_BRYAR_PISTOL && es->saberInFlight) { //Its a grappling hook.
+				trap->FX_PlayEffectID(cgs.effects.grappleHitPlayer, position, dir, -1, -1, qfalse);
+				return;
+			}
 			CG_MissileHitPlayer( es->weapon, position, dir, es->otherEntityNum, qfalse);
 		}
 
@@ -3073,6 +3291,38 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_MISSILE_MISS:
 		DEBUGNAME("EV_MISSILE_MISS");
+
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+
+		{ //yay scope, loda fixme, replace bolts here with predictedplayerstate duelinprogress/racemode
+			centity_t *owner = &cg_entities[es->owner]; //this relies on server mod setting .owner in createmissile, along with r.ownerNum
+			//Com_Printf("Owner is %i, we are %i, his bolt1 is %i, ours is %i\n", es->owner, cg.clientNum, owner->currentState.bolt1, cg_entities[cg.clientNum].currentState.bolt1);
+
+			if (cg.clientNum != owner->currentState.number) { //Never skip our own projectiles
+				if (cg_entities[cg.clientNum].currentState.bolt1 == 0) {// We are in FFA mode
+					if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDEDUELERS1) && owner->currentState.bolt1 == 1) //It belongs to a dueler
+						break;
+					if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDERACERS1) && owner->currentState.bolt1 == 2) //It belongs to a racer
+						break;
+				}
+				else if (cg_entities[cg.clientNum].currentState.bolt1 == 1) {// We are dueling
+					if (owner->currentState.bolt1 != 1) //Only draw stuff from other duelers (should be only our duel partner but whatever for now..)
+						break;
+				}
+				else if (cg_entities[cg.clientNum].currentState.bolt1 == 2) {// We are in race mode
+					if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDEDUELERS1) && owner->currentState.bolt1 == 1) //It belongs to a dueler
+						break;
+					if ((cg_stylePlayer.integer & JAPRO_STYLE_HIDERACERS3) && owner->currentState.bolt1 == 2) //It belongs to a racer
+						break;
+					if (cg_stylePlayer.integer & JAPRO_STYLE_HIDERACERS2)
+						break;
+				}
+			}
+		}
+		//
+
 		ByteToDir( es->eventParm, dir );
 		if ( es->emplacedOwner )
 		{//hack: this is an index to a custom effect to use
@@ -3087,6 +3337,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		else
 		{
+			if (es->weapon == WP_BRYAR_PISTOL && es->saberInFlight) { //Its a grappling hook.
+				trap->FX_PlayEffectID(cgs.effects.grappleHitWall, position, dir, -1, -1, qfalse);
+				return;
+			}
+
 			CG_MissileHitWall(es->weapon, 0, position, dir, IMPACTSOUND_DEFAULT, qfalse, 0);
 		}
 
@@ -3099,6 +3354,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_MISSILE_MISS_METAL:
 		DEBUGNAME("EV_MISSILE_MISS_METAL");
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
 		ByteToDir( es->eventParm, dir );
 		if ( es->emplacedOwner )
 		{//hack: this is an index to a custom effect to use
@@ -3289,6 +3547,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_VOICECMD_SOUND:
 		DEBUGNAME("EV_VOICECMD_SOUND");
+		if (cgs.ignoredVGS & (1<<es->groundEntityNum)) {
+			break;
+		}
 		if (es->groundEntityNum < MAX_CLIENTS && es->groundEntityNum >= 0)
 		{
 			int clientNum = es->groundEntityNum;
@@ -3299,6 +3560,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 			Q_strncpyz(descr, CG_GetStringForVoiceSound(CG_ConfigString( CS_SOUNDS + es->eventParm )), sizeof( descr ) );
 
+			//if (cg_debugEvents.integer == 3)
+				//Com_Printf("VGS Playing: %s, %i\n", descr, CS_SOUNDS + es->eventParm);
+
 			if (!sfx)
 			{
 				s = CG_ConfigString( CS_SOUNDS + es->eventParm );
@@ -3307,49 +3571,85 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 			if (sfx)
 			{
+				int ourTeam;
+				s = CG_ConfigString( CS_SOUNDS + es->eventParm ); //eh?
+
+				ourTeam = cg.predictedPlayerState.persistant[PERS_TEAM];
+				if (cg.predictedPlayerState.pm_flags & PMF_FOLLOW)
+					ourTeam = TEAM_SPECTATOR;
+
 				if (clientNum != cg.predictedPlayerState.clientNum)
 				{ //play on the head as well to simulate hearing in radio and in world
-					if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM] || isGlobalVGS(s)) //Also check for PMF_FOLLOW and treat that like spec!
+					if (ci->team == ourTeam || isGlobalVGS(s)) //Also check for PMF_FOLLOW and treat that like spec!
 					{ //don't hear it if this person is on the other team, but they can still
 						//hear it in the world spot.
 						trap->S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_MENU1, sfx);
 					}
 				}
-				if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM] || isGlobalVGS(s)) //put it to console or.. just not at all?
+				if (ci->team == ourTeam || isGlobalVGS(s)) //put it to console or.. just not at all?
 				{ //add to the chat box
 					//hear it in the world spot.
 					char vchatstr[1024] = {0};
 					Q_strncpyz(vchatstr, va("<%s^7: %s>\n", ci->name, descr), sizeof( vchatstr ) );
 					CG_ChatBox_AddString(vchatstr);
-					trap->Print("*%s", vchatstr);
+					if (cg_chatBox.integer)
+						trap->Print("*%s", vchatstr); //supress in top left w/ the chatbox enabled
+					else
+						trap->Print(vchatstr);
 				}
 
-				//and play in world for everyone
-				trap->S_StartSound (NULL, clientNum, CHAN_VOICE, sfx);
-				vChatEnt->vChatTime = cg.time + 1000;
+				if (ci->team == ourTeam || isGlobalVGS(s))
+				{
+					//and play in world?
+					trap->S_StartSound (NULL, clientNum, CHAN_VOICE, sfx);
+					vChatEnt->vChatTime = cg.time + 1000;
+				}
 			}
 		}
 		break;
 
 	case EV_GENERAL_SOUND:
 		DEBUGNAME("EV_GENERAL_SOUND");
-		if (es->saberEntityNum == TRACK_CHANNEL_2 || es->saberEntityNum == TRACK_CHANNEL_3 ||
-			es->saberEntityNum == TRACK_CHANNEL_5)
-		{ //channels 2 and 3 are for speed and rage, 5 for sight
-			if ( cgs.gameSounds[ es->eventParm ] )
+			/*if (cgs.isJAPro) { // If it is japro
+				if (cg.snap->ps.duelInProgress) {// If we are dueling loda fixme
+					if (cent->currentState.owner != cg.snap->ps.clientNum && cent->currentState.owner != cg.snap->ps.duelIndex) // If sound did not come from me or dueler
+						break;
+				}
+				//else if (cent->currentState.bolt1) {// We are not dueling, but they are..?
+				//	break;
+				//}
+			}*/
+
+			if (cgs.isJAPro) {
+				if ((es->eFlags2 & RS_TIMER_START) && !(cg_raceSounds.integer & RS_TIMER_START)) //Its a timer_start race sound.
+					break;
+			}
+			
+			/* //Not sure what this was, I think meant for when dueling to ignore non duelers saber throw sounds
+			if (cg_draw2D.integer == 2 && cg.predictedPlayerState.duelInProgress && 
+				(es->eventParm != 33) && //Disgusting hack but theres no way to tell who a dropped saber belongs to?
+				!CG_ProximityCheck(cent->currentState.pos.trBase, es->pos.trBase) &&  //Use predictedplayerstate.origin ?
+				!CG_ProximityCheck(cg_entities[cg.predictedPlayerState.duelIndex].currentState.pos.trBase, es->pos.trBase))
+				break; //This can be improved a lot.. check saberEntitynum maybe?
+			*/
+
+			if (es->saberEntityNum == TRACK_CHANNEL_2 || es->saberEntityNum == TRACK_CHANNEL_3 ||
+				es->saberEntityNum == TRACK_CHANNEL_5)
+			{ //channels 2 and 3 are for speed and rage, 5 for sight
+				if ( cgs.gameSounds[ es->eventParm ] )
+				{
+					CG_S_AddRealLoopingSound(es->number, es->pos.trBase, vec3_origin, cgs.gameSounds[ es->eventParm ] );
+				}
+			}
+			else
 			{
-				CG_S_AddRealLoopingSound(es->number, es->pos.trBase, vec3_origin, cgs.gameSounds[ es->eventParm ] );
+				if ( cgs.gameSounds[ es->eventParm ] ) {
+					trap->S_StartSound (NULL, es->number, es->saberEntityNum, cgs.gameSounds[ es->eventParm ] );
+				} else {
+					s = CG_ConfigString( CS_SOUNDS + es->eventParm );
+					trap->S_StartSound (NULL, es->number, es->saberEntityNum, CG_CustomSound( es->number, s ) );
+				}
 			}
-		}
-		else
-		{
-			if ( cgs.gameSounds[ es->eventParm ] ) {
-				trap->S_StartSound (NULL, es->number, es->saberEntityNum, cgs.gameSounds[ es->eventParm ] );
-			} else {
-				s = CG_ConfigString( CS_SOUNDS + es->eventParm );
-				trap->S_StartSound (NULL, es->number, es->saberEntityNum, CG_CustomSound( es->number, s ) );
-			}
-		}
 		break;
 
 	case EV_GLOBAL_SOUND:	// play from the player's head so it never diminishes
@@ -3473,6 +3773,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		// so ignore events on the player
 		DEBUGNAME("EV_PAIN");
 
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+			break;
+
 		if ( !cg_oldPainSounds.integer || (cent->currentState.number != cg.snap->ps.clientNum) )
 		{
 			CG_PainEvent( cent, es->eventParm );
@@ -3483,6 +3786,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_DEATH2:
 	case EV_DEATH3:
 		DEBUGNAME("EV_DEATHx");
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
+				break;
+
 		trap->S_StartSound( NULL, es->number, CHAN_VOICE,
 				CG_CustomSound( es->number, va("*death%i.wav", event - EV_DEATH1 + 1) ) );
 		if (es->eventParm && es->number == cg.snap->ps.clientNum)
@@ -3531,8 +3838,18 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_GIB_PLAYER:
 		DEBUGNAME("EV_GIB_PLAYER");
-		//trap->S_StartSound( NULL, es->number, CHAN_BODY, cgs.media.gibSound );
-		//CG_GibPlayer( cent->lerpOrigin );
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
+
+		if (cg_blood.integer) {
+			trap->S_StartSound(NULL, es->number, CHAN_BODY, cgs.media.gibSound);
+			CG_GibPlayer(cent->lerpOrigin);
+		}
+		else if (!(cent->currentState.eFlags & EF_DEAD)) {
+			trap->S_StartSound(NULL, es->number, CHAN_VOICE,
+				CG_CustomSound(cent->currentState.number, va("*death%i.wav", Q_irand(1, 3))));
+		}
 		break;
 
 	case EV_STARTLOOPINGSOUND:
@@ -3559,6 +3876,16 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_WEAPON_CHARGE:
 		DEBUGNAME("EV_WEAPON_CHARGE");
+
+		/*
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		*/
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
+
 		assert(es->eventParm > WP_NONE && es->eventParm < WP_NUM_WEAPONS);
 		if (cg_weapons[es->eventParm].chargeSound)
 		{
@@ -3572,6 +3899,16 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_WEAPON_CHARGE_ALT:
 		DEBUGNAME("EV_WEAPON_CHARGE_ALT");
+
+		/*
+		if (cg.snap && cg.snap->ps.duelInProgress && ((cg_dueltypes[cg.snap->ps.clientNum] == 1) | (cg_dueltypes[cg.snap->ps.clientNum] == 2))) { //FF or NF Duel, no weapons so ignore this..
+			break;
+		}
+		*/
+
+		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->number && cg.predictedPlayerState.duelIndex != es->number))
+			break;
+
 		assert(es->eventParm > WP_NONE && es->eventParm < WP_NUM_WEAPONS);
 		if (cg_weapons[es->eventParm].altChargeSound)
 		{

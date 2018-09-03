@@ -1253,11 +1253,8 @@ void Com_Init( char *commandLine ) {
 		com_renderfps = Cvar_Get("com_renderfps", "0", CVAR_ARCHIVE_ND);
 		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE_ND);//Loda - FPS UNLOCK ENGINE
 #ifndef _WIN32
-		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE_ND );
+		com_ansiColor = Cvar_Get( "com_ansiColor", "1", CVAR_ARCHIVE_ND );
 #endif
-
-		com_renderfps = Cvar_Get("com_renderfps", "0", CVAR_ARCHIVE);
-		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);//Loda - FPS UNLOCK ENGINE
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
@@ -1265,8 +1262,6 @@ void Com_Init( char *commandLine ) {
 
 		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE_ND );
 		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
-
-		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "0", CVAR_ARCHIVE_ND, "Show intro movies" );
 

@@ -46,7 +46,6 @@ esac
 
 set -- \
 -D CMAKE_BUILD_TYPE="$flavour" \
--D BuildMPCGame=OFF \
 "$@"
 
 ( cd build && cmake \
@@ -64,7 +63,6 @@ fi
 case "${host}" in
 	(macosx-universal-clang)
 		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
-			cp $(pwd)/../../../../assets/bins/cgamex86_64.dylib eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
 			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
 			mv eternaljk-macos-"${arch}".tar.gz $(pwd)/../../../../ && \
 			cd ../../ && \
@@ -72,7 +70,6 @@ case "${host}" in
 		;;
 	(i?86-linux-gnu|native)
 		( cd $(pwd)/build/DESTDIR/prefix/JediAcademy/ && \
-			cp $(pwd)/../../../../assets/bins/cgamex86_64.so eternaljk/ && \
 			tar czvf eternaljk-linux-"${arch}".tar.gz * && \
 			mv eternaljk-linux-"${arch}".tar.gz $(pwd)/../../../../ && \
 			cd ../../ && \

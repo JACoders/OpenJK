@@ -34,6 +34,8 @@ int Q_PrintStrlen( const char *string );
 
 // removes color sequences from string
 char *Q_CleanStr( char *string );
+char *Q_CleanAsciiStr(char *string);
+void Q_CleanString(char *string);
 void Q_StripColor(char *text);
 const char *Q_strchrs( const char *string, const char *search );
 

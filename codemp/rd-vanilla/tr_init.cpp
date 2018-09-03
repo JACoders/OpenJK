@@ -171,6 +171,7 @@ cvar_t	*r_marksOnTriangleMeshes;
 
 cvar_t	*r_aspectCorrectFonts;
 cvar_t	*cl_ratioFix;
+cvar_t	*cl_coloredTextShadows;
 
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
@@ -285,24 +286,15 @@ void R_Set2DRatio(void) {
 
 void R_Splash()
 {
-	image_t *pImage;
-/*	const char* s = ri.Cvar_VariableString("se_language");
-	if (Q_stricmp(s,"english"))
-	{
-		pImage = R_FindImageFile( "menu/splash_eur", qfalse, qfalse, qfalse, GL_CLAMP);
-	}
-	else
-	{
-		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
-	}
-*/
-	if ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth) >= 1.0f) {
-		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
-	} else { 
-		pImage = R_FindImageFile( "menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP); //assuming 16:9 for now
-		if (!pImage || !cl_ratioFix->integer)
-			pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
-	}
+	image_t *pImage = NULL;
+	float ratio = (float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth);
+
+	if (cl_ratioFix->integer && ratio >= 0.74f && ratio <= 0.76f)
+		pImage = R_FindImageFile("menu/splash_16_9", qfalse, qfalse, qfalse, GL_CLAMP);
+
+	if (!pImage)
+		pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+
 	extern void	RB_SetGL2D (void);
 	RB_SetGL2D();
 	if (pImage )
@@ -1587,7 +1579,7 @@ void R_Register( void )
 	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",				"1",						CVAR_ARCHIVE_ND, "" );
 	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
-	r_DynamicGlowScale					= ri.Cvar_Get( "r_DynamicGlowScale",				"0.5",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_DynamicGlowScale					= ri.Cvar_Get( "r_DynamicGlowScale",				"0.25",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH, "" );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_smartpicmip						= ri.Cvar_Get( "r_smartpicmip",						"1",						CVAR_ARCHIVE_ND|CVAR_LATCH, "Applies r_picmip setting to map textures only." );
@@ -1681,6 +1673,7 @@ void R_Register( void )
 	r_marksOnTriangleMeshes				= ri.Cvar_Get( "r_marksOnTriangleMeshes",			"0",						CVAR_ARCHIVE_ND, "" );
 	r_aspectCorrectFonts				= ri.Cvar_Get( "r_aspectCorrectFonts",				"0",						CVAR_ARCHIVE, "" );
 	cl_ratioFix							= ri.Cvar_Get( "cl_ratioFix",						"1",						CVAR_ARCHIVE, "" );
+	cl_coloredTextShadows				= ri.Cvar_Get( "cl_coloredTextShadows",				"0",						CVAR_ARCHIVE, "Toggle colored text shadows" );
 	r_maxpolys							= ri.Cvar_Get( "r_maxpolys",						XSTRING( DEFAULT_MAX_POLYS ),		CVAR_NONE, "" );
 	r_maxpolyverts						= ri.Cvar_Get( "r_maxpolyverts",					XSTRING( DEFAULT_MAX_POLYVERTS ),	CVAR_NONE, "" );
 /*

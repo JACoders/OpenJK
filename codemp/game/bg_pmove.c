@@ -43,7 +43,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	extern void G_CheapWeaponFire(int entNum, int ev);
 	extern qboolean TryGrapple(gentity_t *ent); //g_cmds.c
 #elif defined _CGAME
-	void PM_CosbyBot();
 	extern int cg_dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Dueling
 #endif
 
@@ -261,12 +260,13 @@ static int GetFixRoll(playerState_t *ps) {
 				}
 			}
 		}
-		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))
-			return 1;
-		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL2) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL2))
-			return 2;
 		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL3) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL3))
 			return 3;
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL2) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL2) || cgs.legacyProtocol)
+			return 2;
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))
+			return 1;
+
 		return 0;
 #endif
 }
@@ -393,9 +393,16 @@ QINLINE int PM_GetMovePhysics(void)
 	else if (g_movementStyle.integer >= MV_NUMSTYLES)
 		return 1;
 #else
-	if (!cgs.isJAPro)
-		return 1;
-	return pm->ps->stats[STAT_MOVEMENTSTYLE];
+	if (!cgs.isJAPro) {
+		if (cgs.gametype != GT_SIEGE)
+			return MV_JKA;
+		else
+			return MV_SIEGE;
+	}
+
+	if (cg.predictedPlayerState.m_iVehicleNum)
+		return MV_SWOOP;
+	return cg.predictedPlayerState.stats[STAT_MOVEMENTSTYLE];
 	/*
 	else if (pm->ps->stats[STAT_RACEMODE])
 		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
@@ -1234,6 +1241,9 @@ static void PM_Friction( void ) {
 			if (cgs.cinfo & JAPLUS_CINFO_HEADSLIDE)
 				drop = 0;
 		}
+		else if (cgs.isBaseEnhanced)
+		{
+		}
 		else
 #endif
 			drop = 0;
@@ -1304,7 +1314,7 @@ Handles user intended acceleration
 */
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
-	if ((PM_GetMovePhysics() != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
+	if ((PM_GetMovePhysics() != MV_SIEGE) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
 	{ //standard method, allows "bunnyhopping" and whatnot
 		int			i;
 		float		addspeed, accelspeed, currentspeed;
@@ -2224,9 +2234,7 @@ static qboolean PM_CheckJump( void )
 #ifdef _GAME
 							if ((g_onlyBhop.integer == 1) || ((g_onlyBhop.integer > 1) && client->pers.onlyBhop) || client->ps.stats[STAT_ONLYBHOP])
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && cg_onlyBhop.integer) || pm->ps->stats[STAT_ONLYBHOP]))
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && (cp_pluginDisable.integer & JAPRO_PLUGIN_BHOP)) || pm->ps->stats[STAT_ONLYBHOP]))
 #endif
 							{
 								pm->cmd.upmove = 0;
@@ -3891,7 +3899,7 @@ static void PM_CheckDash(void)
 	if (pm->ps->weaponTime > 0)
 		return;
 
-	if (PM_GetMovePhysics() != 6)
+	if (PM_GetMovePhysics() != MV_WSW)
 		return;
 
 	if (pm->ps->stats[STAT_DASHTIME] > 0)
@@ -4004,7 +4012,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	//if (PM_ForceJumpingUp())//only for bhops loda fixme, uh use forcejumpZstartheight to only do this if we are bhop height :S?
 		//return;
 
-	if (PM_GetMovePhysics() != 6)
+	if (PM_GetMovePhysics() != MV_WSW)
 		return;
 
 	if (pm->ps->stats[STAT_WJTIME] > 0)
@@ -4539,9 +4547,7 @@ static int PM_TryRoll( void )
 
 		if (client && client->pers.noRoll)
 #else
-		//eternal todo: cgame
-		//if (cgs.isJAPro && cg_noRoll.integer)
-		if (cgs.isJAPro)
+		if (cgs.isJAPro && (cp_pluginDisable.integer & JAPRO_PLUGIN_NOROLL))
 #endif
 		{
 			return 0;
@@ -6321,7 +6327,10 @@ int PM_LegsSlopeBackTransition(int desiredAnim)
 		{
 			resultingAnim = anim;
 		}
-		VectorClear(pm->ps->velocity);
+#ifdef _CGAME
+		if (cg_legstuck.integer)
+			VectorClear(pm->ps->velocity);
+#endif
 		break;
 	}
 
@@ -6495,10 +6504,13 @@ static void PM_Footsteps( void ) {
 //[JAPRO - Serverside + Clientside - Physics - Add roll types - Start]
 		
 		{
-
-			if ((GetFixRoll(pm->ps) > 1 && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps))) ||
+#ifndef _CGAME
+			if (((GetFixRoll(pm->ps) > 1 && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps))) ||
+#else	
+			if ((GetFixRoll(pm->ps) > 1 && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps)) ||
+#endif
 				((GetFixRoll(pm->ps) == 1) && (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=30000)) ||
-				(PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000) )
+				(PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000)))
 				rolled = PM_TryRoll();
 
 /*
@@ -6705,9 +6717,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6722,9 +6732,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6739,9 +6747,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6756,9 +6762,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6773,9 +6777,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6788,9 +6790,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6822,9 +6822,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6837,9 +6835,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6854,9 +6850,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6869,9 +6863,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6887,9 +6879,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6902,9 +6892,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6917,9 +6905,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6934,9 +6920,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -6949,9 +6933,7 @@ static void PM_Footsteps( void ) {
 								desiredAnim = BOTH_RUN4;
 							else
 #else
-							//eternal todo: cgame
-							//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
-							if (cgs.isJAPro)
+							if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && (cp_pluginDisable.integer & JAPRO_PLUGIN_JAWARUN))
 								desiredAnim = BOTH_RUN4;
 							else
 #endif
@@ -12166,7 +12148,7 @@ void PmoveSingle (pmove_t *pmove) {
 				pm->ps->forceHandExtendTime = pm->cmd.serverTime + 100;
 				stiffenedUp = qtrue;
 //[JAPRO - Serverside +clientside - Physics - Unlock bow movement/turning- Start]
-#ifdef CGAME
+#ifdef _CGAME
 				if (cgs.isJAPlus || cgs.isJAPro)
 				{
 				}
@@ -12472,7 +12454,7 @@ void PmoveSingle (pmove_t *pmove) {
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 	else if (pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK && !(cgs.jcinfo & JAPRO_CINFO_BACKSLASH))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
-	else if (pm->ps->saberMove == LS_A_LUNGE && (!(cgs.jcinfo & JAPRO_CINFO_JK2LUNGE)) || pm->ps->stats[STAT_RACEMODE])
+	else if (pm->ps->saberMove == LS_A_LUNGE && (!(cgs.jcinfo & JAPRO_CINFO_JK2LUNGE) || pm->ps->stats[STAT_RACEMODE]))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 #endif
 //[JAPRO - Serverside + Clientside - Saber - Spin Red DFA , Spin Backslash - End]
@@ -13192,6 +13174,50 @@ void PmoveSingle (pmove_t *pmove) {
 	{ //riding a vehicle, see if we should do some anim overrides
 		PM_VehicleWeaponAnimate();
 	}
+
+#ifdef _CGAME
+	if (cg.predictedRocketJumpExpireTime > cg.time) { //Rocketjump prediction, we stil havnt gotten the server snapshot yet
+		vec3_t predictedVel = { 0 };
+		vec3_t lastFrameVel = { 0 };
+
+		//This is retarded.  All we should need to do is tell the game that 
+		//1) We just got knocked back (done by adjusting their velocity ONCE).
+		//2) That the shit recieved by the server is bad.. ignore it up until ping ms after firetime ?
+
+		//We already have the initial velocity kick predicted, just need to know how to apply it..
+
+
+
+		VectorCopy(pm->ps->velocity, lastFrameVel);
+
+		VectorCopy(cg.predictedRocketJumpImpulse, predictedVel);
+
+		if (cg_predictKnockback.integer > 1)
+			Com_Printf("Original Z impulse is %.1f\n", predictedVel[2]);
+
+		predictedVel[2] += -800 * 0.001f * (cg.time - cg.predictedRocketJumpTime); //How long ago we shot it is current time - shot time.
+
+		if (cg_predictKnockback.integer > 1)
+			Com_Printf("Current Predicted Z Vel Based on Impulse is %.1f\n", predictedVel[2]);
+
+
+		if (cg.predictedRocketJumpImpulse[2] + predictedVel[2] > 0) {//Dont predict falling i guess...
+
+			VectorAdd(cg.predictedRocketJumpOriginalVel, cg.predictedRocketJumpImpulse, pm->ps->velocity);
+			pm->ps->velocity[2] += predictedVel[2];
+			pm->ps->origin[2] += 5 * 0.001 * -(cg.predictedRocketJumpTime - cg.time);
+
+			if (cg_predictKnockback.integer > 1)
+				Com_Printf("Effect from rocketjump is %.2f, PredictedVel is %.2f\n", cg.predictedRocketJumpImpulse[2], pm->ps->velocity[2]);
+		}
+		else {
+			if (cg_predictKnockback.integer > 1)
+				Com_Printf("Predicted negative Z vel, nothing to do here\n");
+		}
+
+		//VectorCopy(cg.predictedRocketJump, pm->ps->velocity);
+	}
+#endif
 }
 
 qboolean BG_InRollFixed( playerState_t *ps, int anim )
@@ -13256,8 +13282,8 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 		if (pmove->ps->stats[STAT_RACEMODE] && BG_InRollFixed(pmove->ps, pmove->ps->legsAnim)) { //Using float now
-			if ( msec > 8 ) {
-				msec = 8;
+			if ( msec > pmove->pmove_msec ) {
+				msec = pmove->pmove_msec;
 			}
 			//Com_Printf("Chopping\n");
 		}

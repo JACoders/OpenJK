@@ -1925,7 +1925,7 @@ void S_StopLoopingSound( int entityNum )
 	}
 }
 
-#define MAX_DOPPLER_SCALE 50.0f //arbitrary
+#define MAX_DOPPLER_SCALE 5.0f //arbitrary
 
 /*
 ==================

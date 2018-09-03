@@ -380,7 +380,7 @@ static void CG_CalcBiLerp( vec3_t verts[4], vec3_t subVerts[4], vec2_t uv[4] )
 	VectorMA( temp,			uv[3][1],			subVerts[3], subVerts[3] );
 }
 // bilinear
-//f(p',q') = (1 - y) × {[(1 - x) × f(p,q)] + [x × f(p,q+1)]} + y × {[(1 - x) × f(p+1,q)] + [x × f(p+1,q+1)]}.
+//f(p',q') = (1 - y) ï¿½ {[(1 - x) ï¿½ f(p,q)] + [x ï¿½ f(p,q+1)]} + y ï¿½ {[(1 - x) ï¿½ f(p+1,q)] + [x ï¿½ f(p+1,q+1)]}.
 
 
 static void CG_CalcHeightWidth( vec3_t verts[4], float *height, float *width )
@@ -673,7 +673,8 @@ void CG_ExplosionEffects( vec3_t origin, float intensity, int radius, int time )
 	intensityScale = 1 - ( dist / (float) radius );
 	realIntensity = intensity * intensityScale;
 
-	CGCam_Shake( realIntensity, time );
+	if (cg_screenShake.integer || (cgs.jcinfo & JAPRO_CINFO_SCREENSHAKE))
+		CGCam_Shake( realIntensity, time );
 }
 
 /*
@@ -1042,6 +1043,48 @@ void CG_ScorePlum( int client, vec3_t org, int score ) {
 	AnglesToAxis( angles, re->axis );
 }
 
+
+void CG_SpotIcon( int client, vec3_t org ) {
+	localEntity_t	*le;
+	refEntity_t		*re;
+	vec3_t			angles;
+	static vec3_t lastPos;
+
+	// only visualize for the client that scored
+	if (client != cg.predictedPlayerState.clientNum || cg_scorePlums.integer == 0) {
+		return;
+	}
+
+	le = CG_AllocLocalEntity();
+	le->leFlags = 0;
+	le->leType = LE_SCOREPLUM;
+	le->startTime = cg.time;
+	le->endTime = cg.time + 4000;
+	le->lifeRate = 1.0 / ( le->endTime - le->startTime );
+
+	
+	le->color[0] = le->color[1] = le->color[2] = le->color[3] = 1.0;
+	le->radius = 0;
+
+	
+	VectorCopy( org, le->pos.trBase );
+	if (org[2] >= lastPos[2] - 20 && org[2] <= lastPos[2] + 20) {
+		le->pos.trBase[2] -= 20;
+	}
+
+	//CG_Printf( "Plum origin %i %i %i -- %i\n", (int)org[0], (int)org[1], (int)org[2], (int)Distance(org, lastPos));
+	VectorCopy(org, lastPos);
+
+
+	re = &le->refEntity;
+
+	re->reType = RT_SPRITE;
+	re->radius = 16;
+
+	VectorClear(angles);
+	AnglesToAxis( angles, re->axis );
+}
+
 /*
 ====================
 CG_MakeExplosion
@@ -1223,6 +1266,41 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 }
 
 /*
+=================
+CG_Bleed
+
+This is the spurt of blood when a character gets hit
+=================
+*/
+void CG_Bleed( vec3_t origin, int entityNum ) {
+	localEntity_t	*ex;
+
+	if ( !cg_blood.integer ) {
+		return;
+	}
+
+	ex = CG_AllocLocalEntity();
+	ex->leType = LE_EXPLOSION;
+
+	ex->startTime = cg.time;
+	ex->endTime = ex->startTime + 500;
+	
+	VectorCopy ( origin, ex->refEntity.origin);
+	ex->refEntity.reType = RT_SPRITE;
+	ex->refEntity.rotation = rand() % 360;
+	ex->refEntity.radius = 24;
+
+	ex->refEntity.customShader = cgs.media.bloodExplosionShader;//JAPRO - Clientside - Re add oldschool q3 blood effect option
+
+	// don't show player's own blood in view
+	if ( entityNum == cg.snap->ps.clientNum ) {
+		ex->refEntity.renderfx |= RF_THIRD_PERSON;
+	}
+}
+
+
+
+/*
 ==================
 CG_LaunchGib
 ==================
@@ -1251,4 +1329,83 @@ void CG_LaunchGib( vec3_t origin, vec3_t velocity, qhandle_t hModel ) {
 
 	le->leBounceSoundType = LEBS_BLOOD;
 	le->leMarkType = LEMT_BLOOD;
+}
+
+#define	GIB_VELOCITY	250
+#define	GIB_JUMP		250
+void CG_GibPlayer( vec3_t playerOrigin ) {
+	vec3_t	origin, velocity;
+
+	if ( !cg_blood.integer ) {
+		return;
+	}
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	if ( rand() & 1 ) {
+		CG_LaunchGib( origin, velocity, cgs.media.gibSkull );
+	} else {
+		CG_LaunchGib( origin, velocity, cgs.media.gibBrain );
+	}
+
+	// allow gibs to be turned off for speed
+	if ( cg_blood.integer < 2 ) {
+		return;
+	}
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibAbdomen );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibArm );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibChest );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibFist );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibFoot );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibForearm );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibIntestine );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibLeg );
+
+	VectorCopy( playerOrigin, origin );
+	velocity[0] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[1] = Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	velocity[2] = GIB_JUMP + Q_flrand(-1.0f, 1.0f)*GIB_VELOCITY;
+	CG_LaunchGib( origin, velocity, cgs.media.gibLeg );
 }

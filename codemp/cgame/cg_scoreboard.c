@@ -85,8 +85,8 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	//vec3_t	headAngles;
 	clientInfo_t	*ci;
 	int				iconx = SB_BOTICON_X + (SB_RATING_WIDTH / 2);
-	float			scale = largeFormat ? 1.0f : 0.75f,
-					iconSize = largeFormat ? SB_NORMAL_HEIGHT : SB_INTER_HEIGHT;
+	float			scale = (largeFormat && (!cg_smallScoreboard.integer && cgs.gametype != GT_CTF)) ? 1.0f : 0.75f,
+					iconSize = (largeFormat && (!cg_smallScoreboard.integer && cgs.gametype != GT_CTF)) ? SB_NORMAL_HEIGHT : SB_INTER_HEIGHT;
 
 	if ( score->client < 0 || score->client >= cgs.maxclients ) {
 		Com_Printf( "Bad score->client: %i\n", score->client );
@@ -98,7 +98,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	// draw the handicap or bot skill marker (unless player has flag)
 	if ( ci->powerups & (1<<PW_NEUTRALFLAG) )
 	{
-		if ( largeFormat )
+		if ( largeFormat && (!cg_smallScoreboard.integer && cgs.gametype != GT_CTF))//JAPRO - Clientside - Small Scoreboard
 			CG_DrawFlagModel( iconx, y - (32 - BIGCHAR_HEIGHT) / 2, iconSize, iconSize, TEAM_FREE, qfalse );
 		else
 			CG_DrawFlagModel( iconx, y, iconSize, iconSize, TEAM_FREE, qfalse );
@@ -124,7 +124,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 
 			if (scl->classShader)
 			{
-				CG_DrawPic (iconx, y, largeFormat?24:12, largeFormat?24:12, scl->classShader);
+				CG_DrawPic (iconx, y, (((largeFormat && !cg_smallScoreboard.integer && cgs.gametype != GT_CTF))?24:12), ((largeFormat && !cg_smallScoreboard.integer)?24:12), scl->classShader);//JAPRO - Clientside - Small Scoreboard & ratio fix.
 			}
 		}
 	}
@@ -162,7 +162,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 		}
 
 		hcolor[3] = fade * 0.7;
-		CG_FillRect( SB_SCORELINE_X - 5, y + 2, 640 - SB_SCORELINE_X * 2 + 10, largeFormat?SB_NORMAL_HEIGHT:SB_INTER_HEIGHT, hcolor );
+		CG_FillRect( SB_SCORELINE_X - 5, y + 2, 640 - SB_SCORELINE_X * 2 + 10, (largeFormat && (!cg_smallScoreboard.integer && cgs.gametype != GT_CTF))?SB_NORMAL_HEIGHT:SB_INTER_HEIGHT, hcolor );//JAPRO - Clientside - Small Scoreboard
 	}
 
 	CG_Text_Paint (SB_NAME_X, y, 0.9f * scale, colorWhite, ci->name,0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
@@ -171,26 +171,51 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	{
 		if ( ci->team != TEAM_SPECTATOR || cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL )
 		{
-			if (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL)
+			if ((cgs.gametype == GT_DUEL && cgs.fraglimit > 0) || cgs.gametype == GT_POWERDUEL)
 			{
 				CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, va("%i/%i", ci->wins, ci->losses),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 			}
+
+			else if (cgs.gametype == GT_CTF)
+			{
+				CG_Text_Paint( SB_SCORELINE_X + 0.47f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, va("%i", score->score),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
+				CG_Text_Paint( SB_SCORELINE_X + 0.59f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, va("%i", score->captures),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
+				CG_Text_Paint( SB_SCORELINE_X + 0.66f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, va("%i", score->assistCount),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
+				CG_Text_Paint(SB_SCORELINE_X + 0.73f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, va("%i", score->defendCount),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL);//loda
+			}
+
 			else
 			{
 //JAPRO - Clientside - Scoreboard Deaths - Start
-				if ((cgs.isJAPlus || cgs.isJAPro) && cgs.gametype != GT_CTF)
+				if (cg_scoreDeaths.integer && ((cgs.isJAPlus && (!Q_stricmp(cjp_client.string, "1.4JAPRO"))) || cgs.isJAPro) && (cgs.gametype != GT_CTF && cgs.gametype != GT_DUEL))
 					CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, va("%i/%i", score->score, score->deaths),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 				else
 					CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, va("%i", score->score),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 //JAPRO - Clientside - Scoreboard Deaths - End
 			}
 		}
-
-		if ( cg_scoreboardBots.integer && ci->botSkill != -1 )
+		if (cgs.gametype == GT_CTF)
+		{
+			CG_Text_Paint(SB_SCORELINE_X + 0.80 * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, va("%i", score->ping),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL);	
+			CG_Text_Paint(SB_SCORELINE_X + 0.90 * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, va("%i", score->time),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL);
+		}
+		else
+		{
+		if ( ci->botSkill != -1 )
 			CG_Text_Paint( SB_PING_X, y, 1.0f * scale, colorWhite, "BOT", 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 		else
 			CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, va("%i", score->ping),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 		CG_Text_Paint (SB_TIME_X, y, 1.0f * scale, colorWhite, va("%i", score->time),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
+		}
+	}
+	else if (cgs.gametype == GT_CTF)
+	{
+		CG_Text_Paint (SB_SCORELINE_X + 0.47f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );//score
+		CG_Text_Paint (SB_SCORELINE_X + 0.59f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );//caps
+		CG_Text_Paint (SB_SCORELINE_X + 0.66f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );//assists
+		CG_Text_Paint (SB_SCORELINE_X + 0.73f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );//defends
+		CG_Text_Paint (SB_SCORELINE_X + 0.80f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	//ping
+		CG_Text_Paint (SB_SCORELINE_X + 0.90f * SB_SCORELINE_WIDTH, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );//time
 	}
 	else
 	{
@@ -474,24 +499,45 @@ qboolean CG_DrawOldScoreboard( void ) {
 	CG_DrawPic ( SB_SCORELINE_X - 40, y - 5, SB_SCORELINE_WIDTH + 80, 40, trap->R_RegisterShaderNoMip ( "gfx/menus/menu_buttonback.tga" ) );
 
 	CG_Text_Paint ( SB_NAME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "NAME"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	if (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL)
+	if ((cgs.gametype == GT_DUEL && cgs.fraglimit > 0) || cgs.gametype == GT_POWERDUEL)
 	{
 		char sWL[100];
 		trap->SE_GetStringTextString("MP_INGAME_W_L", sWL,	sizeof(sWL));
 
 		CG_Text_Paint ( SB_SCORE_X, y, 1.0f, colorWhite, sWL, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
+	else if (cgs.gametype == GT_CTF)
+	{
+		CG_Text_Paint ( SB_SCORELINE_X + 0.47f * SB_SCORELINE_WIDTH, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "SCORE"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+	}
 	else
 	{
 		CG_Text_Paint ( SB_SCORE_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "SCORE"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
-	CG_Text_Paint ( SB_PING_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "PING"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	CG_Text_Paint ( SB_TIME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "TIME"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+
+	if (cgs.gametype == GT_CTF)
+	{
+		CG_Text_Paint ( SB_SCORELINE_X + 0.80 * SB_SCORELINE_WIDTH, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "PING"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		CG_Text_Paint ( SB_SCORELINE_X + 0.90 * SB_SCORELINE_WIDTH, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "TIME"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+	}
+	else
+	{
+		CG_Text_Paint ( SB_PING_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "PING"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		CG_Text_Paint ( SB_TIME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "TIME"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+	}
+
+	if (cgs.gametype == GT_CTF)
+	{
+		CG_Text_Paint ( SB_SCORELINE_X + 0.59f * SB_SCORELINE_WIDTH, y, 1.0f, colorWhite, "C", 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		CG_Text_Paint ( SB_SCORELINE_X + 0.66f * SB_SCORELINE_WIDTH, y, 1.0f, colorWhite, "A", 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );//loda
+		CG_Text_Paint ( SB_SCORELINE_X + 0.73f * SB_SCORELINE_WIDTH, y, 1.0f, colorWhite, "D", 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+	}
+
 
 	y = SB_TOP;
 
 	// If there are more than SB_MAXCLIENTS_NORMAL, use the interleaved scores
-	if ( cg.numScores > SB_MAXCLIENTS_NORMAL ) {
+	if ( cg.numScores > SB_MAXCLIENTS_NORMAL || (cg_smallScoreboard.integer || cgs.gametype == GT_CTF)) {//JAPRO - Clientside - Small Scoreboard
 		maxClients = SB_MAXCLIENTS_INTER;
 		lineHeight = SB_INTER_HEIGHT;
 		topBorderSize = 8;
@@ -588,6 +634,15 @@ qboolean CG_DrawOldScoreboard( void ) {
 			maxClients -= (team1MaxCl+team2MaxCl);
 		}
 		maxClients = realMaxClients;
+
+		if (cgs.isJAPro && (cgs.gametype == GT_TEAM || cgs.gametype == GT_CTF)) { 	//how do we tell if server has racemode set. meme..
+			//Check if someone is in team free?
+			//Loop through each player, if they are in team free, break and set a flag
+			//if flag is set, do this stuff VVV
+			n1 = CG_TeamScoreboard( y, TEAM_FREE, fade, maxClients, lineHeight, qfalse );
+			y += (n1 * lineHeight) + BIGCHAR_HEIGHT;
+		}
+
 		n1 = CG_TeamScoreboard( y, TEAM_SPECTATOR, fade, maxClients, lineHeight, qfalse );
 		y += (n1 * lineHeight) + BIGCHAR_HEIGHT;
 

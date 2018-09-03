@@ -213,6 +213,7 @@ static bitInfo_t speedometerSettings[] = {
 	{ "Jump height display" },
 	{ "Jump distance display" },
 	{ "Vertical speed indicator" },
+	{ "Yaw speed indicator" },
 	{ "Accel meter" },
 	{ "Speed graph" },
 	{ "Display speed in kilometers instead of units" },
@@ -255,9 +256,9 @@ void UI_SpeedometerSettings_f(void) {
 			return;
 		}
 
-		if ((index == 6 || index == 7))
+		if ((index == 8 || index == 9))
 		{ //Radio button these options
-			int groupMask = (1 << 6) + (1 << 7);
+			int groupMask = (1 << 8) + (1 << 9);
 			int value = cg_speedometerSettings.integer;
 
 			groupMask &= ~(1 << index);

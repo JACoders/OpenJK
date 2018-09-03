@@ -31,6 +31,18 @@ localEntity_t	cg_localEntities[MAX_LOCAL_ENTITIES];
 localEntity_t	cg_activeLocalEntities;		// double linked list
 localEntity_t	*cg_freeLocalEntities;		// single linked list
 
+#if _NEWTRAILS
+#define	_OPTIMIZETRAIL	0
+#define	MAX_STRAFE_TRAILS	1024*16
+strafeTrail_t	cg_strafeTrails[MAX_STRAFE_TRAILS]; //Seperate array for just strafetrails to save space i guess, so we can have a ton of them
+strafeTrail_t	cg_activeStrafeTrails;		// double linked list
+strafeTrail_t	*cg_freeStrafeTrails;		// single linked list
+strafeTrailRef_t tempRefEntity;
+#if _OPTIMIZETRAIL
+strafeTrail_t	cg_lastStrafeTrail;			// k
+#endif
+#endif
+
 /*
 ===================
 CG_InitLocalEntities
@@ -140,7 +152,7 @@ void CG_BloodTrail( localEntity_t *le ) {
 					  t,		// startTime
 					  0,		// fadeInTime
 					  0,		// flags
-					  /*cgs.media.bloodTrailShader*/0 );
+					  cgs.media.bloodTrailShader );
 		// use the optimized version
 		blood->leType = LE_FALL_SCALE_FADE;
 		// drop a total of 40 units over its lifetime
@@ -188,6 +200,21 @@ void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace ) {
 		case LEBS_METAL:
 			s = cgs.media.metalBounceSound[Q_irand(0,1)];// FIXME: make sure that this sound is registered properly...might still be rock bounce sound....
 			break;
+		case LEBS_BLOOD:
+			// half the gibs will make splat sounds
+			if ( rand() & 1 ) {
+				int r = rand()&3;
+				sfxHandle_t	s;
+
+				if ( r == 0 ) {
+					s = cgs.media.gibBounce1Sound;
+				} else if ( r == 1 ) {
+					s = cgs.media.gibBounce2Sound;
+				} else {
+					s = cgs.media.gibBounce3Sound;
+				}
+				trap->S_StartSound( trace->endpos, ENTITYNUM_WORLD, CHAN_AUTO, s );
+			}
 		default:
 			return;
 		}
@@ -654,15 +681,38 @@ CG_AddScorePlum
 void CG_AddScorePlum( localEntity_t *le ) {
 	refEntity_t	*re;
 	vec3_t		origin, delta, dir, vec, up = {0, 0, 1};
-	float		c, len;
+	float		c = 0, len;
 	int			i, score, digits[10], numdigits, negative;
+	qboolean	strafeTrailNum = qfalse;
+
+	if (le->lifeRate == 0) {
+		strafeTrailNum = qtrue;
+	}
+
+	if (strafeTrailNum) {
+		vec3_t diff;
+		VectorSubtract(cg.refdef.vieworg, le->pos.trBase, diff);
+
+		if (cg_strafeTrailGhost.integer > 1)
+			return;
+
+		if (diff[2] > 2048 || diff[2] < -8192) { //Ditch trails that are 2048 above us or 8192 below us
+			return;
+		}
+		if ((VectorLengthSquared(diff) > 4096*4096) /*|| !trap->R_inPVS(cg.refdef.vieworg, trail->start, cg.snap->areamask)*/) {
+			return;
+		}
+	}
 
 	re = &le->refEntity;
 
-	c = ( le->endTime - cg.time ) * le->lifeRate;
-
 	score = le->radius;
-	if (score < 0) {
+	if (strafeTrailNum) { //its a strafetrail num, why the fuck wont this work
+		re->shaderRGBA[0] = 255;
+		re->shaderRGBA[1] = 0;
+		re->shaderRGBA[2] = 0;
+	}
+	else if (score < 0) {
 		re->shaderRGBA[0] = 0xff;
 		re->shaderRGBA[1] = 0x11;
 		re->shaderRGBA[2] = 0x11;
@@ -682,15 +732,25 @@ void CG_AddScorePlum( localEntity_t *le ) {
 		}
 
 	}
-	if (c < 0.25)
-		re->shaderRGBA[3] = 0xff * 4 * c;
-	else
+
+	if (strafeTrailNum) {
 		re->shaderRGBA[3] = 0xff;
+	}
+	else {
+		c = ( le->endTime - cg.time ) * le->lifeRate;
+		if (c < 0.25)
+			re->shaderRGBA[3] = 0xff * 4 * c;
+		else
+			re->shaderRGBA[3] = 0xff;
+	}
 
 	re->radius = NUMBER_SIZE / 2;
 
 	VectorCopy(le->pos.trBase, origin);
-	origin[2] += 110 - c * 100;
+
+	if (!strafeTrailNum) {
+		origin[2] += 110 - c * 100;
+	}
 
 	VectorSubtract(cg.refdef.vieworg, origin, dir);
 	CrossProduct(dir, up, vec);
@@ -700,11 +760,14 @@ void CG_AddScorePlum( localEntity_t *le ) {
 
 	// if the view would be "inside" the sprite, kill the sprite
 	// so it doesn't add too much overdraw
-	VectorSubtract( origin, cg.refdef.vieworg, delta );
-	len = VectorLength( delta );
-	if ( len < 20 ) {
-		CG_FreeLocalEntity( le );
-		return;
+	if (!strafeTrailNum) {
+		VectorSubtract( origin, cg.refdef.vieworg, delta );
+
+		len = VectorLength( delta );
+		if ( len < 20 ) {
+			CG_FreeLocalEntity( le );
+			return;
+		}
 	}
 
 	negative = qfalse;
@@ -728,6 +791,36 @@ void CG_AddScorePlum( localEntity_t *le ) {
 		re->customShader = cgs.media.numberShaders[digits[numdigits-1-i]];
 		trap->R_AddRefEntityToScene( re );
 	}
+}
+
+void CG_AddSpotIcon( localEntity_t *le ) {
+	refEntity_t		ent;
+	float distance;
+	vec3_t diff;
+	int add;
+
+	memset( &ent, 0, sizeof( ent ) );
+	VectorCopy( le->pos.trBase, ent.origin );
+	ent.origin[2] += 48;
+	ent.reType = RT_SPRITE;
+	ent.renderfx = RF_NODEPTH;
+	ent.shaderRGBA[0] = 255;
+	ent.shaderRGBA[1] = 255;
+	ent.shaderRGBA[2] = 255;
+	ent.shaderRGBA[3] = 255;
+
+	VectorSubtract(cg.predictedPlayerState.origin, le->pos.trBase, diff);
+	distance = VectorLength(diff);
+
+	add = distance / 50; //What a gross hack this is
+	ent.radius = 5 + add;
+
+	if (cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_RED)
+		ent.customShader = cgs.media.teamBlueShader;
+	else
+		ent.customShader = cgs.media.teamRedShader;
+
+	trap->R_AddRefEntityToScene( &ent );
 }
 
 /*
@@ -791,6 +884,77 @@ void CG_AddLine( localEntity_t *le )
 	re->reType = RT_LINE;
 
 	trap->R_AddRefEntityToScene( re );
+}
+
+/*
+==================
+CG_AddMissile
+==================
+*/
+static void CG_AddMissile( localEntity_t *le ) { //cg_simulatedprojectiles
+	vec3_t		currentPos, muzzlePointApprox;
+	centity_t	*missile = &cg_entities[cg.predictedPlayerState.clientNum]; // this should be a free entity? not sure how to find what the next available free entity is
+	trace_t		trace;
+
+	BG_EvaluateTrajectory( &le->pos, cg.time, currentPos ); // idk what empty is? its the 'result',, never used?
+			
+	missile->currentState.eType = ET_MISSILE;
+
+	(le->leFlags & EF_ALT_FIRING) ? (missile->currentState.eFlags |= EF_ALT_FIRING) : (missile->currentState.eFlags = 0);
+
+	missile->currentState.pos.trType = le->pos.trType;
+	missile->currentState.pos.trTime =  le->pos.trTime;//idk, maybe i want something like r_znear but only applies to our own projectiles?ghhhhh
+	missile->currentState.pos.trDuration = le->pos.trDuration;
+	missile->currentState.apos.trType = TR_STATIONARY;
+
+	VectorCopy( currentPos, missile->currentState.pos.trBase );
+	VectorCopy( le->pos.trDelta, missile->currentState.pos.trDelta );
+
+	//VectorCopy( le->angles.trBase, missile->currentState.apos.trBase ); //This sets the right angle of the missile?
+	//VectorCopy( le->angles.trBase, missile->currentState.angles ); //This sets the right angle of the missile?
+	//VectorCopy( le->angles.trBase, missile->currentState.angles2 ); //This sets the right angle of the missile?
+
+	VectorCopy( cg.predictedPlayerState.origin, muzzlePointApprox );
+	muzzlePointApprox[2] += cg.predictedPlayerState.viewheight;
+
+	if (pm && pm->ps && pm->ps->stats[STAT_RACEMODE] && cg.snap) {
+		CG_Trace( &trace, currentPos, NULL, NULL, currentPos, -1, CONTENTS_SOLID );
+		if (trace.startsolid) {
+			le->endTime = cg.time; //Kill the missile.
+			//Predict its explosion and launch us?
+			if (cg_predictKnockback.integer)
+			{
+				vec3_t dir = {0};
+				int knockback, damage, distance;
+
+				VectorSubtract(cg.predictedPlayerState.origin, missile->currentState.pos.trBase, dir);
+				distance = VectorLength(dir);
+
+				if (distance < 160) {
+					damage = 100.0f * 0.5f * (1.0f - (distance / 160.0f)); //Rocket damage * Self damage scale * (Max splash dist / dist)
+
+					if (cg_predictKnockback.integer > 1)
+						Com_Printf("Missile hit! Predicted distance: %i Predicted damage: %i\n", distance, damage);
+
+					VectorNormalize(dir);
+
+					knockback = damage;
+					if (knockback > 200)
+						knockback = 200;
+					VectorScale (dir, 1000 * (float)knockback / 200, cg.predictedRocketJumpImpulse); //Now whats dir
+					//VectorAdd(cg.predictedRocketJumpImpulse, pm->ps->velocity, cg.predictedRocketJumpImpulse);
+					cg.predictedRocketJumpTime = cg.time; //disregard timenudge?
+					cg.predictedRocketJumpExpireTime = cg.time + cg.snap->ping + cl_timeNudge.integer; //disregard timenudge?
+					VectorCopy(cg.predictedPlayerState.velocity, cg.predictedRocketJumpOriginalVel);
+				}
+			}
+		}
+	}
+
+	if (Distance(muzzlePointApprox, currentPos) > cg_simulatedProjectiles.integer) {
+		CG_ManualEntityRender(missile);
+		//Com_Printf("Drawing missile at position: %.2f %.2f %.2f\n", missile->currentState.pos.trBase[0], missile->currentState.pos.trBase[1], missile->currentState.pos.trBase[2]);
+	}
 }
 
 //==============================================================================
@@ -861,7 +1025,10 @@ void CG_AddLocalEntities( void ) {
 			break;
 
 		case LE_SCOREPLUM:
-			CG_AddScorePlum( le );
+			if (le->radius)
+				CG_AddScorePlum( le );
+			else
+				CG_AddSpotIcon( le );
 			break;
 
 		case LE_OLINE:
@@ -875,10 +1042,305 @@ void CG_AddLocalEntities( void ) {
 		case LE_LINE:					// oriented lines for FX
 			CG_AddLine( le );
 			break;
+
+		case LE_MISSILE: //cg_simulatedProjectiles
+			CG_AddMissile( le );
+			break;
 		}
 	}
 }
 
+#if _NEWTRAILS
+void	CG_InitStrafeTrails( void ) {
+	int		i;
 
+	memset( cg_strafeTrails, 0, sizeof( cg_strafeTrails ) );
+	cg_activeStrafeTrails.next = &cg_activeStrafeTrails;
+	cg_activeStrafeTrails.prev = &cg_activeStrafeTrails;
+	cg_freeStrafeTrails = cg_strafeTrails;
+	for ( i = 0 ; i < MAX_STRAFE_TRAILS - 1 ; i++ ) {
+		cg_strafeTrails[i].next = &cg_strafeTrails[i+1];
+	}
+}
 
+/*
+==================
+CG_FreeLocalEntity
+==================
+*/
+void CG_FreeStrafeTrail( strafeTrail_t *trail ) {
+	if ( !trail->prev ) {
+		trap->Error( ERR_DROP, "CG_FreeStrafeTrail: not active" );
+		return;
+	}
 
+	// remove from the doubly linked active list
+	trail->prev->next = trail->next;
+	trail->next->prev = trail->prev;
+
+	// the free list is only singly linked
+	trail->next = cg_freeStrafeTrails;
+	cg_freeStrafeTrails = trail;
+}
+
+void CG_RemoveStrafeTrail( int clientNum ) {
+	int i;
+
+	if (clientNum == -1)
+		cg.drawingStrafeTrails = 0;
+	else 
+		cg.drawingStrafeTrails &= ~(1 << clientNum); 
+
+	for ( i = 0 ; i < MAX_STRAFE_TRAILS - 1 ; i++ ) {
+		if ((cg_strafeTrails[i].clientNum == clientNum+1) || clientNum == -1)
+			cg_strafeTrails[i].endTime = cg.time + 100;
+	}
+
+	for ( i = 0 ; i < MAX_LOCAL_ENTITIES - 1 ; i++ ) {
+		if ( (cg_localEntities[i].leType == LE_SCOREPLUM) &&
+			(cg_localEntities[i].lifeRate == 0) &&
+			 ((cg_localEntities[i].leFlags == clientNum+1) || (cg_localEntities[i].leFlags > 0 && clientNum == -1)) ) {
+				 cg_localEntities[i].endTime = cg.time + 100;
+				 //CG_FreeLocalEntity(&cg_localEntities[i]); //just set leTime to 0 instead idk
+		}
+	}
+}
+
+void CG_AddSingleStrafeTrail( strafeTrail_t *trail )
+{	
+	refEntity_t	*re;
+	unsigned int color = trail->color;
+	float radius;
+
+	radius = cg_strafeTrailRadius.value;
+	if (radius < 0.1f)
+		radius = 0.1f;
+	else if (radius > 100)
+		radius = 100;
+
+	re = &tempRefEntity.refEntity;
+	VectorCopy( trail->start, re->origin );
+	VectorCopy( trail->end, re->oldorigin);
+
+	re->reType = RT_LINE;
+	re->radius = 0.5*radius;
+	re->customShader = cgs.media.whiteShader;
+	re->shaderTexCoord[0] = re->shaderTexCoord[1] = 1.0f;
+
+	re->shaderRGBA[0] = color & 0xff;
+	color >>= 8;
+	re->shaderRGBA[1] = color & 0xff;
+	color >>= 8;
+	re->shaderRGBA[2] = color & 0xff;
+	re->shaderRGBA[3] = 0xff;
+
+	trap->R_AddRefEntityToScene( re );
+}
+
+#if _OPTIMIZETRAIL
+void StrafeTrailCopy(strafeTrail_t *in, strafeTrail_t *out) {
+	out->clientNum = in->clientNum;
+	out->color = in->color;
+	VectorCopy(in->end, out->end);
+	out->endTime = in->endTime;
+	out->next = in->next;
+	out->prev = in->prev;
+	VectorCopy(in->start, out->start);
+}
+#endif
+
+void CG_AddStrafeGhost(vec3_t org) {
+	refEntity_t	*re;
+
+	re = &tempRefEntity.refEntity;
+	VectorCopy(org, re->origin);
+	VectorCopy(org, re->oldorigin);
+
+	re->origin[2] -= 12;
+	re->oldorigin[2] += 12;
+	re->radius = 12;
+
+	re->shaderRGBA[0] = 255;
+	re->shaderRGBA[1] = 0;
+	re->shaderRGBA[2] = 0;
+
+	re->reType = RT_LINE;
+	re->customShader = cgs.media.whiteShader;
+	trap->R_AddRefEntityToScene(re);
+}
+
+void CG_AddAllStrafeTrails(void) { //Can this be ignored if we know we are not drawing strafetrails?
+	strafeTrail_t	*trail, *next;
+	vec3_t distance;
+#if _OPTIMIZETRAIL
+	vec3_t line1, line2, ang1, ang2;
+	float dot;
+#endif
+	int i = 0;
+	const int speed = 1000 / cg_strafeTrailFPS.integer;
+	int time = 0;
+	qboolean drawn = qfalse;
+
+	if (!cg_strafeTrailGhost.integer || !cg.snap) //||!cg.snap
+		drawn = qtrue;
+	else {
+		time = (cg.time - cg.predictedPlayerState.duelTime); //god damn this
+		if (!(cg.predictedPlayerState.pm_flags & PMF_FOLLOW) && (cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_SPECTATOR))//Ignore ping and frametime if we are in spec.
+			time += cg.snap->ping + speed*0.5f;
+	}
+
+	trail = cg_activeStrafeTrails.prev;
+	for (; trail != &cg_activeStrafeTrails; trail = next) {
+		next = trail->prev;
+		if (cg.time >= trail->endTime) {
+			CG_FreeStrafeTrail(trail);
+			continue;
+		}
+
+		i++;
+		//Test conditions
+		VectorSubtract(cg.refdef.vieworg, trail->end, distance);
+
+		if (distance[2] > 2048 || distance[2] < -8192) { //Ditch trails that are 2048 above us or 8192 below us
+			continue;
+		}
+		if (VectorLengthSquared(distance) > 16384 * 16384) {
+			continue;
+		}
+		if (!trap->R_InPVS(cg.refdef.vieworg, trail->end, NULL)) {
+			continue;
+		}
+
+#if _OPTIMIZETRAIL
+
+		if (cg_draw2D.integer > 1) {
+			/*
+			At node n, get line1 as n, n+1
+			get line2 as n, n+2
+
+			get dotproduct of line1, line2
+			if small, skip
+
+			if big, keep
+
+			if skip, draw line as n,n+2
+			if keep, draw line as n,n+1
+
+			if skip, increment n an extra time?
+			*/
+
+			VectorSubtract(trail->start, trail->end, line1);
+			VectorSubtract(trail->end, next->start, line2);
+
+			vectoangles(line1, ang1);
+			vectoangles(line2, ang2);
+
+			VectorNormalize(ang1);
+			VectorNormalize(ang2);
+
+			dot = DotProduct(ang1, ang2);
+
+			if (cg_draw2D.integer > 2)
+				Com_Printf("Dotproduct is %.2f\n", dot);
+
+			if (dot > cg_thirdPersonFlagAlpha.value) { //0.9f) 
+				strafeTrail_t tempTrail;
+
+				StrafeTrailCopy(trail, &tempTrail);
+				VectorCopy(next->start, tempTrail.end);
+				trail->color = 0x8B0000; //test..
+
+				CG_AddSingleStrafeTrail(&tempTrail);
+				trail = next; //Increment node..
+			}
+			else {
+				CG_AddSingleStrafeTrail(trail);
+			}
+
+		}
+
+		/*
+		if (cg_draw2D.integer > 1) {
+		strafeTrail_t tempTrail;
+		StrafeTrailCopy(trail, &tempTrail);
+		if (!cg_lastStrafeTrail.endTime) {
+		StrafeTrailCopy(trail, &cg_lastStrafeTrail);
+		Com_Printf("Initializing last strafetrail\n");
+		}
+		else {
+		VectorSubtract(trail->end, trail->start, line1);
+		VectorSubtract(trail->start, cg_lastStrafeTrail.end, line2);
+
+		vectoangles(line1, ang1);
+		vectoangles(line2, ang2);
+
+		VectorNormalize(ang1);
+		VectorNormalize(ang2);
+
+		dot = DotProduct(ang1, ang2);
+
+		if (cg_draw2D.integer > 2)
+		Com_Printf("Dotproduct is %.2f\n", dot);
+
+		if (dot > cg_thirdPersonFlagAlpha.value) { //0.9f) {//angle between trail and last trail is very small, and trail is far away //SKIP
+
+		VectorCopy(cg_lastStrafeTrail.start, tempTrail.start);
+		StrafeTrailCopy(trail, &cg_lastStrafeTrail);
+
+		CG_AddSingleStrafeTrail(&tempTrail);
+		trail = next;
+
+		continue;
+		}
+		}
+
+		CG_AddSingleStrafeTrail(&tempTrail);
+		}
+		*/
+		else
+#endif
+		if (cg_strafeTrailGhost.integer < 2)
+			CG_AddSingleStrafeTrail(trail);
+
+		if (!drawn && time < (i*speed)) {
+			CG_AddStrafeGhost(trail->start);
+			drawn = qtrue;
+		}
+	}
+}
+
+strafeTrail_t	*CG_AllocStrafeTrail( void ) {
+	strafeTrail_t	*trail;
+
+	if ( !cg_freeStrafeTrails ) {
+		// no free entities, so free the one at the end of the chain
+		// remove the oldest active entity
+		//Com_Printf("Out of space, freeing trail at %.1f, %.1f\n", cg_activeStrafeTrails.start[0], cg_activeStrafeTrails.start[1]);
+		CG_FreeStrafeTrail( cg_activeStrafeTrails.prev );  //why this doesnt seem to work sometimes?
+	}
+
+	trail = cg_freeStrafeTrails;
+	cg_freeStrafeTrails = cg_freeStrafeTrails->next;
+
+	memset( trail, 0, sizeof( *trail ) );
+
+	// link into the active list
+	trail->next = cg_activeStrafeTrails.next;
+	trail->prev = &cg_activeStrafeTrails;
+	cg_activeStrafeTrails.next->prev = trail;
+	cg_activeStrafeTrails.next = trail;
+	return trail;
+}
+#else
+void CG_DeleteLocalEntity( int clientNum ) {
+	int i;
+
+	for ( i = 0 ; i < MAX_LOCAL_ENTITIES - 1 ; i++ ) {
+		if ( (cg_localEntities[i].leType == LE_LINE) &&
+			 ((cg_localEntities[i].leFlags == clientNum+1) || (cg_localEntities[i].leFlags > 0 && clientNum == -1)) ) {
+				 cg_localEntities[i].endTime = cg.time + 100;
+				 //CG_FreeLocalEntity(&cg_localEntities[i]); //just set leTime to 0 instead idk
+		}
+	}
+}
+#endif

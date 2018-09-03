@@ -380,7 +380,6 @@ SCR_DrawDemoRecording
 */
 
 void SCR_DrawDemoRecording( void ) {
-	const float	ratio = cls.widthRatioCoef;
 	char	string[1024];
 	int		pos, xpos, ypos;
 
@@ -388,7 +387,7 @@ void SCR_DrawDemoRecording( void ) {
 	{
 		char	string2[32];
 		Com_sprintf(string2, sizeof(string2), "%i", 1000 / cls.frametime);
-		SCR_DrawStringExt2(SCREEN_WIDTH - 128 - strlen(string2), 2.0f, 8.0f*ratio, 8.0f, string2, g_color_table[7], qtrue, qfalse);
+		SCR_DrawStringExt2(SCREEN_WIDTH - 128 - strlen(string2), 2.0f, 8.0f*cls.widthRatioCoef, 8.0f, string2, g_color_table[7], qtrue, qfalse);
 	}
 
 	if ( !clc.demorecording ) {
@@ -416,11 +415,11 @@ void SCR_DrawDemoRecording( void ) {
 		ypos = 36;
 	}
 	else {
-		xpos = SCREEN_WIDTH / 2.0f - strlen(string)*(8.0f / 2.0f)*ratio;
+		xpos = SCREEN_WIDTH / 2.0f - strlen(string)*(8.0f / 2.0f)*cls.widthRatioCoef;
 		ypos = 20.0f;
 	}
 
-	SCR_DrawStringExt2(xpos, ypos, 8.0f*ratio, 8.0f, string, g_color_table[7], qtrue, qfalse);
+	SCR_DrawStringExt2(xpos, ypos, 8.0f*cls.widthRatioCoef, 8.0f, string, g_color_table[7], qtrue, qfalse);
 }
 
 

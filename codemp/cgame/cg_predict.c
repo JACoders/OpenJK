@@ -260,6 +260,48 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 			continue;
 		}
 
+		if (ent->eType == ET_SPECIAL && ent->modelindex == HI_SHIELD)//Japro - Fix bad prediction for HI_SHIELD item for codemonkey 
+			continue;
+
+		//JAPRO - Clientside - Duel Passthru Prediction - Start 
+		if (cgs.isJAPlus || cgs.isJAPro)
+		{
+			if (cg.predictedPlayerState.duelInProgress)
+			{ // we are in a private duel 
+				if (ent->number != cg.predictedPlayerState.duelIndex && ent->eType != ET_MOVER)
+				{ // we are not dueling them 
+				  // don't clip 
+					continue;
+				}
+			}
+			else if (ent->bolt1)
+			{ // we are not in a private duel, and this player is dueling don't clip 
+				continue;
+			}
+			else if (cgs.isJAPro && cg.predictedPlayerState.stats[STAT_RACEMODE]) {
+				if (ent->eType == ET_MOVER) { //TR_SINCE since func_bobbings are still solid, sad hack 
+					if ((VectorLengthSquared(ent->pos.trDelta) || VectorLengthSquared(ent->apos.trDelta)) && ent->pos.trType != TR_SINE) {//If its moving? //how to get classname clientside? 
+						continue; //Dont predict moving et_movers as solid..since that means they are likely func_door or func_plat.. which are nonsolid to racers serverside 
+					}
+				}
+				else {
+					continue;
+				}
+			}
+		}
+		//JAPRO - Clientside - Duel Passthru Prediction - End 
+
+		//JAPRO - Clientside - Nonsolid doors for racemode people 
+		/*
+		if (cgs.isJAPro && cg.predictedPlayerState.stats[STAT_RACEMODE]) {
+		if (ent->eType == ET_MOVER) {
+		if (VectorLengthSquared(ent->pos.trDelta) || VectorLengthSquared(ent->apos.trDelta) && ent->pos.trType != TR_SINE) //If its moving? //how to get classname clientside?
+		continue; //Dont predict moving et_movers as solid..since that means they are likely func_door or func_plat.. which are nonsolid to racers serverside
+		}
+		}
+		*/
+		//JAPRO race doors END
+
 		if ( ent->solid == SOLID_BMODEL ) {
 			// special value for bmodel
 			cmodel = trap->CM_InlineModel( ent->modelindex );
@@ -1057,12 +1099,14 @@ void CG_PredictPlayerState( void ) {
 		cg.physicsTime = cg.snap->serverTime;
 	}
 
-	if ( pmove_msec.integer < 8 ) {
-		trap->Cvar_Set("pmove_msec", "8");
+	//JAPRO - Clientside - Unlock Pmove bounds - Start 
+	if ( pmove_msec.integer < 1 ) {
+		trap->Cvar_Set("pmove_msec", "1");
 	}
-	else if (pmove_msec.integer > 33) {
-		trap->Cvar_Set("pmove_msec", "33");
+	else if (pmove_msec.integer > 66) {
+		trap->Cvar_Set("pmove_msec", "66");
 	}
+	//JAPRO - Clientside - Unlock Pmove bounds - End 
 
 	cg_pmove.pmove_fixed = pmove_fixed.integer;// | cg_pmove_fixed.integer;
 	cg_pmove.pmove_float = pmove_float.integer;
@@ -1237,7 +1281,10 @@ void CG_PredictPlayerState( void ) {
 			}
 		}
 
-		if ( cg_pmove.pmove_fixed ) {
+		/*if (cg.predictedPlayerState.stats[STAT_RACEMODE] && cg_predictRacemode.integer) { //loda fixme
+		cg_pmove.cmd.serverTime = ((cg_pmove.cmd.serverTime + 7) / 8) * 8;
+		}
+		else*/ if ( cg_pmove.pmove_fixed ) { //loda fixme
 			cg_pmove.cmd.serverTime = ((cg_pmove.cmd.serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 		}
 

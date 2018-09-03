@@ -91,7 +91,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	WAVE_AMPLITUDE	1
 #define	WAVE_FREQUENCY	0.4
 
-//[JAPRO - Clientside - All - Define JAPLUS cinfo bits]
+//[JAPRO - Clientside - All - Define cinfo bits - Start]
 #define JAPLUS_CINFO_FLIPKICK			(1<<0)	//Allow player flipkicking
 #define JAPLUS_CINFO_FIXROLL1			(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
 #define JAPLUS_CINFO_FIXROLL2			(1<<2)	//Grip whilst rolling + chainable rolls
@@ -111,7 +111,27 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define JAPLUS_CINFO_LEDGEGRAB			(1<<16)	//Ledgegrab allowed
 #define JAPLUS_CINFO_ALTDIM				(1<<17)	//Any jp_altdim is set
 
-//[JAPRO - Clientside - All - Jcinfo bitvalues
+/*
+#define JAPLUS_CINFO_FLIPKICK			(0x00000001u) // allow player flip-kicking
+#define JAPLUS_CINFO_FIXROLL1			(0x00000002u) // Grip whilst rolling
+#define JAPLUS_CINFO_FIXROLL2			(0x00000004u) // Grip whilst rolling + chainable rolls
+#define JAPLUS_CINFO_FIXROLL3			(0x00000008u) // Long roll + breakable
+#define JAPLUS_CINFO_YELLOWDFA			(0x00000010u) // 'improved' yellow DFA
+#define JAPLUS_CINFO_HEADSLIDE			(0x00000020u) // jp_slideOnPlayer/japp_slideOnPlayer set
+#define JAPLUS_CINFO_SPATTACKS		(0x00000040u) // don't allow sp attacks
+#define JAPLUS_CINFO_NEWDFA			(0x00000080u) // TODO: new close-range DFA
+#define JAPLUS_CINFO_MODELSCALE			(0x00000100u)
+#define JAPLUS_CINFO_DMGSPEEDSCALE			(0x00000200u)
+#define JAPLUS_CINFO_MACROSCAN1		(0x00000400u) // IGNORE: macro-scan 1
+#define JAPLUS_CINFO_MACROSCAN2		(0x00000800u) // IGNORE: macro-scan 2
+#define JAPLUS_CINFO_JK2DFA			(0x00001000u) // TODO: JK2 DFA ???
+#define JAPLUS_CINFO_NOKATA			(0x00002000u) // no kata
+#define JAPLUS_CINFO_NO_AUTO_REPLIER			(0x00004000u)
+#define JAPLUS_CINFO_GLA_ANIMS			(0x00008000u)
+#define JAPLUS_CINFO_LEDGEGRAB			(0x00010000u) // TODO: allow ledge-grab
+#define JAPLUS_CINFO_ALTDIM			(0x00020000u) // TODO: any jp_altDim is set
+*/
+
 #define JAPRO_CINFO_FLIPKICK		(1<<0)	//Allow player flipkicking (normal style)
 #define JAPRO_CINFO_FIXROLL1		(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
 #define JAPRO_CINFO_FIXROLL2		(1<<2)	//Grip whilst rolling + chainable rolls
@@ -125,16 +145,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define JAPRO_CINFO_BHOP1			(1<<10)	//force bhop only mode
 #define JAPRO_CINFO_LG				(1<<11)	//Lightning Gun 
 #define JAPRO_CINFO_JETPACK			(1<<12)	//jetpack physics
-#define JAPRO_CINFO_UNLAGGEDPROJ	(1<<13)	//allow unlagged
+#define JAPRO_CINFO_UNLAGGEDPROJ	(1<<13)	//allow unlagged projectiles
 #define JAPRO_CINFO_SCREENSHAKE		(1<<14)	//remove screenshake
 #define JAPRO_CINFO_FORCECOMBO		(1<<15)	//allow forcecombo
 #define JAPRO_CINFO_UNLAGGEDHITSCAN	(1<<16)	//allow unlagged hitscan
-#define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
-#define JAPRO_CINFO_GUNROLL			(1<<18)	//allow grun roll
-#define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
-#define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //No aim backslash
-#define JAPRO_CINFO_HIGHFPSFIX		(1<<21) //unused
-#define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
+#define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//allow  unlagged hitscan
+#define JAPRO_CINFO_GUNROLL			(1<<18)	//allow gun roll 
+#define JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //needed for flechette primary only, i think
+#define JAPRO_CINFO_EASYBACKSLASH	(1<<20)	//no aim backslash
+#define JAPRO_CINFO_HIGHFPSFIX		(1<<21)	//
+#define JAPRO_CINFO_LEGDANGLE		(1<<22) //remove broken legdangle
 #define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
 #define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
 #define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
@@ -144,6 +164,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define JAPRO_CINFO_PROJSNIPER		(1<<29)
 #define	JAPRO_CINFO_JAPLUSGRAPPLE	(1<<30)
 #define	JAPRO_CINFO_EASIERBACKSLASH	(1<<31)
+
+#define RESTRICT_SB					(1<<0)	//remove hackbots
+#define RESTRICT_COSBY				(1<<1)	//remove hackbots
+#define RESTRICT_LEAD				(1<<2)	//remove lead indicator
+#define RESTRICT_WH					(1<<3)	//remove brightskin wh
+#define RESTRICT_YAW				(1<<4)	//enforce yawspeed cap
+#define RESTRICT_PLUGIN				(1<<5)	//force plugin for racers
+#define RESTRICT_PLAYERLABELS		(1<<6)	//
+#define RESTRICT_FLIPKICKBIND		(1<<7)	//
+#define RESTRICT_STRAFETRAIL		(1<<8)	//force plugin for racers
+#define RESTRICT_DO					(1<<9)	//force plugin for racers
 
 //ja+ stuff
 #define JAPRO_PLUGIN_NEWDRAINEFX		(1<<0)
@@ -178,6 +209,30 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define JAPRO_PLUGIN_CHATBOXCP		(1<<25)	//
 #define JAPRO_PLUGIN_NODMGNUMBERS	(1<<26)	//
 #define JAPRO_PLUGIN_CENTERMUZZLE	(1<<27)	//
+
+//Style playermodel stuff
+#define JAPRO_STYLE_FULLBRIGHT	(1<<0)
+#define JAPRO_STYLE_SHELL		(1<<1)
+#define JAPRO_STYLE_HIDEDUELERS1 (1<<2)
+#define JAPRO_STYLE_HIDERACERS1 (1<<3) //hide racer if we ffa
+#define JAPRO_STYLE_HIDERACERS2 (1<<4) //hide ffa if we racer
+#define JAPRO_STYLE_HIDERACERS3 (1<<5) //hide racers if we racer
+#define JAPRO_STYLE_RACERVFXDISABLE	(1<<6)
+#define JAPRO_STYLE_VFXDUELERS	(1<<7)
+#define JAPRO_STYLE_VFXALTDIM	(1<<8) //ja+
+#define JAPRO_STYLE_HIDENONDUELERS	(1<<9) //base
+#define JAPRO_STYLE_HIDEYSALSHELL	(1<<10)
+#define	JAPRO_STYLE_PLAYERLOD	(1<<11)
+#define JAPRO_STYLE_NOBODIES	(1<<12)
+#define JAPRO_STYLE_NOFADESFX	(1<<13)
+#define JAPRO_STYLE_SANTAHAT	(1<<14) //no asset for this
+
+//japro ignore race fx
+#define RS_TIMER_START					(1<<0) //Ignore sound for start trigger
+#define BODY_FADE_TIME					(60000)
+
+//#define JAPRO_CINFO_UNLAGGEDPUSHPULL (1<<19)	//push pull unlagged
+//[JAPRO - Clientside - All - Define cinfo bits - End]
 
 #define _SPPHYSICS 1
 typedef enum //movementstyle enum
@@ -427,9 +482,12 @@ typedef struct clientInfo_s {
 	float		facial_aux;			// time before next aux. If a minus value, we are in aux mode
 
 	int			superSmoothTime; //do crazy amount of smoothing
+	vec3_t		rgb1, rgb2;//rgb sabers, use different ones for strafetrails. oh no.
 
-	vec3_t			rgb1, rgb2;
-
+#define _STRAFETRAILS 0
+#if _STRAFETRAILS
+	vec3_t		rgb1, rgb2; //rename this shit so it doesnt conflict with saber rgb
+#endif
 } clientInfo_t;
 
 //rww - cheap looping sound struct
@@ -536,6 +594,11 @@ typedef struct centity_s {
 	int				frame_minus1_refreshed;
 	int				frame_minus2_refreshed;
 
+#if _STRAFETRAILS
+	vec3_t			frame_minus12, frame_minus22;
+	int				frame_minus1_refreshed2, frame_minus2_refreshed2;
+#endif
+
 	void			*frame_hold; //pointer to a ghoul2 instance
 
 	int				frame_hold_time;
@@ -549,6 +612,7 @@ typedef struct centity_s {
 	int				teamPowerEffectTime;
 	int				teamPowerType; //0 regen, 1 heal, 2 drain, 3 absorb
 
+	int				lastRagTime;
 	qboolean		isRagging;
 	qboolean		ownerRagging;
 	int				overridingBones;
@@ -573,6 +637,10 @@ typedef struct centity_s {
 	qboolean		cloaked;
 
 	int				vChatTime;
+#if 1
+	vec3_t			lastOrigin; //strafetrail
+	int				lastStrafeTrailTime;
+#endif
 } centity_t;
 
 
@@ -606,7 +674,8 @@ typedef enum {
 	LE_SCOREPLUM,
 	LE_OLINE,
 	LE_SHOWREFENTITY,
-	LE_LINE
+	LE_LINE,
+	LE_MISSILE//japro
 } leType_t;
 
 typedef enum {
@@ -738,6 +807,98 @@ typedef struct localEntity_s {
 	refEntity_t		refEntity;
 } localEntity_t;
 
+
+#define _NEWTRAILS 1
+#if _NEWTRAILS
+
+typedef struct strafeTrailRef_s {
+	union {
+		struct {
+			float radius;
+			float dradius;
+			vec3_t startRGB;
+			vec3_t dRGB;
+		} sprite;
+		struct {
+			float width;
+			float dwidth;
+			float length;
+			float dlength;
+			vec3_t startRGB;
+			vec3_t dRGB;
+		} trail;
+		struct {
+			float width;
+			float dwidth;
+			// Below are bezier specific.
+			vec3_t			control1;				// initial position of control points
+			vec3_t			control2;
+			vec3_t			control1_velocity;		// initial velocity of control points
+			vec3_t			control2_velocity;
+			vec3_t			control1_acceleration;	// constant acceleration of control points
+			vec3_t			control2_acceleration;
+		} line;
+		struct {
+			float width;
+			float dwidth;
+			float width2;
+			float dwidth2;
+			vec3_t startRGB;
+			vec3_t dRGB;
+		} line2;
+		struct {
+			float width;
+			float dwidth;
+			float width2;
+			float dwidth2;
+			float height;
+			float dheight;
+		} cylinder;
+		struct {
+			float width;
+			float dwidth;
+		} electricity;
+		struct
+		{
+			// fight the power! open and close brackets in the same column!
+			float radius;
+			float dradius;
+			qboolean (*thinkFn)(struct localEntity_s *le);
+			vec3_t	dir;	// magnitude is 1, but this is oldpos - newpos right before the
+							//particle is sent to the renderer
+			// may want to add something like particle::localEntity_s *le (for the particle's think fn)
+		} particle;
+		struct
+		{
+			qboolean	dontDie;
+			vec3_t		dir;
+			float		variance;
+			int			delay;
+			int			nextthink;
+			qboolean	(*thinkFn)(struct localEntity_s *le);
+			int			data1;
+			int			data2;
+		} spawner;
+		struct
+		{
+			float radius;
+		} fragment;
+	} data;
+
+	refEntity_t		refEntity;	
+} strafeTrailRef_t;
+
+typedef struct strafeTrail_s {
+	struct strafeTrail_s	*prev, *next;
+	short clientNum;
+	//float radius;
+	vec3_t start;
+	vec3_t end;
+	int endTime;
+	unsigned int color;//More memory, but saves cycles not having to calculate it every frame based on clientnum or w/e.  also good to separate it from clientnum i guess for future features
+} strafeTrail_t;
+#endif
+
 //======================================================================
 
 
@@ -867,6 +1028,20 @@ typedef struct chatBoxItem_s
 	int		lines;
 } chatBoxItem_t;
 
+#define	MAX_CLIENT_SPEEDPOINTS		32
+typedef struct clientSpeedpoint_s
+{
+	int		speed;
+	qboolean isSet;
+	qboolean reached;
+} clientSpeedpoint_t;
+
+#define	MAX_CLIENT_CHECKPOINTS		32
+typedef struct clientCheckpoint_s {
+	int		x1, y1, z1, x2, y2, z2;
+	qboolean isSet;
+} clientCheckpoint_t;
+
 typedef struct cg_s {
 	int			clientFrame;		// incremented each frame
 
@@ -935,6 +1110,8 @@ typedef struct cg_s {
 	// input state sent to server
 	int			weaponSelect;
 
+	short		lastWeaponSelect[2];//japro
+
 	int			forceSelect;
 	int			itemSelect;
 
@@ -984,6 +1161,7 @@ typedef struct cg_s {
 	char		centerPrint[1024];
 	int			centerPrintLines;
 
+	//idk
 	int			oldammo;
 	int			oldAmmoTime;
 
@@ -1146,6 +1324,61 @@ Ghoul2 Insert End
 	int numSpawnVarChars;
 	char spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
+	clientCheckpoint_t	clientCheckpoints[MAX_CLIENT_CHECKPOINTS];//japro checkpoints
+	clientSpeedpoint_t	clientSpeedpoints[MAX_CLIENT_SPEEDPOINTS];//japro speedpoints
+	int					lastCheckPointPrintTime;
+	int					timerStartTime;
+	int					lastGroundTime;//japro
+	qboolean			firstTimeInAir;
+	float				lastGroundSpeed;
+	float				lastZSpeed;
+	int					lastJumpHeightTime;//japro
+	float				lastJumpHeight;
+	int					lastStartTime;//japro
+	float				lastYawSpeed;
+	qboolean			recording;
+	unsigned int		displacement;
+	unsigned int		displacementSamples;
+	float				maxSpeed;
+	float				currentSpeed;
+	float				previousSpeed;
+	float				lastJumpDistance;
+	int					lastJumpDistanceTime;
+	qboolean			wasOnGround;
+	vec3_t				lastGroundPosition;
+
+	int				telemarkX;//japro
+	int				telemarkY;//japro
+	int				telemarkZ;//japro
+	int				telemarkYaw;//japro
+	int				lastAutoKillTime;
+
+	int				predictedRocketJumpTime;
+	int				predictedRocketJumpExpireTime;
+	vec3_t			predictedRocketJumpImpulse;
+	vec3_t			predictedRocketJumpOriginalVel;
+
+	float			lastXpos;
+	float			lastYpos;
+
+	vec4_t			strafeHelperActiveColor;	
+	int				drawingStrafeTrails;//optimization i guess
+	int				doVstrTime;
+	char			doVstr[MAX_QPATH];
+	short			numFKFrames;
+	short			numJumps;
+	int				userinfoUpdateDebounce;
+	qboolean		loggingStrafeTrail;
+	char			logStrafeTrailFilename[MAX_QPATH];
+	fileHandle_t	strafeTrailFileHandle;
+#if 0
+	int					snapshotTimeoutTime;
+#endif
+
+	struct {
+		fileHandle_t	chat; //chatlog
+	} log;
+
 } cg_t;
 
 #define MAX_TICS	14
@@ -1214,6 +1447,7 @@ typedef struct cgMedia_s {
 	qhandle_t	itemHoloModel;
 	qhandle_t	redFlagModel;
 	qhandle_t	blueFlagModel;
+	qhandle_t	neutralFlagModel;
 
 	qhandle_t	teamStatusBar;
 
@@ -1223,11 +1457,32 @@ typedef struct cgMedia_s {
 	qhandle_t	siegeItemShader;
 	qhandle_t	mAutomapPlayerIcon;
 	qhandle_t	mAutomapRocketIcon;
+	qhandle_t	minimapShader;//JAPRO
 
 	qhandle_t	wireframeAutomapFrame_left;
 	qhandle_t	wireframeAutomapFrame_right;
 	qhandle_t	wireframeAutomapFrame_top;
 	qhandle_t	wireframeAutomapFrame_bottom;
+
+//JAPRO - Clientside - Movement keys - Start
+	qhandle_t	keyCrouchOffShader;
+	qhandle_t	keyCrouchOnShader;
+	qhandle_t	keyJumpOffShader;
+	qhandle_t	keyJumpOnShader;
+	qhandle_t	keyBackOffShader;
+	qhandle_t	keyBackOnShader;
+	qhandle_t	keyForwardOffShader;
+	qhandle_t	keyForwardOnShader;
+	qhandle_t	keyLeftOffShader;
+	qhandle_t	keyLeftOnShader;
+	qhandle_t	keyRightOffShader;
+	qhandle_t	keyRightOnShader;
+//JAPRO - Clientside - Movement keys - End
+
+	qhandle_t	bloodExplosionShader;//JAPRO - Clientside - Re add cg_blood
+	qhandle_t	leadIndicator;//JAPRO - Clientside - Re add cg_blood
+
+	qhandle_t	grappleModel;//grapple model
 
 //Chunks
 	qhandle_t	chunkModels[NUM_CHUNK_TYPES][4];
@@ -1258,9 +1513,22 @@ typedef struct cgMedia_s {
 	qhandle_t	purpleSaberGlowShader;
 	qhandle_t	purpleSaberCoreShader;
 
+	//rgb
 	qhandle_t	rgbSaberGlowShader;
 	qhandle_t	rgbSaberCoreShader;
 
+	//sfx
+	qhandle_t	ShaderSaberTrail;
+	qhandle_t	ShaderSaberBlade;
+	qhandle_t	ShaderSaberBladeRGB;
+	qhandle_t	ShaderSaberEnd;
+	qhandle_t	ShaderSaberEndRGB;
+
+	//xmas
+	qhandle_t	christmasHatModel;
+
+#define _SHITTYLINEFX 1
+#if _SHITTYLINEFX
 	qhandle_t	rgbSaberGlow2Shader;
 	qhandle_t	rgbSaberCore2Shader;
 	qhandle_t	rgbSaberTrail2Shader;
@@ -1276,10 +1544,16 @@ typedef struct cgMedia_s {
 	qhandle_t	rgbSaberGlow5Shader;
 	qhandle_t	rgbSaberCore5Shader;
 	qhandle_t	rgbSaberTrail5Shader;
+#endif
+
+#if _GRAPPLE
+	qhandle_t	grappleShader;
+#endif
 
 	qhandle_t	blackSaberGlowShader;
 	qhandle_t	blackSaberCoreShader;
 	qhandle_t	blackBlurShader;
+	//rgb
 
 	qhandle_t	saberBlurShader;
 	qhandle_t	swordTrailShader;
@@ -1387,7 +1661,37 @@ typedef struct cgMedia_s {
 	qhandle_t	medalDefend;
 	qhandle_t	medalAssist;
 	qhandle_t	medalCapture;
+
+	qhandle_t	medalImpressiveQ3;
+	qhandle_t	medalExcellentQ3;
+	qhandle_t	medalGauntletQ3;
+	qhandle_t	medalDefendQ3;
+	qhandle_t	medalAssistQ3;
+	qhandle_t	medalCaptureQ3;
 #endif
+
+	//JK2HUD
+	qhandle_t	JK2HUDLeftFrame;
+	qhandle_t	JK2HUDInnerLeft;
+	qhandle_t	JK2HUDArmor1;
+	qhandle_t	JK2HUDArmor2;
+	qhandle_t	JK2HUDHealth;
+	qhandle_t	JK2HUDHealthTic;
+	qhandle_t	JK2HUDArmorTic;
+	qhandle_t	JK2HUDSaberStyle1;
+	qhandle_t	JK2HUDSaberStyle2;
+	qhandle_t	JK2HUDSaberStyle3;
+	qhandle_t	JK2HUDSaberStyle4;
+	qhandle_t	JK2HUDRightFrame;
+	qhandle_t	JK2HUDInnerRight;
+	qhandle_t	JK2weaponProngsOn;
+	qhandle_t	JK2weaponProngsOff;
+	qhandle_t	JK2forceProngsOn;
+	qhandle_t	JK2inventoryProngsOn;
+
+	//unused weapon icons for staff/duals
+	qhandle_t	weaponIconsStaff;
+	qhandle_t	weaponIconsAkimbo;
 
 	// sounds
 	sfxHandle_t	selectSound;
@@ -1418,6 +1722,14 @@ typedef struct cgMedia_s {
 	sfxHandle_t twoFragSound;
 	sfxHandle_t oneFragSound;
 
+//JAPRO - Clientside - Hitsounds Start
+	sfxHandle_t hitSound; 
+	sfxHandle_t hitSound2; 
+	sfxHandle_t hitSound3; 
+	sfxHandle_t hitSound4; 
+	sfxHandle_t hitTeamSound; 
+//JAPRO - Clientside - Hitsounds End
+
 #ifdef JK2AWARDS
 	sfxHandle_t firstImpressiveSound;
 	sfxHandle_t impressiveSound;
@@ -1428,13 +1740,19 @@ typedef struct cgMedia_s {
 	sfxHandle_t deniedSound;
 	sfxHandle_t defendSound;
 	sfxHandle_t assistSound;
+
+	sfxHandle_t firstImpressiveSoundQ3;
+	sfxHandle_t impressiveSoundQ3;
+	sfxHandle_t firstExcellentSoundQ3;
+	sfxHandle_t excellentSoundQ3;
+	sfxHandle_t deniedSoundQ3;
+	sfxHandle_t firstHumiliationSoundQ3;
+	sfxHandle_t humiliationSoundQ3;
 #endif
 
-	/*
 	sfxHandle_t takenLeadSound;
 	sfxHandle_t tiedLeadSound;
 	sfxHandle_t lostLeadSound;
-	*/
 
 	sfxHandle_t rollSound;
 
@@ -1532,6 +1850,30 @@ typedef struct cgMedia_s {
 	// For vehicles only now
 	sfxHandle_t	noAmmoSound;
 
+	qhandle_t	lightningShader; // japro loda
+
+	//japro gibs
+	qhandle_t	gibAbdomen;
+	qhandle_t	gibArm;
+	qhandle_t	gibChest;
+	qhandle_t	gibFist;
+	qhandle_t	gibFoot;
+	qhandle_t	gibForearm;
+	qhandle_t	gibIntestine;
+	qhandle_t	gibLeg;
+	qhandle_t	gibSkull;
+	qhandle_t	gibBrain;
+
+	qhandle_t	gibSound;
+	qhandle_t	gibBounce1Sound;
+	qhandle_t	gibBounce2Sound;
+	qhandle_t	gibBounce3Sound;
+	qhandle_t	bloodTrailShader;
+	qhandle_t	bloodMarkShader;
+
+	qhandle_t	raceShader;
+	qhandle_t	duelShader;
+
 	sfxHandle_t		maleVGSSounds[MAX_CUSTOM_VGS_SOUNDS];//vgs
 	sfxHandle_t		femaleVGSSounds[MAX_CUSTOM_VGS_SOUNDS];//vgs
 
@@ -1608,6 +1950,7 @@ typedef struct cgEffects_s {
 
 	fxHandle_t forceDrain;
 	fxHandle_t forceDrainWide;
+	fxHandle_t forceDrainWideJaPRO;//japro
 	fxHandle_t forceDrained;
 
 	//TURRET
@@ -1663,6 +2006,11 @@ typedef struct cgEffects_s {
 	fxHandle_t waterSplash;
 	fxHandle_t lavaSplash;
 	fxHandle_t acidSplash;
+
+#if _GRAPPLE
+	fxHandle_t grappleHitWall;
+	fxHandle_t grappleHitPlayer;
+#endif
 } cgEffects_t;
 
 #define MAX_STATIC_MODELS 4000
@@ -1748,11 +2096,13 @@ typedef struct cgs_s {
 	int			restricts;//make this a short?
 	qboolean	isJAPro;
 	qboolean	isJAPlus;
+	qboolean	isOJKAlt;
 	qboolean	isBaseEnhanced;
+	qboolean	legacyProtocol;
 	int			svfps;
 	qboolean	takenscreenshot;
 	int			hookpull;
-	int			protocolswitch;
+	unsigned int ignoredVGS;
 //[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - End]
 
 	qboolean  newHud;
@@ -1836,6 +2186,7 @@ void CG_UpdateCvars( void );
 int CG_CrosshairPlayer( void );
 int CG_LastAttacker( void );
 void CG_LoadMenus(const char *menuFile);
+void CG_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...); //chatlog
 void CG_KeyEvent(int key, qboolean down);
 void CG_MouseEvent(int x, int y);
 void CG_EventHandling(int type);
@@ -1846,8 +2197,6 @@ void CG_NextInventory_f(void);
 void CG_PrevInventory_f(void);
 void CG_NextForcePower_f(void);
 void CG_PrevForcePower_f(void);
-void CG_Set2DRatio(void);
-void CG_UpdateHUD(void);
 
 //
 // cg_view.c
@@ -1888,14 +2237,14 @@ void CG_DrawRotatePic2( float x, float y, float width, float height,float angle,
 void CG_DrawString( float x, float y, const char *string,
 				   float charWidth, float charHeight, const float *modulate );
 
-void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill);
+void CG_DrawNumField (float x, float y, int width, int value, float charWidth, float charHeight, int style, qboolean zeroFill);
 
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
-		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars );
-void CG_DrawBigString( int x, int y, const char *s, float alpha );
-void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color );
-void CG_DrawSmallString( int x, int y, const char *s, float alpha );
-void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color );
+void CG_DrawStringExt( float x, float y, const char *string, const float *setColor,
+		qboolean forceColor, qboolean shadow, float charWidth, float charHeight, int maxChars );
+void CG_DrawBigString( float x, float y, const char *s, float alpha );
+void CG_DrawBigStringColor( float x, float y, const char *s, vec4_t color );
+void CG_DrawSmallString( float x, float y, const char *s, float alpha );
+void CG_DrawSmallStringColor( float x, float y, const char *s, vec4_t color );
 
 int CG_DrawStrlen( const char *str );
 
@@ -1905,8 +2254,8 @@ void CG_TileClear( void );
 void CG_ColorForHealth( vec4_t hcolor );
 void CG_GetColorForHealth( int health, int armor, vec4_t hcolor );
 
-void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
-void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale);
+void CG_DrawProportionalString(float x, float y, const char* str, int style, vec4_t color);
+void CG_DrawScaledProportionalString(float x, float y, const char* str, int style, vec4_t color, float scale);
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
 void CG_DrawSides(float x, float y, float w, float h, float size);
 void CG_DrawTopBottom(float x, float y, float w, float h, float size);
@@ -1919,8 +2268,10 @@ extern	int	numSortedTeamPlayers;
 extern  char systemChat[256];
 
 void CG_AddLagometerFrameInfo( void );
+void CG_AddSpeedGraphFrameInfo( void );
 void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
 void CG_CenterPrint( const char *str, int y, int charWidth );
+void CG_CenterPrintMultiKill(const char *str, int y, int charWidth);
 void CG_DrawHead( float x, float y, float w, float h, int clientNum, vec3_t headAngles );
 void CG_DrawActive( stereoFrame_t stereoView );
 void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean force2D );
@@ -2062,6 +2413,10 @@ void	CG_ImpactMark( qhandle_t markShader,
 void	CG_InitLocalEntities( void );
 localEntity_t	*CG_AllocLocalEntity( void );
 void	CG_AddLocalEntities( void );
+#if _NEWTRAILS
+	void CG_InitStrafeTrails( void );
+	strafeTrail_t	*CG_AllocStrafeTrail( void );
+#endif
 
 //
 // cg_effects.c
@@ -2083,6 +2438,8 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 						float speed, int numChunks, material_t chunkType, int customChunk, float baseScale );
 void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunkType );
 
+void CG_Bleed( vec3_t origin, int entityNum );
+
 localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 								qhandle_t hModel, int numframes, qhandle_t shader, int msec,
 								qboolean isSprite, float scale, int flags );// Overloaded in single player
@@ -2097,6 +2454,9 @@ void CG_InitGlass( void );
 // cg_snapshot.c
 //
 void CG_ProcessSnapshots( void );
+//unlagged - early transitioning
+void CG_TransitionEntity( centity_t *cent );
+//unlagged - early transitioning
 
 //
 // cg_info.c
