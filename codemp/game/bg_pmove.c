@@ -4525,9 +4525,9 @@ static int PM_TryRoll( void )
 		}
 
 #ifdef _GAME
-	if (!(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL)) {
+	if (!(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL) || pm->ps->stats[STAT_RACEMODE]) {
 #else
-	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL)) {
+	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL) || pm->ps->stats[STAT_RACEMODE]) {
 #endif
 		if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
 			|| BG_SpinningSaberAnim( pm->ps->legsAnim ) 
@@ -9138,6 +9138,7 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
+#if _GAME
 	if (!(g_tweakForce.integer & FT_NORAGEFIRERATE) || pm->ps->weapon == WP_MELEE || pm->ps->weapon == WP_SABER) {
 		if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
 			addTime *= 0.75;
@@ -9145,7 +9146,6 @@ if (pm->ps->duelInProgress)
 			addTime *= 1.5;
 	}
 
-#if _GAME
 	if (pm->ps->stats[STAT_RACEMODE]) {
 		if (((gentity_t *)pm_entSelf)->client->pers.haste)
 			addTime /= 1.3;
