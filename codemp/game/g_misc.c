@@ -459,9 +459,12 @@ void misc_model_breakable_init( gentity_t *ent );
 
 void SP_misc_model_breakable( gentity_t *ent ) 
 {
-	float grav;
+	float grav, modelscale;
 	G_SpawnInt( "material", "8", (int*)&ent->material );
 	G_SpawnFloat( "radius", "1", &ent->radius ); // used to scale chunk code if desired by a designer
+	G_SpawnFloat( "modelscale", "1", &modelscale );
+	ent->modelScale[0] = ent->modelScale[1] = ent->modelScale[2] = modelscale;
+	ent->s.iModelScale = modelscale * 100;
 
 	misc_model_breakable_init( ent );
 
