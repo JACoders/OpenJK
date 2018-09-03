@@ -1842,11 +1842,14 @@ void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace )
 		return;
 	if (other->client->sess.raceMode)
 		return;
-	if (level.startTime > (level.time - 1000*20)) //Dont enable for first 20 seconds of map
-		return;
-
+	//if (level.startTime > (level.time - 1000*20)) //Dont enable for first 20 seconds of map
+		//return;
 	if (nowTime - other->client->kothDebounce < 100) {//Some built in floodprotect per player?
 		return;
+	}
+	if (self->radius && ((self->r.currentOrigin[0]-other->client->ps.origin[0]) * (self->r.currentOrigin[0]-other->client->ps.origin[0]) +
+		(self->r.currentOrigin[1]-other->client->ps.origin[1]) * (self->r.currentOrigin[1]-other->client->ps.origin[1])) > self->radius*self->radius) {
+			return;
 	}
 	other->client->kothDebounce = nowTime;
 
