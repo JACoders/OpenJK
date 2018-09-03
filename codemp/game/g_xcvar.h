@@ -185,7 +185,7 @@ XCVAR_DEF( g_fixFlagSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowFlagThrow,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixCTFScores,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixFlagHitbox,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_rabbit,					"0",			CVU_Rabbit,	CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_rabbit,					"0",			CVU_Rabbit,			CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
 XCVAR_DEF( g_tweakSaber,				"0",			CVU_TweakSaber,		CVAR_ARCHIVE,									qtrue )
@@ -276,6 +276,7 @@ XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_stopHealthESP,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_blockDuelHealthSpec,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_KOTH,						"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 #define _ANTIWALLHACK 1
 #if _ANTIWALLHACK

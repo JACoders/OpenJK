@@ -8121,7 +8121,7 @@ static void G_KickSomeMofos(gentity_t *ent)
 					VectorScale( kickDir, -1, kickDir );
 				}
 			}
-			case BOTH_JUMPATTACK7: //Japro staff bdfa kick
+		case BOTH_JUMPATTACK7: //Japro staff bdfa kick
 			kickDist += 20.0f;
 			//FIXME: push forward?
 			if ( elapsedTime >= 250 && remainingTime >= 250 )

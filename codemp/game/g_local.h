@@ -291,6 +291,9 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define FT_NODRAINABSORB	  (1<<13)
 #define FT_GRIPDURINGROLL	  (1<<14)
 #define FT_WEAKPULL			  (1<<15)
+#define FT_NERFED_WEAPPULL	  (1<<16)
+#define FT_WEAPON_PULLRESIST  (1<<17)
+#define FT_NORAGEFIRERATE	  (1<<18)
 
 //Saber tweaks
 #define	ST_NO_MP_SABERLERP		(1<<0)
@@ -811,6 +814,8 @@ typedef struct {//JAPRO - Serverside - Stats
 	int teamDrainDamage;
 
 	float racetime;
+
+	int kothTime;
 } stats_t;
 
 // client data that stays across multiple respawns, but is cleared
@@ -1222,6 +1227,7 @@ struct gclient_s {
 	int			lastDamageTime;
 	//int			lastStartTime; //for autodemo floodprotect
 	int			lastInStartTrigger;
+	int			kothDebounce;
 	//int			numStakes;
 
 #if _GRAPPLE
@@ -1513,6 +1519,8 @@ typedef struct level_locals_s {
 #if _retardedsabertest
 	int			saberUpdateDebounceTime; //why not
 #endif
+
+	int			kothTime; //JAPRO KOTH
 
 	//int			lastVoteFailTime;
 //JAPRO - Serverside - Amlockteam - End

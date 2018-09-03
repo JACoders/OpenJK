@@ -4485,7 +4485,7 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 		return;
 	}
 
-	if (ent && ent->client && ((ent->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (ent->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)))//no loc based in rocketjump mode
+	if (ent && ent->client && ((ent->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (ent->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)))//no loc based in rocketjump mode -and detpack?
 		return;
 
 	if ( (dflags&DAMAGE_NO_HIT_LOC) )
@@ -4707,9 +4707,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			return;
 	}
 
-	if (attacker && attacker->client && attacker->client->sess.raceMode && !((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)))
+	if (attacker && attacker->client && attacker->client->sess.raceMode && !((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JETPACK)))
 		return;
-	if (attacker && attacker->client && attacker->client->sess.raceMode && ((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)) && targ->client && (targ != attacker))
+	if (attacker && attacker->client && attacker->client->sess.raceMode && ((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JETPACK)) && targ->client && (targ != attacker))
 		return;
 	if (targ && targ->client && targ->client->sess.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT /*&& mod != MOD_CRUSH*/ && mod != MOD_LAVA && (damage != Q3_INFINITE)) //Fixme, change this to get rid of dmg from doors/eles.. but only if they get made completely nonsolid first
 		return;
@@ -4825,16 +4825,16 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				break;
 			case MOD_BRYAR_PISTOL:
 			case MOD_BRYAR_PISTOL_ALT:
-				damage *= 5;
+				damage *= 4;
 				break;
 			case MOD_BLASTER:
 				damage *= 5;
 				break;
 			case MOD_DISRUPTOR:
-				damage *= 1;
+				damage *= 0.9f;
 				break;
 			case MOD_DISRUPTOR_SNIPER:
-				damage *= 1;
+				damage *= 0.9f;
 				break;
 			case MOD_BOWCASTER:
 				damage *= 5;
@@ -5296,7 +5296,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	// always give half damage if hurting self... but not in siege.  Heavy weapons need a counter.
 	// calculated after knockback, so rocket jumping works
 	if ( targ == attacker && !(dflags & DAMAGE_NO_SELF_PROTECTION)) {
-		if (targ && targ->client && ((targ->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (targ->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)))//fuck this?
+		if (targ && targ->client && ((targ->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3) || (targ->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM) || (targ->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JETPACK)))//fuck this?
 			damage = 1;
 		if ( level.gametype == GT_SIEGE )
 			damage *= 1.5;

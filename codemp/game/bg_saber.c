@@ -4071,11 +4071,36 @@ void PM_SetSaberMove(short newMove)
 		anim = BOTH_SABERSTAFF_STANCE;
 	}
 	*/
+
+
+
+#ifdef _GAME
+	else if ( (pm->ps->stats[STAT_RACEMODE] || !(g_tweakSaber.integer & ST_NO_REDCHAIN)) &&
+#else
+	else if ( (!cgs.isJAPro || cg.predictedPlayerState.stats[STAT_RACEMODE] || !(cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN)) &&
+#endif
+		pm->ps->fd.saberAnimLevel > FORCE_LEVEL_1 && !BG_SaberInIdle( newMove ) && !PM_SaberInParry( newMove ) && !PM_SaberInKnockaway( newMove ) && !PM_SaberInBrokenParry( newMove ) && !PM_SaberInReflect( newMove ) && !BG_SaberInSpecial(newMove))
+ 	{//readies, parries and reflections have only 1 level
+ 		anim += (pm->ps->fd.saberAnimLevel-FORCE_LEVEL_1) * SABER_ANIM_GROUP_SIZE;
+ 	}
+
+#ifdef _GAME
+	else if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakSaber.integer & ST_NO_REDCHAIN) && 
+#else
+	else if ((cgs.isJAPro && !cg.predictedPlayerState.stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN)) &&
+#endif
+		pm->ps->fd.saberAnimLevel > FORCE_LEVEL_1 && !BG_SaberInIdle(newMove) && !PM_SaberInParry(newMove) && !PM_SaberInReflect(newMove) && !BG_SaberInSpecial(newMove) && !PM_SaberInTransition(newMove))
+	{//FIXME: only have level 1 transitions for now
+		anim += (pm->ps->fd.saberAnimLevel - FORCE_LEVEL_1) * SABER_ANIM_GROUP_SIZE;
+	}
+
+/*
 	else if ( pm->ps->fd.saberAnimLevel > FORCE_LEVEL_1 &&
 		 !BG_SaberInIdle( newMove ) && !PM_SaberInParry( newMove ) && !PM_SaberInKnockaway( newMove ) && !PM_SaberInBrokenParry( newMove ) && !PM_SaberInReflect( newMove ) && !BG_SaberInSpecial(newMove))
 	{//readies, parries and reflections have only 1 level
 		anim += (pm->ps->fd.saberAnimLevel-FORCE_LEVEL_1) * SABER_ANIM_GROUP_SIZE;
 	}
+*/
 
 	// If the move does the same animation as the last one, we need to force a restart...
 	if ( saberMoveData[pm->ps->saberMove].animToUse == anim && newMove > LS_PUTAWAY)

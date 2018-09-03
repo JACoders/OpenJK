@@ -262,7 +262,7 @@ static void RemoveRabbit(void) {
 
 	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
-		if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType = IT_TEAM)) {
+		if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType == IT_TEAM)) {
 			G_FreeEntity( ent );
 			return;
 		}
@@ -288,7 +288,7 @@ static void RemoveWeaponsFromMap(void) {
 				ent->r.contents = 0;
 				//ent->inuse = qfalse;
 			}
-			else if (ent->item->giType == IT_AMMO && wDisable && G_FreeAmmoEntity(ent->item)) {
+			else if ((ent->item->giType == IT_AMMO) && wDisable && G_FreeAmmoEntity(ent->item)) {
 				ent->think = 0;
 				ent->nextthink = 0;
 				ent->s.eFlags |= EF_NODRAW;

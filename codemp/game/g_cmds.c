@@ -998,6 +998,9 @@ void G_Kill( gentity_t *ent ) {
 		return;
 	}
 
+	if (ent->client && ent->client->sess.raceMode)
+		DeletePlayerProjectiles(ent); //Not sure how ppl could realisticly abuse this.. but might as well add it
+
 	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) &&
 		level.numPlayingClients > 1 && !level.warmupTime)
 	{
@@ -1028,8 +1031,6 @@ Cmd_Kill_f
 */
 void Cmd_Kill_f( gentity_t *ent ) {
 	G_Kill( ent );
-	if (ent->client && ent->client->sess.raceMode)
-		DeletePlayerProjectiles(ent); //Not sure how ppl could realisticly abuse this.. but might as well add it
 }
 
 void Cmd_KillOther_f( gentity_t *ent )
@@ -7965,7 +7966,6 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Healthbars visible for all players\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
-
 	//Saber changes
 	Q_strncpyz(buf, " ^3Saber Changes:\n", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage^3: ^2%s\n", (d_saberSPStyleDamage.integer) ? "SP" : "MP"));
@@ -8099,6 +8099,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher alt fire is replaced with redeemer\n");
 		if (g_tweakWeapons.integer & WT_ALLOW_GUNROLL)
 			Q_strcat(buf, sizeof(buf), "   ^5Gunroll enabled\n");
+		if (g_tweakWeapons.integer & WT_NERFED_PISTOL)
+			Q_strcat(buf, sizeof(buf), "   ^5Lower max damage on pistol alt fire\n");
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 
@@ -8219,6 +8221,13 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			if (g_teamEnergizeScale.value != 1.0f)
 				Q_strcat(buf, sizeof(buf), va("   ^5Team energize scale: ^2%.2f\n", g_teamEnergizeScale.value));
 		}
+		if (g_tweakForce.integer & FT_NERFED_WEAPPULL)
+			Q_strcat(buf, sizeof(buf), "   ^5Nerfed weapon pull distance\n");
+		if (g_tweakForce.integer & FT_WEAPON_PULLRESIST)
+			Q_strcat(buf, sizeof(buf), "   ^5Pull resistance when shooting/charging weapons\n");
+		if (g_tweakForce.integer & FT_NORAGEFIRERATE)
+			Q_strcat(buf, sizeof(buf), "   ^5Dark rage does not affect weapon firerate\n");
+
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 	buf[0] = '\0';

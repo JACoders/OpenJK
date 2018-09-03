@@ -977,7 +977,7 @@ void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each c
 	r.svFlags |= SVF_BROADCAST;
 }
 #endif
-void PlayActualGlobalSound(char * sound) {
+void PlayActualGlobalSound(int soundindex) {
 	gentity_t *player;
 	int i;
 
@@ -985,7 +985,7 @@ void PlayActualGlobalSound(char * sound) {
 		if (!g_entities[i].inuse)
 			continue;
 		player = &g_entities[i];
-		G_Sound(player, CHAN_AUTO, G_SoundIndex(sound));
+		G_Sound(player, CHAN_AUTO, soundindex);
 	}
 }
 
@@ -1416,18 +1416,24 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs)
 	}
 }
 
-void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank, float addedScore) {
+void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank, float addedScore, int awesomenoise) {
 	int nameColor, color;
 	char awardString[28] = {0}, messageStr[64] = {0}, nameStr[32] = {0};
 
-	//TODO print rank increase
-
 	//Com_Printf("SOldrank %i SNewrank %i GOldrank %i GNewrank %i Addscore %.1f\n", season_oldRank, season_newRank, global_oldRank, global_newRank, addedScore);
 
-	if (global_newRank == 1) //WR, Play the sound
-		PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
-	else if (global_newRank > 0) //PB
-		PlayActualGlobalSound("sound/chars/rosh/misc/taunt1");
+	if (global_newRank == 1) {//WR, Play the sound
+		//if (awesomenoise)
+			//PlayActualGlobalSound(awesomenoise); //Only for simple PB not WR i guess..
+		//else
+			PlayActualGlobalSound(G_SoundIndex("sound/chars/rosh_boss/misc/victory3"));
+	}
+	else if (global_newRank > 0) {//PB
+		if (awesomenoise)
+			PlayActualGlobalSound(awesomenoise);
+		else
+			PlayActualGlobalSound(G_SoundIndex("sound/chars/rosh/misc/taunt1"));
+	}
 
 	nameColor = 7 - (clientNum % 8);//sad hack
 	if (nameColor < 2)
@@ -1520,7 +1526,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 }
 
 void StripWhitespace(char *s);
-void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
+void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum, int awesomenoise) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char	string[1024] = {0}, info[1024] = {0}, coursename[40], timeStr[32] = {0}, styleString[32] = {0};
 	qboolean seasonPB = qfalse, globalPB = qfalse, WR = qfalse;
@@ -1779,7 +1785,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	CALL_SQLITE (close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
-	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank, addedScore);
+	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank, addedScore, awesomenoise);
 	//DebugWriteToDB("G_AddRaceTime");
 }
 

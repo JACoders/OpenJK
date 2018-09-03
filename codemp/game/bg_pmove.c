@@ -1199,7 +1199,7 @@ static void PM_Friction( void ) {
 		if ( pm->waterlevel <= 1 ) {
 			if (pml.walking && !(pml.groundTrace.surfaceFlags & SURF_SLICK) && (moveStyle != MV_SLICK || (pm->cmd.buttons & BUTTON_WALKING))) { //Slick style here potentially
 				// if getting knocked back, no friction
-				if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
+				if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) { //GB?
 					control = speed < pm_stopspeed ? pm_stopspeed : speed;
 					drop += control*realfriction*pml.frametime;
 				}
@@ -4548,9 +4548,9 @@ static int PM_TryRoll( void )
 		}
 
 #ifdef _GAME
-	if (!(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL)) {
+	if (!(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL) || pm->ps->stats[STAT_RACEMODE]) {
 #else
-	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL)) {
+	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL) || pm->ps->stats[STAT_RACEMODE]) {
 #endif
 		if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
 			|| BG_SpinningSaberAnim( pm->ps->legsAnim ) 
@@ -8750,7 +8750,12 @@ if (pm->ps->duelInProgress)
 	}
 
 	if ( pm->ps->weaponTime > 0 ) {
-		return;
+		//This is the saddest hack we have seen yet
+		if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_JETPACK && pm->ps->weapon == WP_DET_PACK && pm->ps->hasDetPackPlanted && /*!(pm->cmd.buttons & BUTTON_ATTACK) &&*/ pm->cmd.buttons & BUTTON_ALT_ATTACK) {
+		}
+		else {
+			return;
+		}
 	}
 
 	if (pm->ps->weapon == WP_DISRUPTOR &&
@@ -9227,10 +9232,20 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
-	if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
-		addTime *= 0.75;
-	else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
-		addTime *= 1.5;
+#if _GAME
+	if (!(g_tweakForce.integer & FT_NORAGEFIRERATE) || pm->ps->weapon == WP_MELEE || pm->ps->weapon == WP_SABER) {
+		if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
+			addTime *= 0.75;
+		else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
+			addTime *= 1.5;
+	}
+
+	if (pm->ps->stats[STAT_RACEMODE]) {
+		if (((gentity_t *)pm_entSelf)->client->pers.haste)
+			addTime /= 1.3;
+	}
+#endif
+
 	pm->ps->weaponTime += addTime;
 }
 
@@ -10068,7 +10083,14 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 			ps->speed *= 0.85f;
 			break;
 		case FORCE_LEVEL_3:
-			ps->speed *= 0.55f;
+#if _GAME
+			if (g_tweakSaber.integer & ST_NO_REDCHAIN && !ps->stats[STAT_RACEMODE])
+#else
+			if (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN && !cg.predictedPlayerState.stats[STAT_RACEMODE])
+#endif
+				ps->speed *= 0.70f;
+			else
+				ps->speed *= 0.55f;
 			break;
 		default:
 			break;

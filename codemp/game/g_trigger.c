@@ -30,7 +30,15 @@ void InitTrigger( gentity_t *self ) {
 	if (!VectorCompare (self->s.angles, vec3_origin))
 		G_SetMovedir (self->s.angles, self->movedir);
 
-	trap->SetBrushModel( (sharedEntity_t *)self, self->model );
+	if (self->model && self->model[0] == '*') { //Feature from Lugormod - Logical triggers without model key using mins/maxs instead
+		trap->SetBrushModel( (sharedEntity_t *)self, self->model );
+	}
+	//Check for .md3 or .glm model ?
+	else {
+		G_SpawnVector("mins", "-8 -8 -8", self->r.mins);
+		G_SpawnVector("maxs", "8 8 8", self->r.maxs);
+	}
+
 	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap->SetBrushModel
 	self->r.svFlags = SVF_NOCLIENT; //whats this? triggers are not networked to clients then?
 
@@ -1225,19 +1233,19 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK && style != MV_SWOOP && style != MV_JETPACK && style != MV_SLICK && style != MV_BOTCPM) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1 || player->client->ps.powerups[PW_YSALAMIRI] > 0) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 1!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
 		}
 		else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 2) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 2 || player->client->ps.powerups[PW_YSALAMIRI] > 0) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 2!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
 		}
 		else if (restrictions & (1 << 2)) {//flags 4 = only jump3
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 3) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 3 || player->client->ps.powerups[PW_YSALAMIRI] > 0) { //Also dont allow ysal in FJ specified courses..?
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 3!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
@@ -1363,9 +1371,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		player->client->lastInStartTrigger = level.time;
 		return;
 	}
-	else {
-		player->client->lastInStartTrigger = level.time;
-	}
+	player->client->lastInStartTrigger = level.time;
+
 	//if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		//return;
 	//if (player->client->pers.stats.startTime) //Instead of floodprotect, dont let player start a timer if they already have one.  Mapmakers should then put reset timers over the start area.
@@ -1469,10 +1476,10 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 }
 
-void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank, float addedScore);
+void PrintRaceTime(char *username, char *playername, char *message, char *style, int topspeed, int average, char *timeStr, int clientNum, int season_newRank, qboolean spb, int global_newRank, qboolean loggedin, qboolean valid, int season_oldRank, int global_oldRank, float addedScore, int awesomenoise);
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize);
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMS);
-void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
+void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum, int awesomenoise); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
 		return;
@@ -1531,10 +1538,14 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				Q_strncpyz( c, S_COLOR_GREEN, sizeof(c) );
 		}
 
+		/*
 		if (valid && (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JKA) && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
 			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);//Just play it in jka physics for now...
-		else if (trigger->noise_index) 
+		else*/
+		if (trigger->noise_index) //Still play this always? Or handle this later..
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
+
+		//Pass awesomenoise_index through to play it if its a PB
 	
 		IntegerToRaceName(player->client->ps.stats[STAT_MOVEMENTSTYLE], styleStr, sizeof(styleStr));
 		TimeToString((int)(time*1000), timeStr, sizeof(timeStr), qfalse);
@@ -1542,7 +1553,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		Q_StripColor(playerName);
 	
 		if (!valid) {
-			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, 0, 0, 0);
+			PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qfalse, 0, 0, 0, 0);
 		}
 		else {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -1552,10 +1563,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			if (p)
 				*p = 0;
 			if (player->client->pers.userName[0]) { //omg
-				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
+				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum, trigger->awesomenoise_index);
 			}
 			else {
-				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qtrue, 0, 0, 0);
+				PrintRaceTime(NULL, playerName, trigger->message, styleStr, (int)(player->client->pers.stats.topSpeed + 0.5f), average, timeStr, player->client->ps.clientNum, qfalse, qfalse, qfalse, qfalse, qtrue, 0, 0, 0, 0);
 			}
 		}
 
@@ -1817,7 +1828,7 @@ void SP_target_restrict(gentity_t *self)//JAPRO Onlybhop
 		self->use = Use_target_restrict_on;
 }
 
-void SP_trigger_newpush(gentity_t *self)//JAPRO Onlybhop
+void SP_trigger_newpush(gentity_t *self)//JAPRO Newpush
 {
 	char	*s;
 	InitTrigger(self);
@@ -1830,6 +1841,279 @@ void SP_trigger_newpush(gentity_t *self)//JAPRO Onlybhop
 	}
 
 	self->touch = NewPush;
+	trap->LinkEntity ((sharedEntity_t *)self);
+}
+
+void Touch_KOTH( gentity_t *self, gentity_t *other, trace_t *trace ) 
+{
+	const int nowTime = GetTimeMS();
+	int addTime;
+
+	if( !other->client )
+		return;
+	if (other->s.eType == ET_NPC)
+		return;
+	if (self->flags & FL_INACTIVE) //set by target_deactivate
+		return;
+	if (!g_KOTH.integer)
+		return;
+	if (level.gametype != GT_TEAM)
+		return;
+	if (other->client->ps.duelInProgress)
+		return;
+	if (other->client->sess.raceMode)
+		return;
+	//if (level.startTime > (level.time - 1000*20)) //Dont enable for first 20 seconds of map
+		//return;
+	if (nowTime - other->client->kothDebounce < 100) {//Some built in floodprotect per player?
+		return;
+	}
+	if (self->radius && ((self->r.currentOrigin[0]-other->client->ps.origin[0]) * (self->r.currentOrigin[0]-other->client->ps.origin[0]) +
+		(self->r.currentOrigin[1]-other->client->ps.origin[1]) * (self->r.currentOrigin[1]-other->client->ps.origin[1])) > self->radius*self->radius) {
+			return;
+	}
+	other->client->kothDebounce = nowTime;
+
+	addTime = nowTime - other->client->pers.stats.kothTime;
+	if (addTime > 200) {
+		//Com_Printf("Add time is %i\n", addTime);
+		addTime = 200;
+	}
+
+	if (other->client->sess.sessionTeam == TEAM_RED)
+		level.kothTime += addTime;
+	else if (other->client->sess.sessionTeam == TEAM_BLUE)
+		level.kothTime -= addTime;
+
+	other->client->pers.stats.kothTime = nowTime;
+
+	if (level.kothTime > 3000) {
+		AddTeamScore(other->s.pos.trBase, TEAM_RED, 1, qfalse);
+		//trap->SendServerCommand( -1, "chat \"Red Scored\"");
+		CalculateRanks();
+		level.kothTime = 0;
+	}
+	else if (level.kothTime < -3000) {
+		AddTeamScore(other->s.pos.trBase, TEAM_BLUE, 1, qfalse);
+		//trap->SendServerCommand( -1, "chat \"Blue Scored\"");
+		CalculateRanks();
+		level.kothTime = 0;
+	}
+
+#if 0
+
+// moved to just above multi_trigger because up here it just checks if the trigger is not being touched
+// we want it to check any conditions set on the trigger, if one of those isn't met, the trigger is considered to be "cleared"
+//	if ( self->e_ThinkFunc == thinkF_trigger_cleared_fire )
+//	{//We're waiting to fire our target2 first
+//		self->nextthink = level.time + self->speed;
+//		return;
+//	}
+
+//JAPRO - Serverside - Allow/disallow use button/trigger for duelers - Start
+	if (other->client->ps.duelInProgress && (g_allowUseInDuel.integer >= 2))//Loda fixme, make this spawnflags 5 for button? or should it block all triggers?
+		return;
+	if ((self->spawnflags & 4) && other->client->ps.duelInProgress && !g_allowUseInDuel.integer)
+		return;
+//JAPRO - Serverside - Allow/disallow use button/trigger for duelers - End
+
+	if ((self->spawnflags & 4) && (other->client->ps.powerups[PW_NEUTRALFLAG] && g_rabbit.integer))
+		return;
+
+	if ( self->spawnflags & 1 )
+	{
+		if ( other->s.eType == ET_NPC )
+		{
+			return;
+		}
+	}
+	else
+	{
+		if ( self->spawnflags & 16 )
+		{//NPCONLY
+			if ( other->NPC == NULL )
+			{
+				return;
+			}
+		}
+
+		if ( self->NPC_targetname && self->NPC_targetname[0] )
+		{
+			if ( other->script_targetname && other->script_targetname[0] )
+			{
+				if ( Q_stricmp( self->NPC_targetname, other->script_targetname ) != 0 )
+				{//not the right guy to fire me off
+					return;
+				}
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
+	if ( self->spawnflags & 2 )
+	{//FACING
+		vec3_t	forward;
+
+		AngleVectors( other->client->ps.viewangles, forward, NULL, NULL );
+
+		if ( DotProduct( self->movedir, forward ) < 0.5 )
+		{//Not Within 45 degrees
+			return;
+		}
+	}
+
+	if ( self->spawnflags & 4 )
+	{//USE_BUTTON
+		if( !( other->client->pers.cmd.buttons & BUTTON_USE ) )
+		{//not pressing use button
+			return;
+		}
+
+		if ((other->client->ps.weaponTime > 0 && other->client->ps.torsoAnim != BOTH_BUTTON_HOLD && other->client->ps.torsoAnim != BOTH_CONSOLE1) || other->health < 1 ||
+			(other->client->ps.pm_flags & PMF_FOLLOW) || other->client->sess.sessionTeam == TEAM_SPECTATOR ||
+			other->client->ps.forceHandExtend != HANDEXTEND_NONE)
+		{ //player has to be free of other things to use.
+			return;
+		}
+
+		if (self->genericValue7)
+		{ //we have to be holding the use key in this trigger for x milliseconds before firing
+			if (level.gametype == GT_SIEGE &&
+				self->idealclass && self->idealclass[0])
+			{ //only certain classes can activate it
+				if (!other ||
+					!other->client ||
+					other->client->siegeClass < 0)
+				{ //no class
+					return;
+				}
+
+				if (!G_NameInTriggerClassList(bgSiegeClasses[other->client->siegeClass].name, self->idealclass))
+				{ //wasn't in the list
+					return;
+				}
+			}
+
+			if (!G_PointInBounds( other->client->ps.origin, self->r.absmin, self->r.absmax ))
+			{
+				return;
+			}
+			else if (other->client->isHacking != self->s.number && other->s.number < MAX_CLIENTS )
+			{ //start the hack
+				other->client->isHacking = self->s.number;
+				VectorCopy(other->client->ps.viewangles, other->client->hackingAngles);
+				other->client->ps.hackingTime = level.time + self->genericValue7;
+				other->client->ps.hackingBaseTime = self->genericValue7;
+				if (other->client->ps.hackingBaseTime > 60000)
+				{ //don't allow a bit overflow
+					other->client->ps.hackingTime = level.time + 60000;
+					other->client->ps.hackingBaseTime = 60000;
+				}
+				return;
+			}
+			else if (other->client->ps.hackingTime < level.time)
+			{ //finished with the hack, reset the hacking values and let it fall through
+				other->client->isHacking = 0; //can't hack a client
+				other->client->ps.hackingTime = 0;
+			}
+			else
+			{ //hack in progress
+				return;
+			}
+		}
+	}
+
+	if ( self->spawnflags & 8 )
+	{//FIRE_BUTTON
+		if( !( other->client->pers.cmd.buttons & BUTTON_ATTACK ) &&
+			!( other->client->pers.cmd.buttons & BUTTON_ALT_ATTACK ) )
+		{//not pressing fire button or altfire button
+			return;
+		}
+	}
+
+	if ( self->radius )
+	{
+		vec3_t	eyeSpot;
+
+		//Only works if your head is in it, but we allow leaning out
+		//NOTE: We don't use CalcEntitySpot SPOT_HEAD because we don't want this
+		//to be reliant on the physical model the player uses.
+		VectorCopy(other->client->ps.origin, eyeSpot);
+		eyeSpot[2] += other->client->ps.viewheight;
+
+		if ( G_PointInBounds( eyeSpot, self->r.absmin, self->r.absmax ) )
+		{
+			if( !( other->client->pers.cmd.buttons & BUTTON_ATTACK ) &&
+				!( other->client->pers.cmd.buttons & BUTTON_ALT_ATTACK ) )
+			{//not attacking, so hiding bonus
+				/*
+				//FIXME:  should really have sound events clear the hiddenDist
+				other->client->hiddenDist = self->radius;
+				//NOTE: movedir HAS to be normalized!
+				if ( VectorLength( self->movedir ) )
+				{//They can only be hidden from enemies looking in this direction
+					VectorCopy( self->movedir, other->client->hiddenDir );
+				}
+				else
+				{
+					VectorClear( other->client->hiddenDir );
+				}
+				*/
+				//Not using this, at least not yet.
+			}
+		}
+	}
+
+	if ( self->spawnflags & 4 )
+	{//USE_BUTTON
+		if (other->client->sess.raceMode && other->client->sess.movementStyle == MV_JETPACK && VectorLengthSquared(other->client->ps.velocity))
+			return;
+		if (other->client->sess.raceMode && other->client->sess.movementStyle == MV_SWOOP && other->client->ps.m_iVehicleNum)
+			return;
+		if (other->client->ps.torsoAnim != BOTH_BUTTON_HOLD &&
+			other->client->ps.torsoAnim != BOTH_CONSOLE1)
+		{
+			G_SetAnim( other, NULL, SETANIM_TORSO, BOTH_BUTTON_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+		}
+		else
+		{
+			other->client->ps.torsoTimer = 500;
+		}
+		other->client->ps.weaponTime = other->client->ps.torsoTimer;
+	}
+	
+	if ( self->think == trigger_cleared_fire )
+	{//We're waiting to fire our target2 first
+		self->nextthink = level.time + self->speed;
+		return;
+	}
+
+#endif
+
+	multi_trigger( self, other );
+}
+
+void SP_trigger_KOTH(gentity_t *self)//JAPRO Newpush
+{
+	//char	*s;
+	InitTrigger(self);
+
+	/*
+	if ( G_SpawnString( "noise", "", &s ) ) {
+		if (s && s[0])
+			self->noise_index = G_SoundIndex(s);
+		else
+			self->noise_index = 0;
+	}
+	*/
+
+	Com_Printf("Spawned koth\n");
+
+	self->touch = Touch_KOTH;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }
 

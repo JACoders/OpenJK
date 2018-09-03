@@ -153,6 +153,9 @@ field_t fields[] = {
 	{ "lostenemyscript",		FOFS( behaviorSet[BSET_LOSTENEMY] ),	F_STRING },//name of script to run
 	{ "message",				FOFS( message ),						F_STRING },
 	{ "mindtrickscript",		FOFS( behaviorSet[BSET_MINDTRICK] ),	F_STRING },//name of script to run
+
+	//Add mins/maxs here for logical trigger_multiples?
+
 	{ "model",					FOFS( model ),							F_STRING },
 	{ "model2",					FOFS( model2 ),							F_STRING },
 	{ "npc_target",				FOFS( NPC_target ),						F_STRING },
@@ -270,6 +273,7 @@ void SP_trigger_timer_start(gentity_t *self);//JAPRO Timers
 void SP_trigger_timer_checkpoint(gentity_t *self);
 void SP_trigger_timer_stop(gentity_t *self);
 void SP_trigger_newpush (gentity_t *ent);
+void SP_trigger_KOTH (gentity_t *ent);//JAPRO koth
 
 void SP_target_remove_powerups( gentity_t *ent );
 void SP_target_give (gentity_t *ent);
@@ -693,6 +697,9 @@ spawn_t	spawns[] = {
 	{ "trigger_asteroid_field",			qfalse,	SP_trigger_asteroid_field },
 	{ "trigger_hurt",					qfalse,	SP_trigger_hurt },
 	{ "trigger_hyperspace",				qfalse,	SP_trigger_hyperspace },
+
+	{ "trigger_KOTH",					qfalse,	SP_trigger_KOTH},//JAPRO KOTH
+
 	{ "trigger_lightningstrike",		qfalse,	SP_trigger_lightningstrike },
 	{ "trigger_multiple",				qfalse,	SP_trigger_multiple },
 
