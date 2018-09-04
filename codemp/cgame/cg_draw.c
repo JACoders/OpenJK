@@ -3814,7 +3814,7 @@ static float CG_DrawEnemyInfo ( float y )
 		title = CG_GetStringEdString("MP_INGAME", "DUELING");
 		clientNum = cg.snap->ps.duelIndex;
 	}
-	else if ( cgs.gametype == GT_DUEL && cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR)
+	else if (cgs.gametype == GT_DUEL && cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR)
 	{
 		title = CG_GetStringEdString("MP_INGAME", "DUELING");
 		if (cg.snap->ps.clientNum == cgs.duelist1)
@@ -5717,7 +5717,6 @@ static void CG_DrawReward( void ) {
 								SMALLCHAR_WIDTH * cgs.widthRatioCoef, SMALLCHAR_HEIGHT, 0 );
 	}
 	else {
-
 		count = cg.rewardCount[0];
 
 		y = 56;
@@ -9852,8 +9851,8 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[0] = 0.7f;
 			hcolor[1] = 0.7f;
 			hcolor[2] = 0;
-
-			if (!cg.renderingThirdPerson && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDEYSALSHELL))
+			
+			if (!cg.renderingThirdPerson && !cg.predictedPlayerState.stats[STAT_RACEMODE] && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDEYSALSHELL))
 			{
 				CG_FillRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, hcolor );
 			}

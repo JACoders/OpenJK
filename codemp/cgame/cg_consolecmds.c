@@ -1197,59 +1197,62 @@ void CG_PluginDisable_f( void ) {
 
 //Playermodel shit
 static qboolean japroPlayerStyles[] = {
-	qtrue,//{"Fullbright skins"},//0
-	qtrue,//{"Private duel shell"},//1
-	qtrue,//{"Hide duelers if in FFA"},//2
-	qtrue,//{"Hide racers if in FFA"},//3
-	qtrue,//{"Hide non racers if racer"},//4
-	qtrue,//{"Hide racers if racer"},//5
-	qtrue,//{"VFX racers"},//6
-	qtrue,//{"VFX duelers"},//7
-	qfalse,//{"VFX am alt dim"}//8
-	qfalse,//{ "Hide non duelers" }//9
-	qtrue,//{ "Hide ysal shell" }//10
-	qtrue,//{ "LOD player model }//11
-	qtrue,//{ "Fade corpses immediately" }//12
-	qtrue,//{ "Disable corpse fading SFX" },//13
-	qfalse//{ "Santa Hat" }//14
+	qtrue,//Fullbright skins
+	qtrue,//Private duel shell
+	qtrue,//Hide duelers in FFA
+	qtrue,//Hide racers in FFA
+	qtrue,//Hide non-racers in race mode
+	qtrue,//Hide racers in race mode
+	qtrue,//Disable racer VFX
+	qtrue,//Disable non-racer VFX
+	qtrue,//VFX duelers
+	qfalse,//VFX am alt dim
+	qfalse,//Hide non duelers
+	qtrue,//Hide ysal shell
+	qtrue,//LOD player model
+	qtrue,//Fade corpses immediately
+	qtrue,//Disable corpse fading SFX
+	//qfalse//Santa Hat
 };
 
 //JA+ Specific = amaltdim ?
 //Can we treat altdim same as racemode?
 static qboolean japlusPlayerStyles[] = {
-	qtrue,//{"Fullbright skins"},//0
-	qtrue,//{"Private duel shell"},//1
-	qtrue,//{"Hide duelers if in FFA"},//2
-	qfalse,//{"Hide racers if in FFA"},//3
-	qfalse,//{"Hide non racers if racer"},//4
-	qfalse,//{"Hide racers if racer"},//5
-	qfalse,//{"VFX racers"},//6
-	qtrue,//{"VFX duelers"},//7
-	qtrue,//{"VFX am alt dim"}//8
-	qfalse,//{ "Hide non duelers" }//9
-	qtrue,//{ "Hide ysal shell" }//10
-	qtrue,//{ "LOD player model" }//11
-	qtrue,//{ "Fade corpses immediately" }//12
-	qtrue,//{ "Disable corpse fading SFX" },//13
-	qfalse//{ "Santa Hat" }//14
+	qtrue,//Fullbright skins
+	qtrue,//Private duel shell
+	qtrue,//Hide duelers in FFA
+	qfalse,//Hide racers in FFA
+	qfalse,//Hide non-racers in race mode
+	qfalse,//Hide racers if racer
+	qfalse,//Disable racer VFX
+	qfalse,//Disable non-racer VFX
+	qtrue,//VFX duelers
+	qtrue,//VFX am alt dim
+	qfalse,//Hide non dueler
+	qtrue,//Hide ysal shell
+	qtrue,//LOD player model
+	qtrue,//Fade corpses immediately
+	qtrue,//Disable corpse fading SFX
+	//qfalse
 };
 
 static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{ "Fullbright skins" },//0
 	{ "Private duel shell" },//1//need better name for this?
-	{ "Hide duelers if in FFA" },//2
-	{ "Hide racers if in FFA" },//3
-	{ "Hide non racers if racer" },//4
-	{ "Hide racers if racer" },//5
+	{ "Hide duelers in FFA" },//2
+	{ "Hide racers in FFA" },//3
+	{ "Hide non-racers in race mode" },//4
+	{ "Hide racers in race mode" },//5
 	{ "Disable racer VFX" },//6
-	{ "VFX duelers 1" },//7
-	{ "VFX am alt dim 1" },//8
-	{ "Hide non duelers" },//9
-	{ "Hide ysal shell" },//10
-	{ "LOD player model"},//11 need better name for this
-	{ "Fade corpses immediately" },//12
-	{ "Disable corpse fading SFX" },//13
-	//{ "Santa hat" }//14
+	{ "Disable non-racer VFX in race mode" },//7
+	{ "VFX duelers 1" },//8
+	{ "VFX am alt dim 1" },//9
+	{ "Hide non duelers" },//10
+	{ "Hide ysal shell" },//11
+	{ "LOD player model"},//12 need better name for this
+	{ "Fade corpses immediately" },//13
+	{ "Disable corpse fading SFX" },//14
+	//{ "Santa hat" }//15
 };
 static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
 

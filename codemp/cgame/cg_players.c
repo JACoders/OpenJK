@@ -11380,36 +11380,36 @@ skipTrail:
 	{
 		if (cgs.gametype == GT_CTY && (cent->currentState.powerups & (1 << PW_REDFLAG)))
 		{
-			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliredShader );
+			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliredShader);
 		}
 		else if (cgs.gametype == GT_CTY && (cent->currentState.powerups & (1 << PW_BLUEFLAG)))
 		{
-			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliblueShader );
+			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliblueShader);
 		}
 		else
 		{
-			if (!((cg_stylePlayer.integer & JAPRO_STYLE_HIDEYSALSHELL) && cent->currentState.number == cg.predictedPlayerState.clientNum))
-				CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysalimariShader );
+			if (!cg.predictedPlayerState.stats[STAT_RACEMODE] && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDEYSALSHELL && cent->currentState.number == cg.predictedPlayerState.clientNum))
+				CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysalimariShader);
 		}
 	}
-
+	
 	if (cent->currentState.powerups & (1 << PW_FORCE_BOON))
 	{
-		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.boonShader );
+		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.boonShader);
 	}
 
 	if (cent->currentState.powerups & (1 << PW_FORCE_ENLIGHTENED_DARK))
 	{
-		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.endarkenmentShader );
+		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.endarkenmentShader);
 	}
 	else if (cent->currentState.powerups & (1 << PW_FORCE_ENLIGHTENED_LIGHT))
 	{
-		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.enlightenmentShader );
+		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.enlightenmentShader);
 	}
 
 	if (cent->currentState.eFlags & EF_INVULNERABLE)
 	{
-		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.0f, cgs.media.invulnerabilityShader );
+		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.0f, cgs.media.invulnerabilityShader);
 	}
 stillDoSaber:
 	if ((cent->currentState.eFlags & EF_DEAD) && cent->currentState.weapon == WP_SABER)
@@ -12277,17 +12277,19 @@ stillDoSaber:
 			if (cg.snap->ps.duelInProgress) { //We are dueling
 											  //Uhh.. dont draw anyone differently since they are invis i guess and us/opponent look normal
 			}
-			else if (cgs.isJAPro && cg.predictedPlayerState.stats[STAT_RACEMODE] && //We are racing
-				(!(cg_stylePlayer.integer & JAPRO_STYLE_RACERVFXDISABLE) || !cent->currentState.bolt1)) { //they're either not racing or we have racer effects disabled
-				stylePlayer1 = qtrue;
-				drawPlayer = qfalse;
+			else if (cgs.isJAPro && cg.predictedPlayerState.stats[STAT_RACEMODE]) {// We are racing
+				if ((!cent->currentState.bolt1 && !(cg_stylePlayer.integer & JAPRO_STYLE_NONRACERVFXDISABLE)) || //they're in FFA or they're another racer
+					(!cg_stylePlayer.integer & JAPRO_STYLE_RACERVFXDISABLE)) {
+					stylePlayer1 = qtrue;
+					drawPlayer = qfalse;
+				}
 			}
 			else { //We are in ffa
-				if ((cg_stylePlayer.integer & JAPRO_STYLE_VFXDUELERS) && cent->currentState.bolt1 == 1) { //They are dueling
+				if (cent->currentState.bolt1 == 1 && (cg_stylePlayer.integer & JAPRO_STYLE_VFXDUELERS)) { //They are dueling
 					stylePlayer1 = qtrue;
 					drawPlayer = qtrue;
 				}
-				else if (!(cg_stylePlayer.integer & JAPRO_STYLE_RACERVFXDISABLE) && cgs.isJAPro && cent->currentState.bolt1 == 2) { //They are racing
+				else if (cgs.isJAPro && cent->currentState.bolt1 == 2 && !(cg_stylePlayer.integer & JAPRO_STYLE_RACERVFXDISABLE)) { //They are racing
 					stylePlayer1 = qtrue;
 					drawPlayer = qfalse;
 				}
