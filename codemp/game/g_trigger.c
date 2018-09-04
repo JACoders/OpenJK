@@ -2726,6 +2726,9 @@ void func_timer_use( gentity_t *self, gentity_t *other, gentity_t *activator ) {
 }
 
 void SP_func_timer( gentity_t *self ) {
+	if (self->spawnflags & 2 && (!g_KOTH.integer || level.gametype != GT_TEAM)) //spawnflag to only use this entity for KOTH
+		return;
+
 	G_SpawnFloat( "random", "1", &self->random);
 	G_SpawnFloat( "wait", "1", &self->wait );
 
