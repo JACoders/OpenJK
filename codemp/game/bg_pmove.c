@@ -393,26 +393,14 @@ QINLINE int PM_GetMovePhysics(void)
 	else if (g_movementStyle.integer >= MV_NUMSTYLES)
 		return 1;
 #else
-	if (!cgs.isJAPro) {
-		if (cgs.gametype != GT_SIEGE)
-			return MV_JKA;
-		else
-			return MV_SIEGE;
+	if (cgs.isJAPro) {
+		if (cg.predictedPlayerState.m_iVehicleNum)
+			return MV_SWOOP;
+		return cg.predictedPlayerState.stats[STAT_MOVEMENTSTYLE];
 	}
-
-	if (cg.predictedPlayerState.m_iVehicleNum)
-		return MV_SWOOP;
-	return cg.predictedPlayerState.stats[STAT_MOVEMENTSTYLE];
-	/*
-	else if (pm->ps->stats[STAT_RACEMODE])
-		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
-	else if (cgs.jcinfo & JAPRO_CINFO_CPM)
-		return 3;
-	else if (cgs.jcinfo & JAPRO_CINFO_HL2)
-		return 2;
-	else if (cgs.jcinfo & JAPRO_CINFO_NOSTRAFE)
-		return 0;
-		*/
+	if (cgs.gametype == GT_SIEGE)
+		return MV_SIEGE;
+	return MV_JKA;
 #endif
 	return 1;
 }
@@ -13282,10 +13270,9 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 		if (pmove->ps->stats[STAT_RACEMODE] && BG_InRollFixed(pmove->ps, pmove->ps->legsAnim)) { //Using float now
-			if ( msec > pmove->pmove_msec ) {
-				msec = pmove->pmove_msec;
+			if ( msec > 8 ) {
+				msec = 8;
 			}
-			//Com_Printf("Chopping\n");
 		}
 		else if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {

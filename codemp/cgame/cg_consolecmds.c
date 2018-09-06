@@ -602,7 +602,7 @@ static void CG_FollowFastest_f(void) {
 			if (cent->currentState.eType != ET_PLAYER)
 				continue;
 
-			currentSpeed = VectorLength(cent->currentState.pos.trDelta);
+			currentSpeed = VectorLengthSquared(cent->currentState.pos.trDelta);
 
 			if (currentSpeed > fastestSpeed) {
 				fastestSpeed = currentSpeed;
@@ -1256,8 +1256,8 @@ static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 };
 static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
 
-void CG_StylePlayer_f(void) {
-
+void CG_StylePlayer_f(void)
+{
 	if (trap->Cmd_Argc() == 1) {
 		int i = 0, display = 0;
 
@@ -1344,8 +1344,8 @@ static bitInfo_T speedometerSettings[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 };
 static const int MAX_SPEEDOMETER_SETTINGS = ARRAY_LEN(speedometerSettings);
 
-void CG_SpeedometerSettings_f(void) {
-
+void CG_SpeedometerSettings_f(void)
+{
 	if (trap->Cmd_Argc() == 1) {
 		int i = 0, display = 0;
 
