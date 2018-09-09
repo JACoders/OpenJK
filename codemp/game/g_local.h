@@ -875,7 +875,7 @@ typedef struct clientPersistant_s {
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
-
+	unsigned int	unlocks;
 
 	stats_t		stats;
 } clientPersistant_t;

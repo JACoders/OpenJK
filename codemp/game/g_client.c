@@ -2198,7 +2198,31 @@ char *G_ValidateUserinfo( const char *userinfo )
 	return NULL;
 }
 
-qboolean ClientUserinfoChanged( int clientNum ) {
+void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeticStringSize) {
+	int MAX_COSMETICS = 32;
+	int cosmetics = atoi(cosmeticString);
+
+	if (!client->pers.userName || !client->pers.userName[0] || !client->pers.unlocks) {
+		//client->pers.savedCosmetics = cosmetics; //Problem - if we remove cosmetic before they login, do we save it and add it back once they login?
+		//Actually we can just do a clientuserinfochanged on login if they have pers.unlocks ?
+		cosmetics = 0; 	//Remove all cosmetics
+	}
+
+	if (cosmetics) {//Optimized
+		int i;
+
+		for (i = 0; i < MAX_COSMETICS; i++) { //For each bit, check if its allowed, if not, remove.
+			if ((cosmetics & (1 << i))) {
+				if (!(client->pers.unlocks & 1 << i)) { //Check to see if its unlocked, if not disable.
+					cosmetics &= ~i;
+				}
+			}
+		}
+	}
+
+	Q_strncpyz(cosmeticString, va("%i", cosmetics), sizeof(cosmeticString));
+}
+
 qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as an INT can just be max_qpath instead of max_info_string and help performance  a bit..?
 	gentity_t	*ent = g_entities + clientNum;
 	gclient_t	*client = ent->client;
@@ -2206,7 +2230,7 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 	char		*s=NULL,						*value=NULL,
 				userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},		oldClientinfo[MAX_INFO_STRING]={0},
 				model[MAX_QPATH]={0},			forcePowers[MAX_QPATH]={0},		oldname[MAX_NETNAME]={0},
-				className[MAX_QPATH]={0},		color1[MAX_QPATH]={0},	color2[MAX_QPATH]={0}, cp_sbRGB1[MAX_QPATH]={0}, cp_sbRGB2[MAX_QPATH]={0};
+				className[MAX_QPATH]={0},		color1[MAX_QPATH]={0},	color2[MAX_QPATH]={0}, cp_sbRGB1[MAX_QPATH]={0}, cp_sbRGB2[MAX_QPATH]={0}, cp_cosmetics[MAX_QPATH] = { 0 };
 	qboolean	modelChanged = qfalse, female = qfalse;
 
 	trap->GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
@@ -2449,6 +2473,10 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 			VectorScaleM( colorOverride, 255.0f, client->ps.customRGBA );
 	}
 
+	Q_strncpyz(cp_cosmetics, Info_ValueForKey(userinfo, "cp_cosmetics"), sizeof(cp_cosmetics));
+	if (g_validateCosmetics.integer)
+		G_ValidateCosmetics(client, cp_cosmetics, sizeof(cp_cosmetics)); //Model cosmetics
+
 	// bots set their team a few frames later
 	if ( level.gametype >= GT_TEAM && g_entities[clientNum].r.svFlags & SVF_BOT )
 	{
@@ -2590,6 +2618,7 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 	Q_strcat( buf, sizeof( buf ), va( "c2\\%s\\", color2 ) );
 	Q_strcat( buf, sizeof(buf), va( "c3\\%s\\", cp_sbRGB1 ) );//rgbsabers
 	Q_strcat( buf, sizeof(buf), va( "c4\\%s\\", cp_sbRGB2 ) );//rgbsabers
+	Q_strcat(buf, sizeof(buf), va("c5\\%s\\", cp_cosmetics));//cosmetics
 	Q_strcat( buf, sizeof( buf ), va( "hc\\%i\\", client->pers.maxHealth ) );
 	if ( ent->r.svFlags & SVF_BOT )
 		Q_strcat( buf, sizeof( buf ), va( "skill\\%s\\", Info_ValueForKey( userinfo, "skill" ) ) );
