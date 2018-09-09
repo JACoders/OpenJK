@@ -5540,7 +5540,7 @@ void ParseRGBSaber( char *str, vec3_t c ) {
 
 qboolean pluginNoBlackSabers() {
 	if (cgs.isJAPlus || cgs.isJAPro) {
-		if (!cp_pluginDisable.integer & JAPRO_PLUGIN_BLACKSABERSDISABLE && !cg_noRGBSabers.integer)
+		if (!(cp_pluginDisable.integer & JAPRO_PLUGIN_BLACKSABERSDISABLE) && !cg_noRGBSabers.integer)
 			return qfalse;
 	}
 	return qtrue;
