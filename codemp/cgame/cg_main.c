@@ -1319,13 +1319,14 @@ static void CG_RegisterGraphics( void ) {
 
 	cgs.effects.mDisruptorDeathSmoke = trap->FX_RegisterEffect("disruptor/death_smoke");
 
-#if _GRAPPLE
 	if (cgs.isJAPro) {
+#if _GRAPPLE
 		cgs.effects.grappleHitWall = trap->FX_RegisterEffect("effects/grapple/hit_wall.efx");
 		cgs.effects.grappleHitWall = trap->FX_RegisterEffect("effects/grapple/hit_player.efx");
 		cgs.media.grappleModel = trap->R_RegisterModel( "models/items/grapple.md3" );//Grapple model
-	}
 #endif
+		cgs.media.christmasHatModel = trap->R_RegisterModel("models/players/hats/hat.md3");
+	}
 
 	for ( i = 0 ; i < NUM_CROSSHAIRS ; i++ ) {
 		cgs.media.crosshairShader[i] = trap->R_RegisterShaderNoMip( va("gfx/2d/crosshair%c", 'a'+i) );

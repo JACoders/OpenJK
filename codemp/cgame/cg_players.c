@@ -1849,14 +1849,14 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	v = Info_ValueForKey( configstring, "t" );
 	newInfo.team = atoi( v );
 
-//copy team info out to menu
+	// copy team info out to menu
 	if ( clientNum == cg.clientNum)	//this is me
 	{
 		trap->Cvar_Set("ui_team", v);
 		trap->Cvar_Set("ui_myteam", v); //?
 	}
 
-//rgb
+	// rgb
 	yo = Info_ValueForKey( configstring, "c3" );
 	full = atoi( yo );
 	r = full & 255;
@@ -1880,13 +1880,11 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	}
 
 	ParseRGBSaber( va( "%i,%i,%i", r, g, b ), newInfo.rgb2 );
+	// rgb end
 
-	//Cosmetics
+	// cosmetics
 	yo = Info_ValueForKey(configstring, "c5");
-	full = atoi(yo);
-	newInfo.cosmetics = full;
-
-	//rgb
+	newInfo.cosmetics = atoi(yo);
 
 	// Gender hints
 	if ( (v = Info_ValueForKey( configstring, "ds" )) )

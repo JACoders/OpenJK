@@ -166,6 +166,7 @@ XCVAR_DEF( cjp_client,						"1.4JAPRO",	NULL,					CVAR_USERINFO|CVAR_ROM )
 XCVAR_DEF( cp_clanPwd,							"none",	NULL,					CVAR_USERINFO )
 XCVAR_DEF( cp_sbRGB1,							"0",	NULL,					CVAR_ARCHIVE | CVAR_USERINFO )
 XCVAR_DEF( cp_sbRGB2,							"0",	NULL,					CVAR_ARCHIVE | CVAR_USERINFO )
+XCVAR_DEF( cp_cosmetics,						"0",	NULL,					CVAR_ARCHIVE | CVAR_USERINFO )
 
 //XCVAR_DEF( cg_predictRacemode,				"0",	NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_legstuck,							"0",	NULL,					CVAR_NONE )
