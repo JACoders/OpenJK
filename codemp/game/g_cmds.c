@@ -8306,7 +8306,7 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 				if (cl->pers.maxFPS == 0)
 					Q_strncpyz(strFPS, "^3?", sizeof(strFPS));
-				else if (cl->pers.maxFPS > 250 || cl->pers.maxFPS < 60)
+				else if (cl->pers.maxFPS > 333 || cl->pers.maxFPS < 60)
 					Q_strncpyz(strFPS, va("^3%i", cl->pers.maxFPS), sizeof(strFPS));
 				else
 					Q_strncpyz(strFPS, va("^7%i", cl->pers.maxFPS), sizeof(strFPS));
