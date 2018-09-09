@@ -1881,6 +1881,11 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	ParseRGBSaber( va( "%i,%i,%i", r, g, b ), newInfo.rgb2 );
 
+	//Cosmetics
+	yo = Info_ValueForKey(configstring, "c5");
+	full = atoi(yo);
+	newInfo.cosmetics = full;
+
 	//rgb
 
 	// Gender hints
@@ -10472,8 +10477,7 @@ void CG_Player( centity_t *cent ) {
 	}
 
 	//[Kameleon] - Nerevar's Santa Hat.
-	if (cg_stylePlayer.integer & JAPRO_STYLE_SANTAHAT)//Move this to styleplayer
-    {
+	if (ci->cosmetics & JAPRO_COSMETIC_SANTAHAT) {
         CG_DrawHatOnPlayer( cent, cg.time, cgs.gameModels, cgs.media.christmasHatModel );
     }
     //[/Kameleon]

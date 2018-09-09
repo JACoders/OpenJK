@@ -226,11 +226,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	JAPRO_STYLE_PLAYERLOD	(1<<12)
 #define JAPRO_STYLE_NOBODIES	(1<<13)
 #define JAPRO_STYLE_NOFADESFX	(1<<14)
-#define JAPRO_STYLE_SANTAHAT	(1<<15) //still no asset for this
 
 //japro ignore race fx
 #define RS_TIMER_START					(1<<0) //Ignore sound for start trigger
 #define BODY_FADE_TIME					(60000)
+
+//Cosmetics
+#define JAPRO_COSMETIC_SANTAHAT (1<<0)
 
 //#define JAPRO_CINFO_UNLAGGEDPUSHPULL (1<<19)	//push pull unlagged
 //[JAPRO - Clientside - All - Define cinfo bits - End]
@@ -484,6 +486,8 @@ typedef struct clientInfo_s {
 
 	int			superSmoothTime; //do crazy amount of smoothing
 	vec3_t		rgb1, rgb2;//rgb sabers, use different ones for strafetrails. oh no.
+
+	unsigned int	cosmetics;
 
 #define _STRAFETRAILS 0
 #if _STRAFETRAILS
