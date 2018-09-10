@@ -1211,7 +1211,7 @@ void SV_RebuildRaceRanks_f() {
 
 }
 
-static int G_GetSeason() {
+static int G_GetSeason(void) {
 
 	//We want 4 month seasons?
 
@@ -1525,6 +1525,70 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 	}
 }
 
+void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
+	//If its a cumulative award or something, we can check if current race is any of the conditions, then sql check inside to see if all the other conditions are met
+	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
+	unsigned int unlock = 0;
+
+	if (style == 1 && Q_stricmp(coursename, "racearena_pro (a-mountain)")) {
+		unlock = 1; //ok we need like a big list of these
+	}
+
+	if (unlock) {
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+
+		if (id) //We know ID so we can optimize it
+			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE id = ?";
+		else
+			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE username = ?";
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_int(stmt, 1, unlock));
+		if (id) {
+			CALL_SQLITE(bind_int(stmt, 2, id));
+		}
+		else {
+			CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
+		}
+
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateUnlocks)", s);
+		}
+
+		CALL_SQLITE(finalize(stmt));
+	}
+}
+
+void SV_RebuildUnlocks_f(void) { //we dont actually need to get username here, maybe for cumulitive checks..
+	sqlite3 * db;
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s;
+
+	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+
+	sql = "SELECT id, username, coursename, style, season FROM LocalRun";
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			G_UpdateUnlocks(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildUnlocks_f)", s);
+			break;
+		}
+	}
+	CALL_SQLITE(finalize(stmt));
+
+	CALL_SQLITE(close(db));
+
+}
+
 void StripWhitespace(char *s);
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum, int awesomenoise) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
@@ -1772,6 +1836,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				addedScore -= ((season_oldCount / (float)season_oldRank) + (season_oldCount - season_oldRank)) * 0.5f;
 		}
 
+		if (globalPB) {
+			G_UpdateUnlocks(0, username, coursename, style, db);
+		}
 	}
 	//else.. set ranks to 0 for print, nothing to update
 
@@ -6085,6 +6152,8 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	//index LocalRun on RANK
 	//use transactions
 	//COUNT_CHANGES off
+
+	//Create localrun index ?
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
 		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, flags UNSIGNED TINYINT, unlocks UNSIGNED INTEGER)";
