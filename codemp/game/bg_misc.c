@@ -147,7 +147,6 @@ const char	*bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS] =
 	NULL
 };
 
-//vgs
 const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS] = {
 	"*attack_attack",
 	"*attack_attackwait",
@@ -281,7 +280,6 @@ const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS] = {
 	"*team_yes",
 	NULL
 };
-//vgs
 
 //rww - not putting @ in front of these because
 //we don't need them in a cgame StringEd lookup.

@@ -132,9 +132,8 @@
 		{
 			name				join
 			text				@MENUS_JOIN
-			cvarTest			"ui_isJAPro"
-			showCvar 
-			{ "0" }
+			cvarTest			"ui_raceMode"
+			hideCvar 			{ "1" }
 			rect				75 0 70 32
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_FILLED
@@ -166,9 +165,8 @@
 		{
 			name				joinJAPro
 			text				@MENUS_JOIN
-			cvarTest			"ui_isJAPro"
-			showCvar 
-			{ "1" }
+			cvarTest			"ui_raceMode"
+			showCvar 			{ "1" }
 			rect				75 0 70 32
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_FILLED
@@ -180,7 +178,7 @@
 			textaligny			2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
-			visible			1
+			visible				1
 			action 
 			{ 
 				play			"sound/interface/button1.wav" ;
@@ -788,8 +786,8 @@
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
-			cvarTest			"ui_isJAPro"
-			showCvar{ 1 }
+			cvarTest			"ui_raceMode"
+			showCvar			{ "1" }
 			visible				1
 			action 
 			{ 
