@@ -501,7 +501,7 @@ static void CG_UpdateThirdPersonTargetDamp(void)
 	{//hyperspacing, no damp
 		VectorCopy(cameraIdealTarget, cameraCurTarget);
 	}
-	else if (cg_thirdPersonTargetDamp.value>=1.0||cg.thisFrameTeleport||cg.predictedPlayerState.m_iVehicleNum)
+	else if (cg_thirdPersonTargetDamp.value>=1.0||cg.thisFrameTeleport||cg.predictedPlayerState.m_iVehicleNum||cg_strafeHelper.integer & (1<<0)||cg_strafeHelper.integer & (1<<1)||cg_strafeHelper.integer & (1<<2)||cg_strafeHelper.integer & (1<<3)||cg_strafeHelper.integer & (1<<13))
 	{	// No damping.
 		VectorCopy(cameraIdealTarget, cameraCurTarget);
 	}
@@ -566,13 +566,13 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 		float pitch;
 		float dFactor;
 
-		if (!cg.predictedPlayerState.m_iVehicleNum)
+		if (cg.predictedPlayerState.m_iVehicleNum||cg_strafeHelper.integer & (1<<0)||cg_strafeHelper.integer & (1<<1)||cg_strafeHelper.integer & (1<<2)||cg_strafeHelper.integer & (1<<3)||cg_strafeHelper.integer & (1<<13))
 		{
-			dFactor = cg_thirdPersonCameraDamp.value;
+			dFactor = 1.0f;
 		}
 		else
 		{
-			dFactor = 1.0f;
+			dFactor = cg_thirdPersonCameraDamp.value;
 		}
 
 		// Note that the camera pitch has already been capped off to 89.
@@ -1831,7 +1831,7 @@ static int CG_CalcViewValues( void ) {
 		{//use the vehicle's viewangles to render view!
 			CG_OffsetFighterView();
 		}
-		else if ( cg.renderingThirdPerson ) {
+		else if ( cg.renderingThirdPerson ) { // loda
 			// back away from character
 			if (cg_thirdPersonSpecialCam.integer &&
 				BG_SaberInSpecial(cg.snap->ps.saberMove))
@@ -2599,7 +2599,7 @@ int	maxPacketsModificationCount = -1;
 int timeNudgeModificationCount = -1;
 int	maxFPSModificationCount = -1;
 
-QINLINE void CG_UpdateNetUserinfo(void) {
+static QINLINE void CG_UpdateNetUserinfo(void) {
 	//Have to find a new place to auto update cjp_client
 	if (cg.time > cg.userinfoUpdateDebounce) {
 		qboolean updateDisplay = qfalse, updateNet = qfalse;
@@ -2780,6 +2780,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 				trap->Cvar_Set ( "ui_myteam", va("%i", cg.snap->ps.persistant[PERS_TEAM]) );
 			else if (ui_myteam.integer != 3)
 				trap->Cvar_Set("ui_myteam", "3");
+
+			trap->Cvar_Update(&ui_myteam);
 		}
 		if (cgs.gametype == GT_SIEGE && cg_siegeClassIndex != cgs.clientinfo[cg.snap->ps.clientNum].siegeIndex)
 		{
