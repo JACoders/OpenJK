@@ -338,7 +338,7 @@ typedef struct clientStatic_s {
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768
-#define	NUM_CON_TIMES	4
+#define	NUM_CON_TIMES	64
 
 typedef struct console_s {
 	qboolean	initialized;
