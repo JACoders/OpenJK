@@ -1798,7 +1798,7 @@ void CG_DrawHUD(centity_t	*cent)
 
 	if (!(cg_speedometerSettings.integer & SPEEDOMETER_DISABLE)) {
 		CG_Speedometer();
-		if (cg_speedometerSettings.integer & SPEEDOMETER_ACCELMETER)
+		if (cg_speedometerSettings.integer & SPEEDOMETER_ACCELMETER || cg_strafeHelper.integer & SHELPER_ACCELMETER)
 			CG_DrawAccelMeter();
 		if (cg_speedometerSettings.integer & SPEEDOMETER_JUMPHEIHGT)
 			CG_JumpHeight(cent);
@@ -10502,8 +10502,6 @@ void Dzikie_CG_DrawSpeed(int moveDir) {
 }
 
 
-
-
 static void DrawStrafeLine(vec3_t velocity, float diff, qboolean active, int moveDir) { //moveDir is 1-7 for wasd combinations, and 8 for the centerline in cpm style, 9 and 10 for backwards a/d lines
 	vec3_t start, angs, forward, delta, line;
 	float x, y, startx, starty, lineWidth;
@@ -10573,11 +10571,11 @@ static void DrawStrafeLine(vec3_t velocity, float diff, qboolean active, int mov
 		CG_FillRect(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, (-4.444 * AngleSubtract(cg.predictedPlayerState.viewangles[YAW], angs[YAW])), 12, colorTable[CT_RED]);
 	}
 	if (cg_strafeHelper.integer & SHELPER_OLDSTYLE) {
-		int cutoff = 480 - cg_strafeHelperCutoff.integer; //Should be between 480 and LINE_HEIGHT
+		int cutoff = SCREEN_HEIGHT - cg_strafeHelperCutoff.integer; //Should be between 480 and LINE_HEIGHT
 		//distance = sqrt( ((320-x)*(320-x)) + ((480-LINE_HEIGHT)*(480-LINE_HEIGHT)) ); 
 
-		if (cutoff > 480)
-			cutoff = 480;
+		if (cutoff > SCREEN_HEIGHT)
+			cutoff = SCREEN_HEIGHT;
 		if (cutoff < LINE_HEIGHT + 20)
 			cutoff = LINE_HEIGHT + 20;
 
@@ -10591,11 +10589,11 @@ static void DrawStrafeLine(vec3_t velocity, float diff, qboolean active, int mov
 		//CG_DottedLineSegment( 320, 480, x, LINE_HEIGHT, 1, distance, color, color[3], cutoff ); //240 is center, so 220 - 260 is symetrical on crosshair.
 	}
 	if (cg_strafeHelper.integer & SHELPER_SUPEROLDSTYLE) {
-		int cutoff = 480 - cg_strafeHelperCutoff.integer; //Should be between 480 and LINE_HEIGHT
+		int cutoff = SCREEN_HEIGHT - cg_strafeHelperCutoff.integer; //Should be between 480 and LINE_HEIGHT
 		//distance = sqrt( ((320-x)*(320-x)) + ((480-LINE_HEIGHT)*(480-LINE_HEIGHT)) ); 
 
-		if (cutoff > 480)
-			cutoff = 480;
+		if (cutoff > SCREEN_HEIGHT)
+			cutoff = SCREEN_HEIGHT;
 		if (cutoff < LINE_HEIGHT + 20)
 			cutoff = LINE_HEIGHT + 20;
 
@@ -10786,7 +10784,7 @@ static void CG_DrawAccelMeter(void)
 		cg_speedometerY.value - 10.75,
 		37.75 * cgs.widthRatioCoef,
 		13.75,
-		0.25f,
+		0.5f,
 		colorTable[CT_BLACK]);
 
 	actualAccel = accel;
@@ -10821,8 +10819,8 @@ static void CG_DrawAccelMeter(void)
 
 	//if ( percentAccel ) {
 	if (percentAccel && cg.currentSpeed) {
-	CG_FillRect(x * cgs.widthRatioCoef,
-		cg_speedometerY.value - 10,
+	CG_FillRect((x + 0.25f) * cgs.widthRatioCoef,
+		cg_speedometerY.value - 9.9f,
 		36 * percentAccel * cgs.widthRatioCoef,
 		12,
 		colorTable[CT_RED]);
