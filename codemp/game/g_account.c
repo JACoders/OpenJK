@@ -1288,7 +1288,7 @@ void SV_RebuildRaceRanks_f(void) {
 	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 	
 	//This doesn't have to be ordered at all does it?
-	sql = "SSELECT LR1.id, LR1.username, LR1.coursename, LR1.style, LR1.season, LR2.season_count, LR3.global_count FROM "
+	sql = "SELECT LR1.id, LR1.username, LR1.coursename, LR1.style, LR1.season, LR2.season_count, LR3.global_count FROM "
 		"(SELECT id, username, coursename, style, season FROM LocalRun) AS LR1 "
 		"LEFT JOIN "
 		"(SELECT coursename, style, season, COUNT(*) AS season_count FROM LocalRun GROUP BY coursename, style, season) AS LR2 "
@@ -1637,7 +1637,7 @@ void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite
 	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
 	unsigned int unlock = 0;
 
-	if (style == 1 && Q_stricmp(coursename, "racearena_pro (a-mountain)")) {
+	if (style == 1 && !Q_stricmp(coursename, "racearena_pro (a-mountain)")) {
 		unlock = 1; //ok we need like a big list of these
 	}
 
