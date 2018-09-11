@@ -2076,7 +2076,7 @@ saberMoveName_t PM_SaberJumpAttackMove( void )
 			down[2] -= 256;
 			pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID); //Change this to mask_playersolid to allow dfa glitch on more maps (annh slide man etc).
 
-			if ((tr.plane.normal[2] > MIN_WALK_NORMAL) && !(tr.surfaceFlags & SURF_SLICK) && !(tr.surfaceFlags & SURF_FORCEFIELD)) { //Check if on slope, dunno why slick is sometimes forcefield
+			if ((tr.plane.normal[2] >= MIN_WALK_NORMAL) && !(tr.surfaceFlags & SURF_SLICK) && !(tr.surfaceFlags & SURF_FORCEFIELD)) { //Check if on slope, dunno why slick is sometimes forcefield
 				speed = 250;
 			}
 		}

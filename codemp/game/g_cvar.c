@@ -439,6 +439,24 @@ void CVU_Rabbit( void ) {
 	}
 }
 
+static void CVU_RaceMode(void) {
+	g_raceMode.integer ? //1 is forced, 2 allows /race cmd
+		(jcinfo2.integer |= JAPRO_CINFO2_RACEMODE) : (jcinfo2.integer &= ~JAPRO_CINFO2_RACEMODE);
+	trap->Cvar_Set("jcinfo2", va("%i", jcinfo2.integer));
+}
+
+static void CVU_SaberSwitch(void) {
+	g_allowSaberSwitch.integer ?
+		(jcinfo2.integer |= JAPRO_CINFO2_SABERSWITCH) : (jcinfo2.integer &= ~JAPRO_CINFO2_SABERSWITCH);
+	trap->Cvar_Set("jcinfo2", va("%i", jcinfo2.integer));
+}
+
+static void CVU_Registration(void) {
+	g_allowRegistration.integer ?
+		(jcinfo2.integer |= JAPRO_CINFO2_REGISTRATION) : (jcinfo2.integer &= ~JAPRO_CINFO2_REGISTRATION);
+	trap->Cvar_Set("jcinfo2", va("%i", jcinfo2.integer));
+}
+
 //
 // Cvar table
 //
