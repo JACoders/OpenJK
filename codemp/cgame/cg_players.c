@@ -869,13 +869,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded, qboolean isDefaultM
 
 	soundpath[0] = 0;
 
-	if (isDefaultModel) {
-		if (ci->gender == GENDER_FEMALE)
-			isFemale = qtrue;
-		else
-			isFemale = qfalse;
-	}
-	else
+	if (!isDefaultModel)
 	{
 		if (f)
 		{
@@ -900,24 +894,20 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded, qboolean isDefaultM
 			soundpath[i] = 0;
 
 			trap->FS_Close(f);
-
-			if (isFemale)
-			{
-				ci->gender = GENDER_FEMALE;
-			}
-			else
-			{
-				ci->gender = GENDER_MALE;
-			}
-		}
-		else
-		{
-			if ( cgs.gametype != GT_SIEGE )
-				isFemale = ci->gender == GENDER_FEMALE;
-			else
-				isFemale = qfalse;
 		}
 	}
+	else
+	{ //use ci gender for default models
+		if (ci->gender == GENDER_FEMALE)
+			isFemale = qtrue;
+		else
+			isFemale = qfalse;
+	}
+
+	if (isFemale)
+		ci->gender = GENDER_FEMALE;
+	else
+		ci->gender = GENDER_MALE;
 
 	trap->S_Shutup(qtrue);
 
