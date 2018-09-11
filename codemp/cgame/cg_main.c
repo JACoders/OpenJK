@@ -1098,7 +1098,7 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.winnerSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM006" );
 	cgs.media.loserSound = trap->S_RegisterSound( "sound/chars/protocol/misc/40MOM010" );
 
-	if (cgs.isJAPro) { //and g_allowvgs? or let that be toggled without fucking with this..?
+	if (cgs.isJAPro || cgs.isBaseEnhanced) {
 		const char	*s;
 		char		soundName[1024];
 		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++) {
