@@ -860,15 +860,15 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 
 	AnglesToAxis( angles, hand.axis );
 
-	if ( cg_fovViewmodel.integer ) //need this to play nice with +zoom
+	if (cg_fovViewmodel.integer)
 	{
-		if ( cg_fovAspectAdjust.integer ) { //Aspect adjust us.
-			cgFov = atan( tan( desiredFov*M_PI / 360.0f ) * baseAspect*aspect )*360.0f / M_PI;
+		if (cg_fovAspectAdjust.integer) { //Aspect adjust us.
+			cgFov = atan(tan(desiredFov*M_PI / 360.0f) * baseAspect*aspect)*360.0f / M_PI;
 		}
 		if (!cg.zoomed) {
-			fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
-			fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
-			VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
+			fracDistFOV = tanf(cg.refdef.fov_x * (M_PI / 180) * 0.5f);
+			fracWeapFOV = (1.0f / fracDistFOV) * tanf(cgFov * (M_PI / 180) * 0.5f);
+			VectorScale(hand.axis[0], fracWeapFOV, hand.axis[0]);
 		}
 	}
 
@@ -949,7 +949,7 @@ void CG_DrawIconBackground(void)
 	float			inTime = cg.invenSelectTime+WEAPON_SELECT_TIME;
 	float			wpTime = cg.weaponSelectTime+WEAPON_SELECT_TIME;
 	float			fpTime = cg.forceSelectTime+WEAPON_SELECT_TIME;
-	int				prongLeftX,prongRightX;
+	float			prongLeftX,prongRightX;
 	int				drawType = cgs.media.weaponIconBackground;
 	int				yOffset = 0;
 	qhandle_t		background;
@@ -961,7 +961,7 @@ void CG_DrawIconBackground(void)
 		return;
 	}
 
-	if (cg_hudFiles.integer == 1)
+	if (cg_hudFiles.integer == 1 || !cg_drawHud.integer)
 	{ //simple hud
 		return;
 	}

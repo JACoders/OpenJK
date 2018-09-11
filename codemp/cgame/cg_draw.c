@@ -1089,93 +1089,30 @@ void CG_DrawJK2HUDLeftFrame2(float x, float y)
 	CG_DrawPic(x, y, 80*cgs.widthRatioCoef, 80, cgs.media.JK2HUDLeftFrame);		// Metal frame
 }
 
-void DrawHealthArmorJK2(float x, float y)
+void CG_DrawHealthJK2(float x, float y)
 {
 	vec4_t calcColor;
-	float	armorPercent, hold, healthPercent;
+	float	healthPercent, armorPercent;
 	playerState_t	*ps;
-
 	int healthAmt;
-	int armorAmt;
+	char num[16];
+	int l;
 
 	ps = &cg.snap->ps;
 
+	Com_sprintf(num, sizeof(num), "%i", ps->stats[STAT_HEALTH]);
+	l = strlen(num);
+	if (l > 3)
+		l = 3;
+
 	healthAmt = ps->stats[STAT_HEALTH];
-	armorAmt = ps->stats[STAT_ARMOR];
 
 	if (healthAmt > ps->stats[STAT_MAX_HEALTH])
 	{
 		healthAmt = ps->stats[STAT_MAX_HEALTH];
 	}
 
-	if (armorAmt > 100)
-	{
-		armorAmt = 100;
-	}
-
-	trap->R_SetColor(colorTable[CT_WHITE]);
-	CG_DrawPic(x, y, 80, 80, cgs.media.JK2HUDLeftFrame);		// Circular black background
-
-															//	Outer Armor circular
-	memcpy(calcColor, colorTable[CT_GREEN], sizeof(vec4_t));
-
-	hold = armorAmt - (ps->stats[STAT_MAX_HEALTH] / 2);
-	armorPercent = (float)hold / (ps->stats[STAT_MAX_HEALTH] / 2);
-	if (armorPercent <0)
-	{
-		armorPercent = 0;
-	}
-	calcColor[0] *= armorPercent;
-	calcColor[1] *= armorPercent;
-	calcColor[2] *= armorPercent;
-	trap->R_SetColor(calcColor);
-	CG_DrawPic(x, y, 80*cgs.widthRatioCoef, 80, cgs.media.JK2HUDArmor1);
-
-	// Inner Armor circular
-	if (armorPercent>0)
-	{
-		armorPercent = 1;
-	}
-	else
-	{
-		armorPercent = (float)armorAmt / (ps->stats[STAT_MAX_HEALTH] / 2);
-	}
-	memcpy(calcColor, colorTable[CT_GREEN], sizeof(vec4_t));
-	calcColor[0] *= armorPercent;
-	calcColor[1] *= armorPercent;
-	calcColor[2] *= armorPercent;
-	trap->R_SetColor(calcColor);
-	CG_DrawPic(x, y, 80*cgs.widthRatioCoef, 80, cgs.media.JK2HUDArmor2);			//	Inner Armor circular
-
-	if (ps->stats[STAT_ARMOR])	// Is there armor? Draw the HUD Armor TIC
-	{
-		// Make tic flash if inner armor is at 50% (25% of full armor)
-		if (armorPercent<.5)		// Do whatever the flash timer says
-		{
-			if (cg.HUDTickFlashTime < cg.time)			// Flip at the same time
-			{
-				cg.HUDTickFlashTime = cg.time + 100;
-				if (cg.HUDArmorFlag)
-				{
-					cg.HUDArmorFlag = qfalse;
-				}
-				else
-				{
-					cg.HUDArmorFlag = qtrue;
-				}
-			}
-		}
-		else
-		{
-			cg.HUDArmorFlag = qtrue;
-		}
-	}
-	else						// No armor? Don't show it.
-	{
-		cg.HUDArmorFlag = qfalse;
-	}
-
-	memcpy(calcColor, colorTable[CT_RED], sizeof(vec4_t));
+	memcpy(calcColor, colorTable[CT_HUD_RED], sizeof(vec4_t));
 	healthPercent = (float)healthAmt / ps->stats[STAT_MAX_HEALTH];
 	calcColor[0] *= healthPercent;
 	calcColor[1] *= healthPercent;
@@ -1183,7 +1120,9 @@ void DrawHealthArmorJK2(float x, float y)
 	trap->R_SetColor(calcColor);
 	CG_DrawPic(x, y, 80*cgs.widthRatioCoef, 80, cgs.media.JK2HUDHealth);
 
-/*	// Make tic flash if health is at 20% of full
+	armorPercent = (float)(ps->stats[STAT_ARMOR] - (ps->stats[STAT_MAX_HEALTH] / 2)) / (ps->stats[STAT_MAX_HEALTH] / 2);
+
+	// Make tic flash if health is at 20% of full
 	if (healthPercent>.20)
 	{
 		cg.HUDHealthFlag = qtrue;
@@ -1215,51 +1154,12 @@ void DrawHealthArmorJK2(float x, float y)
 	// Draw the ticks
 	if (cg.HUDHealthFlag)
 	{
-		trap->R_SetColor(colorTable[CT_RED]);
-		CG_DrawPic(x, y, 80, 80, cgs.media.JK2HUDHealthTic);
-	}*/
-}
-
-void CG_DrawHealthJK2(float x, float y)
-{
-	vec4_t calcColor;
-	float	healthPercent;
-	playerState_t	*ps;
-	int healthAmt;
-	char num[16];
-	int l;
-
-	ps = &cg.snap->ps;
-
-	Com_sprintf(num, sizeof(num), "%i", ps->stats[STAT_HEALTH]);
-	l = strlen(num);
-	if (l > 3)
-		l = 3;
-
-	healthAmt = ps->stats[STAT_HEALTH];
-
-	if (healthAmt > ps->stats[STAT_MAX_HEALTH])
-	{
-		healthAmt = ps->stats[STAT_MAX_HEALTH];
-	}
-
-	memcpy(calcColor, colorTable[CT_HUD_RED], sizeof(vec4_t));
-	healthPercent = (float)healthAmt / ps->stats[STAT_MAX_HEALTH];
-	calcColor[0] *= healthPercent;
-	calcColor[1] *= healthPercent;
-	calcColor[2] *= healthPercent;
-	trap->R_SetColor(calcColor);
-	CG_DrawPic(x, y, 80*cgs.widthRatioCoef, 80, cgs.media.JK2HUDHealth);
-
-	// Draw the ticks
-	if (cg.HUDHealthFlag)
-	{
 		trap->R_SetColor(colorTable[CT_HUD_RED]);
 		CG_DrawPic(x, y, 80*cgs.widthRatioCoef, 80, cgs.media.JK2HUDHealthTic);
 	}
 
 	trap->R_SetColor(colorTable[CT_HUD_RED]);
-	CG_DrawNumField((float)x - (float)l + ((float)l + 16.0f)*cgs.widthRatioCoef, y + 40, 3, ps->stats[STAT_HEALTH], 6*cgs.widthRatioCoef, 12,
+	CG_DrawNumField(x - l + (l + 16.0f)*cgs.widthRatioCoef, y + 40, 3, ps->stats[STAT_HEALTH], 6*cgs.widthRatioCoef, 12,
 		NUM_FONT_SMALL, qfalse);
 
 }
@@ -1353,7 +1253,7 @@ void CG_DrawArmorJK2(float x, float y)
 	}
 
 	trap->R_SetColor(colorTable[CT_HUD_GREEN]);
-	CG_DrawNumField((float)x - (float)l + ((float)l + 18.0f + 14.0f)*cgs.widthRatioCoef, y + 40 + 14, 3, ps->stats[STAT_ARMOR], 6*cgs.widthRatioCoef, 12,
+	CG_DrawNumField(x - l + (l + 18.0f + 14.0f)*cgs.widthRatioCoef, y + 40 + 14, 3, ps->stats[STAT_ARMOR], 6*cgs.widthRatioCoef, 12,
 		NUM_FONT_SMALL, qfalse);
 
 }
@@ -1392,17 +1292,17 @@ static void CG_DrawAmmoJK2(centity_t *cent, float x, float y)
 		// don't need to draw ammo, but we will draw the current saber style in this window
 		switch ( cg.predictedPlayerState.fd.saberDrawAnimLevel )
 		{
-		case 1://FORCE_LEVEL_1:
+		case SS_FAST:
 			CG_DrawPic(SCREEN_WIDTH - (SCREEN_WIDTH - x)*cgs.widthRatioCoef, y, 80*cgs.widthRatioCoef, 40, cgs.media.JK2HUDSaberStyle1);
 			break;
-		case 2://FORCE_LEVEL_2:
+		case SS_MEDIUM:
 			CG_DrawPic(SCREEN_WIDTH - (SCREEN_WIDTH - x)*cgs.widthRatioCoef, y, 80*cgs.widthRatioCoef, 40, cgs.media.JK2HUDSaberStyle2);
 			break;
-		case 3://FORCE_LEVEL_3:
+		case SS_STRONG:
 			CG_DrawPic(SCREEN_WIDTH - (SCREEN_WIDTH - x)*cgs.widthRatioCoef, y, 80*cgs.widthRatioCoef, 40, cgs.media.JK2HUDSaberStyle3);
 			break;
-		case 6://SS_DUAL
-		case 7://SS_STAFF
+		case SS_DUAL:
+		case SS_STAFF:
 			CG_DrawPic(SCREEN_WIDTH - (SCREEN_WIDTH - x)*cgs.widthRatioCoef, y, 80 * cgs.widthRatioCoef, 40, cgs.media.JK2HUDSaberStyle4);
 		}
 		return;
@@ -1430,11 +1330,8 @@ static void CG_DrawAmmoJK2(centity_t *cent, float x, float y)
 	else*/ //didnt like how it looked idk
 		CG_DrawNumField(SCREEN_WIDTH - (SCREEN_WIDTH - x - 30)*cgs.widthRatioCoef, y + 26, 3, value, 6*cgs.widthRatioCoef, 12, NUM_FONT_SMALL, qfalse);
 
-
-//cg.snap->ps.ammo[weaponData[cg.snap->ps.weapon].ammoIndex]
-
 	if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0 &&
-	!(cent->currentState.weapon == WP_MELEE || cent->currentState.weapon == WP_STUN_BATON))
+		!(cent->currentState.weapon == WP_MELEE || cent->currentState.weapon == WP_STUN_BATON))
 	{ //no ammo ticks with melee/stun baton, full ammo ticks with infinite ammo
 		inc = 8 / MAX_TICS;
 		value = 8;
@@ -2002,7 +1899,7 @@ void CG_DrawHUD(centity_t	*cent)
 				if (teamscorebias > 0)
 					Com_sprintf(teamscoreStr, sizeof(teamscoreStr), "%i (%+i)", teamscore, teamscorebias);
 				else if (teamscorebias < 0)
-					Com_sprintf(teamscoreStr, sizeof(teamscoreStr), "%i (%i)", teamscore, teamscorebias);
+					Com_sprintf(teamscoreStr, sizeof(teamscoreStr), "%i  (%i)", teamscore, teamscorebias);
 				else
 					Com_sprintf(teamscoreStr, sizeof(teamscoreStr), "%i      ", teamscore);
 
