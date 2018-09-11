@@ -5655,6 +5655,11 @@ void ClientThink_real( gentity_t *ent ) {
 						faceKicked->client->ps.velocity[2] = 200; //something here might be different than ja+? how tell..
 					}
 				}
+				else { //Weak knockback for red instead of random 0/full
+					faceKicked->client->ps.velocity[0] = oppDir[0] * (strength * 30);
+					faceKicked->client->ps.velocity[1] = oppDir[1] * (strength * 30);
+					faceKicked->client->ps.velocity[2] = 150; //something here might be different than ja+? how tell..
+				}
 				G_Sound( faceKicked, CHAN_AUTO, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
 			}
 		}

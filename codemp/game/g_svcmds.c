@@ -1578,6 +1578,7 @@ void SV_RebuildElo_f( void );
 #if 1//NEWRACERANKING
 void SV_RebuildRaceRanks_f( void );
 #endif
+void SV_RebuildUnlocks_f(void);
 #if 0
 void G_TestAddRace( void );
 #endif
@@ -1638,6 +1639,7 @@ svcmd_t svcmds[] = {
 #if 1//NEWRACERANKING
 	{ "rebuildRaces",				SV_RebuildRaceRanks_f,				qfalse },
 #endif
+	{ "rebuildUnlocks",				SV_RebuildUnlocks_f,				qfalse },
 
 	{ "register",					Svcmd_Register_f,					qfalse },
 

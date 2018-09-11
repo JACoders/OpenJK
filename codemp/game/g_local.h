@@ -901,7 +901,7 @@ typedef struct clientPersistant_s {
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
-
+	unsigned int	unlocks;
 
 	stats_t		stats;
 } clientPersistant_t;
@@ -1214,7 +1214,7 @@ struct gclient_s {
 	qboolean	iAmALoser;
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
-	int			saberHitWound[MAX_CLIENTS];//japro
+	int			saberHitWound[MAX_CLIENTS][MAX_CLIENTS+1];//allow a slot for NPCs l0l
 	qboolean	didGlitchKick;
 	int			lastTargetLaserTime;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
