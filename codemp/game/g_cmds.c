@@ -7952,6 +7952,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber touch damage^3: ^2%i\n", g_saberTouchDmg.integer));
 	if (g_saberDmgDelay_Idle.integer != 350)
 		Q_strcat(buf, sizeof(buf), va("   ^5Idle saber damage delay^3: ^2%i\n", g_saberDmgDelay_Idle.integer)); 
+	if (g_saberDmgDelay_Wound.integer != 0) //Add dmgdelay_wound print?
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber wound delay^3: ^2%i\n", g_saberDmgDelay_Wound.integer)); //idk what this even is
+	if (g_saberDmgDelay_Hit.integer != 0)
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber damage delay^3: ^2%i\n", g_saberDmgDelay_Hit.integer));
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber kick tweak^3: ^2%s\n", (d_saberKickTweak.integer) ? "Yes" : "No"));
 	if (g_fixGroundStab.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Groundstabs damage players not on ground\n");
