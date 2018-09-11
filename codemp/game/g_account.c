@@ -1257,7 +1257,6 @@ void SV_RebuildRaceRanks_f(void) {
         if (s == SQLITE_ROW) {
 			G_GetRaceScore(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), sqlite3_column_int(stmt, 4), rawtime, db);
 
-			//G_UpdateUnlocks(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
         }
         else if (s == SQLITE_DONE)
             break;
@@ -1303,7 +1302,7 @@ void SV_RebuildRaceRanks_f(void) {
 			G_GetRaceScore(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2),
 				sqlite3_column_int(stmt, 3), sqlite3_column_int(stmt, 4), sqlite3_column_int(stmt, 5), sqlite3_column_int(stmt, 6), rawtime, db);
 
-			//G_UpdateUnlocks(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+			//G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
 		}
 		else if (s == SQLITE_DONE)
 			break;
@@ -1632,7 +1631,7 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 	}
 }
 
-void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
+void G_UpdateUnlocks(char *username, char *coursename, int style, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
 	//If its a cumulative award or something, we can check if current race is any of the conditions, then sql check inside to see if all the other conditions are met
 	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
 	unsigned int unlock = 0;
@@ -1646,18 +1645,10 @@ void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite
 		sqlite3_stmt * stmt;
 		int s;
 
-		if (id) //We know ID so we can optimize it
-			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE id = ?";
-		else
-			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE username = ?";
+		sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE username = ?";
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 		CALL_SQLITE(bind_int(stmt, 1, unlock));
-		if (id) {
-			CALL_SQLITE(bind_int(stmt, 2, id));
-		}
-		else {
-			CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
-		}
+		CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
@@ -1676,12 +1667,12 @@ void SV_RebuildUnlocks_f(void) {
 
 	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-	sql = "SELECT id, username, coursename, style, season FROM LocalRun"; //Only get username for cumulative checks if needed
+	sql = "SELECT username, coursename, style, season FROM LocalRun"; //Only get username for cumulative checks if needed
 	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 	while (1) {
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
-			G_UpdateUnlocks(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+			G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 0), (char*)sqlite3_column_text(stmt, 1), sqlite3_column_int(stmt, 2), db);
 		}
 		else if (s == SQLITE_DONE)
 			break;
@@ -1944,7 +1935,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 
 		if (globalPB) {
-			G_UpdateUnlocks(0, username, coursename, style, db);
+			G_UpdateUnlocks(username, coursename, style, db);
 		}
 	}
 	//else.. set ranks to 0 for print, nothing to update
