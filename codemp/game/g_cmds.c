@@ -4784,6 +4784,11 @@ void Cmd_Saber_f(gentity_t *ent)
 		return;
 	}
 
+	if (VectorLength(ent->client->ps.velocity) && !ent->client->ps.m_iVehicleNum) {
+		trap->SendServerCommand(ent - g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
 	if (level.time - ent->client->ps.footstepTime < 750 
 		|| level.time - ent->client->ps.forceHandExtendTime < 750 
 		|| ent->client->ps.saberMove != LS_READY 

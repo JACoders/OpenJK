@@ -224,6 +224,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 //jcinfo2 stuff
 #define JAPRO_CINFO2_RACEMODE		(1<<0)
 #define JAPRO_CINFO2_REGISTRATION	(1<<1)
+#define JAPRO_CINFO2_SABERSWITCH	(1<<2)
 
 //JAPRO - Serverside - Tweak Weapons bitvalues
 #define WT_DEMP2_RANDOM			(1<<0)
