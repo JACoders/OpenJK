@@ -1042,9 +1042,9 @@ void CleanupLocalRun() { //This should never actually change anything since we i
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-	//sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
 	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, coursename, username, style, season FROM LocalRun ORDER BY duration_ms DESC) AS T GROUP BY T.username, T.coursename, T.style, T.season)";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	//Print to textfile what got deleted since this should never happen? failRaceLog
 
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_DONE)
@@ -1053,7 +1053,6 @@ void CleanupLocalRun() { //This should never actually change anything since we i
 		G_ErrorPrint("ERROR: SQL Delete Failed (CleanupLocalRun)", s);
 
 	CALL_SQLITE (finalize(stmt));
-	//loda fixme, maybe remake table or something.. ?
 	CALL_SQLITE (close(db));
 
 	//DebugWriteToDB("CleanupLocalRun");
@@ -1666,6 +1665,8 @@ void SV_RebuildUnlocks_f(void) {
 	int s;
 
 	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+
+	//Set all unlocks to 0 ?
 
 	sql = "SELECT username, coursename, style, season FROM LocalRun"; //Only get username for cumulative checks if needed
 	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
@@ -5184,7 +5185,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		char * sql;
 		sqlite3_stmt * stmt;
 		int row = 1;
-		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, rankStr[16] = {0}, msg[128] = {0};
+		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, rankStr[16] = {0}, msg[1024 - 128] = { 0 };
 		int s;
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -5277,6 +5278,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		trap->Argv(1, inputString, sizeof(inputString));
 		//use strtol isntead of atoi maybe - partial coursename can start with number
 		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
+			//BUG - atoi(inputstring) returns true for values like "18percent" where it should return false..
 			enteredCourseName = qfalse; //Use current mapname as coursename
 		}
 	}
