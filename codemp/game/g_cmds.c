@@ -4443,7 +4443,33 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			challenged->client->ps.fd.forcePower = challenged->client->ps.fd.forcePowerMax; //max force power too!
 			ent->client->ps.fd.forceRageRecoveryTime = 0;
 			challenged->client->ps.fd.forceRageRecoveryTime = 0; //Get rid of rage recovery when duel starts!
-			
+
+			//Get rid of force speed?, absorb, protect, etc?
+			if (ent->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
+				WP_ForcePowerStop(ent, i);
+			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
+				WP_ForcePowerStop(challenged, i);
+			if (ent->client->ps.fd.forcePowersActive & (1 << FP_PROTECT))
+				WP_ForcePowerStop(ent, i);
+			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_PROTECT))
+				WP_ForcePowerStop(challenged, i);
+			if (ent->client->ps.fd.forcePowersActive & (1 << FP_SPEED))
+				WP_ForcePowerStop(ent, i);
+			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_SPEED))
+				WP_ForcePowerStop(challenged, i);
+			if (ent->client->ps.fd.forcePowersActive & (1 << FP_TELEPATHY))
+				WP_ForcePowerStop(ent, i);
+			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_TELEPATHY))
+				WP_ForcePowerStop(challenged, i);
+			if (ent->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+				WP_ForcePowerStop(ent, i);
+			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+				WP_ForcePowerStop(challenged, i);
+			if (ent->client->ps.fd.forcePowersActive & (1 << FP_SEE))
+				WP_ForcePowerStop(ent, i);
+			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_SEE))
+				WP_ForcePowerStop(challenged, i);
+
 			if (dueltypes[challenged->client->ps.clientNum] > 2) { //1 ?
 				int weapon = dueltypes[challenged->client->ps.clientNum] - 2;
 				if (weapon == LAST_USEABLE_WEAPON + 2) { //All weapons and ammo.
@@ -7047,6 +7073,9 @@ static void Cmd_Launch_f(gentity_t *ent)
 	ent->client->pers.stats.startTime = trap->Milliseconds(); //Set their timer as now..
 	ent->client->ps.duelTime = level.time;
 	ent->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - ent->client->pers.cmd.serverTime; //use level.previousTime?
+
+	ent->client->pers.stats.displacement = 0;
+	ent->client->pers.stats.displacementSamples = 0;//avg fix for standing in starttimer and /launch
 }
 
 static void Cmd_Practice_f(gentity_t *ent)

@@ -1042,9 +1042,9 @@ void CleanupLocalRun() { //This should never actually change anything since we i
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-	//sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
 	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, coursename, username, style, season FROM LocalRun ORDER BY duration_ms DESC) AS T GROUP BY T.username, T.coursename, T.style, T.season)";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	//Print to textfile what got deleted since this should never happen? failRaceLog
 
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_DONE)
@@ -1053,17 +1053,23 @@ void CleanupLocalRun() { //This should never actually change anything since we i
 		G_ErrorPrint("ERROR: SQL Delete Failed (CleanupLocalRun)", s);
 
 	CALL_SQLITE (finalize(stmt));
-	//loda fixme, maybe remake table or something.. ?
 	CALL_SQLITE (close(db));
 
 	//DebugWriteToDB("CleanupLocalRun");
 }
 
+#if 0
 void G_GetRaceScore(int id, char *username, char *coursename, int style, int season, int time, sqlite3 * db) { //Need to use transactions here or something
 	char * sql;
 	sqlite3_stmt * stmt;
 	int s, season_count = 0, season_rank = 0, global_count = 0, global_rank = 0, i = 1;
+
+	//This has to be done like, 15k times currently.  15k x 10ms = like 4 minutes :(
+
+	//Combine 1st and 2nd queries?
+	//Can we sub query this 1st query - Select global count, then select that, season count from global count? -- not possible cuz we want distinct count (dont double count a user if they have multiple season entries)
 	
+	//Get season count and global count of races on specified course/style
 	sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? "
 		"UNION ALL SELECT COUNT(DISTINCT username) FROM LocalRun WHERE coursename = ? AND style = ?";//Select count for that course,style
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -1088,6 +1094,7 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	}
 	CALL_SQLITE (finalize(stmt));
 
+	//Get season rank
 	sql = "SELECT id FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? ORDER BY duration_ms ASC, end_time ASC"; //assume just one per person to speed this up..
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
@@ -1113,7 +1120,8 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 
 	i = 1; // AH HA ha
 
-	//We dont want to count slower season entries in their global scoring, just their fastest season entry.  So either set rank to 0 for "unranked" seasons.  Or ignore it later.
+	//can we index on duration_ms ?
+	//Get global rank - if its a season PB but not a global PB, leave global rank at 0
 	sql = "SELECT id, MIN(duration_ms) AS duration FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC"; 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
@@ -1136,7 +1144,8 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
     }
 	CALL_SQLITE (finalize(stmt));
 	
-	sql = "UPDATE LocalRun SET rank = ?, entries = ?, season_rank = ?, season_entries = ?, last_update = ? WHERE id = ?";//Save rank into row
+	//Save rank into row
+	sql = "UPDATE LocalRun SET rank = ?, entries = ?, season_rank = ?, season_entries = ?, last_update = ? WHERE id = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, global_rank));
 	CALL_SQLITE (bind_int (stmt, 2, global_count));
@@ -1150,8 +1159,83 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, int sea
 	CALL_SQLITE (finalize(stmt));
 
 }
+#endif
 
-void SV_RebuildRaceRanks_f() {
+void G_GetRaceScore(int id, char *username, char *coursename, int style, int season, int season_count, int global_count, int time, sqlite3 * db) { //Need to use transactions here or something
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s, season_rank = 0, global_rank = 0, i = 1;
+
+	//This has to be done like, 15k times currently.  15k x 10ms = like 4 minutes :(
+
+	//Get season rank
+	sql = "SELECT id FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? ORDER BY duration_ms ASC, end_time ASC"; //assume just one per person to speed this up..
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_int(stmt, 2, style));
+	CALL_SQLITE(bind_int(stmt, 3, season));
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			if (id == sqlite3_column_int(stmt, 0)) {
+				season_rank = i;
+				break;
+			}
+			i++;
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (G_GetRaceScore 3)", s);
+			break;
+		}
+	}
+	CALL_SQLITE(finalize(stmt));
+
+	i = 1; // AH HA ha
+
+	//can we index on duration_ms ?
+	//Get global rank - if its a season PB but not a global PB, leave global rank at 0
+	sql = "SELECT id, MIN(duration_ms) AS duration FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC";
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_int(stmt, 2, style));
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			if (id == sqlite3_column_int(stmt, 0)) {
+				global_rank = i;
+				break;
+			}
+			i++;
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (G_GetRaceScore 4)", s);
+			break;
+		}
+	}
+	CALL_SQLITE(finalize(stmt));
+
+	//Save rank into row
+	sql = "UPDATE LocalRun SET rank = ?, entries = ?, season_rank = ?, season_entries = ?, last_update = ? WHERE id = ?";
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	CALL_SQLITE(bind_int(stmt, 1, global_rank));
+	CALL_SQLITE(bind_int(stmt, 2, global_count));
+	CALL_SQLITE(bind_int(stmt, 3, season_rank));
+	CALL_SQLITE(bind_int(stmt, 4, season_count));
+	CALL_SQLITE(bind_int(stmt, 5, time));
+	CALL_SQLITE(bind_int(stmt, 6, id));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Update Failed (G_GetRaceScore 5)", s);
+	CALL_SQLITE(finalize(stmt));
+
+}
+
+#if 0
+void SV_RebuildRaceRanks_f(void) {
 	char * sql;
     sqlite3_stmt * stmt;
 	sqlite3 * db;
@@ -1165,21 +1249,13 @@ void SV_RebuildRaceRanks_f() {
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
 
-	/*
-	sql = "DELETE FROM RaceRanks"; //Clear RaceRanks table
-    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	s = sqlite3_step(stmt);
-	if (s != SQLITE_DONE)
-		trap->Print( "Error: Could not write to database: %i.\n", s);
-	CALL_SQLITE (finalize(stmt));
-	*/
-
 	sql = "SELECT id, username, coursename, style, season FROM LocalRun ORDER BY end_time ASC";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     while (1) {
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
 			G_GetRaceScore(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), sqlite3_column_int(stmt, 4), rawtime, db);
+
         }
         else if (s == SQLITE_DONE)
             break;
@@ -1192,22 +1268,51 @@ void SV_RebuildRaceRanks_f() {
 
 	CALL_SQLITE (close(db));
 
+}
+#endif
 
+void SV_RebuildRaceRanks_f(void) {
+	char * sql;
+	sqlite3_stmt * stmt;
+	sqlite3 * db;
+	int s;//, row = 0;
+	time_t	rawtime;
 
+	time(&rawtime);
+	localtime(&rawtime);
 
-	//how the fuck..
-	//Make sure no duplicate entries
+	CleanupLocalRun();//Make sure no duplicate entries
 
-	//Clear RaceRanks table
+	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+	
+	//This doesn't have to be ordered at all does it?
+	sql = "SELECT LR1.id, LR1.username, LR1.coursename, LR1.style, LR1.season, LR2.season_count, LR3.global_count FROM "
+		"(SELECT id, username, coursename, style, season FROM LocalRun) AS LR1 "
+		"LEFT JOIN "
+		"(SELECT coursename, style, season, COUNT(*) AS season_count FROM LocalRun GROUP BY coursename, style, season) AS LR2 "
+		"ON LR1.style = LR2.style AND LR1.coursename = LR2.coursename AND LR1.season = LR2.season "
+		"LEFT JOIN "
+		"(SELECT coursename, style, COUNT(DISTINCT username) AS global_count FROM LocalRun GROUP BY coursename, style) AS LR3 "
+		"ON LR1.style = LR3.style AND LR1.coursename = LR3.coursename";
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			G_GetRaceScore(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2),
+				sqlite3_column_int(stmt, 3), sqlite3_column_int(stmt, 4), sqlite3_column_int(stmt, 5), sqlite3_column_int(stmt, 6), rawtime, db);
 
-	//For each entry
-		//Select count for that course,style
-		//Select position of that entry in ordered list of course/style (as rank)
-		//save rank into row
-		//Get score = count/rank
-		//Add score to that username/style entry in raceScores
-		//If rank =1, add a gold, etc.
+			//G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildRaceRanks_f)", s);
+			break;
+		}
+	}
+	CALL_SQLITE(finalize(stmt));
 
+	CALL_SQLITE(close(db));
 
 }
 
@@ -1525,12 +1630,12 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 	}
 }
 
-void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
+void G_UpdateUnlocks(char *username, char *coursename, int style, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
 	//If its a cumulative award or something, we can check if current race is any of the conditions, then sql check inside to see if all the other conditions are met
 	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
 	unsigned int unlock = 0;
 
-	if (style == 1 && Q_stricmp(coursename, "racearena_pro (a-mountain)")) {
+	if (style == 1 && !Q_stricmp(coursename, "racearena_pro (a-mountain)")) {
 		unlock = 1; //ok we need like a big list of these
 	}
 
@@ -1539,18 +1644,10 @@ void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite
 		sqlite3_stmt * stmt;
 		int s;
 
-		if (id) //We know ID so we can optimize it
-			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE id = ?";
-		else
-			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE username = ?";
+		sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE username = ?";
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 		CALL_SQLITE(bind_int(stmt, 1, unlock));
-		if (id) {
-			CALL_SQLITE(bind_int(stmt, 2, id));
-		}
-		else {
-			CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
-		}
+		CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
@@ -1561,7 +1658,7 @@ void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite
 	}
 }
 
-void SV_RebuildUnlocks_f(void) { //we dont actually need to get username here, maybe for cumulitive checks..
+void SV_RebuildUnlocks_f(void) {
 	sqlite3 * db;
 	char * sql;
 	sqlite3_stmt * stmt;
@@ -1569,12 +1666,14 @@ void SV_RebuildUnlocks_f(void) { //we dont actually need to get username here, m
 
 	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-	sql = "SELECT id, username, coursename, style, season FROM LocalRun";
+	//Set all unlocks to 0 ?
+
+	sql = "SELECT username, coursename, style, season FROM LocalRun"; //Only get username for cumulative checks if needed
 	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 	while (1) {
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
-			G_UpdateUnlocks(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+			G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 0), (char*)sqlite3_column_text(stmt, 1), sqlite3_column_int(stmt, 2), db);
 		}
 		else if (s == SQLITE_DONE)
 			break;
@@ -1837,7 +1936,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 
 		if (globalPB) {
-			G_UpdateUnlocks(0, username, coursename, style, db);
+			G_UpdateUnlocks(username, coursename, style, db);
 		}
 	}
 	//else.. set ranks to 0 for print, nothing to update
@@ -5086,7 +5185,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		char * sql;
 		sqlite3_stmt * stmt;
 		int row = 1;
-		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, rankStr[16] = {0}, msg[128] = {0};
+		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, rankStr[16] = {0}, msg[1024 - 128] = { 0 };
 		int s;
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -5179,6 +5278,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		trap->Argv(1, inputString, sizeof(inputString));
 		//use strtol isntead of atoi maybe - partial coursename can start with number
 		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
+			//BUG - atoi(inputstring) returns true for values like "18percent" where it should return false..
 			enteredCourseName = qfalse; //Use current mapname as coursename
 		}
 	}

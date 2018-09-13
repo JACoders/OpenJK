@@ -2235,6 +2235,9 @@ void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeti
 	int MAX_COSMETICS = 32;
 	int cosmetics = atoi(cosmeticString);
 
+	if (client->sess.fullAdmin)//Logged in as full admin
+		return; //debug testing
+
 	if (!client->pers.userName || !client->pers.userName[0] || !client->pers.unlocks) {
 		//client->pers.savedCosmetics = cosmetics; //Problem - if we remove cosmetic before they login, do we save it and add it back once they login?
 		//Actually we can just do a clientuserinfochanged on login if they have pers.unlocks ?
