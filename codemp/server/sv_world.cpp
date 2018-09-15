@@ -611,6 +611,10 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			continue;
 		}
 
+		if (DuelCull(SV_GentityNum(clip->passEntityNum), touch)) {
+			continue;
+		}
+
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity (touch);
 

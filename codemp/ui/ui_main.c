@@ -951,17 +951,32 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		case UIMENU_INGAME:
 			info[0] = '\0';
 			trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
+
+			trap->Cvar_Set("ui_raceMode", "0");
+			trap->Cvar_Set("ui_allowRegistration", "0");
+			trap->Cvar_Set("ui_allowSaberSwitch", "0");
+
 			if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {
 				trap->Cvar_Set("ui_isJAPro", "0");
-				trap->Cvar_Set("ui_isBase", "0");
+				trap->Cvar_Set("ui_allowSaberSwitch", "1");
 			}
 			else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
+				int jcinfo2;
 				trap->Cvar_Set("ui_isJAPro", "1");
-				trap->Cvar_Set("ui_isBase", "0");
+
+				jcinfo2 = atoi(Info_ValueForKey(info, "jcinfo2"));
+				if (jcinfo2 & (1<<0)) //race mode
+					trap->Cvar_Set("ui_raceMode", "1");
+
+				if (jcinfo2 & (1<<1)) //allow registration
+					trap->Cvar_Set("ui_allowRegistration", "1");
+
+				if (trap->Cvar_VariableValue("g_gametype") < GT_TEAM && jcinfo2 & (1<<2)) //allow /saber switch cmd
+					trap->Cvar_Set("ui_allowSaberSwitch", "1");
 			}
 			else {
 				trap->Cvar_Set("ui_isJAPro", "0");
-				trap->Cvar_Set("ui_isBase", "1");
+				trap->Cvar_Set("ui_allowSaberSwitch", "0");
 			}
 			trap->Cvar_Set( "cl_paused", "1" );
 			trap->Key_SetCatcher( KEYCATCH_UI );
@@ -6542,7 +6557,7 @@ static void UI_UpdateSaberCvars ( void )
 	trap->Cvar_Set ( "color2", va("%d",colorI) );
 	trap->Cvar_Set ( "g_saber2_color", UI_Cvar_VariableString ( "ui_saber2_color" ));
 
-	if (!ui_isBase.integer) {
+	if (ui_allowSaberSwitch.integer) {
 		trap->Cmd_ExecuteText(EXEC_APPEND, va("cmd saber %s %s", ui_saber.string, ui_saber2.string));
 	}
 }

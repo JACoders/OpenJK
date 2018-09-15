@@ -869,13 +869,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded, qboolean isDefaultM
 
 	soundpath[0] = 0;
 
-	if (isDefaultModel) {
-		if (ci->gender == GENDER_FEMALE)
-			isFemale = qtrue;
-		else
-			isFemale = qfalse;
-	}
-	else
+	if (!isDefaultModel)
 	{
 		if (f)
 		{
@@ -900,24 +894,20 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded, qboolean isDefaultM
 			soundpath[i] = 0;
 
 			trap->FS_Close(f);
-
-			if (isFemale)
-			{
-				ci->gender = GENDER_FEMALE;
-			}
-			else
-			{
-				ci->gender = GENDER_MALE;
-			}
-		}
-		else
-		{
-			if ( cgs.gametype != GT_SIEGE )
-				isFemale = ci->gender == GENDER_FEMALE;
-			else
-				isFemale = qfalse;
 		}
 	}
+	else
+	{ //use ci gender for default models
+		if (ci->gender == GENDER_FEMALE)
+			isFemale = qtrue;
+		else
+			isFemale = qfalse;
+	}
+
+	if (isFemale)
+		ci->gender = GENDER_FEMALE;
+	else
+		ci->gender = GENDER_MALE;
 
 	trap->S_Shutup(qtrue);
 
@@ -5543,7 +5533,7 @@ void ParseRGBSaber( char *str, vec3_t c ) {
 
 qboolean pluginNoBlackSabers() {
 	if (cgs.isJAPlus || cgs.isJAPro) {
-		if (!(cp_pluginDisable.integer & JAPRO_PLUGIN_BLACKSABERSDISABLE) && !cg_noRGBSabers.integer)
+		if (!(cp_pluginDisable.integer & JAPRO_PLUGIN_BLACKSABERSDISABLE))
 			return qfalse;
 	}
 	return qtrue;
@@ -5553,8 +5543,8 @@ static int ClampSaberColor(int color) {
 	if (color >= NUM_SABER_COLORS)
 		color = color % NUM_SABER_COLORS; //cap it to highest 'valid' color?
 
-	if (color == SABER_BLACK && pluginNoBlackSabers())
-		color = SABER_ORANGE;
+	if (color == SABER_BLACK)
+		return (pluginNoBlackSabers() || cg_noRGBSabers.integer) ? SABER_ORANGE : SABER_BLACK;
 
 	if (color > SABER_PURPLE && (cg_noRGBSabers.integer || (!cgs.isJAPlus && !cgs.isJAPro))) {
 		if (disco.integer)
@@ -5785,6 +5775,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			glow = cgs.media.blackSaberGlowShader;
 			blade = cgs.media.blackSaberCoreShader;
 			doLight = qfalse;
+			break;
 		default:
 			glow = cgs.media.blueSaberGlowShader;
 			blade = cgs.media.blueSaberCoreShader;
@@ -6052,7 +6043,6 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 		radiusmult = 1.0f;
 	//RAZTODO: cvar for radiusmult
 	
-	//pulse = Q_fabs(sinf((float)cg.time / 400.0f)) * 0.1f;
 	pulse = Q_fabs(sinf((float)cg.time / 25.0f)) * 0.25f;
 
 	effectradius = ((radius * 1.6f * v1) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult;

@@ -1211,7 +1211,7 @@ void SV_RebuildRaceRanks_f() {
 
 }
 
-static int G_GetSeason() {
+static int G_GetSeason(void) {
 
 	//We want 4 month seasons?
 
@@ -1525,6 +1525,70 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 	}
 }
 
+void G_UpdateUnlocks(int id, char *username, char *coursename, int style, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
+	//If its a cumulative award or something, we can check if current race is any of the conditions, then sql check inside to see if all the other conditions are met
+	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
+	unsigned int unlock = 0;
+
+	if (style == 1 && Q_stricmp(coursename, "racearena_pro (a-mountain)")) {
+		unlock = 1; //ok we need like a big list of these
+	}
+
+	if (unlock) {
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+
+		if (id) //We know ID so we can optimize it
+			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE id = ?";
+		else
+			sql = "UPDATE LocalAccount SET unlocks = unlocks | ? WHERE username = ?";
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_int(stmt, 1, unlock));
+		if (id) {
+			CALL_SQLITE(bind_int(stmt, 2, id));
+		}
+		else {
+			CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
+		}
+
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Update Failed (G_UpdateUnlocks)", s);
+		}
+
+		CALL_SQLITE(finalize(stmt));
+	}
+}
+
+void SV_RebuildUnlocks_f(void) { //we dont actually need to get username here, maybe for cumulitive checks..
+	sqlite3 * db;
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s;
+
+	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+
+	sql = "SELECT id, username, coursename, style, season FROM LocalRun";
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			G_UpdateUnlocks(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildUnlocks_f)", s);
+			break;
+		}
+	}
+	CALL_SQLITE(finalize(stmt));
+
+	CALL_SQLITE(close(db));
+
+}
+
 void StripWhitespace(char *s);
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum, int awesomenoise) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
@@ -1772,6 +1836,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				addedScore -= ((season_oldCount / (float)season_oldRank) + (season_oldCount - season_oldRank)) * 0.5f;
 		}
 
+		if (globalPB) {
+			G_UpdateUnlocks(0, username, coursename, style, db);
+		}
 	}
 	//else.. set ranks to 0 for print, nothing to update
 
@@ -1835,15 +1902,10 @@ void G_TestAddRace() {
 
 void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern ?
 void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip somehow
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-    int row = 0, s, count = 0, i, key;
-	unsigned int ip, lastip = 0;
 	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0}, enteredKey[32];
+	int key;
+	unsigned int ip;
 	char *p = NULL;
-	gclient_t	*cl;
-	int flags = 0;
 
 	if (!ent->client)
 		return;
@@ -1890,118 +1952,130 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		*p = 0;
 	ip = ip_to_int(strIP);
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int flags = 0;
+		int row = 0, s, count = 0, i;
+		gclient_t	*cl;
+		unsigned int lastip = 0, unlocks = 0;
 
-	if (ip) {
-		sql = "SELECT COUNT(*) FROM LocalAccount WHERE lastip = ?";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int64 (stmt, 1, ip));
+		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-		s = sqlite3_step(stmt);
+		if (ip) {
+			sql = "SELECT COUNT(*) FROM LocalAccount WHERE lastip = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_int64(stmt, 1, ip));
 
-		if (s == SQLITE_ROW)
-			count = sqlite3_column_int(stmt, 0);
-		else if (s != SQLITE_DONE) {
-			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACLogin_f 1)", s);
-			CALL_SQLITE (finalize(stmt));
-			CALL_SQLITE (close(db));
+			s = sqlite3_step(stmt);
+
+			if (s == SQLITE_ROW)
+				count = sqlite3_column_int(stmt, 0);
+			else if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACLogin_f 1)", s);
+				CALL_SQLITE(finalize(stmt));
+				CALL_SQLITE(close(db));
+				return;
+			}
+
+			CALL_SQLITE(finalize(stmt));
+		}
+
+		sql = "SELECT password, lastip, flags, unlocks FROM LocalAccount WHERE username = ?";
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
+				lastip = sqlite3_column_int(stmt, 1);
+				flags = (qboolean)sqlite3_column_int(stmt, 2);
+				unlocks = (qboolean)sqlite3_column_int(stmt, 3);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACLogin_f 2)", s);
+				break;
+			}
+		}
+
+		CALL_SQLITE(finalize(stmt));
+
+		if (row == 0) { // No accounts found
+			trap->SendServerCommand(ent - g_entities, "print \"Account not found! To make a new account, use the /register command.\n\"");
+			CALL_SQLITE(close(db));
+			return;
+		}
+		else if (row > 1) { // More than 1 account found
+			trap->Print("WARNING: Multiple accounts with same name!\n");
+			CALL_SQLITE(close(db));
 			return;
 		}
 
-		CALL_SQLITE (finalize(stmt));
-	}
-
-	sql = "SELECT password, lastip, flags FROM LocalAccount WHERE username = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	
-    while (1) {
-        s = sqlite3_step(stmt);
-        if (s == SQLITE_ROW) {
-			Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
-			lastip = sqlite3_column_int(stmt, 1);
-			flags = (qboolean)sqlite3_column_int(stmt, 2);
-            row++;
-        }
-        else if (s == SQLITE_DONE)
-            break;
-        else {
-            G_ErrorPrint("ERROR: SQL Select Failed (Cmd_ACLogin_f 2)", s);
-			break;
-        }
-    }
-
-	CALL_SQLITE (finalize(stmt));
-
-	if (row == 0) { // No accounts found
-		trap->SendServerCommand(ent-g_entities, "print \"Account not found! To make a new account, use the /register command.\n\"");
-		CALL_SQLITE (close(db));
-		return;
-	}
-	else if (row > 1) { // More than 1 account found
-		trap->Print("WARNING: Multiple accounts with same name!\n");
-		CALL_SQLITE (close(db));
-		return;
-	}
-
-	if (!(flags & JAPRO_ACCOUNTFLAG_TRUSTED) && (count > 0) && lastip && ip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
-		trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account. You are only allowed one account.\n\"");
-		CALL_SQLITE (close(db));
-		return;
-	}
-
-	if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip != ip) {
-		trap->SendServerCommand(ent-g_entities, "print \"This account is locked to a different IP address.\n\"");
-		CALL_SQLITE (close(db));
-		return;
-	}
-
-	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clientsv - use numplayingclients fixme
-		if (!g_entities[i].inuse)
-			continue;
-		cl = &level.clients[i];
-		if (!Q_stricmp(username, cl->pers.userName)) {
-			trap->SendServerCommand(ent-g_entities, "print \"This account is already logged in!\n\"");
-			CALL_SQLITE (close(db));
+		if (!(flags & JAPRO_ACCOUNTFLAG_TRUSTED) && (count > 0) && lastip && ip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
+			trap->SendServerCommand(ent - g_entities, "print \"Your IP address already belongs to an account. You are only allowed one account.\n\"");
+			CALL_SQLITE(close(db));
 			return;
 		}
-	}
-		
-	if (enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
-		time_t	rawtime;
 
-		time( &rawtime );
-		localtime( &rawtime );
-
-		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
-		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
-			ResetPlayerTimers(ent, qtrue);
-			trap->SendServerCommand(ent-g_entities, "print \"Login sucessful. Time reset.\n\"");
+		if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip != ip) {
+			trap->SendServerCommand(ent - g_entities, "print \"This account is locked to a different IP address.\n\"");
+			CALL_SQLITE(close(db));
+			return;
 		}
-		else
-			trap->SendServerCommand(ent-g_entities, "print \"Login sucessful.\n\"");
 
-		if (!ip) //meh
-			ip = lastip;
+		for (i = 0; i < MAX_CLIENTS; i++) {//Build a list of clientsv - use numplayingclients fixme
+			if (!g_entities[i].inuse)
+				continue;
+			cl = &level.clients[i];
+			if (!Q_stricmp(username, cl->pers.userName)) {
+				trap->SendServerCommand(ent - g_entities, "print \"This account is already logged in!\n\"");
+				CALL_SQLITE(close(db));
+				return;
+			}
+		}
 
-		sql = "UPDATE LocalAccount SET lastip = ?, lastlogin = ? WHERE username = ?";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int64 (stmt, 1, ip));
-		CALL_SQLITE (bind_int (stmt, 2, rawtime));
-		CALL_SQLITE (bind_text (stmt, 3, username, -1, SQLITE_STATIC));
+		if (enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
+			time_t	rawtime;
 
-		s = sqlite3_step(stmt);
+			time(&rawtime);
+			localtime(&rawtime);
 
-		if (s != SQLITE_DONE)
-			G_ErrorPrint("ERROR: SQL Update Failed (Cmd_ACLogin_f 3)", s);
+			Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
+			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+				ResetPlayerTimers(ent, qtrue);
+				trap->SendServerCommand(ent - g_entities, "print \"Login sucessful. Time reset.\n\"");
+			}
+			else
+				trap->SendServerCommand(ent - g_entities, "print \"Login sucessful.\n\"");
 
-		CALL_SQLITE (finalize(stmt));
+			if (!ip) //meh
+				ip = lastip;
 
+			sql = "UPDATE LocalAccount SET lastip = ?, lastlogin = ? WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_int64(stmt, 1, ip));
+			CALL_SQLITE(bind_int(stmt, 2, rawtime));
+			CALL_SQLITE(bind_text(stmt, 3, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+
+			if (s != SQLITE_DONE)
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_ACLogin_f 3)", s);
+
+			CALL_SQLITE(finalize(stmt));
+
+			ent->client->pers.unlocks = unlocks;
+		}
+		else {
+			trap->SendServerCommand(ent - g_entities, "print \"Incorrect password!\n\"");
+		}
+		CALL_SQLITE(close(db));
 	}
-	else {
-		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
-	}	
-	CALL_SQLITE (close(db));
 
 	//DebugWriteToDB("Cmd_ACLogin_f");
 }
@@ -2905,7 +2979,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		CALL_SQLITE (finalize(stmt));
 	}
 
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, racetime, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, ?)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, racetime, created, lastlogin, lastip, flags, unlocks) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, ?, 0, 0)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
@@ -6079,8 +6153,10 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	//use transactions
 	//COUNT_CHANGES off
 
+	//Create localrun index ?
+
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
-		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, flags UNSIGNED TINYINT)";
+		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, racetime UNSIGNED INTEGER, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER, flags UNSIGNED TINYINT, unlocks UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE)

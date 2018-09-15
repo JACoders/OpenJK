@@ -35,6 +35,7 @@ console_t	con;
 
 cvar_t		*con_conspeed;
 cvar_t		*con_notifytime;
+cvar_t		*con_notifylines;
 cvar_t		*con_opacity; // background alpha multiplier
 cvar_t		*con_scale;
 cvar_t		*con_autoclear;
@@ -527,6 +528,7 @@ void Con_Init (void) {
 	int		i;
 
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0, "How many seconds notify messages should be shown before they fade away");
+	con_notifylines = Cvar_Get("con_notifylines", "3", CVAR_ARCHIVE_ND, "Max number of console lines to print in top left");
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0, "Console open/close speed");
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
@@ -785,7 +787,7 @@ void Con_DrawNotify (void)
 	re->SetColor( g_color_table[currentColor] );
 
 	v = 0;
-	for (i= con.current-NUM_CON_TIMES+1 ; i<=con.current ; i++)
+	for (i= con.current-con_notifylines->integer ; i<=con.current ; i++)
 	{
 		if (i < 0)
 			continue;

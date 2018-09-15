@@ -221,6 +221,11 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_CINFO_PROJSNIPER		(1<<29)	//option for only bhop mode
 #define	JAPRO_CINFO_JAPLUSGRAPPLE	(1<<30)
 
+//jcinfo2 stuff
+#define JAPRO_CINFO2_RACEMODE		(1<<0)
+#define JAPRO_CINFO2_REGISTRATION	(1<<1)
+#define JAPRO_CINFO2_SABERSWITCH	(1<<2)
+
 //JAPRO - Serverside - Tweak Weapons bitvalues
 #define WT_DEMP2_RANDOM			(1<<0)
 #define WT_DEMP2_DAM			(1<<1)
@@ -897,7 +902,7 @@ typedef struct clientPersistant_s {
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
-
+	unsigned int	unlocks;
 
 	stats_t		stats;
 } clientPersistant_t;
@@ -1210,7 +1215,7 @@ struct gclient_s {
 	qboolean	iAmALoser;
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
-	int			saberHitWound[MAX_CLIENTS];//japro
+	int			saberHitWound[MAX_CLIENTS][MAX_CLIENTS+1];//allow a slot for NPCs l0l
 	qboolean	didGlitchKick;
 	int			lastTargetLaserTime;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?

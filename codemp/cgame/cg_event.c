@@ -1755,20 +1755,24 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_JUMP:
 		DEBUGNAME("EV_JUMP");
+		if (!cg_jumpSounds.integer)
+			break;
+
+		if (cg.time - cent->pe.painTime < 500) //don't play immediately after pain/fall sound?
+			break;
+
 		if (cg.predictedPlayerState.duelInProgress && (cg.predictedPlayerState.clientNum != es->clientNum && cg.predictedPlayerState.duelIndex != es->clientNum))
 			break;
-		if (cg_jumpSounds.integer == 1)//JAPRO - Clientside - Add jumpsounds 2 option
-		{
-			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
-		}
+
+		//JAPRO - Clientside - Add jumpsounds options - Start
+		if (cg_jumpSounds.integer == 1)
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) ); //play all jump sounds
 		else if (cg_jumpSounds.integer == 2 && cg.snap->ps.clientNum != es->number)
-		{
-			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
-		}
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) ); //only play other players' jump sounds
 		else if (cg_jumpSounds.integer > 2 && cg.snap->ps.clientNum == es->number)
-		{
-			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
-		}
+			trap->S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) ); //only play my jump sounds
+		//JAPRO - Clientside - Add jumpsounds options - End
+
 		break;
 	case EV_ROLL:
 		DEBUGNAME("EV_ROLL");

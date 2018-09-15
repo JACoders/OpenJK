@@ -4784,6 +4784,11 @@ void Cmd_Saber_f(gentity_t *ent)
 		return;
 	}
 
+	if (VectorLength(ent->client->ps.velocity) && !ent->client->ps.m_iVehicleNum) {
+		trap->SendServerCommand(ent - g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
 	if (level.time - ent->client->ps.footstepTime < 750 
 		|| level.time - ent->client->ps.forceHandExtendTime < 750 
 		|| ent->client->ps.saberMove != LS_READY 
@@ -7997,6 +8002,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber touch damage^3: ^2%i\n", g_saberTouchDmg.integer));
 	if (g_saberDmgDelay_Idle.integer != 350)
 		Q_strcat(buf, sizeof(buf), va("   ^5Idle saber damage delay^3: ^2%i\n", g_saberDmgDelay_Idle.integer)); 
+	if (g_saberDmgDelay_Wound.integer != 0) //Add dmgdelay_wound print?
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber wound delay^3: ^2%i\n", g_saberDmgDelay_Wound.integer)); //idk what this even is
+	if (g_saberDmgDelay_Hit.integer != 0)
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber damage delay^3: ^2%i\n", g_saberDmgDelay_Hit.integer));
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber kick tweak^3: ^2%s\n", (d_saberKickTweak.integer) ? "Yes" : "No"));
 	if (g_fixGroundStab.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Groundstabs damage players not on ground\n");
@@ -8351,7 +8360,7 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 				if (cl->pers.maxFPS == 0)
 					Q_strncpyz(strFPS, "^3?", sizeof(strFPS));
-				else if (cl->pers.maxFPS > 250 || cl->pers.maxFPS < 60)
+				else if (cl->pers.maxFPS > 333 || cl->pers.maxFPS < 60)
 					Q_strncpyz(strFPS, va("^3%i", cl->pers.maxFPS), sizeof(strFPS));
 				else
 					Q_strncpyz(strFPS, va("^7%i", cl->pers.maxFPS), sizeof(strFPS));
