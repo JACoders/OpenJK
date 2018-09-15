@@ -12588,6 +12588,19 @@ void PmoveSingle (pmove_t *pmove) {
 		PM_CheckWallJump();
 	}
 
+#if _CGAME
+	if (cg.predictKnockback) { //Check predict rocketjump
+		VectorAdd(cg.predictedRocketJumpImpulse, pm->ps->velocity, pm->ps->velocity);
+		cg.predictKnockback = qfalse;
+
+		//same concept as PM_DashMove();
+
+		if (cg_predictKnockback.integer > 2) {
+			Com_Printf("Predicting knockback: (%.0f %.0f %.0f)\n", cg.predictedRocketJumpImpulse[0], cg.predictedRocketJumpImpulse[1], cg.predictedRocketJumpImpulse[2]);
+		}
+	}
+#endif
+
 	//if we're in jetpack mode then see if we should be jetting around
 	if (pm->ps->pm_type == PM_JETPACK)
 	{
@@ -13162,50 +13175,6 @@ void PmoveSingle (pmove_t *pmove) {
 	{ //riding a vehicle, see if we should do some anim overrides
 		PM_VehicleWeaponAnimate();
 	}
-
-#ifdef _CGAME
-	if (cg.predictedRocketJumpExpireTime > cg.time) { //Rocketjump prediction, we stil havnt gotten the server snapshot yet
-		vec3_t predictedVel = { 0 };
-		vec3_t lastFrameVel = { 0 };
-
-		//This is retarded.  All we should need to do is tell the game that 
-		//1) We just got knocked back (done by adjusting their velocity ONCE).
-		//2) That the shit recieved by the server is bad.. ignore it up until ping ms after firetime ?
-
-		//We already have the initial velocity kick predicted, just need to know how to apply it..
-
-
-
-		VectorCopy(pm->ps->velocity, lastFrameVel);
-
-		VectorCopy(cg.predictedRocketJumpImpulse, predictedVel);
-
-		if (cg_predictKnockback.integer > 1)
-			Com_Printf("Original Z impulse is %.1f\n", predictedVel[2]);
-
-		predictedVel[2] += -800 * 0.001f * (cg.time - cg.predictedRocketJumpTime); //How long ago we shot it is current time - shot time.
-
-		if (cg_predictKnockback.integer > 1)
-			Com_Printf("Current Predicted Z Vel Based on Impulse is %.1f\n", predictedVel[2]);
-
-
-		if (cg.predictedRocketJumpImpulse[2] + predictedVel[2] > 0) {//Dont predict falling i guess...
-
-			VectorAdd(cg.predictedRocketJumpOriginalVel, cg.predictedRocketJumpImpulse, pm->ps->velocity);
-			pm->ps->velocity[2] += predictedVel[2];
-			pm->ps->origin[2] += 5 * 0.001 * -(cg.predictedRocketJumpTime - cg.time);
-
-			if (cg_predictKnockback.integer > 1)
-				Com_Printf("Effect from rocketjump is %.2f, PredictedVel is %.2f\n", cg.predictedRocketJumpImpulse[2], pm->ps->velocity[2]);
-		}
-		else {
-			if (cg_predictKnockback.integer > 1)
-				Com_Printf("Predicted negative Z vel, nothing to do here\n");
-		}
-
-		//VectorCopy(cg.predictedRocketJump, pm->ps->velocity);
-	}
-#endif
 }
 
 qboolean BG_InRollFixed( playerState_t *ps, int anim )

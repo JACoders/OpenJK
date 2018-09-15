@@ -1358,10 +1358,11 @@ Ghoul2 Insert End
 	int				telemarkYaw;//japro
 	int				lastAutoKillTime;
 
-	int				predictedRocketJumpTime;
-	int				predictedRocketJumpExpireTime;
+	//int				predictedRocketJumpTime;
+	//int				predictedRocketJumpExpireTime;
+	//vec3_t			predictedRocketJumpOriginalVel;
 	vec3_t			predictedRocketJumpImpulse;
-	vec3_t			predictedRocketJumpOriginalVel;
+	qboolean		predictKnockback;
 
 	float			lastXpos;
 	float			lastYpos;
