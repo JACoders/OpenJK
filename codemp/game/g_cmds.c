@@ -4402,29 +4402,29 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 
 			//Get rid of force speed?, absorb, protect, etc?
 			if (ent->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
-				WP_ForcePowerStop(ent, i);
+				WP_ForcePowerStop(ent, FP_RAGE);
 			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
-				WP_ForcePowerStop(challenged, i);
+				WP_ForcePowerStop(challenged, FP_RAGE);
 			if (ent->client->ps.fd.forcePowersActive & (1 << FP_PROTECT))
-				WP_ForcePowerStop(ent, i);
+				WP_ForcePowerStop(ent, FP_PROTECT);
 			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_PROTECT))
-				WP_ForcePowerStop(challenged, i);
+				WP_ForcePowerStop(challenged, FP_PROTECT);
 			if (ent->client->ps.fd.forcePowersActive & (1 << FP_SPEED))
-				WP_ForcePowerStop(ent, i);
+				WP_ForcePowerStop(ent, FP_SPEED);
 			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_SPEED))
-				WP_ForcePowerStop(challenged, i);
+				WP_ForcePowerStop(challenged, FP_SPEED);
 			if (ent->client->ps.fd.forcePowersActive & (1 << FP_TELEPATHY))
-				WP_ForcePowerStop(ent, i);
+				WP_ForcePowerStop(ent, FP_TELEPATHY);
 			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_TELEPATHY))
-				WP_ForcePowerStop(challenged, i);
+				WP_ForcePowerStop(challenged, FP_TELEPATHY);
 			if (ent->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
-				WP_ForcePowerStop(ent, i);
+				WP_ForcePowerStop(ent, FP_ABSORB);
 			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
-				WP_ForcePowerStop(challenged, i);
+				WP_ForcePowerStop(challenged, FP_ABSORB);
 			if (ent->client->ps.fd.forcePowersActive & (1 << FP_SEE))
-				WP_ForcePowerStop(ent, i);
+				WP_ForcePowerStop(ent, FP_SEE);
 			if (challenged->client->ps.fd.forcePowersActive & (1 << FP_SEE))
-				WP_ForcePowerStop(challenged, i);
+				WP_ForcePowerStop(challenged, FP_SEE);
 
 			if (dueltypes[challenged->client->ps.clientNum] > 2) { //1 ?
 				int weapon = dueltypes[challenged->client->ps.clientNum] - 2;
