@@ -180,29 +180,6 @@ typedef struct wavinfo_s {
 	int			dataofs;		// chunk starts this many bytes from file start
 } wavinfo_t;
 
-
-
-/*
-====================================================================
-
-  SYSTEM SPECIFIC FUNCTIONS
-
-====================================================================
-*/
-
-// initializes cycling through a DMA buffer and returns information on it
-qboolean SNDDMA_Init(void);
-
-// gets the current DMA position
-int		SNDDMA_GetDMAPos(void);
-
-// shutdown the DMA xfer.
-void	SNDDMA_Shutdown(void);
-
-void	SNDDMA_BeginPainting (void);
-
-void	SNDDMA_Submit(void);
-
 //====================================================================
 
 #define	MAX_CHANNELS			32
