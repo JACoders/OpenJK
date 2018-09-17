@@ -248,6 +248,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean k
 
 	if (player->client->sess.raceMode) {
 		//player->client->ps.powerups[PW_YSALAMIRI] = 0; //Fuck
+		player->client->ps.powerups[PW_FORCE_BOON] = 0;
 		if (player->client->sess.movementStyle == 7 || player->client->sess.movementStyle == 8) //Get rid of their rockets when they tele/noclip..?
 			DeletePlayerProjectiles(player);
 	}

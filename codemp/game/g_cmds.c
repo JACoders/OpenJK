@@ -660,6 +660,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		ent->client->ps.powerups[PW_FORCE_BOON] = 0;
 		ent->client->pers.haste = qfalse;
 		if (ent->health > 0) {
 			ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
