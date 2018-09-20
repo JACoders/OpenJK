@@ -192,7 +192,7 @@ static bool IN_NumLockEnabled( void )
 
 static void IN_TranslateNumpad( SDL_Keysym *keysym, fakeAscii_t *key )
 {
-	if ( IN_NumLockEnabled() )
+	if ( IN_NumLockEnabled() && Key_GetCatcher() )
 	{
 		switch ( keysym->sym )
 		{
