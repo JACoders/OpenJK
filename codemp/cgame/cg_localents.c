@@ -921,7 +921,7 @@ static void CG_AddMissile( localEntity_t *le ) { //cg_simulatedprojectiles
 		CG_Trace( &trace, currentPos, NULL, NULL, currentPos, -1, CONTENTS_SOLID );
 		if (trace.startsolid) {
 			le->endTime = cg.time; //Kill the missile.
-			//Predict its explosion and launch us?
+			//Predict its explosion save launch vel?
 			if (cg_predictKnockback.integer)
 			{
 				vec3_t dir = {0};
@@ -942,10 +942,11 @@ static void CG_AddMissile( localEntity_t *le ) { //cg_simulatedprojectiles
 					if (knockback > 200)
 						knockback = 200;
 					VectorScale (dir, 1000 * (float)knockback / 200, cg.predictedRocketJumpImpulse); //Now whats dir
+					cg.predictKnockback = qtrue;
 					//VectorAdd(cg.predictedRocketJumpImpulse, pm->ps->velocity, cg.predictedRocketJumpImpulse);
-					cg.predictedRocketJumpTime = cg.time; //disregard timenudge?
-					cg.predictedRocketJumpExpireTime = cg.time + cg.snap->ping + cl_timeNudge.integer; //disregard timenudge?
-					VectorCopy(cg.predictedPlayerState.velocity, cg.predictedRocketJumpOriginalVel);
+					//cg.predictedRocketJumpTime = cg.time; //disregard timenudge?
+					//cg.predictedRocketJumpExpireTime = cg.time + cg.snap->ping + cl_timeNudge.integer; //disregard timenudge?
+					//VectorCopy(cg.predictedPlayerState.velocity, cg.predictedRocketJumpOriginalVel);
 				}
 			}
 		}
