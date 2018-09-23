@@ -8406,7 +8406,7 @@ void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFPopular_f( gentity_t *ent );
 //void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
-void Cmd_Stats_f( gentity_t *ent);
+void Cmd_PlayerInfo_f( gentity_t *ent);
 //void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
 void Cmd_MapEnts_f( gentity_t *self);
@@ -8591,7 +8591,7 @@ command_t commands[] = {
 
 	{ "spot",				Cmd_Spot_f,					CMD_NOINTERMISSION|CMD_ALIVE },
 
-	{ "stats",				Cmd_Stats_f,				CMD_NOINTERMISSION },
+	{ "stats",				Cmd_PlayerInfo_f,			CMD_NOINTERMISSION },
 
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },

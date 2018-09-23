@@ -3919,173 +3919,201 @@ void Cmd_AdminTeam_f( gentity_t *ent ) {
 	}
 }
 
-void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	char username[16], pageStr[8];
-	char timeStr[64] = {0}, dateStr[64] = {0};
-	int s, page = 1, start, lastlogin = 0, row = 0;
+void Cmd_PlayerInfo_f(gentity_t *ent) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
+	char inputString[40], username[16];
+	const int args = trap->Argc();
+	int page = 1, start, type = -1, input, i;
 
-	if (trap->Argc() != 2 && trap->Argc() != 3) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username> <page (optional)>\n\"");
+	if (args > 4) {
+		trap->SendServerCommand(ent - g_entities, "print \"Usage: /stats <username> <type (optional - example: race/combat)> <page (optional)>\n\"");
 		return;
 	}
 
+	//Make 1st arg be username I guess.
 	trap->Argv(1, username, sizeof(username));
 	Q_strlwr(username);
 	Q_CleanStr(username);
 
-	if (trap->Argc() == 3) {
-		trap->Argv(2, pageStr, sizeof(pageStr));
-		page = atoi(pageStr);
-
-		if (page < 1 || page > 100) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username> <page (optional)>\n\"");
-			return;
+	for (i = 2; i < args; i++) {
+		trap->Argv(i, inputString, sizeof(inputString));
+		if (type == -1) {
+			input = StatToInteger(inputString);
+			if (input != -1) {
+				type = input;
+				continue;
+			}
 		}
+		if (page == -1) {
+			input = atoi(inputString);
+			if (input > 0) {
+				page = input;
+				continue;
+			}
+		}	
 	}
+
+	if (type == -1)	//If no type specified, default to... saber? or generic stats?
+		type = 1; //Default to race
+	if (page < 1 || page > 100)
+		page = 1;
 
 	start = (page - 1) * 5;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-
-	sql = "SELECT lastlogin FROM LocalAccount WHERE username = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	
-    while (1) {
-        s = sqlite3_step(stmt);
-        if (s == SQLITE_ROW) {
-			lastlogin = sqlite3_column_int(stmt, 0);
-            row++;
-        }
-        else if (s == SQLITE_DONE)
-            break;
-        else {
-            G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 1)", s);
-			break;
-        }
-    }
-	CALL_SQLITE (finalize(stmt));
-
-	if (row == 0) { //no account found, or more than 1 account with same name, problem
-		trap->SendServerCommand(ent-g_entities, "print \"Account not found!\n\"");
-		CALL_SQLITE (close(db));
-		return;
-	}
-	else if (row > 1) {
-		trap->SendServerCommand(ent-g_entities, "print \"ERROR: Multiple accounts found!\n\"");
-		CALL_SQLITE (close(db));
-		return;
-	}
-
 	{
-		char msg[1024-128] = {0};
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		char timeStr[64] = { 0 }, dateStr[64] = { 0 };
+		int s, lastlogin = 0, created = 0, row = 0;
 
-		getDateTime(lastlogin, timeStr, sizeof(timeStr));
-		Q_strncpyz(msg, va("   ^5Last login: ^2%s\n", timeStr), sizeof(msg));
-		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
-	}
+		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-	{
-		char styleStr[16] = {0}, rankStr[8];
-		char msg[1024-128] = {0};
-		int s;
-		row = 1;
-		//Recent races
-		sql = "SELECT coursename, style, rank, season_rank, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY end_time DESC LIMIT ?, 5";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, start));
-	
-		trap->SendServerCommand(ent-g_entities, "print \"Recent Races:\n    ^5Course                      Style      Rank    Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
+		sql = "SELECT lastlogin, created FROM LocalAccount WHERE username = ?";
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
-				char *tmpMsg = NULL;
-				IntegerToRaceName(sqlite3_column_int(stmt, 1), styleStr, sizeof(styleStr));
-				TimeToString(sqlite3_column_int(stmt, 4), timeStr, sizeof(timeStr), qfalse);
-				getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr)); 
-
-				//If rank == 0, put "Season rank: season_rank".  Else put "Rank: rank"
-				if (sqlite3_column_int(stmt, 2))
-					Com_sprintf(rankStr, sizeof(rankStr), "^2%i^7", sqlite3_column_int(stmt, 2));
-				else
-					Com_sprintf(rankStr, sizeof(rankStr), "^3%i^7", sqlite3_column_int(stmt, 3));
-				
-
-				tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-11s ^3%-12s %s\n", row+start, sqlite3_column_text(stmt, 0), styleStr, rankStr, timeStr, dateStr);
-				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
-					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
-					msg[0] = '\0';
-				}
-				Q_strcat(msg, sizeof(msg), tmpMsg);
+				lastlogin = sqlite3_column_int(stmt, 0);
+				created = sqlite3_column_int(stmt, 1);
 				row++;
 			}
 			else if (s == SQLITE_DONE)
 				break;
 			else {
-				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 2)", s);
+				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 1)", s);
 				break;
 			}
 		}
-		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		CALL_SQLITE(finalize(stmt));
 
-		CALL_SQLITE (finalize(stmt));
+		if (row == 0) { //no account found, or more than 1 account with same name, problem
+			trap->SendServerCommand(ent - g_entities, "print \"Account not found!\n\"");
+			CALL_SQLITE(close(db));
+			return;
+		}
+		else if (row > 1) {
+			trap->SendServerCommand(ent - g_entities, "print \"ERROR: Multiple accounts found!\n\"");
+			CALL_SQLITE(close(db));
+			return;
+		}
 
-	}
+		if (created > 1 || lastlogin)
+		{
+			char msg[128] = { 0 };
+			Com_Printf("Created is %i", created);
+			if (created > 1) { //Sad hack since some accounts were made before this was recorded
+				getDateTime(created, timeStr, sizeof(timeStr));
+				Q_strcat(msg, sizeof(msg), va("   ^5Created:    ^2%s\n", timeStr));
+			}
+			if (lastlogin) {
+				getDateTime(lastlogin, timeStr, sizeof(timeStr));
+				Q_strcat(msg, sizeof(msg), va("   ^5Last login: ^2%s\n", timeStr));
+			}
+			trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+		}
 
-	{
-		char opponent[16], result[16], type[16];
-		char msg[1024-128] = {0};
-		int s;
-		row = 1;
-		//Recent duels
-		sql = "SELECT winner, loser, type, end_time FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 5";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, start));
-	
-		trap->SendServerCommand(ent-g_entities, "print \"Recent Duels:\n    ^5Opponent         Result   Type        Date\n\"");
-		while (1) {
-			s = sqlite3_step(stmt);
-			if (s == SQLITE_ROW) {
-				char *tmpMsg = NULL;
-				IntegerToDuelType(sqlite3_column_int(stmt, 2), type, sizeof(type));
-				getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
-				
-				if (!Q_stricmp((char*)sqlite3_column_text(stmt, 0), username)) { //They are winner
-					Com_sprintf(opponent, sizeof(opponent), "^3%s^7", (char*)sqlite3_column_text(stmt, 1));
-					Com_sprintf(result, sizeof(result), "^2Win^7");
+		if (type == 1)
+		{
+			char styleStr[16] = { 0 }, rankStr[8];
+			char msg[1024 - 128] = { 0 };
+			int s;
+			row = 1;
+			//Recent races
+			sql = "SELECT coursename, style, rank, season_rank, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY end_time DESC LIMIT ?, 10";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+			CALL_SQLITE(bind_int(stmt, 2, start));
+
+			trap->SendServerCommand(ent - g_entities, "print \"Recent Races:\n    ^5Course                      Style      Rank    Time         Date\n\""); //Color rank yellow for global, normal for season -fixme match race print scheme
+			while (1) {
+				s = sqlite3_step(stmt);
+				if (s == SQLITE_ROW) {
+					char *tmpMsg = NULL;
+					IntegerToRaceName(sqlite3_column_int(stmt, 1), styleStr, sizeof(styleStr));
+					TimeToString(sqlite3_column_int(stmt, 4), timeStr, sizeof(timeStr), qfalse);
+					getDateTime(sqlite3_column_int(stmt, 5), dateStr, sizeof(dateStr));
+
+					//If rank == 0, put "Season rank: season_rank".  Else put "Rank: rank"
+					if (sqlite3_column_int(stmt, 2))
+						Com_sprintf(rankStr, sizeof(rankStr), "^2%i^7", sqlite3_column_int(stmt, 2));
+					else
+						Com_sprintf(rankStr, sizeof(rankStr), "^3%i^7", sqlite3_column_int(stmt, 3));
+
+
+					tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-11s ^3%-12s %s\n", row + start, sqlite3_column_text(stmt, 0), styleStr, rankStr, timeStr, dateStr);
+					if (strlen(msg) + strlen(tmpMsg) >= sizeof(msg)) {
+						trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+						msg[0] = '\0';
+					}
+					Q_strcat(msg, sizeof(msg), tmpMsg);
+					row++;
 				}
+				else if (s == SQLITE_DONE)
+					break;
 				else {
-					Com_sprintf(opponent, sizeof(opponent), "^3%s^7", (char*)sqlite3_column_text(stmt, 0));
-					Com_sprintf(result, sizeof(result), "^1Loss^7");
+					G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 2)", s);
+					break;
 				}
+			}
+			trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
 
-				tmpMsg = va("^5%2i^3: ^3%-20s ^3%-12s ^3%-11s %s\n", row+start, opponent, result, type, dateStr);
-				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
-					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
-					msg[0] = '\0';
-				}
-				Q_strcat(msg, sizeof(msg), tmpMsg);
-				row++;
-			}
-			else if (s == SQLITE_DONE)
-				break;
-			else {
-				G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 3)", s);
-				break;
-			}
+			CALL_SQLITE(finalize(stmt));
+
 		}
-		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		else if (type == 2)//All Combat..? break down per style? gametype?
+		{
+			char opponent[16], result[16], type[16];
+			char msg[1024 - 128] = { 0 };
+			int s;
+			row = 1;
+			//Recent duels
+			sql = "SELECT winner, loser, type, end_time FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 10";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+			CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
+			CALL_SQLITE(bind_int(stmt, 3, start));
 
-		CALL_SQLITE (finalize(stmt));
+			trap->SendServerCommand(ent - g_entities, "print \"Recent Duels:\n    ^5Opponent         Result   Type        Date\n\"");
+			while (1) {
+				s = sqlite3_step(stmt);
+				if (s == SQLITE_ROW) {
+					char *tmpMsg = NULL;
+					IntegerToDuelType(sqlite3_column_int(stmt, 2), type, sizeof(type));
+					getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
+
+					if (!Q_stricmp((char*)sqlite3_column_text(stmt, 0), username)) { //They are winner
+						Com_sprintf(opponent, sizeof(opponent), "^3%s^7", (char*)sqlite3_column_text(stmt, 1));
+						Com_sprintf(result, sizeof(result), "^2Win^7");
+					}
+					else {
+						Com_sprintf(opponent, sizeof(opponent), "^3%s^7", (char*)sqlite3_column_text(stmt, 0));
+						Com_sprintf(result, sizeof(result), "^1Loss^7");
+					}
+
+					tmpMsg = va("^5%2i^3: ^3%-20s ^3%-12s ^3%-11s %s\n", row + start, opponent, result, type, dateStr);
+					if (strlen(msg) + strlen(tmpMsg) >= sizeof(msg)) {
+						trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+						msg[0] = '\0';
+					}
+					Q_strcat(msg, sizeof(msg), tmpMsg);
+					row++;
+				}
+				else if (s == SQLITE_DONE)
+					break;
+				else {
+					G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 3)", s);
+					break;
+				}
+			}
+			trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+
+			CALL_SQLITE(finalize(stmt));
+		}
+
+		CALL_SQLITE(close(db));
 	}
-
-	CALL_SQLITE (close(db));
 	//DebugWriteToDB("Cmd_Stats_f");
 }
 
@@ -4434,6 +4462,21 @@ int SeasonToInteger(char *season) {
 		return 4;
 	if (!Q_stricmp(season, "s5"))
 		return 5;
+	return -1;
+}
+
+int StatToInteger(char *type) {
+	Q_strlwr(type);
+	Q_CleanStr(type);
+
+	//Todo - Do this dynamically
+
+	if (!Q_stricmp(type, "race"))
+		return 1;
+	if (!Q_stricmp(type, "combat"))
+		return 2;
+	//if (!Q_stricmp(type, "force"))
+		//return 3;
 	return -1;
 }
 
