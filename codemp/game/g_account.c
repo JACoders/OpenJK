@@ -2362,6 +2362,9 @@ void Svcmd_Register_f(void)
 	if (!username[0]) {
 		return;
 	}
+	if (!Q_stricmp(username, "none") || !Q_stricmp(username, "null") || !Q_stricmp(username, "0")) {
+		return;
+	}
 	if (!Q_stricmp(username, password)) {
 		trap->Print("Username and password cannot be the same\n");
 		return;
@@ -2475,6 +2478,9 @@ void Svcmd_RenameAccount_f(void)
 	Q_strstrip(username, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 	Q_strstrip(newUsername, " \n\r;:.?*<>!#$&'()+@=`~{}[]^_|\\/\"", NULL);
 
+	if (!Q_stricmp(newUsername, "none") || !Q_stricmp(newUsername, "null") || !Q_stricmp(newUsername, "0")) {
+		return;
+	}
 	if (CheckUserExists(newUsername)) {
 		trap->Print( "This username already exists.\n"); //Merge?
 		return;
@@ -3045,6 +3051,9 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	if (!username[0]) {
 		return;
 	}
+	if (!Q_stricmp(username, "none") || !Q_stricmp(username, "null") || !Q_stricmp(username, "0")) {
+		return;
+	}
 	if (!Q_stricmp(username, password)) {
 		trap->SendServerCommand(ent-g_entities, "print \"Username and password cannot be the same\n\"");
 		return;
@@ -3550,7 +3559,7 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 	char username[16], mastername[16];
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand(ent - g_entities, "print \"Usage: /master <name>\n\"");
+		trap->SendServerCommand(ent - g_entities, "print \"Usage: /master <name (or none)>\n\"");
 		return;
 	}
 
@@ -3572,6 +3581,15 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 	//make sure team is public or there is invite? (entry in LocalTeamAccount with flag_PENDING)
 	//insert into LocalTeamAccount with team_id and user_id
 
+	if (!Q_stricmp(ent->client->pers.userName, mastername)) {
+		trap->SendServerCommand(ent - g_entities, "print \"You can not be your own master.\n\"");
+		return;
+	}
+	if (!CheckUserExists(mastername)) {
+		trap->SendServerCommand(ent - g_entities, "print \"Master does not exist.\n\"");
+		return;
+	}
+
 	{
 		sqlite3 * db;
 		char * sql;
@@ -3581,10 +3599,17 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-		sql = "UPDATE LocalAccount SET master = ? WHERE username = ?";
-		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-		CALL_SQLITE(bind_text(stmt, 1, mastername, -1, SQLITE_STATIC));
-		CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
+		if (!Q_stricmp(mastername, "none")) {
+			sql = "UPDATE LocalAccount SET master = NULL WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+		}
+		else {
+			sql = "UPDATE LocalAccount SET master = ? WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, mastername, -1, SQLITE_STATIC));
+			CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
+		}
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
