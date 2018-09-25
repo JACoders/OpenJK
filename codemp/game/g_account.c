@@ -2169,6 +2169,8 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			CALL_SQLITE(finalize(stmt));
 
 			ent->client->pers.unlocks = unlocks;
+
+			//Do something to select number of padawans they have and store that in pers.unlocks or something similiar?
 		}
 		else {
 			trap->SendServerCommand(ent - g_entities, "print \"Incorrect password!\n\"");
@@ -4174,7 +4176,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			int s;
 			row = 1;
 
-
 			//Race stats
 			sql = "SELECT SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
 				"WHERE rank != 0 AND style != 14 AND username = ?";
@@ -4198,9 +4199,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			}
 			CALL_SQLITE(finalize(stmt));
 
-
-
-
 			//Recent races
 			sql = "SELECT coursename, style, rank, season_rank, duration_ms, end_time FROM LocalRun WHERE username = ? ORDER BY end_time DESC LIMIT ?, 10";
 			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
@@ -4221,7 +4219,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 						Com_sprintf(rankStr, sizeof(rankStr), "^2%i^7", sqlite3_column_int(stmt, 2));
 					else
 						Com_sprintf(rankStr, sizeof(rankStr), "^3%i^7", sqlite3_column_int(stmt, 3));
-
 
 					tmpMsg = va("^5%2i^3: ^3%-27s ^3%-10s ^3%-11s ^3%-12s %s\n", row + start, sqlite3_column_text(stmt, 0), styleStr, rankStr, timeStr, dateStr);
 					if (strlen(msg) + strlen(tmpMsg) >= sizeof(msg)) {
@@ -4249,7 +4246,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			char msg[1024 - 128] = { 0 };
 			int s;
 			row = 1;
-
 
 #if 0
 			//Combat stats
@@ -4280,9 +4276,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			}
 			CALL_SQLITE(finalize(stmt));
 #endif
-
-
-
 
 			//Recent duels
 			sql = "SELECT winner, loser, type, end_time FROM LocalDuel WHERE winner = ? OR loser = ? ORDER BY end_time DESC LIMIT ?, 10";
@@ -4330,7 +4323,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 
 		CALL_SQLITE(close(db));
 	}
-	//DebugWriteToDB("Cmd_Stats_f");
+	//DebugWriteToDB("Cmd_AccountStats_f");
 }
 
 //Search array list to find players row
