@@ -3585,7 +3585,7 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 		trap->SendServerCommand(ent - g_entities, "print \"You can not be your own master.\n\"");
 		return;
 	}
-	if (!CheckUserExists(mastername)) {
+	if (Q_stricmp(mastername, "none") && !CheckUserExists(mastername)) { //if its not none and it doesnt exist
 		trap->SendServerCommand(ent - g_entities, "print \"Master does not exist.\n\"");
 		return;
 	}
@@ -3595,7 +3595,6 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 		char * sql;
 		sqlite3_stmt * stmt;
 		int s;
-
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
@@ -4105,7 +4104,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 	const int args = trap->Argc();
 	int page = 1, start, type = -1, input, i;
 
-	if (args > 4) {
+	if (args > 4 || args == 1) {
 		trap->SendServerCommand(ent - g_entities, "print \"Usage: /stats <username> <type (optional - example: race/combat)> <page (optional)>\n\"");
 		return;
 	}
@@ -4140,25 +4139,50 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 
 	start = (page - 1) * 5;
 
+	//List their master if they have one
+	//List their padawans if they have any
+
 	{
 		sqlite3 * db;
 		char * sql;
 		sqlite3_stmt * stmt;
-		char timeStr[64] = { 0 }, dateStr[64] = { 0 };
-		int s, lastlogin = 0, created = 0, row = 0;
+		char timeStr[64] = { 0 }, dateStr[64] = { 0 }, master[16] = { 0 }, padawans[512] = { 0 }; //idk
+		int s, lastlogin = 0, created = 0;
+		qboolean printInfo = qfalse;
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-		sql = "SELECT lastlogin, created FROM LocalAccount WHERE username = ?";
+		sql = "SELECT lastlogin, created, master FROM LocalAccount WHERE username = ? "
+			"UNION ALL SELECT username, NULL, NULL  from LocalAccount WHERE master = ? LIMIT 32";
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
 
-		while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			lastlogin = sqlite3_column_int(stmt, 0);
+			created = sqlite3_column_int(stmt, 1);
+			if ((char*)sqlite3_column_text(stmt, 2))
+				Q_strncpyz(master, (char*)sqlite3_column_text(stmt, 2), sizeof(master));
+		}
+		else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent - g_entities, "print \"Account not found!\n\"");
+			CALL_SQLITE(finalize(stmt));
+			CALL_SQLITE(close(db));
+			return;
+		}
+		else if (s == SQLITE_ERROR) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Cmd_Stats_f 1)", s);
+			CALL_SQLITE(finalize(stmt));
+			CALL_SQLITE(close(db));
+			return;
+		}
+
+		while (1) { //Get padawans
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
-				lastlogin = sqlite3_column_int(stmt, 0);
-				created = sqlite3_column_int(stmt, 1);
-				row++;
+				Com_Printf("Found padawan\n");
+				Q_strcat(padawans, sizeof(padawans), va("%s, ", (char*)sqlite3_column_text(stmt, 0)));
 			}
 			else if (s == SQLITE_DONE)
 				break;
@@ -4169,29 +4193,35 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 		}
 		CALL_SQLITE(finalize(stmt));
 
-		if (row == 0) { //no account found, or more than 1 account with same name, problem
-			trap->SendServerCommand(ent - g_entities, "print \"Account not found!\n\"");
-			CALL_SQLITE(close(db));
-			return;
-		}
-		else if (row > 1) {
-			trap->SendServerCommand(ent - g_entities, "print \"ERROR: Multiple accounts found!\n\"");
-			CALL_SQLITE(close(db));
-			return;
-		}
-
-		if (created > 1 || lastlogin)
 		{
-			char msg[128] = { 0 };
+			char msg[1024-128] = { 0 };
+
 			if (created > 1) { //Sad hack since some accounts were made before this was recorded
 				getDateTime(created, timeStr, sizeof(timeStr));
 				Q_strcat(msg, sizeof(msg), va("   ^5Created:    ^2%s\n", timeStr));
+				printInfo = qtrue;
 			}
 			if (lastlogin) {
 				getDateTime(lastlogin, timeStr, sizeof(timeStr));
 				Q_strcat(msg, sizeof(msg), va("   ^5Last login: ^2%s\n", timeStr));
+				printInfo = qtrue;
 			}
-			trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+			if (Q_stricmp(master, "")) {
+				Q_strcat(msg, sizeof(msg), va("   ^5Master: ^2%s\n", master));
+				printInfo = qtrue;
+			}
+			if (Q_stricmp(padawans, "")) {
+				//Trim end ", " of padawans
+				//char *p = NULL;
+				//*p = padawans;
+				//p[strlen(p) - 2] = 0;
+				Q_strcat(msg, sizeof(msg), va("   ^5Padawans: ^2%s\n", padawans));
+				printInfo = qtrue;
+			}
+
+			if (printInfo) {
+				trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+			}
 		}
 
 		if (type == 1)
@@ -4199,7 +4229,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			char styleStr[16] = { 0 }, rankStr[8];
 			char msg[1024 - 128] = { 0 };
 			int s;
-			row = 1;
+			int row = 1;
 
 			//Race stats
 			sql = "SELECT SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
@@ -4215,7 +4245,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 				int score = (int)(((newscore + oldscore)*0.5f)+0.5f);
 
 				Q_strncpyz(raceStats, "Race Stats:\n    ^5Score    SPR    Avg. Rank    Percentile    Golds    Silvers    Bronzes    Count\n", sizeof(raceStats));
-				Q_strcat(raceStats, sizeof(raceStats), va("    ^3%-8i ^3%-6.2f ^3%-12.2f ^3%-13.2f ^3%-8i ^3%-10i ^3%-10i %i\n", score, oldscore/(float)sqlite3_column_int(stmt, 7), sqlite3_column_double(stmt, 2), sqlite3_column_double(stmt, 3), sqlite3_column_int(stmt, 4), sqlite3_column_int(stmt, 5), sqlite3_column_int(stmt, 6), sqlite3_column_int(stmt, 7)));
+				Q_strcat(raceStats, sizeof(raceStats), va("    ^3%-8i ^3%-6.2f ^3%-12.2f ^3%-13.2f ^3%-8i ^3%-10i ^3%-10i %i\n", score, sqlite3_column_int(stmt, 7) ? oldscore / (float)sqlite3_column_int(stmt, 7) : 0.0f, sqlite3_column_double(stmt, 2), sqlite3_column_double(stmt, 3), sqlite3_column_int(stmt, 4), sqlite3_column_int(stmt, 5), sqlite3_column_int(stmt, 6), sqlite3_column_int(stmt, 7)));
 
 				trap->SendServerCommand(ent - g_entities, va("print \"%s\"", raceStats));
 			}
@@ -4270,7 +4300,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			char opponent[16], result[16], type[16];
 			char msg[1024 - 128] = { 0 };
 			int s;
-			row = 1;
+			int row = 1;
 
 #if 0
 			//Combat stats
