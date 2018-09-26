@@ -4130,7 +4130,7 @@ int StatToInteger(char *type) {
 void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
 	char inputString[40], username[16];
 	const int args = trap->Argc();
-	int page = 1, start, type = -1, input, i;
+	int page = -1, start, type = -1, input, i;
 
 	if (args > 4 || args == 1) {
 		trap->SendServerCommand(ent - g_entities, "print \"Usage: /stats <username> <type (optional - example: race/combat)> <page (optional)>\n\"");
@@ -4165,7 +4165,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 	if (page < 1 || page > 100)
 		page = 1;
 
-	start = (page - 1) * 5;
+	start = (page - 1) * 10;
 
 	//List their master if they have one
 	//List their padawans if they have any
