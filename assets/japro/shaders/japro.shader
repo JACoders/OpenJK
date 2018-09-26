@@ -342,3 +342,27 @@ gfx/hud/saber_stylesstaff
 		rgbGen vertex
 	}
 }
+
+gfx/hud/i_icon_healthdisp
+{
+	nopicmip
+	nomipmaps
+	cull disable
+	{
+		map gfx/hud/i_icon_healthdisp.tga
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		rgbGen vertex
+	}
+}
+
+gfx/hud/i_icon_ammodisp
+{
+	nopicmip
+	nomipmaps
+	cull disable
+	{
+		map gfx/hud/i_icon_ammodisp.tga
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		rgbGen vertex
+	}
+}
