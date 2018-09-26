@@ -3985,9 +3985,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 {
-	int wasActive = self->client->ps.fd.forcePowersActive;
-
-	self->client->ps.fd.forcePowersActive &= ~( 1 << forcePower );
+	//const int wasActive = self->client->ps.fd.forcePowersActive; //what an odd way of doing this isntead of moving the bitremove to after the switch
+	//self->client->ps.fd.forcePowersActive &= ~( 1 << forcePower );
 
 	switch( (int)forcePower )
 	{
@@ -3998,7 +3997,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 	case FP_LEVITATION:
 		break;
 	case FP_SPEED:
-		if (wasActive & (1 << FP_SPEED))
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_SPEED))
 		{
 			G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_2-50], CHAN_VOICE);
 		}
@@ -4008,7 +4007,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 	case FP_PULL:
 		break;
 	case FP_TELEPATHY:
-		if (wasActive & (1 << FP_TELEPATHY))
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_TELEPATHY))
 		{
 			G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/weapons/force/distractstop.wav") );
 		}
@@ -4018,7 +4017,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		self->client->ps.fd.forceMindtrickTargetIndex4 = 0;
 		break;
 	case FP_SEE:
-		if (wasActive & (1 << FP_SEE))
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_SEE))
 		{
 			G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_5-50], CHAN_VOICE);
 		}
@@ -4031,7 +4030,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 			g_entities[self->client->ps.fd.forceGripEntityNum].inuse &&
 			(level.time - g_entities[self->client->ps.fd.forceGripEntityNum].client->ps.fd.forceGripStarted) > 500)
 		{ //if we had our throat crushed in for more than half a second, gasp for air when we're let go
-			if (wasActive & (1 << FP_GRIP))
+			if (self->client->ps.fd.forcePowersActive & (1 << FP_GRIP))
 			{
 				G_EntitySound( &g_entities[self->client->ps.fd.forceGripEntityNum], CHAN_VOICE, G_SoundIndex("*gasp.wav") );
 			}
@@ -4071,19 +4070,19 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		break;
 	case FP_RAGE:
 		self->client->ps.fd.forceRageRecoveryTime = level.time + 10000;
-		if (wasActive & (1 << FP_RAGE))
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
 		{
 			G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_3-50], CHAN_VOICE);
 		}
 		break;
 	case FP_ABSORB:
-		if (wasActive & (1 << FP_ABSORB))
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		{
 			G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_3-50], CHAN_VOICE);
 		}
 		break;
 	case FP_PROTECT:
-		if (wasActive & (1 << FP_PROTECT))
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT))
 		{
 			G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_3-50], CHAN_VOICE);
 		}
@@ -4111,6 +4110,8 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 	default:
 		break;
 	}
+
+	self->client->ps.fd.forcePowersActive &= ~(1 << forcePower);
 }
 
 void DoGripAction(gentity_t *self, forcePowers_t forcePower)

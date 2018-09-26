@@ -1952,6 +1952,10 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 		return;
 	}
 
+	// Racemode only?
+	if ((self->spawnflags & 4) && !other->client->sess.raceMode) {
+		return;
+	}
 
 	dest = 	G_PickTarget( self->target );
 	if (!dest) {

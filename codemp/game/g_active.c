@@ -954,11 +954,13 @@ void P_WorldEffects( gentity_t *ent ) {
 			else
 		#endif
 			{
-				if ( ent->watertype & CONTENTS_LAVA )
-					G_Damage( ent, NULL, NULL, NULL, NULL, 30*waterlevel, 0, MOD_LAVA );
+				if (!ent->client || !ent->client->sess.raceMode) { //No sizzle dmg in racemode?
+					if (ent->watertype & CONTENTS_LAVA)
+						G_Damage(ent, NULL, NULL, NULL, NULL, 30 * waterlevel, 0, MOD_LAVA);
 
-				if ( ent->watertype & CONTENTS_SLIME )
-					G_Damage( ent, NULL, NULL, NULL, NULL, 10*waterlevel, 0, MOD_SLIME );
+					if (ent->watertype & CONTENTS_SLIME)
+						G_Damage(ent, NULL, NULL, NULL, NULL, 10 * waterlevel, 0, MOD_SLIME);
+				}
 			}
 		}
 	}
@@ -1356,6 +1358,7 @@ void G_TouchTriggersWithTrace( gentity_t *ent ) {
 	static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
 	vec3_t			diff;
 	trace_t		trace;
+	float len;
 
 	if ((ent->client->oldFlags ^ ent->client->ps.eFlags ) & EF_TELEPORT_BIT)
 		return;
@@ -1363,7 +1366,8 @@ void G_TouchTriggersWithTrace( gentity_t *ent ) {
 		return;
 
 	VectorSubtract( ent->client->ps.origin, ent->client->oldOrigin, diff );
-	if (VectorLengthSquared(diff) > 512*512) //sanity check i guess
+	len = VectorLengthSquared(diff);
+	if (len > 512 * 512 || len == 0) //sanity check i guess, also skip if they are not moving
 		return;
 
 	trap->Trace( &trace, ent->client->ps.origin, playerMins, playerMaxs, ent->client->oldOrigin, ent->client->ps.clientNum, CONTENTS_TRIGGER, qfalse, 0, 0 );

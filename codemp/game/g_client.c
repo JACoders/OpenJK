@@ -618,7 +618,9 @@ qboolean SpotWouldTelefrag3( vec3_t spot ) {
 		if ( hit->client && hit->client->ps.stats[STAT_HEALTH] > 0 ) {
 			return qtrue;
 		}
-
+		if (hit->r.contents & CONTENTS_LAVA || hit->r.contents & CONTENTS_NODROP) { //assume only pits are contents_nodrop ?
+			return qtrue;
+		}
 	}
 
 	return qfalse;

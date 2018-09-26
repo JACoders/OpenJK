@@ -685,6 +685,7 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		ent->client->ps.powerups[PW_FORCE_BOON] = 0;
 		ent->client->pers.haste = qfalse;
 		if (ent->health > 0) {
 			ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
@@ -8455,7 +8456,7 @@ void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFPopular_f( gentity_t *ent );
 //void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
-void Cmd_Stats_f( gentity_t *ent);
+void Cmd_AccountStats_f( gentity_t *ent);
 //void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
 void Cmd_MapEnts_f( gentity_t *self);
@@ -8472,6 +8473,8 @@ void Cmd_ListTeam_f( gentity_t *ent );
 void Cmd_InviteTeam_f( gentity_t *ent );
 void Cmd_InfoTeam_f( gentity_t *ent );
 void Cmd_AdminTeam_f( gentity_t *ent );
+void Cmd_ListMasters_f(gentity_t *ent);
+void Cmd_AddMaster_f(gentity_t *ent);
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -8599,6 +8602,10 @@ command_t commands[] = {
 	{ "logout",				Cmd_ACLogout_f,				CMD_NOINTERMISSION },
 	
 	{ "mapents",			Cmd_MapEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
+
+	{ "master",				Cmd_AddMaster_f,			CMD_NOINTERMISSION },
+	{ "masterList",			Cmd_ListMasters_f,			CMD_NOINTERMISSION },
+
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "move",				Cmd_MovementStyle_f,		CMD_NOINTERMISSION},
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
@@ -8640,7 +8647,7 @@ command_t commands[] = {
 
 	{ "spot",				Cmd_Spot_f,					CMD_NOINTERMISSION|CMD_ALIVE },
 
-	{ "stats",				Cmd_Stats_f,				CMD_NOINTERMISSION },
+	{ "stats",				Cmd_AccountStats_f,			CMD_NOINTERMISSION }, //rename to info?
 
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
