@@ -5574,7 +5574,8 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 }
 
 qboolean atoi_real(const char* string) {
-	for (size_t i = 0; string[i] != '\0'; ++i) {
+	size_t i;
+	for (i = 0; string[i] != '\0'; ++i) {
 		if (string[i] < '0' || string[i] > '9') {
 			return qfalse;
 		}
