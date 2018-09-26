@@ -932,11 +932,13 @@ void P_WorldEffects( gentity_t *ent ) {
 			else
 		#endif
 			{
-				if ( ent->watertype & CONTENTS_LAVA )
-					G_Damage( ent, NULL, NULL, NULL, NULL, 30*waterlevel, 0, MOD_LAVA );
+				if (!ent->client || !ent->client->sess.raceMode) { //No sizzle dmg in racemode?
+					if (ent->watertype & CONTENTS_LAVA)
+						G_Damage(ent, NULL, NULL, NULL, NULL, 30 * waterlevel, 0, MOD_LAVA);
 
-				if ( ent->watertype & CONTENTS_SLIME )
-					G_Damage( ent, NULL, NULL, NULL, NULL, 10*waterlevel, 0, MOD_SLIME );
+					if (ent->watertype & CONTENTS_SLIME)
+						G_Damage(ent, NULL, NULL, NULL, NULL, 10 * waterlevel, 0, MOD_SLIME);
+				}
 			}
 		}
 	}

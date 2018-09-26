@@ -3604,6 +3604,26 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
 		}
 		else {
+#if 0
+			//Make sure we are not their master
+			sql = "SELECT id FROM LocalAccount WHERE master = ? AND username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+			CALL_SQLITE(bind_text(stmt, 2, mastername, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				trap->SendServerCommand(ent - g_entities, "print \"You can not be your own master.\n\"");
+				CALL_SQLITE(finalize(stmt));
+				CALL_SQLITE(close(db));
+				return;
+			}
+			else if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f 1)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+#endif
+
 			sql = "UPDATE LocalAccount SET master = ? WHERE username = ?";
 			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 			CALL_SQLITE(bind_text(stmt, 1, mastername, -1, SQLITE_STATIC));
@@ -3612,7 +3632,7 @@ void Cmd_AddMaster_f(gentity_t *ent) {
 
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE) {
-			G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f)", s);
+			G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f 2)", s);
 		}
 		else {
 			trap->SendServerCommand(ent - g_entities, "print \"Master added.\n\"");
@@ -3651,28 +3671,33 @@ void Cmd_ListMasters_f(gentity_t *ent) {
 		sqlite3_stmt * stmt;
 		int s, row = 1;
 		char msg[1024 - 128] = { 0 }, mastername[16] = { 0 };
+		qboolean printed = qfalse;
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-		sql = "SELECT master, username FROM LocalAccount WHERE master IS NOT NULL ORDER BY master DESC LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
+		sql = "SELECT T1.master, T1.username FROM "
+			"(SELECT master, username FROM LocalAccount WHERE master IS NOT NULL) AS T1 "
+			"INNER JOIN(SELECT master, COUNT(*) AS count FROM LocalAccount WHERE master IS NOT NULL GROUP BY master) AS T2 "
+			"ON T1.master = T2.master ORDER BY T2.count DESC LIMIT ?, 10"; //Order by score - OH BOY! Or by member count?
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 		CALL_SQLITE(bind_int(stmt, 1, start));
 
-		trap->SendServerCommand(ent - g_entities, "print \"Masterlist:\n    ^5Name               Padawans\n\"");
+		trap->SendServerCommand(ent - g_entities, "print \"Masterlist:\n    ^5Name               Padawans\"");
 
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
 
-				//if (!Q_stricmp((char*)sqlite3_column_text(stmt, 0), mastername)) { //Same master
-					//tmpMsg = va("%s ", sqlite3_column_text(stmt, 1)); ///Append Padawan
-				//}
-				//else { //New master
+				if (!Q_stricmp((char*)sqlite3_column_text(stmt, 0), mastername)) { //Same master
+					tmpMsg = va("%s ", sqlite3_column_text(stmt, 1)); ///Append Padawan
+				}
+				else { //New master
 					Q_strncpyz(mastername, (char*)sqlite3_column_text(stmt, 0), sizeof(mastername)); //Store new master
-					tmpMsg = va("^5%2i^3: ^3%-18s %s\n", start + row, mastername, sqlite3_column_text(stmt, 1)); ///Append newline master and padawan
+					tmpMsg = va("\n^5%2i^3: ^3%-18s %s ", start + row, mastername, sqlite3_column_text(stmt, 1)); ///Append newline master and padawan
+					printed = qtrue;
 					row++;
-				//}
+				}
 
 				//If mastername is equal to previous mastername, strcat 2nd col
 				//Else, new col
@@ -3692,6 +3717,9 @@ void Cmd_ListMasters_f(gentity_t *ent) {
 				break;
 			}
 		}
+
+		if (printed)
+			trap->SendServerCommand(ent - g_entities, "print \"\n\"");
 
 		CALL_SQLITE(finalize(stmt));
 		CALL_SQLITE(close(db));
@@ -4181,8 +4209,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 		while (1) { //Get padawans
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
-				Com_Printf("Found padawan\n");
-				Q_strcat(padawans, sizeof(padawans), va("%s, ", (char*)sqlite3_column_text(stmt, 0)));
+				Q_strcat(padawans, sizeof(padawans), va("%s ", (char*)sqlite3_column_text(stmt, 0)));
 			}
 			else if (s == SQLITE_DONE)
 				break;
