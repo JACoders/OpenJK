@@ -5573,6 +5573,15 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 
 }
 
+qboolean atoi_real(const char* string) {
+	for (size_t i = 0; string[i] != '\0'; ++i) {
+		if (string[i] < '0' || string[i] > '9') {
+			return qfalse;
+		}
+	}
+	return qtrue;
+}
+
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int style = -1, page = -1, season = -1, start = 0, input, i;
 	char inputString[40], inputStyleString[16];
@@ -5596,7 +5605,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	else {
 		trap->Argv(1, inputString, sizeof(inputString));
 		//use strtol isntead of atoi maybe - partial coursename can start with number
-		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi(inputString))) {//If arg1 is style, or season, or page
+		if ((RaceNameToInteger(inputString) != -1) || (SeasonToInteger(inputString) != -1) || (atoi_real(inputString))) {//If arg1 is style, or season, or page
 			//BUG - atoi(inputstring) returns true for values like "18percent" where it should return false..
 			enteredCourseName = qfalse; //Use current mapname as coursename
 		}
