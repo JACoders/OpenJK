@@ -1818,7 +1818,7 @@ void CG_DrawHUD(centity_t	*cent)
 	if (cg_strafeHelper.integer)
 		CG_StrafeHelper(cent);
 	if (cg_strafeHelper.integer & SHELPER_CROSSHAIR) {
-		vec3_t		hcolor;
+		vec4_t		hcolor;
 		float		lineWidth;
 		hcolor[0] = cg_crosshairRed.value / 255.0f;
 		hcolor[1] = cg_crosshairGreen.value / 255.0f;
