@@ -8345,7 +8345,10 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				else
 					Q_strncpyz(strFPS, va("^7%i", cl->pers.maxFPS), sizeof(strFPS));
 
-				Q_strncpyz(realFPS, va("^7%i", 1000/cl->pmoveMsec), sizeof(realFPS));
+				if (cl->pmoveMsec)
+					Q_strncpyz(realFPS, va("^7%i", 1000/cl->pmoveMsec), sizeof(realFPS));
+				else
+					Q_strncpyz(realFPS, "^3?", sizeof(realFPS));
 
 				if (cl->pers.maxPackets == 0)
 					Q_strncpyz(strPackets, "^3?", sizeof(strPackets));

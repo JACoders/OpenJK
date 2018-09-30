@@ -1655,6 +1655,28 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	}
 	else 
 		player->client->ps.stats[STAT_ONLYBHOP] = 1;
+
+	if (trigger->count) { //Set client movementstyle without resetting timer because someone suggested a course that uses different movementstyles for each room.
+		const int style = trigger->count;
+		if (style > 0 && style < MV_NUMSTYLES && style != MV_SWOOP) {//idk how deal with swoop here rly, just spawn it ..?
+			if (style == MV_JETPACK) {
+				player->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			}
+			else {
+				player->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+			}
+
+			if (style == MV_SPEED) {
+				player->client->ps.fd.forcePower = 50;
+			}
+			else {
+				player->client->ps.fd.forcePower = 100; //ok
+			}
+
+			player->client->sess.movementStyle = style;
+			trap->SendServerCommand(player - g_entities, "print \"Movement style updated.\n\"");//eh?
+		}
+	}
 }
 
 void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
