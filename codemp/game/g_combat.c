@@ -2638,12 +2638,157 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			G_AddSimpleStat(self, attacker, 3);
 	}
 
-	if (attacker && attacker->client) {
-		attacker->client->lastkilled_client = self->s.number;
+	if (!attacker || attacker->NPC || !self->NPC || g_scoreNPCs.integer) {
+		if (attacker && attacker->client) {
+			attacker->client->lastkilled_client = self->s.number;
 
-		G_CheckVictoryScript(attacker);
+			if (!self->NPC || g_scoreNPCs.integer > 1) {
+				G_CheckVictoryScript(attacker);
+			}
 
-		if ( attacker == self || OnSameTeam (self, attacker ) ) {
+			if ( attacker == self || OnSameTeam (self, attacker ) ) {
+				if (level.gametype == GT_DUEL)
+				{ //in duel, if you kill yourself, the person you are dueling against gets a kill for it
+					int otherClNum = -1;
+					if (level.sortedClients[0] == self->s.number)
+					{
+						otherClNum = level.sortedClients[1];
+					}
+					else if (level.sortedClients[1] == self->s.number)
+					{
+						otherClNum = level.sortedClients[0];
+					}
+
+					if (otherClNum >= 0 && otherClNum < MAX_CLIENTS &&
+						g_entities[otherClNum].inuse && g_entities[otherClNum].client &&
+						otherClNum != attacker->s.number)
+					{
+						AddScore( &g_entities[otherClNum], self->r.currentOrigin, 1 );
+					}
+					else
+					{
+						if (!attacker->client->sess.raceMode)
+							AddScore( attacker, self->r.currentOrigin, -1 );
+					}
+				}
+				else
+				{
+					if (attacker != self) { //we did a teamkill
+						if (!attacker->client->sess.raceMode) {
+							AddScore( attacker, self->r.currentOrigin, -1 );
+							if (attacker != self  && attacker->client)//JAPRO STATS
+								attacker->client->pers.stats.teamKills++;
+						}
+					}
+					else if (level.gametype != GT_FFA && (level.gametype != GT_CTF || !g_fixCTFScores.integer)) {//we selfkilled
+						if (!attacker->client->sess.raceMode)
+							AddScore( attacker, self->r.currentOrigin, -1 ); //Only take away a point if its not FFA or CTF i guess, sure
+					}
+
+				}
+				if (level.gametype == GT_JEDIMASTER)
+				{
+					AddScore( attacker, self->r.currentOrigin, 1 );
+
+					if (self->client && self->client->ps.isJediMaster)
+					{ //killed ourself so return the saber to the original position
+					  //(to avoid people jumping off ledges and making the saber
+					  //unreachable for 60 seconds)
+						ThrowSaberToAttacker(self, NULL);
+						self->client->ps.isJediMaster = qfalse;
+					}
+				}
+			} else {
+				if (level.gametype == GT_JEDIMASTER)
+				{
+					if ((attacker->client && attacker->client->ps.isJediMaster) ||
+						(self->client && self->client->ps.isJediMaster))
+					{
+						AddScore( attacker, self->r.currentOrigin, 1 );
+						if (self->client && self->client->ps.isJediMaster)
+						{
+							ThrowSaberToAttacker(self, attacker);
+							self->client->ps.isJediMaster = qfalse;
+						}
+					}
+					else
+					{
+						gentity_t *jmEnt = G_GetJediMaster();
+
+						if (jmEnt && jmEnt->client)
+						{
+							AddScore( jmEnt, self->r.currentOrigin, 1 );
+						}
+					}
+				}
+				else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)//rabbit points
+				{
+					int carrier_bonus, killed_carrier, killed_other;
+					if (level.gametype == GT_TEAM) {
+						carrier_bonus = 2;
+						killed_carrier = 2;
+						killed_other = 1;
+					}
+					else {
+						carrier_bonus = 1;
+						killed_carrier = 2;
+						killed_other = 0;
+					}
+					if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
+						AddScore( attacker, self->r.currentOrigin, killed_carrier ); 
+						G_AddSimpleStat(attacker, self, 1);
+						attacker->client->pers.stats.kills++;//JAPRO STATS
+					}
+					else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
+						AddScore( attacker, self->r.currentOrigin, carrier_bonus ); 
+						G_AddSimpleStat(attacker, self, 1);
+						attacker->client->pers.stats.kills++;//JAPRO STATS
+					}
+					else {
+						G_AddSimpleStat(attacker, self, 1);
+						attacker->client->pers.stats.kills++;//JAPRO STATS
+						if (killed_other)
+							AddScore( attacker, self->r.currentOrigin, killed_other ); //we dont care about other kills? just rabbit?
+					}
+				}
+				else
+				{
+					AddScore( attacker, self->r.currentOrigin, 1 );
+					G_AddSimpleStat(attacker, self, 1);
+					attacker->client->pers.stats.kills++;//JAPRO STATS
+				}
+
+				if( meansOfDeath == MOD_STUN_BATON ) {
+				
+					// play humiliation on player
+					attacker->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT]++;
+
+					attacker->client->rewardTime = level.time + REWARD_SPRITE_TIME;
+
+					// also play humiliation on target
+					self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_GAUNTLETREWARD;
+				}
+
+				// check for two kills in a short amount of time
+				// if this is close enough to the last kill, give a reward sound
+				if ( level.time - attacker->client->lastKillTime < CARNAGE_REWARD_TIME ) {
+					// play excellent on player
+					attacker->client->ps.persistant[PERS_EXCELLENT_COUNT]++;
+
+					attacker->client->rewardTime = level.time + REWARD_SPRITE_TIME;
+				}
+				attacker->client->lastKillTime = level.time;
+
+			}
+		} else {
+			if (self->client && self->client->ps.isJediMaster)
+			{ //killed ourself so return the saber to the original position
+			  //(to avoid people jumping off ledges and making the saber
+			  //unreachable for 60 seconds)
+				ThrowSaberToAttacker(self, NULL);
+				self->client->ps.isJediMaster = qfalse;
+			}
+
 			if (level.gametype == GT_DUEL)
 			{ //in duel, if you kill yourself, the person you are dueling against gets a kill for it
 				int otherClNum = -1;
@@ -2658,159 +2803,19 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 				if (otherClNum >= 0 && otherClNum < MAX_CLIENTS &&
 					g_entities[otherClNum].inuse && g_entities[otherClNum].client &&
-					otherClNum != attacker->s.number)
+					otherClNum != self->s.number)
 				{
 					AddScore( &g_entities[otherClNum], self->r.currentOrigin, 1 );
 				}
 				else
 				{
-					if (!attacker->client->sess.raceMode)
-						AddScore( attacker, self->r.currentOrigin, -1 );
+					AddScore( self, self->r.currentOrigin, -1 );
 				}
 			}
 			else
 			{
-				if (attacker != self) { //we did a teamkill
-					if (!attacker->client->sess.raceMode) {
-						AddScore( attacker, self->r.currentOrigin, -1 );
-						if (attacker != self  && attacker->client)//JAPRO STATS
-							attacker->client->pers.stats.teamKills++;
-					}
-				}
-				else if (level.gametype != GT_FFA && (level.gametype != GT_CTF || !g_fixCTFScores.integer)) {//we selfkilled
-					if (!attacker->client->sess.raceMode)
-						AddScore( attacker, self->r.currentOrigin, -1 ); //Only take away a point if its not FFA or CTF i guess, sure
-				}
-
+				AddScore( self, self->r.currentOrigin, -1 ); //Not sure what this is.. loda fixme
 			}
-			if (level.gametype == GT_JEDIMASTER)
-			{
-				if (self->client && self->client->ps.isJediMaster)
-				{ //killed ourself so return the saber to the original position
-				  //(to avoid people jumping off ledges and making the saber
-				  //unreachable for 60 seconds)
-					ThrowSaberToAttacker(self, NULL);
-					self->client->ps.isJediMaster = qfalse;
-				}
-			}
-		} else {
-			if (level.gametype == GT_JEDIMASTER)
-			{
-				if ((attacker->client && attacker->client->ps.isJediMaster) ||
-					(self->client && self->client->ps.isJediMaster))
-				{
-					AddScore( attacker, self->r.currentOrigin, 1 );
-
-					if (self->client && self->client->ps.isJediMaster)
-					{
-						ThrowSaberToAttacker(self, attacker);
-						self->client->ps.isJediMaster = qfalse;
-					}
-				}
-				else
-				{
-					gentity_t *jmEnt = G_GetJediMaster();
-
-					if (jmEnt && jmEnt->client)
-					{
-						AddScore( jmEnt, self->r.currentOrigin, 1 );
-					}
-				}
-			}
-			else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)//rabbit points
-			{
-				int carrier_bonus, killed_carrier, killed_other;
-				if (level.gametype == GT_TEAM) {
-					carrier_bonus = 2;
-					killed_carrier = 2;
-					killed_other = 1;
-				}
-				else {
-					carrier_bonus = 1;
-					killed_carrier = 2;
-					killed_other = 0;
-				}
-				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
-					AddScore( attacker, self->r.currentOrigin, killed_carrier ); 
-					G_AddSimpleStat(attacker, self, 1);
-					attacker->client->pers.stats.kills++;//JAPRO STATS
-				}
-				else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
-					AddScore( attacker, self->r.currentOrigin, carrier_bonus ); 
-					G_AddSimpleStat(attacker, self, 1);
-					attacker->client->pers.stats.kills++;//JAPRO STATS
-				}
-				else {
-					G_AddSimpleStat(attacker, self, 1);
-					attacker->client->pers.stats.kills++;//JAPRO STATS
-					if (killed_other)
-						AddScore( attacker, self->r.currentOrigin, killed_other ); //we dont care about other kills? just rabbit?
-				}
-			}
-			else
-			{
-				AddScore( attacker, self->r.currentOrigin, 1 );
-				G_AddSimpleStat(attacker, self, 1);
-				attacker->client->pers.stats.kills++;//JAPRO STATS
-			}
-
-			if( meansOfDeath == MOD_STUN_BATON ) {
-
-				// play humiliation on player
-				attacker->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT]++;
-
-				attacker->client->rewardTime = level.time + REWARD_SPRITE_TIME;
-
-				// also play humiliation on target
-				self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_GAUNTLETREWARD;
-			}
-
-			// check for two kills in a short amount of time
-			// if this is close enough to the last kill, give a reward sound
-			if ( level.time - attacker->client->lastKillTime < CARNAGE_REWARD_TIME ) {
-				// play excellent on player
-				attacker->client->ps.persistant[PERS_EXCELLENT_COUNT]++;
-
-				attacker->client->rewardTime = level.time + REWARD_SPRITE_TIME;
-			}
-			attacker->client->lastKillTime = level.time;
-
-		}
-	} else {
-		if (self->client && self->client->ps.isJediMaster)
-		{ //killed ourself so return the saber to the original position
-		  //(to avoid people jumping off ledges and making the saber
-		  //unreachable for 60 seconds)
-			ThrowSaberToAttacker(self, NULL);
-			self->client->ps.isJediMaster = qfalse;
-		}
-
-		if (level.gametype == GT_DUEL)
-		{ //in duel, if you kill yourself, the person you are dueling against gets a kill for it
-			int otherClNum = -1;
-			if (level.sortedClients[0] == self->s.number)
-			{
-				otherClNum = level.sortedClients[1];
-			}
-			else if (level.sortedClients[1] == self->s.number)
-			{
-				otherClNum = level.sortedClients[0];
-			}
-
-			if (otherClNum >= 0 && otherClNum < MAX_CLIENTS &&
-				g_entities[otherClNum].inuse && g_entities[otherClNum].client &&
-				otherClNum != self->s.number)
-			{
-				AddScore( &g_entities[otherClNum], self->r.currentOrigin, 1 );
-			}
-			else
-			{
-				AddScore( self, self->r.currentOrigin, -1 );
-			}
-		}
-		else
-		{
-			AddScore( self, self->r.currentOrigin, -1 ); //Not sure what this is.. loda fixme
 		}
 	}
 

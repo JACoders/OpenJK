@@ -8348,8 +8348,17 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 	int			i;
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
+	char strNum[12] = { 0 };
+	char strName[MAX_NETNAME] = { 0 };
+	char strRate[16] = { 0 };
+	char strSnaps[16] = { 0 };
 
-	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate    Snaps     Maxpackets  Timenudge   MaxFPS   Name\n\"");
+	char strFPS[16] = { 0 };
+	char strPackets[16] = { 0 };
+	char strTimenudge[16] = { 0 };
+	char realFPS[16] = { 0 };
+
+	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate    Snaps     Maxpackets  Timenudge   MaxFPS   FPS   Name\n\"");
 
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
 		char *tmpMsg = NULL;
@@ -8357,15 +8366,6 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			continue;
 		cl = &level.clients[i];
 		if (cl->pers.netname[0]) {
-			char strNum[12] = {0};
-			char strName[MAX_NETNAME] = {0};
-			char strRate[16] = {0};
-			char strSnaps[16] = {0};
-
-			char strFPS[16] = {0};
-			char strPackets[16] = {0};
-			char strTimenudge[16] = {0};
-
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 				
@@ -8395,6 +8395,11 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				else
 					Q_strncpyz(strFPS, va("^7%i", cl->pers.maxFPS), sizeof(strFPS));
 
+				if (cl->pmoveMsec)
+					Q_strncpyz(realFPS, va("^7%i", 1000/cl->pmoveMsec), sizeof(realFPS));
+				else
+					Q_strncpyz(realFPS, "^3?", sizeof(realFPS));
+
 				if (cl->pers.maxPackets == 0)
 					Q_strncpyz(strPackets, "^3?", sizeof(strPackets));
 				else if (cl->pers.maxPackets < 30)
@@ -8410,7 +8415,7 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					Q_strncpyz(strTimenudge, va("^7%i", cl->pers.timenudge), sizeof(strTimenudge));
 			}
 
-			tmpMsg = va( "%-2s%-10s%-12s%-14s%-14s%-11s^7%s\n", strNum, strRate, strSnaps, strPackets, strTimenudge, strFPS, strName);
+			tmpMsg = va( "%-2s%-10s%-12s%-14s%-14s%-11s%-8s^7%s\n", strNum, strRate, strSnaps, strPackets, strTimenudge, strFPS, realFPS, strName);
 								
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
