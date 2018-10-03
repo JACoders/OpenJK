@@ -1639,7 +1639,7 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			//G_AddEvent( player, EV_ITEM_PICKUP, 98 ); //100 shield sound i guess, Now why wont the boon sound work?
 		player->client->pers.haste = qtrue;
 	}
-	else if (trigger->spawnflags & 4) { //Reset flags
+	if (trigger->spawnflags & 4) { //Reset flags
 		if (player->client->ps.powerups[PW_NEUTRALFLAG]) {		// only happens in One Flag CTF
 			Team_ReturnFlag( TEAM_FREE );
 			player->client->ps.powerups[PW_NEUTRALFLAG] = 0;
@@ -1653,7 +1653,7 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			player->client->ps.powerups[PW_BLUEFLAG] = 0;
 		}
 	}
-	else if (trigger->spawnflags & 8) { //Change Jump Level with "count" val
+	if (trigger->spawnflags & 8) { //Change Jump Level with "count" val
 		if (trigger->count) { //Set client movementstyle without resetting timer because someone suggested a course that uses different movementstyles for each room.
 			const int jumplevel = trigger->count;
 			if (jumplevel >= 1 && jumplevel <= 3) {
@@ -1687,8 +1687,14 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			}
 		}
 	}
-	else 
+	if (trigger->spawnflags & 32) {//Give Ysal
+		if (player->client->ps.powerups[PW_YSALAMIRI] <= 0)
+			G_Sound(player, CHAN_AUTO, G_SoundIndex("sound/player/boon.mp3"));
+		player->client->ps.powerups[PW_YSALAMIRI] = 99999999;
+	}
+	if (!trigger->spawnflags) {
 		player->client->ps.stats[STAT_ONLYBHOP] = 1;
+	}
 }
 
 void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
@@ -1697,9 +1703,15 @@ void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 
-	player->client->ps.stats[STAT_ONLYBHOP] = 0;
-	if (trigger->spawnflags & 2)
+	if (trigger->spawnflags & 32) {//Give Ysal
+		player->client->ps.powerups[PW_YSALAMIRI] = 0;
+	}
+	if (trigger->spawnflags & 2) {
 		player->client->pers.haste = qfalse;
+	}
+	if (!trigger->spawnflags) {
+		player->client->ps.stats[STAT_ONLYBHOP] = 0;
+	}
 }
 
 void NewPush(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
