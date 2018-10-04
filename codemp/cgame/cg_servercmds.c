@@ -201,6 +201,8 @@ void CG_ParseServerinfo( void ) {
 
 	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
 
+	trap->Cvar_Set("ui_version", Info_ValueForKey(info, "version"));
+
 	cgs.svfps = atoi( Info_ValueForKey( info, "sv_fps" ) );
 	cgs.isJAPlus = qfalse;
 	cgs.isJAPro = qfalse;
@@ -210,8 +212,7 @@ void CG_ParseServerinfo( void ) {
 	cgs.cinfo = 0;
 	cgs.jcinfo = 0;
 	cgs.restricts = 0;
-	if (/*!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) //apparently "JA+ Enhanced" exists.
-	||*/!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+", 3)
+	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+", 3)
 	|| !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14)
 	|| !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {	//uag :s - yes its fatz
 		cgs.isJAPlus = qtrue;

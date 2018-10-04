@@ -264,8 +264,8 @@
 			type				4
 			style				0	
 			text				@MENUS_VERSION
-			cvar				version 
-			maxPaintChars			40
+			cvar				ui_version 
+			maxPaintChars		40
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			180
 			textaligny			14  
