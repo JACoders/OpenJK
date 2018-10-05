@@ -6853,7 +6853,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 	trap->Argv(1, jLevel, sizeof(jLevel));
 	level = atoi(jLevel);
 
-	if (level > 0 && level < 4) {
+	if (level >= 1 && level <= 3) {
 		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = level;
 		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
@@ -8365,6 +8365,8 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 		if (!g_entities[i].inuse)
 			continue;
 		cl = &level.clients[i];
+		if (cl->sess.sessionTeam == TEAM_SPECTATOR)
+			continue;
 		if (cl->pers.netname[0]) {
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
