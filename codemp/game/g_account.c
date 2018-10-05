@@ -3709,7 +3709,6 @@ void Cmd_ListMasters_f(gentity_t *ent) {
 				Q_strcat(msg, sizeof(msg), tmpMsg);
 			}
 			else if (s == SQLITE_DONE) {
-				trap->SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
 				break;
 			}
 			else {
@@ -3718,8 +3717,9 @@ void Cmd_ListMasters_f(gentity_t *ent) {
 			}
 		}
 
-		if (printed)
-			trap->SendServerCommand(ent - g_entities, "print \"\n\"");
+		if (printed) {
+			trap->SendServerCommand(ent - g_entities, va("print \"%s\n\"", msg));
+		}
 
 		CALL_SQLITE(finalize(stmt));
 		CALL_SQLITE(close(db));
@@ -3729,13 +3729,14 @@ void Cmd_ListMasters_f(gentity_t *ent) {
 void Cmd_ListTeam_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
 	char pageStr[8];
 	int page = 1, start;
+	const int args = trap->Argc();
 
-	if (trap->Argc() != 1 && trap->Argc() != 2) {
+	if (args != 1 && args != 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /clanList <page (optional)>\n\"");
 		return;
 	}
 
-	if (trap->Argc() == 2) {
+	if (args == 2) {
 		trap->Argv(1, pageStr, sizeof(pageStr));
 		page = atoi(pageStr);
 

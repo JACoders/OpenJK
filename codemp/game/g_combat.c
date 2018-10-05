@@ -2172,7 +2172,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	}
 	else {
 		VectorClear(self->client->pers.respawnLocation);
-}	
+	}	
 
 	ResetPlayerTimers(self, qfalse);
 
