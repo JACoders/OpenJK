@@ -1831,15 +1831,16 @@ static int SV_FindLeafFolders( const char *baseFolder, char *result, int maxResu
 void SV_BeginAutoRecordDemos() {
 	if ( sv_autoDemo->integer ) {
 		if (sv_autoDemo->integer == 2) { //Record a bot in spec named "RECORDER" only (to be used with cvar that networks spectators all player info)
-			int humans = 0;
+			qboolean humans = qfalse;
 
 			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
 				if ( client->state == CS_ACTIVE && client->netchan.remoteAddress.type != NA_BOT ) {
-					humans++;
+					humans = qtrue;
+					break;
 				}
 			}
 
-			if (humans >= 1) { //mm.. stop demos of only bots being started when map_restart calls this 
+			if (humans) { //mm.. stop demos of only bots being started when map_restart calls this 
 				for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
 					if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
 						if ( client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER") ) { //Only record a bot named RECORDER who is in spectate
@@ -1864,7 +1865,7 @@ void SV_BeginAutoRecordDemos() {
 					}
 				}
 			}
-    }
+		}
 		if ( sv_autoDemoMaxMaps->integer > 0 && sv.demosPruned == qfalse ) {
 			char autorecordDirList[500 * MAX_OSPATH], tmpFileList[5 * MAX_OSPATH];
 			int autorecordDirListCount = SV_FindLeafFolders( "demos/autorecord", autorecordDirList, 500, MAX_OSPATH );
