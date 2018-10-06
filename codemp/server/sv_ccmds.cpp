@@ -1133,21 +1133,12 @@ static void SV_Status_f( void )
 	const char		*s;
 	int				ping;
 	char			state[32];
-	qboolean		avoidTruncation = qfalse;
 
 	// make sure server is running
 	if ( !com_sv_running->integer )
 	{
 		Com_Printf( "Server is not running.\n" );
 		return;
-	}
-
-	if ( Cmd_Argc() > 1 )
-	{
-		if (!Q_stricmp("notrunc", Cmd_Argv(1)))
-		{
-			avoidTruncation = qtrue;
-		}
 	}
 
 	humans = bots = 0;
@@ -1175,25 +1166,26 @@ static void SV_Status_f( void )
 	const char *ded_table[] =
 	{
 		"listen",
-		"lan dedicated",
+		"LAN dedicated",
 		"public dedicated",
 	};
 
 	char hostname[MAX_HOSTNAMELENGTH] = { 0 };
+	const char *gametypeNames[] = { "FFA", "Holocron", "Jedimaster", "Duel", "Powerduel", "Single", "Team", "Siege", "CTF", "CTY" };
 
 	Q_strncpyz( hostname, sv_hostname->string, sizeof(hostname) );
 	Q_StripColor( hostname );
 
 	Com_Printf( "hostname: %s^7\n", hostname );
-	Com_Printf( "version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
-	Com_Printf( "game    : %s\n", FS_GetCurrentGameDir() );
-	Com_Printf( "udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString( "net_ip" ), Cvar_VariableIntegerValue( "net_port" ), STATUS_OS, ded_table[com_dedicated->integer] );
-	Com_Printf( "map     : %s gametype(%i)\n", sv_mapname->string, sv_gametype->integer );
-	Com_Printf( "players : %i humans, %i bots (%i max)\n", humans, bots, sv_maxclients->integer - sv_privateClients->integer );
+	Com_Printf( "server  : %s:%i, %s, %s\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer] );
+	Com_Printf( "game    : %s %i, %s\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION, FS_GetCurrentGameDir());
+	Com_Printf( "map     : ^7%s^7, %s(%i)\n", sv_mapname->string, gametypeNames[sv_gametype->integer], sv_gametype->integer );//Do we need to validate sv_gametype is 0-9? don't think so
+	Com_Printf( "players : %i %s, %i %s(%i max)\n", humans, (humans == 1 ? "human" : "humans"), bots, (bots == 1 ? "bot" : "bots"), sv_maxclients->integer - sv_privateClients->integer );
 	Com_Printf( "uptime  : %s\n", SV_CalcUptime() );
 
-	Com_Printf ("cl score ping name            address                                 rate \n");
-	Com_Printf ("-- ----- ---- --------------- --------------------------------------- -----\n");
+	Com_Printf("cl score ping rate  address                name \n");
+	Com_Printf("-- ----- ---- ----- ---------------------- ---------------\n");
+
 	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++)
 	{
 		if ( !cl->state )
@@ -1211,28 +1203,7 @@ static void SV_Status_f( void )
 		ps = SV_GameClientNum( i );
 		s = NET_AdrToString( cl->netchan.remoteAddress );
 
-		if (!avoidTruncation)
-		{
-			Com_Printf ("%2i %5i %s %-15.15s ^7%39s %5i\n",
-				i,
-				ps->persistant[PERS_SCORE],
-				state,
-				cl->name,
-				s,
-				cl->rate
-				);
-		}
-		else
-		{
-			Com_Printf ("%2i %5i %s %s ^7%39s %5i\n",
-				i,
-				ps->persistant[PERS_SCORE],
-				state,
-				cl->name,
-				s,
-				cl->rate
-				);
-		}
+		Com_Printf("%2i %5i %s %5i ^7%22s %s\n", i, ps->persistant[PERS_SCORE], state, cl->rate, s, cl->name);//No need for truncation "feature" if we move name to end
 	}
 	Com_Printf ("\n");
 }
