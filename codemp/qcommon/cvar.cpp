@@ -275,7 +275,7 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 			if( !Q_isintegral( valuef ) )
 			{
 				if( warn )
-					Com_Printf( "'%s' must be integral", var->name );
+					Com_Printf( "'%s' must be integral\n", var->name );
 
 				valuef = (int)valuef;
 				changed = qtrue;
@@ -285,7 +285,7 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 	else
 	{
 		if( warn )
-			Com_Printf( "'%s' must be numeric", var->name );
+			Com_Printf( "'%s' must be numeric\n", var->name );
 
 		valuef = atof( var->resetString );
 		changed = qtrue;
@@ -334,8 +334,6 @@ static const char *Cvar_Validate( cvar_t *var, const char *value, qboolean warn 
 			Com_sprintf( s, sizeof( s ), "%d", (int)valuef );
 		else
 			Com_sprintf( s, sizeof( s ), "%f", valuef );
-
-		Com_Printf("\n");
 
 		return s;
 	}
