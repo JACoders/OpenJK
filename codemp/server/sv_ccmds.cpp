@@ -1135,8 +1135,7 @@ static void SV_Status_f( void )
 	char			state[32];
 
 	// make sure server is running
-	if ( !com_sv_running->integer )
-	{
+	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
 		return;
 	}
@@ -1163,15 +1162,9 @@ static void SV_Status_f( void )
 #define STATUS_OS "Unknown"
 #endif
 
-	const char *ded_table[] =
-	{
-		"listen",
-		"LAN dedicated",
-		"public dedicated",
-	};
-
-	char hostname[MAX_HOSTNAMELENGTH] = { 0 };
+	const char *ded_table[] = { "listen", "LAN dedicated", "public dedicated" };
 	const char *gametypeNames[] = { "FFA", "Holocron", "Jedimaster", "Duel", "Powerduel", "Single", "Team", "Siege", "CTF", "CTY" };
+	char hostname[MAX_HOSTNAMELENGTH] = { 0 };
 
 	Q_strncpyz( hostname, sv_hostname->string, sizeof(hostname) );
 	Q_StripColor( hostname );
@@ -1186,8 +1179,7 @@ static void SV_Status_f( void )
 	Com_Printf("cl score ping rate  address                name \n");
 	Com_Printf("-- ----- ---- ----- ---------------------- ---------------\n");
 
-	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++)
-	{
+	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++) {
 		if ( !cl->state )
 			continue;
 
@@ -1203,7 +1195,7 @@ static void SV_Status_f( void )
 		ps = SV_GameClientNum( i );
 		s = NET_AdrToString( cl->netchan.remoteAddress );
 
-		Com_Printf("%2i %5i %s %5i ^7%22s %s\n", i, ps->persistant[PERS_SCORE], state, cl->rate, s, cl->name);//No need for truncation "feature" if we move name to end
+		Com_Printf("%2i %5i %s %5i %22s %s^7\n", i, ps->persistant[PERS_SCORE], state, cl->rate, s, cl->name);//No need for truncation "feature" if we move name to end
 	}
 	Com_Printf ("\n");
 }
