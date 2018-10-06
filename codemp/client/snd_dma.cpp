@@ -600,17 +600,17 @@ void S_Init( void ) {
 		// Clamp sound volumes between 0.0f and 1.0f (just in case they aren't already)
 		if (s_volume->value < 0.f)
 			s_volume->value = 0.f;
-		if (s_volume->value > 1.f)
+		else if (s_volume->value > 1.f)
 			s_volume->value = 1.f;
 
 		if (s_volumeVoice->value < 0.f)
 			s_volumeVoice->value = 0.f;
-		if (s_volumeVoice->value > 1.f)
+		else if (s_volumeVoice->value > 1.f)
 			s_volumeVoice->value = 1.f;
 
 		if (s_musicVolume->value < 0.f)
 			s_musicVolume->value = 0.f;
-		if (s_musicVolume->value > 1.f)
+		else if (s_musicVolume->value > 1.f)
 			s_musicVolume->value = 1.f;
 
 		// s_init could be called in game, if so there may be an .eal file
