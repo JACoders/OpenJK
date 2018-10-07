@@ -1494,12 +1494,13 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs) { 
 	if (duration_ms > (60*60*1000)) { //thanks, eternal
 		int hours, minutes, seconds, milliseconds; 
-		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
+		hours = (int)((duration_ms / (1000*60*60))); //wait wut
 		minutes = (int)((duration_ms / (1000*60)) % 60);
 		seconds = (int)(duration_ms / 1000) % 60;
 		milliseconds = duration_ms % 1000; 
-		if (noMs)
+		if (noMs) {
 			Com_sprintf(timeStr, strSize, "%i:%02i:%02i", hours, minutes, seconds);
+		}
 		else
 			Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
 	}
@@ -2548,13 +2549,7 @@ void Svcmd_RenameAccount_f(void)
 
 void Svcmd_AccountInfo_f(void)
 {
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	char username[16], timeStr[64] = {0}, buf[MAX_STRING_CHARS-64] = {0};
-	int row = 0, lastlogin;
-	unsigned int lastip;
-	int s;
+	char username[16];
 
 	if (trap->Argc() != 2) {
 		trap->Print( "Usage: /accountInfo <username>\n");
@@ -2571,30 +2566,45 @@ void Svcmd_AccountInfo_f(void)
 		return;
 	}
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT lastlogin, lastip FROM LocalAccount WHERE username = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	
-    s = sqlite3_step(stmt);
-    if (s == SQLITE_ROW) {
-		lastlogin = sqlite3_column_int(stmt, 0);
-		lastip = sqlite3_column_int(stmt, 1);
-    }
-    else if (s != SQLITE_DONE){
-        G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountInfo_f)", s);
-    }
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int row = 0, lastlogin, created, racetime;
+		unsigned int lastip;
+		int s;
+		char timeStr[64] = { 0 }, buf[MAX_STRING_CHARS - 64] = { 0 };
 
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
+		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+		sql = "SELECT created, lastlogin, lastip, racetime FROM LocalAccount WHERE username = ?";
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
 
-	getDateTime(lastlogin, timeStr, sizeof(timeStr));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			created = sqlite3_column_int(stmt, 0);
+			lastlogin = sqlite3_column_int(stmt, 1);
+			lastip = sqlite3_column_int(stmt, 2);
+			racetime = sqlite3_column_int(stmt, 3);
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountInfo_f)", s);
+		}
 
-	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
-	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
-	Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
+		CALL_SQLITE(finalize(stmt));
+		CALL_SQLITE(close(db));
 
-	trap->Print( "%s", buf);
+		Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
+		getDateTime(created, timeStr, sizeof(timeStr));
+		Q_strcat(buf, sizeof(buf), va("   ^5Created   : ^2%s\n", timeStr));
+		getDateTime(lastlogin, timeStr, sizeof(timeStr));
+		Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
+		Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
+		TimeToString(racetime * 1000, timeStr, sizeof(timeStr), qtrue);
+		Q_strcat(buf, sizeof(buf), va("   ^5Racetime: ^2%s\n", timeStr));
+
+		trap->Print("%s", buf);
+	}
 }
 
 void Svcmd_AccountIPLock_f(void) {

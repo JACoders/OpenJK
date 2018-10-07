@@ -6932,6 +6932,35 @@ static void Cmd_Hide_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"You can be spectated now.\n\"");
 }
 
+
+static void Cmd_Ysal_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+
+	if (!ent->client->pers.practice) {
+		trap->SendServerCommand(ent - g_entities, "print \"You must be in practice mode to use this command!\n\"");
+		return;
+	}
+
+	if (!ent->client->sess.raceMode) {
+		trap->SendServerCommand(ent - g_entities, "print \"You must be in race mode to use this command!\n\""); //Should never happen since cant be in practice w/o racemode? or... w/e
+		return;
+	}
+
+	if (trap->Argc() != 1) {
+		trap->SendServerCommand(ent - g_entities, "print \"Usage: /ysal\n\"");
+		return;
+	}
+
+	if (ent->client->ps.powerups[PW_YSALAMIRI] > 0) {
+		ent->client->ps.powerups[PW_YSALAMIRI] = 0;
+	}
+	else {
+		ent->client->ps.powerups[PW_YSALAMIRI] = 9999999;
+	}
+}
+
 static void Cmd_Launch_f(gentity_t *ent)
 {
 	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], zSpeedStr[16];
@@ -7060,6 +7089,7 @@ static void Cmd_Practice_f(gentity_t *ent)
 			trap->SendServerCommand(ent-g_entities, "print \"Practice mode enabled.\n\"");
 	}
 	else {
+		ent->client->ps.powerups[PW_YSALAMIRI] = 0;
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
 			trap->SendServerCommand(ent-g_entities, "print \"Practice mode disabled: timer reset.\n\"");
 			ResetPlayerTimers(ent, qtrue);
@@ -8630,7 +8660,8 @@ command_t commands[] = {
 	{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 
-	{ "whois",				Cmd_ACWhois_f,				0 }
+	{ "whois",				Cmd_ACWhois_f,				0 },
+	{ "ysal",				Cmd_Ysal_f,					CMD_NOINTERMISSION }
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 
