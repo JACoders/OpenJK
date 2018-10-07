@@ -3832,7 +3832,6 @@ static QINLINE int SaberKickTweak(gentity_t *self)
 }
 
 qboolean WP_SaberCanBlockSwing(int ourStr, int attackStr);
-
 static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBladeNum, vec3_t saberStart, vec3_t saberEnd, qboolean doInterpolate, int trMask, qboolean extrapolate )
 {
 	static trace_t tr;
