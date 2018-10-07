@@ -1498,9 +1498,8 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs)
 		minutes = (int)((duration_ms / (1000*60)) % 60);
 		seconds = (int)(duration_ms / 1000) % 60;
 		milliseconds = duration_ms % 1000; 
-		if (noMs) {
+		if (noMs)
 			Com_sprintf(timeStr, strSize, "%i:%02i:%02i", hours, minutes, seconds);
-		}
 		else
 			Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
 	}
@@ -5126,9 +5125,9 @@ void Cmd_DFFind_f(gentity_t *ent) {
 		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
 		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
 		if (season == -1)
-			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+			sql = "SELECT rank, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
 		else 
-			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+			sql = "SELECT season_rank, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, fullCourseName, -1, SQLITE_STATIC));
@@ -5142,22 +5141,22 @@ void Cmd_DFFind_f(gentity_t *ent) {
 		localtime( &rawtime );
 
 		if (season == -1)
-			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s:\n    ^5Rank     Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString));
 		else
-			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s season %i:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString, season));
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s season %i:\n    ^5Rank     Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString, season));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
-				TimeToString(sqlite3_column_int(stmt, 0), timeStr, sizeof(timeStr), qfalse);
-				getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
-				if (rawtime - sqlite3_column_int(stmt, 3) < 60*60*24) { //Today
+				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				if (rawtime - sqlite3_column_int(stmt, 4) < 60*60*24) { //Today
 					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
 				}
 				else {
 					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
 				}
-				tmpMsg = va("    ^3%-12s ^3%-11i ^3%-12i %s\n", timeStr, sqlite3_column_int(stmt, 1), sqlite3_column_int(stmt, 2), dateStrColored);
+				tmpMsg = va("    ^3%-8i %-12s %-11i %-12i %s\n", sqlite3_column_int(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStrColored);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
