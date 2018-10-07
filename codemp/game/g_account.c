@@ -1494,7 +1494,7 @@ static void G_UpdateOtherLocalRun(sqlite3 * db, int seasonNewRank_self, int seas
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs) { 
 	if (duration_ms > (60*60*1000)) { //thanks, eternal
 		int hours, minutes, seconds, milliseconds; 
-		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
+		hours = (int)((duration_ms / (1000*60*60))); //wait wut
 		minutes = (int)((duration_ms / (1000*60)) % 60);
 		seconds = (int)(duration_ms / 1000) % 60;
 		milliseconds = duration_ms % 1000; 
@@ -2548,13 +2548,7 @@ void Svcmd_RenameAccount_f(void)
 
 void Svcmd_AccountInfo_f(void)
 {
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	char username[16], timeStr[64] = {0}, buf[MAX_STRING_CHARS-64] = {0};
-	int row = 0, lastlogin;
-	unsigned int lastip;
-	int s;
+	char username[16];
 
 	if (trap->Argc() != 2) {
 		trap->Print( "Usage: /accountInfo <username>\n");
@@ -2571,30 +2565,45 @@ void Svcmd_AccountInfo_f(void)
 		return;
 	}
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT lastlogin, lastip FROM LocalAccount WHERE username = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	
-    s = sqlite3_step(stmt);
-    if (s == SQLITE_ROW) {
-		lastlogin = sqlite3_column_int(stmt, 0);
-		lastip = sqlite3_column_int(stmt, 1);
-    }
-    else if (s != SQLITE_DONE){
-        G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountInfo_f)", s);
-    }
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int row = 0, lastlogin, created, racetime;
+		unsigned int lastip;
+		int s;
+		char timeStr[64] = { 0 }, buf[MAX_STRING_CHARS - 64] = { 0 };
 
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
+		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+		sql = "SELECT created, lastlogin, lastip, racetime FROM LocalAccount WHERE username = ?";
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
 
-	getDateTime(lastlogin, timeStr, sizeof(timeStr));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			created = sqlite3_column_int(stmt, 0);
+			lastlogin = sqlite3_column_int(stmt, 1);
+			lastip = sqlite3_column_int(stmt, 2);
+			racetime = sqlite3_column_int(stmt, 3);
+		}
+		else if (s != SQLITE_DONE) {
+			G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountInfo_f)", s);
+		}
 
-	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
-	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
-	Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
+		CALL_SQLITE(finalize(stmt));
+		CALL_SQLITE(close(db));
 
-	trap->Print( "%s", buf);
+		Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
+		getDateTime(created, timeStr, sizeof(timeStr));
+		Q_strcat(buf, sizeof(buf), va("   ^5Created   : ^2%s\n", timeStr));
+		getDateTime(lastlogin, timeStr, sizeof(timeStr));
+		Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
+		Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
+		TimeToString(racetime * 1000, timeStr, sizeof(timeStr), qtrue);
+		Q_strcat(buf, sizeof(buf), va("   ^5Racetime: ^2%s\n", timeStr));
+
+		trap->Print("%s", buf);
+	}
 }
 
 void Svcmd_AccountIPLock_f(void) {
@@ -5116,9 +5125,9 @@ void Cmd_DFFind_f(gentity_t *ent) {
 		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
 		//could be cheaper by using where rank != 0 instead of min(duration_ms) but w/e
 		if (season == -1)
-			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+			sql = "SELECT rank, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
 		else 
-			sql = "SELECT MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
+			sql = "SELECT season_rank, MIN(duration_ms) AS duration, topspeed, average, end_time FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? GROUP BY username ORDER BY duration ASC, end_time ASC LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, fullCourseName, -1, SQLITE_STATIC));
@@ -5132,22 +5141,22 @@ void Cmd_DFFind_f(gentity_t *ent) {
 		localtime( &rawtime );
 
 		if (season == -1)
-			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s:\n    ^5Rank     Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString));
 		else
-			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s season %i:\n    ^5Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString, season));
+			trap->SendServerCommand(ent-g_entities, va("print \"Best time for %s on %s using %s season %i:\n    ^5Rank     Time         Topspeed    Average      Date\n\"", username, fullCourseName, inputStyleString, season));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				char *tmpMsg = NULL;
-				TimeToString(sqlite3_column_int(stmt, 0), timeStr, sizeof(timeStr), qfalse);
-				getDateTime(sqlite3_column_int(stmt, 3), dateStr, sizeof(dateStr));
-				if (rawtime - sqlite3_column_int(stmt, 3) < 60*60*24) { //Today
+				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				if (rawtime - sqlite3_column_int(stmt, 4) < 60*60*24) { //Today
 					Com_sprintf(dateStrColored, sizeof(dateStrColored), "^2%s^7", dateStr);
 				}
 				else {
 					Q_strncpyz(dateStrColored, dateStr, sizeof(dateStrColored));
 				}
-				tmpMsg = va("    ^3%-12s ^3%-11i ^3%-12i %s\n", timeStr, sqlite3_column_int(stmt, 1), sqlite3_column_int(stmt, 2), dateStrColored);
+				tmpMsg = va("    ^3%-8i %-12s %-11i %-12i %s\n", sqlite3_column_int(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStrColored);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
