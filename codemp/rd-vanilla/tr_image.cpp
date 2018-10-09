@@ -1414,12 +1414,13 @@ void R_SetColorMappings( void ) {
 
 	// setup the overbright lighting
 	tr.overbrightBits = r_overBrightBits->integer;
-	if ( !glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders ) {
+	if ( !glConfig.deviceSupportsGamma ) {
 		tr.overbrightBits = 0;		// need hardware gamma for overbright
 	}
 
+
 	// never overbright in windowed mode
-	if ( !glConfig.isFullscreen )
+	if ( !glConfig.isFullscreen && !glConfigExt.doGammaCorrectionWithShaders )
 	{
 		tr.overbrightBits = 0;
 	}
