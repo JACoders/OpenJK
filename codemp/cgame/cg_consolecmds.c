@@ -1234,8 +1234,6 @@ static qboolean japlusPlayerStyles[] = {
 	qtrue,//Fade corpses immediately
 	qtrue,//Disable corpse fading SFX
 	qtrue//Color respawn bubbles by team
-
-
 };
 
 static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
@@ -1312,7 +1310,7 @@ void CG_StylePlayer_f(void)
 
 		//if (index == ..., ...)
 		if (0) { //Radio button these options
-																					 //Toggle index, and make sure everything else in this group (0,1,2,3,13) is turned off
+			//Toggle index, and make sure everything else in this group (0,1,2,3,13) is turned off
 			int groupMask = (1 << 0) + (1 << 1) + (1 << 2) + (1 << 3) + (1 << 13);
 			int value = cg_strafeHelper.integer;
 
@@ -2037,6 +2035,8 @@ static const char *gcmds[] = {
 	"clanInfo",
 	"clanWhoIs",
 	"say_team_mod",
+	"master",
+	"masterlist",
 	"amForceTeam",
 	"amLockTeam",
 	"amWhois",
