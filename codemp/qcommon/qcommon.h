@@ -114,8 +114,13 @@ NET
 
 #define NET_ENABLEV4		0x01
 
-#define	PACKET_BACKUP	32	// number of old messages that must be kept on client and
+#ifndef DEDICATED
+#define PACKET_BACKUP 128
+#else
+#define	PACKET_BACKUP	32 // number of old messages that must be kept on client and
 							// server for delta comrpession and ping estimation
+#endif
+
 #define	PACKET_MASK		(PACKET_BACKUP-1)
 
 #define	MAX_PACKET_USERCMDS		32		// max number of usercmd_t in a packet
