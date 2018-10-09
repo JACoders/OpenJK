@@ -1630,6 +1630,18 @@ void CG_Weapon_f( void ) {
 			return;
 		}
 
+		if (num == 2 && (cg.snap->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)))
+		{ //hack to make pistol button equip bryar or cycle between bryar and dl-44
+			if (cg.snap->ps.weapon == WP_BRYAR_PISTOL || !(cg.snap->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL)))
+			{
+				num = WP_BRYAR_OLD - 2;
+			}
+			else if (cg.snap->ps.weapon == WP_BRYAR_OLD)
+			{
+				num = WP_BRYAR_PISTOL - 2;
+			}
+		}
+
 		//rww - hack to make weapon numbers same as single player
 		if (num > WP_STUN_BATON)
 		{
@@ -1754,6 +1766,18 @@ void CG_WeaponClean_f( void ) {
 			trap->SendConsoleCommand("sv_saberswitch\n");
 		}
 		return;
+	}
+
+	if (num == WP_BRYAR_PISTOL && (cg.snap->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)))
+	{ //hack to make pistol button equip bryar or cycle between bryar and dl-44
+		if (cg.snap->ps.weapon == WP_BRYAR_PISTOL || !(cg.snap->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL)))
+		{
+			num = WP_BRYAR_OLD;
+		}
+		else if (cg.snap->ps.weapon == WP_BRYAR_OLD)
+		{
+			num = WP_BRYAR_PISTOL;
+		}
 	}
 
 	if(num == WP_STUN_BATON) {
