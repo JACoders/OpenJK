@@ -684,7 +684,9 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.duelTime = 0;
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
-		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		if (!ent->client->pers.practice) {
+			ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		}
 		ent->client->ps.powerups[PW_FORCE_BOON] = 0;
 		ent->client->pers.haste = qfalse;
 		if (ent->health > 0) {
@@ -3253,14 +3255,17 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		//Check if we are allowed to call vote
 		if (g_voteTimeout.integer) {
+			const int time = trap->Milliseconds();
 			for (j=0; j<voteFloodProtectSize; j++) {
 				//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].voteTimeoutUntil);
 				if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
 					//trap->Print("Found clients IP in array!\n");
-					if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > trap->Milliseconds())) { //compare this to something other than level.time ?
+					const int voteTimeout = voteFloodProtect[j].failCount+1 * 1000*g_voteTimeout.integer;
+
+					if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > time)) { //compare this to something other than level.time ?
 						//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
 						char timeStr[32];
-						TimeToString((voteFloodProtect[j].voteTimeoutUntil - trap->Milliseconds()) , timeStr, sizeof(timeStr), qtrue);
+						TimeToString((voteFloodProtect[j].voteTimeoutUntil - time) , timeStr, sizeof(timeStr), qtrue);
 						trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
 						return;
 					}
@@ -4427,13 +4432,13 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 				ent->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
 				challenged->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
 
-				if (dueltype == WP_ROCKET_LAUNCHER || dueltype == WP_CONCUSSION) { //Give more health in rocket duels etc
+				if (dueltype == WP_ROCKET_LAUNCHER+2 || dueltype == WP_CONCUSSION+2) { //Give more health in rocket duels etc
 					challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
 					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
 				}
-				else if (dueltype == 20) { //All
-					challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
-					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 2;
+				else if (dueltype == 18) { //All
+					challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 3;
+					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer * 3;
 				}
 				else {
 					ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
@@ -4796,7 +4801,7 @@ void Cmd_Saber_f(gentity_t *ent)
 
 	numSabers = trap->Argc() - 1;
 
-	if (!g_allowSaberSwitch.integer) {
+	if (!g_allowSaberSwitch.integer && !ent->client->sess.raceMode) {
 		trap->SendServerCommand( ent-g_entities, "print \"Command not allowed. (saber).\n\"" );
 		return;
 	}

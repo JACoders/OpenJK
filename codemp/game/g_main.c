@@ -2906,6 +2906,7 @@ void G_KickAllBots(void)
 
 void SetFailedCallVoteIP(char *ClientIP) {
 	int i;
+	const int time = trap->Milliseconds();
 
 	if (!ClientIP[0]) {
 		//trap->Print("Empty client ip bug!\n");
@@ -2920,8 +2921,8 @@ void SetFailedCallVoteIP(char *ClientIP) {
 		if (!Q_stricmp(voteFloodProtect[i].ip, ClientIP)) { //Found us in the array, so update our votetime
 			//voteFloodProtect[i].lastVoteTime = level.time;
 			voteFloodProtect[i].failCount++;
-			voteFloodProtect[i].voteTimeoutUntil = trap->Milliseconds() + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
-			voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			voteFloodProtect[i].voteTimeoutUntil = time + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
+			voteFloodProtect[i].nextDropTime = time + 1000*g_voteTimeout.integer*5;
 			//trap->Print("Found client in the array, updating his vote fail time\n");
 			break;
 		}
@@ -2929,8 +2930,8 @@ void SetFailedCallVoteIP(char *ClientIP) {
 			Q_strncpyz(voteFloodProtect[i].ip, ClientIP, sizeof(voteFloodProtect[i].ip));
 			//voteFloodProtect[i].lastVoteTime = level.time;
 			voteFloodProtect[i].failCount++;
-			voteFloodProtect[i].voteTimeoutUntil = trap->Milliseconds() + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
-			voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			voteFloodProtect[i].voteTimeoutUntil = time + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
+			voteFloodProtect[i].nextDropTime = time + 1000*g_voteTimeout.integer*5;
 			//trap->Print("Client not in array, adding him and his IP( %s, %i)\n", voteFloodProtect[i].ip, voteFloodProtect[i].voteTimeoutUntil);
 			break;
 		}
@@ -3234,11 +3235,12 @@ void CheckCvars( void ) {
 
 static void DropVoteTimeouts(void) { //doesnt need to be checked every frame but w/e..
 	int i;
+	const int time = trap->Milliseconds();
 	for (i=0; i<voteFloodProtectSize; i++) { //Set
 		if (voteFloodProtect[i].ip[0]) { //Found an slot
-			if ((voteFloodProtect[i].failCount > 0) && (voteFloodProtect[i].nextDropTime < trap->Milliseconds())) {
+			if ((voteFloodProtect[i].failCount > 0) && (voteFloodProtect[i].nextDropTime < time)) {
 				voteFloodProtect[i].failCount--;
-				voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+				voteFloodProtect[i].nextDropTime = time + 1000*g_voteTimeout.integer*5;
 			}
 		}
 		else break;
@@ -3380,9 +3382,19 @@ void G_RunFrame( int levelTime ) {
 
 	static int lastMsgTime = 0;//OSP: pause
 
-	if ((unsigned int)levelTime > (1<<31)) {
-		trap->Print ("Auto quitting server %i\n", levelTime);
-		trap->SendConsoleCommand( EXEC_APPEND, "quit\n");
+	if (g_autoQuit.integer) {
+		if (levelTime > /*g_autoQuit.integer*/5 * 24 * 60 * 60 * 1000) {//5 days
+			//Check if between 5 - 5:01 AM? or w/e?.  or check if anyone on?
+			//Where to do this other than runframe.. something thats called like every 1 second?
+			if (level.numVotingClients == 0) { //No humans ingame
+				trap->Print("Auto quitting server %i\n", levelTime);
+				trap->SendConsoleCommand(EXEC_APPEND, "quit\n");
+			}
+			if (levelTime > (2147483648 - 1000)) { //just always quit if its this high.. 24 days?
+				trap->Print("Auto quitting server %i\n", levelTime);
+				trap->SendConsoleCommand(EXEC_APPEND, "quit\n");
+			}
+		}
 	}
 
 	if (level.gametype == GT_SIEGE &&

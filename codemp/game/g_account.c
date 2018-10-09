@@ -2039,6 +2039,9 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 				ent->client->pers.validPlugin = qfalse;
 		}
 	}
+	else {
+		ent->client->pers.validPlugin = qfalse;
+	}
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
@@ -5560,7 +5563,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 					Com_sprintf(rankStr, sizeof(rankStr), "^2%i^7", sqlite3_column_int(stmt, 3));
 
 				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-12s ^3%-12s %s\n", start+row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, rankStr, timeStr, dateStr);
-				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof(msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
 				}
