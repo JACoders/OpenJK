@@ -11401,7 +11401,15 @@ skipTrail:
 
 	if (cent->currentState.eFlags & EF_INVULNERABLE)
 	{
-		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.0f, cgs.media.invulnerabilityShader);
+		if ((cg_stylePlayer.integer & JAPRO_STYLE_COLOREDSPAWNBUBBLE) && cgs.gametype >= GT_TEAM && cgs.gametype != GT_CTY) {
+			if (cgs.clientinfo[cent->currentState.number].team == TEAM_RED)
+				CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.2f, cgs.media.ysaliredShader);
+			else
+				CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.2f, cgs.media.ysaliblueShader);
+		}
+		else {
+			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.0f, cgs.media.invulnerabilityShader);
+		}
 	}
 stillDoSaber:
 	if ((cent->currentState.eFlags & EF_DEAD) && cent->currentState.weapon == WP_SABER)

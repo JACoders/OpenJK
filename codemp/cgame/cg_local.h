@@ -226,6 +226,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	JAPRO_STYLE_PLAYERLOD	(1<<12)
 #define JAPRO_STYLE_NOBODIES	(1<<13)
 #define JAPRO_STYLE_NOFADESFX	(1<<14)
+#define JAPRO_STYLE_COLOREDSPAWNBUBBLE (1<<15)
 
 //japro ignore race fx
 #define RS_TIMER_START					(1<<0) //Ignore sound for start trigger
