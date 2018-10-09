@@ -5053,7 +5053,7 @@ blockStuff:
 			}
 		}
 
-		if ( ((selfSaberLevel < FORCE_LEVEL_3 && ((tryDeflectAgain && Q_irand(1, 10) <= 3) || (!tryDeflectAgain && Q_irand(1, 10) <= 7))) || (Q_irand(1, 10) <= 1 && otherSaberLevel >= FORCE_LEVEL_3))
+		if ( !(g_tweakSaber.integer & ST_NO_REDCHAIN) && ((selfSaberLevel < FORCE_LEVEL_3 && ((tryDeflectAgain && Q_irand(1, 10) <= 3) || (!tryDeflectAgain && Q_irand(1, 10) <= 7))) || (Q_irand(1, 10) <= 1 && otherSaberLevel >= FORCE_LEVEL_3))
 			&& !PM_SaberInBounce(self->client->ps.saberMove)
 
 			&& !PM_SaberInBrokenParry(otherOwner->client->ps.saberMove)
@@ -5100,7 +5100,7 @@ blockStuff:
 
 			didDefense = qtrue;
 		}
-		else if ((selfSaberLevel > FORCE_LEVEL_2 || unblockable) && //if we're doing a special attack, we can send them into a broken parry too (MP only)
+		else if ( !(g_tweakSaber.integer & ST_NO_REDCHAIN) && (selfSaberLevel > FORCE_LEVEL_2 || unblockable) && //if we're doing a special attack, we can send them into a broken parry too (MP only)
 				 ( otherOwner->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] < selfSaberLevel || (otherOwner->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == selfSaberLevel && (Q_irand(1, 10) >= otherSaberLevel*1.5 || unblockable)) ) &&
 				 PM_SaberInParry(otherOwner->client->ps.saberMove) &&
 				 !PM_SaberInBrokenParry(otherOwner->client->ps.saberMove) &&
@@ -5109,7 +5109,7 @@ blockStuff:
 				 !PM_SaberInBounce(self->client->ps.saberMove) &&
 				 dmg > SABER_NONATTACK_DAMAGE &&
 				 !didOffense &&
-				 !otherUnblockable)
+				 !otherUnblockable )
 		{ //they are in a parry, and we are slamming down on them with a move of equal or greater force than their defense, so send them into a broken parry.. unless they are already in one.
 			if (otherOwner->client->ps.saberEntityNum) //make sure he has his saber still
 			{
@@ -5198,31 +5198,35 @@ blockStuff:
 				}
 				attackAdv = (attackStr+attackBonus+self->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE])-(defendStr+otherOwner->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE]);
 
-				if ( attackAdv > 1 )
-				{//I won, he should knockaway
-					otherOwner->client->ps.saberMove = BG_BrokenParryForAttack( otherOwner->client->ps.saberMove );
-					otherOwner->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
-				}
-				else if ( attackAdv > 0 )
-				{//I won, he should bounce, I should continue
-					otherOwner->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
-				}
-				else if ( attackAdv < 1 )
-				{//I lost, I get knocked away
-					self->client->ps.saberMove = BG_BrokenParryForAttack( self->client->ps.saberMove );
-					self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
-				}
-				else if ( attackAdv < 0 )
-				{//I lost, I bounce off
-					self->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
-				}
-				else
-				{//even, both bounce off
-					self->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
-					otherOwner->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
-				}
+				if (!(g_tweakSaber.integer & ST_NO_REDCHAIN)) {
 
+					if ( attackAdv > 1 )
+					{//I won, he should knockaway
+						otherOwner->client->ps.saberMove = BG_BrokenParryForAttack( otherOwner->client->ps.saberMove );
+						otherOwner->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
+					}
+					else if ( attackAdv > 0 )
+					{//I won, he should bounce, I should continue
+						otherOwner->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
+					}
+					else if ( attackAdv < 1 )
+					{//I lost, I get knocked away
+						self->client->ps.saberMove = BG_BrokenParryForAttack( self->client->ps.saberMove );
+						self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
+					}
+					else if ( attackAdv < 0 )
+					{//I lost, I bounce off
+						self->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
+					}
+					else
+					{//even, both bounce off
+						self->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
+						otherOwner->client->ps.saberBlocked = BLOCKED_ATK_BOUNCE;
+					}
+
+				}
 				didOffense = qtrue;
+				
 			}
 		}
 
@@ -5250,7 +5254,7 @@ blockStuff:
 			{
 				qboolean crushTheParry = qfalse;
 
-				if (unblockable)
+				if (unblockable && !(g_tweakSaber.integer & ST_NO_REDCHAIN))
 				{ //It's unblockable. So send us into a broken parry immediately.
 					crushTheParry = qtrue;
 				}
@@ -5268,7 +5272,7 @@ blockStuff:
 					otherOwner->client->ps.saberEventFlags |= SEF_PARRIED;
 					self->client->ps.saberEventFlags |= SEF_BLOCKED;
 
-					if ( attackStr+self->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > otherIdleStr+otherOwner->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] )
+					if ( attackStr+self->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > otherIdleStr+otherOwner->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] && !(g_tweakSaber.integer & ST_NO_REDCHAIN) )
 					{
 						crushTheParry = qtrue;
 					}
@@ -5282,7 +5286,9 @@ blockStuff:
 				{ //they are attacking, and we managed to make them break
 					//Give them a parry, so we can later break it.
 					WP_SaberBlockNonRandom(otherOwner, tr.endpos, qfalse);
-					crushTheParry = qtrue;
+
+					if (!(g_tweakSaber.integer & ST_NO_REDCHAIN))
+						crushTheParry = qtrue;
 
 					if (otherOwner->client->ps.saberEntityNum) //make sure he has his saber still
 					{
@@ -5330,8 +5336,10 @@ blockStuff:
 						}
 #endif
 
-						self->client->ps.saberEventFlags |= SEF_DEFLECTED;
-						otherOwner->client->ps.saberEventFlags |= SEF_DEFLECTED;
+						if (!(g_tweakSaber.integer & ST_NO_REDCHAIN)) {
+							self->client->ps.saberEventFlags |= SEF_DEFLECTED;
+							otherOwner->client->ps.saberEventFlags |= SEF_DEFLECTED;
+						}
 					}
 					else if ((level.time - otherOwner->client->lastSaberStorageTime) < 500 && !unblockable) //make sure the stored saber data is updated
 					{ //They are higher, this means they can actually smash us into a broken parry
@@ -5351,7 +5359,8 @@ blockStuff:
 						}
 #endif
 
-						otherOwner->client->ps.saberEventFlags &= ~SEF_BLOCKED;
+						if (!(g_tweakSaber.integer & ST_NO_REDCHAIN))
+							otherOwner->client->ps.saberEventFlags &= ~SEF_BLOCKED;
 
 						didOffense = qtrue;
 					}
@@ -6953,6 +6962,9 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 
 	if (!SaberSPStyle(saberOwner) && (g_tweakSaber.integer & ST_REDUCE_SABERBLOCK))
 		return qfalse; //Dont do this shit in MP dmgs i guess...
+
+	if (g_tweakSaber.integer & ST_NO_REDCHAIN)
+		return qfalse;
 
 	//Neither gets an advantage based on attack state, when it comes to knocking
 	//saber out of hand.
