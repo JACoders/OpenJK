@@ -146,6 +146,10 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	dot = DotProduct( velocity, trace->plane.normal );
 	VectorMA( velocity, -2*dot, trace->plane.normal, ent->s.pos.trDelta );
 
+	if (ent->bounceCount != -5)
+	{
+		ent->bounceCount--;
+	}
 
 	if ( ent->flags & FL_BOUNCE_SHRAPNEL ) 
 	{
@@ -190,11 +194,6 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	VectorAdd( ent->r.currentOrigin, trace->plane.normal, ent->r.currentOrigin);
 	VectorCopy( ent->r.currentOrigin, ent->s.pos.trBase );
 	ent->s.pos.trTime = level.time;
-
-	if (ent->bounceCount != -5)
-	{
-		ent->bounceCount--;
-	}
 }
 
 
