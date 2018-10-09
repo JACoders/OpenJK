@@ -57,7 +57,7 @@ gfx/effects/sabers/RGBGlow
 {	
 	nopicmip
 	notc
-	cull	twosided
+	cull twosided
 	{
 		map gfx/effects/sabers/RGBGlow
 		blendFunc GL_ONE GL_ONE
@@ -71,7 +71,7 @@ gfx/effects/sabers/RGBCore
 {
 	nopicmip
 	notc
-	cull	twosided
+	cull twosided
 	{
 		map gfx/effects/sabers/RGBCore
 		blendFunc GL_ONE GL_ONE
@@ -157,8 +157,8 @@ gfx/2d/numbers/eight
 {
 	nopicmip
 	{
-			map gfx/2d/numbers/eight
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/eight
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
 
@@ -166,8 +166,8 @@ gfx/2d/numbers/nine
 {
 	nopicmip
 	{
-			map gfx/2d/numbers/nine
-	blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		map gfx/2d/numbers/nine
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 	}
 }
 
@@ -184,7 +184,7 @@ gfx/2d/minimap
 
 gfx/effects/grapple_line
 {
-	cull	twosided
+	cull twosided
 	{
 		map gfx/effects/grapple_line
 		blendFunc GL_ONE GL_ONE
@@ -195,6 +195,9 @@ gfx/effects/grapple_line
 gfx/hud/jk2hudleft
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/static5
 		blendFunc GL_ONE GL_ONE
@@ -205,6 +208,7 @@ gfx/hud/jk2hudleft
 		map gfx/hud/static8
 		blendFunc GL_ONE GL_ONE
 		rgbGen vertex
+
 	}
 	{
 		map gfx/hud/jk2hudleft
@@ -216,6 +220,9 @@ gfx/hud/jk2hudleft
 gfx/hud/jk2hudleft_innerframe
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/jk2hudleft_innerframe
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
@@ -226,7 +233,9 @@ gfx/hud/jk2hudleft_innerframe
 gfx/hud/prong_off
 {
 	nopicmip
-	cull	disable
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/prong_off
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
@@ -237,6 +246,9 @@ gfx/hud/prong_off
 gfx/hud/prong_on_weap
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/prong_on_w
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
@@ -247,6 +259,9 @@ gfx/hud/prong_on_weap
 gfx/hud/prong_on_item
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/prong_on_i
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
@@ -257,6 +272,9 @@ gfx/hud/prong_on_item
 gfx/hud/prong_on_force
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/prong_on_f
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
@@ -267,6 +285,9 @@ gfx/hud/prong_on_force
 gfx/hud/jk2hudrightframe
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/static5
 		blendFunc GL_ONE GL_ONE
@@ -288,6 +309,9 @@ gfx/hud/jk2hudrightframe
 gfx/hud/jk2hudright_innerframe
 {
 	nopicmip
+	nomipmaps
+	notc
+	cull disable
 	{
 		map gfx/hud/jk2hudright_innerframe
 		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
@@ -299,7 +323,8 @@ gfx/hud/saber_stylesfast
 {
 	nopicmip
 	nomipmaps
-	cull	disable
+	notc
+	cull disable
 	{
 		map gfx/hud/saber_stylesfast
 		blendFunc GL_ONE GL_ONE
@@ -311,7 +336,8 @@ gfx/hud/saber_stylesmed
 {
 	nopicmip
 	nomipmaps
-	cull	disable
+	notc
+	cull disable
 	{
 		map gfx/hud/saber_stylesmed
 		blendFunc GL_ONE GL_ONE
@@ -323,7 +349,8 @@ gfx/hud/saber_stylesstrong
 {
 	nopicmip
 	nomipmaps
-	cull	disable
+	notc
+	cull disable
 	{
 		map gfx/hud/saber_stylesstrong
 		blendFunc GL_ONE GL_ONE
@@ -335,7 +362,8 @@ gfx/hud/saber_stylesstaff
 {
 	nopicmip
 	nomipmaps
-	cull	disable
+	notc
+	cull disable
 	{
 		map gfx/hud/saber_stylesstaff
 		blendFunc GL_ONE GL_ONE
@@ -347,6 +375,7 @@ gfx/hud/i_icon_healthdisp
 {
 	nopicmip
 	nomipmaps
+	notc
 	cull disable
 	{
 		map gfx/hud/i_icon_healthdisp.tga
@@ -359,6 +388,7 @@ gfx/hud/i_icon_ammodisp
 {
 	nopicmip
 	nomipmaps
+	notc
 	cull disable
 	{
 		map gfx/hud/i_icon_ammodisp.tga

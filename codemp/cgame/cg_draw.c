@@ -69,7 +69,7 @@ static void CG_DrawTrajectoryLine(void);
 
 #define SPEEDOMETER_DISABLE			(1<<0)
 #define SPEEDOMETER_GROUNDSPEED		(1<<1)
-#define SPEEDOMETER_JUMPHEIHGT		(1<<2)
+#define SPEEDOMETER_JUMPHEIGHT		(1<<2)
 #define SPEEDOMETER_JUMPDISTANCE	(1<<3)
 #define SPEEDOMETER_VERTICALSPEED	(1<<4)
 #define SPEEDOMETER_YAWSPEED		(1<<5)
@@ -1311,36 +1311,23 @@ static void CG_DrawAmmoJK2(centity_t *cent, float x, float y)
 		}
 		return;
 	}
-	else if (cent->currentState.weapon == WP_BRYAR_PISTOL) {
-		value = 888; // xD
-	}
 	else
 	{
 		value = ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
 	}
 
-	if (value < 0 // No ammo
-		|| cent->currentState.weapon == WP_MELEE //don't want a numfield for
-		|| cent->currentState.weapon == WP_STUN_BATON) //either of these
-	{
-		return;
-	}
-
 	numColor_i = CT_HUD_ORANGE;
 
 	trap->R_SetColor( colorTable[numColor_i] );	
-	/*if (value < 0 || (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)) // no ammo/infinite ammo
-		UI_DrawProportionalString(SCREEN_WIDTH - (SCREEN_WIDTH - x - 40)*cgs.widthRatioCoef, y + 20, "--", NUM_FONT_SMALL, colorTable[CT_HUD_ORANGE]);
-	else*/ //didnt like how it looked idk
-		CG_DrawNumField(SCREEN_WIDTH - (SCREEN_WIDTH - x - 30)*cgs.widthRatioCoef, y + 26, 3, value, 6*cgs.widthRatioCoef, 12, NUM_FONT_SMALL, qfalse);
+	if (value < 0 || (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0))  { // infinite ammo
+		CG_DrawScaledProportionalString(SCREEN_WIDTH - (SCREEN_WIDTH - x - 40)*cgs.widthRatioCoef, y + 20, "--", NUM_FONT_SMALL, colorTable[numColor_i], 0.9);
 
-	if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0 &&
-		!(cent->currentState.weapon == WP_MELEE || cent->currentState.weapon == WP_STUN_BATON))
-	{ //no ammo ticks with melee/stun baton, full ammo ticks with infinite ammo
 		inc = 8 / MAX_TICS;
 		value = 8;
 	}
 	else {
+		CG_DrawNumField(SCREEN_WIDTH - (SCREEN_WIDTH - x - 30)*cgs.widthRatioCoef, y + 26, 3, value, 6 * cgs.widthRatioCoef, 12, NUM_FONT_SMALL, qfalse);
+
 		inc = (float)ammoData[weaponData[cent->currentState.weapon].ammoIndex].max / MAX_TICS;
 		value = ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
 	}
@@ -1365,8 +1352,8 @@ static void CG_DrawAmmoJK2(centity_t *cent, float x, float y)
 			memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
 		}
 
-		trap->R_SetColor( calcColor);
-		CG_DrawPic(SCREEN_WIDTH - (SCREEN_WIDTH - x - ammoTicPos[i].x)*cgs.widthRatioCoef, 
+		trap->R_SetColor( calcColor );
+		CG_DrawPic( SCREEN_WIDTH - (SCREEN_WIDTH - x - ammoTicPos[i].x)*cgs.widthRatioCoef, 
 			y + ammoTicPos[i].y, 
 			ammoTicPos[i].width*cgs.widthRatioCoef, 
 			ammoTicPos[i].height, 
@@ -1804,7 +1791,7 @@ void CG_DrawHUD(centity_t	*cent)
 		CG_Speedometer();
 		if (cg_speedometerSettings.integer & SPEEDOMETER_ACCELMETER || cg_strafeHelper.integer & SHELPER_ACCELMETER)
 			CG_DrawAccelMeter();
-		if (cg_speedometerSettings.integer & SPEEDOMETER_JUMPHEIHGT)
+		if (cg_speedometerSettings.integer & SPEEDOMETER_JUMPHEIGHT)
 			CG_JumpHeight(cent);
 		if (cg_speedometerSettings.integer & SPEEDOMETER_JUMPDISTANCE)
 			CG_JumpDistance();
@@ -1845,7 +1832,7 @@ void CG_DrawHUD(centity_t	*cent)
 
 	if (!cg_drawHud.integer)
 		return;
-
+	
 	if (cg_drawScore.integer && !(cgs.gametype == GT_POWERDUEL || (cgs.isJAPro && cg.predictedPlayerState.stats[STAT_RACEMODE]))) {  // JAPRO - Clientside - Add cvar to show player score on HUD.
 		//scoreStr = va("Score: %i", cgs.clientinfo[cg.snap->ps.clientNum].score);
 		if (cgs.gametype == GT_DUEL && cgs.fraglimit > 0)
@@ -5531,6 +5518,13 @@ static int CG_DrawPowerupIcons(int y)
 	return y;
 }
 
+/*
+=====================
+CG_DrawInventory
+Shows a row of icons for all usable items in player inventory at the top left of the screen,
+as well as a number of trip mines, if any.
+=====================
+*/
 static void CG_DrawInventory(int y)
 {
 	int i;
@@ -5541,6 +5535,9 @@ static void CG_DrawInventory(int y)
 		return;
 
 	if (!cg.snap)
+		return;
+
+	if (cgs.isJAPro && cg.snap->ps.stats[STAT_RACEMODE])
 		return;
 
 	if (cg.snap->ps.stats[STAT_HEALTH] <= 0)
@@ -9824,8 +9821,8 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[0] = 0.7f;
 			hcolor[1] = 0.7f;
 			hcolor[2] = 0;
-
-			if (!cg.renderingThirdPerson && ysalTime)
+			
+			if (!cg.renderingThirdPerson && ysalTime && !cg.predictedPlayerState.stats[STAT_RACEMODE] && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDEYSALSHELL))
 			{
 				CG_FillRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, hcolor );
 			}
@@ -10817,7 +10814,7 @@ static void CG_DrawAccelMeter(void)
 
 	if (!(cg_speedometerSettings.integer & SPEEDOMETER_DISABLE)) {
 		if (cg_speedometerSettings.integer & SPEEDOMETER_GROUNDSPEED)
-			x -= 88;
+			x -= 104;
 		else
 			x -= 52;
 	}
@@ -11318,7 +11315,7 @@ static void CG_Speedometer(void)
 				}
 			}
 
-			speedometerXPos += 36;
+			speedometerXPos += 52;
 		}
 
 		//Speedsounds
