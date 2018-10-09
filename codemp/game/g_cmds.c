@@ -3222,16 +3222,17 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		//Check if we are allowed to call vote
 		if (g_voteTimeout.integer) {
+			const int time = trap->Milliseconds();
 			for (j=0; j<voteFloodProtectSize; j++) {
 				//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].voteTimeoutUntil);
 				if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
 					//trap->Print("Found clients IP in array!\n");
 					const int voteTimeout = voteFloodProtect[j].failCount+1 * 1000*g_voteTimeout.integer;
 
-					if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > trap->Milliseconds())) { //compare this to something other than level.time ?
+					if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > time)) { //compare this to something other than level.time ?
 						//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
 						char timeStr[32];
-						TimeToString((voteFloodProtect[j].voteTimeoutUntil - trap->Milliseconds()) , timeStr, sizeof(timeStr), qtrue);
+						TimeToString((voteFloodProtect[j].voteTimeoutUntil - time) , timeStr, sizeof(timeStr), qtrue);
 						trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
 						return;
 					}

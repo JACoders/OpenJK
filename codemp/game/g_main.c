@@ -2891,6 +2891,7 @@ void G_KickAllBots(void)
 
 void SetFailedCallVoteIP(char *ClientIP) {
 	int i;
+	const int time = trap->Milliseconds();
 
 	if (!ClientIP[0]) {
 		//trap->Print("Empty client ip bug!\n");
@@ -2905,8 +2906,8 @@ void SetFailedCallVoteIP(char *ClientIP) {
 		if (!Q_stricmp(voteFloodProtect[i].ip, ClientIP)) { //Found us in the array, so update our votetime
 			//voteFloodProtect[i].lastVoteTime = level.time;
 			voteFloodProtect[i].failCount++;
-			voteFloodProtect[i].voteTimeoutUntil = trap->Milliseconds() + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
-			voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			voteFloodProtect[i].voteTimeoutUntil = time + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
+			voteFloodProtect[i].nextDropTime = time + 1000*g_voteTimeout.integer*5;
 			//trap->Print("Found client in the array, updating his vote fail time\n");
 			break;
 		}
@@ -2914,8 +2915,8 @@ void SetFailedCallVoteIP(char *ClientIP) {
 			Q_strncpyz(voteFloodProtect[i].ip, ClientIP, sizeof(voteFloodProtect[i].ip));
 			//voteFloodProtect[i].lastVoteTime = level.time;
 			voteFloodProtect[i].failCount++;
-			voteFloodProtect[i].voteTimeoutUntil = trap->Milliseconds() + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
-			voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+			voteFloodProtect[i].voteTimeoutUntil = time + (voteFloodProtect[i].failCount * 1000*g_voteTimeout.integer);
+			voteFloodProtect[i].nextDropTime = time + 1000*g_voteTimeout.integer*5;
 			//trap->Print("Client not in array, adding him and his IP( %s, %i)\n", voteFloodProtect[i].ip, voteFloodProtect[i].voteTimeoutUntil);
 			break;
 		}
@@ -3219,11 +3220,12 @@ void CheckCvars( void ) {
 
 static void DropVoteTimeouts(void) { //doesnt need to be checked every frame but w/e..
 	int i;
+	const int time = trap->Milliseconds();
 	for (i=0; i<voteFloodProtectSize; i++) { //Set
 		if (voteFloodProtect[i].ip[0]) { //Found an slot
-			if ((voteFloodProtect[i].failCount > 0) && (voteFloodProtect[i].nextDropTime < trap->Milliseconds())) {
+			if ((voteFloodProtect[i].failCount > 0) && (voteFloodProtect[i].nextDropTime < time)) {
 				voteFloodProtect[i].failCount--;
-				voteFloodProtect[i].nextDropTime = trap->Milliseconds() + 1000*g_voteTimeout.integer*5;
+				voteFloodProtect[i].nextDropTime = time + 1000*g_voteTimeout.integer*5;
 			}
 		}
 		else break;
