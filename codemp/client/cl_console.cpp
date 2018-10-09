@@ -195,9 +195,9 @@ void Con_Copy(void) {
 	}
 
 #ifdef _WIN32
-	bufferlen = con.linewidth + 3 * sizeof(char);
+	bufferlen = con.linewidth + 3;
 #else
-	bufferlen = con.linewidth + 2 * sizeof(char);
+	bufferlen = con.linewidth + 2;
 #endif
 
 	savebufferlen = bufferlen*(con.current - l);
