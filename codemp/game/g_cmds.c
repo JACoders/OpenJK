@@ -659,7 +659,9 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.duelTime = 0;
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
-		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		if (!ent->client->pers.practice) {
+			ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		}
 		ent->client->ps.powerups[PW_FORCE_BOON] = 0;
 		ent->client->pers.haste = qfalse;
 		if (ent->health > 0) {
@@ -4752,7 +4754,7 @@ void Cmd_Saber_f(gentity_t *ent)
 
 	numSabers = trap->Argc() - 1;
 
-	if (!g_allowSaberSwitch.integer) {
+	if (!g_allowSaberSwitch.integer && !ent->client->sess.raceMode) {
 		trap->SendServerCommand( ent-g_entities, "print \"Command not allowed. (saber).\n\"" );
 		return;
 	}
