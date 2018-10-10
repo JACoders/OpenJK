@@ -2286,6 +2286,10 @@ void rocketThink( gentity_t *ent )
 	float dot, dot2, dis;
 	int i;
 	float vel = (ent->spawnflags&1)?ent->speed:ROCKET_VELOCITY;
+	qboolean redeemerAllowed = qtrue;
+
+	if (!g_entities[ent->r.ownerNum].client || !g_entities[ent->r.ownerNum].client->sess.raceMode)
+		redeemerAllowed = qfalse;
 
 	if ( ent->genericValue1 && ent->genericValue1 < level.time )
 	{//time's up, we're done, remove us
@@ -2299,7 +2303,7 @@ void rocketThink( gentity_t *ent )
 		}
 		return;
 	}
-	if (!(g_tweakWeapons.integer & WT_ROCKET_REDEEMER) && ( !ent->enemy 
+	if ((!(g_tweakWeapons.integer & WT_ROCKET_REDEEMER) || !redeemerAllowed) && ( !ent->enemy 
 		|| !ent->enemy->client 
 		|| ent->enemy->health <= 0 
 		|| ent->enemy->client->ps.powerups[PW_CLOAKED] ))
@@ -2323,7 +2327,7 @@ void rocketThink( gentity_t *ent )
 		}
 	}
 
-	if ( !(g_tweakWeapons.integer & WT_ROCKET_REDEEMER) && ent->enemy && ent->enemy->inuse )
+	if ((!(g_tweakWeapons.integer & WT_ROCKET_REDEEMER) || !redeemerAllowed) && ent->enemy && ent->enemy->inuse )
 	{	
 		float newDirMult = ent->angle?ent->angle*2.0f:1.0f;
 		float oldDirMult = ent->angle?(1.0f-ent->angle)*2.0f:1.0f;
@@ -2434,7 +2438,7 @@ void rocketThink( gentity_t *ent )
 		VectorCopy( ent->r.currentOrigin, ent->s.pos.trBase );
 		ent->s.pos.trTime = level.time;
 	}
-	else if (g_tweakWeapons.integer & WT_ROCKET_REDEEMER)
+	else if ((g_tweakWeapons.integer & WT_ROCKET_REDEEMER) && redeemerAllowed)
 	{
 		vec3_t fwd, traceFrom, traceTo, dir;
 		trace_t tr;
@@ -2516,7 +2520,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	if ( altFire )
 		vel *= 0.5f;
 
-	if (altFire && g_tweakWeapons.integer & WT_ROCKET_REDEEMER)
+	if (altFire && g_tweakWeapons.integer & WT_ROCKET_REDEEMER && !ent->client->sess.raceMode)
 		damage *= 2;
 
 	if (q3style && ent->client->pers.backwardsRocket) {
@@ -2562,7 +2566,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		ent->client->ps.rocketLockTime = 0;
 		ent->client->ps.rocketTargetTime = 0;
 	}
-	else if (altFire && g_tweakWeapons.integer & WT_ROCKET_REDEEMER) 
+	else if (altFire && (g_tweakWeapons.integer & WT_ROCKET_REDEEMER) && !ent->client->sess.raceMode)
 	{
 		missile->angle = 0.5f;
 		missile->think = rocketThink;

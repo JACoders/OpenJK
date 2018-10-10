@@ -3375,7 +3375,7 @@ void G_RunFrame( int levelTime ) {
 				trap->Print("Auto quitting server %i\n", levelTime);
 				trap->SendConsoleCommand(EXEC_APPEND, "quit\n");
 			}
-			if (levelTime > (2147483648 - 1000)) { //just always quit if its this high.. 24 days?
+			if (levelTime > (2147483648 - 60*1000)) { //just always quit if its this high.. 24 days?
 				trap->Print("Auto quitting server %i\n", levelTime);
 				trap->SendConsoleCommand(EXEC_APPEND, "quit\n");
 			}
