@@ -1535,7 +1535,8 @@ void SV_StopRecordDemo( client_t *cl ) {
 	FS_FCloseFile (cl->demo.demofile);
 	cl->demo.demofile = 0;
 	cl->demo.demorecording = qfalse;
-	Com_Printf ("Stopped demo for client %d.\n", cl - svs.clients);
+	if (com_developer->integer)
+		Com_Printf ("Stopped demo for client %d.\n", cl - svs.clients);
 }
 
 // stops all recording demos
@@ -1645,7 +1646,10 @@ void SV_RecordDemo( client_t *cl, char *demoName ) {
 	Q_strncpyz( cl->demo.demoName, demoName, sizeof( cl->demo.demoName ) );
 	Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION ); //Should use DEMO_EXTENSION
 
-	Com_Printf( "recording to %s.\n", name );
+
+	if (com_developer->integer) {
+		Com_Printf("recording to %s.\n", name);
+	}
 	cl->demo.demofile = FS_FOpenFileWriteAsync( name );
 	if ( !cl->demo.demofile ) {
 		Com_Printf ("ERROR: couldn't open.\n");
@@ -1883,7 +1887,6 @@ static void SV_Record_f( void ) {
 		Com_Printf( "record <demoname> <clientnum>\n" );
 		return;
 	}
-
 
 	if ( Cmd_Argc() == 3 ) {
 		int clIndex = atoi( Cmd_Argv( 2 ) );
