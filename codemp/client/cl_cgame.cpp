@@ -540,7 +540,7 @@ rescan:
 
 	if (!strcmp(cmd, "print")) {
 		s = Cmd_Argv(1);
-		if (Q_stristr(s, "@@@PLCONNECT") || Q_stristr(s, "@@@DISCONNECT")) {
+		if (Q_stristr(s, "@@@PLCONNECT") || Q_stristr(s, "@@@DISCONNECT") || Q_stristr(s, "@@@WAS_KICKED") || Q_stristr(s, "timed out")) {
 			stampColor = COLOR_YELLOW;
 #ifdef _WIN32
 		if (con_notifyconnect->integer)
@@ -595,9 +595,10 @@ void CL_ShutdownCGame( void ) {
 
 	CL_UnbindCGame();
 
-	if (cl_logChat->integer)
+	if (cl_logChat->integer) {
 		CL_LogPrintf(cls.log.chat, "End logging\n------------------------------------------------------------\n\n");
-	CL_CloseLog(&cls.log.chat);
+		CL_CloseLog(&cls.log.chat);
+	}
 }
 
 /*
@@ -879,7 +880,7 @@ void CL_SetCGameTime( void ) {
 
 		tn = cl_timeNudge->integer;
 
-		if (tn < 0 && (cl.snap.ps.pm_type == PM_SPECTATOR || cl.snap.ps.pm_flags & PMF_FOLLOW))
+		if (tn < 0 && (cl.snap.ps.pm_type == PM_SPECTATOR || cl.snap.ps.pm_flags & PMF_FOLLOW || clc.demoplaying))
 			tn = 0; // JAPRO ENGINE - disable negative timenudge when spectating
 #ifdef _DEBUG
 		if (tn<-900) {

@@ -665,6 +665,13 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	if (ch == '%' && edit == &chatField) {
+		Field_CharEvent(edit, 176);
+		Field_CharEvent(edit, '/');
+		Field_CharEvent(edit, '.');
+		return;
+	}
+
 	if ( kg.key_overstrikeMode ) {
 		// - 2 to leave room for the leading slash and trailing \0
 		if ( edit->cursor == MAX_EDIT_LINE - 2 )

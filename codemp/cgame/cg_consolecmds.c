@@ -905,12 +905,12 @@ static void CG_Lowjump_f(void)
 static void CG_NorollDown_f(void)
 {
 	if ((cgs.isJAPro && cg.predictedPlayerState.stats[STAT_RACEMODE]) || (cgs.restricts & RESTRICT_DO)) {
-		trap->SendConsoleCommand("+speed;wait 2;+movedown;-speed\n");
+		trap->SendConsoleCommand("+speed;wait 2;-moveup;+movedown;-speed\n");
 		return;
 	}
 
 	trap->SendConsoleCommand("+speed\n");
-	Com_sprintf(cg.doVstr, sizeof(cg.doVstr), "+movedown;-speed\n");
+	Com_sprintf(cg.doVstr, sizeof(cg.doVstr), "-moveup;+movedown;-speed\n");
 	cg.doVstrTime = cg.time;
 }
 
@@ -1212,7 +1212,7 @@ static qboolean japroPlayerStyles[] = {
 	qtrue,//LOD player model
 	qtrue,//Fade corpses immediately
 	qtrue,//Disable corpse fading SFX
-	//qfalse//Santa Hat
+	qtrue//Color respawn bubbles by team
 };
 
 //JA+ Specific = amaltdim ?
@@ -1233,7 +1233,7 @@ static qboolean japlusPlayerStyles[] = {
 	qtrue,//LOD player model
 	qtrue,//Fade corpses immediately
 	qtrue,//Disable corpse fading SFX
-	//qfalse
+	qtrue//Color respawn bubbles by team
 };
 
 static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
@@ -1249,10 +1249,10 @@ static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{ "VFX am alt dim 1" },//9
 	{ "Hide non duelers" },//10
 	{ "Hide ysal shell" },//11
-	{ "LOD player model"},//12 need better name for this
+	{ "LOD player model" },//12 need better name for this
 	{ "Fade corpses immediately" },//13
 	{ "Disable corpse fading SFX" },//14
-	//{ "Santa hat" }//15
+	{ "Color respawn bubbles by team" }//15
 };
 static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
 
@@ -1310,7 +1310,7 @@ void CG_StylePlayer_f(void)
 
 		//if (index == ..., ...)
 		if (0) { //Radio button these options
-																					 //Toggle index, and make sure everything else in this group (0,1,2,3,13) is turned off
+			//Toggle index, and make sure everything else in this group (0,1,2,3,13) is turned off
 			int groupMask = (1 << 0) + (1 << 1) + (1 << 2) + (1 << 3) + (1 << 13);
 			int value = cg_strafeHelper.integer;
 
@@ -2035,6 +2035,8 @@ static const char *gcmds[] = {
 	"clanInfo",
 	"clanWhoIs",
 	"say_team_mod",
+	"master",
+	"masterlist",
 	"amForceTeam",
 	"amLockTeam",
 	"amWhois",

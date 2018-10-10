@@ -23,9 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_local.h"
 
-int strafeHelperActiveColorModificationCount = -1;//japro
-int enginePatchModificationCount = -1; //japro
-
 //
 // Cvar callbacks
 //

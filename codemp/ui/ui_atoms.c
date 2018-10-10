@@ -148,11 +148,12 @@ void UI_StrafeHelper_f(void) {
 static bitInfo_t playerStyles[] = {
 	{ "Fullbright skins" },
 	{ "Private duel shell" },
-	{ "Hide duelers if in FFA" },
-	{ "Hide racers if in FFA" },
-	{ "Hide non racers if racer" },
-	{ "Hide racers if racer" },
-	{ "VFX racers 1" },
+	{ "Hide duelers in FFA" },
+	{ "Hide racers in FFA" },
+	{ "Hide non-racers in race mode" },
+	{ "Hide racers in race mode" },
+	{ "Disable racer VFX" },
+	{ "Disable non-racer VFX in race mode" },
 	{ "VFX duelers 1" },
 	{ "VFX am alt dim 1" },
 	{ "Hide non duelers" },
@@ -160,6 +161,7 @@ static bitInfo_t playerStyles[] = {
 	{ "LOD player model" },
 	{ "Fade corpses immediately" },
 	{ "Disable corpse fading SFX" },
+	{ "Color respawn bubbles by team" },
 };
 static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
 
