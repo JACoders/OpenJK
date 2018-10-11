@@ -3390,7 +3390,7 @@ void G_RunFrame( int levelTime ) {
 				trap->Print("Auto quitting server %i\n", levelTime);
 				trap->SendConsoleCommand(EXEC_APPEND, "quit\n");
 			}
-			if (levelTime > (2147483648 - 1000)) { //just always quit if its this high.. 24 days?
+			if (levelTime > (2147483648 - 60*1000)) { //just always quit if its this high.. 24 days?
 				trap->Print("Auto quitting server %i\n", levelTime);
 				trap->SendConsoleCommand(EXEC_APPEND, "quit\n");
 			}
@@ -3838,7 +3838,7 @@ void G_RunFrame( int levelTime ) {
 			{ //using jetpack, drain fuel
 				if (ent->client->jetPackDebReduce < level.time)
 				{
-					ent->client->ps.jetpackFuel -= 5;
+					ent->client->ps.jetpackFuel -= 6;
 					
 					if (ent->client->ps.jetpackFuel <= 0)
 					{ //turn it off

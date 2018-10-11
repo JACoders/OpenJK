@@ -1522,6 +1522,7 @@ qboolean PM_SaberInBrokenParry( int move )
 	if (cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN)
 		return qfalse;
 #endif
+
 	if ( move >= LS_V1_BR && move <= LS_V1_B_ )
 	{
 		return qtrue;
@@ -4218,7 +4219,7 @@ void PM_SetSaberMove(short newMove)
 		{//spins must be played on entire body
 			parts = SETANIM_BOTH;
 		}
-		else if ( (!pm->cmd.forwardmove&&!pm->cmd.rightmove&&!pm->cmd.upmove) )
+		else if ( (!pm->cmd.forwardmove && !pm->cmd.rightmove && !pm->cmd.upmove) )
 		{//not trying to run, duck or jump
 			if ( !BG_FlippingAnim( pm->ps->legsAnim ) &&
 				!BG_InRoll( pm->ps, pm->ps->legsAnim ) &&
