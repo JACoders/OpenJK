@@ -11169,42 +11169,55 @@ static void CG_CalculateSpeed(centity_t *cent) {
 
 static void CG_RaceTimer(void)
 {
-	char timerStr[32] = { 0 };
-	int time, minutes, seconds, milliseconds;
-
-	if (!cg.predictedPlayerState.stats[STAT_RACEMODE])
+	if (!cg.predictedPlayerState.stats[STAT_RACEMODE] || !cg.predictedPlayerState.duelTime) {
+		cg.startSpeed = 0;
+		cg.displacement = 0;
+		cg.maxSpeed = 0;
+		cg.displacementSamples = 0;
 		return;
-	if (!cg.predictedPlayerState.duelTime)
-		return;
+	}
 
-	time = (cg.time - cg.predictedPlayerState.duelTime);
-	minutes = (time / 1000) / 60;
-	seconds = (time / 1000) % 60;
-	milliseconds = (time % 1000);
+	{
+		char timerStr[48] = { 0 };
+		const int time = (cg.time - cg.predictedPlayerState.duelTime);
+		const int minutes = (time / 1000) / 60;
+		const int seconds = (time / 1000) % 60;
+		const int milliseconds = (time % 1000);
 
-	if (cg_raceTimer.integer > 1) {
-		if (time < 1000) {
+		if (time < cg.lastRaceTime) {
+			cg.startSpeed = 0;
 			cg.displacement = 0;
 			cg.maxSpeed = 0;
 			cg.displacementSamples = 0;
 		}
-		else {
-			if (cg.currentSpeed > cg.maxSpeed)
-				cg.maxSpeed = cg.currentSpeed;
-			cg.displacement += cg.currentSpeed;
-			cg.displacementSamples++;
+
+		if (cg_raceTimer.integer > 1) {
+			if (time > 0) {
+				if (!cg.startSpeed)
+					cg.startSpeed = (int)(cg.currentSpeed + 0.5f);
+
+				if (cg.currentSpeed > cg.maxSpeed)
+					cg.maxSpeed = (int)(cg.currentSpeed + 0.5f);
+				cg.displacement += cg.currentSpeed;
+				cg.displacementSamples++;
+			}
 		}
+
+		cg.lastRaceTime = time;
+
+		if (cg_raceTimer.integer < 3)
+			Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%i\n", minutes, seconds, milliseconds / 100);
+		else
+			Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%03i\n", minutes, seconds, milliseconds);
+
+		if (cg_raceTimer.integer > 1 && cg.displacementSamples)
+			Q_strcat(timerStr, sizeof(timerStr), va("Max: %i\nAvg: %i", (int)(cg.maxSpeed + 0.5f), cg.displacement / cg.displacementSamples));
+
+		if (time < 3000)
+			Q_strcat(timerStr, sizeof(timerStr), va("\nStart: %i", cg.startSpeed));
+
+		CG_Text_Paint(cg_raceTimerX.integer, cg_raceTimerY.integer, cg_raceTimerSize.value, colorTable[CT_WHITE], timerStr, 0.0f, 0, ITEM_ALIGN_RIGHT | ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 	}
-
-	if (cg_raceTimer.integer < 3)
-		Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%i\n", minutes, seconds, milliseconds / 100);
-	else
-		Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%03i\n", minutes, seconds, milliseconds);
-
-	if (cg_raceTimer.integer > 1 && cg.displacementSamples)
-		Q_strcat(timerStr, sizeof(timerStr), va("Max: %i\nAvg: %i", (int)floorf(cg.maxSpeed + 0.5f), cg.displacement / cg.displacementSamples));
-
-	CG_Text_Paint(cg_raceTimerX.integer, cg_raceTimerY.integer, cg_raceTimerSize.value, colorTable[CT_WHITE], timerStr, 0.0f, 0, ITEM_ALIGN_RIGHT | ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 }
 
 #define ACCEL_SAMPLES 16

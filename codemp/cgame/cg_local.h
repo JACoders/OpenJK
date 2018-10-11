@@ -1345,8 +1345,10 @@ Ghoul2 Insert End
 	qboolean			recording;
 	unsigned int		displacement;
 	unsigned int		displacementSamples;
-	float				maxSpeed;
+	int					maxSpeed;
+	int					lastRaceTime;
 	float				currentSpeed;
+	int					startSpeed;
 	float				previousSpeed;
 	float				lastJumpDistance;
 	int					lastJumpDistanceTime;

@@ -520,7 +520,7 @@ static void CheckTouchingCheckpoint(clientCheckpoint_t clientCheckpoint) {
 		time = 0.001f;
 
 	if (cg.displacementSamples)
-		CG_CenterPrint(va("^2%.3fs^4, avg ^2%i^4u, max ^2%.0f^4u\n\n\n\n\n\n\n\n\n\n", time, cg.displacement/cg.displacementSamples, cg.maxSpeed), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
+		CG_CenterPrint(va("^2%.3fs^4, avg ^2%i^4u, max ^2%i^4u\n\n\n\n\n\n\n\n\n\n", time, cg.displacement/cg.displacementSamples, cg.maxSpeed), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
 	else
 		CG_CenterPrint( va("^2%.3fs^4\n\n\n\n\n\n\n\n\n\n", time), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
 	cg.lastCheckPointPrintTime = cg.time;
