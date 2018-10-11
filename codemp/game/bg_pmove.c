@@ -319,6 +319,7 @@ qboolean BG_KnockDownable(playerState_t *ps)
 	return qtrue;
 }
 
+extern qboolean BG_InKnockDown(int anim);
 qboolean BG_CanJetpack(playerState_t *ps)
 {
 	if (!(ps->stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
