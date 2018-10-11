@@ -331,6 +331,8 @@ qboolean BG_CanJetpack(playerState_t *ps)
 		return qfalse;
 	if (BG_InSpecialJump(ps->legsAnim))
 		return qfalse;	
+	if (BG_InKnockDown(ps->legsAnim))
+		return qfalse;
 	return qtrue;
 }
 

@@ -3823,7 +3823,7 @@ void G_RunFrame( int levelTime ) {
 			{ //using jetpack, drain fuel
 				if (ent->client->jetPackDebReduce < level.time)
 				{
-					ent->client->ps.jetpackFuel -= 5;
+					ent->client->ps.jetpackFuel -= 6;
 					
 					if (ent->client->ps.jetpackFuel <= 0)
 					{ //turn it off
