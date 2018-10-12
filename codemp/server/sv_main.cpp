@@ -71,6 +71,7 @@ cvar_t	*sv_legacyFixes;
 cvar_t	*sv_banFile;
 
 cvar_t	*sv_snapShotDuelCull;
+cvar_t	*sv_hibernateTime;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
@@ -1149,6 +1150,27 @@ void SV_Frame( int msec ) {
 		SV_Shutdown ("Server was killed.\n");
 		Cvar_Set( "sv_killserver", "0" );
 		return;
+	}
+
+	if (svs.initialized && svs.gameStarted) {
+		int i = 0;
+		int players = 0;
+		for (i = 0; i < sv_maxclients->integer; i++) {
+			if (svs.clients[i].state >= CS_CONNECTED && svs.clients[i].netchan.remoteAddress.type != NA_BOT) {
+				players++;
+			}
+		}
+
+		//Check for hibernation mode
+		if (sv_hibernateTime->integer && !svs.hibernation.enabled && !players) {
+			int elapsed_time = Sys_Milliseconds() - svs.hibernation.lastTimeDisconnected;
+			if (elapsed_time >= sv_hibernateTime->integer) {
+				Cvar_Set("sv_fps", "1");
+				sv_fps->value = svs.hibernation.sv_fps;
+				svs.hibernation.enabled = qtrue;
+				Com_Printf("Server entered hibernation mode\n");
+			}
+		}
 	}
 
 	if ( !com_sv_running->integer ) {

@@ -23,6 +23,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <chrono>
+#include <string>
+
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "game/g_public.h"
@@ -217,6 +220,13 @@ typedef struct serverStatic_s {
 	netadr_t	authorizeAddress;			// for rcon return messages
 
 	qboolean	gameStarted;				// gvm is loaded
+
+	struct {
+		qboolean enabled;
+		int lastTimeDisconnected;
+		float sv_fps;
+	} hibernation;
+
 } serverStatic_t;
 
 #define SERVER_MAXBANS	1024
@@ -278,6 +288,7 @@ extern	cvar_t	*sv_legacyFixes;
 extern	cvar_t	*sv_banFile;
 
 extern	cvar_t	*sv_snapShotDuelCull;
+extern	cvar_t	*sv_hibernateTime;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
