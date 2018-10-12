@@ -429,10 +429,11 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	// send a heartbeat now so the master will get up to date info
 	// if there is already a slot for this ip, reuse it
 
-	int players = 0;
+	qboolean humans = qfalse;
 	for (i = 0; i < sv_maxclients->integer; i++) {
 		if (svs.clients[i].state >= CS_CONNECTED && svs.clients[i].netchan.remoteAddress.type != NA_BOT) {
-			players++;
+			humans = qtrue;
+			break;
 		}
 	}
 
@@ -445,7 +446,7 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		SV_Heartbeat_f();
 	}
 
-	if (players == 0) {
+	if (!humans) {
 		svs.hibernation.lastTimeDisconnected = Sys_Milliseconds();
 	}
 

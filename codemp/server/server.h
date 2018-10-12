@@ -23,9 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <chrono>
-#include <string>
-
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "game/g_public.h"
