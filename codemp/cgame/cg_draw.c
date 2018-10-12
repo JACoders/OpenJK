@@ -11210,11 +11210,12 @@ static void CG_RaceTimer(void)
 		else
 			Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%03i\n", minutes, seconds, milliseconds);
 
-		if (cg_raceTimer.integer > 1 && cg.displacementSamples)
-			Q_strcat(timerStr, sizeof(timerStr), va("Max: %i\nAvg: %i", (int)(cg.maxSpeed + 0.5f), cg.displacement / cg.displacementSamples));
-
-		if (time < 3000)
-			Q_strcat(timerStr, sizeof(timerStr), va("\nStart: %i", cg.startSpeed));
+		if (cg_raceTimer.integer > 1) {
+			if (cg.displacementSamples)
+				Q_strcat(timerStr, sizeof(timerStr), va("Max: %i\nAvg: %i", (int)(cg.maxSpeed + 0.5f), cg.displacement / cg.displacementSamples));
+			if (time < 3000)
+				Q_strcat(timerStr, sizeof(timerStr), va("\nStart: %i", cg.startSpeed));
+		}
 
 		CG_Text_Paint(cg_raceTimerX.integer, cg_raceTimerY.integer, cg_raceTimerSize.value, colorTable[CT_WHITE], timerStr, 0.0f, 0, ITEM_ALIGN_RIGHT | ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 	}
