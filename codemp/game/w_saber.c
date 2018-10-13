@@ -4182,7 +4182,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		else
 //JAPRO - Serverside - Japro Saber Cleanup MP saber damages - Start
 		{
-			dmg = SABER_HITDAMAGE;
+			dmg = SABER_HITDAMAGE;//35
 
 			if (self->client->ps.forceHandExtend == HANDEXTEND_DUELCHALLENGE)//Remove dmg from swings while duel challenging
 				dmg = 1;
@@ -4250,7 +4250,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 
 			else if (self->client->ps.fd.saberAnimLevel == SS_STRONG)//Red Style 
 			{
-				if (self->client->ps.saberMove == LS_A_T2B) { //this is a vert i think?
+				if (self->client->ps.saberMove == LS_A_T2B) { //Red Vert
 					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 100*g_redDamageScale.value;
 					else

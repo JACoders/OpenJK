@@ -4380,8 +4380,11 @@ void ClientThink_real( gentity_t *ent ) {
 						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
 				}
 				else if (dueltypes[ent->client->ps.clientNum] == 1) {//Force
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i/^4%i^7/^5%i^7/^3%i^7) (Force)\n\"", 
-						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR], ent->client->ps.fd.forcePower, ent->client->pers.stats.duelDamageGiven, duelAgainst->client->pers.stats.duelDamageGiven));
+					int percent = 0;
+					if (ent->client->pers.stats.duelDamageGiven + duelAgainst->client->pers.stats.duelDamageGiven)
+						percent = (100 * ent->client->pers.stats.duelDamageGiven) / (ent->client->pers.stats.duelDamageGiven + duelAgainst->client->pers.stats.duelDamageGiven);
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i/^4%i^7/^3%i^7/^6%i^7) (Force)\n\"", 
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR], ent->client->ps.fd.forcePower, percent, ent->client->pers.stats.lowestHP));
 				}
 				else {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", 
