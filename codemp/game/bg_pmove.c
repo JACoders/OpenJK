@@ -2225,7 +2225,7 @@ static qboolean PM_CheckJump( void )
 #ifdef _GAME
 							if ((g_onlyBhop.integer == 1) || ((g_onlyBhop.integer > 1) && client->pers.onlyBhop) || (client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP))
 #else
-							if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && cg_onlyBhop.integer) || (pm->ps->stats[STAT_ONLYBHOP] & JAPRO_RESTRICT_BHOP)))
+							if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && (cp_pluginDisable.integer & JAPRO_PLUGIN_BHOP)) || (pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP)))
 #endif
 							{
 								pm->cmd.upmove = 0;
@@ -2457,7 +2457,7 @@ static qboolean PM_CheckJump( void )
 #ifdef _GAME
 		if (pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP)
 #else
-		if (cgs.isJAPro && pm->ps->stats[STAT_ONLYBHOP] & JAPRO_RESTRICT_BHOP)
+		if (cgs.isJAPro && pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP)
 #endif
 		{
 			allowWallRuns = qfalse;
