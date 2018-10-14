@@ -1011,8 +1011,10 @@ void SV_Init (void) {
 	sv_banFile = Cvar_Get( "sv_banFile", "serverbans.dat", CVAR_ARCHIVE, "File to use to store bans and exceptions" );
 
 	sv_snapShotDuelCull = Cvar_Get("sv_snapShotDuelCull", "1", CVAR_NONE, "Snapshot-based duel isolation");
+
 	sv_hibernateTime = Cvar_Get("sv_hibernateTime", "0", CVAR_ARCHIVE_ND, "Time after which server will enter hibernation mode");
-	svs.hibernation.sv_fps = sv_fps->value;
+	sv_hibernateFPS = Cvar_Get("sv_hibernateFPS", "2", CVAR_ARCHIVE_ND, "FPS during hibernation mode");
+	Cvar_CheckRange(sv_hibernateFPS, 1, 1000, qtrue);
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();

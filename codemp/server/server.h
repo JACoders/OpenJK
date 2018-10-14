@@ -219,9 +219,9 @@ typedef struct serverStatic_s {
 	qboolean	gameStarted;				// gvm is loaded
 
 	struct {
-		qboolean enabled;
+		qboolean enabled = qtrue;
 		int lastTimeDisconnected;
-		float sv_fps;
+		//float sv_fps;
 	} hibernation;
 
 } serverStatic_t;
@@ -285,7 +285,9 @@ extern	cvar_t	*sv_legacyFixes;
 extern	cvar_t	*sv_banFile;
 
 extern	cvar_t	*sv_snapShotDuelCull;
+
 extern	cvar_t	*sv_hibernateTime;
+extern	cvar_t	*sv_hibernateFPS;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;

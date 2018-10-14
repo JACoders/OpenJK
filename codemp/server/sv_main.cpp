@@ -71,7 +71,9 @@ cvar_t	*sv_legacyFixes;
 cvar_t	*sv_banFile;
 
 cvar_t	*sv_snapShotDuelCull;
+
 cvar_t	*sv_hibernateTime;
+cvar_t	*sv_hibernateFPS;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
@@ -1122,7 +1124,10 @@ int SV_FrameMsec()
 	{
 		int frameMsec;
 
-		frameMsec = 1000.0f / sv_fps->value;
+		if (svs.hibernation.enabled)
+			frameMsec = 1000.0f / sv_hibernateFPS->value;
+		else 
+			frameMsec = 1000.0f / sv_fps->value;
 
 		if(frameMsec < sv.timeResidual)
 			return 0;
@@ -1166,8 +1171,6 @@ void SV_Frame( int msec ) {
 		if (sv_hibernateTime->integer && !svs.hibernation.enabled && !humans) {
 			int elapsed_time = Sys_Milliseconds() - svs.hibernation.lastTimeDisconnected;
 			if (elapsed_time >= sv_hibernateTime->integer) {
-				Cvar_Set("sv_fps", "1");
-				sv_fps->value = svs.hibernation.sv_fps;
 				svs.hibernation.enabled = qtrue;
 				Com_Printf("Server entered hibernation mode\n");
 			}
@@ -1187,7 +1190,14 @@ void SV_Frame( int msec ) {
 	if ( sv_fps->integer < 1 ) {
 		Cvar_Set( "sv_fps", "10" );
 	}
-	frameMsec = 1000 / sv_fps->integer * com_timescale->value;
+
+	if (svs.hibernation.enabled) {
+		frameMsec = 1000 / sv_hibernateFPS->integer;
+	}
+	else {
+		frameMsec = 1000 / sv_fps->integer * com_timescale->value;
+	}
+
 	// don't let it scale below 1ms
 	if(frameMsec < 1)
 	{

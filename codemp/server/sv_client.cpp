@@ -337,9 +337,10 @@ gotnewcl:
 		return;
 	}
 
-	Cvar_SetValue("sv_fps", svs.hibernation.sv_fps);
-	svs.hibernation.enabled = qfalse;
-	Com_Printf("Server restored from hibernation\n");
+	if (svs.hibernation.enabled) {
+		svs.hibernation.enabled = qfalse;
+		Com_Printf("Server restored from hibernation\n");
+	}
 
 	SV_UserinfoChanged( newcl );
 
