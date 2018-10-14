@@ -1595,8 +1595,14 @@ static void CG_Chat_f( void ) {
 			trap->Cmd_Argv( 1, text, sizeof( text ) );
 			CG_RemoveChatEscapeChar( text );
 			if (cg_chatBox.integer) {
-				CG_ChatBox_AddString( text );
-				trap->Print( "*%s\n", text );
+				if (cg_cleanChatbox.integer && !strcmp(text, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
+					//Go back and edit.. previous msg.. append (x2) at end, etc? aw fug?
+				}
+				else { //New msg
+					CG_ChatBox_AddString(text);
+					trap->Print("*%s\n", text);
+					Q_strncpyz(cg.lastChatMsg, text, sizeof(cg.lastChatMsg));
+				}
 			}
 			else {
 				trap->Print("%s\n", text);
@@ -1638,8 +1644,14 @@ static void CG_Chat_f( void ) {
 		trap->Cmd_Argv( 1, text, sizeof( text ) );
 		CG_RemoveChatEscapeChar( text );
 		if (cg_chatBox.integer) {
-			CG_ChatBox_AddString( text );
-			trap->Print( "*%s\n", text );
+			if (cg_cleanChatbox.integer && !strcmp(text, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
+																				  //Go back and edit.. previous msg.. append (x2) at end, etc? aw fug?
+			}
+			else { //New msg
+				CG_ChatBox_AddString(text);
+				trap->Print("*%s\n", text);
+				Q_strncpyz(cg.lastChatMsg, text, sizeof(cg.lastChatMsg));
+			}
 		}
 		else {
 			trap->Print( "%s\n", text );

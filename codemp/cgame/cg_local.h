@@ -1380,6 +1380,7 @@ Ghoul2 Insert End
 	qboolean		loggingStrafeTrail;
 	char			logStrafeTrailFilename[MAX_QPATH];
 	fileHandle_t	strafeTrailFileHandle;
+	char			lastChatMsg[MAX_SAY_TEXT + MAX_NETNAME + 32];
 #if 0
 	int					snapshotTimeoutTime;
 #endif
