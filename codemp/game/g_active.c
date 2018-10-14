@@ -3767,7 +3767,7 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 	if (client->ps.stats[STAT_RACEMODE]) {
 			client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = 3; //make sure its allowed on server? or?
-		if (client->ps.stats[STAT_ONLYBHOP])
+		if (client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP)
 			client->ps.fd.forcePowerLevel[FP_LEVITATION] = 3;
 	}
 
