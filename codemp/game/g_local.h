@@ -329,6 +329,22 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define SABERSTYLE_DESANN (1<<5)// desann only
 #define SABERSTYLE_TAVION (1<<6)//tavion only
 
+
+//JAPRO - Serverside + clientside , restrictions 
+#define JAPRO_RESTRICT_BHOP (1<<0)
+#define JAPRO_RESTRICT_CROUCHJUMP (1<<1)
+#define JAPRO_RESTRICT_DOUBLEJUMP (1<<2)
+
+//japro target_restrict restrictions
+
+#define RESTRICT_FLAG_DISABLE (1<<0)
+#define RESTRICT_FLAG_HASTE (1<<1)
+#define RESTRICT_FLAG_FLAGS (1<<2)
+#define RESTRICT_FLAG_JUMP (1<<3)
+#define RESTRICT_FLAG_MOVESTYLE (1<<4)
+#define RESTRICT_FLAG_YSAL (1<<5)
+#define RESTRICT_FLAG_CROUCHJUMP (1<<5)
+
 //JAPRO - Serverside - Unlagged bitvalues
 #define UNLAGGED_PROJ_NUDGE	(1<<0)
 #define UNLAGGED_HITSCAN	(1<<1)
@@ -821,6 +837,7 @@ typedef struct {//JAPRO - Serverside - Stats
 	float racetime;
 
 	int kothTime;
+	short lowestHP;
 } stats_t;
 
 // client data that stays across multiple respawns, but is cleared

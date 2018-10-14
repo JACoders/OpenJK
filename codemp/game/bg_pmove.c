@@ -2223,9 +2223,9 @@ static qboolean PM_CheckJump( void )
 						{
 //JAPRO - Serverside - OnlyBhop - Start
 #ifdef _GAME
-							if ((g_onlyBhop.integer == 1) || ((g_onlyBhop.integer > 1) && client->pers.onlyBhop) || client->ps.stats[STAT_ONLYBHOP])
+							if ((g_onlyBhop.integer == 1) || ((g_onlyBhop.integer > 1) && client->pers.onlyBhop) || (client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP))
 #else
-							if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && (cp_pluginDisable.integer & JAPRO_PLUGIN_BHOP)) || pm->ps->stats[STAT_ONLYBHOP]))
+							if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && cg_onlyBhop.integer) || (pm->ps->stats[STAT_ONLYBHOP] & JAPRO_RESTRICT_BHOP)))
 #endif
 							{
 								pm->cmd.upmove = 0;
@@ -2353,7 +2353,7 @@ static qboolean PM_CheckJump( void )
 						}
 					}
 
-					if (moveStyle == 2 || moveStyle == 5) {//Forcejump rampjump
+					if (moveStyle == MV_QW || moveStyle == MV_PJK) {//Forcejump rampjump
 						//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
 						float realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / (float)JUMP_VELOCITY);
 						
@@ -2455,9 +2455,9 @@ static qboolean PM_CheckJump( void )
 		qboolean allowWallGrabs = qtrue;
 
 #ifdef _GAME
-		if (pm->ps->stats[STAT_ONLYBHOP])
+		if (pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP)
 #else
-		if (cgs.isJAPro && pm->ps->stats[STAT_ONLYBHOP])
+		if (cgs.isJAPro && pm->ps->stats[STAT_ONLYBHOP] & JAPRO_RESTRICT_BHOP)
 #endif
 		{
 			allowWallRuns = qfalse;

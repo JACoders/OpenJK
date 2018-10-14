@@ -3960,6 +3960,13 @@ void G_RunFrame( int levelTime ) {
 					if (xyspeed > ent->client->pers.stats.topSpeed)
 						ent->client->pers.stats.topSpeed = xyspeed; //uhh, round?           
 				}	
+				if (ent->client->ps.duelInProgress) {
+					if (!ent->client->pers.stats.lowestHP || ent->client->ps.stats[STAT_HEALTH] < ent->client->pers.stats.lowestHP)
+						ent->client->pers.stats.lowestHP = ent->client->ps.stats[STAT_HEALTH];
+				}
+				else {
+					ent->client->pers.stats.lowestHP = 0;
+				}
 			}
 
 			if (g_allowNPC.integer)

@@ -682,7 +682,7 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 	if (ent->client->sess.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
 		ent->client->ps.duelTime = 0;
-		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
+		ent->client->ps.stats[STAT_RESTRICTIONS] = 0; //meh
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
 		if (!ent->client->pers.practice) {
 			ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
@@ -715,7 +715,7 @@ QINLINE void ResetPlayerTimers(gentity_t *ent, qboolean print)
 		}
 
 		if (ent->client->pers.userName && ent->client->pers.userName[0]) {
-			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+			if (ent->client->sess.raceMode && !ent->client->pers.practice && ent->client->pers.stats.startTime) {
 				ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime)*0.001f - ent->client->afkDuration*0.001f;
 				ent->client->afkDuration = 0;
 			}

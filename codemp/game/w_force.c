@@ -652,7 +652,7 @@ qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int 
 	int drain = overrideAmt ? overrideAmt :
 				forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower];
 
-	if (self->client->ps.stats[STAT_ONLYBHOP]) {
+	if (self->client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP) {
 		if ((forcePower == FP_SPEED) || (forcePower == FP_RAGE))
 			return qfalse;
 	}
@@ -4508,7 +4508,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		break;
 	case FP_SPEED:
 		//This is handled in PM_WalkMove and PM_StepSlideMove
-		if (self->client->ps.stats[STAT_ONLYBHOP]) {
+		if (self->client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP) {
 			WP_ForcePowerStop( self, forcePower );
 			break;
 		}
@@ -4562,7 +4562,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 			WP_ForcePowerStop(self, forcePower);
 			break;
 		}
-		if (self->client->ps.stats[STAT_ONLYBHOP]) {
+		if (self->client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_BHOP) {
 			WP_ForcePowerStop( self, forcePower );
 			break;
 		}
