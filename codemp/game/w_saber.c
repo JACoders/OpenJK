@@ -4204,7 +4204,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		else
 //JAPRO - Serverside - Japro Saber Cleanup MP saber damages - Start
 		{
-			dmg = SABER_HITDAMAGE;
+			dmg = SABER_HITDAMAGE;//35
 
 			if (self->client->ps.forceHandExtend == HANDEXTEND_DUELCHALLENGE)//Remove dmg from swings while duel challenging
 				dmg = 1;
@@ -4237,6 +4237,8 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACKFLIP_ATK)//back staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
+				else if (self->client->ps.saberMove >= LS_KICK_F_AIR && self->client->ps.saberMove <= LS_KICK_L_AIR)
+					dmg = 40;
 				else//Normal Staff Swing
 					dmg = 30;
 			}
@@ -4272,7 +4274,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 
 			else if (self->client->ps.fd.saberAnimLevel == SS_STRONG)//Red Style 
 			{
-				if (self->client->ps.saberMove == LS_A_T2B) { //this is a vert i think?
+				if (self->client->ps.saberMove == LS_A_T2B) { //Red Vert
 					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 100*g_redDamageScale.value;
 					else
@@ -4294,7 +4296,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 120*g_redDFADamageScale.value;
 					else
-						dmg = G_GetAttackDamage(self, 2, 60*g_redDFADamageScale.value, 0.65f);
+						dmg = G_GetAttackDamage(self, 2, 70*g_redDFADamageScale.value, 0.65f);
 				}
 				else if (self->client->ps.saberMove == LS_A3_SPECIAL)
 					dmg = 20*g_redDamageScale.value;
@@ -4339,6 +4341,8 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACKFLIP_ATK)//Switched from back staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
+				else if (self->client->ps.saberMove >= LS_KICK_F_AIR && self->client->ps.saberMove <= LS_KICK_L_AIR)
+					dmg = 55;
 				else if (self->client->ps.saberMove == LS_A_T2B) {//now what is this
 					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 60*g_yellowDamageScale.value;

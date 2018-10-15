@@ -72,6 +72,7 @@ cvar_t	*sv_banFile;
 
 cvar_t	*sv_snapShotDuelCull;
 
+cvar_t	*sv_pingFix;
 cvar_t	*sv_hibernateTime;
 cvar_t	*sv_hibernateFPS;
 
@@ -888,6 +889,10 @@ void SV_CalcPings( void ) {
 			cl->ping = total/count;
 			if ( cl->ping > 999 ) {
 				cl->ping = 999;
+			}
+			if ( sv_pingFix->integer && cl->ping < 1 )
+			{ // Botfilters assume that players with 0 ping are bots. So put the minimum ping for humans at 1. At least with the new ping calculation enabled.
+				cl->ping = 1;
 			}
 		}
 

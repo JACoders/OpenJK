@@ -3137,7 +3137,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove login status.
 	if (ent->client->pers.userName && ent->client->pers.userName[0]) {
-		if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
+		if (ent->client->sess.raceMode && !ent->client->pers.practice && ent->client->pers.stats.startTime) {
 			ent->client->pers.stats.racetime += (trap->Milliseconds() - ent->client->pers.stats.startTime)*0.001f - ent->client->afkDuration*0.001f;
 			ent->client->afkDuration = 0;
 		}

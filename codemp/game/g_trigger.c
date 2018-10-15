@@ -1439,7 +1439,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	*/
 
 	//Update playtime if needed
-	if (player->client->sess.raceMode && player->client->pers.userName[0] && player->client->pers.stats.startTime) {
+	if (player->client->sess.raceMode && !player->client->pers.practice && player->client->pers.userName[0] && player->client->pers.stats.startTime) {
 		player->client->pers.stats.racetime += (GetTimeMS() - player->client->pers.stats.startTime)*0.001f - player->client->afkDuration*0.001f;
 		player->client->afkDuration = 0;
 		if (player->client->pers.stats.racetime > 120.0f) { //Avoid spamming the db
@@ -1656,13 +1656,13 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 
-	if (trigger->spawnflags & 2) {
+	if (trigger->spawnflags & RESTRICT_FLAG_HASTE) {
 		if (!player->client->pers.haste)
 			G_Sound( player, CHAN_AUTO, G_SoundIndex("sound/player/boon.mp3") );
 			//G_AddEvent( player, EV_ITEM_PICKUP, 98 ); //100 shield sound i guess, Now why wont the boon sound work?
 		player->client->pers.haste = qtrue;
 	}
-	if (trigger->spawnflags & 4) { //Reset flags
+	if (trigger->spawnflags & RESTRICT_FLAG_FLAGS) { //Reset flags
 		if (player->client->ps.powerups[PW_NEUTRALFLAG]) {		// only happens in One Flag CTF
 			Team_ReturnFlag( TEAM_FREE );
 			player->client->ps.powerups[PW_NEUTRALFLAG] = 0;
@@ -1676,8 +1676,8 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			player->client->ps.powerups[PW_BLUEFLAG] = 0;
 		}
 	}
-	if (trigger->spawnflags & 8) { //Change Jump Level with "count" val
-		if (trigger->count) { //Set client movementstyle without resetting timer because someone suggested a course that uses different movementstyles for each room.
+	if (trigger->spawnflags & RESTRICT_FLAG_JUMP) { //Change Jump Level with "count" val
+		if (trigger->count) { //Set client jump without resetting timer because someone suggested a course that uses different movementstyles for each room.
 			const int jumplevel = trigger->count;
 			if (jumplevel >= 1 && jumplevel <= 3) {
 				if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != jumplevel) {
@@ -1687,7 +1687,7 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			}
 		}
 	}
-	else if (trigger->spawnflags & 16) { //Change Movementstyle with "count" val
+	else if (trigger->spawnflags & RESTRICT_FLAG_MOVESTYLE) { //Change Movementstyle with "count" val
 		if (trigger->count) { //Set client movementstyle without resetting timer because someone suggested a course that uses different movementstyles for each room.
 			const int style = trigger->count;
 			if (style > 0 && style < MV_NUMSTYLES && style != MV_SWOOP) {//idk how deal with swoop here rly, just spawn it ..?
@@ -1710,13 +1710,16 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			}
 		}
 	}
-	if (trigger->spawnflags & 32) {//Give Ysal
+	if (trigger->spawnflags & RESTRICT_FLAG_YSAL) {//Give Ysal
 		if (player->client->ps.powerups[PW_YSALAMIRI] <= 0)
 			G_Sound(player, CHAN_AUTO, G_SoundIndex("sound/player/boon.mp3"));
 		player->client->ps.powerups[PW_YSALAMIRI] = 99999999;
 	}
+	if (trigger->spawnflags & RESTRICT_FLAG_CROUCHJUMP) {//hl style crouch jump
+		player->client->ps.stats[STAT_RESTRICTIONS] |= JAPRO_RESTRICT_CROUCHJUMP;
+	}
 	if (!trigger->spawnflags) {
-		player->client->ps.stats[STAT_ONLYBHOP] = 1;
+		player->client->ps.stats[STAT_RESTRICTIONS] |= JAPRO_RESTRICT_BHOP;
 	}
 }
 
@@ -1726,14 +1729,17 @@ void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 
-	if (trigger->spawnflags & 32) {//Give Ysal
+	if (trigger->spawnflags & RESTRICT_FLAG_YSAL) {//Give Ysal
 		player->client->ps.powerups[PW_YSALAMIRI] = 0;
 	}
-	if (trigger->spawnflags & 2) {
+	if (trigger->spawnflags & RESTRICT_FLAG_HASTE) {
 		player->client->pers.haste = qfalse;
 	}
+	if (trigger->spawnflags & RESTRICT_FLAG_CROUCHJUMP) {//hl style crouch jump
+		player->client->ps.stats[STAT_RESTRICTIONS] &= ~JAPRO_RESTRICT_CROUCHJUMP;
+	}
 	if (!trigger->spawnflags) {
-		player->client->ps.stats[STAT_ONLYBHOP] = 0;
+		player->client->ps.stats[STAT_RESTRICTIONS] &= ~JAPRO_RESTRICT_BHOP;
 	}
 }
 
@@ -1870,7 +1876,7 @@ void SP_trigger_timer_stop( gentity_t *self )
 
 void SP_target_restrict(gentity_t *self)//JAPRO Onlybhop
 {
-	if (self->spawnflags & 1)
+	if (self->spawnflags & RESTRICT_FLAG_DISABLE)
 		self->use = Use_target_restrict_off;
 	else
 		self->use = Use_target_restrict_on;

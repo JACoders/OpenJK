@@ -236,6 +236,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define JAPRO_COSMETIC_SANTAHAT (1<<0)
 
 //#define JAPRO_CINFO_UNLAGGEDPUSHPULL (1<<19)	//push pull unlagged
+
+//JAPRO - Serverside + clientside , restrictions 
+#define JAPRO_RESTRICT_BHOP (1<<0)
+#define JAPRO_RESTRICT_CROUCHJUMP (1<<1)
+#define JAPRO_RESTRICT_DOUBLEJUMP (1<<2)
 //[JAPRO - Clientside - All - Define cinfo bits - End]
 
 #define _SPPHYSICS 1

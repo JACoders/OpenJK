@@ -1012,6 +1012,7 @@ void SV_Init (void) {
 
 	sv_snapShotDuelCull = Cvar_Get("sv_snapShotDuelCull", "1", CVAR_NONE, "Snapshot-based duel isolation");
 
+	sv_pingFix = Cvar_Get("sv_pingFix", "1", CVAR_ARCHIVE_ND, "Improved scoreboard client ping calculation");
 	sv_hibernateTime = Cvar_Get("sv_hibernateTime", "0", CVAR_ARCHIVE_ND, "Time after which server will enter hibernation mode");
 	sv_hibernateFPS = Cvar_Get("sv_hibernateFPS", "2", CVAR_ARCHIVE_ND, "FPS during hibernation mode");
 	Cvar_CheckRange(sv_hibernateFPS, 1, 1000, qtrue);
