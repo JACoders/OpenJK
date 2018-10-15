@@ -1849,6 +1849,8 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	// rgb
 	yo = Info_ValueForKey( configstring, "c3" );
 	full = atoi( yo );
+	if (!full)
+		full = 255;
 	r = full & 255;
 	g = (full >> 8) & 255;
 	b = full >> 16;
@@ -1861,6 +1863,8 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	yo = Info_ValueForKey( configstring, "c4" );
 	full = atoi( yo );
+	if (!full)
+		full = 255;
 	r = full & 255;
 	g = (full >> 8) & 255;
 	b = full >> 16;
