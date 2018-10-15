@@ -6318,10 +6318,12 @@ int PM_LegsSlopeBackTransition(int desiredAnim)
 		{
 			resultingAnim = anim;
 		}
-#ifdef _CGAME
+#ifdef _GAME
+		if (pm->ps->groundEntityNum != ENTITYNUM_WORLD && g_slideOnPlayer.integer)
+#elif _CGAME
 		if (cg_legstuck.integer)
-			VectorClear(pm->ps->velocity);
 #endif
+			VectorClear(pm->ps->velocity);
 		break;
 	}
 
