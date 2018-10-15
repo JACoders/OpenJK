@@ -3443,7 +3443,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 				continue;
 
 			cl = &level.clients[i];
-			if (cl->pers.netname[0])
+			if (cl->pers.netname[0] && (!(cl->pers.accountFlags & JAPRO_ACCOUNTFLAG_TRUSTED) || !cl->pers.userName[0])) //Only do this if their account is not trusted or they are not logged in
 			{
 				char theirIP[NET_ADDRSTRMAXLEN] = {0};
 				char *p = NULL;

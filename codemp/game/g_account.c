@@ -33,14 +33,6 @@
         }                                                       \
     }   
 
-#define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<0)
-#define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<1)
-
-#define JAPRO_ACCOUNTTEAMFLAG_OWNER		(1<<0)
-#define JAPRO_ACCOUNTTEAMFLAG_PENDING	(1<<1)
-
-#define JAPRO_TEAMFLAG_PRIVATE		(1<<0)
-
 #if 0
 typedef struct RaceRecord_s {
 	char				username[16];
@@ -2172,6 +2164,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			CALL_SQLITE(finalize(stmt));
 
 			ent->client->pers.unlocks = unlocks;
+			ent->client->pers.accountFlags = flags;
 
 			//Do something to select number of padawans they have and store that in pers.unlocks or something similiar?
 		}
@@ -3147,6 +3140,8 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 		}
 
 		Q_strncpyz(ent->client->pers.userName, "", sizeof(ent->client->pers.userName));
+		ent->client->pers.unlocks = 0;
+		ent->client->pers.accountFlags = 0;
 		trap->SendServerCommand(ent-g_entities, "print \"Logged out.\n\"");
 	}
 	else
