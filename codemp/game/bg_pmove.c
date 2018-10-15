@@ -5525,6 +5525,8 @@ Sets mins, maxs, and pm->ps->viewheight
 static void PM_CheckDuck (void)
 {
 //	trace_t	trace;
+	trace_t sptrace; 
+	int oldHeight;
 
 	if ( pm->ps->m_iVehicleNum > 0 && pm->ps->m_iVehicleNum < ENTITYNUM_NONE )
 	{//riding a vehicle or are a vehicle
@@ -5603,6 +5605,8 @@ static void PM_CheckDuck (void)
 			return;
 		}
 
+		oldHeight = pm->maxs[2];
+
 		if (BG_InRoll(pm->ps, pm->ps->legsAnim) && !BG_KickingAnim(pm->ps->legsAnim))
 		{
 			pm->maxs[2] = pm->ps->crouchheight; //CROUCH_MAXS_2;
@@ -5636,13 +5640,56 @@ static void PM_CheckDuck (void)
 			pm->ps->forceHandExtend == HANDEXTEND_PRETHROWN ||
 			pm->ps->forceHandExtend == HANDEXTEND_POSTTHROWN)
 		{	// duck
+
+			//half-life/jasp crouch climb thing
+			if (pm->ps->groundEntityNum == ENTITYNUM_NONE && ((pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_CROUCHJUMP) || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_SP)) {
+				pm->maxs[2] = pm->ps->crouchheight;
+				pm->ps->viewheight = pm->ps->crouchheight + STANDARD_VIEWHEIGHT_OFFSET; //CROUCH_VIEWHEIGHT
+				pm->trace(&sptrace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+
+				if (!(pm->ps->pm_flags & PMF_DUCKED) && !sptrace.allsolid && pm->ps->velocity[2] >= 0) {
+					pm->ps->eFlags ^= EF_TELEPORT_BIT;
+					//pm->ps->origin[2] += oldHeight - pm->maxs[2];
+					pm->ps->origin[2] -= oldHeight - pm->maxs[2];
+#ifdef _CGAME
+					cg.predictedPlayerState.origin[2] += oldHeight - pm->maxs[2];
+#endif
+				}
+			
+			}
+
 			pm->ps->pm_flags |= PMF_DUCKED;
 		}
 		else
 		{	// stand up if possible
 			if (pm->ps->pm_flags & PMF_DUCKED)
 			{
-				if ( PM_CanStand() ) {
+				if ((pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_CROUCHJUMP) || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_SP) {
+					if (pm->ps->groundEntityNum == ENTITYNUM_NONE && PM_GroundDistance() >= (oldHeight - pm->maxs[2]) && pm->ps->velocity[2] >= 0) {
+						pm->maxs[2] = pm->ps->standheight;
+						pm->ps->origin[2] += oldHeight - pm->maxs[2];
+
+						pm->trace(&sptrace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+
+						if (!sptrace.allsolid)
+						{
+							pm->ps->eFlags ^= EF_TELEPORT_BIT;
+							pm->ps->pm_flags &= ~PMF_DUCKED;
+						}
+						else
+						{
+							pm->ps->origin[2] -= oldHeight - pm->maxs[2]; //undo it so we don't clip thru the floor
+						}
+					}
+					else {
+						pm->maxs[2] = pm->ps->standheight;
+						pm->trace(&sptrace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+						if (!sptrace.allsolid) {
+							pm->ps->pm_flags &= ~PMF_DUCKED;
+						}
+					}
+				}
+				else if ( PM_CanStand() ) {
 					pm->maxs[2] = pm->ps->standheight;
 					pm->ps->pm_flags &= ~PMF_DUCKED;
 				}
