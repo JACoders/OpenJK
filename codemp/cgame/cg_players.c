@@ -9559,16 +9559,6 @@ void CG_DrawHatOnPlayer( centity_t *cent, int time, qhandle_t *gameModels, qhand
         return;
     }
  
-    if ( (cg.snap->ps.duelIndex && cg.snap->ps.duelInProgress && cg.snap->ps.duelIndex != cent->currentState.number && cent->currentState.clientNum != cg.clientNum) && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDENONDUELERS))
-    {
-        return;
-    }
- 
-    if (cent->currentState.clientNum != cg.clientNum && !cg.snap->ps.duelInProgress && cent->currentState.bolt1 && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDEDUELERS1))
-    {
-        return;
-    }
- 
     if (!cg.renderingThirdPerson && cent->currentState.clientNum == cg.clientNum)
     {
         return;
