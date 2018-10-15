@@ -685,9 +685,6 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.ShaderSaberEnd = trap->R_RegisterShader("gfx/effects/sabers/saber_end");
 	cgs.media.ShaderSaberEndRGB = trap->R_RegisterShader("gfx/effects/sabers/saber_end_rgb");
 
-	//xmas 
-	cgs.media.christmasHatModel			= trap->R_RegisterModel(""); //need asset
-
 #if _SHITTYLINEFX
 	//Flame 1
 	cgs.media.rgbSaberGlow2Shader		= trap->R_RegisterShader( "gfx/effects/sabers/RGBglow2" );

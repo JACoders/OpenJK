@@ -1212,7 +1212,8 @@ static qboolean japroPlayerStyles[] = {
 	qtrue,//LOD player model
 	qtrue,//Fade corpses immediately
 	qtrue,//Disable corpse fading SFX
-	qtrue//Color respawn bubbles by team
+	qtrue,//Color respawn bubbles by team
+	qtrue//Hide player cosmetics
 };
 
 //JA+ Specific = amaltdim ?
@@ -1233,7 +1234,8 @@ static qboolean japlusPlayerStyles[] = {
 	qtrue,//LOD player model
 	qtrue,//Fade corpses immediately
 	qtrue,//Disable corpse fading SFX
-	qtrue//Color respawn bubbles by team
+	qtrue,//Color respawn bubbles by team
+	qfalse//Hide player cosmetics
 };
 
 static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
@@ -1252,7 +1254,8 @@ static bitInfo_T playerStyles[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{ "LOD player model" },//12 need better name for this
 	{ "Fade corpses immediately" },//13
 	{ "Disable corpse fading SFX" },//14
-	{ "Color respawn bubbles by team" }//15
+	{ "Color respawn bubbles by team" },//15
+	{ "Hide player cosmetics" }//16
 };
 static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
 
@@ -1312,7 +1315,7 @@ void CG_StylePlayer_f(void)
 		if (0) { //Radio button these options
 			//Toggle index, and make sure everything else in this group (0,1,2,3,13) is turned off
 			int groupMask = (1 << 0) + (1 << 1) + (1 << 2) + (1 << 3) + (1 << 13);
-			int value = cg_strafeHelper.integer;
+			int value = cg_stylePlayer.integer;
 
 			groupMask &= ~(1 << index); //Remove index from groupmask
 			value &= ~(groupMask); //Turn groupmask off
@@ -1391,6 +1394,73 @@ void CG_SpeedometerSettings_f(void)
 		trap->Cvar_Update(&cg_speedometerSettings);
 
 		Com_Printf("%s %s^7\n", speedometerSettings[index2].string, ((cg_speedometerSettings.integer & (1 << index2))
+			? "^2Enabled" : "^1Disabled"));
+	}
+}
+
+static bitInfo_T cosmetics[] = {
+	{ "santa" },
+	{ "jack-o-lantern" },
+	{ "bass pro baseball cap?" },
+	{ "indiana jones" },
+};
+static const int MAX_COSMETICS = ARRAY_LEN(cosmetics);
+
+static void CG_Cosmetics_f(void)
+{
+	if (!cgs.isJAPro)
+		return;
+
+	if (trap->Cmd_Argc() == 1) {
+		int i = 0, display = 0;
+
+		for (i = 0; i < MAX_COSMETICS; i++) {
+			if ((cp_cosmetics.integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", display, cosmetics[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", display, cosmetics[i].string);
+			}
+			display++;
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index, index2, i, n = 0;
+		const uint32_t mask = (1 << MAX_COSMETICS) - 1;
+
+		trap->Cmd_Argv(1, arg, sizeof(arg));
+		index = atoi(arg);
+		index2 = index;
+
+		for (i = 0; i < MAX_COSMETICS; i++) {
+			if (n == index) {
+				index2 = i;
+				break;
+			}
+			n++;
+		}
+
+		if (index2 < 0 || index2 >= MAX_COSMETICS) {
+			Com_Printf("style: Invalid range: %i [0, %i]\n", index2, MAX_PLAYERSTYLES - 1);
+			return;
+		}
+
+		//Radio button all options
+		//Toggle index, and make sure everything else is turned off
+		int groupMask = (1 << 0) + (1 << 1) + (1 << 2) + (1 << 3);
+		int value = cp_cosmetics.integer;
+
+		groupMask &= ~(1 << index); //Remove index from groupmask
+		value &= ~(groupMask); //Turn groupmask off
+		value ^= (1 << index); //Toggle index item
+
+		trap->Cvar_Set("cp_cosmetics", va("%i", value));
+
+		trap->Cvar_Update(&cp_cosmetics);
+
+		Com_Printf("%s %s^7\n", cosmetics[index2].string, ((cp_cosmetics.integer & (1 << index2))
 			? "^2Enabled" : "^1Disabled"));
 	}
 }
@@ -1947,6 +2017,7 @@ static consoleCommand_t	commands[] = {
 	{ "pluginDisable",				CG_PluginDisable_f },
 	{ "stylePlayer",				CG_StylePlayer_f },
 	{ "speedometer",				CG_SpeedometerSettings_f },
+	{ "cosmetics",					CG_Cosmetics_f },
 
 	{ "addSpeedsound",				CG_AddSpeedpoint_f },
 	{ "listSpeedsounds",			CG_ListSpeedpoints_f },
@@ -2139,6 +2210,7 @@ static const char *gcmds[] = {
 	"showNet",
 	"practice",
 	"launch",
+	"ysal",
 
 	"vgs_cmd",
 

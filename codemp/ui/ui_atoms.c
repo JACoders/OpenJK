@@ -162,6 +162,7 @@ static bitInfo_t playerStyles[] = {
 	{ "Fade corpses immediately" },
 	{ "Disable corpse fading SFX" },
 	{ "Color respawn bubbles by team" },
+	{ "Hide player cosmetics" }
 };
 static const int MAX_PLAYERSTYLES = ARRAY_LEN(playerStyles);
 

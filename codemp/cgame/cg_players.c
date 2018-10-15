@@ -10469,10 +10469,21 @@ void CG_Player( centity_t *cent ) {
 	}
 
 	//[Kameleon] - Nerevar's Santa Hat.
-	if (ci->cosmetics & JAPRO_COSMETIC_SANTAHAT) {
-        CG_DrawHatOnPlayer( cent, cg.time, cgs.gameModels, cgs.media.christmasHatModel );
-    }
-    //[/Kameleon]
+	if (cgs.isJAPro && !(cg_stylePlayer.integer & JAPRO_STYLE_HIDECOSMETICS)) {
+		if (ci->cosmetics & JAPRO_COSMETIC_SANTAHAT) {
+			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/santahat.md3"));
+		}
+		else if (ci->cosmetics & JAPRO_COSMETIC_PUMKIN) {
+			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/pumpkin.md3"));
+		}
+		else if (ci->cosmetics & JAPRO_COSMETIC_CAP) {
+			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/cap.md3"));
+		}
+		else if (ci->cosmetics & JAPRO_COSMETIC_FEDORA) {
+			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/fedora.md3"));
+		}
+	}
+	//[/Kameleon]
 
 	// add a water splash if partially in and out of water
 	CG_PlayerSplash( cent );

@@ -227,13 +227,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define JAPRO_STYLE_NOBODIES	(1<<13)
 #define JAPRO_STYLE_NOFADESFX	(1<<14)
 #define JAPRO_STYLE_COLOREDSPAWNBUBBLE (1<<15)
+#define JAPRO_STYLE_HIDECOSMETICS (1<<16)
 
 //japro ignore race fx
 #define RS_TIMER_START					(1<<0) //Ignore sound for start trigger
 #define BODY_FADE_TIME					(60000)
 
 //Cosmetics
-#define JAPRO_COSMETIC_SANTAHAT (1<<0)
+#define	JAPRO_COSMETIC_SANTAHAT (1<<0)
+#define	JAPRO_COSMETIC_PUMKIN	(1<<1)
+#define JAPRO_COSMETIC_CAP		(1<<2)
+#define JAPRO_COSMETIC_FEDORA	(1<<3)
 
 //#define JAPRO_CINFO_UNLAGGEDPUSHPULL (1<<19)	//push pull unlagged
 
@@ -1538,9 +1542,6 @@ typedef struct cgMedia_s {
 	qhandle_t	ShaderSaberBladeRGB;
 	qhandle_t	ShaderSaberEnd;
 	qhandle_t	ShaderSaberEndRGB;
-
-	//xmas
-	qhandle_t	christmasHatModel;
 
 #define _SHITTYLINEFX 1
 #if _SHITTYLINEFX
