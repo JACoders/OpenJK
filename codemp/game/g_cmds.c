@@ -7249,6 +7249,15 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		if (clientid == -1 || clientid == -2)  
 			return; 
 
+		if (g_entities[clientid].client->pers.noFollow) {
+			if (ent->client->sess.fullAdmin && !(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
+				return; //Print msg?
+			else if (ent->client->sess.juniorAdmin && !(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
+				return;
+			else
+				return;
+		}
+
 		origin[0] = g_entities[clientid].client->ps.origin[0];
 		origin[1] = g_entities[clientid].client->ps.origin[1];
 		origin[2] = g_entities[clientid].client->ps.origin[2] + 96;
