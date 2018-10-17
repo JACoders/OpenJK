@@ -1609,6 +1609,23 @@ void SV_RenameDemo_f(void) {
 }
 
 /*
+====================
+SV_ListRecording_f
+
+list demos being recorded
+====================
+*/
+void SV_ListRecording_f(void) {
+	int i;
+	Com_Printf("Demos currently being recorded:\n");
+	for (i = 0; i < sv_maxclients->integer; i++) {
+		if (svs.clients[i].demo.demorecording) {
+			Com_Printf("Client %i (%s)\n", i, svs.clients[i].demo.demoName);
+		}
+	}
+}
+
+/*
 ==================
 SV_DemoFilename
 ==================
@@ -2005,6 +2022,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("svrenamedemo", SV_RenameDemo_f, "Rename a server-side demo");
 	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f, "Reloads banlist from file" );
 	Cmd_AddCommand ("sv_listbans", SV_ListBans_f, "Lists bans" );
+	Cmd_AddCommand( "sv_listrecording", SV_ListRecording_f, "Lists demos being recorded" );
 	Cmd_AddCommand ("sv_banaddr", SV_BanAddr_f, "Bans a user" );
 	Cmd_AddCommand ("sv_exceptaddr", SV_ExceptAddr_f, "Adds a ban exception for a user" );
 	Cmd_AddCommand ("sv_bandel", SV_BanDel_f, "Removes a ban" );

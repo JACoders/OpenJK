@@ -219,9 +219,8 @@ typedef struct serverStatic_s {
 	qboolean	gameStarted;				// gvm is loaded
 
 	struct {
-		qboolean enabled = qtrue;
+		qboolean enabled;
 		int lastTimeDisconnected;
-		//float sv_fps;
 	} hibernation;
 
 } serverStatic_t;
