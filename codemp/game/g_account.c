@@ -2116,7 +2116,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			return;
 		}
 
-		if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip != ip) {
+		if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip && lastip != ip) {
 			trap->SendServerCommand(ent - g_entities, "print \"This account is locked to a different IP address.\n\"");
 			CALL_SQLITE(close(db));
 			return;
@@ -6408,6 +6408,25 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
+	qboolean clientnum = -1;
+
+	if (trap->Argc() == 2) {
+		char arg1[16] = { 0 };
+		trap->Argv(1, arg1, sizeof(arg1));
+
+		if (!Q_stricmp(arg1, "follow")) {
+			if (ent->client->sess.sessionTeam == TEAM_SPECTATOR && (ent->client->ps.pm_flags & PMF_FOLLOW)) {
+				clientnum = ent->client->ps.clientNum;
+			}
+		}
+		else {
+			clientnum = atoi(arg1);
+		}
+	}
+	else if (trap->Argc() != 1) {
+		trap->SendServerCommand(ent - g_entities, "print \"Usage: whois <follow (optional)>\n\"");
+		return;
+	}
 
 	if (ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (g_fullAdminLevel.integer & (1 << A_WHOIS))
@@ -6466,6 +6485,9 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			char strStyle[32] = {0};
 			char jumpLevel[32] = {0};
 			char *p = NULL;
+
+			if (clientnum != -1 && (i != clientnum))
+				continue;
 
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));

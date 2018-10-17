@@ -8345,11 +8345,29 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 	char strName[MAX_NETNAME] = { 0 };
 	char strRate[16] = { 0 };
 	char strSnaps[16] = { 0 };
-
 	char strFPS[16] = { 0 };
 	char strPackets[16] = { 0 };
 	char strTimenudge[16] = { 0 };
 	char realFPS[16] = { 0 };
+	qboolean clientnum = -1;
+
+	if (trap->Argc() == 2) {
+		char arg1[16] = { 0 };
+		trap->Argv(1, arg1, sizeof(arg1));
+
+		if (!Q_stricmp(arg1, "follow")) {
+			if (ent->client->sess.sessionTeam == TEAM_SPECTATOR && (ent->client->ps.pm_flags & PMF_FOLLOW)) {
+				clientnum = ent->client->ps.clientNum;
+			}
+		}
+		else {
+			clientnum = atoi(arg1);
+		}
+	}
+	else if (trap->Argc() != 1) {
+		trap->SendServerCommand(ent - g_entities, "print \"Usage: showNet <follow (optional)>\n\"");
+		return;
+	}
 
 	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate    Snaps     Maxpackets  Timenudge   MaxFPS   FPS   Name\n\"");
 
@@ -8360,17 +8378,20 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 		cl = &level.clients[i];
 		if (cl->sess.sessionTeam == TEAM_SPECTATOR)
 			continue;
+		if (clientnum != -1 && (i != clientnum)) //dont need to check team_spectator since we already do
+			continue;
 		if (cl->pers.netname[0]) {
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 				
 			if (g_entities[i].r.svFlags & SVF_BOT) {
-				Q_strncpyz(strRate, "^7Bot    ", sizeof(strRate)); //dont fucking know why it needs 4 spaces
-				Q_strncpyz(strSnaps, "^7Bot    ", sizeof(strSnaps));
+				Q_strncpyz(strRate, "^7Bot", sizeof(strRate)); //dont fucking know why it needs 4 spaces
+				Q_strncpyz(strSnaps, "^7Bot", sizeof(strSnaps));
 
-				Q_strncpyz(strFPS, "^7Bot    ", sizeof(strFPS));
-				Q_strncpyz(strPackets, "^7Bot    ", sizeof(strPackets));
-				Q_strncpyz(strTimenudge, "^7Bot    ", sizeof(strTimenudge));
+				Q_strncpyz(strFPS, "^7Bot", sizeof(strFPS));
+				Q_strncpyz(strPackets, "^7Bot", sizeof(strPackets));
+				Q_strncpyz(strTimenudge, "^7Bot", sizeof(strTimenudge));
+				Q_strncpyz(realFPS, "^7Bot", sizeof(realFPS));
 			}
 			else {
 				if (cl->pers.rate < sv_maxRate.integer)
