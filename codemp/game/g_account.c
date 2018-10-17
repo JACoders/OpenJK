@@ -6408,7 +6408,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
-	qboolean clientnum = -1;
+	int clientnum = -1;
 
 	if (trap->Argc() == 2) {
 		char arg1[16] = { 0 };
