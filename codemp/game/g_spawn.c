@@ -662,7 +662,7 @@ spawn_t	spawns[] = {
 	{ "point_combat",					qtrue,	SP_point_combat },
 	{ "ref_tag",						qtrue,	SP_reference_tag },
 	{ "ref_tag_huge",					qtrue,	SP_reference_tag },
-	{ "shooter_blaster",				qtrue,	SP_shooter_blaster },
+	{ "shooter_blaster",				qfalse,	SP_shooter_blaster },
 	{ "target_activate",				qtrue,	SP_target_activate },
 	{ "target_counter",					qtrue,	SP_target_counter },
 	{ "target_deactivate",				qtrue,	SP_target_deactivate },
