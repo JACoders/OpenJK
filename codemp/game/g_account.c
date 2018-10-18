@@ -4306,16 +4306,16 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
 		sql = "SELECT created, master FROM LocalAccount WHERE username = ? "
-			"UNION ALL SELECT username, NULL, NULL  from LocalAccount WHERE master = ? LIMIT 32";
+			"UNION ALL SELECT username, NULL  from LocalAccount WHERE master = ? LIMIT 32";
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE(bind_text(stmt, 2, username, -1, SQLITE_STATIC));
 
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
-			created = sqlite3_column_int(stmt, 1);
-			if ((char*)sqlite3_column_text(stmt, 2))
-				Q_strncpyz(master, (char*)sqlite3_column_text(stmt, 2), sizeof(master));
+			created = sqlite3_column_int(stmt, 0);
+			if ((char*)sqlite3_column_text(stmt, 1))
+				Q_strncpyz(master, (char*)sqlite3_column_text(stmt, 1), sizeof(master));
 		}
 		else if (s == SQLITE_DONE) {
 			trap->SendServerCommand(ent - g_entities, "print \"Account not found!\n\"");
