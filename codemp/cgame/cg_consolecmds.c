@@ -529,6 +529,11 @@ static void CG_Login_f(void)
 {
 	char username[MAX_QPATH], password[MAX_QPATH];
 
+	if (cgs.isJAPlus || cgs.isBase) //Block this on mods that dont have /login to help avoid leaking
+		return;
+	if (cg.predictedPlayerState.pm_type == PM_INTERMISSION && !(cgs.isJAPro || cgs.isBaseEnhanced || cgs.isOJKAlt))
+		return;
+
 	trap->Cmd_Argv(1, username, sizeof(username));
 	trap->Cmd_Argv(2, password, sizeof(password));
 	trap->SendClientCommand(va("login %s %s", username, password));
@@ -782,7 +787,7 @@ static void CG_Autologin_f(void)
 {
 	char currentAddress[MAX_ADDRESSLENGTH], autoLoginString[MAX_ADDRESSLENGTH];
 
-	if (cg.predictedPlayerState.pm_type == PM_INTERMISSION)
+	if (cg.predictedPlayerState.pm_type == PM_INTERMISSION && cgs.isJAPlus)
 		return;
 
 	Q_strncpyz( currentAddress, cl_currentServerAddress.string, sizeof(currentAddress));

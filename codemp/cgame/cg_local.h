@@ -2114,6 +2114,7 @@ typedef struct cgs_s {
 	qboolean	isJAPlus;
 	qboolean	isOJKAlt;
 	qboolean	isBaseEnhanced;
+	qboolean	isBase;
 	qboolean	legacyProtocol;
 	int			svfps;
 	qboolean	takenscreenshot;

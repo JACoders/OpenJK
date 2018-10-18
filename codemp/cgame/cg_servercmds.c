@@ -208,6 +208,7 @@ void CG_ParseServerinfo( void ) {
 	cgs.isJAPro = qfalse;
 	cgs.isOJKAlt = qfalse;
 	cgs.isBaseEnhanced = qfalse;
+	cgs.isBase = qfalse;
 	cgs.legacyProtocol = qfalse;
 	cgs.cinfo = 0;
 	cgs.jcinfo = 0;
@@ -234,6 +235,10 @@ void CG_ParseServerinfo( void ) {
 	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "base_enhanced", 13)
 	|| (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "base_entranced", 14))) {
 		cgs.isBaseEnhanced = qtrue;
+	}
+	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "basejka", 7))
+	{
+		cgs.isBase = qtrue;
 	}
 
 	//multiversion "support"
