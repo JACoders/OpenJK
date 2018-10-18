@@ -69,11 +69,10 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.raceMode ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.movementStyle ) );
 
-	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.juniorAdmin ) );
-	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.fullAdmin ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.accountFlags) );
 
-	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.sayteammod ) );
-	Q_strcat( s, sizeof( s ), va( "%s", (int)client->sess.clanpass ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sayteammod ) );
+	Q_strcat( s, sizeof( s ), va( "%s", client->sess.clanpass ) ); //wtf?
 
 	var = va( "session%i", client - level.clients );
 
@@ -93,14 +92,14 @@ void G_ReadSessionData( gclient_t *client )
 {
 	char			s[MAX_CVAR_VALUE_STRING] = {0};
 	const char		*var;
-	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader, tempSawMOTD, tempRaceMode, tempJRAdmin, tempFullAdmin;
+	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader, tempSawMOTD, tempRaceMode;
 
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
 	//trap->Print("READING: %s, Session: %s\n", var, s);
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i %i %s",//[JAPRO - Serverside - All - Ignore]
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i %s",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -119,8 +118,7 @@ void G_ReadSessionData( gclient_t *client )
 		&tempSawMOTD,
 		&tempRaceMode, 
 		&client->sess.movementStyle,
-		&tempJRAdmin,
-		&tempFullAdmin,
+		&client->sess.accountFlags,
 		&client->sess.sayteammod,
 		client->sess.clanpass
 		);
@@ -130,8 +128,6 @@ void G_ReadSessionData( gclient_t *client )
 	client->sess.teamLeader		= (qboolean)tempTeamLeader;
 	client->sess.sawMOTD		= (qboolean)tempSawMOTD;
 	client->sess.raceMode		= (qboolean)tempRaceMode;
-	client->sess.juniorAdmin	= (qboolean)tempJRAdmin; //lets see if this works now
-	client->sess.fullAdmin		= (qboolean)tempFullAdmin;
 
 	if (client->sess.movementStyle == 0)
 		client->sess.movementStyle = 1;//Sad fucking hack to stop it defaulting to siege if player never joined game previous round.. Dunno man

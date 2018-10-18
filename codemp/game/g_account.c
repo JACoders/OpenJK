@@ -2116,12 +2116,6 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			return;
 		}
 
-		if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip && lastip != ip) {
-			trap->SendServerCommand(ent - g_entities, "print \"This account is locked to a different IP address.\n\"");
-			CALL_SQLITE(close(db));
-			return;
-		}
-
 		for (i = 0; i < MAX_CLIENTS; i++) {//Build a list of clientsv - use numplayingclients fixme
 			if (!g_entities[i].inuse)
 				continue;
@@ -2138,6 +2132,12 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 			time(&rawtime);
 			localtime(&rawtime);
+
+			if ((flags & JAPRO_ACCOUNTFLAG_IPLOCK) && lastip && lastip != ip) {
+				trap->SendServerCommand(ent - g_entities, "print \"This account is locked to a different IP address.\n\"");
+				CALL_SQLITE(close(db));
+				return;
+			}
 
 			Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
@@ -2164,9 +2164,16 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			CALL_SQLITE(finalize(stmt));
 
 			ent->client->pers.unlocks = unlocks;
-			ent->client->pers.accountFlags = flags;
+			ent->client->sess.accountFlags = flags;
 
-			//Do something to select number of padawans they have and store that in pers.unlocks or something similiar?
+			if ((flags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)) {
+				if (Q_stricmp(g_fullAdminMsg.string, ""))
+					trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+			}
+			else if ((flags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)) {
+				if (Q_stricmp(g_juniorAdminMsg.string, ""))
+					trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+			}
 		}
 		else {
 			trap->SendServerCommand(ent - g_entities, "print \"Incorrect password!\n\"");
@@ -2640,9 +2647,9 @@ void Svcmd_AccountIPLock_f(void) {
 	CALL_SQLITE (finalize(stmt));
 
 	if (flags & JAPRO_ACCOUNTFLAG_IPLOCK) 
-		sql = "UPDATE LocalAccount SET flags = 0 WHERE username = ?"; //loda redo this
+		sql = "UPDATE LocalAccount SET flags = flags & ~1 WHERE username = ?"; //loda redo this
 	else 
-		sql = "UPDATE LocalAccount SET flags = 1 WHERE username = ?";
+		sql = "UPDATE LocalAccount SET flags = flags | 1 WHERE username = ?";
 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
@@ -2659,6 +2666,116 @@ void Svcmd_AccountIPLock_f(void) {
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
+
+}
+
+void Svcmd_SetAdmin_f(void)
+{
+	char username[16], adminLevelStr[8];
+	int clientid = -1;
+	int adminLevel;
+
+	if (trap->Argc() != 3) {
+		trap->Print("Usage: /setAdmin <username> <level (none/junior/full)>.\n");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+	trap->Argv(2, adminLevelStr, sizeof(adminLevelStr));
+	Q_strlwr(username);
+	Q_CleanStr(username);
+	Q_strlwr(username);
+
+	if (!Q_stricmp(adminLevelStr, "none")) {
+		adminLevel = 0;
+	}
+	else if (!Q_stricmp(adminLevelStr, "junior")) {
+		adminLevel = 1;
+	}
+	else if (!Q_stricmp(adminLevelStr, "full")) {
+		adminLevel = 2;
+	}
+	else {
+		trap->Print("Usage: /setAdmin <username> <level (none/junior/full)>.\n");
+		return;
+	}
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+
+		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+
+		if (adminLevel == 0) {
+			sql = "UPDATE LocalAccount SET flags = flags & ~16 WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 1)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+
+			sql = "UPDATE LocalAccount SET flags = flags & ~32 WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 2)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+		}
+		else if (adminLevel == 1) {
+			sql = "UPDATE LocalAccount SET flags = flags & ~32 WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 3)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+
+			sql = "UPDATE LocalAccount SET flags = flags | 16 WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f 4)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+		}
+		else if (adminLevel == 2) {
+			sql = "UPDATE LocalAccount SET flags = flags & ~16 WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 5)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+
+			sql = "UPDATE LocalAccount SET flags = flags | 32 WHERE username = ?";
+			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE) {
+				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f 6)", s);
+			}
+			CALL_SQLITE(finalize(stmt));
+		}
+
+		trap->Print("Admin set.\n");
+
+		CALL_SQLITE(close(db));
+	}
 
 }
 
@@ -3140,8 +3257,8 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 		}
 
 		Q_strncpyz(ent->client->pers.userName, "", sizeof(ent->client->pers.userName));
-		ent->client->pers.unlocks = 0;
-		ent->client->pers.accountFlags = 0;
+		//ent->client->pers.unlocks = 0;
+		//ent->client->sess.accountFlags = 0;
 		trap->SendServerCommand(ent-g_entities, "print \"Logged out.\n\"");
 	}
 	else
@@ -4183,12 +4300,12 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 		char * sql;
 		sqlite3_stmt * stmt;
 		char timeStr[64] = { 0 }, dateStr[64] = { 0 }, master[16] = { 0 }, padawans[512] = { 0 }; //idk
-		int s, lastlogin = 0, created = 0;
+		int s, created = 0;
 		qboolean printInfo = qfalse;
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-		sql = "SELECT lastlogin, created, master FROM LocalAccount WHERE username = ? "
+		sql = "SELECT created, master FROM LocalAccount WHERE username = ? "
 			"UNION ALL SELECT username, NULL, NULL  from LocalAccount WHERE master = ? LIMIT 32";
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 		CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
@@ -4196,7 +4313,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
-			lastlogin = sqlite3_column_int(stmt, 0);
 			created = sqlite3_column_int(stmt, 1);
 			if ((char*)sqlite3_column_text(stmt, 2))
 				Q_strncpyz(master, (char*)sqlite3_column_text(stmt, 2), sizeof(master));
@@ -4234,11 +4350,6 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 			if (created > 1) { //Sad hack since some accounts were made before this was recorded
 				getDateTime(created, timeStr, sizeof(timeStr));
 				Q_strcat(msg, sizeof(msg), va("   ^5Created:    ^2%s\n", timeStr));
-				printInfo = qtrue;
-			}
-			if (lastlogin) {
-				getDateTime(lastlogin, timeStr, sizeof(timeStr));
-				Q_strcat(msg, sizeof(msg), va("   ^5Last login: ^2%s\n", timeStr));
 				printInfo = qtrue;
 			}
 			if (Q_stricmp(master, "")) {
@@ -6428,13 +6539,13 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 		return;
 	}
 
-	if (ent->client->sess.fullAdmin) {//Logged in as full admin
+	if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {//Logged in as full admin
 		if (g_fullAdminLevel.integer & (1 << A_WHOIS))
 			whois = qtrue;
 		if (g_fullAdminLevel.integer & (1 << A_SEEIP))
 			seeip = qtrue;
 	}
-	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
+	else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {//Logged in as junior admin
 		if (g_juniorAdminLevel.integer & (1 << A_WHOIS))
 			whois = qtrue;
 		if (g_juniorAdminLevel.integer & (1 << A_SEEIP))
@@ -6503,9 +6614,9 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					*p = 0;
 			}
 			if (whois) {
-				if (cl->sess.fullAdmin)
+				if (cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)
 					Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
-				else if (cl->sess.juniorAdmin)
+				else if (cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)
 					Q_strncpyz(strAdmin, "^3Junior^7", sizeof(strAdmin));
 				else
 					Q_strncpyz(strAdmin, "^7None^7", sizeof(strAdmin));

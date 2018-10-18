@@ -1681,11 +1681,11 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 				other = &g_entities[client->sess.spectatorClient];
 				if (other && other->client) {
 					if (g_allowNoFollow.integer && other->client->pers.noFollow) {
-						if (ent->client->sess.fullAdmin) {
+						if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {
 							if (!(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
 								StopFollowing(ent);
 						}
-						else if (ent->client->sess.juniorAdmin) {
+						else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {
 							if (!(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
 								StopFollowing(ent);
 						}
@@ -4403,8 +4403,10 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 					}			
 				}
-				if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) //loda
-					G_AddDuel(ent->client->pers.lastUserName, duelAgainst->client->pers.lastUserName, ent->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+				if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {//loda
+					if (!(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NODUEL) && !(duelAgainst->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NODUEL))
+						G_AddDuel(ent->client->pers.lastUserName, duelAgainst->client->pers.lastUserName, ent->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+				}
 				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 				ent->client->ps.stats[STAT_ARMOR] = 25;//JAPRO

@@ -1208,6 +1208,8 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 	if (style == MV_JETPACK)
 		return qfalse;//temp
 
+	if (player->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NORACE)
+		return qfalse;
 	if (((style == MV_RJQ3) || (style == MV_RJCPM)) && g_knockback.value != 1000.0f)
 		return qfalse;
 	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK && style != MV_SWOOP && style != MV_JETPACK && style != MV_SLICK && style != MV_BOTCPM) { //Ignore forcejump restrictions if in onlybhop movement modes

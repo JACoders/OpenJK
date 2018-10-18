@@ -388,6 +388,10 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 
 #define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<0)
 #define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<1)
+#define JAPRO_ACCOUNTFLAG_NORACE		(1<<2)
+#define JAPRO_ACCOUNTFLAG_NODUEL		(1<<3)
+#define JAPRO_ACCOUNTFLAG_JRADMIN		(1<<4)
+#define JAPRO_ACCOUNTFLAG_FULLADMIN		(1<<5)
 
 #define JAPRO_ACCOUNTTEAMFLAG_OWNER		(1<<0)
 #define JAPRO_ACCOUNTTEAMFLAG_PENDING	(1<<1)
@@ -777,8 +781,7 @@ typedef struct clientSession_s {
 	qboolean	raceMode;
 	int			movementStyle;
 
-	qboolean	juniorAdmin;
-	qboolean	fullAdmin;
+	int			accountFlags;
 
 	char		clanpass[32];//Japro - Serverside Clanpass
 	int			sayteammod;//0 = normal, 1 = clan, 2 = admin
@@ -906,7 +909,6 @@ typedef struct clientPersistant_s {
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
 	unsigned int	unlocks;
-	unsigned int	accountFlags;
 
 	stats_t		stats;
 } clientPersistant_t;
