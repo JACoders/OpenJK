@@ -408,6 +408,14 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 
 #define RS_TIMER_START				(1<<0)
 
+#define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<0)
+#define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<1)
+
+#define JAPRO_ACCOUNTTEAMFLAG_OWNER		(1<<0)
+#define JAPRO_ACCOUNTTEAMFLAG_PENDING	(1<<1)
+
+#define JAPRO_TEAMFLAG_PRIVATE		(1<<0)
+
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
 void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims );
@@ -920,6 +928,7 @@ typedef struct clientPersistant_s {
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
 	unsigned int	unlocks;
+	unsigned int	accountFlags;
 
 	stats_t		stats;
 } clientPersistant_t;

@@ -2187,7 +2187,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 int ForceShootDrain( gentity_t *self )
 {
 	trace_t	tr;
-	vec3_t	end, forward;
+	vec3_t	end, forward, center;
 	gentity_t	*traceEnt;
 	int			gotOneOrMore = 0;
 
@@ -2198,22 +2198,18 @@ int ForceShootDrain( gentity_t *self )
 	AngleVectors( self->client->ps.viewangles, forward, NULL, NULL );
 	VectorNormalize( forward );
 
+	VectorCopy(self->client->ps.origin, center);
+	if (g_tweakForce.integer & FT_FIXDRAINCOF) {
+		center[2] += self->client->ps.viewheight - 16;
+	}
+
 	if ( self->client->ps.fd.forcePowerLevel[FP_DRAIN] > FORCE_LEVEL_2 )
 	{//arc
-		vec3_t	center, mins, maxs, dir, ent_org, size, v, behind;
+		vec3_t	mins, maxs, dir, ent_org, size, v;
 		float	radius = MAX_DRAIN_DISTANCE, dot, dist, cof;
 		gentity_t	*entityList[MAX_GENTITIES];
 		int			iEntityList[MAX_GENTITIES];
 		int		e, numListedEntities, i;
-
-		VectorCopy( self->client->ps.origin, center );
-		VectorCopy( self->client->ps.origin, behind );
-
-		if (g_tweakForce.integer & FT_FIXDRAINCOF) {
-			VectorMA( behind, -16, forward, behind ); //Push it behind us a bit to stop problem of missing drains when we are right up against someone
-			center[2] += 8; //So the drain origin point was actually lower than the comparison point on the target, meaning the min/max drain offset viewangles were not equal.
-			behind[2] += 8;
-		}
 
 		for ( i = 0 ; i < 3 ; i++ ) 
 		{
@@ -2270,22 +2266,23 @@ int ForceShootDrain( gentity_t *self )
 			VectorMA( traceEnt->r.absmin, 0.5, size, ent_org );
 
 			if (g_tweakForce.integer & FT_FIXDRAINCOF) {
-				cof = 0.1;
-				VectorSubtract( ent_org, behind, dir );
-				VectorNormalize( dir );
-				if ( (dot = DotProduct( dir, forward )) < 0.8 ) {//test if they are infront of us
-					continue;
-				}
+				vec3_t behind;
+
+				VectorCopy(center, behind);
+				VectorMA(behind, -16, forward, behind);
+
+				ent_org[2] += 8;
+				VectorSubtract(ent_org, behind, dir);
+
+				cof = 0.7f;
 			}
 			else {
-				cof = 0.5;
+				VectorSubtract(ent_org, center, dir);
+				cof = 0.5f;
 			}
 
-			//see if they're in front of me
-			//must be within the forward cone
-			VectorSubtract( ent_org, center, dir );
-			VectorNormalize( dir );
-			if ( (dot = DotProduct( dir, forward )) < cof ) { //test if they are in cone
+			VectorNormalize(dir);
+			if ((dot = DotProduct(dir, forward)) < cof) { //test if they are in cone
 				continue;
 			}
 
@@ -2303,7 +2300,7 @@ int ForceShootDrain( gentity_t *self )
 			}
 
 			//Now check and see if we can actually hit it
-			JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, center, vec3_origin, vec3_origin, ent_org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 			if ( tr.fraction < 1.0f && tr.entityNum != traceEnt->s.number )
 			{//must have clear LOS
 				continue;
@@ -2316,9 +2313,9 @@ int ForceShootDrain( gentity_t *self )
 	}
 	else
 	{//trace-line
-		VectorMA( self->client->ps.origin, 2048, forward, end );
+		VectorMA( center, 2048, forward, end );
 		
-		JP_Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+		JP_Trace( &tr, center, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.entityNum == ENTITYNUM_NONE || tr.fraction == 1.0 || tr.allsolid || tr.startsolid || !g_entities[tr.entityNum].client || !g_entities[tr.entityNum].inuse )
 		{
 			return 0;

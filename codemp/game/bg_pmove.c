@@ -5525,7 +5525,6 @@ Sets mins, maxs, and pm->ps->viewheight
 static void PM_CheckDuck (void)
 {
 //	trace_t	trace;
-	trace_t sptrace; 
 	int oldHeight;
 
 	if ( pm->ps->m_iVehicleNum > 0 && pm->ps->m_iVehicleNum < ENTITYNUM_NONE )
@@ -5643,10 +5642,10 @@ static void PM_CheckDuck (void)
 
 			//half-life/jasp crouch climb thing
 			if (pm->ps->groundEntityNum == ENTITYNUM_NONE && ((pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_CROUCHJUMP) || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_SP)) {
+				trace_t sptrace;
 				pm->maxs[2] = pm->ps->crouchheight;
 				pm->ps->viewheight = pm->ps->crouchheight + STANDARD_VIEWHEIGHT_OFFSET; //CROUCH_VIEWHEIGHT
 				pm->trace(&sptrace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
-
 				if (!(pm->ps->pm_flags & PMF_DUCKED) && !sptrace.allsolid && pm->ps->velocity[2] >= 0) {
 					pm->ps->eFlags ^= EF_TELEPORT_BIT;
 					//pm->ps->origin[2] += oldHeight - pm->maxs[2];
@@ -5655,7 +5654,7 @@ static void PM_CheckDuck (void)
 					cg.predictedPlayerState.origin[2] += oldHeight - pm->maxs[2];
 #endif
 				}
-			
+
 			}
 
 			pm->ps->pm_flags |= PMF_DUCKED;
@@ -5665,19 +5664,16 @@ static void PM_CheckDuck (void)
 			if (pm->ps->pm_flags & PMF_DUCKED)
 			{
 				if ((pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_CROUCHJUMP) || pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_SP) {
+					trace_t sptrace;
 					if (pm->ps->groundEntityNum == ENTITYNUM_NONE && PM_GroundDistance() >= (oldHeight - pm->maxs[2]) && pm->ps->velocity[2] >= 0) {
 						pm->maxs[2] = pm->ps->standheight;
 						pm->ps->origin[2] += oldHeight - pm->maxs[2];
-
 						pm->trace(&sptrace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
-
-						if (!sptrace.allsolid)
-						{
+						if (!sptrace.allsolid) {
 							pm->ps->eFlags ^= EF_TELEPORT_BIT;
 							pm->ps->pm_flags &= ~PMF_DUCKED;
 						}
-						else
-						{
+						else {
 							pm->ps->origin[2] -= oldHeight - pm->maxs[2]; //undo it so we don't clip thru the floor
 						}
 					}
