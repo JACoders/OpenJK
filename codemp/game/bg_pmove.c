@@ -13207,9 +13207,14 @@ void Pmove (pmove_t *pmove) {
 		int		msec;
 
 		msec = finalTime - pmove->ps->commandTime;
-		if (pmove->ps->stats[STAT_RACEMODE] && BG_InRollFixed(pmove->ps, pmove->ps->legsAnim)) { //Using float now
+		if (pmove->ps->stats[STAT_RACEMODE]) { //Using float now
 			if ( msec > 8 ) {
-				msec = 8;
+				if (BG_InRollFixed(pmove->ps, pmove->ps->legsAnim)) {
+					msec = 8;
+				}
+				else if (msec > 16) {
+					msec = 16;
+				}
 			}
 			//Com_Printf("Chopping\n");
 		}

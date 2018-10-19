@@ -2679,6 +2679,51 @@ void Svcmd_AccountIPLock_f(void) {
 
 }
 
+void Svcmd_ListAdmins_f(void)
+{
+	if (trap->Argc() != 1) {
+		trap->Print("Usage: /listAdmins\n");
+		return;
+	}
+
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+		unsigned int flags;
+		char adminString[16];
+
+		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
+
+		sql = "SELECT username, flags FROM localAccount WHERE flags & 16 OR flags & 32 ORDER BY flags DESC"; //ehh
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+
+		Com_Printf("    ^5Username           Admin\n");
+
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				flags = sqlite3_column_int(stmt, 1);
+				if (flags & 32)
+					Q_strncpyz(adminString, "Full", sizeof(adminString));
+				else if (flags & 16)
+					Q_strncpyz(adminString, "Junior", sizeof(adminString));
+				Com_Printf(va("    %-18s %s\n", (char*)sqlite3_column_text(stmt, 0), adminString));
+			}
+			else if (s == SQLITE_DONE) {
+				break;
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_ListAdmins)", s);
+				return;
+			}
+		}
+		CALL_SQLITE(finalize(stmt));
+		CALL_SQLITE(close(db));
+	}
+}
+
 void Svcmd_SetAdmin_f(void)
 {
 	char username[16], adminLevelStr[8];

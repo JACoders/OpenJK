@@ -1565,6 +1565,7 @@ void G_TestAddRace( void );
 #endif
 void Svcmd_AccountIPLock_f( void );
 void Svcmd_SetAdmin_f(void);
+void Svcmd_ListAdmins_f(void);
 
 void Svcmd_ClanJoin_f( void );
 void Svcmd_ClanKick_f( void );
@@ -1614,6 +1615,9 @@ svcmd_t svcmds[] = {
 	{ "gametype",					Svcmd_ChangeGametype_f,				qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
 	{ "iplock",						Svcmd_AccountIPLock_f,				qfalse },
+
+	{ "listAdmins",					Svcmd_ListAdmins_f,					qfalse },
+
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 
 	{ "pause",						SV_Pause_f,							qfalse },
@@ -1637,7 +1641,7 @@ svcmd_t svcmds[] = {
 
 	{ "say",						Svcmd_Say_f,						qtrue },
 
-	{ "setAdmin",					Svcmd_SetAdmin_f,					qtrue },
+	{ "setAdmin",					Svcmd_SetAdmin_f,					qfalse },
 
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
