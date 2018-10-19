@@ -753,17 +753,17 @@ void Svcmd_Amgrantadmin_f(void)
 		Q_strlwr(arg);
 
 		if (!Q_stricmp(arg, "none")) {
-			g_entities[clientid].client->sess.juniorAdmin = qfalse;
-			g_entities[clientid].client->sess.fullAdmin = qfalse;
+			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
+			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
 		}
 		else if (!Q_stricmp(arg, "junior")) {
-			g_entities[clientid].client->sess.juniorAdmin = qtrue;
-			g_entities[clientid].client->sess.fullAdmin = qfalse;
+			g_entities[clientid].client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
+			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
 			trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
 		}
 		else if (!Q_stricmp(arg, "full")) {
-			g_entities[clientid].client->sess.juniorAdmin = qfalse;
-			g_entities[clientid].client->sess.fullAdmin = qtrue;
+			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
+			g_entities[clientid].client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
 			trap->SendServerCommand( clientid, "print \"You have been granted Full admin privileges.\n\"" );
 		}
 }
@@ -1583,6 +1583,8 @@ void SV_RebuildUnlocks_f(void);
 void G_TestAddRace( void );
 #endif
 void Svcmd_AccountIPLock_f( void );
+void Svcmd_SetAdmin_f(void);
+void Svcmd_ListAdmins_f(void);
 
 void Svcmd_ClanJoin_f( void );
 void Svcmd_ClanKick_f( void );
@@ -1628,6 +1630,9 @@ svcmd_t svcmds[] = {
 	{ "gametype",					Svcmd_ChangeGametype_f,				qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
 	{ "iplock",						Svcmd_AccountIPLock_f,				qfalse },
+
+	{ "listAdmins",					Svcmd_ListAdmins_f,					qfalse },
+
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 
 	{ "pause",						SV_Pause_f,							qfalse },
@@ -1650,6 +1655,8 @@ svcmd_t svcmds[] = {
 	{ "saberDisable",				Svcmd_ToggleSaberDisable_f,			qfalse },
 
 	{ "say",						Svcmd_Say_f,						qtrue },
+
+	{ "setAdmin",					Svcmd_SetAdmin_f,					qfalse },
 
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },

@@ -770,7 +770,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 
 	if (!sv_cheats.integer && ent->client)
 	{
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
+		if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_NOCLIP)))
 			{
@@ -789,7 +789,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				return;
 			}
 		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+		else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_NOCLIP)))
 			{
@@ -883,7 +883,7 @@ static void Cmd_Blink_f( gentity_t *ent )
 			}
 		}
 
-		if (ent->client->sess.fullAdmin) {//Logged in as full admin
+		if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {//Logged in as full admin
 			if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE))) {
 				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink) outside of racemode.\n\"" );
@@ -895,7 +895,7 @@ static void Cmd_Blink_f( gentity_t *ent )
 				}
 			}
 		}
-		else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
+		else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {//Logged in as junior admin
 			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE))) {
 				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink) outside of racemode.\n\"" );
@@ -1552,7 +1552,8 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 		gentity_t *duelAgainst = &g_entities[client->ps.duelIndex];
 
 		if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {
-			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
+			if (!(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NODUEL) && !(duelAgainst->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NODUEL))
+				G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
 		}
 	}
 
@@ -2181,7 +2182,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 
 	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->sess.clanpass, other->client->sess.clanpass) || ent->client->sess.clanpass[0] == 0 || other->client->sess.clanpass[0] == 0)))//Idk
 		return;//Ignore it
-	if (mode == SAY_ADMIN && !(other->client->sess.fullAdmin || other->client->sess.juniorAdmin) && ent != other)
+	if (mode == SAY_ADMIN && !(((other->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || (other->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN))) && ent != other)
 		return;
 
 	if (ClientIsIgnored(other-g_entities, ent-g_entities)) {//Also make sure clanpass is set?
@@ -2857,13 +2858,13 @@ static qboolean CheckAdminCmd(gentity_t *ent, int command, char *commandString) 
 	if (!ent || !ent->client)
 		return qfalse;
 
-	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
+	if (ent->client && ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << command))) {
 			trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (%s).\n\"", commandString ));
 			return qfalse;
 		}
 	}
-	else if (ent->client && ent->client->sess.juniorAdmin) {//Logged in as junior admin
+	else if (ent->client && ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {//Logged in as junior admin
 		if (!(g_juniorAdminLevel.integer & (1 << command))) {
 			trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (%s).\n\"", commandString));
 			return qfalse;
@@ -3188,7 +3189,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
 
 	if ((g_fullAdminLevel.integer & (1 << A_CALLVOTE)) || (g_juniorAdminLevel.integer & (1 << A_CALLVOTE))) { //Admin only voting mode
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
+		if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_CALLVOTE)))
 			{
@@ -3196,7 +3197,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 				return;
 			}
 		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+		else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_CALLVOTE)))
 			{
@@ -3473,7 +3474,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 				continue;
 
 			cl = &level.clients[i];
-			if (cl->pers.netname[0] && (!(cl->pers.accountFlags & JAPRO_ACCOUNTFLAG_TRUSTED) || !cl->pers.userName[0])) //Only do this if their account is not trusted or they are not logged in
+			if (cl->pers.netname[0] && (!(cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_TRUSTED) || !cl->pers.userName[0])) //Only do this if their account is not trusted or they are not logged in
 			{
 				char theirIP[NET_ADDRSTRMAXLEN] = {0};
 				char *p = NULL;
@@ -4562,7 +4563,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	}
 }
 
-#if 1 //#ifndef FINAL_BUILD
+#if 0 //#ifndef FINAL_BUILD
 extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 
 void Cmd_DebugSetSaberMove_f(gentity_t *self)
@@ -4582,7 +4583,7 @@ void Cmd_DebugSetSaberMove_f(gentity_t *self)
 		return;
 	}
 
-	if (!self->client->sess.fullAdmin || !self->client->sess.juniorAdmin)
+	if (!((self->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || (self->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 		return;
 
 	self->client->ps.saberMove = atoi(arg);
@@ -4953,53 +4954,55 @@ Cmd_Amlogin_f
 */
 void Cmd_Amlogin_f(gentity_t *ent)
 {
-	char   pass[MAX_STRING_CHARS]; 
+	char   pass[MAX_STRING_CHARS];
 
-	trap->Argv( 1, pass, sizeof( pass ) ); //Password
+	trap->Argv(1, pass, sizeof(pass)); //Password
 
 	if (!ent->client)
 		return;
 
 	if (trap->Argc() == 1)
 	{
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: amLogin <password>\n\"" ); 
-		return; 
+		trap->SendServerCommand(ent - g_entities, "print \"Usage: amLogin <password>\n\"");
+		return;
 	}
-	if (trap->Argc() == 2) 
+	if (trap->Argc() == 2)
 	{
-		if (ent->client->sess.juniorAdmin || ent->client->sess.fullAdmin)
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN))
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"You are already logged in. Type in /amLogout to remove admin status.\n\"" ); 
-			return; 
-		}
-		if (!Q_stricmp( pass, "" ))
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"Usage: amLogin <password>\n\"" ); 
+			trap->SendServerCommand(ent - g_entities, "print \"You are already logged in. Type in /amLogout to remove admin status.\n\"");
 			return;
 		}
-		if ( !Q_stricmp( pass, g_fullAdminPass.string ) )
+		if (!Q_stricmp(pass, ""))
 		{
-			if ( !Q_stricmp( "", g_fullAdminPass.string ) )//dunno
-				return;
-			ent->client->sess.fullAdmin = qtrue;
-			trap->SendServerCommand( ent-g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
-			if (Q_stricmp(g_fullAdminMsg.string, "" ))
-				trap->SendServerCommand( -1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string ));
-			return; 
+			trap->SendServerCommand(ent - g_entities, "print \"Usage: amLogin <password>\n\"");
+			return;
 		}
-		if ( !Q_stricmp( pass, g_juniorAdminPass.string ) )
+		if (!Q_stricmp(pass, g_fullAdminPass.string))
 		{
-			if ( !Q_stricmp( "", g_juniorAdminPass.string ) )
+			if (!Q_stricmp("", g_fullAdminPass.string))//dunno
 				return;
-			ent->client->sess.juniorAdmin = qtrue;
-			trap->SendServerCommand( ent-g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
-			if (Q_stricmp(g_juniorAdminMsg.string, "" ))
-				trap->SendServerCommand( -1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string ));
-			return; 
+			ent->client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
+			ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
+			trap->SendServerCommand(ent - g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
+			if (Q_stricmp(g_fullAdminMsg.string, ""))
+				trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+			return;
 		}
-		else 
+		if (!Q_stricmp(pass, g_juniorAdminPass.string))
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"^3Failed to log in: Incorrect password!\n\"");
+			if (!Q_stricmp("", g_juniorAdminPass.string))
+				return;
+			ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
+			ent->client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
+			trap->SendServerCommand(ent - g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
+			if (Q_stricmp(g_juniorAdminMsg.string, ""))
+				trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+			return;
+		}
+		else
+		{
+			trap->SendServerCommand(ent - g_entities, "print \"^3Failed to log in: Incorrect password!\n\"");
 		}
 	}
 }
@@ -5015,10 +5018,10 @@ void Cmd_Amlogout_f(gentity_t *ent)
 {
 	if (!ent->client)
 		return;
-	if (ent->client->sess.fullAdmin || ent->client->sess.juniorAdmin)
+	if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN))
 	{ 
-		ent->client->sess.fullAdmin = qfalse;
-		ent->client->sess.juniorAdmin = qfalse;
+		ent->client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
+		ent->client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
 		trap->SendServerCommand( ent-g_entities, "print \"You are no longer an admin.\n\"");         
 	}
 }
@@ -5161,7 +5164,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 				} 
 
 
-				if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
+				if (g_entities[clientid].client && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 				{
 					if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 						return;
@@ -5339,7 +5342,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 
 				if( targetplayer->client && targetplayer->client->pers.connected)
 				{
-					if ((targetplayer->client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && targetplayer->client->sess.juniorAdmin))
+					if ((targetplayer->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (targetplayer->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 						continue;
 					if (!targetplayer->client->pers.amfreeze)
 						targetplayer->client->pers.amfreeze = qtrue;
@@ -5358,7 +5361,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 
 				if(targetplayer->client && targetplayer->client->pers.connected)
 				{
-					if ((targetplayer->client->sess.fullAdmin) || (ent->client->sess.fullAdmin && targetplayer->client->sess.juniorAdmin))
+					if ((targetplayer->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (targetplayer->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 						continue;
 					if (targetplayer->client->pers.amfreeze)
 					{
@@ -5382,7 +5385,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
             return; 
         } 
 
-		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5442,7 +5445,7 @@ void Cmd_Amkick_f(gentity_t *ent)
 			return; 
         } 
 
-		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5484,7 +5487,7 @@ void Cmd_Amban_f(gentity_t *ent)
 			return; 
         } 
 
-		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin)))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5671,7 +5674,7 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 		if (!g_entities[clientid].client)
 			return;
 
-		if ((g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
+		if ((g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5681,18 +5684,18 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 
 		if (trap->Argc() == 2) {
 
-			if (!(g_entities[clientid].client->sess.juniorAdmin) && !(g_entities[clientid].client->sess.fullAdmin))
+			if (!(g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(g_entities[clientid].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN))
 			{
 				trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
-				g_entities[clientid].client->sess.juniorAdmin = qtrue;
-				g_entities[clientid].client->sess.fullAdmin = qfalse;
+				g_entities[clientid].client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
+				g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
 			}
 		}
 		else if (trap->Argc() == 3) {
 			trap->Argv(2, arg, sizeof(arg)); 
 			if (!Q_stricmp(arg, "none")) {
-				g_entities[clientid].client->sess.fullAdmin = qfalse;
-				g_entities[clientid].client->sess.juniorAdmin = qfalse;
+				g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
+				g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
 			}
 		}
 
@@ -5852,85 +5855,77 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Admin commands: ", sizeof(buf));
-	if (!(ent->client->sess.fullAdmin) && !(ent->client->sess.juniorAdmin))
+	if (!(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN))
 		Q_strcat(buf, sizeof(buf), "you are not an administrator on this server.\n");
 	else {
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_ADMINTELE))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 			Q_strcat(buf, sizeof(buf), "amTele "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINTELE))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 			Q_strcat(buf, sizeof(buf), "amTele "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_TELEMARK))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_TELEMARK)))
 			Q_strcat(buf, sizeof(buf), "amTeleMark "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_TELEMARK))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_TELEMARK)))
 			Q_strcat(buf, sizeof(buf), "amTeleMark "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_FREEZE))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_FREEZE)))
 			Q_strcat(buf, sizeof(buf), "amFreeze "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_FREEZE))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_FREEZE)))
 			Q_strcat(buf, sizeof(buf), "amFreeze "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_ADMINBAN))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINBAN)))
 			Q_strcat(buf, sizeof(buf), "amBan "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINBAN))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINBAN)))
 			Q_strcat(buf, sizeof(buf), "amBan "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_ADMINKICK))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINKICK)))
 			Q_strcat(buf, sizeof(buf), "amKick "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINKICK))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINKICK)))
 			Q_strcat(buf, sizeof(buf), "amKick "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_KILLVOTE))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_KILLVOTE)))
 			Q_strcat(buf, sizeof(buf), "amKillVote ");  
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_KILLVOTE))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_KILLVOTE)))
 			Q_strcat(buf, sizeof(buf), "amKillVote ");  
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_NPC))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_NPC)))
 			Q_strcat(buf, sizeof(buf), "NPC "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_NPC))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_NPC)))
 			Q_strcat(buf, sizeof(buf), "NPC "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_NOCLIP))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_NOCLIP)))
 			Q_strcat(buf, sizeof(buf), "Noclip "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_NOCLIP))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_NOCLIP)))
 			Q_strcat(buf, sizeof(buf), "Noclip "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_GRANTADMIN))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_GRANTADMIN)))
 			Q_strcat(buf, sizeof(buf), "amGrantAdmin "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_GRANTADMIN))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_GRANTADMIN)))
 			Q_strcat(buf, sizeof(buf), "amGrantAdmin "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_CHANGEMAP))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CHANGEMAP)))
 			Q_strcat(buf, sizeof(buf), "amMap "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_CHANGEMAP))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_CHANGEMAP)))
 			Q_strcat(buf, sizeof(buf), "amMap "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_LISTMAPS))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LISTMAPS)))
 			Q_strcat(buf, sizeof(buf), "amListMaps ");  
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_LISTMAPS)))
 			Q_strcat(buf, sizeof(buf), "amListMaps ");
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_CSPRINT))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CSPRINT)))
 			Q_strcat(buf, sizeof(buf), "amPsay "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT)))
 			Q_strcat(buf, sizeof(buf), "amPsay "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_FORCETEAM))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_FORCETEAM)))
 			Q_strcat(buf, sizeof(buf), "amForceTeam "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_FORCETEAM))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_FORCETEAM)))
 			Q_strcat(buf, sizeof(buf), "amForceTeam "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_LOCKTEAM))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LOCKTEAM)))
 			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_LOCKTEAM))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOCKTEAM)))
 			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_LOOKUP))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LOOKUP)))
 			Q_strcat(buf, sizeof(buf), "amLookup "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_LOOKUP))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOOKUP)))
 			Q_strcat(buf, sizeof(buf), "amLookup "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_VSTR))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_VSTR)))
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_VSTR))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_VSTR)))
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
-		//if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_STATUS))) 
-			//Q_strcat(buf, sizeof(buf), "amStatus "); 
-		//else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_STATUS))) 
-			//Q_strcat(buf, sizeof(buf), "amStatus "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_RENAME))) 
+		if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_RENAME)))
 			Q_strcat(buf, sizeof(buf), "amRename "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
+		else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_juniorAdminLevel.integer & (1 << A_RENAME)))
 			Q_strcat(buf, sizeof(buf), "amRename"); 
-		//if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
-			//Q_strcat(buf, sizeof(buf), "dfRefresh "); 
-		//else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
-			//Q_strcat(buf, sizeof(buf), "dfRefresh"); 
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 		buf[0] = '\0';
 	}
@@ -6925,7 +6920,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 		return;
 	}
 
-		if (ent->client->sess.fullAdmin) {//Logged in as full admin
+		if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {//Logged in as full admin
 			if (!(g_fullAdminLevel.integer & (1 << A_NOFOLLOW))) {
 				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
@@ -6939,7 +6934,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 				}
 			}
 		}
-		else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
+		else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {//Logged in as junior admin
 			if (!(g_juniorAdminLevel.integer & (1 << A_NOFOLLOW))) {
 				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
@@ -7169,7 +7164,7 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 			}
 		}
 
-		if (ent->client->sess.fullAdmin) {//Logged in as full admin
+		if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {//Logged in as full admin
 			if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK))) {
 				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
@@ -7181,7 +7176,7 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 				}
 			}
 		}
-		else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
+		else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {//Logged in as junior admin
 			if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK))) {
 				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
@@ -7250,9 +7245,9 @@ void Cmd_RaceTele_f(gentity_t *ent)
 			return; 
 
 		if (g_entities[clientid].client->pers.noFollow) {
-			if (ent->client->sess.fullAdmin && !(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
+			if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
 				return; //Print msg?
-			else if (ent->client->sess.juniorAdmin && !(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
+			else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
 				return;
 			else
 				return;
@@ -7354,7 +7349,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 	if (!ent->client)
 		return;
 
-	if (ent->client->sess.fullAdmin)//Logged in as full admin
+	if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
@@ -7367,7 +7362,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			return;
 		}
 	}
-	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+	else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)//Logged in as junior admin
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
@@ -7440,7 +7435,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)  
 			return; 
 
-		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin)))//He has admin
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))//He has admin
 		{	
 			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 			{
@@ -7502,7 +7497,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 		else//Amtele other player to origin
 		{
-			if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin)))//He has admin
+			if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))//He has admin
 			{	
 				if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 				{
@@ -7535,7 +7530,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2)
 			return;
 
-		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin)))//He has admin
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))//He has admin
 		{	
 			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 			{
@@ -7573,7 +7568,7 @@ void Cmd_Amrename_f(gentity_t *ent)
 	if (!ent->client)
 		return;
    
-	if (ent->client->sess.fullAdmin)//Logged in as full admin
+	if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_RENAME)))
 		{
@@ -7581,7 +7576,7 @@ void Cmd_Amrename_f(gentity_t *ent)
 			return;
 		}
 	}
-	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+	else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)//Logged in as junior admin
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_RENAME)))
 		{
@@ -8634,7 +8629,7 @@ command_t commands[] = {
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
-	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	CMD_ALIVE },
+	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	CMD_ALIVE },
 
 	/*
 	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },

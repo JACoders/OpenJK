@@ -4290,7 +4290,7 @@ void Cmd_NPC_f( gentity_t *ent )
 	if (!ent->client)
 		return;
 
-	if (ent->client->sess.fullAdmin)//Logged in as full admin
+	if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_NPC)))
 		{
@@ -4298,7 +4298,7 @@ void Cmd_NPC_f( gentity_t *ent )
 			return;
 		}
 	}
-	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+	else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)//Logged in as junior admin
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_NPC)))
 		{

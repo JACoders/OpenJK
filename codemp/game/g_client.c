@@ -2237,7 +2237,7 @@ void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeti
 	int MAX_COSMETICS = 32;
 	int cosmetics = atoi(cosmeticString);
 
-	if (client->sess.fullAdmin)//Logged in as full admin
+	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 		return; //debug testing
 
 	if (!client->pers.userName || !client->pers.userName[0] || !client->pers.unlocks) {
@@ -2336,6 +2336,11 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 		client->pers.showChatCP = qtrue;
 	else
 		client->pers.showChatCP = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_CONSOLECP)
+		client->pers.showConsoleCP = qfalse;
+	else
+		client->pers.showConsoleCP = qtrue;
 
 	if (atoi(s) & JAPRO_PLUGIN_NODMGNUMBERS)
 		client->pers.noDamageNumbers = qtrue;
@@ -2689,6 +2694,16 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 	return qtrue;
 }
 
+//[JAPRO - Serverside - All - Ignore subfunction - Start]
+void QINLINE ClientRemoveIgnore(const int targetID) {
+	int i;
+	for (i = 0; i < level.maxclients; ++i) {
+		if (level.clients[i].pers.connected == CON_CONNECTED) {
+			level.clients[i].sess.ignore &= ~(1 << targetID);
+		}
+	}
+}
+//[JAPRO - Serverside - All - Ignore subfunction - End]
 
 /*
 ===========
@@ -2753,6 +2768,11 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	Q_strncpyz( tmpIP, isBot ? "Bot" : value, sizeof( tmpIP ) );
 	if ( G_FilterPacket( value ) ) {
 		return "Banned.";
+	}
+
+	Com_Printf("CLIENTCONNECT: IP: %s, OLD SLOT IP: %s\n", tmpIP, level.clients[clientNum].sess.IP);
+	if (!level.clients[clientNum].sess.IP[0] || !CompareIPs(tmpIP, level.clients[clientNum].sess.IP)) { //New Client, remove ignore if it was there
+		ClientRemoveIgnore(clientNum);//JAPRO IGNORE, move this to clientConnect, and only do it if IP does not match previous slot
 	}
 
 	if ( !isBot && g_needpass.integer ) {
@@ -4365,18 +4385,6 @@ void ClientSpawn(gentity_t *ent) {
 	trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
 }
 
-//[JAPRO - Serverside - All - Ignore subfunction - Start]
-QINLINE void ClientRemoveIgnore(const int targetID) {
-	int i;
-	for (i = 0; i < level.maxclients; ++i) {
-		if (level.clients[i].pers.connected == CON_CONNECTED) {
-			level.clients[i].sess.ignore &= ~(1 << targetID);
-		}
-	}
-}
-//[JAPRO - Serverside - All - Ignore subfunction - End]
-
-
 /*
 ===========
 ClientDisconnect
@@ -4467,7 +4475,8 @@ void ClientDisconnect( int clientNum ) {
 
 		if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {
 			//Trying to dodge the duel, no no no
-			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
+			if (!(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NODUEL) && !(duelAgainst->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NODUEL))
+				G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
 		}
 	}
 
@@ -4622,8 +4631,6 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	G_ClearClientLog(clientNum);
-
-	ClientRemoveIgnore(clientNum);//JAPRO IGNORE
 }
 
 

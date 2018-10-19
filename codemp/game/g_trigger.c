@@ -1229,6 +1229,8 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 	if (style == MV_JETPACK)
 		return qfalse;//temp
 
+	if (player->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_NORACE)
+		return qfalse;
 	if (((style == MV_RJQ3) || (style == MV_RJCPM)) && g_knockback.value != 1000.0f)
 		return qfalse;
 	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK && style != MV_SWOOP && style != MV_JETPACK && style != MV_SLICK && style != MV_BOTCPM) { //Ignore forcejump restrictions if in onlybhop movement modes
@@ -1630,7 +1632,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 
 		if (player->client->pers.showCenterCP)
 			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
-		if (player->client->pers.showChatCP)
+		if (player->client->pers.showConsoleCP)
+			trap->SendServerCommand(player - g_entities, va("print \"^3%.3fs^5, avg ^3%i^5u, max ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
+		else if (player->client->pers.showChatCP)
 			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, avg ^3%i^5, max ^3%i^5 ups\"", (float)time * 0.001f, average, (int)(player->client->pers.stats.topSpeed + 0.5f)));
 		
 		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
