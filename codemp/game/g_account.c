@@ -2164,16 +2164,26 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			CALL_SQLITE(finalize(stmt));
 
 			ent->client->pers.unlocks = unlocks;
-			ent->client->sess.accountFlags = flags;
 
+			//Problem, only add to flags, not remove?
 			if ((flags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)) {
 				if (Q_stricmp(g_fullAdminMsg.string, ""))
 					trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
 			}
 			else if ((flags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)) {
 				if (Q_stricmp(g_juniorAdminMsg.string, ""))
 					trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
 			}
+			if (flags & JAPRO_ACCOUNTFLAG_IPLOCK)
+				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_IPLOCK;
+			if (flags & JAPRO_ACCOUNTFLAG_TRUSTED)
+				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_TRUSTED;
+			if (flags & JAPRO_ACCOUNTFLAG_NORACE)
+				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_NORACE;
+			if (flags & JAPRO_ACCOUNTFLAG_NODUEL)
+				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_NODUEL;
 		}
 		else {
 			trap->SendServerCommand(ent - g_entities, "print \"Incorrect password!\n\"");
