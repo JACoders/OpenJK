@@ -370,6 +370,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_PLUGIN_CHATBOXCP		(1<<25)	//
 #define JAPRO_PLUGIN_NODMGNUMBERS	(1<<26)	//
 #define JAPRO_PLUGIN_CENTERMUZZLE	(1<<27)	//
+#define JAPRO_PLUGIN_CONSOLECP		(1<<28)	//
 
 //g_tweakVote TWEAKS
 #define TV_ALLOW_SIEGESPECVOTE		(1<<0)
@@ -904,6 +905,7 @@ typedef struct clientPersistant_s {
 	qboolean	keepDemo;//japro autodemo for defrag... :S
 	qboolean	showChatCP;
 	qboolean	showCenterCP;
+	qboolean	showConsoleCP;
 	int			demoStoppedTime;
 	int			stopRecordingTime;
 	char		oldDemoName[16];
