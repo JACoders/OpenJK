@@ -5540,6 +5540,9 @@ static void CG_DrawInventory(int y)
 	if (cgs.isJAPro && cg.snap->ps.stats[STAT_RACEMODE])
 		return;
 
+	if (cg.snap->ps.pm_type == PM_SPECTATOR)
+		return;
+
 	if (cg.snap->ps.stats[STAT_HEALTH] <= 0)
 		return;
 
