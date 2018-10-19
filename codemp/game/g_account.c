@@ -4349,7 +4349,7 @@ void Cmd_AccountStats_f(gentity_t *ent) { //Should i bother to cache player stat
 
 			if (created > 1) { //Sad hack since some accounts were made before this was recorded
 				getDateTime(created, timeStr, sizeof(timeStr));
-				Q_strcat(msg, sizeof(msg), va("   ^5Created:    ^2%s\n", timeStr));
+				Q_strcat(msg, sizeof(msg), va("   ^5Created: ^2%s\n", timeStr));
 				printInfo = qtrue;
 			}
 			if (Q_stricmp(master, "")) {

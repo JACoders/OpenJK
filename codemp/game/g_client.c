@@ -2747,6 +2747,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		return "Banned.";
 	}
 
+	Com_Printf("CLIENTCONNECT: IP: %s, OLD SLOT IP: %s\n", tmpIP, level.clients[clientNum].sess.IP);
 	if (!level.clients[clientNum].sess.IP[0] || !CompareIPs(tmpIP, level.clients[clientNum].sess.IP)) { //New Client, remove ignore if it was there
 		ClientRemoveIgnore(clientNum);//JAPRO IGNORE, move this to clientConnect, and only do it if IP does not match previous slot
 	}
