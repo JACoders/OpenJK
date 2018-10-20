@@ -846,7 +846,7 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 
 	// don't change velocity if in a timer (FIXME: is this correct?)
 	if ( pm->ps->pm_time ) {
-		VectorCopy( primal_velocity, pm->ps->velocity );
+		VectorCopy( primal_velocity, pm->ps->velocity ); //corner clip , cornerclip , skim
 	}
 
 	return ( bumpcount != 0 );
