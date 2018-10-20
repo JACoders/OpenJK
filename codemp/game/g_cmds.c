@@ -4932,9 +4932,10 @@ void Cmd_Amlogin_f(gentity_t *ent)
 				return;
 			ent->client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
 			ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
-			trap->SendServerCommand(ent - g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
-			if (Q_stricmp(g_fullAdminMsg.string, ""))
-				trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+			if (Q_stricmp(g_fullAdminMsg.string, "")) //Ok, so just set this to " " if you want it to print the normal login msg, or set it to "" to skip.  or "with junior admin" for more info.. etc
+				trap->SendServerCommand(-1, va("print \"%s^7 has logged in %s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+			else
+				trap->SendServerCommand(ent - g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
 			return;
 		}
 		if (!Q_stricmp(pass, g_juniorAdminPass.string))
@@ -4943,9 +4944,10 @@ void Cmd_Amlogin_f(gentity_t *ent)
 				return;
 			ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
 			ent->client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
-			trap->SendServerCommand(ent - g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
 			if (Q_stricmp(g_juniorAdminMsg.string, ""))
-				trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+				trap->SendServerCommand(-1, va("print \"%s^7 has logged in %s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+			else
+				trap->SendServerCommand(ent - g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
 			return;
 		}
 		else
@@ -7192,7 +7194,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		if (clientid == -1 || clientid == -2)  
 			return; 
 
-		if (g_entities[clientid].client->pers.noFollow) {
+		if (g_entities[clientid].client->pers.noFollow || g_entities[clientid].client->sess.sessionTeam == TEAM_SPECTATOR) {
 			if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
 				return; //Print msg?
 			else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
@@ -7366,6 +7368,15 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2)  
 			return; 
 
+		if (g_entities[clientid1].client->pers.noFollow || g_entities[clientid1].client->sess.sessionTeam == TEAM_SPECTATOR) {
+			if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
+				return; //Print msg?
+			else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
+				return;
+			else
+				return;
+		}
+
 		origin[0] = g_entities[clientid1].client->ps.origin[0];
 		origin[1] = g_entities[clientid1].client->ps.origin[1];
 		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
@@ -7382,6 +7393,15 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 		if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)  
 			return; 
+
+		if (g_entities[clientid2].client->pers.noFollow || g_entities[clientid2].client->sess.sessionTeam == TEAM_SPECTATOR) {
+			if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
+				return; //Print msg?
+			else if ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
+				return;
+			else
+				return;
+		}
 
 		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) || ((ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) && (g_entities[clientid1].client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)))//He has admin
 		{	

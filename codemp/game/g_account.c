@@ -2142,10 +2142,10 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 			if (ent->client->sess.raceMode && ent->client->pers.stats.startTime) {
 				ResetPlayerTimers(ent, qtrue);
-				trap->SendServerCommand(ent - g_entities, "print \"Login sucessful. Time reset.\n\"");
+				//trap->SendServerCommand(ent - g_entities, "print \"Login sucessful. Time reset.\n\"");
 			}
 			else
-				trap->SendServerCommand(ent - g_entities, "print \"Login sucessful.\n\"");
+				//trap->SendServerCommand(ent - g_entities, "print \"Login sucessful.\n\"");
 
 			if (!ip) //meh
 				ip = lastip;
@@ -2167,14 +2167,15 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 			//Problem, only add to flags, not remove?
 			if ((flags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)) {
-				if (Q_stricmp(g_fullAdminMsg.string, ""))
-					trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in %s\n\"", ent->client->pers.netname, ent->client->pers.userName, g_fullAdminMsg.string));
 				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
 			}
 			else if ((flags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)) {
-				if (Q_stricmp(g_juniorAdminMsg.string, ""))
-					trap->SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in %s\n\"", ent->client->pers.netname, ent->client->pers.userName, g_juniorAdminMsg.string));
 				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
+			}
+			else {
+				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in\n\"", ent->client->pers.netname, ent->client->pers.userName));
 			}
 			if (flags & JAPRO_ACCOUNTFLAG_IPLOCK)
 				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_IPLOCK;
@@ -2693,6 +2694,7 @@ void Svcmd_ListAdmins_f(void)
 		int s;
 		unsigned int flags;
 		char adminString[16];
+		int row = 1;
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
@@ -2709,7 +2711,8 @@ void Svcmd_ListAdmins_f(void)
 					Q_strncpyz(adminString, "Full", sizeof(adminString));
 				else if (flags & 16)
 					Q_strncpyz(adminString, "Junior", sizeof(adminString));
-				Com_Printf(va("    %-18s %s\n", (char*)sqlite3_column_text(stmt, 0), adminString));
+				Com_Printf(va("^5%2i^3: ^3%-18s %s^7\n", row, (char*)sqlite3_column_text(stmt, 0), adminString));
+				row++;
 			}
 			else if (s == SQLITE_DONE) {
 				break;
@@ -3311,10 +3314,10 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 			ent->client->pers.stats.racetime = 0.0f;
 		}
 
-		Q_strncpyz(ent->client->pers.userName, "", sizeof(ent->client->pers.userName));
 		//ent->client->pers.unlocks = 0;
 		//ent->client->sess.accountFlags = 0;
-		trap->SendServerCommand(ent-g_entities, "print \"Logged out.\n\"");
+		trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged out\n\"", ent->client->pers.netname, ent->client->pers.userName));
+		Q_strncpyz(ent->client->pers.userName, "", sizeof(ent->client->pers.userName));
 	}
 	else
 		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
