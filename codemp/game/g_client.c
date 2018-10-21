@@ -2338,9 +2338,9 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 		client->pers.showChatCP = qfalse;
 
 	if (atoi(s) & JAPRO_PLUGIN_CONSOLECP)
-		client->pers.showConsoleCP = qfalse;
-	else
 		client->pers.showConsoleCP = qtrue;
+	else
+		client->pers.showConsoleCP = qfalse;
 
 	if (atoi(s) & JAPRO_PLUGIN_NODMGNUMBERS)
 		client->pers.noDamageNumbers = qtrue;
