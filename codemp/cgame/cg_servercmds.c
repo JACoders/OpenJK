@@ -1599,6 +1599,27 @@ static void CG_Chat_f( void ) {
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			trap->Cmd_Argv( 1, text, sizeof( text ) );
 			CG_RemoveChatEscapeChar( text );
+
+			// from duo
+			// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
+			char tempChatStr[MAX_SAY_TEXT] = { 0 }, *r = text, *w = tempChatStr;
+			while (*r) {
+				if (*r == -80 && *(r + 1) == '/' && *(r + 2) == '.') {
+					*w = '%';
+					r += 3;
+				}
+				else if (*r == '\'' && *(r + 1) == '\'') {
+					*w = '"';
+					r += 2;
+				}
+				else {
+					*w = *r;
+					r++;
+				}
+				w++;
+			}
+			Q_strncpyz(text, tempChatStr, sizeof(text));
+
 			if (cg_chatBox.integer) {
 				if (cg_cleanChatbox.integer && !strcmp(text, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
 					//Go back and edit.. previous msg.. append (x2) at end, etc? aw fug?
@@ -1637,6 +1658,27 @@ static void CG_Chat_f( void ) {
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 			CG_RemoveChatEscapeChar( text );
+
+			//from duo
+			// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
+			char tempChatStr[MAX_SAY_TEXT] = { 0 }, *r = text, *w = tempChatStr;
+			while (*r) {
+				if (*r == -80 && *(r + 1) == '/' && *(r + 2) == '.') {
+					*w = '%';
+					r += 3;
+				}
+				else if (*r == '\'' && *(r + 1) == '\'') {
+					*w = '"';
+					r += 2;
+				}
+				else {
+					*w = *r;
+					r++;
+				}
+				w++;
+			}
+			Q_strncpyz(text, tempChatStr, sizeof(text));
+
 			CG_ChatBox_AddString( text );
 			trap->Print( "*%s\n", text );
 			Q_CleanString( text );
@@ -1648,6 +1690,27 @@ static void CG_Chat_f( void ) {
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		trap->Cmd_Argv( 1, text, sizeof( text ) );
 		CG_RemoveChatEscapeChar( text );
+
+		// from duo
+		// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
+		char tempChatStr[MAX_SAY_TEXT] = { 0 }, *r = text, *w = tempChatStr;
+		while (*r) {
+			if (*r == -80 && *(r + 1) == '/' && *(r + 2) == '.') {
+				*w = '%';
+				r += 3;
+			}
+			else if (*r == '\'' && *(r + 1) == '\'') {
+				*w = '"';
+				r += 2;
+			}
+			else {
+				*w = *r;
+				r++;
+			}
+			w++;
+		}
+		Q_strncpyz(text, tempChatStr, sizeof(text));
+
 		if (cg_chatBox.integer) {
 			if (cg_cleanChatbox.integer && !strcmp(text, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
 																				  //Go back and edit.. previous msg.. append (x2) at end, etc? aw fug?
@@ -1684,6 +1747,27 @@ static void CG_Chat_f( void ) {
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 		CG_RemoveChatEscapeChar( text );
+
+		// from duo
+		// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
+		char tempChatStr[MAX_SAY_TEXT] = { 0 }, *r = text, *w = tempChatStr;
+		while (*r) {
+			if (*r == -80 && *(r + 1) == '/' && *(r + 2) == '.') {
+				*w = '%';
+				r += 3;
+			}
+			else if (*r == '\'' && *(r + 1) == '\'') {
+				*w = '"';
+				r += 2;
+			}
+			else {
+				*w = *r;
+				r++;
+			}
+			w++;
+		}
+		Q_strncpyz(text, tempChatStr, sizeof(text));
+
 		CG_ChatBox_AddString( text );
 		trap->Print( "*%s\n", text );
 		Q_CleanString( text );
