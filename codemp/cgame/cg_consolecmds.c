@@ -903,7 +903,7 @@ static void CG_Lowjump_f(void)
 	}
 
 	trap->SendConsoleCommand("+moveup\n");
-	Com_sprintf(cg.doVstr, sizeof(cg.doVstr), "-moveup\n");
+	Q_strncpyz(cg.doVstr, "-moveup\n", sizeof(cg.doVstr));
 	cg.doVstrTime = cg.time;
 }
 
@@ -914,8 +914,8 @@ static void CG_NorollDown_f(void)
 		return;
 	}
 
-	trap->SendConsoleCommand("+speed\n");
-	Com_sprintf(cg.doVstr, sizeof(cg.doVstr), "-moveup;+movedown;-speed\n");
+	trap->SendConsoleCommand("+speed;-moveup\n");
+	Q_strncpyz(cg.doVstr, "+movedown;-speed\n", sizeof(cg.doVstr));
 	cg.doVstrTime = cg.time;
 }
 
@@ -926,7 +926,7 @@ static void CG_NorollUp_f(void)
 		return;
 	}
 
-	Com_sprintf(cg.doVstr, sizeof(cg.doVstr), "-movedown;-speed\n"); //?
+	Q_strncpyz(cg.doVstr, "-movedown;-speed\n", sizeof(cg.doVstr)); //?
 	cg.doVstrTime = cg.time;
 }
 
@@ -1066,7 +1066,8 @@ static qboolean japroPluginDisables[] = {
 	qtrue,//{"Disable centerprint checkpoints"},//24
 	qtrue,//{"Show chatbox checkpoints"},//25
 	qtrue,//{"Disable damage numbers"},//26
-	qtrue,//{"Centermuzzle"}//27
+	qtrue,//{"Centermuzzle"},//27
+	qtrue,//{"Show checkpoints in console only"}//28
 };
 
 static qboolean japlusPluginDisables[] = {
@@ -1099,7 +1100,8 @@ static qboolean japlusPluginDisables[] = {
 	qfalse,//{"Disable centerprint checkpoints"},//24
 	qfalse,//{"Show chatbox checkpoints"},//25
 	qfalse,//{"Disable damage numbers"},//26
-	qfalse,//{"Centermuzzle"}//27
+	qfalse,//{"Centermuzzle"},//27
+	qfalse,//{"Show checkpoints in console only"}//28
 };
 
 static bitInfo_T pluginDisables[] = { // MAX_WEAPON_TWEAKS tweaks (24)
@@ -1132,7 +1134,8 @@ static bitInfo_T pluginDisables[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Disable centerprint checkpoints"},//24
 	{"Show chatbox checkpoints"},//25
 	{"Disable damage numbers"},//26
-	{"Centermuzzle"}//27
+	{"Centermuzzle"},//27
+	{"Show checkpoints in console only"}//28
 };
 static const int MAX_PLUGINDISABLES = ARRAY_LEN( pluginDisables );
 
