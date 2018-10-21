@@ -100,7 +100,7 @@ cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cl_idrive; //JAPRO ENGINE
 
-cvar_t *protocolswitch;
+cvar_t	*protocolswitch;
 
 cvar_t	*cl_autolodscale;
 
@@ -2326,13 +2326,6 @@ static void CL_UpdateWidescreen(void) {
 		cls.widthRatioCoef = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
 	else
 		cls.widthRatioCoef = 1.0f;
-
-	//setting console shader here
-	cls.consoleShader = 0;
-	if (cls.widthRatioCoef >= 0.74f && cls.widthRatioCoef <= 0.76f)
-		cls.consoleShader = re->RegisterShader("console_16_9");
-	if (!cls.consoleShader)
-		cls.consoleShader = re->RegisterShader("console");
 }
 
 
@@ -2549,6 +2542,7 @@ void CL_InitRenderer( void ) {
 	cls.charSetShader = re->RegisterShaderNoMip("gfx/2d/charsgrid_med");
 
 	cls.whiteShader = re->RegisterShader( "white" );
+	cls.consoleShader = re->RegisterShader("console");
 
 	CL_UpdateWidescreen();
 }
@@ -3335,10 +3329,10 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("stoprecord", CL_StopRecord_f, "Stop recording a demo" );
 	Cmd_AddCommand ("configstrings", CL_Configstrings_f, "Prints the configstrings list" );
 	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f, "Prints the userinfo variables" );
+	Cmd_AddCommand ("fs_restart", CL_Fs_Restart_f, "Restart the filesystem" );
 	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f, "Restart sound" );
 	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f, "Restart the renderer - or change the resolution" );
 	Cmd_AddCommand ("loadmod", CL_Mod_Restart_f, "Restart the renderer (with specified mod folder) - or change the resolution");
-	Cmd_AddCommand ("fs_restart", CL_Fs_Restart_f, "Restart the filesystem" );
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f, "Disconnect from current server" );
 	Cmd_AddCommand ("cinematic", CL_PlayCinematic_f, "Play a cinematic video" );
 	Cmd_AddCommand ("connect", CL_Connect_f, "Connect to a server" );
@@ -3412,9 +3406,9 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
 	Cmd_RemoveCommand ("clientinfo");
+	Cmd_RemoveCommand ("fs_restart");
 	Cmd_RemoveCommand ("snd_restart");
 	Cmd_RemoveCommand ("vid_restart");
-	Cmd_RemoveCommand ("fs_restart");
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("record");
 	Cmd_RemoveCommand ("demo");
@@ -3426,7 +3420,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("reconnect");
 	Cmd_RemoveCommand ("localservers");
 	Cmd_RemoveCommand ("globalservers");
-	Cmd_RemoveCommand( "addFavorite" );
+	Cmd_RemoveCommand ( "addFavorite" );
 	Cmd_RemoveCommand ("rcon");
 	Cmd_RemoveCommand ("ping");
 	Cmd_RemoveCommand ("serverstatus");

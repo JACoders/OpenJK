@@ -38,6 +38,7 @@ cvar_t		*con_notifytime;
 cvar_t		*con_notifylines;
 cvar_t		*con_opacity; // background alpha multiplier
 cvar_t		*con_scale;
+cvar_t		*con_ratioFix; //for custom console backgrounds
 cvar_t		*con_autoclear;
 cvar_t		*con_notifywords;
 cvar_t		*con_notifyconnect;
@@ -536,6 +537,7 @@ void Con_Init (void) {
 	Cvar_CheckRange(con_scale, 0.2, 10.0f, qfalse);
 
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
+	con_ratioFix = Cvar_Get("con_ratioFix", "1", CVAR_ARCHIVE_ND, "Correct console background height, should probably disable for custom console backgrounds.");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 	con_notifywords = Cvar_Get("con_notifywords", "0", CVAR_ARCHIVE, "Notifies you when defined words are mentioned");
 	con_notifyconnect = Cvar_Get("con_notifyconnect", "0", CVAR_ARCHIVE, "Notifies you when someone connects to the server");
@@ -932,7 +934,12 @@ void Con_DrawSolidConsole( float frac ) {
 		{
 			re->SetColor(NULL);
 		}
-		SCR_DrawPic( 0, 0, SCREEN_WIDTH, (float) y, cls.consoleShader );
+
+		//re->DrawStretchPic(0, 0, SCREEN_WIDTH, (float)y, 0, 0 + (cls.widthRatioCoef / 4), 1, 1 - (cls.widthRatioCoef / 4), cls.consoleShader);
+		if (con_ratioFix->integer && frac <= 0.5f && cls.widthRatioCoef < 1.0f) // && cls.widthRatioCoef < 1.0f)
+			re->DrawStretchPic(0, 0, SCREEN_WIDTH, (float)y, 0, 1 - cls.widthRatioCoef, 1, 0 + cls.widthRatioCoef, cls.consoleShader);
+		else
+			re->DrawStretchPic(0, 0, SCREEN_WIDTH, (float)y, 0, 0, 1, 1, cls.consoleShader);
 	}
 
 	// draw the bottom bar and version number

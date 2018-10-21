@@ -1,22 +1,3 @@
-console_16_9
-{
-	nopicmip
-	nomipmaps
-    {
-        map gfx/interface/stars
-        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
-        alphaGen vertex
-        tcMod scroll 0.01 0.02
-        tcMod scale 2 1
-    }
-    {
-        map gfx/interface/console_jediacademy_16_9
-        blendFunc GL_ONE GL_ONE
-        glow
-        rgbGen wave sin 0.2 0.1 0 0.2
-    }
-}
-
 bloodExplosion		// spurt of blood at point of impact
 {
 	cull disable
