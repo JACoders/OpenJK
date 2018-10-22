@@ -2209,15 +2209,10 @@ void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeti
 	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
 		return; //debug testing
 
-	if (!client->pers.userName || !client->pers.userName[0] || !client->pers.unlocks) {
-		//client->pers.savedCosmetics = cosmetics; //Problem - if we remove cosmetic before they login, do we save it and add it back once they login?
-		//Actually we can just do a clientuserinfochanged on login if they have pers.unlocks ?
-		cosmetics = 0; 	//Remove all cosmetics
-	}
-
 	if (cosmetics) {//Optimized
 		int i;
 
+		//start at i=5 ? this means the first 5 cosmetics are free for everyone.
 		for (i = 0; i < MAX_COSMETICS; i++) { //For each bit, check if its allowed, if not, remove.
 			if ((cosmetics & (1 << i))) {
 				if (!(client->pers.unlocks & 1 << i)) { //Check to see if its unlocked, if not disable.
