@@ -1697,8 +1697,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	char	string[1024] = {0}, info[1024] = {0}, coursename[40], timeStr[32] = {0}, styleString[32] = {0};
 	qboolean seasonPB = qfalse, globalPB = qfalse, WR = qfalse;
 	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
+	char * sql;
+	sqlite3_stmt * stmt;
 	int s;
 	int season_oldBest, season_oldRank, season_newRank = -1, global_oldBest, global_oldRank, global_newRank = -1; //Changed newrank to be -1 ??
 	float addedScore;
@@ -1707,11 +1707,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	cl = &level.clients[clientNum];
 
-	time( &rawtime );
-	localtime( &rawtime );
+	time(&rawtime);
+	localtime(&rawtime);
 
 	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(coursename, Info_ValueForKey( info, "mapname" ), sizeof(coursename));
+	Q_strncpyz(coursename, Info_ValueForKey(info, "mapname"), sizeof(coursename));
 
 	if (message) {// [0]?
 		Q_strlwr(message);
@@ -1731,20 +1731,20 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username, coursename, duration_ms, topspeed, average, style, rawtime);
 
 	if (level.raceLog)
-		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file races.log
+		trap->FS_Write(string, strlen(string), level.raceLog); //Always write to text file races.log
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
 	sql = "SELECT MIN(duration_ms), season_rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? "
 		"UNION ALL SELECT MIN(duration_ms), rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_text (stmt, 2, coursename, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 3, style));
-	CALL_SQLITE (bind_int (stmt, 4, season));
-	CALL_SQLITE (bind_text (stmt, 5, username, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_text (stmt, 6, coursename, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 7, style));
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_text(stmt, 2, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_int(stmt, 3, style));
+	CALL_SQLITE(bind_int(stmt, 4, season));
+	CALL_SQLITE(bind_text(stmt, 5, username, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_text(stmt, 6, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_int(stmt, 7, style));
 
 	s = sqlite3_step(stmt);
 
@@ -1789,7 +1789,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	else if (s != SQLITE_DONE) {
 		G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 2)", s);
 	}
-	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE(finalize(stmt));
 
 
 	if (seasonPB) {
@@ -1798,12 +1798,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 		sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? "
 			"UNION ALL SELECT COUNT(DISTINCT username) FROM LocalRun WHERE coursename = ? AND style = ?"; //entries ?
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
-		CALL_SQLITE (bind_int (stmt, 3, season));
-		CALL_SQLITE (bind_text (stmt, 4, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 5, style));
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 2, style));
+		CALL_SQLITE(bind_int(stmt, 3, season));
+		CALL_SQLITE(bind_text(stmt, 4, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 5, style));
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
 			season_oldCount = sqlite3_column_int(stmt, 0);
@@ -1820,14 +1820,14 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 4)", s);
 		}
 
-		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE(finalize(stmt));
 
 		//Get season rank
 		sql = "SELECT duration_ms FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? ORDER BY duration_ms ASC, end_time ASC"; //assume just one per person to speed this up..
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
-		CALL_SQLITE (bind_int (stmt, 3, season));
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 2, style));
+		CALL_SQLITE(bind_int(stmt, 3, season));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
@@ -1845,15 +1845,15 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				break;
 			}
 		}
-		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE(finalize(stmt));
 
 		i = 1; //oh no no
 
 		//Get global rank, could union this with previous query maybe
 		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC, end_time ASC";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 2, style));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
@@ -1871,7 +1871,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				break;
 			}
 		}
-		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE(finalize(stmt));
 
 		if (season_newRank == 0) { //We wern't faster than any times, so set our rank to count (+ 1) ? -- loda checkme
 			season_newRank = season_oldCount + 1;
@@ -1912,11 +1912,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		G_UpdateOurLocalRun(db, season_oldRank, season_newRank, global_oldRank, global_newRank, style, username, coursename, duration_ms, topspeed, average, rawtime, season_newCount, global_newCount);//Update our race list
 
 		if (cl->pers.recordingDemo && globalPB) {
-			char mapCourse[MAX_QPATH] = {0};
+			char mapCourse[MAX_QPATH] = { 0 };
 
 			Q_strncpyz(mapCourse, coursename, sizeof(mapCourse));
 			StripWhitespace(mapCourse);
-			Q_strstrip( mapCourse, "\n\r;:.?*<>|\\/\"", NULL );
+			Q_strstrip(mapCourse, "\n\r;:.?*<>|\\/\"", NULL);
 
 			if (cl) {
 				cl->pers.stopRecordingTime = level.time + 2000;
@@ -1947,11 +1947,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	cl->pers.stats.racetime += (duration_ms*0.001f) - cl->afkDuration*0.001f;
 	cl->afkDuration = 0;
 	if (cl->pers.stats.racetime > 120.0f) { //Avoid spamming the db
-		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime+0.5f));
+		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime + 0.5f));
 		cl->pers.stats.racetime = 0.0f;
 	}
 	
-	CALL_SQLITE (close(db));
+	CALL_SQLITE(close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
 	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank, addedScore, awesomenoise);
