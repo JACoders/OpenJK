@@ -1627,16 +1627,17 @@ void G_UpdateUnlocks(char *username, char *coursename, int style, int duration_m
 	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
 	unsigned int unlock = 0;
 	unsigned int unlocks = 0;
+	int i;
 
 	if (client)
 		unlocks = client->pers.unlocks;  	//Unlocks is existing unlocks from client. no need to update if they already have it.
 
-	//This should be loaded from a .cfg file or something not hardcoded
-	if (!(unlocks & 1 << 0) && style == MV_JKA && !Q_stricmp(coursename, "racearena_pro (a-mountain)")) { //And they dont already have this?
-		unlock = 1; //ok we need like a big list of these
-	}
-	else if (!(unlocks & 1 << 1) && style == MV_JKA && duration_ms < 9600 && !Q_stricmp(coursename, "racearena_pro (dash1)")) {
-		unlock = 2;
+	for (i=0; i<MAX_COSMETIC_UNLOCKS; i++) {
+		if (!(unlocks & 1 << cosmeticUnlocks[i].bitvalue) && cosmeticUnlocks[i].style == style && !Q_stricmp(coursename, cosmeticUnlocks[i].mapname) && (!cosmeticUnlocks[i].duration || (duration_ms < cosmeticUnlocks[i].duration))) {
+			unlock = (1 << cosmeticUnlocks[i].bitvalue);
+			//Com_Printf("Unlock found %i (%i %s)\n", cosmeticUnlocks[i].bitvalue, style, coursename);
+			break;
+		}
 	}
 
 	if (unlock) {
@@ -1657,7 +1658,7 @@ void G_UpdateUnlocks(char *username, char *coursename, int style, int duration_m
 		CALL_SQLITE(finalize(stmt));
 
 		if (client)//Also update in realtime if possible.
-			client->pers.unlocks |= unlocks;
+			client->pers.unlocks |= unlock;
 	}
 }
 
@@ -6918,6 +6919,50 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	}
 
 	Com_Printf ("Loaded warp locations from %s\n", filename);
+}
+
+void G_SpawnCosmeticUnlocks(void) {
+	fileHandle_t f;	
+	int		fLen = 0, MAX_FILESIZE = 4096, args = 1, row = 0;  //use max num warps idk
+	char	filename[MAX_QPATH+4] = {0}, buf[4096] = {0};//eh
+	char*	pch;
+
+	Q_strncpyz(filename, "cosmetics.cfg", sizeof(filename));
+
+	fLen = trap->FS_Open(filename, &f, FS_READ);
+
+	if (!f) {
+		//Com_Printf ("Couldn't load cosmetic unlocks from %s\n", filename);
+		return;
+	}
+	if (fLen >= MAX_FILESIZE) {
+		trap->FS_Close(f);
+		Com_Printf ("Couldn't load cosmetic unlocks from %s, file is too large\n", filename);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+
+	pch = strtok (buf,";\n\t");  //loda fixme why is this broken
+	while (pch != NULL && row < MAX_COSMETIC_UNLOCKS)
+	{
+		if ((args % 4) == 1)
+			cosmeticUnlocks[row].bitvalue = atoi(pch);
+		else if ((args % 4) == 2)
+			Q_strncpyz(cosmeticUnlocks[row].mapname, pch, sizeof(cosmeticUnlocks[row].mapname));
+		else if ((args % 4) == 3)
+			cosmeticUnlocks[row].style = atoi(pch);
+		else if ((args % 4) == 0) {
+			cosmeticUnlocks[row].duration = atoi(pch);
+			//trap->Print("Cosmetic unlock added: %i, %s, %i, %i\n", cosmeticUnlocks[row].bitvalue, cosmeticUnlocks[row].mapname, cosmeticUnlocks[row].style, cosmeticUnlocks[row].duration);
+			row++;
+		}
+    	pch = strtok (NULL, ";\n\t");
+		args++;
+	}
+	Com_Printf("Loaded cosmetic unlocks from %s\n", filename);
 }
 
 #if 0

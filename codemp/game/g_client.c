@@ -2203,7 +2203,6 @@ char *G_ValidateUserinfo( const char *userinfo )
 }
 
 void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeticStringSize) {
-	int MAX_COSMETICS = 32;
 	int cosmetics = atoi(cosmeticString);
 
 	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
@@ -2212,11 +2211,12 @@ void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeti
 	if (cosmetics) {//Optimized
 		int i;
 
-		//start at i=5 ? this means the first 5 cosmetics are free for everyone.
-		for (i = 0; i < MAX_COSMETICS; i++) { //For each bit, check if its allowed, if not, remove.
-			if ((cosmetics & (1 << i))) {
-				if (!(client->pers.unlocks & 1 << i)) { //Check to see if its unlocked, if not disable.
-					cosmetics &= ~i;
+		for (i=0; i<MAX_COSMETIC_UNLOCKS; i++) { //For each bit, check if its allowed, if not, remove.
+			if (!cosmeticUnlocks[i].bitvalue)
+				break;
+			if ((cosmetics & (1 << cosmeticUnlocks[i].bitvalue))) { //Use .bitvalue instead of i, since some of these are "public/free" cosmetics
+				if (!(client->pers.unlocks & 1 << cosmeticUnlocks[i].bitvalue)) { //Check to see if its unlocked, if not disable.
+					cosmetics &= ~cosmeticUnlocks[i].bitvalue;
 				}
 			}
 		}
