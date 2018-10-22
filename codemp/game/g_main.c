@@ -202,6 +202,7 @@ G_InitGame
 */
 void InitGameAccountStuff(void);
 void G_SpawnWarpLocationsFromCfg(void);
+void G_SpawnCosmeticUnlocks(void);
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
@@ -408,6 +409,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	//setup the warp functionality, and database stuff - japro
 	G_SpawnWarpLocationsFromCfg();
 	G_SpawnHoleFixes();
+	G_SpawnCosmeticUnlocks();
 	InitGameAccountStuff();
 	SetGametypeFuncSolids();
 

@@ -1293,7 +1293,7 @@ void SV_RebuildRaceRanks_f(void) {
 			G_GetRaceScore(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2),
 				sqlite3_column_int(stmt, 3), sqlite3_column_int(stmt, 4), sqlite3_column_int(stmt, 5), sqlite3_column_int(stmt, 6), rawtime, db);
 
-			//G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), 0, db);
+			//G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), NULL, db);
 		}
 		else if (s == SQLITE_DONE)
 			break;
@@ -1622,13 +1622,22 @@ void G_UpdatePlaytime(sqlite3 *db, char *username, int seconds ) {
 	}
 }
 
-void G_UpdateUnlocks(char *username, char *coursename, int style, unsigned int unlocks, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
+void G_UpdateUnlocks(char *username, char *coursename, int style, int duration_ms, gclient_t *client, sqlite3 *db) { //Combine with update playtime i think, to reduce queries.  Update playtime is done after course completion..?
 	//If its a cumulative award or something, we can check if current race is any of the conditions, then sql check inside to see if all the other conditions are met
 	//Or, just make it cumulative when we check ValidateCosmetics, i guess thats better?
 	unsigned int unlock = 0;
+	unsigned int unlocks = 0;
+	int i;
 
-	if (style == 1 && !(unlocks & 1 << 1) && !Q_stricmp(coursename, "racearena_pro (a-mountain)")) { //And they dont already have this?
-		unlock = 1; //ok we need like a big list of these
+	if (client)
+		unlocks = client->pers.unlocks;  	//Unlocks is existing unlocks from client. no need to update if they already have it.
+
+	for (i=0; i<MAX_COSMETIC_UNLOCKS; i++) {
+		if (!(unlocks & 1 << cosmeticUnlocks[i].bitvalue) && cosmeticUnlocks[i].style == style && !Q_stricmp(coursename, cosmeticUnlocks[i].mapname) && (!cosmeticUnlocks[i].duration || (duration_ms < cosmeticUnlocks[i].duration))) {
+			unlock = (1 << cosmeticUnlocks[i].bitvalue);
+			//Com_Printf("Unlock found %i (%i %s)\n", cosmeticUnlocks[i].bitvalue, style, coursename);
+			break;
+		}
 	}
 
 	if (unlock) {
@@ -1647,6 +1656,9 @@ void G_UpdateUnlocks(char *username, char *coursename, int style, unsigned int u
 		}
 
 		CALL_SQLITE(finalize(stmt));
+
+		if (client)//Also update in realtime if possible.
+			client->pers.unlocks |= unlock;
 	}
 }
 
@@ -1660,12 +1672,12 @@ void SV_RebuildUnlocks_f(void) {
 
 	//Set all unlocks to 0 ?
 
-	sql = "SELECT username, coursename, style, season FROM LocalRun"; //Only get username for cumulative checks if needed
+	sql = "SELECT username, coursename, style, duration_ms FROM LocalRun"; //Only get username for cumulative checks if needed
 	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 	while (1) {
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
-			G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 0), (char*)sqlite3_column_text(stmt, 1), sqlite3_column_int(stmt, 2), 0, db);
+			G_UpdateUnlocks((char*)sqlite3_column_text(stmt, 0), (char*)sqlite3_column_text(stmt, 1), sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), NULL, db);
 		}
 		else if (s == SQLITE_DONE)
 			break;
@@ -1686,8 +1698,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	char	string[1024] = {0}, info[1024] = {0}, coursename[40], timeStr[32] = {0}, styleString[32] = {0};
 	qboolean seasonPB = qfalse, globalPB = qfalse, WR = qfalse;
 	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
+	char * sql;
+	sqlite3_stmt * stmt;
 	int s;
 	int season_oldBest, season_oldRank, season_newRank = -1, global_oldBest, global_oldRank, global_newRank = -1; //Changed newrank to be -1 ??
 	float addedScore;
@@ -1696,11 +1708,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	cl = &level.clients[clientNum];
 
-	time( &rawtime );
-	localtime( &rawtime );
+	time(&rawtime);
+	localtime(&rawtime);
 
 	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(coursename, Info_ValueForKey( info, "mapname" ), sizeof(coursename));
+	Q_strncpyz(coursename, Info_ValueForKey(info, "mapname"), sizeof(coursename));
 
 	if (message) {// [0]?
 		Q_strlwr(message);
@@ -1720,20 +1732,20 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username, coursename, duration_ms, topspeed, average, style, rawtime);
 
 	if (level.raceLog)
-		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file races.log
+		trap->FS_Write(string, strlen(string), level.raceLog); //Always write to text file races.log
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
 	sql = "SELECT MIN(duration_ms), season_rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ? AND season = ? "
 		"UNION ALL SELECT MIN(duration_ms), rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_text (stmt, 2, coursename, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 3, style));
-	CALL_SQLITE (bind_int (stmt, 4, season));
-	CALL_SQLITE (bind_text (stmt, 5, username, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_text (stmt, 6, coursename, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 7, style));
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_text(stmt, 2, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_int(stmt, 3, style));
+	CALL_SQLITE(bind_int(stmt, 4, season));
+	CALL_SQLITE(bind_text(stmt, 5, username, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_text(stmt, 6, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE(bind_int(stmt, 7, style));
 
 	s = sqlite3_step(stmt);
 
@@ -1778,7 +1790,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	else if (s != SQLITE_DONE) {
 		G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 2)", s);
 	}
-	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE(finalize(stmt));
 
 
 	if (seasonPB) {
@@ -1787,12 +1799,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 		sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? "
 			"UNION ALL SELECT COUNT(DISTINCT username) FROM LocalRun WHERE coursename = ? AND style = ?"; //entries ?
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
-		CALL_SQLITE (bind_int (stmt, 3, season));
-		CALL_SQLITE (bind_text (stmt, 4, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 5, style));
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 2, style));
+		CALL_SQLITE(bind_int(stmt, 3, season));
+		CALL_SQLITE(bind_text(stmt, 4, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 5, style));
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
 			season_oldCount = sqlite3_column_int(stmt, 0);
@@ -1809,14 +1821,14 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			G_ErrorPrint("ERROR: SQL Select Failed (G_AddRaceTime 4)", s);
 		}
 
-		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE(finalize(stmt));
 
 		//Get season rank
 		sql = "SELECT duration_ms FROM LocalRun WHERE coursename = ? AND style = ? AND season = ? ORDER BY duration_ms ASC, end_time ASC"; //assume just one per person to speed this up..
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
-		CALL_SQLITE (bind_int (stmt, 3, season));
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 2, style));
+		CALL_SQLITE(bind_int(stmt, 3, season));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
@@ -1834,15 +1846,15 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				break;
 			}
 		}
-		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE(finalize(stmt));
 
 		i = 1; //oh no no
 
 		//Get global rank, could union this with previous query maybe
 		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC, end_time ASC";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
+		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+		CALL_SQLITE(bind_text(stmt, 1, coursename, -1, SQLITE_STATIC));
+		CALL_SQLITE(bind_int(stmt, 2, style));
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
@@ -1860,7 +1872,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				break;
 			}
 		}
-		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE(finalize(stmt));
 
 		if (season_newRank == 0) { //We wern't faster than any times, so set our rank to count (+ 1) ? -- loda checkme
 			season_newRank = season_oldCount + 1;
@@ -1901,11 +1913,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		G_UpdateOurLocalRun(db, season_oldRank, season_newRank, global_oldRank, global_newRank, style, username, coursename, duration_ms, topspeed, average, rawtime, season_newCount, global_newCount);//Update our race list
 
 		if (cl->pers.recordingDemo && globalPB) {
-			char mapCourse[MAX_QPATH] = {0};
+			char mapCourse[MAX_QPATH] = { 0 };
 
 			Q_strncpyz(mapCourse, coursename, sizeof(mapCourse));
 			StripWhitespace(mapCourse);
-			Q_strstrip( mapCourse, "\n\r;:.?*<>|\\/\"", NULL );
+			Q_strstrip(mapCourse, "\n\r;:.?*<>|\\/\"", NULL);
 
 			if (cl) {
 				cl->pers.stopRecordingTime = level.time + 2000;
@@ -1928,7 +1940,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		}
 
 		if (globalPB) {
-			G_UpdateUnlocks(username, coursename, style, cl->pers.unlocks, db);
+			G_UpdateUnlocks(username, coursename, style, duration_ms, cl, db);
 		}
 	}
 	//else.. set ranks to 0 for print, nothing to update
@@ -1936,11 +1948,11 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	cl->pers.stats.racetime += (duration_ms*0.001f) - cl->afkDuration*0.001f;
 	cl->afkDuration = 0;
 	if (cl->pers.stats.racetime > 120.0f) { //Avoid spamming the db
-		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime+0.5f));
+		G_UpdatePlaytime(db, username, (int)(cl->pers.stats.racetime + 0.5f));
 		cl->pers.stats.racetime = 0.0f;
 	}
 	
-	CALL_SQLITE (close(db));
+	CALL_SQLITE(close(db));
 
 	TimeToString((int)(duration_ms), timeStr, sizeof(timeStr), qfalse);
 	PrintRaceTime(username, cl->pers.netname, message, styleString, topspeed, average, timeStr, clientNum, season_newRank, seasonPB, global_newRank, qtrue, qtrue, season_oldRank, global_oldRank, addedScore, awesomenoise);
@@ -6907,6 +6919,50 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	}
 
 	Com_Printf ("Loaded warp locations from %s\n", filename);
+}
+
+void G_SpawnCosmeticUnlocks(void) {
+	fileHandle_t f;	
+	int		fLen = 0, MAX_FILESIZE = 4096, args = 1, row = 0;  //use max num warps idk
+	char	filename[MAX_QPATH+4] = {0}, buf[4096] = {0};//eh
+	char*	pch;
+
+	Q_strncpyz(filename, "cosmetics.cfg", sizeof(filename));
+
+	fLen = trap->FS_Open(filename, &f, FS_READ);
+
+	if (!f) {
+		//Com_Printf ("Couldn't load cosmetic unlocks from %s\n", filename);
+		return;
+	}
+	if (fLen >= MAX_FILESIZE) {
+		trap->FS_Close(f);
+		Com_Printf ("Couldn't load cosmetic unlocks from %s, file is too large\n", filename);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+
+	pch = strtok (buf,";\n\t");  //loda fixme why is this broken
+	while (pch != NULL && row < MAX_COSMETIC_UNLOCKS)
+	{
+		if ((args % 4) == 1)
+			cosmeticUnlocks[row].bitvalue = atoi(pch);
+		else if ((args % 4) == 2)
+			Q_strncpyz(cosmeticUnlocks[row].mapname, pch, sizeof(cosmeticUnlocks[row].mapname));
+		else if ((args % 4) == 3)
+			cosmeticUnlocks[row].style = atoi(pch);
+		else if ((args % 4) == 0) {
+			cosmeticUnlocks[row].duration = atoi(pch);
+			//trap->Print("Cosmetic unlock added: %i, %s, %i, %i\n", cosmeticUnlocks[row].bitvalue, cosmeticUnlocks[row].mapname, cosmeticUnlocks[row].style, cosmeticUnlocks[row].duration);
+			row++;
+		}
+    	pch = strtok (NULL, ";\n\t");
+		args++;
+	}
+	Com_Printf("Loaded cosmetic unlocks from %s\n", filename);
 }
 
 #if 0

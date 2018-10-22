@@ -1398,10 +1398,19 @@ typedef struct Warp_s {
 	int				z;
 	short			yaw;
 } Warp_t;
-
 Warp_t	warpList[64];
 //japro
 
+//japro
+#define MAX_COSMETIC_UNLOCKS 32
+typedef struct CosmeticUnlocks_s {
+	unsigned short	bitvalue;
+	char			mapname[40];
+	short			style;
+	unsigned int	duration;
+} CosmeticUnlocks_t;
+CosmeticUnlocks_t cosmeticUnlocks[MAX_COSMETIC_UNLOCKS];
+//japro
 
 //japro
 typedef struct VoteFloodProtect_s {

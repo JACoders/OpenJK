@@ -2416,7 +2416,7 @@ void ResetItem( gentity_t *ent ) { //PushPullItems
 Touch_Item
 ===============
 */
-void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
+void Touch_Item(gentity_t *ent, gentity_t *other, trace_t *trace) {
 	int			respawn;
 	qboolean	predict;
 
@@ -2475,12 +2475,12 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	}
 
 	// the same pickup rules are used for client side and server side
-	if ( !BG_CanItemBeGrabbed( level.gametype, &ent->s, &other->client->ps ) ) {
+	if (!BG_CanItemBeGrabbed(level.gametype, &ent->s, &other->client->ps)) {
 		return;
 	}
 
 
-	if ( other->client->NPC_class == CLASS_ATST ||
+	if (other->client->NPC_class == CLASS_ATST ||
 		other->client->NPC_class == CLASS_GONK ||
 		other->client->NPC_class == CLASS_MARK1 ||
 		other->client->NPC_class == CLASS_MARK2 ||
@@ -2495,23 +2495,23 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		other->client->NPC_class == CLASS_WAMPA ||
 		//other->client->NPC_class == CLASS_JAWA || //FIXME: in some cases it's okay?
 		other->client->NPC_class == CLASS_UGNAUGHT || //FIXME: in some cases it's okay?
-		other->client->NPC_class == CLASS_SENTRY )
+		other->client->NPC_class == CLASS_SENTRY)
 	{//FIXME: some flag would be better
 		//droids can't pick up items/weapons!
 		return;
 	}
 
-	if ( CheckItemCanBePickedUpByNPC( ent, other ) )
+	if (CheckItemCanBePickedUpByNPC(ent, other))
 	{
-		if ( other->NPC && other->NPC->goalEntity && other->NPC->goalEntity->enemy == ent )
+		if (other->NPC && other->NPC->goalEntity && other->NPC->goalEntity->enemy == ent)
 		{//they were running to pick me up, they did, so clear goal
 			other->NPC->goalEntity = NULL;
 			other->NPC->squadState = SQUAD_STAND_AND_SHOOT;
 		}
 	}
-	else if ( !(ent->spawnflags &  ITMSF_ALLOWNPC) )
+	else if (!(ent->spawnflags &  ITMSF_ALLOWNPC))
 	{// NPCs cannot pick it up
-		if ( other->s.eType == ET_NPC )
+		if (other->s.eType == ET_NPC)
 		{// Not the player?
 			qboolean dontGo = qfalse;
 			if (ent->item->giType == IT_AMMO &&
@@ -2520,7 +2520,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 				other->m_pVehicle &&
 				other->m_pVehicle->m_pVehicleInfo->type == VH_WALKER)
 			{ //yeah, uh, atst gets healed by these things
-                if (other->maxHealth &&
+				if (other->maxHealth &&
 					other->health < other->maxHealth)
 				{
 					other->health += 80;
