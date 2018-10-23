@@ -1662,11 +1662,61 @@ void G_UpdateUnlocks(char *username, char *coursename, int style, int duration_m
 	}
 }
 
+void G_SpawnCosmeticUnlocks(void) {
+	fileHandle_t f;
+	int		fLen = 0, MAX_FILESIZE = 4096, args = 1, row = 0;  //use max num warps idk
+	char	filename[MAX_QPATH+4] = {0}, buf[4096] = {0};//eh
+	char*	pch;
+
+	Q_strncpyz(filename, "cosmetics.cfg", sizeof(filename));
+
+	fLen = trap->FS_Open(filename, &f, FS_READ);
+
+	if (!f) {
+		//Com_Printf ("Couldn't load cosmetic unlocks from %s\n", filename);
+		return;
+	}
+	if (fLen >= MAX_FILESIZE) {
+		trap->FS_Close(f);
+		Com_Printf ("Couldn't load cosmetic unlocks from %s, file is too large\n", filename);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+
+	pch = strtok (buf,";\n\t");  //loda fixme why is this broken
+	while (pch != NULL && row < MAX_COSMETIC_UNLOCKS)
+	{
+		if ((args % 4) == 1) {
+			cosmeticUnlocks[row].bitvalue = atoi(pch);
+			cosmeticUnlocks[row].active = qtrue;
+		}
+		else if ((args % 4) == 2)
+			Q_strncpyz(cosmeticUnlocks[row].mapname, pch, sizeof(cosmeticUnlocks[row].mapname));
+		else if ((args % 4) == 3)
+			cosmeticUnlocks[row].style = atoi(pch);
+		else if ((args % 4) == 0) {
+			cosmeticUnlocks[row].duration = atoi(pch);
+			//trap->Print("Cosmetic unlock added: %i, %s, %i, %i\n", cosmeticUnlocks[row].bitvalue, cosmeticUnlocks[row].mapname, cosmeticUnlocks[row].style, cosmeticUnlocks[row].duration);
+			row++;
+		}
+		pch = strtok (NULL, ";\n\t");
+		args++;
+	}
+	Com_Printf("Loaded cosmetic unlocks from %s\n", filename);
+}
+
 void SV_RebuildUnlocks_f(void) {
 	sqlite3 * db;
 	char * sql;
 	sqlite3_stmt * stmt;
 	int s;
+
+	//Clear existing
+	memset(cosmeticUnlocks, 0, sizeof(cosmeticUnlocks));
+	G_SpawnCosmeticUnlocks();//Re Spawn from CFG
 
 	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
@@ -6860,52 +6910,6 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	}
 
 	Com_Printf ("Loaded warp locations from %s\n", filename);
-}
-
-void G_SpawnCosmeticUnlocks(void) {
-	fileHandle_t f;	
-	int		fLen = 0, MAX_FILESIZE = 4096, args = 1, row = 0;  //use max num warps idk
-	char	filename[MAX_QPATH+4] = {0}, buf[4096] = {0};//eh
-	char*	pch;
-
-	Q_strncpyz(filename, "cosmetics.cfg", sizeof(filename));
-
-	fLen = trap->FS_Open(filename, &f, FS_READ);
-
-	if (!f) {
-		//Com_Printf ("Couldn't load cosmetic unlocks from %s\n", filename);
-		return;
-	}
-	if (fLen >= MAX_FILESIZE) {
-		trap->FS_Close(f);
-		Com_Printf ("Couldn't load cosmetic unlocks from %s, file is too large\n", filename);
-		return;
-	}
-
-	trap->FS_Read(buf, fLen, f);
-	buf[fLen] = 0;
-	trap->FS_Close(f);
-
-	pch = strtok (buf,";\n\t");  //loda fixme why is this broken
-	while (pch != NULL && row < MAX_COSMETIC_UNLOCKS)
-	{
-		if ((args % 4) == 1) {
-			cosmeticUnlocks[row].bitvalue = atoi(pch);
-			cosmeticUnlocks[row].active = qtrue;
-		}
-		else if ((args % 4) == 2)
-			Q_strncpyz(cosmeticUnlocks[row].mapname, pch, sizeof(cosmeticUnlocks[row].mapname));
-		else if ((args % 4) == 3)
-			cosmeticUnlocks[row].style = atoi(pch);
-		else if ((args % 4) == 0) {
-			cosmeticUnlocks[row].duration = atoi(pch);
-			//trap->Print("Cosmetic unlock added: %i, %s, %i, %i\n", cosmeticUnlocks[row].bitvalue, cosmeticUnlocks[row].mapname, cosmeticUnlocks[row].style, cosmeticUnlocks[row].duration);
-			row++;
-		}
-    	pch = strtok (NULL, ";\n\t");
-		args++;
-	}
-	Com_Printf("Loaded cosmetic unlocks from %s\n", filename);
 }
 
 #if 0
