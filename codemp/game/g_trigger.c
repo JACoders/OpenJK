@@ -1453,6 +1453,12 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->pers.stats.displacement = 0;
 	player->client->pers.stats.displacementSamples = 0;
 
+	if (player->client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_ALLOWTELES) { //Reset their telemark on map start if this is the case
+		player->client->pers.telemarkOrigin[0] = 0;
+		player->client->pers.telemarkOrigin[1] = 0;
+		player->client->pers.telemarkOrigin[2] = 0;
+		player->client->pers.telemarkAngle = 0;
+	}
 
 	//if (player->r.svFlags & SVF_JUNIORADMIN)
 		//trap->SendServerCommand(player-g_entities, va("cp \"Starting lag: %i\n 2: %i\n 3: %i\n\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, GetTimeMS() - player->client->pers.cmd.serverTime));

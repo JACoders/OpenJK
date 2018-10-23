@@ -256,7 +256,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean k
 
 void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern?
 //JAPRO - Serverside - New teleport Function - Start
-void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor, qboolean race ) {
+void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor, qboolean race, qboolean toMark ) {
 	gentity_t	*tent;
 	qboolean wasNoClip = qfalse;
 	vec3_t neworigin;
@@ -279,7 +279,8 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		wasNoClip = qtrue;
 
 	player->client->noclip = qtrue;
-	ResetPlayerTimers(player, qtrue);
+	if (!(pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_ALLOWTELES))
+		ResetPlayerTimers(player, qtrue);
 	player->client->ps.fd.forceJumpZStart = -65536; //maybe this will fix that annoying overbounce tele shit
 
 	if (droptofloor) {

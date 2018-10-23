@@ -312,6 +312,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_RESTRICT_BHOP (1<<0)
 #define JAPRO_RESTRICT_CROUCHJUMP (1<<1)
 #define JAPRO_RESTRICT_DOUBLEJUMP (1<<2)
+#define JAPRO_RESTRICT_ALLOWTELES (1<<3)
 
 //japro target_restrict restrictions
 
@@ -1816,7 +1817,7 @@ int TAG_GetRadius( const char *owner, const char *name );
 int TAG_GetFlags( const char *owner, const char *name );
 
 void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean keepVel );
-void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor, qboolean race );
+void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor, qboolean race, qboolean toMark );
 
 //
 // g_weapon.c
