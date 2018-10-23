@@ -2632,21 +2632,30 @@ void Svcmd_AccountInfo_f(void)
 	}
 }
 
-void Svcmd_AccountIPLock_f(void) {
-	sqlite3 * db;
-	char * sql;
-    sqlite3_stmt * stmt;
-	int s;
-	char username[16];
-	int flags = 0;
+typedef struct bitInfo_S {
+	const char	*string;
+} bitInfo_T;
 
-	if (trap->Argc() != 2) {
-		trap->Print( "Usage: /iplock <username>\n");
+static bitInfo_T accountFlags[] = { 
+	{"IP Lock"},//1
+	{"Trusted"},//2
+	{"No Race"},//3
+	{"No Duel"},//4
+	{"Junior Admin"},//5
+	{"Full Admin"}//6
+};
+static const int MAX_ACCOUNT_FLAGS = ARRAY_LEN( accountFlags );
+
+void Svcmd_FlagAccount_f( void ) {
+	const int args = trap->Argc();
+	char username[16];
+
+	if (args != 2 && args != 3) {
+		trap->Print( "Usage: /accountFlag <username> <flag>\n");
 		return;
 	}
 
 	trap->Argv(1, username, sizeof(username));
-
 	Q_strlwr(username);
 	Q_CleanStr(username);
 	
@@ -2655,41 +2664,77 @@ void Svcmd_AccountIPLock_f(void) {
 		return;
 	}
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT flags FROM LocalAccount WHERE username = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int s;
+		int flags;
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+		sql = "SELECT flags FROM LocalAccount WHERE username = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
-    s = sqlite3_step(stmt);
-    if (s == SQLITE_ROW) {
-		flags = (qboolean)sqlite3_column_int(stmt, 0);
-    }
-    else if (s != SQLITE_DONE){
-        G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_AccountIPLock_f 1)", s);
-    }
-	CALL_SQLITE (finalize(stmt));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			flags = sqlite3_column_int(stmt, 0);
+		}
+		else if (s != SQLITE_DONE){
+			G_ErrorPrint("ERROR: SQL Select Failed (Svcmd_FlagAccount_f 1)", s);
+		}
+		CALL_SQLITE (finalize(stmt));
 
-	if (flags & JAPRO_ACCOUNTFLAG_IPLOCK) 
-		sql = "UPDATE LocalAccount SET flags = flags & ~1 WHERE username = ?"; //loda redo this
-	else 
-		sql = "UPDATE LocalAccount SET flags = flags | 1 WHERE username = ?";
 
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	s = sqlite3_step(stmt);
-	if (s == SQLITE_DONE) {
-		if (flags & JAPRO_ACCOUNTFLAG_IPLOCK) 
-			trap->Print( "IP unlocked.\n");
-		else
-			trap->Print( "IP locked.\n");
-    }
-    else {
-        G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_AccountIPLock_f 2)", s);
-    }
+		if ( args == 2 ) {
+			int i = 0;
+			for ( i = 0; i < MAX_ACCOUNT_FLAGS; i++ ) {
+				if ( (flags & (1 << i)) ) {
+					trap->Print( "%2d [X] %s\n", i, accountFlags[i].string );
+				}
+				else {
+					trap->Print( "%2d [ ] %s\n", i, accountFlags[i].string );
+				}
+			}
+			CALL_SQLITE (close(db));
+			return;
+		}
+		else if (args == 3) {
+			char arg[8] = { 0 };
+			int index;
+			const uint32_t mask = (1 << MAX_ACCOUNT_FLAGS) - 1;
 
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
+			trap->Argv( 2, arg, sizeof(arg) );
+			index = atoi( arg );
 
+			//DM Start: New -1 toggle all options.
+			if (index < -1 || index >= MAX_ACCOUNT_FLAGS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+				trap->Print("toggleVote: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_ACCOUNT_FLAGS - 1);
+				CALL_SQLITE (close(db));
+				return;
+			}
+
+			if (flags & (1 << index)) 
+				sql = "UPDATE LocalAccount SET flags = flags & ~? WHERE username = ?"; //loda redo this
+			else 
+				sql = "UPDATE LocalAccount SET flags = flags | ? WHERE username = ?";
+
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, (1 << index)));
+			CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_DONE) {
+				trap->Print( "%s %s^7\n", accountFlags[index].string, ((flags & (1 << index))
+					? "^1Disabled" : "^2Enabled") );
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_FlagAccount_f 2)", s);
+			}
+
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+		}
+	}
 }
 
 void Svcmd_ListAdmins_f(void)
@@ -2737,116 +2782,6 @@ void Svcmd_ListAdmins_f(void)
 		CALL_SQLITE(finalize(stmt));
 		CALL_SQLITE(close(db));
 	}
-}
-
-void Svcmd_SetAdmin_f(void)
-{
-	char username[16], adminLevelStr[8];
-	int clientid = -1;
-	int adminLevel;
-
-	if (trap->Argc() != 3) {
-		trap->Print("Usage: /setAdmin <username> <level (none/junior/full)>.\n");
-		return;
-	}
-
-	trap->Argv(1, username, sizeof(username));
-	trap->Argv(2, adminLevelStr, sizeof(adminLevelStr));
-	Q_strlwr(username);
-	Q_CleanStr(username);
-	Q_strlwr(username);
-
-	if (!Q_stricmp(adminLevelStr, "none")) {
-		adminLevel = 0;
-	}
-	else if (!Q_stricmp(adminLevelStr, "junior")) {
-		adminLevel = 1;
-	}
-	else if (!Q_stricmp(adminLevelStr, "full")) {
-		adminLevel = 2;
-	}
-	else {
-		trap->Print("Usage: /setAdmin <username> <level (none/junior/full)>.\n");
-		return;
-	}
-
-	{
-		sqlite3 * db;
-		char * sql;
-		sqlite3_stmt * stmt;
-		int s;
-
-		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
-
-		if (adminLevel == 0) {
-			sql = "UPDATE LocalAccount SET flags = flags & ~16 WHERE username = ?";
-			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
-
-			s = sqlite3_step(stmt);
-			if (s != SQLITE_DONE) {
-				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 1)", s);
-			}
-			CALL_SQLITE(finalize(stmt));
-
-			sql = "UPDATE LocalAccount SET flags = flags & ~32 WHERE username = ?";
-			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
-
-			s = sqlite3_step(stmt);
-			if (s != SQLITE_DONE) {
-				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 2)", s);
-			}
-			CALL_SQLITE(finalize(stmt));
-		}
-		else if (adminLevel == 1) {
-			sql = "UPDATE LocalAccount SET flags = flags & ~32 WHERE username = ?";
-			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
-
-			s = sqlite3_step(stmt);
-			if (s != SQLITE_DONE) {
-				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 3)", s);
-			}
-			CALL_SQLITE(finalize(stmt));
-
-			sql = "UPDATE LocalAccount SET flags = flags | 16 WHERE username = ?";
-			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
-
-			s = sqlite3_step(stmt);
-			if (s != SQLITE_DONE) {
-				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f 4)", s);
-			}
-			CALL_SQLITE(finalize(stmt));
-		}
-		else if (adminLevel == 2) {
-			sql = "UPDATE LocalAccount SET flags = flags & ~16 WHERE username = ?";
-			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
-
-			s = sqlite3_step(stmt);
-			if (s != SQLITE_DONE) {
-				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_SetAdmin_f 5)", s);
-			}
-			CALL_SQLITE(finalize(stmt));
-
-			sql = "UPDATE LocalAccount SET flags = flags | 32 WHERE username = ?";
-			CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
-			CALL_SQLITE(bind_text(stmt, 1, username, -1, SQLITE_STATIC));
-
-			s = sqlite3_step(stmt);
-			if (s != SQLITE_DONE) {
-				G_ErrorPrint("ERROR: SQL Update Failed (Cmd_AddMaster_f 6)", s);
-			}
-			CALL_SQLITE(finalize(stmt));
-		}
-
-		trap->Print("Admin set.\n");
-
-		CALL_SQLITE(close(db));
-	}
-
 }
 
 void Svcmd_DBInfo_f(void)

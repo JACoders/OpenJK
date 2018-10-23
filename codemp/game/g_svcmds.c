@@ -1563,8 +1563,7 @@ void SV_RebuildUnlocks_f(void);
 #if 0
 void G_TestAddRace( void );
 #endif
-void Svcmd_AccountIPLock_f( void );
-void Svcmd_SetAdmin_f(void);
+void Svcmd_FlagAccount_f( void );
 void Svcmd_ListAdmins_f(void);
 
 void Svcmd_ClanJoin_f( void );
@@ -1611,10 +1610,10 @@ svcmd_t svcmds[] = {
 
 	{ "entityinfo",					Svcmd_EntityInfo_f,					qfalse },
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
+	{ "flagAccount",				Svcmd_FlagAccount_f,				qfalse },
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "gametype",					Svcmd_ChangeGametype_f,				qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
-	{ "iplock",						Svcmd_AccountIPLock_f,				qfalse },
 
 	{ "listAdmins",					Svcmd_ListAdmins_f,					qfalse },
 
@@ -1640,8 +1639,6 @@ svcmd_t svcmds[] = {
 	{ "saberDisable",				Svcmd_ToggleSaberDisable_f,			qfalse },
 
 	{ "say",						Svcmd_Say_f,						qtrue },
-
-	{ "setAdmin",					Svcmd_SetAdmin_f,					qfalse },
 
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
