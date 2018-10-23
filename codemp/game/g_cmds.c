@@ -777,7 +777,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				if (ent->client->noclip) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
-					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 					ResetPlayerTimers(ent, qtrue);
 				}
 				else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
@@ -796,7 +796,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				if (ent->client->noclip) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
-					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 					ResetPlayerTimers(ent, qtrue);
 				}
 				else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
@@ -813,7 +813,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			if (ent->client->noclip) {
 				ent->client->noclip = qfalse;
 				trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
-				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 				ResetPlayerTimers(ent, qtrue);
 			}
 			else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
@@ -839,7 +839,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				return;
 			trap->SendServerCommand(target-g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
 			if (target->client->sess.raceMode && target->client->noclip)
-				AmTeleportPlayer( target, target->client->ps.origin, target->client->ps.viewangles, qtrue, qtrue ); //Good
+				AmTeleportPlayer( target, target->client->ps.origin, target->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 			target->client->noclip = !target->client->noclip;
 			ResetPlayerTimers(target, qtrue);
 			return;
@@ -849,7 +849,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				return;
 			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
 			if (ent->client->sess.raceMode && ent->client->noclip)
-				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 			ent->client->noclip = !ent->client->noclip;
 			ResetPlayerTimers(ent, qtrue);
 			return;
@@ -932,9 +932,9 @@ static void Cmd_Blink_f( gentity_t *ent )
 		//G_PlayEffect( EFFECT_LANDING_SAND, ent->client->ps.origin, vec3_origin );
 
 		if (ent->client->sess.raceMode)
-			AmTeleportPlayer(ent, tr.endpos, ent->client->ps.viewangles, qtrue, qtrue);
+			AmTeleportPlayer(ent, tr.endpos, ent->client->ps.viewangles, qtrue, qtrue, qfalse);
 		else
-			AmTeleportPlayer(ent, tr.endpos, ent->client->ps.viewangles, qfalse, qfalse);
+			AmTeleportPlayer(ent, tr.endpos, ent->client->ps.viewangles, qfalse, qfalse, qfalse);
 	}
 }
 
@@ -6789,7 +6789,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		}
 
 		ent->client->sess.movementStyle = style;
-		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 
 		if (ent->client->ourSwoopNum) {
 
@@ -6858,7 +6858,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 
 	if (level >= 1 && level <= 3) {
 		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = level;
-		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
 			trap->SendServerCommand( ent-g_entities, va("print \"Jumplevel updated (%i): timer reset.\n\"", level ));
 			ResetPlayerTimers(ent, qtrue);
@@ -7086,7 +7086,7 @@ static void Cmd_Launch_f(gentity_t *ent)
 		angles[2] = 0;
 
 		//tele
-		AmTeleportPlayer( ent, origin, angles, qfalse, qtrue);
+		AmTeleportPlayer( ent, origin, angles, qfalse, qtrue, qfalse);
 
 		fwdAngles[0] = 0;
 		fwdAngles[1] = atoi(yawStr);
@@ -7228,7 +7228,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 			vec3_t	angles = {0, 0, 0};
 			angles[YAW] = ent->client->pers.telemarkAngle;
 			angles[PITCH] = ent->client->pers.telemarkPitchAngle;
-			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, qtrue, qtrue);
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, qtrue, qtrue, qtrue);
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -7259,7 +7259,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		origin[1] = g_entities[clientid].client->ps.origin[1];
 		origin[2] = g_entities[clientid].client->ps.origin[2] + 96;
 
-		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue );
+		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue, qfalse );
 	}
 
 	if (trap->Argc() == 4)
@@ -7275,7 +7275,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		origin[1] = atoi(y);
 		origin[2] = atoi(z);
 			
-		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue );
+		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue, qfalse );
 	}
 }
 
@@ -7333,7 +7333,7 @@ void Cmd_Warp_f(gentity_t *ent)
 		origin[1] = warpList[warpNum].y;
 		origin[2] = warpList[warpNum].z;
 		angles[YAW] = warpList[warpNum].yaw;
-		AmTeleportPlayer( ent, origin, angles, qtrue, qfalse ); //Maybe this should not be droptofloor but whatever
+		AmTeleportPlayer( ent, origin, angles, qtrue, qfalse, qfalse); //Maybe this should not be droptofloor but whatever
 	}	
 }
 
@@ -7405,7 +7405,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		{
 			angles[YAW] = ent->client->pers.telemarkAngle;
 			angles[PITCH] = ent->client->pers.telemarkPitchAngle;
-			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor, race );
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor, race, qfalse );
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -7432,7 +7432,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[0] = g_entities[clientid1].client->ps.origin[0];
 		origin[1] = g_entities[clientid1].client->ps.origin[1];
 		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
-		AmTeleportPlayer( ent, origin, angles, droptofloor, race );
+		AmTeleportPlayer( ent, origin, angles, droptofloor, race, qfalse );
 		return;
 	}
 
@@ -7470,7 +7470,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[1] = g_entities[clientid2].client->ps.origin[1];
 		origin[2] = g_entities[clientid2].client->ps.origin[2] + 96;
 
-		AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse );
+		AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse, qfalse );
 		return;
 	}
 
@@ -7490,7 +7490,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			angles[YAW] = atoi(yaw);
 		}*/
 			
-		AmTeleportPlayer( ent, origin, angles, droptofloor, race );
+		AmTeleportPlayer( ent, origin, angles, droptofloor, race, qfalse );
 		return;
 	}
 
@@ -7512,7 +7512,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			trap->Argv(4, yaw, sizeof(yaw));
 			angles[YAW] = atoi(yaw);
 			
-			AmTeleportPlayer( ent, origin, angles, droptofloor, race );
+			AmTeleportPlayer( ent, origin, angles, droptofloor, race, qfalse );
 		}
 
 		else//Amtele other player to origin
@@ -7536,7 +7536,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			origin[1] = atoi(y);
 			origin[2] = atoi(z);
 
-			AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse );
+			AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse, qfalse );
 		}
 		return;
 
@@ -7572,7 +7572,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		trap->Argv(5, yaw, sizeof(yaw));
 		angles[YAW] = atoi(yaw);
 			
-		AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse );
+		AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse, qfalse );
 		return;
 	}
 
