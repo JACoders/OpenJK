@@ -279,7 +279,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		wasNoClip = qtrue;
 
 	player->client->noclip = qtrue;
-	if (!toMark || !(pm->ps->stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_ALLOWTELES))
+	if (!toMark || !(player->client->ps.stats[STAT_RESTRICTIONS] & JAPRO_RESTRICT_ALLOWTELES))
 		ResetPlayerTimers(player, qtrue);
 	player->client->ps.fd.forceJumpZStart = -65536; //maybe this will fix that annoying overbounce tele shit
 
