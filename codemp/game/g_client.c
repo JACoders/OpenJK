@@ -2212,11 +2212,11 @@ void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeti
 		int i;
 
 		for (i=0; i<MAX_COSMETIC_UNLOCKS; i++) { //For each bit, check if its allowed, if not, remove.
-			if (!cosmeticUnlocks[i].bitvalue)
+			if (!cosmeticUnlocks[i].active)
 				break;
 			if ((cosmetics & (1 << cosmeticUnlocks[i].bitvalue))) { //Use .bitvalue instead of i, since some of these are "public/free" cosmetics
 				if (!(client->pers.unlocks & 1 << cosmeticUnlocks[i].bitvalue)) { //Check to see if its unlocked, if not disable.
-					cosmetics &= ~cosmeticUnlocks[i].bitvalue;
+					cosmetics &= ~(1 << cosmeticUnlocks[i].bitvalue);
 				}
 			}
 		}

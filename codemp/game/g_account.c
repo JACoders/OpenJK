@@ -1671,6 +1671,12 @@ void SV_RebuildUnlocks_f(void) {
 	CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
 	//Set all unlocks to 0 ?
+	sql = "UPDATE LocalAccount SET unlocks = 0"; //Only get username for cumulative checks if needed
+	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		G_ErrorPrint("ERROR: SQL Update Failed (SV_RebuildUnlocks_f 1)", s);
+	CALL_SQLITE(finalize(stmt));
 
 	sql = "SELECT username, coursename, style, duration_ms FROM LocalRun"; //Only get username for cumulative checks if needed
 	CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
@@ -1682,7 +1688,7 @@ void SV_RebuildUnlocks_f(void) {
 		else if (s == SQLITE_DONE)
 			break;
 		else {
-			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildUnlocks_f)", s);
+			G_ErrorPrint("ERROR: SQL Select Failed (SV_RebuildUnlocks_f 2)", s);
 			break;
 		}
 	}
@@ -6883,8 +6889,10 @@ void G_SpawnCosmeticUnlocks(void) {
 	pch = strtok (buf,";\n\t");  //loda fixme why is this broken
 	while (pch != NULL && row < MAX_COSMETIC_UNLOCKS)
 	{
-		if ((args % 4) == 1)
+		if ((args % 4) == 1) {
 			cosmeticUnlocks[row].bitvalue = atoi(pch);
+			cosmeticUnlocks[row].active = qtrue;
+		}
 		else if ((args % 4) == 2)
 			Q_strncpyz(cosmeticUnlocks[row].mapname, pch, sizeof(cosmeticUnlocks[row].mapname));
 		else if ((args % 4) == 3)
