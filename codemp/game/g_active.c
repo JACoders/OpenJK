@@ -3745,12 +3745,12 @@ void ClientThink_real( gentity_t *ent ) {
 			client->ps.stats[STAT_RACEMODE] = qfalse;
 		}
 	}
-	
+	/*
 	if (client->ps.stats[STAT_RACEMODE] && client->sess.sessionTeam != TEAM_SPECTATOR) {//Is this really needed..
 		if (msec < 3)
 			ucmd->serverTime = ((ucmd->serverTime + 2) / 3) * 3;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
 	}
-	else if (pmove_fixed.integer || client->pers.pmoveFixed)
+	else*/if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
 	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && (g_movementStyle.integer >= MV_SIEGE && g_movementStyle.integer <= MV_WSW) || g_movementStyle.integer == MV_SP || g_movementStyle.integer == MV_SLICK) { //Ok,, this should be like every frame, right??
