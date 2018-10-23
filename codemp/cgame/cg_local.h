@@ -236,8 +236,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //Cosmetics
 #define	JAPRO_COSMETIC_SANTAHAT (1<<0)
 #define	JAPRO_COSMETIC_PUMKIN	(1<<1)
-#define JAPRO_COSMETIC_CAP		(1<<2)
-#define JAPRO_COSMETIC_FEDORA	(1<<3)
+#define	JAPRO_COSMETIC_CAP		(1<<2)
+#define	JAPRO_COSMETIC_FEDORA	(1<<3)
+#define JAPRO_COSMETIC_CRINGE	(1<<4)
 
 //#define JAPRO_CINFO_UNLAGGEDPUSHPULL (1<<19)	//push pull unlagged
 

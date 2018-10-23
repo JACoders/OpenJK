@@ -1411,6 +1411,7 @@ static bitInfo_T cosmetics[] = {
 	{ "jack-o-lantern" },
 	{ "bass pro baseball cap?" },
 	{ "indiana jones" },
+	{ "Kane's Kringe Kap" }
 };
 static const int MAX_COSMETICS = ARRAY_LEN(cosmetics);
 
@@ -1455,16 +1456,11 @@ static void CG_Cosmetics_f(void)
 			return;
 		}
 
-		//Radio button all options
-		//Toggle index, and make sure everything else is turned off
-		int groupMask = (1 << 0) + (1 << 1) + (1 << 2) + (1 << 3);
-		int value = cp_cosmetics.integer;
+		//Radio button all options for now
+		trap->Cvar_Set("cp_cosmetics", "0");
 
-		groupMask &= ~(1 << index); //Remove index from groupmask
-		value &= ~(groupMask); //Turn groupmask off
-		value ^= (1 << index); //Toggle index item
-
-		trap->Cvar_Set("cp_cosmetics", va("%i", value));
+		if (!(cp_cosmetics.integer & (1 << index)))
+			trap->Cvar_Set("cp_cosmetics", va("%i", (1 << index)));
 
 		trap->Cvar_Update(&cp_cosmetics);
 
