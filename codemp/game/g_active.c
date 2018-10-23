@@ -3746,7 +3746,7 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 	
-	if (client->ps.stats[STAT_RACEMODE]) {//Is this really needed..
+	if (client->ps.stats[STAT_RACEMODE] && client->sess.sessionTeam != TEAM_SPECTATOR) {//Is this really needed..
 		if (msec < 3)
 			ucmd->serverTime = ((ucmd->serverTime + 2) / 3) * 3;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
 	}

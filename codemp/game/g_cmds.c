@@ -6967,6 +6967,7 @@ static void Cmd_Launch_f(gentity_t *ent)
 	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], zSpeedStr[16];
 	vec3_t fwdAngles, jumpFwd;
 	const int clampSpeed = 25000;
+	int frametime;
 
 	if (!ent->client)
 		return;
@@ -7051,7 +7052,10 @@ static void Cmd_Launch_f(gentity_t *ent)
 	ent->client->ps.fd.forceJumpSound = 1;
 	//ent->client->pers.cmd.upmove = 0;
 
-	ent->client->pers.stats.startTime = trap->Milliseconds(); //Set their timer as now..
+	frametime = ent->client->pmoveMsec * 0.5f;
+	if (frametime > 4)
+		frametime = 4;
+	ent->client->pers.stats.startTime = trap->Milliseconds() + frametime; //Set their timer as now..
 	ent->client->ps.duelTime = level.time;
 	ent->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - ent->client->pers.cmd.serverTime; //use level.previousTime?
 
