@@ -2752,6 +2752,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		ClientRemoveIgnore(clientNum);//JAPRO IGNORE, move this to clientConnect, and only do it if IP does not match previous slot
 	}
 
+	//CompareIPs always returns qfalse on linux lol?
+
 	if ( !isBot && g_needpass.integer ) {
 		// check for a password
 		value = Info_ValueForKey (userinfo, "password");
@@ -4242,6 +4244,7 @@ void ClientSpawn(gentity_t *ent) {
 	else
 	{
 		client->ps.stats[STAT_ARMOR] = client->ps.stats[STAT_MAX_HEALTH] * 0.25;
+		//Clan Arena starting armor/hp here?
 	}
 
 	G_SetOrigin( ent, spawn_origin );

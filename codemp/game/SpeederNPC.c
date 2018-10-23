@@ -236,7 +236,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 #if 1
 	if ( curTime < pVeh->m_iGravTime )
 	{
-		parentPS->gravity = 1.0f;
+		parentPS->gravity = 1.0f; //gravboost vel2 min = 50? eh
 		if (parentPS)
 		{
 			parentPS->eFlags |= EF_JETPACK_ACTIVE;
