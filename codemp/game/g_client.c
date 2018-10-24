@@ -2704,6 +2704,20 @@ restarts.
 
 static qboolean CompareIPs( const char *ip1, const char *ip2 )
 {
+	char *p = NULL;
+	p = strchr(ip1, ':');
+	if (p)
+		*p = 0;
+	p = strchr(ip2, ':');
+	if (p)
+		*p = 0;
+
+	if (!Q_stricmp(ip1, ip2)) {
+		return qtrue;
+	}
+	return qfalse;
+
+	/*
 	while ( 1 ) {
 		if ( *ip1 != *ip2 )
 			return qfalse;
@@ -2714,6 +2728,7 @@ static qboolean CompareIPs( const char *ip1, const char *ip2 )
 	}
 
 	return qtrue;
+	*/
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
@@ -2747,8 +2762,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		return "Banned.";
 	}
 
-	Com_Printf("CLIENTCONNECT: IP: %s, OLD SLOT IP: %s\n", tmpIP, level.clients[clientNum].sess.IP);
-	if (!level.clients[clientNum].sess.IP[0] || !CompareIPs(tmpIP, level.clients[clientNum].sess.IP)) { //New Client, remove ignore if it was there
+	//Com_Printf("CLIENTCONNECT: IP: %s, OLD SLOT IP: %s\n", tmpIP, level.clients[clientNum].sess.IP);
+	if (!isBot && !level.clients[clientNum].sess.IP[0] || !CompareIPs(tmpIP, level.clients[clientNum].sess.IP)) { //New Client, remove ignore if it was there
 		ClientRemoveIgnore(clientNum);//JAPRO IGNORE, move this to clientConnect, and only do it if IP does not match previous slot
 	}
 
