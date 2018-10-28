@@ -1334,7 +1334,7 @@ static QINLINE int GetTimeMS() {
 //void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex );
 void G_UpdatePlaytime(int null, char *username, int seconds );
 void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
-	int lessTime, frameTime;
+	int lessTime;
 
 	if (!player->client)
 		return;
@@ -1440,12 +1440,9 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	}
 
 	lessTime = InterpolateTouchTime(player, trigger);
-	frameTime = player->client->pmoveMsec * 0.5f;
-	if (frameTime > 3)
-		frameTime = 3;
 
 	if (player->client->ps.stats[STAT_RACEMODE]) {
-		player->client->ps.duelTime = level.time - lessTime;//player->client->pers.stats.startTime;//level.time;
+		player->client->ps.duelTime = level.time - lessTime;
 		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
 		player->client->ps.stats[STAT_ARMOR] = 25;
 
@@ -1461,7 +1458,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	}
 
 	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
-	player->client->pers.stats.startTime = GetTimeMS() - lessTime + frameTime;
+	player->client->pers.stats.startTime = GetTimeMS() - lessTime;
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
 	player->client->pers.stats.displacementSamples = 0;
@@ -1505,7 +1502,6 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		const int endLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
 		const int lessTime = InterpolateTouchTime(player, trigger);
-		int frameTime = player->client->pmoveMsec * 0.5f;
 
 		if (diffLag > 0) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
@@ -1520,9 +1516,6 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 
 		if (lessTime < 16) //Don't really trust this yet, max possible is 250.
 			time -= lessTime;
-		if (frameTime > 3)
-			frameTime = 3;
-		time -= frameTime;
 
 		time /= 1000.0f;
 		if (time < 0.001f)

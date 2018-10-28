@@ -3749,6 +3749,8 @@ void ClientThink_real( gentity_t *ent ) {
 	if (client->ps.stats[STAT_RACEMODE]) {//Is this really needed..
 		if (msec < 3)
 			ucmd->serverTime = ((ucmd->serverTime + 2) / 3) * 3;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
+		else if (msec > 16 && client->pers.practice)
+			ucmd->serverTime = ((ucmd->serverTime + 15) / 16) * 16;
 	}
 	else if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;

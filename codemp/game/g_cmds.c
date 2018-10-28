@@ -6967,7 +6967,7 @@ static void Cmd_Launch_f(gentity_t *ent)
 	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], zSpeedStr[16];
 	vec3_t fwdAngles, jumpFwd;
 	const int clampSpeed = 25000;
-	int frametime;
+	int frameTime;
 
 	if (!ent->client)
 		return;
@@ -7052,10 +7052,10 @@ static void Cmd_Launch_f(gentity_t *ent)
 	ent->client->ps.fd.forceJumpSound = 1;
 	//ent->client->pers.cmd.upmove = 0;
 
-	frametime = ent->client->pmoveMsec * 0.5f;
-	if (frametime > 4)
-		frametime = 4;
-	ent->client->pers.stats.startTime = trap->Milliseconds() + frametime; //Set their timer as now..
+	frameTime = ent->client->pmoveMsec;
+	if (frameTime > 16)
+		frameTime = 16;
+	ent->client->pers.stats.startTime = trap->Milliseconds() + frameTime; //Set their timer as now..
 	ent->client->ps.duelTime = level.time;
 	ent->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - ent->client->pers.cmd.serverTime; //use level.previousTime?
 
@@ -8416,12 +8416,12 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				if (cl->pers.rate < sv_maxRate.integer)
 					Q_strncpyz(strRate, va("^3%i", cl->pers.rate), sizeof(strRate));
 				else
-					Q_strncpyz(strRate, va("^7%i", cl->pers.rate), sizeof(strRate));
+					Q_strncpyz(strRate, va("^7%i", sv_maxRate.integer), sizeof(strRate)); // W/e
 
 				if (cl->pers.snaps < sv_fps.integer)
 					Q_strncpyz(strSnaps, va("^3%i", cl->pers.snaps), sizeof(strSnaps));
 				else
-					Q_strncpyz(strSnaps, va("^7%i", cl->pers.snaps), sizeof(strSnaps));
+					Q_strncpyz(strSnaps, va("^7%i", sv_fps.integer), sizeof(strSnaps)); // W/e
 
 				if (cl->pers.maxFPS == 0)
 					Q_strncpyz(strFPS, "^3?", sizeof(strFPS));
