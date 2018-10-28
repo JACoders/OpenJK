@@ -3266,7 +3266,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if ((g_tweakVote.integer & TV_MAPCHANGELOCKOUT) && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
+	if ((g_tweakVote.integer & TV_MAPCHANGELOCKOUT) && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA || g_raceMode.integer) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
 		char timeStr[32];
 		TimeToString( (1000*60*10 - (level.time - level.startTime)) , timeStr, sizeof(timeStr), qtrue);
 		trap->SendServerCommand( ent-g_entities, va( "print \"The server just changed to this map, please wait %s before calling a map vote.\n\"", timeStr) );
