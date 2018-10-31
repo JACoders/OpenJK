@@ -9256,6 +9256,13 @@ void CG_ChatBox_AddString(char *chatStr)
 		return;
 	}
 
+	if (cg_cleanChatbox.integer && !strcmp(chatStr, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
+		return;
+	}
+	else { //New msg
+		Q_strncpyz(cg.lastChatMsg, chatStr, sizeof(cg.lastChatMsg));
+	}
+
 	memset(chat, 0, sizeof(chatBoxItem_t));
 
 	if (strlen(chatStr) > sizeof(chat->string))
@@ -9301,8 +9308,18 @@ void CG_ChatBox_AddString(char *chatStr)
 				Q_RemoveLeadingColorCode(msg);
 			}
 
-			if (regular)
+			if (regular) {
+				char cleanMsg[MAX_SAY_TEXT+64];
+
+				strcpy(cleanMsg, msg);//Find Media - Currently Playing
+				Q_CleanString(cleanMsg);
+
+				if (!Q_strncmp(cleanMsg, "Media - Currently playing: ", 26)) {//?
+					return; //dont add it lol
+				}
+
 				Q_strcat(name, sizeof(name), "^7: ^2");
+			}
 			else if (teamchat)
 				Q_strcat(name, sizeof(name), "^7): ^5");
 			else if (personal)
