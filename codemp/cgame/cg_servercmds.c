@@ -1621,8 +1621,21 @@ static void CG_Chat_f( void ) {
 			Q_strncpyz(text, tempChatStr, sizeof(text));
 
 			if (cg_chatBox.integer) {
+				char cleanMsg[MAX_SAY_TEXT+64];
+
+				strcpy(cleanMsg, text);//Find Media - Currently Playing
+				Q_CleanString(cleanMsg);
+
+				if(cg_cleanChatbox.integer && strstr(cleanMsg, "Media - Currently playing: ") != NULL) {
+					return;
+				}
+				if (cg_cleanChatbox.integer && !strcmp(text, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
+					return;
+				}
+				//New msg
 				CG_ChatBox_AddString(text);
 				trap->Print("*%s\n", text);
+				Q_strncpyz(cg.lastChatMsg, text, sizeof(cg.lastChatMsg));
 			}
 			else {
 				trap->Print("%s\n", text);
@@ -1706,8 +1719,12 @@ static void CG_Chat_f( void ) {
 		Q_strncpyz(text, tempChatStr, sizeof(text));
 
 		if (cg_chatBox.integer) {
+			if (cg_cleanChatbox.integer && !strcmp(text, cg.lastChatMsg)) {//Same exact msg/sender as previous //replace this with q_strcmp in entire function..?
+				return;
+			}
 			CG_ChatBox_AddString(text);
 			trap->Print("*%s\n", text);
+			Q_strncpyz(cg.lastChatMsg, text, sizeof(cg.lastChatMsg));
 		}
 		else {
 			trap->Print( "%s\n", text );
