@@ -4656,7 +4656,6 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	int					maxBoneIndex = 0;
 	mdxaCompQuatBone_t	*pCompBonePool;
 	unsigned short		*pwIn;
-	mdxaIndex_t			*pIndex;
 #endif
 
  	pinmodel = (mdxaHeader_t *)buffer;
@@ -4875,9 +4874,35 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		}
 	}
 
-	// swap the compressed bones
-	maxBoneIndex	= (mdxa->ofsEnd - mdxa->ofsCompBonePool) / sizeof(mdxaCompQuatBone_t);
-	pCompBonePool	= (mdxaCompQuatBone_t *) ((byte *)mdxa + mdxa->ofsCompBonePool);
+	// Determine the amount of compressed bones.
+	if(mdxa->version == 6){
+		// Official MDXA version. The compressed bone pool always resides
+		// at the end of the file.
+		maxBoneIndex = (mdxa->ofsEnd - mdxa->ofsCompBonePool) / sizeof(mdxaCompQuatBone_t);
+	}else{
+		// Find the largest index by iterating through all frames.
+		// It is not guaranteed that the compressed bone pool still resides
+		// at the end of the file for any future MDXA version.
+		byte    *pIndex;
+		int     tmp;
+
+		for(i = 0; i < mdxa->numFrames; i++){
+			for(j = 0; j < mdxa->numBones; j++){
+				k       = (i * mdxa->numBones * 3) + (j * 3);	// iOffsetToIndex
+				pIndex  = ((byte *)mdxa + mdxa->ofsFrames + k);
+				tmp     = (pIndex[2] << 16) + (pIndex[1] << 8) + (pIndex[0]);
+
+				if(maxBoneIndex < tmp){
+					maxBoneIndex = tmp;
+				}
+			}
+		}
+
+		maxBoneIndex++;
+	}
+
+	// Swap the compressed bones.
+	pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)mdxa + mdxa->ofsCompBonePool);
 	for ( i = 0 ; i < maxBoneIndex ; i++ )
 	{
 		pwIn = (unsigned short *) pCompBonePool[i].Comp;
