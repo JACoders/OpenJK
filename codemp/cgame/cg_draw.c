@@ -11306,21 +11306,19 @@ static void CG_Speedometer(void)
 
 		speedometerXPos += 52;
 
-		if (cg_speedometerSettings.integer & SPEEDOMETER_GROUNDSPEED)
-		{
+		if (cg_speedometerSettings.integer & SPEEDOMETER_GROUNDSPEED) {
 			char speedStr4[32] = {0};
 			vec4_t colorGroundSpeed = {1, 1, 1, 1};
 
-			if (PM_GroundDistance2() < 1) {//pm->ps->groundEntityNum != ENTITYNUM_NONE
-			//if (pm->ps->groundEntityNum == ENTITYNUM_WORLD) {
-				cg.lastGroundTime = cg.time;
+			if (pm->ps->groundEntityNum != ENTITYNUM_NONE || pm->ps->velocity[2] < 0) { //On ground or Moving down
 				cg.firstTimeInAir = qfalse;
-				cg.lastGroundSpeed = 0;
 			}
-			else if (!cg.firstTimeInAir) {
+			else if (!cg.firstTimeInAir) { //Moving up for first time
 				cg.firstTimeInAir = qtrue;
 				cg.lastGroundSpeed = currentSpeed;
+				cg.lastGroundTime = cg.time;
 			}
+
 			if (cg.lastGroundSpeed > 250) {
 				colorGroundSpeed[1] = 1 / ((cg.lastGroundSpeed/250)*(cg.lastGroundSpeed/250));
 				colorGroundSpeed[2] = 1 / ((cg.lastGroundSpeed/250)*(cg.lastGroundSpeed/250));
