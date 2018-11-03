@@ -1409,6 +1409,7 @@ typedef struct CosmeticUnlocks_s {
 	char			mapname[40];
 	short			style;
 	unsigned int	duration;
+	qboolean		active;
 } CosmeticUnlocks_t;
 CosmeticUnlocks_t cosmeticUnlocks[MAX_COSMETIC_UNLOCKS];
 //japro

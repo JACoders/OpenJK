@@ -1431,6 +1431,14 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trigger->noise_index) //Only play on leaving trigger..?
 		G_RaceSound( player, CHAN_AUTO, trigger->noise_index, RS_TIMER_START );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
+	if (trigger->spawnflags & 1) {//set speed to speed value, keep our direction the same
+		vec3_t hVel;
+		hVel[0] = player->client->ps.velocity[0];
+		hVel[1] = player->client->ps.velocity[1];
+		hVel[2] = 0;
+		VectorScale(player->client->ps.velocity, (trigger->speed * (player->client->ps.basespeed / 250.0f)) / VectorLength(hVel), player->client->ps.velocity);
+	}
+
 	player->client->pers.startLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //use level.previousTime?
 	//trap->SendServerCommand( player-g_entities, va("chat \"startlag: %i\"", player->client->pers.startLag));
 
@@ -1455,7 +1463,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	lessTime = InterpolateTouchTime(player, trigger);
 
 	if (player->client->ps.stats[STAT_RACEMODE]) {
-		player->client->ps.duelTime = level.time - lessTime;//player->client->pers.stats.startTime;//level.time;
+		player->client->ps.duelTime = level.time - lessTime;
 		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
 		player->client->ps.stats[STAT_ARMOR] = 25;
 

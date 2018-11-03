@@ -2243,11 +2243,11 @@ void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeti
 		int i;
 
 		for (i=0; i<MAX_COSMETIC_UNLOCKS; i++) { //For each bit, check if its allowed, if not, remove.
-			if (!cosmeticUnlocks[i].bitvalue)
+			if (!cosmeticUnlocks[i].active)
 				break;
 			if ((cosmetics & (1 << cosmeticUnlocks[i].bitvalue))) { //Use .bitvalue instead of i, since some of these are "public/free" cosmetics
 				if (!(client->pers.unlocks & 1 << cosmeticUnlocks[i].bitvalue)) { //Check to see if its unlocked, if not disable.
-					cosmetics &= ~cosmeticUnlocks[i].bitvalue;
+					cosmetics &= ~(1 << cosmeticUnlocks[i].bitvalue);
 				}
 			}
 		}
@@ -2723,6 +2723,20 @@ restarts.
 
 static qboolean CompareIPs( const char *ip1, const char *ip2 )
 {
+	char *p = NULL;
+	p = strchr(ip1, ':');
+	if (p)
+		*p = 0;
+	p = strchr(ip2, ':');
+	if (p)
+		*p = 0;
+
+	if (!Q_stricmp(ip1, ip2)) {
+		return qtrue;
+	}
+	return qfalse;
+
+	/*
 	while ( 1 ) {
 		if ( *ip1 != *ip2 )
 			return qfalse;
@@ -2733,6 +2747,7 @@ static qboolean CompareIPs( const char *ip1, const char *ip2 )
 	}
 
 	return qtrue;
+	*/
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
@@ -2765,10 +2780,12 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		return "Banned.";
 	}
 
-	Com_Printf("CLIENTCONNECT: IP: %s, OLD SLOT IP: %s\n", tmpIP, level.clients[clientNum].sess.IP);
-	if (!level.clients[clientNum].sess.IP[0] || !CompareIPs(tmpIP, level.clients[clientNum].sess.IP)) { //New Client, remove ignore if it was there
+	//Com_Printf("CLIENTCONNECT: IP: %s, OLD SLOT IP: %s\n", tmpIP, level.clients[clientNum].sess.IP);
+	if (!isBot && !level.clients[clientNum].sess.IP[0] || !CompareIPs(tmpIP, level.clients[clientNum].sess.IP)) { //New Client, remove ignore if it was there
 		ClientRemoveIgnore(clientNum);//JAPRO IGNORE, move this to clientConnect, and only do it if IP does not match previous slot
 	}
+
+	//CompareIPs always returns qfalse on linux lol?
 
 	if ( !isBot && g_needpass.integer ) {
 		// check for a password
@@ -4262,6 +4279,7 @@ void ClientSpawn(gentity_t *ent) {
 	else
 	{
 		client->ps.stats[STAT_ARMOR] = client->ps.stats[STAT_MAX_HEALTH] * 0.25;
+		//Clan Arena starting armor/hp here?
 	}
 
 	G_SetOrigin( ent, spawn_origin );

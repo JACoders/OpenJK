@@ -3297,7 +3297,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if ((g_tweakVote.integer & TV_MAPCHANGELOCKOUT) && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
+	if ((g_tweakVote.integer & TV_MAPCHANGELOCKOUT) && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA || g_raceMode.integer) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
 		char timeStr[32];
 		TimeToString( (1000*60*10 - (level.time - level.startTime)) , timeStr, sizeof(timeStr), qtrue);
 		trap->SendServerCommand( ent-g_entities, va( "print \"The server just changed to this map, please wait %s before calling a map vote.\n\"", timeStr) );
@@ -7019,6 +7019,7 @@ static void Cmd_Launch_f(gentity_t *ent)
 	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], zSpeedStr[16];
 	vec3_t fwdAngles, jumpFwd;
 	const int clampSpeed = 25000;
+	int frameTime;
 
 	if (!ent->client)
 		return;
@@ -7103,7 +7104,10 @@ static void Cmd_Launch_f(gentity_t *ent)
 	ent->client->ps.fd.forceJumpSound = 1;
 	//ent->client->pers.cmd.upmove = 0;
 
-	ent->client->pers.stats.startTime = trap->Milliseconds(); //Set their timer as now..
+	frameTime = ent->client->pmoveMsec;
+	if (frameTime > 16)
+		frameTime = 16;
+	ent->client->pers.stats.startTime = trap->Milliseconds() + frameTime; //Set their timer as now..
 	ent->client->ps.duelTime = level.time;
 	ent->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - ent->client->pers.cmd.serverTime; //use level.previousTime?
 
@@ -8464,12 +8468,12 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				if (cl->pers.rate < sv_maxRate.integer)
 					Q_strncpyz(strRate, va("^3%i", cl->pers.rate), sizeof(strRate));
 				else
-					Q_strncpyz(strRate, va("^7%i", cl->pers.rate), sizeof(strRate));
+					Q_strncpyz(strRate, va("^7%i", sv_maxRate.integer), sizeof(strRate)); // W/e
 
 				if (cl->pers.snaps < sv_fps.integer)
 					Q_strncpyz(strSnaps, va("^3%i", cl->pers.snaps), sizeof(strSnaps));
 				else
-					Q_strncpyz(strSnaps, va("^7%i", cl->pers.snaps), sizeof(strSnaps));
+					Q_strncpyz(strSnaps, va("^7%i", sv_fps.integer), sizeof(strSnaps)); // W/e
 
 				if (cl->pers.maxFPS == 0)
 					Q_strncpyz(strFPS, "^3?", sizeof(strFPS));
