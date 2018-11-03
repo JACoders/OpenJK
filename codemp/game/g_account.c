@@ -2118,10 +2118,9 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		sqlite3 * db;
 		char * sql;
 		sqlite3_stmt * stmt;
-		int flags = 0;
 		int row = 0, s, count = 0, i;
 		gclient_t	*cl;
-		unsigned int lastip = 0, unlocks = 0;
+		unsigned int lastip = 0, unlocks = 0, flags;
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
@@ -2153,8 +2152,8 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 			if (s == SQLITE_ROW) {
 				Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
 				lastip = sqlite3_column_int(stmt, 1);
-				flags = (qboolean)sqlite3_column_int(stmt, 2);
-				unlocks = (qboolean)sqlite3_column_int(stmt, 3);
+				flags = sqlite3_column_int(stmt, 2);
+				unlocks = sqlite3_column_int(stmt, 3);
 				row++;
 			}
 			else if (s == SQLITE_DONE)
@@ -2233,26 +2232,15 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 			ent->client->pers.unlocks = unlocks;
 
-			//Problem, only add to flags, not remove?
-			if ((flags & JAPRO_ACCOUNTFLAG_FULLADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)) {
-				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in %s\n\"", ent->client->pers.netname, ent->client->pers.userName, g_fullAdminMsg.string));
-				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
-			}
-			else if ((flags & JAPRO_ACCOUNTFLAG_JRADMIN) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)) {
-				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in %s\n\"", ent->client->pers.netname, ent->client->pers.userName, g_juniorAdminMsg.string));
-				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
-			}
-			else {
+			if ((flags & JAPRO_ACCOUNTFLAG_A_READAMSAY) && !(ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_A_READAMSAY))
+				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in as an admin\n\"", ent->client->pers.netname, ent->client->pers.userName));
+			else
 				trap->SendServerCommand(-1, va("print \"%s^7 (%s) has logged in\n\"", ent->client->pers.netname, ent->client->pers.userName));
+
+			for (i=0; i<32; i++) {//Loop this
+				if (flags & (1 << i))//Problem, only add to flags, not remove?
+					ent->client->sess.accountFlags |= (1 << i);
 			}
-			if (flags & JAPRO_ACCOUNTFLAG_IPLOCK)
-				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_IPLOCK;
-			if (flags & JAPRO_ACCOUNTFLAG_TRUSTED)
-				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_TRUSTED;
-			if (flags & JAPRO_ACCOUNTFLAG_NORACE)
-				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_NORACE;
-			if (flags & JAPRO_ACCOUNTFLAG_NODUEL)
-				ent->client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_NODUEL;
 		}
 		else {
 			trap->SendServerCommand(ent - g_entities, "print \"Incorrect password!\n\"");
@@ -2693,12 +2681,34 @@ typedef struct bitInfo_S {
 } bitInfo_T;
 
 static bitInfo_T accountFlags[] = { 
-	{"IP Lock"},//1
-	{"Trusted"},//2
-	{"No Race"},//3
-	{"No Duel"},//4
-	{"Junior Admin"},//5
-	{"Full Admin"}//6
+	{"AmTele"},//0
+	{"AmFreeze"},//1
+	{"AmTelemark"},//2
+	{"AmBan"},//3
+	{"AmKick"},//4
+	{"NPC"},//5
+	{"NoClip"},//6
+	{"AmGrantAdmin"},//7
+	{"AmMap"},//8
+	{"AmPSay"},//9
+	{"AmForceTeam"},//10
+	{"Amlockteam"},//11
+	{"AmVSTR"},//12
+	{"See IPs"},//13
+	{"AmRename"},//14
+	{"AmListMaps"},//15
+	{"Whois"},//16
+	{"amLookup"},//17
+	{"Hide"},//18
+	{"See Hiders"},//19
+	{"Callvote"},//20
+	{"Killvote"},//21
+	{"Read AmSay"},//22
+	{"IP Lock"},//23
+	{"Trusted"},//24
+	{"No Race"},//25
+	{"No Duel"},//26
+	{"All Cosmetics"}//27
 };
 static const int MAX_ACCOUNT_FLAGS = ARRAY_LEN( accountFlags );
 
@@ -2706,8 +2716,8 @@ void Svcmd_FlagAccount_f( void ) {
 	const int args = trap->Argc();
 	char username[16];
 
-	if (args != 2 && args != 3) {
-		trap->Print( "Usage: /accountFlag <username> <flag>\n");
+	if (args != 2 && args != 3 && args != 4) {
+		trap->Print( "Usage: /accountFlag <username> <set (optional)> <flag>\n");
 		return;
 	}
 
@@ -2790,6 +2800,35 @@ void Svcmd_FlagAccount_f( void ) {
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
 		}
+		else if (args == 4) { //set
+			char arg[8] = { 0 };
+			unsigned int bitmask;
+			trap->Argv( 2, arg, sizeof(arg) );
+
+			if (Q_stricmp(arg, "set")) {
+				trap->Print( "Usage: /accountFlag <username> <set (optional)> <flag>\n");
+				return;
+			}
+
+			trap->Argv( 3, arg, sizeof(arg) );
+			bitmask = atoi( arg );
+
+			sql = "UPDATE LocalAccount SET flags = ? WHERE username = ?";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, bitmask));
+			CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+			s = sqlite3_step(stmt);
+
+			if (s == SQLITE_DONE) {
+				trap->Print("Account flag set.\n");
+			}
+			else {
+				G_ErrorPrint("ERROR: SQL Update Failed (Svcmd_FlagAccount_f 2)", s);
+			}
+
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+		}
 	}
 }
 
@@ -2811,7 +2850,7 @@ void Svcmd_ListAdmins_f(void)
 
 		CALL_SQLITE(open(LOCAL_DB_PATH, &db));
 
-		sql = "SELECT username, flags FROM localAccount WHERE flags & 16 OR flags & 32 ORDER BY flags DESC"; //ehh
+		sql = "SELECT username, flags FROM localAccount WHERE flags & 4194304 ORDER BY flags DESC"; //ehh
 		CALL_SQLITE(prepare_v2(db, sql, strlen(sql) + 1, &stmt, NULL));
 
 		Com_Printf("    ^5Username           Admin\n");
@@ -2820,10 +2859,7 @@ void Svcmd_ListAdmins_f(void)
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
 				flags = sqlite3_column_int(stmt, 1);
-				if (flags & 32)
-					Q_strncpyz(adminString, "Full", sizeof(adminString));
-				else if (flags & 16)
-					Q_strncpyz(adminString, "Junior", sizeof(adminString));
+				Q_strncpyz(adminString, "Admin", sizeof(adminString));
 				Com_Printf(va("^5%2i^3: ^3%-18s %s^7\n", row, (char*)sqlite3_column_text(stmt, 0), adminString));
 				row++;
 			}
@@ -6571,6 +6607,7 @@ void Cmd_DFRefresh_f(gentity_t *ent) {
 }
 #endif
 
+int G_AdminAllowed(gentity_t *ent, unsigned int adminCmd, qboolean cheatAllowed, qboolean raceAllowed, char *cmdName);
 void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? conditional open/close issue??
 	int			i;
 	char		msg[1024-128] = {0};
@@ -6600,21 +6637,11 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 		return;
 	}
 
-	if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {//Logged in as full admin
-		if (g_fullAdminLevel.integer & (1 << A_WHOIS))
-			whois = qtrue;
-		if (g_fullAdminLevel.integer & (1 << A_SEEIP))
-			seeip = qtrue;
-	}
-	else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {//Logged in as junior admin
-		if (g_juniorAdminLevel.integer & (1 << A_WHOIS))
-			whois = qtrue;
-		if (g_juniorAdminLevel.integer & (1 << A_SEEIP))
-			seeip = qtrue;
-	}
+	if (G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_WHOIS, qfalse, qfalse, NULL))
+		whois = qtrue;
+	if (G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_SEEIP, qfalse, qfalse, NULL))
+		seeip = qtrue;
 	
-	//A_STATUS
-
 	if (whois) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 		sql = "SELECT username FROM LocalAccount WHERE lastip = ?";
@@ -6675,10 +6702,12 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					*p = 0;
 			}
 			if (whois) {
-				if (cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)
-					Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
-				else if (cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)
+				if (cl->pers.adminLevel == 1)
 					Q_strncpyz(strAdmin, "^3Junior^7", sizeof(strAdmin));
+				else if (cl->pers.adminLevel == 2)
+					Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
+				else if (cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_A_READAMSAY) //Damn this, how do we get it to ignore non admin account flags
+					Q_strncpyz(strAdmin, "^3Custom^7", sizeof(strAdmin));
 				else
 					Q_strncpyz(strAdmin, "^7None^7", sizeof(strAdmin));
 			}

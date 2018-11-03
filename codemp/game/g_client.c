@@ -2236,7 +2236,7 @@ char *G_ValidateUserinfo( const char *userinfo ) {
 void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeticStringSize) {
 	int cosmetics = atoi(cosmeticString);
 
-	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
+	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_ALLCOSMETICS)
 		return; //debug testing
 
 	if (cosmetics) {//Optimized
@@ -2374,7 +2374,7 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 			else if (i == 1)
 				client->pers.timenudge = atoi(pch);
 			else if (i == 2)
-				client->pers.maxFPS = atoi(pch);
+				client->pers.maxFPS = atoi(pch); //This should have been max msec i guess. w/e
 			else 
 				break;
 			pch = strtok (NULL, " ");

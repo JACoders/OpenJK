@@ -410,17 +410,41 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 
 #define RS_TIMER_START				(1<<0)
 
-#define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<0)
-#define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<1)
-#define JAPRO_ACCOUNTFLAG_NORACE		(1<<2)
-#define JAPRO_ACCOUNTFLAG_NODUEL		(1<<3)
-#define JAPRO_ACCOUNTFLAG_JRADMIN		(1<<4)
-#define JAPRO_ACCOUNTFLAG_FULLADMIN		(1<<5)
+#define JAPRO_ACCOUNTFLAG_A_ADMINTELE	(1<<0)
+#define JAPRO_ACCOUNTFLAG_A_FREEZE		(1<<1)
+#define JAPRO_ACCOUNTFLAG_A_TELEMARK	(1<<2)
+#define JAPRO_ACCOUNTFLAG_A_ADMINBAN	(1<<3)
+#define JAPRO_ACCOUNTFLAG_A_ADMINKICK	(1<<4)
+#define JAPRO_ACCOUNTFLAG_A_NPC			(1<<5)
+#define JAPRO_ACCOUNTFLAG_A_NOCLIP		(1<<6)
+#define JAPRO_ACCOUNTFLAG_A_GRANTADMIN	(1<<7)
+#define JAPRO_ACCOUNTFLAG_A_CHANGEMAP	(1<<8)
+#define JAPRO_ACCOUNTFLAG_A_CSPRINT		(1<<9)
+#define JAPRO_ACCOUNTFLAG_A_FORCETEAM	(1<<10)
+#define JAPRO_ACCOUNTFLAG_A_LOCKTEAM	(1<<11)
+#define JAPRO_ACCOUNTFLAG_A_VSTR		(1<<12)
+#define JAPRO_ACCOUNTFLAG_A_SEEIP		(1<<13)
+#define JAPRO_ACCOUNTFLAG_A_RENAME		(1<<14)
+#define JAPRO_ACCOUNTFLAG_A_LISTMAPS	(1<<15)
+#define JAPRO_ACCOUNTFLAG_A_WHOIS		(1<<16)
+#define JAPRO_ACCOUNTFLAG_A_LOOKUP		(1<<17)
+#define JAPRO_ACCOUNTFLAG_A_NOFOLLOW	(1<<18)
+#define JAPRO_ACCOUNTFLAG_A_SEEHIDDEN	(1<<19)
+#define JAPRO_ACCOUNTFLAG_A_CALLVOTE	(1<<20)
+#define JAPRO_ACCOUNTFLAG_A_KILLVOTE	(1<<21)
+#define JAPRO_ACCOUNTFLAG_A_READAMSAY	(1<<22)
+#define JAPRO_MAX_ADMIN_BITS 22
+
+#define JAPRO_ACCOUNTFLAG_IPLOCK		(1<<23)
+#define JAPRO_ACCOUNTFLAG_TRUSTED		(1<<24)
+#define JAPRO_ACCOUNTFLAG_NORACE		(1<<25)
+#define JAPRO_ACCOUNTFLAG_NODUEL		(1<<26)
+#define JAPRO_ACCOUNTFLAG_ALLCOSMETICS	(1<<27)
 
 #define JAPRO_ACCOUNTTEAMFLAG_OWNER		(1<<0)
 #define JAPRO_ACCOUNTTEAMFLAG_PENDING	(1<<1)
 
-#define JAPRO_TEAMFLAG_PRIVATE		(1<<0)
+#define JAPRO_TEAMFLAG_PRIVATE			(1<<0)
 
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
@@ -438,34 +462,6 @@ typedef struct { //Should this store their g2 anim? for proper g2 sync?
 	int		time, leveltime, torsoAnim, torsoTimer, legsAnim, legsTimer;
 	float	realAngle; //Only the [YAW] is ever used for hit detection
 } clientTrail_t;
-
-
-//JAPRO - Serverside - Admin bitrates
-typedef enum {
-	A_ADMINTELE,
-	A_FREEZE,
-	A_TELEMARK,
-	A_ADMINBAN,
-	A_ADMINKICK,
-	A_NPC,
-	A_NOCLIP,
-	A_GRANTADMIN,
-	A_CHANGEMAP,
-	A_CSPRINT,
-	A_FORCETEAM,
-	A_LOCKTEAM,
-	A_VSTR,
-	A_SEEIP,
-	A_RENAME,
-	A_LISTMAPS,
-	A_BUILDHIGHSCORES,
-	A_WHOIS,
-	A_LOOKUP,
-	A_NOFOLLOW,
-	A_SEEHIDDEN,
-	A_CALLVOTE,
-	A_KILLVOTE
-} admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates
 typedef enum {
@@ -934,6 +930,7 @@ typedef struct clientPersistant_s {
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
 	unsigned int	unlocks;
+	short		adminLevel;//0,1,2,3
 
 	stats_t		stats;
 } clientPersistant_t;
