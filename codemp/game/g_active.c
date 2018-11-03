@@ -1590,6 +1590,7 @@ int SpectatorFind(gentity_t *self)
 SpectatorThink
 =================
 */
+int G_AdminAllowed(gentity_t *ent, unsigned int adminCmd, qboolean cheatAllowed, qboolean raceAllowed, char *cmdName);
 void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 	pmove_t	pmove;
 	gclient_t	*client;
@@ -1681,7 +1682,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 				other = &g_entities[client->sess.spectatorClient];
 				if (other && other->client) {
 					if (g_allowNoFollow.integer && other->client->pers.noFollow) {
-						if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_SEEHIDDEN, qfalse, NULL))
+						if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_SEEHIDDEN, qfalse, qfalse, NULL))
 							StopFollowing(ent);
 					}
 				}
