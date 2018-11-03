@@ -1738,6 +1738,9 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	if (trigger->spawnflags & RESTRICT_FLAG_CROUCHJUMP) {//hl style crouch jump
 		player->client->ps.stats[STAT_RESTRICTIONS] |= JAPRO_RESTRICT_CROUCHJUMP;
 	}
+	if (trigger->spawnflags & RESTRICT_FLAG_ALLOWTELES) {
+		player->client->ps.stats[STAT_RESTRICTIONS] |= JAPRO_RESTRICT_ALLOWTELES;
+	}
 	if (!trigger->spawnflags) {
 		player->client->ps.stats[STAT_RESTRICTIONS] |= JAPRO_RESTRICT_BHOP;
 	}
@@ -1757,6 +1760,9 @@ void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 	}
 	if (trigger->spawnflags & RESTRICT_FLAG_CROUCHJUMP) {//hl style crouch jump
 		player->client->ps.stats[STAT_RESTRICTIONS] &= ~JAPRO_RESTRICT_CROUCHJUMP;
+	}
+	if (trigger->spawnflags & RESTRICT_FLAG_ALLOWTELES) {
+		player->client->ps.stats[STAT_RESTRICTIONS] &= ~JAPRO_RESTRICT_ALLOWTELES;
 	}
 	if (!trigger->spawnflags) {
 		player->client->ps.stats[STAT_RESTRICTIONS] &= ~JAPRO_RESTRICT_BHOP;
