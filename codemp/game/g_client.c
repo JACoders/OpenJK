@@ -2340,7 +2340,7 @@ qboolean ClientUserinfoChanged( int clientNum ) { //I think anything treated as 
 			else if (i == 1)
 				client->pers.timenudge = atoi(pch);
 			else if (i == 2)
-				client->pers.maxFPS = atoi(pch);
+				client->pers.maxFPS = atoi(pch); //This should have been max msec i guess. w/e
 			else 
 				break;
 			pch = strtok (NULL, " ");

@@ -1139,7 +1139,7 @@ SetTeam
 
 qboolean g_dontPenalizeTeam = qfalse;
 qboolean g_preventTeamBegin = qfalse;
-void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modified for proper amforceteam
+void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modified for proper amforceteam.  Why doesn't this accept TEAM_FREE and stuff and instead use char??
 	int					team, oldTeam;
 	gclient_t			*client;
 	int					clientNum;
@@ -8053,12 +8053,12 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				Q_strncpyz(realFPS, "^7Bot", sizeof(realFPS));
 			}
 			else {
-				if (cl->pers.rate < sv_maxRate.integer)
+				if (cl->pers.rate < sv_maxRate.integer || !sv_maxRate.integer) //sometimes it just doesnt read sv_maxrate cvar lol?
 					Q_strncpyz(strRate, va("^3%i", cl->pers.rate), sizeof(strRate));
 				else
 					Q_strncpyz(strRate, va("^7%i", sv_maxRate.integer), sizeof(strRate)); // W/e
 
-				if (cl->pers.snaps < sv_fps.integer)
+				if (cl->pers.snaps < sv_fps.integer || !sv_fps.integer)
 					Q_strncpyz(strSnaps, va("^3%i", cl->pers.snaps), sizeof(strSnaps));
 				else
 					Q_strncpyz(strSnaps, va("^7%i", sv_fps.integer), sizeof(strSnaps)); // W/e
