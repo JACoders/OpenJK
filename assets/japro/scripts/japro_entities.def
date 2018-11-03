@@ -27,7 +27,7 @@ speed - scale to use
 Sets activators velocity
 */
 
-/*QUAKED target_restrict (1 0 0) (-8 -8 -8) (8 8 8) REMOVE_RESTRICTIONS HASTE REMOVE_NEUTRALFLAG SET_JUMPLEVEL SET_MOVEPHYSICS YSAL
+/*QUAKED target_restrict (1 0 0) (-8 -8 -8) (8 8 8) REMOVE_RESTRICTIONS HASTE REMOVE_NEUTRALFLAG SET_JUMPLEVEL SET_MOVEPHYSICS YSAL CROUCHJUMP DOUBLEJUMP ALLOWRACETELE
 
 REMOVE_RESTRICTIONS - Removes the specified restrictions (default only bhop)
 HASTE - Replaces the default onlybhop restriction with haste.
@@ -35,6 +35,9 @@ REMOVE_NEUTRALFLAG - Replaces the default onlybhop restriction with remove neutr
 SET_JUMPLEVEL - Replaces the default onlybhop restriction with set jumplevel (use 'count' field).
 SET_MOVEPHYSICS - Replaces the default onlybhop restriction with set movementstyle (use 'count' field).
 YSAL - Replaces the default onlybhop restriction with haste.
+CROUCHJUMP - Sets flag to enable HL/SP style crouch jumping (where crouching mid air gives extra height).
+DOUBLEJUMP - Sets a flag to disable step/ramp jumping in CPM/PJK styles.
+ALLOWRACETELE - Sets flag to allow amTele without resetting timer.
 
 */
 
