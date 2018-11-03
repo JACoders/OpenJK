@@ -732,17 +732,14 @@ void Svcmd_Amgrantadmin_f(void)
 		Q_strlwr(arg);
 
 		if (!Q_stricmp(arg, "none")) {
-			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
-			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
+			g_entities[clientid].client->pers.adminLevel = 0;
 		}
 		else if (!Q_stricmp(arg, "junior")) {
-			g_entities[clientid].client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_JRADMIN;
-			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_FULLADMIN;
+			g_entities[clientid].client->pers.adminLevel = 1;
 			trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
 		}
 		else if (!Q_stricmp(arg, "full")) {
-			g_entities[clientid].client->sess.accountFlags &= ~JAPRO_ACCOUNTFLAG_JRADMIN;
-			g_entities[clientid].client->sess.accountFlags |= JAPRO_ACCOUNTFLAG_FULLADMIN;
+		g_entities[clientid].client->pers.adminLevel = 2;
 			trap->SendServerCommand( clientid, "print \"You have been granted Full admin privileges.\n\"" );
 		}
 }
@@ -1254,13 +1251,13 @@ static bitInfo_T adminOptions[] = {
 	{"See IPs"},//13
 	{"Amrename"},//14
 	{"Amlistmaps"},//15
-	{"Rebuild highscores (?)"},//16
-	{"Amwhois"},//17
-	{"Amlookup"},//18
-	{"Use hide"},//19
-	{"See hiders"},//20
-	{"Callvote"},//21
-	{"Killvote"}//22
+	{"Amwhois"},//16
+	{"Amlookup"},//17
+	{"Use hide"},//18
+	{"See hiders"},//19
+	{"Callvote"},//20
+	{"Killvote"},//21
+	{"Read Amsay"}//22
 };
 static const int MAX_ADMIN_OPTIONS = ARRAY_LEN( adminOptions );
 

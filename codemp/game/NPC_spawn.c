@@ -4235,27 +4235,8 @@ void Cmd_NPC_f( gentity_t *ent )
 	if (!ent->client)
 		return;
 
-	if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
-	{
-		if (!(g_fullAdminLevel.integer & (1 << A_NPC)))
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (npc).\n\"" );
-			return;
-		}
-	}
-	else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN)//Logged in as junior admin
-	{
-		if (!(g_juniorAdminLevel.integer & (1 << A_NPC)))
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (npc).\n\"" );
-			return;
-		}
-	}
-	else if (!sv_cheats.integer)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (npc).\n\"" );//replaces "Cheats are not enabled on this server." msg
+	if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_NPC, qtrue, "npc"))
 		return;
-	}
 
 	trap->Argv( 1, cmd, 1024 );
 

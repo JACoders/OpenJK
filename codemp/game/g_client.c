@@ -2205,7 +2205,7 @@ char *G_ValidateUserinfo( const char *userinfo )
 void G_ValidateCosmetics(gclient_t *client, char *cosmeticString, size_t cosmeticStringSize) {
 	int cosmetics = atoi(cosmeticString);
 
-	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN)//Logged in as full admin
+	if (client->sess.accountFlags & JAPRO_ACCOUNTFLAG_ALLCOSMETICS)
 		return; //debug testing
 
 	if (cosmetics) {//Optimized
