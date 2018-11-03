@@ -635,12 +635,34 @@ void Field_CharEvent( field_t *edit, int ch ) {
 
 	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
 		if ( edit->cursor > 0 ) {
-			memmove( edit->buffer + edit->cursor - 1,
-				edit->buffer + edit->cursor, len + 1 - edit->cursor );
-			edit->cursor--;
-			if ( edit->cursor < edit->scroll )
-			{
-				edit->scroll--;
+			if (edit == &chatField && edit->cursor > 2 &&
+				*(edit->buffer + edit->cursor - 1) == '.' && *(edit->buffer + edit->cursor - 2) == '/' && *(edit->buffer + edit->cursor - 3) == -80) {
+				memmove(edit->buffer + edit->cursor - 3,
+					edit->buffer + edit->cursor, len + 3 - edit->cursor);
+				edit->cursor -= 3;
+				if (edit->cursor < edit->scroll)
+				{
+					edit->scroll -= 3;
+				}
+			}
+			else if (edit == &chatField && edit->cursor > 1 &&
+				*(edit->buffer + edit->cursor - 1) == '\'' && *(edit->buffer + edit->cursor - 2) == '\'') {
+				memmove(edit->buffer + edit->cursor - 2,
+					edit->buffer + edit->cursor, len + 2 - edit->cursor);
+				edit->cursor -= 2;
+				if (edit->cursor < edit->scroll)
+				{
+					edit->scroll -= 2;
+				}
+			}
+			else {
+				memmove(edit->buffer + edit->cursor - 1,
+					edit->buffer + edit->cursor, len + 1 - edit->cursor);
+				edit->cursor--;
+				if (edit->cursor < edit->scroll)
+				{
+					edit->scroll--;
+				}
 			}
 		}
 		return;
@@ -672,15 +694,22 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	if (ch == '"' && edit == &chatField) {
+		Field_CharEvent(edit, '\'');
+		Field_CharEvent(edit, '\'');
+		return;
+	}
+
+	int max = edit == &chatField ? 151 : MAX_EDIT_LINE;
 	if ( kg.key_overstrikeMode ) {
 		// - 2 to leave room for the leading slash and trailing \0
-		if ( edit->cursor == MAX_EDIT_LINE - 2 )
+		if ( edit->cursor == max - 2 )
 			return;
 		edit->buffer[edit->cursor] = ch;
 		edit->cursor++;
 	} else {	// insert mode
 		// - 2 to leave room for the leading slash and trailing \0
-		if ( len == MAX_EDIT_LINE - 2 ) {
+		if ( len == max - 2 ) {
 			return; // all full
 		}
 		memmove( edit->buffer + edit->cursor + 1,
