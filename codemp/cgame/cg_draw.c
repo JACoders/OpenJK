@@ -11308,7 +11308,7 @@ static void CG_Speedometer(void)
 			char speedStr4[32] = {0};
 			vec4_t colorGroundSpeed = {1, 1, 1, 1};
 
-			if (pm->ps->groundEntityNum != ENTITYNUM_NONE || pm->ps->velocity[2] < 0) { //On ground or Moving down
+			if (pm && (pm->ps->groundEntityNum != ENTITYNUM_NONE || pm->ps->velocity[2] < 0)) { //On ground or Moving down
 				cg.firstTimeInAir = qfalse;
 			}
 			else if (!cg.firstTimeInAir) { //Moving up for first time
