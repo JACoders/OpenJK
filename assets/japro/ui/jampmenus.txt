@@ -7,6 +7,7 @@
 	loadMenu { "ui/jamp/player2.menu" }
 	loadMenu { "ui/jamp/createserver.menu" }
 	loadMenu { "ui/jamp/connect.menu" }
+	loadMenu { "ui/jamp/connect_16_9.menu" }
 	loadMenu { "ui/jamp/rules.menu" }
 	loadMenu { "ui/jamp/rules_games.menu" }
 	loadMenu { "ui/jamp/rules_force.menu" }

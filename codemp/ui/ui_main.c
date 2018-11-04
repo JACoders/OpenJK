@@ -11751,16 +11751,14 @@ void UI_DrawConnectScreen( qboolean overlay ) {
 
 	char sStringEdTemp[256];
 
-	qhandle_t ConnectScreen;
+	menuDef_t *menu = (uiInfo.uiDC.widthRatioCoef >= 0.74f && uiInfo.uiDC.widthRatioCoef <= 0.76f) ? Menus_FindByName("Connect_16_9") : Menus_FindByName("Connect");
 
-	if (uiInfo.uiDC.widthRatioCoef >= 0.74f && uiInfo.uiDC.widthRatioCoef <= 0.76f)
-		ConnectScreen = trap->R_RegisterShaderNoMip("menu/art/unknownmap_mp_16_9");
+	if (!menu)
+		menu = Menus_FindByName("Connect");
 
-	if (!ConnectScreen)
-		ConnectScreen = trap->R_RegisterShaderNoMip("menu/art/unknownmap_mp");
-
-	if (!overlay && ConnectScreen)
-		UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ConnectScreen);
+	if ( !overlay && menu ) {
+		Menu_Paint(menu, qtrue);
+	}
 
 	if (!overlay) {
 		centerPoint = SCREEN_WIDTH / 2;
