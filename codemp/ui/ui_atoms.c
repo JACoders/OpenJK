@@ -211,7 +211,7 @@ void UI_StylePlayer_f(void) {
 
 
 static bitInfo_t speedometerSettings[] = {
-	{ "Disable speedometer" },
+	{ "Enable speedometer" },
 	{ "Pre-speed display" },
 	{ "Jump height display" },
 	{ "Jump distance display" },
@@ -235,7 +235,7 @@ void UI_SpeedometerSettings_f(void) {
 		int i = 0, display = 0;
 
 		for (i = 0; i < MAX_SPEEDOMETER_SETTINGS; i++) {
-			if ((cg_speedometerSettings.integer & (1 << i))) {
+			if (cg_speedometer.integer & (1 << i)) {
 				Com_Printf("%2d [X] %s\n", display, speedometerSettings[i].string);
 			}
 			else {
@@ -262,20 +262,20 @@ void UI_SpeedometerSettings_f(void) {
 		if ((index == 8 || index == 9))
 		{ //Radio button these options
 			int groupMask = (1 << 8) + (1 << 9);
-			int value = cg_speedometerSettings.integer;
+			int value = cg_speedometer.integer;
 
 			groupMask &= ~(1 << index);
 			value &= ~(groupMask);
 			value ^= (1 << index);
 
-			trap->Cvar_Set("cg_speedometerSettings", va("%i", value));
+			trap->Cvar_Set("cg_speedometer", va("%i", value));
 		}
 		else {
-			trap->Cvar_Set("cg_speedometerSettings", va("%i", (1 << index) ^ (cg_speedometerSettings.integer & mask)));
+			trap->Cvar_Set("cg_speedometer", va("%i", (1 << index) ^ (cg_speedometer.integer & mask)));
 		}
-		trap->Cvar_Update(&cg_speedometerSettings);
+		trap->Cvar_Update(&cg_speedometer);
 
-		Com_Printf("%s %s^7\n", speedometerSettings[index2].string, ((cg_speedometerSettings.integer & (1 << index2))
+		Com_Printf("%s %s^7\n", speedometerSettings[index2].string, ((cg_speedometer.integer & (1 << index2))
 			? "^2Enabled" : "^1Disabled"));
 	}
 }

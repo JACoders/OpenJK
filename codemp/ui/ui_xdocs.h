@@ -49,7 +49,7 @@ XDOCS_CVAR_DEF("cg_movementKeysY", "Vertical location of the movement keys onscr
 XDOCS_CVAR_DEF("cg_movementKeysSize", "Scale of the movement keys",""
 )
 
-XDOCS_CVAR_DEF("cg_speedometerSettings", "Configure with the /speedometer command",""
+XDOCS_CVAR_DEF("cg_speedometer", "Configure with the /speedometer command",""
 )
 
 XDOCS_CVAR_DEF("cg_speedometerX", "Horizontal location of the speedometer onscreen",""

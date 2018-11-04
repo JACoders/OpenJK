@@ -159,6 +159,6 @@ XCVAR_DEF( ui_allowSaberSwitch,				"0",					NULL,				CVAR_INTERNAL|CVAR_ROM )
 XCVAR_DEF( ui_RGBSkin,						"0",					NULL,				CVAR_INTERNAL|CVAR_ROM )
 XCVAR_DEF( cg_strafeHelper,					"3008",					NULL,				CVAR_ARCHIVE_ND )
 XCVAR_DEF( cg_stylePlayer,					"0",					NULL,				CVAR_ARCHIVE )
-XCVAR_DEF( cg_speedometerSettings,			"0",					NULL,				CVAR_ARCHIVE )
+XCVAR_DEF( cg_speedometer,					"0",					NULL,				CVAR_ARCHIVE )
 
 #undef XCVAR_DEF

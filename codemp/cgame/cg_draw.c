@@ -67,7 +67,7 @@ static void CG_DrawTrajectoryLine(void);
 #define SHELPER_WEZE			(1<<13)
 #define SHELPER_CROSSHAIR		(1<<14)
 
-#define SPEEDOMETER_DISABLE			(1<<0)
+#define SPEEDOMETER_ENABLE			(1<<0)
 #define SPEEDOMETER_GROUNDSPEED		(1<<1)
 #define SPEEDOMETER_JUMPHEIGHT		(1<<2)
 #define SPEEDOMETER_JUMPDISTANCE	(1<<3)
@@ -1769,7 +1769,7 @@ void CG_DrawHUD(centity_t	*cent)
 	int	scoreBias;
 	char scoreBiasStr[16];
 
-	if (!(cg_speedometerSettings.integer & SPEEDOMETER_DISABLE) || cg_strafeHelper.integer || cg_raceTimer.integer > 1)
+	if ((cg_speedometer.integer & SPEEDOMETER_ENABLE) || cg_strafeHelper.integer || cg_raceTimer.integer > 1)
 		CG_CalculateSpeed(cent);
 
 	//JAPRO - Clientside - Movement Keys Start
@@ -1787,17 +1787,17 @@ void CG_DrawHUD(centity_t	*cent)
 			speedometerXPos -= 42;
 	}
 
-	if (!(cg_speedometerSettings.integer & SPEEDOMETER_DISABLE)) {
+	if (cg_speedometer.integer & SPEEDOMETER_ENABLE) {
 		CG_Speedometer();
-		if (cg_speedometerSettings.integer & SPEEDOMETER_ACCELMETER || cg_strafeHelper.integer & SHELPER_ACCELMETER)
+		if (cg_speedometer.integer & SPEEDOMETER_ACCELMETER || cg_strafeHelper.integer & SHELPER_ACCELMETER)
 			CG_DrawAccelMeter();
-		if (cg_speedometerSettings.integer & SPEEDOMETER_JUMPHEIGHT)
+		if (cg_speedometer.integer & SPEEDOMETER_JUMPHEIGHT)
 			CG_JumpHeight(cent);
-		if (cg_speedometerSettings.integer & SPEEDOMETER_JUMPDISTANCE)
+		if (cg_speedometer.integer & SPEEDOMETER_JUMPDISTANCE)
 			CG_JumpDistance();
-		if (cg_speedometerSettings.integer & SPEEDOMETER_VERTICALSPEED)
+		if (cg_speedometer.integer & SPEEDOMETER_VERTICALSPEED)
 			CG_DrawVerticalSpeed();
-		if (cg_speedometerSettings.integer & SPEEDOMETER_YAWSPEED)
+		if (cg_speedometer.integer & SPEEDOMETER_YAWSPEED)
 			CG_DrawYawSpeed();
 	}
 
@@ -1822,7 +1822,7 @@ void CG_DrawHUD(centity_t	*cent)
 	}
 	if (cg_raceTimer.integer)
 		CG_RaceTimer();
-	if (cg_speedometerSettings.integer & SPEEDOMETER_SPEEDGRAPH)
+	if (cg_speedometer.integer & SPEEDOMETER_SPEEDGRAPH)
 		CG_DrawSpeedGraph();
 //JAPRO - Clientside - Lead Indicator Start
 	if (cg_leadIndicator.integer)
@@ -10815,8 +10815,8 @@ static void CG_DrawAccelMeter(void)
 
 	x = speedometerXPos;
 
-	if (!(cg_speedometerSettings.integer & SPEEDOMETER_DISABLE)) {
-		if (cg_speedometerSettings.integer & SPEEDOMETER_GROUNDSPEED)
+	if (cg_speedometer.integer & SPEEDOMETER_ENABLE) {
+		if (cg_speedometer.integer & SPEEDOMETER_GROUNDSPEED)
 			x -= 104;
 		else
 			x -= 52;
@@ -11285,19 +11285,19 @@ static void CG_Speedometer(void)
 			accelStr3 = "^7m: ";
 		}
 
-		if (!(cg_speedometerSettings.integer & SPEEDOMETER_KPH) && !(cg_speedometerSettings.integer & SPEEDOMETER_MPH))
+		if (!(cg_speedometer.integer & SPEEDOMETER_KPH) && !(cg_speedometer.integer & SPEEDOMETER_MPH))
 		{
 			Com_sprintf(speedStr, sizeof(speedStr), "   %.0f", floorf(currentSpeed + 0.5f));
 			CG_Text_Paint(speedometerXPos*cgs.widthRatioCoef, cg_speedometerY.integer, cg_speedometerSize.value, colorWhite, accelStr, 0.0f, 0, ITEM_ALIGN_RIGHT|ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 			CG_Text_Paint(speedometerXPos*cgs.widthRatioCoef, cg_speedometerY.integer, cg_speedometerSize.value, colorSpeed, speedStr, 0.0f, 0, ITEM_ALIGN_RIGHT|ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 		}
-		else if (cg_speedometerSettings.integer & SPEEDOMETER_KPH)
+		else if (cg_speedometer.integer & SPEEDOMETER_KPH)
 		{
 			Com_sprintf(speedStr2, sizeof(speedStr2), "   %.1f", currentSpeed * 0.05);
 			CG_Text_Paint(speedometerXPos*cgs.widthRatioCoef, cg_speedometerY.integer, cg_speedometerSize.value, colorWhite, accelStr2, 0.0f, 0, ITEM_ALIGN_RIGHT|ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 			CG_Text_Paint(speedometerXPos*cgs.widthRatioCoef, cg_speedometerY.integer, cg_speedometerSize.value, colorSpeed, speedStr2, 0.0f, 0, ITEM_ALIGN_RIGHT|ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
 		}
-		else if (cg_speedometerSettings.integer & SPEEDOMETER_MPH)
+		else if (cg_speedometer.integer & SPEEDOMETER_MPH)
 		{
 			Com_sprintf(speedStr3, sizeof(speedStr3), "   %.1f", currentSpeed * 0.03106855);
 			CG_Text_Paint(speedometerXPos*cgs.widthRatioCoef, cg_speedometerY.integer, cg_speedometerSize.value, colorWhite, accelStr3, 0.0f, 0, ITEM_ALIGN_RIGHT|ITEM_TEXTSTYLE_OUTLINED, FONT_NONE);
@@ -11306,7 +11306,7 @@ static void CG_Speedometer(void)
 
 		speedometerXPos += 52;
 
-		if (cg_speedometerSettings.integer & SPEEDOMETER_GROUNDSPEED) {
+		if (cg_speedometer.integer & SPEEDOMETER_GROUNDSPEED) {
 			char speedStr4[32] = {0};
 			vec4_t colorGroundSpeed = {1, 1, 1, 1};
 

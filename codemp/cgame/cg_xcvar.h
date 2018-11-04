@@ -42,7 +42,7 @@ XCVAR_DEF( cg_movementKeys,			"0",	NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_movementKeysX,		"465",	NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_movementKeysY,		"432",	NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_movementKeysSize,		"1.0",	NULL,					CVAR_ARCHIVE )
-XCVAR_DEF( cg_speedometerSettings,	"0",	NULL,					CVAR_ARCHIVE ) //bitvalue
+XCVAR_DEF( cg_speedometer,			"0",	NULL,					CVAR_ARCHIVE ) //bitvalue
 XCVAR_DEF( cg_speedometerX,			"132",	NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_speedometerY,			"459",	NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_speedometerSize,		"0.75",	NULL,					CVAR_ARCHIVE )
