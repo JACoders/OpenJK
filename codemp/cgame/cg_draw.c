@@ -42,6 +42,7 @@ static void CG_PlayerLabels( void );
 static void CG_CalculateSpeed(centity_t *cent);
 static void CG_Speedometer(void);
 static void CG_DrawAccelMeter(void);
+static void CG_DrawShowPos(void);
 static void CG_MovementKeys(centity_t *cent);
 static void CG_JumpHeight(centity_t *cent);
 static void CG_RaceTimer(void);
@@ -1769,7 +1770,7 @@ void CG_DrawHUD(centity_t	*cent)
 	int	scoreBias;
 	char scoreBiasStr[16];
 
-	if ((cg_speedometer.integer & SPEEDOMETER_ENABLE) || cg_strafeHelper.integer || cg_raceTimer.integer > 1)
+	if ((cg_speedometer.integer & SPEEDOMETER_ENABLE) || cg_strafeHelper.integer || cg_raceTimer.integer > 1 || cg_showpos.integer)
 		CG_CalculateSpeed(cent);
 
 	//JAPRO - Clientside - Movement Keys Start
@@ -10079,6 +10080,7 @@ static void CG_Draw2D( void ) {
 	if (!cl_paused.integer) {
 		CG_DrawBracketedEntities();
 		CG_DrawUpperRight();
+		CG_DrawShowPos();
 	}
 
 	if ( !CG_DrawFollow() ) {
@@ -11303,6 +11305,22 @@ static void CG_Speedometer(void)
 				cg.clientSpeedpoints[i].reached = qfalse;
 			}
 		}
+}
+
+static void CG_DrawShowPos(void)
+{
+	static char showPosString[128];
+
+	if (!cg_showpos.integer)
+		return;
+
+	if (!cg.snap)
+		return;
+
+	Com_sprintf(showPosString, sizeof(showPosString), "pos:   %.2f   %.2f   %.2f\nang:   %.2f   %.2f\nvel:     %.2f", (float)cg.predictedPlayerState.origin[0], (float)cg.predictedPlayerState.origin[1], (float)cg.predictedPlayerState.origin[2], (float)cg.predictedPlayerState.viewangles[PITCH], (float)cg.predictedPlayerState.viewangles[YAW], cg.currentSpeed);
+
+	CG_Text_Paint(SCREEN_WIDTH - (SCREEN_WIDTH - 340) * cgs.widthRatioCoef, 0, 0.6f, colorWhite,
+		showPosString, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL2);
 }
 
 static void CG_MovementKeys(centity_t *cent)

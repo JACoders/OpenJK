@@ -248,6 +248,7 @@ XCVAR_DEF( cg_drawTimerMsec,					"1",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_drawUpperRight,					"1",					NULL,					CVAR_NONE )
 XCVAR_DEF( cg_drawVehLeadIndicator,				"1",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_dynamicCrosshair,					"1",					NULL,					CVAR_ARCHIVE )
+XCVAR_DEF( cg_showpos,							"0",					NULL,					CVAR_NONE )
 //Enables ghoul2 traces for crosshair traces.. more precise when pointing at others, but slower.
 //And if the server doesn't have g2 col enabled, it won't match up the same.
 XCVAR_DEF( cg_dynamicCrosshairPrecision,		"1",					NULL,					CVAR_ARCHIVE )
