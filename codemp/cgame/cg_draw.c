@@ -8150,49 +8150,9 @@ static void CG_DrawCrosshairNames( void ) {
 
 	name = cgs.clientinfo[ cg.crosshairClientNum ].name;
 
-	if (cgs.gametype >= GT_TEAM)
-	{
-		//if (cgs.gametype == GT_SIEGE)
-		if (1)
-		{ //instead of team-based we'll make it oriented based on which team we're on
-			if (cgs.clientinfo[cg.crosshairClientNum].team == cg.predictedPlayerState.persistant[PERS_TEAM])
-			{
-				baseColor = CT_GREEN;
-			}
-			else
-			{
-				baseColor = CT_RED;
-			}
-		}
-		else
-		{
-			if (cgs.clientinfo[cg.crosshairClientNum].team == TEAM_RED)
-			{
-				baseColor = CT_RED;
-			}
-			else
-			{
-				baseColor = CT_BLUE;
-			}
-		}
-	}
-	else
-	{
-		//baseColor = CT_WHITE;
-		if (cgs.gametype == GT_POWERDUEL &&
-			cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR &&
-			cgs.clientinfo[cg.crosshairClientNum].duelTeam == cgs.clientinfo[cg.predictedPlayerState.clientNum].duelTeam)
-		{ //on the same duel team in powerduel, so he's a friend
-			baseColor = CT_GREEN;
-		}
-		else
-		{
-			baseColor = CT_RED; //just make it red in nonteam modes since everyone is hostile and crosshair will be red on them too
-		}
-	}
+	baseColor = CT_WHITE;
 
-	if (cg.snap->ps.duelInProgress)
-	{
+	if (cg.snap->ps.duelInProgress) {
 		if (cg.crosshairClientNum != cg.snap->ps.duelIndex)
 		{ //grey out crosshair for everyone but your foe if you're in a duel
 			if (!(cg_stylePlayer.integer & JAPRO_STYLE_HIDENONDUELERS))
@@ -8211,21 +8171,19 @@ static void CG_DrawCrosshairNames( void ) {
 	tcolor[0] = colorTable[baseColor][0];
 	tcolor[1] = colorTable[baseColor][1];
 	tcolor[2] = colorTable[baseColor][2];
-	tcolor[3] = color[3]*0.8f;
+	tcolor[3] = color[3]*1.0f;
 
-	if (isVeh)
+	if (!isVeh)
 	{
-		char str[MAX_STRING_CHARS];
-		Com_sprintf(str, MAX_STRING_CHARS, "^7%s (pilot)", name); //JAPRO - Clientside - Colored crosshair names
-		CG_DrawProportionalString( (SCREEN_WIDTH / 2), 170, str, UI_CENTER, tcolor);
+		//JAPRO - Clientside - Colored crosshair names - Start
+		CG_DrawProportionalString( (SCREEN_WIDTH / 2), 170, name, UI_CENTER, tcolor );
+		//JAPRO - Clientside - Colored crosshair names - End
 	}
 	else
 	{
-//JAPRO - Clientside - Colored crosshair names - Start
-		char str2[MAX_STRING_CHARS];
-		Com_sprintf(str2, MAX_STRING_CHARS, "^7%s", name);
-		CG_DrawProportionalString( (SCREEN_WIDTH / 2), 170, str2, UI_CENTER, tcolor);
-//JAPRO - Clientside - Colored crosshair names - End
+		char str[MAX_STRING_CHARS];
+		Com_sprintf( str, MAX_STRING_CHARS, "%s ^7(pilot)", name );
+		CG_DrawProportionalString( (SCREEN_WIDTH / 2), 170, str, UI_CENTER, tcolor );
 	}
 
 	trap->R_SetColor( NULL );
