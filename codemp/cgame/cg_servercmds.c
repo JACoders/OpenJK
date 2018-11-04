@@ -1589,7 +1589,7 @@ static void CG_Print_f( void ) {
 
 void CG_ChatBox_AddString(char *chatStr);
 static void CG_Chat_f( void ) {
-	char cmd[MAX_STRING_CHARS] = {0}, text[MAX_SAY_TEXT] = {0};
+	char cmd[MAX_STRING_CHARS] = {0}, text[MAX_SAY_TEXT] = {0}, logtext[MAX_SAY_TEXT] = {0};
 
 	trap->Cmd_Argv( 0, cmd, sizeof( cmd ) );
 
@@ -1599,6 +1599,11 @@ static void CG_Chat_f( void ) {
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			trap->Cmd_Argv( 1, text, sizeof( text ) );
 			CG_RemoveChatEscapeChar( text );
+
+			// Copy text somewhere else and log that
+			Q_strncpyz(logtext, text, sizeof(logtext));
+			Q_CleanStr(logtext);
+			CG_LogPrintf(cg.log.chat, "%s\n", logtext);
 
 			// from duo
 			// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
@@ -1640,8 +1645,6 @@ static void CG_Chat_f( void ) {
 			else {
 				trap->Print("%s\n", text);
 			}
-			Q_CleanString( text );
-			CG_LogPrintf(cg.log.chat, va("%s\n", text));
 		}
 	}
 	else if ( !strcmp( cmd, "lchat" ) ) {
@@ -1666,6 +1669,11 @@ static void CG_Chat_f( void ) {
 			Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 			CG_RemoveChatEscapeChar( text );
 
+			// Copy text somewhere else and log that
+			Q_strncpyz(logtext, text, sizeof(logtext));
+			Q_CleanStr(logtext);
+			CG_LogPrintf(cg.log.chat, "%s\n", logtext);
+
 			//from duo
 			// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
 			char tempChatStr[MAX_SAY_TEXT] = { 0 }, *r = text, *w = tempChatStr;
@@ -1688,8 +1696,6 @@ static void CG_Chat_f( void ) {
 
 			CG_ChatBox_AddString( text );
 			trap->Print( "*%s\n", text );
-			Q_CleanString( text );
-			CG_LogPrintf(cg.log.chat, va("%s\n", text));
 		}
 	}
 	else if ( !strcmp( cmd, "tchat" ) ) {
@@ -1697,6 +1703,11 @@ static void CG_Chat_f( void ) {
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		trap->Cmd_Argv( 1, text, sizeof( text ) );
 		CG_RemoveChatEscapeChar( text );
+
+		// Copy text somewhere else and log that
+		Q_strncpyz(logtext, text, sizeof(logtext));
+		Q_CleanStr(logtext);
+		CG_LogPrintf(cg.log.chat, "%s\n", logtext);
 
 		// from duo
 		// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
@@ -1729,8 +1740,6 @@ static void CG_Chat_f( void ) {
 		else {
 			trap->Print( "%s\n", text );
 		}
-		Q_CleanString( text );
-		CG_LogPrintf(cg.log.chat, va("%s\n", text));
 	}
 	else if ( !strcmp( cmd, "ltchat" ) ) {
 		char	name[MAX_NETNAME]={0},	loc[MAX_STRING_CHARS]={0},
@@ -1752,6 +1761,11 @@ static void CG_Chat_f( void ) {
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 		CG_RemoveChatEscapeChar( text );
+
+		// Copy text somewhere else and log that
+		Q_strncpyz(logtext, text, sizeof(logtext));
+		Q_CleanStr(logtext);
+		CG_LogPrintf(cg.log.chat, "%s\n", logtext);
 
 		// from duo
 		// NOTE: this creates real percent symbols in the string, be careful using va(), etc below here!
@@ -1775,8 +1789,6 @@ static void CG_Chat_f( void ) {
 
 		CG_ChatBox_AddString( text );
 		trap->Print( "*%s\n", text );
-		Q_CleanString( text );
-		CG_LogPrintf(cg.log.chat, va("%s\n", text));
 	}
 }
 

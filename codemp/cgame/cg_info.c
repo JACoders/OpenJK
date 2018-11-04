@@ -144,13 +144,16 @@ void CG_DrawInformation( void ) {
 	levelshot = trap->R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
 	trap->R_SetColor( NULL );
 
-	if (levelshot && cgs.widthRatioCoef < 1.0)
+	if (levelshot && cgs.widthRatioCoef < 1.0f) {
 		CG_DrawPic(0, 0 - (SCREEN_HEIGHT*(1 / cgs.widthRatioCoef) - SCREEN_HEIGHT) / 2, SCREEN_WIDTH, SCREEN_HEIGHT*(1 / cgs.widthRatioCoef), levelshot);
+	}
 	else {
-		if ( !levelshot ) {
+
+		if (!levelshot && cgs.widthRatioCoef >= 0.74f && cgs.widthRatioCoef <= 0.76f)
+			levelshot = trap->R_RegisterShaderNoMip("menu/art/unknownmap_mp_16_9");
+
+		if ( !levelshot )
 			levelshot = trap->R_RegisterShaderNoMip( "menu/art/unknownmap_mp" );
-			trap->R_SetColor( NULL );
-		}
 
 		CG_DrawPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, levelshot );
 	}

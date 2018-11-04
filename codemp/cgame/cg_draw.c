@@ -8378,19 +8378,17 @@ static void CG_DrawVote(void) {
 		sParm = cgs.voteString;
 	}
 
-
-
 	trap->SE_GetStringTextString( "MENUS_VOTE", sVote, sizeof( sVote ) );
 	trap->SE_GetStringTextString( "MENUS_YES", sYes, sizeof( sYes ) );
 	trap->SE_GetStringTextString( "MENUS_NO", sNo, sizeof( sNo ) );
 
 	if (sParm && sParm[0])
-		s = va( "%s(%i):<%s %s> %s:%i %s:%i", sVote, sec, sCmd, sParm, sYes, cgs.voteYes, sNo, cgs.voteNo);
+		s = va( "^7%s(%i):<%s %s^7> %s:%i %s:%i", sVote, sec, sCmd, sParm, sYes, cgs.voteYes, sNo, cgs.voteNo );
 	else
-		s = va( "%s(%i):<%s> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo);
-	CG_DrawSmallString( 4, 59, s, 1.0f );
+		s = va( "^7%s(%i):<%s%7> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo );
+	CG_DrawSmallString( 4, 62, s, 1.0f );
 	s = CG_GetStringEdString( "MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE" );	//	s = "or press ESC then click Vote";
-	CG_DrawSmallString( 4, 59 + SMALLCHAR_HEIGHT + 2, s, 1.0f );
+	CG_DrawSmallString( 4, 62 + SMALLCHAR_HEIGHT + 2, s, 1.0f );
 }
 
 /*
@@ -11310,7 +11308,7 @@ static void CG_Speedometer(void)
 			char speedStr4[32] = {0};
 			vec4_t colorGroundSpeed = {1, 1, 1, 1};
 
-			if (pm->ps->groundEntityNum != ENTITYNUM_NONE || pm->ps->velocity[2] < 0) { //On ground or Moving down
+			if (pm && (pm->ps->groundEntityNum != ENTITYNUM_NONE || pm->ps->velocity[2] < 0)) { //On ground or Moving down
 				cg.firstTimeInAir = qfalse;
 			}
 			else if (!cg.firstTimeInAir) { //Moving up for first time

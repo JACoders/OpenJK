@@ -2297,7 +2297,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 			return qfalse;
 		}
 		if (ps->stats[STAT_RACEMODE] && item && (item->giTag != PW_YSALAMIRI) && (item->giTag != PW_FORCE_BOON)) // no picking up shit in racemode?
-			return qfalse;
+			return qfalse; //Maybe allow spawnflags 2 to be racemode_only ?
 	}
 	else
 	{//safety return since below code assumes a non-null ps

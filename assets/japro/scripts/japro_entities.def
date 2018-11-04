@@ -1,0 +1,122 @@
+/*QUAKED df_trigger_start (.1 .5 .1) ? 
+noise - sound it makes.
+target
+
+Starts the timer.
+*/
+
+/*QUAKED df_trigger_finish (.1 .5 .1) ? JUMP1_ONLY JUMP2_ONLY JUMP3_ONLY ALLOW_HASTE ALLOW_JETPACK NOT_IN_CTF
+noise - sound it makes.
+awesomenoise - sound it makes when time is below 'speed' key (only in jka style).
+speed - max time in ms to play awesomenoise.
+target
+
+Stops the timer.
+*/
+
+/*QUAKED df_trigger_checkpoint (.1 .5 .1) ? 
+noise - sound it makes.
+
+Prints current time.
+*/
+
+/*QUAKED trigger_newpush (.1 .5 .1) ? XVEL YVEL ZVEL PLAYERONLY NPCONLY
+noise - sound it makes.
+speed - scale to use
+
+Sets activators velocity
+*/
+
+/*QUAKED target_restrict (1 0 0) (-8 -8 -8) (8 8 8) REMOVE_RESTRICTIONS HASTE REMOVE_NEUTRALFLAG SET_JUMPLEVEL SET_MOVEPHYSICS YSAL CROUCHJUMP DOUBLEJUMP ALLOWRACETELE
+
+REMOVE_RESTRICTIONS - Removes the specified restrictions (default only bhop)
+HASTE - Replaces the default onlybhop restriction with haste.
+REMOVE_NEUTRALFLAG - Replaces the default onlybhop restriction with remove neutralflag.
+SET_JUMPLEVEL - Replaces the default onlybhop restriction with set jumplevel (use 'count' field).
+SET_MOVEPHYSICS - Replaces the default onlybhop restriction with set movementstyle (use 'count' field).
+YSAL - Replaces the default onlybhop restriction with haste.
+CROUCHJUMP - Sets flag to enable HL/SP style crouch jumping (where crouching mid air gives extra height).
+DOUBLEJUMP - Sets a flag to disable step/ramp jumping in CPM/PJK styles.
+ALLOWRACETELE - Sets flag to allow amTele without resetting timer.
+
+*/
+
+/*QUAKED func_static (0 .5 .8) ? F_PUSH F_PULL SWITCH_SHADER CRUSHER IMPACT x PLAYER_USE INACTIVE BROADCAST NOT_IN_CTF
+F_PUSH		Will be used when you Force-Push it
+F_PULL		Will be used when you Force-Pull it
+SWITCH_SHADER	Toggle the shader anim frame between 1 and 2 when used
+CRUSHER		Make it do damage when it's blocked
+IMPACT		Make it do damage when it hits any entity
+PLAYER_USE	Player can use it with the use button
+INACTIVE	must be used by a target_activate before it can be used
+BROADCAST   don't ever use this, it's evil
+NOT_IN_CTF	 make this entity invisible/nonsolid in CTF
+
+A bmodel that just sits there, doing nothing.  Can be used for conditional walls and models.
+"model2"	.md3 model to also draw
+"model2scale"	percent of normal scale (on all x y and z axii) to scale the model2 if there is one. 100 is normal scale, min is 1 (100 times smaller than normal), max is 1000 (ten times normal).
+"color"		constantLight color
+"light"		constantLight radius
+"dmg"		how much damage to do when it crushes (use with CRUSHER spawnflag)
+"linear" set to 1 and it will move linearly rather than with acceleration (default is 0)
+*/
+
+/*QUAKED trigger_multiple (.1 .5 .1) ? CLIENTONLY FACING USE_BUTTON FIRE_BUTTON NPCONLY x x INACTIVE MULTIPLE x x MULTIPLE2 NO_RACEMODE NOT_IN_CTF
+CLIENTONLY - only a player can trigger this by touch
+FACING - Won't fire unless triggering ent's view angles are within 45 degrees of trigger's angles (in addition to any other conditions)
+USE_BUTTON - Won't fire unless player is in it and pressing use button (in addition to any other conditions)
+FIRE_BUTTON - Won't fire unless player/NPC is in it and pressing fire button (in addition to any other conditions)
+NPCONLY - only non-player NPCs can trigger this by touch
+INACTIVE - Start off, has to be activated to be touchable/usable
+MULTIPLE - multiple entities can touch this trigger in a single frame *and* if needed, the trigger can have a wait of > 0
+MULTIPLE2 - referenced in the code, not sure which is correct.
+NO_RACEMODE - players in racemode wont be able to use this
+NOT_IN_CTF - make this entity dissapear in CTF gametype
+
+"wait"		Seconds between triggerings, 0 default, number < 0 means one time only.
+"random"	wait variance, default is 0
+"delay"		how many seconds to wait to fire targets after tripped
+"hiderange" As long as NPC's head is in this trigger, NPCs out of this hiderange cannot see him.  If you set an angle on the trigger, they're only hidden from enemies looking in that direction.  the player's crouch viewheight is 36, his standing viewheight is 54.  So a trigger thast should hide you when crouched but not standing should be 48 tall.
+"target2"	The trigger will fire this only when the trigger has been activated and subsequently 'cleared'( once any of the conditions on the trigger have not been satisfied).  This will not fire the "target" more than once until the "target2" is fired (trigger field is 'cleared')
+"speed"		How many seconds to wait to fire the target2, default is 1
+"noise"		Sound to play when the trigger fires (plays at activator's origin)
+"NPC_targetname"  Only the NPC with this NPC_targetname fires this trigger
+
+Variable sized repeatable trigger.  Must be targeted at one or more entities.
+so, the basic time between firing is a random time between
+(wait - random) and (wait + random)
+
+"team" - If set, only this team can trip this trigger
+	0 - any
+	1 - red
+	2 - blue
+
+"soundSet"	Ambient sound set to play when this trigger is activated
+
+usetime		-	If specified (in milliseconds) along with the USE_BUTTON flag, will
+				require a client to hold the use key for x amount of ms before firing.
+
+Applicable only during Siege gametype:
+teamuser	-	if 1, team 2 can't use this. If 2, team 1 can't use this.
+siegetrig	-	if non-0, can only be activated by players carrying a misc_siege_item
+				which is associated with this trigger by the item's goaltarget value.
+teambalance	-	if non-0, is "owned" by the last team that activated. Can only be activated
+				by the other team if the number of players on the other team inside	the
+				trigger outnumber the number of players on the owning team inside the
+				trigger.
+target3		-	fire when activated by team1
+target4		-	fire when activated by team2
+
+idealclass	-	Can only be used by this class/these classes. You can specify use by
+				multiple classes with the use of |, e.g.:
+				"Imperial Medic|Imperial Assassin|Imperial Demolitionist"
+*/
+
+/*QUAKED trigger_teleport (.5 .5 .5) ? SPECTATOR KEEP_VELOCITY RACEMODE_ONLY
+Allows client side prediction of teleportation events.
+Must point at a target_position, which will be the teleport destination.
+
+If spectator is set, only spectators can use this teleport
+Spectator teleporters are not normally placed in the editor, but are created
+automatically near doors to allow spectators to move through them
+*/

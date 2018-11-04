@@ -496,7 +496,7 @@ rescan:
 			int i, l;
 
 			s = Cmd_Argv(1);
-			Com_sprintf(chat, sizeof(chat), "%s\n", s);
+			Q_strncpyz(chat, s, sizeof(chat));
 			Q_StripColor(chat);
 		
 			//Remove escape char from name

@@ -1703,15 +1703,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 				other = &g_entities[client->sess.spectatorClient];
 				if (other && other->client) {
 					if (g_allowNoFollow.integer && other->client->pers.noFollow) {
-						if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_FULLADMIN) {
-							if (!(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
-								StopFollowing(ent);
-						}
-						else if (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_JRADMIN) {
-							if (!(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
-								StopFollowing(ent);
-						}
-						else
+						if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_SEEHIDDEN, qfalse, NULL))
 							StopFollowing(ent);
 					}
 				}
@@ -3757,9 +3749,13 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 	
-	/*if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SWOOP)//Is this really needed..
-		ucmd->serverTime = ((ucmd->serverTime + 7) / 8) * 8;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
-	else*/if (pmove_fixed.integer || client->pers.pmoveFixed)
+	if (client->ps.stats[STAT_RACEMODE]) {//Is this really needed..
+		if (msec < 3)
+			ucmd->serverTime = ((ucmd->serverTime + 2) / 3) * 3;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?
+		else if (msec > 16 && client->pers.practice)
+			ucmd->serverTime = ((ucmd->serverTime + 15) / 16) * 16;
+	}
+	else if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 
 	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && (g_movementStyle.integer >= MV_SIEGE && g_movementStyle.integer <= MV_WSW) || g_movementStyle.integer == MV_SP || g_movementStyle.integer == MV_SLICK) { //Ok,, this should be like every frame, right??
