@@ -2138,7 +2138,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 
 	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->sess.clanpass, other->client->sess.clanpass) || ent->client->sess.clanpass[0] == 0 || other->client->sess.clanpass[0] == 0)))//Idk
 		return;//Ignore it
-	if (mode == SAY_ADMIN && !G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_READAMSAY, qfalse, qfalse, NULL) && ent != other)
+	if (mode == SAY_ADMIN && !G_AdminAllowed(other, JAPRO_ACCOUNTFLAG_A_READAMSAY, qfalse, qfalse, NULL) && ent != other)
 		return;
 
 	if (ClientIsIgnored(other-g_entities, ent-g_entities)) {//Also make sure clanpass is set?
@@ -3121,8 +3121,10 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
 
-	if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_CALLVOTE, qfalse, qfalse, "callVote"))
-		return;
+	if ((g_fullAdminLevel.integer & (1 << JAPRO_ACCOUNTFLAG_A_CALLVOTE)) || (g_juniorAdminLevel.integer & (1 << JAPRO_ACCOUNTFLAG_A_CALLVOTE))) { //Admin only voting mode.. idk
+		if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_CALLVOTE, qfalse, qfalse, "callVote"))
+			return;
+	}
 
 	// vote in progress
 	if ( level.voteTime ) {

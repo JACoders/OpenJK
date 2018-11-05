@@ -4283,14 +4283,15 @@ Svcmd_NPC_f
 parse and dispatch bot commands
 */
 qboolean	showBBoxes = qfalse;
-void Cmd_NPC_f( gentity_t *ent )
+int G_AdminAllowed(gentity_t *ent, unsigned int adminCmd, qboolean cheatAllowed, qboolean raceAllowed, char *cmdName);
+void Cmd_NPC_f( gentity_t *ent ) 
 {
 	char	cmd[1024];
 
 	if (!ent->client)
 		return;
 
-	if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_NPC, qtrue, "npc"))
+	if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_NPC, qtrue, qfalse, "npc"))
 		return;
 
 	trap->Argv( 1, cmd, 1024 );
