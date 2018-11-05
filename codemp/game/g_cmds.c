@@ -3090,8 +3090,10 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
 
-	if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_CALLVOTE, qfalse, qfalse, "callVote"))
-		return;
+	if ((g_fullAdminLevel.integer & (1 << JAPRO_ACCOUNTFLAG_A_CALLVOTE)) || (g_juniorAdminLevel.integer & (1 << JAPRO_ACCOUNTFLAG_A_CALLVOTE))) { //Admin only voting mode.. idk
+		if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_CALLVOTE, qfalse, qfalse, "callVote"))
+			return;
+	}
 
 	// vote in progress
 	if ( level.voteTime ) {
