@@ -6702,9 +6702,9 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					*p = 0;
 			}
 			if (whois) {
-				if (cl->pers.adminLevel == 1)
+				if (cl->sess.accountFlags == g_juniorAdminLevel.integer)
 					Q_strncpyz(strAdmin, "^3Junior^7", sizeof(strAdmin));
-				else if (cl->pers.adminLevel == 2)
+				else if (cl->sess.accountFlags == g_fullAdminLevel.integer)
 					Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
 				else if (cl->sess.accountFlags & JAPRO_ACCOUNTFLAG_A_READAMSAY) //Damn this, how do we get it to ignore non admin account flags
 					Q_strncpyz(strAdmin, "^3Custom^7", sizeof(strAdmin));

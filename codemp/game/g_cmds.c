@@ -416,8 +416,6 @@ qboolean QINLINE ClientIgnoreAll(const int selfID) {
 qboolean G_AdminUsableOn(gclient_t *ourClient, gclient_t *theirClient, unsigned int adminCmd) {
 	if (!ourClient|| !theirClient)
 		return qfalse;
-	if (theirClient->pers.adminLevel && theirClient->pers.adminLevel >= ourClient->pers.adminLevel)
-		return qfalse;
 	if (theirClient->sess.accountFlags & adminCmd && ourClient != theirClient) //He has that cmd so... 
 		return qfalse;
 	return qtrue;
@@ -427,14 +425,6 @@ int G_AdminAllowed(gentity_t *ent, unsigned int adminCmd, qboolean cheatAllowed,
 	//See if they are allowed to use a cmd.  first check their adminLevel, then check their account admin
 	//3 = allowed by admin, 2 = allowed by racemode, 1 = allowed by cheats
 
-	if (ent->client->pers.adminLevel == 1) {
-		if (g_juniorAdminLevel.integer & adminCmd)
-			return 3;
-	}
-	if (ent->client->pers.adminLevel == 2) {
-		if (g_fullAdminLevel.integer & adminCmd)
-			return 3;
-	}
 	if (ent->client->sess.accountFlags & adminCmd)
 		return 3;
 	if (raceAllowed && ent->client->sess.raceMode)
@@ -3090,7 +3080,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
 
-	if ((g_fullAdminLevel.integer & (1 << JAPRO_ACCOUNTFLAG_A_CALLVOTE)) || (g_juniorAdminLevel.integer & (1 << JAPRO_ACCOUNTFLAG_A_CALLVOTE))) { //Admin only voting mode.. idk
+	if ((g_fullAdminLevel.integer & JAPRO_ACCOUNTFLAG_A_CALLVOTE) || (g_juniorAdminLevel.integer & JAPRO_ACCOUNTFLAG_A_CALLVOTE)) { //Admin only voting mode.. idk
 		if (!G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_CALLVOTE, qfalse, qfalse, "callVote"))
 			return;
 	}
@@ -4830,7 +4820,7 @@ void Cmd_Amlogin_f(gentity_t *ent)
 	}
 	if (trap->Argc() == 2)
 	{
-		if (ent->client->pers.adminLevel) {
+		if (ent->client->sess.accountFlags == g_juniorAdminLevel.integer || ent->client->sess.accountFlags == g_fullAdminLevel.integer) {
 			trap->SendServerCommand(ent - g_entities, "print \"You are already logged in. Type in /amLogout to remove admin status.\n\"");
 			return;
 		}
@@ -4839,9 +4829,17 @@ void Cmd_Amlogin_f(gentity_t *ent)
 			return;
 		}
 		if (!Q_stricmp(pass, g_juniorAdminPass.string)) {
+			int i;
+
 			if (!Q_stricmp("", g_juniorAdminPass.string))
 				return;
-			ent->client->pers.adminLevel = 1;
+
+			for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+				if (g_juniorAdminLevel.integer & (1 << i)) {
+					ent->client->sess.accountFlags |= (1 << i);
+				}
+			}
+
 			if (Q_stricmp(g_juniorAdminMsg.string, ""))
 				trap->SendServerCommand(-1, va("print \"%s^7 has logged in %s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
 			else
@@ -4849,9 +4847,17 @@ void Cmd_Amlogin_f(gentity_t *ent)
 			return;
 		}
 		if (!Q_stricmp(pass, g_fullAdminPass.string)) {
+			int i;
+
 			if (!Q_stricmp("", g_fullAdminPass.string))//dunno
 				return;
-			ent->client->pers.adminLevel = 2;
+
+			for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+				if (g_fullAdminLevel.integer & (1 << i)) {
+					ent->client->sess.accountFlags |= (1 << i);
+				}
+			}
+
 			if (Q_stricmp(g_fullAdminMsg.string, "")) //Ok, so just set this to " " if you want it to print the normal login msg, or set it to "" to skip.  or "with junior admin" for more info.. etc
 				trap->SendServerCommand(-1, va("print \"%s^7 has logged in %s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
 			else
@@ -4873,21 +4879,22 @@ Cmd_Amlogout_f
 void Cmd_Amlogout_f(gentity_t *ent)
 {
 	int i;
+	qboolean found = qfalse;
+
 	if (!ent->client)
 		return;
-	if (ent->client->pers.adminLevel || (ent->client->sess.accountFlags & JAPRO_ACCOUNTFLAG_A_READAMSAY)) { //idk
-		ent->client->pers.adminLevel = 0;
-		trap->SendServerCommand( ent-g_entities, "print \"You are no longer an admin.\n\"");         
-	}
-	else {
-		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in!\n\"");         
-	}
 
 	for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
-		ent->client->sess.accountFlags &= ~(1 << i);
+		if (ent->client->sess.accountFlags & (1 << i)) {
+			ent->client->sess.accountFlags &= ~(1 << i);
+			found = qtrue;
+		}
 	}
 
-	//For each accountflag, remove admin?
+	if (found)
+		trap->SendServerCommand( ent-g_entities, "print \"You are no longer an admin.\n\"");        
+	else
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in as an admin!\n\"");       
 
 }
 //[JAPRO - Serverside - All - Amlogout Function - End]
@@ -5543,17 +5550,24 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 		}
 
 		if (args == 2) {
-
-			if (!g_entities[clientid].client->pers.adminLevel)
-			{
-				g_entities[clientid].client->pers.adminLevel = 1;
-				trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
+			int i;
+			qboolean added = qfalse;
+			for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+				if (g_juniorAdminLevel.integer & (1 << i)) {
+					g_entities[clientid].client->sess.accountFlags |= (1 << i);
+					added = qtrue;
+				}
 			}
+			if (added)
+				trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
 		}
 		else if (args == 3) {
 			trap->Argv(2, arg, sizeof(arg)); 
 			if (!Q_stricmp(arg, "none")) {
-				g_entities[clientid].client->pers.adminLevel = 0;
+				int i;
+				for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+					g_entities[clientid].client->sess.accountFlags &= ~(1 << i);
+				}
 			}
 		}
 
@@ -5713,7 +5727,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Admin commands: ", sizeof(buf));
-	if (!ent->client->pers.adminLevel && !(ent->client->sess.accountFlags)) //fixme.. idk
+	if (!(ent->client->sess.accountFlags)) //fixme.. idk
 		Q_strcat(buf, sizeof(buf), "you are not an administrator on this server.\n");
 	else {
 		if (G_AdminAllowed(ent, JAPRO_ACCOUNTFLAG_A_ADMINTELE, qfalse, qfalse, NULL))

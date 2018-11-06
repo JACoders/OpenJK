@@ -910,7 +910,6 @@ typedef struct clientPersistant_s {
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
 	unsigned int	unlocks;
-	short		adminLevel;//0,1,2,3
 
 	stats_t		stats;
 } clientPersistant_t;
