@@ -617,12 +617,13 @@ void IN_Init( void *windowData )
 	SDL_StartTextInput( );
 
 	mouseAvailable = (qboolean)( in_mouse->value != 0 );
-	if (in_mouse->integer == 2) {
-		Com_DPrintf("IN_Init: Not using raw input\n");
-		SDL_SetHint("SDL_MOUSE_RELATIVE_MODE_WARP", "1");
-	} else {
+	if (in_mouse->integer != 2) {
 		Com_DPrintf("IN_Init: Using raw mouse input\n");
 		SDL_SetHint("SDL_MOUSE_RELATIVE_MODE_WARP", "0");
+	}
+	else {
+		Com_DPrintf("IN_Init: Not using raw input\n");
+		SDL_SetHint("SDL_MOUSE_RELATIVE_MODE_WARP", "1");
 	}
 	IN_DeactivateMouse( );
 
@@ -922,7 +923,6 @@ static void IN_ProcessEvents( void )
 #ifdef _WIN32
 						con_alert = qfalse;
 #endif
-						Cbuf_ExecuteText(EXEC_NOW, "+button1");
 						break;
 					}
 
@@ -935,7 +935,6 @@ static void IN_ProcessEvents( void )
 							CL_Afk_f();
 							cls.afkTime = cls.realtime;
 						}
-						Cbuf_ExecuteText(EXEC_NOW, "-button1");
 						break;
 					}
 				}

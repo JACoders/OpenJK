@@ -1259,7 +1259,7 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 		}
 	}
 
-	if ( Key_GetCatcher( ) ) {
+	if ( Key_GetCatcher( ) || com_unfocused->integer || com_minimized->integer ) {
 		cmd->buttons |= BUTTON_TALK;
 	}
 
