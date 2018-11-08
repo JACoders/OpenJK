@@ -6,6 +6,7 @@
 //---------------------------------------------------------
 {
 	loadMenu { "ui/jamp/connect.menu"			}
+	loadMenu { "ui/jamp/connect_16_9.menu"		}
 
 	loadMenu { "ui/jamp/ingame_about.menu"			}
 	loadMenu { "ui/jamp/ingame_addbot.menu"			}
