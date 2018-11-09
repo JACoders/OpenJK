@@ -733,7 +733,7 @@ void Svcmd_AmBan_f(void) {
 void Svcmd_Amgrantadmin_f(void)
 {
 		char arg[MAX_NETNAME];
-		int clientid = -1; 
+		int clientid = -1;
 
 		if (trap->Argc() != 3) {
 			trap->Print( "Usage: /amGrantAdmin <client> <level>.\n");
@@ -753,15 +753,34 @@ void Svcmd_Amgrantadmin_f(void)
 		Q_strlwr(arg);
 
 		if (!Q_stricmp(arg, "none")) {
-			g_entities[clientid].client->pers.adminLevel = 0;
+			int i;
+			for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+				g_entities[clientid].client->sess.accountFlags &= ~(1 << i);
+			}
 		}
 		else if (!Q_stricmp(arg, "junior")) {
-			g_entities[clientid].client->pers.adminLevel = 1;
-			trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
+			int i;
+			qboolean added = qfalse;
+			for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+				if (g_juniorAdminLevel.integer & (1 << i)) {
+					g_entities[clientid].client->sess.accountFlags |= (1 << i);
+					added = qtrue;
+				}
+			}
+			if (added)
+				trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
 		}
 		else if (!Q_stricmp(arg, "full")) {
-		g_entities[clientid].client->pers.adminLevel = 2;
-			trap->SendServerCommand( clientid, "print \"You have been granted Full admin privileges.\n\"" );
+			int i;
+			qboolean added = qfalse;
+			for (i=0; i<=JAPRO_MAX_ADMIN_BITS; i++) {//Loop this 0-22 is admin flags.
+				if (g_fullAdminLevel.integer & (1 << i)) {
+					g_entities[clientid].client->sess.accountFlags |= (1 << i);
+					added = qtrue;
+				}
+			}
+			if (added)
+				trap->SendServerCommand( clientid, "print \"You have been granted Full admin privileges.\n\"" );
 		}
 }
 
