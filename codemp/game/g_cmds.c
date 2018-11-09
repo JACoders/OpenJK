@@ -805,6 +805,8 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		if (ent->client->ps.m_iVehicleNum)
 			return;
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
+		if (ent->client->sess.raceMode && ent->client->noclip)
+			AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue, qfalse ); //Good
 		ent->client->noclip = !ent->client->noclip;
 		if (!sv_cheats.integer)
 			ResetPlayerTimers(ent, qtrue);
