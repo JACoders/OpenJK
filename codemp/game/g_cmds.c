@@ -416,7 +416,7 @@ qboolean QINLINE ClientIgnoreAll(const int selfID) {
 qboolean G_AdminUsableOn(gclient_t *ourClient, gclient_t *theirClient, unsigned int adminCmd) {
 	if (!ourClient|| !theirClient)
 		return qfalse;
-	if (theirClient->sess.accountFlags & adminCmd && ourClient != theirClient) //He has that cmd so... 
+	if ((theirClient->sess.accountFlags & adminCmd) && ourClient != theirClient) //He has that cmd so... 
 		return qfalse;
 	return qtrue;
 }

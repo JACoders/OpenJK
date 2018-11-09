@@ -1704,6 +1704,7 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 			}
 		}
 
+		//Forwardmove is 0 here when it shouldnt be with lowfps due to chopping
 		if ( //ucmd->upmove <= 0 && 
 			ps->legsTimer > 0 &&
 			ucmd->forwardmove > 0 &&
@@ -1763,7 +1764,9 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 						}
 					}
 				}
-				if (!pmove_fixed.integer)//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
+				if (pmove_fixed.integer || (ps->stats[STAT_RACEMODE] && pml.msec == 16)) { //chopping, chopped
+				}
+				else//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
 					ucmd->forwardmove = 0;
 				return qtrue;
 			}
