@@ -1930,12 +1930,12 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	//}
 	//loda	
 
-		else if ((newInfo.team != cg.predictedPlayerState.persistant[PERS_TEAM] || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_FREE) && Q_stricmp(cg_forceEnemyModel.string, "0") && Q_stricmp(cg_forceEnemyModel.string, "none") && Q_stricmp(cg_forceEnemyModel.string, ""))
+		if ((newInfo.team != cg.predictedPlayerState.persistant[PERS_TEAM] || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_FREE) && strlen(cg_forceEnemyModel.string) && Q_stricmp(cg_forceEnemyModel.string, "0") && Q_stricmp(cg_forceEnemyModel.string, "none"))
 		{
 			if (clientNum != cg.clientNum)	//this is me
 			Q_strncpyz( newInfo.modelName, cg_forceEnemyModel.string, sizeof(newInfo.modelName));
 		}
-		else if (newInfo.team == cg.predictedPlayerState.persistant[PERS_TEAM] && cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_FREE && Q_stricmp(cg_forceAllyModel.string, "0") && Q_stricmp(cg_forceAllyModel.string, "none") && Q_stricmp(cg_forceEnemyModel.string, ""))
+		else if (newInfo.team == cg.predictedPlayerState.persistant[PERS_TEAM] && cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_FREE && strlen(cg_forceAllyModel.string) && Q_stricmp(cg_forceAllyModel.string, "0") && Q_stricmp(cg_forceAllyModel.string, "none"))
 		{
 			if (clientNum != cg.clientNum)	//this is me
 				Q_strncpyz( newInfo.modelName, cg_forceAllyModel.string, sizeof(newInfo.modelName));
