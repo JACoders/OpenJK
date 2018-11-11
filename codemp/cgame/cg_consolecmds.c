@@ -1411,7 +1411,9 @@ static bitInfo_T cosmetics[] = {
 	{ "jack-o-lantern" },
 	{ "bass pro baseball cap?" },
 	{ "indiana jones" },
-	{ "Kane's Kringe Kap" }
+	{ "Kane's Kringe Kap" },
+	{ "sombrero" },
+	{ "top hat? //dr seuss?" }
 };
 static const int MAX_COSMETICS = ARRAY_LEN(cosmetics);
 

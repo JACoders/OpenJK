@@ -10475,6 +10475,12 @@ void CG_Player( centity_t *cent ) {
 		else if (ci->cosmetics & JAPRO_COSMETIC_CRINGE) {
 			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/cringe.md3"));
 		}
+		else if (ci->cosmetics & JAPRO_COSMETIC_SOMBRERO) {
+			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/sombrero.md3"));
+		}
+		else if (ci->cosmetics & JAPRO_COSMETIC_TOPHAT) {
+			CG_DrawHatOnPlayer(cent, cg.time, cgs.gameModels, trap->R_RegisterModel("models/players/hats/tophat.md3"));
+		}
 	}
 	//[/Kameleon]
 
