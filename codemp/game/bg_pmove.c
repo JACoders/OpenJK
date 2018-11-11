@@ -12262,11 +12262,12 @@ void PmoveSingle (pmove_t *pmove) {
 		pm->cmd.rightmove = pm->cmd.upmove = 0;
 	}
 
-#if 0
-	if ((pm->ps->legsAnim) == BOTH_KISSER1LOOP ||
-		(pm->ps->legsAnim) == BOTH_KISSEE1LOOP)
-	{
-		stiffenedUp = qtrue;
+#ifdef _CGAME
+	if (cgs.isJAPlus) { //some JA+ animation support...
+		if (pm->ps->legsAnim == BOTH_HUGGER1 || pm->ps->legsAnim == BOTH_HUGGEE1)
+			stiffenedUp = qtrue;
+		else if ((pm->ps->legsAnim) >= BOTH_KISSEE && (pm->ps->legsAnim) <= BOTH_MELEE_SPINKICK)
+			stiffenedUp = qtrue;
 	}
 #endif
 
