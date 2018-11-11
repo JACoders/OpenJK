@@ -2767,8 +2767,9 @@ void Svcmd_FlagAccount_f( void ) {
 		}
 		else if (args == 3) {
 			char arg[8] = { 0 };
-			int index;
+			int index, i;
 			const uint32_t mask = (1 << MAX_ACCOUNT_FLAGS) - 1;
+			gclient_t	*cl;
 
 			trap->Argv( 2, arg, sizeof(arg) );
 			index = atoi( arg );
@@ -2799,11 +2800,24 @@ void Svcmd_FlagAccount_f( void ) {
 
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
+
+			for (i=0;  i<level.numPlayingClients; i++) {
+				cl = &level.clients[level.sortedClients[i]];
+				if (cl->pers.userName && cl->pers.userName[0] && !Q_stricmp(cl->pers.userName, username)) {
+					if (flags & (1 << index)) 
+						cl->sess.accountFlags &= ~(1 << index);
+					else
+						cl->sess.accountFlags |= (1 << index);
+					break;
+				}
+			}
 		}
 		else if (args == 4) { //set
 			char arg[8] = { 0 };
 			unsigned int bitmask;
 			trap->Argv( 2, arg, sizeof(arg) );
+			int i;
+			gclient_t	*cl;
 
 			if (Q_stricmp(arg, "set")) {
 				trap->Print( "Usage: /accountFlag <username> <set (optional)> <flag>\n");
@@ -2828,6 +2842,14 @@ void Svcmd_FlagAccount_f( void ) {
 
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
+
+			for (i=0;  i<level.numPlayingClients; i++) {
+				cl = &level.clients[level.sortedClients[i]];
+				if (cl->pers.userName && cl->pers.userName[0] && !Q_stricmp(cl->pers.userName, username)) {
+					cl->sess.accountFlags = bitmask;
+					break;
+				}
+			}
 		}
 	}
 }

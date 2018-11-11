@@ -2502,6 +2502,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 //---------------------------------------------------------
 {
 	int	damage	= ROCKET_DAMAGE;
+	int splashDamage = ROCKET_SPLASH_DAMAGE;
 	int	vel = ROCKET_VELOCITY;
 	int dif = 0;
 	float rTime;
@@ -2513,7 +2514,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 
 	if (ent->client && ent->client->sess.raceMode) {
 		q3style = qtrue;
-		damage = 100; //force default dmg/vel for racers
+		damage = splashDamage = 100; //force default dmg/vel for racers
 		vel = 900;
 	}
 
@@ -2607,7 +2608,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 //===testing being able to shoot rockets out of the air==================================
 	
 	missile->clipmask = MASK_SHOT;
-	missile->splashDamage = ROCKET_SPLASH_DAMAGE;
+	missile->splashDamage = splashDamage;
 	missile->splashRadius = ROCKET_SPLASH_RADIUS;
 
 	// we don't want it to ever bounce
