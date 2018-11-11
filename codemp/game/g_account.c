@@ -2767,8 +2767,9 @@ void Svcmd_FlagAccount_f( void ) {
 		}
 		else if (args == 3) {
 			char arg[8] = { 0 };
-			int index;
+			int index, i;
 			const uint32_t mask = (1 << MAX_ACCOUNT_FLAGS) - 1;
+			gclient_t	*cl;
 
 			trap->Argv( 2, arg, sizeof(arg) );
 			index = atoi( arg );
@@ -2799,11 +2800,24 @@ void Svcmd_FlagAccount_f( void ) {
 
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
+
+			for (i=0;  i<level.numPlayingClients; i++) {
+				cl = &level.clients[level.sortedClients[i]];
+				if (cl->pers.userName && cl->pers.userName[0] && !Q_stricmp(cl->pers.userName, username)) {
+					if (flags & (1 << index)) 
+						cl->sess.accountFlags &= ~(1 << index);
+					else
+						cl->sess.accountFlags |= (1 << index);
+					break;
+				}
+			}
 		}
 		else if (args == 4) { //set
 			char arg[8] = { 0 };
 			unsigned int bitmask;
 			trap->Argv( 2, arg, sizeof(arg) );
+			int i;
+			gclient_t	*cl;
 
 			if (Q_stricmp(arg, "set")) {
 				trap->Print( "Usage: /accountFlag <username> <set (optional)> <flag>\n");
@@ -2828,6 +2842,14 @@ void Svcmd_FlagAccount_f( void ) {
 
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
+
+			for (i=0;  i<level.numPlayingClients; i++) {
+				cl = &level.clients[level.sortedClients[i]];
+				if (cl->pers.userName && cl->pers.userName[0] && !Q_stricmp(cl->pers.userName, username)) {
+					cl->sess.accountFlags = bitmask;
+					break;
+				}
+			}
 		}
 	}
 }
@@ -5447,7 +5469,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 		if (style == -1) {
 			if (season == -1) {
 				sql = "SELECT username, SUM(entries-rank) AS newscore, CAST(SUM(entries/CAST(rank AS FLOAT)) AS INT) AS oldscore, AVG(rank) as rank, AVG((entries - CAST(rank-1 AS float))/entries) AS percentile, SUM(CASE WHEN rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-					"WHERE rank != 0 AND style != 14 "
+					"WHERE rank != 0 "
 					"GROUP BY username "
 					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -5455,7 +5477,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) { //Add season support?
 			}
 			else {
 				sql = "SELECT username, SUM(season_entries-season_rank) AS newscore, CAST(SUM(season_entries/CAST(season_rank AS FLOAT)) AS INT) AS oldscore, AVG(season_rank) as season_rank, AVG((season_entries - CAST(season_rank-1 AS float))/season_entries) AS percentile, SUM(CASE WHEN season_rank == 1 THEN 1 ELSE 0 END) AS golds, SUM(CASE WHEN season_rank == 2 THEN 1 ELSE 0 END) AS silvers, SUM(CASE WHEN season_rank == 3 THEN 1 ELSE 0 END) AS bronzes, COUNT(*) as count FROM LocalRun "
-					"WHERE season = ? AND style != 14 "
+					"WHERE season = ? "
 					"GROUP BY username "
 					"ORDER BY oldscore+newscore DESC, rank DESC LIMIT ?, 10";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
