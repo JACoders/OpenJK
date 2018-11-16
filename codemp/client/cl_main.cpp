@@ -3457,6 +3457,9 @@ void QDECL CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...) {
 	size_t len;
 	time_t rawtime;
 	time(&rawtime);
+
+	if (clc.demoplaying)
+		return;
 	
 	strftime(string, sizeof(string), "[%Y-%m-%d] [%H:%M:%S] ", localtime(&rawtime));
 

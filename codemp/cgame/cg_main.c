@@ -100,6 +100,9 @@ void QDECL CG_LogPrintf( fileHandle_t fileHandle, const char *fmt, ... ) {
 	char string[1024] = { 0 };
 	size_t len;
 
+	if (cg.demoPlayback)
+		return;
+
 	if (cg_logFormat.integer == 0) {
 		int msec = cg.time - cgs.levelStartTime;
 		int secs = msec / 1000;
