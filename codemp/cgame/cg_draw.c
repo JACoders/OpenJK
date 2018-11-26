@@ -8344,7 +8344,7 @@ static void CG_DrawVote(void) {
 	if (sParm && sParm[0])
 		s = va( "^7%s(%i):<%s %s^7> %s:%i %s:%i", sVote, sec, sCmd, sParm, sYes, cgs.voteYes, sNo, cgs.voteNo );
 	else
-		s = va( "^7%s(%i):<%s%7> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo );
+		s = va( "^7%s(%i):<%s^7> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo );
 	CG_DrawSmallString( 4, 62, s, 1.0f );
 	s = CG_GetStringEdString( "MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE" );	//	s = "or press ESC then click Vote";
 	CG_DrawSmallString( 4, 62 + SMALLCHAR_HEIGHT + 2, s, 1.0f );
@@ -8491,10 +8491,10 @@ static qboolean CG_DrawFollow( void )
 	CG_Text_Paint (4, 27, 0.85f, colorWhite, s, 0, 0, 0, FONT_MEDIUM );//JAPRO - Clientside - Move spectated clients name to top left corner of screen
 	
 	//Loda - add their movemnt style here..?f
-	if (pm && pm->ps && pm->ps->stats[STAT_RACEMODE])
+	if (cg.predictedPlayerState.stats[STAT_RACEMODE])
 	{
 		char styleString[16] = {0};
-		IntegerToRaceName(pm->ps->stats[STAT_MOVEMENTSTYLE], styleString, sizeof(styleString));
+		IntegerToRaceName(cg.predictedPlayerState.stats[STAT_MOVEMENTSTYLE], styleString, sizeof(styleString));
 		CG_Text_Paint (4, 44, 0.7f, colorWhite, styleString, 0, 0, 0, FONT_MEDIUM );//JAPRO - Clientside - Move spectated clients name to top left corner of screen
 	}
 
@@ -9829,12 +9829,12 @@ static void CG_AutoDemoRaceRecord(void)
 {
 	if (!cg_autoRecordRaceDemo.integer)
 		return;
-	if (!cg.snap || !pm || !pm->ps)
+	if (!cg.snap)
 		return;
-	if (!pm->ps->stats[STAT_RACEMODE])
+	if (!cg.predictedPlayerState.stats[STAT_RACEMODE])
 		return;
 
-	if (pm->ps->duelTime - cg.lastStartTime > 2000) //Only start a new demo if we havnt started a new one in the last two seconds.
+	if (cg.predictedPlayerState.duelTime - cg.lastStartTime > 2000) //Only start a new demo if we havnt started a new one in the last two seconds.
 	{
 		char buf[256] = {0}, mapname[MAX_QPATH] = {0};
 
@@ -9846,12 +9846,12 @@ static void CG_AutoDemoRaceRecord(void)
 		trap->SendConsoleCommand(va("cl_noPrint !;stoprecord;record %s;cl_noPrint !\n", buf)); //sad hack to not show this message
 		cg.recording = qtrue;
 	}
-	else if (!pm->ps->duelTime && cg.recording) {
+	else if (!cg.predictedPlayerState.duelTime && cg.recording) {
 		trap->SendConsoleCommand(va("wait %i;cl_noPrint !;stoprecord;cl_noPrint !\n", 1000 / cg.frametime)); //Auto stop after crossing finish line...? wait 1 sec?
 		cg.recording = qfalse;
 	}
 
-	cg.lastStartTime = pm->ps->duelTime;
+	cg.lastStartTime = cg.predictedPlayerState.duelTime;
 }
 
 static void CG_Draw2D( void ) {
@@ -10698,7 +10698,7 @@ static void CG_StrafeHelper(centity_t *cent)
 	}
 	else if (moveStyle == MV_SP) {
 		/*
-		if ((DotProduct(pm->ps->velocity, wishdir)) < 0.0f)
+		if ((DotProduct(cg.predictedPlayerState.velocity, wishdir)) < 0.0f)
 		{//Encourage deceleration away from the current velocity
 			wishspeed *= 1.35f;//pm_airDecelRate - adjust basespeed
 		}
@@ -10739,14 +10739,14 @@ static void CG_StrafeHelper(centity_t *cent)
 	}
 	if (moveStyle == MV_JKA || moveStyle == MV_Q3 || moveStyle == MV_RJQ3 || moveStyle == MV_JETPACK || moveStyle == MV_SPEED || moveStyle == MV_SP || (moveStyle == MV_SLICK && onGround)) { //JKA, Q3, RJQ3, Jetpack? have A/D
 		if (cg_strafeHelper.integer & SHELPER_A)
-			DrawStrafeLine(velocityAngle, -(45.0f - (optimalDeltaAngle + (cg_strafeHelperInvertOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove < 0), 2); //A
+			DrawStrafeLine(velocityAngle, -(45.0f - (optimalDeltaAngle + (cg_strafeHelperOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove < 0), 2); //A
 		if (cg_strafeHelper.integer & SHELPER_D)
-			DrawStrafeLine(velocityAngle, (45.0f - (optimalDeltaAngle + (cg_strafeHelperInvertOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove > 0), 6); //D
+			DrawStrafeLine(velocityAngle, (45.0f - (optimalDeltaAngle + (cg_strafeHelperOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove > 0), 6); //D
 
 		//A/D backwards strafe?
 		if (cg_strafeHelper.integer & SHELPER_REAR) {
-			DrawStrafeLine(velocityAngle, (225.0f - (optimalDeltaAngle + (cg_strafeHelperInvertOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove < 0), 9); //A
-			DrawStrafeLine(velocityAngle, (135.0f + (optimalDeltaAngle + (cg_strafeHelperInvertOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove > 0), 10); //D
+			DrawStrafeLine(velocityAngle, (225.0f - (optimalDeltaAngle + (cg_strafeHelperOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove < 0), 9); //A
+			DrawStrafeLine(velocityAngle, (135.0f + (optimalDeltaAngle + (cg_strafeHelperOffset.value * 0.01f))), (qboolean)(cmd.forwardmove == 0 && cmd.rightmove > 0), 10); //D
 		}
 	}
 	if (moveStyle == MV_JKA || moveStyle == MV_Q3 || moveStyle == MV_RJQ3 || moveStyle == MV_SWOOP || moveStyle == MV_JETPACK || moveStyle == MV_SPEED || moveStyle == MV_SP) {
@@ -10998,14 +10998,11 @@ static void CG_JumpHeight(centity_t *cent)
 	const vec_t* const velocity = (cent->currentState.clientNum == cg.clientNum ? cg.predictedPlayerState.velocity : cent->currentState.pos.trDelta);
 	char jumpHeightStr[32] = {0};
 
-	if (!pm || !pm->ps)//idk
+	if (cg.predictedPlayerState.fd.forceJumpZStart == -65536) //Coming back from a tele or w/e
 		return;
 
-	if (pm->ps->fd.forceJumpZStart == -65536) //Coming back from a tele or w/e
-		return;
-
-	if (pm->ps->fd.forceJumpZStart && (cg.lastZSpeed > 0) && (velocity[2] <= 0)) {//If we were going up, and we are now going down, print our height.
-		cg.lastJumpHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
+	if (cg.predictedPlayerState.fd.forceJumpZStart && (cg.lastZSpeed > 0) && (velocity[2] <= 0)) {//If we were going up, and we are now going down, print our height.
+		cg.lastJumpHeight = cg.predictedPlayerState.origin[2] - cg.predictedPlayerState.fd.forceJumpZStart;
 		cg.lastJumpHeightTime = cg.time;
 	}
 
