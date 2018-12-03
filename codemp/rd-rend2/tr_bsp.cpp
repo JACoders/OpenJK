@@ -626,6 +626,10 @@ static void R_LoadVisibility( world_t *worldData, lump_t *l ) {
 	int		len;
 	byte	*buf;
 
+	len = (worldData->numClusters + 63) & ~63;
+	worldData->novis = (byte *)ri.Hunk_Alloc(len, h_low);
+	Com_Memset(worldData->novis, 0xff, len);
+
 	len = l->filelen;
 	if ( !len ) {
 		return;
@@ -2303,7 +2307,14 @@ static void R_LoadSubmodels( world_t *worldData, int worldIndex, lump_t *l ) {
 
 		model->type = MOD_BRUSH;
 		model->data.bmodel = out;
-		Com_sprintf( model->name, sizeof( model->name ), "*%d", i );
+		if (worldIndex >= 0)
+		{
+			Com_sprintf( model->name, sizeof( model->name ), "*%d-%d", worldIndex, i );
+		}
+		else
+		{
+			Com_sprintf( model->name, sizeof( model->name ), "*%d", i );
+		}
 
 		for (j=0 ; j<3 ; j++) {
 			out->bounds[0][j] = LittleFloat (in->mins[j]);
@@ -3750,7 +3761,9 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 		}
 
 		worldIndex = *bspIndex = tr.numBspModels;
-		worldData = tr.bspModels[tr.numBspModels];
+
+		worldData = (world_t *)ri.Hunk_Alloc(sizeof(*worldData), h_low);
+		tr.bspModels[tr.numBspModels] = worldData;
 		++tr.numBspModels;
 	}
 

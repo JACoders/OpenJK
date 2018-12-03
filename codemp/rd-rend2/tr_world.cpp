@@ -660,7 +660,7 @@ R_ClusterPVS
 */
 static const byte *R_ClusterPVS (int cluster) {
 	if (!tr.world->vis || cluster < 0 || cluster >= tr.world->numClusters ) {
-		return NULL;
+		return tr.world->novis;
 	}
 
 	return tr.world->vis + cluster * tr.world->clusterBytes;
@@ -683,7 +683,7 @@ qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask ) {
 
 	leafnum = ri.CM_PointLeafnum (p2);
 	cluster = ri.CM_LeafCluster (leafnum);
-	if ( mask && (!(mask[cluster>>3] & (1<<(cluster&7)) ) ) )
+	if ( !(mask[cluster>>3] & (1<<(cluster&7))) )
 		return qfalse;
 
 	return qtrue;
@@ -754,7 +754,7 @@ static void R_MarkLeaves( void )
 		}
 
 		// check general pvs
-		if ( vis && !(vis[cluster>>3] & (1<<(cluster&7))) ) {
+		if ( !(vis[cluster>>3] & (1<<(cluster&7))) ) {
 			continue;
 		}
 
