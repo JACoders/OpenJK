@@ -1077,6 +1077,8 @@ void Com_Init( char *commandLine ) {
 		FS_InitFilesystem ();	//uses z_malloc
 		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 
+		Sys_SteamInit();
+
 		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
@@ -1579,6 +1581,8 @@ void Com_Shutdown (void) {
 		FS_FCloseFile( com_journalFile );
 		com_journalFile = 0;
 	}
+
+	Sys_SteamShutdown();
 
 #ifdef JK2_MODE
 	JK2SP_Shutdown();
