@@ -415,8 +415,8 @@ typedef struct {
 void R_SetOrientationOriginAndAxis(
 	orientationr_t& orientation,
 	const vec3_t origin,
-	const vec3_t left,
 	const vec3_t forward,
+	const vec3_t left,
 	const vec3_t up);
 void R_SetOrientationOriginAndAxis(
 	orientationr_t& orientation,
@@ -1803,6 +1803,7 @@ typedef struct {
 	int			numClusters;
 	int			clusterBytes;
 	const byte	*vis;			// may be passed in by CM_LoadMap to save space
+	byte *novis; // clusterBytes of 0xff (everything is visible)
 
 	char		*entityString;
 	char		*entityParsePoint;
