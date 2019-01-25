@@ -1370,9 +1370,9 @@ qboolean WP_SaberDamageEffects( trace_t *tr, const vec3_t start, float length, f
 			G_PlayEffect( hitEffect, coll.mCollisionPosition, coll.mCollisionNormal );
 
 			//Get the hit location based on surface name
-			if ( (hitLoc[hitEntNum[numHitEnts]] == HL_NONE && trHitLoc == HL_NONE)
-				|| (hitDismemberLoc[hitEntNum[numHitEnts]] == HL_NONE && trDismemberLoc == HL_NONE)
-				|| (!hitDismember[hitEntNum[numHitEnts]] && !trDismember) )
+			if ( (hitLoc[numHitEnts] == HL_NONE && trHitLoc == HL_NONE)
+				|| (hitDismemberLoc[numHitEnts] == HL_NONE && trDismemberLoc == HL_NONE)
+				|| (!hitDismember[numHitEnts] && !trDismember) )
 			{//no hit loc set for this ent this damage cycle yet
 				//FIXME: find closest impact surf *first* (per ent), then call G_GetHitLocFromSurfName?
 				trDismember = G_GetHitLocFromSurfName( &g_entities[coll.mEntityNum], gi.G2API_GetSurfaceName( &g_entities[coll.mEntityNum].ghoul2[coll.mModelIndex], coll.mSurfaceIndex ), &trHitLoc, coll.mCollisionPosition, dmgDir, bladeDir, MOD_SABER );
