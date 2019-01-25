@@ -2274,9 +2274,9 @@ qboolean WP_SaberDamageEffects( trace_t *tr, const vec3_t start, float length, f
 			}
 
 			//Get the hit location based on surface name
-			if ( (hitLoc[hitEntNum[numHitEnts]] == HL_NONE && trHitLoc[numHitEnts] == HL_NONE)
-				|| (hitDismemberLoc[hitEntNum[numHitEnts]] == HL_NONE && trDismemberLoc[numHitEnts] == HL_NONE)
-				|| (!hitDismember[hitEntNum[numHitEnts]] && !trDismember[numHitEnts]) )
+			if ( (hitLoc[numHitEnts] == HL_NONE && trHitLoc[numHitEnts] == HL_NONE)
+				|| (hitDismemberLoc[numHitEnts] == HL_NONE && trDismemberLoc[numHitEnts] == HL_NONE)
+				|| (!hitDismember[numHitEnts] && !trDismember[numHitEnts]) )
 			{//no hit loc set for this ent this damage cycle yet
 				//FIXME: find closest impact surf *first* (per ent), then call G_GetHitLocFromSurfName?
 				//FIXED: if hit multiple ents in this collision record, these trSurfName, trDismember and trDismemberLoc will get stomped/confused over the multiple ents I hit
