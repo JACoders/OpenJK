@@ -287,9 +287,8 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		float animSpeed = 50.0f / animations[anim].frameLerp;
 		int blendTime = 500;
 		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
-			BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
-					
-		//gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, NULL);
+								BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+
 	}
 	//-------------------------------------
 

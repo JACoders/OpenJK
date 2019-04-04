@@ -34,6 +34,7 @@ int			num_roffs = 0;
 
 qboolean g_bCollidableRoffs = qfalse;
 
+extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animName'
 extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 
 static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
@@ -359,17 +360,64 @@ defaultoffsetposition:
     }
 	else if (strcmp(type, "play") == 0)
 	{
-		//try to cache the animation
-		//TODO:  write needed code!
-
+		if (strcmp(argument, "GLAanim") == 0)
+		{
+			//check additional argument for an animation		
+			if (addlArgs)
+			{
+				if ( ent->model->mdxa && ent->animName )
+				{
+					//find animation index
+					const char* _tempAnimName = ent->animName;
+					const char *token;
+					token = COM_ParseExt(&_tempAnimName, qfalse);
+					int anim = GetIDForString(animTable, token);
+					
+					if ( anim )
+					{
+						float animSpeed = 50.0f / animations[anim].frameLerp;
+						int blendTime = 500;
 #if !NDEBUG
-		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-		//play the animation
-		//TODO:  write needed code!
-
-		//sprintf(errMsg, "Additional argument for type 'loop rof' is invalid.");
-		//goto functionend;
+						gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
+												BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+					}
+					else
+					{
+						sprintf(errMsg, "Cannot find animation < %s > in GLA[ %s ]", ent->animName, ent->model->mdxa->name);
+						goto functionend;					
+					}
+				}
+				else
+				{
+#if !NDEBUG
+					Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
+					// no animation.cfg file, try to play specified frames
+					gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, 
+											BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+					ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
+				}
+			}
+			else
+			{
+				sprintf(errMsg, "Additional argument invalid for type 'play GLAanim'.");
+				goto functionend;
+			}
+		}
+		else if (strcmp(argument, "MD3anim") == 0)
+		{
+			//TODO:  Write code to support misc_model_breakable ( md3 )
+#if !NDEBUG
+			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif		
+		}
+		else
+		{
+			sprintf(errMsg, "Argument for 'play' type is invalid.");
+			goto functionend;
+		}
 	}
 	//else if ...
 	else
@@ -515,9 +563,39 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
     }
 	else if (strcmp(type, "play") == 0)
 	{
-		//try to cache the animation
-		//TODO:  write needed code!
-
+		if (strcmp(argument, "GLAanim") == 0)
+		{
+			//check if entity class is misc_model_ghoul
+			if (strcmp(ent->classname, "misc_model_ghoul") == 0)
+			{
+				//preCache the model
+				qhandle_t mdxmID = gi.G2API_PrecacheGhoul2Model(ent->model);					
+			}
+			else
+			{
+				sprintf(errMsg, "Entity class <%s> does not match misc_model_ghoul.", ent->classname);
+				goto functionend;
+			}
+		}
+		else if (strcmp(argument, "MD3anim") == 0)
+		{
+			//check if entity class is misc_model_breakable
+			if (strcmp(ent->classname, "misc_model_breakable") == 0)
+			{
+				//preCache the model
+				qhandle_t md3ID = RE_RegisterModel(ent->model);
+			}
+			else
+			{
+				sprintf(errMsg, "Entity class <%s> does not match misc_model_breakable.", ent->classname);
+				goto functionend;
+			}
+		}
+		else
+		{
+			sprintf(errMsg, "Argument for 'play' type is invalid.");
+			goto functionend;
+		}
 	}
     //else if ...
     else
