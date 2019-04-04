@@ -250,7 +250,7 @@ defaultoffsetposition:
 		//objectID = G_SoundIndex(argument);
 
 		//try to register the sound
-		objectID = cgi_S_RegisterSound(addlArg);
+		objectID = cgi_S_RegisterSound(argument);
 
 		//play the sound
 		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
