@@ -239,6 +239,9 @@ defaultoffsetposition:
 			useOrigin[1] += up[1]*parsedOffset[2];
 			useOrigin[2] += up[2]*parsedOffset[2];
 
+
+			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+
 			G_PlayEffect(objectID, useOrigin, useAngles);
 		}
 	}
@@ -248,7 +251,9 @@ defaultoffsetposition:
 
 		//try to register the sound
 		objectID = cgi_S_RegisterSound(addlArg);
+
 		//play the sound
+		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
         cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
 	}
     else if (strcmp(type, "loop") == 0)
@@ -290,6 +295,8 @@ defaultoffsetposition:
 			//Re-link entity
 			gi.linkentity(ent);
 
+			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+
 			// Re-apply the ROFF
 			G_Roff(ent);			
 		}
@@ -314,24 +321,10 @@ defaultoffsetposition:
 			if (r2 && strstr(teststr, "sound"))
 			{ 
 				//OK... we should have a relative sound path
-				//try to register the sound
-				objectID = cgi_S_RegisterSound(addlArg);
-				//play looping sound
-				{
-					//update sound origins
-					//vec3_t v3Origin;
-					//VectorCopy(*CG_SetEntitySoundPosition( ent-> ),v3Origin);
-					soundChannel_t chan = CHAN_AUTO;
-					
-					if ( ent->s.eFlags & EF_LESS_ATTEN )
-					{
-						chan = CHAN_LESS_ATTEN;
-					}
-					
-					//add loop sound
-					ent->s.loopSound = G_SoundIndex(addlArg);
-					//G_SoundIndexOnEnt(ent, chan, objectID);
-				}
+				//try to register the sound and add it to the entity loopSound parameter
+				ent->s.loopSound = cgi_S_RegisterSound(addlArg);
+
+				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 			}
 			else
 			{
@@ -349,6 +342,9 @@ defaultoffsetposition:
     {
         //try to cache the script
         Quake3Game()->PrecacheScript(argument);
+
+		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+
         //run the IBI script
         Quake3Game()->RunScript(ent, argument);
     }

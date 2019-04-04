@@ -151,7 +151,6 @@ SOLID - Movement is blocked by it with the MASK_NPCSOLID & CONTENTS_BODY.
 
 "model" - Ghoul2 model (.glm) file to load
 "health" - how much health the model has - default 60 (zero makes non-breakable)
-"skeleton" - Ghoul2 animation (.gla) skeleton file to load (e.g., "_humanoid")
 "modelscale" - "x" uniform scale (default "0"), i.e., no scaling
 "modelscale_vec" - "x y z" scale model in each axis (default "1 1 1")
 "renderRadius" - model render radius (default "120")
@@ -275,7 +274,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	//-------------------------------------
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
-		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", ent->skeleton);
+		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
 		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
