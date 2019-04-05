@@ -34,7 +34,9 @@ int			num_roffs = 0;
 
 qboolean g_bCollidableRoffs = qfalse;
 
+extern qhandle_t	RE_RegisterModel(const char *name);
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animName'
+extern int G_ParseAnimFileSet(const char *skeletonName, const char *modelName = 0);
 extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 
 static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
@@ -365,27 +367,30 @@ defaultoffsetposition:
 			//check additional argument for an animation		
 			if (addlArgs)
 			{
-				if ( ent->model->mdxa && ent->animName )
+				if ( ent->animName )
 				{
 					//find animation index
 					const char* _tempAnimName = ent->animName;
 					const char *token;
 					token = COM_ParseExt(&_tempAnimName, qfalse);
 					int anim = GetIDForString(animTable, token);
+					char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
+					int temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
 					
 					if ( anim )
 					{
+						animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 						float animSpeed = 50.0f / animations[anim].frameLerp;
 						int blendTime = 500;
 #if !NDEBUG
 						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-						gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
+						gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
 												BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 					}
 					else
 					{
-						sprintf(errMsg, "Cannot find animation < %s > in GLA[ %s ]", ent->animName, ent->model->mdxa->name);
+						sprintf(errMsg, "Cannot find animation < %s > in GLA[ %s ]", ent->animName, skeletonName);
 						goto functionend;					
 					}
 				}
@@ -395,7 +400,7 @@ defaultoffsetposition:
 					Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 					// no animation.cfg file, try to play specified frames
-					gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, 
+					gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame, 
 											BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 					ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
 				}
@@ -562,7 +567,7 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
         Quake3Game()->PrecacheScript(argument);
     }
 	else if (strcmp(type, "play") == 0)
-	{
+	{/* //HANDLED BY THE CALLBACK 
 		if (strcmp(argument, "GLAanim") == 0)
 		{
 			//check if entity class is misc_model_ghoul
@@ -595,7 +600,7 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
 		{
 			sprintf(errMsg, "Argument for 'play' type is invalid.");
 			goto functionend;
-		}
+		}*/
 	}
     //else if ...
     else
