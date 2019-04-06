@@ -199,13 +199,19 @@ void SP_misc_model_ghoul( gentity_t *ent )
 {
 #if 1
 	ent->s.modelindex = G_ModelIndex( ent->model );
+
+	//cache the model
+	gi.G2API_PrecacheGhoul2Model(ent->model);
+
+	//initialize model
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 	
 	//ent->s.radius = 50; //Archangel- should there be a radius parameter within the model???
 	
 	//we found the model... so now lets get the mxda animation filename
-	char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
-	
+	char* skeletonName;
+	gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName/*ent->s.modelindex*/);
+
 	//so now load its animation configuration file
 	temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
 	
@@ -259,7 +265,9 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	G_SpawnString("rootbone", "model_root", &root_boneName);
 	G_SpawnString("animSequence", "ROOT", &anim_sequence);
 
-	Q_strncpyz(anim_sequence, ent->animSequence, sizeof(ent->animSequence));
+	ent->animSequence = anim_sequence;
+	//strcpy(ent->animSequence, anim_sequence);
+	//Q_strncpyz(ent->animSequence, anim_sequence, sizeof(anim_sequence + 1));  //crashes here
 
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
@@ -273,15 +281,23 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		int anim = GetIDForString(animTable, anim_sequence);
 		float animSpeed = 50.0f / animations[anim].frameLerp;
 		int blendTime = 500;
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
-								BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 
+		if ( anim >= 0 )
+		{
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
+				BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+		}
+		else
+		{
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
+		}
 	}
 	
 	char *skinName;
 	G_SpawnString("skin", "default", &skinName);
 	char skinRelPath[MAX_QPATH];
-	Q_strncpyz(skinRelPath, ent->model, sizeof(ent->model)); 
+	Q_strncpyz(skinRelPath, ent->model, sizeof(skinRelPath));
 	//strip off the .glm extension
 	COM_StripExtension(skinRelPath, skinRelPath, sizeof(skinRelPath));
 	Q_strcat(skinRelPath, sizeof(skinRelPath), va("_%s.skin", skinName));
@@ -295,7 +311,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	G_SpawnInt("health", "60", &ent->health);
 
 	//cache the model
-	gi.G2API_PrecacheGhoul2Model(ent->model);
+	//gi.G2API_PrecacheGhoul2Model(ent->model);
 	
 	//link entity
 	gi.linkentity (ent);
