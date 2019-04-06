@@ -158,7 +158,7 @@ SOLID - Movement is blocked by it with the MASK_NPCSOLID & CONTENTS_BODY.
 "animSequence" - name of animation sequence to play (default "ROOT")
 "startframe" - animation start frame (default "0")
 "endframe" - animation end frame (default "0") 
-"skin" - skin file to load (default "models/players/kyle/model_default.skin")
+"skin" - skin file to load, e.g.: red, blue, default (default "default")
 - Use "endframe" when you have an animation that's more than 1 frame to play.
 - Use "renderRadius" for models larger than a player model if you notice the misc_model_ghoul disappearing when moving the camera.
 - Use "rootbone" to change the bone that the animation will play from, instead of animating the entire GLA. Use wisely.
@@ -203,22 +203,18 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	
 	//ent->s.radius = 50; //Archangel- should there be a radius parameter within the model???
 	
-	//Archangel - Start--------------------------------------------------------------
 	//we found the model... so now lets get the mxda animation filename
 	char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
 	
 	//so now load its animation configuration file
 	temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
-	//Archangel - End----------------------------------------------------------__----
 	
-	//DT EDIT: misc_model_ghoul edits - START
 	if (ent->playerModel >= 0)
 	{
 		ent->rootBone = gi.G2API_GetBoneIndex(&ent->ghoul2[ent->playerModel], "model_root", qtrue);
 	}
 
 	G_SpawnInt("renderRadius", "120", &ent->s.radius);
-	//DT EDIT: misc_model_ghoul edits - END	
 
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
@@ -248,7 +244,6 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		ent->s.origin[2] += (oldMins2 - ent->mins[2]);
 	}
 
-	//DT EDIT: misc_model_ghoul edits - START
 	if (ent->spawnflags & 1) //SOLID
 	{
 		ent->contents = CONTENTS_BODY;
@@ -264,9 +259,8 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	G_SpawnString("rootbone", "model_root", &root_boneName);
 	G_SpawnString("animSequence", "ROOT", &anim_sequence);
 
-	strcpy(ent->animSequence, anim_sequence);
+	Q_strncpyz(anim_sequence, ent->animSequence, sizeof(ent->animSequence));
 
-	//Archangel - Start----------------------------
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
 		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
@@ -283,28 +277,30 @@ void SP_misc_model_ghoul( gentity_t *ent )
 								BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 
 	}
-	//Archangel - End------------------------------
-
+	
 	char *skinName;
+	G_SpawnString("skin", "default", &skinName);
+	char skinRelPath[MAX_QPATH];
+	Q_strncpyz(skinRelPath, ent->model, sizeof(ent->model)); 
+	//strip off the .glm extension
+	COM_StripExtension(skinRelPath, skinRelPath, sizeof(skinRelPath));
+	Q_strcat(skinRelPath, sizeof(skinRelPath), va("_%s.skin", skinName));
+	Q_strlwr(skinRelPath);
 
-	G_SpawnString("skin", "models/players/kyle/model_default.skin", &skinName);
+	int skin = gi.RE_RegisterSkin(skinRelPath);
 
-	int skin = gi.RE_RegisterSkin(skinName);
+	gi.G2API_SetSkin(&ent->ghoul2[ent->playerModel], G_SkinIndex(skinRelPath), skin);
 
-	gi.G2API_SetSkin(&ent->ghoul2[ent->playerModel], G_SkinIndex(skinName), skin);
-
-	char Model[MAX_QPATH];
-
-	gi.G2API_PrecacheGhoul2Model(Model);
-	//DT EDIT: misc_model_ghoul edits - END
-	
-	//Archangel - set health
+	//set health
 	G_SpawnInt("health", "60", &ent->health);
+
+	//cache the model
+	gi.G2API_PrecacheGhoul2Model(ent->model);
 	
-	//Archangel - link entity
+	//link entity
 	gi.linkentity (ent);
 	
-	//Archangel - set next think
+	//set next think
 	ent->nextthink = level.time + 1000;
 	
 #else
