@@ -24,7 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_roff.h"
 #include "Q3_Interface.h"
 #include "../cgame/cg_local.h"
-#include "../cgame/cg_media.h" //fix ROFF sounds
+#include "../cgame/cg_media.h" //Archangel - needed for fixing ROFF2 sounds
 #include "g_functions.h"
 #include "qcommon/ojk_saved_game_helper.h"
 
@@ -34,9 +34,8 @@ int			num_roffs = 0;
 
 qboolean g_bCollidableRoffs = qfalse;
 
-extern qhandle_t	RE_RegisterModel(const char *name);
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animName'
-extern int G_ParseAnimFileSet(const char *skeletonName, const char *modelName = 0);
+extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animSequence'
+extern int G_ParseAnimFileSet(const char *skeletonName, const char *modelName = 0);	//Archangel - needed for misc_model_ghoul 'animSequence'
 extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 
 static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
@@ -55,8 +54,8 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	{
 		return;
 	}
-
-	//notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
+	//effect notetrack format =  "effect <effects_relative_filepath.ext> <±OffsetX±OffsetY±OffsetZ> <XANGLE-YANGLE-ZANGLE>"
+	//effect notetrack example:  "effect effects/explosion1.efx 0+0+64 0-0-1"
 
 	while (notetrack[i] && notetrack[i] != ' ')
 	{
@@ -245,14 +244,14 @@ defaultoffsetposition:
 #if !NDEBUG
 			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-
 			G_PlayEffect(objectID, useOrigin, useAngles);
 		}
 	}
 	else if (strcmp(type, "sound") == 0)
 	{
-		//objectID = G_SoundIndex(argument);
-
+		//sound notetrack format =	"sound <relative_soundpath.ext>" 
+		//sound notetrack example:	"sound sound/vehicles/tie/flyby2.mp3"
+		
 		//try to register the sound
 		objectID = cgi_S_RegisterSound(argument);
 
@@ -264,6 +263,9 @@ defaultoffsetposition:
 	}
     else if (strcmp(type, "loop") == 0)
     {
+		//loop notetrack format =	"loop <rof|sfx> <relative|absolute>|<sound_relativepath.ext>" 
+		//loop notetrack examples:	"loop rof absolute" or "loop sfx sound/vehicles/tie/loop.wav"
+									
 		if (strcmp(argument, "rof") == 0)
 		{
 			if (strcmp(addlArg, "relative") == 0) //reset rof to original delta position/rotation at current location before looping
@@ -304,7 +306,6 @@ defaultoffsetposition:
 #if !NDEBUG
 			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-
 			// Re-apply the ROFF
 			G_Roff(ent);			
 		}
@@ -333,7 +334,6 @@ defaultoffsetposition:
 #if !NDEBUG
 				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-
 				ent->s.loopSound = cgi_S_RegisterSound(addlArg);
 			}
 			else
@@ -350,36 +350,38 @@ defaultoffsetposition:
     }
     else if (strcmp(type, "USE") == 0)
     {
+		//USE notetrack format =	"USE <IBI_ScriptName_noExt>" 
+		//USE notetrack example:	"USE airborne"
+		
         //try to cache the script
         Quake3Game()->PrecacheScript(argument);
 
 #if !NDEBUG
 		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-
         //run the IBI script
         Quake3Game()->RunScript(ent, argument);
     }
 	else if (strcmp(type, "play") == 0)
 	{
+		//play notetrack format =	"play <GLAanim|MD3anim> <animSequence>"
+		//play notetrack example:	"play GLAanim BOTH_STAND1"
+		
 		if (strcmp(argument, "GLAanim") == 0)
 		{
 			//check additional argument for an animation		
 			if (addlArgs)
 			{
-				if ( ent->animName )
+				if ( ent->animSequence )
 				{
 					//find animation index
-					const char* _tempAnimName = ent->animName;
-					const char *token;
-					token = COM_ParseExt(&_tempAnimName, qfalse);
-					int anim = GetIDForString(animTable, token);
+					int anim = GetIDForString(animTable, ent->animSequence);
 					char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
-					int temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
+					int animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
 					
 					if ( anim )
 					{
-						animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
+						animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
 						float animSpeed = 50.0f / animations[anim].frameLerp;
 						int blendTime = 500;
 #if !NDEBUG
@@ -390,7 +392,7 @@ defaultoffsetposition:
 					}
 					else
 					{
-						sprintf(errMsg, "Cannot find animation < %s > in GLA[ %s ]", ent->animName, skeletonName);
+						sprintf(errMsg, "Cannot find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
 						goto functionend;					
 					}
 				}
@@ -416,7 +418,8 @@ defaultoffsetposition:
 			//TODO:  Write code to support misc_model_breakable ( md3 )
 #if !NDEBUG
 			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif		
+#endif
+			//TODO:  play MD3 animation
 		}
 		else
 		{
@@ -461,13 +464,10 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
 	char teststr[256]	= {0};
 	int addlArgs = 0;
 
-
     if (!notetrack)
     {
         return;
     }
-
-    //notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
 
     while (notetrack[i] && notetrack[i] != ' ')
     {
@@ -562,45 +562,13 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
 		}
     }
     else if (strcmp(type, "USE") == 0)
-    {
+    {	
         //try to cache the script
         Quake3Game()->PrecacheScript(argument);
     }
 	else if (strcmp(type, "play") == 0)
-	{/* //HANDLED BY THE CALLBACK 
-		if (strcmp(argument, "GLAanim") == 0)
-		{
-			//check if entity class is misc_model_ghoul
-			if (strcmp(ent->classname, "misc_model_ghoul") == 0)
-			{
-				//preCache the model
-				qhandle_t mdxmID = gi.G2API_PrecacheGhoul2Model(ent->model);					
-			}
-			else
-			{
-				sprintf(errMsg, "Entity class <%s> does not match misc_model_ghoul.", ent->classname);
-				goto functionend;
-			}
-		}
-		else if (strcmp(argument, "MD3anim") == 0)
-		{
-			//check if entity class is misc_model_breakable
-			if (strcmp(ent->classname, "misc_model_breakable") == 0)
-			{
-				//preCache the model
-				qhandle_t md3ID = RE_RegisterModel(ent->model);
-			}
-			else
-			{
-				sprintf(errMsg, "Entity class <%s> does not match misc_model_breakable.", ent->classname);
-				goto functionend;
-			}
-		}
-		else
-		{
-			sprintf(errMsg, "Argument for 'play' type is invalid.");
-			goto functionend;
-		}*/
+	{
+		//Handled by the ROFF Callback because no access to entity at this time
 	}
     //else if ...
     else

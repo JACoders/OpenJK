@@ -26,7 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"
 
 extern cvar_t *g_spskill;
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animName'
+extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animSequence' parameter
 //
 // Helper functions
 //
@@ -155,7 +155,7 @@ SOLID - Movement is blocked by it with the MASK_NPCSOLID & CONTENTS_BODY.
 "modelscale_vec" - "x y z" scale model in each axis (default "1 1 1")
 "renderRadius" - model render radius (default "120")
 "rootbone" - animation root bone (default "model_root")
-"animName" - name of animation to play (default "ROOT")
+"animSequence" - name of animation sequence to play (default "ROOT")
 "startframe" - animation start frame (default "0")
 "endframe" - animation end frame (default "0") 
 "skin" - skin file to load (default "models/players/kyle/model_default.skin")
@@ -167,8 +167,8 @@ loaded as a model in the renderer - does not take up precious bsp space!
 //------------------------------------------------------------
 #include "anims.h"
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
-
 int temp_animFileIndex;
+
 void set_MiscAnim( gentity_t *ent)
 {
 	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
@@ -201,17 +201,15 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	ent->s.modelindex = G_ModelIndex( ent->model );
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 	
-	//ent->s.radius = 50; //Archangel- should be a radious parameter within the model???
+	//ent->s.radius = 50; //Archangel- should there be a radius parameter within the model???
 	
-	//Archangel
-	//-------------------------------------------------------------------------
+	//Archangel - Start--------------------------------------------------------------
 	//we found the model... so now lets get the mxda animation filename
 	char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
 	
 	//so now load its animation configuration file
 	temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
-
-	//-------------------------------------------------------------------------
+	//Archangel - End----------------------------------------------------------__----
 	
 	//DT EDIT: misc_model_ghoul edits - START
 	if (ent->playerModel >= 0)
@@ -261,17 +259,14 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	G_SpawnInt("endframe", "0", &ent->endFrame);
 
 	char *root_boneName;
-	char *anim_Name;
+	char *anim_sequence;
 
 	G_SpawnString("rootbone", "model_root", &root_boneName);
-	G_SpawnString("animName", "ROOT", &anim_Name);
+	G_SpawnString("animSequence", "ROOT", &anim_sequence);
 
-	strcpy(ent->animName, anim_Name);
-	const char* _tempAnimName = anim_Name;
+	strcpy(ent->animSequence, anim_sequence);
 
-	
-	//Archangel
-	//-------------------------------------
+	//Archangel - Start----------------------------
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
 		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
@@ -279,23 +274,23 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
 	else
-	{ //yeah, it has an animation.cfg file
+	{ //it has an animation.cfg file
 		animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
-		const char *token;
-		token = COM_ParseExt(&_tempAnimName, qfalse);
-		int anim = GetIDForString(animTable, token);
+		int anim = GetIDForString(animTable, anim_sequence);
 		float animSpeed = 50.0f / animations[anim].frameLerp;
 		int blendTime = 500;
 		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
 								BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 
 	}
-	//-------------------------------------
+	//Archangel - End------------------------------
 
 	char *skinName;
-	int skin = gi.RE_RegisterSkin(skinName);
 
 	G_SpawnString("skin", "models/players/kyle/model_default.skin", &skinName);
+
+	int skin = gi.RE_RegisterSkin(skinName);
+
 	gi.G2API_SetSkin(&ent->ghoul2[ent->playerModel], G_SkinIndex(skinName), skin);
 
 	char Model[MAX_QPATH];
