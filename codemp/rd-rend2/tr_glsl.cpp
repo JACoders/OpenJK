@@ -363,6 +363,11 @@ static size_t GLSL_GetShaderHeader(
 		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_MIPS - 4));
 	}
 
+	if (r_deluxeSpecular->value > 0.000001f)
+	{
+		Q_strcat(dest, size, va("#define r_deluxeSpecular %f\n", r_deluxeSpecular->value));
+	}
+
 	if (extra)
 	{
 		Q_strcat(dest, size, extra);
