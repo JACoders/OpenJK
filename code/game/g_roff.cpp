@@ -371,12 +371,14 @@ defaultoffsetposition:
 		{
 			//check additional argument for an animation		
 			if (addlArgs)
-			{
-				if ( ent->animSequence )
+			{					
+				if ( addlArg[0] != '\0' )  
 				{
+					strcpy(ent->animSequence, addlArg);
 					//find animation index
 					int anim = GetIDForString(animTable, ent->animSequence);
-					char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
+					char* skeletonName;
+					gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
 					int animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
 					
 					if ( anim )
