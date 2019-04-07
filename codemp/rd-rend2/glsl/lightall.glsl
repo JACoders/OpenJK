@@ -705,7 +705,7 @@ void main()
 
   #if defined(USE_LIGHTMAP) || defined(USE_LIGHT_VERTEX)
 	ambientColor = lightColor;
-	float surfNL = clamp(dot(N, L), 0.0, 1.0);
+	float surfNL = clamp(dot(var_Normal.xyz, L), 0.0, 1.0);
 
 	// Scale the incoming light to compensate for the baked-in light angle
 	// attenuation.
@@ -739,6 +739,12 @@ void main()
 	float NH = clamp(dot(N, H), 0.0, 1.0);
 
 	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness);
+  #endif
+
+  #if defined(USE_LIGHTMAP) && defined(USE_DELUXEMAP) && defined(r_deluxeSpecular)
+	float NH = clamp(dot(N, H), 0.0, 1.0);
+
+	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness) * r_deluxeSpecular;
   #endif
 
 	vec3 reflectance = Fd + Fs;
