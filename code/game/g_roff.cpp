@@ -24,7 +24,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_roff.h"
 #include "Q3_Interface.h"
 #include "../cgame/cg_local.h"
-#include "../cgame/cg_media.h" //Archangel - needed for fixing ROFF2 sounds
 #include "g_functions.h"
 #include "qcommon/ojk_saved_game_helper.h"
 
@@ -34,11 +33,9 @@ int			num_roffs = 0;
 
 qboolean g_bCollidableRoffs = qfalse;
 
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animSequence'
-extern int G_ParseAnimFileSet(const char *skeletonName, const char *modelName = 0);	//Archangel - needed for misc_model_ghoul 'animSequence'
 extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 
-static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
+static void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 {
 	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0;
 	char type[256];
@@ -50,12 +47,12 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	int addlArgs = 0;
 	vec3_t parsedAngles, parsedOffset, useAngles, useOrigin, forward, right, up;
 
-	if (!ent || !notetrack)
+	if (!cent || !notetrack)
 	{
 		return;
 	}
-	//effect notetrack format =  "effect <effects_relative_filepath.ext> <±OffsetX±OffsetY±OffsetZ> <XANGLE-YANGLE-ZANGLE>"
-	//effect notetrack example:  "effect effects/explosion1.efx 0+0+64 0-0-1"
+
+	//notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
 
 	while (notetrack[i] && notetrack[i] != ' ')
 	{
@@ -214,17 +211,17 @@ defaultoffsetposition:
 				}
 				else
 				{ //failed to parse angles from the extra argument provided..
-					VectorCopy(ent->s.apos.trBase, useAngles);
+					VectorCopy(cent->s.apos.trBase, useAngles);
 				}
 			}
 			else
 			{ //if no constant angles, play in direction entity is facing
-				VectorCopy(ent->s.apos.trBase, useAngles);
+				VectorCopy(cent->s.apos.trBase, useAngles);
 			}
 
 			AngleVectors(useAngles, forward, right, up);
 
-			VectorCopy(ent->s.pos.trBase, useOrigin);
+			VectorCopy(cent->s.pos.trBase, useOrigin);
 
 			//forward
 			useOrigin[0] += forward[0]*parsedOffset[0];
@@ -241,361 +238,33 @@ defaultoffsetposition:
 			useOrigin[1] += up[1]*parsedOffset[2];
 			useOrigin[2] += up[2]*parsedOffset[2];
 
-#if !NDEBUG
-			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
 			G_PlayEffect(objectID, useOrigin, useAngles);
 		}
 	}
 	else if (strcmp(type, "sound") == 0)
 	{
-		//sound notetrack format =	"sound <relative_soundpath.ext>" 
-		//sound notetrack example:	"sound sound/vehicles/tie/flyby2.mp3"
-		
-		//try to register the sound
-		objectID = cgi_S_RegisterSound(argument);
-
-		//play the sound
-#if !NDEBUG
-		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-        cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
-	}
-    else if (strcmp(type, "loop") == 0)
-    {
-		//loop notetrack format =	"loop <rof|sfx> <relative|absolute>|<sound_relativepath.ext>" 
-		//loop notetrack examples:	"loop rof absolute" or "loop sfx sound/vehicles/tie/loop.wav"
-									
-		if (strcmp(argument, "rof") == 0)
-		{
-			if (strcmp(addlArg, "relative") == 0) //reset rof to original delta position/rotation at current location before looping
-			{
-				VectorCopy(ent->s.origin2, ent->s.pos.trBase);
-				VectorCopy(ent->s.origin2, ent->currentOrigin);
-				VectorCopy(ent->s.angles2, ent->s.apos.trBase);
-				VectorCopy(ent->s.angles2, ent->currentAngles);
-			}
-			else if (strcmp(addlArg, "absolute") == 0) //reset rof to original delta position/rotation world location before looping
-			{
-				VectorSubtract(ent->pos1, ent->pos1, ent->pos1);
-				VectorSubtract(ent->pos2, ent->pos2, ent->pos2);
-
-				VectorSubtract(ent->s.pos.trBase, ent->s.pos.trBase, ent->s.pos.trBase);
-				VectorSubtract(ent->currentOrigin, ent->currentOrigin, ent->currentOrigin);
-				VectorSubtract(ent->s.apos.trBase, ent->s.apos.trBase, ent->s.apos.trBase);
-				VectorSubtract(ent->currentAngles, ent->currentAngles, ent->currentAngles);
-
-				VectorCopy(ent->currentOrigin, ent->s.origin2);
-				VectorCopy(ent->currentAngles, ent->s.angles2);
-			}
-			else
-			{
-				sprintf(errMsg, "Additional argument for type 'loop rof' is invalid.");
-				goto functionend;
-			}
-			
-			// Start the ROFF from the beginning
-			ent->roff_ctr = 0;
-
-			// Let the ROFF playing start.
-			ent->next_roff_time = level.time;
-
-			//Re-link entity
-			gi.linkentity(ent);
-
-#if !NDEBUG
-			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-			// Re-apply the ROFF
-			G_Roff(ent);			
-		}
-		else if (strcmp(argument, "sfx") == 0)
-		{
-			//check additional argument for relative sound path
-			r = 0;
-			r2 = 0;
-			
-			if (addlArg[r] == '/')
-			{
-				r++;
-			}
-			while (addlArg[r] && addlArg[r] != '/')
-			{
-				teststr[r2] = addlArg[r];
-				r2++;
-				r++;
-			}
-			teststr[r2] = '\0';
-
-			if (r2 && strstr(teststr, "sound"))
-			{ 
-				//OK... we should have a relative sound path
-				//try to register the sound and add it to the entity loopSound parameter
-#if !NDEBUG
-				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-				ent->s.loopSound = cgi_S_RegisterSound(addlArg);
-			}
-			else
-			{
-				sprintf(errMsg, "Additional argument invalid sound path for type 'loop sfx <addlArg>'");
-				goto functionend;
-			}
-		}
-		else
-		{
-			sprintf(errMsg, "Argument for 'loop' type is invalid.");
-			goto functionend;
-		}
-    }
-    else if (strcmp(type, "USE") == 0)
-    {
-		//USE notetrack format =	"USE <IBI_ScriptName_noExt>" 
-		//USE notetrack example:	"USE airborne"
-		
-        //try to cache the script
-        Quake3Game()->PrecacheScript(argument);
-
-#if !NDEBUG
-		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-        //run the IBI script
-        Quake3Game()->RunScript(ent, argument);
-    }
-	else if (strcmp(type, "play") == 0)
-	{
-		//play notetrack format =	"play <GLAanim|MD3anim> <animSequence>"
-		//play notetrack example:	"play GLAanim BOTH_STAND1"
-		
-		if (strcmp(argument, "GLAanim") == 0)
-		{
-			//check additional argument for an animation		
-			if (addlArgs)
-			{
-				if ( ent->animSequence )
-				{
-					//find animation index
-					int anim = GetIDForString(animTable, ent->animSequence);
-					char* skeletonName = gi.G2API_GetAnimFileNameIndex(ent->s.modelindex);
-					int animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
-					
-					if ( anim )
-					{
-						animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
-						float animSpeed = 50.0f / animations[anim].frameLerp;
-						int blendTime = 500;
-#if !NDEBUG
-						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-						gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
-												BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
-					}
-					else
-					{
-						sprintf(errMsg, "Cannot find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
-						goto functionend;					
-					}
-				}
-				else
-				{
-#if !NDEBUG
-					Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-					// no animation.cfg file, try to play specified frames
-					gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame, 
-											BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
-					ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
-				}
-			}
-			else
-			{
-				sprintf(errMsg, "Additional argument invalid for type 'play GLAanim'.");
-				goto functionend;
-			}
-		}
-		else if (strcmp(argument, "MD3anim") == 0)
-		{
-			//TODO:  Write code to support misc_model_breakable ( md3 )
-#if !NDEBUG
-			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-			//TODO:  play MD3 animation
-		}
-		else
-		{
-			sprintf(errMsg, "Argument for 'play' type is invalid.");
-			goto functionend;
-		}
+		objectID = G_SoundIndex(argument);
+		cgi_S_StartSound(cent->s.pos.trBase, cent->s.number, CHAN_BODY, objectID);
 	}
 	//else if ...
 	else
 	{
 		if (type[0])
 		{
-			Com_Printf("Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
+			Com_Printf("Warning: \"%s\" is an invalid ROFF notetrack function\n", type);
 		}
 		else
 		{
-			Com_Printf("Warning: NoteTrack is missing function and/or arguments\n");
+			Com_Printf("Warning: Notetrack is missing function and/or arguments\n");
 		}
 	}
 
 	return;
 
 functionend:
-	Com_Printf("Type-specific NoteTrack error: %s\n", errMsg);
+	Com_Printf("Type-specific notetrack error: %s\n", errMsg);
 	return;
 }
-
-
-//-------------------------------------------------------
-// G_CacheRoffNoteTracks
-//
-// PreCaches the ROFF2 NoteTrack data
-//-------------------------------------------------------
-
-static void G_CacheRoffNoteTracks(const char *notetrack)
-{
-    int i = 0, r = 0, r2 = 0, objectID = 0;
-    char type[256]		= {0};
-    char argument[512]	= {0};
-	char addlArg[512]	= {0};	
-	char errMsg[256]	= {0};
-	char teststr[256]	= {0};
-	int addlArgs = 0;
-
-    if (!notetrack)
-    {
-        return;
-    }
-
-    while (notetrack[i] && notetrack[i] != ' ')
-    {
-        type[i] = notetrack[i];
-        i++;
-    }
-
-    type[i] = '\0';
-
-    if (notetrack[i] != ' ')
-    { //didn't pass in a valid notetrack type, or forgot the argument for it
-        return;
-    }
-
-    i++;
-
-    while (notetrack[i] && notetrack[i] != ' ')
-    {
-        if (notetrack[i] != '\n' && notetrack[i] != '\r')
-        { //don't read line ends for an argument
-            argument[r] = notetrack[i];
-            r++;
-        }
-        i++;
-    }
-    argument[r] = '\0';
-
-    if (!r)
-    {
-        return;
-    }
-	
-	if (notetrack[i] == ' ')
-	{ //additional arguments...
-		addlArgs = 1;
-
-		i++;
-		r = 0;
-		while (notetrack[i])
-		{
-			addlArg[r] = notetrack[i];
-			r++;
-			i++;
-		}
-		addlArg[r] = '\0';
-	}
-
-    if (strcmp(type, "effect") == 0)
-    {
-        //try to register the EFX
-        objectID = G_EffectIndex(argument);
-    }
-    else if (strcmp(type, "sound") == 0)
-    {
-        //try to register the sound
-        objectID = cgi_S_RegisterSound(argument);
-    }
-    else if (strcmp(type, "loop") == 0)
-    {
-        //only thing we do here is register a sound if 'loop' argument is "sfx"
-		//everything else is handled by G_RoffNotetrackCallback function.
-		
-		if (strcmp(argument, "sfx") == 0)
-		{
-			//check additional argument for a relative sound path
-			r = 0;
-			r2 = 0;
-			
-			if (addlArg[r] == '/')
-			{
-				r++;
-			}
-			while (addlArg[r] && addlArg[r] != '/')
-			{
-				teststr[r2] = addlArg[r];
-				r2++;
-				r++;
-			}
-			teststr[r2] = '\0';
-
-			if (r2 && strstr(teststr, "sound"))
-			{ 
-				//OK... we should have a relative sound path
-				//try to register the sound
-				objectID = cgi_S_RegisterSound(addlArg);
-			}
-			else
-			{
-				sprintf(errMsg, "Additional argument invalid sound path for type 'loop sfx <addlArg>'");
-				goto functionend;
-			}
-		}
-    }
-    else if (strcmp(type, "USE") == 0)
-    {	
-        //try to cache the script
-        Quake3Game()->PrecacheScript(argument);
-    }
-	else if (strcmp(type, "play") == 0)
-	{
-		//Handled by the ROFF Callback because no access to entity at this time
-	}
-    //else if ...
-    else
-    {
-        if (type[0])
-        {
-            Com_Printf("Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
-        }
-        else
-        {
-            Com_Printf("Warning: NoteTrack is missing function and/or arguments\n");
-        }
-    }
-
-    return;
-	
-functionend:
-	Com_Printf("Type-specific NoteTrack error: %s\n", errMsg);
-	return;
-}
-
-
-//-------------------------------------------------------
-// G_ValidRoff
-//
-// Checks header to verify we have a valid .ROF file
-//-------------------------------------------------------
 
 static qboolean G_ValidRoff( roff_hdr2_t *header )
 {
@@ -614,13 +283,6 @@ static qboolean G_ValidRoff( roff_hdr2_t *header )
 	return qfalse;
 }
 
-
-//-------------------------------------------------------
-// G_FreeRoff
-//
-// Deletes all .ROF files from memory
-//-------------------------------------------------------
-
 static void G_FreeRoff(int index)
 {
 	if(roffs[index].mNumNoteTracks) {
@@ -628,13 +290,6 @@ static void G_FreeRoff(int index)
 		delete [] roffs[index].mNoteTrackIndexes;
 	}
 }
-
-
-//-------------------------------------------------------
-// G_InitRoff
-//
-// Initializes the .ROF file
-//-------------------------------------------------------
 
 static qboolean G_InitRoff( char *file, unsigned char *data )
 {
@@ -756,12 +411,6 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 					ptr += strlen(ptr) + 1;
 					roffs[num_roffs].mNoteTrackIndexes[i] = ptr;
 				}
-				
-                //preCache NoteTracks
-                for (i = 0; i < LittleLong(hdr->mNumNotes); i++)
-                {
-                    G_CacheRoffNoteTracks(roffs[num_roffs].mNoteTrackIndexes[i]);
-                }
 			}
 			return qtrue;
 		}
@@ -769,7 +418,6 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 
 	return qfalse;
 }
-
 
 //-------------------------------------------------------
 // G_LoadRoff
@@ -824,7 +472,7 @@ int G_LoadRoff( const char *fileName )
 	// ..and make sure it's reasonably valid
 	if ( !G_ValidRoff( header ))
 	{
-		Com_Printf( S_COLOR_RED"Invalid .ROF format '%s'\n", fileName );
+		Com_Printf( S_COLOR_RED"Invalid roff format '%s'\n", fileName );
 	}
 	else
 	{
@@ -883,16 +531,9 @@ void G_Roff( gentity_t *ent )
 		move_rotate2_t	*data	= &((move_rotate2_t *)roff->data)[ ent->roff_ctr ];
 		VectorCopy( data->origin_delta, org );
 		VectorCopy( data->rotate_delta, ang );
-		/*if (data->mStartNote != -1 || data->mNumNotes)
+		if (data->mStartNote != -1 || data->mNumNotes)
 		{
 			G_RoffNotetrackCallback(ent, roffs[roff_id - 1].mNoteTrackIndexes[data->mStartNote]);
-		}*/
-		if ( data->mStartNote != -1 )
-		{
-			for ( int n = 0; n < data->mNumNotes; n++ )
-			{
-				G_RoffNotetrackCallback(ent, roffs[roff_id - 1].mNoteTrackIndexes[data->mStartNote + n]);
-			}
 		}
 	}
 	else

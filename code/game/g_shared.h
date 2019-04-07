@@ -1143,9 +1143,8 @@ Ghoul2 Insert End
 
 //Animation
 	qboolean	loopAnim;
-	char 		*animSequence;	//Archangel - needed for new ROFF2 animation notetrack type 'play'
-	int			startFrame;
-	int			endFrame;
+	int		startFrame;
+	int		endFrame;
 
 //Script/ICARUS-related fields
 	int				m_iIcarusID;
@@ -1386,7 +1385,6 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(followPosRecalcTime);
 		saved_game.write<int32_t>(followPosWaypoint);
 		saved_game.write<int32_t>(loopAnim);
-		saved_game.write<int32_t>(animSequence);
 		saved_game.write<int32_t>(startFrame);
 		saved_game.write<int32_t>(endFrame);
 		saved_game.write<int32_t>(m_iIcarusID);
@@ -1576,7 +1574,6 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(followPosRecalcTime);
 		saved_game.read<int32_t>(followPosWaypoint);
 		saved_game.read<int32_t>(loopAnim);
-		saved_game.read<int32_t>(animSequence);
 		saved_game.read<int32_t>(startFrame);
 		saved_game.read<int32_t>(endFrame);
 		saved_game.read<int32_t>(m_iIcarusID);

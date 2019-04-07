@@ -24,9 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_functions.h"
 #include "bg_public.h"
 #include "../cgame/cg_local.h"
-
 extern cvar_t *g_spskill;
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animSequence' parameter
+
 //
 // Helper functions
 //
@@ -146,29 +145,14 @@ void CrystalAmmoSettings(gentity_t *ent)
 //------------------------------------------------------------
 
 //------------------------------------------------------------
-/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 -37) (16 16 32) SOLID
-SOLID - Movement is blocked by it with the MASK_NPCSOLID & CONTENTS_BODY.
-
-"model" - Ghoul2 model (.glm) file to load
+/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 -37) (16 16 32)
+"model"		arbitrary .glm file to display
 "health" - how much health the model has - default 60 (zero makes non-breakable)
-"modelscale" - "x" uniform scale (default "0"), i.e., no scaling
-"modelscale_vec" - "x y z" scale model in each axis (default "1 1 1")
-"renderRadius" - model render radius (default "120")
-"rootbone" - animation root bone (default "model_root")
-"animSequence" - name of animation sequence to play (default "ROOT")
-"startframe" - animation start frame (default "0")
-"endframe" - animation end frame (default "0") 
-"skin" - skin file to load, e.g.: red, blue, default (default "default")
-- Use "endframe" when you have an animation that's more than 1 frame to play.
-- Use "renderRadius" for models larger than a player model if you notice the misc_model_ghoul disappearing when moving the camera.
-- Use "rootbone" to change the bone that the animation will play from, instead of animating the entire GLA. Use wisely.
-loaded as a model in the renderer - does not take up precious bsp space!
 */
 //------------------------------------------------------------
 #include "anims.h"
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
 int temp_animFileIndex;
-
 void set_MiscAnim( gentity_t *ent)
 {
 	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
@@ -199,28 +183,8 @@ void SP_misc_model_ghoul( gentity_t *ent )
 {
 #if 1
 	ent->s.modelindex = G_ModelIndex( ent->model );
-
-	//cache the model
-	gi.G2API_PrecacheGhoul2Model(ent->model);
-
-	//initialize model
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
-	
-	//ent->s.radius = 50; //Archangel- should there be a radius parameter within the model???
-	
-	//we found the model... so now lets get the mxda animation filename
-	char* skeletonName;
-	gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName/*ent->s.modelindex*/);
-
-	//so now load its animation configuration file
-	temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
-	
-	if (ent->playerModel >= 0)
-	{
-		ent->rootBone = gi.G2API_GetBoneIndex(&ent->ghoul2[ent->playerModel], "model_root", qtrue);
-	}
-
-	G_SpawnInt("renderRadius", "120", &ent->s.radius);
+	ent->s.radius = 50;
 
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
@@ -250,75 +214,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		ent->s.origin[2] += (oldMins2 - ent->mins[2]);
 	}
 
-	if (ent->spawnflags & 1) //SOLID
-	{
-		ent->contents = CONTENTS_BODY;
-		ent->clipmask = MASK_NPCSOLID;
-	}
-
-	G_SpawnInt("startframe", "0", &ent->startFrame);
-	G_SpawnInt("endframe", "0", &ent->endFrame);
-
-	char *root_boneName;
-	char *anim_sequence;
-
-	G_SpawnString("rootbone", "model_root", &root_boneName);
-	G_SpawnString("animSequence", "ROOT", &anim_sequence);
-
-	ent->animSequence = anim_sequence;
-	//strcpy(ent->animSequence, anim_sequence);
-	//Q_strncpyz(ent->animSequence, anim_sequence, sizeof(anim_sequence + 1));  //crashes here
-
-	if ( temp_animFileIndex < 0 )
-	{ //failed to find an animation.cfg file for this model... try using specified frames
-		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
-		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
-	}
-	else
-	{ //it has an animation.cfg file
-		animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
-		int anim = GetIDForString(animTable, anim_sequence);
-		float animSpeed = 50.0f / animations[anim].frameLerp;
-		int blendTime = 500;
-
-		if ( anim >= 0 )
-		{
-			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-				BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
-		}
-		else
-		{
-			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
-			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
-		}
-	}
-	
-	char *skinName;
-	G_SpawnString("skin", "default", &skinName);
-	char skinRelPath[MAX_QPATH];
-	Q_strncpyz(skinRelPath, ent->model, sizeof(skinRelPath));
-	//strip off the .glm extension
-	COM_StripExtension(skinRelPath, skinRelPath, sizeof(skinRelPath));
-	Q_strcat(skinRelPath, sizeof(skinRelPath), va("_%s.skin", skinName));
-	Q_strlwr(skinRelPath);
-
-	int skin = gi.RE_RegisterSkin(skinRelPath);
-
-	gi.G2API_SetSkin(&ent->ghoul2[ent->playerModel], G_SkinIndex(skinRelPath), skin);
-
-	//set health
-	G_SpawnInt("health", "60", &ent->health);
-
-	//cache the model
-	//gi.G2API_PrecacheGhoul2Model(ent->model);
-	
-	//link entity
 	gi.linkentity (ent);
-	
-	//set next think
-	ent->nextthink = level.time + 1000;
-	
 #else
 	char name1[200] = "models/players/kyle/model.glm";
 	ent->s.modelindex = G_ModelIndex( name1 );
