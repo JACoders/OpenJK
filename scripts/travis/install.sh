@@ -9,7 +9,7 @@ shift 1
 # macOS is special
 if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
 	brew upgrade
-	brew install --universal --verbose libpng sdl2
+	brew install --verbose libpng sdl2
 	exit 0
 fi
 
