@@ -211,9 +211,10 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	//we found the model... so now lets get the mxda animation filename
 	char* skeletonName;
 	gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName/*ent->s.modelindex*/);
+	char* strippedSkelName = COM_SkipPath(skeletonName);
 
 	//so now load its animation configuration file
-	temp_animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
+	temp_animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
 	
 	if (ent->playerModel >= 0)
 	{
@@ -266,8 +267,6 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	G_SpawnString("animSequence", "ROOT", &anim_sequence);
 
 	ent->animSequence = anim_sequence;
-	//strcpy(ent->animSequence, anim_sequence);
-	//Q_strncpyz(ent->animSequence, anim_sequence, sizeof(anim_sequence + 1));  //crashes here
 
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames

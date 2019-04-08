@@ -253,15 +253,18 @@ defaultoffsetposition:
 		//sound notetrack example:	"sound sound/vehicles/tie/flyby2.mp3"
 		
 		//try to register the sound
-		objectID = cgi_S_RegisterSound(argument);
+		//objectID = cgi_S_RegisterSound(argument);
 
 		//play the sound
 #if !NDEBUG
 		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-        cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
+		//cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
+		G_SoundOnEnt(ent, CHAN_BODY, argument);
+
+
 	}
-    else if (strcmp(type, "loop") == 0)
+	else if (strcmp(type, "loop") == 0)
     {
 		//loop notetrack format =	"loop <rof|sfx> <relative|absolute>|<sound_relativepath.ext>" 
 		//loop notetrack examples:	"loop rof absolute" or "loop sfx sound/vehicles/tie/loop.wav"
@@ -327,14 +330,23 @@ defaultoffsetposition:
 			}
 			teststr[r2] = '\0';
 
+			if (r2 && strstr(teststr, "kill"))
+			{ // kill the looping sound
+				ent->s.loopSound = 0;
+			}
 			if (r2 && strstr(teststr, "sound"))
 			{ 
 				//OK... we should have a relative sound path
 				//try to register the sound and add it to the entity loopSound parameter
+				//objectID = G_SoundIndex(addlArg);
+
 #if !NDEBUG
 				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-				ent->s.loopSound = cgi_S_RegisterSound(addlArg);
+				int sfxhandle1 = cgi_S_RegisterSound(addlArg);	//this works for rofftest, breaks for shuttlemap
+				int sfxhandle2 = G_SoundIndex(addlArg);			//this works for shuttlemap, but breaks for rofftest
+
+				ent->s.loopSound = G_SoundIndex(addlArg);
 			}
 			else
 			{
@@ -379,9 +391,10 @@ defaultoffsetposition:
 					int anim = GetIDForString(animTable, ent->animSequence);
 					char* skeletonName;
 					gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
-					int animFileIndex = G_ParseAnimFileSet(skeletonName, ent->model);
+					char* strippedSkelName = COM_SkipPath(skeletonName);
+					int animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
 					
-					if ( anim )
+					if ( anim >= 0 )
 					{
 						animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
 						float animSpeed = 50.0f / animations[anim].frameLerp;
@@ -390,7 +403,7 @@ defaultoffsetposition:
 						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 						gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
-												BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+												BONE_ANIM_OVERRIDE_FREEZE, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 					}
 					else
 					{
@@ -405,7 +418,7 @@ defaultoffsetposition:
 #endif
 					// no animation.cfg file, try to play specified frames
 					gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame, 
-											BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+											BONE_ANIM_OVERRIDE_FREEZE, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 					ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
 				}
 			}
@@ -525,7 +538,7 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
     else if (strcmp(type, "sound") == 0)
     {
         //try to register the sound
-        objectID = cgi_S_RegisterSound(argument);
+		objectID = G_SoundIndex(argument);//cgi_S_RegisterSound(argument);
     }
     else if (strcmp(type, "loop") == 0)
     {
@@ -554,7 +567,7 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
 			{ 
 				//OK... we should have a relative sound path
 				//try to register the sound
-				objectID = cgi_S_RegisterSound(addlArg);
+				objectID = G_SoundIndex(argument);//cgi_S_RegisterSound(argument);
 			}
 			else
 			{
