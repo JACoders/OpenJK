@@ -64,6 +64,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_ShadowMvp3", GLSL_MAT4x4, 1 },
 
 	{ "u_EnableTextures", GLSL_VEC4, 1 },
+
 	{ "u_DiffuseTexMatrix",  GLSL_VEC4, 1 },
 	{ "u_DiffuseTexOffTurb", GLSL_VEC4, 1 },
 
@@ -2009,8 +2010,8 @@ static int GLSL_LoadGPUProgramDynamicGlowUpsample(
 		fallback_dglow_upsampleProgram,
 		0);
 
-	GLSL_InitUniforms(&tr.dglowDownsample);
-	GLSL_FinishGPUShader(&tr.dglowDownsample);
+	GLSL_InitUniforms(&tr.dglowUpsample);
+	GLSL_FinishGPUShader(&tr.dglowUpsample);
 	return 1;
 }
 
@@ -2026,8 +2027,8 @@ static int GLSL_LoadGPUProgramDynamicGlowDownsample(
 		fallback_dglow_downsampleProgram,
 		0);
 
-	GLSL_InitUniforms(&tr.dglowUpsample);
-	GLSL_FinishGPUShader(&tr.dglowUpsample);
+	GLSL_InitUniforms(&tr.dglowDownsample);
+	GLSL_FinishGPUShader(&tr.dglowDownsample);
 	return 1;
 }
 
