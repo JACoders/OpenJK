@@ -3575,18 +3575,32 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
 	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
-	if (!strcmp(mdxm->animName,"models/players/_humanoid/_humanoid"))
-	{	//if we're loading the humanoid, look for a cinematic gla for this map
-		const char*mapname = sv_mapname->string;
-		if (strcmp(mapname,"nomap") )
+	
+	//Archangel - enhancement, check for any cinematic gla related to this skeleton gla for this map (not just _humanoid)
+	char	animGLAName[MAX_PATH];
+	char	*strippedName;
+	char	*slash = NULL;
+	const char*mapname = sv_mapname->string;
+
+	if (strcmp(mapname,"nomap") )
+	{
+		if (strrchr(mapname,'/') )	//maps in subfolders use the root name, ( presuming only one level deep!)
 		{
-			if (strrchr(mapname,'/') )	//maps in subfolders use the root name, ( presuming only one level deep!)
-			{
-				mapname = strrchr(mapname,'/')+1;
-			}
-			RE_RegisterModel(va ("models/players/_humanoid_%s/_humanoid_%s.gla",mapname,mapname));
+			mapname = strrchr(mapname,'/')+1;
 		}
-	}
+		//stripped name of GLA for this model
+		Q_strncpyz(animGLAName, mdxm->animName, sizeof(animGLAName));
+		slash = strrchr(animGLAName, '/');
+		if (slash)
+		{
+			*slash = 0;
+		}
+		strippedName = COM_SkipPath(animGLAName);
+		if (VALIDSTRING(strippedName))
+		{
+			RE_RegisterModel(va("models/players/%s_%s/%s_%s.gla", strippedName, mapname, strippedName, mapname));
+		}
+	}		
 
 #ifndef JK2_MODE
 	bool isAnOldModelFile = false;
