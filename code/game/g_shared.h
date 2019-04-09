@@ -1143,6 +1143,7 @@ Ghoul2 Insert End
 
 //Animation
 	qboolean	loopAnim;
+	char		*overrideBone;  //Archangel = allows specified animSequence to begin playing at the specified bone (overrides "model_root")
 	char 		*animSequence;	//Archangel - needed for new ROFF2 animation notetrack type 'play'
 	int			startFrame;
 	int			endFrame;
@@ -1386,6 +1387,7 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(followPosRecalcTime);
 		saved_game.write<int32_t>(followPosWaypoint);
 		saved_game.write<int32_t>(loopAnim);
+		saved_game.write<int32_t>(overrideBone);
 		saved_game.write<int32_t>(animSequence);
 		saved_game.write<int32_t>(startFrame);
 		saved_game.write<int32_t>(endFrame);
@@ -1576,6 +1578,7 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(followPosRecalcTime);
 		saved_game.read<int32_t>(followPosWaypoint);
 		saved_game.read<int32_t>(loopAnim);
+		saved_game.read<int32_t>(overrideBone);
 		saved_game.read<int32_t>(animSequence);
 		saved_game.read<int32_t>(startFrame);
 		saved_game.read<int32_t>(endFrame);

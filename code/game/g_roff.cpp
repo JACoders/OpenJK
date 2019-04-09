@@ -252,17 +252,19 @@ defaultoffsetposition:
 		//sound notetrack format =	"sound <relative_soundpath.ext>" 
 		//sound notetrack example:	"sound sound/vehicles/tie/flyby2.mp3"
 		
-		//try to register the sound
-		//objectID = cgi_S_RegisterSound(argument);
-
-		//play the sound
 #if !NDEBUG
 		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-		//cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
-		G_SoundOnEnt(ent, CHAN_BODY, argument);
-
-
+		//check for eType and play the sound
+		if (ent->s.eType == ET_MOVER)
+		{
+			objectID = cgi_S_RegisterSound(argument);
+			cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
+		}
+		else
+		{
+			G_SoundOnEnt(ent, CHAN_BODY, argument);
+		}
 	}
 	else if (strcmp(type, "loop") == 0)
     {
@@ -333,24 +335,38 @@ defaultoffsetposition:
 			if (r2 && strstr(teststr, "kill"))
 			{ // kill the looping sound
 				ent->s.loopSound = 0;
+#if !NDEBUG
+				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
 			}
-			if (r2 && strstr(teststr, "sound"))
-			{ 
+			else if (r2 && strstr(teststr, "sound"))
+			{
 				//OK... we should have a relative sound path
-				//try to register the sound and add it to the entity loopSound parameter
-				//objectID = G_SoundIndex(addlArg);
 
 #if !NDEBUG
 				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-				int sfxhandle1 = cgi_S_RegisterSound(addlArg);	//this works for rofftest, breaks for shuttlemap
-				int sfxhandle2 = G_SoundIndex(addlArg);			//this works for shuttlemap, but breaks for rofftest
-
-				ent->s.loopSound = G_SoundIndex(addlArg);
+				//try to register the sound and add it to the entity loopSound parameter
+				if (ent->s.eType == ET_MOVER)
+				{
+					objectID = cgi_S_RegisterSound(addlArg);
+					if (objectID)
+						ent->s.loopSound = objectID;
+					else
+					{
+						ent->s.loopSound = 0;
+						sprintf(errMsg, "cgi_S_RegisterSound(%s) failed to return a valid sfxHandle_t for additional argument. Setting 'loop sfx' to 0.", addlArg);
+						goto functionend;
+					}
+				}
+				else
+				{
+					ent->s.loopSound = G_SoundIndex(addlArg);
+				}
 			}
 			else
 			{
-				sprintf(errMsg, "Additional argument invalid sound path for type 'loop sfx <addlArg>'");
+				sprintf(errMsg, "Invalid additional argument for type 'loop sfx <%s>'", addlArg);
 				goto functionend;
 			}
 		}
@@ -538,7 +554,7 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
     else if (strcmp(type, "sound") == 0)
     {
         //try to register the sound
-		objectID = G_SoundIndex(argument);//cgi_S_RegisterSound(argument);
+		objectID = cgi_S_RegisterSound(argument);
     }
     else if (strcmp(type, "loop") == 0)
     {
@@ -567,7 +583,7 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
 			{ 
 				//OK... we should have a relative sound path
 				//try to register the sound
-				objectID = G_SoundIndex(argument);//cgi_S_RegisterSound(argument);
+				objectID = cgi_S_RegisterSound(argument);
 			}
 			else
 			{

@@ -60,7 +60,7 @@ void SetMiscModelModels( char *modelNameString, gentity_t *ent, qboolean damage_
 }
 
 //------------------------------------------------------------
-void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag,
+void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask, int animFlag,
 									qboolean take_damage, qboolean damage_model = qfalse )
 {
 	// Apply damage and chunk models if they exist
@@ -146,8 +146,13 @@ void CrystalAmmoSettings(gentity_t *ent)
 //------------------------------------------------------------
 
 //------------------------------------------------------------
-/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 -37) (16 16 32) SOLID
+/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 -37) (16 16 32) SOLID BONE_ANIM_OVERRIDE BONE_ANIM_OVERRIDE_LOOP BONE_ANIM_OVERRIDE_FREEZE BONE_ANIM_BLEND BONE_ANIM_NO_LERP
 SOLID - Movement is blocked by it with the MASK_NPCSOLID & CONTENTS_BODY.
+BONE_ANIM_OVERRIDE			0x0008
+BONE_ANIM_OVERRIDE_LOOP		0x0010							// Causes Last Frame To Lerp to First Frame And Start Over
+BONE_ANIM_OVERRIDE_FREEZE	(0x0040 + BONE_ANIM_OVERRIDE)	// Causes Last Frame To Freeze And Not Loop To Beginning
+BONE_ANIM_BLEND				0x0080							// Blends to and from previously played frame on same bone for given time
+BONE_ANIM_NO_LERP			0x1000
 
 "model" - Ghoul2 model (.glm) file to load
 "health" - how much health the model has - default 60 (zero makes non-breakable)
@@ -167,10 +172,30 @@ loaded as a model in the renderer - does not take up precious bsp space!
 //------------------------------------------------------------
 #include "anims.h"
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
+extern stringID_table_t animTable[MAX_ANIMATIONS + 1];	//Archangel - needed for misc_model_ghoul 'animSequence'
 int temp_animFileIndex;
 
-void set_MiscAnim( gentity_t *ent)
+void set_GhoulAnim(gentity_t *ent, char* boneName, char* animSequence, int animFlags)
 {
+	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
+	int anim = GetIDForString(animTable, animSequence);
+	float animSpeed = 50.0f / animations[anim].frameLerp;
+
+	//set animation to play
+	gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, animations[anim].firstFrame,
+			(animations[anim].numFrames - 1) + animations[anim].firstFrame,
+			animFlags, animSpeed, (cg.time ? cg.time : level.time), -1, 350);
+
+	int animDuration = animations[anim].numFrames / animSpeed;
+	ent->nextthink = level.time + animDuration;
+}
+
+void set_MiscAnim( gentity_t *ent )
+{	
+	//made 'set_MiscAnim' a wrapper function to avoid problems with the THINKFUNC definitions in g_functions.h and g_functions.cpp
+	set_GhoulAnim(ent, ent->overrideBone ,ent->animSequence, ent->s.eFlags);
+
+	/*
 	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 	if (ent->playerModel & 1)
 	{
@@ -179,7 +204,7 @@ void set_MiscAnim( gentity_t *ent)
 
 		// yes, its the same animation, so work out where we are in the leg anim, and blend us
 		gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame,
-							(animations[anim].numFrames -1 )+ animations[anim].firstFrame,
+							(animations[anim].numFrames - 1) + animations[anim].firstFrame,
 							BONE_ANIM_OVERRIDE_FREEZE | BONE_ANIM_BLEND , animSpeed, (cg.time?cg.time:level.time), -1, 350);
 	}
 	else
@@ -187,12 +212,12 @@ void set_MiscAnim( gentity_t *ent)
 		int anim = BOTH_PAIN3;
 		float animSpeed = 50.0f / animations[anim].frameLerp;
 		gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame,
-						(animations[anim].numFrames -1 )+ animations[anim].firstFrame,
+						(animations[anim].numFrames - 1) + animations[anim].firstFrame,
 						BONE_ANIM_OVERRIDE_FREEZE | BONE_ANIM_BLEND, animSpeed, (cg.time?cg.time:level.time), -1, 350);
 	}
 	ent->nextthink = level.time + 900;
 	ent->playerModel++;
-
+	*/
 }
 
 void SP_misc_model_ghoul( gentity_t *ent )
@@ -200,26 +225,23 @@ void SP_misc_model_ghoul( gentity_t *ent )
 #if 1
 	ent->s.modelindex = G_ModelIndex( ent->model );
 
-	//cache the model
-	gi.G2API_PrecacheGhoul2Model(ent->model);
-
 	//initialize model
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 	
 	//ent->s.radius = 50; //Archangel- should there be a radius parameter within the model???
-	
-	//we found the model... so now lets get the mxda animation filename
-	char* skeletonName;
-	gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName/*ent->s.modelindex*/);
-	char* strippedSkelName = COM_SkipPath(skeletonName);
 
-	//so now load its animation configuration file
-	temp_animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
-	
 	if (ent->playerModel >= 0)
 	{
 		ent->rootBone = gi.G2API_GetBoneIndex(&ent->ghoul2[ent->playerModel], "model_root", qtrue);
 	}
+	
+	//we found the model... so now lets get the mxda animation filename
+	char* skeletonName;
+	gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
+	char* strippedSkelName = COM_SkipPath(skeletonName);
+
+	//so now load its animation configuration file
+	temp_animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
 
 	G_SpawnInt("renderRadius", "120", &ent->s.radius);
 
@@ -253,7 +275,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	if (ent->spawnflags & 1) //SOLID
 	{
-		ent->contents = CONTENTS_BODY;
+		ent->contents = CONTENTS_SOLID | CONTENTS_BODY | CONTENTS_MONSTERCLIP | CONTENTS_BOTCLIP;
 		ent->clipmask = MASK_NPCSOLID;
 	}
 
@@ -263,7 +285,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	char *root_boneName;
 	char *anim_sequence;
 
-	G_SpawnString("rootbone", "model_root", &root_boneName);
+	G_SpawnString("rootbone", "model_root", &root_boneName);  //this is the bone (and its children) we want to use to apply the animation to... not necessarily "model_root"
 	G_SpawnString("animSequence", "ROOT", &anim_sequence);
 
 	ent->animSequence = anim_sequence;
@@ -309,14 +331,12 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	//set health
 	G_SpawnInt("health", "60", &ent->health);
 
-	//cache the model
-	//gi.G2API_PrecacheGhoul2Model(ent->model);
-	
 	//link entity
 	gi.linkentity (ent);
 	
 	//set next think
-	ent->nextthink = level.time + 1000;
+	ent->nextthink = level.time;
+	ent->e_ThinkFunc = thinkF_set_MiscAnim;
 	
 #else
 	char name1[200] = "models/players/kyle/model.glm";
