@@ -1143,8 +1143,7 @@ Ghoul2 Insert End
 
 //Animation
 	qboolean	loopAnim;
-	char		*overrideBone;  //Archangel = allows specified animSequence to begin playing at the specified bone (overrides "model_root")
-	char 		*animSequence;	//Archangel - needed for new ROFF2 animation notetrack type 'play'
+	char 		*animSequence;	//Needed for new ROFF2 animation notetrack type 'play' for misc_model_ghoul entity
 	int			startFrame;
 	int			endFrame;
 
@@ -1208,7 +1207,7 @@ Ghoul2 Insert End
 	short			genericBolt5;
 
 	qhandle_t		cinematicModel;
-
+	char*			rootBoneName;		// Needed for misc_model_ghoul entity
 //==========================================================================================
 
 //FIELDS USED EXCLUSIVELY BY SPECIFIC CLASSES OF ENTITIES
@@ -1387,7 +1386,6 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(followPosRecalcTime);
 		saved_game.write<int32_t>(followPosWaypoint);
 		saved_game.write<int32_t>(loopAnim);
-		saved_game.write<int32_t>(overrideBone);
 		saved_game.write<int32_t>(animSequence);
 		saved_game.write<int32_t>(startFrame);
 		saved_game.write<int32_t>(endFrame);
@@ -1439,6 +1437,7 @@ Ghoul2 Insert End
 		saved_game.write<int16_t>(genericBolt4);
 		saved_game.write<int16_t>(genericBolt5);
 		saved_game.write<int32_t>(cinematicModel);
+		saved_game.write<int32_t>(rootBoneName);
 		saved_game.write<int32_t>(m_pVehicle);
 		saved_game.write<int32_t>(NPC);
 		saved_game.write<int32_t>(ownername);
@@ -1578,7 +1577,6 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(followPosRecalcTime);
 		saved_game.read<int32_t>(followPosWaypoint);
 		saved_game.read<int32_t>(loopAnim);
-		saved_game.read<int32_t>(overrideBone);
 		saved_game.read<int32_t>(animSequence);
 		saved_game.read<int32_t>(startFrame);
 		saved_game.read<int32_t>(endFrame);
@@ -1630,6 +1628,7 @@ Ghoul2 Insert End
 		saved_game.read<int16_t>(genericBolt4);
 		saved_game.read<int16_t>(genericBolt5);
 		saved_game.read<int32_t>(cinematicModel);
+		saved_game.read<int32_t>(rootBoneName);
 		saved_game.read<int32_t>(m_pVehicle);
 		saved_game.read<int32_t>(NPC);
 		saved_game.read<int32_t>(ownername);

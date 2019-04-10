@@ -26,7 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"
 
 extern cvar_t *g_spskill;
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];	//Archangel - needed for misc_model_ghoul 'animSequence' parameter
+
 //
 // Helper functions
 //
@@ -164,6 +164,7 @@ BONE_ANIM_NO_LERP			0x1000
 "startframe" - animation start frame (default "0")
 "endframe" - animation end frame (default "0") 
 "skin" - skin file to load, e.g.: red, blue, default (default "default")
+
 - Use "endframe" when you have an animation that's more than 1 frame to play.
 - Use "renderRadius" for models larger than a player model if you notice the misc_model_ghoul disappearing when moving the camera.
 - Use "rootbone" to change the bone that the animation will play from, instead of animating the entire GLA. Use wisely.
@@ -172,7 +173,8 @@ loaded as a model in the renderer - does not take up precious bsp space!
 //------------------------------------------------------------
 #include "anims.h"
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
-extern stringID_table_t animTable[MAX_ANIMATIONS + 1];	//Archangel - needed for misc_model_ghoul 'animSequence'
+extern stringID_table_t animTable[MAX_ANIMATIONS + 1];	//Archangel - needed for misc_model_ghoul 'animSequence' key parameter
+
 int temp_animFileIndex;
 
 void set_GhoulAnim(gentity_t *ent, char* boneName, char* animSequence, int animFlags)
@@ -187,13 +189,13 @@ void set_GhoulAnim(gentity_t *ent, char* boneName, char* animSequence, int animF
 			animFlags, animSpeed, (cg.time ? cg.time : level.time), -1, 350);
 
 	int animDuration = animations[anim].numFrames / animSpeed;
-	ent->nextthink = level.time + animDuration;
+	ent->nextthink = level.time + FRAMETIME; // animDuration;
 }
 
 void set_MiscAnim( gentity_t *ent )
 {	
 	//made 'set_MiscAnim' a wrapper function to avoid problems with the THINKFUNC definitions in g_functions.h and g_functions.cpp
-	set_GhoulAnim(ent, ent->overrideBone ,ent->animSequence, ent->s.eFlags);
+	set_GhoulAnim(ent, ent->rootBoneName, ent->animSequence, ent->s.eFlags);
 
 	/*
 	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
@@ -223,16 +225,36 @@ void set_MiscAnim( gentity_t *ent )
 void SP_misc_model_ghoul( gentity_t *ent )
 {
 #if 1
+	if (!ent->model) 
+	{
+		G_Error("no model set on %s at (%.1f %.1f %.1f)\n", ent->classname, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2]);
+	}
+
+	//main model
 	ent->s.modelindex = G_ModelIndex( ent->model );
 
 	//initialize model
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
-	
-	//ent->s.radius = 50; //Archangel- should there be a radius parameter within the model???
+
+	G_SpawnInt("startframe", "0", &ent->startFrame);
+	G_SpawnInt("endframe", "0", &ent->endFrame);
+
+	char *root_boneName;
+	char *anim_sequence;
+
+	G_SpawnString("rootbone", "model_root", &root_boneName);  //this is the bone (and its children) we want to use to apply the animation to... not necessarily "model_root"
+	G_SpawnString("animSequence", "ROOT", &anim_sequence);
+
+	ent->rootBoneName = root_boneName;
+	ent->animSequence = anim_sequence;
 
 	if (ent->playerModel >= 0)
 	{
-		ent->rootBone = gi.G2API_GetBoneIndex(&ent->ghoul2[ent->playerModel], "model_root", qtrue);
+		ent->rootBone = gi.G2API_GetBoneIndex(&ent->ghoul2[ent->playerModel], root_boneName, qfalse);
+	}
+	if (ent->playerModel == -1)
+	{//very bad thing here!
+		Com_Error(ERR_DROP, S_COLOR_RED"SP_misc_model_ghoul: cannot load model %s!\n", ent->model);
 	}
 	
 	//we found the model... so now lets get the mxda animation filename
@@ -247,6 +269,10 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
+
+	//set bounds -- TODO: write supporting function to compute actual bounding box
+	VectorSet(ent->mins, -16, -16, 0);
+	VectorSet(ent->maxs, 16, 16, 64);
 
 	qboolean bHasScale = G_SpawnVector( "modelscale_vec", "1 1 1", ent->s.modelScale );
 	if ( !bHasScale ) {
@@ -275,25 +301,43 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	if (ent->spawnflags & 1) //SOLID
 	{
-		ent->contents = CONTENTS_SOLID | CONTENTS_BODY | CONTENTS_MONSTERCLIP | CONTENTS_BOTCLIP;
-		ent->clipmask = MASK_NPCSOLID;
+		ent->contents = CONTENTS_SOLID | CONTENTS_BODY | CONTENTS_MONSTERCLIP | CONTENTS_PLAYERCLIP | CONTENTS_BOTCLIP;
+		ent->clipmask = MASK_NPCSOLID | CONTENTS_PLAYERCLIP | CONTENTS_BOTCLIP;
 	}
 
-	G_SpawnInt("startframe", "0", &ent->startFrame);
-	G_SpawnInt("endframe", "0", &ent->endFrame);
+	//set the animFlags
+	int animFlags = 0;	
+	int blendTime = -1;
+	qboolean bBlendAnim = qfalse;
 
-	char *root_boneName;
-	char *anim_sequence;
+	if (ent->spawnflags & 2)
+	{
+		animFlags |= BONE_ANIM_OVERRIDE;
+	}
+	if (ent->spawnflags & 4)
+	{
+		animFlags |= BONE_ANIM_OVERRIDE_LOOP;
+	}
+	if (ent->spawnflags & 8)
+	{
+		animFlags |= BONE_ANIM_OVERRIDE_FREEZE;
+	}
+	if (ent->spawnflags & 16)
+	{
+		animFlags |= BONE_ANIM_BLEND;
+		bBlendAnim = qtrue;
+	}
+	if (ent->spawnflags & 32)
+	{
+		animFlags |= BONE_ANIM_NO_LERP;
+	}
 
-	G_SpawnString("rootbone", "model_root", &root_boneName);  //this is the bone (and its children) we want to use to apply the animation to... not necessarily "model_root"
-	G_SpawnString("animSequence", "ROOT", &anim_sequence);
-
-	ent->animSequence = anim_sequence;
+	ent->s.eFlags = animFlags;
 
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
 		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, ent->s.eFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
 	else
@@ -301,16 +345,18 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 		int anim = GetIDForString(animTable, anim_sequence);
 		float animSpeed = 50.0f / animations[anim].frameLerp;
-		int blendTime = 500;
 
 		if ( anim >= 0 )
 		{
+			if (bBlendAnim)
+				blendTime = 2 * animations[anim].frameLerp; //blend over 2 frames (converted to msec)
+
 			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-				BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+				ent->s.eFlags, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 		}
 		else
 		{
-			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, ent->s.eFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 		}
 	}
