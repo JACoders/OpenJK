@@ -40,14 +40,17 @@ extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 
 static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 {
-	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0;
+	int addlArgs = 0;
+	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0, animSettingsGathered = 0;
+	int animFlags = 0, setFrame = 0, blendTime = 0;
+	float animSpeed = 0.0f;
 	char type[256];
 	char argument[512];
 	char addlArg[512];
 	char errMsg[256];
 	char t[64];
 	char teststr[256];
-	int addlArgs = 0;
+	std::vector<char*> addlArgBuffer;
 	vec3_t parsedAngles, parsedOffset, useAngles, useOrigin, forward, right, up;
 
 	if (!ent || !notetrack)
@@ -55,7 +58,7 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 		return;
 	}
 	//effect notetrack format =  "effect <effects_relative_filepath.ext> <±OffsetX±OffsetY±OffsetZ> <XANGLE-YANGLE-ZANGLE>"
-	//effect notetrack example:  "effect effects/explosion1.efx 0+0+64 0-0-1"
+	//effect notetrack example:  "effect effects/explosion1.efx 0+0+64 0-0-1"  (note: '+' and '-' are delimiters! Not positive or negative)
 
 	while (notetrack[i] && notetrack[i] != ' ')
 	{
@@ -346,7 +349,7 @@ defaultoffsetposition:
 #if !NDEBUG
 				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-				//try to register the sound and add it to the entity loopSound parameter
+				//try to register the sound and add it to the entitystate loopSound parameter
 				if (ent->s.eType == ET_MOVER)
 				{
 					objectID = cgi_S_RegisterSound(addlArg);
@@ -392,55 +395,158 @@ defaultoffsetposition:
     }
 	else if (strcmp(type, "play") == 0)
 	{
-		//play notetrack format =	"play <GLAanim|MD3anim> <animSequence>"
-		//play notetrack example:	"play GLAanim BOTH_STAND1"
+		//play notetrack format =	"play <GLAanim|MD3anim> <animSequence> [<rootBoneName>:<animFlags>:<animSpeed>:<setFrame>:<blendTime>]"
+		//note: <> denote required argument, [] denote optional argument
+		//example 1:	"play GLAanim BOTH_ATTACK1"
+		//example 2:	"play GLAanim BOTH_ATTACK1 model_root:72:1.0:0:350"
+
+		//first up, clear the addlArgBuffer
+		addlArgBuffer.clear();
+		addlArgBuffer.shrink_to_fit();
 		
 		if (strcmp(argument, "GLAanim") == 0)
 		{
-			//check additional argument for an animation		
+			//check additional argument for an animation sequence and settings	
 			if (addlArgs)
 			{					
 				if ( addlArg[0] != '\0' )  
 				{
-					strcpy(ent->animSequence, addlArg);
-					//find animation index
-					int anim = GetIDForString(animTable, ent->animSequence);
-					char* skeletonName;
-					gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
-					char* strippedSkelName = COM_SkipPath(skeletonName);
-					int animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
-					
-					if ( anim >= 0 )
+
+					i = 0;
+
+					while (animSettingsGathered < 1)
+					{	//get the animSequence
+						r = 0;
+						while (addlArg[i] && addlArg[i] != ' ')
+						{
+							t[r] = addlArg[i];
+							r++;
+							i++;
+						}
+						t[r] = '\0';
+						i++;
+						if (!r)
+						{ //failure...
+							sprintf(errMsg, "Invalid animation settings: %s", addlArg);
+							i = 0;
+							goto functionend;
+						}
+						addlArgBuffer.push_back(t);
+
+						animSettingsGathered++;
+					}
+
+					if (addlArg[i] == ' ') //we have custom settings!
 					{
-						animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
-						float animSpeed = 50.0f / animations[anim].frameLerp;
-						int blendTime = 500;
+						while (animSettingsGathered < 6) //we still count the animSequence
+						{ //keep parsing second part of addlArg from current i
+							r = 0;
+							while (addlArg[i] && addlArg[i] != ':')
+							{
+								t[r] = addlArg[i];
+								r++;
+								i++;
+							}
+							t[r] = '\0';
+							i++;
+							if (!r)
+							{ //failure...
+								sprintf(errMsg, "Invalid animation settings: %s", addlArg);
+								i = 0;
+								goto functionend;
+							}
+							addlArgBuffer.push_back(t);
+
+							animSettingsGathered++;
+						}
+
+						//copy buffer settings to parameters				
+						strcpy(ent->animSequence, addlArgBuffer[0]);
+						strcpy(ent->rootBoneName, addlArgBuffer[1]);
+						animFlags = atoi(addlArgBuffer[2]);
+						animSpeed = atof(addlArgBuffer[3]);
+						setFrame = atoi(addlArgBuffer[4]);
+						blendTime = atoi(addlArgBuffer[5]);
+
+						if (setFrame < 0 && setFrame != -1)
+							setFrame = -1;
+
+						//find animation index
+						int anim = GetIDForString(animTable, ent->animSequence);
+						char* skeletonName;
+						gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
+						char* strippedSkelName = COM_SkipPath(skeletonName);
+						int animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
+
+						if (anim >= 0)
+						{
+							animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
+
+							if (setFrame >= 0)
+								setFrame += animations[anim].firstFrame;
 #if !NDEBUG
-						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+							Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-						gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1 ) + animations[anim].firstFrame), 
-												BONE_ANIM_OVERRIDE_FREEZE, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+							gi.G2API_SetBoneAnim(&ent->ghoul2[0], ent->rootBoneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
+								animFlags, animSpeed, cg.time, setFrame, blendTime);
+						}
+						else
+						{
+							sprintf(errMsg, "Cannot find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
+							goto functionend;
+						}
 					}
 					else
-					{
-						sprintf(errMsg, "Cannot find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
-						goto functionend;					
+					{ //use default settings
+
+						strcpy(ent->animSequence, addlArgBuffer[0]);
+
+						//find animation index
+						int anim = GetIDForString(animTable, ent->animSequence);
+						char* skeletonName;
+						gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
+						char* strippedSkelName = COM_SkipPath(skeletonName);
+						int animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
+
+						if (animFileIndex)
+						{
+							if (anim >= 0)
+							{
+								animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
+								float animSpeed = 50.0f / animations[anim].frameLerp;
+								int blendTime = 350;
+#if !NDEBUG
+								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
+								gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
+									BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+							}
+							else
+							{
+								sprintf(errMsg, "Can't find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
+								goto functionend;
+							}
+						}
+						else
+						{ // no animation.cfg file, try to play specified frames
+#if !NDEBUG
+							Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
+							gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame,
+								BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+							ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
+						}
 					}
 				}
 				else
 				{
-#if !NDEBUG
-					Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
-#endif
-					// no animation.cfg file, try to play specified frames
-					gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame, 
-											BONE_ANIM_OVERRIDE_FREEZE, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
-					ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
+					sprintf(errMsg, "Missing additional argument for type 'play GLAanim'");
+					goto functionend;
 				}
 			}
 			else
 			{
-				sprintf(errMsg, "Additional argument invalid for type 'play GLAanim'.");
+				sprintf(errMsg, "Missing additional argument for type 'play GLAanim'");
 				goto functionend;
 			}
 		}

@@ -146,13 +146,14 @@ void CrystalAmmoSettings(gentity_t *ent)
 //------------------------------------------------------------
 
 //------------------------------------------------------------
-/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 -37) (16 16 32) SOLID BONE_ANIM_OVERRIDE BONE_ANIM_OVERRIDE_LOOP BONE_ANIM_OVERRIDE_FREEZE BONE_ANIM_BLEND BONE_ANIM_NO_LERP
+/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 0) (16 16 64) SOLID BONE_ANIM_OVERRIDE BONE_ANIM_OVERRIDE_LOOP BONE_ANIM_OVERRIDE_FREEZE BONE_ANIM_BLEND BONE_ANIM_NO_LERP
+
 SOLID - Movement is blocked by it with the MASK_NPCSOLID & CONTENTS_BODY.
-BONE_ANIM_OVERRIDE			0x0008
-BONE_ANIM_OVERRIDE_LOOP		0x0010							// Causes Last Frame To Lerp to First Frame And Start Over
-BONE_ANIM_OVERRIDE_FREEZE	(0x0040 + BONE_ANIM_OVERRIDE)	// Causes Last Frame To Freeze And Not Loop To Beginning
-BONE_ANIM_BLEND				0x0080							// Blends to and from previously played frame on same bone for given time
-BONE_ANIM_NO_LERP			0x1000
+BONE_ANIM_OVERRIDE	-		0x0008
+BONE_ANIM_OVERRIDE_LOOP	-	0x0010							// Causes Last Frame To Lerp to First Frame And Start Over
+BONE_ANIM_OVERRIDE_FREEZE -	(0x0040 + BONE_ANIM_OVERRIDE)	// Causes Last Frame To Freeze And Not Loop To Beginning
+BONE_ANIM_BLEND	-			0x0080							// Blends to and from previously played frame on same bone for given time
+BONE_ANIM_NO_LERP -			0x1000
 
 "model" - Ghoul2 model (.glm) file to load
 "health" - how much health the model has - default 60 (zero makes non-breakable)
