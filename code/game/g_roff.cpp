@@ -57,8 +57,10 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	{
 		return;
 	}
-	//effect notetrack format =  "effect <effects_relative_filepath.ext> <±OffsetX±OffsetY±OffsetZ> <XANGLE-YANGLE-ZANGLE>"
-	//effect notetrack example:  "effect effects/explosion1.efx 0+0+64 0-0-1"  (note: '+' and '-' are delimiters! Not positive or negative)
+
+	//Supported Notetrack types:	effect, sound, loop, USE, play
+	//General Notetrack format:		type argument additionalArguments
+	//Each type provides further details on expected arguments.  Note: <> denote required argument, [] denote optional argument
 
 	while (notetrack[i] && notetrack[i] != ' ')
 	{
@@ -107,7 +109,10 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	}
 
 	if (strcmp(type, "effect") == 0)
-	{
+	{ //effect notetrack format =  "effect <effects_relative_filepath.ext> [±OffsetX±OffsetY±OffsetZ] [XANGLE-YANGLE-ZANGLE]"
+		//	note: '+' and '-' are delimiters! Not positive or negative
+		//	effect notetrack example:  "effect effects/explosion1.efx 0+0+64 0-0-1"  
+
 		if (!addlArgs)
 		{
 			VectorClear(parsedOffset);
@@ -128,7 +133,7 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 			t[r] = '\0';
 			i++;
 			if (!r)
-			{ //failure..
+			{ //failure...
 				VectorClear(parsedOffset);
 				i = 0;
 				goto defaultoffsetposition;
@@ -187,7 +192,7 @@ defaultoffsetposition:
 		if (objectID)
 		{
 			if (addlArgs)
-			{ //if there is an additional argument for an effect it is expected to be XANGLE-YANGLE-ZANGLE
+			{ //if there is a second additional argument for an effect it's format is expected to be:  XANGLE-YANGLE-ZANGLE (in degrees)
 				i++;
 				while (anglesGathered < 3)
 				{
@@ -216,7 +221,7 @@ defaultoffsetposition:
 					VectorCopy(parsedAngles, useAngles);
 				}
 				else
-				{ //failed to parse angles from the extra argument provided..
+				{ //failed to parse angles from the extra argument provided...
 					VectorCopy(ent->s.apos.trBase, useAngles);
 				}
 			}
@@ -271,8 +276,9 @@ defaultoffsetposition:
 	}
 	else if (strcmp(type, "loop") == 0)
     {
-		//loop notetrack format =	"loop <rof|sfx> <relative|absolute>|<sound_relativepath.ext>" 
-		//loop notetrack examples:	"loop rof absolute" or "loop sfx sound/vehicles/tie/loop.wav"
+		//loop notetrack format =	"loop <rof|sfx> <relative|absolute>|<sound_relativepath.ext>|<kill>" 
+		//loop notetrack examples:	"loop rof relative" or "loop rof absolute" or...
+		//							"loop sfx sound/vehicles/tie/loop.wav" or "loop sfx kill"
 									
 		if (strcmp(argument, "rof") == 0)
 		{
@@ -298,7 +304,7 @@ defaultoffsetposition:
 			}
 			else
 			{
-				sprintf(errMsg, "Additional argument for type 'loop rof' is invalid.");
+				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop rof'", addlArg);
 				goto functionend;
 			}
 			
@@ -358,7 +364,7 @@ defaultoffsetposition:
 					else
 					{
 						ent->s.loopSound = 0;
-						sprintf(errMsg, "cgi_S_RegisterSound(%s) failed to return a valid sfxHandle_t for additional argument. Setting 'loop sfx' to 0.", addlArg);
+						sprintf(errMsg, "cgi_S_RegisterSound(%s) failed to return a valid sfxHandle_t for additional argument. Setting 'loopSound' to 0.", addlArg);
 						goto functionend;
 					}
 				}
@@ -369,13 +375,13 @@ defaultoffsetposition:
 			}
 			else
 			{
-				sprintf(errMsg, "Invalid additional argument for type 'loop sfx <%s>'", addlArg);
+				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop sfx'", addlArg);
 				goto functionend;
 			}
 		}
 		else
 		{
-			sprintf(errMsg, "Argument for 'loop' type is invalid.");
+			sprintf(errMsg, "Invalid argument <%s> for type 'loop' notetrack.", argument);
 			goto functionend;
 		}
     }
@@ -396,9 +402,9 @@ defaultoffsetposition:
 	else if (strcmp(type, "play") == 0)
 	{
 		//play notetrack format =	"play <GLAanim|MD3anim> <animSequence> [<rootBoneName>:<animFlags>:<animSpeed>:<setFrame>:<blendTime>]"
-		//note: <> denote required argument, [] denote optional argument
-		//example 1:	"play GLAanim BOTH_ATTACK1"
-		//example 2:	"play GLAanim BOTH_ATTACK1 model_root:72:1.0:0:350"
+		//play notetrack example 1:	"play GLAanim BOTH_ATTACK1"
+		//play notetrack example 2:	"play GLAanim BOTH_ATTACK1 model_root:72:1.0:0:350"
+		//play notetrack example 3:	"play MD3anim <animSequence> (Note: currently unsupported... WIP)
 
 		//first up, clear the addlArgBuffer
 		addlArgBuffer.clear();
@@ -427,7 +433,7 @@ defaultoffsetposition:
 						i++;
 						if (!r)
 						{ //failure...
-							sprintf(errMsg, "Invalid animation settings: %s", addlArg);
+							sprintf(errMsg, "Invalid additional argument [%s]", addlArg);
 							i = 0;
 							goto functionend;
 						}
@@ -436,10 +442,10 @@ defaultoffsetposition:
 						animSettingsGathered++;
 					}
 
-					if (addlArg[i] == ' ') //we have custom settings!
+					if (addlArg[i] == ' ') //we have custom settings! Or do we?
 					{
-						while (animSettingsGathered < 6) //we still count the animSequence
-						{ //keep parsing second part of addlArg from current i
+						while (animSettingsGathered < 6) //we still count the animSequence just gathered
+						{ //keep parsing second part of addlArg
 							r = 0;
 							while (addlArg[i] && addlArg[i] != ':')
 							{
@@ -451,7 +457,7 @@ defaultoffsetposition:
 							i++;
 							if (!r)
 							{ //failure...
-								sprintf(errMsg, "Invalid animation settings: %s", addlArg);
+								sprintf(errMsg, "Invalid additional argument [%s]", addlArg);
 								i = 0;
 								goto functionend;
 							}
@@ -460,7 +466,7 @@ defaultoffsetposition:
 							animSettingsGathered++;
 						}
 
-						//copy buffer settings to parameters				
+						//copy addlArgBuffer values to parameters				
 						strcpy(ent->animSequence, addlArgBuffer[0]);
 						strcpy(ent->rootBoneName, addlArgBuffer[1]);
 						animFlags = atoi(addlArgBuffer[2]);
@@ -488,11 +494,11 @@ defaultoffsetposition:
 							Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 							gi.G2API_SetBoneAnim(&ent->ghoul2[0], ent->rootBoneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-								animFlags, animSpeed, cg.time, setFrame, blendTime);
+													animFlags, animSpeed, cg.time, setFrame, blendTime);
 						}
 						else
 						{
-							sprintf(errMsg, "Cannot find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
+							sprintf(errMsg, "Can't find animSequence <%s> in GLA (%s)", ent->animSequence, skeletonName);
 							goto functionend;
 						}
 					}
@@ -519,34 +525,34 @@ defaultoffsetposition:
 								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 								gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-									BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+													BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 							}
 							else
 							{
-								sprintf(errMsg, "Can't find animation sequence < %s > in GLA [ %s ]", ent->animSequence, skeletonName);
+								sprintf(errMsg, "Can't find animSequence <%s> in GLA (%s)", ent->animSequence, skeletonName);
 								goto functionend;
 							}
 						}
 						else
-						{ // no animation.cfg file, try to play specified frames
+						{ // no animation.cfg file or one was not specified, try to play specified frames
 #if !NDEBUG
 							Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 							gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame,
-								BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+												BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 							ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
 						}
 					}
 				}
 				else
 				{
-					sprintf(errMsg, "Missing additional argument for type 'play GLAanim'");
+					sprintf(errMsg, "Missing additional argument for type 'play GLAanim' notetrack.");
 					goto functionend;
 				}
 			}
 			else
 			{
-				sprintf(errMsg, "Missing additional argument for type 'play GLAanim'");
+				sprintf(errMsg, "Missing additional argument for type 'play GLAanim' notetrack.");
 				goto functionend;
 			}
 		}
@@ -560,7 +566,7 @@ defaultoffsetposition:
 		}
 		else
 		{
-			sprintf(errMsg, "Argument for 'play' type is invalid.");
+			sprintf(errMsg, "Invalid argument <%s> for type 'play' notetrack.", argument);
 			goto functionend;
 		}
 	}

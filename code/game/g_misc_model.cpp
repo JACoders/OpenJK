@@ -178,25 +178,53 @@ extern stringID_table_t animTable[MAX_ANIMATIONS + 1];	//Archangel - needed for 
 
 int temp_animFileIndex;
 
-void set_GhoulAnim(gentity_t *ent, char* boneName, char* animSequence, int animFlags)
+void set_GhoulAnim(gentity_t *ent, char* boneName, char* animSequence, int animFlags, int setFrame, int blendTime)
 {
-	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
-	int anim = GetIDForString(animTable, animSequence);
-	float animSpeed = 50.0f / animations[anim].frameLerp;
 
-	//set animation to play
-	gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, animations[anim].firstFrame,
-			(animations[anim].numFrames - 1) + animations[anim].firstFrame,
-			animFlags, animSpeed, (cg.time ? cg.time : level.time), -1, 350);
+	if (temp_animFileIndex < 0)
+	{ //failed to find an animation.cfg file for this model... try using specified frames
+		Com_Printf(S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", ent->ghoul2[0].aHeader->name);
+		gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, ent->startFrame, ent->endFrame, animFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
+	}
+	else
+	{ //it has an animation.cfg file
+		animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
+		int anim = GetIDForString(animTable, animSequence);
+		float animSpeed = 50.0f / animations[anim].frameLerp;
 
-	int animDuration = animations[anim].numFrames / animSpeed;
+		if (setFrame < 0 && setFrame != -1)
+			setFrame = -1;
+
+		if (anim >= 0)
+		{
+			int endFrame = ((animations[anim].numFrames - 1) + animations[anim].firstFrame);
+
+			if (setFrame >= 0)
+				setFrame += animations[anim].firstFrame;
+
+			if (setFrame >= endFrame)
+				setFrame = endFrame - 1;
+
+			//set animation to play
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, animations[anim].firstFrame, endFrame,
+				animFlags, animSpeed, cg.time, setFrame, blendTime);
+		}
+		else
+		{
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, ent->startFrame, ent->endFrame, animFlags, 1.0f, cg.time, ent->startFrame, 350);
+			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
+		}
+	}
+
+	//int animDuration = animations[anim].numFrames / animSpeed;
 	ent->nextthink = level.time + FRAMETIME; // animDuration;
 }
 
 void set_MiscAnim( gentity_t *ent )
 {	
 	//made 'set_MiscAnim' a wrapper function to avoid problems with the THINKFUNC definitions in g_functions.h and g_functions.cpp
-	set_GhoulAnim(ent, ent->rootBoneName, ent->animSequence, ent->s.eFlags);
+	set_GhoulAnim(ent, ent->rootBoneName, ent->animSequence, ent->s.eG2AnimFlags, ent->setFrame, ent->blendTime);
 
 	/*
 	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
@@ -258,7 +286,7 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		Com_Error(ERR_DROP, S_COLOR_RED"SP_misc_model_ghoul: cannot load model %s!\n", ent->model);
 	}
 	
-	//we found the model... so now lets get the mxda animation filename
+	//we found the model... so now lets get the mdxa animation filename
 	char* skeletonName;
 	gi.G2API_GetAnimFileName(&ent->ghoul2[0], &skeletonName);
 	char* strippedSkelName = COM_SkipPath(skeletonName);
@@ -333,12 +361,12 @@ void SP_misc_model_ghoul( gentity_t *ent )
 		animFlags |= BONE_ANIM_NO_LERP;
 	}
 
-	ent->s.eFlags = animFlags;
+	ent->s.eG2AnimFlags = animFlags;
 
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
 		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, ent->s.eFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+		gi.G2API_SetBoneAnim(&ent->ghoul2[0],ent->rootBoneName, ent->startFrame, ent->endFrame, ent->s.eG2AnimFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
 		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
 	else
@@ -352,8 +380,8 @@ void SP_misc_model_ghoul( gentity_t *ent )
 			if (bBlendAnim)
 				blendTime = 2 * animations[anim].frameLerp; //blend over 2 frames (converted to msec)
 
-			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-				ent->s.eFlags, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], ent->rootBoneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
+								ent->s.eG2AnimFlags, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
 		}
 		else
 		{

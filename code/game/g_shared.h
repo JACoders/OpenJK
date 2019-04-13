@@ -1063,11 +1063,11 @@ Ghoul2 Insert End
 
 	union
 	{
-		char      *roff;                  // the roff file to use, if there is one
+		char      *roff;		// the roff file to use, if there is one
 		char	*fxFile;		// name of the external effect file
 	};
 
-	int		roff_ctr;		// current roff frame we are playing
+	int			roff_ctr;		// current roff frame we are playing
 
 	int			next_roff_time;
 	int			fx_time;		// timer for beam in/out effects.
@@ -1144,6 +1144,8 @@ Ghoul2 Insert End
 //Animation
 	qboolean	loopAnim;
 	char 		*animSequence;	//Needed for new ROFF2 animation notetrack type 'play' for misc_model_ghoul entity
+	int			blendTime;		//Needed for new ROFF2 animation notetrack type 'play' for misc_model_ghoul entity
+	int			setFrame;		//Needed for new ROFF2 animation notetrack type 'play' for misc_model_ghoul entity	
 	int			startFrame;
 	int			endFrame;
 
@@ -1207,7 +1209,7 @@ Ghoul2 Insert End
 	short			genericBolt5;
 
 	qhandle_t		cinematicModel;
-	char*			rootBoneName;		// Needed for misc_model_ghoul entity
+	char*			rootBoneName;		// Needed for misc_model_ghoul entity enhancements	
 //==========================================================================================
 
 //FIELDS USED EXCLUSIVELY BY SPECIFIC CLASSES OF ENTITIES
@@ -1387,6 +1389,8 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(followPosWaypoint);
 		saved_game.write<int32_t>(loopAnim);
 		saved_game.write<int32_t>(animSequence);
+		saved_game.write<int32_t>(blendTime);
+		saved_game.write<int32_t>(setFrame);
 		saved_game.write<int32_t>(startFrame);
 		saved_game.write<int32_t>(endFrame);
 		saved_game.write<int32_t>(m_iIcarusID);
@@ -1578,6 +1582,8 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(followPosWaypoint);
 		saved_game.read<int32_t>(loopAnim);
 		saved_game.read<int32_t>(animSequence);
+		saved_game.read<int32_t>(blendTime);
+		saved_game.read<int32_t>(setFrame);
 		saved_game.read<int32_t>(startFrame);
 		saved_game.read<int32_t>(endFrame);
 		saved_game.read<int32_t>(m_iIcarusID);
