@@ -50,7 +50,7 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	char errMsg[256];
 	char t[64];
 	char teststr[256];
-	std::vector<char*> addlArgBuffer;
+	std::vector<std::string> addlArgBuffer;
 	vec3_t parsedAngles, parsedOffset, useAngles, useOrigin, forward, right, up;
 
 	if (!ent || !notetrack)
@@ -438,12 +438,14 @@ defaultoffsetposition:
 							goto functionend;
 						}
 						addlArgBuffer.push_back(t);
-
 						animSettingsGathered++;
 					}
 
+					i--; //back up one char to check for a space
+
 					if (addlArg[i] == ' ') //we have custom settings! Or do we?
 					{
+						i++; //move to first char in second additional argument
 						while (animSettingsGathered < 6) //we still count the animSequence just gathered
 						{ //keep parsing second part of addlArg
 							r = 0;
@@ -462,17 +464,17 @@ defaultoffsetposition:
 								goto functionend;
 							}
 							addlArgBuffer.push_back(t);
-
 							animSettingsGathered++;
 						}
 
-						//copy addlArgBuffer values to parameters				
-						strcpy(ent->animSequence, addlArgBuffer[0]);
-						strcpy(ent->rootBoneName, addlArgBuffer[1]);
-						animFlags = atoi(addlArgBuffer[2]);
-						animSpeed = atof(addlArgBuffer[3]);
-						setFrame = atoi(addlArgBuffer[4]);
-						blendTime = atoi(addlArgBuffer[5]);
+						//copy addlArgBuffer values to parameters
+						//	Note:	assigning the addlArgBuffer[1].c_str() to ent->rootBoneName causes the animation to fail to play and jitter.
+						//			So just pass it SetBoneAnim function directly
+						strcpy(ent->animSequence, addlArgBuffer[0].c_str());
+						animFlags = atoi(addlArgBuffer[2].c_str());
+						animSpeed = atof(addlArgBuffer[3].c_str());
+						setFrame = atoi(addlArgBuffer[4].c_str());
+						blendTime = atoi(addlArgBuffer[5].c_str());
 
 						if (setFrame < 0 && setFrame != -1)
 							setFrame = -1;
@@ -484,28 +486,54 @@ defaultoffsetposition:
 						char* strippedSkelName = COM_SkipPath(skeletonName);
 						int animFileIndex = G_ParseAnimFileSet(strippedSkelName, ent->model);
 
-						if (anim >= 0)
+						if (animFileIndex)
 						{
-							animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
+							if (anim >= 0)
+							{
+								animation_t *animations = level.knownAnimFileSets[animFileIndex].animations;
 
-							if (setFrame >= 0)
-								setFrame += animations[anim].firstFrame;
+								if (setFrame >= 0)
+									setFrame += animations[anim].firstFrame;
+
+								int endFrame = ((animations[anim].numFrames - 1) + animations[anim].firstFrame);
+
+								if (setFrame >= endFrame)
+									setFrame = endFrame - 1;
+
+								//assign custom settings to entity
+								ent->setFrame = setFrame;
+								ent->startFrame = animations[anim].firstFrame;
+								ent->endFrame = endFrame;
+								ent->s.eG2AnimFlags = animFlags;
+								ent->blendTime = blendTime;
+
+#if !NDEBUG
+								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
+								gi.G2API_SetBoneAnim(&ent->ghoul2[0], addlArgBuffer[1].c_str(), animations[anim].firstFrame, endFrame,
+													ent->s.eG2AnimFlags, animSpeed, (cg.time ? cg.time : level.time), ent->setFrame, ent->blendTime);
+							}
+							else
+							{
+								sprintf(errMsg, "Can't find animSequence <%s> in GLA (%s)", ent->animSequence, skeletonName);
+								goto functionend;
+							}
+						}
+						else
+						{ // no animation.cfg file or one was not specified, try to play specified frames
 #if !NDEBUG
 							Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-							gi.G2API_SetBoneAnim(&ent->ghoul2[0], ent->rootBoneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-													animFlags, animSpeed, cg.time, setFrame, blendTime);
-						}
-						else
-						{
-							sprintf(errMsg, "Can't find animSequence <%s> in GLA (%s)", ent->animSequence, skeletonName);
-							goto functionend;
+							gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame,
+												BONE_ANIM_OVERRIDE_FREEZE, 1.0f, (cg.time ? cg.time : level.time), -1, -1);
+
+							ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
 						}
 					}
 					else
 					{ //use default settings
 
-						strcpy(ent->animSequence, addlArgBuffer[0]);
+						strcpy(ent->animSequence, addlArgBuffer[0].c_str());
 
 						//find animation index
 						int anim = GetIDForString(animTable, ent->animSequence);
@@ -525,7 +553,7 @@ defaultoffsetposition:
 								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 								gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-													BONE_ANIM_OVERRIDE_LOOP, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+													BONE_ANIM_OVERRIDE_FREEZE, animSpeed, (cg.time ? cg.time : level.time), animations[anim].firstFrame, blendTime);
 							}
 							else
 							{
@@ -539,7 +567,8 @@ defaultoffsetposition:
 							Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
 							gi.G2API_SetBoneAnim(&ent->ghoul2[0], "model_root", ent->startFrame, ent->endFrame,
-												BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+												BONE_ANIM_OVERRIDE_FREEZE, 1.0f, (cg.time ? cg.time : level.time), -1, -1);
+
 							ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main					
 						}
 					}

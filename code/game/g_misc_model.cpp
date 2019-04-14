@@ -208,17 +208,18 @@ void set_GhoulAnim(gentity_t *ent, char* boneName, char* animSequence, int animF
 
 			//set animation to play
 			gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, animations[anim].firstFrame, endFrame,
-				animFlags, animSpeed, cg.time, setFrame, blendTime);
+				animFlags, animSpeed, (cg.time ? cg.time : level.time), setFrame, blendTime);
+
+			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 		}
 		else
 		{
-			gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, ent->startFrame, ent->endFrame, animFlags, 1.0f, cg.time, ent->startFrame, 350);
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], boneName, ent->startFrame, ent->endFrame, animFlags, animSpeed, (cg.time ? cg.time : level.time), ent->startFrame, 350);
 			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 		}
 	}
 
-	//int animDuration = animations[anim].numFrames / animSpeed;
-	ent->nextthink = level.time + FRAMETIME; // animDuration;
+	ent->nextthink = level.time + FRAMETIME;
 }
 
 void set_MiscAnim( gentity_t *ent )
@@ -267,6 +268,8 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	G_SpawnInt("startframe", "0", &ent->startFrame);
 	G_SpawnInt("endframe", "0", &ent->endFrame);
+	G_SpawnInt("setFrame", "-1", &ent->setFrame);
+	G_SpawnInt("blendTime", "-1", &ent->blendTime);
 
 	char *root_boneName;
 	char *anim_sequence;
@@ -336,8 +339,6 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	//set the animFlags
 	int animFlags = 0;	
-	int blendTime = -1;
-	qboolean bBlendAnim = qfalse;
 
 	if (ent->spawnflags & 2)
 	{
@@ -354,7 +355,6 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	if (ent->spawnflags & 16)
 	{
 		animFlags |= BONE_ANIM_BLEND;
-		bBlendAnim = qtrue;
 	}
 	if (ent->spawnflags & 32)
 	{
@@ -363,29 +363,40 @@ void SP_misc_model_ghoul( gentity_t *ent )
 
 	ent->s.eG2AnimFlags = animFlags;
 
+	//check setFrame within bounds
+	if (ent->setFrame < ent->startFrame || ent->setFrame > ent->endFrame)
+	{
+		if (ent->setFrame != -1) //problem! set value to -1
+			ent->setFrame = -1;
+	}
+
 	if ( temp_animFileIndex < 0 )
 	{ //failed to find an animation.cfg file for this model... try using specified frames
 		//Com_Printf( S_COLOR_RED"Failed to load animation.cfg file set for \"%s\"\n", skeletonName);
-		gi.G2API_SetBoneAnim(&ent->ghoul2[0],ent->rootBoneName, ent->startFrame, ent->endFrame, ent->s.eG2AnimFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+		gi.G2API_SetBoneAnim(&ent->ghoul2[0], ent->rootBoneName, ent->startFrame, ent->endFrame, ent->s.eG2AnimFlags, 1.0f, 0, -1, -1);
 		ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
 	else
 	{ //it has an animation.cfg file
 		animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 		int anim = GetIDForString(animTable, anim_sequence);
-		float animSpeed = 50.0f / animations[anim].frameLerp;
+		float animSpeed = 50.0f / animations[anim].frameLerp; 	//animSpeed of 1.0f assumes 20FPS
 
 		if ( anim >= 0 )
 		{
-			if (bBlendAnim)
-				blendTime = 2 * animations[anim].frameLerp; //blend over 2 frames (converted to msec)
+			if (ent->setFrame >= 0)
+				ent->setFrame += animations[anim].firstFrame;
+
+			if (ent->setFrame >= ent->endFrame)
+				ent->setFrame = ent->endFrame - 1;
 
 			gi.G2API_SetBoneAnim(&ent->ghoul2[0], ent->rootBoneName, animations[anim].firstFrame, ((animations[anim].numFrames - 1) + animations[anim].firstFrame),
-								ent->s.eG2AnimFlags, animSpeed, cg.time, animations[anim].firstFrame, blendTime);
+								ent->s.eG2AnimFlags, animSpeed, 0, ent->setFrame, ent->blendTime);
+			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 		}
 		else
 		{
-			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, ent->s.eFlags, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1);
+			gi.G2API_SetBoneAnim(&ent->ghoul2[0], root_boneName, ent->startFrame, ent->endFrame, ent->s.eG2AnimFlags, 1.0f, 0, -1, -1);
 			ent->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 		}
 	}
