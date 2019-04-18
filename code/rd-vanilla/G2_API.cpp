@@ -731,7 +731,9 @@ void RestoreGhoul2InfoArray()
 			singleton->Deserialize ((const char *)data, size);
 		R_Free ((void *)data);
 
+#ifdef _DEBUG
 		assert (read == size);
+#endif
 	}
 }
 
