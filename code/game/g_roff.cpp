@@ -41,7 +41,7 @@ extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 {
 	int addlArgs = 0;
-	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0, animSettingsGathered = 0;
+	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0, animSettingsGathered = 0, efxSettingsGathered = 0;
 	int animFlags = 0, setFrame = 0, blendTime = 0;
 	float animSpeed = 0.0f;
 	char type[256];
@@ -376,6 +376,240 @@ defaultoffsetposition:
 			else
 			{
 				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop sfx'", addlArg);
+				goto functionend;
+			}
+		}
+		else if (strcmp(argument, "efx") == 0)
+		{
+			qboolean bKillEFX = qfalse;
+
+			//looping efx only supported by Ghould models... check class name
+			if (ent->classname == "misc_model_ghoul" || ent->ghoul2.IsValid())
+			{
+				//G_PlayEffect( int fxID, 
+				//				const int modelIndex, 
+				//				const int boltIndex, 
+				//				const int entNum, 
+				//				const vec3_t origin, 
+				//				int iLoopTime,			//iLoopTime 0 = not looping, 1 for infinite, else duration
+				//				qboolean isRelative ) 
+
+				//parse additional argument for G_PlayEffect parameters
+				if (addlArgs)
+				{
+					if (addlArg[0] != '\0')
+					{
+						while (efxSettingsGathered < 1)
+						{	//get the fxID
+							i = 0;
+							if (addlArg[i] == '/')
+							{
+								i++;
+							}
+							r = 0;
+							while (addlArg[i] && addlArg[i] != '/')
+							{
+								teststr[r] = addlArg[i];
+								r++;
+								i++;
+							}
+							teststr[r] = '\0';
+
+							if (r && strstr(teststr, "kill-effects"))
+							{ // kill the looping efx
+#if !NDEBUG
+								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
+								//Process the looping effect to kill
+								//TODO: write code to call G_StopEffect(...)
+
+								//get rid of the leading "kill-effects"
+
+								i++;
+								r = 0;
+
+								while (addlArg[i] && addlArg[i] != ' ')
+								{
+									teststr[r] = addlArg[i];
+									r++;
+									i++;
+								}
+								teststr[r] = '\0';
+
+								//set to kill
+								bKillEFX = qtrue;
+							}
+							else if (r && strstr(teststr, "effects"))
+							{ //get rid of the leading "effects" since it's auto-inserted
+#if !NDEBUG
+								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
+#endif
+								i++;
+								r = 0;
+
+								while (addlArg[i] && addlArg[i] != ' ')
+								{
+									teststr[r] = addlArg[i];
+									r++;
+									i++;
+								}
+								teststr[r] = '\0';
+							}
+
+							if (!r)
+							{ //failure...
+								sprintf(errMsg, "Invalid additional argument [%s]", addlArg);
+								i = 0;
+								goto functionend;
+							}
+							addlArgBuffer.push_back(teststr);
+							efxSettingsGathered++;
+						}
+
+						objectID = G_EffectIndex(addlArgBuffer[0].c_str());
+
+						if (objectID) //fxID is valid... press on
+						{
+							if (addlArg[i] == ' ')  //we have custom settings! Or do we?
+							{
+								i++; //move to first char in second additional argument
+
+								if (bKillEFX)
+								{
+									while (efxSettingsGathered < 2) //we still count the fxID just gathered
+									{ //keep parsing second part of addlArg
+										r = 0;
+										while (addlArg[i] && addlArg[i] != ':')
+										{
+											t[r] = addlArg[i];
+											r++;
+											i++;
+										}
+										t[r] = '\0';
+										i++;
+										if (!r)
+										{ //failure...
+											sprintf(errMsg, "Invalid additional argument [%s]", addlArg);
+											i = 0;
+											goto functionend;
+										}
+										addlArgBuffer.push_back(t);
+										efxSettingsGathered++;
+									}
+
+									if (efxSettingsGathered != 2)
+									{ //failure...
+										sprintf(errMsg, "Invalid additional argument count [%s]. Expected 2, got %i", addlArg, efxSettingsGathered);
+										i = 0;
+										goto functionend;
+									}
+									else
+									{
+										//copy addlArgBuffer values to G_StopEffect parameters
+										int boltID = gi.G2API_AddBolt(&ent->ghoul2[0], addlArgBuffer[1].c_str());
+
+										//stop the efx
+										G_StopEffect(objectID, ent->playerModel, boltID, ent->s.number);
+									}
+								}
+								else
+								{
+									while (efxSettingsGathered < 5) //we still count the fxID just gathered
+									{ //keep parsing second part of addlArg
+										r = 0;
+										while (addlArg[i] && addlArg[i] != ':')
+										{
+											t[r] = addlArg[i];
+											r++;
+											i++;
+										}
+										t[r] = '\0';
+										i++;
+										if (!r)
+										{ //failure...
+											sprintf(errMsg, "Invalid additional argument [%s]", addlArg);
+											i = 0;
+											goto functionend;
+										}
+										addlArgBuffer.push_back(t);
+										efxSettingsGathered++;
+									}
+
+									//copy addlArgBuffer values to G_PlayEffect parameters
+									int boltID = gi.G2API_AddBolt(&ent->ghoul2[0], addlArgBuffer[1].c_str());
+
+									// parse origin offset
+									char posBuffer[64];
+									strncpy(posBuffer, addlArgBuffer[2].c_str(), addlArgBuffer[2].length());
+									posBuffer[addlArgBuffer[2].length()] = '\0';
+									i = 0;
+									while (posoffsetGathered < 3)
+									{
+										r = 0;
+										while (posBuffer[i] && posBuffer[i] != '+')
+										{
+											t[r] = posBuffer[i];
+											r++;
+											i++;
+										}
+										t[r] = '\0';
+										i++;
+										if (!r)
+										{ //failure... 
+											VectorClear(parsedOffset); //just zero-out offset and play efx at origin
+											i = 0;
+											goto zerooffsetposition;
+										}
+										parsedOffset[posoffsetGathered] = atof(t);
+										posoffsetGathered++;
+									}
+
+									if (posoffsetGathered < 3)
+									{
+										sprintf(errMsg, "Offset position argument for 'loop efx' type is invalid.");
+										goto functionend;
+									}
+
+zerooffsetposition:
+									int iLoopTime = atoi(addlArgBuffer[3].c_str());
+									qboolean isRelative;
+									if (strcmp(addlArgBuffer[4].c_str(), "true") == 0)
+										isRelative = qtrue;
+									else
+										isRelative = qfalse;
+
+									//play the efx
+									G_PlayEffect(objectID, ent->playerModel, boltID, ent->s.number, parsedOffset, iLoopTime, isRelative);
+								}
+							}
+							else
+							{ //missing efx additional arguments
+								sprintf(errMsg, "Missing additional arguments for type 'loop efx' notetrack.  Playing basic efx at origin.");
+								G_PlayEffect(objectID, ent->s.origin);
+								goto functionend;
+							}
+						}
+						else
+						{
+							sprintf(errMsg, "fxID for not found for 'loop efx' notetrack: %s", notetrack);
+							goto functionend;
+						}
+					}
+					else
+					{
+						sprintf(errMsg, "Missing additional argument for type 'loop efx' notetrack.");
+						goto functionend;
+					}
+				}
+				else
+				{
+					sprintf(errMsg, "Invalid additional argument <%s> for type 'loop efx'", addlArg);
+					goto functionend;
+				}
+			}
+			else
+			{
+				sprintf(errMsg, "Invalid entity class <%s> for type 'loop efx' -- only Ghoul2 supported.", ent->classname);
 				goto functionend;
 			}
 		}
