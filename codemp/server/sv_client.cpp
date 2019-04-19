@@ -1562,7 +1562,8 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		}
 		// if we can tell that the client has dropped the last
 		// gamestate we sent them, resend it
-		if ( cl->messageAcknowledge > cl->gamestateMessageNum ) {
+		// Fix for https://bugzilla.icculus.org/show_bug.cgi?id=6324
+		if ( cl->state != CS_ACTIVE && cl->messageAcknowledge > cl->gamestateMessageNum ) {
 			Com_DPrintf( "%s : dropped gamestate, resending\n", cl->name );
 			SV_SendClientGameState( cl );
 		}
