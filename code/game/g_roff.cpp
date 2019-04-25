@@ -420,11 +420,7 @@ defaultoffsetposition:
 #if !NDEBUG
 								Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack); //DEBUGGING
 #endif
-								//Process the looping effect to kill
-								//TODO: write code to call G_StopEffect(...)
-
 								//get rid of the leading "kill-effects"
-
 								i++;
 								r = 0;
 
@@ -514,7 +510,7 @@ defaultoffsetposition:
 								}
 								else
 								{
-									while (efxSettingsGathered < 5) //we still count the fxID just gathered
+									while (efxSettingsGathered < 6) //we still count the fxID just gathered
 									{ //keep parsing second part of addlArg
 										r = 0;
 										while (addlArg[i] && addlArg[i] != ':')
@@ -577,9 +573,55 @@ zerooffsetposition:
 										isRelative = qtrue;
 									else
 										isRelative = qfalse;
+									
+									//parse the angles
+									//////////////////////////////////////////////////////////////////
+									// angles argument format is expected to be:  XANGLE-YANGLE-ZANGLE (in degrees)
+									// note: the '-' is a delimiter, not numerical sign... blame Raven
+
+									// parse origin offset
+									char pos2Buffer[64];
+									strncpy(pos2Buffer, addlArgBuffer[5].c_str(), addlArgBuffer[5].length());
+									pos2Buffer[addlArgBuffer[5].length()] = '\0';
+									i = 0;
+									while (anglesGathered < 3)
+									{
+										r = 0;
+										while (pos2Buffer[i] && pos2Buffer[i] != '-')
+										{
+											t[r] = pos2Buffer[i];
+											r++;
+											i++;
+										}
+										t[r] = '\0';
+										i++;
+
+										if (!r)
+										{ //failed to get a new part of the vector
+											anglesGathered = 0;
+											break;
+										}
+
+										parsedAngles[anglesGathered] = atof(t);
+										anglesGathered++;
+									}
+
+									if (anglesGathered)
+									{
+										VectorCopy(parsedAngles, useAngles);
+									}
+									else
+									{ //failed to parse angles from the extra argument provided... default to zero
+										VectorCopy(vec3_origin, useAngles);
+									}
+							
+									//AngleVectors(useAngles, forward, right, up);
+
+									//////////////////////////////////////////////////////////////////
+
 
 									//play the efx
-									G_PlayEffect(objectID, ent->playerModel, boltID, ent->s.number, parsedOffset, iLoopTime, isRelative);
+									G_PlayEffect(objectID, ent->playerModel, boltID, ent->s.number, parsedOffset, iLoopTime, isRelative, useAngles);
 								}
 							}
 							else

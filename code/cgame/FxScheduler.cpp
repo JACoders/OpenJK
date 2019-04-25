@@ -1263,8 +1263,13 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 					sfx->mBoltNum = boltNum;
 					sfx->mModelNum = modelNum;
 
+					if (axis)
+						AxisCopy(axis, sfx->mAxis);
+
 					// Also, the ghoul bolt may not be around yet, so delay the creation one frame
 					sfx->mStartTime++;
+
+
 				}
 
 				mFxSchedule.push_front( sfx );
@@ -1396,10 +1401,12 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 			}
 			else
 			{	//bolted on effect
+				qboolean entIsRoffing = qfalse;
 				// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
 				if ((effect->mModelNum != oldModelNum) || (effect->mEntNum != oldEntNum) || (effect->mBoltNum != oldBoltIndex))
 				{
 					const centity_t &cent = cg_entities[effect->mEntNum];
+
 					if (cent.gent->ghoul2.IsValid())
 					{
 						if (effect->mModelNum>=0&&effect->mModelNum<cent.gent->ghoul2.size())
@@ -1407,6 +1414,8 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 							if (cent.gent->ghoul2[effect->mModelNum].mModelindex>=0)
 							{
 								doesBoltExist = (qboolean)(theFxHelper.GetOriginAxisFromBolt(cent, effect->mModelNum, effect->mBoltNum, origin, axis) != 0);
+								if (cent.gent->next_roff_time > 0)
+									entIsRoffing = qtrue;
 							}
 						}
 					}
@@ -1421,9 +1430,18 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 				{
 					if (effect->mIsRelative )
 					{
-						CreateEffect( effect->mpTemplate,
-									vec3_origin, axis,
-									0, effect->mEntNum, effect->mModelNum, effect->mBoltNum );
+						if (true /*entIsRoffing*/)
+						{
+							CreateEffect(effect->mpTemplate,
+								vec3_origin, effect->mAxis,
+								0, effect->mEntNum, effect->mModelNum, effect->mBoltNum);
+						}
+						else 
+						{
+							CreateEffect(effect->mpTemplate,
+								vec3_origin, axis,
+								0, effect->mEntNum, effect->mModelNum, effect->mBoltNum);
+						}
 					}
 					else
 					{

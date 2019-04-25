@@ -814,6 +814,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	// Ghoul2 Insert Start
 			if (es->boltInfo != 0)
 			{
+				if (true /*cent->gent->next_roff_time > 0*/)
+				{
+					AnglesToAxis(cent->gent->currentAngles, axis);
+				}
 				const bool isRelative = !!es->weapon;
 				theFxScheduler.PlayEffect( s, cent->lerpOrigin, axis, es->boltInfo, -1, portalEnt, es->loopSound, isRelative );	//loopSound 0 = not looping, 1 for infinite, else duration
 			}

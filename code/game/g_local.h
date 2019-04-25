@@ -420,7 +420,7 @@ void G_PlayEffect( const char *name, const vec3_t origin, const vec3_t axis[3] )
 void G_PlayEffect( int fxID, const vec3_t origin );
 void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t fwd );
 void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t axis[3] );
-void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum, const vec3_t origin, int iLoopTime = qfalse, qboolean isRelative = qfalse );//iLoopTime 0 = not looping, 1 for infinite, else duration
+void G_PlayEffect(int fxID, const int modelIndex, const int boltIndex, const int entNum, const vec3_t origin, int iLoopTime = qfalse, qboolean isRelative = qfalse, const vec3_t angles = vec3_origin );//iLoopTime 0 = not looping, 1 for infinite, else duration
 void G_PlayEffect( int fxID, int entNum, const vec3_t fwd );
 void G_StopEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum );
 void G_StopEffect(const char *name, const int modelIndex, const int boltIndex, const int entNum );

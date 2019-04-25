@@ -191,19 +191,25 @@ void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t axis[3] )
 	VectorCopy( axis[1], tent->pos4 );
 }
 
-// Effect playing utilities	- bolt an effect to a ghoul2 models bolton point
+// Effect playing utilities	- bolt an effect to a ghoul2 models bolton 
+// iLoopTime 0 = not looping, 1 for infinite, else duration
 //-----------------------------
-void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum, const vec3_t origin, int iLoopTime, qboolean isRelative )//iLoopTime 0 = not looping, 1 for infinite, else duration
+void G_PlayEffect(int fxID, const int modelIndex, const int boltIndex, const int entNum, const vec3_t origin, int iLoopTime, qboolean isRelative, const vec3_t angles )
 {
 	gentity_t	*tent;
 
 	tent = G_TempEntity( origin, EV_PLAY_EFFECT );
-	tent->s.eventParm = fxID;
 
+	//VectorCopy(angles, tent->s.angles);
+	G_SetAngles(tent, angles);
+
+	gi.linkentity(tent);
+
+	tent->s.eventParm = fxID;
 	tent->s.loopSound = iLoopTime;
 	tent->s.weapon = isRelative;
-
 	tent->svFlags |=SVF_BROADCAST;
+
 	gi.G2API_AttachEnt(&tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex);
 }
 
