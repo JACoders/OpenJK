@@ -3577,7 +3577,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
 	
 	//Archangel - enhancement, check for any cinematic gla related to this skeleton gla for this map (not just _humanoid)
-	char	animGLAName[MAX_PATH];
+	char	animGLAName[MAX_QPATH];
 	char	*strippedName;
 	char	*slash = NULL;
 	const char*mapname = sv_mapname->string;
