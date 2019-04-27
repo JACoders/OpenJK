@@ -1010,6 +1010,9 @@ void SV_Init (void) {
 
 	sv_banFile = Cvar_Get( "sv_banFile", "serverbans.dat", CVAR_ARCHIVE, "File to use to store bans and exceptions" );
 
+	sv_maxOOBRate = Cvar_Get("sv_maxOOBRate", "1000", CVAR_ARCHIVE, "Maximum rate of handling incoming server commands" );
+	sv_maxOOBRateIP = Cvar_Get("sv_maxOOBRateIP", "1", CVAR_ARCHIVE, "Maximum rate of handling incoming server commands per IP address" );
+
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();
 

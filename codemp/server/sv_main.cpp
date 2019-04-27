@@ -69,6 +69,8 @@ cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
 cvar_t	*sv_legacyFixes;
 cvar_t	*sv_banFile;
+cvar_t	*sv_maxOOBRate;
+cvar_t	*sv_maxOOBRateIP;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
@@ -665,8 +667,27 @@ connectionless packets.
 =================
 */
 void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
+	static leakyBucket_t	bucket;
 	char	*s;
 	char	*c;
+
+	if (sv_maxOOBRateIP->integer) {
+		int rate = Com_Clampi(1, 1000, sv_maxOOBRateIP->integer);
+		int period = 1000 / rate;
+
+		if (SVC_RateLimitAddress(from, rate, period)) {
+			return;
+		}
+	}
+
+	if (sv_maxOOBRate->integer) {
+		int rate = Com_Clampi(1, 1000, sv_maxOOBRate->integer);
+		int period = 1000 / rate;
+
+		if (SVC_RateLimit(&bucket, rate, period)) {
+			return;
+		}
+	}
 
 	MSG_BeginReadingOOB( msg );
 	MSG_ReadLong( msg );		// skip the -1 marker
