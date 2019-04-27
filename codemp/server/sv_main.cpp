@@ -322,15 +322,29 @@ Find or allocate a bucket for an address
 
 static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int period, int now ) {
 	static std::map<int, leakyBucket_t> bucketMap;
-	static unsigned int	callCounter = 0;
+	static int lastGC = 0;
 
 	if (address.type != NA_IP) {
 		return NULL;
 	}
 
-	callCounter++;
+	// Consider following spoofed dos scenario:
+	//
+	// Packets coming at a steady rate, IPs are never the
+	// same. The garbage collector will perform
+	// packet_rate * (1 + gc_rate * period / 1000)
+	// iterations per second (where rates are in Hz)
+	//
+	// Theoretical minimum is packet_rate because buckets need to be
+	// removed at the same rate they are created. It can be achieved
+	// with another map, at the cost of higher constants.
+	//
+	// gc_rate at 1/s will keep the overhead relatively low.
+	// Memory consumption is packet_rate * (period / 1000 + 1 / gc_rate)
 
-	if ((callCounter & 0xffffu) == 0) {
+	if (lastGC + 1000 < now) {
+		lastGC = now;
+
 		auto it = bucketMap.begin();
 
 		while (it != bucketMap.end()) {
