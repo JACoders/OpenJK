@@ -575,7 +575,6 @@ zerooffsetposition:
 										isRelative = qfalse;
 									
 									//parse the angles
-									//////////////////////////////////////////////////////////////////
 									// angles argument format is expected to be:  XANGLE-YANGLE-ZANGLE (in degrees)
 									// note: the '-' is a delimiter, not numerical sign... blame Raven
 
@@ -615,11 +614,6 @@ zerooffsetposition:
 										VectorCopy(vec3_origin, useAngles);
 									}
 							
-									//AngleVectors(useAngles, forward, right, up);
-
-									//////////////////////////////////////////////////////////////////
-
-
 									//play the efx
 									G_PlayEffect(objectID, ent->playerModel, boltID, ent->s.number, parsedOffset, iLoopTime, isRelative, useAngles);
 								}

@@ -200,9 +200,7 @@ void G_PlayEffect(int fxID, const int modelIndex, const int boltIndex, const int
 
 	tent = G_TempEntity( origin, EV_PLAY_EFFECT );
 
-	//VectorCopy(angles, tent->s.angles);
 	G_SetAngles(tent, angles);
-
 	gi.linkentity(tent);
 
 	tent->s.eventParm = fxID;

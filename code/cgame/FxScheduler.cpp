@@ -281,6 +281,7 @@ void CFxScheduler::StopEffect( const char *file, int boltInfo, bool isPortal )
 void CFxScheduler::AddLoopedEffects()
 {
 	int i;
+	vec3_t axis[3];
 
 	for (i=0;i<MAX_LOOPED_FX;i++)
 	{
@@ -289,7 +290,8 @@ void CFxScheduler::AddLoopedEffects()
 			const int entNum = ( mLoopedEffectArray[i].mBoltInfo >> ENTITY_SHIFT )	& ENTITY_AND;
 			if ( cg_entities[entNum].gent->inuse )
 			{// only play the looped effect when the ent is still inUse....
-				PlayEffect( mLoopedEffectArray[i].mId, cg_entities[entNum].lerpOrigin, 0, mLoopedEffectArray[i].mBoltInfo, -1, mLoopedEffectArray[i].mPortalEffect, false,  mLoopedEffectArray[i].mIsRelative );	//very important to send FALSE looptime to not recursively add me!
+				AnglesToAxis(cg_entities[entNum].lerpAngles, axis);
+				PlayEffect(mLoopedEffectArray[i].mId, cg_entities[entNum].lerpOrigin, axis /*0*/, mLoopedEffectArray[i].mBoltInfo, -1, mLoopedEffectArray[i].mPortalEffect, false, mLoopedEffectArray[i].mIsRelative);	//very important to send FALSE looptime to not recursively add me!
 				mLoopedEffectArray[i].mNextTime = theFxHelper.mTime + mEffectTemplates[mLoopedEffectArray[i].mId].mRepeatDelay;
 			}
 			else
@@ -1263,13 +1265,14 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 					sfx->mBoltNum = boltNum;
 					sfx->mModelNum = modelNum;
 
-					if (axis)
+					//if (origin)
+						VectorCopy(origin, sfx->mOrigin);
+
+					//if (axis)
 						AxisCopy(axis, sfx->mAxis);
 
 					// Also, the ghoul bolt may not be around yet, so delay the creation one frame
 					sfx->mStartTime++;
-
-
 				}
 
 				mFxSchedule.push_front( sfx );

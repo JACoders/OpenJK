@@ -30,6 +30,20 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../game/anims.h"
 
+//copied defines from G2.h
+// defines to setup the
+#define		ENTITY_WIDTH 12
+#define		MODEL_WIDTH	10
+#define		BOLT_WIDTH	10
+
+#define		MODEL_AND	((1<<MODEL_WIDTH)-1)
+#define		BOLT_AND	((1<<BOLT_WIDTH)-1)
+#define		ENTITY_AND	((1<<ENTITY_WIDTH)-1)
+
+#define		BOLT_SHIFT	0
+#define		MODEL_SHIFT	(BOLT_SHIFT + BOLT_WIDTH)
+#define		ENTITY_SHIFT (MODEL_SHIFT + MODEL_WIDTH)
+
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 extern void FX_KothosBeam( vec3_t start, vec3_t end );
 
@@ -809,17 +823,22 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_PLAY_EFFECT");
 		{
 			const bool portalEnt = !!es->isPortalEnt; //the fxrunner spawning this effect is within a skyportal, so only render this effect within that portal.
-
+			int entityNum = -1;
 			s = CG_ConfigString( CS_EFFECTS + es->eventParm );
 	// Ghoul2 Insert Start
 			if (es->boltInfo != 0)
 			{
 				if (true /*cent->gent->next_roff_time > 0*/)
 				{
-					AnglesToAxis(cent->gent->currentAngles, axis);
+					AnglesToAxis(cent->gent->s.angles, axis);
 				}
+
 				const bool isRelative = !!es->weapon;
-				theFxScheduler.PlayEffect( s, cent->lerpOrigin, axis, es->boltInfo, -1, portalEnt, es->loopSound, isRelative );	//loopSound 0 = not looping, 1 for infinite, else duration
+
+				//get the correct entNum from the boltinfo
+				entityNum = (es->boltInfo >> ENTITY_SHIFT)	& ENTITY_AND;
+
+				theFxScheduler.PlayEffect(s, cent->lerpOrigin, axis, es->boltInfo, entityNum /*- 1*/, portalEnt, es->loopSound, isRelative);	//loopSound 0 = not looping, 1 for infinite, else duration
 			}
 			else
 			{
