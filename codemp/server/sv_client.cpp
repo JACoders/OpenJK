@@ -74,15 +74,6 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
-	// Prevent using getchallenge as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
 	// Create a unique challenge for this client without storing state on the server
 	challenge = SV_CreateChallenge(from);
 

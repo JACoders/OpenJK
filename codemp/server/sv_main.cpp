@@ -311,8 +311,6 @@ CONNECTIONLESS COMMANDS
 ==============================================================================
 */
 
-leakyBucket_t outboundLeakyBucket;
-
 /*
 ================
 SVC_BucketForAddress
@@ -419,22 +417,6 @@ void SVC_Status( netadr_t from ) {
 	}
 	*/
 
-	// Prevent using getstatus as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
-	// Allow getstatus to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SVC_Status: rate limit exceeded, dropping request\n" );
-		return;
-	}
-
 	// A maximum challenge length of 128 should be more than plenty.
 	if(strlen(Cmd_Argv(1)) > 128)
 		return;
@@ -488,22 +470,6 @@ void SVC_Info( netadr_t from ) {
 
 	if (Cvar_VariableValue("ui_singlePlayerActive"))
 	{
-		return;
-	}
-
-	// Prevent using getinfo as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
-	// Allow getinfo to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SVC_Info: rate limit exceeded, dropping request\n" );
 		return;
 	}
 
@@ -598,25 +564,8 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	char		sv_outputbuf[SV_OUTPUTBUF_LENGTH];
 	char		*cmd_aux;
 
-	// Prevent using rcon as an amplifier and make dictionary attacks impractical
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
 	if ( !strlen( sv_rconPassword->string ) ||
 		strcmp (Cmd_Argv(1), sv_rconPassword->string) ) {
-		static leakyBucket_t bucket;
-
-		// Make DoS via rcon impractical
-		if ( SVC_RateLimit( &bucket, 10, 1000 ) ) {
-			Com_DPrintf( "SVC_RemoteCommand: rate limit exceeded, dropping request\n" );
-			return;
-		}
-
 		valid = qfalse;
 		Com_Printf ("Bad rcon from %s: %s\n", NET_AdrToString (from), Cmd_ArgsFrom(2) );
 	} else {
