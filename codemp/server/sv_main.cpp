@@ -71,6 +71,7 @@ cvar_t	*sv_legacyFixes;
 cvar_t	*sv_banFile;
 cvar_t	*sv_maxOOBRate;
 cvar_t	*sv_maxOOBRateIP;
+cvar_t	*sv_autoWhitelist;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
@@ -273,6 +274,8 @@ void SV_MasterHeartbeat( void ) {
 				adr[i].port = BigShort( PORT_MASTER );
 			}
 			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(adr[i]) );
+
+			SVC_WhitelistAdr( adr[i] );
 		}
 
 		Com_Printf ("Sending heartbeat to %s\n", sv_master[i]->string );
@@ -617,6 +620,69 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	Com_EndRedirect ();
 }
 
+// dos protection whitelist
+
+#define WHITELIST_FILE			"ipwhitelist.dat"
+
+#include <set>
+
+static std::set<int32_t>	svc_whitelist;
+
+void SVC_LoadWhitelist( void ) {
+	fileHandle_t f;
+	int32_t *data = NULL;
+	int len = FS_SV_FOpenFileRead(WHITELIST_FILE, &f);
+
+	if (len <= 0) {
+		return;
+	}
+
+	data = (int32_t *)Z_Malloc(len, TAG_TEMP_WORKSPACE);
+
+	FS_Read(data, len, f);
+	FS_FCloseFile(f);
+
+	len /= sizeof(int32_t);
+
+	for (int i = 0; i < len; i++) {
+		svc_whitelist.insert(data[i]);
+	}
+
+	Z_Free(data);
+	data = NULL;
+}
+
+void SVC_WhitelistAdr( netadr_t adr ) {
+	fileHandle_t f;
+
+	if (adr.type != NA_IP) {
+		return;
+	}
+
+	if (!svc_whitelist.insert(adr.ipi).second) {
+		return;
+	}
+
+	Com_DPrintf("Whitelisting %s\n", NET_AdrToString(adr));
+
+	f = FS_SV_FOpenFileAppend(WHITELIST_FILE);
+	if (!f) {
+		Com_Printf("Couldn't open " WHITELIST_FILE ".\n");
+		return;
+	}
+
+	FS_Write(adr.ip, sizeof(adr.ip), f);
+	FS_FCloseFile(f);
+}
+
+static qboolean SVC_IsWhitelisted( netadr_t adr ) {
+	if (adr.type == NA_IP) {
+		return (qboolean)(svc_whitelist.find(adr.ipi) != svc_whitelist.end());
+	} else {
+		return qtrue;
+	}
+}
+
 /*
 =================
 SV_ConnectionlessPacket
@@ -650,6 +716,10 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	if (sv_maxOOBRate->integer) {
 		int rate = Com_Clampi(1, 1000, sv_maxOOBRate->integer);
 		int period = 1000 / rate;
+
+		if (SVC_IsWhitelisted(from)) {
+			rate *= 2;
+		}
 
 		if (SVC_RateLimit(&bucket, rate, period, now)) {
 			dropped++;
