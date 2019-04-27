@@ -284,18 +284,8 @@ extern	int serverBansCount;
 //
 typedef struct leakyBucket_s leakyBucket_t;
 struct leakyBucket_s {
-	netadrtype_t	type;
-
-	union {
-		byte	_4[4];
-	} ipv;
-
 	int					lastTime;
-	signed char			burst;
-
-	long				hash;
-
-	leakyBucket_t *prev, *next;
+	unsigned short		burst;
 };
 
 extern leakyBucket_t outboundLeakyBucket;
