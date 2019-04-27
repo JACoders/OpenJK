@@ -1906,6 +1906,29 @@ static void SV_Record_f( void ) {
 	SV_RecordDemo( cl, demoName );
 }
 
+/*
+=================
+SV_WhitelistIP_f
+=================
+*/
+static void SV_WhitelistIP_f( void ) {
+	if ( Cmd_Argc() < 2 ) {
+		Com_Printf ("Usage: whitelistip <ip>...\n");
+		return;
+	}
+
+	for ( int i = 1; i < Cmd_Argc(); i++ ) {
+		netadr_t	adr;
+
+		if ( NET_StringToAdr( Cmd_Argv(i), &adr ) ) {
+			SVC_WhitelistAdr( adr );
+			Com_Printf("Added %s to the IP whitelist\n", NET_AdrToString(adr));
+		} else {
+			Com_Printf("Incorrect IP address: %s\n", Cmd_Argv(i));
+		}
+	}
+}
+
 //===========================================================
 
 /*
@@ -1966,6 +1989,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("sv_bandel", SV_BanDel_f, "Removes a ban" );
 	Cmd_AddCommand ("sv_exceptdel", SV_ExceptDel_f, "Removes a ban exception" );
 	Cmd_AddCommand ("sv_flushbans", SV_FlushBans_f, "Removes all bans and exceptions" );
+	Cmd_AddCommand ("whitelistip", SV_WhitelistIP_f, "Add IP to the whitelist" );
 }
 
 /*
