@@ -628,7 +628,9 @@ connectionless packets.
 =================
 */
 void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
-	static leakyBucket_t	bucket;
+	static	leakyBucket_t	bucket;
+	static	int	dropped = 0;
+	static	int	lastMsg = 0;
 	int		now = Sys_Milliseconds();
 	char	*s;
 	char	*c;
@@ -638,6 +640,9 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		int period = 1000 / rate;
 
 		if (SVC_RateLimitAddress(from, rate, period, now)) {
+			if (com_developer && com_developer->integer) {
+				Com_Printf("SV_ConnectionlessPacket: Rate limit from %s exceeded, dropping request\n", NET_AdrToString(from));
+			}
 			return;
 		}
 	}
@@ -647,8 +652,15 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		int period = 1000 / rate;
 
 		if (SVC_RateLimit(&bucket, rate, period, now)) {
+			dropped++;
 			return;
 		}
+	}
+
+	if (dropped > 0 && lastMsg + 5000 < now) {
+		Com_Printf("SV_ConnectionlessPacket: Rate limit exceeded, dropped %d requests\n", dropped);
+		dropped = 0;
+		lastMsg = now;
 	}
 
 	MSG_BeginReadingOOB( msg );
