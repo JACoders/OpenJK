@@ -3576,7 +3576,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
 	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
 	
-	//Archangel - enhancement, check for any cinematic gla related to this skeleton gla for this map (not just _humanoid)
 	char	animGLAName[MAX_QPATH];
 	char	*strippedName;
 	char	*slash = NULL;
