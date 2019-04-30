@@ -1404,7 +1404,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 			}
 			else
 			{	//bolted on effect
-				qboolean entIsRoffing = qfalse;
+				qboolean bROFF2_SchedEFX = qfalse;
 				// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
 				if ((effect->mModelNum != oldModelNum) || (effect->mEntNum != oldEntNum) || (effect->mBoltNum != oldBoltIndex))
 				{
@@ -1417,8 +1417,8 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 							if (cent.gent->ghoul2[effect->mModelNum].mModelindex>=0)
 							{
 								doesBoltExist = (qboolean)(theFxHelper.GetOriginAxisFromBolt(cent, effect->mModelNum, effect->mBoltNum, origin, axis) != 0);
-								if (cent.gent->next_roff_time > 0)
-									entIsRoffing = qtrue;
+								if (cent.gent->s.eFlags2 & EF2_ROFF2_LOOP_EFX)
+									bROFF2_SchedEFX = qtrue;
 							}
 						}
 					}
@@ -1433,11 +1433,16 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 				{
 					if (effect->mIsRelative )
 					{
-						if (true /*entIsRoffing*/)
+						if (bROFF2_SchedEFX)
 						{
+							matrix3_t newAxis;
+							AxisClear(newAxis); //set identity matrix
+							//apply ROFF2 axis offsets
+							MatrixMultiply(effect->mAxis, axis, newAxis);
+
 							CreateEffect(effect->mpTemplate,
-								vec3_origin, effect->mAxis,
-								0, effect->mEntNum, effect->mModelNum, effect->mBoltNum);
+								effect->mOrigin, newAxis,
+								0, effect->mEntNum, effect->mModelNum, effect->mBoltNum, bROFF2_SchedEFX);
 						}
 						else 
 						{
@@ -1483,7 +1488,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime, int clientID, int modelNum, int boltNum )
+void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime, int clientID, int modelNum, int boltNum, qboolean bROFF2_EFX )
 {
 	vec3_t	org, org2, temp,
 				vel, accel,

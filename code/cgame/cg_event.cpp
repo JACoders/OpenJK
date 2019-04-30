@@ -828,7 +828,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	// Ghoul2 Insert Start
 			if (es->boltInfo != 0)
 			{
-				if (true /*cent->gent->next_roff_time > 0*/)
+				if (cent->gent->s.eFlags2 & EF2_ROFF2_LOOP_EFX)
 				{
 					AnglesToAxis(cent->gent->s.angles, axis);
 				}

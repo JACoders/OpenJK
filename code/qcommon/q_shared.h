@@ -2378,6 +2378,7 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	int		number;			// entity index
 	int		eType;			// entityType_t
 	int		eFlags;
+	int		eFlags2;
 	int		eG2AnimFlags;	// for saving Ghoul2 animation flags set for a misc_model_ghoul
 
 	trajectory_t	pos;	// for calculating position
@@ -2458,6 +2459,7 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(number);
 		saved_game.write<int32_t>(eType);
 		saved_game.write<int32_t>(eFlags);
+		saved_game.write<int32_t>(eFlags2);
 		saved_game.write<int32_t>(eG2AnimFlags);
 		saved_game.write<>(pos);
 		saved_game.write<>(apos);
@@ -2515,6 +2517,7 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(number);
 		saved_game.read<int32_t>(eType);
 		saved_game.read<int32_t>(eFlags);
+		saved_game.read<int32_t>(eFlags2);
 		saved_game.read<int32_t>(eG2AnimFlags);
 		saved_game.read<>(pos);
 		saved_game.read<>(apos);

@@ -660,7 +660,7 @@ private:
 	void	AddPrimitiveToEffect( SEffectTemplate *fx, CPrimitiveTemplate *prim );
 	int		ParseEffect( const char *file, const CGPGroup& base );
 
-	void	CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime, int clientID = -1, int modelNum = -1, int boltNum = -1 );
+	void	CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime, int clientID = -1, int modelNum = -1, int boltNum = -1, qboolean bROFF2_EFX = qfalse );
 	void	CreateEffect( CPrimitiveTemplate *fx, int clientID, int lateTime );
 
 public:

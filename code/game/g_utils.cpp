@@ -208,6 +208,10 @@ void G_PlayEffect(int fxID, const int modelIndex, const int boltIndex, const int
 	tent->s.weapon = isRelative;
 	tent->svFlags |=SVF_BROADCAST;
 
+	//set eFlags2 on temp entity
+	if (g_entities[entNum].s.eFlags2 & EF2_ROFF2_LOOP_EFX)
+		tent->s.eFlags2 |= EF2_ROFF2_LOOP_EFX;
+
 	gi.G2API_AttachEnt(&tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex);
 }
 

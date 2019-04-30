@@ -241,6 +241,19 @@ typedef enum {
 #define EF_FORCE_DRAINED		0x40000000	// Force drained effect
 #define EF_BLOCKED_MOVER		0x80000000	// for movers that are blocked - shared with previous
 
+// entityState_t->eFlags2 
+//New EF2_??? flags
+//NOTE: we only allow 10 of these (for now)...
+#define	EF2_ROFF2_LOOP_EFX		(1<<0)		// entity has a ROFF2 looping EFX
+#define	EF2_NOT_USED_1			(1<<1)		// not used
+#define	EF2_NOT_USED_2			(1<<2)		// not used
+#define	EF2_NOT_USED_3			(1<<3)		// not used
+#define	EF2_NOT_USED_4			(1<<4)		// not used
+#define	EF2_NOT_USED_5			(1<<5)		// not used
+#define	EF2_NOT_USED_6			(1<<6)		// not used
+#define	EF2_NOT_USED_7			(1<<7)		// not used
+#define	EF2_NOT_USED_8			(1<<8)		// not used
+
 typedef enum {
 	PW_NONE,
 	PW_QUAD,// This can go away

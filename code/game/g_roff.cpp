@@ -506,6 +506,9 @@ defaultoffsetposition:
 
 										//stop the efx
 										G_StopEffect(objectID, ent->playerModel, boltID, ent->s.number);
+
+										//remove the eFlags2
+										ent->s.eFlags2 &= ~(EF2_ROFF2_LOOP_EFX);
 									}
 								}
 								else
@@ -613,6 +616,9 @@ zerooffsetposition:
 									{ //failed to parse angles from the extra argument provided... default to zero
 										VectorCopy(vec3_origin, useAngles);
 									}
+
+									//set the eFlags2
+									ent->s.eFlags2 |= EF2_ROFF2_LOOP_EFX;
 							
 									//play the efx
 									G_PlayEffect(objectID, ent->playerModel, boltID, ent->s.number, parsedOffset, iLoopTime, isRelative, useAngles);
