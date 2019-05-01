@@ -289,8 +289,8 @@ void CFxScheduler::AddLoopedEffects()
 		{
 			const int entNum = ( mLoopedEffectArray[i].mBoltInfo >> ENTITY_SHIFT )	& ENTITY_AND;
 			if ( cg_entities[entNum].gent->inuse )
-			{// only play the looped effect when the ent is still inUse....
-				AnglesToAxis(cg_entities[entNum].lerpAngles, axis);
+			{// only play the looped effect when the ent is still inUse...
+				AnglesToAxis(cg_entities[entNum].gent->currentAngles, axis);
 				PlayEffect(mLoopedEffectArray[i].mId, cg_entities[entNum].lerpOrigin, axis /*0*/, mLoopedEffectArray[i].mBoltInfo, -1, mLoopedEffectArray[i].mPortalEffect, false, mLoopedEffectArray[i].mIsRelative);	//very important to send FALSE looptime to not recursively add me!
 				mLoopedEffectArray[i].mNextTime = theFxHelper.mTime + mEffectTemplates[mLoopedEffectArray[i].mId].mRepeatDelay;
 			}
@@ -1438,10 +1438,10 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 							matrix3_t newAxis;
 							AxisClear(newAxis); //set identity matrix
 							//apply ROFF2 axis offsets
-							MatrixMultiply(effect->mAxis, axis, newAxis);
+							MatrixMultiply(axis, effect->mAxis, newAxis);
 
 							CreateEffect(effect->mpTemplate,
-								effect->mOrigin, newAxis,
+								vec3_origin, newAxis,
 								0, effect->mEntNum, effect->mModelNum, effect->mBoltNum, bROFF2_SchedEFX);
 						}
 						else 
@@ -1591,7 +1591,18 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		//-------------------------------------
 		if ( fx->mSpawnFlags & FX_VEL_IS_ABSOLUTE || flags & FX_RELATIVE )
 		{
-			VectorSet( vel, fx->mVelX.GetVal(), fx->mVelY.GetVal(), fx->mVelZ.GetVal() );
+			if (bROFF2_EFX)
+			{
+				//vec3_t tempFX = { fx->mVelX.GetVal(), fx->mVelY.GetVal(), fx->mVelZ.GetVal() };
+				//VectorRotate(tempFX, ax, vel);
+				VectorScale(ax[0], fx->mVelX.GetVal(), vel);
+				VectorMA(vel, fx->mVelY.GetVal(), ax[1], vel);
+				VectorMA(vel, fx->mVelZ.GetVal(), ax[2], vel);
+			}
+			else
+			{
+				VectorSet(vel, fx->mVelX.GetVal(), fx->mVelY.GetVal(), fx->mVelZ.GetVal());
+			}
 		}
 		else
 		{ // bah, do some extra work to coerce it
@@ -1604,7 +1615,18 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		//-------------------------------------
 		if ( fx->mSpawnFlags & FX_ACCEL_IS_ABSOLUTE || flags & FX_RELATIVE )
 		{
-			VectorSet( accel, fx->mAccelX.GetVal(), fx->mAccelY.GetVal(), fx->mAccelZ.GetVal() );
+			if (bROFF2_EFX)
+			{
+				//vec3_t tempAccel = { fx->mAccelX.GetVal(), fx->mAccelY.GetVal(), fx->mAccelZ.GetVal() };
+				//VectorRotate(tempAccel, ax, accel);
+				VectorScale(ax[0], fx->mAccelX.GetVal(), accel);
+				VectorMA(accel, fx->mAccelY.GetVal(), ax[1], accel);
+				VectorMA(accel, fx->mAccelZ.GetVal(), ax[2], accel);
+			}
+			else 
+			{
+				VectorSet(accel, fx->mAccelX.GetVal(), fx->mAccelY.GetVal(), fx->mAccelZ.GetVal());
+			}
 		}
 		else
 		{

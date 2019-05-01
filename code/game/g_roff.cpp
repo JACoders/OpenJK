@@ -619,7 +619,9 @@ zerooffsetposition:
 
 									//set the eFlags2
 									ent->s.eFlags2 |= EF2_ROFF2_LOOP_EFX;
-							
+
+									G_SetAngles(ent, useAngles); //debugging - needed to fix issue in AddLoopedEffects() losing angle data
+									
 									//play the efx
 									G_PlayEffect(objectID, ent->playerModel, boltID, ent->s.number, parsedOffset, iLoopTime, isRelative, useAngles);
 								}
