@@ -398,7 +398,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope )
 		forwhom->client->ps.viewangles[PITCH] = dot * pitch;
 		forwhom->client->ps.viewangles[ROLL] = ((1-Q_fabs(dot)) * pitch * mod);
 		oldmins2 = forwhom->r.mins[2];
-		forwhom->r.mins[2] = -24 + 12 * fabs(forwhom->client->ps.viewangles[PITCH])/180.0f;
+		forwhom->r.mins[2] = -24 + 12 * fabsf(forwhom->client->ps.viewangles[PITCH])/180.0f;
 		//FIXME: if it gets bigger, move up
 		if ( oldmins2 > forwhom->r.mins[2] )
 		{//our mins is now lower, need to move up

@@ -409,11 +409,11 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 		}
 		if ( fps < 0 )
 		{//backwards
-			animset[animNum].frameLerp = floor(1000.0f / fps);
+			animset[animNum].frameLerp = floorf(1000.0f / fps);
 		}
 		else
 		{
-			animset[animNum].frameLerp = ceil(1000.0f / fps);
+			animset[animNum].frameLerp = ceilf(1000.0f / fps);
 		}
 
 //		animset[animNum].initialLerp = ceil(1000.0f / fabs(fps));
@@ -2851,7 +2851,7 @@ static void UI_DrawServerRefreshDate(rectDef_t *rect, float scale, vec4_t color,
 		lowLight[1] = 0.8 * color[1];
 		lowLight[2] = 0.8 * color[2];
 		lowLight[3] = 0.8 * color[3];
-		LerpColor(color,lowLight,newColor,0.5+0.5*sin((float)(uiInfo.uiDC.realTime / PULSE_DIVISOR)));
+		LerpColor(color,lowLight,newColor,0.5+0.5*sinf((float)(uiInfo.uiDC.realTime / PULSE_DIVISOR)));
 
 		trap->SE_GetStringTextString("MP_INGAME_GETTINGINFOFORSERVERS", holdSPString, sizeof(holdSPString));
 		Text_Paint(rect->x, rect->y, scale, newColor, va((char *) holdSPString, trap->LAN_GetServerCount(UI_SourceForLAN())), 0, 0, textStyle, iMenuFont);

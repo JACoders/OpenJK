@@ -266,7 +266,7 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 	{
 		// decay yaw error
 		error = AngleDelta ( NPCS.NPC->client->ps.viewangles[YAW], targetYaw );
-		if( fabs(error) > MIN_ANGLE_ERROR )
+		if( fabsf(error) > MIN_ANGLE_ERROR )
 		{
 			if ( error )
 			{
@@ -302,7 +302,7 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 	{
 		// decay pitch error
 		error = AngleDelta ( NPCS.NPC->client->ps.viewangles[PITCH], targetPitch );
-		if ( fabs(error) > MIN_ANGLE_ERROR )
+		if ( fabsf(error) > MIN_ANGLE_ERROR )
 		{
 			if ( error )
 			{
@@ -864,7 +864,7 @@ void SetTeamNumbers (void)
 
 	for( i = 0; i < TEAM_NUM_TEAMS; i++ )
 	{//Get the average health
-		teamStrength[i] = floor( ((float)(teamStrength[i])) / ((float)(teamNumbers[i])) );
+		teamStrength[i] = floorf( ((float)(teamStrength[i])) / ((float)(teamNumbers[i])) );
 	}
 }
 
@@ -1534,7 +1534,7 @@ qboolean NPC_FacePosition( vec3_t position, qboolean doPitch )
 	if ( NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->NPC_class == CLASS_ATST )
 	{
 		// FIXME: this is kind of dumb, but it was the easiest way to get it to look sort of ok
-		NPCS.NPCInfo->desiredYaw	+= flrand( -5, 5 ) + sin( level.time * 0.004f ) * 7;
+		NPCS.NPCInfo->desiredYaw	+= flrand( -5, 5 ) + sinf( level.time * 0.004f ) * 7;
 		NPCS.NPCInfo->desiredPitch += flrand( -2, 2 );
 	}
 	//Face that yaw
@@ -1544,7 +1544,7 @@ qboolean NPC_FacePosition( vec3_t position, qboolean doPitch )
 	yawDelta = AngleNormalize360( NPCS.NPCInfo->desiredYaw - ( SHORT2ANGLE( NPCS.ucmd.angles[YAW] + NPCS.client->ps.delta_angles[YAW] ) ) );
 
 	//See if we are facing properly
-	if ( fabs( yawDelta ) > VALID_ATTACK_CONE )
+	if ( fabsf( yawDelta ) > VALID_ATTACK_CONE )
 		facing = qfalse;
 
 	if ( doPitch )
@@ -1554,7 +1554,7 @@ qboolean NPC_FacePosition( vec3_t position, qboolean doPitch )
 		float pitchDelta = NPCS.NPCInfo->desiredPitch - currentAngles;
 
 		//See if we are facing properly
-		if ( fabs( pitchDelta ) > VALID_ATTACK_CONE )
+		if ( fabsf( pitchDelta ) > VALID_ATTACK_CONE )
 			facing = qfalse;
 	}
 

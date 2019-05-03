@@ -201,7 +201,7 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 		{//Allow for a little z difference
 			vec3_t	diff;
 			VectorSubtract( point, dest, diff );
-			if ( fabs(diff[2]) <= 24 )
+			if ( fabsf(diff[2]) <= 24 )
 			{
 				diff[2] = 0;
 			}
@@ -535,7 +535,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t *trace, int clipma
 		return qtrue;
 
 	//See if we're too far above
-	if ( fabs( self->r.currentOrigin[2] - end[2] ) > 48 )
+	if ( fabsf( self->r.currentOrigin[2] - end[2] ) > 48 )
 		return qfalse;
 
 	//This is a work around
@@ -625,8 +625,8 @@ qboolean NAV_Bypass( gentity_t *self, gentity_t *blocker, vec3_t blocked_dir, fl
 	yaw = vectoyaw( blocked_dir );
 
 	//Get the avoid radius
-	avoidRadius = sqrt( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) +
-						sqrt( ( self->r.maxs[0] * self->r.maxs[0] ) + ( self->r.maxs[1] * self->r.maxs[1] ) );
+	avoidRadius = sqrtf( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) +
+						sqrtf( ( self->r.maxs[0] * self->r.maxs[0] ) + ( self->r.maxs[1] * self->r.maxs[1] ) );
 
 	//See if we're inside our avoidance radius
 	arcAngle = ( blocked_dist <= avoidRadius ) ? 135 : ( ( avoidRadius / blocked_dist ) * 90 );
@@ -787,8 +787,8 @@ qboolean NAV_StackedCanyon( gentity_t *self, gentity_t *blocker, vec3_t pathDir 
 	PerpendicularVector( perp, pathDir );
 	CrossProduct( pathDir, perp, cross );
 
-	avoidRadius =	sqrt( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) +
-					sqrt( ( self->r.maxs[0] * self->r.maxs[0] ) + ( self->r.maxs[1] * self->r.maxs[1] ) );
+	avoidRadius =	sqrtf( ( blocker->r.maxs[0] * blocker->r.maxs[0] ) + ( blocker->r.maxs[1] * blocker->r.maxs[1] ) ) +
+					sqrtf( ( self->r.maxs[0] * self->r.maxs[0] ) + ( self->r.maxs[1] * self->r.maxs[1] ) );
 
 	VectorMA( blocker->r.currentOrigin, avoidRadius, cross, test );
 
@@ -1017,7 +1017,7 @@ int NAV_TestBestNode( gentity_t *self, int startID, int endID, qboolean failEdge
 	}
 
 	//See if we're too far above
-	if ( self->s.weapon != WP_SABER && fabs( self->r.currentOrigin[2] - end[2] ) > 48 )
+	if ( self->s.weapon != WP_SABER && fabsf( self->r.currentOrigin[2] - end[2] ) > 48 )
 	{
 	}
 	else
@@ -1049,7 +1049,7 @@ int NAV_TestBestNode( gentity_t *self, int startID, int endID, qboolean failEdge
 					return startID;
 				}
 				//we can keep heading to the door, it should open
-				if ( self->s.weapon != WP_SABER && fabs( self->r.currentOrigin[2] - end[2] ) > 48 )
+				if ( self->s.weapon != WP_SABER && fabsf( self->r.currentOrigin[2] - end[2] ) > 48 )
 				{//too far above
 				}
 				else

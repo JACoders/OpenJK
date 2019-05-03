@@ -153,7 +153,7 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 		{//invert
 			attDelay = 2000-attDelay;
 		}
-		attDelay += floor( (DotProduct( fwd, dir )+1.0f) * 2000.0f );//add up to 4000ms delay if they're facing away
+		attDelay += floorf( (DotProduct( fwd, dir )+1.0f) * 2000.0f );//add up to 4000ms delay if they're facing away
 
 		//FIXME: should distance matter, too?
 

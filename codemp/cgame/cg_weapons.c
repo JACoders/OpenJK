@@ -876,9 +876,9 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 		}
 
 		trap->G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0);
-		hand.frame = CG_MapTorsoToWeaponFrame( ci, ceil( currentFrame ), ps->torsoAnim );
-		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, floor( currentFrame ), ps->torsoAnim );
-		hand.backlerp = 1.0f - (currentFrame-floor(currentFrame));
+		hand.frame = CG_MapTorsoToWeaponFrame( ci, ceilf( currentFrame ), ps->torsoAnim );
+		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, floorf( currentFrame ), ps->torsoAnim );
+		hand.backlerp = 1.0f - (currentFrame-floorf(currentFrame));
 
 		// Handle the fringe situation where oldframe is invalid
 		if ( hand.frame == -1 )

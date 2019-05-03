@@ -173,9 +173,9 @@ void Interrogator_MaintainHeight( void )
 		dif = (NPCS.NPC->enemy->r.currentOrigin[2] + NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
-		if ( fabs( dif ) > 2 )
+		if ( fabsf( dif ) > 2 )
 		{
-			if ( fabs( dif ) > 16 )
+			if ( fabsf( dif ) > 16 )
 			{
 				dif = ( dif < 0 ? -16 : 16 );
 			}
@@ -199,7 +199,7 @@ void Interrogator_MaintainHeight( void )
 		{
 			dif = goal->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2];
 
-			if ( fabs( dif ) > 24 )
+			if ( fabsf( dif ) > 24 )
 			{
 				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
@@ -209,7 +209,7 @@ void Interrogator_MaintainHeight( void )
 				{
 					NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-					if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 2 )
+					if ( fabsf( NPCS.NPC->client->ps.velocity[2] ) < 2 )
 					{
 						NPCS.NPC->client->ps.velocity[2] = 0;
 					}
@@ -221,7 +221,7 @@ void Interrogator_MaintainHeight( void )
 		{
 			NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-			if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 1 )
+			if ( fabsf( NPCS.NPC->client->ps.velocity[2] ) < 1 )
 			{
 				NPCS.NPC->client->ps.velocity[2] = 0;
 			}
@@ -233,7 +233,7 @@ void Interrogator_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[0] ) < 1 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[0] ) < 1 )
 		{
 			NPCS.NPC->client->ps.velocity[0] = 0;
 		}
@@ -243,7 +243,7 @@ void Interrogator_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[1] ) < 1 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[1] ) < 1 )
 		{
 			NPCS.NPC->client->ps.velocity[1] = 0;
 		}
@@ -285,7 +285,7 @@ void Interrogator_Strafe( void )
 			dif = (NPCS.NPC->enemy->r.currentOrigin[2] + 32) - NPCS.NPC->r.currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
-			if ( fabs( dif ) > 8 )
+			if ( fabsf( dif ) > 8 )
 			{
 				dif = ( dif < 0 ? -HUNTER_UPWARD_PUSH : HUNTER_UPWARD_PUSH );
 			}

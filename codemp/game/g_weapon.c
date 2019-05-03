@@ -2223,11 +2223,11 @@ qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, 
 			VectorCopy( start, lastPos );
 
 			//This may be kind of wasteful, especially on long throws... use larger steps?  Divide the travelTime into a certain hard number of slices?  Trace just to apex and down?
-			for ( elapsedTime = timeStep; elapsedTime < floor(travelTime)+timeStep; elapsedTime += timeStep )
+			for ( elapsedTime = timeStep; elapsedTime < floorf(travelTime)+timeStep; elapsedTime += timeStep )
 			{
 				if ( (float)elapsedTime > travelTime )
 				{//cap it
-					elapsedTime = floor( travelTime );
+					elapsedTime = floorf( travelTime );
 				}
 				BG_EvaluateTrajectory( &tr, level.time + elapsedTime, testPos );
 				trap->Trace( &trace, lastPos, mins, maxs, testPos, ignoreEntNum, clipmask, qfalse, 0, 0 );
@@ -2269,7 +2269,7 @@ qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, 
 						break;
 					}
 				}
-				if ( elapsedTime == floor( travelTime ) )
+				if ( elapsedTime == floorf( travelTime ) )
 				{//reached end, all clear
 					break;
 				}
@@ -4052,7 +4052,7 @@ void WP_GetVehicleCamPos( gentity_t *ent, gentity_t *pilot, vec3_t camPos )
 	if ( ent->client->ps.hackingTime )
 	{
 		thirdPersonHorzOffset += (((float)ent->client->ps.hackingTime)/MAX_STRAFE_TIME) * -80.0f;
-		thirdPersonRange += fabs(((float)ent->client->ps.hackingTime)/MAX_STRAFE_TIME) * 100.0f;
+		thirdPersonRange += fabsf(((float)ent->client->ps.hackingTime)/MAX_STRAFE_TIME) * 100.0f;
 	}
 
 	if ( ent->m_pVehicle->m_pVehicleInfo->cameraPitchDependantVertOffset )

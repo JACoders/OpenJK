@@ -827,7 +827,7 @@ void NPC_BSJump (void)
 		//FIXME: length of xy will change curve of parabola, need to account for this
 		//somewhere... PARA_WIDTH
 
-		z = (sqrt(apexHeight + z) - sqrt(apexHeight));
+		z = (sqrtf(apexHeight + z) - sqrtf(apexHeight));
 
 		assert(z >= 0);
 
@@ -1199,9 +1199,9 @@ void NPC_BSNoClip ( void )
 		rDot = DotProduct(right, dir) * 127;
 		uDot = DotProduct(up, dir) * 127;
 
-		NPCS.ucmd.forwardmove = floor(fDot);
-		NPCS.ucmd.rightmove = floor(rDot);
-		NPCS.ucmd.upmove = floor(uDot);
+		NPCS.ucmd.forwardmove = floorf(fDot);
+		NPCS.ucmd.rightmove = floorf(rDot);
+		NPCS.ucmd.upmove = floorf(uDot);
 	}
 	else
 	{

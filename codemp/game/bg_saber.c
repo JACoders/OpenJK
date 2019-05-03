@@ -1381,7 +1381,7 @@ void PM_SaberLocked( void )
 				if ( (pm->ps->torsoAnim) == BOTH_CCWCIRCLELOCK ||
 					(pm->ps->torsoAnim) == BOTH_BF2LOCK )
 				{
-					curFrame = floor( currentFrame )-strength;
+					curFrame = floorf( currentFrame )-strength;
 					//drop my frame one
 					if ( curFrame <= anim->firstFrame )
 					{//I won!  Break out
@@ -1396,7 +1396,7 @@ void PM_SaberLocked( void )
 				}
 				else
 				{
-					curFrame = ceil( currentFrame )+strength;
+					curFrame = ceilf( currentFrame )+strength;
 					//advance my frame one
 					if ( curFrame >= anim->firstFrame+anim->numFrames )
 					{//I won!  Break out
@@ -1414,7 +1414,7 @@ void PM_SaberLocked( void )
 			{ //new locks
 				if ( BG_CheckIncrementLockAnim( pm->ps->torsoAnim, SABERLOCK_WIN ) )
 				{
-					curFrame = ceil( currentFrame )+strength;
+					curFrame = ceilf( currentFrame )+strength;
 					//advance my frame one
 					if ( curFrame >= anim->firstFrame+anim->numFrames )
 					{//I won!  Break out
@@ -1429,7 +1429,7 @@ void PM_SaberLocked( void )
 				}
 				else
 				{
-					curFrame = floor( currentFrame )-strength;
+					curFrame = floorf( currentFrame )-strength;
 					//drop my frame one
 					if ( curFrame <= anim->firstFrame )
 					{//I won!  Break out
@@ -1457,7 +1457,7 @@ void PM_SaberLocked( void )
 				{
 					if ( !PM_irand_timesync( 0, 2 ) )
 					{
-						BG_AddPredictableEventToPlayerstate(EV_PAIN, floor((float)80/100*100.0f), genemy);
+						BG_AddPredictableEventToPlayerstate(EV_PAIN, floorf((float)80/100*100.0f), genemy);
 					}
 					PM_SetAnimFrame( genemy, anim->firstFrame+remaining, qtrue, qtrue );
 				}
@@ -1472,7 +1472,7 @@ void PM_SaberLocked( void )
 				{
 					if ( !PM_irand_timesync( 0, 2 ) )
 					{
-						BG_AddPredictableEventToPlayerstate(EV_PAIN, floor((float)80/100*100.0f), genemy);
+						BG_AddPredictableEventToPlayerstate(EV_PAIN, floorf((float)80/100*100.0f), genemy);
 					}
 					PM_SetAnimFrame( genemy, anim->firstFrame+anim->numFrames-remaining, qtrue, qtrue );
 				}

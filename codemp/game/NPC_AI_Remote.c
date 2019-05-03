@@ -74,7 +74,7 @@ void Remote_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 2 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[2] ) < 2 )
 		{
 			NPCS.NPC->client->ps.velocity[2] = 0;
 		}
@@ -90,9 +90,9 @@ void Remote_MaintainHeight( void )
 			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  Q_irand( 0, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
-			if ( fabs( dif ) > 2 )
+			if ( fabsf( dif ) > 2 )
 			{
-				if ( fabs( dif ) > 24 )
+				if ( fabsf( dif ) > 24 )
 				{
 					dif = ( dif < 0 ? -24 : 24 );
 				}
@@ -119,7 +119,7 @@ void Remote_MaintainHeight( void )
 		{
 			dif = goal->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2];
 
-			if ( fabs( dif ) > 24 )
+			if ( fabsf( dif ) > 24 )
 			{
 				dif = ( dif < 0 ? -24 : 24 );
 				NPCS.NPC->client->ps.velocity[2] = (NPCS.NPC->client->ps.velocity[2]+dif)/2;
@@ -132,7 +132,7 @@ void Remote_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[0] ) < 1 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[0] ) < 1 )
 		{
 			NPCS.NPC->client->ps.velocity[0] = 0;
 		}
@@ -142,7 +142,7 @@ void Remote_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[1] ) < 1 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[1] ) < 1 )
 		{
 			NPCS.NPC->client->ps.velocity[1] = 0;
 		}

@@ -1025,8 +1025,8 @@ static void HandleEntityAdjustment(void)
 	}
 
 	rotation = DEG2RAD(level.mRotationAdjust);
-	newOrigin[0] = origin[0]*cos(rotation) - origin[1]*sin(rotation);
-	newOrigin[1] = origin[0]*sin(rotation) + origin[1]*cos(rotation);
+	newOrigin[0] = origin[0]*cosf(rotation) - origin[1]*sinf(rotation);
+	newOrigin[1] = origin[0]*sinf(rotation) + origin[1]*cosf(rotation);
 	newOrigin[2] = origin[2];
 	VectorAdd(newOrigin, level.mOriginAdjust, newOrigin);
 	// damn VMs don't handle outputing a float that is compatible with sscanf in all cases
@@ -1041,7 +1041,7 @@ static void HandleEntityAdjustment(void)
 			VectorClear( angles );
 		}
 
-		angles[YAW] = fmod(angles[YAW] + level.mRotationAdjust, 360.0f);
+		angles[YAW] = fmodf(angles[YAW] + level.mRotationAdjust, 360.0f);
 		// damn VMs don't handle outputing a float that is compatible with sscanf in all cases
 		Com_sprintf(temp, sizeof( temp ), "%0.0f %0.0f %0.0f", angles[0], angles[1], angles[2]);
 		AddSpawnField("angles", temp);
@@ -1057,7 +1057,7 @@ static void HandleEntityAdjustment(void)
 		{
 			angles[YAW] = 0.0;
 		}
-		angles[YAW] = fmod(angles[YAW] + level.mRotationAdjust, 360.0f);
+		angles[YAW] = fmodf(angles[YAW] + level.mRotationAdjust, 360.0f);
 		Com_sprintf(temp, sizeof( temp ), "%0.0f", angles[YAW]);
 		AddSpawnField("angle", temp);
 	}
@@ -1076,7 +1076,7 @@ static void HandleEntityAdjustment(void)
 	{
 		angles[0] = angles[1] = angles[2] = 0.0;
 	}
-	angles[YAW] = fmod(angles[YAW] + level.mRotationAdjust, 360.0f);
+	angles[YAW] = fmodf(angles[YAW] + level.mRotationAdjust, 360.0f);
 	Com_sprintf(temp, sizeof( temp ), "%0.0f %0.0f %0.0f", angles[0], angles[1], angles[2]);
 	AddSpawnField("direction", temp);
 

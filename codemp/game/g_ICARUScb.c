@@ -2155,7 +2155,7 @@ static void Q3_SetOriginOffset( int entID, int axis, float offset )
 	duration = 0;
 	if ( ent->speed )
 	{
-		duration = fabs(offset)/fabs(ent->speed)*1000.0f;
+		duration = fabsf(offset)/fabsf(ent->speed)*1000.0f;
 	}
 	Q3_Lerp2Origin( -1, entID, origin, duration );
 }
@@ -2319,7 +2319,7 @@ static qboolean Q3_SetNavGoal( int entID, const char *name )
 			else
 			{
 				ent->NPC->goalEntity = targ;
-				ent->NPC->goalRadius = sqrt(ent->r.maxs[0]+ent->r.maxs[0]) + sqrt(targ->r.maxs[0]+targ->r.maxs[0]);
+				ent->NPC->goalRadius = sqrtf(ent->r.maxs[0]+ent->r.maxs[0]) + sqrtf(targ->r.maxs[0]+targ->r.maxs[0]);
 				ent->NPC->aiFlags &= ~NPCAI_TOUCHED_GOAL;
 			}
 		}

@@ -144,7 +144,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 		//guarantee the hit will happen, thereby taking off a piece of the ship
 		forceSurfDestruction = qtrue;
 	}
-	else if ( (fabs(pm->ps->velocity[0])+fabs(pm->ps->velocity[1])) < 100.0f
+	else if ( (fabsf(pm->ps->velocity[0])+fabsf(pm->ps->velocity[1])) < 100.0f
 		&& pm->ps->velocity[2] > -100.0f )
 #elif defined(_CGAME)
 	if ( (fabs(pm->ps->velocity[0])+fabs(pm->ps->velocity[1])) < 100.0f

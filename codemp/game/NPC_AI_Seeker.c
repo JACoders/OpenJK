@@ -97,9 +97,9 @@ void Seeker_MaintainHeight( void )
 			}
 
 			// cap to prevent dramatic height shifts
-			if ( fabs( dif ) > 2*difFactor )
+			if ( fabsf( dif ) > 2*difFactor )
 			{
-				if ( fabs( dif ) > 24*difFactor )
+				if ( fabsf( dif ) > 24*difFactor )
 				{
 					dif = ( dif < 0 ? -24*difFactor : 24*difFactor );
 				}
@@ -128,7 +128,7 @@ void Seeker_MaintainHeight( void )
 		{
 			dif = goal->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2];
 
-			if ( fabs( dif ) > 24 )
+			if ( fabsf( dif ) > 24 )
 			{
 				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
@@ -138,7 +138,7 @@ void Seeker_MaintainHeight( void )
 				{
 					NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-					if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 2 )
+					if ( fabsf( NPCS.NPC->client->ps.velocity[2] ) < 2 )
 					{
 						NPCS.NPC->client->ps.velocity[2] = 0;
 					}
@@ -152,7 +152,7 @@ void Seeker_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[0] ) < 1 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[0] ) < 1 )
 		{
 			NPCS.NPC->client->ps.velocity[0] = 0;
 		}
@@ -162,7 +162,7 @@ void Seeker_MaintainHeight( void )
 	{
 		NPCS.NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
 
-		if ( fabs( NPCS.NPC->client->ps.velocity[1] ) < 1 )
+		if ( fabsf( NPCS.NPC->client->ps.velocity[1] ) < 1 )
 		{
 			NPCS.NPC->client->ps.velocity[1] = 0;
 		}
@@ -491,8 +491,8 @@ void Seeker_FollowOwner( void )
 		// generally circle the player closely till we take an enemy..this is our target point
 		if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
 		{
-			pt[0] = owner->r.currentOrigin[0] + cos( level.time * 0.001f + NPCS.NPC->random ) * 250;
-			pt[1] = owner->r.currentOrigin[1] + sin( level.time * 0.001f + NPCS.NPC->random ) * 250;
+			pt[0] = owner->r.currentOrigin[0] + cosf( level.time * 0.001f + NPCS.NPC->random ) * 250;
+			pt[1] = owner->r.currentOrigin[1] + sinf( level.time * 0.001f + NPCS.NPC->random ) * 250;
 			if ( NPCS.NPC->client->jetPackTime < level.time )
 			{
 				pt[2] = NPCS.NPC->r.currentOrigin[2] - 64;
@@ -504,8 +504,8 @@ void Seeker_FollowOwner( void )
 		}
 		else
 		{
-			pt[0] = owner->r.currentOrigin[0] + cos( level.time * 0.001f + NPCS.NPC->random ) * 56;
-			pt[1] = owner->r.currentOrigin[1] + sin( level.time * 0.001f + NPCS.NPC->random ) * 56;
+			pt[0] = owner->r.currentOrigin[0] + cosf( level.time * 0.001f + NPCS.NPC->random ) * 56;
+			pt[1] = owner->r.currentOrigin[1] + sinf( level.time * 0.001f + NPCS.NPC->random ) * 56;
 			pt[2] = owner->r.currentOrigin[2] + 40;
 		}
 

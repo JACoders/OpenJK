@@ -363,7 +363,7 @@ static void CG_CalcIdealThirdPersonViewLocation(void)
 			thirdPersonRange = veh->m_pVehicle->m_pVehicleInfo->cameraRange;
 			if ( veh->playerState->hackingTime )
 			{
-				thirdPersonRange += fabs(((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * 100.0f;
+				thirdPersonRange += fabsf(((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * 100.0f;
 			}
 		}
 	}
@@ -752,10 +752,10 @@ static void CG_OffsetThirdPersonView( void )
 
 		AngleVectors(cameraFocusAngles, camerafwd, NULL, cameraup);
 
-		deltayaw = fabs(cameraFocusAngles[YAW] - cameraLastYaw);
+		deltayaw = fabsf(cameraFocusAngles[YAW] - cameraLastYaw);
 		if (deltayaw > 180.0f)
 		{ // Normalize this angle so that it is between 0 and 180.
-			deltayaw = fabs(deltayaw - 360.0f);
+			deltayaw = fabsf(deltayaw - 360.0f);
 		}
 		cameraStiffFactor = deltayaw / (float)(cg.time-cameraLastFrame);
 		if (cameraStiffFactor < 1.0)
@@ -1091,7 +1091,7 @@ static void CG_OffsetFighterView( void )
 		if ( veh->playerState->hackingTime )
 		{
 			horzOffset += (((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * -80.0f;
-			range += fabs(((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * 100.0f;
+			range += fabsf(((float)veh->playerState->hackingTime)/MAX_STRAFE_TIME) * 100.0f;
 		}
 	}
 
@@ -1256,7 +1256,7 @@ static int CG_CalcFov( void ) {
 	cg.refdef.viewContents = CG_PointContents( cg.refdef.vieworg, -1 );
 	if ( cg.refdef.viewContents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
 		phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		v = WAVE_AMPLITUDE * sin( phase );
+		v = WAVE_AMPLITUDE * sinf( phase );
 		fov_x += v;
 		fov_y -= v;
 		inwater = qtrue;
@@ -1542,7 +1542,7 @@ static int CG_CalcViewValues( void ) {
 
 	cg.bobcycle = ( ps->bobCycle & 128 ) >> 7;
 	cg.bobfracsin = fabs( sin( ( ps->bobCycle & 127 ) / 127.0 * M_PI ) );
-	cg.xyspeed = sqrt( ps->velocity[0] * ps->velocity[0] +
+	cg.xyspeed = sqrtf( ps->velocity[0] * ps->velocity[0] +
 		ps->velocity[1] * ps->velocity[1] );
 
 	if (cg.xyspeed > 270)
@@ -2325,8 +2325,8 @@ void CG_SetupFrustum( void ) {
 	float ang;
 
 	ang = cg.refdef.fov_x / 180 * M_PI * 0.5f;
-	xs = sin( ang );
-	xc = cos( ang );
+	xs = sinf( ang );
+	xc = cosf( ang );
 
 	VectorScale( cg.refdef.viewaxis[0], xs, frustum[0].normal );
 	VectorMA( frustum[0].normal, xc, cg.refdef.viewaxis[1], frustum[0].normal );
@@ -2335,8 +2335,8 @@ void CG_SetupFrustum( void ) {
 	VectorMA( frustum[1].normal, -xc, cg.refdef.viewaxis[1], frustum[1].normal );
 
 	ang = cg.refdef.fov_y / 180 * M_PI * 0.5f;
-	xs = sin( ang );
-	xc = cos( ang );
+	xs = sinf( ang );
+	xc = cosf( ang );
 
 	VectorScale( cg.refdef.viewaxis[0], xs, frustum[2].normal );
 	VectorMA( frustum[2].normal, xc, cg.refdef.viewaxis[2], frustum[2].normal );

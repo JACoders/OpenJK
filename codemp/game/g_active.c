@@ -1202,8 +1202,8 @@ void G_AddPushVecToUcmd( gentity_t *self, usercmd_t *ucmd )
 
 	fMove = 127.0 * DotProduct(forward, moveDir);
 	rMove = 127.0 * DotProduct(right, moveDir);
-	ucmd->forwardmove = floor(fMove);//If in the same dir , will be positive
-	ucmd->rightmove = floor(rMove);//If in the same dir , will be positive
+	ucmd->forwardmove = floorf(fMove);//If in the same dir , will be positive
+	ucmd->rightmove = floorf(rMove);//If in the same dir , will be positive
 
 	if ( self->client->pushVecTime < level.time )
 	{
@@ -2232,7 +2232,7 @@ void ClientThink_real( gentity_t *ent ) {
 								{
 									float slowdownSpeed = ((float)ent->NPC->desiredSpeed) * ent->NPC->distToGoal / SLOWDOWN_DIST;
 
-									ent->NPC->desiredSpeed = ceil(slowdownSpeed);
+									ent->NPC->desiredSpeed = ceilf(slowdownSpeed);
 									if ( ent->NPC->desiredSpeed < MIN_NPC_SPEED )
 									{//don't slow down too much
 										ent->NPC->desiredSpeed = MIN_NPC_SPEED;
@@ -2300,11 +2300,11 @@ void ClientThink_real( gentity_t *ent ) {
 						//if( client->renderInfo.renderFlags & RF_LOCKEDANGLE ) // yeah I know the RF_ flag is a pretty ugly hack...
 						if (0) //rwwFIXMEFIXME: ...
 						{
-							turndelta = (180 - fabs( AngleDelta( ent->r.currentAngles[YAW], ent->NPC->lockedDesiredYaw ) ))/180;
+							turndelta = (180 - fabsf( AngleDelta( ent->r.currentAngles[YAW], ent->NPC->lockedDesiredYaw ) ))/180;
 						}
 						else
 						{
-							turndelta = (180 - fabs( AngleDelta( ent->r.currentAngles[YAW], ent->NPC->desiredYaw ) ))/180;
+							turndelta = (180 - fabsf( AngleDelta( ent->r.currentAngles[YAW], ent->NPC->desiredYaw ) ))/180;
 						}
 
 						if ( turndelta < 0.75f )
@@ -2313,7 +2313,7 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if ( ent->NPC->distToGoal < 100 && turndelta < 1.0 )
 						{//Turn is greater than 45 degrees or closer than 100 to goal
-							client->ps.speed = floor(((float)(client->ps.speed))*turndelta);
+							client->ps.speed = floorf(((float)(client->ps.speed))*turndelta);
 						}
 					}
 				}

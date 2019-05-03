@@ -626,14 +626,14 @@ void BotInputToUserCommand(bot_input_t *bi, usercmd_t *ucmd, int delta_angles[3]
 	f = DotProduct(forward, bi->dir);
 	r = DotProduct(right, bi->dir);
 	u = abs(forward[2]) * bi->dir[2];
-	m = fabs(f);
+	m = fabsf(f);
 
-	if (fabs(r) > m) {
-		m = fabs(r);
+	if (fabsf(r) > m) {
+		m = fabsf(r);
 	}
 
-	if (fabs(u) > m) {
-		m = fabs(u);
+	if (fabsf(u) > m) {
+		m = fabsf(u);
 	}
 
 	if (m > 0) {

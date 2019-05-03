@@ -1594,7 +1594,7 @@ int BG_AnimLength( int index, animNumber_t anim ) {
 		return 0;
 	}
 
-	return bgAllAnims[index].anims[anim].numFrames * fabs( (float)(bgAllAnims[index].anims[anim].frameLerp) );
+	return bgAllAnims[index].anims[anim].numFrames * fabsf( (float)(bgAllAnims[index].anims[anim].frameLerp) );
 }
 
 //just use whatever pm->animations is
@@ -1603,7 +1603,7 @@ int PM_AnimLength( int index, animNumber_t anim ) {
 		return 0;
 	}
 
-	return pm->animations[anim].numFrames * fabs( (float)(pm->animations[anim].frameLerp) );
+	return pm->animations[anim].numFrames * fabsf( (float)(pm->animations[anim].frameLerp) );
 }
 
 void PM_DebugLegsAnim(int anim)
@@ -2476,11 +2476,11 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 		}
 		if ( fps < 0 )
 		{//backwards
-			animset[animNum].frameLerp = floor(1000.0f / fps);
+			animset[animNum].frameLerp = floorf(1000.0f / fps);
 		}
 		else
 		{
-			animset[animNum].frameLerp = ceil(1000.0f / fps);
+			animset[animNum].frameLerp = ceilf(1000.0f / fps);
 		}
 	}
 /*
@@ -2795,7 +2795,7 @@ void BG_SetAnimFinal(playerState_t *ps, animation_t *animations,
 				int dur;
 				int speedDif;
 
-				dur = (animations[anim].numFrames-1) * fabs((float)(animations[anim].frameLerp));
+				dur = (animations[anim].numFrames-1) * fabsf((float)(animations[anim].frameLerp));
 				speedDif = dur - (dur * editAnimSpeed);
 				dur += speedDif;
 				if (dur > 1)
@@ -2804,12 +2804,12 @@ void BG_SetAnimFinal(playerState_t *ps, animation_t *animations,
 				}
 				else
 				{
-					ps->torsoTimer = fabs((float)(animations[anim].frameLerp));
+					ps->torsoTimer = fabsf((float)(animations[anim].frameLerp));
 				}
 			}
 			else
 			{
-				ps->torsoTimer = ((animations[anim].numFrames ) * fabs((float)(animations[anim].frameLerp)));
+				ps->torsoTimer = ((animations[anim].numFrames ) * fabsf((float)(animations[anim].frameLerp)));
 			}
 
 			if (ps->fd.forcePowersActive & (1 << FP_RAGE))
@@ -2843,7 +2843,7 @@ setAnimLegs:
 				int dur;
 				int speedDif;
 
-				dur = (animations[anim].numFrames-1) * fabs((float)(animations[anim].frameLerp));
+				dur = (animations[anim].numFrames-1) * fabsf((float)(animations[anim].frameLerp));
 				speedDif = dur - (dur * editAnimSpeed);
 				dur += speedDif;
 				if (dur > 1)
@@ -2852,12 +2852,12 @@ setAnimLegs:
 				}
 				else
 				{
-					ps->legsTimer = fabs((float)(animations[anim].frameLerp));
+					ps->legsTimer = fabsf((float)(animations[anim].frameLerp));
 				}
 			}
 			else
 			{
-				ps->legsTimer = ((animations[anim].numFrames ) * fabs((float)(animations[anim].frameLerp)));
+				ps->legsTimer = ((animations[anim].numFrames ) * fabsf((float)(animations[anim].frameLerp)));
 			}
 
 			if (PM_RunningAnim(anim) ||

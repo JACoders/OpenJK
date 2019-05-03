@@ -353,11 +353,11 @@ void CreateShield(gentity_t *ent)
 
 	if ( level.gametype == GT_SIEGE )
 	{
-		ent->health = ceil((float)(SHIELD_SIEGE_HEALTH*1));
+		ent->health = ceilf((float)(SHIELD_SIEGE_HEALTH*1));
 	}
 	else
 	{
-		ent->health = ceil((float)(SHIELD_HEALTH*1));
+		ent->health = ceilf((float)(SHIELD_HEALTH*1));
 	}
 
 	ent->s.time = ent->health;//???
@@ -436,7 +436,7 @@ qboolean PlaceShield(gentity_t *playerent)
 			shield = G_Spawn();
 
 			// Figure out what direction the shield is facing.
-			if (fabs(fwd[0]) > fabs(fwd[1]))
+			if (fabsf(fwd[0]) > fabsf(fwd[1]))
 			{	// shield is north/south, facing east.
 				shield->s.angles[YAW] = 0;
 			}
@@ -882,14 +882,14 @@ void pas_think( gentity_t *ent )
 	else
 	{
 		// no enemy, so make us slowly sweep back and forth as if searching for a new one
-		diffYaw = sin( level.time * 0.0001f + ent->count ) * 2.0f;
+		diffYaw = sinf( level.time * 0.0001f + ent->count ) * 2.0f;
 	}
 
-	if ( fabs(diffYaw) > 0.25f )
+	if ( fabsf(diffYaw) > 0.25f )
 	{
 		moved = qtrue;
 
-		if ( fabs(diffYaw) > 10.0f )
+		if ( fabsf(diffYaw) > 10.0f )
 		{
 			// cap max speed
 			ent->speed += (diffYaw > 0.0f) ? -10.0f : 10.0f;
@@ -902,11 +902,11 @@ void pas_think( gentity_t *ent )
 	}
 
 
-	if ( fabs(diffPitch) > 0.25f )
+	if ( fabsf(diffPitch) > 0.25f )
 	{
 		moved = qtrue;
 
-		if ( fabs(diffPitch) > 4.0f )
+		if ( fabsf(diffPitch) > 4.0f )
 		{
 			// cap max speed
 			ent->random += (diffPitch > 0.0f) ? -4.0f : 4.0f;

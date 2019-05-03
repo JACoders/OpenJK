@@ -1505,7 +1505,7 @@ qboolean WP_SabersCheckLock( gentity_t *ent1, gentity_t *ent2 )
 		}
 	}
 
-	if ( fabs( ent1->r.currentOrigin[2]-ent2->r.currentOrigin[2] ) > 16 )
+	if ( fabsf( ent1->r.currentOrigin[2]-ent2->r.currentOrigin[2] ) > 16 )
 	{
 		return qfalse;
 	}
@@ -1950,7 +1950,7 @@ static QINLINE qboolean WP_GetSaberDeflectionAngle( gentity_t *attacker, gentity
 		int attQuadStart = saberMoveData[attacker->client->ps.saberMove].startQuad;
 		int attQuadEnd = saberMoveData[attacker->client->ps.saberMove].endQuad;
 		int defQuad = saberMoveData[defender->client->ps.saberMove].endQuad;
-		int quadDiff = fabs((float)(defQuad-attQuadStart));
+		int quadDiff = fabsf((float)(defQuad-attQuadStart));
 
 		if ( defender->client->ps.saberMove == LS_READY )
 		{
@@ -2025,7 +2025,7 @@ static QINLINE qboolean WP_GetSaberDeflectionAngle( gentity_t *attacker, gentity
 			{
 				quadDiff = -4 + (quadDiff + 4);
 			}
-			newQuad = attQuadEnd + ceil( ((float)quadDiff)/2.0f );
+			newQuad = attQuadEnd + ceilf( ((float)quadDiff)/2.0f );
 			if ( newQuad < Q_BR )
 			{//less than zero wraps around
 				newQuad = Q_B + newQuad;
@@ -2223,7 +2223,7 @@ static QINLINE int G_GetAttackDamage(gentity_t *self, int minDmg, int maxDmg, fl
 	int speedDif = 0;
 	int totalDamage = maxDmg;
 	float peakPoint = 0;
-	float attackAnimLength = bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].numFrames * fabs((float)(bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].frameLerp));
+	float attackAnimLength = bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].numFrames * fabsf((float)(bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].frameLerp));
 	float currentPoint = 0;
 	float damageFactor = 0;
 	float animSpeedFactor = 1.0f;
@@ -2263,7 +2263,7 @@ static QINLINE int G_GetAttackDamage(gentity_t *self, int minDmg, int maxDmg, fl
 static QINLINE float G_GetAnimPoint(gentity_t *self)
 {
 	int speedDif = 0;
-	float attackAnimLength = bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].numFrames * fabs((float)(bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].frameLerp));
+	float attackAnimLength = bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].numFrames * fabsf((float)(bgAllAnims[self->localAnimIndex].anims[self->client->ps.torsoAnim].frameLerp));
 	float currentPoint = 0;
 	float animSpeedFactor = 1.0f;
 	float animPercentage = 0;
@@ -3728,7 +3728,7 @@ void WP_SaberRadiusDamage( gentity_t *ent, vec3_t point, float radius, int damag
 			{//in range
 				if ( damage > 0 )
 				{//do damage
-					int points = ceil((float)damage*dist/radius);
+					int points = ceilf((float)damage*dist/radius);
 					G_Damage( radiusEnt, ent, ent, vec3_origin, radiusEnt->r.currentOrigin, points, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
 				}
 				if ( knockBack > 0 )
@@ -4139,11 +4139,11 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				float traceLength = Distance( saberEnd, saberStart );
 				if ( tr.fraction >= 1.0f )
 				{//allsolid?
-					dmg = ceil( fDmg*traceLength*0.1f*0.33f );
+					dmg = ceilf( fDmg*traceLength*0.1f*0.33f );
 				}
 				else
 				{//fractional hit, the sooner you hit in the trace, the more damage you did
-					dmg = ceil( fDmg*traceLength*(1.0f-tr.fraction)*0.1f*0.33f );//(1.0f-tr.fraction) isn't really accurate, but kind of simulates what we have in SP
+					dmg = ceilf( fDmg*traceLength*(1.0f-tr.fraction)*0.1f*0.33f );//(1.0f-tr.fraction) isn't really accurate, but kind of simulates what we have in SP
 				}
 #ifdef DEBUG_SABER_BOX
 				if ( g_saberDebugBox.integer == 3 || g_saberDebugBox.integer == 4 )
@@ -4381,12 +4381,12 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		if ( !WP_SaberBladeUseSecondBladeStyle( &self->client->saber[rSaberNum], rBladeNum )
 			&& self->client->saber[rSaberNum].damageScale != 1.0f )
 		{
-			dmg = ceil( (float)dmg*self->client->saber[rSaberNum].damageScale );
+			dmg = ceilf( (float)dmg*self->client->saber[rSaberNum].damageScale );
 		}
 		else if ( WP_SaberBladeUseSecondBladeStyle( &self->client->saber[rSaberNum], rBladeNum )
 			&& self->client->saber[rSaberNum].damageScale2 != 1.0f )
 		{
-			dmg = ceil( (float)dmg*self->client->saber[rSaberNum].damageScale2 );
+			dmg = ceilf( (float)dmg*self->client->saber[rSaberNum].damageScale2 );
 		}
 
 		if ((self->client->ps.brokenLimbs & (1 << BROKENLIMB_RARM)) ||
@@ -5316,7 +5316,7 @@ void G_SPSaberDamageTraceLerped( gentity_t *self, int saberNum, int bladeNum, ve
 			curDirFrac = 1.0f;
 		}
 		//NOTE: if saber spun at least 180 degrees since last damage trace, this is not reliable...!
-		if ( fabs(curDirFrac) < 1.0f - MAX_SABER_SWING_INC )
+		if ( fabsf(curDirFrac) < 1.0f - MAX_SABER_SWING_INC )
 		{//the saber blade spun more than 33 degrees since the last damage trace
 			curDirFrac = dirInc = 1.0f/((1.0f - curDirFrac)/MAX_SABER_SWING_INC);
 		}

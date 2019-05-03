@@ -798,10 +798,10 @@ void Use_BinaryMover_Go( gentity_t *ent )
 			VectorScale( ent->s.pos.trDelta, fPartial, curDelta );
 			fPartial /= ent->s.pos.trDuration;
 			fPartial /= 0.001f;
-			fPartial = acos( fPartial );
+			fPartial = acosf( fPartial );
 			fPartial = RAD2DEG( fPartial );
 			fPartial = (90.0f - fPartial)/90.0f*ent->s.pos.trDuration;
-			partial = total - floor( fPartial );
+			partial = total - floorf( fPartial );
 		}
 		else
 		{
@@ -834,10 +834,10 @@ void Use_BinaryMover_Go( gentity_t *ent )
 			VectorScale( ent->s.pos.trDelta, fPartial, curDelta );
 			fPartial /= ent->s.pos.trDuration;
 			fPartial /= 0.001f;
-			fPartial = acos( fPartial );
+			fPartial = acosf( fPartial );
 			fPartial = RAD2DEG( fPartial );
 			fPartial = (90.0f - fPartial)/90.0f*ent->s.pos.trDuration;
-			partial = total - floor( fPartial );
+			partial = total - floorf( fPartial );
 		}
 		else
 		{
@@ -1086,7 +1086,7 @@ static void Touch_DoorTriggerSpectator( gentity_t *ent, gentity_t *other, trace_
 
 	if (origin[axis] < doorMin || origin[axis] > doorMax) return;
 
-	if (fabs(origin[axis] - doorMax) < fabs(origin[axis] - doorMin)) {
+	if (fabsf(origin[axis] - doorMax) < fabsf(origin[axis] - doorMin)) {
 		origin[axis] = doorMin - 25; // 10
 	} else {
 		origin[axis] = doorMax + 25; // 10
@@ -1451,9 +1451,9 @@ void SP_func_door (gentity_t *ent)
 	// calculate second position
 	trap->SetBrushModel( (sharedEntity_t *)ent, ent->model );
 	G_SetMovedir( ent->s.angles, ent->movedir );
-	abs_movedir[0] = fabs( ent->movedir[0] );
-	abs_movedir[1] = fabs( ent->movedir[1] );
-	abs_movedir[2] = fabs( ent->movedir[2] );
+	abs_movedir[0] = fabsf( ent->movedir[0] );
+	abs_movedir[1] = fabsf( ent->movedir[1] );
+	abs_movedir[2] = fabsf( ent->movedir[2] );
 	VectorSubtract( ent->r.maxs, ent->r.mins, size );
 	distance = DotProduct( abs_movedir, size ) - lip;
 	VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
@@ -1717,9 +1717,9 @@ void SP_func_button( gentity_t *ent ) {
 	G_SpawnFloat( "lip", "4", &lip );
 
 	G_SetMovedir( ent->s.angles, ent->movedir );
-	abs_movedir[0] = fabs(ent->movedir[0]);
-	abs_movedir[1] = fabs(ent->movedir[1]);
-	abs_movedir[2] = fabs(ent->movedir[2]);
+	abs_movedir[0] = fabsf(ent->movedir[0]);
+	abs_movedir[1] = fabsf(ent->movedir[1]);
+	abs_movedir[2] = fabsf(ent->movedir[2]);
 	VectorSubtract( ent->r.maxs, ent->r.mins, size );
 	distance = abs_movedir[0] * size[0] + abs_movedir[1] * size[1] + abs_movedir[2] * size[2] - lip;
 	VectorMA (ent->pos1, distance, ent->movedir, ent->pos2);
@@ -2308,12 +2308,12 @@ void SP_func_pendulum(gentity_t *ent) {
 	trap->SetBrushModel( (sharedEntity_t *)ent, ent->model );
 
 	// find pendulum length
-	length = fabs( ent->r.mins[2] );
+	length = fabsf( ent->r.mins[2] );
 	if ( length < 8 ) {
 		length = 8;
 	}
 
-	freq = 1 / ( M_PI * 2 ) * sqrt( g_gravity.value / ( 3 * length ) );
+	freq = 1 / ( M_PI * 2 ) * sqrtf( g_gravity.value / ( 3 * length ) );
 
 	ent->s.pos.trDuration = ( 1000 / freq );
 
@@ -2451,7 +2451,7 @@ void funcBBrushDieGo (gentity_t *self)
 
 	// This formula really has no logical basis other than the fact that it seemed to be the closest to yielding the results that I wanted.
 	// Volume is length * width * height...then break that volume down based on how many chunks we have
-	scale = sqrt( sqrt( org[0] * org[1] * org[2] )) * 1.75f;
+	scale = sqrt( sqrtf( org[0] * org[1] * org[2] )) * 1.75f;
 
 	if ( scale > 48 )
 	{
@@ -2526,7 +2526,7 @@ void funcBBrushDie (gentity_t *self, gentity_t *inflictor, gentity_t *attacker, 
 	if(self->delay)
 	{
 		self->think = funcBBrushDieGo;
-		self->nextthink = level.time + floor(self->delay * 1000.0f);
+		self->nextthink = level.time + floorf(self->delay * 1000.0f);
 		return;
 	}
 
@@ -2602,7 +2602,7 @@ void funcBBrushPain(gentity_t *self, gentity_t *attacker, int damage)
 		{
 			// designer wants to scale number of chunks, helpful because the above scale code is far from perfect
 			//	I do this after the scale calculation because it seems that the chunk size generally seems to be very close, it's just the number of chunks is a bit weak
-			numChunks = ceil(numChunks*self->radius);
+			numChunks = ceilf(numChunks*self->radius);
 		}
 		G_Chunks( self->s.number, org, dir, self->r.absmin, self->r.absmax, 300, numChunks, self->material, 0, (scale*self->mass) );
 	}

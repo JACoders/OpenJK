@@ -2523,7 +2523,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 	{
 		animEvents = bgAllEvents[eventFileIndex].legsAnimEvents;
 	}
-	if ( fabs((float)(oldFrame-frame)) > 1 )
+	if ( fabsf((float)(oldFrame-frame)) > 1 )
 	{//given a range, see if keyFrame falls in that range
 		int oldAnim, anim;
 		if ( torso )
@@ -2590,11 +2590,11 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 		{//exact match
 			match = qtrue;
 		}
-		else if ( fabs((float)(oldFrame-frame)) > 1 /*&& cg_reliableAnimSounds.integer*/ )
+		else if ( fabsf((float)(oldFrame-frame)) > 1 /*&& cg_reliableAnimSounds.integer*/ )
 		{//given a range, see if keyFrame falls in that range
 			if ( inSameAnim )
 			{//if changed anims altogether, sorry, the sound is lost
-				if ( fabs((float)(oldFrame-animEvents[i].keyFrame)) <= 3
+				if ( fabsf((float)(oldFrame-animEvents[i].keyFrame)) <= 3
 					 || fabs((float)(frame-animEvents[i].keyFrame)) <= 3 )
 				{//must be at least close to the keyframe
 					if ( animBackward )
@@ -2736,7 +2736,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 	if (trap->G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &currentFrame, cgs.gameModels, 0))
 	{
 		// the above may have failed, not sure what to do about it, current frame will be zero in that case
-		curFrame = floor( currentFrame );
+		curFrame = floorf( currentFrame );
 	}
 	if ( curFrame != cent->pe.legs.frame )
 	{
@@ -2754,7 +2754,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 
 	if (trap->G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0))
 	{
-		curFrame = floor( currentFrame );
+		curFrame = floorf( currentFrame );
 	}
 	if ( curFrame != cent->pe.torso.frame )
 	{
@@ -3582,7 +3582,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 		if (!inSomething)
 		{
 			int anim = (cent->currentState.legsAnim);
-			int dur = (bgAllAnims[cent->localAnimIndex].anims[anim].numFrames-1) * fabs((float)(bgAllAnims[cent->localAnimIndex].anims[anim].frameLerp));
+			int dur = (bgAllAnims[cent->localAnimIndex].anims[anim].numFrames-1) * fabsf((float)(bgAllAnims[cent->localAnimIndex].anims[anim].frameLerp));
 			int i = 0;
 			int boltChecks[5];
 			vec3_t boltPoints[5];
@@ -5039,7 +5039,7 @@ static void CG_ForcePushBodyBlur( centity_t *cent )
 static void CG_ForceGripEffect( vec3_t org )
 {
 	localEntity_t	*ex;
-	float wv = sin( cg.time * 0.004f ) * 0.08f + 0.1f;
+	float wv = sinf( cg.time * 0.004f ) * 0.08f + 0.1f;
 
 	ex = CG_AllocLocalEntity();
 	ex->leType = LE_PUFF;
@@ -6700,9 +6700,9 @@ void CG_AddLightningBeam(vec3_t start, vec3_t end)
 	VectorMA( b.start, 0.6666f * len, dir, c2 );
 
 	// get some chaos values that really aren't very chaotic :)
-	s1 = sin( cg.time * 0.005f ) * 2 + Q_flrand(-1.0f, 1.0f) * 0.2f;
-	s2 = sin( cg.time * 0.001f );
-	s3 = sin( cg.time * 0.011f );
+	s1 = sinf( cg.time * 0.005f ) * 2 + Q_flrand(-1.0f, 1.0f) * 0.2f;
+	s2 = sinf( cg.time * 0.001f );
+	s3 = sinf( cg.time * 0.011f );
 
 	VectorSet( chaos, len * 0.01f * s1,
 						len * 0.02f * s2,
@@ -9138,9 +9138,9 @@ void CG_Player( centity_t *cent ) {
 							 //don't show in first person?
 
 		angle = ((cg.time / 12) & 255) * (M_PI * 2) / 255;
-		dir[0] = cos(angle) * 20;
-		dir[1] = sin(angle) * 20;
-		dir[2] = cos(angle) * 5;
+		dir[0] = cosf(angle) * 20;
+		dir[1] = sinf(angle) * 20;
+		dir[2] = cosf(angle) * 5;
 		VectorAdd(elevated, dir, seeker.origin);
 
 		VectorCopy(seeker.origin, seekorg);
@@ -9161,9 +9161,9 @@ void CG_Player( centity_t *cent ) {
 			elevated[2] -= 55-prefig;
 
 			angle = ((cg.time / 12) & 255) * (M_PI * 2) / 255;
-			dir[0] = cos(angle) * 20;
-			dir[1] = sin(angle) * 20;
-			dir[2] = cos(angle) * 5;
+			dir[0] = cosf(angle) * 20;
+			dir[1] = sinf(angle) * 20;
+			dir[2] = cosf(angle) * 5;
 			VectorAdd(elevated, dir, seeker.origin);
 		}
 		else if (cent->currentState.genericenemyindex != ENTITYNUM_NONE && cent->currentState.genericenemyindex != -1)
@@ -9181,7 +9181,7 @@ void CG_Player( centity_t *cent ) {
 
 		if (!successchange)
 		{
-			angles[0] = sin(angle) * 30;
+			angles[0] = sinf(angle) * 30;
 			angles[1] = (angle * 180 / M_PI) + 90;
 			if (angles[1] > 360)
 				angles[1] -= 360;
@@ -9786,12 +9786,12 @@ void CG_Player( centity_t *cent ) {
 				if (renderedHolos == 0)
 				{
 					angle = ((cg.time / 8) & 255) * (M_PI * 2) / 255;
-					dir[0] = cos(angle) * 20;
-					dir[1] = sin(angle) * 20;
-					dir[2] = cos(angle) * 20;
+					dir[0] = cosf(angle) * 20;
+					dir[1] = sinf(angle) * 20;
+					dir[2] = cosf(angle) * 20;
 					VectorAdd(elevated, dir, holoRef.origin);
 
-					angles[0] = sin(angle) * 30;
+					angles[0] = sinf(angle) * 30;
 					angles[1] = (angle * 180 / M_PI) + 90;
 					if (angles[1] > 360)
 						angles[1] -= 360;
@@ -9803,9 +9803,9 @@ void CG_Player( centity_t *cent ) {
 					angle = ((cg.time / 8) & 255) * (M_PI * 2) / 255 + M_PI;
 					if (angle > M_PI * 2)
 						angle -= (float)M_PI * 2;
-					dir[0] = sin(angle) * 20;
-					dir[1] = cos(angle) * 20;
-					dir[2] = cos(angle) * 20;
+					dir[0] = sinf(angle) * 20;
+					dir[1] = cosf(angle) * 20;
+					dir[2] = cosf(angle) * 20;
 					VectorAdd(elevated, dir, holoRef.origin);
 
 					angles[0] = cos(angle - 0.5 * M_PI) * 30;
@@ -9821,7 +9821,7 @@ void CG_Player( centity_t *cent ) {
 					if (angle > M_PI * 2)
 						angle -= (float)M_PI * 2;
 					dir[0] = sin(angle) * 20;
-					dir[1] = cos(angle) * 20;
+					dir[1] = cosf(angle) * 20;
 					dir[2] = 0;
 					VectorAdd(elevated, dir, holoRef.origin);
 
@@ -9845,7 +9845,7 @@ void CG_Player( centity_t *cent ) {
 					holoCenter[1] = holoRef.origin[1] + holoRef.axis[2][1]*18;
 					holoCenter[2] = holoRef.origin[2] + holoRef.axis[2][2]*18;
 
-					wv = sin( cg.time * 0.004f ) * 0.08f + 0.1f;
+					wv = sinf( cg.time * 0.004f ) * 0.08f + 0.1f;
 
 					VectorCopy(holoCenter, fxSArgs.origin);
 					VectorClear(fxSArgs.vel);
@@ -10320,7 +10320,7 @@ stillDoSaber:
 				efOrg[1] = boltMatrix.matrix[1][3];
 				efOrg[2] = boltMatrix.matrix[2][3];
 
-				wv = sin( cg.time * 0.003f ) * 0.08f + 0.1f;
+				wv = sinf( cg.time * 0.003f ) * 0.08f + 0.1f;
 
 				//trap->FX_AddSprite( NULL, efOrg, NULL, NULL, 8.0f, 8.0f, wv, wv, 0.0f, 0.0f, 1.0f, cgs.media.yellowSaberGlowShader, 0x08000000 );
 				VectorCopy(efOrg, fxSArgs.origin);
@@ -10904,7 +10904,7 @@ stillDoSaber:
 		legs.shaderRGBA[0] = 255;
 		legs.shaderRGBA[1] = 255;
 		legs.shaderRGBA[2] = 255;
-		legs.shaderRGBA[3] = 10.0f+(sin((float)(cg.time/4))*128.0f);//112.0 * ((cent->damageTime - cg.time) / MIN_SHIELD_TIME) + Q_flrand(0.0f, 1.0f)*16;
+		legs.shaderRGBA[3] = 10.0f+(sinf((float)(cg.time/4))*128.0f);//112.0 * ((cent->damageTime - cg.time) / MIN_SHIELD_TIME) + Q_flrand(0.0f, 1.0f)*16;
 
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
@@ -11073,7 +11073,7 @@ stillDoSaber:
 
 			if ( dif < 500 )
 			{
-				brightness = floor((dif - 500.0f) / 500.0f * 255.0f );
+				brightness = floorf((dif - 500.0f) / 500.0f * 255.0f );
 			}
 
 			legs.renderfx &= ~RF_FORCE_ENT_ALPHA;

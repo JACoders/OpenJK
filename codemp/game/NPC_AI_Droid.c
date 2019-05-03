@@ -91,7 +91,7 @@ void R2D2_TurnAnims ( void )
 
 	turndelta = AngleDelta(NPCS.NPC->r.currentAngles[YAW], NPCS.NPCInfo->desiredYaw);
 
-	if ((fabs(turndelta) > 20) && ((NPCS.NPC->client->NPC_class == CLASS_R2D2) || (NPCS.NPC->client->NPC_class == CLASS_R5D2)))
+	if ((fabsf(turndelta) > 20) && ((NPCS.NPC->client->NPC_class == CLASS_R2D2) || (NPCS.NPC->client->NPC_class == CLASS_R5D2)))
 	{
 		anim = NPCS.NPC->client->ps.legsAnim;
 		if (turndelta<0)

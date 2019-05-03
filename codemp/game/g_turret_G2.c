@@ -572,7 +572,7 @@ static void turretG2_aim( gentity_t *self )
 	if ( diffYaw )
 	{
 		// cap max speed....
-		if ( fabs(diffYaw) > maxYawSpeed )
+		if ( fabsf(diffYaw) > maxYawSpeed )
 		{
 			diffYaw = ( diffYaw >= 0 ? maxYawSpeed : -maxYawSpeed );
 		}
@@ -588,7 +588,7 @@ static void turretG2_aim( gentity_t *self )
 
 	if ( diffPitch )
 	{
-		if ( fabs(diffPitch) > maxPitchSpeed )
+		if ( fabsf(diffPitch) > maxPitchSpeed )
 		{
 			// cap max speed
 			self->speed += (diffPitch > 0.0f) ? -maxPitchSpeed : maxPitchSpeed;
