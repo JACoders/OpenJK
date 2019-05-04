@@ -53,20 +53,42 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 		return;
 	}
 
-	//Supported notetrack types:	effect, sound, USE
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//Supported notetrack types:	effect, sound, USE, loop
+	//
 	//General notetrack format:		<type> <argument> [additionalArguments]
-	//Note: <> denote required argument, [] denote optional argument
-	
-	//effect notetrack format:		<effect> <relative_filepath.efx> [originOffset] [rotationOffset]
+	//Note: <> denote required argument, [] denote optional argument, | denotes argument choices
+	//
+	//Examples:
+	//effect notetrack format:		effect <relative_filepath.efx> [originOffset] [rotationOffset]
 	//					notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
 	//the '+' and '-' are delimiters and not positive/negative signs. For example, negative origin offset would be: -10+-20+-10
 	//angles are expected to be from 0 to 360, i.e., no negative angles.
-	
-	//sound notetrack format:		<sound> <relative_filepath.ext>
+	//optional additional argument for rotationOffset requires the originOffset preceding it.
+	//
+	//
+	//sound notetrack format:		sound <relative_soundfilepath.ext>
 	//					notetrack =	"sound sound/vehicles/tie/flyby2.mp3";
-	
+	//
+	//
 	//USE notetrack format =	<USE> <IBI_ScriptName_noExt>
 	//					notetrack = "USE airborne";
+	//
+	//
+	//loop notetrack format:		loop <rof> < absolute | relative >
+	//								loop <sfx> < relative_soundfilepath.ext | kill >
+	//					notetrack = "loop rof absolute";
+	//					notetrack = "loop rof relative";
+	//					notetrack = "loop sfx sound/vehicles/tie/loop.wav";
+	//					notetrack = "loop sfx kill";
+	//'loop rof' notes:  
+	//		absolute ==> reset rof to original delta position/rotation world location before looping.
+	//		relative ==> reset rof to original delta position/rotation at current location before looping.
+	//'loop sfx' notes:
+	//		adds a sound to be looped which gets assigned to the entitystate's loopSound parameter.
+	//		addlArg 'kill' -- kills the looping sound by setting entitystate's loopSound to zero.
+	//
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	while (notetrack[i] && notetrack[i] != ' ')
 	{
@@ -285,6 +307,111 @@ defaultoffsetposition:
         //run the IBI script
         Quake3Game()->RunScript(ent, argument);
     }
+	else if (strcmp(type, "loop") == 0)
+	{
+		if (strcmp(argument, "rof") == 0)
+		{
+			if (strcmp(addlArg, "absolute") == 0)
+			{
+				VectorSubtract(ent->pos1, ent->pos1, ent->pos1);
+				VectorSubtract(ent->pos2, ent->pos2, ent->pos2);
+
+				VectorSubtract(ent->s.pos.trBase, ent->s.pos.trBase, ent->s.pos.trBase);
+				VectorSubtract(ent->currentOrigin, ent->currentOrigin, ent->currentOrigin);
+				VectorSubtract(ent->s.apos.trBase, ent->s.apos.trBase, ent->s.apos.trBase);
+				VectorSubtract(ent->currentAngles, ent->currentAngles, ent->currentAngles);
+
+				VectorCopy(ent->currentOrigin, ent->s.origin2);
+				VectorCopy(ent->currentAngles, ent->s.angles2);
+			}
+			else if (strcmp(addlArg, "relative") == 0)
+			{
+				VectorCopy(ent->s.origin2, ent->s.pos.trBase);
+				VectorCopy(ent->s.origin2, ent->currentOrigin);
+				VectorCopy(ent->s.angles2, ent->s.apos.trBase);
+				VectorCopy(ent->s.angles2, ent->currentAngles);
+			}
+			else
+			{
+				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop rof'", addlArg);
+				goto functionend;
+			}
+
+			// Start the ROFF from the beginning
+			ent->roff_ctr = 0;
+
+			// Let the ROFF playing start
+			ent->next_roff_time = level.time;
+
+			//Re-link entity
+			gi.linkentity(ent);
+
+#if !NDEBUG
+			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
+#endif
+			// Re-apply the ROFF
+			G_Roff(ent);
+		}
+		else if (strcmp(argument, "sfx") == 0)
+		{
+			//check additional argument for relative sound path
+			r = 0;
+			r2 = 0;
+
+			if (addlArg[r] == '/')
+			{
+				r++;
+			}
+			while (addlArg[r] && addlArg[r] != '/')
+			{
+				teststr[r2] = addlArg[r];
+				r2++;
+				r++;
+			}
+			teststr[r2] = '\0';
+
+			if (r2 && strstr(teststr, "kill"))
+			{ // kill the looping sound
+				ent->s.loopSound = 0;
+#if !NDEBUG
+				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
+#endif
+			}
+			else if (r2 && strstr(teststr, "sound"))
+			{ // OK... we should have a relative sound path
+				//try to register the sound and add it to the entitystate loopSound parameter
+				if (ent->s.eType == ET_MOVER)
+				{
+					objectID = cgi_S_RegisterSound(addlArg);
+					if (objectID)
+					{
+						ent->s.loopSound = objectID;
+#if !NDEBUG
+						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
+#endif
+					}
+					else
+					{
+						ent->s.loopSound = 0;
+						sprintf(errMsg, "cgi_S_RegisterSound(%s) failed to return a valid sfxHandle_t for additional argument. Setting 'loopSound' to 0.", addlArg);
+						goto functionend;
+					}
+				}
+				else
+				{
+					ent->s.loopSound = G_SoundIndex(addlArg);
+#if !NDEBUG
+					Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
+#endif
+				}
+			}
+			else
+			{
+				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop sfx'", addlArg);
+				goto functionend;
+			}
+		}
+	}
 	//else if ...
 	else
 	{
@@ -388,6 +515,42 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
         //try to cache the script
         Quake3Game()->PrecacheScript(argument);
     }
+	else if (strcmp(type, "loop") == 0)
+	{
+		//only thing we do here is register a sound if 'loop' argument is "sfx"
+		//everything else is handled by G_RoffNotetrackCallback function
+
+		if (strcmp(argument, "sfx") == 0)
+		{
+			//check additional argument for a relative sound path
+			r = 0;
+			r2 = 0;
+
+			if (addlArg[r] == '/')
+			{
+				r++;
+			}
+			while (addlArg[r] && addlArg[r] != '/')
+			{
+				teststr[r2] = addlArg[r];
+				r2++;
+				r++;
+			}
+			teststr[r2] = '\0';
+
+			if (r2 && strstr(teststr, "sound"))
+			{
+				//OK... we should have a relative sound path
+				//try to register the sound
+				objectID = cgi_S_RegisterSound(argument);
+			}
+			else
+			{
+				sprintf(errMsg, "Additional argument <%s> invalid sound path for type 'loop sfx'", addlArg);
+				goto functionend;
+			}
+		}
+	}
     //else if ...
     else
     {
