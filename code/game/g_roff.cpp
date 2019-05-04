@@ -62,16 +62,19 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	//Examples:
 	//effect notetrack format:		effect <relative_filepath.efx> [originOffset] [rotationOffset]
 	//					notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
-	//the '+' and '-' are delimiters and not positive/negative signs. For example, negative origin offset would be: -10+-20+-10
-	//angles are expected to be from 0 to 360, i.e., no negative angles.
-	//optional additional argument for rotationOffset requires the originOffset preceding it.
+	//'effect' notes:
+	//		(1) the '+' and '-' are delimiters and not positive/negative signs. For example, negative origin offset would be: -10+-20+-10
+	//		(2) angles are expected to be from 0 to 360, i.e., no negative angles.
+	//		(3) optional additional argument for rotationOffset requires the originOffset preceding it.
 	//
 	//
 	//sound notetrack format:		sound <relative_soundfilepath.ext>
 	//					notetrack =	"sound sound/vehicles/tie/flyby2.mp3";
+	//'sound' notes:
+	//		(1) supported sound file formats are: .mp3, .wav
 	//
 	//
-	//USE notetrack format =	<USE> <IBI_ScriptName_noExt>
+	//USE notetrack format:			USE <IBI_ScriptName_noExt>
 	//					notetrack = "USE airborne";
 	//
 	//
@@ -82,11 +85,11 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	//					notetrack = "loop sfx sound/vehicles/tie/loop.wav";
 	//					notetrack = "loop sfx kill";
 	//'loop rof' notes:  
-	//		absolute ==> reset rof to original delta position/rotation world location before looping.
-	//		relative ==> reset rof to original delta position/rotation at current location before looping.
+	//		(1) absolute ==> reset rof to original delta position/rotation world location before looping.
+	//		(2) relative ==> reset rof to original delta position/rotation at current location before looping.
 	//'loop sfx' notes:
-	//		adds a sound to be looped which gets assigned to the entitystate's loopSound parameter.
-	//		addlArg 'kill' -- kills the looping sound by setting entitystate's loopSound to zero.
+	//		(1) adds a sound to be looped which gets assigned to the entitystate's loopSound parameter.
+	//		(2) addlArg 'kill' -- kills the looping sound by setting entitystate's loopSound equal to zero.
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -411,24 +414,29 @@ defaultoffsetposition:
 				goto functionend;
 			}
 		}
+		else
+		{
+			sprintf(errMsg, "Invalid argument <%s> for type 'loop' notetrack.", argument);
+			goto functionend;
+		}
 	}
 	//else if ...
 	else
 	{
 		if (type[0])
 		{
-			Com_Printf("Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
+			Com_Printf(S_COLOR_YELLOW"Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
 		}
 		else
 		{
-			Com_Printf("Warning: NoteTrack is missing function and/or arguments\n");
+			Com_Printf(S_COLOR_YELLOW"Warning: NoteTrack is missing function and/or arguments\n");
 		}
 	}
 
 	return;
 
 functionend:
-	Com_Printf("Type-specific NoteTrack error: %s\n", errMsg);
+	Com_Printf(S_COLOR_RED"Type-specific NoteTrack error: %s\n", errMsg);
 	return;
 }
 
@@ -556,18 +564,18 @@ static void G_CacheRoffNoteTracks(const char *notetrack)
     {
         if (type[0])
         {
-            Com_Printf("Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
+            Com_Printf(S_COLOR_YELLOW"Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
         }
         else
         {
-            Com_Printf("Warning: NoteTrack is missing function and/or arguments\n");
+            Com_Printf(S_COLOR_YELLOW"Warning: NoteTrack is missing function and/or arguments\n");
         }
     }
 
     return;
 	
 functionend:
-	Com_Printf("Type-specific NoteTrack error: %s\n", errMsg);
+	Com_Printf(S_COLOR_RED"Type-specific NoteTrack error: %s\n", errMsg);
 	return;
 }
 
