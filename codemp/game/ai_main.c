@@ -625,7 +625,7 @@ void BotInputToUserCommand(bot_input_t *bi, usercmd_t *ucmd, int delta_angles[3]
 	//set the view independent movement
 	f = DotProduct(forward, bi->dir);
 	r = DotProduct(right, bi->dir);
-	u = abs(forward[2]) * bi->dir[2];
+	u = fabs(forward[2]) * bi->dir[2];
 	m = fabs(f);
 
 	if (fabs(r) > m) {
