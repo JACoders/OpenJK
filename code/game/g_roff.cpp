@@ -60,7 +60,7 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	//Note: <> denote required argument, [] denote optional argument, | denotes argument choices
 	//
 	//Examples:
-	//effect notetrack format:		effect <relative_filepath.efx> [originOffset] [rotationOffset]
+	//effect notetrack format:		effect <relative_effectfilepath.efx> [originOffset] [rotationOffset]
 	//					notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
 	//'effect' notes:
 	//		(1) the '+' and '-' are delimiters and not positive/negative signs. For example, negative origin offset would be: -10+-20+-10
@@ -74,8 +74,8 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	//		(1) supported sound file formats are: .mp3, .wav
 	//
 	//
-	//USE notetrack format:			USE <IBI_ScriptName_noExt>
-	//					notetrack = "USE airborne";
+	//USE notetrack format:			USE <relative_scriptfilepath_noExt>
+	//					notetrack = "USE shuttlemap/shuttletakeoff";
 	//
 	//
 	//loop notetrack format:		loop <rof> < absolute | relative >
@@ -442,145 +442,6 @@ functionend:
 
 
 //-------------------------------------------------------
-// G_CacheRoffNoteTracks
-//
-// PreCaches the ROFF2 NoteTrack data
-//-------------------------------------------------------
-
-static void G_CacheRoffNoteTracks(const char *notetrack)
-{
-    int i = 0, r = 0, r2 = 0, objectID = 0;
-    char type[256]		= {0};
-    char argument[512]	= {0};
-	char addlArg[512]	= {0};	
-	char errMsg[256]	= {0};
-	char teststr[256]	= {0};
-	int addlArgs = 0;
-
-    if (!notetrack)
-    {
-        return;
-    }
-
-    while (notetrack[i] && notetrack[i] != ' ')
-    {
-        type[i] = notetrack[i];
-        i++;
-    }
-
-    type[i] = '\0';
-
-    if (notetrack[i] != ' ')
-    { //didn't pass in a valid notetrack type, or forgot the argument for it
-        return;
-    }
-
-    i++;
-
-    while (notetrack[i] && notetrack[i] != ' ')
-    {
-        if (notetrack[i] != '\n' && notetrack[i] != '\r')
-        { //don't read line ends for an argument
-            argument[r] = notetrack[i];
-            r++;
-        }
-        i++;
-    }
-    argument[r] = '\0';
-
-    if (!r)
-    {
-        return;
-    }
-	
-	if (notetrack[i] == ' ')
-	{ //additional arguments...
-		addlArgs = 1;
-
-		i++;
-		r = 0;
-		while (notetrack[i])
-		{
-			addlArg[r] = notetrack[i];
-			r++;
-			i++;
-		}
-		addlArg[r] = '\0';
-	}
-
-    if (strcmp(type, "effect") == 0)
-    {
-        //try to register the EFX
-        objectID = G_EffectIndex(argument);
-    }
-    else if (strcmp(type, "sound") == 0)
-    {
-        //try to register the sound
-		objectID = cgi_S_RegisterSound(argument);
-    }
-    else if (strcmp(type, "USE") == 0)
-    {	
-        //try to cache the script
-        Quake3Game()->PrecacheScript(argument);
-    }
-	else if (strcmp(type, "loop") == 0)
-	{
-		//only thing we do here is register a sound if 'loop' argument is "sfx"
-		//everything else is handled by G_RoffNotetrackCallback function
-
-		if (strcmp(argument, "sfx") == 0)
-		{
-			//check additional argument for a relative sound path
-			r = 0;
-			r2 = 0;
-
-			if (addlArg[r] == '/')
-			{
-				r++;
-			}
-			while (addlArg[r] && addlArg[r] != '/')
-			{
-				teststr[r2] = addlArg[r];
-				r2++;
-				r++;
-			}
-			teststr[r2] = '\0';
-
-			if (r2 && strstr(teststr, "sound"))
-			{
-				//OK... we should have a relative sound path
-				//try to register the sound
-				objectID = cgi_S_RegisterSound(argument);
-			}
-			else
-			{
-				sprintf(errMsg, "Additional argument <%s> invalid sound path for type 'loop sfx'", addlArg);
-				goto functionend;
-			}
-		}
-	}
-    //else if ...
-    else
-    {
-        if (type[0])
-        {
-            Com_Printf(S_COLOR_YELLOW"Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
-        }
-        else
-        {
-            Com_Printf(S_COLOR_YELLOW"Warning: NoteTrack is missing function and/or arguments\n");
-        }
-    }
-
-    return;
-	
-functionend:
-	Com_Printf(S_COLOR_RED"Type-specific NoteTrack error: %s\n", errMsg);
-	return;
-}
-
-
-//-------------------------------------------------------
 // G_ValidRoff
 //
 // Checks header to verify we have a valid .ROF file
@@ -745,13 +606,8 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 					ptr += strlen(ptr) + 1;
 					roffs[num_roffs].mNoteTrackIndexes[i] = ptr;
 				}
-				
-                //preCache NoteTracks
-                for (i = 0; i < LittleLong(hdr->mNumNotes); i++)
-                {
-                    G_CacheRoffNoteTracks(roffs[num_roffs].mNoteTrackIndexes[i]);
-                }
 			}
+
 			return qtrue;
 		}
 	}
