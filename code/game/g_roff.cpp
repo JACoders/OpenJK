@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_functions.h"
 #include "qcommon/ojk_saved_game_helper.h"
 
+
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
 int			num_roffs = 0;
@@ -35,6 +36,7 @@ int			num_roffs = 0;
 qboolean g_bCollidableRoffs = qfalse;
 
 extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
+
 
 static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 {
@@ -277,17 +279,21 @@ defaultoffsetposition:
 			useOrigin[1] += up[1]*parsedOffset[2];
 			useOrigin[2] += up[2]*parsedOffset[2];
 
-#if !NDEBUG
-			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+			if (g_developer->integer)
+			{
+				Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+			}
+
 			G_PlayEffect(objectID, useOrigin, useAngles);
 		}
 	}
 	else if (strcmp(type, "sound") == 0)
 	{
-#if !NDEBUG
-		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+		if (g_developer->integer)
+		{
+			Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+		}
+
 		//check for eType and play the sound
 		if (ent->s.eType == ET_MOVER)
 		{
@@ -304,9 +310,11 @@ defaultoffsetposition:
         //try to cache the script
         Quake3Game()->PrecacheScript(argument);
 
-#if !NDEBUG
-		Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+		if (g_developer->integer)
+		{
+			Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+		}
+
         //run the IBI script
         Quake3Game()->RunScript(ent, argument);
     }
@@ -349,9 +357,11 @@ defaultoffsetposition:
 			//Re-link entity
 			gi.linkentity(ent);
 
-#if !NDEBUG
-			Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+			if (g_developer->integer)
+			{
+				Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+			}
+
 			// Re-apply the ROFF
 			G_Roff(ent);
 		}
@@ -376,9 +386,10 @@ defaultoffsetposition:
 			if (r2 && strstr(teststr, "kill"))
 			{ // kill the looping sound
 				ent->s.loopSound = 0;
-#if !NDEBUG
-				Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+				if (g_developer->integer)
+				{
+					Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+				}
 			}
 			else if (r2 && strstr(teststr, "sound"))
 			{ // OK... we should have a relative sound path
@@ -389,9 +400,10 @@ defaultoffsetposition:
 					if (objectID)
 					{
 						ent->s.loopSound = objectID;
-#if !NDEBUG
-						Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+						if (g_developer->integer)
+						{
+							Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+						}
 					}
 					else
 					{
@@ -403,9 +415,10 @@ defaultoffsetposition:
 				else
 				{
 					ent->s.loopSound = G_SoundIndex(addlArg);
-#if !NDEBUG
-					Com_Printf(S_COLOR_GREEN"NoteTrack:  \"%s\"\n", notetrack);
-#endif
+					if (g_developer->integer)
+					{
+						Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+					}
 				}
 			}
 			else
