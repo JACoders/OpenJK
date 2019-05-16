@@ -24,7 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_roff.h"
 #include "Q3_Interface.h"
 #include "../cgame/cg_local.h"
-#include "../cgame/cg_media.h" //needed for fixing ROFF2 sounds
+#include "../cgame/cg_media.h"
 #include "g_functions.h"
 #include "qcommon/ojk_saved_game_helper.h"
 
@@ -65,7 +65,7 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	//effect notetrack format:		effect <relative_effectfilepath.efx> [originOffset] [rotationOffset]
 	//					notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
 	//'effect' notes:
-	//		(1) the '+' and '-' are delimiters and not positive/negative signs. For example, negative origin offset would be: -10+-20+-10
+	//		(1) the '+' and '-' are delimiters and not positive/negative signs; e.g., negative origin offset would be: -10+-20+-10
 	//		(2) angles are expected to be from 0 to 360, i.e., no negative angles.
 	//		(3) optional additional argument for rotationOffset requires the originOffset preceding it.
 	//
@@ -305,19 +305,19 @@ defaultoffsetposition:
 			G_SoundOnEnt(ent, CHAN_BODY, argument);
 		}
 	}
-    else if (strcmp(type, "USE") == 0)
-    {	
-        //try to cache the script
-        Quake3Game()->PrecacheScript(argument);
+	else if (strcmp(type, "USE") == 0)
+	{
+		//try to cache the script
+		Quake3Game()->PrecacheScript(argument);
 
 		if (g_developer->integer)
 		{
 			Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
 		}
 
-        //run the IBI script
-        Quake3Game()->RunScript(ent, argument);
-    }
+		//run the IBI script
+		Quake3Game()->RunScript(ent, argument);
+	}
 	else if (strcmp(type, "loop") == 0)
 	{
 		if (strcmp(argument, "rof") == 0)
