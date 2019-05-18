@@ -704,8 +704,9 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	if (sv_maxOOBRateIP->integer) {
 		int rate = Com_Clampi(1, 1000, sv_maxOOBRateIP->integer);
 		int period = 1000 / rate;
+		int burst = 10 * rate;
 
-		if (SVC_RateLimitAddress(from, rate, period, now)) {
+		if (SVC_RateLimitAddress(from, burst, period, now)) {
 			if (com_developer && com_developer->integer) {
 				Com_Printf("SV_ConnectionlessPacket: Rate limit from %s exceeded, dropping request\n", NET_AdrToString(from));
 			}
