@@ -324,16 +324,17 @@ defaultoffsetposition:
 		{
 			if (strcmp(addlArg, "absolute") == 0)
 			{
-				VectorSubtract(ent->pos1, ent->pos1, ent->pos1);
-				VectorSubtract(ent->pos2, ent->pos2, ent->pos2);
+				VectorClear(ent->pos1);
+				VectorClear(ent->pos2);
 
-				VectorSubtract(ent->s.pos.trBase, ent->s.pos.trBase, ent->s.pos.trBase);
-				VectorSubtract(ent->currentOrigin, ent->currentOrigin, ent->currentOrigin);
-				VectorSubtract(ent->s.apos.trBase, ent->s.apos.trBase, ent->s.apos.trBase);
-				VectorSubtract(ent->currentAngles, ent->currentAngles, ent->currentAngles);
+				VectorClear(ent->currentOrigin);
+				VectorClear(ent->currentAngles);
 
-				VectorCopy(ent->currentOrigin, ent->s.origin2);
-				VectorCopy(ent->currentAngles, ent->s.angles2);
+				VectorClear(ent->s.pos.trBase);
+				VectorClear(ent->s.apos.trBase);
+
+				VectorClear(ent->s.origin2);
+				VectorClear(ent->s.angles2);
 			}
 			else if (strcmp(addlArg, "relative") == 0)
 			{
