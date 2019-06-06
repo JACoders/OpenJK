@@ -1,15 +1,13 @@
 # Builder image
-FROM centos:7 as builder
-
-# Install EPEL repository for cmake3
-RUN yum -y install epel-release &&\
-	yum -y clean all
+FROM ubuntu:18.04 as builder
 
 # Install build tools and libraries
-RUN yum -y install gcc gcc-c++ make cmake3 \
-        glibc-devel libstdc++-devel libjpeg-turbo-devel libpng-devel zlib-devel \
-        glibc-devel.i686 libstdc++-devel.i686 libjpeg-turbo-devel.i686 libpng-devel.i686 zlib-devel.i686 &&\
-	yum -y clean all
+RUN dpkg --add-architecture i386 &&\
+	apt-get -q update &&\
+	DEBIAN_FRONTEND="noninteractive" apt-get -q upgrade -y -o Dpkg::Options::="--force-confnew" --no-install-recommends &&\
+	DEBIAN_FRONTEND="noninteractive" apt-get -q install -y -o Dpkg::Options::="--force-confnew" --no-install-recommends build-essential gcc-multilib g++-multilib cmake libjpeg-dev libjpeg-dev:i386 libpng-dev libpng-dev:i386 zlib1g-dev zlib1g-dev:i386 &&\
+	apt-get -q autoremove &&\
+	apt-get -q clean -y && rm -rf /var/lib/apt/lists/* && rm -f /var/cache/apt/*.bin
 
 # Copy sources
 COPY . /usr/src/openjk
@@ -17,38 +15,44 @@ COPY . /usr/src/openjk
 # Build i386 arch
 RUN mkdir /usr/src/openjk/build.i386 &&\
 	cd /usr/src/openjk/build.i386 &&\
-	cmake3 -DCMAKE_TOOLCHAIN_FILE=CMakeModules/Toolchains/linux-i686.cmake \
+	cmake -DCMAKE_TOOLCHAIN_FILE=CMakeModules/Toolchains/linux-i686.cmake \
+		-DCMAKE_INSTALL_PREFIX=/opt \
 		-DBuildMPCGame=OFF -DBuildMPEngine=OFF -DBuildMPRdVanilla=OFF -DBuildMPUI=OFF \
 		-DBuildSPEngine=OFF -DBuildSPGame=OFF -DBuildSPRdVanilla=OFF \
 		.. &&\
-    make
+	make &&\
+	make install
 
 # Build x86_64 arch
 RUN mkdir /usr/src/openjk/build.x86_64 &&\
 	cd /usr/src/openjk/build.x86_64 &&\
-	cmake3 -DBuildMPCGame=OFF -DBuildMPEngine=OFF -DBuildMPRdVanilla=OFF -DBuildMPUI=OFF \
+	cmake -DCMAKE_INSTALL_PREFIX=/opt \
+		-DBuildMPCGame=OFF -DBuildMPEngine=OFF -DBuildMPRdVanilla=OFF -DBuildMPUI=OFF \
 		-DBuildSPEngine=OFF -DBuildSPGame=OFF -DBuildSPRdVanilla=OFF \
 		.. &&\
-    make
+	make &&\
+	make install
 
 
 # Server image
-FROM centos:7
+FROM ubuntu:18.04
 
 # Install utilities and libraries
-RUN yum -y install file iproute less socat wget which \
-        libstdc++ zlib \
-        libstdc++.i686 zlib.i686 &&\
-	yum -y clean all
+RUN dpkg --add-architecture i386 &&\
+	apt-get -q update &&\
+	DEBIAN_FRONTEND="noninteractive" apt-get -q upgrade -y -o Dpkg::Options::="--force-confnew" --no-install-recommends &&\
+	DEBIAN_FRONTEND="noninteractive" apt-get -q install -y -o Dpkg::Options::="--force-confnew" --no-install-recommends socat libstdc++6 libstdc++6:i386 zlib1g zlib1g:i386 &&\
+	apt-get -q autoremove &&\
+	apt-get -q clean -y && rm -rf /var/lib/apt/lists/* && rm -f /var/cache/apt/*.bin
 
 # Copy binaries and scripts
 RUN mkdir -p /opt/openjk/cdpath/base /opt/openjk/basepath /opt/openjk/homepath
-COPY --from=builder /usr/src/openjk/build.i386/openjkded.i386 /opt/openjk/
-COPY --from=builder /usr/src/openjk/build.i386/codemp/game/jampgamei386.so /opt/openjk/cdpath/base/
-COPY --from=builder /usr/src/openjk/build.x86_64/openjkded.x86_64 /opt/openjk/
-COPY --from=builder /usr/src/openjk/build.x86_64/codemp/game/jampgamex86_64.so /opt/openjk/cdpath/base/
+COPY --from=builder /opt/JediAcademy/openjkded.* /opt/openjk/
+COPY --from=builder /opt/JediAcademy/base/ /opt/openjk/cdpath/base/
+COPY --from=builder /opt/JediAcademy/OpenJK/ /opt/openjk/cdpath/OpenJK/
 COPY scripts/docker/*.sh /opt/openjk/
 COPY scripts/docker/server.cfg /opt/openjk/cdpath/base/
+COPY scripts/docker/server.cfg /opt/openjk/cdpath/OpenJK/
 RUN chmod +x /opt/openjk/openjkded.* /opt/openjk/*.sh
 
 # Execution
