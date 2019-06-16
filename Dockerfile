@@ -4,10 +4,8 @@ FROM ubuntu:18.04 as builder
 # Install build tools and libraries
 RUN dpkg --add-architecture i386 &&\
 	apt-get -q update &&\
-	DEBIAN_FRONTEND="noninteractive" apt-get -q upgrade -y -o Dpkg::Options::="--force-confnew" --no-install-recommends &&\
 	DEBIAN_FRONTEND="noninteractive" apt-get -q install -y -o Dpkg::Options::="--force-confnew" --no-install-recommends build-essential gcc-multilib g++-multilib cmake libjpeg-dev libjpeg-dev:i386 libpng-dev libpng-dev:i386 zlib1g-dev zlib1g-dev:i386 &&\
-	apt-get -q autoremove &&\
-	apt-get -q clean -y && rm -rf /var/lib/apt/lists/* && rm -f /var/cache/apt/*.bin
+	rm -rf /var/lib/apt/lists/*
 
 # Copy sources
 COPY . /usr/src/openjk
@@ -40,10 +38,8 @@ FROM ubuntu:18.04
 # Install utilities and libraries
 RUN dpkg --add-architecture i386 &&\
 	apt-get -q update &&\
-	DEBIAN_FRONTEND="noninteractive" apt-get -q upgrade -y -o Dpkg::Options::="--force-confnew" --no-install-recommends &&\
 	DEBIAN_FRONTEND="noninteractive" apt-get -q install -y -o Dpkg::Options::="--force-confnew" --no-install-recommends socat libstdc++6 libstdc++6:i386 zlib1g zlib1g:i386 &&\
-	apt-get -q autoremove &&\
-	apt-get -q clean -y && rm -rf /var/lib/apt/lists/* && rm -f /var/cache/apt/*.bin
+	rm -rf /var/lib/apt/lists/*
 
 # Copy binaries and scripts
 RUN mkdir -p /opt/openjk/cdpath/base /opt/openjk/basepath /opt/openjk/homepath
