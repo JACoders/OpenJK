@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -75,7 +75,7 @@ private:
 	array_base<TStorageTraits>	mData;
 	queue_vs<int, CAPACITY>		mFree;
 	bits_base<CAPACITY>			mUsed;
-	int							mSize;
+	int							mSize{0};
 
 
 	void FillFreeList()
@@ -105,7 +105,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constructor
     ////////////////////////////////////////////////////////////////////////////////////
-	pool_root() : mSize(0)
+	pool_root()
 	{
 		FillFreeList();
 	}

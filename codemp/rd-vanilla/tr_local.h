@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 1999 - 2005, Id Software, Inc.
 Copyright (C) 2000 - 2013, Raven Software, Inc.
@@ -1621,15 +1621,15 @@ class CRenderableSurface
 {
 public:
 #ifdef _G2_GORE
-	int				ident;
+	int				ident{SF_MDX};
 #else
-	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to
+	const int		ident{SF_MDX};			// ident of this surface - required so the materials renderer knows what sort of surface this refers to
 #endif
-	CBoneCache 		*boneCache;
-	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
+	CBoneCache 		*boneCache{0};
+	mdxmSurface_t	*surfaceData{0};	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
 #ifdef _G2_GORE
-	float			*alternateTex;		// alternate texture coordinates.
-	void			*goreChain;
+	float			*alternateTex{0};		// alternate texture coordinates.
+	void			*goreChain{0};
 
 	float			scale;
 	float			fade;
@@ -1649,16 +1649,7 @@ public:
 	}
 #endif
 
-CRenderableSurface():
-	ident(SF_MDX),
-	boneCache(0),
-#ifdef _G2_GORE
-	surfaceData(0),
-	alternateTex(0),
-	goreChain(0)
-#else
-	surfaceData(0)
-#endif
+CRenderableSurface()
 	{}
 
 #ifdef _G2_GORE

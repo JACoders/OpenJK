@@ -137,7 +137,7 @@ private:
 	std::string error_message_;
 
 	// A handle to a file.
-	int32_t file_handle_;
+	int32_t file_handle_{};
 
 	// I/O buffer.
 	Buffer io_buffer_;
@@ -146,22 +146,22 @@ private:
 	Buffer saved_io_buffer_;
 
 	// A current offset inside the I/O buffer.
-	BufferOffset io_buffer_offset_;
+	BufferOffset io_buffer_offset_{};
 
 	// Saved I/O buffer offset.
-	BufferOffset saved_io_buffer_offset_;
+	BufferOffset saved_io_buffer_offset_{};
 
 	// RLE codec buffer.
 	Buffer rle_buffer_;
 
 	// True if saved game opened for reading.
-	bool is_readable_;
+	bool is_readable_{};
 
 	// True if saved game opened for writing.
-	bool is_writable_;
+	bool is_writable_{};
 
 	// Error flag.
-	bool is_failed_;
+	bool is_failed_{};
 
 
 	// Compresses data.

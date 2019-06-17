@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -467,13 +467,13 @@ public:
 		friend class const_iterator;
 		// Data
 		//------
-		int						mLoc;
-		vector_base<T>*			mOwner;
+		int						mLoc{0};
+		vector_base<T>*			mOwner{0};
 
 	public:
 		// Constructors
 		//--------------
-		iterator()						: mOwner(0), mLoc(0)
+		iterator()
 		{}
 		iterator(vector_base<T>* p, int t)	: mOwner(p), mLoc(t)
 		{}
@@ -552,13 +552,13 @@ public:
 	{
 		friend class vector_base<T>;
 
-		int							mLoc;
-		const vector_base<T>*		mOwner;
+		int							mLoc{0};
+		const vector_base<T>*		mOwner{0};
 
 	public:
 		// Constructors
 		//--------------
-		const_iterator()							: mOwner(0), mLoc(0)
+		const_iterator()
 		{}
 		const_iterator(const vector_base<T>* p, int t)	: mOwner(p), mLoc(t)
 		{}
