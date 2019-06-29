@@ -24,55 +24,43 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // Filename:-	tr_stl.cpp
 //
-// I mainly made this file because I was getting sick of all the stupid error messages in MS's STL implementation,
-//	and didn't want them showing up in the renderer files they were used in. This way keeps them more or less invisible
-//	because of minimal dependancies
+// I mainly made this file because I was getting sick of all the stupid error
+// messages in MS's STL implementation,
+//	and didn't want them showing up in the renderer files they were used in.
+//This way keeps them more or less invisible 	because of minimal dependancies
 //
-#include "tr_local.h"	// this isn't actually needed other than getting rid of warnings via pragmas
+#include "tr_local.h" // this isn't actually needed other than getting rid of warnings via pragmas
 #include "tr_stl.h"
 
+#include "../qcommon/sstring.h" // #include <string>
 #include <map>
-#include "../qcommon/sstring.h"	// #include <string>
 
-typedef std::map<sstring_t, const char *>	ShaderEntryPtrs_t;
-typedef ShaderEntryPtrs_t::size_type	ShaderEntryPtr_size;
-										ShaderEntryPtrs_t ShaderEntryPtrs;
+typedef std::map<sstring_t, const char *> ShaderEntryPtrs_t;
+typedef ShaderEntryPtrs_t::size_type ShaderEntryPtr_size;
+ShaderEntryPtrs_t ShaderEntryPtrs;
 
-void ShaderEntryPtrs_Clear(void)
-{
-	ShaderEntryPtrs.clear();
-}
+void ShaderEntryPtrs_Clear(void) { ShaderEntryPtrs.clear(); }
 
+int ShaderEntryPtrs_Size(void) { return ShaderEntryPtrs.size(); }
 
-int ShaderEntryPtrs_Size(void)
-{
-	return ShaderEntryPtrs.size();
-}
+void ShaderEntryPtrs_Insert(const char *token, const char *p) {
+  ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(token);
 
-void ShaderEntryPtrs_Insert(const char *token, const char *p)
-{
-	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(token);
-
-	if (it == ShaderEntryPtrs.end())
-	{
-		ShaderEntryPtrs[token] = p;
-	}
-	else
-	{
-		ri.Printf( PRINT_DEVELOPER, "Duplicate shader entry %s!\n",token );
-	}
+  if (it == ShaderEntryPtrs.end()) {
+    ShaderEntryPtrs[token] = p;
+  } else {
+    ri.Printf(PRINT_DEVELOPER, "Duplicate shader entry %s!\n", token);
+  }
 }
 
 // returns NULL if not found...
 //
-const char *ShaderEntryPtrs_Lookup(const char *psShaderName)
-{
-	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(psShaderName);
-	if (it != ShaderEntryPtrs.end())
-	{
-		const char *p = (*it).second;
-		return p;
-	}
+const char *ShaderEntryPtrs_Lookup(const char *psShaderName) {
+  ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(psShaderName);
+  if (it != ShaderEntryPtrs.end()) {
+    const char *p = (*it).second;
+    return p;
+  }
 
-	return NULL;
+  return NULL;
 }

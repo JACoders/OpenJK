@@ -34,10 +34,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 void Interface_Init( interface_export_t *pe )
 {
 
-	//TODO: This is where you link up all your functions to the engine
+        //TODO: This is where you link up all your functions to the engine
 
-	//Example:
-	//
-	// pe->I_GetEntityByName = ENGINE_GetEntityByName;
+        //Example:
+        //
+        // pe->I_GetEntityByName = ENGINE_GetEntityByName;
 }
 */

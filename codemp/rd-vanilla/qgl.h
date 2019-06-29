@@ -23,30 +23,30 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#if defined( __LINT__ )
-#	include <GL/gl.h>
-#elif defined( _WIN32 )
-#	include <windows.h>
-#	include <GL/gl.h>
+#if defined(__LINT__)
+#include <GL/gl.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#include <GL/gl.h>
 #elif defined(MACOS_X)
 // Prevent OS X from including its own out-of-date glext.h
-#	define GL_GLEXT_LEGACY
-#	include <OpenGL/gl.h>
-#elif defined( __linux__ )
-#	include <GL/gl.h>
-#	include <GL/glx.h>
+#define GL_GLEXT_LEGACY
+#include <OpenGL/gl.h>
+#elif defined(__linux__)
+#include <GL/gl.h>
+#include <GL/glx.h>
 // bk001129 - from cvs1.17 (mkv)
-#	if defined(__FX__)
-#		include <GL/fxmesa.h>
-#	endif
-#elif defined( __FreeBSD__ ) || defined(__OpenBSD__) // rb010123
-#	include <GL/gl.h>
-#	include <GL/glx.h>
-#	if defined(__FX__)
-#		include <GL/fxmesa.h>
-#	endif
+#if defined(__FX__)
+#include <GL/fxmesa.h>
+#endif
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) // rb010123
+#include <GL/gl.h>
+#include <GL/glx.h>
+#if defined(__FX__)
+#include <GL/fxmesa.h>
+#endif
 #else
-#	include <gl.h>
+#include <gl.h>
 #endif
 
 #include "glext.h"
@@ -410,10 +410,14 @@ extern PFNGLCOMBINEROUTPUTNVPROC qglCombinerOutputNV;
 extern PFNGLFINALCOMBINERINPUTNVPROC qglFinalCombinerInputNV;
 extern PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC qglGetCombinerInputParameterfvNV;
 extern PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC qglGetCombinerInputParameterivNV;
-extern PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC qglGetCombinerOutputParameterfvNV;
-extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC qglGetCombinerOutputParameterivNV;
-extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC qglGetFinalCombinerInputParameterfvNV;
-extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC qglGetFinalCombinerInputParameterivNV;
+extern PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC
+    qglGetCombinerOutputParameterfvNV;
+extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC
+    qglGetCombinerOutputParameterivNV;
+extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC
+    qglGetFinalCombinerInputParameterfvNV;
+extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC
+    qglGetFinalCombinerInputParameterivNV;
 
 extern PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB;
 extern PFNGLBINDPROGRAMARBPROC qglBindProgramARB;

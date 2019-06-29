@@ -21,7 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #if !defined(CG_LOCAL_H_INC)
-	#include "cg_local.h"
+#include "cg_local.h"
 #endif
 
 #ifndef FX_SYSTEM_H_INC
@@ -29,55 +29,59 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/safe/gsl.h"
 
+#define irand Q_irand
+#define flrand Q_flrand
 
-#define irand	Q_irand
-#define flrand	Q_flrand
+extern vmCvar_t fx_debug;
+extern vmCvar_t fx_freeze;
 
-extern vmCvar_t	fx_debug;
-extern vmCvar_t	fx_freeze;
+extern void CG_CalcEntityLerpPositions(centity_t *);
 
-extern void	CG_CalcEntityLerpPositions( centity_t * );
+struct SFxHelper {
+  int mTime;
+  int mFrameTime;
+  float mFloatFrameTime;
 
-struct SFxHelper
-{
-	int		mTime;
-	int		mFrameTime;
-	float	mFloatFrameTime;
+  void Init();
+  void AdjustTime(int time);
 
-	void	Init();
-	void	AdjustTime( int time );
+  // These functions are wrapped and used by the fx system in case it makes
+  // things a bit more portable
+  void Print(const char *msg, ...);
 
-	// These functions are wrapped and used by the fx system in case it makes things a bit more portable
-	void	Print( const char *msg, ... );
+  // File handling
+  int OpenFile(const char *path, fileHandle_t *fh, int mode);
+  int ReadFile(void *data, int len, fileHandle_t fh);
+  void CloseFile(fileHandle_t fh);
 
-	// File handling
-	int		OpenFile( const char *path, fileHandle_t *fh, int mode );
-	int		ReadFile( void *data, int len, fileHandle_t fh );
-	void	CloseFile( fileHandle_t fh );
+  // Sound
+  void PlaySound(const vec3_t origin, int entityNum, int entchannel,
+                 sfxHandle_t sfx);
+  void PlayLocalSound(sfxHandle_t sfx, int channelNum);
+  int RegisterSound(const gsl::cstring_view &sound);
 
-	// Sound
-	void	PlaySound( const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-	void	PlayLocalSound( sfxHandle_t sfx, int channelNum );
-	int		RegisterSound( const gsl::cstring_view& sound );
+  // G2
+  int GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int boltNum,
+                            vec3_t /*out*/ origin, vec3_t /*out*/ *axis);
 
-	//G2
-	int		GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/*axis);
+  // Physics/collision
+  void Trace(trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end,
+             int skipEntNum, int flags);
+  void G2Trace(trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end,
+               int skipEntNum, int flags);
 
-	// Physics/collision
-	void	Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end, int skipEntNum, int flags );
-	void	G2Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end, int skipEntNum, int flags );
+  void AddFxToScene(refEntity_t *ent);
+  void AddLightToScene(vec3_t org, float radius, float red, float green,
+                       float blue);
 
-	void	AddFxToScene( refEntity_t *ent );
-	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue );
+  int RegisterShader(const gsl::cstring_view &shader);
+  int RegisterModel(const gsl::cstring_view &model);
 
-	int		RegisterShader( const gsl::cstring_view& shader );
-	int		RegisterModel( const gsl::cstring_view& model );
+  void AddPolyToScene(int shader, int count, polyVert_t *verts);
 
-	void	AddPolyToScene( int shader, int count, polyVert_t *verts );
-
-	void	CameraShake( vec3_t origin, float intensity, int radius, int time );
+  void CameraShake(vec3_t origin, float intensity, int radius, int time);
 };
 
-extern SFxHelper	theFxHelper;
+extern SFxHelper theFxHelper;
 
 #endif // FX_SYSTEM_H_INC

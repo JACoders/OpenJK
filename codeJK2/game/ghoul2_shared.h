@@ -20,7 +20,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-
 // FIXME Not used.
 #if 0
 
@@ -31,12 +30,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 /*
 Ghoul2 Insert Start
 */
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#include <vector>
+#pragma warning(push, 3) // go back down to 3 for the stl include
+#pragma warning(                                                               \
+    disable : 4503) // decorated name length xceeded, name was truncated
 #include <map>
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#include <vector>
+#pragma warning(pop)
+#pragma warning(                                                               \
+    disable : 4503) // decorated name length xceeded, name was truncated
 /*
 Ghoul2 Insert End
 */
@@ -74,19 +75,27 @@ surfaceInfo_t():
 
 };
 
-#define BONE_ANGLES_PREMULT			0x0001
-#define BONE_ANGLES_POSTMULT		0x0002
-#define BONE_ANGLES_REPLACE			0x0004
-#define BONE_ANGLES_TOTAL			( BONE_ANGLES_PREMULT | BONE_ANGLES_POSTMULT | BONE_ANGLES_REPLACE )
+#define BONE_ANGLES_PREMULT 0x0001
+#define BONE_ANGLES_POSTMULT 0x0002
+#define BONE_ANGLES_REPLACE 0x0004
+#define BONE_ANGLES_TOTAL                                                      \
+  (BONE_ANGLES_PREMULT | BONE_ANGLES_POSTMULT | BONE_ANGLES_REPLACE)
 
-#define BONE_ANIM_OVERRIDE			0x0008
-#define BONE_ANIM_OVERRIDE_LOOP		0x0010	// Causes Last Frame To Lerp to First Frame And Start Over
-#define BONE_ANIM_OVERRIDE_FREEZE	(0x0040 + BONE_ANIM_OVERRIDE)	// Causes Last Frame To Freeze And Not Loop To Beginning
-#define BONE_ANIM_BLEND				0x0080		// Blends to and from previously played frame on same bone for given time
-#define	BONE_ANIM_NO_LERP			0x1000
-#define BONE_ANIM_TOTAL				(BONE_ANIM_NO_LERP| BONE_ANIM_OVERRIDE | BONE_ANIM_OVERRIDE_LOOP | BONE_ANIM_OVERRIDE_FREEZE | BONE_ANIM_BLEND )
+#define BONE_ANIM_OVERRIDE 0x0008
+#define BONE_ANIM_OVERRIDE_LOOP                                                \
+  0x0010 // Causes Last Frame To Lerp to First Frame And Start Over
+#define BONE_ANIM_OVERRIDE_FREEZE                                              \
+  (0x0040 + BONE_ANIM_OVERRIDE) // Causes Last Frame To Freeze And Not Loop To
+                                // Beginning
+#define BONE_ANIM_BLEND                                                        \
+  0x0080 // Blends to and from previously played frame on same bone for given
+         // time
+#define BONE_ANIM_NO_LERP 0x1000
+#define BONE_ANIM_TOTAL                                                        \
+  (BONE_ANIM_NO_LERP | BONE_ANIM_OVERRIDE | BONE_ANIM_OVERRIDE_LOOP |          \
+   BONE_ANIM_OVERRIDE_FREEZE | BONE_ANIM_BLEND)
 
-#define BONE_INDEX_INVALID			-1
+#define BONE_INDEX_INVALID -1
 
 /*#define MDXABONEDEF				// used in the mdxformat.h file to stop redefinitions of the bone struct.
 
@@ -150,8 +159,9 @@ struct boltInfo_t{
 	{}
 };
 
-
-#define MAX_GHOUL_COUNT_BITS 8 // bits required to send across the MAX_G2_MODELS inside of the networking - this is the only restriction on ghoul models possible per entity
+#define MAX_GHOUL_COUNT_BITS                                                   \
+  8 // bits required to send across the MAX_G2_MODELS inside of the networking -
+    // this is the only restriction on ghoul models possible per entity
 
 typedef vector <surfaceInfo_t> surfaceInfo_v;
 typedef vector <boneInfo_t> boneInfo_v;
@@ -159,10 +169,10 @@ typedef vector <boltInfo_t> boltInfo_v;
 typedef vector <mdxaBone_t> mdxaBone_v;
 
 // defines for stuff to go into the mflags
-#define		GHOUL2_NOCOLLIDE 0x001
-#define		GHOUL2_NORENDER	 0x002
-#define		GHOUL2_NOMODEL	 0x004
-#define		GHOUL2_NEWORIGIN 0x008
+#define GHOUL2_NOCOLLIDE 0x001
+#define GHOUL2_NORENDER 0x002
+#define GHOUL2_NOMODEL 0x004
+#define GHOUL2_NEWORIGIN 0x008
 
 
 // NOTE order in here matters. We save out from mModelindex to mFlags, but not the STL vectors that are at the top or the bottom.
@@ -177,7 +187,9 @@ public:
 	boltInfo_v		mBltlist;
 	boneInfo_v		mBlist;
 // save from here
-#define BSAVE_START_FIELD mModelindex	// this is the start point for loadsave, keep it up to date it you change anything
+#define BSAVE_START_FIELD                                                      \
+  mModelindex // this is the start point for loadsave, keep it up to date it you
+              // change anything
 	int				mModelindex;
 #ifndef __NO_JKA
 	int				animModelIndexOffset;
@@ -198,7 +210,9 @@ public:
 	int				mMeshFrameNum;
 	int				mFlags;	// used for determining whether to do full collision detection against this object
 // to here
-#define BSAVE_END_FIELD mTransformedVertsArray	// this is the end point for loadsave, keep it up to date it you change anything
+#define BSAVE_END_FIELD                                                        \
+  mTransformedVertsArray // this is the end point for loadsave, keep it up to
+                         // date it you change anything
 	int				*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
 	CBoneCache		*mBoneCache;
 	int				mSkin;
@@ -392,7 +406,7 @@ public:
 
 // collision detection stuff
 #define G2_FRONTFACE 1
-#define	G2_BACKFACE	 0
+#define G2_BACKFACE 0
 
 
 class CCollisionRecord

@@ -22,28 +22,23 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // ICARUS Public Header File
 
-#ifndef	__ICARUS__
+#ifndef __ICARUS__
 #define __ICARUS__
 
-//For system-wide prints
-enum WL_e {
-	WL_ERROR=1,
-	WL_WARNING,
-	WL_VERBOSE,
-	WL_DEBUG
-};
+// For system-wide prints
+enum WL_e { WL_ERROR = 1, WL_WARNING, WL_VERBOSE, WL_DEBUG };
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
-#define STL_INSERT( a, b )		a.insert( a.end(), b );
+#define STL_ITERATE(a, b) for (a = b.begin(); a != b.end(); ++a)
+#define STL_INSERT(a, b) a.insert(a.end(), b);
 
-#include "tokenizer.h"
 #include "blockstream.h"
+#include "instance.h"
 #include "interpreter.h"
 #include "sequencer.h"
 #include "taskmanager.h"
-#include "instance.h"
+#include "tokenizer.h"
 
 extern void *ICARUS_Malloc(int iSize);
-extern void  ICARUS_Free(void *pMem);
+extern void ICARUS_Free(void *pMem);
 
-#endif	//__ICARUS__
+#endif //__ICARUS__

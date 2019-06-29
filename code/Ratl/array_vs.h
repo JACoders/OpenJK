@@ -27,8 +27,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // Array
 // -----
-// This array class is little more than an assert loaded wrapper around a standard
-// array.
+// This array class is little more than an assert loaded wrapper around a
+// standard array.
 //
 //
 //
@@ -40,47 +40,46 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #if !defined(RATL_ARRAY_VS)
 #define RATL_ARRAY_VS
 
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(RATL_COMMON_INC)
-	#include "ratl_common.h"
+#include "ratl_common.h"
 #endif
 
-namespace ratl
-{
+namespace ratl {
 
-template<class T, int ARG_CAPACITY>
-class array_vs : public array_base<storage::value_semantics<T,ARG_CAPACITY> >
-{
+template <class T, int ARG_CAPACITY>
+class array_vs : public array_base<storage::value_semantics<T, ARG_CAPACITY>> {
 public:
-	typedef typename storage::value_semantics<T,ARG_CAPACITY> TStorageTraits;
-	typedef typename TStorageTraits::TValue TTValue;
-	static const int CAPACITY		= ARG_CAPACITY;
-	array_vs() {}
+  typedef typename storage::value_semantics<T, ARG_CAPACITY> TStorageTraits;
+  typedef typename TStorageTraits::TValue TTValue;
+  static const int CAPACITY = ARG_CAPACITY;
+  array_vs() {}
 };
 
-template<class T, int ARG_CAPACITY>
-class array_os : public array_base<storage::object_semantics<T,ARG_CAPACITY> >
-{
+template <class T, int ARG_CAPACITY>
+class array_os : public array_base<storage::object_semantics<T, ARG_CAPACITY>> {
 public:
-	typedef typename storage::object_semantics<T,ARG_CAPACITY> TStorageTraits;
-	typedef typename TStorageTraits::TValue TTValue;
-	static const int CAPACITY		= ARG_CAPACITY;
-	array_os() {}
+  typedef typename storage::object_semantics<T, ARG_CAPACITY> TStorageTraits;
+  typedef typename TStorageTraits::TValue TTValue;
+  static const int CAPACITY = ARG_CAPACITY;
+  array_os() {}
 };
 
-template<class T, int ARG_CAPACITY, int ARG_MAX_CLASS_SIZE>
-class array_is : public array_base<storage::virtual_semantics<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> >
-{
+template <class T, int ARG_CAPACITY, int ARG_MAX_CLASS_SIZE>
+class array_is
+    : public array_base<
+          storage::virtual_semantics<T, ARG_CAPACITY, ARG_MAX_CLASS_SIZE>> {
 public:
-	typedef typename storage::virtual_semantics<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> TStorageTraits;
-	typedef typename TStorageTraits::TValue TTValue;
-	static const int CAPACITY		= ARG_CAPACITY;
-	static const int MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE;
-	array_is() {}
+  typedef
+      typename storage::virtual_semantics<T, ARG_CAPACITY, ARG_MAX_CLASS_SIZE>
+          TStorageTraits;
+  typedef typename TStorageTraits::TValue TTValue;
+  static const int CAPACITY = ARG_CAPACITY;
+  static const int MAX_CLASS_SIZE = ARG_MAX_CLASS_SIZE;
+  array_is() {}
 };
 
-}
+} // namespace ratl
 #endif

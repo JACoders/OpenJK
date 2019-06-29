@@ -25,187 +25,180 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __TASK_MANAGER__
 #define __TASK_MANAGER__
 
-#include "sequencer.h"
 #include "../../code/qcommon/q_shared.h"
+#include "sequencer.h"
 
-#define MAX_TASK_NAME	64
+#define MAX_TASK_NAME 64
 
-#define TASKFLAG_NORMAL	0x00000000
+#define TASKFLAG_NORMAL 0x00000000
 
-const int RUNAWAY_LIMIT	= 256;
+const int RUNAWAY_LIMIT = 256;
 
-enum
-{
-	TASK_RETURN_COMPLETE,
-	TASK_RETURN_FAILED,
+enum {
+  TASK_RETURN_COMPLETE,
+  TASK_RETURN_FAILED,
 };
 
-enum 
-{
-	TASK_OK,
-	TASK_FAILED,
-	TASK_START,
-	TASK_END,
+enum {
+  TASK_OK,
+  TASK_FAILED,
+  TASK_START,
+  TASK_END,
 };
-	
+
 // CTask
 
-class CTask
-{
+class CTask {
 public:
+  CTask();
+  ~CTask();
 
-	CTask();
-	~CTask();
+  static CTask *Create(int GUID, CBlock *block);
 
-	static CTask *Create( int GUID, CBlock *block );
+  void Free(void);
 
-	void	Free( void );
+  uint32_t GetTimeStamp(void) const { return m_timeStamp; }
+  CBlock *GetBlock(void) const { return m_block; }
+  int GetGUID(void) const { return m_id; }
+  int GetID(void) const { return m_block->GetBlockID(); }
 
-	uint32_t GetTimeStamp( void )	const	{	return m_timeStamp;				}
-	CBlock	*GetBlock( void )		const	{	return m_block;					}
-	int		GetGUID( void)			const	{	return m_id;					}
-	int		GetID( void )			const	{	return m_block->GetBlockID();	}
-
-	void	SetTimeStamp( uint32_t timeStamp )	{	m_timeStamp = timeStamp;	}
-	void	SetBlock( CBlock *block )			{	m_block = block;			}
-	void	SetGUID( int id )					{	m_id = id;					}
+  void SetTimeStamp(uint32_t timeStamp) { m_timeStamp = timeStamp; }
+  void SetBlock(CBlock *block) { m_block = block; }
+  void SetGUID(int id) { m_id = id; }
 
 protected:
-
-	int		m_id;
-	uint32_t	m_timeStamp;
-	CBlock	*m_block;
+  int m_id;
+  uint32_t m_timeStamp;
+  CBlock *m_block;
 };
 
 // CTaskGroup
 
-class CTaskGroup
-{
+class CTaskGroup {
 public:
+  typedef std::map<int, bool> taskCallback_m;
 
-	typedef std::map < int, bool > taskCallback_m;
+  CTaskGroup(void);
+  ~CTaskGroup(void);
 
-	CTaskGroup( void );
-	~CTaskGroup( void );
+  void Init(void);
 
-	void Init( void );
+  int Add(CTask *task);
 
-	int Add( CTask *task );
-	
-	void SetGUID( int GUID );
-	void SetParent( CTaskGroup *group )	{	m_parent = group;	}
+  void SetGUID(int GUID);
+  void SetParent(CTaskGroup *group) { m_parent = group; }
 
-	bool Complete(void)		const { return ( m_numCompleted == (int)m_completedTasks.size() ); }
+  bool Complete(void) const {
+    return (m_numCompleted == (int)m_completedTasks.size());
+  }
 
-	bool MarkTaskComplete( int id );
+  bool MarkTaskComplete(int id);
 
-	CTaskGroup *GetParent( void )	const	{	return m_parent;	}
-	int	GetGUID( void )				const	{	return m_GUID;		}
+  CTaskGroup *GetParent(void) const { return m_parent; }
+  int GetGUID(void) const { return m_GUID; }
 
-//protected:
+  // protected:
 
-	taskCallback_m	m_completedTasks;
+  taskCallback_m m_completedTasks;
 
-	CTaskGroup	*m_parent;
+  CTaskGroup *m_parent;
 
-	int		m_numCompleted;
-	int		m_GUID;
+  int m_numCompleted;
+  int m_GUID;
 };
 
 // CTaskManager
 
-class CTaskManager
-{
+class CTaskManager {
 
-	typedef	std::map < int, CTask * >			taskID_m;
-	typedef std::map < std::string, CTaskGroup * >	taskGroupName_m;
-	typedef std::map < int, CTaskGroup * >		taskGroupID_m;
-	typedef std::vector < CTaskGroup * >			taskGroup_v;
-	typedef std::list < CTask *>					tasks_l;
+  typedef std::map<int, CTask *> taskID_m;
+  typedef std::map<std::string, CTaskGroup *> taskGroupName_m;
+  typedef std::map<int, CTaskGroup *> taskGroupID_m;
+  typedef std::vector<CTaskGroup *> taskGroup_v;
+  typedef std::list<CTask *> tasks_l;
 
 public:
+  CTaskManager();
+  ~CTaskManager();
 
-	CTaskManager();
-	~CTaskManager();
+  static CTaskManager *Create(void);
 
-	static CTaskManager *Create( void );
+  CBlock *GetCurrentTask(void);
 
-	CBlock *GetCurrentTask( void );
+  int Init(CSequencer *owner);
+  int Free(void);
 
-	int Init( CSequencer *owner );
-	int	Free( void );
+  int Flush(void);
 
-	int	Flush( void );
+  int SetCommand(CBlock *block, int type);
+  int Completed(int id);
 
-	int	SetCommand( CBlock *block, int type );
-	int Completed( int id );
+  int Update(void);
+  qboolean IsRunning(void);
 
-	int Update( void );
-	qboolean IsRunning( void );
+  CTaskGroup *AddTaskGroup(const char *name);
+  CTaskGroup *GetTaskGroup(const char *name);
+  CTaskGroup *GetTaskGroup(int id);
 
-	CTaskGroup *AddTaskGroup( const char *name );
-	CTaskGroup *GetTaskGroup( const char *name );
-	CTaskGroup *GetTaskGroup( int id );
+  int MarkTask(int id, int operation);
+  CBlock *RecallTask(void);
 
-	int MarkTask( int id, int operation );
-	CBlock *RecallTask( void );
-
-	void Save( void );
-	void Load( void );
+  void Save(void);
+  void Load(void);
 
 protected:
+  int Go(void); // Heartbeat function called once per game frame
+  int CallbackCommand(CTask *task, int returnCode);
 
-	int	Go( void );	//Heartbeat function called once per game frame
-	int CallbackCommand( CTask *task, int returnCode );
+  inline bool Check(int targetID, CBlock *block, int memberNum);
 
-	inline bool Check( int targetID, CBlock *block, int memberNum );
+  int GetVector(int entID, CBlock *block, int &memberNum, vector_t &value);
+  int GetFloat(int entID, CBlock *block, int &memberNum, float &value);
+  int Get(int entID, CBlock *block, int &memberNum, char **value);
 
-	int GetVector( int entID, CBlock *block, int &memberNum, vector_t &value );
-	int GetFloat( int entID, CBlock *block, int &memberNum, float &value );
-	int Get( int entID, CBlock *block, int &memberNum, char **value );
+  int PushTask(CTask *task, int flag);
+  CTask *PopTask(int flag);
 
-	int	PushTask( CTask *task, int flag );
-	CTask *PopTask( int flag );
+  // Task functions
+  int Rotate(CTask *task);
+  int Remove(CTask *task);
+  int Camera(CTask *task);
+  int Print(CTask *task);
+  int Sound(CTask *task);
+  int Move(CTask *task);
+  int Kill(CTask *task);
+  int Set(CTask *task);
+  int Use(CTask *task);
+  int DeclareVariable(CTask *task);
+  int FreeVariable(CTask *task);
+  int Signal(CTask *task);
+  int Play(CTask *task);
 
-	// Task functions
-	int Rotate( CTask *task );
-	int Remove( CTask *task );
-	int Camera( CTask *task );
-	int Print( CTask *task );
-	int Sound( CTask *task );
-	int Move( CTask *task );
-	int Kill( CTask *task );
-	int Set( CTask *task );
-	int Use( CTask *task );
-	int DeclareVariable( CTask *task );
-	int FreeVariable( CTask *task );
-	int Signal( CTask *task );
-	int Play( CTask *task );
+  int Wait(CTask *task, bool &completed);
+  int WaitSignal(CTask *task, bool &completed);
 
-	int Wait( CTask *task, bool &completed );
-	int WaitSignal( CTask *task, bool &completed );
+  int SaveCommand(CBlock *block);
 
-	int	SaveCommand( CBlock *block );
+  // Variables
 
-	// Variables
+  CSequencer *m_owner;
+  int m_ownerID;
 
-	CSequencer				*m_owner;
-	int						m_ownerID;
+  CTaskGroup *m_curGroup;
 
-	CTaskGroup				*m_curGroup;
+  taskGroup_v m_taskGroups;
+  tasks_l m_tasks;
 
-	taskGroup_v				m_taskGroups;
-	tasks_l					m_tasks;
+  int m_GUID;
+  int m_count;
 
-	int						m_GUID;
-	int						m_count;
-	
-	taskGroupName_m			m_taskGroupNameMap;
-	taskGroupID_m			m_taskGroupIDMap;
+  taskGroupName_m m_taskGroupNameMap;
+  taskGroupID_m m_taskGroupIDMap;
 
-	bool					m_resident;
+  bool m_resident;
 
-	//CTask	*m_waitTask;		//Global pointer to the current task that is waiting for callback completion
+  // CTask	*m_waitTask;		//Global pointer to the current task that is
+  // waiting for callback completion
 };
 
-#endif	//__TASK_MANAGER__
+#endif //__TASK_MANAGER__

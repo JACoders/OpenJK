@@ -22,8 +22,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // Filename: tr_stl.h
 //
-//  I had to make this new file, because if I put the STL "map" include inside tr_local.h then one of the other header
-//	files got compile errors because of using "map" in the function protos as a GLEnum, this way seemed simpler...
+//  I had to make this new file, because if I put the STL "map" include inside
+//  tr_local.h then one of the other header
+//	files got compile errors because of using "map" in the function protos
+//as a GLEnum, this way seemed simpler...
 
 #pragma once
 
@@ -32,11 +34,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define USE_STL_FOR_SHADER_LOOKUPS
 
 #ifdef USE_STL_FOR_SHADER_LOOKUPS
-	void ShaderEntryPtrs_Clear(void);
-	int ShaderEntryPtrs_Size(void);
-	const char  *ShaderEntryPtrs_Lookup(const char *psShaderName);
-	void ShaderEntryPtrs_Insert(const char  *token, const char  *p);
+void ShaderEntryPtrs_Clear(void);
+int ShaderEntryPtrs_Size(void);
+const char *ShaderEntryPtrs_Lookup(const char *psShaderName);
+void ShaderEntryPtrs_Insert(const char *token, const char *p);
 #else
 
-	#define ShaderEntryPtrs_Clear()
-#endif	// #ifdef USE_STL_FOR_SHADER_LOOKUPS
+#define ShaderEntryPtrs_Clear()
+#endif // #ifdef USE_STL_FOR_SHADER_LOOKUPS

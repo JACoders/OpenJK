@@ -23,23 +23,24 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_headers.h"
 
 #include "b_local.h"
-#include "g_local.h"
-#include "wp_saber.h"
-#include "w_local.h"
 #include "g_functions.h"
+#include "g_local.h"
+#include "w_local.h"
+#include "wp_saber.h"
 
 //	Bot Laser
 //---------------------------------------------------------
-void WP_BotLaser( gentity_t *ent )
+void WP_BotLaser(gentity_t *ent)
 //---------------------------------------------------------
 {
-	gentity_t	*missile = CreateMissile( wpMuzzle, wpFwd, BRYAR_PISTOL_VEL, 10000, ent );
+  gentity_t *missile =
+      CreateMissile(wpMuzzle, wpFwd, BRYAR_PISTOL_VEL, 10000, ent);
 
-	missile->classname = "bryar_proj";
-	missile->s.weapon = WP_BRYAR_PISTOL;
+  missile->classname = "bryar_proj";
+  missile->s.weapon = WP_BRYAR_PISTOL;
 
-	missile->damage = weaponData[WP_BOT_LASER].damage;
-	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-	missile->methodOfDeath = MOD_ENERGY;
-	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+  missile->damage = weaponData[WP_BOT_LASER].damage;
+  missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+  missile->methodOfDeath = MOD_ENERGY;
+  missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 }

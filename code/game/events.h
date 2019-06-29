@@ -24,9 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __EVENTS__
 
 typedef enum //# eventType_e
-{
-	EV_BAD = 0,
+{ EV_BAD = 0,
 
 } eventType_t;
 
-#endif	//__EVENTS__
+#endif //__EVENTS__

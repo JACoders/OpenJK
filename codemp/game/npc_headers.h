@@ -22,8 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "b_local.h"
 #include "anims.h"
+#include "b_local.h"
 #include "g_functions.h"
 #include "g_nav.h"
 #include "g_navigator.h"

@@ -22,7 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // Filename:-	stringed_interface.h
 //
-// These are the functions that get replaced by game-specific ones (or StringEd code) so SGE can access files etc
+// These are the functions that get replaced by game-specific ones (or StringEd
+// code) so SGE can access files etc
 //
 
 #ifndef STRINGED_INTERFACE_H
@@ -30,12 +31,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 
-unsigned char *	SE_LoadFileData			( const char *psFileName, int *piLoadedLength = 0);
-void			SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile );
-int				SE_BuildFileList		( const char *psStartDir, std::string &strResults );
+unsigned char *SE_LoadFileData(const char *psFileName, int *piLoadedLength = 0);
+void SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile);
+int SE_BuildFileList(const char *psStartDir, std::string &strResults);
 
-#endif	// #ifndef STRINGED_INTERFACE_H
-
+#endif // #ifndef STRINGED_INTERFACE_H
 
 ////////////////// eof ///////////////////
-

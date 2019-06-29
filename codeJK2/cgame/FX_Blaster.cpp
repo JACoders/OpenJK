@@ -21,9 +21,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 // Blaster Weapon
+#include "FxScheduler.h"
 #include "cg_local.h"
 #include "cg_media.h"
-#include "FxScheduler.h"
 
 /*
 -------------------------
@@ -31,41 +31,37 @@ FX_BlasterProjectileThink
 -------------------------
 */
 
-void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon )
-{
-	vec3_t forward;
+void FX_BlasterProjectileThink(centity_t *cent,
+                               const struct weaponInfo_s *weapon) {
+  vec3_t forward;
 
-	if ( VectorNormalize2( cent->gent->s.pos.trDelta, forward ) == 0.0f )
-	{
-		if ( VectorNormalize2( cent->currentState.pos.trDelta, forward ) == 0.0f )
-		{
-			forward[2] = 1.0f;
-		}
-	}
+  if (VectorNormalize2(cent->gent->s.pos.trDelta, forward) == 0.0f) {
+    if (VectorNormalize2(cent->currentState.pos.trDelta, forward) == 0.0f) {
+      forward[2] = 1.0f;
+    }
+  }
 
-	// hack the scale of the forward vector if we were just fired or bounced...this will shorten up the tail for a split second so tails don't clip so harshly
-	int dif = cg.time - cent->gent->s.pos.trTime;
+  // hack the scale of the forward vector if we were just fired or
+  // bounced...this will shorten up the tail for a split second so tails don't
+  // clip so harshly
+  int dif = cg.time - cent->gent->s.pos.trTime;
 
-	if ( dif < 75 )
-	{
-		if ( dif < 0 )
-		{
-			dif = 0;
-		}
+  if (dif < 75) {
+    if (dif < 0) {
+      dif = 0;
+    }
 
-		float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
+    float scale = (dif / 75.0f) * 0.95f + 0.05f;
 
-		VectorScale( forward, scale, forward );
-	}
+    VectorScale(forward, scale, forward);
+  }
 
-	if ( cent->gent && cent->gent->owner && cent->gent->owner->s.number > 0 )
-	{
-		theFxScheduler.PlayEffect( "blaster/NPCshot", cent->lerpOrigin, forward );
-	}
-	else
-	{
-		theFxScheduler.PlayEffect( cgs.effects.blasterShotEffect, cent->lerpOrigin, forward );
-	}
+  if (cent->gent && cent->gent->owner && cent->gent->owner->s.number > 0) {
+    theFxScheduler.PlayEffect("blaster/NPCshot", cent->lerpOrigin, forward);
+  } else {
+    theFxScheduler.PlayEffect(cgs.effects.blasterShotEffect, cent->lerpOrigin,
+                              forward);
+  }
 }
 
 /*
@@ -73,9 +69,9 @@ void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weap
 FX_BlasterAltFireThink
 -------------------------
 */
-void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon )
-{
-	FX_BlasterProjectileThink( cent, weapon );
+void FX_BlasterAltFireThink(centity_t *cent,
+                            const struct weaponInfo_s *weapon) {
+  FX_BlasterProjectileThink(cent, weapon);
 }
 
 /*
@@ -83,9 +79,9 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 FX_BlasterWeaponHitWall
 -------------------------
 */
-void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal )
-{
-	theFxScheduler.PlayEffect( cgs.effects.blasterWallImpactEffect, origin, normal );
+void FX_BlasterWeaponHitWall(vec3_t origin, vec3_t normal) {
+  theFxScheduler.PlayEffect(cgs.effects.blasterWallImpactEffect, origin,
+                            normal);
 }
 
 /*
@@ -93,7 +89,8 @@ void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal )
 FX_BlasterWeaponHitPlayer
 -------------------------
 */
-void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid )
-{
-	theFxScheduler.PlayEffect( cgs.effects.blasterFleshImpactEffect, origin, normal );
+void FX_BlasterWeaponHitPlayer(vec3_t origin, vec3_t normal,
+                               qboolean humanoid) {
+  theFxScheduler.PlayEffect(cgs.effects.blasterFleshImpactEffect, origin,
+                            normal);
 }

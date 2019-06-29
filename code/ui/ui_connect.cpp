@@ -33,8 +33,8 @@ CONNECTION SCREEN
 ===============================================================================
 */
 
-char		connectionDialogString[1024];
-char		connectionMessageString[1024];
+char connectionDialogString[1024];
+char connectionMessageString[1024];
 
 #ifdef JK2_MODE
 /*
@@ -42,9 +42,8 @@ char		connectionMessageString[1024];
  UI_DrawThumbNail
  =================
  */
-void UI_DrawThumbNail( float x, float y, float w, float h, byte *pic )
-{
-	ui.DrawStretchRaw( x, y, w, h, SG_SCR_WIDTH, SG_SCR_HEIGHT, pic, 0, qtrue );
+void UI_DrawThumbNail(float x, float y, float w, float h, byte *pic) {
+  ui.DrawStretchRaw(x, y, w, h, SG_SCR_WIDTH, SG_SCR_HEIGHT, pic, 0, qtrue);
 }
 #endif
 
@@ -55,7 +54,7 @@ UI_DrawConnect
 ========================
 */
 
-void UI_DrawConnect( const char *servername, const char *updateInfoString ) {
+void UI_DrawConnect(const char *servername, const char *updateInfoString) {
 #if 0
 	// if connecting to a local host, don't draw anything before the
 	// gamestate message.  This allows cinematics to start seamlessly
@@ -67,21 +66,18 @@ void UI_DrawConnect( const char *servername, const char *updateInfoString ) {
 	}
 #endif
 #ifdef JK2_MODE
-	qboolean qValid;
-	byte *levelPic = SCR_GetScreenshot(&qValid);
-	// draw the dialog background
-	if (!qValid)
-	{
-		UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader );
-	}
-	else {
-		UI_DrawThumbNail(0,0, SCREEN_WIDTH, SCREEN_HEIGHT, levelPic );
-	}
+  qboolean qValid;
+  byte *levelPic = SCR_GetScreenshot(&qValid);
+  // draw the dialog background
+  if (!qValid) {
+    UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader);
+  } else {
+    UI_DrawThumbNail(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, levelPic);
+  }
 #else
-	UI_DrawHandlePic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader );
+  UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader);
 #endif
 }
-
 
 /*
 ========================
@@ -89,9 +85,9 @@ UI_UpdateConnectionString
 
 ========================
 */
-void UI_UpdateConnectionString( const char *string ) {
-	Q_strncpyz( connectionDialogString, string, sizeof( connectionDialogString )  );
-	UI_UpdateScreen();
+void UI_UpdateConnectionString(const char *string) {
+  Q_strncpyz(connectionDialogString, string, sizeof(connectionDialogString));
+  UI_UpdateScreen();
 }
 
 /*
@@ -100,17 +96,17 @@ UI_UpdateConnectionMessageString
 
 ========================
 */
-void UI_UpdateConnectionMessageString( char *string ) {
-	char		*s;
+void UI_UpdateConnectionMessageString(char *string) {
+  char *s;
 
-	Q_strncpyz( connectionMessageString, string, sizeof( connectionMessageString ) );
+  Q_strncpyz(connectionMessageString, string, sizeof(connectionMessageString));
 
-	// strip \n
-	s = strstr( connectionMessageString, "\n" );
-	if ( s ) {
-		*s = 0;
-	}
-	UI_UpdateScreen();
+  // strip \n
+  s = strstr(connectionMessageString, "\n");
+  if (s) {
+    *s = 0;
+  }
+  UI_UpdateScreen();
 }
 
 /*
@@ -118,13 +114,9 @@ void UI_UpdateConnectionMessageString( char *string ) {
 UI_KeyConnect
 ===================
 */
-void UI_KeyConnect( int key )
-{
-	if ( key == A_ESCAPE )
-	{
-		ui.Cmd_ExecuteText( EXEC_APPEND, "disconnect\n" );
-		return;
-	}
+void UI_KeyConnect(int key) {
+  if (key == A_ESCAPE) {
+    ui.Cmd_ExecuteText(EXEC_APPEND, "disconnect\n");
+    return;
+  }
 }
-
-

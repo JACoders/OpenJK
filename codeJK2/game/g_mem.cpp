@@ -33,25 +33,24 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 static char		memoryPool[POOLSIZE];
 */
-static int		allocPoint;
-static cvar_t	*g_debugalloc;
+static int allocPoint;
+static cvar_t *g_debugalloc;
 
-void *G_Alloc( int size ) {
-	if ( g_debugalloc->integer ) {
-		gi.Printf( "G_Alloc of %i bytes\n", size );
-	}
+void *G_Alloc(int size) {
+  if (g_debugalloc->integer) {
+    gi.Printf("G_Alloc of %i bytes\n", size);
+  }
 
+  allocPoint += size;
 
-	allocPoint += size;
-	
-	return gi.Malloc(size, TAG_G_ALLOC, qfalse);
+  return gi.Malloc(size, TAG_G_ALLOC, qfalse);
 }
 
-void G_InitMemory( void ) {
-	allocPoint = 0;
-	g_debugalloc = gi.cvar ("g_debugalloc", "0", 0);
+void G_InitMemory(void) {
+  allocPoint = 0;
+  g_debugalloc = gi.cvar("g_debugalloc", "0", 0);
 }
 
-void Svcmd_GameMem_f( void ) {
-	gi.Printf( "Game memory status: %i allocated\n", allocPoint );
+void Svcmd_GameMem_f(void) {
+  gi.Printf("Game memory status: %i allocated\n", allocPoint);
 }

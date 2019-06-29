@@ -36,8 +36,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #ifdef AASINTERN
-//initialize the AAS clustering
+// initialize the AAS clustering
 void AAS_InitClustering(void);
 //
 void AAS_SetViewPortalsAsClusterPortals(void);
-#endif //AASINTERN
+#endif // AASINTERN

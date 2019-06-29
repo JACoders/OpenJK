@@ -21,7 +21,6 @@
  * Or go to http://www.gnu.org/copyleft/lgpl.html
  */
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -63,42 +62,42 @@ typedef void ALvoid;
 typedef int ALenum;
 
 /* Bad value. */
-#define AL_INVALID                               (-1)
+#define AL_INVALID (-1)
 
 /* Disable value. */
-#define AL_NONE									 0
+#define AL_NONE 0
 
 /* Boolean False. */
-#define AL_FALSE                                 0
+#define AL_FALSE 0
 
 /* Boolean True. */
-#define AL_TRUE                                  1
+#define AL_TRUE 1
 
 /**
-  * Indicate the type of AL_SOURCE.
-  * Sources can be spatialized
-  */
-#define AL_SOURCE_TYPE                           0x200
+ * Indicate the type of AL_SOURCE.
+ * Sources can be spatialized
+ */
+#define AL_SOURCE_TYPE 0x200
 
 /** Indicate source has absolute coordinates. */
-#define AL_SOURCE_ABSOLUTE                       0x201
+#define AL_SOURCE_ABSOLUTE 0x201
 
 /** Indicate Source has listener relative coordinates. */
-#define AL_SOURCE_RELATIVE                       0x202
+#define AL_SOURCE_RELATIVE 0x202
 
 /**
  * Directional source, inner cone angle, in degrees.
  * Range:    [0-360]
  * Default:  360
  */
-#define AL_CONE_INNER_ANGLE                      0x1001
+#define AL_CONE_INNER_ANGLE 0x1001
 
 /**
  * Directional source, outer cone angle, in degrees.
  * Range:    [0-360]
  * Default:  360
  */
-#define AL_CONE_OUTER_ANGLE                      0x1002
+#define AL_CONE_OUTER_ANGLE 0x1002
 
 /**
  * Specify the pitch to be applied, either at source,
@@ -106,7 +105,7 @@ typedef int ALenum;
  * Range:	 [0.5-2.0]
  * Default:  1.0
  */
-#define AL_PITCH                                 0x1003
+#define AL_PITCH 0x1003
 
 /**
  * Specify the current location in three dimensional space.
@@ -118,13 +117,13 @@ typedef int ALenum;
  *  sign on the Z coordinate.
  * Listener position is always in the world coordinate system.
  */
-#define AL_POSITION                              0x1004
+#define AL_POSITION 0x1004
 
 /** Specify the current direction as forward vector. */
-#define AL_DIRECTION                             0x1005
+#define AL_DIRECTION 0x1005
 
 /** Specify the current velocity in three dimensional space. */
-#define AL_VELOCITY                              0x1006
+#define AL_VELOCITY 0x1006
 
 /**
  * Indicate whether source has to loop infinite.
@@ -132,14 +131,14 @@ typedef int ALenum;
  * Range:    [AL_TRUE, AL_FALSE]
  * Default:  AL_FALSE
  */
-#define AL_LOOPING                               0x1007
+#define AL_LOOPING 0x1007
 
 /**
  * Indicate the buffer to provide sound samples.
  * Type: ALuint.
  * Range: any valid Buffer id.
  */
-#define AL_BUFFER                                0x1009
+#define AL_BUFFER 0x1009
 
 /**
  * Indicate the gain (volume amplification) applied.
@@ -152,28 +151,28 @@ typedef int ALenum;
  *  scale; it is interpreted as zero volume - the channel
  *  is effectively disabled.
  */
-#define AL_GAIN                                  0x100A
+#define AL_GAIN 0x100A
 
 /**
  * Indicate minimum source attenuation.
  * Type:     ALfloat
  * Range:	 [0.0 - 1.0]
  */
-#define AL_MIN_GAIN                              0x100D
+#define AL_MIN_GAIN 0x100D
 
 /**
  * Indicate maximum source attenuation.
  * Type:	 ALfloat
  * Range:	 [0.0 - 1.0]
  */
-#define AL_MAX_GAIN                              0x100E
+#define AL_MAX_GAIN 0x100E
 
 /**
  * Specify the current orientation.
  * Type:	 ALfv6 (at/up)
  * Range:	 N/A
  */
-#define AL_ORIENTATION                           0x100F
+#define AL_ORIENTATION 0x100F
 
 /* byte offset into source (in canon format).  -1 if source
  * is not playing.  Don't set this, get this.
@@ -182,15 +181,15 @@ typedef int ALenum;
  * Range:    [0.0 - ]
  * Default:  1.0
  */
-#define AL_REFERENCE_DISTANCE                    0x1020
+#define AL_REFERENCE_DISTANCE 0x1020
 
- /**
+/**
  * Indicate the rolloff factor for the source.
  * Type: ALfloat
  * Range:    [0.0 - ]
  * Default:  1.0
  */
-#define AL_ROLLOFF_FACTOR                        0x1021
+#define AL_ROLLOFF_FACTOR 0x1021
 
 /**
  * Indicate the gain (volume amplification) applied.
@@ -203,57 +202,57 @@ typedef int ALenum;
  *  scale; it is interpreted as zero volume - the channel
  *  is effectively disabled.
  */
-#define AL_CONE_OUTER_GAIN                       0x1022
+#define AL_CONE_OUTER_GAIN 0x1022
 
 /**
  * Specify the maximum distance.
  * Type:	 ALfloat
  * Range:	 [0.0 - ]
  */
-#define AL_MAX_DISTANCE                          0x1023
+#define AL_MAX_DISTANCE 0x1023
 
 /**
  * Specify the panning to be applied (2D only.)
  * Range:	 [-1.0 - 1.0]
  * Default:  0.0
  */
-#define AL_PAN                                   0x1024
+#define AL_PAN 0x1024
 
 /**
  * Get the playing time of a stream.
  * Range:	 [0.0 - infinity]
  */
-#define AL_TIME                                   0x1025
+#define AL_TIME 0x1025
 
 /**
  * Specify the channel mask. (Creative)
  * Type:	 ALuint
  * Range:	 [0 - 255]
  */
-#define AL_CHANNEL_MASK							 0x3000
+#define AL_CHANNEL_MASK 0x3000
 
 /**
  * Source state information
  */
-#define AL_SOURCE_STATE                          0x1010
-#define AL_INITIAL                               0x1011
-#define AL_PLAYING                               0x1012
-#define AL_PAUSED                                0x1013
-#define AL_STOPPED                               0x1014
+#define AL_SOURCE_STATE 0x1010
+#define AL_INITIAL 0x1011
+#define AL_PLAYING 0x1012
+#define AL_PAUSED 0x1013
+#define AL_STOPPED 0x1014
 
 /**
  * Buffer Queue params
  */
-#define AL_BUFFERS_QUEUED                        0x1015
-#define AL_BUFFERS_PROCESSED                     0x1016
+#define AL_BUFFERS_QUEUED 0x1015
+#define AL_BUFFERS_PROCESSED 0x1016
 
 /** Sound buffers: format specifier. */
-#define AL_FORMAT_MONO8                          0x1100
-#define AL_FORMAT_MONO16                         0x1101
-#define AL_FORMAT_STEREO8                        0x1102
-#define AL_FORMAT_STEREO16                       0x1103
-#define AL_FORMAT_MONO4                          0x1104
-#define AL_FORMAT_STEREO4                        0x1105
+#define AL_FORMAT_MONO8 0x1100
+#define AL_FORMAT_MONO16 0x1101
+#define AL_FORMAT_STEREO8 0x1102
+#define AL_FORMAT_STEREO16 0x1103
+#define AL_FORMAT_MONO4 0x1104
+#define AL_FORMAT_STEREO4 0x1105
 
 /**
  * Sound buffers: frequency, in units of Hertz [Hz].
@@ -261,38 +260,38 @@ typedef int ALenum;
  *  sample frequency marks the maximum significant
  *  frequency component.
  */
-#define AL_FREQUENCY                             0x2001
-#define AL_BITS                                  0x2002
-#define AL_CHANNELS                              0x2003
-#define AL_SIZE                                  0x2004
-#define AL_DATA                                  0x2005
+#define AL_FREQUENCY 0x2001
+#define AL_BITS 0x2002
+#define AL_CHANNELS 0x2003
+#define AL_SIZE 0x2004
+#define AL_DATA 0x2005
 
 /**
  * Buffer state.
  *
  * Not supported for public use (yet).
  */
-#define AL_UNUSED                                0x2010
-#define AL_PENDING                               0x2011
-#define AL_PROCESSED                             0x2012
+#define AL_UNUSED 0x2010
+#define AL_PENDING 0x2011
+#define AL_PROCESSED 0x2012
 
 /** Errors: No Error. */
-#define AL_NO_ERROR                              AL_FALSE
+#define AL_NO_ERROR AL_FALSE
 
 /**
  * Illegal name passed as an argument to an AL call.
  */
-#define AL_INVALID_NAME                          0xA001
+#define AL_INVALID_NAME 0xA001
 
 /**
  * Illegal enum passed as an argument to an AL call.
  */
-#define AL_INVALID_ENUM                          0xA002
+#define AL_INVALID_ENUM 0xA002
 /**
  * Illegal value passed as an argument to an AL call.
  * Applies to parameter values, but not to enumerations.
  */
-#define AL_INVALID_VALUE                         0xA003
+#define AL_INVALID_VALUE 0xA003
 
 /**
  * A function was called at inappropriate time,
@@ -300,47 +299,47 @@ typedef int ALenum;
  * This can be an incompatible ALenum, object ID,
  *  and/or function.
  */
-#define AL_INVALID_OPERATION                     0xA004
+#define AL_INVALID_OPERATION 0xA004
 
 /**
  * A function could not be completed,
  * because there is not enough memory available.
  */
-#define AL_OUT_OF_MEMORY                         0xA005
+#define AL_OUT_OF_MEMORY 0xA005
 
 /** Context strings: Vendor Name. */
-#define AL_VENDOR                                0xB001
-#define AL_VERSION                               0xB002
-#define AL_RENDERER                              0xB003
-#define AL_EXTENSIONS                            0xB004
-#define AL_MEMORY_USED                           0xB005
-#define AL_MEMORY_ALLOCATOR                      0xB006
-#define AL_MEMORY_DEALLOCATOR                    0xB007
-#define AL_STEREO                                0xB008
+#define AL_VENDOR 0xB001
+#define AL_VERSION 0xB002
+#define AL_RENDERER 0xB003
+#define AL_EXTENSIONS 0xB004
+#define AL_MEMORY_USED 0xB005
+#define AL_MEMORY_ALLOCATOR 0xB006
+#define AL_MEMORY_DEALLOCATOR 0xB007
+#define AL_STEREO 0xB008
 
 /** Global tweakage. */
 
 /**
  * Doppler scale.  Default 1.0
  */
-#define AL_DOPPLER_FACTOR                        0xC000
+#define AL_DOPPLER_FACTOR 0xC000
 
 /**
  * Doppler velocity.  Default 1.0
  */
-#define AL_DOPPLER_VELOCITY                      0xC001
+#define AL_DOPPLER_VELOCITY 0xC001
 
 /**
  * Distance model.  Default AL_INVERSE_DISTANCE_CLAMPED
  */
-#define AL_DISTANCE_MODEL                        0xD000
+#define AL_DISTANCE_MODEL 0xD000
 
 /** Distance models. */
 
-#define AL_INVERSE_DISTANCE                      0xD001
-#define AL_INVERSE_DISTANCE_CLAMPED              0xD002
+#define AL_INVERSE_DISTANCE 0xD001
+#define AL_INVERSE_DISTANCE_CLAMPED 0xD002
 
- /**
+/**
  * enables
  */
 

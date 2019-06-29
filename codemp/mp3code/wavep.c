@@ -32,10 +32,10 @@ with conditional pcm conversion to MS wave format
 portable version
 
 -----------------------------------------------------------*/
-#include <stdlib.h>
-#include <stdio.h>
 #include <float.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #ifdef WIN32
 #include <io.h>
 #else

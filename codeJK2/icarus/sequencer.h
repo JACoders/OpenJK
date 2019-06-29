@@ -27,45 +27,47 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "blockstream.h"
 #include "interface.h"
-#include "taskmanager.h"
 #include "sequence.h"
+#include "taskmanager.h"
 
-#include <list>
-#include <vector>
-#include <map>
 #include <algorithm>
+#include <list>
+#include <map>
+#include <vector>
 
-//Defines
+// Defines
 
-#define SQ_COMMON		0x00000000 	//Common one-pass sequence
-#define	SQ_LOOP			0x00000001 	//Looping sequence
-#define SQ_RETAIN		0x00000002 	//Inside a looping sequence list, retain the information
-#define SQ_AFFECT		0x00000004 	//Affect sequence 
-#define SQ_RUN			0x00000008	//A run block
-#define SQ_PENDING		0x00000010	//Pending use, don't free when flushing the sequences
-#define SQ_CONDITIONAL	0x00000020	//Conditional statement
-#define SQ_TASK			0x00000040	//Task block
+#define SQ_COMMON 0x00000000 // Common one-pass sequence
+#define SQ_LOOP 0x00000001   // Looping sequence
+#define SQ_RETAIN                                                              \
+  0x00000002 // Inside a looping sequence list, retain the information
+#define SQ_AFFECT 0x00000004 // Affect sequence
+#define SQ_RUN 0x00000008    // A run block
+#define SQ_PENDING                                                             \
+  0x00000010 // Pending use, don't free when flushing the sequences
+#define SQ_CONDITIONAL 0x00000020 // Conditional statement
+#define SQ_TASK 0x00000040        // Task block
 
-#define	BF_ELSE			0x00000001	//Block has an else id	//FIXME: This was a sloppy fix for a problem that arose from conditionals
+#define BF_ELSE                                                                \
+  0x00000001 // Block has an else id	//FIXME: This was a sloppy fix for a
+             // problem that arose from conditionals
 
-#define S_FAILED(a) (a!=SEQ_OK)
+#define S_FAILED(a) (a != SEQ_OK)
 
-//const int MAX_ERROR_LENGTH	= 256;
+// const int MAX_ERROR_LENGTH	= 256;
 
-//Typedefs
+// Typedefs
 
-typedef struct bstream_s
-{
-	CBlockStream *stream;
-	bstream_s	 *last;
+typedef struct bstream_s {
+  CBlockStream *stream;
+  bstream_s *last;
 } bstream_t;
 
-//Enumerations
+// Enumerations
 
-enum
-{
-	SEQ_OK,				//Command was successfully added
-	SEQ_FAILED,			//An error occured while trying to insert the command
+enum {
+  SEQ_OK,     // Command was successfully added
+  SEQ_FAILED, // An error occured while trying to insert the command
 };
 
 // Sequencer
@@ -80,112 +82,118 @@ class ICARUS_Instance;
 ==================================================================================================
 */
 
-class CSequencer
-{
-	typedef	std::map < int, CSequence * >			sequenceID_m;
-	typedef std::list < CSequence * >				sequence_l;
-	typedef std::map < CTaskGroup *, CSequence * >	taskSequence_m;
+class CSequencer {
+  typedef std::map<int, CSequence *> sequenceID_m;
+  typedef std::list<CSequence *> sequence_l;
+  typedef std::map<CTaskGroup *, CSequence *> taskSequence_m;
 
 public:
+  CSequencer();
+  ~CSequencer();
 
-	CSequencer();
-	~CSequencer();
+  int Init(int ownerID, interface_export_t *ie, CTaskManager *taskManager,
+           ICARUS_Instance *iCARUS);
+  static CSequencer *Create(void);
+  int Free(void);
 
-	int Init( int ownerID, interface_export_t *ie, CTaskManager *taskManager, ICARUS_Instance *iCARUS );
-	static CSequencer *Create ( void );
-	int Free( void );
+  int Run(char *buffer, long size);
+  int Callback(CTaskManager *taskManager, CBlock *block, int returnCode);
 
-	int Run( char *buffer, long size );
-	int Callback( CTaskManager *taskManager, CBlock *block, int returnCode );
+  ICARUS_Instance *GetOwner(void) { return m_owner; }
 
-	ICARUS_Instance	*GetOwner( void )	{	return m_owner;	}
+  void SetOwnerID(int owner) { m_ownerID = owner; }
 
-	void SetOwnerID( int owner )	{	m_ownerID = owner;}
+  int GetOwnerID(void) const { return m_ownerID; }
+  interface_export_t *GetInterface(void) const { return m_ie; }
+  CTaskManager *GetTaskManager(void) const { return m_taskManager; }
 
-	int	GetOwnerID( void )						const	{	return m_ownerID;	}
-	interface_export_t *GetInterface( void )	const	{	return m_ie;			}
-	CTaskManager *GetTaskManager( void )		const	{	return m_taskManager;	}
+  void SetTaskManager(CTaskManager *tm) {
+    if (tm)
+      m_taskManager = tm;
+  }
 
-	void SetTaskManager( CTaskManager *tm)	{	if ( tm )	m_taskManager = tm;	}
+  int Save(void);
+  int Load(void);
 
-	int Save( void );
-	int Load( void );
+  // moved to public on 2/12/2 to allow calling during shutdown
+  int Recall(void);
 
-// moved to public on 2/12/2 to allow calling during shutdown
-	int Recall( void );
 protected:
+  int EvaluateConditional(CBlock *block);
 
-	int EvaluateConditional( CBlock *block );
+  int Route(CSequence *sequence, bstream_t *bstream);
+  int Flush(CSequence *owner);
+  void Interrupt(void);
 
-	int Route( CSequence *sequence, bstream_t *bstream );
-	int Flush( CSequence *owner );
-	void Interrupt( void );
+  bstream_t *AddStream(void);
+  void DeleteStream(bstream_t *bstream);
 
-	bstream_t *AddStream( void );
-	void DeleteStream( bstream_t *bstream );
+  int AddAffect(bstream_t *bstream, int retain, int *id);
 
-	int AddAffect( bstream_t *bstream, int retain, int *id );
+  CSequence *AddSequence(void);
+  CSequence *AddSequence(CSequence *parent, CSequence *returnSeq, int flags);
 
-	CSequence *AddSequence( void );
-	CSequence *AddSequence( CSequence *parent, CSequence *returnSeq, int flags );
+  CSequence *GetSequence(int id);
 
-	CSequence *GetSequence( int id );
+  // NOTENOTE: This only removes references to the sequence, IT DOES NOT FREE
+  // THE ALLOCATED MEMORY!
+  int RemoveSequence(CSequence *sequence);
+  int DestroySequence(CSequence *sequence);
 
-	//NOTENOTE: This only removes references to the sequence, IT DOES NOT FREE THE ALLOCATED MEMORY!
-	int RemoveSequence( CSequence *sequence);
-	int DestroySequence( CSequence *sequence);
+  int PushCommand(CBlock *command, int flag);
+  CBlock *PopCommand(int flag);
 
-	int PushCommand( CBlock *command, int flag );
-	CBlock *PopCommand( int flag );
+  inline CSequence *ReturnSequence(CSequence *sequence);
 
-	inline CSequence *ReturnSequence( CSequence *sequence );
+  void CheckRun(CBlock **);
+  void CheckLoop(CBlock **);
+  void CheckAffect(CBlock **);
+  void CheckIf(CBlock **);
+  void CheckDo(CBlock **);
+  void CheckFlush(CBlock **);
 
-	void CheckRun( CBlock ** );
-	void CheckLoop( CBlock ** );
-	void CheckAffect( CBlock ** );
-	void CheckIf( CBlock ** );
-	void CheckDo( CBlock ** );
-	void CheckFlush( CBlock ** );
+  void Prep(CBlock **);
 
-	void Prep( CBlock ** );
+  int Prime(CTaskManager *taskManager, CBlock *command);
 
-	int Prime( CTaskManager *taskManager, CBlock *command );
+  int ParseRun(CBlock *block);
+  int ParseLoop(CBlock *block, bstream_t *bstream);
+  int ParseAffect(CBlock *block, bstream_t *bstream);
+  int ParseIf(CBlock *block, bstream_t *bstream);
+  int ParseElse(CBlock *block, bstream_t *bstream);
+  int ParseTask(CBlock *block, bstream_t *bstream);
 
-	int ParseRun( CBlock *block );
-	int ParseLoop( CBlock *block, bstream_t *bstream );
-	int ParseAffect( CBlock *block, bstream_t *bstream );
-	int ParseIf( CBlock *block, bstream_t *bstream );
-	int ParseElse( CBlock *block, bstream_t *bstream );
-	int ParseTask( CBlock *block, bstream_t *bstream );
+  int Affect(int id, int type);
 
-	int Affect( int id, int type );
+  void AddTaskSequence(CSequence *sequence, CTaskGroup *group);
+  CSequence *GetTaskSequence(CTaskGroup *group);
 
-	void AddTaskSequence( CSequence *sequence, CTaskGroup *group );
-	CSequence *GetTaskSequence( CTaskGroup *group );
+  // Member variables
 
-	//Member variables
-	
-	ICARUS_Instance		*m_owner;
-	int					m_ownerID;
+  ICARUS_Instance *m_owner;
+  int m_ownerID;
 
-	CTaskManager		*m_taskManager;
-	interface_export_t	*m_ie;				//This is unique to the sequencer so that client side and server side sequencers could both
-											//operate under different interfaces (for client side scripting)
+  CTaskManager *m_taskManager;
+  interface_export_t
+      *m_ie; // This is unique to the sequencer so that client side and server
+             // side sequencers could both operate under different interfaces
+             // (for client side scripting)
 
-	int					m_numCommands;		//Total number of commands for the sequencer (including all child sequences)
+  int m_numCommands; // Total number of commands for the sequencer (including
+                     // all child sequences)
 
-	sequenceID_m		m_sequenceMap;
-	sequence_l			m_sequences;
-	taskSequence_m		m_taskSequences;
+  sequenceID_m m_sequenceMap;
+  sequence_l m_sequences;
+  taskSequence_m m_taskSequences;
 
-	CSequence			*m_curSequence;
-	CTaskGroup			*m_curGroup;
+  CSequence *m_curSequence;
+  CTaskGroup *m_curGroup;
 
-	bstream_t			*m_curStream;
+  bstream_t *m_curStream;
 
-	int					m_elseValid;
-	CBlock				*m_elseOwner;
-	std::vector<bstream_t*>  m_streamsCreated;
+  int m_elseValid;
+  CBlock *m_elseOwner;
+  std::vector<bstream_t *> m_streamsCreated;
 };
 
-#endif	//__SEQUENCER__
+#endif //__SEQUENCER__

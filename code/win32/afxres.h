@@ -16,4 +16,3 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 #include <windows.h>
-

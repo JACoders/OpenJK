@@ -31,8 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #if !defined __TR_WORLDEFFECTS_H
 #define __TR_WORLDEFFECTS_H
 
-#include "../qcommon/q_shared.h"		// For Vec3_t
-
+#include "../qcommon/q_shared.h" // For Vec3_t
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Supported Commands
@@ -60,6 +59,5 @@ bool R_SetTempGlobalFogColor(vec3_t color);
 
 bool R_IsRaining();
 bool R_IsPuffing();
-
 
 #endif // __TR_WORLDEFFECTS_H

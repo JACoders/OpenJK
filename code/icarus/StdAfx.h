@@ -23,13 +23,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __ICR_STDAFX__
 #define __ICR_STDAFX__
 
-#include <string>
-#include <list>
-#include <vector>
-#include <map>
 #include <algorithm>
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
-#define STL_INSERT( a, b )		a.insert( a.end(), b );
+#define STL_ITERATE(a, b) for (a = b.begin(); a != b.end(); ++a)
+#define STL_INSERT(a, b) a.insert(a.end(), b);
 
 #endif

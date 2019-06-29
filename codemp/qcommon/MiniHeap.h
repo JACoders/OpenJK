@@ -24,63 +24,52 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 
-class IHeapAllocator
-{
+class IHeapAllocator {
 public:
-	virtual ~IHeapAllocator() {}
+  virtual ~IHeapAllocator() {}
 
-	virtual void ResetHeap() = 0;
-	virtual char *MiniHeapAlloc ( int size ) = 0;
+  virtual void ResetHeap() = 0;
+  virtual char *MiniHeapAlloc(int size) = 0;
 };
 
-class CMiniHeap : public IHeapAllocator
-{
+class CMiniHeap : public IHeapAllocator {
 private:
-	char	*mHeap;
-	char	*mCurrentHeap;
-	int		mSize;
+  char *mHeap;
+  char *mCurrentHeap;
+  int mSize;
+
 public:
+  // reset the heap back to the start
+  void ResetHeap() { mCurrentHeap = mHeap; }
 
-	// reset the heap back to the start
-	void ResetHeap()
-	{
-		mCurrentHeap = mHeap;
-	}
+  // initialise the heap
+  CMiniHeap(int size) {
+    mHeap = (char *)malloc(size);
+    mSize = size;
+    if (mHeap) {
+      ResetHeap();
+    }
+  }
 
-	// initialise the heap
-	CMiniHeap (int size)
-	{
-		mHeap = (char *)malloc(size);
-		mSize = size;
-		if (mHeap)
-		{
-			ResetHeap();
-		}
-	}
+  // free up the heap
+  ~CMiniHeap() {
+    if (mHeap) {
+      free(mHeap);
+    }
+  }
 
-	// free up the heap
-	~CMiniHeap()
-	{
-		if (mHeap)
-		{
-			free(mHeap);
-		}
-	}
-
-	// give me some space from the heap please
-	char *MiniHeapAlloc(int size)
-	{
-		if ((size_t)size < (mSize - ((size_t)mCurrentHeap - (size_t)mHeap)))
-		{
-			char *tempAddress =  mCurrentHeap;
-			mCurrentHeap += size;
-			return tempAddress;
-		}
-		return NULL;
-	}
-
+  // give me some space from the heap please
+  char *MiniHeapAlloc(int size) {
+    if ((size_t)size < (mSize - ((size_t)mCurrentHeap - (size_t)mHeap))) {
+      char *tempAddress = mCurrentHeap;
+      mCurrentHeap += size;
+      return tempAddress;
+    }
+    return NULL;
+  }
 };
 
-// this is in the parent executable, so access ri->GetG2VertSpaceServer() from the rd backends!
+// this is in the parent executable, so access ri->GetG2VertSpaceServer() from
+// the rd backends!
 extern IHeapAllocator *G2VertSpaceServer;
 extern IHeapAllocator *G2VertSpaceClient;

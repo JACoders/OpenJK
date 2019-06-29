@@ -39,9 +39,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef AASINTERN
 void AAS_InitAlternativeRouting(void);
 void AAS_ShutdownAlternativeRouting(void);
-#endif //AASINTERN
+#endif // AASINTERN
 
-
-int AAS_AlternativeRouteGoals(vec3_t start, int startareanum, vec3_t goal, int goalareanum, int travelflags,
-										aas_altroutegoal_t *altroutegoals, int maxaltroutegoals,
-										int type);
+int AAS_AlternativeRouteGoals(vec3_t start, int startareanum, vec3_t goal,
+                              int goalareanum, int travelflags,
+                              aas_altroutegoal_t *altroutegoals,
+                              int maxaltroutegoals, int type);

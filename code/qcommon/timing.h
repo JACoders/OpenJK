@@ -21,47 +21,42 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #if defined(_WIN32) && defined(__GNUC__)
-#include <x86intrin.h>  /* for __rdtsc() */
+#include <x86intrin.h> /* for __rdtsc() */
 #endif
 
-class timing_c
-{
+class timing_c {
 private:
-	uint64_t start;
-	uint64_t end;
+  uint64_t start;
+  uint64_t end;
 
-	int		reset;
+  int reset;
+
 public:
-	timing_c(void)
-	{
-	}
+  timing_c(void) {}
 
-	void Start()
-	{
+  void Start() {
 #ifdef _WIN32
-		start = __rdtsc();
+    start = __rdtsc();
 #else
-		start = 0;
+    start = 0;
 #endif
-	}
+  }
 
-	int End()
-	{
-		int time;
+  int End() {
+    int time;
 
 #ifdef _WIN32
-		end = __rdtsc();
+    end = __rdtsc();
 #else
-		end = 0;
+    end = 0;
 #endif
 
-		time = end - start;
-		if (time < 0)
-		{
-			time = 0;
-		}
-		return((int)time);
-	}
+    time = end - start;
+    if (time < 0) {
+      time = 0;
+    }
+    return ((int)time);
+  }
 };
 
 // end

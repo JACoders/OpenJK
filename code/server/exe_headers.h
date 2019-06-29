@@ -20,8 +20,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-// stuff added for PCH files.  I want to have a lot of stuff included here so the PCH is pretty rich,
-//	but without exposing too many extra protos, so for now (while I experiment)...
+// stuff added for PCH files.  I want to have a lot of stuff included here so
+// the PCH is pretty rich,
+//	but without exposing too many extra protos, so for now (while I
+//experiment)...
 //
 
 #include "../qcommon/q_shared.h"
@@ -33,4 +35,3 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef _MSC_VER
 #pragma hdrstop
 #endif
-

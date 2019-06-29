@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 weaponData_t weaponData[WP_NUM_WEAPONS];
 ammoData_t ammoData[AMMO_MAX];
 
-extern void WP_LoadWeaponParms (void);
+extern void WP_LoadWeaponParms(void);
 
 //
 // Initialization - Read in files and parse into infos
@@ -43,7 +43,4 @@ extern void WP_LoadWeaponParms (void);
 GI_Init
 ===============
 */
-void GI_Init( gameinfo_import_t *import ) {
-
-	WP_LoadWeaponParms ();
-}
+void GI_Init(gameinfo_import_t *import) { WP_LoadWeaponParms(); }

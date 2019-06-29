@@ -24,8 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_local.h"
 
-#include "../game/g_local.h"
-#include "../game/g_functions.h"
 #include "../game/b_local.h"
+#include "../game/g_functions.h"
+#include "../game/g_local.h"
 
 // end
