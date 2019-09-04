@@ -3701,9 +3701,11 @@ static shader_t *FinishShader( void ) {
 	//
 	// set polygon offset
 	//
-	if ( shader.polygonOffset && !shader.sort ) {
-		shader.sort = SS_DECAL;
+	if ( shader.polygonOffset ) {
 		shaderStateBits |= GLS_POLYGON_OFFSET_FILL;
+		if ( !shader.sort ) {
+			shader.sort = SS_DECAL;
+		}
 	}
 
 	int lmStage;
