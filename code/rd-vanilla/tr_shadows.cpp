@@ -350,15 +350,27 @@ void RB_DoShadowTessEnd( vec3_t lightPos )
 	qglDepthFunc(GL_LESS);
 
 	//now using the Carmack Reverse<tm> -rww
-	GL_Cull(CT_FRONT_SIDED);
-	qglStencilOp( GL_KEEP, GL_INCR, GL_KEEP );
+	if (glConfig.doStencilShadowsInOneDrawcall)
+	{
+		GL_Cull(CT_TWO_SIDED);
+		qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		qglStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
-	R_RenderShadowEdges();
+		R_RenderShadowEdges();
+		qglDisable(GL_STENCIL_TEST);
+	}
+	else
+	{
+		GL_Cull(CT_FRONT_SIDED);
+		qglStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
 
-	GL_Cull(CT_BACK_SIDED);
-	qglStencilOp( GL_KEEP, GL_DECR, GL_KEEP );
+		R_RenderShadowEdges();
 
-	R_RenderShadowEdges();
+		GL_Cull(CT_BACK_SIDED);
+		qglStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+
+		R_RenderShadowEdges();
+	}
 
 	qglDepthFunc(GL_LEQUAL);
 #else

@@ -216,6 +216,8 @@ cvar_t *se_language;
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
+PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
@@ -724,6 +726,12 @@ static void GLimp_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = false;
 		ri.Cvar_Set( "r_DynamicGlow","0" );
+	}
+
+	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
+	if ( qglStencilOpSeparate )
+	{
+		glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
 	}
 }
 
