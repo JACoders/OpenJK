@@ -167,7 +167,7 @@ G_InitGame
 */
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
-gentity_t *SelectRandomDeathmatchSpawnPoint( void );
+gentity_t *SelectRandomDeathmatchSpawnPoint( qboolean isbot );
 void SP_info_jedimaster_start( gentity_t *ent );
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
@@ -411,7 +411,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 		if ( i == level.num_entities ) {
 			// no JM saber found. drop one at one of the player spawnpoints
-			gentity_t *spawnpoint = SelectRandomDeathmatchSpawnPoint();
+			gentity_t *spawnpoint = SelectRandomDeathmatchSpawnPoint( qfalse );
 
 			if( !spawnpoint ) {
 				trap->Error( ERR_DROP, "Couldn't find an FFA spawnpoint to drop the jedimaster saber at!\n" );
