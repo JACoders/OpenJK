@@ -118,6 +118,13 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			return pos + normal * scale * bulgeHeight;
 		}
 
+		case DEFORM_BULGE_UNIFORM:
+		{
+			float bulgeHeight = u_DeformParams[1]; // amplitude
+
+			return pos + normal * bulgeHeight;
+		}
+
 		case DEFORM_WAVE:
 		{
 			float base = u_DeformParams[0];

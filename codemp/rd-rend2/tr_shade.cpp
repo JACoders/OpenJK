@@ -362,6 +362,10 @@ static void ComputeDeformValues(deform_t *type, genFunc_t *waveFunc, float defor
 				deformParams[4] = 0.0f;
 				deformParams[5] = 0.0f;
 				deformParams[6] = 0.0f;
+
+				if (ds->bulgeSpeed == 0.0f && ds->bulgeWidth == 0.0f)
+					*type = DEFORM_BULGE_UNIFORM;
+
 				break;
 
 			case DEFORM_MOVE:

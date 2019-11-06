@@ -270,6 +270,7 @@ static size_t GLSL_GetShaderHeader(
 						"#define DEFORM_WAVE %i\n"
 						"#define DEFORM_NORMALS %i\n"
 						"#define DEFORM_BULGE %i\n"
+						"#define DEFORM_BULGE_UNIFORM %i\n"
 						"#define DEFORM_MOVE %i\n"
 						"#define DEFORM_PROJECTION_SHADOW %i\n"
 						"#define WF_NONE %i\n"
@@ -283,6 +284,7 @@ static size_t GLSL_GetShaderHeader(
 						DEFORM_WAVE,
 						DEFORM_NORMALS,
 						DEFORM_BULGE,
+						DEFORM_BULGE_UNIFORM,
 						DEFORM_MOVE,
 						DEFORM_PROJECTION_SHADOW,
 						GF_NONE,
