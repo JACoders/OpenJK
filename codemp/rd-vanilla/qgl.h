@@ -392,6 +392,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define qglVertexPointer glVertexPointer
 #define qglViewport glViewport
 
+extern PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+
 extern PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 extern PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 extern PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
