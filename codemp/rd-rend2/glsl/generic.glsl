@@ -168,14 +168,9 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 				u_DeformParams[5],
 				u_DeformParams[6]);
 
-			float d = dot( lightDir, ground );
-
-			lightDir = lightDir * max( 0.5 - d, 0.0 ) + ground;
-			d = 1.0 / dot( lightDir, ground );
-
+			float d = 1.0 / dot( lightDir, ground );
 			vec3 lightPos = lightDir * d;
-
-			return pos - lightPos * dot( pos, ground ) + groundDist;
+			return pos - lightPos * (dot( pos, ground ) + groundDist);
 		}
 
 		case DEFORM_DISINTEGRATION:

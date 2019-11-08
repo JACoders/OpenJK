@@ -2489,6 +2489,20 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			}
 #endif
 		}
+
+		// projection shadows work fine with personal models
+		if (r_shadows->integer == 3
+			&& RS.fogNum == 0
+			&& (RS.renderfx & (RF_NOSHADOW | RF_DEPTHHACK))
+			&& shader->sort == SS_OPAQUE) {
+
+			CRenderableSurface *newSurf = AllocGhoul2RenderableSurface();
+			newSurf->vboMesh = &RS.currentModel->data.glm->vboModels[RS.lod].vboMeshes[RS.surfaceNum];
+			assert(newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
+			newSurf->surfaceData = surface;
+			newSurf->boneCache = RS.boneCache;
+			R_AddDrawSurf((surfaceType_t *)newSurf, entityNum, tr.projectionShadowShader, 0, qfalse, qfalse, 0);
+		}
 	}
 	
 	// if we are turning off all descendants, then stop this recursion now

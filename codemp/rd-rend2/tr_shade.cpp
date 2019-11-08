@@ -407,9 +407,16 @@ static void ComputeDeformValues(deform_t *type, genFunc_t *waveFunc, float defor
 				deformParams[1] = backEnd.ori.axis[1][2];
 				deformParams[2] = backEnd.ori.axis[2][2];
 				deformParams[3] = backEnd.ori.origin[2] - backEnd.currentEntity->e.shadowPlane;
-				deformParams[4] = backEnd.currentEntity->lightDir[0];
-				deformParams[5] = backEnd.currentEntity->lightDir[1];
-				deformParams[6] = backEnd.currentEntity->lightDir[2];
+
+				vec3_t lightDir;
+				VectorCopy(backEnd.currentEntity->modelLightDir, lightDir);
+				lightDir[2] = 0.0f;
+				VectorNormalize(lightDir);
+				VectorSet(lightDir, lightDir[0] * 0.3f, lightDir[1] * 0.3f, 1.0f);
+
+				deformParams[4] = lightDir[0];
+				deformParams[5] = lightDir[1];
+				deformParams[6] = lightDir[2];
 				break;
 
 			default:
