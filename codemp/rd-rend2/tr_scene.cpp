@@ -436,6 +436,11 @@ void RE_BeginScene(const refdef_t *fd)
 		tr.refdef.num_dlights = 0;
 	}
 
+	if (fd->rdflags & RDF_SKYBOXPORTAL)
+	{
+		tr.world->skyboxportal = 1;
+	}
+
 	// a single frame may have multiple scenes draw inside it --
 	// a 3D game view, 3D status bar renderings, 3D menus, etc.
 	// They need to be distinguished by the light flare code, because

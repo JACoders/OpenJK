@@ -1801,7 +1801,7 @@ typedef struct {
 	int			numGridArrayElements;
 
 
-
+	int			skyboxportal;
 	int			numClusters;
 	int			clusterBytes;
 	const byte	*vis;			// may be passed in by CM_LoadMap to save space
