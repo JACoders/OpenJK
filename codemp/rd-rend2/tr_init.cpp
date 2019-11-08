@@ -2192,6 +2192,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	Ghoul2 Insert End
 	*/
 
+	re.ext.Font_StrLenPixels = RE_Font_StrLenPixelsNew;
+
 	return &re;
 }
 }
