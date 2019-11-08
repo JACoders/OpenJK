@@ -54,6 +54,10 @@ uniform vec3 u_ModelLightDir;
 uniform float u_PortalRange;
 #endif
 
+#if defined(USE_RGBAGEN) || defined(USE_DEFORM_VERTEXES)
+uniform vec4 u_Disintegration; // origin, threshhold
+#endif
+
 #if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
@@ -173,6 +177,21 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 
 			return pos - lightPos * dot( pos, ground ) + groundDist;
 		}
+
+		case DEFORM_DISINTEGRATION:
+		{
+			vec3 delta = u_Disintegration.xyz - pos;
+			float distance = dot(delta, delta);
+			if ( distance < u_Disintegration.w )
+			{
+				return normal * vec3(2.0, 2.0, 0.5) + pos;
+			}
+			else if ( distance < u_Disintegration.w + 50 )
+			{
+				return normal * vec3(1.0, 1.0, 0.0) + pos;
+			}
+			return pos - normal * 0.01;
+		}
 	}
 }
 
@@ -264,7 +283,39 @@ vec4 CalcColor(vec3 position, vec3 normal)
 
 		color.rgb = clamp(u_DirectedLight * incoming + u_AmbientLight, 0.0, 1.0);
 	}
-	
+	else if (u_ColorGen == CGEN_DISINTEGRATION_1)
+	{
+		vec3 delta = u_Disintegration.xyz - position;
+		float distance = dot(delta, delta);
+		if (distance < u_Disintegration.w)
+		{
+			color *= 0.0;
+		}
+		else if (distance < u_Disintegration.w + 60.0)
+		{
+			color *= vec4(0.0, 0.0, 0.0, 1.0);
+		}
+		else if (distance < u_Disintegration.w + 150.0)
+		{
+			color *= vec4(0.435295, 0.435295, 0.435295, 1.0);
+		}
+		else if (distance < u_Disintegration.w + 180.0)
+		{
+			color *= vec4(0.6862745, 0.6862745, 0.6862745, 1.0);
+		}
+		return color;
+	}
+	else if (u_ColorGen == CGEN_DISINTEGRATION_2)
+	{
+		vec3 delta = u_Disintegration.xyz - position;
+		float distance = dot(delta, delta);
+		if (distance < u_Disintegration.w)
+		{
+			color *= 0.0;
+		}
+		return color;
+	}
+
 	vec3 viewer = u_LocalViewOrigin - position;
 
 	if (u_AlphaGen == AGEN_LIGHTING_SPECULAR)
@@ -422,7 +473,7 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in vec4 fogPlane, in float d
 void main()
 {
 	vec4 color  = texture(u_DiffuseMap, var_DiffuseTex);
-
+	color.a *= var_Color.a;
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -451,7 +502,7 @@ void main()
 	color *= vec4(1.0) - u_FogColorMask * fog;
 #endif
 
-	out_Color = color * var_Color;
+	out_Color = vec4(color.rgb * var_Color.rgb, color.a);
 
 #if defined(USE_GLOW_BUFFER)
 	out_Glow = out_Color;

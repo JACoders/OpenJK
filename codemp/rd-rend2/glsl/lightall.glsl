@@ -52,7 +52,9 @@ uniform vec4 u_DiffuseTexOffTurb;
 uniform mat4 u_ModelViewProjectionMatrix;
 uniform vec4 u_BaseColor;
 uniform vec4 u_VertColor;
+uniform vec4 u_Disintegration;
 uniform mat4 u_ModelMatrix;
+uniform int u_ColorGen;
 
 #if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
@@ -94,6 +96,44 @@ out vec4 var_LightDir;
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
 out vec4 var_PrimaryLightDir;
 #endif
+
+vec4 CalcColor(vec3 position)
+{
+	vec4 color = vec4(1.0);
+	if (u_ColorGen == CGEN_DISINTEGRATION_1)
+	{
+		vec3 delta = u_Disintegration.xyz - position;
+		float distance = dot(delta, delta);
+		if (distance < u_Disintegration.w)
+		{
+			color = vec4(0.0);
+		}
+		else if (distance < u_Disintegration.w + 60.0)
+		{
+			color = vec4(0.0, 0.0, 0.0, 1.0);
+		}
+		else if (distance < u_Disintegration.w + 150.0)
+		{
+			color = vec4(0.435295, 0.435295, 0.435295, 1.0);
+		}
+		else if (distance < u_Disintegration.w + 180.0)
+		{
+			color = vec4(0.6862745, 0.6862745, 0.6862745, 1.0);
+		}
+		return color;
+	}
+	else if (u_ColorGen == CGEN_DISINTEGRATION_2)
+	{
+		vec3 delta = u_Disintegration.xyz - position;
+		float distance = dot(delta, delta);
+		if (distance < u_Disintegration.w)
+		{
+			color = vec4(0.0);
+		}
+		return color;
+	}
+	return color;
+}
 
 #if defined(USE_TCGEN) || defined(USE_LIGHTMAP)
 vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3 TCGenVector1)
@@ -164,7 +204,6 @@ float CalcLightAttenuation(in bool isPoint, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
-
 void main()
 {
 #if defined(USE_VERTEX_ANIMATION)
@@ -231,6 +270,8 @@ void main()
 	var_TexCoords.xy = texCoords;
 #endif
 
+	vec4 disintegration = CalcColor(position);
+
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
 
 	position  = (u_ModelMatrix * vec4(position, 1.0)).xyz;
@@ -276,6 +317,7 @@ void main()
 		var_Color.rgb *= u_DirectedLight * (attenuation * NL) + u_AmbientLight;
 #endif
 	}
+	var_Color *= disintegration;
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
 	var_PrimaryLightDir.xyz = u_PrimaryLightOrigin.xyz - (position * u_PrimaryLightOrigin.w);
@@ -638,6 +680,7 @@ void main()
 #endif
 
 	vec4 diffuse = texture(u_DiffuseMap, texCoords);
+	diffuse.a *= var_Color.a;
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -781,7 +824,7 @@ void main()
     out_Color.rgb = diffuse.rgb * lightColor;
 #endif
 	
-	out_Color.a = diffuse.a * var_Color.a;
+	out_Color.a = diffuse.a;
 
 #if defined(USE_GLOW_BUFFER)
 	out_Glow = out_Color;

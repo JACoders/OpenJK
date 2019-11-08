@@ -330,6 +330,12 @@ static void ComputeDeformValues(deform_t *type, genFunc_t *waveFunc, float defor
 	*type = DEFORM_NONE;
 	*waveFunc = GF_NONE;
 
+	if (backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE2)
+	{
+		*type = DEFORM_DISINTEGRATION;
+		return;
+	}
+
 	if(!ShaderRequiresCPUDeforms(tess.shader))
 	{
 		deformStage_t  *ds;
@@ -536,6 +542,8 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 		case CGEN_LIGHTING_DIFFUSE:
 		case CGEN_BAD:
 			break;
+		default:
+			break;
 	}
 
 	//
@@ -585,6 +593,8 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			// Done entirely in vertex program
 			baseColor[3] = 1.0f;
 			vertColor[3] = 0.0f;
+			break;
+		default:
 			break;
 	}
 
@@ -1300,6 +1310,12 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 				index |= GENERICDEF_USE_ALPHA_TEST;
 			}
 
+			if (backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1 | RF_DISINTEGRATE2))
+				index |= GENERICDEF_USE_RGBAGEN;
+
+			if (backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE2)
+				index |= GENERICDEF_USE_DEFORM_VERTEXES;
+
 			result = &tr.genericShader[index];
 			backEnd.pc.c_genericDraws++;
 		}
@@ -1384,6 +1400,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
 		int index = 0;
 		bool useAlphaTestGE192 = false;
+		vec4_t disintegrationInfo;
 
 		if ( !pStage )
 		{
@@ -1401,16 +1418,27 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			assert(backEnd.currentEntity->e.renderfx >= 0);
 
-			if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
+			if ( backEnd.currentEntity->e.renderfx & ( RF_DISINTEGRATE1 | RF_DISINTEGRATE2 ))
 			{
-				// we want to be able to rip a hole in the thing being
-				// disintegrated, and by doing the depth-testing it avoids some
-				// kinds of artefacts, but will probably introduce others?
-				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE;
-				useAlphaTestGE192 = true;
-			}
+				if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
+				{
+					// we want to be able to rip a hole in the thing being
+					// disintegrated, and by doing the depth-testing it avoids some
+					// kinds of artefacts, but will probably introduce others?
+					stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE;
+					forceRGBGen = CGEN_DISINTEGRATION_1;
+					useAlphaTestGE192 = true;
+				}
+				else
+					forceRGBGen = CGEN_DISINTEGRATION_2;
 
-			if ( backEnd.currentEntity->e.renderfx & RF_RGB_TINT )
+				disintegrationInfo[0] = backEnd.currentEntity->e.oldorigin[0];
+				disintegrationInfo[1] = backEnd.currentEntity->e.oldorigin[1];
+				disintegrationInfo[2] = backEnd.currentEntity->e.oldorigin[2];
+				disintegrationInfo[3] = (backEnd.refdef.time - backEnd.currentEntity->e.endTime) * 0.045f;
+				disintegrationInfo[3] *= disintegrationInfo[3];
+			}
+			else if ( backEnd.currentEntity->e.renderfx & RF_RGB_TINT )
 			{//want to use RGBGen from ent
 				forceRGBGen = CGEN_ENTITY;
 			}
@@ -1450,6 +1478,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformInt(UNIFORM_DEFORMFUNC, deformGen);
 			uniformDataWriter.SetUniformFloat(UNIFORM_DEFORMPARAMS, deformParams, 7);
 			uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
+		}
+
+		if ( disintegrationInfo != NULL )
+		{
+			uniformDataWriter.SetUniformVec4(UNIFORM_DISINTEGRATION, disintegrationInfo);
 		}
 
 		if ( input->fogNum ) {
@@ -1710,7 +1743,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-		uint32_t key = RB_CreateSortKey(item, stage, input->shader->sort);
+		uint32_t key = 0;
+		if ((backEnd.currentEntity->e.renderfx & RF_DISTORTION) ||
+			(backEnd.currentEntity->e.renderfx & RF_FORCEPOST) ||
+			(backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA))
+			key = RB_CreateSortKey(item, 15, input->shader->sort);
+		else
+			key = RB_CreateSortKey(item, stage, input->shader->sort);
+
 		RB_AddDrawItem(backEndData->currentPass, key, item);
 
 		// allow skipping out to show just lightmaps during development

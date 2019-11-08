@@ -83,15 +83,16 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_BaseColor", GLSL_VEC4, 1 },
 	{ "u_VertColor", GLSL_VEC4, 1 },
 
-	{ "u_DlightInfo",    GLSL_VEC4, 1 },
-	{ "u_LightForward",  GLSL_VEC3, 1 },
-	{ "u_LightUp",       GLSL_VEC3, 1 },
-	{ "u_LightRight",    GLSL_VEC3, 1 },
-	{ "u_LightOrigin",   GLSL_VEC4, 1 },
-	{ "u_ModelLightDir", GLSL_VEC3, 1 },
-	{ "u_LightRadius",   GLSL_FLOAT, 1 },
-	{ "u_AmbientLight",  GLSL_VEC3, 1 },
-	{ "u_DirectedLight", GLSL_VEC3, 1 },
+	{ "u_DlightInfo",     GLSL_VEC4, 1 },
+	{ "u_LightForward",   GLSL_VEC3, 1 },
+	{ "u_LightUp",        GLSL_VEC3, 1 },
+	{ "u_LightRight",     GLSL_VEC3, 1 },
+	{ "u_LightOrigin",    GLSL_VEC4, 1 },
+	{ "u_ModelLightDir",  GLSL_VEC3, 1 },
+	{ "u_LightRadius",    GLSL_FLOAT, 1 },
+	{ "u_AmbientLight",   GLSL_VEC3, 1 },
+	{ "u_DirectedLight",  GLSL_VEC3, 1 },
+	{ "u_Disintegration", GLSL_VEC4, 1 },
 
 	{ "u_PortalRange", GLSL_FLOAT, 1 },
 
@@ -273,6 +274,7 @@ static size_t GLSL_GetShaderHeader(
 						"#define DEFORM_BULGE_UNIFORM %i\n"
 						"#define DEFORM_MOVE %i\n"
 						"#define DEFORM_PROJECTION_SHADOW %i\n"
+						"#define DEFORM_DISINTEGRATION %i\n"
 						"#define WF_NONE %i\n"
 						"#define WF_SIN %i\n"
 						"#define WF_SQUARE %i\n"
@@ -287,6 +289,7 @@ static size_t GLSL_GetShaderHeader(
 						DEFORM_BULGE_UNIFORM,
 						DEFORM_MOVE,
 						DEFORM_PROJECTION_SHADOW,
+						DEFORM_DISINTEGRATION,
 						GF_NONE,
 						GF_SIN,
 						GF_SQUARE,
@@ -319,8 +322,12 @@ static size_t GLSL_GetShaderHeader(
 					 va("#ifndef colorGen_t\n"
 						"#define colorGen_t\n"
 						"#define CGEN_LIGHTING_DIFFUSE %i\n"
+						"#define CGEN_DISINTEGRATION_1 %i\n"
+						"#define CGEN_DISINTEGRATION_2 %i\n"
 						"#endif\n",
-						CGEN_LIGHTING_DIFFUSE));
+						CGEN_LIGHTING_DIFFUSE,
+						CGEN_DISINTEGRATION_1,
+						CGEN_DISINTEGRATION_2));
 
 	Q_strcat(dest, size,
 					 va("#ifndef alphaGen_t\n"
@@ -2400,6 +2407,12 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 
 	if ( pStage->alphaTestType != ALPHA_TEST_NONE )
 		shaderAttribs |= GENERICDEF_USE_ALPHA_TEST;
+
+	if (backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1 | RF_DISINTEGRATE2))
+		shaderAttribs |= GENERICDEF_USE_RGBAGEN;
+
+	if (backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE2)
+		shaderAttribs |= GENERICDEF_USE_DEFORM_VERTEXES;
 
 	switch (pStage->rgbGen)
 	{
