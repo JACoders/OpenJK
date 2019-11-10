@@ -3322,7 +3322,7 @@ void R_CreateBuiltinImages( void ) {
 			tr.pshadowMaps[x] = R_CreateImage(
 				va("*shadowmap%i", x), NULL, PSHADOW_MAP_SIZE,
 				PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA,
-				IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+				IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
 		}
 	}
 

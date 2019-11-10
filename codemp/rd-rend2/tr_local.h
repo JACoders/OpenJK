@@ -58,8 +58,8 @@ typedef unsigned int glIndex_t;
 #define MAX_IBOS      4096
 
 #define MAX_CALC_PSHADOWS    64
-#define MAX_DRAWN_PSHADOWS    16 // do not increase past 32, because bit flags are used on surfaces
-#define PSHADOW_MAP_SIZE      512
+#define MAX_DRAWN_PSHADOWS    32 // do not increase past 32, because bit flags are used on surfaces
+#define PSHADOW_MAP_SIZE      1024
 #define CUBE_MAP_MIPS      8
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 

@@ -29,19 +29,26 @@ in vec3 var_Normal;
 
 out vec4 out_Color;
 
-float sampleDistMap(sampler2D texMap, vec2 uv, float scale)
-{
-	vec3 distv = texture(texMap, uv).xyz;
-	return dot(distv, vec3(1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0)) * scale;
-}
+#define PCF_SAMPLES 9
+#define TEXTURE_SCALE float(1.0/1024.0)
+
+const vec2 poissonDisc[PCF_SAMPLES] = vec2[PCF_SAMPLES](
+vec2(-0.7055767, 0.196515),    vec2(0.3524343, -0.7791386),
+vec2(0.2391056, 0.9189604),    vec2(-0.07580382, -0.09224417),
+vec2(0.5784913, -0.002528916), vec2(0.192888, 0.4064181),
+vec2(-0.6335801, -0.5247476),  vec2(-0.5579782, 0.7491854),
+vec2(0.7320465, 0.6317794)
+);
 
 void main()
 {
 	vec3 lightToPos = var_Position - u_LightOrigin.xyz;
 	vec2 st = vec2(-dot(u_LightRight, lightToPos), dot(u_LightUp, lightToPos));
-	
+	vec3 L = normalize(-lightToPos);
+	vec3 normal = normalize(var_Normal);
+
 	float fade = length(st);
-	
+
 #if defined(USE_DISCARD)
 	if (fade >= 1.0)
 	{
@@ -50,70 +57,49 @@ void main()
 #endif
 
 	fade = clamp(8.0 - fade * 8.0, 0.0, 1.0);
-	
+
 	st = st * 0.5 + vec2(0.5);
 
-#if defined(USE_SOLID_PSHADOWS)
-	float intensity = max(sign(u_LightRadius - length(lightToPos)), 0.0);
-#else
 	float intensity = clamp((1.0 - dot(lightToPos, lightToPos) / (u_LightRadius * u_LightRadius)) * 2.0, 0.0, 1.0);
-#endif
-	
 	float lightDist = length(lightToPos);
-	float dist;
 
 #if defined(USE_DISCARD)
-	if (dot(u_LightForward, lightToPos) <= 0.0)
+	if (dot(normalize(-u_LightForward), L) <= 0.0)
 	{
 		discard;
 	}
 
-	if (dot(var_Normal, lightToPos) > 0.0)
+	if (dot(normal, L) <= 0.0)
 	{
 		discard;
 	}
-#else
-	intensity *= max(sign(dot(u_LightForward, lightToPos)), 0.0);
-	intensity *= max(sign(-dot(var_Normal, lightToPos)), 0.0);
 #endif
 
+	intensity *= max(dot(normal, L), 0.0);
 	intensity *= fade;
+
+	float part = 0.0;
 #if defined(USE_PCF)
-	float part;
-	
-	dist = sampleDistMap(u_ShadowMap, st + vec2(-1.0/512.0, -1.0/512.0), u_LightRadius);
-	part =  max(sign(lightDist - dist), 0.0);
+	float offsetScale = pow(lightDist, 4.0) * TEXTURE_SCALE * 0.00000001;
+	for (int i = 0; i < PCF_SAMPLES; ++i)
+	{
+		part += float(texture(u_ShadowMap, st + offsetScale * poissonDisc[i]).r != 1.0);
+	}
+#else
+	part = float(texture(u_ShadowMap, st).r != 1.0);
+#endif
 
-	dist = sampleDistMap(u_ShadowMap, st + vec2( 1.0/512.0, -1.0/512.0), u_LightRadius);
-	part += max(sign(lightDist - dist), 0.0);
-
-	dist = sampleDistMap(u_ShadowMap, st + vec2(-1.0/512.0,  1.0/512.0), u_LightRadius);
-	part += max(sign(lightDist - dist), 0.0);
-
-	dist = sampleDistMap(u_ShadowMap, st + vec2( 1.0/512.0,  1.0/512.0), u_LightRadius);
-	part += max(sign(lightDist - dist), 0.0);
-
-  #if defined(USE_DISCARD)
 	if (part <= 0.0)
 	{
 		discard;
 	}
-  #endif
 
-	intensity *= part * 0.25;
+#if defined(USE_PCF)
+	intensity *= part * 0.111;
 #else
-	dist = sampleDistMap(u_ShadowMap, st, u_LightRadius);
-
-  #if defined(USE_DISCARD)
-	if (lightDist - dist <= 0.0)
-	{
-		discard;
-	}
-  #endif
-			
-	intensity *= max(sign(lightDist - dist), 0.0);
+	intensity *= part;
 #endif
-		
-	out_Color.rgb = vec3(0.0);
+
+	out_Color.rgb = vec3(.0,.0,.0);
 	out_Color.a = clamp(intensity, 0.0, 0.75);
 }

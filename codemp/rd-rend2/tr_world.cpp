@@ -353,10 +353,10 @@ static void R_AddWorldSurface(
 	}
 
 	// check for pshadows
-	/*if ( pshadowBits ) *//*{
+	if ( pshadowBits ) {
 		pshadowBits = R_PshadowSurface( surf, pshadowBits);
 		pshadowBits = ( pshadowBits != 0 );
-	}*/
+	}
 
 	bool isPostRenderEntity = false;
 	if ( entityNum != REFENTITYNUM_WORLD )

@@ -2270,6 +2270,7 @@ void R_SetupViewParmsForOrthoRendering(
 
 void R_RenderPshadowMaps(const refdef_t *fd)
 {
+	viewParms_t		shadowParms;
 	int i;
 
 	// first, make a list of shadows
@@ -2302,34 +2303,21 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 
 			switch (model->type)
 			{
-				case MOD_MESH:
+				case MOD_MDXM:
+				case MOD_BAD:
 				{
-					mdvFrame_t *frame = &model->data.mdv[0]->frames[ent->e.frame];
-
-					radius = frame->radius * scale;
-				}
-				break;
-
-				case MOD_MDR:
-				{
-					// FIXME: never actually tested this
-					mdrHeader_t *header = model->data.mdr;
-					int frameSize = (size_t)( &((mdrFrame_t *)0)->bones[ header->numBones ] );
-					mdrFrame_t *frame = ( mdrFrame_t * ) ( ( byte * ) header + header->ofsFrames + frameSize * ent->e.frame);
-
-					radius = frame->radius;
-				}
-				break;
-				case MOD_IQM:
-				{
-					// FIXME: never actually tested this
-					iqmData_t *data = model->data.iqm;
-					vec3_t diag;
-					float *framebounds;
-
-					framebounds = data->bounds + 6*ent->e.frame;
-					VectorSubtract( framebounds+3, framebounds, diag );
-					radius = 0.5f * VectorLength( diag );
+					if (ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)))
+					{
+						// scale the radius if needed
+						float largestScale = ent->e.modelScale[0];
+						if (ent->e.modelScale[1] > largestScale)
+							largestScale = ent->e.modelScale[1];
+						if (ent->e.modelScale[2] > largestScale)
+							largestScale = ent->e.modelScale[2];
+						if (!largestScale)
+							largestScale = 1;
+						radius = ent->e.radius * largestScale * 1.2;
+					}
 				}
 				break;
 
@@ -2341,7 +2329,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 				continue;
 
 			// Cull entities that are behind the viewer by more than lightRadius
-			VectorSubtract(ent->e.origin, fd->vieworg, diff);
+			VectorSubtract(ent->e.lightingOrigin, fd->vieworg, diff);
 			if (DotProduct(diff, fd->viewaxis[0]) < -r_pshadowDist->value)
 				continue;
 
@@ -2351,7 +2339,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 			shadow.entityNums[0] = i;
 			shadow.viewRadius = radius;
 			shadow.lightRadius = r_pshadowDist->value;
-			VectorCopy(ent->e.origin, shadow.viewOrigin);
+			VectorCopy(ent->e.lightingOrigin, shadow.viewOrigin);
 			shadow.sort = DotProduct(diff, diff) / (radius * radius);
 			VectorCopy(ent->e.origin, shadow.entityOrigins[0]);
 			shadow.entityRadiuses[0] = radius;
@@ -2379,60 +2367,6 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 		}
 	}
 
-	// next, merge touching pshadows
-	for ( i = 0; i < tr.refdef.num_pshadows; i++)
-	{
-		pshadow_t *ps1 = &tr.refdef.pshadows[i];
-		int j;
-
-		for (j = i + 1; j < tr.refdef.num_pshadows; j++)
-		{
-			pshadow_t *ps2 = &tr.refdef.pshadows[j];
-			int k;
-			qboolean touch;
-
-			if (ps1->numEntities == 8)
-				break;
-
-			touch = qfalse;
-			if (SpheresIntersect(ps1->viewOrigin, ps1->viewRadius, ps2->viewOrigin, ps2->viewRadius))
-			{
-				for (k = 0; k < ps1->numEntities; k++)
-				{
-					if (SpheresIntersect(ps1->entityOrigins[k], ps1->entityRadiuses[k], ps2->viewOrigin, ps2->viewRadius))
-					{
-						touch = qtrue;
-						break;
-					}
-				}
-			}
-
-			if (touch)
-			{
-				vec3_t newOrigin;
-				float newRadius;
-
-				BoundingSphereOfSpheres(ps1->viewOrigin, ps1->viewRadius, ps2->viewOrigin, ps2->viewRadius, newOrigin, &newRadius);
-				VectorCopy(newOrigin, ps1->viewOrigin);
-				ps1->viewRadius = newRadius;
-
-				ps1->entityNums[ps1->numEntities] = ps2->entityNums[0];
-				VectorCopy(ps2->viewOrigin, ps1->entityOrigins[ps1->numEntities]);
-				ps1->entityRadiuses[ps1->numEntities] = ps2->viewRadius;
-
-				ps1->numEntities++;
-
-				for (k = j; k < tr.refdef.num_pshadows - 1; k++)
-				{
-					tr.refdef.pshadows[k] = tr.refdef.pshadows[k + 1];
-				}
-
-				j--;
-				tr.refdef.num_pshadows--;
-			}
-		}
-	}
-
 	// cap number of drawn pshadows
 	if (tr.refdef.num_pshadows > MAX_DRAWN_PSHADOWS)
 	{
@@ -2447,14 +2381,18 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 		vec3_t ambientLight, directedLight, lightDir;
 
 		VectorSet(lightDir, 0.57735f, 0.57735f, 0.57735f);
-#if 1
-		R_LightForPoint(shadow->viewOrigin, ambientLight, directedLight, lightDir);
 
+		R_LightForPoint(shadow->viewOrigin, ambientLight, directedLight, lightDir);
+#if 1
+		lightDir[2] = 0.0f;
+		VectorNormalize(lightDir);
+		VectorSet(lightDir, lightDir[0] * 0.3f, lightDir[1] * 0.3f, 1.0f);
+		VectorNormalize(lightDir);
+#else
 		// sometimes there's no light
 		if (DotProduct(lightDir, lightDir) < 0.9f)
 			VectorSet(lightDir, 0.0f, 0.0f, 1.0f);
 #endif
-
 		if (shadow->viewRadius * 3.0f > shadow->lightRadius)
 		{
 			shadow->lightRadius = shadow->viewRadius * 3.0f;
@@ -2485,34 +2423,112 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 	for ( i = 0; i < tr.refdef.num_pshadows; i++)
 	{
 		pshadow_t *shadow = &tr.refdef.pshadows[i];
+		int j;
 
-		orientationr_t orientation;
-		R_SetOrientationOriginAndAxis(orientation, shadow->lightOrigin, shadow->lightViewAxis);
+		Com_Memset(&shadowParms, 0, sizeof(shadowParms));
 
-		const float viewRadius = shadow->viewRadius;
-		vec3_t shadowViewBounds[2];
-		VectorSet(shadowViewBounds[0], -viewRadius, -viewRadius, 0.0f);
-		VectorSet(shadowViewBounds[1], viewRadius, viewRadius, shadow->lightRadius);
+		shadowParms.viewportX = 0;
+		shadowParms.viewportY = 0;
+		shadowParms.viewportWidth = PSHADOW_MAP_SIZE;
+		shadowParms.viewportHeight = PSHADOW_MAP_SIZE;
+		shadowParms.isPortal = qfalse;
+		shadowParms.isMirror = qfalse;
 
-		R_SetupViewParmsForOrthoRendering(
-			PSHADOW_MAP_SIZE,
-			PSHADOW_MAP_SIZE,
-			tr.pshadowFbos[i],
-			VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL,
-			orientation,
-			shadowViewBounds);
+		shadowParms.fovX = 90;
+		shadowParms.fovY = 90;
 
-		const int firstDrawSurf = tr.refdef.numDrawSurfs;
-		for (int j = 0; j < shadow->numEntities; j++)
+		shadowParms.targetFbo = tr.pshadowFbos[i];
+
+		shadowParms.flags = (viewParmFlags_t)(VPF_DEPTHSHADOW | VPF_NOVIEWMODEL);
+		shadowParms.zFar = shadow->lightRadius;
+
+		VectorCopy(shadow->lightOrigin, shadowParms.ori.origin);
+
+		VectorCopy(shadow->lightViewAxis[0], shadowParms.ori.axis[0]);
+		VectorCopy(shadow->lightViewAxis[1], shadowParms.ori.axis[1]);
+		VectorCopy(shadow->lightViewAxis[2], shadowParms.ori.axis[2]);
+
 		{
-			int entityNum = shadow->entityNums[j];
-			trRefEntity_t *ent = tr.refdef.entities + entityNum;
-			R_AddEntitySurface(&tr.refdef, ent, entityNum);
-		}
+			tr.viewCount++;
 
-		R_SortAndSubmitDrawSurfs(
-			tr.refdef.drawSurfs + firstDrawSurf,
-			tr.refdef.numDrawSurfs - firstDrawSurf);
+			tr.viewParms = shadowParms;
+			tr.viewParms.frameSceneNum = tr.frameSceneNum;
+			tr.viewParms.frameCount = tr.frameCount;
+
+			// set viewParms.world
+			R_RotateForViewer(&tr.ori, &tr.viewParms);
+
+			{
+				float xmin, xmax, ymin, ymax, znear, zfar;
+				viewParms_t *dest = &tr.viewParms;
+				vec3_t pop;
+
+				xmin = ymin = -shadow->viewRadius;
+				xmax = ymax = shadow->viewRadius;
+				znear = 0;
+				zfar = shadow->lightRadius;
+
+				dest->projectionMatrix[0] = 2 / (xmax - xmin);
+				dest->projectionMatrix[4] = 0;
+				dest->projectionMatrix[8] = (xmax + xmin) / (xmax - xmin);
+				dest->projectionMatrix[12] = 0;
+
+				dest->projectionMatrix[1] = 0;
+				dest->projectionMatrix[5] = 2 / (ymax - ymin);
+				dest->projectionMatrix[9] = (ymax + ymin) / (ymax - ymin);	// normally 0
+				dest->projectionMatrix[13] = 0;
+
+				dest->projectionMatrix[2] = 0;
+				dest->projectionMatrix[6] = 0;
+				dest->projectionMatrix[10] = 2 / (zfar - znear);
+				dest->projectionMatrix[14] = 0;
+
+				dest->projectionMatrix[3] = 0;
+				dest->projectionMatrix[7] = 0;
+				dest->projectionMatrix[11] = 0;
+				dest->projectionMatrix[15] = 1;
+
+				VectorScale(dest->ori.axis[1], 1.0f, dest->frustum[0].normal);
+				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[0].normal, pop);
+				dest->frustum[0].dist = DotProduct(pop, dest->frustum[0].normal);
+
+				VectorScale(dest->ori.axis[1], -1.0f, dest->frustum[1].normal);
+				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[1].normal, pop);
+				dest->frustum[1].dist = DotProduct(pop, dest->frustum[1].normal);
+
+				VectorScale(dest->ori.axis[2], 1.0f, dest->frustum[2].normal);
+				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[2].normal, pop);
+				dest->frustum[2].dist = DotProduct(pop, dest->frustum[2].normal);
+
+				VectorScale(dest->ori.axis[2], -1.0f, dest->frustum[3].normal);
+				VectorMA(dest->ori.origin, -shadow->viewRadius, dest->frustum[3].normal, pop);
+				dest->frustum[3].dist = DotProduct(pop, dest->frustum[3].normal);
+
+				VectorScale(dest->ori.axis[0], -1.0f, dest->frustum[4].normal);
+				VectorMA(dest->ori.origin, -shadow->lightRadius, dest->frustum[4].normal, pop);
+				dest->frustum[4].dist = DotProduct(pop, dest->frustum[4].normal);
+
+				for (j = 0; j < 5; j++)
+				{
+					dest->frustum[j].type = PLANE_NON_AXIAL;
+					SetPlaneSignbits(&dest->frustum[j]);
+				}
+
+				dest->flags |= VPF_FARPLANEFRUSTUM;
+			}
+
+			const int firstDrawSurf = tr.refdef.numDrawSurfs;
+			for (int j = 0; j < shadow->numEntities; j++)
+			{
+				int entityNum = shadow->entityNums[j];
+				trRefEntity_t *ent = tr.refdef.entities + entityNum;
+				R_AddEntitySurface(&tr.refdef, ent, entityNum);
+			}
+
+			R_SortAndSubmitDrawSurfs(
+				tr.refdef.drawSurfs + firstDrawSurf,
+				tr.refdef.numDrawSurfs - firstDrawSurf);
+		}
 	}
 }
 

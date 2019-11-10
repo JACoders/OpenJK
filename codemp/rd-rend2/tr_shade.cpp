@@ -1071,18 +1071,25 @@ static void ForwardDlight( const shaderCommands_t *input,  VertexArraysPropertie
 }
 
 
-static void ProjectPshadowVBOGLSL( void ) {
+static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexArraysProperties *vertexArrays ) {
 	int		l;
 	vec3_t	origin;
 	float	radius;
-
-	shaderCommands_t *input = &tess;
 
 	if ( !backEnd.refdef.num_pshadows ) {
 		return;
 	}
 
-	for ( l = 0 ; l < backEnd.refdef.num_pshadows ; l++ ) {
+	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
+
+	UniformDataWriter uniformDataWriter;
+	SamplerBindingsWriter samplerBindingsWriter;
+	shaderStage_t *pStage = tess.xstages[0];
+
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
+
+	for ( l = 0; l < backEnd.refdef.num_pshadows; l++ ) {
 		pshadow_t	*ps;
 		shaderProgram_t *sp;
 		vec4_t vector;
@@ -1097,46 +1104,58 @@ static void ProjectPshadowVBOGLSL( void ) {
 
 		sp = &tr.pshadowShader;
 
-		GLSL_BindProgram(sp);
+		uniformDataWriter.Start(sp);
 
-		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+		uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 
 		VectorCopy(origin, vector);
 		vector[3] = 1.0f;
-		GLSL_SetUniformVec4(sp, UNIFORM_LIGHTORIGIN, vector);
+		uniformDataWriter.SetUniformVec4(UNIFORM_LIGHTORIGIN, vector);
 
-		VectorScale(ps->lightViewAxis[0], 1.0f / ps->viewRadius, vector);
-		GLSL_SetUniformVec3(sp, UNIFORM_LIGHTFORWARD, vector);
+		VectorScale(ps->lightViewAxis[0], 1.0f, vector);
+		uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTFORWARD, vector);
 
 		VectorScale(ps->lightViewAxis[1], 1.0f / ps->viewRadius, vector);
-		GLSL_SetUniformVec3(sp, UNIFORM_LIGHTRIGHT, vector);
+		uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTRIGHT, vector);
 
 		VectorScale(ps->lightViewAxis[2], 1.0f / ps->viewRadius, vector);
-		GLSL_SetUniformVec3(sp, UNIFORM_LIGHTUP, vector);
+		uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTUP, vector);
 
-		GLSL_SetUniformFloat(sp, UNIFORM_LIGHTRADIUS, radius);
-	  
+		uniformDataWriter.SetUniformFloat(UNIFORM_LIGHTRADIUS, radius);
+
 		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
 		// where they aren't rendered
-		GL_State( GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL );
+		uint32_t stateBits = 0;
+		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL;
 
-		GL_BindToTMU( tr.pshadowMaps[l], TB_DIFFUSEMAP );
+		samplerBindingsWriter.AddStaticImage(tr.pshadowMaps[l], TB_DIFFUSEMAP);
 
-		//
-		// draw
-		//
+		CaptureDrawData(input, pStage, 0, 0);
 
-		if (input->multiDrawPrimitives)
-		{
-			R_DrawMultiElementsVBO(input->multiDrawPrimitives, input->multiDrawMinIndex, input->multiDrawMaxIndex, input->multiDrawNumIndexes, input->multiDrawFirstIndex);
-		}
-		else
-		{
-			R_DrawElementsVBO(input->numIndexes, input->firstIndex, input->minIndex, input->maxIndex);
-		}
+		DrawItem item = {};
+		item.renderState.stateBits = stateBits;
+		item.renderState.cullType = cullType;
+		item.program = sp;
+		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
+		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
+
+		item.numAttributes = vertexArrays->numVertexArrays;
+		item.attributes = ojkAllocArray<vertexAttribute_t>(
+			*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
+		memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
+
+		item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+		// FIXME: This is a bit ugly with the casting
+		item.samplerBindings = samplerBindingsWriter.Finish(
+			*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
+
+		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
+
+		uint32_t key = RB_CreateSortKey(item, 14, input->shader->sort);
+		RB_AddDrawItem(backEndData->currentPass, key, item);
 
 		backEnd.pc.c_totalIndexes += tess.numIndexes;
-		//backEnd.pc.c_dlightIndexes += tess.numIndexes;
+
 		RB_BinTriangleCounts();
 	}
 }
@@ -1884,7 +1903,6 @@ void RB_StageIteratorGeneric( void )
 	{
 		RB_IterateStagesGeneric( input, &vertexArrays );
 
-#if 0 // don't do this for now while I get draw sorting working :)
 		//
 		// pshadows!
 		//
@@ -1893,9 +1911,8 @@ void RB_StageIteratorGeneric( void )
 				tess.shader->sort <= SS_OPAQUE &&
 				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY)))
 		{
-			ProjectPshadowVBOGLSL();
+			ProjectPshadowVBOGLSL( input, &vertexArrays );
 		}
-#endif
 
 		// 
 		// now do any dynamic lighting needed
