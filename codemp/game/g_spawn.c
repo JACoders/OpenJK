@@ -1267,96 +1267,6 @@ static	char *defaultStyles[32][3] =
 		"zyxwvutsrqmlkjihgfedcba",
 		"aammbbzzccllcckkffyyggp"
 	},
-	{	// 14
-		"",
-		"",
-		""
-	},
-	{	// 15
-		"",
-		"",
-		""
-	},
-	{	// 16
-		"",
-		"",
-		""
-	},
-	{	// 17
-		"",
-		"",
-		""
-	},
-	{	// 18
-		"",
-		"",
-		""
-	},
-	{	// 19
-		"",
-		"",
-		""
-	},
-	{	// 20
-		"",
-		"",
-		""
-	},
-	{	// 21
-		"",
-		"",
-		""
-	},
-	{	// 22
-		"",
-		"",
-		""
-	},
-	{	// 23
-		"",
-		"",
-		""
-	},
-	{	// 24
-		"",
-		"",
-		""
-	},
-	{	// 25
-		"",
-		"",
-		""
-	},
-	{	// 26
-		"",
-		"",
-		""
-	},
-	{	// 27
-		"",
-		"",
-		""
-	},
-	{	// 28
-		"",
-		"",
-		""
-	},
-	{	// 29
-		"",
-		"",
-		""
-	},
-	{	// 30
-		"",
-		"",
-		""
-	},
-	{	// 31
-		"",
-		"",
-		""
-	}
 };
 
 void *precachedKyle = 0;
@@ -1496,17 +1406,17 @@ void SP_worldspawn( void )
 	{
 		Com_sprintf(temp, sizeof(temp), "ls_%dr", i);
 		G_SpawnString(temp, defaultStyles[i][0], &text);
-		lengthRed = strlen(text);
+		lengthRed = text ? strlen(text) : 0;
 		trap->SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+0, text);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%dg", i);
 		G_SpawnString(temp, defaultStyles[i][1], &text);
-		lengthGreen = strlen(text);
+		lengthGreen = text ? strlen(text) : 0;
 		trap->SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+1, text);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%db", i);
 		G_SpawnString(temp, defaultStyles[i][2], &text);
-		lengthBlue = strlen(text);
+		lengthBlue = text ? strlen(text) : 0;
 		trap->SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+2, text);
 
 		if (lengthRed != lengthGreen || lengthGreen != lengthBlue)

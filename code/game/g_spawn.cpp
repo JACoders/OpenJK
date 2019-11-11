@@ -1337,96 +1337,6 @@ static	const char *defaultStyles[LS_NUM_STYLES][3] =
 		"zyxwvutsrqmlkjihgfedcba",
 		"aammbbzzccllcckkffyyggp"
 	},
-	{	// 14
-		"",
-		"",
-		""
-	},
-	{	// 15
-		"",
-		"",
-		""
-	},
-	{	// 16
-		"",
-		"",
-		""
-	},
-	{	// 17
-		"",
-		"",
-		""
-	},
-	{	// 18
-		"",
-		"",
-		""
-	},
-	{	// 19
-		"",
-		"",
-		""
-	},
-	{	// 20
-		"",
-		"",
-		""
-	},
-	{	// 21
-		"",
-		"",
-		""
-	},
-	{	// 22
-		"",
-		"",
-		""
-	},
-	{	// 23
-		"",
-		"",
-		""
-	},
-	{	// 24
-		"",
-		"",
-		""
-	},
-	{	// 25
-		"",
-		"",
-		""
-	},
-	{	// 26
-		"",
-		"",
-		""
-	},
-	{	// 27
-		"",
-		"",
-		""
-	},
-	{	// 28
-		"",
-		"",
-		""
-	},
-	{	// 29
-		"",
-		"",
-		""
-	},
-	{	// 30
-		"",
-		"",
-		""
-	},
-	{	// 31
-		"",
-		"",
-		""
-	}
 };
 
 
@@ -1509,17 +1419,17 @@ void SP_worldspawn( void ) {
 		int		lengthRed, lengthBlue, lengthGreen;
 		Com_sprintf(temp, sizeof(temp), "ls_%dr", i);
 		G_SpawnString( temp, defaultStyles[i][0], &s );
-		lengthRed = strlen(s);
+		lengthRed = s ? strlen(s) : 0;
 		gi.SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+0, s);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%dg", i);
 		G_SpawnString(temp, defaultStyles[i][1], &s);
-		lengthGreen = strlen(s);
+		lengthGreen = s ? strlen(s) : 0;
 		gi.SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+1, s);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%db", i);
 		G_SpawnString(temp, defaultStyles[i][2], &s);
-		lengthBlue = strlen(s);
+		lengthBlue = s ? strlen(s) : 0;
 		gi.SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+2, s);
 
 		if (lengthRed != lengthGreen || lengthGreen != lengthBlue)
