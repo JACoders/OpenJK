@@ -1154,7 +1154,7 @@ void G2_TimingModel(
 	const float endFrame = (float)bone.endFrame;
 
 	// we are supposed to be animating right?
-	if ( numFramesInAnim > 0 )
+	if ( numFramesInAnim != 0 )
 	{
 		// did we run off the end?
 		if ( (animSpeed > 0.0f && newLerpFrame > (endFrame - 1)) || 
