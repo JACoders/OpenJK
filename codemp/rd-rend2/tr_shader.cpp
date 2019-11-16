@@ -1326,7 +1326,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 			if (!stage->bundle[TB_NORMALMAP].image[0])
 			{
-				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name);
+				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find normalMap '%s' in shader '%s'\n", token, shader.name);
 				return qfalse;
 			}
 
@@ -1346,6 +1346,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
+			if (!Q_stricmp(token, "$whiteimage"))
+			{
+				stage->bundle[TB_SPECULARMAP].image[0] = tr.whiteImage;
+				continue;
+			}
+
 			int flags = IMGFLAG_NONE;
 
 			if (!shader.noMipMaps)
@@ -1363,7 +1369,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 			if (!stage->bundle[TB_SPECULARMAP].image[0])
 			{
-				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name);
+				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find specMap '%s' in shader '%s'\n", token, shader.name);
 				return qfalse;
 			}
 
@@ -3251,7 +3257,7 @@ static qboolean CollapseStagesToGLSL(void)
 			}
 
 			vertexlit = qfalse;
-			if (diffuse->rgbGen == CGEN_VERTEX_LIT || diffuse->rgbGen == CGEN_EXACT_VERTEX_LIT)
+			if (diffuse->rgbGen == CGEN_VERTEX_LIT || diffuse->rgbGen == CGEN_EXACT_VERTEX_LIT || diffuse->rgbGen == CGEN_VERTEX || diffuse->rgbGen == CGEN_EXACT_VERTEX)
 			{
 				vertexlit = qtrue;
 			}
