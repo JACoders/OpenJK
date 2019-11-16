@@ -556,6 +556,17 @@ void RB_BeginDrawingView (void) {
 #endif
 	}
 
+	if (tr.refdef.rdflags & RDF_AUTOMAP || (!(backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
+	{
+		if (tr.world && tr.world->globalFog)
+		{ 
+			const fog_t		*fog = tr.world->globalFog;
+
+			clearBits |= GL_COLOR_BUFFER_BIT;
+			qglClearColor(fog->parms.color[0], fog->parms.color[1], fog->parms.color[2], 1.0f);
+		}
+	}
+
 	// clear to white for shadow maps
 	if (backEnd.viewParms.flags & VPF_SHADOWMAP)
 	{
