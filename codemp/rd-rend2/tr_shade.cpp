@@ -1218,7 +1218,8 @@ static void RB_FogPass( shaderCommands_t *input, const fog_t *fog, const VertexA
 
 	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
-	uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
+	qboolean hasPlane = fog == tr.world->globalFog ? qfalse : fog->hasSurface;
+	uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, hasPlane);
 	uniformDataWriter.SetUniformFloat(
 		UNIFORM_FOGDEPTHTOOPAQUE,
 		sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque);
