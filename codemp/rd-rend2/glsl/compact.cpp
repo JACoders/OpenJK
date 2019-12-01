@@ -1,3 +1,5 @@
+#define NOMINMAX
+
 #include <algorithm>
 #include <cassert>
 #include <fstream>
@@ -144,9 +146,10 @@ int main( int argc, char *argv[] )
 			continue;
 		}
 
-		std::streampos fileSize;
-		fs.seekg(0, std::ios::end);
-		fileSize = fs.tellg();
+		//from: https://stackoverflow.com/questions/22984956/tellg-function-give-wrong-size-of-file/22986486
+		fs.ignore(std::numeric_limits<std::streamsize>::max());
+		std::streamsize fileSize = fs.gcount();
+		fs.clear();   //  Since ignore will have set eof.
 		fs.seekg(0, std::ios::beg);
 
 		allocator.Reset();
