@@ -89,9 +89,9 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			${OpenJKLibDir}/SDL2/include
 			)
 	else()
-		find_package(SDL2 REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
+		find_package(SDL2 REQUIRED CONFIG)
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIRS})
+		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARIES})
 	endif()
 
 	#    Source Files

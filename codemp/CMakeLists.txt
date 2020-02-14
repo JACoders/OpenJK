@@ -396,9 +396,9 @@ if(BuildMPEngine)
 			${OpenJKLibDir}/SDL2/include
 			)
 	else()
-		find_package(SDL2 REQUIRED)
-		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
+		find_package(SDL2 REQUIRED CONFIG)
+		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIRS})
+		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARIES})
 	endif()
 
 	# EAX is Windows-Only (right?)
