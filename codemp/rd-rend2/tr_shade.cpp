@@ -1548,7 +1548,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 			if (backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA)
 			{
-				vertColor[3] = backEnd.currentEntity->e.shaderRGBA[3] / 255.0f;
+				baseColor[3] = backEnd.currentEntity->e.shaderRGBA[3] / 255.0f; 
+				vertColor[3] = 0.0f;
 			}
 
 			uniformDataWriter.SetUniformVec4(UNIFORM_BASECOLOR, baseColor);
