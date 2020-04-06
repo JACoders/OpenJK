@@ -177,28 +177,14 @@ void main()
 	vec3 normal   = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
 	normal = normalize(normal - vec3(0.5));
 #elif defined(USE_SKELETAL_ANIMATION)
-	vec4 position4 = vec4(0.0);
-	vec4 normal4 = vec4(0.0);
-	vec4 originalPosition = vec4(attr_Position, 1.0);
-	vec4 originalNormal = vec4(attr_Normal - vec3 (0.5), 0.0);
+	mat4x3 influence =
+		u_BoneMatrices[attr_BoneIndexes[0]] * attr_BoneWeights[0] +
+        u_BoneMatrices[attr_BoneIndexes[1]] * attr_BoneWeights[1] +
+        u_BoneMatrices[attr_BoneIndexes[2]] * attr_BoneWeights[2] +
+        u_BoneMatrices[attr_BoneIndexes[3]] * attr_BoneWeights[3];
 
-	for (int i = 0; i < 4; i++)
-	{
-		uint boneIndex = attr_BoneIndexes[i];
-
-		mat4 boneMatrix = mat4(
-			vec4(u_BoneMatrices[boneIndex][0], 0.0),
-			vec4(u_BoneMatrices[boneIndex][1], 0.0),
-			vec4(u_BoneMatrices[boneIndex][2], 0.0),
-			vec4(u_BoneMatrices[boneIndex][3], 1.0)
-		);
-
-		position4 += (boneMatrix * originalPosition) * attr_BoneWeights[i];
-		normal4 += (boneMatrix * originalNormal) * attr_BoneWeights[i];
-	}
-
-	vec3 position = position4.xyz;
-	vec3 normal = normalize(normal4.xyz);
+    vec3 position = influence * vec4(attr_Position, 1.0);
+    vec3 normal = normalize(influence * vec4(attr_Normal - vec3(0.5), 0.0));
 #else
 	vec3 position = attr_Position;
 	vec3 normal   = attr_Normal * 2.0 - vec3(1.0);
