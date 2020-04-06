@@ -2289,6 +2289,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t lightallShader[LIGHTDEF_COUNT];
 	shaderProgram_t shadowmapShader;
 	shaderProgram_t pshadowShader;
+	shaderProgram_t volumeShadowShader;
 	shaderProgram_t down4xShader;
 	shaderProgram_t bokehShader;
 	shaderProgram_t tonemapShader;
@@ -2879,19 +2880,6 @@ int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, ve
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world );
 int R_CubemapForPoint( const vec3_t point );
 
-
-/*
-============================================================
-
-SHADOWS
-
-============================================================
-*/
-
-void RB_ShadowTessEnd( void );
-void RB_ShadowFinish( void );
-void RB_ProjectionShadowDeform( void );
-
 /*
 ============================================================
 
@@ -2980,6 +2968,17 @@ void			RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data);
 void			CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties);
 void			CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties);
 
+/*
+============================================================
+
+SHADOWS
+
+============================================================
+*/
+
+void RB_ShadowTessEnd(shaderCommands_t *input, const VertexArraysProperties *vertexArrays);
+void RB_ShadowFinish(void);
+void RB_ProjectionShadowDeform(void);
 
 /*
 ============================================================

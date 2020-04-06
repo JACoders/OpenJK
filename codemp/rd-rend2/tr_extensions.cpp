@@ -25,6 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define GL_GetProcAddress ri.GL_GetProcAddress
 
+// Stencil commands
+PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+
 // Drawing commands
 PFNGLDRAWRANGEELEMENTSPROC qglDrawRangeElements;
 PFNGLDRAWARRAYSINSTANCEDPROC qglDrawArraysInstanced;
@@ -477,6 +480,7 @@ void GLimp_InitCoreFunctions()
 	GetGLFunction (qglGenerateMipmap, "glGenerateMipmap", qtrue);
 	GetGLFunction (qglDrawBuffers, "glDrawBuffers", qtrue);
 	GetGLFunction (qglClearBufferfv, "glClearBufferfv", qtrue);
+	GetGLFunction (qglStencilOpSeparate, "glStencilOpSeparate", qtrue);
 
 	// Queries
 	GetGLFunction (qglGenQueries, "glGenQueries", qtrue);
@@ -496,6 +500,7 @@ void GLimp_InitCoreFunctions()
 	GetGLFunction (qglDeleteSync, "glDeleteSync", qtrue);
 	GetGLFunction (qglClientWaitSync, "glClientWaitSync", qtrue);
 	GetGLFunction (qglWaitSync, "glWaitSync", qtrue);
+	
 }
 
 void GLW_InitTextureCompression( void );

@@ -1901,6 +1901,10 @@ void RB_StageIteratorGeneric( void )
 			RB_RenderShadowmap(input, &vertexArrays);
 		}
 	}
+	else if (input->shader == tr.shadowShader && r_shadows->integer == 2)
+	{
+		RB_ShadowTessEnd( input, &vertexArrays );
+	}
 	else
 	{
 		RB_IterateStagesGeneric( input, &vertexArrays );
@@ -1986,11 +1990,6 @@ void RB_EndSurface( void ) {
 	}	
 	if (input->xyz[SHADER_MAX_VERTEXES-1][0] != 0) {
 		ri.Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_VERTEXES hit");
-	}
-
-	if ( tess.shader == tr.shadowShader ) {
-		RB_ShadowTessEnd();
-		return;
 	}
 
 	// for debugging of sort order issues, stop rendering after a given sort value

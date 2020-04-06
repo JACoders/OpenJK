@@ -286,8 +286,7 @@ R_AttachFBOTexturePackedDepthStencil
 */
 void R_AttachFBOTexturePackedDepthStencil(int texId)
 {
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
 }
 
 void FBO_AttachTextureImage(image_t *img, int index)
@@ -427,7 +426,7 @@ void FBO_Init(void)
 		FBO_Bind(tr.renderFbo);
 		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, multisample);
 		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 1, multisample);
-		FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24, 0, multisample);
+		FBO_CreateBuffer(tr.renderFbo, GL_DEPTH24_STENCIL8, 0, multisample);
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderFbo);
@@ -439,7 +438,7 @@ void FBO_Init(void)
 		FBO_Bind(tr.msaaResolveFbo);
 		FBO_AttachTextureImage(tr.renderImage, 0);
 		FBO_AttachTextureImage(tr.glowImage, 1);
-		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
+		R_AttachFBOTexturePackedDepthStencil(tr.renderDepthImage->texnum);
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.msaaResolveFbo);
@@ -453,7 +452,7 @@ void FBO_Init(void)
 		FBO_Bind(tr.renderFbo);
 		FBO_AttachTextureImage(tr.renderImage, 0);
 		FBO_AttachTextureImage(tr.glowImage, 1);
-		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
+		R_AttachFBOTexturePackedDepthStencil(tr.renderDepthImage->texnum);
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderFbo);

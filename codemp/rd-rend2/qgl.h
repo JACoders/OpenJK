@@ -361,6 +361,9 @@
 #define qglVertexPointer glVertexPointer
 #define qglViewport glViewport
 
+// Stencil commands
+extern PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+
 // Drawing commands
 extern PFNGLDRAWRANGEELEMENTSPROC qglDrawRangeElements;
 extern PFNGLDRAWARRAYSINSTANCEDPROC qglDrawArraysInstanced;

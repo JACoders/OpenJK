@@ -1732,6 +1732,32 @@ static int GLSL_LoadGPUProgramPShadow(
 	return 1;
 }
 
+static int GLSL_LoadGPUProgramVShadow(
+	ShaderProgramBuilder& builder,
+	Allocator& scratchAlloc)
+{
+	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
+
+	char extradefines[1200];
+	const GPUProgramDesc *programDesc =
+		LoadProgramSource("shadowvolume", allocator, fallback_shadowvolumeProgram);
+	const uint32_t attribs = ATTR_POSITION | ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
+
+	extradefines[0] = '\0';
+	Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
+
+	if (!GLSL_LoadGPUShader(builder, &tr.volumeShadowShader, "shadowvolume", attribs, NO_XFB_VARS,
+		extradefines, *programDesc))
+	{
+		ri.Error(ERR_FATAL, "Could not load shadowvolume shader!");
+	}
+
+	GLSL_InitUniforms(&tr.volumeShadowShader);
+	GLSL_FinishGPUShader(&tr.volumeShadowShader);
+
+	return 1;
+}
+
 static int GLSL_LoadGPUProgramDownscale4x(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
@@ -2188,6 +2214,7 @@ void GLSL_LoadGPUShaders()
 	numEtcShaders += GLSL_LoadGPUProgramTextureColor(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDepthFill(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramPShadow(builder, allocator);
+	numEtcShaders += GLSL_LoadGPUProgramVShadow(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDownscale4x(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramBokeh(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTonemap(builder, allocator);
@@ -2236,6 +2263,7 @@ void GLSL_ShutdownGPUShaders(void)
 
 	GLSL_DeleteGPUShader(&tr.shadowmapShader);
 	GLSL_DeleteGPUShader(&tr.pshadowShader);
+	GLSL_DeleteGPUShader(&tr.volumeShadowShader);
 	GLSL_DeleteGPUShader(&tr.down4xShader);
 	GLSL_DeleteGPUShader(&tr.bokehShader);
 	GLSL_DeleteGPUShader(&tr.tonemapShader);
