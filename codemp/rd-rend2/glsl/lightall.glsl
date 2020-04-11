@@ -128,7 +128,7 @@ vec4 CalcColor(vec3 position)
 		float sqrDistance = dot(delta, delta);
 		if (sqrDistance < u_Disintegration.w)
 		{
-			color = vec4(0.0);
+			return vec4(0.0);
 		}
 		return color;
 	}
