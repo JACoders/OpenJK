@@ -1507,10 +1507,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
 		}
 
-		if ( disintegrationInfo != NULL )
-		{
-			uniformDataWriter.SetUniformVec4(UNIFORM_DISINTEGRATION, disintegrationInfo);
-		}
+		uniformDataWriter.SetUniformVec4(UNIFORM_DISINTEGRATION, disintegrationInfo);
 
 		if ( input->fogNum ) {
 			const fog_t *fog = tr.world->fogs + input->fogNum;
@@ -1771,13 +1768,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-		uint32_t key = 0;
-		if ((backEnd.currentEntity->e.renderfx & RF_DISTORTION) ||
-			(backEnd.currentEntity->e.renderfx & RF_FORCEPOST) ||
-			(backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA))
-			key = RB_CreateSortKey(item, 15, input->shader->sort);
-		else
-			key = RB_CreateSortKey(item, stage, input->shader->sort);
+		uint32_t key = RB_CreateSortKey(item, stage, input->shader->sort);
 
 		RB_AddDrawItem(backEndData->currentPass, key, item);
 

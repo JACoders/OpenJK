@@ -103,20 +103,20 @@ vec4 CalcColor(vec3 position)
 	if (u_ColorGen == CGEN_DISINTEGRATION_1)
 	{
 		vec3 delta = u_Disintegration.xyz - position;
-		float distance = dot(delta, delta);
-		if (distance < u_Disintegration.w)
+		float sqrDistance = dot(delta, delta);
+		if (sqrDistance < u_Disintegration.w)
 		{
 			color = vec4(0.0);
 		}
-		else if (distance < u_Disintegration.w + 60.0)
+		else if (sqrDistance < u_Disintegration.w + 60.0)
 		{
 			color = vec4(0.0, 0.0, 0.0, 1.0);
 		}
-		else if (distance < u_Disintegration.w + 150.0)
+		else if (sqrDistance < u_Disintegration.w + 150.0)
 		{
 			color = vec4(0.435295, 0.435295, 0.435295, 1.0);
 		}
-		else if (distance < u_Disintegration.w + 180.0)
+		else if (sqrDistance < u_Disintegration.w + 180.0)
 		{
 			color = vec4(0.6862745, 0.6862745, 0.6862745, 1.0);
 		}
@@ -125,8 +125,8 @@ vec4 CalcColor(vec3 position)
 	else if (u_ColorGen == CGEN_DISINTEGRATION_2)
 	{
 		vec3 delta = u_Disintegration.xyz - position;
-		float distance = dot(delta, delta);
-		if (distance < u_Disintegration.w)
+		float sqrDistance = dot(delta, delta);
+		if (sqrDistance < u_Disintegration.w)
 		{
 			color = vec4(0.0);
 		}

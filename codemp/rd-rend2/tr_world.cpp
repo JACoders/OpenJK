@@ -352,10 +352,9 @@ static void R_AddWorldSurface(
 		dlightBits = ( dlightBits != 0 );
 	}
 
-	// check for pshadows
-	if ( pshadowBits ) {
-		pshadowBits = R_PshadowSurface( surf, pshadowBits);
-		pshadowBits = ( pshadowBits != 0 );
+	// set pshadows
+	if ( pshadowBits && r_shadows->integer == 4 ) {
+		R_PshadowSurface( surf, pshadowBits );
 	}
 
 	bool isPostRenderEntity = false;

@@ -176,16 +176,17 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 		case DEFORM_DISINTEGRATION:
 		{
 			vec3 delta = u_Disintegration.xyz - pos;
-			float distance = dot(delta, delta);
-			if ( distance < u_Disintegration.w )
+			float sqrDistance = dot(delta, delta);
+			vec3 normalScale = vec3(-0.01);
+			if ( sqrDistance < u_Disintegration.w )
 			{
-				return normal * vec3(2.0, 2.0, 0.5) + pos;
+				normalScale = vec3(2.0, 2.0, 0.5);
 			}
-			else if ( distance < u_Disintegration.w + 50 )
+			else if ( sqrDistance < u_Disintegration.w + 50 )
 			{
-				return normal * vec3(1.0, 1.0, 0.0) + pos;
+				normalScale = vec3(1.0, 1.0, 0.0);
 			}
-			return pos - normal * 0.01;
+			return pos + normal * normalScale;
 		}
 	}
 }
@@ -281,20 +282,20 @@ vec4 CalcColor(vec3 position, vec3 normal)
 	else if (u_ColorGen == CGEN_DISINTEGRATION_1)
 	{
 		vec3 delta = u_Disintegration.xyz - position;
-		float distance = dot(delta, delta);
-		if (distance < u_Disintegration.w)
+		float sqrDistance = dot(delta, delta);
+		if (sqrDistance < u_Disintegration.w)
 		{
 			color *= 0.0;
 		}
-		else if (distance < u_Disintegration.w + 60.0)
+		else if (sqrDistance < u_Disintegration.w + 60.0)
 		{
 			color *= vec4(0.0, 0.0, 0.0, 1.0);
 		}
-		else if (distance < u_Disintegration.w + 150.0)
+		else if (sqrDistance < u_Disintegration.w + 150.0)
 		{
 			color *= vec4(0.435295, 0.435295, 0.435295, 1.0);
 		}
-		else if (distance < u_Disintegration.w + 180.0)
+		else if (sqrDistance < u_Disintegration.w + 180.0)
 		{
 			color *= vec4(0.6862745, 0.6862745, 0.6862745, 1.0);
 		}
@@ -303,8 +304,8 @@ vec4 CalcColor(vec3 position, vec3 normal)
 	else if (u_ColorGen == CGEN_DISINTEGRATION_2)
 	{
 		vec3 delta = u_Disintegration.xyz - position;
-		float distance = dot(delta, delta);
-		if (distance < u_Disintegration.w)
+		float sqrDistance = dot(delta, delta);
+		if (sqrDistance < u_Disintegration.w)
 		{
 			color *= 0.0;
 		}

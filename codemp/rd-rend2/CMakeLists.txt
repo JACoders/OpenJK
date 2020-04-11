@@ -178,7 +178,7 @@ add_executable(compact_glsl
 	${MPDir}/rd-rend2/tr_allocator.cpp
 	${MPDir}/rd-rend2/tr_allocator.h
 	${MPDir}/rd-rend2/tr_glsl_parse.cpp)
-target_compile_definitions(compact_glsl PRIVATE "GLSL_BUILDTOOL")
+target_compile_definitions(compact_glsl PRIVATE "GLSL_BUILDTOOL" "NOMINMAX")
 if (NOT WIN32 AND NOT APPLE)
 	target_compile_definitions(compact_glsl PRIVATE "ARCH_STRING=\"${Architecture}\"")
 endif()
