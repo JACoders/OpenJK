@@ -67,7 +67,6 @@ cpack_add_component_group(JK2SP
 	DESCRIPTION "Jedi Outcast single player game")
 
 if(WIN32)
-	include(CPackNSIS)
 	set(CPACK_NSIS_DISPLAY_NAME "OpenJK")
 	set(CPACK_NSIS_PACKAGE_NAME "OpenJK")
 	set(CPACK_NSIS_MUI_ICON "${SharedDir}/icons/icon.ico")
