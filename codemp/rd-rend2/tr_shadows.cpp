@@ -28,10 +28,6 @@ RB_ShadowTessEnd
 =================
 */
 void RB_ShadowTessEnd( shaderCommands_t *input, const VertexArraysProperties *vertexArrays ) {
-	int		i;
-	int		numTris;
-	GLboolean rgba[4];
-
 	if (glConfig.stencilBits < 4) {
 		ri.Printf(PRINT_ALL, "no stencil bits for stencil writing\n");
 		return;
@@ -125,7 +121,7 @@ void RB_ShadowFinish(void) {
 	GLSL_SetUniformVec4(&tr.textureColorShader, UNIFORM_COLOR, color);
 	GLSL_SetUniformMatrix4x4(&tr.textureColorShader, UNIFORM_MODELVIEWPROJECTIONMATRIX, projection);
 
-	vec4i_t dstBox, srcBox;
+	vec4i_t dstBox;
 	vec4_t quadVerts[4];
 	vec2_t texCoords[4];
 	VectorSet4(dstBox, 0, glConfig.vidHeight, glConfig.vidWidth, 0);
