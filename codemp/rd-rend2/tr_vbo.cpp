@@ -659,8 +659,8 @@ void RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data)
 	qglBufferSubData(GL_UNIFORM_BUFFER,
 			thisFrame->uboWriteOffset, blockInfo->size, data);
 
-	// FIXME: Use actual ubo alignment
-	const size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
+	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
+	const size_t alignedBlockSize = (blockInfo->size + alignment) & ~alignment;
 	thisFrame->uboWriteOffset += alignedBlockSize;
 }
 

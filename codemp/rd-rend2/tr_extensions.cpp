@@ -326,6 +326,7 @@ void GLimp_InitCoreFunctions()
 	GetGLFunction (qglIsVertexArray, "glIsVertexArray", qtrue);
 	
 	// Buffer objects
+	qglGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &glRefConfig.uniformBufferOffsetAlignment);
 	GetGLFunction (qglBindBuffer, "glBindBuffer", qtrue);
 	GetGLFunction (qglDeleteBuffers, "glDeleteBuffers", qtrue);
 	GetGLFunction (qglGenBuffers, "glGenBuffers", qtrue);
