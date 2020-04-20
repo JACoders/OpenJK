@@ -3,7 +3,15 @@ in vec3 attr_Position;
 in vec3 attr_Normal;
 
 uniform mat4 u_ModelViewProjectionMatrix;
-uniform vec3 u_ViewOrigin;
+
+layout(std140) uniform Camera
+{
+	vec4 u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
 
 layout(std140) uniform SurfaceSprite
 {

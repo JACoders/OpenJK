@@ -3177,7 +3177,7 @@ void R_CreateBuiltinImages( void ) {
 		for (x = 0; x < MAX_DLIGHTS; x++)
 		{
 			tr.shadowCubemaps[x].image = R_CreateImage(
-				va("*shadowcubemap%i", x), NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 
+				va("*shadowcubemap%i", x), NULL, DSHADOW_MAP_SIZE, DSHADOW_MAP_SIZE, 
 				IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_CUBEMAP, 
 				GL_DEPTH_COMPONENT24);
 			GL_Bind(tr.shadowCubemaps[x].image);

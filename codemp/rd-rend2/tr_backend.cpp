@@ -656,6 +656,47 @@ void RB_BeginDrawingView (void) {
 
 #define	MAC_EVENT_PUMP_MSEC		5
 
+void DrawItemSetVertexAttributes(
+	DrawItem& drawItem,
+	const vertexAttribute_t *attributes,
+	uint32_t count,
+	Allocator& allocator)
+{
+	drawItem.numAttributes = count;
+	drawItem.attributes = ojkAllocArray<vertexAttribute_t>(allocator, count);
+	memcpy(
+		drawItem.attributes, attributes, sizeof(*drawItem.attributes) * count);
+}
+
+void DrawItemSetSamplerBindings(
+	DrawItem& drawItem,
+	const SamplerBinding *bindings,
+	uint32_t count,
+	Allocator& allocator)
+{
+	drawItem.numSamplerBindings = count;
+	drawItem.samplerBindings = ojkAllocArray<SamplerBinding>(allocator, count);
+	memcpy(
+		drawItem.samplerBindings,
+		bindings,
+		sizeof(*drawItem.samplerBindings) * count);
+}
+
+void DrawItemSetUniformBlockBindings(
+	DrawItem& drawItem,
+	const UniformBlockBinding *bindings,
+	uint32_t count,
+	Allocator& allocator)
+{
+	drawItem.numUniformBlockBindings = count;
+	drawItem.uniformBlockBindings = ojkAllocArray<UniformBlockBinding>(
+		allocator, count);
+	memcpy(
+		drawItem.uniformBlockBindings,
+		bindings,
+		sizeof(*drawItem.uniformBlockBindings) * count);
+}
+
 UniformDataWriter::UniformDataWriter()
 	: failed(false)
 	, shaderProgram(nullptr)
@@ -979,17 +1020,14 @@ static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings 
 	}
 }
 
-static void RB_BindAndUpdateUniformBlocks(
+static void RB_BindUniformBlocks(
 	size_t numBindings,
 	const UniformBlockBinding *bindings)
 {
 	for (size_t i = 0; i < numBindings; ++i)
 	{
 		const UniformBlockBinding& binding = bindings[i];
-		if (binding.data)
-			RB_BindAndUpdateUniformBlock(binding.block, binding.data);
-		else
-			RB_BindUniformBlock(binding.block);
+		RB_BindUniformBlock(binding.ubo, binding.block, binding.offset);
 	}
 }
 
@@ -1012,11 +1050,11 @@ static void RB_BindTransformFeedbackBuffer(const bufferBinding_t& binding)
 {
 	if (memcmp(&glState.currentXFBBO, &binding, sizeof(binding)) != 0)
 	{
-		if (binding.vbo != nullptr)
+		if (binding.buffer != 0)
 			qglBindBufferRange(
 				GL_TRANSFORM_FEEDBACK_BUFFER,
 				0,
-				binding.vbo->vertexesVBO,
+				binding.buffer,
 				binding.offset,
 				binding.size);
 		else
@@ -1042,7 +1080,7 @@ static void RB_DrawItems(
 
 		GL_VertexAttribPointers(drawItem.numAttributes, drawItem.attributes);
 		RB_BindTextures(drawItem.numSamplerBindings, drawItem.samplerBindings);
-		RB_BindAndUpdateUniformBlocks(
+		RB_BindUniformBlocks(
 			drawItem.numUniformBlockBindings,
 			drawItem.uniformBlockBindings);
 		RB_BindTransformFeedbackBuffer(drawItem.transformFeedbackBuffer);
@@ -1224,6 +1262,7 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		if ( shader == oldShader &&	entityNum == oldEntityNum )
 		{
 			// fast path, same as previous sort
+			backEnd.currentDrawSurfIndex = i;
 			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
 			continue;
 		}
@@ -1260,7 +1299,10 @@ static void RB_SubmitDrawSurfsForDepthFill(
 			oldEntityNum = entityNum;
 		}
 
+		backEnd.currentDrawSurfIndex = i;
+
 		// add the triangles for this surface
+		assert(drawSurf->surface != nullptr);
 		rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
 	}
 
@@ -1308,6 +1350,7 @@ static void RB_SubmitDrawSurfs(
 				dlighted == oldDlighted )
 		{
 			// fast path, same as previous sort
+			backEnd.currentDrawSurfIndex = i;
 			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
 			continue;
 		}
@@ -1354,6 +1397,8 @@ static void RB_SubmitDrawSurfs(
 
 			oldEntityNum = entityNum;
 		}
+
+		backEnd.currentDrawSurfIndex = i;
 
 		// add the triangles for this surface
 		rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
@@ -2245,48 +2290,434 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 	}
 }
 
-static void RB_TransformAllAnimations( drawSurf_t *drawSurfs, int numDrawSurfs )
+static void RB_UpdateCameraConstants(gpuFrame_t *frame)
 {
-	drawSurf_t *drawSurf = drawSurfs;
-	for ( int i = 0; i < numDrawSurfs; ++i, ++drawSurf )
+	const float zmax = backEnd.viewParms.zFar;
+	const float zmin = r_znear->value;
+
+	CameraBlock cameraBlock = {};
+	VectorSet4(cameraBlock.viewInfo, zmax / zmin, zmax, 0.0f, 0.0f);
+	VectorCopy(backEnd.refdef.viewaxis[0], cameraBlock.viewForward);
+	VectorCopy(backEnd.refdef.viewaxis[1], cameraBlock.viewLeft);
+	VectorCopy(backEnd.refdef.viewaxis[2], cameraBlock.viewUp);
+	VectorCopy(backEnd.refdef.vieworg, cameraBlock.viewOrigin);
+	tr.cameraUboOffset = RB_AppendConstantsData(
+		frame, &cameraBlock, sizeof(cameraBlock));
+}
+
+static void RB_UpdateSceneConstants(gpuFrame_t *frame)
+{
+	SceneBlock sceneBlock = {};
+	VectorCopy4(backEnd.refdef.sunDir, sceneBlock.primaryLightOrigin);
+	VectorCopy(backEnd.refdef.sunAmbCol, sceneBlock.primaryLightAmbient);
+	VectorCopy(backEnd.refdef.sunCol, sceneBlock.primaryLightColor);
+
+	tr.sceneUboOffset = RB_AppendConstantsData(
+		frame, &sceneBlock, sizeof(sceneBlock));
+}
+
+static void RB_UpdateLightsConstants(gpuFrame_t *frame)
+{
+	LightsBlock lightsBlock = {};
+	lightsBlock.numLights = backEnd.refdef.num_dlights;
+	for (int i = 0; i < lightsBlock.numLights; ++i)
 	{
-		if ( *drawSurf->surface != SF_MDX )
+		const dlight_t *dlight = backEnd.refdef.dlights + i;
+		LightsBlock::Light *lightData = lightsBlock.lights + i;
+
+		VectorSet4(
+			lightData->origin,
+			dlight->origin[0],
+			dlight->origin[1],
+			dlight->origin[2],
+			1.0f);
+		VectorCopy(dlight->color, lightData->color);
+		lightData->radius = dlight->radius;
+	}
+
+	tr.lightsUboOffset = RB_AppendConstantsData(
+		frame, &lightsBlock, sizeof(lightsBlock));
+}
+
+static void RB_UpdateFogsConstants(gpuFrame_t *frame)
+{
+	FogsBlock fogsBlock = {};
+	if (tr.world == nullptr)
+	{
+		fogsBlock.numFogs = 0;
+	}
+	else
+	{
+		fogsBlock.numFogs = tr.world->numfogs - 1; // Don't reserve fog 0 as 'null'
+	}
+
+	for (int i = 0; i < fogsBlock.numFogs; ++i)
+	{
+		const fog_t *fog = tr.world->fogs + i + 1;
+		FogsBlock::Fog *fogData = fogsBlock.fogs + i;
+
+		VectorCopy4(fog->surface, fogData->plane);
+		VectorCopy4(fog->color, fogData->color);
+		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
+		fogData->hasPlane = fog == tr.world->globalFog ? qfalse : fog->hasSurface;
+	}
+
+	tr.fogsUboOffset = RB_AppendConstantsData(
+		frame, &fogsBlock, sizeof(fogsBlock));
+}
+
+static void RB_UpdateEntityLightConstants(
+	EntityBlock& entityBlock,
+	const trRefEntity_t *refEntity)
+{
+	static const float normalizeFactor = 1.0f / 255.0f;
+
+	VectorScale(refEntity->ambientLight, normalizeFactor, entityBlock.ambientLight);
+	VectorScale(refEntity->directedLight, normalizeFactor, entityBlock.directedLight);
+	VectorCopy(refEntity->modelLightDir, entityBlock.modelLightDir);
+
+	VectorCopy(refEntity->lightDir, entityBlock.lightOrigin);
+	entityBlock.lightOrigin[3] = 0.0f;
+	entityBlock.lightRadius = 0.0f;
+}
+
+static void RB_UpdateEntityMatrixConstants(
+	EntityBlock& entityBlock,
+	const trRefEntity_t *refEntity)
+{
+	matrix_t modelViewMatrix;
+	orientationr_t ori;
+	if (refEntity == &tr.worldEntity)
+	{
+		ori = tr.viewParms.world;
+		Matrix16Identity(entityBlock.modelMatrix);
+	}
+	else
+	{
+		R_RotateForEntity(refEntity, &tr.viewParms, &ori);
+		Matrix16Copy(ori.modelMatrix, entityBlock.modelMatrix);
+	}
+	
+	Matrix16Copy(ori.modelViewMatrix, modelViewMatrix);
+	VectorCopy(ori.viewOrigin, entityBlock.localViewOrigin);
+
+	Matrix16Multiply(
+		tr.viewParms.projectionMatrix,
+		modelViewMatrix,
+		entityBlock.modelViewProjectionMatrix);
+}
+
+static void RB_UpdateEntityModelConstants(
+	EntityBlock& entityBlock,
+	const trRefEntity_t *refEntity)
+{
+	static const float normalizeFactor = 1.0f / 255.0f;
+
+	entityBlock.fxVolumetricBase = -1.0f;
+	if (refEntity->e.renderfx & RF_VOLUMETRIC)
+		entityBlock.fxVolumetricBase = refEntity->e.shaderRGBA[0] * normalizeFactor;
+
+	entityBlock.vertexLerp = 0.0f;
+	if (refEntity->e.oldframe || refEntity->e.frame)
+		if (refEntity->e.oldframe != refEntity->e.frame)
+			entityBlock.vertexLerp = refEntity->e.backlerp;
+}
+
+static void RB_UpdateSkyEntityConstants(gpuFrame_t *frame)
+{
+	EntityBlock skyEntityBlock = {};
+	skyEntityBlock.fxVolumetricBase = -1.0f;
+
+	matrix_t translation;
+	Matrix16Translation(backEnd.viewParms.ori.origin, translation);
+
+	matrix_t modelViewMatrix;
+	Matrix16Multiply(
+		backEnd.viewParms.world.modelViewMatrix,
+		translation,
+		modelViewMatrix);
+	Matrix16Multiply(
+		backEnd.viewParms.projectionMatrix,
+		modelViewMatrix,
+		skyEntityBlock.modelViewProjectionMatrix);
+
+	tr.skyEntityUboOffset = RB_AppendConstantsData(
+		frame, &skyEntityBlock, sizeof(skyEntityBlock));
+}
+
+static uint32_t RB_HashEntityShaderKey(int entityNum, int shaderNum)
+{
+	uint32_t hash = 0;
+	hash += entityNum;
+	hash += shaderNum * 119;
+	return (hash ^ (hash >> 10) ^ (hash >> 20));
+}
+
+void RB_InsertEntityShaderUboOffset(
+	EntityShaderUboOffset *offsetMap,
+	int mapSize,
+	int entityNum,
+	int shaderNum,
+	int uboOffset)
+{
+	int hash = RB_HashEntityShaderKey(entityNum, shaderNum) % mapSize;
+	while (offsetMap[hash].inuse)
+		hash = (hash + 1) % mapSize;
+
+	EntityShaderUboOffset& offset = offsetMap[hash];
+	offset.inuse = true;
+	offset.entityNum = entityNum;
+	offset.shaderNum = shaderNum;
+	offset.offset = uboOffset;
+}
+
+int RB_GetEntityShaderUboOffset(
+	EntityShaderUboOffset *offsetMap,
+	int mapSize,
+	int entityNum,
+	int shaderNum)
+{
+	int hash = RB_HashEntityShaderKey(entityNum, shaderNum) % mapSize;
+	while (offsetMap[hash].inuse)
+	{
+		const EntityShaderUboOffset& uboOffset = offsetMap[hash];
+		if (uboOffset.entityNum == entityNum &&
+			uboOffset.shaderNum == shaderNum)
+			return uboOffset.offset;
+		hash = (hash + 1) % mapSize;
+	}
+
+	return -1;
+}
+
+static void ComputeDeformValues(
+	const shader_t *shader,
+	deform_t *type,
+	genFunc_t *waveFunc,
+	vec4_t deformParams0,
+	vec4_t deformParams1)
+{
+	// u_DeformGen
+	*type = DEFORM_NONE;
+	*waveFunc = GF_NONE;
+
+	if (backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE2)
+	{
+		*type = DEFORM_DISINTEGRATION;
+		return;
+	}
+
+	if (!ShaderRequiresCPUDeforms(shader))
+	{
+		// only support the first one
+		const deformStage_t  *ds = &shader->deforms[0];
+
+		switch (ds->deformation)
 		{
-			continue;
+		case DEFORM_WAVE:
+			*type = DEFORM_WAVE;
+			*waveFunc = ds->deformationWave.func;
+
+			deformParams0[0] = ds->deformationWave.base;
+			deformParams0[1] = ds->deformationWave.amplitude;
+			deformParams0[2] = ds->deformationWave.phase;
+			deformParams0[3] = ds->deformationWave.frequency;
+			deformParams1[0] = ds->deformationSpread;
+			deformParams1[1] = 0.0f;
+			deformParams1[2] = 0.0f;
+			break;
+
+		case DEFORM_BULGE:
+			*type = DEFORM_BULGE;
+
+			deformParams0[0] = 0.0f;
+			deformParams0[1] = ds->bulgeHeight; // amplitude
+			deformParams0[2] = ds->bulgeWidth;  // phase
+			deformParams0[3] = ds->bulgeSpeed;  // frequency
+			deformParams1[0] = 0.0f;
+			deformParams1[1] = 0.0f;
+			deformParams1[2] = 0.0f;
+			break;
+
+		case DEFORM_MOVE:
+			*type = DEFORM_MOVE;
+			*waveFunc = ds->deformationWave.func;
+
+			deformParams0[0] = ds->deformationWave.base;
+			deformParams0[1] = ds->deformationWave.amplitude;
+			deformParams0[2] = ds->deformationWave.phase;
+			deformParams0[3] = ds->deformationWave.frequency;
+			deformParams1[0] = ds->moveVector[0];
+			deformParams1[1] = ds->moveVector[1];
+			deformParams1[2] = ds->moveVector[2];
+
+			break;
+
+		case DEFORM_NORMALS:
+			*type = DEFORM_NORMALS;
+
+			deformParams0[0] = 0.0f;
+			deformParams0[1] = ds->deformationWave.amplitude; // amplitude
+			deformParams0[2] = 0.0f;  // phase
+			deformParams0[3] = ds->deformationWave.frequency;  // frequency
+			deformParams1[0] = 0.0f;
+			deformParams1[1] = 0.0f;
+			deformParams1[2] = 0.0f;
+			break;
+
+		case DEFORM_PROJECTION_SHADOW:
+			*type = DEFORM_PROJECTION_SHADOW;
+
+			deformParams0[0] = backEnd.ori.axis[0][2];
+			deformParams0[1] = backEnd.ori.axis[1][2];
+			deformParams0[2] = backEnd.ori.axis[2][2];
+			deformParams0[3] = backEnd.ori.origin[2] - backEnd.currentEntity->e.shadowPlane;
+
+			vec3_t lightDir;
+			VectorCopy(backEnd.currentEntity->modelLightDir, lightDir);
+			lightDir[2] = 0.0f;
+			VectorNormalize(lightDir);
+			VectorSet(lightDir, lightDir[0] * 0.3f, lightDir[1] * 0.3f, 1.0f);
+
+			deformParams1[0] = backEnd.currentEntity->lightDir[0];
+			deformParams1[1] = backEnd.currentEntity->lightDir[1];
+			deformParams1[2] = backEnd.currentEntity->lightDir[2];
+			break;
+
+		default:
+			break;
 		}
 	}
 }
 
-/*
-=============
-RB_DrawSurfs
 
-=============
-*/
-static const void *RB_DrawSurfs( const void *data ) {
-	const drawSurfsCommand_t	*cmd;
+static void RB_UpdateShaderEntityConstants(
+	gpuFrame_t *frame,
+	const int entityNum,
+	const trRefEntity_t *refEntity,
+	const shader_t *shader)
+{
+	ShaderInstanceBlock shaderInstanceBlock = {};
+	ComputeDeformValues(
+		shader,
+		(deform_t *)&shaderInstanceBlock.deformType,
+		(genFunc_t *)&shaderInstanceBlock.deformFunc,
+		shaderInstanceBlock.deformParams0,
+		shaderInstanceBlock.deformParams1);
+	shaderInstanceBlock.portalRange = shader->portalRange;
+	shaderInstanceBlock.time =
+		backEnd.refdef.floatTime - shader->timeOffset;
+	if (entityNum == REFENTITYNUM_WORLD)
+		shaderInstanceBlock.time -= refEntity->e.shaderTime;
 
-	// finish any 2D drawing if needed
-	if ( tess.numIndexes ) {
-		RB_EndSurface();
+	const int uboOffset = RB_AppendConstantsData(
+		frame, &shaderInstanceBlock, sizeof(shaderInstanceBlock));
+
+	RB_InsertEntityShaderUboOffset(
+		tr.shaderInstanceUboOffsetsMap,
+		tr.shaderInstanceUboOffsetsMapSize,
+		entityNum,
+		shader->index,
+		uboOffset);
+}
+
+static void RB_UpdateShaderAndEntityConstants(
+	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
+{
+	//bool updatedEntities[MAX_REFENTITIES] = {};
+
+	// Make the map bigger than it needs to be. Eases collisions and iterations
+	// through the map during lookup/insertion.
+	tr.shaderInstanceUboOffsetsMapSize = numDrawSurfs * 2;
+	tr.shaderInstanceUboOffsetsMap = ojkAllocArray<EntityShaderUboOffset>(
+		*backEndData->perFrameMemory,
+		tr.shaderInstanceUboOffsetsMapSize);
+
+	memset(tr.entityUboOffsets, 0, sizeof(tr.entityUboOffsets));
+	memset(
+		tr.shaderInstanceUboOffsetsMap, 0,
+		sizeof(EntityShaderUboOffset) * tr.shaderInstanceUboOffsetsMapSize);
+
+	for (int i = 0; i < numDrawSurfs; ++i)
+	{
+		const drawSurf_t *drawSurf = drawSurfs + i;
+
+		shader_t *shader;
+		int ignored;
+		int entityNum;
+
+		R_DecomposeSort(
+			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
+
+		const trRefEntity_t *refEntity = backEnd.refdef.entities + entityNum;
+		//FIX ME: find out why this causes trouble!
+		//if (!updatedEntities[entityNum])
+		{
+			EntityBlock entityBlock = {};
+
+			RB_UpdateEntityLightConstants(entityBlock, refEntity);
+			RB_UpdateEntityMatrixConstants(entityBlock, refEntity);
+			RB_UpdateEntityModelConstants(entityBlock, refEntity);
+
+			if (tr.world != nullptr)
+			{
+				if (tr.world->globalFog != nullptr)
+					entityBlock.fogIndex = tr.world->globalFog - tr.world->fogs - 1;
+				else if (drawSurf->fogIndex > 0)
+					entityBlock.fogIndex = drawSurf->fogIndex - 1;
+			}
+
+			tr.entityUboOffsets[entityNum] = RB_AppendConstantsData(
+				frame, &entityBlock, sizeof(entityBlock));
+			//updatedEntities[entityNum] = true;
+		}
+
+		RB_UpdateShaderEntityConstants(frame, entityNum, refEntity, shader);
 	}
 
-	cmd = (const drawSurfsCommand_t *)data;
-
-	backEnd.refdef = cmd->refdef;
-	backEnd.viewParms = cmd->viewParms;
-
-	// clear the z buffer, set the modelview, etc
-	RB_BeginDrawingView ();
-
-	RB_TransformAllAnimations(cmd->drawSurfs, cmd->numDrawSurfs);
-
-	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
-
-	RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);
-
-	return (const void *)(cmd + 1);
+	RB_UpdateSkyEntityConstants(frame);
 }
+
+static void RB_UpdateAnimationConstants(
+	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
+{
+	tr.animationBoneUboOffsets = ojkAllocArray<int>(
+		*backEndData->perFrameMemory, numDrawSurfs);
+	memset(tr.animationBoneUboOffsets, 0, sizeof(int) * numDrawSurfs);
+
+	for (int i = 0; i < numDrawSurfs; ++i)
+	{
+		const drawSurf_t *drawSurf = drawSurfs + i;
+		if (*drawSurf->surface != SF_MDX)
+			continue;
+
+		SkeletonBoneMatricesBlock bonesBlock = {};
+		RB_TransformBones(
+			(CRenderableSurface *)drawSurf->surface,
+			bonesBlock.matrices);
+
+		tr.animationBoneUboOffsets[i] = RB_AppendConstantsData(
+			frame, &bonesBlock, sizeof(bonesBlock));
+	}
+}
+
+static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
+{
+	gpuFrame_t *frame = backEndData->currentFrame;
+	RB_BeginConstantsUpdate(frame);
+
+	RB_UpdateCameraConstants(frame);
+	RB_UpdateSceneConstants(frame);
+	RB_UpdateLightsConstants(frame);
+	RB_UpdateFogsConstants(frame);
+
+	RB_UpdateShaderAndEntityConstants(frame, drawSurfs, numDrawSurfs);
+	RB_UpdateAnimationConstants(frame, drawSurfs, numDrawSurfs);
+
+	RB_EndConstantsUpdate(frame);
+}
+
+
 
 
 /*
@@ -2650,6 +3081,17 @@ const void *RB_PostProcess(const void *data)
 		FBO_BlitFromTexture(tr.screenShadowImage, NULL, NULL, NULL, dstBox, NULL, NULL, 0);
 	}
 
+	if (0 && r_ssao->integer)
+	{
+		vec4i_t dstBox;
+		VectorSet4(dstBox, 0, glConfig.vidHeight, 512, -512);
+		FBO_BlitFromTexture(tr.screenSsaoImage, NULL, NULL, NULL, dstBox, NULL, NULL, 0);
+		VectorSet4(dstBox, 512, glConfig.vidHeight, 512, -512);
+		FBO_BlitFromTexture(tr.quarterImage[0], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
+		VectorSet4(dstBox, 1024, glConfig.vidHeight, 512, -512);
+		FBO_BlitFromTexture(tr.quarterImage[1], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
+	}
+
 	if (0)
 	{
 		vec4i_t dstBox;
@@ -2747,6 +3189,49 @@ static const void *RB_EndTimedBlock( const void *data )
 
 
 /*
+=============
+RB_DrawSurfs
+
+=============
+*/
+static const void *RB_DrawSurfs(const void *data) {
+	const drawSurfsCommand_t	*cmd;
+
+	// finish any 2D drawing if needed
+	if (tess.numIndexes) {
+		RB_EndSurface();
+	}
+
+	cmd = (const drawSurfsCommand_t *)data;
+
+	backEnd.refdef = cmd->refdef;
+	backEnd.viewParms = cmd->viewParms;
+
+	// clear the z buffer, set the modelview, etc
+	RB_BeginDrawingView();
+
+	beginTimedBlockCommand_t cmd2;
+	cmd2.commandId = RC_BEGIN_TIMED_BLOCK;
+	cmd2.name = "Update Constants";
+	cmd2.timerHandle = tr.numTimedBlocks++;
+	RB_BeginTimedBlock(&cmd2);
+
+	RB_UpdateConstants(cmd->drawSurfs, cmd->numDrawSurfs);
+
+	endTimedBlockCommand_t cmd3;
+	cmd3.commandId = RC_END_TIMED_BLOCK;
+	cmd3.timerHandle = cmd2.timerHandle;
+	RB_EndTimedBlock(&cmd3);
+
+	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
+
+	RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);
+
+	return (const void *)(cmd + 1);
+}
+
+
+/*
 ====================
 RB_ExecuteRenderCommands
 ====================
@@ -2819,3 +3304,4 @@ void RB_ExecuteRenderCommands( const void *data ) {
 	}
 
 }
+

@@ -27,7 +27,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 void GLSL_BindNullProgram(void);
 
 const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
-	{ 10, "SurfaceSprite", sizeof(SurfaceSpriteBlock) }
+	{ 0, "Camera", sizeof(CameraBlock) },
+	{ 1, "Scene", sizeof(SceneBlock) },
+	{ 2, "Lights", sizeof(LightsBlock) },
+	{ 3, "Fogs", sizeof(FogsBlock) },
+	{ 4, "Entity", sizeof(EntityBlock) },
+	{ 5, "ShaderInstance", sizeof(ShaderInstanceBlock) },
+	{ 6, "Bones", sizeof(SkeletonBoneMatricesBlock) },
+	{ 10, "SurfaceSprite", sizeof(SurfaceSpriteBlock) },
 };
 
 typedef struct uniformInfo_s
@@ -73,10 +80,6 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_TCGen0Vector1", GLSL_VEC3, 1 },
 	{ "u_TCGen1",        GLSL_INT, 1 },
 
-	{ "u_DeformType",    GLSL_INT, 1 },
-	{ "u_DeformFunc",    GLSL_INT, 1 },
-	{ "u_DeformParams", GLSL_FLOAT, 7 },
-
 	{ "u_ColorGen",  GLSL_INT, 1 },
 	{ "u_AlphaGen",  GLSL_INT, 1 },
 	{ "u_Color",     GLSL_VEC4, 1 },
@@ -93,16 +96,9 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_AmbientLight",   GLSL_VEC3, 1 },
 	{ "u_DirectedLight",  GLSL_VEC3, 1 },
 	{ "u_Disintegration", GLSL_VEC4, 1 },
+	{ "u_LightIndex",    GLSL_INT, 1 },
 
-	{ "u_PortalRange", GLSL_FLOAT, 1 },
-
-	{ "u_FogDistance",  GLSL_VEC4, 1 },
-	{ "u_FogDepth",     GLSL_VEC4, 1 },
-	{ "u_FogEyeT",      GLSL_FLOAT, 1 },
 	{ "u_FogColorMask", GLSL_VEC4, 1 },
-	{ "u_FogPlane",		GLSL_VEC4, 1 },
-	{ "u_FogHasPlane",	GLSL_INT, 1 },
-	{ "u_FogDepthToOpaque", GLSL_FLOAT, 1 },
 
 	{ "u_ModelMatrix",               GLSL_MAT4x4, 1 },
 	{ "u_ModelViewProjectionMatrix", GLSL_MAT4x4, 1 },
@@ -123,14 +119,8 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_AutoExposureMinMax",  GLSL_VEC2, 1 },
 	{ "u_ToneMinAvgMaxLinear", GLSL_VEC3, 1 },
 
-	{ "u_PrimaryLightOrigin",  GLSL_VEC4, 1  },
-	{ "u_PrimaryLightColor",   GLSL_VEC3, 1  },
-	{ "u_PrimaryLightAmbient", GLSL_VEC3, 1  },
-	{ "u_PrimaryLightRadius",  GLSL_FLOAT, 1 },
-
 	{ "u_CubeMapInfo", GLSL_VEC4, 1 },
 
-	{ "u_BoneMatrices",			GLSL_MAT4x3, 20 },
 	{ "u_AlphaTestType",		GLSL_INT, 1 },
 
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
@@ -859,16 +849,104 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 	program->uniformBlocks = 0;
 	for ( int i = 0; i < UNIFORM_BLOCK_COUNT; ++i )
 	{
-		GLuint blockIndex = qglGetUniformBlockIndex(program->program,
-								uniformBlocksInfo[i].name);
-		if ( blockIndex == GL_INVALID_INDEX )
-		{
+		const GLuint blockIndex = qglGetUniformBlockIndex(
+			program->program, uniformBlocksInfo[i].name);
+		if (blockIndex == GL_INVALID_INDEX)
 			continue;
-		}
-
-		qglUniformBlockBinding(program->program, blockIndex,
-				uniformBlocksInfo[i].slot);
+		ri.Printf(
+			PRINT_DEVELOPER,
+			"Binding block %d (name '%s', size %zu bytes) to slot %d\n",
+			blockIndex,
+			uniformBlocksInfo[i].name,
+			uniformBlocksInfo[i].size,
+			uniformBlocksInfo[i].slot);
+		qglUniformBlockBinding(
+			program->program, blockIndex, uniformBlocksInfo[i].slot);
 		program->uniformBlocks |= (1u << i);
+	}
+
+	GLint numActiveUniformBlocks = 0;
+	qglGetProgramiv(program->program, GL_ACTIVE_UNIFORM_BLOCKS, &numActiveUniformBlocks);
+	ri.Printf(PRINT_DEVELOPER, "..num uniform blocks: %d\n", numActiveUniformBlocks);
+	for (int i = 0; i < numActiveUniformBlocks; ++i)
+	{
+		char blockName[512];
+		qglGetActiveUniformBlockName(
+			program->program,
+			i,
+			sizeof(blockName),
+			nullptr,
+			blockName);
+
+		GLint blockSize = 0;
+		qglGetActiveUniformBlockiv(
+			program->program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+		ri.Printf(PRINT_DEVELOPER, "..block %d: %s (%d bytes)\n", i, blockName, blockSize);
+		GLint numMembers = 0;
+		qglGetActiveUniformBlockiv(
+			program->program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &numMembers);
+
+		if (numMembers > 0)
+		{
+			GLuint memberIndices[128];
+			qglGetActiveUniformBlockiv(
+				program->program,
+				i,
+				GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
+				(GLint *)memberIndices);
+
+			GLint memberOffsets[128];
+			qglGetActiveUniformsiv(
+				program->program,
+				numMembers,
+				memberIndices,
+				GL_UNIFORM_OFFSET,
+				memberOffsets);
+
+			GLint memberTypes[128];
+			qglGetActiveUniformsiv(
+				program->program,
+				numMembers,
+				memberIndices,
+				GL_UNIFORM_TYPE,
+				memberTypes);
+
+			for (int j = 0; j < numMembers; ++j)
+			{
+				char memberName[512];
+				qglGetActiveUniformName(
+					program->program,
+					memberIndices[j],
+					sizeof(memberName),
+					nullptr,
+					memberName);
+
+				ri.Printf(PRINT_DEVELOPER, "....uniform '%s'\n", memberName);
+				ri.Printf(PRINT_DEVELOPER, "......offset: %d\n", memberOffsets[j]);
+				switch (memberTypes[j])
+				{
+				case GL_FLOAT:
+					ri.Printf(PRINT_DEVELOPER, "......type: float\n");
+					break;
+				case GL_FLOAT_VEC2:
+					ri.Printf(PRINT_DEVELOPER, "......type: vec2\n");
+					break;
+				case GL_FLOAT_VEC3:
+					ri.Printf(PRINT_DEVELOPER, "......type: vec3\n");
+					break;
+				case GL_FLOAT_VEC4:
+					ri.Printf(PRINT_DEVELOPER, "......type: vec4\n");
+					break;
+				case GL_INT:
+					ri.Printf(PRINT_DEVELOPER, "......type: int\n");
+					break;
+				default:
+					ri.Printf(PRINT_DEVELOPER, "......type: other\n");
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -882,6 +960,9 @@ void GLSL_FinishGPUShader(shaderProgram_t *program)
 
 void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData )
 {
+	if (uniformData == nullptr)
+		return;
+
 	UniformData *data = uniformData;
 	if (data == nullptr)
 		return;

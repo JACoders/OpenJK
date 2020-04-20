@@ -37,7 +37,7 @@ void RB_ShadowTessEnd( shaderCommands_t *input, const VertexArraysProperties *ve
 	{
 		return;
 	}
-
+#if 0
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 	GL_VertexAttribPointers(vertexArrays->numVertexArrays, attribs);
@@ -81,6 +81,7 @@ void RB_ShadowTessEnd( shaderCommands_t *input, const VertexArraysProperties *ve
 
 	uint32_t key = RB_CreateSortKey(item, 15, 15);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
+#endif
 }
 
 

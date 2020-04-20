@@ -327,6 +327,8 @@ void GLimp_InitCoreFunctions()
 	
 	// Buffer objects
 	qglGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &glRefConfig.uniformBufferOffsetAlignment);
+	qglGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &glRefConfig.maxUniformBlockSize);
+	qglGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &glRefConfig.maxUniformBufferBindings);
 	GetGLFunction (qglBindBuffer, "glBindBuffer", qtrue);
 	GetGLFunction (qglDeleteBuffers, "glDeleteBuffers", qtrue);
 	GetGLFunction (qglGenBuffers, "glGenBuffers", qtrue);

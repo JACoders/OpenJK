@@ -272,17 +272,18 @@ void R_BindNullIBO(void)
 
 /*
 ============
-R_InitVBOs
+R_InitGPUBuffers
 ============
 */
-void R_InitVBOs(void)
+void R_InitGPUBuffers(void)
 {
-	ri.Printf(PRINT_ALL, "------- R_InitVBOs -------\n");
+	ri.Printf(PRINT_ALL, "------- R_InitGPUBuffers -------\n");
 
 	// glGenBuffers only allocates the IDs for these buffers. The 'buffer object' is
 	// actually created on first bind.
 	qglGenBuffers(MAX_IBOS, tr.iboNames);
 	qglGenBuffers(MAX_VBOS, tr.vboNames);
+	qglGenBuffers(1, &tr.staticUbo);
 
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
@@ -295,16 +296,17 @@ void R_InitVBOs(void)
 
 /*
 ============
-R_ShutdownVBOs
+R_DestroyGPUBuffers
 ============
 */
-void R_ShutdownVBOs(void)
+void R_DestroyGPUBuffers(void)
 {
-	ri.Printf(PRINT_ALL, "------- R_ShutdownVBOs -------\n");
+	ri.Printf(PRINT_ALL, "------- R_DestroyGPUBuffers -------\n");
 
 	R_BindNullVBO();
 	R_BindNullIBO();
 
+	qglDeleteBuffers(1, &tr.staticUbo);
 	qglDeleteBuffers(MAX_IBOS, tr.iboNames);
 	qglDeleteBuffers(MAX_VBOS, tr.vboNames);
 
@@ -649,12 +651,33 @@ void RB_CommitInternalBufferData()
 	currentFrame->dynamicVboCommitOffset = currentFrame->dynamicVboWriteOffset;
 }
 
-void RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data)
+void RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, int offset)
+{
+	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
+
+	assert(blockInfo->slot < MAX_UBO_BINDINGS);
+
+	bufferBinding_t *currentBinding = glState.currentUBOs + blockInfo->slot;
+	if (currentBinding->buffer != ubo ||
+		currentBinding->offset != offset ||
+		currentBinding->size != blockInfo->size)
+	{
+		qglBindBufferRange(
+			GL_UNIFORM_BUFFER, blockInfo->slot, ubo, offset, blockInfo->size);
+
+		currentBinding->buffer = ubo;
+		currentBinding->offset = offset;
+		currentBinding->size = blockInfo->size;
+	}
+}
+
+int RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data)
 {
 	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
 	gpuFrame_t *thisFrame = backEndData->currentFrame;
+	const int offset = thisFrame->uboWriteOffset;
 
-	RB_BindUniformBlock(block);
+	RB_BindUniformBlock(thisFrame->ubo, block, offset);
 
 	qglBufferSubData(GL_UNIFORM_BUFFER,
 			thisFrame->uboWriteOffset, blockInfo->size, data);
@@ -662,13 +685,52 @@ void RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data)
 	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
 	const size_t alignedBlockSize = (blockInfo->size + alignment) & ~alignment;
 	thisFrame->uboWriteOffset += alignedBlockSize;
+
+	return offset;
 }
 
-void RB_BindUniformBlock(uniformBlock_t block)
+void RB_BeginConstantsUpdate(gpuFrame_t *frame)
 {
-	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
-	gpuFrame_t *thisFrame = backEndData->currentFrame;
+	if (glState.currentGlobalUBO != frame->ubo)
+	{
+		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
+		glState.currentGlobalUBO = frame->ubo;
+	}
 
-	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
-			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
+	const GLbitfield mapFlags =
+		GL_MAP_WRITE_BIT |
+		GL_MAP_UNSYNCHRONIZED_BIT |
+		GL_MAP_FLUSH_EXPLICIT_BIT;
+
+	frame->uboMapBase = frame->uboWriteOffset;
+	frame->uboMemory = qglMapBufferRange(
+		GL_UNIFORM_BUFFER,
+		frame->uboWriteOffset,
+		frame->uboSize - frame->uboWriteOffset,
+		mapFlags);
+}
+
+int RB_AppendConstantsData(
+	gpuFrame_t *frame, const void *data, size_t dataSize)
+{
+	const size_t writeOffset = frame->uboWriteOffset;
+	const size_t relativeOffset = writeOffset - frame->uboMapBase;
+
+	memcpy((char *)frame->uboMemory + relativeOffset, data, dataSize);
+
+	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
+	const size_t alignedBlockSize = (dataSize + alignment) & ~alignment;
+
+	frame->uboWriteOffset += alignedBlockSize;
+	assert(frame->uboWriteOffset > 0);
+	return writeOffset;
+}
+
+void RB_EndConstantsUpdate(const gpuFrame_t *frame)
+{
+	qglFlushMappedBufferRange(
+		GL_UNIFORM_BUFFER,
+		frame->uboMapBase,
+		frame->uboWriteOffset - frame->uboMapBase);
+	qglUnmapBuffer(GL_UNIFORM_BUFFER);
 }

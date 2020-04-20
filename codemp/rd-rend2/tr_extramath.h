@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 typedef float matrix_t[16];
 typedef float mat4x3_t[12];
+typedef float mat3x4_t[12];
 typedef int vec2i_t[2];
 typedef int vec3i_t[3];
 typedef int vec4i_t[4];

@@ -435,12 +435,11 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 	UniformDataWriter uniformDataWriter;
 	SamplerBindingsWriter samplerBindingsWriter;
+	Allocator& frameAllocator = *backEndData->perFrameMemory;
 
 	shaderProgram_t *sp = &tr.lightallShader[0];
 	float colorScale = backEnd.refdef.colorScale;
 	uniformDataWriter.Start(sp);
-	uniformDataWriter.SetUniformMatrix4x4(
-		UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 	uniformDataWriter.SetUniformVec4(
 		UNIFORM_BASECOLOR, colorScale, colorScale, colorScale, 1.0f);
 	uniformDataWriter.SetUniformVec4(
@@ -452,20 +451,25 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 	samplerBindingsWriter.AddStaticImage(image, TB_DIFFUSEMAP);
 
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const UniformBlockBinding uniformBlockBindings[] = {
+		{ currentFrameUbo, tr.skyEntityUboOffset, UNIFORM_BLOCK_ENTITY }
+	};
+
 	DrawItem item = {};
 	item.renderState.cullType = CT_TWO_SIDED;
 	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, tess.shader);
 	item.program = sp;
 	item.ibo = backEndData->currentFrame->dynamicIbo;
-	item.numAttributes = vertexArrays.numVertexArrays;
-	item.attributes = ojkAllocArray<vertexAttribute_t>(
-		*backEndData->perFrameMemory, vertexArrays.numVertexArrays);
-	memcpy(item.attributes, attribs,
-		sizeof(*item.attributes) * item.numAttributes);
+	item.uniformData = uniformDataWriter.Finish(frameAllocator);
 
-	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 	item.samplerBindings = samplerBindingsWriter.Finish(
-		*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
+		frameAllocator, (int *)&item.numSamplerBindings);
+
+	DrawItemSetVertexAttributes(
+		item, attribs, vertexArrays.numVertexArrays, frameAllocator);
+	DrawItemSetUniformBlockBindings(
+		item, uniformBlockBindings, frameAllocator);
 
 	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, &tess);
 	item.draw.params.indexed.numIndices -= tess.firstIndex;
@@ -842,17 +846,7 @@ void RB_StageIteratorSky( void ) {
 	// draw the outer skybox
 	if ( tess.shader->sky.outerbox[0] &&
 			tess.shader->sky.outerbox[0] != tr.defaultImage ) {
-		// FIXME: this could be a lot cleaner
-		matrix_t trans, product;
-		matrix_t oldmodelview;
-
-		Matrix16Copy( glState.modelview, oldmodelview );
-		Matrix16Translation( backEnd.viewParms.ori.origin, trans );
-		Matrix16Multiply( glState.modelview, trans, product );
-
-		GL_SetModelviewMatrix( product );
 		DrawSkyBox( tess.shader );
-		GL_SetModelviewMatrix( oldmodelview );
 	}
 
 	// generate the vertexes for all the clouds, which will be drawn

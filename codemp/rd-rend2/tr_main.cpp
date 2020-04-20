@@ -2149,8 +2149,8 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 
 		shadowParms.viewportX = 0;
 		shadowParms.viewportY = 0;
-		shadowParms.viewportWidth = PSHADOW_MAP_SIZE;
-		shadowParms.viewportHeight = PSHADOW_MAP_SIZE;
+		shadowParms.viewportWidth = DSHADOW_MAP_SIZE;
+		shadowParms.viewportHeight = DSHADOW_MAP_SIZE;
 		shadowParms.isPortal = qfalse;
 		shadowParms.isMirror = qtrue; // because it is
 

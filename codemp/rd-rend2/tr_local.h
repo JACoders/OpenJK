@@ -60,6 +60,7 @@ typedef unsigned int glIndex_t;
 #define MAX_CALC_PSHADOWS    64
 #define MAX_DRAWN_PSHADOWS    32 // do not increase past 32, because bit flags are used on surfaces
 #define PSHADOW_MAP_SIZE      1024
+#define DSHADOW_MAP_SIZE      512
 #define CUBE_MAP_MIPS      8
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 
@@ -683,6 +684,91 @@ struct SurfaceSpriteBlock
 	float fadeScale;
 	float widthVariance;
 	float heightVariance;
+	float pad0;
+};
+
+struct CameraBlock
+{
+	vec4_t viewInfo;
+	vec3_t viewOrigin;
+	float pad0;
+	vec3_t viewForward;
+	float pad1;
+	vec3_t viewLeft;
+	float pad2;
+	vec3_t viewUp;
+	float pad3;
+};
+
+struct SceneBlock
+{
+	vec4_t primaryLightOrigin;
+	vec3_t primaryLightAmbient;
+	float pad0;
+	vec3_t primaryLightColor;
+	float primaryLightRadius;
+};
+
+struct LightsBlock
+{
+	struct Light
+	{
+		vec4_t origin;
+		vec3_t color;
+		float radius;
+	};
+
+	int numLights;
+	float pad0[3];
+
+	Light lights[MAX_DLIGHTS];
+};
+
+struct FogsBlock
+{
+	struct Fog
+	{
+		vec4_t plane;
+		vec4_t color;
+		float depthToOpaque;
+		int hasPlane;
+		float pad1[2];
+	};
+
+	int numFogs;
+	float pad0[3];
+	Fog fogs[16];
+};
+
+struct EntityBlock
+{
+	matrix_t modelMatrix;
+	matrix_t modelViewProjectionMatrix;
+	vec4_t lightOrigin;
+	vec3_t ambientLight;
+	float lightRadius;
+	vec3_t directedLight;
+	float fxVolumetricBase;
+	vec3_t modelLightDir;
+	float vertexLerp;
+	vec3_t localViewOrigin;
+	int fogIndex;
+};
+
+struct ShaderInstanceBlock
+{
+	vec4_t deformParams0;
+	vec4_t deformParams1;
+	float time;
+	float portalRange;
+	int deformType;
+	int deformFunc;
+	float pad1;
+};
+
+struct SkeletonBoneMatricesBlock
+{
+	mat3x4_t matrices[20];
 };
 
 struct surfaceSprite_t
@@ -1127,6 +1213,13 @@ enum
 
 enum uniformBlock_t
 {
+	UNIFORM_BLOCK_CAMERA,
+	UNIFORM_BLOCK_SCENE,
+	UNIFORM_BLOCK_LIGHTS,
+	UNIFORM_BLOCK_FOGS,
+	UNIFORM_BLOCK_ENTITY,
+	UNIFORM_BLOCK_SHADER_INSTANCE,
+	UNIFORM_BLOCK_BONES,
 	UNIFORM_BLOCK_SURFACESPRITE,
 	UNIFORM_BLOCK_COUNT
 };
@@ -1209,10 +1302,6 @@ typedef enum
 	UNIFORM_TCGEN0VECTOR1,
 	UNIFORM_TCGEN1,
 
-	UNIFORM_DEFORMTYPE,
-	UNIFORM_DEFORMFUNC,
-	UNIFORM_DEFORMPARAMS,
-
 	UNIFORM_COLORGEN,
 	UNIFORM_ALPHAGEN,
 	UNIFORM_COLOR,
@@ -1229,16 +1318,9 @@ typedef enum
 	UNIFORM_AMBIENTLIGHT,
 	UNIFORM_DIRECTEDLIGHT,
 	UNIFORM_DISINTEGRATION,
+	UNIFORM_LIGHTINDEX,
 
-	UNIFORM_PORTALRANGE,
-
-	UNIFORM_FOGDISTANCE,
-	UNIFORM_FOGDEPTH,
-	UNIFORM_FOGEYET,
 	UNIFORM_FOGCOLORMASK,
-	UNIFORM_FOGPLANE,
-	UNIFORM_FOGHASPLANE,
-	UNIFORM_FOGDEPTHTOOPAQUE,
 
 	UNIFORM_MODELMATRIX,
 	UNIFORM_MODELVIEWPROJECTIONMATRIX,
@@ -1259,14 +1341,8 @@ typedef enum
 	UNIFORM_AUTOEXPOSUREMINMAX,
 	UNIFORM_TONEMINAVGMAXLINEAR,
 
-	UNIFORM_PRIMARYLIGHTORIGIN,
-	UNIFORM_PRIMARYLIGHTCOLOR,
-	UNIFORM_PRIMARYLIGHTAMBIENT,
-	UNIFORM_PRIMARYLIGHTRADIUS,
-
 	UNIFORM_CUBEMAPINFO,
 
-	UNIFORM_BONE_MATRICES,
 	UNIFORM_ALPHA_TEST_TYPE,
 
 	UNIFORM_FX_VOLUMETRIC_BASE,
@@ -2013,9 +2089,10 @@ struct vertexAttribute_t
 	int stepRate;
 };
 
+#define MAX_UBO_BINDINGS (16)
 struct bufferBinding_t
 {
-	VBO_t *vbo;
+	GLuint buffer;
 	int offset;
 	int size;
 };
@@ -2037,13 +2114,13 @@ typedef struct glstate_s {
 	int				vertexAttribsTexCoordOffset[2];
 	qboolean        vertexAnimation;
 	qboolean		skeletalAnimation;
-	mat4x3_t       *boneMatrices;
-	int				numBones;
 	shaderProgram_t *currentProgram;
 	FBO_t          *currentFBO;
 	VBO_t          *currentVBO;
 	IBO_t          *currentIBO;
 	bufferBinding_t currentXFBBO;
+	GLuint			currentGlobalUBO;
+	bufferBinding_t currentUBOs[MAX_UBO_BINDINGS];
 	matrix_t        modelview;
 	matrix_t        projection;
 	matrix_t		modelviewProjection;
@@ -2084,6 +2161,8 @@ typedef struct {
 
 	int textureCompression;
 	int uniformBufferOffsetAlignment;
+	int maxUniformBlockSize;
+	int maxUniformBufferBindings;
 
 	qboolean immutableTextures;
 	qboolean immutableBuffers;
@@ -2153,6 +2232,7 @@ typedef struct {
 	orientationr_t	ori;
 	backEndCounters_t	pc;
 	trRefEntity_t	*currentEntity;
+	int			currentDrawSurfIndex;
 	qboolean	skyRenderedThisView;	// flag for drawing sun
 
 	qboolean	projection2D;	// if qtrue, drawstretchpic doesn't need to change modes
@@ -2164,6 +2244,14 @@ typedef struct {
 	qboolean    framePostProcessed;
 	qboolean    depthFill;
 } backEndState_t;
+
+struct EntityShaderUboOffset
+{
+	bool inuse;
+	int entityNum;
+	int shaderNum;
+	int offset;
+};
 
 /*
 ** trGlobals_t 
@@ -2307,6 +2395,21 @@ typedef struct trGlobals_s {
 	shaderProgram_t spriteShader[SSDEF_COUNT];
 	shaderProgram_t weatherUpdateShader;
 	shaderProgram_t weatherShader;
+
+	GLuint staticUbo;
+	int entity2DUboOffset;
+
+	int cameraUboOffset;
+
+	int sceneUboOffset;
+	int lightsUboOffset;
+	int fogsUboOffset;
+	int skyEntityUboOffset;
+	int entityUboOffsets[MAX_REFENTITIES + 1];
+
+	int *animationBoneUboOffsets;
+	EntityShaderUboOffset *shaderInstanceUboOffsetsMap;
+	int shaderInstanceUboOffsetsMapSize;
 
 	// -----------------------------------------
 
@@ -2958,14 +3061,18 @@ void            R_BindNullVBO(void);
 void            R_BindIBO(IBO_t * ibo);
 void            R_BindNullIBO(void);
 
-void            R_InitVBOs(void);
-void            R_ShutdownVBOs(void);
+void			R_InitGPUBuffers(void);
+void            R_DestroyGPUBuffers(void);
 void            R_VBOList_f(void);
 
 void            RB_UpdateVBOs(unsigned int attribBits);
 void			RB_CommitInternalBufferData();
-void			RB_BindUniformBlock(uniformBlock_t block);
-void			RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data);
+
+void			RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, int offset);
+int				RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data);
+void			RB_BeginConstantsUpdate(struct gpuFrame_t *frame);
+void			RB_EndConstantsUpdate(const struct gpuFrame_t *frame);
+int				RB_AppendConstantsData(struct gpuFrame_t *frame, const void *data, size_t dataSize);
 void			CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties);
 void			CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties);
 
@@ -3143,6 +3250,7 @@ public:
 
 void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum );
 void RB_SurfaceGhoul( CRenderableSurface *surface );
+void RB_TransformBones(CRenderableSurface *surf, mat3x4_t *outMatrices);
 /*
 Ghoul2 Insert End
 */
@@ -3362,6 +3470,9 @@ struct gpuFrame_t
 	GLsync sync;
 	GLuint ubo;
 	size_t uboWriteOffset;
+	size_t uboSize;
+	size_t uboMapBase;
+	void *uboMemory;
 
 	screenshotReadback_t screenshotReadback;
 
@@ -3489,7 +3600,8 @@ struct SamplerBinding
 
 struct UniformBlockBinding
 {
-	void *data;
+	GLuint ubo;
+	int offset;
 	uniformBlock_t block;
 };
 
@@ -3561,6 +3673,31 @@ struct DrawItem
 
 	DrawCommand draw;
 };
+
+void DrawItemSetSamplerBindings(
+	DrawItem& drawItem,
+	const SamplerBinding *bindings,
+	uint32_t count,
+	Allocator& allocator);
+void DrawItemSetUniformBlockBindings(
+	DrawItem& drawItem,
+	const UniformBlockBinding *bindings,
+	uint32_t count,
+	Allocator& allocator);
+void DrawItemSetVertexAttributes(
+	DrawItem& drawItem,
+	const vertexAttribute_t *attributes,
+	uint32_t count,
+	Allocator& allocator);
+
+template<int N>
+void DrawItemSetUniformBlockBindings(
+	DrawItem& drawItem,
+	const UniformBlockBinding(&bindings)[N],
+	Allocator& allocator)
+{
+	DrawItemSetUniformBlockBindings(drawItem, &bindings[0], N, allocator);
+}
 
 class UniformDataWriter
 {

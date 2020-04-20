@@ -1,5 +1,5 @@
 /*[Vertex]*/
-#if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
+#if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT) && !defined(USE_LIGHT_VECTOR)
 #define PER_PIXEL_LIGHTING
 #endif
 in vec2 attr_TexCoord0;
@@ -28,19 +28,51 @@ in vec4 attr_BoneWeights;
 in vec3 attr_LightDirection;
 #endif
 
+layout(std140) uniform Camera
+{
+	vec4 u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
+
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+};
+
+layout(std140) uniform Entity
+{
+	mat4 u_ModelMatrix;
+	mat4 u_ModelViewProjectionMatrix;
+	vec4 u_LocalLightOrigin;
+	vec3 u_AmbientLight;
+	float u_LocalLightRadius;
+	vec3 u_DirectedLight;
+	float _u_FXVolumetricBase;
+	vec3 u_ModelLightDir;
+	float u_VertexLerp;
+	vec3 u_LocalViewOrigin;
+};
+uniform float u_FXVolumetricBase;
+
+layout(std140) uniform Bones
+{
+	mat3x4 u_BoneMatrices[20];
+};
+
 #if defined(USE_DELUXEMAP)
 uniform vec4   u_EnableTextures; // x = normal, y = deluxe, z = specular, w = cube
-#endif
-
-#if defined(PER_PIXEL_LIGHTING)
-uniform vec3 u_ViewOrigin;
 #endif
 
 #if defined(USE_TCGEN) || defined(USE_LIGHTMAP)
 uniform int u_TCGen0;
 uniform vec3 u_TCGen0Vector0;
 uniform vec3 u_TCGen0Vector1;
-uniform vec3 u_LocalViewOrigin;
 uniform int u_TCGen1;
 #endif
 
@@ -49,35 +81,10 @@ uniform vec4 u_DiffuseTexMatrix;
 uniform vec4 u_DiffuseTexOffTurb;
 #endif
 
-uniform mat4 u_ModelViewProjectionMatrix;
 uniform vec4 u_BaseColor;
 uniform vec4 u_VertColor;
 uniform vec4 u_Disintegration;
-uniform mat4 u_ModelMatrix;
 uniform int u_ColorGen;
-
-#if defined(USE_VERTEX_ANIMATION)
-uniform float u_VertexLerp;
-#elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4x3 u_BoneMatrices[20];
-#endif
-
-#if defined(USE_LIGHT_VECTOR)
-uniform vec4 u_LightOrigin;
-uniform float u_LightRadius;
-  #if defined(USE_FAST_LIGHT)
-uniform vec3 u_DirectedLight;
-uniform vec3 u_AmbientLight;
-  #endif
-#endif
-
-#if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-uniform vec4 u_PrimaryLightOrigin;
-uniform float u_PrimaryLightRadius;
-#endif
-
-uniform vec3 u_ViewForward;
-uniform float u_FXVolumetricBase;
 
 out vec4 var_TexCoords;
 out vec4 var_Color;
@@ -204,6 +211,16 @@ float CalcLightAttenuation(in bool isPoint, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
+mat4x3 GetBoneMatrix(uint index)
+{
+	mat3x4 bone = u_BoneMatrices[index];
+	return mat4x3(
+		bone[0].x, bone[1].x, bone[2].x,
+		bone[0].y, bone[1].y, bone[2].y,
+		bone[0].z, bone[1].z, bone[2].z,
+		bone[0].w, bone[1].w, bone[2].w);
+}
+
 void main()
 {
 #if defined(USE_VERTEX_ANIMATION)
@@ -212,10 +229,10 @@ void main()
 	vec3 tangent   = mix(attr_Tangent.xyz, attr_Tangent2.xyz, u_VertexLerp);
 #elif defined(USE_SKELETAL_ANIMATION)
 	mat4x3 influence =
-		u_BoneMatrices[attr_BoneIndexes[0]] * attr_BoneWeights[0] +
-        u_BoneMatrices[attr_BoneIndexes[1]] * attr_BoneWeights[1] +
-        u_BoneMatrices[attr_BoneIndexes[2]] * attr_BoneWeights[2] +
-        u_BoneMatrices[attr_BoneIndexes[3]] * attr_BoneWeights[3];
+		GetBoneMatrix(attr_BoneIndexes[0]) * attr_BoneWeights[0] +
+        GetBoneMatrix(attr_BoneIndexes[1]) * attr_BoneWeights[1] +
+        GetBoneMatrix(attr_BoneIndexes[2]) * attr_BoneWeights[2] +
+        GetBoneMatrix(attr_BoneIndexes[3]) * attr_BoneWeights[3];
 
     vec3 position = influence * vec4(attr_Position, 1.0);
     vec3 normal = normalize(influence * vec4(attr_Normal - vec3(0.5), 0.0));
@@ -264,7 +281,7 @@ void main()
 #endif
 
 #if defined(USE_LIGHT_VECTOR)
-	vec3 L = u_LightOrigin.xyz - (position * u_LightOrigin.w);
+	vec3 L = vec3(0.0);
 #elif defined(PER_PIXEL_LIGHTING)
 	vec3 L = attr_LightDirection * 2.0 - vec3(1.0);
 	L = (u_ModelMatrix * vec4(L, 0.0)).xyz;
@@ -276,7 +293,7 @@ void main()
 
 	if ( u_FXVolumetricBase > 0.0 )
 	{
-		vec3 viewForward = u_ViewForward;
+		vec3 viewForward = u_ViewForward.xyz;
 
 		float d = clamp(dot(normalize(viewForward), normalize(normal)), 0.0, 1.0);
 		d = d * d;
@@ -287,14 +304,6 @@ void main()
 	else
 	{
 		var_Color = u_VertColor * attr_Color + u_BaseColor;
-
-#if defined(USE_LIGHT_VECTOR) && defined(USE_FAST_LIGHT)
-		float sqrLightDist = dot(L, L);
-		float attenuation = CalcLightAttenuation(u_LightOrigin.w, u_LightRadius * u_LightRadius / sqrLightDist);
-		float NL = clamp(dot(normalize(normal), L) / sqrt(sqrLightDist), 0.0, 1.0);
-
-		var_Color.rgb *= u_DirectedLight * (attenuation * NL) + u_AmbientLight;
-#endif
 	}
 	var_Color *= disintegration;
 
@@ -304,18 +313,14 @@ void main()
 #endif
 
 #if defined(PER_PIXEL_LIGHTING)
-  #if defined(USE_LIGHT_VECTOR)
-	var_LightDir = vec4(L, u_LightRadius * u_LightRadius);
-  #else
-	var_LightDir = vec4(L, 0.0);
-  #endif
+  var_LightDir = vec4(L, 0.0);
   #if defined(USE_DELUXEMAP)
 	var_LightDir -= u_EnableTextures.y * var_LightDir;
   #endif
 #endif
 
 #if defined(PER_PIXEL_LIGHTING)
-	vec3 viewDir = u_ViewOrigin - position;
+	vec3 viewDir = u_ViewOrigin.xyz - position;
 
 	// store view direction in tangent space to save on outs
 	var_Normal    = vec4(normal,    viewDir.x);
@@ -325,9 +330,39 @@ void main()
 }
 
 /*[Fragment]*/
-#if defined(USE_LIGHT) && !defined(USE_VERTEX_LIGHTING)
+#if defined(USE_LIGHT) && !defined(USE_VERTEX_LIGHTING) && !defined(USE_LIGHT_VECTOR)
 #define PER_PIXEL_LIGHTING
 #endif
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+};
+
+layout(std140) uniform Camera
+{
+	vec4 u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
+
+layout(std140) uniform Entity
+{
+	mat4 u_ModelMatrix;
+	mat4 u_ModelViewProjectionMatrix;
+	vec4 u_LocalLightOrigin;
+	vec3 u_AmbientLight;
+	float u_LocalLightRadius;
+	vec3 u_DirectedLight;
+	float _u_FXVolumetricBase;
+	vec3 u_ModelLightDir;
+	float u_VertexLerp;
+	vec3 u_LocalViewOrigin;
+};
 
 uniform sampler2D u_DiffuseMap;
 
@@ -351,6 +386,8 @@ uniform sampler2D u_SpecularMap;
 uniform sampler2D u_ShadowMap;
 #endif
 
+//uniform samplerCubeShadow u_ShadowMap2;
+
 #if defined(USE_CUBEMAP)
 uniform samplerCube u_CubeMap;
 uniform sampler2D u_EnvBrdfMap;
@@ -361,21 +398,8 @@ uniform sampler2D u_EnvBrdfMap;
 uniform vec4 u_EnableTextures;
 #endif
 
-#if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING)
-uniform vec3 u_DirectedLight;
-uniform vec3 u_AmbientLight;
-uniform samplerCubeShadow u_ShadowMap2;
-#endif
-
-#if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-uniform vec3 u_PrimaryLightColor;
-uniform vec3 u_PrimaryLightAmbient;
-#endif
-
-#if defined(PER_PIXEL_LIGHTING)
 uniform vec4 u_NormalScale;
 uniform vec4 u_SpecularScale;
-#endif
 
 #if defined(PER_PIXEL_LIGHTING) && defined(USE_CUBEMAP)
 uniform vec4 u_CubeMapInfo;
@@ -561,7 +585,8 @@ float getLightDepth(in vec3 Vec, in float f)
 float getShadowValue(in vec4 light)
 {
 	float distance = getLightDepth(light.xyz, sqrt(light.w));
-	return pcfShadow(u_ShadowMap2, light.xyz, distance);
+	//return pcfShadow(u_ShadowMap2, light.xyz, distance);
+	return 1.0;
 }
 #endif
 
@@ -581,19 +606,21 @@ vec3 CalcIBLContribution(
 	in float roughness,
 	in vec3 N,
 	in vec3 E,
+	in vec3 viewOrigin,
 	in vec3 viewDir,
 	in float NE,
 	in vec3 specular
 )
 {
-#if defined(USE_CUBEMAP)
+#if defined(PER_PIXEL_LIGHTING) &&  defined(USE_CUBEMAP)
 	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
 
 	vec3 R = reflect(E, N);
 
 	// parallax corrected cubemap (cheaper trick)
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-	vec3 parallax = u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
+	vec3 eyeToCubeCenter = (u_CubeMapInfo.xyz - viewOrigin) * 0.001;
+	vec3 parallax = eyeToCubeCenter + u_CubeMapInfo.w * viewDir * 0.001;
 
 	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
 
@@ -693,9 +720,9 @@ void main()
 	ambientColor = vec3 (0.0);
 	attenuation = 1.0;
   #elif defined(USE_LIGHT_VECTOR)
-	lightColor	= u_DirectedLight * var_Color.rgb;
-	ambientColor = u_AmbientLight * var_Color.rgb;
-	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
+	lightColor = vec3(0.0);
+	ambientColor = vec3(0.0);
+	attenuation = 0.0;
 
     #if defined(USE_DSHADOWS)
 	  if (var_LightDir.w > 0.0) {
@@ -757,12 +784,6 @@ void main()
 	vec3  Fd = CalcDiffuse(diffuse.rgb, NE, NL, LH, roughness);
 	vec3  Fs = vec3(0.0);
 
-  #if defined(USE_LIGHT_VECTOR)
-	float NH = clamp(dot(N, H), 0.0, 1.0);
-
-	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness);
-  #endif
-
   #if defined(USE_LIGHTMAP) && defined(USE_DELUXEMAP) && defined(r_deluxeSpecular)
 	float NH = clamp(dot(N, H), 0.0, 1.0);
 
@@ -792,7 +813,7 @@ void main()
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
 	
-	out_Color.rgb += CalcIBLContribution(roughness, N, E, viewDir, NE, specular.rgb);
+	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb);
 
 #else
 	lightColor = var_Color.rgb;

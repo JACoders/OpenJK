@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_weather.h"
 #include <algorithm>
 
+static size_t STATIC_UNIFORM_BUFFER_SIZE = 1 * 1024 * 1024;
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
 static size_t FRAME_VERTEX_BUFFER_SIZE = 12*1024*1024;
 static size_t FRAME_INDEX_BUFFER_SIZE = 4*1024*1024;
@@ -1671,6 +1672,7 @@ static void R_InitBackEndFrameData()
 
 		frame->ubo = ubos[i];
 		frame->uboWriteOffset = 0;
+		frame->uboSize = FRAME_UNIFORM_BUFFER_SIZE;
 		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
 
 		// TODO: persistently mapped UBOs
@@ -1711,6 +1713,33 @@ static void R_InitBackEndFrameData()
 	}
 
 	backEndData->currentFrame = backEndData->frames;
+}
+
+static void R_InitStaticConstants()
+{
+	EntityBlock entity2DBlock = {};
+	entity2DBlock.fxVolumetricBase = -1.0f;
+
+	Matrix16Identity(entity2DBlock.modelMatrix);
+	Matrix16Ortho(
+		0.0f,
+		640.0f,
+		480.0f,
+		0.0f,
+		0.0f,
+		1.0f,
+		entity2DBlock.modelViewProjectionMatrix);
+
+	qglBindBuffer(GL_UNIFORM_BUFFER, tr.staticUbo);
+	qglBufferData(
+		GL_UNIFORM_BUFFER,
+		STATIC_UNIFORM_BUFFER_SIZE,
+		nullptr,
+		GL_STATIC_DRAW);
+
+	tr.entity2DUboOffset = 0;
+	qglBufferSubData(
+		GL_UNIFORM_BUFFER, 0, sizeof(entity2DBlock), &entity2DBlock);
 }
 
 static void R_ShutdownBackEndFrameData()
@@ -1823,8 +1852,9 @@ void R_Init( void ) {
 
 	InitOpenGL();
 
-	R_InitVBOs();
+	R_InitGPUBuffers();
 
+	R_InitStaticConstants();
 	R_InitBackEndFrameData();
 	R_InitImages();
 
@@ -1881,7 +1911,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 		R_ShutDownQueries();
 		FBO_Shutdown();
 		R_DeleteTextures();
-		R_ShutdownVBOs();
+		R_DestroyGPUBuffers();
 		GLSL_ShutdownGPUShaders();
 
 		if ( destroyWindow && restarting )

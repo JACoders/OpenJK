@@ -87,10 +87,10 @@ static int currentRenderSurfIndex = 0;
 
 static CRenderableSurface *AllocGhoul2RenderableSurface()
 {
-	if ( currentRenderSurfIndex >= MAX_RENDERABLE_SURFACES )
+	if ( currentRenderSurfIndex >= MAX_RENDERABLE_SURFACES - 1)
 	{
-		ri.Error( ERR_DROP, "AllocRenderableSurface: Reached maximum number of Ghoul2 renderable surfaces (%d)", MAX_RENDERABLE_SURFACES );
-		return NULL;
+		ResetGhoul2RenderableSurfaceHeap();
+		ri.Printf( PRINT_DEVELOPER, "AllocRenderableSurface: Reached maximum number of Ghoul2 renderable surfaces (%d)\n", MAX_RENDERABLE_SURFACES );
 	}
 
 	CRenderableSurface *rs = &renderSurfHeap[currentRenderSurfIndex++];
@@ -3440,30 +3440,24 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-static void MDXABoneToMatrix ( const mdxaBone_t& bone, mat4x3_t& matrix )
+void RB_TransformBones(CRenderableSurface *surf, mat3x4_t *outMatrices)
 {
-	matrix[0] = bone.matrix[0][0];
-	matrix[1] = bone.matrix[1][0];
-	matrix[2] = bone.matrix[2][0];
+	const mdxmSurface_t *surfData = surf->surfaceData;
+	const int *boneReferences =
+		(const int *)((const byte *)surfData + surfData->ofsBoneReferences);
 
-	matrix[3] = bone.matrix[0][1];
-	matrix[4] = bone.matrix[1][1];
-	matrix[5] = bone.matrix[2][1];
-
-	matrix[6] = bone.matrix[0][2];
-	matrix[7] = bone.matrix[1][2];
-	matrix[8] = bone.matrix[2][2];
-
-	matrix[9] = bone.matrix[0][3];
-	matrix[10] = bone.matrix[1][3];
-	matrix[11] = bone.matrix[2][3];
+	for (int i = 0; i < surfData->numBoneReferences; ++i)
+	{
+		const mdxaBone_t& bone = surf->boneCache->EvalRender(boneReferences[i]);
+		Com_Memcpy(
+			outMatrices + i,
+			&bone.matrix[0][0],
+			sizeof(*outMatrices));
+	}
 }
 
 void RB_SurfaceGhoul( CRenderableSurface *surf ) 
 {
-	static mat4x3_t boneMatrices[20] = {};
-
-	mdxmSurface_t *surfData = surf->surfaceData;
 	mdxmVBOMesh_t *surface = surf->vboMesh;
 
 	if ( surface->vbo == NULL || surface->ibo == NULL )
@@ -3486,15 +3480,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	tess.maxIndex = surface->maxIndex;
 	tess.firstIndex = surface->indexOffset;
 
-	int *boneReferences = (int *)((byte *)surfData + surfData->ofsBoneReferences);
-	for ( int i = 0; i < surfData->numBoneReferences; i++ )
-	{
-		const mdxaBone_t& bone = surf->boneCache->EvalRender (boneReferences[i]);
-		MDXABoneToMatrix (bone, boneMatrices[i]);
-	}
-
-	glState.boneMatrices = boneMatrices;
-	glState.numBones = surfData->numBoneReferences;
 	glState.skeletalAnimation = qtrue;
 
 	RB_EndSurface();
