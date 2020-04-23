@@ -413,6 +413,10 @@ public:
 	bool mUnsquash;
 	float mSmoothFactor;
 
+	// GPU Data
+	mat3x4_t boneMatrices[52];
+	int      uboOffset;
+
 	CBoneCache( const model_t *amod, const mdxaHeader_t *aheader )
 		: header(aheader)
 		, mod(amod)
@@ -425,6 +429,7 @@ public:
 		, mSmoothingActive(false)
 		, mUnsquash(false)
 		, mSmoothFactor(0.0f)
+		, uboOffset(-1)
 	{
 		assert(amod);
 		assert(aheader);
@@ -2389,6 +2394,12 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 
+			// render shadows?
+			if (r_shadows->integer == 2
+				&& (RS.renderfx & (RF_NOSHADOW | RF_DEPTHHACK))
+				&& shader->sort == SS_OPAQUE)
+				newSurf->genShadows = qtrue;
+
 			R_AddDrawSurf(
 				(surfaceType_t *)newSurf,
 				entityNum,
@@ -2488,21 +2499,6 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 				}
 			}
 #endif
-		}
-
-		// stencil shadows can't do personal models unless I polyhedron clip
-		if (!RS.personalModel
-			&& r_shadows->integer == 2
-			&& RS.fogNum == 0
-			&& (RS.renderfx & (RF_NOSHADOW | RF_DEPTHHACK))
-			&& shader->sort == SS_OPAQUE) {
-
-			CRenderableSurface *newSurf = AllocGhoul2RenderableSurface();
-			newSurf->vboMesh = &RS.currentModel->data.glm->vboModels[RS.lod].vboMeshes[RS.surfaceNum];
-			assert(newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
-			newSurf->surfaceData = surface;
-			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf((surfaceType_t *)newSurf, entityNum, tr.shadowShader, 0, qfalse, qfalse, 0);
 		}
 
 		// projection shadows work fine with personal models
@@ -3440,7 +3436,7 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-void RB_TransformBones(CRenderableSurface *surf, mat3x4_t *outMatrices)
+void RB_TransformBones(CRenderableSurface *surf)
 {
 	const mdxmSurface_t *surfData = surf->surfaceData;
 	const int *boneReferences =
@@ -3448,12 +3444,33 @@ void RB_TransformBones(CRenderableSurface *surf, mat3x4_t *outMatrices)
 
 	for (int i = 0; i < surfData->numBoneReferences; ++i)
 	{
+		int boneIndex = boneReferences[i];
 		const mdxaBone_t& bone = surf->boneCache->EvalRender(boneReferences[i]);
 		Com_Memcpy(
-			outMatrices + i,
+			surf->boneCache->boneMatrices + boneIndex,
 			&bone.matrix[0][0],
-			sizeof(*outMatrices));
+			sizeof(mat3x4_t));
 	}
+	surf->boneCache->uboOffset = -1;
+}
+
+int RB_GetBoneUboOffset(CRenderableSurface *surf)
+{
+	return surf->boneCache->uboOffset;
+	
+}
+
+void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset)
+{
+	surf->boneCache->uboOffset = offset;
+}
+
+void RB_FillBoneBlock(CRenderableSurface *surf, mat3x4_t *outMatrices)
+{
+	Com_Memcpy(
+		outMatrices,
+		surf->boneCache->boneMatrices,
+		sizeof(surf->boneCache->boneMatrices));
 }
 
 void RB_SurfaceGhoul( CRenderableSurface *surf ) 
@@ -3480,12 +3497,14 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	tess.maxIndex = surface->maxIndex;
 	tess.firstIndex = surface->indexOffset;
 
+	glState.genShadows = surf->genShadows;
 	glState.skeletalAnimation = qtrue;
 
 	RB_EndSurface();
 
 	// So we don't lerp surfaces that shouldn't be lerped
 	glState.skeletalAnimation = qfalse;
+	glState.genShadows = qfalse;
 }
  
 /*
@@ -4131,6 +4150,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		{
 			// Positions and normals
 			mdxmVertex_t *v = (mdxmVertex_t *)((byte *)surf + surf->ofsVerts);
+			int *boneRef = (int *)((byte *)surf + surf->ofsBoneReferences);
 
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
@@ -4151,7 +4171,8 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 				{
 					float weight = G2_GetVertBoneWeightNotSlow(&v[k], w);
 					weights[w] = (byte)(weight * 255.0f);
-					bonerefs[w] = G2_GetVertBoneIndex(&v[k], w);
+					int packedIndex = G2_GetVertBoneIndex(&v[k], w);
+					bonerefs[w] = boneRef[packedIndex];
 
 					lastWeight -= weights[w];
 				}
@@ -4160,7 +4181,8 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 				// Ensure that all the weights add up to 1.0
 				weights[lastInfluence] = lastWeight;
-				bonerefs[lastInfluence] = G2_GetVertBoneIndex(&v[k], lastInfluence);
+				int packedIndex = G2_GetVertBoneIndex(&v[k], lastInfluence);
+				bonerefs[lastInfluence] = boneRef[packedIndex];
 
 				// Fill in the rest of the info with zeroes.
 				for ( int w = numWeights; w < 4; w++ )

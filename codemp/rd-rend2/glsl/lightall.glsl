@@ -1,5 +1,5 @@
 /*[Vertex]*/
-#if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT) && !defined(USE_LIGHT_VECTOR)
+#if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 #define PER_PIXEL_LIGHTING
 #endif
 in vec2 attr_TexCoord0;
@@ -53,17 +53,18 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
 };
-uniform float u_FXVolumetricBase;
 
+#if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones
 {
-	mat3x4 u_BoneMatrices[20];
+	mat3x4 u_BoneMatrices[52];
 };
+#endif
 
 #if defined(USE_DELUXEMAP)
 uniform vec4   u_EnableTextures; // x = normal, y = deluxe, z = specular, w = cube
@@ -211,6 +212,7 @@ float CalcLightAttenuation(in bool isPoint, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
+#if defined(USE_SKELETAL_ANIMATION)
 mat4x3 GetBoneMatrix(uint index)
 {
 	mat3x4 bone = u_BoneMatrices[index];
@@ -220,6 +222,7 @@ mat4x3 GetBoneMatrix(uint index)
 		bone[0].z, bone[1].z, bone[2].z,
 		bone[0].w, bone[1].w, bone[2].w);
 }
+#endif
 
 void main()
 {
@@ -281,7 +284,7 @@ void main()
 #endif
 
 #if defined(USE_LIGHT_VECTOR)
-	vec3 L = vec3(0.0);
+	vec3 L = u_LocalLightOrigin.xyz - (position * u_LocalLightOrigin.w);
 #elif defined(PER_PIXEL_LIGHTING)
 	vec3 L = attr_LightDirection * 2.0 - vec3(1.0);
 	L = (u_ModelMatrix * vec4(L, 0.0)).xyz;
@@ -304,6 +307,14 @@ void main()
 	else
 	{
 		var_Color = u_VertColor * attr_Color + u_BaseColor;
+
+		#if defined(USE_LIGHT_VECTOR) && defined(USE_FAST_LIGHT)
+		float sqrLightDist = dot(L, L);
+		float attenuation = CalcLightAttenuation(u_LocalLightOrigin.w, u_LightRadius * u_LightRadius / sqrLightDist);
+		float NL = clamp(dot(normalize(normal), L) / sqrt(sqrLightDist), 0.0, 1.0);
+
+		var_Color.rgb *= u_DirectedLight * (attenuation * NL) + u_AmbientLight;
+#endif
 	}
 	var_Color *= disintegration;
 
@@ -330,7 +341,7 @@ void main()
 }
 
 /*[Fragment]*/
-#if defined(USE_LIGHT) && !defined(USE_VERTEX_LIGHTING) && !defined(USE_LIGHT_VECTOR)
+#if defined(USE_LIGHT) && !defined(USE_VERTEX_LIGHTING)
 #define PER_PIXEL_LIGHTING
 #endif
 layout(std140) uniform Scene
@@ -358,7 +369,7 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
@@ -720,9 +731,9 @@ void main()
 	ambientColor = vec3 (0.0);
 	attenuation = 1.0;
   #elif defined(USE_LIGHT_VECTOR)
-	lightColor = vec3(0.0);
-	ambientColor = vec3(0.0);
-	attenuation = 0.0;
+	lightColor	= u_DirectedLight * var_Color.rgb;
+	ambientColor = u_AmbientLight * var_Color.rgb;
+	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
 
     #if defined(USE_DSHADOWS)
 	  if (var_LightDir.w > 0.0) {
@@ -783,6 +794,12 @@ void main()
 
 	vec3  Fd = CalcDiffuse(diffuse.rgb, NE, NL, LH, roughness);
 	vec3  Fs = vec3(0.0);
+
+  #if defined(USE_LIGHT_VECTOR)
+	float NH = clamp(dot(N, H), 0.0, 1.0);
+
+	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness);
+  #endif
 
   #if defined(USE_LIGHTMAP) && defined(USE_DELUXEMAP) && defined(r_deluxeSpecular)
 	float NH = clamp(dot(N, H), 0.0, 1.0);

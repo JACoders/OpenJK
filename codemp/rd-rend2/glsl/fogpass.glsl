@@ -20,7 +20,7 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
@@ -37,10 +37,12 @@ layout(std140) uniform ShaderInstance
 	int u_DeformFunc;
 };
 
+#if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones
 {
-	mat3x4 u_BoneMatrices[20];
+	mat3x4 u_BoneMatrices[52];
 };
+#endif
 
 out vec3 var_WSPosition;
 
@@ -176,6 +178,7 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 }
 #endif
 
+#if defined(USE_SKELETAL_ANIMATION)
 mat4x3 GetBoneMatrix(uint index)
 {
 	mat3x4 bone = u_BoneMatrices[index];
@@ -185,6 +188,7 @@ mat4x3 GetBoneMatrix(uint index)
 		bone[0].z, bone[1].z, bone[2].z,
 		bone[0].w, bone[1].w, bone[2].w);
 }
+#endif
 
 void main()
 {
@@ -252,7 +256,7 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;

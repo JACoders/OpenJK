@@ -1304,6 +1304,57 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 	return result;
 }
 
+/*
+=================
+RB_ShadowTessEnd
+
+=================
+*/
+void RB_ShadowTessEnd(shaderCommands_t *input, const VertexArraysProperties *vertexArrays) {
+	if (glConfig.stencilBits < 4) {
+		ri.Printf(PRINT_ALL, "no stencil bits for stencil writing\n");
+		return;
+	}
+
+	if (!input->numVertexes || !input->numIndexes || input->useInternalVBO)
+	{
+		return;
+	}
+
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
+	GL_VertexAttribPointers(vertexArrays->numVertexArrays, attribs);
+
+	Allocator& frameAllocator = *backEndData->perFrameMemory;
+
+	cullType_t cullType = CT_TWO_SIDED;
+
+	int stateBits = GLS_DEPTHFUNC_LESS | GLS_STENCILTEST_ENABLE | GLS_COLORMASK_BITS;
+
+	const UniformBlockBinding uniformBlockBindings[] = {
+		GetEntityBlockUniformBinding(backEnd.currentEntity),
+		GetBonesBlockUniformBinding(backEnd.currentEntity)
+	};
+
+	DrawItem item = {};
+	item.renderState.stateBits = stateBits;
+	item.renderState.cullType = cullType;
+	DepthRange range = { 0.0f, 1.0f };
+	item.renderState.depthRange = range;
+	item.program = &tr.volumeShadowShader;
+	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
+
+	DrawItemSetVertexAttributes(
+		item, attribs, vertexArrays->numVertexArrays, frameAllocator);
+	DrawItemSetUniformBlockBindings(
+		item, uniformBlockBindings, frameAllocator);
+
+	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
+
+	const uint32_t key = RB_CreateSortKey(item, 15, 15);
+	RB_AddDrawItem(backEndData->currentPass, key, item);
+}
+
 static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
 {
 	Allocator& frameAllocator = *backEndData->perFrameMemory;
@@ -1743,10 +1794,6 @@ void RB_StageIteratorGeneric( void )
 			RB_RenderShadowmap(input, &vertexArrays);
 		}
 	}
-	else if (input->shader == tr.shadowShader && r_shadows->integer == 2)
-	{
-		RB_ShadowTessEnd( input, &vertexArrays );
-	}
 	else
 	{
 		RB_IterateStagesGeneric( input, &vertexArrays );
@@ -1762,6 +1809,14 @@ void RB_StageIteratorGeneric( void )
 			ProjectPshadowVBOGLSL( input, &vertexArrays );
 		}
 
+		//
+		// volumeshadows!
+		//
+		if (glState.genShadows && r_shadows->integer == 2)
+		{
+			RB_ShadowTessEnd( input, &vertexArrays );
+		}
+
 		// 
 		// now do any dynamic lighting needed
 		//
@@ -1769,7 +1824,7 @@ void RB_StageIteratorGeneric( void )
 				tess.shader->sort <= SS_OPAQUE &&
 				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY) ) )
 		{
-			ForwardDlight(input, &vertexArrays);
+			ForwardDlight( input, &vertexArrays );
 		}
 
 		//

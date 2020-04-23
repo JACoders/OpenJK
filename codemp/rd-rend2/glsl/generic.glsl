@@ -34,7 +34,7 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
@@ -51,10 +51,12 @@ layout(std140) uniform ShaderInstance
 	int u_DeformFunc;
 };
 
+#if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones
 {
-	mat3x4 u_BoneMatrices[20];
+	mat3x4 u_BoneMatrices[52];
 };
+#endif
 
 uniform vec4 u_DiffuseTexMatrix;
 uniform vec4 u_DiffuseTexOffTurb;
@@ -72,8 +74,6 @@ uniform vec4 u_VertColor;
 uniform int u_ColorGen;
 uniform int u_AlphaGen;
 #endif
-
-uniform float u_FXVolumetricBase;
 
 #if defined(USE_RGBAGEN) || defined(USE_DEFORM_VERTEXES)
 uniform vec4 u_Disintegration; // origin, threshhold
@@ -338,6 +338,7 @@ vec4 CalcColor(vec3 position, vec3 normal)
 }
 #endif
 
+#if defined(USE_SKELETAL_ANIMATION)
 mat4x3 GetBoneMatrix(uint index)
 {
 	mat3x4 bone = u_BoneMatrices[index];
@@ -347,6 +348,7 @@ mat4x3 GetBoneMatrix(uint index)
 		bone[0].z, bone[1].z, bone[2].z,
 		bone[0].w, bone[1].w, bone[2].w);
 }
+#endif
 
 void main()
 {
@@ -445,7 +447,7 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;

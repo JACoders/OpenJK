@@ -768,7 +768,7 @@ struct ShaderInstanceBlock
 
 struct SkeletonBoneMatricesBlock
 {
-	mat3x4_t matrices[20];
+	mat3x4_t matrices[52];
 };
 
 struct surfaceSprite_t
@@ -2114,6 +2114,7 @@ typedef struct glstate_s {
 	int				vertexAttribsTexCoordOffset[2];
 	qboolean        vertexAnimation;
 	qboolean		skeletalAnimation;
+	qboolean		genShadows;
 	shaderProgram_t *currentProgram;
 	FBO_t          *currentFBO;
 	VBO_t          *currentVBO;
@@ -3190,6 +3191,9 @@ public:
 	CBoneCache *boneCache;
 	mdxmVBOMesh_t *vboMesh;
 
+	// tell the renderer to render shadows for this surface
+	qboolean genShadows;
+
 	// pointer to surface data loaded into file - only used by client renderer
 	// DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of
 	// wack on the game
@@ -3244,13 +3248,17 @@ public:
 		alternateTex = nullptr;
 		goreChain = nullptr;
 		vboMesh = nullptr;
+		genShadows = qfalse;
 	}
 #endif
 };
 
 void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum );
-void RB_SurfaceGhoul( CRenderableSurface *surface );
-void RB_TransformBones(CRenderableSurface *surf, mat3x4_t *outMatrices);
+void RB_SurfaceGhoul( CRenderableSurface *surf );
+void RB_TransformBones(CRenderableSurface *surf);
+int RB_GetBoneUboOffset(CRenderableSurface *surf);
+void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset);
+void RB_FillBoneBlock(CRenderableSurface *surf, mat3x4_t *outMatrices);
 /*
 Ghoul2 Insert End
 */
@@ -3579,8 +3587,6 @@ float ProjectRadius( float r, vec3_t location );
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 qboolean ShaderHashTableExists(void);
 void R_ImageLoader_Init(void);
-
-void RB_SurfaceGhoul( CRenderableSurface *surf );
 
 class Allocator;
 GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text );

@@ -1385,16 +1385,6 @@ static void RB_SubmitDrawSurfs(
 		if ( entityNum != oldEntityNum )
 		{
 			RB_PrepareForEntity(entityNum, &oldDepthRange, originalTime);
-
-			// set up the dynamic lighting if needed
-			if ( entityNum == REFENTITYNUM_WORLD || backEnd.currentEntity->needDlights )
-			{
-				R_TransformDlights(
-					backEnd.refdef.num_dlights,
-					backEnd.refdef.dlights,
-					&backEnd.ori);
-			}
-
 			oldEntityNum = entityNum;
 		}
 
@@ -2374,11 +2364,23 @@ static void RB_UpdateEntityLightConstants(
 
 	VectorScale(refEntity->ambientLight, normalizeFactor, entityBlock.ambientLight);
 	VectorScale(refEntity->directedLight, normalizeFactor, entityBlock.directedLight);
-	VectorCopy(refEntity->modelLightDir, entityBlock.modelLightDir);
-
 	VectorCopy(refEntity->lightDir, entityBlock.lightOrigin);
+
+	vec3_t lightDir;
+	float lightRadius;
+	VectorCopy(refEntity->modelLightDir, lightDir);
+	lightRadius = 300.0f;
+	if (r_shadows->integer == 2)
+	{
+		lightDir[2] = 0.0f;
+		VectorNormalize(lightDir);
+		VectorSet(lightDir, lightDir[0] * 0.3f, lightDir[1] * 0.3f, 1.0f);
+		lightRadius = refEntity->e.lightingOrigin[2] - refEntity->e.shadowPlane + 64.0f;
+	}
+
+	VectorCopy(lightDir, entityBlock.modelLightDir);
 	entityBlock.lightOrigin[3] = 0.0f;
-	entityBlock.lightRadius = 0.0f;
+	entityBlock.lightRadius = lightRadius;
 }
 
 static void RB_UpdateEntityMatrixConstants(
@@ -2638,6 +2640,10 @@ static void RB_UpdateShaderAndEntityConstants(
 		tr.shaderInstanceUboOffsetsMap, 0,
 		sizeof(EntityShaderUboOffset) * tr.shaderInstanceUboOffsetsMapSize);
 
+	int old_ubo = 0;
+	shader_t *oldShader = nullptr;
+	int oldEntityNum = -1;
+
 	for (int i = 0; i < numDrawSurfs; ++i)
 	{
 		const drawSurf_t *drawSurf = drawSurfs + i;
@@ -2648,6 +2654,13 @@ static void RB_UpdateShaderAndEntityConstants(
 
 		R_DecomposeSort(
 			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
+
+		if (shader == oldShader &&
+			entityNum == oldEntityNum )
+		{
+			tr.entityUboOffsets[entityNum] = old_ubo;
+			continue;
+		}
 
 		const trRefEntity_t *refEntity = backEnd.refdef.entities + entityNum;
 		//FIX ME: find out why this causes trouble!
@@ -2671,6 +2684,9 @@ static void RB_UpdateShaderAndEntityConstants(
 				frame, &entityBlock, sizeof(entityBlock));
 			//updatedEntities[entityNum] = true;
 		}
+			old_ubo = tr.entityUboOffsets[entityNum];
+			oldShader = shader;
+			oldEntityNum = entityNum;
 
 		RB_UpdateShaderEntityConstants(frame, entityNum, refEntity, shader);
 	}
@@ -2691,13 +2707,33 @@ static void RB_UpdateAnimationConstants(
 		if (*drawSurf->surface != SF_MDX)
 			continue;
 
-		SkeletonBoneMatricesBlock bonesBlock = {};
 		RB_TransformBones(
-			(CRenderableSurface *)drawSurf->surface,
-			bonesBlock.matrices);
+			(CRenderableSurface *)drawSurf->surface);
+	}
 
-		tr.animationBoneUboOffsets[i] = RB_AppendConstantsData(
-			frame, &bonesBlock, sizeof(bonesBlock));
+	//now get offsets or add skeletons to ubo
+	for (int i = 0; i < numDrawSurfs; ++i)
+	{
+		const drawSurf_t *drawSurf = drawSurfs + i;
+		if (*drawSurf->surface != SF_MDX)
+			continue;
+
+		CRenderableSurface *RS = (CRenderableSurface *)drawSurf->surface;
+		int currentOffset = RB_GetBoneUboOffset(RS);
+		if (currentOffset < 0)
+		{
+			SkeletonBoneMatricesBlock bonesBlock = {};
+			RB_FillBoneBlock(RS, bonesBlock.matrices);
+
+			tr.animationBoneUboOffsets[i] = RB_AppendConstantsData(
+				frame, &bonesBlock, sizeof(bonesBlock));
+
+			RB_SetBoneUboOffset(RS, tr.animationBoneUboOffsets[i]);
+		}
+		else
+		{
+			tr.animationBoneUboOffsets[i] = currentOffset;
+		}
 	}
 }
 
