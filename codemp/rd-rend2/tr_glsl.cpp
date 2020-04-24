@@ -349,6 +349,10 @@ static size_t GLSL_GetShaderHeader(
 						ALPHA_TEST_GE128,
 						ALPHA_TEST_GE192));
 
+	Q_strcat(dest, size,
+					va("#define MAX_G2_BONES %i\n",
+						MAX_G2_BONES));
+
 	fbufWidthScale = 1.0f / ((float)glConfig.vidWidth);
 	fbufHeightScale = 1.0f / ((float)glConfig.vidHeight);
 	Q_strcat(dest, size,

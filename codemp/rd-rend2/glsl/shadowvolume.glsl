@@ -25,7 +25,7 @@ layout(std140) uniform Entity
 #if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones
 {
-	mat3x4 u_BoneMatrices[52];
+	mat3x4 u_BoneMatrices[MAX_G2_BONES];
 };
 
 mat4x3 GetBoneMatrix(uint index)

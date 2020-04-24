@@ -414,7 +414,7 @@ public:
 	float mSmoothFactor;
 
 	// GPU Data
-	mat3x4_t boneMatrices[52];
+	mat3x4_t boneMatrices[MAX_G2_BONES];
 	int      uboOffset;
 
 	CBoneCache( const model_t *amod, const mdxaHeader_t *aheader )
@@ -433,6 +433,8 @@ public:
 	{
 		assert(amod);
 		assert(aheader);
+		
+		Com_Memset(boneMatrices, 0, sizeof(boneMatrices));
 
 		int numBones = header->numBones;
 		mdxaSkelOffsets_t *offsets =

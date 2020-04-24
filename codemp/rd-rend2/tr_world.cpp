@@ -572,9 +572,9 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, 
 		tr.viewParms.visBounds[0][1] = MIN(node->mins[1], tr.viewParms.visBounds[0][1]);
 		tr.viewParms.visBounds[0][2] = MIN(node->mins[2], tr.viewParms.visBounds[0][2]);
 
-		tr.viewParms.visBounds[1][0] = MIN(node->maxs[0], tr.viewParms.visBounds[1][0]);
-		tr.viewParms.visBounds[1][1] = MIN(node->maxs[1], tr.viewParms.visBounds[1][1]);
-		tr.viewParms.visBounds[1][2] = MIN(node->maxs[2], tr.viewParms.visBounds[1][2]);
+		tr.viewParms.visBounds[1][0] = MAX(node->maxs[0], tr.viewParms.visBounds[1][0]);
+		tr.viewParms.visBounds[1][1] = MAX(node->maxs[1], tr.viewParms.visBounds[1][1]);
+		tr.viewParms.visBounds[1][2] = MAX(node->maxs[2], tr.viewParms.visBounds[1][2]);
 
 		// add merged and unmerged surfaces
 		if (tr.world->viewSurfaces && !r_nocurves->integer)

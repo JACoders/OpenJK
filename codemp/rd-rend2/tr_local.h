@@ -56,6 +56,7 @@ typedef unsigned int glIndex_t;
 #define MAX_VISCOUNTS 5
 #define MAX_VBOS      4096
 #define MAX_IBOS      4096
+#define MAX_G2_BONES  53
 
 #define MAX_CALC_PSHADOWS    64
 #define MAX_DRAWN_PSHADOWS    32 // do not increase past 32, because bit flags are used on surfaces
@@ -768,7 +769,7 @@ struct ShaderInstanceBlock
 
 struct SkeletonBoneMatricesBlock
 {
-	mat3x4_t matrices[52];
+	mat3x4_t matrices[MAX_G2_BONES];
 };
 
 struct surfaceSprite_t

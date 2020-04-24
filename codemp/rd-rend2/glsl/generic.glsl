@@ -54,7 +54,7 @@ layout(std140) uniform ShaderInstance
 #if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones
 {
-	mat3x4 u_BoneMatrices[52];
+	mat3x4 u_BoneMatrices[MAX_G2_BONES];
 };
 #endif
 
@@ -135,6 +135,13 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float scale = CalculateDeformScale( WF_SIN, u_Time, bulgeWidth * st.x, bulgeSpeed );
 
 			return pos + normal * scale * bulgeHeight;
+		}
+
+		case DEFORM_BULGE_UNIFORM:
+		{
+			float bulgeHeight = u_DeformParams0.y; // amplitude
+
+			return pos + normal * bulgeHeight;
 		}
 
 		case DEFORM_WAVE:

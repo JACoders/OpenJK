@@ -40,7 +40,7 @@ layout(std140) uniform ShaderInstance
 #if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones
 {
-	mat3x4 u_BoneMatrices[52];
+	mat3x4 u_BoneMatrices[MAX_G2_BONES];
 };
 #endif
 

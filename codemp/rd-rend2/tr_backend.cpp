@@ -2493,6 +2493,7 @@ int RB_GetEntityShaderUboOffset(
 }
 
 static void ComputeDeformValues(
+	const trRefEntity_t *refEntity,
 	const shader_t *shader,
 	deform_t *type,
 	genFunc_t *waveFunc,
@@ -2503,7 +2504,7 @@ static void ComputeDeformValues(
 	*type = DEFORM_NONE;
 	*waveFunc = GF_NONE;
 
-	if (backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE2)
+	if (refEntity->e.renderfx & RF_DISINTEGRATE2)
 	{
 		*type = DEFORM_DISINTEGRATION;
 		return;
@@ -2539,6 +2540,10 @@ static void ComputeDeformValues(
 			deformParams1[0] = 0.0f;
 			deformParams1[1] = 0.0f;
 			deformParams1[2] = 0.0f;
+
+			if (ds->bulgeSpeed == 0.0f && ds->bulgeWidth == 0.0f)
+				*type = DEFORM_BULGE_UNIFORM;
+
 			break;
 
 		case DEFORM_MOVE:
@@ -2601,6 +2606,7 @@ static void RB_UpdateShaderEntityConstants(
 {
 	ShaderInstanceBlock shaderInstanceBlock = {};
 	ComputeDeformValues(
+		refEntity,
 		shader,
 		(deform_t *)&shaderInstanceBlock.deformType,
 		(genFunc_t *)&shaderInstanceBlock.deformFunc,
@@ -2626,7 +2632,7 @@ static void RB_UpdateShaderEntityConstants(
 static void RB_UpdateShaderAndEntityConstants(
 	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
 {
-	//bool updatedEntities[MAX_REFENTITIES] = {};
+	bool updatedEntities[MAX_REFENTITIES + 1] = {};
 
 	// Make the map bigger than it needs to be. Eases collisions and iterations
 	// through the map during lookup/insertion.
@@ -2664,7 +2670,7 @@ static void RB_UpdateShaderAndEntityConstants(
 
 		const trRefEntity_t *refEntity = backEnd.refdef.entities + entityNum;
 		//FIX ME: find out why this causes trouble!
-		//if (!updatedEntities[entityNum])
+		if (!updatedEntities[entityNum] || entityNum == REFENTITYNUM_WORLD)
 		{
 			EntityBlock entityBlock = {};
 
@@ -2682,7 +2688,7 @@ static void RB_UpdateShaderAndEntityConstants(
 
 			tr.entityUboOffsets[entityNum] = RB_AppendConstantsData(
 				frame, &entityBlock, sizeof(entityBlock));
-			//updatedEntities[entityNum] = true;
+			updatedEntities[entityNum] = true;
 		}
 			old_ubo = tr.entityUboOffsets[entityNum];
 			oldShader = shader;
@@ -2701,6 +2707,7 @@ static void RB_UpdateAnimationConstants(
 		*backEndData->perFrameMemory, numDrawSurfs);
 	memset(tr.animationBoneUboOffsets, 0, sizeof(int) * numDrawSurfs);
 
+	// transform all bones for this frame
 	for (int i = 0; i < numDrawSurfs; ++i)
 	{
 		const drawSurf_t *drawSurf = drawSurfs + i;
@@ -2711,7 +2718,7 @@ static void RB_UpdateAnimationConstants(
 			(CRenderableSurface *)drawSurf->surface);
 	}
 
-	//now get offsets or add skeletons to ubo
+	// now get offsets or add skeletons to ubo
 	for (int i = 0; i < numDrawSurfs; ++i)
 	{
 		const drawSurf_t *drawSurf = drawSurfs + i;
