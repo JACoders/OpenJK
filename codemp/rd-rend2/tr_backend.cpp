@@ -2662,13 +2662,14 @@ static void RB_UpdateShaderAndEntityConstants(
 			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
 
 		if (shader == oldShader &&
-			entityNum == oldEntityNum )
+			(entityNum == oldEntityNum || shader->entityMergable))
 		{
 			tr.entityUboOffsets[entityNum] = old_ubo;
 			continue;
 		}
 
-		const trRefEntity_t *refEntity = backEnd.refdef.entities + entityNum;
+		const trRefEntity_t *refEntity = entityNum == REFENTITYNUM_WORLD ? &tr.worldEntity : &backEnd.refdef.entities[entityNum];
+
 		//FIX ME: find out why this causes trouble!
 		if (!updatedEntities[entityNum] || entityNum == REFENTITYNUM_WORLD)
 		{
@@ -2690,9 +2691,10 @@ static void RB_UpdateShaderAndEntityConstants(
 				frame, &entityBlock, sizeof(entityBlock));
 			updatedEntities[entityNum] = true;
 		}
-			old_ubo = tr.entityUboOffsets[entityNum];
-			oldShader = shader;
-			oldEntityNum = entityNum;
+
+		old_ubo = tr.entityUboOffsets[entityNum];
+		oldShader = shader;
+		oldEntityNum = entityNum;
 
 		RB_UpdateShaderEntityConstants(frame, entityNum, refEntity, shader);
 	}

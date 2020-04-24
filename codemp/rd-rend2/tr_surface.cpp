@@ -2059,6 +2059,8 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 		RB_SurfaceAxis();
 		break;
 	}
+	// FIX ME: just a testing hack. Pretty sure we can merge all of these
+	tess.shader->entityMergable = qtrue;
 }
 
 static void RB_SurfaceBad( surfaceType_t *surfType ) {
