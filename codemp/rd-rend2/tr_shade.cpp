@@ -654,10 +654,6 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 				cullFront = !cullFront;
 
 			cullType = (cullFront ? CT_FRONT_SIDED : CT_BACK_SIDED);
-
-			// FIXME: SomaZ: Not sure why this is needed, but fixes sunlight and shadows in cubemaps
-			if ( tr.renderCubeFbo && glState.currentFBO == tr.renderCubeFbo)
-				cullType = CT_TWO_SIDED;
 		}
 	}
 
@@ -793,11 +789,6 @@ static UniformBlockBinding GetBonesBlockUniformBinding(
 	return binding;
 }
 
-int RB_GetEntityShaderUboOffset(
-	EntityShaderUboOffset *offsetMap,
-	int mapSize,
-	int entityNum,
-	int shaderNum);
 static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 	const trRefEntity_t *refEntity, const shader_t *shader)
 {
@@ -1646,11 +1637,19 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
 		}
 
+		if (tess.dlightBits &&
+			tess.shader->sort <= SS_OPAQUE &&
+			!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY)))
+			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, tess.dlightBits);
+		else
+			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, 0);
+
 		CaptureDrawData(input, pStage, index, stage);
 
 		const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 		const UniformBlockBinding uniformBlockBindings[] = {
 			{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+			{ currentFrameUbo, tr.lightsUboOffset, UNIFORM_BLOCK_LIGHTS },
 			{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
 			{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS },
 			GetEntityBlockUniformBinding(backEnd.currentEntity),
@@ -1821,12 +1820,12 @@ void RB_StageIteratorGeneric( void )
 		// 
 		// now do any dynamic lighting needed
 		//
-		if ( tess.dlightBits &&
+		/*if ( tess.dlightBits &&
 				tess.shader->sort <= SS_OPAQUE &&
 				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY) ) )
 		{
 			ForwardDlight( input, &vertexArrays );
-		}
+		}*/
 
 		//
 		// now do fog

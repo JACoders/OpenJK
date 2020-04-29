@@ -108,7 +108,6 @@ void GL_BindToTMU( image_t *image, int tmu )
 			qglBindTexture( GL_TEXTURE_CUBE_MAP, texnum );
 		else
 			qglBindTexture( GL_TEXTURE_2D, texnum );
-		GL_SelectTexture( oldtmu );
 	}
 }
 
@@ -1992,6 +1991,11 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 static void RB_RenderSunShadows()
 {
+	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
+		(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) ||
+		(tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo))
+		return;
+
 	FBO_t *shadowFbo = tr.screenShadowFbo;
 
 	vec4_t quadVerts[4];
@@ -2391,12 +2395,12 @@ static void RB_UpdateEntityMatrixConstants(
 	orientationr_t ori;
 	if (refEntity == &tr.worldEntity)
 	{
-		ori = tr.viewParms.world;
+		ori = backEnd.viewParms.world;
 		Matrix16Identity(entityBlock.modelMatrix);
 	}
 	else
 	{
-		R_RotateForEntity(refEntity, &tr.viewParms, &ori);
+		R_RotateForEntity(refEntity, &backEnd.viewParms, &ori);
 		Matrix16Copy(ori.modelMatrix, entityBlock.modelMatrix);
 	}
 	
@@ -2404,7 +2408,7 @@ static void RB_UpdateEntityMatrixConstants(
 	VectorCopy(ori.viewOrigin, entityBlock.localViewOrigin);
 
 	Matrix16Multiply(
-		tr.viewParms.projectionMatrix,
+		backEnd.viewParms.projectionMatrix,
 		modelViewMatrix,
 		entityBlock.modelViewProjectionMatrix);
 }
@@ -2578,17 +2582,17 @@ static void ComputeDeformValues(
 			deformParams0[0] = backEnd.ori.axis[0][2];
 			deformParams0[1] = backEnd.ori.axis[1][2];
 			deformParams0[2] = backEnd.ori.axis[2][2];
-			deformParams0[3] = backEnd.ori.origin[2] - backEnd.currentEntity->e.shadowPlane;
+			deformParams0[3] = backEnd.ori.origin[2] - refEntity->e.shadowPlane;
 
 			vec3_t lightDir;
-			VectorCopy(backEnd.currentEntity->modelLightDir, lightDir);
+			VectorCopy(refEntity->modelLightDir, lightDir);
 			lightDir[2] = 0.0f;
 			VectorNormalize(lightDir);
 			VectorSet(lightDir, lightDir[0] * 0.3f, lightDir[1] * 0.3f, 1.0f);
 
-			deformParams1[0] = backEnd.currentEntity->lightDir[0];
-			deformParams1[1] = backEnd.currentEntity->lightDir[1];
-			deformParams1[2] = backEnd.currentEntity->lightDir[2];
+			deformParams1[0] = lightDir[0];
+			deformParams1[1] = lightDir[1];
+			deformParams1[2] = lightDir[2];
 			break;
 
 		default:
@@ -2671,7 +2675,7 @@ static void RB_UpdateShaderAndEntityConstants(
 		const trRefEntity_t *refEntity = entityNum == REFENTITYNUM_WORLD ? &tr.worldEntity : &backEnd.refdef.entities[entityNum];
 
 		//FIX ME: find out why this causes trouble!
-		if (!updatedEntities[entityNum] || entityNum == REFENTITYNUM_WORLD)
+		if (!updatedEntities[entityNum])
 		{
 			EntityBlock entityBlock = {};
 
@@ -2746,6 +2750,70 @@ static void RB_UpdateAnimationConstants(
 	}
 }
 
+static void Fill_SpriteBlock( srfSprites_t *surf , SurfaceSpriteBlock *surfaceSpriteBlock)
+{
+	const surfaceSprite_t *ss = surf->sprite;
+
+	surfaceSpriteBlock->width = ss->width;
+	surfaceSpriteBlock->height =
+		(ss->facing == SURFSPRITE_FACING_DOWN) ? -ss->height : ss->height;
+	surfaceSpriteBlock->fadeStartDistance = ss->fadeDist;
+	surfaceSpriteBlock->fadeEndDistance = ss->fadeMax;
+	surfaceSpriteBlock->fadeScale = ss->fadeScale;
+	surfaceSpriteBlock->widthVariance = ss->variance[0];
+	surfaceSpriteBlock->heightVariance = ss->variance[1];
+}
+
+static void RB_UpdateSpriteConstants(
+	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
+{
+	if (!r_surfaceSprites->integer)
+		return;
+
+	// FIX ME: horrible idea to reuse the hashing
+	tr.surfaceSpriteInstanceUboOffsetsMap = ojkAllocArray<EntityShaderUboOffset>(
+		*backEndData->perFrameMemory,
+		64);
+	memset(
+		tr.surfaceSpriteInstanceUboOffsetsMap, 0,
+		sizeof(EntityShaderUboOffset) * 64);
+
+	shader_t *oldShader = nullptr;
+
+	// get all the spriteData
+	for (int i = 0; i < numDrawSurfs; ++i)
+	{
+		const drawSurf_t *drawSurf = drawSurfs + i;
+		if (*drawSurf->surface != SF_SPRITES)
+			continue;
+
+		shader_t *shader;
+		int ignored;
+		int entityNum;
+
+		R_DecomposeSort(
+			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
+
+		if (oldShader == shader)
+			continue;
+		
+		SurfaceSpriteBlock surfaceSpriteBlock = {};
+		Fill_SpriteBlock((srfSprites_t*)drawSurf->surface, &surfaceSpriteBlock);
+		
+		const int uboOffset = RB_AppendConstantsData(
+			frame, &surfaceSpriteBlock, sizeof(surfaceSpriteBlock));
+
+		RB_InsertEntityShaderUboOffset(
+			tr.surfaceSpriteInstanceUboOffsetsMap,
+			64,
+			REFENTITYNUM_WORLD,
+			shader->index,
+			uboOffset);
+
+		oldShader = shader;
+	}
+}
+
 static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 {
 	gpuFrame_t *frame = backEndData->currentFrame;
@@ -2758,6 +2826,8 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 
 	RB_UpdateShaderAndEntityConstants(frame, drawSurfs, numDrawSurfs);
 	RB_UpdateAnimationConstants(frame, drawSurfs, numDrawSurfs);
+
+	RB_UpdateSpriteConstants(frame, drawSurfs, numDrawSurfs);
 
 	RB_EndConstantsUpdate(frame);
 }

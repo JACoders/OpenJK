@@ -2161,21 +2161,6 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	shaderProgram_t *program = programGroup + shaderFlags;
 	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
 
-	SurfaceSpriteBlock *surfaceSpriteBlock =
-		ojkAlloc<SurfaceSpriteBlock>(*backEndData->perFrameMemory);
-	*surfaceSpriteBlock = {};
-	surfaceSpriteBlock->width = ss->width;
-	surfaceSpriteBlock->height =
-		(ss->facing == SURFSPRITE_FACING_DOWN) ? -ss->height : ss->height;
-	surfaceSpriteBlock->fadeStartDistance = ss->fadeDist;
-	surfaceSpriteBlock->fadeEndDistance = ss->fadeMax;
-	surfaceSpriteBlock->fadeScale = ss->fadeScale;
-	surfaceSpriteBlock->widthVariance = ss->variance[0];
-	surfaceSpriteBlock->heightVariance = ss->variance[1];
-
-	const int uboDataOffset = RB_BindAndUpdateFrameUniformBlock(
-		UNIFORM_BLOCK_SURFACESPRITE, &surfaceSpriteBlock);
-
 	UniformDataWriter uniformDataWriter;
 	uniformDataWriter.Start(program);
 	
@@ -2187,9 +2172,15 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	SamplerBindingsWriter samplerBindingsWriter;
 	samplerBindingsWriter.AddAnimatedImage(&firstStage->bundle[0], TB_COLORMAP);
 
+	int offset = RB_GetEntityShaderUboOffset(
+		tr.surfaceSpriteInstanceUboOffsetsMap,
+		64,
+		REFENTITYNUM_WORLD,
+		shader->index);
+
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
-		{ currentFrameUbo, uboDataOffset, UNIFORM_BLOCK_SURFACESPRITE },
+		{ currentFrameUbo, offset, UNIFORM_BLOCK_SURFACESPRITE },
 		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA }
 	};
 

@@ -375,6 +375,20 @@ layout(std140) uniform Entity
 	vec3 u_LocalViewOrigin;
 };
 
+struct Light
+{
+	vec4 origin;
+	vec3 color;
+	float radius;
+};
+
+layout(std140) uniform Lights
+{
+	int u_NumLights;
+	Light u_Lights[32];
+};
+
+uniform int u_LightIndex;
 uniform sampler2D u_DiffuseMap;
 
 #if defined(USE_LIGHTMAP)
@@ -613,6 +627,44 @@ vec2 GetParallaxOffset(in vec2 texCoords, in vec3 E, in mat3 tangentToWorld )
 #endif
 }
 
+vec3 CalcDynamicLightContribution(
+	in float roughness,
+	in vec3 N,
+	in vec3 E,
+	in vec3 viewOrigin,
+	in vec3 viewDir,
+	in float NE,
+	in vec3 diffuse,
+	in vec3 specular
+)
+{
+	vec3 outColor = vec3(0.0);
+	vec3 position = viewOrigin - viewDir;
+	for ( int i = 0; i < u_NumLights; i++ )
+	{
+		if ( ( u_LightIndex & ( 1 << i ) ) == 0 ) {
+			continue;
+		}
+		Light light = u_Lights[i];
+		
+		vec3  L  = light.origin.xyz - position;
+		float sqrLightDist = dot(L, L);
+
+		float attenuation = CalcLightAttenuation(1.0, light.radius * light.radius / sqrLightDist);
+
+		L /= sqrt(sqrLightDist);
+		vec3  H  = normalize(L + E);
+		float NL = clamp(dot(N, L), 0.0, 1.0);
+		float LH = clamp(dot(L, H), 0.0, 1.0);
+		float NH = clamp(dot(N, H), 0.0, 1.0);
+
+		vec3 reflectance = diffuse + CalcSpecular(specular, NH, NL, NE, LH, roughness);
+
+		outColor += light.color * reflectance * attenuation * NL;
+	}
+	return outColor;
+}
+
 vec3 CalcIBLContribution(
 	in float roughness,
 	in vec3 N,
@@ -626,14 +678,14 @@ vec3 CalcIBLContribution(
 #if defined(PER_PIXEL_LIGHTING) &&  defined(USE_CUBEMAP)
 	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
 
-	vec3 R = reflect(E, N);
+	vec3 R = reflect(-E, N);
 
 	// parallax corrected cubemap (cheaper trick)
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
 	vec3 eyeToCubeCenter = (u_CubeMapInfo.xyz - viewOrigin) * 0.001;
 	vec3 parallax = eyeToCubeCenter + u_CubeMapInfo.w * viewDir * 0.001;
 
-	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
+	vec3 cubeLightColor = textureLod(u_CubeMap, R - parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
 
 	return cubeLightColor * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
 #else
@@ -830,6 +882,7 @@ void main()
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
 	
+	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb);
 	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb);
 
 #else
@@ -846,6 +899,6 @@ void main()
 #if defined(USE_GLOW_BUFFER)
 	out_Glow = out_Color;
 #else
-	out_Glow = vec4(0.0);
+	out_Glow = vec4(0.0, 0.0, 0.0, out_Color.a);
 #endif
 }

@@ -56,7 +56,7 @@ typedef unsigned int glIndex_t;
 #define MAX_VISCOUNTS 5
 #define MAX_VBOS      4096
 #define MAX_IBOS      4096
-#define MAX_G2_BONES  53
+#define MAX_G2_BONES  72
 
 #define MAX_CALC_PSHADOWS    64
 #define MAX_DRAWN_PSHADOWS    32 // do not increase past 32, because bit flags are used on surfaces
@@ -764,7 +764,7 @@ struct ShaderInstanceBlock
 	float portalRange;
 	int deformType;
 	int deformFunc;
-	float pad1;
+	//float pad1;
 };
 
 struct SkeletonBoneMatricesBlock
@@ -1467,7 +1467,7 @@ typedef struct {
 	vec3_t		pvsOrigin;			// may be different than or.origin for portals
 	qboolean	isPortal;			// true if this view is through a portal
 	qboolean	isMirror;			// the portal is a mirror, invert the face culling
-	int flags;
+	int			flags;
 	int			frameSceneNum;		// copied from tr.frameSceneNum
 	int			frameCount;			// copied from tr.frameCount
 	cplane_t	portalPlane;		// clip anything behind this if mirroring
@@ -2408,6 +2408,8 @@ typedef struct trGlobals_s {
 	int fogsUboOffset;
 	int skyEntityUboOffset;
 	int entityUboOffsets[MAX_REFENTITIES + 1];
+	int surfaceSpriteUboOffsets[64]; //FIX ME: maybe not fixed size?
+	EntityShaderUboOffset *surfaceSpriteInstanceUboOffsetsMap;
 
 	int *animationBoneUboOffsets;
 	EntityShaderUboOffset *shaderInstanceUboOffsetsMap;
@@ -3769,4 +3771,9 @@ uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
 void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
 DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader );
 
+int RB_GetEntityShaderUboOffset(
+	EntityShaderUboOffset *offsetMap,
+	int mapSize,
+	int entityNum,
+	int shaderNum);
 #endif //TR_LOCAL_H
