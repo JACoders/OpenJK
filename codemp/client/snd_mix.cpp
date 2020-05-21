@@ -281,6 +281,9 @@ static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, in
 
 	for ( int i=0 ; i<count ; i++ )
 	{
+		// have we run off the end?
+		if ((int)ofst >= sfx->iSoundLengthInSamples)
+			break;
 		iData = sfx->pSoundData[ (int)ofst ];
 
 		pSamplesDest[i].left  += (iData * iLeftVol )>>8;
