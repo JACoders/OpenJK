@@ -44,6 +44,9 @@ USER INTERFACE MAIN
 #include "game/bg_saga.h"
 #include "ui_shared.h"
 
+NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
+void (*Com_Printf)( const char *msg, ... );
+
 extern void UI_SaberAttachToChar( itemDef_t *item );
 
 const char *forcepowerDesc[NUM_FORCE_POWERS] =
