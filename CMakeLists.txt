@@ -159,10 +159,10 @@ set(MPBotLib "botlib")
 set(SharedLib "shared")
 
 # Paths
-set(SPDir "${CMAKE_SOURCE_DIR}/code")
-set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
-set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
-set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
+set(SPDir "${CMAKE_SOURCE_DIR}/code/jkasp")
+set(MPDir "${CMAKE_SOURCE_DIR}/code/jkamp")
+set(JK2SPDir "${CMAKE_SOURCE_DIR}/code/jk2sp")
+set(SharedDir ${CMAKE_SOURCE_DIR}/code/shared)
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 set(GSLIncludeDirectory "${OpenJKLibDir}/gsl-lite/include")
 
