@@ -94,7 +94,7 @@ if(APPLE)
 endif()
 
 # Custom CMake Modules needed
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 Include(CheckTypeSize)
 check_type_size("void*" CMAKE_SIZEOF_VOID_P)
