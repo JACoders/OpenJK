@@ -80,13 +80,6 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 * If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
 
 
-### Deciphering buildbot's output
-
-* Pick the build from the operating system builder you're interested in at the [builders](https://jk.xd.cm/builders) page.
-* Click on stdio for the Steps to see the command executed and the result.
-* The command is at the very top, the output starts below.
-
-
 ## Maintainers (in alphabetical order)
 
 * Ensiform
