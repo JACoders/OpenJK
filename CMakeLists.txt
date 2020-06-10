@@ -22,15 +22,10 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment ver
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
-
-
-# Project name
 set(ProjectName "OpenJK" CACHE STRING "Project Name")
 project(${ProjectName})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-
-
 
 # Customizable options
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
@@ -51,8 +46,8 @@ option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
 
-Include(CMakeDependentOption)
-CMAKE_DEPENDENT_OPTION(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
+include(CMakeDependentOption)
+cmake_dependent_option(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
 
 # Configure the use of bundled libraries.  By default, we assume the user is on
 # a platform that does not require any bundling.
@@ -67,19 +62,19 @@ set(UseInternalJPEGDefault   OFF)
 set(UseInternalSDL2Default   OFF)
 
 if(WIN32)
-  set(UseInternalOpenALDefault ON)
-  set(UseInternalZlibDefault   ON)
-  set(UseInternalPNGDefault    ON)
-  set(UseInternalJPEGDefault   ON)
-  set(UseInternalSDL2Default   ON)
+	set(UseInternalOpenALDefault ON)
+	set(UseInternalZlibDefault   ON)
+	set(UseInternalPNGDefault    ON)
+	set(UseInternalJPEGDefault   ON)
+	set(UseInternalSDL2Default   ON)
 endif()
 
 if(APPLE)
-  set(UseInternalJPEGDefault ON)
+	set(UseInternalJPEGDefault ON)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "BSD")
-  add_definitions(-DIOAPI_NO_64)
+	add_definitions(-DIOAPI_NO_64)
 endif()
 
 option(UseInternalOpenAL "If set, use bundled OpenAL."  ${UseInternalOpenALDefault})
@@ -90,16 +85,14 @@ option(UseInternalSDL2   "If set, use bundled SDL2."    ${UseInternalSDL2Default
 
 # This option won't appear on non-Apple platforms.
 if(APPLE)
-  option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
+	option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 endif()
 
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
-Include(CheckTypeSize)
+include(CheckTypeSize)
 check_type_size("void*" CMAKE_SIZEOF_VOID_P)
-
-
 
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
@@ -139,15 +132,13 @@ endif()
 message(STATUS "Architecture is ${Architecture}")
 
 if(WIN32 AND CMAKE_VERSION VERSION_LESS "3.4")
-message(WARNING "Building on Windows platform with CMake version less than 3.4 is deprecated. Manifest file will fail to be included.")
+	message(WARNING "Building on Windows platform with CMake version less than 3.4 is deprecated. Manifest file will fail to be included.")
 endif()
 
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 message(STATUS "Git revision is ${GIT_SHA1}")
-
-
 
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
@@ -167,8 +158,6 @@ set(AssetsPk3 "openjk-${Architecture}.pk3")
 set(MPBotLib "botlib")
 set(SharedLib "shared")
 
-
-
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
@@ -178,8 +167,6 @@ set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 set(GSLIncludeDirectory "${OpenJKLibDir}/gsl-lite/include")
 
 include(InstallConfig)
-
-
 
 # Operating settings
 if(WIN64)
@@ -194,11 +181,8 @@ if (NOT WIN32 AND NOT APPLE)
 	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
 endif()
 
-
-
 # Compiler settings
 if(MSVC)
-
 	set(SharedDefines ${SharedDefines} "NOMINMAX")
 	set(SharedDefines ${SharedDefines} "_CRT_SECURE_NO_WARNINGS")
 	set(SharedDefines ${SharedDefines} "_SCL_SECURE_NO_WARNINGS")
@@ -212,7 +196,6 @@ if(MSVC)
 
 	# We don't try to control symbol visibility under MSVC.
 	set(OPENJK_VISIBILITY_FLAGS "")
-
 elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang"))
 	# I hope this doesn't come back to bite me in the butt later on.
 	# Realistically though, can the C and CXX compilers be different?
@@ -280,7 +263,6 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" M
 	elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
-		#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
 	endif()
@@ -302,8 +284,6 @@ else()
 	set(SharedDefines ${SharedDefines} "FINAL_BUILD")
 endif()
 
-
-
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
@@ -318,8 +298,6 @@ if (NOT ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL ""))
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(SharedDefines ${SharedDefines} "SOURCE_DATE=\"${source_date}\"")
 endif()
-
-
 
 # Files shared across all projects
 set(SharedCommonFiles
@@ -339,38 +317,37 @@ set(SharedCommonSafeFiles
 	"${SharedDir}/qcommon/safe/limited_vector.h"
 	)
 
-
 if(UseInternalJPEG)
-  add_subdirectory(lib/jpeg-9a)
+	add_subdirectory(lib/jpeg-9a)
 else()
-  find_package(JPEG REQUIRED)
+	find_package(JPEG REQUIRED)
 endif()
 
 if(UseInternalZlib)
-  add_subdirectory(lib/zlib)
+	add_subdirectory(lib/zlib)
 else()
-  find_package(ZLIB REQUIRED)
+	find_package(ZLIB REQUIRED)
 endif()
 
 if(UseInternalPNG)
-  add_subdirectory(lib/libpng)
+	add_subdirectory(lib/libpng)
 else()
-  find_package(PNG REQUIRED)
+	find_package(PNG REQUIRED)
 endif()
 
 # Always use bundled minizip (sets MINIZIP_{LIBRARIES,INCLUDE_DIR})
 add_subdirectory(lib/minizip)
 
-# Add projects
 add_subdirectory(${SPDir})
 if(BuildJK2SPGame)
 	add_subdirectory("${JK2SPDir}/game")
 endif()
+
 add_subdirectory(${MPDir})
-# Windows Symbol Server tools
 if(BuildSymbolServer)
 	add_subdirectory("tools/WinSymbol")
 endif()
+
 if(BuildTests)
 	enable_testing()
 	add_subdirectory("tests")
