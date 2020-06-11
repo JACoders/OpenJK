@@ -28,22 +28,18 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_public.h"
 #include "mp3code/mp3struct.h"
 
-#if defined(_MSC_VER) && !defined(WIN64)
+#if (defined(_MSC_VER) && !defined(WIN64)) || defined(MACOS_X)
 #define USE_OPENAL
 #endif
 
 // Open AL Specific
 #ifdef USE_OPENAL
-#include "OpenAL/al.h"
-#include "OpenAL/alc.h"
-#include "eax/eax.h"
-#include "eax/EaxMan.h"
-/*#elif defined MACOS_X
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>*/
+#  include <OpenAL/al.h>
+#  include <OpenAL/alc.h>
+#  if defined(USE_EAX)
+#    include "eax/eax.h"
+#    include "eax/EaxMan.h"
+#  endif
 #endif
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
 void S_AL_MuteAllSounds(qboolean bMute);

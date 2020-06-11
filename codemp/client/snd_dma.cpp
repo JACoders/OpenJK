@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_mp3.h"
 #include "snd_music.h"
 #include "client.h"
+#include "sys/sys_public.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -253,6 +254,12 @@ void UpdateLoopingSounds();
 void AL_UpdateRawSamples();
 void S_SetLipSyncs();
 
+ALboolean				s_bEAX;					// Is EAX 4.0 support available
+bool					s_bEALFileLoaded;		// Has an .eal file been loaded for the current level
+bool					s_bInWater;				// Underwater effect currently active
+int						s_EnvironmentID;		// EAGLE ID of current environment
+
+#if defined(USE_EAX)
 // EAX Related
 
 typedef struct ENVTABLE_s {
@@ -277,11 +284,6 @@ typedef struct FXSLOTINFO_s {
 	GUID	FXSlotGuid;
 	ALint	lEnvID;
 } FXSLOTINFO, *LPFXSLOTINFO;
-
-ALboolean				s_bEAX;					// Is EAX 4.0 support available
-bool					s_bEALFileLoaded;		// Has an .eal file been loaded for the current level
-bool					s_bInWater;				// Underwater effect currently active
-int						s_EnvironmentID;		// EAGLE ID of current environment
 
 LPEAXMANAGER			s_lpEAXManager;			// Pointer to EAXManager object
 HINSTANCE				s_hEAXManInst;			// Handle of EAXManager DLL
@@ -333,6 +335,7 @@ const GUID EAX_NULL_GUID = { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x0
 const GUID EAX_PrimaryFXSlotID = { 0xf317866d, 0x924c, 0x450c, { 0x86, 0x1b, 0xe6, 0xda, 0xa2, 0x5e, 0x7c, 0x20} };
 
 const GUID EAX_REVERB_EFFECT = { 0xcf95c8f, 0xa3cc, 0x4849, { 0xb0, 0xb6, 0x83, 0x2e, 0xcc, 0x18, 0x22, 0xdf} };
+#endif
 
 /**************************************************************************************************\
 *
@@ -496,7 +499,12 @@ void S_Init( void ) {
 	{
 		int i, j;
 
-		ALCdevice *ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
+        static const ALCchar* audioDevice = nullptr;
+#if defined(_WIN32)
+        audioDevice = "DirectSound3D";
+#endif
+
+		ALCdevice *ALCDevice = alcOpenDevice(audioDevice);
 		if (!ALCDevice)
 			return;
 
@@ -528,7 +536,9 @@ void S_Init( void ) {
 		alListenerfv(AL_VELOCITY,listenerVel);
 		alListenerfv(AL_ORIENTATION,listenerOri);
 
+#if defined(USE_EAX)
 		InitEAXManager();
+#endif
 
 		memset(s_channels, 0, sizeof(s_channels));
 
@@ -552,6 +562,7 @@ void S_Init( void ) {
 			// Sources / Channels are not sending to any Slots (other than the Listener / Primary FX Slot)
 			s_channels[i].lSlotID = -1;
 
+#if defined(USE_EAX)
 			if (s_bEAX)
 			{
 				// Remove the RoomAuto flag from each Source (to remove Reverb Engine Statistical
@@ -564,6 +575,7 @@ void S_Init( void ) {
 				s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
 							s_channels[i].alSource, &ulFlags, sizeof(ulFlags));
 			}
+#endif
 
 			s_numChannels++;
 		}
@@ -607,12 +619,12 @@ void S_Init( void ) {
 		if (s_musicVolume->value > 1.f)
 			s_musicVolume->value = 1.f;
 
+#if defined(USE_EAX)
 		// s_init could be called in game, if so there may be an .eal file
 		// for this level
-
 		const char *mapname = Cvar_VariableString( "mapname" );
 		EALFileInit(mapname);
-
+#endif
 	}
 	else
 	{
@@ -710,7 +722,9 @@ void S_Shutdown( void )
 		// Close device
 		alcCloseDevice(ALCDevice);
 
+#if defined(USE_EAX)
 		ReleaseEAXManager();
+#endif
 
 		s_numChannels = 0;
 
@@ -916,7 +930,7 @@ void S_BeginRegistration( void )
 {
 	s_soundMuted = qfalse;		// we can play again
 
-#ifdef USE_OPENAL
+#if defined(USE_OPENAL) && defined(USE_EAX)
 	// Find name of level so we can load in the appropriate EAL file
 	if (s_UseOpenAL)
 	{
@@ -946,7 +960,7 @@ void S_BeginRegistration( void )
 	}
 }
 
-#ifdef USE_OPENAL
+#if defined(USE_OPENAL) && defined(USE_EAX)
 void EALFileInit(const char *level)
 {
 	// If an EAL File is already unloaded, remove it
@@ -1584,7 +1598,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 				{
 					// Stop this sound
 					alSourceStop(ch->alSource);
-					alSourcei(ch->alSource, AL_BUFFER, NULL);
+					alSourcei(ch->alSource, AL_BUFFER, 0);
 					ch->bPlaying = false;
 					ch->thesfx = NULL;
 					break;
@@ -1600,7 +1614,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 				{
 					// Stop this sound
 					alSourceStop(ch->alSource);
-					alSourcei(ch->alSource, AL_BUFFER, NULL);
+					alSourcei(ch->alSource, AL_BUFFER, 0);
 					ch->bPlaying = false;
 					ch->thesfx = NULL;
 					break;
@@ -1822,7 +1836,7 @@ void S_StopSounds(void)
 		for (i = 0; i < s_numChannels; i++, ch++)
 		{
 			alSourceStop(s_channels[i].alSource);
-			alSourcei(s_channels[i].alSource, AL_BUFFER, NULL);
+			alSourcei(s_channels[i].alSource, AL_BUFFER, 0);
 			ch->thesfx = NULL;
 			memset(&ch->MP3StreamHeader, 0, sizeof(MP3STREAM));
 			ch->bLooping = false;
@@ -2351,7 +2365,9 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 					pos[2] = -origin[1];
 					alSourcefv(s_channels[i].alSource, AL_POSITION, pos);
 
+#if defined(USE_EAX)
 					UpdateEAXBuffer(ch);
+#endif
 				}
 
 /*				pos[0] = origin[0];
@@ -2506,7 +2522,7 @@ Change the volumes of all the playing sounds for changes in their positions
 */
 void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwater )
 {
-#ifdef USE_OPENAL
+#if defined(USE_OPENAL) && defined(USE_EAX)
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
 #endif
@@ -2534,6 +2550,7 @@ void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwat
 		listener_ori[5] = -axis[2][1];
 		alListenerfv(AL_ORIENTATION, listener_ori);
 
+#if defined(USE_EAX)
 		// Update EAX effects here
 		if (s_bEALFileLoaded)
 		{
@@ -2605,6 +2622,7 @@ void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwat
 				}
 			}
 		}
+#endif
 	}
 	else
 	{
@@ -2951,8 +2969,10 @@ void S_Update_(void) {
 				}
 			}
 
+#if defined(USE_EAX)
 			if (s_bEALFileLoaded)
 				UpdateEAXBuffer(ch);
+#endif
 
 			int nBytesDecoded = 0;
 			int nTotalBytesDecoded = 0;
@@ -3006,7 +3026,7 @@ void S_Update_(void) {
 					nBuffersToAdd = i + 1;
 
 				// Make sure queue is empty first
-				alSourcei(s_channels[source].alSource, AL_BUFFER, NULL);
+				alSourcei(s_channels[source].alSource, AL_BUFFER, 0);
 
 				for (i = 0; i < nBuffersToAdd; i++)
 				{
@@ -3034,7 +3054,7 @@ void S_Update_(void) {
 					if (ch->thesfx->lipSyncData)
 					{
 						// Record start time for Lip-syncing
-						s_channels[source].iStartTime = timeGetTime();
+						s_channels[source].iStartTime = Sys_Milliseconds();
 
 						// Prepare lipsync value(s)
 						s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[0];
@@ -3067,7 +3087,7 @@ void S_Update_(void) {
 					if (ch->thesfx->lipSyncData)
 					{
 						// Record start time for Lip-syncing
-						s_channels[source].iStartTime = timeGetTime();
+						s_channels[source].iStartTime = Sys_Milliseconds();
 
 						// Prepare lipsync value(s)
 						s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[0];
@@ -3177,7 +3197,7 @@ void UpdateSingleShotSounds()
 						if (state == AL_STOPPED)
 						{
 							// Attach NULL buffer to Source to remove any buffers left in the queue
-							alSourcei(ch->alSource, AL_BUFFER, NULL);
+							alSourcei(ch->alSource, AL_BUFFER, 0);
 							ch->thesfx = NULL;
 							ch->bPlaying = false;
 						}
@@ -3383,8 +3403,10 @@ void UpdateLoopingSounds()
 					ch->master_vol = loop->volume;
 					alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
 
+#if defined(USE_EAX)
 					if (s_bEALFileLoaded)
 						UpdateEAXBuffer(ch);
+#endif
 
 					ch->bProcessed = true;
 					loop->bProcessed = true;
@@ -3457,8 +3479,10 @@ void UpdateLoopingSounds()
 			alSourcef(s_channels[source].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.0f);
 			alSourcei(s_channels[source].alSource, AL_SOURCE_RELATIVE, ch->fixed_origin ? AL_TRUE : AL_FALSE);
 
+#if defined(USE_EAX)
 			if (s_bEALFileLoaded)
 				UpdateEAXBuffer(ch);
+#endif
 
 			alGetError();
 			alSourcePlay(s_channels[source].alSource);
@@ -3624,12 +3648,7 @@ void S_SetLipSyncs()
 	int currentTime, timePlayed;
 	channel_t *ch;
 
-#ifdef _WIN32
-	currentTime = timeGetTime();
-#else
-	// FIXME: alternative to timeGetTime ?
-	currentTime = 0;
-#endif
+	currentTime = Sys_Milliseconds();
 
 	memset(s_entityWavVol, 0, sizeof(s_entityWavVol));
 
@@ -4096,8 +4115,6 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 	int		len;
 	char	dump[16];
 	char	name[MAX_QPATH];
-
-	Q_strncpyz( sMusic_BackgroundLoop, loop, sizeof( sMusic_BackgroundLoop ));
 
 	Q_strncpyz( name, intro, sizeof( name ) - 4 );	// this seems to be so that if the filename hasn't got an extension
 													//	but doesn't have the room to append on either then you'll just
@@ -4571,6 +4588,8 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 	{
 		const char *psLoopName = S_FileExists( sNameLoop ) ? sNameLoop : sNameIntro;
 		Com_DPrintf("S_StartBackgroundTrack: Found/using non-dynamic music track '%s' (loop: '%s')\n", sNameIntro, psLoopName);
+
+        Q_strncpyz( sMusic_BackgroundLoop, psLoopName, sizeof( sMusic_BackgroundLoop ));
 		S_StartBackgroundTrack_Actual( &tMusic_Info[eBGRNDTRACK_NONDYNAMIC], bMusic_IsDynamic, sNameIntro, psLoopName );
 	}
 	else
@@ -4585,6 +4604,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 				const char *psMusicName = Music_GetFileNameForState( (MusicState_e) i);
 				if (psMusicName && (!Q_stricmp(tMusic_Info[i].sLoadedDataName, psMusicName) || S_FileExists( psMusicName )) )
 				{
+                    Q_strncpyz( sMusic_BackgroundLoop, loop, sizeof( sMusic_BackgroundLoop ));
 					bOk = S_StartBackgroundTrack_Actual( &tMusic_Info[i], qtrue, psMusicName, loop );
 				}
 
@@ -4748,16 +4768,20 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 		if (pMusicInfo->bIsMP3)
 		{
 			int iStartingSampleNum = pMusicInfo->chMP3_Bgrnd.thesfx->iSoundLengthInSamples - pMusicInfo->s_backgroundSamples;	// but this IS relevant
-			// Com_Printf(S_COLOR_YELLOW "Requesting MP3 samples: sample %d\n",iStartingSampleNum);
-
+			Com_Printf(S_COLOR_YELLOW "Requesting MP3 samples: sample %d\n",iStartingSampleNum);
 
 			if (pMusicInfo->s_backgroundFile == -1)
 			{
 				// in-mem...
 				//
-				qbForceFinish = (MP3Stream_GetSamples( &pMusicInfo->chMP3_Bgrnd, iStartingSampleNum, fileBytes/2, (short*) raw, qtrue ))?qfalse:qtrue;
+				qbForceFinish = (MP3Stream_GetSamples(
+                    &pMusicInfo->chMP3_Bgrnd,
+                    iStartingSampleNum,
+                    fileBytes/2,
+                    (short*) raw,
+                    qtrue)) ? qfalse : qtrue;
 
-				//Com_Printf(S_COLOR_YELLOW "Music time remaining: %f seconds\n", MP3Stream_GetRemainingTimeInSeconds( &pMusicInfo->chMP3_Bgrnd.MP3StreamHeader ));
+				Com_Printf(S_COLOR_YELLOW "Music time remaining: %f seconds\n", MP3Stream_GetRemainingTimeInSeconds( &pMusicInfo->chMP3_Bgrnd.MP3StreamHeader ));
 			}
 			else
 			{
@@ -4768,7 +4792,16 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 
 				pMusicInfo->chMP3_Bgrnd.MP3StreamHeader.pbSourceData = pbScrolledStreamData - pMusicInfo->chMP3_Bgrnd.MP3StreamHeader.iSourceReadIndex;
 
-				qbForceFinish = (MP3Stream_GetSamples( &pMusicInfo->chMP3_Bgrnd, iStartingSampleNum, fileBytes/2, (short*) raw, qtrue ))?qfalse:qtrue;
+				qbForceFinish = (MP3Stream_GetSamples(
+                    &pMusicInfo->chMP3_Bgrnd,
+                    iStartingSampleNum,
+                    fileBytes/2,
+                    (short*) raw,
+                    qtrue)) ? qfalse : qtrue;
+
+				Com_Printf(
+                    S_COLOR_YELLOW "Music time remaining: %f seconds\n",
+                    MP3Stream_GetRemainingTimeInSeconds(&pMusicInfo->chMP3_Bgrnd.MP3StreamHeader));
 			}
 		}
 		else
@@ -4792,6 +4825,9 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 						pMusicInfo->s_backgroundInfo.width, pMusicInfo->s_backgroundInfo.channels, raw, pMusicInfo->fSmoothedOutVolume,
 						bFirstOrOnlyMusicTrack
 					);
+
+        Com_Printf(S_COLOR_YELLOW "bgSamples=%d fileSamples=%d forceFinish=%d rawend=%d soundtime=%d\n",
+            pMusicInfo->s_backgroundSamples, fileSamples, qbForceFinish, s_rawend, s_soundtime);
 
 		pMusicInfo->s_backgroundSamples -= fileSamples;
 		if ( !pMusicInfo->s_backgroundSamples || qbForceFinish )
@@ -5303,7 +5339,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 	return bAtLeastOneSoundDropped;
 }
 
-#ifdef USE_OPENAL
+#if defined(USE_OPENAL) && defined(USE_EAX)
 /****************************************************************************************************\
 *
 *	EAX Related
