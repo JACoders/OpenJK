@@ -504,6 +504,22 @@ void S_Init( void ) {
         audioDevice = "DirectSound3D";
 #endif
 
+        if (alcIsExtensionPresent(nullptr, "ALC_ENUMERATION_EXT"))
+        {
+            const ALCchar* defaultDevice = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
+            Com_Printf("Default audio device: %s\n", defaultDevice);
+
+            const ALCchar* availableDevices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+            const char* end = nullptr;
+
+            Com_Printf("Available audio devices:\n");
+            for (const char* device = availableDevices; *device != '\0'; device = end + 1)
+            {
+                Com_Printf("...%s\n", device);
+                end = strchr(device, '\0');
+            }
+        }
+
 		ALCdevice *ALCDevice = alcOpenDevice(audioDevice);
 		if (!ALCDevice)
 			return;
@@ -1751,7 +1767,12 @@ void S_ClearSoundBuffer( void ) {
 	s_rawend = 0;
 
 #ifdef USE_OPENAL
-	if (!s_UseOpenAL)
+	if (s_UseOpenAL)
+	{
+		s_paintedtime = 0;
+		s_soundtime = 0;
+	}
+    else
 #endif
 	{
 		if (dma.samplebits == 8)
@@ -1764,15 +1785,7 @@ void S_ClearSoundBuffer( void ) {
 			memset(dma.buffer, clear, dma.samples * dma.samplebits/8);
 		SNDDMA_Submit ();
 	}
-#ifdef USE_OPENAL
-	else
-	{
-		s_paintedtime = 0;
-		s_soundtime = 0;
-	}
-#endif
 }
-
 
 // kinda kludgy way to stop a special-use sfx_t playing...
 //
@@ -1846,12 +1859,10 @@ void S_StopSounds(void)
 		}
 	}
 	else
+#endif
 	{
-#endif
 		memset(s_channels, 0, sizeof(s_channels));
-#ifdef USE_OPENAL
 	}
-#endif
 
 	// clear out the lip synching override array
 	memset(s_entityWavVol, 0,sizeof(s_entityWavVol));
@@ -2878,7 +2889,7 @@ void S_Update_(void) {
 		channel_t *ch = s_channels + 1;
 		for ( i = 1; i < MAX_CHANNELS ; i++, ch++ )
 		{
-			if ( !ch->thesfx || (ch->bPlaying))
+			if ( !ch->thesfx || ch->bPlaying)
 				continue;
 
 			int source = ch - s_channels;
@@ -2974,9 +2985,6 @@ void S_Update_(void) {
 				UpdateEAXBuffer(ch);
 #endif
 
-			int nBytesDecoded = 0;
-			int nTotalBytesDecoded = 0;
-			int nBuffersToAdd = 0;
 
 			if (ch->thesfx->pMP3StreamHeader)
 			{
@@ -2991,11 +2999,11 @@ void S_Update_(void) {
 				// Decode (STREAMING_BUFFER_SIZE / 1152) MP3 frames for each of the NUM_STREAMING_BUFFERS AL Buffers
 				for (i = 0; i < NUM_STREAMING_BUFFERS; i++)
 				{
-					nTotalBytesDecoded = 0;
+					int nTotalBytesDecoded = 0;
 
 					for (j = 0; j < (STREAMING_BUFFER_SIZE / 1152); j++)
 					{
-						nBytesDecoded = C_MP3Stream_Decode(&ch->MP3StreamHeader, 0);	// added ,0 ?
+						int nBytesDecoded = C_MP3Stream_Decode(&ch->MP3StreamHeader, 0);
 						memcpy(ch->buffers[i].Data + nTotalBytesDecoded, ch->MP3StreamHeader.bDecodeBuffer, nBytesDecoded);
 						if (ch->entchannel == CHAN_VOICE || ch->entchannel == CHAN_VOICE_ATTEN || ch->entchannel == CHAN_VOICE_GLOBAL )
 						{
@@ -3020,6 +3028,7 @@ void S_Update_(void) {
 					}
 				}
 
+                int nBuffersToAdd = 0;
 				if (i >= NUM_STREAMING_BUFFERS)
 					nBuffersToAdd = NUM_STREAMING_BUFFERS;
 				else
@@ -3159,153 +3168,153 @@ void UpdateSingleShotSounds()
 	for (i = 1; i < s_numChannels; i++, ch++)
 	{
 		ch->bProcessed = false;
-		if ((s_channels[i].bPlaying) && (!ch->bLooping))
+		if (!s_channels[i].bPlaying || ch->bLooping)
 		{
-			// Single-shot
-			if (s_channels[i].bStreaming == false)
-			{
-				alGetSourcei(s_channels[i].alSource, AL_SOURCE_STATE, &state);
-				if (state == AL_STOPPED)
-				{
-					s_channels[i].thesfx = NULL;
-					s_channels[i].bPlaying = false;
-				}
-			}
-			else
-			{
-				// Process streaming sample
+            continue;
+        }
 
-				// Procedure :-
-				// if more data to play
-				//		if any UNQUEUED Buffers
-				//			fill them with data
-				//		(else ?)
-				//			get number of buffers processed
-				//			fill them with data
-				//		restart playback if it has stopped (buffer underrun)
-				// else
-				//		free channel
+        // Single-shot
+        if (!s_channels[i].bStreaming)
+        {
+            alGetSourcei(s_channels[i].alSource, AL_SOURCE_STATE, &state);
+            if (state == AL_STOPPED)
+            {
+                s_channels[i].thesfx = NULL;
+                s_channels[i].bPlaying = false;
+            }
 
-				int nBytesDecoded;
+            continue;
+        }
 
-				if (ch->thesfx->pMP3StreamHeader)
-				{
-					if (ch->MP3StreamHeader.iSourceBytesRemaining == 0)
-					{
-						// Finished decoding data - if the source has finished playing then we're done
-						alGetSourcei(ch->alSource, AL_SOURCE_STATE, &state);
-						if (state == AL_STOPPED)
-						{
-							// Attach NULL buffer to Source to remove any buffers left in the queue
-							alSourcei(ch->alSource, AL_BUFFER, 0);
-							ch->thesfx = NULL;
-							ch->bPlaying = false;
-						}
-						// Move on to next channel ...
-						continue;
-					}
+        // Process streaming sample
 
-					// Check to see if any Buffers have been processed
-					alGetSourcei(ch->alSource, AL_BUFFERS_PROCESSED, &processed);
+        // Procedure :-
+        // if more data to play
+        //		if any UNQUEUED Buffers
+        //			fill them with data
+        //		(else ?)
+        //			get number of buffers processed
+        //			fill them with data
+        //		restart playback if it has stopped (buffer underrun)
+        // else
+        //		free channel
 
-					ALuint buffer;
-					while (processed)
-					{
-						alSourceUnqueueBuffers(ch->alSource, 1, &buffer);
-						for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
-						{
-							if (ch->buffers[j].BufferID == buffer)
-							{
-								ch->buffers[j].Status = UNQUEUED;
-								break;
-							}
-						}
-						processed--;
-					}
+        if (ch->thesfx->pMP3StreamHeader == nullptr)
+        {
+            continue;
+        }
 
-					int nTotalBytesDecoded = 0;
+        if (ch->MP3StreamHeader.iSourceBytesRemaining == 0)
+        {
+            // Finished decoding data - if the source has finished playing then we're done
+            alGetSourcei(ch->alSource, AL_SOURCE_STATE, &state);
+            if (state == AL_STOPPED)
+            {
+                // Attach NULL buffer to Source to remove any buffers left in the queue
+                alSourcei(ch->alSource, AL_BUFFER, 0);
+                ch->thesfx = NULL;
+                ch->bPlaying = false;
+            }
+            // Move on to next channel ...
+            continue;
+        }
 
-					for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
-					{
-						if ((ch->buffers[j].Status == UNQUEUED) && (ch->MP3StreamHeader.iSourceBytesRemaining > 0))
-						{
-							nTotalBytesDecoded = 0;
+        // Check to see if any Buffers have been processed
+        alGetSourcei(ch->alSource, AL_BUFFERS_PROCESSED, &processed);
 
-							for (k = 0; k < (STREAMING_BUFFER_SIZE / 1152); k++)
-							{
-								nBytesDecoded = C_MP3Stream_Decode(&ch->MP3StreamHeader, 0); // added ,0
+        while (processed--)
+        {
+            ALuint buffer;
+            alSourceUnqueueBuffers(ch->alSource, 1, &buffer);
+            for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
+            {
+                if (ch->buffers[j].BufferID == buffer)
+                {
+                    ch->buffers[j].Status = UNQUEUED;
+                    break;
+                }
+            }
+        }
 
-								if (nBytesDecoded > 0)
-								{
-									memcpy(ch->buffers[j].Data + nTotalBytesDecoded, ch->MP3StreamHeader.bDecodeBuffer, nBytesDecoded);
+        for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
+        {
+            if ((ch->buffers[j].Status != UNQUEUED) || (ch->MP3StreamHeader.iSourceBytesRemaining == 0))
+            {
+                continue;
+            }
 
-									if (ch->entchannel == CHAN_VOICE || ch->entchannel == CHAN_VOICE_ATTEN || ch->entchannel == CHAN_VOICE_GLOBAL )
-									{
-										if (ch->thesfx->lipSyncData)
-										{
-											ch->thesfx->lipSyncData[(j*4)+k] = S_MP3PreProcessLipSync(ch, (short *)(ch->buffers[j].Data));
-										}
-										else
-										{
+            int nTotalBytesDecoded = 0;
+
+            for (k = 0; k < (STREAMING_BUFFER_SIZE / 1152); k++)
+            {
+                int nBytesDecoded = C_MP3Stream_Decode(&ch->MP3StreamHeader, 0);
+                if (nBytesDecoded > 0)
+                {
+                    memcpy(ch->buffers[j].Data + nTotalBytesDecoded, ch->MP3StreamHeader.bDecodeBuffer, nBytesDecoded);
+
+                    if (ch->entchannel == CHAN_VOICE || ch->entchannel == CHAN_VOICE_ATTEN || ch->entchannel == CHAN_VOICE_GLOBAL )
+                    {
+                        if (ch->thesfx->lipSyncData)
+                        {
+                            ch->thesfx->lipSyncData[(j*4)+k] = S_MP3PreProcessLipSync(ch, (short *)(ch->buffers[j].Data));
+                        }
+                        else
+                        {
 #ifdef _DEBUG
-											Com_OPrintf("Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
+                            Com_OPrintf("Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 #endif
-										}
-									}
-									nTotalBytesDecoded += nBytesDecoded;
-								}
-								else
-								{
-									// Make sure that iSourceBytesRemaining is 0
-									if (ch->MP3StreamHeader.iSourceBytesRemaining != 0)
-									{
-										ch->MP3StreamHeader.iSourceBytesRemaining = 0;
-										break;
-									}
-								}
-							}
+                        }
+                    }
+                    nTotalBytesDecoded += nBytesDecoded;
+                }
+                else
+                {
+                    // Make sure that iSourceBytesRemaining is 0
+                    if (ch->MP3StreamHeader.iSourceBytesRemaining != 0)
+                    {
+                        ch->MP3StreamHeader.iSourceBytesRemaining = 0;
+                        break;
+                    }
+                }
+            }
 
-							if (nTotalBytesDecoded != STREAMING_BUFFER_SIZE)
-							{
-								memset(ch->buffers[j].Data + nTotalBytesDecoded, 0, (STREAMING_BUFFER_SIZE - nTotalBytesDecoded));
+            if (nTotalBytesDecoded != STREAMING_BUFFER_SIZE)
+            {
+                memset(ch->buffers[j].Data + nTotalBytesDecoded, 0, (STREAMING_BUFFER_SIZE - nTotalBytesDecoded));
 
-								// Move data to buffer
-								alBufferData(ch->buffers[j].BufferID, AL_FORMAT_MONO16, ch->buffers[j].Data, STREAMING_BUFFER_SIZE, 22050);
+                // Move data to buffer
+                alBufferData(ch->buffers[j].BufferID, AL_FORMAT_MONO16, ch->buffers[j].Data, STREAMING_BUFFER_SIZE, 22050);
 
-								// Queue Buffer on Source
-								alSourceQueueBuffers(ch->alSource, 1, &(ch->buffers[j].BufferID));
+                // Queue Buffer on Source
+                alSourceQueueBuffers(ch->alSource, 1, &(ch->buffers[j].BufferID));
 
-								// Update status of Buffer
-								ch->buffers[j].Status = QUEUED;
+                // Update status of Buffer
+                ch->buffers[j].Status = QUEUED;
 
-								break;
-							}
-							else
-							{
-								// Move data to buffer
-								alBufferData(ch->buffers[j].BufferID, AL_FORMAT_MONO16, ch->buffers[j].Data, STREAMING_BUFFER_SIZE, 22050);
+                break;
+            }
+            else
+            {
+                // Move data to buffer
+                alBufferData(ch->buffers[j].BufferID, AL_FORMAT_MONO16, ch->buffers[j].Data, STREAMING_BUFFER_SIZE, 22050);
 
-								// Queue Buffer on Source
-								alSourceQueueBuffers(ch->alSource, 1, &(ch->buffers[j].BufferID));
+                // Queue Buffer on Source
+                alSourceQueueBuffers(ch->alSource, 1, &(ch->buffers[j].BufferID));
 
-								// Update status of Buffer
-								ch->buffers[j].Status = QUEUED;
-							}
-						}
-					}
+                // Update status of Buffer
+                ch->buffers[j].Status = QUEUED;
+            }
+        }
 
-					// Get state of Buffer
-					alGetSourcei(ch->alSource, AL_SOURCE_STATE, &state);
-					if (state != AL_PLAYING)
-					{
-						alSourcePlay(ch->alSource);
+        // Get state of Buffer
+        alGetSourcei(ch->alSource, AL_SOURCE_STATE, &state);
+        if (state != AL_PLAYING)
+        {
+            alSourcePlay(ch->alSource);
 #ifdef _DEBUG
-						Com_OPrintf("[%d] Restarting playback of single-shot streaming MP3 sample - still have %d bytes to decode\n", i, ch->MP3StreamHeader.iSourceBytesRemaining);
+            Com_OPrintf("[%d] Restarting playback of single-shot streaming MP3 sample - still have %d bytes to decode\n", i, ch->MP3StreamHeader.iSourceBytesRemaining);
 #endif
-					}
-				}
-			}
-		}
+        }
 	}
 }
 
@@ -3321,113 +3330,118 @@ void UpdateLoopingSounds()
 	ch = s_channels + 1;
 	for (i = 1; i < s_numChannels; i++, ch++)
 	{
-		if (ch->bLooping && s_channels[i].bPlaying)
+		if (!ch->bLooping || !s_channels[i].bPlaying)
 		{
-			for (j = 0; j < numLoopSounds; j++)
-			{
-				loop = &loopSounds[j];
+            continue;
+        }
 
-				// If this channel is playing the right sound effect at the right position then mark this channel and looping sound
-				// as processed
-				if ((loop->bProcessed == false) && (ch->thesfx == loop->sfx) )
-				{
-					if ( (loop->origin[0] == listener_pos[0]) && (loop->origin[1] == -listener_pos[2])
-						&& (loop->origin[2] == listener_pos[1]) )
-					{
-						// Assume that this sound is head relative
-						if (!loop->bRelative)
-						{
-							// Set position to 0,0,0 and turn on Head Relative Mode
-							float pos[3];
-							pos[0] = 0.f;
-							pos[1] = 0.f;
-							pos[2] = 0.f;
+        for (j = 0; j < numLoopSounds; j++)
+        {
+            loop = &loopSounds[j];
 
-							alSourcefv(s_channels[i].alSource, AL_POSITION, pos);
-							alSourcei(s_channels[i].alSource, AL_SOURCE_RELATIVE, AL_TRUE);
-							loop->bRelative = true;
-						}
+            // If this channel is playing the right sound effect at the right position then mark this channel and looping sound
+            // as processed
+            if (loop->bProcessed || ch->thesfx != loop->sfx)
+            {
+                continue;
+            }
 
-						// Make sure Gain is set correctly
-						if (ch->master_vol != loop->volume)
-						{
-							ch->master_vol = loop->volume;
-							alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
-						}
+            if (loop->origin[0] == listener_pos[0] &&
+                loop->origin[1] == -listener_pos[2] &&
+                loop->origin[2] == listener_pos[1])
+            {
+                // Assume that this sound is head relative
+                if (!loop->bRelative)
+                {
+                    // Set position to 0,0,0 and turn on Head Relative Mode
+                    const float pos[3] = {0.0f, 0.0f, 0.0f};
+                    alSourcefv(s_channels[i].alSource, AL_POSITION, pos);
+                    alSourcei(s_channels[i].alSource, AL_SOURCE_RELATIVE, AL_TRUE);
+                    loop->bRelative = true;
+                }
 
-						ch->bProcessed = true;
-						loop->bProcessed = true;
-					}
-					else if ((loop->bProcessed == false) && (ch->thesfx == loop->sfx) && (!memcmp(ch->origin, loop->origin, sizeof(ch->origin))))
-					{
-						// Match !
-						ch->bProcessed = true;
-						loop->bProcessed = true;
+                // Make sure Gain is set correctly
+                if (ch->master_vol != loop->volume)
+                {
+                    ch->master_vol = loop->volume;
+                    alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
+                }
 
-						// Make sure Gain is set correctly
-						if (ch->master_vol != loop->volume)
-						{
-							ch->master_vol = loop->volume;
-							alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
-						}
+                ch->bProcessed = true;
+                loop->bProcessed = true;
+            }
+            else if (!loop->bProcessed && ch->thesfx == loop->sfx && !memcmp(ch->origin, loop->origin, sizeof(ch->origin)))
+            {
+                // Match !
+                ch->bProcessed = true;
+                loop->bProcessed = true;
 
-						break;
-					}
-				}
-			}
-		}
+                // Make sure Gain is set correctly
+                if (ch->master_vol != loop->volume)
+                {
+                    ch->master_vol = loop->volume;
+                    alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
+                }
+
+                break;
+            }
+        }
 	}
 
 	// Next check if the correct looping sound is playing, but at the wrong position
 	ch = s_channels + 1;
 	for (i = 1; i < s_numChannels; i++, ch++)
 	{
-		if ((ch->bLooping) && (ch->bProcessed == false) && s_channels[i].bPlaying)
+		if (!ch->bLooping || ch->bProcessed || !s_channels[i].bPlaying)
 		{
-			for (j = 0; j < numLoopSounds; j++)
-			{
-				loop = &loopSounds[j];
+            continue;
+        }
 
-				if ((loop->bProcessed == false) && (ch->thesfx == loop->sfx))
-				{
-					// Same sound - wrong position
-					ch->origin[0] = loop->origin[0];
-					ch->origin[1] = loop->origin[1];
-					ch->origin[2] = loop->origin[2];
+        for (j = 0; j < numLoopSounds; j++)
+        {
+            loop = &loopSounds[j];
 
-					pos[0] = loop->origin[0];
-					pos[1] = loop->origin[2];
-					pos[2] = -loop->origin[1];
-					alSourcefv(s_channels[i].alSource, AL_POSITION, pos);
+            if (!loop->bProcessed && ch->thesfx == loop->sfx)
+            {
+                // Same sound - wrong position
+                ch->origin[0] = loop->origin[0];
+                ch->origin[1] = loop->origin[1];
+                ch->origin[2] = loop->origin[2];
 
-					ch->master_vol = loop->volume;
-					alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
+                pos[0] = loop->origin[0];
+                pos[1] = loop->origin[2];
+                pos[2] = -loop->origin[1];
+                alSourcefv(s_channels[i].alSource, AL_POSITION, pos);
+
+                ch->master_vol = loop->volume;
+                alSourcef(s_channels[i].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.f);
 
 #if defined(USE_EAX)
-					if (s_bEALFileLoaded)
-						UpdateEAXBuffer(ch);
+                if (s_bEALFileLoaded)
+                    UpdateEAXBuffer(ch);
 #endif
 
-					ch->bProcessed = true;
-					loop->bProcessed = true;
-					break;
-				}
-			}
-		}
-	}
+                ch->bProcessed = true;
+                loop->bProcessed = true;
+                break;
+            }
+        }
+    }
 
 	// If any non-procesed looping sounds are still playing on a channel, they can be removed as they are no longer
 	// required
 	ch = s_channels + 1;
 	for (i = 1; i < s_numChannels; i++, ch++)
 	{
-		if (s_channels[i].bPlaying && ch->bLooping && !ch->bProcessed)
+		if (!s_channels[i].bPlaying || !ch->bLooping || ch->bProcessed)
 		{
-			// Sound no longer needed
-			alSourceStop(s_channels[i].alSource);
-			ch->thesfx = NULL;
-			ch->bPlaying = false;
-		}
+            continue;
+        }
+
+        // Sound no longer needed
+        alSourceStop(s_channels[i].alSource);
+        ch->thesfx = NULL;
+        ch->bPlaying = false;
 	}
 
 #ifdef _DEBUG
@@ -3437,58 +3451,59 @@ void UpdateLoopingSounds()
 	for (j = 0; j < numLoopSounds; j++)
 	{
 		loop = &loopSounds[j];
-
-		if (loop->bProcessed == false)
+		if (loop->bProcessed)
 		{
-			ch = S_PickChannel(0,0);
+            continue;
+        }
 
-			ch->master_vol = loop->volume;
-			ch->entnum = loop->entnum;
-			ch->entchannel = CHAN_AMBIENT;	// Make sure this gets set to something
-			ch->thesfx = loop->sfx;
-			ch->bLooping = true;
+        ch = S_PickChannel(0,0);
+        ch->master_vol = loop->volume;
+        ch->entnum = loop->entnum;
+        ch->entchannel = CHAN_AMBIENT;	// Make sure this gets set to something
+        ch->thesfx = loop->sfx;
+        ch->bLooping = true;
 
-			// Check if the Source is positioned at exactly the same location as the listener
-			if ( (loop->origin[0] == listener_pos[0]) && (loop->origin[1] == -listener_pos[2])
-						&& (loop->origin[2] == listener_pos[1]) )
-			{
-				// Assume that this sound is head relative
-				loop->bRelative = true;
-				ch->origin[0] = 0.f;
-				ch->origin[1] = 0.f;
-				ch->origin[2] = 0.f;
-			}
-			else
-			{
-				ch->origin[0] = loop->origin[0];
-				ch->origin[1] = loop->origin[1];
-				ch->origin[2] = loop->origin[2];
-				loop->bRelative = false;
-			}
+        // Check if the Source is positioned at exactly the same location as the listener
+        if (loop->origin[0] == listener_pos[0] &&
+            loop->origin[1] == -listener_pos[2] &&
+            loop->origin[2] == listener_pos[1])
+        {
+            // Assume that this sound is head relative
+            loop->bRelative = true;
+            ch->origin[0] = 0.f;
+            ch->origin[1] = 0.f;
+            ch->origin[2] = 0.f;
+        }
+        else
+        {
+            ch->origin[0] = loop->origin[0];
+            ch->origin[1] = loop->origin[1];
+            ch->origin[2] = loop->origin[2];
+            loop->bRelative = false;
+        }
 
-			ch->fixed_origin = (qboolean)loop->bRelative;
-			pos[0] = ch->origin[0];
-			pos[1] = ch->origin[2];
-			pos[2] = -ch->origin[1];
+        ch->fixed_origin = (qboolean)loop->bRelative;
+        pos[0] = ch->origin[0];
+        pos[1] = ch->origin[2];
+        pos[2] = -ch->origin[1];
 
-			source = ch - s_channels;
-			alSourcei(s_channels[source].alSource, AL_BUFFER, ch->thesfx->Buffer);
-			alSourcefv(s_channels[source].alSource, AL_POSITION, pos);
-			alSourcei(s_channels[source].alSource, AL_LOOPING, AL_TRUE);
-			alSourcef(s_channels[source].alSource, AL_REFERENCE_DISTANCE, DEFAULT_REF_DISTANCE);
-			alSourcef(s_channels[source].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.0f);
-			alSourcei(s_channels[source].alSource, AL_SOURCE_RELATIVE, ch->fixed_origin ? AL_TRUE : AL_FALSE);
+        source = ch - s_channels;
+        alSourcei(s_channels[source].alSource, AL_BUFFER, ch->thesfx->Buffer);
+        alSourcefv(s_channels[source].alSource, AL_POSITION, pos);
+        alSourcei(s_channels[source].alSource, AL_LOOPING, AL_TRUE);
+        alSourcef(s_channels[source].alSource, AL_REFERENCE_DISTANCE, DEFAULT_REF_DISTANCE);
+        alSourcef(s_channels[source].alSource, AL_GAIN, ((float)(ch->master_vol) * s_volume->value) / 255.0f);
+        alSourcei(s_channels[source].alSource, AL_SOURCE_RELATIVE, ch->fixed_origin ? AL_TRUE : AL_FALSE);
 
 #if defined(USE_EAX)
-			if (s_bEALFileLoaded)
-				UpdateEAXBuffer(ch);
+        if (s_bEALFileLoaded)
+            UpdateEAXBuffer(ch);
 #endif
 
-			alGetError();
-			alSourcePlay(s_channels[source].alSource);
-			if (alGetError() == AL_NO_ERROR)
-				s_channels[source].bPlaying = true;
-		}
+        alGetError();
+        alSourcePlay(s_channels[source].alSource);
+        if (alGetError() == AL_NO_ERROR)
+            s_channels[source].bPlaying = true;
 	}
 }
 
@@ -3509,8 +3524,7 @@ void AL_UpdateRawSamples()
 
 	// Find out how many buffers have been processed (played) by the Source
 	alGetSourcei(s_channels[0].alSource, AL_BUFFERS_PROCESSED, &processed);
-
-	while (processed)
+	while (processed--)
 	{
 		// Unqueue each buffer, determine the length of the buffer, and then delete it
 		alSourceUnqueueBuffers(s_channels[0].alSource, 1, &buffer);
@@ -3519,8 +3533,6 @@ void AL_UpdateRawSamples()
 
 		// Update sg.soundtime (+= number of samples played (number of bytes / 4))
 		s_soundtime += (size >> 2);
-
-		processed--;
 	}
 
 	// Add new data to a new Buffer and queue it on the Source
@@ -3587,10 +3599,9 @@ void AL_UpdateRawSamples()
 			// Stopped playing ... due to buffer underrun
 			// Unqueue any buffers still on the Source (they will be PROCESSED), and restart playback
 			alGetSourcei(s_channels[0].alSource, AL_BUFFERS_PROCESSED, &processed);
-			while (processed)
+			while (processed--)
 			{
 				alSourceUnqueueBuffers(s_channels[0].alSource, 1, &buffer);
-				processed--;
 				alGetBufferi(buffer, AL_SIZE, &size);
 				alDeleteBuffers(1, &buffer);
 
@@ -3655,62 +3666,64 @@ void S_SetLipSyncs()
 	ch = s_channels + 1;
 	for (i = 1; i < s_numChannels; i++, ch++)
 	{
-		if ((!ch->thesfx)||(!ch->bPlaying))
+		if (!ch->thesfx || !ch->bPlaying)
 			continue;
 
-		if ( ch->entchannel == CHAN_VOICE || ch->entchannel == CHAN_VOICE_ATTEN || ch->entchannel == CHAN_VOICE_GLOBAL )
+		if ( ch->entchannel != CHAN_VOICE && ch->entchannel != CHAN_VOICE_ATTEN && ch->entchannel != CHAN_VOICE_GLOBAL )
 		{
-			// Calculate how much time has passed since the sample was started
-			timePlayed = currentTime - ch->iStartTime;
+            continue;
+        }
 
-			if (ch->thesfx->eSoundCompressionMethod==ct_16)
-			{
-				// There is a new computed lip-sync value every 1000 samples - so find out how many samples
-				// have been played and lookup the value in the lip-sync table
-				samples = (timePlayed * 22050) / 1000;
+        // Calculate how much time has passed since the sample was started
+        timePlayed = currentTime - ch->iStartTime;
 
-				if (ch->thesfx->lipSyncData == NULL)
-				{
+        if (ch->thesfx->eSoundCompressionMethod==ct_16)
+        {
+            // There is a new computed lip-sync value every 1000 samples - so find out how many samples
+            // have been played and lookup the value in the lip-sync table
+            samples = (timePlayed * 22050) / 1000;
+
+            if (ch->thesfx->lipSyncData == NULL)
+            {
 #ifdef _DEBUG
-					Com_OPrintf("Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
+                Com_OPrintf("Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 #endif
-				}
+            }
 
-				if ((ch->thesfx->lipSyncData) && ((int)samples < ch->thesfx->iSoundLengthInSamples))
-				{
-					s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[samples / 1000];
-					if ( s_show->integer == 3 )
-					{
-						Com_Printf( "(%i)%i %s vol = %i\n", ch->entnum, i, ch->thesfx->sSoundName, s_entityWavVol[ ch->entnum ] );
-					}
-				}
-			}
-			else
-			{
-				// MP3
+            if ((ch->thesfx->lipSyncData) && ((int)samples < ch->thesfx->iSoundLengthInSamples))
+            {
+                s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[samples / 1000];
+                if ( s_show->integer == 3 )
+                {
+                    Com_Printf( "(%i)%i %s vol = %i\n", ch->entnum, i, ch->thesfx->sSoundName, s_entityWavVol[ ch->entnum ] );
+                }
+            }
+        }
+        else
+        {
+            // MP3
 
-				// There is a new computed lip-sync value every 576 samples - so find out how many samples
-				// have been played and lookup the value in the lip-sync table
-				samples = (timePlayed * 22050) / 1000;
+            // There is a new computed lip-sync value every 576 samples - so find out how many samples
+            // have been played and lookup the value in the lip-sync table
+            samples = (timePlayed * 22050) / 1000;
 
-				if (ch->thesfx->lipSyncData == NULL)
-				{
+            if (ch->thesfx->lipSyncData == NULL)
+            {
 #ifdef _DEBUG
-					Com_OPrintf("Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
+                Com_OPrintf("Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 #endif
-				}
+            }
 
-				if ((ch->thesfx->lipSyncData) && (samples < (unsigned)ch->thesfx->iSoundLengthInSamples))
-				{
-					s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[(samples / 576) % 16];
+            if ((ch->thesfx->lipSyncData) && (samples < (unsigned)ch->thesfx->iSoundLengthInSamples))
+            {
+                s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[(samples / 576) % 16];
 
-					if ( s_show->integer == 3 )
-					{
-						Com_Printf( "(%i)%i %s vol = %i\n", ch->entnum, i, ch->thesfx->sSoundName, s_entityWavVol[ ch->entnum ] );
-					}
-				}
-			}
-		}
+                if ( s_show->integer == 3 )
+                {
+                    Com_Printf( "(%i)%i %s vol = %i\n", ch->entnum, i, ch->thesfx->sSoundName, s_entityWavVol[ ch->entnum ] );
+                }
+            }
+        }
 	}
 }
 
@@ -4768,7 +4781,7 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 		if (pMusicInfo->bIsMP3)
 		{
 			int iStartingSampleNum = pMusicInfo->chMP3_Bgrnd.thesfx->iSoundLengthInSamples - pMusicInfo->s_backgroundSamples;	// but this IS relevant
-			Com_Printf(S_COLOR_YELLOW "Requesting MP3 samples: sample %d\n",iStartingSampleNum);
+			//Com_Printf(S_COLOR_YELLOW "Requesting MP3 samples: sample %d\n",iStartingSampleNum);
 
 			if (pMusicInfo->s_backgroundFile == -1)
 			{
@@ -4781,7 +4794,7 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
                     (short*) raw,
                     qtrue)) ? qfalse : qtrue;
 
-				Com_Printf(S_COLOR_YELLOW "Music time remaining: %f seconds\n", MP3Stream_GetRemainingTimeInSeconds( &pMusicInfo->chMP3_Bgrnd.MP3StreamHeader ));
+				//Com_Printf(S_COLOR_YELLOW "Music time remaining: %f seconds\n", MP3Stream_GetRemainingTimeInSeconds( &pMusicInfo->chMP3_Bgrnd.MP3StreamHeader ));
 			}
 			else
 			{
@@ -4799,9 +4812,9 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
                     (short*) raw,
                     qtrue)) ? qfalse : qtrue;
 
-				Com_Printf(
-                    S_COLOR_YELLOW "Music time remaining: %f seconds\n",
-                    MP3Stream_GetRemainingTimeInSeconds(&pMusicInfo->chMP3_Bgrnd.MP3StreamHeader));
+				//Com_Printf(
+                //    S_COLOR_YELLOW "Music time remaining: %f seconds\n",
+                //    MP3Stream_GetRemainingTimeInSeconds(&pMusicInfo->chMP3_Bgrnd.MP3StreamHeader));
 			}
 		}
 		else
@@ -4826,8 +4839,8 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 						bFirstOrOnlyMusicTrack
 					);
 
-        Com_Printf(S_COLOR_YELLOW "bgSamples=%d fileSamples=%d forceFinish=%d rawend=%d soundtime=%d\n",
-            pMusicInfo->s_backgroundSamples, fileSamples, qbForceFinish, s_rawend, s_soundtime);
+        //Com_Printf(S_COLOR_YELLOW "bgSamples=%d fileSamples=%d forceFinish=%d rawend=%d soundtime=%d\n",
+        //    pMusicInfo->s_backgroundSamples, fileSamples, qbForceFinish, s_rawend, s_soundtime);
 
 		pMusicInfo->s_backgroundSamples -= fileSamples;
 		if ( !pMusicInfo->s_backgroundSamples || qbForceFinish )
