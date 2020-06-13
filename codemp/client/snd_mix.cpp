@@ -365,8 +365,6 @@ void ChannelPaint(channel_t *ch, sfx_t *sc, int count, int sampleOffset, int buf
 	}
 }
 
-
-
 void S_PaintChannels( int endtime ) {
 	int 	i;
 	int 	end;
