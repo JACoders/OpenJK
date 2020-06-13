@@ -37,6 +37,7 @@ static int s_EnvironmentID;   // EAGLE ID of current environment
 
 static bool CheckChannelStomp(int chan1, int chan2);
 static int MP3PreProcessLipSync(channel_t *ch, short *data);
+static void PreProcessLipSync(sfx_t *sfx);
 static void SetLipSyncs();
 static void UpdateLoopingSounds();
 static void UpdateRawSamples();
@@ -190,6 +191,47 @@ qboolean S_AL_Init()
 #endif
 
     return qtrue;
+}
+
+void S_AL_OnLoadSound(sfx_t* sfx)
+{
+    if (!S_AL_IsEnabled())
+    {
+        return;
+    }
+    if ((strstr(sfx->sSoundName, "chars")) ||
+        (strstr(sfx->sSoundName, "CHARS")))
+    {
+        sfx->lipSyncData = (char*)Z_Malloc(
+            (sfx->iSoundLengthInSamples / 1000) + 1, TAG_SND_RAWDATA, qfalse);
+        PreProcessLipSync(sfx);
+    }
+    else
+        sfx->lipSyncData = NULL;
+
+    // Clear Open AL Error State
+    alGetError();
+
+    // Generate AL Buffer
+    ALuint Buffer;
+    alGenBuffers(1, &Buffer);
+    if (alGetError() == AL_NO_ERROR)
+    {
+        // Copy audio data to AL Buffer
+        alBufferData(
+            Buffer,
+            AL_FORMAT_MONO16,
+            sfx->pSoundData,
+            sfx->iSoundLengthInSamples * 2,
+            22050);
+        if (alGetError() == AL_NO_ERROR)
+        {
+            // Store AL Buffer in sfx struct, and release sample data
+            sfx->Buffer = Buffer;
+            Z_Free(sfx->pSoundData);
+            sfx->pSoundData = NULL;
+        }
+    }
 }
 
 void S_AL_OnRegistration()
@@ -931,7 +973,9 @@ void S_AL_Update()
             alGetError();
             alSourcePlay(s_channels[source].alSource);
             if (alGetError() == AL_NO_ERROR)
+            {
                 s_channels[source].bPlaying = true;
+            }
 
             ch->bStreaming = true;
 
@@ -971,7 +1015,9 @@ void S_AL_Update()
             alGetError();
             alSourcePlay(s_channels[source].alSource);
             if (alGetError() == AL_NO_ERROR)
+            {
                 s_channels[source].bPlaying = true;
+            }
 
             if (ch->entchannel == CHAN_VOICE ||
                 ch->entchannel == CHAN_VOICE_ATTEN ||
@@ -1002,6 +1048,76 @@ void S_AL_Update()
     UpdateLoopingSounds();
 
     UpdateRawSamples();
+}
+
+/*
+	Precalculate the lipsync values for the whole sample
+*/
+static void PreProcessLipSync(sfx_t *sfx)
+{
+	int i, j;
+	int sample;
+	int sampleTotal = 0;
+
+	j = 0;
+	for (i = 0; i < sfx->iSoundLengthInSamples; i += 100)
+	{
+		sample = LittleShort(sfx->pSoundData[i]);
+
+		sample = sample >> 8;
+		sampleTotal += sample * sample;
+		if (((i + 100) % 1000) == 0)
+		{
+			sampleTotal /= 10;
+
+			if (sampleTotal < sfx->fVolRange *  s_lip_threshold_1->value)
+			{
+				// tell the scripts that are relying on this that we are still going, but actually silent right now.
+				sample = -1;
+			}
+			else if (sampleTotal < sfx->fVolRange * s_lip_threshold_2->value)
+				sample = 1;
+			else if (sampleTotal < sfx->fVolRange * s_lip_threshold_3->value)
+				sample = 2;
+			else if (sampleTotal < sfx->fVolRange * s_lip_threshold_4->value)
+				sample = 3;
+			else
+				sample = 4;
+
+			sfx->lipSyncData[j] = sample;
+			j++;
+
+			sampleTotal = 0;
+		}
+	}
+
+	if ((i % 1000) == 0)
+		return;
+
+	i -= 100;
+	i = i % 1000;
+	i = i / 100;
+	// Process last < 1000 samples
+	if (i != 0)
+		sampleTotal /= i;
+	else
+		sampleTotal = 0;
+
+	if (sampleTotal < sfx->fVolRange * s_lip_threshold_1->value)
+	{
+		// tell the scripts that are relying on this that we are still going, but actually silent right now.
+		sample = -1;
+	}
+	else if (sampleTotal < sfx->fVolRange * s_lip_threshold_2->value)
+		sample = 1;
+	else if (sampleTotal < sfx->fVolRange * s_lip_threshold_3->value)
+		sample = 2;
+	else if (sampleTotal < sfx->fVolRange * s_lip_threshold_4->value)
+		sample = 3;
+	else
+		sample = 4;
+
+	sfx->lipSyncData[j] = sample;
 }
 
 static bool CheckChannelStomp(int chan1, int chan2)
@@ -1087,7 +1203,6 @@ static void SetLipSyncs()
         }
 	}
 }
-
 
 static void UpdateSingleShotSounds()
 {

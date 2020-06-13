@@ -256,6 +256,7 @@ void S_AL_InitCvars();
 void S_AL_Shutdown();
 
 void S_AL_OnClearLoopingSounds();
+void S_AL_OnLoadSound(sfx_t* sfx);
 void S_AL_OnRegistration();
 void S_AL_OnStartSound(int entnum, int entchannel);
 void S_AL_OnUpdateEntityPosition(int entnum, const vec3_t position);
