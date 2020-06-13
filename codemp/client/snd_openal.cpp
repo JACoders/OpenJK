@@ -289,7 +289,7 @@ void S_AL_OnStartSound(int entnum, int entchannel)
             if (ch->entnum == entnum &&
                 ch->entchannel == CHAN_WEAPON &&
                 ch->thesfx != nullptr &&
-                strstr(ch->thesfx->sSoundName, "altcharge") != NULL)
+                strstr(ch->thesfx->sSoundName, "altcharge") != nullptr)
             {
                 // Stop this sound
                 alSourceStop(ch->alSource);
@@ -306,7 +306,7 @@ void S_AL_OnStartSound(int entnum, int entchannel)
         {
             if (ch->entnum == entnum &&
                 ch->thesfx != nullptr &&
-                strstr(ch->thesfx->sSoundName, "falling") != NULL)
+                strstr(ch->thesfx->sSoundName, "falling") != nullptr)
             {
                 // Stop this sound
                 alSourceStop(ch->alSource);
@@ -699,7 +699,6 @@ void S_AL_Update()
     channel_t* ch = s_channels + 1;
     for (int i = 1; i < MAX_CHANNELS; i++, ch++)
     {
-
         if (!ch->thesfx || ch->bPlaying)
             continue;
 
@@ -1173,7 +1172,7 @@ static void UpdateSingleShotSounds()
 
         for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
         {
-            if ((ch->buffers[j].Status != UNQUEUED) || (ch->MP3StreamHeader.iSourceBytesRemaining == 0))
+            if (ch->buffers[j].Status != UNQUEUED || ch->MP3StreamHeader.iSourceBytesRemaining <= 0)
             {
                 continue;
             }
@@ -1217,31 +1216,20 @@ static void UpdateSingleShotSounds()
             {
                 memset(ch->buffers[j].Data + nTotalBytesDecoded, 0, (STREAMING_BUFFER_SIZE - nTotalBytesDecoded));
 
-                // Move data to buffer
                 alBufferData(ch->buffers[j].BufferID, AL_FORMAT_MONO16, ch->buffers[j].Data, STREAMING_BUFFER_SIZE, 22050);
-
-                // Queue Buffer on Source
                 alSourceQueueBuffers(ch->alSource, 1, &(ch->buffers[j].BufferID));
-
-                // Update status of Buffer
                 ch->buffers[j].Status = QUEUED;
 
                 break;
             }
             else
             {
-                // Move data to buffer
                 alBufferData(ch->buffers[j].BufferID, AL_FORMAT_MONO16, ch->buffers[j].Data, STREAMING_BUFFER_SIZE, 22050);
-
-                // Queue Buffer on Source
                 alSourceQueueBuffers(ch->alSource, 1, &(ch->buffers[j].BufferID));
-
-                // Update status of Buffer
                 ch->buffers[j].Status = QUEUED;
             }
         }
 
-        // Get state of Buffer
         alGetSourcei(ch->alSource, AL_SOURCE_STATE, &state);
         if (state != AL_PLAYING)
         {
@@ -1281,7 +1269,6 @@ static int MP3PreProcessLipSync(channel_t *ch, short *data)
 
 	return sample;
 }
-
 
 static void UpdateLoopingSounds()
 {
@@ -1487,19 +1474,23 @@ static void UpdateRawSamples()
 
 	S_UpdateBackgroundTrack();
 
-	// Find out how many buffers have been processed (played) by the Source
-	alGetSourcei(s_channels[0].alSource, AL_BUFFERS_PROCESSED, &processed);
+    channel_t* musicChannel = s_channels;
+	// Find out how many buffers have been processed (played) by the music channel source
+	alGetSourcei(musicChannel->alSource, AL_BUFFERS_PROCESSED, &processed);
 	while (processed--)
 	{
 		// Unqueue each buffer, determine the length of the buffer, and then delete it
-		alSourceUnqueueBuffers(s_channels[0].alSource, 1, &buffer);
+		alSourceUnqueueBuffers(musicChannel->alSource, 1, &buffer);
 		alGetBufferi(buffer, AL_SIZE, &size);
 		alDeleteBuffers(1, &buffer);
+
+        //Com_Printf(S_COLOR_RED "Unqueued buffer=%d size=%d\n", buffer, size);
 
 		// Update sg.soundtime (+= number of samples played (number of bytes / 4))
 		s_soundtime += (size >> 2);
 	}
 
+    //Com_Printf(S_COLOR_YELLOW "rawend=%d paintedtime=%d\n", s_rawend, s_paintedtime);
 	// Add new data to a new Buffer and queue it on the Source
 	if (s_rawend > s_paintedtime)
 	{
@@ -1541,16 +1532,18 @@ static void UpdateRawSamples()
 
 			if (size > largestBufferSize)
 			{
+                //Com_Printf(S_COLOR_GREEN "Enqueueing buffer %d with %d bytes of data\n", buffer, largestBufferSize);
 				alBufferData(buffer, AL_FORMAT_STEREO16, (char*)(s_rawdata + ((iterations * largestBufferSize)>>1)), largestBufferSize, 22050);
 				size -= largestBufferSize;
 			}
 			else
 			{
+                //Com_Printf(S_COLOR_GREEN "Enqueueing buffer %d with %d bytes of data\n", buffer, size);
 				alBufferData(buffer, AL_FORMAT_STEREO16, (char*)(s_rawdata + ((iterations * largestBufferSize)>>1)), size, 22050);
 				size = 0;
 			}
 
-			alSourceQueueBuffers(s_channels[0].alSource, 1, &buffer);
+			alSourceQueueBuffers(musicChannel->alSource, 1, &buffer);
 			iterations++;
 		}
 
@@ -1558,26 +1551,30 @@ static void UpdateRawSamples()
 		s_paintedtime = s_rawend;
 
 		// Check that the Source is actually playing
-		alGetSourcei(s_channels[0].alSource, AL_SOURCE_STATE, &state);
+		alGetSourcei(musicChannel->alSource, AL_SOURCE_STATE, &state);
 		if (state != AL_PLAYING)
 		{
+            #if 0
 			// Stopped playing ... due to buffer underrun
 			// Unqueue any buffers still on the Source (they will be PROCESSED), and restart playback
-			alGetSourcei(s_channels[0].alSource, AL_BUFFERS_PROCESSED, &processed);
+			alGetSourcei(musicChannel->alSource, AL_BUFFERS_PROCESSED, &processed);
 			while (processed--)
 			{
-				alSourceUnqueueBuffers(s_channels[0].alSource, 1, &buffer);
+				alSourceUnqueueBuffers(musicChannel->alSource, 1, &buffer);
 				alGetBufferi(buffer, AL_SIZE, &size);
 				alDeleteBuffers(1, &buffer);
+
+                //Com_Printf(S_COLOR_RED "Unqueued buffer=%d size=%d for underrun\n", buffer, size);
 
 				// Update sg.soundtime (+= number of samples played (number of bytes / 4))
 				s_soundtime += (size >> 2);
 			}
+            #endif
 
 #ifdef _DEBUG
 			Com_OPrintf("Restarting / Starting playback of Raw Samples\n");
 #endif
-			alSourcePlay(s_channels[0].alSource);
+			alSourcePlay(musicChannel->alSource);
 		}
 	}
 

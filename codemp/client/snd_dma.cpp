@@ -637,12 +637,10 @@ sfxHandle_t	S_RegisterSound( const char *name)
         return sfx - s_knownSfx;
     }
 
-#if defined(USE_OPENAL)
 	if (S_AL_IsEnabled() && sfx->Buffer)
 	{
         return sfx - s_knownSfx;
 	}
-#endif
 
 	sfx->bInMemory = qfalse;
 
@@ -3219,7 +3217,7 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 					);
 
         //Com_Printf(S_COLOR_YELLOW "bgSamples=%d fileSamples=%d forceFinish=%d rawend=%d soundtime=%d\n",
-        //    pMusicInfo->s_backgroundSamples, fileSamples, qbForceFinish, s_rawend, s_soundtime);
+            //pMusicInfo->s_backgroundSamples, fileSamples, qbForceFinish, s_rawend, s_soundtime);
 
 		pMusicInfo->s_backgroundSamples -= fileSamples;
 		if ( !pMusicInfo->s_backgroundSamples || qbForceFinish )
