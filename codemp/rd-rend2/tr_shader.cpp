@@ -1281,7 +1281,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				if (r_genNormalMaps->integer)
 					flags |= IMGFLAG_GENNORMALMAP;
 
-				if (r_srgb->integer)
+				if (shader.isHDRLit)
 					flags |= IMGFLAG_SRGB;
 
 				Q_strncpyz(bufferBaseColorTextureName, token, sizeof(bufferBaseColorTextureName));
@@ -1437,7 +1437,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					if (!shader.noPicMip)
 						flags |= IMGFLAG_PICMIP;
 
-					if (r_srgb->integer)
+					if (shader.isHDRLit)
 						flags |= IMGFLAG_SRGB;
 
 					if (shader.noTC)
@@ -1445,9 +1445,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 					if (r_genNormalMaps->integer)
 						flags |= IMGFLAG_GENNORMALMAP;
-
-					if (r_srgb->integer)
-						flags |= IMGFLAG_SRGB;
 
 					stage->bundle[0].image[num] = R_FindImageFile( token, imgtype, flags );
 					if ( !stage->bundle[0].image[num] )
@@ -2262,7 +2259,7 @@ static void ParseSkyParms( const char **text ) {
 	if (shader.noTC)
 		imgFlags |= IMGFLAG_NO_COMPRESSION;
 
-	if (r_srgb->integer)
+	if (tr.world && tr.world->hdrLighting)
 		imgFlags |= IMGFLAG_SRGB;
 
 	// outerbox
@@ -4075,6 +4072,25 @@ static qboolean IsShader ( const shader_t *sh, const char *name, const int *ligh
 	return qtrue;
 }
 
+/*
+===============
+R_FindLightmaps
+===============
+*/
+static inline const int *R_FindLightmaps(const int *lightmapIndexes)
+{
+	// don't bother with vertex lighting
+	if (*lightmapIndexes < 0)
+		return lightmapIndexes;
+
+	// do the lightmaps exist?
+	for (int i = 0; i < MAXLIGHTMAPS; i++)
+	{
+		if (lightmapIndexes[i] >= tr.numLightmaps || tr.lightmaps[lightmapIndexes[i]] == NULL)
+			return lightmapsVertex;
+	}
+	return lightmapIndexes;
+}
 
 /*
 ===============
@@ -4123,6 +4139,23 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 		// negative lightmap indexes cause stray pointers (think tr.lightmaps[lightmapIndex])
 		ri.Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndexes[0]  );
 		lightmapIndexes = lightmapsVertex;
+	}
+
+	lightmapIndexes = R_FindLightmaps(lightmapIndexes);
+	switch (lightmapIndexes[0]) {
+	case LIGHTMAP_NONE:
+	case LIGHTMAP_2D:
+	case LIGHTMAP_WHITEIMAGE:
+	{
+		shader.isHDRLit = qfalse;
+		break;
+	}
+	default:
+	{
+
+		shader.isHDRLit = tr.world ? tr.world->hdrLighting: qfalse;
+		break;
+	}
 	}
 
 	COM_StripExtension(name, strippedName, sizeof(strippedName));
@@ -4176,7 +4209,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 
 	flags = IMGFLAG_NONE;
 
-	if (r_srgb->integer)
+	if (shader.isHDRLit == qtrue)
 		flags |= IMGFLAG_SRGB;
 
 	if (mipRawImage)

@@ -3406,23 +3406,12 @@ void R_SetColorMappings( void ) {
 	g = r_gamma->value;
 
 	for ( i = 0; i < 256; i++ ) {
-		int i2;
-
-		if (r_srgb->integer)
-		{
-			i2 = 255 * RGBtosRGB(i/255.0f) + 0.5f;
-		}
-		else
-		{
-			i2 = i;
-		}
-
 		if ( g == 1 ) {
-			inf = i2;
+			inf = i;
 		} else {
-			inf = 255 * pow ( i2/255.0f, 1.0f / g ) + 0.5f;
+			inf = 255 * pow ( i/255.0f, 1.0f / g ) + 0.5f;
 		}
-
+		inf <<= tr.overbrightBits;
 		if (inf < 0) {
 			inf = 0;
 		}

@@ -87,7 +87,9 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 	else
 		GL_BindToTMU(tr.fixedLevelsImage, TB_LEVELSMAP);
 
-	FBO_Blit(hdrFbo, hdrBox, NULL, ldrFbo, ldrBox, &tr.tonemapShader, color, 0);
+	bool srgbTransform = tr.world && tr.world->hdrLighting == qtrue;
+	shaderProgram_t *shader = srgbTransform ? &tr.tonemapShader[1] : &tr.tonemapShader[0];
+	FBO_Blit(hdrFbo, hdrBox, NULL, ldrFbo, ldrBox, shader, color, 0);
 }
 
 /*

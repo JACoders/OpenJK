@@ -1575,9 +1575,6 @@ static int GLSL_LoadGPUProgramLightAll(
 		if (r_dlightMode->integer >= 2)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOWMAP\n");
 
-		if (1)
-			Q_strcat(extradefines, sizeof(extradefines), "#define SWIZZLE_NORMALMAP\n");
-
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
 			Q_strcat(extradefines, sizeof(extradefines), "#define RGBM_LIGHTMAP\n");
 
@@ -1891,23 +1888,36 @@ static int GLSL_LoadGPUProgramTonemap(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
 {
-	GLSL_LoadGPUProgramBasic(
-		builder,
-		scratchAlloc,
-		&tr.tonemapShader,
-		"tonemap",
-		fallback_tonemapProgram);
+	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
+	char extradefines[1200];
+	const GPUProgramDesc *programDesc =
+		LoadProgramSource("tonemap", allocator, fallback_tonemapProgram);
+	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 
-	GLSL_InitUniforms(&tr.tonemapShader);
+	extradefines[0] = '\0';
+	if (!GLSL_LoadGPUShader(builder, &tr.tonemapShader[0], "tonemap", attribs, NO_XFB_VARS,
+		extradefines, *programDesc))
+	{
+		ri.Error(ERR_FATAL, "Could not load tonemap shader!");
+	}
 
-	qglUseProgram(tr.tonemapShader.program);
-	GLSL_SetUniformInt(&tr.tonemapShader, UNIFORM_TEXTUREMAP, TB_COLORMAP);
-	GLSL_SetUniformInt(&tr.tonemapShader, UNIFORM_LEVELSMAP,  TB_LEVELSMAP);
-	qglUseProgram(0);
+	Q_strcat(extradefines, sizeof(extradefines), "#define USE_LINEAR_LIGHT\n");
+	if (!GLSL_LoadGPUShader(builder, &tr.tonemapShader[1], "tonemap", attribs, NO_XFB_VARS,
+		extradefines, *programDesc))
+	{
+		ri.Error(ERR_FATAL, "Could not load tonemap shader!");
+	}
 
-	GLSL_FinishGPUShader(&tr.tonemapShader);
-	
-	return 1;
+	for (int i = 0; i < 2; i++)
+	{
+		GLSL_InitUniforms(&tr.tonemapShader[i]);
+		qglUseProgram(tr.tonemapShader[i].program);
+		GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_TEXTUREMAP, TB_COLORMAP);
+		GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_LEVELSMAP, TB_LEVELSMAP);
+		qglUseProgram(0);
+		GLSL_FinishGPUShader(&tr.tonemapShader[i]);
+	}
+	return 2;
 }
 
 static int GLSL_LoadGPUProgramCalcLuminanceLevel(
@@ -2351,7 +2361,9 @@ void GLSL_ShutdownGPUShaders(void)
 	GLSL_DeleteGPUShader(&tr.volumeShadowShader);
 	GLSL_DeleteGPUShader(&tr.down4xShader);
 	GLSL_DeleteGPUShader(&tr.bokehShader);
-	GLSL_DeleteGPUShader(&tr.tonemapShader);
+
+	for (i = 0; i < 2; ++i)
+		GLSL_DeleteGPUShader(&tr.tonemapShader[i]);
 
 	for ( i = 0; i < 2; i++)
 		GLSL_DeleteGPUShader(&tr.calclevels4xShader[i]);

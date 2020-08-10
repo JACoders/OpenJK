@@ -24,14 +24,10 @@ in vec2 var_TexCoords;
 
 out vec4 out_Color;
 
-const vec3  LUMINANCE_VECTOR =   vec3(0.2125, 0.7154, 0.0721); //vec3(0.299, 0.587, 0.114);
-
 vec3 LinearTosRGB( in vec3 color )
 {
-	vec3 clampedColor = clamp(color, 0.0, 1.0);
-
-	vec3 lo = 12.92 * clampedColor;
-	vec3 hi = 1.055 * pow(clampedColor, vec3(0.41666)) - 0.055;
+	vec3 lo = 12.92 * color;
+	vec3 hi = 1.055 * pow(color, vec3(0.4166666)) - 0.055;
 	return mix(lo, hi, greaterThanEqual(color, vec3(0.0031308)));
 }
 
@@ -68,7 +64,10 @@ void main()
 
 	vec3 fWhite = 1.0 / FilmicTonemap(vec3(u_ToneMinAvgMaxLinear.z - u_ToneMinAvgMaxLinear.x));
 	color.rgb = FilmicTonemap(color.rgb) * fWhite;
-	//color.rgb = LinearTosRGB(color.rgb);
-	
+
+	#if defined(USE_LINEAR_LIGHT)
+	color.rgb = LinearTosRGB(color.rgb);
+	#endif
+
 	out_Color = clamp(color, 0.0, 1.0);
 }

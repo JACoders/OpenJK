@@ -698,25 +698,13 @@ vec3 CalcNormal( in vec3 vertexNormal, in vec2 texCoords, in mat3 tangentToWorld
 	vec3 N = vertexNormal;
 
 #if defined(USE_NORMALMAP)
-  #if defined(SWIZZLE_NORMALMAP)
 	N.xy = texture(u_NormalMap, texCoords).ag - vec2(0.5);
-  #else
-	N.xy = texture(u_NormalMap, texCoords).rg - vec2(0.5);
-  #endif
-
 	N.xy *= u_NormalScale.xy;
 	N.z = sqrt(clamp((0.25 - N.x * N.x) - N.y * N.y, 0.0, 1.0));
 	N = tangentToWorld * N;
 #endif
 
 	return normalize(N);
-}
-
-vec3 sRGBToLinear( in vec3 srgb )
-{
-	vec3 lo = srgb / 12.92;
-	vec3 hi = pow(((srgb + vec3(0.055)) / 1.055), vec3(2.4));
-	return mix(lo, hi, greaterThan(srgb, vec3(0.04045)));
 }
 
 void main()
@@ -737,10 +725,6 @@ void main()
 
 #if defined(USE_LIGHTMAP)
 	vec4 lightmapColor = texture(u_LightMap, var_TexCoords.zw);
-  #if defined(RGBM_LIGHTMAP)
-	lightmapColor.rgb *= lightmapColor.a;
-  #endif
-	//lightmapColor.rgb = sRGBToLinear(lightmapColor.rgb);
 #endif
 
 	vec2 texCoords = var_TexCoords.xy;
@@ -772,8 +756,6 @@ void main()
 			discard;
 	}
 #endif
-
-	//diffuse.rgb = sRGBToLinear(diffuse.rgb);
 
 #if defined(PER_PIXEL_LIGHTING)
 	float attenuation;
@@ -831,7 +813,6 @@ void main()
 	vec4 specular = vec4(1.0);
   #if defined(USE_SPECULARMAP)
 	specular = texture(u_SpecularMap, texCoords);
-	//specular.rgb = sRGBToLinear(specular.rgb);
   #endif
 	specular *= u_SpecularScale;
 

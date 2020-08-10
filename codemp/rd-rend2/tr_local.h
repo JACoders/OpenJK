@@ -148,8 +148,6 @@ extern cvar_t  *r_forceAutoExposure;
 extern cvar_t  *r_forceAutoExposureMin;
 extern cvar_t  *r_forceAutoExposureMax;
 
-extern cvar_t  *r_srgb;
-
 extern cvar_t  *r_depthPrepass;
 extern cvar_t  *r_ssao;
 
@@ -971,6 +969,7 @@ typedef struct shader_s {
 	shaderStage_t	*stages[MAX_SHADER_STAGES];		
 
 	void		(*optimalStageIteratorFunc)( void );
+	qboolean	isHDRLit;
 
   float clampTime;                                  // time this shader is clamped to
   float timeOffset;                                 // current time offset for this shader
@@ -1890,6 +1889,8 @@ typedef struct {
 
 	char		*entityString;
 	char		*entityParsePoint;
+
+	qboolean	hdrLighting;
 } world_t;
 
 
@@ -2383,7 +2384,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t volumeShadowShader;
 	shaderProgram_t down4xShader;
 	shaderProgram_t bokehShader;
-	shaderProgram_t tonemapShader;
+	shaderProgram_t tonemapShader[2];
 	shaderProgram_t calclevels4xShader[2];
 	shaderProgram_t shadowmaskShader;
 	shaderProgram_t ssaoShader;
@@ -2618,8 +2619,6 @@ extern  cvar_t  *r_forceAutoExposureMax;
 
 extern  cvar_t  *r_cameraExposure;
 
-extern  cvar_t  *r_srgb;
-
 extern  cvar_t  *r_depthPrepass;
 extern  cvar_t  *r_ssao;
 
@@ -2810,6 +2809,7 @@ void	R_InitFogTable( void );
 float	R_FogFactor( float s, float t );
 void	R_InitImagesPool();
 void	R_InitImages( void );
+void	R_LoadHDRImage(const char *filename, byte **data, int *width, int *height);
 void	R_DeleteTextures( void );
 int		R_SumOfUsedImages( void );
 void	R_InitSkins( void );

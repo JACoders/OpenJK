@@ -129,8 +129,6 @@ cvar_t  *r_forceAutoExposure;
 cvar_t  *r_forceAutoExposureMin;
 cvar_t  *r_forceAutoExposureMax;
 
-cvar_t  *r_srgb;
-
 cvar_t  *r_depthPrepass;
 cvar_t  *r_ssao;
 
@@ -1479,8 +1477,6 @@ void R_Register( void )
 	r_forceAutoExposureMax = ri.Cvar_Get( "r_forceAutoExposureMax", "2.0", CVAR_CHEAT, "" );
 
 	r_cameraExposure = ri.Cvar_Get( "r_cameraExposure", "0", CVAR_CHEAT, "" );
-
-	r_srgb = ri.Cvar_Get( "r_srgb", "0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 
 	r_depthPrepass = ri.Cvar_Get( "r_depthPrepass", "1", CVAR_ARCHIVE, "" );
 	r_ssao = ri.Cvar_Get( "r_ssao", "0", CVAR_LATCH | CVAR_ARCHIVE, "" );

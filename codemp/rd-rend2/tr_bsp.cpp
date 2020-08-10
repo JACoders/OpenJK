@@ -139,7 +139,7 @@ R_ColorShiftLightingFloats
 
 ===============
 */
-static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale )
+static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale, bool overbrightBits = true )
 {
 	float r, g, b;
 
@@ -149,42 +149,22 @@ static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale )
 	g = in[1] * scale;
 	b = in[2] * scale;
 
-	if ( r > 1.0f || g > 1.0f || b > 1.0f )
+	if (!glRefConfig.floatLightmap)
 	{
-		float high = Q_max (Q_max (r, g), b);
+		if (r > 1.0f || g > 1.0f || b > 1.0f)
+		{
+			float high = Q_max(Q_max(r, g), b);
 
-		r /= high;
-		g /= high;
-		b /= high;
+			r /= high;
+			g /= high;
+			b /= high;
+		}
 	}
 
 	out[0] = r;
 	out[1] = g;
 	out[2] = b;
 	out[3] = in[3];
-}
-
-
-// Modified from http://graphicrants.blogspot.jp/2009/04/rgbm-color-encoding.html
-void ColorToRGBM(const vec3_t color, unsigned char rgbm[4])
-{
-	vec3_t          sample;
-	float			maxComponent;
-
-	VectorCopy(color, sample);
-
-	maxComponent = MAX(sample[0], sample[1]);
-	maxComponent = MAX(maxComponent, sample[2]);
-	maxComponent = CLAMP(maxComponent, 1.0f/255.0f, 1.0f);
-
-	rgbm[3] = (unsigned char) ceil(maxComponent * 255.0f);
-	maxComponent = 255.0f / rgbm[3];
-
-	VectorScale(sample, maxComponent, sample);
-
-	rgbm[0] = (unsigned char) (sample[0] * 255);
-	rgbm[1] = (unsigned char) (sample[1] * 255);
-	rgbm[2] = (unsigned char) (sample[2] * 255);
 }
 
 void ColorToRGBA16F(const vec3_t color, unsigned short rgba16f[4])
@@ -194,7 +174,6 @@ void ColorToRGBA16F(const vec3_t color, unsigned short rgba16f[4])
 	rgba16f[2] = FloatToHalf(color[2]);
 	rgba16f[3] = FloatToHalf(1.0f);
 }
-
 
 /*
 ===============
@@ -209,22 +188,42 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	dsurface_t  *surf;
 	int			len;
 	byte		*image;
-	int			i, j, numLightmaps; 
+	int			imageSize;
+	int			i, j, numLightmaps = 0, textureInternalFormat = 0;
 	float maxIntensity = 0;
 	double sumIntensity = 0;
+	int numColorComponents = 3;
+
+	bool hdr_capable = glRefConfig.floatLightmap && r_hdr->integer;
+	tr.lightmapSize = DEFAULT_LIGHTMAP_SIZE;
+
+	worldData->hdrLighting = qfalse;
 
 	len = l->filelen;
-	if ( !len ) {
-		return;
+	// test for external lightmaps
+	if (!len) {
+		for (i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
+			i < surfs->filelen / sizeof(dsurface_t);
+			i++, surf++) {
+			for (int j = 0; j < MAXLIGHTMAPS; j++)
+			{
+				numLightmaps = MAX(numLightmaps, LittleLong(surf->lightmapNum[j]) + 1);
+			}
+		}
+		buf = NULL;
 	}
-	buf = fileBase + l->fileofs;
+	else
+	{
+		numLightmaps = len / (tr.lightmapSize * tr.lightmapSize * 3);
+		buf = fileBase + l->fileofs;
+	}
+
+	if (numLightmaps == 0)
+		return;
 
 	// we are about to upload textures
 	R_IssuePendingRenderCommands();
-
-	tr.lightmapSize = DEFAULT_LIGHTMAP_SIZE;
-	numLightmaps = len / (tr.lightmapSize * tr.lightmapSize * 3);
-
+	
 	// check for deluxe mapping
 	if (numLightmaps <= 1)
 	{
@@ -235,14 +234,14 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		tr.worldDeluxeMapping = qtrue;
 
 		// Check that none of the deluxe maps are referenced by any of the map surfaces.
-		for( i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
+		for (i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
 			tr.worldDeluxeMapping && i < surfs->filelen / sizeof(dsurface_t);
-			i++, surf++ ) {
-			for ( int j = 0; j < MAXLIGHTMAPS; j++ )
+			i++, surf++) {
+			for (int j = 0; j < MAXLIGHTMAPS; j++)
 			{
-				int lightmapNum = LittleLong( surf->lightmapNum[j] );
+				int lightmapNum = LittleLong(surf->lightmapNum[j]);
 
-				if ( lightmapNum >= 0 && (lightmapNum & 1) != 0 ) {
+				if (lightmapNum >= 0 && (lightmapNum & 1) != 0) {
 					tr.worldDeluxeMapping = qfalse;
 					break;
 				}
@@ -250,7 +249,8 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		}
 	}
 
-	image = (byte *)Z_Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2, TAG_BSP);
+	imageSize = tr.lightmapSize * tr.lightmapSize * 4 * 2;
+	image = (byte *)Z_Malloc(imageSize, TAG_BSP, qfalse);
 
 	if (tr.worldDeluxeMapping)
 		numLightmaps >>= 1;
@@ -284,6 +284,11 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		tr.deluxemaps = (image_t **)ri.Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 	}
 
+	if (glRefConfig.floatLightmap)
+		textureInternalFormat = GL_RGBA16F;
+	else
+		textureInternalFormat = GL_RGBA8;
+
 	if (r_mergeLightmaps->integer)
 	{
 		for (i = 0; i < tr.numLightmaps; i++)
@@ -295,7 +300,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 				tr.lightmapAtlasSize[1],
 				IMGTYPE_COLORALPHA,
 				IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-				GL_RGBA8);
+				textureInternalFormat);
 
 			if (tr.worldDeluxeMapping)
 			{
@@ -311,7 +316,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		}
 	}
 
-	for(i = 0; i < numLightmaps; i++)
+	for (i = 0; i < numLightmaps; i++)
 	{
 		int xoff = 0, yoff = 0;
 		int lightmapnum = i;
@@ -327,194 +332,209 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		// if (tr.worldLightmapping)
 		{
 			char filename[MAX_QPATH];
-			byte *hdrLightmap = NULL;
-			int size = 0;
+			byte *externalLightmap = NULL;
+			float *hdrL = NULL;
+			int lightmapWidth = tr.lightmapSize;
+			int lightmapHeight = tr.lightmapSize;
+			int bppc;
+			bool foundLightmap = true;
 
-			// look for hdr lightmaps
-			if (r_hdr->integer)
-			{
-				Com_sprintf( filename, sizeof( filename ), "maps/%s/lm_%04d.hdr", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1) );
-				//ri.Printf(PRINT_ALL, "looking for %s\n", filename);
-
-				size = ri.FS_ReadFile(filename, (void **)&hdrLightmap);
-			}
-
-			if (hdrLightmap)
-			{
-				byte *p = hdrLightmap;
-				//ri.Printf(PRINT_ALL, "found!\n");
-				
-				/* FIXME: don't just skip over this header and actually parse it */
-				while (size && !(*p == '\n' && *(p+1) == '\n'))
-				{
-					size--;
-					p++;
-				}
-
-				if (!size)
-					ri.Error(ERR_DROP, "Bad header for %s!", filename);
-
-				size -= 2;
-				p += 2;
-				
-				while (size && !(*p == '\n'))
-				{
-					size--;
-					p++;
-				}
-
-				size--;
-				p++;
-
-				buf_p = (byte *)p;
-
-#if 0 // HDRFILE_RGBE
-				if (size != tr.lightmapSize * tr.lightmapSize * 4)
-					ri.Error(ERR_DROP, "Bad size for %s (%i)!", filename, size);
-#else // HDRFILE_FLOAT
-				if (size != tr.lightmapSize * tr.lightmapSize * 12)
-					ri.Error(ERR_DROP, "Bad size for %s (%i)!", filename, size);
-#endif
-			}
+			if (hdr_capable)
+				Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.hdr", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1));
 			else
+				Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.tga", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1));
+
+			bppc = 16;
+			R_LoadHDRImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
+			if (!externalLightmap)
+			{
+				bppc = 8;
+				R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
+			}
+
+			if (externalLightmap)
+			{
+				int newImageSize = lightmapWidth * lightmapHeight * 4 * 2;
+				if (r_mergeLightmaps->integer && (lightmapWidth != tr.lightmapSize || lightmapHeight != tr.lightmapSize))
+				{
+					ri.Printf(PRINT_ALL, "Error loading %s: non %dx%d lightmaps require r_mergeLightmaps 0.\n", filename, tr.lightmapSize, tr.lightmapSize);
+					Z_Free(externalLightmap);
+					externalLightmap = NULL;
+					if (!len)
+					{
+						tr.numLightmaps = 0;
+						return;
+					}
+				}
+				else if (newImageSize > imageSize)
+				{
+					Z_Free(image);
+					imageSize = newImageSize;
+					image = (byte *)Z_Malloc(imageSize, TAG_BSP, qfalse);
+				}
+				numColorComponents = 4;
+			}
+			if (!externalLightmap)
+			{
+				lightmapWidth = tr.lightmapSize;
+				lightmapHeight = tr.lightmapSize;
+				numColorComponents = 3;
+			}
+
+			foundLightmap = true;
+			if (externalLightmap)
+			{
+				if (bppc > 8)
+				{
+					hdrL = (float *)externalLightmap;
+					worldData->hdrLighting = qtrue;
+				}
+				else
+				{
+					buf_p = externalLightmap;
+				}
+			}
+			else if (buf)
 			{
 				if (tr.worldDeluxeMapping)
 					buf_p = buf + (i * 2) * tr.lightmapSize * tr.lightmapSize * 3;
 				else
 					buf_p = buf + i * tr.lightmapSize * tr.lightmapSize * 3;
 			}
-
-			for ( j = 0 ; j < tr.lightmapSize * tr.lightmapSize; j++ ) 
+			else
 			{
-				if (hdrLightmap)
-				{
-					vec4_t color;
-
-#if 0 // HDRFILE_RGBE
-					float exponent = exp2(buf_p[j*4+3] - 128);
-
-					color[0] = buf_p[j*4+0] * exponent;
-					color[1] = buf_p[j*4+1] * exponent;
-					color[2] = buf_p[j*4+2] * exponent;
-#else // HDRFILE_FLOAT
-					memcpy(color, &buf_p[j*12], 12);
-
-					color[0] = LittleFloat(color[0]);
-					color[1] = LittleFloat(color[1]);
-					color[2] = LittleFloat(color[2]);
-#endif
-					color[3] = 1.0f;
-
-					R_ColorShiftLightingFloats(color, color, 1.0f/255.0f);
-
-					if (glRefConfig.floatLightmap)
-						ColorToRGBA16F(color, (unsigned short *)(&image[j*8]));
-					else
-						ColorToRGBM(color, &image[j*4]);
-				}
-				else if (glRefConfig.floatLightmap)
-				{
-					vec4_t color;
-
-					//hack: convert LDR lightmap to HDR one
-					color[0] = MAX(buf_p[j*3+0], 0.499f);
-					color[1] = MAX(buf_p[j*3+1], 0.499f);
-					color[2] = MAX(buf_p[j*3+2], 0.499f);
-
-					// if under an arbitrary value (say 12) grey it out
-					// this prevents weird splotches in dimly lit areas
-					if (color[0] + color[1] + color[2] < 12.0f)
-					{
-						float avg = (color[0] + color[1] + color[2]) * 0.3333f;
-						color[0] = avg;
-						color[1] = avg;
-						color[2] = avg;
-					}
-					color[3] = 1.0f;
-
-					R_ColorShiftLightingFloats(color, color, 1.0f/255.0f);
-
-					ColorToRGBA16F(color, (unsigned short *)(&image[j*8]));
-				}
-				else
-				{
-					if ( r_lightmap->integer == 2 )
-					{	// color code by intensity as development tool	(FIXME: check range)
-						float r = buf_p[j*3+0];
-						float g = buf_p[j*3+1];
-						float b = buf_p[j*3+2];
-						float intensity;
-						float out[3] = {0.0, 0.0, 0.0};
-
-						intensity = 0.33f * r + 0.685f * g + 0.063f * b;
-
-						if ( intensity > 255 )
-							intensity = 1.0f;
-						else
-							intensity /= 255.0f;
-
-						if ( intensity > maxIntensity )
-							maxIntensity = intensity;
-
-						HSVtoRGB( intensity, 1.00, 0.50, out );
-
-						image[j*4+0] = out[0] * 255;
-						image[j*4+1] = out[1] * 255;
-						image[j*4+2] = out[2] * 255;
-						image[j*4+3] = 255;
-
-						sumIntensity += intensity;
-					}
-					else
-					{
-						R_ColorShiftLightingBytes( &buf_p[j*3], &image[j*4] );
-						image[j*4+3] = 255;
-					}
-				}
+				buf_p = NULL;
+				foundLightmap = false;
 			}
 
-			if (r_mergeLightmaps->integer)
-				R_UpdateSubImage(
-					tr.lightmaps[lightmapnum],
-					image,
-					xoff,
-					yoff,
-					tr.lightmapSize,
-					tr.lightmapSize);
-			else
-				tr.lightmaps[i] = R_CreateImage(
-					va("*lightmap%d", i),
-					image,
-					tr.lightmapSize,
-					tr.lightmapSize,
-					IMGTYPE_COLORALPHA,
-					IMGFLAG_NOLIGHTSCALE |
+			if (foundLightmap)
+			{
+				for (j = 0; j < lightmapWidth * lightmapHeight; j++)
+				{
+					if (hdrL && hdr_capable)
+					{
+						vec4_t color;
+						int column = (j % lightmapWidth);
+						int rowIndex = ((lightmapHeight - (int)floor(j / lightmapHeight)) - 1) * lightmapHeight;
+
+						int index = column + rowIndex;
+
+						memcpy(color, &hdrL[index * 3], 12);
+
+						color[3] = 1.0f;
+
+						R_ColorShiftLightingFloats(color, color, 1.0f, false);
+
+						ColorToRGBA16F(color, (uint16_t *)(&image[j * 8]));
+					}
+					else if (buf_p && glRefConfig.floatLightmap)
+					{
+						vec4_t color;
+						
+						//hack: convert LDR lightmap to HDR one
+						color[0] = MAX(buf_p[j*numColorComponents + 0], 0.499f);
+						color[1] = MAX(buf_p[j*numColorComponents + 1], 0.499f);
+						color[2] = MAX(buf_p[j*numColorComponents + 2], 0.499f);
+
+						// if under an arbitrary value (say 12) grey it out
+						// this prevents weird splotches in dimly lit areas
+						if (color[0] + color[1] + color[2] < 12.0f)
+						{
+							float avg = (color[0] + color[1] + color[2]) * 0.3333f;
+							color[0] = avg;
+							color[1] = avg;
+							color[2] = avg;
+						}
+						color[3] = 1.0f;
+
+						R_ColorShiftLightingFloats(color, color, 1.0f / 255.0f);
+
+						color[0] = color[0];
+						color[1] = color[1];
+						color[2] = color[2];
+
+						ColorToRGBA16F(color, (unsigned short *)(&image[j * 8]));
+					}
+					else if (buf_p)
+					{
+						if (r_lightmap->integer == 2)
+						{	// color code by intensity as development tool	(FIXME: check range)
+							float r = buf_p[j*numColorComponents + 0];
+							float g = buf_p[j*numColorComponents + 1];
+							float b = buf_p[j*numColorComponents + 2];
+							float intensity;
+							float out[3] = { 0.0, 0.0, 0.0 };
+
+							intensity = 0.33f * r + 0.685f * g + 0.063f * b;
+
+							if (intensity > 255)
+								intensity = 1.0f;
+							else
+								intensity /= 255.0f;
+
+							if (intensity > maxIntensity)
+								maxIntensity = intensity;
+
+							HSVtoRGB(intensity, 1.00, 0.50, out);
+
+							image[j * 4 + 0] = out[0] * 255;
+							image[j * 4 + 1] = out[1] * 255;
+							image[j * 4 + 2] = out[2] * 255;
+							image[j * 4 + 3] = 255;
+
+							sumIntensity += intensity;
+						}
+						else
+						{
+							R_ColorShiftLightingBytes(&buf_p[j * numColorComponents], &image[j * 4]);
+							image[j * 4 + 3] = 255;
+						}
+					}
+				}
+
+				if (r_mergeLightmaps->integer)
+					R_UpdateSubImage(
+						tr.lightmaps[lightmapnum],
+						image,
+						xoff,
+						yoff,
+						lightmapWidth,
+						lightmapHeight);
+				else
+					tr.lightmaps[i] = R_CreateImage(
+						va("*lightmap%d", i),
+						image,
+						lightmapWidth,
+						lightmapHeight,
+						IMGTYPE_COLORALPHA,
+						IMGFLAG_NOLIGHTSCALE |
 						IMGFLAG_NO_COMPRESSION |
 						IMGFLAG_CLAMPTOEDGE,
-					GL_RGBA8);
+						textureInternalFormat);
+			}
 
-			if (hdrLightmap)
-				ri.FS_FreeFile(hdrLightmap);
-		}
+			if (externalLightmap)
+				Z_Free(externalLightmap);
+			}
 
-		if (tr.worldDeluxeMapping)
+		if (tr.worldDeluxeMapping && buf)
 		{
 			buf_p = buf + (i * 2 + 1) * tr.lightmapSize * tr.lightmapSize * 3;
 
-			for ( j = 0 ; j < tr.lightmapSize * tr.lightmapSize; j++ ) {
-				image[j*4+0] = buf_p[j*3+0];
-				image[j*4+1] = buf_p[j*3+1];
-				image[j*4+2] = buf_p[j*3+2];
+			for (j = 0; j < tr.lightmapSize * tr.lightmapSize; j++) {
+				image[j * 4 + 0] = buf_p[j * 3 + 0];
+				image[j * 4 + 1] = buf_p[j * 3 + 1];
+				image[j * 4 + 2] = buf_p[j * 3 + 2];
 
 				// make 0,0,0 into 127,127,127
-				if ((image[j*4+0] == 0) && (image[j*4+1] == 0) && (image[j*4+2] == 0))
+				if ((image[j * 4 + 0] == 0) && (image[j * 4 + 1] == 0) && (image[j * 4 + 2] == 0))
 				{
 					image[j*4+0] =
 					image[j*4+1] =
 					image[j*4+2] = 127;
 				}
 
-				image[j*4+3] = 255;
+				image[j * 4 + 3] = 255;
 			}
 
 			if (r_mergeLightmaps->integer)
@@ -536,19 +556,19 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					tr.lightmapSize,
 					IMGTYPE_DELUXE,
 					IMGFLAG_NOLIGHTSCALE |
-						IMGFLAG_NO_COMPRESSION |
-						IMGFLAG_CLAMPTOEDGE,
+					IMGFLAG_NO_COMPRESSION |
+					IMGFLAG_CLAMPTOEDGE,
 					0);
 			}
 		}
-	}
+		}
 
 	if ( r_lightmap->integer == 2 )	{
 		ri.Printf( PRINT_ALL, "Brightest lightmap value: %d\n", ( int ) ( maxIntensity * 255 ) );
 	}
 
 	Z_Free(image);
-}
+	}
 
 
 static float FatPackU(float input, int lightmapnum)
