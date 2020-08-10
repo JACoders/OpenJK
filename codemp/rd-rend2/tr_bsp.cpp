@@ -143,7 +143,8 @@ static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale, b
 {
 	float r, g, b;
 
-	scale *= pow(2.0f, r_mapOverBrightBits->integer - tr.overbrightBits);
+	if (overbrightBits)
+		scale *= pow(2.0f, r_mapOverBrightBits->integer - tr.overbrightBits);
 
 	r = in[0] * scale;
 	g = in[1] * scale;
