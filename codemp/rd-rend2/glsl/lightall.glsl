@@ -457,11 +457,7 @@ out vec4 out_Glow;
 #if defined(USE_PARALLAXMAP)
 float SampleDepth(sampler2D normalMap, vec2 t)
 {
-  #if defined(SWIZZLE_NORMALMAP)
 	return 1.0 - texture(normalMap, t).r;
-  #else
-	return 1.0 - texture(normalMap, t).a;
-  #endif
 }
 
 float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
