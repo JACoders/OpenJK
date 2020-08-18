@@ -136,7 +136,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 	int		gridStep[3];
 	vec3_t	direction;
 	float	totalFactor;
-	unsigned short	*startGridPos;
+	int		startGridPos;
 
 	if ( ent->e.renderfx & RF_LIGHTING_ORIGIN ) {
 		// seperate lightOrigins are needed so an object that is
@@ -171,13 +171,13 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 	gridStep[0] = 1;
 	gridStep[1] = 1 * world->lightGridBounds[0];
 	gridStep[2] = 1 * world->lightGridBounds[0] * world->lightGridBounds[1];
-	startGridPos = world->lightGridArray + (pos[0] * gridStep[0] + pos[1] * gridStep[1] + pos[2] * gridStep[2]);
+	startGridPos = pos[0] * gridStep[0] + pos[1] * gridStep[1] + pos[2] * gridStep[2];
 
 	totalFactor = 0;
 	for ( i = 0 ; i < 8 ; i++ ) {
 		float	factor;
 		mgrid_t	*data;
-		unsigned short	*gridPos;
+		int		gridPos;
 		int		lat, lng;
 		vec3_t	normal;
 
@@ -197,23 +197,15 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 			}
 		}
 
-		if (gridPos >= world->lightGridArray + world->numGridArrayElements)
+		if (gridPos >= world->numGridArrayElements)
 		{//we've gone off the array somehow
 			continue;
 		}
 
-		data = world->lightGridData + *gridPos;
+		data = world->lightGridData + *(world->lightGridArray+gridPos);
 		if ( data->styles[0] == LS_LSNONE ) 
 		{
 			continue;	// ignore samples in walls
-		}
-
-		if (world->hdrLightGrid)
-		{
-			float *hdrData = world->hdrLightGrid + (int)(data - world->lightGridData) / 8 * 6;
-			if (!(hdrData[0]+hdrData[1]+hdrData[2]+hdrData[3]+hdrData[4]+hdrData[5]) ) {
-				continue;	// ignore samples in walls
-			}
 		}
 
 		totalFactor += factor;
@@ -231,16 +223,14 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 		#else
 		if (world->hdrLightGrid)
 		{
-			// FIXME: this is hideous
-			float *hdrData = world->hdrLightGrid + (int)(data - world->lightGridData) / 8 * 6;
+			float *hdrData = world->hdrLightGrid + (gridPos * 6);
+			ent->ambientLight[0] += factor * hdrData[0] * 255.0f;
+			ent->ambientLight[1] += factor * hdrData[1] * 255.0f;
+			ent->ambientLight[2] += factor * hdrData[2] * 255.0f;
 
-			ent->ambientLight[0] += factor * hdrData[0];
-			ent->ambientLight[1] += factor * hdrData[1];
-			ent->ambientLight[2] += factor * hdrData[2];
-
-			ent->directedLight[0] += factor * hdrData[3];
-			ent->directedLight[1] += factor * hdrData[4];
-			ent->directedLight[2] += factor * hdrData[5];
+			ent->directedLight[0] += factor * hdrData[3] * 255.0f;
+			ent->directedLight[1] += factor * hdrData[4] * 255.0f;
+			ent->directedLight[2] += factor * hdrData[5] * 255.0f;
 		}
 		else
 		{

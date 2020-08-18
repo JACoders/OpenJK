@@ -791,11 +791,14 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 			cv->verts[i].lightmap[j][1] = FatPackV(
 				LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
+			float scale = 1.0f / 255.0f;
 			if (hdrVertColors)
 			{
-				color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
-				color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
-				color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
+				float *hdrColor = hdrVertColors + (ds->firstVert + i) * 3;
+				color[0] = hdrColor[0];
+				color[1] = hdrColor[1];
+				color[2] = hdrColor[2];
+				scale = 1.0f;
 			}
 			else
 			{
@@ -815,7 +818,7 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 			}
 			color[3] = verts[i].color[j][3] / 255.0f;
 
-			R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors[j], 1.0f / 255.0f );
+			R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors[j], scale, hdrVertColors != NULL );
 		}
 	}
 
@@ -939,11 +942,14 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 			points[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), ds->lightmapNum[j]);
 			points[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
+			float scale = 1.0f / 255.0f;
 			if (hdrVertColors)
 			{
-				color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
-				color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
-				color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
+				float *hdrColor = hdrVertColors + (ds->firstVert + i)*3;
+				color[0] = hdrColor[0];
+				color[1] = hdrColor[1];
+				color[2] = hdrColor[2];
+				scale = 1.0f;
 			}
 			else
 			{
@@ -963,7 +969,7 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 			}
 			color[3] = verts[i].color[j][3] / 255.0f;
 
-			R_ColorShiftLightingFloats( color, points[i].vertexColors[j], 1.0f / 255.0f );
+			R_ColorShiftLightingFloats( color, points[i].vertexColors[j], scale, hdrVertColors != NULL );
 		}
 	}
 
@@ -1054,11 +1060,14 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 			cv->verts[i].lightmap[j][1] = FatPackV(
 				LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
+			float scale = 1.0f / 255.0f;
 			if (hdrVertColors)
 			{
-				color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
-				color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
-				color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
+				float *hdrColor = hdrVertColors + ((ds->firstVert + i) * 3);
+				color[0] = hdrColor[0];
+				color[1] = hdrColor[1];
+				color[2] = hdrColor[2];
+				scale = 1.0f;
 			}
 			else
 			{
@@ -1078,7 +1087,7 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 			}
 			color[3] = verts[i].color[j][3] / 255.0f;
 
-			R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors[j], 1.0f / 255.0f );
+			R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors[j], scale, hdrVertColors != NULL );
 		}
 	}
 
@@ -2726,25 +2735,21 @@ void R_LoadLightGrid( world_t *worldData, lump_t *l ) {
 
 		if (hdrLightGrid)
 		{
-			float lightScale = pow(2.0f, r_mapOverBrightBits->integer - tr.overbrightBits);
-
-			//ri.Printf(PRINT_ALL, "found!\n");
-
-			if (size != sizeof(float) * 6 * numGridDataElements)
+			if (size != sizeof(float) * 6 * worldData->lightGridBounds[0] * worldData->lightGridBounds[1] * worldData->lightGridBounds[2])
 			{
-				ri.Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)(sizeof(float)) * 6 * numGridDataElements);
+				ri.Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)(sizeof(float)) * 6 * worldData->lightGridBounds[0] * worldData->lightGridBounds[1] * worldData->lightGridBounds[2]);
 			}
 
 			worldData->hdrLightGrid = (float *)ri.Hunk_Alloc(size, h_low);
 
-			for (i = 0; i < numGridDataElements ; i++)
+			for (i = 0; i < worldData->lightGridBounds[0] * worldData->lightGridBounds[1] * worldData->lightGridBounds[2]; i++)
 			{
-				worldData->hdrLightGrid[i * 6    ] = hdrLightGrid[i * 6    ] * lightScale;
-				worldData->hdrLightGrid[i * 6 + 1] = hdrLightGrid[i * 6 + 1] * lightScale;
-				worldData->hdrLightGrid[i * 6 + 2] = hdrLightGrid[i * 6 + 2] * lightScale;
-				worldData->hdrLightGrid[i * 6 + 3] = hdrLightGrid[i * 6 + 3] * lightScale;
-				worldData->hdrLightGrid[i * 6 + 4] = hdrLightGrid[i * 6 + 4] * lightScale;
-				worldData->hdrLightGrid[i * 6 + 5] = hdrLightGrid[i * 6 + 5] * lightScale;
+				worldData->hdrLightGrid[i * 6    ] = hdrLightGrid[i * 6    ];
+				worldData->hdrLightGrid[i * 6 + 1] = hdrLightGrid[i * 6 + 1];
+				worldData->hdrLightGrid[i * 6 + 2] = hdrLightGrid[i * 6 + 2];
+				worldData->hdrLightGrid[i * 6 + 3] = hdrLightGrid[i * 6 + 3];
+				worldData->hdrLightGrid[i * 6 + 4] = hdrLightGrid[i * 6 + 4];
+				worldData->hdrLightGrid[i * 6 + 5] = hdrLightGrid[i * 6 + 5];
 			}
 		}
 
