@@ -69,6 +69,9 @@ cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
 cvar_t	*sv_legacyFixes;
 cvar_t	*sv_banFile;
+cvar_t	*sv_maxOOBRate;
+cvar_t	*sv_maxOOBRateIP;
+cvar_t	*sv_autoWhitelist;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
@@ -271,6 +274,8 @@ void SV_MasterHeartbeat( void ) {
 				adr[i].port = BigShort( PORT_MASTER );
 			}
 			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(adr[i]) );
+
+			SVC_WhitelistAdr( adr[i] );
 		}
 
 		Com_Printf ("Sending heartbeat to %s\n", sv_master[i]->string );
@@ -309,39 +314,6 @@ CONNECTIONLESS COMMANDS
 ==============================================================================
 */
 
-// This is deliberately quite large to make it more of an effort to DoS
-#define MAX_BUCKETS			16384
-#define MAX_HASHES			1024
-
-static leakyBucket_t buckets[ MAX_BUCKETS ];
-static leakyBucket_t *bucketHashes[ MAX_HASHES ];
-leakyBucket_t outboundLeakyBucket;
-
-/*
-================
-SVC_HashForAddress
-================
-*/
-static long SVC_HashForAddress( netadr_t address ) {
-	byte 		*ip = NULL;
-	size_t	size = 0;
-	long		hash = 0;
-
-	switch ( address.type ) {
-		case NA_IP:  ip = address.ip;  size = 4; break;
-		default: break;
-	}
-
-	for ( size_t i = 0; i < size; i++ ) {
-		hash += (long)( ip[ i ] ) * ( i + 119 );
-	}
-
-	hash = ( hash ^ ( hash >> 10 ) ^ ( hash >> 20 ) );
-	hash &= ( MAX_HASHES - 1 );
-
-	return hash;
-}
-
 /*
 ================
 SVC_BucketForAddress
@@ -349,73 +321,47 @@ SVC_BucketForAddress
 Find or allocate a bucket for an address
 ================
 */
-static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int period ) {
-	leakyBucket_t	*bucket = NULL;
-	int						i;
-	long					hash = SVC_HashForAddress( address );
-	int						now = Sys_Milliseconds();
+#include <map>
 
-	for ( bucket = bucketHashes[ hash ]; bucket; bucket = bucket->next ) {
-		switch ( bucket->type ) {
-			case NA_IP:
-				if ( memcmp( bucket->ipv._4, address.ip, 4 ) == 0 ) {
-					return bucket;
-				}
-				break;
+static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int period, int now ) {
+	static std::map<int, leakyBucket_t> bucketMap;
+	static int lastGC = 0;
 
-			default:
-				break;
-		}
+	if (address.type != NA_IP) {
+		return NULL;
 	}
 
-	for ( i = 0; i < MAX_BUCKETS; i++ ) {
-		int interval;
+	// Consider following spoofed dos scenario:
+	//
+	// Packets coming at a steady rate, IPs are never the
+	// same. The garbage collector will perform
+	// packet_rate * (1 + gc_rate * period / 1000)
+	// iterations per second (where rates are in Hz)
+	//
+	// Theoretical minimum is packet_rate because buckets need to be
+	// removed at the same rate they are created. It can be achieved
+	// with another map, at the cost of higher constants.
+	//
+	// gc_rate at 1/s will keep the overhead relatively low.
+	// Memory consumption is packet_rate * (period / 1000 + 1 / gc_rate)
 
-		bucket = &buckets[ i ];
-		interval = now - bucket->lastTime;
+	if (lastGC + 1000 < now) {
+		lastGC = now;
 
-		// Reclaim expired buckets
-		if ( bucket->lastTime > 0 && ( interval > ( burst * period ) ||
-					interval < 0 ) ) {
-			if ( bucket->prev != NULL ) {
-				bucket->prev->next = bucket->next;
+		auto it = bucketMap.begin();
+
+		while (it != bucketMap.end()) {
+			int interval = now - it->second.lastTime;
+
+			if (interval > it->second.burst * period || interval < 0) {
+				it = bucketMap.erase(it);
 			} else {
-				bucketHashes[ bucket->hash ] = bucket->next;
+				++it;
 			}
-
-			if ( bucket->next != NULL ) {
-				bucket->next->prev = bucket->prev;
-			}
-
-			Com_Memset( bucket, 0, sizeof( leakyBucket_t ) );
-		}
-
-		if ( bucket->type == NA_BAD ) {
-			bucket->type = address.type;
-			switch ( address.type ) {
-				case NA_IP:  Com_Memcpy( bucket->ipv._4, address.ip, 4 );   break;
-				default: break;
-			}
-
-			bucket->lastTime = now;
-			bucket->burst = 0;
-			bucket->hash = hash;
-
-			// Add to the head of the relevant hash chain
-			bucket->next = bucketHashes[ hash ];
-			if ( bucketHashes[ hash ] != NULL ) {
-				bucketHashes[ hash ]->prev = bucket;
-			}
-
-			bucket->prev = NULL;
-			bucketHashes[ hash ] = bucket;
-
-			return bucket;
 		}
 	}
 
-	// Couldn't allocate a bucket for this address
-	return NULL;
+	return &bucketMap[address.ipi];
 }
 
 /*
@@ -423,9 +369,8 @@ static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int per
 SVC_RateLimit
 ================
 */
-qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
+qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period, int now ) {
 	if ( bucket != NULL ) {
-		int now = Sys_Milliseconds();
 		int interval = now - bucket->lastTime;
 		int expired = interval / period;
 		int expiredRemainder = interval % period;
@@ -455,10 +400,10 @@ SVC_RateLimitAddress
 Rate limit for a particular address
 ================
 */
-qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
-	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period );
+qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period, int now ) {
+	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period, now );
 
-	return SVC_RateLimit( bucket, burst, period );
+	return SVC_RateLimit( bucket, burst, period, now );
 }
 
 /*
@@ -486,22 +431,6 @@ void SVC_Status( netadr_t from ) {
 		return;
 	}
 	*/
-
-	// Prevent using getstatus as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
-	// Allow getstatus to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SVC_Status: rate limit exceeded, dropping request\n" );
-		return;
-	}
 
 	// A maximum challenge length of 128 should be more than plenty.
 	if(strlen(Cmd_Argv(1)) > 128)
@@ -556,22 +485,6 @@ void SVC_Info( netadr_t from ) {
 
 	if (Cvar_VariableValue("ui_singlePlayerActive"))
 	{
-		return;
-	}
-
-	// Prevent using getinfo as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
-	// Allow getinfo to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SVC_Info: rate limit exceeded, dropping request\n" );
 		return;
 	}
 
@@ -666,25 +579,8 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	char		sv_outputbuf[SV_OUTPUTBUF_LENGTH];
 	char		*cmd_aux;
 
-	// Prevent using rcon as an amplifier and make dictionary attacks impractical
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
 	if ( !strlen( sv_rconPassword->string ) ||
 		strcmp (Cmd_Argv(1), sv_rconPassword->string) ) {
-		static leakyBucket_t bucket;
-
-		// Make DoS via rcon impractical
-		if ( SVC_RateLimit( &bucket, 10, 1000 ) ) {
-			Com_DPrintf( "SVC_RemoteCommand: rate limit exceeded, dropping request\n" );
-			return;
-		}
-
 		valid = qfalse;
 		Com_Printf ("Bad rcon from %s: %s\n", NET_AdrToString (from), Cmd_ArgsFrom(2) );
 	} else {
@@ -724,6 +620,69 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	Com_EndRedirect ();
 }
 
+// dos protection whitelist
+
+#define WHITELIST_FILE			"ipwhitelist.dat"
+
+#include <set>
+
+static std::set<int32_t>	svc_whitelist;
+
+void SVC_LoadWhitelist( void ) {
+	fileHandle_t f;
+	int32_t *data = NULL;
+	int len = FS_SV_FOpenFileRead(WHITELIST_FILE, &f);
+
+	if (len <= 0) {
+		return;
+	}
+
+	data = (int32_t *)Z_Malloc(len, TAG_TEMP_WORKSPACE);
+
+	FS_Read(data, len, f);
+	FS_FCloseFile(f);
+
+	len /= sizeof(int32_t);
+
+	for (int i = 0; i < len; i++) {
+		svc_whitelist.insert(data[i]);
+	}
+
+	Z_Free(data);
+	data = NULL;
+}
+
+void SVC_WhitelistAdr( netadr_t adr ) {
+	fileHandle_t f;
+
+	if (adr.type != NA_IP) {
+		return;
+	}
+
+	if (!svc_whitelist.insert(adr.ipi).second) {
+		return;
+	}
+
+	Com_DPrintf("Whitelisting %s\n", NET_AdrToString(adr));
+
+	f = FS_SV_FOpenFileAppend(WHITELIST_FILE);
+	if (!f) {
+		Com_Printf("Couldn't open " WHITELIST_FILE ".\n");
+		return;
+	}
+
+	FS_Write(adr.ip, sizeof(adr.ip), f);
+	FS_FCloseFile(f);
+}
+
+static qboolean SVC_IsWhitelisted( netadr_t adr ) {
+	if (adr.type == NA_IP) {
+		return (qboolean)(svc_whitelist.find(adr.ipi) != svc_whitelist.end());
+	} else {
+		return qtrue;
+	}
+}
+
 /*
 =================
 SV_ConnectionlessPacket
@@ -735,8 +694,45 @@ connectionless packets.
 =================
 */
 void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
+	static	leakyBucket_t	bucket;
+	static	int	dropped = 0;
+	static	int	lastMsg = 0;
+	int		now = Sys_Milliseconds();
 	char	*s;
 	char	*c;
+
+	if (sv_maxOOBRateIP->integer) {
+		int rate = Com_Clampi(1, 1000, sv_maxOOBRateIP->integer);
+		int period = 1000 / rate;
+		int burst = 10 * rate;
+
+		if (SVC_RateLimitAddress(from, burst, period, now)) {
+			if (com_developer && com_developer->integer) {
+				Com_Printf("SV_ConnectionlessPacket: Rate limit from %s exceeded, dropping request\n", NET_AdrToString(from));
+			}
+			return;
+		}
+	}
+
+	if (sv_maxOOBRate->integer) {
+		int rate = Com_Clampi(1, 1000, sv_maxOOBRate->integer);
+		int period = 1000 / rate;
+
+		if (SVC_IsWhitelisted(from)) {
+			rate *= 2;
+		}
+
+		if (SVC_RateLimit(&bucket, rate, period, now)) {
+			dropped++;
+			return;
+		}
+	}
+
+	if (dropped > 0 && lastMsg + 5000 < now) {
+		Com_Printf("SV_ConnectionlessPacket: Rate limit exceeded, dropped %d requests\n", dropped);
+		dropped = 0;
+		lastMsg = now;
+	}
 
 	MSG_BeginReadingOOB( msg );
 	MSG_ReadLong( msg );		// skip the -1 marker

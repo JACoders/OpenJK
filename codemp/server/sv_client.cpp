@@ -74,15 +74,6 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
-	// Prevent using getchallenge as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		if ( com_developer->integer ) {
-			Com_Printf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-		}
-		return;
-	}
-
 	// Create a unique challenge for this client without storing state on the server
 	challenge = SV_CreateChallenge(from);
 
@@ -560,6 +551,10 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 
 	Com_DPrintf( "Going from CS_PRIMED to CS_ACTIVE for %s\n", client->name );
 	client->state = CS_ACTIVE;
+
+	if (sv_autoWhitelist->integer) {
+		SVC_WhitelistAdr( client->netchan.remoteAddress );
+	}
 
 	// resend all configstrings using the cs commands since these are
 	// no longer sent when the client is CS_PRIMED
