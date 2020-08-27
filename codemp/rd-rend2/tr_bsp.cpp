@@ -3919,6 +3919,12 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.mapLightScale  = 1.0f;
 	tr.sunShadowScale = 0.5f;
 
+	// set default sun color to be used if it isn't
+	// overridden by a shader
+	tr.sunLight[0] = 1.0f;
+	tr.sunLight[1] = 1.0f;
+	tr.sunLight[2] = 1.0f;
+
 	// set default sun direction to be used if it isn't
 	// overridden by a shader
 	tr.sunDirection[0] = 0.45f;
@@ -3932,9 +3938,19 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.autoExposureMinMax[1] = 2.0f;
 
 	// set default tone mapping settings
-	tr.toneMinAvgMaxLevel[0] = -8.0f;
-	tr.toneMinAvgMaxLevel[1] = -2.0f;
-	tr.toneMinAvgMaxLevel[2] = 0.0f;
+	if (r_hdr->integer)
+	{
+		tr.toneMinAvgMaxLevel[0] = -6.0f;
+		tr.toneMinAvgMaxLevel[1] = 0.0f;
+		tr.toneMinAvgMaxLevel[2] = 2.0f;
+	}
+	else
+	{
+		tr.toneMinAvgMaxLevel[0] = -8.0f;
+		tr.toneMinAvgMaxLevel[1] = -2.0f;
+		tr.toneMinAvgMaxLevel[2] = 0.0f;
+	}
+	
 
 	world_t *world = R_LoadBSP(name);
 	if (world == nullptr)
