@@ -3036,6 +3036,44 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 		}
 	}
 
+	if (r_specularMapping->integer)
+	{
+		image_t *diffuseImg;
+		if (stage->bundle[TB_SPECULARMAP].image[0])
+		{
+			//ri.Printf(PRINT_ALL, ", specularmap %s", stage->bundle[TB_SPECULARMAP].image[0]->imgName);
+		}
+		else if ((lightmap || useLightVector || useLightVertex) && (diffuseImg = stage->bundle[TB_DIFFUSEMAP].image[0]))
+		{
+			char specularName[MAX_QPATH];
+			image_t *specularImg;
+			int specularFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
+
+			COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
+			Q_strcat(specularName, MAX_QPATH, "_specGloss");
+
+			specularImg = R_FindImageFile(specularName, IMGTYPE_COLORALPHA, specularFlags);
+
+			if (specularImg)
+			{
+				stage->bundle[TB_SPECULARMAP] = stage->bundle[0];
+				stage->bundle[TB_SPECULARMAP].numImageAnimations = 0;
+				stage->bundle[TB_SPECULARMAP].image[0] = specularImg;
+
+				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+			}
+			else
+			{
+				COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
+				Q_strcat(specularName, MAX_QPATH, "_rmo");
+				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO);
+
+				if (stage->bundle[TB_SPECULARMAP].image[0])
+					VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+			}
+		}
+	}
+
 	if (tcgen || stage->bundle[0].numTexMods)
 	{
 		defs |= LIGHTDEF_USE_TCGEN_AND_TCMOD;

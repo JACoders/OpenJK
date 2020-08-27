@@ -2622,7 +2622,7 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 	Q_strcat(diffuseName, sizeof(diffuseName), "_diffuse");
 
 	COM_StripExtension(name, specularName, sizeof(specularName));
-	Q_strcat(specularName, sizeof(specularName), "_spec");
+	Q_strcat(specularName, sizeof(specularName), "_specGloss");
 
 	//
 	// see if the images are already loaded
