@@ -5225,7 +5225,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 
 	if ( !hShader )
 	{
-		hShader = cgs.media.crosshairShader[ cg_drawCrosshair.integer % NUM_CROSSHAIRS ];
+		hShader = cgs.media.crosshairShader[Com_Clampi( 1, NUM_CROSSHAIRS, cg_drawCrosshair.integer ) - 1];
 	}
 
 	chX = x + cg.refdef.x + 0.5 * (640 - w);

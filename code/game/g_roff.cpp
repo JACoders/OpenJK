@@ -24,8 +24,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_roff.h"
 #include "Q3_Interface.h"
 #include "../cgame/cg_local.h"
+#include "../cgame/cg_media.h"
 #include "g_functions.h"
 #include "qcommon/ojk_saved_game_helper.h"
+
 
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
@@ -35,7 +37,8 @@ qboolean g_bCollidableRoffs = qfalse;
 
 extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
 
-static void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
+
+static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 {
 	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0;
 	char type[256];
@@ -47,12 +50,50 @@ static void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 	int addlArgs = 0;
 	vec3_t parsedAngles, parsedOffset, useAngles, useOrigin, forward, right, up;
 
-	if (!cent || !notetrack)
+	if (!ent || !notetrack)
 	{
 		return;
 	}
 
-	//notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//Supported notetrack types:	effect, sound, USE, loop
+	//
+	//General notetrack format:		<type> <argument> [additionalArguments]
+	//Note: <> denote required argument, [] denote optional argument, | denotes argument choices
+	//
+	//Examples:
+	//effect notetrack format:		effect <relative_effectfilepath.efx> [originOffset] [rotationOffset]
+	//					notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
+	//'effect' notes:
+	//		(1) the '+' and '-' are delimiters and not positive/negative signs; e.g., negative origin offset would be: -10+-20+-10
+	//		(2) angles are expected to be from 0 to 360, i.e., no negative angles.
+	//		(3) optional additional argument for rotationOffset requires the originOffset preceding it.
+	//
+	//
+	//sound notetrack format:		sound <relative_soundfilepath.ext>
+	//					notetrack =	"sound sound/vehicles/tie/flyby2.mp3";
+	//'sound' notes:
+	//		(1) supported sound file formats are: .mp3, .wav
+	//
+	//
+	//USE notetrack format:			USE <relative_scriptfilepath_noExt>
+	//					notetrack = "USE shuttlemap/shuttletakeoff";
+	//
+	//
+	//loop notetrack format:		loop <rof> < absolute | relative >
+	//								loop <sfx> < relative_soundfilepath.ext | kill >
+	//					notetrack = "loop rof absolute";
+	//					notetrack = "loop rof relative";
+	//					notetrack = "loop sfx sound/vehicles/tie/loop.wav";
+	//					notetrack = "loop sfx kill";
+	//'loop rof' notes:  
+	//		(1) absolute ==> reset rof to original delta position/rotation world location before looping.
+	//		(2) relative ==> reset rof to original delta position/rotation at current location before looping.
+	//'loop sfx' notes:
+	//		(1) adds a sound to be looped which gets assigned to the entitystate's loopSound parameter.
+	//		(2) addlArg 'kill' -- kills the looping sound by setting entitystate's loopSound equal to zero.
+	//
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	while (notetrack[i] && notetrack[i] != ' ')
 	{
@@ -122,7 +163,7 @@ static void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 			t[r] = '\0';
 			i++;
 			if (!r)
-			{ //failure..
+			{ //failure...
 				VectorClear(parsedOffset);
 				i = 0;
 				goto defaultoffsetposition;
@@ -210,18 +251,18 @@ defaultoffsetposition:
 					VectorCopy(parsedAngles, useAngles);
 				}
 				else
-				{ //failed to parse angles from the extra argument provided..
-					VectorCopy(cent->s.apos.trBase, useAngles);
+				{ //failed to parse angles from the extra argument provided...
+					VectorCopy(ent->s.apos.trBase, useAngles);
 				}
 			}
 			else
 			{ //if no constant angles, play in direction entity is facing
-				VectorCopy(cent->s.apos.trBase, useAngles);
+				VectorCopy(ent->s.apos.trBase, useAngles);
 			}
 
 			AngleVectors(useAngles, forward, right, up);
 
-			VectorCopy(cent->s.pos.trBase, useOrigin);
+			VectorCopy(ent->s.pos.trBase, useOrigin);
 
 			//forward
 			useOrigin[0] += forward[0]*parsedOffset[0];
@@ -238,33 +279,187 @@ defaultoffsetposition:
 			useOrigin[1] += up[1]*parsedOffset[2];
 			useOrigin[2] += up[2]*parsedOffset[2];
 
+			if (g_developer->integer)
+			{
+				Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+			}
+
 			G_PlayEffect(objectID, useOrigin, useAngles);
 		}
 	}
 	else if (strcmp(type, "sound") == 0)
 	{
-		objectID = G_SoundIndex(argument);
-		cgi_S_StartSound(cent->s.pos.trBase, cent->s.number, CHAN_BODY, objectID);
+		if (g_developer->integer)
+		{
+			Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+		}
+
+		//check for eType and play the sound
+		if (ent->s.eType == ET_MOVER)
+		{
+			objectID = cgi_S_RegisterSound(argument);
+			cgi_S_StartSound(ent->s.pos.trBase, ent->s.number, CHAN_BODY, objectID);
+		}
+		else
+		{
+			G_SoundOnEnt(ent, CHAN_BODY, argument);
+		}
+	}
+	else if (strcmp(type, "USE") == 0)
+	{
+		//try to cache the script
+		Quake3Game()->PrecacheScript(argument);
+
+		if (g_developer->integer)
+		{
+			Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+		}
+
+		//run the IBI script
+		Quake3Game()->RunScript(ent, argument);
+	}
+	else if (strcmp(type, "loop") == 0)
+	{
+		if (strcmp(argument, "rof") == 0)
+		{
+			if (strcmp(addlArg, "absolute") == 0)
+			{
+				VectorClear(ent->pos1);
+				VectorClear(ent->pos2);
+
+				VectorClear(ent->currentOrigin);
+				VectorClear(ent->currentAngles);
+
+				VectorClear(ent->s.pos.trBase);
+				VectorClear(ent->s.apos.trBase);
+
+				VectorClear(ent->s.origin2);
+				VectorClear(ent->s.angles2);
+			}
+			else if (strcmp(addlArg, "relative") == 0)
+			{
+				VectorCopy(ent->s.origin2, ent->s.pos.trBase);
+				VectorCopy(ent->s.origin2, ent->currentOrigin);
+				VectorCopy(ent->s.angles2, ent->s.apos.trBase);
+				VectorCopy(ent->s.angles2, ent->currentAngles);
+			}
+			else
+			{
+				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop rof'", addlArg);
+				goto functionend;
+			}
+
+			// Start the ROFF from the beginning
+			ent->roff_ctr = 0;
+
+			// Let the ROFF playing start
+			ent->next_roff_time = level.time;
+
+			//Re-link entity
+			gi.linkentity(ent);
+
+			if (g_developer->integer)
+			{
+				Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+			}
+
+			// Re-apply the ROFF
+			G_Roff(ent);
+		}
+		else if (strcmp(argument, "sfx") == 0)
+		{
+			//check additional argument for relative sound path
+			r = 0;
+			r2 = 0;
+
+			if (addlArg[r] == '/')
+			{
+				r++;
+			}
+			while (addlArg[r] && addlArg[r] != '/')
+			{
+				teststr[r2] = addlArg[r];
+				r2++;
+				r++;
+			}
+			teststr[r2] = '\0';
+
+			if (r2 && strstr(teststr, "kill"))
+			{ // kill the looping sound
+				ent->s.loopSound = 0;
+				if (g_developer->integer)
+				{
+					Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+				}
+			}
+			else if (r2 && strstr(teststr, "sound"))
+			{ // OK... we should have a relative sound path
+				//try to register the sound and add it to the entitystate loopSound parameter
+				if (ent->s.eType == ET_MOVER)
+				{
+					objectID = cgi_S_RegisterSound(addlArg);
+					if (objectID)
+					{
+						ent->s.loopSound = objectID;
+						if (g_developer->integer)
+						{
+							Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+						}
+					}
+					else
+					{
+						ent->s.loopSound = 0;
+						sprintf(errMsg, "cgi_S_RegisterSound(%s) failed to return a valid sfxHandle_t for additional argument. Setting 'loopSound' to 0.", addlArg);
+						goto functionend;
+					}
+				}
+				else
+				{
+					ent->s.loopSound = G_SoundIndex(addlArg);
+					if (g_developer->integer)
+					{
+						Com_Printf(S_COLOR_GREEN "NoteTrack:  \"%s\"\n", notetrack);
+					}
+				}
+			}
+			else
+			{
+				sprintf(errMsg, "Invalid additional argument <%s> for type 'loop sfx'", addlArg);
+				goto functionend;
+			}
+		}
+		else
+		{
+			sprintf(errMsg, "Invalid argument <%s> for type 'loop' notetrack.", argument);
+			goto functionend;
+		}
 	}
 	//else if ...
 	else
 	{
 		if (type[0])
 		{
-			Com_Printf("Warning: \"%s\" is an invalid ROFF notetrack function\n", type);
+			Com_Printf(S_COLOR_YELLOW"Warning: \"%s\" is an invalid ROFF NoteTrack function\n", type);
 		}
 		else
 		{
-			Com_Printf("Warning: Notetrack is missing function and/or arguments\n");
+			Com_Printf(S_COLOR_YELLOW"Warning: NoteTrack is missing function and/or arguments\n");
 		}
 	}
 
 	return;
 
 functionend:
-	Com_Printf("Type-specific notetrack error: %s\n", errMsg);
+	Com_Printf(S_COLOR_RED"Type-specific NoteTrack error: %s\n", errMsg);
 	return;
 }
+
+
+//-------------------------------------------------------
+// G_ValidRoff
+//
+// Checks header to verify we have a valid .ROF file
+//-------------------------------------------------------
 
 static qboolean G_ValidRoff( roff_hdr2_t *header )
 {
@@ -283,6 +478,13 @@ static qboolean G_ValidRoff( roff_hdr2_t *header )
 	return qfalse;
 }
 
+
+//-------------------------------------------------------
+// G_FreeRoff
+//
+// Deletes all .ROF files from memory
+//-------------------------------------------------------
+
 static void G_FreeRoff(int index)
 {
 	if(roffs[index].mNumNoteTracks) {
@@ -290,6 +492,13 @@ static void G_FreeRoff(int index)
 		delete [] roffs[index].mNoteTrackIndexes;
 	}
 }
+
+
+//-------------------------------------------------------
+// G_InitRoff
+//
+// Initializes the .ROF file
+//-------------------------------------------------------
 
 static qboolean G_InitRoff( char *file, unsigned char *data )
 {
@@ -412,12 +621,14 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 					roffs[num_roffs].mNoteTrackIndexes[i] = ptr;
 				}
 			}
+
 			return qtrue;
 		}
 	}
 
 	return qfalse;
 }
+
 
 //-------------------------------------------------------
 // G_LoadRoff
@@ -472,7 +683,7 @@ int G_LoadRoff( const char *fileName )
 	// ..and make sure it's reasonably valid
 	if ( !G_ValidRoff( header ))
 	{
-		Com_Printf( S_COLOR_RED"Invalid roff format '%s'\n", fileName );
+		Com_Printf( S_COLOR_RED"Invalid .ROF format '%s'\n", fileName );
 	}
 	else
 	{
@@ -531,9 +742,13 @@ void G_Roff( gentity_t *ent )
 		move_rotate2_t	*data	= &((move_rotate2_t *)roff->data)[ ent->roff_ctr ];
 		VectorCopy( data->origin_delta, org );
 		VectorCopy( data->rotate_delta, ang );
-		if (data->mStartNote != -1 || data->mNumNotes)
+		
+		if ( data->mStartNote != -1 )
 		{
-			G_RoffNotetrackCallback(ent, roffs[roff_id - 1].mNoteTrackIndexes[data->mStartNote]);
+			for ( int n = 0; n < data->mNumNotes; n++ )
+			{
+				G_RoffNotetrackCallback(ent, roffs[roff_id - 1].mNoteTrackIndexes[data->mStartNote + n]);
+			}
 		}
 	}
 	else

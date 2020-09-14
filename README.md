@@ -13,19 +13,12 @@ Rough support for Jedi Outcast single player is also available, however this sho
 
 Please use discretion when making issue requests on GitHub. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for support queries, discussions, and feature requests.
 
-[![IRC](https://img.shields.io/badge/irc-%23JACoders-brightgreen.svg)](http://unic0rn.github.io/tiramisu/jacoders/)
+<a href="https://discord.gg/dPNCfeQ"><img src="https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat" /></a>
 [![Forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-brightgreen.svg)](http://jkhub.org/forum/51-discussion/)
 
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/1153/badge.svg)](https://scan.coverity.com/projects/1153)
 
-| Windows | macOS | Linux x86 | Linux x64 |
-|---------|-------|-----------|-----------|
-| [![Windows Build Status](http://jk.xd.cm/badge.svg?builder=windows)](http://jk.xd.cm/builders/windows) | [ ![macOS Build Status](http://jk.xd.cm/badge.svg?builder=osx)](http://jk.xd.cm/builders/osx) | [ ![Linux x86 Build Status](http://jk.xd.cm/badge.svg?builder=linux)](http://jk.xd.cm/builders/linux) | [ ![Linux x64 Build Status](http://jk.xd.cm/badge.svg?builder=linux-64)](http://jk.xd.cm/builders/linux-64) |
-
-
 ## License
-
-[![License](https://img.shields.io/github/license/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
@@ -85,13 +78,6 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Change the GAMEVERSION define in codemp/game/g_local.h from "OpenJK" to your project name
 * If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
-
-
-### Deciphering buildbot's output
-
-* Pick the build from the operating system builder you're interested in at the [builders](https://jk.xd.cm/builders) page.
-* Click on stdio for the Steps to see the command executed and the result.
-* The command is at the very top, the output starts below.
 
 
 ## Maintainers (in alphabetical order)

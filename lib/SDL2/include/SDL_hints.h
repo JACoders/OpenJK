@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -165,6 +165,21 @@ extern "C" {
 #define SDL_HINT_VIDEO_ALLOW_SCREENSAVER    "SDL_VIDEO_ALLOW_SCREENSAVER"
 
 /**
+ * \brief A variable controlling whether the graphics context is externally managed.
+ *
+ * This variable can be set to the following values:
+ *  "0"         - SDL will manage graphics contexts that are attached to windows.
+ *  "1"         - Disable graphics context management on windows.
+ *
+ * By default SDL will manage OpenGL contexts in certain situations. For example, on Android the
+ * context will be automatically saved and restored when pausing the application. Additionally, some
+ * platforms will assume usage of OpenGL if Vulkan isn't used. Setting this to "1" will prevent this
+ * behavior, which is desireable when the application manages the graphics context, such as
+ * an externally managed OpenGL context or attaching a Vulkan surface to the window.
+ */
+#define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
+
+/**
  *  \brief  A variable controlling whether the X11 VidMode extension should be used.
  *
  *  This variable can be set to the following values:
@@ -198,6 +213,12 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
+ *  \brief  A variable forcing the visual ID chosen for new X11 windows
+ *
+ */
+#define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
+
+/**
  *  \brief  A variable controlling whether the X11 _NET_WM_PING protocol should be supported.
  *
  *  This variable can be set to the following values:
@@ -222,6 +243,17 @@ extern "C" {
  * 
  */
 #define SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
+
+/**
+ * \brief A variable controlling whether X11 should use GLX or EGL by default
+ *
+ * This variable can be set to the following values:
+ * "0" - Use GLX
+ * "1" - Use EGL
+ *
+ * By default SDL will use GLX when both are present.
+ */
+#define SDL_HINT_VIDEO_X11_FORCE_EGL "SDL_VIDEO_X11_FORCE_EGL"
 
 /**
  *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
@@ -261,6 +293,16 @@ extern "C" {
  *  By default SDL will not grab the keyboard so system shortcuts still work.
  */
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
+
+/**
+ *  \brief  A variable setting the double click time, in milliseconds.
+ */
+#define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME    "SDL_MOUSE_DOUBLE_CLICK_TIME"
+
+/**
+ *  \brief  A variable setting the double click radius, in pixels.
+ */
+#define SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS    "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
 
 /**
  *  \brief  A variable setting the speed scale for mouse motion, in floating point, when the mouse is not in relative mode
@@ -306,6 +348,16 @@ extern "C" {
 #define SDL_HINT_TOUCH_MOUSE_EVENTS    "SDL_TOUCH_MOUSE_EVENTS"
 
 /**
+ *  \brief  A variable controlling whether mouse events should generate synthetic touch events
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Mouse events will not generate touch events (default for desktop platforms)
+ *    "1"       - Mouse events will generate touch events (default for mobile platforms, such as Android and iOS)
+ */
+
+#define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
+
+/**
  *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
  *
  */
@@ -329,7 +381,7 @@ extern "C" {
 #define SDL_HINT_IDLE_TIMER_DISABLED "SDL_IOS_IDLE_TIMER_DISABLED"
 
 /**
- *  \brief  A variable controlling which orientations are allowed on iOS.
+ *  \brief  A variable controlling which orientations are allowed on iOS/Android.
  *
  *  In some circumstances it is necessary to be able to explicitly control
  *  which UI orientations are allowed.
@@ -417,6 +469,24 @@ extern "C" {
 #define SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING "SDL_XINPUT_USE_OLD_JOYSTICK_MAPPING"
 
 /**
+ *  \brief  A variable that overrides the automatic controller type detection
+ *
+ *  The variable should be comma separated entries, in the form: VID/PID=type
+ *
+ *  The VID and PID should be hexadecimal with exactly 4 digits, e.g. 0x00fd
+ *
+ *  The type should be one of:
+ *      Xbox360
+ *      XboxOne
+ *      PS3
+ *      PS4
+ *      SwitchPro
+ *
+ *  This hint affects what driver is used, and must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+ */
+#define SDL_HINT_GAMECONTROLLERTYPE "SDL_GAMECONTROLLERTYPE"
+
+/**
  *  \brief  A variable that lets you manually hint extra gamecontroller db entries.
  *
  *  The variable should be newline delimited rows of gamecontroller config data, see SDL_gamecontroller.h
@@ -425,6 +495,16 @@ extern "C" {
  *  You can update mappings after the system is initialized with SDL_GameControllerMappingForGUID() and SDL_GameControllerAddMapping()
  */
 #define SDL_HINT_GAMECONTROLLERCONFIG "SDL_GAMECONTROLLERCONFIG"
+
+/**
+ *  \brief  A variable that lets you provide a file with extra gamecontroller db entries.
+ *
+ *  The file should contain lines of gamecontroller config data, see SDL_gamecontroller.h
+ *
+ *  This hint must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+ *  You can update mappings after the system is initialized with SDL_GameControllerMappingForGUID() and SDL_GameControllerAddMapping()
+ */
+#define SDL_HINT_GAMECONTROLLERCONFIG_FILE "SDL_GAMECONTROLLERCONFIG_FILE"
 
 /**
  *  \brief  A variable containing a list of devices to skip when scanning for game controllers.
@@ -453,6 +533,29 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"
 
 /**
+ *  \brief  If set, game controller face buttons report their values according to their labels instead of their positional layout.
+ * 
+ *  For example, on Nintendo Switch controllers, normally you'd get:
+ *
+ *      (Y)
+ *  (X)     (B)
+ *      (A)
+ *
+ *  but if this hint is set, you'll get:
+ *
+ *      (X)
+ *  (Y)     (A)
+ *      (B)
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Report the face buttons by position, as though they were on an Xbox controller.
+ *    "1"       - Report the face buttons by label instead of position
+ *
+ *  The default value is "1".  This hint may be set at any time.
+ */
+#define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
+
+/**
  *  \brief  A variable that lets you enable joystick (and gamecontroller) events even when your app is in the background.
  *
  *  The variable can be set to the following values:
@@ -464,6 +567,99 @@ extern "C" {
  *  The default value is "0".  This hint may be set at any time.
  */
 #define SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI joystick drivers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI drivers are not used
+ *    "1"       - HIDAPI drivers are used (the default)
+ *
+ *  This variable is the default for all drivers, but can be overridden by the hints for specific drivers below.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI "SDL_JOYSTICK_HIDAPI"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
+
+/**
+ *  \brief  A variable controlling whether extended input reports should be used for PS4 controllers when using the HIDAPI driver.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - extended reports are not enabled (the default)
+ *    "1"       - extended reports
+ *
+ *  Extended input reports allow rumble on Bluetooth PS4 controllers, but
+ *  break DirectInput handling for applications that don't use SDL.
+ *
+ *  Once extended reports are enabled, they can not be disabled without
+ *  power cycling the controller.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE "SDL_JOYSTICK_HIDAPI_PS4_RUMBLE"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAM "SDL_JOYSTICK_HIDAPI_STEAM"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Switch controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Nintendo GameCube controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE "SDL_JOYSTICK_HIDAPI_GAMECUBE"
+
+/**
+ *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Do not scan for Steam Controllers
+ *    "1"       - Scan for Steam Controllers (the default)
+ *
+ *  The default value is "1".  This hint must be set before initializing the joystick subsystem.
+ */
+#define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
+
 
 /**
  *  \brief If set to "0" then never set the top most bit on a SDL Window, even if the video mode expects it.
@@ -527,6 +723,10 @@ extern "C" {
 *  This is specially useful if you build SDL against a non glibc libc library (such as musl) which
 *  provides a relatively small default thread stack size (a few kilobytes versus the default 8MB glibc uses).
 *  Support for this hint is currently available only in the pthread, Windows, and PSP backend.
+*
+*  Instead of this hint, in 2.0.9 and later, you can use
+*  SDL_CreateThreadWithStackSize(). This hint only works with the classic
+*  SDL_CreateThread().
 */
 #define SDL_HINT_THREAD_STACK_SIZE              "SDL_THREAD_STACK_SIZE"
 
@@ -740,17 +940,33 @@ extern "C" {
  */
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
- /**
- * \brief A variable to control whether mouse and touch events are to be treated together or separately
+/**
+ * \brief A variable to control whether we trap the Android back button to handle it manually.
+ *        This is necessary for the right mouse button to work on some Android devices, or
+ *        to be able to trap the back button for use in your code reliably.  If set to true,
+ *        the back button will show up as an SDL_KEYDOWN / SDL_KEYUP pair with a keycode of 
+ *        SDL_SCANCODE_AC_BACK.
  *
  * The variable can be set to the following values:
- *   "0"       - Mouse events will be handled as touch events, and touch will raise fake mouse
- *               events. This is the behaviour of SDL <= 2.0.3. (default)
- *   "1"       - Mouse events will be handled separately from pure touch events.
+ *   "0"       - Back button will be handled as usual for system. (default)
+ *   "1"       - Back button will be trapped, allowing you to handle the key press
+ *               manually.  (This will also let right mouse click work on systems 
+ *               where the right mouse button functions as back.)
  *
  * The value of this hint is used at runtime, so it can be changed at any time.
  */
-#define SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH "SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH"
+#define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
+
+/**
+ * \brief A variable to control whether the event loop will block itself when the app is paused.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Non blocking.
+ *   "1"       - Blocking. (default)
+ *
+ * The value should be set before SDL is initialized.
+ */
+#define SDL_HINT_ANDROID_BLOCK_ON_PAUSE "SDL_ANDROID_BLOCK_ON_PAUSE"
 
  /**
  * \brief A variable to control whether the return key on the soft keyboard
@@ -929,6 +1145,132 @@ extern "C" {
  *  https://developer.apple.com/library/content/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/AudioSessionCategoriesandModes/AudioSessionCategoriesandModes.html
  */
 #define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
+
+/**
+ *  \brief  A variable controlling whether the 2D render API is compatible or efficient.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "0"     - Don't use batching to make rendering more efficient.
+ *    "1"     - Use batching, but might cause problems if app makes its own direct OpenGL calls.
+ *
+ *  Up to SDL 2.0.9, the render API would draw immediately when requested. Now
+ *  it batches up draw requests and sends them all to the GPU only when forced
+ *  to (during SDL_RenderPresent, when changing render targets, by updating a
+ *  texture that the batch needs, etc). This is significantly more efficient,
+ *  but it can cause problems for apps that expect to render on top of the
+ *  render API's output. As such, SDL will disable batching if a specific
+ *  render backend is requested (since this might indicate that the app is
+ *  planning to use the underlying graphics API directly). This hint can
+ *  be used to explicitly request batching in this instance. It is a contract
+ *  that you will either never use the underlying graphics API directly, or
+ *  if you do, you will call SDL_RenderFlush() before you do so any current
+ *  batch goes to the GPU before your work begins. Not following this contract
+ *  will result in undefined behavior.
+ */
+#define SDL_HINT_RENDER_BATCHING  "SDL_RENDER_BATCHING"
+
+
+/**
+ *  \brief  A variable controlling whether SDL logs all events pushed onto its internal queue.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "0"     - Don't log any events (default)
+ *    "1"     - Log all events except mouse and finger motion, which are pretty spammy.
+ *    "2"     - Log all events.
+ *
+ *  This is generally meant to be used to debug SDL itself, but can be useful
+ *  for application developers that need better visibility into what is going
+ *  on in the event queue. Logged events are sent through SDL_Log(), which
+ *  means by default they appear on stdout on most platforms or maybe
+ *  OutputDebugString() on Windows, and can be funneled by the app with
+ *  SDL_LogSetOutputFunction(), etc.
+ *
+ *  This hint can be toggled on and off at runtime, if you only need to log
+ *  events for a small subset of program execution.
+ */
+#define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
+
+
+
+/**
+ *  \brief  Controls how the size of the RIFF chunk affects the loading of a WAVE file.
+ *
+ *  The size of the RIFF chunk (which includes all the sub-chunks of the WAVE
+ *  file) is not always reliable. In case the size is wrong, it's possible to
+ *  just ignore it and step through the chunks until a fixed limit is reached.
+ *
+ *  Note that files that have trailing data unrelated to the WAVE file or
+ *  corrupt files may slow down the loading process without a reliable boundary.
+ *  By default, SDL stops after 10000 chunks to prevent wasting time. Use the
+ *  environment variable SDL_WAVE_CHUNK_LIMIT to adjust this value.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "force"        - Always use the RIFF chunk size as a boundary for the chunk search
+ *    "ignorezero"   - Like "force", but a zero size searches up to 4 GiB (default)
+ *    "ignore"       - Ignore the RIFF chunk size and always search up to 4 GiB
+ *    "maximum"      - Search for chunks until the end of file (not recommended)
+ */
+#define SDL_HINT_WAVE_RIFF_CHUNK_SIZE   "SDL_WAVE_RIFF_CHUNK_SIZE"
+
+/**
+ *  \brief  Controls how a truncated WAVE file is handled.
+ *
+ *  A WAVE file is considered truncated if any of the chunks are incomplete or
+ *  the data chunk size is not a multiple of the block size. By default, SDL
+ *  decodes until the first incomplete block, as most applications seem to do.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "verystrict" - Raise an error if the file is truncated
+ *    "strict"     - Like "verystrict", but the size of the RIFF chunk is ignored
+ *    "dropframe"  - Decode until the first incomplete sample frame
+ *    "dropblock"  - Decode until the first incomplete block (default)
+ */
+#define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
+
+/**
+ *  \brief  Controls how the fact chunk affects the loading of a WAVE file.
+ *
+ *  The fact chunk stores information about the number of samples of a WAVE
+ *  file. The Standards Update from Microsoft notes that this value can be used
+ *  to 'determine the length of the data in seconds'. This is especially useful
+ *  for compressed formats (for which this is a mandatory chunk) if they produce
+ *  multiple sample frames per block and truncating the block is not allowed.
+ *  The fact chunk can exactly specify how many sample frames there should be
+ *  in this case.
+ *
+ *  Unfortunately, most application seem to ignore the fact chunk and so SDL
+ *  ignores it by default as well.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "truncate"    - Use the number of samples to truncate the wave data if
+ *                    the fact chunk is present and valid
+ *    "strict"      - Like "truncate", but raise an error if the fact chunk
+ *                    is invalid, not present for non-PCM formats, or if the
+ *                    data chunk doesn't have that many samples
+ *    "ignorezero"  - Like "truncate", but ignore fact chunk if the number of
+ *                    samples is zero
+ *    "ignore"      - Ignore fact chunk entirely (default)
+ */
+#define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
+
+/*
+ *  \brief Override for SDL_GetDisplayUsableBounds()
+ *
+ *  If set, this hint will override the expected results for
+ *  SDL_GetDisplayUsableBounds() for display index 0. Generally you don't want
+ *  to do this, but this allows an embedded system to request that some of the
+ *  screen be reserved for other uses when paired with a well-behaved
+ *  application.
+ *
+ *  The contents of this hint must be 4 comma-separated integers, the first
+ *  is the bounds x, then y, width and height, in that order.
+ */
+#define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
  *  \brief  An enumeration of hint priorities

@@ -26,6 +26,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 
 #include "ui/ui_shared.h"
+
+NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
+void (*Com_Printf)( const char *msg, ... );
+
 // display context for new ui stuff
 displayContextDef_t cgDC;
 

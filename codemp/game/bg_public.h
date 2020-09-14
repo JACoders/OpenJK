@@ -1029,6 +1029,7 @@ typedef enum {
 
 	EV_SIEGESPEC,
 
+	EV_NUM_ENTITY_EVENTS
 } entity_event_t;			// There is a maximum of 256 events (8 bits transmission, 2 high bits for uniqueness)
 
 

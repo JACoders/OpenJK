@@ -14,13 +14,13 @@ case "${host}" in
 		export CC=${host}-gcc
 		export CXX=${host}-g++
 		set -- \
-			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/${host}.cmake \
+			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/cmake/Toolchains/${host}.cmake \
 			"$@"
 		;;
 
 	(i?86-linux-gnu)
 		set -- \
-			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/linux-i686.cmake \
+			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/cmake/Toolchains/linux-i686.cmake \
 			"$@"
 		;;
 

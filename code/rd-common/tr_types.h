@@ -243,6 +243,8 @@ typedef struct glconfig_s {
 
 	int						displayFrequency;
 
+	qboolean				doStencilShadowsInOneDrawcall;
+
 	// synonymous with "does rendering consume the entire screen?", therefore
 	// a Voodoo or Voodoo2 will have this set to TRUE, as will a Win32 ICD that
 	// used CDS.

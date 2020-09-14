@@ -634,8 +634,8 @@ typedef struct pscript_s
 	long	length;
 } pscript_t;
 
-typedef std::map < std::string, int, std::less<std::string>, std::allocator<int> >		entlist_t;
-typedef std::map < std::string, pscript_t*, std::less<std::string>, std::allocator<pscript_t*> >	bufferlist_t;
+typedef std::map < std::string, int, std::less<std::string> >		entlist_t;
+typedef std::map < std::string, pscript_t*, std::less<std::string> >	bufferlist_t;
 
 
 extern char *G_NewString( const char *string );

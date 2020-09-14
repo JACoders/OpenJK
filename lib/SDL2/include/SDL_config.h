@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -82,6 +82,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_DSOUND_H 1
 #define HAVE_DXGI_H 1
 #define HAVE_XINPUT_H 1
+#define HAVE_MMDEVICEAPI_H 1
+#define HAVE_AUDIOCLIENT_H 1
 
 /* This is disabled by default to avoid C runtime dependencies and manifest requirements */
 #ifdef HAVE_LIBC
@@ -115,6 +117,10 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+/* #undef HAVE_STRTOK_R */
+#if defined(_MSC_VER)
+#define HAVE_STRTOK_S 1
+#endif
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__ULTOA */
@@ -136,9 +142,11 @@ typedef unsigned int uintptr_t;
 #define HAVE_ATAN2  1
 #define HAVE_ATAN2F 1
 #define HAVE_CEILF  1
-#define HAVE__COPYSIGN  1
+#define HAVE__COPYSIGN 1
 #define HAVE_COS    1
 #define HAVE_COSF   1
+#define HAVE_EXP    1
+#define HAVE_EXPF   1
 #define HAVE_FABS   1
 #define HAVE_FABSF  1
 #define HAVE_FLOOR  1
@@ -163,7 +171,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRTOLL 1
 #define HAVE_VSSCANF 1
 #define HAVE_SCALBN 1
-#define HAVE_SCALBNF    1
+#define HAVE_SCALBNF 1
 #endif
 /* This function is available with at least the VC++ 2008 C runtime library */
 #if _MSC_VER >= 1400
@@ -188,8 +196,12 @@ typedef unsigned int uintptr_t;
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
 #define SDL_JOYSTICK_XINPUT 1
+#define SDL_JOYSTICK_HIDAPI 1
 #define SDL_HAPTIC_DINPUT   1
 #define SDL_HAPTIC_XINPUT   1
+
+/* Enable the dummy sensor driver */
+#define SDL_SENSOR_DUMMY  1
 
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_WINDOWS  1

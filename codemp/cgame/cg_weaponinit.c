@@ -40,11 +40,11 @@ void CG_RegisterWeapon( int weaponNum) {
 	vec3_t			mins, maxs;
 	int				i;
 
-	weaponInfo = &cg_weapons[weaponNum];
-
-	if ( weaponNum == 0 ) {
+	if ( weaponNum <= WP_NONE || weaponNum >= WP_NUM_WEAPONS ) {
 		return;
 	}
+
+	weaponInfo = &cg_weapons[weaponNum];
 
 	if ( weaponInfo->registered ) {
 		return;
@@ -167,7 +167,7 @@ void CG_RegisterWeapon( int weaponNum) {
 	case WP_SABER:
 		MAKERGB( weaponInfo->flashDlightColor, 0.6f, 0.6f, 1.0f );
 		weaponInfo->firingSound = trap->S_RegisterSound( "sound/weapons/saber/saberhum1.wav" );
-		weaponInfo->missileModel		= trap->R_RegisterModel( "models/weapons2/saber/saber_w.glm" );
+		weaponInfo->missileModel		= trap->R_RegisterModel( DEFAULT_SABER_MODEL );
 		break;
 
 	case WP_CONCUSSION:

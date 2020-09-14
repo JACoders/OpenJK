@@ -1853,7 +1853,7 @@ void Cmd_Where_f( gentity_t *ent ) {
 	//trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
 }
 
-static const char *gameNames[] = {
+static const char *gameNames[GT_MAX_GAME_TYPE] = {
 	"Free For All",
 	"Holocron FFA",
 	"Jedi Master",

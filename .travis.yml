@@ -1,8 +1,16 @@
 language: cpp
 sudo: required
-dist: trusty
+dist: bionic
 
-install: ./scripts/travis/install.sh "${host:-native}" $opts
+addons:
+  homebrew:
+    update: true
+    packages:
+    - libpng
+    - sdl2
+
+install:
+  - if [[ "${TRAVIS_OS_NAME}" != "osx" ]]; then ./scripts/travis/install.sh "${host:-native}" $opts; fi
 script: ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
 
 matrix:
@@ -13,6 +21,7 @@ matrix:
 
     # macOS
     - os: osx
+      osx_image: xcode9.4
       compiler: clang
 
     # Linux x64 Debug

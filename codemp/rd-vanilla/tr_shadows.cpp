@@ -350,28 +350,24 @@ void RB_DoShadowTessEnd( vec3_t lightPos )
 	qglDepthFunc(GL_LESS);
 
 	//now using the Carmack Reverse<tm> -rww
-	if ( backEnd.viewParms.isMirror ) {
-		//qglCullFace( GL_BACK );
-		GL_Cull(CT_BACK_SIDED);
-		qglStencilOp( GL_KEEP, GL_INCR, GL_KEEP );
+	if ( glConfigExt.doStencilShadowsInOneDrawcall )
+	{
+		GL_Cull(CT_TWO_SIDED);
+		qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		qglStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 		R_RenderShadowEdges();
-
-		//qglCullFace( GL_FRONT );
+		qglDisable(GL_STENCIL_TEST);
+	}
+	else
+	{
 		GL_Cull(CT_FRONT_SIDED);
-		qglStencilOp( GL_KEEP, GL_DECR, GL_KEEP );
-
-		R_RenderShadowEdges();
-	} else {
-		//qglCullFace( GL_FRONT );
-		GL_Cull(CT_FRONT_SIDED);
-		qglStencilOp( GL_KEEP, GL_INCR, GL_KEEP );
+		qglStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
 
 		R_RenderShadowEdges();
 
-		//qglCullFace( GL_BACK );
 		GL_Cull(CT_BACK_SIDED);
-		qglStencilOp( GL_KEEP, GL_DECR, GL_KEEP );
+		qglStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
 
 		R_RenderShadowEdges();
 	}
@@ -404,7 +400,7 @@ void RB_DoShadowTessEnd( vec3_t lightPos )
 
 	// reenable writing to the color buffer
 	qglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-
+	
 #ifdef _DEBUG_STENCIL_SHADOWS
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif

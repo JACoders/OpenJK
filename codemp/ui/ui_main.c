@@ -44,6 +44,9 @@ USER INTERFACE MAIN
 #include "game/bg_saga.h"
 #include "ui_shared.h"
 
+NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
+void (*Com_Printf)( const char *msg, ... );
+
 extern void UI_SaberAttachToChar( itemDef_t *item );
 
 const char *forcepowerDesc[NUM_FORCE_POWERS] =
@@ -500,7 +503,7 @@ static const char *skillLevels[] = {
 };
 static const size_t numSkillLevels = ARRAY_LEN( skillLevels );
 
-static const char *gameTypes[] = {
+static const char *gameTypes[GT_MAX_GAME_TYPE] = {
 	"FFA",
 	"Holocron",
 	"JediMaster",

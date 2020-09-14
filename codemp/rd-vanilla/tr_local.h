@@ -1099,6 +1099,7 @@ struct glconfigExt_t
 	glconfig_t *glConfig;
 
 	qboolean doGammaCorrectionWithShaders;
+	qboolean doStencilShadowsInOneDrawcall;
 	const char *originalExtensionString;
 };
 

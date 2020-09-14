@@ -376,7 +376,7 @@ void JMSaberThink(gentity_t *ent)
 			VectorCopy(ent->enemy->s.pos.trBase, ent->s.pos.trBase);
 			VectorCopy(ent->enemy->s.pos.trBase, ent->s.origin);
 			VectorCopy(ent->enemy->s.pos.trBase, ent->r.currentOrigin);
-			ent->s.modelindex = G_ModelIndex("models/weapons2/saber/saber_w.glm");
+			ent->s.modelindex = G_ModelIndex( DEFAULT_SABER_MODEL );
 			ent->s.eFlags &= ~(EF_NODRAW);
 			ent->s.modelGhoul2 = 1;
 			ent->s.eType = ET_MISSILE;
@@ -509,7 +509,7 @@ void SP_info_jedimaster_start(gentity_t *ent)
 
 	ent->flags = FL_BOUNCE_HALF;
 
-	ent->s.modelindex = G_ModelIndex("models/weapons2/saber/saber_w.glm");
+	ent->s.modelindex = G_ModelIndex( DEFAULT_SABER_MODEL );
 	ent->s.modelGhoul2 = 1;
 	ent->s.g2radius = 20;
 	//ent->s.eType = ET_GENERAL;
@@ -1589,7 +1589,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	{
 		int defSkin;
 
-		Com_sprintf( afilename, sizeof( afilename ), "models/players/kyle/model.glm" );
+		Com_sprintf( afilename, sizeof( afilename ), "models/players/" DEFAULT_MODEL "/model.glm" );
 		handle = trap->G2API_InitGhoul2Model(&precachedKyle, afilename, 0, 0, -20, 0, 0);
 
 		if (handle<0)
@@ -1597,7 +1597,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 			return;
 		}
 
-		defSkin = trap->R_RegisterSkin("models/players/kyle/model_default.skin");
+		defSkin = trap->R_RegisterSkin("models/players/" DEFAULT_MODEL "/model_default.skin");
 		trap->G2API_SetSkin(precachedKyle, 0, defSkin, defSkin);
 	}
 
@@ -1908,7 +1908,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 
 		if (!g2SaberInstance)
 		{
-			trap->G2API_InitGhoul2Model(&g2SaberInstance, "models/weapons2/saber/saber_w.glm", 0, 0, -20, 0, 0);
+			trap->G2API_InitGhoul2Model(&g2SaberInstance, DEFAULT_SABER_MODEL, 0, 0, -20, 0, 0);
 
 			if (g2SaberInstance)
 			{

@@ -438,7 +438,7 @@ typedef enum {
 
 	EV_DEBUG_LINE,
 
-
+	EV_NUM_ENTITY_EVENTS
 } entity_event_t;
 
 class animation_t

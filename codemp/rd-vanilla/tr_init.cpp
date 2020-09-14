@@ -216,6 +216,10 @@ cvar_t *se_language;
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
+#if !defined(__APPLE__)
+PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+#endif
+
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
@@ -725,6 +729,16 @@ static void GLimp_InitExtensions( void )
 		g_bDynamicGlowSupported = false;
 		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
+
+#if !defined(__APPLE__)
+	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
+	if ( qglStencilOpSeparate )
+	{
+		glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
+	}
+#else
+	glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
+#endif
 }
 
 // Truncates the GL extensions string by only allowing up to 'maxExtensions' extensions in the string.
