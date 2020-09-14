@@ -2494,6 +2494,8 @@ typedef struct trGlobals_s {
 	// Specific to Jedi Academy
 	int						numBSPModels;
 	int						currentLevel;
+
+	bool					explicitToneMap;
 } trGlobals_t;
 
 struct glconfigExt_t

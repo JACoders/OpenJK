@@ -3938,19 +3938,10 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.autoExposureMinMax[1] = 2.0f;
 
 	// set default tone mapping settings
-	if (r_hdr->integer)
-	{
-		tr.toneMinAvgMaxLevel[0] = -6.0f;
-		tr.toneMinAvgMaxLevel[1] = 0.0f;
-		tr.toneMinAvgMaxLevel[2] = 2.0f;
-	}
-	else
-	{
-		tr.toneMinAvgMaxLevel[0] = -8.0f;
-		tr.toneMinAvgMaxLevel[1] = -2.0f;
-		tr.toneMinAvgMaxLevel[2] = 0.0f;
-	}
-	
+	tr.toneMinAvgMaxLevel[0] = -8.0f;
+	tr.toneMinAvgMaxLevel[1] = -2.0f;
+	tr.toneMinAvgMaxLevel[2] = 0.0f;
+	tr.explicitToneMap = false;
 
 	world_t *world = R_LoadBSP(name);
 	if (world == nullptr)
@@ -3959,6 +3950,13 @@ void RE_LoadWorldMap( const char *name ) {
 		// loaded version
 		tr.world = nullptr;
 		return;
+	}
+
+	if (r_hdr->integer && world->hdrLighting && !tr.explicitToneMap)
+	{
+		tr.toneMinAvgMaxLevel[0] = -6.0f;
+		tr.toneMinAvgMaxLevel[1] = 0.0f;
+		tr.toneMinAvgMaxLevel[2] = 2.0f;
 	}
 
 	tr.worldMapLoaded = qtrue;
