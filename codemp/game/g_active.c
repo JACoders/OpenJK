@@ -2510,7 +2510,10 @@ void ClientThink_real( gentity_t *ent ) {
 			//Private duel announcements are now made globally because we only want one duel at a time.
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-				trap->SendServerCommand( -1, va("cp \"%s %s %s!\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname) );
+			        const int health = ent->client->ps.stats[STAT_HEALTH];
+			        const int armor = ent->client->ps.stats[STAT_ARMOR];
+				trap->SendServerCommand( -1, va("cp \"%s %s %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, health, armor ) );
+				trap->SendServerCommand( -1, va("print \"%s^7 has defeated %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, duelAgainst->client->pers.netname, health, armor) );
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame

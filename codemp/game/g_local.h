@@ -44,7 +44,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK"
+#define	GAMEVERSION	"jkenhanced"
 
 #define SECURITY_LOG "security.log"
 
@@ -1035,7 +1035,9 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent);
 int G_ItemUsable(playerState_t *ps, int forcedUse);
 void Cmd_ToggleSaber_f(gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent);
-
+// [jkenhanced] set private shield and armors.
+#define JKE_DUEL_ARMOR 100;
+#define JKE_DUEL_HEALTH 100;
 //
 // g_items.c
 //

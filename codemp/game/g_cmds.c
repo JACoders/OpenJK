@@ -3117,6 +3117,10 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 				challenged->client->ps.weaponTime = 400;
 				challenged->client->ps.saberHolstered = 2;
 			}
+			// [jkenhanced] Set health/armor to 100
+			ent->health = challenged->health = ent->client->ps.stats[STAT_HEALTH] = challenged->client->ps.stats[STAT_HEALTH] = JKE_DUEL_HEALTH;
+			ent->client->ps.stats[STAT_ARMOR] = challenged->client->ps.stats[STAT_ARMOR] = JKE_DUEL_ARMOR;
+
 		}
 		else
 		{
