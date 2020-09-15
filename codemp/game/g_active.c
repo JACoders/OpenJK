@@ -1611,13 +1611,15 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	{ //hack, don't do while moving
 		return;
 	}
-	if ( taunt != TAUNT_TAUNT )
+	// [jkenhanced] delete emote limit
+	
+	/*if ( taunt != TAUNT_TAUNT )
 	{//normal taunt always allowed
 		if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
 		{//no taunts unless in Duel
 			return;
 		}
-	}
+	}*/
 
 	// fix: rocket lock bug
 	BG_ClearRocketLock(&ent->client->ps);
@@ -2482,6 +2484,9 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		else if (duelAgainst->health < 1 || duelAgainst->client->ps.stats[STAT_HEALTH] < 1)
 		{
+                        const int health = ent->client->ps.stats[STAT_HEALTH];
+		        const int armor = ent->client->ps.stats[STAT_ARMOR];
+
 			ent->client->ps.duelInProgress = 0;
 			duelAgainst->client->ps.duelInProgress = 0;
 
@@ -2510,10 +2515,16 @@ void ClientThink_real( gentity_t *ent ) {
 			//Private duel announcements are now made globally because we only want one duel at a time.
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-			        const int health = ent->client->ps.stats[STAT_HEALTH];
-			        const int armor = ent->client->ps.stats[STAT_ARMOR];
-				trap->SendServerCommand( -1, va("cp \"%s %s %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, health, armor ) );
-				trap->SendServerCommand( -1, va("print \"%s^7 has defeated %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, duelAgainst->client->pers.netname, health, armor) );
+				trap->SendServerCommand( -1, va("cp \"%s^7 %s %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, health, armor ) );
+				if (armor == 100 && health == 100)
+				{
+					trap->SendServerCommand( -1, va("print \"%s^7 ^1humiliated by %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, duelAgainst->client->pers.netname, health, armor) );
+					G_Sound( ent, CHAN_BODY, G_SoundIndex("sound/feedback/humiliation") );
+				}
+				else 
+				{
+					trap->SendServerCommand( -1, va("print \"%s^7 has defeated %s^7! (^1%d^7/^2%d^7)\n\"", ent->client->pers.netname, duelAgainst->client->pers.netname, health, armor) );
+				}
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
