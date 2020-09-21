@@ -3811,6 +3811,9 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	Q_strncpyz(worldData->baseName, COM_SkipPath(worldData->name), sizeof(worldData->name));
 	COM_StripExtension(worldData->baseName, worldData->baseName, sizeof(worldData->baseName));
 
+	Q_strncpyz(tr.worldName, worldData->name, sizeof(worldData->name));
+	COM_StripExtension(tr.worldName, tr.worldName, sizeof(tr.worldName));
+
 	const byte *startMarker = (const byte *)ri.Hunk_Alloc(0, h_low);
 	dheader_t *header = (dheader_t *)buffer.b;
 	fileBase = (byte *)header;

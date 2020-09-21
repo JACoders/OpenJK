@@ -2046,6 +2046,28 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	}
 
 	//
+	// search for shader based external lightmaps that were created by q3map2
+	//
+	if (stage->bundle[0].tcGen == TCGEN_LIGHTMAP && stage->bundle[0].isLightmap == qfalse)
+	{
+		const char *filename = { va("%s/lm_", tr.worldName) };
+		if (!Q_strncmp(filename, bufferBaseColorTextureName, sizeof(filename)))
+		{
+			stage->bundle[0].isLightmap = qtrue;
+			shader.lightmapIndex[0] = LIGHTMAP_EXTERNAL;
+
+			// shader based external lightmaps can't utilize lightstyles
+			shader.styles[0] = 0;
+			shader.styles[1] = 255;
+			shader.styles[2] = 255;
+			shader.styles[3] = 255;
+
+			// it obviously receives light, so receive dlights too
+			shader.surfaceFlags &= ~SURF_NODLIGHT;
+		}
+	}
+
+	//
 	// if cgen isn't explicitly specified, use either identity or identitylighting
 	//
 	if ( stage->rgbGen == CGEN_BAD ) {

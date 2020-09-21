@@ -857,6 +857,7 @@ enum AlphaTestType
 
 // any change in the LIGHTMAP_* defines here MUST be reflected in
 // R_FindShader() in tr_bsp.c
+#define LIGHTMAP_EXTERNAL	-5
 #define LIGHTMAP_2D         -4	// shader is for 2D rendering
 #define LIGHTMAP_BY_VERTEX  -3	// pre-lit triangle models
 #define LIGHTMAP_WHITEIMAGE -2
@@ -2290,6 +2291,7 @@ typedef struct trGlobals_s {
 	vec2_t                  autoExposureMinMax;
 	vec3_t                  toneMinAvgMaxLevel;
 	world_t					*world;
+	char					worldName[MAX_QPATH];
 
 	const byte				*externalVisData;	// from RE_SetWorldVisData, shared with CM_Load
 
