@@ -1281,7 +1281,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				if (r_genNormalMaps->integer)
 					flags |= IMGFLAG_GENNORMALMAP;
 
-				if (shader.isHDRLit)
+				if (shader.isHDRLit == qtrue)
 					flags |= IMGFLAG_SRGB;
 
 				Q_strncpyz(bufferBaseColorTextureName, token, sizeof(bufferBaseColorTextureName));
@@ -1437,7 +1437,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					if (!shader.noPicMip)
 						flags |= IMGFLAG_PICMIP;
 
-					if (shader.isHDRLit)
+					if (shader.isHDRLit == qtrue)
 						flags |= IMGFLAG_SRGB;
 
 					if (shader.noTC)
@@ -2259,7 +2259,7 @@ static void ParseSkyParms( const char **text ) {
 	if (shader.noTC)
 		imgFlags |= IMGFLAG_NO_COMPRESSION;
 
-	if (tr.world && tr.world->hdrLighting)
+	if (tr.world && tr.hdrLighting == qtrue)
 		imgFlags |= IMGFLAG_SRGB;
 
 	// outerbox
@@ -3049,7 +3049,7 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 		{
 			char specularName[MAX_QPATH];
 			image_t *specularImg;
-			int specularFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
+			int specularFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP)) | IMGFLAG_NOLIGHTSCALE;
 
 			COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
 			Q_strcat(specularName, MAX_QPATH, "_specGloss");
@@ -4182,21 +4182,6 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 	}
 
 	lightmapIndexes = R_FindLightmaps(lightmapIndexes);
-	switch (lightmapIndexes[0]) {
-	case LIGHTMAP_NONE:
-	case LIGHTMAP_2D:
-	case LIGHTMAP_WHITEIMAGE:
-	{
-		shader.isHDRLit = qfalse;
-		break;
-	}
-	default:
-	{
-
-		shader.isHDRLit = tr.world ? tr.world->hdrLighting: qfalse;
-		break;
-	}
-	}
 
 	COM_StripExtension(name, strippedName, sizeof(strippedName));
 
@@ -4221,6 +4206,20 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 	Q_strncpyz(shader.name, strippedName, sizeof(shader.name));
 	Com_Memcpy (shader.lightmapIndex, lightmapIndexes, sizeof (shader.lightmapIndex));
 	Com_Memcpy (shader.styles, styles, sizeof (shader.styles));
+	switch (lightmapIndexes[0]) {
+	case LIGHTMAP_NONE:
+	case LIGHTMAP_2D:
+	case LIGHTMAP_WHITEIMAGE:
+	{
+		shader.isHDRLit = qfalse;
+		break;
+	}
+	default:
+	{
+		shader.isHDRLit = tr.hdrLighting;
+		break;
+	}
+	}
 
 	//
 	// attempt to define shader from an explicit parameter file
@@ -4410,6 +4409,8 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		stages[0].rgbGen = CGEN_EXACT_VERTEX;
 		stages[0].alphaGen = AGEN_SKIP;
 		stages[0].stateBits = GLS_DEFAULT;
+
+		shader.isHDRLit = tr.hdrLighting;
 	} else if ( shader.lightmapIndex[0] == LIGHTMAP_2D ) {
 		// GUI elements
 		stages[0].bundle[0].image[0] = image;
@@ -4443,6 +4444,8 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		stages[1].active = qtrue;
 		stages[1].rgbGen = CGEN_IDENTITY;
 		stages[1].stateBits |= GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO;
+
+		shader.isHDRLit = tr.hdrLighting;
 	}
 
 	sh = FinishShader();

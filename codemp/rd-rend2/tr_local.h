@@ -1890,7 +1890,6 @@ typedef struct {
 	char		*entityString;
 	char		*entityParsePoint;
 
-	qboolean	hdrLighting;
 } world_t;
 
 
@@ -2359,6 +2358,8 @@ typedef struct trGlobals_s {
 	image_t					**lightmaps;
 	image_t					**deluxemaps;
 
+	qboolean				hdrLighting;
+
 	vec2i_t					lightmapAtlasSize;
 	vec2i_t					lightmapsPerAtlasSide;
 
@@ -2704,11 +2705,6 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level);
 void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce);
 
 void R_AddMD3Surfaces( trRefEntity_t *e, int entityNum );
-void R_AddNullModelSurfaces( trRefEntity_t *e, int entityNum );
-void R_AddBeamSurfaces( trRefEntity_t *e, int entityNum );
-void R_AddRailSurfaces( trRefEntity_t *e, qboolean isUnderwater );
-void R_AddLightningBoltSurfaces( trRefEntity_t *e );
-
 void R_AddPolygonSurfaces( const trRefdef_t *refdef );
 
 void R_DecomposeSort( uint32_t sort, int *entityNum, shader_t **shader, int *cubemap, int *postRender );
@@ -2750,10 +2746,8 @@ void	GL_CheckErrs( const char *file, int line );
 void	GL_State( uint32_t stateVector );
 void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
-//void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
 void	GL_DepthRange( float min, float max );
-void	GL_PolygonOffset( qboolean enabled );
 void	GL_VertexAttribPointers(size_t numAttributes,
 								vertexAttribute_t *attributes);
 void	GL_DrawIndexed(GLenum primitiveType, int numIndices, GLenum indexType,
@@ -2782,7 +2776,7 @@ qhandle_t	RE_RegisterServerModel( const char *name );
 qhandle_t	RE_RegisterModel( const char *name );
 qhandle_t	RE_RegisterServerSkin( const char *name );
 qhandle_t	RE_RegisterSkin( const char *name );
-void		RE_Shutdown( qboolean destroyWindow );
+void		RE_Shutdown(qboolean destroyWindow, qboolean restarting);
 world_t		*R_LoadBSP(const char *name, int *bspIndex = nullptr);
 
 qboolean	R_GetEntityToken( char *buffer, int size );
@@ -2833,7 +2827,6 @@ extern const byte stylesDefault[MAXLIGHTMAPS];
 
 shader_t	*R_FindShader( const char *name, const int *lightmapIndexes, const byte *styles, qboolean mipRawImage );
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
-shader_t	*R_GetShaderByState( int index, long *cycleTime );
 shader_t *R_FindShaderByName( const char *name );
 void		R_InitShaders( qboolean server );
 void		R_ShaderList_f( void );
@@ -3000,7 +2993,6 @@ SKIES
 
 void R_BuildCloudData( shaderCommands_t *shader );
 void R_InitSkyTexCoords( float cloudLayerHeight );
-void R_DrawSkyBox( shaderCommands_t *shader );
 void RB_DrawSun( float scale, shader_t *shader );
 void RB_ClipSkyPolygons( shaderCommands_t *shader );
 
@@ -3540,7 +3532,6 @@ void RB_ExecuteRenderCommands( const void *data );
 void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
-void R_AddCapShadowmapCmd( int dlight, int cubeSide );
 void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubeSide);
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
@@ -3572,7 +3563,6 @@ const mdxaBone_t operator *( const float scale, const mdxaBone_t& rhs );
 
 qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
 qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-bool LoadTGAPalletteImage( const char *name, byte **pic, int *width, int *height);
 void RE_InsertModelIntoHash( const char *name, model_t *mod );
 void ResetGhoul2RenderableSurfaceHeap();
 

@@ -2154,8 +2154,8 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 		!backEnd.colorMask[3]);
 	backEnd.depthFill = qfalse;
 
-	
-	if (tr.msaaResolveFbo)
+	// Only resolve the main pass depth
+	if (tr.msaaResolveFbo && backEnd.viewParms.targetFbo == tr.renderFbo)
 	{
 		if (backEnd.viewParms.targetFbo == tr.renderCubeFbo && tr.msaaResolveFbo)
 		{
@@ -3325,18 +3325,7 @@ static const void *RB_DrawSurfs(const void *data) {
 	// clear the z buffer, set the modelview, etc
 	RB_BeginDrawingView();
 
-	beginTimedBlockCommand_t cmd2;
-	cmd2.commandId = RC_BEGIN_TIMED_BLOCK;
-	cmd2.name = "Update Constants";
-	cmd2.timerHandle = tr.numTimedBlocks++;
-	RB_BeginTimedBlock(&cmd2);
-
 	RB_UpdateConstants(cmd->drawSurfs, cmd->numDrawSurfs);
-
-	endTimedBlockCommand_t cmd3;
-	cmd3.commandId = RC_END_TIMED_BLOCK;
-	cmd3.timerHandle = cmd2.timerHandle;
-	RB_EndTimedBlock(&cmd3);
 
 	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
 

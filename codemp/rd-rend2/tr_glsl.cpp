@@ -329,17 +329,6 @@ static size_t GLSL_GetShaderHeader(
 						AGEN_PORTAL));
 
 	Q_strcat(dest, size,
-					 va("#ifndef texenv_t\n"
-						"#define texenv_t\n"
-						"#define TEXENV_MODULATE %i\n"
-						"#define TEXENV_ADD %i\n"
-						"#define TEXENV_REPLACE %i\n"
-						"#endif\n",
-						0x2100/* GL_MODULATE */,
-						0x0104/* GL_ADD */,
-						GL_REPLACE));
-
-	Q_strcat(dest, size,
 					 va("#define ALPHA_TEST_GT0 %d\n"
 						"#define ALPHA_TEST_LT128 %d\n" 
 						"#define ALPHA_TEST_GE128 %d\n"

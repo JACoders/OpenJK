@@ -196,9 +196,9 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	int numColorComponents = 3;
 
 	bool hdr_capable = glRefConfig.floatLightmap && r_hdr->integer;
-	tr.lightmapSize = DEFAULT_LIGHTMAP_SIZE;
 
-	worldData->hdrLighting = qfalse;
+	tr.lightmapSize = DEFAULT_LIGHTMAP_SIZE;
+	tr.hdrLighting = qfalse;
 
 	len = l->filelen;
 	// test for external lightmaps
@@ -388,7 +388,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 				if (bppc > 8)
 				{
 					hdrL = (float *)externalLightmap;
-					worldData->hdrLighting = qtrue;
+					tr.hdrLighting = qtrue;
 				}
 				else
 				{
@@ -3155,6 +3155,7 @@ static void R_RenderAllCubemaps()
 		cubemapFormat = GL_RGBA16F;
 	}
 
+	int frontEndMsec, backEndMsec;
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		bool bounce = k != 0;
@@ -3173,20 +3174,20 @@ static void R_RenderAllCubemaps()
 					IMGFLAG_CUBEMAP,
 					cubemapFormat);
 
+			RE_BeginFrame(STEREO_CENTER);
 			for (int j = 0; j < 6; j++)
 			{
 				RE_ClearScene();
 				R_RenderCubemapSide(i, j, qfalse, bounce);
 				R_IssuePendingRenderCommands();
-				R_InitNextFrame();
 			}
 			for (int j = 0; j < 6; j++)
 			{
 				RE_ClearScene();
 				R_AddConvolveCubemapCmd(&tr.cubemaps[i], j);
 				R_IssuePendingRenderCommands();
-				R_InitNextFrame();
 			}
+			RE_EndFrame( &frontEndMsec, &backEndMsec );
 		}
 	}
 }
@@ -3952,9 +3953,9 @@ void RE_LoadWorldMap( const char *name ) {
 		return;
 	}
 
-	if (r_hdr->integer && world->hdrLighting && !tr.explicitToneMap)
+	if (r_hdr->integer && tr.hdrLighting && !tr.explicitToneMap)
 	{
-		tr.toneMinAvgMaxLevel[0] = -6.0f;
+		tr.toneMinAvgMaxLevel[0] = -8.0f;
 		tr.toneMinAvgMaxLevel[1] = 0.0f;
 		tr.toneMinAvgMaxLevel[2] = 2.0f;
 	}
@@ -3962,11 +3963,11 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.worldMapLoaded = qtrue;
 	tr.world = world;
 
+	R_InitWeatherForMap();
+
 	// Render all cubemaps
 	if (r_cubeMapping->integer && tr.numCubemaps)
 	{
 		R_RenderAllCubemaps();
 	}
-
-	R_InitWeatherForMap();
 }
