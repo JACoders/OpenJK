@@ -210,20 +210,15 @@ static const char *GetSubString(std::string &strResult)
 
 // sort entries by their last name (starts at back of string and moves forward until start or just before whitespace)
 // ...
-static int SortBySurname(const void *elem1, const void *elem2)
+static bool SortBySurname(const StringAndSize_t &str1, const StringAndSize_t &str2)
 {
-	StringAndSize_t *p1 = (StringAndSize_t *) elem1;
-	StringAndSize_t *p2 = (StringAndSize_t *) elem2;
+	std::string::const_reverse_iterator rbegin1 = str1.str.rbegin();
+	std::string::const_reverse_iterator rbegin2 = str2.str.rbegin();
 
-	const char *psSurName1 = p1->c_str() + (strlen( p1->c_str() ) - 1);
-	const char *psSurName2 = p2->c_str() + (strlen( p2->c_str() ) - 1);
+	while (rbegin1 != str1.str.rend() && !isspace(*rbegin1)) rbegin1++;
+	while (rbegin2 != str2.str.rend() && !isspace(*rbegin2)) rbegin2++;
 
-	while (psSurName1 > p1->c_str() && !isspace(*psSurName1)) psSurName1--;
-	while (psSurName2 > p2->c_str() && !isspace(*psSurName2)) psSurName2--;
-	if (isspace(*psSurName1)) psSurName1++;
-	if (isspace(*psSurName2)) psSurName2++;
-		
-	return Q_stricmp(psSurName1, psSurName2);
+	return Q_stricmp(&*rbegin1.base(), &*rbegin2.base()) < 0;
 }
 
 
@@ -424,7 +419,7 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color )
 					{
 						// sort entries RHS dotted entries by alpha...
 						//
-						qsort(&CreditLine.vstrText[0], CreditLine.vstrText.size(), sizeof(CreditLine.vstrText[0]), SortBySurname);
+						std::sort( CreditLine.vstrText.begin(), CreditLine.vstrText.end(), SortBySurname );
 
 						CreditData.CreditLines.push_back( CreditLine );
 						iLineNumber += CreditLine.vstrText.size();
@@ -467,7 +462,7 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color )
 					{
 						// sort entries by alpha...
 						//
-						qsort(&CreditCard.vstrText[0], CreditCard.vstrText.size(), sizeof(CreditCard.vstrText[0]), SortBySurname);
+						std::sort( CreditCard.vstrText.begin(), CreditCard.vstrText.end(), SortBySurname );
 
 						CreditData.CreditCards.push_back(CreditCard);
 					}
