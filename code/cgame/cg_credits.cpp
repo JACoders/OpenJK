@@ -214,13 +214,11 @@ static const char *GetSubString(std::string &strResult)
 // ...
 static bool SortBySurname(const StringAndSize_t &str1, const StringAndSize_t &str2)
 {
-	std::string::const_reverse_iterator rbegin1 = str1.str.rbegin();
-	std::string::const_reverse_iterator rbegin2 = str2.str.rbegin();
+	std::string::const_reverse_iterator rstart1 = std::find_if(str1.str.rbegin(), str1.str.rend(), isspace);
+	std::string::const_reverse_iterator rstart2 = std::find_if(str2.str.rbegin(), str2.str.rend(), isspace);
+	
 
-	while (rbegin1 != str1.str.rend() && !isspace(*rbegin1)) rbegin1++;
-	while (rbegin2 != str2.str.rend() && !isspace(*rbegin2)) rbegin2++;
-
-	return Q_stricmp(&*rbegin1.base(), &*rbegin2.base()) < 0;
+	return Q_stricmp(&*rstart1.base(), &*rstart2.base()) < 0;
 }
 
 
