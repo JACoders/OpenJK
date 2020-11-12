@@ -38,7 +38,7 @@ FROM ubuntu:18.04
 # Install utilities and libraries
 RUN dpkg --add-architecture i386 &&\
 	apt-get -q update &&\
-	DEBIAN_FRONTEND="noninteractive" apt-get -q install -y -o Dpkg::Options::="--force-confnew" --no-install-recommends socat libstdc++6 libstdc++6:i386 zlib1g zlib1g:i386 &&\
+	DEBIAN_FRONTEND="noninteractive" apt-get -q install -y -o Dpkg::Options::="--force-confnew" --no-install-recommends socat libstdc++6 libstdc++6:i386 zlib1g zlib1g:i386 libcurl4 libcurl4:i386 &&\
 	rm -rf /var/lib/apt/lists/*
 
 # Copy binaries and scripts
