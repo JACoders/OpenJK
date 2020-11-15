@@ -1617,6 +1617,10 @@ static void RB_SurfaceLathe()
 	{
 		lod = 4;
 	}
+	if ( lod < 1 )
+	{
+		lod = 1;
+	}
 	bezierStep = BEZIER_STEP * lod;
 	latheStep = LATHE_SEG_STEP * lod;
 
