@@ -37,6 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "anims.h"
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 #include <float.h>
 
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
@@ -76,6 +77,9 @@ extern int PM_SaberFlipOverAttackMove( void );
 extern int PM_SaberJumpAttackMove( void );
 
 qboolean PM_InKnockDown( playerState_t *ps );
+qboolean PM_InShootDodge(playerState_t* ps);
+qboolean PM_InShootDodgeInAir( playerState_t* ps );
+qboolean PM_InShootDodgeOnGround(playerState_t* ps);
 qboolean PM_InKnockDownOnGround( playerState_t *ps );
 qboolean PM_InGetUp( playerState_t *ps );
 qboolean PM_InRoll( playerState_t *ps );
@@ -604,7 +608,7 @@ static qboolean PM_CheckJump( void )
 		return qfalse;
 	}
 
-	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ) )
+	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ) || PM_InShootDodge( pm->ps ) )
 	{//in knockdown
 		return qfalse;
 	}
@@ -1763,7 +1767,8 @@ static void PM_AirMove( void ) {
 	VectorNormalize (pml.forward);
 	VectorNormalize (pml.right);
 
-	if ( (pm->ps->pm_flags&PMF_SLOW_MO_FALL) )
+	// can't control of traveling direction while in shoot dodge
+	if ( (pm->ps->pm_flags&PMF_SLOW_MO_FALL)  || PM_InShootDodge(pm->ps))
 	{//no air-control
 		VectorClear( wishvel );
 	}
@@ -2586,7 +2591,8 @@ static void PM_CrashLand( void )
 	qboolean deadFallSound = qfalse;
 	if( !PM_InDeathAnim() )
 	{
-		if ( pm->cmd.upmove >= 0 && !PM_InKnockDown( pm->ps ) && !PM_InRoll( pm->ps ))
+		// if in shoot dodge and landed on the ground, stay in animation and wait for getup animation
+		if ( pm->cmd.upmove >= 0 && !PM_InKnockDown( pm->ps ) && !PM_InRoll( pm->ps ) && !PM_InShootDodge(pm->ps))
 		{//not crouching
 			if ( delta > 10
 				|| pm->ps->pm_flags & PMF_BACKWARDS_JUMP
@@ -3199,11 +3205,8 @@ static void PM_GroundTrace( void ) {
 		else if ( PM_InSpecialJump( pm->ps->legsAnim ) )
 		{//special jumps
 		}
-		else if ( PM_InKnockDown( pm->ps ) )
-		{//in knockdown
-		}
-		else if ( PM_InRoll( pm->ps ) )
-		{//in knockdown
+		else if ( PM_InKnockDown( pm->ps ) || PM_InShootDodge(pm->ps) || PM_InRoll( pm->ps ) )
+		{//in knockdown, shootdodge, or roll, don't attempt to jump
 		}
 		else
 		{
@@ -3513,7 +3516,7 @@ static void PM_CheckDuck (void)
 		pm->ps->viewheight = crouchheight + STANDARD_VIEWHEIGHT_OFFSET;
 		return;
 	}
-	if ( PM_InKnockDown( pm->ps ) )
+	if ( PM_InKnockDown( pm->ps ) || PM_InShootDodge(pm->ps) )
 	{//forced crouch
 		if ( pm->gent && pm->gent->client )
 		{//interrupted any potential delayed weapon fires
@@ -3713,6 +3716,62 @@ qboolean PM_InKnockDown( playerState_t *ps )
 	}
 }
 
+qboolean PM_InShootDodge(playerState_t* ps)
+{
+	switch (ps->legsAnim)
+	{
+	case BOTH_SHOOTDODGE_F:
+	case BOTH_SHOOTDODGE_B:
+	case BOTH_SHOOTDODGE_L:
+	case BOTH_SHOOTDODGE_R:
+		return qtrue;
+	}
+	return qfalse;
+}
+
+qboolean PM_InShootDodgeInAir(playerState_t* ps)
+{
+	qboolean onGround = qfalse;
+
+	if (!ps)
+		return qfalse;
+
+	if (ps->groundEntityNum != ENTITYNUM_NONE)
+	{
+		gentity_t* groundEnt = &g_entities[ps->groundEntityNum];
+		// if we're touching the ground (and not an NPC) and we're not at the beginning of the shoot dodge anim, then we're not shoot dodging in the air
+		if (groundEnt && !groundEnt->NPC && (PM_AnimLength(g_entities[ps->clientNum].client->clientInfo.animFileIndex, (animNumber_t)ps->legsAnim) - ps->legsAnimTimer > 200))
+			return qfalse;
+	}
+
+	switch (ps->legsAnim)
+	{
+	case BOTH_SHOOTDODGE_F:
+	case BOTH_SHOOTDODGE_B:
+	case BOTH_SHOOTDODGE_L:
+	case BOTH_SHOOTDODGE_R:
+		return qtrue;
+	}
+	return qfalse;
+}
+
+qboolean PM_InShootDodgeOnGround(playerState_t* ps)
+{
+	// if we're in the air or we're at the beginning of the shoot dodge animation then consider ourselves not in the shoot dodge on the ground state
+	if ((ps->groundEntityNum == ENTITYNUM_NONE) || (PM_AnimLength(g_entities[ps->clientNum].client->clientInfo.animFileIndex, (animNumber_t)ps->legsAnim) - ps->legsAnimTimer < 200))
+		return qfalse;
+
+	switch (ps->legsAnim)
+	{
+	case BOTH_SHOOTDODGE_F:
+	case BOTH_SHOOTDODGE_B:
+	case BOTH_SHOOTDODGE_L:
+	case BOTH_SHOOTDODGE_R:
+		return qtrue;
+	}
+	return qfalse;
+}
+
 qboolean PM_InKnockDownOnGround( playerState_t *ps )
 {
 	switch ( ps->legsAnim )
@@ -3722,6 +3781,10 @@ qboolean PM_InKnockDownOnGround( playerState_t *ps )
 	case BOTH_KNOCKDOWN3:
 	case BOTH_KNOCKDOWN4:
 	case BOTH_KNOCKDOWN5:
+	case BOTH_SHOOTDODGE_F:
+	case BOTH_SHOOTDODGE_B:
+	case BOTH_SHOOTDODGE_L:
+	case BOTH_SHOOTDODGE_R:
 		//if ( PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, (animNumber_t)ps->legsAnim ) - ps->legsAnimTimer > 300 )
 		{//at end of fall down anim
 			return qtrue;
@@ -3761,6 +3824,8 @@ qboolean PM_CrouchGetup( float crouchheight )
 	case BOTH_KNOCKDOWN1:
 	case BOTH_KNOCKDOWN2:
 	case BOTH_KNOCKDOWN4:
+	case BOTH_FORCEJUMPLEFT1:
+	case BOTH_FORCEJUMPRIGHT1:
 		anim = BOTH_GETUP_CROUCH_B1;
 		break;
 	case BOTH_KNOCKDOWN3:
@@ -3789,7 +3854,11 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 		||legsAnim == BOTH_KNOCKDOWN2
 		||legsAnim == BOTH_KNOCKDOWN3
 		||legsAnim == BOTH_KNOCKDOWN4
-		||legsAnim == BOTH_KNOCKDOWN5 )
+		||legsAnim == BOTH_KNOCKDOWN5
+		||legsAnim == BOTH_SHOOTDODGE_F
+		||legsAnim == BOTH_SHOOTDODGE_B
+		||legsAnim == BOTH_SHOOTDODGE_L
+		||legsAnim == BOTH_SHOOTDODGE_R)
 	{//in a knockdown
 		if ( !pm->ps->legsAnimTimer )
 		{//done with the knockdown - FIXME: somehow this is allowing an *instant* getup...???
@@ -3810,6 +3879,7 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 					int	anim = BOTH_GETUP1;
 					pm->maxs[2] = standheight;
 					pm->ps->viewheight = standheight + STANDARD_VIEWHEIGHT_OFFSET;
+
 					//NOTE: the force power checks will stop fencers and grunts from getting up using force jump
 					switch ( pm->ps->legsAnim )
 					{
@@ -3824,6 +3894,7 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 							anim = BOTH_GETUP1;
 						}
 						break;
+					case BOTH_SHOOTDODGE_B:
 					case BOTH_KNOCKDOWN2:
 						if ( (pm->ps->clientNum&&pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0) || (!pm->ps->clientNum&&pm->cmd.upmove>0&&pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1) )
 						{
@@ -3835,6 +3906,7 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 							anim = BOTH_GETUP2;
 						}
 						break;
+					case BOTH_SHOOTDODGE_F: // for shoot dodges use same getup as being knocked down
 					case BOTH_KNOCKDOWN3:
 						if ( (pm->ps->clientNum&&pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0) || (!pm->ps->clientNum&&pm->cmd.upmove>0&&pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1) )
 						{
@@ -3883,7 +3955,7 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 						//launch off ground?
 						pm->ps->weaponTime = 300;//just to make sure it's cleared
 					}
-					PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS );
+					PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 300 );
 					pm->ps->saberMove = pm->ps->saberBounceMove = LS_READY;//don't finish whatever saber anim you may have been in
 					pm->ps->saberBlocked = BLOCKED_NONE;
 					return qtrue;
@@ -4875,7 +4947,7 @@ static void PM_Footsteps( void )
 	{//spinning
 		return;
 	}
-	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ))
+	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ) || PM_InShootDodge( pm->ps ) )
 	{//in knockdown
 		return;
 	}
@@ -7514,6 +7586,7 @@ void PM_WeaponLightsaber(void)
 	}
 
 	addTime = pm->ps->weaponTime;
+
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK ) 	{
 		PM_AddEvent( EV_ALT_FIRE );
 		if ( !addTime )
@@ -7805,8 +7878,13 @@ static int PM_DoChargingAmmoUsage( int *amount )
 	}
 	else if ( pm->ps->weapon == WP_BRYAR_PISTOL && pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
+		float shootDodgeBryarReductionModifier = 1.0f;
+
+		if (PM_InShootDodgeInAir(pm->ps))
+			shootDodgeBryarReductionModifier = SHOOT_DODGE_BRYAR_CHARGE_REDUCTION;
+
 		// this code is duplicated ( I know, I know ) in G_weapon.cpp for the bryar alt-fire
-		count = ( level.time - pm->ps->weaponChargeTime ) / BRYAR_CHARGE_UNIT;
+		count = ( level.time - pm->ps->weaponChargeTime ) / (BRYAR_CHARGE_UNIT * shootDodgeBryarReductionModifier);
 
 		if ( count < 1 )
 		{
@@ -7833,8 +7911,13 @@ static int PM_DoChargingAmmoUsage( int *amount )
 					count = 1;
 				}
 
+				float shootDodgeBryarReductionModifier = 1.0f;
+
+				if (PM_InShootDodgeInAir(pm->ps))
+					shootDodgeBryarReductionModifier = SHOOT_DODGE_BRYAR_CHARGE_REDUCTION;
+
 				// now get a real chargeTime so the duplicated code in g_weapon doesn't get freaked
-				pm->ps->weaponChargeTime = level.time - ( count * BRYAR_CHARGE_UNIT );
+				pm->ps->weaponChargeTime = level.time - ( count * BRYAR_CHARGE_UNIT * shootDodgeBryarReductionModifier );
 			}
 		}
 
@@ -7946,6 +8029,82 @@ qboolean PM_DroidMelee( int npc_class )
 	return qfalse;
 }
 
+qboolean PM_IsShootdodgeWeapon(int weapon)
+{
+	switch (weapon) {
+		case WP_BRYAR_PISTOL:
+		case WP_BLASTER_PISTOL:
+		case WP_BLASTER:
+		case WP_DISRUPTOR:
+		case WP_BOWCASTER:
+		case WP_REPEATER:
+		case WP_DEMP2:
+		case WP_FLECHETTE:
+		case WP_ROCKET_LAUNCHER:
+			return qtrue;
+	}
+	return qfalse;
+}
+
+static qboolean PM_CanShootDodge()
+{
+	if (PM_IsShootdodgeWeapon(pm->ps->weapon) && // if you're holding a normal ranged weapon
+		(pm->cmd.buttons & BUTTON_ALT_ATTACK) && // if you're holding alt attack
+		!PM_InKnockDown(pm->ps) && // if you're not in a knockdown
+		!PM_InKnockDownOnGround(pm->ps) && // if you're not in a getup animation
+		!PM_InRoll(pm->ps) && // if you're not in a getup animation
+		!PM_InShootDodge(pm->ps) && // if you're not in a shootdodge already
+		pm->ps->groundEntityNum != ENTITYNUM_NONE && // if you're standing on something
+		pm->ps->clientNum == 0 && // only the player can shootdodge
+		cg.renderingThirdPerson && // right now only initiate from third person
+		// !(pm->ps->eFlags & EF_ALT_FIRING) && // not already firing
+		(pm->cmd.forwardmove != 0 || pm->cmd.rightmove != 0)) // must be attempting to move
+	{
+		return qtrue;
+	}
+	return qfalse;
+}
+
+static void PM_ShootDodge()
+{
+	vec3_t curDir;
+	float shootDodgeSpeed;
+	shootDodgeSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
+	VectorCopy(curDir, pm->ps->moveDir);
+	
+	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
+
+	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping
+
+	//G_Sound(pm->gent, G_SoundIndex("sound/weapons/force/push.wav"));
+	//G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/weapons/force/speed.wav");
+	G_SoundOnEnt(pm->gent, CHAN_VOICE, "sound/shoot_dodge/bassbullettime8db.mp3");
+
+	// set the anims - first the torso weapon anims
+	switch (pm->ps->weapon)
+	{
+	case WP_BRYAR_PISTOL:
+	case WP_BLASTER_PISTOL:
+		PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE2, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		break;
+	default:
+		PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		break;
+	}
+
+	// now the lower body anims
+	if (pm->cmd.forwardmove > 0)
+		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_F, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+	else if (pm->cmd.forwardmove < 0)
+		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_B, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+	else if (pm->cmd.rightmove < 0)
+		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_L, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+	else
+		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		
+	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in direction facing
+}
+
 /*
 ==============
 PM_Weapon
@@ -7975,6 +8134,13 @@ static void PM_Weapon( void )
 			}
 		}
 		return;
+	}
+
+
+	// if not in shoot dodge anymore set timescale back to 1
+	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0) {
+		if (g_timescale->value < 1.0f)
+			g_timescale->value = 1.0;
 	}
 
 	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ))
@@ -8331,6 +8497,11 @@ static void PM_Weapon( void )
 		{
 			if ( !MatrixMode )
 			{//Special test for Matrix Mode (tm)
+				// if in shoot dodge raise rate of fire slightly
+				if (PM_InShootDodgeInAir(pm->ps)) {
+					addTime *= g_timescale->value * 3.2f;
+				}
+
 				if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 				{//player always fires at normal speed
 					addTime *= g_timescale->value;
@@ -8343,6 +8514,8 @@ static void PM_Weapon( void )
 			}
 		}
 	}
+	
+
 
 	pm->ps->weaponTime += addTime;
 	pm->ps->lastShotTime = level.time;//so we know when the last time we fired our gun is
@@ -8562,6 +8735,21 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		if ( pm->ps->saberInFlight )
 		{//saber not in hand, can't swing it
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
+		}
+	}
+
+	// if we're just now pressing the alt attack button, check to see if we can shoot dodge
+	if ((pm->cmd.buttons & BUTTON_ALT_ATTACK) && !(pm->ps->eFlags & EF_ALT_FIRING))
+	{
+		if (PM_CanShootDodge())
+		{
+			// yay, we can shoot dodge!
+			PM_ShootDodge();
+
+			// set flags to not fire as soon as we shootdodge
+			pm->ps->weaponTime += 50;
+
+			return;
 		}
 	}
 

@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "anims.h"
 #include "g_functions.h"
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 
 extern qboolean G_CheckForStrongAttackMomentum( gentity_t *self );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
@@ -576,6 +577,19 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 		if ( other->health > 0 ) 
 		{
 			NPCInfo->touchedByPlayer = other;
+
+			// if colliding with an enemy in shootdodge but not in knock down already get knocked back
+			if (PM_InShootDodgeInAir(&other->client->ps) && !PM_InKnockDown(&self->client->ps))
+			{
+				vec3_t tackleDir;
+				VectorSubtract(self->currentOrigin, other->currentOrigin, tackleDir);
+				float tackleStrength = other->client->ps.speed;
+				tackleStrength = tackleStrength > 100.0f ? 100.0f : tackleStrength;// sometimes this sends people flying so cap it
+				VectorNormalize(tackleDir);
+				G_Knockdown(self, other, tackleDir, tackleStrength, qtrue);
+				G_ApplyKnockback(self, tackleDir, tackleStrength);
+				G_Sound(self, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
+			}
 		}
 
 		if ( other == NPCInfo->goalEntity ) 

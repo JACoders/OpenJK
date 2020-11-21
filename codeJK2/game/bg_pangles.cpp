@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "bg_local.h"
 #include "anims.h"
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 
 extern qboolean PM_InAnimForSaberMove( int anim, int saberMove );
 extern qboolean PM_InForceGetUp( playerState_t *ps );
@@ -356,10 +357,11 @@ qboolean PM_AdjustAnglesForSaberLock( gentity_t *ent, usercmd_t *ucmd )
 
 qboolean PM_AdjustAnglesForKnockdown( gentity_t *ent, usercmd_t *ucmd, qboolean angleClampOnly )
 {
-	if ( PM_InKnockDown( &ent->client->ps ) )
+	if ( PM_InKnockDown( &ent->client->ps ) || PM_InShootDodgeOnGround(&ent->client->ps) )
 	{//being knocked down or getting up, can't do anything!
 		if ( !angleClampOnly )
 		{
+			// can't move around while shoot dodging on the ground, but can shoot
 			ucmd->forwardmove = 0;
 			ucmd->rightmove = 0;
 			if ( ent->NPC )
@@ -369,7 +371,7 @@ qboolean PM_AdjustAnglesForKnockdown( gentity_t *ent, usercmd_t *ucmd, qboolean 
 			//you can jump up out of a knockdown and you get get up into a crouch from a knockdown
 			//ucmd->upmove = 0;
 			//if ( !PM_InForceGetUp( &ent->client->ps ) || ent->client->ps.torsoAnimTimer > 800 || ent->s.weapon != WP_SABER )
-			if ( ent->health > 0 )
+			if ( ent->health > 0 && !PM_InShootDodge(&ent->client->ps))
 			{//can only attack if you've started a force-getup and are using the saber
 				ucmd->buttons = 0;
 			}

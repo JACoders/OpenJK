@@ -31,6 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "anims.h"
 #include "b_local.h"
 #include "w_local.h"
+#include "b_shootdodge.h"
 
 vec3_t	wpFwd, wpVright, wpUp;
 vec3_t	wpMuzzle;
@@ -92,6 +93,12 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t
 	missile->owner = owner;
 
 	missile->alt_fire = altFire;
+
+	// add some slop to the alt-fire direction
+	if (owner->client && PM_InShootDodgeInAir(&owner->client->ps))
+	{
+		vel *= SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER;
+	}
 
 	missile->s.pos.trType = TR_LINEAR;
 	missile->s.pos.trTime = level.time;// - 10;	// move a bit on the very first frame
@@ -382,6 +389,7 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 
 	switch( ent->s.weapon )
 	{
+
 	case WP_BRYAR_PISTOL:
 		ViewHeightFix(ent);
 		muzzlePoint[2] += ent->client->ps.viewheight;//By eyes
@@ -456,6 +464,9 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 
 	AddLeanOfs(ent, muzzlePoint);
 }
+
+
+extern qboolean PM_InShootDodgeInAir(playerState_t* ps);
 
 //---------------------------------------------------------
 void FireWeapon( gentity_t *ent, qboolean alt_fire )
@@ -563,7 +574,31 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	}
 	else
 	{
-		AngleVectors( ent->client->ps.viewangles, wpFwd, wpVright, wpUp );
+		// in third person and you're the player
+		if (/*PM_IsShootDodgeWeapon(ent->client->ps.weapon) &&*/ cg.renderingThirdPerson && ent->s.number == 0) 
+		{
+			trace_t		trace;
+			vec3_t		traceStart, traceEnd, cursorTargetPoint, fireDir, fireAng, weaponLoc;
+			vec3_t d_f, d_rt, d_up;
+
+			//VectorCopy(g_entities[0].client->renderInfo.eyePoint, traceStart); // this is only used for first person
+			VectorCopy(cg.refdef.vieworg, traceStart); // copy third person camera position
+			AngleVectors(cg.refdefViewAngles, d_f, d_rt, d_up); // get angle vectors based on camera view angles
+			VectorMA(traceStart, 2048, d_f, traceEnd);	//get max trace ent point from camera position to max end of camera view
+
+			gi.trace(&trace, traceStart, NULL, NULL, traceEnd, ent->s.number, MASK_SHOT, G2_RETURNONHIT, 10); // trace from camera position out to max of camera view
+
+			VectorCopy(trace.endpos, cursorTargetPoint); // copy first trace hit as the target we want to shoot towards
+
+			CalcEntitySpot(ent, SPOT_WEAPON, weaponLoc); // calculate weapon location -> our origin of firing
+			VectorSubtract(cursorTargetPoint, weaponLoc, fireDir); // calculate fire trajectory as cursor target minus weapon location
+			vectoangles(fireDir, fireAng); // change fire trajectory to angles
+
+			AngleVectors(fireAng, wpFwd, wpVright, wpUp); // then convert it back to trajectory, can't just do it earlier at vector subtract because we need the vright and up values too
+		}
+		else {
+			AngleVectors(ent->client->ps.viewangles, wpFwd, wpVright, wpUp);
+		}
 	}
 
 	ent->alt_fire = alt_fire;

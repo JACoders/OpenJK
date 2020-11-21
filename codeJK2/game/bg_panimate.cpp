@@ -55,6 +55,8 @@ extern qboolean PM_FlippingAnim( int anim );
 extern qboolean PM_RollingAnim( int anim );
 extern qboolean PM_SwimmingAnim( int anim );
 extern qboolean PM_InKnockDown( playerState_t *ps );
+extern qboolean PM_InShootDodge(playerState_t* ps);
+extern qboolean PM_InShootDodgeOnGround(playerState_t* ps);
 extern qboolean PM_InRoll( playerState_t *ps );
 extern qboolean PM_DodgeAnim( int anim );
 extern qboolean PM_InSlopeAnim( int anim );
@@ -3015,7 +3017,7 @@ PM_TorsoAnimation
 void PM_TorsoAnimation( void )
 {//FIXME: Write a much smarter and more appropriate anim picking routine logic...
 //	int	oldAnim;
-	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ))
+	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ) || PM_InShootDodge(pm->ps))
 	{//in knockdown
 		return;
 	}
@@ -3905,6 +3907,8 @@ qboolean PM_InOnGroundAnim ( playerState_t *ps )
 	case BOTH_KNOCKDOWN3:		//#
 	case BOTH_KNOCKDOWN4:		//#
 	case BOTH_KNOCKDOWN5:		//#
+	case BOTH_FORCEJUMPLEFT1:
+	case BOTH_FORCEJUMPRIGHT1:
 		if ( ps->legsAnimTimer < 500 )
 		{//pretty much horizontal by this point
 			return qtrue;

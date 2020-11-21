@@ -132,6 +132,7 @@ set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/anims.h"
 	"${JK2SPDir}/game/b_local.h"
 	"${JK2SPDir}/game/b_public.h"
+	"${JK2SPDir}/game/b_shootdodge.h"
 	"${JK2SPDir}/game/bg_local.h"
 	"${JK2SPDir}/game/bg_public.h"
 	"${JK2SPDir}/game/bset.h"

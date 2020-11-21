@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "w_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 
 //---------------
 //	Blaster
@@ -86,6 +87,10 @@ static void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qbo
 //		}
 //	}
 
+	// add some slop to the alt-fire direction
+	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+		damage *= SHOOT_DODGE_BLASTER_DAMAGE_MULTIPLIER;
+
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	if ( altFire )
@@ -110,11 +115,15 @@ void WP_FireBlaster( gentity_t *ent, qboolean alt_fire )
 
 	vectoangles( wpFwd, angs );
 
+	float shootDodgeSpreadModifier = 1.0f;
+	// add some slop to the alt-fire direction
+	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+		shootDodgeSpreadModifier = SHOOT_DODGE_SPREAD_MULTIPLIER;
+
 	if ( alt_fire )
 	{
-		// add some slop to the alt-fire direction
-		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
-		angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD * shootDodgeSpreadModifier;
+		angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD * shootDodgeSpreadModifier;
 	}
 	else
 	{
@@ -130,8 +139,8 @@ void WP_FireBlaster( gentity_t *ent, qboolean alt_fire )
 		else
 		{
 			// add some slop to the main-fire direction
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
-			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD * shootDodgeSpreadModifier;
+			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD * shootDodgeSpreadModifier;
 		}
 	}
 

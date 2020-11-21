@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // active (after loading) gameplay
 
 #include "../game/g_local.h"
+#include "../game/b_local.h"
 #include "cg_local.h"
 #include "cg_media.h"
 #include "../game/objectives.h"
@@ -1681,6 +1682,7 @@ CG_ScanForCrosshairEntity
 =================
 */
 extern float forcePushPullRadius[];
+extern qboolean PM_IsShootdodgeWeapon(int weapon);
 static void CG_ScanForCrosshairEntity( qboolean scanAll ) 
 {
 	trace_t		trace;
@@ -1782,7 +1784,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	}
 	if ( !cg_forceCrosshair )
 	{
-		if ( cg_dynamicCrosshair.integer )
+		if ( cg_dynamicCrosshair.integer && !PM_IsShootdodgeWeapon(cg.snap->ps.weapon)) // don't use dynamic crosshair when using a shoot dodge weapon
 		{//100% accurate
 			vec3_t d_f, d_rt, d_up;
 			if ( cg.snap->ps.weapon == WP_NONE || 

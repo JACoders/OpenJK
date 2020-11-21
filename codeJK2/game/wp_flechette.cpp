@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "w_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 
 //-----------------------
 //	Golan Arms Flechette
@@ -56,6 +57,15 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 //		damage *= 2;
 //	}
 
+	float shootDodgeSpreadModifier = 1.0f;
+	float shootDodgeDmgModifier = 1.0f;
+	// add some slop to the alt-fire direction
+	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+	{
+		shootDodgeSpreadModifier = .4f;
+		shootDodgeDmgModifier = 1.7f;
+	}
+
 	for ( int i = 0; i < FLECHETTE_SHOTS; i++ )
 	{
 		vectoangles( wpFwd, angs );
@@ -66,8 +76,8 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 		}
 		else
 		{
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * FLECHETTE_SPREAD;
-			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * FLECHETTE_SPREAD;
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * FLECHETTE_SPREAD * shootDodgeSpreadModifier;
+			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * FLECHETTE_SPREAD * shootDodgeSpreadModifier;
 		}
 
 		AngleVectors( angs, fwd, NULL, NULL );
@@ -80,7 +90,7 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 		VectorSet( missile->maxs, FLECHETTE_SIZE, FLECHETTE_SIZE, FLECHETTE_SIZE );
 		VectorScale( missile->maxs, -1, missile->mins );
 
-		missile->damage = damage;
+		missile->damage = damage * shootDodgeDmgModifier;
 
 //		if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
 //		{

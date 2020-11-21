@@ -1047,6 +1047,10 @@ typedef enum //# animNumber_e
 	BOTH_KNOCKDOWN3,		//#	knocked forwards
 	BOTH_KNOCKDOWN4,		//# knocked backwards from crouch
 	BOTH_KNOCKDOWN5,		//# dupe of 3 - will be removed
+	BOTH_SHOOTDODGE_F,
+	BOTH_SHOOTDODGE_B,
+	BOTH_SHOOTDODGE_L,
+	BOTH_SHOOTDODGE_R,
 	BOTH_GETUP1,			//#
 	BOTH_GETUP2,			//#
 	BOTH_GETUP3,			//#
@@ -1378,7 +1382,7 @@ typedef enum //# animNumber_e
 	FACE_ALERT,				//# 
 	FACE_SMILE,				//# 
 	FACE_FROWN,				//# 
-	FACE_DEAD,				//# 
+	FACE_DEAD,					//# 
 
 	//# #eol
 	MAX_ANIMATIONS,

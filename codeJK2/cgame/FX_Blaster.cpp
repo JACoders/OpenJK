@@ -24,13 +24,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
+#include "../game/b_shootdodge.h"
 
 /*
 -------------------------
 FX_BlasterProjectileThink
 -------------------------
 */
-
 void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon )
 {
 	vec3_t forward;
@@ -46,16 +46,21 @@ void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weap
 	// hack the scale of the forward vector if we were just fired or bounced...this will shorten up the tail for a split second so tails don't clip so harshly
 	int dif = cg.time - cent->gent->s.pos.trTime;
 
-	if ( dif < 75 )
+	if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
 	{
-		if ( dif < 0 )
+		float shootDodgeScale = SHOOT_DODGE_BLASTER_BOLT_FX_SCALE;
+		VectorScale(forward, shootDodgeScale, forward);
+	}
+	else if (dif < 75) // don't shorten up the tail in shoot dodge, it looks weird in slow mo
+	{
+		if (dif < 0)
 		{
 			dif = 0;
 		}
 
-		float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
+		float scale = (dif / 75.0f) * 0.95f + 0.05f;
 
-		VectorScale( forward, scale, forward );
+		VectorScale(forward, scale, forward);
 	}
 
 	if ( cent->gent && cent->gent->owner && cent->gent->owner->s.number > 0 )

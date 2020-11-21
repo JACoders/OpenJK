@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "../game/g_local.h"
 #include "../game/b_local.h"
+#include "../game/b_shootdodge.h"
 #define	CG_PLAYERS_CPP
 #include "cg_media.h"
 #include "FxScheduler.h"
@@ -2065,6 +2066,7 @@ Handles seperate torso motion
 */
 extern int PM_TurnAnimForLegsAnim( gentity_t *gent, int anim );
 extern float PM_GetTimeScaleMod( gentity_t *gent );
+extern qboolean PM_InShootDodgeInAir(playerState_t* ps);
 void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 {
 	vec3_t		headAngles, neckAngles, chestAngles, thoracicAngles = {0,0,0};//legsAngles, torsoAngles,
@@ -2230,7 +2232,27 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
-			if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED && cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
+			if (PM_InShootDodge(&cent->gent->client->ps))
+			{
+				vec3_t movDir, movAngles;
+				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);
+				vectoangles(movDir, movAngles);
+				switch (cent->gent->client->ps.legsAnim)
+				{
+				case BOTH_SHOOTDODGE_B:
+					angles[YAW] = AngleNormalize180(movAngles[YAW] + 180);
+					break;
+				case BOTH_SHOOTDODGE_L:
+					angles[YAW] = AngleNormalize180(movAngles[YAW] - 90);
+					break;
+				case BOTH_SHOOTDODGE_R:
+					angles[YAW] = AngleNormalize180(movAngles[YAW] + 90);
+					break;
+				default:
+					angles[YAW] = AngleNormalize180(movAngles[YAW]);
+				}
+			}
+			else if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED && cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 			{
 				vec3_t	centFwd, centRt;
 

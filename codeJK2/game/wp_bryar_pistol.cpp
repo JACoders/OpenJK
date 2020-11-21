@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "w_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 
 //---------------
 //	Bryar Pistol
@@ -69,7 +70,12 @@ void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire )
 
 	if ( alt_fire )
 	{
-		int count = ( level.time - ent->client->ps.weaponChargeTime ) / BRYAR_CHARGE_UNIT;
+		float shootDodgeBryarReductionModifier = 1.0f;
+
+		if (PM_InShootDodgeInAir(&ent->client->ps))
+			shootDodgeBryarReductionModifier = SHOOT_DODGE_BRYAR_CHARGE_REDUCTION;
+
+		int count = ( level.time - ent->client->ps.weaponChargeTime ) / (BRYAR_CHARGE_UNIT * shootDodgeBryarReductionModifier);
 
 		if ( count < 1 )
 		{

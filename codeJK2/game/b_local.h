@@ -241,6 +241,7 @@ extern qboolean infront(gentity_t *from, gentity_t *to);
 extern void NPC_SetAnim(gentity_t	*ent,int type,int anim,int priority);
 extern qboolean NPC_EnemyTooFar(gentity_t *enemy, float dist, qboolean toShoot);
 
+
 // ==================================================================
 
 inline qboolean NPC_ClearLOS( const vec3_t start, const vec3_t end )

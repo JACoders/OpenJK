@@ -412,6 +412,7 @@ void ExplodeDeath_Wait( gentity_t *self, gentity_t *inflictor, gentity_t *attack
 void ExplodeDeath( gentity_t *self );
 void GoExplodeDeath( gentity_t *self, gentity_t *other, gentity_t *activator);
 void G_ApplyKnockback( gentity_t *targ, vec3_t newDir, float knockback );
+void G_Knockdown(gentity_t* self, gentity_t* attacker, vec3_t pushDir, float strength, qboolean breakSaberLock);
 void G_Throw( gentity_t *targ, vec3_t newDir, float push );
 
 // damage flags
