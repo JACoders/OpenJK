@@ -352,24 +352,50 @@ Ghoul2 Insert End
 		ent.renderfx|=RF_SETANIMINDEX;
 		ent.skinNum = s1->frame;
 	}
-	else if ( s1->eFlags & EF_ANIM_ONCE )
+	else 
 	{
-		//s1->frame++;
-		//ent.frame = s1->frame;
-		ent.frame = cent->gent->s.frame;
-		ent.renderfx|=RF_CAP_FRAMES;
+		int startFrame = cent->gent->startFrame;
+		int endFrame = cent->gent->endFrame;
+		int prevFrame = -1;
+		//reverse playback?
+		if (cent->gent->startFrame > cent->gent->endFrame)
+		{
+			startFrame = cent->gent->endFrame;
+			endFrame = cent->gent->startFrame;
+			prevFrame = 1;
+		}
+
+		if (s1->eFlags & EF_ANIM_ONCE)
+		{
+			// Don't interpolate oneshot animations as they have different animation 
+			// speeds in the code and we can't know it for sure here.
+			ent.frame = cent->gent->s.frame;
+			ent.renderfx |= RF_CAP_FRAMES;
+		}
+		else if (s1->eFlags & EF_ANIM_ALLFAST)
+		{
+			ent.frame = cg.time / 100;
+			ent.oldframe = ent.frame + prevFrame;
+			ent.backlerp = 1.0f - ((cg.time % 100) / 100.0f);
+			ent.renderfx |= RF_WRAP_FRAMES;
+		}
+		else
+		{
+			ent.frame = s1->frame;
+			ent.oldframe = ent.frame + prevFrame;
+
+			if (ent.oldframe >= startFrame && ent.frame < endFrame)
+			{
+				ent.backlerp = 1.0f - ((cg.time % 50) / 50.0f);
+			}
+			else
+			{
+				ent.backlerp = 0.0f;
+				ent.oldframe = ent.frame;
+			}
+		}
 	}
-	else if ( s1->eFlags & EF_ANIM_ALLFAST )
-	{
-		ent.frame = (cg.time / 100);
-		ent.renderfx|=RF_WRAP_FRAMES;
-	}
-	else
-	{
-		ent.frame = s1->frame;
-	}
-	ent.oldframe = ent.frame;
-	ent.backlerp = 0;
+
 /*
 Ghoul2 Insert Start
 */
@@ -1372,19 +1398,45 @@ Ghoul2 Insert End
 
 	//We're a normal model being moved, animate our model
 	ent.skinNum = 0;
-	if ( s1->eFlags & EF_ANIM_ONCE )
-	{//FIXME: needs to anim at once per 100 ms
-		ent.frame = cent->gent->s.frame;
-		ent.renderfx|=RF_CAP_FRAMES;
-	}
-	else if ( s1->eFlags & EF_ANIM_ALLFAST )
+	int startFrame = cent->gent->startFrame;
+	int endFrame = cent->gent->endFrame;
+	int prevFrame = -1;
+	//reverse playback?
+	if (cent->gent->startFrame > cent->gent->endFrame)
 	{
-		ent.frame = (cg.time / 100);
-		ent.renderfx|=RF_WRAP_FRAMES;
+		startFrame = cent->gent->endFrame;
+		endFrame = cent->gent->startFrame;
+		prevFrame = 1;
+	}
+
+	if (s1->eFlags & EF_ANIM_ONCE)
+	{
+		// Don't interpolate oneshot animations as they have different animation 
+		// speeds in the code and we can't know it for sure here.
+		ent.frame = cent->gent->s.frame;
+		ent.renderfx |= RF_CAP_FRAMES;
+	}
+	else if (s1->eFlags & EF_ANIM_ALLFAST)
+	{
+		ent.frame = cg.time / 100;
+		ent.oldframe = ent.frame + prevFrame;
+		ent.backlerp = 1.0f - ((cg.time % 100) / 100.0f);
+		ent.renderfx |= RF_WRAP_FRAMES;
 	}
 	else
 	{
 		ent.frame = s1->frame;
+		ent.oldframe = ent.frame + prevFrame;
+
+		if (ent.oldframe >= startFrame && ent.frame < endFrame)
+		{
+			ent.backlerp = 1.0f - ((cg.time % 50) / 50.0f);
+		}
+		else
+		{
+			ent.backlerp = 0.0f;
+			ent.oldframe = ent.frame;
+		}
 	}
 
 	if ( s1->eFlags & EF_SHADER_ANIM )
