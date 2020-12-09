@@ -508,39 +508,57 @@ float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
 }
 #endif
 
-//vec3 CalcFresnel( in vec3 f0, in vec3 f90, in float LH )
-//{
-//	return f0 + (f90 - f0) * pow(1.0 - LH, 5.0);
-//}
+float D_Charlie(in float a, in float NH)
+{
+	// Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+	float invAlpha = 1.0 / a;
+	float cos2h = NH * NH;
+	float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+	return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * M_PI);
+}
 
+float V_Neubelt(in float NV, in float NL)
+{
+	// Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
+	return 1.0 / (4.0 * (NL + NV - NL * NV));
+}
 
+float D_Ashikhmin(float roughness, float nh){
+                float a2 = roughness * roughness;
+                float cos2h = nh * nh ;
+                float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+	            float sin4h = sin2h * sin2h;
+                float cot2 = -cos2h / (a2 * sin2h);
+	            return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
 
-float3 Specular_CharlieSheen(float Roughness, float NoH, float NoV, float NoL, float3 SpecularColor, float cloth)
+            }
+
+vec3 Specular_CharlieSheen(float Roughness, float NoH, float NoV, float NoL, vec3 SpecularColor, float cloth)
 {
 	float D = cloth > 0.f ? D_Ashikhmin(Roughness, NoH) : D_Charlie(Roughness, NoH);
 
 	return (D * V_Neubelt(NoV, NoL)) * SpecularColor; //No fresnel in the documentation.
 }
 
-float3 Fresnel_Schlick(const float3 f0, float f90, float VoH)
+vec3 Fresnel_Schlick(const vec3 f0, float f90, float VoH)
 {
 	// Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"
 	return f0 + (f90 - f0) * pow(1.0 - VoH, 5.f);
 }
 
-float Diff_Burley(float roughness, float NoV, float NoL, float LoH)
+/*float Diff_Burley(float roughness, float NoV, float NoL, float LoH)
 {
 	// Burley 2012, "Physically-Based Shading at Disney"
 	float f90 = 0.5 + 2.0 * roughness * LoH * LoH;
 	float lightScatter = Fresnel_Schlick(1.0, f90, NoL);
 	float viewScatter = Fresnel_Schlick(1.0, f90, NoV);
-	return lightScatter * viewScatter * (1.0 / PI);
-}
+	return lightScatter * viewScatter * (1.0 / M_PI);
+}*/
 
-float3 F_Schlick(in vec3 SpecularColor, in float VH)
+vec3 F_Schlick(in vec3 SpecularColor, in float VH)
 {
-	float Fc = Pow5(1 - VH);
-	return saturate(50.0 * SpecularColor.g) * Fc + (1 - Fc) * SpecularColor; //hacky way to decide if reflectivity is too low (< 2%)
+	float Fc = pow(1 - VH, 5);
+	return clamp(50.0 * SpecularColor.g, 0.0, 1.0) * Fc + (1 - Fc) * SpecularColor; //hacky way to decide if reflectivity is too low (< 2%)
 }
 
 float D_GGX( in float NH, in float a )
@@ -554,28 +572,13 @@ float D_GGX( in float NH, in float a )
 	return a2 / (M_PI * d * d);
 }
 
-float D_Charlie(in float a, in float NH)
-{
-	// Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
-	float invAlpha = 1.0 / a;
-	float cos2h = NH * NH;
-	float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
-	return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);
-}
-
-float V_Neubelt(in float NV, in float NL)
-{
-	// Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
-	return 1.0 / (4.0 * (NoL + NoV - NoL * NoV));
-}
-
 // Appoximation of joint Smith term for GGX
 // [Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"]
 float V_SmithJointApprox(in float a, in float NV, in float NL)
 {
 	float Vis_SmithV = NL * (NV * (1 - a) + a);
 	float Vis_SmithL = NV * (NL * (1 - a) + a);
-	return 0.5 * rcp(Vis_SmithV + Vis_SmithL);
+	return 0.5 * (1.0 / (Vis_SmithV + Vis_SmithL));
 }
 
 float CalcVisibility(in float NL, in float NE, in float roughness)
@@ -603,13 +606,13 @@ vec3 CalcSpecular(
 #if 1 //should define this as the base BRDF
 	vec3  F = F_Schlick(specular, VH);
 	float D = D_GGX(NH, roughness);
-	float V = V_SmithJointApprox(rougness, NE, NL);
+	float V = V_SmithJointApprox(roughness, NE, NL);
 #else //and define this as the cloth BRDF
 	//this cloth model essentially uses the metallic input to help transition from isotropic to anisotropic reflections.
 	//as cloth is a microfibre structure, cloth like velevet and silk tends to have anisotropy.
 	vec3 F = specular; //this shading model omits fresnel
 	float D = D_Charlie(roughness, NH);
-	float V = V_Neubelt(roughness, NE, NL);
+	float V = V_Neubelt(NE, NL);
 #endif
 
 	return D * F * V;
@@ -618,7 +621,7 @@ vec3 CalcSpecular(
 //Energy conserving wrap term.
 float WrapLambert(in float NL, in float w)
 {
-	return clamp((NL + w) / Pow2(1.0 + w), 0.0, 1.0);
+	return clamp((NL + w) / pow(1.0 + w, 2), 0.0, 1.0);
 }
 
 vec3 Diffuse_Lambert(in vec3 DiffuseColor)
@@ -643,7 +646,8 @@ vec3 CalcDiffuse(
 	d *= WrapLambert(NL, 0.5);
 	// Cheap subsurface scatter
 	// ideally we should actually have a new colour for subsurface, but for cloth most times it makes sense to just use the diffuse.
-	d *= clamp(diffuse + NoL, 0.0, 1.0);
+	d *= clamp(diffuse + NL, 0.0, 1.0);
+	return d;
 #endif
 }
 
@@ -916,14 +920,14 @@ void main()
 
   #if defined(USE_LIGHT_VECTOR)
 	float NH = clamp(dot(N, H), 0.0, 1.0);
-
-	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness);
+	float VH = clamp(dot(E, H), 0.0, 1.0);
+	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, VH, roughness);
   #endif
 
   #if defined(USE_LIGHTMAP) && defined(USE_DELUXEMAP) && defined(r_deluxeSpecular)
 	float NH = clamp(dot(N, H), 0.0, 1.0);
-
-	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness) * r_deluxeSpecular;
+	float VH = clamp(dot(E, H), 0.0, 1.0);
+	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, VH, roughness) * r_deluxeSpecular;
   #endif
 
 	vec3 reflectance = Fd + Fs;
@@ -937,9 +941,9 @@ void main()
 	float NL2  = clamp(dot(N,  L2), 0.0, 1.0);
 	float L2H2 = clamp(dot(L2, H2), 0.0, 1.0);
 	float NH2  = clamp(dot(N,  H2), 0.0, 1.0);
-
+	float VH2  = clamp(dot(E, H), 0.0, 1.0);
 	reflectance  = CalcDiffuse(diffuse.rgb, NE, NL2, L2H2, roughness);
-	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, L2H2, roughness);
+	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, L2H2, VH2, roughness);
 
 	lightColor = u_PrimaryLightColor * var_Color.rgb;
     #if defined(USE_SHADOWMAP)
