@@ -508,21 +508,79 @@ float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
 }
 #endif
 
-vec3 CalcFresnel( in vec3 f0, in vec3 f90, in float LH )
+//vec3 CalcFresnel( in vec3 f0, in vec3 f90, in float LH )
+//{
+//	return f0 + (f90 - f0) * pow(1.0 - LH, 5.0);
+//}
+
+
+
+float3 Specular_CharlieSheen(float Roughness, float NoH, float NoV, float NoL, float3 SpecularColor, float cloth)
 {
-	return f0 + (f90 - f0) * pow(1.0 - LH, 5.0);
+	float D = cloth > 0.f ? D_Ashikhmin(Roughness, NoH) : D_Charlie(Roughness, NoH);
+
+	return (D * V_Neubelt(NoV, NoL)) * SpecularColor; //No fresnel in the documentation.
 }
 
-float CalcGGX( in float NH, in float roughness )
+float3 Fresnel_Schlick(const float3 f0, float f90, float VoH)
 {
-	float alphaSq = roughness*roughness;
+	// Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"
+	return f0 + (f90 - f0) * pow(1.0 - VoH, 5.f);
+}
+
+float Diff_Burley(float roughness, float NoV, float NoL, float LoH)
+{
+	// Burley 2012, "Physically-Based Shading at Disney"
+	float f90 = 0.5 + 2.0 * roughness * LoH * LoH;
+	float lightScatter = Fresnel_Schlick(1.0, f90, NoL);
+	float viewScatter = Fresnel_Schlick(1.0, f90, NoV);
+	return lightScatter * viewScatter * (1.0 / PI);
+}
+
+float3 F_Schlick(in vec3 SpecularColor, in float VH)
+{
+	float Fc = Pow5(1 - VH);
+	return saturate(50.0 * SpecularColor.g) * Fc + (1 - Fc) * SpecularColor; //hacky way to decide if reflectivity is too low (< 2%)
+}
+
+float D_GGX( in float NH, in float a )
+{
+	/*float alphaSq = roughness*roughness;
 	float f = (NH * alphaSq - NH) * NH + 1.0;
-	return alphaSq / (f * f);
+	return alphaSq / (f * f);*/
+
+	float a2 = a * a;
+	float d = (NH * a2 - NH) * NH + 1;
+	return a2 / (M_PI * d * d);
 }
 
-float CalcVisibility( in float NL, in float NE, in float roughness )
+float D_Charlie(in float a, in float NH)
 {
-	float alphaSq = roughness*roughness;
+	// Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+	float invAlpha = 1.0 / a;
+	float cos2h = NH * NH;
+	float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+	return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);
+}
+
+float V_Neubelt(in float NV, in float NL)
+{
+	// Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
+	return 1.0 / (4.0 * (NoL + NoV - NoL * NoV));
+}
+
+// Appoximation of joint Smith term for GGX
+// [Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"]
+float V_SmithJointApprox(in float a, in float NV, in float NL)
+{
+	float Vis_SmithV = NL * (NV * (1 - a) + a);
+	float Vis_SmithL = NV * (NL * (1 - a) + a);
+	return 0.5 * rcp(Vis_SmithV + Vis_SmithL);
+}
+
+float CalcVisibility(in float NL, in float NE, in float roughness)
+{
+	float alphaSq = roughness * roughness;
 
 	float lambdaE = NL * sqrt((-NE * alphaSq + NE) * NE + alphaSq);
 	float lambdaL = NE * sqrt((-NL * alphaSq + NL) * NL + alphaSq);
@@ -537,14 +595,35 @@ vec3 CalcSpecular(
 	in float NL,
 	in float NE,
 	in float LH,
+	in float VH,
 	in float roughness
 )
 {
-	vec3  F = CalcFresnel(specular, vec3(1.0), LH);
-	float D = CalcGGX(NH, roughness);
-	float V = CalcVisibility(NL, NE, roughness);
+	//Using #if to define our BRDF's is a good idea.
+#if 1 //should define this as the base BRDF
+	vec3  F = F_Schlick(specular, VH);
+	float D = D_GGX(NH, roughness);
+	float V = V_SmithJointApprox(rougness, NE, NL);
+#else //and define this as the cloth BRDF
+	//this cloth model essentially uses the metallic input to help transition from isotropic to anisotropic reflections.
+	//as cloth is a microfibre structure, cloth like velevet and silk tends to have anisotropy.
+	vec3 F = specular; //this shading model omits fresnel
+	float D = D_Charlie(roughness, NH);
+	float V = V_Neubelt(roughness, NE, NL);
+#endif
 
 	return D * F * V;
+}
+
+//Energy conserving wrap term.
+float WrapLambert(in float NL, in float w)
+{
+	return clamp((NL + w) / Pow2(1.0 + w), 0.0, 1.0);
+}
+
+vec3 Diffuse_Lambert(in vec3 DiffuseColor)
+{
+	return DiffuseColor * (1 / M_PI);
 }
 
 vec3 CalcDiffuse(
@@ -555,7 +634,17 @@ vec3 CalcDiffuse(
 	in float roughness
 )
 {
-	return diffuse;
+	//Using #if to define our diffuse's is a good idea.
+#if 1 //should define this as the base BRDF
+	return Diffuse_Lambert(diffuse);
+#else //and define this as the cloth diffuse
+	//this cloth model has a wrapped diffuse, we can be energy conservant here.
+	vec3 d = Diffuse_Lambert(diffuse);
+	d *= WrapLambert(NL, 0.5);
+	// Cheap subsurface scatter
+	// ideally we should actually have a new colour for subsurface, but for cloth most times it makes sense to just use the diffuse.
+	d *= clamp(diffuse + NoL, 0.0, 1.0);
+#endif
 }
 
 float CalcLightAttenuation(float point, float normDist)
@@ -653,8 +742,9 @@ vec3 CalcDynamicLightContribution(
 		float NL = clamp(dot(N, L), 0.0, 1.0);
 		float LH = clamp(dot(L, H), 0.0, 1.0);
 		float NH = clamp(dot(N, H), 0.0, 1.0);
+		float VH = clamp(dot(E, H), 0.0, 1.0);
 
-		vec3 reflectance = diffuse + CalcSpecular(specular, NH, NL, NE, LH, roughness);
+		vec3 reflectance = diffuse + CalcSpecular(specular, NH, NL, NE, LH, VH, roughness);
 
 		outColor += light.color * reflectance * attenuation * NL;
 	}
