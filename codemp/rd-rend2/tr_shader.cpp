@@ -1958,6 +1958,13 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			continue;
 		}
 		//
+		// If this stage is cloth
+		else if (Q_stricmp(token, "cloth") == 0)
+		{
+			stage->cloth = qtrue;
+
+			continue;
+		}
 		// surfaceSprites <type> ...
 		//
 		else if ( !Q_stricmp( token, "surfacesprites" ) )
@@ -3105,6 +3112,9 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 
 	if (stage->glow)
 		defs |= LIGHTDEF_USE_GLOW_BUFFER;
+
+	if (stage->cloth)
+		defs |= LIGHTDEF_USE_CLOTH_BRDF;
 
 	if (stage->alphaTestType != ALPHA_TEST_NONE)
 		defs |= LIGHTDEF_USE_ALPHA_TEST;

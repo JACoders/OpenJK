@@ -546,6 +546,7 @@ vec3 Fresnel_Schlick(const vec3 f0, float f90, float VoH)
 	return f0 + (f90 - f0) * pow(1.0 - VoH, 5.f);
 }
 
+// FIXME: Fresnel_Schlick returns vec3, function assumes float -> compile error
 /*float Diff_Burley(float roughness, float NoV, float NoL, float LoH)
 {
 	// Burley 2012, "Physically-Based Shading at Disney"
@@ -603,7 +604,7 @@ vec3 CalcSpecular(
 )
 {
 	//Using #if to define our BRDF's is a good idea.
-#if 1 //should define this as the base BRDF
+#if !defined(USE_CLOTH_BRDF) //should define this as the base BRDF
 	vec3  F = F_Schlick(specular, VH);
 	float D = D_GGX(NH, roughness);
 	float V = V_SmithJointApprox(roughness, NE, NL);
@@ -626,7 +627,7 @@ float WrapLambert(in float NL, in float w)
 
 vec3 Diffuse_Lambert(in vec3 DiffuseColor)
 {
-	return DiffuseColor * (1 / M_PI);
+	return DiffuseColor * (1.0 / M_PI);
 }
 
 vec3 CalcDiffuse(
@@ -638,7 +639,7 @@ vec3 CalcDiffuse(
 )
 {
 	//Using #if to define our diffuse's is a good idea.
-#if 1 //should define this as the base BRDF
+#if !defined(USE_CLOTH_BRDF) //should define this as the base BRDF
 	return Diffuse_Lambert(diffuse);
 #else //and define this as the cloth diffuse
 	//this cloth model has a wrapped diffuse, we can be energy conservant here.
@@ -766,18 +767,32 @@ vec3 CalcIBLContribution(
 )
 {
 #if defined(PER_PIXEL_LIGHTING) &&  defined(USE_CUBEMAP)
-	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
-
 	vec3 R = reflect(-E, N);
 
 	// parallax corrected cubemap (cheaper trick)
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
 	vec3 eyeToCubeCenter = (u_CubeMapInfo.xyz - viewOrigin) * 0.001;
 	vec3 parallax = eyeToCubeCenter + u_CubeMapInfo.w * viewDir * 0.001;
-
 	vec3 cubeLightColor = textureLod(u_CubeMap, R - parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
 
-	return cubeLightColor * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
+	#if !defined(USE_CLOTH_BRDF) //should define this as the base BRDF
+		vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
+		return cubeLightColor * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
+	#else //and define this as the cloth brdf
+		vec3  L  = -normalize(R-parallax);
+		vec3  H  = normalize(L + E);
+		float NL = clamp(dot(N, L), 0.0, 1.0);
+		float NH = clamp(dot(N, H), 0.0, 1.0);
+		return cubeLightColor * CalcSpecular(
+			specular,
+			NH,
+			NL,
+			NE,
+			0.0,
+			0.0,
+			roughness
+		);
+	#endif
 #else
 	return vec3(0.0);
 #endif

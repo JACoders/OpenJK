@@ -1640,6 +1640,11 @@ static int GLSL_LoadGPUProgramLightAll(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
 
+		if (i & LIGHTDEF_USE_CLOTH_BRDF)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_CLOTH_BRDF\n");
+		}
+
 		if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");

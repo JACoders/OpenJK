@@ -867,6 +867,7 @@ typedef struct {
 	qboolean		active;
 	qboolean		isDetail;
 	qboolean		glow;
+	qboolean		cloth;
 
 	AlphaTestType	alphaTestType;
 	
@@ -1182,12 +1183,13 @@ enum
 	LIGHTDEF_USE_SKELETAL_ANIMATION 	= 0x0040,
 	LIGHTDEF_USE_GLOW_BUFFER     		= 0x0080,
 	LIGHTDEF_USE_ALPHA_TEST		 		= 0x0100,
+	LIGHTDEF_USE_CLOTH_BRDF				= 0x0200,
 
 	LIGHTDEF_LIGHTTYPE_MASK      		= LIGHTDEF_USE_LIGHTMAP |
 										  LIGHTDEF_USE_LIGHT_VECTOR |
 										  LIGHTDEF_USE_LIGHT_VERTEX,
 
-	LIGHTDEF_ALL                 		= 0x01FF,
+	LIGHTDEF_ALL                 		= 0x03FF,
 	LIGHTDEF_COUNT               		= LIGHTDEF_ALL + 1
 };
 
