@@ -105,5 +105,5 @@ int NextPowerOfTwo(int in);
 unsigned short FloatToHalf(float in);
 uint32_t ReverseBits(uint32_t v);
 float GSmithCorrelated(float roughness, float ndotv, float ndotl);
-
+float V_Neubelt(float NdotV, float NdotL);
 #endif

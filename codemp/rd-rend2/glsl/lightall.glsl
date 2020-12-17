@@ -546,15 +546,14 @@ vec3 Fresnel_Schlick(const vec3 f0, float f90, float VoH)
 	return f0 + (f90 - f0) * pow(1.0 - VoH, 5.f);
 }
 
-// FIXME: Fresnel_Schlick returns vec3, function assumes float -> compile error
-/*float Diff_Burley(float roughness, float NoV, float NoL, float LoH)
+vec3 Diff_Burley(float roughness, float NoV, float NoL, float LoH)
 {
 	// Burley 2012, "Physically-Based Shading at Disney"
 	float f90 = 0.5 + 2.0 * roughness * LoH * LoH;
-	float lightScatter = Fresnel_Schlick(1.0, f90, NoL);
-	float viewScatter = Fresnel_Schlick(1.0, f90, NoV);
+	vec3 lightScatter = Fresnel_Schlick(vec3(1.0), f90, NoL);
+	vec3 viewScatter = Fresnel_Schlick(vec3(1.0), f90, NoV);
 	return lightScatter * viewScatter * (1.0 / M_PI);
-}*/
+}
 
 vec3 F_Schlick(in vec3 SpecularColor, in float VH)
 {
@@ -776,22 +775,11 @@ vec3 CalcIBLContribution(
 	vec3 cubeLightColor = textureLod(u_CubeMap, R - parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
 
 	#if !defined(USE_CLOTH_BRDF) //should define this as the base BRDF
-		vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rgb;
+		vec2 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rg;
 		return cubeLightColor * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
 	#else //and define this as the cloth brdf
-		vec3  L  = -normalize(R-parallax);
-		vec3  H  = normalize(L + E);
-		float NL = clamp(dot(N, L), 0.0, 1.0);
-		float NH = clamp(dot(N, H), 0.0, 1.0);
-		return cubeLightColor * CalcSpecular(
-			specular,
-			NH,
-			NL,
-			NE,
-			0.0,
-			0.0,
-			roughness
-		);
+		float EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).b;
+		return cubeLightColor * EnvBRDF;
 	#endif
 #else
 	return vec3(0.0);
@@ -923,7 +911,7 @@ void main()
 
 	// energy conservation
 	diffuse.rgb *= vec3(1.0) - specular.rgb;
-	float roughness = max(1.0 - specular.a, 0.02);
+	float roughness = mix(1.0, 0.01, specular.a);
 
 	vec3  H  = normalize(L + E);
 	float NE = abs(dot(N, E)) + 1e-5;
@@ -939,7 +927,7 @@ void main()
 	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, VH, roughness);
   #endif
 
-  #if defined(USE_LIGHTMAP) && defined(USE_DELUXEMAP) && defined(r_deluxeSpecular)
+  #if (defined(USE_LIGHTMAP) && defined(USE_DELUXEMAP) && defined(r_deluxeSpecular)) || defined(USE_LIGHT_VERTEX)
 	float NH = clamp(dot(N, H), 0.0, 1.0);
 	float VH = clamp(dot(E, H), 0.0, 1.0);
 	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, VH, roughness) * r_deluxeSpecular;

@@ -258,3 +258,9 @@ float GSmithCorrelated(float roughness, float NdotV, float NdotL)
 
 	return 0.5f / (visV + visL);
 }
+
+float V_Neubelt(float NdotV, float NdotL)
+{
+	// Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
+	return 1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV));
+}

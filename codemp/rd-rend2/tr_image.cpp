@@ -1989,6 +1989,10 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 		dataFormat = GL_RG;
 		dataType = GL_HALF_FLOAT;
 		break;
+	case GL_RGB16F:
+		dataFormat = GL_RGB;
+		dataType = GL_HALF_FLOAT;
+		break;
 	case GL_RGBA16F:
 		dataFormat = GL_RGBA;
 		dataType = GL_HALF_FLOAT;
@@ -3048,7 +3052,7 @@ static void R_CreateEnvBrdfLUT(void) {
 	if (!r_cubeMapping->integer)
 		return;
 
-	uint16_t data[LUT_WIDTH][LUT_HEIGHT][2];
+	uint16_t data[LUT_WIDTH][LUT_HEIGHT][3];
 
 	unsigned const numSamples = 1024;
 
@@ -3067,43 +3071,73 @@ static void R_CreateEnvBrdfLUT(void) {
 
 			float scale = 0.0f;
 			float bias = 0.0f;
+			float velvet = 0.0f;
 
 			for (unsigned i = 0; i < numSamples; ++i)
 			{
 				float const e1 = (float)i / numSamples;
 				float const e2 = (float)((double)ReverseBits(i) / (double)0x100000000LL);
-
 				float const phi = 2.0f * M_PI * e1;
-				float const cosTheta = sqrtf((1.0f - e2) / (1.0f + (m2 - 1.0f) * e2));
-				float const sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
 
-				float const hx = sinTheta * cosf(phi);
-				float const hy = sinTheta * sinf(phi);
-				float const hz = cosTheta;
-
-				float const vdh = vx * hx + vy * hy + vz * hz;
-				float const lz = 2.0f * vdh * hz - vz;
-
-				float const NdotL = MAX(lz, 0.0f);
-				float const NdotH = MAX(hz, 0.0f);
-				float const VdotH = MAX(vdh, 0.0f);
-
-				if (NdotL > 0.0f)
+				// GGX Distribution
 				{
-					float const visibility = GSmithCorrelated(roughness, NdotV, NdotL);
-					float const NdotLVisPDF = NdotL * visibility * (4.0f * VdotH / NdotH);
-					float const fresnel = powf(1.0f - VdotH, 5.0f);
+					float const cosTheta = sqrtf((1.0f - e2) / (1.0f + (m2 - 1.0f) * e2));
+					float const sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
 
-					scale += NdotLVisPDF * (1.0f - fresnel);
-					bias += NdotLVisPDF * fresnel;
+					float const hx = sinTheta * cosf(phi);
+					float const hy = sinTheta * sinf(phi);
+					float const hz = cosTheta;
+
+					float const vdh = vx * hx + vy * hy + vz * hz;
+					float const lz = 2.0f * vdh * hz - vz;
+
+					float const NdotL = MAX(lz, 0.0f);
+					float const NdotH = MAX(hz, 0.0f);
+					float const VdotH = MAX(vdh, 0.0f);
+
+					if (NdotL > 0.0f)
+					{
+						float const visibility = GSmithCorrelated(roughness, NdotV, NdotL);
+						float const NdotLVisPDF = NdotL * visibility * (4.0f * VdotH / NdotH);
+						float const fresnel = powf(1.0f - VdotH, 5.0f);
+
+						scale += NdotLVisPDF * (1.0f - fresnel);
+						bias += NdotLVisPDF * fresnel;
+					}
+				}
+
+				// Charlie Distribution
+				{
+					float const sinTheta = sqrtf(powf(e2, (2.0f * roughness) / ((2.0f * roughness) + 1.0f)));
+					float const cosTheta = sqrtf(1.0f - sinTheta * sinTheta);
+
+					float const hx = sinTheta * cosf(phi);
+					float const hy = sinTheta * sinf(phi);
+					float const hz = cosTheta;
+
+					float const vdh = vx * hx + vy * hy + vz * hz;
+					float const lz = 2.0f * vdh * hz - vz;
+
+					float const NdotL = MAX(lz, 0.0f);
+					float const NdotH = MAX(hz, 0.0f);
+					float const VdotH = MAX(vdh, 0.0f);
+
+					if (NdotL > 0.0f)
+					{
+						float const velvetV = V_Neubelt(NdotV, NdotL);
+						float const rcp_pdf = 4.0f * VdotH / NdotH;
+						velvet += NdotL * velvetV * rcp_pdf;
+					}
 				}
 			}
 
 			scale /= numSamples;
 			bias /= numSamples;
+			velvet /= numSamples;
 
 			data[y][x][0] = FloatToHalf(scale);
 			data[y][x][1] = FloatToHalf(bias);
+			data[y][x][2] = FloatToHalf(velvet);
 		}
 	}
 
@@ -3114,7 +3148,7 @@ static void R_CreateEnvBrdfLUT(void) {
 		LUT_HEIGHT,
 		IMGTYPE_COLORALPHA,
 		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-		GL_RG16F);
+		GL_RGB16F);
 }
 
 /*
