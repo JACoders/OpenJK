@@ -140,11 +140,6 @@ if(WIN32 AND CMAKE_VERSION VERSION_LESS "3.4")
 	message(WARNING "Building on Windows platform with CMake version less than 3.4 is deprecated. Manifest file will fail to be included.")
 endif()
 
-# Current Git SHA1 hash
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-message(STATUS "Git revision is ${GIT_SHA1}")
-
 #=============================================================================
 #
 # Binary names
@@ -298,21 +293,37 @@ set(SharedDefines ${SharedDefines} "$<$<CONFIG:Debug>:_DEBUG>")
 set(SharedDefines ${SharedDefines} "$<$<NOT:$<CONFIG:Debug>>:FINAL_BUILD>")
 
 if(BuildPortableVersion)
-	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
-endif()
-
-# https://reproducible-builds.org/specs/source-date-epoch/
-if (NOT ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL ""))
-	execute_process(COMMAND "date"
-		"--date=@$ENV{SOURCE_DATE_EPOCH}" "+%b %_d %Y"
-		OUTPUT_VARIABLE source_date
-		ERROR_QUIET
-		OUTPUT_STRIP_TRAILING_WHITESPACE)
-	set(SharedDefines ${SharedDefines} "SOURCE_DATE=\"${source_date}\"")
+	set(BUILD_PORTABLE ON)
 endif()
 
 #=============================================================================
 #
+# Generate version file
+#
+#=============================================================================
+
+# Reproducible builds
+# https://reproducible-builds.org/specs/source-date-epoch/
+if ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL "")
+	message(STATUS "SOURCE_DATE_EPOCH is not set: SOURCE_DATE will be set to the compile-time date")
+else()
+	execute_process(
+		COMMAND "date" "--date=@$ENV{SOURCE_DATE_EPOCH}" "+%b %_d %Y"
+		OUTPUT_VARIABLE SOURCE_DATE
+		ERROR_QUIET
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	message(STATUS "SOURCE_DATE_EPOCH is set ($ENV{SOURCE_DATE_EPOCH}): SOURCE_DATE set to \"${SOURCE_DATE}\"")
+endif()
+
+# Current Git SHA1 hash
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_HASH)
+message(STATUS "Git revision is ${GIT_HASH}")
+
+configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
+
+#=============================================================================
+
 # Files shared across all projects
 #
 #=============================================================================
@@ -324,6 +335,7 @@ set(SharedCommonFiles
 	"${SharedDir}/qcommon/q_string.h"
 	"${SharedDir}/qcommon/q_string.c"
 	"${SharedDir}/qcommon/q_platform.h"
+	"${CMAKE_BINARY_DIR}/shared/qcommon/q_version.h"
 	)
 set(SharedCommonSafeFiles
 	"${SharedDir}/qcommon/safe/gsl.h"

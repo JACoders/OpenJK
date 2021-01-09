@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "stringed_ingame.h"
 #include "qcommon/cm_public.h"
 #include "qcommon/game_version.h"
+#include "qcommon/q_version.h"
 #include "../server/NPCNav/navigator.h"
 #include "../shared/sys/sys_local.h"
 #if defined(_WIN32)
