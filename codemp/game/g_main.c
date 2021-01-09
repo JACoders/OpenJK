@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_nav.h"
 #include "bg_saga.h"
 #include "b_local.h"
+#include "qcommon/q_version.h"
 
 NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
 void (*Com_Printf)( const char *msg, ... );
