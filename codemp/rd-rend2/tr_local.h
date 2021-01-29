@@ -844,6 +844,14 @@ enum specularType
 	SPEC_RMOS,  // calculate spec from rmos texture with a specular of 0.0 - 0.08 from input
 	SPEC_MOXR,  // calculate spec from moxr texture with a specular of 0.04 for dielectric materials
 	SPEC_MOSR,  // calculate spec from mosr texture with a specular of 0.0 - 0.08 from input
+	SPEC_ORM,	// calculate spec from orm  texture with a specular of 0.04 for dielectric materials
+	SPEC_ORMS,	// calculate spec from orms texture with a specular of 0.0 - 0.08 from input
+};
+
+enum roughnessType
+{
+	ROUGHNESS_PERCEPTUAL,
+	ROUGHNESS_LINEAR,
 };
 
 enum AlphaTestType
@@ -3579,7 +3587,7 @@ void RE_AddDecalToScene ( qhandle_t shader, const vec3_t origin, const vec3_t di
 void R_AddDecals( void );
 
 image_t	*R_FindImageFile( const char *name, imgType_t type, int flags );
-void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type);
+void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type, int roughnessType);
 qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);

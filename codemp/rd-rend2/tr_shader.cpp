@@ -1200,6 +1200,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	char bufferPackedTextureName[MAX_QPATH];
 	char bufferBaseColorTextureName[MAX_QPATH];
 	int  buildSpecFromPacked = SPEC_NONE;
+	int roughnessType = ROUGHNESS_PERCEPTUAL;
 	qboolean foundBaseColor = qfalse;
 
 	stage->active = qtrue;
@@ -1404,6 +1405,20 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 			buildSpecFromPacked = !Q_stricmp(token, "mosrMap") ? SPEC_MOSR : SPEC_MOXR;
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
+		}
+		//
+		// ormMap <name> || ormsMap <name>
+		//
+		else if (!Q_stricmp(token, "ormMap") || !Q_stricmp(token, "ormsMap"))
+		{
+		token = COM_ParseExt(text, qfalse);
+		if (!token[0])
+		{
+			ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'ormMap' keyword in shader '%s'\n", shader.name);
+			return qfalse;
+		}
+		buildSpecFromPacked = !Q_stricmp(token, "ormsMap") ? SPEC_ORMS : SPEC_ORM;
+		Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
 		// animMap <frequency> <image1> .... <imageN>
@@ -1627,6 +1642,14 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 
 			stage->specularScale[3] = Com_Clamp(0.0f, 1.0f, 1.0 - atof(token));
+		}
+		//
+		// linearRoughness
+		//
+		else if (!Q_stricmp(token, "linearroughness"))
+		{
+			roughnessType = ROUGHNESS_LINEAR;
+			continue;
 		}
 		//
 		// parallaxDepth <value>
@@ -2063,7 +2086,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		if (shader.noTC)
 			flags |= IMGFLAG_NO_COMPRESSION;
 
-		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked);
+		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked, roughnessType);
 
 		VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
@@ -3112,7 +3135,7 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 			{
 				COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
 				Q_strcat(specularName, MAX_QPATH, "_rmo");
-				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO);
+				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO, ROUGHNESS_PERCEPTUAL);
 
 				if (stage->bundle[TB_SPECULARMAP].image[0])
 					VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
