@@ -893,6 +893,7 @@ typedef struct {
 
 	vec4_t normalScale;
 	vec4_t specularScale;
+	float  parallaxBias;
 
 	surfaceSprite_t	*ss;
 
@@ -1332,6 +1333,7 @@ typedef enum
 	UNIFORM_VERTEXLERP,
 	UNIFORM_NORMALSCALE,
 	UNIFORM_SPECULARSCALE,
+	UNIFORM_PARALLAXBIAS,
 
 	UNIFORM_VIEWINFO, // znear, zfar, width/2, height/2
 	UNIFORM_VIEWORIGIN,
@@ -2633,6 +2635,7 @@ extern  cvar_t  *r_normalMapping;
 extern  cvar_t  *r_specularMapping;
 extern  cvar_t  *r_deluxeMapping;
 extern  cvar_t  *r_parallaxMapping;
+extern  cvar_t  *r_forceParallaxBias;
 extern  cvar_t  *r_cubeMapping;
 extern  cvar_t  *r_cubeMappingBounces;
 extern  cvar_t  *r_baseNormalX;

@@ -1643,6 +1643,20 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			stage->normalScale[3] = atof( token );
 		}
 		//
+		// parallaxBias <value>
+		//
+		else if (!Q_stricmp(token, "parallaxbias"))
+		{
+			token = COM_ParseExt(text, qfalse);
+			if (token[0] == 0)
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for parallaxBias in shader '%s'\n", shader.name);
+				continue;
+			}
+
+			stage->parallaxBias = atof(token);
+		}
+		//
 		// normalScale <xy>
 		// or normalScale <x> <y>
 		// or normalScale <x> <y> <height>

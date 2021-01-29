@@ -425,6 +425,7 @@ uniform vec4 u_EnableTextures;
 
 uniform vec4 u_NormalScale;
 uniform vec4 u_SpecularScale;
+uniform float u_ParallaxBias;
 
 #if defined(PER_PIXEL_LIGHTING) && defined(USE_CUBEMAP)
 uniform vec4 u_CubeMapInfo;
@@ -460,10 +461,12 @@ float SampleDepth(sampler2D normalMap, vec2 t)
 	return 1.0 - texture(normalMap, t).r;
 }
 
-float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
+float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, in float parallaxBias)
 {
 	const int linearSearchSteps = 16;
-	const int binarySearchSteps = 6;
+	const int binarySearchSteps = 4;
+
+	vec2 dp = inDp - parallaxBias * ds;
 
 	// current size of search window
 	float size = 1.0 / float(linearSearchSteps);
@@ -504,7 +507,13 @@ float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
 		depth += size;
 	}
 
-	return bestDepth;
+	vec2 prevTexCoords = dp + ds * (depth-size);
+	float afterDepth  = SampleDepth(normalMap, dp + ds * depth) - depth;
+	float beforeDepth = SampleDepth(normalMap, prevTexCoords) - depth + size;
+	float weight = afterDepth / (afterDepth - beforeDepth);
+	bestDepth -= weight*size;
+
+	return bestDepth - parallaxBias;
 }
 #endif
 
@@ -710,7 +719,7 @@ vec2 GetParallaxOffset(in vec2 texCoords, in vec3 E, in mat3 tangentToWorld )
 	vec3 offsetDir = normalize(E * tangentToWorld);
 	offsetDir.xy *= -u_NormalScale.a / offsetDir.z;
 
-	return offsetDir.xy * RayIntersectDisplaceMap(texCoords, offsetDir.xy, u_NormalMap);
+	return offsetDir.xy * RayIntersectDisplaceMap(texCoords, offsetDir.xy, u_NormalMap, u_ParallaxBias);
 #else
 	return vec2(0.0);
 #endif
