@@ -911,6 +911,8 @@ void main()
 	// light is below the surface
 	ambientColor = clamp(ambientColor - lightColor * surfNL, 0.0, 1.0);
   #endif
+	lightColor *= M_PI;
+	ambientColor *= M_PI;
 
 	vec4 specular = vec4(1.0);
   #if defined(USE_SPECULARMAP)
