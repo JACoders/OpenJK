@@ -1246,6 +1246,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					stage->bundle[0].image[0] = tr.whiteImage;
 				} else {
 					stage->bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[0]];
+					if (r_deluxeMapping->integer && tr.worldDeluxeMapping)
+						stage->bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
 				}
 				continue;
 			}
@@ -3016,8 +3018,7 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 	if (r_deluxeMapping->integer && tr.worldDeluxeMapping && lightmap)
 	{
 		//ri.Printf(PRINT_ALL, ", deluxemap");
-		stage->bundle[TB_DELUXEMAP] = lightmap->bundle[0];
-		stage->bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
+		stage->bundle[TB_DELUXEMAP] = lightmap->bundle[TB_DELUXEMAP];
 	}
 
 	if (r_normalMapping->integer)
@@ -3156,38 +3157,6 @@ static qboolean CollapseStagesToGLSL(void)
 
 	if (!skip)
 	{
-		// if 2+ stages and first stage is lightmap, switch them
-		// this makes it easier for the later bits to process
-		if (stages[0].active &&
-			stages[0].bundle[0].tcGen >= TCGEN_LIGHTMAP &&
-			stages[0].bundle[0].tcGen <= TCGEN_LIGHTMAP3 &&
-			stages[1].active)
-		{
-			int blendBits = stages[1].stateBits & ( GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS );
-
-			if (blendBits == (GLS_DSTBLEND_SRC_COLOR | GLS_SRCBLEND_ZERO)
-				|| blendBits == (GLS_DSTBLEND_ZERO | GLS_SRCBLEND_DST_COLOR))
-			{
-				int stateBits0 = stages[0].stateBits;
-				int stateBits1 = stages[1].stateBits;
-				shaderStage_t swapStage;
-
-				swapStage = stages[0];
-				stages[0] = stages[1];
-				stages[1] = swapStage;
-
-				stages[0].stateBits = stateBits0;
-				stages[1].stateBits = stateBits1;
-
-				ri.Printf (PRINT_DEVELOPER, "> Swapped first and second stage.\n");
-				ri.Printf (PRINT_DEVELOPER, "-> First stage is now: %s\n", stages[0].bundle[0].image[0]->imgName);
-				ri.Printf (PRINT_DEVELOPER, "-> Second stage is now: %s\n", stages[1].bundle[0].image[0]->imgName);
-			}
-		}
-	}
-
-	if (!skip)
-	{
 		// scan for shaders that aren't supported
 		for (i = 0; i < MAX_SHADER_STAGES; i++)
 		{
@@ -3208,7 +3177,8 @@ static qboolean CollapseStagesToGLSL(void)
 				int blendBits = pStage->stateBits & ( GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS );
 				
 				if (blendBits != (GLS_DSTBLEND_SRC_COLOR | GLS_SRCBLEND_ZERO)
-					&& blendBits != (GLS_DSTBLEND_ZERO | GLS_SRCBLEND_DST_COLOR))
+					&& blendBits != (GLS_DSTBLEND_ZERO | GLS_SRCBLEND_DST_COLOR)
+					&& blendBits != (GLS_DSTBLEND_ONE | GLS_SRCBLEND_ONE)) //lightstyle lightmap stages
 				{
 					skip = qtrue;
 					break;
@@ -3280,8 +3250,7 @@ static qboolean CollapseStagesToGLSL(void)
 			parallax = qfalse;
 			lightmap = NULL;
 
-
-			// we have a diffuse map, find matching normal, specular, and lightmap
+			// we have a diffuse map, find matching lightmap
 			for (j = i + 1; j < MAX_SHADER_STAGES; j++)
 			{
 				shaderStage_t *pStage2 = &stages[j];
@@ -3292,21 +3261,14 @@ static qboolean CollapseStagesToGLSL(void)
 				if (pStage2->glow)
 					continue;
 
-				switch(pStage2->type)
+				if (pStage2->bundle[0].tcGen >= TCGEN_LIGHTMAP &&
+					pStage2->bundle[0].tcGen <= TCGEN_LIGHTMAP3 &&
+					pStage2->rgbGen != CGEN_EXACT_VERTEX)
 				{
-					case ST_COLORMAP:
-						if (pStage2->bundle[0].tcGen >= TCGEN_LIGHTMAP &&
-							pStage2->bundle[0].tcGen <= TCGEN_LIGHTMAP3 &&
-							pStage2->rgbGen != CGEN_EXACT_VERTEX)
-						{
-							ri.Printf (PRINT_DEVELOPER, "> Setting lightmap for %s to %s\n", pStage->bundle[0].image[0]->imgName, pStage2->bundle[0].image[0]->imgName);
-							lightmap = pStage2;
-							lightmaps[j] = NULL;
-						}
-						break;
-
-					default:
-						break;
+					ri.Printf (PRINT_DEVELOPER, "> Setting lightmap for %s to %s\n", pStage->bundle[0].image[0]->imgName, pStage2->bundle[0].image[0]->imgName);
+					lightmap = pStage2;
+					lightmaps[j] = NULL;
+					break;
 				}
 			}
 
@@ -3332,6 +3294,40 @@ static qboolean CollapseStagesToGLSL(void)
 			}
 
 			CollapseStagesToLightall(diffuse, lightmap, diffuselit, vertexlit, tcgen);
+
+			//find lightstyle stages
+			if (lightmap != NULL)
+			{
+				for (j = i + 2; j < MAX_SHADER_STAGES; j++)
+				{
+					shaderStage_t *pStage2 = &stages[j];
+
+					int blendBits = pStage2->stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS);
+
+					if (blendBits != (GLS_DSTBLEND_ONE | GLS_SRCBLEND_ONE)
+						|| (pStage2->bundle[0].tcGen < TCGEN_LIGHTMAP && pStage2->bundle[0].tcGen > TCGEN_LIGHTMAP3)
+						|| pStage2->rgbGen != CGEN_LIGHTMAPSTYLE)
+						break;
+
+					//style stage is the previous lightmap stage which is not used anymore
+					shaderStage_t *styleStage = &stages[j - 1];
+
+					int style = pStage2->lightmapStyle;
+					int stateBits = pStage2->stateBits;
+					textureBundle_t tbLightmap = pStage2->bundle[0];
+					textureBundle_t tbDeluxemap = pStage2->bundle[TB_DELUXEMAP];
+
+					memcpy(styleStage, diffuse, sizeof(shaderStage_t));
+					styleStage->lightmapStyle = style;
+					styleStage->stateBits = stateBits;
+					styleStage->rgbGen = CGEN_LIGHTMAPSTYLE;
+
+					styleStage->bundle[TB_LIGHTMAP] = tbLightmap;
+					styleStage->bundle[TB_DELUXEMAP] = tbDeluxemap;
+
+					lightmaps[j] = NULL;
+				}
+			}
 		}
 
 		// deactivate lightmap stages
@@ -3383,7 +3379,9 @@ static qboolean CollapseStagesToGLSL(void)
 			if (pStage->adjustColorsForFog)
 				continue;
 
-			if (pStage->bundle[TB_DIFFUSEMAP].tcGen >= TCGEN_LIGHTMAP && pStage->bundle[TB_DIFFUSEMAP].tcGen <= TCGEN_LIGHTMAP3)
+			if (pStage->bundle[TB_DIFFUSEMAP].tcGen >= TCGEN_LIGHTMAP 
+				&& pStage->bundle[TB_DIFFUSEMAP].tcGen <= TCGEN_LIGHTMAP3
+				&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE) //don't convert lightstyled lightmap stages
 			{
 				pStage->glslShaderGroup = tr.lightallShader;
 				pStage->glslShaderIndex = LIGHTDEF_USE_LIGHTMAP;
@@ -3811,6 +3809,32 @@ static shader_t *FinishShader( void ) {
 		}
 	}
 
+	// if 2+ stages and first stage is lightmap, switch them
+	// this makes it easier for the later bits to process
+	if (stages[0].active &&
+		stages[0].bundle[0].isLightmap &&
+		stages[1].active)
+	{
+		int blendBits = stages[1].stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS);
+
+		if (blendBits == (GLS_DSTBLEND_SRC_COLOR | GLS_SRCBLEND_ZERO)
+			|| blendBits == (GLS_DSTBLEND_ZERO | GLS_SRCBLEND_DST_COLOR))
+		{
+			int stateBits0 = stages[0].stateBits;
+			int stateBits1 = stages[1].stateBits;
+			shaderStage_t swapStage;
+
+			swapStage = stages[0];
+			stages[0] = stages[1];
+			stages[1] = swapStage;
+
+			stages[0].stateBits = stateBits0;
+			stages[1].stateBits = stateBits1;
+
+			lmStage = 1;
+		}
+	}
+
 	if (lmStage < MAX_SHADER_STAGES)// && !r_fullbright->value)
 	{
 		int	numStyles;
@@ -3846,6 +3870,11 @@ static shader_t *FinishShader( void ) {
 				{
 					stages[lmStage+i+1].bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[i+1]];
 					stages[lmStage+i+1].bundle[0].tcGen = (texCoordGen_t)(TCGEN_LIGHTMAP+i+1);
+					if (r_deluxeMapping->integer && tr.worldDeluxeMapping)
+					{
+						stages[lmStage+i+1].bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[i+1]];
+						stages[lmStage+i+1].bundle[TB_DELUXEMAP].tcGen = (texCoordGen_t)(TCGEN_LIGHTMAP+i+1);
+					}
 				}
 				stages[lmStage+i+1].rgbGen = CGEN_LIGHTMAPSTYLE;
 				stages[lmStage+i+1].stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
@@ -3911,6 +3940,8 @@ static shader_t *FinishShader( void ) {
 		if ( pStage->bundle[0].isLightmap ) {
 			if ( pStage->bundle[0].tcGen == TCGEN_BAD ) {
 				pStage->bundle[0].tcGen = TCGEN_LIGHTMAP;
+				if (r_deluxeMapping->integer && tr.worldDeluxeMapping)
+					pStage->bundle[TB_DELUXEMAP].tcGen = TCGEN_LIGHTMAP;
 			}
 			hasLightmapStage = qtrue;
 		} else {
@@ -4342,6 +4373,8 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 		// two pass lightmap
 		stages[0].bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[0]];
 		stages[0].bundle[0].isLightmap = qtrue;
+		if (r_deluxeMapping->integer && tr.worldDeluxeMapping)
+			stages[0].bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
 		stages[0].active = qtrue;
 		stages[0].rgbGen = CGEN_IDENTITY;	// lightmaps are scaled on creation
 													// for identitylight
@@ -4467,6 +4500,8 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		// two pass lightmap
 		stages[0].bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[0]];
 		stages[0].bundle[0].isLightmap = qtrue;
+		if (r_deluxeMapping->integer && tr.worldDeluxeMapping)
+			stages[0].bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex[0]];
 		stages[0].active = qtrue;
 		stages[0].rgbGen = CGEN_IDENTITY;	// lightmaps are scaled on creation
 													// for identitylight

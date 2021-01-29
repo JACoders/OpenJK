@@ -1499,8 +1499,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		//
 		// do multitexture
 		//
-		bool enableCubeMaps =
-			(r_cubeMapping->integer && !(tr.viewParms.flags & VPF_NOCUBEMAPS) && input->cubemapIndex);
+		bool enableCubeMaps = (	r_cubeMapping->integer
+								&& !(tr.viewParms.flags & VPF_NOCUBEMAPS)
+								&& input->cubemapIndex
+								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
+		bool enableDLights = (	tess.dlightBits
+								&& tess.shader->sort <= SS_OPAQUE
+								&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
+								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
 
 		if ( backEnd.depthFill )
 		{
@@ -1636,10 +1642,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
 		}
-
-		if (tess.dlightBits &&
-			tess.shader->sort <= SS_OPAQUE &&
-			!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY)))
+		
+		if ( enableDLights )
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, tess.dlightBits);
 		else
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, 0);
