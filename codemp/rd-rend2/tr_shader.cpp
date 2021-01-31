@@ -3239,7 +3239,6 @@ static qboolean CollapseStagesToGLSL(void)
 
 			switch(pStage->alphaGen)
 			{
-				case AGEN_LIGHTING_SPECULAR:
 				case AGEN_PORTAL:
 					skip = qtrue;
 					break;
@@ -3277,6 +3276,10 @@ static qboolean CollapseStagesToGLSL(void)
 
 			// skip normal and specular maps
 			if (pStage->type != ST_COLORMAP)
+				continue;
+
+			// skip agen spec stages and environment mapped stages
+			if (pStage->alphaGen == AGEN_LIGHTING_SPECULAR || pStage->bundle[0].tcGen == TCGEN_ENVIRONMENT_MAPPED)
 				continue;
 
 			// skip lightmaps
@@ -3850,7 +3853,8 @@ static shader_t *FinishShader( void ) {
 	// this makes it easier for the later bits to process
 	if (stages[0].active &&
 		stages[0].bundle[0].isLightmap &&
-		stages[1].active)
+		stages[1].active &&
+		shader.numDeforms == 0) //only for shaders that can be collapsed
 	{
 		int blendBits = stages[1].stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS);
 
