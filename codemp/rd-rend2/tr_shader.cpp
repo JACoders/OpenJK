@@ -1200,7 +1200,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	char bufferPackedTextureName[MAX_QPATH];
 	char bufferBaseColorTextureName[MAX_QPATH];
 	int  buildSpecFromPacked = SPEC_NONE;
-	int roughnessType = ROUGHNESS_PERCEPTUAL;
+	int roughnessType = ROUGHNESS_LINEAR;
 	qboolean foundBaseColor = qfalse;
 
 	stage->active = qtrue;
@@ -3135,7 +3135,7 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 			{
 				COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
 				Q_strcat(specularName, MAX_QPATH, "_rmo");
-				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO, ROUGHNESS_PERCEPTUAL);
+				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO, ROUGHNESS_LINEAR);
 
 				if (stage->bundle[TB_SPECULARMAP].image[0])
 					VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
