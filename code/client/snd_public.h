@@ -38,6 +38,7 @@ void S_UnCacheDynamicMusic( void );
 void S_RestartMusic( void );
 void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCalledByCGameStart );
 void S_StopBackgroundTrack( void );
+void setPitchDilationByTimescale( void );
 float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle);
 
 // cinematics and voice-over-network will send raw samples

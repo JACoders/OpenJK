@@ -235,6 +235,10 @@ void	cgi_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean b
 	Q_syscall( CG_S_STARTBACKGROUNDTRACK, intro, loop, bForceStart );
 }
 
+void	cgi_S_SetSoundTimeDilation(void) {
+	Q_syscall(CG_S_SETSOUNDTIMEDILATION);
+}
+
 float	cgi_S_GetSampleLength( sfxHandle_t sfx ) {
 	return Q_syscall( CG_S_GETSAMPLELENGTH, sfx);
 }

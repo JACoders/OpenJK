@@ -549,6 +549,9 @@ cgameImport_t CL_ConvertJK2SysCall( cgameJK2Import_t import )
 		case CG_S_STARTBACKGROUNDTRACK_JK2:
 			return CG_S_STARTBACKGROUNDTRACK;
 			break;
+		case CG_S_SETSOUNDTIMEDILATION_JK2:
+			return CG_S_SETSOUNDTIMEDILATION;
+			break;
 		case CG_R_LOADWORLDMAP_JK2:
 			return CG_R_LOADWORLDMAP;
 			break;
@@ -950,6 +953,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return S_RegisterSound( (const char *) VMA(1) );
 	case CG_S_STARTBACKGROUNDTRACK:
 		S_StartBackgroundTrack( (const char *) VMA(1), (const char *) VMA(2), (qboolean)(args[3] != 0) );
+		return 0;
+	case CG_S_SETSOUNDTIMEDILATION:
+		setPitchDilationByTimescale();
 		return 0;
 	case CG_S_GETSAMPLELENGTH:
 		return S_GetSampleLengthInMilliSeconds(  args[1]);

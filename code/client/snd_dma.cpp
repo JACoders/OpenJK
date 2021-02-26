@@ -38,6 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <inttypes.h>
 #if defined(_WIN32)
 #include <windows.h>
+#include <dsound_time.h>
 #endif
 
 static void S_Play_f(void);
@@ -2893,6 +2894,14 @@ void S_Update_(void) {
 				}
 			}
 
+			if (com_timescale->value < 1.0f)
+			{
+				float pitchShift = .8f;
+				alSourcef(s_channels[source].alSource, AL_PITCH, pitchShift);
+			}
+			else
+				alSourcef(s_channels[source].alSource, AL_PITCH, 1.0f);
+
 			if (s_bEALFileLoaded)
 				UpdateEAXBuffer(ch);
 
@@ -4655,6 +4664,23 @@ void S_StopBackgroundTrack( void )
 	}
 
 	s_rawend = 0;
+}
+
+
+
+void setPitchDilationByTimescale()
+{
+	float pitchDilation = 1.0f;
+	float timescaleValue = com_timescale->value;
+
+	if (timescaleValue < .02f)
+		pitchDilation = .64f;
+	else if (timescaleValue < 1.0f)
+		pitchDilation = .75f;
+	else if (timescaleValue > 1.0f)
+		pitchDilation = 1.3f;
+
+	setSoundPitchForTimeDilation(pitchDilation);
 }
 
 

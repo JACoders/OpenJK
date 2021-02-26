@@ -308,6 +308,7 @@ vmCvar_t	cg_thirdPersonHorzOffset;
 vmCvar_t	cg_stereoSeparation;
 vmCvar_t 	cg_developer;
 vmCvar_t 	cg_timescale;
+vmCvar_t 	cg_sounddilation; //cvar for whether sounds should dilate with shoot dodge
 vmCvar_t	cg_skippingcin;
 
 vmCvar_t	cg_pano;
@@ -385,6 +386,9 @@ static cvarTable_t cvarTable[] = {
 	// NOTE : I also create this in UI_Init()
 	{ &cg_addMarks, "cg_marks", "1", CVAR_ARCHIVE },
 	// NOTE : I also create these weapon sway cvars in UI_Init()
+
+	{ &cg_sounddilation, "cg_sounddilation", "1", CVAR_ARCHIVE | CVAR_SAVEGAME },
+
 	{ &cg_runpitch, "cg_runpitch", "0.002", CVAR_ARCHIVE},
 	{ &cg_runroll, "cg_runroll", "0.005", CVAR_ARCHIVE },
 	{ &cg_bobup , "cg_bobup", "0.005", CVAR_ARCHIVE },
@@ -437,6 +441,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_paused, "cl_paused", "0", CVAR_ROM },
 	{ &cg_developer, "developer", "", 0 },
 	{ &cg_timescale, "timescale", "1", 0 },
+	{ &cg_timescale, "sounddilation", "1", 0 },
 	{ &cg_skippingcin, "skippingCinematic", "0", CVAR_ROM},
 	{ &cg_missionInfoFlashTime, "cg_missionInfoFlashTime", "10000", 0  },
 	{ &cg_hudFiles, "cg_hudFiles", "ui/jahud.txt", CVAR_ARCHIVE},

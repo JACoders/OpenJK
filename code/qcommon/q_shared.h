@@ -1876,6 +1876,8 @@ public:
 
 	float		jumpZStart;							//So when you land, you don't get hurt as much
 	vec3_t		moveDir;
+	vec3_t		shootDodgeDir;
+	short		shootDodgeToggled;
 
 	float		waterheight;						//exactly what the z org of the water is (will be +4 above if under water, -4 below if not in water)
 	waterHeightLevel_t	waterHeightLevel;					//how high it really is
@@ -2051,6 +2053,8 @@ public:
 		saved_game.write<int32_t>(taunting);
 		saved_game.write<float>(jumpZStart);
 		saved_game.write<float>(moveDir);
+		saved_game.write<float>(shootDodgeDir);
+		saved_game.write<int16_t>(shootDodgeToggled);
 		saved_game.write<float>(waterheight);
 		saved_game.write<int32_t>(waterHeightLevel);
 
@@ -2220,6 +2224,8 @@ public:
 		saved_game.read<int32_t>(taunting);
 		saved_game.read<float>(jumpZStart);
 		saved_game.read<float>(moveDir);
+		saved_game.read<float>(shootDodgeDir);
+		saved_game.read<int16_t>(shootDodgeToggled);
 		saved_game.read<float>(waterheight);
 		saved_game.read<int32_t>(waterHeightLevel);
 

@@ -551,8 +551,8 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	rate = SQRTFAST( mx * mx + my * my ) / speed;
 	accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
 
-	// scale by FOV
-	accelSensitivity *= cl.cgameSensitivity;
+	// scale by FOV, also don't slow don't cursor when in shoot dodge
+	accelSensitivity *= cl.cgameSensitivity / com_timescale->value;
 
 	if ( rate && cl_showMouseRate->integer ) {
 		Com_Printf( "%f : %f\n", rate, accelSensitivity );
