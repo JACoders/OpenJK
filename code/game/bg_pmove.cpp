@@ -10565,8 +10565,9 @@ qboolean PM_SaberLocked( void )
 #endif
 						gi.G2API_GetBoneAnimIndex( &gent->ghoul2[gent->playerModel], gent->lowerLumbarBone,
 						(cg.time?cg.time:level.time), &currentFrame, &junk, &junk, &junk, &junk2, NULL );
+#ifdef _DEBUG
 					assert( ret ); // this would be pretty bad, the below code seems to assume the call succeeds. -gil
-
+#endif
 					strength = G_SaberLockStrength( gent );
 					if ( PM_InSaberLockOld( pm->ps->torsoAnim ) )
 					{//old locks
