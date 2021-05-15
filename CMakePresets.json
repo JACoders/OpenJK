@@ -2,9 +2,9 @@
     "version": 2,
     "configurePresets": [
         {
-            "name": "MSVC x86-Debug",
-            "displayName": "MSVC x86-Debug",
-            "description": "Using compilers for Visual Studio 16 2019 (x86 architecture - Debug mode)",
+            "name": "x86-Debug",
+            "displayName": "x86-Debug",
+            "description": "Visual Studio 16 2019 - x86 - Debug mode",
             "generator": "Visual Studio 16 2019",
             "toolset": "host=x86",
             "architecture": "win32",
@@ -15,9 +15,9 @@
             }
         },
         {
-            "name": "MSVC x86-Release",
-            "displayName": "MSVC x86-Release",
-            "description": "Using compilers for Visual Studio 16 2019 (x86 architecture - Release mode)",
+            "name": "x86-Release",
+            "displayName": "x86-Release",
+            "description": "Visual Studio 16 2019 - x86 - Release mode",
             "generator": "Visual Studio 16 2019",
             "toolset": "host=x86",
             "architecture": "win32",
@@ -28,9 +28,9 @@
             }
         },
         {
-            "name": "MSVC x86-RelWithDebInfo",
-            "displayName": "MSVC x86-RelWithDebInfo",
-            "description": "Using compilers for Visual Studio 16 2019 (x86 architecture - Release mode with Debug Info)",
+            "name": "x86-RelWithDebInfo",
+            "displayName": "x86-RelWithDebInfo",
+            "description": "Visual Studio 16 2019 - x86 - Release mode with Debug Info",
             "generator": "Visual Studio 16 2019",
             "toolset": "host=x86",
             "architecture": "win32",
