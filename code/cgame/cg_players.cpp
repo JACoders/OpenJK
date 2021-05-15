@@ -3829,7 +3829,7 @@ static void CG_PlayerFootsteps( centity_t *const cent, footstepType_t footStepTy
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, sideOrigin );
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, footDownDir );
 		VectorMA( sideOrigin, -8.0f, footDownDir, sideOrigin );//was [2] += 15;	//fudge up a bit for coplanar
-		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle-90, 6, cent, footStepType );
+		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle, 6, cent, footStepType );
 	}
 }
 
