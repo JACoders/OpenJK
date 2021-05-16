@@ -668,8 +668,9 @@ void RestoreGhoul2InfoArray()
 #endif
 			singleton->Deserialize ((const char *)data, size);
 		Z_Free ((void *)data);
-
+#ifdef _DEBUG
 		assert (read == size);
+#endif
 	}
 }
 
@@ -681,9 +682,9 @@ void SaveGhoul2InfoArray()
 	size_t written =
 #endif
 		singleton->Serialize ((char *)data);
-
+#ifdef _DEBUG
 	assert (written == size);
-
+#endif
 	if ( !ri.PD_Store (PERSISTENT_G2DATA, data, size) )
 	{
 		Com_Printf (S_COLOR_RED "ERROR: Failed to store persistent renderer data.\n");
