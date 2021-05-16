@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -40,12 +40,7 @@ CQuickSpriteSystem SQuickSprite;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CQuickSpriteSystem::CQuickSpriteSystem() :
-	mTexBundle(NULL),
-	mGLStateBits(0),
-	mFogIndex(-1),
-	mUseFog(qfalse),
-	mNextVert(0)
+CQuickSpriteSystem::CQuickSpriteSystem()
 {
 	int i;
 

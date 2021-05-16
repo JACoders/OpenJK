@@ -37,12 +37,12 @@ extern cvar_t	*fx_nearCull;
 class SFxHelper
 {
 public:
-	int		mTime;
-	int		mOldTime;
-	int		mFrameTime;
-	bool	mTimeFrozen;
+	int		mTime{0};
+	int		mOldTime{0};
+	int		mFrameTime{0};
+	bool	mTimeFrozen{false};
 	float	mRealTime;
-	refdef_t*	refdef;
+	refdef_t*	refdef{0};
 #ifdef _DEBUG
 	int		mMainRefs;
 	int		mMiniRefs;

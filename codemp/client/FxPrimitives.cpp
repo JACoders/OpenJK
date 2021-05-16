@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -31,12 +31,7 @@ extern int		drawnFx;
 // Base Effect Class
 //
 //--------------------------
-CEffect::CEffect(void) :
-	mFlags(0),
-	mMatImpactFX(MATIMPACTFX_NONE),
-	mMatImpactParm(-1),
-	mSoundRadius(-1),
-	mSoundVolume(-1)
+CEffect::CEffect(void)
 {
 	memset( &mRefEnt, 0, sizeof( mRefEnt ));
 }

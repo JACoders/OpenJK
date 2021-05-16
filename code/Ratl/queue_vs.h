@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -74,9 +74,9 @@ private:
 	// Data
 	////////////////////////////////////////////////////////////////////////////////////
 	array_base<TStorageTraits>	mData;			// The Memory
-	int							mPush;			// Address Of Next Add Location
-	int							mPop;			// Address Of Next Remove Location
-	int							mSize;
+	int							mPush{0};			// Address Of Next Add Location
+	int							mPop{0};			// Address Of Next Remove Location
+	int							mSize{0};
 
 
 	int push_low()
@@ -104,7 +104,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constructor
     ////////////////////////////////////////////////////////////////////////////////////
-	queue_base() : mPush(0), mPop(0), mSize(0)
+	queue_base()
 	{
 	}
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -129,8 +129,8 @@ public:
 
 private:
 	pool_base<TStorageTraits>		mPool;				// The Allocation Data Pool
-	int								mRoot;
-	int								mLastAdd;
+	int								mRoot{tree_node::NULL_NODE};
+	int								mLastAdd{-1};
 
 
 	void link_left(int node,int left)
@@ -716,7 +716,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constructor
     ////////////////////////////////////////////////////////////////////////////////////
-    tree_base() : mRoot(tree_node::NULL_NODE), mLastAdd(-1)
+    tree_base()
 	{
 	}
 

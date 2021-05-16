@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -36,12 +36,7 @@ cvar_t	*fx_nearCull;
 
 // Stuff for the FxHelper
 //------------------------------------------------------
-SFxHelper::SFxHelper() :
-	mTime(0),
-	mOldTime(0),
-	mFrameTime(0),
-	mTimeFrozen(false),
-	refdef(0)
+SFxHelper::SFxHelper()
 {
 }
 

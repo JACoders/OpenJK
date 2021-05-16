@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -392,7 +392,6 @@ public:
 		: pool (new T[N])
 		, freeAndAllocated (new int[N])
 		, numFree (N)
-		, highWatermark (0)
 	{
 		for ( int i = 0; i < N; i++ )
 		{
@@ -482,7 +481,7 @@ private:
 	int *freeAndAllocated;
 	int numFree;
 
-	int highWatermark;
+	int highWatermark{0};
 };
 
 template<typename T, int N>
@@ -490,8 +489,7 @@ class PagedPoolAllocator
 {
 	public:
 		PagedPoolAllocator ()
-			: numPages (1)
-			, pages (new PoolAllocator<T, N>[1]())
+			: pages (new PoolAllocator<T, N>[1]())
 		{
 		}
 
@@ -555,7 +553,7 @@ class PagedPoolAllocator
 		}
 
 	private:
-		int numPages;
+		int numPages{1};
 		PoolAllocator<T, N> *pages;
 };
 

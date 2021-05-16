@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -47,20 +47,14 @@ struct model_s;
 // we save the whole surfaceInfo_t struct
 struct surfaceInfo_t
 {
-	int			offFlags;		// what the flags are for this model
-	int			surface;		// index into array held inside the model definition of pointers to the actual surface data loaded in - used by both client and game
-	float		genBarycentricJ;	// point 0 barycentric coors
-	float		genBarycentricI;	// point 1 barycentric coors - point 2 is 1 - point0 - point1
-	int			genPolySurfaceIndex; // used to point back to the original surface and poly if this is a generated surface
-	int			genLod;			// used to determine original lod of original surface and poly hit location
+	int			offFlags{0};		// what the flags are for this model
+	int			surface{0};		// index into array held inside the model definition of pointers to the actual surface data loaded in - used by both client and game
+	float		genBarycentricJ{0};	// point 0 barycentric coors
+	float		genBarycentricI{0};	// point 1 barycentric coors - point 2 is 1 - point0 - point1
+	int			genPolySurfaceIndex{0}; // used to point back to the original surface and poly if this is a generated surface
+	int			genLod{0};			// used to determine original lod of original surface and poly hit location
 
-surfaceInfo_t():
-	offFlags(0),
-	surface(0),
-	genBarycentricJ(0),
-	genBarycentricI(0),
-	genPolySurfaceIndex(0),
-	genLod(0)
+surfaceInfo_t()
 	{}
 
 };
@@ -72,21 +66,21 @@ surfaceInfo_t():
 // we save the whole structure here.
 struct  boneInfo_t
 {
-	int			boneNumber;		// what bone are we overriding?
+	int			boneNumber{-1};		// what bone are we overriding?
 	mdxaBone_t	matrix;			// details of bone angle overrides - some are pre-done on the server, some in ghoul2
-	int			flags;			// flags for override
-	int			startFrame;		// start frame for animation
-	int			endFrame;		// end frame for animation NOTE anim actually ends on endFrame+1
-	int			startTime;		// time we started this animation
-	int			pauseTime;		// time we paused this animation - 0 if not paused
-	float		animSpeed;		// speed at which this anim runs. 1.0f means full speed of animation incoming - ie if anim is 20hrtz, we run at 20hrts. If 5hrts, we run at 5 hrts
-	float		blendFrame;		// frame PLUS LERP value to blend from
-	int			blendLerpFrame;	// frame to lerp the blend frame with.
-	int			blendTime;		// Duration time for blending - used to calc amount each frame of new anim is blended with last frame of the last anim
-	int			blendStart;		// Time when blending starts - not necessarily the same as startTime since we might start half way through an anim
-	int			boneBlendTime;	// time for duration of bone angle blend with normal animation
-	int			boneBlendStart;	// time bone angle blend with normal animation began
-	int			lastTime;		// this does not go across the network
+	int			flags{0};			// flags for override
+	int			startFrame{0};		// start frame for animation
+	int			endFrame{0};		// end frame for animation NOTE anim actually ends on endFrame+1
+	int			startTime{0};		// time we started this animation
+	int			pauseTime{0};		// time we paused this animation - 0 if not paused
+	float		animSpeed{0};		// speed at which this anim runs. 1.0f means full speed of animation incoming - ie if anim is 20hrtz, we run at 20hrts. If 5hrts, we run at 5 hrts
+	float		blendFrame{0};		// frame PLUS LERP value to blend from
+	int			blendLerpFrame{0};	// frame to lerp the blend frame with.
+	int			blendTime{0};		// Duration time for blending - used to calc amount each frame of new anim is blended with last frame of the last anim
+	int			blendStart{0};		// Time when blending starts - not necessarily the same as startTime since we might start half way through an anim
+	int			boneBlendTime{0};	// time for duration of bone angle blend with normal animation
+	int			boneBlendStart{0};	// time bone angle blend with normal animation began
+	int			lastTime{0};		// this does not go across the network
 	mdxaBone_t	newMatrix;		// This is the lerped matrix that Ghoul2 uses on the client side - does not go across the network
 
 	//rww - RAGDOLL_BEGIN
@@ -108,7 +102,7 @@ struct  boneInfo_t
 	int			firstTime;
 	int			firstCollisionTime;
 	int			restTime;
-	int			RagFlags;
+	int			RagFlags{0};
 	int			DependentRagIndexMask;
 	mdxaBone_t	originalTrueBoneMatrix;
 	mdxaBone_t	parentTrueBoneMatrix;			// figure I will need this sooner or later
@@ -153,22 +147,7 @@ struct  boneInfo_t
 	int			airTime; //base is in air, be more quick and sensitive about collisions
 	//rww - RAGDOLL_END
 
-boneInfo_t():
-	boneNumber(-1),
-	flags(0),
-	startFrame(0),
-	endFrame(0),
-	startTime(0),
-	pauseTime(0),
-	animSpeed(0),
-	blendFrame(0),
-	blendLerpFrame(0),
-	blendTime(0),
-	blendStart(0),
-	boneBlendTime(0),
-	boneBlendStart(0),
-	lastTime(0),
-	RagFlags(0)
+boneInfo_t()
 	{
 		matrix.matrix[0][0] = matrix.matrix[0][1] = matrix.matrix[0][2] = matrix.matrix[0][3] =
 		matrix.matrix[1][0] = matrix.matrix[1][1] = matrix.matrix[1][2] = matrix.matrix[1][3] =
@@ -178,16 +157,12 @@ boneInfo_t():
 };
 //we save from top to boltUsed here. Don't bother saving the position, it gets rebuilt every frame anyway
 struct boltInfo_t{
-	int			boneNumber;		// bone number bolt attaches to
-	int			surfaceNumber;	// surface number bolt attaches to
-	int			surfaceType;	// if we attach to a surface, this tells us if it is an original surface or a generated one - doesn't go across the network
-	int			boltUsed;		// nor does this
+	int			boneNumber{-1};		// bone number bolt attaches to
+	int			surfaceNumber{-1};	// surface number bolt attaches to
+	int			surfaceType{0};	// if we attach to a surface, this tells us if it is an original surface or a generated one - doesn't go across the network
+	int			boltUsed{0};		// nor does this
 	mdxaBone_t	position;		// this does not go across the network
-	boltInfo_t():
-	boneNumber(-1),
-	surfaceNumber(-1),
-	surfaceType(0),
-	boltUsed(0)
+	boltInfo_t()
 	{}
 };
 
@@ -254,68 +229,41 @@ public:
 	boltInfo_v		mBltlist;
 	boneInfo_v		mBlist;
 // save from here
-	int				mModelindex;
-	qhandle_t		mCustomShader;
-	qhandle_t		mCustomSkin;
-	int				mModelBoltLink;
-	int				mSurfaceRoot;
-	int				mLodBias;
-	int				mNewOrigin;	// this contains the bolt index of the new origin for this model
+	int				mModelindex{-1};
+	qhandle_t		mCustomShader{0};
+	qhandle_t		mCustomSkin{0};
+	int				mModelBoltLink{0};
+	int				mSurfaceRoot{0};
+	int				mLodBias{0};
+	int				mNewOrigin{-1};	// this contains the bolt index of the new origin for this model
 #ifdef _G2_GORE
-	int				mGoreSetTag;
+	int				mGoreSetTag{0};
 #endif
-	qhandle_t		mModel;		// this and the next entries do NOT go across the network. They are for gameside access ONLY
+	qhandle_t		mModel{0};		// this and the next entries do NOT go across the network. They are for gameside access ONLY
 	char			mFileName[MAX_QPATH];
-	int				mAnimFrameDefault;
-	int				mSkelFrameNum;
-	int				mMeshFrameNum;
-	int				mFlags;	// used for determining whether to do full collision detection against this object
+	int				mAnimFrameDefault{0};
+	int				mSkelFrameNum{-1};
+	int				mMeshFrameNum{-1};
+	int				mFlags{0};	// used for determining whether to do full collision detection against this object
 // to here
-	size_t			*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
-	CBoneCache		*mBoneCache;
-	int				mSkin;
+	size_t			*mTransformedVertsArray{0};	// used to create an array of pointers to transformed verts per surface for collision detection
+	CBoneCache		*mBoneCache{0};
+	int				mSkin{0};
 
 	// these occasionally are not valid (like after a vid_restart)
 	// call the questionably efficient G2_SetupModelPointers(this) to insure validity
-	bool				mValid; // all the below are proper and valid
-	const model_s		*currentModel;
-	int					currentModelSize;
-	const model_s		*animModel;
-	int					currentAnimModelSize;
-	const mdxaHeader_t	*aHeader;
+	bool				mValid{false}; // all the below are proper and valid
+	const model_s		*currentModel{0};
+	int					currentModelSize{0};
+	const model_s		*animModel{0};
+	int					currentAnimModelSize{0};
+	const mdxaHeader_t	*aHeader{0};
 
 #ifdef _G2_LISTEN_SERVER_OPT
-	int					entityNum;
+	int					entityNum{ENTITYNUM_NONE};
 #endif
 
-	CGhoul2Info():
-	mModelindex(-1),
-	mCustomShader(0),
-	mCustomSkin(0),
-	mModelBoltLink(0),
-	mSurfaceRoot(0),
-	mLodBias(0),
-	mNewOrigin(-1),
-#ifdef _G2_GORE
-	mGoreSetTag(0),
-#endif
-	mModel(0),
-	mAnimFrameDefault(0),
-	mSkelFrameNum(-1),
-	mMeshFrameNum(-1),
-	mFlags(0),
-	mTransformedVertsArray(0),
-	mBoneCache(0),
-	mSkin(0),
-	mValid(false),
-	currentModel(0),
-	currentModelSize(0),
-	animModel(0),
-	currentAnimModelSize(0),
-	aHeader(0)
-#ifdef _G2_LISTEN_SERVER_OPT
-	, entityNum(ENTITYNUM_NONE)
-#endif
+	CGhoul2Info()
 	{
 		mFileName[0] = 0;
 	}

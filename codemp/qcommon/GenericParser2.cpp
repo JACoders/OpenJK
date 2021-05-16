@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -177,9 +177,7 @@ static char *GetToken(char **text, bool allowLineBreaks, bool readUntilEOL = fal
 }
 
 CTextPool::CTextPool(int initSize) :
-	mNext(0),
-	mSize(initSize),
-	mUsed(0)
+	mSize(initSize)
 {
 //	mPool = (char *)Z_Malloc(mSize, TAG_GP2);
 	mPool = (char *)Z_Malloc(mSize, TAG_TEXTPOOL, qtrue);
@@ -462,14 +460,7 @@ bool CGPValue::Write(CTextPool **textPool, int depth)
 
 CGPGroup::CGPGroup(const char *initName, CGPGroup *initParent) :
 	CGPObject(initName),
-	mPairs(0),
-	mInOrderPairs(0),
-	mCurrentPair(0),
-	mSubGroups(0),
-	mInOrderSubGroups(0),
-	mCurrentSubGroup(0),
-	mParent(initParent),
-	mWriteable(false)
+	mParent(initParent)
 {
 }
 
@@ -862,9 +853,7 @@ const char *CGPGroup::FindPairValue(const char *key, const char *defaultVal)
 
 
 
-CGenericParser2::CGenericParser2(void) :
-	mTextPool(0),
-	mWriteable(false)
+CGenericParser2::CGenericParser2(void)
 {
 }
 
@@ -907,14 +896,6 @@ bool CGenericParser2::Write(CTextPool *textPool)
 {
 	return mTopLevel.Write(&textPool, -1);
 }
-
-
-
-
-
-
-
-
 
 // The following groups of routines are used for a C interface into GP2.
 // C++ users should just use the objects as normally and not call these routines below

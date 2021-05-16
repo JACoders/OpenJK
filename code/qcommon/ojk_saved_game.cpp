@@ -1,4 +1,4 @@
-//
+﻿//
 // Saved game.
 //
 
@@ -15,17 +15,7 @@ namespace ojk
 {
 
 
-SavedGame::SavedGame() :
-		error_message_(),
-		file_handle_(),
-		io_buffer_(),
-		saved_io_buffer_(),
-		io_buffer_offset_(),
-		saved_io_buffer_offset_(),
-		rle_buffer_(),
-		is_readable_(),
-		is_writable_(),
-		is_failed_()
+SavedGame::SavedGame()
 {
 }
 

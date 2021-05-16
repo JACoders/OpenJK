@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 1999 - 2005, Id Software, Inc.
 Copyright (C) 2000 - 2013, Raven Software, Inc.
@@ -48,10 +48,10 @@ public:
 struct PointAndLeaf
 {
 	// Default constructor for array construction below
-	PointAndLeaf() : point(0, 0, 0), leaf(0) { }
+	PointAndLeaf() {}
 
-	CPoint	point;
-	int		leaf;
+	CPoint	point{0, 0, 0};
+	int		leaf{0};
 };
 
 // I think it is a patholoically bad idea to do a 64 item linear search for a cache,

@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -1145,9 +1145,7 @@ private:
 		////////////////////////////////////////////////////////////////////////////////
 		search_node(int Node=-1, int Parent=-1) :
 			mNode(Node),
-			mParentVisit(Parent),
-			mCostToGoal(-1),
-			mCostFromStart(0)
+			mParentVisit(Parent)
 		{}
 		search_node(const search_node& t) :
 			mNode(t.mNode),
@@ -1197,8 +1195,8 @@ private:
 		int		mNode;					// Which Node Is This (Index To Pool mNodes)
 		int		mParentVisit;			// Which Search Node (In Visited)
 
-		float	mCostToGoal;			// How Far From The Start Of The Search Are We?
-		float	mCostFromStart;			// How Far From The End Of The Search Are We?
+		float	mCostToGoal{-1};			// How Far From The Start Of The Search Are We?
+		float	mCostFromStart{0};			// How Far From The End Of The Search Are We?
 	};
 
 

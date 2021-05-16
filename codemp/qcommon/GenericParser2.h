@@ -45,8 +45,8 @@ class CTextPool
 {
 private:
 	char		*mPool;
-	CTextPool	*mNext;
-	int			mSize, mUsed;
+	CTextPool	*mNext{0};
+	int			mSize, mUsed{0};
 
 public:
 	CTextPool(int initSize = 10240);
@@ -114,12 +114,12 @@ public:
 class CGPGroup : public CGPObject
 {
 private:
-	CGPValue			*mPairs, *mInOrderPairs;
-	CGPValue			*mCurrentPair;
-	CGPGroup			*mSubGroups, *mInOrderSubGroups;
-	CGPGroup			*mCurrentSubGroup;
+	CGPValue			*mPairs{0}, *mInOrderPairs{0};
+	CGPValue			*mCurrentPair{0};
+	CGPGroup			*mSubGroups{0}, *mInOrderSubGroups{0};
+	CGPGroup			*mCurrentSubGroup{0};
 	CGPGroup			*mParent;
-	bool				mWriteable;
+	bool				mWriteable{false};
 
 	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList,
 					   CGPObject **lastObject);
@@ -158,8 +158,8 @@ class CGenericParser2
 {
 private:
 	CGPGroup		mTopLevel;
-	CTextPool		*mTextPool;
-	bool			mWriteable;
+	CTextPool		*mTextPool{0};
+	bool			mWriteable{false};
 
 public:
 	CGenericParser2(void);

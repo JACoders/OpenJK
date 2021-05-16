@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -63,13 +63,13 @@ class CEdge
 
 public:
 
-	CEdge( void ) : m_first(-1), m_second(-1), m_cost(-1) {}
+	CEdge( void ) {}
 	CEdge( int first, int second, int cost );
 	~CEdge( void );
 
-	int		m_first;
-	int		m_second;
-	int		m_cost;
+	int		m_first{-1};
+	int		m_second{-1};
+	int		m_cost{-1};
 };
 
 /*
