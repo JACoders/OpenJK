@@ -394,7 +394,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	char powerBuf[128];
 	char readBuf[128];
 	qboolean maintainsValidity = qtrue;
-	int powerLen = strlen(powerOut);
+	int powerLen = (int)strlen(powerOut);
 	int i = 0;
 	int c = 0;
 	int allowedPoints = 0;
@@ -414,7 +414,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 		Q_strncpyz( powerBuf, powerOut, sizeof( powerBuf ) ); //copy it as the original
 
 	//first of all, print the max rank into the string as the rank
-	Q_strncpyz( powerOut, va( "%i-", maxRank ), powerOutSize );
+	Q_strncpyz( powerOut, va( "%i-", maxRank ), (int)powerOutSize );
 
 	while (i < sizeof( powerBuf ) && powerBuf[i] && powerBuf[i] != '-')
 	{
@@ -651,9 +651,9 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	//We finally have all the force powers legalized and stored locally.
 	//Put them all into the string and return the result. We already have
 	//the rank there, so print the side and the powers now.
-	Q_strcat(powerOut, powerOutSize, va("%i-", final_Side));
+	Q_strcat(powerOut, (int)powerOutSize, va("%i-", final_Side));
 
-	i = strlen(powerOut);
+	i = (int)strlen(powerOut);
 	c = 0;
 	while (c < NUM_FORCE_POWERS)
 	{
@@ -2652,7 +2652,7 @@ qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team
 			}
 			else
 			{//need to set it to red
-				int len = strlen( skinName );
+				int len = (int)strlen( skinName );
 				if ( len < 3 )
 				{//too short to be "red"
 					Q_strcat(skinName, MAX_QPATH, "_red");
@@ -2697,7 +2697,7 @@ qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team
 			}
 			else
 			{//need to set it to blue
-				int len = strlen( skinName );
+				int len = (int)strlen( skinName );
 				if ( len < 4 )
 				{//too short to be "blue"
 					Q_strcat(skinName, MAX_QPATH, "_blue");
@@ -3146,7 +3146,7 @@ void BG_TempFree( int size )
 
 char *BG_StringAlloc ( const char *source )
 {
-	char *dest = (char*)BG_Alloc( strlen ( source ) + 1 );
+	char *dest = (char*)BG_Alloc( (int)(strlen ( source ) + 1) );
 	strcpy( dest, source );
 	return dest;
 }

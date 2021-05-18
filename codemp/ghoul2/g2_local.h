@@ -165,7 +165,7 @@ public:
 		{
 			return 0;
 		}
-		return Array().size();
+		return static_cast<int>(Array().size());
 	}
 	bool IsValid() const
 	{

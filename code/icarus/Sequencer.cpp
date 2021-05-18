@@ -2463,7 +2463,7 @@ int	CSequencer::Save()
 	CIcarus *pIcarus = (CIcarus *)IIcarusInterface::GetIcarus();
 
 	//Get the number of sequences to save out
-	numSequences = /*m_sequenceMap.size();*/ m_sequences.size();
+	numSequences = /*m_sequenceMap.size();*/ static_cast<int>(m_sequences.size());
 
 	//Save out the owner sequence
 	pIcarus->BufferWrite( &m_ownerID, sizeof( m_ownerID ) );
@@ -2483,7 +2483,7 @@ int	CSequencer::Save()
 	m_taskManager->Save();
 
 	//Save out the task sequences mapping the name to the GUIDs
-	numTasks = m_taskSequences.size();
+	numTasks = static_cast<int>(m_taskSequences.size());
 	pIcarus->BufferWrite( &numTasks, sizeof( numTasks ) );
 
 	STL_ITERATE( ti, m_taskSequences )
