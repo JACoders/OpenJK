@@ -21,10 +21,10 @@ void main()
 /*[Fragment]*/
 uniform sampler2D u_ScreenDepthMap;
 
-uniform sampler2D u_ShadowMap;
+uniform sampler2DShadow u_ShadowMap;
 #if defined(USE_SHADOW_CASCADE)
-uniform sampler2D u_ShadowMap2;
-uniform sampler2D u_ShadowMap3;
+uniform sampler2DShadow u_ShadowMap2;
+uniform sampler2DShadow u_ShadowMap3;
 #endif
 
 uniform mat4 u_ShadowMvp;
@@ -62,43 +62,74 @@ float random( const vec2 p )
   return mod( 123456789., 1e-7 + 256. * dot(p,r) );  
 }
 
-float PCF(const sampler2D shadowmap, const vec2 st, const float dist)
+const vec2 poissonDisk[16] = vec2[16]( 
+	vec2( -0.94201624, -0.39906216 ), 
+	vec2( 0.94558609, -0.76890725 ), 
+	vec2( -0.094184101, -0.92938870 ), 
+	vec2( 0.34495938, 0.29387760 ), 
+	vec2( -0.91588581, 0.45771432 ), 
+	vec2( -0.81544232, -0.87912464 ), 
+	vec2( -0.38277543, 0.27676845 ), 
+	vec2( 0.97484398, 0.75648379 ), 
+	vec2( 0.44323325, -0.97511554 ), 
+	vec2( 0.53742981, -0.47373420 ), 
+	vec2( -0.26496911, -0.41893023 ), 
+	vec2( 0.79197514, 0.19090188 ), 
+	vec2( -0.24188840, 0.99706507 ), 
+	vec2( -0.81409955, 0.91437590 ), 
+	vec2( 0.19984126, 0.78641367 ), 
+	vec2( 0.14383161, -0.14100790 ) 
+);
+
+float PCF(const sampler2DShadow shadowmap, const vec2 st, const float dist, float PCFScale)
 {
 	float mult;
-	float scale = 2.0 / r_shadowMapSize;
+	float scale = PCFScale / r_shadowMapSize;
 
 #if defined(USE_SHADOW_FILTER)
 	float r = random(var_DepthTex.xy);
-	float sinr = sin(r) * scale;
-	float cosr = cos(r) * scale;
-	mat2 rmat = mat2(cosr, sinr, -sinr, cosr);
+	float sinr = sin(r);
+	float cosr = cos(r);
+	mat2 rmat = mat2(cosr, sinr, -sinr, cosr) * scale;
 
-	mult =  step(dist, texture(shadowmap, st + rmat * vec2(-0.7055767, 0.196515)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.3524343, -0.7791386)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.2391056, 0.9189604)).r);
+	mult =  texture(shadowmap, vec3(st + rmat * vec2(-0.7055767, 0.196515), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(0.3524343, -0.7791386), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(0.2391056, 0.9189604), dist));
   #if defined(USE_SHADOW_FILTER2)
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(-0.07580382, -0.09224417)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.5784913, -0.002528916)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.192888, 0.4064181)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(-0.6335801, -0.5247476)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(-0.5579782, 0.7491854)).r);
-	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.7320465, 0.6317794)).r);
+	mult += texture(shadowmap, vec3(st + rmat * vec2(-0.07580382, -0.09224417), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(0.5784913, -0.002528916), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(0.192888, 0.4064181), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(-0.6335801, -0.5247476), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(-0.5579782, 0.7491854), dist));
+	mult += texture(shadowmap, vec3(st + rmat * vec2(0.7320465, 0.6317794), dist));
 
 	mult *= 0.11111;
   #else
     mult *= 0.33333;
   #endif
 #else
-	mult = step(dist, texture(shadowmap, st).r);
+	float r = random(var_DepthTex.xy);
+	float sinr = sin(r);
+	float cosr = cos(r);
+	mat2 rmat = mat2(cosr, sinr, -sinr, cosr) * scale;
+
+	mult =  texture(shadowmap, vec3(st, dist));
+	for (int i = 0; i < 16; i++)
+	{
+		vec2 delta = rmat * poissonDisk[i];
+		mult += texture(shadowmap, vec3(st + delta, dist));
+	}
+	mult *= 1.0 / 17.0;
 #endif
 		
 	return mult;
 }
 
-float getLinearDepth(sampler2D depthMap, vec2 tex, float zFarDivZNear)
+float getLinearDepth(sampler2D depthMap, vec2 tex, float zFarDivZNear, float maxErrorFactor)
 {
 	float sampleZDivW = texture(depthMap, tex).r;
-	sampleZDivW -= DEPTH_MAX_ERROR;
+	sampleZDivW += DEPTH_MAX_ERROR;
+	//sampleZDivW -= maxErrorFactor * fwidth(sampleZDivW);
 	return 1.0 / mix(zFarDivZNear, 1.0, sampleZDivW);
 }
 
@@ -106,50 +137,57 @@ void main()
 {
 	float result;
 	
-	float depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x);
+	float depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 0.0);
 	float sampleZ = u_ViewInfo.y * depth;
 
 	vec4 biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
-	
-	vec4 shadowpos = u_ShadowMvp * biasPos;
-	
+
+	const float PCFScale = 1.0;
+	const float edgeBias = 0.5 - ( 4.0 * PCFScale / r_shadowMapSize );
+	float edgefactor = 0.0;
+
 #if defined(USE_SHADOW_CASCADE)
 	const float fadeTo = 1.0;
 	result = fadeTo;
 #else
 	result = 0.0;
 #endif
-
-	if (all(lessThanEqual(abs(shadowpos.xyz), vec3(abs(shadowpos.w)))))
+	vec4 shadowpos = u_ShadowMvp * biasPos;
+	shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
+	if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(edgeBias))))
 	{
-		shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
-		result = PCF(u_ShadowMap, shadowpos.xy, shadowpos.z);
+		vec3 dCoords = smoothstep(0.3, 0.45, abs(shadowpos.xyz - vec3(0.5)));
+		edgefactor = 2.0 * PCFScale * clamp(dCoords.x + dCoords.y + dCoords.z, 0.0, 1.0);
+		result = PCF(u_ShadowMap, shadowpos.xy, shadowpos.z, PCFScale + edgefactor);
 	}
 #if defined(USE_SHADOW_CASCADE)
 	else
 	{
+		depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 0.0);
+		biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
 		shadowpos = u_ShadowMvp2 * biasPos;
-
-		if (all(lessThanEqual(abs(shadowpos.xyz), vec3(abs(shadowpos.w)))))
+		shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
+		if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(edgeBias))))
 		{
-			shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
-			result = PCF(u_ShadowMap2, shadowpos.xy, shadowpos.z);
+			vec3 dCoords = smoothstep(0.3, 0.45, abs(shadowpos.xyz - vec3(0.5)));
+			edgefactor = 0.5 * PCFScale * clamp(dCoords.x + dCoords.y + dCoords.z, 0.0, 1.0);
+			result = PCF(u_ShadowMap2, shadowpos.xy, shadowpos.z, PCFScale + edgefactor);
 		}
 		else
 		{
+			depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 0.0);
+			biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
 			shadowpos = u_ShadowMvp3 * biasPos;
-
-			if (all(lessThanEqual(abs(shadowpos.xyz), vec3(abs(shadowpos.w)))))
+			shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
+			if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(1.0))))
 			{
-				shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
-				result = PCF(u_ShadowMap3, shadowpos.xy, shadowpos.z);
-
+				result = PCF(u_ShadowMap3, shadowpos.xy, shadowpos.z, PCFScale);
 				float fade = clamp(sampleZ / r_shadowCascadeZFar * 10.0 - 9.0, 0.0, 1.0);
 				result = mix(result, fadeTo, fade);
 			}
 		}
 	}
 #endif
-		
+	
 	out_Color = vec4(vec3(result), 1.0);
 }

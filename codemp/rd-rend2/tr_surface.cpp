@@ -2137,7 +2137,7 @@ static void RB_SurfaceSkip( void *surf ) {
 
 static void RB_SurfaceSprites( srfSprites_t *surf )
 {
-	if ( !r_surfaceSprites->integer )
+	if ( !r_surfaceSprites->integer  || surf->numSprites == 0)
 		return;
 
 	RB_EndSurface();

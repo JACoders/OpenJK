@@ -3383,6 +3383,11 @@ void R_CreateBuiltinImages( void ) {
 				r_shadowMapSize->integer, IMGTYPE_COLORALPHA,
 				IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
 				GL_DEPTH_COMPONENT24);
+			GL_Bind(tr.sunShadowDepthImage[x]);
+			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 		}
 
 		tr.screenShadowImage = R_CreateImage(

@@ -101,10 +101,6 @@ out vec4 var_Bitangent;
 out vec4 var_LightDir;
 #endif
 
-#if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-out vec4 var_PrimaryLightDir;
-#endif
-
 vec4 CalcColor(vec3 position)
 {
 	vec4 color = vec4(1.0);
@@ -318,11 +314,6 @@ void main()
 	}
 	var_Color *= disintegration;
 
-#if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-	var_PrimaryLightDir.xyz = u_PrimaryLightOrigin.xyz - (position * u_PrimaryLightOrigin.w);
-	var_PrimaryLightDir.w = u_PrimaryLightRadius * u_PrimaryLightRadius;
-#endif
-
 #if defined(PER_PIXEL_LIGHTING)
   var_LightDir = vec4(L, 0.0);
   #if defined(USE_DELUXEMAP)
@@ -446,10 +437,6 @@ in vec4 var_Bitangent;
 in vec4 var_LightDir;
 #endif
 
-#if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-in vec4 var_PrimaryLightDir;
-#endif
-
 out vec4 out_Color;
 out vec4 out_Glow;
 
@@ -464,7 +451,7 @@ float SampleDepth(sampler2D normalMap, vec2 t)
 float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, in float parallaxBias)
 {
 	const int linearSearchSteps = 16;
-	const int binarySearchSteps = 4;
+	const int binarySearchSteps = 6;
 
 	vec2 dp = inDp - parallaxBias * ds;
 
@@ -495,7 +482,7 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 	for(int i = 0; i < binarySearchSteps; ++i)
 	{
 		size *= 0.5;
-
+	
 		float t = SampleDepth(normalMap, dp + ds * depth);
 		
 		if(depth >= t)
@@ -510,8 +497,8 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 	vec2 prevTexCoords = dp + ds * (depth-size);
 	float afterDepth  = SampleDepth(normalMap, dp + ds * depth) - depth;
 	float beforeDepth = SampleDepth(normalMap, prevTexCoords) - depth + size;
-	float weight = afterDepth / (afterDepth - beforeDepth);
-	bestDepth -= weight*size;
+	float weight = beforeDepth / (beforeDepth - afterDepth);
+	bestDepth += weight*size;
 
 	return bestDepth - parallaxBias;
 }
@@ -886,11 +873,11 @@ void main()
 	L /= sqrt(sqrLightDist);
 
   #if defined(USE_SHADOWMAP)
-	vec2 shadowTex = gl_FragCoord.xy * r_FBufScale;
+	vec2 shadowTex = gl_FragCoord.xy / r_FBufScale;
 	float shadowValue = texture(u_ShadowMap, shadowTex).r;
 
 	// surfaces not facing the light are always shadowed
-	vec3 primaryLightDir = normalize(var_PrimaryLightDir.xyz);
+	vec3 primaryLightDir = normalize(u_PrimaryLightOrigin.xyz);
 	shadowValue = mix(0.0, shadowValue, dot(N, primaryLightDir) > 0.0);
 
     #if defined(SHADOWMAP_MODULATE)
@@ -949,9 +936,9 @@ void main()
 	out_Color.rgb += ambientColor * diffuse.rgb;
 	
   #if defined(USE_PRIMARY_LIGHT)
-	vec3  L2   = normalize(var_PrimaryLightDir.xyz);
+	vec3  L2   = normalize(u_PrimaryLightOrigin.xyz);
 	vec3  H2   = normalize(L2 + E);
-	float NL2  = clamp(dot(N,  L2), 0.0, 1.0);
+	float NL2  = clamp(min(dot(N,  L2), dot(var_Normal.xyz, L2)), 0.0, 1.0);
 	float L2H2 = clamp(dot(L2, H2), 0.0, 1.0);
 	float NH2  = clamp(dot(N,  H2), 0.0, 1.0);
 	float VH2  = clamp(dot(E, H), 0.0, 1.0);
