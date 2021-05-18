@@ -1,3 +1,6 @@
+# CMake presets for local build configurations: https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#build-preset
+CMakeUserPresets.json
+
 #################
 ## Eclipse
 #################
