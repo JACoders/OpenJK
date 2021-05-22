@@ -313,7 +313,7 @@ void CL_ConfigstringModified( void ) {
 			continue;		// leave with the default empty string
 		}
 
-		len = strlen( dup );
+		len = static_cast<int>(strlen( dup ));
 
 		if ( len + 1 + cl.gameState.dataCount > MAX_GAMESTATE_CHARS ) {
 			Com_Error( ERR_DROP, "MAX_GAMESTATE_CHARS exceeded" );

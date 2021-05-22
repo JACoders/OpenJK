@@ -166,7 +166,7 @@ void Con_Dump_f (void)
 #else
 		Q_strcat(buffer, bufferlen, "\n");
 #endif
-		FS_Write(buffer, strlen(buffer), f);
+		FS_Write(buffer, static_cast<int>(strlen(buffer)), f);
 	}
 
 	Z_Free( buffer );
@@ -567,7 +567,7 @@ void Con_DrawSolidConsole( float frac )
 	re.SetColor( console_color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
-	i = strlen( Q3_VERSION );
+	i = static_cast<int>(strlen( Q3_VERSION ));
 
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
