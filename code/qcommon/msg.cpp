@@ -254,7 +254,7 @@ void MSG_WriteString( msg_t *sb, const char *s ) {
 		int		l, i;
 		char	string[MAX_STRING_CHARS];
 
-		l = strlen( s );
+		l = static_cast<int>(strlen( s ));
 		if ( l >= MAX_STRING_CHARS ) {
 			Com_Printf( "MSG_WriteString: MAX_STRING_CHARS" );
 			MSG_WriteData (sb, "", 1);
