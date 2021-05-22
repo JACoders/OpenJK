@@ -47,7 +47,7 @@ int G2_Find_Bolt_Bone_Num(boltInfo_v &bltlist, const int boneNum)
 	{
 		if (bltlist[i].boneNumber == boneNum)
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -63,7 +63,7 @@ int G2_Find_Bolt_Surface_Num(boltInfo_v &bltlist, const int surfaceNum, const in
 	{
 		if ((bltlist[i].surfaceNumber == surfaceNum) && ((bltlist[i].surfaceType & flags) == flags))
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -93,7 +93,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 		{
 			// increment the usage count
 			bltlist[i].boltUsed++;
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -108,7 +108,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 			bltlist[i].surfaceNumber = surfNum;
 			bltlist[i].surfaceType = G2SURFACEFLAG_GENERATED;
 			bltlist[i].boltUsed = 1;
-	 		return i;
+	 		return static_cast<int>(i);
 		}
 	}
 
@@ -118,7 +118,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 	tempBolt.boneNumber = -1;
 	tempBolt.boltUsed = 1;
 	bltlist.push_back(tempBolt);
-	return bltlist.size()-1;
+	return static_cast<int>(bltlist.size())-1;
 
 }
 
@@ -148,7 +148,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 			{
 				// increment the usage count
 				bltlist[i].boltUsed++;
-				return i;
+				return static_cast<int>(i);
 			}
 		}
 
@@ -162,7 +162,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 				bltlist[i].surfaceNumber = surfNum;
 				bltlist[i].boltUsed = 1;
 				bltlist[i].surfaceType = 0;
-		 		return i;
+		 		return static_cast<int>(i);
 			}
 		}
 
@@ -172,7 +172,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		tempBolt.boltUsed = 1;
 		tempBolt.surfaceType = 0;
 		bltlist.push_back(tempBolt);
-		return bltlist.size()-1;
+		return static_cast<int>(bltlist.size())-1;
 	}
 
 	// no, check to see if it's a bone then
@@ -210,7 +210,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		{
 			// increment the usage count
 			bltlist[i].boltUsed++;
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -224,7 +224,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 			bltlist[i].boneNumber = x;
 			bltlist[i].boltUsed = 1;
 			bltlist[i].surfaceType = 0;
-	 		return i;
+	 		return static_cast<int>(i);
 		}
 	}
 
@@ -234,7 +234,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	tempBolt.boltUsed = 1;
  	tempBolt.surfaceType = 0;
 	bltlist.push_back(tempBolt);
-	return bltlist.size()-1;
+	return static_cast<int>(bltlist.size())-1;
 
 }
 

@@ -182,7 +182,7 @@ void RE_GetScreenShot(byte *buffer, int w, int h)
 
 	// gamma correct
 	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(source + offset, memcount);
+		R_GammaCorrect(source + offset, static_cast<int>(memcount));
 
 	// resample from source
 	xScale = glConfig.vidWidth / (4.0*w);

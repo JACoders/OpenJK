@@ -819,7 +819,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *) R_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse);
+	buffer = (byte *) R_Malloc(static_cast<int>(padwidth * height + *offset + packAlign) - 1, TAG_TEMP_WORKSPACE, qfalse);
 
 	bufstart = (byte *)PADP((intptr_t) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -883,9 +883,9 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 
 	// gamma correct
 	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(allbuf + offset, memcount);
+		R_GammaCorrect(allbuf + offset, static_cast<int>(memcount));
 
-	ri.FS_WriteFile(fileName, buffer, memcount + 18);
+	ri.FS_WriteFile(fileName, buffer, static_cast<int>(memcount + 18));
 
 	R_Free(allbuf);
 }
@@ -920,7 +920,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 
 	// gamma correct
 	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(buffer + offset, memcount);
+		R_GammaCorrect(buffer + offset, static_cast<int>(memcount));
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
 	R_Free(buffer);
@@ -1190,7 +1190,7 @@ void R_PrintLongString(const char *string)
 {
 	char buffer[1024];
 	const char *p = string;
-	int remainingLength = strlen(string);
+	int remainingLength = static_cast<int>(strlen(string));
 
 	while (remainingLength > 0)
 	{
