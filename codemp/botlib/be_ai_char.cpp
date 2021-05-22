@@ -203,7 +203,7 @@ void BotDefaultCharacteristics(bot_character_t *ch, bot_character_t *defaultch)
 		else if (defaultch->c[i].type == CT_STRING)
 		{
 			ch->c[i].type = CT_STRING;
-			ch->c[i].value.string = (char *) GetMemory(strlen(defaultch->c[i].value.string)+1);
+			ch->c[i].value.string = (char *) GetMemory(static_cast<unsigned long>(strlen(defaultch->c[i].value.string)+1));
 			strcpy(ch->c[i].value.string, defaultch->c[i].value.string);
 		} //end else if
 	} //end for
@@ -307,7 +307,7 @@ bot_character_t *BotLoadCharacterFromFile(char *charfile, int skill)
 					else if (token.type == TT_STRING)
 					{
 						StripDoubleQuotes(token.string);
-						ch->c[index].value.string = (char *)GetMemory(strlen(token.string)+1);
+						ch->c[index].value.string = (char *)GetMemory(static_cast<unsigned long>(strlen(token.string)+1));
 						strcpy(ch->c[index].value.string, token.string);
 						ch->c[index].type = CT_STRING;
 					} //end else if
@@ -558,7 +558,7 @@ int BotInterpolateCharacters(int handle1, int handle2, float desiredskill)
 		else if (ch1->c[i].type == CT_STRING)
 		{
 			out->c[i].type = CT_STRING;
-			out->c[i].value.string = (char *) GetMemory(strlen(ch1->c[i].value.string)+1);
+			out->c[i].value.string = (char *) GetMemory(static_cast<unsigned long>(strlen(ch1->c[i].value.string)+1));
 			strcpy(out->c[i].value.string, ch1->c[i].value.string);
 		} //end else if
 	} //end for
