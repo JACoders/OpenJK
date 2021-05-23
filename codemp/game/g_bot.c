@@ -92,7 +92,7 @@ int G_ParseInfos( char *buf, int max, char *infos[] ) {
 			Info_SetValueForKey( info, key, token );
 		}
 		//NOTE: extra space for arena number
-		infos[count] = (char *) G_Alloc(strlen(info) + strlen("\\num\\") + strlen(va("%d", MAX_ARENAS)) + 1);
+		infos[count] = (char *) G_Alloc((int)(strlen(info) + strlen("\\num\\") + strlen(va("%d", MAX_ARENAS)) + 1));
 		if (infos[count]) {
 			strcpy(infos[count], info);
 			count++;
@@ -348,7 +348,7 @@ void G_LoadArenas( void ) {
 		numFiles = MAX_MAPS;
 
 	for(; i < numFiles; i++) {
-		len = strlen(fileptr);
+		len = (int)strlen(fileptr);
 		Com_sprintf(filename, sizeof(filename), "scripts/%s", fileptr);
 		G_LoadArenasFromFile(filename);
 		fileptr += len + 1;
@@ -1241,7 +1241,7 @@ static void G_LoadBots( void ) {
 	numdirs = trap->FS_GetFileList("scripts", ".bot", dirlist, 1024 );
 	dirptr  = dirlist;
 	for (i = 0; i < numdirs; i++, dirptr += dirlen+1) {
-		dirlen = strlen(dirptr);
+		dirlen = (int)strlen(dirptr);
 		strcpy(filename, "scripts/");
 		strcat(filename, dirptr);
 		G_LoadBotsFromFile(filename);

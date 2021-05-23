@@ -1172,7 +1172,7 @@ qboolean FS_IsExt(const char *filename, const char *ext, int namelen)
 {
 	int extlen;
 
-	extlen = strlen(ext);
+	extlen = static_cast<int>(strlen(ext));
 
 	if(extlen > namelen)
 		return qfalse;
@@ -1394,7 +1394,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						// The x86.dll suffixes are needed in order for sv_pure to continue to
 						// work on non-x86/windows systems...
 
-						l = strlen( filename );
+						l = static_cast<int>(strlen( filename ));
 						if ( !(pak->referenced & FS_GENERAL_REF)) {
 							if( !FS_IsExt(filename, ".shader", l) &&
 							    !FS_IsExt(filename, ".txt", l) &&
@@ -1487,7 +1487,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 
 				// if we are running restricted, the only files we
 				// will allow to come from the directory are .cfg files
-				l = strlen( filename );
+				l = static_cast<int>(strlen( filename ));
 		  // FIXME TTimo I'm not sure about the fs_numServerPaks test
 		  // if you are using FS_ReadFile to find out if a file exists,
 		  //   this test can make the search fail although the file is in the directory
@@ -1672,7 +1672,7 @@ int FS_Read( void *buffer, int len, fileHandle_t f ) {
 		tries = 0;
 		while (remaining) {
 			block = remaining;
-			read = fread (buf, 1, block, fsh[f].handleFiles.file.o);
+			read = static_cast<int>(fread (buf, 1, block, fsh[f].handleFiles.file.o));
 			if (read == 0) {
 				// we might have been trying to read from a CD, which
 				// sometimes returns a 0 read on windows
@@ -1723,7 +1723,7 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	tries = 0;
 	while (remaining) {
 		block = remaining;
-		written = fwrite (buf, 1, block, f);
+		written = static_cast<int>(fwrite (buf, 1, block, f));
 		if (written == 0) {
 			if (!tries) {
 				tries = 1;
@@ -1755,7 +1755,7 @@ void QDECL FS_Printf( fileHandle_t h, const char *fmt, ... ) {
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
-	FS_Write(msg, strlen(msg), h);
+	FS_Write(msg, static_cast<int>(strlen(msg)), h);
 }
 
 #define PK3_SEEK_BUFFER_SIZE 65536
@@ -2123,7 +2123,7 @@ static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 		if (err != UNZ_OK) {
 			break;
 		}
-		len += strlen(filename_inzip) + 1;
+		len += static_cast<int>(strlen(filename_inzip) + 1);
 		unzGoToNextFile(uf);
 	}
 
@@ -2140,8 +2140,8 @@ static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 		}
 	}
 
-	pack = (pack_t *)Z_Malloc( sizeof( pack_t ) + i * sizeof(fileInPack_t *), TAG_FILESYS, qtrue );
-	pack->hashSize = i;
+	pack = (pack_t *)Z_Malloc( static_cast<int>(sizeof( pack_t ) + i * sizeof(fileInPack_t *)), TAG_FILESYS, qtrue );
+	pack->hashSize = static_cast<int>(i);
 	pack->hashTable = (fileInPack_t **) (((char *) pack) + sizeof( pack_t ));
 	for(int j = 0; j < pack->hashSize; j++) {
 		pack->hashTable[j] = NULL;
@@ -2324,11 +2324,11 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 		extension = "";
 	}
 
-	pathLength = strlen( path );
+	pathLength = static_cast<int>(strlen( path ));
 	if ( path[pathLength-1] == '\\' || path[pathLength-1] == '/' ) {
 		pathLength--;
 	}
-	extensionLength = strlen( extension );
+	extensionLength = static_cast<int>(strlen( extension ));
 	nfiles = 0;
 	FS_ReturnPath(path, zpath, &pathDepth);
 
@@ -2371,7 +2371,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 					}
 
 					// check for extension match
-					length = strlen( name );
+					length = static_cast<int>(strlen( name ));
 					if ( length < extensionLength ) {
 						continue;
 					}
@@ -2485,7 +2485,7 @@ int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int
 	pFiles = FS_ListFiles(path, extension, &nFiles);
 
 	for (i =0; i < nFiles; i++) {
-		nLen = strlen(pFiles[i]) + 1;
+		nLen = static_cast<int>(strlen(pFiles[i]) + 1);
 		if (nTotal + nLen + 1 < bufsize) {
 			strcpy(listbuf, pFiles[i]);
 			listbuf += nLen;
@@ -2653,7 +2653,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 
 			if (nPaks > 0) {
 				bool isBase = !Q_stricmp( name, BASEGAME );
-				nLen = isBase ? 1 : strlen(name) + 1;
+				nLen = isBase ? 1 : static_cast<int>(strlen(name) + 1);
 				// nLen is the length of the mod path
 				// we need to see if there is a description available
 				descPath[0] = '\0';
@@ -2664,7 +2664,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 					FILE *file;
 					file = FS_FileForHandle(descHandle);
 					Com_Memset( descPath, 0, sizeof( descPath ) );
-					nDescLen = fread(descPath, 1, 48, file);
+					nDescLen = static_cast<int>(fread(descPath, 1, 48, file));
 					if (nDescLen >= 0) {
 						descPath[nDescLen] = '\0';
 					}
@@ -2674,7 +2674,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 				} else {
 					strcpy(descPath, name);
 				}
-				nDescLen = strlen(descPath) + 1;
+				nDescLen = static_cast<int>(strlen(descPath) + 1);
 
 				if (nTotal + nLen + 1 + nDescLen + 1 < bufsize) {
 					if ( isBase )
@@ -3580,7 +3580,7 @@ const char *FS_ReferencedPakChecksums( void ) {
 	for ( search = fs_searchpaths ; search ; search = search->next ) {
 		// is the element a pak file?
 		if ( search->pack ) {
-			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, strlen(BASEGAME))) {
+			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, static_cast<int>(strlen(BASEGAME)))) {
 				Q_strcat( info, sizeof( info ), va("%i ", search->pack->checksum ) );
 			}
 		}
@@ -3659,7 +3659,7 @@ const char *FS_ReferencedPakNames( void ) {
 	for ( search = fs_searchpaths ; search ; search = search->next ) {
 		// is the element a pak file?
 		if ( search->pack ) {
-			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, strlen(BASEGAME))) {
+			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, static_cast<int>(strlen(BASEGAME)))) {
 				if (*info) {
 					Q_strcat(info, sizeof( info ), " " );
 				}
@@ -4153,7 +4153,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 			if ( file != INVALID_HANDLE_VALUE )
 			{
 				DWORD bytesWritten = 0;
-				if (WriteFile(file, data, dataLength, &bytesWritten, NULL))
+				if (WriteFile(file, data, static_cast<DWORD>(dataLength), &bytesWritten, NULL))
 				{
 					int deletesRemaining = ARRAY_LEN(fs_temporaryFileNames);
 
@@ -4194,8 +4194,8 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 					if ( tempFilePath )
 					{
 						size_t fileNameLen = strlen(tempFileName);
-						*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS);
-						Q_strncpyz(*tempFilePath, tempFileName, fileNameLen + 1);
+						*tempFilePath = (char *)Z_Malloc(static_cast<int>(fileNameLen + 1), TAG_FILESYS);
+						Q_strncpyz(*tempFilePath, tempFileName, static_cast<int>(fileNameLen + 1));
 					}
 
 					return qtrue;

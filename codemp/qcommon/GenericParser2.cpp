@@ -192,7 +192,7 @@ CTextPool::~CTextPool(void)
 
 char *CTextPool::AllocText(char *text, bool addNULL, CTextPool **poolPtr)
 {
-	int	length = strlen(text) + (addNULL ? 1 : 0);
+	int	length = static_cast<int>(strlen(text) + (addNULL ? 1 : 0));
 
 	if (mUsed + length + 1> mSize)
 	{	// extra 1 to put a null on the end
@@ -822,7 +822,7 @@ CGPValue *CGPGroup::FindPair(const char *key)
 		while(pair)
 		{
 			if (strlen(pair->GetName()) == length &&
-				Q_stricmpn(pair->GetName(), pos, length) == 0)
+				Q_stricmpn(pair->GetName(), pos, static_cast<int>(length)) == 0)
 			{
 				return pair;
 			}

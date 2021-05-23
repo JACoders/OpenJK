@@ -753,7 +753,7 @@ static void G_SpewEntList(void)
 #ifdef _DEBUG
 				if (fh)
 				{
-					trap->FS_Write(str, strlen(str), fh);
+					trap->FS_Write(str, (int)strlen(str), fh);
 				}
 #endif
 			}
@@ -771,7 +771,7 @@ static void G_SpewEntList(void)
 #ifdef _DEBUG
 			if (fh)
 			{
-				trap->FS_Write(str, strlen(str), fh);
+				trap->FS_Write(str, (int)strlen(str), fh);
 			}
 #endif
 		}
@@ -784,7 +784,7 @@ static void G_SpewEntList(void)
 #ifdef _DEBUG
 	if (fh)
 	{
-		trap->FS_Write(str, strlen(str), fh);
+		trap->FS_Write(str, (int)strlen(str), fh);
 		trap->FS_Close(fh);
 	}
 #endif
