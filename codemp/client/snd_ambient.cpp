@@ -319,7 +319,7 @@ static void AS_GetSubWaves( ambientSet_t &set )
 	sscanf( parseBuffer+parsePos, "%s %s", tempBuffer, dirBuffer );
 
 	//Move the pointer past these two strings
-	parsePos += ((strlen(keywordNames[SET_KEYWORD_SUBWAVES])+1) + (strlen(dirBuffer)+1));
+	parsePos += static_cast<int>((strlen(keywordNames[SET_KEYWORD_SUBWAVES])+1) + (strlen(dirBuffer)+1));
 
 	//Get all the subwaves
 	while ( parsePos <= parseSize )
@@ -350,7 +350,7 @@ static void AS_GetSubWaves( ambientSet_t &set )
 		}
 
 		//Move the pointer past this string
-		parsePos += strlen(waveBuffer)+1;
+		parsePos += static_cast<int>(strlen(waveBuffer)+1);
 
 		if ( ( (parseBuffer+parsePos)[0] == '\n') || ( (parseBuffer+parsePos)[0] == '\r') )
 			break;
@@ -629,13 +629,13 @@ static qboolean AS_ParseSet( int setID, CSetGroup *sg )
 	while ( parsePos <= parseSize )
 	{
 		//Check for a valid set group
-		if ( Q_strncmp( parseBuffer+parsePos, name, strlen(name) ) == 0 )
+		if ( Q_strncmp( parseBuffer+parsePos, name, static_cast<int>(strlen(name)) ) == 0 )
 		{
 			//Update the debug info
 			numSets++;
 
 			//Push past the set specifier and on to the name
-			parsePos+=strlen(name)+1;	//Also take the following space out
+			parsePos+=static_cast<int>(strlen(name)+1);	//Also take the following space out
 
 			//Get the set name (this MUST be first)
 			sscanf( parseBuffer+parsePos, "%s", tempBuffer );

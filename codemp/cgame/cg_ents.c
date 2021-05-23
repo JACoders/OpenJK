@@ -1390,7 +1390,7 @@ Ghoul2 Insert End
 			if (cent->ghoul2 && trap->G2API_SkinlessModel(cent->ghoul2, 0))
 			{ //well, you'd never want a skinless model, so try to get his skin...
 				Q_strncpyz(skinName, modelName, MAX_QPATH);
-				l = strlen(skinName);
+				l = (int)strlen(skinName);
 				while (l > 0 && skinName[l] != '/')
 				{ //parse back to first /
 					l--;

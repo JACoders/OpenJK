@@ -1047,7 +1047,7 @@ void CL_Connect_f( void ) {
 	Com_Printf( "%s resolved to %s\n", cls.servername, serverString );
 
 	if( cl_guidServerUniq->integer )
-		CL_UpdateGUID( serverString, strlen( serverString ) );
+		CL_UpdateGUID( serverString, static_cast<int>(strlen( serverString )) );
 	else
 		CL_UpdateGUID( NULL, 0 );
 
@@ -1135,7 +1135,7 @@ void CL_Rcon_f( void ) {
 		}
 	}
 
-	NET_SendPacket (NS_CLIENT, strlen(message)+1, message, rcon_address);
+	NET_SendPacket (NS_CLIENT, static_cast<int>(strlen(message)+1), message, rcon_address);
 }
 
 /*
@@ -1566,7 +1566,7 @@ void CL_CheckForResend( void ) {
 		Info_SetValueForKey( info, "challenge", va("%i", clc.challenge ) );
 
 		Com_sprintf(data, sizeof(data), "connect \"%s\"", info );
-		NET_OutOfBandData( NS_CLIENT, clc.serverAddress, (byte *)data, strlen(data) );
+		NET_OutOfBandData( NS_CLIENT, clc.serverAddress, (byte *)data, static_cast<int>(strlen(data)) );
 
 		// the most current userinfo has been sent, so watch for any
 		// newer changes to userinfo variables
@@ -1795,7 +1795,7 @@ static void CL_CheckSVStringEdRef(char *buf, const char *str)
 
 	strcpy(buf, str);
 
-	strLen = strlen(str);
+	strLen = static_cast<int>(strlen(str));
 
 	if (strLen >= MAX_STRINGED_SV_STRING)
 	{
@@ -1830,7 +1830,7 @@ static void CL_CheckSVStringEdRef(char *buf, const char *str)
 
 					buf[b] = 0;
 					Q_strcat(buf, MAX_STRINGED_SV_STRING, SE_GetString(va("MP_SVGAME_%s", stripRef)));
-					b = strlen(buf);
+					b = static_cast<int>(strlen(buf));
 				}
 			}
 		}
@@ -3215,7 +3215,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 		}
 	}
 
-	len = strlen(serverStatus->string);
+	len = static_cast<int>(strlen(serverStatus->string));
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\");
 
 	if (serverStatus->print) {
@@ -3224,7 +3224,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	}
 	for (i = 0, s = MSG_ReadStringLine( msg ); *s; s = MSG_ReadStringLine( msg ), i++) {
 
-		len = strlen(serverStatus->string);
+		len = static_cast<int>(strlen(serverStatus->string));
 		Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\%s", s);
 
 		if (serverStatus->print) {
@@ -3240,7 +3240,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 			Com_Printf("%-2d   %-3d    %-3d   %s\n", i, score, ping, s );
 		}
 	}
-	len = strlen(serverStatus->string);
+	len = static_cast<int>(strlen(serverStatus->string));
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\");
 
 	serverStatus->time = Com_Milliseconds();
@@ -3288,7 +3288,7 @@ void CL_LocalServers_f( void ) {
 			to.port = BigShort( (short)(PORT_SERVER + j) );
 
 			to.type = NA_BROADCAST;
-			NET_SendPacket( NS_CLIENT, strlen( message ), message, to );
+			NET_SendPacket( NS_CLIENT, static_cast<int>(strlen( message )), message, to );
 		}
 	}
 }

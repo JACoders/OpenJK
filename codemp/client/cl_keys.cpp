@@ -410,7 +410,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 	int		i;
 
 	drawLen = edit->widthInChars - 1; // - 1 so there is always a space for the cursor
-	len = strlen( edit->buffer );
+	len = static_cast<int>(strlen( edit->buffer ));
 
 	// guarantee that cursor will be visible
 	if ( len <= drawLen ) {
@@ -463,7 +463,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 			cursorChar = 10;
 		}
 
-		i = drawLen - strlen( str );
+		i = drawLen - static_cast<int>(strlen( str ));
 
 		if ( size == SMALLCHAR_WIDTH ) {
 			SCR_DrawSmallChar( x + ( edit->cursor - prestep - i ) * size, y, cursorChar );
@@ -529,7 +529,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 	}
 
 	key = tolower( key );
-	len = strlen( edit->buffer );
+	len = static_cast<int>(strlen( edit->buffer ));
 
 	switch ( key ) {
 		case A_DELETE:
@@ -593,7 +593,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	len = strlen( edit->buffer );
+	len = static_cast<int>(strlen( edit->buffer ));
 
 	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
 		if ( edit->cursor > 0 ) {
@@ -1105,7 +1105,7 @@ void Key_WriteBindings( fileHandle_t f ) {
 	FS_Printf( f, "unbindall\n" );
 	for ( size_t i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] ) {
-			const char *name = Key_KeynumToString( i );
+			const char *name = Key_KeynumToString( static_cast<int>(i) );
 
 			// handle the escape character nicely
 			if ( !strcmp( name, "\\" ) )
@@ -1125,7 +1125,7 @@ Key_Bindlist_f
 void Key_Bindlist_f( void ) {
 	for ( size_t i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
-			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s (%s) = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
+			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s (%s) = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToAscii( static_cast<int>(i) ), Key_KeynumToString( static_cast<int>(i) ), kg.keys[i].binding );
 	}
 }
 

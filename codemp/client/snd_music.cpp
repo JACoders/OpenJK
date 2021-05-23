@@ -230,7 +230,7 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 			else
 			if (!strcmp(psGroupName,sKEY_EXIT))
 			{
-				int iThisExitPointIndex = MusicFile.MusicExitPoints.size();	// must eval this first, so unaffected by push_back etc
+				int iThisExitPointIndex = static_cast<int>(MusicFile.MusicExitPoints.size());	// must eval this first, so unaffected by push_back etc
 				//
 				// read this set of exit points...
 				//
@@ -251,7 +251,7 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 						MusicExitPoint.sNextMark = psValue;
 					}
 					else
-					if (!Q_strncmp(psKey,sKEY_TIME,strlen(sKEY_TIME)))
+					if (!Q_strncmp(psKey,sKEY_TIME,static_cast<int>(strlen(sKEY_TIME))))
 					{
 						MusicExitTime_t MusicExitTime;
 										MusicExitTime.fTime		= atof(psValue);
@@ -278,7 +278,7 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 				}
 
 				MusicFile.MusicExitPoints.push_back(MusicExitPoint);
-				int iNumExitPoints = MusicFile.MusicExitPoints.size();
+				int iNumExitPoints = static_cast<int>(MusicFile.MusicExitPoints.size());
 
 				// error checking...
 				//
@@ -381,7 +381,7 @@ static char *StripTrailingWhiteSpaceOnEveryLine(char *pText)
 		do
 		{
 			bTrimmed = qfalse;
-			int iStrLen = strlen(sOneLine);
+			int iStrLen = static_cast<int>(strlen(sOneLine));
 
 			if (iStrLen)
 			{
@@ -398,7 +398,7 @@ static char *StripTrailingWhiteSpaceOnEveryLine(char *pText)
 		strNewText += "\n";
 	}
 
-	char  *pNewText = (char *) Z_Malloc( strlen(strNewText.c_str())+1, TAG_TEMP_WORKSPACE, qfalse);
+	char  *pNewText = (char *) Z_Malloc( static_cast<int>(strlen(strNewText.c_str())+1), TAG_TEMP_WORKSPACE, qfalse);
 	strcpy(pNewText, strNewText.c_str());
 	return pNewText;
 }

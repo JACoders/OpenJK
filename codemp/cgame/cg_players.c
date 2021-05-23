@@ -705,7 +705,7 @@ retryModel:
 		int j;
 		char iconName[1024];
 		strcpy(iconName, "icon_");
-		j = strlen(iconName);
+		j = (int)strlen(iconName);
 		while (skinName[i] && skinName[i] != '|' && j < 1024)
 		{
             iconName[j] = skinName[i];
