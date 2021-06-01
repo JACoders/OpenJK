@@ -234,7 +234,7 @@ void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const 
 	{
 		// if we already had this model entry, then re-register all the shaders it wanted...
 		//
-		int iEntries = ModelBin.ShaderRegisterData.size();
+		int iEntries = static_cast<int>(ModelBin.ShaderRegisterData.size());
 		for (int i=0; i<iEntries; i++)
 		{
 			int iShaderNameOffset	= ModelBin.ShaderRegisterData[i].first;
@@ -469,7 +469,7 @@ void RE_RegisterModels_Info_f( void )
 		return;
 	}
 
-	int iModels = CachedModels->size();
+	int iModels = static_cast<int>(CachedModels->size());
 	int iModel  = 0;
 
 	for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end(); ++itModel,iModel++)
@@ -1566,7 +1566,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 
 		// strip off a trailing _1 or _2
 		// this is a crutch for q3data being a mess
-		j = strlen( surf->name );
+		j = static_cast<int>(strlen( surf->name ));
 		if ( j > 2 && surf->name[j-2] == '_' ) {
 			surf->name[j-2] = 0;
 		}

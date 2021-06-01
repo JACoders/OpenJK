@@ -67,7 +67,7 @@ int G2_Find_Bone(const model_t *mod, boneInfo_v &blist, const char *boneName)
 		// if name is the same, we found it
 		if (!Q_stricmp(skel->name, boneName))
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -125,7 +125,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 			// if name is the same, we found it
 			if (!Q_stricmp(skel->name, boneName))
 			{
-				return i;
+				return static_cast<int>(i);
 			}
 		}
 		else
@@ -133,7 +133,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 			// if we found an entry that had a -1 for the bonenumber, then we hit a bone slot that was empty
 			blist[i].boneNumber = x;
 			blist[i].flags = 0;
-	 		return i;
+	 		return static_cast<int>(i);
 		}
 	}
 
@@ -144,7 +144,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 	tempBone.boneNumber = x;
 	tempBone.flags = 0;
 	blist.push_back(tempBone);
-	return blist.size()-1;
+	return static_cast<int>(blist.size()-1);
 }
 
 
@@ -169,9 +169,9 @@ qboolean G2_Remove_Bone_Index ( boneInfo_v &blist, int index)
 			// set this bone to not used
 			blist[index].boneNumber = -1;
 
-		   	unsigned int newSize = blist.size();
+		   	unsigned int newSize = static_cast<unsigned int>(blist.size());
 			// now look through the list from the back and see if there is a block of -1's we can resize off the end of the list
-			for (int i=blist.size()-1; i>-1; i--)
+			for (int i=static_cast<int>(blist.size()-1); i>-1; i--)
 			{
 				if (blist[i].boneNumber == -1)
 				{
@@ -207,7 +207,7 @@ int	G2_Find_Bone_In_List(boneInfo_v &blist, const int boneNum)
 	{
 		if (blist[i].boneNumber == boneNum)
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 	return -1;
@@ -1146,7 +1146,7 @@ void G2_Animate_Bone_List(CGhoul2Info_v &ghoul2, const int currentTime, const in
 							if ((blist[i].flags & BONE_ANIM_OVERRIDE_FREEZE) != BONE_ANIM_OVERRIDE_FREEZE)
 							{
 								// nope, just stop it. And remove the bone if possible
-								G2_Stop_Bone_Index(blist, i, (BONE_ANIM_TOTAL));
+								G2_Stop_Bone_Index(blist, static_cast<int>(i), (BONE_ANIM_TOTAL));
 							}
 						}
 					}
@@ -1320,7 +1320,7 @@ int G2_Find_Bone_Rag(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneNa
 		// if name is the same, we found it
 		if (!Q_stricmp(skel->name, boneName))
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 #if _DEBUG
@@ -1957,7 +1957,7 @@ void G2_SetRagDollBullet(CGhoul2Info &ghoul2,const vec3_t rayStart,const vec3_t 
 		int i;
 		int		magicFactor13=150.0f; // squared radius multiplier for shot effects
 		boneInfo_v &blist = ghoul2.mBlist;
-		for(i=blist.size()-1;i>=0;i--)
+		for(i=static_cast<int>(blist.size()-1);i>=0;i--)
 		{
 			boneInfo_t &bone=blist[i];
 			if ((bone.flags & BONE_ANGLES_TOTAL))
@@ -2226,7 +2226,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 					rag.resize(bone.boneNumber+1,0);
 				}
 				rag[bone.boneNumber]=&bone;
-				ragBlistIndex[bone.boneNumber]=i;
+				ragBlistIndex[bone.boneNumber]=static_cast<int>(i);
 
 				bone.lastTimeUpdated=frameNum;
 				if (resetOrigin)
@@ -4652,7 +4652,7 @@ void G2_RemoveRedundantBoneOverrides(boneInfo_v &blist, int *activeBones)
 			if (!activeBones[blist[i].boneNumber])
 			{
 				blist[i].flags = 0;
-				G2_Remove_Bone_Index(blist, i);
+				G2_Remove_Bone_Index(blist, static_cast<int>(i));
 			}
 		}
 	}
