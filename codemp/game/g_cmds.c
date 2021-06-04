@@ -92,7 +92,7 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 			cl->ps.persistant[PERS_ASSIST_COUNT],
 			perfect,
 			cl->ps.persistant[PERS_CAPTURES]);
-		j = strlen(entry);
+		j = (int)strlen(entry);
 		if (stringlength + j > 1022)
 			break;
 		strcpy (string + stringlength, entry);
@@ -134,7 +134,7 @@ char	*ConcatArgs( int start ) {
 	c = trap->Argc();
 	for ( i = start ; i < c ; i++ ) {
 		trap->Argv( i, arg, sizeof( arg ) );
-		tlen = strlen( arg );
+		tlen = (int)strlen( arg );
 		if ( len + tlen >= MAX_STRING_CHARS - 1 ) {
 			break;
 		}
@@ -160,7 +160,7 @@ qboolean StringIsInteger( const char *s ) {
 	int			i=0, len=0;
 	qboolean	foundDigit=qfalse;
 
-	for ( i=0, len=strlen( s ); i<len; i++ )
+	for ( i=0, len=(int)strlen( s ); i<len; i++ )
 	{
 		if ( !isdigit( s[i] ) )
 			return qfalse;

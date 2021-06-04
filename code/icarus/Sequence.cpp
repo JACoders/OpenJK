@@ -583,7 +583,7 @@ int CSequence::Save()
 	pIcarus->BufferWrite( &id, sizeof( id ) );
 
 	//Save the number of children
-	int iNumChildren = m_children.size();
+	int iNumChildren = static_cast<int>(m_children.size());
 	pIcarus->BufferWrite( &iNumChildren, sizeof( iNumChildren ) );
 
 	//Save out the children (only by GUID)

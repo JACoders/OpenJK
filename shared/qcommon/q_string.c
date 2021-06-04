@@ -199,7 +199,7 @@ char *Q_strupr( char *s1 ) {
 void Q_strcat( char *dest, int size, const char *src ) {
 	int		l1;
 
-	l1 = strlen( dest );
+	l1 = (int)strlen( dest );
 	if ( l1 >= size ) {
 		//Com_Error( ERR_FATAL, "Q_strcat: already overflowed" );
 		return;
@@ -238,7 +238,7 @@ const char *Q_stristr( const char *s, const char *find )
 					sc -= ('a' - 'A');
 				}
 			} while (sc != c);
-		} while (Q_stricmpn(s, find, len) != 0);
+		} while (Q_stricmpn(s, find, (int)len) != 0);
 		s--;
 	}
 	return s;
@@ -351,7 +351,7 @@ void Q_strstrip( char *string, const char *strip, const char *repl )
 {
 	char		*out=string, *p=string, c;
 	const char	*s=strip;
-	int			replaceLen = repl?strlen( repl ):0, offset=0;
+	int			replaceLen = repl ? (int)strlen( repl ) : 0, offset=0;
 	qboolean	recordChar = qtrue;
 
 	while ( (c = *p++) != '\0' )
@@ -359,7 +359,7 @@ void Q_strstrip( char *string, const char *strip, const char *repl )
 		recordChar = qtrue;
 		for ( s=strip; *s; s++ )
 		{
-			offset = s-strip;
+			offset = (int)(s-strip);
 			if ( c == *s )
 			{
 				if ( !repl || offset >= replaceLen )
@@ -427,7 +427,7 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 		// implementation, so we have no choice but to return size.
 
 		str[size - 1] = '\0';
-		return size;
+		return (int)size;
 	}
 
 	return retval;

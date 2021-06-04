@@ -244,7 +244,7 @@ void CL_ConfigstringModified( void ) {
 			continue;		// leave with the default empty string
 		}
 
-		len = strlen( dup );
+		len = static_cast<int>(strlen( dup ));
 
 		if ( len + 1 + cl.gameState.dataCount > MAX_GAMESTATE_CHARS ) {
 			Com_Error( ERR_DROP, "MAX_GAMESTATE_CHARS exceeded" );
@@ -314,7 +314,7 @@ void CL_CheckSVStringEdRef(char *buf, const char *str)
 
 	strcpy(buf, str);
 
-	strLen = strlen(str);
+	strLen = static_cast<int>(strlen(str));
 
 	if (strLen >= MAX_STRINGED_SV_STRING)
 	{
@@ -349,7 +349,7 @@ void CL_CheckSVStringEdRef(char *buf, const char *str)
 
 					buf[b] = 0;
 					Q_strcat(buf, MAX_STRINGED_SV_STRING, SE_GetString("MP_SVGAME", stringRef));
-					b = strlen(buf);
+					b = static_cast<int>(strlen(buf));
 				}
 			}
 		}

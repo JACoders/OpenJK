@@ -2382,7 +2382,7 @@ void G2_ProcessGeneratedSurfaceBolts(CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, m
 		if (ghoul2.mSlist[i].offFlags & G2SURFACEFLAG_GENERATED)
 		{
 	   		// well alrighty then. Lets see if there is a bolt that is attempting to use it
-			int boltNum = G2_Find_Bolt_Surface_Num(ghoul2.mBltlist, i, G2SURFACEFLAG_GENERATED);
+			int boltNum = G2_Find_Bolt_Surface_Num(ghoul2.mBltlist, static_cast<int>(i), G2SURFACEFLAG_GENERATED);
 			// yes - ok, processing time.
 			if (boltNum != -1)
 			{

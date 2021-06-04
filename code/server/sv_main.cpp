@@ -201,7 +201,7 @@ void SVC_Status( netadr_t from ) {
 				score = 0;
 			}
 			Com_sprintf( player, sizeof( player ), "%i %i \"%s\"\n", score, cl->name );
-			playerLength = strlen(player);
+			playerLength = static_cast<int>(strlen(player));
 			if (statusLength + playerLength >= (int)sizeof(status) ) {
 				break;		// can't hold any more
 			}

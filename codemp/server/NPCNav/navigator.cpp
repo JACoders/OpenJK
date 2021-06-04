@@ -690,7 +690,7 @@ bool CNavigator::Save( const char *filename, int checksum )
 	//Write out the checksum
 	FS_Write( &checksum, sizeof( checksum ), file );
 
-	int	numNodes = m_nodes.size();
+	int	numNodes = static_cast<int>(m_nodes.size());
 
 	//Write out the number of nodes to follow
 	FS_Write( &numNodes, sizeof(numNodes), file );
@@ -719,7 +719,7 @@ AddRawPoint
 
 int CNavigator::AddRawPoint( vec3_t point, int flags, int radius )
 {
-	CNode	*node	= CNode::Create( point, flags, radius, m_nodes.size() );
+	CNode	*node	= CNode::Create( point, flags, radius, static_cast<int>(m_nodes.size()) );
 
 	if ( node == NULL )
 	{
@@ -900,7 +900,7 @@ void CNavigator::CalculatePaths( qboolean recalc )
 	for ( size_t i = 0; i < m_nodes.size(); i++ )
 	{
 		//Allocate the needed memory
-		m_nodes[i]->InitRanks( m_nodes.size() );
+		m_nodes[i]->InitRanks( static_cast<int>(m_nodes.size()) );
 	}
 
 	for ( size_t i = 0; i < m_nodes.size(); i++ )
@@ -1300,7 +1300,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 				nChain.distance = dist;
 
 				nodeChain.insert( nci, nChain );
-				collected = nodeChain.size();
+				collected = static_cast<int>(nodeChain.size());
 				added = true;
 
 				//If we've hit our collection limit, throw off the oldest one

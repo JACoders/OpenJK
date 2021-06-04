@@ -87,8 +87,8 @@ qboolean COM_CompareExtension(const char *in, const char *ext)
 {
 	int inlen, extlen;
 
-	inlen = strlen(in);
-	extlen = strlen(ext);
+	inlen = static_cast<int>(strlen(in));
+	extlen = static_cast<int>(strlen(ext));
 
 	if(extlen <= inlen)
 	{
@@ -617,7 +617,7 @@ int Com_HexStrToInt( const char *str )
 			n += digit;
 		}
 
-		return n;
+		return static_cast<int>(n);
 	}
 
 	return -1;
@@ -680,7 +680,7 @@ Assumes buffer is atleast TRUNCATE_LENGTH big
 ============
 */
 void Com_TruncateLongString( char *buffer, const char *s ) {
-	int length = strlen( s );
+	int length = static_cast<int>(strlen( s ));
 
 	if ( length <= TRUNCATE_LENGTH )
 		Q_strncpyz( buffer, s, TRUNCATE_LENGTH );

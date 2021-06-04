@@ -175,7 +175,7 @@ static int GetStringNum(const char *psString)
 	}
 
 	strList.push_back( psString );
-	return strlen(psString) + 1;	// this gives us the chunk length for the reader later
+	return static_cast<int>(strlen(psString) + 1);	// this gives us the chunk length for the reader later
 }
 
 static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)

@@ -65,7 +65,7 @@ public:
 	// Overloaded new operator.
 	inline void *operator new( size_t size )
 	{	// Allocate the memory.
-		return IGameInterface::GetGame()->Malloc( size );
+		return IGameInterface::GetGame()->Malloc( static_cast<int>(size) );
 	}
 
 	// Overloaded delete operator.
@@ -159,7 +159,7 @@ public:
 	// Overloaded new operator.
 	inline void *operator new( size_t size )
 	{	// Allocate the memory.
-		return IGameInterface::GetGame()->Malloc( size );
+		return IGameInterface::GetGame()->Malloc( static_cast<int>(size) );
 	}
 
 	// Overloaded delete operator.
@@ -210,7 +210,7 @@ public:
 	// Overloaded new operator.
 	static void *operator new( size_t size )
 	{	// Allocate the memory.
-		return IGameInterface::GetGame()->Malloc( size );
+		return IGameInterface::GetGame()->Malloc( static_cast<int>(size) );
 	}
 
 	// Overloaded delete operator.

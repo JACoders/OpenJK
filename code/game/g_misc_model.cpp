@@ -41,7 +41,7 @@ void SetMiscModelModels( char *modelNameString, gentity_t *ent, qboolean damage_
 
 	if ( damage_model )
 	{
-		len = strlen( modelNameString ) - 4; // extract the extension
+		len = static_cast<int>(strlen( modelNameString )) - 4; // extract the extension
 
 		//Dead/damaged model
 		strncpy( damageModel, modelNameString, len );

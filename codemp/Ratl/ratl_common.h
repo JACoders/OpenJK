@@ -215,7 +215,7 @@ namespace str
 {
 	inline int		len(const char *src)
 	{
-		return strlen(src);
+		return static_cast<int>(strlen(src));
 	}
 
 	inline void	cpy(char *dest,const char *src)

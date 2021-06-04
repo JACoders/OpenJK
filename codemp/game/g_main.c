@@ -1511,7 +1511,7 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 
 	Com_sprintf( string, sizeof( string ), "%i:%02i ", mins, seconds );
 
-	l = strlen( string );
+	l = (int)strlen( string );
 
 	va_start( argptr, fmt );
 	Q_vsnprintf( string + l, sizeof( string ) - l, fmt, argptr );
@@ -1523,7 +1523,7 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 	if ( !level.logFile )
 		return;
 
-	trap->FS_Write( string, strlen( string ), level.logFile );
+	trap->FS_Write( string, (int)strlen( string ), level.logFile );
 }
 /*
 =================
@@ -1541,7 +1541,7 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	time( &rawtime );
 	localtime( &rawtime );
 	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
-	timeLen = strlen( string );
+	timeLen = (int)strlen( string );
 
 	va_start( argptr, fmt );
 	Q_vsnprintf( string+timeLen, sizeof( string ) - timeLen, fmt, argptr );
@@ -1553,7 +1553,7 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	if ( !level.security.log )
 		return;
 
-	trap->FS_Write( string, strlen( string ), level.security.log );
+	trap->FS_Write( string, (int)strlen( string ), level.security.log );
 }
 
 /*

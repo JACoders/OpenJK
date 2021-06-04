@@ -56,7 +56,7 @@ namespace Zone
 		using is_always_equal = std::true_type;
 		T* allocate( std::size_t n ) const
 		{
-			void* mem = detail::Malloc( n * sizeof( T ), tag );
+			void* mem = detail::Malloc( static_cast<int>(n * sizeof( T )), tag );
 			return static_cast< T* >( mem );
 		}
 		void deallocate( T* mem, std::size_t n ) const NOEXCEPT

@@ -266,7 +266,7 @@ static void IT_ClassName(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 32)
 	{
@@ -290,7 +290,7 @@ static void IT_WorldModel(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -541,7 +541,7 @@ static void IT_Icon(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 32)
 	{
@@ -618,7 +618,7 @@ static void IT_PickupSound(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 32)
 	{

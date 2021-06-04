@@ -321,7 +321,7 @@ SaveSequenceIDTable
 int ICARUS_Instance::SaveSequenceIDTable( void )
 {
 	//Save out the number of sequences to follow
-	int		numSequences = m_sequences.size();
+	int		numSequences = static_cast<int>(m_sequences.size());
 	m_interface->I_WriteSaveData( INT_ID('#','S','E','Q'), &numSequences, sizeof( numSequences ) );
 
 	//Sequences are saved first, by ID and information
@@ -376,7 +376,7 @@ SaveSequencers
 int ICARUS_Instance::SaveSequencers( void )
 {
 	//Save out the number of sequences to follow
-	int		numSequencers = m_sequencers.size();
+	int		numSequencers = static_cast<int>(m_sequencers.size());
 	m_interface->I_WriteSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( numSequencers ) );
 
 	//The sequencers are then saved
@@ -397,7 +397,7 @@ SaveSignals
 
 int ICARUS_Instance::SaveSignals( void )
 {
-	int	numSignals = m_signals.size();
+	int	numSignals = static_cast<int>(m_signals.size());
 
 	m_interface->I_WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
 
@@ -410,7 +410,7 @@ int ICARUS_Instance::SaveSignals( void )
 		//Make sure this is a valid string
 		assert( ( name != NULL ) && ( name[0] != '\0' ) );
 
-		int length = strlen( name ) + 1;
+		int length = static_cast<int>(strlen( name ) + 1);
 
 		//Save out the string size
 		m_interface->I_WriteSaveData( INT_ID('S','I','G','#'), &length, sizeof ( length ) );

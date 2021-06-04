@@ -189,7 +189,7 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 			Q_strncpyz(psDest,psText,iDestSize);
 		}
 
-		return strlen(psText);
+		return static_cast<int>(strlen(psText));
 	}
 
 	return 0;

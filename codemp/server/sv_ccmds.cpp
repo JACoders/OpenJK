@@ -683,7 +683,7 @@ static void SV_WriteBans( void )
 
 			Com_sprintf( writebuf, sizeof( writebuf ), "%d %s %d\n",
 				curban->isexception, NET_AdrToString( curban->ip ), curban->subnet );
-			FS_Write( writebuf, strlen( writebuf ), writeto );
+			FS_Write( writebuf, static_cast<int>(strlen( writebuf )), writeto );
 		}
 
 		FS_FCloseFile( writeto );

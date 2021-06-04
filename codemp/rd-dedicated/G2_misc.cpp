@@ -1709,7 +1709,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 	*size = 0;
 
 	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	int ghoul2BlockSize = (size_t)&ghoul2[0].mTransformedVertsArray - (size_t)&ghoul2[0].mModelindex;
+	int ghoul2BlockSize = static_cast<int>((size_t)&ghoul2[0].mTransformedVertsArray - (size_t)&ghoul2[0].mModelindex);
 
 	// add in count for number of ghoul2 models
 	*size += 4;
@@ -1720,13 +1720,13 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 		*size += ghoul2BlockSize;
 		// add in count for number of surfaces
 		*size += 4;
-		*size += (ghoul2[i].mSlist.size() * SURFACE_SAVE_BLOCK_SIZE);
+		*size += static_cast<int>(ghoul2[i].mSlist.size() * SURFACE_SAVE_BLOCK_SIZE);
 		// add in count for number of bones
 		*size += 4;
-		*size += (ghoul2[i].mBlist.size() * BONE_SAVE_BLOCK_SIZE);
+		*size += static_cast<int>(ghoul2[i].mBlist.size() * BONE_SAVE_BLOCK_SIZE);
 		// add in count for number of bolts
 		*size += 4;
-		*size += (ghoul2[i].mBltlist.size() * BOLT_SAVE_BLOCK_SIZE);
+		*size += static_cast<int>(ghoul2[i].mBltlist.size() * BOLT_SAVE_BLOCK_SIZE);
 	}
 
 	// ok, we should know how much space we need now
@@ -1747,7 +1747,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 		tempBuffer += ghoul2BlockSize;
 
 		// save out how many surfaces we have
-		*(int*)tempBuffer = ghoul2[i].mSlist.size();
+		*(int*)tempBuffer = static_cast<int>(ghoul2[i].mSlist.size());
 		tempBuffer +=4;
 
 		// now save the all the surface list info
@@ -1758,7 +1758,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 		}
 
 		// save out how many bones we have
-		*(int*)tempBuffer = ghoul2[i].mBlist.size();
+		*(int*)tempBuffer = static_cast<int>(ghoul2[i].mBlist.size());
 		tempBuffer +=4;
 
 		// now save the all the bone list info
@@ -1769,7 +1769,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 		}
 
 		// save out how many bolts we have
-		*(int*)tempBuffer = ghoul2[i].mBltlist.size();
+		*(int*)tempBuffer = static_cast<int>(ghoul2[i].mBltlist.size());
 		tempBuffer +=4;
 
 		// lastly save the all the bolt list info
@@ -1807,7 +1807,7 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 	}
 
 	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	int ghoul2BlockSize = (size_t)&ghoul2[0].mTransformedVertsArray - (size_t)&ghoul2[0].mModelindex;
+	int ghoul2BlockSize = static_cast<int>((size_t)&ghoul2[0].mTransformedVertsArray - (size_t)&ghoul2[0].mModelindex);
 
 	// now we have enough instances, lets go through each one and load up the relevant details
 	for (int i=0; i<ghoul2.size(); i++)

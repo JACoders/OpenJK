@@ -768,7 +768,7 @@ int giTextureBindNum = 1024;	// will be set to this anyway at runtime, but wtf?
 int R_Images_StartIteration(void)
 {
 	itAllocatedImages = AllocatedImages.begin();
-	return AllocatedImages.size();
+	return static_cast<int>(AllocatedImages.size());
 }
 
 image_t *R_Images_GetNextIteration(void)

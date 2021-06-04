@@ -196,7 +196,7 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 bool CPrimitiveTemplate::ParseFloat( const gsl::cstring_view& val, float& min, float& max )
 {
 	// attempt to read out the values
-	int v = Q::sscanf( val, min, max );
+	int v = static_cast<int>(Q::sscanf( val, min, max ));
 
 	if ( v == 0 )
 	{ // nothing was there, failure
@@ -233,7 +233,7 @@ bool CPrimitiveTemplate::ParseVector( const gsl::cstring_view& val, vec3_t min, 
 	}
 
 	// attempt to read out our values
-	int v = Q::sscanf( val, min[0], min[1], min[2], max[0], max[1], max[2] );
+	int v = static_cast<int>(Q::sscanf( val, min[0], min[1], min[2], max[0], max[1], max[2] ));
 
 	// Check for completeness
 	if ( v < 3 || v == 4 || v == 5 )
@@ -268,7 +268,7 @@ namespace detail
 		template< std::size_t count, typename... Args >
 		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
 		{
-			return Q::sscanf( val, args... );
+			return static_cast<int>(Q::sscanf( val, args... ));
 		}
 	};
 }

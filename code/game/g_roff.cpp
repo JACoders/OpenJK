@@ -606,7 +606,7 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 
 				for( i = 0; i < LittleLong(hdr->mNumNotes); i++ )
 				{
-					size += strlen(ptr) + 1;
+					size += static_cast<int>(strlen(ptr) + 1);
 					ptr += strlen(ptr) + 1;
 				}
 
@@ -878,7 +878,7 @@ void G_SaveCachedRoffs()
 	for ( i = 0; i < num_roffs; i++ )
 	{
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
-		len = strlen( roffs[i].fileName ) + 1;
+		len = static_cast<int>(strlen( roffs[i].fileName ) + 1);
 
 		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'L', 'E', 'N'),

@@ -1660,7 +1660,7 @@ qboolean NAV_WaypointsTooFar( gentity_t *wp1, gentity_t *wp2 )
 		{//they both have valid targetnames
 			Com_sprintf( temp, sizeof(temp), S_COLOR_RED"Waypoint conn %s->%s > 1024\n", wp1->targetname, wp2->targetname );
 		}
-		len = strlen( temp );
+		len = (int)strlen( temp );
 		if ( (fatalErrorPointer-fatalErrorString)+len >= sizeof( fatalErrorString ) )
 		{
 			Com_Error( ERR_DROP, "%s%s%dTOO MANY FATAL NAV ERRORS!!!\n", fatalErrorString, temp, fatalErrors );

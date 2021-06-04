@@ -7206,7 +7206,7 @@ VariableSaveFloats
 
 void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 {
-	int numFloats = fmap.size();
+	int numFloats = static_cast<int>(fmap.size());
 
 	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
@@ -7219,7 +7219,7 @@ void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 	STL_ITERATE( vfi, fmap )
 	{
 		//Save out the map id
-		int	idSize = strlen( ((*vfi).first).c_str() );
+		int	idSize = static_cast<int>(strlen( ((*vfi).first).c_str() ));
 
 		//Save out the real data
 		saved_game.write_chunk<int32_t>(
@@ -7246,7 +7246,7 @@ VariableSaveStrings
 
 void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 {
-	int numStrings = smap.size();
+	int numStrings = static_cast<int>(smap.size());
 
 	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
@@ -7259,7 +7259,7 @@ void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 	STL_ITERATE( vsi, smap )
 	{
 		//Save out the map id
-		int	idSize = strlen( ((*vsi).first).c_str() );
+		int	idSize = static_cast<int>(strlen( ((*vsi).first).c_str() ));
 
 		//Save out the real data
 		saved_game.write_chunk<int32_t>(
@@ -7272,7 +7272,7 @@ void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 			idSize);
 
 		//Save out the string value
-		idSize = strlen( ((*vsi).second).c_str() );
+		idSize = static_cast<int>(strlen( ((*vsi).second).c_str() ));
 
 		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'V', 'S', 'Z'),
@@ -7613,7 +7613,7 @@ int CQuake3GameInterface::MakeValidScriptName( char **strScriptName )
 	// MAX_FILENAME_LENGTH should really be MAX_QPATH (and 64 bytes instead of 1024), but this fits the rest of the code
 	char sFilename[MAX_FILENAME_LENGTH];
 
-	if ( !Q_stricmpn( *strScriptName, Q3_SCRIPT_DIR, strlen( Q3_SCRIPT_DIR ) ) )
+	if ( !Q_stricmpn( *strScriptName, Q3_SCRIPT_DIR, static_cast<int>(strlen( Q3_SCRIPT_DIR )) ) )
 	{
 		Q_strncpyz( sFilename, *strScriptName, sizeof( sFilename ) );
 	}
@@ -7638,7 +7638,7 @@ int CQuake3GameInterface::RegisterScript( const char *strFileName, void **ppBuf,
 	// MAX_FILENAME_LENGTH should really be MAX_QPATH (and 64 bytes instead of 1024), but this fits the rest of the code
 	char sFilename[MAX_FILENAME_LENGTH];
 
-	if ( !Q_stricmpn( strFileName, Q3_SCRIPT_DIR, strlen( Q3_SCRIPT_DIR ) ) )
+	if ( !Q_stricmpn( strFileName, Q3_SCRIPT_DIR, static_cast<int>(strlen( Q3_SCRIPT_DIR )) ) )
 	{
 		Q_strncpyz( sFilename, strFileName, sizeof( sFilename ) );
 	}
@@ -10571,7 +10571,7 @@ int		CQuake3GameInterface::GetString( int entID, const char *name, char **value 
 	if( !Q_stricmpn(name, "cvar_", 5) &&
 		strlen(name) > 5 )
 	{
-		gi.Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
+		gi.Cvar_VariableStringBuffer(name+5, *value, static_cast<int>(strlen(*value)));
 		return true;
 	}
 

@@ -1296,7 +1296,7 @@ void BG_VehWeaponLoadParms( void )
 
 	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
-		vehExtFNLen = strlen( holdChar );
+		vehExtFNLen = (int)strlen( holdChar );
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
@@ -1363,7 +1363,7 @@ void BG_VehicleLoadParms( void )
 
 	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
-		vehExtFNLen = strlen( holdChar );
+		vehExtFNLen = (int)strlen( holdChar );
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
@@ -1430,7 +1430,7 @@ void BG_GetVehicleModelName(char *modelName, const char *vehicleName, size_t len
 	if (vIndex == VEHICLE_NONE)
 		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
 
-	Q_strncpyz( modelName, g_vehicleInfo[vIndex].model, len );
+	Q_strncpyz( modelName, g_vehicleInfo[vIndex].model, (int)len );
 }
 
 void BG_GetVehicleSkinName(char *skinname, int len)

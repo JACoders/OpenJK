@@ -276,13 +276,13 @@ void CG_CaptionText( const char *str, int sound)
 
 	s=(const char*)&text;
 	// tai...
-//	s="ÁÉ¨ô­ôº¸³Õ¤h¤w¸g¦w¥þ¤F¡A§Ú¤]§â©Ò¦³µo²{³ø§iµ¹¡u°Ó©±¡v¡C«Ü¤£©¯¦a¡A·ç¤hÄµ§½¦³¨Ç¥ÕÃ¨µo²{¤F¤@¨Çª¬ªp¡A·Ç³Æ¦b¾÷³õ¶e®·¨È¾ú¦è¡E¯Ç§J·ç±o¡C¥L°°¸Ë¦¨¥~¥æ¨Ï¸`¡A¬ï¹L¤F¼h¼h¨¾³Æ¡C²{¦b¥L´¤¦³¤H½è¡A¨Ã¥B«Â¯Ù­n´²¼½¯f¬r¡C®Ú¾Ú³Ì·sªº³ø§i¡A¯Ç§J·ç±o¥H¤Î¥LªºÄÒ¦Ð¤w¸g§¹¥þ¦û¾Ú¤F¾÷³õ¡C§Ú¨ü©R¨Ó°l®·¯Ç§J·ç±o¥H¤Î±Ï¥X©Ò¦³¤H½è¡C³o¨Ã¤£®e©ö¡C";
+//	s="ï¿½É¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¤hï¿½wï¿½gï¿½wï¿½ï¿½ï¿½Fï¿½Aï¿½Ú¤]ï¿½ï¿½Ò¦ï¿½ï¿½oï¿½{ï¿½ï¿½ï¿½iï¿½ï¿½ï¿½uï¿½Ó©ï¿½ï¿½vï¿½Cï¿½Ü¤ï¿½ï¿½ï¿½ï¿½aï¿½Aï¿½ï¿½hÄµï¿½ï¿½ï¿½ï¿½ï¿½Ç¥ï¿½Ã¨ï¿½oï¿½{ï¿½Fï¿½@ï¿½Çªï¿½ï¿½pï¿½Aï¿½Ç³Æ¦bï¿½ï¿½ï¿½ï¿½ï¿½eï¿½ï¿½ï¿½È¾ï¿½ï¿½ï¿½Eï¿½Ç§Jï¿½ï¿½oï¿½Cï¿½Lï¿½ï¿½ï¿½Ë¦ï¿½ï¿½~ï¿½ï¿½Ï¸`ï¿½Aï¿½ï¿½Lï¿½Fï¿½hï¿½hï¿½ï¿½ï¿½Æ¡Cï¿½{ï¿½bï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Hï¿½ï¿½Aï¿½Ã¥Bï¿½Â¯Ù­nï¿½ï¿½ï¿½ï¿½ï¿½fï¿½rï¿½Cï¿½Ú¾Ú³Ì·sï¿½ï¿½ï¿½ï¿½ï¿½iï¿½Aï¿½Ç§Jï¿½ï¿½oï¿½Hï¿½Î¥Lï¿½ï¿½ï¿½Ò¦Ð¤wï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¤Fï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½Ú¨ï¿½ï¿½Rï¿½Ó°lï¿½ï¿½ï¿½Ç§Jï¿½ï¿½oï¿½Hï¿½Î±Ï¥Xï¿½Ò¦ï¿½ï¿½Hï¿½ï¿½Cï¿½oï¿½Ã¤ï¿½ï¿½eï¿½ï¿½ï¿½C";
 	// kor...
-//	s="Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+//	s="Wp:ï¿½ï¿½Å¸ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½Ö¸ï¿½. ï¿½×µï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ´ï¿½ï¿½ ï¿½×°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Ú´ï¿½.ï¿½ï¿½Å¸ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½Ö¸ï¿½. ï¿½×µï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ´ï¿½ï¿½ ï¿½×°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Ú´ï¿½.";
 	holds = s;
 
 	int iPlayingTimeMS	= cgi_S_GetSampleLength(sound);
-	int iLengthInChars	= strlen(s);//cgi_R_Font_StrLenChars(s);	// strlen is also good for MBCS in this instance, since it's for timing
+	int iLengthInChars	= static_cast<int>(strlen(s));	//cgi_R_Font_StrLenChars(s);	// strlen is also good for MBCS in this instance, since it's for timing
 	if (iLengthInChars == 0)
 	{
 		iLengthInChars = 1;
@@ -372,10 +372,10 @@ void CG_CaptionText( const char *str, int sound)
 
 	// calc the length of time to hold each 2 lines of text on the screen.... presumably this works?
 	//
-	holdTime = strlen(cg.captionText[0]);
+	holdTime = static_cast<int>(strlen(cg.captionText[0]));
 	if (cg.scrollTextLines > 1)
 	{
-		holdTime += strlen(cg.captionText[1]);	// strlen is also good for MBCS in this instance, since it's for timing
+		holdTime += static_cast<int>(strlen(cg.captionText[1]));	// strlen is also good for MBCS in this instance, since it's for timing
 	}
 	cg.captionNextTextTime = cg.time + (holdTime * cg.captionLetterTime);
 
@@ -419,12 +419,12 @@ void CG_DrawCaptionText(void)
 		}
 		else
 		{
-			holdTime = strlen(cg.captionText[cg.captionTextCurrentLine]);
+			holdTime = static_cast<int>(strlen(cg.captionText[cg.captionTextCurrentLine]));
 			if (cg.scrollTextLines >= cg.captionTextCurrentLine)
 			{
 				// ( strlen is also good for MBCS in this instance, since it's for timing -ste)
 				//
-				holdTime += strlen(cg.captionText[cg.captionTextCurrentLine + 1]);
+				holdTime += static_cast<int>(strlen(cg.captionText[cg.captionTextCurrentLine + 1]));
 			}
 
 			cg.captionNextTextTime = cg.time + (holdTime * cg.captionLetterTime);//50);

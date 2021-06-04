@@ -154,7 +154,7 @@ const char*	hstring::operator *(void) const
 ////////////////////////////////////////////////////////////////////////////////////
 int			hstring::length() const
 {
-	return strlen(c_str());
+	return static_cast<int>(strlen(c_str()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ void		hstring::init(const char *str)
 	}
 	else
 	{
-		mHandle = Pool().get_handle(str, strlen(str)+1);		// +1 for null character
+		mHandle = Pool().get_handle(str, static_cast<int>(strlen(str)+1));		// +1 for null character
 	}
 	#ifdef _DEBUG
 	mStr	= (char*)Pool()[mHandle];

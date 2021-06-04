@@ -96,7 +96,7 @@ void CG_SetLightstyle (int i)
 	int			j, k;
 
 	s = CG_ConfigString( i+CS_LIGHT_STYLES );
-	j = strlen (s);
+	j = static_cast<int>(strlen(s));
 	if (j >= MAX_QPATH)
 	{
 		Com_Error (ERR_DROP, "svc_lightstyle length=%i", j);

@@ -2277,7 +2277,7 @@ void WP_SaberLoadParms( void )
 
 	holdChar = saberExtensionListBuf;
 	for ( i=0; i<fileCnt; i++, holdChar += saberExtFNLen+1 ) {
-		saberExtFNLen = strlen( holdChar );
+		saberExtFNLen = (int)strlen( holdChar );
 
 		len = trap->FS_Open( va( "ext_data/sabers/%s", holdChar ), &f, FS_READ );
 

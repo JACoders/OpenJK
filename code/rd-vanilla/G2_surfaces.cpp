@@ -94,7 +94,7 @@ const surfaceInfo_t *G2_FindOverrideSurface(int surfaceNum,const surfaceInfo_v &
 		{
 			if (surfaceList[i].surface>=0)
 			{
-				QuickOverride.Set(surfaceList[i].surface,i);
+				QuickOverride.Set(surfaceList[i].surface,static_cast<int>(i));
 			}
 		}
 		return NULL;
@@ -178,7 +178,7 @@ const mdxmSurface_t *G2_FindSurface(CGhoul2Info *ghlInfo, surfaceInfo_v &slist, 
 	const mdxmHierarchyOffsets_t *surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)ghlInfo->currentModel->mdxm + sizeof(mdxmHeader_t));
 
  	// first find if we already have this surface in the list
-	for (i = slist.size() - 1; i >= 0; i--)
+	for (i = static_cast<int>(slist.size()) - 1; i >= 0; i--)
 	{
 		if ((slist[i].surface != 10000) && (slist[i].surface != -1))
 		{
@@ -337,7 +337,7 @@ int G2_AddSurface(CGhoul2Info *ghoul2, int surfaceNumber, int polyNumber, float 
 	ghoul2->mSlist[i].genBarycentricJ = BarycentricJ;
 	ghoul2->mSlist[i].genPolySurfaceIndex = ((polyNumber & 0xffff) << 16) | (surfaceNumber & 0xffff);
 	ghoul2->mSlist[i].genLod = lod;
-	return i;
+	return static_cast<int>(i);
 }
 
 qboolean G2_RemoveSurface(surfaceInfo_v &slist, const int index)

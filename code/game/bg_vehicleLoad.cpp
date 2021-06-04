@@ -1474,7 +1474,7 @@ void BG_VehWeaponLoadParms( void )
 
 	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
-		vehExtFNLen = strlen( holdChar );
+		vehExtFNLen = static_cast<int>(strlen( holdChar ));
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
@@ -1566,7 +1566,7 @@ void BG_VehicleLoadParms( void )
 
 	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
-		vehExtFNLen = strlen( holdChar );
+		vehExtFNLen = static_cast<int>(strlen( holdChar ));
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 

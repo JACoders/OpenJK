@@ -1184,7 +1184,7 @@ void SP_misc_model_breakable( gentity_t *ent )
 	CacheChunkEffects( ent->material );
 	misc_model_breakable_init( ent );
 
-	len = strlen( ent->model ) - 4;
+	len = static_cast<int>(strlen( ent->model )) - 4;
 	assert(ent->model[len]=='.');//we're expecting ".md3"
 	strncpy( damageModel, ent->model, sizeof(damageModel) );
 	damageModel[len] = 0;	//chop extension

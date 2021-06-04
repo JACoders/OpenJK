@@ -197,7 +197,7 @@ int GetValueGroup(char *buf, char *group, char *outbuf)
 		return 0;
 	}
 
-	startpoint = place - buf + strlen(group) + 1;
+	startpoint = place - buf + (int)strlen(group) + 1;
 	startletter = (place - buf) - 1;
 
 	failure = 0;
@@ -289,7 +289,7 @@ int GetPairedValue(char *buf, char *key, char *outbuf)
 		return 0;
 	}
 	//tab == 9
-	startpoint = place - buf + strlen(key);
+	startpoint = place - buf + (int)strlen(key);
 	startletter = (place - buf) - 1;
 
 	found = 0;

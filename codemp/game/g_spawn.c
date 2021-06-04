@@ -743,7 +743,7 @@ char *G_NewString( const char *string )
 	char *newb=NULL, *new_p=NULL;
 	int i=0, len=0;
 
-	len = strlen( string )+1;
+	len = (int)(strlen( string )+1);
 	new_p = newb = (char *)G_Alloc( len );
 
 	for ( i=0; i<len; i++ )
@@ -770,7 +770,7 @@ char *G_NewString_Safe( const char *string )
 	char *newb=NULL, *new_p=NULL;
 	int i=0, len=0;
 
-	len = strlen( string )+1;
+	len = (int)(strlen( string )+1);
 	new_p = newb = (char *)malloc( len );
 
 	if ( !new_p )
@@ -971,7 +971,7 @@ char *G_AddSpawnVarToken( const char *string ) {
 	int		l;
 	char	*dest;
 
-	l = strlen( string );
+	l = (int)strlen( string );
 	if ( level.numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS ) {
 		trap->Error( ERR_DROP, "G_AddSpawnVarToken: MAX_SPAWN_VARS_CHARS" );
 	}
@@ -1496,17 +1496,17 @@ void SP_worldspawn( void )
 	{
 		Com_sprintf(temp, sizeof(temp), "ls_%dr", i);
 		G_SpawnString(temp, defaultStyles[i][0], &text);
-		lengthRed = strlen(text);
+		lengthRed = (int)strlen(text);
 		trap->SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+0, text);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%dg", i);
 		G_SpawnString(temp, defaultStyles[i][1], &text);
-		lengthGreen = strlen(text);
+		lengthGreen = (int)strlen(text);
 		trap->SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+1, text);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%db", i);
 		G_SpawnString(temp, defaultStyles[i][2], &text);
-		lengthBlue = strlen(text);
+		lengthBlue = (int)strlen(text);
 		trap->SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+2, text);
 
 		if (lengthRed != lengthGreen || lengthGreen != lengthBlue)

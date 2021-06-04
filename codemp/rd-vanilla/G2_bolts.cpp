@@ -40,7 +40,7 @@ int G2_Find_Bolt_Bone_Num(boltInfo_v &bltlist, const int boneNum)
 
 		if (bltlist[i].boneNumber == boneNum)
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -62,7 +62,7 @@ int G2_Find_Bolt_Surface_Num(boltInfo_v &bltlist, const int surfaceNum, const in
 
 		if ((bltlist[i].surfaceNumber == surfaceNum) && ((bltlist[i].surfaceType & flags) == flags))
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -91,7 +91,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 		{
 			// increment the usage count
 			bltlist[i].boltUsed++;
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -106,7 +106,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 			bltlist[i].surfaceNumber = surfNum;
 			bltlist[i].surfaceType = G2SURFACEFLAG_GENERATED;
 			bltlist[i].boltUsed = 1;
-	 		return i;
+	 		return static_cast<int>(i);
 		}
 	}
 
@@ -116,7 +116,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 	tempBolt.boneNumber = -1;
 	tempBolt.boltUsed = 1;
 	bltlist.push_back(tempBolt);
-	return bltlist.size()-1;
+	return static_cast<int>(bltlist.size()-1);
 
 }
 
@@ -145,7 +145,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 			{
 				// increment the usage count
 				bltlist[i].boltUsed++;
-				return i;
+				return static_cast<int>(i);
 			}
 		}
 
@@ -159,7 +159,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 				bltlist[i].surfaceNumber = surfNum;
 				bltlist[i].boltUsed = 1;
 				bltlist[i].surfaceType = 0;
-		 		return i;
+		 		return static_cast<int>(i);
 			}
 		}
 
@@ -169,7 +169,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		tempBolt.boltUsed = 1;
 		tempBolt.surfaceType = 0;
 		bltlist.push_back(tempBolt);
-		return bltlist.size()-1;
+		return static_cast<int>(bltlist.size()-1);
 	}
 
 	// no, check to see if it's a bone then
@@ -206,7 +206,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		{
 			// increment the usage count
 			bltlist[i].boltUsed++;
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -220,7 +220,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 			bltlist[i].boneNumber = x;
 			bltlist[i].boltUsed = 1;
 			bltlist[i].surfaceType = 0;
-	 		return i;
+	 		return static_cast<int>(i);
 		}
 	}
 
@@ -230,7 +230,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	tempBolt.boltUsed = 1;
  	tempBolt.surfaceType = 0;
 	bltlist.push_back(tempBolt);
-	return bltlist.size()-1;
+	return static_cast<int>(bltlist.size()-1);
 
 }
 
@@ -247,9 +247,9 @@ qboolean G2_Remove_Bolt (boltInfo_v &bltlist, int index)
 			bltlist[index].boneNumber = -1;
 			bltlist[index].surfaceNumber = -1;
 
-			unsigned int newSize = bltlist.size();
+			unsigned int newSize = static_cast<unsigned int>(bltlist.size());
 			// now look through the list from the back and see if there is a block of -1's we can resize off the end of the list
-			for (int i=bltlist.size()-1; i>-1; i--)
+			for (int i=static_cast<int>(bltlist.size()-1); i>-1; i--)
 			{
 				if ((bltlist[i].surfaceNumber == -1) && (bltlist[i].boneNumber == -1))
 				{
@@ -304,7 +304,7 @@ void G2_RemoveRedundantBolts(boltInfo_v &bltlist, surfaceInfo_v &slist, int *act
 					{
 						// no - we want to remove this bolt, regardless of how many people are using it
 						bltlist[i].boltUsed = 1;
-						G2_Remove_Bolt(bltlist, i);
+						G2_Remove_Bolt(bltlist, static_cast<int>(i));
 					}
 				}
 				// no, it's an original, so look for it in the active surfaces list
@@ -313,7 +313,7 @@ void G2_RemoveRedundantBolts(boltInfo_v &bltlist, surfaceInfo_v &slist, int *act
 					{
 						// no - we want to remove this bolt, regardless of how many people are using it
 						bltlist[i].boltUsed = 1;
-						G2_Remove_Bolt(bltlist, i);
+						G2_Remove_Bolt(bltlist, static_cast<int>(i));
 					}
 				}
 			}
@@ -325,7 +325,7 @@ void G2_RemoveRedundantBolts(boltInfo_v &bltlist, surfaceInfo_v &slist, int *act
 				{
 					// no - we want to remove this bolt, regardless of how many people are using it
 					bltlist[i].boltUsed = 1;
-					G2_Remove_Bolt(bltlist, i);
+					G2_Remove_Bolt(bltlist, static_cast<int>(i));
 				}
 			}
 		}

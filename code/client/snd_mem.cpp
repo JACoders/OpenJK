@@ -740,7 +740,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 	char	*psExt;
 	char	sLoadName[MAX_QPATH];
 
-	int		len = strlen(sfx->sSoundName);
+	int		len = static_cast<int>(strlen(sfx->sSoundName));
 	if (len<5)
 	{
 		return qfalse;
@@ -764,7 +764,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 		//Com_Printf( "WARNING: soundname '%s' does not have 3-letter extension\n",sLoadName);
 		COM_DefaultExtension(sLoadName,sizeof(sLoadName),".wav");	// so psExt below is always valid
 		psExt = &sLoadName[strlen(sLoadName)-4];
-		len = strlen(sLoadName);
+		len = static_cast<int>(strlen(sLoadName));
 	}
 
 	if (!S_LoadSound_FileLoadAndNameAdjuster(sLoadName, &data, &size, len))

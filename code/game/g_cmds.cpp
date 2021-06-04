@@ -77,7 +77,7 @@ char	*ConcatArgs( int start ) {
 	c = gi.argc();
 	for ( i = start ; i < c ; i++ ) {
 		arg = gi.argv( i );
-		tlen = strlen( arg );
+		tlen = static_cast<int>(strlen( arg ));
 		if ( len + tlen >= MAX_STRING_CHARS - 1 ) {
 			break;
 		}
@@ -582,7 +582,7 @@ Cmd_Where_f
 */
 void Cmd_Where_f( gentity_t *ent ) {
 	const char *s = gi.argv(1);
-	const int len = strlen(s);
+	const int len = static_cast<int>(strlen(s));
 	gentity_t	*check;
 
 	if ( gi.argc () < 2 ) {

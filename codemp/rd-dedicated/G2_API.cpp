@@ -2500,7 +2500,7 @@ int G2API_GetNumGoreMarks(CGhoul2Info_v& ghoul2, int modelIndex)
 
 		if (goreSet)
 		{
-			return goreSet->mGoreRecords.size();
+			return static_cast<int>(goreSet->mGoreRecords.size());
 		}
 	}
 

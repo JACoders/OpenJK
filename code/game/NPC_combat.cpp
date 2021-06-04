@@ -2704,7 +2704,7 @@ static int NPC_CollectCombatPoints( const vec3_t origin, const float radius, com
 		}
 	}
 
-	return points.size();
+	return static_cast<int>(points.size());
 }
 
 /*

@@ -4096,7 +4096,7 @@ void NPC_LoadParms( void )
 	holdChar = npcExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += npcExtFNLen + 1 )
 	{
-		npcExtFNLen = strlen( holdChar );
+		npcExtFNLen = static_cast<int>(strlen( holdChar ));
 
 		//gi.Printf( "Parsing %s\n", holdChar );
 

@@ -3856,7 +3856,7 @@ static qboolean UI_Skill_HandleKey(int flags, float *special, int key) {
 		}
 
 		if (i < 1) {
-			i = numSkillLevels;
+			i = (int)numSkillLevels;
 		} else if (i > numSkillLevels) {
 			i = 1;
 		}
@@ -4071,7 +4071,7 @@ static qboolean UI_BotSkill_HandleKey(int flags, float *special, int key) {
 		if (uiInfo.skillIndex >= numSkillLevels) {
 			uiInfo.skillIndex = 0;
 		} else if (uiInfo.skillIndex < 0) {
-			uiInfo.skillIndex = numSkillLevels-1;
+			uiInfo.skillIndex = (int)(numSkillLevels-1);
 		}
 		return qtrue;
 	}
@@ -4379,7 +4379,7 @@ static void UI_LoadMods() {
 	numdirs = trap->FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
 	dirptr  = dirlist;
 	for( i = 0; i < numdirs; i++ ) {
-		dirlen = strlen( dirptr ) + 1;
+		dirlen = (int)(strlen( dirptr ) + 1);
 		descptr = dirptr + dirlen;
 		uiInfo.modList[uiInfo.modCount].modName = String_Alloc(dirptr);
 		uiInfo.modList[uiInfo.modCount].modDescr = String_Alloc(descptr);
@@ -4409,7 +4409,7 @@ static void UI_LoadMovies() {
 		}
 		moviename = movielist;
 		for ( i = 0; i < uiInfo.movieCount; i++ ) {
-			len = strlen( moviename );
+			len = (int)strlen( moviename );
 			if (!Q_stricmp(moviename + len - 4, ".roq")) {
 				moviename[len-4] = '\0';
 			}
@@ -7427,10 +7427,10 @@ static void UI_BuildServerDisplayList(int force) {
 
 	// do motd updates here too
 	trap->Cvar_VariableStringBuffer( "cl_motdString", uiInfo.serverStatus.motd, sizeof(uiInfo.serverStatus.motd) );
-	len = strlen(uiInfo.serverStatus.motd);
+	len = (int)strlen(uiInfo.serverStatus.motd);
 	if (len == 0) {
 		Q_strncpyz( uiInfo.serverStatus.motd, "Welcome to Jedi Academy MP!", sizeof( uiInfo.serverStatus.motd ) );
-		len = strlen(uiInfo.serverStatus.motd);
+		len = (int)strlen(uiInfo.serverStatus.motd);
 	}
 	if (len != uiInfo.serverStatus.motdLen) {
 		uiInfo.serverStatus.motdLen = len;
@@ -7678,7 +7678,7 @@ static int UI_GetServerStatusInfo( const char *serverAddress, serverStatusInfo_t
 				name = p;
 				Com_sprintf(&info->pings[len], sizeof(info->pings)-len, "%d", i);
 				info->lines[info->numLines][0] = &info->pings[len];
-				len += strlen(&info->pings[len]) + 1;
+				len += (int)(strlen(&info->pings[len]) + 1);
 				info->lines[info->numLines][1] = score;
 				info->lines[info->numLines][2] = ping;
 				info->lines[info->numLines][3] = name;
@@ -8544,7 +8544,7 @@ static qhandle_t UI_FeederItemImage(float feederID, int index) {
 				int i = 0;
 				int skinPlace;
 
-				i = strlen(uiInfo.q3HeadNames[index]);
+				i = (int)strlen(uiInfo.q3HeadNames[index]);
 
 				while (uiInfo.q3HeadNames[index][i] != '/')
 				{
@@ -8557,7 +8557,7 @@ static qhandle_t UI_FeederItemImage(float feederID, int index) {
 				//now, build a full path out of what's in q3HeadNames, into iconNameFromSkinName
 				Com_sprintf(iconNameFromSkinName, sizeof(iconNameFromSkinName), "models/players/%s", uiInfo.q3HeadNames[index]);
 
-				i = strlen(iconNameFromSkinName);
+				i = (int)strlen(iconNameFromSkinName);
 
 				while (iconNameFromSkinName[i] != '/')
 				{
@@ -8569,7 +8569,7 @@ static qhandle_t UI_FeederItemImage(float feederID, int index) {
 				Q_strcat(iconNameFromSkinName, 256, "icon_");
 
 				//and now, for the final step, append the skin name from q3HeadNames onto the end of iconNameFromSkinName
-				i = strlen(iconNameFromSkinName);
+				i = (int)strlen(iconNameFromSkinName);
 
 				while (uiInfo.q3HeadNames[index][skinPlace])
 				{
@@ -9368,7 +9368,7 @@ nextSearch:
 
 	for (j=0; j<numfiles && uiInfo.forceConfigCount < MAX_FORCE_CONFIGS;j++,fileptr+=filelen+1)
 	{
-		filelen = strlen(fileptr);
+		filelen = (int)strlen(fileptr);
 		COM_StripExtension(fileptr, configname, sizeof( configname ) );
 
 		if (lightSearch)
@@ -9452,7 +9452,7 @@ static void UI_BuildQ3Model_List( void )
 	dirptr  = dirlist;
 	for (i=0; i<numdirs && uiInfo.q3HeadCount < MAX_Q3PLAYERMODELS; i++,dirptr+=dirlen+1)
 	{
-		dirlen = strlen(dirptr);
+		dirlen = (int)strlen(dirptr);
 
 		if (dirlen && dirptr[dirlen-1]=='/') dirptr[dirlen-1]='\0';
 
@@ -9466,11 +9466,11 @@ static void UI_BuildQ3Model_List( void )
 		{
 			int skinLen = 0;
 
-			filelen = strlen(fileptr);
+			filelen = (int)strlen(fileptr);
 
 			COM_StripExtension(fileptr,skinname, sizeof( skinname ) );
 
-			skinLen = strlen(skinname);
+			skinLen = (int)strlen(skinname);
 			k = 0;
 			while (k < skinLen && skinname[k] && skinname[k] != '_')
 			{
@@ -9669,7 +9669,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, dirListSize );
+	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, (int)dirListSize );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
@@ -9678,7 +9678,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		int f = 0;
 		char fpath[MAX_QPATH];
 
-		dirlen = strlen(dirptr);
+		dirlen = (int)strlen(dirptr);
 
 		if (dirlen)
 		{
@@ -9753,7 +9753,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 						trap->FS_Close(f);
 				}
 
-				filelen = strlen(fileptr);
+				filelen = (int)strlen(fileptr);
 				COM_StripExtension(fileptr,skinname,sizeof(skinname));
 
 				if (bIsImageFile(dirptr, skinname))
@@ -10207,11 +10207,11 @@ static void UI_ReadableSize ( char *buf, int bufsize, int value )
 {
 	if (value > 1024*1024*1024 ) { // gigs
 		Com_sprintf( buf, bufsize, "%d", value / (1024*1024*1024) );
-		Com_sprintf( buf+strlen(buf), bufsize-strlen(buf), ".%02d GB",
+		Com_sprintf( buf+strlen(buf), (int)(bufsize-strlen(buf)), ".%02d GB",
 			(value % (1024*1024*1024))*100 / (1024*1024*1024) );
 	} else if (value > 1024*1024 ) { // megs
 		Com_sprintf( buf, bufsize, "%d", value / (1024*1024) );
-		Com_sprintf( buf+strlen(buf), bufsize-strlen(buf), ".%02d MB",
+		Com_sprintf( buf+strlen(buf), (int)(bufsize-strlen(buf)), ".%02d MB",
 			(value % (1024*1024))*100 / (1024*1024) );
 	} else if (value > 1024 ) { // kilos
 		Com_sprintf( buf, bufsize, "%d KB", value / 1024 );

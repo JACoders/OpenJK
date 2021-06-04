@@ -998,7 +998,7 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 				}
 				Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", var->name, var->string);
 			}
-			FS_Write( buffer, strlen( buffer ), f );
+			FS_Write( buffer, static_cast<int>(strlen( buffer )), f );
 		}
 	}
 }
@@ -1396,7 +1396,7 @@ static void Cvar_Realloc(char **string, char *memPool, int &memPoolUsed)
 	{
 		char *temp = memPool + memPoolUsed;
 		strcpy(temp, *string);
-		memPoolUsed += strlen(*string) + 1;
+		memPoolUsed += static_cast<int>(strlen(*string) + 1);
 		Cvar_FreeString(*string);
 		*string = temp;
 	}
@@ -1413,16 +1413,16 @@ void Cvar_Defrag(void)
 	for (var = cvar_vars; var; var = var->next)
 	{
 		if (var->name) {
-			totalMem += strlen(var->name) + 1;
+			totalMem += static_cast<int>(strlen(var->name) + 1);
 		}
 		if (var->string) {
-			totalMem += strlen(var->string) + 1;
+			totalMem += static_cast<int>(strlen(var->string) + 1);
 		}
 		if (var->resetString) {
-			totalMem += strlen(var->resetString) + 1;
+			totalMem += static_cast<int>(strlen(var->resetString) + 1);
 		}
 		if (var->latchedString) {
-			totalMem += strlen(var->latchedString) + 1;
+			totalMem += static_cast<int>(strlen(var->latchedString) + 1);
 		}
 	}
 

@@ -210,7 +210,7 @@ int bitget_bits_used()
 {
    int n;			/* compute bits used from last init call */
 
-   n = ((bitdat.bs_ptr - bitdat.bs_ptr0) << 3) - bitdat.bits;
+   n = (int)((bitdat.bs_ptr - bitdat.bs_ptr0) << 3) - bitdat.bits;
    return n;
 }
 /*------------- check for n bits in bitbuf -------------*/

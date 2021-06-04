@@ -440,7 +440,7 @@ int CIcarus::Run(int icarusID, char* buffer, long length)
 int CIcarus::SaveSequenceIDTable()
 {
 	//Save out the number of sequences to follow
-	int		numSequences = m_sequences.size();
+	int		numSequences = static_cast<int>(m_sequences.size());
 
 	BufferWrite( &numSequences, sizeof( numSequences ) );
 
@@ -485,7 +485,7 @@ int CIcarus::SaveSequences()
 int CIcarus::SaveSequencers()
 {
 	//Save out the number of sequences to follow
-	int		numSequencers = m_sequencers.size();
+	int		numSequencers = static_cast<int>(m_sequencers.size());
 	BufferWrite( &numSequencers, sizeof( numSequencers ) );
 
 	//The sequencers are then saved
@@ -504,7 +504,7 @@ int CIcarus::SaveSequencers()
 
 int CIcarus::SaveSignals()
 {
-	int	numSignals = m_signals.size();
+	int	numSignals = static_cast<int>(m_signals.size());
 
 	//game->WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
 	BufferWrite( &numSignals, sizeof( numSignals ) );
@@ -515,7 +515,7 @@ int CIcarus::SaveSignals()
 		//game->WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
 		const char *name = ((*si).first).c_str();
 
-		int length = strlen( name ) + 1;
+		int length = static_cast<int>(strlen( name ) + 1);
 
 		//Save out the string size
 		BufferWrite( &length, sizeof( length ) );

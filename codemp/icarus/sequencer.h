@@ -110,7 +110,7 @@ public:
 	// Overloaded new operator.
 	inline void *operator new( size_t size )
 	{	// Allocate the memory.
-		return Z_Malloc( size, TAG_ICARUS2, qtrue );
+		return Z_Malloc( (int)size, TAG_ICARUS2, qtrue );
 	}
 	// Overloaded delete operator.
 	inline void operator delete( void *pRawData )

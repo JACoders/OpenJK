@@ -258,7 +258,7 @@ void UI_SaveForceTemplate()
 	}
 
 	Com_sprintf(fcfString, sizeof(fcfString), "%i-%i-", uiForceRank, uiForceSide);
-	strPlace = strlen(fcfString);
+	strPlace = (int)strlen(fcfString);
 
 	while (forcePlace < NUM_FORCE_POWERS)
 	{
@@ -271,7 +271,7 @@ void UI_SaveForceTemplate()
 	fcfString[strPlace] = '\n';
 	fcfString[strPlace+1] = 0;
 
-	trap->FS_Write(fcfString, strlen(fcfString), f);
+	trap->FS_Write(fcfString, (int)strlen(fcfString), f);
 	trap->FS_Close(f);
 
 	Com_Printf("Template saved as \"%s\".\n", selectedName);
@@ -498,7 +498,7 @@ void UI_ReadLegalForce(void)
 
 	//First, stick them into a string.
 	Com_sprintf(fcfString, sizeof(fcfString), "%i-%i-", uiForceRank, uiForceSide);
-	strPlace = strlen(fcfString);
+	strPlace = (int)strlen(fcfString);
 
 	while (forcePlace < NUM_FORCE_POWERS)
 	{

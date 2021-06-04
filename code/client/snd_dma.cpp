@@ -3872,7 +3872,7 @@ void S_SoundList_f( void ) {
 			qboolean bDumpThisOne = qtrue;
 			if (iVariantCap >= 1 && iVariantCap <= 3)
 			{
-				int iStrLen = strlen(sfx->sSoundName);
+				int iStrLen = static_cast<int>(strlen(sfx->sSoundName));
 				if (iStrLen > 2)	// crash-safety, jic.
 				{
 					char c  = sfx->sSoundName[iStrLen-1];

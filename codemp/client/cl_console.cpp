@@ -242,7 +242,7 @@ void Con_Dump_f (void)
 #else
 		Q_strcat(buffer, bufferlen, "\n");
 #endif
-		FS_Write(buffer, strlen(buffer), f);
+		FS_Write(buffer, static_cast<int>(strlen(buffer)), f);
 	}
 
 	Hunk_FreeTempMemory( buffer );
@@ -671,13 +671,13 @@ void Con_DrawNotify (void)
 		{
 			chattext = SE_GetString("MP_SVGAME", "SAY_TEAM");
 			SCR_DrawBigString (8, v, chattext, 1.0f, qfalse );
-			skip = strlen(chattext)+1;
+			skip = static_cast<int>(strlen(chattext)+1);
 		}
 		else
 		{
 			chattext = SE_GetString("MP_SVGAME", "SAY");
 			SCR_DrawBigString (8, v, chattext, 1.0f, qfalse );
-			skip = strlen(chattext)+1;
+			skip = static_cast<int>(strlen(chattext)+1);
 		}
 
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
@@ -736,7 +736,7 @@ void Con_DrawSolidConsole( float frac ) {
 	re->SetColor( console_color );
 	re->DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
-	i = strlen( JK_VERSION );
+	i = static_cast<int>(strlen( JK_VERSION ));
 
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,

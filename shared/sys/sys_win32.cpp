@@ -43,7 +43,7 @@ const char *Sys_Basename( char *path )
 	static char base[ MAX_OSPATH ] = { 0 };
 	int length;
 
-	length = strlen( path ) - 1;
+	length = static_cast<int>(strlen( path ) - 1u);
 
 	// Skip trailing slashes
 	while( length > 0 && path[ length ] == '\\' )
@@ -54,7 +54,7 @@ const char *Sys_Basename( char *path )
 
 	Q_strncpyz( base, &path[ length ], sizeof( base ) );
 
-	length = strlen( base ) - 1;
+	length = static_cast<int>(strlen( base ) - 1u);
 
 	// Strip trailing slashes
 	while( length > 0 && base[ length ] == '\\' )
@@ -74,7 +74,7 @@ const char *Sys_Dirname( char *path )
 	int length;
 
 	Q_strncpyz( dir, path, sizeof( dir ) );
-	length = strlen( dir ) - 1;
+	length = static_cast<int>(strlen( dir ) - 1u);
 
 	while( length > 0 && dir[ length ] != '\\' )
 		length--;
@@ -192,7 +192,7 @@ static const char *GetErrorString( DWORD error ) {
 			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
 		if ( bufLen ) {
 			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-			Q_strncpyz( buf, lpMsgStr, Q_min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
+			Q_strncpyz( buf, lpMsgStr, static_cast<int>(Q_min( (size_t)(lpMsgStr + bufLen), sizeof(buf) )) );
 			LocalFree( lpMsgBuf );
 		}
 	}
@@ -353,8 +353,8 @@ void Sys_ListFilteredFiles( const char *basedir, char *subdirs, char *filter, ch
 static qboolean strgtr(const char *s0, const char *s1) {
 	int l0, l1, i;
 
-	l0 = strlen(s0);
-	l1 = strlen(s1);
+	l0 = static_cast<int>(strlen(s0));
+	l1 = static_cast<int>(strlen(s1));
 
 	if (l1<l0) {
 		l0 = l1;
@@ -414,7 +414,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 		flag = _A_SUBDIR;
 	}
 
-	extLen = strlen( extension );
+	extLen = static_cast<int>(strlen( extension ));
 
 	Com_sprintf( search, sizeof(search), "%s\\*%s", directory, extension );
 

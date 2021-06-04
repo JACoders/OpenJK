@@ -646,7 +646,7 @@ char *CopyString( const char *in ) {
 		}
 	}
 
-	out = (char *) S_Malloc (strlen(in)+1);
+	out = (char *) S_Malloc (static_cast<int>(strlen(in)+1));
 	strcpy (out, in);
 	return out;
 }

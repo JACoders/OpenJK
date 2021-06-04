@@ -112,7 +112,7 @@ static int SV_CreateChallenge(int timestamp, netadr_t from)
 
 	// Create an unforgeable, temporal challenge for this client using HMAC(secretKey, clientParams + timestamp)
 	byte digest[MD5_DIGEST_SIZE];
-	HMAC_MD5_Update(&challenger, (byte*)clientParams, clientParamsLen);
+	HMAC_MD5_Update(&challenger, (byte*)clientParams, static_cast<unsigned int>(clientParamsLen));
 	HMAC_MD5_Update(&challenger, (byte*)&timestamp, sizeof(timestamp));
 	HMAC_MD5_Final(&challenger, digest);
 	HMAC_MD5_Reset(&challenger);

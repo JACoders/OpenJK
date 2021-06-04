@@ -843,7 +843,7 @@ void CG_PrintCTFMessage(clientInfo_t *ci, const char *teamName, int ctfMessage)
 			if (ci)
 			{
 				Com_sprintf(printMsg, sizeof(printMsg), "%s^7 ", ci->name);
-				strLen = strlen(printMsg);
+				strLen = (int)strlen(printMsg);
 			}
 
 			while (psStringEDString[i] && i < 512)
@@ -853,7 +853,7 @@ void CG_PrintCTFMessage(clientInfo_t *ci, const char *teamName, int ctfMessage)
 				{
 					printMsg[strLen] = '\0';
 					Q_strcat(printMsg, sizeof(printMsg), teamName);
-					strLen = strlen(printMsg);
+					strLen = (int)strlen(printMsg);
 
 					i++;
 				}

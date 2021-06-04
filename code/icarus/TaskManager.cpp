@@ -1715,7 +1715,7 @@ void CTaskManager::Save()
 	pIcarus->BufferWrite( &m_GUID, sizeof( m_GUID ) );
 
 	//Save out the number of tasks that will follow
-	int iNumTasks = m_tasks.size();
+	int iNumTasks = static_cast<int>(m_tasks.size());
 	pIcarus->BufferWrite( &iNumTasks, sizeof( iNumTasks ) );
 
 	//Save out all the tasks
@@ -1737,7 +1737,7 @@ void CTaskManager::Save()
 	}
 
 	//Save out the number of task groups
-	int numTaskGroups = m_taskGroups.size();
+	int numTaskGroups = static_cast<int>(m_taskGroups.size());
 	pIcarus->BufferWrite( &numTaskGroups, sizeof( numTaskGroups ) );
 
 	//Save out the IDs of all the task groups
@@ -1760,7 +1760,7 @@ void CTaskManager::Save()
 		pIcarus->BufferWrite( &id, sizeof( id ) );
 
 		//Save out the number of commands
-		numCommands = (*tgi)->m_completedTasks.size();
+		numCommands = static_cast<int>((*tgi)->m_completedTasks.size());
 		pIcarus->BufferWrite( &numCommands, sizeof( numCommands ) );
 
 		//Save out the command map
@@ -1802,7 +1802,7 @@ void CTaskManager::Save()
 		//Make sure this is a valid string
 		assert( ( name != NULL ) && ( name[0] != '\0' ) );
 
-		int length = strlen( name ) + 1;
+		int length = static_cast<int>(strlen( name ) + 1);
 
 		//Save out the string size
 		//icarus->GetGame()->WriteSaveData( 'TGNL', &length, sizeof ( length ) );

@@ -332,7 +332,7 @@ static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
 	buffer += blockSize;
 
 	// Surfaces vector + size
-	*(int *)buffer = g2Info.mSlist.size();
+	*(int *)buffer = static_cast<int>(g2Info.mSlist.size());
 	buffer += sizeof (int);
 
 	blockSize = g2Info.mSlist.size() * sizeof (surfaceInfo_t);
@@ -340,7 +340,7 @@ static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
 	buffer += blockSize;
 
 	// Bones vector + size
-	*(int *)buffer = g2Info.mBlist.size();
+	*(int *)buffer = static_cast<int>(g2Info.mBlist.size());
 	buffer += sizeof (int);
 
 	blockSize = g2Info.mBlist.size() * sizeof (boneInfo_t);
@@ -348,7 +348,7 @@ static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
 	buffer += blockSize;
 
 	// Bolts vector + size
-	*(int *)buffer = g2Info.mBltlist.size();
+	*(int *)buffer = static_cast<int>(g2Info.mBltlist.size());
 	buffer += sizeof (int);
 
 	blockSize = g2Info.mBltlist.size() * sizeof (boltInfo_t);
@@ -458,7 +458,7 @@ public:
 		char *base = buffer;
 
 		// Free indices
-		*(int *)buffer = mFreeIndecies.size();
+		*(int *)buffer = static_cast<int>(mFreeIndecies.size());
 		buffer += sizeof (int);
 
 		std::copy (mFreeIndecies.begin(), mFreeIndecies.end(), (int *)buffer);
@@ -471,7 +471,7 @@ public:
 		// Ghoul2 infos
 		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
 		{
-			*(int *)buffer = mInfos[i].size();
+			*(int *)buffer = static_cast<int>(mInfos[i].size());
 			buffer += sizeof (int);
 
 			for ( size_t j = 0; j < mInfos[i].size(); j++ )
@@ -677,7 +677,7 @@ void RestoreGhoul2InfoArray()
 void SaveGhoul2InfoArray()
 {
 	size_t size = singleton->GetSerializedSize();
-	void *data = Z_Malloc (size, TAG_GHOUL2);
+	void *data = Z_Malloc (static_cast<int>(size), TAG_GHOUL2);
 #ifdef _DEBUG
 	size_t written =
 #endif
@@ -2747,7 +2747,7 @@ int G2API_GetNumGoreMarks(CGhoul2Info_v& ghoul2, int modelIndex)
 
 		if (goreSet)
 		{
-			return goreSet->mGoreRecords.size();
+			return static_cast<int>(goreSet->mGoreRecords.size());
 		}
 	}
 
