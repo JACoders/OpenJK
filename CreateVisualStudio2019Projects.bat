@@ -1,4 +1,4 @@
-@REM Create OpenJK projects for Visual Studio 2017 using CMake
+@REM Create OpenJK projects for Visual Studio 2019 using CMake
 @echo off
 for %%X in (cmake.exe) do (set FOUND=%%~$PATH:X)
 if not defined FOUND (
