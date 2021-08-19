@@ -515,7 +515,7 @@ vec2 GetParallaxOffset(in vec2 texCoords, in vec3 tangentDir)
 {
 #if defined(USE_PARALLAXMAP)
 	ivec2 normalSize = textureSize(u_NormalMap, 0);
-	vec3 nonSquareScale = mix(vec3(normalSize.y / normalSize.x, 1.0, 1.0), vec3(1.0, normalSize.x / normalSize.y, 1.0), normalSize.y <= normalSize.x);
+	vec3 nonSquareScale = mix(vec3(normalSize.y / normalSize.x, 1.0, 1.0), vec3(1.0, normalSize.x / normalSize.y, 1.0), float(normalSize.y <= normalSize.x));
 	vec3 offsetDir = normalize(tangentDir * nonSquareScale);
 	offsetDir.xy *= -u_NormalScale.a / offsetDir.z;
 
