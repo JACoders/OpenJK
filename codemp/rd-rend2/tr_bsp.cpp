@@ -720,7 +720,7 @@ static shader_t *ShaderForShaderNum( const world_t *worldData, int shaderNum, co
 ParseFace
 ===============
 */
-static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, msurface_t *surf, int *indexes  ) {
+static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *verts, packedTangentSpace_t *tangentSpace, float *hdrVertColors, msurface_t *surf, int *indexes  ) {
 	int			i, j;
 	srfBspSurface_t	*cv;
 	glIndex_t  *tri;
@@ -767,6 +767,8 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 	surf->cullinfo.type = CULLINFO_PLANE | CULLINFO_BOX;
 	ClearBounds(surf->cullinfo.bounds[0], surf->cullinfo.bounds[1]);
 	verts += LittleLong(ds->firstVert);
+	if (tangentSpace)
+		tangentSpace += LittleLong(ds->firstVert);
 	for(i = 0; i < numVerts; i++)
 	{
 		vec4_t color;
@@ -776,6 +778,14 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 			cv->verts[i].xyz[j] = LittleFloat(verts[i].xyz[j]);
 			cv->verts[i].normal[j] = LittleFloat(verts[i].normal[j]);
 		}
+
+		if (tangentSpace)
+		{
+			for (j = 0; j < 4; j++)
+				cv->verts[i].tangent[j] = LittleFloat(tangentSpace[i].tangentAndSign[j]);
+		}
+		else
+			Com_Memset(cv->verts[i].tangent, 0, sizeof(vec4_t));
 
 		AddPointToBounds(cv->verts[i].xyz, surf->cullinfo.bounds[0], surf->cullinfo.bounds[1]);
 
@@ -860,20 +870,6 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 	surf->cullinfo.plane = cv->cullPlane;
 
 	surf->data = (surfaceType_t *)cv;
-
-	// Calculate tangent spaces
-	{
-		srfVert_t      *dv[3];
-
-		for(i = 0, tri = cv->indexes; i < numIndexes; i += 3, tri += 3)
-		{
-			dv[0] = &cv->verts[tri[0]];
-			dv[1] = &cv->verts[tri[1]];
-			dv[2] = &cv->verts[tri[2]];
-
-			R_CalcTangentVectors(dv);
-		}
-	}
 }
 
 
@@ -882,7 +878,7 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 ParseMesh
 ===============
 */
-static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, msurface_t *surf ) {
+static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *verts, packedTangentSpace_t *tangentSpace, float *hdrVertColors, msurface_t *surf ) {
 	srfBspSurface_t	*grid;
 	int				i, j;
 	int				width, height, numPoints;
@@ -921,6 +917,8 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 		ri.Error(ERR_DROP, "ParseMesh: bad size");
 
 	verts += LittleLong( ds->firstVert );
+	if (tangentSpace)
+		tangentSpace += LittleLong(ds->firstVert);
 	numPoints = width * height;
 	for(i = 0; i < numPoints; i++)
 	{
@@ -931,6 +929,14 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 			points[i].xyz[j] = LittleFloat(verts[i].xyz[j]);
 			points[i].normal[j] = LittleFloat(verts[i].normal[j]);
 		}
+
+		if (tangentSpace)
+		{
+			for (j = 0; j < 4; j++)
+				points[i].tangent[j] = LittleFloat(tangentSpace[i].tangentAndSign[j]);
+		}
+		else
+			Com_Memset(points[i].tangent, 0, sizeof(vec4_t));
 
 		for(j = 0; j < 2; j++)
 		{
@@ -995,7 +1001,7 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 ParseTriSurf
 ===============
 */
-static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, msurface_t *surf, int *indexes ) {
+static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *verts, packedTangentSpace_t *tangentSpace, float *hdrVertColors, msurface_t *surf, int *indexes ) {
 	srfBspSurface_t *cv;
 	glIndex_t  *tri;
 	int             i, j;
@@ -1036,15 +1042,25 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 	surf->cullinfo.type = CULLINFO_BOX;
 	ClearBounds(surf->cullinfo.bounds[0], surf->cullinfo.bounds[1]);
 	verts += LittleLong(ds->firstVert);
-	for(i = 0; i < numVerts; i++)
+	if (tangentSpace)
+		tangentSpace += LittleLong(ds->firstVert);
+	for (i = 0; i < numVerts; i++)
 	{
 		vec4_t color;
 
-		for(j = 0; j < 3; j++)
+		for (j = 0; j < 3; j++)
 		{
 			cv->verts[i].xyz[j] = LittleFloat(verts[i].xyz[j]);
 			cv->verts[i].normal[j] = LittleFloat(verts[i].normal[j]);
 		}
+
+		if (tangentSpace)
+		{
+			for (j = 0; j < 4; j++)
+				cv->verts[i].tangent[j] = LittleFloat(tangentSpace[i].tangentAndSign[j]);
+		}
+		else
+			Com_Memset(cv->verts[i].tangent, 0, sizeof(vec4_t));
 
 		AddPointToBounds( cv->verts[i].xyz, surf->cullinfo.bounds[0], surf->cullinfo.bounds[1] );
 
@@ -1117,20 +1133,6 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 	{
 		ri.Printf(PRINT_WARNING, "Trisurf has bad triangles, originally shader %s %d tris %d verts, now %d tris\n", surf->shader->name, numIndexes / 3, numVerts, numIndexes / 3 - badTriangles);
 		cv->numIndexes -= badTriangles * 3;
-	}
-
-	// Calculate tangent spaces
-	{
-		srfVert_t      *dv[3];
-
-		for(i = 0, tri = cv->indexes; i < numIndexes; i += 3, tri += 3)
-		{
-			dv[0] = &cv->verts[tri[0]];
-			dv[1] = &cv->verts[tri[1]];
-			dv[2] = &cv->verts[tri[2]];
-
-			R_CalcTangentVectors(dv);
-		}
 	}
 }
 
@@ -1911,16 +1913,6 @@ static int BSPSurfaceCompare(const void *a, const void *b)
 	return 0;
 }
 
-struct packedVertex_t
-{
-	vec3_t position;
-	uint32_t normal;
-	uint32_t tangent;
-	vec2_t texcoords[1 + MAXLIGHTMAPS];
-	vec4_t colors[MAXLIGHTMAPS];
-	uint32_t lightDirection;
-};
-
 /*
 ===============
 R_CreateWorldVBOs
@@ -2090,7 +2082,12 @@ static void R_CreateWorldVBOs( world_t *worldData )
 
 				VectorCopy (bspSurf->verts[i].xyz, vert.position);
 				vert.normal = R_VboPackNormal (bspSurf->verts[i].normal);
-				vert.tangent = R_VboPackTangent (bspSurf->verts[i].tangent);
+
+				if (VectorLengthSquared(bspSurf->verts[i].tangent) > 0.001f)
+					vert.tangent = R_VboPackTangent(bspSurf->verts[i].tangent);
+				else
+					vert.tangent = 0u;
+
 				VectorCopy2 (bspSurf->verts[i].st, vert.texcoords[0]);
 
 				for (int j = 0; j < MAXLIGHTMAPS; j++)
@@ -2106,6 +2103,8 @@ static void R_CreateWorldVBOs( world_t *worldData )
 				vert.lightDirection = R_VboPackNormal (bspSurf->verts[i].lightdir);
 			}
 		}
+
+		R_CalcMikkTSpaceBSPSurface(numIndexes/3, verts, indexes);
 
 		vbo = R_CreateVBO((byte *)verts, sizeof (packedVertex_t) * numVerts, VBO_USAGE_STATIC);
 		ibo = R_CreateIBO((byte *)indexes, numIndexes * sizeof (glIndex_t), VBO_USAGE_STATIC);
@@ -2158,6 +2157,7 @@ static void R_CreateWorldVBOs( world_t *worldData )
 		ri.Hunk_FreeTempMemory(verts);
 
 		k++;
+		ri.Printf(PRINT_ALL, "Finished vbo %i\n", k);
 	}
 
 	Z_Free(surfacesSorted);
@@ -2220,9 +2220,23 @@ static	void R_LoadSurfaces( world_t *worldData, lump_t *surfs, lump_t *verts, lu
 		if (hdrVertColors)
 		{
 			//ri.Printf(PRINT_ALL, "Found!\n");
-			if (size != sizeof(float) * 3 * (verts->filelen / sizeof(*dv)))
-				ri.Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)((sizeof(float)) * 3 * (verts->filelen / sizeof(*dv))));
+			if (size != sizeof(float) * 3 * verts->filelen / sizeof(*dv))
+				ri.Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)((sizeof(float)) * 3 * verts->filelen / sizeof(*dv)));
 		}
+	}
+
+	// load vertex tangent space
+	packedTangentSpace_t *tangentSpace = NULL;
+	char filename[MAX_QPATH];
+	Com_sprintf(filename, sizeof(filename), "maps/%s.tspace", worldData->baseName);
+	int size = ri.FS_ReadFile(filename, (void **)&tangentSpace);
+
+	if (tangentSpace)
+	{
+		assert(size == (verts->filelen / sizeof(*dv)) * sizeof(float) * 4);
+
+		if (size != sizeof(tangentSpace[0]) * verts->filelen / sizeof(*dv))
+			ri.Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)(sizeof(float) * 4 * verts->filelen / sizeof(*dv)));
 	}
 
 
@@ -2255,7 +2269,7 @@ static	void R_LoadSurfaces( world_t *worldData, lump_t *surfs, lump_t *verts, lu
 	for ( i = 0 ; i < count ; i++, in++, out++ ) {
 		switch ( LittleLong( in->surfaceType ) ) {
 		case MST_PATCH:
-			ParseMesh ( worldData, in, dv, hdrVertColors, out );
+			ParseMesh ( worldData, in, dv, tangentSpace, hdrVertColors, out );
 			{
 				srfBspSurface_t *surface = (srfBspSurface_t *)out->data;
 
@@ -2268,11 +2282,11 @@ static	void R_LoadSurfaces( world_t *worldData, lump_t *surfs, lump_t *verts, lu
 			numMeshes++;
 			break;
 		case MST_TRIANGLE_SOUP:
-			ParseTriSurf( worldData, in, dv, hdrVertColors, out, indexes );
+			ParseTriSurf( worldData, in, dv, tangentSpace, hdrVertColors, out, indexes );
 			numTriSurfs++;
 			break;
 		case MST_PLANAR:
-			ParseFace( worldData, in, dv, hdrVertColors, out, indexes );
+			ParseFace( worldData, in, dv, tangentSpace, hdrVertColors, out, indexes );
 			numFaces++;
 			break;
 		case MST_FLARE:

@@ -4074,14 +4074,10 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		byte *data;
 		int dataSize = 0;
-		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights;
-		int ofs_tangent;
+		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents;
 		int stride = 0;
 		int numVerts = 0;
 		int numTriangles = 0;
-
-		vec3_t *tangentsf;
-		vec3_t *bitangentsf;
 
 		// +1 to add total vertex count
 		int *baseVertexes = (int *)ri.Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
@@ -4106,9 +4102,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		}
 
 		baseVertexes[mdxm->numSurfaces] = numVerts;
-
-		tangentsf = (vec3_t *)ri.Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);
-		bitangentsf = (vec3_t *)ri.Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);;
 
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
@@ -4141,33 +4134,79 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		stride += sizeof (*weights) * 4;
 
 		tangents = (uint32_t *)(data + stride);
-		ofs_tangent = stride;
+		ofsTangents = stride;
 		stride += sizeof (*tangents);
+
+		// Fill in the index buffer and compute tangents
+		glIndex_t *indices = (glIndex_t *)ri.Hunk_AllocateTempMemory(sizeof(glIndex_t) * numTriangles * 3);
+		glIndex_t *index = indices;
+		uint32_t *tangentsf = (uint32_t *)ri.Hunk_AllocateTempMemory(sizeof(uint32_t) * numVerts);;
+
+		surf = (mdxmSurface_t *)((byte *)lod + sizeof(mdxmLOD_t) + (mdxm->numSurfaces * sizeof(mdxmLODSurfOffset_t)));
+
+		for (int n = 0; n < mdxm->numSurfaces; n++)
+		{
+			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
+			glIndex_t *surf_indices = (glIndex_t *)ri.Hunk_AllocateTempMemory(sizeof(glIndex_t) * surf->numTriangles * 3);
+			glIndex_t *surf_index = surf_indices;
+
+			for (int k = 0; k < surf->numTriangles; k++, index += 3, surf_index += 3)
+			{
+				index[0] = t[k].indexes[0] + baseVertexes[n];
+				assert(index[0] >= 0 && index[0] < numVerts);
+
+				index[1] = t[k].indexes[1] + baseVertexes[n];
+				assert(index[1] >= 0 && index[1] < numVerts);
+
+				index[2] = t[k].indexes[2] + baseVertexes[n];
+				assert(index[2] >= 0 && index[2] < numVerts);
+
+				surf_index[0] = t[k].indexes[0];
+				surf_index[1] = t[k].indexes[1];
+				surf_index[2] = t[k].indexes[2];
+			}
+
+			// Build tangent space
+			mdxmVertex_t *vertices = (mdxmVertex_t *)((byte *)surf + surf->ofsVerts);
+			mdxmVertexTexCoord_t *textureCoordinates = (mdxmVertexTexCoord_t *)(vertices + surf->numVerts);
+
+			R_CalcMikkTSpaceGlmSurface(
+				surf->numTriangles,
+				vertices,
+				textureCoordinates,
+				tangentsf + baseVertexes[n],
+				surf_indices
+			);
+
+			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
+		}
+
+		assert(index == (indices + numTriangles * 3));
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 
-		for ( int n = 0; n < mdxm->numSurfaces; n++ )
+		for (int n = 0; n < mdxm->numSurfaces; n++)
 		{
 			// Positions and normals
 			mdxmVertex_t *v = (mdxmVertex_t *)((byte *)surf + surf->ofsVerts);
 			int *boneRef = (int *)((byte *)surf + surf->ofsBoneReferences);
 
-			for ( int k = 0; k < surf->numVerts; k++ )
+			for (int k = 0; k < surf->numVerts; k++)
 			{
-				VectorCopy (v[k].vertCoords, *verts);
-				*normals = R_VboPackNormal (v[k].normal);
+				VectorCopy(v[k].vertCoords, *verts);
+				*normals = R_VboPackNormal(v[k].normal);
 
 				verts = (vec3_t *)((byte *)verts + stride);
 				normals = (uint32_t *)((byte *)normals + stride);
 			}
 
 			// Weights
-			for ( int k = 0; k < surf->numVerts; k++ )
+			for (int k = 0; k < surf->numVerts; k++)
 			{
-				int numWeights = G2_GetVertWeights (&v[k]);
+				int numWeights = G2_GetVertWeights(&v[k]);
 				int lastWeight = 255;
 				int lastInfluence = numWeights - 1;
-				for ( int w = 0; w < lastInfluence; w++ )
+				for (int w = 0; w < lastInfluence; w++)
 				{
 					float weight = G2_GetVertBoneWeightNotSlow(&v[k], w);
 					weights[w] = (byte)(weight * 255.0f);
@@ -4185,19 +4224,19 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 				bonerefs[lastInfluence] = boneRef[packedIndex];
 
 				// Fill in the rest of the info with zeroes.
-				for ( int w = numWeights; w < 4; w++ )
+				for (int w = numWeights; w < 4; w++)
 				{
 					weights[w] = 0;
 					bonerefs[w] = 0;
 				}
-				
+
 				weights += stride;
 				bonerefs += stride;
 			}
 
 			// Texture coordinates
 			mdxmVertexTexCoord_t *tc = (mdxmVertexTexCoord_t *)(v + surf->numVerts);
-			for ( int k = 0; k < surf->numVerts; k++ )
+			for (int k = 0; k < surf->numVerts; k++)
 			{
 				(*texcoords)[0] = tc[k].texCoords[0];
 				(*texcoords)[1] = tc[k].texCoords[1];
@@ -4205,69 +4244,9 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 				texcoords = (vec2_t *)((byte *)texcoords + stride);
 			}
 
-			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
-			for ( int k = 0; k < surf->numTriangles; k++ )
+			for (int k = 0; k < surf->numVerts; k++)
 			{
-				int index[3];
-				vec3_t sdir, tdir;
-				float *v0, *v1, *v2;
-				float *uv0, *uv1, *uv2;
-				vec3_t normal = { 0.0f, 0.0f, 0.0f };
-
-				index[0] = t[k].indexes[0];
-				index[1] = t[k].indexes[1];
-				index[2] = t[k].indexes[2];
-
-				v0 = v[index[0]].vertCoords;
-				v1 = v[index[1]].vertCoords;
-				v2 = v[index[2]].vertCoords;
-
-				uv0 = tc[index[0]].texCoords;
-				uv1 = tc[index[1]].texCoords;
-				uv2 = tc[index[2]].texCoords;
-
-				VectorAdd (normal, v[index[0]].normal, normal);
-				VectorAdd (normal, v[index[1]].normal, normal);
-				VectorAdd (normal, v[index[2]].normal, normal);
-				VectorNormalize (normal);
-
-				R_CalcTexDirs (sdir, tdir, v0, v1, v2, uv0, uv1, uv2);
-
-				for ( int i = 0; i < 3; i++ )
-				{
-					VectorAdd (tangentsf[baseVertexes[n] + index[i]],
-						sdir,
-						tangentsf[baseVertexes[n] + index[i]]);
-
-					VectorAdd (bitangentsf[baseVertexes[n] + index[i]],
-						tdir,
-						bitangentsf[baseVertexes[n] + index[i]]);
-				}
-			}
-
-			// Finally add it to the vertex buffer data
-			for ( int k = 0; k < surf->numVerts; k++ )
-			{
-				vec3_t sdir, tdir;
-
-				vec3_t& tangent = tangentsf[baseVertexes[n] + k];
-				vec3_t& bitangent = bitangentsf[baseVertexes[n] + k];
-				vec3_t NxT;
-				vec4_t T;
-
-				VectorCopy (tangent, sdir);
-				VectorCopy (bitangent, tdir);
-
-				VectorNormalize (sdir);
-				VectorNormalize (tdir);
-
-				R_CalcTbnFromNormalAndTexDirs(tangent, bitangent, v[k].normal, sdir, tdir);
-
-				CrossProduct (v[k].normal, tangent, NxT);
-				VectorCopy (tangent, T);
-				T[3] = DotProduct (NxT, bitangent) < 0.0f ? -1.0f : 1.0f;
-
-				*tangents = R_VboPackTangent (T);
+				*tangents = *(tangentsf + baseVertexes[n] + k);
 				tangents = (uint32_t *)((byte *)tangents + stride);
 			}
 
@@ -4281,19 +4260,19 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		{
 			modelName = mdxm->name;
 		}
-
 		VBO_t *vbo = R_CreateVBO (data, dataSize, VBO_USAGE_STATIC);
+		IBO_t *ibo = R_CreateIBO((byte *)indices, sizeof(glIndex_t) * numTriangles * 3, VBO_USAGE_STATIC);
 
 		ri.Hunk_FreeTempMemory (data);
 		ri.Hunk_FreeTempMemory (tangentsf);
-		ri.Hunk_FreeTempMemory (bitangentsf);
+		ri.Hunk_FreeTempMemory (indices);
 
 		vbo->offsets[ATTR_INDEX_POSITION] = ofsPosition;
 		vbo->offsets[ATTR_INDEX_NORMAL] = ofsNormals;
 		vbo->offsets[ATTR_INDEX_TEXCOORD0] = ofsTexcoords;
 		vbo->offsets[ATTR_INDEX_BONE_INDEXES] = ofsBoneRefs;
 		vbo->offsets[ATTR_INDEX_BONE_WEIGHTS] = ofsWeights;
-		vbo->offsets[ATTR_INDEX_TANGENT] = ofs_tangent;
+		vbo->offsets[ATTR_INDEX_TANGENT] = ofsTangents;
 
 		vbo->strides[ATTR_INDEX_POSITION] = stride;
 		vbo->strides[ATTR_INDEX_NORMAL] = stride;
@@ -4308,37 +4287,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->sizes[ATTR_INDEX_BONE_WEIGHTS] = sizeof(*weights);
 		vbo->sizes[ATTR_INDEX_BONE_INDEXES] = sizeof(*bonerefs);
 		vbo->sizes[ATTR_INDEX_TANGENT] = sizeof(*tangents);
-
-		// Fill in the index buffer
-		glIndex_t *indices = (glIndex_t *)ri.Hunk_AllocateTempMemory (sizeof (glIndex_t) * numTriangles * 3);
-		glIndex_t *index = indices;
-
-		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
-
-		for ( int n = 0; n < mdxm->numSurfaces; n++ )
-		{
-			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
-
-			for ( int k = 0; k < surf->numTriangles; k++, index += 3 )
-			{
-				index[0] = t[k].indexes[0] + baseVertexes[n];
-				assert (index[0] >= 0 && index[0] < numVerts);
-
-				index[1] = t[k].indexes[1] + baseVertexes[n];
-				assert (index[1] >= 0 && index[1] < numVerts);
-
-				index[2] = t[k].indexes[2] + baseVertexes[n];
-				assert (index[2] >= 0 && index[2] < numVerts);
-			}
-
-			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
-		}
-
-		assert (index == (indices + numTriangles * 3));
-
-		IBO_t *ibo = R_CreateIBO ((byte *)indices, sizeof (glIndex_t) * numTriangles * 3, VBO_USAGE_STATIC);
-
-		ri.Hunk_FreeTempMemory (indices);
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 

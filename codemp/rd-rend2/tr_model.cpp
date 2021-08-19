@@ -823,7 +823,7 @@ R_LoadMD3
 */
 static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modName)
 {
-	int             f, i, j;
+	int             i, j;
 
 	md3Header_t    *md3Model;
 	md3Frame_t     *md3Frame;
@@ -1054,59 +1054,6 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 			st->st[1] = LittleFloat(md3st->st[1]);
 		}
 
-		// calc tangent spaces
-		{
-			for(j = 0, v = surf->verts; j < (surf->numVerts * mdvModel->numFrames); j++, v++)
-			{
-				VectorClear(v->tangent);
-				VectorClear(v->bitangent);
-			}
-
-			for(f = 0; f < mdvModel->numFrames; f++)
-			{
-				for(j = 0, tri = surf->indexes; j < surf->numIndexes; j += 3, tri += 3)
-				{
-					vec3_t sdir, tdir;
-					const float *v0, *v1, *v2, *t0, *t1, *t2;
-					glIndex_t index0, index1, index2;
-
-					index0 = surf->numVerts * f + tri[0];
-					index1 = surf->numVerts * f + tri[1];
-					index2 = surf->numVerts * f + tri[2];
-
-					v0 = surf->verts[index0].xyz;
-					v1 = surf->verts[index1].xyz;
-					v2 = surf->verts[index2].xyz;
-
-					t0 = surf->st[tri[0]].st;
-					t1 = surf->st[tri[1]].st;
-					t2 = surf->st[tri[2]].st;
-
-					R_CalcTexDirs(sdir, tdir, v0, v1, v2, t0, t1, t2);
-
-					VectorAdd(sdir, surf->verts[index0].tangent,   surf->verts[index0].tangent);
-					VectorAdd(sdir, surf->verts[index1].tangent,   surf->verts[index1].tangent);
-					VectorAdd(sdir, surf->verts[index2].tangent,   surf->verts[index2].tangent);
-					VectorAdd(tdir, surf->verts[index0].bitangent, surf->verts[index0].bitangent);
-					VectorAdd(tdir, surf->verts[index1].bitangent, surf->verts[index1].bitangent);
-					VectorAdd(tdir, surf->verts[index2].bitangent, surf->verts[index2].bitangent);
-				}
-			}
-
-			for(j = 0, v = surf->verts; j < (surf->numVerts * mdvModel->numFrames); j++, v++)
-			{
-				vec3_t sdir, tdir;
-
-				VectorCopy(v->tangent,   sdir);
-				VectorCopy(v->bitangent, tdir);
-
-				VectorNormalize(sdir);
-				VectorNormalize(tdir);
-
-				R_CalcTbnFromNormalAndTexDirs(v->tangent, v->bitangent, v->normal, sdir, tdir);
-			}
-		}
-
 		// find the next surface
 		md3Surf = (md3Surface_t *) ((byte *) md3Surf + md3Surf->ofsEnd);
 		surf++;
@@ -1157,17 +1104,9 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 			v = surf->verts;
 			for ( j = 0; j < surf->numVerts * mdvModel->numFrames ; j++, v++ )
 			{
-				vec3_t nxt;
-				vec4_t tangent;
-
 				VectorCopy(v->xyz,       verts[j]);
-
 				normals[j] = R_VboPackNormal(v->normal);
-				CrossProduct(v->normal, v->tangent, nxt);
-				VectorCopy(v->tangent, tangent);
-				tangent[3] = (DotProduct(nxt, v->bitangent) < 0.0f) ? -1.0f : 1.0f;
-
-				tangents[j] = R_VboPackTangent(tangent);
+				tangents[j] = 0;
 			}
 
 			st = surf->st;
@@ -1175,6 +1114,9 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 				texcoords[j][0] = st->st[0];
 				texcoords[j][1] = st->st[1];
 			}
+
+			// If we would support vertex animations, we would need to compute tangents for the other frames too!
+			R_CalcMikkTSpaceMD3Surface(surf->numIndexes/3, verts, normals, tangents, texcoords, surf->indexes);
 
 			vboSurf->surfaceType = SF_VBO_MDVMESH;
 			vboSurf->mdvModel = mdvModel;

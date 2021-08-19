@@ -848,12 +848,6 @@ enum specularType
 	SPEC_ORMS,	// calculate spec from orms texture with a specular of 0.0 - 0.08 from input
 };
 
-enum roughnessType
-{
-	ROUGHNESS_PERCEPTUAL,
-	ROUGHNESS_LINEAR,
-};
-
 enum AlphaTestType
 {
 	ALPHA_TEST_NONE,
@@ -2701,6 +2695,21 @@ extern cvar_t	*r_debugWeather;
 
 //====================================================================
 
+struct packedVertex_t
+{
+	vec3_t position;
+	uint32_t normal;
+	uint32_t tangent;
+	vec2_t texcoords[1 + MAXLIGHTMAPS];
+	vec4_t colors[MAXLIGHTMAPS];
+	uint32_t lightDirection;
+};
+
+struct packedTangentSpace_t
+{
+	vec4_t tangentAndSign;
+};
+
 void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef );
 void R_SetupViewParmsForOrthoRendering(
 	int viewportWidth,
@@ -2727,6 +2736,10 @@ uint32_t R_CreateSortKey(int entityNum, int sortedShaderIndex, int cubemapIndex,
 void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
 bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity );
+
+void R_CalcMikkTSpaceBSPSurface(int numSurfaces, packedVertex_t *vertices, glIndex_t *indices);
+void R_CalcMikkTSpaceMD3Surface(int numSurfaces, vec3_t *verts, uint32_t *normals, uint32_t *tangents, vec2_t *texcoords, glIndex_t *indices);
+void R_CalcMikkTSpaceGlmSurface(int numSurfaces, mdxmVertex_t *vertices, mdxmVertexTexCoord_t *textureCoordinates, uint32_t *tangents, glIndex_t *indices);
 
 void R_CalcTexDirs(vec3_t sdir, vec3_t tdir, const vec3_t v1, const vec3_t v2,
 					const vec3_t v3, const vec2_t w1, const vec2_t w2, const vec2_t w3);
@@ -3587,7 +3600,7 @@ void RE_AddDecalToScene ( qhandle_t shader, const vec3_t origin, const vec3_t di
 void R_AddDecals( void );
 
 image_t	*R_FindImageFile( const char *name, imgType_t type, int flags );
-void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type, int roughnessType);
+void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type);
 qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);

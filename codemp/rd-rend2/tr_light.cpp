@@ -360,29 +360,33 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 		VectorCopy( tr.sunDirection, ent->lightDir );
 	}
 
-	// bonus items and view weapons have a fixed minimum add
-	if ( 1/*!r_hdr->integer*/ ) {
-		// give everything a minimum light add
-		ent->ambientLight[0] += tr.identityLight * 32;
-		ent->ambientLight[1] += tr.identityLight * 32;
-		ent->ambientLight[2] += tr.identityLight * 32;
-	}
-
-	if ( ent->e.renderfx & RF_MINLIGHT )
-	{ //the minlight flag is now for items rotating on their holo thing
-		if (ent->e.shaderRGBA[0] == 255 &&
-			ent->e.shaderRGBA[1] == 255 &&
-			ent->e.shaderRGBA[2] == 0)
-		{
-			ent->ambientLight[0] += tr.identityLight * 255;
-			ent->ambientLight[1] += tr.identityLight * 255;
-			ent->ambientLight[2] += tr.identityLight * 0;
+	// only do min lighting when there is no hdr light data
+	if (tr.hdrLighting != qtrue)
+	{
+		// bonus items and view weapons have a fixed minimum add
+		if (1/*!r_hdr->integer*/) {
+			// give everything a minimum light add
+			ent->ambientLight[0] += tr.identityLight * 32;
+			ent->ambientLight[1] += tr.identityLight * 32;
+			ent->ambientLight[2] += tr.identityLight * 32;
 		}
-		else
-		{
-			ent->ambientLight[0] += tr.identityLight * 16;
-			ent->ambientLight[1] += tr.identityLight * 96;
-			ent->ambientLight[2] += tr.identityLight * 150;
+
+		if (ent->e.renderfx & RF_MINLIGHT)
+		{ //the minlight flag is now for items rotating on their holo thing
+			if (ent->e.shaderRGBA[0] == 255 &&
+				ent->e.shaderRGBA[1] == 255 &&
+				ent->e.shaderRGBA[2] == 0)
+			{
+				ent->ambientLight[0] += tr.identityLight * 255;
+				ent->ambientLight[1] += tr.identityLight * 255;
+				ent->ambientLight[2] += tr.identityLight * 0;
+			}
+			else
+			{
+				ent->ambientLight[0] += tr.identityLight * 16;
+				ent->ambientLight[1] += tr.identityLight * 96;
+				ent->ambientLight[2] += tr.identityLight * 150;
+			}
 		}
 	}
 
@@ -408,7 +412,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 
 	// clamp ambient
-	//if ( !r_hdr->integer )
+	if (tr.hdrLighting != qtrue)
 	{
 		for ( i = 0 ; i < 3 ; i++ ) {
 			if ( ent->ambientLight[i] > tr.identityLightByte ) {

@@ -1200,7 +1200,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	char bufferPackedTextureName[MAX_QPATH];
 	char bufferBaseColorTextureName[MAX_QPATH];
 	int  buildSpecFromPacked = SPEC_NONE;
-	int roughnessType = ROUGHNESS_LINEAR;
 	qboolean foundBaseColor = qfalse;
 
 	stage->active = qtrue;
@@ -1644,14 +1643,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			stage->specularScale[3] = Com_Clamp(0.0f, 1.0f, 1.0 - atof(token));
 		}
 		//
-		// linearRoughness
-		//
-		else if (!Q_stricmp(token, "linearroughness"))
-		{
-			roughnessType = ROUGHNESS_LINEAR;
-			continue;
-		}
-		//
 		// parallaxDepth <value>
 		//
 		else if (!Q_stricmp(token, "parallaxdepth"))
@@ -2086,7 +2077,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		if (shader.noTC)
 			flags |= IMGFLAG_NO_COMPRESSION;
 
-		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked, roughnessType);
+		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked);
 
 		VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
@@ -3073,7 +3064,6 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 			image_t *normalImg;
 			int normalFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
 			qboolean parallax = qfalse;
-
 			// try a normalheight image first
 			COM_StripExtension(diffuseImg->imgName, normalName, sizeof(normalName));
 			Q_strcat(normalName, sizeof(normalName), "_nh");
@@ -3135,10 +3125,19 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 			{
 				COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
 				Q_strcat(specularName, MAX_QPATH, "_rmo");
-				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO, ROUGHNESS_LINEAR);
+				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO);
 
 				if (stage->bundle[TB_SPECULARMAP].image[0])
 					VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+				else
+				{
+					COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
+					Q_strcat(specularName, MAX_QPATH, "_orm");
+					R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_ORM);
+
+					if (stage->bundle[TB_SPECULARMAP].image[0])
+						VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+				}
 			}
 		}
 	}

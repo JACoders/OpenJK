@@ -2396,7 +2396,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 	if (!internalFormat)
 	{
 		if (image->flags & IMGFLAG_CUBEMAP)
-			internalFormat = GL_RGBA8;
+			internalFormat = r_hdr->integer ? GL_RGBA16F : GL_RGBA8;
 		else
 			internalFormat = RawImage_GetFormat(pic, width * height, isLightmap, image->type, image->flags);
 	}
@@ -2610,7 +2610,7 @@ image_t* R_GetLoadedImage(const char *name, int flags) {
 	return NULL;
 }
 
-void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type, int roughnessType)
+void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
 {
 	char	diffuseName[MAX_QPATH];
 	char	specularName[MAX_QPATH];
@@ -2693,8 +2693,6 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 		case SPEC_RMO:
 		case SPEC_RMOS:
 			roughness = ByteToFloat(rmoPic[i + 0]);
-			if (roughnessType == ROUGHNESS_PERCEPTUAL)
-				roughness *= roughness;
 			gloss = (1.0 - roughness) + (0.04 * roughness);
 			metalness = ByteToFloat(rmoPic[i + 1]);
 			ao = ByteToFloat(rmoPic[i + 2]);
@@ -2708,16 +2706,12 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 			ao += (1.0 - ao) * (1.0 - aoStrength);
 			specular_variance = (type == SPEC_MOSR) ? ByteToFloat(rmoPic[i + 2]) : 1.0f;
 			roughness = ByteToFloat(rmoPic[i + 3]);
-			if (roughnessType == ROUGHNESS_PERCEPTUAL)
-				roughness *= roughness;
 			gloss = (1.0 - roughness) + (0.04 * roughness);
 			break;
 		case SPEC_ORM:
 		case SPEC_ORMS:
 			ao = ByteToFloat(rmoPic[i + 0]);
 			roughness = ByteToFloat(rmoPic[i + 1]);
-			if (roughnessType == ROUGHNESS_PERCEPTUAL)
-				roughness *= roughness;
 			gloss = (1.0 - roughness) + (0.04 * roughness);
 			metalness = ByteToFloat(rmoPic[i + 2]);
 			specular_variance = (type == SPEC_ORMS) ? ByteToFloat(rmoPic[i + 3]) : 1.0f;
@@ -2744,9 +2738,9 @@ void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const c
 		// diffuse Color = baseColor * (1.0 - metalness) 
 		// also gamma correct again
 		// FIXME: AO should be handled in shader because it should only affect the ambient lighting
-		diffusePic[i + 0] = FloatToByte(RGBtosRGB(baseColor[0] * ao));
-		diffusePic[i + 1] = FloatToByte(RGBtosRGB(baseColor[1] * ao));
-		diffusePic[i + 2] = FloatToByte(RGBtosRGB(baseColor[2] * ao));
+		diffusePic[i + 0] = FloatToByte(RGBtosRGB(baseColor[0] * ao * (1.0f - metalness)));
+		diffusePic[i + 1] = FloatToByte(RGBtosRGB(baseColor[1] * ao * (1.0f - metalness)));
+		diffusePic[i + 2] = FloatToByte(RGBtosRGB(baseColor[2] * ao * (1.0f - metalness)));
 		diffusePic[i + 3] = FloatToByte(baseColor[3]);
 
 		// specular Color = mix(baseSpecular, baseColor, metalness)
@@ -2903,6 +2897,15 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		(flags & IMGFLAG_PICMIP) && (flags & IMGFLAG_MIPMAP) && (flags & IMGFLAG_GENNORMALMAP))
 	{
 		R_CreateNormalMap( name, pic, width, height, flags );
+	}
+
+	// flip height info, so we don't need to do this in the shader later
+	if (type == IMGTYPE_NORMALHEIGHT)
+	{
+		for (int i = 0; i < width*height; i++)
+		{
+			pic[4 * i + 3] = 255 - pic[4 * i + 3];
+		}
 	}
 
 	image = R_CreateImage( name, pic, width, height, type, flags, 0 );

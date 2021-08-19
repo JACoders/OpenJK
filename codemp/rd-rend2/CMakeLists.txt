@@ -64,13 +64,18 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_vbo.cpp"
 	"${MPDir}/rd-rend2/tr_world.cpp"
 	"${MPDir}/rd-rend2/tr_weather.cpp"
-	"${MPDir}/rd-rend2/tr_weather.h"
-	)
+	"${MPDir}/rd-rend2/tr_weather.h")
 source_group("renderer" FILES ${MPRend2Files})
 
 file(GLOB MPRend2GLSLFiles "${MPDir}/rd-rend2/glsl/*.glsl")
 source_group("renderer\\glsl" FILES ${MPRend2GLSLFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2GLSLFiles})
+
+set(MPRend2MikktFiles
+	"${MPDir}/rd-rend2/MikkTSpace/mikktspace.h"
+	"${MPDir}/rd-rend2/MikkTSpace/mikktspace.c")
+source_group("MikktSpace" FILES ${MPRend2MikktFiles})
+set(MPRend2Files ${MPRend2Files} ${MPRend2MikktFiles})
 
 set(MPRend2Ghoul2Files
 	"${MPDir}/ghoul2/g2_local.h"

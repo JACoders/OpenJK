@@ -3077,7 +3077,7 @@ const void *RB_PostProcess(const void *data)
 	if(tess.numIndexes)
 		RB_EndSurface();
 
-	if (tr.viewParms.flags & VPF_NOPOSTPROCESS)
+	if (cmd->viewParms.flags & VPF_NOPOSTPROCESS)
 	{
 		// do nothing
 		return (const void *)(cmd + 1);
