@@ -667,7 +667,11 @@ GLimp_StartDriverAndSetMode
 static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, const windowDesc_t *windowDesc, int mode, qboolean fullscreen, qboolean noborder)
 {
 	rserr_t err;
-
+	/*Starting from SDL2 2.0.14 The default value for SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS 
+	is now false for better compatibility with modern window managers, however it 
+	prevented the game from alt-tab/minimize, set to 1 before calling SDL_Init fix it.
+	*/
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
 		const char *driverName;
