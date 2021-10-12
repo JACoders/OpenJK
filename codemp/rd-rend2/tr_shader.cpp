@@ -1410,14 +1410,14 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if (!Q_stricmp(token, "ormMap") || !Q_stricmp(token, "ormsMap"))
 		{
-		token = COM_ParseExt(text, qfalse);
-		if (!token[0])
-		{
-			ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'ormMap' keyword in shader '%s'\n", shader.name);
-			return qfalse;
-		}
-		buildSpecFromPacked = !Q_stricmp(token, "ormsMap") ? SPEC_ORMS : SPEC_ORM;
-		Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
+			token = COM_ParseExt(text, qfalse);
+			if (!token[0])
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'ormMap' keyword in shader '%s'\n", shader.name);
+				return qfalse;
+			}
+			buildSpecFromPacked = !Q_stricmp(token, "ormsMap") ? SPEC_ORMS : SPEC_ORM;
+			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
 		// animMap <frequency> <image1> .... <imageN>
@@ -1773,9 +1773,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				vec3_t	color;
 
 				ParseVector( text, 3, color );
-				stage->constantColor[0] = 255 * color[0];
-				stage->constantColor[1] = 255 * color[1];
-				stage->constantColor[2] = 255 * color[2];
+				stage->constantColor[0] = color[0];
+				stage->constantColor[1] = color[1];
+				stage->constantColor[2] = color[2];
 
 				stage->rgbGen = CGEN_CONST;
 			}
@@ -1859,7 +1859,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else if ( !Q_stricmp( token, "const" ) )
 			{
 				token = COM_ParseExt( text, qfalse );
-				stage->constantColor[3] = 255 * atof( token );
+				stage->constantColor[3] = atof( token );
 				stage->alphaGen = AGEN_CONST;
 			}
 			else if ( !Q_stricmp( token, "identity" ) )
@@ -2066,7 +2066,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	//
 	if (foundBaseColor && buildSpecFromPacked != SPEC_NONE)
 	{
-		int flags = IMGFLAG_NONE;
+		int flags = IMGFLAG_NOLIGHTSCALE;
 
 		if (!shader.noMipMaps)
 			flags |= IMGFLAG_MIPMAP;
@@ -2076,6 +2076,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 		if (shader.noTC)
 			flags |= IMGFLAG_NO_COMPRESSION;
+
+		if (shader.isHDRLit == qtrue)
+			flags |= IMGFLAG_SRGB;
 
 		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked);
 

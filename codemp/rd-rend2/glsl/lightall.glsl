@@ -882,7 +882,7 @@ void main()
   #elif defined(USE_LIGHT_VECTOR)
 	lightColor	= u_DirectedLight * var_Color.rgb;
 	ambientColor = u_AmbientLight * var_Color.rgb;
-	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
+	attenuation = 1.0; //CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
 
     #if defined(USE_DSHADOWS)
 	  if (var_LightDir.w > 0.0) {
@@ -995,8 +995,8 @@ void main()
 	out_Glow = out_Color;
 #else
 
-	out_Glow = pow(out_Color, vec4(vec3(1.0 / 2.2), 1.0)) - vec4(0.99, 0.99, 0.99, 0.0);
-	out_Glow = max(vec4(0.0), out_Glow);
-	//out_Glow = vec4(0.0, 0.0, 0.0, out_Color.a);
+	//out_Glow = pow(out_Color, vec4(vec3(1.0 / 2.2), 1.0)) - vec4(0.99, 0.99, 0.99, 0.0);
+	//out_Glow = max(vec4(0.0), out_Glow);
+	out_Glow = vec4(0.0, 0.0, 0.0, out_Color.a);
 #endif
 }

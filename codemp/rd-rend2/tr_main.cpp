@@ -2222,14 +2222,15 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 					break;
 				}
 
-				R_AddDrawSurf(
-					&entitySurface,
-					entityNum,
-					tr.defaultShader,
-					0,
-					0,
-					R_IsPostRenderEntity(ent),
-					0 /* cubeMap */ );
+				if (tr.currentModel->dataSize > 0)
+					R_AddDrawSurf(
+						&entitySurface,
+						entityNum,
+						tr.defaultShader,
+						0,
+						0,
+						R_IsPostRenderEntity(ent),
+						0 /* cubeMap */ );
 				break;
 			default:
 				ri.Error( ERR_DROP, "R_AddEntitySurfaces: Bad modeltype" );

@@ -368,10 +368,10 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			vertColor[3] = 1.0f;
 			break;
 		case CGEN_CONST:
-			baseColor[0] = pStage->constantColor[0] / 255.0f;
-			baseColor[1] = pStage->constantColor[1] / 255.0f;
-			baseColor[2] = pStage->constantColor[2] / 255.0f;
-			baseColor[3] = pStage->constantColor[3] / 255.0f;
+			baseColor[0] = pStage->constantColor[0];
+			baseColor[1] = pStage->constantColor[1];
+			baseColor[2] = pStage->constantColor[2];
+			baseColor[3] = pStage->constantColor[3];
 			break;
 		case CGEN_VERTEX:
 			baseColor[0] = 
@@ -460,7 +460,7 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			break;
 		case AGEN_CONST:
 			if ( rgbGen != CGEN_CONST ) {
-				baseColor[3] = pStage->constantColor[3] / 255.0f;
+				baseColor[3] = pStage->constantColor[3];
 				vertColor[3] = 0.0f;
 			}
 			break;

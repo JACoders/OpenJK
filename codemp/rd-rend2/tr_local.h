@@ -881,7 +881,7 @@ typedef struct {
 	waveForm_t		alphaWave;
 	alphaGen_t		alphaGen;
 
-	byte			constantColor[4];			// for CGEN_CONST and AGEN_CONST
+	float			constantColor[4];			// for CGEN_CONST and AGEN_CONST
 
 	uint32_t		stateBits;					// GLS_xxxx mask
 

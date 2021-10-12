@@ -745,12 +745,6 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 	}
 
 	numVerts = LittleLong(ds->numVerts);
-	if (numVerts > MAX_FACE_POINTS) {
-		ri.Printf( PRINT_WARNING, "WARNING: MAX_FACE_POINTS exceeded: %i\n", numVerts);
-		numVerts = MAX_FACE_POINTS;
-		surf->shader = tr.defaultShader;
-	}
-
 	numIndexes = LittleLong(ds->numIndexes);
 
 	//cv = ri.Hunk_Alloc(sizeof(*cv), h_low);
@@ -784,8 +778,6 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 			for (j = 0; j < 4; j++)
 				cv->verts[i].tangent[j] = LittleFloat(tangentSpace[i].tangentAndSign[j]);
 		}
-		else
-			Com_Memset(cv->verts[i].tangent, 0, sizeof(vec4_t));
 
 		AddPointToBounds(cv->verts[i].xyz, surf->cullinfo.bounds[0], surf->cullinfo.bounds[1]);
 
@@ -935,8 +927,6 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 			for (j = 0; j < 4; j++)
 				points[i].tangent[j] = LittleFloat(tangentSpace[i].tangentAndSign[j]);
 		}
-		else
-			Com_Memset(points[i].tangent, 0, sizeof(vec4_t));
 
 		for(j = 0; j < 2; j++)
 		{
@@ -1059,8 +1049,6 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 			for (j = 0; j < 4; j++)
 				cv->verts[i].tangent[j] = LittleFloat(tangentSpace[i].tangentAndSign[j]);
 		}
-		else
-			Com_Memset(cv->verts[i].tangent, 0, sizeof(vec4_t));
 
 		AddPointToBounds( cv->verts[i].xyz, surf->cullinfo.bounds[0], surf->cullinfo.bounds[1] );
 
@@ -2157,7 +2145,6 @@ static void R_CreateWorldVBOs( world_t *worldData )
 		ri.Hunk_FreeTempMemory(verts);
 
 		k++;
-		ri.Printf(PRINT_ALL, "Finished vbo %i\n", k);
 	}
 
 	Z_Free(surfacesSorted);
@@ -3698,6 +3685,7 @@ static void R_GenerateSurfaceSprites(
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
 	out->numSprites = sprites.size();
+	// FIXME: Use big preallocated vbo/ibo to store all sprites in one vao
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
 
