@@ -61,6 +61,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_sky.cpp"
 	"${MPDir}/rd-rend2/tr_subs.cpp"
 	"${MPDir}/rd-rend2/tr_surface.cpp"
+	"${MPDir}/rd-rend2/tr_tangentspace.cpp"
 	"${MPDir}/rd-rend2/tr_vbo.cpp"
 	"${MPDir}/rd-rend2/tr_world.cpp"
 	"${MPDir}/rd-rend2/tr_weather.cpp"
