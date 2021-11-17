@@ -699,6 +699,8 @@ void R_BuildCloudData( shaderCommands_t *input )
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;
 	tess.firstIndex = 0;
+	tess.useInternalVBO = qtrue;
+	tess.externalIBO = nullptr;
 
 	if ( shader->sky.cloudHeight )
 	{
