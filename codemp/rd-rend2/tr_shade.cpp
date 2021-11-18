@@ -1899,7 +1899,7 @@ void RB_EndSurface( void ) {
 		return;
 	}
 
-	if (tr.world) {
+	if (tr.world && !backEnd.framePostProcessed) {
 		if (tr.world->skyboxportal)
 		{
 			// world

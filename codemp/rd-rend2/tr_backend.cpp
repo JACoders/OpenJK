@@ -3077,6 +3077,10 @@ const void *RB_PostProcess(const void *data)
 	if(tess.numIndexes)
 		RB_EndSurface();
 
+	if (tr.world->skyboxportal && (cmd->refdef.rdflags & RDF_SKYBOXPORTAL)) {
+		return (const void *)(cmd + 1);;
+	}
+
 	if (cmd->viewParms.flags & VPF_NOPOSTPROCESS)
 	{
 		// do nothing
