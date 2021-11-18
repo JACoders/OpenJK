@@ -924,8 +924,16 @@ void main()
 	// light is below the surface
 	ambientColor = clamp(ambientColor - lightColor * surfNL, 0.0, 1.0);
   #endif
+
+	// Scale lightColor by PI because we need want to have the same output intensity
+	// as in vanilla, but we also want correct computation formulas
+	// Lambiertian Diffuse divides by PI, so multiply light before to get the same intensity
+	// HDR Lightsources are scaled on upload accordingly
 	lightColor *= M_PI;
-	ambientColor *= M_PI;
+
+	// Dont scale ambient as we dont compute lambertian diffuse for it
+	// We dont compute it because cloth diffuse is dependent on NL
+	// So we just skip this. Reconsider this again when more BRDFS are added
 
 	vec4 specular = vec4(1.0);
   #if defined(USE_SPECULARMAP)
