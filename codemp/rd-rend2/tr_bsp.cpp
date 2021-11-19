@@ -516,7 +516,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 			if (externalLightmap)
 				Z_Free(externalLightmap);
-			}
+		}
 
 		if (tr.worldDeluxeMapping && buf)
 		{
@@ -562,7 +562,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					0);
 			}
 		}
-		}
+	}
 
 	if ( r_lightmap->integer == 2 )	{
 		ri.Printf( PRINT_ALL, "Brightest lightmap value: %d\n", ( int ) ( maxIntensity * 255 ) );

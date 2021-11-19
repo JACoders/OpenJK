@@ -2194,7 +2194,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	item.uniformData = uniformDataWriter.Finish(frameAllocator);
 
 	item.samplerBindings = samplerBindingsWriter.Finish(
-		frameAllocator, (int *)&item.numSamplerBindings);
+		frameAllocator, &item.numSamplerBindings);
 
 	DrawItemSetVertexAttributes(
 		item, surf->attributes, surf->numAttributes, frameAllocator);

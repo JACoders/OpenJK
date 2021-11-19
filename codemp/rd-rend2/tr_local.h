@@ -3772,7 +3772,7 @@ public:
 
 	SamplerBindingsWriter& AddAnimatedImage( textureBundle_t *bundle, int unit );
 
-	SamplerBinding *Finish( Allocator& destHeap, int* numBindings );
+	SamplerBinding *Finish( Allocator& destHeap, uint32_t* numBindings );
 
 private:
 	SamplerBinding scratch[32];

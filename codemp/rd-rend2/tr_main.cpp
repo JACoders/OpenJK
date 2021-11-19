@@ -2116,8 +2116,6 @@ void R_RenderView (viewParms_t *parms) {
 
 	firstDrawSurf = tr.refdef.numDrawSurfs;
 
-	tr.viewCount++;
-
 	// set viewParms.world
 	R_RotateForViewer(&tr.ori, &tr.viewParms);
 

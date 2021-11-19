@@ -822,175 +822,6 @@ static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 	return binding;
 }
 
-static void ForwardDlight( const shaderCommands_t *input,  VertexArraysProperties *vertexArrays )
-{
-	if ( !backEnd.refdef.num_dlights ) {
-		return;
-	}
-	
-	Allocator& frameAllocator = *backEndData->perFrameMemory;
-	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
-
-	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
-	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
-
-	UniformDataWriter uniformDataWriter;
-	SamplerBindingsWriter samplerBindingsWriter;
-
-	shaderStage_t *pStage = tess.xstages[0];
-	int index;
-	shaderProgram_t *shaderGroup;
-	uint32_t stateBits = 0;
-	if ( input->shader->numUnfoggedPasses == 1 &&
-			pStage->glslShaderGroup == tr.lightallShader &&
-			(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) )
-	{
-		index = pStage->glslShaderIndex;
-
-		stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
-		shaderGroup = tr.lightallShader;
-		index &= ~LIGHTDEF_LIGHTTYPE_MASK;
-		index |= LIGHTDEF_USE_LIGHT_VECTOR;
-
-		if (glState.vertexAnimation)
-			index |= LIGHTDEF_USE_VERTEX_ANIMATION;
-
-		if (glState.skeletalAnimation)
-			index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
-	}
-	else
-	{
-		index = 0;
-
-		stateBits = GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
-		shaderGroup = tr.dlightShader;
-		if (input->shader->numDeforms &&
-			!ShaderRequiresCPUDeforms(input->shader))
-		{
-			index |= DLIGHTDEF_USE_DEFORM_VERTEXES;
-		}
-	}
-
-	shaderProgram_t *sp = shaderGroup + index;
-	for ( int l = 0 ; l < backEnd.refdef.num_dlights ; l++ ) {
-
-		if ( !( tess.dlightBits & ( 1 << l ) ) ) {
-			continue;	// this surface definately doesn't have any of this light
-		}
-
-		backEnd.pc.c_lightallDraws++;
-
-		uniformDataWriter.Start(sp);
-
-		{
-			vec4_t baseColor;
-			vec4_t vertColor;
-
-			ComputeShaderColors(pStage, baseColor, vertColor, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE, NULL, NULL);
-
-			uniformDataWriter.SetUniformVec4(UNIFORM_BASECOLOR, baseColor);
-			uniformDataWriter.SetUniformVec4(UNIFORM_VERTCOLOR, vertColor);
-		}
-
-#if 0 // TODO: Revisit this later, isn't it simply an alphaGen?
-		if (pStage->alphaGen == AGEN_PORTAL)
-		{
-			uniformDataWriter.SetUniformFloat(UNIFORM_PORTALRANGE, tess.shader->portalRange);
-		}
-#endif
-
-		uniformDataWriter.SetUniformInt(UNIFORM_COLORGEN, pStage->rgbGen);
-		uniformDataWriter.SetUniformInt(UNIFORM_ALPHAGEN, pStage->alphaGen);
-
-		uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, l);
-
-		uniformDataWriter.SetUniformVec4(
-			UNIFORM_NORMALSCALE, pStage->normalScale);
-		uniformDataWriter.SetUniformVec4(
-			UNIFORM_SPECULARSCALE, pStage->specularScale);
-
-		if (pStage->bundle[TB_DIFFUSEMAP].image[0])
-			samplerBindingsWriter.AddAnimatedImage( &pStage->bundle[TB_DIFFUSEMAP], TB_DIFFUSEMAP);
-
-		// bind textures that are sampled and used in the glsl shader, and
-		// bind whiteImage to textures that are sampled but zeroed in the glsl shader
-		//
-		// alternatives:
-		//  - use the last bound texture
-		//     -> costs more to sample a higher res texture then throw out the result
-		//  - disable texture sampling in glsl shader with #ifdefs, as before
-		//     -> increases the number of shaders that must be compiled
-		//
-
-		if (pStage->bundle[TB_NORMALMAP].image[0])
-			samplerBindingsWriter.AddAnimatedImage( &pStage->bundle[TB_NORMALMAP], TB_NORMALMAP);
-		else if (r_normalMapping->integer)
-			samplerBindingsWriter.AddStaticImage( tr.whiteImage, TB_NORMALMAP );
-
-		if (pStage->bundle[TB_SPECULARMAP].image[0])
-			samplerBindingsWriter.AddAnimatedImage( &pStage->bundle[TB_SPECULARMAP], TB_SPECULARMAP);
-		else if (r_specularMapping->integer)
-			samplerBindingsWriter.AddStaticImage( tr.whiteImage, TB_SPECULARMAP );
-
-		vec4_t enableTextures = {};
-		uniformDataWriter.SetUniformVec4(UNIFORM_ENABLETEXTURES, enableTextures);
-
-		if (r_dlightMode->integer >= 2)
-			samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[l].image, TB_SHADOWMAP2);
-
-		vec4_t texMatrix;
-		vec4_t texOffTurb;
-		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
-		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
-		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
-
-		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN0, pStage->bundle[0].tcGen);
-		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN1, pStage->bundle[1].tcGen);
-
-		CaptureDrawData(input, pStage, 0, 0);
-
-		const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
-		const UniformBlockBinding uniformBlockBindings[] = {
-			{ currentFrameUbo, tr.lightsUboOffset, UNIFORM_BLOCK_LIGHTS },
-			GetEntityBlockUniformBinding(backEnd.currentEntity),
-			GetShaderInstanceBlockUniformBinding(
-				backEnd.currentEntity, input->shader),
-			GetBonesBlockUniformBinding(backEnd.currentEntity)
-		};
-
-		DrawItem item = {};
-
-		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
-		// where they aren't rendered
-		item.renderState.stateBits = stateBits;
-		item.renderState.cullType = cullType;
-		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
-		item.program = sp;
-		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
-		item.uniformData = uniformDataWriter.Finish(frameAllocator);
-
-		// FIXME: This is a bit ugly with the casting
-		item.samplerBindings = samplerBindingsWriter.Finish(
-			frameAllocator, (int *)&item.numSamplerBindings);
-
-		DrawItemSetVertexAttributes(
-			item, attribs, vertexArrays->numVertexArrays, frameAllocator);
-		DrawItemSetUniformBlockBindings(
-			item, uniformBlockBindings, frameAllocator);
-		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
-
-		uint32_t key = RB_CreateSortKey(item, 15, input->shader->sort);
-		RB_AddDrawItem(backEndData->currentPass, key, item);
-
-		backEnd.pc.c_totalIndexes += tess.numIndexes;
-		backEnd.pc.c_dlightIndexes += tess.numIndexes;
-		backEnd.pc.c_dlightVertexes += tess.numVertexes;
-
-		RB_BinTriangleCounts();
-	}
-}
-
-
 static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexArraysProperties *vertexArrays ) {
 	int		l;
 	vec3_t	origin;
@@ -1067,7 +898,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 		// FIXME: This is a bit ugly with the casting
 		item.samplerBindings = samplerBindingsWriter.Finish(
-			*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
+			*backEndData->perFrameMemory, &item.numSamplerBindings);
 
 		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
@@ -1079,8 +910,6 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		RB_BinTriangleCounts();
 	}
 }
-
-
 
 /*
 ===================
@@ -1670,10 +1499,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		item.program = sp;
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 		item.uniformData = uniformDataWriter.Finish(frameAllocator);
-
-		// FIXME: This is a bit ugly with the casting
 		item.samplerBindings = samplerBindingsWriter.Finish(
-			frameAllocator, (int *)&item.numSamplerBindings);
+			frameAllocator, &item.numSamplerBindings);
 
 		DrawItemSetVertexAttributes(
 			item, attribs, vertexArrays->numVertexArrays, frameAllocator);
@@ -1821,16 +1648,6 @@ void RB_StageIteratorGeneric( void )
 		{
 			RB_ShadowTessEnd( input, &vertexArrays );
 		}
-
-		// 
-		// now do any dynamic lighting needed
-		//
-		/*if ( tess.dlightBits &&
-				tess.shader->sort <= SS_OPAQUE &&
-				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY) ) )
-		{
-			ForwardDlight( input, &vertexArrays );
-		}*/
 
 		//
 		// now do fog

@@ -971,7 +971,7 @@ SamplerBindingsWriter& SamplerBindingsWriter::AddAnimatedImage( textureBundle_t 
 	return AddStaticImage(bundle->image[ index ], unit);
 }
 
-SamplerBinding *SamplerBindingsWriter::Finish( Allocator& destHeap, int* numBindings )
+SamplerBinding *SamplerBindingsWriter::Finish( Allocator& destHeap, uint32_t* numBindings )
 {
 	if ( failed )
 	{
@@ -2157,29 +2157,11 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 	// Only resolve the main pass depth
 	if (tr.msaaResolveFbo && backEnd.viewParms.targetFbo == tr.renderFbo)
 	{
-		if (backEnd.viewParms.targetFbo == tr.renderCubeFbo && tr.msaaResolveFbo)
-		{
-			// If we're using multisampling and rendering a cubemap, resolve the depth to correct size first
-			vec4i_t frameBox;
-			frameBox[0] = backEnd.viewParms.viewportX;
-			frameBox[1] = backEnd.viewParms.viewportY;
-			frameBox[2] = backEnd.viewParms.viewportWidth;
-			frameBox[3] = backEnd.viewParms.viewportHeight;
-			FBO_FastBlit(
-				tr.renderCubeFbo, frameBox,
-				tr.msaaResolveFbo, frameBox,
-				GL_DEPTH_BUFFER_BIT,
-				GL_NEAREST);
-		}
-		else
-		{
-			// If we're using multisampling, resolve the depth first
-			FBO_FastBlit(
-				tr.renderFbo, NULL,
-				tr.msaaResolveFbo, NULL,
-				GL_DEPTH_BUFFER_BIT,
-				GL_NEAREST);
-		}
+		FBO_FastBlit(
+			tr.renderFbo, NULL,
+			tr.msaaResolveFbo, NULL,
+			GL_DEPTH_BUFFER_BIT,
+			GL_NEAREST);
 	}
 	else if (tr.renderFbo == NULL)
 	{
@@ -3172,8 +3154,10 @@ const void *RB_PostProcess(const void *data)
 	if (r_drawSunRays->integer)
 		RB_SunRays(NULL, srcBox, NULL, dstBox);
 
-	if (1)
+#if 0
+	if (backEnd.refdef.blurFactor > 0.0f)
 		RB_BokehBlur(NULL, srcBox, NULL, dstBox, backEnd.refdef.blurFactor);
+#endif
 
 	if (r_debugWeather->integer == 2)
 	{

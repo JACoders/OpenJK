@@ -464,7 +464,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	item.uniformData = uniformDataWriter.Finish(frameAllocator);
 
 	item.samplerBindings = samplerBindingsWriter.Finish(
-		frameAllocator, (int *)&item.numSamplerBindings);
+		frameAllocator, &item.numSamplerBindings);
 
 	DrawItemSetVertexAttributes(
 		item, attribs, vertexArrays.numVertexArrays, frameAllocator);
