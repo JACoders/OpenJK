@@ -34,7 +34,7 @@ VIRTUAL MACHINE
 */
 intptr_t	VM_Call( int callnum, ... )
 {
-	intptr_t args[10] = { 0 };
+	intptr_t args[8] = { 0 };
 	va_list ap;
 
 	if ( cgvm.entryPoint ) {
@@ -43,8 +43,7 @@ intptr_t	VM_Call( int callnum, ... )
 			args[i] = va_arg( ap, intptr_t );
 		va_end(ap);
 
-		return cgvm.entryPoint( callnum,  args[0],  args[1],  args[2], args[3], args[4],  args[5],  args[6], args[7],
-								args[8],  args[9]);
+		return cgvm.entryPoint( callnum,  args[0], args[1], args[2], args[3], args[4],  args[5],  args[6], args[7] );
 	}
 	return -1;
 }
