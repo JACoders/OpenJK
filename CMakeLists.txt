@@ -17,7 +17,7 @@
 #============================================================================
 
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
 
 set(InOpenJK ON)
 
@@ -112,7 +112,9 @@ if(WIN32)
 	endif()
 else()
 	set(X86 OFF)
-	if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+	if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+		set(Architecture "aarch64")
+	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
 		set(Architecture "arm")
 	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^i.86$")
 		set(X86 ON)
