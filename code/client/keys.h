@@ -23,10 +23,18 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "keycodes.h"
 
+typedef enum bindingModifier_s {
+	BINDINGMOD_NONE = 0,
+	BINDINGMOD_ALT,
+	BINDINGMOD_CTRL,
+	BINDINGMOD_SHIFT,
+	NUM_BINDINGMODS
+} bindingModifier_t;
+
 typedef struct qkey_s {
 	qboolean	down;
 	int			repeats;		// if > 1, it is autorepeating
-	char		*binding;
+	char		*binding[NUM_BINDINGMODS];
 } qkey_t;
 
 typedef struct keyGlobals_s {
