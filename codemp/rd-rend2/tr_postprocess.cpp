@@ -49,15 +49,13 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 			while (size > 1)
 			{
 				VectorSet4(srcBox, 0, 0, size, size);
-				//size >>= 2;
 				size >>= 1;
 				VectorSet4(dstBox, 0, 0, size, size);
 
 				if (size == 1)
 					dstFbo = tr.targetLevelsFbo;
 
-				//FBO_Blit(targetFbo, srcBox, NULL, tr.textureScratchFbo[nextScratch], dstBox, &tr.calclevels4xShader[1], NULL, 0);
-				FBO_FastBlit(srcFbo, srcBox, dstFbo, dstBox, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+				FBO_Blit(srcFbo, srcBox, NULL, dstFbo, dstBox, &tr.calclevels4xShader[1], NULL, 0);
 
 				tmp = srcFbo;
 				srcFbo = dstFbo;
@@ -71,6 +69,7 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 		color[0] = 
 		color[1] =
 		color[2] = 1.0f;
+		// FIX ME: blend based on time instead of fixed amount
 		color[3] = 0.03f;
 
 		FBO_Blit(tr.targetLevelsFbo, srcBox, NULL, tr.calcLevelsFbo, NULL,  NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);

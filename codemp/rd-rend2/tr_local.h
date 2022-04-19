@@ -311,6 +311,10 @@ typedef enum
 	IMGFLAG_SRGB           = 0x0080,
 	IMGFLAG_GENNORMALMAP   = 0x0100,
 	IMGFLAG_MUTABLE        = 0x0200,
+	IMGFLAG_HDR            = 0x0400,
+	IMGFLAG_2D_ARRAY       = 0x0800,
+	IMGFLAG_3D             = 0x1000,
+	IMGLFAG_SHADOWCOMP     = 0x2000,
 } imgFlags_t;
 
 typedef enum
@@ -355,7 +359,7 @@ static const int NO_XFB_VARS = 0;
 
 typedef struct image_s {
 	char		imgName[MAX_QPATH];		// game path, including extension
-	int			width, height;				// source image
+	int			width, height, layers;				// source image
 	int			uploadWidth, uploadHeight;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
 	GLuint		texnum;					// gl texture binding
 
@@ -821,12 +825,12 @@ enum
 	TB_COLORMAP2   = 1,
 	TB_NORMALMAP   = 2,
 	TB_DELUXEMAP   = 3,
-	TB_SHADOWMAP2  = 3,
 	TB_SPECULARMAP = 4,
 	TB_SHADOWMAP   = 5,
 	TB_CUBEMAP     = 6,
 	TB_ENVBRDFMAP  = 7,
-	NUM_TEXTURE_BUNDLES = 8
+	TB_SHADOWMAP2  = 8,
+	NUM_TEXTURE_BUNDLES = 9
 };
 
 typedef enum
@@ -1463,7 +1467,8 @@ enum viewParmFlag_t {
 	VPF_USESUNLIGHT     = 0x20,
 	VPF_FARPLANEFRUSTUM = 0x40, // Use far clipping plane
 	VPF_NOCUBEMAPS      = 0x80, // Don't render cubemaps
-	VPF_NOPOSTPROCESS	= 0x100
+	VPF_NOPOSTPROCESS	= 0x100,
+	VPF_CUBEMAPSIDE		= 0x200,// Rendering into a cubemap side
 };
 using viewParmFlags_t = uint32_t;
 
@@ -1481,7 +1486,6 @@ typedef struct {
 	int			scissorX, scissorY, scissorWidth, scissorHeight;
 	FBO_t		*targetFbo;
 	int         targetFboLayer;
-	cubemap_t   *targetFboCubemap;
 	float		fovX, fovY;
 	float		projectionMatrix[16];
 	cplane_t	frustum[5];
@@ -2252,6 +2256,7 @@ typedef struct {
 	qboolean    colorMask[4];
 	qboolean    framePostProcessed;
 	qboolean    depthFill;
+	qboolean	frameUBOsInitialized;
 } backEndState_t;
 
 struct EntityShaderUboOffset
@@ -2316,18 +2321,19 @@ typedef struct trGlobals_s {
 	image_t					*glowImageScaled[6];
 	image_t					*sunRaysImage;
 	image_t					*renderDepthImage;
-	image_t					*pshadowMaps[MAX_DRAWN_PSHADOWS];
+	image_t					*pshadowArrayMap;
 	image_t					*textureScratchImage[2];
 	image_t                 *quarterImage[2];
 	image_t					*calcLevelsImage;
 	image_t					*targetLevelsImage;
 	image_t					*fixedLevelsImage;
 	image_t					*sunShadowDepthImage[3];
+	image_t					*sunShadowArrayMap;
 	image_t                 *screenShadowImage;
 	image_t                 *screenSsaoImage;
 	image_t					*hdrDepthImage;
 	image_t                 *renderCubeImage;
-	image_t                 *prefilterEnvMapImage;
+	image_t                 *renderCubeDepthImage;
 	image_t					*envBrdfImage;
 	image_t					*textureDepthImage;
 	image_t					*weatherDepthImage;
@@ -2347,8 +2353,8 @@ typedef struct trGlobals_s {
 	FBO_t					*screenShadowFbo;
 	FBO_t					*screenSsaoFbo;
 	FBO_t					*hdrDepthFbo;
-	FBO_t                   *renderCubeFbo;
-	FBO_t					*preFilterEnvMapFbo;
+	FBO_t                   *renderCubeFbo[6];
+	FBO_t                   *filterCubeFbo;
 	FBO_t					*weatherDepthFbo;
 
 	shader_t				*defaultShader;
@@ -3009,6 +3015,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent );
 void R_TransformDlights( int count, dlight_t *dl, orientationr_t *ori );
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir );
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world );
+int R_DLightsForPoint(const vec3_t point, const float radius);
 int R_CubemapForPoint( const vec3_t point );
 
 /*
@@ -3218,6 +3225,8 @@ public:
 
 	// tell the renderer to render shadows for this surface
 	qboolean genShadows;
+	int dlightBits;
+	int pshadowBits;
 
 	// pointer to surface data loaded into file - only used by client renderer
 	// DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of
@@ -3434,7 +3443,7 @@ typedef struct capShadowmapCommand_s {
 typedef struct convolveCubemapCommand_s {
 	int			commandId;
 	cubemap_t	*cubemap;
-	int			cubeSide;
+	int			cubemapId;
 } convolveCubemapCommand_t;
 
 typedef struct postProcessCommand_s {
@@ -3560,7 +3569,7 @@ void RB_ExecuteRenderCommands( const void *data );
 void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
-void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubeSide);
+void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubemapId);
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );

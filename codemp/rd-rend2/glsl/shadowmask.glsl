@@ -1,7 +1,4 @@
 /*[Vertex]*/
-in vec4 attr_Position;
-in vec4 attr_TexCoord0;
-
 uniform vec3 u_ViewForward;
 uniform vec3 u_ViewLeft;
 uniform vec3 u_ViewUp;
@@ -12,26 +9,21 @@ out vec3 var_ViewDir;
 
 void main()
 {
-	gl_Position = attr_Position;
+	vec2 position = vec2(2.0 * float(gl_VertexID & 2) - 1.0, 4.0 * float(gl_VertexID & 1) - 1.0);
+	gl_Position = vec4(position, 0.0, 1.0);
 	vec2 screenCoords = gl_Position.xy / gl_Position.w;
-	var_DepthTex = attr_TexCoord0.xy;
+	var_DepthTex = position.xy * .5 + .5;
 	var_ViewDir = u_ViewForward + u_ViewLeft * -screenCoords.x + u_ViewUp * screenCoords.y;
 }
 
 /*[Fragment]*/
 uniform sampler2D u_ScreenDepthMap;
 
-uniform sampler2DShadow u_ShadowMap;
-#if defined(USE_SHADOW_CASCADE)
-uniform sampler2DShadow u_ShadowMap2;
-uniform sampler2DShadow u_ShadowMap3;
-#endif
+uniform sampler2DArrayShadow u_ShadowMap;
 
 uniform mat4 u_ShadowMvp;
-#if defined(USE_SHADOW_CASCADE)
 uniform mat4 u_ShadowMvp2;
 uniform mat4 u_ShadowMvp3;
-#endif
 
 uniform vec3 u_ViewOrigin;
 uniform vec4 u_ViewInfo; // zfar / znear, zfar
@@ -41,9 +33,9 @@ in vec3 var_ViewDir;
 
 out vec4 out_Color;
 
-// depth is GL_DEPTH_COMPONENT24
-// so the maximum error is 1.0 / 2^24
-#define DEPTH_MAX_ERROR 0.000000059604644775390625
+// depth is GL_DEPTH_COMPONENT16
+// so the maximum error is 1.0 / 2^16
+#define DEPTH_MAX_ERROR 0.0000152587890625
 
 // Input: It uses texture coords as the random number seed.
 // Output: Random number: [0,1), that is between 0.0 and 0.999999... inclusive.
@@ -81,7 +73,7 @@ const vec2 poissonDisk[16] = vec2[16](
 	vec2( 0.14383161, -0.14100790 ) 
 );
 
-float PCF(const sampler2DShadow shadowmap, const vec2 st, const float dist, float PCFScale)
+float PCF(const sampler2DArrayShadow shadowmap, const float layer, const vec2 st, const float dist, float PCFScale)
 {
 	float mult;
 	float scale = PCFScale / r_shadowMapSize;
@@ -92,16 +84,16 @@ float PCF(const sampler2DShadow shadowmap, const vec2 st, const float dist, floa
 	float cosr = cos(r);
 	mat2 rmat = mat2(cosr, sinr, -sinr, cosr) * scale;
 
-	mult =  texture(shadowmap, vec3(st + rmat * vec2(-0.7055767, 0.196515), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(0.3524343, -0.7791386), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(0.2391056, 0.9189604), dist));
+	mult =  texture(shadowmap, vec4(st + rmat * vec2(-0.7055767, 0.196515), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.3524343, -0.7791386), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.2391056, 0.9189604), layer, dist));
   #if defined(USE_SHADOW_FILTER2)
-	mult += texture(shadowmap, vec3(st + rmat * vec2(-0.07580382, -0.09224417), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(0.5784913, -0.002528916), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(0.192888, 0.4064181), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(-0.6335801, -0.5247476), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(-0.5579782, 0.7491854), dist));
-	mult += texture(shadowmap, vec3(st + rmat * vec2(0.7320465, 0.6317794), dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(-0.07580382, -0.09224417), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.5784913, -0.002528916), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.192888, 0.4064181), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(-0.6335801, -0.5247476), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(-0.5579782, 0.7491854), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.7320465, 0.6317794), layer, dist));
 
 	mult *= 0.11111;
   #else
@@ -113,11 +105,11 @@ float PCF(const sampler2DShadow shadowmap, const vec2 st, const float dist, floa
 	float cosr = cos(r);
 	mat2 rmat = mat2(cosr, sinr, -sinr, cosr) * scale;
 
-	mult =  texture(shadowmap, vec3(st, dist));
+	mult =  texture(shadowmap, vec4(st, layer, dist));
 	for (int i = 0; i < 16; i++)
 	{
 		vec2 delta = rmat * poissonDisk[i];
-		mult += texture(shadowmap, vec3(st + delta, dist));
+		mult += texture(shadowmap, vec4(st + delta, layer, dist));
 	}
 	mult *= 1.0 / 17.0;
 #endif
@@ -128,16 +120,16 @@ float PCF(const sampler2DShadow shadowmap, const vec2 st, const float dist, floa
 float getLinearDepth(sampler2D depthMap, vec2 tex, float zFarDivZNear, float maxErrorFactor)
 {
 	float sampleZDivW = texture(depthMap, tex).r;
-	sampleZDivW += DEPTH_MAX_ERROR;
-	//sampleZDivW -= maxErrorFactor * fwidth(sampleZDivW);
+	sampleZDivW -= DEPTH_MAX_ERROR;
+	sampleZDivW -= maxErrorFactor * fwidth(sampleZDivW);
 	return 1.0 / mix(zFarDivZNear, 1.0, sampleZDivW);
 }
 
 void main()
 {
-	float result;
 	
-	float depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 0.0);
+	
+	float depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 3.0);
 	float sampleZ = u_ViewInfo.y * depth;
 
 	vec4 biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
@@ -145,49 +137,43 @@ void main()
 	const float PCFScale = 1.0;
 	const float edgeBias = 0.5 - ( 4.0 * PCFScale / r_shadowMapSize );
 	float edgefactor = 0.0;
-
-#if defined(USE_SHADOW_CASCADE)
 	const float fadeTo = 1.0;
-	result = fadeTo;
-#else
-	result = 0.0;
-#endif
+	float result = 1.0;
+
 	vec4 shadowpos = u_ShadowMvp * biasPos;
 	shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
 	if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(edgeBias))))
 	{
 		vec3 dCoords = smoothstep(0.3, 0.45, abs(shadowpos.xyz - vec3(0.5)));
 		edgefactor = 2.0 * PCFScale * clamp(dCoords.x + dCoords.y + dCoords.z, 0.0, 1.0);
-		result = PCF(u_ShadowMap, shadowpos.xy, shadowpos.z, PCFScale + edgefactor);
+		result = PCF(u_ShadowMap, 0.0, shadowpos.xy, shadowpos.z, PCFScale + edgefactor);
 	}
-#if defined(USE_SHADOW_CASCADE)
 	else
 	{
-		depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 0.0);
-		biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
+		//depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 1.5);
+		//biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
 		shadowpos = u_ShadowMvp2 * biasPos;
 		shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
 		if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(edgeBias))))
 		{
 			vec3 dCoords = smoothstep(0.3, 0.45, abs(shadowpos.xyz - vec3(0.5)));
 			edgefactor = 0.5 * PCFScale * clamp(dCoords.x + dCoords.y + dCoords.z, 0.0, 1.0);
-			result = PCF(u_ShadowMap2, shadowpos.xy, shadowpos.z, PCFScale + edgefactor);
+			result = PCF(u_ShadowMap, 1.0, shadowpos.xy, shadowpos.z, PCFScale + edgefactor);
 		}
 		else
 		{
-			depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 0.0);
-			biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
+			//depth = getLinearDepth(u_ScreenDepthMap, var_DepthTex, u_ViewInfo.x, 1.0);
+			//biasPos = vec4(u_ViewOrigin + var_ViewDir * (depth - 0.5 / u_ViewInfo.x), 1.0);
 			shadowpos = u_ShadowMvp3 * biasPos;
 			shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
 			if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(1.0))))
 			{
-				result = PCF(u_ShadowMap3, shadowpos.xy, shadowpos.z, PCFScale);
+				result = PCF(u_ShadowMap, 2.0, shadowpos.xy, shadowpos.z, PCFScale);
 				float fade = clamp(sampleZ / r_shadowCascadeZFar * 10.0 - 9.0, 0.0, 1.0);
 				result = mix(result, fadeTo, fade);
 			}
 		}
 	}
-#endif
 	
 	out_Color = vec4(vec3(result), 1.0);
 }

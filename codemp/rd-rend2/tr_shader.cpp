@@ -2321,8 +2321,8 @@ static void ParseSkyParms( const char **text ) {
 	if (shader.noTC)
 		imgFlags |= IMGFLAG_NO_COMPRESSION;
 
-	if (tr.world && tr.hdrLighting == qtrue)
-		imgFlags |= IMGFLAG_SRGB;
+	if (tr.hdrLighting == qtrue)
+		imgFlags |= IMGFLAG_SRGB | IMGFLAG_HDR | IMGFLAG_NOLIGHTSCALE;
 
 	// outerbox
 	token = COM_ParseExt( text, qfalse );

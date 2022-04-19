@@ -346,6 +346,8 @@ void R_AddMD3Surfaces( trRefEntity_t *ent, int entityNum ) {
 	fogNum = R_ComputeFogNum( model, ent );
 
 	cubemapIndex = R_CubemapForPoint(ent->e.origin);
+	// FIX ME: not tested! Animated models might be handled incorrecly
+	int dlightBits = R_DLightsForPoint(ent->e.origin, model->frames[ent->e.frame].radius);
 
 	//
 	// draw all surfaces
@@ -390,7 +392,8 @@ void R_AddMD3Surfaces( trRefEntity_t *ent, int entityNum ) {
 		{
 			srfVBOMDVMesh_t *vboSurface = &model->vboSurfaces[i];
 
-			R_AddDrawSurf((surfaceType_t *)vboSurface, entityNum, shader, fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex );
+			R_AddDrawSurf((surfaceType_t *)vboSurface, entityNum, shader, fogNum, dlightBits, R_IsPostRenderEntity(ent), cubemapIndex );
+			//R_AddDrawSurf((surfaceType_t *)vboSurface, entityNum, shader, fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex );
 		}
 
 		surface++;

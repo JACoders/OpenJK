@@ -2090,6 +2090,9 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	if(!surface->vbo || !surface->ibo)
 		return;
 
+	//drawSurf_t drawSurf = 
+	int dlightBits = tess.dlightBits;
+
 	//RB_CheckVBOandIBO(surface->vbo, surface->ibo);
 	RB_EndSurface();
 	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
@@ -2104,7 +2107,7 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	tess.numVertexes += surface->numVerts;
 	tess.minIndex = surface->minIndex;
 	tess.maxIndex = surface->maxIndex;
-
+	tess.dlightBits = dlightBits;
 	//mdvModel = surface->mdvModel;
 	//mdvSurface = surface->mdvSurface;
 

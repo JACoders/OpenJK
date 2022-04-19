@@ -860,7 +860,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 
 		VectorCopy(origin, vector);
-		vector[3] = 1.0f;
+		vector[3] = (float)l;
 		uniformDataWriter.SetUniformVec4(UNIFORM_LIGHTORIGIN, vector);
 
 		VectorScale(ps->lightViewAxis[0], 1.0f, vector);
@@ -879,7 +879,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		uint32_t stateBits = 0;
 		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL;
 
-		samplerBindingsWriter.AddStaticImage(tr.pshadowMaps[l], TB_DIFFUSEMAP);
+		samplerBindingsWriter.AddStaticImage(tr.pshadowArrayMap, TB_DIFFUSEMAP);
 
 		CaptureDrawData(input, pStage, 0, 0);
 
@@ -1290,6 +1290,33 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				vertColor[3] = 0.0f;
 			}
 
+			if (backEnd.currentEntity->e.hModel != NULL)
+			{
+				model_t *model = R_GetModelByHandle(backEnd.currentEntity->e.hModel);
+				if (model->type != MOD_BRUSH)
+				{
+					switch (forceRGBGen)
+					{
+					case CGEN_EXACT_VERTEX:
+					case CGEN_EXACT_VERTEX_LIT:
+					case CGEN_VERTEX:
+					case CGEN_VERTEX_LIT:
+						baseColor[0] =
+							baseColor[1] =
+							baseColor[2] =
+							baseColor[3] = tr.identityLight;
+
+						vertColor[0] =
+							vertColor[1] =
+							vertColor[2] =
+							vertColor[3] = 0.0f;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+
 			uniformDataWriter.SetUniformVec4(UNIFORM_BASECOLOR, baseColor);
 			uniformDataWriter.SetUniformVec4(UNIFORM_VERTCOLOR, vertColor);
 		}
@@ -1364,10 +1391,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
-					if (i == TB_LIGHTMAP)
-						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_LIGHTMAP], i);
-					else
+					if (i == TB_DIFFUSEMAP)
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, i);
+					else
+						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[i], i);
 				}
 			}
 			else if (r_lightmap->integer == 3 && pStage->bundle[TB_DELUXEMAP].image[0])
@@ -1376,8 +1403,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				{
 					if (i == TB_LIGHTMAP)
 						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_DELUXEMAP], i);
-					else
+					else if (i == TB_DIFFUSEMAP)
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, i);
+					else
+						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[i], i);
 				}
 			}
 			else
@@ -1473,8 +1502,12 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
 		}
 		
-		if ( enableDLights )
+		if (enableDLights)
+		{
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, tess.dlightBits);
+			if (r_dlightMode->integer > 1)
+				samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[0].image, TB_SHADOWMAP2);
+		}
 		else
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, 0);
 

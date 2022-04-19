@@ -403,7 +403,7 @@ uniform sampler2D u_SpecularMap;
 uniform sampler2D u_ShadowMap;
 #endif
 
-//uniform samplerCubeShadow u_ShadowMap2;
+uniform samplerCubeShadow u_ShadowMap2;
 
 #if defined(USE_CUBEMAP)
 uniform samplerCube u_CubeMap;
@@ -674,7 +674,7 @@ float CalcLightAttenuation(float point, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
-#if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING) && defined(USE_DSHADOWS)
+#if defined(USE_DSHADOWS)
 #define DEPTH_MAX_ERROR 0.000000059604644775390625
 
 vec3 sampleOffsetDirections[20] = vec3[]
@@ -714,8 +714,7 @@ float getLightDepth(in vec3 Vec, in float f)
 float getShadowValue(in vec4 light, in int lightId)
 {
 	float distance = getLightDepth(light.xyz, light.w);
-	//return pcfShadow(u_ShadowMap2, light.xyz, distance);
-	return 1.0;
+	return pcfShadow(u_ShadowMap2, light.xyz, distance);
 }
 #endif
 
@@ -902,7 +901,7 @@ void main()
 
 	// Recover any unused light as ambient, in case attenuation is over 4x or
 	// light is below the surface
-	ambientColor = clamp(ambientColor - lightColor * surfNL, 0.0, 1.0);
+	ambientColor = max(ambientColor - lightColor * surfNL, 0.0);
   #endif
 
 	// Scale lightColor by PI because we need want to have the same output intensity

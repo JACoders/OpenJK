@@ -347,6 +347,7 @@ static void R_AddWorldSurface(
 	}
 
 	// check for dlighting
+	// TODO: check for beeing correctly implemented because problems eg. with elevators ffa3
 	if ( dlightBits ) {
 		dlightBits = R_DlightSurface( surf, dlightBits );
 		dlightBits = ( dlightBits != 0 );

@@ -1575,6 +1575,9 @@ static int GLSL_LoadGPUProgramLightAll(
 			if (useFastLight)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_FAST_LIGHT\n");
 
+			if (r_dlightMode->integer >= 2)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_DSHADOWS\n");
+
 			switch (lightType)
 			{
 				case LIGHTDEF_USE_LIGHTMAP:
@@ -1591,9 +1594,6 @@ static int GLSL_LoadGPUProgramLightAll(
 				case LIGHTDEF_USE_LIGHT_VECTOR:
 				{
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VECTOR\n");
-					if (r_dlightMode->integer >= 2)
-						Q_strcat(extradefines, sizeof(extradefines), "#define USE_DSHADOWS\n");
-
 					break;
 				}
 
@@ -1970,8 +1970,6 @@ static int GLSL_LoadGPUProgramShadowMask(
 
 	if (r_shadowFilter->integer >= 2)
 		Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_FILTER2\n");
-
-	Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_CASCADE\n");
 
 	Q_strcat(
 		extradefines, sizeof(extradefines),

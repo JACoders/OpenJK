@@ -2206,7 +2206,6 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 			}
 
 			shadowParms.targetFbo = tr.shadowCubeFbo;
-			shadowParms.targetFboCubemap = &tr.shadowCubemaps[i];
 			shadowParms.targetFboLayer = j;
 
 			R_RenderView(&shadowParms);
@@ -2762,7 +2761,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		tr.refdef.sunShadowMvp[level]);
 }
 
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce )
+void R_RenderCubemapSide(int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce)
 {
 	refdef_t refdef = {};
 	float oldColorScale = tr.refdef.colorScale;
@@ -2770,49 +2769,49 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	VectorCopy(tr.cubemaps[cubemapIndex].origin, refdef.vieworg);
 	refdef.fov_x = 90;
 	refdef.fov_y = 90;
-	refdef.width = tr.renderCubeFbo->width;
-	refdef.height = tr.renderCubeFbo->height;
+	refdef.width = tr.renderCubeFbo[cubemapSide]->width;
+	refdef.height = tr.renderCubeFbo[cubemapSide]->height;
 	refdef.x = 0;
 	refdef.y = 0;
 
-	switch(cubemapSide)
+	switch (cubemapSide)
 	{
-		case 0:
-			// +X
-			VectorSet(refdef.viewaxis[0], 1,  0, 0);
-			VectorSet(refdef.viewaxis[1], 0,  0, 1);
-			VectorSet(refdef.viewaxis[2], 0, -1, 0);
-			break;
-		case 1: 
-			// -X
-			VectorSet(refdef.viewaxis[0], -1,  0,  0);
-			VectorSet(refdef.viewaxis[1],  0,  0, -1);
-			VectorSet(refdef.viewaxis[2],  0, -1,  0);
-			break;
-		case 2: 
-			// +Y
-			VectorSet(refdef.viewaxis[0],  0, 1, 0);
-			VectorSet(refdef.viewaxis[1], -1, 0, 0);
-			VectorSet(refdef.viewaxis[2],  0, 0, 1);
-			break;
-		case 3: 
-			// -Y
-			VectorSet(refdef.viewaxis[0],  0, -1,  0);
-			VectorSet(refdef.viewaxis[1], -1,  0,  0);
-			VectorSet(refdef.viewaxis[2],  0,  0, -1);
-			break;
-		case 4:
-			// +Z
-			VectorSet(refdef.viewaxis[0],  0,  0, 1);
-			VectorSet(refdef.viewaxis[1], -1,  0, 0);
-			VectorSet(refdef.viewaxis[2],  0, -1, 0);
-			break;
-		case 5:
-			// -Z
-			VectorSet(refdef.viewaxis[0], 0,  0, -1);
-			VectorSet(refdef.viewaxis[1], 1,  0,  0);
-			VectorSet(refdef.viewaxis[2], 0, -1,  0);
-			break;
+	case 0:
+		// +X
+		VectorSet(refdef.viewaxis[0], 1, 0, 0);
+		VectorSet(refdef.viewaxis[1], 0, 0, 1);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
+	case 1:
+		// -X
+		VectorSet(refdef.viewaxis[0], -1, 0, 0);
+		VectorSet(refdef.viewaxis[1], 0, 0, -1);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
+	case 2:
+		// +Y
+		VectorSet(refdef.viewaxis[0], 0, 1, 0);
+		VectorSet(refdef.viewaxis[1], -1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, 0, 1);
+		break;
+	case 3:
+		// -Y
+		VectorSet(refdef.viewaxis[0], 0, -1, 0);
+		VectorSet(refdef.viewaxis[1], -1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, 0, -1);
+		break;
+	case 4:
+		// +Z
+		VectorSet(refdef.viewaxis[0], 0, 0, 1);
+		VectorSet(refdef.viewaxis[1], -1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
+	case 5:
+		// -Z
+		VectorSet(refdef.viewaxis[0], 0, 0, -1);
+		VectorSet(refdef.viewaxis[1], 1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
 	}
 
 	if (!subscene)
@@ -2830,10 +2829,10 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	tr.refdef.colorScale = 1.0f;
 
 	viewParms_t	parms = {};
-	parms.viewportWidth = tr.renderCubeFbo->width;
-	parms.viewportHeight = tr.renderCubeFbo->height;
+	parms.viewportWidth = tr.renderCubeFbo[cubemapSide]->width;
+	parms.viewportHeight = tr.renderCubeFbo[cubemapSide]->height;
 	parms.isMirror = qfalse;
-	parms.flags =  VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS;
+	parms.flags = VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS | VPF_CUBEMAPSIDE;
 	if (!bounce)
 		parms.flags |= VPF_NOCUBEMAPS;
 
@@ -2841,21 +2840,20 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	parms.fovX = 90;
 	parms.fovY = 90;
 
-	VectorCopy( refdef.vieworg, parms.ori.origin );
-	VectorCopy( refdef.viewaxis[0], parms.ori.axis[0] );
-	VectorCopy( refdef.viewaxis[1], parms.ori.axis[1] );
-	VectorCopy( refdef.viewaxis[2], parms.ori.axis[2] );
+	VectorCopy(refdef.vieworg, parms.ori.origin);
+	VectorCopy(refdef.viewaxis[0], parms.ori.axis[0]);
+	VectorCopy(refdef.viewaxis[1], parms.ori.axis[1]);
+	VectorCopy(refdef.viewaxis[2], parms.ori.axis[2]);
 
-	VectorCopy( refdef.vieworg, parms.pvsOrigin );
+	VectorCopy(refdef.vieworg, parms.pvsOrigin);
 
 	if (r_sunlightMode->integer && r_depthPrepass->value && (r_forceSun->integer > 0 || tr.sunShadows))
 	{
 		parms.flags |= VPF_USESUNLIGHT;
 	}
 
-	parms.targetFbo = tr.renderCubeFbo;
+	parms.targetFbo = tr.renderCubeFbo[cubemapSide];
 	parms.targetFboLayer = cubemapSide;
-	parms.targetFboCubemap = &tr.cubemaps[cubemapIndex];
 
 	R_RenderView(&parms);
 

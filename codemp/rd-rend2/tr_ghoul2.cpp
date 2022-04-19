@@ -2381,7 +2381,13 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			shader = R_GetShaderByHandle( surfInfo->shaderIndex );
 		}
 
-		int cubemapIndex = R_CubemapForPoint (ent->e.origin);
+		// Get dlightBits and Cubemap
+		float radius;
+		// scale the radius if needed
+		float largestScale = MAX(ent->e.modelScale[0], MAX(ent->e.modelScale[1], ent->e.modelScale[2]));
+		radius = ent->e.radius * largestScale;
+		int dlightBits = R_DLightsForPoint(ent->e.origin, radius);
+		int cubemapIndex = R_CubemapForPoint(ent->e.origin);
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
@@ -2393,6 +2399,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			assert (newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
+			newSurf->dlightBits = dlightBits;
 
 			// render shadows?
 			if (r_shadows->integer == 2
@@ -3456,8 +3463,10 @@ void RB_TransformBones(CRenderableSurface *surf)
 
 int RB_GetBoneUboOffset(CRenderableSurface *surf)
 {
-	return surf->boneCache->uboOffset;
-	
+	if (surf->boneCache)
+		return surf->boneCache->uboOffset;
+	else
+		return -1;
 }
 
 void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset)
@@ -3487,6 +3496,8 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);
+
+	tess.dlightBits = surf->dlightBits;
 
 	tess.useInternalVBO = qfalse;
 	tess.externalIBO = surface->ibo;
