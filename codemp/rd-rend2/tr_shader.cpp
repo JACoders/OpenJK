@@ -3242,6 +3242,7 @@ static qboolean CollapseStagesToGLSL(void)
 			switch(pStage->alphaGen)
 			{
 				case AGEN_PORTAL:
+				case AGEN_LIGHTING_SPECULAR:
 					skip = qtrue;
 					break;
 				default:
@@ -3278,10 +3279,6 @@ static qboolean CollapseStagesToGLSL(void)
 
 			// skip normal and specular maps
 			if (pStage->type != ST_COLORMAP)
-				continue;
-
-			// skip agen spec stages and environment mapped stages
-			if (pStage->alphaGen == AGEN_LIGHTING_SPECULAR || pStage->bundle[0].tcGen == TCGEN_ENVIRONMENT_MAPPED)
 				continue;
 
 			// skip lightmaps
