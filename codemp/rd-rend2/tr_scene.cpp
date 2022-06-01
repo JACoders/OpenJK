@@ -107,6 +107,15 @@ void R_AddPolygonSurfaces( const trRefdef_t *refdef ) {
 	}
 }
 
+	int	fogMask = -((refdef->rdflags & RDF_NOFOG) == 0);
+
+	int i;
+	for (i = 0, poly = refdef->polys; i < refdef->numPolys; i++, poly++) {
+		shader_t *sh = R_GetShaderByHandle(poly->hShader);
+
+	}
+}
+
 /*
 =====================
 RE_AddPolyToScene
@@ -257,10 +266,22 @@ void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, floa
 	}
 	dl = &backEndData->dlights[r_numdlights++];
 	VectorCopy (org, dl->origin);
-	dl->radius = intensity;
+	dl->radius = intensity * 20.0f;
 	dl->color[0] = r;
 	dl->color[1] = g;
 	dl->color[2] = b;
+
+	if (r_hdr->integer) 
+	{
+		float maxValue = MAX(r, MAX(g, b));
+		if (maxValue > 1.0f)
+		{
+			VectorScale(dl->color, 1.0f / maxValue, dl->color);
+			dl->radius *= maxValue;
+		}
+		dl->radius = MIN(dl->radius, 65535.0f);
+	}
+	
 	dl->additive = additive;
 }
 

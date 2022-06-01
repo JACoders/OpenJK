@@ -4069,7 +4069,6 @@ static shader_t *FinishShader( void ) {
   		//shader.lightmapIndex = LIGHTMAP_NONE;
 	}
 
-
 	//
 	// compute number of passes
 	//
@@ -4078,6 +4077,22 @@ static shader_t *FinishShader( void ) {
 	// fogonly shaders don't have any normal passes
 	if (stage == 0 && !shader.isSky)
 		shader.sort = SS_FOG;
+
+	// determain if the shader can be simplified when beeing rendered to depth
+	if (shader.sort == SS_OPAQUE &&
+		shader.numDeforms == 0)
+	{
+		for (stage = 0; stage < MAX_SHADER_STAGES; stage++) {
+			shaderStage_t *pStage = &stages[stage];
+
+			if (!pStage->active)
+				continue;
+
+			if (pStage->alphaTestType == ALPHA_TEST_NONE)
+				shader.useSimpleDepthShader = qtrue;
+			break;
+		}
+	}
 
 	// determine which stage iterator function is appropriate
 	ComputeStageIteratorFunc();

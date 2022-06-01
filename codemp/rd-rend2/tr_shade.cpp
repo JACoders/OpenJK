@@ -879,7 +879,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		uint32_t stateBits = 0;
 		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL;
 
-		samplerBindingsWriter.AddStaticImage(tr.pshadowArrayMap, TB_DIFFUSEMAP);
+		samplerBindingsWriter.AddStaticImage(tr.pshadowArrayImage, TB_DIFFUSEMAP);
 
 		CaptureDrawData(input, pStage, 0, 0);
 
@@ -1254,6 +1254,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			}
 		}
 
+		if (backEnd.viewParms.flags & VPF_POINTSHADOW)
+			stateBits |= GLS_POLYGON_OFFSET_FILL;
+
 		sp = SelectShaderProgram(stage, pStage, pStage->glslShaderGroup, useAlphaTestGE192);
 		assert(sp);
 
@@ -1506,7 +1509,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, tess.dlightBits);
 			if (r_dlightMode->integer > 1)
-				samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[0].image, TB_SHADOWMAP2);
+				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAP2);
 		}
 		else
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, 0);

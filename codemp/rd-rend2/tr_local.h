@@ -52,7 +52,7 @@ typedef unsigned int glIndex_t;
 #define SHADERNUM_BITS	14
 #define MAX_SHADERS		(1<<SHADERNUM_BITS)
 
-#define	MAX_FBOS      64
+#define	MAX_FBOS      256
 #define MAX_VISCOUNTS 5
 #define MAX_VBOS      4096
 #define MAX_IBOS      4096
@@ -63,6 +63,7 @@ typedef unsigned int glIndex_t;
 #define PSHADOW_MAP_SIZE      1024
 #define DSHADOW_MAP_SIZE      512
 #define CUBE_MAP_MIPS      8
+#define CUBE_MAP_ROUGHNESS_MIPS CUBE_MAP_MIPS-4
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 
 /*
@@ -209,6 +210,8 @@ extern cvar_t	*r_markcount;
 extern cvar_t	*r_textureMode;
 extern cvar_t	*r_offsetFactor;
 extern cvar_t	*r_offsetUnits;
+extern cvar_t	*r_shadowOffsetFactor;
+extern cvar_t	*r_shadowOffsetUnits;
 extern cvar_t	*r_gamma;
 extern cvar_t	*r_intensity;
 extern cvar_t	*r_lockpvs;
@@ -979,6 +982,7 @@ typedef struct shader_s {
 
 	void		(*optimalStageIteratorFunc)( void );
 	qboolean	isHDRLit;
+	qboolean	useSimpleDepthShader;
 
   float clampTime;                                  // time this shader is clamped to
   float timeOffset;                                 // current time offset for this shader
@@ -1468,7 +1472,8 @@ enum viewParmFlag_t {
 	VPF_FARPLANEFRUSTUM = 0x40, // Use far clipping plane
 	VPF_NOCUBEMAPS      = 0x80, // Don't render cubemaps
 	VPF_NOPOSTPROCESS	= 0x100,
-	VPF_CUBEMAPSIDE		= 0x200,// Rendering into a cubemap side
+	VPF_POINTSHADOW		= 0x200,// Rendering pointlight shadow
+	VPF_SHADOWCASCADES	= 0x400,// Rendering sun shadow cascades
 };
 using viewParmFlags_t = uint32_t;
 
@@ -2314,21 +2319,19 @@ typedef struct trGlobals_s {
 	image_t					*whiteImage;			// full of 0xff
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
-	cubemap_t               shadowCubemaps[MAX_DLIGHTS];
-
 	image_t					*renderImage;
 	image_t					*glowImage;
 	image_t					*glowImageScaled[6];
 	image_t					*sunRaysImage;
 	image_t					*renderDepthImage;
-	image_t					*pshadowArrayMap;
+	image_t					*pshadowArrayImage;
 	image_t					*textureScratchImage[2];
 	image_t                 *quarterImage[2];
 	image_t					*calcLevelsImage;
 	image_t					*targetLevelsImage;
 	image_t					*fixedLevelsImage;
-	image_t					*sunShadowDepthImage[3];
-	image_t					*sunShadowArrayMap;
+	image_t					*sunShadowArrayImage;
+	image_t					*pointShadowArrayImage;
 	image_t                 *screenShadowImage;
 	image_t                 *screenSsaoImage;
 	image_t					*hdrDepthImage;
@@ -2344,7 +2347,7 @@ typedef struct trGlobals_s {
 	FBO_t					*sunRaysFbo;
 	FBO_t					*depthFbo;
 	FBO_t					*pshadowFbos[MAX_DRAWN_PSHADOWS];
-	FBO_t					*shadowCubeFbo;
+	FBO_t					*shadowCubeFbo[MAX_DLIGHTS*6];
 	FBO_t					*textureScratchFbo[2];
 	FBO_t                   *quarterFbo[2];
 	FBO_t					*calcLevelsFbo;

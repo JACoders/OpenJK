@@ -3362,18 +3362,15 @@ void R_CreateBuiltinImages( void ) {
 
 	if (r_dlightMode->integer >= 2)
 	{
-		for (x = 0; x < MAX_DLIGHTS; x++)
-		{
-			tr.shadowCubemaps[x].image = R_CreateImage(
-				va("*shadowcubemap%i", x), NULL, DSHADOW_MAP_SIZE, DSHADOW_MAP_SIZE, 
-				IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_CUBEMAP, 
-				GL_DEPTH_COMPONENT24);
-			GL_Bind(tr.shadowCubemaps[x].image);
-			qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-			qglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-		}
+		tr.pointShadowArrayImage = R_Create2DImageArray(
+			va("*pointshadowmapImage"),
+			NULL,
+			DSHADOW_MAP_SIZE,
+			DSHADOW_MAP_SIZE,
+			MAX_DLIGHTS*6,
+			IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP,
+			GL_DEPTH_COMPONENT16);
 	}
 
 	// with overbright bits active, we need an image which is some fraction of
@@ -3505,7 +3502,7 @@ void R_CreateBuiltinImages( void ) {
 
 	if (r_shadows->integer == 4)
 	{
-		tr.pshadowArrayMap = R_Create2DImageArray(
+		tr.pshadowArrayImage = R_Create2DImageArray(
 			va("*pshadowmapArray"), 
 			NULL, 
 			PSHADOW_MAP_SIZE,
@@ -3518,21 +3515,7 @@ void R_CreateBuiltinImages( void ) {
 
 	if (r_sunlightMode->integer)
 	{
-		for (x = 0; x < 3; x++)
-		{
-			tr.sunShadowDepthImage[x] = R_CreateImage(
-				va("*sunshadowdepth%i", x), NULL, r_shadowMapSize->integer,
-				r_shadowMapSize->integer, IMGTYPE_COLORALPHA,
-				IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-				GL_DEPTH_COMPONENT24);
-			GL_Bind(tr.sunShadowDepthImage[x]);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-		}
-
-		tr.sunShadowArrayMap = R_Create2DImageArray(
+		tr.sunShadowArrayImage = R_Create2DImageArray(
 			va("*sunShadowmapArray"),
 			NULL,
 			r_shadowMapSize->integer,
@@ -3544,7 +3527,7 @@ void R_CreateBuiltinImages( void ) {
 
 		tr.screenShadowImage = R_CreateImage(
 			"*screenShadow", NULL, width, height, IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_R8);
 	}
 
 	if (r_cubeMapping->integer)

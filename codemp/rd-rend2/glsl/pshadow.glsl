@@ -81,6 +81,7 @@ void main()
 	float part = 0.0;
 #if defined(USE_PCF)
 	float offsetScale = pow(lightDist, 4.0) * TEXTURE_SCALE * 0.00000001;
+	offsetScale = max(TEXTURE_SCALE, offsetScale);
 	for (int i = 0; i < PCF_SAMPLES; ++i)
 	{
 		part += float(texture(u_ShadowMap, vec3(st + offsetScale * poissonDisc[i], u_LightOrigin.w)).r != 1.0);

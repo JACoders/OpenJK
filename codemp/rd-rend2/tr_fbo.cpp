@@ -496,16 +496,16 @@ void FBO_Init(void)
 	}
 
 #if MAX_DRAWN_PSHADOWS > 0
-	if (tr.pshadowArrayMap != NULL)
+	if (tr.pshadowArrayImage != NULL)
 	{
 		for( i = 0; i < MAX_DRAWN_PSHADOWS; i++)
 		{
 			tr.pshadowFbos[i] = FBO_Create(
-				va("_shadowmap%i", i), tr.pshadowArrayMap->width,
-				tr.pshadowArrayMap->height);
+				va("_shadowmap%i", i), tr.pshadowArrayImage->width,
+				tr.pshadowArrayImage->height);
 
 			FBO_Bind(tr.pshadowFbos[i]);
-			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.pshadowArrayMap->texnum, 0, i);
+			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.pshadowArrayImage->texnum, 0, i);
 			qglDrawBuffer(GL_NONE);
 			qglReadBuffer(GL_NONE);
 			R_CheckFBO(tr.pshadowFbos[i]);
@@ -516,25 +516,27 @@ void FBO_Init(void)
 
 	if (r_dlightMode->integer >= 2)
 	{
-		tr.shadowCubeFbo = FBO_Create("_shadowCubeFbo", PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
-
-		FBO_Bind(tr.shadowCubeFbo);
-		FBO_CreateBuffer(tr.shadowCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
-		FBO_SetupDrawBuffers();
-
-		R_CheckFBO(tr.shadowCubeFbo);
+		for (i = 0; i < MAX_DLIGHTS * 6; i++)
+		{
+			tr.shadowCubeFbo[i] = FBO_Create(va("_shadowCubeFbo_%i", i), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
+			FBO_Bind(tr.shadowCubeFbo[i]);
+			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.pointShadowArrayImage->texnum, 0, i);
+			qglDrawBuffer(GL_NONE);
+			qglReadBuffer(GL_NONE);
+			R_CheckFBO(tr.shadowCubeFbo[i]);
+		}
 	}
 
-	if (tr.sunShadowDepthImage[0] != NULL)
+	if (tr.sunShadowArrayImage != NULL)
 	{
 		for ( i = 0; i < 3; i++)
 		{
 			tr.sunShadowFbo[i] = FBO_Create(
-				"_sunshadowmap", tr.sunShadowArrayMap->width,
-				tr.sunShadowArrayMap->height);
+				"_sunshadowmap", tr.sunShadowArrayImage->width,
+				tr.sunShadowArrayImage->height);
 
 			FBO_Bind(tr.sunShadowFbo[i]);
-			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.sunShadowArrayMap->texnum, 0, i);
+			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.sunShadowArrayImage->texnum, 0, i);
 			qglDrawBuffer(GL_NONE);
 			qglReadBuffer(GL_NONE);
 

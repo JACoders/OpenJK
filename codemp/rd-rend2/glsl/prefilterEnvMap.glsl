@@ -101,8 +101,7 @@ vec3 PrefilterEnvMap( float Roughness, vec3 R )
 			float D   = D_GGX(NH, Roughness);
 			float pdf = (D * NH / (4.0 * HV)) + 0.0001; 
 
-			const float cubemapSize = 256.0;
-			float saTexel  = 4.0 * M_PI / (6.0 * cubemapSize * cubemapSize);
+			float saTexel  = 4.0 * M_PI / (6.0 * CUBEMAP_RESOLUTION * CUBEMAP_RESOLUTION);
 			float saSample = 1.0 / (float(NumSamples) * pdf + 0.0001);
 
 			float mipLevel = Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 

@@ -361,7 +361,6 @@ void GL_State( uint32_t stateBits )
 		if ( stateBits & GLS_POLYGON_OFFSET_FILL )
 		{
 			qglEnable( GL_POLYGON_OFFSET_FILL );
-			qglPolygonOffset( r_offsetFactor->value, r_offsetUnits->value );
 		}
 		else
 		{
@@ -553,13 +552,6 @@ void RB_BeginDrawingView (void) {
 	else
 	{
 		FBO_Bind(backEnd.viewParms.targetFbo);
-
-		// FIXME: hack for shadows testing
-		if (tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo)
-		{
-			image_t *cubemap = tr.shadowCubemaps[0].image;
-			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
-		}
 	}
 
 	//
@@ -609,13 +601,6 @@ void RB_BeginDrawingView (void) {
 		clearBits |= GL_COLOR_BUFFER_BIT;
 		qglClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 	}
-	
-	// clear to black for cube maps
-	if (backEnd.viewParms.flags & VPF_CUBEMAPSIDE)
-	{
-		clearBits |= GL_COLOR_BUFFER_BIT;
-		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-	}
 
 	qglClear( clearBits );
 
@@ -653,6 +638,11 @@ void RB_BeginDrawingView (void) {
 #endif
 		GL_SetModelviewMatrix( s_flipMatrix );
 	}
+
+	if (backEnd.viewParms.flags & VPF_POINTSHADOW)
+		qglPolygonOffset(r_shadowOffsetFactor->value, r_shadowOffsetUnits->value);
+	else
+		qglPolygonOffset(r_offsetFactor->value, r_offsetUnits->value);
 }
 
 
@@ -1992,9 +1982,9 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	int width = cmd->cubemap->image->width;
 	int height = cmd->cubemap->image->height;
-	float roughnessMips = (float)CUBE_MAP_MIPS - 4.0f;
+	float roughnessMips = (float)CUBE_MAP_ROUGHNESS_MIPS;
 
-	for (int level = 0; level <= (int)roughnessMips; level++)
+	for (int level = 0; level <= CUBE_MAP_ROUGHNESS_MIPS; level++)
 	{
 		FBO_Bind(tr.filterCubeFbo);
 		qglFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd->cubemap->image->texnum, level);
@@ -2019,8 +2009,8 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 static void RB_RenderSunShadows()
 {
 	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
-		(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) ||
-		(tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo))
+		(backEnd.viewParms.flags & VPF_SHADOWMAP) ||
+		(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
 		return;
 
 	FBO_t *shadowFbo = tr.screenShadowFbo;
@@ -2060,7 +2050,7 @@ static void RB_RenderSunShadows()
 		GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
 	}
 	
-	GL_BindToTMU(tr.sunShadowArrayMap, TB_SHADOWMAP);
+	GL_BindToTMU(tr.sunShadowArrayImage, TB_SHADOWMAP);
 
 	GLSL_SetUniformMatrix4x4(
 		&tr.shadowmaskShader,
@@ -3126,6 +3116,7 @@ const void *RB_PostProcess(const void *data)
 	dstBox[2] = backEnd.viewParms.viewportWidth;
 	dstBox[3] = backEnd.viewParms.viewportHeight;
 
+#if 0
 	if (r_ssao->integer)
 	{
 		srcBox[0] = backEnd.viewParms.viewportX      * tr.screenSsaoImage->width  / (float)glConfig.vidWidth;
@@ -3143,6 +3134,7 @@ const void *RB_PostProcess(const void *data)
 
 		FBO_Blit(tr.screenSsaoFbo, srcBox, NULL, srcFbo, dstBox, NULL, NULL, blendMode);
 	}
+#endif
 
 	if (r_dynamicGlow->integer)
 	{
@@ -3194,17 +3186,6 @@ const void *RB_PostProcess(const void *data)
 	if (r_debugWeather->integer == 2)
 	{
 		FBO_BlitFromTexture(tr.weatherDepthImage, NULL, NULL, NULL, nullptr, NULL, NULL, 0);
-	}
-
-	if (0 && r_sunlightMode->integer)
-	{
-		vec4i_t dstBox;
-		VectorSet4(dstBox, 0, 0, 128, 128);
-		FBO_BlitFromTexture(tr.sunShadowDepthImage[0], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
-		VectorSet4(dstBox, 128, 0, 128, 128);
-		FBO_BlitFromTexture(tr.sunShadowDepthImage[1], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
-		VectorSet4(dstBox, 256, 0, 128, 128);
-		FBO_BlitFromTexture(tr.sunShadowDepthImage[2], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
 	}
 
 	if (0)

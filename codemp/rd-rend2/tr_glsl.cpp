@@ -354,7 +354,8 @@ static size_t GLSL_GetShaderHeader(
 
 	if (r_cubeMapping->integer)
 	{
-		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_MIPS - 4));
+		Q_strcat(dest, size, va("#define CUBEMAP_RESOLUTION float(%i)\n", CUBE_MAP_SIZE));
+		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_ROUGHNESS_MIPS));
 	}
 
 	if (r_deluxeSpecular->value > 0.000001f)

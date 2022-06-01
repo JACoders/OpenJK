@@ -1792,16 +1792,32 @@ void R_AddDrawSurf(
 		return;
 	}
 
+	if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW) &&
+		(postRender == qtrue || shader->sort != SS_OPAQUE))
+	{
+		return;
+	}
+
 	// instead of checking for overflow, we just mask the index
 	// so it wraps around
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 	surf = tr.refdef.drawSurfs + index;
-
-	surf->sort = R_CreateSortKey(entityNum, shader->sortedIndex, cubemap, postRender);
-	surf->dlightBits = dlightMap;
 	surf->surface = surface;
-	surf->fogIndex = fogIndex;
 
+	if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW) &&
+		shader->useSimpleDepthShader == qtrue)
+	{
+		surf->sort = R_CreateSortKey(entityNum, tr.defaultShader->sortedIndex, 0, 0);
+		surf->dlightBits = 0;
+		surf->fogIndex = 0;
+	}
+	else
+	{
+		surf->sort = R_CreateSortKey(entityNum, shader->sortedIndex, cubemap, postRender);
+		surf->dlightBits = dlightMap;
+		surf->fogIndex = fogIndex;
+	}
+	
 	tr.refdef.numDrawSurfs++;
 }
 
@@ -2039,6 +2055,32 @@ void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
 	}
 }
 
+	if ((viewParms->flags & VPF_ORTHOGRAPHIC) == 0)
+	{
+		// set the projection matrix with the minimum zfar
+		// now that we have the world bounded
+		// this needs to be done before entities are
+		// added, because they use the projection
+		// matrix for lod calculation
+
+		// dynamically compute far clip plane distance
+		if (!(tr.viewParms.flags & VPF_SHADOWMAP))
+		{
+			R_SetFarClip(viewParms, refdef);
+		}
+
+		// we know the size of the clipping volume. Now set the rest of the projection matrix.
+		R_SetupProjectionZ(viewParms);
+	}
+
+	R_AddEntitySurfaces(refdef);
+
+	if (!(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW)))
+	{
+		R_AddWeatherSurfaces();
+	}
+}
+
 /*
 ================
 R_DebugPolygon
@@ -2142,8 +2184,8 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		int j;
 
 		// use previous frame to determine visible dlights
-		if ((1 << i) & bufferDlightMask)
-			continue;
+		/*if ((1 << i) & bufferDlightMask)
+			continue;*/
 
 		Com_Memset( &shadowParms, 0, sizeof( shadowParms ) );
 
@@ -2152,12 +2194,12 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		shadowParms.viewportWidth = DSHADOW_MAP_SIZE;
 		shadowParms.viewportHeight = DSHADOW_MAP_SIZE;
 		shadowParms.isPortal = qfalse;
-		shadowParms.isMirror = qtrue; // because it is
+		shadowParms.isMirror = qfalse;
 
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
-		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL;
+		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL | VPF_POINTSHADOW;
 		shadowParms.zFar = tr.refdef.dlights[i].radius;
 		shadowParms.zNear = 1.0f;
 
@@ -2205,8 +2247,8 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 					break;
 			}
 
-			shadowParms.targetFbo = tr.shadowCubeFbo;
-			shadowParms.targetFboLayer = j;
+			shadowParms.targetFbo = tr.shadowCubeFbo[i*6+j];
+			shadowParms.targetFboLayer = 0;
 
 			R_RenderView(&shadowParms);
 		}
@@ -2725,7 +2767,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		tr.sunShadowFbo[level]->width,
 		tr.sunShadowFbo[level]->height,
 		tr.sunShadowFbo[level],
-		VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL,
+		VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL | VPF_SHADOWCASCADES,
 		orientation,
 		lightviewBounds);
 
@@ -2832,7 +2874,7 @@ void R_RenderCubemapSide(int cubemapIndex, int cubemapSide, qboolean subscene, b
 	parms.viewportWidth = tr.renderCubeFbo[cubemapSide]->width;
 	parms.viewportHeight = tr.renderCubeFbo[cubemapSide]->height;
 	parms.isMirror = qfalse;
-	parms.flags = VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS | VPF_CUBEMAPSIDE;
+	parms.flags = VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS;
 	if (!bounce)
 		parms.flags |= VPF_NOCUBEMAPS;
 

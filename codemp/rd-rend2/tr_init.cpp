@@ -190,6 +190,8 @@ cvar_t	*r_markcount;
 cvar_t	*r_textureMode;
 cvar_t	*r_offsetFactor;
 cvar_t	*r_offsetUnits;
+cvar_t	*r_shadowOffsetFactor;
+cvar_t	*r_shadowOffsetUnits;
 cvar_t	*r_gamma;
 cvar_t	*r_intensity;
 cvar_t	*r_lockpvs;
@@ -1597,6 +1599,10 @@ void R_Register( void )
 	r_clear = ri.Cvar_Get ("r_clear", "0", CVAR_CHEAT, "");
 	r_offsetFactor = ri.Cvar_Get( "r_offsetfactor", "-1", CVAR_CHEAT, "" );
 	r_offsetUnits = ri.Cvar_Get( "r_offsetunits", "-2", CVAR_CHEAT, "" );
+
+	r_shadowOffsetFactor = ri.Cvar_Get("r_shadowOffsetFactor", "1.0", CVAR_CHEAT, "");
+	r_shadowOffsetUnits = ri.Cvar_Get("r_shadowOffsetUnits", "1.0", CVAR_CHEAT, "");
+
 	r_drawBuffer = ri.Cvar_Get( "r_drawBuffer", "GL_BACK", CVAR_CHEAT, "" );
 	r_lockpvs = ri.Cvar_Get ("r_lockpvs", "0", CVAR_CHEAT, "");
 	r_noportals = ri.Cvar_Get ("r_noportals", "0", CVAR_CHEAT, "");

@@ -68,22 +68,16 @@ static qboolean	R_CullSurface( msurface_t *surf, int entityNum ) {
 			return qfalse;
 		}
 
-		// don't cull for depth shadow
-		/*
-		if ( tr.viewParms.flags & VPF_DEPTHSHADOW )
-		{
+		if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
 			return qfalse;
-		}
-		*/
 
-		// shadowmaps draw back surfaces
-		if ( tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW) )
+		if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
 		{
 			if (ct == CT_FRONT_SIDED)
 			{
 				ct = CT_BACK_SIDED;
 			}
-			else
+			else if (ct == CT_BACK_SIDED)
 			{
 				ct = CT_FRONT_SIDED;
 			}
