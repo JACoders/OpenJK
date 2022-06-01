@@ -107,15 +107,6 @@ void R_AddPolygonSurfaces( const trRefdef_t *refdef ) {
 	}
 }
 
-	int	fogMask = -((refdef->rdflags & RDF_NOFOG) == 0);
-
-	int i;
-	for (i = 0, poly = refdef->polys; i < refdef->numPolys; i++, poly++) {
-		shader_t *sh = R_GetShaderByHandle(poly->hShader);
-
-	}
-}
-
 /*
 =====================
 RE_AddPolyToScene
