@@ -2055,32 +2055,6 @@ void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
 	}
 }
 
-	if ((viewParms->flags & VPF_ORTHOGRAPHIC) == 0)
-	{
-		// set the projection matrix with the minimum zfar
-		// now that we have the world bounded
-		// this needs to be done before entities are
-		// added, because they use the projection
-		// matrix for lod calculation
-
-		// dynamically compute far clip plane distance
-		if (!(tr.viewParms.flags & VPF_SHADOWMAP))
-		{
-			R_SetFarClip(viewParms, refdef);
-		}
-
-		// we know the size of the clipping volume. Now set the rest of the projection matrix.
-		R_SetupProjectionZ(viewParms);
-	}
-
-	R_AddEntitySurfaces(refdef);
-
-	if (!(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW)))
-	{
-		R_AddWeatherSurfaces();
-	}
-}
-
 /*
 ================
 R_DebugPolygon
