@@ -3174,7 +3174,7 @@ static qboolean CollapseStagesToGLSL(void)
 	ri.Printf (PRINT_DEVELOPER, "Collapsing stages for shader '%s'\n", shader.name);
 
 	// skip shaders with deforms
-	if (shader.numDeforms != 0)
+	if (shader.numDeforms == 1)
 	{
 		skip = qtrue;
 		ri.Printf (PRINT_DEVELOPER, "> Shader has vertex deformations. Aborting stage collapsing\n");
