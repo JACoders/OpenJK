@@ -979,7 +979,7 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 
 	if(glState.vertexAnimation)
 	{
-		vertexAttribs &= ~ATTR_COLOR;
+		//vertexAttribs &= ~ATTR_COLOR;
 		vertexAttribs |= ATTR_POSITION2;
 		if (vertexAttribs & ATTR_NORMAL)
 		{

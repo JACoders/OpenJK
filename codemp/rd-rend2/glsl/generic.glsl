@@ -41,6 +41,7 @@ layout(std140) uniform Entity
 	int u_FogIndex;
 };
 
+#if defined(USE_DEFORM_VERTEXES) || defined(USE_RGBAGEN)
 layout(std140) uniform ShaderInstance
 {
 	vec4 u_DeformParams0;
@@ -50,6 +51,7 @@ layout(std140) uniform ShaderInstance
 	int u_DeformType;
 	int u_DeformFunc;
 };
+#endif
 
 #if defined(USE_SKELETAL_ANIMATION)
 layout(std140) uniform Bones

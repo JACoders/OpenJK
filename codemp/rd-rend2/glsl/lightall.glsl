@@ -13,7 +13,9 @@ in vec4 attr_Color;
 
 in vec3 attr_Position;
 in vec3 attr_Normal;
+#if defined(PER_PIXEL_LIGHTING)
 in vec4 attr_Tangent;
+#endif
 
 #if defined(USE_VERTEX_ANIMATION)
 in vec3 attr_Position2;
@@ -35,14 +37,6 @@ layout(std140) uniform Camera
 	vec3 u_ViewForward;
 	vec3 u_ViewLeft;
 	vec3 u_ViewUp;
-};
-
-layout(std140) uniform Scene
-{
-	vec4 u_PrimaryLightOrigin;
-	vec3 u_PrimaryLightAmbient;
-	vec3 u_PrimaryLightColor;
-	float u_PrimaryLightRadius;
 };
 
 layout(std140) uniform Entity
@@ -226,7 +220,9 @@ void main()
 #if defined(USE_VERTEX_ANIMATION)
 	vec3 position  = mix(attr_Position,    attr_Position2,    u_VertexLerp);
 	vec3 normal    = mix(attr_Normal,      attr_Normal2,      u_VertexLerp);
+	#if defined(PER_PIXEL_LIGHTING)
 	vec3 tangent   = mix(attr_Tangent.xyz, attr_Tangent2.xyz, u_VertexLerp);
+	#endif
 #elif defined(USE_SKELETAL_ANIMATION)
 	mat4x3 influence =
 		GetBoneMatrix(attr_BoneIndexes[0]) * attr_BoneWeights[0] +
@@ -333,7 +329,7 @@ void main()
 }
 
 /*[Fragment]*/
-#if defined(USE_LIGHT) && !defined(USE_VERTEX_LIGHTING)
+#if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 #define PER_PIXEL_LIGHTING
 #endif
 layout(std140) uniform Scene
@@ -995,7 +991,7 @@ void main()
 	reflectance  = CalcDiffuse(diffuse.rgb, NE, NL2, L2H2, roughness);
 	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, L2H2, VH2, roughness);
 
-	lightColor = u_PrimaryLightColor * var_Color.rgb;
+	lightColor = u_PrimaryLightColor;
     #if defined(USE_SHADOWMAP)
 	lightColor *= shadowValue;
     #endif
