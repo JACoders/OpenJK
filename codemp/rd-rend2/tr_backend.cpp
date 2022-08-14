@@ -2336,12 +2336,15 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 	}
 	else
 	{
-		fogsBlock.numFogs = tr.world->numfogs - 1; // Don't reserve fog 0 as 'null'
+		if (tr.world->globalFog)
+			fogsBlock.numFogs = 1;
+		else
+			fogsBlock.numFogs = tr.world->numfogs - 1; // Don't reserve fog 0 as 'null'
 	}
 
 	for (int i = 0; i < fogsBlock.numFogs; ++i)
 	{
-		const fog_t *fog = tr.world->fogs + i + 1;
+		const fog_t *fog = tr.world->globalFog ? tr.world->globalFog : tr.world->fogs + i + 1;
 		FogsBlock::Fog *fogData = fogsBlock.fogs + i;
 
 		VectorCopy4(fog->surface, fogData->plane);
@@ -2686,7 +2689,7 @@ static void RB_UpdateShaderAndEntityConstants(
 			if (tr.world != nullptr)
 			{
 				if (tr.world->globalFog != nullptr)
-					entityBlock.fogIndex = tr.world->globalFog - tr.world->fogs - 1;
+					entityBlock.fogIndex = 0;
 				else if (drawSurf->fogIndex > 0)
 					entityBlock.fogIndex = drawSurf->fogIndex - 1;
 			}
