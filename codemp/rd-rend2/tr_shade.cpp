@@ -1075,7 +1075,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 	{
 		index = stage->glslShaderIndex;
 
-		if (r_lightmap->integer && (index & LIGHTDEF_USE_LIGHTMAP))
+		if (r_lightmap->integer && (index & LIGHTDEF_USE_LIGHTMAP) && !(index & LIGHTDEF_USE_LIGHT_VERTEX))
 		{
 			index = LIGHTDEF_USE_LIGHTMAP;
 		}
@@ -1307,12 +1307,12 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 						baseColor[0] =
 							baseColor[1] =
 							baseColor[2] =
-							baseColor[3] = tr.identityLight;
+							baseColor[3] = 0.0f;
 
 						vertColor[0] =
 							vertColor[1] =
 							vertColor[2] =
-							vertColor[3] = 0.0f;
+							vertColor[3] = tr.identityLight;
 						break;
 					default:
 						break;
@@ -1390,7 +1390,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			}
 
 			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) &&
-					pStage->bundle[TB_LIGHTMAP].image[0])
+				(pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap))
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
