@@ -1574,7 +1574,7 @@ void R_Register( void )
 	r_lightmap = ri.Cvar_Get ("r_lightmap", "0", 0, "" );
 	r_portalOnly = ri.Cvar_Get ("r_portalOnly", "0", CVAR_CHEAT, "" );
 
-	r_flareSize = ri.Cvar_Get ("r_flareSize", "40", CVAR_CHEAT, "");
+	r_flareSize = ri.Cvar_Get ("r_flareSize", "4", CVAR_CHEAT, "");
 	r_flareFade = ri.Cvar_Get ("r_flareFade", "7", CVAR_CHEAT, "");
 	r_flareCoeff = ri.Cvar_Get ("r_flareCoeff", FLARE_STDCOEFF, CVAR_CHEAT, "");
 
@@ -1723,6 +1723,10 @@ static void R_InitBackEndFrameData()
 
 static void R_InitStaticConstants()
 {
+
+	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
+	const size_t alignedBlockSize = (sizeof(EntityBlock) + alignment) & ~alignment;
+
 	EntityBlock entity2DBlock = {};
 	entity2DBlock.fxVolumetricBase = -1.0f;
 
@@ -1746,6 +1750,22 @@ static void R_InitStaticConstants()
 	tr.entity2DUboOffset = 0;
 	qglBufferSubData(
 		GL_UNIFORM_BUFFER, 0, sizeof(entity2DBlock), &entity2DBlock);
+
+	EntityBlock entityFlareBlock = {};
+	entityFlareBlock.fxVolumetricBase = -1.0f;
+	Matrix16Identity(entityFlareBlock.modelMatrix);
+	Matrix16Ortho(
+		0.0f,
+		glConfig.vidWidth,
+		glConfig.vidHeight,
+		0.0f,
+		-99999.0f,
+		99999.0f,
+		entityFlareBlock.modelViewProjectionMatrix);
+
+	tr.entityFlareUboOffset = alignedBlockSize;
+	qglBufferSubData(
+		GL_UNIFORM_BUFFER, tr.entityFlareUboOffset, sizeof(entityFlareBlock), &entityFlareBlock);
 }
 
 static void R_ShutdownBackEndFrameData()

@@ -1145,6 +1145,26 @@ static void ParseFlare( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 	flare = (srfFlare_t *)surf->data;
 	flare->surfaceType = SF_FLARE;
 
+	if (surf->shader == tr.defaultShader)
+		flare->shader = tr.flareShader;
+	else
+		flare->shader = surf->shader;
+
+	if (!flare->shader->defaultShader)
+	{
+		// Set some default values. Deforms are handled by the flares system itself
+		flare->shader->cullType = CT_TWO_SIDED;
+		flare->shader->numDeforms = 0;
+		for (int index = 0; index < flare->shader->numUnfoggedPasses; index++)
+		{
+			flare->shader->stages[index]->adjustColorsForFog = ACFF_NONE;
+			flare->shader->stages[index]->stateBits |= GLS_DEPTHTEST_DISABLE;
+			if (flare->shader->stages[index]->alphaGen == AGEN_PORTAL)
+				flare->portal_ranged = true;
+			flare->shader->stages[index]->alphaGen = AGEN_VERTEX;
+		}
+	}
+
 	surf->data = (surfaceType_t *)flare;
 
 	for ( i = 0 ; i < 3 ; i++ ) {

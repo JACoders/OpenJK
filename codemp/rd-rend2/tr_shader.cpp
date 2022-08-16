@@ -4993,7 +4993,7 @@ static void CreateInternalShaders( void ) {
 
 static void CreateExternalShaders( void ) {
 	tr.projectionShadowShader = R_FindShader( "projectionShadow", lightmapsNone, stylesDefault, qtrue );
-	tr.flareShader = R_FindShader( "flareShader", lightmapsNone, stylesDefault, qtrue );
+	tr.flareShader = R_FindShader( "gfx/misc/flare", lightmapsNone, stylesDefault, qtrue );
 
 	// Hack to make fogging work correctly on flares. Fog colors are calculated
 	// in tr_flare.c already.

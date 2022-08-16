@@ -751,6 +751,11 @@ static UniformBlockBinding GetEntityBlockUniformBinding(
 		binding.ubo = tr.staticUbo;
 		binding.offset = tr.entity2DUboOffset;
 	}
+	else if (refEntity == &backEnd.entityFlare)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.entityFlareUboOffset;
+	}
 	else
 	{
 		binding.ubo = currentFrameUbo;

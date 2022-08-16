@@ -2218,6 +2218,8 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	// darken down any stencil shadows
 	RB_ShadowFinish();
+
+	RB_RenderFlares();
 }
 
 static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSurfs )

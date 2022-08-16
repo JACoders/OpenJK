@@ -1586,6 +1586,8 @@ typedef struct srfFlare_s {
 	vec3_t			origin;
 	vec3_t			normal;
 	vec3_t			color;
+	shader_t		*shader;
+	bool			portal_ranged;
 } srfFlare_t;
 
 struct vertexAttribute_t;
@@ -2255,7 +2257,8 @@ typedef struct {
 
 	qboolean	projection2D;	// if qtrue, drawstretchpic doesn't need to change modes
 	float		color2D[4];
-	trRefEntity_t	entity2D;	// currentEntity will point at this when doing 2D rendering
+	trRefEntity_t	entity2D;		// currentEntity will point at this when doing 2D rendering
+	trRefEntity_t	entityFlare;	// currentEntity will point at this when doing flare rendering
 
 	FBO_t *last2DFBO;
 	qboolean    colorMask[4];
@@ -2419,6 +2422,7 @@ typedef struct trGlobals_s {
 
 	GLuint staticUbo;
 	int entity2DUboOffset;
+	int entityFlareUboOffset;
 
 	int cameraUboOffset;
 
@@ -2535,7 +2539,7 @@ extern window_t		window;
 extern cvar_t	*r_flareSize;
 extern cvar_t	*r_flareFade;
 // coefficient for the flare intensity falloff function.
-#define FLARE_STDCOEFF "150"
+#define FLARE_STDCOEFF "80"
 extern cvar_t	*r_flareCoeff;
 
 extern cvar_t	*r_railWidth;
