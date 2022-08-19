@@ -358,8 +358,42 @@ typedef enum
 	A_AUX30,
 	A_AUX31,
 
+	// Gamepad controls
+	// Ordered to match SDL2 game controller buttons and axes
+	// Do not change this order without also changing IN_GamepadMove() in SDL_input.c
+	A_PAD0_A,
+	A_PAD0_B,
+	A_PAD0_X,
+	A_PAD0_Y,
+	A_PAD0_BACK,
+	A_PAD0_GUIDE,
+	A_PAD0_START,
+	A_PAD0_LEFTSTICK_CLICK,
+	A_PAD0_RIGHTSTICK_CLICK,
+	A_PAD0_LEFTSHOULDER,
+	A_PAD0_RIGHTSHOULDER,
+	A_PAD0_DPAD_UP,
+	A_PAD0_DPAD_DOWN,
+	A_PAD0_DPAD_LEFT,
+	A_PAD0_DPAD_RIGHT,
+
+	A_PAD0_MISC1,
+
+	A_PAD0_LEFTSTICK_LEFT,
+	A_PAD0_LEFTSTICK_RIGHT,
+	A_PAD0_LEFTSTICK_UP,
+	A_PAD0_LEFTSTICK_DOWN,
+	A_PAD0_RIGHTSTICK_LEFT,
+	A_PAD0_RIGHTSTICK_RIGHT,
+	A_PAD0_RIGHTSTICK_UP,
+	A_PAD0_RIGHTSTICK_DOWN,
+	A_PAD0_LEFTTRIGGER,
+	A_PAD0_RIGHTTRIGGER,
+
 	MAX_KEYS
 } fakeAscii_t;
+
+#define OLD_MAX_KEYS 320
 
 
 // The menu code needs to get both key and char events, but
