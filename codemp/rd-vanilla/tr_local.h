@@ -1730,7 +1730,7 @@ RENDERER BACK END COMMAND QUEUE
 =============================================================
 */
 
-#define	MAX_RENDER_COMMANDS	0x40000
+#define	MAX_RENDER_COMMANDS	0x80000
 
 typedef struct renderCommandList_s {
 	byte	cmds[MAX_RENDER_COMMANDS];
@@ -1833,7 +1833,6 @@ extern	int		max_polyverts;
 extern	backEndData_t	*backEndData;
 
 
-void *R_GetCommandBuffer( int bytes );
 void RB_ExecuteRenderCommands( const void *data );
 
 void R_IssuePendingRenderCommands( void );
