@@ -10998,9 +10998,9 @@ saberMoveName_t G_PickAutoMultiKick( gentity_t *self, qboolean allowSingles, qbo
 			continue;
 		kickMove = G_PickAutoKick( self, ent, qfalse );
 		if ( kickMove == LS_KICK_F_AIR
-			&& kickMove == LS_KICK_B_AIR
-			&& kickMove == LS_KICK_R_AIR
-			&& kickMove == LS_KICK_L_AIR )
+			|| kickMove == LS_KICK_B_AIR
+			|| kickMove == LS_KICK_R_AIR
+			|| kickMove == LS_KICK_L_AIR )
 		{//in air?  Can't do multikicks
 		}
 		else
