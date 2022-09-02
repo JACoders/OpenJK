@@ -179,6 +179,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	vmCvar_t	ckSum;
 	char serverinfo[MAX_INFO_STRING] = {0};
 
+	Rand_Init( trap->Milliseconds() );
+
 	//Init RMG to 0, it will be autoset to 1 if there is terrain on the level.
 	trap->Cvar_Set("RMG", "0");
 	RMG.integer = 0;
