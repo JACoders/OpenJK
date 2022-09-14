@@ -4126,32 +4126,31 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		// Allocate and write to memory
 		data = (byte *)ri.Hunk_AllocateTempMemory (dataSize);
 
-		color = (vec4_t *)(data + stride);
-		ofsColor = stride;
-		stride += 0; // sizeof(*color); Overwrite for the generic value
+		color = (vec4_t *)(data);
+		ofsColor = 0;
 
-		verts = (vec3_t *)(data + stride);
-		ofsPosition = stride;
+		ofsPosition = stride + sizeof(*color);
+		verts = (vec3_t *)(data + ofsPosition);
 		stride += sizeof (*verts);
 
-		normals = (uint32_t *)(data + stride);
-		ofsNormals = stride;
+		ofsNormals = stride + sizeof(*color);
+		normals = (uint32_t *)(data + ofsNormals);
 		stride += sizeof (*normals);
 
-		texcoords = (vec2_t *)(data + stride);
-		ofsTexcoords = stride;
+		ofsTexcoords = stride + sizeof(*color);
+		texcoords = (vec2_t *)(data + ofsTexcoords);
 		stride += sizeof (*texcoords);
 
-		bonerefs = data + stride;
-		ofsBoneRefs = stride;
+		ofsBoneRefs = stride + sizeof(*color);
+		bonerefs = data + ofsBoneRefs;
 		stride += sizeof (*bonerefs) * 4;
 
-		weights = data + stride;
-		ofsWeights = stride;
+		ofsWeights = stride + sizeof(*color);
+		weights = data + ofsWeights;
 		stride += sizeof (*weights) * 4;
 
-		tangents = (uint32_t *)(data + stride);
-		ofsTangents = stride;
+		ofsTangents = stride + sizeof(*color);
+		tangents = (uint32_t *)(data + ofsTangents);
 		stride += sizeof (*tangents);
 
 		// Fill in the index buffer and compute tangents
