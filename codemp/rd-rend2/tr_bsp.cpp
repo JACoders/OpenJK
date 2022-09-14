@@ -3575,6 +3575,7 @@ struct sprite_t
 {
 	vec3_t position;
 	vec3_t normal;
+	vec3_t color;
 };
 
 static uint32_t UpdateHash( const char *text, uint32_t hash )
@@ -3617,6 +3618,11 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 		VectorCopy(v1->normal, n1);
 		VectorCopy(v2->normal, n2);
 
+		vec4_t c0, c1, c2;
+		VectorCopy(v0->vertexColors[0], c0);
+		VectorCopy(v1->vertexColors[0], c1);
+		VectorCopy(v2->vertexColors[0], c2);
+
 		const vec2_t p01 = {p1[0] - p0[0], p1[1] - p0[1]};
 		const vec2_t p02 = {p2[0] - p0[0], p2[1] - p0[1]};
 
@@ -3650,6 +3656,10 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 				VectorMA(sprite.position, x, p0, sprite.position);
 				VectorMA(sprite.position, y, p1, sprite.position);
 				VectorMA(sprite.position, z, p2, sprite.position);
+
+				VectorMA(sprite.color, x, c0, sprite.color);
+				VectorMA(sprite.color, y, c1, sprite.color);
+				VectorMA(sprite.color, z, c2, sprite.color);
 
 				// x*x + y*y = 1.0
 				// => y*y = 1.0 - x*x
@@ -3701,7 +3711,7 @@ static void R_GenerateSurfaceSprites(
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
 	out->shader->stages[0]->alphaTestType = stage->alphaTestType;
 
-	out->numAttributes = 2;
+	out->numAttributes = 3;
 	out->attributes = (vertexAttribute_t *)ri.Hunk_Alloc(
 			sizeof(vertexAttribute_t) * out->numAttributes, h_low);
 
@@ -3724,6 +3734,16 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[1].stride = sizeof(sprite_t);
 	out->attributes[1].offset = offsetof(sprite_t, normal);
 	out->attributes[1].stepRate = 1;
+
+	out->attributes[2].vbo = out->vbo;
+	out->attributes[2].index = ATTR_INDEX_COLOR;
+	out->attributes[2].numComponents = 3;
+	out->attributes[2].integerAttribute = qfalse;
+	out->attributes[2].type = GL_FLOAT;
+	out->attributes[2].normalize = GL_FALSE;
+	out->attributes[2].stride = sizeof(sprite_t);
+	out->attributes[2].offset = offsetof(sprite_t, color);
+	out->attributes[2].stepRate = 1;
 }
 
 static void R_GenerateSurfaceSprites( const world_t *world )

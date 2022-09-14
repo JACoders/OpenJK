@@ -1,6 +1,7 @@
 /*[Vertex]*/
 in vec3 attr_Position;
 in vec3 attr_Normal;
+in vec3 attr_Color;
 
 uniform mat4 u_ModelViewProjectionMatrix;
 
@@ -26,6 +27,7 @@ layout(std140) uniform SurfaceSprite
 
 out vec2 var_TexCoords;
 out float var_Alpha;
+out vec3 var_Color;
 
 void main()
 {
@@ -74,6 +76,7 @@ void main()
 	vec4 worldPos = vec4(attr_Position + offset, 1.0);
 	gl_Position = u_ModelViewProjectionMatrix * worldPos;
 	var_TexCoords = texcoords[gl_VertexID];
+	var_Color = attr_Color;
 	var_Alpha = 1.0 - fadeScale;
 }
 
@@ -81,6 +84,7 @@ void main()
 uniform sampler2D u_DiffuseMap;
 
 in vec2 var_TexCoords;
+in vec3 var_Color;
 in float var_Alpha;
 
 layout(std140) uniform SurfaceSprite
@@ -101,6 +105,7 @@ void main()
 {
 	const float alphaTestValue = 0.5;
 	out_Color = texture(u_DiffuseMap, var_TexCoords);
+	out_Color.rgb *= var_Color;
 	out_Color.a *= var_Alpha*(1.0 - alphaTestValue) + alphaTestValue;
 
 #if defined(ALPHA_TEST)

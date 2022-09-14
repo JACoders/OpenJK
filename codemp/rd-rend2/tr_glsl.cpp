@@ -2166,7 +2166,7 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("surface_sprites", allocator, fallback_surface_spritesProgram);
-	const uint32_t attribs = ATTR_POSITION | ATTR_NORMAL;
+	const uint32_t attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_COLOR;
 	for ( int i = 0; i < SSDEF_COUNT; ++i )
 	{
 		extradefines[0] = '\0';
