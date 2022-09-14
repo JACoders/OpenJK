@@ -1160,8 +1160,10 @@ static void ParseFlare( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 			flare->shader->stages[index]->adjustColorsForFog = ACFF_NONE;
 			flare->shader->stages[index]->stateBits |= GLS_DEPTHTEST_DISABLE;
 			if (flare->shader->stages[index]->alphaGen == AGEN_PORTAL)
+			{
 				flare->portal_ranged = true;
-			flare->shader->stages[index]->alphaGen = AGEN_VERTEX;
+				flare->shader->stages[index]->alphaGen = AGEN_VERTEX;
+			}
 		}
 	}
 

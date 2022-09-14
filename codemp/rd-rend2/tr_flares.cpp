@@ -131,21 +131,21 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 	int				i;
 	flare_t			*f;
 	vec3_t			local;
-	float			d = 1;
+	float			d = 1.0f;
 	vec4_t			eye, clip, normalized, window;
 
 	backEnd.pc.c_flareAdds++;
 
-	//if(normal && (normal[0] || normal[1] || normal[2]))
-	//{
-	//	VectorSubtract( backEnd.viewParms.ori.origin, point, local );
-	//	VectorNormalizeFast(local);
-	//	d = DotProduct(local, normal);
+	if(normal && (normal[0] || normal[1] || normal[2]))
+	{
+		VectorSubtract( backEnd.viewParms.ori.origin, point, local );
+		VectorNormalizeFast(local);
+		d = DotProduct(local, normal);
 
 	//	// If the viewer is behind the flare don't add it.
 	//	if(d < 0)
 	//		return;
-	//}
+	}
 
 	// if the point is off the screen, don't bother adding it
 	// calculate screen coordinates and depth
@@ -204,7 +204,7 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 
 	// fade the intensity of the flare down as the
 	// light surface turns away from the viewer
-	//VectorScale( f->color, d, f->color ); 
+	VectorScale( f->color, d, f->color ); 
 
 	// save info needed to test
 	f->windowX = backEnd.viewParms.viewportX + window[0];
@@ -504,6 +504,10 @@ void RB_RenderFlares (void) {
 	if ( !r_flares->integer ) {
 		return;
 	}
+
+	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
+		(backEnd.viewParms.flags & VPF_NOPOSTPROCESS))
+		return;
 
 	if(r_flareCoeff->modified)
 	{

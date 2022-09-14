@@ -2677,6 +2677,12 @@ static void RB_UpdateShaderAndEntityConstants(
 				continue;
 		}
 
+		if (*drawSurf->surface == SF_FLARE)
+		{
+			RB_UpdateShaderEntityConstants(frame, REFENTITYNUM_WORLD, &backEnd.entityFlare, shader);
+			continue;
+		}
+
 		const trRefEntity_t *refEntity = entityNum == REFENTITYNUM_WORLD ? &tr.worldEntity : &backEnd.refdef.entities[entityNum];
 
 		if (shader != oldShader ||

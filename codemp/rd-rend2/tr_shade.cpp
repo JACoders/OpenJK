@@ -802,7 +802,7 @@ static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 	binding.ubo = currentFrameUbo;
 	binding.block = UNIFORM_BLOCK_SHADER_INSTANCE;
 
-	if (refEntity == &tr.worldEntity)
+	if (refEntity == &tr.worldEntity || refEntity == &backEnd.entityFlare)
 	{
 		binding.offset = RB_GetEntityShaderUboOffset(
 			tr.shaderInstanceUboOffsetsMap,
