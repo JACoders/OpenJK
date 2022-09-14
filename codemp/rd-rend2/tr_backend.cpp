@@ -1454,11 +1454,13 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 	each surface corresponds to something which has all of its gpu data uploaded
 	*/
 
+	int estimatedShaderStages = (backEnd.viewParms.flags & VPF_DEPTHSHADOW) ? 1 : 4;
+
 	// Prepare memory for the current render pass
 	void *allocMark = backEndData->perFrameMemory->Mark();
 	assert(backEndData->currentPass == nullptr);
 	backEndData->currentPass = RB_CreatePass(
-		*backEndData->perFrameMemory, numDrawSurfs * 4);
+		*backEndData->perFrameMemory, numDrawSurfs * estimatedShaderStages);
 
 	// save original time for entity shader offsets
 	float originalTime = backEnd.refdef.floatTime;
