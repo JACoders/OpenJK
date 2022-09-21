@@ -96,7 +96,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_AmbientLight",   GLSL_VEC3, 1 },
 	{ "u_DirectedLight",  GLSL_VEC3, 1 },
 	{ "u_Disintegration", GLSL_VEC4, 1 },
-	{ "u_LightIndex",    GLSL_INT, 1 },
+	{ "u_LightMask",    GLSL_INT, 1 },
 
 	{ "u_FogColorMask", GLSL_VEC4, 1 },
 

@@ -17,8 +17,8 @@ void main()
 uniform sampler2D u_TextureMap;
 uniform sampler2D u_LevelsMap;
 uniform vec4 u_Color;
-uniform vec2  u_AutoExposureMinMax;
-uniform vec3   u_ToneMinAvgMaxLinear;
+uniform vec2 u_AutoExposureMinMax;
+uniform vec3 u_ToneMinAvgMaxLinear;
 
 in vec2 var_TexCoords;
 

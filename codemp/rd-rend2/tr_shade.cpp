@@ -1512,12 +1512,12 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		
 		if (enableDLights)
 		{
-			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, tess.dlightBits);
+			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, tess.dlightBits);
 			if (r_dlightMode->integer > 1)
 				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAP2);
 		}
 		else
-			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, 0);
+			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, 0);
 
 		CaptureDrawData(input, pStage, index, stage);
 

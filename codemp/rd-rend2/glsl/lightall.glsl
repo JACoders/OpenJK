@@ -376,7 +376,7 @@ layout(std140) uniform Lights
 	Light u_Lights[32];
 };
 
-uniform int u_LightIndex;
+uniform int u_LightMask;
 uniform sampler2D u_DiffuseMap;
 
 #if defined(USE_LIGHTMAP)
@@ -763,7 +763,7 @@ vec3 CalcDynamicLightContribution(
 	vec3 position = viewOrigin - viewDir;
 	for ( int i = 0; i < u_NumLights; i++ )
 	{
-		if ( ( u_LightIndex & ( 1 << i ) ) == 0 ) {
+		if ( ( u_LightMask & ( 1 << i ) ) == 0 ) {
 			continue;
 		}
 		Light light = u_Lights[i];
