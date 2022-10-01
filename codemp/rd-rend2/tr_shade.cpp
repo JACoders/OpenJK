@@ -1050,10 +1050,46 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 	return vertexAttribs;
 }
 
-static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stage, shaderProgram_t *glslShaderGroup, bool useAlphaTestGE192 )
+static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stage, shaderProgram_t *glslShaderGroup, bool useAlphaTestGE192, bool forceRefraction )
 {
 	uint32_t index;
 	shaderProgram_t *result = nullptr;
+
+	if (forceRefraction)
+	{
+		index = 0;
+		if (tess.shader->numDeforms && !ShaderRequiresCPUDeforms(tess.shader))
+		{
+			index |= REFRACTIONDEF_USE_DEFORM_VERTEXES;
+		}
+
+		if (glState.vertexAnimation)
+		{
+			index |= REFRACTIONDEF_USE_VERTEX_ANIMATION;
+		}
+		else if (glState.skeletalAnimation)
+		{
+			index |= REFRACTIONDEF_USE_SKELETAL_ANIMATION;
+		}
+
+		if (stage->bundle[0].tcGen != TCGEN_TEXTURE || (stage->bundle[0].numTexMods))
+			index |= REFRACTIONDEF_USE_TCGEN_AND_TCMOD;
+
+		if (!useAlphaTestGE192)
+		{
+			if (stage->alphaTestType != ALPHA_TEST_NONE)
+				index |= REFRACTIONDEF_USE_TCGEN_AND_TCMOD | REFRACTIONDEF_USE_ALPHA_TEST;
+		}
+		else
+		{
+			index |= REFRACTIONDEF_USE_ALPHA_TEST;
+		}
+
+		if (tr.hdrLighting == qtrue)
+			index |= REFRACTIONDEF_USE_SRGB_TRANSFORM;
+
+		return &tr.refractionShader[index];
+	}
 
 	if (backEnd.depthFill)
 	{
@@ -1250,6 +1286,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
 		int index = 0;
 		bool useAlphaTestGE192 = false;
+		bool forceRefraction = false;
 		vec4_t disintegrationInfo;
 
 		if ( !pStage )
@@ -1293,6 +1330,13 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				forceRGBGen = CGEN_ENTITY;
 			}
 
+			// only force blend on the internal distortion shader
+			if (input->shader == tr.distortionShader)
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+
+			if (input->shader->useDistortion == qtrue || backEnd.currentEntity->e.renderfx & RF_DISTORTION)
+				forceRefraction = true;
+
 			if ( backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA )
 			{
 				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
@@ -1310,7 +1354,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		if (backEnd.viewParms.flags & VPF_POINTSHADOW)
 			stateBits |= GLS_POLYGON_OFFSET_FILL;
 
-		sp = SelectShaderProgram(stage, pStage, pStage->glslShaderGroup, useAlphaTestGE192);
+		sp = SelectShaderProgram(stage, pStage, pStage->glslShaderGroup, useAlphaTestGE192, forceRefraction);
 		assert(sp);
 
 		uniformDataWriter.Start(sp);
@@ -1389,6 +1433,18 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		if (backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1 | RF_DISINTEGRATE2))
 			uniformDataWriter.SetUniformVec4(UNIFORM_DISINTEGRATION, disintegrationInfo);
 
+		if (forceRefraction)
+		{
+			vec4_t color;
+			color[0] =
+			color[1] =
+			color[2] = powf(2.0f, r_cameraExposure->value);
+			color[3] = 10.0f;
+			uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, color);
+			uniformDataWriter.SetUniformVec2(UNIFORM_AUTOEXPOSUREMINMAX, tr.refdef.autoExposureMinMax);
+			uniformDataWriter.SetUniformVec3(UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
+		}
+
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
@@ -1423,7 +1479,22 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 								&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
 								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
 
-		if ( backEnd.depthFill )
+		if (forceRefraction)
+		{
+			FBO_t *srcFbo = tr.renderFbo;
+			if (tr.msaaResolveFbo)
+				srcFbo = tr.msaaResolveFbo;
+
+			samplerBindingsWriter.AddStaticImage(srcFbo->colorImage[0], TB_COLORMAP);
+			samplerBindingsWriter.AddStaticImage(tr.renderDepthImage, TB_SHADOWMAP);
+			qboolean autoExposure = (qboolean)(r_autoExposure->integer || r_forceAutoExposure->integer);
+
+			if (autoExposure)
+				samplerBindingsWriter.AddStaticImage(tr.calcLevelsImage, TB_LEVELSMAP);
+			else
+				samplerBindingsWriter.AddStaticImage(tr.fixedLevelsImage, TB_LEVELSMAP);
+		}
+		else if ( backEnd.depthFill )
 		{
 			if (pStage->alphaTestType == ALPHA_TEST_NONE)
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
@@ -1583,7 +1654,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		DrawItem item = {};
 		item.renderState.stateBits = stateBits;
-		item.renderState.cullType = cullType;
+		item.renderState.cullType = forceRefraction ? CT_TWO_SIDED : cullType;
 		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.program = sp;
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;

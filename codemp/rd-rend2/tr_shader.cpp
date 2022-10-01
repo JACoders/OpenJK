@@ -2702,6 +2702,12 @@ static qboolean ParseShader( const char **text )
 			shader.noPicMip = qtrue;
 			continue;
 		}
+		// refractive surface
+		else if ( !Q_stricmp(token, "refractive" ) )
+		{
+			shader.useDistortion = qtrue;
+			continue;
+		}
 		// no picmip adjustment
 		else if ( !Q_stricmp( token, "nopicmip" ) )
 		{
@@ -4983,6 +4989,7 @@ static void CreateInternalShaders( void ) {
 	shader.sort = SS_BLEND0;
 	shader.defaultShader = qfalse;
 	tr.distortionShader = FinishShader();
+	tr.distortionShader->useDistortion = qtrue;
 	shader.defaultShader = qtrue;
 
 	// weather shader placeholder

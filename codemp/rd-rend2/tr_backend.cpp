@@ -1339,12 +1339,13 @@ static void RB_SubmitDrawSurfs(
 		fogNum = drawSurf->fogIndex;
 		dlighted = drawSurf->dlightBits;
 
-		if ( shader == oldShader &&
+		if (    shader == oldShader &&
 				fogNum == oldFogNum &&
 				postRender == oldPostRender &&
 				cubemapIndex == oldCubemapIndex &&
 				entityNum == oldEntityNum &&
-				dlighted == oldDlighted )
+				dlighted == oldDlighted &&
+				backEnd.framePostProcessed == shader->useDistortion )
 		{
 			// fast path, same as previous sort
 			backEnd.currentDrawSurfIndex = i;
@@ -1384,6 +1385,12 @@ static void RB_SubmitDrawSurfs(
 			RB_PrepareForEntity(entityNum, &oldDepthRange, originalTime);
 			oldEntityNum = entityNum;
 		}
+
+		qboolean isDistortionShader = (qboolean)
+			((shader->useDistortion == qtrue) || (backEnd.currentEntity && backEnd.currentEntity->e.renderfx & RF_DISTORTION));
+
+		if (backEnd.framePostProcessed != isDistortionShader)
+			continue;
 
 		backEnd.currentDrawSurfIndex = i;
 
@@ -3183,6 +3190,9 @@ const void *RB_PostProcess(const void *data)
 
 			FBO_Blit(srcFbo, srcBox, NULL, NULL, dstBox, NULL, color, 0);
 		}
+
+		// Copy depth buffer to the backbuffer for depth culling refractive surfaces
+		FBO_FastBlit(tr.renderFbo, srcBox, NULL, dstBox, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 	}
 
 	if (r_drawSunRays->integer)
@@ -3266,6 +3276,10 @@ const void *RB_PostProcess(const void *data)
 	}
 
 	backEnd.framePostProcessed = qtrue;
+	FBO_Bind(NULL);
+	RB_RenderDrawSurfList(
+		backEnd.refdef.drawSurfs + backEnd.refdef.fistDrawSurf,
+		backEnd.refdef.numDrawSurfs - tr.refdef.fistDrawSurf);
 
 	return (const void *)(cmd + 1);
 }

@@ -983,6 +983,7 @@ typedef struct shader_s {
 	void		(*optimalStageIteratorFunc)( void );
 	qboolean	isHDRLit;
 	qboolean	useSimpleDepthShader;
+	qboolean	useDistortion;
 
   float clampTime;                                  // time this shader is clamped to
   float timeOffset;                                 // current time offset for this shader
@@ -1176,11 +1177,16 @@ enum
 
 enum
 {
-	DLIGHTDEF_USE_DEFORM_VERTEXES  		= 0x0001,
-	DLIGHTDEF_USE_ALPHA_TEST	   		= 0x0002,
+	REFRACTIONDEF_USE_DEFORM_VERTEXES = 0x0001,
+	REFRACTIONDEF_USE_TCGEN_AND_TCMOD = 0x0002,
+	REFRACTIONDEF_USE_VERTEX_ANIMATION = 0x0004,
+	REFRACTIONDEF_USE_RGBAGEN = 0x0008,
+	REFRACTIONDEF_USE_SKELETAL_ANIMATION = 0x0020,
+	REFRACTIONDEF_USE_ALPHA_TEST = 0x0040,
+	REFRACTIONDEF_USE_SRGB_TRANSFORM = 0x0080,
 
-	DLIGHTDEF_ALL                  		= 0x0003,
-	DLIGHTDEF_COUNT                		= DLIGHTDEF_ALL + 1,
+	REFRACTIONDEF_ALL = 0x00FF,
+	REFRACTIONDEF_COUNT = REFRACTIONDEF_ALL + 1,
 };
 
 enum
@@ -1431,6 +1437,7 @@ typedef struct {
 	int			numPolys;
 	struct srfPoly_s	*polys;
 
+	int			fistDrawSurf;
 	int			numDrawSurfs;
 	struct drawSurf_s	*drawSurfs;
 
@@ -2403,6 +2410,7 @@ typedef struct trGlobals_s {
 	//
 	shaderProgram_t splashScreenShader;
 	shaderProgram_t genericShader[GENERICDEF_COUNT];
+	shaderProgram_t refractionShader[REFRACTIONDEF_COUNT];
 	shaderProgram_t textureColorShader;
 	shaderProgram_t fogShader[FOGDEF_COUNT];
 	shaderProgram_t lightallShader[LIGHTDEF_COUNT];

@@ -2118,7 +2118,6 @@ or a mirror / remote location
 ================
 */
 void R_RenderView (viewParms_t *parms) {
-	int		firstDrawSurf;
 
 	if ( parms->viewportWidth <= 0 || parms->viewportHeight <= 0 ) {
 		return;
@@ -2130,8 +2129,7 @@ void R_RenderView (viewParms_t *parms) {
 	tr.viewParms.frameSceneNum = tr.frameSceneNum;
 	tr.viewParms.frameCount = tr.frameCount;
 
-	firstDrawSurf = tr.refdef.numDrawSurfs;
-
+	tr.refdef.fistDrawSurf = tr.refdef.numDrawSurfs;
 	// set viewParms.world
 	R_RotateForViewer(&tr.ori, &tr.viewParms);
 
@@ -2139,7 +2137,7 @@ void R_RenderView (viewParms_t *parms) {
 
 	R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
 
-	R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+	R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + tr.refdef.fistDrawSurf, tr.refdef.numDrawSurfs - tr.refdef.fistDrawSurf);
 
 	// draw main system development information (surface outlines, etc)
 	R_DebugGraphics();

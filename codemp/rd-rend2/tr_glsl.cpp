@@ -1502,40 +1502,66 @@ static int GLSL_LoadGPUProgramFogPass(
 	return numPrograms;
 }
 
-static int GLSL_LoadGPUProgramDLight(
+static int GLSL_LoadGPUProgramRefraction(
 	ShaderProgramBuilder& builder,
-	Allocator& scratchAlloc )
+	Allocator& scratchAlloc)
 {
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
-		LoadProgramSource("dlight", allocator, fallback_dlightProgram);
-	for ( int i = 0; i < DLIGHTDEF_COUNT; i++ )
+		LoadProgramSource("refraction", allocator, fallback_refractionProgram);
+	for (int i = 0; i < REFRACTIONDEF_COUNT; i++)
 	{
-		uint32_t attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0;
+		uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_NORMAL | ATTR_COLOR;
 		extradefines[0] = '\0';
 
-		if (i & DLIGHTDEF_USE_DEFORM_VERTEXES)
+		if (i & REFRACTIONDEF_USE_DEFORM_VERTEXES)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
 
-		if (i & DLIGHTDEF_USE_ALPHA_TEST)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
-
-		if (!GLSL_LoadGPUShader(builder, &tr.dlightShader[i], "dlight", attribs, NO_XFB_VARS,
-				extradefines, *programDesc))
+		if (i & REFRACTIONDEF_USE_TCGEN_AND_TCMOD)
 		{
-			ri.Error(ERR_FATAL, "Could not load dlight shader!");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
 
-		GLSL_InitUniforms(&tr.dlightShader[i]);
+		if (i & REFRACTIONDEF_USE_VERTEX_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
+			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
+		}
 
-		qglUseProgram(tr.dlightShader[i].program);
-		GLSL_SetUniformInt(&tr.dlightShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
+		if (i & REFRACTIONDEF_USE_SKELETAL_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
+			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
+		}
+
+		if (i & REFRACTIONDEF_USE_RGBAGEN)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
+
+		if (i & REFRACTIONDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
+
+		if (i & REFRACTIONDEF_USE_SRGB_TRANSFORM)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LINEAR_LIGHT\n");
+
+		if (!GLSL_LoadGPUShader(builder, &tr.refractionShader[i], "refraction", attribs, NO_XFB_VARS,
+			extradefines, *programDesc))
+		{
+			ri.Error(ERR_FATAL, "Could not load generic shader!");
+		}
+
+		GLSL_InitUniforms(&tr.refractionShader[i]);
+
+		qglUseProgram(tr.refractionShader[i].program);
+		GLSL_SetUniformInt(&tr.refractionShader[i], UNIFORM_TEXTUREMAP, TB_COLORMAP);
+		GLSL_SetUniformInt(&tr.refractionShader[i], UNIFORM_LEVELSMAP, TB_LEVELSMAP);
+		GLSL_SetUniformInt(&tr.refractionShader[i], UNIFORM_SCREENDEPTHMAP, TB_SHADOWMAP);
 		qglUseProgram(0);
 
-		GLSL_FinishGPUShader(&tr.dlightShader[i]);
+		GLSL_FinishGPUShader(&tr.refractionShader[i]);
 
 		++numPrograms;
 	}
@@ -2307,6 +2333,7 @@ void GLSL_LoadGPUShaders()
 	numGenShaders += GLSL_LoadGPUProgramGeneric(builder, allocator);
 	numLightShaders += GLSL_LoadGPUProgramLightAll(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramFogPass(builder, allocator);
+	numEtcShaders += GLSL_LoadGPUProgramRefraction(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTextureColor(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDepthFill(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramPShadow(builder, allocator);
@@ -2346,6 +2373,9 @@ void GLSL_ShutdownGPUShaders(void)
 
 	for ( i = 0; i < GENERICDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.genericShader[i]);
+
+	for (i = 0; i < REFRACTIONDEF_COUNT; i++)
+		GLSL_DeleteGPUShader(&tr.refractionShader[i]);
 
 	GLSL_DeleteGPUShader(&tr.textureColorShader);
 
