@@ -940,14 +940,26 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	else if (glState.skeletalAnimation)
 		shaderBits |= FOGDEF_USE_SKELETAL_ANIMATION;
+
+	if (tr.world && tr.world->globalFog && 
+		input->fogNum != tr.world->globalFogIndex &&
+		input->shader->sort != SS_FOG)
+		shaderBits |= FOGDEF_USE_FALLBACK_GLOBAL_FOG;
 	
 	shaderProgram_t *sp = tr.fogShader + shaderBits;
 
 	backEnd.pc.c_fogDraws++;
 
+	UniformDataWriter uniformDataWriter;
+	uniformDataWriter.Start(sp);
+	uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
+	
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	if ( tess.shader->fogPass == FP_EQUAL )
 		stateBits |= GLS_DEPTHFUNC_EQUAL;
+
+	if (input->shader->polygonOffset == qtrue)
+		stateBits |= GLS_POLYGON_OFFSET_FILL;
 
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
@@ -965,6 +977,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	item.renderState.cullType = cullType;
 	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 	item.program = sp;
+	item.uniformData = uniformDataWriter.Finish(frameAllocator);
 	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	DrawItemSetVertexAttributes(
@@ -976,6 +989,41 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	const uint32_t key = RB_CreateSortKey(item, 15, input->shader->sort);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
+
+	// invert fog planes and render global fog into them
+	if (input->fogNum != tr.world->globalFogIndex && tr.world->globalFogIndex != -1)
+	{
+		// only invert render fog planes
+		if (input->shader->sort != SS_FOG)
+			return;
+		if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
+			return;
+		// well, no idea how to handle this case, it's actually wrong
+		if (cullType == CT_TWO_SIDED)
+			return;
+		if (cullType == CT_FRONT_SIDED)
+			cullType = CT_BACK_SIDED;
+		else
+			cullType = CT_FRONT_SIDED;
+		UniformDataWriter uniformDataWriterBack;
+		uniformDataWriterBack.Start(sp);
+		uniformDataWriterBack.SetUniformInt(UNIFORM_FOGINDEX, tr.world->globalFogIndex - 1);
+
+		DrawItem backItem = {};
+		memcpy(&backItem, &item, sizeof(item));
+		backItem.renderState.cullType = cullType;
+		backItem.uniformData = uniformDataWriterBack.Finish(frameAllocator);
+
+		DrawItemSetVertexAttributes(
+			backItem, attribs, vertexArrays->numVertexArrays, frameAllocator);
+		DrawItemSetUniformBlockBindings(
+			backItem, uniformBlockBindings, frameAllocator);
+
+		RB_FillDrawCommand(backItem.draw, GL_TRIANGLES, 1, input);
+
+		const uint32_t key = RB_CreateSortKey(backItem, 15, input->shader->sort);
+		RB_AddDrawItem(backEndData->currentPass, key, backItem);
+	}
 }
 
 static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
@@ -1696,14 +1744,11 @@ void RB_StageIteratorGeneric( void )
 		const fog_t *fog = nullptr;
 		if ( tr.world )
 		{
-			if ( tr.world->globalFog )
-				fog = tr.world->globalFog;
-			else if ( tess.fogNum )
-				fog = tr.world->fogs + tess.fogNum;
+			fog = tr.world->fogs + input->fogNum;
 		}
 
 		if ( fog && tess.shader->fogPass ) {
-			RB_FogPass( &tess, &vertexArrays );
+			RB_FogPass( input, &vertexArrays );
 		}
 	}
 

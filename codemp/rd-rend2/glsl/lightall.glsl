@@ -336,6 +336,7 @@ layout(std140) uniform Scene
 {
 	vec4 u_PrimaryLightOrigin;
 	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
 	vec3 u_PrimaryLightColor;
 	float u_PrimaryLightRadius;
 };

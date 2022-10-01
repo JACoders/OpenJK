@@ -97,6 +97,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_DirectedLight",  GLSL_VEC3, 1 },
 	{ "u_Disintegration", GLSL_VEC4, 1 },
 	{ "u_LightMask",    GLSL_INT, 1 },
+	{ "u_FogIndex",    GLSL_INT, 1 },
 
 	{ "u_FogColorMask", GLSL_VEC4, 1 },
 
@@ -1480,6 +1481,9 @@ static int GLSL_LoadGPUProgramFogPass(
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
+		if (i & FOGDEF_USE_FALLBACK_GLOBAL_FOG)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_FALLBACK_GLOBAL_FOG\n");
+
 		if (i & FOGDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
@@ -2181,6 +2185,10 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define FACE_UP\n");
 
+		if ( i & SSDEF_USE_FOG )
+			Q_strcat(extradefines, sizeof(extradefines),
+				"#define USE_FOG\n");
+
 		if ( i & SSDEF_ALPHA_TEST )
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define ALPHA_TEST\n");
@@ -2518,7 +2526,8 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	shaderStage_t *pStage = tess.xstages[stage];
 	int shaderAttribs = 0;
 
-	if (tess.fogNum && pStage->adjustColorsForFog)
+	if ( tess.fogNum && pStage->adjustColorsForFog && 
+		tess.shader->fogPass )
 		shaderAttribs |= GENERICDEF_USE_FOG;
 
 	if ( pStage->alphaTestType != ALPHA_TEST_NONE )

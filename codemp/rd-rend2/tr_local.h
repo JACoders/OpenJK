@@ -710,7 +710,7 @@ struct SceneBlock
 {
 	vec4_t primaryLightOrigin;
 	vec3_t primaryLightAmbient;
-	float pad0;
+	int	   globalFogIndex;
 	vec3_t primaryLightColor;
 	float primaryLightRadius;
 };
@@ -758,7 +758,7 @@ struct EntityBlock
 	vec3_t modelLightDir;
 	float vertexLerp;
 	vec3_t localViewOrigin;
-	int fogIndex;
+	float pad0; // fogIndex;
 };
 
 struct ShaderInstanceBlock
@@ -1168,8 +1168,9 @@ enum
 	FOGDEF_USE_VERTEX_ANIMATION 		= 0x0002,
 	FOGDEF_USE_SKELETAL_ANIMATION 		= 0x0004,
 	FOGDEF_USE_ALPHA_TEST				= 0x0008,
+	FOGDEF_USE_FALLBACK_GLOBAL_FOG				= 0x0010,
 
-	FOGDEF_ALL                  		= 0x000F,
+	FOGDEF_ALL                  		= 0x001F,
 	FOGDEF_COUNT                		= FOGDEF_ALL + 1,
 };
 
@@ -1209,8 +1210,9 @@ enum
 	SSDEF_FACE_CAMERA					= 0x01,
 	SSDEF_ALPHA_TEST					= 0x02,
 	SSDEF_FACE_UP						= 0x04,
+	SSDEF_USE_FOG						= 0x08,
 
-	SSDEF_ALL							= 0x07,
+	SSDEF_ALL							= 0x0F,
 	SSDEF_COUNT							= SSDEF_ALL + 1
 };
 
@@ -1333,6 +1335,7 @@ typedef enum
 	UNIFORM_DIRECTEDLIGHT,
 	UNIFORM_DISINTEGRATION,
 	UNIFORM_LIGHTMASK,
+	UNIFORM_FOGINDEX,
 
 	UNIFORM_FOGCOLORMASK,
 
@@ -1600,6 +1603,9 @@ struct srfSprites_t
 	int numSprites;
 	VBO_t *vbo;
 	IBO_t *ibo;
+
+	int fogIndex;
+	AlphaTestType alphaTestType;
 
 	int numAttributes;
 	vertexAttribute_t *attributes;
@@ -1884,6 +1890,7 @@ typedef struct {
 	int			numfogs;
 	fog_t		*fogs;
 	const fog_t	*globalFog;
+	int			globalFogIndex;
 
 	vec3_t		lightGridOrigin;
 	vec3_t		lightGridSize;

@@ -733,6 +733,10 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader value
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles);
@@ -884,6 +888,10 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader value
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles );
@@ -1002,6 +1010,10 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles );
@@ -1134,6 +1146,10 @@ static void ParseFlare( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, lightmapsVertex, ds->lightmapStyles, ds->vertexStyles );
@@ -2599,6 +2615,7 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 	worldData->numfogs = count + 1;
 	worldData->fogs = (fog_t *)ri.Hunk_Alloc ( worldData->numfogs*sizeof(*out), h_low);
 	worldData->globalFog = nullptr;
+	worldData->globalFogIndex = -1;
 	out = worldData->fogs + 1;
 
 	if ( !count ) {
@@ -2627,6 +2644,7 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 			firstSide = -1;
 
 			worldData->globalFog = worldData->fogs + i + 1;
+			worldData->globalFogIndex = i + 1;
 		}
 		else
 		{
@@ -2684,7 +2702,7 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 		// set the gradient vector
 		sideNum = LittleLong( fogs->visibleSide );
 
-		out->hasSurface = qtrue;
+		out->hasSurface = (out->originalBrushNumber == -1) ? qfalse : qtrue;
 		if ( sideNum != -1 ) {
 			planeNum = LittleLong( sides[ firstSide + sideNum ].planeNum );
 			VectorSubtract( vec3_origin, worldData->planes[ planeNum ].normal, out->surface );
@@ -3595,10 +3613,24 @@ static uint32_t UpdateHash( const char *text, uint32_t hash )
 
 static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 	const srfBspSurface_t *bspSurf,
-	float density)
+	float density,
+	const shaderStage_t *stage)
 {
 	const srfVert_t *verts = bspSurf->verts;
 	const glIndex_t *indexes = bspSurf->indexes;
+
+	vec4_t color = { 1.0, 1.0, 1.0, 1.0 };
+	if (stage->rgbGen == CGEN_CONST)
+	{
+		color[0] = stage->constantColor[0];
+		color[1] = stage->constantColor[1];
+		color[2] = stage->constantColor[2];
+	}
+	bool vertexLit = (
+		stage->rgbGen == CGEN_VERTEX ||
+		stage->rgbGen == CGEN_EXACT_VERTEX ||
+		stage->rgbGen == CGEN_VERTEX_LIT ||
+		stage->rgbGen == CGEN_EXACT_VERTEX_LIT);
 
 	std::vector<sprite_t> sprites;
 	sprites.reserve(10000);
@@ -3657,9 +3689,15 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 				VectorMA(sprite.position, y, p1, sprite.position);
 				VectorMA(sprite.position, z, p2, sprite.position);
 
-				VectorMA(sprite.color, x, c0, sprite.color);
-				VectorMA(sprite.color, y, c1, sprite.color);
-				VectorMA(sprite.color, z, c2, sprite.color);
+				if (vertexLit)
+				{
+					VectorMA(sprite.color, x, c0, sprite.color);
+					VectorMA(sprite.color, y, c1, sprite.color);
+					VectorMA(sprite.color, z, c2, sprite.color);
+					VectorScale(sprite.color, tr.identityLight, sprite.color);
+				}
+				else
+					VectorCopy(color, sprite.color);
 
 				// x*x + y*y = 1.0
 				// => y*y = 1.0 - x*x
@@ -3682,6 +3720,7 @@ static void R_GenerateSurfaceSprites(
 	const srfBspSurface_t *bspSurf,
 	const shader_t *shader,
 	const shaderStage_t *stage,
+	const int fogIndex,
 	srfSprites_t *out)
 {
 	const surfaceSprite_t *surfaceSprite = stage->ss;
@@ -3693,11 +3732,12 @@ static void R_GenerateSurfaceSprites(
 
 	uint16_t indices[] = { 0, 1, 2, 0, 2, 3 };
 	std::vector<sprite_t> sprites =
-		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density);
+		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density, stage);
 
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
 	out->numSprites = sprites.size();
+	out->fogIndex = fogIndex;
 	// FIXME: Use big preallocated vbo/ibo to store all sprites in one vao
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
@@ -3709,7 +3749,7 @@ static void R_GenerateSurfaceSprites(
 			bundle, stage->stateBits);
 	out->shader->cullType = shader->cullType;
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
-	out->shader->stages[0]->alphaTestType = stage->alphaTestType;
+	out->alphaTestType = stage->alphaTestType;
 
 	out->numAttributes = 3;
 	out->attributes = (vertexAttribute_t *)ri.Hunk_Alloc(
@@ -3778,8 +3818,15 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 					if ( !stage->ss || stage->ss->type == SURFSPRITE_NONE )
 						continue;
 
+					if (j > 0 && (stage->stateBits & GLS_DEPTHFUNC_EQUAL))
+					{
+						ri.Printf(PRINT_WARNING, "depthFunc equal is not supported on surface sprites in rend2. Skipping stage\n");
+						surf->numSurfaceSprites -= 1;
+						continue;
+					}
+
 					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
-					R_GenerateSurfaceSprites(bspSurf, shader, stage, sprite);
+					R_GenerateSurfaceSprites(bspSurf, shader, stage, surf->fogIndex, sprite);
 					++surfaceSpriteNum;
 				}
 				break;

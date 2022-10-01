@@ -38,7 +38,6 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
-	int u_FogIndex;
 };
 
 #if defined(USE_DEFORM_VERTEXES) || defined(USE_RGBAGEN)
@@ -460,13 +459,13 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
-	int u_FogIndex;
 };
 
 uniform sampler2D u_DiffuseMap;
 #if defined(USE_ALPHA_TEST)
 uniform int u_AlphaTestType;
 #endif
+uniform int u_FogIndex;
 
 in vec2 var_DiffuseTex;
 in vec4 var_Color;
@@ -493,15 +492,19 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 
 	// fogPlane is inverted in tr_bsp for some reason.
 	float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
+	
+	bool intersects = (t > 0.0 && t <= 1.0);
+	if (inFog == intersects)
+		return 0.0;
 
 	float distToVertexFromViewOrigin = length(V);
-	float distToIntersectionFromViewOrigin = max(t, 0.0) * distToVertexFromViewOrigin;
+	float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
 
 	float distOutsideFog = max(distToVertexFromViewOrigin - distToIntersectionFromViewOrigin, 0.0);
-	float distThroughFog = mix(distToVertexFromViewOrigin, distOutsideFog, !inFog);
+	float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
 
 	float z = fog.depthToOpaque * distThroughFog;
-	return 1.0 - clamp(exp(-(z * z)), 0.0, 1.0);
+	return 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0);
 }
 #endif
 

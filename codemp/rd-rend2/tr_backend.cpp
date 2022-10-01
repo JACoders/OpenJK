@@ -602,7 +602,12 @@ void RB_BeginDrawingView (void) {
 		qglClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 	}
 
-	qglClear( clearBits );
+	// dont clear color if we have a skyportal and it has been rendered
+	if (tr.world && tr.world->skyboxportal == 1 && !(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
+		clearBits &= ~GL_COLOR_BUFFER_BIT;
+
+	if (clearBits > 0)
+		qglClear( clearBits );
 
 	if (backEnd.viewParms.targetFbo == NULL)
 	{
@@ -2302,6 +2307,10 @@ static void RB_UpdateSceneConstants(gpuFrame_t *frame)
 	VectorCopy4(backEnd.refdef.sunDir, sceneBlock.primaryLightOrigin);
 	VectorCopy(backEnd.refdef.sunAmbCol, sceneBlock.primaryLightAmbient);
 	VectorCopy(backEnd.refdef.sunCol, sceneBlock.primaryLightColor);
+	if (tr.world != nullptr)
+		sceneBlock.globalFogIndex = tr.world->globalFogIndex - 1;
+	else
+		sceneBlock.globalFogIndex = -1;
 
 	tr.sceneUboOffset = RB_AppendConstantsData(
 		frame, &sceneBlock, sizeof(sceneBlock));
@@ -2340,21 +2349,18 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 	}
 	else
 	{
-		if (tr.world->globalFog)
-			fogsBlock.numFogs = 1;
-		else
-			fogsBlock.numFogs = tr.world->numfogs - 1; // Don't reserve fog 0 as 'null'
+		fogsBlock.numFogs = tr.world->numfogs - 1; // Don't reserve fog 0 as 'null'
 	}
 
 	for (int i = 0; i < fogsBlock.numFogs; ++i)
 	{
-		const fog_t *fog = tr.world->globalFog ? tr.world->globalFog : tr.world->fogs + i + 1;
+		const fog_t *fog = tr.world->fogs + i + 1;
 		FogsBlock::Fog *fogData = fogsBlock.fogs + i;
 
 		VectorCopy4(fog->surface, fogData->plane);
 		VectorCopy4(fog->color, fogData->color);
 		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
-		fogData->hasPlane = fog == tr.world->globalFog ? qfalse : fog->hasSurface;
+		fogData->hasPlane = fog->hasSurface;
 	}
 
 	tr.fogsUboOffset = RB_AppendConstantsData(
@@ -2695,14 +2701,6 @@ static void RB_UpdateShaderAndEntityConstants(
 			RB_UpdateEntityMatrixConstants(entityBlock, refEntity);
 			RB_UpdateEntityModelConstants(entityBlock, refEntity);
 
-			if (tr.world != nullptr)
-			{
-				if (tr.world->globalFog != nullptr)
-					entityBlock.fogIndex = 0;
-				else if (drawSurf->fogIndex > 0)
-					entityBlock.fogIndex = drawSurf->fogIndex - 1;
-			}
-
 			tr.entityUboOffsets[entityNum] = RB_AppendConstantsData(
 				frame, &entityBlock, sizeof(entityBlock));
 		}
@@ -2832,9 +2830,9 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 	RB_UpdateCameraConstants(frame);
 	if (backEnd.frameUBOsInitialized == qfalse)
 	{
+		RB_UpdateFogsConstants(frame);
 		RB_UpdateSceneConstants(frame);
 		RB_UpdateLightsConstants(frame);
-		RB_UpdateFogsConstants(frame);
 	}
 
 	RB_UpdateShaderAndEntityConstants(frame, drawSurfs, numDrawSurfs);
@@ -2844,7 +2842,7 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 
 	RB_EndConstantsUpdate(frame);
 
-	backEnd.frameUBOsInitialized = qtrue;
+	backEnd.frameUBOsInitialized = (backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) ? qfalse : qtrue;
 }
 
 

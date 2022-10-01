@@ -2155,11 +2155,14 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	const surfaceSprite_t *ss = surf->sprite;
 
 	uint32_t shaderFlags = 0;
-	if ( firstStage->alphaTestType != ALPHA_TEST_NONE )
+	if ( surf->alphaTestType != ALPHA_TEST_NONE )
 		shaderFlags |= SSDEF_ALPHA_TEST;
 
 	if ( ss->type == SURFSPRITE_ORIENTED )
 		shaderFlags |= SSDEF_FACE_CAMERA;
+
+	if ( surf->fogIndex != -1)
+		shaderFlags |= SSDEF_USE_FOG;
 
 	shaderProgram_t *program = programGroup + shaderFlags;
 	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
@@ -2169,6 +2172,12 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	
 	uniformDataWriter.SetUniformMatrix4x4(
 		UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+
+	uniformDataWriter.SetUniformInt(
+		UNIFORM_ALPHA_TEST_TYPE, surf->alphaTestType);
+
+	if (surf->fogIndex != -1)
+		uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, surf->fogIndex - 1);
 
 	Allocator& frameAllocator = *backEndData->perFrameMemory;
 
@@ -2184,7 +2193,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
 		{ currentFrameUbo, offset, UNIFORM_BLOCK_SURFACESPRITE },
-		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA }
+		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS }
 	};
 
 	DrawItem item = {};
