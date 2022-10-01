@@ -13,7 +13,9 @@ in vec4 attr_Color;
 
 in vec3 attr_Position;
 in vec3 attr_Normal;
+#if defined(PER_PIXEL_LIGHTING)
 in vec4 attr_Tangent;
+#endif
 
 #if defined(USE_VERTEX_ANIMATION)
 in vec3 attr_Position2;
@@ -35,14 +37,6 @@ layout(std140) uniform Camera
 	vec3 u_ViewForward;
 	vec3 u_ViewLeft;
 	vec3 u_ViewUp;
-};
-
-layout(std140) uniform Scene
-{
-	vec4 u_PrimaryLightOrigin;
-	vec3 u_PrimaryLightAmbient;
-	vec3 u_PrimaryLightColor;
-	float u_PrimaryLightRadius;
 };
 
 layout(std140) uniform Entity
@@ -226,7 +220,9 @@ void main()
 #if defined(USE_VERTEX_ANIMATION)
 	vec3 position  = mix(attr_Position,    attr_Position2,    u_VertexLerp);
 	vec3 normal    = mix(attr_Normal,      attr_Normal2,      u_VertexLerp);
+	#if defined(PER_PIXEL_LIGHTING)
 	vec3 tangent   = mix(attr_Tangent.xyz, attr_Tangent2.xyz, u_VertexLerp);
+	#endif
 #elif defined(USE_SKELETAL_ANIMATION)
 	mat4x3 influence =
 		GetBoneMatrix(attr_BoneIndexes[0]) * attr_BoneWeights[0] +
@@ -333,13 +329,14 @@ void main()
 }
 
 /*[Fragment]*/
-#if defined(USE_LIGHT) && !defined(USE_VERTEX_LIGHTING)
+#if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 #define PER_PIXEL_LIGHTING
 #endif
 layout(std140) uniform Scene
 {
 	vec4 u_PrimaryLightOrigin;
 	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
 	vec3 u_PrimaryLightColor;
 	float u_PrimaryLightRadius;
 };
@@ -380,7 +377,7 @@ layout(std140) uniform Lights
 	Light u_Lights[32];
 };
 
-uniform int u_LightIndex;
+uniform int u_LightMask;
 uniform sampler2D u_DiffuseMap;
 
 #if defined(USE_LIGHTMAP)
@@ -403,7 +400,7 @@ uniform sampler2D u_SpecularMap;
 uniform sampler2D u_ShadowMap;
 #endif
 
-//uniform samplerCubeShadow u_ShadowMap2;
+uniform sampler2DArrayShadow u_ShadowMap2;
 
 #if defined(USE_CUBEMAP)
 uniform samplerCube u_CubeMap;
@@ -674,26 +671,65 @@ float CalcLightAttenuation(float point, float normDist)
 	return clamp(attenuation, 0.0, 1.0);
 }
 
-#if defined(USE_LIGHT_VECTOR) && !defined(USE_VERTEX_LIGHTING) && defined(USE_DSHADOWS)
-#define DEPTH_MAX_ERROR 0.000000059604644775390625
+#if defined(USE_DSHADOWS)
+#define DEPTH_MAX_ERROR 0.0000152587890625
 
-vec3 sampleOffsetDirections[20] = vec3[]
+vec2 poissonDiscPolar[9] = vec2[9]
 (
-	vec3(1.0, 1.0, 1.0), vec3(1.0, -1.0, 1.0), vec3(-1.0, -1.0, 1.0), vec3(-1.0, 1.0, 1.0),
-	vec3(1.0, 1.0, -1.0), vec3(1.0, -1.0, -1.0), vec3(-1.0, -1.0, -1.0), vec3(-1.0, 1.0, -1.0),
-	vec3(1.0, 1.0, 0.0), vec3(1.0, -1.0, 0.0), vec3(-1.0, -1.0, 0.0), vec3(-1.0, 1.0, 0.0),
-	vec3(1.0, 0.0, 1.0), vec3(-1.0, 0.0, 1.0), vec3(1.0, 0.0, -1.0), vec3(-1.0, 0.0, -1.0),
-	vec3(0.0, 1.0, 1.0), vec3(0.0, -1.0, 1.0), vec3(0.0, -1.0, -1.0), vec3(0.0, 1.0, -1.0)
-	);
+vec2(-0.7055767, 0.196515),    vec2(0.3524343, -0.7791386),
+vec2(0.2391056, 0.9189604),    vec2(-0.07580382, -0.09224417),
+vec2(0.5784913, -0.002528916), vec2(0.192888, 0.4064181),
+vec2(-0.6335801, -0.5247476),  vec2(-0.5579782, 0.7491854),
+vec2(0.7320465, 0.6317794)
+);
 
-float pcfShadow(in samplerCubeShadow depthMap, in vec3 L, in float distance)
+// based on https://www.gamedev.net/forums/topic/687535-implementing-a-cube-map-lookup-function/5337472/
+vec3 sampleCube(in vec3 v)
 {
+	vec3 vAbs = abs(v);
+	float ma = 0.0;
+	vec2 uv = vec2(0.0);
+	float faceIndex = 0.0;
+	if(vAbs.z >= vAbs.x && vAbs.z >= vAbs.y)
+	{
+		faceIndex = v.z < 0.0 ? 5.0 : 4.0;
+		ma = 0.5 / vAbs.z;
+		uv = vec2(v.z < 0.0 ? -v.x : v.x, -v.y);
+	}
+	else if(vAbs.y >= vAbs.x)
+	{
+		faceIndex = v.y < 0.0 ? 3.0 : 2.0;
+		ma = 0.5 / vAbs.y;
+		uv = vec2(v.x, v.y < 0.0 ? -v.z : v.z);
+	}
+	else
+	{
+		faceIndex = v.x < 0.0 ? 1.0 : 0.0;
+		ma = 0.5 / vAbs.x;
+		uv = vec2(v.x < 0.0 ? v.z : -v.z, -v.y);
+	}
+	return vec3(uv * ma + 0.5, faceIndex);
+}
+
+float pcfShadow(in sampler2DArrayShadow depthMap, in vec3 L, in float distance, in int lightId)
+{
+	const int samples = 9;
+	const float diskRadius = M_PI / 512.0;
+	
+	vec2 polarL = vec2(atan(L.z, L.x), acos(L.y));
 	float shadow = 0.0;
-	int samples = 20;
-	float diskRadius = 0.25;
+
 	for (int i = 0; i < samples; ++i)
 	{
-		shadow += texture(depthMap, vec4(L + sampleOffsetDirections[i] * diskRadius, distance));
+		vec2 samplePolar = poissonDiscPolar[i] * diskRadius + polarL;
+		vec3 sampleVec = vec3(0.0);
+		sampleVec.x = cos(samplePolar.x) * sin(samplePolar.y);
+		sampleVec.z = sin(samplePolar.x) * sin(samplePolar.y);
+		sampleVec.y = cos(samplePolar.y);
+
+		vec3 lookup = sampleCube(sampleVec) + vec3(0.0, 0.0, lightId * 6.0);
+
+		shadow += texture(depthMap, vec4(lookup, distance));
 	}
 	shadow /= float(samples);
 	return shadow;
@@ -708,14 +744,7 @@ float getLightDepth(in vec3 Vec, in float f)
 
 	float NormZComp = (f + n) / (f - n) - 2 * f*n / (Z* (f - n));
 
-	return ((NormZComp + 1.0) * 0.5) - DEPTH_MAX_ERROR;
-}
-
-float getShadowValue(in vec4 light, in int lightId)
-{
-	float distance = getLightDepth(light.xyz, light.w);
-	//return pcfShadow(u_ShadowMap2, light.xyz, distance);
-	return 1.0;
+	return ((NormZComp + 1.0) * 0.5);
 }
 #endif
 
@@ -727,14 +756,15 @@ vec3 CalcDynamicLightContribution(
 	in vec3 viewDir,
 	in float NE,
 	in vec3 diffuse,
-	in vec3 specular
+	in vec3 specular,
+	in vec3 vertexNormal
 )
 {
 	vec3 outColor = vec3(0.0);
 	vec3 position = viewOrigin - viewDir;
 	for ( int i = 0; i < u_NumLights; i++ )
 	{
-		if ( ( u_LightIndex & ( 1 << i ) ) == 0 ) {
+		if ( ( u_LightMask & ( 1 << i ) ) == 0 ) {
 			continue;
 		}
 		Light light = u_Lights[i];
@@ -745,10 +775,15 @@ vec3 CalcDynamicLightContribution(
 		float attenuation = CalcLightAttenuation(1.0, light.radius * light.radius / sqrLightDist);
 
 		#if defined(USE_DSHADOWS)
-			attenuation *= getShadowValue(vec4(L, light.radius), i);
+			vec3 sampleVector = L;
+			L /= sqrt(sqrLightDist);
+			sampleVector += L * tan(acos(dot(vertexNormal, -L)));
+			float distance = getLightDepth(sampleVector, light.radius);
+			attenuation *= pcfShadow(u_ShadowMap2, L, distance, i);
+		#else
+			L /= sqrt(sqrLightDist);
 		#endif
 
-		L = normalize(L);
 		vec3  H  = normalize(L + E);
 		float NL = clamp(dot(N, L), 0.0, 1.0);
 		float LH = clamp(dot(L, H), 0.0, 1.0);
@@ -902,7 +937,7 @@ void main()
 
 	// Recover any unused light as ambient, in case attenuation is over 4x or
 	// light is below the surface
-	ambientColor = clamp(ambientColor - lightColor * surfNL, 0.0, 1.0);
+	ambientColor = max(ambientColor - lightColor * surfNL, 0.0);
   #endif
 
 	// Scale lightColor by PI because we need want to have the same output intensity
@@ -957,7 +992,7 @@ void main()
 	reflectance  = CalcDiffuse(diffuse.rgb, NE, NL2, L2H2, roughness);
 	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, L2H2, VH2, roughness);
 
-	lightColor = u_PrimaryLightColor * var_Color.rgb;
+	lightColor = u_PrimaryLightColor;
     #if defined(USE_SHADOWMAP)
 	lightColor *= shadowValue;
     #endif
@@ -965,7 +1000,7 @@ void main()
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
 	
-	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb);
+	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, var_Normal.xyz);
 	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb);
 
 #else

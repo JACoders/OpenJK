@@ -2321,8 +2321,8 @@ static void ParseSkyParms( const char **text ) {
 	if (shader.noTC)
 		imgFlags |= IMGFLAG_NO_COMPRESSION;
 
-	if (tr.world && tr.hdrLighting == qtrue)
-		imgFlags |= IMGFLAG_SRGB;
+	if (tr.hdrLighting == qtrue)
+		imgFlags |= IMGFLAG_SRGB | IMGFLAG_HDR | IMGFLAG_NOLIGHTSCALE;
 
 	// outerbox
 	token = COM_ParseExt( text, qfalse );
@@ -2702,6 +2702,12 @@ static qboolean ParseShader( const char **text )
 			shader.noPicMip = qtrue;
 			continue;
 		}
+		// refractive surface
+		else if ( !Q_stricmp(token, "refractive" ) )
+		{
+			shader.useDistortion = qtrue;
+			continue;
+		}
 		// no picmip adjustment
 		else if ( !Q_stricmp( token, "nopicmip" ) )
 		{
@@ -2879,7 +2885,7 @@ static void ComputeVertexAttribs(void)
 	int i, stage;
 
 	// dlights always need ATTR_NORMAL
-	shader.vertexAttribs = ATTR_POSITION | ATTR_NORMAL;
+	shader.vertexAttribs = ATTR_POSITION | ATTR_NORMAL | ATTR_COLOR;
 
 	if (shader.defaultShader)
 	{
@@ -3174,7 +3180,7 @@ static qboolean CollapseStagesToGLSL(void)
 	ri.Printf (PRINT_DEVELOPER, "Collapsing stages for shader '%s'\n", shader.name);
 
 	// skip shaders with deforms
-	if (shader.numDeforms != 0)
+	if (shader.numDeforms == 1)
 	{
 		skip = qtrue;
 		ri.Printf (PRINT_DEVELOPER, "> Shader has vertex deformations. Aborting stage collapsing\n");
@@ -3242,6 +3248,7 @@ static qboolean CollapseStagesToGLSL(void)
 			switch(pStage->alphaGen)
 			{
 				case AGEN_PORTAL:
+				case AGEN_LIGHTING_SPECULAR:
 					skip = qtrue;
 					break;
 				default:
@@ -3278,10 +3285,6 @@ static qboolean CollapseStagesToGLSL(void)
 
 			// skip normal and specular maps
 			if (pStage->type != ST_COLORMAP)
-				continue;
-
-			// skip agen spec stages and environment mapped stages
-			if (pStage->alphaGen == AGEN_LIGHTING_SPECULAR || pStage->bundle[0].tcGen == TCGEN_ENVIRONMENT_MAPPED)
 				continue;
 
 			// skip lightmaps
@@ -4072,7 +4075,6 @@ static shader_t *FinishShader( void ) {
   		//shader.lightmapIndex = LIGHTMAP_NONE;
 	}
 
-
 	//
 	// compute number of passes
 	//
@@ -4081,6 +4083,22 @@ static shader_t *FinishShader( void ) {
 	// fogonly shaders don't have any normal passes
 	if (stage == 0 && !shader.isSky)
 		shader.sort = SS_FOG;
+
+	// determain if the shader can be simplified when beeing rendered to depth
+	if (shader.sort == SS_OPAQUE &&
+		shader.numDeforms == 0)
+	{
+		for (stage = 0; stage < MAX_SHADER_STAGES; stage++) {
+			shaderStage_t *pStage = &stages[stage];
+
+			if (!pStage->active)
+				continue;
+
+			if (pStage->alphaTestType == ALPHA_TEST_NONE)
+				shader.useSimpleDepthShader = qtrue;
+			break;
+		}
+	}
 
 	// determine which stage iterator function is appropriate
 	ComputeStageIteratorFunc();
@@ -4971,6 +4989,7 @@ static void CreateInternalShaders( void ) {
 	shader.sort = SS_BLEND0;
 	shader.defaultShader = qfalse;
 	tr.distortionShader = FinishShader();
+	tr.distortionShader->useDistortion = qtrue;
 	shader.defaultShader = qtrue;
 
 	// weather shader placeholder
@@ -4981,7 +5000,7 @@ static void CreateInternalShaders( void ) {
 
 static void CreateExternalShaders( void ) {
 	tr.projectionShadowShader = R_FindShader( "projectionShadow", lightmapsNone, stylesDefault, qtrue );
-	tr.flareShader = R_FindShader( "flareShader", lightmapsNone, stylesDefault, qtrue );
+	tr.flareShader = R_FindShader( "gfx/misc/flare", lightmapsNone, stylesDefault, qtrue );
 
 	// Hack to make fogging work correctly on flares. Fog colors are calculated
 	// in tr_flare.c already.

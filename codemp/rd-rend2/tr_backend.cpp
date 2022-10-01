@@ -62,6 +62,10 @@ void GL_Bind( image_t *image ) {
 		glState.currenttextures[glState.currenttmu] = texnum;
 		if (image && image->flags & IMGFLAG_CUBEMAP)
 			qglBindTexture( GL_TEXTURE_CUBE_MAP, texnum );
+		else if (image->flags & IMGFLAG_3D)
+			qglBindTexture(GL_TEXTURE_3D, texnum);
+		else if (image->flags & IMGFLAG_2D_ARRAY)
+			qglBindTexture(GL_TEXTURE_2D_ARRAY, texnum);
 		else
 			qglBindTexture( GL_TEXTURE_2D, texnum );
 	}
@@ -106,6 +110,10 @@ void GL_BindToTMU( image_t *image, int tmu )
 
 		if (image && (image->flags & IMGFLAG_CUBEMAP))
 			qglBindTexture( GL_TEXTURE_CUBE_MAP, texnum );
+		else if (image && (image->flags & IMGFLAG_3D))
+			qglBindTexture(GL_TEXTURE_3D, texnum);
+		else if (image && (image->flags & IMGFLAG_2D_ARRAY))
+			qglBindTexture(GL_TEXTURE_2D_ARRAY, texnum);
 		else
 			qglBindTexture( GL_TEXTURE_2D, texnum );
 	}
@@ -353,7 +361,6 @@ void GL_State( uint32_t stateBits )
 		if ( stateBits & GLS_POLYGON_OFFSET_FILL )
 		{
 			qglEnable( GL_POLYGON_OFFSET_FILL );
-			qglPolygonOffset( r_offsetFactor->value, r_offsetUnits->value );
 		}
 		else
 		{
@@ -545,18 +552,6 @@ void RB_BeginDrawingView (void) {
 	else
 	{
 		FBO_Bind(backEnd.viewParms.targetFbo);
-
-		// FIXME: hack for cubemap testing
-		if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
-		{
-			image_t *cubemap = backEnd.viewParms.targetFboCubemap->image;
-			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
-		}
-		else if (tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo)
-		{
-			image_t *cubemap = backEnd.viewParms.targetFboCubemap->image;
-			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, cubemap->texnum, 0);
-		}
 	}
 
 	//
@@ -607,14 +602,12 @@ void RB_BeginDrawingView (void) {
 		qglClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 	}
 
-	// clear to black for cube maps
-	if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
-	{
-		clearBits |= GL_COLOR_BUFFER_BIT;
-		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-	}
+	// dont clear color if we have a skyportal and it has been rendered
+	if (tr.world && tr.world->skyboxportal == 1 && !(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
+		clearBits &= ~GL_COLOR_BUFFER_BIT;
 
-	qglClear( clearBits );
+	if (clearBits > 0)
+		qglClear( clearBits );
 
 	if (backEnd.viewParms.targetFbo == NULL)
 	{
@@ -650,6 +643,11 @@ void RB_BeginDrawingView (void) {
 #endif
 		GL_SetModelviewMatrix( s_flipMatrix );
 	}
+
+	if (backEnd.viewParms.flags & VPF_POINTSHADOW)
+		qglPolygonOffset(r_shadowOffsetFactor->value, r_shadowOffsetUnits->value);
+	else
+		qglPolygonOffset(r_offsetFactor->value, r_offsetUnits->value);
 }
 
 
@@ -1258,7 +1256,13 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemapIndex, &postRender);
 		assert(shader != nullptr);
 
-		if ( shader == oldShader &&	entityNum == oldEntityNum )
+		if (shader->sort != SS_OPAQUE)
+		{
+			// Don't draw yet, let's see what's to come
+			continue;
+		}
+
+		if ( shader == oldShader &&	entityNum == oldEntityNum)
 		{
 			// fast path, same as previous sort
 			backEnd.currentDrawSurfIndex = i;
@@ -1273,12 +1277,6 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		if ( shader != oldShader ||
 				(entityNum != oldEntityNum && !shader->entityMergable) )
 		{
-			if ( shader->sort != SS_OPAQUE )
-			{
-				// Don't draw yet, let's see what's to come
-				continue;
-			}
-
 			if ( oldShader != nullptr )
 			{
 				RB_EndSurface();
@@ -1341,12 +1339,13 @@ static void RB_SubmitDrawSurfs(
 		fogNum = drawSurf->fogIndex;
 		dlighted = drawSurf->dlightBits;
 
-		if ( shader == oldShader &&
+		if (    shader == oldShader &&
 				fogNum == oldFogNum &&
 				postRender == oldPostRender &&
 				cubemapIndex == oldCubemapIndex &&
 				entityNum == oldEntityNum &&
-				dlighted == oldDlighted )
+				dlighted == oldDlighted &&
+				backEnd.framePostProcessed == shader->useDistortion )
 		{
 			// fast path, same as previous sort
 			backEnd.currentDrawSurfIndex = i;
@@ -1387,7 +1386,17 @@ static void RB_SubmitDrawSurfs(
 			oldEntityNum = entityNum;
 		}
 
+		qboolean isDistortionShader = (qboolean)
+			((shader->useDistortion == qtrue) || (backEnd.currentEntity && backEnd.currentEntity->e.renderfx & RF_DISTORTION));
+
+		if (backEnd.framePostProcessed != isDistortionShader)
+			continue;
+
 		backEnd.currentDrawSurfIndex = i;
+
+		// ugly hack for now...
+		// find better way to pass dlightbits
+		tess.dlightBits = drawSurf->dlightBits;
 
 		// add the triangles for this surface
 		rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
@@ -1457,11 +1466,13 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 	each surface corresponds to something which has all of its gpu data uploaded
 	*/
 
+	int estimatedNumShaderStages = (backEnd.viewParms.flags & VPF_DEPTHSHADOW) ? 1 : 4;
+
 	// Prepare memory for the current render pass
 	void *allocMark = backEndData->perFrameMemory->Mark();
 	assert(backEndData->currentPass == nullptr);
 	backEndData->currentPass = RB_CreatePass(
-		*backEndData->perFrameMemory, numDrawSurfs * 4);
+		*backEndData->perFrameMemory, numDrawSurfs * estimatedNumShaderStages);
 
 	// save original time for entity shader offsets
 	float originalTime = backEnd.refdef.floatTime;
@@ -1957,32 +1968,52 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 
 	RB_SetGL2D();
 
-	image_t *cubemap = cmd->cubemap->image;
+	qglBindTexture(GL_TEXTURE_CUBE_MAP, tr.renderCubeImage->texnum);
+	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	qglBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-	if (!cubemap)
-		return (const void *)(cmd + 1);
-
-	FBO_Bind(tr.preFilterEnvMapFbo);
-	GL_BindToTMU(cubemap, TB_CUBEMAP);
-
-	GLSL_BindProgram(&tr.prefilterEnvMapShader);
-
-	int width = cubemap->width;
-	int height = cubemap->height;
-	float roughnessMips = (float)CUBE_MAP_MIPS - 4.0f;
-
-	for (int level = 1; level <= CUBE_MAP_MIPS; level++)
+	if (!cmd->cubemap->image)
 	{
-		width = width / 2;
-		height = height / 2;
+		GLenum cubemapFormat = GL_RGBA8;
+		if (r_hdr->integer)
+		{
+			cubemapFormat = GL_RGBA16F;
+		}
+		// FIX ME: Only allocate needed mip level!
+		cmd->cubemap->image = R_CreateImage(
+			va("*cubeMap%d", cmd->cubemapId),
+			NULL,
+			CUBE_MAP_SIZE,
+			CUBE_MAP_SIZE,
+			IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION |
+			IMGFLAG_CLAMPTOEDGE |
+			IMGFLAG_MIPMAP |
+			IMGFLAG_CUBEMAP,
+			cubemapFormat);
+	}
+	assert(cmd->cubemap->image);
+
+	int width = cmd->cubemap->image->width;
+	int height = cmd->cubemap->image->height;
+	float roughnessMips = (float)CUBE_MAP_ROUGHNESS_MIPS;
+
+	for (int level = 0; level <= CUBE_MAP_ROUGHNESS_MIPS; level++)
+	{
+		FBO_Bind(tr.filterCubeFbo);
+		qglFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd->cubemap->image->texnum, level);
+		GL_BindToTMU(tr.renderCubeImage, TB_CUBEMAP);
+		GLSL_BindProgram(&tr.prefilterEnvMapShader);
+
 		qglViewport(0, 0, width, height);
 		qglScissor(0, 0, width, height);
 
 		vec4_t viewInfo;
-		VectorSet4(viewInfo, cmd->cubeSide, level, roughnessMips, level / roughnessMips);
+		VectorSet4(viewInfo, 0, level, roughnessMips, level / roughnessMips);
 		GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
 		RB_InstantTriangle();
-		qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, level, 0, 0, 0, 0, width, height);
+		width = width / 2;
+		height = height / 2;
 	}
 
 	return (const void *)(cmd + 1);
@@ -1992,14 +2023,12 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 static void RB_RenderSunShadows()
 {
 	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
-		(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) ||
-		(tr.shadowCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.shadowCubeFbo))
+		(backEnd.viewParms.flags & VPF_SHADOWMAP) ||
+		(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
 		return;
 
 	FBO_t *shadowFbo = tr.screenShadowFbo;
 
-	vec4_t quadVerts[4];
-	vec2_t texCoords[4];
 	vec4_t box;
 
 	FBO_Bind(shadowFbo);
@@ -2015,33 +2044,27 @@ static void RB_RenderSunShadows()
 	qglViewport(box[0], box[1], box[2], box[3]);
 	qglScissor(box[0], box[1], box[2], box[3]);
 
-	box[0] = backEnd.viewParms.viewportX / (float)glConfig.vidWidth;
-	box[1] = backEnd.viewParms.viewportY / (float)glConfig.vidHeight;
-	box[2] = box[0] + backEnd.viewParms.viewportWidth / (float)glConfig.vidWidth;
-	box[3] = box[1] + backEnd.viewParms.viewportHeight / (float)glConfig.vidHeight;
-
-	texCoords[0][0] = box[0]; texCoords[0][1] = box[3];
-	texCoords[1][0] = box[2]; texCoords[1][1] = box[3];
-	texCoords[2][0] = box[2]; texCoords[2][1] = box[1];
-	texCoords[3][0] = box[0]; texCoords[3][1] = box[1];
-
-	box[0] = -1.0f;
-	box[1] = -1.0f;
-	box[2] =  1.0f;
-	box[3] =  1.0f;
-
-	VectorSet4(quadVerts[0], box[0], box[3], 0, 1);
-	VectorSet4(quadVerts[1], box[2], box[3], 0, 1);
-	VectorSet4(quadVerts[2], box[2], box[1], 0, 1);
-	VectorSet4(quadVerts[3], box[0], box[1], 0, 1);
-
 	GL_State(GLS_DEPTHTEST_DISABLE);
 	GLSL_BindProgram(&tr.shadowmaskShader);
 
-	GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
-	GL_BindToTMU(tr.sunShadowDepthImage[0], TB_SHADOWMAP);
-	GL_BindToTMU(tr.sunShadowDepthImage[1], TB_SHADOWMAP2);
-	GL_BindToTMU(tr.sunShadowDepthImage[2], TB_SHADOWMAP3);
+	if (tr.renderCubeFbo[0] != NULL && (
+		backEnd.viewParms.targetFbo == tr.renderCubeFbo[0] ||
+		backEnd.viewParms.targetFbo == tr.renderCubeFbo[1] ||
+		backEnd.viewParms.targetFbo == tr.renderCubeFbo[2] ||
+		backEnd.viewParms.targetFbo == tr.renderCubeFbo[3] ||
+		backEnd.viewParms.targetFbo == tr.renderCubeFbo[4] ||
+		backEnd.viewParms.targetFbo == tr.renderCubeFbo[5]
+		)
+		)
+	{
+		GL_BindToTMU(tr.renderCubeDepthImage, TB_COLORMAP);
+	}
+	else
+	{
+		GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
+	}
+	
+	GL_BindToTMU(tr.sunShadowArrayImage, TB_SHADOWMAP);
 
 	GLSL_SetUniformMatrix4x4(
 		&tr.shadowmaskShader,
@@ -2077,8 +2100,9 @@ static void RB_RenderSunShadows()
 
 	const vec4_t viewInfo = { zmax / zmin, zmax, 0.0f, 0.0f };
 	GLSL_SetUniformVec4(&tr.shadowmaskShader, UNIFORM_VIEWINFO, viewInfo);
+	RB_InstantTriangle();
 
-	RB_InstantQuad2(quadVerts, texCoords);
+	GL_BindToTMU(NULL, TB_SHADOWMAP);
 }
 
 static void RB_RenderSSAO()
@@ -2086,7 +2110,6 @@ static void RB_RenderSSAO()
 	const float zmax = backEnd.viewParms.zFar;
 	const float zmin = r_znear->value;
 	const vec4_t viewInfo = { zmax / zmin, zmax, 0.0f, 0.0f };
-
 
 	FBO_Bind(tr.quarterFbo[0]);
 
@@ -2209,6 +2232,8 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	// darken down any stencil shadows
 	RB_ShadowFinish();
+
+	RB_RenderFlares();
 }
 
 static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSurfs )
@@ -2271,6 +2296,8 @@ static void RB_UpdateCameraConstants(gpuFrame_t *frame)
 	const float zmax = backEnd.viewParms.zFar;
 	const float zmin = r_znear->value;
 
+	// TODO: Add ViewProjection Matrix
+
 	CameraBlock cameraBlock = {};
 	VectorSet4(cameraBlock.viewInfo, zmax / zmin, zmax, 0.0f, 0.0f);
 	VectorCopy(backEnd.refdef.viewaxis[0], cameraBlock.viewForward);
@@ -2287,6 +2314,10 @@ static void RB_UpdateSceneConstants(gpuFrame_t *frame)
 	VectorCopy4(backEnd.refdef.sunDir, sceneBlock.primaryLightOrigin);
 	VectorCopy(backEnd.refdef.sunAmbCol, sceneBlock.primaryLightAmbient);
 	VectorCopy(backEnd.refdef.sunCol, sceneBlock.primaryLightColor);
+	if (tr.world != nullptr)
+		sceneBlock.globalFogIndex = tr.world->globalFogIndex - 1;
+	else
+		sceneBlock.globalFogIndex = -1;
 
 	tr.sceneUboOffset = RB_AppendConstantsData(
 		frame, &sceneBlock, sizeof(sceneBlock));
@@ -2310,6 +2341,7 @@ static void RB_UpdateLightsConstants(gpuFrame_t *frame)
 		VectorCopy(dlight->color, lightData->color);
 		lightData->radius = dlight->radius;
 	}
+	// TODO: Add pshadow data
 
 	tr.lightsUboOffset = RB_AppendConstantsData(
 		frame, &lightsBlock, sizeof(lightsBlock));
@@ -2335,7 +2367,7 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 		VectorCopy4(fog->surface, fogData->plane);
 		VectorCopy4(fog->color, fogData->color);
 		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
-		fogData->hasPlane = fog == tr.world->globalFog ? qfalse : fog->hasSurface;
+		fogData->hasPlane = fog->hasSurface;
 	}
 
 	tr.fogsUboOffset = RB_AppendConstantsData(
@@ -2618,8 +2650,6 @@ static void RB_UpdateShaderEntityConstants(
 static void RB_UpdateShaderAndEntityConstants(
 	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
 {
-	bool updatedEntities[MAX_REFENTITIES + 1] = {};
-
 	// Make the map bigger than it needs to be. Eases collisions and iterations
 	// through the map during lookup/insertion.
 	tr.shaderInstanceUboOffsetsMapSize = numDrawSurfs * 2;
@@ -2647,17 +2677,30 @@ static void RB_UpdateShaderAndEntityConstants(
 		R_DecomposeSort(
 			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
 
-		if (shader == oldShader &&
-			(entityNum == oldEntityNum || shader->entityMergable))
+		if (shader == oldShader && entityNum == oldEntityNum)
+			continue;
+
+		if (backEnd.frameUBOsInitialized == qtrue)
 		{
-			tr.entityUboOffsets[entityNum] = old_ubo;
+			// TODO: check if data set already inserted
+			if (RB_GetEntityShaderUboOffset(
+				tr.shaderInstanceUboOffsetsMap,
+				tr.shaderInstanceUboOffsetsMapSize,
+				entityNum,
+				shader->index) != -1)
+				continue;
+		}
+
+		if (*drawSurf->surface == SF_FLARE)
+		{
+			RB_UpdateShaderEntityConstants(frame, REFENTITYNUM_WORLD, &backEnd.entityFlare, shader);
 			continue;
 		}
 
 		const trRefEntity_t *refEntity = entityNum == REFENTITYNUM_WORLD ? &tr.worldEntity : &backEnd.refdef.entities[entityNum];
 
-		//FIX ME: find out why this causes trouble!
-		if (!updatedEntities[entityNum])
+		if (shader != oldShader ||
+			(entityNum != oldEntityNum /* && !shader->entityMergable*/))
 		{
 			EntityBlock entityBlock = {};
 
@@ -2665,19 +2708,9 @@ static void RB_UpdateShaderAndEntityConstants(
 			RB_UpdateEntityMatrixConstants(entityBlock, refEntity);
 			RB_UpdateEntityModelConstants(entityBlock, refEntity);
 
-			if (tr.world != nullptr)
-			{
-				if (tr.world->globalFog != nullptr)
-					entityBlock.fogIndex = tr.world->globalFog - tr.world->fogs - 1;
-				else if (drawSurf->fogIndex > 0)
-					entityBlock.fogIndex = drawSurf->fogIndex - 1;
-			}
-
 			tr.entityUboOffsets[entityNum] = RB_AppendConstantsData(
 				frame, &entityBlock, sizeof(entityBlock));
-			updatedEntities[entityNum] = true;
 		}
-
 		old_ubo = tr.entityUboOffsets[entityNum];
 		oldShader = shader;
 		oldEntityNum = entityNum;
@@ -2701,9 +2734,9 @@ static void RB_UpdateAnimationConstants(
 		const drawSurf_t *drawSurf = drawSurfs + i;
 		if (*drawSurf->surface != SF_MDX)
 			continue;
+		CRenderableSurface *RS = (CRenderableSurface *)drawSurf->surface;
 
-		RB_TransformBones(
-			(CRenderableSurface *)drawSurf->surface);
+		RB_TransformBones(RS);
 	}
 
 	// now get offsets or add skeletons to ubo
@@ -2712,8 +2745,8 @@ static void RB_UpdateAnimationConstants(
 		const drawSurf_t *drawSurf = drawSurfs + i;
 		if (*drawSurf->surface != SF_MDX)
 			continue;
-
 		CRenderableSurface *RS = (CRenderableSurface *)drawSurf->surface;
+		
 		int currentOffset = RB_GetBoneUboOffset(RS);
 		if (currentOffset < 0)
 		{
@@ -2802,9 +2835,12 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 	RB_BeginConstantsUpdate(frame);
 
 	RB_UpdateCameraConstants(frame);
-	RB_UpdateSceneConstants(frame);
-	RB_UpdateLightsConstants(frame);
-	RB_UpdateFogsConstants(frame);
+	if (backEnd.frameUBOsInitialized == qfalse)
+	{
+		RB_UpdateFogsConstants(frame);
+		RB_UpdateSceneConstants(frame);
+		RB_UpdateLightsConstants(frame);
+	}
 
 	RB_UpdateShaderAndEntityConstants(frame, drawSurfs, numDrawSurfs);
 	RB_UpdateAnimationConstants(frame, drawSurfs, numDrawSurfs);
@@ -2812,6 +2848,8 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 	RB_UpdateSpriteConstants(frame, drawSurfs, numDrawSurfs);
 
 	RB_EndConstantsUpdate(frame);
+
+	backEnd.frameUBOsInitialized = (backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) ? qfalse : qtrue;
 }
 
 
@@ -3038,6 +3076,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 
 	backEnd.framePostProcessed = qfalse;
 	backEnd.projection2D = qfalse;
+	backEnd.frameUBOsInitialized = qfalse;
 
 	return (const void *)(cmd + 1);
 }
@@ -3094,6 +3133,7 @@ const void *RB_PostProcess(const void *data)
 	dstBox[2] = backEnd.viewParms.viewportWidth;
 	dstBox[3] = backEnd.viewParms.viewportHeight;
 
+#if 0
 	if (r_ssao->integer)
 	{
 		srcBox[0] = backEnd.viewParms.viewportX      * tr.screenSsaoImage->width  / (float)glConfig.vidWidth;
@@ -3111,6 +3151,7 @@ const void *RB_PostProcess(const void *data)
 
 		FBO_Blit(tr.screenSsaoFbo, srcBox, NULL, srcFbo, dstBox, NULL, NULL, blendMode);
 	}
+#endif
 
 	if (r_dynamicGlow->integer)
 	{
@@ -3149,6 +3190,9 @@ const void *RB_PostProcess(const void *data)
 
 			FBO_Blit(srcFbo, srcBox, NULL, NULL, dstBox, NULL, color, 0);
 		}
+
+		// Copy depth buffer to the backbuffer for depth culling refractive surfaces
+		FBO_FastBlit(tr.renderFbo, srcBox, NULL, dstBox, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 	}
 
 	if (r_drawSunRays->integer)
@@ -3162,17 +3206,6 @@ const void *RB_PostProcess(const void *data)
 	if (r_debugWeather->integer == 2)
 	{
 		FBO_BlitFromTexture(tr.weatherDepthImage, NULL, NULL, NULL, nullptr, NULL, NULL, 0);
-	}
-
-	if (0 && r_sunlightMode->integer)
-	{
-		vec4i_t dstBox;
-		VectorSet4(dstBox, 0, 0, 128, 128);
-		FBO_BlitFromTexture(tr.sunShadowDepthImage[0], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
-		VectorSet4(dstBox, 128, 0, 128, 128);
-		FBO_BlitFromTexture(tr.sunShadowDepthImage[1], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
-		VectorSet4(dstBox, 256, 0, 128, 128);
-		FBO_BlitFromTexture(tr.sunShadowDepthImage[2], NULL, NULL, NULL, dstBox, NULL, NULL, 0);
 	}
 
 	if (0)
@@ -3243,6 +3276,10 @@ const void *RB_PostProcess(const void *data)
 	}
 
 	backEnd.framePostProcessed = qtrue;
+	FBO_Bind(NULL);
+	RB_RenderDrawSurfList(
+		backEnd.refdef.drawSurfs + backEnd.refdef.fistDrawSurf,
+		backEnd.refdef.numDrawSurfs - tr.refdef.fistDrawSurf);
 
 	return (const void *)(cmd + 1);
 }

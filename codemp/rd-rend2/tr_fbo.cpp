@@ -298,6 +298,7 @@ void FBO_AttachTextureImage(image_t *img, int index)
 	}
 
 	R_AttachFBOTexture2D(GL_TEXTURE_2D, img->texnum, index);
+
 	glState.currentFBO->colorImage[index] = img;
 	glState.currentFBO->colorBuffers[index] = img->texnum;
 }
@@ -461,7 +462,7 @@ void FBO_Init(void)
 	// clear render buffer
 	// this fixes the corrupt screen bug with r_hdr 1 on older hardware
 	FBO_Bind(tr.renderFbo);
-	qglClearColor( 1, 0, 0.5, 1 );
+	qglClearColor( 0.f, 0.f, 0.f, 1 );
 	qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// glow buffers
@@ -494,50 +495,50 @@ void FBO_Init(void)
 		R_CheckFBO(tr.sunRaysFbo);
 	}
 
-	// FIXME: Don't use separate color/depth buffers for a shadow buffer
 #if MAX_DRAWN_PSHADOWS > 0
-	if (tr.pshadowMaps[0] != NULL)
+	if (tr.pshadowArrayImage != NULL)
 	{
 		for( i = 0; i < MAX_DRAWN_PSHADOWS; i++)
 		{
 			tr.pshadowFbos[i] = FBO_Create(
-				va("_shadowmap%i", i), tr.pshadowMaps[i]->width,
-				tr.pshadowMaps[i]->height);
+				va("_shadowmap%i", i), tr.pshadowArrayImage->width,
+				tr.pshadowArrayImage->height);
 
 			FBO_Bind(tr.pshadowFbos[i]);
-			FBO_CreateBuffer(tr.pshadowFbos[i], GL_DEPTH_COMPONENT24, 0, 0);
-			R_AttachFBOTextureDepth(tr.pshadowMaps[i]->texnum);
-			FBO_SetupDrawBuffers();
-
+			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.pshadowArrayImage->texnum, 0, i);
+			qglDrawBuffer(GL_NONE);
+			qglReadBuffer(GL_NONE);
 			R_CheckFBO(tr.pshadowFbos[i]);
 		}
+
 	}
 #endif
 
 	if (r_dlightMode->integer >= 2)
 	{
-		tr.shadowCubeFbo = FBO_Create("_shadowCubeFbo", PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
-
-		FBO_Bind(tr.shadowCubeFbo);
-		FBO_CreateBuffer(tr.shadowCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
-		FBO_SetupDrawBuffers();
-
-		R_CheckFBO(tr.shadowCubeFbo);
+		for (i = 0; i < MAX_DLIGHTS * 6; i++)
+		{
+			tr.shadowCubeFbo[i] = FBO_Create(va("_shadowCubeFbo_%i", i), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE);
+			FBO_Bind(tr.shadowCubeFbo[i]);
+			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.pointShadowArrayImage->texnum, 0, i);
+			qglDrawBuffer(GL_NONE);
+			qglReadBuffer(GL_NONE);
+			R_CheckFBO(tr.shadowCubeFbo[i]);
+		}
 	}
 
-	if (tr.sunShadowDepthImage[0] != NULL)
+	if (tr.sunShadowArrayImage != NULL)
 	{
 		for ( i = 0; i < 3; i++)
 		{
 			tr.sunShadowFbo[i] = FBO_Create(
-				"_sunshadowmap", tr.sunShadowDepthImage[i]->width,
-				tr.sunShadowDepthImage[i]->height);
+				"_sunshadowmap", tr.sunShadowArrayImage->width,
+				tr.sunShadowArrayImage->height);
 
 			FBO_Bind(tr.sunShadowFbo[i]);
+			qglFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tr.sunShadowArrayImage->texnum, 0, i);
 			qglDrawBuffer(GL_NONE);
 			qglReadBuffer(GL_NONE);
-			R_AttachFBOTextureDepth(tr.sunShadowDepthImage[i]->texnum);
-			FBO_SetupDrawBuffers();
 
 			R_CheckFBO(tr.sunShadowFbo[i]);
 		}
@@ -627,32 +628,30 @@ void FBO_Init(void)
 
 	if (tr.renderCubeImage != NULL)
 	{
-		tr.renderCubeFbo = FBO_Create(
-			"_renderCubeFbo", tr.renderCubeImage->width,
-			tr.renderCubeImage->height);
+		for (i = 0; i < 6; i++)
+		{
+			tr.renderCubeFbo[i] = FBO_Create(
+				"_renderCubeFbo", tr.renderCubeImage->width,
+				tr.renderCubeImage->height);
+			FBO_Bind(tr.renderCubeFbo[i]);
+			R_AttachFBOTexture2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, tr.renderCubeImage->texnum, 0);
+			glState.currentFBO->colorImage[0] = tr.renderCubeImage;
+			glState.currentFBO->colorBuffers[0] = tr.renderCubeImage->texnum;
+			R_AttachFBOTextureDepth(tr.renderCubeDepthImage->texnum);
 
-		FBO_Bind(tr.renderCubeFbo);
-		R_AttachFBOTexture2D(
-			GL_TEXTURE_CUBE_MAP_POSITIVE_X, tr.renderCubeImage->texnum, 0);
+			FBO_SetupDrawBuffers();
+			R_CheckFBO(tr.renderCubeFbo[i]);
+		}
+
+		tr.filterCubeFbo = FBO_Create(
+			"_filterCubeFbo", tr.renderCubeImage->width,
+			tr.renderCubeImage->height);
+		FBO_Bind(tr.filterCubeFbo);
+		qglFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tr.renderCubeImage->texnum, 0);
 		glState.currentFBO->colorImage[0] = tr.renderCubeImage;
 		glState.currentFBO->colorBuffers[0] = tr.renderCubeImage->texnum;
-		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
 		FBO_SetupDrawBuffers();
-
-		R_CheckFBO(tr.renderCubeFbo);
-	}
-
-	if (tr.renderCubeImage != NULL)
-	{
-		tr.preFilterEnvMapFbo = FBO_Create(
-			"_preFilterEnvMapFbo", tr.renderCubeImage->width,
-			tr.renderCubeImage->height);
-
-		FBO_Bind(tr.preFilterEnvMapFbo);
-		FBO_AttachTextureImage(tr.prefilterEnvMapImage, 0);
-		FBO_SetupDrawBuffers();
-
-		R_CheckFBO(tr.preFilterEnvMapFbo);
+		R_CheckFBO(tr.filterCubeFbo);
 	}
 
 	if (tr.weatherDepthImage != nullptr)

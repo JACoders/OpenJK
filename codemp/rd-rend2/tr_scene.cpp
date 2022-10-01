@@ -261,6 +261,18 @@ void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, floa
 	dl->color[0] = r;
 	dl->color[1] = g;
 	dl->color[2] = b;
+
+	if (r_hdr->integer) 
+	{
+		float maxValue = MAX(r, MAX(g, b));
+		if (maxValue > 1.0f)
+		{
+			VectorScale(dl->color, 1.0f / maxValue, dl->color);
+			dl->radius *= maxValue;
+		}
+		dl->radius = MIN(dl->radius, 65535.0f);
+	}
+	
 	dl->additive = additive;
 }
 

@@ -59,8 +59,10 @@ layout(std140) uniform Bones
 };
 #endif
 
+#if defined(USE_TCMOD)
 uniform vec4 u_DiffuseTexMatrix;
 uniform vec4 u_DiffuseTexOffTurb;
+#endif
 
 #if defined(USE_TCGEN)
 uniform int u_TCGen0;
@@ -70,21 +72,18 @@ uniform vec3 u_TCGen0Vector1;
 
 uniform vec4 u_BaseColor;
 uniform vec4 u_VertColor;
+uniform vec4 u_Color;
 
 #if defined(USE_RGBAGEN)
 uniform int u_ColorGen;
 uniform int u_AlphaGen;
 #endif
 
-#if defined(USE_RGBAGEN) || defined(USE_DEFORM_VERTEXES)
-uniform vec4 u_Disintegration; // origin, threshhold
-#endif
-
 out vec2 var_DiffuseTex;
 out vec4 var_Color;
-#if defined(USE_FOG)
-out vec3 var_WSPosition;
-#endif
+out vec4 var_RefractPosR;
+out vec4 var_RefractPosG;
+out vec4 var_RefractPosB;
 
 #if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )
@@ -170,37 +169,6 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float scale = CalculateDeformScale( u_DeformFunc, u_Time, phase, frequency );
 
 			return pos + direction * (base + scale * amplitude);
-		}
-
-		case DEFORM_PROJECTION_SHADOW:
-		{
-			vec3 ground = u_DeformParams0.xyz;
-			float groundDist = u_DeformParams0.w;
-			vec3 lightDir = u_DeformParams1.xyz;
-
-			float d = dot( lightDir, ground );
-
-			lightDir = lightDir * max( 0.5 - d, 0.0 ) + ground;
-			d = 1.0 / dot( lightDir, ground );
-
-			vec3 lightPos = lightDir * d;
-
-			return pos - lightPos * dot( pos, ground ) + groundDist;
-		}
-		case DEFORM_DISINTEGRATION:
-		{
-			vec3 delta = u_Disintegration.xyz - pos;
-			float sqrDistance = dot(delta, delta);
-			vec3 normalScale = vec3(-0.01);
-			if ( sqrDistance < u_Disintegration.w )
-			{
-				normalScale = vec3(2.0, 2.0, 0.5);
-			}
-			else if ( sqrDistance < u_Disintegration.w + 50 )
-			{
-				normalScale = vec3(1.0, 1.0, 0.0);
-			}
-			return pos + normal * normalScale;
 		}
 	}
 }
@@ -293,38 +261,6 @@ vec4 CalcColor(vec3 position, vec3 normal)
 
 		color.rgb = clamp(u_DirectedLight * incoming + u_AmbientLight, 0.0, 1.0);
 	}
-	else if (u_ColorGen == CGEN_DISINTEGRATION_1)
-	{
-		vec3 delta = u_Disintegration.xyz - position;
-		float sqrDistance = dot(delta, delta);
-		if (sqrDistance < u_Disintegration.w)
-		{
-			color *= 0.0;
-		}
-		else if (sqrDistance < u_Disintegration.w + 60.0)
-		{
-			color *= vec4(0.0, 0.0, 0.0, 1.0);
-		}
-		else if (sqrDistance < u_Disintegration.w + 150.0)
-		{
-			color *= vec4(0.435295, 0.435295, 0.435295, 1.0);
-		}
-		else if (sqrDistance < u_Disintegration.w + 180.0)
-		{
-			color *= vec4(0.6862745, 0.6862745, 0.6862745, 1.0);
-		}
-		return color;
-	}
-	else if (u_ColorGen == CGEN_DISINTEGRATION_2)
-	{
-		vec3 delta = u_Disintegration.xyz - position;
-		float sqrDistance = dot(delta, delta);
-		if (sqrDistance < u_Disintegration.w)
-		{
-			return vec4(0.0);
-		}
-		return color;
-	}
 
 	vec3 viewer = u_LocalViewOrigin - position;
 
@@ -357,6 +293,10 @@ mat4x3 GetBoneMatrix(uint index)
 		bone[0].w, bone[1].w, bone[2].w);
 }
 #endif
+
+const float etaR = 1.0 / 1.35;
+const float etaG = 1.0 / 1.20;
+const float etaB = 1.0 / 1.05;
 
 void main()
 {
@@ -415,28 +355,36 @@ void main()
 #endif
 	}
 
-#if defined(USE_FOG)
-	var_WSPosition = (u_ModelMatrix * vec4(position, 1.0)).xyz;
-#endif
+	vec3 ws_Position	= mat3(u_ModelMatrix) * position;
+	vec3 ws_Normal		= normalize(mat3(u_ModelMatrix) * normal);
+	vec3 ws_ViewDir		= (u_ViewForward + u_ViewLeft * -gl_Position.x) + u_ViewUp * gl_Position.y;
+
+	#if defined(USE_TCMOD)
+	float distance = u_Color.a * clamp(1.0 - distance(tex, var_DiffuseTex), 0.0, 1.0);
+	#else
+	float distance = u_Color.a;
+	#endif
+
+	mat3 inverseModel = inverse(mat3(u_ModelMatrix));
+
+	vec3 refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaR));
+	vec3 new_pos = (distance * refraction_vec) + ws_Position;
+	var_RefractPosR = vec4(inverseModel * new_pos, 1.0);
+	var_RefractPosR = u_ModelViewProjectionMatrix * var_RefractPosR;
+	
+	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaG));
+	new_pos = (distance * refraction_vec) + ws_Position;
+	var_RefractPosG = vec4(inverseModel * new_pos, 1.0);
+	var_RefractPosG = u_ModelViewProjectionMatrix * var_RefractPosG;
+	
+	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaB));
+	new_pos = (distance * refraction_vec) + ws_Position;
+	var_RefractPosB = vec4(inverseModel * new_pos, 1.0);
+	var_RefractPosB = u_ModelViewProjectionMatrix * var_RefractPosB;
 }
 
 
 /*[Fragment]*/
-struct Fog
-{
-	vec4 plane;
-	vec4 color;
-	float depthToOpaque;
-	bool hasPlane;
-};
-
-layout(std140) uniform Fogs
-{
-	int u_NumFogs;
-	Fog u_Fogs[16];
-};
-
-uniform vec4 u_FogColorMask;
 
 layout(std140) uniform Camera
 {
@@ -461,57 +409,66 @@ layout(std140) uniform Entity
 	vec3 u_LocalViewOrigin;
 };
 
-uniform sampler2D u_DiffuseMap;
+uniform sampler2D u_TextureMap;
+uniform sampler2D u_LevelsMap;
+uniform sampler2D u_ScreenDepthMap;
+uniform vec4 u_Color;
+uniform vec2 u_AutoExposureMinMax;
+uniform vec3 u_ToneMinAvgMaxLinear;
+
 #if defined(USE_ALPHA_TEST)
 uniform int u_AlphaTestType;
 #endif
-uniform int u_FogIndex;
 
 in vec2 var_DiffuseTex;
 in vec4 var_Color;
-#if defined(USE_FOG)
-in vec3 var_WSPosition;
-#endif
+in vec4 var_RefractPosR;
+in vec4 var_RefractPosG;
+in vec4 var_RefractPosB;
 
 out vec4 out_Color;
-out vec4 out_Glow;
 
-
-#if defined(USE_FOG)
-float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
+vec3 LinearTosRGB( in vec3 color )
 {
-	bool inFog = dot(viewOrigin, fog.plane.xyz) - fog.plane.w >= 0.0 || !fog.hasPlane;
-
-	// line: x = o + tv
-	// plane: (x . n) + d = 0
-	// intersects: dot(o + tv, n) + d = 0
-	//             dot(o + tv, n) = -d
-	//             dot(o, n) + t*dot(n, v) = -d
-	//             t = -(d + dot(o, n)) / dot(n, v)
-	vec3 V = position - viewOrigin;
-
-	// fogPlane is inverted in tr_bsp for some reason.
-	float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
-	
-	bool intersects = (t > 0.0 && t <= 1.0);
-	if (inFog == intersects)
-		return 0.0;
-
-	float distToVertexFromViewOrigin = length(V);
-	float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
-
-	float distOutsideFog = max(distToVertexFromViewOrigin - distToIntersectionFromViewOrigin, 0.0);
-	float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
-
-	float z = fog.depthToOpaque * distThroughFog;
-	return 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0);
+	vec3 lo = 12.92 * color;
+	vec3 hi = 1.055 * pow(color, vec3(0.4166666)) - 0.055;
+	return mix(lo, hi, greaterThanEqual(color, vec3(0.0031308)));
 }
-#endif
+
+vec3 FilmicTonemap(vec3 x)
+{
+	const float SS  = 0.22; // Shoulder Strength
+	const float LS  = 0.30; // Linear Strength
+	const float LA  = 0.10; // Linear Angle
+	const float TS  = 0.20; // Toe Strength
+	const float TAN = 0.01; // Toe Angle Numerator
+	const float TAD = 0.30; // Toe Angle Denominator
+	
+	vec3 SSxx = SS * x * x;
+	vec3 LSx = LS * x;
+	vec3 LALSx = LSx * LA;
+	
+	return ((SSxx + LALSx + TS * TAN) / (SSxx + LSx + TS * TAD)) - TAN / TAD;
+}
 
 void main()
 {
-	vec4 color  = texture(u_DiffuseMap, var_DiffuseTex);
-	color.a *= var_Color.a;
+	vec2 texR = (var_RefractPosR.xy / var_RefractPosR.w) * 0.5 + 0.5;
+	vec2 texG = (var_RefractPosG.xy / var_RefractPosG.w) * 0.5 + 0.5;
+	vec2 texB = (var_RefractPosB.xy / var_RefractPosB.w) * 0.5 + 0.5;
+
+	vec4 color;
+	color.r	= texture(u_TextureMap, texR).r;
+	color.g = texture(u_TextureMap, texG).g;
+	color.b = texture(u_TextureMap, texB).b;
+	color.a = var_Color.a;
+	color.rgb *= var_Color.rgb;
+	color.rgb *= u_Color.rgb;
+
+	vec3 minAvgMax = texture(u_LevelsMap, texG).rgb;
+	vec3 logMinAvgMaxLum = clamp(minAvgMax * 20.0 - 10.0, -u_AutoExposureMinMax.y, -u_AutoExposureMinMax.x);
+	float avgLum = exp2(logMinAvgMaxLum.y);
+	
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -534,18 +491,16 @@ void main()
 			discard;
 	}
 #endif
+	
+	color.rgb *= u_ToneMinAvgMaxLinear.y / avgLum;
+	color.rgb = max(vec3(0.0), color.rgb - vec3(u_ToneMinAvgMaxLinear.x));
 
-#if defined(USE_FOG)
-	Fog fog = u_Fogs[u_FogIndex];
-	float fogFactor = CalcFog(u_ViewOrigin, var_WSPosition, fog);
-	color *= vec4(1.0) - u_FogColorMask * fogFactor;
-#endif
+	vec3 fWhite = 1.0 / FilmicTonemap(vec3(u_ToneMinAvgMaxLinear.z - u_ToneMinAvgMaxLinear.x));
+	color.rgb = FilmicTonemap(color.rgb) * fWhite;
 
-	out_Color = vec4(color.rgb * var_Color.rgb, color.a);
+	#if defined(USE_LINEAR_LIGHT)
+		color.rgb = LinearTosRGB(color.rgb);
+	#endif
 
-#if defined(USE_GLOW_BUFFER)
-	out_Glow = out_Color;
-#else
-	out_Glow = vec4(0.0);
-#endif
+	out_Color = clamp(color, 0.0, 1.0);
 }

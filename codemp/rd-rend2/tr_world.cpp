@@ -68,22 +68,16 @@ static qboolean	R_CullSurface( msurface_t *surf, int entityNum ) {
 			return qfalse;
 		}
 
-		// don't cull for depth shadow
-		/*
-		if ( tr.viewParms.flags & VPF_DEPTHSHADOW )
-		{
+		if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
 			return qfalse;
-		}
-		*/
 
-		// shadowmaps draw back surfaces
-		if ( tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW) )
+		if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
 		{
 			if (ct == CT_FRONT_SIDED)
 			{
 				ct = CT_BACK_SIDED;
 			}
-			else
+			else if (ct == CT_BACK_SIDED)
 			{
 				ct = CT_FRONT_SIDED;
 			}
@@ -347,6 +341,7 @@ static void R_AddWorldSurface(
 	}
 
 	// check for dlighting
+	// TODO: check for beeing correctly implemented because problems eg. with elevators ffa3
 	if ( dlightBits ) {
 		dlightBits = R_DlightSurface( surf, dlightBits );
 		dlightBits = ( dlightBits != 0 );

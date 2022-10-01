@@ -96,7 +96,8 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_AmbientLight",   GLSL_VEC3, 1 },
 	{ "u_DirectedLight",  GLSL_VEC3, 1 },
 	{ "u_Disintegration", GLSL_VEC4, 1 },
-	{ "u_LightIndex",    GLSL_INT, 1 },
+	{ "u_LightMask",    GLSL_INT, 1 },
+	{ "u_FogIndex",    GLSL_INT, 1 },
 
 	{ "u_FogColorMask", GLSL_VEC4, 1 },
 
@@ -354,7 +355,8 @@ static size_t GLSL_GetShaderHeader(
 
 	if (r_cubeMapping->integer)
 	{
-		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_MIPS - 4));
+		Q_strcat(dest, size, va("#define CUBEMAP_RESOLUTION float(%i)\n", CUBE_MAP_SIZE));
+		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_ROUGHNESS_MIPS));
 	}
 
 	if (r_deluxeSpecular->value > 0.000001f)
@@ -1479,6 +1481,9 @@ static int GLSL_LoadGPUProgramFogPass(
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
+		if (i & FOGDEF_USE_FALLBACK_GLOBAL_FOG)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_FALLBACK_GLOBAL_FOG\n");
+
 		if (i & FOGDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
@@ -1497,40 +1502,66 @@ static int GLSL_LoadGPUProgramFogPass(
 	return numPrograms;
 }
 
-static int GLSL_LoadGPUProgramDLight(
+static int GLSL_LoadGPUProgramRefraction(
 	ShaderProgramBuilder& builder,
-	Allocator& scratchAlloc )
+	Allocator& scratchAlloc)
 {
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
-		LoadProgramSource("dlight", allocator, fallback_dlightProgram);
-	for ( int i = 0; i < DLIGHTDEF_COUNT; i++ )
+		LoadProgramSource("refraction", allocator, fallback_refractionProgram);
+	for (int i = 0; i < REFRACTIONDEF_COUNT; i++)
 	{
-		uint32_t attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0;
+		uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_NORMAL | ATTR_COLOR;
 		extradefines[0] = '\0';
 
-		if (i & DLIGHTDEF_USE_DEFORM_VERTEXES)
+		if (i & REFRACTIONDEF_USE_DEFORM_VERTEXES)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
 
-		if (i & DLIGHTDEF_USE_ALPHA_TEST)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
-
-		if (!GLSL_LoadGPUShader(builder, &tr.dlightShader[i], "dlight", attribs, NO_XFB_VARS,
-				extradefines, *programDesc))
+		if (i & REFRACTIONDEF_USE_TCGEN_AND_TCMOD)
 		{
-			ri.Error(ERR_FATAL, "Could not load dlight shader!");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
 
-		GLSL_InitUniforms(&tr.dlightShader[i]);
+		if (i & REFRACTIONDEF_USE_VERTEX_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
+			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
+		}
 
-		qglUseProgram(tr.dlightShader[i].program);
-		GLSL_SetUniformInt(&tr.dlightShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
+		if (i & REFRACTIONDEF_USE_SKELETAL_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
+			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
+		}
+
+		if (i & REFRACTIONDEF_USE_RGBAGEN)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
+
+		if (i & REFRACTIONDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
+
+		if (i & REFRACTIONDEF_USE_SRGB_TRANSFORM)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LINEAR_LIGHT\n");
+
+		if (!GLSL_LoadGPUShader(builder, &tr.refractionShader[i], "refraction", attribs, NO_XFB_VARS,
+			extradefines, *programDesc))
+		{
+			ri.Error(ERR_FATAL, "Could not load generic shader!");
+		}
+
+		GLSL_InitUniforms(&tr.refractionShader[i]);
+
+		qglUseProgram(tr.refractionShader[i].program);
+		GLSL_SetUniformInt(&tr.refractionShader[i], UNIFORM_TEXTUREMAP, TB_COLORMAP);
+		GLSL_SetUniformInt(&tr.refractionShader[i], UNIFORM_LEVELSMAP, TB_LEVELSMAP);
+		GLSL_SetUniformInt(&tr.refractionShader[i], UNIFORM_SCREENDEPTHMAP, TB_SHADOWMAP);
 		qglUseProgram(0);
 
-		GLSL_FinishGPUShader(&tr.dlightShader[i]);
+		GLSL_FinishGPUShader(&tr.refractionShader[i]);
 
 		++numPrograms;
 	}
@@ -1575,6 +1606,9 @@ static int GLSL_LoadGPUProgramLightAll(
 			if (useFastLight)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_FAST_LIGHT\n");
 
+			if (r_dlightMode->integer >= 2)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_DSHADOWS\n");
+
 			switch (lightType)
 			{
 				case LIGHTDEF_USE_LIGHTMAP:
@@ -1591,9 +1625,6 @@ static int GLSL_LoadGPUProgramLightAll(
 				case LIGHTDEF_USE_LIGHT_VECTOR:
 				{
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VECTOR\n");
-					if (r_dlightMode->integer >= 2)
-						Q_strcat(extradefines, sizeof(extradefines), "#define USE_DSHADOWS\n");
-
 					break;
 				}
 
@@ -1971,8 +2002,6 @@ static int GLSL_LoadGPUProgramShadowMask(
 	if (r_shadowFilter->integer >= 2)
 		Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_FILTER2\n");
 
-	Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_CASCADE\n");
-
 	Q_strcat(
 		extradefines, sizeof(extradefines),
 		va("#define r_shadowMapSize %d\n", r_shadowMapSize->integer));
@@ -2167,7 +2196,7 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("surface_sprites", allocator, fallback_surface_spritesProgram);
-	const uint32_t attribs = ATTR_POSITION | ATTR_NORMAL;
+	const uint32_t attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_COLOR;
 	for ( int i = 0; i < SSDEF_COUNT; ++i )
 	{
 		extradefines[0] = '\0';
@@ -2181,6 +2210,10 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 		else if ( i & SSDEF_FACE_UP )
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define FACE_UP\n");
+
+		if ( i & SSDEF_USE_FOG )
+			Q_strcat(extradefines, sizeof(extradefines),
+				"#define USE_FOG\n");
 
 		if ( i & SSDEF_ALPHA_TEST )
 			Q_strcat(extradefines, sizeof(extradefines),
@@ -2300,7 +2333,7 @@ void GLSL_LoadGPUShaders()
 	numGenShaders += GLSL_LoadGPUProgramGeneric(builder, allocator);
 	numLightShaders += GLSL_LoadGPUProgramLightAll(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramFogPass(builder, allocator);
-	numEtcShaders += GLSL_LoadGPUProgramDLight(builder, allocator);
+	numEtcShaders += GLSL_LoadGPUProgramRefraction(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTextureColor(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDepthFill(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramPShadow(builder, allocator);
@@ -2311,7 +2344,8 @@ void GLSL_LoadGPUShaders()
 	numEtcShaders += GLSL_LoadGPUProgramCalcLuminanceLevel(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramShadowMask(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramSSAO(builder, allocator);
-	numEtcShaders += GLSL_LoadGPUProgramPrefilterEnvMap(builder, allocator);
+	if (r_cubeMapping->integer)
+		numEtcShaders += GLSL_LoadGPUProgramPrefilterEnvMap(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDepthBlur(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramGaussianBlur(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDynamicGlowUpsample(builder, allocator);
@@ -2340,13 +2374,13 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < GENERICDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.genericShader[i]);
 
+	for (i = 0; i < REFRACTIONDEF_COUNT; i++)
+		GLSL_DeleteGPUShader(&tr.refractionShader[i]);
+
 	GLSL_DeleteGPUShader(&tr.textureColorShader);
 
 	for ( i = 0; i < FOGDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.fogShader[i]);
-
-	for ( i = 0; i < DLIGHTDEF_COUNT; i++)
-		GLSL_DeleteGPUShader(&tr.dlightShader[i]);
 
 	for ( i = 0; i < LIGHTDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.lightallShader[i]);
@@ -2522,7 +2556,8 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	shaderStage_t *pStage = tess.xstages[stage];
 	int shaderAttribs = 0;
 
-	if (tess.fogNum && pStage->adjustColorsForFog)
+	if ( tess.fogNum && pStage->adjustColorsForFog && 
+		tess.shader->fogPass )
 		shaderAttribs |= GENERICDEF_USE_FOG;
 
 	if ( pStage->alphaTestType != ALPHA_TEST_NONE )

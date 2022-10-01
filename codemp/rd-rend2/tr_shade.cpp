@@ -751,6 +751,11 @@ static UniformBlockBinding GetEntityBlockUniformBinding(
 		binding.ubo = tr.staticUbo;
 		binding.offset = tr.entity2DUboOffset;
 	}
+	else if (refEntity == &backEnd.entityFlare)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.entityFlareUboOffset;
+	}
 	else
 	{
 		binding.ubo = currentFrameUbo;
@@ -797,7 +802,7 @@ static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 	binding.ubo = currentFrameUbo;
 	binding.block = UNIFORM_BLOCK_SHADER_INSTANCE;
 
-	if (refEntity == &tr.worldEntity)
+	if (refEntity == &tr.worldEntity || refEntity == &backEnd.entityFlare)
 	{
 		binding.offset = RB_GetEntityShaderUboOffset(
 			tr.shaderInstanceUboOffsetsMap,
@@ -860,7 +865,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 
 		VectorCopy(origin, vector);
-		vector[3] = 1.0f;
+		vector[3] = (float)l;
 		uniformDataWriter.SetUniformVec4(UNIFORM_LIGHTORIGIN, vector);
 
 		VectorScale(ps->lightViewAxis[0], 1.0f, vector);
@@ -879,7 +884,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 		uint32_t stateBits = 0;
 		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL;
 
-		samplerBindingsWriter.AddStaticImage(tr.pshadowMaps[l], TB_DIFFUSEMAP);
+		samplerBindingsWriter.AddStaticImage(tr.pshadowArrayImage, TB_DIFFUSEMAP);
 
 		CaptureDrawData(input, pStage, 0, 0);
 
@@ -935,14 +940,26 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	else if (glState.skeletalAnimation)
 		shaderBits |= FOGDEF_USE_SKELETAL_ANIMATION;
+
+	if (tr.world && tr.world->globalFog && 
+		input->fogNum != tr.world->globalFogIndex &&
+		input->shader->sort != SS_FOG)
+		shaderBits |= FOGDEF_USE_FALLBACK_GLOBAL_FOG;
 	
 	shaderProgram_t *sp = tr.fogShader + shaderBits;
 
 	backEnd.pc.c_fogDraws++;
 
+	UniformDataWriter uniformDataWriter;
+	uniformDataWriter.Start(sp);
+	uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
+	
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	if ( tess.shader->fogPass == FP_EQUAL )
 		stateBits |= GLS_DEPTHFUNC_EQUAL;
+
+	if (input->shader->polygonOffset == qtrue)
+		stateBits |= GLS_POLYGON_OFFSET_FILL;
 
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
@@ -960,6 +977,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	item.renderState.cullType = cullType;
 	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 	item.program = sp;
+	item.uniformData = uniformDataWriter.Finish(frameAllocator);
 	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	DrawItemSetVertexAttributes(
@@ -971,6 +989,41 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	const uint32_t key = RB_CreateSortKey(item, 15, input->shader->sort);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
+
+	// invert fog planes and render global fog into them
+	if (input->fogNum != tr.world->globalFogIndex && tr.world->globalFogIndex != -1)
+	{
+		// only invert render fog planes
+		if (input->shader->sort != SS_FOG)
+			return;
+		if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
+			return;
+		// well, no idea how to handle this case, it's actually wrong
+		if (cullType == CT_TWO_SIDED)
+			return;
+		if (cullType == CT_FRONT_SIDED)
+			cullType = CT_BACK_SIDED;
+		else
+			cullType = CT_FRONT_SIDED;
+		UniformDataWriter uniformDataWriterBack;
+		uniformDataWriterBack.Start(sp);
+		uniformDataWriterBack.SetUniformInt(UNIFORM_FOGINDEX, tr.world->globalFogIndex - 1);
+
+		DrawItem backItem = {};
+		memcpy(&backItem, &item, sizeof(item));
+		backItem.renderState.cullType = cullType;
+		backItem.uniformData = uniformDataWriterBack.Finish(frameAllocator);
+
+		DrawItemSetVertexAttributes(
+			backItem, attribs, vertexArrays->numVertexArrays, frameAllocator);
+		DrawItemSetUniformBlockBindings(
+			backItem, uniformBlockBindings, frameAllocator);
+
+		RB_FillDrawCommand(backItem.draw, GL_TRIANGLES, 1, input);
+
+		const uint32_t key = RB_CreateSortKey(backItem, 15, input->shader->sort);
+		RB_AddDrawItem(backEndData->currentPass, key, backItem);
+	}
 }
 
 static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
@@ -979,7 +1032,7 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 
 	if(glState.vertexAnimation)
 	{
-		vertexAttribs &= ~ATTR_COLOR;
+		//vertexAttribs &= ~ATTR_COLOR;
 		vertexAttribs |= ATTR_POSITION2;
 		if (vertexAttribs & ATTR_NORMAL)
 		{
@@ -997,10 +1050,46 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 	return vertexAttribs;
 }
 
-static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stage, shaderProgram_t *glslShaderGroup, bool useAlphaTestGE192 )
+static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stage, shaderProgram_t *glslShaderGroup, bool useAlphaTestGE192, bool forceRefraction )
 {
 	uint32_t index;
 	shaderProgram_t *result = nullptr;
+
+	if (forceRefraction)
+	{
+		index = 0;
+		if (tess.shader->numDeforms && !ShaderRequiresCPUDeforms(tess.shader))
+		{
+			index |= REFRACTIONDEF_USE_DEFORM_VERTEXES;
+		}
+
+		if (glState.vertexAnimation)
+		{
+			index |= REFRACTIONDEF_USE_VERTEX_ANIMATION;
+		}
+		else if (glState.skeletalAnimation)
+		{
+			index |= REFRACTIONDEF_USE_SKELETAL_ANIMATION;
+		}
+
+		if (stage->bundle[0].tcGen != TCGEN_TEXTURE || (stage->bundle[0].numTexMods))
+			index |= REFRACTIONDEF_USE_TCGEN_AND_TCMOD;
+
+		if (!useAlphaTestGE192)
+		{
+			if (stage->alphaTestType != ALPHA_TEST_NONE)
+				index |= REFRACTIONDEF_USE_TCGEN_AND_TCMOD | REFRACTIONDEF_USE_ALPHA_TEST;
+		}
+		else
+		{
+			index |= REFRACTIONDEF_USE_ALPHA_TEST;
+		}
+
+		if (tr.hdrLighting == qtrue)
+			index |= REFRACTIONDEF_USE_SRGB_TRANSFORM;
+
+		return &tr.refractionShader[index];
+	}
 
 	if (backEnd.depthFill)
 	{
@@ -1075,7 +1164,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 	{
 		index = stage->glslShaderIndex;
 
-		if (r_lightmap->integer && (index & LIGHTDEF_USE_LIGHTMAP))
+		if (r_lightmap->integer && (index & LIGHTDEF_USE_LIGHTMAP) && !(index & LIGHTDEF_USE_LIGHT_VERTEX))
 		{
 			index = LIGHTDEF_USE_LIGHTMAP;
 		}
@@ -1197,6 +1286,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
 		int index = 0;
 		bool useAlphaTestGE192 = false;
+		bool forceRefraction = false;
 		vec4_t disintegrationInfo;
 
 		if ( !pStage )
@@ -1240,6 +1330,13 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				forceRGBGen = CGEN_ENTITY;
 			}
 
+			// only force blend on the internal distortion shader
+			if (input->shader == tr.distortionShader)
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+
+			if (input->shader->useDistortion == qtrue || backEnd.currentEntity->e.renderfx & RF_DISTORTION)
+				forceRefraction = true;
+
 			if ( backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA )
 			{
 				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
@@ -1254,7 +1351,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			}
 		}
 
-		sp = SelectShaderProgram(stage, pStage, pStage->glslShaderGroup, useAlphaTestGE192);
+		if (backEnd.viewParms.flags & VPF_POINTSHADOW)
+			stateBits |= GLS_POLYGON_OFFSET_FILL;
+
+		sp = SelectShaderProgram(stage, pStage, pStage->glslShaderGroup, useAlphaTestGE192, forceRefraction);
 		assert(sp);
 
 		uniformDataWriter.Start(sp);
@@ -1290,6 +1390,33 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				vertColor[3] = 0.0f;
 			}
 
+			if (backEnd.currentEntity->e.hModel != NULL)
+			{
+				model_t *model = R_GetModelByHandle(backEnd.currentEntity->e.hModel);
+				if (model->type != MOD_BRUSH)
+				{
+					switch (forceRGBGen)
+					{
+					case CGEN_EXACT_VERTEX:
+					case CGEN_EXACT_VERTEX_LIT:
+					case CGEN_VERTEX:
+					case CGEN_VERTEX_LIT:
+						baseColor[0] =
+							baseColor[1] =
+							baseColor[2] =
+							baseColor[3] = 0.0f;
+
+						vertColor[0] =
+							vertColor[1] =
+							vertColor[2] =
+							vertColor[3] = tr.identityLight;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+
 			uniformDataWriter.SetUniformVec4(UNIFORM_BASECOLOR, baseColor);
 			uniformDataWriter.SetUniformVec4(UNIFORM_VERTCOLOR, vertColor);
 		}
@@ -1305,6 +1432,18 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		if (backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1 | RF_DISINTEGRATE2))
 			uniformDataWriter.SetUniformVec4(UNIFORM_DISINTEGRATION, disintegrationInfo);
+
+		if (forceRefraction)
+		{
+			vec4_t color;
+			color[0] =
+			color[1] =
+			color[2] = powf(2.0f, r_cameraExposure->value);
+			color[3] = 10.0f;
+			uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, color);
+			uniformDataWriter.SetUniformVec2(UNIFORM_AUTOEXPOSUREMINMAX, tr.refdef.autoExposureMinMax);
+			uniformDataWriter.SetUniformVec3(UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
+		}
 
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
@@ -1340,7 +1479,22 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 								&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
 								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
 
-		if ( backEnd.depthFill )
+		if (forceRefraction)
+		{
+			FBO_t *srcFbo = tr.renderFbo;
+			if (tr.msaaResolveFbo)
+				srcFbo = tr.msaaResolveFbo;
+
+			samplerBindingsWriter.AddStaticImage(srcFbo->colorImage[0], TB_COLORMAP);
+			samplerBindingsWriter.AddStaticImage(tr.renderDepthImage, TB_SHADOWMAP);
+			qboolean autoExposure = (qboolean)(r_autoExposure->integer || r_forceAutoExposure->integer);
+
+			if (autoExposure)
+				samplerBindingsWriter.AddStaticImage(tr.calcLevelsImage, TB_LEVELSMAP);
+			else
+				samplerBindingsWriter.AddStaticImage(tr.fixedLevelsImage, TB_LEVELSMAP);
+		}
+		else if ( backEnd.depthFill )
 		{
 			if (pStage->alphaTestType == ALPHA_TEST_NONE)
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
@@ -1360,14 +1514,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			}
 
 			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) &&
-					pStage->bundle[TB_LIGHTMAP].image[0])
+				(pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap))
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
-					if (i == TB_LIGHTMAP)
-						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_LIGHTMAP], i);
-					else
+					if (i == TB_DIFFUSEMAP)
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, i);
+					else
+						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[i], i);
 				}
 			}
 			else if (r_lightmap->integer == 3 && pStage->bundle[TB_DELUXEMAP].image[0])
@@ -1376,8 +1530,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				{
 					if (i == TB_LIGHTMAP)
 						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_DELUXEMAP], i);
-					else
+					else if (i == TB_DIFFUSEMAP)
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, i);
+					else
+						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[i], i);
 				}
 			}
 			else
@@ -1473,10 +1629,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
 		}
 		
-		if ( enableDLights )
-			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, tess.dlightBits);
+		if (enableDLights)
+		{
+			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, tess.dlightBits);
+			if (r_dlightMode->integer > 1)
+				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAP2);
+		}
 		else
-			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTINDEX, 0);
+			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, 0);
 
 		CaptureDrawData(input, pStage, index, stage);
 
@@ -1494,7 +1654,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		DrawItem item = {};
 		item.renderState.stateBits = stateBits;
-		item.renderState.cullType = cullType;
+		item.renderState.cullType = forceRefraction ? CT_TWO_SIDED : cullType;
 		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.program = sp;
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
@@ -1655,14 +1815,11 @@ void RB_StageIteratorGeneric( void )
 		const fog_t *fog = nullptr;
 		if ( tr.world )
 		{
-			if ( tr.world->globalFog )
-				fog = tr.world->globalFog;
-			else if ( tess.fogNum )
-				fog = tr.world->fogs + tess.fogNum;
+			fog = tr.world->fogs + input->fogNum;
 		}
 
 		if ( fog && tess.shader->fogPass ) {
-			RB_FogPass( &tess, &vertexArrays );
+			RB_FogPass( input, &vertexArrays );
 		}
 	}
 

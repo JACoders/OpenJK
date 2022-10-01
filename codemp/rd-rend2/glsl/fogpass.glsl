@@ -24,7 +24,6 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
-	int u_FogIndex;
 };
 
 layout(std140) uniform ShaderInstance
@@ -225,6 +224,15 @@ void main()
 uniform int u_AlphaTestType;
 #endif
 
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+};
+
 struct Fog
 {
 	vec4 plane;
@@ -260,15 +268,16 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
-	int u_FogIndex;
 };
+
+uniform int u_FogIndex;
 
 in vec3 var_WSPosition;
 
 out vec4 out_Color;
 out vec4 out_Glow;
 
-float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
+vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 {
 	bool inFog = dot(viewOrigin, fog.plane.xyz) - fog.plane.w >= 0.0 || !fog.hasPlane;
 
@@ -283,23 +292,34 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 	// fogPlane is inverted in tr_bsp for some reason.
 	float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
 
+	// only use this for objects with potentially two contibuting fogs
+	#if defined(USE_FALLBACK_GLOBAL_FOG)
+	bool intersects = (t > 0.0 && t <= 1.0);
+	if (inFog == intersects)
+	{
+		Fog globalFog = u_Fogs[u_globalFogIndex];
+
+		float distToVertex = length(V);
+		float distFromIntersection = distToVertex - (t * distToVertex);
+		float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
+		return vec4(globalFog.color.rgb, 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0));
+	}
+	#endif
+
 	float distToVertexFromViewOrigin = length(V);
-	float distToIntersectionFromViewOrigin = max(t, 0.0) * distToVertexFromViewOrigin;
+	float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
 
 	float distOutsideFog = max(distToVertexFromViewOrigin - distToIntersectionFromViewOrigin, 0.0);
-	float distThroughFog = mix(distToVertexFromViewOrigin, distOutsideFog, !inFog);
+	float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
 
 	float z = fog.depthToOpaque * distThroughFog;
-	return 1.0 - clamp(exp(-(z * z)), 0.0, 1.0);
+	return vec4(fog.color.rgb, 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0));
 }
 
 void main()
 {
 	Fog fog = u_Fogs[u_FogIndex];
-	float fogFactor = CalcFog(u_ViewOrigin, var_WSPosition, fog);
-	out_Color.rgb = fog.color.rgb;
-	out_Color.a = fogFactor;
-
+	out_Color = CalcFog(u_ViewOrigin, var_WSPosition, fog);
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{

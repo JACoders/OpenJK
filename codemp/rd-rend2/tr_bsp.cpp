@@ -285,7 +285,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		tr.deluxemaps = (image_t **)ri.Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 	}
 
-	if (glRefConfig.floatLightmap)
+	if (hdr_capable)
 		textureInternalFormat = GL_RGBA16F;
 	else
 		textureInternalFormat = GL_RGBA8;
@@ -428,7 +428,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 						ColorToRGBA16F(color, (uint16_t *)(&image[j * 8]));
 					}
-					else if (buf_p && glRefConfig.floatLightmap)
+					else if (buf_p && hdr_capable)
 					{
 						vec4_t color;
 						
@@ -449,10 +449,6 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 						color[3] = 1.0f;
 
 						R_ColorShiftLightingFloats(color, color, 1.0f / 255.0f);
-
-						color[0] = color[0];
-						color[1] = color[1];
-						color[2] = color[2];
 
 						ColorToRGBA16F(color, (unsigned short *)(&image[j * 8]));
 					}
@@ -737,6 +733,10 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader value
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles);
@@ -888,6 +888,10 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader value
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles );
@@ -1006,6 +1010,10 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles );
@@ -1138,6 +1146,10 @@ static void ParseFlare( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
+	if (!surf->fogIndex && worldData->globalFog != nullptr)
+	{
+		surf->fogIndex = worldData->globalFogIndex;
+	}
 
 	// get shader
 	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, lightmapsVertex, ds->lightmapStyles, ds->vertexStyles );
@@ -1148,6 +1160,28 @@ static void ParseFlare( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 	//flare = ri.Hunk_Alloc( sizeof( *flare ), h_low );
 	flare = (srfFlare_t *)surf->data;
 	flare->surfaceType = SF_FLARE;
+
+	if (surf->shader == tr.defaultShader)
+		flare->shader = tr.flareShader;
+	else
+		flare->shader = surf->shader;
+
+	if (!flare->shader->defaultShader)
+	{
+		// Set some default values. Deforms are handled by the flares system itself
+		flare->shader->cullType = CT_TWO_SIDED;
+		flare->shader->numDeforms = 0;
+		for (int index = 0; index < flare->shader->numUnfoggedPasses; index++)
+		{
+			flare->shader->stages[index]->adjustColorsForFog = ACFF_NONE;
+			flare->shader->stages[index]->stateBits |= GLS_DEPTHTEST_DISABLE;
+			if (flare->shader->stages[index]->alphaGen == AGEN_PORTAL)
+			{
+				flare->portal_ranged = true;
+				flare->shader->stages[index]->alphaGen = AGEN_VERTEX;
+			}
+		}
+	}
 
 	surf->data = (surfaceType_t *)flare;
 
@@ -2581,6 +2615,7 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 	worldData->numfogs = count + 1;
 	worldData->fogs = (fog_t *)ri.Hunk_Alloc ( worldData->numfogs*sizeof(*out), h_low);
 	worldData->globalFog = nullptr;
+	worldData->globalFogIndex = -1;
 	out = worldData->fogs + 1;
 
 	if ( !count ) {
@@ -2609,6 +2644,7 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 			firstSide = -1;
 
 			worldData->globalFog = worldData->fogs + i + 1;
+			worldData->globalFogIndex = i + 1;
 		}
 		else
 		{
@@ -2666,7 +2702,7 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 		// set the gradient vector
 		sideNum = LittleLong( fogs->visibleSide );
 
-		out->hasSurface = qtrue;
+		out->hasSurface = (out->originalBrushNumber == -1) ? qfalse : qtrue;
 		if ( sideNum != -1 ) {
 			planeNum = LittleLong( sides[ firstSide + sideNum ].planeNum );
 			VectorSubtract( vec3_origin, worldData->planes[ planeNum ].normal, out->surface );
@@ -3160,34 +3196,19 @@ static void R_RenderAllCubemaps()
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		bool bounce = k != 0;
-		for (int i = 0; i < tr.numCubemaps; i++)		
+		// Limit number of Cubemaps per map
+		int maxCubemaps = MIN(tr.numCubemaps, 128);
+		for (int i = 0; i < maxCubemaps; i++)
 		{
-			if (!bounce)
-				tr.cubemaps[i].image = R_CreateImage(
-					va("*cubeMap%d", i),
-					NULL,
-					CUBE_MAP_SIZE,
-					CUBE_MAP_SIZE,
-					IMGTYPE_COLORALPHA,
-					IMGFLAG_NO_COMPRESSION |
-					IMGFLAG_CLAMPTOEDGE |
-					IMGFLAG_MIPMAP |
-					IMGFLAG_CUBEMAP,
-					cubemapFormat);
-
 			RE_BeginFrame(STEREO_CENTER);
 			for (int j = 0; j < 6; j++)
 			{
-				RE_ClearScene();
 				R_RenderCubemapSide(i, j, qfalse, bounce);
-				R_IssuePendingRenderCommands();
 			}
-			for (int j = 0; j < 6; j++)
-			{
-				RE_ClearScene();
-				R_AddConvolveCubemapCmd(&tr.cubemaps[i], j);
-				R_IssuePendingRenderCommands();
-			}
+
+			RE_ClearScene();
+			R_AddConvolveCubemapCmd(&tr.cubemaps[i], i);
+			R_IssuePendingRenderCommands();
 			RE_EndFrame( &frontEndMsec, &backEndMsec );
 		}
 	}
@@ -3572,6 +3593,7 @@ struct sprite_t
 {
 	vec3_t position;
 	vec3_t normal;
+	vec3_t color;
 };
 
 static uint32_t UpdateHash( const char *text, uint32_t hash )
@@ -3591,10 +3613,24 @@ static uint32_t UpdateHash( const char *text, uint32_t hash )
 
 static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 	const srfBspSurface_t *bspSurf,
-	float density)
+	float density,
+	const shaderStage_t *stage)
 {
 	const srfVert_t *verts = bspSurf->verts;
 	const glIndex_t *indexes = bspSurf->indexes;
+
+	vec4_t color = { 1.0, 1.0, 1.0, 1.0 };
+	if (stage->rgbGen == CGEN_CONST)
+	{
+		color[0] = stage->constantColor[0];
+		color[1] = stage->constantColor[1];
+		color[2] = stage->constantColor[2];
+	}
+	bool vertexLit = (
+		stage->rgbGen == CGEN_VERTEX ||
+		stage->rgbGen == CGEN_EXACT_VERTEX ||
+		stage->rgbGen == CGEN_VERTEX_LIT ||
+		stage->rgbGen == CGEN_EXACT_VERTEX_LIT);
 
 	std::vector<sprite_t> sprites;
 	sprites.reserve(10000);
@@ -3613,6 +3649,11 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 		VectorCopy(v0->normal, n0);
 		VectorCopy(v1->normal, n1);
 		VectorCopy(v2->normal, n2);
+
+		vec4_t c0, c1, c2;
+		VectorCopy(v0->vertexColors[0], c0);
+		VectorCopy(v1->vertexColors[0], c1);
+		VectorCopy(v2->vertexColors[0], c2);
 
 		const vec2_t p01 = {p1[0] - p0[0], p1[1] - p0[1]};
 		const vec2_t p02 = {p2[0] - p0[0], p2[1] - p0[1]};
@@ -3648,6 +3689,16 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 				VectorMA(sprite.position, y, p1, sprite.position);
 				VectorMA(sprite.position, z, p2, sprite.position);
 
+				if (vertexLit)
+				{
+					VectorMA(sprite.color, x, c0, sprite.color);
+					VectorMA(sprite.color, y, c1, sprite.color);
+					VectorMA(sprite.color, z, c2, sprite.color);
+					VectorScale(sprite.color, tr.identityLight, sprite.color);
+				}
+				else
+					VectorCopy(color, sprite.color);
+
 				// x*x + y*y = 1.0
 				// => y*y = 1.0 - x*x
 				// => y = -/+sqrt(1.0 - x*x)
@@ -3669,6 +3720,7 @@ static void R_GenerateSurfaceSprites(
 	const srfBspSurface_t *bspSurf,
 	const shader_t *shader,
 	const shaderStage_t *stage,
+	const int fogIndex,
 	srfSprites_t *out)
 {
 	const surfaceSprite_t *surfaceSprite = stage->ss;
@@ -3680,11 +3732,12 @@ static void R_GenerateSurfaceSprites(
 
 	uint16_t indices[] = { 0, 1, 2, 0, 2, 3 };
 	std::vector<sprite_t> sprites =
-		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density);
+		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density, stage);
 
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
 	out->numSprites = sprites.size();
+	out->fogIndex = fogIndex;
 	// FIXME: Use big preallocated vbo/ibo to store all sprites in one vao
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
@@ -3696,9 +3749,9 @@ static void R_GenerateSurfaceSprites(
 			bundle, stage->stateBits);
 	out->shader->cullType = shader->cullType;
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
-	out->shader->stages[0]->alphaTestType = stage->alphaTestType;
+	out->alphaTestType = stage->alphaTestType;
 
-	out->numAttributes = 2;
+	out->numAttributes = 3;
 	out->attributes = (vertexAttribute_t *)ri.Hunk_Alloc(
 			sizeof(vertexAttribute_t) * out->numAttributes, h_low);
 
@@ -3721,6 +3774,16 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[1].stride = sizeof(sprite_t);
 	out->attributes[1].offset = offsetof(sprite_t, normal);
 	out->attributes[1].stepRate = 1;
+
+	out->attributes[2].vbo = out->vbo;
+	out->attributes[2].index = ATTR_INDEX_COLOR;
+	out->attributes[2].numComponents = 3;
+	out->attributes[2].integerAttribute = qfalse;
+	out->attributes[2].type = GL_FLOAT;
+	out->attributes[2].normalize = GL_FALSE;
+	out->attributes[2].stride = sizeof(sprite_t);
+	out->attributes[2].offset = offsetof(sprite_t, color);
+	out->attributes[2].stepRate = 1;
 }
 
 static void R_GenerateSurfaceSprites( const world_t *world )
@@ -3755,8 +3818,15 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 					if ( !stage->ss || stage->ss->type == SURFSPRITE_NONE )
 						continue;
 
+					if (j > 0 && (stage->stateBits & GLS_DEPTHFUNC_EQUAL))
+					{
+						ri.Printf(PRINT_WARNING, "depthFunc equal is not supported on surface sprites in rend2. Skipping stage\n");
+						surf->numSurfaceSprites -= 1;
+						continue;
+					}
+
 					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
-					R_GenerateSurfaceSprites(bspSurf, shader, stage, sprite);
+					R_GenerateSurfaceSprites(bspSurf, shader, stage, surf->fogIndex, sprite);
 					++surfaceSpriteNum;
 				}
 				break;
@@ -3838,29 +3908,89 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	}
 
 	// load into heap
+	int startTime, endTime;
+	startTime = ri.Milliseconds();
 	R_LoadEntities(worldData, &header->lumps[LUMP_ENTITIES]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadEntities in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadShaders(worldData, &header->lumps[LUMP_SHADERS]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadShaders in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadLightmaps(
 		worldData,
 		&header->lumps[LUMP_LIGHTMAPS],
 		&header->lumps[LUMP_SURFACES]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadLightmaps in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadPlanes(worldData, &header->lumps[LUMP_PLANES]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadPlanes in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadFogs(
 		worldData,
 		&header->lumps[LUMP_FOGS],
 		&header->lumps[LUMP_BRUSHES],
 		&header->lumps[LUMP_BRUSHSIDES]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadFogs in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadSurfaces(
 		worldData,
 		&header->lumps[LUMP_SURFACES],
 		&header->lumps[LUMP_DRAWVERTS],
 		&header->lumps[LUMP_DRAWINDEXES]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadSurfaces in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadMarksurfaces(worldData, &header->lumps[LUMP_LEAFSURFACES]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadMarksurfaces in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadNodesAndLeafs(worldData, &header->lumps[LUMP_NODES], &header->lumps[LUMP_LEAFS]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadNodesAndLeafs in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadSubmodels(worldData, worldIndex, &header->lumps[LUMP_MODELS]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadSubmodels in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadVisibility(worldData, &header->lumps[LUMP_VISIBILITY]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadVisibility in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadLightGrid(worldData, &header->lumps[LUMP_LIGHTGRID]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadLightGrid in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
+
+	startTime = ri.Milliseconds();
 	R_LoadLightGridArray(worldData, &header->lumps[LUMP_LIGHTARRAY]);
+	endTime = ri.Milliseconds();
+	ri.Printf(PRINT_ALL, "R_LoadLightGridArray in %5.2f seconds\n",
+		(endTime - startTime) / 1000.0f);
 
 	R_GenerateSurfaceSprites(worldData);
 	

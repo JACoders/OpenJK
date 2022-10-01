@@ -1792,16 +1792,32 @@ void R_AddDrawSurf(
 		return;
 	}
 
+	if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW) &&
+		(postRender == qtrue || shader->sort != SS_OPAQUE))
+	{
+		return;
+	}
+
 	// instead of checking for overflow, we just mask the index
 	// so it wraps around
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 	surf = tr.refdef.drawSurfs + index;
-
-	surf->sort = R_CreateSortKey(entityNum, shader->sortedIndex, cubemap, postRender);
-	surf->dlightBits = dlightMap;
 	surf->surface = surface;
-	surf->fogIndex = fogIndex;
 
+	if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW) &&
+		shader->useSimpleDepthShader == qtrue)
+	{
+		surf->sort = R_CreateSortKey(entityNum, tr.defaultShader->sortedIndex, 0, 0);
+		surf->dlightBits = 0;
+		surf->fogIndex = 0;
+	}
+	else
+	{
+		surf->sort = R_CreateSortKey(entityNum, shader->sortedIndex, cubemap, postRender);
+		surf->dlightBits = dlightMap;
+		surf->fogIndex = fogIndex;
+	}
+	
 	tr.refdef.numDrawSurfs++;
 }
 
@@ -2102,7 +2118,6 @@ or a mirror / remote location
 ================
 */
 void R_RenderView (viewParms_t *parms) {
-	int		firstDrawSurf;
 
 	if ( parms->viewportWidth <= 0 || parms->viewportHeight <= 0 ) {
 		return;
@@ -2114,8 +2129,7 @@ void R_RenderView (viewParms_t *parms) {
 	tr.viewParms.frameSceneNum = tr.frameSceneNum;
 	tr.viewParms.frameCount = tr.frameCount;
 
-	firstDrawSurf = tr.refdef.numDrawSurfs;
-
+	tr.refdef.fistDrawSurf = tr.refdef.numDrawSurfs;
 	// set viewParms.world
 	R_RotateForViewer(&tr.ori, &tr.viewParms);
 
@@ -2123,7 +2137,7 @@ void R_RenderView (viewParms_t *parms) {
 
 	R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
 
-	R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+	R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + tr.refdef.fistDrawSurf, tr.refdef.numDrawSurfs - tr.refdef.fistDrawSurf);
 
 	// draw main system development information (surface outlines, etc)
 	R_DebugGraphics();
@@ -2142,8 +2156,8 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		int j;
 
 		// use previous frame to determine visible dlights
-		if ((1 << i) & bufferDlightMask)
-			continue;
+		/*if ((1 << i) & bufferDlightMask)
+			continue;*/
 
 		Com_Memset( &shadowParms, 0, sizeof( shadowParms ) );
 
@@ -2152,12 +2166,12 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		shadowParms.viewportWidth = DSHADOW_MAP_SIZE;
 		shadowParms.viewportHeight = DSHADOW_MAP_SIZE;
 		shadowParms.isPortal = qfalse;
-		shadowParms.isMirror = qtrue; // because it is
+		shadowParms.isMirror = qfalse;
 
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
-		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL;
+		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL | VPF_POINTSHADOW;
 		shadowParms.zFar = tr.refdef.dlights[i].radius;
 		shadowParms.zNear = 1.0f;
 
@@ -2205,9 +2219,8 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 					break;
 			}
 
-			shadowParms.targetFbo = tr.shadowCubeFbo;
-			shadowParms.targetFboCubemap = &tr.shadowCubemaps[i];
-			shadowParms.targetFboLayer = j;
+			shadowParms.targetFbo = tr.shadowCubeFbo[i*6+j];
+			shadowParms.targetFboLayer = 0;
 
 			R_RenderView(&shadowParms);
 		}
@@ -2726,7 +2739,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		tr.sunShadowFbo[level]->width,
 		tr.sunShadowFbo[level]->height,
 		tr.sunShadowFbo[level],
-		VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL,
+		VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL | VPF_SHADOWCASCADES,
 		orientation,
 		lightviewBounds);
 
@@ -2762,7 +2775,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		tr.refdef.sunShadowMvp[level]);
 }
 
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce )
+void R_RenderCubemapSide(int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce)
 {
 	refdef_t refdef = {};
 	float oldColorScale = tr.refdef.colorScale;
@@ -2770,49 +2783,49 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	VectorCopy(tr.cubemaps[cubemapIndex].origin, refdef.vieworg);
 	refdef.fov_x = 90;
 	refdef.fov_y = 90;
-	refdef.width = tr.renderCubeFbo->width;
-	refdef.height = tr.renderCubeFbo->height;
+	refdef.width = tr.renderCubeFbo[cubemapSide]->width;
+	refdef.height = tr.renderCubeFbo[cubemapSide]->height;
 	refdef.x = 0;
 	refdef.y = 0;
 
-	switch(cubemapSide)
+	switch (cubemapSide)
 	{
-		case 0:
-			// +X
-			VectorSet(refdef.viewaxis[0], 1,  0, 0);
-			VectorSet(refdef.viewaxis[1], 0,  0, 1);
-			VectorSet(refdef.viewaxis[2], 0, -1, 0);
-			break;
-		case 1: 
-			// -X
-			VectorSet(refdef.viewaxis[0], -1,  0,  0);
-			VectorSet(refdef.viewaxis[1],  0,  0, -1);
-			VectorSet(refdef.viewaxis[2],  0, -1,  0);
-			break;
-		case 2: 
-			// +Y
-			VectorSet(refdef.viewaxis[0],  0, 1, 0);
-			VectorSet(refdef.viewaxis[1], -1, 0, 0);
-			VectorSet(refdef.viewaxis[2],  0, 0, 1);
-			break;
-		case 3: 
-			// -Y
-			VectorSet(refdef.viewaxis[0],  0, -1,  0);
-			VectorSet(refdef.viewaxis[1], -1,  0,  0);
-			VectorSet(refdef.viewaxis[2],  0,  0, -1);
-			break;
-		case 4:
-			// +Z
-			VectorSet(refdef.viewaxis[0],  0,  0, 1);
-			VectorSet(refdef.viewaxis[1], -1,  0, 0);
-			VectorSet(refdef.viewaxis[2],  0, -1, 0);
-			break;
-		case 5:
-			// -Z
-			VectorSet(refdef.viewaxis[0], 0,  0, -1);
-			VectorSet(refdef.viewaxis[1], 1,  0,  0);
-			VectorSet(refdef.viewaxis[2], 0, -1,  0);
-			break;
+	case 0:
+		// +X
+		VectorSet(refdef.viewaxis[0], 1, 0, 0);
+		VectorSet(refdef.viewaxis[1], 0, 0, 1);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
+	case 1:
+		// -X
+		VectorSet(refdef.viewaxis[0], -1, 0, 0);
+		VectorSet(refdef.viewaxis[1], 0, 0, -1);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
+	case 2:
+		// +Y
+		VectorSet(refdef.viewaxis[0], 0, 1, 0);
+		VectorSet(refdef.viewaxis[1], -1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, 0, 1);
+		break;
+	case 3:
+		// -Y
+		VectorSet(refdef.viewaxis[0], 0, -1, 0);
+		VectorSet(refdef.viewaxis[1], -1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, 0, -1);
+		break;
+	case 4:
+		// +Z
+		VectorSet(refdef.viewaxis[0], 0, 0, 1);
+		VectorSet(refdef.viewaxis[1], -1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
+	case 5:
+		// -Z
+		VectorSet(refdef.viewaxis[0], 0, 0, -1);
+		VectorSet(refdef.viewaxis[1], 1, 0, 0);
+		VectorSet(refdef.viewaxis[2], 0, -1, 0);
+		break;
 	}
 
 	if (!subscene)
@@ -2830,10 +2843,10 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	tr.refdef.colorScale = 1.0f;
 
 	viewParms_t	parms = {};
-	parms.viewportWidth = tr.renderCubeFbo->width;
-	parms.viewportHeight = tr.renderCubeFbo->height;
+	parms.viewportWidth = tr.renderCubeFbo[cubemapSide]->width;
+	parms.viewportHeight = tr.renderCubeFbo[cubemapSide]->height;
 	parms.isMirror = qfalse;
-	parms.flags =  VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS;
+	parms.flags = VPF_NOVIEWMODEL | VPF_NOPOSTPROCESS;
 	if (!bounce)
 		parms.flags |= VPF_NOCUBEMAPS;
 
@@ -2841,21 +2854,20 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, 
 	parms.fovX = 90;
 	parms.fovY = 90;
 
-	VectorCopy( refdef.vieworg, parms.ori.origin );
-	VectorCopy( refdef.viewaxis[0], parms.ori.axis[0] );
-	VectorCopy( refdef.viewaxis[1], parms.ori.axis[1] );
-	VectorCopy( refdef.viewaxis[2], parms.ori.axis[2] );
+	VectorCopy(refdef.vieworg, parms.ori.origin);
+	VectorCopy(refdef.viewaxis[0], parms.ori.axis[0]);
+	VectorCopy(refdef.viewaxis[1], parms.ori.axis[1]);
+	VectorCopy(refdef.viewaxis[2], parms.ori.axis[2]);
 
-	VectorCopy( refdef.vieworg, parms.pvsOrigin );
+	VectorCopy(refdef.vieworg, parms.pvsOrigin);
 
 	if (r_sunlightMode->integer && r_depthPrepass->value && (r_forceSun->integer > 0 || tr.sunShadows))
 	{
 		parms.flags |= VPF_USESUNLIGHT;
 	}
 
-	parms.targetFbo = tr.renderCubeFbo;
+	parms.targetFbo = tr.renderCubeFbo[cubemapSide];
 	parms.targetFboLayer = cubemapSide;
-	parms.targetFboCubemap = &tr.cubemaps[cubemapIndex];
 
 	R_RenderView(&parms);
 

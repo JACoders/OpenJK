@@ -73,6 +73,7 @@ PFNGLISBUFFERPROC qglIsBuffer;
 
 // Texturing
 PFNGLACTIVETEXTUREPROC qglActiveTexture;
+PFNGLTEXIMAGE3DPROC qglTexImage3D;
 
 // Shader objects
 PFNGLCREATESHADERPROC qglCreateShader;
@@ -187,6 +188,8 @@ PFNGLCHECKFRAMEBUFFERSTATUSPROC qglCheckFramebufferStatus;
 PFNGLFRAMEBUFFERTEXTURE1DPROC qglFramebufferTexture1D;
 PFNGLFRAMEBUFFERTEXTURE2DPROC qglFramebufferTexture2D;
 PFNGLFRAMEBUFFERTEXTURE3DPROC qglFramebufferTexture3D;
+PFNGLFRAMEBUFFERTEXTUREPROC qglFramebufferTexture;
+PFNGLFRAMEBUFFERTEXTURELAYERPROC qglFramebufferTextureLayer;
 PFNGLFRAMEBUFFERRENDERBUFFERPROC qglFramebufferRenderbuffer;
 PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC qglGetFramebufferAttachmentParameteriv;
 PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC qglRenderbufferStorageMultisample;
@@ -349,7 +352,7 @@ void GLimp_InitCoreFunctions()
 
 	// Texturing
 	GetGLFunction (qglActiveTexture, "glActiveTexture", qtrue);
-
+	GetGLFunction (qglTexImage3D, "glTexImage3D", qtrue);
 
 	// Shader objects
 	GetGLFunction (qglCreateShader, "glCreateShader", qtrue);
@@ -476,6 +479,8 @@ void GLimp_InitCoreFunctions()
 	GetGLFunction (qglFramebufferTexture1D, "glFramebufferTexture1D", qtrue);
 	GetGLFunction (qglFramebufferTexture2D, "glFramebufferTexture2D", qtrue);
 	GetGLFunction (qglFramebufferTexture3D, "glFramebufferTexture3D", qtrue);
+	GetGLFunction (qglFramebufferTexture, "glFramebufferTexture", qtrue);
+	GetGLFunction (qglFramebufferTextureLayer, "glFramebufferTextureLayer", qtrue);
 	GetGLFunction (qglFramebufferRenderbuffer, "glFramebufferRenderbuffer", qtrue);
 	GetGLFunction (qglGetFramebufferAttachmentParameteriv, "glGetFramebufferAttachmentParameteriv", qtrue);
 	GetGLFunction (qglRenderbufferStorageMultisample, "glRenderbufferStorageMultisample", qtrue);

@@ -2381,7 +2381,13 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			shader = R_GetShaderByHandle( surfInfo->shaderIndex );
 		}
 
-		int cubemapIndex = R_CubemapForPoint (ent->e.origin);
+		// Get dlightBits and Cubemap
+		float radius;
+		// scale the radius if needed
+		float largestScale = MAX(ent->e.modelScale[0], MAX(ent->e.modelScale[1], ent->e.modelScale[2]));
+		radius = ent->e.radius * largestScale;
+		int dlightBits = R_DLightsForPoint(ent->e.origin, radius);
+		int cubemapIndex = R_CubemapForPoint(ent->e.origin);
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
@@ -2393,6 +2399,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			assert (newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
+			newSurf->dlightBits = dlightBits;
 
 			// render shadows?
 			if (r_shadows->integer == 2
@@ -3456,8 +3463,10 @@ void RB_TransformBones(CRenderableSurface *surf)
 
 int RB_GetBoneUboOffset(CRenderableSurface *surf)
 {
-	return surf->boneCache->uboOffset;
-	
+	if (surf->boneCache)
+		return surf->boneCache->uboOffset;
+	else
+		return -1;
 }
 
 void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset)
@@ -3487,6 +3496,8 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);
+
+	tess.dlightBits = surf->dlightBits;
 
 	tess.useInternalVBO = qfalse;
 	tess.externalIBO = surface->ibo;
@@ -4071,10 +4082,11 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		byte *bonerefs;
 		byte *weights;
 		uint32_t *tangents;
+		vec4_t *color;
 
 		byte *data;
 		int dataSize = 0;
-		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents;
+		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents, ofsColor;
 		int stride = 0;
 		int numVerts = 0;
 		int numTriangles = 0;
@@ -4103,6 +4115,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		baseVertexes[mdxm->numSurfaces] = numVerts;
 
+		dataSize += 1.0 * sizeof(*color);
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
 		dataSize += numVerts * sizeof (*texcoords);
@@ -4113,28 +4126,31 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		// Allocate and write to memory
 		data = (byte *)ri.Hunk_AllocateTempMemory (dataSize);
 
-		verts = (vec3_t *)(data + stride);
-		ofsPosition = stride;
+		color = (vec4_t *)(data);
+		ofsColor = 0;
+
+		ofsPosition = stride + sizeof(*color);
+		verts = (vec3_t *)(data + ofsPosition);
 		stride += sizeof (*verts);
 
-		normals = (uint32_t *)(data + stride);
-		ofsNormals = stride;
+		ofsNormals = stride + sizeof(*color);
+		normals = (uint32_t *)(data + ofsNormals);
 		stride += sizeof (*normals);
 
-		texcoords = (vec2_t *)(data + stride);
-		ofsTexcoords = stride;
+		ofsTexcoords = stride + sizeof(*color);
+		texcoords = (vec2_t *)(data + ofsTexcoords);
 		stride += sizeof (*texcoords);
 
-		bonerefs = data + stride;
-		ofsBoneRefs = stride;
+		ofsBoneRefs = stride + sizeof(*color);
+		bonerefs = data + ofsBoneRefs;
 		stride += sizeof (*bonerefs) * 4;
 
-		weights = data + stride;
-		ofsWeights = stride;
+		ofsWeights = stride + sizeof(*color);
+		weights = data + ofsWeights;
 		stride += sizeof (*weights) * 4;
 
-		tangents = (uint32_t *)(data + stride);
-		ofsTangents = stride;
+		ofsTangents = stride + sizeof(*color);
+		tangents = (uint32_t *)(data + ofsTangents);
 		stride += sizeof (*tangents);
 
 		// Fill in the index buffer and compute tangents
@@ -4254,6 +4270,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		}
 
 		assert ((byte *)verts == (data + dataSize));
+		VectorSet4(*color, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		const char *modelName = strrchr (mdxm->name, '/');
 		if (modelName == NULL)
@@ -4267,6 +4284,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		ri.Hunk_FreeTempMemory (tangentsf);
 		ri.Hunk_FreeTempMemory (indices);
 
+		vbo->offsets[ATTR_INDEX_COLOR] = ofsColor;
 		vbo->offsets[ATTR_INDEX_POSITION] = ofsPosition;
 		vbo->offsets[ATTR_INDEX_NORMAL] = ofsNormals;
 		vbo->offsets[ATTR_INDEX_TEXCOORD0] = ofsTexcoords;
@@ -4274,6 +4292,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->offsets[ATTR_INDEX_BONE_WEIGHTS] = ofsWeights;
 		vbo->offsets[ATTR_INDEX_TANGENT] = ofsTangents;
 
+		vbo->strides[ATTR_INDEX_COLOR] = 0;
 		vbo->strides[ATTR_INDEX_POSITION] = stride;
 		vbo->strides[ATTR_INDEX_NORMAL] = stride;
 		vbo->strides[ATTR_INDEX_TEXCOORD0] = stride;
@@ -4281,6 +4300,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->strides[ATTR_INDEX_BONE_WEIGHTS] = stride;
 		vbo->strides[ATTR_INDEX_TANGENT] = stride;
 
+		vbo->sizes[ATTR_INDEX_COLOR] = sizeof(*color);
 		vbo->sizes[ATTR_INDEX_POSITION] = sizeof(*verts);
 		vbo->sizes[ATTR_INDEX_NORMAL] = sizeof(*normals);
 		vbo->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(*texcoords);

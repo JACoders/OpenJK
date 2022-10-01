@@ -14,11 +14,10 @@ layout(std140) uniform Entity
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
 	vec3 u_DirectedLight;
-	float _u_FXVolumetricBase;
+	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
-	int u_FogIndex;
 };
 
 layout(std140) uniform ShaderInstance

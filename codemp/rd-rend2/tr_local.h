@@ -52,7 +52,7 @@ typedef unsigned int glIndex_t;
 #define SHADERNUM_BITS	14
 #define MAX_SHADERS		(1<<SHADERNUM_BITS)
 
-#define	MAX_FBOS      64
+#define	MAX_FBOS      256
 #define MAX_VISCOUNTS 5
 #define MAX_VBOS      4096
 #define MAX_IBOS      4096
@@ -63,6 +63,7 @@ typedef unsigned int glIndex_t;
 #define PSHADOW_MAP_SIZE      1024
 #define DSHADOW_MAP_SIZE      512
 #define CUBE_MAP_MIPS      8
+#define CUBE_MAP_ROUGHNESS_MIPS CUBE_MAP_MIPS-4
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 
 /*
@@ -209,6 +210,8 @@ extern cvar_t	*r_markcount;
 extern cvar_t	*r_textureMode;
 extern cvar_t	*r_offsetFactor;
 extern cvar_t	*r_offsetUnits;
+extern cvar_t	*r_shadowOffsetFactor;
+extern cvar_t	*r_shadowOffsetUnits;
 extern cvar_t	*r_gamma;
 extern cvar_t	*r_intensity;
 extern cvar_t	*r_lockpvs;
@@ -311,6 +314,10 @@ typedef enum
 	IMGFLAG_SRGB           = 0x0080,
 	IMGFLAG_GENNORMALMAP   = 0x0100,
 	IMGFLAG_MUTABLE        = 0x0200,
+	IMGFLAG_HDR            = 0x0400,
+	IMGFLAG_2D_ARRAY       = 0x0800,
+	IMGFLAG_3D             = 0x1000,
+	IMGLFAG_SHADOWCOMP     = 0x2000,
 } imgFlags_t;
 
 typedef enum
@@ -355,7 +362,7 @@ static const int NO_XFB_VARS = 0;
 
 typedef struct image_s {
 	char		imgName[MAX_QPATH];		// game path, including extension
-	int			width, height;				// source image
+	int			width, height, layers;				// source image
 	int			uploadWidth, uploadHeight;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
 	GLuint		texnum;					// gl texture binding
 
@@ -703,7 +710,7 @@ struct SceneBlock
 {
 	vec4_t primaryLightOrigin;
 	vec3_t primaryLightAmbient;
-	float pad0;
+	int	   globalFogIndex;
 	vec3_t primaryLightColor;
 	float primaryLightRadius;
 };
@@ -751,7 +758,7 @@ struct EntityBlock
 	vec3_t modelLightDir;
 	float vertexLerp;
 	vec3_t localViewOrigin;
-	int fogIndex;
+	float pad0; // fogIndex;
 };
 
 struct ShaderInstanceBlock
@@ -821,12 +828,12 @@ enum
 	TB_COLORMAP2   = 1,
 	TB_NORMALMAP   = 2,
 	TB_DELUXEMAP   = 3,
-	TB_SHADOWMAP2  = 3,
 	TB_SPECULARMAP = 4,
 	TB_SHADOWMAP   = 5,
 	TB_CUBEMAP     = 6,
 	TB_ENVBRDFMAP  = 7,
-	NUM_TEXTURE_BUNDLES = 8
+	TB_SHADOWMAP2  = 8,
+	NUM_TEXTURE_BUNDLES = 9
 };
 
 typedef enum
@@ -975,6 +982,8 @@ typedef struct shader_s {
 
 	void		(*optimalStageIteratorFunc)( void );
 	qboolean	isHDRLit;
+	qboolean	useSimpleDepthShader;
+	qboolean	useDistortion;
 
   float clampTime;                                  // time this shader is clamped to
   float timeOffset;                                 // current time offset for this shader
@@ -1160,18 +1169,24 @@ enum
 	FOGDEF_USE_VERTEX_ANIMATION 		= 0x0002,
 	FOGDEF_USE_SKELETAL_ANIMATION 		= 0x0004,
 	FOGDEF_USE_ALPHA_TEST				= 0x0008,
+	FOGDEF_USE_FALLBACK_GLOBAL_FOG				= 0x0010,
 
-	FOGDEF_ALL                  		= 0x000F,
+	FOGDEF_ALL                  		= 0x001F,
 	FOGDEF_COUNT                		= FOGDEF_ALL + 1,
 };
 
 enum
 {
-	DLIGHTDEF_USE_DEFORM_VERTEXES  		= 0x0001,
-	DLIGHTDEF_USE_ALPHA_TEST	   		= 0x0002,
+	REFRACTIONDEF_USE_DEFORM_VERTEXES = 0x0001,
+	REFRACTIONDEF_USE_TCGEN_AND_TCMOD = 0x0002,
+	REFRACTIONDEF_USE_VERTEX_ANIMATION = 0x0004,
+	REFRACTIONDEF_USE_RGBAGEN = 0x0008,
+	REFRACTIONDEF_USE_SKELETAL_ANIMATION = 0x0020,
+	REFRACTIONDEF_USE_ALPHA_TEST = 0x0040,
+	REFRACTIONDEF_USE_SRGB_TRANSFORM = 0x0080,
 
-	DLIGHTDEF_ALL                  		= 0x0003,
-	DLIGHTDEF_COUNT                		= DLIGHTDEF_ALL + 1,
+	REFRACTIONDEF_ALL = 0x00FF,
+	REFRACTIONDEF_COUNT = REFRACTIONDEF_ALL + 1,
 };
 
 enum
@@ -1201,8 +1216,9 @@ enum
 	SSDEF_FACE_CAMERA					= 0x01,
 	SSDEF_ALPHA_TEST					= 0x02,
 	SSDEF_FACE_UP						= 0x04,
+	SSDEF_USE_FOG						= 0x08,
 
-	SSDEF_ALL							= 0x07,
+	SSDEF_ALL							= 0x0F,
 	SSDEF_COUNT							= SSDEF_ALL + 1
 };
 
@@ -1324,7 +1340,8 @@ typedef enum
 	UNIFORM_AMBIENTLIGHT,
 	UNIFORM_DIRECTEDLIGHT,
 	UNIFORM_DISINTEGRATION,
-	UNIFORM_LIGHTINDEX,
+	UNIFORM_LIGHTMASK,
+	UNIFORM_FOGINDEX,
 
 	UNIFORM_FOGCOLORMASK,
 
@@ -1420,6 +1437,7 @@ typedef struct {
 	int			numPolys;
 	struct srfPoly_s	*polys;
 
+	int			fistDrawSurf;
 	int			numDrawSurfs;
 	struct drawSurf_s	*drawSurfs;
 
@@ -1463,7 +1481,9 @@ enum viewParmFlag_t {
 	VPF_USESUNLIGHT     = 0x20,
 	VPF_FARPLANEFRUSTUM = 0x40, // Use far clipping plane
 	VPF_NOCUBEMAPS      = 0x80, // Don't render cubemaps
-	VPF_NOPOSTPROCESS	= 0x100
+	VPF_NOPOSTPROCESS	= 0x100,
+	VPF_POINTSHADOW		= 0x200,// Rendering pointlight shadow
+	VPF_SHADOWCASCADES	= 0x400,// Rendering sun shadow cascades
 };
 using viewParmFlags_t = uint32_t;
 
@@ -1481,7 +1501,6 @@ typedef struct {
 	int			scissorX, scissorY, scissorWidth, scissorHeight;
 	FBO_t		*targetFbo;
 	int         targetFboLayer;
-	cubemap_t   *targetFboCubemap;
 	float		fovX, fovY;
 	float		projectionMatrix[16];
 	cplane_t	frustum[5];
@@ -1577,6 +1596,8 @@ typedef struct srfFlare_s {
 	vec3_t			origin;
 	vec3_t			normal;
 	vec3_t			color;
+	shader_t		*shader;
+	bool			portal_ranged;
 } srfFlare_t;
 
 struct vertexAttribute_t;
@@ -1589,6 +1610,9 @@ struct srfSprites_t
 	int numSprites;
 	VBO_t *vbo;
 	IBO_t *ibo;
+
+	int fogIndex;
+	AlphaTestType alphaTestType;
 
 	int numAttributes;
 	vertexAttribute_t *attributes;
@@ -1873,6 +1897,7 @@ typedef struct {
 	int			numfogs;
 	fog_t		*fogs;
 	const fog_t	*globalFog;
+	int			globalFogIndex;
 
 	vec3_t		lightGridOrigin;
 	vec3_t		lightGridSize;
@@ -2246,12 +2271,14 @@ typedef struct {
 
 	qboolean	projection2D;	// if qtrue, drawstretchpic doesn't need to change modes
 	float		color2D[4];
-	trRefEntity_t	entity2D;	// currentEntity will point at this when doing 2D rendering
+	trRefEntity_t	entity2D;		// currentEntity will point at this when doing 2D rendering
+	trRefEntity_t	entityFlare;	// currentEntity will point at this when doing flare rendering
 
 	FBO_t *last2DFBO;
 	qboolean    colorMask[4];
 	qboolean    framePostProcessed;
 	qboolean    depthFill;
+	qboolean	frameUBOsInitialized;
 } backEndState_t;
 
 struct EntityShaderUboOffset
@@ -2309,25 +2336,24 @@ typedef struct trGlobals_s {
 	image_t					*whiteImage;			// full of 0xff
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
-	cubemap_t               shadowCubemaps[MAX_DLIGHTS];
-
 	image_t					*renderImage;
 	image_t					*glowImage;
 	image_t					*glowImageScaled[6];
 	image_t					*sunRaysImage;
 	image_t					*renderDepthImage;
-	image_t					*pshadowMaps[MAX_DRAWN_PSHADOWS];
+	image_t					*pshadowArrayImage;
 	image_t					*textureScratchImage[2];
 	image_t                 *quarterImage[2];
 	image_t					*calcLevelsImage;
 	image_t					*targetLevelsImage;
 	image_t					*fixedLevelsImage;
-	image_t					*sunShadowDepthImage[3];
+	image_t					*sunShadowArrayImage;
+	image_t					*pointShadowArrayImage;
 	image_t                 *screenShadowImage;
 	image_t                 *screenSsaoImage;
 	image_t					*hdrDepthImage;
 	image_t                 *renderCubeImage;
-	image_t                 *prefilterEnvMapImage;
+	image_t                 *renderCubeDepthImage;
 	image_t					*envBrdfImage;
 	image_t					*textureDepthImage;
 	image_t					*weatherDepthImage;
@@ -2338,7 +2364,7 @@ typedef struct trGlobals_s {
 	FBO_t					*sunRaysFbo;
 	FBO_t					*depthFbo;
 	FBO_t					*pshadowFbos[MAX_DRAWN_PSHADOWS];
-	FBO_t					*shadowCubeFbo;
+	FBO_t					*shadowCubeFbo[MAX_DLIGHTS*6];
 	FBO_t					*textureScratchFbo[2];
 	FBO_t                   *quarterFbo[2];
 	FBO_t					*calcLevelsFbo;
@@ -2347,8 +2373,8 @@ typedef struct trGlobals_s {
 	FBO_t					*screenShadowFbo;
 	FBO_t					*screenSsaoFbo;
 	FBO_t					*hdrDepthFbo;
-	FBO_t                   *renderCubeFbo;
-	FBO_t					*preFilterEnvMapFbo;
+	FBO_t                   *renderCubeFbo[6];
+	FBO_t                   *filterCubeFbo;
 	FBO_t					*weatherDepthFbo;
 
 	shader_t				*defaultShader;
@@ -2384,9 +2410,9 @@ typedef struct trGlobals_s {
 	//
 	shaderProgram_t splashScreenShader;
 	shaderProgram_t genericShader[GENERICDEF_COUNT];
+	shaderProgram_t refractionShader[REFRACTIONDEF_COUNT];
 	shaderProgram_t textureColorShader;
 	shaderProgram_t fogShader[FOGDEF_COUNT];
-	shaderProgram_t dlightShader[DLIGHTDEF_COUNT];
 	shaderProgram_t lightallShader[LIGHTDEF_COUNT];
 	shaderProgram_t shadowmapShader;
 	shaderProgram_t pshadowShader;
@@ -2410,6 +2436,7 @@ typedef struct trGlobals_s {
 
 	GLuint staticUbo;
 	int entity2DUboOffset;
+	int entityFlareUboOffset;
 
 	int cameraUboOffset;
 
@@ -2526,7 +2553,7 @@ extern window_t		window;
 extern cvar_t	*r_flareSize;
 extern cvar_t	*r_flareFade;
 // coefficient for the flare intensity falloff function.
-#define FLARE_STDCOEFF "150"
+#define FLARE_STDCOEFF "80"
 extern cvar_t	*r_flareCoeff;
 
 extern cvar_t	*r_railWidth;
@@ -3009,6 +3036,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent );
 void R_TransformDlights( int count, dlight_t *dl, orientationr_t *ori );
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir );
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world );
+int R_DLightsForPoint(const vec3_t point, const float radius);
 int R_CubemapForPoint( const vec3_t point );
 
 /*
@@ -3218,6 +3246,8 @@ public:
 
 	// tell the renderer to render shadows for this surface
 	qboolean genShadows;
+	int dlightBits;
+	int pshadowBits;
 
 	// pointer to surface data loaded into file - only used by client renderer
 	// DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of
@@ -3425,16 +3455,10 @@ typedef struct clearDepthCommand_s {
 	int commandId;
 } clearDepthCommand_t;
 
-typedef struct capShadowmapCommand_s {
-	int commandId;
-	int map;
-	int cubeSide;
-} capShadowmapCommand_t;
-
 typedef struct convolveCubemapCommand_s {
 	int			commandId;
 	cubemap_t	*cubemap;
-	int			cubeSide;
+	int			cubemapId;
 } convolveCubemapCommand_t;
 
 typedef struct postProcessCommand_s {
@@ -3560,7 +3584,7 @@ void RB_ExecuteRenderCommands( const void *data );
 void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
-void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubeSide);
+void R_AddConvolveCubemapCmd(cubemap_t *cubemap, int cubemapId);
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );

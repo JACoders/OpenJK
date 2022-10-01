@@ -131,7 +131,7 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 	int				i;
 	flare_t			*f;
 	vec3_t			local;
-	float			d = 1;
+	float			d = 1.0f;
 	vec4_t			eye, clip, normalized, window;
 
 	backEnd.pc.c_flareAdds++;
@@ -142,9 +142,9 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 		VectorNormalizeFast(local);
 		d = DotProduct(local, normal);
 
-		// If the viewer is behind the flare don't add it.
-		if(d < 0)
-			return;
+	//	// If the viewer is behind the flare don't add it.
+	//	if(d < 0)
+	//		return;
 	}
 
 	// if the point is off the screen, don't bother adding it
@@ -288,7 +288,8 @@ void RB_TestFlare( flare_t *f ) {
 		FBO_Bind(tr.msaaResolveFbo);
 	}
 
-	// read back the z buffer contents
+	// read back the z buffer contents, which is bad
+	// TODO: Don't use glReadPixels
 	qglReadPixels( f->windowX, f->windowY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth );
 
 	// if we're doing multisample rendering, switch to the old FBO
@@ -309,11 +310,14 @@ void RB_TestFlare( flare_t *f ) {
 		}
 		fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * r_flareFade->value;
 	} else {
-		if ( f->visible ) {
+		// Dont fade out when flare is occluded. Will result in the ability to see 
+		// flares through surfaces on high movement speeds
+		/*if ( f->visible ) {
 			f->visible = qfalse;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
-		fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * r_flareFade->value;
+		fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * r_flareFade->value;*/
+		fade = 0.0f;
 	}
 
 	if ( fade < 0 ) {
@@ -391,51 +395,78 @@ void RB_RenderFlare( flare_t *f ) {
 			return;
 	}
 
-	iColor[0] = color[0] * fogFactors[0];
-	iColor[1] = color[1] * fogFactors[1];
-	iColor[2] = color[2] * fogFactors[2];
-	
-	RB_BeginSurface( tr.flareShader, f->fogNum, 0 );
+	srfFlare_t *flare = (srfFlare_t *)f->surface;
+	float alpha = 1.0f;
+	if (flare->portal_ranged)
+	{
+		float len = distance;
+		len /= flare->shader->portalRange;
+
+		if (len < 0)
+		{
+			alpha = 0;
+		}
+		else if (len > 1)
+		{
+			alpha = 0xff;
+		}
+		else
+		{
+			alpha = len * 0xff;
+		}
+		alpha /= 255.0f;
+	}
+
+	iColor[0] = (color[0] * fogFactors[0] * alpha) / 255.0f;
+	iColor[1] = (color[1] * fogFactors[1] * alpha) / 255.0f;
+	iColor[2] = (color[2] * fogFactors[2] * alpha) / 255.0f;
+
+	backEnd.currentEntity = &backEnd.entityFlare;
+	RB_BeginSurface( flare->shader, f->fogNum, 0 );
 
 	// FIXME: use quadstamp?
 	tess.xyz[tess.numVertexes][0] = f->windowX - size;
-	tess.xyz[tess.numVertexes][1] = f->windowY - size;
+	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY - size;
+	tess.xyz[tess.numVertexes][2] = 0.5f;
 	tess.texCoords[tess.numVertexes][0][0] = 0;
 	tess.texCoords[tess.numVertexes][0][1] = 0;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = iColor[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = iColor[2] / 255.0f;
-	tess.vertexColors[tess.numVertexes][3] = 1.0f;
+	tess.vertexColors[tess.numVertexes][0] = iColor[0];
+	tess.vertexColors[tess.numVertexes][1] = iColor[1];
+	tess.vertexColors[tess.numVertexes][2] = iColor[2];
+	tess.vertexColors[tess.numVertexes][3] = alpha;
 	tess.numVertexes++;
 
 	tess.xyz[tess.numVertexes][0] = f->windowX - size;
-	tess.xyz[tess.numVertexes][1] = f->windowY + size;
+	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY + size;
+	tess.xyz[tess.numVertexes][2] = 0.5f;
 	tess.texCoords[tess.numVertexes][0][0] = 0;
 	tess.texCoords[tess.numVertexes][0][1] = 1;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = iColor[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = iColor[2] / 255.0f;
-	tess.vertexColors[tess.numVertexes][3] = 1.0f;
+	tess.vertexColors[tess.numVertexes][0] = iColor[0];
+	tess.vertexColors[tess.numVertexes][1] = iColor[1];
+	tess.vertexColors[tess.numVertexes][2] = iColor[2];
+	tess.vertexColors[tess.numVertexes][3] = alpha;
 	tess.numVertexes++;
 
 	tess.xyz[tess.numVertexes][0] = f->windowX + size;
-	tess.xyz[tess.numVertexes][1] = f->windowY + size;
+	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY + size;
+	tess.xyz[tess.numVertexes][2] = 0.5f;
 	tess.texCoords[tess.numVertexes][0][0] = 1;
 	tess.texCoords[tess.numVertexes][0][1] = 1;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = iColor[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = iColor[2] / 255.0f;
-	tess.vertexColors[tess.numVertexes][3] = 1.0f;
+	tess.vertexColors[tess.numVertexes][0] = iColor[0];
+	tess.vertexColors[tess.numVertexes][1] = iColor[1];
+	tess.vertexColors[tess.numVertexes][2] = iColor[2];
+	tess.vertexColors[tess.numVertexes][3] = alpha;
 	tess.numVertexes++;
 
 	tess.xyz[tess.numVertexes][0] = f->windowX + size;
-	tess.xyz[tess.numVertexes][1] = f->windowY - size;
+	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY - size;
+	tess.xyz[tess.numVertexes][2] = 0.5f;
 	tess.texCoords[tess.numVertexes][0][0] = 1;
 	tess.texCoords[tess.numVertexes][0][1] = 0;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = iColor[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = iColor[2] / 255.0f;
-	tess.vertexColors[tess.numVertexes][3] = 1.0f;
+	tess.vertexColors[tess.numVertexes][0] = iColor[0];
+	tess.vertexColors[tess.numVertexes][1] = iColor[1];
+	tess.vertexColors[tess.numVertexes][2] = iColor[2];
+	tess.vertexColors[tess.numVertexes][3] = alpha;
 	tess.numVertexes++;
 
 	tess.indexes[tess.numIndexes++] = 0;
@@ -465,7 +496,6 @@ extend past the portal edge will be overwritten.
 ==================
 */
 void RB_RenderFlares (void) {
-#if 0
 	flare_t		*f;
 	flare_t		**prev;
 	qboolean	draw;
@@ -474,6 +504,10 @@ void RB_RenderFlares (void) {
 	if ( !r_flares->integer ) {
 		return;
 	}
+
+	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
+		(backEnd.viewParms.flags & VPF_NOPOSTPROCESS))
+		return;
 
 	if(r_flareCoeff->modified)
 	{
@@ -528,7 +562,7 @@ void RB_RenderFlares (void) {
 	Matrix16Identity(matrix);
 	GL_SetModelviewMatrix(matrix);
 	Matrix16Ortho( backEnd.viewParms.viewportX, backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth,
-	               backEnd.viewParms.viewportY, backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight,
+		           backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight, backEnd.viewParms.viewportY,
 	               -99999, 99999, matrix );
 	GL_SetProjectionMatrix(matrix);
 
@@ -542,7 +576,6 @@ void RB_RenderFlares (void) {
 
 	GL_SetProjectionMatrix(oldprojection);
 	GL_SetModelviewMatrix(oldmodelview);
-#endif
 }
 
 

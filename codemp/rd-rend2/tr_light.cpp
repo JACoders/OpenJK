@@ -396,7 +396,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	d = VectorLength( ent->directedLight );
 	VectorScale( ent->lightDir, d, lightDir );
 
-	for ( i = 0 ; i < refdef->num_dlights ; i++ ) {
+	/*for ( i = 0 ; i < refdef->num_dlights ; i++ ) {
 		dl = &refdef->dlights[i];
 		VectorSubtract( dl->origin, lightOrigin, dir );
 		d = VectorNormalize( dir );
@@ -409,7 +409,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 
 		VectorMA( ent->directedLight, d, dl->color, ent->directedLight );
 		VectorMA( lightDir, d, dir, lightDir );
-	}
+	}*/
 
 	// clamp ambient
 	if (tr.hdrLighting != qtrue)
@@ -480,6 +480,27 @@ int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *w
 		VectorCopy(normal, lightDir);
 
 	return qtrue;
+}
+
+int R_DLightsForPoint(const vec3_t point, const float radius)
+{
+	int dlightBits = 0;
+	vec3_t delta;
+	dlight_t currentDlight;
+	float distance;
+	float radiusSum;
+	for (int i = 0; i < tr.refdef.num_dlights; i++)
+	{
+		currentDlight = tr.refdef.dlights[i];
+		
+		VectorSubtract(point, currentDlight.origin, delta);
+		distance = VectorLength(delta);
+		radiusSum = radius + currentDlight.radius;
+
+		if (distance < radiusSum)
+			dlightBits |= 1 << i;
+	}
+	return dlightBits;
 }
 
 int R_CubemapForPoint( const vec3_t point )
