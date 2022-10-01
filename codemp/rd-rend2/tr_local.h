@@ -2398,7 +2398,6 @@ typedef struct trGlobals_s {
 	shaderProgram_t genericShader[GENERICDEF_COUNT];
 	shaderProgram_t textureColorShader;
 	shaderProgram_t fogShader[FOGDEF_COUNT];
-	shaderProgram_t dlightShader[DLIGHTDEF_COUNT];
 	shaderProgram_t lightallShader[LIGHTDEF_COUNT];
 	shaderProgram_t shadowmapShader;
 	shaderProgram_t pshadowShader;
@@ -3440,12 +3439,6 @@ typedef struct colorMaskCommand_s {
 typedef struct clearDepthCommand_s {
 	int commandId;
 } clearDepthCommand_t;
-
-typedef struct capShadowmapCommand_s {
-	int commandId;
-	int map;
-	int cubeSide;
-} capShadowmapCommand_t;
 
 typedef struct convolveCubemapCommand_s {
 	int			commandId;

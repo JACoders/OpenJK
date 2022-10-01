@@ -1454,13 +1454,13 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 	each surface corresponds to something which has all of its gpu data uploaded
 	*/
 
-	int estimatedShaderStages = (backEnd.viewParms.flags & VPF_DEPTHSHADOW) ? 1 : 4;
+	int estimatedNumShaderStages = (backEnd.viewParms.flags & VPF_DEPTHSHADOW) ? 1 : 4;
 
 	// Prepare memory for the current render pass
 	void *allocMark = backEndData->perFrameMemory->Mark();
 	assert(backEndData->currentPass == nullptr);
 	backEndData->currentPass = RB_CreatePass(
-		*backEndData->perFrameMemory, numDrawSurfs * estimatedShaderStages);
+		*backEndData->perFrameMemory, numDrawSurfs * estimatedNumShaderStages);
 
 	// save original time for entity shader offsets
 	float originalTime = backEnd.refdef.floatTime;
@@ -2493,8 +2493,7 @@ int RB_GetEntityShaderUboOffset(
 			return uboOffset.offset;
 		hash = (hash + 1) % mapSize;
 	}
-	if (backEnd.frameUBOsInitialized == qfalse)
-		ri.Printf(PRINT_ALL, "Failed finding Entity Shader UboOffset! BAD\n");
+
 	return -1;
 }
 
