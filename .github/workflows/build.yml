@@ -1,0 +1,105 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  vs2019:
+    name: Build VS 2019, ${{ matrix.build_type }}, ${{ matrix.arch }}
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        build_type: [Debug, RelWithDebInfo]
+        arch: [Win32, x64]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -A ${{ matrix.arch }}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config ${{ matrix.build_type }}
+
+  vs2017_xp:
+    name: Build VS 2017, Windows XP
+    runs-on: windows-2016
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -A Win32 -T v141_xp
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config RelWithDebInfo
+
+  macos:
+    name: Build macOS AppleClang
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: |
+        brew install zlib libjpeg libpng sdl2
+        cmake -E make_directory ${{runner.workspace}}/build
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build .
+
+  linux:
+    name: Build Linux, ${{ matrix.build_type }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type: [Debug, RelWithDebInfo]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install libjpeg-dev libpng-dev zlib1g-dev libsdl2-dev
+        cmake -E make_directory ${{runner.workspace}}/build
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build .

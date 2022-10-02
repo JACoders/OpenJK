@@ -372,8 +372,3 @@ typedef union byteAlias_u {
 #else
 	#define PLATFORM_STRING OS_STRING "-" ARCH_STRING "-debug"
 #endif
-
-// to support https://reproducible-builds.org/specs/source-date-epoch/
-#ifndef SOURCE_DATE
-#define SOURCE_DATE __DATE__
-#endif

@@ -54,6 +54,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #pragma warning(disable : 4710)		// not inlined
 #pragma warning(disable : 4711)		// selected for automatic inline expansion
 #pragma warning(disable : 4786)		// identifier was truncated
+#pragma warning(disable : 5208)		// unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes
 
 #pragma warning(disable : 4996)		// This function or variable may be unsafe.
 

@@ -173,25 +173,25 @@ int			s_numSfx;
 #define		LOOP_HASH		128
 static	sfx_t		*sfxHash[LOOP_HASH];
 
-cvar_t		*s_volume;
-cvar_t		*s_volumeVoice;
-cvar_t		*s_testsound;
-cvar_t		*s_khz;
-cvar_t		*s_allowDynamicMusic;
-cvar_t		*s_show;
-cvar_t		*s_mixahead;
-cvar_t		*s_mixPreStep;
-cvar_t		*s_musicVolume;
-cvar_t		*s_separation;
-cvar_t		*s_lip_threshold_1;
-cvar_t		*s_lip_threshold_2;
-cvar_t		*s_lip_threshold_3;
-cvar_t		*s_lip_threshold_4;
-cvar_t		*s_language;	// note that this is distinct from "g_language"
-cvar_t		*s_dynamix;
-cvar_t		*s_debugdynamic;
-
-cvar_t		*s_doppler;
+cvar_t *s_allowDynamicMusic;
+cvar_t *s_debugdynamic;
+cvar_t *s_doppler;
+cvar_t *s_dynamix;
+cvar_t *s_initsound;
+cvar_t *s_khz;
+cvar_t *s_language;	// note that this is distinct from "g_language"
+cvar_t *s_lip_threshold_1;
+cvar_t *s_lip_threshold_2;
+cvar_t *s_lip_threshold_3;
+cvar_t *s_lip_threshold_4;
+cvar_t *s_mixahead;
+cvar_t *s_mixPreStep;
+cvar_t *s_musicVolume;
+cvar_t *s_separation;
+cvar_t *s_show;
+cvar_t *s_testsound;
+cvar_t *s_volume;
+cvar_t *s_volumeVoice;
 
 typedef struct
 {
@@ -443,36 +443,32 @@ S_Init
 ================
 */
 void S_Init( void ) {
-	cvar_t	*cv;
 	qboolean	r;
 
 	Com_Printf("\n------- sound initialization -------\n");
 
-	s_volume = Cvar_Get ("s_volume", "0.5", CVAR_ARCHIVE, "Volume" );
-	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE, "Volume for voice channels" );
-	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE, "Music Volume" );
-	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
-	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
-	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE_ND);
-	s_mixahead = Cvar_Get ("s_mixahead", "0.2", CVAR_ARCHIVE);
-
-	s_mixPreStep = Cvar_Get ("s_mixPreStep", "0.05", CVAR_ARCHIVE);
-	s_show = Cvar_Get ("s_show", "0", CVAR_CHEAT);
-	s_testsound = Cvar_Get ("s_testsound", "0", CVAR_CHEAT);
-	s_debugdynamic = Cvar_Get("s_debugdynamic","0", CVAR_CHEAT);
-	s_lip_threshold_1 = Cvar_Get("s_threshold1" , "0.5",0);
-	s_lip_threshold_2 = Cvar_Get("s_threshold2" , "4.0",0);
-	s_lip_threshold_3 = Cvar_Get("s_threshold3" , "7.0",0);
-	s_lip_threshold_4 = Cvar_Get("s_threshold4" , "8.0",0);
-
-	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART, "Sound language" );
-
-	s_doppler = Cvar_Get("s_doppler", "1", CVAR_ARCHIVE_ND);
+	s_allowDynamicMusic = Cvar_Get( "s_allowDynamicMusic", "1",       CVAR_ARCHIVE_ND );
+	s_debugdynamic      = Cvar_Get( "s_debugdynamic",      "0",       CVAR_CHEAT );
+	s_doppler           = Cvar_Get( "s_doppler",           "1",       CVAR_ARCHIVE_ND );
+	s_initsound         = Cvar_Get( "s_initsound",         "1",       CVAR_ARCHIVE );
+	s_khz               = Cvar_Get( "s_khz",               "44",      CVAR_ARCHIVE | CVAR_LATCH );
+	s_language          = Cvar_Get( "s_language",          "english", CVAR_ARCHIVE | CVAR_NORESTART, "Sound language" );
+	s_lip_threshold_1   = Cvar_Get( "s_threshold1",        "0.5",     0 );
+	s_lip_threshold_2   = Cvar_Get( "s_threshold2",        "4.0",     0 );
+	s_lip_threshold_3   = Cvar_Get( "s_threshold3",        "7.0",     0 );
+	s_lip_threshold_4   = Cvar_Get( "s_threshold4",        "8.0",     0 );
+	s_mixahead          = Cvar_Get( "s_mixahead",          "0.2",     CVAR_ARCHIVE );
+	s_mixPreStep        = Cvar_Get( "s_mixPreStep",        "0.05",    CVAR_ARCHIVE );
+	s_musicVolume       = Cvar_Get( "s_musicvolume",       "0.25",    CVAR_ARCHIVE, "Music Volume" );
+	s_separation        = Cvar_Get( "s_separation",        "0.5",     CVAR_ARCHIVE );
+	s_show              = Cvar_Get( "s_show",              "0",       CVAR_CHEAT );
+	s_testsound         = Cvar_Get( "s_testsound",         "0",       CVAR_CHEAT );
+	s_volume            = Cvar_Get( "s_volume",            "0.5",     CVAR_ARCHIVE, "Volume" );
+	s_volumeVoice       = Cvar_Get( "s_volumeVoice",       "1.0",     CVAR_ARCHIVE, "Volume for voice channels" );
 
 	MP3_InitCvars();
 
-	cv = Cvar_Get ("s_initsound", "1", 0);
-	if ( !cv->integer ) {
+	if ( !s_initsound->integer ) {
 		s_soundStarted = 0;	// needed in case you set s_initsound to 0 midgame then snd_restart (div0 err otherwise later)
 		Com_Printf ("not initializing.\n");
 		Com_Printf("------------------------------------\n");
@@ -489,7 +485,7 @@ void S_Init( void ) {
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f, "Change dynamic music state" );
 
 #ifdef USE_OPENAL
-	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
+	cvar_t *cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
 	s_UseOpenAL = !!(cv->integer);
 
 	if (s_UseOpenAL)

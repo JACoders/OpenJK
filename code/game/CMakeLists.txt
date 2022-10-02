@@ -27,6 +27,7 @@ set(SPGameIncludeDirectories
 	${SPDir}
 	"${SPDir}/game"
 	"${GSLIncludeDirectory}"
+	"${CMAKE_BINARY_DIR}/shared"
 	)
 
 if(WIN32)

@@ -180,7 +180,7 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(WIN32)
 
 	# Include directories
-	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${GSLIncludeDirectory}) # codemp folder, since includes are not always relative in the files
+	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${GSLIncludeDirectory} ${CMAKE_BINARY_DIR}/shared)
 
 	# Transparently use our bundled minizip.
 	list(APPEND MPEngineAndDedIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
@@ -402,6 +402,11 @@ if(BuildMPEngine)
 			)
 	else()
 		find_package(SDL2 REQUIRED CONFIG)
+		if (TARGET SDL2::SDL2)
+			set(SDL2_INCLUDE_DIRS "")
+			set(SDL2_LIBRARIES SDL2::SDL2)
+		endif()
+		string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIRS})
 		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARIES})
 	endif()
@@ -707,44 +712,3 @@ if(BuildMPDed)
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server")
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)
-
-	set(GameLibsBuilt)
-	if(BuildMPGame)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
-	endif()
-
-	if(BuildMPCGame)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-	endif()
-
-	if(BuildMPUI)
-		set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
-	endif()
-
-if(WIN32)
-set(GameLibFullPaths)
-	if(MSVC)
-		foreach(GameLib ${GameLibsBuilt})
-			set(GameLibFullPaths
-				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
-		endforeach(GameLib)
-	else()
-		foreach(GameLib ${GameLibsBuilt})
-			set(GameLibFullPaths
-				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
-		endforeach(GameLib)
-	endif()
-
-	include(InstallZIP)
-	add_zip_command(${AssetsPk3}
-		FILES ${GameLibFullPaths}
-		DEPENDS "${GameLibsBuilt}")
-	add_custom_target(Assets
-		ALL
-		DEPENDS ${AssetsPk3})
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
-		DESTINATION "${JKAInstallDir}/OpenJK"
-		COMPONENT ${JKAMPCoreComponent})
-endif()

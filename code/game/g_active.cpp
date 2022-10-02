@@ -2905,7 +2905,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 						}
 					}
 					if ( ent->client->ps.legsAnimTimer <= 1150
-						&& ent->client->ps.legsAnimTimer > 10500 )
+						&& ent->client->ps.legsAnimTimer > 1050 )
 					{
 						TIMER_Set( ent, "grappleDamageDebounce", 150 );
 						if ( ent->s.number < MAX_CLIENTS )
