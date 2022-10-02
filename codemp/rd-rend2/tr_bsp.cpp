@@ -3710,6 +3710,9 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 
 				// We have 4 copies for each corner of the quad
 				sprites.push_back(sprite);
+				sprites.push_back(sprite);
+				sprites.push_back(sprite);
+				sprites.push_back(sprite);
 			}
 		}
 	}
@@ -3730,19 +3733,29 @@ static void R_GenerateSurfaceSprites(
 	for ( int i = 0; bundle->image[i]; ++i )
 		hash = UpdateHash(bundle->image[i]->imgName, hash);
 
-	uint16_t indices[] = { 0, 1, 2, 0, 2, 3 };
 	std::vector<sprite_t> sprites =
 		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density, stage);
 
+	int numSprites = sprites.size() / 4;
+	int numIndices = numSprites * 6;
+	uint16_t *indices = (uint16_t*)Z_Malloc(numIndices * sizeof(uint16_t), TAG_BSP);
+	for (int i = 0; i < numIndices; i++)
+	{
+		const uint16_t face_indices[] = { 0, 1, 2, 0, 2, 3 };
+		int vert_index = face_indices[i % 6] + int(i / 6)*4;
+		indices[i] = vert_index;
+	}
+
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
-	out->numSprites = sprites.size();
+	out->numSprites = numSprites;
+	out->numIndices = numIndices;
 	out->fogIndex = fogIndex;
 	// FIXME: Use big preallocated vbo/ibo to store all sprites in one vao
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
 
-	out->ibo = R_CreateIBO((byte *)indices, sizeof(indices), VBO_USAGE_STATIC);
+	out->ibo = R_CreateIBO((byte *)indices, numIndices * sizeof(uint16_t), VBO_USAGE_STATIC);
 
 	// FIXME: Need a better way to handle this.
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
@@ -3763,7 +3776,7 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[0].normalize = GL_FALSE;
 	out->attributes[0].stride = sizeof(sprite_t);
 	out->attributes[0].offset = offsetof(sprite_t, position);
-	out->attributes[0].stepRate = 1;
+	out->attributes[0].stepRate = 0;
 
 	out->attributes[1].vbo = out->vbo;
 	out->attributes[1].index = ATTR_INDEX_NORMAL;
@@ -3773,7 +3786,7 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[1].normalize = GL_FALSE;
 	out->attributes[1].stride = sizeof(sprite_t);
 	out->attributes[1].offset = offsetof(sprite_t, normal);
-	out->attributes[1].stepRate = 1;
+	out->attributes[1].stepRate = 0;
 
 	out->attributes[2].vbo = out->vbo;
 	out->attributes[2].index = ATTR_INDEX_COLOR;
@@ -3783,7 +3796,7 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[2].normalize = GL_FALSE;
 	out->attributes[2].stride = sizeof(sprite_t);
 	out->attributes[2].offset = offsetof(sprite_t, color);
-	out->attributes[2].stepRate = 1;
+	out->attributes[2].stepRate = 0;
 }
 
 static void R_GenerateSurfaceSprites( const world_t *world )

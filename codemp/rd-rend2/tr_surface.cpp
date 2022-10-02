@@ -2216,10 +2216,10 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 
 	item.draw.type = DRAW_COMMAND_INDEXED;
 	item.draw.primitiveType = GL_TRIANGLES;
-	item.draw.numInstances = surf->numSprites;
+	item.draw.numInstances = 1;
 	item.draw.params.indexed.indexType = GL_UNSIGNED_SHORT;
 	item.draw.params.indexed.firstIndex = 0;
-	item.draw.params.indexed.numIndices = 6;
+	item.draw.params.indexed.numIndices = surf->numIndices;
 
 	tess.externalIBO = surf->ibo;
 

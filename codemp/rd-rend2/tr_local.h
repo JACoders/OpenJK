@@ -1608,6 +1608,7 @@ struct srfSprites_t
 	shader_t *shader;
 	const surfaceSprite_t *sprite;
 	int numSprites;
+	int numIndices;
 	VBO_t *vbo;
 	IBO_t *ibo;
 
