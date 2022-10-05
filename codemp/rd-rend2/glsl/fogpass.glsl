@@ -302,7 +302,7 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 		float distToVertex = length(V);
 		float distFromIntersection = distToVertex - (t * distToVertex);
 		float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
-		return vec4(globalFog.color.rgb, 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0));
+		return vec4(globalFog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
 	}
 	#endif
 
@@ -313,7 +313,7 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 	float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
 
 	float z = fog.depthToOpaque * distThroughFog;
-	return vec4(fog.color.rgb, 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0));
+	return vec4(fog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
 }
 
 void main()

@@ -504,7 +504,7 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 	float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
 
 	float z = fog.depthToOpaque * distThroughFog;
-	return 1.0 - clamp(exp2(-(z * z)), 0.0, 1.0);
+	return 1.0 - clamp(exp(-(z * z)), 0.0, 1.0);
 }
 #endif
 
