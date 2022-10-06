@@ -2017,7 +2017,8 @@ void RE_SetLightStyle(int style, int color)
 	}
 }
 
-void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, float *normal) {}
+void RE_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal);
+
 void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}
 static void RE_SetRefractionProperties ( float distortionAlpha, float distortionStretch, qboolean distortionPrePost, qboolean distortionNegate ) { }
@@ -2131,7 +2132,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.GetLightStyle = RE_GetLightStyle;
 	re.SetLightStyle = RE_SetLightStyle;
-	re.GetBModelVerts = stub_RE_GetBModelVerts;
+	re.GetBModelVerts = RE_GetBModelVerts;
 
 	re.SetRangedFog = RE_SetRangedFog;
 	re.SetRefractionProperties = RE_SetRefractionProperties;

@@ -407,6 +407,100 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent, int entityNum ) {
 	}
 }
 
+float GetQuadArea(vec3_t v1, vec3_t v2, vec3_t v3, vec3_t v4)
+{
+	vec3_t	vec1, vec2, dis1, dis2;
+
+	// Get area of tri1
+	VectorSubtract(v1, v2, vec1);
+	VectorSubtract(v1, v4, vec2);
+	CrossProduct(vec1, vec2, dis1);
+	VectorScale(dis1, 0.25f, dis1);
+
+	// Get area of tri2
+	VectorSubtract(v3, v2, vec1);
+	VectorSubtract(v3, v4, vec2);
+	CrossProduct(vec1, vec2, dis2);
+	VectorScale(dis2, 0.25f, dis2);
+
+	// Return addition of disSqr of each tri area
+	return (dis1[0] * dis1[0] + dis1[1] * dis1[1] + dis1[2] * dis1[2] +
+		dis2[0] * dis2[0] + dis2[1] * dis2[1] + dis2[2] * dis2[2]);
+}
+
+void RE_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal)
+{
+	int					surf;
+	srfBspSurface_t		*face;
+	//	Not sure if we really need to track the best two candidates
+	int					maxDist[2] = { 0,0 };
+	int					maxIndx[2] = { 0,0 };
+	int					dist = 0;
+	float				dot1, dot2;
+
+	model_t *pModel = R_GetModelByHandle(bmodelIndex);
+	bmodel_t *bmodel = pModel->data.bmodel;
+	world_t *world = R_GetWorld(bmodel->worldIndex);
+
+	// Loop through all surfaces on the brush and find the best two candidates
+	for (int i = 0; i < bmodel->numSurfaces; i++)
+	{
+		surf = bmodel->firstSurface + i;
+		face = (srfBspSurface_t *)(world->surfaces + surf)->data;
+
+		// It seems that the safest way to handle this is by finding the area of the faces
+		dist = GetQuadArea(face->verts[0].xyz, face->verts[1].xyz, face->verts[2].xyz, face->verts[3].xyz);
+
+		// Check against the highest max
+		if (dist > maxDist[0])
+		{
+			// Shuffle our current maxes down
+			maxDist[1] = maxDist[0];
+			maxIndx[1] = maxIndx[0];
+
+			maxDist[0] = dist;
+			maxIndx[0] = i;
+		}
+		// Check against the second highest max
+		else if (dist >= maxDist[1])
+		{
+			// just stomp the old
+			maxDist[1] = dist;
+			maxIndx[1] = i;
+		}
+	}
+
+	// Hopefully we've found two best case candidates.  Now we should see which of these faces the viewer
+
+	surf = bmodel->firstSurface + maxIndx[0];
+	face = (srfBspSurface_t *)(world->surfaces + surf)->data;
+	dot1 = DotProduct(face->cullPlane.normal, tr.refdef.viewaxis[0]);
+
+	surf = bmodel->firstSurface + maxIndx[1];
+	face = (srfBspSurface_t *)(world->surfaces + surf)->data;
+	dot2 = DotProduct(face->cullPlane.normal, tr.refdef.viewaxis[0]);
+
+	if (dot2 < dot1 && dot2 < 0.0f)
+	{
+		surf = bmodel->firstSurface + maxIndx[1]; // use the second face
+	}
+	else if (dot1 < dot2 && dot1 < 0.0f)
+	{
+		surf = bmodel->firstSurface + maxIndx[0]; // use the first face
+	}
+	else
+	{ // Possibly only have one face, so may as well use the first face, which also should be the best one
+		//i = rand() & 1; // ugh, we don't know which to use.  I'd hope this would never happen
+		surf = bmodel->firstSurface + maxIndx[0]; // use the first face
+	}
+	face = (srfBspSurface_t *)(world->surfaces + surf)->data;
+
+	for (int t = 0; t < 4; t++)
+	{
+		VectorCopy(face->verts[t].xyz, verts[t]);
+	}
+}
+
 void RE_SetRangedFog ( float range )
 {
 	tr.rangedFog = range;
