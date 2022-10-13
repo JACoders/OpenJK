@@ -30,3 +30,5 @@ void R_InitWeatherForMap();
 void R_AddWeatherSurfaces();
 void R_ShutdownWeatherSystem();
 void RB_SurfaceWeather( srfWeather_t *surfaceType );
+
+void R_WorldEffect_f(void);

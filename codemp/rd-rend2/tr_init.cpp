@@ -1398,7 +1398,7 @@ static consoleCommand_t	commands[] = {
 	{ "screenshot_tga",		R_ScreenShotTGA_f },
 	{ "gfxinfo",			GfxInfo_f },
 	{ "gfxmeminfo",			GfxMemInfo_f },
-	//{ "r_we",				R_WorldEffect_f },
+	{ "r_we",				R_WorldEffect_f },
 	//{ "imagecacheinfo",		RE_RegisterImages_Info_f },
 	{ "modellist",			R_Modellist_f },
 	//{ "modelcacheinfo",		RE_RegisterModels_Info_f },
@@ -2018,8 +2018,8 @@ void RE_SetLightStyle(int style, int color)
 }
 
 void RE_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal);
+void RE_WorldEffectCommand(const char *cmd);
 
-void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}
 static void RE_SetRefractionProperties ( float distortionAlpha, float distortionStretch, qboolean distortionPrePost, qboolean distortionNegate ) { }
 
@@ -2141,7 +2141,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	// R_AutomapElevationAdjustment
 	re.InitializeWireframeAutomap = stub_InitializeWireframeAutomap;
 	re.AddWeatherZone = stub_RE_AddWeatherZone;
-	re.WorldEffectCommand = stub_RE_WorldEffectCommand;
+	re.WorldEffectCommand = RE_WorldEffectCommand;
 	re.RegisterMedia_LevelLoadBegin = C_LevelLoadBegin;
 	re.RegisterMedia_LevelLoadEnd = C_LevelLoadEnd;
 	re.RegisterMedia_GetLevel = C_GetLevel;

@@ -128,6 +128,8 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
 	{ "u_MapZExtents",			GLSL_VEC2, 1 },
 	{ "u_ZoneOffset",			GLSL_VEC2, 1 },
+	{ "u_EnvForce",				GLSL_VEC3, 1 },
+	{ "u_RandomOffset",			GLSL_VEC4, 1 }
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
@@ -2247,6 +2249,10 @@ static int GLSL_LoadGPUProgramWeather(
 		ATTR_POSITION | ATTR_COLOR);
 
 	GLSL_InitUniforms(&tr.weatherShader);
+	qglUseProgram(tr.weatherShader.program);
+	GLSL_SetUniformInt(&tr.weatherShader, UNIFORM_SHADOWMAP, TB_SHADOWMAP);
+	GLSL_SetUniformInt(&tr.weatherShader, UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
+	qglUseProgram(0);
 	GLSL_FinishGPUShader(&tr.weatherShader);
 
 	GLSL_LoadGPUProgramBasic(

@@ -2318,6 +2318,7 @@ static void RB_UpdateSceneConstants(gpuFrame_t *frame)
 		sceneBlock.globalFogIndex = tr.world->globalFogIndex - 1;
 	else
 		sceneBlock.globalFogIndex = -1;
+	sceneBlock.currentTime = backEnd.refdef.time;
 
 	tr.sceneUboOffset = RB_AppendConstantsData(
 		frame, &sceneBlock, sizeof(sceneBlock));

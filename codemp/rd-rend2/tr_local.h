@@ -713,6 +713,8 @@ struct SceneBlock
 	int	   globalFogIndex;
 	vec3_t primaryLightColor;
 	float primaryLightRadius;
+	float currentTime;
+	float pad0[3];
 };
 
 struct LightsBlock
@@ -1372,6 +1374,8 @@ typedef enum
 	UNIFORM_FX_VOLUMETRIC_BASE,
 	UNIFORM_MAPZEXTENTS,
 	UNIFORM_ZONEOFFSET,
+	UNIFORM_ENVFORCE,
+	UNIFORM_RANDOMOFFSET,
 
 	UNIFORM_COUNT
 } uniform_t;
@@ -1422,6 +1426,8 @@ typedef struct {
 	qboolean	areamaskModified;	// qtrue if areamask changed since last scene
 
 	float		floatTime;			// tr.refdef.time / 1000.0
+	float		frameTime;			// delta last frame to frame now
+	float		lastTime;			// last frame time
 
 	float		blurFactor;
 

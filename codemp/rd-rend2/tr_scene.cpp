@@ -314,6 +314,7 @@ void RE_BeginScene(const refdef_t *fd)
 
 	tr.refdef.time = fd->time;
 	tr.refdef.rdflags = fd->rdflags;
+	tr.refdef.frameTime = fd->time - tr.refdef.lastTime;
 
 	// copy the areamask data over and note if it has changed, which
 	// will force a reset of the visible leafs even if the view hasn't moved
@@ -451,6 +452,12 @@ void RE_BeginScene(const refdef_t *fd)
 	if (fd->rdflags & RDF_SKYBOXPORTAL)
 	{
 		tr.world->skyboxportal = 1;
+	}
+	else
+	{
+		// pasted this from SP
+		// cdr - only change last time for the real render, not the portal
+		tr.refdef.lastTime = fd->time;
 	}
 
 	// a single frame may have multiple scenes draw inside it --

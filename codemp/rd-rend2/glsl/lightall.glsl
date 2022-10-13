@@ -339,6 +339,7 @@ layout(std140) uniform Scene
 	int  u_globalFogIndex;
 	vec3 u_PrimaryLightColor;
 	float u_PrimaryLightRadius;
+	float u_frameTime;
 };
 
 layout(std140) uniform Camera
