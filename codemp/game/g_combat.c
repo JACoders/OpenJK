@@ -2235,18 +2235,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	G_BreakArm(self, 0); //unbreak anything we have broken
 	self->client->ps.saberEntityNum = self->client->saberStoredIndex; //in case we died while our saber was knocked away.
 
-	if (self->client->ps.weapon == WP_SABER && self->client->saberKnockedTime)
-	{
-		gentity_t *saberEnt = &g_entities[self->client->ps.saberEntityNum];
-		//trap->Print("DEBUG: Running saber cleanup for %s\n", self->client->pers.netname);
-		self->client->saberKnockedTime = 0;
-		saberReactivate(saberEnt, self);
-		saberEnt->r.contents = CONTENTS_LIGHTSABER;
-		saberEnt->think = saberBackToOwner;
-		saberEnt->nextthink = level.time;
-		G_RunObject(saberEnt);
-	}
-
 	self->client->bodyGrabIndex = ENTITYNUM_NONE;
 	self->client->bodyGrabTime = 0;
 
