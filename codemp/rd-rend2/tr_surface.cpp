@@ -2161,7 +2161,16 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	if ( ss->type == SURFSPRITE_ORIENTED )
 		shaderFlags |= SSDEF_FACE_CAMERA;
 
-	if ( surf->fogIndex != -1)
+	if (ss->facing == SURFSPRITE_FACING_UP)
+		shaderFlags |= SSDEF_FACE_UP;
+
+	if (ss->type == SURFSPRITE_EFFECT || ss->type == SURFSPRITE_WEATHERFX)
+		shaderFlags |= SSDEF_FX_SPRITE;
+
+	if ((firstStage->stateBits & (GLS_SRCBLEND_BITS|GLS_DSTBLEND_BITS)) == (GLS_SRCBLEND_ONE|GLS_DSTBLEND_ONE))
+		shaderFlags |= SSDEF_ADDITIVE;
+
+	if (surf->fogIndex > 0)
 		shaderFlags |= SSDEF_USE_FOG;
 
 	shaderProgram_t *program = programGroup + shaderFlags;
@@ -2170,6 +2179,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	UniformDataWriter uniformDataWriter;
 	uniformDataWriter.Start(program);
 	
+	// FIXME: Use entity block for this
 	uniformDataWriter.SetUniformMatrix4x4(
 		UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 
@@ -2192,6 +2202,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
+		{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
 		{ currentFrameUbo, offset, UNIFORM_BLOCK_SURFACESPRITE },
 		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
 		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS }

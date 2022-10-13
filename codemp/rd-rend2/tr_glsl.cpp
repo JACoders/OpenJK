@@ -2198,7 +2198,7 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("surface_sprites", allocator, fallback_surface_spritesProgram);
-	const uint32_t attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_COLOR;
+	const uint32_t attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_COLOR;
 	for ( int i = 0; i < SSDEF_COUNT; ++i )
 	{
 		extradefines[0] = '\0';
@@ -2213,6 +2213,10 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define FACE_UP\n");
 
+		if (i & SSDEF_FX_SPRITE)
+			Q_strcat(extradefines, sizeof(extradefines),
+				"#define FX_SPRITE\n");
+
 		if ( i & SSDEF_USE_FOG )
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define USE_FOG\n");
@@ -2221,6 +2225,10 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define ALPHA_TEST\n");
 
+		if (i & SSDEF_ADDITIVE)
+			Q_strcat(extradefines, sizeof(extradefines),
+				"#define ADDITIVE_BLEND\n");
+		
 		shaderProgram_t *program = tr.spriteShader + i;
 		if (!GLSL_LoadGPUShader(builder, program, "surface_sprites", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))

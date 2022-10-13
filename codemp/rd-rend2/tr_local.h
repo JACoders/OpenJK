@@ -683,14 +683,16 @@ enum surfaceSpriteOrientation_t
 
 struct SurfaceSpriteBlock
 {
-	float width;
-	float height;
+	vec2_t fxGrow;
+	float fxDuration;
 	float fadeStartDistance;
 	float fadeEndDistance;
 	float fadeScale;
-	float widthVariance;
-	float heightVariance;
-	float pad0;
+	float wind;
+	float windIdle;
+	float fxAlphaStart;
+	float fxAlphaEnd;
+	float pad0[2];
 };
 
 struct CameraBlock
@@ -1218,9 +1220,12 @@ enum
 	SSDEF_FACE_CAMERA					= 0x01,
 	SSDEF_ALPHA_TEST					= 0x02,
 	SSDEF_FACE_UP						= 0x04,
-	SSDEF_USE_FOG						= 0x08,
+	SSDEF_FX_SPRITE						= 0x08,
+	SSDEF_USE_FOG						= 0x10,
+	SSDEF_FOG_MODULATE					= 0x20,
+	SSDEF_ADDITIVE						= 0x40,
 
-	SSDEF_ALL							= 0x0F,
+	SSDEF_ALL							= 0x7F,
 	SSDEF_COUNT							= SSDEF_ALL + 1
 };
 

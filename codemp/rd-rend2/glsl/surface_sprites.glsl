@@ -1,9 +1,20 @@
 /*[Vertex]*/
-in vec3 attr_Position;
+in vec4 attr_Position; // x, y, z, random value [0.0, 1.0]
 in vec3 attr_Normal;
 in vec3 attr_Color;
+in vec4 attr_Position2; // width, height, skew.x, skew.y
 
 uniform mat4 u_ModelViewProjectionMatrix;
+
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+	float u_frameTime;
+};
 
 layout(std140) uniform Camera
 {
@@ -16,18 +27,24 @@ layout(std140) uniform Camera
 
 layout(std140) uniform SurfaceSprite
 {
-	float u_Width;
-	float u_Height;
+	vec2  u_FxGrow;
+	float u_FxDuration;
 	float u_FadeStartDistance;
 	float u_FadeEndDistance;
 	float u_FadeScale;
-	float u_WidthVariance;
-	float u_HeightVariance;
+	float u_Wind;
+	float u_WindIdle;
+	float u_FxAlphaStart;
+	float u_FxAlphaEnd;
 };
 
 out vec2 var_TexCoords;
 out float var_Alpha;
 out vec3 var_Color;
+
+#if defined(FX_SPRITE)
+out float var_Effectpos;
+#endif
 
 #if defined(USE_FOG)
 out vec3 var_WSPosition;
@@ -35,15 +52,22 @@ out vec3 var_WSPosition;
 
 void main()
 {
-	vec3 V = u_ViewOrigin - attr_Position;
+	vec3 V = u_ViewOrigin - attr_Position.xyz;
 
-	float width = u_Width * (1.0 + u_WidthVariance*0.5);
-	float height = u_Height * (1.0 + u_HeightVariance*0.5);
+	float width = attr_Position2.x;
+	float height = attr_Position2.y;
+	vec2 skew = attr_Position2.zw;
 
 	float distanceToCamera = length(V);
 	float fadeScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
 						distanceToCamera);
-	width += u_FadeScale * fadeScale * u_Width;
+	width += u_FadeScale * fadeScale * width;
+
+#if defined(FX_SPRITE)
+	var_Effectpos = fract((u_frameTime+10000.0*attr_Position.w) / u_FxDuration);
+	width += var_Effectpos * width * u_FxGrow.x;
+	height += var_Effectpos * height * u_FxGrow.y;
+#endif
 
 	float halfWidth = width * 0.5;
 	vec3 offsets[] = vec3[](
@@ -52,7 +76,7 @@ void main()
 		vec3( halfWidth,  halfWidth, 0.0),
 		vec3(-halfWidth,  halfWidth, 0.0),
 		vec3(-halfWidth, -halfWidth, 0.0)
-#else
+#else 
 		vec3( halfWidth, 0.0, 0.0),
 		vec3( halfWidth, 0.0, height),
 		vec3(-halfWidth, 0.0, height),
@@ -69,15 +93,27 @@ void main()
 
 	vec3 offset = offsets[gl_VertexID % 4];
 
+
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
 	offset.xy = offset.x*vec2(toCamera.y, -toCamera.x);
 #elif !defined(FACE_UP)
+	// Make this sprite face in some direction in direction of the camera
+	vec2 toCamera = normalize(V.xy);
+	offset.xy = offset.x * (attr_Normal.xy + 3.0 * vec2(toCamera.y, -toCamera.x)) * 0.25;
+#else
 	// Make this sprite face in some direction
-	offset.xy = offset.x*attr_Normal.xy;
+	// offset.xy = offset.x * attr_Normal.xy;
 #endif
 
-	vec4 worldPos = vec4(attr_Position + offset, 1.0);
+#if !defined(FACE_UP) && !defined(FX_SPRITE)
+	offset.xy += mix(skew, vec2(0.0), offset.z == 0.0);
+	float angle = (attr_Position.x + attr_Position.y) * 0.02 + (u_frameTime * 0.0015);
+	float windsway = mix(height* u_WindIdle * 0.075, 0.0, offset.z == 0.0);
+	offset.xy += vec2(cos(angle), sin(angle)) * windsway;
+#endif
+
+	vec4 worldPos = vec4(attr_Position.xyz + offset, 1.0);
 	gl_Position = u_ModelViewProjectionMatrix * worldPos;
 	var_TexCoords = texcoords[gl_VertexID % 4];
 	var_Color = attr_Color;
@@ -94,19 +130,25 @@ in vec2 var_TexCoords;
 in vec3 var_Color;
 in float var_Alpha;
 
+#if defined(FX_SPRITE)
+in float var_Effectpos;
+#endif
+
 #if defined(USE_FOG)
 in vec3 var_WSPosition;
 #endif
 
 layout(std140) uniform SurfaceSprite
 {
-	float u_Width;
-	float u_Height;
+	vec2  u_FxGrow;
+	float u_FxDuration;
 	float u_FadeStartDistance;
 	float u_FadeEndDistance;
 	float u_FadeScale;
-	float u_WidthVariance;
-	float u_HeightVariance;
+	float u_Wind;
+	float u_WindIdle;
+	float u_FxAlphaStart;
+	float u_FxAlphaEnd;
 };
 
 #if defined(USE_FOG)
@@ -134,6 +176,7 @@ layout(std140) uniform Fogs
 };
 
 uniform int u_FogIndex;
+uniform vec4 u_FogColorMask;
 #endif
 
 #if defined(ALPHA_TEST)
@@ -181,6 +224,21 @@ void main()
 	out_Color.rgb *= var_Color;
 	out_Color.a *= var_Alpha*(1.0 - alphaTestValue) + alphaTestValue;
 
+#if defined(FX_SPRITE)
+	float fxalpha = u_FxAlphaEnd - u_FxAlphaStart;
+	if (u_FxAlphaEnd < 0.05)
+	{
+	if (var_Effectpos > 0.5)
+		out_Color.a *= u_FxAlphaStart + (fxalpha * (var_Effectpos - 0.5) * 2.0);
+	else
+		out_Color.a *= u_FxAlphaStart + (fxalpha * (0.5 - var_Effectpos) * 2.0);
+	}
+	else
+	{
+		out_Color.a *= u_FxAlphaStart + (fxalpha * var_Effectpos);
+	}
+#endif
+
 #if defined(ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -207,7 +265,15 @@ void main()
 #if defined(USE_FOG)
 	Fog fog = u_Fogs[u_FogIndex];
 	float fogFactor = CalcFog(u_ViewOrigin, var_WSPosition, fog);
+#if defined(ADDITIVE_BLEND)
+	out_Color.rgb *= fog.color.rgb * (1.0 - fogFactor);
+#else
 	out_Color.rgb = mix(out_Color.rgb, fog.color.rgb, fogFactor);
+#endif
+#endif
+
+#if defined(ADDITIVE_BLEND)
+	out_Color.rgb *= out_Color.a;
 #endif
 	
 	out_Glow = vec4(0.0);

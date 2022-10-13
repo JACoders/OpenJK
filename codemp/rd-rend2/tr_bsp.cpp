@@ -3591,9 +3591,11 @@ static void R_CalcVertexLightDirs( world_t *worldData )
 
 struct sprite_t
 {
-	vec3_t position;
+	vec4_t position;
 	vec3_t normal;
 	vec3_t color;
+	vec2_t widthHeight;
+	vec2_t skew;
 };
 
 static uint32_t UpdateHash( const char *text, uint32_t hash )
@@ -3688,6 +3690,7 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 				VectorMA(sprite.position, x, p0, sprite.position);
 				VectorMA(sprite.position, y, p1, sprite.position);
 				VectorMA(sprite.position, z, p2, sprite.position);
+				sprite.position[3] = flrand(0.0f, 1.0f);
 
 				if (vertexLit)
 				{
@@ -3707,6 +3710,14 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 				ny *= irand(0, 1) ? -1 : 1;
 
 				VectorSet(sprite.normal, nx, ny, 0.0f);
+
+				sprite.widthHeight[0] = stage->ss->width*(1.0f + (stage->ss->variance[0] * flrand(0.0f, 1.0f)));
+				sprite.widthHeight[1] = stage->ss->height*(1.0f + (stage->ss->variance[1] * flrand(0.0f, 1.0f)));
+				if (stage->ss->facing == SURFSPRITE_FACING_DOWN)
+					sprite.widthHeight[1] *= -1.0f;
+
+				sprite.skew[0] = stage->ss->height * stage->ss->vertSkew * flrand(-1.0f, 1.0f);
+				sprite.skew[1] = stage->ss->height * stage->ss->vertSkew * flrand(-1.0f, 1.0f);
 
 				// We have 4 copies for each corner of the quad
 				sprites.push_back(sprite);
@@ -3764,13 +3775,13 @@ static void R_GenerateSurfaceSprites(
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
 	out->alphaTestType = stage->alphaTestType;
 
-	out->numAttributes = 3;
+	out->numAttributes = 4;
 	out->attributes = (vertexAttribute_t *)ri.Hunk_Alloc(
 			sizeof(vertexAttribute_t) * out->numAttributes, h_low);
 
 	out->attributes[0].vbo = out->vbo;
 	out->attributes[0].index = ATTR_INDEX_POSITION;
-	out->attributes[0].numComponents = 3;
+	out->attributes[0].numComponents = 4;
 	out->attributes[0].integerAttribute = qfalse;
 	out->attributes[0].type = GL_FLOAT;
 	out->attributes[0].normalize = GL_FALSE;
@@ -3797,6 +3808,16 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[2].stride = sizeof(sprite_t);
 	out->attributes[2].offset = offsetof(sprite_t, color);
 	out->attributes[2].stepRate = 0;
+
+	out->attributes[3].vbo = out->vbo;
+	out->attributes[3].index = ATTR_INDEX_POSITION2;
+	out->attributes[3].numComponents = 4; // store width,height and skew
+	out->attributes[3].integerAttribute = qfalse;
+	out->attributes[3].type = GL_FLOAT;
+	out->attributes[3].normalize = GL_FALSE;
+	out->attributes[3].stride = sizeof(sprite_t);
+	out->attributes[3].offset = offsetof(sprite_t, widthHeight);
+	out->attributes[3].stepRate = 0;
 }
 
 static void R_GenerateSurfaceSprites( const world_t *world )

@@ -2770,14 +2770,16 @@ static void Fill_SpriteBlock( srfSprites_t *surf , SurfaceSpriteBlock *surfaceSp
 {
 	const surfaceSprite_t *ss = surf->sprite;
 
-	surfaceSpriteBlock->width = ss->width;
-	surfaceSpriteBlock->height =
-		(ss->facing == SURFSPRITE_FACING_DOWN) ? -ss->height : ss->height;
+	surfaceSpriteBlock->fxGrow[0] = ss->fxGrow[0];
+	surfaceSpriteBlock->fxGrow[1] = ss->fxGrow[1];
+	surfaceSpriteBlock->fxDuration = ss->fxDuration;
 	surfaceSpriteBlock->fadeStartDistance = ss->fadeDist;
 	surfaceSpriteBlock->fadeEndDistance = ss->fadeMax;
 	surfaceSpriteBlock->fadeScale = ss->fadeScale;
-	surfaceSpriteBlock->widthVariance = ss->variance[0];
-	surfaceSpriteBlock->heightVariance = ss->variance[1];
+	surfaceSpriteBlock->wind = ss->wind;
+	surfaceSpriteBlock->windIdle = ss->windIdle;
+	surfaceSpriteBlock->fxAlphaStart = ss->fxAlphaStart;
+	surfaceSpriteBlock->fxAlphaEnd = ss->fxAlphaEnd;
 }
 
 static void RB_UpdateSpriteConstants(
