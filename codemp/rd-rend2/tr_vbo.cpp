@@ -643,6 +643,44 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	}
 }
 
+#define MAX_GORE_VERTS (3000)
+#define MAX_GORE_INDECIES (6000)
+//TODO: This needs to be set via a scalability cvar with some reasonable minimum value if pgore is used at all
+#define MAX_GORE_RECORDS (500)
+
+void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
+{
+	goreSurface->firstVert = tr.goreVBOCurrentIndex;
+	goreSurface->firstIndex = tr.goreIBOCurrentIndex;
+
+	if (tr.goreVBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS))
+		tr.goreVBOCurrentIndex = 0;
+
+	R_BindVBO(tr.goreVBO);
+	GLbitfield mapFlags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
+	void *dstPtr = qglMapBufferRange(
+		GL_ARRAY_BUFFER, 
+		sizeof(g2GoreVert_t) * tr.goreVBOCurrentIndex,
+		sizeof(g2GoreVert_t) * goreSurface->numVerts,
+		mapFlags);
+	memcpy(dstPtr, (byte *)goreSurface->verts, sizeof(g2GoreVert_t)*goreSurface->numVerts);
+	qglUnmapBuffer(GL_ARRAY_BUFFER);
+	tr.goreVBOCurrentIndex += goreSurface->numVerts;
+
+	if (tr.goreIBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES))
+		tr.goreIBOCurrentIndex = 0;
+
+	R_BindIBO(tr.goreIBO);
+	void *dst = qglMapBufferRange(
+		GL_ELEMENT_ARRAY_BUFFER, 
+		sizeof(glIndex_t) * tr.goreIBOCurrentIndex,
+		sizeof(glIndex_t) * goreSurface->numIndexes,
+		mapFlags);
+	memcpy(dst, goreSurface->indexes, sizeof(glIndex_t) * goreSurface->numIndexes);
+	qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+	tr.goreIBOCurrentIndex += goreSurface->numIndexes;
+}
+
 void RB_CommitInternalBufferData()
 {
 	gpuFrame_t *currentFrame = backEndData->currentFrame;

@@ -28,6 +28,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_weather.h"
 #include <algorithm>
 
+#ifdef _G2_GORE
+#include "G2_gore_r2.h"
+#endif
+
 static size_t STATIC_UNIFORM_BUFFER_SIZE = 1 * 1024 * 1024;
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
 static size_t FRAME_VERTEX_BUFFER_SIZE = 12*1024*1024;
@@ -1721,6 +1725,44 @@ static void R_InitBackEndFrameData()
 	backEndData->currentFrame = backEndData->frames;
 }
 
+#ifdef _G2_GORE
+static void R_InitGoreVao()
+{
+	tr.goreVBO = R_CreateVBO(
+		nullptr,
+		sizeof(g2GoreVert_t) * MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS,
+		VBO_USAGE_DYNAMIC);
+	tr.goreVBO->offsets[ATTR_INDEX_POSITION] = offsetof(g2GoreVert_t, position);
+	tr.goreVBO->offsets[ATTR_INDEX_NORMAL] = offsetof(g2GoreVert_t, normal);
+	tr.goreVBO->offsets[ATTR_INDEX_TEXCOORD0] = offsetof(g2GoreVert_t, texCoords);
+	tr.goreVBO->offsets[ATTR_INDEX_BONE_INDEXES] = offsetof(g2GoreVert_t, bonerefs);
+	tr.goreVBO->offsets[ATTR_INDEX_BONE_WEIGHTS] = offsetof(g2GoreVert_t, weights);
+	tr.goreVBO->offsets[ATTR_INDEX_TANGENT] = offsetof(g2GoreVert_t, tangents);
+
+	tr.goreVBO->strides[ATTR_INDEX_POSITION] = sizeof(g2GoreVert_t);
+	tr.goreVBO->strides[ATTR_INDEX_NORMAL] = sizeof(g2GoreVert_t);
+	tr.goreVBO->strides[ATTR_INDEX_TEXCOORD0] = sizeof(g2GoreVert_t);
+	tr.goreVBO->strides[ATTR_INDEX_BONE_INDEXES] = sizeof(g2GoreVert_t);
+	tr.goreVBO->strides[ATTR_INDEX_BONE_WEIGHTS] = sizeof(g2GoreVert_t);
+	tr.goreVBO->strides[ATTR_INDEX_TANGENT] = sizeof(g2GoreVert_t);
+
+	tr.goreVBO->sizes[ATTR_INDEX_POSITION] = sizeof(vec3_t);
+	tr.goreVBO->sizes[ATTR_INDEX_NORMAL] = sizeof(uint32_t);
+	tr.goreVBO->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(vec2_t);
+	tr.goreVBO->sizes[ATTR_INDEX_BONE_WEIGHTS] = sizeof(byte);
+	tr.goreVBO->sizes[ATTR_INDEX_BONE_INDEXES] = sizeof(byte);
+	tr.goreVBO->sizes[ATTR_INDEX_TANGENT] = sizeof(uint32_t);
+
+	tr.goreIBO = R_CreateIBO(
+		nullptr,
+		sizeof(glIndex_t) * MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES,
+		VBO_USAGE_DYNAMIC);
+
+	tr.goreIBOCurrentIndex = 0;
+	tr.goreVBOCurrentIndex = 0;
+}
+#endif
+
 static void R_InitStaticConstants()
 {
 
@@ -1883,6 +1925,10 @@ void R_Init( void ) {
 	R_InitStaticConstants();
 	R_InitBackEndFrameData();
 	R_InitImages();
+
+#ifdef _G2_GORE
+	R_InitGoreVao();
+#endif
 
 	FBO_Init();
 

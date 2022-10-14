@@ -18,6 +18,8 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_API.cpp"
 	"${MPDir}/rd-rend2/G2_bolts.cpp"
 	"${MPDir}/rd-rend2/G2_bones.cpp"
+	"${MPDir}/rd-rend2/G2_gore_r2.cpp"
+	"${MPDir}/rd-rend2/G2_gore_r2.h"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
 	"${MPDir}/rd-rend2/tr_allocator.cpp"

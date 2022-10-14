@@ -5,7 +5,7 @@
 #include "ghoul2/G2.h"
 #include "ghoul2/g2_local.h"
 #ifdef _G2_GORE
-#include "ghoul2/G2_gore.h"
+#include "G2_gore_r2.h"
 #endif
 
 #ifdef _MSC_VER
@@ -2428,7 +2428,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 					auto kcur = k;
 					k++;
 
-					GoreTextureCoordinates *tex = FindGoreRecord(kcur->second.mGoreTag);
+					R2GoreTextureCoordinates *tex = FindR2GoreRecord(kcur->second.mGoreTag);
 					if (!tex ||	// it is gone, lets get rid of it
 						(kcur->second.mDeleteTime &&
 						 curTime >= kcur->second.mDeleteTime)) // out of time
@@ -3493,6 +3493,27 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 	RB_EndSurface();
 	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
+
+	if (surf->alternateTex)
+	{
+		R_BindVBO(tr.goreVBO);
+		R_BindIBO(tr.goreIBO);
+
+		tess.numIndexes = surf->alternateTex->numIndexes;
+		tess.numVertexes = surf->alternateTex->numVerts;
+		tess.useInternalVBO = qfalse;
+		tess.externalIBO = tr.goreIBO;
+		tess.dlightBits = surf->dlightBits;
+		tess.minIndex = surf->alternateTex->firstVert;
+		tess.maxIndex = surf->alternateTex->firstVert + surf->alternateTex->numVerts;
+		tess.firstIndex = surf->alternateTex->firstIndex;
+
+		glState.skeletalAnimation = qtrue;
+		RB_EndSurface();
+		// So we don't lerp surfaces that shouldn't be lerped
+		glState.skeletalAnimation = qfalse;
+		return;
+	}
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);

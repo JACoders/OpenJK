@@ -1650,6 +1650,36 @@ typedef struct
 #endif
 } srfVert_t;
 
+#ifdef _G2_GORE
+typedef struct
+{
+	vec3_t			position;
+	uint32_t		normal;
+	vec2_t			texCoords;
+	byte			bonerefs[4];
+	byte			weights[4];
+	uint32_t		tangents;
+} g2GoreVert_t;
+
+typedef struct srfG2GoreSurface_s
+{
+	surfaceType_t   surfaceType;
+
+	// indexes
+	int             numIndexes;
+	glIndex_t      *indexes;
+
+	// vertexes
+	int             numVerts;
+	g2GoreVert_t    *verts;
+
+	// BSP VBO offsets
+	int             firstVert;
+	int             firstIndex;
+
+} srfG2GoreSurface_t;
+#endif
+
 // srfBspSurface_t covers SF_GRID, SF_TRIANGLES, SF_POLY, and SF_VBO_MESH
 typedef struct srfBspSurface_s
 {
@@ -2515,6 +2545,13 @@ typedef struct trGlobals_s {
 	unsigned int			iboNames[MAX_IBOS];
 	IBO_t					*ibos[MAX_IBOS];
 
+#ifdef _G2_GORE
+	VBO_t					*goreVBO;
+	int						goreVBOCurrentIndex;
+	IBO_t					*goreIBO;
+	int						goreIBOCurrentIndex;
+#endif
+
 	// shader indexes from other modules will be looked up in tr.shaders[]
 	// shader indexes from drawsurfs will be looked up in sortedShaders[]
 	// lower indexed sortedShaders must be rendered first (opaque surfaces before translucent)
@@ -3132,6 +3169,9 @@ void            R_DestroyGPUBuffers(void);
 void            R_VBOList_f(void);
 
 void            RB_UpdateVBOs(unsigned int attribBits);
+#ifdef _G2_GORE
+void			RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface);
+#endif
 void			RB_CommitInternalBufferData();
 
 void			RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, int offset);
@@ -3268,7 +3308,7 @@ public:
 
 #ifdef _G2_GORE
 	// alternate texture coordinates
-	float *alternateTex;
+	srfG2GoreSurface_t *alternateTex;
 	void *goreChain;
 
 	float scale;

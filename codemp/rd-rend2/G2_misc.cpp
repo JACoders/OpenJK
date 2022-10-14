@@ -7,6 +7,7 @@
 
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"
+#include "G2_gore_r2.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)
@@ -14,43 +15,41 @@
 static int CurrentTag=GORE_TAG_UPPER+1;
 static int CurrentTagUpper=GORE_TAG_UPPER;
 
-static std::map<int,GoreTextureCoordinates> GoreRecords;
+static std::map<int, R2GoreTextureCoordinates> GoreRecords;
 static std::map<std::pair<int,int>,int> GoreTagsTemp; // this is a surface index to gore tag map used only 
 								  // temporarily during the generation phase so we reuse gore tags per LOD
 int goreModelIndex;
 
 static cvar_t *cg_g2MarksAllModels=NULL;
 
-GoreTextureCoordinates *FindGoreRecord(int tag);
+R2GoreTextureCoordinates *FindR2GoreRecord(int tag);
 static inline void DestroyGoreTexCoordinates(int tag)
 {
-	GoreTextureCoordinates *gTC = FindGoreRecord(tag);
+	R2GoreTextureCoordinates *gTC = FindR2GoreRecord(tag);
 	if (!gTC)
 	{
 		return;
 	}
-	gTC->~GoreTextureCoordinates();
+	gTC->~R2GoreTextureCoordinates();
 	//I don't know what's going on here, it should call the destructor for
 	//this when it erases the record but sometimes it doesn't. -rww
 }
 
-//TODO: This needs to be set via a scalability cvar with some reasonable minimum value if pgore is used at all
-#define MAX_GORE_RECORDS (500)
 
-int AllocGoreRecord()
+int AllocR2GoreRecord()
 {
 	while (GoreRecords.size()>MAX_GORE_RECORDS)
 	{
 		int tagHigh=(*GoreRecords.begin()).first&GORE_TAG_MASK;
-		std::map<int,GoreTextureCoordinates>::iterator it;
-		GoreTextureCoordinates *gTC;
+		std::map<int, R2GoreTextureCoordinates>::iterator it;
+		R2GoreTextureCoordinates *gTC;
 
 		it = GoreRecords.begin();
 		gTC = &(*it).second;
 
 		if (gTC)
 		{
-			gTC->~GoreTextureCoordinates();
+			gTC->~R2GoreTextureCoordinates();
 		}
 		GoreRecords.erase(GoreRecords.begin());
 		while (GoreRecords.size())
@@ -64,13 +63,13 @@ int AllocGoreRecord()
 
 			if (gTC)
 			{
-				gTC->~GoreTextureCoordinates();
+				gTC->~R2GoreTextureCoordinates();
 			}
 			GoreRecords.erase(GoreRecords.begin());
 		}
 	}
 	int ret=CurrentTag;
-	GoreRecords[CurrentTag]=GoreTextureCoordinates();
+	GoreRecords[CurrentTag]= R2GoreTextureCoordinates();
 	CurrentTag++;
 	return ret;
 }
@@ -82,9 +81,9 @@ void ResetGoreTag()
 	CurrentTagUpper+=GORE_TAG_UPPER;
 }
 
-GoreTextureCoordinates *FindGoreRecord(int tag)
+R2GoreTextureCoordinates *FindR2GoreRecord(int tag)
 {
-	std::map<int,GoreTextureCoordinates>::iterator i=GoreRecords.find(tag);
+	std::map<int, R2GoreTextureCoordinates>::iterator i=GoreRecords.find(tag);
 	if (i!=GoreRecords.end())
 	{
 		return &(*i).second;
@@ -94,10 +93,10 @@ GoreTextureCoordinates *FindGoreRecord(int tag)
 
 void *G2_GetGoreRecord(int tag)
 {
-	return FindGoreRecord(tag);
+	return FindR2GoreRecord(tag);
 }
 
-void DeleteGoreRecord(int tag)
+void DeleteR2GoreRecord(int tag)
 {
 	DestroyGoreTexCoordinates(tag);
 	GoreRecords.erase(tag);
@@ -147,7 +146,7 @@ CGoreSet::~CGoreSet()
 	std::multimap<int,SGoreSurface>::iterator i;
 	for (i=mGoreRecords.begin();i!=mGoreRecords.end();i++)
 	{
-		DeleteGoreRecord((*i).second.mGoreTag);
+		DeleteR2GoreRecord((*i).second.mGoreTag);
 	}
 };
 #endif // _SOF2
@@ -765,12 +764,9 @@ struct SVertexTemp
 	}
 };
 
-#define MAX_GORE_VERTS (3000)
 static SVertexTemp GoreVerts[MAX_GORE_VERTS];
 static int GoreIndexCopy[MAX_GORE_VERTS];
 static int GoreTouch=1;
-
-#define MAX_GORE_INDECIES (6000)
 static int GoreIndecies[MAX_GORE_INDECIES];
 
 #define GORE_MARGIN (0.0f)
@@ -935,7 +931,7 @@ void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const mdxmSu
 	std::map<std::pair<int,int>,int>::iterator f=GoreTagsTemp.find(std::pair<int,int>(goreModelIndex,TS.surfaceNum));
 	if (f==GoreTagsTemp.end()) // need to generate a record
 	{
-		newTag=AllocGoreRecord();
+		newTag=AllocR2GoreRecord();
 		CGoreSet *goreSet=0;
 		if (TS.ghoul2info->mGoreSetTag)
 		{
@@ -979,66 +975,57 @@ void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const mdxmSu
 	{
 		newTag=(*f).second;
 	}
-	GoreTextureCoordinates *gore=FindGoreRecord(newTag);
+	R2GoreTextureCoordinates *gore= FindR2GoreRecord(newTag);
 	if (gore)
 	{
-		assert(sizeof(float)==sizeof(int));
-		// data block format:
-		unsigned int size=
-			sizeof(int)+ // num verts
-			sizeof(int)+ // num tris
-			sizeof(int)*newNumVerts+ // which verts to copy from original surface
-			sizeof(float)*4*newNumVerts+ // storgage for deformed verts
-			sizeof(float)*4*newNumVerts+ // storgage for deformed normal
-			sizeof(float)*2*newNumVerts+ // texture coordinates
-			sizeof(int)*newNumTris*3;  // new indecies
-
-		int *data=(int *)Z_Malloc ( sizeof(int)*size, TAG_GHOUL2_GORE, qtrue );
-
+		srfG2GoreSurface_t *goreSurface=(srfG2GoreSurface_t *)Z_Malloc ( sizeof(srfG2GoreSurface_t), TAG_GHOUL2_GORE, qtrue );
 
 		if ( gore->tex[TS.lod] )
 		{
+			if (gore->tex[TS.lod]->verts)
+				Z_Free(gore->tex[TS.lod]->verts);
+			if (gore->tex[TS.lod]->indexes)
+				Z_Free(gore->tex[TS.lod]->indexes);
 			Z_Free(gore->tex[TS.lod]);
 		}
 
-		gore->tex[TS.lod]=(float *)data;
-		*data++=newNumVerts;
-		*data++=newNumTris;
-
-		memcpy(data,GoreIndexCopy,sizeof(int)*newNumVerts);
-		data+=newNumVerts*9; // skip verts and normals
-		float *fdata=(float *)data;
+		gore->tex[TS.lod]=(srfG2GoreSurface_t *)goreSurface;
+		goreSurface->numVerts = newNumVerts;
+		goreSurface->verts = (g2GoreVert_t *)Z_Malloc(sizeof(g2GoreVert_t)*newNumVerts, TAG_GHOUL2_GORE, qtrue);
 
 		for (j=0;j<newNumVerts;j++)
 		{
-			*fdata++=GoreVerts[GoreIndexCopy[j]].tex[0];
-			*fdata++=GoreVerts[GoreIndexCopy[j]].tex[1];
+			goreSurface->verts[j].texCoords[0] = GoreVerts[GoreIndexCopy[j]].tex[0];
+			goreSurface->verts[j].texCoords[1] = GoreVerts[GoreIndexCopy[j]].tex[1];
 		}
-		data=(int *)fdata;
-		memcpy(data,GoreIndecies,sizeof(int)*newNumTris*3);
-		data+=newNumTris*3;
-		assert((data-(int *)gore->tex[TS.lod])*sizeof(int)==size);
-		fdata = (float *)data;
-		// build the entity to gore matrix
-		VectorCopy(saxis,fdata+0);
-		VectorCopy(taxis,fdata+4);
-		VectorCopy(TS.rayEnd,fdata+8);
-		VectorNormalize(fdata+0);
-		VectorNormalize(fdata+4);
-		VectorNormalize(fdata+8);
-		fdata[3]=-0.5f; // subtract texture center
-		fdata[7]=-0.5f;
-		fdata[11]=0.0f;
-		vec3_t shotOriginInCurrentSpace; // unknown space
-		TransformPoint(TS.rayStart,shotOriginInCurrentSpace,(mdxaBone_t *)fdata); // dest middle arg
-		// this will insure the shot origin in our unknown space is now the shot origin, making it a known space
-		fdata[3]-=shotOriginInCurrentSpace[0];
-		fdata[7]-=shotOriginInCurrentSpace[1];
-		fdata[11]-=shotOriginInCurrentSpace[2];
-		Inverse_Matrix((mdxaBone_t *)fdata,(mdxaBone_t *)(fdata+12));  // dest 2nd arg
-		data+=24;
 
-//		assert((data - (int *)gore->tex[TS.lod]) * sizeof(int) == size);
+		mdxmVertex_t *v = (mdxmVertex_t *)((byte *)surface + surface->ofsVerts);
+		int *boneRef = (int *)((byte *)surface + surface->ofsBoneReferences);
+		for (j = 0; j < newNumVerts; j++)
+		{
+			mdxmVertex_t currentVert = v[GoreIndexCopy[j]];
+			VectorCopy(currentVert.vertCoords, goreSurface->verts[j].position);
+			goreSurface->verts[j].normal = R_VboPackNormal(currentVert.normal);
+			
+			int numWeights = G2_GetVertWeights(&currentVert);
+			float fTotalWeight = 0.0f;
+			for (int w = 0; w < numWeights; w++)
+			{
+				float weight = G2_GetVertBoneWeight(&currentVert, w, fTotalWeight, numWeights);
+				goreSurface->verts[j].weights[w] = (byte)(weight * 255.0f);
+				int packedIndex = G2_GetVertBoneIndex(&currentVert, w);
+				goreSurface->verts[j].bonerefs[w] = boneRef[packedIndex];
+			}
+		}
+
+		goreSurface->indexes = (glIndex_t *)Z_Malloc(sizeof(glIndex_t)*newNumTris*3, TAG_GHOUL2_GORE, qtrue);
+		for (j = 0; j < newNumTris * 3; j++)
+		{
+			goreSurface->indexes[j] = GoreIndecies[j] + tr.goreVBOCurrentIndex;
+		}
+		goreSurface->numIndexes = newNumTris * 3;
+
+		RB_UpdateGoreVBO(goreSurface);
 	}
 }
 #else
