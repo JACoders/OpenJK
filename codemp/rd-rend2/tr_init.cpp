@@ -1211,6 +1211,9 @@ void GL_SetDefaultState( void )
 	qglStencilFunc(GL_ALWAYS, 0, 0xff);
 	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 	qglStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+
+	// set default vertex color
+	qglVertexAttrib4f(ATTR_INDEX_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 /*

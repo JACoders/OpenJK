@@ -519,9 +519,11 @@ void CalculateVertexArraysFromVBO(
 	properties->vertexDataSize = 0;
 	properties->numVertexArrays = 0;
 
-	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
+	for (int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1)
 	{
-		if ( attributes & j )
+		if (vbo->sizes[i] == 0)
+			continue;
+		if (attributes & j)
 			AddVertexArray(
 				properties,
 				i,

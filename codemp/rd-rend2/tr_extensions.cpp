@@ -109,6 +109,11 @@ PFNGLGETVERTEXATTRIBIVPROC qglGetVertexAttribiv;
 PFNGLGETVERTEXATTRIBIIVPROC qglGetVertexAttribIiv;
 PFNGLGETVERTEXATTRIBIUIVPROC qglGetVertexAttribIuiv;
 
+PFNGLVERTEXATTRIB1FPROC qglVertexAttrib1f;
+PFNGLVERTEXATTRIB2FPROC qglVertexAttrib2f;
+PFNGLVERTEXATTRIB3FPROC qglVertexAttrib3f;
+PFNGLVERTEXATTRIB4FPROC qglVertexAttrib4f;
+
 // Varying variables
 PFNGLTRANSFORMFEEDBACKVARYINGSPROC qglTransformFeedbackVaryings;
 PFNGLGETTRANSFORMFEEDBACKVARYINGPROC qglGetTransformFeedbackVarying;
@@ -327,6 +332,11 @@ void GLimp_InitCoreFunctions()
 	GetGLFunction (qglDeleteVertexArrays, "glDeleteVertexArrays", qtrue);
 	GetGLFunction (qglBindVertexArray, "glBindVertexArray", qtrue);
 	GetGLFunction (qglIsVertexArray, "glIsVertexArray", qtrue);
+
+	GetGLFunction (qglVertexAttrib1f, "glVertexAttrib1f", qtrue);
+	GetGLFunction (qglVertexAttrib2f, "glVertexAttrib2f", qtrue);
+	GetGLFunction (qglVertexAttrib3f, "glVertexAttrib3f", qtrue);
+	GetGLFunction (qglVertexAttrib4f, "glVertexAttrib4f", qtrue);
 	
 	// Buffer objects
 	qglGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &glRefConfig.uniformBufferOffsetAlignment);

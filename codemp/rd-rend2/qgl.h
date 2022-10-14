@@ -382,6 +382,11 @@ extern PFNGLVERTEXATTRIBDIVISORPROC qglVertexAttribDivisor;
 extern PFNGLENABLEVERTEXATTRIBARRAYPROC qglEnableVertexAttribArray;
 extern PFNGLDISABLEVERTEXATTRIBARRAYPROC qglDisableVertexAttribArray;
 
+extern PFNGLVERTEXATTRIB1FPROC qglVertexAttrib1f;
+extern PFNGLVERTEXATTRIB2FPROC qglVertexAttrib2f;
+extern PFNGLVERTEXATTRIB3FPROC qglVertexAttrib3f;
+extern PFNGLVERTEXATTRIB4FPROC qglVertexAttrib4f;
+
 // Vertex array objects
 extern PFNGLGENVERTEXARRAYSPROC qglGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC qglDeleteVertexArrays;

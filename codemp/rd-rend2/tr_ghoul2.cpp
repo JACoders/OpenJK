@@ -4103,11 +4103,10 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		byte *bonerefs;
 		byte *weights;
 		uint32_t *tangents;
-		vec4_t *color;
 
 		byte *data;
 		int dataSize = 0;
-		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents, ofsColor;
+		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents;
 		int stride = 0;
 		int numVerts = 0;
 		int numTriangles = 0;
@@ -4136,7 +4135,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		baseVertexes[mdxm->numSurfaces] = numVerts;
 
-		dataSize += 1.0 * sizeof(*color);
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
 		dataSize += numVerts * sizeof (*texcoords);
@@ -4147,30 +4145,27 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		// Allocate and write to memory
 		data = (byte *)ri.Hunk_AllocateTempMemory (dataSize);
 
-		color = (vec4_t *)(data);
-		ofsColor = 0;
-
-		ofsPosition = stride + sizeof(*color);
+		ofsPosition = stride;
 		verts = (vec3_t *)(data + ofsPosition);
 		stride += sizeof (*verts);
 
-		ofsNormals = stride + sizeof(*color);
+		ofsNormals = stride;
 		normals = (uint32_t *)(data + ofsNormals);
 		stride += sizeof (*normals);
 
-		ofsTexcoords = stride + sizeof(*color);
+		ofsTexcoords = stride;
 		texcoords = (vec2_t *)(data + ofsTexcoords);
 		stride += sizeof (*texcoords);
 
-		ofsBoneRefs = stride + sizeof(*color);
+		ofsBoneRefs = stride;
 		bonerefs = data + ofsBoneRefs;
 		stride += sizeof (*bonerefs) * 4;
 
-		ofsWeights = stride + sizeof(*color);
+		ofsWeights = stride;
 		weights = data + ofsWeights;
 		stride += sizeof (*weights) * 4;
 
-		ofsTangents = stride + sizeof(*color);
+		ofsTangents = stride;
 		tangents = (uint32_t *)(data + ofsTangents);
 		stride += sizeof (*tangents);
 
@@ -4291,7 +4286,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		}
 
 		assert ((byte *)verts == (data + dataSize));
-		VectorSet4(*color, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		const char *modelName = strrchr (mdxm->name, '/');
 		if (modelName == NULL)
@@ -4305,7 +4299,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		ri.Hunk_FreeTempMemory (tangentsf);
 		ri.Hunk_FreeTempMemory (indices);
 
-		vbo->offsets[ATTR_INDEX_COLOR] = ofsColor;
 		vbo->offsets[ATTR_INDEX_POSITION] = ofsPosition;
 		vbo->offsets[ATTR_INDEX_NORMAL] = ofsNormals;
 		vbo->offsets[ATTR_INDEX_TEXCOORD0] = ofsTexcoords;
@@ -4313,7 +4306,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->offsets[ATTR_INDEX_BONE_WEIGHTS] = ofsWeights;
 		vbo->offsets[ATTR_INDEX_TANGENT] = ofsTangents;
 
-		vbo->strides[ATTR_INDEX_COLOR] = 0;
 		vbo->strides[ATTR_INDEX_POSITION] = stride;
 		vbo->strides[ATTR_INDEX_NORMAL] = stride;
 		vbo->strides[ATTR_INDEX_TEXCOORD0] = stride;
@@ -4321,7 +4313,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->strides[ATTR_INDEX_BONE_WEIGHTS] = stride;
 		vbo->strides[ATTR_INDEX_TANGENT] = stride;
 
-		vbo->sizes[ATTR_INDEX_COLOR] = sizeof(*color);
 		vbo->sizes[ATTR_INDEX_POSITION] = sizeof(*verts);
 		vbo->sizes[ATTR_INDEX_NORMAL] = sizeof(*normals);
 		vbo->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(*texcoords);

@@ -1073,18 +1073,14 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 			vec2_t *texcoords;
 			uint32_t *normals;
 			uint32_t *tangents;
-			vec4_t *color;
 
 			byte *data;
 			int dataSize;
 
 			int ofs_xyz, ofs_normal, ofs_st;
-			int ofs_tangent, ofs_color;
+			int ofs_tangent;
 
 			dataSize = 0;
-
-			ofs_color = dataSize;
-			dataSize += 1.0f * sizeof(*color);
 
 			ofs_xyz = dataSize;
 			dataSize += surf->numVerts * mdvModel->numFrames * sizeof(*verts);
@@ -1100,7 +1096,6 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 
 			data = (byte *)Z_Malloc(dataSize, TAG_MODEL_MD3);
 
-			color =      (vec4_t *)(data + ofs_color);
 			verts =      (vec3_t *)(data + ofs_xyz);
 			normals =    (uint32_t *)(data + ofs_normal);
 			tangents =   (uint32_t *)(data + ofs_tangent);
@@ -1120,8 +1115,6 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 				texcoords[j][1] = st->st[1];
 			}
 
-			VectorSet4(*color, 1.0f, 1.0f, 1.0f, 1.0f);
-
 			// If we would support vertex animations, we would need to compute tangents for the other frames too!
 			R_CalcMikkTSpaceMD3Surface(surf->numIndexes/3, verts, normals, tangents, texcoords, surf->indexes);
 
@@ -1136,19 +1129,16 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 
 			vboSurf->vbo = R_CreateVBO(data, dataSize, VBO_USAGE_STATIC);
 
-			vboSurf->vbo->offsets[ATTR_INDEX_COLOR]		= ofs_color;
 			vboSurf->vbo->offsets[ATTR_INDEX_POSITION]  = ofs_xyz;
 			vboSurf->vbo->offsets[ATTR_INDEX_NORMAL]    = ofs_normal;
 			vboSurf->vbo->offsets[ATTR_INDEX_TEXCOORD0] = ofs_st;
 			vboSurf->vbo->offsets[ATTR_INDEX_TANGENT]   = ofs_tangent;
 
-			vboSurf->vbo->strides[ATTR_INDEX_COLOR]		= 0; // sizeof(*color); This is to overrite the generic color value and to be less prone to attr binding errors
 			vboSurf->vbo->strides[ATTR_INDEX_POSITION]  = sizeof(*verts);
 			vboSurf->vbo->strides[ATTR_INDEX_NORMAL]    = sizeof(*normals);
 			vboSurf->vbo->strides[ATTR_INDEX_TEXCOORD0] = sizeof(*st);
 			vboSurf->vbo->strides[ATTR_INDEX_TANGENT]   = sizeof(*tangents);
 
-			vboSurf->vbo->sizes[ATTR_INDEX_POSITION]    = sizeof(*color);
 			vboSurf->vbo->sizes[ATTR_INDEX_POSITION]    = sizeof(*verts);
 			vboSurf->vbo->sizes[ATTR_INDEX_NORMAL]      = sizeof(*normals);
 			vboSurf->vbo->sizes[ATTR_INDEX_TEXCOORD0]   = sizeof(*texcoords);
