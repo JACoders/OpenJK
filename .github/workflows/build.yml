@@ -174,7 +174,7 @@ jobs:
           fi
           
           if [ ${{ matrix.arch }} == "x86" ]; then
-          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} $OPTIONS -DCMAKE_TOOLCHAIN_FILE=CMakeModules/Toolchains/linux-i686.cmake
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} $OPTIONS -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/linux-i686.cmake
           else
           cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} $OPTIONS
           fi
