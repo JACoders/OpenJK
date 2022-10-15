@@ -3,12 +3,14 @@ name: build
 on:
   workflow_dispatch:
   push:
+    branches: [master]
     paths-ignore:
       - '**.md'
       - '*.txt'
       - '.gitignore'
       - 'docs/*'
   pull_request:
+    branches: [master]
     paths-ignore:
       - '**.md'
       - '*.txt'
@@ -16,9 +18,6 @@ on:
       - 'docs/*'
   release:
     types: [published]
-
-env:
-  newline: \\n
 
 jobs:
   msvc:
