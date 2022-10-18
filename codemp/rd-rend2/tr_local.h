@@ -2991,7 +2991,10 @@ struct shaderCommands_s
 	float		shaderTime;
 	int			fogNum;
 	int         cubemapIndex;
-
+#ifdef REND2_SP_MAYBE
+	bool		scale;		// uses texCoords[input->firstIndex] for storage
+	bool		fade;		// uses svars.colors[input->firstIndex] for storage
+#endif
 	int			dlightBits;	// or together of all vertexDlightBits
 	int         pshadowBits;
 

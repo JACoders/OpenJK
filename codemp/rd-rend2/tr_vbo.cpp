@@ -659,27 +659,24 @@ void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
 		tr.goreVBOCurrentIndex = 0;
 
 	R_BindVBO(tr.goreVBO);
-	GLbitfield mapFlags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
-	void *dstPtr = qglMapBufferRange(
-		GL_ARRAY_BUFFER, 
+	qglBufferSubData(
+		GL_ARRAY_BUFFER,
 		sizeof(g2GoreVert_t) * tr.goreVBOCurrentIndex,
 		sizeof(g2GoreVert_t) * goreSurface->numVerts,
-		mapFlags);
-	memcpy(dstPtr, (byte *)goreSurface->verts, sizeof(g2GoreVert_t)*goreSurface->numVerts);
-	qglUnmapBuffer(GL_ARRAY_BUFFER);
+		goreSurface->verts
+	);
 	tr.goreVBOCurrentIndex += goreSurface->numVerts;
 
 	if (tr.goreIBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES))
 		tr.goreIBOCurrentIndex = 0;
 
 	R_BindIBO(tr.goreIBO);
-	void *dst = qglMapBufferRange(
-		GL_ELEMENT_ARRAY_BUFFER, 
+	qglBufferSubData(
+		GL_ELEMENT_ARRAY_BUFFER,
 		sizeof(glIndex_t) * tr.goreIBOCurrentIndex,
 		sizeof(glIndex_t) * goreSurface->numIndexes,
-		mapFlags);
-	memcpy(dst, goreSurface->indexes, sizeof(glIndex_t) * goreSurface->numIndexes);
-	qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+		goreSurface->indexes
+	);
 	tr.goreIBOCurrentIndex += goreSurface->numIndexes;
 }
 

@@ -2452,7 +2452,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 								float(curTime - kcur->second.mGoreGrowStartTime) /
 								float(magicFactor42);  // linear
 						}
-
+#ifdef REND2_SP_MAYBE
 						if (curTime < kcur->second.mGoreGrowEndTime)
 						{
 							newSurf2->scale = Q_max(
@@ -2462,7 +2462,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 									kcur->second.mGoreGrowFactor +
 									kcur->second.mGoreGrowOffset));
 						}
-
+#endif
 						shader_t *gshader;
 						if (kcur->second.shader)
 						{
@@ -2472,7 +2472,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 						{
 							gshader = R_GetShaderByHandle(goreShader);
 						}
-
+#ifdef REND2_SP_MAYBE
 						// Set fade on surf.
 						// Only if we have a fade time set, and let us fade on
 						// rgb if we want -rww
@@ -2491,7 +2491,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 								}
 							}
 						}
-
+#endif
 						last->goreChain = newSurf2;
 						last = newSurf2;
 						R_AddDrawSurf(
@@ -3508,10 +3508,49 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 		tess.maxIndex = surf->alternateTex->firstVert + surf->alternateTex->numVerts;
 		tess.firstIndex = surf->alternateTex->firstIndex;
 
+#ifdef REND2_SP_MAYBE
+		// UNTESTED CODE
+		if (surf->scale > 1.0f)
+		{
+			tess.scale = true;
+			tess.texCoords[tess.firstIndex][0][0] = surf->scale;
+		}
+
+		//now check for fade overrides -rww
+		if (surf->fade)
+		{
+			static int lFade;
+			if (surf->fade < 1.0)
+			{
+				tess.fade = true;
+				lFade = Q_ftol(254.4f*surf->fade);
+				tess.svars.colors[tess.firstIndex][0] =
+				tess.svars.colors[tess.firstIndex][1] =
+				tess.svars.colors[tess.firstIndex][2] = Q_ftol(1.0f);
+				tess.svars.colors[tess.firstIndex][3] = lFade;
+			}
+			else if (surf->fade > 2.0f && surf->fade < 3.0f)
+			{ //hack to fade out on RGB if desired (don't want to add more to CRenderableSurface) -rww
+				tess.fade = true;
+				lFade = Q_ftol(254.4f*(surf->fade - 2.0f));
+				if (lFade < tess.svars.colors[tess.firstIndex][0])
+				{ //don't set it unless the fade is less than the current r value (to avoid brightening suddenly before we start fading)
+					tess.svars.colors[tess.firstIndex][0] = 
+					tess.svars.colors[tess.firstIndex][1] = 
+					tess.svars.colors[tess.firstIndex][2] = lFade;
+				}
+				tess.svars.colors[tess.firstIndex][3] = lFade;
+			}
+		}
+#endif
 		glState.skeletalAnimation = qtrue;
 		RB_EndSurface();
 		// So we don't lerp surfaces that shouldn't be lerped
 		glState.skeletalAnimation = qfalse;
+#ifdef REND2_SP_MAYBE
+		tess.scale = false;
+		tess.fade = false;
+#endif
 		return;
 	}
 

@@ -1406,8 +1406,18 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			vec4_t baseColor;
 			vec4_t vertColor;
-			
-			ComputeShaderColors(pStage, baseColor, vertColor, stateBits, &forceRGBGen, &forceAlphaGen);
+
+#ifdef REND2_SP_MAYBE
+			// Fade will be set true when rendering some gore surfaces
+			if (input->fade)
+			{
+				VectorCopy4(input->svars.colors[input->firstIndex], baseColor);
+				VectorScale4(baseColor, 1.0f / 255.0f, baseColor);
+				VectorSet4(vertColor, 0.0f, 0.0f, 0.0f, 0.0f);
+			}
+			else
+#endif
+				ComputeShaderColors(pStage, baseColor, vertColor, stateBits, &forceRGBGen, &forceAlphaGen);
 
 			if ((backEnd.refdef.colorScale != 1.0f) && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
 			{
@@ -1477,7 +1487,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec3(UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
 		}
 
-		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
+#ifdef REND2_SP_MAYBE
+		// tess scale will be set true only when theres scaled gore
+		if (!input->scale)
+			texMatrix[0] = texMatrix[3] = input->texCoords[input->firstIndex][0][0];
+		else
+#endif
+			ComputeTexMods(pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb); 
+
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
 
