@@ -1776,6 +1776,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				stage->constantColor[0] = color[0];
 				stage->constantColor[1] = color[1];
 				stage->constantColor[2] = color[2];
+				if (tr.hdrLighting == qfalse)
+				{
+					stage->constantColor[0] = MIN(color[0], 1.0f);
+					stage->constantColor[1] = MIN(color[1], 1.0f);
+					stage->constantColor[2] = MIN(color[2], 1.0f);
+				}
 
 				stage->rgbGen = CGEN_CONST;
 			}
