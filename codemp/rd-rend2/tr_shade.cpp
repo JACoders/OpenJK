@@ -130,58 +130,6 @@ void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
 	GL_BindToTMU( bundle->image[ index ], tmu );
 }
 
-
-/*
-================
-DrawTris
-
-Draws triangle outlines for debugging
-================
-*/
-static void DrawTris (shaderCommands_t *input) {
-#if 0
-	GL_Bind( tr.whiteImage );
-
-	GL_State( GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE );
-	GL_DepthRange(0.0f, 0.0f);
-
-	{
-		shaderProgram_t *sp = &tr.textureColorShader;
-		vec4_t color;
-
-		GLSL_VertexAttribsState(ATTR_POSITION, NULL);
-		GLSL_BindProgram(sp);
-		
-		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-		VectorSet4(color, 1, 1, 1, 1);
-		GLSL_SetUniformVec4(sp, UNIFORM_COLOR, color);
-
-		if (input->multiDrawPrimitives)
-		{
-			R_DrawMultiElementsVBO(input->multiDrawPrimitives, input->multiDrawMinIndex, input->multiDrawMaxIndex, input->multiDrawNumIndexes, input->multiDrawFirstIndex);
-		}
-		else
-		{
-			R_DrawElementsVBO(input->numIndexes, input->firstIndex, input->minIndex, input->maxIndex);
-		}
-	}
-
-	GL_DepthRange(0.0f, 1.0f);
-#endif
-}
-
-
-/*
-================
-DrawNormals
-
-Draws vertex normals for debugging
-================
-*/
-static void DrawNormals (shaderCommands_t *input) {
-	//FIXME: implement this
-}
-
 /*
 ==============
 RB_BeginSurface
@@ -827,6 +775,90 @@ static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 	return binding;
 }
 
+/*
+================
+DrawTris
+
+Draws triangle outlines for debugging
+================
+*/
+static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vertexArrays) {
+
+	Allocator& frameAllocator = *backEndData->perFrameMemory;
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
+	{
+		int index = 0;
+
+		if (input->shader->numDeforms && !ShaderRequiresCPUDeforms(input->shader))
+		{
+			index |= GENERICDEF_USE_DEFORM_VERTEXES;
+		}
+		if (glState.vertexAnimation)
+		{
+			index |= GENERICDEF_USE_VERTEX_ANIMATION;
+		}
+		else if (glState.skeletalAnimation)
+		{
+			index |= GENERICDEF_USE_SKELETAL_ANIMATION;
+		}
+
+		shaderProgram_t *sp = &tr.genericShader[index];
+		assert(sp);
+		UniformDataWriter uniformDataWriter;
+		SamplerBindingsWriter samplerBindingsWriter;
+		uniformDataWriter.Start(sp);
+
+		const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+		const UniformBlockBinding uniformBlockBindings[] = {
+			{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+			{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
+			GetEntityBlockUniformBinding(backEnd.currentEntity),
+			GetShaderInstanceBlockUniformBinding(
+				backEnd.currentEntity, input->shader),
+			GetBonesBlockUniformBinding(backEnd.currentEntity)
+		};
+
+		samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_DIFFUSEMAP);
+		const vec4_t baseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		const vec4_t vertColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		uniformDataWriter.SetUniformVec4(UNIFORM_BASECOLOR, baseColor);
+		uniformDataWriter.SetUniformVec4(UNIFORM_VERTCOLOR, vertColor);
+
+		DrawItem item = {};
+		item.renderState.stateBits = GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE | GLS_POLYGON_OFFSET_FILL;
+		item.renderState.cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
+		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
+		item.program = sp;
+		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
+		item.uniformData = uniformDataWriter.Finish(frameAllocator);
+		item.samplerBindings = samplerBindingsWriter.Finish(
+			frameAllocator, &item.numSamplerBindings);
+
+		DrawItemSetVertexAttributes(
+			item, attribs, vertexArrays->numVertexArrays, frameAllocator);
+		DrawItemSetUniformBlockBindings(
+			item, uniformBlockBindings, frameAllocator);
+
+		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
+
+		uint32_t key = RB_CreateSortKey(item, 15, 15);
+
+		RB_AddDrawItem(backEndData->currentPass, key, item);
+	}
+}
+
+/*
+================
+DrawNormals
+
+Draws vertex normals for debugging
+================
+*/
+static void DrawNormals(shaderCommands_t *input) {
+	//FIXME: implement this
+}
+
 static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexArraysProperties *vertexArrays ) {
 	int		l;
 	vec3_t	origin;
@@ -907,7 +939,7 @@ static void ProjectPshadowVBOGLSL( const shaderCommands_t *input, const VertexAr
 
 		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-		uint32_t key = RB_CreateSortKey(item, 14, input->shader->sort);
+		uint32_t key = RB_CreateSortKey(item, 13, input->shader->sort);
 		RB_AddDrawItem(backEndData->currentPass, key, item);
 
 		backEnd.pc.c_totalIndexes += tess.numIndexes;
@@ -987,7 +1019,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-	const uint32_t key = RB_CreateSortKey(item, 15, input->shader->sort);
+	const uint32_t key = RB_CreateSortKey(item, 14, input->shader->sort);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
 
 	// invert fog planes and render global fog into them
@@ -1021,7 +1053,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 		RB_FillDrawCommand(backItem.draw, GL_TRIANGLES, 1, input);
 
-		const uint32_t key = RB_CreateSortKey(backItem, 15, input->shader->sort);
+		const uint32_t key = RB_CreateSortKey(backItem, 14, input->shader->sort);
 		RB_AddDrawItem(backEndData->currentPass, key, backItem);
 	}
 }
@@ -1260,7 +1292,7 @@ void RB_ShadowTessEnd(shaderCommands_t *input, const VertexArraysProperties *ver
 
 	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-	const uint32_t key = RB_CreateSortKey(item, 15, 15);
+	const uint32_t key = RB_CreateSortKey(item, 13, 15);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
 }
 
@@ -1821,6 +1853,16 @@ void RB_StageIteratorGeneric( void )
 		if ( fog && tess.shader->fogPass ) {
 			RB_FogPass( input, &vertexArrays );
 		}
+
+		//
+		// draw debugging stuff
+		//
+		if ( r_showtris->integer ) {
+			DrawTris( input, &vertexArrays );
+		}
+		if ( r_shownormals->integer ) {
+			DrawNormals( input );
+		}
 	}
 
 	RB_CommitInternalBufferData();
@@ -1904,15 +1946,6 @@ void RB_EndSurface( void ) {
 	//
 	tess.currentStageIteratorFunc();
 
-	//
-	// draw debugging stuff
-	//
-	if ( r_showtris->integer ) {
-		DrawTris (input);
-	}
-	if ( r_shownormals->integer ) {
-		DrawNormals (input);
-	}
 	// clear shader so we can tell we don't have any unclosed surfaces
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;
