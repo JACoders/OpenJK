@@ -3655,6 +3655,24 @@ static shader_t *GeneratePermanentShader( void ) {
 		newShader->fogPass = FP_LE;
 	}
 
+	// determain if fog pass can use depth equal or not
+	if (newShader->fogPass == FP_EQUAL)
+	{
+		newShader->fogPass = FP_LE;
+		for (int stage = 0; stage < MAX_SHADER_STAGES; stage++) {
+			shaderStage_t *pStage = &stages[stage];
+
+			if (!pStage->active)
+				continue;
+
+			if (pStage->stateBits & GLS_DEPTHMASK_TRUE)
+			{
+				newShader->fogPass = FP_EQUAL;
+				break;
+			}
+		}
+	}
+
 	tr.shaders[ tr.numShaders ] = newShader;
 	newShader->index = tr.numShaders;
 	

@@ -2603,10 +2603,6 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	shaderStage_t *pStage = tess.xstages[stage];
 	int shaderAttribs = 0;
 
-	if ( tess.fogNum && pStage->adjustColorsForFog && 
-		tess.shader->fogPass )
-		shaderAttribs |= GENERICDEF_USE_FOG;
-
 	if ( pStage->alphaTestType != ALPHA_TEST_NONE )
 		shaderAttribs |= GENERICDEF_USE_ALPHA_TEST;
 
@@ -2634,6 +2630,11 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 		default:
 			break;
 	}
+
+	if (tess.fogNum && 
+		pStage->adjustColorsForFog != ACFF_NONE && 
+		!(shaderAttribs & GENERICDEF_USE_RGBAGEN))
+		shaderAttribs |= GENERICDEF_USE_FOG;
 
 	if (pStage->bundle[0].tcGen != TCGEN_TEXTURE)
 	{

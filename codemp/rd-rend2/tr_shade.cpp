@@ -1395,6 +1395,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			vec4_t fogColorMask;
 			ComputeFogColorMask(pStage, fogColorMask);
 			uniformDataWriter.SetUniformVec4(UNIFORM_FOGCOLORMASK, fogColorMask);
+			uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
 		}
 
 		float volumetricBaseValue = -1.0f;
