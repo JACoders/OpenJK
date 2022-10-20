@@ -4,6 +4,9 @@ uniform float u_Time; // delta time
 uniform vec2 u_MapZExtents;
 uniform vec3 u_EnvForce;
 uniform vec4 u_RandomOffset;
+uniform vec2 u_ZoneOffset[9];
+uniform int u_ChunkParticles;
+
 
 in vec3 attr_Position;
 in vec3 attr_Color;
@@ -13,27 +16,13 @@ out vec3 var_Velocity;
 
 const float CHUNK_EXTENDS = 2000.0;
 const float HALF_CHUNK_EXTENDS = CHUNK_EXTENDS * 0.5;
+const float THREE_HALF_CHUNK_EXTENDS = 3.0 * HALF_CHUNK_EXTENDS;
 
-vec3 NewParticleZPosition()
+vec3 NewParticleZPosition( in vec3 in_position )
 {
-	vec3 position = var_Position;
+	vec3 position = in_position;
 	position.xy += u_RandomOffset.xy;
 	position.z += u_MapZExtents.y - u_MapZExtents.x;
-
-	vec2 signs = sign(position.xy);
-	vec2 absPos = abs(position.xy) + vec2(HALF_CHUNK_EXTENDS);
-	position.xy = -signs * (HALF_CHUNK_EXTENDS - mod(absPos, CHUNK_EXTENDS));
-
-	return position;
-}
-
-vec3 NewParticleXYPosition(vec3 in_Position)
-{
-	vec3 position = in_Position;
-	position.xy += u_RandomOffset.xy * 10.0;
-	vec2 signs = sign(position.xy);
-	vec2 absPos = abs(position.xy) + vec2(HALF_CHUNK_EXTENDS);
-	position.xy = -signs * (1.5 * CHUNK_EXTENDS - mod(absPos, CHUNK_EXTENDS));
 
 	return position;
 }
@@ -47,12 +36,20 @@ void main()
 
 	if (var_Position.z < u_MapZExtents.x)
 	{
-		var_Position = NewParticleZPosition();
+		var_Position = NewParticleZPosition(var_Position);
 		var_Velocity.xy = u_EnvForce.xy;
 	}
-	if (u_EnvForce.z == 0 && any(greaterThan(abs(var_Position).xy, vec2(1.5 * CHUNK_EXTENDS))))
+
+	int zone = gl_VertexID / u_ChunkParticles;
+	vec2 zoneOffset = u_ZoneOffset[zone] * CHUNK_EXTENDS;
+	vec2 sim_Position = var_Position.xy + zoneOffset;
+
+	if (any(greaterThan(abs(sim_Position).xy, vec2(THREE_HALF_CHUNK_EXTENDS))))
 	{
-		var_Position = NewParticleXYPosition(var_Position);
-		var_Velocity.xy = u_EnvForce.xy;
+		vec2 signs = sign(sim_Position.xy);
+		vec2 absPos = abs(sim_Position.xy) + vec2(THREE_HALF_CHUNK_EXTENDS);
+		sim_Position.xy = -signs * (THREE_HALF_CHUNK_EXTENDS - mod(absPos, 3.0 * CHUNK_EXTENDS));
+
+		var_Position.xy = sim_Position - zoneOffset;
 	}
 }

@@ -58,7 +58,6 @@ struct weatherObject_t
 	image_t *drawImage;
 	vec4_t  color;
 	vec2_t	size;
-	vec3_t	currentVelocity;
 };
 
 #define MAX_WINDOBJECTS 10
@@ -244,11 +243,9 @@ namespace
 		R_IssuePendingRenderCommands();
 		R_InitNextFrame();
 		RE_EndScene();
-
-		// TODO: Store ViewProjection Mat for depth comparisons
 	}
 
-	void RB_SimulateWeather(weatherObject_t *ws)
+	void RB_SimulateWeather(weatherObject_t *ws, vec2_t *zoneOffsets, int zoneIndex)
 	{
 		if (ws->vboLastUpdateFrame == backEndData->realFrameNumber || 
 			tr.weatherSystem->frozen)
@@ -301,6 +298,8 @@ namespace
 		uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.frameTime);
 		uniformDataWriter.SetUniformVec3(UNIFORM_ENVFORCE, envForce);
 		uniformDataWriter.SetUniformVec4(UNIFORM_RANDOMOFFSET, randomOffset);
+		uniformDataWriter.SetUniformVec2(UNIFORM_ZONEOFFSET, (float*)zoneOffsets, 9);
+		uniformDataWriter.SetUniformInt(UNIFORM_CHUNK_PARTICLES, ws->particleCount);
 
 		item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 
@@ -437,15 +436,15 @@ void RE_WorldEffectCommand(const char *command)
 
 	//// Add a zone
 	////---------------
-	//else if (Q_stricmp(token, "zone") == 0)
-	//{
-	//	vec3_t	mins;
-	//	vec3_t	maxs;
-	//	//if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
-	//	{
-	//		//mOutside.AddWeatherZone(mins, maxs);
-	//	}
-	//}
+	else if (Q_stricmp(token, "zone") == 0)
+	{
+		vec3_t	mins;
+		vec3_t	maxs;
+		//if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
+		{
+			ri.Printf(PRINT_DEVELOPER, "Weather zones aren't supported in MP\n");
+		}
+	}
 
 	// Basic Wind
 	//------------
@@ -599,7 +598,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].particleCount = 2000;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].gravity = 2.0f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = -1.0f;
+		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 6000.0f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].size[0] = 2.0f;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].size[1] = 14.0f;
@@ -635,7 +634,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].particleCount = 5000;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].gravity = 2.8f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = -1.0f;
+		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 6000.0f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].size[0] = 1.5f;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].size[1] = 14.0f;
@@ -666,7 +665,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_SNOW].particleCount = 1000;
 		tr.weatherSystem->weatherSlots[WEATHER_SNOW].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_SNOW].gravity = 0.3f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = -1.0f;
+		tr.weatherSystem->weatherSlots[WEATHER_SNOW].fadeDistance = 6000.0f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_SNOW].size[0] = 1.5f;
 		tr.weatherSystem->weatherSlots[WEATHER_SNOW].size[1] = 1.5f;
@@ -712,7 +711,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].particleCount = count;
 		tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].gravity = 0.0f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 3500000.f;
+		tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].fadeDistance = 3000.f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].size[0] = 2.5f;
 		tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].size[1] = 2.5f;
@@ -754,7 +753,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_SAND].particleCount = 400;
 		tr.weatherSystem->weatherSlots[WEATHER_SAND].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_SAND].gravity = 0.0f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 3500000.f;
+		tr.weatherSystem->weatherSlots[WEATHER_SAND].fadeDistance = 2400.f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_SAND].size[0] = 300.f;
 		tr.weatherSystem->weatherSlots[WEATHER_SAND].size[1] = 300.f;
@@ -789,7 +788,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].particleCount = 60;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].gravity = 0.0f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 3500000.f;
+		tr.weatherSystem->weatherSlots[WEATHER_FOG].fadeDistance = 2400.f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[0] = 300.f;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[1] = 300.f;
@@ -828,7 +827,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].particleCount = 70;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].gravity = 0.0f; 
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 3500000.f;
+		tr.weatherSystem->weatherSlots[WEATHER_FOG].fadeDistance = 2400.f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[0] = 300.f;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[1] = 300.f;
@@ -867,7 +866,7 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].particleCount = 70;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].active = true;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].gravity = 0.0f;
-		tr.weatherSystem->weatherSlots[WEATHER_RAIN].fadeDistance = 3500000.f;
+		tr.weatherSystem->weatherSlots[WEATHER_FOG].fadeDistance = 2000.f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[0] = 300.f;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[1] = 300.f;
@@ -880,37 +879,37 @@ void RE_WorldEffectCommand(const char *command)
 		VectorScale(tr.weatherSystem->weatherSlots[WEATHER_FOG].color, 0.12f, tr.weatherSystem->weatherSlots[WEATHER_FOG].color);
 	}
 
-	/*else if (Q_stricmp(token, "outsideshake") == 0)
+	else if (Q_stricmp(token, "outsideshake") == 0)
 	{
-		mOutside.mOutsideShake = !mOutside.mOutsideShake;
+		ri.Printf(PRINT_DEVELOPER, "outsideshake isn't supported in MP\n");
 	}
 	else if (Q_stricmp(token, "outsidepain") == 0)
 	{
-		mOutside.mOutsidePain = !mOutside.mOutsidePain;
-	}*/
+		ri.Printf(PRINT_DEVELOPER, "outsidepain isn't supported in MP\n");
+	}
 	else
 	{
 		ri.Printf(PRINT_ALL, "Weather Effect: Please enter a valid command.\n");
 		ri.Printf(PRINT_ALL, "	die\n");
 		ri.Printf(PRINT_ALL, "	clear\n");
 		ri.Printf(PRINT_ALL, "	freeze\n");
-		//ri.Printf(PRINT_ALL, "	zone (mins) (maxs)\n");
+		ri.Printf(PRINT_ALL, "	zone (mins) (maxs)\n");
 		ri.Printf(PRINT_ALL, "	wind\n");
 		ri.Printf(PRINT_ALL, "	constantwind (velocity)\n");
 		ri.Printf(PRINT_ALL, "	gustingwind\n");
-		//ri.Printf( PRINT_ALL, "	windzone (mins) (maxs) (velocity)\n" );
+		//ri.Printf(PRINT_ALL, "	windzone (mins) (maxs) (velocity)\n");
 		ri.Printf(PRINT_ALL, "	lightrain\n");
 		ri.Printf(PRINT_ALL, "	rain\n");
 		ri.Printf(PRINT_ALL, "	acidrain\n");
 		ri.Printf(PRINT_ALL, "	heavyrain\n");
 		ri.Printf(PRINT_ALL, "	snow\n");
-		ri.Printf(PRINT_ALL, "	spacedust\n");
+		ri.Printf(PRINT_ALL, "	spacedust (count)\n");
 		ri.Printf(PRINT_ALL, "	sand\n");
 		ri.Printf(PRINT_ALL, "	fog\n");
 		ri.Printf(PRINT_ALL, "	heavyrainfog\n");
 		ri.Printf(PRINT_ALL, "	light_fog\n");
-		//ri.Printf(PRINT_ALL, "	outsideshake\n"); // not available in MP
-		//ri.Printf(PRINT_ALL, "	outsidepain\n"); // not available in MP
+		ri.Printf(PRINT_ALL, "	outsideshake\n"); // not available in MP
+		ri.Printf(PRINT_ALL, "	outsidepain\n"); // not available in MP
 	}
 }
 
@@ -940,11 +939,6 @@ void R_AddWeatherSurfaces()
 	);
 }
 
-float lerp(float a, float b, float t)
-{
-	return a + t * (b - a);
-}
-
 void RB_SurfaceWeather( srfWeather_t *surf )
 {
 	assert(tr.weatherSystem);
@@ -956,7 +950,37 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 
 	const float numMinZonesX = std::floor((abs(tr.world->bmodels[0].bounds[0][0]) / CHUNK_EXTENDS) + 0.5f);
 	const float numMinZonesY = std::floor((abs(tr.world->bmodels[0].bounds[0][1]) / CHUNK_EXTENDS) + 0.5f);
+	vec3_t viewOrigin;
+	VectorCopy(backEnd.viewParms.ori.origin, viewOrigin);
+	float centerZoneOffsetX =
+		std::floor((viewOrigin[0] / CHUNK_EXTENDS) + 0.5f);
+	float centerZoneOffsetY =
+		std::floor((viewOrigin[1] / CHUNK_EXTENDS) + 0.5f);
 
+	vec2_t zoneOffsets[9];
+	GLint  zoneMapping[9];
+	int		centerZoneIndex;
+	{
+		int chunkIndex = 0;
+		int currentIndex = 0;
+		for (int y = -1; y <= 1; ++y)
+		{
+			for (int x = -1; x <= 1; ++x, ++currentIndex)
+			{
+				chunkIndex  = (int(centerZoneOffsetX + numMinZonesX) + x + 1) % 3;
+				chunkIndex += (int(centerZoneOffsetY + numMinZonesY) + y + 1) % 3 * 3;
+				VectorSet2(
+					zoneOffsets[chunkIndex],
+					x,
+					y);
+				zoneMapping[currentIndex] = chunkIndex;
+				if (x == 0 && y == 0)
+					centerZoneIndex = currentIndex;
+			}
+		}
+	}
+
+	// Get current global wind vector
 	VectorCopy(tr.weatherSystem->constWindDirection, tr.weatherSystem->windDirection);
 	for (int i = 0; i < tr.weatherSystem->activeWindObjects; i++)
 	{
@@ -965,6 +989,9 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 		VectorAdd(windObject->currentVelocity, tr.weatherSystem->windDirection, tr.weatherSystem->windDirection);
 	}
 
+	Allocator& frameAllocator = *backEndData->perFrameMemory;
+
+	// Simulate and render all the weather zones
 	for (int weatherType = 0; weatherType < NUM_WEATHER_TYPES; weatherType++)
 	{
 		weatherObject_t *weatherObject = &ws.weatherSlots[weatherType];
@@ -976,58 +1003,23 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 				tr.weatherSystem->weatherSlots[weatherType],
 				maxWeatherTypeParticles[weatherType]);
 
-		RB_SimulateWeather(weatherObject);
+		RB_SimulateWeather(weatherObject, &zoneOffsets[0], centerZoneIndex);
 
-		vec3_t viewOrigin;
-		VectorCopy(backEnd.viewParms.ori.origin, viewOrigin);
-
-		const float frictionInverse = 0.7;
-		vec3_t envForce = {
-			tr.weatherSystem->windDirection[0] * frictionInverse,
-			tr.weatherSystem->windDirection[1] * frictionInverse,
-			-weatherObject->gravity
+		vec4_t viewInfo = {
+			weatherObject->size[0],
+			weatherObject->size[1],
+			0.0f,
+			weatherObject->fadeDistance
 		};
-		weatherObject->currentVelocity[0] = lerp(
-			weatherObject->currentVelocity[0],
-			envForce[0],
-			backEnd.refdef.frameTime * 0.0005f);
-		weatherObject->currentVelocity[1] = lerp(
-			weatherObject->currentVelocity[1],
-			envForce[1],
-			backEnd.refdef.frameTime * 0.0005f);
-		weatherObject->currentVelocity[2] = lerp(
-			weatherObject->currentVelocity[2],
-			envForce[2],
-			backEnd.refdef.frameTime * 0.0005f);
 
-		if (weatherObject->gravity != 0.0f)
-		{
-			vec3_t windOffsetPerHeight = {
-				weatherObject->currentVelocity[0],
-				weatherObject->currentVelocity[1],
-				0.0f };
-			VectorScale(windOffsetPerHeight, 1.0f / weatherObject->currentVelocity[2], windOffsetPerHeight);
-			VectorMA(
-				viewOrigin,
-				tr.world->bmodels[0].bounds[1][2] - viewOrigin[2],
-				windOffsetPerHeight,
-				viewOrigin);
-		}
-
-		float centerZoneOffsetX =
-		std::floor((viewOrigin[0] / CHUNK_EXTENDS) + 0.5f);
-		float centerZoneOffsetY =
-		std::floor((viewOrigin[1] / CHUNK_EXTENDS) + 0.5f);
+		int stateBits = weatherType == WEATHER_SAND ?
+			GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA :
+			GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE;
 
 		DrawItem item = {};
 
-		if (weatherType == WEATHER_SAND)
-			item.renderState.stateBits =
-				GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
-		else
-			item.renderState.stateBits =
-				GLS_DEPTHFUNC_LESS | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE;
-		item.renderState.cullType = CT_FRONT_SIDED;
+		item.renderState.stateBits = stateBits;
+		item.renderState.cullType = CT_TWO_SIDED;
 		item.renderState.depthRange = { 0.0f, 1.0f };
 		item.program = &tr.weatherShader;
 
@@ -1047,10 +1039,11 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 		item.draw.primitiveType = GL_POINTS;
 		item.draw.params.arrays.numVertices = weatherObject->particleCount;
 
-		int chunkIndex = 0;
+		//TODO: Cull non visable zones
+		int currentIndex = 0;
 		for (int y = -1; y <= 1; ++y)
 		{
-			for (int x = -1; x <= 1; ++x)
+			for (int x = -1; x <= 1; ++x, ++currentIndex)
 			{
 				UniformDataWriter uniformDataWriter;
 				uniformDataWriter.Start(&tr.weatherShader);
@@ -1064,12 +1057,6 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 					(centerZoneOffsetY + y) * CHUNK_EXTENDS);
 				uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.frameTime);
 				uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, weatherObject->color);
-				vec4_t viewInfo = {
-					weatherObject->size[0],
-					weatherObject->size[1],
-					0.0f,
-					weatherObject->fadeDistance
-				};
 				uniformDataWriter.SetUniformVec4(UNIFORM_VIEWINFO, viewInfo);
 				uniformDataWriter.SetUniformMatrix4x4(UNIFORM_SHADOWMVP, tr.weatherSystem->weatherMVP);
 				item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
@@ -1081,13 +1068,10 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 				else
 					samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_DIFFUSEMAP);
 
-				Allocator& frameAllocator = *backEndData->perFrameMemory;
 				item.samplerBindings = samplerBindingsWriter.Finish(
 					frameAllocator, &item.numSamplerBindings);
 
-				chunkIndex = (int(centerZoneOffsetX + numMinZonesX) + x + 1) % 3;
-				chunkIndex+= (int(centerZoneOffsetY + numMinZonesY) + y + 1) % 3 * 3;
-				item.draw.params.arrays.firstVertex = weatherObject->particleCount * chunkIndex;
+				item.draw.params.arrays.firstVertex = weatherObject->particleCount * zoneMapping[currentIndex];
 
 				uint32_t key = RB_CreateSortKey(item, 15, SS_SEE_THROUGH);
 				RB_AddDrawItem(backEndData->currentPass, key, item);

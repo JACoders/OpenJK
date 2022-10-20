@@ -127,9 +127,10 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
 	{ "u_MapZExtents",			GLSL_VEC2, 1 },
-	{ "u_ZoneOffset",			GLSL_VEC2, 1 },
+	{ "u_ZoneOffset",			GLSL_VEC2, 9 },
 	{ "u_EnvForce",				GLSL_VEC3, 1 },
-	{ "u_RandomOffset",			GLSL_VEC4, 1 }
+	{ "u_RandomOffset",			GLSL_VEC4, 1 },
+	{ "u_ChunkParticles",		GLSL_INT, 1 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
@@ -988,9 +989,8 @@ void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData )
 
 			case GLSL_VEC2:
 			{
-				assert(data->numElements == 1);
 				GLfloat *value = (GLfloat *)(data + 1);
-				GLSL_SetUniformVec2(program, data->index, value);
+				GLSL_SetUniformVec2N(program, data->index, value, data->numElements);
 				data = reinterpret_cast<UniformData *>(value + data->numElements*2);
 				break;
 			}
@@ -1109,6 +1109,39 @@ void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t 
 	compare[1] = v[1];
 
 	qglUniform2f(uniforms[uniformNum], v[0], v[1]);
+}
+
+void GLSL_SetUniformVec2N(shaderProgram_t *program, int uniformNum, const float *v, int numVec2s)
+{
+	GLint *uniforms = program->uniforms;
+	float *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+
+	if (uniforms[uniformNum] == -1)
+		return;
+
+	if (uniformsInfo[uniformNum].type != GLSL_VEC2)
+	{
+		ri.Printf(PRINT_WARNING, "GLSL_SetUniformVec2: wrong type for uniform %i in program %s\n", uniformNum, program->name);
+		return;
+	}
+
+	if (uniformsInfo[uniformNum].size < numVec2s)
+	{
+		ri.Printf(PRINT_WARNING, "GLSL_SetUniformVec2N: uniform %i only has %d elements! Tried to set %d\n",
+			uniformNum,
+			uniformsInfo[uniformNum].size,
+			numVec2s);
+		return;
+	}
+
+	if (memcmp(compare, v, sizeof(vec2_t) * numVec2s) == 0)
+	{
+		return;
+	}
+
+	memcpy(compare, v, sizeof(vec2_t) * numVec2s);
+
+	qglUniform2fv(uniforms[uniformNum], numVec2s, v);
 }
 
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v)

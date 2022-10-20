@@ -1,5 +1,5 @@
 /*[Vertex]*/
-uniform vec2 u_ZoneOffset;
+uniform vec2 u_ZoneOffset[9];
 
 uniform sampler2D u_ShadowMap;
 uniform mat4 u_ShadowMvp;
@@ -14,7 +14,7 @@ out int var_Culled;
 void main()
 {
 	gl_Position = vec4(
-		attr_Position.xy + u_ZoneOffset,
+		attr_Position.xy + u_ZoneOffset[0],
 		attr_Position.z,
 		1.0);
 	var_Velocity = attr_Color;
@@ -80,10 +80,10 @@ void main()
 			vec4 worldPos = vec4(P + offset, 1.0);
 			gl_Position = u_ModelViewProjectionMatrix * worldPos;
 
-			// TODO: Fade on distance to viewer
-			float alpha = 1.0;
+			float distance = distance(u_ViewOrigin, worldPos.xyz);
+			float alpha = (u_ViewInfo.w - distance) / u_ViewInfo.w;
 
-			var_TexCoordAlpha = vec3(texcoords[i], alpha);
+			var_TexCoordAlpha = vec3(texcoords[i], clamp(alpha, 0.0, 1.0));
 			EmitVertex();
 		}
 		EndPrimitive();
