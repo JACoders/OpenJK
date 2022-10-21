@@ -295,7 +295,7 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 
 	// only use this for objects with potentially two contibuting fogs
 	#if defined(USE_FALLBACK_GLOBAL_FOG)
-	bool intersects = (t > 0.0 && t <= 1.0);
+	bool intersects = (t > 0.0 && t < 0.995);
 	if (inFog == intersects)
 	{
 		Fog globalFog = u_Fogs[u_globalFogIndex];
@@ -305,6 +305,10 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 		float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
 		return vec4(globalFog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
 	}
+	#else
+	bool intersects = (t > 0.0 && t < 0.995);
+	if (inFog == intersects)
+		return vec4(0.0);
 	#endif
 
 	float distToVertexFromViewOrigin = length(V);

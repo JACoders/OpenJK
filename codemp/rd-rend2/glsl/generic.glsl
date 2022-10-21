@@ -493,7 +493,7 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 	// fogPlane is inverted in tr_bsp for some reason.
 	float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
 	
-	bool intersects = (t > 0.0 && t <= 1.0);
+	bool intersects = (t > 0.0 && t < 0.995);
 	if (inFog == intersects)
 		return 0.0;
 
