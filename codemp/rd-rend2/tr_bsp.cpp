@@ -3198,7 +3198,12 @@ static void R_RenderAllCubemaps()
 		cubemapFormat = GL_RGBA16F;
 	}
 
+	// Clear everything before rendering cubemaps to make sure only visable surfaces to the cubemap are rendered
 	int frontEndMsec, backEndMsec;
+	R_IssuePendingRenderCommands();
+	RE_ClearScene();
+	R_InitNextFrame();
+	
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		bool bounce = k != 0;
