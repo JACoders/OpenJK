@@ -1024,7 +1024,10 @@ static void RB_BindUniformBlocks(
 	for (size_t i = 0; i < numBindings; ++i)
 	{
 		const UniformBlockBinding& binding = bindings[i];
-		RB_BindUniformBlock(binding.ubo, binding.block, binding.offset);
+		if (binding.offset < 0)
+			RB_BindUniformBlock(binding.ubo, binding.block, 0);
+		else
+			RB_BindUniformBlock(binding.ubo, binding.block, binding.offset);
 	}
 }
 
@@ -2271,12 +2274,12 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 			nullptr, 0);
 	}
 
-	if ( r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) )
+	if ( r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
 	{
 		RB_RenderSunShadows();
 	}
 
-	if (r_ssao->integer)
+	if (r_ssao->integer && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
 	{
 		RB_RenderSSAO();
 	}

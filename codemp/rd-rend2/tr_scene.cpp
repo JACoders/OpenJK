@@ -536,6 +536,8 @@ void RE_RenderScene( const refdef_t *fd ) {
 		R_EndTimedBlockCmd( timer );
 	}
 
+	R_IssuePendingRenderCommands();
+
 	// setup view parms for the initial view
 	//
 	// set up viewport
