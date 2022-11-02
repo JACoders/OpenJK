@@ -3663,17 +3663,23 @@ static shader_t *GeneratePermanentShader( void ) {
 		newShader->fogPass = FP_EQUAL;
 	} else if ( shader.contentFlags & CONTENTS_FOG ) {
 		newShader->fogPass = FP_LE;
+	} else {
+		newShader->fogPass = FP_NONE;
 	}
 
 	// determain if fog pass can use depth equal or not
 	if (newShader->fogPass == FP_EQUAL)
 	{
 		newShader->fogPass = FP_LE;
+		bool allPassesAlpha = true;
 		for (int stage = 0; stage < MAX_SHADER_STAGES; stage++) {
 			shaderStage_t *pStage = &stages[stage];
 
 			if (!pStage->active)
 				continue;
+
+			if (pStage->adjustColorsForFog != ACFF_MODULATE_ALPHA)
+				allPassesAlpha = false;
 
 			if (pStage->stateBits & GLS_DEPTHMASK_TRUE)
 			{
@@ -3681,6 +3687,9 @@ static shader_t *GeneratePermanentShader( void ) {
 				break;
 			}
 		}
+
+		if (allPassesAlpha)
+			newShader->fogPass = FP_NONE;
 	}
 
 	tr.shaders[ tr.numShaders ] = newShader;

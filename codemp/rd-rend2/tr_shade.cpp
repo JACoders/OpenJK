@@ -1866,14 +1866,12 @@ void RB_StageIteratorGeneric( void )
 		// now do fog
 		//
 		const fog_t *fog = nullptr;
-		if ( tr.world )
+		if ( tr.world && input->fogNum != 0)
 		{
 			fog = tr.world->fogs + input->fogNum;
 		}
-
-		if ( fog && tess.shader->fogPass ) {
-			RB_FogPass( input, &vertexArrays );
-		}
+		if (fog && tess.shader->fogPass)
+			RB_FogPass(input, &vertexArrays);
 
 		//
 		// draw debugging stuff
