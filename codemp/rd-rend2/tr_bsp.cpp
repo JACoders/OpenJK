@@ -3200,6 +3200,7 @@ static void R_RenderAllCubemaps()
 
 	// Clear everything before rendering cubemaps to make sure only visable surfaces to the cubemap are rendered
 	int frontEndMsec, backEndMsec;
+	R_IssuePendingRenderCommands();
 	RE_ClearScene();
 	R_InitNextFrame();
 	

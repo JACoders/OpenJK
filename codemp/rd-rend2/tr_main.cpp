@@ -2315,6 +2315,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 			switch (model->type)
 			{
 				case MOD_MDXM:
+				case MOD_BAD:
 				{
 					if (ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)))
 					{
