@@ -4878,6 +4878,14 @@ static void ScanAndLoadShaderFiles( void )
 			Q_strncpyz(shaderName, token, sizeof(shaderName));
 			shaderLine = COM_GetCurrentParseLine();
 
+			if (token[0] == '#')
+			{
+				ri.Printf(PRINT_WARNING, "WARNING: Deprecated shader comment \"%s\" on line %d in file %s.  Ignoring line.\n",
+					shaderName, shaderLine, filename);
+				SkipRestOfLine(&p);
+				continue;
+			}
+
 			token = COM_ParseExt(&p, qtrue);
 			if(token[0] != '{' || token[1] != '\0')
 			{
