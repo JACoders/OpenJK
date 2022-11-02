@@ -63,7 +63,7 @@ typedef unsigned int glIndex_t;
 #define PSHADOW_MAP_SIZE      1024
 #define DSHADOW_MAP_SIZE      512
 #define CUBE_MAP_MIPS      8
-#define CUBE_MAP_ROUGHNESS_MIPS CUBE_MAP_MIPS-4
+#define CUBE_MAP_ROUGHNESS_MIPS CUBE_MAP_MIPS - 2
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 
 /*
@@ -315,9 +315,10 @@ typedef enum
 	IMGFLAG_GENNORMALMAP   = 0x0100,
 	IMGFLAG_MUTABLE        = 0x0200,
 	IMGFLAG_HDR            = 0x0400,
-	IMGFLAG_2D_ARRAY       = 0x0800,
-	IMGFLAG_3D             = 0x1000,
-	IMGLFAG_SHADOWCOMP     = 0x2000,
+	IMGFLAG_HDR_LIGHTMAP   = 0x0800,
+	IMGFLAG_2D_ARRAY       = 0x1000,
+	IMGFLAG_3D             = 0x2000,
+	IMGLFAG_SHADOWCOMP     = 0x4000,
 } imgFlags_t;
 
 typedef enum
@@ -828,16 +829,17 @@ enum
 	TB_DIFFUSEMAP  = 0,
 	TB_LIGHTMAP    = 1,
 	TB_LEVELSMAP   = 1,
-	TB_SHADOWMAP3  = 1,
 	TB_COLORMAP2   = 1,
 	TB_NORMALMAP   = 2,
 	TB_DELUXEMAP   = 3,
 	TB_SPECULARMAP = 4,
+	TB_ORMSMAP     = 4,
 	TB_SHADOWMAP   = 5,
 	TB_CUBEMAP     = 6,
 	TB_ENVBRDFMAP  = 7,
-	TB_SHADOWMAP2  = 8,
-	NUM_TEXTURE_BUNDLES = 9
+	TB_SHADOWMAPARRAY  = 8,
+	TB_SSAOMAP     = 9,
+	NUM_TEXTURE_BUNDLES = 10
 };
 
 typedef enum
@@ -848,16 +850,17 @@ typedef enum
 	ST_GLSL
 } stageType_t;
 
-enum specularType
+typedef enum 
 {
-	SPEC_NONE,  // no specular found
-	SPEC_RMO,   // calculate spec from rmo  texture with a specular of 0.04 for dielectric materials
-	SPEC_RMOS,  // calculate spec from rmos texture with a specular of 0.0 - 0.08 from input
-	SPEC_MOXR,  // calculate spec from moxr texture with a specular of 0.04 for dielectric materials
-	SPEC_MOSR,  // calculate spec from mosr texture with a specular of 0.0 - 0.08 from input
-	SPEC_ORM,	// calculate spec from orm  texture with a specular of 0.04 for dielectric materials
-	SPEC_ORMS,	// calculate spec from orms texture with a specular of 0.0 - 0.08 from input
-};
+	SPEC_NONE,		// no specular found
+	SPEC_SPECGLOSS,	// Specular Gloss
+	SPEC_RMO,		// calculate spec from rmo  texture with a specular of 0.04 for dielectric materials
+	SPEC_RMOS,		// calculate spec from rmos texture with a specular of 0.0 - 0.08 from input
+	SPEC_MOXR,		// calculate spec from moxr texture with a specular of 0.04 for dielectric materials
+	SPEC_MOSR,		// calculate spec from mosr texture with a specular of 0.0 - 0.08 from input
+	SPEC_ORM,		// calculate spec from orm  texture with a specular of 0.04 for dielectric materials
+	SPEC_ORMS,		// calculate spec from orms texture with a specular of 0.0 - 0.08 from input
+} specularType_t;
 
 enum AlphaTestType
 {
@@ -901,6 +904,7 @@ typedef struct {
 	int				lightmapStyle;
 
 	stageType_t     type;
+	specularType_t  specularType;
 	struct shaderProgram_s *glslShaderGroup;
 	int glslShaderIndex;
 
@@ -1206,12 +1210,13 @@ enum
 	LIGHTDEF_USE_GLOW_BUFFER     		= 0x0080,
 	LIGHTDEF_USE_ALPHA_TEST		 		= 0x0100,
 	LIGHTDEF_USE_CLOTH_BRDF				= 0x0200,
+	LIGHTDEF_USE_SPEC_GLOSS				= 0x0400,
 
 	LIGHTDEF_LIGHTTYPE_MASK      		= LIGHTDEF_USE_LIGHTMAP |
 										  LIGHTDEF_USE_LIGHT_VECTOR |
 										  LIGHTDEF_USE_LIGHT_VERTEX,
 
-	LIGHTDEF_ALL                 		= 0x03FF,
+	LIGHTDEF_ALL                 		= 0x07FF,
 	LIGHTDEF_COUNT               		= LIGHTDEF_ALL + 1
 };
 
@@ -1304,6 +1309,7 @@ typedef enum
 	UNIFORM_NORMALMAP,
 	UNIFORM_DELUXEMAP,
 	UNIFORM_SPECULARMAP,
+	UNIFORM_SSAOMAP,
 
 	UNIFORM_TEXTUREMAP,
 	UNIFORM_LEVELSMAP,
@@ -1315,7 +1321,6 @@ typedef enum
 
 	UNIFORM_SHADOWMAP,
 	UNIFORM_SHADOWMAP2,
-	UNIFORM_SHADOWMAP3,
 
 	UNIFORM_SHADOWMVP,
 	UNIFORM_SHADOWMVP2,
@@ -3681,7 +3686,8 @@ void RE_AddDecalToScene ( qhandle_t shader, const vec3_t origin, const vec3_t di
 void R_AddDecals( void );
 
 image_t	*R_FindImageFile( const char *name, imgType_t type, int flags );
-void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type);
+void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName, int flags);
+image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageName, int flags);
 qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);

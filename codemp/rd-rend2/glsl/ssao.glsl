@@ -1,15 +1,22 @@
 /*[Vertex]*/
-in vec4 attr_Position;
-in vec4 attr_TexCoord0;
-
 out vec2 var_ScreenTex;
 
 void main()
 {
-	gl_Position = attr_Position;
-	var_ScreenTex = attr_TexCoord0.xy;
-	//vec2 screenCoords = gl_Position.xy / gl_Position.w;
-	//var_ScreenTex = screenCoords * 0.5 + 0.5;
+	const vec2 positions[] = vec2[3](
+		vec2(-1.0f, -1.0f),
+		vec2(-1.0f,  3.0f),
+		vec2( 3.0f, -1.0f)
+	);
+
+	const vec2 texcoords[] = vec2[3](
+		vec2( 0.0f,  1.0f),
+		vec2( 0.0f, -1.0f),
+		vec2( 2.0f,  1.0f)
+	);
+
+	gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
+	var_ScreenTex = texcoords[gl_VertexID];
 }
 
 /*[Fragment]*/
@@ -75,7 +82,7 @@ float ambientOcclusion(sampler2D depthMap, const vec2 tex, const float zFarDivZN
 	mat2 rmat = randomRotation(tex);
 		
 	int i;
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < 9; i++)
 	{
 		vec2 offset = rmat * poissonDisc[i] * offsetScale;
 		float sampleZ2 = zFar * getLinearDepth(depthMap, tex + offset, zFarDivZNear);
@@ -89,7 +96,7 @@ float ambientOcclusion(sampler2D depthMap, const vec2 tex, const float zFarDivZN
 		}
 	}
 	
-	result *= 0.33333;
+	result *= 0.11111;
 	
 	return result;
 }

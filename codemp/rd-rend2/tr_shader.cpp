@@ -112,7 +112,7 @@ static void ClearGlobalShader(void)
 		stages[i].specularScale[0] = 
 		stages[i].specularScale[1] =
 		stages[i].specularScale[2] = r_baseSpecular->value;
-		stages[i].specularScale[3] = 0.1;
+		stages[i].specularScale[3] = 0.99;
 	}
 
 	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;
@@ -1199,10 +1199,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	qboolean depthMaskExplicit = qfalse;
 	char bufferPackedTextureName[MAX_QPATH];
 	char bufferBaseColorTextureName[MAX_QPATH];
-	int  buildSpecFromPacked = SPEC_NONE;
-	qboolean foundBaseColor = qfalse;
 
 	stage->active = qtrue;
+	stage->specularType = SPEC_NONE;
 
 	while ( 1 )
 	{
@@ -1294,8 +1293,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
 					return qfalse;
 				}
-
-				foundBaseColor = qtrue;
 			}
 		}
 		//
@@ -1365,17 +1362,19 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			if (shader.noTC)
 				flags |= IMGFLAG_NO_COMPRESSION;
 
-			flags |= IMGFLAG_NOLIGHTSCALE;
-
-			stage->bundle[TB_SPECULARMAP].image[0] = R_FindImageFile(token, type, flags);
+			// Always srgb to have correct reflectivity
+			if (shader.isHDRLit == qtrue)
+				stage->bundle[TB_SPECULARMAP].image[0] = R_FindImageFile(token, type, flags | IMGFLAG_SRGB);
+			else
+				stage->bundle[TB_SPECULARMAP].image[0] = R_BuildSDRSpecGlossImage(stage, token, flags);
 
 			if (!stage->bundle[TB_SPECULARMAP].image[0])
 			{
 				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find specMap '%s' in shader '%s'\n", token, shader.name);
 				return qfalse;
 			}
-
-			VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+			stage->specularType = SPEC_SPECGLOSS;
+			VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 0.0f);
 		}
 		//
 		// rmoMap <name> || rmosMap <name>
@@ -1388,7 +1387,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'rmoMap' keyword in shader '%s'\n", shader.name);
 				return qfalse;
 			}
-			buildSpecFromPacked = !Q_stricmp(token, "rmosMap") ? SPEC_RMOS : SPEC_RMO;
+			stage->specularType = !Q_stricmp(token, "rmosMap") ? SPEC_RMOS : SPEC_RMO;
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
@@ -1402,7 +1401,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'moxrMap' keyword in shader '%s'\n", shader.name);
 				return qfalse;
 			}
-			buildSpecFromPacked = !Q_stricmp(token, "mosrMap") ? SPEC_MOSR : SPEC_MOXR;
+			stage->specularType = !Q_stricmp(token, "mosrMap") ? SPEC_MOSR : SPEC_MOXR;
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
@@ -1416,7 +1415,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri.Printf(PRINT_WARNING, "WARNING: missing parameter for 'ormMap' keyword in shader '%s'\n", shader.name);
 				return qfalse;
 			}
-			buildSpecFromPacked = !Q_stricmp(token, "ormsMap") ? SPEC_ORMS : SPEC_ORM;
+			stage->specularType = !Q_stricmp(token, "ormsMap") ? SPEC_ORMS : SPEC_ORM;
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
@@ -1612,7 +1611,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			// Change shininess to gloss 
 			// FIXME: assumes max exponent of 8192 and min of 1, must change here if altered in lightall_fp.glsl 
 			exponent = CLAMP(exponent, 1.0, 8192.0); 
-			stage->specularScale[3] = log(exponent) / log(8192.0);
+			stage->specularScale[3] = 1.0f - (log(exponent) / log(8192.0));
 		}
 		//
 		// gloss <value> 
@@ -1626,7 +1625,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				continue;
 			}
 
-			stage->specularScale[3] = Com_Clamp( 0.0f, 1.0f, atof( token ) );
+			stage->specularScale[3] = Com_Clamp( 0.0f, 1.0f, 1.0 - atof( token ) );
 		}
 		//
 		// roughness <value>
@@ -1640,7 +1639,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				continue;
 			}
 
-			stage->specularScale[3] = Com_Clamp(0.0f, 1.0f, 1.0 - atof(token));
+			stage->specularScale[3] = Com_Clamp(0.0f, 1.0f, atof(token));
 		}
 		//
 		// parallaxDepth <value>
@@ -1734,7 +1733,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			if ( token[0] == 0 )
 			{
 				// two values, rgb then gloss
-				stage->specularScale[3] = stage->specularScale[1];
+				stage->specularScale[3] = 1.0 - stage->specularScale[1];
 				stage->specularScale[1] =
 				stage->specularScale[2] = stage->specularScale[0];
 				continue;
@@ -1749,7 +1748,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				continue;
 			}
 
-			stage->specularScale[3] = atof( token );
+			stage->specularScale[3] = 1.0 - atof( token );
 		}
 		//
 		// rgbGen
@@ -2068,9 +2067,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	}
 
 	//
-	// build specular and diffuse if albedo and packed textures were found
+	// load packed textures
 	//
-	if (foundBaseColor && buildSpecFromPacked != SPEC_NONE)
+	if (stage->specularType != SPEC_SPECGLOSS && stage->specularType != SPEC_NONE)
 	{
 		int flags = IMGFLAG_NOLIGHTSCALE;
 
@@ -2083,12 +2082,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		if (shader.noTC)
 			flags |= IMGFLAG_NO_COMPRESSION;
 
-		if (shader.isHDRLit == qtrue)
-			flags |= IMGFLAG_SRGB;
-
-		R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, bufferBaseColorTextureName, bufferPackedTextureName, flags, buildSpecFromPacked);
-
-		VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+		R_LoadPackedMaterialImage(stage, bufferPackedTextureName, flags);
 	}
 
 	//
@@ -2099,6 +2093,13 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		const char *filename = { va("%s/lm_", tr.worldName) };
 		if (!Q_strncmp(filename, bufferBaseColorTextureName, sizeof(filename)))
 		{
+			if (shader.isHDRLit)
+			{
+				image_t *hdrImage = R_FindImageFile(bufferBaseColorTextureName, IMGTYPE_COLORALPHA, IMGFLAG_NOLIGHTSCALE | IMGFLAG_HDR_LIGHTMAP | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE);
+				if (hdrImage)
+					stage->bundle[0].image[0] = hdrImage;
+			}
+
 			stage->bundle[0].isLightmap = qtrue;
 			shader.lightmapIndex[0] = LIGHTMAP_EXTERNAL;
 
@@ -2322,13 +2323,13 @@ static void ParseSkyParms( const char **text ) {
 	static const char	*suf[6] = {"rt", "lf", "bk", "ft", "up", "dn"};
 	char		pathname[MAX_QPATH];
 	int			i;
-	int imgFlags = IMGFLAG_MIPMAP | IMGFLAG_PICMIP;
+	int imgFlags = IMGFLAG_MIPMAP | IMGFLAG_PICMIP | IMGFLAG_CLAMPTOEDGE;
 
 	if (shader.noTC)
 		imgFlags |= IMGFLAG_NO_COMPRESSION;
 
 	if (tr.hdrLighting == qtrue)
-		imgFlags |= IMGFLAG_SRGB | IMGFLAG_HDR | IMGFLAG_NOLIGHTSCALE;
+		imgFlags |= IMGFLAG_SRGB | IMGFLAG_HDR | IMGFLAG_NOLIGHTSCALE; // srgb or hdr are requested. If hdr is found, the srgb flag will be ignored
 
 	// outerbox
 	token = COM_ParseExt( text, qfalse );
@@ -2339,7 +2340,7 @@ static void ParseSkyParms( const char **text ) {
 	if ( strcmp( token, "-" ) ) {
 		for (i=0 ; i<6 ; i++) {
 			Com_sprintf( pathname, sizeof(pathname), "%s_%s", token, suf[i] );
-			shader.sky.outerbox[i] = R_FindImageFile( ( char * ) pathname, IMGTYPE_COLORALPHA, imgFlags | IMGFLAG_CLAMPTOEDGE );
+			shader.sky.outerbox[i] = R_FindImageFile( ( char * ) pathname, IMGTYPE_COLORALPHA, imgFlags );
 
 			if ( !shader.sky.outerbox[i] ) {
 				if ( i )
@@ -3115,43 +3116,52 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 		image_t *diffuseImg;
 		if (stage->bundle[TB_SPECULARMAP].image[0])
 		{
-			//ri.Printf(PRINT_ALL, ", specularmap %s", stage->bundle[TB_SPECULARMAP].image[0]->imgName);
+			if (stage->specularType == SPEC_SPECGLOSS)
+				defs |= LIGHTDEF_USE_SPEC_GLOSS;
 		}
-		else if ((lightmap || useLightVector || useLightVertex) && (diffuseImg = stage->bundle[TB_DIFFUSEMAP].image[0]))
+		else if ((lightmap || useLightVector || useLightVertex) && (diffuseImg = stage->bundle[TB_DIFFUSEMAP].image[0]) != NULL)
 		{
-			char specularName[MAX_QPATH];
+			char imageName[MAX_QPATH];
 			image_t *specularImg;
-			int specularFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP)) | IMGFLAG_NOLIGHTSCALE;
+			int specularFlags = diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP);
 
-			COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
-			Q_strcat(specularName, MAX_QPATH, "_specGloss");
+			COM_StripExtension(diffuseImg->imgName, imageName, MAX_QPATH);
+			Q_strcat(imageName, MAX_QPATH, "_specGloss");
 
-			specularImg = R_FindImageFile(specularName, IMGTYPE_COLORALPHA, specularFlags);
+			if (diffuseImg->flags & IMGFLAG_SRGB)
+				specularImg = R_FindImageFile(imageName, IMGTYPE_COLORALPHA, specularFlags);
+			else
+				specularImg = R_BuildSDRSpecGlossImage(stage, imageName, specularFlags);
 
 			if (specularImg)
 			{
 				stage->bundle[TB_SPECULARMAP] = stage->bundle[0];
 				stage->bundle[TB_SPECULARMAP].numImageAnimations = 0;
 				stage->bundle[TB_SPECULARMAP].image[0] = specularImg;
-
-				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+				stage->specularType = SPEC_SPECGLOSS;
+				defs |= LIGHTDEF_USE_SPEC_GLOSS;
+				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 0.0f);
 			}
 			else
 			{
-				COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
-				Q_strcat(specularName, MAX_QPATH, "_rmo");
-				R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_RMO);
-
-				if (stage->bundle[TB_SPECULARMAP].image[0])
-					VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
-				else
+				// Data images shouldn't be lightscaled
+				specularFlags |= IMGFLAG_NOLIGHTSCALE;
+				COM_StripExtension(diffuseImg->imgName, imageName, MAX_QPATH);
+				Q_strcat(imageName, MAX_QPATH, "_rmo");
+				stage->specularType = SPEC_RMO;
+				R_LoadPackedMaterialImage(stage, imageName, specularFlags);
+				
+				if (!stage->bundle[TB_ORMSMAP].image[0])
 				{
-					COM_StripExtension(diffuseImg->imgName, specularName, MAX_QPATH);
-					Q_strcat(specularName, MAX_QPATH, "_orm");
-					R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(stage, diffuseImg->imgName, specularName, specularFlags, SPEC_ORM);
-
-					if (stage->bundle[TB_SPECULARMAP].image[0])
-						VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+					COM_StripExtension(diffuseImg->imgName, imageName, MAX_QPATH);
+					Q_strcat(imageName, MAX_QPATH, "_orm");
+					stage->specularType = SPEC_ORM;
+					R_LoadPackedMaterialImage(stage, imageName, specularFlags);
+					if (!stage->bundle[TB_ORMSMAP].image[0])
+					{
+						stage->specularType = SPEC_SPECGLOSS;
+						defs |= LIGHTDEF_USE_SPEC_GLOSS;
+					}
 				}
 			}
 		}
@@ -4355,7 +4365,6 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 	Com_Memcpy (shader.lightmapIndex, lightmapIndexes, sizeof (shader.lightmapIndex));
 	Com_Memcpy (shader.styles, styles, sizeof (shader.styles));
 	switch (lightmapIndexes[0]) {
-	case LIGHTMAP_NONE:
 	case LIGHTMAP_2D:
 	case LIGHTMAP_WHITEIMAGE:
 	{
@@ -4546,6 +4555,7 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 	//
 	// create the default shading commands
 	//
+	shader.isHDRLit = tr.hdrLighting;
 	if ( shader.lightmapIndex[0] == LIGHTMAP_NONE ) {
 		// dynamic colors at vertexes
 		stages[0].bundle[0].image[0] = image;
@@ -4559,8 +4569,6 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		stages[0].rgbGen = CGEN_EXACT_VERTEX;
 		stages[0].alphaGen = AGEN_SKIP;
 		stages[0].stateBits = GLS_DEFAULT;
-
-		shader.isHDRLit = tr.hdrLighting;
 	} else if ( shader.lightmapIndex[0] == LIGHTMAP_2D ) {
 		// GUI elements
 		stages[0].bundle[0].image[0] = image;
@@ -4570,6 +4578,7 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		stages[0].stateBits = GLS_DEPTHTEST_DISABLE |
 			  GLS_SRCBLEND_SRC_ALPHA |
 			  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+		shader.isHDRLit = qfalse;
 	} else if ( shader.lightmapIndex[0] == LIGHTMAP_WHITEIMAGE ) {
 		// fullbright level
 		stages[0].bundle[0].image[0] = tr.whiteImage;
@@ -4581,6 +4590,7 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		stages[1].active = qtrue;
 		stages[1].rgbGen = CGEN_IDENTITY;
 		stages[1].stateBits |= GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO;
+		shader.isHDRLit = qfalse;
 	} else {
 		// two pass lightmap
 		stages[0].bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[0]];
@@ -4596,8 +4606,6 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, const int *lightmapIndexe
 		stages[1].active = qtrue;
 		stages[1].rgbGen = CGEN_IDENTITY;
 		stages[1].stateBits |= GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO;
-
-		shader.isHDRLit = tr.hdrLighting;
 	}
 
 	sh = FinishShader();

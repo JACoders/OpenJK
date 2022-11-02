@@ -2067,7 +2067,7 @@ static void RB_RenderSunShadows()
 		GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
 	}
 	
-	GL_BindToTMU(tr.sunShadowArrayImage, TB_SHADOWMAP);
+	GL_BindToTMU(tr.sunShadowArrayImage, TB_SHADOWMAPARRAY);
 
 	GLSL_SetUniformMatrix4x4(
 		&tr.shadowmaskShader,
@@ -2119,19 +2119,6 @@ static void RB_RenderSSAO()
 	qglViewport(0, 0, tr.quarterFbo[0]->width, tr.quarterFbo[0]->height);
 	qglScissor(0, 0, tr.quarterFbo[0]->width, tr.quarterFbo[0]->height);
 
-	vec4_t quadVerts[4] = {
-		{-1.0f,  1.0f, 0.0f, 1.0f},
-		{ 1.0f,  1.0f, 0.0f, 1.0f},
-		{ 1.0f, -1.0f, 0.0f, 1.0f},
-		{-1.0f, -1.0f, 0.0f, 1.0f},
-	};
-	vec2_t texCoords[4] = {
-		{0.0f, 1.0f},
-		{1.0f, 1.0f},
-		{1.0f, 0.0f},
-		{0.0f, 0.0f},
-	};
-
 	GL_State( GLS_DEPTHTEST_DISABLE );
 
 	GLSL_BindProgram(&tr.ssaoShader);
@@ -2139,7 +2126,8 @@ static void RB_RenderSSAO()
 	GL_BindToTMU(tr.hdrDepthImage, TB_COLORMAP);
 	GLSL_SetUniformVec4(&tr.ssaoShader, UNIFORM_VIEWINFO, viewInfo);
 
-	RB_InstantQuad2(quadVerts, texCoords);
+	//RB_InstantQuad2(quadVerts, texCoords);
+	RB_InstantTriangle();
 
 	FBO_Bind(tr.quarterFbo[1]);
 
@@ -2152,7 +2140,8 @@ static void RB_RenderSSAO()
 	GL_BindToTMU(tr.hdrDepthImage, TB_LIGHTMAP);
 	GLSL_SetUniformVec4(&tr.depthBlurShader[0], UNIFORM_VIEWINFO, viewInfo);
 
-	RB_InstantQuad2(quadVerts, texCoords);
+	//RB_InstantQuad2(quadVerts, texCoords);
+	RB_InstantTriangle();
 
 	FBO_Bind(tr.screenSsaoFbo);
 
@@ -2165,7 +2154,8 @@ static void RB_RenderSSAO()
 	GL_BindToTMU(tr.hdrDepthImage, TB_LIGHTMAP);
 	GLSL_SetUniformVec4(&tr.depthBlurShader[1], UNIFORM_VIEWINFO, viewInfo);
 
-	RB_InstantQuad2(quadVerts, texCoords);
+	//RB_InstantQuad2(quadVerts, texCoords);
+	RB_InstantTriangle();
 }
 
 static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
@@ -2198,6 +2188,20 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 			GL_DEPTH_COMPONENT24, 0,
 			0, glConfig.vidWidth,
 			glConfig.vidHeight, 0);
+	}
+
+	if (r_ssao->integer && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
+	{
+		// need the depth in a texture we can do GL_LINEAR sampling on, so
+		// copy it to an HDR image
+		FBO_BlitFromTexture(
+			tr.renderDepthImage,
+			nullptr,
+			nullptr,
+			tr.hdrDepthFbo,
+			nullptr,
+			nullptr,
+			nullptr, 0);
 	}
 }
 
@@ -2259,20 +2263,6 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 	}
 
 	RB_RenderDepthOnly(drawSurfs, numDrawSurfs);
-
-	if (r_ssao->integer)
-	{
-		// need the depth in a texture we can do GL_LINEAR sampling on, so
-		// copy it to an HDR image
-		FBO_BlitFromTexture(
-			tr.renderDepthImage,
-			nullptr,
-			nullptr,
-			tr.hdrDepthFbo,
-			nullptr,
-			nullptr,
-			nullptr, 0);
-	}
 
 	if ( r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
 	{

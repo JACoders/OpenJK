@@ -401,7 +401,13 @@ uniform sampler2D u_SpecularMap;
 uniform sampler2D u_ShadowMap;
 #endif
 
+#if defined(USE_SSAO)
+uniform sampler2D u_SSAOMap;
+#endif
+
+#if defined(USE_DSHADOWS)
 uniform sampler2DArrayShadow u_ShadowMap2;
+#endif
 
 #if defined(USE_CUBEMAP)
 uniform samplerCube u_CubeMap;
@@ -915,9 +921,12 @@ void main()
 	N = CalcNormal(var_Normal.xyz, var_Tangent, texCoords);
 	L /= sqrt(sqrLightDist);
 
+  #if defined(USE_SHADOWMAP) || defined(USE_SSAO)
+	vec2 windowTex = gl_FragCoord.xy / r_FBufScale;
+  #endif
+
   #if defined(USE_SHADOWMAP)
-	vec2 shadowTex = gl_FragCoord.xy / r_FBufScale;
-	float shadowValue = texture(u_ShadowMap, shadowTex).r;
+	float shadowValue = texture(u_ShadowMap, windowTex).r;
 
 	// surfaces not facing the light are always shadowed
 	vec3 primaryLightDir = normalize(u_PrimaryLightOrigin.xyz);
@@ -951,12 +960,29 @@ void main()
 	// We dont compute it because cloth diffuse is dependent on NL
 	// So we just skip this. Reconsider this again when more BRDFS are added
 
+	float AO = 1.0;
+	#if defined (USE_SSAO)
+	AO = texture(u_SSAOMap, windowTex).r;
+	#endif
+
 	vec4 specular = vec4(1.0);
+	float roughness = 0.99;
   #if defined(USE_SPECULARMAP)
+  #if !defined(USE_SPECGLOSS)
+	vec4 ORMS = mix(vec4(1.0, 1.0, 0.0, 0.5), texture(u_SpecularMap, texCoords), u_EnableTextures.z);
+
+	specular.rgb = mix(vec3(0.08) * u_SpecularScale.w, diffuse.rgb, ORMS.z) * ORMS.w;
+	diffuse.rgb *= vec3(1.0 - ORMS.z);
+	
+	roughness = mix(0.01, 1.0, ORMS.y);
+	AO = min(ORMS.x, AO);
+  #else
 	specular = texture(u_SpecularMap, texCoords);
+	specular.rgb *= u_SpecularScale.xyz;
+	roughness = mix(1.0, 0.01, specular.a * (1.0 - u_SpecularScale.w));
   #endif
-	specular *= u_SpecularScale;
-	float roughness = mix(1.0, 0.01, specular.a);
+  #endif
+	ambientColor *= AO;
 
 	vec3  H  = normalize(L + E);
 	float NE = abs(dot(N, E)) + 1e-5;
@@ -1002,8 +1028,7 @@ void main()
   #endif
 	
 	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, var_Normal.xyz);
-	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb);
-
+	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb * AO);
 #else
 	lightColor = var_Color.rgb;
   #if defined(USE_LIGHTMAP) 

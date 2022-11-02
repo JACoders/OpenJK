@@ -53,6 +53,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_NormalMap",   GLSL_INT, 1 },
 	{ "u_DeluxeMap",   GLSL_INT, 1 },
 	{ "u_SpecularMap", GLSL_INT, 1 },
+	{ "u_SSAOMap",     GLSL_INT, 1 },
 
 	{ "u_TextureMap", GLSL_INT, 1 },
 	{ "u_LevelsMap",  GLSL_INT, 1 },
@@ -64,7 +65,6 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_ShadowMap",  GLSL_INT, 1 },
 	{ "u_ShadowMap2", GLSL_INT, 1 },
-	{ "u_ShadowMap3", GLSL_INT, 1 },
 
 	{ "u_ShadowMvp",  GLSL_MAT4x4, 1 },
 	{ "u_ShadowMvp2", GLSL_MAT4x4, 1 },
@@ -361,6 +361,9 @@ static size_t GLSL_GetShaderHeader(
 		Q_strcat(dest, size, va("#define CUBEMAP_RESOLUTION float(%i)\n", CUBE_MAP_SIZE));
 		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_ROUGHNESS_MIPS));
 	}
+
+	if (r_ssao->integer)
+		Q_strcat(dest, size, "#define USE_SSAO\n");
 
 	if (r_deluxeSpecular->value > 0.000001f)
 	{
@@ -1685,7 +1688,11 @@ static int GLSL_LoadGPUProgramLightAll(
 			}
 
 			if (r_specularMapping->integer)
+			{
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_SPECULARMAP\n");
+				if (i & LIGHTDEF_USE_SPEC_GLOSS)
+					Q_strcat(extradefines, sizeof(extradefines), "#define USE_SPECGLOSS\n");
+			}
 
 			if (r_cubeMapping->integer)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_CUBEMAP\n");
@@ -1747,9 +1754,10 @@ static int GLSL_LoadGPUProgramLightAll(
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_DELUXEMAP,   TB_DELUXEMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SPECULARMAP, TB_SPECULARMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP,   TB_SHADOWMAP);
-		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP2,  TB_SHADOWMAP2);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_CUBEMAP,     TB_CUBEMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_ENVBRDFMAP,  TB_ENVBRDFMAP);
+		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP2,  TB_SHADOWMAPARRAY);
+		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SSAOMAP,     TB_SSAOMAP);
 		qglUseProgram(0);
 
 		GLSL_FinishGPUShader(&tr.lightallShader[i]);
@@ -2054,9 +2062,7 @@ static int GLSL_LoadGPUProgramShadowMask(
 
 	qglUseProgram(tr.shadowmaskShader.program);
 	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SCREENDEPTHMAP, TB_COLORMAP);
-	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP,  TB_SHADOWMAP);
-	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP2, TB_SHADOWMAP2);
-	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP3, TB_SHADOWMAP3);
+	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP, TB_SHADOWMAPARRAY);
 	qglUseProgram(0);
 
 	GLSL_FinishGPUShader(&tr.shadowmaskShader);

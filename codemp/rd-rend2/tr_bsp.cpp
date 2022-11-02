@@ -3952,89 +3952,29 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	}
 
 	// load into heap
-	int startTime, endTime;
-	startTime = ri.Milliseconds();
 	R_LoadEntities(worldData, &header->lumps[LUMP_ENTITIES]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadEntities in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadShaders(worldData, &header->lumps[LUMP_SHADERS]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadShaders in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadLightmaps(
 		worldData,
 		&header->lumps[LUMP_LIGHTMAPS],
 		&header->lumps[LUMP_SURFACES]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadLightmaps in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadPlanes(worldData, &header->lumps[LUMP_PLANES]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadPlanes in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadFogs(
 		worldData,
 		&header->lumps[LUMP_FOGS],
 		&header->lumps[LUMP_BRUSHES],
 		&header->lumps[LUMP_BRUSHSIDES]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadFogs in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadSurfaces(
 		worldData,
 		&header->lumps[LUMP_SURFACES],
 		&header->lumps[LUMP_DRAWVERTS],
 		&header->lumps[LUMP_DRAWINDEXES]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadSurfaces in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadMarksurfaces(worldData, &header->lumps[LUMP_LEAFSURFACES]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadMarksurfaces in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadNodesAndLeafs(worldData, &header->lumps[LUMP_NODES], &header->lumps[LUMP_LEAFS]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadNodesAndLeafs in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadSubmodels(worldData, worldIndex, &header->lumps[LUMP_MODELS]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadSubmodels in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadVisibility(worldData, &header->lumps[LUMP_VISIBILITY]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadVisibility in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadLightGrid(worldData, &header->lumps[LUMP_LIGHTGRID]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadLightGrid in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
-
-	startTime = ri.Milliseconds();
 	R_LoadLightGridArray(worldData, &header->lumps[LUMP_LIGHTARRAY]);
-	endTime = ri.Milliseconds();
-	ri.Printf(PRINT_ALL, "R_LoadLightGridArray in %5.2f seconds\n",
-		(endTime - startTime) / 1000.0f);
 
 	R_GenerateSurfaceSprites(worldData);
 	

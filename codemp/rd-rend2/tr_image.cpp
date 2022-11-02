@@ -1364,6 +1364,9 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 	int			outWidth, outHeight;
 	byte		*temp;
 
+	if ( r_simpleMipMaps->integer )
+		return;
+
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
 	temp = (byte *)ri.Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
@@ -1411,45 +1414,18 @@ static void R_MipMap (byte *in, int width, int height) {
 	byte	*out;
 	int		row;
 
-	if ( !r_simpleMipMaps->integer ) {
+	if ( !r_simpleMipMaps->integer )
 		R_MipMap2( in, width, height );
-		return;
-	}
 
-	if ( width == 1 && height == 1 ) {
-		return;
-	}
-
-	row = width * 4;
-	out = in;
-	width >>= 1;
-	height >>= 1;
-
-	if ( width == 0 || height == 0 ) {
-		width += height;	// get largest
-		for (i=0 ; i<width ; i++, out+=4, in+=8 ) {
-			out[0] = ( in[0] + in[4] )>>1;
-			out[1] = ( in[1] + in[5] )>>1;
-			out[2] = ( in[2] + in[6] )>>1;
-			out[3] = ( in[3] + in[7] )>>1;
-		}
-		return;
-	}
-
-	for (i=0 ; i<height ; i++, in+=row) {
-		for (j=0 ; j<width ; j++, out+=4, in+=8) {
-			out[0] = (in[0] + in[4] + in[row+0] + in[row+4])>>2;
-			out[1] = (in[1] + in[5] + in[row+1] + in[row+5])>>2;
-			out[2] = (in[2] + in[6] + in[row+2] + in[row+6])>>2;
-			out[3] = (in[3] + in[7] + in[row+3] + in[row+7])>>2;
-		}
-	}
 }
 
 
 static void R_MipMapLuminanceAlpha (const byte *in, byte *out, int width, int height)
 {
 	int  i, j, row;
+
+	if ( r_simpleMipMaps->integer )
+		return;
 
 	if ( width == 1 && height == 1 ) {
 		return;
@@ -1488,6 +1464,9 @@ static void R_MipMapNormalHeight (const byte *in, byte *out, int width, int heig
 	int		row;
 	int sx = swizzle ? 3 : 0;
 	int sa = swizzle ? 0 : 3;
+
+	if ( r_simpleMipMaps->integer )
+		return;
 
 	if ( width == 1 && height == 1 ) {
 		return;
@@ -2034,7 +2013,7 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 		}
 	}
 
-	if ((flags & IMGFLAG_MIPMAP) &&
+	if ((flags & IMGFLAG_MIPMAP) && (!r_simpleMipMaps->integer) &&
 		(data != NULL || !ShouldUseImmutableTextures(flags, internalFormat) ))
 	{
 		// Don't need to generate mipmaps if we are generating an immutable texture and
@@ -2189,7 +2168,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, int fla
 		}
 		Com_Memcpy (scaledBuffer, data, width*height*4);
 	}
-	else
+	else if ( !r_simpleMipMaps->integer )
 	{
 		// use the normal mip-mapping function to go down from here
 		while ( width > scaled_width || height > scaled_height ) {
@@ -2420,9 +2399,16 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 		qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		int format = GL_BGRA;
-		if (internalFormat == GL_DEPTH_COMPONENT24) 
+		switch (internalFormat)
 		{
+		case GL_DEPTH_COMPONENT:
+		case GL_DEPTH_COMPONENT16:
+		case GL_DEPTH_COMPONENT24:
+		case GL_DEPTH_COMPONENT32:
 			format = GL_DEPTH_COMPONENT;
+			break;
+		default:
+			break;
 		}
 
 		if (image->flags & IMGFLAG_MIPMAP)
@@ -2484,6 +2470,9 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapClampMode );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapClampMode );
+
+		if (image->flags & IMGFLAG_MIPMAP && r_simpleMipMaps->integer)
+			qglGenerateMipmap(GL_TEXTURE_2D);
 	}
 
 	GL_SelectTexture( 0 );
@@ -2544,6 +2533,7 @@ image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height
 		break;
 	}
 
+	GL_SelectTexture(0);
 	GL_Bind(image);
 	//qglTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers);
 	qglTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers, 0, format, GL_UNSIGNED_BYTE, NULL);
@@ -2637,7 +2627,7 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 		}
 		Com_Memcpy (scaledBuffer, data, width*height*4);
 	}
-	else
+	else if ( !r_simpleMipMaps->integer )
 	{
 		// use the normal mip-mapping function to go down from here
 		while ( width > scaled_width || height > scaled_height ) {
@@ -2663,6 +2653,10 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 			}
 		}
 		Com_Memcpy( scaledBuffer, data, width * height * 4 );
+	}
+	else if ( !r_simpleMipMaps->integer )
+	{
+		qglGenerateMipmap(GL_TEXTURE_2D);
 	}
 
 	if (!(image->flags & IMGFLAG_NOLIGHTSCALE))
@@ -2703,155 +2697,136 @@ image_t* R_GetLoadedImage(const char *name, int flags) {
 	return NULL;
 }
 
-void R_CreateDiffuseAndSpecMapsFromBaseColorAndRMO(shaderStage_t *stage, const char *name, const char *rmoName, int flags, int type)
+void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName, int flags)
 {
-	char	diffuseName[MAX_QPATH];
-	char	specularName[MAX_QPATH];
-	int		width, height, rmoWidth, rmoHeight;
-	byte	*rmoPic, *baseColorPic, *specGlossPic, *diffusePic;
+	char	packedName[MAX_QPATH];
+	int		packedWidth, packedHeight;
+	byte	*packedPic;
 	image_t *image;
 
-	if (!name) {
+	if (!packedImageName) {
 		return;
 	}
 
-	COM_StripExtension(name, diffuseName, sizeof(diffuseName));
-	Q_strcat(diffuseName, sizeof(diffuseName), "_diffuse");
-
-	COM_StripExtension(name, specularName, sizeof(specularName));
-	Q_strcat(specularName, sizeof(specularName), "_specGloss");
+	COM_StripExtension(packedImageName, packedName, sizeof(packedName));
+	Q_strcat(packedName, sizeof(packedName), "_ORMS");
 
 	//
-	// see if the images are already loaded
+	// see if the image is already loaded
 	//
-	image = R_GetLoadedImage(diffuseName, flags);
+	image = R_GetLoadedImage(packedName, flags);
 	if (image != NULL)
 	{
-		stage->bundle[TB_COLORMAP].image[0] = image;
-
-		image = R_GetLoadedImage(specularName, flags);
-		if (image != NULL)
-		{
-			stage->bundle[TB_SPECULARMAP].image[0] = R_GetLoadedImage(specularName, flags);
-			ri.Printf(PRINT_DEVELOPER, "WARNING: reused Diffuse and Specular images for %s\n", name);
-			return;
-		}
-	}
-
-	//
-	// load the pics from disk
-	//
-	R_LoadImage(name, &baseColorPic, &width, &height);
-	if (baseColorPic == NULL) {
+		stage->bundle[TB_ORMSMAP].image[0] = image;
 		return;
 	}
 
-	R_LoadImage(rmoName, &rmoPic, &rmoWidth, &rmoHeight);
-	if (rmoPic == NULL) {
-		Z_Free(baseColorPic);
+	R_LoadImage(packedImageName, &packedPic, &packedWidth, &packedHeight);
+	if (packedPic == NULL) {
 		return;
 	}
 
-	if (width != rmoWidth || height != rmoHeight)
-	{
-		ri.Printf(PRINT_ALL, "WARNING: Can't build Specular Map for %s (different texture sizes for baseColor and rmo)\n", name);
-		Z_Free(baseColorPic);
-		Z_Free(rmoPic);
-		return;
-	}
-
-	specGlossPic = (byte *)Z_Malloc(width * height * 4, TAG_TEMP_WORKSPACE, qfalse);
-	diffusePic = (byte *)Z_Malloc(width * height * 4, TAG_TEMP_WORKSPACE, qfalse);
-
-	float baseSpecular;
-
-	switch (type)
+	switch (stage->specularType)
 	{
 	case SPEC_RMOS:
 	case SPEC_MOSR:
-		baseSpecular = 0.08f;
+	case SPEC_ORMS:
+		stage->specularScale[3] = 1.0f;	// Don't scale base specular
 		break;
 	default:
-		baseSpecular = 0.04f;
+		stage->specularScale[3] = 0.5f; // Basespecular is assumed to be 0.04 and shader assumes 0.08
 		break;
 	}
 
-	for (int i = 0; i < width * height * 4; i += 4)
+	// Don't scale occlusion, roughness and metalness 
+	stage->specularScale[0] =
+	stage->specularScale[1] =
+	stage->specularScale[2] = 1.0f;
+	
+	GLint swizzle[4] = { GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA };
+
+	switch (stage->specularType)
 	{
-		const float aoStrength = 0.5f;
-		float roughness, gloss, metalness, specular_variance, ao;
-
-		switch (type)
-		{
-		case SPEC_RMO:
-		case SPEC_RMOS:
-			roughness = ByteToFloat(rmoPic[i + 0]);
-			gloss = (1.0 - roughness) + (0.04 * roughness);
-			metalness = ByteToFloat(rmoPic[i + 1]);
-			ao = ByteToFloat(rmoPic[i + 2]);
-			ao += (1.0 - ao) * (1.0 - aoStrength);
-			specular_variance = (type == SPEC_RMOS) ? ByteToFloat(rmoPic[i + 3]) : 1.0f;
-			break;
-		case SPEC_MOXR:
-		case SPEC_MOSR:
-			metalness = ByteToFloat(rmoPic[i + 0]);
-			ao = ByteToFloat(rmoPic[i + 1]);
-			ao += (1.0 - ao) * (1.0 - aoStrength);
-			specular_variance = (type == SPEC_MOSR) ? ByteToFloat(rmoPic[i + 2]) : 1.0f;
-			roughness = ByteToFloat(rmoPic[i + 3]);
-			gloss = (1.0 - roughness) + (0.04 * roughness);
-			break;
-		case SPEC_ORM:
-		case SPEC_ORMS:
-			ao = ByteToFloat(rmoPic[i + 0]);
-			roughness = ByteToFloat(rmoPic[i + 1]);
-			gloss = (1.0 - roughness) + (0.04 * roughness);
-			metalness = ByteToFloat(rmoPic[i + 2]);
-			specular_variance = (type == SPEC_ORMS) ? ByteToFloat(rmoPic[i + 3]) : 1.0f;
-			break;
-		// should never reach this
-		default:
-			specular_variance = 1.0f;
-			metalness = 0.0f;
-			gloss = 0.02f;
-			ao = 1.0f;
-			break;
-		}
-
-		vec4_t baseColor;
-		// remove gamma correction because we want to work in linear space
-		baseColor[0] = sRGBtoRGB(ByteToFloat(baseColorPic[i + 0]));
-		baseColor[1] = sRGBtoRGB(ByteToFloat(baseColorPic[i + 1]));
-		baseColor[2] = sRGBtoRGB(ByteToFloat(baseColorPic[i + 2]));
-		// don't remove gamma correction in alpha because this is data, not color
-		baseColor[3] = ByteToFloat(baseColorPic[i + 3]);
-
-		specular_variance *= baseSpecular;
-
-		// diffuse Color = baseColor * (1.0 - metalness) 
-		// also gamma correct again
-		// FIXME: AO should be handled in shader because it should only affect the ambient lighting
-		diffusePic[i + 0] = FloatToByte(RGBtosRGB(baseColor[0] * ao * (1.0f - metalness)));
-		diffusePic[i + 1] = FloatToByte(RGBtosRGB(baseColor[1] * ao * (1.0f - metalness)));
-		diffusePic[i + 2] = FloatToByte(RGBtosRGB(baseColor[2] * ao * (1.0f - metalness)));
-		diffusePic[i + 3] = FloatToByte(baseColor[3]);
-
-		// specular Color = mix(baseSpecular, baseColor, metalness)
-		// also gamma correct again
-		specGlossPic[i + 0] = FloatToByte(RGBtosRGB(specular_variance * (1.0f - metalness) + baseColor[0] * metalness));
-		specGlossPic[i + 1] = FloatToByte(RGBtosRGB(specular_variance * (1.0f - metalness) + baseColor[1] * metalness));
-		specGlossPic[i + 2] = FloatToByte(RGBtosRGB(specular_variance * (1.0f - metalness) + baseColor[2] * metalness));
-		// don't remove gamma correction in alpha because this is data, not color
-		specGlossPic[i + 3] = FloatToByte(gloss);
+	case SPEC_RMO:
+		swizzle[0] = GL_BLUE;
+		swizzle[1] = GL_RED;
+		swizzle[2] = GL_GREEN;
+		swizzle[3] = GL_ONE;
+		break;
+	case SPEC_RMOS:
+		swizzle[0] = GL_BLUE;
+		swizzle[1] = GL_RED;
+		swizzle[2] = GL_GREEN;
+		swizzle[3] = GL_ALPHA;
+		break;
+	case SPEC_MOXR:
+		swizzle[0] = GL_GREEN;
+		swizzle[1] = GL_ALPHA;
+		swizzle[2] = GL_RED;
+		swizzle[3] = GL_ONE;
+		break;
+	case SPEC_MOSR:
+		swizzle[0] = GL_GREEN;
+		swizzle[1] = GL_ALPHA;
+		swizzle[2] = GL_RED;
+		swizzle[3] = GL_BLUE;
+		break;
+	case SPEC_ORM:
+	case SPEC_ORMS:
+	default:
+		break;
 	}
 
-	stage->bundle[TB_COLORMAP].image[0] = R_CreateImage(diffuseName, diffusePic, width, height, IMGTYPE_COLORALPHA, flags, 0);
-	stage->bundle[TB_SPECULARMAP].image[0] = R_CreateImage(specularName, specGlossPic, width, height, IMGTYPE_COLORALPHA, flags, 0);
+	stage->bundle[TB_ORMSMAP].image[0] = R_CreateImage(packedName, packedPic, packedWidth, packedHeight, IMGTYPE_COLORALPHA, flags & ~IMGFLAG_SRGB, 0);
+	glBindTexture(GL_TEXTURE_2D, stage->bundle[TB_ORMSMAP].image[0]->texnum);
+	glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+	Z_Free(packedPic);
+}
 
-	Z_Free(diffusePic);
-	Z_Free(specGlossPic);
-	Z_Free(baseColorPic);
-	Z_Free(rmoPic);
+image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageName, int flags)
+{
+	char	sdrName[MAX_QPATH];
+	int		specWidth, specHeight;
+	byte	*specPic;
+	image_t *image;
+
+	if (!specImageName)
+		return NULL;
+
+	COM_StripExtension(specImageName, sdrName, sizeof(sdrName));
+	Q_strcat(sdrName, sizeof(sdrName), "_SDR");
+
+	//
+	// see if the image is already loaded
+	//
+	image = R_GetLoadedImage(sdrName, flags);
+	if (image != NULL)
+		return image;
+
+	R_LoadImage(specImageName, &specPic, &specWidth, &specHeight);
+	if (specPic == NULL)
+		return NULL;
+
+	byte *sdrSpecPic = (byte *)Z_Malloc(specWidth * specHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
+	vec3_t currentColor;
+	for (int i = 0; i < specWidth * specHeight * 4; i += 4)
+	{
+		currentColor[0] = ByteToFloat(specPic[i + 0]);
+		currentColor[1] = ByteToFloat(specPic[i + 1]);
+		currentColor[2] = ByteToFloat(specPic[i + 2]);
+
+		float ratio = 
+			(sRGBtoRGB(currentColor[0]) + sRGBtoRGB(currentColor[1]) + sRGBtoRGB(currentColor[1])) /
+			(currentColor[0] + currentColor[1] + currentColor[2]);
+
+		sdrSpecPic[i + 0] = FloatToByte(currentColor[0] * ratio);
+		sdrSpecPic[i + 1] = FloatToByte(currentColor[1] * ratio);
+		sdrSpecPic[i + 2] = FloatToByte(currentColor[2] * ratio);
+		sdrSpecPic[i + 3] = specPic[i + 3];
+	}
+	Z_Free(specPic);
+
+	return R_CreateImage(sdrName, sdrSpecPic, specWidth, specHeight, IMGTYPE_COLORALPHA, flags & ~IMGFLAG_SRGB, 0);
 }
 
 static void R_CreateNormalMap ( const char *name, byte *pic, int width, int height, int flags )
@@ -2991,7 +2966,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 	//
 	// load the pic from disk
 	//
-	if (r_hdr->integer && (flags & IMGFLAG_HDR))
+	if (r_hdr->integer && (flags & IMGFLAG_HDR || flags & IMGFLAG_HDR_LIGHTMAP))
 	{
 		char filename[MAX_QPATH];
 		Com_sprintf(filename, sizeof(filename), "%s.hdr", name);
@@ -3003,16 +2978,19 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		{
 			R_LoadImage(name, &pic, &width, &height);
 		}
-		else
+		else 
 		{
 			pic = (byte *)Z_Malloc(width*height*4*2, TAG_TEMP_WORKSPACE, qfalse);
 			for (int i = 0; i < width*height; i++)
 			{
 				vec4_t color;
 				memcpy(color, &floatBuffer[i*3], 12);
-				color[0] = color[0] / M_PI;
-				color[1] = color[1] / M_PI;
-				color[2] = color[2] / M_PI;
+				if (flags & IMGFLAG_HDR_LIGHTMAP)
+				{
+					color[0] = color[0] / M_PI;
+					color[1] = color[1] / M_PI;
+					color[2] = color[2] / M_PI;
+				}
 				color[3] = 1.0f;
 				ColorToRGBA16F2(color, (uint16_t *)(&pic[i * 8]));
 			}

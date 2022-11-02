@@ -1637,6 +1637,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					{
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SPECULARMAP);
 					}
+
+					if (r_ssao->integer)
+						samplerBindingsWriter.AddStaticImage(tr.screenSsaoImage, TB_SSAOMAP);
 				}
 
 				if ( enableCubeMaps )
@@ -1683,7 +1686,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, tess.dlightBits);
 			if (r_dlightMode->integer > 1)
-				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAP2);
+				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAPARRAY);
 		}
 		else
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, 0);
