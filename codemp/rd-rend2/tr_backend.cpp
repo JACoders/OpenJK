@@ -3346,11 +3346,14 @@ static const void *RB_DrawSurfs(const void *data) {
 	// clear the z buffer, set the modelview, etc
 	RB_BeginDrawingView();
 
-	RB_UpdateConstants(cmd->drawSurfs, cmd->numDrawSurfs);
+	if (cmd->numDrawSurfs > 0)
+	{
+		RB_UpdateConstants(cmd->drawSurfs, cmd->numDrawSurfs);
 
-	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
+		RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
 
-	RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);
+		RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);
+	}
 
 	return (const void *)(cmd + 1);
 }
