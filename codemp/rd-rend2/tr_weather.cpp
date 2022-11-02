@@ -286,7 +286,7 @@ namespace
 		vec3_t envForce = {
 			tr.weatherSystem->windDirection[0] * frictionInverse,
 			tr.weatherSystem->windDirection[1] * frictionInverse,
-			-ws->gravity
+			-ws->gravity * frictionInverse
 		};
 		vec4_t randomOffset = {
 			Q_flrand(-4.0f, 4.0f),
