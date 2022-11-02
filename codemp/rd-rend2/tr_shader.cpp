@@ -1348,6 +1348,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			if (!Q_stricmp(token, "$whiteimage"))
 			{
 				stage->bundle[TB_SPECULARMAP].image[0] = tr.whiteImage;
+				stage->specularType = SPEC_SPECGLOSS;
+				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 0.0f);
 				continue;
 			}
 
