@@ -76,10 +76,6 @@ In JA, we define these in the tr_local.h, which is much more logical
 =====================================================
 */
 
-extern cvar_t	*r_flareSize;
-extern cvar_t	*r_flareFade;
-extern cvar_t	*r_flareCoeff;
-
 extern cvar_t	*r_verbose;
 extern cvar_t	*r_ignore;
 
@@ -2605,12 +2601,6 @@ extern window_t		window;
 //
 // cvars
 //
-extern cvar_t	*r_flareSize;
-extern cvar_t	*r_flareFade;
-// coefficient for the flare intensity falloff function.
-#define FLARE_STDCOEFF "80"
-extern cvar_t	*r_flareCoeff;
-
 extern cvar_t	*r_railWidth;
 extern cvar_t	*r_railCoreWidth;
 extern cvar_t	*r_railSegmentLength;

@@ -77,27 +77,13 @@ typedef struct flare_s {
 
 	vec3_t		origin;
 	vec3_t		color;
+	vec3_t		normal;
 } flare_t;
 
 #define		MAX_FLARES		128
 
 flare_t		r_flareStructs[MAX_FLARES];
 flare_t		*r_activeFlares, *r_inactiveFlares;
-
-int flareCoeff;
-
-/*
-==================
-R_SetFlareCoeff
-==================
-*/
-static void R_SetFlareCoeff( void ) {
-
-	if(r_flareCoeff->value == 0.0f)
-		flareCoeff = atof(FLARE_STDCOEFF);
-	else
-		flareCoeff = r_flareCoeff->value;
-}
 
 /*
 ==================
@@ -115,8 +101,6 @@ void R_ClearFlares( void ) {
 		r_flareStructs[i].next = r_inactiveFlares;
 		r_inactiveFlares = &r_flareStructs[i];
 	}
-
-	R_SetFlareCoeff();
 }
 
 
@@ -141,10 +125,6 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 		VectorSubtract( backEnd.viewParms.ori.origin, point, local );
 		VectorNormalizeFast(local);
 		d = DotProduct(local, normal);
-
-	//	// If the viewer is behind the flare don't add it.
-	//	if(d < 0)
-	//		return;
 	}
 
 	// if the point is off the screen, don't bother adding it
@@ -201,6 +181,7 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 
 	VectorCopy(point, f->origin);
 	VectorCopy( color, f->color );
+	VectorCopy( normal, f->normal);
 
 	// fade the intensity of the flare down as the
 	// light surface turns away from the viewer
@@ -308,7 +289,7 @@ void RB_TestFlare( flare_t *f ) {
 			f->visible = qtrue;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
-		fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * r_flareFade->value;
+		fade = ( ( backEnd.refdef.time - f->fadeTime ) / 500.0f );
 	} else {
 		// Dont fade out when flare is occluded. Will result in the ability to see 
 		// flares through surfaces on high movement speeds
@@ -338,143 +319,56 @@ RB_RenderFlare
 */
 void RB_RenderFlare( flare_t *f ) {
 	float			size;
-	vec3_t			color;
-	int				iColor[3];
+	vec4_t			color;
 	float distance, intensity, factor;
-	byte fogFactors[3] = {255, 255, 255};
 
 	backEnd.pc.c_flareRenders++;
 
-	// We don't want too big values anyways when dividing by distance.
-	if(f->eyeZ > -1.0f)
-		distance = 1.0f;
-	else
-		distance = -f->eyeZ;
-
-	// calculate the flare size..
-	size = backEnd.viewParms.viewportWidth * ( r_flareSize->value/640.0f + 8 / distance );
-
-/*
- * This is an alternative to intensity scaling. It changes the size of the flare on screen instead
- * with growing distance. See in the description at the top why this is not the way to go.
-	// size will change ~ 1/r.
-	size = backEnd.viewParms.viewportWidth * (r_flareSize->value / (distance * -2.0f));
-*/
-
-/*
- * As flare sizes stay nearly constant with increasing distance we must decrease the intensity
- * to achieve a reasonable visual result. The intensity is ~ (size^2 / distance^2) which can be
- * got by considering the ratio of
- * (flaresurface on screen) : (Surface of sphere defined by flare origin and distance from flare)
- * An important requirement is:
- * intensity <= 1 for all distances.
- *
- * The formula used here to compute the intensity is as follows:
- * intensity = flareCoeff * size^2 / (distance + size*sqrt(flareCoeff))^2
- * As you can see, the intensity will have a max. of 1 when the distance is 0.
- * The coefficient flareCoeff will determine the falloff speed with increasing distance.
- */
-
-	factor = distance + size * sqrt((double)flareCoeff);
-	
-	intensity = flareCoeff * size * size / (factor * factor);
-
-	VectorScale(f->color, f->drawIntensity * intensity, color);
-
-	// Calculations for fogging
-	if(tr.world && f->fogNum > 0 && f->fogNum < tr.world->numfogs)
-	{
-		tess.numVertexes = 1;
-		VectorCopy(f->origin, tess.xyz[0]);
-		tess.fogNum = f->fogNum;
-	
-		RB_CalcModulateColorsByFog(fogFactors);
-		
-		// We don't need to render the flare if colors are 0 anyways.
-		if(!(fogFactors[0] || fogFactors[1] || fogFactors[2]))
-			return;
-	}
-
 	srfFlare_t *flare = (srfFlare_t *)f->surface;
-	float alpha = 1.0f;
-	if (flare->portal_ranged)
-	{
-		float len = distance;
-		len /= flare->shader->portalRange;
 
-		if (len < 0)
-		{
-			alpha = 0;
-		}
-		else if (len > 1)
-		{
-			alpha = 0xff;
-		}
-		else
-		{
-			alpha = len * 0xff;
-		}
-		alpha /= 255.0f;
-	}
-
-	iColor[0] = (color[0] * fogFactors[0] * alpha) / 255.0f;
-	iColor[1] = (color[1] * fogFactors[1] * alpha) / 255.0f;
-	iColor[2] = (color[2] * fogFactors[2] * alpha) / 255.0f;
-
-	backEnd.currentEntity = &backEnd.entityFlare;
+	backEnd.currentEntity = &tr.worldEntity;
 	RB_BeginSurface( flare->shader, f->fogNum, 0 );
 
-	// FIXME: use quadstamp?
-	tess.xyz[tess.numVertexes][0] = f->windowX - size;
-	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY - size;
-	tess.xyz[tess.numVertexes][2] = 0.5f;
-	tess.texCoords[tess.numVertexes][0][0] = 0;
-	tess.texCoords[tess.numVertexes][0][1] = 0;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0];
-	tess.vertexColors[tess.numVertexes][1] = iColor[1];
-	tess.vertexColors[tess.numVertexes][2] = iColor[2];
-	tess.vertexColors[tess.numVertexes][3] = alpha;
-	tess.numVertexes++;
+	vec3_t		dir;
+	vec3_t		left, up;
+	vec3_t		origin;
+	float		d, dist;
 
-	tess.xyz[tess.numVertexes][0] = f->windowX - size;
-	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY + size;
-	tess.xyz[tess.numVertexes][2] = 0.5f;
-	tess.texCoords[tess.numVertexes][0][0] = 0;
-	tess.texCoords[tess.numVertexes][0][1] = 1;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0];
-	tess.vertexColors[tess.numVertexes][1] = iColor[1];
-	tess.vertexColors[tess.numVertexes][2] = iColor[2];
-	tess.vertexColors[tess.numVertexes][3] = alpha;
-	tess.numVertexes++;
+	// calculate the xyz locations for the four corners
+	VectorMA(f->origin, 3, f->normal, origin);
+	float* snormal = f->normal;
 
-	tess.xyz[tess.numVertexes][0] = f->windowX + size;
-	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY + size;
-	tess.xyz[tess.numVertexes][2] = 0.5f;
-	tess.texCoords[tess.numVertexes][0][0] = 1;
-	tess.texCoords[tess.numVertexes][0][1] = 1;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0];
-	tess.vertexColors[tess.numVertexes][1] = iColor[1];
-	tess.vertexColors[tess.numVertexes][2] = iColor[2];
-	tess.vertexColors[tess.numVertexes][3] = alpha;
-	tess.numVertexes++;
+	VectorSubtract(origin, backEnd.viewParms.ori.origin, dir);
+	dist = VectorNormalize(dir);
 
-	tess.xyz[tess.numVertexes][0] = f->windowX + size;
-	tess.xyz[tess.numVertexes][1] = backEnd.viewParms.viewportHeight - f->windowY - size;
-	tess.xyz[tess.numVertexes][2] = 0.5f;
-	tess.texCoords[tess.numVertexes][0][0] = 1;
-	tess.texCoords[tess.numVertexes][0][1] = 0;
-	tess.vertexColors[tess.numVertexes][0] = iColor[0];
-	tess.vertexColors[tess.numVertexes][1] = iColor[1];
-	tess.vertexColors[tess.numVertexes][2] = iColor[2];
-	tess.vertexColors[tess.numVertexes][3] = alpha;
-	tess.numVertexes++;
+	d = -DotProduct(dir, snormal);
+	if (d < 0) {
+		d = -d;
+	}
 
-	tess.indexes[tess.numIndexes++] = 0;
-	tess.indexes[tess.numIndexes++] = 1;
-	tess.indexes[tess.numIndexes++] = 2;
-	tess.indexes[tess.numIndexes++] = 0;
-	tess.indexes[tess.numIndexes++] = 2;
-	tess.indexes[tess.numIndexes++] = 3;
+	// fade the intensity of the flare down as the
+	// light surface turns away from the viewer
+	color[0] = d;
+	color[1] = d;
+	color[2] = d;
+	color[3] = 1.0f;	//only gets used if the shader has cgen exact_vertex!
+
+	float radius = tess.shader->portalRange ? tess.shader->portalRange : 30;
+	if (dist < 512.0f)
+	{
+		radius = radius * dist / 512.0f;
+	}
+	if (radius < 5.0f)
+	{
+		radius = 5.0f;
+	}
+	VectorScale(backEnd.viewParms.ori.axis[1], radius, left);
+	VectorScale(backEnd.viewParms.ori.axis[2], radius, up);
+	if (backEnd.viewParms.isMirror) {
+		VectorSubtract(vec3_origin, left, left);
+	}
+
+	RB_AddQuadStamp(origin, left, up, color);
 
 	RB_EndSurface();
 }
@@ -508,12 +402,6 @@ void RB_RenderFlares (void) {
 	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
 		(backEnd.viewParms.flags & VPF_NOPOSTPROCESS))
 		return;
-
-	if(r_flareCoeff->modified)
-	{
-		R_SetFlareCoeff();
-		r_flareCoeff->modified = qfalse;
-	}
 
 	// Reset currentEntity to world so that any previously referenced entities
 	// don't have influence on the rendering of these flares (i.e. RF_ renderer flags).
@@ -557,15 +445,6 @@ void RB_RenderFlares (void) {
 		return;		// none visible
 	}
 
-	Matrix16Copy(glState.projection, oldprojection);
-	Matrix16Copy(glState.modelview, oldmodelview);
-	Matrix16Identity(matrix);
-	GL_SetModelviewMatrix(matrix);
-	Matrix16Ortho( backEnd.viewParms.viewportX, backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth,
-		           backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight, backEnd.viewParms.viewportY,
-	               -99999, 99999, matrix );
-	GL_SetProjectionMatrix(matrix);
-
 	for ( f = r_activeFlares ; f ; f = f->next ) {
 		if ( f->frameSceneNum == backEnd.viewParms.frameSceneNum
 			&& f->inPortal == backEnd.viewParms.isPortal
@@ -573,9 +452,6 @@ void RB_RenderFlares (void) {
 			RB_RenderFlare( f );
 		}
 	}
-
-	GL_SetProjectionMatrix(oldprojection);
-	GL_SetModelviewMatrix(oldmodelview);
 }
 
 
