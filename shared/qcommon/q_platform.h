@@ -110,7 +110,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 		#define Q3_LITTLE_ENDIAN
 	#elif defined(__aarch64__)
 		#define ARCH_STRING "arm64"
-		#define Q3_BIG_ENDIAN
+		#define Q3_LITTLE_ENDIAN
 	#endif
 
     #define DLL_EXT ".dylib"
