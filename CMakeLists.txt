@@ -43,9 +43,9 @@ option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.ex
 option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" ON)
 option(BuildSPRdVanilla "Whether to create projects for the SP default renderer (rdsp-vanilla_x86.dll)" ON)
 
-option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openjo_sp.exe)" OFF)
-option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" OFF)
-option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" OFF)
+option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openjo_sp.exe)" ON)
+option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
+option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" ON)
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
 
@@ -103,11 +103,17 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
 if(WIN32)
 	set(X86 ON)
-	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+	if(DEFINED CMAKE_GENERATOR_PLATFORM)
+		set(Architecture "${CMAKE_GENERATOR_PLATFORM}")
+	elseif(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		set(Architecture "x86_64")
-		set(WIN64 TRUE)
 	else()
 		set(Architecture "x86")
+	endif()
+
+	if(Architecture EQUAL "x86_64")
+		set(WIN64 TRUE)
+	elseif(Architecture EQUAL "x86")
 		set(WIN64 FALSE)
 	endif()
 else()
