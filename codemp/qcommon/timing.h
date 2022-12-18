@@ -39,7 +39,7 @@ public:
 
 	void Start()
 	{
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_M_ARM64)
 		start = __rdtsc();
 #else
 		start = 0;
@@ -50,7 +50,7 @@ public:
 	{
 		int64_t	time;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_M_ARM64)
 		end = __rdtsc();
 #else
 		end = 0;
