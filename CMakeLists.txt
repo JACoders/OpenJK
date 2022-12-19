@@ -115,7 +115,7 @@ if(WIN32)
 		set(Architecture "x86" CACHE INTERNAL "")
 	endif()
 
-	if(Architecture STREQUAL "x86_64")
+	if(Architecture STREQUAL "x86_64" OR Architecture STREQUAL "arm64")
 		set(WIN64 TRUE)
 	elseif(Architecture STREQUAL "x86")
 		set(WIN64 FALSE)

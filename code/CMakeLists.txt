@@ -402,8 +402,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
 						)
 				elseif(Architecture STREQUAL "arm64")
-					set(SPEngineLibraries
-						${SPEngineLibraries}
+					set(SPEngineExtraInstallFiles
 						${VcpkgDir}/installed/arm64-windows/bin/SDL2.dll
 						)
 				endif()
