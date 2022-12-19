@@ -390,8 +390,8 @@ if(BuildMPEngine)
 				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
 				)
 		elseif(Architecture STREQUAL "arm64")
-			set(SPEngineLibraries
-				${SPEngineLibraries}
+			set(MPEngineLibraries
+				${MPEngineLibraries}
 				${VcpkgDir}/installed/arm64-windows/lib/manual-link/SDL2main.lib
 				${VcpkgDir}/installed/arm64-windows/lib/SDL2.lib
 				)
@@ -571,15 +571,15 @@ if(BuildMPEngine)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
 		if(UseInternalSDL2)
 			if(Architecture STREQUAL "x86")
-				set(SPEngineExtraInstallFiles
+				set(MPEngineExtraInstallFiles
 					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
 					)
 			elseif(Architecture STREQUAL "x86_64")
-				set(SPEngineExtraInstallFiles
+				set(MPEngineExtraInstallFiles
 					${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
 					)
 			elseif(Architecture STREQUAL "arm64")
-				set(SPEngineExtraInstallFiles
+				set(MPEngineExtraInstallFiles
 					${VcpkgDir}/installed/arm64-windows/bin/SDL2.dll
 					)
 			endif()
