@@ -1,105 +1,347 @@
-name: Build
+name: build
 
 on:
   workflow_dispatch:
   push:
-    branches: master
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - '*.txt'
+      - '.gitignore'
+      - 'docs/*'
   pull_request:
-    branches: master
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - '*.txt'
+      - '.gitignore'
+      - 'docs/*'
+  release:
+    types: [published]
 
 jobs:
-  vs2019:
-    name: Build VS 2019, ${{ matrix.build_type }}, ${{ matrix.arch }}
-    runs-on: windows-2019
+  msvc:
+    name: Windows ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
+    runs-on: windows-2022
     strategy:
       matrix:
-        build_type: [Debug, RelWithDebInfo]
-        arch: [Win32, x64]
+        arch: [x86, x86_64]
+        build_type: [Debug, Release]
+        portable: [Portable, Non-Portable]
+        include:
+          - arch: x86
+            platform: Win32
+          - arch: x86_64
+            platform: x64
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
 
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{ runner.workspace }}/build
 
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -A ${{ matrix.arch }}
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ runner.workspace }}/build
+        run: |
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS="-DCMAKE_BUILD_TYPE=${{ runner.build_type }} -DBuildPortableVersion=ON -DCMAKE_INSTALL_PREFIX=bin"
+          else
+            OPTIONS="-DCMAKE_BUILD_TYPE=${{ runner.build_type }} -DBuildPortableVersion=OFF -DCMAKE_INSTALL_PREFIX=bin"
+          fi
+          cmake $GITHUB_WORKSPACE -A ${{ matrix.platform }} $OPTIONS
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config ${{ matrix.build_type }}
+      - name: Build
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --build . --config ${{ matrix.build_type }}
 
-  vs2017_xp:
-    name: Build VS 2017, Windows XP
-    runs-on: windows-2016
+      - name: Install
+        if: ${{ matrix.build_type == 'Release' }} 
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --install . --config ${{ matrix.build_type }}
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }} 
+        with:
+          name: OpenJK-windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ runner.workspace }}/build/bin
+          if-no-files-found: error
+
+  msvcxp:
+    name: WinXP ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        arch: [x86, x86_64]
+        build_type: [Debug, Release]
+        portable: [Portable, Non-Portable]
+        include:
+          - arch: x86
+            platform: Win32
+          - arch: x86_64
+            platform: x64
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      - name: Install v141_xp Toolchain
+        continue-on-error: true
+        shell: powershell
+        run: |
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $WorkLoads = '--add Microsoft.VisualStudio.Component.WinXP'
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"", $WorkLoads, '--quiet', '--norestart', '--nocache')
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -eq 0) {
+              Write-Host "components have been successfully added"
+          } else {
+              Write-Host "components were not installed"
+          }
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
 
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{ runner.workspace }}/build
 
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -A Win32 -T v141_xp
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ runner.workspace }}/build
+        run: |
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS="-DCMAKE_BUILD_TYPE=${{ runner.build_type }} -DBuildPortableVersion=ON -DCMAKE_INSTALL_PREFIX=bin"
+          else
+            OPTIONS="-DCMAKE_BUILD_TYPE=${{ runner.build_type }} -DBuildPortableVersion=OFF -DCMAKE_INSTALL_PREFIX=bin"
+          fi
+          cmake $GITHUB_WORKSPACE -T v141_xp -A ${{ matrix.platform }} $OPTIONS
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config RelWithDebInfo
+      - name: Build
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --build . --config ${{ matrix.build_type }}
+
+      - name: Install
+        if: ${{ matrix.build_type == 'Release' }} 
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: |
+          cmake --install . --config ${{ matrix.build_type }}
+          
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }} 
+        with:
+          name: OpenJK-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ runner.workspace }}/build/bin
+          if-no-files-found: error
+
+  ubuntu:
+    name: Ubuntu ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86, x86_64]
+        build_type: [Debug, Release]
+        portable: [Non-Portable]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create Build Environment
+        run: |
+          if [ ${{ matrix.arch }} == "x86" ]; then
+            sudo dpkg --add-architecture i386
+            sudo apt-get -qq update
+            sudo apt-get -y install aptitude
+            sudo apt-get -y install gcc-multilib g++-multilib ninja-build
+            sudo apt-get -y install --allow-downgrades libpcre2-8-0:i386 libjpeg-dev:i386 libpng-dev:i386 libcurl4-openssl-dev:i386
+            sudo aptitude -y install libglib2.0-dev:i386 libsdl2-dev:i386
+          else
+            sudo apt-get -qq update
+            sudo apt-get install libjpeg-dev libpng-dev zlib1g-dev libsdl2-dev
+          fi
+          cmake -E make_directory ${{ runner.workspace }}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ runner.workspace }}/build
+        run: |
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS="-DUseInternalLibs=ON -DBuildPortableVersion=ON -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/install"
+          else
+            OPTIONS="-DUseInternalLibs=OFF -DBuildPortableVersion=OFF -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/install"
+          fi
+          
+          if [ ${{ matrix.arch }} == "x86" ]; then
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} $OPTIONS -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/linux-i686.cmake
+          else
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} $OPTIONS
+          fi
+
+      - name: Build
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --build .
+
+      - name: Install
+        if: ${{ matrix.build_type == 'Release' }} 
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --install .
+
+      - name: Create binary archive
+        if: ${{ matrix.build_type  == 'Release'}}
+        working-directory: ${{ runner.workspace }}/install/JediAcademy
+        shell: bash
+        run: |
+          if [ ${{ matrix.arch }} == "x86" ]; then
+          chmod +x openjk.i386
+          else
+          chmod +x openjk.${{ matrix.arch }}  
+          fi
+          tar -czvf OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz      *
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }} 
+        with:
+          name: OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{runner.workspace}}/install/JediAcademy/OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
+          if-no-files-found: error
 
   macos:
-    name: Build macOS AppleClang
-    runs-on: macos-10.15
+    name: macOS ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable}})
+    runs-on: macos-12
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64]
+        build_type: [Debug, Release]
+        portable: [Non-Portable]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Create Build Environment
-      run: |
-        brew install zlib libjpeg libpng sdl2
-        cmake -E make_directory ${{runner.workspace}}/build
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - name: Create Build Environment
+        run: |
+          brew install zlib libjpeg libpng sdl2
+          cmake -E make_directory ${{ runner.workspace }}/build
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build .
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ runner.workspace }}/build
+        run: |
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS="-DCMAKE_BUILD_TYPE=${{ runner.build_type }} -DUseInternalLibs=ON -DBuildPortableVersion=ON -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/install"
+          else
+            OPTIONS="-DCMAKE_BUILD_TYPE=${{ runner.build_type }} -DUseInternalLibs=OFF -DBuildPortableVersion=OFF -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/install"
+          fi
+          cmake $GITHUB_WORKSPACE $OPTIONS
 
-  linux:
-    name: Build Linux, ${{ matrix.build_type }}
-    runs-on: ubuntu-20.04
+      - name: Build
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --build .
+
+      - name: Install
+        if: ${{ matrix.build_type == 'Release' }} 
+        working-directory: ${{ runner.workspace }}/build
+        shell: bash
+        run: cmake --install .
+
+      - name: Create binary archive
+        if: ${{ matrix.build_type == 'Release' }} 
+        working-directory: ${{ runner.workspace }}/install/JediAcademy
+        shell: bash
+        run: |
+          chmod +x openjk.x86_64.app/Contents/MacOS/openjk.x86_64
+          tar -czvf openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz      *
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }} 
+        with:
+          name: OpenJK-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ runner.workspace }}/install/JediAcademy/openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
+          if-no-files-found: error
+
+  create-latest:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [msvc, ubuntu, macos]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create binary archives
+        run: |
+          7z a -r OpenJK-windows-x86.zip         ./OpenJK-windows-x86-Release/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          mv ./OpenJK-linux-x86-Release-Non-Portable/*     OpenJK-linux-x86.tar.gz
+          mv ./OpenJK-linux-x86_64-Release-Non-Portable/*  OpenJK-linux-x86_64.tar.gz
+          mv ./OpenJK-macos-x86_64-Release-Non-Portable/*  OpenJK-macos-x86_64.tar.gz
+
+      - name: Create latest build
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: Latest Build
+          files: |
+            *.zip
+            *.tar.gz
+
+  create-release:
+    if: github.event_name == 'release'
+    needs: [msvc, ubuntu, macos]
+    runs-on: ubuntu-22.04
+
     strategy:
       matrix:
-        build_type: [Debug, RelWithDebInfo]
+        include:
+          - artifact_dir: OpenJK-windows-x86-Release-Portable/JediAcademy
+            artifact_name: OpenJK-windows-x86.zip
+            zip: true
+
+          - artifact_dir: OpenJK-linux-x86-Release-Non-Portable
+            artifact_name: OpenJK-linux-x86.tar.gz
+            zip: false
+
+          - artifact_dir: OpenJK-linux-x86_64-Release-Non-Portable
+            artifact_name: OpenJK-linux-x86_64.tar.gz
+            zip: false
+
+          - artifact_dir: OpenJK-macos-x86_64-Release-Non-Portable
+            artifact_name: OpenJK-macos-x86_64.tar.gz
+            zip: false
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-    - name: Create Build Environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install libjpeg-dev libpng-dev zlib1g-dev libsdl2-dev
-        cmake -E make_directory ${{runner.workspace}}/build
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build .
+      - name: Create archive
+        run: |
+          if [ "${{ matrix.zip }}" == "true" ]; then
+            7z a -r ${{ matrix.artifact_name }} ./${{ matrix.artifact_dir }}/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          else
+            mv ./${{ matrix.artifact_dir }}/* ${{ matrix.artifact_name }}
+          fi
+
+      - name: Upload archives
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          overwrite: true
+          file: ${{ matrix.artifact_name }}
