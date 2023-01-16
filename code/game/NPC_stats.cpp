@@ -1154,6 +1154,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 
 			if (modderGLAIndex)
 			{
+				// Check to see if we have a cinematic GLA indexed as well
 				if (cineGLAIndex)
 				{
 					assert(modderGLAIndex == cineGLAIndex + 1);
