@@ -1145,6 +1145,40 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 				G_ParseAnimationFile(1,    skeletonMapName, fileIndex);
 				G_ParseAnimationEvtFile(1, skeletonMapName, fileIndex, cineGLAIndex, false/*flag for model specific*/);
 			}
+
+			// Get The Modder GLA Name
+			//----------------------------
+			char skeletonModderName[MAX_QPATH];
+			Com_sprintf(skeletonModderName, MAX_QPATH, "_humanoid_mod");
+			const int modderGLAIndex = gi.G2API_PrecacheGhoul2Model(va("models/players/_humanoid/%s.gla", skeletonModderName));
+
+			if (modderGLAIndex)
+			{
+				if (cineGLAIndex)
+				{
+					assert(modderGLAIndex == cineGLAIndex + 1);
+
+					if (modderGLAIndex != cineGLAIndex + 1)
+					{
+						Com_Error(ERR_DROP, "Modder GLA was not loaded after the cinematic GLA.  Cannot continue safely.");
+					}
+
+					G_ParseAnimationFile(2, skeletonModderName, fileIndex);
+					G_ParseAnimationEvtFile(2, skeletonModderName, fileIndex, modderGLAIndex, false/*flag for model specific*/);
+				}
+				else
+				{
+					assert(modderGLAIndex == normalGLAIndex + 1);
+
+					if (modderGLAIndex != normalGLAIndex + 1)
+					{
+						Com_Error(ERR_DROP, "Modder GLA was not loaded after the normal GLA.  Cannot continue safely.");
+					}
+
+					G_ParseAnimationFile(1, skeletonModderName, fileIndex);
+					G_ParseAnimationEvtFile(1, skeletonModderName, fileIndex, modderGLAIndex, false/*flag for model specific*/);
+				}
+			}
 		}
 		else
 		{
