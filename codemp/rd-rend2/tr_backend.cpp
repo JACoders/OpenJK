@@ -1259,13 +1259,13 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemapIndex, &postRender);
 		assert(shader != nullptr);
 
-		if (shader->sort != SS_OPAQUE)
+		if (shader->sort != SS_OPAQUE || shader->useDistortion)
 		{
 			// Don't draw yet, let's see what's to come
 			continue;
 		}
 
-		if ( shader == oldShader &&	entityNum == oldEntityNum)
+		if ( shader == oldShader &&	entityNum == oldEntityNum )
 		{
 			// fast path, same as previous sort
 			backEnd.currentDrawSurfIndex = i;

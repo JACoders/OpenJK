@@ -1410,9 +1410,6 @@ Operates in place, quartering the size of the texture
 ================
 */
 static void R_MipMap (byte *in, int width, int height) {
-	int		i, j;
-	byte	*out;
-	int		row;
 
 	if ( !r_simpleMipMaps->integer )
 		R_MipMap2( in, width, height );
