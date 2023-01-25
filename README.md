@@ -4,7 +4,7 @@ OpenJK is an effort by the JACoders group to maintain and improve the game engin
 
 Our aims are to:
 * Improve the stability of the engine by fixing bugs and improving performance.
-* Provide a clean base from which new JO and JA code modifications can be made.
+* Provide a clean base from which new JO and JA code modifications can be made (for JK1, see [OpenJKDF2](https://github.com/shinyquagsire23/OpenJKDF2)).
 * Make available this engine to more operating systems. To date, we have ports on Linux and macOS.
 
 Currently, the most stable portion of this project is the Jedi Academy multiplayer code, with the single player code in a reasonable state.
@@ -12,6 +12,8 @@ Currently, the most stable portion of this project is the Jedi Academy multiplay
 Rough support for Jedi Outcast single player is also available, however this should be considered heavily work in progress. This is not currently actively worked on or tested. OpenJK does not have Jedi Outcast multiplayer support.
 
 Please use discretion when making issue requests on GitHub. The [JKHub sub-forum](https://jkhub.org/forums/forum/49-openjk/) is a better place for support queries, discussions, and feature requests.
+
+
 
 <a href="https://discord.gg/dPNCfeQ"><img src="https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat" /></a>
 [![Forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-brightgreen.svg)](https://jkhub.org/forums/forum/49-openjk/)
