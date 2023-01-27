@@ -861,7 +861,8 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 	mod->dataSize += size;
 	//mdvModel = mod->mdv[lod] = (mdvModel_t *)ri.Hunk_Alloc(sizeof(mdvModel_t), h_low);
 	qboolean bAlreadyFound = qfalse;
-	mdvModel = mod->data.mdv[lod] = (mdvModel_t *)CModelCache->Allocate( size, buffer, modName, &bAlreadyFound, TAG_MODEL_MD3 );
+	md3Model = (md3Header_t *)CModelCache->Allocate(size, buffer, modName, &bAlreadyFound, TAG_MODEL_MD3);
+	mdvModel = mod->data.mdv[lod] = (mdvModel_t *)ri.Hunk_Alloc(sizeof(*mdvModel), h_low);
 
 //  Com_Memcpy(mod->md3[lod], buffer, LittleLong(md3Model->ofsEnd));
 	if( !bAlreadyFound )
