@@ -3072,7 +3072,9 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 		image_t *diffuseImg;
 		if (stage->bundle[TB_NORMALMAP].image[0])
 		{
-			if (stage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT && r_parallaxMapping->integer)
+			if (stage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT && 
+				r_parallaxMapping->integer && 
+				defs & LIGHTDEF_LIGHTTYPE_MASK)
 				defs |= LIGHTDEF_USE_PARALLAXMAP;
 			//ri.Printf(PRINT_ALL, ", normalmap %s", stage->bundle[TB_NORMALMAP].image[0]->imgName);
 		}
