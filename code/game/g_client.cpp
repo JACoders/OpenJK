@@ -239,6 +239,9 @@ gentity_t *SelectRandomDeathmatchSpawnPoint( team_t team ) {
 	spot = NULL;
 
 	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+		if (count >= MAX_SPAWN_POINTS) {
+			G_Error("too many spawnpoints in map, must not exceed %d", MAX_SPAWN_POINTS);
+		}
 		/*if ( team == TEAM_RED && ( spot->spawnflags & 2 ) ) {
 			continue;
 		}
