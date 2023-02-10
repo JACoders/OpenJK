@@ -106,7 +106,7 @@ if(WIN32)
 	get_filename_component(ParentDir ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 	# VCPKG default dir is this repository's sibling directory 'vcpkg'.
 	set(VcpkgDir "${ParentDir}/vcpkg" CACHE INTERNAL "")
-	if(DEFINED CMAKE_GENERATOR_PLATFORM)
+	if(DEFINED CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "")
 		set(Architecture "${CMAKE_GENERATOR_PLATFORM}" CACHE INTERNAL "")
 		string(TOLOWER "${Architecture}" Architecture)
 	elseif(CMAKE_SIZEOF_VOID_P MATCHES "8")
