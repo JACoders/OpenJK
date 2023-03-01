@@ -7473,6 +7473,7 @@ CQuake3GameInterface::CQuake3GameInterface() : IGameInterface()
 {
 	m_ScriptList.clear();
 	m_EntityList.clear();
+	m_cvars.clear();
 
 	m_numVariables = 0;
 
@@ -7509,6 +7510,7 @@ CQuake3GameInterface::~CQuake3GameInterface()
 
 	m_ScriptList.clear();
 	m_EntityList.clear();
+	m_cvars.clear();
 }
 
 // Initialize an Entity by ID.
@@ -8230,8 +8232,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	vec3_t		vector_data;
 
 	// eezstreet: Add support for cvars getting modified thru ICARUS script
-	if(!Q_stricmpn(type_name, "cvar_", 5) &&
-		strlen(type_name) > 5)
+	if(strlen(type_name) > 5 && !Q_stricmpn(type_name, "cvar_", 5))
 	{
 		gi.cvar_set(type_name+5, data);
 		return;
@@ -9867,8 +9868,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 		return false;
 	}
 
-	if( !Q_stricmpn(name, "cvar_", 5) &&
-		strlen(name) > 5 )
+	if( strlen(name) > 5 &&!Q_stricmpn(name, "cvar_", 5) )
 	{
 		*value = (float)gi.Cvar_VariableIntegerValue(name+5);
 		return true;
@@ -10568,10 +10568,13 @@ int		CQuake3GameInterface::GetString( int entID, const char *name, char **value 
 		return false;
 	}
 
-	if( !Q_stricmpn(name, "cvar_", 5) &&
-		strlen(name) > 5 )
+	if( strlen(name) > 5 && Q_stricmpn(name, "cvar_", 5) )
 	{
-		gi.Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
+		char cvarbuf[MAX_STRING_CHARS];
+
+		gi.Cvar_VariableStringBuffer(name+5, cvarbuf, sizeof(cvarbuf));
+		m_cvars[name+5] = cvarbuf;
+		*value = &m_cvars[name+5][0];
 		return true;
 	}
 

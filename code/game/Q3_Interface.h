@@ -577,6 +577,8 @@ private:
 	varString_m		m_varVectors;
 	int				m_numVariables;
 
+	varString_m		m_cvars;
+
 	int				m_entFilter;
 
 	// Register variables functions.
