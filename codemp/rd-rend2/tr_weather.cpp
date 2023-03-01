@@ -242,7 +242,7 @@ namespace
 			tr.viewParms.world.modelViewMatrix,
 			tr.weatherSystem->weatherMVP);
 
-#ifdef 0
+#if 0
 		if (tr.weatherSystem->numWeatherZones > 0)
 		{
 			FBO_Bind(tr.weatherDepthFbo);
