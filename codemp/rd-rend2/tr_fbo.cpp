@@ -398,7 +398,7 @@ void FBO_Init(void)
 	hdrFormat = GL_RGBA8;
 	if (r_hdr->integer)
 	{
-		hdrFormat = GL_RGB16F;
+		hdrFormat = GL_RGBA16F;
 	}
 
 	qglGetIntegerv(GL_MAX_SAMPLES, &multisample);
