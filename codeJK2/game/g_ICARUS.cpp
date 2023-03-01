@@ -34,6 +34,8 @@ ICARUS_Instance		*iICARUS;
 bufferlist_t		ICARUS_BufferList;
 entlist_t			ICARUS_EntList;
 
+cvarlist_t			ICARUS_CvarList;
+
 extern uint32_t Com_BlockChecksum (const void *buffer, int length);
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
@@ -136,6 +138,8 @@ void ICARUS_Init( void )
 		Com_Error( ERR_DROP, "Unable to initialize ICARUS instance\n" );
 		return;
 	}
+
+	ICARUS_CvarList.clear();
 }
 
 /*
@@ -171,6 +175,8 @@ void ICARUS_Shutdown( void )
 
 	//Clear the name map
 	ICARUS_EntList.clear();
+
+	ICARUS_CvarList.clear();
 
 	//Free this instance
 	if ( iICARUS )

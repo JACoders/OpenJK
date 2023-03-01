@@ -6533,11 +6533,10 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 	int			int_data, toSet;
 	vec3_t		vector_data;
 
-	// eezstreet: In response to issue #75 (Cvars being affected by set command)
-	if( !Q_stricmpn(type_name, "cvar_", 5) &&
-		strlen(type_name) > 5 )
+	// eezstreet: Add support for cvars getting modified thru ICARUS script
+	if(strlen(type_name) > 5 && !Q_stricmpn(type_name, "cvar_", 5))
 	{
-		cgi_Cvar_Set(type_name+5, data);
+		gi.cvar_set(type_name+5, data);
 		return;
 	}
 
@@ -7904,8 +7903,7 @@ static int Q3_GetFloat( int entID, int type, const char *name, float *value )
 		return false;
 	}
 
-	if( !Q_stricmpn(name, "cvar_", 5) &&
-		strlen(name) > 5 )
+	if( strlen(name) > 5 &&!Q_stricmpn(name, "cvar_", 5) )
 	{
 		*value = (float)gi.Cvar_VariableIntegerValue(name+5);
 		return true;
@@ -8599,10 +8597,13 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 		return false;
 	}
 
-	if( !Q_stricmpn(name, "cvar_", 5) &&
-		strlen(name) > 5 )
+	if( strlen(name) > 5 && Q_stricmpn(name, "cvar_", 5) )
 	{
-		gi.Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
+		char cvarbuf[MAX_STRING_CHARS];
+
+		gi.Cvar_VariableStringBuffer(name+5, cvarbuf, sizeof(cvarbuf));
+		ICARUS_CvarList[name+5] = cvarbuf;
+		*value = &ICARUS_CvarList[name+5][0];
 		return true;
 	}
 
