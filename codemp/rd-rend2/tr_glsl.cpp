@@ -1532,6 +1532,12 @@ static int GLSL_LoadGPUProgramFogPass(
 		}
 
 		GLSL_InitUniforms(&tr.fogShader[i]);
+
+		qglUseProgram(tr.fogShader[i].program);
+		if (i & FOGDEF_USE_ALPHA_TEST)
+			GLSL_SetUniformInt(&tr.fogShader[i], UNIFORM_DIFFUSEMAP, 0);
+		qglUseProgram(0);
+
 		GLSL_FinishGPUShader(&tr.fogShader[i]);
 		
 		++numPrograms;

@@ -44,6 +44,9 @@ layout(std140) uniform Bones
 #endif
 
 out vec3 var_WSPosition;
+#if defined(USE_ALPHA_TEST)
+out vec2 var_TexCoords;
+#endif
 
 #if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )
@@ -217,11 +220,15 @@ void main()
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
 
 	var_WSPosition = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+#if defined(USE_ALPHA_TEST)
+	var_TexCoords = attr_TexCoord0;
+#endif
 }
 
 /*[Fragment]*/
 #if defined(USE_ALPHA_TEST)
 uniform int u_AlphaTestType;
+uniform sampler2D u_DiffuseMap;
 #endif
 
 layout(std140) uniform Scene
@@ -274,6 +281,9 @@ layout(std140) uniform Entity
 uniform int u_FogIndex;
 
 in vec3 var_WSPosition;
+#if defined(USE_ALPHA_TEST)
+in vec2 var_TexCoords;
+#endif
 
 out vec4 out_Color;
 out vec4 out_Glow;
@@ -323,30 +333,31 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 
 void main()
 {
-	Fog fog = u_Fogs[u_FogIndex];
-	out_Color = CalcFog(u_ViewOrigin, var_WSPosition, fog);
 #if defined(USE_ALPHA_TEST)
+	float alpha = texture(u_DiffuseMap, var_TexCoords).a;
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
-		if (out_Color.a == 0.0)
+		if (alpha == 0.0)
 			discard;
 	}
 	else if (u_AlphaTestType == ALPHA_TEST_LT128)
 	{
-		if (out_Color.a >= 0.5)
+		if (alpha >= 0.5)
 			discard;
 	}
 	else if (u_AlphaTestType == ALPHA_TEST_GE128)
 	{
-		if (out_Color.a < 0.5)
+		if (alpha < 0.5)
 			discard;
 	}
 	else if (u_AlphaTestType == ALPHA_TEST_GE192)
 	{
-		if (out_Color.a < 0.75)
+		if (alpha < 0.75)
 			discard;
 	}
 #endif
+	Fog fog = u_Fogs[u_FogIndex];
+	out_Color = CalcFog(u_ViewOrigin, var_WSPosition, fog);
 
 #if defined(USE_GLOW_BUFFER)
 	out_Glow = out_Color;
