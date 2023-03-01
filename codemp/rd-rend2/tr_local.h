@@ -1497,6 +1497,7 @@ enum viewParmFlag_t {
 	VPF_NOPOSTPROCESS	= 0x100,
 	VPF_POINTSHADOW		= 0x200,// Rendering pointlight shadow
 	VPF_SHADOWCASCADES	= 0x400,// Rendering sun shadow cascades
+	VPF_NOCLEAR			= 0x800,
 };
 using viewParmFlags_t = uint32_t;
 

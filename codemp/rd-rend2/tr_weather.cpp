@@ -43,6 +43,9 @@ const int maxWeatherTypeParticles[NUM_WEATHER_TYPES] = {
 	1000
 };
 
+#define MAX_WINDOBJECTS 10
+#define MAX_WEATHER_ZONES 100
+
 struct weatherObject_t
 {
 	VBO_t *lastVBO;
@@ -60,7 +63,6 @@ struct weatherObject_t
 	vec2_t	size;
 };
 
-#define MAX_WINDOBJECTS 10
 struct windObject_t
 {
 	vec3_t currentVelocity;
@@ -72,13 +74,21 @@ struct windObject_t
 	int targetVelocityTimeRemaining;
 };
 
+struct weatherZone_t
+{
+	vec3_t mins;
+	vec3_t maxs;
+};
+
 struct weatherSystem_t
 {
 	weatherObject_t weatherSlots[NUM_WEATHER_TYPES];
 	windObject_t windSlots[MAX_WINDOBJECTS];
+	weatherZone_t weatherZones[MAX_WEATHER_ZONES];
 
 	int activeWeatherTypes = 0;
 	int activeWindObjects = 0;
+	int numWeatherZones = 0;
 	bool frozen;
 
 	srfWeather_t weatherSurface;
@@ -227,6 +237,97 @@ namespace
 			VPF_DEPTHCLAMP | VPF_DEPTHSHADOW | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL,
 			orientation,
 			viewBounds);
+		Matrix16Multiply(
+			tr.viewParms.projectionMatrix,
+			tr.viewParms.world.modelViewMatrix,
+			tr.weatherSystem->weatherMVP);
+
+#ifdef 0
+		if (tr.weatherSystem->numWeatherZones > 0)
+		{
+			FBO_Bind(tr.weatherDepthFbo);
+
+			qglViewport(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
+			qglScissor(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
+
+			// clear depth to 0, then stomp the depth buffer with the mins of the weather zones
+			qglClearDepth(0.0f);
+			qglClear(GL_DEPTH_BUFFER_BIT);
+			qglClearDepth(1.0f);
+
+			qglEnable(GL_DEPTH_CLAMP);
+
+			GL_State(GLS_DEPTHMASK_TRUE | GLS_DEPTHFUNC_GREATER);
+			GL_Cull(CT_TWO_SIDED);
+			vec4_t color = { 0.0f, 0.0f, 0.0f, 1.0f };
+			backEnd.currentEntity = &tr.worldEntity;
+			RB_BeginSurface(tr.defaultShader, 0, 0);
+
+			for (int i = 0; i <= tr.weatherSystem->numWeatherZones; i++)
+			{
+				weatherZone_t *currentWeatherZone = &tr.weatherSystem->weatherZones[i];
+				{
+					vec3_t up = {
+						currentWeatherZone->mins[0] - currentWeatherZone->maxs[0],
+						0.0f,
+						0.0f };
+					vec3_t left = {
+						0.0f,
+						currentWeatherZone->mins[1] - currentWeatherZone->maxs[1],
+						0.0f };
+					vec3_t zone_origin = {
+						currentWeatherZone->maxs[0],
+						currentWeatherZone->maxs[1],
+						currentWeatherZone->maxs[2] };
+
+					RB_AddQuadStamp(zone_origin, left, up, color);
+				}
+				{
+					vec3_t up = {
+						-currentWeatherZone->mins[0] + currentWeatherZone->maxs[0],
+						0.0f,
+						0.0f };
+					vec3_t left = {
+						0.0f,
+						-currentWeatherZone->mins[1] + currentWeatherZone->maxs[1],
+						0.0f };
+					vec3_t zone_origin = {
+						currentWeatherZone->mins[0],
+						currentWeatherZone->mins[1],
+						currentWeatherZone->mins[2] };
+
+					RB_AddQuadStamp(zone_origin, left, up, color);
+				}
+			}
+
+			RB_UpdateVBOs(ATTR_POSITION);
+
+			GLSL_VertexAttribsState(ATTR_POSITION, NULL);
+
+			GLSL_BindProgram(&tr.textureColorShader);
+
+			GLSL_SetUniformMatrix4x4(
+				&tr.textureColorShader,
+				UNIFORM_MODELVIEWPROJECTIONMATRIX,
+				tr.weatherSystem->weatherMVP);
+
+			R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
+
+			RB_CommitInternalBufferData();
+
+			qglDisable(GL_DEPTH_CLAMP);
+
+			tess.numIndexes = 0;
+			tess.numVertexes = 0;
+			tess.firstIndex = 0;
+			tess.minIndex = 0;
+			tess.maxIndex = 0;
+			tess.useInternalVBO = qfalse;
+		}
+
+		if (tr.weatherSystem->numWeatherZones > 0)
+			tr.viewParms.flags |= VPF_NOCLEAR;
+#endif
 
 		const int firstDrawSurf = tr.refdef.numDrawSurfs;
 
@@ -234,11 +335,6 @@ namespace
 		R_SortAndSubmitDrawSurfs(
 			tr.refdef.drawSurfs + firstDrawSurf,
 			tr.refdef.numDrawSurfs - firstDrawSurf);
-
-		Matrix16Multiply(
-			tr.viewParms.projectionMatrix,
-			tr.viewParms.world.modelViewMatrix,
-			tr.weatherSystem->weatherMVP);
 
 		R_IssuePendingRenderCommands();
 		R_InitNextFrame();
@@ -388,6 +484,19 @@ qboolean WE_ParseVector(const char **text, int count, float *v) {
 	return qtrue;
 }
 
+void R_AddWeatherZone(vec3_t mins, vec3_t maxs)
+{
+	if (tr.weatherSystem->numWeatherZones >= MAX_WEATHER_ZONES)
+	{
+		ri.Printf(PRINT_WARNING, "Max weather zones hit. Skipping new zone\n");
+		return;
+	}
+	VectorCopy(mins, tr.weatherSystem->weatherZones[tr.weatherSystem->numWeatherZones].mins);
+	VectorCopy(maxs, tr.weatherSystem->weatherZones[tr.weatherSystem->numWeatherZones].maxs);
+	tr.weatherSystem->numWeatherZones++;
+	ri.Printf(PRINT_ALL, "Weather zone %i added\n", tr.weatherSystem->numWeatherZones);
+}
+
 void RE_WorldEffectCommand(const char *command)
 {
 	if (!command)
@@ -440,9 +549,9 @@ void RE_WorldEffectCommand(const char *command)
 	{
 		vec3_t	mins;
 		vec3_t	maxs;
-		//if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
+		if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
 		{
-			ri.Printf(PRINT_DEVELOPER, "Weather zones aren't supported in MP\n");
+			R_AddWeatherZone(mins, maxs);
 		}
 	}
 

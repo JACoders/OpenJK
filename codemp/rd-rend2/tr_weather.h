@@ -28,6 +28,7 @@ struct srfWeather_t;
 void R_InitWeatherSystem();
 void R_InitWeatherForMap();
 void R_AddWeatherSurfaces();
+void R_AddWeatherZone(vec3_t mins, vec3_t maxs);
 void R_ShutdownWeatherSystem();
 void RB_SurfaceWeather( srfWeather_t *surfaceType );
 

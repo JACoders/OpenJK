@@ -606,7 +606,7 @@ void RB_BeginDrawingView (void) {
 	if (tr.world && tr.world->skyboxportal == 1 && !(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
 		clearBits &= ~GL_COLOR_BUFFER_BIT;
 
-	if (clearBits > 0)
+	if (clearBits > 0 && !(backEnd.viewParms.flags & VPF_NOCLEAR))
 		qglClear( clearBits );
 
 	if (backEnd.viewParms.targetFbo == NULL)

@@ -3209,6 +3209,39 @@ static void R_RenderAllCubemaps()
 }
 
 
+void R_LoadWeatherZones()
+{
+	char spawnVarChars[2048];
+	int numSpawnVars;
+	char *spawnVars[MAX_SPAWN_VARS][2];
+
+	while (R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
+	{
+		vec3_t mins, maxs;
+		qboolean isWeatherZone = qfalse;
+		char *model = NULL;
+
+		for (int i = 0; i < numSpawnVars; i++)
+		{
+			if (!Q_stricmp(spawnVars[i][0], "classname") && !Q_stricmp(spawnVars[i][1], "misc_weather_zone"))
+			{
+				isWeatherZone = qtrue;
+			}
+			if (!Q_stricmp(spawnVars[i][0], "model"))
+			{
+				model = spawnVars[i][1];
+			}
+		}
+
+		if (isWeatherZone == qtrue && model != NULL)
+		{
+			R_ModelBounds(RE_RegisterModel(model), mins, maxs);
+			R_AddWeatherZone(mins, maxs);
+		}
+	}
+}
+
+
 /*
 =================
 R_MergeLeafSurfaces
@@ -4066,6 +4099,7 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.worldMapLoaded = qtrue;
 	tr.world = world;
 
+	R_LoadWeatherZones();
 	R_InitWeatherForMap();
 
 	// Render all cubemaps
