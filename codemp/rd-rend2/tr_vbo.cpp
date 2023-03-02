@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_vbo.c
 #include "tr_local.h"
 
+#ifdef _G2_GORE
+#include "G2_gore_r2.h"
+#endif
 
 
 uint32_t R_VboPackTangent(vec4_t v)
@@ -645,17 +648,13 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	}
 }
 
-#define MAX_GORE_VERTS (3000)
-#define MAX_GORE_INDECIES (6000)
-//TODO: This needs to be set via a scalability cvar with some reasonable minimum value if pgore is used at all
-#define MAX_GORE_RECORDS (500)
-
+#ifdef _G2_GORE
 void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
 {
 	goreSurface->firstVert = tr.goreVBOCurrentIndex;
 	goreSurface->firstIndex = tr.goreIBOCurrentIndex;
 
-	if (tr.goreVBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS))
+	if (tr.goreVBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES))
 		tr.goreVBOCurrentIndex = 0;
 
 	R_BindVBO(tr.goreVBO);
@@ -667,7 +666,7 @@ void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
 	);
 	tr.goreVBOCurrentIndex += goreSurface->numVerts;
 
-	if (tr.goreIBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES))
+	if (tr.goreIBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES))
 		tr.goreIBOCurrentIndex = 0;
 
 	R_BindIBO(tr.goreIBO);
@@ -679,6 +678,7 @@ void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
 	);
 	tr.goreIBOCurrentIndex += goreSurface->numIndexes;
 }
+#endif
 
 void RB_CommitInternalBufferData()
 {

@@ -3325,8 +3325,10 @@ public:
 		ident = src.ident;
 		boneCache = src.boneCache;
 		surfaceData = src.surfaceData;
+#ifdef _G2_GORE
 		alternateTex = src.alternateTex;
 		goreChain = src.goreChain;
+#endif
 		vboMesh = src.vboMesh;
 
 		return *this;
@@ -3347,18 +3349,18 @@ public:
 	{
 	}
 
-#ifdef _G2_GORE
 	void Init()
 	{
 		ident = SF_MDX;
 		boneCache = nullptr;
 		surfaceData = nullptr;
+#ifdef _G2_GORE
 		alternateTex = nullptr;
 		goreChain = nullptr;
+#endif
 		vboMesh = nullptr;
 		genShadows = qfalse;
 	}
-#endif
 };
 
 void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum );

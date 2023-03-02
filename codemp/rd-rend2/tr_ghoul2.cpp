@@ -3494,6 +3494,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	RB_EndSurface();
 	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
 
+#ifdef _G2_GORE
 	if (surf->alternateTex)
 	{
 		R_BindVBO(tr.goreVBO);
@@ -3553,6 +3554,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 #endif
 		return;
 	}
+#endif
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);
