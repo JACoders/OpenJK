@@ -1594,7 +1594,7 @@ static int GLSL_LoadGPUProgramRefraction(
 		if (!GLSL_LoadGPUShader(builder, &tr.refractionShader[i], "refraction", attribs, NO_XFB_VARS,
 			extradefines, *programDesc))
 		{
-			ri.Error(ERR_FATAL, "Could not load generic shader!");
+			ri.Error(ERR_FATAL, "Could not load refraction shader!");
 		}
 
 		GLSL_InitUniforms(&tr.refractionShader[i]);

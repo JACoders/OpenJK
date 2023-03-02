@@ -2483,9 +2483,9 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 
 /*
 ================
-R_CreateImage
+R_Create2DImageArray
 
-This is the only way any image_t are created
+This is the only way any 2d array sampler image_t are created
 ================
 */
 image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height, int layers, imgType_t type, int flags, int internalFormat) 
@@ -2532,8 +2532,10 @@ image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height
 
 	GL_SelectTexture(0);
 	GL_Bind(image);
-	//qglTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers);
-	qglTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers, 0, format, GL_UNSIGNED_BYTE, NULL);
+	if (ShouldUseImmutableTextures(image->flags, internalFormat))
+		qglTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers);
+	else
+		qglTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers, 0, format, GL_UNSIGNED_BYTE, NULL);
 
 	switch (internalFormat)
 	{
@@ -2929,14 +2931,6 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 	}
 }
 
-void ColorToRGBA16F2(const vec3_t color, unsigned short rgba16f[4])
-{
-	rgba16f[0] = FloatToHalf(color[0]);
-	rgba16f[1] = FloatToHalf(color[1]);
-	rgba16f[2] = FloatToHalf(color[2]);
-	rgba16f[3] = FloatToHalf(1.0f);
-}
-
 /*
 ===============
 R_FindImageFile
@@ -2989,7 +2983,12 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 					color[2] = color[2] / M_PI;
 				}
 				color[3] = 1.0f;
-				ColorToRGBA16F2(color, (uint16_t *)(&pic[i * 8]));
+
+				uint16_t *hdr_color = (uint16_t *)(&pic[i * 8]);
+				hdr_color[0] = FloatToHalf(color[0]);
+				hdr_color[1] = FloatToHalf(color[1]);
+				hdr_color[2] = FloatToHalf(color[2]);
+				hdr_color[3] = FloatToHalf(1.0f);
 			}
 			internalFormat = GL_RGBA16F;
 			loadFlags = flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_MIPMAP);
@@ -3344,7 +3343,7 @@ void R_CreateBuiltinImages( void ) {
 			DSHADOW_MAP_SIZE,
 			MAX_DLIGHTS*6,
 			IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP | IMGFLAG_MUTABLE,
 			GL_DEPTH_COMPONENT16);
 	}
 
@@ -3484,7 +3483,7 @@ void R_CreateBuiltinImages( void ) {
 			PSHADOW_MAP_SIZE, 
 			MAX_DRAWN_PSHADOWS, 
 			IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP | IMGFLAG_MUTABLE,
 			GL_DEPTH_COMPONENT16);
 	}
 
@@ -3497,7 +3496,7 @@ void R_CreateBuiltinImages( void ) {
 			r_shadowMapSize->integer,
 			3, // number of cascades
 			IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP | IMGFLAG_MUTABLE,
 			GL_DEPTH_COMPONENT16);
 
 		tr.screenShadowImage = R_CreateImage(
