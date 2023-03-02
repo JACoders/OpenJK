@@ -97,13 +97,13 @@ void main()
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
 	offset.xy = offset.x*vec2(toCamera.y, -toCamera.x);
+#elif defined(FACE_FLATTENED)
+	// Make this sprite face in some direction
+	offset.xy = offset.x * attr_Normal.xy;
 #elif !defined(FACE_UP)
 	// Make this sprite face in some direction in direction of the camera
 	vec2 toCamera = normalize(V.xy);
 	offset.xy = offset.x * (attr_Normal.xy + 3.0 * vec2(toCamera.y, -toCamera.x)) * 0.25;
-#else
-	// Make this sprite face in some direction
-	// offset.xy = offset.x * attr_Normal.xy;
 #endif
 
 #if !defined(FACE_UP) && !defined(FX_SPRITE)

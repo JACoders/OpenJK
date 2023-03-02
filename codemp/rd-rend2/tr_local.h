@@ -1225,8 +1225,9 @@ enum
 	SSDEF_USE_FOG						= 0x10,
 	SSDEF_FOG_MODULATE					= 0x20,
 	SSDEF_ADDITIVE						= 0x40,
+	SSDEF_FLATTENED						= 0x80,
 
-	SSDEF_ALL							= 0x7F,
+	SSDEF_ALL							= 0xFF,
 	SSDEF_COUNT							= SSDEF_ALL + 1
 };
 

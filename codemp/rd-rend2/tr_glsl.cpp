@@ -2257,6 +2257,9 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 		else if ( i & SSDEF_FACE_UP )
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define FACE_UP\n");
+		else if (i & SSDEF_FLATTENED)
+			Q_strcat(extradefines, sizeof(extradefines),
+				"#define FACE_FLATTENED\n");
 
 		if (i & SSDEF_FX_SPRITE)
 			Q_strcat(extradefines, sizeof(extradefines),

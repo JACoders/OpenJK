@@ -2164,6 +2164,9 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	if (ss->facing == SURFSPRITE_FACING_UP)
 		shaderFlags |= SSDEF_FACE_UP;
 
+	if (ss->facing == SURFSPRITE_FACING_NORMAL)
+		shaderFlags |= SSDEF_FLATTENED;
+
 	if (ss->type == SURFSPRITE_EFFECT || ss->type == SURFSPRITE_WEATHERFX)
 		shaderFlags |= SSDEF_FX_SPRITE;
 
