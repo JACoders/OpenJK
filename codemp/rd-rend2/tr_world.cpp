@@ -341,10 +341,12 @@ static void R_AddWorldSurface(
 	}
 
 	// check for dlighting
-	// TODO: check for beeing correctly implemented because problems eg. with elevators ffa3
+	// TODO: implement dlight culling for non worldspawn surfaces
 	if ( dlightBits ) {
-		dlightBits = R_DlightSurface( surf, dlightBits );
-		dlightBits = ( dlightBits != 0 );
+		if (entityNum != REFENTITYNUM_WORLD)
+			dlightBits = (1 << tr.refdef.num_dlights) - 1;
+		else
+			dlightBits = R_DlightSurface( surf, dlightBits );
 	}
 
 	// set pshadows
