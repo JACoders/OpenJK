@@ -978,8 +978,9 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		input->shader->sort != SS_FOG)
 		shaderBits |= FOGDEF_USE_FALLBACK_GLOBAL_FOG;
 
-	if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
-		shaderBits |= FOGDEF_USE_ALPHA_TEST;
+	if (input->numPasses > 0)
+		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
+			shaderBits |= FOGDEF_USE_ALPHA_TEST;
 	
 	shaderProgram_t *sp = tr.fogShader + shaderBits;
 
@@ -988,7 +989,8 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	UniformDataWriter uniformDataWriter;
 	uniformDataWriter.Start(sp);
 	uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
-	uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
+	if (input->numPasses > 0)
+		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
 	
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	if ( tess.shader->fogPass == FP_EQUAL )
@@ -1008,8 +1010,9 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	};
 
 	SamplerBindingsWriter samplerBindingsWriter;
-	if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
-		samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
+	if (input->numPasses > 0)
+		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
+			samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
 
 	Allocator& frameAllocator = *backEndData->perFrameMemory;
 	DrawItem item = {};
@@ -1050,7 +1053,8 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		UniformDataWriter uniformDataWriterBack;
 		uniformDataWriterBack.Start(sp);
 		uniformDataWriterBack.SetUniformInt(UNIFORM_FOGINDEX, tr.world->globalFogIndex - 1);
-		uniformDataWriterBack.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
+		if (input->numPasses > 0)
+			uniformDataWriterBack.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
 		SamplerBindingsWriter samplerBindingsWriter;
 		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
 			samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
