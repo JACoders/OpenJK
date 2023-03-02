@@ -2485,6 +2485,11 @@ qboolean G2API_SkinlessModel(CGhoul2Info_v& ghoul2, int modelIndex)
 	return qtrue;
 }
 
+int G2API_Ghoul2Size(CGhoul2Info_v &ghoul2)
+{
+	return ghoul2.size();
+}
+
 //#ifdef _SOF2
 #ifdef _G2_GORE
 void ResetGoreTag(); // put here to reduce coupling
@@ -2519,11 +2524,6 @@ void G2API_ClearSkinGore ( CGhoul2Info_v &ghoul2 )
 			ghoul2[i].mGoreSetTag = 0;
 		}
 	}
-}
-
-int G2API_Ghoul2Size ( CGhoul2Info_v &ghoul2 )
-{
-	return ghoul2.size();
 }
 
 extern int		G2_DecideTraceLod(CGhoul2Info &ghoul2, int useLod);
