@@ -147,7 +147,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			rd_flush(rd_buffer);
 			*rd_buffer = 0;
 		}
-		Q_strcat (rd_buffer, strlen(rd_buffer), msg);
+		Q_strcat (rd_buffer, static_cast<int>(strlen(rd_buffer)), msg);
 		return;
 	}
 
@@ -172,7 +172,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			}
 		}
 		if ( logfile ) {
-			FS_Write(msg, strlen(msg), logfile);
+			FS_Write(msg, static_cast<int>(strlen(msg)), logfile);
 		}
 	}
 }
@@ -522,7 +522,7 @@ Com_StringContains
 const char *Com_StringContains(const char *str1, const char *str2, int casesensitive) {
 	int len, i, j;
 
-	len = strlen(str1) - strlen(str2);
+	len = static_cast<int>(strlen(str1)) - static_cast<int>(strlen(str2));
 	for (i = 0; i <= len; i++, str1++) {
 		for (j = 0; str2[j]; j++) {
 			if (casesensitive) {
@@ -1473,7 +1473,7 @@ void Com_Frame( void ) {
 				if(!speedslog)
 				{
 					speedslog = FS_FOpenFileWrite("speeds.log");
-					FS_Write("data={\n", strlen("data={\n"), speedslog);
+					FS_Write("data={\n", static_cast<int>(strlen("data={\n")), speedslog);
 					bComma=false;
 					if ( com_speedslog->integer > 1 )
 					{
@@ -1488,17 +1488,17 @@ void Com_Frame( void ) {
 
 					if(bComma)
 					{
-						FS_Write(",\n", strlen(",\n"), speedslog);
+						FS_Write(",\n", static_cast<int>(strlen(",\n")), speedslog);
 						bComma=false;
 					}
-					FS_Write("{", strlen("{"), speedslog);
+					FS_Write("{", static_cast<int>(strlen("{")), speedslog);
 					Com_sprintf(msg,sizeof(msg),
 								"%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,",corg[0],corg[1],corg[2],cangles[0],cangles[1],cangles[2]);
-					FS_Write(msg, strlen(msg), speedslog);
+					FS_Write(msg, static_cast<int>(strlen(msg)), speedslog);
 					Com_sprintf(msg,sizeof(msg),
 						"%i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i}",
 						com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
-					FS_Write(msg, strlen(msg), speedslog);
+					FS_Write(msg, static_cast<int>(strlen(msg)), speedslog);
 					bComma=true;
 				}
 			}
@@ -1566,7 +1566,7 @@ void Com_Shutdown (void) {
 	}
 
 	if (speedslog) {
-		FS_Write("\n};", strlen("\n};"), speedslog);
+		FS_Write("\n};", static_cast<int>(strlen("\n};")), speedslog);
 		FS_FCloseFile (speedslog);
 		speedslog = 0;
 	}
@@ -1625,7 +1625,7 @@ FindMatches
 static void FindMatches( const char *s ) {
 	int		i;
 
-	if ( Q_stricmpn( s, completionString, strlen( completionString ) ) ) {
+	if ( Q_stricmpn( s, completionString, static_cast<int>(strlen( completionString )) ) ) {
 		return;
 	}
 	matchCount++;
@@ -1654,7 +1654,7 @@ PrintMatches
 ===============
 */
 static void PrintMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !Q_stricmpn( s, shortestMatch, static_cast<int>(strlen( shortestMatch )) ) ) {
 		Com_Printf( S_COLOR_GREY "Cmd  " S_COLOR_WHITE "%s\n", s );
 	}
 }
@@ -1681,7 +1681,7 @@ PrintKeyMatches
 ===============
 */
 static void PrintKeyMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !Q_stricmpn( s, shortestMatch, static_cast<int>(strlen( shortestMatch )) ) ) {
 		Com_Printf( S_COLOR_GREY "Key  " S_COLOR_WHITE "%s\n", s );
 	}
 }
@@ -1693,7 +1693,7 @@ PrintFileMatches
 ===============
 */
 static void PrintFileMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !Q_stricmpn( s, shortestMatch, static_cast<int>(strlen( shortestMatch )) ) ) {
 		Com_Printf( S_COLOR_GREY "File " S_COLOR_WHITE "%s\n", s );
 	}
 }
@@ -1738,11 +1738,11 @@ static qboolean Field_Complete( void ) {
 	if ( matchCount == 0 )
 		return qtrue;
 
-	completionOffset = strlen( completionField->buffer ) - strlen( completionString );
+	completionOffset = static_cast<int>(strlen( completionField->buffer )) - static_cast<int>(strlen( completionString ));
 
 	Q_strncpyz( &completionField->buffer[completionOffset], shortestMatch, sizeof( completionField->buffer ) - completionOffset );
 
-	completionField->cursor = strlen( completionField->buffer );
+	completionField->cursor = static_cast<int>(strlen( completionField->buffer ));
 
 	if ( matchCount == 1 ) {
 		Q_strcat( completionField->buffer, sizeof( completionField->buffer ), " " );

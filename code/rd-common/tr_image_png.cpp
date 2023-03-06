@@ -29,7 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 void user_write_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
 	fileHandle_t fp = *(fileHandle_t*)png_get_io_ptr( png_ptr );
-	ri.FS_Write( data, length, fp );
+	ri.FS_Write( data, static_cast<int>(length), fp );
 }
 void user_flush_data( png_structp png_ptr ) {
 	//TODO: ri->FS_Flush?
@@ -76,8 +76,8 @@ int RE_SavePNG( const char *filename, byte *buf, size_t width, size_t height, in
 
 	png_set_IHDR (png_ptr,
 		info_ptr,
-		width,
-		height,
+		static_cast<png_uint_32>(width),
+		static_cast<png_uint_32>(height),
 		depth,
 		PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE,

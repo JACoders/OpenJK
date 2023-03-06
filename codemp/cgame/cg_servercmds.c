@@ -1130,7 +1130,7 @@ void CG_CheckSVStringEdRef(char *buf, const char *str)
 
 	strcpy(buf, str);
 
-	strLen = strlen(str);
+	strLen = (int)strlen(str);
 
 	if (strLen >= MAX_STRINGED_SV_STRING)
 	{
@@ -1165,7 +1165,7 @@ void CG_CheckSVStringEdRef(char *buf, const char *str)
 
 					buf[b] = 0;
 					Q_strcat(buf, MAX_STRINGED_SV_STRING, CG_GetStringEdString("MP_SVGAME", stringRef));
-					b = strlen(buf);
+					b = (int)strlen(buf);
 				}
 			}
 		}

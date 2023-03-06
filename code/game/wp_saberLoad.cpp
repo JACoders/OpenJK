@@ -2301,7 +2301,7 @@ void WP_SaberLoadParms( void )
 	holdChar = saberExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 )
 	{
-		saberExtFNLen = strlen( holdChar );
+		saberExtFNLen = static_cast<int>(strlen( holdChar ));
 
 		len = gi.FS_ReadFile( va( "ext_data/sabers/%s", holdChar), (void **) &buffer );
 

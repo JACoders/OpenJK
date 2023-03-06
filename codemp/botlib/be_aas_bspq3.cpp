@@ -423,7 +423,7 @@ void AAS_ParseBSPEntities(void)
 				return;
 			} //end if
 			StripDoubleQuotes(token.string);
-			epair->key = (char *) GetHunkMemory(strlen(token.string) + 1);
+			epair->key = (char *) GetHunkMemory(static_cast<unsigned long>(strlen(token.string) + 1));
 			strcpy(epair->key, token.string);
 			if (!PS_ExpectTokenType(script, TT_STRING, 0, &token))
 			{
@@ -432,7 +432,7 @@ void AAS_ParseBSPEntities(void)
 				return;
 			} //end if
 			StripDoubleQuotes(token.string);
-			epair->value = (char *) GetHunkMemory(strlen(token.string) + 1);
+			epair->value = (char *) GetHunkMemory(static_cast<unsigned long>(strlen(token.string) + 1));
 			strcpy(epair->value, token.string);
 		} //end while
 		if (strcmp(token.string, "}"))
@@ -482,7 +482,7 @@ void AAS_DumpBSPData(void)
 int AAS_LoadBSPFile(void)
 {
 	AAS_DumpBSPData();
-	bspworld.entdatasize = strlen(botimport.BSPEntityData()) + 1;
+	bspworld.entdatasize = static_cast<int>(strlen(botimport.BSPEntityData()) + 1);
 	bspworld.dentdata = (char *) GetClearedHunkMemory(bspworld.entdatasize);
 	Com_Memcpy(bspworld.dentdata, botimport.BSPEntityData(), bspworld.entdatasize);
 	AAS_ParseBSPEntities();

@@ -704,7 +704,7 @@ void PC_AddBuiltinDefines(source_t *source)
 	{
 		define = (define_t *) GetMemory(sizeof(define_t));
 		Com_Memset(define, 0, sizeof(define_t));
-		define->name = (char *) GetMemory(strlen(builtin[i].string) + 1);
+		define->name = (char *) GetMemory(static_cast<unsigned long>(strlen(builtin[i].string) + 1));
 		strcpy(define->name, builtin[i].string);
 		define->flags |= DEFINE_FIXED;
 		define->builtin = builtin[i].mBuiltin;
@@ -750,7 +750,7 @@ int PC_ExpandBuiltinDefine(source_t *source, token_t *deftoken, define_t *define
 		{
 			strcpy(token->string, source->scriptstack->filename);
 			token->type = TT_NAME;
-			token->subtype = strlen(token->string);
+			token->subtype = static_cast<int>(strlen(token->string));
 			*firsttoken = token;
 			*lasttoken = token;
 			break;
@@ -765,7 +765,7 @@ int PC_ExpandBuiltinDefine(source_t *source, token_t *deftoken, define_t *define
 			strcat(token->string, "\"");
 			free(curtime);
 			token->type = TT_NAME;
-			token->subtype = strlen(token->string);
+			token->subtype = static_cast<int>(strlen(token->string));
 			*firsttoken = token;
 			*lasttoken = token;
 			break;
@@ -779,7 +779,7 @@ int PC_ExpandBuiltinDefine(source_t *source, token_t *deftoken, define_t *define
 			strcat(token->string, "\"");
 			free(curtime);
 			token->type = TT_NAME;
-			token->subtype = strlen(token->string);
+			token->subtype = static_cast<int>(strlen(token->string));
 			*firsttoken = token;
 			*lasttoken = token;
 			break;
@@ -1243,7 +1243,7 @@ int PC_Directive_define(source_t *source)
 	//allocate define
 	define = (define_t *) GetMemory(sizeof(define_t));
 	Com_Memset(define, 0, sizeof(define_t));
-	define->name = (char *) GetMemory(strlen(token.string) + 1);
+	define->name = (char *) GetMemory(static_cast<unsigned long>(strlen(token.string) + 1));
 	strcpy(define->name, token.string);
 	//add the define to the source
 #if DEFINEHASHING
@@ -1351,7 +1351,7 @@ define_t *PC_DefineFromString(char *string)
 
 	PC_InitTokenHeap();
 
-	script = LoadScriptMemory(string, strlen(string), "*extern");
+	script = LoadScriptMemory(string, static_cast<int>(strlen(string)), "*extern");
 	//create a new source
 	Com_Memset(&src, 0, sizeof(source_t));
 	strncpy(src.filename, "*extern", MAX_PATH);
@@ -1504,7 +1504,7 @@ define_t *PC_CopyDefine(source_t *source, define_t *define)
 
 	newdefine = (define_t *) GetMemory(sizeof(define_t));
 	//copy the define name
-	newdefine->name = (char *) GetMemory(strlen(define->name) + 1);
+	newdefine->name = (char *) GetMemory(static_cast<unsigned long>(strlen(define->name) + 1));
 	strcpy(newdefine->name, define->name);
 	newdefine->flags = define->flags;
 	newdefine->builtin = define->builtin;

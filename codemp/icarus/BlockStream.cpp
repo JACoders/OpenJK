@@ -88,7 +88,7 @@ SetData overloads
 
 void CBlockMember::SetData( const char *data )
 {
-	WriteDataPointer( data, strlen(data)+1 );
+	WriteDataPointer( data, static_cast<int>(strlen(data)+1) );
 }
 
 void CBlockMember::SetData( vector_t data )
@@ -268,7 +268,7 @@ int CBlock::Write( int member_id, const char *member_data )
 	bMember->SetID( member_id );
 
 	bMember->SetData( member_data );
-	bMember->SetSize( strlen(member_data) + 1 );
+	bMember->SetSize( static_cast<int>(strlen(member_data) + 1) );
 
 	AddMember( bMember );
 

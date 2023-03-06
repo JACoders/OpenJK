@@ -186,7 +186,7 @@ void TIMER_Save( void )
 		while(p)
 		{
 			const char	*timerID = p->id.c_str();
-			const int	length = strlen(timerID) + 1;
+			const int	length = static_cast<int>(strlen(timerID) + 1);
 			const int	time = p->time - level.time;	//convert this back to delta so we can use SET after loading
 
 			assert( length < 1024 );//This will cause problems when loading the timer if longer

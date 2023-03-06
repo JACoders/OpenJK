@@ -545,7 +545,7 @@ void WPN_WeaponClass(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 32)
 	{
@@ -568,7 +568,7 @@ void WPN_WeaponModel(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -590,7 +590,7 @@ void WPN_WeaponIcon(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -652,7 +652,7 @@ void WPN_FiringSnd(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -674,7 +674,7 @@ void WPN_AltFiringSnd( const char **holdBuf )
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -696,7 +696,7 @@ void WPN_StopSnd( const char **holdBuf )
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -718,7 +718,7 @@ void WPN_ChargeSnd(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -740,7 +740,7 @@ void WPN_AltChargeSnd(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -762,7 +762,7 @@ void WPN_SelectSnd( const char **holdBuf )
 		return;
 	}
 
-	len = strlen( tokenStr );
+	len = static_cast<int>(strlen( tokenStr ));
 	len++;
 
 	if (len > 64)
@@ -938,7 +938,7 @@ void WPN_AmmoIcon(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1032,7 +1032,7 @@ void WPN_MissileName(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1055,7 +1055,7 @@ void WPN_AltMissileName(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1079,7 +1079,7 @@ void WPN_MissileHitSound(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1101,7 +1101,7 @@ void WPN_AltMissileHitSound(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1123,7 +1123,7 @@ void WPN_MissileSound(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1147,7 +1147,7 @@ void WPN_AltMissileSound(const char **holdBuf)
 		return;
 	}
 
-	len = strlen(tokenStr);
+	len = static_cast<int>(strlen(tokenStr));
 	len++;
 	if (len > 64)
 	{
@@ -1319,7 +1319,7 @@ void WPN_MuzzleEffect(const char **holdBuf)
 	}
 
 	G_EffectIndex( tokenStr );
-	Q_strncpyz(weaponData[wpnParms.weaponNum].mMuzzleEffect,tokenStr,len);
+	Q_strncpyz(weaponData[wpnParms.weaponNum].mMuzzleEffect,tokenStr,static_cast<int>(len));
 }
 
 //--------------------------------------------
@@ -1341,7 +1341,7 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 	}
 
 	G_EffectIndex( tokenStr );
-	Q_strncpyz(weaponData[wpnParms.weaponNum].mAltMuzzleEffect,tokenStr,len);
+	Q_strncpyz(weaponData[wpnParms.weaponNum].mAltMuzzleEffect,tokenStr,static_cast<int>(len));
 }
 
 //--------------------------------------------

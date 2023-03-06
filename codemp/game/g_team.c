@@ -1249,7 +1249,7 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 					i, player->client->pers.teamState.location, h, a,
 					player->client->ps.weapon, player->s.powerups );
 			}
-			j = strlen(entry);
+			j = (int)strlen(entry);
 			if (stringlength + j >= sizeof(string))
 				break;
 			strcpy (string + stringlength, entry);

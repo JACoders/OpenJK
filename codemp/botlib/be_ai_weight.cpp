@@ -357,7 +357,7 @@ weightconfig_t *ReadWeightConfig(char *filename)
 				return NULL;
 			} //end if
 			StripDoubleQuotes(token.string);
-			config->weights[config->numweights].name = (char *) GetClearedMemory(strlen(token.string) + 1);
+			config->weights[config->numweights].name = (char *) GetClearedMemory(static_cast<unsigned long>(strlen(token.string) + 1));
 			strcpy(config->weights[config->numweights].name, token.string);
 			if (!PC_ExpectAnyToken(source, &token))
 			{

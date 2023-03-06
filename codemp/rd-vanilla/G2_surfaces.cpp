@@ -124,7 +124,7 @@ mdxmSurface_t *G2_FindSurface(CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const 
 	}
 
  	// first find if we already have this surface in the list
-	for (i = slist.size() - 1; i >= 0; i--)
+	for (i = static_cast<int>(slist.size() - 1); i >= 0; i--)
 	{
 		if ((slist[i].surface != 10000) && (slist[i].surface != -1))
 		{
@@ -324,7 +324,7 @@ void G2_RemoveRedundantGeneratedSurfaces(surfaceInfo_v &slist, int *activeSurfac
 				// if it's not in the list, remove it
 				if (!activeSurfaces[slist[i].genPolySurfaceIndex & 0xffff])
 				{
-					G2_RemoveSurface(slist, i);
+					G2_RemoveSurface(slist, static_cast<int>(i));
 				}
 			}
 			// no, so it does point back at a legal surface
@@ -333,7 +333,7 @@ void G2_RemoveRedundantGeneratedSurfaces(surfaceInfo_v &slist, int *activeSurfac
 				// if it's not in the list, remove it
 				if (!activeSurfaces[slist[i].surface])
 				{
-					G2_RemoveSurface(slist, i);
+					G2_RemoveSurface(slist, static_cast<int>(i));
 				}
 			}
 		}
@@ -534,7 +534,7 @@ int G2_AddSurface(CGhoul2Info *ghoul2, int surfaceNumber, int polyNumber, float 
 			ghoul2->mSlist[i].genBarycentricJ = BarycentricJ;
 			ghoul2->mSlist[i].genPolySurfaceIndex = ((polyNumber & 0xffff) << 16) | (surfaceNumber & 0xffff);
 			ghoul2->mSlist[i].genLod = lod;
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 
@@ -549,7 +549,7 @@ int G2_AddSurface(CGhoul2Info *ghoul2, int surfaceNumber, int polyNumber, float 
 
 	ghoul2->mSlist.push_back(temp_slist_entry);
 
-	return (ghoul2->mSlist.size() -1 );
+	return static_cast<int>(ghoul2->mSlist.size() -1 );
 }
 
 qboolean G2_RemoveSurface(surfaceInfo_v &slist, const int index)
@@ -560,9 +560,9 @@ qboolean G2_RemoveSurface(surfaceInfo_v &slist, const int index)
 		 // set us to be the 'not active' state
 		slist[index].surface = -1;
 
-		unsigned int newSize = slist.size();
+		unsigned int newSize = static_cast<unsigned int>(slist.size());
 		// now look through the list from the back and see if there is a block of -1's we can resize off the end of the list
-		for (int i=slist.size()-1; i>-1; i--)
+		for (int i=static_cast<int>(slist.size()-1); i>-1; i--)
 		{
 			if (slist[i].surface == -1)
 			{

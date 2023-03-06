@@ -1325,7 +1325,7 @@ const char *String_Alloc(const char *p)
 		str = str->next;
 	}
 
-	len = strlen(p);
+	len = static_cast<int>(strlen(p));
 	if (len + strPoolIndex + 1 < STRING_POOL_SIZE)
 	{
 		int ph = strPoolIndex;
@@ -6862,7 +6862,7 @@ int BindingIDFromName( const char *name ) {
 	// iterate each command, set its default binding
 	for ( i = 0; i < g_bindCount; i++ ) {
 		if ( !Q_stricmp( name, g_bindCommands[i] ) )
-			return i;
+			return static_cast<int>(i);
 	}
 	return -1;
 }
@@ -9754,7 +9754,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 
 		memset(buff, 0, sizeof(buff));
 		DC->getCVarString(item->cvar, buff, sizeof(buff));
-		len = strlen(buff);
+		len = static_cast<int>(strlen(buff));
 		if (editPtr->maxChars && len > editPtr->maxChars)
 		{
 			len = editPtr->maxChars;

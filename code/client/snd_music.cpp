@@ -245,7 +245,7 @@ static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2&
 			}
 			else if( groupName == sKEY_EXIT )
 			{
-				int iThisExitPointIndex = MusicFile.MusicExitPoints.size();	// must eval this first, so unaffected by push_back etc
+				int iThisExitPointIndex = static_cast<int>(MusicFile.MusicExitPoints.size());	// must eval this first, so unaffected by push_back etc
 				//
 				// read this set of exit points...
 				//
@@ -291,7 +291,7 @@ static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2&
 				}
 
 				MusicFile.MusicExitPoints.push_back( MusicExitPoint );
-				int iNumExitPoints = MusicFile.MusicExitPoints.size();
+				int iNumExitPoints = static_cast<int>(MusicFile.MusicExitPoints.size());
 
 				// error checking...
 				//

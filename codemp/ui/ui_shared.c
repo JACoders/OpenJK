@@ -243,7 +243,7 @@ const char *String_Alloc(const char *p) {
 		str = str->next;
 	}
 
-	len = strlen(p);
+	len = (int)strlen(p);
 	if (len + strPoolIndex + 1 < STRING_POOL_SIZE) {
 		int ph = strPoolIndex;
 		strcpy(&strPool[strPoolIndex], p);
@@ -3458,7 +3458,7 @@ void Item_TextField_Paste( itemDef_t *item ) {
 	}
 
 	// send as if typed, so insert / overstrike works properly
-	pasteLen = strlen( buff );
+	pasteLen = (int)strlen( buff );
 	for ( i = 0; i < pasteLen; i++ ) {
 		Item_TextField_HandleKey( item, buff[i]|K_CHAR_FLAG );
 	}
@@ -3475,7 +3475,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 
 		buff[0] = 0;
 		DC->getCVarString(item->cvar, buff, sizeof(buff));
-		len = strlen(buff);
+		len = (int)strlen(buff);
 		if (editPtr->maxChars && len > editPtr->maxChars) {
 			len = editPtr->maxChars;
 		}
@@ -4971,7 +4971,7 @@ int BindingIDFromName( const char *name ) {
 	// iterate each command, set its default binding
 	for ( i=0; i < g_bindCount; i++ ) {
 		if ( !Q_stricmp( name, g_bindCommands[i] ) )
-			return i;
+			return (int)i;
 	}
 	return -1;
 }

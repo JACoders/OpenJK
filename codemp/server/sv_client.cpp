@@ -1185,9 +1185,9 @@ void SV_UserinfoChanged( client_t *cl ) {
 
 	val = Info_ValueForKey( cl->userinfo, "ip" );
 	if( val[0] )
-		len = strlen( ip ) - strlen( val ) + strlen( cl->userinfo );
+		len = static_cast<int>(strlen( ip ) - strlen( val ) + strlen( cl->userinfo ));
 	else
-		len = strlen( ip ) + 4 + strlen( cl->userinfo );
+		len = static_cast<int>(strlen( ip ) + 4 + strlen( cl->userinfo ));
 
 	if( len >= MAX_INFO_STRING )
 		SV_DropClient( cl, "userinfo string length exceeded" );

@@ -566,7 +566,7 @@ static void UI_LoadMods() {
 	numdirs = FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
 	dirptr  = dirlist;
 	for( i = 0; i < numdirs; i++ ) {
-		dirlen = strlen( dirptr ) + 1;
+		dirlen = static_cast<int>(strlen( dirptr ) + 1);
 		descptr = dirptr + dirlen;
 		uiInfo.modList[uiInfo.modCount].modName = String_Alloc(dirptr);
 		uiInfo.modList[uiInfo.modCount].modDescr = String_Alloc(descptr);
@@ -2472,7 +2472,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, dirListSize );
+	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, static_cast<int>(dirListSize) );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
@@ -2481,7 +2481,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		int f = 0;
 		char fpath[MAX_QPATH];
 
-		dirlen = strlen(dirptr);
+		dirlen = static_cast<int>(strlen(dirptr));
 
 		if (dirlen)
 		{
@@ -2552,7 +2552,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 					if (f) ui.FS_FCloseFile(f);
 				}
 
-				filelen = strlen(fileptr);
+				filelen = static_cast<int>(strlen(fileptr));
 				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
 				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
@@ -6530,7 +6530,7 @@ void ReadSaveDirectory (void)
 	for ( i = 0; i < fileCnt; i++ )
 	{
 		// strip extension
-		len = strlen( holdChar );
+		len = static_cast<int>(strlen( holdChar ));
 		holdChar[len-4] = '\0';
 
 		if	( Q_stricmp("current",holdChar)!=0 )

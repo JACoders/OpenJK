@@ -919,7 +919,7 @@ char *G_NewString( const char *string ) {
 		return NULL;
 	}
 
-	l = strlen(string) + 1;
+	l = static_cast<int>(strlen(string) + 1);
 
 	newb = (char *) G_Alloc( l );
 
@@ -1184,7 +1184,7 @@ char *G_AddSpawnVarToken( const char *string ) {
 	int		l;
 	char	*dest;
 
-	l = strlen( string );
+	l = static_cast<int>(strlen( string ));
 	if ( numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS ) {
 		G_Error( "G_AddSpawnVarToken: MAX_SPAWN_VARS" );
 	}
@@ -1509,17 +1509,17 @@ void SP_worldspawn( void ) {
 		int		lengthRed, lengthBlue, lengthGreen;
 		Com_sprintf(temp, sizeof(temp), "ls_%dr", i);
 		G_SpawnString( temp, defaultStyles[i][0], &s );
-		lengthRed = strlen(s);
+		lengthRed = static_cast<int>(strlen(s));
 		gi.SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+0, s);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%dg", i);
 		G_SpawnString(temp, defaultStyles[i][1], &s);
-		lengthGreen = strlen(s);
+		lengthGreen = static_cast<int>(strlen(s));
 		gi.SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+1, s);
 
 		Com_sprintf(temp, sizeof(temp), "ls_%db", i);
 		G_SpawnString(temp, defaultStyles[i][2], &s);
-		lengthBlue = strlen(s);
+		lengthBlue = static_cast<int>(strlen(s));
 		gi.SetConfigstring(CS_LIGHT_STYLES+((i+LS_STYLES_START)*3)+2, s);
 
 		if (lengthRed != lengthGreen || lengthGreen != lengthBlue)

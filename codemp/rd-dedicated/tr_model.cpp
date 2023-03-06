@@ -448,7 +448,7 @@ void RE_RegisterModels_Info_f( void )
 		return;
 	}
 
-	int iModels = CachedModels->size();
+	int iModels = static_cast<int>(CachedModels->size());
 	int iModel  = 0;
 
 	for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end(); ++itModel,iModel++)
@@ -1501,7 +1501,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 
 		// strip off a trailing _1 or _2
 		// this is a crutch for q3data being a mess
-		j = strlen( surf->name );
+		j = static_cast<int>(strlen( surf->name ));
 		if ( j > 2 && surf->name[j-2] == '_' ) {
 			surf->name[j-2] = 0;
 		}

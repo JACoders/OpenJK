@@ -438,7 +438,7 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color)
 						std::sort( CreditLine.vstrText.begin(), CreditLine.vstrText.end(), SortBySurname );
 
 						CreditData.CreditLines.push_back( CreditLine );
-						iLineNumber += CreditLine.vstrText.size();
+						iLineNumber += static_cast<int>(CreditLine.vstrText.size());
 					}
 				}
 				break;
@@ -555,7 +555,7 @@ qboolean CG_Credits_Draw( void )
 			//
 			// how many lines is it?
 			//
-			int iLines = CreditCard.vstrText.size() + 2;	// +2 for title itself & one seperator line
+			int iLines = static_cast<int>(CreditCard.vstrText.size() + 2);	// +2 for title itself & one seperator line
 			//
 			int iYpos = (SCREEN_HEIGHT - (iLines * iFontHeight))/2;
 			//

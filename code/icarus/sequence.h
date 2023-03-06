@@ -72,7 +72,7 @@ public:
 	void SetReturn ( CSequence *sequence );
 
 	int GetNumCommands( void )	const	{	return m_numCommands;	}
-	int GetNumChildren( void )	const	{	return m_children.size();	}
+	int GetNumChildren( void )	const	{	return static_cast<int>(m_children.size());	}
 
 	CSequence *GetChildByID( int id );
 	CSequence *GetChildByIndex( int iIndex );
@@ -84,7 +84,7 @@ public:
 	// Overloaded new operator.
 	inline void *operator new( size_t size )
 	{	// Allocate the memory.
-		return IGameInterface::GetGame()->Malloc( size );
+		return IGameInterface::GetGame()->Malloc( static_cast<int>(size) );
 	}
 
 	// Overloaded delete operator.

@@ -134,7 +134,7 @@ public:
 	// Overloaded new operator.
 	inline void *operator new( size_t size )
 	{
-		return IGameInterface::GetGame()->Malloc( size );
+		return IGameInterface::GetGame()->Malloc( static_cast<int>(size) );
 	}
 
 	// Overloaded delete operator.

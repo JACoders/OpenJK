@@ -7361,8 +7361,8 @@ chatbox functionality -rww
 //place (assuming this will not overflow the buffer)
 void CG_ChatBox_StrInsert(char *buffer, int place, char *str)
 {
-	int insLen = strlen(str);
-	int i = strlen(buffer);
+	int insLen = (int)strlen(str);
+	int i = (int)strlen(buffer);
 	int k = 0;
 
 	buffer[i+insLen+1] = 0; //terminate the string at its new length

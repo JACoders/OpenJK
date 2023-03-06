@@ -110,7 +110,7 @@ public:
 	}
 	int length() const
 	{
-		return strlen(mStorage.data);
+		return static_cast<int>(strlen(mStorage.data));
 	}
 	bool operator==(const sstring<MaxSize> &o) const
 	{

@@ -75,7 +75,7 @@ int G2_Find_Bone(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName)
 		// if name is the same, we found it
 		if (!Q_stricmp(skel->name, boneName))
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 #if _DEBUG
@@ -141,7 +141,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 					OutputDebugString(mess);
 				}
 #endif
-				return i;
+				return static_cast<int>(i);
 			}
 		}
 		else
@@ -159,7 +159,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 				OutputDebugString(mess);
 			}
 #endif
-	 		return i;
+	 		return static_cast<int>(i);
 		}
 	}
 
@@ -177,7 +177,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 		OutputDebugString(mess);
 	}
 #endif
-	return blist.size()-1;
+	return static_cast<int>(blist.size())-1;
 }
 
 
@@ -206,7 +206,7 @@ int	G2_Find_Bone_In_List(boneInfo_v &blist, const int boneNum)
 	{
 		if (blist[i].boneNumber == boneNum)
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 	return -1;
@@ -1208,7 +1208,7 @@ int G2_Find_Bone_Rag(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneNa
 		// if name is the same, we found it
 		if (!Q_stricmp(skel->name, boneName))
 		{
-			return i;
+			return static_cast<int>(i);
 		}
 	}
 #if _DEBUG
@@ -2050,7 +2050,7 @@ void G2_SetRagDollBullet(CGhoul2Info &ghoul2,const vec3_t rayStart,const vec3_t 
 		int i;
 		int		magicFactor13=150.0f; // squared radius multiplier for shot effects
 		boneInfo_v &blist = ghoul2.mBlist;
-		for(i=blist.size()-1;i>=0;i--)
+		for(i=static_cast<int>(blist.size())-1;i>=0;i--)
 		{
 			boneInfo_t &bone=blist[i];
 			if ((bone.flags & BONE_ANGLES_TOTAL))
@@ -2322,7 +2322,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 					rag->resize(bone.boneNumber+1,0);
 				}
 				(*rag)[bone.boneNumber]=&bone;
-				ragBlistIndex[bone.boneNumber]=i;
+				ragBlistIndex[bone.boneNumber]=static_cast<int>(i);
 
 				bone.lastTimeUpdated=frameNum;
 				if (resetOrigin)

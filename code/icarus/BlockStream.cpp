@@ -94,7 +94,7 @@ SetData overloads
 
 void CBlockMember::SetData( const char *data , CIcarus* icarus)
 {
-	WriteDataPointer( data, strlen(data)+1, icarus );
+	WriteDataPointer( data, static_cast<int>(strlen(data)+1), icarus );
 }
 
 void CBlockMember::SetData( vec3_t data , CIcarus* icarus)
@@ -267,7 +267,7 @@ int CBlock::Write( int member_id, const char *member_data, CIcarus* icarus )
 	bMember->SetID( member_id );
 
 	bMember->SetData( member_data, icarus );
-	bMember->SetSize( strlen(member_data) + 1 );
+	bMember->SetSize( static_cast<int>(strlen(member_data) + 1));
 
 	AddMember( bMember );
 

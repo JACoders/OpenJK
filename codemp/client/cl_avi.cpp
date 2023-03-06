@@ -93,7 +93,7 @@ WRITE_STRING
 static QINLINE void WRITE_STRING( const char *s )
 {
   Com_Memcpy( &buffer[ bufIndex ], s, strlen( s ) );
-  bufIndex += strlen( s );
+  bufIndex += static_cast<int>(strlen( s ));
 }
 
 /*

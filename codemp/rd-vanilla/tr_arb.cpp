@@ -207,7 +207,7 @@ void ARB_InitGPUShaders(void) {
 
 	qglGenProgramsARB(1, &tr.gammaCorrectVtxShader);
 	qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, tr.gammaCorrectVtxShader);
-	qglProgramStringARB(GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(gammaCorrectVtxShader), gammaCorrectVtxShader);
+	qglProgramStringARB(GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, static_cast<GLsizei>(strlen(gammaCorrectVtxShader)), gammaCorrectVtxShader);
 
 	int errorChar;
 	qglGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errorChar);
@@ -220,7 +220,7 @@ void ARB_InitGPUShaders(void) {
 	{
 		qglGenProgramsARB(1, &tr.gammaCorrectPxShader);
 		qglBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, tr.gammaCorrectPxShader);
-		qglProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(gammaCorrectPxShader), gammaCorrectPxShader);
+		qglProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, static_cast<GLsizei>(strlen(gammaCorrectPxShader)), gammaCorrectPxShader);
 
 		qglGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errorChar);
 		if ( errorChar != -1 )

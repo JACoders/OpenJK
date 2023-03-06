@@ -2498,7 +2498,7 @@ int SavePathData(const char *filename)
 		i++;
 	}
 
-	trap->FS_Write(fileString, strlen(fileString), f);
+	trap->FS_Write(fileString, (int)strlen(fileString), f);
 
 	B_TempFree(524288); //fileString
 	B_TempFree(4096); //storeString

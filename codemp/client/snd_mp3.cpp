@@ -196,7 +196,7 @@ qboolean MP3_ReadSpecialTagInfo(byte *pbLoadedFile, int iLoadedFileLen,
 
 		// read MAXVOL key...
 		//
-		if (Q_strncmp(pTAG->comment, sKEY_MAXVOL,	strlen(sKEY_MAXVOL)))
+		if (Q_strncmp(pTAG->comment, sKEY_MAXVOL,	static_cast<int>(strlen(sKEY_MAXVOL))))
 		{
 			qbError = qtrue;
 		}
@@ -211,7 +211,7 @@ qboolean MP3_ReadSpecialTagInfo(byte *pbLoadedFile, int iLoadedFileLen,
 		//
 		// read UNCOMP key...
 		//
-		if (Q_strncmp(pTAG->album, sKEY_UNCOMP, strlen(sKEY_UNCOMP)))
+		if (Q_strncmp(pTAG->album, sKEY_UNCOMP, static_cast<int>(strlen(sKEY_UNCOMP))))
 		{
 			qbError = qtrue;
 		}

@@ -764,8 +764,8 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 		extensionsLen = p - extensionsString - 1;
 	}
 
-	truncatedExtensions = (char *)Hunk_Alloc(extensionsLen + 1, h_low);
-	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
+	truncatedExtensions = (char *)Hunk_Alloc(static_cast<int>(extensionsLen + 1), h_low);
+	Q_strncpyz (truncatedExtensions, extensionsString, static_cast<int>(extensionsLen + 1));
 
 	return truncatedExtensions;
 }
@@ -912,7 +912,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *)Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
+	buffer = (byte *)Hunk_AllocateTempMemory(static_cast<int>(padwidth * height + *offset + packAlign - 1));
 
 	bufstart = (byte *)PADP((intptr_t) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -976,9 +976,9 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 
 	// gamma correct
 	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
-		R_GammaCorrect(allbuf + offset, memcount);
+		R_GammaCorrect(allbuf + offset, static_cast<int>(memcount));
 
-	ri.FS_WriteFile(fileName, buffer, memcount + 18);
+	ri.FS_WriteFile(fileName, buffer, static_cast<int>(memcount + 18));
 
 	ri.Hunk_FreeTempMemory(allbuf);
 }
@@ -1013,7 +1013,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 
 	// gamma correct
 	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
-		R_GammaCorrect(buffer + offset, memcount);
+		R_GammaCorrect(buffer + offset, static_cast<int>(memcount));
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
 	ri.Hunk_FreeTempMemory(buffer);
@@ -1243,10 +1243,10 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 
 	// Alignment stuff for glReadPixels
 	padwidth = PAD(linelen, packAlign);
-	padlen = padwidth - linelen;
+	padlen = padwidth - static_cast<int>(linelen);
 	// AVI line padding
 	avipadwidth = PAD(linelen, AVI_LINE_PADDING);
-	avipadlen = avipadwidth - linelen;
+	avipadlen = avipadwidth - static_cast<int>(linelen);
 
 	cBuf = (byte *)PADP(cmd->captureBuffer, packAlign);
 
@@ -1257,14 +1257,14 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 
 	// gamma correct
 	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
-		R_GammaCorrect(cBuf, memcount);
+		R_GammaCorrect(cBuf, static_cast<int>(memcount));
 
 	if(cmd->motionJpeg)
 	{
 		memcount = RE_SaveJPGToBuffer(cmd->encodeBuffer, linelen * cmd->height,
 			r_aviMotionJpegQuality->integer,
 			cmd->width, cmd->height, cBuf, padlen);
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, memcount);
+		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, static_cast<int>(memcount));
 	}
 	else
 	{
@@ -1357,7 +1357,7 @@ void R_PrintLongString(const char *string)
 {
 	char buffer[1024];
 	const char *p = string;
-	int remainingLength = strlen(string);
+	int remainingLength = static_cast<int>(strlen(string));
 
 	while (remainingLength > 0)
 	{

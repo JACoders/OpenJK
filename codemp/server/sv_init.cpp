@@ -42,7 +42,7 @@ static void SV_SendConfigstring(client_t *client, int index)
 	int maxChunkSize = MAX_STRING_CHARS - 24;
 	int len;
 
-	len = strlen(sv.configstrings[index]);
+	len = static_cast<int>(strlen(sv.configstrings[index]));
 
 	if( len >= maxChunkSize ) {
 		int		sent = 0;

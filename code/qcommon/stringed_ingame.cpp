@@ -270,7 +270,7 @@ void CStringEdPackage::SetupNewFileParse( const char *psFileName, SE_BOOL bLoadD
 //
 SE_BOOL CStringEdPackage::CheckLineForKeyword( const char *psKeyword, const char *&psLine)
 {
-	if (!Q_stricmpn(psKeyword, psLine, strlen(psKeyword)) )
+	if (!Q_stricmpn(psKeyword, psLine, static_cast<int>(strlen(psKeyword))) )
 	{
 		psLine += strlen(psKeyword);
 
@@ -294,7 +294,7 @@ const char *CStringEdPackage::ConvertCRLiterals_Read( const char *psString )
 	static std::string str;
 	str = psString;
 	int iLoc;
-	while ( (iLoc = str.find("\\n")) != -1 )
+	while ( (iLoc = static_cast<int>(str.find("\\n"))) != -1 )
 	{
 		str[iLoc  ] = '\n';
 		str.erase( iLoc+1,1 );
@@ -337,7 +337,7 @@ void CStringEdPackage::REMKill( char *psBuffer )
 			//
 			if (psScanPos[0])	// any strlen? (else access violation with -1 below)
 			{
-				int iWhiteSpaceScanPos = strlen(psScanPos)-1;
+				int iWhiteSpaceScanPos = static_cast<int>(strlen(psScanPos))-1;
 				while (iWhiteSpaceScanPos>=0 && isspace(psScanPos[iWhiteSpaceScanPos]))
 				{
 					psScanPos[iWhiteSpaceScanPos--] = '\0';
@@ -386,7 +386,7 @@ SE_BOOL CStringEdPackage::ReadLine( const char *&psParsePos, char *psDest )
 		//
 		if (psDest[0])
 		{
-			int iWhiteSpaceScanPos = strlen(psDest)-1;
+			int iWhiteSpaceScanPos = static_cast<int>(strlen(psDest))-1;
 			while (iWhiteSpaceScanPos>=0 && isspace(psDest[iWhiteSpaceScanPos]))
 			{
 				psDest[iWhiteSpaceScanPos--] = '\0';
@@ -499,7 +499,7 @@ void CStringEdPackage::AddFlagReference( const char *psLocalReference, const cha
 //
 static char *CopeWithDumbStringData( const char *psSentence, const char *psThisLanguage )
 {
-	const int iBufferSize = strlen(psSentence)*3;	// *3 to allow for expansion of anything even stupid string consisting entirely of elipsis chars
+	const int iBufferSize = static_cast<int>(strlen(psSentence)*3);	// *3 to allow for expansion of anything even stupid string consisting entirely of elipsis chars
 	char *psNewString = (char *) Z_Malloc(iBufferSize, TAG_TEMP_WORKSPACE, qfalse);
 	Q_strncpyz(psNewString, psSentence, iBufferSize);
 
@@ -663,7 +663,7 @@ const char *CStringEdPackage::ParseLine( const char *psLine )
 			m_bEndMarkerFound_ParseOnly = SE_TRUE;	// the only major error checking I bother to do (for file truncation)
 		}
 		else
-		if (!Q_stricmpn(sSE_KEYWORD_LANG, psLine, strlen(sSE_KEYWORD_LANG)))
+		if (!Q_stricmpn(sSE_KEYWORD_LANG, psLine, static_cast<int>(strlen(sSE_KEYWORD_LANG))))
 		{
 			// LANG_ENGLISH 	"GUARD:  Good to see you, sir.  Taylor is waiting for you in the clean tent.  We need to get you suited up.  "
 			//
@@ -1061,7 +1061,7 @@ int	SE_GetFlags ( const char *psPackageAndStringReference )
 
 int SE_GetNumFlags( void )
 {
-	return TheStringPackage.m_vstrFlagNames.size();
+	return static_cast<int>(TheStringPackage.m_vstrFlagNames.size());
 }
 
 const char *SE_GetFlagName( int iFlagIndex )
@@ -1135,7 +1135,7 @@ int SE_GetNumLanguages(void)
 		}
 	}
 
-	return gvLanguagesAvailable.size();
+	return static_cast<int>(gvLanguagesAvailable.size());
 }
 
 // SE_GetNumLanguages() must have been called before this...

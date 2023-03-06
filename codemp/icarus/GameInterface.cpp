@@ -456,7 +456,7 @@ void ICARUS_InterrogateScript( const char *filename )
 	//
 	char sFilename[MAX_FILENAME_LENGTH];	// should really be MAX_QPATH (and 64 bytes instead of 1024), but this fits the rest of the code
 
-	if (!Q_stricmpn(filename,Q3_SCRIPT_DIR,strlen(Q3_SCRIPT_DIR)))
+	if (!Q_stricmpn(filename,Q3_SCRIPT_DIR,static_cast<int>(strlen(Q3_SCRIPT_DIR))))
 	{
 		Q_strncpyz(sFilename,filename,sizeof(sFilename));
 	}

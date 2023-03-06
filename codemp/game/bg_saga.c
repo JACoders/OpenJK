@@ -1035,11 +1035,11 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 			int titleLength, arrayTitleLength;
 			char *holdBuf;
 
-			titleLength = strlen(parseBuf);
+			titleLength = (int)strlen(parseBuf);
 			for (i=0;i<SPC_MAX;i++)
 			{
 				// Back up
-				arrayTitleLength = strlen(classTitles[i]);
+				arrayTitleLength = (int)strlen(classTitles[i]);
 				if (arrayTitleLength>titleLength)	// Too long
 				{
 					break;
@@ -1218,7 +1218,7 @@ void BG_SiegeLoadClasses(siegeClassDesc_t *descBuffer)
 
 	for (i = 0; i < numFiles; i++, fileptr += filelen+1)
 	{
-		filelen = strlen(fileptr);
+		filelen = (int)strlen(fileptr);
 		Q_strncpyz(filename, "ext_data/Siege/Classes/", sizeof(filename));
 		Q_strcat(filename, sizeof(filename), fileptr);
 
@@ -1352,7 +1352,7 @@ void BG_SiegeLoadTeams(void)
 
 	for (i = 0; i < numFiles; i++, fileptr += filelen+1)
 	{
-		filelen = strlen(fileptr);
+		filelen = (int)strlen(fileptr);
 		Q_strncpyz(filename, "ext_data/Siege/Teams/", sizeof(filename));
 		Q_strcat(filename, sizeof(filename), fileptr);
 		BG_SiegeParseTeamFile(filename);

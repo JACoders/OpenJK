@@ -183,7 +183,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 		opening_qconsole = qfalse;
 		if ( logfile && FS_Initialized()) {
-			FS_Write(msg, strlen(msg), logfile);
+			FS_Write(msg, static_cast<int>(strlen(msg)), logfile);
 		}
 	}
 
@@ -509,7 +509,7 @@ Com_StringContains
 char *Com_StringContains(char *str1, char *str2, int casesensitive) {
 	int len, i, j;
 
-	len = strlen(str1) - strlen(str2);
+	len = static_cast<int>(strlen(str1)) - static_cast<int>(strlen(str2));
 	for (i = 0; i <= len; i++, str1++) {
 		for (j = 0; str2[j]; j++) {
 			if (casesensitive) {
@@ -1723,7 +1723,7 @@ FindMatches
 static void FindMatches( const char *s ) {
 	int		i;
 
-	if ( Q_stricmpn( s, completionString, strlen( completionString ) ) ) {
+	if ( Q_stricmpn( s, completionString, static_cast<int>(strlen( completionString )) ) ) {
 		return;
 	}
 	matchCount++;
@@ -1784,7 +1784,7 @@ PrintKeyMatches
 ===============
 */
 static void PrintKeyMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !Q_stricmpn( s, shortestMatch, static_cast<int>(strlen( shortestMatch )) ) ) {
 		Com_Printf( S_COLOR_GREY "Key  " S_COLOR_WHITE "%s\n", s );
 	}
 }
@@ -1797,7 +1797,7 @@ PrintFileMatches
 ===============
 */
 static void PrintFileMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !Q_stricmpn( s, shortestMatch, static_cast<int>(strlen( shortestMatch )) ) ) {
 		Com_Printf( S_COLOR_GREY "File " S_COLOR_WHITE "%s\n", s );
 	}
 }
@@ -1845,11 +1845,11 @@ static qboolean Field_Complete( void ) {
 	if ( matchCount == 0 )
 		return qtrue;
 
-	completionOffset = strlen( completionField->buffer ) - strlen( completionString );
+	completionOffset = static_cast<int>(strlen( completionField->buffer )) - static_cast<int>(strlen( completionString ));
 
 	Q_strncpyz( &completionField->buffer[completionOffset], shortestMatch, sizeof( completionField->buffer ) - completionOffset );
 
-	completionField->cursor = strlen( completionField->buffer );
+	completionField->cursor = static_cast<int>(strlen( completionField->buffer ));
 
 	if ( matchCount == 1 ) {
 		Q_strcat( completionField->buffer, sizeof( completionField->buffer ), " " );

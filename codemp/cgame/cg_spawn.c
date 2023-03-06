@@ -348,7 +348,7 @@ char *CG_AddSpawnVarToken( const char *string ) {
 	int l;
 	char *dest;
 
-	l = strlen( string );
+	l = (int)strlen( string );
 	if( cg.numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS ) {
 		trap->Error( ERR_DROP, "CG_AddSpawnVarToken: MAX_SPAWN_VARS_CHARS" );
 	}

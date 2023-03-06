@@ -1259,9 +1259,9 @@ void SnapVector( float *v )
 	__asm fistp i
 	*v = (float)i;
 #else // mac, linux, mingw
-	v[0] = (int)v[0];
-	v[1] = (int)v[1];
-	v[2] = (int)v[2];
+	v[0] = (float)((int)v[0]);
+	v[1] = (float)((int)v[1]);
+	v[2] = (float)((int)v[2]);
 #endif
 }
 
