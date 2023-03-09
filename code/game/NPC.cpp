@@ -438,9 +438,6 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 		if ( trace.fraction >= 1.0 )
 			return;
 
-		if( !( &trace.plane ) )
-			return;
-
 		if ( VectorCompare( vec3_origin, trace.plane.normal ) )
 			return;
 

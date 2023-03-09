@@ -4035,7 +4035,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	{//FIXME: just HazTeam members in formation on away missions?
 		//or more controlled- via deathscripts?
 		// Don't count player
-		if (( &g_entities[0] != NULL && g_entities[0].client ) && (self->s.number != 0))
+		if (( g_entities[0].inuse && g_entities[0].client ) && (self->s.number != 0))
 		{//add to the number of teammates lost
 			g_entities[0].client->ps.persistant[PERS_TEAMMATES_KILLED]++;
 		}
