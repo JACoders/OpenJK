@@ -283,6 +283,7 @@ jobs:
       - name: Create binary archives
         run: |
           7z a -r OpenJK-windows-x86.zip         ./OpenJK-windows-x86-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJK-windows-x86_64.zip      ./OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           mv ./OpenJK-linux-x86-Release-Non-Portable/*     OpenJK-linux-x86.tar.gz
           mv ./OpenJK-linux-x86_64-Release-Non-Portable/*  OpenJK-linux-x86_64.tar.gz
           mv ./OpenJK-macos-x86_64-Release-Non-Portable/*  OpenJK-macos-x86_64.tar.gz
@@ -308,6 +309,10 @@ jobs:
         include:
           - artifact_dir: OpenJK-windows-x86-Release-Non-Portable/JediAcademy
             artifact_name: OpenJK-windows-x86.zip
+            zip: true
+
+          - artifact_dir: OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy
+            artifact_name: OpenJK-windows-x86_64.zip
             zip: true
 
           - artifact_dir: OpenJK-linux-x86-Release-Non-Portable
