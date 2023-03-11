@@ -1106,7 +1106,8 @@ static void RB_DrawItems(
 					drawItem.draw.params.indexed.numIndices,
 					drawItem.draw.params.indexed.indexType,
 					drawItem.draw.params.indexed.firstIndex,
-					drawItem.draw.numInstances, 0);
+					drawItem.draw.numInstances, 
+					drawItem.draw.params.indexed.baseVertex);
 				break;
 			}
 
@@ -2767,7 +2768,7 @@ static void Fill_SpriteBlock( srfSprites_t *surf , SurfaceSpriteBlock *surfaceSp
 	surfaceSpriteBlock->fxGrow[1] = ss->fxGrow[1];
 	surfaceSpriteBlock->fxDuration = ss->fxDuration;
 	surfaceSpriteBlock->fadeStartDistance = ss->fadeDist;
-	surfaceSpriteBlock->fadeEndDistance = ss->fadeMax;
+	surfaceSpriteBlock->fadeEndDistance = MAX(ss->fadeDist + 250.f, ss->fadeMax);
 	surfaceSpriteBlock->fadeScale = ss->fadeScale;
 	surfaceSpriteBlock->wind = ss->wind;
 	surfaceSpriteBlock->windIdle = ss->windIdle;

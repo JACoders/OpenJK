@@ -3640,10 +3640,54 @@ static uint32_t UpdateHash( const char *text, uint32_t hash )
 	return (hash ^ (hash >> 10) ^ (hash >> 20));
 }
 
-static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
+static uint32_t R_CountSurfaceSprites(
 	const srfBspSurface_t *bspSurf,
 	float density,
 	const shaderStage_t *stage)
+{
+	uint32_t numStageSprites = 0;
+
+	const srfVert_t *verts = bspSurf->verts;
+	const glIndex_t *indexes = bspSurf->indexes;
+
+	for (int i = 0, numIndexes = bspSurf->numIndexes; i < numIndexes; i += 3)
+	{
+		const srfVert_t *v0 = verts + indexes[i + 0];
+		const srfVert_t *v1 = verts + indexes[i + 1];
+		const srfVert_t *v2 = verts + indexes[i + 2];
+
+		vec3_t p0, p1, p2;
+		VectorCopy(v0->xyz, p0);
+		VectorCopy(v1->xyz, p1);
+		VectorCopy(v2->xyz, p2);
+
+		const vec2_t p01 = { p1[0] - p0[0], p1[1] - p0[1] };
+		const vec2_t p02 = { p2[0] - p0[0], p2[1] - p0[1] };
+
+		const float zarea = std::fabs(p02[0] * p01[1] - p02[1] * p01[0]);
+		if (zarea <= 1.0)
+		{
+			// Triangle's area is too small to consider.
+			continue;
+		}
+
+		const float step = density * Q_rsqrt(zarea);
+		for (float a = 0.0f; a < 1.0f; a += step)
+		{
+			for (float b = 0.0f, bend = (1.0f - a); b < bend; b += step)
+			{
+				numStageSprites += 1;
+			}
+		}
+	}
+	return numStageSprites;
+}
+
+static int R_CreateSurfaceSpritesVertexData(
+	const srfBspSurface_t *bspSurf,
+	float density,
+	const shaderStage_t *stage,
+	std::vector<sprite_t> *sprites)
 {
 	const srfVert_t *verts = bspSurf->verts;
 	const glIndex_t *indexes = bspSurf->indexes;
@@ -3661,8 +3705,7 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 		stage->rgbGen == CGEN_VERTEX_LIT ||
 		stage->rgbGen == CGEN_EXACT_VERTEX_LIT);
 
-	std::vector<sprite_t> sprites;
-	sprites.reserve(10000);
+	int numSprites = 0;
 	for ( int i = 0, numIndexes = bspSurf->numIndexes; i < numIndexes; i += 3 )
 	{
 		const srfVert_t *v0 = verts + indexes[i + 0];
@@ -3746,15 +3789,15 @@ static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
 				sprite.skew[0] = stage->ss->height * stage->ss->vertSkew * flrand(-1.0f, 1.0f);
 				sprite.skew[1] = stage->ss->height * stage->ss->vertSkew * flrand(-1.0f, 1.0f);
 
-				// We have 4 copies for each corner of the quad
-				sprites.push_back(sprite);
-				sprites.push_back(sprite);
-				sprites.push_back(sprite);
-				sprites.push_back(sprite);
+				sprites->push_back(sprite);
+				sprites->push_back(sprite);
+				sprites->push_back(sprite);
+				sprites->push_back(sprite);
+				++numSprites;
 			}
 		}
 	}
-	return sprites;
+	return numSprites;
 }
 
 static void R_GenerateSurfaceSprites(
@@ -3762,7 +3805,8 @@ static void R_GenerateSurfaceSprites(
 	const shader_t *shader,
 	const shaderStage_t *stage,
 	const int fogIndex,
-	srfSprites_t *out)
+	srfSprites_t *out,
+	std::vector<sprite_t> *sprites)
 {
 	const surfaceSprite_t *surfaceSprite = stage->ss;
 	const textureBundle_t *bundle = &stage->bundle[0];
@@ -3771,29 +3815,16 @@ static void R_GenerateSurfaceSprites(
 	for ( int i = 0; bundle->image[i]; ++i )
 		hash = UpdateHash(bundle->image[i]->imgName, hash);
 
-	std::vector<sprite_t> sprites =
-		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density, stage);
-
-	int numSprites = sprites.size() / 4;
-	int numIndices = numSprites * 6;
-	uint16_t *indices = (uint16_t*)Z_Malloc(numIndices * sizeof(uint16_t), TAG_BSP);
-	for (int i = 0; i < numIndices; i++)
-	{
-		const uint16_t face_indices[] = { 0, 1, 2, 0, 2, 3 };
-		int vert_index = face_indices[i % 6] + int(i / 6)*4;
-		indices[i] = vert_index;
-	}
-
+	out->baseVertex = sprites->size();
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
-	out->numSprites = numSprites;
-	out->numIndices = numIndices;
+	//R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density, stage, sprites);
+	out->numSprites = R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density, stage, sprites);
+	out->numIndices = out->numSprites * 6;
 	out->fogIndex = fogIndex;
-	// FIXME: Use big preallocated vbo/ibo to store all sprites in one vao
-	out->vbo = R_CreateVBO((byte *)sprites.data(),
-			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
 
-	out->ibo = R_CreateIBO((byte *)indices, numIndices * sizeof(uint16_t), VBO_USAGE_STATIC);
+	out->vbo = NULL;
+	out->ibo = NULL;
 
 	// FIXME: Need a better way to handle this.
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
@@ -3850,6 +3881,25 @@ static void R_GenerateSurfaceSprites(
 static void R_GenerateSurfaceSprites( const world_t *world )
 {
 	msurface_t *surfaces = world->surfaces;
+	std::vector<sprite_t> sprites_data;
+	sprites_data.reserve(65535);
+	IBO_t *ibo;
+
+	{
+		std::vector<uint16_t> sprites_index_data;
+		sprites_index_data.reserve(65535 * 6);
+		for (int i = 0; i < 65535 * 6; i++)
+		{
+			const uint16_t face_indices[] = { 0, 1, 2, 0, 2, 3 };
+			int vert_index = face_indices[i % 6] + (int(i / 6) * 4);
+			sprites_index_data.push_back(vert_index);
+		}
+		ibo = R_CreateIBO((byte *)sprites_index_data.data(), sprites_index_data.size() * sizeof(uint16_t), VBO_USAGE_STATIC);
+	}
+
+	std::vector<srfSprites_t *> currentBatch;
+	currentBatch.reserve(65535); // worst case, theres at least 65535 surfaces with exactly one sprite
+
 	for ( int i = 0, numSurfaces = world->numsurfaces; i < numSurfaces; ++i )
 	{
 		msurface_t *surf = surfaces + i;
@@ -3887,7 +3937,29 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 					}
 
 					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
-					R_GenerateSurfaceSprites(bspSurf, shader, stage, surf->fogIndex, sprite);
+					int numCurrentSurfaceSprites = R_CountSurfaceSprites(bspSurf, stage->ss->density, stage);
+					if ((sprites_data.size() + numCurrentSurfaceSprites * 4) > 65535)
+					{
+						VBO_t *vbo = R_CreateVBO((byte *)sprites_data.data(),
+							sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC);
+						
+						for (srfSprites_t *sp : currentBatch) 
+						{
+							sp->vbo = vbo;
+							sp->ibo = ibo;
+							sp->attributes[0].vbo = vbo;
+							sp->attributes[1].vbo = vbo;
+							sp->attributes[2].vbo = vbo;
+							sp->attributes[3].vbo = vbo;
+						}
+
+						sprites_data.clear();
+						currentBatch.clear();
+					}
+
+					R_GenerateSurfaceSprites(bspSurf, shader, stage, surf->fogIndex, sprite, &sprites_data);
+					currentBatch.push_back(sprite);
+
 					++surfaceSpriteNum;
 				}
 				break;
@@ -3896,6 +3968,19 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 			default:
 				break;
 		}
+	}
+
+	VBO_t *vbo = R_CreateVBO((byte *)sprites_data.data(),
+		sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC);
+
+	for (srfSprites_t *sp : currentBatch)
+	{
+		sp->vbo = vbo;
+		sp->ibo = ibo;
+		sp->attributes[0].vbo = vbo;
+		sp->attributes[1].vbo = vbo;
+		sp->attributes[2].vbo = vbo;
+		sp->attributes[3].vbo = vbo;
 	}
 }
 

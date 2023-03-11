@@ -2234,6 +2234,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	item.draw.params.indexed.indexType = GL_UNSIGNED_SHORT;
 	item.draw.params.indexed.firstIndex = 0;
 	item.draw.params.indexed.numIndices = surf->numIndices;
+	item.draw.params.indexed.baseVertex = surf->baseVertex;
 
 	tess.externalIBO = surf->ibo;
 

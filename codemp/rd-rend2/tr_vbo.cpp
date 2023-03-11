@@ -183,7 +183,7 @@ void R_BindVBO(VBO_t * vbo)
 	if(!vbo)
 	{
 		//R_BindNullVBO();
-		ri.Error(ERR_DROP, "R_BindNullVBO: NULL vbo");
+		ri.Error(ERR_DROP, "R_BindVBO: NULL vbo");
 		return;
 	}
 

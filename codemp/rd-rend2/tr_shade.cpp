@@ -656,6 +656,7 @@ void RB_FillDrawCommand(
 			drawCmd.params.indexed.indexType = GL_INDEX_TYPE;
 			drawCmd.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
 			drawCmd.params.indexed.numIndices = input->multiDrawNumIndexes[0];
+			drawCmd.params.indexed.baseVertex = 0;
 		}
 		else
 		{
@@ -684,6 +685,7 @@ void RB_FillDrawCommand(
 		drawCmd.params.indexed.indexType = GL_INDEX_TYPE;
 		drawCmd.params.indexed.firstIndex = offset;
 		drawCmd.params.indexed.numIndices = input->numIndexes;
+		drawCmd.params.indexed.baseVertex = 0;
 	}
 }
 

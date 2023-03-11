@@ -1622,6 +1622,7 @@ struct srfSprites_t
 
 	shader_t *shader;
 	const surfaceSprite_t *sprite;
+	int baseVertex;
 	int numSprites;
 	int numIndices;
 	VBO_t *vbo;
@@ -3742,6 +3743,7 @@ struct DrawCommand
 			GLenum indexType;
 			GLsizei numIndices;
 			glIndex_t firstIndex;
+			glIndex_t baseVertex;
 		} indexed;
 
 		struct DrawArrays
