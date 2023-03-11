@@ -2127,7 +2127,6 @@ static void RB_RenderSSAO()
 	GL_BindToTMU(tr.hdrDepthImage, TB_COLORMAP);
 	GLSL_SetUniformVec4(&tr.ssaoShader, UNIFORM_VIEWINFO, viewInfo);
 
-	//RB_InstantQuad2(quadVerts, texCoords);
 	RB_InstantTriangle();
 
 	FBO_Bind(tr.quarterFbo[1]);
@@ -2141,7 +2140,6 @@ static void RB_RenderSSAO()
 	GL_BindToTMU(tr.hdrDepthImage, TB_LIGHTMAP);
 	GLSL_SetUniformVec4(&tr.depthBlurShader[0], UNIFORM_VIEWINFO, viewInfo);
 
-	//RB_InstantQuad2(quadVerts, texCoords);
 	RB_InstantTriangle();
 
 	FBO_Bind(tr.screenSsaoFbo);
@@ -2155,7 +2153,6 @@ static void RB_RenderSSAO()
 	GL_BindToTMU(tr.hdrDepthImage, TB_LIGHTMAP);
 	GLSL_SetUniformVec4(&tr.depthBlurShader[1], UNIFORM_VIEWINFO, viewInfo);
 
-	//RB_InstantQuad2(quadVerts, texCoords);
 	RB_InstantTriangle();
 }
 
@@ -2195,9 +2192,11 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 	{
 		// need the depth in a texture we can do GL_LINEAR sampling on, so
 		// copy it to an HDR image
+		vec4i_t srcBox;
+		VectorSet4(srcBox, 0, tr.renderDepthImage->height, tr.renderDepthImage->width, -tr.renderDepthImage->height);
 		FBO_BlitFromTexture(
 			tr.renderDepthImage,
-			nullptr,
+			srcBox,
 			nullptr,
 			tr.hdrDepthFbo,
 			nullptr,
