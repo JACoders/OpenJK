@@ -3887,8 +3887,8 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 
 	{
 		std::vector<uint16_t> sprites_index_data;
-		sprites_index_data.reserve(65535 * 6);
-		for (int i = 0; i < 65535 * 6; i++)
+		sprites_index_data.reserve(98298);
+		for (int i = 0; i < 98299; i++)
 		{
 			const uint16_t face_indices[] = { 0, 1, 2, 0, 2, 3 };
 			int vert_index = face_indices[i % 6] + (int(i / 6) * 4);
