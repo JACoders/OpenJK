@@ -370,6 +370,9 @@ static size_t GLSL_GetShaderHeader(
 		Q_strcat(dest, size, va("#define r_deluxeSpecular %f\n", r_deluxeSpecular->value));
 	}
 
+	if (r_hdr->integer && (r_toneMap->integer || r_forceToneMap->integer))
+		Q_strcat(dest, size, "#define USE_TONEMAPPING\n");
+
 	if (extra)
 	{
 		Q_strcat(dest, size, extra);

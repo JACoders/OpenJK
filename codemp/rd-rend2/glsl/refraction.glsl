@@ -464,10 +464,6 @@ void main()
 	color.a = var_Color.a;
 	color.rgb *= var_Color.rgb;
 	color.rgb *= u_Color.rgb;
-
-	vec3 minAvgMax = texture(u_LevelsMap, texG).rgb;
-	vec3 logMinAvgMaxLum = clamp(minAvgMax * 20.0 - 10.0, -u_AutoExposureMinMax.y, -u_AutoExposureMinMax.x);
-	float avgLum = exp2(logMinAvgMaxLum.y);
 	
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
@@ -491,6 +487,11 @@ void main()
 			discard;
 	}
 #endif
+
+#if defined(USE_TONEMAPPING)
+	vec3 minAvgMax = texture(u_LevelsMap, texG).rgb;
+	vec3 logMinAvgMaxLum = clamp(minAvgMax * 20.0 - 10.0, -u_AutoExposureMinMax.y, -u_AutoExposureMinMax.x);
+	float avgLum = exp2(logMinAvgMaxLum.y);
 	
 	color.rgb *= u_ToneMinAvgMaxLinear.y / avgLum;
 	color.rgb = max(vec3(0.0), color.rgb - vec3(u_ToneMinAvgMaxLinear.x));
@@ -501,6 +502,7 @@ void main()
 	#if defined(USE_LINEAR_LIGHT)
 		color.rgb = LinearTosRGB(color.rgb);
 	#endif
+#endif
 
 	out_Color = clamp(color, 0.0, 1.0);
 }
