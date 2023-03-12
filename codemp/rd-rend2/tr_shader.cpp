@@ -109,10 +109,10 @@ static void ClearGlobalShader(void)
 
 		// default normal/specular
 		VectorSet4(stages[i].normalScale, 0.0f, 0.0f, 0.0f, 0.0f);
-		stages[i].specularScale[0] = 
+		stages[i].specularScale[0] =
 		stages[i].specularScale[1] =
 		stages[i].specularScale[2] = r_baseSpecular->value;
-		stages[i].specularScale[3] = 0.99;
+		stages[i].specularScale[3] = 0.99f;
 	}
 
 	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;
@@ -1345,11 +1345,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
+			stage->specularType = SPEC_SPECGLOSS;
+			VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 0.0f);
 			if (!Q_stricmp(token, "$whiteimage"))
 			{
 				stage->bundle[TB_SPECULARMAP].image[0] = tr.whiteImage;
-				stage->specularType = SPEC_SPECGLOSS;
-				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 0.0f);
 				continue;
 			}
 
@@ -1375,8 +1375,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri.Printf(PRINT_WARNING, "WARNING: R_FindImageFile could not find specMap '%s' in shader '%s'\n", token, shader.name);
 				return qfalse;
 			}
-			stage->specularType = SPEC_SPECGLOSS;
-			VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 0.0f);
+			
 		}
 		//
 		// rmoMap <name> || rmosMap <name>
@@ -1390,6 +1389,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 			stage->specularType = !Q_stricmp(token, "rmosMap") ? SPEC_RMOS : SPEC_RMO;
+			if (!Q_stricmp(token, "$whiteimage"))
+			{
+				stage->bundle[TB_SPECULARMAP].image[0] = tr.whiteImage;
+				continue;
+			}
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
@@ -1404,6 +1408,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 			stage->specularType = !Q_stricmp(token, "mosrMap") ? SPEC_MOSR : SPEC_MOXR;
+			if (!Q_stricmp(token, "$whiteimage"))
+			{
+				stage->bundle[TB_SPECULARMAP].image[0] = tr.whiteImage;
+				continue;
+			}
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
@@ -1418,6 +1427,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 			stage->specularType = !Q_stricmp(token, "ormsMap") ? SPEC_ORMS : SPEC_ORM;
+			if (!Q_stricmp(token, "$whiteimage"))
+			{
+				stage->bundle[TB_SPECULARMAP].image[0] = tr.whiteImage;
+				continue;
+			}
 			Q_strncpyz(bufferPackedTextureName, token, sizeof(bufferPackedTextureName));
 		}
 		//
@@ -1627,7 +1641,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				continue;
 			}
 
-			stage->specularScale[3] = Com_Clamp( 0.0f, 1.0f, 1.0 - atof( token ) );
+			stage->specularScale[3] = 1.0 - atof( token );
 		}
 		//
 		// roughness <value>
@@ -1641,7 +1655,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				continue;
 			}
 
-			stage->specularScale[3] = Com_Clamp(0.0f, 1.0f, atof(token));
+			stage->specularScale[3] = atof(token);
 		}
 		//
 		// parallaxDepth <value>
@@ -1710,6 +1724,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		// specularScale <rgb> <gloss>
 		// or specularScale <r> <g> <b>
 		// or specularScale <r> <g> <b> <gloss>
+		// or specularScale <metalness> <specular> <unused> <gloss> when metal roughness workflow is used
 		//
 		else if (!Q_stricmp(token, "specularscale"))
 		{

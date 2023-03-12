@@ -2707,6 +2707,28 @@ void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName
 		return;
 	}
 
+	R_LoadImage(packedImageName, &packedPic, &packedWidth, &packedHeight);
+	if (packedPic == NULL) {
+		return;
+	}
+
+	switch (stage->specularType)
+	{
+	case SPEC_RMOS:
+	case SPEC_MOSR:
+	case SPEC_ORMS:
+		stage->specularScale[1] = 1.0f;	// Don't scale base specular
+		break;
+	default:
+		stage->specularScale[1] = 0.5f; // Basespecular is assumed to be 0.04 and shader assumes 0.08
+		break;
+	}
+
+	// Don't scale occlusion, roughness and metalness 
+	stage->specularScale[0] =
+	stage->specularScale[2] =
+	stage->specularScale[3] = 1.0f;
+
 	COM_StripExtension(packedImageName, packedName, sizeof(packedName));
 	Q_strcat(packedName, sizeof(packedName), "_ORMS");
 
@@ -2719,28 +2741,6 @@ void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName
 		stage->bundle[TB_ORMSMAP].image[0] = image;
 		return;
 	}
-
-	R_LoadImage(packedImageName, &packedPic, &packedWidth, &packedHeight);
-	if (packedPic == NULL) {
-		return;
-	}
-
-	switch (stage->specularType)
-	{
-	case SPEC_RMOS:
-	case SPEC_MOSR:
-	case SPEC_ORMS:
-		stage->specularScale[3] = 1.0f;	// Don't scale base specular
-		break;
-	default:
-		stage->specularScale[3] = 0.5f; // Basespecular is assumed to be 0.04 and shader assumes 0.08
-		break;
-	}
-
-	// Don't scale occlusion, roughness and metalness 
-	stage->specularScale[0] =
-	stage->specularScale[1] =
-	stage->specularScale[2] = 1.0f;
 	
 	GLint swizzle[4] = { GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA };
 
