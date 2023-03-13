@@ -233,7 +233,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	else
 	{
 		tr.worldDeluxeMapping = qtrue;
-
+		tr.worldInternalDeluxeMapping = qtrue;
 		// Check that none of the deluxe maps are referenced by any of the map surfaces.
 		for (i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
 			tr.worldDeluxeMapping && i < surfs->filelen / sizeof(dsurface_t);
@@ -244,6 +244,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 				if (lightmapNum >= 0 && (lightmapNum & 1) != 0) {
 					tr.worldDeluxeMapping = qfalse;
+					tr.worldInternalDeluxeMapping = qfalse;
 					break;
 				}
 			}
@@ -558,6 +559,62 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					0);
 			}
 		}
+		else if (r_deluxeMapping->integer && !tr.worldDeluxeMapping && !r_mergeLightmaps->integer)
+		{
+			char filename[MAX_QPATH];
+			byte *externalLightmap = NULL;
+			int lightmapWidth = tr.lightmapSize;
+			int lightmapHeight = tr.lightmapSize;
+
+			// try loading additional deluxemaps
+			Com_sprintf(filename, sizeof(filename), "maps/%s/dm_%04d.tga", worldData->baseName, i);
+			R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
+			if (!externalLightmap)
+				continue;
+
+			int newImageSize = lightmapWidth * lightmapHeight * 4 * 2;
+			if (newImageSize > imageSize)
+			{
+				Z_Free(image);
+				imageSize = newImageSize;
+				image = (byte *)Z_Malloc(imageSize, TAG_BSP, qfalse);
+			}
+
+			buf_p = externalLightmap;
+
+			for (j = 0; j < lightmapWidth * lightmapHeight; j++) {
+				image[j * 4 + 0] = buf_p[j * 4 + 0];
+				image[j * 4 + 1] = buf_p[j * 4 + 1];
+				image[j * 4 + 2] = buf_p[j * 4 + 2];
+
+				// make 0,0,0 into 127,127,127
+				if ((image[j * 4 + 0] == 0) && (image[j * 4 + 1] == 0) && (image[j * 4 + 2] == 0))
+				{
+					image[j * 4 + 0] =
+					image[j * 4 + 1] =
+					image[j * 4 + 2] = 127;
+				}
+
+				image[j * 4 + 3] = 255;
+			}
+
+			if (!tr.deluxemaps)
+				tr.deluxemaps = (image_t **)ri.Hunk_Alloc(tr.numLightmaps * sizeof(image_t *), h_low);
+
+			tr.deluxemaps[i] = R_CreateImage(
+				va("*deluxemap%d", i),
+				image,
+				lightmapWidth,
+				lightmapHeight,
+				IMGTYPE_DELUXE,
+				IMGFLAG_NOLIGHTSCALE |
+				IMGFLAG_NO_COMPRESSION |
+				IMGFLAG_CLAMPTOEDGE,
+				0);
+
+			Z_Free(externalLightmap);
+			externalLightmap = NULL;
+		}
 	}
 
 	if ( r_lightmap->integer == 2 )	{
@@ -565,6 +622,9 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	}
 
 	Z_Free(image);
+
+	if (tr.deluxemaps)
+		tr.worldDeluxeMapping = qtrue;
 	}
 
 
@@ -612,7 +672,7 @@ static int FatLightmap(int lightmapnum)
 	if (lightmapnum < 0)
 		return lightmapnum;
 
-	if (tr.worldDeluxeMapping)
+	if (tr.worldInternalDeluxeMapping)
 		lightmapnum >>= 1;
 
 	if (tr.lightmapAtlasSize[0] > 0)

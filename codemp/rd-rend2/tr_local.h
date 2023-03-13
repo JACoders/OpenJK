@@ -2368,6 +2368,7 @@ typedef struct trGlobals_s {
 
 	qboolean				worldMapLoaded;
 	qboolean				worldDeluxeMapping;
+	qboolean				worldInternalDeluxeMapping;
 	vec2_t                  autoExposureMinMax;
 	vec3_t                  toneMinAvgMaxLevel;
 	world_t					*world;
