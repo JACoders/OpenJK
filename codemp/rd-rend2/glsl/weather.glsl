@@ -21,6 +21,7 @@ void main()
 
 	vec4 velocitiyOffset = u_ViewInfo.y * vec4(-var_Velocity.xy/var_Velocity.z, var_Velocity.z, 0.0);
 	velocitiyOffset.xyz = mix(vec3(0.0), velocitiyOffset.xyz, var_Velocity.z != 0.0);
+	var_Velocity.z *= u_ViewInfo.z;
 
 	vec4 depthPosition = u_ShadowMvp * (gl_Position + velocitiyOffset);
 	depthPosition.xyz = depthPosition.xyz / depthPosition.w * 0.5 + 0.5;

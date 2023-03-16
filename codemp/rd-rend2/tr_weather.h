@@ -55,6 +55,7 @@ struct weatherObject_t
 
 	float	gravity;
 	float	fadeDistance;
+	float	velocityOrientationScale;
 	int		particleCount;
 	image_t *drawImage;
 	vec4_t  color;
