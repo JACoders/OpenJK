@@ -19,86 +19,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tr_weather.h"
-#include "tr_local.h"
 #include <utility>
 #include <vector>
 #include <cmath>
-
-enum weatherType_t
-{
-	WEATHER_RAIN,
-	WEATHER_SNOW,
-	WEATHER_SPACEDUST,
-	WEATHER_SAND,
-	WEATHER_FOG,
-
-	NUM_WEATHER_TYPES
-};
-
-const int maxWeatherTypeParticles[NUM_WEATHER_TYPES] = {
-	30000,
-	10000,
-	5000,
-	1000,
-	1000
-};
-
-#define MAX_WINDOBJECTS 10
-#define MAX_WEATHER_ZONES 100
-
-struct weatherObject_t
-{
-	VBO_t *lastVBO;
-	VBO_t *vbo;
-	unsigned vboLastUpdateFrame;
-	vertexAttribute_t attribsTemplate[2];
-	
-	bool active;
-
-	float	gravity;
-	float	fadeDistance;
-	int		particleCount;
-	image_t *drawImage;
-	vec4_t  color;
-	vec2_t	size;
-};
-
-struct windObject_t
-{
-	vec3_t currentVelocity;
-	vec3_t targetVelocity;
-	vec3_t maxVelocity;
-	vec3_t minVelocity;
-	float chanceOfDeadTime;
-	vec2_t deadTimeMinMax;
-	int targetVelocityTimeRemaining;
-};
-
-struct weatherZone_t
-{
-	vec3_t mins;
-	vec3_t maxs;
-};
-
-struct weatherSystem_t
-{
-	weatherObject_t weatherSlots[NUM_WEATHER_TYPES];
-	windObject_t windSlots[MAX_WINDOBJECTS];
-	weatherZone_t weatherZones[MAX_WEATHER_ZONES];
-
-	int activeWeatherTypes = 0;
-	int activeWindObjects = 0;
-	int numWeatherZones = 0;
-	bool frozen;
-
-	srfWeather_t weatherSurface;
-
-	vec3_t		constWindDirection;
-	vec3_t		windDirection;
-	float		windSpeed;
-
-	float		weatherMVP[16];
-};
 
 namespace
 {
@@ -187,6 +110,18 @@ namespace
 		ws.attribsTemplate[1].vbo = nullptr;
 	}
 
+	bool intersectPlane(const vec3_t n, const float dist, const vec3_t l0, const vec3_t l, float &t)
+	{
+		// assuming vectors are all normalized
+		float denom = DotProduct(n, l);
+		if (denom > 1e-6) {
+			t = -(DotProduct(l0, n) + dist) / denom;
+			return (t >= 0);
+		}
+
+		return false;
+	}
+
 	void GenerateDepthMap()
 	{
 		vec3_t mapSize;
@@ -200,7 +135,7 @@ namespace
 
 		const vec3_t forward = {0.0f, 0.0f, -1.0f};
 		const vec3_t left = {0.0f, 1.0f, 0.0f};
-		const vec3_t up = {1.0f, 0.0f, 0.0f};
+		const vec3_t up = {-1.0f, 0.0f, 0.0f};
 
 		vec3_t viewOrigin;
 		VectorMA(tr.world->bmodels[0].bounds[1], 0.5f, mapSize, viewOrigin);
@@ -242,92 +177,166 @@ namespace
 			tr.viewParms.world.modelViewMatrix,
 			tr.weatherSystem->weatherMVP);
 
-#if 0
-		if (tr.weatherSystem->numWeatherZones > 0)
+		if (tr.weatherSystem->numWeatherBrushes > 0)
 		{
 			FBO_Bind(tr.weatherDepthFbo);
 
 			qglViewport(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
 			qglScissor(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
 
-			// clear depth to 0, then stomp the depth buffer with the mins of the weather zones
-			qglClearDepth(0.0f);
+	
+			if (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE) // used outside brushes
+			{
+				qglClearDepth(0.0f);
+				GL_State(GLS_DEPTHMASK_TRUE | GLS_DEPTHFUNC_GREATER);
+			}
+			else // used inside brushes
+			{
+				qglClearDepth(1.0f);
+				GL_State(GLS_DEPTHMASK_TRUE);
+			}
+
 			qglClear(GL_DEPTH_BUFFER_BIT);
 			qglClearDepth(1.0f);
-
 			qglEnable(GL_DEPTH_CLAMP);
 
-			GL_State(GLS_DEPTHMASK_TRUE | GLS_DEPTHFUNC_GREATER);
 			GL_Cull(CT_TWO_SIDED);
 			vec4_t color = { 0.0f, 0.0f, 0.0f, 1.0f };
 			backEnd.currentEntity = &tr.worldEntity;
-			RB_BeginSurface(tr.defaultShader, 0, 0);
+			
 
-			for (int i = 0; i <= tr.weatherSystem->numWeatherZones; i++)
+			vec3_t stepSize = {
+				abs(mapSize[0]) / tr.weatherDepthFbo->width,
+				abs(mapSize[1]) / tr.weatherDepthFbo->height,
+				0.0,
+			};
+
+			vec3_t up = {
+				stepSize[0] * 0.5f,
+				0.0f,
+				0.0f
+			};
+			vec3_t left = {
+				0.0f,
+				stepSize[1] * 0.5f,
+				0.0f
+			};
+			vec3_t traceVec = {
+				0.0f,
+				0.0f,
+				-1.0f
+			};
+
+			for (int i = 0; i < tr.weatherSystem->numWeatherBrushes; i++)
 			{
-				weatherZone_t *currentWeatherZone = &tr.weatherSystem->weatherZones[i];
-				{
-					vec3_t up = {
-						currentWeatherZone->mins[0] - currentWeatherZone->maxs[0],
-						0.0f,
-						0.0f };
-					vec3_t left = {
-						0.0f,
-						currentWeatherZone->mins[1] - currentWeatherZone->maxs[1],
-						0.0f };
-					vec3_t zone_origin = {
-						currentWeatherZone->maxs[0],
-						currentWeatherZone->maxs[1],
-						currentWeatherZone->maxs[2] };
+				RB_BeginSurface(tr.defaultShader, 0, 0);
+				weatherBrushes_t *currentWeatherBrush = &tr.weatherSystem->weatherBrushes[i];
 
-					RB_AddQuadStamp(zone_origin, left, up, color);
-				}
-				{
-					vec3_t up = {
-						-currentWeatherZone->mins[0] + currentWeatherZone->maxs[0],
-						0.0f,
-						0.0f };
-					vec3_t left = {
-						0.0f,
-						-currentWeatherZone->mins[1] + currentWeatherZone->maxs[1],
-						0.0f };
-					vec3_t zone_origin = {
-						currentWeatherZone->mins[0],
-						currentWeatherZone->mins[1],
-						currentWeatherZone->mins[2] };
+				// RBSP brushes actually store their bounding box in the first 6 planes! Nice
+				vec3_t mins = {
+					-currentWeatherBrush->planes[0][3],
+					-currentWeatherBrush->planes[2][3],
+					-currentWeatherBrush->planes[4][3],
+				};
+				vec3_t maxs = {
+					currentWeatherBrush->planes[1][3],
+					currentWeatherBrush->planes[3][3],
+					currentWeatherBrush->planes[5][3],
+				};
 
-					RB_AddQuadStamp(zone_origin, left, up, color);
+				ivec2_t numSteps = {
+					int((maxs[0] - mins[0]) / stepSize[0]) + 2,
+					int((maxs[1] - mins[1]) / stepSize[1]) + 2
+				};
+
+				vec2_t rayOrigin = {
+					tr.world->bmodels[0].bounds[0][0] + (floorf((mins[0] - tr.world->bmodels[0].bounds[0][0]) / stepSize[0]) + 0.5f) * stepSize[0],
+					tr.world->bmodels[0].bounds[0][1] + (floorf((mins[1] - tr.world->bmodels[0].bounds[0][1]) / stepSize[1]) + 0.5f) * stepSize[1]
+				};
+
+				for (int y = 0; y < (int)numSteps[1]; y++)
+				{
+					for (int x = 0; x < (int)numSteps[0]; x++)
+					{
+						vec3_t rayPos = {
+							rayOrigin[0] + x * stepSize[0],
+							rayOrigin[1] + y * stepSize[1],
+							tr.world->bmodels[0].bounds[1][2]
+						};
+
+						// Find intersection point with the brush
+						float t = 0.0f;
+						for (int j = 0; j < currentWeatherBrush->numPlanes; j++)
+						{
+							vec3_t plane_normal;
+							float plane_dist;
+							if (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE)
+							{
+								plane_normal[0] = currentWeatherBrush->planes[j][0];
+								plane_normal[1] = currentWeatherBrush->planes[j][1];
+								plane_normal[2] = currentWeatherBrush->planes[j][2];
+								plane_dist = -currentWeatherBrush->planes[j][3];
+							}
+							else
+							{
+								plane_normal[0] = -currentWeatherBrush->planes[j][0];
+								plane_normal[1] = -currentWeatherBrush->planes[j][1];
+								plane_normal[2] = -currentWeatherBrush->planes[j][2];
+								plane_dist = currentWeatherBrush->planes[j][3];
+							}
+
+							float dist = 0.0f;
+							if (intersectPlane(plane_normal, plane_dist, rayPos, traceVec, dist))
+								t = MAX(t, dist);
+						}
+
+						bool hit = true;
+						rayPos[2] -= t;
+
+						// Now test if the intersected point is actually on the brush
+						for (int j = 0; j < currentWeatherBrush->numPlanes; j++)
+						{
+							vec4_t *plane = &currentWeatherBrush->planes[j];
+							vec3_t normal = {
+								currentWeatherBrush->planes[j][0],
+								currentWeatherBrush->planes[j][1],
+								currentWeatherBrush->planes[j][2]
+							};
+							if (DotProduct(rayPos, normal) > currentWeatherBrush->planes[j][3] + 1e-3)
+								hit = false;
+						}
+
+						if (!hit)
+							continue;
+
+						// Just draw it now
+						RB_AddQuadStamp(rayPos, left, up, color);
+
+						RB_UpdateVBOs(ATTR_POSITION);
+						GLSL_VertexAttribsState(ATTR_POSITION, NULL);
+						GLSL_BindProgram(&tr.textureColorShader);
+						GLSL_SetUniformMatrix4x4(
+							&tr.textureColorShader,
+							UNIFORM_MODELVIEWPROJECTIONMATRIX,
+							tr.weatherSystem->weatherMVP);
+						R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
+
+						RB_CommitInternalBufferData();
+
+						tess.numIndexes = 0;
+						tess.numVertexes = 0;
+						tess.firstIndex = 0;
+						tess.multiDrawPrimitives = 0;
+						tess.externalIBO = nullptr;
+					}
 				}
 			}
 
-			RB_UpdateVBOs(ATTR_POSITION);
-
-			GLSL_VertexAttribsState(ATTR_POSITION, NULL);
-
-			GLSL_BindProgram(&tr.textureColorShader);
-
-			GLSL_SetUniformMatrix4x4(
-				&tr.textureColorShader,
-				UNIFORM_MODELVIEWPROJECTIONMATRIX,
-				tr.weatherSystem->weatherMVP);
-
-			R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
-
-			RB_CommitInternalBufferData();
-
 			qglDisable(GL_DEPTH_CLAMP);
-
-			tess.numIndexes = 0;
-			tess.numVertexes = 0;
-			tess.firstIndex = 0;
-			tess.minIndex = 0;
-			tess.maxIndex = 0;
-			tess.useInternalVBO = qfalse;
 		}
 
-		if (tr.weatherSystem->numWeatherZones > 0)
+		if (tr.weatherSystem->numWeatherBrushes > 0)
 			tr.viewParms.flags |= VPF_NOCLEAR;
-#endif
 
 		const int firstDrawSurf = tr.refdef.numDrawSurfs;
 
@@ -484,17 +493,17 @@ qboolean WE_ParseVector(const char **text, int count, float *v) {
 	return qtrue;
 }
 
-void R_AddWeatherZone(vec3_t mins, vec3_t maxs)
+void R_AddWeatherBrush(uint8_t numPlanes, vec4_t *planes)
 {
-	if (tr.weatherSystem->numWeatherZones >= MAX_WEATHER_ZONES)
+	if (tr.weatherSystem->numWeatherBrushes >= (MAX_WEATHER_ZONES * 2))
 	{
-		ri.Printf(PRINT_WARNING, "Max weather zones hit. Skipping new zone\n");
+		ri.Printf(PRINT_WARNING, "Max weather brushes hit. Skipping new inside/outside brush\n");
 		return;
 	}
-	VectorCopy(mins, tr.weatherSystem->weatherZones[tr.weatherSystem->numWeatherZones].mins);
-	VectorCopy(maxs, tr.weatherSystem->weatherZones[tr.weatherSystem->numWeatherZones].maxs);
-	tr.weatherSystem->numWeatherZones++;
-	ri.Printf(PRINT_ALL, "Weather zone %i added\n", tr.weatherSystem->numWeatherZones);
+	tr.weatherSystem->weatherBrushes[tr.weatherSystem->numWeatherBrushes].numPlanes = numPlanes;
+	memcpy(tr.weatherSystem->weatherBrushes[tr.weatherSystem->numWeatherBrushes].planes, planes, numPlanes * sizeof(vec4_t));
+
+	tr.weatherSystem->numWeatherBrushes++;
 }
 
 void RE_WorldEffectCommand(const char *command)
@@ -547,12 +556,7 @@ void RE_WorldEffectCommand(const char *command)
 	////---------------
 	else if (Q_stricmp(token, "zone") == 0)
 	{
-		vec3_t	mins;
-		vec3_t	maxs;
-		if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
-		{
-			R_AddWeatherZone(mins, maxs);
-		}
+		ri.Printf(PRINT_DEVELOPER, "Weather zones aren't used in rend2, but inside/outside brushes\n");
 	}
 
 	// Basic Wind

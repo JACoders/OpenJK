@@ -3269,35 +3269,54 @@ static void R_RenderAllCubemaps()
 }
 
 
-void R_LoadWeatherZones()
+void R_LoadWeatherZones(world_t *worldData, lump_t *brushesLump, lump_t *sidesLump)
 {
-	char spawnVarChars[2048];
-	int numSpawnVars;
-	char *spawnVars[MAX_SPAWN_VARS][2];
+	dbrush_t 	*brushes, *brush;
+	dbrushside_t	*sides;
+	int			brushesCount, sidesCount;
 
-	while (R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars))
-	{
-		vec3_t mins, maxs;
-		qboolean isWeatherZone = qfalse;
-		char *model = NULL;
+	brushes = (dbrush_t *)(fileBase + brushesLump->fileofs);
+	if (brushesLump->filelen % sizeof(*brushes)) {
+		ri.Error(ERR_DROP, "LoadMap: funny lump size in %s", worldData->name);
+	}
+	brushesCount = brushesLump->filelen / sizeof(*brushes);
 
-		for (int i = 0; i < numSpawnVars; i++)
+	sides = (dbrushside_t *)(fileBase + sidesLump->fileofs);
+	if (sidesLump->filelen % sizeof(*sides)) {
+		ri.Error(ERR_DROP, "LoadMap: funny lump size in %s", worldData->name);
+	}
+	sidesCount = sidesLump->filelen / sizeof(*sides);
+
+	tr.weatherSystem->weatherBrushType = WEATHER_BRUSHES_NONE;
+
+	for (int i = 0; i < brushesCount; i++, brushes++) {
+		dshader_t *currentShader = worldData->shaders + brushes->shaderNum;
+		int contents = currentShader->contentFlags;
+		if (!(contents & CONTENTS_INSIDE || contents & CONTENTS_OUTSIDE))
+			continue;
+
+		weatherBrushType_t currentBrushType = contents & CONTENTS_OUTSIDE ? WEATHER_BRUSHES_OUTSIDE : WEATHER_BRUSHES_INSIDE;
+		if (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_NONE)
+			tr.weatherSystem->weatherBrushType = currentBrushType;
+
+		if (tr.weatherSystem->weatherBrushType != currentBrushType)
 		{
-			if (!Q_stricmp(spawnVars[i][0], "classname") && !Q_stricmp(spawnVars[i][1], "misc_weather_zone"))
-			{
-				isWeatherZone = qtrue;
-			}
-			if (!Q_stricmp(spawnVars[i][0], "model"))
-			{
-				model = spawnVars[i][1];
-			}
+			Com_Error(ERR_DROP, "Weather Effect: Both Indoor and Outdoor brushs encountered in map.\n");
+			return;
 		}
 
-		if (isWeatherZone == qtrue && model != NULL)
+		vec4_t planes[64];
+		for (int j = 0; j < brushes->numSides; j++)
 		{
-			R_ModelBounds(RE_RegisterModel(model), mins, maxs);
-			R_AddWeatherZone(mins, maxs);
+			int currentSideIndex = brushes->firstSide + j;
+			int currentPlaneIndex = sides[currentSideIndex].planeNum;
+			planes[j][0] = worldData->planes[currentPlaneIndex].normal[0];
+			planes[j][1] = worldData->planes[currentPlaneIndex].normal[1];
+			planes[j][2] = worldData->planes[currentPlaneIndex].normal[2];
+			planes[j][3] = worldData->planes[currentPlaneIndex].dist;
 		}
+
+		R_AddWeatherBrush((uint8_t)brushes->numSides, planes);
 	}
 }
 
@@ -4138,6 +4157,10 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	R_LoadLightGrid(worldData, &header->lumps[LUMP_LIGHTGRID]);
 	R_LoadLightGridArray(worldData, &header->lumps[LUMP_LIGHTARRAY]);
 
+	R_LoadWeatherZones(
+		worldData,
+		&header->lumps[LUMP_BRUSHES],
+		&header->lumps[LUMP_BRUSHSIDES]);
 	R_GenerateSurfaceSprites(worldData);
 	
 	// determine vertex light directions
@@ -4244,7 +4267,6 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.worldMapLoaded = qtrue;
 	tr.world = world;
 
-	R_LoadWeatherZones();
 	R_InitWeatherForMap();
 
 	// Render all cubemaps
