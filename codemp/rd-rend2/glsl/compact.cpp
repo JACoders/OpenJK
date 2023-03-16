@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include "tr_local.h"
 #include "tr_allocator.h"
