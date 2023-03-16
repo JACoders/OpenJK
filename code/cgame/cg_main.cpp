@@ -1613,7 +1613,7 @@ Ghoul2 Insert End
 
 	for (i=0 ; i < ENTITYNUM_WORLD ; i++)
 	{
-		if(&g_entities[i])
+		if(g_entities[i].inuse)
 		{
 			if(g_entities[i].client)
 			{

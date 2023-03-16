@@ -273,13 +273,6 @@ char *C_MP3_IsValid(void *pvData, int iDataLen, int bStereoDesired)
 	// although the decoder can convert stereo to mono (apparently), we want to know about stereo files
 	//	because they're a waste of source space... (all FX are mono, and moved via panning)
 	//
-	if (head.mode != 3 && !bStereoDesired && iDataLen > 98000)	//3 seems to mean mono
-	{// we'll allow it for small files even if stereo
-		if ( iDataLen != 1050024 ) //fixme, make cinematic_1 play as music instead
-		{
-			return "MP3ERR: Sound file is stereo!";
-		}
-	}
 	if (audio.decode_init(&head, iFrameBytes, reduction_code, iRealDataStart, bStereoDesired?convert_code_stereo:convert_code_mono, freq_limit))
 	{
 		if (bStereoDesired)

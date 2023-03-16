@@ -218,7 +218,7 @@ qboolean G_ClearViewEntity( gentity_t *ent )
 
 	if ( ent->client->ps.viewEntity > 0 && ent->client->ps.viewEntity < ENTITYNUM_NONE )
 	{
-		if ( &g_entities[ent->client->ps.viewEntity] )
+		if ( g_entities[ent->client->ps.viewEntity].inuse )
 		{
 			g_entities[ent->client->ps.viewEntity].svFlags &= ~SVF_BROADCAST;
 			if ( g_entities[ent->client->ps.viewEntity].NPC )

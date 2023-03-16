@@ -5490,7 +5490,7 @@ bool	STEER::Reached(gentity_t* actor, NAV::TNodeHandle target, float targetRadiu
 ////////////////////////////////////////////////////////////////////////////////////
 bool	STEER::Reached(gentity_t* actor, const vec3_t& target, float targetRadius, bool flying)
 {
-	if (!actor || !target)
+	if (!actor || VectorCompare(target, vec3_origin) )
 	{
 		return false;
 	}
