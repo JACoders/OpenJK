@@ -417,7 +417,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					{
 						vec4_t color;
 						int column = (j % lightmapWidth);
-						int rowIndex = ((lightmapHeight - (int)floor(j / lightmapHeight)) - 1) * lightmapHeight;
+						int rowIndex = (int)floor(j / lightmapHeight) * lightmapHeight;
 
 						int index = column + rowIndex;
 
