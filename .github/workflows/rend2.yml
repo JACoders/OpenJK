@@ -145,7 +145,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64]
+        arch: [x86, x86_64]
         build_type: [Debug, Release]
         portable: [Non-Portable]
 
@@ -282,10 +282,11 @@ jobs:
 
       - name: Create binary archives
         run: |
-          7z a -r OpenJK-windows-x86.zip         ./OpenJK-windows-x86-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
-          7z a -r OpenJK-windows-x86_64.zip      ./OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
-          mv ./OpenJK-linux-x86_64-Release-Non-Portable/*  OpenJK-linux-x86_64.tar.gz
-          mv ./OpenJK-macos-x86_64-Release-Non-Portable/*  OpenJK-macos-x86_64.tar.gz
+          7z a -r OpenJK-rend2-windows-x86.zip         ./OpenJK-windows-x86-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJK-rend2-windows-x86_64.zip      ./OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          mv ./OpenJK-linux-x86-Release-Non-Portable/*     OpenJK-rend2-linux-x86.tar.gz
+          mv ./OpenJK-linux-x86_64-Release-Non-Portable/*  OpenJK-rend2-linux-x86_64.tar.gz
+          mv ./OpenJK-macos-x86_64-Release-Non-Portable/*  OpenJK-rend2-macos-x86_64.tar.gz
 
       - name: Create latest build
         uses: marvinpinto/action-automatic-releases@latest
@@ -293,7 +294,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           automatic_release_tag: "latest"
           prerelease: false
-          title: Latest Build
+          title: Latest rend2 Build
           files: |
             *.zip
             *.tar.gz
@@ -313,6 +314,10 @@ jobs:
           - artifact_dir: OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy
             artifact_name: OpenJK-rend2-windows-x86_64.zip
             zip: true
+
+          - artifact_dir: OpenJK-linux-x86-Release-Non-Portable
+            artifact_name: OpenJK-rend2-linux-x86.tar.gz
+            zip: false
 
           - artifact_dir: OpenJK-linux-x86_64-Release-Non-Portable
             artifact_name: OpenJK-rend2-linux-x86_64.tar.gz

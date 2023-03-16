@@ -193,6 +193,7 @@ if (NOT WIN32 AND NOT APPLE)
 	target_compile_definitions(compact_glsl PRIVATE "ARCH_STRING=\"${Architecture}\"")
 endif()
 target_include_directories(compact_glsl PRIVATE "${MPRend2IncludeDirectories}")
+if (WIN32 OR APPLE)
 add_custom_command(
 	OUTPUT
 		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
@@ -204,3 +205,16 @@ add_custom_command(
 			${MPRend2GLSLFiles}
 	DEPENDS
 		compact_glsl ${MPRend2GLSLFiles})
+else()
+add_custom_command(
+	OUTPUT
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+	COMMAND
+		${CMAKE_BINARY_DIR}/compact_glsl
+			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+			${MPRend2GLSLFiles}
+	DEPENDS
+		compact_glsl ${MPRend2GLSLFiles})
+endif()
