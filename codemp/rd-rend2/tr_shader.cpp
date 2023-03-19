@@ -3697,6 +3697,9 @@ static shader_t *GeneratePermanentShader( void ) {
 			if (!pStage->active)
 				continue;
 
+			if (pStage->glow)
+				continue;
+
 			if (pStage->adjustColorsForFog != ACFF_MODULATE_ALPHA)
 				allPassesAlpha = false;
 
