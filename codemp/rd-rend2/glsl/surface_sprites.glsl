@@ -107,9 +107,10 @@ void main()
 #endif
 
 #if !defined(FACE_UP) && !defined(FX_SPRITE)
-	offset.xy += mix(skew, vec2(0.0), offset.z == 0.0);
+	float isLowerVertex = float(offset.z == 0.0);
+	offset.xy += mix(skew, vec2(0.0), isLowerVertex);
 	float angle = (attr_Position.x + attr_Position.y) * 0.02 + (u_frameTime * 0.0015);
-	float windsway = mix(height* u_WindIdle * 0.075, 0.0, offset.z == 0.0);
+	float windsway = mix(height* u_WindIdle * 0.075, 0.0, isLowerVertex);
 	offset.xy += vec2(cos(angle), sin(angle)) * windsway;
 #endif
 
