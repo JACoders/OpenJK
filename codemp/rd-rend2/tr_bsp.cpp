@@ -3132,7 +3132,7 @@ void R_LoadEnvironmentJson(const char *baseName)
 	ri.FS_FreeFile(buffer.v);
 }
 
-void R_LoadCubemapEntities(char *cubemapEntityName)
+void R_LoadCubemapEntities(const char *cubemapEntityName)
 {
 	char spawnVarChars[2048];
 	int numSpawnVars;
@@ -4175,15 +4175,25 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 		// Try loading an env.json file first
 		R_LoadEnvironmentJson(worldData->baseName);
 
-		if (!tr.numCubemaps)
+		const int numCubemapEntities = 5;
+		const char *cubemapEntities[numCubemapEntities] =
 		{
-			R_LoadCubemapEntities("misc_cubemap");
-		}
+			"misc_cubemap",
+			"info_player_deathmatch",
+			"info_player_start",
+			"info_player_duel",
+			"info_player_intermission",
+		};
 
 		if (!tr.numCubemaps)
 		{
-			// use deathmatch spawn points as cubemaps
-			R_LoadCubemapEntities("info_player_deathmatch");
+			for (int i = 0; i < numCubemapEntities; i++)
+			{
+				R_LoadCubemapEntities(cubemapEntities[i]);
+				if (tr.numCubemaps)
+					break;
+			}
+			
 		}
 
 		if (tr.numCubemaps)
