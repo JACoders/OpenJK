@@ -96,7 +96,7 @@ VBO_t *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 	memset(vbo, 0, sizeof(*vbo));
 
 	vbo->vertexesSize = vertexesSize;
-	vbo->vertexesVBO = tr.vboNames[tr.numVBOs];
+	qglGenBuffers(1, &vbo->vertexesVBO);
 	tr.numVBOs++;
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo->vertexesVBO);
@@ -143,7 +143,7 @@ IBO_t *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
 	ibo = tr.ibos[tr.numIBOs] = (IBO_t *)ri.Hunk_Alloc(sizeof(*ibo), h_low);
 
 	ibo->indexesSize = indexesSize;
-	ibo->indexesVBO = tr.iboNames[tr.numIBOs];
+	qglGenBuffers(1, &ibo->indexesVBO);
 	tr.numIBOs++;
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->indexesVBO);
@@ -284,8 +284,6 @@ void R_InitGPUBuffers(void)
 
 	// glGenBuffers only allocates the IDs for these buffers. The 'buffer object' is
 	// actually created on first bind.
-	qglGenBuffers(MAX_IBOS, tr.iboNames);
-	qglGenBuffers(MAX_VBOS, tr.vboNames);
 	qglGenBuffers(1, &tr.staticUbo);
 
 	tr.numVBOs = 0;
@@ -310,8 +308,26 @@ void R_DestroyGPUBuffers(void)
 	R_BindNullIBO();
 
 	qglDeleteBuffers(1, &tr.staticUbo);
-	qglDeleteBuffers(MAX_IBOS, tr.iboNames);
-	qglDeleteBuffers(MAX_VBOS, tr.vboNames);
+
+	for (int i = 0; i < tr.numVBOs; i++)
+	{
+		VBO_t *vbo = tr.vbos[i];
+
+		if (vbo->vertexesVBO)
+		{
+			qglDeleteBuffers(1, &vbo->vertexesVBO);
+		}
+	}
+
+	for (int i = 0; i < tr.numIBOs; i++)
+	{
+		IBO_t *ibo = tr.ibos[i];
+
+		if (ibo->indexesVBO)
+		{
+			qglDeleteBuffers(1, &ibo->indexesVBO);
+		}
+	}
 
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
