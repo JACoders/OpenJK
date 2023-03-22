@@ -4049,6 +4049,9 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 		}
 	}
 
+	if (sprites_data.size() == 0)
+		return;
+
 	VBO_t *vbo = R_CreateVBO((byte *)sprites_data.data(),
 		sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC);
 
