@@ -2544,11 +2544,9 @@ typedef struct trGlobals_s {
 	FBO_t					*fbos[MAX_FBOS];
 
 	int						numVBOs;
-	unsigned int			vboNames[MAX_VBOS];
 	VBO_t					*vbos[MAX_VBOS];
 
 	int						numIBOs;
-	unsigned int			iboNames[MAX_IBOS];
 	IBO_t					*ibos[MAX_IBOS];
 
 #ifdef _G2_GORE
@@ -3417,7 +3415,7 @@ RENDERER BACK END COMMAND QUEUE
 =============================================================
 */
 
-#define	MAX_RENDER_COMMANDS	0x40000
+#define	MAX_RENDER_COMMANDS	0x80000
 
 typedef struct renderCommandList_s {
 	byte	cmds[MAX_RENDER_COMMANDS];
