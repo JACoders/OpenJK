@@ -2650,7 +2650,8 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	}
 
 	if (tess.fogNum && 
-		pStage->adjustColorsForFog != ACFF_NONE)
+		pStage->adjustColorsForFog != ACFF_NONE &&
+		r_drawfog->integer)
 		shaderAttribs |= GENERICDEF_USE_FOG;
 
 	if (pStage->bundle[0].tcGen != TCGEN_TEXTURE)

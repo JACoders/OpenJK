@@ -107,6 +107,7 @@ extern cvar_t	*r_autolodscalevalue;
 extern cvar_t	*r_norefresh;
 extern cvar_t	*r_drawentities;
 extern cvar_t	*r_drawworld;
+extern cvar_t	*r_drawfog;
 extern cvar_t	*r_speeds;
 extern cvar_t	*r_fullbright;
 extern cvar_t	*r_novis;

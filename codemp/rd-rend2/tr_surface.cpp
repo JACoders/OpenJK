@@ -2173,7 +2173,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	if ((firstStage->stateBits & (GLS_SRCBLEND_BITS|GLS_DSTBLEND_BITS)) == (GLS_SRCBLEND_ONE|GLS_DSTBLEND_ONE))
 		shaderFlags |= SSDEF_ADDITIVE;
 
-	if (surf->fogIndex > 0)
+	if (surf->fogIndex > 0 && r_drawfog->integer)
 		shaderFlags |= SSDEF_USE_FOG;
 
 	shaderProgram_t *program = programGroup + shaderFlags;

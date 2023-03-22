@@ -1892,7 +1892,7 @@ void RB_StageIteratorGeneric( void )
 		{
 			fog = tr.world->fogs + input->fogNum;
 		}
-		if (fog && tess.shader->fogPass)
+		if (fog && tess.shader->fogPass && r_drawfog->integer)
 			RB_FogPass(input, &vertexArrays);
 
 		//
