@@ -493,6 +493,15 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 					// FIXME: Doesn't this mean the frame will never render?
 					qglDeleteSync( sync );
 					thisFrame->sync = NULL;
+
+					thisFrame->uboWriteOffset = 0;
+
+					thisFrame->dynamicIboCommitOffset = 0;
+					thisFrame->dynamicIboWriteOffset = 0;
+
+					thisFrame->dynamicVboCommitOffset = 0;
+					thisFrame->dynamicVboWriteOffset = 0;
+
 					backEndData->perFrameMemory->Reset();
 
 					ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "OpenGL: Failed to wait for frame to finish! Aborting frame.\n" );
