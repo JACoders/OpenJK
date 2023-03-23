@@ -1816,6 +1816,23 @@ static void R_ShutdownBackEndFrameData()
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
 
+		if (frame->sync)
+		{
+			GLenum result = qglClientWaitSync(frame->sync, 0, 0);
+			if (result != GL_ALREADY_SIGNALED)
+			{
+				static const GLuint64 HALF_SECOND = 500 * 1000 * 1000;
+				do
+				{
+					result = qglClientWaitSync(frame->sync, GL_SYNC_FLUSH_COMMANDS_BIT, HALF_SECOND);
+					if (result == GL_WAIT_FAILED)
+						break;
+				} while (result != GL_ALREADY_SIGNALED && result != GL_CONDITION_SATISFIED);
+			}
+			qglDeleteSync(frame->sync);
+			frame->sync = NULL;
+		}
+
 		qglDeleteBuffers(1, &frame->ubo);
 
 		if ( glRefConfig.immutableBuffers )
@@ -1970,13 +1987,15 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	for ( size_t i = 0; i < numCommands; i++ )
 		ri.Cmd_RemoveCommand( commands[i].cmd );
 
+	if (tr.registered)
+		R_IssuePendingRenderCommands();
+
 	R_ShutdownBackEndFrameData();
 
 	R_ShutdownWeatherSystem();
 
 	R_ShutdownFonts();
 	if ( tr.registered ) {
-		R_IssuePendingRenderCommands();
 		R_ShutDownQueries();
 		FBO_Shutdown();
 		R_DeleteTextures();
