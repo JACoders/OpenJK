@@ -490,7 +490,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 				result = qglClientWaitSync( sync, GL_SYNC_FLUSH_COMMANDS_BIT, HALF_SECOND);
 				if ( result == GL_WAIT_FAILED )
 				{
-					// FIXME: Doesn't this mean the frame will never render?
+					// This indicates that opengl context was lost, is there a way to recover?
 					qglDeleteSync( sync );
 					thisFrame->sync = NULL;
 
@@ -504,7 +504,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 					backEndData->perFrameMemory->Reset();
 
-					ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "OpenGL: Failed to wait for frame to finish! Aborting frame.\n" );
+					ri.Error(ERR_DROP, "OpenGL: Failed to wait for fence. Context lost. (0x%x)\n", qglGetError());
 					return;
 				}
 			}

@@ -1698,9 +1698,6 @@ static const void *RB_StretchPic ( const void *data ) {
 	shader_t *shader;
 
 	cmd = (const stretchPicCommand_t *)data;
-	if (!tr.registered) {
-		return(const void *)(cmd + 1);
-	}
 
 	// FIXME: HUGE hack
 	if (!tr.renderFbo || backEnd.framePostProcessed)
@@ -1784,9 +1781,6 @@ static const void *RB_RotatePic ( const void *data )
 	shader_t *shader;
 
 	cmd = (const rotatePicCommand_t *)data;
-	if (!tr.registered) {
-		return(const void *)(cmd + 1);
-	}
 
 	// FIXME: HUGE hack
 	if (!tr.renderFbo || backEnd.framePostProcessed)
@@ -1880,9 +1874,6 @@ static const void *RB_RotatePic2 ( const void *data )
 	shader_t *shader;
 
 	cmd = (const rotatePicCommand_t *)data;
-	if (!tr.registered) {
-		return(const void *)(cmd + 1);
-	}
 
 	// FIXME: HUGE hack
 	if (!tr.renderFbo || backEnd.framePostProcessed)
