@@ -181,15 +181,15 @@ R_GetCommandBuffer
 make sure there is enough command space
 ============
 */
-void *R_GetCommandBuffer( int bytes ) {
+static void *R_GetCommandBufferReserved( int bytes, int reservedBytes ) {
 	renderCommandList_t	*cmdList;
 
 	cmdList = &backEndData->commands;
 	bytes = PAD(bytes, sizeof(void *));
 
 	// always leave room for the end of list command
-	if ( cmdList->used + bytes + 4 > MAX_RENDER_COMMANDS ) {
-		if ( bytes > MAX_RENDER_COMMANDS - 4 ) {
+	if ( cmdList->used + bytes + sizeof(int) + reservedBytes > MAX_RENDER_COMMANDS ) {
+		if ( bytes > MAX_RENDER_COMMANDS - (int)sizeof(int)) {
 			ri.Error( ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes );
 		}
 		// if we run out of room, just start dropping commands
@@ -199,6 +199,16 @@ void *R_GetCommandBuffer( int bytes ) {
 	cmdList->used += bytes;
 
 	return cmdList->cmds + cmdList->used - bytes;
+}
+
+/*
+============
+R_GetCommandBuffer
+make sure there is enough command space
+============
+*/
+void *R_GetCommandBuffer(int bytes) {
+	return R_GetCommandBufferReserved(bytes, PAD(sizeof(swapBuffersCommand_t), sizeof(void *)));
 }
 
 
@@ -211,6 +221,9 @@ R_AddDrawSurfCmd
 void	R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	drawSurfsCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (drawSurfsCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -233,6 +246,9 @@ R_AddConvolveCubemapsCmd
 void	R_AddConvolveCubemapCmd( cubemap_t *cubemap , int cubemapId ) {
 	convolveCubemapCommand_t	*cmd;
 	
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (convolveCubemapCommand_t *)R_GetCommandBuffer( sizeof( *cmd ));
 	if ( !cmd ) {
 		return;
@@ -252,6 +268,9 @@ R_PostProcessingCmd
 void	R_AddPostProcessCmd( ) {
 	postProcessCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (postProcessCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -266,6 +285,9 @@ qhandle_t R_BeginTimedBlockCmd( const char *name )
 {
 	beginTimedBlockCommand_t *cmd;
 
+	if (!tr.registered) {
+		return (qhandle_t)-1;
+	}
 	cmd = (beginTimedBlockCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd )
 	{
@@ -288,6 +310,9 @@ void R_EndTimedBlockCmd( qhandle_t timerHandle )
 {
 	endTimedBlockCommand_t *cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (endTimedBlockCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd )
 	{
@@ -313,9 +338,9 @@ Passing NULL will set the color to white
 void	RE_SetColor( const float *rgba ) {
 	setColorCommand_t	*cmd;
 
-  if ( !tr.registered ) {
-    return;
-  }
+	if ( !tr.registered ) {
+		return;
+	}
 	cmd = (setColorCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -342,6 +367,9 @@ void RE_RotatePic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
 	rotatePicCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -368,6 +396,9 @@ void RE_RotatePic2 ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
 	rotatePicCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -725,7 +756,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	if ( !tr.registered ) {
 		return;
 	}
-	cmd = (swapBuffersCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (swapBuffersCommand_t *)R_GetCommandBufferReserved( sizeof( *cmd ), 0 );
 	if ( !cmd ) {
 		return;
 	}
