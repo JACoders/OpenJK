@@ -636,7 +636,7 @@ typedef struct pscript_s
 
 typedef std::map < std::string, int, std::less<std::string> >		entlist_t;
 typedef std::map < std::string, pscript_t*, std::less<std::string> >	bufferlist_t;
-typedef std::map < std::string, std::string >		cvarlist_t;
+typedef std::map < std::string, std::array<char, MAX_STRING_CHARS> >		cvarlist_t;
 
 
 extern char *G_NewString( const char *string );
