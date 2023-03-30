@@ -194,15 +194,6 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 }
 #endif
 
-
-float CalcLightAttenuation(in bool isPoint, float normDist)
-{
-	// zero light at 1.0, approximating q3 style
-	// also don't attenuate directional light
-	float attenuation = 1.0 + mix(0.0, 0.5 * normDist - 1.5, isPoint);
-	return clamp(attenuation, 0.0, 1.0);
-}
-
 #if defined(USE_SKELETAL_ANIMATION)
 mat4x3 GetBoneMatrix(uint index)
 {
@@ -299,10 +290,9 @@ void main()
 
 		#if defined(USE_LIGHT_VECTOR) && defined(USE_FAST_LIGHT)
 			float sqrLightDist = dot(L, L);
-			float attenuation = CalcLightAttenuation(u_LocalLightOrigin.w, u_LightRadius * u_LightRadius / sqrLightDist);
 			float NL = clamp(dot(normal, L) / sqrt(sqrLightDist), 0.0, 1.0);
 
-			var_Color.rgb *= u_DirectedLight * (attenuation * NL) + u_AmbientLight;
+			var_Color.rgb *= u_DirectedLight * NL + u_AmbientLight;
 		#endif
 	}
 	var_Color *= disintegration;
@@ -670,11 +660,10 @@ vec3 CalcDiffuse(
 #endif
 }
 
-float CalcLightAttenuation(float point, float normDist)
+float CalcLightAttenuation(float normDist)
 {
 	// zero light at 1.0, approximating q3 style
-	// also don't attenuate directional light
-	float attenuation = (0.5 * normDist - 1.5) * point + 1.0;
+	float attenuation = 0.5 * normDist - 0.5;
 	return clamp(attenuation, 0.0, 1.0);
 }
 
@@ -779,7 +768,7 @@ vec3 CalcDynamicLightContribution(
 		vec3  L  = light.origin.xyz - position;
 		float sqrLightDist = dot(L, L);
 
-		float attenuation = CalcLightAttenuation(1.0, light.radius * light.radius / sqrLightDist);
+		float attenuation = CalcLightAttenuation(light.radius * light.radius / sqrLightDist);
 
 		#if defined(USE_DSHADOWS)
 			vec3 sampleVector = L;
