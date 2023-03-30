@@ -559,7 +559,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					0);
 			}
 		}
-		else if (r_deluxeMapping->integer && !tr.worldDeluxeMapping && !r_mergeLightmaps->integer)
+		else if (r_deluxeMapping->integer && !r_mergeLightmaps->integer)
 		{
 			char filename[MAX_QPATH];
 			byte *externalLightmap = NULL;
@@ -567,7 +567,11 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 			int lightmapHeight = tr.lightmapSize;
 
 			// try loading additional deluxemaps
-			Com_sprintf(filename, sizeof(filename), "maps/%s/dm_%04d.tga", worldData->baseName, i);
+			if (tr.worldDeluxeMapping)
+				Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.tga", worldData->baseName, i * 2 + 1);
+			else
+				Com_sprintf(filename, sizeof(filename), "maps/%s/dm_%04d.tga", worldData->baseName, i);
+
 			R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
 			if (!externalLightmap)
 				continue;
