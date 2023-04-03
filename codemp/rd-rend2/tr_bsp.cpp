@@ -249,6 +249,8 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 				}
 			}
 		}
+		if (tr.worldDeluxeMapping == qtrue && (!len))
+			numLightmaps++;
 	}
 
 	imageSize = tr.lightmapSize * tr.lightmapSize * 4 * 2;
