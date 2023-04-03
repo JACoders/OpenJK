@@ -69,8 +69,8 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 		color[0] = 
 		color[1] =
 		color[2] = 1.0f;
-		color[3] = MAX(0.001f * backEnd.refdef.frameTime, 0.0f);
 
+		color[3] = Com_Clamp(0.0f, 1.0f, 0.001f * backEnd.refdef.frameTime);
 		FBO_Blit(tr.targetLevelsFbo, srcBox, NULL, tr.calcLevelsFbo, NULL,  NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
 	}
 
