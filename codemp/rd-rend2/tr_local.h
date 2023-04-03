@@ -2326,6 +2326,7 @@ typedef struct {
 	qboolean    colorMask[4];
 	qboolean    framePostProcessed;
 	qboolean    depthFill;
+	qboolean    refractionFill;
 	qboolean	frameUBOsInitialized;
 } backEndState_t;
 

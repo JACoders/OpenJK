@@ -1349,7 +1349,7 @@ static void RB_SubmitDrawSurfs(
 				cubemapIndex == oldCubemapIndex &&
 				entityNum == oldEntityNum &&
 				dlighted == oldDlighted &&
-				backEnd.framePostProcessed == shader->useDistortion )
+				backEnd.refractionFill == shader->useDistortion )
 		{
 			// fast path, same as previous sort
 			backEnd.currentDrawSurfIndex = i;
@@ -1393,7 +1393,7 @@ static void RB_SubmitDrawSurfs(
 		qboolean isDistortionShader = (qboolean)
 			((shader->useDistortion == qtrue) || (backEnd.currentEntity && backEnd.currentEntity->e.renderfx & RF_DISTORTION));
 
-		if (backEnd.framePostProcessed != isDistortionShader)
+		if (backEnd.refractionFill != isDistortionShader)
 			continue;
 
 		backEnd.currentDrawSurfIndex = i;
@@ -3273,9 +3273,11 @@ const void *RB_PostProcess(const void *data)
 
 	backEnd.framePostProcessed = qtrue;
 	FBO_Bind(NULL);
+	backEnd.refractionFill = qtrue;
 	RB_RenderDrawSurfList(
 		backEnd.refdef.drawSurfs + backEnd.refdef.fistDrawSurf,
 		backEnd.refdef.numDrawSurfs - tr.refdef.fistDrawSurf);
+	backEnd.refractionFill = qfalse;
 
 	return (const void *)(cmd + 1);
 }
