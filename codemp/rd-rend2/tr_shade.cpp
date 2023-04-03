@@ -1660,8 +1660,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SPECULARMAP);
 					}
 
-					if (r_ssao->integer)
+					if (r_ssao->integer && tr.world && backEnd.framePostProcessed == qfalse)
 						samplerBindingsWriter.AddStaticImage(tr.screenSsaoImage, TB_SSAOMAP);
+					else if (r_ssao->integer)
+						samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SSAOMAP);
+
 				}
 
 				if ( enableCubeMaps )
