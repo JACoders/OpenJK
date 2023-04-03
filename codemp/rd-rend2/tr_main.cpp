@@ -2049,7 +2049,7 @@ void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
 
 	R_AddEntitySurfaces(refdef);
 
-	if ( !(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW)) )
+	if ( !(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW)) && tr.world)
 	{
 		R_AddWeatherSurfaces();
 	}
