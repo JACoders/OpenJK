@@ -441,6 +441,9 @@ void R_InitWeatherSystem()
 	tr.weatherSystem->activeWeatherTypes = 0;
 	tr.weatherSystem->constWindDirection[0] = .0f;
 	tr.weatherSystem->constWindDirection[1] = .0f;
+
+	for (int i = 0; i < NUM_WEATHER_TYPES; i++)
+		tr.weatherSystem->weatherSlots[i].active = false;
 }
 
 void R_ShutdownWeatherSystem()
