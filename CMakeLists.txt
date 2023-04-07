@@ -50,7 +50,8 @@ option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (j
 option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" OFF)
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
-option(UseSanitizer "Whether to enable runtime sanitizers (e.g. AddressSanitizer)" OFF)
+option(UseAddressSanitizer "Whether to enable runtime address sanitizer" OFF)
+option(UseUndefinedSanitizer "Whether to enable runtime Undefined Behavior sanitizer" OFF)
 
 include(CMakeDependentOption)
 cmake_dependent_option(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
@@ -245,9 +246,14 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" M
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-	if(CMAKE_BUILD_TYPE MATCHES "DEBUG" OR CMAKE_BUILD_TYPE MATCHES "Debug" AND UseSanitizer)
+	if(UseAddressSanitizer)
+		# also raise stack size drastically (to 64MiB), since the sanitizer adds overhead to stack frames
 		add_compile_options(-fsanitize=address)
-		add_link_options(-fsanitize=address)
+		add_link_options(-fsanitize=address -z stack-size=4000000)
+	endif()
+	if(UseUndefinedSanitizer)
+		add_compile_options(-fsanitize=undefined)
+		add_link_options(-fsanitize=undefined)
 	endif()
 
 	# additional flags for debug configuration
