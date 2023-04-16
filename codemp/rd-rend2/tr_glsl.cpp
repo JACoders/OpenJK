@@ -1640,7 +1640,7 @@ static int GLSL_LoadGPUProgramLightAll(
 
 		extradefines[0] = '\0';
 
-		if (r_dlightMode->integer >= 2)
+		if (r_sunlightMode->integer)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOWMAP\n");
 
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
