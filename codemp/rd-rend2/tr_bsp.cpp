@@ -3200,6 +3200,7 @@ void R_LoadCubemapEntities(const char *cubemapEntityName)
 			Q_strncpyz(cubemap->name, name, MAX_QPATH);
 			VectorCopy(origin, cubemap->origin);
 			cubemap->parallaxRadius = parallaxRadius;
+			cubemap->image = nullptr;
 			numCubemaps++;
 		}
 	}
@@ -4186,7 +4187,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	R_CalcVertexLightDirs(worldData);
 
 	// load cubemaps
-	if (r_cubeMapping->integer)
+	if (r_cubeMapping->integer && bspIndex == nullptr)
 	{
 		// Try loading an env.json file first
 		R_LoadEnvironmentJson(worldData->baseName);

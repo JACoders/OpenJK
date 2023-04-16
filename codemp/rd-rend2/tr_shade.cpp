@@ -1544,7 +1544,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		//
 		bool enableCubeMaps = (	r_cubeMapping->integer
 								&& !(tr.viewParms.flags & VPF_NOCUBEMAPS)
-								&& input->cubemapIndex
+								&& input->cubemapIndex > 0
 								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
 		bool enableDLights = (	tess.dlightBits
 								&& tess.shader->sort <= SS_OPAQUE
