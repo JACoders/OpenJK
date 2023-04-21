@@ -1311,7 +1311,9 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 					iTexturePageIndex = 0;
 				}
 
+#ifndef JK2_MODE
 				int iOriginalCollapsedAsianCode = iCollapsedAsianCode;	// need to back this up (if Thai) for later
+#endif
 				iCollapsedAsianCode -= iTexturePageIndex *  (m_iAsianGlyphsAcross * m_iAsianGlyphsAcross);
 
 				const int iColumn	= iCollapsedAsianCode % m_iAsianGlyphsAcross;
