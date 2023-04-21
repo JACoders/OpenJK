@@ -8604,7 +8604,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 		// we ensure that pointers to it never become invalid,
 		// so we can support expressions using the same cvar twice,
 		// e.g. if(get(cvar_x) == get(cvar_x))
-		std::array<char, MAX_STRING_CHARS>& buf = m_cvars[cvar_name];
+		std::array<char, MAX_STRING_CHARS>& buf = ICARUS_CvarList[cvar_name];
 		gi.Cvar_VariableStringBuffer(cvar_name, buf.data(), buf.size());
 		*value = buf.data();
 		return true;
