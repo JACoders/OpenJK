@@ -7903,7 +7903,7 @@ static int Q3_GetFloat( int entID, int type, const char *name, float *value )
 		return false;
 	}
 
-	if( strlen(name) > 5 &&!Q_stricmpn(name, "cvar_", 5) )
+	if( strlen(name) > 5 && !Q_stricmpn(name, "cvar_", 5) )
 	{
 		*value = (float)gi.Cvar_VariableIntegerValue(name+5);
 		return true;
@@ -8597,7 +8597,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 		return false;
 	}
 
-	if( strlen(name) > 5 && Q_stricmpn(name, "cvar_", 5) )
+	if( strlen(name) > 5 && !Q_stricmpn(name, "cvar_", 5) )
 	{
 		const char* cvar_name = name + 5;
 		// by allocating and then re-using the same sufficiently large buffer,
