@@ -1056,10 +1056,12 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		uniformDataWriterBack.Start(sp);
 		uniformDataWriterBack.SetUniformInt(UNIFORM_FOGINDEX, tr.world->globalFogIndex - 1);
 		if (input->numPasses > 0)
+		{
 			uniformDataWriterBack.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
-		SamplerBindingsWriter samplerBindingsWriter;
-		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
-			samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
+			SamplerBindingsWriter samplerBindingsWriter;
+			if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
+				samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
+		}
 
 		DrawItem backItem = {};
 		memcpy(&backItem, &item, sizeof(item));
