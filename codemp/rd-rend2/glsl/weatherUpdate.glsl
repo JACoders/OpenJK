@@ -1,12 +1,21 @@
 /*[Vertex]*/
 
-uniform float u_Time; // delta time
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+	float u_frameTime;
+	float u_deltaTime;
+};
+
 uniform vec2 u_MapZExtents;
 uniform vec3 u_EnvForce;
 uniform vec4 u_RandomOffset;
 uniform vec2 u_ZoneOffset[9];
 uniform int u_ChunkParticles;
-
 
 in vec3 attr_Position;
 in vec3 attr_Color;
@@ -30,9 +39,9 @@ vec3 NewParticleZPosition( in vec3 in_position )
 void main()
 {
 	var_Velocity = attr_Color;
-	var_Velocity = mix(var_Velocity, u_EnvForce, u_Time * 0.002);
+	var_Velocity = mix(var_Velocity, u_EnvForce, u_deltaTime * 0.002);
 	var_Position = attr_Position;
-	var_Position += var_Velocity * u_Time;
+	var_Position += var_Velocity * u_deltaTime;
 
 	if (var_Position.z < u_MapZExtents.x)
 	{

@@ -689,6 +689,31 @@ void RB_FillDrawCommand(
 	}
 }
 
+static UniformBlockBinding GetCameraBlockUniformBinding(
+	const trRefEntity_t *refEntity)
+{
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	UniformBlockBinding binding = {};
+	binding.block = UNIFORM_BLOCK_CAMERA;
+
+	if (refEntity == &backEnd.entity2D)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.camera2DUboOffset;
+	}
+	else if (refEntity == &backEnd.entityFlare)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.cameraFlareUboOffset;
+	}
+	else
+	{
+		binding.ubo = currentFrameUbo;
+		binding.offset = tr.cameraUboOffset;
+	}
+	return binding;
+}
+
 static UniformBlockBinding GetEntityBlockUniformBinding(
 	const trRefEntity_t *refEntity)
 {
@@ -813,7 +838,7 @@ static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vert
 
 		const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 		const UniformBlockBinding uniformBlockBindings[] = {
-			{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+			GetCameraBlockUniformBinding(backEnd.currentEntity),
 			{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
 			GetEntityBlockUniformBinding(backEnd.currentEntity),
 			GetShaderInstanceBlockUniformBinding(
@@ -1003,7 +1028,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
-		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+		GetCameraBlockUniformBinding(backEnd.currentEntity),
 		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS },
 		GetEntityBlockUniformBinding(backEnd.currentEntity),
 		GetShaderInstanceBlockUniformBinding(
@@ -1297,6 +1322,7 @@ void RB_ShadowTessEnd(shaderCommands_t *input, const VertexArraysProperties *ver
 	int stateBits = GLS_DEPTHFUNC_LESS | GLS_STENCILTEST_ENABLE | GLS_COLORMASK_BITS;
 
 	const UniformBlockBinding uniformBlockBindings[] = {
+		GetCameraBlockUniformBinding(backEnd.currentEntity),
 		GetEntityBlockUniformBinding(backEnd.currentEntity),
 		GetBonesBlockUniformBinding(backEnd.currentEntity)
 	};
@@ -1722,7 +1748,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 		const UniformBlockBinding uniformBlockBindings[] = {
-			{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+			GetCameraBlockUniformBinding(backEnd.currentEntity),
 			{ currentFrameUbo, tr.lightsUboOffset, UNIFORM_BLOCK_LIGHTS },
 			{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
 			{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS },
@@ -1774,9 +1800,10 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 
 	const UniformBlockBinding uniformBlockBindings[] = {
-	GetEntityBlockUniformBinding(backEnd.currentEntity),
-	GetShaderInstanceBlockUniformBinding(
-		backEnd.currentEntity, input->shader)
+		GetCameraBlockUniformBinding(backEnd.currentEntity),
+		GetEntityBlockUniformBinding(backEnd.currentEntity),
+		GetShaderInstanceBlockUniformBinding(
+			backEnd.currentEntity, input->shader)
 	};
 
 	DrawItem item = {};

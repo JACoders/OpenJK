@@ -42,9 +42,16 @@ void main()
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform mat4 u_ModelViewProjectionMatrix;
-uniform vec3 u_ViewOrigin;
-uniform float u_Time; // delta time
+layout(std140) uniform Camera
+{
+	mat4 u_viewProjectionMatrix;
+	vec4 _u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
+
 uniform vec4 u_ViewInfo;
 
 in vec3 var_Velocity[];
@@ -79,7 +86,7 @@ void main()
 			if (var_Velocity[0].z != 0.0)
 				offset.xy += offset.z * var_Velocity[0].xy / var_Velocity[0].z;
 			vec4 worldPos = vec4(P + offset, 1.0);
-			gl_Position = u_ModelViewProjectionMatrix * worldPos;
+			gl_Position = u_viewProjectionMatrix * worldPos;
 
 			float distance = distance(u_ViewOrigin, worldPos.xyz);
 			float alpha = (u_ViewInfo.w - distance) / u_ViewInfo.w;

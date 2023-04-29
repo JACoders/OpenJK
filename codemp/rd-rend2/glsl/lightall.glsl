@@ -32,6 +32,7 @@ in vec3 attr_LightDirection;
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -42,7 +43,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -255,7 +255,8 @@ void main()
 
 	vec4 disintegration = CalcColor(position);
 
-	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+	gl_Position = MVP * vec4(position, 1.0);
 
 	position  = (u_ModelMatrix * vec4(position, 1.0)).xyz;
 	normal    = normalize(mat3(u_ModelMatrix) * normal);
@@ -322,6 +323,7 @@ void main()
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 #define PER_PIXEL_LIGHTING
 #endif
+
 layout(std140) uniform Scene
 {
 	vec4 u_PrimaryLightOrigin;
@@ -330,10 +332,12 @@ layout(std140) uniform Scene
 	vec3 u_PrimaryLightColor;
 	float u_PrimaryLightRadius;
 	float u_frameTime;
+	float u_deltaTime;
 };
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -344,7 +348,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;

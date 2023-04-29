@@ -364,6 +364,8 @@ namespace
 		VBO_t *lastRainVBO = ws->vbo;
 		VBO_t *rainVBO = ws->lastVBO;
 
+		Allocator& frameAllocator = *backEndData->perFrameMemory;
+
 		DrawItem item = {};
 		item.renderState.transformFeedback = true;
 		item.transformFeedbackBuffer = {rainVBO->vertexesVBO, 0, rainVBO->vertexesSize};
@@ -400,13 +402,19 @@ namespace
 			tr.world->bmodels[0].bounds[1][2] - backEnd.viewParms.ori.origin[2]
 		};
 		uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
-		uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.frameTime);
 		uniformDataWriter.SetUniformVec3(UNIFORM_ENVFORCE, envForce);
 		uniformDataWriter.SetUniformVec4(UNIFORM_RANDOMOFFSET, randomOffset);
 		uniformDataWriter.SetUniformVec2(UNIFORM_ZONEOFFSET, (float*)zoneOffsets, 9);
 		uniformDataWriter.SetUniformInt(UNIFORM_CHUNK_PARTICLES, ws->particleCount);
 
 		item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+
+		const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+		const UniformBlockBinding uniformBlockBindings[] = {
+			{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE }
+		};
+		DrawItemSetUniformBlockBindings(
+			item, uniformBlockBindings, frameAllocator);
 
 		item.draw.type = DRAW_COMMAND_ARRAYS;
 		item.draw.numInstances = 1;
@@ -1181,12 +1189,15 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 		{
 			for (int x = -1; x <= 1; ++x, ++currentIndex)
 			{
+				const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+				const UniformBlockBinding uniformBlockBindings[] = {
+					{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA }
+				};
+				DrawItemSetUniformBlockBindings(
+					item, uniformBlockBindings, frameAllocator);
+
 				UniformDataWriter uniformDataWriter;
 				uniformDataWriter.Start(&tr.weatherShader);
-				uniformDataWriter.SetUniformMatrix4x4(
-					UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-				uniformDataWriter.SetUniformVec3(
-					UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 				uniformDataWriter.SetUniformVec2(
 					UNIFORM_ZONEOFFSET,
 					(centerZoneOffsetX + x) * CHUNK_EXTENDS,

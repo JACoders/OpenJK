@@ -10,7 +10,6 @@ in vec4 attr_BoneWeights;
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -62,10 +61,19 @@ void main()
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 18) out;
 
+layout(std140) uniform Camera
+{
+	mat4 u_viewProjectionMatrix;
+	vec4 u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
+
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -78,15 +86,15 @@ layout(std140) uniform Entity
 
 in vec3	  var_Position[];
 
-void quad(vec3 first, vec3 second, vec3 L)
+void quad(in vec3 first, in vec3 second, in vec3 L, in mat4 MVP)
 {
-    gl_Position = u_ModelViewProjectionMatrix * vec4(first, 1.0);
+    gl_Position = MVP * vec4(first, 1.0);
     EmitVertex();
-    gl_Position = u_ModelViewProjectionMatrix * vec4(first - L, 1.0);
+    gl_Position = MVP * vec4(first - L, 1.0);
     EmitVertex();
-    gl_Position = u_ModelViewProjectionMatrix * vec4(second, 1.0);
+    gl_Position = MVP * vec4(second, 1.0);
     EmitVertex();
-    gl_Position = u_ModelViewProjectionMatrix * vec4(second - L, 1.0);
+    gl_Position = MVP * vec4(second - L, 1.0);
     EmitVertex();
 	EndPrimitive();
 }
@@ -96,29 +104,31 @@ void main()
 	vec3 BmA = var_Position[1].xyz - var_Position[0].xyz;
 	vec3 CmA = var_Position[2].xyz - var_Position[0].xyz;
 
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+
 	if (dot(cross(BmA,CmA), -u_ModelLightDir.xyz) > 0.0) {
 		vec3 L = u_ModelLightDir.xyz*u_LocalLightRadius;
 		
 		// front cap
-		gl_Position = u_ModelViewProjectionMatrix * vec4(var_Position[0].xyz, 1.0);
+		gl_Position = MVP * vec4(var_Position[0].xyz, 1.0);
 		EmitVertex();
-		gl_Position = u_ModelViewProjectionMatrix * vec4(var_Position[1].xyz, 1.0);
+		gl_Position = MVP * vec4(var_Position[1].xyz, 1.0);
 		EmitVertex();
-		gl_Position = u_ModelViewProjectionMatrix * vec4(var_Position[2].xyz, 1.0);
+		gl_Position = MVP * vec4(var_Position[2].xyz, 1.0);
 		EmitVertex();
 		EndPrimitive();
 		
 		// sides
-		quad(var_Position[0], var_Position[1], L);
-		quad(var_Position[1], var_Position[2], L);
-		quad(var_Position[2], var_Position[0], L);
+		quad(var_Position[0], var_Position[1], L, MVP);
+		quad(var_Position[1], var_Position[2], L, MVP);
+		quad(var_Position[2], var_Position[0], L, MVP);
 		
 		// back cap
-		gl_Position = u_ModelViewProjectionMatrix * vec4(var_Position[2].xyz - L, 1.0);
+		gl_Position = MVP * vec4(var_Position[2].xyz - L, 1.0);
 		EmitVertex();
-		gl_Position = u_ModelViewProjectionMatrix * vec4(var_Position[1].xyz - L, 1.0);
+		gl_Position = MVP * vec4(var_Position[1].xyz - L, 1.0);
 		EmitVertex();
-		gl_Position = u_ModelViewProjectionMatrix * vec4(var_Position[0].xyz - L, 1.0);
+		gl_Position = MVP * vec4(var_Position[0].xyz - L, 1.0);
 		EmitVertex();
 		EndPrimitive();
     }

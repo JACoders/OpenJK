@@ -19,6 +19,7 @@ in vec2 attr_TexCoord1;
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -29,7 +30,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -383,7 +383,8 @@ void main()
 	normal = DeformNormal( position, normal );
 #endif
 
-	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+	gl_Position = MVP * vec4(position, 1.0);
 
 #if defined(USE_TCGEN)
 	vec2 tex = GenTexCoords(u_TCGen0, position, normal, u_TCGen0Vector0, u_TCGen0Vector1);
@@ -440,6 +441,7 @@ uniform vec4 u_FogColorMask;
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -450,7 +452,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;

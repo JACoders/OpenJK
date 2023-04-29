@@ -1762,22 +1762,8 @@ static void R_InitGoreVao()
 
 static void R_InitStaticConstants()
 {
-
 	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
-	const size_t alignedBlockSize = (sizeof(EntityBlock) + alignment) & ~alignment;
-
-	EntityBlock entity2DBlock = {};
-	entity2DBlock.fxVolumetricBase = -1.0f;
-
-	Matrix16Identity(entity2DBlock.modelMatrix);
-	Matrix16Ortho(
-		0.0f,
-		640.0f,
-		480.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-		entity2DBlock.modelViewProjectionMatrix);
+	size_t alignedBlockSize = 0;
 
 	qglBindBuffer(GL_UNIFORM_BUFFER, tr.staticUbo);
 	qglBufferData(
@@ -1786,13 +1772,43 @@ static void R_InitStaticConstants()
 		nullptr,
 		GL_STATIC_DRAW);
 
-	tr.entity2DUboOffset = 0;
+	// Setup static 2d camera data
+	EntityBlock entity2DBlock = {};
+	entity2DBlock.fxVolumetricBase = -1.0f;
+	Matrix16Identity(entity2DBlock.modelMatrix);
+	tr.entity2DUboOffset = alignedBlockSize;
 	qglBufferSubData(
 		GL_UNIFORM_BUFFER, 0, sizeof(entity2DBlock), &entity2DBlock);
+	alignedBlockSize += (sizeof(EntityBlock) + alignment) & ~alignment;
 
+	// Setup static 2d camera data
+	CameraBlock a2DCameraBlock = {};
+	Matrix16Ortho(
+		0.0f,
+		640.0f,
+		480.0f,
+		0.0f,
+		0.0f,
+		1.0f,
+		a2DCameraBlock.viewProjectionMatrix);
+
+	tr.camera2DUboOffset = alignedBlockSize;
+	qglBufferSubData(
+		GL_UNIFORM_BUFFER, tr.camera2DUboOffset, sizeof(a2DCameraBlock), &a2DCameraBlock);
+	alignedBlockSize += (sizeof(CameraBlock) + alignment) & ~alignment;
+
+	// Setup static flare entity data
 	EntityBlock entityFlareBlock = {};
 	entityFlareBlock.fxVolumetricBase = -1.0f;
 	Matrix16Identity(entityFlareBlock.modelMatrix);
+
+	tr.entityFlareUboOffset = alignedBlockSize;
+	qglBufferSubData(
+		GL_UNIFORM_BUFFER, tr.entityFlareUboOffset, sizeof(entityFlareBlock), &entityFlareBlock);
+	alignedBlockSize += (sizeof(EntityBlock) + alignment) & ~alignment;
+
+	// Setup static flare camera data
+	CameraBlock flareCameraBlock = {};
 	Matrix16Ortho(
 		0.0f,
 		glConfig.vidWidth,
@@ -1800,11 +1816,12 @@ static void R_InitStaticConstants()
 		0.0f,
 		-99999.0f,
 		99999.0f,
-		entityFlareBlock.modelViewProjectionMatrix);
+		flareCameraBlock.viewProjectionMatrix);
 
-	tr.entityFlareUboOffset = alignedBlockSize;
+	tr.cameraFlareUboOffset = alignedBlockSize;
 	qglBufferSubData(
-		GL_UNIFORM_BUFFER, tr.entityFlareUboOffset, sizeof(entityFlareBlock), &entityFlareBlock);
+		GL_UNIFORM_BUFFER, tr.cameraFlareUboOffset, sizeof(flareCameraBlock), &flareCameraBlock);
+	//alignedBlockSize += (sizeof(CameraBlock) + alignment) & ~alignment; // un-comment if you add more blocks to the static ubo
 }
 
 static void R_ShutdownBackEndFrameData()

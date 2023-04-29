@@ -12,10 +12,19 @@ in uvec4 attr_BoneIndexes;
 in vec4 attr_BoneWeights;
 #endif
 
+layout(std140) uniform Camera
+{
+	mat4 u_viewProjectionMatrix;
+	vec4 u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
+
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -217,7 +226,8 @@ void main()
 	normal = DeformNormal( position, normal );
 #endif
 
-	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+	gl_Position = MVP * vec4(position, 1.0);
 
 	var_WSPosition = (u_ModelMatrix * vec4(position, 1.0)).xyz;
 #if defined(USE_ALPHA_TEST)
@@ -239,6 +249,7 @@ layout(std140) uniform Scene
 	vec3 u_PrimaryLightColor;
 	float u_PrimaryLightRadius;
 	float u_frameTime;
+	float u_deltaTime;
 };
 
 struct Fog
@@ -257,6 +268,7 @@ layout(std140) uniform Fogs
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -267,7 +279,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;

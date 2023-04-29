@@ -6,10 +6,19 @@ in vec4 attr_TexCoord0;
 in vec3 attr_Position2;
 in vec3 attr_Normal2;
 
+layout(std140) uniform Camera
+{
+	mat4 u_viewProjectionMatrix;
+	vec4 u_ViewInfo;
+	vec3 u_ViewOrigin;
+	vec3 u_ViewForward;
+	vec3 u_ViewLeft;
+	vec3 u_ViewUp;
+};
+
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -167,7 +176,8 @@ void main()
 	normal = normalize(normal - vec3(0.5));
 
 	position = DeformPosition(position, normal, attr_TexCoord0.st);
-	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+	gl_Position = MVP * vec4(position, 1.0);
 }
 
 /*[Fragment]*/

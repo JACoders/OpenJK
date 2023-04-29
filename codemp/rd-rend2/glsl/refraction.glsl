@@ -19,6 +19,7 @@ in vec2 attr_TexCoord1;
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -29,7 +30,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;
@@ -323,7 +323,8 @@ void main()
 	normal = DeformNormal( position, normal );
 #endif
 
-	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+	gl_Position = MVP * vec4(position, 1.0);
 
 #if defined(USE_TCGEN)
 	vec2 tex = GenTexCoords(u_TCGen0, position, normal, u_TCGen0Vector0, u_TCGen0Vector1);
@@ -370,17 +371,17 @@ void main()
 	vec3 refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaR));
 	vec3 new_pos = (distance * refraction_vec) + ws_Position;
 	var_RefractPosR = vec4(inverseModel * new_pos, 1.0);
-	var_RefractPosR = u_ModelViewProjectionMatrix * var_RefractPosR;
+	var_RefractPosR = MVP * var_RefractPosR;
 	
 	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaG));
 	new_pos = (distance * refraction_vec) + ws_Position;
 	var_RefractPosG = vec4(inverseModel * new_pos, 1.0);
-	var_RefractPosG = u_ModelViewProjectionMatrix * var_RefractPosG;
+	var_RefractPosG = MVP * var_RefractPosG;
 	
 	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaB));
 	new_pos = (distance * refraction_vec) + ws_Position;
 	var_RefractPosB = vec4(inverseModel * new_pos, 1.0);
-	var_RefractPosB = u_ModelViewProjectionMatrix * var_RefractPosB;
+	var_RefractPosB = MVP * var_RefractPosB;
 }
 
 
@@ -388,6 +389,7 @@ void main()
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -398,7 +400,6 @@ layout(std140) uniform Camera
 layout(std140) uniform Entity
 {
 	mat4 u_ModelMatrix;
-	mat4 u_ModelViewProjectionMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
 	float u_LocalLightRadius;

@@ -4,8 +4,6 @@ in vec3 attr_Normal;
 in vec3 attr_Color;
 in vec4 attr_Position2; // width, height, skew.x, skew.y
 
-uniform mat4 u_ModelViewProjectionMatrix;
-
 layout(std140) uniform Scene
 {
 	vec4 u_PrimaryLightOrigin;
@@ -14,10 +12,12 @@ layout(std140) uniform Scene
 	vec3 u_PrimaryLightColor;
 	float u_PrimaryLightRadius;
 	float u_frameTime;
+	float u_deltaTime;
 };
 
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
@@ -115,7 +115,7 @@ void main()
 #endif
 
 	vec4 worldPos = vec4(attr_Position.xyz + offset, 1.0);
-	gl_Position = u_ModelViewProjectionMatrix * worldPos;
+	gl_Position = u_viewProjectionMatrix * worldPos;
 	var_TexCoords = texcoords[gl_VertexID % 4];
 	var_Color = attr_Color;
 	var_Alpha = 1.0 - fadeScale;
@@ -155,6 +155,7 @@ layout(std140) uniform SurfaceSprite
 #if defined(USE_FOG)
 layout(std140) uniform Camera
 {
+	mat4 u_viewProjectionMatrix;
 	vec4 u_ViewInfo;
 	vec3 u_ViewOrigin;
 	vec3 u_ViewForward;
