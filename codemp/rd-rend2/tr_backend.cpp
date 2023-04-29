@@ -1167,30 +1167,15 @@ static Pass *RB_CreatePass( Allocator& allocator, int capacity )
 	return pass;
 }
 
-static void RB_PrepareForEntity( int entityNum, int *oldDepthRange, float originalTime )
+static void RB_PrepareForEntity( int entityNum )
 {
-	int depthRange = 0;
-
 	if ( entityNum != REFENTITYNUM_WORLD )
 	{
 		backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
-		if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
-			// No depth at all, very rare but some things for seeing through walls
-			depthRange = 2;
-		}
-		else if ( backEnd.currentEntity->e.renderfx & RF_DEPTHHACK ) {
-			// hack the depth range to prevent view model from poking into walls
-			depthRange = 1;
-		}
-	} else {
-		backEnd.currentEntity = &tr.worldEntity;
 	}
-
-	// change depthrange
-	// does not look like coming out of the screen.
-	if ( *oldDepthRange != depthRange )
+	else
 	{
-		*oldDepthRange = depthRange;
+		backEnd.currentEntity = &tr.worldEntity;
 	}
 }
 
@@ -1251,7 +1236,7 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		// change the modelview matrix if needed
 		if ( entityNum != oldEntityNum )
 		{
-			RB_PrepareForEntity(entityNum, &oldDepthRange, originalTime);
+			RB_PrepareForEntity(entityNum);
 			oldEntityNum = entityNum;
 		}
 
@@ -1341,7 +1326,7 @@ static void RB_SubmitDrawSurfs(
 
 		if ( entityNum != oldEntityNum )
 		{
-			RB_PrepareForEntity(entityNum, &oldDepthRange, originalTime);
+			RB_PrepareForEntity(entityNum);
 			oldEntityNum = entityNum;
 		}
 
