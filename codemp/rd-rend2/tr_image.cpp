@@ -2814,7 +2814,7 @@ image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageNam
 	if (specPic == NULL)
 		return NULL;
 
-	byte *sdrSpecPic = (byte *)Z_Malloc(specWidth * specHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
+	byte *sdrSpecPic = (byte *)ri.Hunk_AllocateTempMemory(sizeof(unsigned) * specWidth * specHeight);
 	vec3_t currentColor;
 	for (int i = 0; i < specWidth * specHeight * 4; i += 4)
 	{
@@ -2831,7 +2831,7 @@ image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageNam
 		sdrSpecPic[i + 2] = FloatToByte(currentColor[2] * ratio);
 		sdrSpecPic[i + 3] = specPic[i + 3];
 	}
-	Z_Free(specPic);
+	ri.Hunk_FreeTempMemory(specPic);
 
 	return R_CreateImage(sdrName, sdrSpecPic, specWidth, specHeight, IMGTYPE_COLORALPHA, flags & ~IMGFLAG_SRGB, 0);
 }
@@ -2969,20 +2969,18 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 	{
 		char filename[MAX_QPATH];
 		Com_sprintf(filename, sizeof(filename), "%s.hdr", name);
-		byte	*hdrPic = NULL;
 		float	*floatBuffer;
-		R_LoadHDRImage(filename, &hdrPic, &width, &height);
-		floatBuffer = (float*)hdrPic;
-		if (hdrPic == NULL)
+		R_LoadHDRImage(filename, &pic, &width, &height);
+		if (pic == NULL)
 		{
 			R_LoadImage(name, &pic, &width, &height);
 		}
 		else 
 		{
-			pic = (byte *)Z_Malloc(width*height*4*2, TAG_TEMP_WORKSPACE, qfalse);
 			for (int i = 0; i < width*height; i++)
 			{
 				vec4_t color;
+				floatBuffer = (float*)pic;
 				memcpy(color, &floatBuffer[i*3], 12);
 				if (flags & IMGFLAG_HDR_LIGHTMAP)
 				{
@@ -3000,7 +2998,6 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 			}
 			internalFormat = GL_RGBA16F;
 			loadFlags = flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_MIPMAP);
-			Z_Free(hdrPic);
 		}
 	}
 	else

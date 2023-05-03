@@ -3276,7 +3276,6 @@ static void R_RenderAllCubemaps()
 			currentFrame->sync = qglFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 			backEndData->realFrameNumber++;
-			ri.WIN_Present(&window);
 			backEnd.framePostProcessed = qfalse;
 			backEnd.projection2D = qfalse;
 			backEnd.frameUBOsInitialized = qfalse;
