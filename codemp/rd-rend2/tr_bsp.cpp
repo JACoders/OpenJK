@@ -199,6 +199,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 	tr.lightmapSize = DEFAULT_LIGHTMAP_SIZE;
 	tr.hdrLighting = qfalse;
+	tr.worldInternalLightmapping = qfalse;
 
 	len = l->filelen;
 	// test for external lightmaps
@@ -217,10 +218,28 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	{
 		numLightmaps = len / (tr.lightmapSize * tr.lightmapSize * 3);
 		buf = fileBase + l->fileofs;
+		tr.worldInternalLightmapping = qtrue;
 	}
 
 	if (numLightmaps == 0)
 		return;
+
+	// test for hdr lighting
+	if (hdr_capable && tr.worldInternalLightmapping)
+	{
+		char filename[MAX_QPATH];
+		byte *externalLightmap = NULL;
+		int lightmapWidth = tr.lightmapSize;
+		int lightmapHeight = tr.lightmapSize;
+		Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.hdr", worldData->baseName, 0);
+		R_LoadHDRImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
+		if (externalLightmap != NULL)
+		{
+			tr.worldInternalLightmapping = qfalse;
+			ri.Hunk_FreeTempMemory(externalLightmap);
+		}
+			
+	}
 
 	// we are about to upload textures
 	R_IssuePendingRenderCommands();
@@ -259,7 +278,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	if (tr.worldDeluxeMapping)
 		numLightmaps >>= 1;
 
-	if (r_mergeLightmaps->integer)
+	if (tr.worldInternalLightmapping)
 	{
 		const int targetLightmapsPerX = (int)ceilf(sqrtf(numLightmaps));
 
@@ -293,7 +312,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	else
 		textureInternalFormat = GL_RGBA8;
 
-	if (r_mergeLightmaps->integer)
+	if (tr.worldInternalLightmapping)
 	{
 		for (i = 0; i < tr.numLightmaps; i++)
 		{
@@ -326,7 +345,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		int lightmapnum = i;
 		// expand the 24 bit on-disk to 32 bit
 
-		if (r_mergeLightmaps->integer)
+		if (tr.worldInternalLightmapping)
 		{
 			xoff = (i % tr.lightmapsPerAtlasSide[0]) * tr.lightmapSize;
 			yoff = (i / tr.lightmapsPerAtlasSide[0]) * tr.lightmapSize;
@@ -343,32 +362,31 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 			int bppc;
 			bool foundLightmap = true;
 
-			if (hdr_capable)
-				Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.hdr", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1));
-			else
-				Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.tga", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1));
-
-			bppc = 16;
-			R_LoadHDRImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
-			if (!externalLightmap)
+			if (!tr.worldInternalLightmapping)
 			{
-				bppc = 8;
-				R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
-			}
+				if (hdr_capable)
+					Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.hdr", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1));
+				else
+					Com_sprintf(filename, sizeof(filename), "maps/%s/lm_%04d.tga", worldData->baseName, i * (tr.worldDeluxeMapping ? 2 : 1));
 
+				bppc = 16;
+				R_LoadHDRImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
+				if (!externalLightmap)
+				{
+					bppc = 8;
+					R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
+				}
+			}
+			
 			if (externalLightmap)
 			{
 				int newImageSize = lightmapWidth * lightmapHeight * 4 * 2;
-				if (r_mergeLightmaps->integer && (lightmapWidth != tr.lightmapSize || lightmapHeight != tr.lightmapSize))
+				if (tr.worldInternalLightmapping && (lightmapWidth != tr.lightmapSize || lightmapHeight != tr.lightmapSize))
 				{
-					ri.Printf(PRINT_ALL, "Error loading %s: non %dx%d lightmaps require r_mergeLightmaps 0.\n", filename, tr.lightmapSize, tr.lightmapSize);
+					ri.Printf(PRINT_ALL, "Error loading %s: non %dx%d lightmaps\n", filename, tr.lightmapSize, tr.lightmapSize);
 					Z_Free(externalLightmap);
 					externalLightmap = NULL;
-					if (!len)
-					{
-						tr.numLightmaps = 0;
-						return;
-					}
+					continue;
 				}
 				else if (newImageSize > imageSize)
 				{
@@ -492,7 +510,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					}
 				}
 
-				if (r_mergeLightmaps->integer)
+				if (tr.worldInternalLightmapping)
 					R_UpdateSubImage(
 						tr.lightmaps[lightmapnum],
 						image,
@@ -537,7 +555,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 				image[j * 4 + 3] = 255;
 			}
 
-			if (r_mergeLightmaps->integer)
+			if (tr.worldInternalLightmapping)
 			{
 				R_UpdateSubImage(
 					tr.deluxemaps[lightmapnum],
@@ -561,7 +579,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					0);
 			}
 		}
-		else if (r_deluxeMapping->integer && !r_mergeLightmaps->integer)
+		else if (r_deluxeMapping->integer)
 		{
 			char filename[MAX_QPATH];
 			byte *externalLightmap = NULL;
@@ -577,6 +595,14 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 			R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
 			if (!externalLightmap)
 				continue;
+
+			if (tr.worldInternalLightmapping && (lightmapWidth != tr.lightmapSize || lightmapHeight != tr.lightmapSize))
+			{
+				ri.Printf(PRINT_ALL, "Error loading %s: non %dx%d deluxemaps\n", filename, tr.lightmapSize, tr.lightmapSize);
+				Z_Free(externalLightmap);
+				externalLightmap = NULL;
+				continue;
+			}
 
 			int newImageSize = lightmapWidth * lightmapHeight * 4 * 2;
 			if (newImageSize > imageSize)
@@ -605,18 +631,46 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 			}
 
 			if (!tr.deluxemaps)
+			{
 				tr.deluxemaps = (image_t **)ri.Hunk_Alloc(tr.numLightmaps * sizeof(image_t *), h_low);
+				if (tr.worldInternalLightmapping)
+				{
+					{
+						tr.deluxemaps[lightmapnum] = R_CreateImage(
+							va("_fatdeluxemap%d", i),
+							NULL,
+							tr.lightmapAtlasSize[0],
+							tr.lightmapAtlasSize[1],
+							IMGTYPE_DELUXE,
+							IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+							0);
+					}
+				}
+			}
 
-			tr.deluxemaps[i] = R_CreateImage(
-				va("*deluxemap%d", i),
-				image,
-				lightmapWidth,
-				lightmapHeight,
-				IMGTYPE_DELUXE,
-				IMGFLAG_NOLIGHTSCALE |
-				IMGFLAG_NO_COMPRESSION |
-				IMGFLAG_CLAMPTOEDGE,
-				0);
+			if (tr.worldInternalLightmapping)
+			{
+				R_UpdateSubImage(
+					tr.deluxemaps[lightmapnum],
+					image,
+					xoff,
+					yoff,
+					lightmapWidth,
+					lightmapHeight);
+			}
+			else
+			{
+				tr.deluxemaps[i] = R_CreateImage(
+					va("*deluxemap%d", i),
+					image,
+					lightmapWidth,
+					lightmapHeight,
+					IMGTYPE_DELUXE,
+					IMGFLAG_NOLIGHTSCALE |
+					IMGFLAG_NO_COMPRESSION |
+					IMGFLAG_CLAMPTOEDGE,
+					0);
+			}
 
 			Z_Free(externalLightmap);
 			externalLightmap = NULL;
@@ -639,7 +693,7 @@ static float FatPackU(float input, int lightmapnum)
 	if (lightmapnum < 0)
 		return input;
 
-	if (tr.worldDeluxeMapping)
+	if (tr.worldInternalDeluxeMapping)
 		lightmapnum >>= 1;
 
 	if (tr.lightmapAtlasSize[0] > 0)
@@ -658,7 +712,7 @@ static float FatPackV(float input, int lightmapnum)
 	if (lightmapnum < 0)
 		return input;
 
-	if (tr.worldDeluxeMapping)
+	if (tr.worldInternalDeluxeMapping)
 		lightmapnum >>= 1;
 
 	if (tr.lightmapAtlasSize[1] > 0)

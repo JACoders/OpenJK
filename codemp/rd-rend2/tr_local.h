@@ -155,7 +155,6 @@ extern cvar_t  *r_deluxeMapping;
 extern cvar_t  *r_deluxeSpecular;
 extern cvar_t  *r_parallaxMapping;
 extern cvar_t  *r_normalAmbient;
-extern cvar_t  *r_mergeLightmaps;
 extern cvar_t  *r_dlightMode;
 extern cvar_t  *r_pshadowDist;
 extern cvar_t  *r_imageUpsample;
@@ -2370,6 +2369,7 @@ typedef struct trGlobals_s {
 	GLuint					globalVao;
 
 	qboolean				worldMapLoaded;
+	qboolean				worldInternalLightmapping; // qtrue indicates lightmap atlasing
 	qboolean				worldDeluxeMapping;
 	qboolean				worldInternalDeluxeMapping;
 	vec2_t                  autoExposureMinMax;
@@ -2726,7 +2726,6 @@ extern  cvar_t  *r_baseSpecular;
 extern  cvar_t  *r_dlightMode;
 extern  cvar_t  *r_pshadowDist;
 extern  cvar_t  *r_recalcMD3Normals;
-extern  cvar_t  *r_mergeLightmaps;
 extern  cvar_t  *r_imageUpsample;
 extern  cvar_t  *r_imageUpsampleMaxSize;
 extern  cvar_t  *r_imageUpsampleType;
