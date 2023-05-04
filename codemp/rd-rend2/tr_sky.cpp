@@ -456,7 +456,8 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	const UniformBlockBinding uniformBlockBindings[] = {
-		{ currentFrameUbo, tr.skyEntityUboOffset, UNIFORM_BLOCK_ENTITY }
+		{ currentFrameUbo, tr.skyEntityUboOffset, UNIFORM_BLOCK_ENTITY },
+		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA }
 	};
 
 	DrawItem item = {};
