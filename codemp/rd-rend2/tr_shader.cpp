@@ -3178,8 +3178,10 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 					R_LoadPackedMaterialImage(stage, imageName, specularFlags);
 					if (!stage->bundle[TB_ORMSMAP].image[0])
 					{
-						stage->specularType = SPEC_SPECGLOSS;
-						defs |= LIGHTDEF_USE_SPEC_GLOSS;
+						stage->specularScale[0] = 0.0f;
+						stage->specularScale[2] =
+						stage->specularScale[3] = 1.0f;
+						stage->specularScale[1] = 0.5f;
 					}
 				}
 			}
@@ -3424,6 +3426,19 @@ static qboolean CollapseStagesToGLSL(void)
 			{
 				pStage->active = qfalse;
 			}
+		}
+	}
+
+	if (skip)
+	{
+		// set default specular scale for skipped shaders that will use metalness workflow by default
+		for (i = 0; i < MAX_SHADER_STAGES; i++)
+		{
+			shaderStage_t *pStage = &stages[i];
+			pStage->specularScale[0] = 0.0f;
+			pStage->specularScale[2] =
+			pStage->specularScale[3] = 1.0f;
+			pStage->specularScale[1] = 0.5f;
 		}
 	}
 
