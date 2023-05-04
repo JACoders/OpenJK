@@ -2128,7 +2128,9 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 			glConfig.vidHeight, 0);
 	}
 
-	if (r_ssao->integer && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
+	if (r_ssao->integer &&
+		!(backEnd.viewParms.flags & VPF_DEPTHSHADOW) &&
+		!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
 	{
 		// need the depth in a texture we can do GL_LINEAR sampling on, so
 		// copy it to an HDR image
@@ -2209,7 +2211,9 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 		RB_RenderSunShadows();
 	}
 
-	if (r_ssao->integer && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
+	if (r_ssao->integer &&
+		!(backEnd.viewParms.flags & VPF_DEPTHSHADOW) &&
+		!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
 	{
 		RB_RenderSSAO();
 	}
