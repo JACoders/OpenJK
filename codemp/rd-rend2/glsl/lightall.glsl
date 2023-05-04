@@ -911,7 +911,8 @@ void main()
 	attenuation = 1.0;
   #endif
 
-	N = CalcNormal(var_Normal.xyz, var_Tangent, texCoords);
+	vec3 vertexNormal = mix(var_Normal.xyz, -var_Normal.xyz, float(gl_FrontFacing));
+	N = CalcNormal(vertexNormal, var_Tangent, texCoords);
 	L /= sqrt(sqrLightDist);
 
   #if defined(USE_SHADOWMAP) || defined(USE_SSAO)
@@ -932,7 +933,7 @@ void main()
 
   #if defined(USE_LIGHTMAP) || defined(USE_LIGHT_VERTEX)
 	ambientColor = lightColor;
-	float surfNL = clamp(dot(var_Normal.xyz, L), 0.0, 1.0);
+	float surfNL = clamp(dot(vertexNormal, L), 0.0, 1.0);
 
 	// Scale the incoming light to compensate for the baked-in light angle
 	// attenuation.
@@ -1006,7 +1007,7 @@ void main()
   #if defined(USE_PRIMARY_LIGHT)
 	vec3  L2   = normalize(u_PrimaryLightOrigin.xyz);
 	vec3  H2   = normalize(L2 + E);
-	float NL2  = clamp(min(dot(N,  L2), dot(var_Normal.xyz, L2)), 0.0, 1.0);
+	float NL2  = clamp(min(dot(N,  L2), dot(vertexNormal, L2)), 0.0, 1.0);
 	float L2H2 = clamp(dot(L2, H2), 0.0, 1.0);
 	float NH2  = clamp(dot(N,  H2), 0.0, 1.0);
 	float VH2  = clamp(dot(E, H), 0.0, 1.0);
@@ -1021,7 +1022,7 @@ void main()
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
 	
-	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, var_Normal.xyz);
+	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, vertexNormal);
 	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb * AO);
 #else
 	lightColor = var_Color.rgb;
