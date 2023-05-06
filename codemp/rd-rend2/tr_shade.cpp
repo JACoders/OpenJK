@@ -821,10 +821,12 @@ static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vert
 		{
 			index |= GENERICDEF_USE_DEFORM_VERTEXES;
 		}
+#ifdef REND2_SP
 		if (glState.vertexAnimation)
 		{
 			index |= GENERICDEF_USE_VERTEX_ANIMATION;
 		}
+#endif // REND2_SP
 		else if (glState.skeletalAnimation)
 		{
 			index |= GENERICDEF_USE_SKELETAL_ANIMATION;
@@ -993,10 +995,10 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	if (input->shader->numDeforms && !ShaderRequiresCPUDeforms(input->shader))
 		shaderBits |= FOGDEF_USE_DEFORM_VERTEXES;
-
+#ifdef REND2_SP
 	if (glState.vertexAnimation)
 		shaderBits |= FOGDEF_USE_VERTEX_ANIMATION;
-
+#endif // REND2_SP
 	else if (glState.skeletalAnimation)
 		shaderBits |= FOGDEF_USE_SKELETAL_ANIMATION;
 
@@ -1110,7 +1112,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 {
 	unsigned int vertexAttribs = shader->vertexAttribs;
-
+#ifdef REND2_SP
 	if(glState.vertexAnimation)
 	{
 		//vertexAttribs &= ~ATTR_COLOR;
@@ -1121,7 +1123,7 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 			vertexAttribs |= ATTR_TANGENT2;
 		}
 	}
-
+#endif // REND2_SP
 	if (glState.skeletalAnimation)
 	{
 		vertexAttribs |= ATTR_BONE_WEIGHTS;
@@ -1143,11 +1145,12 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 		{
 			index |= REFRACTIONDEF_USE_DEFORM_VERTEXES;
 		}
-
+#ifdef REND2_SP
 		if (glState.vertexAnimation)
 		{
 			index |= REFRACTIONDEF_USE_VERTEX_ANIMATION;
 		}
+#endif // REND2_SP
 		else if (glState.skeletalAnimation)
 		{
 			index |= REFRACTIONDEF_USE_SKELETAL_ANIMATION;
@@ -1180,11 +1183,14 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
+#ifdef REND2_SP
 				if (glState.vertexAnimation)
 				{
 					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
 				}
-				else if (glState.skeletalAnimation)
+				else
+#endif // REND2_SP
+				if (glState.skeletalAnimation)
 				{
 					index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
 				}
@@ -1211,11 +1217,12 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 			{
 				index |= GENERICDEF_USE_DEFORM_VERTEXES;
 			}
-
+#ifdef REND2_SP
 			if (glState.vertexAnimation)
 			{
 				index |= GENERICDEF_USE_VERTEX_ANIMATION;
 			}
+#endif // REND2_SP
 			else if (glState.skeletalAnimation)
 			{
 				index |= GENERICDEF_USE_SKELETAL_ANIMATION;
@@ -1253,22 +1260,16 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 		{
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
+#ifdef REND2_SP
 				if (glState.vertexAnimation)
 				{
 					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
 				}
-
+#endif // REND2_SP
 				if (glState.skeletalAnimation)
 				{
 					index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
 				} 
-			}
-
-			if (r_sunlightMode->integer &&
-					(backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
-					(index & LIGHTDEF_LIGHTTYPE_MASK))
-			{
-				index |= LIGHTDEF_USE_SHADOWMAP;
 			}
 
 			if ( !useAlphaTestGE192 )
@@ -1612,6 +1613,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			{
 				samplerBindingsWriter.AddStaticImage(tr.screenShadowImage, TB_SHADOWMAP);
 			}
+			else
+				samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SHADOWMAP);
 
 			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) &&
 				(pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap))

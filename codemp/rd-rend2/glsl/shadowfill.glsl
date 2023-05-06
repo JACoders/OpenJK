@@ -3,9 +3,6 @@ in vec3 attr_Position;
 in vec3 attr_Normal;
 in vec4 attr_TexCoord0;
 
-in vec3 attr_Position2;
-in vec3 attr_Normal2;
-
 layout(std140) uniform Camera
 {
 	mat4 u_viewProjectionMatrix;
@@ -171,8 +168,8 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 
 void main()
 {
-	vec3 position  = mix(attr_Position, attr_Position2, u_VertexLerp);
-	vec3 normal    = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
+	vec3 position  = attr_Position;
+	vec3 normal    = attr_Normal;
 	normal = normalize(normal - vec3(0.5));
 
 	position = DeformPosition(position, normal, attr_TexCoord0.st);

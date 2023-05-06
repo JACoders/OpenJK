@@ -553,7 +553,6 @@ static void GLSL_BindShaderInterface( shaderProgram_t *program )
 		"attr_Tangent",  // ATTR_INDEX_TANGENT
 		"attr_Normal",  // ATTR_INDEX_NORMAL
 		"attr_Color",  // ATTR_INDEX_COLOR
-		"attr_PaintColor",  // ATTR_INDEX_PAINTCOLOR
 		"attr_LightDirection",  // ATTR_INDEX_LIGHTDIRECTION
 		"attr_BoneIndexes",  // ATTR_INDEX_BONE_INDEXES
 		"attr_BoneWeights",  // ATTR_INDEX_BONE_WEIGHTS
@@ -1304,19 +1303,21 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 
 static bool GLSL_IsValidPermutationForGeneric (int shaderCaps)
 {
+#ifdef REND2_SP
 	if ( (shaderCaps & GENERICDEF_USE_VERTEX_ANIMATION) &&
 			(shaderCaps & GENERICDEF_USE_SKELETAL_ANIMATION) )
 		return false;
-
+#endif // REND2_SP
 	return true;
 }
 
 static bool GLSL_IsValidPermutationForFog (int shaderCaps)
 {
+#ifdef REND2_SP
 	if ( (shaderCaps & FOGDEF_USE_VERTEX_ANIMATION) &&
 			(shaderCaps & FOGDEF_USE_SKELETAL_ANIMATION) )
 		return false;
-
+#endif // REND2_SP
 	return true;
 }
 
@@ -1328,13 +1329,11 @@ static bool GLSL_IsValidPermutationForLight (int lightType, int shaderCaps)
 	if (!lightType && (shaderCaps & LIGHTDEF_USE_PARALLAXMAP))
 		return false;
 
-	if (!lightType && (shaderCaps & LIGHTDEF_USE_SHADOWMAP))
-		return false;
-
+#ifdef REND2_SP
 	if ( (shaderCaps & LIGHTDEF_USE_SKELETAL_ANIMATION) &&
 			(shaderCaps & LIGHTDEF_USE_VERTEX_ANIMATION) )
 		return false;
-
+#endif // REND2_SP
 	return true;
 }
 
@@ -1443,13 +1442,13 @@ static int GLSL_LoadGPUProgramGeneric(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
-
+#ifdef REND2_SP
 		if (i & GENERICDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
-
+#endif // REND2_SP
 		if (i & GENERICDEF_USE_SKELETAL_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
@@ -1499,23 +1498,26 @@ static int GLSL_LoadGPUProgramFogPass(
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("fogpass", allocator, fallback_fogpassProgram);
-	for ( int i = 0; i < FOGDEF_COUNT; i++ )
+	for (int i = 0; i < FOGDEF_COUNT; i++)
 	{
-		if (!GLSL_IsValidPermutationForFog (i))
+		if (!GLSL_IsValidPermutationForFog(i))
 		{
 			continue;
 		}
 
 		uint32_t attribs =
-			(ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0);
+			(ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0);
 		extradefines[0] = '\0';
 
 		if (i & FOGDEF_USE_DEFORM_VERTEXES)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
-
+#ifdef REND2_SP
 		if (i & FOGDEF_USE_VERTEX_ANIMATION)
+		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
-
+			attribs |= ATTR_POSITION2 | ATTR_NORMAL2
+		}
+#endif // REND2_SP
 		if (i & FOGDEF_USE_SKELETAL_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
@@ -1572,13 +1574,13 @@ static int GLSL_LoadGPUProgramRefraction(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
-
+#ifdef REND2_SP
 		if (i & REFRACTIONDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
-
+#endif // REND2_SP
 		if (i & REFRACTIONDEF_USE_SKELETAL_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
@@ -1639,9 +1641,6 @@ static int GLSL_LoadGPUProgramLightAll(
 		uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_COLOR | ATTR_NORMAL;
 
 		extradefines[0] = '\0';
-
-		if (r_sunlightMode->integer)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOWMAP\n");
 
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
 			Q_strcat(extradefines, sizeof(extradefines), "#define RGBM_LIGHTMAP\n");
@@ -1707,7 +1706,7 @@ static int GLSL_LoadGPUProgramLightAll(
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_CUBEMAP\n");
 		}
 
-		if (i & LIGHTDEF_USE_SHADOWMAP)
+		if (r_sunlightMode->integer)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOWMAP\n");
 
@@ -1727,7 +1726,7 @@ static int GLSL_LoadGPUProgramLightAll(
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_CLOTH_BRDF\n");
 		}
-
+#ifdef REND2_SP
 		if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
@@ -1736,7 +1735,9 @@ static int GLSL_LoadGPUProgramLightAll(
 			if (r_normalMapping->integer)
 				attribs |= ATTR_TANGENT2;
 		}
-		else if (i & LIGHTDEF_USE_SKELETAL_ANIMATION)
+		else
+#endif // REND2_SP
+		if (i & LIGHTDEF_USE_SKELETAL_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
@@ -1858,7 +1859,7 @@ static int GLSL_LoadGPUProgramDepthFill(
 		&tr.shadowmapShader,
 		"shadowfill",
 		fallback_shadowfillProgram,
-		ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0);
+		ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0);
 
 	GLSL_InitUniforms(&tr.shadowmapShader);
 	GLSL_FinishGPUShader(&tr.shadowmapShader);
@@ -2576,13 +2577,14 @@ void GL_VertexArraysToAttribs(
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // tangent
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal
 		{ 4, GL_FALSE, GL_FLOAT, GL_FALSE }, // color
-		{ 0, GL_FALSE, GL_NONE, GL_FALSE }, // paint color
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // light direction
 		{ 4, GL_TRUE,  GL_UNSIGNED_BYTE, GL_FALSE }, // bone indices
 		{ 4, GL_FALSE, GL_UNSIGNED_BYTE, GL_TRUE }, // bone weights
+#ifdef REND2_SP
 		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE }, // pos2
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // tangent2
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
+#endif // REND2_SP
 	};
 
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
@@ -2663,12 +2665,12 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	{
 		shaderAttribs |= GENERICDEF_USE_DEFORM_VERTEXES;
 	}
-
+#ifdef REND2_SP
 	if (glState.vertexAnimation)
 	{
 		shaderAttribs |= GENERICDEF_USE_VERTEX_ANIMATION;
 	}
-
+#endif // REND2_SP
 	if (glState.skeletalAnimation)
 	{
 		shaderAttribs |= GENERICDEF_USE_SKELETAL_ANIMATION;

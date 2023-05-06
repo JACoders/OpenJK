@@ -238,7 +238,6 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 			tr.worldInternalLightmapping = qfalse;
 			ri.Hunk_FreeTempMemory(externalLightmap);
 		}
-			
 	}
 
 	// we are about to upload textures
@@ -635,16 +634,14 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 				tr.deluxemaps = (image_t **)ri.Hunk_Alloc(tr.numLightmaps * sizeof(image_t *), h_low);
 				if (tr.worldInternalLightmapping)
 				{
-					{
-						tr.deluxemaps[lightmapnum] = R_CreateImage(
-							va("_fatdeluxemap%d", i),
-							NULL,
-							tr.lightmapAtlasSize[0],
-							tr.lightmapAtlasSize[1],
-							IMGTYPE_DELUXE,
-							IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-							0);
-					}
+					tr.deluxemaps[lightmapnum] = R_CreateImage(
+						va("_fatdeluxemap%d", i),
+						NULL,
+						tr.lightmapAtlasSize[0],
+						tr.lightmapAtlasSize[1],
+						IMGTYPE_DELUXE,
+						IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+						0);
 				}
 			}
 
