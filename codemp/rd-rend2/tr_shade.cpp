@@ -1684,7 +1684,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					if (pStage->bundle[TB_SPECULARMAP].image[0])
 					{
 						samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_SPECULARMAP], TB_SPECULARMAP);
-						enableTextures[2] = 1.0f;
 					}
 					else if (r_specularMapping->integer)
 					{

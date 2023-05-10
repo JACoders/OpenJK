@@ -83,7 +83,6 @@ uniform int u_ColorGen;
 
 out vec4 var_TexCoords;
 out vec4 var_Color;
-out vec3 var_N;
 
 #if defined(PER_PIXEL_LIGHTING)
 out vec4 var_Normal;
@@ -963,7 +962,7 @@ void main()
 	float roughness = 0.99;
   #if defined(USE_SPECULARMAP)
   #if !defined(USE_SPECGLOSS)
-	vec4 ORMS = mix(vec4(1.0), texture(u_SpecularMap, texCoords), u_EnableTextures.z);
+	vec4 ORMS = texture(u_SpecularMap, texCoords);
 	ORMS.xyzw *= u_SpecularScale.zwxy;
 
 	specular.rgb = mix(vec3(0.08) * ORMS.w, diffuse.rgb, ORMS.z);
@@ -972,7 +971,7 @@ void main()
 	roughness = mix(0.01, 1.0, ORMS.y);
 	AO = min(ORMS.x, AO);
   #else
-	specular = mix(vec4(1.0), texture(u_SpecularMap, texCoords), u_EnableTextures.z);
+	specular = texture(u_SpecularMap, texCoords);
 	specular.rgb *= u_SpecularScale.xyz;
 	roughness = mix(1.0, 0.01, specular.a * (1.0 - u_SpecularScale.w));
   #endif
