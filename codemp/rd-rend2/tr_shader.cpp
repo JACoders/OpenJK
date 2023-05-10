@@ -3462,7 +3462,7 @@ static qboolean CollapseStagesToGLSL(void)
 
 	// convert any remaining lightmap stages to a lighting pass with a white texture
 	// only do this with r_sunlightMode non-zero, as it's only for correct shadows.
-	if (r_sunlightMode->integer && shader.numDeforms == 0)
+	if (r_sunlightMode->integer && shader.numDeforms != 1)
 	{
 		for (i = 0; i < MAX_SHADER_STAGES; i++)
 		{
@@ -3489,7 +3489,7 @@ static qboolean CollapseStagesToGLSL(void)
 	}
 
 	// convert any remaining lightingdiffuse stages to a lighting pass
-	if (shader.numDeforms == 0)
+	if (shader.numDeforms != 1)
 	{
 		for (i = 0; i < MAX_SHADER_STAGES; i++)
 		{
@@ -3939,7 +3939,7 @@ static shader_t *FinishShader( void ) {
 	if (stages[0].active &&
 		stages[0].bundle[0].isLightmap &&
 		stages[1].active &&
-		shader.numDeforms == 0) //only for shaders that can be collapsed
+		shader.numDeforms != 1)
 	{
 		int blendBits = stages[1].stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS);
 
