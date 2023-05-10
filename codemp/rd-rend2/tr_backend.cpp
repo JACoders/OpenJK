@@ -1167,16 +1167,24 @@ static Pass *RB_CreatePass( Allocator& allocator, int capacity )
 	return pass;
 }
 
-static void RB_PrepareForEntity( int entityNum )
+static void RB_PrepareForEntity( int entityNum, float originalTime )
 {
 	if ( entityNum != REFENTITYNUM_WORLD )
 	{
 		backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
+
+		backEnd.refdef.floatTime = originalTime - backEnd.currentEntity->e.shaderTime;
 	}
 	else
 	{
 		backEnd.currentEntity = &tr.worldEntity;
+
+		backEnd.refdef.floatTime = originalTime;
 	}
+
+	// we have to reset the shaderTime as well otherwise image animations on
+	// the world (like water) continue with the wrong frame
+	tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 }
 
 static void RB_SubmitDrawSurfsForDepthFill(
@@ -1236,7 +1244,7 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		// change the modelview matrix if needed
 		if ( entityNum != oldEntityNum )
 		{
-			RB_PrepareForEntity(entityNum);
+			RB_PrepareForEntity(entityNum, originalTime);
 			oldEntityNum = entityNum;
 		}
 
@@ -1326,7 +1334,7 @@ static void RB_SubmitDrawSurfs(
 
 		if ( entityNum != oldEntityNum )
 		{
-			RB_PrepareForEntity(entityNum);
+			RB_PrepareForEntity(entityNum, originalTime);
 			oldEntityNum = entityNum;
 		}
 
