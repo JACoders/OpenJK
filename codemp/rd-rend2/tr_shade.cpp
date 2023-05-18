@@ -2027,6 +2027,9 @@ void RB_EndSurface( void ) {
 	tess.firstIndex = 0;
 	tess.multiDrawPrimitives = 0;
 	tess.externalIBO = nullptr;
+	glState.vertexAnimation = qfalse;
+	glState.skeletalAnimation = qfalse;
+	glState.genShadows = qfalse;
 
 	GLimp_LogComment( "----------\n" );
 }

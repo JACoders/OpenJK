@@ -3491,23 +3491,24 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 		return;
 	}
 
-	RB_EndSurface();
-	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
+	int numIndexes = surface->numIndexes;
+	int numVertexes = surface->numVertexes;
+	int minIndex = surface->minIndex;
+	int maxIndex = surface->maxIndex;
+	int indexOffset = surface->indexOffset;
 
 #ifdef _G2_GORE
 	if (surf->alternateTex)
 	{
 		R_BindVBO(tr.goreVBO);
 		R_BindIBO(tr.goreIBO);
-
-		tess.numIndexes = surf->alternateTex->numIndexes;
-		tess.numVertexes = surf->alternateTex->numVerts;
-		tess.useInternalVBO = qfalse;
 		tess.externalIBO = tr.goreIBO;
-		tess.dlightBits = surf->dlightBits;
-		tess.minIndex = surf->alternateTex->firstVert;
-		tess.maxIndex = surf->alternateTex->firstVert + surf->alternateTex->numVerts;
-		tess.firstIndex = surf->alternateTex->firstIndex;
+
+		numIndexes = surf->alternateTex->numIndexes;
+		numVertexes = surf->alternateTex->numVerts;
+		minIndex = surf->alternateTex->firstVert;
+		maxIndex = surf->alternateTex->firstVert + surf->alternateTex->numVerts;
+		indexOffset = surf->alternateTex->firstIndex;
 
 #ifdef REND2_SP_MAYBE
 		// UNTESTED CODE
@@ -3543,41 +3544,106 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 				tess.svars.colors[tess.firstIndex][3] = lFade;
 			}
 		}
-#endif
-		glState.skeletalAnimation = qtrue;
-		RB_EndSurface();
-		// So we don't lerp surfaces that shouldn't be lerped
-		glState.skeletalAnimation = qfalse;
-#ifdef REND2_SP_MAYBE
 		tess.scale = false;
 		tess.fade = false;
 #endif
-		return;
-	}
+	} else {
 #endif
 
-	R_BindVBO(surface->vbo);
-	R_BindIBO(surface->ibo);
+		R_BindVBO(surface->vbo);
+		R_BindIBO(surface->ibo);
+		tess.externalIBO = surface->ibo;
 
+		glState.genShadows = surf->genShadows;
+#ifdef _G2_GORE
+	}
+#endif
+	int i, mergeForward, mergeBack;
+	GLvoid *firstIndexOffset, *lastIndexOffset;
+
+	// merge this into any existing multidraw primitives
+	mergeForward = -1;
+	mergeBack = -1;
+	firstIndexOffset = BUFFER_OFFSET(indexOffset * sizeof(glIndex_t));
+	lastIndexOffset = BUFFER_OFFSET((indexOffset + numIndexes) * sizeof(glIndex_t));
+
+	if (r_mergeMultidraws->integer)
+	{
+		i = 0;
+
+		if (r_mergeMultidraws->integer == 1)
+		{
+			// lazy merge, only check the last primitive
+			if (tess.multiDrawPrimitives)
+			{
+				i = tess.multiDrawPrimitives - 1;
+			}
+		}
+
+		for (; i < tess.multiDrawPrimitives; i++)
+		{
+			if (tess.multiDrawLastIndex[i] == firstIndexOffset)
+			{
+				mergeBack = i;
+			}
+
+			if (lastIndexOffset == tess.multiDrawFirstIndex[i])
+			{
+				mergeForward = i;
+			}
+		}
+	}
+
+	if (mergeBack != -1 && mergeForward == -1)
+	{
+		tess.multiDrawNumIndexes[mergeBack] += numIndexes;
+		tess.multiDrawLastIndex[mergeBack] = tess.multiDrawFirstIndex[mergeBack] + tess.multiDrawNumIndexes[mergeBack];
+		tess.multiDrawMinIndex[mergeBack] = MIN(tess.multiDrawMinIndex[mergeBack], minIndex);
+		tess.multiDrawMaxIndex[mergeBack] = MAX(tess.multiDrawMaxIndex[mergeBack], maxIndex);
+		backEnd.pc.c_multidrawsMerged++;
+	}
+	else if (mergeBack == -1 && mergeForward != -1)
+	{
+		tess.multiDrawNumIndexes[mergeForward] += numIndexes;
+		tess.multiDrawFirstIndex[mergeForward] = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[mergeForward] = tess.multiDrawFirstIndex[mergeForward] + tess.multiDrawNumIndexes[mergeForward];
+		tess.multiDrawMinIndex[mergeForward] = MIN(tess.multiDrawMinIndex[mergeForward], minIndex);
+		tess.multiDrawMaxIndex[mergeForward] = MAX(tess.multiDrawMaxIndex[mergeForward], maxIndex);
+		backEnd.pc.c_multidrawsMerged++;
+	}
+	else if (mergeBack != -1 && mergeForward != -1)
+	{
+		tess.multiDrawNumIndexes[mergeBack] += numIndexes + tess.multiDrawNumIndexes[mergeForward];
+		tess.multiDrawLastIndex[mergeBack] = tess.multiDrawFirstIndex[mergeBack] + tess.multiDrawNumIndexes[mergeBack];
+		tess.multiDrawMinIndex[mergeBack] = MIN(tess.multiDrawMinIndex[mergeBack], MIN(tess.multiDrawMinIndex[mergeForward], minIndex));
+		tess.multiDrawMaxIndex[mergeBack] = MAX(tess.multiDrawMaxIndex[mergeBack], MAX(tess.multiDrawMaxIndex[mergeForward], maxIndex));
+		tess.multiDrawPrimitives--;
+
+		if (mergeForward != tess.multiDrawPrimitives)
+		{
+			tess.multiDrawNumIndexes[mergeForward] = tess.multiDrawNumIndexes[tess.multiDrawPrimitives];
+			tess.multiDrawFirstIndex[mergeForward] = tess.multiDrawFirstIndex[tess.multiDrawPrimitives];
+		}
+		backEnd.pc.c_multidrawsMerged += 2;
+	}
+	else if (mergeBack == -1 && mergeForward == -1)
+	{
+		tess.multiDrawNumIndexes[tess.multiDrawPrimitives] = numIndexes;
+		tess.multiDrawFirstIndex[tess.multiDrawPrimitives] = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[tess.multiDrawPrimitives] = (glIndex_t *)lastIndexOffset;
+		tess.multiDrawMinIndex[tess.multiDrawPrimitives] = minIndex;
+		tess.multiDrawMaxIndex[tess.multiDrawPrimitives] = maxIndex;
+		tess.multiDrawPrimitives++;
+	}
+
+	backEnd.pc.c_multidraws++;
+
+	tess.numIndexes += numIndexes;
+	tess.numVertexes += numVertexes;
+	tess.useInternalVBO = qfalse;
 	tess.dlightBits = surf->dlightBits;
 
-	tess.useInternalVBO = qfalse;
-	tess.externalIBO = surface->ibo;
-
-	tess.numIndexes += surface->numIndexes;
-	tess.numVertexes += surface->numVertexes;
-	tess.minIndex = surface->minIndex;
-	tess.maxIndex = surface->maxIndex;
-	tess.firstIndex = surface->indexOffset;
-
-	glState.genShadows = surf->genShadows;
 	glState.skeletalAnimation = qtrue;
-
-	RB_EndSurface();
-
-	// So we don't lerp surfaces that shouldn't be lerped
-	glState.skeletalAnimation = qfalse;
-	glState.genShadows = qfalse;
 }
  
 /*
@@ -4213,7 +4279,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		// Fill in the index buffer and compute tangents
 		glIndex_t *indices = (glIndex_t *)ri.Hunk_AllocateTempMemory(sizeof(glIndex_t) * numTriangles * 3);
 		glIndex_t *index = indices;
-		uint32_t *tangentsf = (uint32_t *)ri.Hunk_AllocateTempMemory(sizeof(uint32_t) * numVerts);;
+		uint32_t *tangentsf = (uint32_t *)ri.Hunk_AllocateTempMemory(sizeof(uint32_t) * numVerts);
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof(mdxmLOD_t) + (mdxm->numSurfaces * sizeof(mdxmLODSurfOffset_t)));
 

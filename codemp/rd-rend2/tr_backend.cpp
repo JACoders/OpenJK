@@ -1196,6 +1196,7 @@ static void RB_SubmitDrawSurfsForDepthFill(
 	int oldEntityNum = -1;
 	int oldSort = -1;
 	int oldDepthRange = 0;
+	CBoneCache *oldBoneCache = nullptr;
 
 	drawSurf_t *drawSurf = drawSurfs;
 	for ( int i = 0; i < numDrawSurfs; i++, drawSurf++ )
@@ -1212,6 +1213,16 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		{
 			// Don't draw yet, let's see what's to come
 			continue;
+		}
+
+		if (*drawSurf->surface == SF_MDX)
+		{
+			if (((CRenderableSurface*)drawSurf->surface)->boneCache != oldBoneCache)
+			{
+				RB_EndSurface();
+				RB_BeginSurface(shader, 0, 0);
+				oldBoneCache = ((CRenderableSurface*)drawSurf->surface)->boneCache;
+			}
 		}
 
 		if ( shader == oldShader &&	entityNum == oldEntityNum )
@@ -1275,6 +1286,7 @@ static void RB_SubmitDrawSurfs(
 	int oldDlighted = 0;
 	int oldPostRender = 0;
 	int oldCubemapIndex = -1;
+	CBoneCache *oldBoneCache = nullptr;
 
 	drawSurf_t *drawSurf = drawSurfs;
 	for ( int i = 0; i < numDrawSurfs; i++, drawSurf++ )
@@ -1290,6 +1302,16 @@ static void RB_SubmitDrawSurfs(
 		assert(shader != nullptr);
 		fogNum = drawSurf->fogIndex;
 		dlighted = drawSurf->dlightBits;
+
+		if (*drawSurf->surface == SF_MDX)
+		{
+			if (((CRenderableSurface*)drawSurf->surface)->boneCache != oldBoneCache)
+			{
+				RB_EndSurface();
+				RB_BeginSurface(shader, fogNum, cubemapIndex);
+				oldBoneCache = ((CRenderableSurface*)drawSurf->surface)->boneCache;
+			}
+		}
 
 		if (    shader == oldShader &&
 				fogNum == oldFogNum &&
