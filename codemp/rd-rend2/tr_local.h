@@ -1808,6 +1808,7 @@ typedef struct srfVBOMDVMesh_s
 	struct mdvSurface_s *mdvSurface;
 
 	// backEnd stats
+	int				indexOffset;
 	int             numIndexes;
 	int             numVerts;
 	glIndex_t       minIndex;
@@ -2837,7 +2838,7 @@ void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,
 bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity );
 
 void R_CalcMikkTSpaceBSPSurface(int numSurfaces, packedVertex_t *vertices, glIndex_t *indices);
-void R_CalcMikkTSpaceMD3Surface(int numSurfaces, vec3_t *verts, uint32_t *normals, uint32_t *tangents, vec2_t *texcoords, glIndex_t *indices);
+void R_CalcMikkTSpaceMD3Surface(int numSurfaces, mdvVertex_t *verts, uint32_t *tangents, mdvSt_t *texcoords, glIndex_t *indices);
 void R_CalcMikkTSpaceGlmSurface(int numSurfaces, mdxmVertex_t *vertices, mdxmVertexTexCoord_t *textureCoordinates, uint32_t *tangents, glIndex_t *indices);
 
 void R_CalcTexDirs(vec3_t sdir, vec3_t tdir, const vec3_t v1, const vec3_t v2,

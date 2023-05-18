@@ -2084,18 +2084,21 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	//mdvModel_t     *mdvModel;
 	//mdvSurface_t   *mdvSurface;
 	refEntity_t    *refEnt;
+	int i, mergeForward, mergeBack;
+	GLvoid *firstIndexOffset, *lastIndexOffset;
 
 	GLimp_LogComment("--- RB_SurfaceVBOMDVMesh ---\n");
 
 	if(!surface->vbo || !surface->ibo)
 		return;
 
+	if (glState.currentVBO != surface->vbo)
+	{
+		RB_EndSurface();
+	}
+
 	//drawSurf_t drawSurf = 
 	int dlightBits = tess.dlightBits;
-
-	//RB_CheckVBOandIBO(surface->vbo, surface->ibo);
-	RB_EndSurface();
-	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);
@@ -2103,36 +2106,87 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	tess.useInternalVBO = qfalse;
 	tess.externalIBO = surface->ibo;
 
-	tess.numIndexes += surface->numIndexes;
-	tess.numVertexes += surface->numVerts;
-	tess.minIndex = surface->minIndex;
-	tess.maxIndex = surface->maxIndex;
 	tess.dlightBits = dlightBits;
-	//mdvModel = surface->mdvModel;
-	//mdvSurface = surface->mdvSurface;
 
-	refEnt = &backEnd.currentEntity->e;
+	// merge this into any existing multidraw primitives
+	mergeForward = -1;
+	mergeBack = -1;
+	firstIndexOffset = BUFFER_OFFSET(surface->indexOffset * sizeof(glIndex_t));
+	lastIndexOffset = BUFFER_OFFSET(surface->numIndexes * sizeof(glIndex_t));
 
-	if ( refEnt->oldframe || refEnt->frame )
+	if (r_mergeMultidraws->integer)
 	{
-		if(refEnt->oldframe == refEnt->frame)
+		i = 0;
+
+		if (r_mergeMultidraws->integer == 1)
 		{
-			glState.vertexAttribsInterpolation = 0;
-		}
-		else
-		{
-			glState.vertexAttribsInterpolation = refEnt->backlerp;
+			// lazy merge, only check the last primitive
+			if (tess.multiDrawPrimitives)
+			{
+				i = tess.multiDrawPrimitives - 1;
+			}
 		}
 
-		glState.vertexAttribsOldFrame = refEnt->oldframe;
-		glState.vertexAttribsNewFrame = refEnt->frame;
-		glState.vertexAnimation = qtrue;
+		for (; i < tess.multiDrawPrimitives; i++)
+		{
+			if (tess.multiDrawLastIndex[i] == firstIndexOffset)
+			{
+				mergeBack = i;
+			}
+
+			if (lastIndexOffset == tess.multiDrawFirstIndex[i])
+			{
+				mergeForward = i;
+			}
+		}
 	}
 
-	RB_EndSurface();
+	if (mergeBack != -1 && mergeForward == -1)
+	{
+		tess.multiDrawNumIndexes[mergeBack] += surface->numIndexes;
+		tess.multiDrawLastIndex[mergeBack] = tess.multiDrawFirstIndex[mergeBack] + tess.multiDrawNumIndexes[mergeBack];
+		tess.multiDrawMinIndex[mergeBack] = MIN(tess.multiDrawMinIndex[mergeBack], surface->minIndex);
+		tess.multiDrawMaxIndex[mergeBack] = MAX(tess.multiDrawMaxIndex[mergeBack], surface->maxIndex);
+		backEnd.pc.c_multidrawsMerged++;
+	}
+	else if (mergeBack == -1 && mergeForward != -1)
+	{
+		tess.multiDrawNumIndexes[mergeForward] += surface->numIndexes;
+		tess.multiDrawFirstIndex[mergeForward] = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[mergeForward] = tess.multiDrawFirstIndex[mergeForward] + tess.multiDrawNumIndexes[mergeForward];
+		tess.multiDrawMinIndex[mergeForward] = MIN(tess.multiDrawMinIndex[mergeForward], surface->minIndex);
+		tess.multiDrawMaxIndex[mergeForward] = MAX(tess.multiDrawMaxIndex[mergeForward], surface->maxIndex);
+		backEnd.pc.c_multidrawsMerged++;
+	}
+	else if (mergeBack != -1 && mergeForward != -1)
+	{
+		tess.multiDrawNumIndexes[mergeBack] += surface->numIndexes + tess.multiDrawNumIndexes[mergeForward];
+		tess.multiDrawLastIndex[mergeBack] = tess.multiDrawFirstIndex[mergeBack] + tess.multiDrawNumIndexes[mergeBack];
+		tess.multiDrawMinIndex[mergeBack] = MIN(tess.multiDrawMinIndex[mergeBack], MIN(tess.multiDrawMinIndex[mergeForward], surface->minIndex));
+		tess.multiDrawMaxIndex[mergeBack] = MAX(tess.multiDrawMaxIndex[mergeBack], MAX(tess.multiDrawMaxIndex[mergeForward], surface->maxIndex));
+		tess.multiDrawPrimitives--;
 
-	// So we don't lerp surfaces that shouldn't be lerped
-	glState.vertexAnimation = qfalse;
+		if (mergeForward != tess.multiDrawPrimitives)
+		{
+			tess.multiDrawNumIndexes[mergeForward] = tess.multiDrawNumIndexes[tess.multiDrawPrimitives];
+			tess.multiDrawFirstIndex[mergeForward] = tess.multiDrawFirstIndex[tess.multiDrawPrimitives];
+		}
+		backEnd.pc.c_multidrawsMerged += 2;
+	}
+	else if (mergeBack == -1 && mergeForward == -1)
+	{
+		tess.multiDrawNumIndexes[tess.multiDrawPrimitives] = surface->numIndexes;
+		tess.multiDrawFirstIndex[tess.multiDrawPrimitives] = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[tess.multiDrawPrimitives] = (glIndex_t *)lastIndexOffset;
+		tess.multiDrawMinIndex[tess.multiDrawPrimitives] = surface->minIndex;
+		tess.multiDrawMaxIndex[tess.multiDrawPrimitives] = surface->maxIndex;
+		tess.multiDrawPrimitives++;
+	}
+
+	backEnd.pc.c_multidraws++;
+
+	tess.numIndexes += surface->numIndexes;
+	tess.numVertexes += surface->numVerts;
 }
 
 static void RB_SurfaceSkip( void *surf ) {

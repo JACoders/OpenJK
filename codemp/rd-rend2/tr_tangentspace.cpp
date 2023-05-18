@@ -135,11 +135,9 @@ void R_CalcMikkTSpaceBSPSurface(int numSurfaces, packedVertex_t *vertices, glInd
 struct ModelMeshData
 {
 	int numSurfaces;
-	vec3_t *verts;
-	uint32_t *normals;
+	mdvVertex_t *verts;
 	uint32_t *tangents;
-	vec2_t *texcoords;
-	int stride;
+	mdvSt_t *texcoords;
 	glIndex_t *indices;
 };
 
@@ -148,9 +146,9 @@ void R_GetModelPosition(const SMikkTSpaceContext * pContext, float *fvPosOut, co
 	ModelMeshData *meshData = (ModelMeshData *)pContext->m_pUserData;
 	const int vert_index = R_FixMikktVertIndex(iVert);
 	glIndex_t index = meshData->indices[iFace * 3 + vert_index];
-	fvPosOut[0] = meshData->verts[index][0];
-	fvPosOut[1] = meshData->verts[index][1];
-	fvPosOut[2] = meshData->verts[index][2];
+	fvPosOut[0] = meshData->verts[index].xyz[0];
+	fvPosOut[1] = meshData->verts[index].xyz[1];
+	fvPosOut[2] = meshData->verts[index].xyz[2];
 }
 
 void R_GetNormalModelSurface(const SMikkTSpaceContext * pContext, float *fvNormOut, const int iFace, const int iVert)
@@ -159,9 +157,9 @@ void R_GetNormalModelSurface(const SMikkTSpaceContext * pContext, float *fvNormO
 	const int vert_index = R_FixMikktVertIndex(iVert);
 	glIndex_t index = meshData->indices[iFace * 3 + vert_index];
 
-	fvNormOut[0] = ((meshData->normals[index]) & 0x3ff) * 1.0f / 511.5f - 1.0f;
-	fvNormOut[1] = ((meshData->normals[index] >> 10) & 0x3ff) * 1.0f / 511.5f - 1.0f;
-	fvNormOut[2] = ((meshData->normals[index] >> 20) & 0x3ff) * 1.0f / 511.5f - 1.0f;
+	fvNormOut[0] = meshData->verts[index].normal[0];
+	fvNormOut[1] = meshData->verts[index].normal[1];
+	fvNormOut[2] = meshData->verts[index].normal[2];
 }
 
 void R_GetModelTexCoord(const SMikkTSpaceContext * pContext, float *fvTexcOut, const int iFace, const int iVert)
@@ -169,8 +167,8 @@ void R_GetModelTexCoord(const SMikkTSpaceContext * pContext, float *fvTexcOut, c
 	ModelMeshData *meshData = (ModelMeshData *)pContext->m_pUserData;
 	const int vert_index = R_FixMikktVertIndex(iVert);
 	glIndex_t index = meshData->indices[iFace * 3 + vert_index];
-	fvTexcOut[0] = meshData->texcoords[index][0];
-	fvTexcOut[1] = meshData->texcoords[index][1];
+	fvTexcOut[0] = meshData->texcoords[index].st[0];
+	fvTexcOut[1] = meshData->texcoords[index].st[1];
 }
 
 void R_SetModelTSpaceBasic(const SMikkTSpaceContext * pContext, const float *fvTangent, const float fSign, const int iFace, const int iVert)
@@ -187,7 +185,7 @@ void R_SetModelTSpaceBasic(const SMikkTSpaceContext * pContext, const float *fvT
 
 }
 
-void R_CalcMikkTSpaceMD3Surface(int numSurfaces, vec3_t *verts, uint32_t *normals, uint32_t *tangents, vec2_t *texcoords, glIndex_t *indices)
+void R_CalcMikkTSpaceMD3Surface(int numSurfaces, mdvVertex_t *verts, uint32_t *tangents, mdvSt_t *texcoords, glIndex_t *indices)
 {
 	SMikkTSpaceInterface tangentSpaceInterface;
 	tangentSpaceInterface.m_getNumFaces = R_GetNumFaces;
@@ -201,7 +199,6 @@ void R_CalcMikkTSpaceMD3Surface(int numSurfaces, vec3_t *verts, uint32_t *normal
 	ModelMeshData meshData;
 	meshData.numSurfaces = numSurfaces;
 	meshData.verts = verts;
-	meshData.normals = normals;
 	meshData.tangents = tangents;
 	meshData.texcoords = texcoords;
 	meshData.indices = indices;
