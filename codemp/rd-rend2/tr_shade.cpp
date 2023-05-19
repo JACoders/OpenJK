@@ -1612,6 +1612,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
 			{
 				samplerBindingsWriter.AddStaticImage(tr.screenShadowImage, TB_SHADOWMAP);
+				enableTextures[2] = 1.0f;
 			}
 			else
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SHADOWMAP);

@@ -926,7 +926,8 @@ void main()
 	shadowValue = mix(0.0, shadowValue, dot(N, primaryLightDir) > 0.0);
 
     #if defined(SHADOWMAP_MODULATE)
-	lightColor = mix(u_PrimaryLightAmbient * lightColor, lightColor, shadowValue);
+	vec3 ambientScale = mix(vec3(1.0), u_PrimaryLightAmbient, u_EnableTextures.z);
+	lightColor = mix(ambientScale * lightColor, lightColor, shadowValue);
     #endif
   #endif
 
