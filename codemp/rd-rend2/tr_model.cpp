@@ -1094,9 +1094,6 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 			numVerts += surf->numVerts;
 			numIndexes += surf->numIndexes;
 		}
-
-		ri.Printf(PRINT_ALL, "Verts %i Indexes %i\n", numVerts, numIndexes);
-
 		baseVertexes[mdvModel->numSurfaces] = numVerts;
 
 		dataSize += numVerts * sizeof(*verts);

@@ -183,7 +183,6 @@ namespace
 
 			qglViewport(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
 			qglScissor(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
-
 	
 			if (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE) // used outside brushes
 			{
@@ -203,7 +202,6 @@ namespace
 			GL_Cull(CT_TWO_SIDED);
 			vec4_t color = { 0.0f, 0.0f, 0.0f, 1.0f };
 			backEnd.currentEntity = &tr.worldEntity;
-			
 
 			vec3_t stepSize = {
 				abs(mapSize[0]) / tr.weatherDepthFbo->width,
