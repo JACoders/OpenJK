@@ -2223,6 +2223,10 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 			shadowParms.targetFboLayer = 0;
 
 			R_RenderView(&shadowParms);
+
+			R_IssuePendingRenderCommands();
+
+			tr.refdef.numDrawSurfs = 0;
 		}
 	}
 }
