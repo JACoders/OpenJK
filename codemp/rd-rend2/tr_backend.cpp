@@ -2690,7 +2690,7 @@ static void RB_UpdateAnimationConstants(
 			continue;
 		CRenderableSurface *RS = (CRenderableSurface *)drawSurf->surface;
 
-		RB_TransformBones(RS);
+		RB_TransformBones(RS, backEndData->realFrameNumber);
 	}
 
 	// now get offsets or add skeletons to ubo
@@ -2710,7 +2710,7 @@ static void RB_UpdateAnimationConstants(
 			tr.animationBoneUboOffsets[i] = RB_AppendConstantsData(
 				frame, &bonesBlock, sizeof(bonesBlock));
 
-			RB_SetBoneUboOffset(RS, tr.animationBoneUboOffsets[i]);
+			RB_SetBoneUboOffset(RS, tr.animationBoneUboOffsets[i], backEndData->realFrameNumber);
 		}
 		else
 		{

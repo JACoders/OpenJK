@@ -416,6 +416,7 @@ public:
 	// GPU Data
 	mat3x4_t boneMatrices[MAX_G2_BONES];
 	int      uboOffset;
+	int	     uboGPUFrame;
 
 	CBoneCache( const model_t *amod, const mdxaHeader_t *aheader )
 		: header(aheader)
@@ -430,6 +431,7 @@ public:
 		, mUnsquash(false)
 		, mSmoothFactor(0.0f)
 		, uboOffset(-1)
+		, uboGPUFrame(-1)
 	{
 		assert(amod);
 		assert(aheader);
@@ -3443,8 +3445,11 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-void RB_TransformBones(CRenderableSurface *surf)
+void RB_TransformBones(CRenderableSurface *surf, int currentFrameNum)
 {
+	if (surf->boneCache->uboGPUFrame == currentFrameNum)
+		return;
+
 	const mdxmSurface_t *surfData = surf->surfaceData;
 	const int *boneReferences =
 		(const int *)((const byte *)surfData + surfData->ofsBoneReferences);
@@ -3469,9 +3474,10 @@ int RB_GetBoneUboOffset(CRenderableSurface *surf)
 		return -1;
 }
 
-void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset)
+void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset, int currentFrameNum)
 {
 	surf->boneCache->uboOffset = offset;
+	surf->boneCache->uboGPUFrame = currentFrameNum;
 }
 
 void RB_FillBoneBlock(CRenderableSurface *surf, mat3x4_t *outMatrices)

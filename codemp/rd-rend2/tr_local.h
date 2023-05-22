@@ -3392,9 +3392,9 @@ public:
 
 void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum );
 void RB_SurfaceGhoul( CRenderableSurface *surf );
-void RB_TransformBones(CRenderableSurface *surf);
+void RB_TransformBones(CRenderableSurface *surf, int currentFrameNum);
 int RB_GetBoneUboOffset(CRenderableSurface *surf);
-void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset);
+void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset, int currentFrameNum);
 void RB_FillBoneBlock(CRenderableSurface *surf, mat3x4_t *outMatrices);
 /*
 Ghoul2 Insert End
