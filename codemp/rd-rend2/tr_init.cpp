@@ -280,6 +280,7 @@ static void R_Splash()
 
 	qglViewport( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
 	qglClearBufferfv(GL_COLOR, 0, black);
+	qglClear(GL_DEPTH_BUFFER_BIT);
 
 	GLSL_InitSplashScreenShader();
 
@@ -291,7 +292,7 @@ static void R_Splash()
 
 	GL_State(GLS_DEPTHTEST_DISABLE);
 	GLSL_BindProgram(&tr.splashScreenShader);
-	qglDrawArrays(GL_TRIANGLES, 0, 3);
+	RB_InstantTriangle();
 
 	ri.WIN_Present(&window);
 }
