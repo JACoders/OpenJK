@@ -1793,15 +1793,6 @@ void R_ReloadFonts_f(void)
 	}
 }
 
-void R_InitFreeType(void) {
-#ifdef BUILD_FREETYPE
-	if (FT_Init_FreeType( &ftLibrary )) {
-		ri.Printf(PRINT_WARNING, "R_InitFreeType: Unable to initialize FreeType.\n");
-	}
-#endif
-	// I DONT DO NOTHING
-}
-
 
 void R_DoneFreeType(void) {
 #ifdef BUILD_FREETYPE
