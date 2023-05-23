@@ -318,9 +318,7 @@ RB_RenderFlare
 ==================
 */
 void RB_RenderFlare( flare_t *f ) {
-	float			size;
 	vec4_t			color;
-	float distance, intensity, factor;
 
 	backEnd.pc.c_flareRenders++;
 
@@ -393,7 +391,6 @@ void RB_RenderFlares (void) {
 	flare_t		*f;
 	flare_t		**prev;
 	qboolean	draw;
-	matrix_t    oldmodelview, oldprojection, matrix;
 
 	if ( !r_flares->integer ) {
 		return;

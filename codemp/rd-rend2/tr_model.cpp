@@ -1076,7 +1076,7 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 
 		byte *data;
 		int dataSize = 0;
-		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents;
+		int ofsPosition, ofsNormals, ofsTexcoords, ofsTangents;
 		int stride = 0;
 		int numVerts = 0;
 		int numIndexes = 0;

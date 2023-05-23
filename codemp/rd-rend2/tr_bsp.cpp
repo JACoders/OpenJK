@@ -3300,7 +3300,6 @@ static void R_RenderAllCubemaps()
 	}
 
 	// Clear everything before rendering cubemaps to make sure only visable surfaces to the cubemap are rendered
-	int frontEndMsec, backEndMsec;
 	R_IssuePendingRenderCommands();
 	RE_ClearScene();
 	R_InitNextFrame();
@@ -3338,7 +3337,7 @@ static void R_RenderAllCubemaps()
 
 void R_LoadWeatherZones(world_t *worldData, lump_t *brushesLump, lump_t *sidesLump)
 {
-	dbrush_t 	*brushes, *brush;
+	dbrush_t 	*brushes;
 	dbrushside_t	*sides;
 	int			brushesCount, sidesCount;
 

@@ -2081,9 +2081,6 @@ static void RB_SurfaceVBOMesh(srfBspSurface_t * srf)
 
 void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 {
-	//mdvModel_t     *mdvModel;
-	//mdvSurface_t   *mdvSurface;
-	refEntity_t    *refEnt;
 	int i, mergeForward, mergeBack;
 	GLvoid *firstIndexOffset, *lastIndexOffset;
 
