@@ -99,10 +99,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define SURF_UNUSED40000000		(0x40000000u) //
 #define SURF_UNUSED80000000		(0x80000000u) //
 
-// NEW for rend2
-#define SURF_LIGHTFILTER		0x04000000	// filter light going through the object
-#define SURF_ALPHASHADOW		0x08000000	// test light on a per-pixel basis
-
 #define MATERIAL_BITS			5
 #define MATERIAL_MASK			0x1f	// mask to get the material type
 

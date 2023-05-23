@@ -142,6 +142,7 @@ static void NPC_LadderMove( vec3_t dir )
 NPC_GetMoveInformation
 -------------------------
 */
+
 static QINLINE qboolean NPC_GetMoveInformation( vec3_t dir, float *distance )
 {
 	//NOTENOTE: Use path stacks!
