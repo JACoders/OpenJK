@@ -177,6 +177,8 @@ namespace
 			tr.viewParms.world.modelViewMatrix,
 			tr.weatherSystem->weatherMVP);
 
+		R_IssuePendingRenderCommands();
+
 		if (tr.weatherSystem->numWeatherBrushes > 0)
 		{
 			FBO_Bind(tr.weatherDepthFbo);
@@ -227,7 +229,7 @@ namespace
 
 			for (int i = 0; i < tr.weatherSystem->numWeatherBrushes; i++)
 			{
-				RB_BeginSurface(tr.defaultShader, 0, 0);
+				RE_BeginFrame(STEREO_CENTER);
 				weatherBrushes_t *currentWeatherBrush = &tr.weatherSystem->weatherBrushes[i];
 
 				// RBSP brushes actually store their bounding box in the first 6 planes! Nice
@@ -307,28 +309,58 @@ namespace
 						if (!hit)
 							continue;
 
-						// Just draw it now
+						// Just draw it when batch is full
+						if (tess.numVertexes + 4 >= SHADER_MAX_VERTEXES || tess.numIndexes + 6 >= SHADER_MAX_INDEXES) 
+						{ 
+							RB_UpdateVBOs(ATTR_POSITION);
+							GLSL_VertexAttribsState(ATTR_POSITION, NULL);
+							GLSL_BindProgram(&tr.textureColorShader);
+							GLSL_SetUniformMatrix4x4(
+								&tr.textureColorShader,
+								UNIFORM_MODELVIEWPROJECTIONMATRIX,
+								tr.weatherSystem->weatherMVP);
+							R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
+
+							RB_CommitInternalBufferData();
+
+							tess.numIndexes = 0;
+							tess.numVertexes = 0;
+							tess.firstIndex = 0;
+							tess.multiDrawPrimitives = 0;
+							tess.externalIBO = nullptr;
+						}
+						
 						RB_AddQuadStamp(rayPos, left, up, color);
-
-						RB_UpdateVBOs(ATTR_POSITION);
-						GLSL_VertexAttribsState(ATTR_POSITION, NULL);
-						GLSL_BindProgram(&tr.textureColorShader);
-						GLSL_SetUniformMatrix4x4(
-							&tr.textureColorShader,
-							UNIFORM_MODELVIEWPROJECTIONMATRIX,
-							tr.weatherSystem->weatherMVP);
-						R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
-
-						RB_CommitInternalBufferData();
-
-						tess.numIndexes = 0;
-						tess.numVertexes = 0;
-						tess.firstIndex = 0;
-						tess.multiDrawPrimitives = 0;
-						tess.externalIBO = nullptr;
 					}
 				}
+
+				gpuFrame_t *currentFrame = backEndData->currentFrame;
+				assert(!currentFrame->sync);
+				currentFrame->sync = qglFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+				backEndData->realFrameNumber++;
+				backEnd.framePostProcessed = qfalse;
+				backEnd.projection2D = qfalse;
+				backEnd.frameUBOsInitialized = qfalse;
 			}
+
+			// draw remaining quads
+			RB_UpdateVBOs(ATTR_POSITION);
+			GLSL_VertexAttribsState(ATTR_POSITION, NULL);
+			GLSL_BindProgram(&tr.textureColorShader);
+			GLSL_SetUniformMatrix4x4(
+				&tr.textureColorShader,
+				UNIFORM_MODELVIEWPROJECTIONMATRIX,
+				tr.weatherSystem->weatherMVP);
+			R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
+
+			RB_CommitInternalBufferData();
+
+			tess.numIndexes = 0;
+			tess.numVertexes = 0;
+			tess.firstIndex = 0;
+			tess.multiDrawPrimitives = 0;
+			tess.externalIBO = nullptr;
 
 			qglDisable(GL_DEPTH_CLAMP);
 		}
