@@ -2574,6 +2574,16 @@ static void RB_UpdateShaderEntityConstants(
 	const trRefEntity_t *refEntity,
 	const shader_t *shader)
 {
+	if (shader->numDeforms != 1 && !shader->portalRange)
+	{
+		RB_InsertEntityShaderUboOffset(
+			tr.shaderInstanceUboOffsetsMap,
+			tr.shaderInstanceUboOffsetsMapSize,
+			entityNum,
+			shader->index,
+			-1);
+		return;
+	}
 	ShaderInstanceBlock shaderInstanceBlock = {};
 	ComputeDeformValues(
 		refEntity,
@@ -2788,7 +2798,6 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 	gpuFrame_t *frame = backEndData->currentFrame;
 	RB_BeginConstantsUpdate(frame);
 
-	RB_UpdateCameraConstants(frame);
 	if (backEnd.frameUBOsInitialized == qfalse)
 	{
 		RB_UpdateFogsConstants(frame);
@@ -2796,6 +2805,7 @@ static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
 		RB_UpdateLightsConstants(frame);
 	}
 
+	RB_UpdateCameraConstants(frame);
 	RB_UpdateShaderAndEntityConstants(frame, drawSurfs, numDrawSurfs);
 	RB_UpdateAnimationConstants(frame, drawSurfs, numDrawSurfs);
 

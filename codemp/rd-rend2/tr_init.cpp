@@ -1849,6 +1849,13 @@ static void R_InitStaticConstants()
 	qglBufferSubData(
 		GL_UNIFORM_BUFFER, tr.defaultFogsUboOffset, sizeof(fogsBlock), &fogsBlock);
 	alignedBlockSize += (sizeof(FogsBlock) + alignment) & ~alignment;
+
+	// Setup default shader instance block
+	ShaderInstanceBlock shaderInstanceBlock = {};
+	tr.defaultShaderInstanceUboOffset = alignedBlockSize;
+	qglBufferSubData(
+		GL_UNIFORM_BUFFER, tr.defaultShaderInstanceUboOffset, sizeof(shaderInstanceBlock), &shaderInstanceBlock);
+	alignedBlockSize += (sizeof(ShaderInstanceBlock) + alignment) & ~alignment;
 }
 
 static void R_ShutdownBackEndFrameData()

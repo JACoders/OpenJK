@@ -856,6 +856,12 @@ static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 			shader->index);
 	}
 
+	if (binding.offset == -1)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.defaultShaderInstanceUboOffset;
+	}
+
 	return binding;
 }
 
