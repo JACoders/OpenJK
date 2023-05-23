@@ -2376,7 +2376,6 @@ static void RB_UpdateEntityMatrixConstants(
 	EntityBlock& entityBlock,
 	const trRefEntity_t *refEntity)
 {
-	matrix_t modelViewMatrix;
 	orientationr_t ori;
 	if (refEntity == &tr.worldEntity)
 	{
@@ -2389,7 +2388,6 @@ static void RB_UpdateEntityMatrixConstants(
 		Matrix16Copy(ori.modelMatrix, entityBlock.modelMatrix);
 	}
 	
-	Matrix16Copy(ori.modelViewMatrix, modelViewMatrix);
 	VectorCopy(ori.viewOrigin, entityBlock.localViewOrigin);
 }
 
