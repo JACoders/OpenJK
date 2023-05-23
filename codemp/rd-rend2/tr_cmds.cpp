@@ -564,6 +564,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	tr.frameCount++;
 	tr.frameSceneNum = 0;
 
+	tr.fogsUboOffset = -1;
+	tr.lightsUboOffset = -1;
+	tr.sceneUboOffset = -1;
+
 	//
 	// do overdraw measurement
 	//
