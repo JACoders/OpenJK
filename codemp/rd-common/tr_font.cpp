@@ -1794,15 +1794,4 @@ void R_ReloadFonts_f(void)
 }
 
 
-void R_DoneFreeType(void) {
-#ifdef BUILD_FREETYPE
-	if (ftLibrary) {
-		FT_Done_FreeType( ftLibrary );
-		ftLibrary = NULL;
-	}
-#endif
-	// I DONT DO NOTHING
-}
-
-
 // end
