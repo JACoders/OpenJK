@@ -25,6 +25,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define	MAX_VARIABLES	32
 
+#include <string>
+#include <map>
+#include <array>
+
 typedef std::map < std::string, std::string >		varString_m;
 typedef std::map < std::string, float >		varFloat_m;
 

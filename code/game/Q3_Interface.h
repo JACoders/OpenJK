@@ -23,6 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __Q3_INTERFACE__
 #define __Q3_INTERFACE__
 
+#include <array>
 #include "../icarus/IcarusInterface.h"
 #include "bg_public.h"
 #include "g_shared.h"
@@ -558,6 +559,8 @@ typedef std::map < std::string, pscript_t* >	scriptlist_t;
 // STL map type definitions for the variable containers.
 typedef std::map < std::string, std::string >		varString_m;
 typedef std::map < std::string, float >		varFloat_m;
+// For cases where we need to re-use a buffer without invalidating it
+typedef std::map < std::string, std::array< char, MAX_STRING_CHARS > >		varStringBuf_m;
 
 
 // The Quake 3 Game Interface Class for Quake3 and Icarus to use.
@@ -576,6 +579,8 @@ private:
 	varFloat_m		m_varFloats;
 	varString_m		m_varVectors;
 	int				m_numVariables;
+
+	varStringBuf_m		m_cvars;
 
 	int				m_entFilter;
 

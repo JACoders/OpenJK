@@ -30,6 +30,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/stringed_ingame.h"
 
+#ifdef JK2_MODE
+#include "../qcommon/strippublic.h"
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // This file is shared in the single and multiplayer codebases, so be CAREFUL WHAT YOU ADD/CHANGE!!!!!
@@ -39,27 +43,40 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 typedef enum
 {
 	eWestern,	// ( I only care about asian languages in here at the moment )
+#ifndef JK2_MODE
 	eRussian,	//  .. but now I need to care about this, since it uses a different TP
 	ePolish,	// ditto
+#endif
 	eKorean,
 	eTaiwanese,	// 15x15 glyphs tucked against BR of 16x16 space
 	eJapanese,	// 15x15 glyphs tucked against TL of 16x16 space
+#ifndef JK2_MODE
 	eChinese,	// 15x15 glyphs tucked against TL of 16x16 space
 	eThai,		// 16x16 cells with glyphs against left edge, special file (tha_widths.dat) for variable widths
+#endif
 } Language_e;
 
 // this is to cut down on all the stupid string compares I've been doing, and convert asian stuff to switch-case
 //
-Language_e GetLanguageEnum()
+static Language_e GetLanguageEnum()
 {
-#ifndef JK2_MODE
-	static int			iSE_Language_ModificationCount = -1234;	// any old silly value that won't match the cvar mod count
-#endif
 	static Language_e	eLanguage = eWestern;
+#ifdef JK2_MODE
+	if ( !sp_language )
+		return eLanguage;
+	else if ( sp_language->integer == SP_LANGUAGE_KOREAN )
+		eLanguage = eKorean;
+	else if ( sp_language->integer == SP_LANGUAGE_JAPANESE )
+		eLanguage = eJapanese;
+	else if ( sp_language->integer == SP_LANGUAGE_TAIWANESE )
+		eLanguage = eTaiwanese;
+
+	return eLanguage;
+#else
+	static int			iSE_Language_ModificationCount = -1234;	// any old silly value that won't match the cvar mod count
 
 	// only re-strcmp() when language string has changed from what we knew it as...
 	//
-#ifndef JK2_MODE
 	if (iSE_Language_ModificationCount != se_language->modificationCount )
 	{
 		iSE_Language_ModificationCount  = se_language->modificationCount;
@@ -73,11 +90,11 @@ Language_e GetLanguageEnum()
 		else	if ( Language_IsThai()		)	eLanguage = eThai;
 		else	eLanguage = eWestern;
 	}
-#endif
-
 	return eLanguage;
+#endif
 }
 
+#ifndef JK2_MODE
 struct SBCSOverrideLanguages_t
 {
 	const char *m_psName;
@@ -191,6 +208,7 @@ struct ThaiCodes_t
 		return m_strInitFailureReason.c_str();
 	}
 };
+#endif
 
 
 #define GLYPH_MAX_KOREAN_SHADERS	3
@@ -216,9 +234,15 @@ private:
 	int				m_iAsianGlyphsAcross;	// needed to dynamically calculate S,T coords
 	int				m_iAsianPagesLoaded;
 	bool			m_bAsianLastPageHalfHeight;
+#ifdef JK2_MODE
+	int				m_iAsianLanguageLoaded;	// doesn't matter what this is, so long as it's comparable as being changed
+#else
 	int				m_iLanguageModificationCount;	// doesn't matter what this is, so long as it's comparable as being changed
+#endif
 
+#ifndef JK2_MODE
 	ThaiCodes_t		*m_pThaiData;
+#endif
 
 public:
 	char			m_sFontName[MAX_QPATH];	// eg "fonts/lcd"	// needed for korean font-hint if we need >1 hangul set
@@ -228,10 +252,12 @@ public:
 	int				mDescender;
 
 	bool			mbRoundCalcs;	// trying to make this !@#$%^ thing work with scaling
+#ifndef JK2_MODE
 	int				m_iThisFont;	// handle to itself
 	int				m_iAltSBCSFont;	// -1 == NULL // alternative single-byte font for languages like russian/polish etc that need to override high characters ?
 	int				m_iOriginalFontWhenSBCSOverriden;
 	float			m_fAltSBCSFontScaleFactor;	// -1, else amount to adjust returned values by to make them fit the master western font they're substituting for
+#endif
 	bool			m_bIsFakeAlienLanguage;	// ... if true, don't process as MBCS or override as SBCS etc
 
 	CFontInfo(const char *fontName);
@@ -250,7 +276,11 @@ public:
 	const int GetLetterHorizAdvance(const unsigned int uiLetter);
 	const int GetShader(void) const { return(mShader); }
 
+#ifdef JK2_MODE
+	void FlagNoAsianGlyphs(void) { m_hAsianShaders[0] = 0; m_iAsianLanguageLoaded = -1; }	// used during constructor
+#else
 	void FlagNoAsianGlyphs(void) { m_hAsianShaders[0] = 0; m_iLanguageModificationCount = -1; }	// used during constructor
+#endif
 	bool AsianGlyphsAvailable(void) const { return !!(m_hAsianShaders[0]); }
 
 	void UpdateAsianIfNeeded( bool bForceReEval = false);
@@ -503,6 +533,7 @@ static int Japanese_InitFields(int &iGlyphTPs, const char *&psLang)
 	return 64;	// m_iAsianGlyphsAcross
 }
 
+#ifndef JK2_MODE
 // ======================== some Chinese stuff ==============================
 
 #define GB_HIBYTE_START		0xA1	// range is...
@@ -527,7 +558,6 @@ static inline qboolean Chinese_ValidGBCode( unsigned int uiCode)
 	return Chinese_ValidGBCode( uiCode >> 8, uiCode & 0xFF );
 }
 
-#ifndef JK2_MODE
 // only call this when Chinese_ValidGBCode() has already returned true...
 //
 static qboolean Chinese_IsTrailingPunctuation( unsigned int uiCode )
@@ -543,7 +573,6 @@ static qboolean Chinese_IsTrailingPunctuation( unsigned int uiCode )
 
 	return qfalse;
 }
-#endif
 
 // takes a GB double-byte code and collapses down to a 0..n glyph index...
 // Assumes rows are 96 wide (glyph slots), not 94 wide (actual glyphs), so I can ignore boundary markers
@@ -595,7 +624,6 @@ static int Thai_IsAccentChar( unsigned int uiCode )
 }
 */
 
-#ifndef JK2_MODE
 // returns a valid Thai code (or 0), based on taking 1,2 or 3 bytes from the supplied byte stream
 //	Fills in <iThaiBytes> with 1,2 or 3
 static int Thai_ValidTISCode( const byte *psString, int &iThaiBytes )
@@ -638,7 +666,6 @@ static int Thai_ValidTISCode( const byte *psString, int &iThaiBytes )
 
 	return 0;
 }
-#endif
 
 // special case, thai can only break on certain letters, and since the rules are complicated then
 //	we tell the translators to put an underscore ('_') between each word even though in Thai they're
@@ -674,6 +701,7 @@ static int Thai_InitFields(int &iGlyphTPs, const char *&psLang)
 	g_iNonScaledCharRange = INT_MAX;	// in other words, don't scale any thai chars down
 	return 32;	// m_iAsianGlyphsAcross
 }
+#endif
 
 
 // ============================================================================
@@ -914,8 +942,10 @@ qboolean Language_IsAsian(void)
 		case eKorean:
 		case eTaiwanese:
 		case eJapanese:
+#ifndef JK2_MODE
 		case eChinese:
 		case eThai:	// this is asian, but the query is normally used for scaling
+#endif
 			return qtrue;
 		default:
 			break;
@@ -931,8 +961,10 @@ qboolean Language_UsesSpaces(void)
 	{
 		case eTaiwanese:
 		case eJapanese:
+#ifndef JK2_MODE
 		case eChinese:
 		case eThai:
+#endif
 			return qfalse;
 		default:
 			break;
@@ -960,11 +992,13 @@ CFontInfo::CFontInfo(const char *_fontName)
 
 	// clear some general things...
 	//
+#ifndef JK2_MODE
 	m_pThaiData = NULL;
 	m_iAltSBCSFont = -1;
 	m_iThisFont = -1;
 	m_iOriginalFontWhenSBCSOverriden = -1;
 	m_fAltSBCSFontScaleFactor = -1;
+#endif
 	m_bIsFakeAlienLanguage = !strcmp(_fontName,"aurabesh");	// dont try and make SBCS or asian overrides for this
 
 	len = ri.FS_ReadFile(fontName, NULL);
@@ -1041,6 +1075,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 			// SBCS override languages...
 			//
 			fileHandle_t f;
+#ifndef JK2_MODE
 			for (int i=0; g_SBCSOverrideLanguages[i].m_psName ;i++)
 			{
 				char sTemp[MAX_QPATH];
@@ -1053,16 +1088,23 @@ CFontInfo::CFontInfo(const char *_fontName)
 				ri.FS_FOpenFileRead( sTemp, &f, qfalse );
 				if (f) ri.FS_FCloseFile( f );
 			}
+#endif
 
 			// asian MBCS override languages...
 			//
+#ifdef JK2_MODE
+			for (int iLang=0; iLang<3; iLang++)
+#else
 			for (int iLang=0; iLang<5; iLang++)
+#endif
+
 			{
 				switch (iLang)
 				{
 					case 0:	m_iAsianGlyphsAcross = Korean_InitFields	(iGlyphTPs, psLang);	break;
 					case 1: m_iAsianGlyphsAcross = Taiwanese_InitFields	(iGlyphTPs, psLang);	break;
 					case 2: m_iAsianGlyphsAcross = Japanese_InitFields	(iGlyphTPs, psLang);	break;
+#ifndef JK2_MODE
 					case 3: m_iAsianGlyphsAcross = Chinese_InitFields	(iGlyphTPs, psLang);	break;
 					case 4: m_iAsianGlyphsAcross = Thai_InitFields		(iGlyphTPs, psLang);
 					{
@@ -1079,6 +1121,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 						}
 					}
                     break;
+#endif
 				}
 
 				for (int i=0; i<iGlyphTPs; i++)
@@ -1104,13 +1147,24 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 	{
 		Language_e eLanguage = GetLanguageEnum();
 
+#ifdef JK2_MODE
+		if (eLanguage == eKorean || eLanguage == eTaiwanese || eLanguage == eJapanese)
+#else
 		if (eLanguage == eKorean || eLanguage == eTaiwanese || eLanguage == eJapanese || eLanguage == eChinese || eLanguage == eThai)
+#endif
 		{
 			int iCappedHeight = mHeight < 16 ? 16: mHeight;	// arbitrary limit on small char sizes because Asian chars don't squash well
 
+#ifdef JK2_MODE
+			const int iThisLanguage = Language_GetIntegerValue();
+			if (m_iAsianLanguageLoaded != iThisLanguage || !AsianGlyphsAvailable() || bForceReEval)
+			{
+				m_iAsianLanguageLoaded  = iThisLanguage;
+#else
 			if (m_iLanguageModificationCount != se_language->modificationCount || !AsianGlyphsAvailable() || bForceReEval)
 			{
 				m_iLanguageModificationCount  = se_language->modificationCount;
+#endif
 
 				int iGlyphTPs = 0;
 				const char *psLang = NULL;
@@ -1120,6 +1174,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 					case eKorean:		m_iAsianGlyphsAcross = Korean_InitFields(iGlyphTPs, psLang);	break;
 					case eTaiwanese:	m_iAsianGlyphsAcross = Taiwanese_InitFields(iGlyphTPs, psLang);	break;
 					case eJapanese:		m_iAsianGlyphsAcross = Japanese_InitFields(iGlyphTPs, psLang);	break;
+#ifndef JK2_MODE
 					case eChinese:		m_iAsianGlyphsAcross = Chinese_InitFields(iGlyphTPs, psLang);	break;
 					case eThai:
 					{
@@ -1142,6 +1197,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 						}
 					}
 					break;
+#endif
 					default:
 					break;
 				}
@@ -1189,7 +1245,10 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 
 					case eTaiwanese:
 					case eJapanese:
-					case eChinese:	m_AsianGlyph.horizAdvance	= iCappedHeight + 3;	// need to force some spacing for these
+#ifndef JK2_MODE
+					case eChinese:	
+#endif
+									m_AsianGlyph.horizAdvance	= iCappedHeight + 3;	// need to force some spacing for these
 //					case eThai:	// this is done dynamically elsewhere, since Thai glyphs are variable width
 				}
 				m_AsianGlyph.horizOffset	= 0;				// ""
@@ -1252,7 +1311,9 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 					iTexturePageIndex = 0;
 				}
 
+#ifndef JK2_MODE
 				int iOriginalCollapsedAsianCode = iCollapsedAsianCode;	// need to back this up (if Thai) for later
+#endif
 				iCollapsedAsianCode -= iTexturePageIndex *  (m_iAsianGlyphsAcross * m_iAsianGlyphsAcross);
 
 				const int iColumn	= iCollapsedAsianCode % m_iAsianGlyphsAcross;
@@ -1282,7 +1343,9 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 					break;
 
 					case eJapanese:
+#ifndef JK2_MODE
 					case eChinese:
+#endif
 					{
 						m_AsianGlyph.s  = (float)(((1024 / m_iAsianGlyphsAcross) * ( iColumn    ))  ) / 1024.0f;
 						m_AsianGlyph.t  = (float)(((1024 / iAsianGlyphsDown    ) * ( iRow       ))  ) / 1024.0f;
@@ -1291,6 +1354,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 					}
 					break;
 
+#ifndef JK2_MODE
 					case eThai:
 					{
 						int iGlyphXpos = (1024 / m_iAsianGlyphsAcross) * ( iColumn );
@@ -1318,6 +1382,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 						m_AsianGlyph.horizAdvance = iGlyphWidth + 1;
 					}
 					break;
+#endif
 				}
 				*piShader = m_hAsianShaders[ iTexturePageIndex ];
 			}
@@ -1334,6 +1399,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 	//
 	// SBCS language substitution?...
 	//
+#ifndef JK2_MODE
 	if ( m_fAltSBCSFontScaleFactor != -1 )
 	{
 		// sod it, use the asian glyph, that's fine...
@@ -1353,6 +1419,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 
 		pGlyph = &m_AsianGlyph;
 	}
+#endif
 
 	return pGlyph;
 }
@@ -1368,8 +1435,10 @@ const int CFontInfo::GetCollapsedAsianCode(ulong uiLetter) const
 			case eKorean:		iCollapsedAsianCode = Korean_CollapseKSC5601HangulCode( uiLetter );	break;
 			case eTaiwanese:	iCollapsedAsianCode = Taiwanese_CollapseBig5Code( uiLetter );		break;
 			case eJapanese:		iCollapsedAsianCode = Japanese_CollapseShiftJISCode( uiLetter );	break;
+#ifndef JK2_MODE
 			case eChinese:		iCollapsedAsianCode = Chinese_CollapseGBCode( uiLetter );			break;
 			case eThai:			iCollapsedAsianCode = Thai_CollapseTISCode( uiLetter );				break;
+#endif
 			default:			assert(0);	/* unhandled asian language */							break;
 		}
 	}
@@ -1391,6 +1460,7 @@ const int CFontInfo::GetLetterHorizAdvance(unsigned int uiLetter)
 
 // ensure any GetFont calls that need SBCS overriding (such as when playing in Russian) have the appropriate stuff done...
 //
+#ifndef JK2_MODE
 static CFontInfo *GetFont_SBCSOverride(CFontInfo *pFont, Language_e eLanguageSBCS, const char *psLanguageNameSBCS )
 {
 	if ( !pFont->m_bIsFakeAlienLanguage )
@@ -1436,6 +1506,7 @@ static CFontInfo *GetFont_SBCSOverride(CFontInfo *pFont, Language_e eLanguageSBC
 
 	return NULL;
 }
+#endif
 
 
 
@@ -1443,6 +1514,7 @@ CFontInfo *GetFont(int index)
 {
 	CFontInfo *pFont = GetFont_Actual( index );
 
+#ifndef JK2_MODE
 	if (pFont)
 	{
 		// any SBCS overrides? (this has to be pretty quick, and is (sort of))...
@@ -1456,6 +1528,7 @@ CFontInfo *GetFont(int index)
 			}
 		}
 	}
+#endif
 
 	return pFont;
 }
@@ -1590,7 +1663,9 @@ int RE_Font_StrLenChars(const char *psText)
 				break;	// colour code (note next-char skip)
 			case 10:								break;	// linefeed
 			case 13:								break;	// return
+#ifndef JK2_MODE
 			case '_':	iCharCount += (GetLanguageEnum() == eThai && (((unsigned char *)psText)[0] >= TIS_GLYPHS_START))?0:1; break;	// special word-break hack
+#endif
 			default:	iCharCount++;				break;
 		}
 	}
@@ -1974,7 +2049,9 @@ int RE_RegisterFont(const char *psName)
 		{
 			int iFontIndex = g_iCurrentFontIndex - 1;
 			g_mapFontIndexes[psName] = iFontIndex;
+#ifndef JK2_MODE
 			pFont->m_iThisFont = iFontIndex;
+#endif
 			return iFontIndex;
 		}
 		else
@@ -2025,7 +2102,9 @@ void R_ShutdownFonts(void)
 	g_vFontArray.clear();
 	g_iCurrentFontIndex = 1;	// entry 0 is reserved for "missing/invalid"
 
+#ifndef JK2_MODE
 	g_ThaiCodes.Clear();
+#endif
 }
 
 // this is only really for debugging while tinkering with fonts, but harmless to leave in...

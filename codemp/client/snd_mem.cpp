@@ -236,7 +236,7 @@ void ResampleSfx (sfx_t *sfx, int iInRate, int iInWidth, byte *pData)
 		if (iInWidth == 2) {
 			iSample = LittleShort ( ((short *)pData)[iSrcSample] );
 		} else {
-			iSample = (int)( (unsigned char)(pData[iSrcSample]) - 128) << 8;
+			iSample = (unsigned int)( (unsigned char)(pData[iSrcSample]) - 128) << 8;
 		}
 
 		sfx->pSoundData[i] = (short)iSample;

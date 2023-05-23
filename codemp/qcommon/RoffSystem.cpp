@@ -869,19 +869,19 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 		return qtrue;
 	}
 
+#ifndef DEDICATED
+	vec3_t		originTemp, angleTemp;
 	if (roff_ent->mIsClient)
 	{
-#ifndef DEDICATED
-		vec3_t		originTemp, angleTemp;
 		originTrajectory = CGVM_GetOriginTrajectory( roff_ent->mEntID );
 		angleTrajectory = CGVM_GetAngleTrajectory( roff_ent->mEntID );
 		CGVM_GetOrigin( roff_ent->mEntID, originTemp );
 		origin = originTemp;
 		CGVM_GetAngles( roff_ent->mEntID, angleTemp );
 		angle = angleTemp;
-#endif
 	}
 	else
+#endif
 	{
 		// Find the entity to apply the roff to
 		ent = SV_GentityNum( roff_ent->mEntID );
@@ -982,7 +982,7 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 		{
 			temp[size++] = note[pos++];
 		}
-		temp[size] = 0;
+		temp[size] = '\0';
 
 		if (size)
 		{
@@ -1016,19 +1016,19 @@ qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
 	float			*origin = NULL, *angle = NULL;
 
+#ifndef DEDICATED
+	vec3_t		originTemp, angleTemp;
 	if (roff_ent->mIsClient)
 	{
-#ifndef DEDICATED
-		vec3_t		originTemp, angleTemp;
 		originTrajectory = CGVM_GetOriginTrajectory( roff_ent->mEntID );
 		angleTrajectory = CGVM_GetAngleTrajectory( roff_ent->mEntID );
 		CGVM_GetOrigin( roff_ent->mEntID, originTemp );
 		origin = originTemp;
 		CGVM_GetAngles( roff_ent->mEntID, angleTemp );
 		angle = angleTemp;
-#endif
 	}
 	else
+#endif
 	{
 		// Find the entity to apply the roff to
 		ent = SV_GentityNum( roff_ent->mEntID );
