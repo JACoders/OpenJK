@@ -758,7 +758,7 @@ static UniformBlockBinding GetFogsBlockUniformBinding()
 	UniformBlockBinding binding = {};
 	binding.block = UNIFORM_BLOCK_FOGS;
 
-	if (tr.sceneUboOffset == -1)
+	if (tr.fogsUboOffset == -1)
 	{
 		binding.ubo = tr.staticUbo;
 		binding.offset = tr.defaultFogsUboOffset;

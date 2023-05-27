@@ -2377,17 +2377,8 @@ static void RB_UpdateEntityMatrixConstants(
 	const trRefEntity_t *refEntity)
 {
 	orientationr_t ori;
-	if (refEntity == &tr.worldEntity)
-	{
-		ori = backEnd.viewParms.world;
-		Matrix16Identity(entityBlock.modelMatrix);
-	}
-	else
-	{
-		R_RotateForEntity(refEntity, &backEnd.viewParms, &ori);
-		Matrix16Copy(ori.modelMatrix, entityBlock.modelMatrix);
-	}
-	
+	R_RotateForEntity(refEntity, &backEnd.viewParms, &ori);
+	Matrix16Copy(ori.modelMatrix, entityBlock.modelMatrix);
 	VectorCopy(ori.viewOrigin, entityBlock.localViewOrigin);
 }
 

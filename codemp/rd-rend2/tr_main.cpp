@@ -703,12 +703,12 @@ Called by both the front end and the back end
 =================
 */
 void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms,
-					   orientationr_t *ori ) {
-	float	glMatrix[16];
+					   orientationr_t *ori ) 
+{
 	vec3_t	delta;
 	float	axisLength;
 
-	if ( ent->e.reType != RT_MODEL ) {
+	if ( ent->e.reType != RT_MODEL || ent == &tr.worldEntity ) {
 		*ori = viewParms->world;
 		return;
 	}
@@ -719,28 +719,25 @@ void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms,
 	VectorCopy( ent->e.axis[1], ori->axis[1] );
 	VectorCopy( ent->e.axis[2], ori->axis[2] );
 
-	glMatrix[0] = ori->axis[0][0];
-	glMatrix[4] = ori->axis[1][0];
-	glMatrix[8] = ori->axis[2][0];
-	glMatrix[12] = ori->origin[0];
+	ori->modelMatrix[0] = ori->axis[0][0];
+	ori->modelMatrix[4] = ori->axis[1][0];
+	ori->modelMatrix[8] = ori->axis[2][0];
+	ori->modelMatrix[12] = ori->origin[0];
 
-	glMatrix[1] = ori->axis[0][1];
-	glMatrix[5] = ori->axis[1][1];
-	glMatrix[9] = ori->axis[2][1];
-	glMatrix[13] = ori->origin[1];
+	ori->modelMatrix[1] = ori->axis[0][1];
+	ori->modelMatrix[5] = ori->axis[1][1];
+	ori->modelMatrix[9] = ori->axis[2][1];
+	ori->modelMatrix[13] = ori->origin[1];
 
-	glMatrix[2] = ori->axis[0][2];
-	glMatrix[6] = ori->axis[1][2];
-	glMatrix[10] = ori->axis[2][2];
-	glMatrix[14] = ori->origin[2];
+	ori->modelMatrix[2] = ori->axis[0][2];
+	ori->modelMatrix[6] = ori->axis[1][2];
+	ori->modelMatrix[10] = ori->axis[2][2];
+	ori->modelMatrix[14] = ori->origin[2];
 
-	glMatrix[3] = 0;
-	glMatrix[7] = 0;
-	glMatrix[11] = 0;
-	glMatrix[15] = 1;
-
-	Matrix16Copy(glMatrix, ori->modelMatrix);
-	myGlMultMatrix( glMatrix, viewParms->world.modelViewMatrix, ori->modelViewMatrix );
+	ori->modelMatrix[3] = 0;
+	ori->modelMatrix[7] = 0;
+	ori->modelMatrix[11] = 0;
+	ori->modelMatrix[15] = 1;
 
 	// calculate the viewer origin in the model's space
 	// needed for fog, specular, and environment mapping

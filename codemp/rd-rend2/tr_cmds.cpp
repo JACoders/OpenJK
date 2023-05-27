@@ -550,6 +550,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 		// Resets resources
 		qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo);
+		glState.currentGlobalUBO = thisFrame->ubo;
 		thisFrame->uboWriteOffset = 0;
 
 		thisFrame->dynamicIboCommitOffset = 0;

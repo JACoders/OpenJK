@@ -38,7 +38,7 @@ void Matrix16Multiply( const matrix_t in1, const matrix_t in2, matrix_t out );
 void Matrix16Transform( const matrix_t in1, const vec4_t in2, vec4_t out );
 qboolean Matrix16Compare(const matrix_t a, const matrix_t b);
 void Matrix16Dump( const matrix_t in );
-void Matrix16Translation( vec3_t vec, matrix_t out );
+void Matrix16Translation( const vec3_t vec, matrix_t out );
 void Matrix16Ortho( float left, float right, float bottom, float top, float znear, float zfar, matrix_t out );
 void Matrix16View(vec3_t axes[3], vec3_t origin, matrix_t out);
 void Matrix16SimpleInverse( const matrix_t in, matrix_t out);

@@ -717,6 +717,7 @@ void RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, int offset)
 	{
 		qglBindBufferRange(
 			GL_UNIFORM_BUFFER, blockInfo->slot, ubo, offset, blockInfo->size);
+		glState.currentGlobalUBO = ubo;
 
 		currentBinding->buffer = ubo;
 		currentBinding->offset = offset;

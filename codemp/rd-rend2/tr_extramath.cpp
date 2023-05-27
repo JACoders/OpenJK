@@ -97,7 +97,7 @@ void Matrix16Dump( const matrix_t in )
 	ri.Printf(PRINT_ALL, "%3.5f %3.5f %3.5f %3.5f\n", in[ 3], in[ 7], in[11], in[15]);
 }
 
-void Matrix16Translation( vec3_t vec, matrix_t out )
+void Matrix16Translation(const vec3_t vec, matrix_t out )
 {
 	out[ 0] = 1.0f; out[ 4] = 0.0f; out[ 8] = 0.0f; out[12] = vec[0];
 	out[ 1] = 0.0f; out[ 5] = 1.0f; out[ 9] = 0.0f; out[13] = vec[1];
