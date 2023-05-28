@@ -2552,46 +2552,12 @@ static float CalcSplit(float n, float f, float i, float m)
 
 void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 {
-	vec4_t lightDir, lightCol;
 	vec3_t lightViewAxis[3];
 	vec3_t lightOrigin;
 	float splitZNear, splitZFar, splitBias;
 	float viewZNear, viewZFar;
 	vec3_t lightviewBounds[2];
 	qboolean lightViewIndependentOfCameraView = qtrue;
-
-	if (r_forceSun->integer == 2)
-	{
-		int scale = 32768;
-		float angle = (fd->time % scale) / (float)scale * M_PI;
-		lightDir[0] = cos(angle);
-		lightDir[1] = sin(35.0f * M_PI / 180.0f);
-		lightDir[2] = sin(angle) * cos(35.0f * M_PI / 180.0f);
-		lightDir[3] = 0.0f;
-
-		if (1) //((fd->time % (scale * 2)) < scale)
-		{
-			lightCol[0] = 
-			lightCol[1] = 
-			lightCol[2] = CLAMP(sin(angle) * 2.0f, 0.0f, 1.0f) * 2.0f;
-			lightCol[3] = 1.0f;
-		}
-		else
-		{
-			lightCol[0] = 
-			lightCol[1] = 
-			lightCol[2] = CLAMP(sin(angle) * 2.0f * 0.1f, 0.0f, 0.1f);
-			lightCol[3] = 1.0f;
-		}
-
-		VectorCopy4(lightDir, tr.refdef.sunDir);
-		VectorCopy4(lightCol, tr.refdef.sunCol);
-		VectorScale4(lightCol, 0.2f, tr.refdef.sunAmbCol);
-	}
-	else
-	{
-		VectorCopy4(tr.refdef.sunDir, lightDir);
-	}
 
 	viewZNear = r_shadowCascadeZNear->value;
 	viewZFar = r_shadowCascadeZFar->value;
@@ -2622,9 +2588,8 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 			
 	VectorCopy(fd->vieworg, lightOrigin);
 
-
 	// Make up a projection
-	VectorScale(lightDir, -1.0f, lightViewAxis[0]);
+	VectorScale(tr.refdef.sunDir, -1.0f, lightViewAxis[0]);
 
 	if (lightViewIndependentOfCameraView)
 	{

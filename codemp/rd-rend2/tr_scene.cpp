@@ -374,6 +374,26 @@ void RE_BeginScene(const refdef_t *fd)
 				VectorScale(tr.sunLight, scale * tr.sunShadowScale, tr.refdef.sunAmbCol);
 			}
 		}
+
+		if (r_forceSun->integer == 2)
+		{
+			vec4_t lightDir, lightCol;
+			int scale = 32768;
+			float angle = (fd->time % scale) / (float)scale * M_PI;
+			lightDir[0] = cos(angle);
+			lightDir[1] = sin(35.0f * M_PI / 180.0f);
+			lightDir[2] = sin(angle) * cos(35.0f * M_PI / 180.0f);
+			lightDir[3] = 0.0f;
+
+			lightCol[0] =
+				lightCol[1] =
+				lightCol[2] = CLAMP(sin(angle) * 2.0f, 0.0f, 1.0f) * 2.0f;
+			lightCol[3] = 1.0f;
+
+			VectorCopy4(lightDir, tr.refdef.sunDir);
+			VectorCopy4(lightCol, tr.refdef.sunCol);
+			VectorScale4(lightCol, 0.2f, tr.refdef.sunAmbCol);
+		}
 	}
 
 	if (r_forceAutoExposure->integer)
