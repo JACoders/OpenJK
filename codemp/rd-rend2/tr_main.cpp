@@ -1555,15 +1555,15 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 		newParms.flags |= VPF_NOVIEWMODEL;
 
 	// Calculate window coordinates of this surface to get tight fitting scissor rectangle
-	int minRectX = INT_MAX;
-	int minRectY = INT_MAX;
-	int maxRectX = 0;
-	int maxRectY = 0;
-
 	int viewportWidth = oldParms.viewportWidth;
 	int viewportHeight = oldParms.viewportHeight;
 	float viewportCenterX = oldParms.viewportX + 0.5f * viewportWidth;
 	float viewportCenterY = oldParms.viewportY + 0.5f * viewportHeight;
+
+	/*int minRectX = INT_MAX;
+	int minRectY = INT_MAX;
+	int maxRectX = 0;
+	int maxRectY = 0;
 
 	for ( int i = 0; i < numVertices; i++ )
 	{
@@ -1613,7 +1613,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	newParms.scissorX = minRectX;
 	newParms.scissorY = minRectY;
 	newParms.scissorWidth = maxRectX - minRectX;
-	newParms.scissorHeight = maxRectY - minRectY;
+	newParms.scissorHeight = maxRectY - minRectY;*/
 
 	R_MirrorPoint (oldParms.ori.origin, &surface, &camera, newParms.ori.origin );
 
