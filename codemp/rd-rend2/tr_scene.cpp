@@ -341,7 +341,7 @@ void RE_BeginScene(const refdef_t *fd)
 	tr.refdef.sunAmbCol[3] = 1.0f;
 
 	VectorCopy(tr.sunDirection, tr.refdef.sunDir);
-	if ( (tr.refdef.rdflags & RDF_NOWORLDMODEL) || !(r_depthPrepass->value) ){
+	if ( (fd->rdflags & RDF_NOWORLDMODEL) || !(r_depthPrepass->value) ){
 		tr.refdef.colorScale = 1.0f;
 		VectorSet(tr.refdef.sunCol, 0, 0, 0);
 		VectorSet(tr.refdef.sunAmbCol, 0, 0, 0);
@@ -453,7 +453,7 @@ void RE_BeginScene(const refdef_t *fd)
 
 	// Add the decals here because decals add polys and we need to ensure
 	// that the polys are added before the the renderer is prepared
-	if ( !(tr.refdef.rdflags & RDF_NOWORLDMODEL) )
+	if ( !(fd->rdflags & RDF_NOWORLDMODEL) )
 		R_AddDecals();
 
 	tr.refdef.numPolys = r_numpolys - r_firstScenePoly;
@@ -472,6 +472,9 @@ void RE_BeginScene(const refdef_t *fd)
 	if (fd->rdflags & RDF_SKYBOXPORTAL)
 	{
 		tr.world->skyboxportal = 1;
+
+		// Don't update constants yet. Store everything and render everything next scene
+		return;
 	}
 	else
 	{
@@ -487,6 +490,10 @@ void RE_BeginScene(const refdef_t *fd)
 	// each scene / view.
 	tr.frameSceneNum++;
 	tr.sceneCount++;
+
+	//ri.Printf(PRINT_ALL, "RE_BeginScene Frame: %i, skyportal: %i, entities: %i\n", backEndData->realFrameNumber, int(tr.world->skyboxportal && (tr.refdef.rdflags & RDF_SKYBOXPORTAL)), tr.refdef.num_entities);
+	R_GatherFrameViews(&tr.refdef);
+	RB_UpdateConstants(&tr.refdef);
 }
 
 void RE_EndScene()
@@ -496,6 +503,8 @@ void RE_EndScene()
 	r_firstSceneEntity = r_numentities;
 	r_firstSceneDlight = r_numdlights;
 	r_firstScenePoly = r_numpolys;
+	tr.skyPortalEntities = 0;
+	tr.numCachedViewParms = 0;
 }
 
 /*
@@ -509,8 +518,8 @@ Rendering a scene may require multiple views to be rendered
 to handle mirrors,
 @@@@@@@@@@@@@@@@@@@@@
 */
-void RE_RenderScene( const refdef_t *fd ) {
-	viewParms_t		parms;
+void RE_RenderScene( const refdef_t *fd ) 
+{
 	int				startTime;
 
 	if ( !tr.registered ) {
@@ -530,68 +539,47 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	RE_BeginScene(fd);
 
-	// SmileTheory: playing with shadow mapping
-	if (!( fd->rdflags & RDF_NOWORLDMODEL ) && tr.refdef.num_dlights && r_dlightMode->integer >= 2)
+	// Store skyportal info and don't render yet
+	if (tr.refdef.rdflags & RDF_SKYBOXPORTAL)
 	{
-		qhandle_t timer = R_BeginTimedBlockCmd( "Dlight cubemaps" );
-		R_RenderDlightCubemaps(fd);
-		R_EndTimedBlockCmd( timer );
+		viewParms_t		parms;
+		Com_Memset(&parms, 0, sizeof(parms));
+		parms.viewportX = fd->x;
+		parms.viewportY = glConfig.vidHeight - (fd->y + fd->height);
+		parms.viewportWidth = fd->width;
+		parms.viewportHeight = fd->height;
+		parms.isPortal = qfalse;
+		parms.isSkyPortal = qfalse;
+		parms.zNear = r_znear->value;
+
+		parms.fovX = fd->fov_x;
+		parms.fovY = fd->fov_y;
+
+		parms.stereoFrame = tr.refdef.stereoFrame;
+
+		VectorCopy(fd->vieworg, parms.ori.origin);
+		VectorCopy(fd->viewaxis[0], parms.ori.axis[0]);
+		VectorCopy(fd->viewaxis[1], parms.ori.axis[1]);
+		VectorCopy(fd->viewaxis[2], parms.ori.axis[2]);
+
+		VectorCopy(fd->vieworg, parms.pvsOrigin);
+
+		parms.isSkyPortal = qtrue;
+		Com_Memcpy(&tr.skyPortalParms, &parms, sizeof(viewParms_t));
+		Com_Memcpy(tr.skyPortalAreaMask, tr.refdef.areamask, sizeof(tr.refdef.areamask));
+		tr.skyPortalEntities = tr.refdef.num_entities;
+		return;
 	}
 
-	/* playing with more shadows */
-	if(!( fd->rdflags & RDF_NOWORLDMODEL ) && r_shadows->integer == 4)
+	// Render all the passes
+	for (int i = 0; i < tr.numCachedViewParms; i++)
 	{
-		qhandle_t timer = R_BeginTimedBlockCmd( "PShadow Maps" );
-		R_RenderPshadowMaps(fd);
-		R_EndTimedBlockCmd( timer );
+		qhandle_t timer = R_BeginTimedBlockCmd(va("Render Pass %i", i));
+		tr.refdef.numDrawSurfs = 0;
+		R_RenderView(&tr.cachedViewParms[i]);
+		R_IssuePendingRenderCommands();
+		R_EndTimedBlockCmd(timer);
 	}
-
-	// playing with even more shadows
-	if(r_sunlightMode->integer && !( fd->rdflags & RDF_NOWORLDMODEL ) && (r_forceSun->integer || tr.sunShadows))
-	{
-		qhandle_t timer = R_BeginTimedBlockCmd( "Shadow cascades" );
-		R_RenderSunShadowMaps(fd, 0);
-		R_RenderSunShadowMaps(fd, 1);
-		R_RenderSunShadowMaps(fd, 2);
-		R_EndTimedBlockCmd( timer );
-	}
-
-	R_IssuePendingRenderCommands();
-
-	// setup view parms for the initial view
-	//
-	// set up viewport
-	// The refdef takes 0-at-the-top y coordinates, so
-	// convert to GL's 0-at-the-bottom space
-	//
-	Com_Memset( &parms, 0, sizeof( parms ) );
-	parms.viewportX = tr.refdef.x;
-	parms.viewportY = glConfig.vidHeight - ( tr.refdef.y + tr.refdef.height );
-	parms.viewportWidth = tr.refdef.width;
-	parms.viewportHeight = tr.refdef.height;
-	parms.isPortal = qfalse;
-	parms.zNear = r_znear->value;
-
-	parms.fovX = tr.refdef.fov_x;
-	parms.fovY = tr.refdef.fov_y;
-	
-	parms.stereoFrame = tr.refdef.stereoFrame;
-
-	VectorCopy( fd->vieworg, parms.ori.origin );
-	VectorCopy( fd->viewaxis[0], parms.ori.axis[0] );
-	VectorCopy( fd->viewaxis[1], parms.ori.axis[1] );
-	VectorCopy( fd->viewaxis[2], parms.ori.axis[2] );
-
-	VectorCopy( fd->vieworg, parms.pvsOrigin );
-
-	if(!( fd->rdflags & RDF_NOWORLDMODEL ) && r_depthPrepass->value && ((r_forceSun->integer) || tr.sunShadows))
-	{
-		parms.flags = VPF_USESUNLIGHT;
-	}
-
-	qhandle_t timer = R_BeginTimedBlockCmd( "Main Render" );
-	R_RenderView( &parms );
-	R_EndTimedBlockCmd( timer );
 
 	if(!( fd->rdflags & RDF_NOWORLDMODEL ))
 	{
@@ -599,6 +587,8 @@ void RE_RenderScene( const refdef_t *fd ) {
 		R_AddPostProcessCmd();
 		R_EndTimedBlockCmd( timer );
 	}
+
+	R_IssuePendingRenderCommands();
 
 	RE_EndScene();
 

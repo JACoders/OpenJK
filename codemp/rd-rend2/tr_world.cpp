@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 
 
-static world_t *R_GetWorld(int worldIndex)
+world_t *R_GetWorld(int worldIndex)
 {
 	if (worldIndex == -1)
 	{
@@ -68,10 +68,7 @@ static qboolean	R_CullSurface( msurface_t *surf, int entityNum ) {
 			return qfalse;
 		}
 
-		if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
-			return qfalse;
-
-		if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
+		if (tr.viewParms.flags & (VPF_DEPTHSHADOW) && tr.viewParms.flags & (VPF_SHADOWCASCADES))
 		{
 			if (ct == CT_FRONT_SIDED)
 			{
@@ -350,7 +347,7 @@ static void R_AddWorldSurface(
 	}
 
 	// set pshadows
-	if ( pshadowBits && r_shadows->integer == 4 ) {
+	if ( pshadowBits ) {
 		R_PshadowSurface( surf, pshadowBits );
 	}
 
@@ -394,13 +391,13 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent, int entityNum ) {
 		return;
 	}
 	
-	R_SetupEntityLighting( &tr.refdef, ent );
-	R_DlightBmodel( bmodel, ent );
+	if (!(tr.viewParms.flags & VPF_DEPTHSHADOW))
+		R_DlightBmodel( bmodel, ent );
 
+	world_t *world = R_GetWorld(bmodel->worldIndex);
 	for ( int i = 0 ; i < bmodel->numSurfaces ; i++ ) {
 		int surf = bmodel->firstSurface + i;
-		world_t *world = R_GetWorld(bmodel->worldIndex);
-
+		
 		if (world->surfacesViewCount[surf] != tr.viewCount)
 		{
 			world->surfacesViewCount[surf] = tr.viewCount;
@@ -523,7 +520,7 @@ void RE_SetRangedFog ( float range )
 R_RecursiveWorldNode
 ================
 */
-static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, int pshadowBits )
+void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, int pshadowBits )
 {
 	do {
 		int			newDlights[2];
@@ -708,7 +705,6 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, 
 			view++;
 		}
 	}
-
 }
 
 
@@ -787,7 +783,7 @@ Mark the leaves and nodes that are in the PVS for the current
 cluster
 ===============
 */
-static void R_MarkLeaves( void )
+void R_MarkLeaves( void )
 {
 	// lockpvs lets designers walk around to determine the
 	// extent of the current pvs
@@ -837,7 +833,7 @@ static void R_MarkLeaves( void )
 	const byte *vis = R_ClusterPVS(tr.visClusters[tr.visIndex]);
 	
 	int i;
-	for (i = 0, leaf = tr.world->nodes; i < tr.world->numnodes; i++, leaf++) {
+	for (i = 0, leaf = (tr.world->nodes + tr.world->numDecisionNodes); i < (tr.world->numnodes - tr.world->numDecisionNodes); i++, leaf++) {
 		cluster = leaf->cluster;
 		if ( cluster < 0 || cluster >= tr.world->numClusters ) {
 			continue;
@@ -848,8 +844,11 @@ static void R_MarkLeaves( void )
 			continue;
 		}
 
+		// Handle skyportal draws
+		byte *areamask = tr.viewParms.isSkyPortal == qtrue ? tr.skyPortalAreaMask : tr.refdef.areamask;
+
 		// check for door connection
-		if ( (tr.refdef.areamask[leaf->area>>3] & (1<<(leaf->area&7)) ) ) {
+		if ( (areamask[leaf->area>>3] & (1<<(leaf->area&7)) ) ) {
 			continue;		// not visible
 		}
 
@@ -901,22 +900,19 @@ void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef ) {
 		dlightBits = 0;
 		pshadowBits = 0;
 	}
-	else if ( !(viewParms->flags & VPF_SHADOWMAP) )
-	{
-		dlightBits = ( 1 << refdef->num_dlights ) - 1;
-		pshadowBits = ( 1 << refdef->num_pshadows ) - 1;
-	}
 	else
 	{
-		dlightBits = ( 1 << refdef->num_dlights ) - 1;
-		pshadowBits = 0;
+		dlightBits = (1 << refdef->num_dlights) - 1;
+		if (r_shadows->integer == 4)
+			pshadowBits = (1 << refdef->num_pshadows) - 1;
+		else
+			pshadowBits = 0;
 	}
 
 	R_RecursiveWorldNode(tr.world->nodes, planeBits, dlightBits, pshadowBits);
 
 	// now add all the potentially visible surfaces
-	// also mask invisible dlights for next frame
-	refdef->dlightMask = 0;
+	R_RotateForEntity(&tr.worldEntity, &tr.viewParms, &tr.ori);
 
 	for (int i = 0; i < tr.world->numWorldSurfaces; i++)
 	{
@@ -929,7 +925,6 @@ void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef ) {
 			REFENTITYNUM_WORLD,
 			tr.world->surfacesDlightBits[i],
 			tr.world->surfacesPshadowBits[i]);
-		refdef->dlightMask |= tr.world->surfacesDlightBits[i];
 	}
 
 	for (int i = 0; i < tr.world->numMergedSurfaces; i++)
@@ -943,8 +938,5 @@ void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef ) {
 			REFENTITYNUM_WORLD,
 			tr.world->mergedSurfacesDlightBits[i],
 			tr.world->mergedSurfacesPshadowBits[i]);
-		refdef->dlightMask |= tr.world->mergedSurfacesDlightBits[i];
 	}
-
-	refdef->dlightMask = ~refdef->dlightMask;
 }

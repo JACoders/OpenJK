@@ -64,7 +64,8 @@ void main()
 	width += u_FadeScale * fadeScale * width;
 
 #if defined(FX_SPRITE)
-	var_Effectpos = fract((u_frameTime+10000.0*attr_Position.w) / u_FxDuration);
+	float sprite_time = u_frameTime * 1000.0;
+	var_Effectpos = fract((sprite_time+10000.0*attr_Position.w) / u_FxDuration);
 	width += var_Effectpos * width * u_FxGrow.x;
 	height += var_Effectpos * height * u_FxGrow.y;
 #endif
@@ -109,7 +110,8 @@ void main()
 #if !defined(FACE_UP) && !defined(FX_SPRITE)
 	float isLowerVertex = float(offset.z == 0.0);
 	offset.xy += mix(skew, vec2(0.0), isLowerVertex);
-	float angle = (attr_Position.x + attr_Position.y) * 0.02 + (u_frameTime * 0.0015);
+	float sprite_time = u_frameTime * 1000.0;
+	float angle = (attr_Position.x + attr_Position.y) * 0.02 + (sprite_time * 0.0015);
 	float windsway = mix(height* u_WindIdle * 0.075, 0.0, isLowerVertex);
 	offset.xy += vec2(cos(angle), sin(angle)) * windsway;
 #endif

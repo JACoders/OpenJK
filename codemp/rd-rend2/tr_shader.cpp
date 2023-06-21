@@ -3751,6 +3751,8 @@ static shader_t *GeneratePermanentShader( void ) {
 		}
 	}
 
+	RB_AddShaderToShaderInstanceUBO(newShader);
+
 	SortNewShader();
 
 	hash = generateHashValue(newShader->name, FILE_HASH_SIZE);

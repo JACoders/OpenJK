@@ -396,8 +396,7 @@ void RB_RenderFlares (void) {
 		return;
 	}
 
-	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
-		(backEnd.viewParms.flags & VPF_NOPOSTPROCESS))
+	if (backEnd.viewParms.flags & VPF_DEPTHSHADOW)
 		return;
 
 	// Reset currentEntity to world so that any previously referenced entities

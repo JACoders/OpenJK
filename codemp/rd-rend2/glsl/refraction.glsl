@@ -17,6 +17,17 @@ in vec2 attr_TexCoord0;
 in vec2 attr_TexCoord1;
 #endif
 
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+	float u_frameTime;
+	float u_deltaTime;
+};
+
 layout(std140) uniform Camera
 {
 	mat4 u_viewProjectionMatrix;
@@ -38,6 +49,7 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
+	float u_entityTime;
 };
 
 #if defined(USE_DEFORM_VERTEXES) || defined(USE_RGBAGEN)
@@ -132,7 +144,7 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float bulgeWidth = u_DeformParams0.z; // phase
 			float bulgeSpeed = u_DeformParams0.w; // frequency
 
-			float scale = CalculateDeformScale( WF_SIN, u_Time, bulgeWidth * st.x, bulgeSpeed );
+			float scale = CalculateDeformScale( WF_SIN, (u_entityTime + u_frameTime + u_Time), bulgeWidth * st.x, bulgeSpeed );
 
 			return pos + normal * scale * bulgeHeight;
 		}
@@ -153,7 +165,7 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float spread = u_DeformParams1.x;
 
 			float offset = dot( pos.xyz, vec3( spread ) );
-			float scale = CalculateDeformScale( u_DeformFunc, u_Time, phase + offset, frequency );
+			float scale = CalculateDeformScale( u_DeformFunc, (u_entityTime + u_frameTime + u_Time), phase + offset, frequency );
 
 			return pos + normal * (base + scale * amplitude);
 		}
@@ -166,7 +178,7 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float frequency = u_DeformParams0.w;
 			vec3 direction = u_DeformParams1.xyz;
 
-			float scale = CalculateDeformScale( u_DeformFunc, u_Time, phase, frequency );
+			float scale = CalculateDeformScale( u_DeformFunc, (u_entityTime + u_frameTime + u_Time), phase, frequency );
 
 			return pos + direction * (base + scale * amplitude);
 		}
@@ -190,19 +202,19 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 		position.x * scale,
 		position.y * scale,
 		position.z * scale,
-		u_Time * frequency );
+		(u_entityTime + u_frameTime + u_Time) * frequency );
 
 	outNormal.y += amplitude * GetNoiseValue(
 		100.0 * position.x * scale,
 		position.y * scale,
 		position.z * scale,
-		u_Time * frequency );
+		(u_entityTime + u_frameTime + u_Time) * frequency );
 
 	outNormal.z += amplitude * GetNoiseValue(
 		200.0 * position.x * scale,
 		position.y * scale,
 		position.z * scale,
-		u_Time * frequency );
+		(u_entityTime + u_frameTime + u_Time) * frequency );
 
 	return outNormal;
 }
@@ -408,6 +420,7 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
+	float u_entityTime;
 };
 
 uniform sampler2D u_TextureMap;

@@ -595,15 +595,8 @@ void RB_BeginDrawingView (void) {
 		}
 	}
 
-	// clear to white for shadow maps
-	if (backEnd.viewParms.flags & VPF_SHADOWMAP)
-	{
-		clearBits |= GL_COLOR_BUFFER_BIT;
-		qglClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
-	}
-
 	// dont clear color if we have a skyportal and it has been rendered
-	if (tr.world && tr.world->skyboxportal == 1 && !(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
+	if (tr.world && tr.world->skyboxportal == 1 && !(tr.viewParms.isSkyPortal))
 		clearBits &= ~GL_COLOR_BUFFER_BIT;
 
 	if (clearBits > 0 && !(backEnd.viewParms.flags & VPF_NOCLEAR))
@@ -1209,6 +1202,9 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemapIndex, &postRender);
 		assert(shader != nullptr);
 
+		if (shader->useSimpleDepthShader == qtrue)
+			shader = tr.defaultShader;
+
 		if (shader->sort != SS_OPAQUE || shader->useDistortion)
 		{
 			// Don't draw yet, let's see what's to come
@@ -1222,13 +1218,13 @@ static void RB_SubmitDrawSurfsForDepthFill(
 				RB_EndSurface();
 				RB_BeginSurface(shader, 0, 0);
 				oldBoneCache = ((CRenderableSurface*)drawSurf->surface)->boneCache;
+				tr.animationBoneUboOffset = RB_GetBoneUboOffset((CRenderableSurface*)drawSurf->surface);
 			}
 		}
 
 		if ( shader == oldShader &&	entityNum == oldEntityNum )
 		{
 			// fast path, same as previous sort
-			backEnd.currentDrawSurfIndex = i;
 			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
 			continue;
 		}
@@ -1258,8 +1254,6 @@ static void RB_SubmitDrawSurfsForDepthFill(
 			RB_PrepareForEntity(entityNum, originalTime);
 			oldEntityNum = entityNum;
 		}
-
-		backEnd.currentDrawSurfIndex = i;
 
 		// add the triangles for this surface
 		assert(drawSurf->surface != nullptr);
@@ -1310,6 +1304,7 @@ static void RB_SubmitDrawSurfs(
 				RB_EndSurface();
 				RB_BeginSurface(shader, fogNum, cubemapIndex);
 				oldBoneCache = ((CRenderableSurface*)drawSurf->surface)->boneCache;
+				tr.animationBoneUboOffset = RB_GetBoneUboOffset((CRenderableSurface*)drawSurf->surface);
 			}
 		}
 
@@ -1322,7 +1317,6 @@ static void RB_SubmitDrawSurfs(
 				backEnd.refractionFill == shader->useDistortion )
 		{
 			// fast path, same as previous sort
-			backEnd.currentDrawSurfIndex = i;
 			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
 			continue;
 		}
@@ -1365,8 +1359,6 @@ static void RB_SubmitDrawSurfs(
 
 		if (backEnd.refractionFill != isDistortionShader)
 			continue;
-
-		backEnd.currentDrawSurfIndex = i;
 
 		// ugly hack for now...
 		// find better way to pass dlightbits
@@ -1994,91 +1986,6 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 }
 
 
-static void RB_RenderSunShadows()
-{
-	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW) ||
-		(backEnd.viewParms.flags & VPF_SHADOWMAP) ||
-		(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
-		return;
-
-	FBO_t *shadowFbo = tr.screenShadowFbo;
-
-	vec4_t box;
-
-	FBO_Bind(shadowFbo);
-	
-	const float viewportScaleX = shadowFbo->width / glConfig.vidWidth;
-	const float viewportScaleY = shadowFbo->height / glConfig.vidHeight;
-
-	box[0] = backEnd.viewParms.viewportX * viewportScaleX;
-	box[1] = backEnd.viewParms.viewportY * viewportScaleY;
-	box[2] = backEnd.viewParms.viewportWidth  * viewportScaleX;
-	box[3] = backEnd.viewParms.viewportHeight * viewportScaleY;
-
-	qglViewport(box[0], box[1], box[2], box[3]);
-	qglScissor(box[0], box[1], box[2], box[3]);
-
-	GL_State(GLS_DEPTHTEST_DISABLE);
-	GLSL_BindProgram(&tr.shadowmaskShader);
-
-	if (tr.renderCubeFbo[0] != NULL && (
-		backEnd.viewParms.targetFbo == tr.renderCubeFbo[0] ||
-		backEnd.viewParms.targetFbo == tr.renderCubeFbo[1] ||
-		backEnd.viewParms.targetFbo == tr.renderCubeFbo[2] ||
-		backEnd.viewParms.targetFbo == tr.renderCubeFbo[3] ||
-		backEnd.viewParms.targetFbo == tr.renderCubeFbo[4] ||
-		backEnd.viewParms.targetFbo == tr.renderCubeFbo[5]
-		)
-		)
-	{
-		GL_BindToTMU(tr.renderCubeDepthImage, TB_COLORMAP);
-	}
-	else
-	{
-		GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
-	}
-	
-	GL_BindToTMU(tr.sunShadowArrayImage, TB_SHADOWMAPARRAY);
-
-	GLSL_SetUniformMatrix4x4(
-		&tr.shadowmaskShader,
-		UNIFORM_SHADOWMVP,
-		backEnd.refdef.sunShadowMvp[0]);
-	GLSL_SetUniformMatrix4x4(
-		&tr.shadowmaskShader,
-		UNIFORM_SHADOWMVP2,
-		backEnd.refdef.sunShadowMvp[1]);
-	GLSL_SetUniformMatrix4x4(
-		&tr.shadowmaskShader,
-		UNIFORM_SHADOWMVP3,
-		backEnd.refdef.sunShadowMvp[2]);
-	GLSL_SetUniformVec3(
-		&tr.shadowmaskShader,
-		UNIFORM_VIEWORIGIN,
-		backEnd.refdef.vieworg);
-
-	const float zmax = backEnd.viewParms.zFar;
-	const float ymax = zmax * tanf(backEnd.viewParms.fovY * M_PI / 360.0f);
-	const float xmax = zmax * tanf(backEnd.viewParms.fovX * M_PI / 360.0f);
-
-	const float zmin = r_znear->value;
-
-	vec3_t viewBasis[3];
-	VectorScale(backEnd.refdef.viewaxis[0], zmax, viewBasis[0]);
-	VectorScale(backEnd.refdef.viewaxis[1], xmax, viewBasis[1]);
-	VectorScale(backEnd.refdef.viewaxis[2], ymax, viewBasis[2]);
-
-	GLSL_SetUniformVec3(&tr.shadowmaskShader, UNIFORM_VIEWFORWARD, viewBasis[0]);
-	GLSL_SetUniformVec3(&tr.shadowmaskShader, UNIFORM_VIEWLEFT, viewBasis[1]);
-	GLSL_SetUniformVec3(&tr.shadowmaskShader, UNIFORM_VIEWUP, viewBasis[2]);
-
-	const vec4_t viewInfo = { zmax / zmin, zmax, 0.0f, 0.0f };
-	GLSL_SetUniformVec4(&tr.shadowmaskShader, UNIFORM_VIEWINFO, viewInfo);
-	RB_InstantTriangle();
-
-	GL_BindToTMU(NULL, TB_SHADOWMAP);
-}
-
 static void RB_RenderSSAO()
 {
 	const float zmax = backEnd.viewParms.zFar;
@@ -2160,7 +2067,7 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	if (r_ssao->integer &&
 		!(backEnd.viewParms.flags & VPF_DEPTHSHADOW) &&
-		!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
+		!(tr.viewParms.isSkyPortal))
 	{
 		// need the depth in a texture we can do GL_LINEAR sampling on, so
 		// copy it to an HDR image
@@ -2236,14 +2143,9 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 
 	RB_RenderDepthOnly(drawSurfs, numDrawSurfs);
 
-	if ( r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) && !(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
-	{
-		RB_RenderSunShadows();
-	}
-
 	if (r_ssao->integer &&
 		!(backEnd.viewParms.flags & VPF_DEPTHSHADOW) &&
-		!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
+		!(tr.viewParms.isSkyPortal))
 	{
 		RB_RenderSSAO();
 	}
@@ -2260,47 +2162,69 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 
 static void RB_UpdateCameraConstants(gpuFrame_t *frame)
 {
-	const float zmax = backEnd.viewParms.zFar;
-	const float zmin = r_znear->value;
+	for (int i = 0; i < tr.numCachedViewParms; i++)
+	{
+		const float zmax = tr.cachedViewParms[i].zFar;
+		const float zmin = tr.cachedViewParms[i].zNear;
 
-	CameraBlock cameraBlock = {};
-	Matrix16Multiply(
-		backEnd.viewParms.projectionMatrix,
-		backEnd.viewParms.world.modelViewMatrix,
-		cameraBlock.viewProjectionMatrix);
-	VectorSet4(cameraBlock.viewInfo, zmax / zmin, zmax, 0.0f, 0.0f);
-	VectorCopy(backEnd.refdef.viewaxis[0], cameraBlock.viewForward);
-	VectorCopy(backEnd.refdef.viewaxis[1], cameraBlock.viewLeft);
-	VectorCopy(backEnd.refdef.viewaxis[2], cameraBlock.viewUp);
-	VectorCopy(backEnd.refdef.vieworg, cameraBlock.viewOrigin);
-	tr.cameraUboOffset = RB_AppendConstantsData(
-		frame, &cameraBlock, sizeof(cameraBlock));
+		const float ymax = zmax * tanf(backEnd.viewParms.fovY * M_PI / 360.0f);
+		const float xmax = zmax * tanf(backEnd.viewParms.fovX * M_PI / 360.0f);
+
+		vec3_t viewBasis[3];
+
+		VectorNormalize(tr.cachedViewParms[i].ori.axis[0]);
+		VectorNormalize(tr.cachedViewParms[i].ori.axis[1]);
+		VectorNormalize(tr.cachedViewParms[i].ori.axis[2]);
+
+		VectorScale(tr.cachedViewParms[i].ori.axis[0], zmax, viewBasis[0]);
+		VectorScale(tr.cachedViewParms[i].ori.axis[1], xmax, viewBasis[1]);
+		VectorScale(tr.cachedViewParms[i].ori.axis[2], ymax, viewBasis[2]);
+
+		CameraBlock cameraBlock = {};
+		Matrix16Multiply(
+			tr.cachedViewParms[i].projectionMatrix,
+			tr.cachedViewParms[i].world.modelViewMatrix,
+			cameraBlock.viewProjectionMatrix);
+		VectorSet4(cameraBlock.viewInfo, zmax / zmin, zmax, 0.0f, 0.0f);
+		VectorCopy(viewBasis[0], cameraBlock.viewForward);
+		VectorCopy(viewBasis[1], cameraBlock.viewLeft);
+		VectorCopy(viewBasis[2], cameraBlock.viewUp);
+		VectorCopy(tr.cachedViewParms[i].ori.origin, cameraBlock.viewOrigin);
+
+		tr.cameraUboOffsets[tr.cachedViewParms[i].currentViewParm] = RB_AppendConstantsData(
+			frame, &cameraBlock, sizeof(cameraBlock));
+	}
 }
 
-static void RB_UpdateSceneConstants(gpuFrame_t *frame)
+static void RB_UpdateSceneConstants(gpuFrame_t *frame, const trRefdef_t *refdef)
 {
 	SceneBlock sceneBlock = {};
-	VectorCopy4(backEnd.refdef.sunDir, sceneBlock.primaryLightOrigin);
-	VectorCopy(backEnd.refdef.sunAmbCol, sceneBlock.primaryLightAmbient);
-	VectorCopy(backEnd.refdef.sunCol, sceneBlock.primaryLightColor);
+	VectorCopy4(refdef->sunDir, sceneBlock.primaryLightOrigin);
+	VectorCopy(refdef->sunAmbCol, sceneBlock.primaryLightAmbient);
+	VectorCopy(refdef->sunCol, sceneBlock.primaryLightColor);
 	if (tr.world != nullptr)
 		sceneBlock.globalFogIndex = tr.world->globalFogIndex - 1;
 	else
 		sceneBlock.globalFogIndex = -1;
-	sceneBlock.currentTime = backEnd.refdef.time;
-	sceneBlock.frameTime = backEnd.refdef.frameTime;
+	sceneBlock.currentTime = refdef->floatTime;
+	sceneBlock.frameTime = refdef->frameTime;
 
 	tr.sceneUboOffset = RB_AppendConstantsData(
 		frame, &sceneBlock, sizeof(sceneBlock));
 }
 
-static void RB_UpdateLightsConstants(gpuFrame_t *frame)
+static void RB_UpdateLightsConstants(gpuFrame_t *frame, const trRefdef_t *refdef)
 {
 	LightsBlock lightsBlock = {};
-	lightsBlock.numLights = backEnd.refdef.num_dlights;
+
+	memcpy(lightsBlock.shadowVP1, refdef->sunShadowMvp[0], sizeof(matrix_t));
+	memcpy(lightsBlock.shadowVP2, refdef->sunShadowMvp[1], sizeof(matrix_t));
+	memcpy(lightsBlock.shadowVP3, refdef->sunShadowMvp[2], sizeof(matrix_t));
+
+	lightsBlock.numLights = MIN(refdef->num_dlights, MAX_DLIGHTS);
 	for (int i = 0; i < lightsBlock.numLights; ++i)
 	{
-		const dlight_t *dlight = backEnd.refdef.dlights + i;
+		const dlight_t *dlight = refdef->dlights + i;
 		LightsBlock::Light *lightData = lightsBlock.lights + i;
 
 		VectorSet4(
@@ -2396,65 +2320,27 @@ static void RB_UpdateEntityModelConstants(
 	if (refEntity->e.oldframe || refEntity->e.frame)
 		if (refEntity->e.oldframe != refEntity->e.frame)
 			entityBlock.vertexLerp = refEntity->e.backlerp;
+
+	entityBlock.entityTime = 0.0f;
+	if (refEntity != &tr.worldEntity)
+		entityBlock.entityTime = -refEntity->e.shaderTime;
 }
 
-static void RB_UpdateSkyEntityConstants(gpuFrame_t *frame)
+static void RB_UpdateSkyEntityConstants(gpuFrame_t *frame, const trRefdef_t *refdef)
 {
 	EntityBlock skyEntityBlock = {};
 	skyEntityBlock.fxVolumetricBase = -1.0f;
 
-	Matrix16Translation(backEnd.viewParms.ori.origin, skyEntityBlock.modelMatrix);
+	if (tr.world && tr.world->skyboxportal)
+		Matrix16Translation(tr.skyPortalParms.ori.origin, skyEntityBlock.modelMatrix);
+	else
+		Matrix16Translation(refdef->vieworg, skyEntityBlock.modelMatrix);
 	tr.skyEntityUboOffset = RB_AppendConstantsData(
 		frame, &skyEntityBlock, sizeof(skyEntityBlock));
 }
 
-static uint32_t RB_HashEntityShaderKey(int entityNum, int shaderNum)
-{
-	uint32_t hash = 0;
-	hash += entityNum;
-	hash += shaderNum * 119;
-	return (hash ^ (hash >> 10) ^ (hash >> 20));
-}
-
-void RB_InsertEntityShaderUboOffset(
-	EntityShaderUboOffset *offsetMap,
-	int mapSize,
-	int entityNum,
-	int shaderNum,
-	int uboOffset)
-{
-	int hash = RB_HashEntityShaderKey(entityNum, shaderNum) % mapSize;
-	while (offsetMap[hash].inuse)
-		hash = (hash + 1) % mapSize;
-
-	EntityShaderUboOffset& offset = offsetMap[hash];
-	offset.inuse = true;
-	offset.entityNum = entityNum;
-	offset.shaderNum = shaderNum;
-	offset.offset = uboOffset;
-}
-
-int RB_GetEntityShaderUboOffset(
-	EntityShaderUboOffset *offsetMap,
-	int mapSize,
-	int entityNum,
-	int shaderNum)
-{
-	int hash = RB_HashEntityShaderKey(entityNum, shaderNum) % mapSize;
-	while (offsetMap[hash].inuse)
-	{
-		const EntityShaderUboOffset& uboOffset = offsetMap[hash];
-		if (uboOffset.entityNum == entityNum &&
-			uboOffset.shaderNum == shaderNum)
-			return uboOffset.offset;
-		hash = (hash + 1) % mapSize;
-	}
-
-	return -1;
-}
-
 static void ComputeDeformValues(
-	const trRefEntity_t *refEntity,
+	//const trRefEntity_t *refEntity,
 	const shader_t *shader,
 	deform_t *type,
 	genFunc_t *waveFunc,
@@ -2465,11 +2351,12 @@ static void ComputeDeformValues(
 	*type = DEFORM_NONE;
 	*waveFunc = GF_NONE;
 
-	if (refEntity->e.renderfx & RF_DISINTEGRATE2)
+	// Handled via the CGEN_DISINTEGRATION_2 color gen, as both just happen at the same time
+	/*if (refEntity->e.renderfx & RF_DISINTEGRATE2)
 	{
 		*type = DEFORM_DISINTEGRATION;
 		return;
-	}
+	}*/
 
 	if (!ShaderRequiresCPUDeforms(shader))
 	{
@@ -2535,7 +2422,7 @@ static void ComputeDeformValues(
 
 		case DEFORM_PROJECTION_SHADOW:
 			*type = DEFORM_PROJECTION_SHADOW;
-
+			/*
 			deformParams0[0] = backEnd.ori.axis[0][2];
 			deformParams0[1] = backEnd.ori.axis[1][2];
 			deformParams0[2] = backEnd.ori.axis[2][2];
@@ -2549,7 +2436,7 @@ static void ComputeDeformValues(
 
 			deformParams1[0] = lightDir[0];
 			deformParams1[1] = lightDir[1];
-			deformParams1[2] = lightDir[2];
+			deformParams1[2] = lightDir[2];*/
 			break;
 
 		default:
@@ -2558,257 +2445,100 @@ static void ComputeDeformValues(
 	}
 }
 
-
-static void RB_UpdateShaderEntityConstants(
-	gpuFrame_t *frame,
-	const int entityNum,
-	const trRefEntity_t *refEntity,
-	const shader_t *shader)
+void RB_AddShaderToShaderInstanceUBO(shader_t *shader)
 {
 	if (shader->numDeforms != 1 && !shader->portalRange)
 	{
-		RB_InsertEntityShaderUboOffset(
-			tr.shaderInstanceUboOffsetsMap,
-			tr.shaderInstanceUboOffsetsMapSize,
-			entityNum,
-			shader->index,
-			-1);
+		shader->ShaderInstanceUboOffset = -1;
 		return;
 	}
+	
 	ShaderInstanceBlock shaderInstanceBlock = {};
 	ComputeDeformValues(
-		refEntity,
 		shader,
 		(deform_t *)&shaderInstanceBlock.deformType,
 		(genFunc_t *)&shaderInstanceBlock.deformFunc,
 		shaderInstanceBlock.deformParams0,
 		shaderInstanceBlock.deformParams1);
 	shaderInstanceBlock.portalRange = shader->portalRange;
-	shaderInstanceBlock.time =
-		backEnd.refdef.floatTime - shader->timeOffset;
-	if (entityNum != REFENTITYNUM_WORLD)
-		shaderInstanceBlock.time -= refEntity->e.shaderTime;
+	shaderInstanceBlock.time = -shader->timeOffset;
 
-	const int uboOffset = RB_AppendConstantsData(
-		frame, &shaderInstanceBlock, sizeof(shaderInstanceBlock));
-
-	RB_InsertEntityShaderUboOffset(
-		tr.shaderInstanceUboOffsetsMap,
-		tr.shaderInstanceUboOffsetsMapSize,
-		entityNum,
-		shader->index,
-		uboOffset);
+	shader->ShaderInstanceUboOffset = RB_AddShaderInstanceBlock((void*)&shaderInstanceBlock);
 }
 
-static void RB_UpdateShaderAndEntityConstants(
-	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
+static void RB_UpdateEntityConstants(
+	gpuFrame_t *frame, const trRefdef_t *refdef)
 {
-	// Make the map bigger than it needs to be. Eases collisions and iterations
-	// through the map during lookup/insertion.
-	tr.shaderInstanceUboOffsetsMapSize = numDrawSurfs * 2;
-	tr.shaderInstanceUboOffsetsMap = ojkAllocArray<EntityShaderUboOffset>(
-		*backEndData->perFrameMemory,
-		tr.shaderInstanceUboOffsetsMapSize);
-
 	memset(tr.entityUboOffsets, 0, sizeof(tr.entityUboOffsets));
-	memset(
-		tr.shaderInstanceUboOffsetsMap, 0,
-		sizeof(EntityShaderUboOffset) * tr.shaderInstanceUboOffsetsMapSize);
-
-	int old_ubo = 0;
-	shader_t *oldShader = nullptr;
-	int oldEntityNum = -1;
-
-	for (int i = 0; i < numDrawSurfs; ++i)
+	for (int i = 0; i < refdef->num_entities; i++)
 	{
-		const drawSurf_t *drawSurf = drawSurfs + i;
+		trRefEntity_t *ent = &refdef->entities[i];
 
-		shader_t *shader;
-		int ignored;
-		int entityNum;
+		R_SetupEntityLighting(refdef, ent);
 
-		R_DecomposeSort(
-			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
+		EntityBlock entityBlock = {};
+		RB_UpdateEntityLightConstants(entityBlock, ent);
+		RB_UpdateEntityMatrixConstants(entityBlock, ent);
+		RB_UpdateEntityModelConstants(entityBlock, ent);
 
-		if (shader == oldShader && entityNum == oldEntityNum)
-			continue;
-
-		if (backEnd.frameUBOsInitialized == qtrue)
-		{
-			// TODO: check if data set already inserted
-			if (RB_GetEntityShaderUboOffset(
-				tr.shaderInstanceUboOffsetsMap,
-				tr.shaderInstanceUboOffsetsMapSize,
-				entityNum,
-				shader->index) != -1)
-				continue;
-		}
-
-		if (*drawSurf->surface == SF_FLARE)
-		{
-			RB_UpdateShaderEntityConstants(frame, REFENTITYNUM_WORLD, &backEnd.entityFlare, shader);
-			continue;
-		}
-
-		const trRefEntity_t *refEntity = entityNum == REFENTITYNUM_WORLD ? &tr.worldEntity : &backEnd.refdef.entities[entityNum];
-
-		if (shader != oldShader ||
-			(entityNum != oldEntityNum /* && !shader->entityMergable*/))
-		{
-			EntityBlock entityBlock = {};
-
-			RB_UpdateEntityLightConstants(entityBlock, refEntity);
-			RB_UpdateEntityMatrixConstants(entityBlock, refEntity);
-			RB_UpdateEntityModelConstants(entityBlock, refEntity);
-
-			tr.entityUboOffsets[entityNum] = RB_AppendConstantsData(
-				frame, &entityBlock, sizeof(entityBlock));
-		}
-		old_ubo = tr.entityUboOffsets[entityNum];
-		oldShader = shader;
-		oldEntityNum = entityNum;
-
-		RB_UpdateShaderEntityConstants(frame, entityNum, refEntity, shader);
+		tr.entityUboOffsets[i] = RB_AppendConstantsData(
+			frame, &entityBlock, sizeof(entityBlock));
 	}
 
-	RB_UpdateSkyEntityConstants(frame);
+	const trRefEntity_t *ent = &tr.worldEntity;
+	EntityBlock entityBlock = {};
+	RB_UpdateEntityLightConstants(entityBlock, ent);
+	RB_UpdateEntityMatrixConstants(entityBlock, ent);
+	RB_UpdateEntityModelConstants(entityBlock, ent);
+
+	tr.entityUboOffsets[REFENTITYNUM_WORLD] = RB_AppendConstantsData(
+		frame, &entityBlock, sizeof(entityBlock));
+
+	RB_UpdateSkyEntityConstants(frame, refdef);
 }
 
-static void RB_UpdateAnimationConstants(
-	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
+static void RB_UpdateGhoul2Constants(gpuFrame_t *frame, const trRefdef_t *refdef)
 {
-	tr.animationBoneUboOffsets = ojkAllocArray<int>(
-		*backEndData->perFrameMemory, numDrawSurfs);
-	memset(tr.animationBoneUboOffsets, 0, sizeof(int) * numDrawSurfs);
-
-	// transform all bones for this frame
-	for (int i = 0; i < numDrawSurfs; ++i)
+	for (int i = 0; i < refdef->num_entities; i++)
 	{
-		const drawSurf_t *drawSurf = drawSurfs + i;
-		if (*drawSurf->surface != SF_MDX)
+		const trRefEntity_t *ent = &refdef->entities[i];
+		if (ent->e.reType != RT_MODEL)
 			continue;
-		CRenderableSurface *RS = (CRenderableSurface *)drawSurf->surface;
 
-		RB_TransformBones(RS, backEndData->realFrameNumber);
-	}
-
-	// now get offsets or add skeletons to ubo
-	for (int i = 0; i < numDrawSurfs; ++i)
-	{
-		const drawSurf_t *drawSurf = drawSurfs + i;
-		if (*drawSurf->surface != SF_MDX)
+		model_t *model = R_GetModelByHandle(ent->e.hModel);
+		if (!model)
 			continue;
-		CRenderableSurface *RS = (CRenderableSurface *)drawSurf->surface;
-		
-		int currentOffset = RB_GetBoneUboOffset(RS);
-		if (currentOffset < 0)
+
+		switch (model->type)
 		{
-			SkeletonBoneMatricesBlock bonesBlock = {};
-			RB_FillBoneBlock(RS, bonesBlock.matrices);
-
-			tr.animationBoneUboOffsets[i] = RB_AppendConstantsData(
-				frame, &bonesBlock, sizeof(bonesBlock));
-
-			RB_SetBoneUboOffset(RS, tr.animationBoneUboOffsets[i], backEndData->realFrameNumber);
+		case MOD_MDXM:
+		case MOD_BAD:
+		{
+			// Transform Bones and upload them
+			RB_TransformBones(ent, refdef, backEndData->realFrameNumber, frame);
 		}
-		else
-		{
-			tr.animationBoneUboOffsets[i] = currentOffset;
+		break;
+
+		default:
+			break;
 		}
 	}
 }
 
-static void Fill_SpriteBlock( srfSprites_t *surf , SurfaceSpriteBlock *surfaceSpriteBlock)
-{
-	const surfaceSprite_t *ss = surf->sprite;
-
-	surfaceSpriteBlock->fxGrow[0] = ss->fxGrow[0];
-	surfaceSpriteBlock->fxGrow[1] = ss->fxGrow[1];
-	surfaceSpriteBlock->fxDuration = ss->fxDuration;
-	surfaceSpriteBlock->fadeStartDistance = ss->fadeDist;
-	surfaceSpriteBlock->fadeEndDistance = MAX(ss->fadeDist + 250.f, ss->fadeMax);
-	surfaceSpriteBlock->fadeScale = ss->fadeScale;
-	surfaceSpriteBlock->wind = ss->wind;
-	surfaceSpriteBlock->windIdle = ss->windIdle;
-	surfaceSpriteBlock->fxAlphaStart = ss->fxAlphaStart;
-	surfaceSpriteBlock->fxAlphaEnd = ss->fxAlphaEnd;
-}
-
-static void RB_UpdateSpriteConstants(
-	gpuFrame_t *frame, const drawSurf_t *drawSurfs, int numDrawSurfs)
-{
-	if (!r_surfaceSprites->integer)
-		return;
-
-	// FIX ME: horrible idea to reuse the hashing
-	tr.surfaceSpriteInstanceUboOffsetsMap = ojkAllocArray<EntityShaderUboOffset>(
-		*backEndData->perFrameMemory,
-		64);
-	memset(
-		tr.surfaceSpriteInstanceUboOffsetsMap, 0,
-		sizeof(EntityShaderUboOffset) * 64);
-
-	shader_t *oldShader = nullptr;
-
-	// get all the spriteData
-	for (int i = 0; i < numDrawSurfs; ++i)
-	{
-		const drawSurf_t *drawSurf = drawSurfs + i;
-		if (*drawSurf->surface != SF_SPRITES)
-			continue;
-
-		shader_t *shader;
-		int ignored;
-		int entityNum;
-
-		R_DecomposeSort(
-			drawSurf->sort, &entityNum, &shader, &ignored, &ignored);
-
-		if (oldShader == shader)
-			continue;
-		
-		SurfaceSpriteBlock surfaceSpriteBlock = {};
-		Fill_SpriteBlock((srfSprites_t*)drawSurf->surface, &surfaceSpriteBlock);
-		
-		const int uboOffset = RB_AppendConstantsData(
-			frame, &surfaceSpriteBlock, sizeof(surfaceSpriteBlock));
-
-		RB_InsertEntityShaderUboOffset(
-			tr.surfaceSpriteInstanceUboOffsetsMap,
-			64,
-			REFENTITYNUM_WORLD,
-			shader->index,
-			uboOffset);
-
-		oldShader = shader;
-	}
-}
-
-static void RB_UpdateConstants(const drawSurf_t *drawSurfs, int numDrawSurfs)
+void RB_UpdateConstants(const trRefdef_t *refdef)
 {
 	gpuFrame_t *frame = backEndData->currentFrame;
 	RB_BeginConstantsUpdate(frame);
 
-	if (backEnd.frameUBOsInitialized == qfalse)
-	{
-		RB_UpdateFogsConstants(frame);
-		RB_UpdateSceneConstants(frame);
-		RB_UpdateLightsConstants(frame);
-	}
-
 	RB_UpdateCameraConstants(frame);
-	RB_UpdateShaderAndEntityConstants(frame, drawSurfs, numDrawSurfs);
-	RB_UpdateAnimationConstants(frame, drawSurfs, numDrawSurfs);
-
-	RB_UpdateSpriteConstants(frame, drawSurfs, numDrawSurfs);
+	RB_UpdateSceneConstants(frame, refdef);
+	RB_UpdateLightsConstants(frame, refdef);
+	RB_UpdateFogsConstants(frame);
+	RB_UpdateGhoul2Constants(frame, refdef);
+	RB_UpdateEntityConstants(frame, refdef);
 
 	RB_EndConstantsUpdate(frame);
-
-	backEnd.frameUBOsInitialized = (backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) ? qfalse : qtrue;
 }
-
-
-
 
 /*
 =============
@@ -3017,21 +2747,11 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		}
 	}
 
-	int frameNumber = backEndData->realFrameNumber;
-	gpuFrame_t *currentFrame = backEndData->currentFrame;
-
-	assert( !currentFrame->sync );
-	currentFrame->sync = qglFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE, 0 );
-
-	backEndData->realFrameNumber = frameNumber + 1;
+	R_NewFrameSync();
 
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
 	ri.WIN_Present( &window );
-
-	backEnd.framePostProcessed = qfalse;
-	backEnd.projection2D = qfalse;
-	backEnd.frameUBOsInitialized = qfalse;
 
 	return (const void *)(cmd + 1);
 }
@@ -3052,16 +2772,6 @@ const void *RB_PostProcess(const void *data)
 	// finish any 2D drawing if needed
 	if(tess.numIndexes)
 		RB_EndSurface();
-
-	if (tr.world->skyboxportal && (cmd->refdef.rdflags & RDF_SKYBOXPORTAL)) {
-		return (const void *)(cmd + 1);;
-	}
-
-	if (cmd->viewParms.flags & VPF_NOPOSTPROCESS)
-	{
-		// do nothing
-		return (const void *)(cmd + 1);
-	}
 
 	if (cmd)
 	{
@@ -3309,8 +3019,6 @@ static const void *RB_DrawSurfs(const void *data) {
 
 	if (cmd->numDrawSurfs > 0)
 	{
-		RB_UpdateConstants(cmd->drawSurfs, cmd->numDrawSurfs);
-
 		RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
 
 		RB_RenderMainPass(cmd->drawSurfs, cmd->numDrawSurfs);

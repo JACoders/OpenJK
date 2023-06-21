@@ -532,7 +532,8 @@ void FBO_Init(void)
 		for ( i = 0; i < 3; i++)
 		{
 			tr.sunShadowFbo[i] = FBO_Create(
-				"_sunshadowmap", tr.sunShadowArrayImage->width,
+				va("_sunshadowmap%i", i),
+				tr.sunShadowArrayImage->width,
 				tr.sunShadowArrayImage->height);
 
 			FBO_Bind(tr.sunShadowFbo[i]);

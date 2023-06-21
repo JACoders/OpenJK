@@ -728,6 +728,10 @@ struct LightsBlock
 		float radius;
 	};
 
+	matrix_t shadowVP1;
+	matrix_t shadowVP2;
+	matrix_t shadowVP3;
+
 	int numLights;
 	float pad0[3];
 
@@ -761,7 +765,7 @@ struct EntityBlock
 	vec3_t modelLightDir;
 	float vertexLerp;
 	vec3_t localViewOrigin;
-	float pad0; // fogIndex;
+	float entityTime;
 };
 
 struct ShaderInstanceBlock
@@ -772,7 +776,6 @@ struct ShaderInstanceBlock
 	float portalRange;
 	int deformType;
 	int deformFunc;
-	//float pad1;
 };
 
 struct SkeletonBoneMatricesBlock
@@ -800,6 +803,8 @@ struct surfaceSprite_t
 	vec2_t variance;
 	vec2_t fxGrow;
 	surfaceSpriteOrientation_t facing;
+
+	int spriteUboOffset;
 };
 
 #define	MAX_IMAGE_ANIMATIONS	(32)
@@ -984,6 +989,9 @@ typedef struct shader_s {
 
 	int			numUnfoggedPasses;
 	int			numSurfaceSpriteStages;
+	GLuint		spriteUbo;
+	int			ShaderInstanceUboOffset;
+	
 	shaderStage_t	*stages[MAX_SHADER_STAGES];		
 
 	void		(*optimalStageIteratorFunc)( void );
@@ -991,10 +999,10 @@ typedef struct shader_s {
 	qboolean	useSimpleDepthShader;
 	qboolean	useDistortion;
 
-  float clampTime;                                  // time this shader is clamped to
-  float timeOffset;                                 // current time offset for this shader
+	float clampTime;                                  // time this shader is clamped to
+	float timeOffset;                                 // current time offset for this shader
 
-  struct shader_s *remappedShader;                  // current shader this one is remapped too
+	struct shader_s *remappedShader;                  // current shader this one is remapped too
 
 	struct	shader_s	*next;
 } shader_t;
@@ -1477,7 +1485,6 @@ typedef struct {
 	int			numDrawSurfs;
 	struct drawSurf_s	*drawSurfs;
 
-	unsigned int dlightMask;
 	int         num_pshadows;
 	struct pshadow_s *pshadows;
 
@@ -1510,41 +1517,52 @@ typedef struct {
 
 enum viewParmFlag_t {
 	VPF_NOVIEWMODEL     = 0x01, // Don't render the view model
-	VPF_SHADOWMAP       = 0x02, // Rendering to shadow map
-	VPF_DEPTHSHADOW     = 0x04, // Rendering depth-only
-	VPF_DEPTHCLAMP      = 0x08, // Perform depth clamping when rendering z pass
-	VPF_ORTHOGRAPHIC    = 0x10, // Use orthographic projection
-	VPF_USESUNLIGHT     = 0x20,
-	VPF_FARPLANEFRUSTUM = 0x40, // Use far clipping plane
-	VPF_NOCUBEMAPS      = 0x80, // Don't render cubemaps
-	VPF_NOPOSTPROCESS	= 0x100,
-	VPF_POINTSHADOW		= 0x200,// Rendering pointlight shadow
-	VPF_SHADOWCASCADES	= 0x400,// Rendering sun shadow cascades
-	VPF_NOCLEAR			= 0x800,
+	VPF_DEPTHSHADOW     = 0x02, // Rendering depth-only
+	VPF_DEPTHCLAMP      = 0x04, // Perform depth clamping when rendering z pass
+	VPF_ORTHOGRAPHIC    = 0x08, // Use orthographic projection
+	VPF_USESUNLIGHT     = 0x10,
+	VPF_FARPLANEFRUSTUM = 0x20, // Use far clipping plane
+	VPF_NOCUBEMAPS      = 0x40, // Don't render cubemaps
+	VPF_POINTSHADOW		= 0x80,// Rendering pointlight shadow
+	VPF_SHADOWCASCADES	= 0x100,// Rendering sun shadow cascades
+	VPF_NOCLEAR			= 0x200,
 };
 using viewParmFlags_t = uint32_t;
+
+enum viewParmType_t {
+	VPT_SKYPORTAL,
+	VPT_SUN_SHADOWS,
+	VPT_PLAYER_SHADOWS,
+	VPT_POINT_SHADOWS,
+	VPT_PORTAL,
+	VPT_MAIN,
+	VPT_ALL
+};
 
 typedef struct {
 	orientationr_t	ori;
 	orientationr_t	world;
-	vec3_t		pvsOrigin;			// may be different than or.origin for portals
-	qboolean	isPortal;			// true if this view is through a portal
-	qboolean	isMirror;			// the portal is a mirror, invert the face culling
-	int			flags;
-	int			frameSceneNum;		// copied from tr.frameSceneNum
-	int			frameCount;			// copied from tr.frameCount
-	cplane_t	portalPlane;		// clip anything behind this if mirroring
-	int			viewportX, viewportY, viewportWidth, viewportHeight;
-	int			scissorX, scissorY, scissorWidth, scissorHeight;
-	FBO_t		*targetFbo;
-	int         targetFboLayer;
-	float		fovX, fovY;
-	float		projectionMatrix[16];
-	cplane_t	frustum[5];
-	vec3_t		visBounds[2];
-	float		zFar;
-	float       zNear;
+	vec3_t			pvsOrigin;			// may be different than or.origin for portals
+	qboolean		isPortal;			// true if this view is through a portal
+	qboolean		isMirror;			// the portal is a mirror, invert the face culling
+	qboolean		isSkyPortal;
+	int				flags;
+	int				frameSceneNum;		// copied from tr.frameSceneNum
+	int				frameCount;			// copied from tr.frameCount
+	cplane_t		portalPlane;		// clip anything behind this if mirroring
+	int				viewportX, viewportY, viewportWidth, viewportHeight;
+	int				scissorX, scissorY, scissorWidth, scissorHeight;
+	FBO_t			*targetFbo;
+	int				targetFboLayer;
+	float			fovX, fovY;
+	float			projectionMatrix[16];
+	cplane_t		frustum[5];
+	vec3_t			visBounds[2];
+	float			zFar;
+	float			zNear;
 	stereoFrame_t	stereoFrame;
+	int				currentViewParm;
+	viewParmType_t	viewParmType;
 } viewParms_t;
 
 
@@ -1987,7 +2005,7 @@ typedef struct {
 	int			numClusters;
 	int			clusterBytes;
 	const byte	*vis;			// may be passed in by CM_LoadMap to save space
-	byte *novis; // clusterBytes of 0xff (everything is visible)
+	byte		*novis; // clusterBytes of 0xff (everything is visible)
 
 	char		*entityString;
 	char		*entityParsePoint;
@@ -2336,7 +2354,6 @@ typedef struct {
 	orientationr_t	ori;
 	backEndCounters_t	pc;
 	trRefEntity_t	*currentEntity;
-	int			currentDrawSurfIndex;
 	qboolean	skyRenderedThisView;	// flag for drawing sun
 
 	qboolean	projection2D;	// if qtrue, drawstretchpic doesn't need to change modes
@@ -2349,16 +2366,7 @@ typedef struct {
 	qboolean    framePostProcessed;
 	qboolean    depthFill;
 	qboolean    refractionFill;
-	qboolean	frameUBOsInitialized;
 } backEndState_t;
-
-struct EntityShaderUboOffset
-{
-	bool inuse;
-	int entityNum;
-	int shaderNum;
-	int offset;
-};
 
 /*
 ** trGlobals_t 
@@ -2487,14 +2495,12 @@ typedef struct trGlobals_s {
 	shaderProgram_t textureColorShader;
 	shaderProgram_t fogShader[FOGDEF_COUNT];
 	shaderProgram_t lightallShader[LIGHTDEF_COUNT];
-	shaderProgram_t shadowmapShader;
 	shaderProgram_t pshadowShader;
 	shaderProgram_t volumeShadowShader;
 	shaderProgram_t down4xShader;
 	shaderProgram_t bokehShader;
 	shaderProgram_t tonemapShader[2];
 	shaderProgram_t calclevels4xShader[2];
-	shaderProgram_t shadowmaskShader;
 	shaderProgram_t ssaoShader;
 	shaderProgram_t depthBlurShader[2];
 	shaderProgram_t testcubeShader;
@@ -2508,6 +2514,9 @@ typedef struct trGlobals_s {
 	shaderProgram_t weatherShader;
 
 	GLuint staticUbo;
+	GLuint spriteUbos[MAX_SUB_BSP + 1];
+	GLuint shaderInstanceUbo;
+	int shaderInstanceUboWriteOffset;
 	int entity2DUboOffset;
 	int camera2DUboOffset;
 	int entityFlareUboOffset;
@@ -2517,22 +2526,23 @@ typedef struct trGlobals_s {
 	int defaultFogsUboOffset;
 	int defaultShaderInstanceUboOffset;
 
-	int cameraUboOffset;
+	int cameraUboOffsets[3 + MAX_DLIGHTS * 6 + 3 + MAX_DRAWN_PSHADOWS];
 	int sceneUboOffset;
 	int lightsUboOffset;
 	int fogsUboOffset;
 	int skyEntityUboOffset;
-	int entityUboOffsets[MAX_REFENTITIES + 1];
-	int surfaceSpriteUboOffsets[64]; //FIX ME: maybe not fixed size?
-	EntityShaderUboOffset *surfaceSpriteInstanceUboOffsetsMap;
-
-	int *animationBoneUboOffsets;
-	EntityShaderUboOffset *shaderInstanceUboOffsetsMap;
-	int shaderInstanceUboOffsetsMapSize;
+	int entityUboOffsets[REFENTITYNUM_WORLD + 1];
+	int animationBoneUboOffset;
 
 	// -----------------------------------------
 
 	viewParms_t				viewParms;
+	viewParms_t				cachedViewParms[3 + MAX_DLIGHTS * 6 + 3 + MAX_DRAWN_PSHADOWS];
+	int						numCachedViewParms;
+	
+	viewParms_t				skyPortalParms;
+	byte					skyPortalAreaMask[MAX_MAP_AREA_BYTES];
+	int						skyPortalEntities;
 
 	float					identityLight;		// 1.0 / ( 1 << overbrightBits )
 	int						identityLightByte;	// identityLight * 255
@@ -2827,9 +2837,9 @@ void R_SwapBuffers( int );
 
 void R_RenderView( viewParms_t *parms );
 void R_RenderDlightCubemaps(const refdef_t *fd);
-void R_RenderPshadowMaps(const refdef_t *fd);
-void R_RenderSunShadowMaps(const refdef_t *fd, int level);
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene, bool bounce);
+void R_SetupPshadowMaps(const refdef_t *fd);
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, bool bounce);
+void R_GatherFrameViews(trRefdef_t *refdef);
 
 void R_AddMD3Surfaces( trRefEntity_t *e, int entityNum );
 void R_AddPolygonSurfaces( const trRefdef_t *refdef );
@@ -2899,7 +2909,7 @@ void	RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 void	RE_UploadCinematic (int cols, int rows, const byte *data, int client, qboolean dirty);
 void	RE_SetRangedFog ( float range );
 
-void		RE_BeginFrame( stereoFrame_t stereoFrame );
+
 void		RE_BeginRegistration( glconfig_t *glconfig );
 void		RE_LoadWorldMap( const char *mapname );
 void		RE_SetWorldVisData( const byte *vis );
@@ -3082,9 +3092,11 @@ WORLD MAP
 
 ============================================================
 */
-
+world_t *R_GetWorld(int worldIndex);
 void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef );
+void R_MarkLeaves(void);
+void R_RecursiveWorldNode(mnode_t *node, int planeBits, int dlightBits, int pshadowBits);
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
 
 
@@ -3206,6 +3218,9 @@ void			RB_CommitInternalBufferData();
 
 void			RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, int offset);
 int				RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data);
+void			RB_AddShaderToShaderInstanceUBO(shader_t *shader);
+int				RB_AddShaderInstanceBlock(void *data);
+void			RB_UpdateConstants(const trRefdef_t *refdef);
 void			RB_BeginConstantsUpdate(struct gpuFrame_t *frame);
 void			RB_EndConstantsUpdate(const struct gpuFrame_t *frame);
 int				RB_AppendConstantsData(struct gpuFrame_t *frame, const void *data, size_t dataSize);
@@ -3395,7 +3410,7 @@ public:
 
 void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum );
 void RB_SurfaceGhoul( CRenderableSurface *surf );
-void RB_TransformBones(CRenderableSurface *surf, int currentFrameNum);
+void RB_TransformBones(const trRefEntity_t *ent, const trRefdef_t *refdef, int currentFrameNum, gpuFrame_t *frame);
 int RB_GetBoneUboOffset(CRenderableSurface *surf);
 void RB_SetBoneUboOffset(CRenderableSurface *surf, int offset, int currentFrameNum);
 void RB_FillBoneBlock(CRenderableSurface *surf, mat3x4_t *outMatrices);
@@ -3680,6 +3695,7 @@ void RE_StretchPic ( float x, float y, float w, float h, float s1, float t1, flo
 void RE_RotatePic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, float a, qhandle_t hShader );
 void RE_RotatePic2 ( float x, float y, float w, float h, float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
 void RE_BeginFrame( stereoFrame_t stereoFrame );
+void R_NewFrameSync();
 void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
@@ -3902,9 +3918,4 @@ uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
 void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
 DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader );
 
-int RB_GetEntityShaderUboOffset(
-	EntityShaderUboOffset *offsetMap,
-	int mapSize,
-	int entityNum,
-	int shaderNum);
 #endif //TR_LOCAL_H

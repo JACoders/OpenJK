@@ -3180,26 +3180,16 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum )
 	}
 
 	HackadelicOnClient = true;
-	
-	// are any of these models setting a new origin?
-	mdxaBone_t rootMatrix;
-	RootMatrix(ghoul2, currentTime, ent->e.modelScale, rootMatrix);
 
    	// don't add third_person objects if not in a portal
 	qboolean personalModel = (qboolean)(
 		(ent->e.renderfx & RF_THIRD_PERSON) &&
 		!(tr.viewParms.isPortal ||
-			(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
+			(tr.viewParms.flags & VPF_DEPTHSHADOW)));
 
 	int modelList[256];
 	assert(ghoul2.size() < ARRAY_LEN(modelList));
 	modelList[255] = 548;
-
-	// set up lighting now that we know we aren't culled
-	if ( !personalModel || r_shadows->integer > 1 )
-	{
-		R_SetupEntityLighting(&tr.refdef, ent);
-	}
 
 	// see if we are in a fog volume
 	int fogNum = R_GComputeFogNum(ent);
@@ -3215,9 +3205,6 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum )
 		goreShader = RE_RegisterShader("gfx/damage/burnmark1");
 	}
 #endif
-
-	// construct a world matrix for this entity
-	G2_GenerateWorldMatrix(ent->e.angles, ent->e.origin);
 
 	// walk each possible model for this entity and try rendering it out
 	for (int j = 0; j < modelCount; ++j )
@@ -3258,20 +3245,6 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum )
 			{
 				skin = R_GetSkinByHandle( g2Info.mSkin );
 			}
-		}
-
-		if ( j && g2Info.mModelBoltLink != -1 )
-		{
-			int	boltMod = (g2Info.mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
-			int	boltNum = (g2Info.mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
-
-			mdxaBone_t bolt;
-			G2_GetBoltMatrixLow(ghoul2[boltMod], boltNum, ent->e.modelScale, bolt);
-			G2_TransformGhoulBones(g2Info.mBlist, bolt, g2Info, currentTime);
-		}
-		else
-		{
-			G2_TransformGhoulBones(g2Info.mBlist, rootMatrix, g2Info,currentTime);
 		}
 
 		int whichLod = G2_ComputeLOD( ent, g2Info.currentModel, g2Info.mLodBias );
@@ -3445,25 +3418,102 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-void RB_TransformBones(CRenderableSurface *surf, int currentFrameNum)
+void RB_TransformBones(const trRefEntity_t *ent, const trRefdef_t *refdef, int currentFrameNum, gpuFrame_t *frame)
 {
-	if (surf->boneCache->uboGPUFrame == currentFrameNum)
+	if (!ent->e.ghoul2 || !G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)))
 		return;
 
-	const mdxmSurface_t *surfData = surf->surfaceData;
-	const int *boneReferences =
-		(const int *)((const byte *)surfData + surfData->ofsBoneReferences);
+	CGhoul2Info_v &ghoul2 = *((CGhoul2Info_v *)ent->e.ghoul2);
 
-	for (int i = 0; i < surfData->numBoneReferences; ++i)
+	if (!ghoul2.IsValid())
+		return;
+
+	// if we don't want server ghoul2 models and this is one, or we just don't
+	// want ghoul2 models at all, then return
+	if (r_noServerGhoul2->integer)
 	{
-		int boneIndex = boneReferences[i];
-		const mdxaBone_t& bone = surf->boneCache->EvalRender(boneReferences[i]);
-		Com_Memcpy(
-			surf->boneCache->boneMatrices + boneIndex,
-			&bone.matrix[0][0],
-			sizeof(mat3x4_t));
+		return;
 	}
-	surf->boneCache->uboOffset = -1;
+
+	if (!G2_SetupModelPointers(ghoul2))
+	{
+		return;
+	}
+
+	int currentTime = G2API_GetTime(refdef->time);
+
+	HackadelicOnClient = true;
+
+	mdxaBone_t rootMatrix;
+	RootMatrix(ghoul2, currentTime, ent->e.modelScale, rootMatrix);
+
+	int modelList[256];
+	assert(ghoul2.size() < ARRAY_LEN(modelList));
+	modelList[255] = 548;
+
+	// order sort the ghoul 2 models so bolt ons get bolted to the right model
+	int modelCount;
+	G2_Sort_Models(ghoul2, modelList, ARRAY_LEN(modelList), &modelCount);
+	assert(modelList[255] == 548);
+
+	// construct a world matrix for this entity
+	G2_GenerateWorldMatrix(ent->e.angles, ent->e.origin);
+
+	// walk each possible model for this entity and try transforming all bones
+	for (int j = 0; j < modelCount; ++j)
+	{
+		CGhoul2Info& g2Info = ghoul2[modelList[j]];
+
+		if (!g2Info.mValid)
+		{
+			continue;
+		}
+
+		if ((g2Info.mFlags & (GHOUL2_NOMODEL | GHOUL2_NORENDER)) != 0)
+		{
+			continue;
+		}
+
+		if (j && g2Info.mModelBoltLink != -1)
+		{
+			int	boltMod = (g2Info.mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
+			int	boltNum = (g2Info.mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
+
+			mdxaBone_t bolt;
+			G2_GetBoltMatrixLow(ghoul2[boltMod], boltNum, ent->e.modelScale, bolt);
+			G2_TransformGhoulBones(g2Info.mBlist, bolt, g2Info, currentTime);
+		}
+		else
+		{
+			G2_TransformGhoulBones(g2Info.mBlist, rootMatrix, g2Info, currentTime);
+		}
+
+		CBoneCache *bc = g2Info.mBoneCache;
+		if (bc->uboGPUFrame == currentFrameNum)
+			return;
+
+		for (int bone = 0; bone < (int)bc->mBones.size(); bone++)
+		{
+			const mdxaBone_t& b = bc->EvalRender(bone);
+			Com_Memcpy(
+				bc->boneMatrices + bone,
+				&b.matrix[0][0],
+				sizeof(mat3x4_t));
+		}
+		bc->uboOffset = -1;
+
+		SkeletonBoneMatricesBlock bonesBlock = {};
+		Com_Memcpy(
+			bonesBlock.matrices,
+			bc->boneMatrices,
+			sizeof(mat3x4_t) * bc->mBones.size());
+
+		int uboOffset = RB_AppendConstantsData(
+			frame, &bonesBlock, sizeof(mat3x4_t) * bc->mBones.size());
+
+		bc->uboOffset = uboOffset;
+		bc->uboGPUFrame = currentFrameNum;
+	}
 }
 
 int RB_GetBoneUboOffset(CRenderableSurface *surf)
@@ -3647,7 +3697,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	tess.numIndexes += numIndexes;
 	tess.numVertexes += numVertexes;
 	tess.useInternalVBO = qfalse;
-	tess.dlightBits = surf->dlightBits;
+	tess.dlightBits |= surf->dlightBits;
 
 	glState.skeletalAnimation = qtrue;
 }

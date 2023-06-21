@@ -51,6 +51,7 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
+	float u_entityTime;
 };
 
 #if defined(USE_SKELETAL_ANIMATION)
@@ -355,6 +356,7 @@ layout(std140) uniform Entity
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
 	vec3 u_LocalViewOrigin;
+	float u_entityTime;
 };
 
 struct Light
@@ -366,6 +368,9 @@ struct Light
 
 layout(std140) uniform Lights
 {
+	uniform mat4 u_ShadowMvp;
+	uniform mat4 u_ShadowMvp2;
+	uniform mat4 u_ShadowMvp3;
 	int u_NumLights;
 	Light u_Lights[32];
 };
@@ -390,7 +395,7 @@ uniform sampler2D u_SpecularMap;
 #endif
 
 #if defined(USE_SHADOWMAP)
-uniform sampler2D u_ShadowMap;
+uniform sampler2DArrayShadow u_ShadowMap;
 #endif
 
 #if defined(USE_SSAO)
@@ -437,6 +442,147 @@ in vec4 var_LightDir;
 
 out vec4 out_Color;
 out vec4 out_Glow;
+
+// depth is GL_DEPTH_COMPONENT16
+// so the maximum error is 1.0 / 2^16
+#define DEPTH_MAX_ERROR 0.0000152587890625
+
+// Input: It uses texture coords as the random number seed.
+// Output: Random number: [0,1), that is between 0.0 and 0.999999... inclusive.
+// Author: Michael Pohoreski
+// Copyright: Copyleft 2012 :-)
+// Source: http://stackoverflow.com/questions/5149544/can-i-generate-a-random-number-inside-a-pixel-shader
+
+float random( const vec2 p )
+{
+  // We need irrationals for pseudo randomness.
+  // Most (all?) known transcendental numbers will (generally) work.
+  const vec2 r = vec2(
+    23.1406926327792690,  // e^pi (Gelfond's constant)
+     2.6651441426902251); // 2^sqrt(2) (Gelfond-Schneider constant)
+  //return fract( cos( mod( 123456789., 1e-7 + 256. * dot(p,r) ) ) );
+  return mod( 123456789., 1e-7 + 256. * dot(p,r) );  
+}
+
+const vec2 poissonDisk[16] = vec2[16]( 
+	vec2( -0.94201624, -0.39906216 ), 
+	vec2( 0.94558609, -0.76890725 ), 
+	vec2( -0.094184101, -0.92938870 ), 
+	vec2( 0.34495938, 0.29387760 ), 
+	vec2( -0.91588581, 0.45771432 ), 
+	vec2( -0.81544232, -0.87912464 ), 
+	vec2( -0.38277543, 0.27676845 ), 
+	vec2( 0.97484398, 0.75648379 ), 
+	vec2( 0.44323325, -0.97511554 ), 
+	vec2( 0.53742981, -0.47373420 ), 
+	vec2( -0.26496911, -0.41893023 ), 
+	vec2( 0.79197514, 0.19090188 ), 
+	vec2( -0.24188840, 0.99706507 ), 
+	vec2( -0.81409955, 0.91437590 ), 
+	vec2( 0.19984126, 0.78641367 ), 
+	vec2( 0.14383161, -0.14100790 ) 
+);
+
+float PCF(const sampler2DArrayShadow shadowmap, const float layer, const vec2 st, const float dist, float PCFScale)
+{
+	float mult;
+	float scale = PCFScale / r_shadowMapSize;
+
+#if defined(USE_SHADOW_FILTER)
+	float r = random(gl_FragCoord.xy / r_FBufScale);
+	float sinr = sin(r);
+	float cosr = cos(r);
+	mat2 rmat = mat2(cosr, sinr, -sinr, cosr) * scale;
+
+	mult =  texture(shadowmap, vec4(st + rmat * vec2(-0.7055767, 0.196515), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.3524343, -0.7791386), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.2391056, 0.9189604), layer, dist));
+  #if defined(USE_SHADOW_FILTER2)
+	mult += texture(shadowmap, vec4(st + rmat * vec2(-0.07580382, -0.09224417), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.5784913, -0.002528916), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.192888, 0.4064181), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(-0.6335801, -0.5247476), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(-0.5579782, 0.7491854), layer, dist));
+	mult += texture(shadowmap, vec4(st + rmat * vec2(0.7320465, 0.6317794), layer, dist));
+
+	mult *= 0.11111;
+  #else
+    mult *= 0.33333;
+  #endif
+#else
+	float r = random(gl_FragCoord.xy / r_FBufScale);
+	float sinr = sin(r);
+	float cosr = cos(r);
+	mat2 rmat = mat2(cosr, sinr, -sinr, cosr) * scale;
+
+	mult =  texture(shadowmap, vec4(st, layer, dist));
+	for (int i = 0; i < 16; i++)
+	{
+		vec2 delta = rmat * poissonDisk[i];
+		mult += texture(shadowmap, vec4(st + delta, layer, dist));
+	}
+	mult *= 1.0 / 17.0;
+#endif
+		
+	return mult;
+}
+
+float sunShadow(in vec3 viewOrigin, in vec3 viewDir, in vec3 biasOffset)
+{
+	vec4 biasPos = vec4(viewOrigin - viewDir + biasOffset, 1.0);
+	float cameraDistance = length(viewDir);
+
+	const float PCFScale = 1.5;
+	const float edgeBias = 0.5 - ( 4.0 * PCFScale / r_shadowMapSize );
+	float edgefactor = 0.0;
+	const float fadeTo = 1.0;
+	float result = 1.0;
+
+	vec4 shadowpos = u_ShadowMvp * biasPos;
+	shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
+	if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(edgeBias))))
+	{
+		vec3 dCoords = smoothstep(0.3, 0.45, abs(shadowpos.xyz - vec3(0.5)));
+		edgefactor = 2.0 * PCFScale * clamp(dCoords.x + dCoords.y + dCoords.z, 0.0, 1.0);
+		result = PCF(u_ShadowMap,
+					 0.0,
+					 shadowpos.xy,
+					 shadowpos.z,
+					 PCFScale + edgefactor);
+	}
+	else
+	{
+		shadowpos = u_ShadowMvp2 * (biasPos + vec4(biasOffset, 0.0));
+		shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
+		if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(edgeBias))))
+		{
+			vec3 dCoords = smoothstep(0.3, 0.45, abs(shadowpos.xyz - vec3(0.5)));
+			edgefactor = 0.5 * PCFScale * clamp(dCoords.x + dCoords.y + dCoords.z, 0.0, 1.0);
+			result = PCF(u_ShadowMap,
+						 1.0,
+						 shadowpos.xy,
+						 shadowpos.z,
+						 PCFScale + edgefactor);
+		}
+		else
+		{
+			shadowpos = u_ShadowMvp3 * (biasPos + vec4(biasOffset, 0.0));
+			shadowpos.xyz = shadowpos.xyz / shadowpos.w * 0.5 + 0.5;
+			if (all(lessThanEqual(abs(shadowpos.xyz - vec3(0.5)), vec3(1.0))))
+			{
+				result = PCF(u_ShadowMap,
+							 2.0,
+							 shadowpos.xy,
+							 shadowpos.z,
+							 PCFScale);
+				float fade = clamp(cameraDistance / r_shadowCascadeZFar * 10.0 - 9.0, 0.0, 1.0);
+				result = mix(result, fadeTo, fade);
+			}
+		}
+	}
+	
+	return result;
+}
 
 #define EPSILON 0.00000001
 
@@ -910,20 +1056,19 @@ void main()
 	attenuation = 1.0;
   #endif
 
-	vec3 vertexNormal = mix(var_Normal.xyz, -var_Normal.xyz, float(gl_FrontFacing));
+	vec3 vertexNormal = mix(var_Normal.xyz, -var_Normal.xyz, float(gl_FrontFacing)) * u_NormalScale.z;
 	N = CalcNormal(vertexNormal, var_Tangent, texCoords);
 	L /= sqrt(sqrLightDist);
 
-  #if defined(USE_SHADOWMAP) || defined(USE_SSAO)
-	vec2 windowTex = gl_FragCoord.xy / r_FBufScale;
-  #endif
-
   #if defined(USE_SHADOWMAP)
-	float shadowValue = texture(u_ShadowMap, windowTex).r;
+	vec3 primaryLightDir = normalize(u_PrimaryLightOrigin.xyz);
+	float NPL = clamp(dot(N, primaryLightDir), -1.0, 1.0);
+	vec3 normalBias = vertexNormal * (1.0 - NPL);
+	float shadowValue = sunShadow(u_ViewOrigin, viewDir, normalBias) * NPL;
 
 	// surfaces not facing the light are always shadowed
-	vec3 primaryLightDir = normalize(u_PrimaryLightOrigin.xyz);
-	shadowValue = mix(0.0, shadowValue, dot(N, primaryLightDir) > 0.0);
+	
+	//shadowValue = mix(0.0, shadowValue, dot(N, primaryLightDir) > 0.0);
 
     #if defined(SHADOWMAP_MODULATE)
 	vec3 ambientScale = mix(vec3(1.0), u_PrimaryLightAmbient, u_EnableTextures.z);
@@ -956,6 +1101,7 @@ void main()
 
 	float AO = 1.0;
 	#if defined (USE_SSAO)
+	vec2 windowTex = gl_FragCoord.xy / r_FBufScale;
 	AO = texture(u_SSAOMap, windowTex).r;
 	#endif
 
@@ -1007,7 +1153,7 @@ void main()
   #if defined(USE_PRIMARY_LIGHT)
 	vec3  L2   = normalize(u_PrimaryLightOrigin.xyz);
 	vec3  H2   = normalize(L2 + E);
-	float NL2  = clamp(min(dot(N,  L2), dot(vertexNormal, L2)), 0.0, 1.0);
+	float NL2  = clamp(dot(N,  L2), 0.0, 1.0);
 	float L2H2 = clamp(dot(L2, H2), 0.0, 1.0);
 	float NH2  = clamp(dot(N,  H2), 0.0, 1.0);
 	float VH2  = clamp(dot(E, H), 0.0, 1.0);

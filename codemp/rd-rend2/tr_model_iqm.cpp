@@ -883,13 +883,6 @@ void R_AddIQMSurfaces( trRefEntity_t *ent, int entityNum ) {
 	}
 
 	//
-	// set up lighting now that we know we aren't culled
-	//
-	if ( !personalModel || r_shadows->integer > 1 ) {
-		R_SetupEntityLighting( &tr.refdef, ent );
-	}
-
-	//
 	// see if we are in a fog volume
 	//
 	fogNum = R_ComputeIQMFogNum( data, ent );

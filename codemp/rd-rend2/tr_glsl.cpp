@@ -1714,6 +1714,19 @@ static int GLSL_LoadGPUProgramLightAll(
 				Q_strcat(extradefines, sizeof(extradefines), "#define SHADOWMAP_MODULATE\n");
 			else if (r_sunlightMode->integer == 2)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_PRIMARY_LIGHT\n");
+
+			if (r_shadowFilter->integer >= 1)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_FILTER\n");
+
+			if (r_shadowFilter->integer >= 2)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_FILTER2\n");
+
+			Q_strcat(
+				extradefines, sizeof(extradefines),
+				va("#define r_shadowMapSize %d\n", r_shadowMapSize->integer));
+			Q_strcat(
+				extradefines, sizeof(extradefines),
+				va("#define r_shadowCascadeZFar %f\n", r_shadowCascadeZFar->value));
 		}
 
 		if (i & LIGHTDEF_USE_TCGEN_AND_TCMOD)
@@ -1845,24 +1858,6 @@ static int GLSL_LoadGPUProgramTextureColor(
 	qglUseProgram(0);
 
 	GLSL_FinishGPUShader(&tr.textureColorShader);
-
-	return 1;
-}
-
-static int GLSL_LoadGPUProgramDepthFill(
-	ShaderProgramBuilder& builder,
-	Allocator& scratchAlloc )
-{
-	GLSL_LoadGPUProgramBasic(
-		builder,
-		scratchAlloc,
-		&tr.shadowmapShader,
-		"shadowfill",
-		fallback_shadowfillProgram,
-		ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0);
-
-	GLSL_InitUniforms(&tr.shadowmapShader);
-	GLSL_FinishGPUShader(&tr.shadowmapShader);
 
 	return 1;
 }
@@ -2035,49 +2030,6 @@ static int GLSL_LoadGPUProgramCalcLuminanceLevel(
 	}
 
 	return numPrograms;
-}
-
-static int GLSL_LoadGPUProgramShadowMask(
-	ShaderProgramBuilder& builder,
-	Allocator& scratchAlloc )
-{
-	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
-
-	char extradefines[1200];
-	const GPUProgramDesc *programDesc =
-		LoadProgramSource("shadowmask", allocator, fallback_shadowmaskProgram);
-	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0;
-	extradefines[0] = '\0';
-
-	if (r_shadowFilter->integer >= 1)
-		Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_FILTER\n");
-
-	if (r_shadowFilter->integer >= 2)
-		Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOW_FILTER2\n");
-
-	Q_strcat(
-		extradefines, sizeof(extradefines),
-		va("#define r_shadowMapSize %d\n", r_shadowMapSize->integer));
-	Q_strcat(
-		extradefines, sizeof(extradefines),
-		va("#define r_shadowCascadeZFar %f\n", r_shadowCascadeZFar->value));
-
-	if (!GLSL_LoadGPUShader(builder, &tr.shadowmaskShader, "shadowmask", attribs, NO_XFB_VARS,
-			extradefines, *programDesc))
-	{
-		ri.Error(ERR_FATAL, "Could not load shadowmask shader!");
-	}
-
-	GLSL_InitUniforms(&tr.shadowmaskShader);
-
-	qglUseProgram(tr.shadowmaskShader.program);
-	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SCREENDEPTHMAP, TB_COLORMAP);
-	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP, TB_SHADOWMAPARRAY);
-	qglUseProgram(0);
-
-	GLSL_FinishGPUShader(&tr.shadowmaskShader);
-	
-	return 1;
 }
 
 static int GLSL_LoadGPUProgramSSAO(
@@ -2401,14 +2353,12 @@ void GLSL_LoadGPUShaders()
 	numEtcShaders += GLSL_LoadGPUProgramFogPass(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramRefraction(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTextureColor(builder, allocator);
-	numEtcShaders += GLSL_LoadGPUProgramDepthFill(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramPShadow(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramVShadow(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDownscale4x(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramBokeh(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTonemap(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramCalcLuminanceLevel(builder, allocator);
-	numEtcShaders += GLSL_LoadGPUProgramShadowMask(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramSSAO(builder, allocator);
 	if (r_cubeMapping->integer)
 		numEtcShaders += GLSL_LoadGPUProgramPrefilterEnvMap(builder, allocator);
@@ -2451,7 +2401,6 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < LIGHTDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.lightallShader[i]);
 
-	GLSL_DeleteGPUShader(&tr.shadowmapShader);
 	GLSL_DeleteGPUShader(&tr.pshadowShader);
 	GLSL_DeleteGPUShader(&tr.volumeShadowShader);
 	GLSL_DeleteGPUShader(&tr.down4xShader);
@@ -2463,7 +2412,6 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < 2; i++)
 		GLSL_DeleteGPUShader(&tr.calclevels4xShader[i]);
 
-	GLSL_DeleteGPUShader(&tr.shadowmaskShader);
 	GLSL_DeleteGPUShader(&tr.ssaoShader);
 
 	for ( i = 0; i < 2; i++)

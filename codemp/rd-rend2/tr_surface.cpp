@@ -2095,7 +2095,6 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	}
 
 	//drawSurf_t drawSurf = 
-	int dlightBits = tess.dlightBits;
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);
@@ -2103,7 +2102,7 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	tess.useInternalVBO = qfalse;
 	tess.externalIBO = surface->ibo;
 
-	tess.dlightBits = dlightBits;
+	// tess.dlightBits is already set in the renderloop
 
 	// merge this into any existing multidraw primitives
 	mergeForward = -1;
@@ -2248,17 +2247,12 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	SamplerBindingsWriter samplerBindingsWriter;
 	samplerBindingsWriter.AddAnimatedImage(&firstStage->bundle[0], TB_COLORMAP);
 
-	int offset = RB_GetEntityShaderUboOffset(
-		tr.surfaceSpriteInstanceUboOffsetsMap,
-		64,
-		REFENTITYNUM_WORLD,
-		shader->index);
-
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const GLuint currentSpriteUbo = shader->spriteUbo;
 	const UniformBlockBinding uniformBlockBindings[] = {
+		{ currentSpriteUbo, ss->spriteUboOffset, UNIFORM_BLOCK_SURFACESPRITE },
 		{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
-		{ currentFrameUbo, offset, UNIFORM_BLOCK_SURFACESPRITE },
-		{ currentFrameUbo, tr.cameraUboOffset, UNIFORM_BLOCK_CAMERA },
+		{ currentFrameUbo, tr.cameraUboOffsets[tr.viewParms.currentViewParm], UNIFORM_BLOCK_CAMERA },
 		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS }
 	};
 

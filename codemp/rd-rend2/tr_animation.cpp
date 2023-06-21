@@ -196,7 +196,7 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent, int entityNum ) {
 	personalModel = (qboolean)(
 		(ent->e.renderfx & RF_THIRD_PERSON) &&
 		!(tr.viewParms.isPortal ||
-			(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
+			(tr.viewParms.flags & VPF_DEPTHSHADOW)));
 	
 	if ( ent->e.renderfx & RF_WRAP_FRAMES )
 	{
@@ -242,12 +242,6 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent, int entityNum ) {
 	for(i = 0; i < lodnum; i++)
 	{
 		lod = (mdrLOD_t *) ((byte *) lod + lod->ofsEnd);
-	}
-	
-	// set up lighting
-	if ( !personalModel || r_shadows->integer > 1 )
-	{
-		R_SetupEntityLighting( &tr.refdef, ent );
 	}
 
 	// fogNum?

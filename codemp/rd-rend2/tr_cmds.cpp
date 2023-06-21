@@ -747,6 +747,18 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	tr.refdef.stereoFrame = stereoFrame;
 }
 
+void R_NewFrameSync()
+{
+	gpuFrame_t *currentFrame = backEndData->currentFrame;
+
+	assert(!currentFrame->sync);
+	currentFrame->sync = qglFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+	backEndData->realFrameNumber++;
+	backEnd.framePostProcessed = qfalse;
+	backEnd.projection2D = qfalse;
+}
+
 
 /*
 =============

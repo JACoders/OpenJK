@@ -163,7 +163,7 @@ void RB_BeginSurface( shader_t *shader, int fogNum, int cubemapIndex ) {
 		tess.shaderTime = tess.shader->clampTime;
 	}
 
-	if (backEnd.viewParms.flags & VPF_SHADOWMAP)
+	if (backEnd.viewParms.flags & VPF_DEPTHSHADOW)
 	{
 		tess.currentStageIteratorFunc = RB_StageIteratorGeneric;
 	}
@@ -709,7 +709,7 @@ static UniformBlockBinding GetCameraBlockUniformBinding(
 	else
 	{
 		binding.ubo = currentFrameUbo;
-		binding.offset = tr.cameraUboOffset;
+		binding.offset = tr.cameraUboOffsets[backEnd.viewParms.currentViewParm];
 	}
 	return binding;
 }
@@ -791,7 +791,7 @@ static UniformBlockBinding GetEntityBlockUniformBinding(
 	else
 	{
 		binding.ubo = currentFrameUbo;
-		if (refEntity == &tr.worldEntity)
+		if (!refEntity || refEntity == &tr.worldEntity)
 		{
 			binding.offset = tr.entityUboOffsets[REFENTITYNUM_WORLD];
 		}
@@ -819,8 +819,7 @@ static UniformBlockBinding GetBonesBlockUniformBinding(
 		binding.offset = 0;
 	else
 	{
-		const int drawSurfNum = backEnd.currentDrawSurfIndex;
-		binding.offset = tr.animationBoneUboOffsets[drawSurfNum];
+		binding.offset = tr.animationBoneUboOffset;
 	}
 
 	return binding;
@@ -831,36 +830,17 @@ static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 {
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
 	UniformBlockBinding binding = {};
-	binding.ubo = currentFrameUbo;
+	binding.ubo = tr.shaderInstanceUbo;
 	binding.block = UNIFORM_BLOCK_SHADER_INSTANCE;
 
-	if (refEntity == &tr.worldEntity || refEntity == &backEnd.entityFlare)
-	{
-		binding.offset = RB_GetEntityShaderUboOffset(
-			tr.shaderInstanceUboOffsetsMap,
-			tr.shaderInstanceUboOffsetsMapSize,
-			REFENTITYNUM_WORLD,
-			shader->index);
-	}
-	else if (refEntity == &backEnd.entity2D)
-	{
-		binding.offset = 0; // FIXME: FIX THIS!
-	}
-	else
-	{
-		const int refEntityNum = refEntity - backEnd.refdef.entities;
-		binding.offset = RB_GetEntityShaderUboOffset(
-			tr.shaderInstanceUboOffsetsMap,
-			tr.shaderInstanceUboOffsetsMapSize,
-			refEntityNum,
-			shader->index);
-	}
-
-	if (binding.offset == -1)
+	if (shader->ShaderInstanceUboOffset == -1)
 	{
 		binding.ubo = tr.staticUbo;
 		binding.offset = tr.defaultShaderInstanceUboOffset;
+		return binding;
 	}
+
+	binding.offset = shader->ShaderInstanceUboOffset;
 
 	return binding;
 }
@@ -1619,7 +1599,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec3(UNIFORM_TCGEN0VECTOR1, pStage->bundle[0].tcGenVectors[1]);
 		}
 
-		uniformDataWriter.SetUniformVec4(UNIFORM_NORMALSCALE, pStage->normalScale);
+		vec4_t normalScale = {
+			pStage->normalScale[0],
+			pStage->normalScale[1],
+			backEnd.viewParms.isPortal ? -1.0f : 1.0f,
+			pStage->normalScale[3]
+		};
+
+		uniformDataWriter.SetUniformVec4(UNIFORM_NORMALSCALE, normalScale);
 		uniformDataWriter.SetUniformVec4(UNIFORM_SPECULARSCALE, pStage->specularScale);
 
 		const float parallaxBias = r_forceParallaxBias->value > 0.0f ? r_forceParallaxBias->value : pStage->parallaxBias;
@@ -1672,7 +1659,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					(backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
 					(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
 			{
-				samplerBindingsWriter.AddStaticImage(tr.screenShadowImage, TB_SHADOWMAP);
+				samplerBindingsWriter.AddStaticImage(tr.sunShadowArrayImage, TB_SHADOWMAP);
 				enableTextures[2] = 1.0f;
 			}
 			else
@@ -1853,45 +1840,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 	}
 }
 
-
-static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
-{
-	Allocator& frameAllocator = *backEndData->perFrameMemory;
-	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
-
-	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
-	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
-
-	const UniformBlockBinding uniformBlockBindings[] = {
-		GetCameraBlockUniformBinding(backEnd.currentEntity),
-		GetEntityBlockUniformBinding(backEnd.currentEntity),
-		GetShaderInstanceBlockUniformBinding(
-			backEnd.currentEntity, input->shader)
-	};
-
-	DrawItem item = {};
-	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
-	item.renderState.cullType = cullType;
-	item.program = &tr.shadowmapShader;
-	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
-
-	item.numAttributes = vertexArrays->numVertexArrays;
-	item.attributes = ojkAllocArray<vertexAttribute_t>(
-		*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
-	memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
-
-	DrawItemSetVertexAttributes(
-		item, attribs, vertexArrays->numVertexArrays, frameAllocator);
-	DrawItemSetUniformBlockBindings(
-		item, uniformBlockBindings, frameAllocator);
-
-	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
-
-	// FIXME: Use depth to object
-	uint32_t key = 0;
-	RB_AddDrawItem(backEndData->currentPass, key, item);
-}
-
 /*
 ** RB_StageIteratorGeneric
 */
@@ -1948,13 +1896,6 @@ void RB_StageIteratorGeneric( void )
 	if ( backEnd.depthFill )
 	{
 		RB_IterateStagesGeneric( input, &vertexArrays );
-	}
-	else if (backEnd.viewParms.flags & VPF_SHADOWMAP)
-	{
-		if ( input->shader->sort == SS_OPAQUE )
-		{
-			RB_RenderShadowmap(input, &vertexArrays);
-		}
 	}
 	else
 	{
@@ -2055,7 +1996,7 @@ void RB_EndSurface( void ) {
 		if (tr.world->skyboxportal)
 		{
 			// world
-			if (!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) && (tess.currentStageIteratorFunc == RB_StageIteratorSky))
+			if (!(tr.viewParms.isSkyPortal) && (tess.currentStageIteratorFunc == RB_StageIteratorSky))
 			{	// don't process these tris at all
 				return;
 			}

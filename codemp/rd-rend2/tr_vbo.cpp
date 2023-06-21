@@ -285,6 +285,20 @@ void R_InitGPUBuffers(void)
 	// glGenBuffers only allocates the IDs for these buffers. The 'buffer object' is
 	// actually created on first bind.
 	qglGenBuffers(1, &tr.staticUbo);
+	qglGenBuffers(MAX_SUB_BSP + 1, tr.spriteUbos);
+	qglGenBuffers(1, &tr.shaderInstanceUbo);
+
+	// Allocate/create ShaderInstanceBlock ubo
+	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
+	const size_t alignedBlockSize = (sizeof(ShaderInstanceBlock) + alignment) & ~alignment;
+
+	qglBindBuffer(GL_UNIFORM_BUFFER, tr.shaderInstanceUbo);
+	glState.currentGlobalUBO = tr.shaderInstanceUbo;
+	qglBufferData(
+		GL_UNIFORM_BUFFER,
+		MAX_SHADERS * alignedBlockSize,
+		nullptr,
+		GL_STATIC_DRAW);
 
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
@@ -308,6 +322,8 @@ void R_DestroyGPUBuffers(void)
 	R_BindNullIBO();
 
 	qglDeleteBuffers(1, &tr.staticUbo);
+	qglDeleteBuffers(MAX_SUB_BSP + 1, tr.spriteUbos);
+	qglDeleteBuffers(1, &tr.shaderInstanceUbo);
 
 	for (int i = 0; i < tr.numVBOs; i++)
 	{
@@ -741,6 +757,25 @@ int RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data)
 	thisFrame->uboWriteOffset += alignedBlockSize;
 
 	return offset;
+}
+
+int RB_AddShaderInstanceBlock(void *data)
+{
+	if (glState.currentGlobalUBO != tr.shaderInstanceUbo)
+	{
+		qglBindBuffer(GL_UNIFORM_BUFFER, tr.shaderInstanceUbo);
+		glState.currentGlobalUBO = tr.shaderInstanceUbo;
+	}
+	const size_t writeOffset = tr.shaderInstanceUboWriteOffset;
+
+	qglBufferSubData(GL_UNIFORM_BUFFER,
+		tr.shaderInstanceUboWriteOffset, sizeof(ShaderInstanceBlock), data);
+
+	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
+	const size_t alignedBlockSize = (sizeof(ShaderInstanceBlock) + alignment) & ~alignment;
+	tr.shaderInstanceUboWriteOffset += alignedBlockSize;
+
+	return writeOffset;
 }
 
 void RB_BeginConstantsUpdate(gpuFrame_t *frame)

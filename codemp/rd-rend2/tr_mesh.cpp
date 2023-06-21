@@ -293,7 +293,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent, int entityNum ) {
 
 	// don't add third_person objects if not in a portal
 	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !(tr.viewParms.isPortal 
-	                 || (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
+	                 || (tr.viewParms.flags & VPF_DEPTHSHADOW)));
 
 	if ( ent->e.renderfx & RF_WRAP_FRAMES ) {
 		ent->e.frame %= tr.currentModel->data.mdv[0]->numFrames;
@@ -331,13 +331,6 @@ void R_AddMD3Surfaces( trRefEntity_t *ent, int entityNum ) {
 	cull = R_CullModel ( model, ent );
 	if ( cull == CULL_OUT ) {
 		return;
-	}
-
-	//
-	// set up lighting now that we know we aren't culled
-	//
-	if ( !personalModel || r_shadows->integer > 1 ) {
-		R_SetupEntityLighting( &tr.refdef, ent );
 	}
 
 	//

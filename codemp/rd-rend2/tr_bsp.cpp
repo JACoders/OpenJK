@@ -3295,6 +3295,7 @@ static void R_RenderAllCubemaps()
 {
 	R_IssuePendingRenderCommands();
 	R_InitNextFrame();
+	R_NewFrameSync();
 
 	GLenum cubemapFormat = GL_RGBA8;
 	if (r_hdr->integer)
@@ -3311,20 +3312,7 @@ static void R_RenderAllCubemaps()
 		{
 			for (int j = 0; j < 6; j++)
 			{
-				RE_BeginFrame(STEREO_CENTER);
-
-				R_RenderCubemapSide(i, j, qfalse, bounce);
-				R_IssuePendingRenderCommands();
-				R_InitNextFrame();
-
-				gpuFrame_t *currentFrame = backEndData->currentFrame;
-				assert(!currentFrame->sync);
-				currentFrame->sync = qglFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-
-				backEndData->realFrameNumber++;
-				backEnd.framePostProcessed = qfalse;
-				backEnd.projection2D = qfalse;
-				backEnd.frameUBOsInitialized = qfalse;
+				R_RenderCubemapSide(i, j, bounce);
 			}
 
 			R_AddConvolveCubemapCmd(&tr.cubemaps[i], i);
@@ -3973,6 +3961,8 @@ static void R_GenerateSurfaceSprites(
 	// FIXME: Need a better way to handle this.
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
 			bundle, stage->stateBits);
+	out->shader->spriteUbo = shader->spriteUbo;
+
 	out->shader->cullType = shader->cullType;
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
 	out->alphaTestType = stage->alphaTestType;
@@ -4022,13 +4012,85 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[3].stepRate = 0;
 }
 
-static void R_GenerateSurfaceSprites( const world_t *world )
+static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 {
+	int numSpriteStages = 0;
+	for (int i = 0; i < tr.numShaders; i++)
+	{
+		const shader_t *shader = tr.shaders[i];
+		if (shader->spriteUbo != NULL)
+			continue;
+
+		numSpriteStages += shader->numSurfaceSpriteStages;
+	}
+
+	if (numSpriteStages == 0)
+		return;
+
+	//TODO: put into backend
+	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
+	size_t spriteAlignedBlockSize = (sizeof(SurfaceSpriteBlock) + alignment) & ~alignment;
+
+	if (glState.currentGlobalUBO != tr.spriteUbos[worldIndex])
+	{
+		qglBindBuffer(GL_UNIFORM_BUFFER, tr.spriteUbos[worldIndex]);
+		glState.currentGlobalUBO = tr.spriteUbos[worldIndex];
+	}
+	qglBufferData(
+		GL_UNIFORM_BUFFER,
+		numSpriteStages * spriteAlignedBlockSize,
+		nullptr,
+		GL_STATIC_DRAW);
+
+	size_t alignedBlockSize = 0;
+	for (int i = 0; i < tr.numShaders; i++)
+	{
+		shader_t *shader = tr.shaders[i];
+		if (!shader->numSurfaceSpriteStages)
+			continue;
+
+		shader->spriteUbo = tr.spriteUbos[worldIndex];
+
+		for (int j = 0, numStages = shader->numUnfoggedPasses;
+			j < numStages; ++j)
+		{
+			const shaderStage_t *stage = shader->stages[j];
+			if (!stage)
+				break;
+
+			if (!stage->ss || stage->ss->type == SURFSPRITE_NONE)
+				continue;
+
+			if (j > 0 && (stage->stateBits & GLS_DEPTHFUNC_EQUAL))
+			{
+				continue;
+			}
+
+			SurfaceSpriteBlock surfaceSpriteBlock = {};
+			surfaceSprite_t *ss = stage->ss;
+
+			surfaceSpriteBlock.fxGrow[0] = ss->fxGrow[0];
+			surfaceSpriteBlock.fxGrow[1] = ss->fxGrow[1];
+			surfaceSpriteBlock.fxDuration = ss->fxDuration;
+			surfaceSpriteBlock.fadeStartDistance = ss->fadeDist;
+			surfaceSpriteBlock.fadeEndDistance = MAX(ss->fadeDist + 250.f, ss->fadeMax);
+			surfaceSpriteBlock.fadeScale = ss->fadeScale;
+			surfaceSpriteBlock.wind = ss->wind;
+			surfaceSpriteBlock.windIdle = ss->windIdle;
+			surfaceSpriteBlock.fxAlphaStart = ss->fxAlphaStart;
+			surfaceSpriteBlock.fxAlphaEnd = ss->fxAlphaEnd;
+
+			ss->spriteUboOffset = alignedBlockSize;
+			qglBufferSubData(
+				GL_UNIFORM_BUFFER, ss->spriteUboOffset, sizeof(SurfaceSpriteBlock), &surfaceSpriteBlock);
+			alignedBlockSize += spriteAlignedBlockSize;
+		}
+	}
+
 	msurface_t *surfaces = world->surfaces;
 	std::vector<sprite_t> sprites_data;
 	sprites_data.reserve(65535);
 	IBO_t *ibo;
-
 	{
 		std::vector<uint16_t> sprites_index_data;
 		sprites_index_data.reserve(98298);
@@ -4225,15 +4287,17 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	R_LoadLightGrid(worldData, &header->lumps[LUMP_LIGHTGRID]);
 	R_LoadLightGridArray(worldData, &header->lumps[LUMP_LIGHTARRAY]);
 
-	R_LoadWeatherZones(
-		worldData,
-		&header->lumps[LUMP_BRUSHES],
-		&header->lumps[LUMP_BRUSHSIDES]);
-	R_GenerateSurfaceSprites(worldData);
-	
 	// determine vertex light directions
 	R_CalcVertexLightDirs(worldData);
 
+	if (bspIndex == nullptr)
+		R_LoadWeatherZones(
+			worldData,
+			&header->lumps[LUMP_BRUSHES],
+			&header->lumps[LUMP_BRUSHSIDES]);
+
+	R_GenerateSurfaceSprites(worldData, worldIndex + 1);
+	
 	// load cubemaps
 	if (r_cubeMapping->integer && bspIndex == nullptr)
 	{
