@@ -443,6 +443,7 @@ in vec4 var_LightDir;
 out vec4 out_Color;
 out vec4 out_Glow;
 
+#if defined(USE_SHADOWMAP)
 // depth is GL_DEPTH_COMPONENT16
 // so the maximum error is 1.0 / 2^16
 #define DEPTH_MAX_ERROR 0.0000152587890625
@@ -583,11 +584,9 @@ float sunShadow(in vec3 viewOrigin, in vec3 viewDir, in vec3 biasOffset)
 	
 	return result;
 }
-
-#define EPSILON 0.00000001
+#endif
 
 #if defined(USE_PARALLAXMAP)
-
 float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, in float parallaxBias)
 {
 	const int linearSearchSteps = 16;
