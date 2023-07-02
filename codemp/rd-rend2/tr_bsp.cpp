@@ -3295,7 +3295,6 @@ static void R_RenderAllCubemaps()
 {
 	R_IssuePendingRenderCommands();
 	R_InitNextFrame();
-	R_NewFrameSync();
 
 	GLenum cubemapFormat = GL_RGBA8;
 	if (r_hdr->integer)

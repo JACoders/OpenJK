@@ -2164,6 +2164,7 @@ static void RB_UpdateCameraConstants(gpuFrame_t *frame)
 {
 	for (int i = 0; i < tr.numCachedViewParms; i++)
 	{
+		backEnd.viewParms = tr.cachedViewParms[i];
 		const float zmax = tr.cachedViewParms[i].zFar;
 		const float zmin = tr.cachedViewParms[i].zNear;
 

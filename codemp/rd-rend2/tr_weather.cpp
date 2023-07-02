@@ -126,7 +126,6 @@ namespace
 	{
 		R_IssuePendingRenderCommands();
 		R_InitNextFrame();
-		R_NewFrameSync();
 		RE_BeginFrame(STEREO_CENTER);
 
 		vec3_t mapSize;
@@ -146,29 +145,13 @@ namespace
 		VectorMA(tr.world->bmodels[0].bounds[1], 0.5f, mapSize, viewOrigin);
 		viewOrigin[2] = tr.world->bmodels[0].bounds[1][2];
 
-		ri.Printf(PRINT_ALL, "Rendering weather depth from (%.f %.f %.f)\n",
-				viewOrigin[0], viewOrigin[1], viewOrigin[2]);
-
 		orientationr_t orientation;
 		R_SetOrientationOriginAndAxis(orientation, viewOrigin, forward, left, up);
-
-		refdef_t refdef = {};
-		VectorCopy(orientation.origin, refdef.vieworg);
-		for (int i = 0; i < 3; ++i)
-			VectorCopy(orientation.axis[i], refdef.viewaxis[i]);
-
-		tr.refdef.rdflags = tr.refdef.rdflags & ~RDF_SKYBOXPORTAL;
-		tr.skyPortalEntities = 0;
 		
 		const vec3_t viewBounds[2] = {
 			{ 0.0f, -halfMapSize[1], -halfMapSize[0] },
 			{ halfMapSize[2] * 2.0f, halfMapSize[1], halfMapSize[0] }
 		};
-		ri.Printf(
-			PRINT_ALL,
-			"Weather view bounds (%f %f %f) (%f %f %f)\n",
-			viewBounds[0][0], viewBounds[0][1], viewBounds[0][2],
-			viewBounds[1][0], viewBounds[1][1], viewBounds[1][2]);
 
 		R_SetupViewParmsForOrthoRendering(
 			tr.weatherDepthFbo->width,
@@ -360,22 +343,10 @@ namespace
 			qglDisable(GL_DEPTH_CLAMP);
 		}
 
+		RE_BeginFrame(STEREO_CENTER);
+
 		if (tr.weatherSystem->numWeatherBrushes > 0)
 			tr.viewParms.flags |= VPF_NOCLEAR;
-
-		const int firstDrawSurf = tr.refdef.numDrawSurfs;
-
-		tr.refdef.x = refdef.x;
-		tr.refdef.y = refdef.y;
-		tr.refdef.width = refdef.width;
-		tr.refdef.height = refdef.height;
-		tr.refdef.fov_x = refdef.fov_x;
-		tr.refdef.fov_y = refdef.fov_y;
-
-		VectorCopy(refdef.vieworg, tr.refdef.vieworg);
-		VectorCopy(refdef.viewaxis[0], tr.refdef.viewaxis[0]);
-		VectorCopy(refdef.viewaxis[1], tr.refdef.viewaxis[1]);
-		VectorCopy(refdef.viewaxis[2], tr.refdef.viewaxis[2]);
 
 		tr.refdef.numDrawSurfs = 0;
 		tr.refdef.drawSurfs = backEndData->drawSurfs;
@@ -386,6 +357,11 @@ namespace
 		tr.refdef.num_dlights = 0;
 		tr.refdef.dlights = backEndData->dlights;
 
+		tr.refdef.fistDrawSurf = 0;
+
+		tr.skyPortalEntities = 0;
+
+		tr.viewParms.targetFbo = tr.weatherDepthFbo;
 		tr.viewParms.currentViewParm = 0;
 		Com_Memcpy(&tr.cachedViewParms[0], &tr.viewParms, sizeof(viewParms_t));
 		tr.numCachedViewParms = 1;
@@ -393,12 +369,11 @@ namespace
 		RB_UpdateConstants(&tr.refdef);
 
 		R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
-		R_SortAndSubmitDrawSurfs(
-			tr.refdef.drawSurfs + firstDrawSurf,
-			tr.refdef.numDrawSurfs - firstDrawSurf);
+		R_SortAndSubmitDrawSurfs(tr.refdef.drawSurfs, tr.refdef.numDrawSurfs);
 
 		R_IssuePendingRenderCommands();
 		tr.refdef.numDrawSurfs = 0;
+		tr.numCachedViewParms = 0;
 
 		RE_EndScene();
 
