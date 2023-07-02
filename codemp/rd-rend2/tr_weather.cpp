@@ -386,7 +386,7 @@ namespace
 			tr.weatherSystem->frozen)
 		{
 			// Already simulated for this frame
-			//return;
+			return;
 		}
 
 		// Intentionally switched. Previous frame's VBO would be in ws.vbo and

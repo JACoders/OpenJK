@@ -2026,7 +2026,7 @@ void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
 
 	R_AddPolygonSurfaces(refdef);
 
-	if ( !(tr.viewParms.flags & VPF_DEPTHSHADOW) && tr.world)
+	if ( tr.viewParms.viewParmType > VPT_POINT_SHADOWS && tr.world )
 	{
 		R_AddWeatherSurfaces();
 	}
