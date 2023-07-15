@@ -6533,11 +6533,10 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 	int			int_data, toSet;
 	vec3_t		vector_data;
 
-	// eezstreet: In response to issue #75 (Cvars being affected by set command)
-	if( !Q_stricmpn(type_name, "cvar_", 5) &&
-		strlen(type_name) > 5 )
+	// eezstreet: Add support for cvars getting modified thru ICARUS script
+	if(strlen(type_name) > 5 && !Q_stricmpn(type_name, "cvar_", 5))
 	{
-		cgi_Cvar_Set(type_name+5, data);
+		gi.cvar_set(type_name+5, data);
 		return;
 	}
 
@@ -7904,8 +7903,7 @@ static int Q3_GetFloat( int entID, int type, const char *name, float *value )
 		return false;
 	}
 
-	if( !Q_stricmpn(name, "cvar_", 5) &&
-		strlen(name) > 5 )
+	if( strlen(name) > 5 && !Q_stricmpn(name, "cvar_", 5) )
 	{
 		*value = (float)gi.Cvar_VariableIntegerValue(name+5);
 		return true;
@@ -8599,10 +8597,16 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 		return false;
 	}
 
-	if( !Q_stricmpn(name, "cvar_", 5) &&
-		strlen(name) > 5 )
+	if( strlen(name) > 5 && !Q_stricmpn(name, "cvar_", 5) )
 	{
-		gi.Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
+		const char* cvar_name = name + 5;
+		// by allocating and then re-using the same sufficiently large buffer,
+		// we ensure that pointers to it never become invalid,
+		// so we can support expressions using the same cvar twice,
+		// e.g. if(get(cvar_x) == get(cvar_x))
+		std::array<char, MAX_STRING_CHARS>& buf = ICARUS_CvarList[cvar_name];
+		gi.Cvar_VariableStringBuffer(cvar_name, buf.data(), buf.size());
+		*value = buf.data();
 		return true;
 	}
 

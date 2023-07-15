@@ -1,4 +1,4 @@
-@REM Create OpenJK projects for Visual Studio 2019 using CMake
+@REM Create OpenJK projects for Visual Studio 2022 using CMake
 @echo off
 for %%X in (cmake.exe) do (set FOUND=%%~$PATH:X)
 if not defined FOUND (
@@ -13,6 +13,6 @@ if not defined FOUND (
 )
 if not exist build\nul (mkdir build)
 pushd build
-cmake -G "Visual Studio 16 2019" -A Win32 -D CMAKE_INSTALL_PREFIX=../install ..
+cmake -G "Visual Studio 17 2022" -A Win32 -D CMAKE_INSTALL_PREFIX=../install ..
 popd
 pause

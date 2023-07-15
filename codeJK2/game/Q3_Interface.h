@@ -23,6 +23,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __Q3_INTERFACE__
 #define __Q3_INTERFACE__
 
+#include <array>
+
 //NOTENOTE: The enums and tables in this file will obviously bitch if they are included multiple times, don't do that
 
 typedef enum //# setType_e

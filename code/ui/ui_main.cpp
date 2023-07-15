@@ -4643,6 +4643,34 @@ static void UI_SetPowerTitleText ( qboolean showAllocated )
 	}
 }
 
+#ifndef JK2_MODE
+static int UI_CountForcePowers( void ) {
+	const client_t *cl = &svs.clients[0];
+
+	if ( cl && cl->gentity ) {
+		const playerState_t *ps = cl->gentity->client;
+		return		ps->forcePowerLevel[FP_HEAL] +
+					ps->forcePowerLevel[FP_TELEPATHY] +
+					ps->forcePowerLevel[FP_PROTECT] +
+					ps->forcePowerLevel[FP_ABSORB] +
+					ps->forcePowerLevel[FP_GRIP] +
+					ps->forcePowerLevel[FP_LIGHTNING] +
+					ps->forcePowerLevel[FP_RAGE] +
+					ps->forcePowerLevel[FP_DRAIN];
+	}
+	else {
+		return		uiInfo.forcePowerLevel[FP_HEAL] +
+					uiInfo.forcePowerLevel[FP_TELEPATHY] +
+					uiInfo.forcePowerLevel[FP_PROTECT] +
+					uiInfo.forcePowerLevel[FP_ABSORB] +
+					uiInfo.forcePowerLevel[FP_GRIP] +
+					uiInfo.forcePowerLevel[FP_LIGHTNING] +
+					uiInfo.forcePowerLevel[FP_RAGE] +
+					uiInfo.forcePowerLevel[FP_DRAIN];
+	}
+}
+#endif
+
 //. Find weapons button and make active/inactive  (Used by Force Power Allocation screen)
 static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 {
@@ -4654,9 +4682,13 @@ static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 		return;
 	}
 
-	// Cheats are on so lets always let us pass
-	if(trap_Cvar_VariableValue("helpUsObi") != 0)
-		activeFlag = qtrue;
+#ifndef JK2_MODE
+	if (!activeFlag) {
+		// total light and dark powers are at maximum level 3    ( 3 levels * ( 4ls + 4ds ) = 24 )
+		if ( UI_CountForcePowers() >= 24 )
+			activeFlag = qtrue;
+	}
+#endif
 
 	// Find weaponsbutton
 	itemDef_t	*item;

@@ -555,8 +555,8 @@ extern qboolean INV_GoodieKeyGive( gentity_t *target );
 extern qboolean INV_GoodieKeyTake( gentity_t *target );
 extern int INV_GoodieKeyCheck( gentity_t *target );
 extern qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname );
-extern void INV_SecurityKeyTake( gentity_t *target, char *keyname );
-extern qboolean INV_SecurityKeyCheck( gentity_t *target, char *keyname );
+extern void INV_SecurityKeyTake( gentity_t *target, const char *keyname );
+extern qboolean INV_SecurityKeyCheck( gentity_t *target, const char *keyname );
 
 //
 // g_team.c
@@ -636,6 +636,7 @@ typedef struct pscript_s
 
 typedef std::map < std::string, int, std::less<std::string> >		entlist_t;
 typedef std::map < std::string, pscript_t*, std::less<std::string> >	bufferlist_t;
+typedef std::map < std::string, std::array<char, MAX_STRING_CHARS> >		cvarlist_t;
 
 
 extern char *G_NewString( const char *string );

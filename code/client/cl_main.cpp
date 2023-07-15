@@ -1086,7 +1086,7 @@ void CL_InitRef( void ) {
 	GetRefAPI_t	GetRefAPI;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
-    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH|CVAR_PROTECTED );
+    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 

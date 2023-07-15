@@ -1174,7 +1174,7 @@ void G_RollMissile( gentity_t *ent )
 		//
 		// modify velocity so it parallels all of the clip planes
 		//
-		if ( &g_entities[trace.entityNum] != NULL && g_entities[trace.entityNum].client )
+		if ( g_entities[trace.entityNum].inuse && g_entities[trace.entityNum].client )
 		{//hit a person, bounce off much less
 			bounceAmt = OVERCLIP;
 		}
