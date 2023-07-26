@@ -6,7 +6,7 @@
 
 namespace Q
 {
-	Ordering stricmp( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs ) NOEXCEPT
+	Ordering stricmp( const gsl::cstring_span& lhs, const gsl::cstring_span& rhs ) NOEXCEPT
 	{
 		auto lIt = lhs.begin();
 		auto rIt = rhs.begin();
@@ -39,7 +39,7 @@ namespace Q
 		return Ordering::LT;
 	}
 
-	gsl::cstring_view substr( const gsl::cstring_view& lhs, const std::string::size_type pos, const std::string::size_type count )
+	gsl::cstring_span substr( const gsl::cstring_span& lhs, const std::string::size_type pos, const std::string::size_type count )
 	{
 		if( pos > lhs.size() )
 		{
@@ -47,18 +47,18 @@ namespace Q
 		}
 		auto start = lhs.begin() + pos;
 		auto end = count == std::string::npos ? lhs.end() : std::min( start + count, lhs.end() );
-		gsl::cstring_view result{ start, end };
+		gsl::cstring_span result{ start, end };
 		return result;
 	}
 
-	int svtoi( const gsl::cstring_view& view )
+	int svtoi( const gsl::cstring_span& view )
 	{
 		int result = 0;
 		Q::sscanf( view, result );
 		return result;
 	}
 
-	float svtof( const gsl::cstring_view& view )
+	float svtof( const gsl::cstring_span& view )
 	{
 		float result = 0.f;
 		Q::sscanf( view, result );

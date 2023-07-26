@@ -58,7 +58,7 @@ struct SFxHelper
 	// Sound
 	void	PlaySound( const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
 	void	PlayLocalSound( sfxHandle_t sfx, int channelNum );
-	int		RegisterSound( const gsl::cstring_view& sound );
+	int		RegisterSound( const gsl::cstring_span& sound );
 
 	//G2
 	int		GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/*axis);
@@ -70,8 +70,8 @@ struct SFxHelper
 	void	AddFxToScene( refEntity_t *ent );
 	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue );
 
-	int		RegisterShader( const gsl::cstring_view& shader );
-	int		RegisterModel( const gsl::cstring_view& model );
+	int		RegisterShader( const gsl::cstring_span& shader );
+	int		RegisterModel( const gsl::cstring_span& model );
 
 	void	AddPolyToScene( int shader, int count, polyVert_t *verts );
 
