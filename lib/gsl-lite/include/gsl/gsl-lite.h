@@ -187,8 +187,8 @@ namespace gsl {
 // GSL.owner: ownership pointers 
 //
 #if gsl_HAVE_SHARED_PTR
-  using std::unique_ptr;
-  using std::shared_ptr;
+  using ::std::unique_ptr;
+  using ::std::shared_ptr;
 #endif
 
 #if gsl_HAVE_ALIAS_TEMPLATE
@@ -473,14 +473,14 @@ public:
     typedef const_pointer const_iterator;
     
 #if gsl_BETWEEN( gsl_COMPILER_MSVC_VERSION, 6, 7 )
-    typedef std::reverse_iterator< iterator, T >             reverse_iterator;
-    typedef std::reverse_iterator< const_iterator, const T > const_reverse_iterator;
+    typedef ::std::reverse_iterator< iterator, T >             reverse_iterator;
+    typedef ::std::reverse_iterator< const_iterator, const T > const_reverse_iterator;
 #else
-    typedef std::reverse_iterator< iterator >                reverse_iterator;
-    typedef std::reverse_iterator< const_iterator >          const_reverse_iterator;
+    typedef ::std::reverse_iterator< iterator >                reverse_iterator;
+    typedef ::std::reverse_iterator< const_iterator >          const_reverse_iterator;
 #endif
 
-    typedef typename std::iterator_traits< iterator >::difference_type difference_type;    
+    typedef typename ::std::iterator_traits< iterator >::difference_type difference_type;
 
     gsl_constexpr14 array_view()
         : begin_( NULL )
@@ -490,7 +490,7 @@ public:
     }
 
 #if gsl_HAVE_NULLPTR
-    gsl_constexpr14 array_view( std::nullptr_t, size_type size )
+    gsl_constexpr14 array_view( ::std::nullptr_t, size_type size )
         : begin_( nullptr )
         , end_  ( nullptr )
     {
@@ -528,7 +528,7 @@ public:
 
 #if gsl_HAVE_ARRAY
     template< class U, size_t N >
-    gsl_constexpr14 array_view( std::array< U, N > & arr ) 
+    gsl_constexpr14 array_view( ::std::array< U, N > & arr )
         : begin_( arr.data() )
         , end_  ( arr.data() + N )
     {}
@@ -624,7 +624,7 @@ public:
     gsl_constexpr14 bool operator==( array_view const & other ) const gsl_noexcept
     {
         return  size() == other.size() 
-            && (begin_ == other.begin_ || std::equal( this->begin(), this->end(), other.begin() ) );	    
+            && (begin_ == other.begin_ || ::std::equal( this->begin(), this->end(), other.begin() ) );
     }
 
     gsl_constexpr14 bool operator!=( array_view const & other ) const gsl_noexcept 
@@ -634,7 +634,7 @@ public:
 
     gsl_constexpr14 bool operator< ( array_view const & other ) const gsl_noexcept
     { 
-        return std::lexicographical_compare( this->begin(), this->end(), other.begin(), other.end() ); 
+        return ::std::lexicographical_compare( this->begin(), this->end(), other.begin(), other.end() );
     }
 
     gsl_constexpr14 bool operator<=( array_view const & other ) const gsl_noexcept
@@ -670,7 +670,7 @@ public:
 
     gsl_constexpr14 size_type size() const gsl_noexcept
     {
-        return std::distance( begin_, end_ );
+        return ::std::distance( begin_, end_ );
     }
 
     gsl_constexpr14 size_type length() const gsl_noexcept
@@ -695,7 +695,7 @@ public:
 
     void swap( array_view & other ) gsl_noexcept
     {
-        using std::swap;
+        using ::std::swap;
         swap( begin_, other.begin_ );
         swap( end_  , other.end_   );
     }
@@ -762,7 +762,7 @@ gsl_constexpr14 array_view<T> as_array_view( T (&arr)[N] )
 
 #if gsl_HAVE_ARRAY
 template< typename T, size_t N >
-gsl_constexpr14 array_view<T> as_array_view( std::array<T,N> & arr )
+gsl_constexpr14 array_view<T> as_array_view( ::std::array<T,N> & arr )
 {
     return array_view<T>( arr );
 }
@@ -776,7 +776,7 @@ gsl_constexpr14 auto as_array_view( Cont & cont ) ->  array_view< typename Cont:
 }
 #else
 template< class T >
-array_view<T> as_array_view( std::vector<T> & cont )
+array_view<T> as_array_view( ::std::vector<T> & cont )
 { 
     return array_view<T>( cont );
 }
@@ -798,24 +798,24 @@ typedef array_view< const wchar_t > cwstring_view;
 
 // to_string() allow (explicit) conversions from string_view to string
 
-inline std::string to_string( string_view const & view )
+inline ::std::string to_string( string_view const & view )
 {
-    return std::string( view.data(), view.length() );
+    return ::std::string( view.data(), view.length() );
 }
 
-inline std::string to_string( cstring_view const & view )
+inline ::std::string to_string( cstring_view const & view )
 {
-    return std::string( view.data(), view.length() );
+    return ::std::string( view.data(), view.length() );
 }
 
-inline std::wstring to_string( wstring_view const & view )
+inline ::std::wstring to_string( wstring_view const & view )
 {
-    return std::wstring( view.data(), view.length() );
+    return ::std::wstring( view.data(), view.length() );
 }
 
-inline std::wstring to_string( cwstring_view const & view )
+inline ::std::wstring to_string( cwstring_view const & view )
 {
-    return std::wstring( view.data(), view.length() );
+    return ::std::wstring( view.data(), view.length() );
 }
 
 //
@@ -829,14 +829,14 @@ inline std::wstring to_string( cwstring_view const & view )
 namespace detail {
 
 template<class T, class SizeType, const T Sentinel>
-static array_view<T> ensure_sentinel( T * seq, SizeType max = std::numeric_limits<SizeType>::max() )
+static array_view<T> ensure_sentinel( T * seq, SizeType max = ::std::numeric_limits<SizeType>::max() )
 {
     typedef T * pointer;
-    typedef typename std::iterator_traits<pointer>::difference_type difference_type;
+    typedef typename ::std::iterator_traits<pointer>::difference_type difference_type;
     
     pointer cur = seq;
 
-    while ( std::distance( seq, cur ) < static_cast<difference_type>( max ) && *cur != Sentinel ) 
+    while ( ::std::distance( seq, cur ) < static_cast<difference_type>( max ) && *cur != Sentinel )
         ++cur;
     
     Expects( *cur == Sentinel );
@@ -852,7 +852,7 @@ static array_view<T> ensure_sentinel( T * seq, SizeType max = std::numeric_limit
 //
 
 template< class T >
-inline array_view<T> ensure_z( T * const & sz, size_t max = std::numeric_limits<size_t>::max() )
+inline array_view<T> ensure_z( T * const & sz, size_t max = ::std::numeric_limits<size_t>::max() )
 {
     return detail::ensure_sentinel<T, size_t, 0>( sz, max );
 //    return detail::ensure<T, size_t, 0>::sentinel( sz, max );
@@ -867,7 +867,7 @@ array_view<T> ensure_z( T (&sz)[N] )
 # if gsl_HAVE_TYPE_TRAITS
 
 template< class Cont >
-array_view< typename std::remove_pointer<typename Cont::pointer>::type > 
+array_view< typename ::std::remove_pointer<typename Cont::pointer>::type >
 ensure_z( Cont& cont )
 {
     return ensure_z( cont.data(), cont.length() );
