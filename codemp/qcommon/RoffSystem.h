@@ -64,7 +64,7 @@ private:
 	//-------------------------------
 	{
 		char	mHeader[4];				// should match roff_string defined above
-		long	mVersion;				// version num, supported version defined above
+		int		mVersion;				// version num, supported version defined above
 		float	mCount;					// I think this is a float because of a limitation of the roff exporter
 
 	} TROFFHeader;
@@ -81,7 +81,7 @@ private:
 	//-------------------------------
 	{
 		char	mHeader[4];				// should match roff_string defined above
-		long	mVersion;				// version num, supported version defined above
+		int		mVersion;				// version num, supported version defined above
 		int		mCount;					// I think this is a float because of a limitation of the roff exporter
 		int		mFrameRate;				// Frame rate the roff should be played at
 		int		mNumNotes;				// number of notes (null terminated strings) after the roff data
