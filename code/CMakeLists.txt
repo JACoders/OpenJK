@@ -71,17 +71,23 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif()
 
 	if(UseInternalSDL2)
-		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+		if(Architecture STREQUAL "x86")
 			set(SPEngineLibraries
 				${SPEngineLibraries}
 				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
 				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
 				)
-		else()
+		elseif(Architecture STREQUAL "x86_64")
 			set(SPEngineLibraries
 				${SPEngineLibraries}
 				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
 				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
+				)
+		elseif(Architecture STREQUAL "arm64")
+			set(SPEngineLibraries
+				${SPEngineLibraries}
+				${VcpkgDir}/installed/arm64-windows/lib/manual-link/SDL2main.lib
+				${VcpkgDir}/installed/arm64-windows/lib/SDL2.lib
 				)
 		endif()
 
@@ -387,13 +393,17 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		if(WIN32)
 			add_executable(${ProjectName} WIN32 ${SPEngineFiles})
 			if(UseInternalSDL2)
-				if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+				if(Architecture STREQUAL "x86")
 					set(SPEngineExtraInstallFiles
 						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
 						)
-				else()
+				elseif(Architecture STREQUAL "x86_64")
 					set(SPEngineExtraInstallFiles
 						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+						)
+				elseif(Architecture STREQUAL "arm64")
+					set(SPEngineExtraInstallFiles
+						${VcpkgDir}/installed/arm64-windows/bin/SDL2.dll
 						)
 				endif()
 			endif()
