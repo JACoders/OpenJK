@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -29,15 +29,15 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 class CQuickSpriteSystem
 {
 private:
-			textureBundle_t	*mTexBundle;
-			uint32_t	mGLStateBits;
-			int				mFogIndex;
-			qboolean		mUseFog;
+			textureBundle_t	*mTexBundle = nullptr;
+			uint32_t	mGLStateBits{0};
+			int				mFogIndex{-1};
+			qboolean		mUseFog{qfalse};
 			vec4_t			mVerts[SHADER_MAX_VERTEXES];
 			vec2_t			mTextureCoords[SHADER_MAX_VERTEXES];	// Ideally this would be static, cause it never changes
 			vec2_t			mFogTextureCoords[SHADER_MAX_VERTEXES];
 			uint32_t	mColors[SHADER_MAX_VERTEXES];
-			int				mNextVert;
+			int				mNextVert{0};
 
 			void Flush(void);
 

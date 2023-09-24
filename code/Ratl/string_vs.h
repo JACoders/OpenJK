@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -307,7 +307,7 @@ public:
 	public:
 		// Constructors
 		//--------------
-		tokenizer()							: mLoc(0)
+		tokenizer()
 		{}
 		tokenizer(const char* t, const char* gap)
 		{
@@ -352,7 +352,7 @@ public:
 		// Data
 		//------
 	private:
-		char*					mLoc;
+		char*					mLoc{0};
 		char					mGap[TOKEN_GAP_LEN];
 	};
 

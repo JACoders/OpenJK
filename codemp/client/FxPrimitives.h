@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
@@ -132,10 +132,10 @@ protected:
 	int			mTimeStart;
 	int			mTimeEnd;
 
-	unsigned int	mFlags;
+	unsigned int	mFlags{0};
 
-	EMatImpactEffect	mMatImpactFX;
-	int					mMatImpactParm;
+	EMatImpactEffect	mMatImpactFX{MATIMPACTFX_NONE};
+	int					mMatImpactParm{-1};
 
 	// Size of our object, useful for things that have physics
 	vec3_t		mMin;
@@ -146,8 +146,8 @@ protected:
 
 	miniRefEntity_t		mRefEnt;
 
-	int			mSoundRadius;
-	int			mSoundVolume;
+	int			mSoundRadius{-1};
+	int			mSoundVolume{-1};
 
 public:
 
@@ -364,10 +364,7 @@ class CFlash : public CParticle
 {
 public:
 
-	CFlash():
-	mScreenX(0),
-	mScreenY(0),
-	mRadiusModifier(1)
+	CFlash()
 	{}
 
 	virtual ~CFlash() {}
@@ -380,9 +377,9 @@ public:
 
 protected:
 	// kef -- mScreenX and mScreenY are used for flashes that are FX_LOCALIZED_FLASH
-	float		mScreenX;
-	float		mScreenY;
-	float		mRadiusModifier;
+	float		mScreenX{0};
+	float		mScreenY{0};
+	float		mRadiusModifier{1};
 };
 
 //------------------------------
