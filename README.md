@@ -20,7 +20,7 @@ Our aims are to:
 | Game | Single Player | Multi Player |
 | - | - | - |
 | Jedi Academy | ✅ Stable | ✅ Stable |
-| Jedi Outcast | 🫤 Works, needs attention | 🙅 Not supported - consider [JK2MV](https://jk2mv.org) |
+| Jedi Outcast | 😧 Works, needs attention | 🙅 Not supported - consider [JK2MV](https://jk2mv.org) |
 | Jedi Knight DF2 | 💡 Consider [OpenJKDF2](https://github.com/shinyquagsire23/OpenJKDF2) | 😶 N/A |
 
 Please direct support queries, discussions and feature requests to the JKHub sub-forum or Discord linked above.
