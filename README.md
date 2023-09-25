@@ -33,6 +33,8 @@ OpenJK is licensed under GPLv2 as free software. You are free to use, modify and
 
 To install OpenJK, you will first need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](https://store.steampowered.com/app/6020/), [Amazon](https://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy).
 
+Download the [latest build](https://github.com/JACoders/OpenJK/releases/tag/latest) ([alt link](https://builds.openjk.org)) for your operating system.
+
 Installing and running OpenJK:
 
 1. [Download the latest build](https://github.com/JACoders/OpenJK/releases/tag/latest) ([alt link](https://builds.openjk.org)) for your operating system.
@@ -43,11 +45,10 @@ Installing and running OpenJK:
 
 If you do not have a windows partition and need to download the game base.
 
-1. Download  and Install SteamCMD [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Linux) .
+1. Download and Install SteamCMD [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Linux).
 1. Set the download path using steamCMD: `force_install_dir path/to/install/jka`
 1. Using SteamCMD Set the platform to windows to download any windows game on steam. @sSteamCmdForcePlatformType "windows"
-1. Using SteamCMD download the game,  app_update 6020.
-1. [Download the latest build](https://builds.openjk.org) for your operating system.
+1. Using SteamCMD download the game, `app_update 6020`.
 1. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
 
 ### macOS Instructions
@@ -56,7 +57,7 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 
 1. Install [Homebrew](https://brew.sh/) if you don't have it.
 1. Open the Terminal app, and enter the command `brew install sdl2`.
-1. Extract the contents of the OpenJK DMG ([Download the latest build](https://builds.openjk.org)) into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
+1. Extract the contents of the OpenJK DMG into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
 1. Run `OpenJK.app` or `OpenJK SP.app`
 1. Savegames, Config Files and Log Files are stored in `/Users/<USER>/Library/Application Support/OpenJK/`
 
