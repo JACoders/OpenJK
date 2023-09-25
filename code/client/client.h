@@ -263,6 +263,7 @@ extern	cvar_t	*cl_sensitivity;
 extern	cvar_t	*cl_freelook;
 
 extern	cvar_t	*cl_mouseAccel;
+extern	cvar_t	*cl_mouseAspectScaling;
 extern	cvar_t	*cl_showMouseRate;
 
 extern	cvar_t	*cl_allowAltEnter;

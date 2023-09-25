@@ -922,12 +922,18 @@ CL_MouseEvent
 =================
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
+	float dxScaled = dx;
+	float dyScaled = dy;
+	if ( cl_mouseAspectScaling->integer ) {
+		dxScaled *= (SCREEN_WIDTH / (float)cls.glconfig.vidWidth);
+		dyScaled *= (SCREEN_HEIGHT / (float)cls.glconfig.vidHeight);
+	}
 	if (g_clAutoMapMode && cls.cgameStarted)
 	{ //automap input
 		autoMapInput_t *data = (autoMapInput_t *)cl.mSharedMemory;
 
-		g_clAutoMapInput.yaw = dx;
-		g_clAutoMapInput.pitch = dy;
+		g_clAutoMapInput.yaw = dxScaled;
+		g_clAutoMapInput.pitch = dyScaled;
 		memcpy(data, &g_clAutoMapInput, sizeof(autoMapInput_t));
 		CGVM_AutomapInput();
 
@@ -935,9 +941,9 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		g_clAutoMapInput.pitch = 0.0f;
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
-		UIVM_MouseEvent( dx, dy );
+		UIVM_MouseEvent( dxScaled, dyScaled );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
-		CGVM_MouseEvent( dx, dy );
+		CGVM_MouseEvent( dxScaled, dyScaled );
 	} else {
 		cl.mouseDx[cl.mouseIndex] += dx;
 		cl.mouseDy[cl.mouseIndex] += dy;
