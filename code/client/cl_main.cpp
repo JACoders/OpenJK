@@ -1259,7 +1259,7 @@ void CL_Init( void ) {
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE_ND);
 	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE);
 	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE_ND);
-	cl_mouseAspectScaling = Cvar_Get ("cl_mouseAspectScaling", "1", CVAR_ARCHIVE_ND);
+	cl_mouseAspectScaling = Cvar_Get ("cl_mouseAspectScaling", "0", CVAR_ARCHIVE_ND);
 	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE_ND );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);

@@ -2731,7 +2731,7 @@ void CL_Init( void ) {
 	// this should be set to the max rate value
 	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE_ND, "Mouse acceleration offset for style 1" );
 
-	cl_mouseAspectScaling = Cvar_Get( "cl_mouseAspectScaling", "1", CVAR_ARCHIVE_ND, "Scale mouse movement correctly in menus based on your desktop aspect ratio" );
+	cl_mouseAspectScaling = Cvar_Get( "cl_mouseAspectScaling", "0", CVAR_ARCHIVE_ND, "Scale mouse movement correctly in menus based on your desktop aspect ratio" );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
