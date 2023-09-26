@@ -152,6 +152,12 @@ typedef struct {
 	int		bssLength;			// zero filled memory appended to datalength
 } vmHeader_t;
 
+typedef enum {
+	VMI_NATIVE,
+	VMI_BYTECODE,
+	VMI_COMPILED
+} vmInterpret_t;
+
 
 extern	vm_t	*currentVM;
 extern	int		vm_debugLevel;
@@ -172,3 +178,7 @@ void VM_LogSyscalls( int *args );
 void VM_BlockCopy(unsigned int dest, unsigned int src, size_t n);
 
 void VM_Debug( int level );
+
+void VM_LoadSymbols( vm_t *vm );
+void VM_VmInfo_f( void );
+void VM_VmProfile_f( void );

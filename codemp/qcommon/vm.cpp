@@ -42,6 +42,8 @@ const char *vmStrs[MAX_VM] = {
 	"UIVM",
 };
 
+cvar_t *vmModeCvar[MAX_VM];
+
 // VM slots are automatically allocated by VM_Create, and freed by VM_Free
 // The VM table should never be directly accessed from other files.
 // Example usage:
@@ -61,6 +63,13 @@ void VM_Init( void ) {
 #ifdef _DEBUG
 	vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
 #endif
+
+	vmModeCvar[VM_CGAME] = Cvar_Get( "vm_cgame", "2", CVAR_ARCHIVE );
+	vmModeCvar[VM_GAME] = Cvar_Get( "vm_game", "2", CVAR_ARCHIVE );
+	vmModeCvar[VM_UI] = Cvar_Get( "vm_ui", "2", CVAR_ARCHIVE );
+
+	Cmd_AddCommand ("vmprofile", VM_VmProfile_f );
+	Cmd_AddCommand ("vminfo", VM_VmInfo_f );
 
 	memset( vmTable, 0, sizeof(vmTable) );
 }
@@ -112,8 +121,117 @@ vm_t *VM_Restart( vm_t *vm ) {
 		return VM_Create( saved.slot );
 }
 
+
+/*
+=================
+VM_LoadQVM
+
+Load a .qvm file
+=================
+*/
+vmHeader_t *VM_LoadQVM( vm_t *vm, qboolean alloc, qboolean freeVM )
+{
+	int					dataLength;
+	int					i;
+	char				filename[MAX_QPATH];
+	union {
+		vmHeader_t	*h;
+		void				*v;
+	} header;
+
+	// load the image
+	Com_sprintf( filename, sizeof(filename), "vm/%s.qvm", vm->name );
+	Com_Printf( "Loading vm file %s...\n", filename );
+
+	FS_ReadFile(filename, &header.v);
+
+	if ( !header.h ) {
+		Com_Printf( "Failed.\n" );
+		if ( freeVM ) VM_Free( vm );
+
+		Com_Printf(S_COLOR_YELLOW "Warning: Couldn't open VM file %s\n", filename);
+
+		return NULL;
+	}
+
+	// show where the qvm was loaded from
+	//FS_Which(filename, vm->searchPath);
+
+	if( LittleLong( header.h->vmMagic ) == VM_MAGIC ) {
+		// byte swap the header
+		// sizeof( vmHeader_t ) - sizeof( int ) is the 1.32b vm header size
+		for ( size_t i = 0 ; i < ( sizeof( vmHeader_t ) - sizeof( int ) ) / 4 ; i++ ) {
+			((int *)header.h)[i] = LittleLong( ((int *)header.h)[i] );
+		}
+
+		// validate
+		if ( header.h->bssLength < 0
+			|| header.h->dataLength < 0
+			|| header.h->litLength < 0
+			|| header.h->codeLength <= 0 )
+		{
+			if ( freeVM ) VM_Free(vm);
+			FS_FreeFile(header.v);
+
+			Com_Printf(S_COLOR_YELLOW "Warning: %s has bad header\n", filename);
+			return NULL;
+		}
+	} else {
+		if ( freeVM ) VM_Free( vm );
+		FS_FreeFile(header.v);
+
+		Com_Printf(S_COLOR_YELLOW "Warning: %s does not have a recognisable "
+				"magic number in its header\n", filename);
+		return NULL;
+	}
+
+	// round up to next power of 2 so all data operations can
+	// be mask protected
+	dataLength = header.h->dataLength + header.h->litLength +
+		header.h->bssLength;
+	for ( i = 0 ; dataLength > ( 1 << i ) ; i++ ) {
+	}
+	dataLength = 1 << i;
+
+	if(alloc)
+	{
+		// allocate zero filled space for initialized and uninitialized data
+		vm->dataBase = (byte *)Hunk_Alloc(dataLength, h_high);
+		vm->dataMask = dataLength - 1;
+	}
+	else
+	{
+		// clear the data, but make sure we're not clearing more than allocated
+		if(vm->dataMask + 1 != dataLength)
+		{
+			if ( freeVM ) VM_Free(vm);
+			FS_FreeFile(header.v);
+
+			Com_Printf(S_COLOR_YELLOW "Warning: Data region size of %s not matching after "
+					"VM_Restart()\n", filename);
+			return NULL;
+		}
+
+		Com_Memset(vm->dataBase, 0, dataLength);
+	}
+
+	// copy the intialized data
+	Com_Memcpy( vm->dataBase, (byte *)header.h + header.h->dataOffset,
+		header.h->dataLength + header.h->litLength );
+
+	// byte swap the longs
+	for ( i = 0 ; i < header.h->dataLength ; i += 4 ) {
+		*(int *)(vm->dataBase + i) = LittleLong( *(int *)(vm->dataBase + i ) );
+	}
+
+	return header.h;
+}
+
 vm_t *VM_CreateLegacy( vmSlots_t vmSlot, intptr_t( *systemCalls )(intptr_t *) ) {
+	vmHeader_t	*header;
 	vm_t *vm = NULL;
+	int remaining = Hunk_MemoryRemaining();
+	int interpret = vmModeCvar[vmSlot]->integer;
 
 	if ( !systemCalls ) {
 		Com_Error( ERR_FATAL, "VM_CreateLegacy: bad parms" );
@@ -133,6 +251,49 @@ vm_t *VM_CreateLegacy( vmSlots_t vmSlot, intptr_t( *systemCalls )(intptr_t *) ) 
 	vm->slot = vmSlot;
 	Q_strncpyz( vm->name, vmNames[vmSlot], sizeof(vm->name) );
 	vm->legacy.syscall = systemCalls;
+
+	// QVM
+	if ( interpret != VMI_NATIVE && (header = VM_LoadQVM(vm, qtrue, qfalse)) ) {
+		// allocate space for the jump targets, which will be filled in by the compile/prep functions
+		vm->instructionCount = header->instructionCount;
+		vm->instructionPointers = (intptr_t *)Hunk_Alloc(vm->instructionCount * sizeof(*vm->instructionPointers), h_high);
+
+		// copy or compile the instructions
+		vm->codeLength = header->codeLength;
+
+		vm->compiled = qfalse;
+
+	#ifdef NO_VM_COMPILED
+		if(interpret >= VMI_COMPILED) {
+			Com_Printf("Architecture doesn't have a bytecode compiler, using interpreter\n");
+			interpret = VMI_BYTECODE;
+		}
+	#else
+		if(interpret != VMI_BYTECODE)
+		{
+			vm->compiled = qtrue;
+			VM_Compile( vm, header );
+		}
+	#endif
+		// VM_Compile may have reset vm->compiled if compilation failed
+		if (!vm->compiled)
+		{
+			VM_PrepareInterpreter( vm, header );
+		}
+
+		// free the original file
+		FS_FreeFile( header );
+
+		// load the map file
+		VM_LoadSymbols( vm );
+
+		// the stack is implicitly at the end of the image
+		vm->programStack = vm->dataMask + 1;
+		vm->stackBottom = vm->programStack - PROGRAM_STACK_SIZE;
+
+		Com_Printf("%s loaded in %d bytes on the hunk\n", vmNames[vmSlot], remaining - Hunk_MemoryRemaining());
+		return vm;
+	}
 
 	// find the legacy syscall api
 	FS_FindPureDLL( vm->name );
@@ -163,6 +324,11 @@ vm_t *VM_Create( vmSlots_t vmSlot ) {
 	// see if we already have the VM
 	if ( vmTable[vmSlot] )
 		return vmTable[vmSlot];
+
+	if ( vmModeCvar[vmSlot]->integer != VMI_NATIVE ) {
+		// If the module shouldn't be a native library return and have the caller try the legacy system, because QVMs are part of that
+		return NULL;
+	}
 
 	// find a free vm
 	vmTable[vmSlot] = (vm_t *)Z_Malloc( sizeof(*vm), TAG_VM, qtrue );
@@ -262,7 +428,11 @@ void *VM_ArgPtr( intptr_t intValue ) {
 	if ( !currentVM )
 		return NULL;
 
-	return (void *)intValue;
+	if ( currentVM->dllHandle ) {
+		return (void *)intValue;
+	} else {
+		return (void *)(currentVM->dataBase + (intValue & currentVM->dataMask));
+	}
 }
 
 void *VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue ) {
@@ -290,8 +460,55 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, intptr_t arg0, intptr_t arg1, int
 
 	VMSwap v( vm );
 
-	return vm->legacy.main( callnum, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
-		arg9, arg10, arg11 );
+	if ( vm->dllHandle ) {
+		return vm->legacy.main( callnum, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
+			arg9, arg10, arg11 );
+	} else {
+		size_t i;
+		intptr_t r;
+		if ( vm_debugLevel ) {
+		Com_Printf( "VM_Call( %d )\n", callnum );
+		}
+
+		++vm->callLevel;
+
+#if ( id386 || idsparc ) && !defined __clang__ // calling convention doesn't need conversion in some cases
+#ifndef NO_VM_COMPILED
+		if ( vm->compiled )
+			r = VM_CallCompiled( vm, (int*)&callnum );
+		else
+#endif
+			r = VM_CallInterpreted( vm, (int*)&callnum );
+#else
+		struct {
+			int callnum;
+			int args[MAX_VMMAIN_ARGS-1];
+		} a;
+
+		a.callnum = callnum;
+		a.args[0] = arg0;
+		a.args[1] = arg1;
+		a.args[2] = arg2;
+		a.args[3] = arg3;
+		a.args[4] = arg4;
+		a.args[5] = arg5;
+		a.args[6] = arg6;
+		a.args[7] = arg7;
+		a.args[8] = arg8;
+		a.args[9] = arg9;
+		a.args[10] = arg10;
+		a.args[11] = arg11;
+#ifndef NO_VM_COMPILED
+		if ( vm->compiled )
+			r = VM_CallCompiled( vm, &a.callnum );
+		else
+#endif
+			r = VM_CallInterpreted( vm, &a.callnum );
+#endif
+		--vm->callLevel;
+
+		return r;
+	}
 }
 
 // QVM functions
@@ -810,8 +1027,8 @@ void VM_VmInfo_f( void ) {
 	Com_Printf( "Registered virtual machines:\n" );
 	for ( i = 0 ; i < MAX_VM ; i++ ) {
 		vm = vmTable[i];
-		if ( !vm->name[0] ) {
-			break;
+		if ( !vm || !vm->name[0] ) {
+			continue;
 		}
 		Com_Printf( "%s : ", vm->name );
 		if ( vm->dllHandle ) {
