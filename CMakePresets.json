@@ -1,0 +1,59 @@
+{
+	"version": 6,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 20
+	},
+	"configurePresets": [
+		{
+			"name": "NOOP",
+			"hidden": true,
+			"cacheVariables": {
+				"BuildMPEngine": "OFF",
+				"BuildMPRdVanilla": "OFF",
+				"BuildMPDed": "OFF",
+				"BuildMPGame": "OFF",
+				"BuildMPCGame": "OFF",
+				"BuildMPUI": "OFF",
+				"BuildSPEngine": "OFF",
+				"BuildSPGame": "OFF",
+				"BuildSPRdVanilla": "OFF",
+				"BuildJK2SPEngine": "OFF",
+				"BuildJK2SPGame": "OFF",
+				"BuildJK2SPRdVanilla": "OFF"
+			}
+		},
+		{
+			"name": "JASP",
+			"cacheVariables": {
+				"BuildSPEngine": "ON",
+				"BuildSPGame": "ON",
+				"BuildSPRdVanilla": "ON"
+			}
+		},
+		{
+			"name": "JAMP",
+			"cacheVariables": {
+				"BuildMPEngine": "ON",
+				"BuildMPRdVanilla": "ON",
+				"BuildMPDed": "ON",
+				"BuildMPGame": "ON",
+				"BuildMPCGame": "ON",
+				"BuildMPUI": "ON"
+			}
+		},
+		{
+			"name": "JKA",
+			"inherits": [ "JASP", "JAMP", "NOOP" ]
+		},
+		{
+			"name": "JK2",
+			"inherits": [ "NOOP" ],
+			"cacheVariables": {
+				"BuildJK2SPEngine": "ON",
+				"BuildJK2SPGame": "ON",
+				"BuildJK2SPRdVanilla": "ON"
+			}
+		}
+	]
+}
