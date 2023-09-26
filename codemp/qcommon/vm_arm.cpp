@@ -368,7 +368,7 @@ void __attribute__((optimize("O0"))) VM_CompiledSyscall() {
 
     savedvm = currentVM;
     opStack += opStackIndex;
-    *opStack = currentVM->systemCall(args);
+    *opStack = currentVM->legacy.syscall(args);
     currentVM = savedvm;
 }
 

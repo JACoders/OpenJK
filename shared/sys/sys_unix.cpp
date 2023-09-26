@@ -62,6 +62,11 @@ void Sys_PlatformExit( void )
 {
 }
 
+int Sys_PID( void )
+{
+	return getpid( );
+}
+
 /*
 ================
 Sys_Milliseconds

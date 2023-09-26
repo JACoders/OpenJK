@@ -270,7 +270,18 @@ typedef enum vmSlots_e {
 	MAX_VM
 } vmSlots_t;
 
-typedef struct vm_s {
+typedef struct vmSymbol_s {
+	struct vmSymbol_s	*next;
+	struct vmSymbol_s	*caller;
+	int		symValue;
+	int		symInstr;
+	long	profileCount;
+	int		callCount;
+	char	symName[1];		// variable sized
+} vmSymbol_t;
+
+typedef struct vm_s vm_t;
+struct vm_s {
 	vmSlots_t	slot; // VM_GAME, VM_CGAME, VM_UI
     char		name[MAX_QPATH];
 	void		*dllHandle;
@@ -284,7 +295,38 @@ typedef struct vm_s {
 		VMMainProc* main; // module vmMain
 		intptr_t	(QDECL *syscall)( intptr_t *parms );	// engine syscall handler
 	} legacy;
-} vm_t;
+
+	// QVM stuff
+	int			programStack;		// the vm may be recursively entered
+	void		(*destroy)(vm_t* self);
+	qboolean	currentlyInterpreting;
+
+	qboolean	compiled;
+	byte		*codeBase;
+	int			entryOfs;
+	int			callProcOfs;
+	int			callProcOfsSyscall;
+	int			codeLength;
+
+	intptr_t	*instructionPointers;
+	int			instructionCount;
+
+	byte		*dataBase;
+	int			dataMask;
+
+	int			stackBottom;		// if programStack < stackBottom, error
+
+	int			numSymbols;
+	vmSymbol_t	*symbols;
+	vmSymbol_t	**symbolTable;
+
+	int			callLevel;		// counts recursive VM_Call
+	int			breakFunction;		// increment breakCount on function entry to this
+	int			breakCount;
+
+	byte		*jumpTableTargets;
+	int			numJumpTableTargets;
+};
 
 extern vm_t *currentVM;
 
@@ -613,7 +655,7 @@ fileHandle_t FS_SV_FOpenFileWrite( const char *filename );
 fileHandle_t FS_SV_FOpenFileAppend( const char *filename );
 int		FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
 void	FS_SV_Rename( const char *from, const char *to, qboolean safe );
-long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE);
 // if uniqueFILE is true, then a new FILE will be fopened even if the file
 // is found in an already open pak file.  If uniqueFILE is false, you must call
 // FS_FCloseFile instead of fclose, otherwise the pak FILE would be improperly closed

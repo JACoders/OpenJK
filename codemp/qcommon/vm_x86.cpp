@@ -150,7 +150,7 @@ static void EmitPtr(void *ptr)
 	intptr_t v = (intptr_t) ptr;
 
 	Emit4(v);
-#if idx64
+#if defined(idx64)
 	Emit1((v >> 32) & 0xFF);
 	Emit1((v >> 40) & 0xFF);
 	Emit1((v >> 48) & 0xFF);
@@ -193,7 +193,7 @@ static void EmitString( const char *string ) {
 }
 static void EmitRexString(byte rex, const char *string)
 {
-#if idx64
+#if defined(idx64)
 	if(rex)
 		Emit1(rex);
 #endif
@@ -419,21 +419,21 @@ void DoSyscall(void)
 	if(vm_syscallNum < 0)
 	{
 		int *data;
-#if idx64
+#if defined(idx64)
 		intptr_t args[MAX_VMSYSCALL_ARGS];
 #endif
 
 		data = (int *) (savedVM->dataBase + vm_programStack + 4);
 
-#if idx64
+#if defined(idx64)
 		args[0] = ~vm_syscallNum;
 		for(size_t index = 1; index < ARRAY_LEN(args); index++)
 			args[index] = data[index];
 
-		vm_opStackBase[vm_opStackOfs + 1] = savedVM->systemCall(args);
+		vm_opStackBase[vm_opStackOfs + 1] = savedVM->legacy.syscall(args);
 #else
 		data[0] = ~vm_syscallNum;
-		vm_opStackBase[vm_opStackOfs + 1] = savedVM->systemCall((intptr_t *) data);
+		vm_opStackBase[vm_opStackOfs + 1] = savedVM->legacy.syscall((intptr_t *) data);
 #endif
 	}
 	else
@@ -493,7 +493,7 @@ int EmitCallDoSyscall(vm_t *vm)
 	EmitString("51");			// push ebx
 	EmitString("56");			// push esi
 	EmitString("57");			// push edi
-#if idx64
+#if defined(idx64)
 	EmitRexString(0x41, "50");		// push r8
 	EmitRexString(0x41, "51");		// push r9
 #endif
@@ -532,7 +532,7 @@ int EmitCallDoSyscall(vm_t *vm)
 
 	// reset the stack pointer to its previous value
 	EmitString("5C");				// pop esp
-#if idx64
+#if defined(idx64)
 	EmitRexString(0x41, "59");		// pop r9
 	EmitRexString(0x41, "58");		// pop r8
 #endif
@@ -595,7 +595,7 @@ int EmitCallProcedure(vm_t *vm, int sysCallOfs)
 	EmitString("73");		// jae badAddr
 	jmpBadAddr = compiledOfs++;
 
-#if idx64
+#if defined(idx64)
 	EmitRexString(0x49, "FF 14 C0");	// call qword ptr [r8 + eax * 8]
 #else
 	EmitString("FF 14 85");			// call dword ptr [vm->instructionPointers + eax * 4]
@@ -753,7 +753,7 @@ qboolean ConstOptimize(vm_t *vm, int callProcOfsSyscall)
 
 	case OP_LOAD4:
 		EmitPushStack(vm);
-#if idx64
+#if defined(idx64)
 		EmitRexString(0x41, "8B 81");			// mov eax, dword ptr [r9 + 0x12345678]
 		Emit4(Constant4() & vm->dataMask);
 #else
@@ -769,7 +769,7 @@ qboolean ConstOptimize(vm_t *vm, int callProcOfsSyscall)
 
 	case OP_LOAD2:
 		EmitPushStack(vm);
-#if idx64
+#if defined(idx64)
 		EmitRexString(0x41, "0F B7 81");		// movzx eax, word ptr [r9 + 0x12345678]
 		Emit4(Constant4() & vm->dataMask);
 #else
@@ -785,7 +785,7 @@ qboolean ConstOptimize(vm_t *vm, int callProcOfsSyscall)
 
 	case OP_LOAD1:
 		EmitPushStack(vm);
-#if idx64
+#if defined(idx64)
 		EmitRexString(0x41, "0F B6 81");		// movzx eax, byte ptr [r9 + 0x12345678]
 		Emit4(Constant4() & vm->dataMask);
 #else
@@ -801,7 +801,7 @@ qboolean ConstOptimize(vm_t *vm, int callProcOfsSyscall)
 
 	case OP_STORE4:
 		EmitMovEAXStack(vm, (vm->dataMask & ~3));
-#if idx64
+#if defined(idx64)
 		EmitRexString(0x41, "C7 04 01");		// mov dword ptr [r9 + eax], 0x12345678
 		Emit4(Constant4());
 #else
@@ -816,7 +816,7 @@ qboolean ConstOptimize(vm_t *vm, int callProcOfsSyscall)
 
 	case OP_STORE2:
 		EmitMovEAXStack(vm, (vm->dataMask & ~1));
-#if idx64
+#if defined(idx64)
 		Emit1(0x66);					// mov word ptr [r9 + eax], 0x1234
 		EmitRexString(0x41, "C7 04 01");
 		Emit2(Constant4());
@@ -833,7 +833,7 @@ qboolean ConstOptimize(vm_t *vm, int callProcOfsSyscall)
 
 	case OP_STORE1:
 		EmitMovEAXStack(vm, vm->dataMask);
-#if idx64
+#if defined(idx64)
 		EmitRexString(0x41, "C6 04 01");		// mov byte [r9 + eax], 0x12
 		Emit1(Constant4());
 #else
@@ -1198,7 +1198,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			EmitString("81 C2");				// add edx, 0x12345678
 			Emit4((Constant1() & 0xFF));
 			MASK_REG("E2", vm->dataMask);			// and edx, 0x12345678
-#if idx64
+#if defined(idx64)
 			EmitRexString(0x41, "89 04 11");		// mov dword ptr [r9 + edx], eax
 #else
 			EmitString("89 82");				// mov dword ptr [edx + 0x12345678], eax
@@ -1238,7 +1238,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 				EmitMovEDXStack(vm, vm->dataMask);
 				if(v == 1 && oc0 == oc1 && pop0 == OP_LOCAL && pop1 == OP_LOCAL)
 				{
-#if idx64
+#if defined(idx64)
 					EmitRexString(0x41, "FF 04 11");	// inc dword ptr [r9 + edx]
 #else
 					EmitString("FF 82");			// inc dword ptr [edx + 0x12345678]
@@ -1247,7 +1247,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 				}
 				else
 				{
-#if idx64
+#if defined(idx64)
 					EmitRexString(0x41, "8B 04 11");	// mov eax, dword ptr [r9 + edx]
 #else
 					EmitString("8B 82");			// mov eax, dword ptr [edx + 0x12345678]
@@ -1258,7 +1258,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 
 					if (oc0 == oc1 && pop0 == OP_LOCAL && pop1 == OP_LOCAL)
 					{
-#if idx64
+#if defined(idx64)
 						EmitRexString(0x41, "89 04 11");	// mov dword ptr [r9 + edx], eax
 #else
 						EmitString("89 82");			// mov dword ptr [edx + 0x12345678], eax
@@ -1270,7 +1270,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 						EmitCommand(LAST_COMMAND_SUB_BL_1);	// sub bl, 1
 						EmitString("8B 14 9F");			// mov edx, dword ptr [edi + ebx * 4]
 						MASK_REG("E2", vm->dataMask);		// and edx, 0x12345678
-#if idx64
+#if defined(idx64)
 						EmitRexString(0x41, "89 04 11");	// mov dword ptr [r9 + edx], eax
 #else
 						EmitString("89 82");			// mov dword ptr [edx + 0x12345678], eax
@@ -1300,7 +1300,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 				EmitMovEDXStack(vm, vm->dataMask);
 				if(v == 1 && oc0 == oc1 && pop0 == OP_LOCAL && pop1 == OP_LOCAL)
 				{
-#if idx64
+#if defined(idx64)
 					EmitRexString(0x41, "FF 0C 11");	// dec dword ptr [r9 + edx]
 #else
 					EmitString("FF 8A");			// dec dword ptr [edx + 0x12345678]
@@ -1309,7 +1309,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 				}
 				else
 				{
-#if idx64
+#if defined(idx64)
 					EmitRexString(0x41, "8B 04 11");	// mov eax, dword ptr [r9 + edx]
 #else
 					EmitString("8B 82");			// mov eax, dword ptr [edx + 0x12345678]
@@ -1320,7 +1320,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 
 					if(oc0 == oc1 && pop0 == OP_LOCAL && pop1 == OP_LOCAL)
 					{
-#if idx64
+#if defined(idx64)
 						EmitRexString(0x41, "89 04 11");	// mov dword ptr [r9 + edx], eax
 #else
 						EmitString("89 82");			// mov dword ptr [edx + 0x12345678], eax
@@ -1332,7 +1332,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 						EmitCommand(LAST_COMMAND_SUB_BL_1);	// sub bl, 1
 						EmitString("8B 14 9F");			// mov edx, dword ptr [edi + ebx * 4]
 						MASK_REG("E2", vm->dataMask);		// and edx, 0x12345678
-#if idx64
+#if defined(idx64)
 						EmitRexString(0x41, "89 04 11");	// mov dword ptr [r9 + edx], eax
 #else
 						EmitString("89 82");			// mov dword ptr [edx + 0x12345678], eax
@@ -1352,7 +1352,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 				compiledOfs -= 3;
 				vm->instructionPointers[instruction - 1] = compiledOfs;
 				MASK_REG("E0", vm->dataMask);			// and eax, 0x12345678
-#if idx64
+#if defined(idx64)
 				EmitRexString(0x41, "8B 04 01");		// mov eax, dword ptr [r9 + eax]
 #else
 				EmitString("8B 80");				// mov eax, dword ptr [eax + 0x1234567]
@@ -1363,7 +1363,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			}
 
 			EmitMovEAXStack(vm, vm->dataMask);
-#if idx64
+#if defined(idx64)
 			EmitRexString(0x41, "8B 04 01");		// mov eax, dword ptr [r9 + eax]
 #else
 			EmitString("8B 80");				// mov eax, dword ptr [eax + 0x12345678]
@@ -1373,7 +1373,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			break;
 		case OP_LOAD2:
 			EmitMovEAXStack(vm, vm->dataMask);
-#if idx64
+#if defined(idx64)
 			EmitRexString(0x41, "0F B7 04 01");		// movzx eax, word ptr [r9 + eax]
 #else
 			EmitString("0F B7 80");				// movzx eax, word ptr [eax + 0x12345678]
@@ -1383,7 +1383,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			break;
 		case OP_LOAD1:
 			EmitMovEAXStack(vm, vm->dataMask);
-#if idx64
+#if defined(idx64)
 			EmitRexString(0x41, "0F B6 04 01");		// movzx eax, byte ptr [r9 + eax]
 #else
 			EmitString("0F B6 80");				// movzx eax, byte ptr [eax + 0x12345678]
@@ -1395,7 +1395,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			EmitMovEAXStack(vm, 0);
 			EmitString("8B 54 9F FC");			// mov edx, dword ptr -4[edi + ebx * 4]
 			MASK_REG("E2", vm->dataMask & ~3);		// and edx, 0x12345678
-#if idx64
+#if defined(idx64)
 			EmitRexString(0x41, "89 04 11");		// mov dword ptr [r9 + edx], eax
 #else
 			EmitString("89 82");				// mov dword ptr [edx + 0x12345678], eax
@@ -1407,7 +1407,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			EmitMovEAXStack(vm, 0);
 			EmitString("8B 54 9F FC");			// mov edx, dword ptr -4[edi + ebx * 4]
 			MASK_REG("E2", vm->dataMask & ~1);		// and edx, 0x12345678
-#if idx64
+#if defined(idx64)
 			Emit1(0x66);					// mov word ptr [r9 + edx], eax
 			EmitRexString(0x41, "89 04 11");
 #else
@@ -1420,7 +1420,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			EmitMovEAXStack(vm, 0);
 			EmitString("8B 54 9F FC");			// mov edx, dword ptr -4[edi + ebx * 4]
 			MASK_REG("E2", vm->dataMask);			// and edx, 0x12345678
-#if idx64
+#if defined(idx64)
 			EmitRexString(0x41, "88 04 11");		// mov byte ptr [r9 + edx], eax
 #else
 			EmitString("88 82");				// mov byte ptr [edx + 0x12345678], eax
@@ -1636,7 +1636,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 			EmitString("8B 44 9F 04");		// mov eax, dword ptr 4[edi + ebx * 4]
 			EmitString("81 F8");			// cmp eax, vm->instructionCount
 			Emit4(vm->instructionCount);
-#if idx64
+#if defined(idx64)
 			EmitString("73 04");			// jae +4
 			EmitRexString(0x49, "FF 24 C0");        // jmp qword ptr [r8 + eax * 8]
 #else
@@ -1719,7 +1719,7 @@ This function is called directly by the generated code
 ==============
 */
 
-#if defined(_MSC_VER) && idx64
+#if defined(_MSC_VER) && defined(idx64)
 extern "C" uint8_t qvmcall64(int *programStack, int *opStack, intptr_t *instructionPointers, byte *dataBase);
 #endif
 
@@ -1759,7 +1759,7 @@ int VM_CallCompiled(vm_t *vm, int *args)
 	opStackOfs = 0;
 
 #ifdef _MSC_VER
-  #if idx64
+  #if defined(idx64)
 	opStackOfs = qvmcall64(&programStack, opStack, vm->instructionPointers, vm->dataBase);
   #else
 	__asm
@@ -1779,7 +1779,7 @@ int VM_CallCompiled(vm_t *vm, int *args)
 		popad
 	}
   #endif
-#elif idx64
+#elif defined(idx64)
 	__asm__ volatile(
 		"movq %5, %%rax\n"
 		"movq %3, %%r8\n"

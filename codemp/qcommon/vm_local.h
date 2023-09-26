@@ -133,69 +133,24 @@ typedef enum {
 
 typedef int	vmptr_t;
 
-typedef struct vmSymbol_s {
-	struct vmSymbol_s	*next;
-	struct vmSymbol_s	*caller;
-	int		symValue;
-	int		symInstr;
-	long	profileCount;
-	int		callCount;
-	char	symName[1];		// variable sized
-} vmSymbol_t;
-
 #define	VM_OFFSET_PROGRAM_STACK		0
 #define	VM_OFFSET_SYSTEM_CALL		4
 
-struct vm_s {
-	// DO NOT MOVE OR CHANGE THESE WITHOUT CHANGING THE VM_OFFSET_* DEFINES
-	// USED BY THE ASM CODE
-	int			programStack;		// the vm may be recursively entered
-	intptr_t	(*systemCall)( intptr_t *parms );
 
-	//------------------------------------
+#define	VM_MAGIC	0x12721444
+typedef struct {
+	int		vmMagic;
 
-	char		name[MAX_QPATH];
-	void		*searchPath;				// hint for FS_ReadFileDir()
+	int		instructionCount;
 
-	// for dynamic linked modules
-	void		*dllHandle;
-	VM_EntryPoint_t entryPoint;
-	void		(*destroy)(vm_t* self);
-	qboolean	mvOverride;
+	int		codeOffset;
+	int		codeLength;
 
-	// for interpreted modules
-	qboolean	currentlyInterpreting;
-
-	qboolean	compiled;
-	byte		*codeBase;
-	int			entryOfs;
-	int			callProcOfs;
-	int			callProcOfsSyscall;
-	int			codeLength;
-
-	intptr_t	*instructionPointers;
-	int			instructionCount;
-
-	byte		*dataBase;
-	int			dataMask;
-
-	int			stackBottom;		// if programStack < stackBottom, error
-
-	int			numSymbols;
-	vmSymbol_t	*symbols;
-	vmSymbol_t	**symbolTable;
-
-	int			callLevel;		// counts recursive VM_Call
-	int			breakFunction;		// increment breakCount on function entry to this
-	int			breakCount;
-
-	byte		*jumpTableTargets;
-	int			numJumpTableTargets;
-
-	int			mvapilevel;
-	int			mvmenu;
-	mvversion_t	gameversion;
-};
+	int		dataOffset;
+	int		dataLength;
+	int		litLength;			// ( dataLength - litLength ) should be byteswapped on load
+	int		bssLength;			// zero filled memory appended to datalength
+} vmHeader_t;
 
 
 extern	vm_t	*currentVM;
@@ -215,3 +170,5 @@ const char *VM_SymbolForCompiledPointer( void *code );
 void VM_LogSyscalls( int *args );
 
 void VM_BlockCopy(unsigned int dest, unsigned int src, size_t n);
+
+void VM_Debug( int level );

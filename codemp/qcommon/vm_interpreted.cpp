@@ -117,14 +117,14 @@ static const char * const opnames[256] = {
 
 //FIXME: these, um... look the same to me
 #if defined(__GNUC__)
-static ID_INLINE unsigned int loadWord(void *addr) {
+static QINLINE unsigned int loadWord(void *addr) {
 	unsigned int word;
 
 	asm("lwbrx %0,0,%1" : "=r" (word) : "r" (addr));
 	return word;
 }
 #else
-static ID_INLINE unsigned int __lwbrx(register void *addr,
+static QINLINE unsigned int __lwbrx(register void *addr,
 		register int offset) {
 	register unsigned int word;
 
@@ -135,7 +135,7 @@ static ID_INLINE unsigned int __lwbrx(register void *addr,
 #endif
 
 #else
-	static ID_INLINE int loadWord(void *addr) {
+	static QINLINE int loadWord(void *addr) {
 	int word;
 	memcpy(&word, addr, 4);
 	return LittleLong(word);
@@ -518,10 +518,10 @@ nextInstruction2:
 						for (size_t i = 0; i < ARRAY_LEN(argarr); ++i) {
 							argarr[i] = *(++imagePtr);
 						}
-						r = vm->systemCall( argarr );
+						r = vm->legacy.syscall( argarr );
 					} else {
 						intptr_t* argptr = (intptr_t *)&image[ programStack + 4 ];
-						r = vm->systemCall( argptr );
+						r = vm->legacy.syscall( argptr );
 					}
 				}
 
