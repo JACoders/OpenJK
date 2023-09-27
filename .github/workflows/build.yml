@@ -284,7 +284,7 @@ jobs:
         working-directory: ${{ github.workspace }}/install/JediOutcast
         shell: bash
         run: |
-          chmod +x openjo_sp.x86_64.app/Contents/MacOS/openjo.x86_64
+          chmod +x openjo_sp.x86_64.app/Contents/MacOS/openjo_sp.x86_64
           tar -czvf openjo_sp-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - uses: actions/upload-artifact@v3
