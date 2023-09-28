@@ -38,17 +38,6 @@ jobs:
             platform: x64
 
     steps:
-      - name: Get the number of CPUs that the current process has access to.
-        id: cpus
-        run: |
-          from os import environ, sched_getaffinity
-
-          num_cpus = len(sched_getaffinity(0))
-          output_file = environ["GITHUB_OUTPUT"]
-          with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write("count={}\n".format(num_cpus))
-        shell: python
-
       - uses: actions/checkout@v3
 
       - name: Add msbuild to PATH
@@ -73,7 +62,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build . --config ${{ matrix.build_type }} -j ${{ steps.cpus.outputs.count }}
+        run: cmake --build . --config ${{ matrix.build_type }} -j $NUMBER_OF_PROCESSORS
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
@@ -110,17 +99,6 @@ jobs:
             platform: x64
 
     steps:
-      - name: Get the number of CPUs that the current process has access to.
-        id: cpus
-        run: |
-          from os import environ, sched_getaffinity
-
-          num_cpus = len(sched_getaffinity(0))
-          output_file = environ["GITHUB_OUTPUT"]
-          with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write("count={}\n".format(num_cpus))
-        shell: python
-
       - uses: actions/checkout@v3
 
       - name: Install v141_xp Toolchain
@@ -159,7 +137,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build . --config ${{ matrix.build_type }} -j ${{ steps.cpus.outputs.count }}
+        run: cmake --build . --config ${{ matrix.build_type }} -j $NUMBER_OF_PROCESSORS
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
@@ -192,17 +170,6 @@ jobs:
         portable: [Non-Portable]
 
     steps:
-      - name: Get the number of CPUs that the current process has access to.
-        id: cpus
-        run: |
-          from os import environ, sched_getaffinity
-
-          num_cpus = len(sched_getaffinity(0))
-          output_file = environ["GITHUB_OUTPUT"]
-          with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write("count={}\n".format(num_cpus))
-        shell: python
-
       - uses: actions/checkout@v3
 
       - name: Create Build Environment
@@ -239,7 +206,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build . -j ${{ steps.cpus.outputs.count }}
+        run: cmake --build . -j $(nproc)
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
@@ -284,17 +251,6 @@ jobs:
         portable: [Non-Portable]
 
     steps:
-      - name: Get the number of CPUs that the current process has access to.
-        id: cpus
-        run: |
-          from os import environ, sched_getaffinity
-
-          num_cpus = len(sched_getaffinity(0))
-          output_file = environ["GITHUB_OUTPUT"]
-          with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write("count={}\n".format(num_cpus))
-        shell: python
-
       - uses: actions/checkout@v3
 
       - name: Create Build Environment
@@ -318,7 +274,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build . -j ${{ steps.cpus.outputs.count }}
+        run: cmake --build . -j $(getconf _NPROCESSORS_ONLN)
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
