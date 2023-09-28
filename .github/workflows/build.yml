@@ -38,6 +38,17 @@ jobs:
             platform: x64
 
     steps:
+      - name: Get the number of CPUs that the current process has access to.
+        id: cpus
+        run: |
+          from os import environ, sched_getaffinity
+
+          num_cpus = len(sched_getaffinity(0))
+          output_file = environ["GITHUB_OUTPUT"]
+          with open(output_file, "a", encoding="utf-8") as output_stream:
+              output_stream.write(f"count={num_cpus}\n")
+        shell: python
+
       - uses: actions/checkout@v3
 
       - name: Add msbuild to PATH
@@ -62,7 +73,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build . --config ${{ matrix.build_type }}
+        run: cmake --build . --config ${{ matrix.build_type }} -j ${{ steps.cpus.outputs.count }}
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
@@ -73,8 +84,15 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.build_type == 'Release' }}
         with:
-          name: windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
-          path: ${{ github.workspace }}/build/bin
+          name: OpenJK-windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ github.workspace }}/build/bin/JediAcademy
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }}
+        with:
+          name: OpenJO-windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ github.workspace }}/build/bin/JediOutcast
           if-no-files-found: error
 
   msvcxp:
@@ -92,6 +110,17 @@ jobs:
             platform: x64
 
     steps:
+      - name: Get the number of CPUs that the current process has access to.
+        id: cpus
+        run: |
+          from os import environ, sched_getaffinity
+
+          num_cpus = len(sched_getaffinity(0))
+          output_file = environ["GITHUB_OUTPUT"]
+          with open(output_file, "a", encoding="utf-8") as output_stream:
+              output_stream.write(f"count={num_cpus}\n")
+        shell: python
+
       - uses: actions/checkout@v3
 
       - name: Install v141_xp Toolchain
@@ -130,20 +159,26 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build . --config ${{ matrix.build_type }}
+        run: cmake --build . --config ${{ matrix.build_type }} -j ${{ steps.cpus.outputs.count }}
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: |
-          cmake --install . --config ${{ matrix.build_type }}
+        run: cmake --install . --config ${{ matrix.build_type }}
 
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.build_type == 'Release' }}
         with:
-          name: windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
-          path: ${{ github.workspace }}/build/bin
+          name: OpenJK-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ github.workspace }}/build/bin/JediAcademy
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }}
+        with:
+          name: OpenJO-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ github.workspace }}/build/bin/JediOutcast
           if-no-files-found: error
 
   ubuntu:
@@ -157,6 +192,17 @@ jobs:
         portable: [Non-Portable]
 
     steps:
+      - name: Get the number of CPUs that the current process has access to.
+        id: cpus
+        run: |
+          from os import environ, sched_getaffinity
+
+          num_cpus = len(sched_getaffinity(0))
+          output_file = environ["GITHUB_OUTPUT"]
+          with open(output_file, "a", encoding="utf-8") as output_stream:
+              output_stream.write(f"count={num_cpus}\n")
+        shell: python
+
       - uses: actions/checkout@v3
 
       - name: Create Build Environment
@@ -193,7 +239,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build .
+        run: cmake --build . -j ${{ steps.cpus.outputs.count }}
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
@@ -202,18 +248,16 @@ jobs:
         run: cmake --install .
 
       - name: Create OpenJK binary archive
-        if: ${{ matrix.build_type == 'Release'}}
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ github.workspace }}/install/JediAcademy
         shell: bash
-        run: |
-          tar -czvf OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
+        run: tar -czvf OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - name: Create OpenJO binary archive
-        if: ${{ matrix.build_type == 'Release'}}
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ github.workspace }}/install/JediOutcast
         shell: bash
-        run: |
-          tar -czvf OpenJO-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
+        run: tar -czvf OpenJO-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.build_type == 'Release' }}
@@ -240,6 +284,17 @@ jobs:
         portable: [Non-Portable]
 
     steps:
+      - name: Get the number of CPUs that the current process has access to.
+        id: cpus
+        run: |
+          from os import environ, sched_getaffinity
+
+          num_cpus = len(sched_getaffinity(0))
+          output_file = environ["GITHUB_OUTPUT"]
+          with open(output_file, "a", encoding="utf-8") as output_stream:
+              output_stream.write(f"count={num_cpus}\n")
+        shell: python
+
       - uses: actions/checkout@v3
 
       - name: Create Build Environment
@@ -263,7 +318,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/build
         shell: bash
-        run: cmake --build .
+        run: cmake --build . -j ${{ steps.cpus.outputs.count }}
 
       - name: Install
         if: ${{ matrix.build_type == 'Release' }}
@@ -315,17 +370,17 @@ jobs:
 
       - name: Create binary archives
         run: |
-          7z a -r OpenJK-windows-x86.zip ./windows-x86-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
-          7z a -r OpenJK-windows-x86_64.zip ./windows-x86_64-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJK-windows-x86.zip ./OpenJK-windows-x86-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJK-windows-x86_64.zip ./OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           mv ./OpenJK-linux-x86-Release-Non-Portable/* OpenJK-linux-x86.tar.gz
           mv ./OpenJK-linux-x86_64-Release-Non-Portable/* OpenJK-linux-x86_64.tar.gz
           mv ./OpenJK-macos-x86_64-Release-Non-Portable/* OpenJK-macos-x86_64.tar.gz
 
-          7z a -r OpenJO-windows-x86.zip                   ./windows-x86-Release-Non-Portable/JediOutcast/*
-          7z a -r OpenJO-windows-x86_64.zip                ./windows-x86_64-Release-Non-Portable/JediOutcast/*
-          mv ./OpenJO-linux-x86-Release-Non-Portable/*     OpenJO-linux-x86.tar.gz
-          mv ./OpenJO-linux-x86_64-Release-Non-Portable/*  OpenJO-linux-x86_64.tar.gz
-          mv ./OpenJO-macos-x86_64-Release-Non-Portable/*  OpenJO-macos-x86_64.tar.gz
+          7z a -r OpenJO-windows-x86.zip ./OpenJO-windows-x86-Release-Non-Portable/JediOutcast/*
+          7z a -r OpenJO-windows-x86_64.zip ./OpenJO-windows-x86_64-Release-Non-Portable/JediOutcast/*
+          mv ./OpenJO-linux-x86-Release-Non-Portable/* OpenJO-linux-x86.tar.gz
+          mv ./OpenJO-linux-x86_64-Release-Non-Portable/* OpenJO-linux-x86_64.tar.gz
+          mv ./OpenJO-macos-x86_64-Release-Non-Portable/* OpenJO-macos-x86_64.tar.gz
 
       - name: Create latest build
         uses: marvinpinto/action-automatic-releases@latest
