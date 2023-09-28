@@ -46,7 +46,7 @@ jobs:
           num_cpus = len(sched_getaffinity(0))
           output_file = environ["GITHUB_OUTPUT"]
           with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write(f"count={num_cpus}\n")
+              output_stream.write("count={}\n".format(num_cpus))
         shell: python
 
       - uses: actions/checkout@v3
@@ -118,7 +118,7 @@ jobs:
           num_cpus = len(sched_getaffinity(0))
           output_file = environ["GITHUB_OUTPUT"]
           with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write(f"count={num_cpus}\n")
+              output_stream.write("count={}\n".format(num_cpus))
         shell: python
 
       - uses: actions/checkout@v3
@@ -200,7 +200,7 @@ jobs:
           num_cpus = len(sched_getaffinity(0))
           output_file = environ["GITHUB_OUTPUT"]
           with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write(f"count={num_cpus}\n")
+              output_stream.write("count={}\n".format(num_cpus))
         shell: python
 
       - uses: actions/checkout@v3
@@ -292,7 +292,7 @@ jobs:
           num_cpus = len(sched_getaffinity(0))
           output_file = environ["GITHUB_OUTPUT"]
           with open(output_file, "a", encoding="utf-8") as output_stream:
-              output_stream.write(f"count={num_cpus}\n")
+              output_stream.write("count={}\n".format(num_cpus))
         shell: python
 
       - uses: actions/checkout@v3
