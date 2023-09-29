@@ -4151,7 +4151,7 @@ void			STEER::Activate(gentity_t* actor)
 	gentity_t*	neighbor = 0;
 
 	int	numFound = gi.EntitiesInBox(Mins.v, Maxs.v, EntityList, MAX_GENTITIES);
-	for (int i=0; i<numFound; i++)
+	for (int i=0; i<numFound && !suser.mNeighbors.full(); i++)
 	{
 		neighbor = EntityList[i];
 		assert(neighbor!=0);
