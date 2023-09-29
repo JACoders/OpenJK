@@ -2403,6 +2403,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 	const char	*s;
 	int i = 0;
 
+	Rand_Init( trap->Milliseconds() );
+
 	BG_InitAnimsets(); //clear it out
 
 	trap->RegisterSharedMemory( cg.sharedBuffer.raw );
