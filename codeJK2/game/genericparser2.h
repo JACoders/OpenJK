@@ -44,17 +44,17 @@ namespace GP2
 class CGPProperty
 {
 public:
-	using Values = GP2::Vector< gsl::cstring_view >;
+	using Values = GP2::Vector< gsl::cstring_span >;
 private:
-	gsl::cstring_view mKey;
+	gsl::cstring_span mKey;
 	Values mValues;
 
 
 public:
 
-	CGPProperty( gsl::cstring_view initKey, gsl::cstring_view initValue = {} );
+	CGPProperty( gsl::cstring_span initKey, gsl::cstring_span initValue = {} );
 
-	const gsl::cstring_view& GetName() const
+	const gsl::cstring_span& GetName() const
 	{
 		return mKey;
 	}
@@ -62,9 +62,9 @@ public:
 	{
 		return mValues.size() > 1;
 	}
-	const gsl::cstring_view& GetTopValue() const NOEXCEPT
+	const gsl::cstring_span& GetTopValue() const NOEXCEPT
 	{
-		static gsl::cstring_view empty{};
+		static gsl::cstring_span empty{};
 		return mValues.empty() ? empty : mValues.front();
 	}
 	const Values& GetValues() const NOEXCEPT
@@ -72,7 +72,7 @@ public:
 		return mValues;
 	}
 	// Copies the value into the textPool and adds a pointer to that copy to the end of the list.
-	void AddValue( gsl::cstring_view newValue );
+	void AddValue( gsl::cstring_span newValue );
 };
 
 
@@ -85,11 +85,11 @@ public:
 	using SubGroups = GP2::Vector< CGPGroup >;
 private:
 	Properties mProperties;
-	gsl::cstring_view mName = CSTRING_VIEW( "Top Level" );
+	gsl::cstring_span mName = CSTRING_VIEW( "Top Level" );
 	SubGroups mSubGroups;
 public:
 	CGPGroup() = default;
-	CGPGroup( const gsl::cstring_view& initName );
+	CGPGroup( const gsl::cstring_span& initName );
 	// non-copyable; but just for performance reasons, since it would incur a deep copy.
 	CGPGroup( const CGPGroup& ) = delete;
 	CGPGroup& operator=( const CGPGroup& ) = delete;
@@ -122,7 +122,7 @@ public:
 	{
 		return mSubGroups;
 	}
-	const CGPGroup* FindSubGroup( const gsl::cstring_view& name ) const NOEXCEPT
+	const CGPGroup* FindSubGroup( const gsl::cstring_span& name ) const NOEXCEPT
 	{
 		for ( auto& sub : GetSubGroups() )
 		{
@@ -133,7 +133,7 @@ public:
 		}
 		return nullptr;
 	}
-	const CGPProperty* FindProperty( const gsl::cstring_view& name ) const NOEXCEPT
+	const CGPProperty* FindProperty( const gsl::cstring_span& name ) const NOEXCEPT
 	{
 		for ( auto& prop : GetProperties() )
 		{
@@ -144,7 +144,7 @@ public:
 		}
 		return nullptr;
 	}
-	const gsl::cstring_view& GetName() const NOEXCEPT
+	const gsl::cstring_span& GetName() const NOEXCEPT
 	{
 		return mName;
 	}
@@ -154,7 +154,7 @@ public:
 		mProperties.clear();
 		mSubGroups.clear();
 	}
-	bool Parse( gsl::cstring_view& data, const bool topLevel = true );
+	bool Parse( gsl::cstring_span& data, const bool topLevel = true );
 };
 
 /**

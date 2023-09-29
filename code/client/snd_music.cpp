@@ -204,7 +204,7 @@ const char *Music_BaseStateToString( MusicState_e eMusicState, qboolean bDebugPr
 	return NULL;
 }
 
-static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Parser, MusicData_t* MusicData, const CGPGroup& pgMusicFiles, const gsl::cstring_view& psMusicName, const gsl::cstring_view& psMusicNameKey, MusicState_e eMusicState )
+static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Parser, MusicData_t* MusicData, const CGPGroup& pgMusicFiles, const gsl::cstring_span& psMusicName, const gsl::cstring_span& psMusicNameKey, MusicState_e eMusicState )
 {
 	bool bReturn = false;
 	MusicFile_t MusicFile;
@@ -424,7 +424,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 				// check for new USE keyword...
 				//
 				int steps = 0;
-				gsl::cstring_view searchName{ &sLevelName[ 0 ], &sLevelName[ strlen( &sLevelName[ 0 ] ) ] };
+				gsl::cstring_span searchName{ &sLevelName[ 0 ], &sLevelName[ strlen( &sLevelName[ 0 ] ) ] };
 
 				const int sanityLimit = 10;
 				while( !searchName.empty() && steps < sanityLimit )
@@ -469,10 +469,10 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 				{
 					// these are optional fields, so see which ones we find...
 					//
-					gsl::cstring_view psName_Explore;
-					gsl::cstring_view psName_Action;
-					gsl::cstring_view psName_Boss;
-					gsl::cstring_view psName_UseBoss;
+					gsl::cstring_span psName_Explore;
+					gsl::cstring_span psName_Action;
+					gsl::cstring_span psName_Boss;
+					gsl::cstring_span psName_UseBoss;
 
 					for( auto& prop : pgThisLevelMusic->GetProperties() )
 					{
@@ -532,15 +532,15 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 
 					// done this way in case I want to conditionally pass any bools depending on music type...
 					//
-					if( bReturn && psName_Explore )
+					if( bReturn && psName_Explore.length() )
 					{
 						bReturn = Music_ParseMusic( filename, Parser, MusicData, *pgMusicFiles, psName_Explore, sKEY_EXPLORE, eBGRNDTRACK_EXPLORE );
 					}
-					if( bReturn && psName_Action )
+					if( bReturn && psName_Action.length() )
 					{
 						bReturn = Music_ParseMusic( filename, Parser, MusicData, *pgMusicFiles, psName_Action, sKEY_ACTION, eBGRNDTRACK_ACTION );
 					}
-					if( bReturn && psName_Boss )
+					if( bReturn && psName_Boss.length() )
 					{
 						bReturn = Music_ParseMusic( filename, Parser, MusicData, *pgMusicFiles, psName_Boss, sKEY_BOSS, eBGRNDTRACK_BOSS );
 					}

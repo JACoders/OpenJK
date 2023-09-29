@@ -44,7 +44,7 @@ namespace FS
 		{
 			return _buffer != nullptr;
 		}
-		gsl::cstring_view view() const NOEXCEPT
+		gsl::cstring_span view() const NOEXCEPT
 		{
 			return{ begin(), end() };
 		}
