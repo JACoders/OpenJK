@@ -326,6 +326,9 @@ struct vm_s {
 
 	byte		*jumpTableTargets;
 	int			numJumpTableTargets;
+
+	int			extraMemOffset;
+	int			extraMemUse;
 };
 
 extern vm_t *currentVM;

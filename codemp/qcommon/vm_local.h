@@ -182,3 +182,12 @@ void VM_Debug( int level );
 void VM_LoadSymbols( vm_t *vm );
 void VM_VmInfo_f( void );
 void VM_VmProfile_f( void );
+
+#define QVM_EXTRA_MEMORY_AMOUNT 8192
+
+void VM_ExtraMemory_Clear( vm_t *vm );
+void *VM_ExtraMemory_Claim( vm_t *vm, int amount );
+void VM_ExtraMemory_Release( vm_t *vm, int amount );
+void *VM_ExtraMemory_ClaimData( vm_t *vm, const void *data, uint32_t size );
+char *VM_ExtraMemory_ClaimString( vm_t *vm, const char *inputString );
+size_t VM_PtrToOffset( vm_t *vm, void *ptr );

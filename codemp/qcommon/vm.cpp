@@ -189,6 +189,12 @@ vmHeader_t *VM_LoadQVM( vm_t *vm, qboolean alloc, qboolean freeVM )
 	// be mask protected
 	dataLength = header.h->dataLength + header.h->litLength +
 		header.h->bssLength;
+
+	// Allocate more memory to have room for additional data to be added within the QVM's scope
+	vm->extraMemOffset = dataLength - PROGRAM_STACK_SIZE;
+	vm->extraMemUse = 0;
+	dataLength += QVM_EXTRA_MEMORY_AMOUNT;
+
 	for ( i = 0 ; dataLength > ( 1 << i ) ; i++ ) {
 	}
 	dataLength = 1 << i;
@@ -630,7 +636,7 @@ const char *VM_SymbolForCompiledPointer( void *code ) {
 	for ( int i = 0; i < MAX_VM; i++ ) {
 		vm_t *vm = vmTable[i];
 
-		if ( vm->compiled ) {
+		if ( vm && vm->compiled ) {
 			if ( vm->codeBase <= code && code < vm->codeBase + vm->codeLength ) {
 				return VM_ValueToSymbol( vm, (byte *)code - vm->codeBase );
 			}
@@ -1088,4 +1094,96 @@ void VM_BlockCopy(unsigned int dest, unsigned int src, size_t n)
 	}
 
 	Com_Memcpy(currentVM->dataBase + dest, currentVM->dataBase + src, n);
+}
+
+/*
+================
+ VM_ExtraMemory
+----------------
+For QVMs we allocate additional memory when loading the QVM to write data inside
+there that the module expects to be given as pointers. Ideally the module
+would pass a pointer to its own memory for the engine to fill, but JKA does this
+different for some subsystems, because JKA shipped with dlls rather than QVMs.
+To stay compatible with vanilla code expectations in the QVM we need to copy our
+data into QVM memory for the QVM to have access to it.
+================
+*/
+void VM_ExtraMemory_Clear( vm_t *vm )
+{
+	// Not for dlls
+	if ( vm->dllHandle ) return;
+	vm->extraMemUse = 0;
+}
+
+void *VM_ExtraMemory_Claim( vm_t *vm, int amount )
+{
+	int retBlock;
+
+	// Not for dlls
+	if ( vm->dllHandle ) return NULL;
+
+	// Pad the amount
+	amount = PAD(amount, sizeof(void*) );
+
+	// Make sure it fits
+	if ( vm->extraMemOffset + vm->extraMemUse + amount >= vm->dataMask - PROGRAM_STACK_SIZE ) {
+		//Com_Error( ERR_FATAL, "VM_ExtraMemory_Claim: failed to claim %i bytes\n", amount );
+		Com_Printf( "VM_ExtraMemory_Claim: failed to claim %i bytes\n", amount );
+		return NULL;
+	}
+
+	// Remember where we are now and increate the use counter
+	retBlock = vm->extraMemOffset + vm->extraMemUse;
+	vm->extraMemUse += amount;
+
+	// Return address that we can write to
+	return (void *)(currentVM->dataBase + (retBlock & currentVM->dataMask));
+}
+
+void VM_ExtraMemory_Release( vm_t *vm, int amount )
+{ // NOTE: Must be in reverse order of claim
+	// Not for dlls
+	if ( vm->dllHandle ) return;
+
+	// Pad the amount
+	amount = PAD(amount, sizeof(void*) );
+
+	// Make sure it fits
+	if ( vm->extraMemUse - amount < 0 ) {
+		Com_Error( ERR_FATAL, "VM_ExtraMemory_Release: failed to release %i bytes, because a lower amount had been claimed\n", amount );
+	}
+
+	// Subtract the amount
+	vm->extraMemUse -= amount;
+}
+
+void *VM_ExtraMemory_ClaimData( vm_t *vm, const void *data, uint32_t size )
+{
+	if ( !data ) return NULL;
+	void *dst = VM_ExtraMemory_Claim( vm, size );
+	if ( dst ) memcpy( dst, data, size );
+	return dst;
+}
+
+char *VM_ExtraMemory_ClaimString( vm_t *vm, const char *inputString )
+{
+	if ( !inputString ) return NULL;
+	int length = strlen( inputString ) + 1;
+	return (char*)VM_ExtraMemory_ClaimData( vm, inputString, length );
+}
+
+size_t VM_PtrToOffset( vm_t *vm, void *ptr )
+{
+	// Dlls are not masked
+	if ( vm->dllHandle ) return (size_t)ptr;
+
+	// Return 0 if it's a NULL pointer. This allows calls like VM_PtrToOffset( vm, VM_ExtraMemory_ClaimData(...) )
+	if ( !ptr ) return 0;
+
+	// Make sure it's within the module memory
+	if ( ptr < vm->dataBase || ptr > vm->dataBase + vm->dataMask ) {
+		Com_Error( ERR_FATAL, "VM_PtrToOffset: tried to get offset for non-vm pointer\n" );
+	}
+
+	return (byte*)ptr - vm->dataBase;
 }

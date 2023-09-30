@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_ambient.h"
 #include "FXExport.h"
 #include "FxUtil.h"
+#include "qcommon/vm_local.h"
 
 #include <unordered_map>
 
@@ -220,16 +221,16 @@ static void CL_GetGlconfig( glconfig_t *config ) {
 		// pointers. Instead of just assigning the glconfig we have to manually copy it over.
 		glconfig_qvm_t *glconfig_qvm = (glconfig_qvm_t*)config;
 
-		// FIXME: The QVM can't access the engine pointers so there is no point in passing our pointers in here.
-		//        JK2 used to have the module pass fixed size buffers that could be written to, but here we just have a
-		//        pointer so we force it to 0 for now. In theory we could allocate additional memory as part of the
-		//        QVM memory block when loading the QVM and write the strings there to let the QVM access them, but that
-		//        would require changes to the vm_* code, thus we are sticking with the NULL pointers for now. This
-		//        could still get adjusted later on.
-		glconfig_qvm->renderer_string = 0;
-		glconfig_qvm->vendor_string = 0;
-		glconfig_qvm->version_string = 0;
-		glconfig_qvm->extensions_string = 0;
+		// We now reserve additional memory when loading the QVM. The QVM shouldn't try to access it on its own, but it
+		// is valid inside the QVM and if we set a pointer to it the QVM should be able to access it. Thus we now claim
+		// some of this extra memory in QVM-scope to write our glconfig strings in there and tell the QVM where to find
+		// them.
+		// FIXME: It would probably be a good idea to keep a reference to this extra memory ourselves in case a module
+		//        decides to call this functions multiple times. Currently we would claim additional memory each time.
+		glconfig_qvm->renderer_string   = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.renderer_string   ) );
+		glconfig_qvm->vendor_string     = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.vendor_string     ) );
+		glconfig_qvm->version_string    = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.version_string    ) );
+		glconfig_qvm->extensions_string = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.extensions_string ) );
 
 		// Assign the rest of the values
 		glconfig_qvm->maxTextureSize = cls.glconfig.maxTextureSize;
