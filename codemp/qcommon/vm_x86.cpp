@@ -418,22 +418,23 @@ void DoSyscall(void)
 
 	if(vm_syscallNum < 0)
 	{
-		int *data;
+		int *data, *ret;
 #if defined(idx64)
 		intptr_t args[MAX_VMSYSCALL_ARGS];
 #endif
 
 		data = (int *) (savedVM->dataBase + vm_programStack + 4);
+		ret = &vm_opStackBase[vm_opStackOfs + 1 ];
 
 #if defined(idx64)
 		args[0] = ~vm_syscallNum;
 		for(size_t index = 1; index < ARRAY_LEN(args); index++)
 			args[index] = data[index];
 
-		vm_opStackBase[vm_opStackOfs + 1] = savedVM->legacy.syscall(args);
+		*ret = savedVM->legacy.syscall(args);
 #else
 		data[0] = ~vm_syscallNum;
-		vm_opStackBase[vm_opStackOfs + 1] = savedVM->legacy.syscall((intptr_t *) data);
+		*ret = savedVM->legacy.syscall((intptr_t *) data);
 #endif
 	}
 	else
