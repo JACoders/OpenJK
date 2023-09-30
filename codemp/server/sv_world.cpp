@@ -747,7 +747,7 @@ Ghoul2 Insert Start
 #ifndef FINAL_BUILD
 			if (sv_showghoultraces->integer)
 			{
-				Com_Printf( "Ghoul2 trace   lod=%1d   length=%6.0f   to %s\n",clip->useLod,VectorDistance(clip->start, clip->end), re->G2API_GetModelName (*(CGhoul2Info_v *)touch->ghoul2, 0));
+				Com_Printf( "Ghoul2 trace   lod=%1d   length=%6.0f   to %s\n",clip->useLod,VectorDistance(clip->start, clip->end), re->G2API_GetModelName(*(SV_G2Map_GetG2FromHandle((g2handleptr_t)touch->ghoul2)), 0));
 			}
 #endif
 
@@ -757,11 +757,11 @@ Ghoul2 Insert Start
 				touch->s.NPC_class == CLASS_VEHICLE &&
 				touch->m_pVehicle)
 			{ //for vehicles cache the transform data.
-				re->G2API_CollisionDetectCache(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
+				re->G2API_CollisionDetectCache(G2Trace, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)touch->ghoul2)), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
 			}
 			else
 			{
-				re->G2API_CollisionDetect(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
+				re->G2API_CollisionDetect(G2Trace, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)touch->ghoul2)), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
 			}
 
 			tN = 0;

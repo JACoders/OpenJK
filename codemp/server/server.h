@@ -385,6 +385,10 @@ void		SV_InitGameProgs ( void );
 void		SV_ShutdownGameProgs ( void );
 qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
 
+CGhoul2Info_v *SV_G2Map_GetG2FromHandle( g2handleptr_t g2h );
+CGhoul2Info_v **SV_G2Map_GetG2PtrFromHandle( g2handleptr_t g2h );
+void SV_G2Map_Update( g2handleptr_t *g2h, CGhoul2Info_v *g2Ptr );
+
 //
 // sv_bot.c
 //
