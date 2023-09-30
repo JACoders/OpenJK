@@ -324,8 +324,11 @@ else()
 endif()
 
 # Current Git SHA1 hash
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC GIT_HASH)
+execute_process(
+	COMMAND "git" "rev-parse" "--short" "HEAD"
+	OUTPUT_VARIABLE GIT_HASH
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+	COMMAND_ERROR_IS_FATAL ANY)
 message(STATUS "Git revision is ${GIT_HASH}")
 
 configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)

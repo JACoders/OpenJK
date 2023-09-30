@@ -55,6 +55,7 @@ cvar_t	*com_cl_running;
 cvar_t	*com_logfile;		// 1 = buffer log, 2 = flush after each print
 cvar_t	*com_showtrace;
 cvar_t	*com_version;
+cvar_t	*com_revision;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_bootlogo;
 cvar_t	*cl_paused;
@@ -1161,6 +1162,7 @@ void Com_Init( char *commandLine ) {
 
 		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
+		com_revision = Cvar_Get ("com_revision", GIT_HASH, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifdef JK2_MODE
 		JK2SP_Init();
