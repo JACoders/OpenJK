@@ -429,7 +429,7 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 
 	char *truncatedExtensions;
 
-	while ( (q = strchr (p, ' ')) != NULL && numExtensions <= maxExtensions )
+	while ( (q = strchr (p, ' ')) != NULL && numExtensions < maxExtensions )
 	{
 		p = q + 1;
 		numExtensions++;
