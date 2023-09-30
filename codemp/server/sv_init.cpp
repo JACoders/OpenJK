@@ -94,8 +94,8 @@ void SV_UpdateConfigstrings(client_t *client)
 			continue;
 
 		// do not always send server info to all clients
-		if ( index == CS_SERVERINFO && client->gentity &&
-			(client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
+		if ( index == CS_SERVERINFO && client->gentityMapper &&
+			(client->gentityMapper->r->svFlags & SVF_NOSERVERINFO) ) {
 			continue;
 		}
 		SV_SendConfigstring(client, index);
@@ -142,7 +142,7 @@ void SV_SetConfigstring (int index, const char *val) {
 				continue;
 			}
 			// do not always send server info to all clients
-			if ( index == CS_SERVERINFO && client->gentity && (client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
+			if ( index == CS_SERVERINFO && client->gentityMapper && (client->gentityMapper->r->svFlags & SVF_NOSERVERINFO) ) {
 				continue;
 			}
 
@@ -217,20 +217,20 @@ baseline will be transmitted
 ================
 */
 void SV_CreateBaseline( void ) {
-	sharedEntity_t *svent;
+	sharedEntityMapper_t *svent;
 	int				entnum;
 
 	for ( entnum = 1; entnum < sv.num_entities ; entnum++ ) {
-		svent = SV_GentityNum(entnum);
-		if (!svent->r.linked) {
+		svent = SV_GentityMapperNum(entnum);
+		if (!svent->r->linked) {
 			continue;
 		}
-		svent->s.number = entnum;
+		svent->s->number = entnum;
 
 		//
 		// take current state as baseline
 		//
-		sv.svEntities[entnum].baseline = svent->s;
+		sv.svEntities[entnum].baseline = *(svent->s);
 	}
 }
 
@@ -668,13 +668,12 @@ Ghoul2 Insert End
 				}
 				else {
 					client_t		*client;
-					sharedEntity_t	*ent;
 
 					client = &svs.clients[i];
 					client->state = CS_ACTIVE;
-					ent = SV_GentityNum( i );
-					ent->s.number = i;
-					client->gentity = ent;
+					client->gentityMapper = SV_GentityMapperNum( i );
+					client->gentityMapper->s->number = i;
+					client->gentity = SV_GentityNum( i );
 
 					client->deltaMessage = -1;
 					client->nextSnapshotTime = svs.time;	// generate a snapshot immediately

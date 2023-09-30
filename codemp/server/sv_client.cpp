@@ -133,7 +133,6 @@ void SV_DirectConnect( netadr_t from ) {
 	int			i;
 	client_t	*cl, *newcl;
 	client_t	temp;
-	sharedEntity_t *ent;
 	int			clientNum;
 	int			version;
 	int			qport;
@@ -303,8 +302,8 @@ gotnewcl:
 	// this is the only place a client_t is ever initialized
 	*newcl = temp;
 	clientNum = newcl - svs.clients;
-	ent = SV_GentityNum( clientNum );
-	newcl->gentity = ent;
+	newcl->gentity = SV_GentityNum( clientNum );
+	newcl->gentityMapper = SV_GentityMapperNum( clientNum );
 
 	// save the challenge
 	newcl->challenge = challenge;
@@ -547,7 +546,6 @@ SV_ClientEnterWorld
 */
 void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 	int		clientNum;
-	sharedEntity_t *ent;
 
 	Com_DPrintf( "Going from CS_PRIMED to CS_ACTIVE for %s\n", client->name );
 	client->state = CS_ACTIVE;
@@ -562,9 +560,9 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 
 	// set up the entity for the client
 	clientNum = client - svs.clients;
-	ent = SV_GentityNum( clientNum );
-	ent->s.number = clientNum;
-	client->gentity = ent;
+	client->gentity = SV_GentityNum( clientNum );
+	client->gentityMapper = SV_GentityMapperNum( clientNum );
+	client->gentityMapper->s->number = clientNum;
 
 	client->lastUserInfoChange = 0; //reset the delay
 	client->lastUserInfoCount = 0; //reset the count

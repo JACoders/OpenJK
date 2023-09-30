@@ -183,7 +183,7 @@ public:
 	void ShowEdges( void );
 	void ShowPath( int start, int end );
 
-	int GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int targetID );
+	int GetNearestNode( sharedEntityMapper_t *ent, int lastID, int flags, int targetID );
 
 	int GetBestNode( int startID, int endID, int rejectID = NODE_NONE );
 
@@ -201,9 +201,9 @@ public:
 
 	int GetProjectedNode( vec3_t origin, int nodeID );
 //MCG Added BEGIN
-	void CheckFailedNodes( sharedEntity_t *ent );
-	void AddFailedNode( sharedEntity_t *ent, int nodeID );
-	qboolean NodeFailed( sharedEntity_t *ent, int nodeID );
+	void CheckFailedNodes( sharedEntityMapper_t *ent );
+	void AddFailedNode( sharedEntityMapper_t *ent, int nodeID );
+	qboolean NodeFailed( sharedEntityMapper_t *ent, int nodeID );
 	qboolean NodesAreNeighbors( int startID, int endID );
 	void ClearFailedEdge( failedEdge_t	*failedEdge );
 	void ClearAllFailedEdges( void );
@@ -214,7 +214,7 @@ public:
 	qboolean RouteBlocked( int startID, int testEdgeID, int endID, int rejectRank );
 	int GetBestNodeAltRoute( int startID, int endID, int *pathCost, int rejectID = NODE_NONE );
 	int GetBestNodeAltRoute( int startID, int endID, int rejectID = NODE_NONE );
-	int GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goal, int flags );
+	int GetBestPathBetweenEnts( sharedEntityMapper_t *ent, sharedEntityMapper_t *goal, int flags );
 	int	GetNodeRadius( int nodeID );
 	void CheckBlockedEdges( void );
 	void ClearCheckedNodes( void );
@@ -228,9 +228,9 @@ public:
 
 protected:
 
-	int		TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts );
-	int		TestNodeLOS( sharedEntity_t *ent, vec3_t position );
-	int		TestBestFirst( sharedEntity_t *ent, int lastID, int flags );
+	int		TestNodePath( sharedEntityMapper_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts );
+	int		TestNodeLOS( sharedEntityMapper_t *ent, vec3_t position );
+	int		TestBestFirst( sharedEntityMapper_t *ent, int lastID, int flags );
 
 #if __NEWCOLLECT
 	int		CollectNearestNodes( vec3_t origin, int radius, int maxCollect, nodeChain_l &nodeChain );

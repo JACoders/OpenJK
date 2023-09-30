@@ -544,9 +544,9 @@ int CM_ModelContents( clipHandle_t model, int subBSPIndex );
 int CM_LoadSubBSP( const char *name, qboolean clientload );
 int CM_FindSubBSP( int modelIndex );
 char *CM_SubBSPEntityString( int index );
-qboolean Q3_TaskIDPending( sharedEntity_t *ent, taskID_t taskType );
-void Q3_TaskIDSet( sharedEntity_t *ent, taskID_t taskType, int taskID );
-void Q3_TaskIDComplete( sharedEntity_t *ent, taskID_t taskType );
+qboolean Q3_TaskIDPending( sharedEntityMapper_t *ent, taskID_t taskType );
+void Q3_TaskIDSet( sharedEntityMapper_t *ent, taskID_t taskType, int taskID );
+void Q3_TaskIDComplete( sharedEntityMapper_t *ent, taskID_t taskType );
 void Q3_SetVar( int taskID, int entID, const char *type_name, const char *data );
 int Q3_VariableDeclared( const char *name );
 int Q3_GetFloatVariable( const char *name, float *value );
@@ -555,13 +555,92 @@ int Q3_GetVectorVariable( const char *name, vec3_t value );
 void SV_BotWaypointReception( int wpnum, wpobject_t **wps );
 void SV_BotCalculatePaths( int rmg );
 
+static void SV_UpdateSharedEntitiesMapping( void ) {
+	int i;
+	int entCount = Com_Clampi( 0, ARRAY_LEN(sv.gentitiesMapper), sv.num_entities );
+	sharedEntityMapper_t *entM;
+
+	if ( gvm->dllHandle ) {
+		sharedEntity_t *ent;
+		for ( i = 0; i < entCount; i++ ) {
+			// Get the shared entity and the mapper
+			ent = (sharedEntity_t *)((byte *)sv.gentities + sv.gentitySize*(i));
+			entM = &sv.gentitiesMapper[i];
+
+			// Assign all values
+			entM->s                       = &ent->s;
+			entM->playerState             = &ent->playerState;
+			entM->m_pVehicle              = &ent->m_pVehicle;
+			entM->ghoul2                  = &ent->ghoul2;
+			entM->localAnimIndex          = &ent->localAnimIndex;
+			entM->modelScale              = &ent->modelScale;
+			entM->r                       = &ent->r;
+			entM->taskID                  = &ent->taskID;
+			entM->parms                   = &ent->parms;
+			entM->behaviorSet             = &ent->behaviorSet;
+			entM->script_targetname       = &ent->script_targetname;
+			entM->delayScriptTime         = &ent->delayScriptTime;
+			entM->fullName                = &ent->fullName;
+			entM->targetname              = &ent->targetname;
+			entM->classname               = &ent->classname;
+			entM->waypoint                = &ent->waypoint;
+			entM->lastWaypoint            = &ent->lastWaypoint;
+			entM->lastValidWaypoint       = &ent->lastValidWaypoint;
+			entM->noWaypointTime          = &ent->noWaypointTime;
+			entM->combatPoint             = &ent->combatPoint;
+			entM->failedWaypoints         = &ent->failedWaypoints;
+			entM->failedWaypointCheckTime = &ent->failedWaypointCheckTime;
+			entM->next_roff_time          = &ent->next_roff_time;
+		}
+	} else {
+		sharedEntity_qvm_t *ent;
+		for ( i = 0; i < entCount; i++ ) {
+			// Get the shared entity and the mapper
+			ent = (sharedEntity_qvm_t *)((byte *)sv.gentities + sv.gentitySize*(i));
+			entM = &sv.gentitiesMapper[i];
+
+			// Assign all values
+			entM->s                       = &ent->s;
+			entM->playerState             = (playerState_t**)&ent->playerState;
+#if (!defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__))
+			entM->m_pVehicle              = (Vehicle_t**)&ent->m_pVehicle;
+#else
+			entM->m_pVehicle              = (struct Vehicle_s**)&ent->m_pVehicle;
+#endif
+			entM->ghoul2                  = (void**)&ent->ghoul2;
+			entM->localAnimIndex          = &ent->localAnimIndex;
+			entM->modelScale              = &ent->modelScale;
+			entM->r                       = &ent->r;
+			entM->taskID                  = &ent->taskID;
+			entM->parms                   = (parms_t**)&ent->parms;
+			entM->behaviorSet             = (char*(*)[NUM_BSETS])&ent->behaviorSet;
+			entM->script_targetname       = (char**)&ent->script_targetname;
+			entM->delayScriptTime         = &ent->delayScriptTime;
+			entM->fullName                = (char**)&ent->fullName;
+			entM->targetname              = (char**)&ent->targetname;
+			entM->classname               = (char**)&ent->classname;
+			entM->waypoint                = &ent->waypoint;
+			entM->lastWaypoint            = &ent->lastWaypoint;
+			entM->lastValidWaypoint       = &ent->lastValidWaypoint;
+			entM->noWaypointTime          = &ent->noWaypointTime;
+			entM->combatPoint             = &ent->combatPoint;
+			entM->failedWaypoints         = &ent->failedWaypoints;
+			entM->failedWaypointCheckTime = &ent->failedWaypointCheckTime;
+			entM->next_roff_time          = &ent->next_roff_time;
+		}
+	}
+}
+
 static void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGameClient ) {
+
 	sv.gentities = gEnts;
 	sv.gentitySize = sizeofGEntity_t;
 	sv.num_entities = numGEntities;
 
 	sv.gameClients = clients;
 	sv.gameClientSize = sizeofGameClient;
+
+	SV_UpdateSharedEntitiesMapping();
 }
 
 static void SV_GameDropClient( int clientNum, const char *reason ) {
@@ -587,11 +666,13 @@ static qboolean SV_EntityContact( const vec3_t mins, const vec3_t maxs, const sh
 	clipHandle_t	ch;
 	trace_t			trace;
 
-	// check for exact collision
-	origin = gEnt->r.currentOrigin;
-	angles = gEnt->r.currentAngles;
+	sharedEntityMapper_t *gEntM = SV_GEntityMapperForGentity( gEnt );
 
-	ch = SV_ClipHandleForEntity( gEnt );
+	// check for exact collision
+	origin = gEntM->r->currentOrigin;
+	angles = gEntM->r->currentAngles;
+
+	ch = SV_ClipHandleForEntity( gEntM );
 	CM_TransformedBoxTrace ( &trace, vec3_origin, vec3_origin, mins, maxs,
 		ch, -1, origin, angles, capsule );
 
@@ -602,6 +683,8 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 	clipHandle_t	h;
 	vec3_t			mins, maxs;
 
+	sharedEntityMapper_t *gEntM = SV_GEntityMapperForGentity( ent );
+
 	if (!name)
 	{
 		Com_Error( ERR_DROP, "SV_SetBrushModel: NULL" );
@@ -609,36 +692,36 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 
 	if (name[0] == '*')
 	{
-		ent->s.modelindex = atoi( name + 1 );
+		gEntM->s->modelindex = atoi( name + 1 );
 
 		if (sv.mLocalSubBSPIndex != -1)
 		{
-			ent->s.modelindex += sv.mLocalSubBSPModelOffset;
+			gEntM->s->modelindex += sv.mLocalSubBSPModelOffset;
 		}
 
-		h = CM_InlineModel( ent->s.modelindex );
+		h = CM_InlineModel( gEntM->s->modelindex );
 
 		CM_ModelBounds(h, mins, maxs);
 
-		VectorCopy (mins, ent->r.mins);
-		VectorCopy (maxs, ent->r.maxs);
-		ent->r.bmodel = qtrue;
-		ent->r.contents = CM_ModelContents( h, -1 );
+		VectorCopy (mins, gEntM->r->mins);
+		VectorCopy (maxs, gEntM->r->maxs);
+		gEntM->r->bmodel = qtrue;
+		gEntM->r->contents = CM_ModelContents( h, -1 );
 	}
 	else if (name[0] == '#')
 	{
-		ent->s.modelindex = CM_LoadSubBSP(va("maps/%s.bsp", name + 1), qfalse);
-		CM_ModelBounds( ent->s.modelindex, mins, maxs );
+		gEntM->s->modelindex = CM_LoadSubBSP(va("maps/%s.bsp", name + 1), qfalse);
+		CM_ModelBounds( gEntM->s->modelindex, mins, maxs );
 
-		VectorCopy (mins, ent->r.mins);
-		VectorCopy (maxs, ent->r.maxs);
-		ent->r.bmodel = qtrue;
+		VectorCopy (mins, gEntM->r->mins);
+		VectorCopy (maxs, gEntM->r->maxs);
+		gEntM->r->bmodel = qtrue;
 
 		//rwwNOTE: We don't ever want to set contents -1, it includes CONTENTS_LIGHTSABER.
 		//Lots of stuff will explode if there's a brush with CONTENTS_LIGHTSABER that isn't attached to a client owner.
 		//ent->contents = -1;		// we don't know exactly what is in the brushes
-		h = CM_InlineModel( ent->s.modelindex );
-		ent->r.contents = CM_ModelContents( h, CM_FindSubBSP(ent->s.modelindex) );
+		h = CM_InlineModel( gEntM->s->modelindex );
+		gEntM->r->contents = CM_ModelContents( h, CM_FindSubBSP(gEntM->s->modelindex) );
 	}
 	else
 	{
@@ -693,35 +776,62 @@ static void SV_GetUsercmd( int clientNum, usercmd_t *cmd ) {
 }
 
 static sharedEntity_t gLocalModifier;
-static sharedEntity_t *ConvertedEntity( sharedEntity_t *ent ) { //Return an entity with the memory shifted around to allow reading/modifying VM memory
+static sharedEntityMapper_t gLocalModifierMapper;
+sharedEntityMapper_t *ConvertedEntity( sharedEntity_t *ent ) { //Return an entity with the memory shifted around to allow reading/modifying VM memory
 	int i = 0;
+
+	sharedEntityMapper_t *gEntM = SV_GEntityMapperForGentity( ent );
 
 	assert(ent);
 
-	gLocalModifier.s = ent->s;
-	gLocalModifier.r = ent->r;
+	gLocalModifier.s = *(gEntM->s);
+	gLocalModifier.r = *(gEntM->r);
 	while (i < NUM_TIDS)
 	{
-		gLocalModifier.taskID[i] = ent->taskID[i];
+		gLocalModifier.taskID[i] = (*(gEntM->taskID))[i];
 		i++;
 	}
 	i = 0;
-	gLocalModifier.parms = (parms_t *)VM_ArgPtr((intptr_t)ent->parms);
+	gLocalModifier.parms = (parms_t *)VM_ArgPtr((intptr_t)(*(gEntM->parms)));
 	while (i < NUM_BSETS)
 	{
-		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)ent->behaviorSet[i]);
+		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)(*(gEntM->behaviorSet))[i]);
 		i++;
 	}
 	i = 0;
-	gLocalModifier.script_targetname = (char *)VM_ArgPtr((intptr_t)ent->script_targetname);
-	gLocalModifier.delayScriptTime = ent->delayScriptTime;
-	gLocalModifier.fullName = (char *)VM_ArgPtr((intptr_t)ent->fullName);
-	gLocalModifier.targetname = (char *)VM_ArgPtr((intptr_t)ent->targetname);
-	gLocalModifier.classname = (char *)VM_ArgPtr((intptr_t)ent->classname);
+	gLocalModifier.script_targetname = (char *)VM_ArgPtr((intptr_t)(*(gEntM->script_targetname)));
+	gLocalModifier.delayScriptTime = (*(gEntM->delayScriptTime));
+	gLocalModifier.fullName = (char *)VM_ArgPtr((intptr_t)(*(gEntM->fullName)));
+	gLocalModifier.targetname = (char *)VM_ArgPtr((intptr_t)(*(gEntM->targetname)));
+	gLocalModifier.classname = (char *)VM_ArgPtr((intptr_t)(*(gEntM->classname)));
 
-	gLocalModifier.ghoul2 = ent->ghoul2;
+	gLocalModifier.ghoul2 = (*(gEntM->ghoul2));
 
-	return &gLocalModifier;
+	gLocalModifierMapper.s                       = &gLocalModifier.s;
+	gLocalModifierMapper.playerState             = &gLocalModifier.playerState;
+	gLocalModifierMapper.m_pVehicle              = &gLocalModifier.m_pVehicle;
+	gLocalModifierMapper.ghoul2                  = &gLocalModifier.ghoul2;
+	gLocalModifierMapper.localAnimIndex          = &gLocalModifier.localAnimIndex;
+	gLocalModifierMapper.modelScale              = &gLocalModifier.modelScale;
+	gLocalModifierMapper.r                       = &gLocalModifier.r;
+	gLocalModifierMapper.taskID                  = &gLocalModifier.taskID;
+	gLocalModifierMapper.parms                   = &gLocalModifier.parms;
+	gLocalModifierMapper.behaviorSet             = &gLocalModifier.behaviorSet;
+	gLocalModifierMapper.script_targetname       = &gLocalModifier.script_targetname;
+	gLocalModifierMapper.delayScriptTime         = &gLocalModifier.delayScriptTime;
+	gLocalModifierMapper.fullName                = &gLocalModifier.fullName;
+	gLocalModifierMapper.targetname              = &gLocalModifier.targetname;
+	gLocalModifierMapper.classname               = &gLocalModifier.classname;
+	gLocalModifierMapper.waypoint                = &gLocalModifier.waypoint;
+	gLocalModifierMapper.lastWaypoint            = &gLocalModifier.lastWaypoint;
+	gLocalModifierMapper.lastValidWaypoint       = &gLocalModifier.lastValidWaypoint;
+	gLocalModifierMapper.noWaypointTime          = &gLocalModifier.noWaypointTime;
+	gLocalModifierMapper.combatPoint             = &gLocalModifier.combatPoint;
+	gLocalModifierMapper.failedWaypoints         = &gLocalModifier.failedWaypoints;
+	gLocalModifierMapper.failedWaypointCheckTime = &gLocalModifier.failedWaypointCheckTime;
+	gLocalModifierMapper.next_roff_time          = &gLocalModifier.next_roff_time;
+
+	return &gLocalModifierMapper;
 }
 
 static const char *SV_SetActiveSubBSP( int index ) {
@@ -812,7 +922,7 @@ static qboolean SV_ICARUS_RegisterScript( const char *name, qboolean bCalledDuri
 }
 
 static qboolean SV_ICARUS_ValidEnt( sharedEntity_t *ent ) {
-	return (qboolean)ICARUS_ValidEnt( ent );
+	return (qboolean)ICARUS_ValidEnt( SV_GEntityMapperForGentity(ent) );
 }
 
 static qboolean ICARUS_IsInitialized( int entID ) {
@@ -837,15 +947,15 @@ static qboolean ICARUS_IsRunning( int entID ) {
 }
 
 static qboolean ICARUS_TaskIDPending( sharedEntity_t *ent, int taskID ) {
-	return Q3_TaskIDPending( ent, (taskID_t)taskID );
+	return Q3_TaskIDPending( SV_GEntityMapperForGentity(ent), (taskID_t)taskID );
 }
 
 static void SV_ICARUS_TaskIDSet( sharedEntity_t *ent, int taskType, int taskID ) {
-	Q3_TaskIDSet( ent, (taskID_t)taskType, taskID );
+	Q3_TaskIDSet( SV_GEntityMapperForGentity(ent), (taskID_t)taskType, taskID );
 }
 
 static void SV_ICARUS_TaskIDComplete( sharedEntity_t *ent, int taskType ) {
-	Q3_TaskIDComplete( ent, (taskID_t)taskType );
+	Q3_TaskIDComplete( SV_GEntityMapperForGentity(ent), (taskID_t)taskType );
 }
 
 static int SV_ICARUS_GetStringVariable( const char *name, const char *value ) {
@@ -897,7 +1007,7 @@ static void SV_Nav_ShowPath( int start, int end ) {
 }
 
 static int SV_Nav_GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int targetID ) {
-	return navigator.GetNearestNode( ent, lastID, flags, targetID );
+	return navigator.GetNearestNode( SV_GEntityMapperForGentity(ent), lastID, flags, targetID );
 }
 
 static int SV_Nav_GetBestNode( int startID, int endID, int rejectID ) {
@@ -937,15 +1047,15 @@ static int SV_Nav_GetProjectedNode( vec3_t origin, int nodeID ) {
 }
 
 static void SV_Nav_CheckFailedNodes( sharedEntity_t *ent ) {
-	navigator.CheckFailedNodes( ent );
+	navigator.CheckFailedNodes( SV_GEntityMapperForGentity(ent) );
 }
 
 static void SV_Nav_AddFailedNode( sharedEntity_t *ent, int nodeID ) {
-	navigator.AddFailedNode( ent, nodeID );
+	navigator.AddFailedNode( SV_GEntityMapperForGentity(ent), nodeID );
 }
 
 static qboolean SV_Nav_NodeFailed( sharedEntity_t *ent, int nodeID ) {
-	return navigator.NodeFailed( ent, nodeID );
+	return navigator.NodeFailed( SV_GEntityMapperForGentity(ent), nodeID );
 }
 
 static qboolean SV_Nav_NodesAreNeighbors( int startID, int endID ) {
@@ -989,7 +1099,7 @@ static int SV_Nav_GetBestNodeAltRoute2( int startID, int endID, int rejectID ) {
 }
 
 static int SV_Nav_GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goal, int flags ) {
-	return navigator.GetBestPathBetweenEnts( ent, goal, flags );
+	return navigator.GetBestPathBetweenEnts( SV_GEntityMapperForGentity(ent), SV_GEntityMapperForGentity(goal), flags );
 }
 
 static int SV_Nav_GetNodeRadius( int nodeID ) {
@@ -1897,6 +2007,27 @@ static void GVM_Cvar_Set( const char *var_name, const char *value ) {
 	Cvar_VM_Set( var_name, value, VM_GAME );
 }
 
+static void GVM_LinkEntity( sharedEntity_t *gEnt ) {
+	SV_LinkEntity( SV_GEntityMapperForGentity(gEnt) );
+}
+
+static void GVM_UnlinkEntity( sharedEntity_t *gEnt ) {
+	SV_UnlinkEntity( SV_GEntityMapperForGentity(gEnt) );
+}
+
+int SV_ICARUS_RunScript( sharedEntity_t *ent, const char *name ) {
+    return ICARUS_RunScript( SV_GEntityMapperForGentity(ent), name );
+}
+void SV_ICARUS_InitEnt( sharedEntity_t *ent ) {
+    ICARUS_InitEnt( SV_GEntityMapperForGentity(ent) );
+}
+void SV_ICARUS_FreeEnt( sharedEntity_t *ent ) {
+    ICARUS_FreeEnt( SV_GEntityMapperForGentity(ent) );
+}
+void SV_ICARUS_AssociateEnt( sharedEntity_t *ent ) {
+    ICARUS_AssociateEnt( SV_GEntityMapperForGentity(ent) );
+}
+
 // legacy syscall
 
 intptr_t SV_GameSystemCalls( intptr_t *args ) {
@@ -2038,11 +2169,11 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_LINKENTITY:
-		SV_LinkEntity( (sharedEntity_t *)VMA(1) );
+		SV_LinkEntity( SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)) );
 		return 0;
 
 	case G_UNLINKENTITY:
-		SV_UnlinkEntity( (sharedEntity_t *)VMA(1) );
+		SV_UnlinkEntity( SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)) );
 		return 0;
 
 	case G_ENTITIES_IN_BOX:
@@ -2203,7 +2334,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return ICARUS_IsRunning( args[1] );
 
 	case G_ICARUS_TASKIDPENDING:
-		return Q3_TaskIDPending((sharedEntity_t *)VMA(1), (taskID_t)args[2]);
+		return Q3_TaskIDPending(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2]);
 
 	case G_ICARUS_INITENT:
 		ICARUS_InitEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
@@ -2225,12 +2356,12 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		//rww - note that we are passing in the true entity here.
 		//This is because we allow modification of certain non-pointer values,
 		//which is valid.
-		Q3_TaskIDSet((sharedEntity_t *)VMA(1), (taskID_t)args[2], args[3]);
+		Q3_TaskIDSet(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2], args[3]);
 		return 0;
 
 	case G_ICARUS_TASKIDCOMPLETE:
 		//same as above.
-		Q3_TaskIDComplete((sharedEntity_t *)VMA(1), (taskID_t)args[2]);
+		Q3_TaskIDComplete(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2]);
 		return 0;
 
 	case G_ICARUS_SETVAR:
@@ -2282,7 +2413,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		navigator.ShowPath(args[1], args[2]);
 		return 0;
 	case G_NAV_GETNEARESTNODE:
-		return navigator.GetNearestNode((sharedEntity_t *)VMA(1), args[2], args[3], args[4]);
+		return navigator.GetNearestNode(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), args[2], args[3], args[4]);
 	case G_NAV_GETBESTNODE:
 		return navigator.GetBestNode(args[1], args[2], args[3]);
 	case G_NAV_GETNODEPOSITION:
@@ -2302,13 +2433,13 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_NAV_GETPROJECTEDNODE:
 		return navigator.GetProjectedNode((float *)VMA(1), args[2]);
 	case G_NAV_CHECKFAILEDNODES:
-		navigator.CheckFailedNodes((sharedEntity_t *)VMA(1));
+		navigator.CheckFailedNodes(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 	case G_NAV_ADDFAILEDNODE:
-		navigator.AddFailedNode((sharedEntity_t *)VMA(1), args[2]);
+		navigator.AddFailedNode(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), args[2]);
 		return 0;
 	case G_NAV_NODEFAILED:
-		return navigator.NodeFailed((sharedEntity_t *)VMA(1), args[2]);
+		return navigator.NodeFailed(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), args[2]);
 	case G_NAV_NODESARENEIGHBORS:
 		return navigator.NodesAreNeighbors(args[1], args[2]);
 	case G_NAV_CLEARFAILEDEDGE:
@@ -2334,7 +2465,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_NAV_GETBESTNODEALT2:
 		return navigator.GetBestNodeAltRoute(args[1], args[2], args[3]);
 	case G_NAV_GETBESTPATHBETWEENENTS:
-		return navigator.GetBestPathBetweenEnts((sharedEntity_t *)VMA(1), (sharedEntity_t *)VMA(2), args[3]);
+		return navigator.GetBestPathBetweenEnts(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), SV_GEntityMapperForGentity((sharedEntity_t *)VMA(2)), args[3]);
 	case G_NAV_GETNODERADIUS:
 		return navigator.GetNodeRadius(args[1]);
 	case G_NAV_CHECKBLOCKEDEDGES:
@@ -2942,8 +3073,10 @@ void SV_InitGame( qboolean restart ) {
 
 	// clear level pointers
 	sv.entityParsePoint = CM_EntityString();
-	for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ )
+	for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
 		cl->gentity = NULL;
+		cl->gentityMapper = NULL;
+	}
 
 	GVM_InitGame( sv.time, Com_Milliseconds(), restart );
 }
@@ -2995,7 +3128,7 @@ void SV_BindGame( void ) {
 		gi.GetUserinfo							= SV_GetUserinfo;
 		gi.InPVS								= SV_inPVS;
 		gi.InPVSIgnorePortals					= SV_inPVSIgnorePortals;
-		gi.LinkEntity							= SV_LinkEntity;
+		gi.LinkEntity							= GVM_LinkEntity;
 		gi.LocateGameData						= SV_LocateGameData;
 		gi.PointContents						= SV_PointContents;
 		gi.SendConsoleCommand					= Cbuf_ExecuteText;
@@ -3006,13 +3139,13 @@ void SV_BindGame( void ) {
 		gi.SetUserinfo							= SV_SetUserinfo;
 		gi.SiegePersSet							= SV_SiegePersSet;
 		gi.SiegePersGet							= SV_SiegePersGet;
-		gi.UnlinkEntity							= SV_UnlinkEntity;
+		gi.UnlinkEntity							= GVM_UnlinkEntity;
 		gi.ROFF_Clean							= SV_ROFF_Clean;
 		gi.ROFF_UpdateEntities					= SV_ROFF_UpdateEntities;
 		gi.ROFF_Cache							= SV_ROFF_Cache;
 		gi.ROFF_Play							= SV_ROFF_Play;
 		gi.ROFF_Purge_Ent						= SV_ROFF_Purge_Ent;
-		gi.ICARUS_RunScript						= ICARUS_RunScript;
+		gi.ICARUS_RunScript						= SV_ICARUS_RunScript;
 		gi.ICARUS_RegisterScript				= SV_ICARUS_RegisterScript;
 		gi.ICARUS_Init							= ICARUS_Init;
 		gi.ICARUS_ValidEnt						= SV_ICARUS_ValidEnt;
@@ -3020,9 +3153,9 @@ void SV_BindGame( void ) {
 		gi.ICARUS_MaintainTaskManager			= ICARUS_MaintainTaskManager;
 		gi.ICARUS_IsRunning						= ICARUS_IsRunning;
 		gi.ICARUS_TaskIDPending					= ICARUS_TaskIDPending;
-		gi.ICARUS_InitEnt						= ICARUS_InitEnt;
-		gi.ICARUS_FreeEnt						= ICARUS_FreeEnt;
-		gi.ICARUS_AssociateEnt					= ICARUS_AssociateEnt;
+		gi.ICARUS_InitEnt						= SV_ICARUS_InitEnt;
+		gi.ICARUS_FreeEnt						= SV_ICARUS_FreeEnt;
+		gi.ICARUS_AssociateEnt					= SV_ICARUS_AssociateEnt;
 		gi.ICARUS_Shutdown						= ICARUS_Shutdown;
 		gi.ICARUS_TaskIDSet						= SV_ICARUS_TaskIDSet;
 		gi.ICARUS_TaskIDComplete				= SV_ICARUS_TaskIDComplete;

@@ -68,6 +68,8 @@ typedef struct server_s {
 
 	char			*entityParsePoint;	// used during game VM init
 
+	sharedEntityMapper_t gentitiesMapper[MAX_GENTITIES];
+
 	// the game virtual machine will update these on init and changes
 	sharedEntity_t	*gentities;
 	int				gentitySize;
@@ -152,6 +154,7 @@ typedef struct client_s {
 	int				lastClientCommand;	// reliable client message sequence
 	char			lastClientCommandString[MAX_STRING_CHARS];
 	sharedEntity_t	*gentity;			// SV_GentityNum(clientnum)
+	sharedEntityMapper_t *gentityMapper;
 	char			name[MAX_NAME_LENGTH];			// extracted from userinfo, high bits masked
 
 	// downloading
@@ -376,11 +379,16 @@ void SV_SendClientSnapshot( client_t *client );
 //
 // sv_game.c
 //
-int	SV_NumForGentity( sharedEntity_t *ent );
+int	SV_NumForGentity( const sharedEntity_t *ent );
+int	SV_NumForGentityMapper( const sharedEntityMapper_t *ent );
 sharedEntity_t *SV_GentityNum( int num );
+sharedEntityMapper_t *SV_GentityMapperNum( int num );
 playerState_t *SV_GameClientNum( int num );
 svEntity_t	*SV_SvEntityForGentity( sharedEntity_t *gEnt );
+svEntity_t	*SV_SvEntityForGentityMapper( sharedEntityMapper_t *gEnt );
 sharedEntity_t *SV_GEntityForSvEntity( svEntity_t *svEnt );
+sharedEntityMapper_t *SV_GEntityMapperForSvEntity( svEntity_t *svEnt );
+sharedEntityMapper_t *SV_GEntityMapperForGentity( const sharedEntity_t *gEnt );
 void		SV_InitGameProgs ( void );
 void		SV_ShutdownGameProgs ( void );
 qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
@@ -388,6 +396,8 @@ qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
 CGhoul2Info_v *SV_G2Map_GetG2FromHandle( g2handleptr_t g2h );
 CGhoul2Info_v **SV_G2Map_GetG2PtrFromHandle( g2handleptr_t g2h );
 void SV_G2Map_Update( g2handleptr_t *g2h, CGhoul2Info_v *g2Ptr );
+
+sharedEntityMapper_t *ConvertedEntity( sharedEntity_t *ent );
 
 //
 // sv_bot.c
@@ -414,11 +424,11 @@ void BotImport_DebugPolygonDelete(int id);
 void SV_ClearWorld (void);
 // called after the world model has been loaded, before linking any entities
 
-void SV_UnlinkEntity( sharedEntity_t *ent );
+void SV_UnlinkEntity( sharedEntityMapper_t *ent );
 // call before removing an entity, and before trying to move one,
 // so it doesn't clip against itself
 
-void SV_LinkEntity( sharedEntity_t *ent );
+void SV_LinkEntity( sharedEntityMapper_t *ent );
 // Needs to be called any time an entity changes origin, mins, maxs,
 // or solid.  Automatically unlinks if needed.
 // sets ent->v.absmin and ent->v.absmax
@@ -426,7 +436,7 @@ void SV_LinkEntity( sharedEntity_t *ent );
 // is not solid
 
 
-clipHandle_t SV_ClipHandleForEntity( const sharedEntity_t *ent );
+clipHandle_t SV_ClipHandleForEntity( const sharedEntityMapper_t *ent );
 
 
 void SV_SectorList_f( void );

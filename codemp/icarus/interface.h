@@ -35,7 +35,7 @@ typedef struct interface_export_s
 	int				(*I_LoadFile)( const char *name, void **buf );
 	void			(*I_CenterPrint)( const char *format, ... );
 	void			(*I_DPrintf)( int, const char *, ... );
-	sharedEntity_t *(*I_GetEntityByName)( const char *name );		//Polls the engine for the sequencer of the entity matching the name passed
+	sharedEntityMapper_t  *(*I_GetEntityByName)( const char *name );		//Polls the engine for the sequencer of the entity matching the name passed
 	unsigned int			(*I_GetTime)( void );							//Gets the current time
 	unsigned int			(*I_GetTimeScale)(void );
 	int 			(*I_PlaySound)( int taskID, int entID, const char *name, const char *channel );

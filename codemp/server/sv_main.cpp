@@ -861,11 +861,11 @@ void SV_CalcPings( void ) {
 			cl->ping = 999;
 			continue;
 		}
-		if ( !cl->gentity ) {
+		if ( !cl->gentityMapper ) {
 			cl->ping = 999;
 			continue;
 		}
-		if ( cl->gentity->r.svFlags & SVF_BOT ) {
+		if ( cl->gentityMapper->r->svFlags & SVF_BOT ) {
 			cl->ping = 0;
 			continue;
 		}
