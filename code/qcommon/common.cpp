@@ -1162,7 +1162,7 @@ void Com_Init( char *commandLine ) {
 
 		s = va("%s %s %s", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
-		com_revision = Cvar_Get ("com_revision", GIT_HASH, CVAR_ROM | CVAR_SERVERINFO );
+		com_revision = Cvar_Get ("revision", GIT_HASH, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifdef JK2_MODE
 		JK2SP_Init();
