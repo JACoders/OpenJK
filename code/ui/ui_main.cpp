@@ -3696,9 +3696,9 @@ static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontInde
 {
 	int width;
 
-	width = DC->textWidth(Q3_VERSION, scale, 0);
+	width = DC->textWidth(JK_VERSION, scale, 0);
 
-	DC->drawText(rect->x - width, rect->y, scale, color, Q3_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
+	DC->drawText(rect->x - width, rect->y, scale, color, JK_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
 }
 
 /*

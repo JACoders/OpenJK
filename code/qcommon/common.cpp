@@ -1082,7 +1082,7 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 
-	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
+	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
 	try {
 		Com_InitZoneMemory();
@@ -1160,7 +1160,7 @@ void Com_Init( char *commandLine ) {
 			Cmd_AddCommand ("freeze", Com_Freeze_f);
 		}
 
-		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
+		s = va("%s %s %s", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 		com_revision = Cvar_Get ("com_revision", GIT_HASH, CVAR_ROM | CVAR_SERVERINFO );
 
