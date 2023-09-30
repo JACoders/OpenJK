@@ -2256,36 +2256,51 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS }
 	};
 
-	DrawItem item = {};
-	item.renderState.stateBits = firstStage->stateBits;
-	item.renderState.cullType = CT_TWO_SIDED;
-	item.renderState.depthRange = DepthRange{0.0f, 1.0f};
-	item.program = program;
-	item.ibo = surf->ibo;
-	
-	item.uniformData = uniformDataWriter.Finish(frameAllocator);
+	uint32_t numBindings;
+	UniformData *spriteUniformData = uniformDataWriter.Finish(frameAllocator);
+	SamplerBinding *spriteSamplerBinding = samplerBindingsWriter.Finish(
+		frameAllocator, &numBindings);
 
-	item.samplerBindings = samplerBindingsWriter.Finish(
-		frameAllocator, &item.numSamplerBindings);
+	int numDrawIndicesUndrawn = surf->numIndices;
+	int baseVertex = surf->baseVertex;
+	while (numDrawIndicesUndrawn > 5)
+	{
+		int drawIndices = numDrawIndicesUndrawn > 98298 ? 98298 : numDrawIndicesUndrawn;
 
-	DrawItemSetVertexAttributes(
-		item, surf->attributes, surf->numAttributes, frameAllocator);
-	DrawItemSetUniformBlockBindings(
-		item, uniformBlockBindings, frameAllocator);
+		DrawItem item = {};
+		item.renderState.stateBits = firstStage->stateBits;
+		item.renderState.cullType = CT_TWO_SIDED;
+		item.renderState.depthRange = DepthRange{ 0.0f, 1.0f };
+		item.program = program;
+		item.ibo = surf->ibo;
 
-	item.draw.type = DRAW_COMMAND_INDEXED;
-	item.draw.primitiveType = GL_TRIANGLES;
-	item.draw.numInstances = 1;
-	item.draw.params.indexed.indexType = GL_UNSIGNED_SHORT;
-	item.draw.params.indexed.firstIndex = 0;
-	item.draw.params.indexed.numIndices = surf->numIndices;
-	item.draw.params.indexed.baseVertex = surf->baseVertex;
+		item.uniformData = spriteUniformData;
 
-	tess.externalIBO = surf->ibo;
+		item.samplerBindings = spriteSamplerBinding;
+		item.numSamplerBindings = numBindings;
 
-	uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
-	uint32_t key = RB_CreateSortKey(item, 0, surf->shader->sort);
-	RB_AddDrawItem(backEndData->currentPass, key, item);
+		DrawItemSetVertexAttributes(
+			item, surf->attributes, surf->numAttributes, frameAllocator);
+		DrawItemSetUniformBlockBindings(
+			item, uniformBlockBindings, frameAllocator);
+
+		item.draw.type = DRAW_COMMAND_INDEXED;
+		item.draw.primitiveType = GL_TRIANGLES;
+		item.draw.numInstances = 1;
+		item.draw.params.indexed.indexType = GL_UNSIGNED_SHORT;
+		item.draw.params.indexed.firstIndex = 0;
+		item.draw.params.indexed.numIndices = drawIndices;
+		item.draw.params.indexed.baseVertex = baseVertex;
+
+		tess.externalIBO = surf->ibo;
+
+		uint32_t RB_CreateSortKey(const DrawItem& item, int stage, int layer);
+		uint32_t key = RB_CreateSortKey(item, 0, surf->shader->sort);
+		RB_AddDrawItem(backEndData->currentPass, key, item);
+
+		numDrawIndicesUndrawn -= drawIndices;
+		baseVertex += ((98298 / 6) * 4);
+	}
 }
 
 void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
