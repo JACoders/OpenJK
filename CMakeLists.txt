@@ -327,8 +327,12 @@ endif()
 execute_process(
 	COMMAND "git" "rev-parse" "--short" "HEAD"
 	OUTPUT_VARIABLE GIT_HASH
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-	COMMAND_ERROR_IS_FATAL ANY)
+	RESULT_VARIABLE GIT_HASH_ERROR
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(GIT_HASH_ERROR AND NOT GIT_HASH_ERROR EQUAL 0)
+	message(WARNING "Unable to determine Git revision")
+	set(GIT_HASH UNKNOWN)
+endif()
 message(STATUS "Git revision is ${GIT_HASH}")
 
 configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
