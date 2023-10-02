@@ -157,7 +157,7 @@ void COM_EndParseSession( void )
 #endif
 }
 
-int COM_GetCurrentParseLine( int index )
+int COM_GetCurrentParseLine( void )
 {
 	if(parseDataCount < 0)
 		Com_Error(ERR_FATAL, "COM_GetCurrentParseLine: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
