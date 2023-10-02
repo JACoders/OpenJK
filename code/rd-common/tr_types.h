@@ -219,7 +219,8 @@ typedef enum {
 typedef enum {
 	TC_NONE,
 	TC_S3TC,
-	TC_S3TC_DXT
+	TC_S3TC_DXT,
+	TC_S3TC_ARB
 } textureCompression_t;
 
 typedef struct glconfig_s {

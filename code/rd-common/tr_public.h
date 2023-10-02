@@ -155,6 +155,9 @@ typedef struct {
 	int		  (*GetAnimationCFG)(const char *psCFGFilename, char *psDest, int iDestSize);
 	qhandle_t (*RegisterShader)( const char *name );
 	qhandle_t (*RegisterShaderNoMip)( const char *name );
+	//Rend2 - START: Used for parsing cubemap entities
+	qboolean(*GetEntityToken)(char* buffer, int size);
+	//Rend2 - END
 	void	(*LoadWorld)( const char *name );
 	void	(*R_LoadImage)( const char *name, byte **pic, int *width, int *height );
 
