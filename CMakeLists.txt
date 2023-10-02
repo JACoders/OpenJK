@@ -356,7 +356,7 @@ set(SharedCommonSafeFiles
 #
 #=============================================================================
 if(UseInternalJPEG)
-  add_subdirectory(lib/jpeg-9a)
+  add_subdirectory(lib/jpeg-9d)
 else()
   find_package(JPEG REQUIRED)
 endif()
