@@ -326,14 +326,14 @@ jobs:
 
       - name: Create binary archives
         run: |
-          7z a -r OpenJK-windows-x86.zip ./OpenJK-windows-x86-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
-          7z a -r OpenJK-windows-x86_64.zip ./OpenJK-windows-x86_64-Release-Non-Portable/JediAcademy/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJK-windows-x86.zip ./OpenJK-windows-x86-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJK-windows-x86_64.zip ./OpenJK-windows-x86_64-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           mv ./OpenJK-linux-x86-Release-Non-Portable/* OpenJK-linux-x86.tar.gz
           mv ./OpenJK-linux-x86_64-Release-Non-Portable/* OpenJK-linux-x86_64.tar.gz
           mv ./OpenJK-macos-x86_64-Release-Non-Portable/* OpenJK-macos-x86_64.tar.gz
 
-          7z a -r OpenJO-windows-x86.zip ./OpenJO-windows-x86-Release-Non-Portable/JediOutcast/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
-          7z a -r OpenJO-windows-x86_64.zip ./OpenJO-windows-x86_64-Release-Non-Portable/JediOutcast/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJO-windows-x86.zip ./OpenJO-windows-x86-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
+          7z a -r OpenJO-windows-x86_64.zip ./OpenJO-windows-x86_64-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           mv ./OpenJO-linux-x86-Release-Non-Portable/* OpenJO-linux-x86.tar.gz
           mv ./OpenJO-linux-x86_64-Release-Non-Portable/* OpenJO-linux-x86_64.tar.gz
           mv ./OpenJO-macos-x86_64-Release-Non-Portable/* OpenJO-macos-x86_64.tar.gz
