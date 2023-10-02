@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "tr_local.h"
 
+// for CM_LeafCluster, CM_PointLeafnum, CM_LeafArea
+#include "qcommon/cm_public.h"
+
 
 world_t *R_GetWorld(int worldIndex)
 {
@@ -757,21 +760,17 @@ static const byte *R_ClusterPVS (int cluster) {
 R_inPVS
 =================
 */
-qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask ) {
-	int		leafnum;
-	int		cluster;
+qboolean R_inPVS(vec3_t p1, vec3_t p2) {
+	mnode_t* leaf;
+	byte* vis;
 
-	leafnum = ri.CM_PointLeafnum (p1);
-	cluster = ri.CM_LeafCluster (leafnum);
+	leaf = R_PointInLeaf(p1);
+	vis = ri.CM_ClusterPVS(leaf->cluster);
+	leaf = R_PointInLeaf(p2);
 
-	//agh, the damn snapshot mask doesn't work for this
-	mask = (byte *) ri.CM_ClusterPVS (cluster);
-
-	leafnum = ri.CM_PointLeafnum (p2);
-	cluster = ri.CM_LeafCluster (leafnum);
-	if ( !(mask[cluster>>3] & (1<<(cluster&7))) )
+	if (!(vis[leaf->cluster >> 3] & (1 << (leaf->cluster & 7)))) {
 		return qfalse;
-
+	}
 	return qtrue;
 }
 

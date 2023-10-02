@@ -387,21 +387,21 @@ srfBspSurface_t *R_CreateSurfaceGridMesh(int width, int height,
 	size = (width * height - 1) * sizeof( srfVert_t ) + sizeof( *grid );
 
 #ifdef PATCH_STITCHING
-	grid = /*ri.Hunk_Alloc*/ (srfBspSurface_t *)Z_Malloc( size, TAG_GRIDMESH );
+	grid = /*ri.Hunk_Alloc*/ (srfBspSurface_t *)R_Malloc( size, TAG_GRIDMESH );
 	Com_Memset(grid, 0, size);
 
-	grid->widthLodError = /*ri.Hunk_Alloc*/ (float *)Z_Malloc( width * 4, TAG_GRIDMESH );
+	grid->widthLodError = /*ri.Hunk_Alloc*/ (float *)R_Malloc( width * 4, TAG_GRIDMESH );
 	Com_Memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = /*ri.Hunk_Alloc*/ (float *)Z_Malloc( height * 4, TAG_GRIDMESH );
+	grid->heightLodError = /*ri.Hunk_Alloc*/ (float *)R_Malloc( height * 4, TAG_GRIDMESH );
 	Com_Memcpy( grid->heightLodError, errorTable[1], height * 4 );
 
 	grid->numIndexes = numIndexes;
-	grid->indexes = (glIndex_t *)Z_Malloc(grid->numIndexes * sizeof(glIndex_t), TAG_GRIDMESH);
+	grid->indexes = (glIndex_t *)R_Malloc(grid->numIndexes * sizeof(glIndex_t), TAG_GRIDMESH);
 	Com_Memcpy(grid->indexes, indexes, numIndexes * sizeof(glIndex_t));
 
 	grid->numVerts = (width * height);
-	grid->verts = (srfVert_t *)Z_Malloc(grid->numVerts * sizeof(srfVert_t), TAG_GRIDMESH);
+	grid->verts = (srfVert_t *)R_Malloc(grid->numVerts * sizeof(srfVert_t), TAG_GRIDMESH);
 #else
 	grid = ri.Hunk_Alloc( size );
 	Com_Memset(grid, 0, size);
@@ -450,11 +450,11 @@ R_FreeSurfaceGridMesh
 =================
 */
 void R_FreeSurfaceGridMesh( srfBspSurface_t *grid ) {
-	Z_Free(grid->widthLodError);
-	Z_Free(grid->heightLodError);
-	Z_Free(grid->indexes);
-	Z_Free(grid->verts);
-	Z_Free(grid);
+	R_Free(grid->widthLodError);
+	R_Free(grid->heightLodError);
+	R_Free(grid->indexes);
+	R_Free(grid->verts);
+	R_Free(grid);
 }
 
 /*

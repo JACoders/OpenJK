@@ -23,10 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 #include "tr_weather.h"
+#include "qcommon/qcommon.h"
 
 #include <string.h> // memcpy
 
-#include "ghoul2/g2_local.h"
+//#include "ghoul2/g2_local.h"
 
 trGlobals_t		tr;
 
@@ -1871,7 +1872,7 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 	case RT_ORIENTED_QUAD:
 	case RT_ELECTRICITY:
 	case RT_LINE:
-	case RT_ORIENTEDLINE:
+	//case RT_ORIENTEDLINE:
 	case RT_CYLINDER:
 	case RT_SABER_GLOW:
 		// self blood sprites, talk balloons, etc should not be drawn in the primary
@@ -1952,6 +1953,7 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 			}
 		}
 		break;
+		/*
 	case RT_ENT_CHAIN:
 		shader = R_GetShaderByHandle(ent->e.customShader);
 		R_AddDrawSurf(
@@ -1961,8 +1963,9 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 			R_SpriteFogNum(ent),
 			false,
 			R_IsPostRenderEntity(ent),
-			0 /* cubeMap */ );
+			0 );
 		break;
+		*/
 	default:
 		ri.Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );
 	}
@@ -2252,7 +2255,7 @@ void R_SetupViewParmsForOrthoRendering(
 
 void R_SetupPshadowMaps(trRefdef_t *refdef)
 {
-	viewParms_t		shadowParms;
+	//viewParms_t		shadowParms;
 	int i;
 
 	// first, make a list of shadows
@@ -2573,7 +2576,7 @@ qboolean R_AddPortalView(const trRefdef_t *refdef)
 		case RT_ORIENTED_QUAD:
 		case RT_ELECTRICITY:
 		case RT_LINE:
-		case RT_ORIENTEDLINE:
+		//case RT_ORIENTEDLINE:
 		case RT_CYLINDER:
 		case RT_SABER_GLOW:
 			break;
@@ -2619,8 +2622,6 @@ qboolean R_AddPortalView(const trRefdef_t *refdef)
 					break;
 				}
 			}
-			break;
-		case RT_ENT_CHAIN:
 			break;
 		default:
 			break;
@@ -3034,4 +3035,49 @@ void R_GatherFrameViews(trRefdef_t *refdef)
 		Com_Memcpy(&tr.cachedViewParms[tr.numCachedViewParms], &tr.viewParms, sizeof(viewParms_t));
 		tr.numCachedViewParms++;
 	}
+}
+
+/*
+=================
+Hunk_Alloc
+
+Allocate permanent (until the hunk is cleared) memory
+=================
+*/
+static memtag_t hunk_tag;
+
+
+void* R_Hunk_Alloc(int iSize, ha_pref preferences)
+{
+	return R2_Hunk_Alloc(iSize, preferences);
+}
+
+void* R2_Hunk_Alloc(int size, ha_pref preference) {
+	return R_Malloc(size, hunk_tag, qtrue);
+}
+
+
+/*
+=================
+Hunk_AllocateTempMemory
+
+This is used by the file loading system.
+Multiple files can be loaded in temporary memory.
+When the files-in-use count reaches zero, all temp memory will be deleted
+=================
+*/
+void* R2_Hunk_AllocateTempMemory(int size) {
+	// don't bother clearing, because we are going to load a file over it
+	return R_Malloc(size, TAG_TEMP_HUNKALLOC, qfalse);
+}
+
+
+/*
+==================
+Hunk_FreeTempMemory
+==================
+*/
+void R2_Hunk_FreeTempMemory(void* buf)
+{
+	R_Free(buf);
 }

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_subs.c - common function replacements for modular renderer
 
 #include "tr_local.h"
-
+#include "qcommon/qcommon.h"
 
 void QDECL Com_Printf( const char *msg, ... )
 {
@@ -45,7 +45,8 @@ void QDECL Com_OPrintf( const char *msg, ... )
 	Q_vsnprintf(text, sizeof(text), msg, argptr);
 	va_end(argptr);
 
-	ri.OPrintf("%s", text);
+	//ri.OPrintf("%s", text);
+	ri.Printf(PRINT_ALL, "%s", text);
 }
 
 void QDECL Com_Error( int level, const char *error, ... )
@@ -61,6 +62,7 @@ void QDECL Com_Error( int level, const char *error, ... )
 }
 
 // HUNK
+/*
 void *Hunk_AllocateTempMemory( int size ) {
 	return ri.Hunk_AllocateTempMemory( size );
 }
@@ -76,20 +78,30 @@ void *Hunk_Alloc( int size, ha_pref preference ) {
 int Hunk_MemoryRemaining( void ) {
 	return ri.Hunk_MemoryRemaining();
 }
+*/
 
 // ZONE
-void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
-	return ri.Z_Malloc( iSize, eTag, bZeroit, iAlign );
+// tr_common.h
+
+void* R_Malloc(int iSize, memtag_t eTag, qboolean bZeroit)
+{
+	return ri.Malloc(iSize, eTag, bZeroit, 4);
 }
 
-void Z_Free( void *ptr ) {
-	ri.Z_Free( ptr );
+void* R_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign )
+{
+	return ri.Malloc( iSize, eTag, bZeroit, iAlign );
 }
 
-int Z_MemSize( memtag_t eTag ) {
+void R_Free( void *ptr )
+{
+	ri.Z_Free(ptr);
+}
+
+int R_MemSize( memtag_t eTag ) {
 	return ri.Z_MemSize( eTag );
 }
 
-void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
+void R_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 	ri.Z_MorphMallocTag( pvBuffer, eDesiredTag );
 }

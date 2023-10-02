@@ -23,6 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "tr_local.h"
+#include "ghoul2/ghoul2_gore.h"
 
 #ifdef _G2_GORE
 
@@ -33,9 +34,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //TODO: This needs to be set via a scalability cvar with some reasonable minimum value if pgore is used at all
 #define MAX_GORE_RECORDS (500)
 
-struct R2GoreTextureCoordinates
+struct R2GoreTextureCoordinates : GoreTextureCoordinates
 {
-	srfG2GoreSurface_t *tex[MAX_LODS];
+	srfG2GoreSurface_t *tex_new[MAX_LODS];
 
 	R2GoreTextureCoordinates();
 	~R2GoreTextureCoordinates();

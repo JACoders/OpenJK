@@ -178,6 +178,11 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 }
 
 
+void RE_AddPolyToScene_v18(qhandle_t hShader, int numVerts, const polyVert_t* verts)
+{
+	RE_AddPolyToScene(hShader, numVerts, verts, 1);
+}
+
 //=================================================================================
 
 
@@ -225,7 +230,7 @@ RE_AddMiniRefEntityToScene
 1:1 with how vanilla does it --eez
 =====================
 */
-void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt ) {
+void RE_AddMiniRefEntityToScene( const refEntity_t* miniRefEnt ) {
 	refEntity_t entity;
 	if(!tr.registered)
 		return;
@@ -298,7 +303,7 @@ void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, flo
 
 void RE_BeginScene(const refdef_t *fd)
 {
-	Com_Memcpy( tr.refdef.text, fd->text, sizeof( tr.refdef.text ) );
+	//Com_Memcpy( tr.refdef.text, fd->text, sizeof( tr.refdef.text ) );
 
 	tr.refdef.x = fd->x;
 	tr.refdef.y = fd->y;

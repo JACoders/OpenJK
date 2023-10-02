@@ -49,22 +49,33 @@ typedef unsigned int glIndex_t;
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
 // see QSORT_SHADERNUM_SHIFT
-#define SHADERNUM_BITS	14
-#define MAX_SHADERS		(1<<SHADERNUM_BITS)
+#define SHADERNUM_BITS			14
+#define MAX_SHADERS				(1<<SHADERNUM_BITS)
 
-#define	MAX_FBOS      256
-#define MAX_VISCOUNTS 5
-#define MAX_VBOS      4096
-#define MAX_IBOS      4096
-#define MAX_G2_BONES  72
+#define	MAX_FBOS				256
+#define MAX_VISCOUNTS			5
+#define MAX_VBOS				4096
+#define MAX_IBOS				4096
+#define MAX_G2_BONES			72
 
-#define MAX_CALC_PSHADOWS    64
-#define MAX_DRAWN_PSHADOWS    32 // do not increase past 32, because bit flags are used on surfaces
-#define PSHADOW_MAP_SIZE      1024
-#define DSHADOW_MAP_SIZE      512
-#define CUBE_MAP_MIPS      8
+#define MAX_CALC_PSHADOWS		64
+#define MAX_DRAWN_PSHADOWS		32 // do not increase past 32, because bit flags are used on surfaces
+#define PSHADOW_MAP_SIZE		1024
+#define DSHADOW_MAP_SIZE		512
+#define CUBE_MAP_MIPS			8
 #define CUBE_MAP_ROUGHNESS_MIPS CUBE_MAP_MIPS - 2
-#define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
+#define CUBE_MAP_SIZE			(1 << CUBE_MAP_MIPS)
+
+//for transform optimization -rww
+#define GHOUL2_ZONETRANSALLOC	0x2000
+
+#define	GHOUL2_CRAZY_SMOOTH		0x2000		// hack for smoothing during ugly situations. forgive me.
+#define	BONE_NEED_TRANSFORM		0x8000
+#define RDF_AUTOMAP				32			// means this scene is to draw the automap -rww
+#define RF_FORCEPOST			0x200000	// force it to post-render -rww
+#define	RF_MINLIGHT				0x00001		// allways have some light (viewmodel, some items)
+#define RF_ALPHA_DEPTH			0x100000	// depth write on alpha model
+#define	RDF_NOFOG				64			// no global fog in this scene (but still brush fog) -rww
 
 /*
 =====================================================
@@ -259,7 +270,7 @@ Ghoul2 Insert Start
 extern cvar_t	*r_noPrecacheGLA;
 #endif
 
-extern cvar_t	*r_noServerGhoul2;
+extern cvar_t	*r_noGhoul2;
 extern cvar_t	*r_Ghoul2AnimSmooth;
 extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
 //extern cvar_t	*r_Ghoul2UnSqash;
@@ -1444,6 +1455,14 @@ typedef struct shaderProgram_s
 
 	// uniform blocks
 	uint32_t uniformBlocks;
+
+	shaderProgram_s()
+		: program(NULL)
+		, uniforms(NULL)
+		, uniformBufferOffsets(0)
+		, uniformBuffer(0)
+		, uniformBlocks(0)
+	{}
 } shaderProgram_t;
 
 // trRefdef_t holds everything that comes in refdef_t,
@@ -1496,6 +1515,9 @@ typedef struct {
 
 	float       autoExposureMinMax[2];
 	float       toneMinAvgMaxLinear[3];
+
+	boolean		doLAGoggles;
+	int			fogIndex;	//what fog brush the vieworg is in
 } trRefdef_t;
 
 
@@ -1565,6 +1587,25 @@ typedef struct {
 	viewParmType_t	viewParmType;
 } viewParms_t;
 
+/*
+==============================================================================
+
+SURFACES
+
+==============================================================================
+*/
+
+// skins allow models to be retextured without modifying the model file
+typedef struct {
+	char		name[MAX_QPATH];
+	shader_t* shader;
+} _skinSurface_t;
+
+typedef struct skin_s {
+	char		name[MAX_QPATH];		// game path, including extension
+	int			numSurfaces;
+	_skinSurface_t* surfaces[128];
+} skin_t;
 
 /*
 ==============================================================================
@@ -2163,6 +2204,8 @@ void		R_ModelInit (void);
 model_t		*R_GetModelByHandle( qhandle_t hModel );
 int			R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame, 
 					 float frac, const char *tagName );
+void		R_LerpTag_v18(orientation_t* tag, qhandle_t handle, int startFrame, int endFrame,
+	float frac, const char* tagName);
 void		R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs );
 
 void		R_Modellist_f (void);
@@ -2915,8 +2958,9 @@ void		RE_LoadWorldMap( const char *mapname );
 void		RE_SetWorldVisData( const byte *vis );
 qhandle_t	RE_RegisterServerModel( const char *name );
 qhandle_t	RE_RegisterModel( const char *name );
-qhandle_t	RE_RegisterServerSkin( const char *name );
+//qhandle_t	RE_RegisterServerSkin( const char *name );
 qhandle_t	RE_RegisterSkin( const char *name );
+int			RE_GetAnimationCFG(const char* psCFGFilename, char* psDest, int iDestSize);
 void		RE_Shutdown(qboolean destroyWindow, qboolean restarting);
 world_t		*R_LoadBSP(const char *name, int *bspIndex = nullptr);
 
@@ -2954,7 +2998,7 @@ skin_t	*R_GetSkinByHandle( qhandle_t hSkin );
 
 int R_ComputeLOD( trRefEntity_t *ent );
 
-const void *RB_TakeVideoFrameCmd( const void *data );
+//const void *RB_TakeVideoFrameCmd( const void *data );
 void RE_HunkClearCrap(void);
 
 //
@@ -2969,7 +3013,7 @@ extern const byte stylesDefault[MAXLIGHTMAPS];
 shader_t	*R_FindShader( const char *name, const int *lightmapIndexes, const byte *styles, qboolean mipRawImage );
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 shader_t *R_FindShaderByName( const char *name );
-void		R_InitShaders( qboolean server );
+void		R_InitShaders( void );
 void		R_ShaderList_f( void );
 void    R_RemapShader(const char *oldShader, const char *newShader, const char *timeOffset);
 shader_t *R_CreateShaderFromTextureBundle(
@@ -3028,10 +3072,10 @@ struct shaderCommands_s
 	float		shaderTime;
 	int			fogNum;
 	int         cubemapIndex;
-#ifdef REND2_SP_MAYBE
+
 	bool		scale;		// uses texCoords[input->firstIndex] for storage
 	bool		fade;		// uses svars.colors[input->firstIndex] for storage
-#endif
+
 	int			dlightBits;	// or together of all vertexDlightBits
 	int         pshadowBits;
 
@@ -3097,7 +3141,7 @@ void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef );
 void R_MarkLeaves(void);
 void R_RecursiveWorldNode(mnode_t *node, int planeBits, int dlightBits, int pshadowBits);
-qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
+qboolean R_inPVS( vec3_t p1, vec3_t p2 );
 
 
 /*
@@ -3282,13 +3326,15 @@ void R_InitNextFrame( void );
 
 void RE_ClearScene( void );
 void RE_AddRefEntityToScene( const refEntity_t *ent );
-void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt );
+void RE_AddMiniRefEntityToScene( const refEntity_t* miniRefEnt );
 void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts, int num );
+void RE_AddPolyToScene_v18(qhandle_t hShader, int numVerts, const polyVert_t* verts);
 void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_BeginScene( const refdef_t *fd );
 void RE_RenderScene( const refdef_t *fd );
 void RE_EndScene( void );
+qboolean RE_GetLighting(const vec3_t origin, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir);
 
 /*
 =============================================================
@@ -3306,8 +3352,6 @@ UNCOMPRESSING BONES
 #define MC_SCALE_X (1.0f/64)
 #define MC_SCALE_Y (1.0f/64)
 #define MC_SCALE_Z (1.0f/64)
-
-void MC_UnCompress(float mat[3][4],const unsigned char * comp);
 
 /*
 =============================================================
@@ -3354,7 +3398,8 @@ public:
 
 #ifdef _G2_GORE
 	// alternate texture coordinates
-	srfG2GoreSurface_t *alternateTex;
+	srfG2GoreSurface_t* alternateTex;
+	float* alternateTexLegacy;
 	void *goreChain;
 
 	float scale;
@@ -3372,6 +3417,7 @@ public:
 		surfaceData = src.surfaceData;
 #ifdef _G2_GORE
 		alternateTex = src.alternateTex;
+		alternateTexLegacy = src.alternateTexLegacy;
 		goreChain = src.goreChain;
 #endif
 		vboMesh = src.vboMesh;
@@ -3386,6 +3432,7 @@ public:
 		, surfaceData(nullptr)
 #ifdef _G2_GORE
 		, alternateTex(nullptr)
+		, alternateTexLegacy(nullptr)
 		, goreChain(nullptr)
 		, scale(1.0f)
 		, fade(0.0f)
@@ -3401,6 +3448,7 @@ public:
 		surfaceData = nullptr;
 #ifdef _G2_GORE
 		alternateTex = nullptr;
+		alternateTexLegacy = nullptr;
 		goreChain = nullptr;
 #endif
 		vboMesh = nullptr;
@@ -3512,6 +3560,13 @@ typedef struct rotatePicCommand_s {
 	float	a;
 } rotatePicCommand_t;
 
+typedef struct
+{
+	int	commandId;
+	float x, y;
+	float w, h;
+} scissorCommand_t;
+
 typedef struct drawSurfsCommand_s {
 	int		commandId;
 	trRefdef_t	refdef;
@@ -3589,6 +3644,7 @@ typedef enum {
 	RC_SWAP_BUFFERS,
 	RC_SCREENSHOT,
 	RC_VIDEOFRAME,
+	RC_SCISSOR,
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
 	RC_CONVOLVECUBEMAP,
@@ -3672,6 +3728,15 @@ typedef struct backEndData_s {
 	renderCommandList_t	commands;
 } backEndData_t;
 
+typedef enum {
+	h_high,
+	h_low,
+	h_dontcare
+} ha_pref;
+
+void* Hunk_Alloc(int size, ha_pref preference);
+
+
 extern	int		max_polys;
 extern	int		max_polyverts;
 
@@ -3694,6 +3759,8 @@ void RE_SetColor( const float *rgba );
 void RE_StretchPic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t hShader );
 void RE_RotatePic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, float a, qhandle_t hShader );
 void RE_RotatePic2 ( float x, float y, float w, float h, float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
+void RE_LAGoggles(void);
+void RE_Scissor(float x, float y, float w, float h);
 void RE_BeginFrame( stereoFrame_t stereoFrame );
 void R_NewFrameSync();
 void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
@@ -3917,5 +3984,56 @@ void RB_FillDrawCommand(
 uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
 void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
 DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader );
+
+/*
+Ghoul2 Insert Start
+*/
+
+// tr_ghoul2.cpp
+void		Create_Matrix(const float* angle, mdxaBone_t* matrix);
+void		Multiply_3x4Matrix(mdxaBone_t* out, const mdxaBone_t* in2, const mdxaBone_t* in);
+extern qboolean R_LoadMDXM(model_t* mod, void* buffer, const char* name, qboolean& bAlreadyCached);
+extern qboolean R_LoadMDXA(model_t* mod, void* buffer, const char* name, qboolean& bAlreadyCached);
+/*
+Ghoul2 Insert End
+*/
+
+// ************************************************************
+// Functions below were implemented in rd-common in MP game, but not presented in rd-common in SP
+
+
+/*
+Hunk Start
+*/
+void* R2_Hunk_Alloc(int size, ha_pref preference);
+void* R2_Hunk_AllocateTempMemory(int size);
+void R2_Hunk_FreeTempMemory(void* buf);
+/*
+end Hunk
+*/
+
+// implementation in G2_surfaces.cpp
+qboolean G2_SetSurfaceOnOff(CGhoul2Info* ghlInfo, surfaceInfo_v& slist, const char* surfaceName, const int offFlags);
+// implementation in G2_surfaces.cpp
+void G2_SetSurfaceOnOffFromSkin(CGhoul2Info* ghlInfo, qhandle_t renderSkin);
+// implementation in tr_ghoul2.cpp
+void G2_GetBoltMatrixLow(CGhoul2Info& ghoul2, int boltNum, const vec3_t scale, mdxaBone_t& retMatrix);
+// implementation in tr_ghoul2.cpp
+void G2_GetBoneMatrixLow(CGhoul2Info& ghoul2, int boneNum, const vec3_t scale, mdxaBone_t& retMatrix, mdxaBone_t*& retBasepose, mdxaBone_t*& retBaseposeInv);
+
+extern void G2API_AnimateG2ModelsRag(CGhoul2Info_v& ghoul2, int AcurrentTime, CRagDollUpdateParams* params);
+qboolean G2API_GetRagBonePos(CGhoul2Info_v& ghoul2, const char* boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale);
+extern qboolean G2API_IKMove(CGhoul2Info_v& ghoul2, int time, sharedIKMoveParams_t* params);
+extern void G2API_AnimateG2Models(CGhoul2Info_v& ghoul2, int AcurrentTime, CRagDollUpdateParams* params);
+extern qboolean G2API_RagEffectorGoal(CGhoul2Info_v& ghoul2, const char* boneName, vec3_t pos);
+extern qboolean G2API_RagEffectorKick(CGhoul2Info_v& ghoul2, const char* boneName, vec3_t velocity);
+extern qboolean G2API_RagForceSolve(CGhoul2Info_v& ghoul2, qboolean force);
+extern qboolean G2API_RagPCJConstraint(CGhoul2Info_v& ghoul2, const char* boneName, vec3_t min, vec3_t max);
+extern qboolean G2API_RagPCJGradientSpeed(CGhoul2Info_v& ghoul2, const char* boneName, const float speed);
+extern qboolean G2API_SetBoneIKState(CGhoul2Info_v& ghoul2, int time, const char* boneName, int ikState, sharedSetBoneIKStateParams_t* params);
+extern void G2API_SetRagDoll(CGhoul2Info_v& ghoul2, CRagDollParams* parms);
+extern IGhoul2InfoArray& TheGhoul2InfoArray();
+
+void* R_Hunk_Alloc(int iSize, ha_pref preferences);
 
 #endif //TR_LOCAL_H

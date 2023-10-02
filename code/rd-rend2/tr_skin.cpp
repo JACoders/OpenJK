@@ -1,4 +1,5 @@
 #include "tr_local.h"
+#include "qcommon/sstring.h"
 
 /*
 ============================================================================
@@ -139,13 +140,17 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			Com_Printf( "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, ARRAY_LEN( skin->surfaces ) );
 			break;
 		}
-		surf = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), h_low );
+		surf = (skinSurface_t *)R_Hunk_Alloc( sizeof( *skin->surfaces[0] ), h_low );
 		skin->surfaces[skin->numSurfaces] = (_skinSurface_t *)surf;
 
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
 
+		/*
 		if (gServerSkinHack)	surf->shader = R_FindServerShader( token, lightmapsNone, stylesDefault, qtrue );
 		else					surf->shader = R_FindShader( token, lightmapsNone, stylesDefault, qtrue );
+		*/
+		surf->shader = R_FindShader(token, lightmapsNone, stylesDefault, qtrue);
+
 		skin->numSurfaces++;
 	}
 
@@ -191,7 +196,7 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 		return 0;
 	}
 	tr.numSkins++;
-	skin = (struct skin_s *)Hunk_Alloc( sizeof( skin_t ), h_low );
+	skin = (skin_s *)R_Hunk_Alloc( sizeof( skin_t ), h_low );
 	tr.skins[hSkin] = skin;
 	Q_strncpyz( skin->name, name, sizeof( skin->name ) );
 	skin->numSurfaces = 0;
@@ -331,12 +336,64 @@ static char *CommaParse( char **data_p ) {
 	if (len == MAX_TOKEN_CHARS)
 	{
 //		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
-		len = 0;
+		len = MAX_TOKEN_CHARS - 1;
 	}
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;
 	return com_token;
+}
+
+typedef std::map<sstring_t, char* /*, CStringComparator*/ >	AnimationCFGs_t;
+AnimationCFGs_t AnimationCFGs;
+
+// I added this function for development purposes (and it's VM-safe) so we don't have problems
+//	with our use of cached models but uncached animation.cfg files (so frame sequences are out of sync
+//	if someone rebuild the model while you're ingame and you change levels)...
+//
+// Usage:  call with psDest == NULL for a size enquire (for malloc),
+//				then with NZ ptr for it to copy to your supplied buffer...
+//
+int RE_GetAnimationCFG(const char* psCFGFilename, char* psDest, int iDestSize)
+{
+	char* psText = NULL;
+
+	AnimationCFGs_t::iterator it = AnimationCFGs.find(psCFGFilename);
+	if (it != AnimationCFGs.end())
+	{
+		psText = (*it).second;
+	}
+	else
+	{
+		// not found, so load it...
+		//
+		fileHandle_t f;
+		int iLen = ri.FS_FOpenFileRead(psCFGFilename, &f, qfalse);
+		if (iLen <= 0)
+		{
+			return 0;
+		}
+
+		psText = (char*)R_Malloc(iLen + 1, TAG_ANIMATION_CFG, qfalse);
+
+		ri.FS_Read(psText, iLen, f);
+		psText[iLen] = '\0';
+		ri.FS_FCloseFile(f);
+
+		AnimationCFGs[psCFGFilename] = psText;
+	}
+
+	if (psText)	// sanity, but should always be NZ
+	{
+		if (psDest)
+		{
+			Q_strncpyz(psDest, psText, iDestSize);
+		}
+
+		return strlen(psText);
+	}
+
+	return 0;
 }
 
 /*
@@ -346,6 +403,7 @@ RE_RegisterServerSkin
 Mangled version of the above function to load .skin files on the server.
 ===============
 */
+/*
 qhandle_t RE_RegisterServerSkin( const char *name ) {
 	qhandle_t r;
 
@@ -362,6 +420,7 @@ qhandle_t RE_RegisterServerSkin( const char *name ) {
 
 	return r;
 }
+*/
 
 /*
 ===============
@@ -374,10 +433,10 @@ void	R_InitSkins( void ) {
 	tr.numSkins = 1;
 
 	// make the default skin have all default shaders
-	skin = tr.skins[0] = (struct skin_s *)ri.Hunk_Alloc( sizeof( skin_t ), h_low );
+	skin = tr.skins[0] = (struct skin_s *)R_Hunk_Alloc( sizeof( skin_t ), h_low );
 	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
 	skin->numSurfaces = 1;
-	skin->surfaces[0] = (_skinSurface_t *)ri.Hunk_Alloc( sizeof( skinSurface_t ), h_low );
+	skin->surfaces[0] = (_skinSurface_t *)R_Hunk_Alloc( sizeof( skinSurface_t ), h_low );
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 

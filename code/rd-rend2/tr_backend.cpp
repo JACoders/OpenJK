@@ -2095,7 +2095,7 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	if (r_drawSun->integer)
 	{
-		RB_DrawSun(0.1, tr.sunShader);
+		RB_DrawSun(0.1f, tr.sunShader);
 	}
 
 	if (r_drawSunRays->integer)
@@ -2109,7 +2109,7 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 		tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
 		qglBeginQuery(GL_SAMPLES_PASSED, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
 
-		RB_DrawSun(0.3, tr.sunFlareShader);
+		RB_DrawSun(0.3f, tr.sunFlareShader);
 
 		qglEndQuery(GL_SAMPLES_PASSED);
 
@@ -2712,7 +2712,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		long sum = 0;
 		unsigned char *stencilReadback;
 
-		stencilReadback = (unsigned char *)ri.Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
+		stencilReadback = (unsigned char *)R2_Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
 		qglReadPixels( 0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, stencilReadback );
 
 		for ( i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++ ) {
@@ -2720,7 +2720,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		}
 
 		backEnd.pc.c_overDraw += sum;
-		ri.Hunk_FreeTempMemory( stencilReadback );
+		R2_Hunk_FreeTempMemory( stencilReadback );
 	}
 
 	if (!backEnd.framePostProcessed)
@@ -3067,9 +3067,11 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_SCREENSHOT:
 			data = RB_TakeScreenshotCmd( data );
 			break;
+			/*
 		case RC_VIDEOFRAME:
 			data = RB_TakeVideoFrameCmd( data );
 			break;
+			*/
 		case RC_COLORMASK:
 			data = RB_ColorMask(data);
 			break;

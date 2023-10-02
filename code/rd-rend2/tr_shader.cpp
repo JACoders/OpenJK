@@ -826,7 +826,7 @@ static bool ParseSurfaceSprites( const char *buffer, shaderStage_t *stage )
 
 	if ( !stage->ss )
 	{
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
+		stage->ss = (surfaceSprite_t *)R_Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
 
 	}
 
@@ -886,7 +886,7 @@ static bool ParseSurfaceSpritesOptional(
 
 	if (!stage->ss)
 	{
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
+		stage->ss = (surfaceSprite_t *)R_Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
 	}
 
 	// TODO: Tidy this up some how. There's a lot of repeated code
@@ -1495,7 +1495,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri.Printf( PRINT_WARNING, "WARNING: missing parameter for 'videoMap' keyword in shader '%s'\n", shader.name );
 				return qfalse;
 			}
-			stage->bundle[0].videoMapHandle = ri.CIN_PlayCinematic( token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader));
+			stage->bundle[0].videoMapHandle = ri.CIN_PlayCinematic( token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader), NULL);
 			if (stage->bundle[0].videoMapHandle != -1) {
 				stage->bundle[0].isVideoMap = qtrue;
 				stage->bundle[0].image[0] = tr.scratchImage[stage->bundle[0].videoMapHandle];
@@ -3667,7 +3667,7 @@ static void SortNewShader( void ) {
 
 	// Arnout: fix rendercommandlist
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=493
-	FixRenderCommandList( i+1 );
+	//FixRenderCommandList( i+1 );
 
 	newShader->sortedIndex = i+1;
 	tr.sortedShaders[i+1] = newShader;
@@ -3689,7 +3689,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = (shader_t *)ri.Hunk_Alloc( sizeof( shader_t ), h_low );
+	newShader = (shader_t *)R2_Hunk_Alloc( sizeof( shader_t ), h_low );
 
 	*newShader = shader;
 
@@ -3741,12 +3741,12 @@ static shader_t *GeneratePermanentShader( void ) {
 		if ( !stages[i].active ) {
 			break;
 		}
-		newShader->stages[i] = (shaderStage_t *)ri.Hunk_Alloc( sizeof( stages[i] ), h_low );
+		newShader->stages[i] = (shaderStage_t *)R2_Hunk_Alloc( sizeof( stages[i] ), h_low );
 		*newShader->stages[i] = stages[i];
 
 		for ( b = 0 ; b < NUM_TEXTURE_BUNDLES ; b++ ) {
 			size = newShader->stages[i]->bundle[b].numTexMods * sizeof( texModInfo_t );
-			newShader->stages[i]->bundle[b].texMods = (texModInfo_t *)ri.Hunk_Alloc( size, h_low );
+			newShader->stages[i]->bundle[b].texMods = (texModInfo_t *)R2_Hunk_Alloc( size, h_low );
 			Com_Memcpy( newShader->stages[i]->bundle[b].texMods, stages[i].bundle[b].texMods, size );
 		}
 	}
@@ -4957,7 +4957,7 @@ static void ScanAndLoadShaderFiles( void )
 	}
 
 	// build single large buffer
-	s_shaderText = (char *)ri.Hunk_Alloc( sum + numShaderFiles*2, h_low );
+	s_shaderText = (char *)R2_Hunk_Alloc( sum + numShaderFiles*2, h_low );
 	s_shaderText[ 0 ] = '\0';
 	textEnd = s_shaderText;
  
@@ -4997,7 +4997,7 @@ static void ScanAndLoadShaderFiles( void )
 
 	size += MAX_SHADERTEXT_HASH;
 
-	hashMem = (char *)ri.Hunk_Alloc( size * sizeof(char *), h_low );
+	hashMem = (char *)R2_Hunk_Alloc( size * sizeof(char *), h_low );
 
 	for (i = 0; i < MAX_SHADERTEXT_HASH; i++) {
 		shaderTextHashTable[i] = (char **) hashMem;
@@ -5126,17 +5126,15 @@ static void CreateExternalShaders( void ) {
 R_InitShaders
 ==================
 */
-void R_InitShaders( qboolean server ) {
+void R_InitShaders( void )
+{
 	ri.Printf( PRINT_ALL, "Initializing Shaders\n" );
 
 	Com_Memset(hashTable, 0, sizeof(hashTable));
 
-	if ( !server )
-	{
-		CreateInternalShaders();
+	CreateInternalShaders();
 
-		ScanAndLoadShaderFiles();
+	ScanAndLoadShaderFiles();
 
-		CreateExternalShaders();
-	}
+	CreateExternalShaders();
 }

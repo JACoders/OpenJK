@@ -483,7 +483,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 	}
 
 	mod->type = MOD_IQM;
-	iqmData = (iqmData_t *)ri.Hunk_Alloc( size, h_low );
+	iqmData = (iqmData_t *)R2_Hunk_Alloc( size, h_low );
 	mod->data.iqm = iqmData;
 
 	// fill header

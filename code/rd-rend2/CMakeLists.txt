@@ -3,218 +3,254 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPRend2IncludeDirectories
-	"${SharedDir}"
-	"${MPDir}"
-	"${MPDir}/rd-rend2"
-	"${GSLIncludeDirectory}"
-	)
+if(BuildSPRend2)
 
-set(MPRend2Files
-	"${MPDir}/rd-rend2/iqm.h"
-	"${MPDir}/rd-rend2/glext.h"
-	"${MPDir}/rd-rend2/qgl.h"
-	"${MPDir}/rd-rend2/stb_image.h"
-	"${MPDir}/rd-rend2/G2_API.cpp"
-	"${MPDir}/rd-rend2/G2_bolts.cpp"
-	"${MPDir}/rd-rend2/G2_bones.cpp"
-	"${MPDir}/rd-rend2/G2_gore_r2.cpp"
-	"${MPDir}/rd-rend2/G2_gore_r2.h"
-	"${MPDir}/rd-rend2/G2_misc.cpp"
-	"${MPDir}/rd-rend2/G2_surfaces.cpp"
-	"${MPDir}/rd-rend2/tr_allocator.cpp"
-	"${MPDir}/rd-rend2/tr_allocator.h"
-	"${MPDir}/rd-rend2/tr_animation.cpp"
-	"${MPDir}/rd-rend2/tr_backend.cpp"
-	"${MPDir}/rd-rend2/tr_bsp.cpp"
-	"${MPDir}/rd-rend2/tr_cache.cpp"
-	"${MPDir}/rd-rend2/tr_cache.h"
-	"${MPDir}/rd-rend2/tr_cmds.cpp"
-	"${MPDir}/rd-rend2/tr_curve.cpp"
-	"${MPDir}/rd-rend2/tr_decals.cpp"
-	"${MPDir}/rd-rend2/tr_extensions.cpp"
-	"${MPDir}/rd-rend2/tr_extramath.cpp"
-	"${MPDir}/rd-rend2/tr_extramath.h"
-	"${MPDir}/rd-rend2/tr_extratypes.h"
-	"${MPDir}/rd-rend2/tr_fbo.cpp"
-	"${MPDir}/rd-rend2/tr_fbo.h"
-	"${MPDir}/rd-rend2/tr_flares.cpp"
-	"${MPDir}/rd-rend2/tr_ghoul2.cpp"
-	"${MPDir}/rd-rend2/tr_glsl.cpp"
-	"${MPDir}/rd-rend2/tr_glsl_parse.cpp"
-	"${MPDir}/rd-rend2/tr_image.cpp"
-	"${MPDir}/rd-rend2/tr_image_stb.cpp"
-	"${MPDir}/rd-rend2/tr_init.cpp"
-	"${MPDir}/rd-rend2/tr_light.cpp"
-	"${MPDir}/rd-rend2/tr_local.h"
-	"${MPDir}/rd-rend2/tr_main.cpp"
-	"${MPDir}/rd-rend2/tr_marks.cpp"
-	"${MPDir}/rd-rend2/tr_mesh.cpp"
-	"${MPDir}/rd-rend2/tr_model.cpp"
-	"${MPDir}/rd-rend2/tr_model_iqm.cpp"
-	"${MPDir}/rd-rend2/tr_postprocess.cpp"
-	"${MPDir}/rd-rend2/tr_postprocess.h"
-	"${MPDir}/rd-rend2/tr_scene.cpp"
-	"${MPDir}/rd-rend2/tr_shade.cpp"
-	"${MPDir}/rd-rend2/tr_shade_calc.cpp"
-	"${MPDir}/rd-rend2/tr_shader.cpp"
-	"${MPDir}/rd-rend2/tr_shadows.cpp"
-	"${MPDir}/rd-rend2/tr_skin.cpp"
-	"${MPDir}/rd-rend2/tr_sky.cpp"
-	"${MPDir}/rd-rend2/tr_subs.cpp"
-	"${MPDir}/rd-rend2/tr_surface.cpp"
-	"${MPDir}/rd-rend2/tr_tangentspace.cpp"
-	"${MPDir}/rd-rend2/tr_vbo.cpp"
-	"${MPDir}/rd-rend2/tr_world.cpp"
-	"${MPDir}/rd-rend2/tr_weather.cpp"
-	"${MPDir}/rd-rend2/tr_weather.h")
-source_group("renderer" FILES ${MPRend2Files})
+	set(SPRend2RendererIncludeDirectories ${SPDir})
+	set(SPRend2RendererIncludeDirectories
+		${SharedDir}
+		${SPRend2RendererIncludeDirectories}
+		"${SPDir}/rd-rend2"
+		"${GSLIncludeDirectory}"
+		)
 
-file(GLOB MPRend2GLSLFiles "${MPDir}/rd-rend2/glsl/*.glsl")
-source_group("renderer\\glsl" FILES ${MPRend2GLSLFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2GLSLFiles})
+	# Modular Renderer crap (let's hope this works..)
 
-set(MPRend2MikktFiles
-	"${MPDir}/rd-rend2/MikkTSpace/mikktspace.h"
-	"${MPDir}/rd-rend2/MikkTSpace/mikktspace.c")
-source_group("MikktSpace" FILES ${MPRend2MikktFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2MikktFiles})
+	# Defines
+	set(SPRend2Defines ${SharedDefines} "RENDERER" "_JK2EXE")
 
-set(MPRend2Ghoul2Files
-	"${MPDir}/ghoul2/g2_local.h"
-	"${MPDir}/ghoul2/ghoul2_shared.h"
-	"${MPDir}/ghoul2/G2_gore.cpp"
-	"${MPDir}/ghoul2/G2_gore.h")
-source_group("ghoul2" FILES ${MPRend2Ghoul2Files})
-set(MPRend2Files ${MPRend2Files} ${MPRend2Ghoul2Files})
+	# Files
+	
+	set(SPRend2MikktFiles
+		"${SPDir}/rd-rend2/MikkTSpace/mikktspace.h"
+		"${SPDir}/rd-rend2/MikkTSpace/mikktspace.c")
+	source_group("MikktSpace" FILES ${SPRend2MikktFiles})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2MikktFiles})
 
-set(MPRend2RdCommonFiles
-	"${MPDir}/rd-common/mdx_format.h"
-	"${MPDir}/rd-common/tr_common.h"
-	"${MPDir}/rd-common/tr_font.cpp"
-	"${MPDir}/rd-common/tr_font.h"
-	"${MPDir}/rd-common/tr_image_load.cpp"
-	"${MPDir}/rd-common/tr_image_jpg.cpp"
-	"${MPDir}/rd-common/tr_image_tga.cpp"
-	"${MPDir}/rd-common/tr_image_png.cpp"
-	"${MPDir}/rd-common/tr_noise.cpp"
-	"${MPDir}/rd-common/tr_public.h"
-	"${MPDir}/rd-common/tr_types.h")
-source_group("rd-common" FILES ${MPRend2RdCommonFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})
+	# GHOUL 2
+	set(SPRend2G2Files
+		"${SPDir}/ghoul2/G2.h"
+		"${SPDir}/ghoul2/ghoul2_gore.h"
+		"${SPDir}/rd-rend2/G2_API.cpp"
+		"${SPDir}/rd-rend2/G2_bolts.cpp"
+		"${SPDir}/rd-rend2/G2_bones.cpp"
+		"${SPDir}/rd-rend2/G2_gore_r2.cpp"
+		"${SPDir}/rd-rend2/G2_gore_r2.h"
+		"${SPDir}/rd-rend2/G2_misc.cpp"
+		"${SPDir}/rd-rend2/G2_surfaces.cpp"	
+		)
+	source_group("ghoul2" FILES ${SPRend2G2Files})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2G2Files})
 
-set(MPRend2CommonFiles
-	"${MPDir}/qcommon/matcomp.cpp"
-	"${MPDir}/qcommon/q_shared.cpp"
-	"${SharedCommonFiles}")
-source_group("common" FILES ${MPRend2CommonFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2CommonFiles})
+    # Transparently use either bundled or system jpeg.
+    list(APPEND SPRend2RendererIncludeDirectories ${JPEG_INCLUDE_DIR})
+    list(APPEND SPRend2RendererLibraries          ${JPEG_LIBRARIES})
 
-set(MPRend2CommonSafeFiles
-	${SharedCommonSafeFiles}
-	)
-source_group("common/safe" FILES ${MPRend2CommonSafeFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2CommonSafeFiles})
+    # Transparently use either bundled or system libpng.  Order is important --
+    # libpng used zlib, so it must come before it on the linker command line.
+    list(APPEND SPRend2RendererIncludeDirectories ${PNG_INCLUDE_DIRS})
+    list(APPEND SPRend2RendererLibraries          ${PNG_LIBRARIES})
 
-# Transparently use either bundled or system libjpeg.
-list(APPEND MPRend2IncludeDirectories ${JPEG_INCLUDE_DIR})
-list(APPEND MPRend2Libraries          ${JPEG_LIBRARIES})
+    # Transparently use either bundled or system zlib.
+    list(APPEND SPRend2RendererIncludeDirectories ${ZLIB_INCLUDE_DIR})
+    list(APPEND SPRend2RendererLibraries          ${ZLIB_LIBRARIES})
 
-# Transparently use either bundled or system libpng.  Order is important --
-# libpng used zlib, so it must come before it on the linker command line.
-list(APPEND MPRend2IncludeDirectories ${PNG_INCLUDE_DIRS})
-list(APPEND MPRend2Libraries          ${PNG_LIBRARIES})
+    # Transparently use our bundled minizip.
+    list(APPEND SPRend2RendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+    list(APPEND SPRend2RendererLibraries          ${MINIZIP_LIBRARIES})
 
-# Transparently use either bundled or system zlib.
-list(APPEND MPRend2IncludeDirectories ${ZLIB_INCLUDE_DIR})
-list(APPEND MPRend2Libraries          ${ZLIB_LIBRARIES})
+    # Transparantly make use of all renderer directories
+    list(APPEND SPRend2RendererIncludeDirectories "${SPDir}/rd-common")
+    list(APPEND SPRend2RendererIncludeDirectories "${SPDir}/rd-rend2")
 
-# Transparently use our bundled minizip.
-list(APPEND MPRend2IncludeDirectories ${MINIZIP_INCLUDE_DIRS})
-list(APPEND MPRend2Libraries          ${MINIZIP_LIBRARIES})
+	# Misc files
+	set(SPRend2CommonFiles
+		"${SPDir}/qcommon/matcomp.cpp"
+		"${SPDir}/qcommon/q_shared.cpp"
+		"${SPDir}/qcommon/q_shared.h"
+		"${SPDir}/qcommon/ojk_i_saved_game.h"
+		"${SPDir}/qcommon/ojk_saved_game_class_archivers.h"
+		"${SPDir}/qcommon/ojk_saved_game_helper.h"
+		"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+		"${SPDir}/qcommon/ojk_scope_guard.h"
+		${SharedCommonFiles}
+		)
+	source_group("common" FILES ${SPRend2CommonFiles})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2CommonFiles})
 
-find_package(OpenGL REQUIRED)
-set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OPENGL_INCLUDE_DIR})
-set(MPRend2Libraries ${MPRend2Libraries} ${OPENGL_LIBRARIES})
+	# Misc files
+	set(SPRend2CommonSafeFiles
+		${SharedCommonSafeFiles}
+		)
+	source_group("common/safe" FILES ${SPRend2CommonSafeFiles})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2CommonSafeFiles})
 
-source_group("renderer"
-	FILES
-	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
-	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
-set(MPRend2Files
-	${MPRend2Files}
-	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
-	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
+	# main files
+	set(SPRend2MainFiles
+		"${SPDir}/rd-rend2/iqm.h"
+		"${SPDir}/rd-rend2/glext.h"
+		"${SPDir}/rd-rend2/qgl.h"
+		"${SPDir}/rd-rend2/stb_image.h"
+		"${SPDir}/rd-rend2/tr_allocator.cpp"
+		"${SPDir}/rd-rend2/tr_allocator.h"
+		"${SPDir}/rd-rend2/tr_animation.cpp"
+		"${SPDir}/rd-rend2/tr_backend.cpp"
+		"${SPDir}/rd-rend2/tr_bsp.cpp"
+		"${SPDir}/rd-rend2/tr_cache.cpp"
+		"${SPDir}/rd-rend2/tr_cache.h"
+		"${SPDir}/rd-rend2/tr_cmds.cpp"
+		"${SPDir}/rd-rend2/tr_curve.cpp"
+		"${SPDir}/rd-rend2/tr_decals.cpp"
+		"${SPDir}/rd-rend2/tr_extensions.cpp"
+		"${SPDir}/rd-rend2/tr_extramath.cpp"
+		"${SPDir}/rd-rend2/tr_extramath.h"
+		"${SPDir}/rd-rend2/tr_extratypes.h"
+		"${SPDir}/rd-rend2/tr_fbo.cpp"
+		"${SPDir}/rd-rend2/tr_fbo.h"
+		"${SPDir}/rd-rend2/tr_flares.cpp"
+		"${SPDir}/rd-rend2/tr_ghoul2.cpp"
+		"${SPDir}/rd-rend2/tr_glsl.cpp"
+		"${SPDir}/rd-rend2/tr_glsl_parse.cpp"
+		"${SPDir}/rd-rend2/tr_image.cpp"
+		"${SPDir}/rd-rend2/tr_image_stb.cpp"
+		"${SPDir}/rd-rend2/tr_init.cpp"
+		"${SPDir}/rd-rend2/tr_light.cpp"
+		"${SPDir}/rd-rend2/tr_local.h"
+		"${SPDir}/rd-rend2/tr_main.cpp"
+		"${SPDir}/rd-rend2/tr_marks.cpp"
+		"${SPDir}/rd-rend2/tr_mesh.cpp"
+		"${SPDir}/rd-rend2/tr_model.cpp"
+		"${SPDir}/rd-rend2/tr_model_iqm.cpp"
+		"${SPDir}/rd-rend2/tr_postprocess.cpp"
+		"${SPDir}/rd-rend2/tr_postprocess.h"
+		"${SPDir}/rd-rend2/tr_scene.cpp"
+		"${SPDir}/rd-rend2/tr_shade.cpp"
+		"${SPDir}/rd-rend2/tr_shade_calc.cpp"
+		"${SPDir}/rd-rend2/tr_shader.cpp"
+		"${SPDir}/rd-rend2/tr_shadows.cpp"
+		"${SPDir}/rd-rend2/tr_skin.cpp"
+		"${SPDir}/rd-rend2/tr_sky.cpp"
+		"${SPDir}/rd-rend2/tr_subs.cpp"
+		"${SPDir}/rd-rend2/tr_surface.cpp"
+		"${SPDir}/rd-rend2/tr_tangentspace.cpp"
+		"${SPDir}/rd-rend2/tr_vbo.cpp"
+		"${SPDir}/rd-rend2/tr_world.cpp"
+		"${SPDir}/rd-rend2/tr_weather.cpp"
+		"${SPDir}/rd-rend2/tr_weather.h"
+		)
+	source_group("renderer" FILES ${SPRend2MainFiles})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2MainFiles})
+	
+	file(GLOB SPRend2GLSLFiles "${SPDir}/rd-rend2/glsl/*.glsl")
+	source_group("renderer\\glsl" FILES ${SPRend2GLSLFiles})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2GLSLFiles})
 
-set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OpenJKLibDir})
-add_library(${MPRend2} SHARED ${MPRend2Files})
+	set(SPRend2RdCommonFiles
+		"${SPDir}/rd-common/mdx_format.h"
+		"${SPDir}/rd-common/tr_common.h"
+		"${SPDir}/rd-common/tr_font.cpp"
+		"${SPDir}/rd-common/tr_font.h"
+		"${SPDir}/rd-common/tr_image_load.cpp"
+		"${SPDir}/rd-common/tr_image_jpg.cpp"
+		"${SPDir}/rd-common/tr_image_tga.cpp"
+		"${SPDir}/rd-common/tr_image_png.cpp"
+		"${SPDir}/rd-common/tr_noise.cpp"
+		"${SPDir}/rd-common/tr_public.h"
+		"${SPDir}/rd-common/tr_types.h")
+	source_group("rd-common" FILES ${SPRend2RdCommonFiles})
+	set(SPRend2Files ${SPRend2Files} ${SPRend2RdCommonFiles})
 
-if(NOT MSVC)
-	# remove "lib" prefix for .so/.dylib files
-	set_target_properties(${MPRend2} PROPERTIES PREFIX "")
-endif()
+	find_package(OpenGL REQUIRED)
+	set(SPRend2RendererIncludeDirectories ${SPRend2RendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+	set(SPRend2RendererLibraries ${SPRend2RendererLibraries} ${OPENGL_LIBRARIES})
+	
+	source_group("renderer"
+		FILES
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
+	set(SPRend2Files
+		${SPRend2Files}
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
 
-if(WIN32)
-	install(TARGETS ${MPRend2}
-		RUNTIME
-		DESTINATION ${JKAInstallDir}
-		COMPONENT ${JKAMPClientComponent})
-else(WIN32)
-	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPRend2}
-			LIBRARY
-			DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
-			COMPONENT ${JKAMPClientComponent})
-	else()
-		install(TARGETS ${MPRend2}
-			LIBRARY
-			DESTINATION ${JKAInstallDir}
-			COMPONENT ${JKAMPClientComponent})
+	set(SPRend2RendererIncludeDirectories ${SPRend2RendererIncludeDirectories} ${OpenJKLibDir})
+
+	function(add_sp_renderer_project ProjectName Label EngineName InstallDir Component)
+		add_library(${ProjectName} SHARED ${SPRend2Files})
+		if(NOT MSVC)
+			# remove "lib" prefix for .so/.dylib files
+			set_target_properties(${ProjectName} PROPERTIES PREFIX "")
+		endif()
+
+		if(WIN32)
+			install(TARGETS ${ProjectName}
+				RUNTIME
+				DESTINATION ${InstallDir}
+				COMPONENT ${Component})
+		else(WIN32)
+			if(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
+				install(TARGETS ${ProjectName}
+					LIBRARY
+					DESTINATION "${InstallDir}/${EngineName}.app/Contents/MacOS/"
+					COMPONENT ${Component})
+			else()
+				install(TARGETS ${ProjectName}
+					LIBRARY
+					DESTINATION ${InstallDir}
+					COMPONENT ${Component})
+			endif()
+		endif()
+
+		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPRend2Defines}")
+
+		# Hide symbols not explicitly marked public.
+		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
+		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPRend2RendererIncludeDirectories}")
+		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
+
+		target_link_libraries(${ProjectName} ${SPRend2RendererLibraries})
+		target_include_directories(${ProjectName} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+	endfunction(add_sp_renderer_project)
+
+	if(BuildSPRend2)
+		add_sp_renderer_project(${SPRend2} "SP Rend2 Renderer" ${SPEngine} ${JKAInstallDir} ${JKASPClientComponent})
+	endif(BuildSPRend2)
+	
+	# GLSL shader file generator
+	add_executable(compact_glsl_sp
+		${SPDir}/rd-rend2/glsl/compact.cpp
+		${SPDir}/rd-rend2/tr_allocator.cpp
+		${SPDir}/rd-rend2/tr_allocator.h
+		${SPDir}/rd-rend2/tr_glsl_parse.cpp)
+	target_compile_definitions(compact_glsl_sp PRIVATE "GLSL_BUILDTOOL" "NOMINMAX")
+	if (NOT WIN32 AND NOT APPLE)
+		target_compile_definitions(compact_glsl_sp PRIVATE "ARCH_STRING=\"${Architecture}\"")
 	endif()
-endif()
-
-set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
-
-# Hide symbols not explicitly marked public.
-set_property(TARGET ${MPRend2} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
-set_target_properties(${MPRend2} PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
-set_target_properties(${MPRend2} PROPERTIES PROJECT_LABEL "MP Rend2 Renderer")
-target_link_libraries(${MPRend2} ${MPRend2Libraries})
-target_include_directories(${MPRend2} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-# GLSL shader file generator
-add_executable(compact_glsl
-	${MPDir}/rd-rend2/glsl/compact.cpp
-	${MPDir}/rd-rend2/tr_allocator.cpp
-	${MPDir}/rd-rend2/tr_allocator.h
-	${MPDir}/rd-rend2/tr_glsl_parse.cpp)
-target_compile_definitions(compact_glsl PRIVATE "GLSL_BUILDTOOL" "NOMINMAX")
-if (NOT WIN32 AND NOT APPLE)
-	target_compile_definitions(compact_glsl PRIVATE "ARCH_STRING=\"${Architecture}\"")
-endif()
-target_include_directories(compact_glsl PRIVATE "${MPRend2IncludeDirectories}")
-if (WIN32 OR APPLE)
-add_custom_command(
-	OUTPUT
-		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
-		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
-	COMMAND
-		compact_glsl
+	target_include_directories(compact_glsl_sp PRIVATE "${SPRend2RendererIncludeDirectories}")
+	if (WIN32 OR APPLE)
+	add_custom_command(
+		OUTPUT
 			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
 			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
-			${MPRend2GLSLFiles}
-	DEPENDS
-		compact_glsl ${MPRend2GLSLFiles})
-else()
-add_custom_command(
-	OUTPUT
-		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
-		${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
-	COMMAND
-		${CMAKE_BINARY_DIR}/compact_glsl
+		COMMAND
+			compact_glsl_sp
+				${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+				${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+				${SPRend2GLSLFiles}
+		DEPENDS
+			compact_glsl_sp ${SPRend2GLSLFiles})
+	else()
+	add_custom_command(
+		OUTPUT
 			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
 			${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
-			${MPRend2GLSLFiles}
-	DEPENDS
-		compact_glsl ${MPRend2GLSLFiles})
-endif()
+		COMMAND
+			${CMAKE_BINARY_DIR}/compact_glsl_sp
+				${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+				${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.h
+				${SPRend2GLSLFiles}
+		DEPENDS
+			compact_glsl_sp ${SPRend2GLSLFiles})
+	endif()
+
+endif(BuildSPRend2)

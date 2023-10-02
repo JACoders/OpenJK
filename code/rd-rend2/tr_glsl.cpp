@@ -159,7 +159,7 @@ static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
 	}
 	else
 	{
-		char *msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+		char *msg = (char *)R_Malloc(maxLength, TAG_SHADERTEXT);
 
 		qglGetProgramInfoLog(object, maxLength, &maxLength, msg);
 
@@ -170,7 +170,7 @@ static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
 			ri.Printf(printLevel, "%s\n", msgPart);
 		}
 
-		Z_Free(msg);
+		R_Free(msg);
 	}
 }
 
@@ -202,7 +202,7 @@ static void GLSL_PrintShaderInfoLog(GLuint object, qboolean developerOnly)
 	}
 	else
 	{
-		msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+		msg = (char *)R_Malloc(maxLength, TAG_SHADERTEXT);
 
 		qglGetShaderInfoLog(object, maxLength, &maxLength, msg);
 
@@ -213,7 +213,7 @@ static void GLSL_PrintShaderInfoLog(GLuint object, qboolean developerOnly)
 			ri.Printf(printLevel, "%s\n", msgPart);
 		}
 
-		Z_Free(msg);
+		R_Free(msg);
 	}
 }
 
@@ -228,7 +228,7 @@ static void GLSL_PrintShaderSource(GLuint shader)
 		return;
 	}
 
-	char *msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+	char *msg = (char *)R_Malloc(maxLength, TAG_SHADERTEXT);
 	qglGetShaderSource(shader, maxLength, nullptr, msg);
 
 	for (int i = 0; i < maxLength; i += 1023)
@@ -238,7 +238,7 @@ static void GLSL_PrintShaderSource(GLuint shader)
 		ri.Printf(PRINT_ALL, "%s\n", msgPart);
 	}
 
-	Z_Free(msg);
+	R_Free(msg);
 }
 
 static size_t GLSL_GetShaderHeader(
@@ -663,7 +663,7 @@ class ShaderProgramBuilder
 ShaderProgramBuilder::ShaderProgramBuilder()
 	: name(nullptr)
 	, attribs(0)
-	, program(0)
+	, program(NULL)
 	, shaderNames()
 	, numShaderNames(0)
 	, shaderSource(MAX_SHADER_SOURCE_LEN, '\0')
@@ -756,7 +756,7 @@ bool ShaderProgramBuilder::AddShader( const GPUShaderDesc& shaderDesc, const cha
 bool ShaderProgramBuilder::Build( shaderProgram_t *shaderProgram )
 {
 	const size_t nameBufferSize = strlen(name) + 1;
-	shaderProgram->name = (char *)Z_Malloc(nameBufferSize, TAG_GENERAL);
+	shaderProgram->name = (char *)R_Malloc(nameBufferSize, TAG_GENERAL);
 	Q_strncpyz(shaderProgram->name, name, nameBufferSize);
 
 	shaderProgram->program = program;
@@ -806,9 +806,9 @@ static bool GLSL_LoadGPUShader(
 
 void GLSL_InitUniforms(shaderProgram_t *program)
 {
-	program->uniforms = (GLint *)Z_Malloc(
+	program->uniforms = (GLint *)R_Malloc(
 			UNIFORM_COUNT * sizeof(*program->uniforms), TAG_GENERAL);
-	program->uniformBufferOffsets = (short *)Z_Malloc(
+	program->uniformBufferOffsets = (short *)R_Malloc(
 			UNIFORM_COUNT * sizeof(*program->uniformBufferOffsets), TAG_GENERAL);
 
 	GLint *uniforms = program->uniforms;
@@ -848,7 +848,7 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 		}
 	}
 
-	program->uniformBuffer = (char *)Z_Malloc(size, TAG_SHADERTEXT, qtrue);
+	program->uniformBuffer = (char *)R_Malloc(size, TAG_SHADERTEXT, qtrue);
 
 	program->uniformBlocks = 0;
 	for ( int i = 0; i < UNIFORM_BLOCK_COUNT; ++i )
@@ -1292,10 +1292,22 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 	{
 		qglDeleteProgram(program->program);
 
-		Z_Free (program->name);
-		Z_Free (program->uniformBuffer);
-		Z_Free (program->uniformBufferOffsets);
-		Z_Free (program->uniforms);
+		if (program->uniformBuffer)
+		{
+			R_Free(program->uniformBuffer);
+		}
+		if (program->name)
+		{
+			R_Free(program->name);
+		}
+		if (program->uniformBufferOffsets)
+		{
+			R_Free(program->uniformBufferOffsets);
+		}
+		if (program->uniforms)
+		{
+			R_Free(program->uniforms);
+		}
 
 		Com_Memset(program, 0, sizeof(*program));
 	}
@@ -1386,7 +1398,7 @@ void GLSL_InitSplashScreenShader()
 
 	size_t splashLen = strlen("splash");
 	tr.splashScreenShader.program = program;
-	tr.splashScreenShader.name = (char *)Z_Malloc(splashLen + 1, TAG_GENERAL);
+	tr.splashScreenShader.name = (char *)R_Malloc(splashLen + 1, TAG_GENERAL);
 	Q_strncpyz(tr.splashScreenShader.name, "splash", splashLen + 1);
 }
 

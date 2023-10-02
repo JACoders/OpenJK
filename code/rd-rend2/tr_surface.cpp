@@ -860,6 +860,7 @@ static void DoLine2( const vec3_t start, const vec3_t end, const vec3_t up, floa
 	tess.indexes[tess.numIndexes++] = vbase + 3;
 }
 
+/*
 static void DoLine_Oriented( const vec3_t start, const vec3_t end, const vec3_t up, float spanWidth )
 {
 	float		spanWidth2;
@@ -903,6 +904,7 @@ static void DoLine_Oriented( const vec3_t start, const vec3_t end, const vec3_t 
 	tess.indexes[tess.numIndexes++] = vbase + 1;
 	tess.indexes[tess.numIndexes++] = vbase + 3;
 }
+*/
 
 //-----------------
 // RB_SurfaceLine
@@ -928,6 +930,7 @@ static void RB_SurfaceLine( void )
 	DoLine( start, end, right, e->radius);
 }
 
+/*
 static void RB_SurfaceOrientedLine( void ) 
 {
 	refEntity_t *e;
@@ -944,6 +947,7 @@ static void RB_SurfaceOrientedLine( void )
 	VectorCopy(e->axis[1], right);
 	DoLine_Oriented( start, end, right, e->data.line.width*0.5 );
 }
+*/
 
 /*
 ==============
@@ -2022,16 +2026,16 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	case RT_LINE:
 		RB_SurfaceLine();
 		break;
-	case RT_ORIENTEDLINE:
-		RB_SurfaceOrientedLine();
-		break;
+	//case RT_ORIENTEDLINE:
+	//	RB_SurfaceOrientedLine();
+	//	break;
 	case RT_SABER_GLOW:
 		RB_SurfaceSaberGlow();
 		break;
 	case RT_CYLINDER:
 		RB_SurfaceCylinder();
 		break;
-	case RT_ENT_CHAIN:
+	/*case RT_ENT_CHAIN:
 		{
 			static trRefEntity_t tempEnt = *backEnd.currentEntity;
 
@@ -2054,7 +2058,7 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 				RB_SurfaceEntity(surfType);
 			}
 		}
-		break;
+		break;*/
 	default:
 		RB_SurfaceAxis();
 		break;

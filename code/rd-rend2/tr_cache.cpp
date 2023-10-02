@@ -81,7 +81,7 @@ qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffe
 	if (!strcmp (sDEFAULT_GLA_NAME ".gla", path))
 	{
 		// return fake params as though it was found on disk...
-		void *pvFakeGLAFile = Z_Malloc(sizeof (FakeGLAFile), TAG_FILESYS, qfalse);
+		void *pvFakeGLAFile = R_Malloc(sizeof (FakeGLAFile), TAG_FILESYS, qfalse);
 
 		memcpy(pvFakeGLAFile, &FakeGLAFile[0], sizeof (FakeGLAFile));
 		*ppFileBuffer = pvFakeGLAFile;
@@ -103,7 +103,7 @@ qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffe
 
 void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag )
 {
-	int		iChecksum;
+	//int		iChecksum;
 	char	sModelName[MAX_QPATH];
 
 	/* Standard NULL checking. */
@@ -122,9 +122,9 @@ void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *p
 		/* Create this image. */
 
 		if( pvDiskBuffer )
-			Z_MorphMallocTag( pvDiskBuffer, eTag );
+			R_MorphMallocTag( pvDiskBuffer, eTag );
 		else
-			pvDiskBuffer = Z_Malloc(iSize, eTag, qfalse);
+			pvDiskBuffer = R_Malloc(iSize, eTag, qfalse);
 
 		files.emplace_back();
 		pFile = &files.back();
@@ -132,8 +132,8 @@ void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *p
 		pFile->iAllocSize = iSize;
 		Q_strncpyz(pFile->path, sModelName, sizeof(pFile->path));
 
-		if( ri.FS_FileIsInPAK( sModelName, &iChecksum ) )
-			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
+		if (ri.FS_FileIsInPAK( sModelName))
+			pFile->iPAKChecksum = 1;  /* Otherwise, it will be -1. */
 
 		*bAlreadyFound = qfalse;
 	}
@@ -159,7 +159,7 @@ void CModelCacheManager::DeleteAll( void )
 {
 	for ( auto& file : files )
 	{
-		Z_Free(file.pDiskImage);
+		R_Free(file.pDiskImage);
 	}
 
 	FileCache().swap(files);
@@ -176,16 +176,15 @@ void CModelCacheManager::DumpNonPure( void )
 
 	for ( auto it = files.begin(); it != files.end(); /* empty */ )
 	{
-		int iChecksum;
-		int iInPak = ri.FS_FileIsInPAK( it->path, &iChecksum );
+		int iInPak = ri.FS_FileIsInPAK( it->path );
 
-		if( iInPak == -1 || iChecksum != it->iPAKChecksum )
+		if( iInPak == -1 )
 		{
 			/* Erase the file because it doesn't match the checksum */
 			ri.Printf( PRINT_DEVELOPER, "Dumping none pure model \"%s\"", it->path );
 
 			if( it->pDiskImage )
-				Z_Free( it->pDiskImage );
+				R_Free( it->pDiskImage );
 
 			it = files.erase(it);
 		}
@@ -250,7 +249,7 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 			ri.Printf( PRINT_DEVELOPER, S_COLOR_GREEN "Dumping \"%s\"", it->path);
 			if( it->pDiskImage )
 			{
-				Z_Free( it->pDiskImage );
+				R_Free( it->pDiskImage );
 				bAtLeastOneModelFreed = qtrue;	// FIXME: is this correct? shouldn't it be in the next lower scope?
 			}
 

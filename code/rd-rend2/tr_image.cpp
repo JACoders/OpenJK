@@ -45,8 +45,8 @@ Extends the size of the images pool allocator
 */
 static void R_ExtendImagesPool()
 {
-	ImagesPool *pool = (ImagesPool *)Z_Malloc(sizeof(*pool), TAG_GENERAL);
-	image_t *freeImages = (image_t *)Z_Malloc(sizeof(*freeImages) * NUM_IMAGES_PER_POOL_ALLOC, TAG_IMAGE_T);
+	ImagesPool *pool = (ImagesPool *)R_Malloc(sizeof(*pool), TAG_GENERAL);
+	image_t *freeImages = (image_t *)R_Malloc(sizeof(*freeImages) * NUM_IMAGES_PER_POOL_ALLOC, TAG_IMAGE_T);
 
 	for ( int i = 0; i < (NUM_IMAGES_PER_POOL_ALLOC - 1); i++ )
 	{
@@ -1319,7 +1319,7 @@ static void R_MipMap2( byte *in, int inWidth, int inHeight ) {
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = (unsigned int *)ri.Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (unsigned int *)R2_Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	inWidthMask = inWidth - 1;
 	inHeightMask = inHeight - 1;
@@ -1354,7 +1354,7 @@ static void R_MipMap2( byte *in, int inWidth, int inHeight ) {
 	}
 
 	Com_Memcpy( in, temp, outWidth * outHeight * 4 );
-	ri.Hunk_FreeTempMemory( temp );
+	R2_Hunk_FreeTempMemory( temp );
 }
 
 
@@ -1369,7 +1369,7 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = (byte *)ri.Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (byte *)R2_Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	for ( i = 0 ; i < outHeight ; i++ ) {
 		byte *outbyte = temp + (  i          * outWidth ) * 4;
@@ -1399,7 +1399,7 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 	}
 
 	Com_Memcpy( in, temp, outWidth * outHeight * 4 );
-	ri.Hunk_FreeTempMemory( temp );
+	R2_Hunk_FreeTempMemory( temp );
 }
 
 /*
@@ -1625,7 +1625,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 			finalheight >>= 1;
 		}
 
-		*resampledBuffer = (byte *)ri.Hunk_AllocateTempMemory( finalwidth * finalheight * 4 );
+		*resampledBuffer = (byte *)R2_Hunk_AllocateTempMemory( finalwidth * finalheight * 4 );
 
 		if (scaled_width != width || scaled_height != height)
 		{
@@ -1677,7 +1677,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 	else if ( scaled_width != width || scaled_height != height ) {
 		if (data && resampledBuffer)
 		{
-			*resampledBuffer = (byte *)ri.Hunk_AllocateTempMemory( scaled_width * scaled_height * 4 );
+			*resampledBuffer = (byte *)R2_Hunk_AllocateTempMemory( scaled_width * scaled_height * 4 );
 			ResampleTexture (*data, width, height, *resampledBuffer, scaled_width, scaled_height);
 			*data = *resampledBuffer;
 		}
@@ -2102,7 +2102,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, int fla
 		RawImage_ScaleToPower2(&data, &width, &height, &scaled_width, &scaled_height, type, flags, &resampledBuffer);
 	}
 
-	scaledBuffer = (byte *)ri.Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
+	scaledBuffer = (byte *)R2_Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	//
 	// scan the texture for each channel's max values
@@ -2221,9 +2221,9 @@ done:
 	GL_CheckErrors();
 
 	if ( scaledBuffer != 0 )
-		ri.Hunk_FreeTempMemory( scaledBuffer );
+		R2_Hunk_FreeTempMemory( scaledBuffer );
 	if ( resampledBuffer != 0 )
-		ri.Hunk_FreeTempMemory( resampledBuffer );
+		R2_Hunk_FreeTempMemory( resampledBuffer );
 }
 
 
@@ -2606,7 +2606,7 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 
 	RawImage_ScaleToPower2(&pic, &width, &height, &scaled_width, &scaled_height, image->type, image->flags, &resampledBuffer);
 
-	scaledBuffer = (byte *)ri.Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
+	scaledBuffer = (byte *)R2_Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	GL_SelectTexture( image->TMU );
 	GL_Bind(image);	
@@ -2672,9 +2672,9 @@ done:
 	GL_CheckErrors();
 
 	if ( scaledBuffer != 0 )
-		ri.Hunk_FreeTempMemory( scaledBuffer );
+		R2_Hunk_FreeTempMemory( scaledBuffer );
 	if ( resampledBuffer != 0 )
-		ri.Hunk_FreeTempMemory( resampledBuffer );
+		R2_Hunk_FreeTempMemory( resampledBuffer );
 }
 
 image_t* R_GetLoadedImage(const char *name, int flags) {
@@ -2787,7 +2787,7 @@ void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName
 	stage->bundle[TB_ORMSMAP].image[0] = R_CreateImage(packedName, packedPic, packedWidth, packedHeight, IMGTYPE_COLORALPHA, flags & ~IMGFLAG_SRGB, 0);
 	glBindTexture(GL_TEXTURE_2D, stage->bundle[TB_ORMSMAP].image[0]->texnum);
 	glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
-	Z_Free(packedPic);
+	R_Free(packedPic);
 }
 
 image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageName, int flags)
@@ -2814,7 +2814,7 @@ image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageNam
 	if (specPic == NULL)
 		return NULL;
 
-	byte *sdrSpecPic = (byte *)ri.Hunk_AllocateTempMemory(sizeof(unsigned) * specWidth * specHeight);
+	byte *sdrSpecPic = (byte *)R2_Hunk_AllocateTempMemory(sizeof(unsigned) * specWidth * specHeight);
 	vec3_t currentColor;
 	for (int i = 0; i < specWidth * specHeight * 4; i += 4)
 	{
@@ -2831,7 +2831,7 @@ image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageNam
 		sdrSpecPic[i + 2] = FloatToByte(currentColor[2] * ratio);
 		sdrSpecPic[i + 3] = specPic[i + 3];
 	}
-	ri.Hunk_FreeTempMemory(specPic);
+	R2_Hunk_FreeTempMemory(specPic);
 
 	return R_CreateImage(sdrName, sdrSpecPic, specWidth, specHeight, IMGTYPE_COLORALPHA, flags & ~IMGFLAG_SRGB, 0);
 }
@@ -2859,7 +2859,7 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 		
 		normalWidth = width;
 		normalHeight = height;
-		normalPic = (byte *)Z_Malloc(width * height * 4, TAG_GENERAL);
+		normalPic = (byte *)R_Malloc(width * height * 4, TAG_GENERAL);
 		RGBAtoNormal(pic, normalPic, width, height, (qboolean)(flags & IMGFLAG_CLAMPTOEDGE));
 		
 #if 1
@@ -2935,7 +2935,7 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 #endif
 		
 		R_CreateImage( normalName, normalPic, normalWidth, normalHeight, IMGTYPE_NORMAL, normalFlags, 0 );
-		Z_Free( normalPic );
+		R_Free( normalPic );
 	}
 }
 
@@ -3025,7 +3025,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 	}
 
 	image = R_CreateImage( name, pic, width, height, type, loadFlags, internalFormat);
-	Z_Free( pic );
+	R_Free( pic );
 	
 	return image;
 }
@@ -3045,7 +3045,7 @@ static void R_CreateDlightImage( void ) {
 	if (pic)
 	{
 		tr.dlightImage = R_CreateImage("*dlight", pic, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, 0 );
-		Z_Free(pic);
+		R_Free(pic);
 	}
 	else
 	{	// if we dont get a successful load
@@ -3144,7 +3144,7 @@ static void R_CreateFogImage( void ) {
 	float	d;
 	float	borderColor[4];
 
-	data = (byte *)ri.Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
+	data = (byte *)R2_Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
 
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {
@@ -3161,7 +3161,7 @@ static void R_CreateFogImage( void ) {
 	// the border color at the edges.  OpenGL 1.2 has clamp-to-edge, which does
 	// what we want.
 	tr.fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, IMGTYPE_COLORALPHA, IMGFLAG_CLAMPTOEDGE, 0 );
-	ri.Hunk_FreeTempMemory( data );
+	R2_Hunk_FreeTempMemory( data );
 
 	borderColor[0] = 1.0;
 	borderColor[1] = 1.0;
@@ -3648,8 +3648,8 @@ void R_DeleteTextures( void ) {
 	while ( imagesPool )
 	{
 		ImagesPool *pNext = imagesPool->pNext;
-		Z_Free(imagesPool->pPool);
-		Z_Free(imagesPool);
+		R_Free(imagesPool->pPool);
+		R_Free(imagesPool);
 
 		imagesPool = pNext;
 	}
