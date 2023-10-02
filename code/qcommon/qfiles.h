@@ -341,8 +341,8 @@ typedef struct {
 #define	MAXLIGHTMAPS	4
 #define LS_NORMAL		0x00
 #define LS_UNUSED		0xfe
-#define	LS_NONE			0xff
 #define MAX_LIGHT_STYLES		64
+#define	LS_LSNONE			0xff
 
 typedef struct {
 	vec3_t		xyz;
