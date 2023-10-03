@@ -5,78 +5,79 @@ endif(NOT InOpenJK)
 
 set(MPRend2IncludeDirectories
 	"${SharedDir}"
+	"${SharedDir}/rd-rend2"
 	"${MPDir}"
 	"${MPDir}/rd-rend2"
 	"${GSLIncludeDirectory}"
 	)
 
 set(MPRend2Files
-	"${MPDir}/rd-rend2/iqm.h"
-	"${MPDir}/rd-rend2/glext.h"
-	"${MPDir}/rd-rend2/qgl.h"
-	"${MPDir}/rd-rend2/stb_image.h"
+	"${SharedDir}/rd-rend2/iqm.h"
+	"${SharedDir}/rd-rend2/glext.h"
+	"${SharedDir}/rd-rend2/qgl.h"
+	"${SharedDir}/rd-rend2/stb_image.h"
 	"${MPDir}/rd-rend2/G2_API.cpp"
 	"${MPDir}/rd-rend2/G2_bolts.cpp"
 	"${MPDir}/rd-rend2/G2_bones.cpp"
-	"${MPDir}/rd-rend2/G2_gore_r2.cpp"
-	"${MPDir}/rd-rend2/G2_gore_r2.h"
+	"${SharedDir}/rd-rend2/G2_gore_r2.cpp"
+	"${SharedDir}/rd-rend2/G2_gore_r2.h"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
-	"${MPDir}/rd-rend2/tr_allocator.cpp"
-	"${MPDir}/rd-rend2/tr_allocator.h"
-	"${MPDir}/rd-rend2/tr_animation.cpp"
-	"${MPDir}/rd-rend2/tr_backend.cpp"
-	"${MPDir}/rd-rend2/tr_bsp.cpp"
-	"${MPDir}/rd-rend2/tr_cache.cpp"
-	"${MPDir}/rd-rend2/tr_cache.h"
-	"${MPDir}/rd-rend2/tr_cmds.cpp"
-	"${MPDir}/rd-rend2/tr_curve.cpp"
-	"${MPDir}/rd-rend2/tr_decals.cpp"
-	"${MPDir}/rd-rend2/tr_extensions.cpp"
-	"${MPDir}/rd-rend2/tr_extramath.cpp"
-	"${MPDir}/rd-rend2/tr_extramath.h"
-	"${MPDir}/rd-rend2/tr_extratypes.h"
-	"${MPDir}/rd-rend2/tr_fbo.cpp"
-	"${MPDir}/rd-rend2/tr_fbo.h"
-	"${MPDir}/rd-rend2/tr_flares.cpp"
-	"${MPDir}/rd-rend2/tr_ghoul2.cpp"
-	"${MPDir}/rd-rend2/tr_glsl.cpp"
-	"${MPDir}/rd-rend2/tr_glsl_parse.cpp"
-	"${MPDir}/rd-rend2/tr_image.cpp"
-	"${MPDir}/rd-rend2/tr_image_stb.cpp"
+	"${SharedDir}/rd-rend2/tr_allocator.cpp"
+	"${SharedDir}/rd-rend2/tr_allocator.h"
+	"${SharedDir}/rd-rend2/tr_animation.cpp"
+	"${SharedDir}/rd-rend2/tr_backend.cpp"
+	"${SharedDir}/rd-rend2/tr_bsp.cpp"
+	"${SharedDir}/rd-rend2/tr_cache.cpp"
+	"${SharedDir}/rd-rend2/tr_cache.h"
+	"${SharedDir}/rd-rend2/tr_cmds.cpp"
+	"${SharedDir}/rd-rend2/tr_curve.cpp"
+	"${SharedDir}/rd-rend2/tr_decals.cpp"
+	"${SharedDir}/rd-rend2/tr_extensions.cpp"
+	"${SharedDir}/rd-rend2/tr_extramath.cpp"
+	"${SharedDir}/rd-rend2/tr_extramath.h"
+	"${SharedDir}/rd-rend2/tr_extratypes.h"
+	"${SharedDir}/rd-rend2/tr_fbo.cpp"
+	"${SharedDir}/rd-rend2/tr_fbo.h"
+	"${SharedDir}/rd-rend2/tr_flares.cpp"
+	"${SharedDir}/rd-rend2/tr_ghoul2.cpp"
+	"${SharedDir}/rd-rend2/tr_glsl.cpp"
+	"${SharedDir}/rd-rend2/tr_glsl_parse.cpp"
+	"${SharedDir}/rd-rend2/tr_image.cpp"
+	"${SharedDir}/rd-rend2/tr_image_stb.cpp"
 	"${MPDir}/rd-rend2/tr_init.cpp"
-	"${MPDir}/rd-rend2/tr_light.cpp"
-	"${MPDir}/rd-rend2/tr_local.h"
-	"${MPDir}/rd-rend2/tr_main.cpp"
-	"${MPDir}/rd-rend2/tr_marks.cpp"
-	"${MPDir}/rd-rend2/tr_mesh.cpp"
-	"${MPDir}/rd-rend2/tr_model.cpp"
-	"${MPDir}/rd-rend2/tr_model_iqm.cpp"
-	"${MPDir}/rd-rend2/tr_postprocess.cpp"
-	"${MPDir}/rd-rend2/tr_postprocess.h"
-	"${MPDir}/rd-rend2/tr_scene.cpp"
-	"${MPDir}/rd-rend2/tr_shade.cpp"
-	"${MPDir}/rd-rend2/tr_shade_calc.cpp"
-	"${MPDir}/rd-rend2/tr_shader.cpp"
-	"${MPDir}/rd-rend2/tr_shadows.cpp"
-	"${MPDir}/rd-rend2/tr_skin.cpp"
-	"${MPDir}/rd-rend2/tr_sky.cpp"
-	"${MPDir}/rd-rend2/tr_subs.cpp"
-	"${MPDir}/rd-rend2/tr_surface.cpp"
-	"${MPDir}/rd-rend2/tr_tangentspace.cpp"
-	"${MPDir}/rd-rend2/tr_vbo.cpp"
-	"${MPDir}/rd-rend2/tr_world.cpp"
-	"${MPDir}/rd-rend2/tr_weather.cpp"
-	"${MPDir}/rd-rend2/tr_weather.h")
+	"${SharedDir}/rd-rend2/tr_light.cpp"
+	"${SharedDir}/rd-rend2/tr_local.h"
+	"${SharedDir}/rd-rend2/tr_main.cpp"
+	"${SharedDir}/rd-rend2/tr_marks.cpp"
+	"${SharedDir}/rd-rend2/tr_mesh.cpp"
+	"${SharedDir}/rd-rend2/tr_model.cpp"
+	"${SharedDir}/rd-rend2/tr_model_iqm.cpp"
+	"${SharedDir}/rd-rend2/tr_postprocess.cpp"
+	"${SharedDir}/rd-rend2/tr_postprocess.h"
+	"${SharedDir}/rd-rend2/tr_scene.cpp"
+	"${SharedDir}/rd-rend2/tr_shade.cpp"
+	"${SharedDir}/rd-rend2/tr_shade_calc.cpp"
+	"${SharedDir}/rd-rend2/tr_shader.cpp"
+	"${SharedDir}/rd-rend2/tr_shadows.cpp"
+	"${SharedDir}/rd-rend2/tr_skin.cpp"
+	"${SharedDir}/rd-rend2/tr_sky.cpp"
+	"${SharedDir}/rd-rend2/tr_subs.cpp"
+	"${SharedDir}/rd-rend2/tr_surface.cpp"
+	"${SharedDir}/rd-rend2/tr_tangentspace.cpp"
+	"${SharedDir}/rd-rend2/tr_vbo.cpp"
+	"${SharedDir}/rd-rend2/tr_world.cpp"
+	"${SharedDir}/rd-rend2/tr_weather.cpp"
+	"${SharedDir}/rd-rend2/tr_weather.h")
 source_group("renderer" FILES ${MPRend2Files})
 
-file(GLOB MPRend2GLSLFiles "${MPDir}/rd-rend2/glsl/*.glsl")
+file(GLOB MPRend2GLSLFiles "${SharedDir}/rd-rend2/glsl/*.glsl")
 source_group("renderer\\glsl" FILES ${MPRend2GLSLFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2GLSLFiles})
 
 set(MPRend2MikktFiles
-	"${MPDir}/rd-rend2/MikkTSpace/mikktspace.h"
-	"${MPDir}/rd-rend2/MikkTSpace/mikktspace.c")
+	"${SharedDir}/rd-rend2/MikkTSpace/mikktspace.h"
+	"${SharedDir}/rd-rend2/MikkTSpace/mikktspace.c")
 source_group("MikktSpace" FILES ${MPRend2MikktFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2MikktFiles})
 
@@ -184,10 +185,10 @@ target_include_directories(${MPRend2} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # GLSL shader file generator
 add_executable(compact_glsl
-	${MPDir}/rd-rend2/glsl/compact.cpp
-	${MPDir}/rd-rend2/tr_allocator.cpp
-	${MPDir}/rd-rend2/tr_allocator.h
-	${MPDir}/rd-rend2/tr_glsl_parse.cpp)
+	${SharedDir}/rd-rend2/glsl/compact.cpp
+	${SharedDir}/rd-rend2/tr_allocator.cpp
+	${SharedDir}/rd-rend2/tr_allocator.h
+	${SharedDir}/rd-rend2/tr_glsl_parse.cpp)
 target_compile_definitions(compact_glsl PRIVATE "GLSL_BUILDTOOL" "NOMINMAX")
 if (NOT WIN32 AND NOT APPLE)
 	target_compile_definitions(compact_glsl PRIVATE "ARCH_STRING=\"${Architecture}\"")
