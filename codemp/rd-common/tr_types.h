@@ -279,20 +279,6 @@ Ghoul2 Insert Start
 #include "rd-common/mdx_format.h"
 #include "qcommon/qfiles.h"
 
-// skins allow models to be retextured without modifying the model file
-//this is a mock copy, renderers may have their own implementation.
-// try not to break the ghoul2 code which is very implicit :/
-typedef struct _skinSurface_s {
-	char		name[MAX_QPATH];
-	void	*shader;
-} _skinSurface_t;
-
-typedef struct skin_s {
-	char		name[MAX_QPATH];		// game path, including extension
-	int			numSurfaces;
-	_skinSurface_t	*surfaces[128];
-} skin_t;
-
 /*
 Ghoul2 Insert End
 */
