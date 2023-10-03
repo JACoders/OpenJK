@@ -470,7 +470,6 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, intptr_t arg0, intptr_t arg1, int
 		return vm->legacy.main( callnum, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
 			arg9, arg10, arg11 );
 	} else {
-		size_t i;
 		intptr_t r;
 		if ( vm_debugLevel ) {
 		Com_Printf( "VM_Call( %d )\n", callnum );
@@ -679,7 +678,6 @@ static void VM_GeneratePerfMap(vm_t *vm) {
 		// generate perf .map file for profiling compiled QVM
 		char		mapFile[MAX_OSPATH];
 		FILE		*f;
-		void		*address;
 		int			length;
 
 		if ( !vm->symbols ) {
@@ -695,7 +693,6 @@ static void VM_GeneratePerfMap(vm_t *vm) {
 
 		// perf .map format: "hex_address hex_length name\n"
 		for ( vmSymbol_t *sym = vm->symbols; sym; sym = sym->next ) {
-			address = vm->codeBase + sym->symValue;
 
 			if ( sym->next ) {
 				length = sym->next->symValue - sym->symValue;

@@ -335,7 +335,7 @@ trajectory_t *CGVM_GetAngleTrajectory( int entID ) {
 
 void CGVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	if ( cgvm->isLegacy ) {
-		int notetrack_length;
+		int notetrack_length = 0;
 		const char *notetrack_ptr;
 
 		if ( !cgvm->dllHandle ) {

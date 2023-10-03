@@ -215,7 +215,7 @@ int GVM_BotAIStartFrame( int time ) {
 
 void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	if ( gvm->isLegacy ) {
-		int notetrack_length;
+		int notetrack_length = 0;
 		const char *notetrack_ptr;
 
 		if ( !gvm->dllHandle ) {
