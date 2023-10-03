@@ -168,7 +168,18 @@ void GVM_ClientCommand( int clientNum ) {
 
 void GVM_ClientThink( int clientNum, usercmd_t *ucmd ) {
 	if ( gvm->isLegacy ) {
-		VM_Call( gvm, GAME_CLIENT_THINK, clientNum, reinterpret_cast< intptr_t >( ucmd ) );
+		usercmd_t *ucmd_ptr;
+
+		if ( !gvm->dllHandle ) {
+			ucmd_ptr = (usercmd_t*)(intptr_t)(VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (usercmd_t*)ucmd, sizeof(usercmd_t)) ) );
+		} else {
+			ucmd_ptr = ucmd;
+		}
+		VM_Call( gvm, GAME_CLIENT_THINK, clientNum, reinterpret_cast< intptr_t >( ucmd_ptr ) );
+		if ( !gvm->dllHandle ) {
+			// Memory may only be released in reverse order.
+			if ( ucmd_ptr ) VM_ExtraMemory_Release( gvm, sizeof(usercmd_t) );
+		}
 		return;
 	}
 	VMSwap v( gvm );
@@ -204,7 +215,20 @@ int GVM_BotAIStartFrame( int time ) {
 
 void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	if ( gvm->isLegacy ) {
-		VM_Call( gvm, GAME_ROFF_NOTETRACK_CALLBACK, entID, reinterpret_cast< intptr_t >( notetrack ) );
+		int notetrack_length;
+		const char *notetrack_ptr;
+
+		if ( !gvm->dllHandle ) {
+			notetrack_length = strlen( notetrack ) + 1; // +1 for the terminating 0-byte, which ClaimString automatically allocates, too
+			notetrack_ptr = (const char*)(intptr_t)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimString(gvm, notetrack) );
+		} else {
+			notetrack_ptr = notetrack;
+		}
+		VM_Call( gvm, GAME_ROFF_NOTETRACK_CALLBACK, entID, reinterpret_cast< intptr_t >( notetrack_ptr ) );
+		if ( !gvm->dllHandle ) {
+			// Memory may only be released in reverse order.
+			if ( notetrack_ptr && notetrack_length ) VM_ExtraMemory_Release( gvm, notetrack_length );
+		}
 		return;
 	}
 	VMSwap v( gvm );
