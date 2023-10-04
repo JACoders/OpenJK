@@ -655,18 +655,20 @@ void G2_TransformModel(CGhoul2Info_v& ghoul2, const int frameNum, vec3_t scale, 
 #endif
 
 		mdxmHeader_t *mdxm = g.currentModel->data.glm->header;
-
+#ifndef REND2_SP
 		// give us space for the transformed vertex array to be put in
 		if (!(g.mFlags & GHOUL2_ZONETRANSALLOC))
 		{
+#endif
 			//do not stomp if we're using zone space
 			g.mTransformedVertsArray = (intptr_t*)G2VertSpace->MiniHeapAlloc(mdxm->numSurfaces * sizeof(intptr_t));
 			if (!g.mTransformedVertsArray)
 			{
 				Com_Error(ERR_DROP, "Ran out of transform space for Ghoul2 Models. Adjust G2_MINIHEAP_SIZE in sv_init.cpp.\n");
 			}
+#ifndef REND2_SP
 		}
-
+#endif
 		memset(g.mTransformedVertsArray, 0,mdxm->numSurfaces * sizeof (intptr_t));
 
 		G2_FindOverrideSurface(-1,g.mSlist); //reset the quick surface override lookup;
@@ -1068,17 +1070,17 @@ static void G2_GorePolys(const mdxmSurface_t* surface, CTraceSurface& TS, const 
 		srfG2GoreSurface_t* goreSurface = (srfG2GoreSurface_t*)R_Malloc(sizeof(srfG2GoreSurface_t), TAG_GHOUL2_GORE, qtrue);
 
 		// cleanup old data
-		if (gore->tex_new[TS.lod])
+		if (gore->tex[TS.lod])
 		{
-			if (gore->tex_new[TS.lod]->verts)
-				R_Free(gore->tex_new[TS.lod]->verts);
-			if (gore->tex_new[TS.lod]->indexes)
-				R_Free(gore->tex_new[TS.lod]->indexes);
-			R_Free(gore->tex_new[TS.lod]);
+			if (gore->tex[TS.lod]->verts)
+				Z_Free(gore->tex[TS.lod]->verts);
+			if (gore->tex[TS.lod]->indexes)
+				Z_Free(gore->tex[TS.lod]->indexes);
+			Z_Free(gore->tex[TS.lod]);
 		}
 
 		// set pointer to allocated memory
-		gore->tex_new[TS.lod] = (srfG2GoreSurface_t*)goreSurface;
+		gore->tex[TS.lod] = (srfG2GoreSurface_t*)goreSurface;
 		goreSurface->numVerts = newNumVerts;
 		// allocate space for vertices
 		goreSurface->verts = (g2GoreVert_t*)R_Malloc(sizeof(g2GoreVert_t) * newNumVerts, TAG_GHOUL2_GORE, qtrue);
@@ -1845,7 +1847,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v& ghoul2)
 // have to free space malloced in the save system here because the game DLL can't.
 void G2_FreeSaveBuffer(char *buffer)
 {
-	R_Free(buffer);
+	Z_Free(buffer);
 }
 
 void G2_LoadGhoul2Model(

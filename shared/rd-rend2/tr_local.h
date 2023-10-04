@@ -41,6 +41,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <unordered_map>
 #include <string>
 
+#ifdef REND2_SP
+typedef enum {
+	h_high,
+	h_low,
+	h_dontcare
+} ha_pref;
+void* Hunk_Alloc(int size, ha_pref preference);
+void* Hunk_AllocateTempMemory(int size);
+void Hunk_FreeTempMemory(void* buf);
+#else
+void* R_Malloc(int iSize, memtag_t eTag);
+void* R_Malloc(int iSize, memtag_t eTag, qboolean bZeroit);
+#endif
+
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
@@ -341,7 +355,7 @@ enum
 
 	// GPU vertex animations and some extra sprite info
 	ATTR_INDEX_POSITION2,
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	ATTR_INDEX_TANGENT2,
 	ATTR_INDEX_NORMAL2,
 #endif // REND2_SP
@@ -1139,7 +1153,7 @@ enum
 
 	// for .md3 interpolation and some sprite data
 	ATTR_POSITION2		= 0x1000,
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	ATTR_TANGENT2		= 0x2000,
 	ATTR_NORMAL2		= 0x4000,
 #endif // REND2_SP
@@ -1158,7 +1172,7 @@ enum
 							ATTR_BONE_INDEXES |
 							ATTR_BONE_WEIGHTS |
 							ATTR_POSITION2
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 							| 
 							ATTR_TANGENT2 |
 							ATTR_NORMAL2
@@ -1174,7 +1188,7 @@ enum
 	GENERICDEF_USE_SKELETAL_ANIMATION	= 0x0010,
 	GENERICDEF_USE_GLOW_BUFFER      	= 0x0020,
 	GENERICDEF_USE_ALPHA_TEST			= 0x0040,
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	GENERICDEF_USE_VERTEX_ANIMATION		= 0x0080,
 	GENERICDEF_ALL						= 0x00FF,
 #else
@@ -1190,7 +1204,7 @@ enum
 	FOGDEF_USE_SKELETAL_ANIMATION 		= 0x0002,
 	FOGDEF_USE_ALPHA_TEST				= 0x0004,
 	FOGDEF_USE_FALLBACK_GLOBAL_FOG		= 0x0008,
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	FOGDEF_USE_VERTEX_ANIMATION			= 0x0010,
 	FOGDEF_ALL							= 0x001F,
 #else
@@ -1208,7 +1222,7 @@ enum
 	REFRACTIONDEF_USE_SKELETAL_ANIMATION	= 0x0008,
 	REFRACTIONDEF_USE_ALPHA_TEST			= 0x0010,
 	REFRACTIONDEF_USE_SRGB_TRANSFORM		= 0x0020,
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	REFRACTIONDEF_USE_VERTEX_ANIMATION		= 0x0040,
 	REFRACTIONDEF_ALL						= 0x007F,
 #else
@@ -1236,7 +1250,7 @@ enum
 										  LIGHTDEF_USE_LIGHT_VECTOR |
 										  LIGHTDEF_USE_LIGHT_VERTEX,
 
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	LIGHTDEF_USE_VERTEX_ANIMATION		= 0x0200,
 	LIGHTDEF_ALL						= 0x03FF,
 #else
@@ -1496,10 +1510,24 @@ typedef struct {
 
 	float       autoExposureMinMax[2];
 	float       toneMinAvgMaxLinear[3];
+
+	qboolean	doLAGoggles;
 } trRefdef_t;
 
 
 //=================================================================================
+
+// skins allow models to be retextured without modifying the model file
+typedef struct {
+	char		name[MAX_QPATH];
+	shader_t	*shader;
+} skinSurface_t;
+
+typedef struct skin_s {
+	char		name[MAX_QPATH];		// game path, including extension
+	int			numSurfaces;
+	skinSurface_t	*surfaces[128];
+} skin_t;
 
 
 typedef struct {
@@ -2903,8 +2931,6 @@ void	GL_Draw( GLenum primitiveType, int firstVertex, int numVertices, int numIns
 extern glconfig_t  glConfig;
 extern glconfigExt_t	glConfigExt;
 
-typedef _skinSurface_t skinSurface_t;
-
 void	RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
 void	RE_UploadCinematic (int cols, int rows, const byte *data, int client, qboolean dirty);
 void	RE_SetRangedFog ( float range );
@@ -2919,6 +2945,10 @@ qhandle_t	RE_RegisterServerSkin( const char *name );
 qhandle_t	RE_RegisterSkin( const char *name );
 void		RE_Shutdown(qboolean destroyWindow, qboolean restarting);
 world_t		*R_LoadBSP(const char *name, int *bspIndex = nullptr);
+
+#ifdef REND2_SP
+int			RE_GetAnimationCFG(const char* psCFGFilename, char* psDest, int iDestSize);
+#endif
 
 qboolean	R_GetEntityToken( char *buffer, int size );
 
@@ -3028,7 +3058,7 @@ struct shaderCommands_s
 	float		shaderTime;
 	int			fogNum;
 	int         cubemapIndex;
-#ifdef REND2_SP_MAYBE
+#ifdef REND2_SP
 	bool		scale;		// uses texCoords[input->firstIndex] for storage
 	bool		fade;		// uses svars.colors[input->firstIndex] for storage
 #endif
@@ -3097,8 +3127,11 @@ void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef );
 void R_MarkLeaves(void);
 void R_RecursiveWorldNode(mnode_t *node, int planeBits, int dlightBits, int pshadowBits);
+#ifndef REND2_SP
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
-
+#else
+qboolean R_inPVS(vec3_t p1, vec3_t p2);
+#endif
 
 /*
 ============================================================
@@ -3129,6 +3162,9 @@ int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, ve
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world );
 int R_DLightsForPoint(const vec3_t point, const float radius);
 int R_CubemapForPoint( const vec3_t point );
+#ifdef REND2_SP
+qboolean RE_GetLighting(const vec3_t origin, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir);
+#endif
 
 /*
 ============================================================
@@ -3282,8 +3318,12 @@ void R_InitNextFrame( void );
 
 void RE_ClearScene( void );
 void RE_AddRefEntityToScene( const refEntity_t *ent );
+#ifndef REND2_SP
 void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt );
-void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts, int num );
+void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts, int num = 1);
+#else
+void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts);
+#endif
 void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_BeginScene( const refdef_t *fd );
@@ -3306,8 +3346,6 @@ UNCOMPRESSING BONES
 #define MC_SCALE_X (1.0f/64)
 #define MC_SCALE_Y (1.0f/64)
 #define MC_SCALE_Z (1.0f/64)
-
-void MC_UnCompress(float mat[3][4],const unsigned char * comp);
 
 /*
 =============================================================
@@ -3512,6 +3550,14 @@ typedef struct rotatePicCommand_s {
 	float	a;
 } rotatePicCommand_t;
 
+#ifdef REND2_SP
+typedef struct scissorCommand_s {
+	int	commandId;
+	float x, y;
+	float w, h;
+} scissorCommand_t;
+#endif
+
 typedef struct drawSurfsCommand_s {
 	int		commandId;
 	trRefdef_t	refdef;
@@ -3589,6 +3635,7 @@ typedef enum {
 	RC_SWAP_BUFFERS,
 	RC_SCREENSHOT,
 	RC_VIDEOFRAME,
+	RC_SCISSOR,
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
 	RC_CONVOLVECUBEMAP,
@@ -3694,6 +3741,10 @@ void RE_SetColor( const float *rgba );
 void RE_StretchPic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t hShader );
 void RE_RotatePic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, float a, qhandle_t hShader );
 void RE_RotatePic2 ( float x, float y, float w, float h, float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
+#ifdef REND2_SP
+void RE_LAGoggles(void);
+void RE_Scissor(float x, float y, float w, float h);
+#endif
 void RE_BeginFrame( stereoFrame_t stereoFrame );
 void R_NewFrameSync();
 void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
@@ -3701,6 +3752,10 @@ void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
 
 // tr_ghoul2.cpp
+#ifdef REND2_SP
+void Create_Matrix(const float* angle, mdxaBone_t* matrix);
+void G2_SetSurfaceOnOffFromSkin(CGhoul2Info *ghlInfo, qhandle_t renderSkin);	//tr_ghoul2.cpp
+#endif
 void Mat3x4_Multiply(mdxaBone_t *out, const mdxaBone_t *in2, const mdxaBone_t *in);
 void Mat3x4_Scale( mdxaBone_t *result, const mdxaBone_t *lhs, const float scale );
 void Mat3x4_Lerp(

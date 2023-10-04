@@ -360,6 +360,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	// only do min lighting when there is no hdr light data
 	if (tr.hdrLighting != qtrue)
 	{
+#ifndef REND2_SP
 		// bonus items and view weapons have a fixed minimum add
 		if (1/*!r_hdr->integer*/) {
 			// give everything a minimum light add
@@ -385,6 +386,20 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 				ent->ambientLight[2] += tr.identityLight * 150;
 			}
 		}
+#else
+		// bonus items and view weapons have a fixed minimum add
+		if (ent->e.renderfx & RF_MORELIGHT) {
+			ent->ambientLight[0] += tr.identityLight * 96;
+			ent->ambientLight[1] += tr.identityLight * 96;
+			ent->ambientLight[2] += tr.identityLight * 96;
+		}
+		else {
+			// give everything a minimum light add
+			ent->ambientLight[0] += tr.identityLight * 32;
+			ent->ambientLight[1] += tr.identityLight * 32;
+			ent->ambientLight[2] += tr.identityLight * 32;
+		}
+#endif
 	}
 
 	d = VectorLength( ent->directedLight );
@@ -509,3 +524,30 @@ int R_CubemapForPoint( const vec3_t point )
 
 	return cubemapIndex + 1;
 }
+
+#ifdef REND2_SP
+//pass in origin
+qboolean RE_GetLighting(const vec3_t origin, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir) {
+	trRefEntity_t tr_ent;
+
+	if (!tr.world || !tr.world->lightGridData) {
+		ambientLight[0] = ambientLight[1] = ambientLight[2] = 255.0;
+		directedLight[0] = directedLight[1] = directedLight[2] = 255.0;
+		VectorCopy(tr.sunDirection, lightDir);
+		return qfalse;
+	}
+	memset(&tr_ent, 0, sizeof(tr_ent));
+
+	if (ambientLight[0] == 666)
+	{//HAX0R
+		tr_ent.e.hModel = -1;
+	}
+
+	VectorCopy(origin, tr_ent.e.origin);
+	R_SetupEntityLightingGrid(&tr_ent, tr.world);
+	VectorCopy(tr_ent.ambientLight, ambientLight);
+	VectorCopy(tr_ent.directedLight, directedLight);
+	VectorCopy(tr_ent.lightDir, lightDir);
+	return qtrue;
+}
+#endif

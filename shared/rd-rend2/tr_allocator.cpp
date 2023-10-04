@@ -21,7 +21,7 @@ Allocator::Allocator( size_t memorySize, size_t alignment )
 #if defined(GLSL_BUILDTOOL)
 	, unalignedBase(malloc(memorySize))
 #else
-	, unalignedBase(Z_Malloc(memorySize, TAG_SHADERTEXT))
+	, unalignedBase(R_Malloc(memorySize, TAG_SHADERTEXT))
 #endif
 	, alignedBase(PADP(unalignedBase, alignment))
 	, mark(alignedBase)

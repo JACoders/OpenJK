@@ -223,7 +223,7 @@ cvar_t	*r_saveFontData;
 cvar_t	*r_noPrecacheGLA;
 #endif
 
-cvar_t	*r_noGhoul2;
+cvar_t	*r_noServerGhoul2; // In SP renderer CVAR is actually r_noghoul2!
 cvar_t	*r_Ghoul2AnimSmooth=0;
 cvar_t	*r_Ghoul2UnSqashAfterSmooth=0;
 //cvar_t	*r_Ghoul2UnSqash;
@@ -695,7 +695,7 @@ static byte *RB_ReadPixels(
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *)R2_Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
+	buffer = (byte *)Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
 
 	bufstart = (byte*)(PADP((intptr_t) buffer + *offset, packAlign));
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -739,7 +739,7 @@ static void R_SaveTGA(
 	const size_t pixelBufferSize = stride * height;
 	const size_t bufferSize = headerSize + pixelBufferSize;
 
-	byte *buffer = (byte *)R2_Hunk_AllocateTempMemory(bufferSize);
+	byte *buffer = (byte *)Hunk_AllocateTempMemory(bufferSize);
 
 	// Write TGA header
 	Com_Memset(buffer, 0, headerSize);
@@ -753,7 +753,7 @@ static void R_SaveTGA(
 	ConvertRGBtoBGR(buffer + headerSize, pixels, stride, width, height);
 
 	ri.FS_WriteFile(filename, buffer, bufferSize);
-	R2_Hunk_FreeTempMemory(buffer);
+	Hunk_FreeTempMemory(buffer);
 }
 
 /* 
@@ -824,7 +824,7 @@ void R_SaveScreenshot(screenshotReadback_t *screenshotReadback)
 		const int stride = screenshotReadback->strideInBytes;
 		const size_t pixelBufferSize = stride * height;
 
-		byte *pixels = (byte *)R2_Hunk_AllocateTempMemory(pixelBufferSize);
+		byte *pixels = (byte *)Hunk_AllocateTempMemory(pixelBufferSize);
 		Com_Memcpy(pixels, pixelBuffer, pixelBufferSize);
 		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -846,7 +846,7 @@ void R_SaveScreenshot(screenshotReadback_t *screenshotReadback)
 				break;
 		}
 
-		R2_Hunk_FreeTempMemory(pixels);
+		Hunk_FreeTempMemory(pixels);
 	}
 
 	qglDeleteBuffers(1, &screenshotReadback->pbo);
@@ -963,7 +963,7 @@ static void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = (byte *)R2_Hunk_AllocateTempMemory(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18);
+	buffer = (byte *)Hunk_AllocateTempMemory(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;
@@ -1000,8 +1000,8 @@ static void R_LevelShot( void ) {
 
 	ri.FS_WriteFile( checkname, buffer, LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18 );
 
-	R2_Hunk_FreeTempMemory( buffer );
-	R2_Hunk_FreeTempMemory( allsource );
+	Hunk_FreeTempMemory( buffer );
+	Hunk_FreeTempMemory( allsource );
 
 	ri.Printf( PRINT_ALL, "Wrote %s\n", checkname );
 }
@@ -1121,7 +1121,7 @@ void R_ScreenShotJPEG_f (void) {
 RB_TakeVideoFrameCmd
 ==================
 */
-/*
+
 const void *RB_TakeVideoFrameCmd( const void *data )
 {
 	const videoFrameCommand_t	*cmd;
@@ -1131,11 +1131,11 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 	GLint packAlign;
 
 	// finish any 2D drawing if needed
-	if(tess.numIndexes)
+	if (tess.numIndexes)
 		RB_EndSurface();
 
 	cmd = (const videoFrameCommand_t *)data;
-	
+#ifndef REND2_SP
 	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
 
 	linelen = cmd->width * 3;
@@ -1194,10 +1194,10 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 		
 		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, avipadwidth * cmd->height);
 	}
-
+#endif
 	return (const void *)(cmd + 1);	
 }
-*/
+
 
 //============================================================================
 
@@ -1665,7 +1665,7 @@ void R_Register( void )
 #ifdef _DEBUG
 	r_noPrecacheGLA						= ri_Cvar_Get_NoComm( "r_noPrecacheGLA",				"0",					CVAR_CHEAT, "" );
 #endif
-	r_noGhoul2							= ri_Cvar_Get_NoComm( "r_noghoul2",				"0",							CVAR_CHEAT, "" );
+	r_noServerGhoul2					= ri_Cvar_Get_NoComm( "r_noghoul2",				"0",							CVAR_CHEAT, "" );
 	r_Ghoul2AnimSmooth					= ri_Cvar_Get_NoComm( "r_ghoul2animsmooth",			"0.3",						CVAR_TEMP, "" );
 	r_Ghoul2UnSqashAfterSmooth			= ri_Cvar_Get_NoComm( "r_ghoul2unsqashaftersmooth",	"1",						CVAR_TEMP, "" );
 	broadsword							= ri_Cvar_Get_NoComm( "broadsword",					"0",						CVAR_ARCHIVE, "" );
@@ -2010,7 +2010,7 @@ void R_Init( void ) {
 	max_polys = Q_min( r_maxpolys->integer, DEFAULT_MAX_POLYS );
 	max_polyverts = Q_min( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
-	ptr = (byte*)R2_Hunk_Alloc(
+	ptr = (byte*)Hunk_Alloc(
 		sizeof( *backEndData ) +
 		sizeof(srfPoly_t) * max_polys +
 		sizeof(polyVert_t) * max_polyverts +
@@ -2054,7 +2054,7 @@ void R_Init( void ) {
 
 	GLSL_LoadGPUShaders();
 
-	R_InitShaders();
+	R_InitShaders(qfalse);
 
 	R_InitSkins();
 
@@ -2079,33 +2079,6 @@ void R_Init( void ) {
 	// print info
 	GfxInfo_f();
 	ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
-}
-
-/*
-===============
-R_SVModelInit
-===============
-*/
-void R_SVModelInit()
-{
-	//tr.numModels = 0;
-	//tr.numShaders = 0;
-	//tr.numSkins = 0;
-
-	//R_InitImages();
-	//R_InitShaders();
-
-	tr.numShaders = 0;
-	tr.numImages = 0;
-
-	R_InitImagesPool();
-	R_InitImages();
-	R_InitGPUBuffers();
-	FBO_Init();
-	GLSL_LoadGPUShaders();
-	R_InitShaders();
-
-	R_ModelInit();
 }
 
 /*
@@ -2270,6 +2243,17 @@ void C_LevelLoadEnd( void )
 #endif // JKA_MP
 }
 
+extern void G2API_AnimateG2ModelsRag(CGhoul2Info_v &ghoul2, int AcurrentTime, CRagDollUpdateParams *params);
+extern qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale);
+extern qboolean G2API_RagEffectorKick(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity);
+extern qboolean G2API_RagForceSolve(CGhoul2Info_v &ghoul2, qboolean force);
+extern qboolean G2API_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params);
+extern qboolean G2API_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
+extern qboolean G2API_RagEffectorGoal(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos);
+extern qboolean G2API_RagPCJGradientSpeed(CGhoul2Info_v &ghoul2, const char *boneName, const float speed);
+extern qboolean G2API_RagPCJConstraint(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t min, vec3_t max);
+extern void G2API_SetRagDoll(CGhoul2Info_v &ghoul2, CRagDollParams *parms);
+
 /*
 @@@@@@@@@@@@@@@@@@@@@
 GetRefAPI
@@ -2318,8 +2302,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	//re.ClearDecals = RE_ClearDecals;
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
 	//re.AddMiniRefEntityToScene = RE_AddMiniRefEntityToScene;
-	re.GetLighting = RE_GetLighting;
-	re.AddPolyToScene = RE_AddPolyToScene_v18;
+	re.AddPolyToScene = RE_AddPolyToScene;
 	re.AddLightToScene = RE_AddLightToScene;
 	//re.AddDecalToScene = RE_AddDecalToScene;
 	//re.LightForPoint = R_LightForPoint;
@@ -2353,7 +2336,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	//REX(TempRawImage_CleanUp);
 
 	re.MarkFragments = R_MarkFragments;
-	re.LerpTag = R_LerpTag_v18;
+	re.LerpTag = R_LerpTag;
 	re.ModelBounds = R_ModelBounds;
 	re.GetLightStyle = RE_GetLightStyle;
 	re.SetLightStyle = RE_SetLightStyle;
@@ -2396,7 +2379,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	//re.GetRealRes = GetRealRes; // MP
 
 	re.TheGhoul2InfoArray = TheGhoul2InfoArray;
-	re.GetEntityToken = R_GetEntityToken;  //MP only, but need this for cubemaps...
+	//re.GetEntityToken = R_GetEntityToken;  //MP only, but need this for cubemaps...
 	
 	re.G2API_AddBolt = G2API_AddBolt;
 	re.G2API_AddBoltSurfNum = G2API_AddBoltSurfNum;

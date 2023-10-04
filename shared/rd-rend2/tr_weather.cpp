@@ -473,7 +473,7 @@ void R_InitWeatherSystem()
 {
 	Com_Printf("Initializing weather system\n");
 	tr.weatherSystem =
-		(weatherSystem_t *)Z_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
+		(weatherSystem_t *)R_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
 	tr.weatherSystem->weatherSurface.surfaceType = SF_WEATHER;
 	tr.weatherSystem->frozen = false;
 	tr.weatherSystem->activeWeatherTypes = 0;

@@ -584,7 +584,11 @@ void RB_BeginDrawingView (void) {
 #endif
 	}
 
-	if (tr.refdef.rdflags & RDF_AUTOMAP || (!(backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
+	if (
+#ifndef REND2_SP
+		tr.refdef.rdflags & RDF_AUTOMAP ||
+#endif
+		(!(backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
 	{
 		if (tr.world && tr.world->globalFog)
 		{ 
@@ -1918,6 +1922,36 @@ static const void *RB_RotatePic2 ( const void *data )
 	return (const void *)(cmd + 1);
 }
 
+#ifdef REND2_SP
+/*
+=============
+RB_ScissorPic
+=============
+*/
+const void *RB_Scissor(const void *data)
+{
+	const scissorCommand_t	*cmd;
+
+	cmd = (const scissorCommand_t *)data;
+
+	if (!backEnd.projection2D)
+	{
+		RB_SetGL2D();
+	}
+
+	if (cmd->x >= 0)
+	{
+		qglScissor(cmd->x, (glConfig.vidHeight - cmd->y - cmd->h), cmd->w, cmd->h);
+	}
+	else
+	{
+		qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+	}
+
+	return (const void *)(cmd + 1);
+}
+#endif
+
 /*
 =============
 RB_PrefilterEnvMap
@@ -2712,7 +2746,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		long sum = 0;
 		unsigned char *stencilReadback;
 
-		stencilReadback = (unsigned char *)ri.Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
+		stencilReadback = (unsigned char *)Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
 		qglReadPixels( 0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, stencilReadback );
 
 		for ( i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++ ) {
@@ -2720,7 +2754,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		}
 
 		backEnd.pc.c_overDraw += sum;
-		ri.Hunk_FreeTempMemory( stencilReadback );
+		Hunk_FreeTempMemory( stencilReadback );
 	}
 
 	if (!backEnd.framePostProcessed)
@@ -3055,6 +3089,11 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_ROTATE_PIC2:
 			data = RB_RotatePic2( data );
 			break;
+#ifdef REND2_SP
+		case RC_SCISSOR:
+			data = RB_Scissor(data);
+			break;
+#endif
 		case RC_DRAW_SURFS:
 			data = RB_DrawSurfs( data );
 			break;

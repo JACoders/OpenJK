@@ -3,7 +3,9 @@
 #include "qcommon/matcomp.h"
 #include "qcommon/qcommon.h"
 #include "ghoul2/G2.h"
+#ifndef REND2_SP
 #include "ghoul2/g2_local.h"
+#endif // !REND2_SP
 #ifdef _G2_GORE
 #include "G2_gore_r2.h"
 #endif
@@ -11,7 +13,9 @@
 #ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
 #endif
+#ifndef REND2_SP
 #include "qcommon/disablewarnings.h"
+#endif // !REND2_SP
 #include "tr_cache.h"
 
 #define	LL(x) x=LittleLong(x)
@@ -80,6 +84,10 @@ void G2Time_ReportTimers(void)
 #endif
 
 //rww - RAGDOLL_END
+
+#ifdef REND2_SP
+extern cvar_t* sv_mapname;
+#endif
 
 static const int MAX_RENDERABLE_SURFACES = 2048;
 static CRenderableSurface renderSurfHeap[MAX_RENDERABLE_SURFACES];
@@ -1870,6 +1878,7 @@ static void G2_TransformBone( int child, CBoneCache& BC )
 	}
 }
 
+/*
 void G2_SetUpBolts(
 	mdxaHeader_t *header,
 	CGhoul2Info &ghoul2,
@@ -1892,6 +1901,7 @@ void G2_SetUpBolts(
 		boltList[i].position = bonePtr[boltList[i].boneNumber].second * skel->BasePoseMat;
 	}
 }
+*/
 
 #define		GHOUL2_RAG_STARTED						0x0010
 //rwwFIXMEFIXME: Move this into the stupid header or something.
@@ -1943,11 +1953,14 @@ static void G2_TransformGhoulBones(
 		float val = r_Ghoul2AnimSmooth->value;
 		if (val > 0.0f && val < 1.0f)
 		{
+#ifndef REND2_SP
 			if (ghoul2.mFlags & GHOUL2_CRAZY_SMOOTH)
 			{
 				val = 0.9f;
 			}
-			else if (ghoul2.mFlags & GHOUL2_RAG_STARTED)
+			else
+#endif
+				if (ghoul2.mFlags & GHOUL2_RAG_STARTED)
 			{
 				for (size_t k = 0; k < rootBoneList.size(); k++)
 				{
@@ -2026,7 +2039,7 @@ static void G2_TransformGhoulBones(
 //
 // Surface Manipulation code 
 
-
+#ifndef REND2_SP
 // We've come across a surface that's designated as a bolt surface, process it and put it in the appropriate bolt place
 void G2_ProcessSurfaceBolt(
 	mdxaBone_v &bonePtr,
@@ -2319,6 +2332,7 @@ void G2_ProcessGeneratedSurfaceBolts(CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, m
 		G2PerformanceTimer_G2_ProcessGeneratedSurfaceBolts.End();
 #endif
 }
+#endif
 
 void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum )
 {
@@ -2367,7 +2381,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 			int		j;
 			
 			// match the surface name to something in the skin file
-			shader = tr.defaultShader;
+			shader = R_GetShaderByHandle(surfInfo->shaderIndex);
 			for ( j = 0 ; j < RS.skin->numSurfaces ; j++ )
 			{
 				// the names have both been lowercased
@@ -2454,7 +2468,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 								float(curTime - kcur->second.mGoreGrowStartTime) /
 								float(magicFactor42);  // linear
 						}
-#ifdef REND2_SP_MAYBE
+#ifdef REND2_SP
 						if (curTime < kcur->second.mGoreGrowEndTime)
 						{
 							newSurf2->scale = Q_max(
@@ -2474,7 +2488,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 						{
 							gshader = R_GetShaderByHandle(goreShader);
 						}
-#ifdef REND2_SP_MAYBE
+#ifdef REND2_SP
 						// Set fade on surf.
 						// Only if we have a fade time set, and let us fade on
 						// rgb if we want -rww
@@ -2543,6 +2557,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 #endif
 }
 
+/*
 // Go through the model and deal with just the surfaces that are tagged as bolt
 // on points - this is for the server side skeleton construction
 void ProcessModelBoltSurfaces(
@@ -2608,7 +2623,7 @@ void ProcessModelBoltSurfaces(
 	G2Time_ProcessModelBoltSurfaces += G2PerformanceTimer_ProcessModelBoltSurfaces.End();
 #endif
 }
-
+*/
 
 // build the used bone list so when doing bone transforms we can determine if we need to do it or not
 void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
@@ -2618,7 +2633,11 @@ void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
 	mdxmHeader_t *mdxm = CBL.currentModel->data.glm->header;
 
 	// back track and get the surfinfo struct for this surface
+#ifndef REND2_SP
 	const mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void *)CBL.currentModel, CBL.surfaceNum, 0);
+#else
+	const mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface(CBL.currentModel, CBL.surfaceNum, 0);
+#endif
 	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)mdxm + sizeof(mdxmHeader_t));
 	const mdxmSurfHierarchy_t	*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	const model_t				*mod_a = R_GetModelByHandle(mdxm->animIndex);
@@ -3232,19 +3251,22 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum )
 		else
 		{
 			cust_shader = nullptr;
+#ifndef REND2_SP
 			// figure out the custom skin thing
 			if (g2Info.mCustomSkin)
 			{
-				skin = R_GetSkinByHandle(g2Info.mCustomSkin );
+				skin = R_GetSkinByHandle(g2Info.mCustomSkin);
 			}
-			else if (ent->e.customSkin)
-			{
-				skin = R_GetSkinByHandle(ent->e.customSkin );
-			}
-			else if ( g2Info.mSkin > 0 && g2Info.mSkin < tr.numSkins ) 
-			{
-				skin = R_GetSkinByHandle( g2Info.mSkin );
-			}
+			else
+#endif
+				if (ent->e.customSkin)
+				{
+					skin = R_GetSkinByHandle(ent->e.customSkin);
+				}
+				else if (g2Info.mSkin > 0 && g2Info.mSkin < tr.numSkins)
+				{
+					skin = R_GetSkinByHandle(g2Info.mSkin);
+				}
 		}
 
 		int whichLod = G2_ComputeLOD( ent, g2Info.currentModel, g2Info.mLodBias );
@@ -3566,7 +3588,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 		maxIndex = surf->alternateTex->firstVert + surf->alternateTex->numVerts;
 		indexOffset = surf->alternateTex->firstIndex;
 
-#ifdef REND2_SP_MAYBE
+#ifdef REND2_SP
 		// UNTESTED CODE
 		if (surf->scale > 1.0f)
 		{
@@ -4097,7 +4119,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 	
 	qboolean bAlreadyFound = qfalse;
 	mdxm = (mdxmHeader_t*)CModelCache->Allocate(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
-	mod->data.glm = (mdxmData_t *)ri.Hunk_Alloc (sizeof (mdxmData_t), h_low);
+	mod->data.glm = (mdxmData_t *)Hunk_Alloc(sizeof (mdxmData_t), h_low);
 	mod->data.glm->header = mdxm;
 
 	//RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
@@ -4127,7 +4149,34 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		
 	// first up, go load in the animation file we need that has the skeletal
 	// animation info for this model
-	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
+	mdxm->animIndex = RE_RegisterModel(va("%s.gla", mdxm->animName));
+#ifdef REND2_SP
+	char animGLAName[MAX_QPATH];
+	char* strippedName;
+	char* slash = NULL;
+	const char* mapname = sv_mapname->string;
+
+	if (strcmp(mapname, "nomap"))
+	{
+		if (strrchr(mapname, '/'))	//maps in subfolders use the root name, ( presuming only one level deep!)
+		{
+			mapname = strrchr(mapname, '/') + 1;
+		}
+		//stripped name of GLA for this model
+		Q_strncpyz(animGLAName, mdxm->animName, sizeof(animGLAName));
+		slash = strrchr(animGLAName, '/');
+		if (slash)
+		{
+			*slash = 0;
+		}
+		strippedName = COM_SkipPath(animGLAName);
+		if (VALIDSTRING(strippedName))
+		{
+			RE_RegisterModel(va("models/players/%s_%s/%s_%s.gla", strippedName, mapname, strippedName, mapname));
+		}
+	}
+
+#endif
 
 	if (!mdxm->animIndex) 
 	{
@@ -4254,7 +4303,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 	// Make a copy on the GPU
 	lod = (mdxmLOD_t *)((byte *)mdxm + mdxm->ofsLODs);
 
-	mod->data.glm->vboModels = (mdxmVBOModel_t *)ri.Hunk_Alloc (sizeof (mdxmVBOModel_t) * mdxm->numLODs, h_low);
+	mod->data.glm->vboModels = (mdxmVBOModel_t *)Hunk_Alloc (sizeof (mdxmVBOModel_t) * mdxm->numLODs, h_low);
 	for ( l = 0; l < mdxm->numLODs; l++ )
 	{
 		mdxmVBOModel_t *vboModel = &mod->data.glm->vboModels[l];
@@ -4275,11 +4324,11 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		int numTriangles = 0;
 
 		// +1 to add total vertex count
-		int *baseVertexes = (int *)ri.Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
-		int *indexOffsets = (int *)ri.Hunk_AllocateTempMemory (sizeof (int) * mdxm->numSurfaces);
+		int *baseVertexes = (int *)Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
+		int *indexOffsets = (int *)Hunk_AllocateTempMemory (sizeof (int) * mdxm->numSurfaces);
 
 		vboModel->numVBOMeshes = mdxm->numSurfaces;
-		vboModel->vboMeshes = (mdxmVBOMesh_t *)ri.Hunk_Alloc (sizeof (mdxmVBOMesh_t) * mdxm->numSurfaces, h_low);
+		vboModel->vboMeshes = (mdxmVBOMesh_t *)Hunk_Alloc (sizeof (mdxmVBOMesh_t) * mdxm->numSurfaces, h_low);
 		vboMeshes = vboModel->vboMeshes;
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
@@ -4306,7 +4355,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		dataSize += numVerts * sizeof (*tangents);
 
 		// Allocate and write to memory
-		data = (byte *)ri.Hunk_AllocateTempMemory (dataSize);
+		data = (byte *)Hunk_AllocateTempMemory (dataSize);
 
 		ofsPosition = stride;
 		verts = (vec3_t *)(data + ofsPosition);
@@ -4333,16 +4382,16 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		stride += sizeof (*tangents);
 
 		// Fill in the index buffer and compute tangents
-		glIndex_t *indices = (glIndex_t *)ri.Hunk_AllocateTempMemory(sizeof(glIndex_t) * numTriangles * 3);
+		glIndex_t *indices = (glIndex_t *)Hunk_AllocateTempMemory(sizeof(glIndex_t) * numTriangles * 3);
 		glIndex_t *index = indices;
-		uint32_t *tangentsf = (uint32_t *)ri.Hunk_AllocateTempMemory(sizeof(uint32_t) * numVerts);
+		uint32_t *tangentsf = (uint32_t *)Hunk_AllocateTempMemory(sizeof(uint32_t) * numVerts);
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof(mdxmLOD_t) + (mdxm->numSurfaces * sizeof(mdxmLODSurfOffset_t)));
 
 		for (int n = 0; n < mdxm->numSurfaces; n++)
 		{
 			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
-			glIndex_t *surf_indices = (glIndex_t *)ri.Hunk_AllocateTempMemory(sizeof(glIndex_t) * surf->numTriangles * 3);
+			glIndex_t *surf_indices = (glIndex_t *)Hunk_AllocateTempMemory(sizeof(glIndex_t) * surf->numTriangles * 3);
 			glIndex_t *surf_index = surf_indices;
 
 			for (int k = 0; k < surf->numTriangles; k++, index += 3, surf_index += 3)
@@ -4460,9 +4509,9 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		VBO_t *vbo = R_CreateVBO (data, dataSize, VBO_USAGE_STATIC);
 		IBO_t *ibo = R_CreateIBO((byte *)indices, sizeof(glIndex_t) * numTriangles * 3, VBO_USAGE_STATIC);
 
-		ri.Hunk_FreeTempMemory (data);
-		ri.Hunk_FreeTempMemory (tangentsf);
-		ri.Hunk_FreeTempMemory (indices);
+		Hunk_FreeTempMemory (data);
+		Hunk_FreeTempMemory (tangentsf);
+		Hunk_FreeTempMemory (indices);
 
 		vbo->offsets[ATTR_INDEX_POSITION] = ofsPosition;
 		vbo->offsets[ATTR_INDEX_NORMAL] = ofsNormals;
@@ -4504,8 +4553,8 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vboModel->vbo = vbo;
 		vboModel->ibo = ibo;
 
-		ri.Hunk_FreeTempMemory (indexOffsets);
-		ri.Hunk_FreeTempMemory (baseVertexes);
+		Hunk_FreeTempMemory (indexOffsets);
+		Hunk_FreeTempMemory (baseVertexes);
 
 		lod = (mdxmLOD_t *)((byte *)lod + lod->ofsEnd);
 	}

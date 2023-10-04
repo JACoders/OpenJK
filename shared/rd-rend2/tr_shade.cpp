@@ -864,7 +864,7 @@ static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vert
 		{
 			index |= GENERICDEF_USE_DEFORM_VERTEXES;
 		}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		if (glState.vertexAnimation)
 		{
 			index |= GENERICDEF_USE_VERTEX_ANIMATION;
@@ -1037,7 +1037,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	if (input->shader->numDeforms && !ShaderRequiresCPUDeforms(input->shader))
 		shaderBits |= FOGDEF_USE_DEFORM_VERTEXES;
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	if (glState.vertexAnimation)
 		shaderBits |= FOGDEF_USE_VERTEX_ANIMATION;
 #endif // REND2_SP
@@ -1153,7 +1153,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 {
 	unsigned int vertexAttribs = shader->vertexAttribs;
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	if(glState.vertexAnimation)
 	{
 		//vertexAttribs &= ~ATTR_COLOR;
@@ -1186,7 +1186,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 		{
 			index |= REFRACTIONDEF_USE_DEFORM_VERTEXES;
 		}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		if (glState.vertexAnimation)
 		{
 			index |= REFRACTIONDEF_USE_VERTEX_ANIMATION;
@@ -1224,7 +1224,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 				if (glState.vertexAnimation)
 				{
 					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
@@ -1258,7 +1258,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 			{
 				index |= GENERICDEF_USE_DEFORM_VERTEXES;
 			}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 			if (glState.vertexAnimation)
 			{
 				index |= GENERICDEF_USE_VERTEX_ANIMATION;
@@ -1301,7 +1301,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 		{
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 				if (glState.vertexAnimation)
 				{
 					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
@@ -1464,7 +1464,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			if ( backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA )
 			{
 				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+#ifndef REND2_SP
 				if ( backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH )
+#endif
 				{
 					// depth write, so faces through the model will be stomped
 					// over by nearer ones. this works because we draw
@@ -1500,7 +1502,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-#ifdef REND2_SP_MAYBE
+#ifdef REND2_SP
 			// Fade will be set true when rendering some gore surfaces
 			if (input->fade)
 			{
@@ -1580,7 +1582,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec3(UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
 		}
 
-#ifdef REND2_SP_MAYBE
+#ifdef REND2_SP
 		// tess scale will be set true only when theres scaled gore
 		if (!input->scale)
 			texMatrix[0] = texMatrix[3] = input->texCoords[input->firstIndex][0][0];

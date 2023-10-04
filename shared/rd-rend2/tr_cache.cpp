@@ -81,7 +81,7 @@ qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffe
 	if (!strcmp (sDEFAULT_GLA_NAME ".gla", path))
 	{
 		// return fake params as though it was found on disk...
-		void *pvFakeGLAFile = Z_Malloc(sizeof (FakeGLAFile), TAG_FILESYS, qfalse);
+		void *pvFakeGLAFile = R_Malloc(sizeof (FakeGLAFile), TAG_FILESYS, qfalse);
 
 		memcpy(pvFakeGLAFile, &FakeGLAFile[0], sizeof (FakeGLAFile));
 		*ppFileBuffer = pvFakeGLAFile;
@@ -103,7 +103,7 @@ qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffe
 
 void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag )
 {
-	int		iChecksum;
+	int		iChecksum = 1;
 	char	sModelName[MAX_QPATH];
 
 	/* Standard NULL checking. */
@@ -124,16 +124,20 @@ void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *p
 		if( pvDiskBuffer )
 			Z_MorphMallocTag( pvDiskBuffer, eTag );
 		else
-			pvDiskBuffer = Z_Malloc(iSize, eTag, qfalse);
+			pvDiskBuffer = R_Malloc(iSize, eTag, qfalse);
 
 		files.emplace_back();
 		pFile = &files.back();
 		pFile->pDiskImage = pvDiskBuffer;
 		pFile->iAllocSize = iSize;
 		Q_strncpyz(pFile->path, sModelName, sizeof(pFile->path));
-
+#ifndef REND2_SP
 		if( ri.FS_FileIsInPAK( sModelName, &iChecksum ) )
 			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
+#else
+		if (ri.FS_FileIsInPAK(sModelName))
+			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
+#endif
 
 		*bAlreadyFound = qfalse;
 	}
@@ -177,7 +181,11 @@ void CModelCacheManager::DumpNonPure( void )
 	for ( auto it = files.begin(); it != files.end(); /* empty */ )
 	{
 		int iChecksum;
+#ifndef REND2_SP
 		int iInPak = ri.FS_FileIsInPAK( it->path, &iChecksum );
+#else
+		int iInPak = ri.FS_FileIsInPAK(it->path);
+#endif
 
 		if( iInPak == -1 || iChecksum != it->iPAKChecksum )
 		{

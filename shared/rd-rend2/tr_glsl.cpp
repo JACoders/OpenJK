@@ -159,7 +159,7 @@ static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
 	}
 	else
 	{
-		char *msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+		char *msg = (char *)R_Malloc(maxLength, TAG_SHADERTEXT);
 
 		qglGetProgramInfoLog(object, maxLength, &maxLength, msg);
 
@@ -202,7 +202,7 @@ static void GLSL_PrintShaderInfoLog(GLuint object, qboolean developerOnly)
 	}
 	else
 	{
-		msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+		msg = (char *)R_Malloc(maxLength, TAG_SHADERTEXT);
 
 		qglGetShaderInfoLog(object, maxLength, &maxLength, msg);
 
@@ -228,7 +228,7 @@ static void GLSL_PrintShaderSource(GLuint shader)
 		return;
 	}
 
-	char *msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+	char *msg = (char *)R_Malloc(maxLength, TAG_SHADERTEXT);
 	qglGetShaderSource(shader, maxLength, nullptr, msg);
 
 	for (int i = 0; i < maxLength; i += 1023)
@@ -756,7 +756,7 @@ bool ShaderProgramBuilder::AddShader( const GPUShaderDesc& shaderDesc, const cha
 bool ShaderProgramBuilder::Build( shaderProgram_t *shaderProgram )
 {
 	const size_t nameBufferSize = strlen(name) + 1;
-	shaderProgram->name = (char *)Z_Malloc(nameBufferSize, TAG_GENERAL);
+	shaderProgram->name = (char *)R_Malloc(nameBufferSize, TAG_GENERAL);
 	Q_strncpyz(shaderProgram->name, name, nameBufferSize);
 
 	shaderProgram->program = program;
@@ -806,9 +806,9 @@ static bool GLSL_LoadGPUShader(
 
 void GLSL_InitUniforms(shaderProgram_t *program)
 {
-	program->uniforms = (GLint *)Z_Malloc(
+	program->uniforms = (GLint *)R_Malloc(
 			UNIFORM_COUNT * sizeof(*program->uniforms), TAG_GENERAL);
-	program->uniformBufferOffsets = (short *)Z_Malloc(
+	program->uniformBufferOffsets = (short *)R_Malloc(
 			UNIFORM_COUNT * sizeof(*program->uniformBufferOffsets), TAG_GENERAL);
 
 	GLint *uniforms = program->uniforms;
@@ -848,7 +848,7 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 		}
 	}
 
-	program->uniformBuffer = (char *)Z_Malloc(size, TAG_SHADERTEXT, qtrue);
+	program->uniformBuffer = (char *)R_Malloc(size, TAG_SHADERTEXT, qtrue);
 
 	program->uniformBlocks = 0;
 	for ( int i = 0; i < UNIFORM_BLOCK_COUNT; ++i )
@@ -1292,10 +1292,22 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 	{
 		qglDeleteProgram(program->program);
 
-		Z_Free (program->name);
-		Z_Free (program->uniformBuffer);
-		Z_Free (program->uniformBufferOffsets);
-		Z_Free (program->uniforms);
+		if (program->uniformBuffer)
+		{
+			Z_Free(program->uniformBuffer);
+		}
+		if (program->name)
+		{
+			Z_Free(program->name);
+		}
+		if (program->uniformBufferOffsets)
+		{
+			Z_Free(program->uniformBufferOffsets);
+		}
+		if (program->uniforms)
+		{
+			Z_Free(program->uniforms);
+		}
 
 		Com_Memset(program, 0, sizeof(*program));
 	}
@@ -1303,7 +1315,7 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 
 static bool GLSL_IsValidPermutationForGeneric (int shaderCaps)
 {
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	if ( (shaderCaps & GENERICDEF_USE_VERTEX_ANIMATION) &&
 			(shaderCaps & GENERICDEF_USE_SKELETAL_ANIMATION) )
 		return false;
@@ -1313,7 +1325,7 @@ static bool GLSL_IsValidPermutationForGeneric (int shaderCaps)
 
 static bool GLSL_IsValidPermutationForFog (int shaderCaps)
 {
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	if ( (shaderCaps & FOGDEF_USE_VERTEX_ANIMATION) &&
 			(shaderCaps & FOGDEF_USE_SKELETAL_ANIMATION) )
 		return false;
@@ -1329,7 +1341,7 @@ static bool GLSL_IsValidPermutationForLight (int lightType, int shaderCaps)
 	if (!lightType && (shaderCaps & LIGHTDEF_USE_PARALLAXMAP))
 		return false;
 
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	if ( (shaderCaps & LIGHTDEF_USE_SKELETAL_ANIMATION) &&
 			(shaderCaps & LIGHTDEF_USE_VERTEX_ANIMATION) )
 		return false;
@@ -1386,7 +1398,7 @@ void GLSL_InitSplashScreenShader()
 
 	size_t splashLen = strlen("splash");
 	tr.splashScreenShader.program = program;
-	tr.splashScreenShader.name = (char *)Z_Malloc(splashLen + 1, TAG_GENERAL);
+	tr.splashScreenShader.name = (char *)R_Malloc(splashLen + 1, TAG_GENERAL);
 	Q_strncpyz(tr.splashScreenShader.name, "splash", splashLen + 1);
 }
 
@@ -1442,7 +1454,7 @@ static int GLSL_LoadGPUProgramGeneric(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		if (i & GENERICDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
@@ -1511,11 +1523,11 @@ static int GLSL_LoadGPUProgramFogPass(
 
 		if (i & FOGDEF_USE_DEFORM_VERTEXES)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		if (i & FOGDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
-			attribs |= ATTR_POSITION2 | ATTR_NORMAL2
+			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
 #endif // REND2_SP
 		if (i & FOGDEF_USE_SKELETAL_ANIMATION)
@@ -1574,7 +1586,7 @@ static int GLSL_LoadGPUProgramRefraction(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		if (i & REFRACTIONDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
@@ -1739,7 +1751,7 @@ static int GLSL_LoadGPUProgramLightAll(
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_CLOTH_BRDF\n");
 		}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
@@ -2528,7 +2540,7 @@ void GL_VertexArraysToAttribs(
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // light direction
 		{ 4, GL_TRUE,  GL_UNSIGNED_BYTE, GL_FALSE }, // bone indices
 		{ 4, GL_FALSE, GL_UNSIGNED_BYTE, GL_TRUE }, // bone weights
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE }, // pos2
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // tangent2
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
@@ -2613,7 +2625,7 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	{
 		shaderAttribs |= GENERICDEF_USE_DEFORM_VERTEXES;
 	}
-#ifdef REND2_SP
+#ifdef REND2_SP_MD3
 	if (glState.vertexAnimation)
 	{
 		shaderAttribs |= GENERICDEF_USE_VERTEX_ANIMATION;

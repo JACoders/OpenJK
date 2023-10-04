@@ -243,12 +243,6 @@ mdxmSurface_t *G2_FindSurface(CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const 
 	return 0;
 }
 
-// set a named surface offFlags - if it doesn't find a surface with this name in the list then it will add one.
-qboolean G2_SetSurfaceOnOff(CGhoul2Info* ghlInfo, const char* surfaceName, const int offFlags)
-{
-	return G2_SetSurfaceOnOff(ghlInfo, ghlInfo->mSlist, surfaceName, offFlags);
-}
-
 qboolean G2_SetSurfaceOnOff(CGhoul2Info* ghlInfo, surfaceInfo_v& slist, const char* surfaceName, const int offFlags)
 {
 	int					surfIndex = -1;
@@ -300,6 +294,12 @@ qboolean G2_SetSurfaceOnOff(CGhoul2Info* ghlInfo, surfaceInfo_v& slist, const ch
 		}
 	}
 	return qfalse;
+}
+
+// set a named surface offFlags - if it doesn't find a surface with this name in the list then it will add one.
+qboolean G2_SetSurfaceOnOff(CGhoul2Info* ghlInfo, const char* surfaceName, const int offFlags)
+{
+	return G2_SetSurfaceOnOff(ghlInfo, ghlInfo->mSlist, surfaceName, offFlags);
 }
 
 void G2_SetSurfaceOnOffFromSkin(CGhoul2Info *ghlInfo, qhandle_t renderSkin)

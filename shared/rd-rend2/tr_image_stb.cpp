@@ -26,23 +26,23 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 static void* R_LocalMalloc(size_t size)
 {
-	return ri.Hunk_AllocateTempMemory(size);
+	return Hunk_AllocateTempMemory(size);
 }
 
 static void* R_LocalReallocSized(void *ptr, size_t old_size, size_t new_size)
 {
-	void *mem = ri.Hunk_AllocateTempMemory(new_size);
+	void *mem = Hunk_AllocateTempMemory(new_size);
 	if (ptr)
 	{
 		memcpy(mem, ptr, old_size);
-		ri.Hunk_FreeTempMemory(ptr);
+		Hunk_FreeTempMemory(ptr);
 	}
 	return mem;
 }
 static void R_LocalFree(void *ptr)
 {
 	if (ptr)
-		ri.Hunk_FreeTempMemory(ptr);
+		Hunk_FreeTempMemory(ptr);
 }
 
 #define STBI_MALLOC R_LocalMalloc

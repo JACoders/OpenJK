@@ -91,8 +91,9 @@ Adds all the scene's polys into this view's drawsurf list
 */
 void R_AddPolygonSurfaces( const trRefdef_t *refdef ) {
 	srfPoly_t *poly;
+#ifndef REND2_SP
 	int	fogMask = -((refdef->rdflags & RDF_NOFOG) == 0);
-
+#endif
 	int i;
 	for ( i = 0, poly = refdef->polys; i < refdef->numPolys ; i++, poly++ ) {
 		shader_t *sh = R_GetShaderByHandle( poly->hShader );
@@ -100,7 +101,11 @@ void R_AddPolygonSurfaces( const trRefdef_t *refdef ) {
 			(surfaceType_t *)poly,
 			REFENTITYNUM_WORLD,
 			sh,
+#ifndef REND2_SP
 			poly->fogIndex & fogMask,
+#else
+			poly->fogIndex,
+#endif
 			qfalse,
 			qfalse,
 			0 /* cubemapIndex */ );
@@ -113,7 +118,12 @@ RE_AddPolyToScene
 
 =====================
 */
+#ifndef REND2_SP
 void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts, int numPolys ) {
+#else
+void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts) {
+	int numPolys = 1;
+#endif
 	srfPoly_t	*poly;
 	int			i, j;
 	int			fogIndex;
@@ -218,6 +228,7 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	r_numentities++;
 }
 
+#ifndef REND2_SP
 /*
 =====================
 RE_AddMiniRefEntityToScene
@@ -235,7 +246,7 @@ void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt ) {
 	memcpy(&entity, miniRefEnt, sizeof(*miniRefEnt));
 	RE_AddRefEntityToScene(&entity);
 }
-
+#endif
 
 /*
 =====================
@@ -298,8 +309,6 @@ void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, flo
 
 void RE_BeginScene(const refdef_t *fd)
 {
-	Com_Memcpy( tr.refdef.text, fd->text, sizeof( tr.refdef.text ) );
-
 	tr.refdef.x = fd->x;
 	tr.refdef.y = fd->y;
 	tr.refdef.width = fd->width;

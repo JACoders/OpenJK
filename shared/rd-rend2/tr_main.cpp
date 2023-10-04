@@ -25,9 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_weather.h"
 
 #include <string.h> // memcpy
-
+#ifndef REND2_SP
 #include "ghoul2/g2_local.h"
-
+#endif
 trGlobals_t		tr;
 
 static float	s_flipMatrix[16] = {
@@ -820,10 +820,12 @@ static void R_SetFarClip( viewParms_t *viewParms, const trRefdef_t *refdef )
 	if (refdef != NULL)
 	{
 		if (refdef->rdflags & RDF_NOWORLDMODEL) {
+#ifndef REND2_SP
 			// override the zfar then
 			if (refdef->rdflags & RDF_AUTOMAP)
 				viewParms->zFar = 32768.0f;
 			else
+#endif
 				viewParms->zFar = 2048.0f;
 			return;
 		}
@@ -1741,7 +1743,9 @@ static void R_RadixSort( drawSurf_t *source, int size )
 bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity )
 {
 	return (refEntity->e.renderfx & RF_DISTORTION) ||
+#ifndef REND2_SP
 			(refEntity->e.renderfx & RF_FORCEPOST) ||
+#endif
 			(refEntity->e.renderfx & RF_FORCE_ENT_ALPHA);
 }
 
@@ -1786,12 +1790,12 @@ void R_AddDrawSurf(
 {
 	int index;
 	drawSurf_t *surf;
-
+#ifndef REND2_SP
 	if (tr.refdef.rdflags & RDF_NOFOG)
 	{
 		fogIndex = 0;
 	}
-
+#endif
 	if ( (shader->surfaceFlags & SURF_FORCESIGHT) && !(tr.refdef.rdflags & RDF_ForceSightOn) )
 	{	//if shader is only seen with ForceSight and we don't have ForceSight on, then don't draw
 		return;
@@ -1871,7 +1875,9 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 	case RT_ORIENTED_QUAD:
 	case RT_ELECTRICITY:
 	case RT_LINE:
+#ifndef REND2_SP
 	case RT_ORIENTEDLINE:
+#endif
 	case RT_CYLINDER:
 	case RT_SABER_GLOW:
 		// self blood sprites, talk balloons, etc should not be drawn in the primary
@@ -1952,6 +1958,7 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 			}
 		}
 		break;
+#ifndef REND2_SP
 	case RT_ENT_CHAIN:
 		shader = R_GetShaderByHandle(ent->e.customShader);
 		R_AddDrawSurf(
@@ -1963,6 +1970,7 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 			R_IsPostRenderEntity(ent),
 			0 /* cubeMap */ );
 		break;
+#endif
 	default:
 		ri.Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );
 	}
@@ -2573,7 +2581,9 @@ qboolean R_AddPortalView(const trRefdef_t *refdef)
 		case RT_ORIENTED_QUAD:
 		case RT_ELECTRICITY:
 		case RT_LINE:
+#ifndef REND2_SP
 		case RT_ORIENTEDLINE:
+#endif
 		case RT_CYLINDER:
 		case RT_SABER_GLOW:
 			break;
@@ -2620,8 +2630,10 @@ qboolean R_AddPortalView(const trRefdef_t *refdef)
 				}
 			}
 			break;
+#ifndef REND2_SP
 		case RT_ENT_CHAIN:
 			break;
+#endif
 		default:
 			break;
 		}

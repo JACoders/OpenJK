@@ -693,7 +693,7 @@ void RestoreGhoul2InfoArray()
 		size_t read =
 #endif // _DEBUG
 			singleton->Deserialize((const char*)data, size);
-		R_Free((void*)data);
+		Z_Free((void*)data);
 #ifdef _DEBUG
 		assert(read == size);
 #endif
@@ -1473,7 +1473,7 @@ void G2API_AbsurdSmoothing(CGhoul2Info_v &ghoul2, qboolean status)
 {
 	assert(ghoul2.size());
 	CGhoul2Info *ghlInfo = &ghoul2[0];
-
+#ifndef REND2_SP
 	if (status)
 	{ //turn it on
 		ghlInfo->mFlags |= GHOUL2_CRAZY_SMOOTH;
@@ -1482,6 +1482,7 @@ void G2API_AbsurdSmoothing(CGhoul2Info_v &ghoul2, qboolean status)
 	{ //off
 		ghlInfo->mFlags &= ~GHOUL2_CRAZY_SMOOTH;
 	}
+#endif
 }
 
 //rww - RAGDOLL_BEGIN
@@ -2437,7 +2438,7 @@ extern timing_c G2PerformanceTimer_G2_SetupModelPointers;
 extern int G2Time_G2_SetupModelPointers;
 #endif
 
-bool G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is properly set up
+qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is properly set up
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_G2_SetupModelPointers.Start();
@@ -2445,7 +2446,7 @@ bool G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is
 	G2ERROR(ghlInfo,"G2_SetupModelPointers: NULL ghlInfo");
 	if (!ghlInfo)
 	{
-		return false;
+		return qfalse;
 	}
 
 	ghlInfo->mValid=false;
@@ -2513,17 +2514,17 @@ bool G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2Time_G2_SetupModelPointers += G2PerformanceTimer_G2_SetupModelPointers.End();
 #endif
-	return ghlInfo->mValid;
+	return (qboolean)ghlInfo->mValid;
 }
 
-bool G2_SetupModelPointers(CGhoul2Info_v &ghoul2) // returns true if any model is properly set up
+qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2) // returns true if any model is properly set up
 {
-	bool ret = false;
+	qboolean ret = qfalse;
 
 	for (int i=0; i<ghoul2.size(); i++)
 	{
-		bool r = G2_SetupModelPointers(&ghoul2[i]);
-		ret = ret || r;
+		qboolean r = G2_SetupModelPointers(&ghoul2[i]);
+		ret = (qboolean)(ret || r);
 	}
 	return ret;
 }

@@ -1495,7 +1495,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri.Printf( PRINT_WARNING, "WARNING: missing parameter for 'videoMap' keyword in shader '%s'\n", shader.name );
 				return qfalse;
 			}
+#ifndef REND2_SP
 			stage->bundle[0].videoMapHandle = ri.CIN_PlayCinematic( token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader));
+#else
+			stage->bundle[0].videoMapHandle = ri.CIN_PlayCinematic(token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader), NULL);
+#endif
 			if (stage->bundle[0].videoMapHandle != -1) {
 				stage->bundle[0].isVideoMap = qtrue;
 				stage->bundle[0].image[0] = tr.scratchImage[stage->bundle[0].videoMapHandle];
@@ -3537,7 +3541,7 @@ static qboolean CollapseStagesToGLSL(void)
 
 	return (qboolean)numStages;
 }
-
+#ifndef REND2_SP
 /*
 =============
 
@@ -3622,7 +3626,7 @@ static void FixRenderCommandList( int newShader ) {
 		}
 	}
 }
-
+#endif
 /*
 ==============
 SortNewShader
@@ -3665,9 +3669,11 @@ static void SortNewShader( void ) {
 		tr.sortedShaders[i+1]->sortedIndex++;
 	}
 
+#ifndef REND2_SP
 	// Arnout: fix rendercommandlist
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=493
 	FixRenderCommandList( i+1 );
+#endif
 
 	newShader->sortedIndex = i+1;
 	tr.sortedShaders[i+1] = newShader;
@@ -3689,7 +3695,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = (shader_t *)ri.Hunk_Alloc( sizeof( shader_t ), h_low );
+	newShader = (shader_t *)Hunk_Alloc( sizeof( shader_t ), h_low );
 
 	*newShader = shader;
 
@@ -3741,12 +3747,12 @@ static shader_t *GeneratePermanentShader( void ) {
 		if ( !stages[i].active ) {
 			break;
 		}
-		newShader->stages[i] = (shaderStage_t *)ri.Hunk_Alloc( sizeof( stages[i] ), h_low );
+		newShader->stages[i] = (shaderStage_t *)Hunk_Alloc( sizeof( stages[i] ), h_low );
 		*newShader->stages[i] = stages[i];
 
 		for ( b = 0 ; b < NUM_TEXTURE_BUNDLES ; b++ ) {
 			size = newShader->stages[i]->bundle[b].numTexMods * sizeof( texModInfo_t );
-			newShader->stages[i]->bundle[b].texMods = (texModInfo_t *)ri.Hunk_Alloc( size, h_low );
+			newShader->stages[i]->bundle[b].texMods = (texModInfo_t *)Hunk_Alloc( size, h_low );
 			Com_Memcpy( newShader->stages[i]->bundle[b].texMods, stages[i].bundle[b].texMods, size );
 		}
 	}
@@ -4957,7 +4963,7 @@ static void ScanAndLoadShaderFiles( void )
 	}
 
 	// build single large buffer
-	s_shaderText = (char *)ri.Hunk_Alloc( sum + numShaderFiles*2, h_low );
+	s_shaderText = (char *)Hunk_Alloc( sum + numShaderFiles*2, h_low );
 	s_shaderText[ 0 ] = '\0';
 	textEnd = s_shaderText;
  
@@ -4997,7 +5003,7 @@ static void ScanAndLoadShaderFiles( void )
 
 	size += MAX_SHADERTEXT_HASH;
 
-	hashMem = (char *)ri.Hunk_Alloc( size * sizeof(char *), h_low );
+	hashMem = (char *)Hunk_Alloc( size * sizeof(char *), h_low );
 
 	for (i = 0; i < MAX_SHADERTEXT_HASH; i++) {
 		shaderTextHashTable[i] = (char **) hashMem;
