@@ -208,7 +208,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs(qtrue);
 
-	Com_Printf ("------ Server Initialization ------\n%s\nrevision: %s\n", com_version->string, com_revision->string);
+	Com_Printf ("------ Server Initialization ------\n%s\n", com_version->string);
 	Com_Printf ("Server: %s\n",server);
 
 	// Moved up from below to help reduce fragmentation

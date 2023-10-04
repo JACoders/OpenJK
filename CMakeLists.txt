@@ -323,17 +323,18 @@ else()
 	message(STATUS "SOURCE_DATE_EPOCH is set ($ENV{SOURCE_DATE_EPOCH}): SOURCE_DATE set to \"${SOURCE_DATE}\"")
 endif()
 
-# Current Git SHA1 hash
+# Current Git tag/version
+# ideally we would separate the hash suffix into its own variable, but sed is not available everywhere
 execute_process(
-	COMMAND "git" "rev-parse" "--short" "HEAD"
-	OUTPUT_VARIABLE GIT_HASH
-	RESULT_VARIABLE GIT_HASH_ERROR
+	COMMAND "git" "describe" "--tag"
+	OUTPUT_VARIABLE GIT_TAG
+	RESULT_VARIABLE GIT_TAG_ERROR
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(GIT_HASH_ERROR AND NOT GIT_HASH_ERROR EQUAL 0)
-	message(WARNING "Unable to determine Git revision")
-	set(GIT_HASH UNKNOWN)
+if(GIT_TAG_ERROR AND NOT GIT_TAG_ERROR EQUAL 0)
+	message(WARNING "Unable to determine Git tag")
+	set(GIT_TAG vUNKNOWN)
 endif()
-message(STATUS "Git revision is ${GIT_HASH}")
+message(STATUS "Git tag is ${GIT_TAG}")
 
 configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
 

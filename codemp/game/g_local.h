@@ -43,9 +43,6 @@ extern vec3_t gPainPoint;
 
 //==================================================================
 
-// the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK-" GIT_HASH
-
 #define SECURITY_LOG "security.log"
 
 #define BODY_QUEUE_SIZE		8

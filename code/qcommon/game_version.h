@@ -20,16 +20,21 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include "qcommon/q_version.h"
+
 // Current version of the single player game
-#include "../win32/AutoVersion.h"
+#define VERSION_MAJOR_RELEASE		1
+#define VERSION_MINOR_RELEASE		0
+#define VERSION_EXTERNAL_BUILD		1
+#define VERSION_INTERNAL_BUILD		1
 
-#ifdef _DEBUG
-	#define	JK_VERSION		"(debug)OpenJK: v" VERSION_STRING_DOTTED
-#elif defined FINAL_BUILD
-	#define	JK_VERSION		"OpenJK: v" VERSION_STRING_DOTTED
+#define VERSION_STRING XSTRING(VERSION_MAJOR_RELEASE) ", " XSTRING(VERSION_MINOR_RELEASE) ", " XSTRING(VERSION_EXTERNAL_BUILD) ", " XSTRING(VERSION_INTERNAL_BUILD) // "a, b, c, d"
+#define VERSION_STRING_DOTTED XSTRING(VERSION_MAJOR_RELEASE) "." XSTRING(VERSION_MINOR_RELEASE) "." XSTRING(VERSION_EXTERNAL_BUILD) "." XSTRING(VERSION_INTERNAL_BUILD) // "a.b.c.d"
+
+#if defined(_DEBUG)
+	#define	JK_VERSION		"(debug)OpenJK: " GIT_TAG
+	#define JK_VERSION_OLD	"(debug)JA: v" VERSION_STRING_DOTTED
 #else
-	#define	JK_VERSION		"(internal)OpenJK: v" VERSION_STRING_DOTTED
+	#define	JK_VERSION		"OpenJK: " GIT_TAG
+	#define JK_VERSION_OLD	"JA: v" VERSION_STRING_DOTTED
 #endif
-// end
-
-

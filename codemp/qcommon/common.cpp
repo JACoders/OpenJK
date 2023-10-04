@@ -27,7 +27,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "stringed_ingame.h"
 #include "qcommon/cm_public.h"
 #include "qcommon/game_version.h"
-#include "qcommon/q_version.h"
 #include "../server/NPCNav/navigator.h"
 #include "../shared/sys/sys_local.h"
 #if defined(_WIN32)
@@ -59,7 +58,6 @@ cvar_t	*com_G2Report;
 #endif
 
 cvar_t	*com_version;
-cvar_t	*com_revision;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_bootlogo;
 cvar_t	*cl_paused;
@@ -1155,7 +1153,6 @@ Com_Init
 =================
 */
 void Com_Init( char *commandLine ) {
-	char	*s;
 	int		qport;
 
 	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
@@ -1275,9 +1272,7 @@ void Com_Init( char *commandLine ) {
 
 		com_timestamps = Cvar_Get( "com_timestamps", "1", CVAR_ARCHIVE_ND, "Show timestamps in terminal and qconsole.log" );
 
-		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, SOURCE_DATE );
-		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
-		com_revision = Cvar_Get ("revision", GIT_HASH, CVAR_ROM | CVAR_SERVERINFO );
+		com_version = Cvar_Get ("version", JK_VERSION " " PLATFORM_STRING " " SOURCE_DATE, CVAR_ROM | CVAR_SERVERINFO );
 
 		SE_Init();
 
