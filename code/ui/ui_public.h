@@ -105,7 +105,7 @@ typedef struct {
 	//========= model collision ===============
 
 	// R_LerpTag is only valid for md3 models
-	void		(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
+	int			(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
 						 float frac, const char *tagName );
 
 	// =========== sound function calls ===============
