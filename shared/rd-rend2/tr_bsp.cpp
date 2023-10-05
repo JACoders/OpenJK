@@ -2948,6 +2948,9 @@ void R_LoadEntities( world_t *worldData, lump_t *l ) {
 	strcpy( w->entityString, p );
 	w->entityParsePoint = w->entityString;
 
+#ifdef REND2_SP
+	COM_BeginParseSession();
+#endif
 	token = COM_ParseExt( &p, qtrue );
 	if (!*token || *token != '{') {
 		return;
@@ -3013,6 +3016,9 @@ void R_LoadEntities( world_t *worldData, lump_t *l ) {
 			continue;
 		}
 	}
+#ifdef REND2_SP
+	COM_EndParseSession();
+#endif
 }
 
 /*
@@ -4317,7 +4323,13 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 		{
 			for (int i = 0; i < numCubemapEntities; i++)
 			{
+#ifdef REND2_SP
+				COM_BeginParseSession();
+#endif
 				R_LoadCubemapEntities(cubemapEntities[i]);
+#ifdef REND2_SP
+				COM_EndParseSession();
+#endif
 				if (tr.numCubemaps)
 					break;
 			}

@@ -559,9 +559,11 @@ void RE_WorldEffectCommand(const char *command)
 	{
 		return;
 	}
-
+#ifndef REND2_SP
 	COM_BeginParseSession("RE_WorldEffectCommand");
-
+#else
+	COM_BeginParseSession();
+#endif
 	const char	*token;//, *origCommand;
 
 	token = COM_ParseExt(&command, qfalse);
@@ -1095,6 +1097,9 @@ void RE_WorldEffectCommand(const char *command)
 		ri.Printf(PRINT_ALL, "	outsideshake\n"); // not available in MP
 		ri.Printf(PRINT_ALL, "	outsidepain\n"); // not available in MP
 	}
+#ifdef REND2_SP
+	COM_EndParseSession();
+#endif
 }
 
 void R_WorldEffect_f(void)

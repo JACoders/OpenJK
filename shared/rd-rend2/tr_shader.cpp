@@ -4438,6 +4438,9 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 	//
 	// attempt to define shader from an explicit parameter file
 	//
+#ifdef REND2_SP
+	COM_BeginParseSession();
+#endif
 	shaderText = FindShaderInShaderText( strippedName );
 	if ( shaderText ) {
 		// enable this when building a pak file to get a global list
@@ -4451,8 +4454,14 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 			shader.defaultShader = qtrue;
 		}
 		sh = FinishShader();
+#ifdef REND2_SP
+		COM_EndParseSession();
+#endif
 		return sh;
 	}
+#ifdef REND2_SP
+	COM_EndParseSession();
+#endif
 
 
 	//
@@ -4913,7 +4922,11 @@ static void ScanAndLoadShaderFiles( void )
 		
 		// Do a simple check on the shader structure in that file to make sure one bad shader file cannot fuck up all other shaders.
 		p = buffers[i];
+#ifndef REND2_SP
 		COM_BeginParseSession(filename);
+#else
+		COM_BeginParseSession();
+#endif
 		while(1)
 		{
 			token = COM_ParseExt(&p, qtrue);
@@ -4960,6 +4973,10 @@ static void ScanAndLoadShaderFiles( void )
 		
 		if (buffers[i])
 			sum += summand;		
+
+#ifdef REND2_SP
+		COM_EndParseSession();
+#endif
 	}
 
 	// build single large buffer
@@ -4986,6 +5003,10 @@ static void ScanAndLoadShaderFiles( void )
 
 	Com_Memset(shaderTextHashTableSizes, 0, sizeof(shaderTextHashTableSizes));
 	size = 0;
+
+#ifdef REND2_SP
+	COM_BeginParseSession();
+#endif
 
 	p = s_shaderText;
 	// look for shader names
@@ -5026,6 +5047,10 @@ static void ScanAndLoadShaderFiles( void )
 
 		SkipBracedSection(&p, 0);
 	}
+
+#ifdef REND2_SP
+	COM_EndParseSession();
+#endif
 
 	return;
 
