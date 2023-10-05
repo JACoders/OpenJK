@@ -23,6 +23,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <cmath>
 
+// Cached to save test tume
+int CurrentWeatherBrushIndex;
+
 namespace
 {
 	const int CHUNK_COUNT = 9;  // in 3x3 arrangement
@@ -476,9 +479,12 @@ void R_InitWeatherSystem()
 		(weatherSystem_t *)R_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
 	tr.weatherSystem->weatherSurface.surfaceType = SF_WEATHER;
 	tr.weatherSystem->frozen = false;
+	tr.weatherSystem->shaking = false;
 	tr.weatherSystem->activeWeatherTypes = 0;
 	tr.weatherSystem->constWindDirection[0] = .0f;
 	tr.weatherSystem->constWindDirection[1] = .0f;
+
+	CurrentWeatherBrushIndex = -1;
 
 	for (int i = 0; i < NUM_WEATHER_TYPES; i++)
 		tr.weatherSystem->weatherSlots[i].active = false;
@@ -1055,7 +1061,11 @@ void RE_WorldEffectCommand(const char *command)
 
 	else if (Q_stricmp(token, "outsideshake") == 0)
 	{
+#ifdef REND2_SP
+		tr.weatherSystem->shaking = true;
+#else
 		ri.Printf(PRINT_DEVELOPER, "outsideshake isn't supported in MP\n");
+#endif
 	}
 	else if (Q_stricmp(token, "outsidepain") == 0)
 	{
@@ -1255,4 +1265,86 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 			}
 		}
 	}
+}
+
+bool IsInsideBrush(const weatherBrushes_t* Brush, const vec3_t pos)
+{
+	// RBSP brushes actually store their bounding box in the first 6 planes! Nice
+	const vec3_t mins = {
+		-Brush->planes[0][3],
+		-Brush->planes[2][3],
+		-Brush->planes[4][3],
+	};
+	const vec3_t maxs = {
+		Brush->planes[1][3],
+		Brush->planes[3][3],
+		Brush->planes[5][3],
+	};
+
+	return (pos[0] > mins[0] && pos[1] > mins[1] && pos[2] > mins[2]
+		&& pos[0] < maxs[0] && pos[1] < maxs[1] && pos[2] < maxs[2]);
+}
+
+bool R_IsOutside(vec3_t pos)
+{
+	if (!tr.weatherSystem)
+	{
+		return false;
+	}
+
+	// check cashed brush first
+	if (CurrentWeatherBrushIndex >= 0 && CurrentWeatherBrushIndex < tr.weatherSystem->numWeatherBrushes)
+	{
+		if (IsInsideBrush(&tr.weatherSystem->weatherBrushes[CurrentWeatherBrushIndex], pos))
+		{
+			return (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE);
+		}
+	}
+
+	// check all weather brushes
+	for (int i = 0; i < tr.weatherSystem->numWeatherBrushes; i++)
+	{
+		const weatherBrushes_t* WeatherBrush = &tr.weatherSystem->weatherBrushes[i];
+
+		if (IsInsideBrush(WeatherBrush, pos))
+		{
+			CurrentWeatherBrushIndex = i;
+			return (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE);
+		}
+	}
+
+	CurrentWeatherBrushIndex = -1;
+	return (tr.weatherSystem->weatherBrushType != WEATHER_BRUSHES_OUTSIDE);
+}
+
+bool R_IsShaking(vec3_t pos)
+{
+	return (tr.weatherSystem
+		&& tr.weatherSystem->shaking
+		&& R_IsOutside(pos));
+}
+
+bool R_GetWindVector(vec3_t windVector, vec3_t atPoint)
+{
+	// @TODO: need to process "Windzone" command
+
+	if (!tr.weatherSystem)
+	{
+		return false;
+	}
+
+	VectorCopy(tr.weatherSystem->windDirection, windVector);
+
+	// everything is processed in RB_SurfaceWeather, no need to add something here
+	return (tr.weatherSystem->activeWindObjects > 0);
+}
+
+bool R_GetWindGusting(vec3_t atPoint)
+{
+	float windSpeed = 0.f;
+	// @TODO: need to process "Windzone" command
+	//R_GetWindSpeed(windSpeed, atPoint);
+
+	// this line doesn't work
+	return (tr.weatherSystem && tr.weatherSystem->windSpeed > 1000.0f);
 }

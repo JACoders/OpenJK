@@ -292,11 +292,7 @@ static qboolean gbAllowScreenDissolve = qtrue;
 // STUBS, REPLACEME
 qboolean stub_RE_ProcessDissolve(void) { return qfalse; }
 qboolean stub_RE_InitDissolve(qboolean bForceCircularExtroWipe) { return qfalse; }
-bool stub_R_IsShaking(vec3_t pos) { return qfalse; }
 void stub_R_InitWorldEffects(void) {}
-bool stub_R_GetWindVector(vec3_t windVector, vec3_t atpoint) { return qfalse; }
-bool stub_R_GetWindGusting(vec3_t atpoint) { return qfalse; }
-bool stub_R_IsOutside(vec3_t pos) { return qfalse; }
 float stub_R_IsOutsideCausingPain(vec3_t pos) { return qfalse; }
 float stub_R_GetChanceOfSaberFizz() { return qfalse; }
 bool stub_R_SetTempGlobalFogColor(vec3_t color) { return qfalse; }
@@ -2191,6 +2187,10 @@ void RE_SetLightStyle(int style, int color)
 
 void RE_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal);
 void RE_WorldEffectCommand(const char *cmd);
+bool R_IsShaking(vec3_t pos);
+bool R_GetWindVector(vec3_t windVector, vec3_t atPoint); // doesn't work?
+bool R_GetWindGusting(vec3_t atPoint); // doesn't work
+
 
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {} // Intentionally left blank. Rend2 reads the zones manually on bsp load
 static void RE_SetRefractionProperties ( float distortionAlpha, float distortionStretch, qboolean distortionPrePost, qboolean distortionNegate ) { }
@@ -2365,12 +2365,12 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.tr_distortionNegate = stub_get_tr_distortionNegate;
 
 	//re.InitializeWireframeAutomap = stub_InitializeWireframeAutomap; // MP
-	re.GetWindVector = stub_R_GetWindVector;
-	re.GetWindGusting = stub_R_GetWindGusting;
-	re.IsOutside = stub_R_IsOutside;
+	re.GetWindVector = R_GetWindVector;
+	re.GetWindGusting = R_GetWindGusting;
+	re.IsOutside = R_IsOutside;
 	re.IsOutsideCausingPain = stub_R_IsOutsideCausingPain;
 	re.GetChanceOfSaberFizz = stub_R_GetChanceOfSaberFizz;
-	re.IsShaking = stub_R_IsShaking;
+	re.IsShaking = R_IsShaking;
 	re.AddWeatherZone = stub_RE_AddWeatherZone;
 	re.SetTempGlobalFogColor = stub_R_SetTempGlobalFogColor;
 

@@ -100,6 +100,7 @@ struct weatherSystem_t
 	int activeWindObjects = 0;
 	int numWeatherBrushes = 0;
 	bool frozen;
+	bool shaking;
 
 	srfWeather_t weatherSurface;
 
@@ -117,5 +118,6 @@ void R_AddWeatherSurfaces();
 void R_AddWeatherBrush(uint8_t numPlanes, vec4_t *planes);
 void R_ShutdownWeatherSystem();
 void RB_SurfaceWeather( srfWeather_t *surfaceType );
+bool R_IsOutside(vec3_t pos);
 
 void R_WorldEffect_f(void);
