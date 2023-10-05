@@ -22,6 +22,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/q_version.h"
 
+#if !defined(STRING) && !defined(XSTRING)
+	// rather than including q_shared.h from win32 resource scripts (win32/*.rc)
+	#define STRING( a ) #a
+	#define XSTRING( a ) STRING( a )
+#endif
+
 // Current version of the single player game
 #define VERSION_MAJOR_RELEASE		1
 #define VERSION_MINOR_RELEASE		0
