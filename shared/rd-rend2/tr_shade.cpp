@@ -869,8 +869,9 @@ static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vert
 		{
 			index |= GENERICDEF_USE_VERTEX_ANIMATION;
 		}
+		else
 #endif // REND2_SP
-		else if (glState.skeletalAnimation)
+		if (glState.skeletalAnimation)
 		{
 			index |= GENERICDEF_USE_SKELETAL_ANIMATION;
 		}
@@ -1040,8 +1041,9 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 #ifdef REND2_SP_MD3
 	if (glState.vertexAnimation)
 		shaderBits |= FOGDEF_USE_VERTEX_ANIMATION;
+	else
 #endif // REND2_SP
-	else if (glState.skeletalAnimation)
+	if (glState.skeletalAnimation)
 		shaderBits |= FOGDEF_USE_SKELETAL_ANIMATION;
 
 	if (tr.world && tr.world->globalFog && 
@@ -1191,8 +1193,9 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 		{
 			index |= REFRACTIONDEF_USE_VERTEX_ANIMATION;
 		}
+		else
 #endif // REND2_SP
-		else if (glState.skeletalAnimation)
+		if (glState.skeletalAnimation)
 		{
 			index |= REFRACTIONDEF_USE_SKELETAL_ANIMATION;
 		}
@@ -1263,8 +1266,9 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 			{
 				index |= GENERICDEF_USE_VERTEX_ANIMATION;
 			}
+			else
 #endif // REND2_SP
-			else if (glState.skeletalAnimation)
+			if (glState.skeletalAnimation)
 			{
 				index |= GENERICDEF_USE_SKELETAL_ANIMATION;
 			}
@@ -1466,7 +1470,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 #ifndef REND2_SP
 				if ( backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH )
-#endif
 				{
 					// depth write, so faces through the model will be stomped
 					// over by nearer ones. this works because we draw
@@ -1474,6 +1477,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					// standard alpha surfs.
 					stateBits |= GLS_DEPTHMASK_TRUE;
 				}
+#endif
 			}
 		}
 
@@ -1502,7 +1506,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-#ifdef REND2_SP
+#ifdef REND2_SP_GORE
 			// Fade will be set true when rendering some gore surfaces
 			if (input->fade)
 			{
@@ -1582,9 +1586,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec3(UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
 		}
 
-#ifdef REND2_SP
+#ifdef REND2_SP_GORE
 		// tess scale will be set true only when theres scaled gore
-		if (!input->scale)
+		if (!input->scale) // FIXME!!!
 			texMatrix[0] = texMatrix[3] = input->texCoords[input->firstIndex][0][0];
 		else
 #endif

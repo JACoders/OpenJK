@@ -2468,7 +2468,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 								float(curTime - kcur->second.mGoreGrowStartTime) /
 								float(magicFactor42);  // linear
 						}
-#ifdef REND2_SP
+#ifdef REND2_SP_GORE
 						if (curTime < kcur->second.mGoreGrowEndTime)
 						{
 							newSurf2->scale = Q_max(
@@ -2488,7 +2488,7 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 						{
 							gshader = R_GetShaderByHandle(goreShader);
 						}
-#ifdef REND2_SP
+#ifdef REND2_SP_GORE
 						// Set fade on surf.
 						// Only if we have a fade time set, and let us fade on
 						// rgb if we want -rww
@@ -3588,7 +3588,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 		maxIndex = surf->alternateTex->firstVert + surf->alternateTex->numVerts;
 		indexOffset = surf->alternateTex->firstIndex;
 
-#ifdef REND2_SP
+#ifdef REND2_SP_GORE
 		// UNTESTED CODE
 		if (surf->scale > 1.0f)
 		{

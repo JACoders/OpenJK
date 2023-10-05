@@ -3058,7 +3058,7 @@ struct shaderCommands_s
 	float		shaderTime;
 	int			fogNum;
 	int         cubemapIndex;
-#ifdef REND2_SP
+#ifdef REND2_SP_GORE
 	bool		scale;		// uses texCoords[input->firstIndex] for storage
 	bool		fade;		// uses svars.colors[input->firstIndex] for storage
 #endif
