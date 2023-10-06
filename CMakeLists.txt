@@ -48,6 +48,7 @@ option(BuildSPRend2 "Whether to create projects for the EXPERIMENTAL SP rend2 re
 option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openjo_sp.exe)" OFF)
 option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" OFF)
 option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" OFF)
+option(BuildJK2SPRdRend2 "Whether to create projects for the EXPERIMENTAL jk2 SP rend2 renderer (rdjosp-rend2_x86.dll)" OFF)
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
 
@@ -164,6 +165,7 @@ set(MPRend2 "rd-rend2_${Architecture}")
 set(JK2SPEngine "openjo_sp.${Architecture}")
 set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
+set(JK2SPRend2Renderer "rdjosp-rend2_${Architecture}")
 set(AssetsPk3 "openjk-${Architecture}.pk3")
 # Library names
 set(MPBotLib "botlib")

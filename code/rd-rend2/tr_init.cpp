@@ -52,6 +52,9 @@ glstate_t	glState;
 window_t	window;
 
 cvar_t	*se_language;
+#ifdef JK2_MODE
+cvar_t	*sp_language;			// JK2
+#endif
 
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
@@ -1681,7 +1684,9 @@ void R_Register( void )
 	*/
 
 	se_language = ri_Cvar_Get_NoComm ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART, "" );
-
+#ifdef JK2_MODE
+	sp_language = ri.Cvar_Get("sp_language", va("%d", SP_LANGUAGE_ENGLISH), CVAR_ARCHIVE | CVAR_NORESTART);
+#endif
 	// added for SP
 	// @TODO add all cvars from vanilla
 	com_buildScript = ri.Cvar_Get("com_buildScript", "0", 0);
@@ -2332,7 +2337,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.GetScreenShot = stub_RE_GetScreenShot;
 
 #ifdef JK2_MODE
-	REX(SaveJPGToBuffer);
+	re.SaveJPGToBuffer = RE_SaveJPGToBuffer;
 	re.LoadJPGFromBuffer = LoadJPGFromBuffer;
 #endif
 

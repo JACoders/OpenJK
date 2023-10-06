@@ -146,42 +146,55 @@ set(SPRend2Files
 	${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
 
 set(SPRend2IncludeDirectories ${SPRend2IncludeDirectories} ${OpenJKLibDir})
-add_library(${SPRend2} SHARED ${SPRend2Files})
 
-if(NOT MSVC)
-	# remove "lib" prefix for .so/.dylib files
-	set_target_properties(${SPRend2} PROPERTIES PREFIX "")
-endif()
-
-if(WIN32)
-	install(TARGETS ${SPRend2}
-		RUNTIME
-		DESTINATION ${JKAInstallDir}
-		COMPONENT ${JKASPClientComponent})
-else(WIN32)
-	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${SPRend2}
-			LIBRARY
-			DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
-			COMPONENT ${JKASPClientComponent})
-	else()
-		install(TARGETS ${SPRend2}
-			LIBRARY
-			DESTINATION ${JKAInstallDir}
-			COMPONENT ${JKASPClientComponent})
+function(add_sp_renderer_project ProjectName Label EngineName InstallDir Component)
+	add_library(${ProjectName} SHARED ${SPRend2Files})
+	if(NOT MSVC)
+		# remove "lib" prefix for .so/.dylib files
+		set_target_properties(${ProjectName} PROPERTIES PREFIX "")
 	endif()
-endif()
+
+	if(WIN32)
+		install(TARGETS ${ProjectName}
+			RUNTIME
+			DESTINATION ${InstallDir}
+			COMPONENT ${Component})
+	else(WIN32)
+		if(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
+			install(TARGETS ${ProjectName}
+				LIBRARY
+				DESTINATION "${InstallDir}/${EngineName}.app/Contents/MacOS/"
+				COMPONENT ${Component})
+		else()
+			install(TARGETS ${ProjectName}
+				LIBRARY
+				DESTINATION ${InstallDir}
+				COMPONENT ${Component})
+		endif()
+	endif()
+
+	set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPRend2Defines}")
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
+	set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPRend2IncludeDirectories}")
+	set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
+
+	target_link_libraries(${ProjectName} ${SPRend2Libraries})
+	target_include_directories(${ProjectName} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+endfunction(add_sp_renderer_project)
 
 # Defines
 set(SPRend2Defines ${SharedDefines} "RENDERER" "REND2_SP")
-set_target_properties(${SPRend2} PROPERTIES COMPILE_DEFINITIONS "${SPRend2Defines}")
 
-# Hide symbols not explicitly marked public.
-set_property(TARGET ${SPRend2} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
-set_target_properties(${SPRend2} PROPERTIES INCLUDE_DIRECTORIES "${SPRend2IncludeDirectories}")
-set_target_properties(${SPRend2} PROPERTIES PROJECT_LABEL "SP Rend2 Renderer")
-target_link_libraries(${SPRend2} ${SPRend2Libraries})
-target_include_directories(${SPRend2} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(BuildSPRend2)
+	add_sp_renderer_project(${SPRend2} "SP Rend2 Renderer" ${SPEngine} ${JKAInstallDir} ${JKASPClientComponent})
+endif(BuildSPRend2)
+if(BuildJK2SPRdRend2)
+	set(SPRend2Defines ${SPRend2Defines} "JK2_MODE")
+	add_sp_renderer_project(${JK2SPRend2Renderer} "JK2 SP Rend2 Renderer" ${JK2SPEngine} ${JK2InstallDir} ${JK2SPClientComponent})
+endif(BuildJK2SPRdRend2)
 
 # GLSL shader file generator
 add_executable(compact_glsl_sp
