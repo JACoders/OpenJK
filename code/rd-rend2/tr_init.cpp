@@ -2253,6 +2253,10 @@ extern qboolean G2API_RagEffectorGoal(CGhoul2Info_v &ghoul2, const char *boneNam
 extern qboolean G2API_RagPCJGradientSpeed(CGhoul2Info_v &ghoul2, const char *boneName, const float speed);
 extern qboolean G2API_RagPCJConstraint(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t min, vec3_t max);
 extern void G2API_SetRagDoll(CGhoul2Info_v &ghoul2, CRagDollParams *parms);
+#ifdef G2_PERFORMANCE_ANALYSIS
+extern void G2Time_ResetTimers(void);
+extern void G2Time_ReportTimers(void);
+#endif
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
