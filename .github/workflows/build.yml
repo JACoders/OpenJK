@@ -5,17 +5,17 @@ on:
   push:
     branches: [master]
     paths-ignore:
-      - '**.md'
-      - '*.txt'
-      - '.gitignore'
-      - 'docs/*'
+      - "**.md"
+      - "*.txt"
+      - ".gitignore"
+      - "docs/*"
   pull_request:
     branches: [master]
     paths-ignore:
-      - '**.md'
-      - '*.txt'
-      - '.gitignore'
-      - 'docs/*'
+      - "**.md"
+      - "*.txt"
+      - ".gitignore"
+      - "docs/*"
   release:
     types: [published]
 
@@ -28,6 +28,9 @@ jobs:
         arch: [x86, x86_64]
         build_type: [Debug, Release]
         portable: [Portable, Non-Portable]
+        exclude:
+          - build_type: Debug
+            portable: Portable
         include:
           - arch: x86
             platform: Win32
@@ -60,13 +63,13 @@ jobs:
         run: cmake --build . --config ${{ matrix.build_type }}
 
       - name: Install
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ runner.workspace }}/build
         shell: bash
         run: cmake --install . --config ${{ matrix.build_type }}
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{ runner.workspace }}/build/bin
@@ -78,8 +81,8 @@ jobs:
     strategy:
       matrix:
         arch: [x86, x86_64]
-        build_type: [Debug, Release]
-        portable: [Portable, Non-Portable]
+        build_type: [Release]
+        portable: [Non-Portable]
         include:
           - arch: x86
             platform: Win32
@@ -126,14 +129,14 @@ jobs:
         run: cmake --build . --config ${{ matrix.build_type }}
 
       - name: Install
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ runner.workspace }}/build
         shell: bash
         run: |
           cmake --install . --config ${{ matrix.build_type }}
-          
+
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{ runner.workspace }}/build/bin
@@ -176,7 +179,7 @@ jobs:
           else
             OPTIONS="-DUseInternalLibs=OFF -DBuildPortableVersion=OFF -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/install"
           fi
-          
+
           if [ ${{ matrix.arch }} == "x86" ]; then
           cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} $OPTIONS -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/linux-i686.cmake
           else
@@ -189,7 +192,7 @@ jobs:
         run: cmake --build .
 
       - name: Install
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ runner.workspace }}/build
         shell: bash
         run: cmake --install .
@@ -202,12 +205,12 @@ jobs:
           if [ ${{ matrix.arch }} == "x86" ]; then
           chmod +x openjk.i386
           else
-          chmod +x openjk.${{ matrix.arch }}  
+          chmod +x openjk.${{ matrix.arch }}
           fi
           tar -czvf OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz      *
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{runner.workspace}}/install/JediAcademy/OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
@@ -248,13 +251,13 @@ jobs:
         run: cmake --build .
 
       - name: Install
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ runner.workspace }}/build
         shell: bash
         run: cmake --install .
 
       - name: Create binary archive
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ runner.workspace }}/install/JediAcademy
         shell: bash
         run: |
@@ -262,7 +265,7 @@ jobs:
           tar -czvf openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz      *
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.build_type == 'Release' }} 
+        if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{ runner.workspace }}/install/JediAcademy/openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
