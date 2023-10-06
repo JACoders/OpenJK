@@ -539,7 +539,7 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 	static int	touchlist[MAX_GENTITIES];
 	int			i, num;
 	sharedEntityMapper_t *touch;
-	int			passOwnerNum;
+	int			passOwnerNum = -1; // Default to -1
 	trace_t		trace, oldTrace= {0};
 	clipHandle_t	clipHandle;
 	float		*origin, *angles;
@@ -548,18 +548,14 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 
 	num = SV_AreaEntities( clip->boxmins, clip->boxmaxs, touchlist, MAX_GENTITIES);
 
-	if ( clip->passEntityNum != ENTITYNUM_NONE ) {
-		if ( passEnt && passEnt->r ) passOwnerNum = passEnt->r->ownerNum;
-		if ( passOwnerNum == ENTITYNUM_NONE ) {
-			passOwnerNum = -1;
+	if ( passEnt && passEnt->r ) {
+		if ( clip->passEntityNum != ENTITYNUM_NONE && passEnt->r->ownerNum != ENTITYNUM_NONE ) {
+			passOwnerNum = passEnt->r->ownerNum;
 		}
-	} else {
-		passOwnerNum = -1;
-	}
 
-	if ( passEnt && passEnt->r && passEnt->r->svFlags & SVF_OWNERNOTSHARED )
-	{
-		thisOwnerShared = 0;
+		if ( passEnt->r->svFlags & SVF_OWNERNOTSHARED ) {
+			thisOwnerShared = 0;
+		}
 	}
 
 	for ( i=0 ; i<num ; i++ ) {
