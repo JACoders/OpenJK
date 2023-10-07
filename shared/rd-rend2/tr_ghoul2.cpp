@@ -4190,11 +4190,6 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 	mod->numLods = mdxm->numLODs -1 ;	//copy this up to the model for ease of use - it wil get inced after this.
 
-	if (bAlreadyFound)
-	{
-		return qtrue;	// All done. Stop, go no further, do not LittleLong(), do not pass Go...
-	}
-
 #ifndef JK2_MODE
 	bool isAnOldModelFile = false;
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
