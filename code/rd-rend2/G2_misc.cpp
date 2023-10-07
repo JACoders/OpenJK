@@ -578,9 +578,12 @@ void G2_TransformModel(CGhoul2Info_v& ghoul2, const int frameNum, vec3_t scale, 
 {
 	int				i, lod;
 	vec3_t			correctScale;
-#ifdef _G2_GORE
-	qboolean		firstModelOnly = qfalse;
 
+#if !defined(JK2_MODE) || defined(_G2_GORE)
+	qboolean		firstModelOnly = qfalse;
+#endif // !JK2_MODE || _G2_GORE
+
+#ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
 	{
 		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
@@ -1585,10 +1588,12 @@ void G2_TraceModels(CGhoul2Info_v& ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	int				i, lod;
 	skin_t*			skin;
 	shader_t*		cust_shader;
+#if !defined(JK2_MODE) || defined(_G2_GORE)
 	qboolean		firstModelOnly = qfalse;
+#endif // !JK2_MODE || _G2_GORE
 	int				firstModel = 0;
 
-#ifdef _G2_GORE
+#ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
 	{
 		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
@@ -1599,7 +1604,9 @@ void G2_TraceModels(CGhoul2Info_v& ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	{
 		firstModelOnly = qtrue;
 	}
+#endif // !JK2_MODE
 
+#ifdef _G2_GORE
 	if (gore && gore->firstModel > 0)
 	{
 		firstModel = gore->firstModel;
@@ -1642,7 +1649,7 @@ void G2_TraceModels(CGhoul2Info_v& ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 
 		lod = G2_DecideTraceLod(ghoul2[i],useLod);
 
-#ifdef _G2_GORE
+#ifndef JK2_MODE
 		if ( skipIfLODNotMatch )
 		{//we only want to hit this SPECIFIC LOD...
 			if ( lod != useLod )
@@ -1793,7 +1800,16 @@ void G2_SaveGhoul2Models(CGhoul2Info_v& ghoul2)
 	if (!ghoul2.IsValid() || ghoul2.size() == 0)
 	{
 		const int zero_size = 0;
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(
+			zero_size);
+
+		saved_game.write_chunk_and_size<int32_t>(
+			INT_ID('G', 'L', '2', 'S'),
+			INT_ID('G', 'H', 'L', '2'));
+#else
 		saved_game.write_chunk<int32_t>(INT_ID('G', 'H', 'L', '2'), zero_size); //write out a zero buffer
+#endif // JK2_MODE
 
 		return;
 	}
@@ -1841,7 +1857,14 @@ void G2_SaveGhoul2Models(CGhoul2Info_v& ghoul2)
 		}
 	}
 
-	saved_game.write_chunk(INT_ID('G', 'H', 'L', '2'));
+#ifdef JK2_MODE
+	saved_game.write_chunk_and_size<int32_t>(
+		INT_ID('G', 'L', '2', 'S'),
+		INT_ID('G', 'H', 'L', '2'));
+#else
+	saved_game.write_chunk(
+		INT_ID('G', 'H', 'L', '2'));
+#endif // JK2_MODE
 }
 
 // have to free space malloced in the save system here because the game DLL can't.
@@ -1860,7 +1883,17 @@ void G2_LoadGhoul2Model(
 
 	// first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
 	int model_count = 0;
-	saved_game.read<int32_t>(model_count);
+#ifdef JK2_MODE
+	if (saved_game.get_buffer_size() > 0)
+	{
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(
+			model_count);
+
+#ifdef JK2_MODE
+	}
+#endif // JK2_MODE
 	ghoul2.resize(model_count);
 
 	// did we actually resize to a value?

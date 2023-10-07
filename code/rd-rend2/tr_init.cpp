@@ -299,7 +299,6 @@ void stub_R_InitWorldEffects(void) {}
 float stub_R_IsOutsideCausingPain(vec3_t pos) { return qfalse; }
 float stub_R_GetChanceOfSaberFizz() { return qfalse; }
 bool stub_R_SetTempGlobalFogColor(vec3_t color) { return qfalse; }
-void stub_RE_GetScreenShot(byte* buffer, int w, int h) {}
 
 float tr_distortionAlpha = 1.0f; //opaque
 float tr_distortionStretch = 0.0f; //no stretch override
@@ -681,7 +680,7 @@ Return value must be freed with R2_Hunk_FreeTempMemory()
 ==================
 */
 
-static byte *RB_ReadPixels(
+byte *RB_ReadPixels(
 	int x, int y, int width, int height, size_t *offset, int *padlen)
 {
 	byte *buffer, *bufstart;
@@ -2248,6 +2247,7 @@ void C_LevelLoadEnd( void )
 #endif // JKA_MP
 }
 
+extern void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 extern void G2API_AnimateG2ModelsRag(CGhoul2Info_v &ghoul2, int AcurrentTime, CRagDollUpdateParams *params);
 extern qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale);
 extern qboolean G2API_RagEffectorKick(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity);
@@ -2261,6 +2261,12 @@ extern void G2API_SetRagDoll(CGhoul2Info_v &ghoul2, CRagDollParams *parms);
 #ifdef G2_PERFORMANCE_ANALYSIS
 extern void G2Time_ResetTimers(void);
 extern void G2Time_ReportTimers(void);
+#endif
+
+#ifdef JK2_MODE
+unsigned int AnyLanguage_ReadCharFromString_JK2(char **text, qboolean *pbIsTrailingPunctuation) {
+	return AnyLanguage_ReadCharFromString(text, pbIsTrailingPunctuation);
+}
 #endif
 
 /*
@@ -2334,15 +2340,14 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.ProcessDissolve = stub_RE_ProcessDissolve;
 	re.InitDissolve = stub_RE_InitDissolve;
-	re.GetScreenShot = stub_RE_GetScreenShot;
+	re.GetScreenShot = RE_GetScreenShot;
 
 #ifdef JK2_MODE
 	re.SaveJPGToBuffer = RE_SaveJPGToBuffer;
 	re.LoadJPGFromBuffer = LoadJPGFromBuffer;
 #endif
-
-	//REX(TempRawImage_ReadFromFile);
-	//REX(TempRawImage_CleanUp);
+	re.TempRawImage_ReadFromFile = RE_TempRawImage_ReadFromFile;
+	re.TempRawImage_CleanUp = RE_TempRawImage_CleanUp;
 
 	re.MarkFragments = R_MarkFragments;
 	re.LerpTag = R_LerpTag;
@@ -2351,7 +2356,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.SetLightStyle = RE_SetLightStyle;
 	re.GetBModelVerts = RE_GetBModelVerts;
 	re.WorldEffectCommand = RE_WorldEffectCommand;
-	//re.GetModelBounds = RE_GetModelBounds;
+	re.GetModelBounds = RE_GetModelBounds;
 
 	re.SVModelInit = R_SVModelInit;
 
@@ -2363,6 +2368,9 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.Language_IsAsian = Language_IsAsian;
 	re.Language_UsesSpaces = Language_UsesSpaces;
 	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
+#ifdef JK2_MODE
+	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString_JK2;
+#endif
 
 	re.R_InitWorldEffects = stub_R_InitWorldEffects;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;

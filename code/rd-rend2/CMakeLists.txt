@@ -33,6 +33,7 @@ set(SPRend2Files
 	"${SharedDir}/rd-rend2/tr_cmds.cpp"
 	"${SharedDir}/rd-rend2/tr_curve.cpp"
 	"${SharedDir}/rd-rend2/tr_decals.cpp"
+	"${SPDir}/rd-rend2/tr_draw.cpp"
 	"${SharedDir}/rd-rend2/tr_extensions.cpp"
 	"${SharedDir}/rd-rend2/tr_extramath.cpp"
 	"${SharedDir}/rd-rend2/tr_extramath.h"

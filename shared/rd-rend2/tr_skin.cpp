@@ -128,6 +128,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		// parse the shader name
 		token = CommaParse( &text_p );
 
+#ifndef JK2_MODE
 		if ( !strcmp( &surfName[strlen(surfName)-4], "_off") )
 		{
 			if ( !strcmp( token ,"*off" ) )
@@ -136,6 +137,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
+#endif
 		if ( (unsigned)skin->numSurfaces >= ARRAY_LEN( skin->surfaces ) )
 		{
 			assert( ARRAY_LEN( skin->surfaces ) > (unsigned)skin->numSurfaces );
@@ -201,16 +203,16 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 
 	// make sure the render thread is stopped
 	R_IssuePendingRenderCommands();
-
+#ifdef JK2_MODE
 	// If not a .skin file, load as a single shader
 	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
-/*		skin->numSurfaces = 1;
+		skin->numSurfaces = 1;
 		skin->surfaces[0] = (skinSurface_t *)Hunk_Alloc( sizeof(skin->surfaces[0]), h_low );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
 		return hSkin;
-*/
-	}
 
+	}
+#endif
 	char skinhead[MAX_QPATH]={0};
 	char skintorso[MAX_QPATH]={0};
 	char skinlower[MAX_QPATH]={0};

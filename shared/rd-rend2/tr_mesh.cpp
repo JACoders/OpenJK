@@ -156,6 +156,31 @@ static int R_CullModel( mdvModel_t *model, trRefEntity_t *ent ) {
 	}
 }
 
+/*
+=================
+RE_GetModelBounds
+
+  Returns the bounds of the current model
+  (qhandle_t)hModel and (int)frame need to be set
+=================
+*/
+
+void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2)
+{
+	mdvFrame_t		*frame;
+	md3Header_t		*header;
+	model_t			*model;
+
+	assert(refEnt);
+
+	model = R_GetModelByHandle(refEnt->hModel);
+	assert(model);
+	frame = &model->data.mdv[0]->frames[refEnt->frame];
+	assert(frame);
+
+	VectorCopy(frame->bounds[0], bounds1);
+	VectorCopy(frame->bounds[1], bounds2);
+}
 
 /*
 =================

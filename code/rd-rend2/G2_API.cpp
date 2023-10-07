@@ -817,13 +817,14 @@ qboolean G2API_SetSkin(CGhoul2Info* ghlInfo, qhandle_t customSkin, qhandle_t ren
 	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
+#ifndef JK2_MODE
 		if (renderSkin)
 		{	
 			// this is going to set the surfs on/off matching the skin file
 			// header moved to tr_local.h, implemented in G2_surface.cpp
 			G2_SetSurfaceOnOffFromSkin( ghlInfo, renderSkin );
 		}
-
+#endif
 		return qtrue;
 	}
 	return qfalse;

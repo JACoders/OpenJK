@@ -2934,7 +2934,12 @@ extern glconfigExt_t	glConfigExt;
 void	RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
 void	RE_UploadCinematic (int cols, int rows, const byte *data, int client, qboolean dirty);
 void	RE_SetRangedFog ( float range );
-
+#ifdef REND2_SP
+byte	*RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen);
+void	RE_GetScreenShot(byte *data, int w, int h);
+byte*	RE_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
+void	RE_TempRawImage_CleanUp();
+#endif
 
 void		RE_BeginRegistration( glconfig_t *glconfig );
 void		RE_LoadWorldMap( const char *mapname );

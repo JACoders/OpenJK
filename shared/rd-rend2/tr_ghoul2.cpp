@@ -3516,7 +3516,11 @@ void RB_TransformBones(const trRefEntity_t *ent, const trRefdef_t *refdef, int c
 
 		for (int bone = 0; bone < (int)bc->mBones.size(); bone++)
 		{
+#ifdef JK2_MODE
+			const mdxaBone_t& b = bc->Eval(bone);
+#else
 			const mdxaBone_t& b = bc->EvalRender(bone);
+#endif // JK2_MODE
 			Com_Memcpy(
 				bc->boneMatrices + bone,
 				&b.matrix[0][0],
@@ -4191,22 +4195,29 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		return qtrue;	// All done. Stop, go no further, do not LittleLong(), do not pass Go...
 	}
 
+#ifndef JK2_MODE
 	bool isAnOldModelFile = false;
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
 	{
 		isAnOldModelFile = true;
 	}
-
+#endif
 	surfInfo = (mdxmSurfHierarchy_t *)( (byte *)mdxm + mdxm->ofsSurfHierarchy);
  	for ( i = 0 ; i < mdxm->numSurfaces ; i++) 
 	{
 		LL(surfInfo->numChildren);
 		LL(surfInfo->parentIndex);
-
+#ifndef JK2_MODE
 		Q_strlwr(surfInfo->name);	//just in case
 		if ( !strcmp( &surfInfo->name[strlen(surfInfo->name)-4],"_off") )
 		{
 			surfInfo->name[strlen(surfInfo->name)-4]=0;	//remove "_off" from name
+		}
+#endif
+
+		if (surfInfo->shader[0] == '[')
+		{
+			surfInfo->shader[0] = 0;	//kill the stupid [nomaterial] since carcass doesn't
 		}
 
 		// do all the children indexs
@@ -4277,7 +4288,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 			// change to surface identifier
 			surf->ident = SF_MDX;
 			// register the shaders
-
+#ifndef JK2_MODE
 			if (isAnOldModelFile)
 			{
 				int *boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
@@ -4293,6 +4304,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 					}
 				}
 			}
+#endif
 			// find the next surface
 			surf = (mdxmSurface_t *)( (byte *)surf + surf->ofsEnd );
 		}
