@@ -176,7 +176,7 @@ struct Fog
 layout(std140) uniform Fogs
 {
 	int u_NumFogs;
-	Fog u_Fogs[16];
+	Fog u_Fogs[MAX_GPU_FOGS];
 };
 
 uniform int u_FogIndex;

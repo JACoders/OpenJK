@@ -2289,6 +2289,12 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 		fogsBlock.numFogs = tr.world->numfogs - 1; // Don't reserve fog 0 as 'null'
 	}
 
+	if (fogsBlock.numFogs > MAX_GPU_FOGS)
+	{
+		ri.Printf(PRINT_DEVELOPER, "Too many fogs in current map. Increase MAX_GPU_FOGS\n");
+		fogsBlock.numFogs = MAX_GPU_FOGS;
+	}
+
 	for (int i = 0; i < fogsBlock.numFogs; ++i)
 	{
 		const fog_t *fog = tr.world->fogs + i + 1;
