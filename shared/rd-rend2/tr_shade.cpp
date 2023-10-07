@@ -1607,8 +1607,19 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
 
-		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN0, pStage->bundle[0].tcGen);
-		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN1, pStage->bundle[1].tcGen);
+		texCoordGen_t bundle0TcGen = pStage->bundle[0].tcGen;
+		texCoordGen_t bundle1TcGen = pStage->bundle[1].tcGen;
+#ifdef REND2_SP
+		if (backEnd.currentEntity && backEnd.currentEntity->e.renderfx&RF_FIRST_PERSON)
+		{
+			if (bundle0TcGen == TCGEN_ENVIRONMENT_MAPPED_SP)
+				bundle0TcGen = TCGEN_ENVIRONMENT_MAPPED_SP_FP;
+			if (bundle1TcGen == TCGEN_ENVIRONMENT_MAPPED_SP)
+				bundle1TcGen = TCGEN_ENVIRONMENT_MAPPED_SP_FP;
+		}
+#endif
+		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN0, bundle0TcGen);
+		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN1, bundle1TcGen);
 		if (pStage->bundle[0].tcGen == TCGEN_VECTOR)
 		{
 			uniformDataWriter.SetUniformVec3(UNIFORM_TCGEN0VECTOR0, pStage->bundle[0].tcGenVectors[0]);

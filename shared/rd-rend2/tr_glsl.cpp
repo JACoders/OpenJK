@@ -301,6 +301,8 @@ static size_t GLSL_GetShaderHeader(
 						"#define TCGEN_LIGHTMAP3 %i\n"
 						"#define TCGEN_TEXTURE %i\n"
 						"#define TCGEN_ENVIRONMENT_MAPPED %i\n"
+						"#define TCGEN_ENVIRONMENT_MAPPED_SP %i\n"
+						"#define TCGEN_ENVIRONMENT_MAPPED_SP_FP %i\n"
 						"#define TCGEN_FOG %i\n"
 						"#define TCGEN_VECTOR %i\n"
 						"#endif\n",
@@ -310,6 +312,8 @@ static size_t GLSL_GetShaderHeader(
 						TCGEN_LIGHTMAP3,
 						TCGEN_TEXTURE,
 						TCGEN_ENVIRONMENT_MAPPED,
+						TCGEN_ENVIRONMENT_MAPPED_SP,
+						TCGEN_ENVIRONMENT_MAPPED_SP_FP,
 						TCGEN_FOG,
 						TCGEN_VECTOR));
 

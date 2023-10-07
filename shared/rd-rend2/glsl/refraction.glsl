@@ -236,6 +236,20 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 		tex.s = ref.x * -0.5 + 0.5;
 		tex.t = ref.y *  0.5 + 0.5;
 	}
+	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED_SP)
+	{
+		vec3 viewer = normalize(u_LocalViewOrigin - position);
+		vec2 ref = reflect(viewer, normal).xy;
+		tex.s = ref.x * -0.5;
+		tex.t = ref.y * -0.5;
+	}
+
+	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED_SP_FP)
+	{
+		vec2 ref = reflect(u_ModelLightDir.xyz, normal).xy;
+		tex.s = ref.x * -0.5 + 0.5 * u_ModelLightDir.x;
+		tex.t = ref.y * -0.5 + 0.5 * u_ModelLightDir.y;
+	}
 	else if (TCGen == TCGEN_VECTOR)
 	{
 		tex = vec2(dot(position, TCGenVector0), dot(position, TCGenVector1));

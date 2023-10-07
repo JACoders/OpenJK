@@ -1964,7 +1964,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 			if ( !Q_stricmp( token, "environment" ) )
 			{
+#ifndef REND2_SP
 				stage->bundle[0].tcGen = TCGEN_ENVIRONMENT_MAPPED;
+#else
+				stage->bundle[0].tcGen = TCGEN_ENVIRONMENT_MAPPED_SP;
+#endif
 			}
 			else if ( !Q_stricmp( token, "lightmap" ) )
 			{
@@ -3038,6 +3042,8 @@ static void ComputeVertexAttribs(void)
 											 ATTR_TEXCOORD3 | ATTR_TEXCOORD4);
 					break;
 				case TCGEN_ENVIRONMENT_MAPPED:
+				case TCGEN_ENVIRONMENT_MAPPED_SP:
+				case TCGEN_ENVIRONMENT_MAPPED_SP_FP:
 					shader.vertexAttribs |= ATTR_NORMAL;
 					break;
 
@@ -3306,6 +3312,8 @@ static qboolean CollapseStagesToGLSL(void)
 				case TCGEN_LIGHTMAP2:
 				case TCGEN_LIGHTMAP3:
 				case TCGEN_ENVIRONMENT_MAPPED:
+				case TCGEN_ENVIRONMENT_MAPPED_SP:
+				case TCGEN_ENVIRONMENT_MAPPED_SP_FP:
 				case TCGEN_VECTOR:
 					break;
 				default:
@@ -3387,6 +3395,8 @@ static qboolean CollapseStagesToGLSL(void)
 
 			tcgen = qfalse;
 			if (diffuse->bundle[0].tcGen == TCGEN_ENVIRONMENT_MAPPED
+				|| diffuse->bundle[0].tcGen == TCGEN_ENVIRONMENT_MAPPED_SP
+				|| diffuse->bundle[0].tcGen == TCGEN_ENVIRONMENT_MAPPED_SP_FP
 			    || (diffuse->bundle[0].tcGen >= TCGEN_LIGHTMAP && diffuse->bundle[0].tcGen <= TCGEN_LIGHTMAP3)
 			    || diffuse->bundle[0].tcGen == TCGEN_VECTOR)
 			{
