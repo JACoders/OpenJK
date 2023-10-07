@@ -2010,6 +2010,333 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 	}
 }
 
+#ifdef REND2_SP
+#define LATHE_SEG_STEP	10
+#define BEZIER_STEP		0.05f	// must be in the range of 0 to 1
+
+// FIXME: This function is horribly expensive
+static void RB_SurfaceLathe()
+{
+	refEntity_t *e;
+	vec2_t		pt, oldpt, l_oldpt;
+	vec2_t		pt2, oldpt2, l_oldpt2;
+	float		bezierStep, latheStep;
+	float		temp, mu, mum1;
+	float		mum13, mu3, group1, group2;
+	float		s, c, d = 1.0f, pain = 0.0f;
+	int			i, t, vbase;
+
+	e = &backEnd.currentEntity->e;
+
+	if (e->endTime && e->endTime > backEnd.refdef.time)
+	{
+		d = 1.0f - (e->endTime - backEnd.refdef.time) / 1000.0f;
+	}
+
+	if (e->frame && e->frame + 1000 > backEnd.refdef.time)
+	{
+		pain = (backEnd.refdef.time - e->frame) / 1000.0f;
+		//		pain *= pain;
+		pain = (1.0f - pain) * 0.08f;
+	}
+
+	VectorSet2(l_oldpt, e->axis[0][0], e->axis[0][1]);
+
+	// do scalability stuff...r_lodbias 0-3
+	int lod = r_lodbias->integer + 1;
+	if (lod > 4)
+	{
+		lod = 4;
+	}
+	if (lod < 1)
+	{
+		lod = 1;
+	}
+	bezierStep = BEZIER_STEP * lod;
+	latheStep = LATHE_SEG_STEP * lod;
+
+	// Do bezier profile strip, then lathe this around to make a 3d model
+	for (mu = 0.0f; mu <= 1.01f * d; mu += bezierStep)
+	{
+		// Four point curve
+		mum1 = 1 - mu;
+		mum13 = mum1 * mum1 * mum1;
+		mu3 = mu * mu * mu;
+		group1 = 3 * mu * mum1 * mum1;
+		group2 = 3 * mu * mu *mum1;
+
+		// Calc the current point on the curve
+		for (i = 0; i < 2; i++)
+		{
+			l_oldpt2[i] = mum13 * e->axis[0][i] + group1 * e->axis[1][i] + group2 * e->axis[2][i] + mu3 * e->oldorigin[i];
+		}
+
+		VectorSet2(oldpt, l_oldpt[0], 0);
+		VectorSet2(oldpt2, l_oldpt2[0], 0);
+
+		// lathe patch section around in a complete circle
+		for (t = latheStep; t <= 360; t += latheStep)
+		{
+			VectorSet2(pt, l_oldpt[0], 0);
+			VectorSet2(pt2, l_oldpt2[0], 0);
+
+			s = sin(DEG2RAD(t));
+			c = cos(DEG2RAD(t));
+
+			// rotate lathe points
+//c -s 0
+//s  c 0
+//0  0 1
+			temp = c * pt[0] - s * pt[1];
+			pt[1] = s * pt[0] + c * pt[1];
+			pt[0] = temp;
+			temp = c * pt2[0] - s * pt2[1];
+			pt2[1] = s * pt2[0] + c * pt2[1];
+			pt2[0] = temp;
+
+			RB_CHECKOVERFLOW(4, 6);
+
+			vbase = tess.numVertexes;
+
+			vec3_t normal;
+
+			// Actually generate the necessary verts
+			VectorSet(normal, oldpt[0], oldpt[1], l_oldpt[1]);
+			VectorAdd(e->origin, normal, tess.xyz[tess.numVertexes]);
+			VectorNormalize(normal);
+			tess.normal[tess.numVertexes] = R_VboPackNormal(normal);
+			i = oldpt[0] * 0.1f + oldpt[1] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][0] = (t - latheStep) / 360.0f;
+			tess.texCoords[tess.numVertexes][0][1] = mu - bezierStep + cos(i + backEnd.refdef.floatTime) * pain;
+			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
+			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
+			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			VectorSet(normal, oldpt2[0], oldpt2[1], l_oldpt2[1]);
+			VectorAdd(e->origin, normal, tess.xyz[tess.numVertexes]);
+			VectorNormalize(normal);
+			tess.normal[tess.numVertexes] = R_VboPackNormal(normal);
+			i = oldpt2[0] * 0.1f + oldpt2[1] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][0] = (t - latheStep) / 360.0f;
+			tess.texCoords[tess.numVertexes][0][1] = mu + cos(i + backEnd.refdef.floatTime) * pain;
+			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
+			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
+			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			VectorSet(normal, pt[0], pt[1], l_oldpt[1]);
+			VectorAdd(e->origin, normal, tess.xyz[tess.numVertexes]);
+			VectorNormalize(normal);
+			tess.normal[tess.numVertexes] = R_VboPackNormal(normal);
+			i = pt[0] * 0.1f + pt[1] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][0] = t / 360.0f;
+			tess.texCoords[tess.numVertexes][0][1] = mu - bezierStep + cos(i + backEnd.refdef.floatTime) * pain;
+			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
+			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
+			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			VectorSet(normal, pt2[0], pt2[1], l_oldpt2[1]);
+			VectorAdd(e->origin, normal, tess.xyz[tess.numVertexes]);
+			VectorNormalize(normal);
+			tess.normal[tess.numVertexes] = R_VboPackNormal(normal);
+			i = pt2[0] * 0.1f + pt2[1] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][0] = t / 360.0f;
+			tess.texCoords[tess.numVertexes][0][1] = mu + cos(i + backEnd.refdef.floatTime) * pain;
+			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
+			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
+			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			tess.indexes[tess.numIndexes++] = vbase;
+			tess.indexes[tess.numIndexes++] = vbase + 1;
+			tess.indexes[tess.numIndexes++] = vbase + 3;
+
+			tess.indexes[tess.numIndexes++] = vbase + 3;
+			tess.indexes[tess.numIndexes++] = vbase + 2;
+			tess.indexes[tess.numIndexes++] = vbase;
+
+			// Shuffle new points to old
+			VectorCopy2(pt, oldpt);
+			VectorCopy2(pt2, oldpt2);
+		}
+
+		// shuffle lathe points
+		VectorCopy2(l_oldpt2, l_oldpt);
+	}
+}
+
+#define DISK_DEF	4
+#define TUBE_DEF	6
+
+static void RB_SurfaceClouds()
+{
+	// Disk definition
+	float diskStripDef[DISK_DEF] = {
+				0.0f,
+				0.4f,
+				0.7f,
+				1.0f };
+
+	float diskAlphaDef[DISK_DEF] = {
+				1.0f,
+				1.0f,
+				0.4f,
+				0.0f };
+
+	float diskCurveDef[DISK_DEF] = {
+				0.0f,
+				0.0f,
+				0.008f,
+				0.02f };
+
+	// tube definition
+	float tubeStripDef[TUBE_DEF] = {
+				0.0f,
+				0.05f,
+				0.1f,
+				0.5f,
+				0.7f,
+				1.0f };
+
+	float tubeAlphaDef[TUBE_DEF] = {
+				0.0f,
+				0.45f,
+				1.0f,
+				1.0f,
+				0.45f,
+				0.0f };
+
+	float tubeCurveDef[TUBE_DEF] = {
+				0.0f,
+				0.004f,
+				0.006f,
+				0.01f,
+				0.006f,
+				0.0f };
+
+	refEntity_t *e;
+	vec3_t		pt, oldpt;
+	vec3_t		pt2, oldpt2;
+	float		latheStep = 30.0f;
+	float		s, c, temp;
+	float		*stripDef, *alphaDef, *curveDef, ct;
+	int			i, t, vbase;
+
+	e = &backEnd.currentEntity->e;
+
+	// select which type we shall be doing
+	if (e->renderfx & RF_GROW) // doing tube type
+	{
+		ct = TUBE_DEF;
+		stripDef = tubeStripDef;
+		alphaDef = tubeAlphaDef;
+		curveDef = tubeCurveDef;
+		e->backlerp *= -1; // needs to be reversed
+	}
+	else
+	{
+		ct = DISK_DEF;
+		stripDef = diskStripDef;
+		alphaDef = diskAlphaDef;
+		curveDef = diskCurveDef;
+	}
+
+	// do the strip def, then lathe this around to make a 3d model
+	for (i = 0; i < ct - 1; i++)
+	{
+		VectorSet(oldpt, (stripDef[i] * (e->radius - e->rotation)) + e->rotation, 0, curveDef[i] * e->radius * e->backlerp);
+		VectorSet(oldpt2, (stripDef[i + 1] * (e->radius - e->rotation)) + e->rotation, 0, curveDef[i + 1] * e->radius * e->backlerp);
+
+		// lathe section around in a complete circle
+		for (t = latheStep; t <= 360; t += latheStep)
+		{
+			// rotate every time except last seg
+			if (t < 360.0f)
+			{
+				VectorCopy(oldpt, pt);
+				VectorCopy(oldpt2, pt2);
+
+				s = sin(DEG2RAD(latheStep));
+				c = cos(DEG2RAD(latheStep));
+
+				// rotate lathe points
+				temp = c * pt[0] - s * pt[1];	// c -s 0
+				pt[1] = s * pt[0] + c * pt[1];	// s  c 0
+				pt[0] = temp;					// 0  0 1
+
+				temp = c * pt2[0] - s * pt2[1];	 // c -s 0
+				pt2[1] = s * pt2[0] + c * pt2[1];// s  c 0
+				pt2[0] = temp;					 // 0  0 1
+			}
+			else
+			{
+				// just glue directly to the def points.
+				VectorSet(pt, (stripDef[i] * (e->radius - e->rotation)) + e->rotation, 0, curveDef[i] * e->radius * e->backlerp);
+				VectorSet(pt2, (stripDef[i + 1] * (e->radius - e->rotation)) + e->rotation, 0, curveDef[i + 1] * e->radius * e->backlerp);
+			}
+
+			RB_CHECKOVERFLOW(4, 6);
+
+			vbase = tess.numVertexes;
+
+			// Actually generate the necessary verts
+			VectorAdd(e->origin, oldpt, tess.xyz[tess.numVertexes]);
+			tess.texCoords[tess.numVertexes][0][0] = tess.xyz[tess.numVertexes][0] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
+			tess.vertexColors[tess.numVertexes][0] =
+				tess.vertexColors[tess.numVertexes][1] =
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			VectorAdd(e->origin, oldpt2, tess.xyz[tess.numVertexes]);
+			tess.texCoords[tess.numVertexes][0][0] = tess.xyz[tess.numVertexes][0] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
+			tess.vertexColors[tess.numVertexes][0] =
+				tess.vertexColors[tess.numVertexes][1] =
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i + 1];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			VectorAdd(e->origin, pt, tess.xyz[tess.numVertexes]);
+			tess.texCoords[tess.numVertexes][0][0] = tess.xyz[tess.numVertexes][0] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
+			tess.vertexColors[tess.numVertexes][0] =
+				tess.vertexColors[tess.numVertexes][1] =
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			VectorAdd(e->origin, pt2, tess.xyz[tess.numVertexes]);
+			tess.texCoords[tess.numVertexes][0][0] = tess.xyz[tess.numVertexes][0] * 0.1f;
+			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
+			tess.vertexColors[tess.numVertexes][0] =
+				tess.vertexColors[tess.numVertexes][1] =
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i + 1];
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			tess.numVertexes++;
+
+			tess.indexes[tess.numIndexes++] = vbase;
+			tess.indexes[tess.numIndexes++] = vbase + 1;
+			tess.indexes[tess.numIndexes++] = vbase + 3;
+
+			tess.indexes[tess.numIndexes++] = vbase + 3;
+			tess.indexes[tess.numIndexes++] = vbase + 2;
+			tess.indexes[tess.numIndexes++] = vbase;
+
+			// Shuffle new points to old
+			VectorCopy2(pt, oldpt);
+			VectorCopy2(pt2, oldpt2);
+		}
+	}
+}
+#endif
 
 /*
 ===========================================================================
@@ -2106,6 +2433,13 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 				RB_SurfaceEntity(surfType);
 			}
 		}
+		break;
+#else
+	case RT_LATHE:
+		RB_SurfaceLathe();
+		break;
+	case RT_CLOUDS:
+		RB_SurfaceClouds();
 		break;
 #endif
 	default:

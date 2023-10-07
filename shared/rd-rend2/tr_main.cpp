@@ -1877,6 +1877,9 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 	case RT_LINE:
 #ifndef REND2_SP
 	case RT_ORIENTEDLINE:
+#else
+	case RT_LATHE:
+	case RT_CLOUDS:
 #endif
 	case RT_CYLINDER:
 	case RT_SABER_GLOW:
