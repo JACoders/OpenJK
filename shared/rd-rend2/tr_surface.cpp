@@ -2481,7 +2481,12 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 		RB_EndSurface();
 	}
 
-	//drawSurf_t drawSurf = 
+	//FIXME: Implement GPU vertex interpolation instead!
+	if (backEnd.currentEntity->e.oldframe != 0 || backEnd.currentEntity->e.frame != 0)
+	{
+		RB_SurfaceMesh(surface->mdvSurface);
+		return;
+	}
 
 	R_BindVBO(surface->vbo);
 	R_BindIBO(surface->ibo);
