@@ -2056,8 +2056,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		{//force powers and saber only
 			if ( item->giType != IT_TEAM //not a flag
 				&& item->giType != IT_ARMOR//not shields
-				&& (item->giType != IT_WEAPON
-									|| item->giTag != WP_SABER)//not a saber
+				&& (item->giType != IT_WEAPON || item->giTag != WP_SABER)//not a saber
 				&& (item->giType != IT_HOLDABLE || item->giTag != HI_SEEKER)//not a seeker
 				&& (item->giType != IT_POWERUP || item->giTag == PW_YSALAMIRI) )//not a force pick-up
 			{

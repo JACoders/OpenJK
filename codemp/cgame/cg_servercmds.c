@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // be a valid snapshot this frame
 
 #include "cg_local.h"
+#include "game/bg_public.h"
 #include "ui/menudef.h"
 #include "ghoul2/G2.h"
 #include "ui/ui_public.h"
@@ -908,6 +909,10 @@ static void CG_ConfigStringModified( void ) {
 	}
 	else if ( num == CS_SHADERSTATE ) {
 		CG_ShaderStateChanged();
+	}
+	else if ( num == CS_LEGACY_FIXES ) {
+		// LEGACYFIX_SABERMOVEDATA may have changed
+		BG_FixSaberMoveData();
 	}
 	else if ( num >= CS_LIGHT_STYLES && num < CS_LIGHT_STYLES + (MAX_LIGHT_STYLES * 3))
 	{

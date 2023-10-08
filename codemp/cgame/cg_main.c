@@ -1623,6 +1623,9 @@ CG_ConfigString
 =================
 */
 const char *CG_ConfigString( int index ) {
+	// don't read configstrings before initialisation
+	assert( cgs.gameState.dataCount != 0 );
+
 	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
 		trap->Error( ERR_DROP, "CG_ConfigString: bad index: %i", index );
 	}
@@ -2449,6 +2452,9 @@ Ghoul2 Insert End
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( cg_weapons, 0, sizeof(cg_weapons) );
 
+	// get the gamestate from the client system
+	trap->GetGameState( &cgs.gameState );
+
 	cg.clientNum = clientNum;
 
 	cgs.processedSnapshotNum = serverMessageNum;
@@ -2555,9 +2561,6 @@ Ghoul2 Insert End
 	cgs.screenXScale = cgs.glconfig.vidWidth / 640.0;
 	cgs.screenYScale = cgs.glconfig.vidHeight / 480.0;
 
-	// get the gamestate from the client system
-	trap->GetGameState( &cgs.gameState );
-
 	CG_TransitionPermanent(); //rwwRMG - added
 
 	// check version
@@ -2626,6 +2629,8 @@ Ghoul2 Insert End
 	cg.distanceCull = trap->R_GetDistanceCull();
 
 	CG_ParseEntitiesFromString();
+
+	BG_FixSaberMoveData();
 }
 
 //makes sure returned string is in localized format
