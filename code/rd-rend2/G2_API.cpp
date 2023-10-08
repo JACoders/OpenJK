@@ -20,9 +20,14 @@ extern mdxaBone_t worldMatrix;
 extern mdxaBone_t worldMatrixInv;
 
 #define NUM_G2T_TIME (2)
+#ifndef REND2_SP
 // must be a power of two
 #define MAX_G2_MODELS (1024)
 #define G2_MODEL_BITS (10)
+#else
+#define MAX_G2_MODELS (512)
+#define G2_MODEL_BITS (9)
+#endif
 #define G2_INDEX_MASK (MAX_G2_MODELS-1)
 // rww - RAGDOLL_BEGIN
 #define GHOUL2_RAG_STARTED						0x0010
