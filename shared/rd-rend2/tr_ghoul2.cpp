@@ -3626,8 +3626,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 				tess.svars.colors[tess.firstIndex][3] = lFade;
 			}
 		}
-		tess.scale = false;
-		tess.fade = false;
 #endif
 	} else {
 #endif

@@ -1598,7 +1598,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 #ifdef REND2_SP_GORE
 		// tess scale will be set true only when theres scaled gore
-		if (!input->scale) // FIXME!!!
+		if (input->scale)
 			texMatrix[0] = texMatrix[3] = input->texCoords[input->firstIndex][0][0];
 		else
 #endif
@@ -2056,6 +2056,10 @@ void RB_EndSurface( void ) {
 	tess.firstIndex = 0;
 	tess.multiDrawPrimitives = 0;
 	tess.externalIBO = nullptr;
+#ifdef REND2_SP_GORE
+	tess.fade = false;
+	tess.scale = false;
+#endif
 	glState.vertexAnimation = qfalse;
 	glState.skeletalAnimation = qfalse;
 	glState.genShadows = qfalse;

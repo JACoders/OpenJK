@@ -187,7 +187,7 @@ function(add_sp_renderer_project ProjectName Label EngineName InstallDir Compone
 endfunction(add_sp_renderer_project)
 
 # Defines
-set(SPRend2Defines ${SharedDefines} "RENDERER" "REND2_SP")
+set(SPRend2Defines ${SharedDefines} "RENDERER" "REND2_SP" "REND2_SP_GORE")
 
 if(BuildSPRend2)
 	add_sp_renderer_project(${SPRend2} "SP Rend2 Renderer" ${SPEngine} ${JKAInstallDir} ${JKASPClientComponent})
