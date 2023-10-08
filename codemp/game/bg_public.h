@@ -158,6 +158,18 @@ Ghoul2 Insert End
 
 typedef enum legacyFixes_e {
 	LEGACYFIX_SABERMOVEDATA = 0,
+	/*
+	m    m                        ""#      "             m                    m
+	#    #  mmm   m   m             #    mmm     mmm   mm#mm   mmm   m mm     #
+	#mmmm# #"  #  "m m"             #      #    #   "    #    #"  #  #"  #    #
+	#    # #""""   #m#              #      #     """m    #    #""""  #   #    "
+	#    # "#mm"   "#      #        "mm  mm#mm  "mmm"    "mm  "#mm"  #   #    #
+	               m"     "
+	              ""
+	Forks of OpenJK should NOT add to or modify the legacy fixes values
+	Removal, replacement or adding of new flags might lead to incompatibilities
+	Forks should define their own configstring or serverinfo cvar instead of modifying this
+	*/
 } legacyFixes_t;
 
 typedef enum {
