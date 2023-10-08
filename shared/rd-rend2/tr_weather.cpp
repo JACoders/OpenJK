@@ -771,6 +771,8 @@ void RE_WorldEffectCommand(const char *command)
 
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].velocityOrientationScale = 1.0f;
 
+		tr.weatherSystem->pain = 0.1f;
+
 		imgType_t type = IMGTYPE_COLORALPHA;
 		int flags = IMGFLAG_CLAMPTOEDGE;
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].drawImage = R_FindImageFile("gfx/world/rain.jpg", type, flags);
@@ -1071,7 +1073,11 @@ void RE_WorldEffectCommand(const char *command)
 	}
 	else if (Q_stricmp(token, "outsidepain") == 0)
 	{
+#ifdef REND2_SP
+		tr.weatherSystem->pain = !tr.weatherSystem->pain;
+#else
 		ri.Printf(PRINT_DEVELOPER, "outsidepain isn't supported in MP\n");
+#endif
 	}
 	else
 	{
@@ -1339,17 +1345,55 @@ bool R_GetWindVector(vec3_t windVector, vec3_t atPoint)
 	}
 
 	VectorCopy(tr.weatherSystem->windDirection, windVector);
-
+	VectorNormalize(windVector);
 	// everything is processed in RB_SurfaceWeather, no need to add something here
-	return (tr.weatherSystem->activeWindObjects > 0);
+	return (VectorLength(windVector) > 0.0f);
 }
 
 bool R_GetWindGusting(vec3_t atPoint)
 {
-	float windSpeed = 0.f;
-	// @TODO: need to process "Windzone" command
-	//R_GetWindSpeed(windSpeed, atPoint);
+	if (!tr.weatherSystem)
+		return false;
 
-	// this line doesn't work
-	return (tr.weatherSystem && tr.weatherSystem->windSpeed > 1000.0f);
+	float windSpeed = VectorLength(tr.weatherSystem->windDirection);
+	return (windSpeed > 1.0f);
+}
+
+float R_IsOutsideCausingPain(vec3_t pos)
+{
+	return (R_IsOutside(pos) && tr.weatherSystem->pain);
+}
+
+float R_GetChanceOfSaberFizz()
+{
+	float	chance = 0.0f;
+	int		numWater = 0;
+	if (tr.weatherSystem->weatherSlots[WEATHER_RAIN].active)
+	{
+		chance += (tr.weatherSystem->weatherSlots[WEATHER_RAIN].gravity / 20.0f);
+		numWater++;
+	}
+	if (tr.weatherSystem->weatherSlots[WEATHER_SNOW].active)
+	{
+		chance += (tr.weatherSystem->weatherSlots[WEATHER_SNOW].gravity / 20.0f);
+		numWater++;
+	}
+	if (numWater)
+	{
+		return (chance / numWater);
+	}
+	return 0.0f;
+}
+
+bool R_IsRaining()
+{
+	if (!tr.weatherSystem)
+		return false;
+
+	return tr.weatherSystem->weatherSlots[WEATHER_RAIN].active;
+}
+
+bool R_IsPuffing()
+{
+	return false;
 }

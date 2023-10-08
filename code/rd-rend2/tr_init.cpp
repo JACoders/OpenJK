@@ -2190,10 +2190,6 @@ void RE_SetLightStyle(int style, int color)
 }
 
 void RE_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal);
-void RE_WorldEffectCommand(const char *cmd);
-bool R_IsShaking(vec3_t pos);
-bool R_GetWindVector(vec3_t windVector, vec3_t atPoint); // doesn't work?
-bool R_GetWindGusting(vec3_t atPoint); // doesn't work
 
 
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {} // Intentionally left blank. Rend2 reads the zones manually on bsp load
@@ -2385,8 +2381,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.GetWindVector = R_GetWindVector;
 	re.GetWindGusting = R_GetWindGusting;
 	re.IsOutside = R_IsOutside;
-	re.IsOutsideCausingPain = stub_R_IsOutsideCausingPain;
-	re.GetChanceOfSaberFizz = stub_R_GetChanceOfSaberFizz;
+	re.IsOutsideCausingPain = R_IsOutsideCausingPain;
+	re.GetChanceOfSaberFizz = R_GetChanceOfSaberFizz;
 	re.IsShaking = R_IsShaking;
 	re.AddWeatherZone = stub_RE_AddWeatherZone;
 	re.SetTempGlobalFogColor = stub_R_SetTempGlobalFogColor;

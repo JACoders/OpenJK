@@ -101,6 +101,7 @@ struct weatherSystem_t
 	int numWeatherBrushes = 0;
 	bool frozen;
 	bool shaking;
+	float pain = 0.0f;
 
 	srfWeather_t weatherSurface;
 
@@ -119,5 +120,11 @@ void R_AddWeatherBrush(uint8_t numPlanes, vec4_t *planes);
 void R_ShutdownWeatherSystem();
 void RB_SurfaceWeather( srfWeather_t *surfaceType );
 bool R_IsOutside(vec3_t pos);
+bool R_IsShaking(vec3_t pos);
+float R_IsOutsideCausingPain(vec3_t pos);
+float R_GetChanceOfSaberFizz();
+bool R_GetWindVector(vec3_t windVector, vec3_t atPoint); // doesn't work?
+bool R_GetWindGusting(vec3_t atPoint); // doesn't work
 
+void RE_WorldEffectCommand(const char *cmd);
 void R_WorldEffect_f(void);
