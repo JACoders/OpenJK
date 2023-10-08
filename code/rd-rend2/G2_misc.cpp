@@ -950,8 +950,7 @@ static void G2_GorePolys(const mdxmSurface_t* surface, CTraceSurface& TS, const 
 		assert(tris[j].indexes[0] >= 0 && tris[j].indexes[0] < numVerts);
 		assert(tris[j].indexes[1] >= 0 && tris[j].indexes[1] < numVerts);
 		assert(tris[j].indexes[2] >= 0 && tris[j].indexes[2] < numVerts);
-		// AntiAnti: 15 in MP, 63 in SP???
-		flags = 63 &
+		flags = 15 &
 			GoreVerts[tris[j].indexes[0]].flags &
 			GoreVerts[tris[j].indexes[1]].flags &
 			GoreVerts[tris[j].indexes[2]].flags;
