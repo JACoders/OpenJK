@@ -2499,7 +2499,7 @@ void R_SetupViewParms(const trRefdef_t *refdef)
 	tr.viewParms.viewportX = refdef->x;
 
 	// Shoud be just refef->y but this flips the menu orientation for models, so its actually needed like this
-	if (!tr.world)
+	if (!tr.world || refdef->rdflags & RDF_NOWORLDMODEL)
 		tr.viewParms.viewportY = glConfig.vidHeight - (refdef->y + refdef->height);
 	else
 		tr.viewParms.viewportY = refdef->y;
