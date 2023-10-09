@@ -212,7 +212,7 @@ public:
 #ifdef _WIN32
 	const struct shader_t*	cust_shader;
 #else
-    shader_t*			cust_shader;
+    const shader_t*			cust_shader;
 #endif
 	intptr_t*			TransformedVertsArray;
 	const EG2_Collision	eG2TraceType;
