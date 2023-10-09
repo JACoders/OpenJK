@@ -1300,22 +1300,10 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 	{
 		qglDeleteProgram(program->program);
 
-		if (program->uniformBuffer)
-		{
-			Z_Free(program->uniformBuffer);
-		}
-		if (program->name)
-		{
-			Z_Free(program->name);
-		}
-		if (program->uniformBufferOffsets)
-		{
-			Z_Free(program->uniformBufferOffsets);
-		}
-		if (program->uniforms)
-		{
-			Z_Free(program->uniforms);
-		}
+		Z_Free(program->name);
+		Z_Free(program->uniformBuffer);
+		Z_Free(program->uniformBufferOffsets);
+		Z_Free(program->uniforms);
 
 		Com_Memset(program, 0, sizeof(*program));
 	}
@@ -1407,6 +1395,7 @@ void GLSL_InitSplashScreenShader()
 	size_t splashLen = strlen("splash");
 	tr.splashScreenShader.program = program;
 	tr.splashScreenShader.name = (char *)R_Malloc(splashLen + 1, TAG_GENERAL);
+	GLSL_InitUniforms(&tr.splashScreenShader);
 	Q_strncpyz(tr.splashScreenShader.name, "splash", splashLen + 1);
 }
 
