@@ -137,7 +137,15 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 	vec3_t	direction;
 	float	totalFactor;
 	uint32_t startGridPos;
-
+#ifdef REND2_SP
+	if (r_fullbright->integer || (tr.refdef.rdflags & RDF_doLAGoggles))
+	{
+		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[2] = 255.0;
+		ent->directedLight[0] = ent->directedLight[1] = ent->directedLight[2] = 255.0;
+		VectorCopy(tr.sunDirection, ent->lightDir);
+		return;
+	}
+#endif
 	if ( ent->e.renderfx & RF_LIGHTING_ORIGIN ) {
 		// seperate lightOrigins are needed so an object that is
 		// sinking into the ground can still be lit, and so
