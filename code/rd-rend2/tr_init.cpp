@@ -296,8 +296,6 @@ static qboolean gbAllowScreenDissolve = qtrue;
 qboolean stub_RE_ProcessDissolve(void) { return qfalse; }
 qboolean stub_RE_InitDissolve(qboolean bForceCircularExtroWipe) { return qfalse; }
 void stub_R_InitWorldEffects(void) {}
-float stub_R_IsOutsideCausingPain(vec3_t pos) { return qfalse; }
-float stub_R_GetChanceOfSaberFizz() { return qfalse; }
 bool stub_R_SetTempGlobalFogColor(vec3_t color) { return qfalse; }
 
 float tr_distortionAlpha = 1.0f; //opaque

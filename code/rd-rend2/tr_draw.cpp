@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 void RE_GetScreenShot(byte *buffer, int w, int h)
 {
-	byte		*source;
+	byte		*source, *allsource;
 	byte		*src, *dst;
 	size_t offset = 0, memcount;
 	int padlen;
@@ -37,13 +37,10 @@ void RE_GetScreenShot(byte *buffer, int w, int h)
 	float		xScale, yScale;
 	int			xx, yy;
 
+	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
+	source = allsource + offset;
 
-	source = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	memcount = (glConfig.vidWidth * 3 + padlen) * glConfig.vidHeight;
-
-	// gamma correct
-	if (glConfig.deviceSupportsGamma)
-		R_GammaCorrect(source + offset, memcount);
 
 	// resample from source
 	xScale = glConfig.vidWidth / (4.0*w);
@@ -53,20 +50,24 @@ void RE_GetScreenShot(byte *buffer, int w, int h)
 			r = g = b = 0;
 			for (yy = 0; yy < 3; yy++) {
 				for (xx = 0; xx < 4; xx++) {
-					src = source + offset + 3 * (glConfig.vidWidth * (int)((y * 3 + yy)*yScale) + (int)((x * 4 + xx)*xScale));
+					src = source + 3 * (glConfig.vidWidth * (int)((y * 3 + yy)*yScale) + (int)((x * 4 + xx)*xScale));
 					r += src[0];
 					g += src[1];
 					b += src[2];
 				}
 			}
-			dst = buffer + 3 * (y * w + x);
+			dst = buffer + 4 * (h * w - y * w + x);
 			dst[0] = r / 12;
 			dst[1] = g / 12;
 			dst[2] = b / 12;
 		}
 	}
 
-	R_Free(source);
+	// gamma correct
+	if (glConfig.deviceSupportsGamma)
+		R_GammaCorrect(buffer, w * h * 4);
+
+	Hunk_FreeTempMemory(allsource);
 }
 
 // this is just a chunk of code from RE_TempRawImage_ReadFromFile() below, subroutinised so I can call it
