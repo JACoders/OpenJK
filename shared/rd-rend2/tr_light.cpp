@@ -138,10 +138,10 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 	float	totalFactor;
 	uint32_t startGridPos;
 #ifdef REND2_SP
-	if (r_fullbright->integer || (tr.refdef.rdflags & RDF_doLAGoggles))
+	if (r_fullbright->integer || tr.refdef.doLAGoggles)
 	{
-		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[2] = 255.0;
-		ent->directedLight[0] = ent->directedLight[1] = ent->directedLight[2] = 255.0;
+		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[2] = 255.0f;
+		ent->directedLight[0] = ent->directedLight[1] = ent->directedLight[2] = 255.0f;
 		VectorCopy(tr.sunDirection, ent->lightDir);
 		return;
 	}

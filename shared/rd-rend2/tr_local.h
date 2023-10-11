@@ -1513,8 +1513,10 @@ typedef struct {
 
 	float       autoExposureMinMax[2];
 	float       toneMinAvgMaxLinear[3];
-
-	qboolean	doLAGoggles;
+#ifdef REND2_SP
+	bool		doLAGoggles;
+	bool		doFullbright;
+#endif
 } trRefdef_t;
 
 

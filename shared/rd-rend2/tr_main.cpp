@@ -1795,6 +1795,11 @@ void R_AddDrawSurf(
 	{
 		fogIndex = 0;
 	}
+#else
+	if (tr.refdef.doLAGoggles)
+	{
+		fogIndex = tr.world->numfogs;
+	}
 #endif
 	if ( (shader->surfaceFlags & SURF_FORCESIGHT) && !(tr.refdef.rdflags & RDF_ForceSightOn) )
 	{	//if shader is only seen with ForceSight and we don't have ForceSight on, then don't draw

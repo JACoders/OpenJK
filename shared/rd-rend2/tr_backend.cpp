@@ -919,6 +919,16 @@ SamplerBindingsWriter& SamplerBindingsWriter::AddAnimatedImage( textureBundle_t 
 {
 	int index;
 
+#ifdef REND2_SP
+	if ((r_fullbright->integer
+		|| tr.refdef.doLAGoggles
+		|| tr.refdef.doFullbright)
+		&& bundle->isLightmap)
+	{
+		return AddStaticImage(tr.whiteImage, unit);
+	}
+#endif
+
 	if ( bundle->isVideoMap )
 	{
 		SamplerBinding *binding = &scratch[count];
@@ -2305,7 +2315,25 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
 		fogData->hasPlane = fog->hasSurface;
 	}
+#ifdef REND2_SP
+	if (tr.refdef.doLAGoggles && fogsBlock.numFogs+1 <= MAX_GPU_FOGS)
+	{
+		FogsBlock::Fog *fogData = fogsBlock.fogs + fogsBlock.numFogs;
 
+		vec4_t color = {
+			0.75f,
+			0.42f + Q_flrand(0.0f, 1.0f) * 0.025f,
+			0.07f,
+			1.0f
+		};
+		const float depthForOpaque = sqrtf(-logf(1.0f / 255.0f)) / 700.f;
+
+		VectorCopy4(color, fogData->color);
+		fogData->depthToOpaque = depthForOpaque;
+		fogData->hasPlane = 0;
+		fogsBlock.numFogs++;
+	}
+#endif
 	tr.fogsUboOffset = RB_AppendConstantsData(
 		frame, &fogsBlock, sizeof(fogsBlock));
 }

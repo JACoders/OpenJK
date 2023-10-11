@@ -91,13 +91,7 @@ void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
 		GL_SelectTexture(oldtmu);
 		return;
 	}
-#ifdef REND2_SP
-	if ((r_fullbright->integer || tr.refdef.doLAGoggles || (tr.refdef.rdflags & RDF_doFullbright)) && bundle->isLightmap)
-	{
-		GL_Bind(tr.whiteImage);
-		return;
-	}
-#endif
+
 	if ( bundle->numImageAnimations <= 1 ) {
 		GL_BindToTMU( bundle->image[0], tmu);
 		return;

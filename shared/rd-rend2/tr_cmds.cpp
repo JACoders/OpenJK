@@ -490,21 +490,8 @@ void R_SetColorMode(GLboolean *rgba, stereoFrame_t stereoFrame, int colormode)
 #ifdef REND2_SP
 void RE_LAGoggles(void)
 {
-	tr.refdef.rdflags |= (RDF_doLAGoggles | RDF_doFullbright);
-	tr.refdef.doLAGoggles = qtrue;
-
-	fog_t* fog = &tr.world->fogs[tr.world->numfogs];
-
-	fog->parms.color[0] = 0.75f;
-	fog->parms.color[1] = 0.42f + Q_flrand(0.0f, 1.0f) * 0.025f;
-	fog->parms.color[2] = 0.07f;
-	fog->parms.depthForOpaque = 10000;
-	unsigned int colorInt = ColorBytes4(fog->parms.color[0], fog->parms.color[1], fog->parms.color[2], 1.0f);
-	fog->color[0] = fog->parms.color[0];
-	fog->color[1] = fog->parms.color[1];
-	fog->color[2] = fog->parms.color[2];
-	fog->color[3] = 1.f;
-	fog->tcScale = 2.0f / (fog->parms.depthForOpaque * (1.0f + cos(tr.refdef.floatTime) * 0.1f));
+	tr.refdef.doLAGoggles = true;
+	tr.refdef.doFullbright = true;
 }
 
 /*
