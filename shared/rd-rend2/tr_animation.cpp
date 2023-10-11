@@ -137,6 +137,7 @@ R_MDRComputeFogNum
 
 int R_MDRComputeFogNum( mdrHeader_t *header, trRefEntity_t *ent ) {
 	int				i, j;
+	float			frameRadius;
 	fog_t			*fog;
 	mdrFrame_t		*mdrFrame;
 	vec3_t			localOrigin;
@@ -151,22 +152,56 @@ int R_MDRComputeFogNum( mdrHeader_t *header, trRefEntity_t *ent ) {
 	// FIXME: non-normalized axis issues
 	mdrFrame = ( mdrFrame_t * ) ( ( byte * ) header + header->ofsFrames + frameSize * ent->e.frame);
 	VectorAdd( ent->e.origin, mdrFrame->localOrigin, localOrigin );
-	for ( i = 1 ; i < tr.world->numfogs ; i++ ) {
+	frameRadius = mdrFrame->radius;
+#ifndef REND2_SP
+	for (i = 1; i < tr.world->numfogs; i++) {
 		fog = &tr.world->fogs[i];
-		for ( j = 0 ; j < 3 ; j++ ) {
-			if ( localOrigin[j] - mdrFrame->radius >= fog->bounds[1][j] ) {
+		for (j = 0; j < 3; j++) {
+			if (localOrigin[j] - frameRadius >= fog->bounds[1][j]) {
 				break;
 			}
-			if ( localOrigin[j] + mdrFrame->radius <= fog->bounds[0][j] ) {
+			if (localOrigin[j] + frameRadius <= fog->bounds[0][j]) {
 				break;
 			}
 		}
-		if ( j == 3 ) {
+		if (j == 3) {
 			return i;
 		}
 	}
-
 	return 0;
+#else
+	int partialFog = 0;
+	for (i = 1; i < tr.world->numfogs; i++) {
+		fog = &tr.world->fogs[i];
+		if (localOrigin[0] - frameRadius >= fog->bounds[0][0]
+			&& localOrigin[0] + frameRadius <= fog->bounds[1][0]
+			&& localOrigin[1] - frameRadius >= fog->bounds[0][1]
+			&& localOrigin[1] + frameRadius <= fog->bounds[1][1]
+			&& localOrigin[2] - frameRadius >= fog->bounds[0][2]
+			&& localOrigin[2] + frameRadius <= fog->bounds[1][2])
+		{//totally inside it
+			return i;
+			break;
+		}
+		if ((localOrigin[0] - frameRadius >= fog->bounds[0][0] && localOrigin[1] - frameRadius >= fog->bounds[0][1] && localOrigin[2] - frameRadius >= fog->bounds[0][2] &&
+			localOrigin[0] - frameRadius <= fog->bounds[1][0] && localOrigin[1] - frameRadius <= fog->bounds[1][1] && localOrigin[2] - frameRadius <= fog->bounds[1][2]) ||
+			(localOrigin[0] + frameRadius >= fog->bounds[0][0] && localOrigin[1] + frameRadius >= fog->bounds[0][1] && localOrigin[2] + frameRadius >= fog->bounds[0][2] &&
+				localOrigin[0] + frameRadius <= fog->bounds[1][0] && localOrigin[1] + frameRadius <= fog->bounds[1][1] && localOrigin[2] + frameRadius <= fog->bounds[1][2]))
+		{//partially inside it
+			//if (tr.refdef.fogIndex == i || R_FogParmsMatch(tr.refdef.fogIndex, i))
+			//{//take new one only if it's the same one that the viewpoint is in
+			//	return i;
+			//	break;
+			//}
+			//else 
+			if (!partialFog)
+			{//first partialFog
+				partialFog = i;
+			}
+		}
+	}
+	return partialFog;
+#endif
 }
 
 

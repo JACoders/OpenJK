@@ -1655,28 +1655,65 @@ See if a sprite is inside a fog volume
 */
 int R_SpriteFogNum( trRefEntity_t *ent ) {
 	int				i, j;
+	float			frameRadius;
 	fog_t			*fog;
+	vec3_t			localOrigin;
 
 	if ( tr.refdef.rdflags & RDF_NOWORLDMODEL ) {
 		return 0;
 	}
 
-	for ( i = 1 ; i < tr.world->numfogs ; i++ ) {
+	VectorCopy(ent->e.origin, localOrigin);
+	frameRadius = ent->e.radius;
+#ifndef REND2_SP
+	for (i = 1; i < tr.world->numfogs; i++) {
 		fog = &tr.world->fogs[i];
-		for ( j = 0 ; j < 3 ; j++ ) {
-			if ( ent->e.origin[j] - ent->e.radius >= fog->bounds[1][j] ) {
+		for (j = 0; j < 3; j++) {
+			if (localOrigin[j] - frameRadius >= fog->bounds[1][j]) {
 				break;
 			}
-			if ( ent->e.origin[j] + ent->e.radius <= fog->bounds[0][j] ) {
+			if (localOrigin[j] + frameRadius <= fog->bounds[0][j]) {
 				break;
 			}
 		}
-		if ( j == 3 ) {
+		if (j == 3) {
 			return i;
 		}
 	}
-
 	return 0;
+#else
+	int partialFog = 0;
+	for (i = 1; i < tr.world->numfogs; i++) {
+		fog = &tr.world->fogs[i];
+		if (localOrigin[0] - frameRadius >= fog->bounds[0][0]
+			&& localOrigin[0] + frameRadius <= fog->bounds[1][0]
+			&& localOrigin[1] - frameRadius >= fog->bounds[0][1]
+			&& localOrigin[1] + frameRadius <= fog->bounds[1][1]
+			&& localOrigin[2] - frameRadius >= fog->bounds[0][2]
+			&& localOrigin[2] + frameRadius <= fog->bounds[1][2])
+		{//totally inside it
+			return i;
+			break;
+		}
+		if ((localOrigin[0] - frameRadius >= fog->bounds[0][0] && localOrigin[1] - frameRadius >= fog->bounds[0][1] && localOrigin[2] - frameRadius >= fog->bounds[0][2] &&
+			localOrigin[0] - frameRadius <= fog->bounds[1][0] && localOrigin[1] - frameRadius <= fog->bounds[1][1] && localOrigin[2] - frameRadius <= fog->bounds[1][2]) ||
+			(localOrigin[0] + frameRadius >= fog->bounds[0][0] && localOrigin[1] + frameRadius >= fog->bounds[0][1] && localOrigin[2] + frameRadius >= fog->bounds[0][2] &&
+				localOrigin[0] + frameRadius <= fog->bounds[1][0] && localOrigin[1] + frameRadius <= fog->bounds[1][1] && localOrigin[2] + frameRadius <= fog->bounds[1][2]))
+		{//partially inside it
+			//if (tr.refdef.fogIndex == i || R_FogParmsMatch(tr.refdef.fogIndex, i))
+			//{//take new one only if it's the same one that the viewpoint is in
+			//	return i;
+			//	break;
+			//}
+			//else 
+			if (!partialFog)
+			{//first partialFog
+				partialFog = i;
+			}
+		}
+	}
+	return partialFog;
+#endif
 }
 
 /*
