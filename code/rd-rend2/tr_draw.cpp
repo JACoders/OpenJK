@@ -213,8 +213,7 @@ void RE_TempRawImage_CleanUp(void)
 	}
 }
 
-#if 0
-
+#ifdef REND2_SP
 typedef enum
 {
 	eDISSOLVE_RT_TO_LT = 0,
@@ -269,15 +268,54 @@ static int PowerOf2(int iArg)
 Dissolve_t Dissolve={0};
 #define fDISSOLVE_SECONDS 0.75f
 
+static void RE_Blit(float fX0, float fY0, float fX1, float fY1, float fX2, float fY2, float fX3, float fY3,
+	//float fU0, float fV0, float fU1, float fV1, float fU2, float fV2, float fU3, float fV3,
+	image_t *pImage, int iGLState, bool atest
+)
+{
+	//
+	// some junk they had at the top of other StretchRaw code...
+	//
+	R_IssuePendingRenderCommands();
+
+	qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+	qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+
+	GL_State(iGLState);
+	GL_Cull(CT_TWO_SIDED);
+	GL_BindToTMU(pImage, TB_COLORMAP);
+
+	shaderProgram_t *shaderProgram = atest ? &tr.genericShader[GENERICDEF_USE_ALPHA_TEST] : &tr.genericShader[0];
+	GLSL_BindProgram(shaderProgram);
+
+	RB_BindUniformBlock(tr.staticUbo, UNIFORM_BLOCK_CAMERA, tr.camera2DUboOffset);
+	RB_BindUniformBlock(tr.staticUbo, UNIFORM_BLOCK_ENTITY, tr.entity2DUboOffset);
+
+	vec4_t color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4_t vcolor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	GLSL_SetUniformVec4(shaderProgram, UNIFORM_BASECOLOR, color);
+	GLSL_SetUniformVec4(shaderProgram, UNIFORM_VERTCOLOR, vcolor);
+	GLSL_SetUniformInt(shaderProgram, UNIFORM_ALPHA_TEST_TYPE, ALPHA_TEST_LT128);
+
+	vec4_t quadVerts[4] = {
+		{fX0, fY0, 0.f},
+		{fX1, fY1, 0.f},
+		{fX2, fY2, 0.f},
+		{fX3, fY3, 0.f},
+	};
+	vec2_t texCoords[4] = {
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+		{0.0f, 1.0f},
+	};
+
+	RB_InstantQuad2(quadVerts, texCoords);
+}
+
 static void RE_KillDissolve(void)
 {
 	Dissolve.iStartTime = 0;
-
-	if (Dissolve.pImage)
-	{
-		/*R_Images_DeleteImage(	Dissolve.pImage );
-								Dissolve.pImage = NULL;*/
-	}
 }
 // Draw the dissolve pic to the screen, over the top of what's already been rendered.
 //
@@ -341,7 +379,7 @@ qboolean RE_ProcessDissolve(void)
 					x3 = x0;
 					y3 = y2;
 
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE | GLS_ATEST_LT_80);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, true);
 
 					// blit a blank thing over the area the old screen is to be displayed on to enable screen-writing...
 					// (to the left of fXboundary)
@@ -354,7 +392,7 @@ qboolean RE_ProcessDissolve(void)
 					y2 = fYScaleFactor * Dissolve.iHeight;
 					x3 = x0;
 					y3 = y2;
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, false);
 				}
 				break;
 
@@ -373,7 +411,7 @@ qboolean RE_ProcessDissolve(void)
 					x3 = x0;
 					y3 = y2;
 
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE | GLS_ATEST_LT_80);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, true);
 
 					// blit a blank thing over the area the old screen is to be displayed on to enable screen-writing...
 					// (to the right of fXboundary)
@@ -386,7 +424,7 @@ qboolean RE_ProcessDissolve(void)
 					y2 = fYScaleFactor * Dissolve.iHeight;
 					x3 = x0;
 					y3 = y2;
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, false);
 				}
 				break;
 
@@ -405,7 +443,7 @@ qboolean RE_ProcessDissolve(void)
 					x3 = x2;
 					y3 = y0;
 
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE | GLS_ATEST_LT_80);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, true);
 
 					// blit a blank thing over the area the old screen is to be displayed on to enable screen-writing...
 					// (underneath fYboundary)
@@ -418,7 +456,7 @@ qboolean RE_ProcessDissolve(void)
 					y2 = fYScaleFactor * Dissolve.iHeight;
 					x3 = x0;
 					y3 = y2;
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, false);
 				}
 				break;
 
@@ -437,7 +475,7 @@ qboolean RE_ProcessDissolve(void)
 					x3 = x2;
 					y3 = y0;
 
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE | GLS_ATEST_LT_80);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, true);
 
 					// blit a blank thing over the area the old screen is to be displayed on to enable screen-writing...
 					// (above fYboundary)
@@ -450,7 +488,7 @@ qboolean RE_ProcessDissolve(void)
 					y2 = fYScaleFactor * (fYboundary + iSAFETY_SPRITE_OVERLAP);
 					x3 = x0;
 					y3 = y2;
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, false);
 				}
 				break;
 
@@ -470,7 +508,7 @@ qboolean RE_ProcessDissolve(void)
 					x3 = x0;
 					y3 = y2;
 
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE | GLS_ATEST_LT_80);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, true);
 				}
 				break;
 
@@ -490,7 +528,7 @@ qboolean RE_ProcessDissolve(void)
 					x3 = x0;
 					y3 = y2;
 
-					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE | GLS_ATEST_LT_80);
+					RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pDissolve, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE, true);
 					// now blit the 4 black squares around it to mask off the rest of the screen...
 					//
 					// LHS, top to bottom...
@@ -499,7 +537,8 @@ qboolean RE_ProcessDissolve(void)
 							x0+iSAFETY_SPRITE_OVERLAP,0,		// x1,y1
 							x0+iSAFETY_SPRITE_OVERLAP,(fYScaleFactor * Dissolve.iHeight),// x2,y2
 							0,(fYScaleFactor * Dissolve.iHeight),	// x3,y3,
-							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE
+							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE,
+							false
 							);
 
 					// RHS top to bottom...
@@ -508,7 +547,8 @@ qboolean RE_ProcessDissolve(void)
 							(fXScaleFactor * Dissolve.iWidth),0,	// x1,y1
 							(fXScaleFactor * Dissolve.iWidth),(fYScaleFactor * Dissolve.iHeight),// x2,y2
 							x1-iSAFETY_SPRITE_OVERLAP,(fYScaleFactor * Dissolve.iHeight),	// x3,y3,
-							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE
+							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE,
+							false
 							);
 
 					// top...
@@ -517,7 +557,8 @@ qboolean RE_ProcessDissolve(void)
 							x1+iSAFETY_SPRITE_OVERLAP,0,		// x1,y1
 							x1+iSAFETY_SPRITE_OVERLAP,y0 + iSAFETY_SPRITE_OVERLAP,	// x2,y2
 							x0-iSAFETY_SPRITE_OVERLAP,y0 + iSAFETY_SPRITE_OVERLAP,	// x3,y3
-							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE
+							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE,
+							false
 							);
 
 					// bottom...
@@ -526,7 +567,8 @@ qboolean RE_ProcessDissolve(void)
 							x1+iSAFETY_SPRITE_OVERLAP,y2-iSAFETY_SPRITE_OVERLAP,		// x1,y1
 							x1+iSAFETY_SPRITE_OVERLAP,(fYScaleFactor * Dissolve.iHeight),	// x2,y2
 							x0-iSAFETY_SPRITE_OVERLAP,(fYScaleFactor * Dissolve.iHeight),	// x3,y3
-							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE
+							Dissolve.pBlack, GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE,
+							false
 							);
 				}
 				break;
@@ -554,7 +596,7 @@ qboolean RE_ProcessDissolve(void)
 				x3 = x0;
 				y3 = y2;
 
-				RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pImage,GLS_DEPTHFUNC_EQUAL);
+				RE_Blit(x0,y0,x1,y1,x2,y2,x3,y3, Dissolve.pImage, GLS_DEPTHFUNC_EQUAL, false);
 			}
 		}
 
@@ -688,31 +730,25 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 												);
 
 			Dissolve.pImage = R_CreateImage("*DissolveImage",		// const char *name
-											pbScreenSprite,			// const byte *pic
-											Dissolve.iUploadWidth,	// int width
-											Dissolve.iUploadHeight,	// int height
-											GL_RGBA,
-											qfalse,					// qboolean mipmap
-											qfalse,					// qboolean allowPicmip
-											qfalse,					// qboolean allowTC
-											GL_CLAMP				// int glWrapClampMode
-											);
+				pbScreenSprite,			// const byte *pic
+				Dissolve.iUploadWidth,	// int width
+				Dissolve.iUploadHeight,	// int height
+				IMGTYPE_COLORALPHA,
+				IMGFLAG_CLAMPTOEDGE,
+				GL_RGBA8);
 
 
 			static byte bBlack[8*8*4]={0};
 			for (int j=0; j<8*8*4; j+=4)	// itu?
 				bBlack[j+3]=255;		//
 
-			Dissolve.pBlack = R_CreateImage( "*DissolveBlack",	// const char *name
-											bBlack,				// const byte *pic
-											8,					// int width
-											8,					// int height
-											GL_RGBA,
-											qfalse,				// qboolean mipmap
-											qfalse,				// qboolean allowPicmip
-											qfalse,				// qboolean allowTC
-											GL_CLAMP			// int glWrapClampMode
-											);
+			Dissolve.pBlack = R_CreateImage("*DissolveBlack",	// const char *name
+				bBlack,				// const byte *pic
+				8,					// int width
+				8,					// int height
+				IMGTYPE_COLORALPHA,
+				IMGFLAG_CLAMPTOEDGE,
+				GL_RGBA8);
 
 			if (pbReSampleBuffer)
 			{
@@ -753,13 +789,10 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 			//	then allow the random wiper to overwrite the ptr if needed. This way the end of level call
 			//	will be instant.  Downside: every level has one extra 256x256 texture.
 	 		// Trying to decipher these comments - looks like no problem taking this out. I want the RAM.
+			imgType_t type = IMGTYPE_COLORALPHA;
+			int flags = IMGFLAG_CLAMPTOEDGE;
 			{
-					Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono_rev",		// const char *name
-															qfalse,						// qboolean mipmap
-															qfalse,						// qboolean allowPicmip
-															qfalse,						// qboolean allowTC
-															GL_CLAMP					// int glWrapClampMode
-														);
+				Dissolve.pDissolve = R_FindImageFile("gfx/2d/iris_mono_rev", type, flags);
 			}
 
 			extern cvar_t *com_buildScript;
@@ -767,52 +800,28 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 			{
 				// register any/all of the possible CASE statements below...
 				//
-				Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono",			// const char *name
-														qfalse,						// qboolean mipmap
-														qfalse,						// qboolean allowPicmip
-														qfalse,						// qboolean allowTC
-														GL_CLAMP					// int glWrapClampMode
-													);
-				Dissolve.pDissolve = R_FindImageFile(	"textures/common/dissolve",	// const char *name
-														qfalse,						// qboolean mipmap
-														qfalse,						// qboolean allowPicmip
-														qfalse,						// qboolean allowTC
-														GL_REPEAT					// int glWrapClampMode
-													);
+				
+				Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono", type, flags);
+				Dissolve.pDissolve = R_FindImageFile(	"textures/common/dissolve", type, flags);
 			}
 
 			switch (Dissolve.eDissolveType)
 			{
 				case eDISSOLVE_CIRCULAR_IN:
 				{
-					Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono_rev",		// const char *name
-															qfalse,						// qboolean mipmap
-															qfalse,						// qboolean allowPicmip
-															qfalse,						// qboolean allowTC
-															GL_CLAMP					// int glWrapClampMode
-														);
+					Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono_rev", type, flags);
 				}
 				break;
 
 				case eDISSOLVE_CIRCULAR_OUT:
 				{
-					Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono",			// const char *name
-															qfalse,						// qboolean mipmap
-															qfalse,						// qboolean allowPicmip
-															qfalse,						// qboolean allowTC
-															GL_CLAMP					// int glWrapClampMode
-														);
+					Dissolve.pDissolve = R_FindImageFile(	"gfx/2d/iris_mono", type, flags);
 				}
 				break;
 
 				default:
 				{
-					Dissolve.pDissolve = R_FindImageFile(	"textures/common/dissolve",	// const char *name
-															qfalse,						// qboolean mipmap
-															qfalse,						// qboolean allowPicmip
-															qfalse,						// qboolean allowTC
-															GL_REPEAT					// int glWrapClampMode
-														);
+					Dissolve.pDissolve = R_FindImageFile(	"textures/common/dissolve", type, IMGFLAG_NONE);
 				}
 				break;
 			}
@@ -834,5 +843,4 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 
 	return bReturn;
 }
-
 #endif

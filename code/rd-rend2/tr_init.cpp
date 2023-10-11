@@ -286,15 +286,14 @@ cvar_t* r_ext_compressed_lightmaps;
 
 #define ri_Cvar_Get_NoComm(varname, value, flag, comment) ri.Cvar_Get(varname, value, flag)
 
-#ifndef JKA_MP
-
+#ifdef REND2_SP
 static qboolean gbAllowScreenDissolve = qtrue;
-
-#endif // !JKA_MP
+extern qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe);
+extern qboolean RE_ProcessDissolve(void);
+#endif // REND2_SP
 
 // STUBS, REPLACEME
-qboolean stub_RE_ProcessDissolve(void) { return qfalse; }
-qboolean stub_RE_InitDissolve(qboolean bForceCircularExtroWipe) { return qfalse; }
+
 void stub_R_InitWorldEffects(void) {}
 bool stub_R_SetTempGlobalFogColor(vec3_t color) { return qfalse; }
 
@@ -2220,25 +2219,24 @@ int C_GetLevel( void )
 
 void C_LevelLoadEnd( void )
 {
-#ifdef JKA_MP
+#ifndef REND2_SP
 	CModelCache->LevelLoadEnd(qfalse);
 	ri.SND_RegisterAudio_LevelLoadEnd(qfalse);
 	ri.S_RestartMusic();
 #else
 	CModelCache->LevelLoadEnd(qfalse);
-	//RE_RegisterImages_LevelLoadEnd();
+
 	ri.SND_RegisterAudio_LevelLoadEnd(qfalse);
 
 	if (gbAllowScreenDissolve)
 	{
-		// TODO: Implement InitDissolve
-		//RE_InitDissolve(qfalse);
+		RE_InitDissolve(qfalse);
 	}
 
 	ri.S_RestartMusic();
 
 	*(ri.gbAlreadyDoingLoad()) = qfalse;
-#endif // JKA_MP
+#endif // REND2_SP
 }
 
 extern void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
@@ -2332,8 +2330,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.BeginFrame = RE_BeginFrame;
 	re.EndFrame = RE_EndFrame;
 
-	re.ProcessDissolve = stub_RE_ProcessDissolve;
-	re.InitDissolve = stub_RE_InitDissolve;
+	re.ProcessDissolve = RE_ProcessDissolve;
+	re.InitDissolve = RE_InitDissolve;
 	re.GetScreenShot = RE_GetScreenShot;
 
 #ifdef JK2_MODE
