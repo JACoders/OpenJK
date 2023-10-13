@@ -470,7 +470,10 @@ int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *w
 	trRefEntity_t ent;
 	
 	if ( world->lightGridData == NULL )
-	  return qfalse;
+	{
+		VectorCopy(normal, lightDir);
+		return qfalse;
+	}
 
 	Com_Memset(&ent, 0, sizeof(ent));
 	VectorCopy( point, ent.e.origin );
