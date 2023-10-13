@@ -4222,6 +4222,9 @@ static shader_t *FinishShader( void ) {
 			if (!pStage->active)
 				continue;
 
+			if (pStage->stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS))
+				break;
+
 			if (pStage->alphaTestType == ALPHA_TEST_NONE)
 				shader.useSimpleDepthShader = qtrue;
 			break;
