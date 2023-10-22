@@ -18,9 +18,10 @@ void main()
 		attr_Position.z,
 		1.0);
 	var_Velocity = attr_Color;
+	var_Velocity.z = min(-0.00001, var_Velocity.z);
 
 	vec4 velocitiyOffset = u_ViewInfo.y * vec4(-var_Velocity.xy/var_Velocity.z, var_Velocity.z, 0.0);
-	velocitiyOffset.xyz = mix(vec3(0.0), velocitiyOffset.xyz, float(var_Velocity.z != 0.0));
+	velocitiyOffset.xyz = mix(vec3(0.0), velocitiyOffset.xyz, float(attr_Color.z != 0.0));
 	var_Velocity.z *= u_ViewInfo.z;
 
 	vec4 depthPosition = u_ShadowMvp * (gl_Position + velocitiyOffset);
