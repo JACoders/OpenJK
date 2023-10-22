@@ -2788,6 +2788,13 @@ static qboolean ParseShader( const char **text )
 				return qfalse;
 			}
 
+			if (tr.hdrLighting)
+			{
+				shader.fogParms.color[0] = sRGBtoRGB(shader.fogParms.color[0]);
+				shader.fogParms.color[1] = sRGBtoRGB(shader.fogParms.color[1]);
+				shader.fogParms.color[2] = sRGBtoRGB(shader.fogParms.color[2]);
+			}
+
 			token = COM_ParseExt( text, qfalse );
 			if ( !token[0] ) 
 			{
