@@ -3330,10 +3330,8 @@ void RE_ClearScene( void );
 void RE_AddRefEntityToScene( const refEntity_t *ent );
 #ifndef REND2_SP
 void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt );
-void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts, int num = 1);
-#else
-void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts);
 #endif
+void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts, int num = 1);
 void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_BeginScene( const refdef_t *fd );

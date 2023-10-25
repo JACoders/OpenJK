@@ -84,7 +84,7 @@ typedef struct {
 	// Nothing is drawn until R_RenderScene is called.
 	void		(*R_ClearScene)( void );
 	void		(*R_AddRefEntityToScene)( const refEntity_t *re );
-	void		(*R_AddPolyToScene)( qhandle_t hShader , int numVerts, const polyVert_t *verts );
+	void		(*R_AddPolyToScene)( qhandle_t hShader , int numVerts, const polyVert_t *verts, int numPolys );
 	void		(*R_AddLightToScene)( const vec3_t org, float intensity, float r, float g, float b );
 	void		(*R_RenderScene)( const refdef_t *fd );
 

@@ -118,12 +118,8 @@ RE_AddPolyToScene
 
 =====================
 */
-#ifndef REND2_SP
+
 void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts, int numPolys ) {
-#else
-void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts) {
-	int numPolys = 1;
-#endif
 	srfPoly_t	*poly;
 	int			i, j;
 	int			fogIndex;

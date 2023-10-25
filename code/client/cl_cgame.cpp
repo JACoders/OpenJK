@@ -1006,7 +1006,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_R_GETLIGHTING:
 		return re.GetLighting( (const float * ) VMA(1), (float *) VMA(2), (float *) VMA(3), (float *) VMA(4) );
 	case CG_R_ADDPOLYTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t *) VMA(3) );
+		re.AddPolyToScene( args[1], args[2], (const polyVert_t *) VMA(3), 1 );
 		return 0;
 	case CG_R_ADDLIGHTTOSCENE:
 		re.AddLightToScene( (const float *) VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );

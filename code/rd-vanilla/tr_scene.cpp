@@ -116,9 +116,9 @@ RE_AddPolyToScene
 
 =====================
 */
-void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts ) {
+void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts, int numPolys ) {
 	srfPoly_t	*poly;
-	int			i;
+	int			i, j;
 	int			fogIndex = 0;
 	fog_t		*fog;
 	vec3_t		bounds[2];
@@ -134,67 +134,70 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 		return;
 	}
 
-	if ( r_numpolyverts + numVerts >= MAX_POLYVERTS || r_numpolys >= MAX_POLYS ) {
-      /*
-      NOTE TTimo this was initially a PRINT_WARNING
-      but it happens a lot with high fighting scenes and particles
-      since we don't plan on changing the const and making for room for those effects
-      simply cut this message to developer only
-      */
-		ri.Printf( PRINT_DEVELOPER, S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
-		return;
-	}
-
-	poly = &backEndData->polys[r_numpolys];
-	poly->surfaceType = SF_POLY;
-	poly->hShader = hShader;
-	poly->numVerts = numVerts;
-	poly->verts = &backEndData->polyVerts[r_numpolyverts];
-
-	memcpy( poly->verts, verts, numVerts * sizeof( *verts ) );
-	r_numpolys++;
-	r_numpolyverts += numVerts;
-
-	// see if it is in a fog volume
-	if ( !tr.world || tr.world->numfogs == 1) {
-		fogIndex = 0;
-	} else {
-		// find which fog volume the poly is in
-		VectorCopy( poly->verts[0].xyz, bounds[0] );
-		VectorCopy( poly->verts[0].xyz, bounds[1] );
-		for ( i = 1 ; i < poly->numVerts ; i++ ) {
-			AddPointToBounds( poly->verts[i].xyz, bounds[0], bounds[1] );
+	for (j = 0; j < numPolys; j++) {
+		if (r_numpolyverts + numVerts >= MAX_POLYVERTS || r_numpolys >= MAX_POLYS) {
+			/*
+			NOTE TTimo this was initially a PRINT_WARNING
+			but it happens a lot with high fighting scenes and particles
+			since we don't plan on changing the const and making for room for those effects
+			simply cut this message to developer only
+			*/
+			ri.Printf(PRINT_DEVELOPER, S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
+			return;
 		}
-		for ( int fI = 1 ; fI < tr.world->numfogs ; fI++ ) {
-			fog = &tr.world->fogs[fI];
-			if ( bounds[0][0] >= fog->bounds[0][0]
-				&& bounds[0][1] >= fog->bounds[0][1]
-				&& bounds[0][2] >= fog->bounds[0][2]
-				&& bounds[1][0] <= fog->bounds[1][0]
-				&& bounds[1][1] <= fog->bounds[1][1]
-				&& bounds[1][2] <= fog->bounds[1][2] )
-			{//completely in this one
-				fogIndex = fI;
-				break;
+
+		poly = &backEndData->polys[r_numpolys];
+		poly->surfaceType = SF_POLY;
+		poly->hShader = hShader;
+		poly->numVerts = numVerts;
+		poly->verts = &backEndData->polyVerts[r_numpolyverts];
+
+		memcpy( poly->verts, &verts[numVerts*j], numVerts * sizeof( *verts ) );
+		r_numpolys++;
+		r_numpolyverts += numVerts;
+
+		// see if it is in a fog volume
+		if (!tr.world || tr.world->numfogs == 1) {
+			fogIndex = 0;
+		}
+		else {
+			// find which fog volume the poly is in
+			VectorCopy(poly->verts[0].xyz, bounds[0]);
+			VectorCopy(poly->verts[0].xyz, bounds[1]);
+			for (i = 1; i < poly->numVerts; i++) {
+				AddPointToBounds(poly->verts[i].xyz, bounds[0], bounds[1]);
 			}
-			else if ( ( bounds[0][0] >= fog->bounds[0][0] && bounds[0][1] >= fog->bounds[0][1] && bounds[0][2] >= fog->bounds[0][2] &&
-						bounds[0][0] <= fog->bounds[1][0] && bounds[0][1] <= fog->bounds[1][1] && bounds[0][2] <= fog->bounds[1][2]) ||
-				( bounds[1][0] >= fog->bounds[0][0] && bounds[1][1] >= fog->bounds[0][1] && bounds[1][2] >= fog->bounds[0][2] &&
-					bounds[1][0] <= fog->bounds[1][0] && bounds[1][1] <= fog->bounds[1][1] && bounds[1][2] <= fog->bounds[1][2] ) )
-			{//partially in this one
-				if ( tr.refdef.fogIndex == fI || R_FogParmsMatch( tr.refdef.fogIndex, fI ) )
-				{//take new one only if it's the same one that the viewpoint is in
+			for (int fI = 1; fI < tr.world->numfogs; fI++) {
+				fog = &tr.world->fogs[fI];
+				if (bounds[0][0] >= fog->bounds[0][0]
+					&& bounds[0][1] >= fog->bounds[0][1]
+					&& bounds[0][2] >= fog->bounds[0][2]
+					&& bounds[1][0] <= fog->bounds[1][0]
+					&& bounds[1][1] <= fog->bounds[1][1]
+					&& bounds[1][2] <= fog->bounds[1][2])
+				{//completely in this one
 					fogIndex = fI;
 					break;
 				}
-				else if ( !fogIndex )
-				{//didn't find one yet, so use this one
-					fogIndex = fI;
+				else if ((bounds[0][0] >= fog->bounds[0][0] && bounds[0][1] >= fog->bounds[0][1] && bounds[0][2] >= fog->bounds[0][2] &&
+					bounds[0][0] <= fog->bounds[1][0] && bounds[0][1] <= fog->bounds[1][1] && bounds[0][2] <= fog->bounds[1][2]) ||
+					(bounds[1][0] >= fog->bounds[0][0] && bounds[1][1] >= fog->bounds[0][1] && bounds[1][2] >= fog->bounds[0][2] &&
+						bounds[1][0] <= fog->bounds[1][0] && bounds[1][1] <= fog->bounds[1][1] && bounds[1][2] <= fog->bounds[1][2]))
+				{//partially in this one
+					if (tr.refdef.fogIndex == fI || R_FogParmsMatch(tr.refdef.fogIndex, fI))
+					{//take new one only if it's the same one that the viewpoint is in
+						fogIndex = fI;
+						break;
+					}
+					else if (!fogIndex)
+					{//didn't find one yet, so use this one
+						fogIndex = fI;
+					}
 				}
 			}
 		}
+		poly->fogIndex = fogIndex;
 	}
-	poly->fogIndex = fogIndex;
 }
 
 
