@@ -1029,7 +1029,11 @@ void VM_VmInfo_f( void ) {
 		}
 		Com_Printf( "%s : ", vm->name );
 		if ( vm->dllHandle ) {
-			Com_Printf( "native\n" );
+			if ( vm->isLegacy ) {
+				Com_Printf( "native [legacy]\n" );
+			} else {
+				Com_Printf( "native\n" );
+			}
 		} else {
 			if (vm->compiled) {
 				Com_Printf("compiled on load\n");
