@@ -694,7 +694,7 @@ void Q3_DebugPrint( int level, const char *format, ... )
 				if ( ( entNum < 0 ) || ( entNum >= MAX_GENTITIES ) )
 					entNum = 0;
 
-				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", *(SV_GentityMapperNum(entNum)->script_targetname), entNum, buffer );
+				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", (char *)VM_ArgPtr((intptr_t)*(SV_GentityMapperNum(entNum)->script_targetname)), entNum, buffer );
 				break;
 			}
 		default:
