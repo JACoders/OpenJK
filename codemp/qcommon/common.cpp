@@ -34,6 +34,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#include <setjmp.h>
+
+static jmp_buf abortframe;
 
 FILE *debuglogfile;
 fileHandle_t logfile;
@@ -289,7 +292,7 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 
 	if ( code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT || code == ERR_DROP || code == ERR_NEED_CD ) {
-		throw code;
+		longjmp(abortframe, code+1); // +1 to avoid 0 value
 	} else {
 		CL_Shutdown ();
 		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
@@ -1126,10 +1129,17 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 	int		qport;
+	int		errCode;
 
 	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
-	try
+	if ( (errCode = setjmp(abortframe)) )
+	{
+		errCode--;
+		Com_CatchError( errCode );
+		Sys_Error( "Error during initialization: %s", Com_ErrorString(errCode)) ;
+	}
+	else
 	{
 		// initialize the weak pseudo-random number generator for use later.
 		Com_InitRand();
@@ -1293,11 +1303,6 @@ void Com_Init( char *commandLine ) {
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
 	}
-	catch ( int code )
-	{
-		Com_CatchError (code);
-		Sys_Error ("Error during initialization: %s", Com_ErrorString (code));
-	}
 }
 
 //==================================================================
@@ -1460,8 +1465,15 @@ Com_Frame
 =================
 */
 void Com_Frame( void ) {
-
-	try
+	int errCode;
+	if ( (errCode = setjmp(abortframe)) )
+	{
+		errCode--;
+		Com_CatchError( errCode );
+		Com_Printf ("%s\n", Com_ErrorString(errCode) );
+		return;
+	}
+	else
 	{
 #ifdef G2_PERFORMANCE_ANALYSIS
 		G2PerformanceTimer_PreciseFrame.Start();
@@ -1637,11 +1649,6 @@ void Com_Frame( void ) {
 		}
 
 		com_frameNumber++;
-	}
-	catch (int code) {
-		Com_CatchError (code);
-		Com_Printf ("%s\n", Com_ErrorString (code));
-		return;
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS
