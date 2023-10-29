@@ -818,6 +818,7 @@ void		Com_StartupVariable( const char *match );
 
 extern	cvar_t	*com_developer;
 extern	cvar_t	*com_dedicated;
+extern	cvar_t	*com_dedicatedForceErrorsToFatal;
 extern	cvar_t	*com_speeds;
 extern	cvar_t	*com_timescale;
 extern	cvar_t	*com_sv_running;

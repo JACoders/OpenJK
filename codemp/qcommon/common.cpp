@@ -46,6 +46,7 @@ fileHandle_t	com_journalDataFile;		// config files are written here
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_dedicated;
+cvar_t	*com_dedicatedForceErrorsToFatal;
 cvar_t	*com_timescale;
 cvar_t	*com_fixedtime;
 cvar_t	*com_journal;
@@ -267,7 +268,7 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	// ERR_DROPs on dedicated drop to an interactive console
 	// which doesn't make sense for dedicated as it's generally
 	// run unattended
-	if ( com_dedicated && com_dedicated->integer ) {
+	if ( com_dedicated && com_dedicated->integer && com_dedicatedForceErrorsToFatal && com_dedicatedForceErrorsToFatal->integer ) {
 		code = ERR_FATAL;
 	}
 
@@ -1202,6 +1203,7 @@ void Com_Init( char *commandLine ) {
 	#ifdef DEDICATED
 		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_INIT);
 		Cvar_CheckRange( com_dedicated, 1, 2, qtrue );
+		com_dedicatedForceErrorsToFatal = Cvar_Get( "com_dedicatedForceErrorsToFatal", "1", CVAR_ARCHIVE );
 	#else
 		//OJKFIXME: Temporarily disabled dedicated server when not using the dedicated server binary.
 		//			Issue is the server not having a renderer when not using ^^^^^
