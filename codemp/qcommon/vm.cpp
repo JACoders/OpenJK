@@ -439,11 +439,15 @@ void *VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue ) {
 	if ( !intValue )
 		return NULL;
 
-	// currentVM is missing on reconnect here as well?
-	if ( !currentVM )
+	// vm is missing on reconnect here as well?
+	if ( !vm )
 		return NULL;
 
-	return (void *)intValue;
+	if ( vm->dllHandle ) {
+		return (void *)intValue;
+	} else {
+		return (void *)(vm->dataBase + (intValue & vm->dataMask));
+	}
 }
 
 float _vmf( intptr_t x ) {

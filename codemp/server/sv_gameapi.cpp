@@ -122,7 +122,7 @@ void GVM_ShutdownGame( int restart ) {
 
 char *GVM_ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	if ( gvm->isLegacy )
-		return (char *)VM_Call( gvm, GAME_CLIENT_CONNECT, clientNum, firstTime, isBot );
+		return (char*)VM_ExplicitArgPtr( gvm, VM_Call(gvm, GAME_CLIENT_CONNECT, clientNum, firstTime, isBot) );
 	VMSwap v( gvm );
 
 	return ge->ClientConnect( clientNum, firstTime, isBot );
