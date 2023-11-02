@@ -271,6 +271,12 @@ if(BuildMPEngine OR BuildMPDed)
 		)
 	endif()
 
+	if(MSVC)
+		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles}
+			"${MPDir}/win32/q3asm.asm"
+		)
+	endif()
+
 	if(WIN32)
 		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles})
 	endif(WIN32)
