@@ -498,6 +498,10 @@ int EmitCallDoSyscall(vm_t *vm)
 #if defined(idx64)
 	EmitRexString(0x41, "50");		// push r8
 	EmitRexString(0x41, "51");		// push r9
+	EmitRexString(0x41, "54");		// push r12
+	EmitRexString(0x41, "55");		// push r13
+	EmitRexString(0x41, "56");		// push r14
+	EmitRexString(0x41, "57");		// push r15
 #endif
 
 	// write arguments to global vars
@@ -535,6 +539,10 @@ int EmitCallDoSyscall(vm_t *vm)
 	// reset the stack pointer to its previous value
 	EmitString("5C");				// pop esp
 #if defined(idx64)
+	EmitRexString(0x41, "5F");		// pop r15
+	EmitRexString(0x41, "5E");		// pop r14
+	EmitRexString(0x41, "5D");		// pop r13
+	EmitRexString(0x41, "5C");		// pop r12
 	EmitRexString(0x41, "59");		// pop r9
 	EmitRexString(0x41, "58");		// pop r8
 #endif
