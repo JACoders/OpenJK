@@ -526,18 +526,27 @@ int EmitCallDoSyscall(vm_t *vm)
 	EmitPtr(&vm_arg);
 
 	// align the stack pointer to a 16-byte-boundary
+#if defined(_MSC_VER) && defined(idx64)
+	EmitRexString(0x48, "89 E6");		// mov esi, esp
+	EmitRexString(0x48, "83 E4 F0");	// and esp, 0xFFFFFFF0
+#else
 	EmitRexString(0x48, "89 E0");		// mov eax, esp
 	EmitString("51");					// push ecx (decrease esp in a portable way)
 	EmitRexString(0x48, "83 E4 F0");	// and esp, 0xFFFFFFF0
 	EmitString("59");					// pop ecx (increase esp in a portable way)
 	EmitString("50");					// push eax
+#endif
 
 	// call the syscall wrapper function DoSyscall()
 
 	EmitString("FF D2");			// call edx
 
 	// reset the stack pointer to its previous value
+#if defined(_MSC_VER) && defined(idx64)
+	EmitRexString(0x48, "89 F4");		// mov esp, esi
+#else
 	EmitString("5C");				// pop esp
+#endif
 #if defined(idx64)
 	EmitRexString(0x41, "5F");		// pop r15
 	EmitRexString(0x41, "5E");		// pop r14
