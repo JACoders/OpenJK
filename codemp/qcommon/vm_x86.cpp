@@ -491,7 +491,8 @@ int EmitCallDoSyscall(vm_t *vm)
 
 	// Push important registers to stack as we can't really make
 	// any assumptions about calling conventions.
-	EmitString("51");			// push ebx
+	EmitString("51");			// push ecx
+	EmitString("53");			// push ebx
 	EmitString("56");			// push esi
 	EmitString("57");			// push edi
 #if defined(idx64)
@@ -539,7 +540,8 @@ int EmitCallDoSyscall(vm_t *vm)
 #endif
 	EmitString("5F");			// pop edi
 	EmitString("5E");			// pop esi
-	EmitString("59");			// pop ebx
+	EmitString("5B");			// pop ebx
+	EmitString("59");			// pop ecx
 
 	// restore frame pointer
 	EmitString("5D");			// pop ebp
