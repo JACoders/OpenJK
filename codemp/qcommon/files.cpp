@@ -210,6 +210,7 @@ typedef struct pack_s {
 	int				pure_checksum;				// checksum for pure
 	int				numfiles;					// number of files in pk3
 	int				referenced;					// referenced file flags
+	qboolean		noref;						// file is blacklisted for referencing
 	int				hashSize;					// hash table size (power of 2)
 	fileInPack_t*	*hashTable;					// hash table
 	fileInPack_t*	buildBuffer;				// buffer with the filenames etc.
@@ -317,6 +318,12 @@ const char *get_filename(const char *path) {
 	const char *slash = strrchr(path, PATH_SEP);
 	if (!slash || slash == path) return "";
 	return slash + 1;
+}
+
+const char *get_filename_ext(const char *filename) {
+	const char *dot = strrchr(filename, '.');
+	if (!dot || dot == filename) return "";
+	return dot + 1;
 }
 
 /*
@@ -1401,41 +1408,47 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						// The x86.dll suffixes are needed in order for sv_pure to continue to
 						// work on non-x86/windows systems...
 
-						l = strlen( filename );
-						if ( !(pak->referenced & FS_GENERAL_REF)) {
-							if( !FS_IsExt(filename, ".shader", l) &&
-							    !FS_IsExt(filename, ".txt", l) &&
-							    !FS_IsExt(filename, ".str", l) &&
-							    !FS_IsExt(filename, ".cfg", l) &&
-							    !FS_IsExt(filename, ".config", l) &&
-							    !FS_IsExt(filename, ".bot", l) &&
-							    !FS_IsExt(filename, ".arena", l) &&
-							    !FS_IsExt(filename, ".menu", l) &&
-							    !FS_IsExt(filename, ".fcf", l) &&
-							    Q_stricmp(filename, "jampgamex86.dll") != 0 &&
-							    //Q_stricmp(filename, "vm/qagame.qvm") != 0 &&
-							    !strstr(filename, "levelshots"))
-							{
+						// reference lists
+						if ( !pak->noref ) {
+							// JK2MV automatically references pk3's in three cases:
+							// 1. A .bsp file is loaded from it (and thus it is expected to be a map)
+							// 2. cgame.qvm or ui.qvm is loaded from it (expected to be a clientside)
+							// 3. pk3 is located in fs_game != base (standard jk2 behavior)
+							// All others need to be referenced manually by the use of reflists.
+
+							if (!Q_stricmp(get_filename_ext(filename), "bsp")) {
 								pak->referenced |= FS_GENERAL_REF;
 							}
-						}
 
-						if (!(pak->referenced & FS_CGAME_REF))
-						{
-							if ( Q_stricmp( filename, "cgame.qvm" ) == 0 ||
-									Q_stricmp( filename, "cgamex86.dll" ) == 0 )
-							{
+							if (!Q_stricmp(filename, "vm/cgame.qvm") || !Q_stricmp( filename, "cgamex86.dll" )) {
 								pak->referenced |= FS_CGAME_REF;
 							}
-						}
 
-						if (!(pak->referenced & FS_UI_REF))
-						{
-							if ( Q_stricmp( filename, "ui.qvm" ) == 0 ||
-									Q_stricmp( filename, "uix86.dll" ) == 0 )
-							{
+							if (!Q_stricmp(filename, "vm/ui.qvm") || !Q_stricmp( filename, "uix86.dll" )) {
 								pak->referenced |= FS_UI_REF;
 							}
+
+							// OLD Ref:
+							/*
+							l = strlen( filename );
+							if ( !(pak->referenced & FS_GENERAL_REF)) {
+								if( !FS_IsExt(filename, ".shader", l) &&
+								    !FS_IsExt(filename, ".txt", l) &&
+								    !FS_IsExt(filename, ".str", l) &&
+								    !FS_IsExt(filename, ".cfg", l) &&
+								    !FS_IsExt(filename, ".config", l) &&
+								    !FS_IsExt(filename, ".bot", l) &&
+								    !FS_IsExt(filename, ".arena", l) &&
+								    !FS_IsExt(filename, ".menu", l) &&
+								    !FS_IsExt(filename, ".fcf", l) &&
+								    Q_stricmp(filename, "jampgamex86.dll") != 0 &&
+								    //Q_stricmp(filename, "vm/qagame.qvm") != 0 &&
+								    !strstr(filename, "levelshots"))
+								{
+									pak->referenced |= FS_GENERAL_REF;
+								}
+							}
+							*/
 						}
 
 						if ( uniqueFILE ) {
@@ -3098,6 +3111,11 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		// store the game name for downloading
 		Q_strncpyz(pak->pakGamename, dir, sizeof(pak->pakGamename));
 
+		// if the pk3 is not in base, always reference it (standard jk2 behaviour)
+		if (Q_stricmpn(pak->pakGamename, BASEGAME, (int)strlen(BASEGAME))) {
+			pak->referenced |= FS_GENERAL_REF;
+		}
+
 		fs_packFiles += pak->numfiles;
 
 		search = (searchpath_s *)Z_Malloc (sizeof(searchpath_t), TAG_FILESYS, qtrue);
@@ -3456,6 +3474,77 @@ static void FS_ReorderPurePaks()
 
 	@param gameName Name of the default folder (i.e. always BASEGAME = "base" in OpenJK)
 */
+void FS_LoadReflists( void ) {
+	char *mv_whitelist = NULL, *mv_blacklist = NULL, *mv_forcelist = NULL;
+	fileHandle_t f_w, f_b, f_f;
+	int f_wl, f_bl, f_fl;
+	int s;
+	searchpath_t *search;
+
+	char packstr[MAX_OSPATH];
+
+	// reference lists
+	f_wl = FS_FOpenFileRead("ref_whitelist.txt", &f_w, qfalse);
+	f_bl = FS_FOpenFileRead("ref_blacklist.txt", &f_b, qfalse);
+	f_fl = FS_FOpenFileRead("ref_forcelist.txt", &f_f, qfalse);
+
+	if (f_w) {
+		Com_Printf("using whitelist for referenced files...\n");
+
+		mv_whitelist = (char *)Hunk_AllocateTempMemory(1 + f_wl + 1);
+		mv_whitelist[0] = '\n';
+		s = FS_Read(mv_whitelist + 1, f_wl, f_w);
+		mv_whitelist[s + 1] = 0;
+	}
+
+	if (f_b) {
+		Com_Printf("using blacklist for referenced files...\n");
+
+		mv_blacklist = (char *)Hunk_AllocateTempMemory(1 + f_bl + 1);
+		mv_blacklist[0] = '\n';
+		s = FS_Read(mv_blacklist + 1, f_bl, f_b);
+		mv_blacklist[s + 1] = 0;
+	}
+
+	if (f_f) {
+		Com_Printf("using forcelist for referenced files...\n");
+
+		mv_forcelist = (char *)Hunk_AllocateTempMemory(1 + f_fl + 1);
+		mv_forcelist[0] = '\n';
+		s = FS_Read(mv_forcelist + 1, f_fl, f_f);
+		mv_forcelist[s + 1] = 0;
+	}
+
+	for (search = fs_searchpaths; search; search = search->next) {
+		if (search->pack) {
+			Com_sprintf(packstr, sizeof(packstr), "\n%s/%s.pk3", search->pack->pakGamename, search->pack->pakBasename);
+
+			if (f_w && !Q_stristr(mv_whitelist, packstr)) {
+				search->pack->noref = qtrue;
+				search->pack->referenced = 0;
+			} else if (f_b && Q_stristr(mv_blacklist, packstr)) {
+				search->pack->noref = qtrue;
+				search->pack->referenced = 0;
+			} else if (f_f && Q_stristr(mv_forcelist, packstr)) {
+				search->pack->referenced |= FS_GENERAL_REF;
+			}
+		}
+	}
+
+	if (f_w) {
+		FS_FCloseFile(f_w);
+		Hunk_FreeTempMemory(mv_whitelist);
+	}
+	if (f_b) {
+		FS_FCloseFile(f_b);
+		Hunk_FreeTempMemory(mv_blacklist);
+	}
+	if (f_f) {
+		FS_FCloseFile(f_f);
+		Hunk_FreeTempMemory(mv_forcelist);
+	}
+}
+
 void FS_Startup( const char *gameName ) {
 	const char *homePath;
 
@@ -3559,6 +3648,8 @@ void FS_Startup( const char *gameName ) {
 	FS_Path_f();
 
 	fs_gamedirvar->modified = qfalse; // We just loaded, it's not modified
+
+	FS_LoadReflists();
 
 	Com_Printf( "----------------------\n" );
 
@@ -3670,7 +3761,7 @@ const char *FS_ReferencedPakChecksums( void ) {
 	for ( search = fs_searchpaths ; search ; search = search->next ) {
 		// is the element a pak file?
 		if ( search->pack ) {
-			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, strlen(BASEGAME))) {
+			if (search->pack->referenced) {
 				Q_strcat( info, sizeof( info ), va("%i ", search->pack->checksum ) );
 			}
 		}
@@ -3749,7 +3840,7 @@ const char *FS_ReferencedPakNames( void ) {
 	for ( search = fs_searchpaths ; search ; search = search->next ) {
 		// is the element a pak file?
 		if ( search->pack ) {
-			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, strlen(BASEGAME))) {
+			if (search->pack->referenced) {
 				if (*info) {
 					Q_strcat(info, sizeof( info ), " " );
 				}
@@ -4323,4 +4414,43 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 #endif
 
 	return qfalse;
+}
+
+// only referenced pk3 files can be downloaded
+// returns the path to the GameData directory of the requested file.
+const char *FS_MV_VerifyDownloadPath(const char *pk3file) {
+	char path[MAX_OSPATH];
+	searchpath_t	*search;
+
+	for (search = fs_searchpaths; search; search = search->next) {
+		if (!search->pack)
+			continue;
+
+		Com_sprintf(path, sizeof(path), "%s/%s", search->pack->pakGamename, search->pack->pakBasename);
+		if (FS_idPak(path, BASEGAME))
+			continue;
+
+		Q_strcat(path, sizeof(path), ".pk3");
+
+		if (!Q_stricmp(path, pk3file)) {
+			if (search->pack->noref)
+				return NULL;
+
+			if (search->pack->referenced) {
+				static char gameDataPath[MAX_OSPATH];
+				Q_strncpyz(gameDataPath, search->pack->pakFilename, sizeof(gameDataPath));
+
+				char *sp = strrchr(gameDataPath, PATH_SEP);
+				if ( sp ) *sp = 0;
+				else return NULL;
+				sp = strrchr(gameDataPath, PATH_SEP);
+				if ( sp ) *sp = 0;
+				else return NULL;
+
+				return gameDataPath;
+			}
+		}
+	}
+
+	return NULL;
 }
