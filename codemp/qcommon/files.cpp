@@ -243,6 +243,7 @@ static cvar_t		*fs_cdpath;
 static cvar_t		*fs_copyfiles;
 static cvar_t		*fs_gamedirvar;
 static cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
+static cvar_t		*fs_forcegame;
 static searchpath_t	*fs_searchpaths;
 static int			fs_readCount;			// total bytes read
 static int			fs_loadCount;			// total files read
@@ -3324,6 +3325,22 @@ void FS_UpdateGamedir(void)
 			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
 		}
 	}
+
+	// forcegame allows users to override any fs_game settings
+	if ( fs_forcegame->string[0] && Q_stricmp(fs_forcegame->string, fs_gamedir) ) {
+		if ( !fs_basegame->string[0] || Q_stricmp(fs_forcegame->string, fs_basegame->string) ) {
+			if (fs_cdpath->string[0]) {
+				FS_AddGameDirectory(fs_cdpath->string, fs_forcegame->string);
+			}
+			if (fs_basepath->string[0]) {
+				FS_AddGameDirectory(fs_basepath->string, fs_forcegame->string);
+			}
+			if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+				FS_AddGameDirectory(fs_homepath->string, fs_forcegame->string);
+			}
+		}
+		Q_strncpyz( fs_gamedir, fs_forcegame->string, sizeof( fs_gamedir ) );
+	}
 }
 
 /*
@@ -3405,6 +3422,8 @@ void FS_Startup( const char *gameName ) {
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 
+	fs_forcegame = Cvar_Get ("fs_forcegame", "", CVAR_INIT, "Folder to use for overriding of fs_game (can not be set by the server)." );
+
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
 		FS_AddGameDirectory( fs_cdpath->string, gameName );
@@ -3452,6 +3471,22 @@ void FS_Startup( const char *gameName ) {
 		if (fs_homepath->string[0] && !Sys_PathCmp(fs_homepath->string, fs_basepath->string)) {
 			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
 		}
+	}
+
+	// forcegame allows users to override any fs_game settings
+	if ( fs_forcegame->string[0] && Q_stricmp(fs_forcegame->string, fs_gamedir) ) {
+		if ( !fs_basegame->string[0] || Q_stricmp(fs_forcegame->string, fs_basegame->string) ) {
+			if (fs_cdpath->string[0]) {
+				FS_AddGameDirectory(fs_cdpath->string, fs_forcegame->string);
+			}
+			if (fs_basepath->string[0]) {
+				FS_AddGameDirectory(fs_basepath->string, fs_forcegame->string);
+			}
+			if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+				FS_AddGameDirectory(fs_homepath->string, fs_forcegame->string);
+			}
+		}
+		Q_strncpyz( fs_gamedir, fs_forcegame->string, sizeof( fs_gamedir ) );
 	}
 
 	// add our commands
@@ -3827,6 +3862,7 @@ void FS_InitFilesystem( void ) {
 #ifdef MACOS_X
 	Com_StartupVariable( "fs_apppath" );
 #endif
+	Com_StartupVariable( "fs_forcegame" );
 
 	if(!FS_FilenameCompare(Cvar_VariableString("fs_game"), BASEGAME))
 		Cvar_Set("fs_game", "");
@@ -3890,7 +3926,7 @@ void FS_Restart( int checksumFeed ) {
 		Com_Error( ERR_FATAL, "Couldn't load mpdefault.cfg" );
 	}
 
-	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
+	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) && !fs_forcegame->string[0] ) {
 		// skip the jampconfig.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
 			Cbuf_AddText ("exec " Q3CONFIG_CFG "\n");
