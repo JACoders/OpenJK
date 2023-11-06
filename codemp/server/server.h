@@ -397,7 +397,17 @@ CGhoul2Info_v *SV_G2Map_GetG2FromHandle( g2handleptr_t g2h );
 CGhoul2Info_v **SV_G2Map_GetG2PtrFromHandle( g2handleptr_t g2h );
 void SV_G2Map_Update( g2handleptr_t *g2h, CGhoul2Info_v *g2Ptr );
 
-sharedEntityMapper_t *ConvertedEntity( sharedEntity_t *ent );
+#define ENTITYMAP_READER_PROTO( type, funcName ) type funcName( type *inPtr );
+
+ENTITYMAP_READER_PROTO( char*, SV_EntityMapperReadString );
+ENTITYMAP_READER_PROTO( void*, SV_EntityMapperReadData );
+ENTITYMAP_READER_PROTO( playerState_t*, SV_EntityMapperReadPlayerState );
+#if (!defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__))
+	ENTITYMAP_READER_PROTO( Vehicle_t*, SV_EntityMapperReadVehicle );
+#else
+	ENTITYMAP_READER_PROTO( struct Vehicle_s*, SV_EntityMapperReadVehicle );
+#endif
+ENTITYMAP_READER_PROTO( parms_t*, SV_EntityMapperReadParms );
 
 //
 // sv_bot.c

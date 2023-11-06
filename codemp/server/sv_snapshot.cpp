@@ -579,11 +579,10 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	if (ps->m_iVehicleNum)
 	{ //get the vehicle's playerstate too then
 		sharedEntityMapper_t *veh = SV_GentityMapperNum(ps->m_iVehicleNum);
+		playerState_t *vps;
 
-		if (veh && *(veh->playerState))
+		if (veh && (vps = SV_EntityMapperReadPlayerState(veh->playerState)))
 		{ //Now VMA it and we've got ourselves a playerState
-			playerState_t *vps = ((playerState_t *)VM_ArgPtr((intptr_t)(*veh->playerState)));
-
             frame->vps = *vps;
 #ifdef _ONEBIT_COMBO
 			frame->pDeltaOneBitVeh = &vps->deltaOneBits;

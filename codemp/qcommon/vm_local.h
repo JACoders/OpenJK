@@ -191,3 +191,4 @@ void VM_ExtraMemory_Release( vm_t *vm, int amount );
 void *VM_ExtraMemory_ClaimData( vm_t *vm, const void *data, uint32_t size );
 char *VM_ExtraMemory_ClaimString( vm_t *vm, const char *inputString );
 size_t VM_PtrToOffset( vm_t *vm, void *ptr );
+qboolean VM_IsCurrentQVM( void );

@@ -659,6 +659,25 @@ static void SV_UpdateSharedEntitiesMapping( void ) {
 	}
 }
 
+#define ENTITYMAP_READER( type, funcName ) \
+	type funcName( type *inPtr ) { \
+		if ( gvm->dllHandle ) { \
+			return *inPtr; \
+		} else { \
+			return (type)VM_ArgPtr((intptr_t)(*(uint32_t*)inPtr)); \
+		} \
+	}
+
+ENTITYMAP_READER( char*, SV_EntityMapperReadString );
+ENTITYMAP_READER( void*, SV_EntityMapperReadData );
+ENTITYMAP_READER( playerState_t*, SV_EntityMapperReadPlayerState );
+#if (!defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__))
+	ENTITYMAP_READER( Vehicle_t*, SV_EntityMapperReadVehicle );
+#else
+	ENTITYMAP_READER( struct Vehicle_s*, SV_EntityMapperReadVehicle );
+#endif
+ENTITYMAP_READER( parms_t*, SV_EntityMapperReadParms );
+
 static void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGameClient ) {
 
 	sv.gentities = gEnts;
@@ -801,65 +820,6 @@ static void SV_GetUsercmd( int clientNum, usercmd_t *cmd ) {
 		return;
 	}
 	*cmd = svs.clients[clientNum].lastUsercmd;
-}
-
-static sharedEntity_t gLocalModifier;
-static sharedEntityMapper_t gLocalModifierMapper;
-sharedEntityMapper_t *ConvertedEntity( sharedEntity_t *ent ) { //Return an entity with the memory shifted around to allow reading/modifying VM memory
-	int i = 0;
-
-	sharedEntityMapper_t *gEntM = SV_GEntityMapperForGentity( ent );
-
-	assert(ent);
-
-	gLocalModifier.s = *(gEntM->s);
-	gLocalModifier.r = *(gEntM->r);
-	while (i < NUM_TIDS)
-	{
-		gLocalModifier.taskID[i] = (*(gEntM->taskID))[i];
-		i++;
-	}
-	i = 0;
-	gLocalModifier.parms = (parms_t *)VM_ArgPtr((intptr_t)(*(gEntM->parms)));
-	while (i < NUM_BSETS)
-	{
-		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)(*(gEntM->behaviorSet[i])));
-		gLocalModifierMapper.behaviorSet[i] = &(gLocalModifier.behaviorSet[i]);
-		i++;
-	}
-	i = 0;
-	gLocalModifier.script_targetname = (char *)VM_ArgPtr((intptr_t)(*(gEntM->script_targetname)));
-	gLocalModifier.delayScriptTime = (*(gEntM->delayScriptTime));
-	gLocalModifier.fullName = (char *)VM_ArgPtr((intptr_t)(*(gEntM->fullName)));
-	gLocalModifier.targetname = (char *)VM_ArgPtr((intptr_t)(*(gEntM->targetname)));
-	gLocalModifier.classname = (char *)VM_ArgPtr((intptr_t)(*(gEntM->classname)));
-
-	gLocalModifier.ghoul2 = (*(gEntM->ghoul2));
-
-	gLocalModifierMapper.s                       = &gLocalModifier.s;
-	gLocalModifierMapper.playerState             = &gLocalModifier.playerState;
-	gLocalModifierMapper.m_pVehicle              = &gLocalModifier.m_pVehicle;
-	gLocalModifierMapper.ghoul2                  = &gLocalModifier.ghoul2;
-	gLocalModifierMapper.localAnimIndex          = &gLocalModifier.localAnimIndex;
-	gLocalModifierMapper.modelScale              = &gLocalModifier.modelScale;
-	gLocalModifierMapper.r                       = &gLocalModifier.r;
-	gLocalModifierMapper.taskID                  = &gLocalModifier.taskID;
-	gLocalModifierMapper.parms                   = &gLocalModifier.parms;
-	gLocalModifierMapper.script_targetname       = &gLocalModifier.script_targetname;
-	gLocalModifierMapper.delayScriptTime         = &gLocalModifier.delayScriptTime;
-	gLocalModifierMapper.fullName                = &gLocalModifier.fullName;
-	gLocalModifierMapper.targetname              = &gLocalModifier.targetname;
-	gLocalModifierMapper.classname               = &gLocalModifier.classname;
-	gLocalModifierMapper.waypoint                = &gLocalModifier.waypoint;
-	gLocalModifierMapper.lastWaypoint            = &gLocalModifier.lastWaypoint;
-	gLocalModifierMapper.lastValidWaypoint       = &gLocalModifier.lastValidWaypoint;
-	gLocalModifierMapper.noWaypointTime          = &gLocalModifier.noWaypointTime;
-	gLocalModifierMapper.combatPoint             = &gLocalModifier.combatPoint;
-	gLocalModifierMapper.failedWaypoints         = &gLocalModifier.failedWaypoints;
-	gLocalModifierMapper.failedWaypointCheckTime = &gLocalModifier.failedWaypointCheckTime;
-	gLocalModifierMapper.next_roff_time          = &gLocalModifier.next_roff_time;
-
-	return &gLocalModifierMapper;
 }
 
 static const char *SV_SetActiveSubBSP( int index ) {
@@ -2340,7 +2300,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 	//rww - icarus traps
 	case G_ICARUS_RUNSCRIPT:
-		return ICARUS_RunScript(ConvertedEntity((sharedEntity_t *)VMA(1)), (const char *)VMA(2));
+		return ICARUS_RunScript(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (const char *)VMA(2));
 
 	case G_ICARUS_REGISTERSCRIPT:
 		return ICARUS_RegisterScript((const char *)VMA(1), (qboolean)args[2]);
@@ -2350,7 +2310,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_ICARUS_VALIDENT:
-		return ICARUS_ValidEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		return ICARUS_ValidEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 
 	case G_ICARUS_ISINITIALIZED:
 		return ICARUS_IsInitialized( args[1] );
@@ -2365,15 +2325,15 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return Q3_TaskIDPending(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2]);
 
 	case G_ICARUS_INITENT:
-		ICARUS_InitEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		ICARUS_InitEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 
 	case G_ICARUS_FREEENT:
-		ICARUS_FreeEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		ICARUS_FreeEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 
 	case G_ICARUS_ASSOCIATEENT:
-		ICARUS_AssociateEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		ICARUS_AssociateEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 
 	case G_ICARUS_SHUTDOWN:

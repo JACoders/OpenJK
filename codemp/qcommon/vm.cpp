@@ -1186,3 +1186,9 @@ size_t VM_PtrToOffset( vm_t *vm, void *ptr )
 
 	return (byte*)ptr - vm->dataBase;
 }
+
+qboolean VM_IsCurrentQVM( void )
+{
+	if ( !currentVM ) return qfalse;
+	return (qboolean)(currentVM->dllHandle == NULL);
+}
