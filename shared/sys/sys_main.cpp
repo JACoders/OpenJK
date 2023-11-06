@@ -788,8 +788,6 @@ int main ( int argc, char* argv[] )
 	Com_Printf( "SDL Version Linked: %d.%d.%d\n", linked.major, linked.minor, linked.patch );
 #endif
 
-	NET_Init();
-
 	// main game loop
 	while (1)
 	{
