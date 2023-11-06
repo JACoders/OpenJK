@@ -580,7 +580,7 @@ void SV_BotWaypointReception( int wpnum, wpobject_t **wps );
 void SV_BotCalculatePaths( int rmg );
 
 static void SV_UpdateSharedEntitiesMapping( void ) {
-	int i;
+	int i, j;
 	int entCount = Com_Clampi( 0, ARRAY_LEN(sv.gentitiesMapper), sv.num_entities );
 	sharedEntityMapper_t *entM;
 
@@ -601,7 +601,9 @@ static void SV_UpdateSharedEntitiesMapping( void ) {
 			entM->r                       = &ent->r;
 			entM->taskID                  = &ent->taskID;
 			entM->parms                   = &ent->parms;
-			entM->behaviorSet             = &ent->behaviorSet;
+			for ( j = 0; j < NUM_BSETS; j++ ) {
+				entM->behaviorSet[j]      = &(ent->behaviorSet[j]);
+			}
 			entM->script_targetname       = &ent->script_targetname;
 			entM->delayScriptTime         = &ent->delayScriptTime;
 			entM->fullName                = &ent->fullName;
@@ -637,7 +639,9 @@ static void SV_UpdateSharedEntitiesMapping( void ) {
 			entM->r                       = &ent->r;
 			entM->taskID                  = &ent->taskID;
 			entM->parms                   = (parms_t**)&ent->parms;
-			entM->behaviorSet             = (char*(*)[NUM_BSETS])&ent->behaviorSet;
+			for ( j = 0; j < NUM_BSETS; j++ ) {
+				entM->behaviorSet[j]      = (char**)&(ent->behaviorSet[j]);
+			}
 			entM->script_targetname       = (char**)&ent->script_targetname;
 			entM->delayScriptTime         = &ent->delayScriptTime;
 			entM->fullName                = (char**)&ent->fullName;
@@ -819,7 +823,8 @@ sharedEntityMapper_t *ConvertedEntity( sharedEntity_t *ent ) { //Return an entit
 	gLocalModifier.parms = (parms_t *)VM_ArgPtr((intptr_t)(*(gEntM->parms)));
 	while (i < NUM_BSETS)
 	{
-		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)(*(gEntM->behaviorSet))[i]);
+		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)(*(gEntM->behaviorSet[i])));
+		gLocalModifierMapper.behaviorSet[i] = &(gLocalModifier.behaviorSet[i]);
 		i++;
 	}
 	i = 0;
@@ -840,7 +845,6 @@ sharedEntityMapper_t *ConvertedEntity( sharedEntity_t *ent ) { //Return an entit
 	gLocalModifierMapper.r                       = &gLocalModifier.r;
 	gLocalModifierMapper.taskID                  = &gLocalModifier.taskID;
 	gLocalModifierMapper.parms                   = &gLocalModifier.parms;
-	gLocalModifierMapper.behaviorSet             = &gLocalModifier.behaviorSet;
 	gLocalModifierMapper.script_targetname       = &gLocalModifier.script_targetname;
 	gLocalModifierMapper.delayScriptTime         = &gLocalModifier.delayScriptTime;
 	gLocalModifierMapper.fullName                = &gLocalModifier.fullName;

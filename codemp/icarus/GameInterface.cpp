@@ -294,7 +294,7 @@ bool ICARUS_ValidEnt( sharedEntityMapper_t *ent )
 	//Potentially able to call a script
 	for ( i = 0; i < NUM_BSETS; i++ )
 	{
-		if VALIDSTRING( (*(ent->behaviorSet))[i] )
+		if VALIDSTRING( *((ent->behaviorSet)[i]) )
 		{
 			//Com_Printf( "WARNING: Entity %d (%s) has behaviorSet but no script_targetname -- using targetname\n", ent->s.number, ent->targetname );
 
@@ -635,12 +635,12 @@ void ICARUS_PrecacheEnt( sharedEntityMapper_t *ent )
 
 	for ( i = 0; i < NUM_BSETS; i++ )
 	{
-		if ( (*(ent->behaviorSet))[i] == NULL )
+		if ( *((ent->behaviorSet)[i]) == NULL )
 			continue;
 
-		if ( GetIDForString( BSTable, (*(ent->behaviorSet))[i] ) == -1 )
+		if ( GetIDForString( BSTable, *((ent->behaviorSet)[i]) ) == -1 )
 		{//not a behavior set
-			Com_sprintf( newname, sizeof(newname), "%s/%s", Q3_SCRIPT_DIR, (*(ent->behaviorSet))[i] );
+			Com_sprintf( newname, sizeof(newname), "%s/%s", Q3_SCRIPT_DIR, *((ent->behaviorSet)[i]) );
 
 			//Precache this, and all internally referenced scripts
 			ICARUS_InterrogateScript( newname );

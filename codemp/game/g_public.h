@@ -313,7 +313,7 @@ typedef struct sharedEntityMapper_s {
 	//Script/ICARUS-related fields
 	int				(*taskID)[NUM_TIDS];
 	parms_t			**parms;
-	char			*(*behaviorSet)[NUM_BSETS];
+	char			**behaviorSet[NUM_BSETS];
 	char			**script_targetname;
 	int				*delayScriptTime;
 	char			**fullName;
