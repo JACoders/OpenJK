@@ -313,6 +313,12 @@ FILE*		missingFiles = NULL;
 #  endif
 #endif
 
+const char *get_filename(const char *path) {
+	const char *slash = strrchr(path, PATH_SEP);
+	if (!slash || slash == path) return "";
+	return slash + 1;
+}
+
 /*
 ==============
 FS_Initialized
@@ -2986,7 +2992,15 @@ static int QDECL paksort( const void *a, const void *b ) {
 	aa = *(char **)a;
 	bb = *(char **)b;
 
-	return FS_PathCmp( aa, bb );
+	// downloaded files have priority
+	// this is needed because otherwise even if a clientside was downloaded, there is no gurantee it is actually used.
+	if (!Q_stricmpn(aa, "dl_", 3) && Q_stricmpn(bb, "dl_", 3)) {
+		return 1;
+	} else if (Q_stricmpn(aa, "dl_", 3) && !Q_stricmpn(bb, "dl_", 3)) {
+		return -1;
+	} else {
+		return FS_PathCmp(aa, bb);
+	}
 }
 
 /*
@@ -3008,6 +3022,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	int				numfiles;
 	char			**pakfiles;
 	char			*sorted[MAX_PAKFILES];
+	const char		*filename;
 
 	// this fixes the case where fs_basepath is the same as fs_cdpath
 	// which happens on full installs
@@ -3052,8 +3067,33 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 
 	for ( i = 0 ; i < numfiles ; i++ ) {
 		pakfile = FS_BuildOSPath( path, dir, sorted[i] );
+		filename = get_filename(pakfile);
+
 		if ( ( pak = FS_LoadZipFile( pakfile, sorted[i] ) ) == 0 )
 			continue;
+
+		// files beginning with "dl_" are only loaded when referenced by the server
+		if (!Q_stricmpn(filename, "dl_", 3)) {
+			int j;
+			qboolean found = qfalse;
+
+			for (j = 0; j < fs_numServerReferencedPaks; j++) {
+				if (pak->checksum == fs_serverReferencedPaks[j]) {
+					// server wants it!
+					found = qtrue;
+					break;
+				}
+			}
+
+			if (!found) {
+				// server has no interest in the file
+				unzClose(pak->handle);
+				Z_Free(pak->buildBuffer);
+				Z_Free(pak);
+				continue;
+			}
+		}
+
 		Q_strncpyz(pak->pakPathname, curpath, sizeof(pak->pakPathname));
 		// store the game name for downloading
 		Q_strncpyz(pak->pakGamename, dir, sizeof(pak->pakGamename));
@@ -3149,8 +3189,11 @@ we are not interested in a download string format, we want something human-reada
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 	searchpath_t	*sp;
 	qboolean havepak;
-	char *origpos = neededpaks;
 	int i;
+
+	char moddir[MAX_ZPATH], filename[MAX_ZPATH]; // If the sum of them exceed 255 characters the game won't accept them
+	qboolean badname = qfalse;
+	int read;
 
 	if ( !fs_numServerReferencedPaks ) {
 		return qfalse; // Server didn't send any pack information along
@@ -3183,41 +3226,53 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 
 		if ( !havepak && fs_serverReferencedPakNames[i] && *fs_serverReferencedPakNames[i] ) {
 			// Don't got it
+			read = sscanf(fs_serverReferencedPakNames[i], "%255[^'/']/%255s", moddir, filename);
+
+			if ( read != 2 ) {
+				Com_Printf( "WARNING: Unable to parse pak name: %s\n", fs_serverReferencedPakNames[i] );
+				badname = qtrue;
+				continue;
+			}
 
 			if (dlstring)
 			{
-				// We need this to make sure we won't hit the end of the buffer or the server could
-				// overwrite non-pk3 files on clients by writing so much crap into neededpaks that
-				// Q_strcat cuts off the .pk3 extension.
+				// To make sure we don't cut anything off we build the string for the current pak in a separate buffer,
+				// which must be able to hold fs_serverReferencedPakNames[i], the result of st and 6 more characters. As
+				// st is at least 8 characters longer than fs_serverReferencedPakNames[i] the doubled size of st should
+				// be enough.
+				char currentPak[MAX_ZPATH*2];
 
-				origpos += strlen(origpos);
+				// Don't allow '@' in file names, because the download code splits by them
+				if ( strchr(fs_serverReferencedPakNames[i], '@') ) {
+					badname = qtrue;
+					continue;
+				}
+
+				*currentPak = 0;
 
 				// Remote name
-				Q_strcat( neededpaks, len, "@");
-				Q_strcat( neededpaks, len, fs_serverReferencedPakNames[i] );
-				Q_strcat( neededpaks, len, ".pk3" );
+				Q_strcat( currentPak, sizeof(currentPak), "@");
+				Q_strcat( currentPak, sizeof(currentPak), fs_serverReferencedPakNames[i] );
+				Q_strcat( currentPak, sizeof(currentPak), ".pk3" );
 
 				// Local name
-				Q_strcat( neededpaks, len, "@");
+				Q_strcat( currentPak, sizeof(currentPak), "@");
 				// Do we have one with the same name?
-				if ( FS_SV_FileExists( va( "%s.pk3", fs_serverReferencedPakNames[i] ) ) ) {
-					char st[MAX_ZPATH];
+				if (FS_SV_FileExists(va("%s/dl_%s.pk3", moddir, filename))) {
 					// We already have one called this, we need to download it to another name
 					// Make something up with the checksum in it
-					Com_sprintf( st, sizeof( st ), "%s.%08x.pk3", fs_serverReferencedPakNames[i], fs_serverReferencedPaks[i] );
-					Q_strcat( neededpaks, len, st );
+					Q_strcat( currentPak, sizeof(currentPak), va("%s/dl_%s.%08x.pk3", moddir, filename, fs_serverReferencedPaks[i]) );
 				} else {
-					Q_strcat( neededpaks, len, fs_serverReferencedPakNames[i] );
-					Q_strcat( neededpaks, len, ".pk3" );
+					Q_strcat( currentPak, sizeof(currentPak), va("%s/dl_%s.pk3", moddir, filename) );
 				}
 
-				// Find out whether it might have overflowed the buffer and don't add this file to the
-				// list if that is the case.
-				if(strlen(origpos) + (origpos - neededpaks) >= (unsigned)(len - 1))
-				{
-					*origpos = '\0';
+				// If the currentPak doesn't fit the neededpaks buffer we are likely running into issues
+				if ( strlen(neededpaks) + strlen(currentPak) >= (size_t)len ) {
+					Com_Printf( S_COLOR_YELLOW "WARNING (FS_ComparePaks): referenced pk3 files cut off due to too long total length\n" );
 					break;
 				}
+
+				Q_strcat( neededpaks, len, currentPak );
 			}
 			else
 			{
@@ -3232,7 +3287,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 			}
 		}
 	}
-	if ( *neededpaks ) {
+	if ( *neededpaks || badname ) {
 		return qtrue;
 	}
 
