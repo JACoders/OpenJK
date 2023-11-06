@@ -38,6 +38,7 @@ cvar_t		*con_conspeed;
 cvar_t		*con_notifytime;
 cvar_t		*con_opacity; // background alpha multiplier
 cvar_t		*con_autoclear;
+cvar_t		*con_height;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
@@ -364,6 +365,7 @@ void Con_Init (void) {
 
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
+	con_height = Cvar_Get ("con_height", "0.5", CVAR_ARCHIVE_ND);
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
@@ -878,7 +880,7 @@ Scroll it up or down
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
-		con.finalFrac = 0.5;		// half screen
+		con.finalFrac = con_height->value;
 	else
 		con.finalFrac = 0;				// none visible
 
