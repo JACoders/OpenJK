@@ -2997,6 +2997,29 @@ void FS_Which_f( void ) {
 	Com_Printf( "File not found: \"%s\"\n", filename );
 }
 
+/*
+============
+FS_Restart_f
+============
+*/
+static qboolean FS_CanRestartInPlace( void ) {
+	int i;
+	for ( i = 1; i < MAX_FILE_HANDLES; i++ ) {
+		// If we have an active filehandle for a module that references a zip file we cannot restart.
+		if ( fsh[i].fileSize ) {
+			if ( fsh[i].zipFile ) return qfalse;
+		}
+	}
+	return qtrue;
+}
+static void FS_Restart_f( void ) {
+	if ( !FS_CanRestartInPlace() ) {
+		Com_Printf( "^3WARNING: Cannot restart file system due to active file handles for pk3 files inside of modules.\n" );
+		return;
+	}
+	FS_Restart( fs_checksumFeed, qtrue );
+}
+
 //===========================================================================
 
 static int QDECL paksort( const void *a, const void *b ) {
@@ -3319,7 +3342,7 @@ FS_Shutdown
 Frees all resources and closes all files
 ================
 */
-void FS_Shutdown( qboolean closemfp ) {
+void FS_Shutdown( qboolean closemfp, qboolean keepModuleFiles ) {
 	searchpath_t	*p, *next;
 	int	i;
 
@@ -3346,7 +3369,8 @@ void FS_Shutdown( qboolean closemfp ) {
 
 	for(i = 0; i < MAX_FILE_HANDLES; i++) {
 		if (fsh[i].fileSize) {
-			FS_FCloseFile(i);
+			if ( !keepModuleFiles ) FS_FCloseFile(i);
+			else if ( fsh[i].zipFile ) Com_Error(ERR_FATAL, "FS_Shutdown: tried to keep module files when at least one module file is inside of a pak");
 		}
 	}
 
@@ -3371,6 +3395,7 @@ void FS_Shutdown( qboolean closemfp ) {
 	Cmd_RemoveCommand( "fdir" );
 	Cmd_RemoveCommand( "touchFile" );
 	Cmd_RemoveCommand( "which" );
+	Cmd_RemoveCommand( "fs_restart" );
 
 #ifdef FS_MISSING
 	if (closemfp) {
@@ -3639,6 +3664,7 @@ void FS_Startup( const char *gameName ) {
 	Cmd_AddCommand ("fdir", FS_NewDir_f, "Lists a folder with filters" );
 	Cmd_AddCommand ("touchFile", FS_TouchFile_f, "Touches a file" );
 	Cmd_AddCommand ("which", FS_Which_f, "Determines which search path a file was loaded from" );
+	Cmd_AddCommand ("fs_restart", FS_Restart_f, "Restarts the filesystem if no module is currently using files from a pk3" );
 
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=506
 	// reorder the pure pk3 files according to server order
@@ -4039,10 +4065,10 @@ void FS_InitFilesystem( void ) {
 FS_Restart
 ================
 */
-void FS_Restart( int checksumFeed ) {
+void FS_Restart( int checksumFeed, qboolean inPlace ) {
 
 	// free anything we currently have loaded
-	FS_Shutdown(qfalse);
+	FS_Shutdown(qfalse, inPlace);
 
 	// set the checksum feed
 	fs_checksumFeed = checksumFeed;

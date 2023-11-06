@@ -2685,6 +2685,29 @@ void FS_Which_f( void ) {
 	Com_Printf( "File not found: \"%s\"\n", filename );
 }
 
+/*
+============
+FS_Restart_f
+============
+*/
+static qboolean FS_CanRestartInPlace( void ) {
+	int i;
+	for ( i = 1; i < MAX_FILE_HANDLES; i++ ) {
+		// If we have an active filehandle for a module that references a zip file we cannot restart.
+		if ( fsh[i].fileSize ) {
+			if ( fsh[i].zipFile ) return qfalse;
+		}
+	}
+	return qtrue;
+}
+static void FS_Restart_f( void ) {
+	if ( !FS_CanRestartInPlace() ) {
+		Com_Printf( "^3WARNING: Cannot restart file system due to active file handles for pk3 files inside of modules.\n" );
+		return;
+	}
+	FS_Restart( qtrue );
+}
+
 //===========================================================================
 
 static int QDECL paksort( const void *a, const void *b ) {
@@ -2819,13 +2842,14 @@ FS_Shutdown
 Frees all resources and closes all files
 ================
 */
-void FS_Shutdown( void ) {
+void FS_Shutdown( qboolean keepModuleFiles ) {
 	searchpath_t	*p, *next;
 	int	i;
 
 	for(i = 0; i < MAX_FILE_HANDLES; i++) {
 		if (fsh[i].fileSize) {
-			FS_FCloseFile(i);
+			if ( !keepModuleFiles ) FS_FCloseFile(i);
+			else if ( fsh[i].zipFile ) Com_Error(ERR_FATAL, "FS_Shutdown: tried to keep module files when at least one module file is inside of a pak");
 		}
 	}
 
@@ -2850,6 +2874,7 @@ void FS_Shutdown( void ) {
 	Cmd_RemoveCommand( "fdir" );
 	Cmd_RemoveCommand( "touchFile" );
 	Cmd_RemoveCommand( "which" );
+	Cmd_RemoveCommand( "fs_restart" );
 }
 
 /*
@@ -2935,6 +2960,7 @@ void FS_Startup( const char *gameName ) {
 	Cmd_AddCommand ("fdir", FS_NewDir_f );
 	Cmd_AddCommand ("touchFile", FS_TouchFile_f );
 	Cmd_AddCommand ("which", FS_Which_f );
+	Cmd_AddCommand ("fs_restart", FS_Restart_f );
 
 	// print the current search paths
 	FS_Path_f();
@@ -2998,10 +3024,10 @@ void FS_InitFilesystem( void ) {
 FS_Restart
 ================
 */
-void FS_Restart( void ) {
+void FS_Restart( qboolean inPlace ) {
 
 	// free anything we currently have loaded
-	FS_Shutdown();
+	FS_Shutdown( inPlace );
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
