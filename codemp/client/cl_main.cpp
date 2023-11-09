@@ -105,6 +105,8 @@ cvar_t  *cl_lanForcePackets;
 
 cvar_t	*cl_drawRecording;
 
+cvar_t	*cl_filterGames;
+
 vec3_t cl_windVec;
 
 
@@ -2774,6 +2776,8 @@ void CL_Init( void ) {
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE, "Which keys are used to toggle the console");
 	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE, "Use native console key detection" );
 
+	cl_filterGames = Cvar_Get( "cl_filterGames", "", CVAR_ARCHIVE_ND, "List of fs_game to filter (space separated)" );
+
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE_ND, "Player name" );
 	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE, "Data rate" );
@@ -2989,6 +2993,20 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	if ( prot != PROTOCOL_VERSION ) {
 		Com_DPrintf( "Different protocol info packet: %s\n", infoString );
 		return;
+	}
+
+	if ( cl_filterGames && cl_filterGames->string && cl_filterGames->string[0] ) {
+		const char *gameFolder = Info_ValueForKey( infoString, "game" );
+
+		// NOTE: As the command tokenization doesn't support nested quotes we can't filter fs_game with spaces using
+		//       this approach, but fs_game with spaces cause other issues as well, like downloads not working and at
+		//       the time of writing this no public servers actually use an fs_game with spaces...
+		Cmd_TokenizeString( cl_filterGames->string );
+		for ( i = 0; i < Cmd_Argc(); i++ ) {
+			if ( !Q_stricmp(Cmd_Argv(i), gameFolder) ) {
+				return;
+			}
+		}
 	}
 
 	// iterate servers waiting for ping response
