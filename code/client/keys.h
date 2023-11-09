@@ -55,8 +55,8 @@ extern field_t		historyEditLines[COMMAND_HISTORY];
 
 void	Field_KeyDownEvent	( field_t *edit, int key );
 void	Field_CharEvent		( field_t *edit, int ch );
-void	Field_Draw			( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
-void	Field_BigDraw		( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
+void	Field_Draw			( field_t *edit, int x, int y, qboolean showCursor, qboolean noColorEscape );
+void	Field_BigDraw		( field_t *edit, int x, int y, qboolean showCursor, qboolean noColorEscape );
 
 void		Key_SetBinding			( int keynum, const char *binding );
 const char *Key_GetBinding			( int keynum );
