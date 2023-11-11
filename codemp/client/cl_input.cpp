@@ -922,7 +922,9 @@ CL_MouseEvent
 =================
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
-	if (g_clAutoMapMode && cls.cgameStarted)
+	if (cls.cursorActive) {
+		CL_UpdateCursorPosition( dx, dy );
+	} else if (g_clAutoMapMode && cls.cgameStarted)
 	{ //automap input
 		autoMapInput_t *data = (autoMapInput_t *)cl.mSharedMemory;
 
