@@ -409,6 +409,8 @@ ENTITYMAP_READER_PROTO( playerState_t*, SV_EntityMapperReadPlayerState );
 #endif
 ENTITYMAP_READER_PROTO( parms_t*, SV_EntityMapperReadParms );
 
+void *SV_EntityMapperReadGhoul2( void **inPtr );
+
 //
 // sv_bot.c
 //

@@ -678,6 +678,15 @@ ENTITYMAP_READER( playerState_t*, SV_EntityMapperReadPlayerState );
 #endif
 ENTITYMAP_READER( parms_t*, SV_EntityMapperReadParms );
 
+void *SV_EntityMapperReadGhoul2( void **inPtr ) {
+	if ( gvm->dllHandle ) {
+		return *inPtr;
+	} else {
+		// For QVMs the address is actually a handle we have to interpret as uint32_t
+		return (void*)(intptr_t)(*(uint32_t*)inPtr);
+	}
+}
+
 static void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGameClient ) {
 
 	sv.gentities = gEnts;
