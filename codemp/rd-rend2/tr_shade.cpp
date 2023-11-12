@@ -897,7 +897,7 @@ static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vert
 		uniformDataWriter.SetUniformVec4(UNIFORM_VERTCOLOR, vertColor);
 
 		DrawItem item = {};
-		item.renderState.stateBits = GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE | GLS_POLYGON_OFFSET_FILL;
+		item.renderState.stateBits = GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE | GLS_POLYGON_OFFSET_FILL | GLS_DEPTHTEST_DISABLE;
 		item.renderState.cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 		item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.program = sp;
