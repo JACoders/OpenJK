@@ -206,6 +206,15 @@ typedef struct {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
+
+	// Cursor
+	qboolean	cursorActive;
+	qhandle_t	cursorShader;
+	int			cursorX;
+	int			cursorY;
+
+	// Engine menu
+	int			menuFont;
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768

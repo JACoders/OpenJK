@@ -577,10 +577,10 @@ issues.
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
-void	FS_Shutdown( qboolean closemfp );
+void	FS_Shutdown( qboolean closemfp, qboolean keepModuleFiles = qfalse );
 
 qboolean	FS_ConditionalRestart( int checksumFeed );
-void	FS_Restart( int checksumFeed );
+void	FS_Restart( int checksumFeed, qboolean inPlace = qfalse );
 // shutdown and restart the filesystem so changes to fs_gamedir can take effect
 
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
@@ -706,6 +706,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
 
 qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
+const char *FS_MV_VerifyDownloadPath(const char *pk3file);
 
 
 /*

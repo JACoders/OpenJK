@@ -28,7 +28,7 @@ void 		IN_Frame( void );
 void 		IN_Shutdown( void );
 void 		IN_Restart( void );
 
-void		Sys_PlatformInit( void );
+void		Sys_PlatformInit( int argc, char *argv[] );
 void		Sys_PlatformExit( void );
 qboolean	Sys_GetPacket( netadr_t *net_from, msg_t *net_message );
 char		*Sys_ConsoleInput( void );

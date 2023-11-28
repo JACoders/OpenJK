@@ -716,80 +716,27 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 	int curindex;
 	int rate;
 	int blockspersnap;
-	int unreferenced = 1;
 	char errorMessage[1024];
-	char pakbuf[MAX_QPATH], *pakptr;
-	int numRefPaks;
 
 	if (!*cl->downloadName)
 		return;	// Nothing being downloaded
 
 	if(!cl->download)
 	{
-		qboolean idPack = qfalse;
-		qboolean missionPack = qfalse;
-
- 		// Chop off filename extension.
-		Com_sprintf(pakbuf, sizeof(pakbuf), "%s", cl->downloadName);
-		pakptr = strrchr(pakbuf, '.');
-
-		if(pakptr)
-		{
-			*pakptr = '\0';
-
-			// Check for pk3 filename extension
-			if(!Q_stricmp(pakptr + 1, "pk3"))
-			{
-				const char *referencedPaks = FS_ReferencedPakNames();
-
-				// Check whether the file appears in the list of referenced
-				// paks to prevent downloading of arbitrary files.
-				Cmd_TokenizeStringIgnoreQuotes(referencedPaks);
-				numRefPaks = Cmd_Argc();
-
-				for(curindex = 0; curindex < numRefPaks; curindex++)
-				{
-					if(!FS_FilenameCompare(Cmd_Argv(curindex), pakbuf))
-					{
-						unreferenced = 0;
-
-						// now that we know the file is referenced,
-						// check whether it's legal to download it.
-						missionPack = FS_idPak(pakbuf, "missionpack");
-						idPack = missionPack;
-						idPack = (qboolean)(idPack || FS_idPak(pakbuf, BASEGAME));
-
-						break;
-					}
-				}
-			}
-		}
+		qboolean allowDownload = FS_MV_VerifyDownloadPath( cl->downloadName ) ? qtrue : qfalse;
 
 		cl->download = 0;
 
 		// We open the file here
 		if ( !sv_allowDownload->integer ||
-			idPack || unreferenced ||
+			!allowDownload ||
 			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) < 0 ) {
 			// cannot auto-download file
-			if(unreferenced)
+			if( !allowDownload )
 			{
 				Com_Printf("clientDownload: %d : \"%s\" is not referenced and cannot be downloaded.\n", (int) (cl - svs.clients), cl->downloadName);
 				Com_sprintf(errorMessage, sizeof(errorMessage), "File \"%s\" is not referenced and cannot be downloaded.", cl->downloadName);
-			}
-			else if (idPack) {
-				Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", (int) (cl - svs.clients), cl->downloadName);
-				if(missionPack)
-				{
-					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload Team Arena file \"%s\"\n"
-									"The Team Arena mission pack can be found in your local game store.", cl->downloadName);
-				}
-				else
-				{
-					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
-				}
-			}
-			else if ( !sv_allowDownload->integer ) {
+			} else if ( !sv_allowDownload->integer ) {
 				Com_Printf("clientDownload: %d : \"%s\" download disabled\n", (int) (cl - svs.clients), cl->downloadName);
 				if (sv_pure->integer) {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"

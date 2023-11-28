@@ -445,7 +445,9 @@ issues.
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
-void	FS_Shutdown( void );
+void	FS_Shutdown( qboolean inPlace = qfalse );
+
+void	FS_Restart( qboolean inPlace = qfalse );
 
 qboolean FS_ConditionalRestart( void );
 

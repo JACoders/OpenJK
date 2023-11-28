@@ -472,6 +472,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		UIVM_Refresh( cls.realtime );
 	}
 
+	// Engine internal menu
+	CL_DrawEngineMenus();
+
 	// console draws next
 	Con_DrawConsole ();
 
