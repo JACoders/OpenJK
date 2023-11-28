@@ -1537,10 +1537,15 @@ void CL_InitDownloads(void) {
 		}
 	}
 	else if ( FS_ComparePaks( clc.downloadList, sizeof( clc.downloadList ) , qtrue ) ) {
+		const char *serverInfo = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SERVERINFO ];
+		const char *serverAllowDownloads = Info_ValueForKey( serverInfo, "sv_allowDownload" );
 
 		Com_Printf("Need paks: %s\n", clc.downloadList );
 
-		if ( *clc.downloadList ) {
+		if ( serverAllowDownloads[0] && !atoi(serverAllowDownloads) ) {
+			// The server has an "sv_allowDownload" value set, but it's 0
+			Com_Printf("Skipping downloads, because the server does not allow downloads\n");
+		} else if ( *clc.downloadList ) {
 			// if autodownloading is not enabled on the server
 			cls.state = CA_CONNECTED;
 
