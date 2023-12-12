@@ -860,7 +860,6 @@ static void DoLine2(const vec3_t start, const vec3_t end, const vec3_t up, float
 	tess.indexes[tess.numIndexes++] = vbase + 3;
 }
 
-#ifndef REND2_SP
 static void DoLine_Oriented( const vec3_t start, const vec3_t end, const vec3_t up, float spanWidth )
 {
 	float		spanWidth2;
@@ -921,7 +920,6 @@ static void RB_SurfaceOrientedLine(void)
 	VectorCopy(e->axis[1], right);
 	DoLine_Oriented(start, end, right, e->data.line.width*0.5);
 }
-#endif
 
 //-----------------
 // RB_SurfaceLine
@@ -2010,7 +2008,6 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 	}
 }
 
-#ifdef REND2_SP
 #define LATHE_SEG_STEP	10
 #define BEZIER_STEP		0.05f	// must be in the range of 0 to 1
 
@@ -2336,7 +2333,6 @@ static void RB_SurfaceClouds()
 		}
 	}
 }
-#endif
 
 /*
 ===========================================================================
@@ -2406,7 +2402,6 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	case RT_CYLINDER:
 		RB_SurfaceCylinder();
 		break;
-#ifndef REND2_SP
 	case RT_ORIENTEDLINE:
 		RB_SurfaceOrientedLine();
 		break;
@@ -2434,14 +2429,12 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 			}
 		}
 		break;
-#else
 	case RT_LATHE:
 		RB_SurfaceLathe();
 		break;
 	case RT_CLOUDS:
 		RB_SurfaceClouds();
 		break;
-#endif
 	default:
 		RB_SurfaceAxis();
 		break;

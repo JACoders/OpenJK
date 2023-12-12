@@ -554,7 +554,6 @@ typedef struct trRefdef_s {
 
 	int			num_entities;
 	trRefEntity_t	*entities;
-	trMiniRefEntity_t	*miniEntities;
 
 	int			num_dlights;
 	struct dlight_s	*dlights;
@@ -1103,6 +1102,7 @@ struct glconfigExt_t
 {
 	glconfig_t *glConfig;
 
+	qboolean textureFilterAnisotropicAvailable;
 	qboolean doGammaCorrectionWithShaders;
 	qboolean doStencilShadowsInOneDrawcall;
 	const char *originalExtensionString;

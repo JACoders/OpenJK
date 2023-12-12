@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_WorldEffects.h"
 
 glconfig_t	glConfig;
+glconfigExt_t glConfigExt;
 glstate_t	glState;
 window_t	window;
 
@@ -677,10 +678,10 @@ static void GLimp_InitExtensions( void )
 	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
 	if (qglStencilOpSeparate)
 	{
-		glConfig.doStencilShadowsInOneDrawcall = qtrue;
+		glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
 	}
 #else
-	glConfig.doStencilShadowsInOneDrawcall = qtrue;
+	glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
 #endif
 }
 

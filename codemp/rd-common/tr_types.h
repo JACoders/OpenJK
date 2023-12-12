@@ -75,6 +75,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define RF_FORCEPOST		0x200000 //force it to post-render -rww
 
+// SP renderfx flags, only use in SP!
+#define	RF_CAP_FRAMES		0x400000	// cap the model frames by the maxframes for one shot anims
+#define RF_ALPHA_FADE		0x800000	// hacks blend mode and uses whatever the set alpha is.
+#define RF_PULSATE			0x1000000	// for things like a dropped saber, where we want to add an extra visual clue
+#define RF_G2MINLOD			0x2000000	// force Lowest lod on g2
+#define RF_MORELIGHT		0x4000000	// allways have some light (viewmodel, some items) | SP version which is different from MP
+
 // refdef flags
 #define RDF_NOWORLDMODEL	1		// used for player configuration screen
 #define RDF_HYPERSPACE		4		// teleportation effect
@@ -85,6 +92,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define RDF_AUTOMAP			32		//means this scene is to draw the automap -rww
 #define	RDF_NOFOG			64		//no global fog in this scene (but still brush fog) -rww
 #define RDF_ForceSightOn	128		//using force sight
+
+// SP refdef flags, only use in SP!
+#define RDF_doLAGoggles		256		// SP only Light Amp goggles
+#define RDF_doFullbright	512		// SP only Light Amp goggles
 
 extern int	skyboxportal;
 extern int	drawskyboxportal;
@@ -117,7 +128,12 @@ typedef enum {
 	RT_CYLINDER,
 	RT_ENT_CHAIN,
 
-	RT_MAX_REF_ENTITY_TYPE
+	RT_MAX_MP_REF_ENTITY_TYPE,
+	// SP ONLY Entity Types!
+	RT_LATHE,
+	RT_CLOUDS,
+
+	RT_MAX_SP_REF_ENTITY_TYPE
 } refEntityType_t;
 
 typedef struct miniRefEntity_s

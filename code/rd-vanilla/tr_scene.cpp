@@ -220,7 +220,13 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 #endif
 		return;
 	}
-	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) {
+
+	if (ent->reType == RT_ENT_CHAIN)
+	{ //minirefents must die.
+		return;
+	}
+
+	if ( (int)ent->reType < 0 || ent->reType >= RT_MAX_SP_REF_ENTITY_TYPE || ent->reType == RT_MAX_MP_REF_ENTITY_TYPE ) {
 		Com_Error( ERR_DROP, "RE_AddRefEntityToScene: bad reType %i", ent->reType );
 	}
 
@@ -228,6 +234,38 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	backEndData->entities[r_numentities].lightingCalculated = qfalse;
 
 	r_numentities++;
+}
+
+
+/************************************************************************************************
+ * RE_AddMiniRefEntityToScene                                                                   *
+ *    Adds a mini ref ent to the scene.  If the input parameter is null, it signifies the end   *
+ *    of the chain.  Otherwise, if there is a valid chain parent, it will be added to that.     *
+ *    If there is no parent, it will be added as a regular ref ent.                             *
+ *                                                                                              *
+ * Input                                                                                        *
+ *    ent: the mini ref ent to be added                                                         *
+ *                                                                                              *
+ * Output / Return                                                                              *
+ *    none                                                                                      *
+ *                                                                                              *
+ ************************************************************************************************/
+void RE_AddMiniRefEntityToScene(const miniRefEntity_t *ent)
+{
+	if (!tr.registered)
+	{
+		return;
+	}
+	if (!ent)
+	{
+		return;
+	}
+
+	refEntity_t		tempEnt;
+
+	memcpy(&tempEnt, ent, sizeof(*ent));
+	memset(((char *)&tempEnt) + sizeof(*ent), 0, sizeof(tempEnt) - sizeof(*ent));
+	RE_AddRefEntityToScene(&tempEnt);
 }
 
 

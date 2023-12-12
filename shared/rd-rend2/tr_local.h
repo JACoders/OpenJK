@@ -2664,12 +2664,16 @@ struct glconfigExt_t
 {
 	glconfig_t *glConfig;
 
+	qboolean textureFilterAnisotropicAvailable;
+	qboolean doGammaCorrectionWithShaders;
+	qboolean doStencilShadowsInOneDrawcall;
 	const char *originalExtensionString;
 };
 
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern glconfigExt_t glConfigExt;
 extern glRefConfig_t glRefConfig;
 extern window_t		window;
 
@@ -3328,9 +3332,7 @@ void R_InitNextFrame( void );
 
 void RE_ClearScene( void );
 void RE_AddRefEntityToScene( const refEntity_t *ent );
-#ifndef REND2_SP
 void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt );
-#endif
 void RE_AddPolyToScene(qhandle_t hShader, int numVerts, const polyVert_t *verts, int num = 1);
 void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b );

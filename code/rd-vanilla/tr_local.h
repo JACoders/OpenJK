@@ -1066,6 +1066,16 @@ typedef struct {
 	float					distanceCull;
 } trGlobals_t;
 
+struct glconfigExt_t
+{
+	glconfig_t *glConfig;
+
+	qboolean textureFilterAnisotropicAvailable;
+	qboolean doGammaCorrectionWithShaders;
+	qboolean doStencilShadowsInOneDrawcall;
+	const char *originalExtensionString;
+};
+
 int		 R_Images_StartIteration(void);
 image_t *R_Images_GetNextIteration(void);
 void	 R_Images_Clear(void);
@@ -1076,6 +1086,7 @@ void	 R_Images_DeleteImage(image_t *pImage);
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
+extern glconfigExt_t glConfigExt;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
 extern window_t		window;
 

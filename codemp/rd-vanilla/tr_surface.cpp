@@ -1622,22 +1622,22 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 		break;
 	case RT_ENT_CHAIN:
 		{
-			int				i, count, start;
-			static trRefEntity_t	tempEnt = *backEnd.currentEntity;
+			static trRefEntity_t tempEnt = *backEnd.currentEntity;
+
 			//rww - if not static then currentEntity is garbage because
 			//this is a local. This was not static in sof2.. but I guess
 			//they never check ce.renderfx so it didn't show up.
 
-			start = backEnd.currentEntity->e.uRefEnt.uMini.miniStart;
-			count = backEnd.currentEntity->e.uRefEnt.uMini.miniCount;
+			const int start = backEnd.currentEntity->e.uRefEnt.uMini.miniStart;
+			const int count = backEnd.currentEntity->e.uRefEnt.uMini.miniCount;
 			assert(count > 0);
 			backEnd.currentEntity = &tempEnt;
 
 			assert(backEnd.currentEntity->e.renderfx >= 0);
 
-			for(i=0;i<count;i++)
+			for (int i = 0, j = start; i < count; i++, j++)
 			{
-				memcpy(&backEnd.currentEntity->e, &backEnd.refdef.miniEntities[start+i], sizeof(backEnd.refdef.miniEntities[start+i]));
+				backEnd.currentEntity->e = backEnd.refdef.entities[j].e;
 
 				assert(backEnd.currentEntity->e.renderfx >= 0);
 

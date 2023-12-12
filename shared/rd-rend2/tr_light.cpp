@@ -368,15 +368,6 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	// only do min lighting when there is no hdr light data
 	if (tr.hdrLighting != qtrue)
 	{
-#ifndef REND2_SP
-		// bonus items and view weapons have a fixed minimum add
-		if (1/*!r_hdr->integer*/) {
-			// give everything a minimum light add
-			ent->ambientLight[0] += tr.identityLight * 32;
-			ent->ambientLight[1] += tr.identityLight * 32;
-			ent->ambientLight[2] += tr.identityLight * 32;
-		}
-
 		if (ent->e.renderfx & RF_MINLIGHT)
 		{ //the minlight flag is now for items rotating on their holo thing
 			if (ent->e.shaderRGBA[0] == 255 &&
@@ -394,9 +385,8 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 				ent->ambientLight[2] += tr.identityLight * 150;
 			}
 		}
-#else
 		// bonus items and view weapons have a fixed minimum add
-		if (ent->e.renderfx & RF_MORELIGHT) {
+		else if (ent->e.renderfx & RF_MORELIGHT) {
 			ent->ambientLight[0] += tr.identityLight * 96;
 			ent->ambientLight[1] += tr.identityLight * 96;
 			ent->ambientLight[2] += tr.identityLight * 96;
@@ -407,7 +397,6 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 			ent->ambientLight[1] += tr.identityLight * 32;
 			ent->ambientLight[2] += tr.identityLight * 32;
 		}
-#endif
 	}
 
 	d = VectorLength( ent->directedLight );
