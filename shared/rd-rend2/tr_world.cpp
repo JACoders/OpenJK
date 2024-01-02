@@ -833,7 +833,7 @@ void R_MarkLeaves( void )
 	const byte *vis = R_ClusterPVS(tr.visClusters[tr.visIndex]);
 	
 	int i;
-	for (i = 0, leaf = (tr.world->nodes + tr.world->numDecisionNodes); i < (tr.world->numnodes - tr.world->numDecisionNodes); i++, leaf++) {
+	for (i = 0, leaf = tr.world->nodes; i < tr.world->numnodes; i++, leaf++) {
 		cluster = leaf->cluster;
 		if ( cluster < 0 || cluster >= tr.world->numClusters ) {
 			continue;
