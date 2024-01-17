@@ -87,6 +87,12 @@ if(APPLE)
   option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 endif()
 
+find_program(CCACHE_FOUND ccache)
+if (CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set(ENV{CCACHE_SLOPPINESS} pch_defines,time_macros)
+endif()
+
 #=============================================================================
 #
 # Custom CMake Modules needed
