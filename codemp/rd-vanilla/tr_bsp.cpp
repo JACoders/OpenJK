@@ -1391,15 +1391,15 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 		}
 	}
 
-#ifdef PATCH_STITCHING
-	R_StitchAllPatches(worldData);
-#endif
+	if ( r_patchStitching->integer ) {
+		R_StitchAllPatches(worldData);
+	}
 
 	R_FixSharedVertexLodError(worldData);
 
-#ifdef PATCH_STITCHING
-	R_MovePatchSurfacesToHunk(worldData);
-#endif
+	if ( r_patchStitching->integer ) {
+		R_MovePatchSurfacesToHunk(worldData);
+	}
 
 	ri.Printf( PRINT_ALL, "...loaded %d faces, %i meshes, %i trisurfs, %i flares\n", numFaces, numMeshes, numTriSurfs, numFlares );
 }

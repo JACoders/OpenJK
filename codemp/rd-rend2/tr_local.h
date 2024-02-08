@@ -286,6 +286,8 @@ extern cvar_t	*broadsword_dircap;
 Ghoul2 Insert End
 */
 
+extern cvar_t	*r_patchStitching;
+
 /*
 End Cvars
 */
@@ -497,8 +499,8 @@ typedef enum {
 	GF_SIN,
 	GF_SQUARE,
 	GF_TRIANGLE,
-	GF_SAWTOOTH, 
-	GF_INVERSE_SAWTOOTH, 
+	GF_SAWTOOTH,
+	GF_INVERSE_SAWTOOTH,
 
 	GF_NOISE,
 	GF_RAND
@@ -853,7 +855,7 @@ typedef enum
 	ST_GLSL
 } stageType_t;
 
-typedef enum 
+typedef enum
 {
 	SPEC_NONE,		// no specular found
 	SPEC_SPECGLOSS,	// Specular Gloss
@@ -889,7 +891,7 @@ typedef struct {
 	qboolean		cloth;
 
 	AlphaTestType	alphaTestType;
-	
+
 	textureBundle_t	bundle[NUM_TEXTURE_BUNDLES];
 
 	waveForm_t		rgbWave;
@@ -975,7 +977,7 @@ typedef struct shader_s {
 	qboolean	isPortal;
 
 	cullType_t	cullType;				// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
-	qboolean	polygonOffset;			// set for decals and other items that must be offset 
+	qboolean	polygonOffset;			// set for decals and other items that must be offset
 	qboolean	noMipMaps;				// for console fonts, 2D elements, etc.
 	qboolean	noPicMip;				// for images that must always be full resolution
 	qboolean	noTC;					// for images that don't want to be texture compressed (eg skies)
@@ -991,8 +993,8 @@ typedef struct shader_s {
 	int			numSurfaceSpriteStages;
 	GLuint		spriteUbo;
 	int			ShaderInstanceUboOffset;
-	
-	shaderStage_t	*stages[MAX_SHADER_STAGES];		
+
+	shaderStage_t	*stages[MAX_SHADER_STAGES];
 
 	void		(*optimalStageIteratorFunc)( void );
 	qboolean	isHDRLit;
@@ -1159,7 +1161,7 @@ enum
 							ATTR_BONE_WEIGHTS |
 							ATTR_POSITION2
 #ifdef REND2_SP
-							| 
+							|
 							ATTR_TANGENT2 |
 							ATTR_NORMAL2
 #endif // REND2_SP
@@ -1180,7 +1182,7 @@ enum
 #else
 	GENERICDEF_ALL						= 0x007F,
 #endif // REND2_SP
-	
+
 	GENERICDEF_COUNT                	= GENERICDEF_ALL + 1,
 };
 
@@ -1242,7 +1244,7 @@ enum
 #else
 	LIGHTDEF_ALL						= 0x01FF,
 #endif // REND2_SP
-	
+
 	LIGHTDEF_COUNT               		= LIGHTDEF_ALL + 1
 };
 
@@ -1757,7 +1759,7 @@ typedef struct srfBspSurface_s
 	// static render data
 	VBO_t          *vbo;
 	IBO_t          *ibo;
-	
+
 	// SF_GRID specific variables after here
 
 	// lod information, which may be different
@@ -1850,7 +1852,7 @@ SHADOWS
 typedef struct pshadow_s
 {
 	float sort;
-	
+
 	int    numEntities;
 	int    entityNums[8];
 	vec3_t entityOrigins[8];
@@ -1919,7 +1921,7 @@ typedef struct mnode_s {
 
 	// node specific
 	cplane_t	*plane;
-	struct mnode_s	*children[2];	
+	struct mnode_s	*children[2];
 
 	// leaf specific
 	int			cluster;
@@ -1936,7 +1938,7 @@ typedef struct {
 	int			numSurfaces;
 } bmodel_t;
 
-typedef struct 
+typedef struct
 {
 	byte		ambientLight[MAXLIGHTMAPS][3];
 	byte		directLight[MAXLIGHTMAPS][3];
@@ -2161,7 +2163,7 @@ typedef struct model_s {
 void		R_ModelInit (void);
 
 model_t		*R_GetModelByHandle( qhandle_t hModel );
-int			R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame, 
+int			R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame,
 					 float frac, const char *tagName );
 void		R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs );
 
@@ -2315,7 +2317,7 @@ typedef struct {
 	int		c_surfaces, c_shaders, c_vertexes, c_indexes, c_totalIndexes;
 	int     c_surfBatches;
 	float	c_overDraw;
-	
+
 	int		c_vboVertexBuffers;
 	int		c_vboIndexBuffers;
 	int		c_vboVertexes;
@@ -2369,7 +2371,7 @@ typedef struct {
 } backEndState_t;
 
 /*
-** trGlobals_t 
+** trGlobals_t
 **
 ** Most renderer globals are defined here.
 ** backend functions should never modify any of these fields,
@@ -2539,7 +2541,7 @@ typedef struct trGlobals_s {
 	viewParms_t				viewParms;
 	viewParms_t				cachedViewParms[3 + MAX_DLIGHTS * 6 + 3 + MAX_DRAWN_PSHADOWS];
 	int						numCachedViewParms;
-	
+
 	viewParms_t				skyPortalParms;
 	byte					skyPortalAreaMask[MAX_MAP_AREA_BYTES];
 	int						skyPortalEntities;
@@ -2846,7 +2848,7 @@ void R_AddPolygonSurfaces( const trRefdef_t *refdef );
 
 void R_DecomposeSort( uint32_t sort, int *entityNum, shader_t **shader, int *cubemap, int *postRender );
 uint32_t R_CreateSortKey(int entityNum, int sortedShaderIndex, int cubemapIndex, int postRender);
-void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
+void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
 bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity );
 
@@ -3006,7 +3008,7 @@ typedef struct stageVars
 #define MAX_MULTIDRAW_PRIMITIVES	16384
 
 const int NUM_TESS_TEXCOORDS = 1 + MAXLIGHTMAPS;
-struct shaderCommands_s 
+struct shaderCommands_s
 {
 	glIndex_t	indexes[SHADER_MAX_INDEXES] QALIGN(16);
 	vec4_t		xyz[SHADER_MAX_VERTEXES] QALIGN(16);
@@ -3150,8 +3152,6 @@ CURVE TESSELATION
 
 ============================================================
 */
-
-#define PATCH_STITCHING
 
 srfBspSurface_t *R_SubdividePatchToGrid( int width, int height,
 								srfVert_t points[MAX_PATCH_SIZE*MAX_PATCH_SIZE] );

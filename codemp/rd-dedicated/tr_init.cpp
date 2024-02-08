@@ -212,6 +212,8 @@ Ghoul2 Insert End
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
+cvar_t	*r_patchStitching;
+
 /*
 ** R_GetModeInfo
 */
@@ -453,6 +455,9 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+	r_patchStitching = ri.Cvar_Get("r_patchStitching", "1", CVAR_ARCHIVE, "Enable stitching of neighbouring patch surfaces" );
+
 	r_modelpoolmegs = ri.Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE, "" );
 	if (ri.Sys_LowPhysicalMemory() )
 		ri.Cvar_Set("r_modelpoolmegs", "0");
