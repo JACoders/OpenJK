@@ -100,6 +100,7 @@ cvar_t	*cl_autolodscale;
 
 cvar_t	*cl_consoleKeys;
 cvar_t	*cl_consoleUseScanCode;
+cvar_t	*cl_consoleShiftRequirement;
 
 cvar_t  *cl_lanForcePackets;
 
@@ -2291,6 +2292,7 @@ void CL_InitRenderer( void ) {
 
 	// load character sets
 	cls.charSetShader = re->RegisterShaderNoMip("gfx/2d/charsgrid_med");
+	cls.consoleFont = re->RegisterFont( "ocr_a" );
 
 	cls.whiteShader = re->RegisterShader( "white" );
 	cls.consoleShader = re->RegisterShader( "console" );
@@ -2775,6 +2777,7 @@ void CL_Init( void ) {
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE, "Which keys are used to toggle the console");
 	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE, "Use native console key detection" );
+	cl_consoleShiftRequirement = Cvar_Get( "cl_consoleShiftRequirement", "0", CVAR_ARCHIVE, "Require shift key to be pressed for native console key detection" );
 
 	cl_filterGames = Cvar_Get( "cl_filterGames", "MBII MBIIOpenBeta", CVAR_ARCHIVE_ND, "List of fs_game to filter (space separated)" );
 
