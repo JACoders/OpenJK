@@ -114,7 +114,7 @@ static	void R_ColorShiftLightingBytes( byte in[4], byte out[4] ) {
 	r = in[0] << shift;
 	g = in[1] << shift;
 	b = in[2] << shift;
-	
+
 	// normalize by color instead of saturating to white
 	if ( ( r | g | b ) > 255 ) {
 		int		max;
@@ -242,7 +242,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 	// we are about to upload textures
 	R_IssuePendingRenderCommands();
-	
+
 	// check for deluxe mapping
 	if (numLightmaps <= 1)
 	{
@@ -376,7 +376,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					R_LoadImage(filename, &externalLightmap, &lightmapWidth, &lightmapHeight);
 				}
 			}
-			
+
 			if (externalLightmap)
 			{
 				int newImageSize = lightmapWidth * lightmapHeight * 4 * 2;
@@ -451,7 +451,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					else if (buf_p && hdr_capable)
 					{
 						vec4_t color;
-						
+
 						//hack: convert LDR lightmap to HDR one
 						color[0] = MAX(buf_p[j*numColorComponents + 0], 0.499f);
 						color[1] = MAX(buf_p[j*numColorComponents + 1], 0.499f);
@@ -734,7 +734,7 @@ static int FatLightmap(int lightmapnum)
 
 	if (tr.lightmapAtlasSize[0] > 0)
 		return 0;
-	
+
 	return lightmapnum;
 }
 
@@ -2174,8 +2174,8 @@ static void R_CreateWorldVBOs( world_t *worldData )
 		ri.Printf(PRINT_ALL, "...calculating world VBO %d ( %i verts %i tris )\n", k, numVerts, numIndexes / 3);
 
 		// create arrays
-		verts = (packedVertex_t *)ri.Hunk_AllocateTempMemory(numVerts * sizeof(packedVertex_t)); 
-		indexes = (glIndex_t *)ri.Hunk_AllocateTempMemory(numIndexes * sizeof(glIndex_t)); 
+		verts = (packedVertex_t *)ri.Hunk_AllocateTempMemory(numVerts * sizeof(packedVertex_t));
+		indexes = (glIndex_t *)ri.Hunk_AllocateTempMemory(numIndexes * sizeof(glIndex_t));
 
 		// set up indices and copy vertices
 		numVerts = 0;
@@ -2319,7 +2319,7 @@ static	void R_LoadSurfaces( world_t *worldData, lump_t *surfs, lump_t *verts, lu
 	if ( indexLump->filelen % sizeof(*indexes))
 		ri.Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData->name);
 
-	out = (msurface_t *)ri.Hunk_Alloc ( count * sizeof(*out), h_low );	
+	out = (msurface_t *)ri.Hunk_Alloc ( count * sizeof(*out), h_low );
 
 	worldData->surfaces = out;
 	worldData->numsurfaces = count;
@@ -2427,17 +2427,17 @@ static	void R_LoadSurfaces( world_t *worldData, lump_t *surfs, lump_t *verts, lu
 		ri.FS_FreeFile(hdrVertColors);
 	}
 
-#ifdef PATCH_STITCHING
-	R_StitchAllPatches(worldData);
-#endif
+	if ( r_patchStitching->integer ) {
+		R_StitchAllPatches(worldData);
+	}
 
 	R_FixSharedVertexLodError(worldData);
 
-#ifdef PATCH_STITCHING
-	R_MovePatchSurfacesToHunk(worldData);
-#endif
+	if ( r_patchStitching->integer ) {
+		R_MovePatchSurfacesToHunk(worldData);
+	}
 
-	ri.Printf( PRINT_ALL, "...loaded %d faces, %i meshes, %i trisurfs, %i flares\n", 
+	ri.Printf( PRINT_ALL, "...loaded %d faces, %i meshes, %i trisurfs, %i flares\n",
 		numFaces, numMeshes, numTriSurfs, numFlares );
 }
 
@@ -2538,7 +2538,7 @@ static	void R_LoadNodesAndLeafs (world_t *worldData, lump_t *nodeLump, lump_t *l
 	numNodes = nodeLump->filelen / sizeof(dnode_t);
 	numLeafs = leafLump->filelen / sizeof(dleaf_t);
 
-	out = (mnode_t *)ri.Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);	
+	out = (mnode_t *)ri.Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);
 
 	worldData->nodes = out;
 	worldData->numnodes = numNodes + numLeafs;
@@ -2552,7 +2552,7 @@ static	void R_LoadNodesAndLeafs (world_t *worldData, lump_t *nodeLump, lump_t *l
 			out->mins[j] = LittleLong (in->mins[j]);
 			out->maxs[j] = LittleLong (in->maxs[j]);
 		}
-	
+
 		p = LittleLong(in->planeNum);
 		out->plane = worldData->planes + p;
 
@@ -2567,7 +2567,7 @@ static	void R_LoadNodesAndLeafs (world_t *worldData, lump_t *nodeLump, lump_t *l
 				out->children[j] = worldData->nodes + numNodes + (-1 - p);
 		}
 	}
-	
+
 	// load leafs
 	inLeaf = (dleaf_t *)(fileBase + leafLump->fileofs);
 	for ( i=0 ; i<numLeafs ; i++, inLeaf++, out++)
@@ -2587,7 +2587,7 @@ static	void R_LoadNodesAndLeafs (world_t *worldData, lump_t *nodeLump, lump_t *l
 
 		out->firstmarksurface = LittleLong(inLeaf->firstLeafSurface);
 		out->nummarksurfaces = LittleLong(inLeaf->numLeafSurfaces);
-	}	
+	}
 
 	// chain decendants
 	R_SetParent (worldData->nodes, NULL);
@@ -2600,10 +2600,10 @@ static	void R_LoadNodesAndLeafs (world_t *worldData, lump_t *nodeLump, lump_t *l
 R_LoadShaders
 =================
 */
-static	void R_LoadShaders( world_t *worldData, lump_t *l ) {	
+static	void R_LoadShaders( world_t *worldData, lump_t *l ) {
 	int		i, count;
 	dshader_t	*in, *out;
-	
+
 	in = (dshader_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri.Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData->name);
@@ -2628,16 +2628,16 @@ R_LoadMarksurfaces
 =================
 */
 static	void R_LoadMarksurfaces (world_t *worldData, lump_t *l)
-{	
+{
 	int		i, j, count;
 	int		*in;
 	int     *out;
-	
+
 	in = (int *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri.Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData->name);
 	count = l->filelen / sizeof(*in);
-	out = (int *)ri.Hunk_Alloc ( count*sizeof(*out), h_low);	
+	out = (int *)ri.Hunk_Alloc ( count*sizeof(*out), h_low);
 
 	worldData->marksurfaces = out;
 	worldData->nummarksurfaces = count;
@@ -2661,13 +2661,13 @@ static	void R_LoadPlanes( world_t *worldData, lump_t *l ) {
 	dplane_t 	*in;
 	int			count;
 	int			bits;
-	
+
 	in = (dplane_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri.Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData->name);
 	count = l->filelen / sizeof(*in);
-	out = (cplane_t *)ri.Hunk_Alloc ( count*2*sizeof(*out), h_low);	
-	
+	out = (cplane_t *)ri.Hunk_Alloc ( count*2*sizeof(*out), h_low);
+
 	worldData->planes = out;
 	worldData->numplanes = count;
 
@@ -2797,8 +2797,8 @@ static	void R_LoadFogs( world_t *worldData, lump_t *l, lump_t *brushesLump, lump
 		out->parms = shader->fogParms;
 
 		VectorSet4(out->color,
-			shader->fogParms.color[0] * tr.identityLight, 
-			shader->fogParms.color[1] * tr.identityLight, 
+			shader->fogParms.color[0] * tr.identityLight,
+			shader->fogParms.color[1] * tr.identityLight,
 			shader->fogParms.color[2] * tr.identityLight,
 			1.0);
 
@@ -2851,7 +2851,7 @@ void R_LoadLightGrid( world_t *worldData, lump_t *l ) {
 	Com_Memcpy( worldData->lightGridData, (void *)(fileBase + l->fileofs), l->filelen );
 
 	// deal with overbright bits
-	for ( i = 0 ; i < numGridDataElements ; i++ ) 
+	for ( i = 0 ; i < numGridDataElements ; i++ )
 	{
 		for(int j = 0; j < MAXLIGHTMAPS; j++)
 		{
@@ -2954,7 +2954,7 @@ void R_LoadEntities( world_t *worldData, lump_t *l ) {
 	}
 
 	// only parse the world spawn
-	while ( 1 ) {	
+	while ( 1 ) {
 		// parse key
 		token = COM_ParseExt( &p, qtrue );
 
@@ -3064,7 +3064,7 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 	}
 
 	// go through all the key / value pairs
-	while ( 1 ) {  
+	while ( 1 ) {
 		int keyLength, tokenLength;
 
 		// parse key
@@ -3077,7 +3077,7 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 			break;
 		}
 
-		// parse value  
+		// parse value
 		if ( !R_GetEntityToken( com_token, sizeof( com_token ) ) ) {
 			ri.Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace\n" );
 			return qfalse;
@@ -3301,7 +3301,7 @@ static void R_RenderAllCubemaps()
 	{
 		cubemapFormat = GL_RGBA16F;
 	}
-	
+
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		bool bounce = k != 0;
@@ -3462,7 +3462,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 
 				if (worldData->surfacesViewCount[surfNum2] != -1)
 					continue;
-				
+
 				surf2 = worldData->surfaces + surfNum2;
 
 				if ((*surf2->data != SF_GRID) &&
@@ -3512,7 +3512,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 
 		if (!merges)
 			worldData->surfacesViewCount[i] = -1;
-	}	
+	}
 
 	// count merged/unmerged surfaces
 	numMergedSurfaces = 0;
@@ -3543,7 +3543,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 		(int *)ri.Hunk_Alloc(
 			sizeof(*worldData->mergedSurfacesPshadowBits) * numMergedSurfaces, h_low);
 	worldData->numMergedSurfaces = numMergedSurfaces;
-	
+
 	// view surfaces are like mark surfaces, except negative ones represent merged surfaces
 	// -1 represents 0, -2 represents 1, and so on
 	worldData->viewSurfaces =
@@ -3707,7 +3707,7 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 
 	endTime = ri.Milliseconds();
 
-	ri.Printf(PRINT_ALL, "Processed %d surfaces into %d merged, %d unmerged in %5.2f seconds\n", 
+	ri.Printf(PRINT_ALL, "Processed %d surfaces into %d merged, %d unmerged in %5.2f seconds\n",
 		numWorldSurfaces, numMergedSurfaces, numUnmergedSurfaces, (endTime - startTime) / 1000.0f);
 
 	// reset viewcounts
@@ -4147,8 +4147,8 @@ static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 					{
 						VBO_t *vbo = R_CreateVBO((byte *)sprites_data.data(),
 							sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC);
-						
-						for (srfSprites_t *sp : currentBatch) 
+
+						for (srfSprites_t *sp : currentBatch)
 						{
 							sp->vbo = vbo;
 							sp->ibo = ibo;
@@ -4249,7 +4249,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	{
 		ri.Error(
 			ERR_DROP,
-			"R_LoadBSP: %s has wrong version number (%i should be %i)", 
+			"R_LoadBSP: %s has wrong version number (%i should be %i)",
 			name,
 			bspVersion,
 			BSP_VERSION);
@@ -4296,7 +4296,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 			&header->lumps[LUMP_BRUSHSIDES]);
 
 	R_GenerateSurfaceSprites(worldData, worldIndex + 1);
-	
+
 	// load cubemaps
 	if (r_cubeMapping->integer && bspIndex == nullptr)
 	{
@@ -4321,7 +4321,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 				if (tr.numCubemaps)
 					break;
 			}
-			
+
 		}
 
 		if (tr.numCubemaps)
