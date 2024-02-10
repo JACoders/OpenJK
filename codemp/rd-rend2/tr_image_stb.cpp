@@ -24,23 +24,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "tr_local.h"
 
-static void* R_LocalMalloc(size_t size)
-{
-	return ri.Hunk_AllocateTempMemory(size);
-}
+static void *R_LocalMalloc(size_t size) { return ri.Hunk_AllocateTempMemory(size); }
 
-static void* R_LocalReallocSized(void *ptr, size_t old_size, size_t new_size)
-{
+static void *R_LocalReallocSized(void *ptr, size_t old_size, size_t new_size) {
 	void *mem = ri.Hunk_AllocateTempMemory(new_size);
-	if (ptr)
-	{
+	if (ptr) {
 		memcpy(mem, ptr, old_size);
 		ri.Hunk_FreeTempMemory(ptr);
 	}
 	return mem;
 }
-static void R_LocalFree(void *ptr)
-{
+static void R_LocalFree(void *ptr) {
 	if (ptr)
 		ri.Hunk_FreeTempMemory(ptr);
 }
@@ -59,13 +53,11 @@ static void R_LocalFree(void *ptr)
 #define IMG_FLOAT 1
 
 // Loads a HDR image from file.
-void R_LoadHDRImage( const char *filename, byte **data, int *width, int *height )
-{
+void R_LoadHDRImage(const char *filename, byte **data, int *width, int *height) {
 	byte *buf = NULL;
 	int x, y, n;
-	int len = ri.FS_ReadFile (filename, (void **)&buf);
-	if ( len <= 0 || buf == NULL )
-	{
+	int len = ri.FS_ReadFile(filename, (void **)&buf);
+	if (len <= 0 || buf == NULL) {
 		return;
 	}
 	stbi_set_flip_vertically_on_load(0);
@@ -85,5 +77,4 @@ void R_LoadHDRImage( const char *filename, byte **data, int *width, int *height 
 		*height = y;
 	else
 		*height = 0;
-
 }

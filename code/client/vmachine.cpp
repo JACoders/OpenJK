@@ -32,18 +32,17 @@ VIRTUAL MACHINE
 
 ==============================================================
 */
-intptr_t	VM_Call( int callnum, ... )
-{
-	intptr_t args[8] = { 0 };
+intptr_t VM_Call(int callnum, ...) {
+	intptr_t args[8] = {0};
 	va_list ap;
 
-	if ( cgvm.entryPoint ) {
-		va_start( ap, callnum );
-		for ( size_t i = 0; i < ARRAY_LEN( args ); i++ )
-			args[i] = va_arg( ap, intptr_t );
+	if (cgvm.entryPoint) {
+		va_start(ap, callnum);
+		for (size_t i = 0; i < ARRAY_LEN(args); i++)
+			args[i] = va_arg(ap, intptr_t);
 		va_end(ap);
 
-		return cgvm.entryPoint( callnum,  args[0], args[1], args[2], args[3], args[4],  args[5],  args[6], args[7] );
+		return cgvm.entryPoint(callnum, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
 	}
 	return -1;
 }
@@ -63,9 +62,9 @@ intptr_t	VM_Call( int callnum, ... )
 //	works on. Rather than add the performance hit for those platforms, the original code is still in use there.
 // For speed, we just grab 9 arguments, and don't worry about exactly how many the syscall actually needs; the extra is
 //	thrown away.
-extern intptr_t CL_CgameSystemCalls( intptr_t *args );
+extern intptr_t CL_CgameSystemCalls(intptr_t *args);
 
-intptr_t VM_DllSyscall( intptr_t arg, ... ) {
+intptr_t VM_DllSyscall(intptr_t arg, ...) {
 #if !id386 || defined __clang__ || defined MACOS_X
 	// rcg010206 - see commentary above
 	intptr_t args[16];
@@ -73,13 +72,13 @@ intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 
 	args[0] = arg;
 
-	va_start( ap, arg );
-	for (size_t i = 1; i < ARRAY_LEN (args); i++)
-		args[i] = va_arg( ap, intptr_t );
-	va_end( ap );
+	va_start(ap, arg);
+	for (size_t i = 1; i < ARRAY_LEN(args); i++)
+		args[i] = va_arg(ap, intptr_t);
+	va_end(ap);
 
-	return CL_CgameSystemCalls( args );
+	return CL_CgameSystemCalls(args);
 #else // original id code
-	return CL_CgameSystemCalls( &arg );
+	return CL_CgameSystemCalls(&arg);
 #endif
 }

@@ -34,62 +34,55 @@ EVENT LOOP
 ========================================================================
 */
 
-#define	MAX_QUED_EVENTS		256
-#define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
+#define MAX_QUED_EVENTS 256
+#define MASK_QUED_EVENTS (MAX_QUED_EVENTS - 1)
 
-static sysEvent_t	eventQue[MAX_QUED_EVENTS] = {};
-static sysEvent_t	*lastEvent = nullptr;
-static uint32_t		eventHead = 0, eventTail = 0;
+static sysEvent_t eventQue[MAX_QUED_EVENTS] = {};
+static sysEvent_t *lastEvent = nullptr;
+static uint32_t eventHead = 0, eventTail = 0;
 
-static const char *Sys_EventName( sysEventType_t evType ) {
+static const char *Sys_EventName(sysEventType_t evType) {
 
-	static const char *evNames[SE_MAX] = {
-		"SE_NONE",
-		"SE_KEY",
-		"SE_CHAR",
-		"SE_MOUSE",
-		"SE_JOYSTICK_AXIS",
-		"SE_CONSOLE"
-	};
+	static const char *evNames[SE_MAX] = {"SE_NONE", "SE_KEY", "SE_CHAR", "SE_MOUSE", "SE_JOYSTICK_AXIS", "SE_CONSOLE"};
 
-	if ( evType >= SE_MAX ) {
+	if (evType >= SE_MAX) {
 		return "SE_UNKNOWN";
 	} else {
 		return evNames[evType];
 	}
 }
 
-sysEvent_t Sys_GetEvent( void ) {
-	sysEvent_t	ev;
-	char		*s;
+sysEvent_t Sys_GetEvent(void) {
+	sysEvent_t ev;
+	char *s;
 
 	// return if we have data
-	if ( eventHead > eventTail ) {
+	if (eventHead > eventTail) {
 		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
+		return eventQue[(eventTail - 1) & MASK_QUED_EVENTS];
 	}
 
 	// check for console commands
 	s = Sys_ConsoleInput();
-	if ( s ) {
-		char	*b;
-		int		len;
+	if (s) {
+		char *b;
+		int len;
 
-		len = strlen( s ) + 1;
-		b = (char *)Z_Malloc( len,TAG_EVENT,qfalse );
-		strcpy( b, s );
-		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
+		len = strlen(s) + 1;
+		b = (char *)Z_Malloc(len, TAG_EVENT, qfalse);
+		strcpy(b, s);
+		Sys_QueEvent(0, SE_CONSOLE, 0, 0, len, b);
 	}
 
 	// return if we have data
-	if ( eventHead > eventTail ) {
+	if (eventHead > eventTail) {
 		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
+		return eventQue[(eventTail - 1) & MASK_QUED_EVENTS];
 	}
 
 	// create an empty event to return
 
-	memset( &ev, 0, sizeof( ev ) );
+	memset(&ev, 0, sizeof(ev));
 	ev.evTime = Sys_Milliseconds();
 
 	return ev;
@@ -104,17 +97,17 @@ Ptr should either be null, or point to a block of data that can
 be freed by the game later.
 ================
 */
-void Sys_QueEvent( int evTime, sysEventType_t evType, int value, int value2, int ptrLength, void *ptr ) {
-	sysEvent_t	*ev;
+void Sys_QueEvent(int evTime, sysEventType_t evType, int value, int value2, int ptrLength, void *ptr) {
+	sysEvent_t *ev;
 
-	if ( evTime == 0 ) {
+	if (evTime == 0) {
 		evTime = Sys_Milliseconds();
 	}
 
 	// try to combine all sequential mouse moves in one event
-	if ( evType == SE_MOUSE && lastEvent && lastEvent->evType == SE_MOUSE ) {
+	if (evType == SE_MOUSE && lastEvent && lastEvent->evType == SE_MOUSE) {
 		// try to reuse already processed item
-		if ( eventTail == eventHead ) {
+		if (eventTail == eventHead) {
 			lastEvent->evValue = value;
 			lastEvent->evValue2 = value2;
 			eventTail--;
@@ -126,13 +119,13 @@ void Sys_QueEvent( int evTime, sysEventType_t evType, int value, int value2, int
 		return;
 	}
 
-	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
+	ev = &eventQue[eventHead & MASK_QUED_EVENTS];
 
-	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-		Com_Printf( "Sys_QueEvent(%s,time=%i): overflow\n", Sys_EventName(evType), evTime );
+	if (eventHead - eventTail >= MAX_QUED_EVENTS) {
+		Com_Printf("Sys_QueEvent(%s,time=%i): overflow\n", Sys_EventName(evType), evTime);
 		// we are discarding an event, but don't leak memory
-		if ( ev->evPtr ) {
-			Z_Free( ev->evPtr );
+		if (ev->evPtr) {
+			Z_Free(ev->evPtr);
 		}
 		eventTail++;
 	}

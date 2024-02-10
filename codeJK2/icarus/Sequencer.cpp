@@ -32,14 +32,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "assert.h"
 #include "../code/qcommon/ojk_saved_game_helper.h"
 
-// Sequencer 
+// Sequencer
 
-CSequencer::CSequencer( void )
-{
-	m_numCommands	= 0;
+CSequencer::CSequencer(void) {
+	m_numCommands = 0;
 
-	m_curStream		= NULL;
-	m_curSequence	= NULL;
+	m_curStream = NULL;
+	m_curSequence = NULL;
 
 	m_elseValid = 0;
 	m_elseOwner = NULL;
@@ -47,9 +46,8 @@ CSequencer::CSequencer( void )
 	m_curGroup = NULL;
 }
 
-CSequencer::~CSequencer( void )
-{
-	Free();	//Safe even if already freed
+CSequencer::~CSequencer(void) {
+	Free(); // Safe even if already freed
 }
 
 /*
@@ -60,8 +58,7 @@ Static creation function
 ========================
 */
 
-CSequencer *CSequencer::Create ( void )
-{
+CSequencer *CSequencer::Create(void) {
 	CSequencer *sequencer = new CSequencer;
 
 	return sequencer;
@@ -74,12 +71,11 @@ Init
 Initializes the sequencer
 ========================
 */
-int CSequencer::Init( int ownerID, interface_export_t *ie, CTaskManager *taskManager, ICARUS_Instance *iICARUS )
-{
-	m_ownerID		= ownerID;
-	m_owner			= iICARUS;
-	m_taskManager	= taskManager;
-	m_ie			= ie;
+int CSequencer::Init(int ownerID, interface_export_t *ie, CTaskManager *taskManager, ICARUS_Instance *iICARUS) {
+	m_ownerID = ownerID;
+	m_owner = iICARUS;
+	m_taskManager = taskManager;
+	m_ie = ie;
 
 	return SEQ_OK;
 }
@@ -91,27 +87,24 @@ Free
 Releases all resources and re-inits the sequencer
 ========================
 */
-int CSequencer::Free( void )
-{
-	sequence_l::iterator	sli;
+int CSequencer::Free(void) {
+	sequence_l::iterator sli;
 
-	//Flush the sequences
-	for ( sli = m_sequences.begin(); sli != m_sequences.end(); ++sli )
-	{
-		m_owner->DeleteSequence( (*sli) );
+	// Flush the sequences
+	for (sli = m_sequences.begin(); sli != m_sequences.end(); ++sli) {
+		m_owner->DeleteSequence((*sli));
 	}
 
 	m_sequences.clear();
 	m_sequenceMap.clear();
 	m_taskSequences.clear();
 
-	//Clean up any other info
+	// Clean up any other info
 	m_numCommands = 0;
 	m_curSequence = NULL;
 
 	bstream_t *streamToDel;
-	while(!m_streamsCreated.empty())
-	{
+	while (!m_streamsCreated.empty()) {
 		streamToDel = m_streamsCreated.back();
 		DeleteStream(streamToDel);
 	}
@@ -125,38 +118,35 @@ Flush
 -------------------------
 */
 
-int CSequencer::Flush( CSequence *owner )
-{
-	if ( owner == NULL )
+int CSequencer::Flush(CSequence *owner) {
+	if (owner == NULL)
 		return SEQ_FAILED;
-	
+
 	Recall();
 
-	sequence_l::iterator	sli;
+	sequence_l::iterator sli;
 
-	//Flush the sequences
-	for ( sli = m_sequences.begin(); sli != m_sequences.end(); )
-	{
-		if ( ( (*sli) == owner ) || ( owner->HasChild( (*sli) ) ) || ( (*sli)->HasFlag( SQ_PENDING ) ) || ( (*sli)->HasFlag( SQ_TASK ) ) )
-		{
+	// Flush the sequences
+	for (sli = m_sequences.begin(); sli != m_sequences.end();) {
+		if (((*sli) == owner) || (owner->HasChild((*sli))) || ((*sli)->HasFlag(SQ_PENDING)) || ((*sli)->HasFlag(SQ_TASK))) {
 			++sli;
 			continue;
 		}
 
-		//Remove it from the map
-		m_sequenceMap.erase( (*sli)->GetID() );
-		
-		//Delete it, and remove all references
-		RemoveSequence( (*sli) );
-		m_owner->DeleteSequence( (*sli) );
-		
-		//Delete from the sequence list and move on
-		sli = m_sequences.erase( sli );
+		// Remove it from the map
+		m_sequenceMap.erase((*sli)->GetID());
+
+		// Delete it, and remove all references
+		RemoveSequence((*sli));
+		m_owner->DeleteSequence((*sli));
+
+		// Delete from the sequence list and move on
+		sli = m_sequences.erase(sli);
 	}
 
-	//Make sure this owner knows it's now the root sequence
-	owner->SetParent( NULL );
-	owner->SetReturn( NULL );
+	// Make sure this owner knows it's now the root sequence
+	owner->SetParent(NULL);
+	owner->SetReturn(NULL);
 
 	return SEQ_OK;
 }
@@ -169,12 +159,11 @@ Creates a stream for parsing
 ========================
 */
 
-bstream_t *CSequencer::AddStream( void )
-{
-	bstream_t	*stream;
+bstream_t *CSequencer::AddStream(void) {
+	bstream_t *stream;
 
-	stream = new bstream_t;				//deleted in Route()
-	stream->stream = new CBlockStream;	//deleted in Route()
+	stream = new bstream_t;			   // deleted in Route()
+	stream->stream = new CBlockStream; // deleted in Route()
 	stream->last = m_curStream;
 
 	m_streamsCreated.push_back(stream);
@@ -189,16 +178,14 @@ DeleteStream
 Deletes parsing stream
 ========================
 */
-void CSequencer::DeleteStream( bstream_t *bstream )
-{
-	std::vector<bstream_t*>::iterator finder = std::find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
-	if(finder != m_streamsCreated.end())
-	{
+void CSequencer::DeleteStream(bstream_t *bstream) {
+	std::vector<bstream_t *>::iterator finder = std::find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
+	if (finder != m_streamsCreated.end()) {
 		m_streamsCreated.erase(finder);
 	}
 
 	bstream->stream->Free();
-	
+
 	delete bstream->stream;
 	delete bstream;
 
@@ -211,10 +198,7 @@ AddTaskSequence
 -------------------------
 */
 
-void CSequencer::AddTaskSequence( CSequence *sequence, CTaskGroup *group )
-{
-	m_taskSequences[ group ] = sequence;
-}
+void CSequencer::AddTaskSequence(CSequence *sequence, CTaskGroup *group) { m_taskSequences[group] = sequence; }
 
 /*
 -------------------------
@@ -222,13 +206,12 @@ GetTaskSequence
 -------------------------
 */
 
-CSequence *CSequencer::GetTaskSequence( CTaskGroup *group )
-{
-	taskSequence_m::iterator	tsi;
+CSequence *CSequencer::GetTaskSequence(CTaskGroup *group) {
+	taskSequence_m::iterator tsi;
 
-	tsi = m_taskSequences.find( group );
+	tsi = m_taskSequences.find(group);
 
-	if ( tsi == m_taskSequences.end() )
+	if (tsi == m_taskSequences.end())
 		return NULL;
 
 	return (*tsi).second;
@@ -242,44 +225,42 @@ Creates and adds a sequence to the sequencer
 ========================
 */
 
-CSequence *CSequencer::AddSequence( void )
-{
-	CSequence	*sequence = m_owner->GetSequence();
+CSequence *CSequencer::AddSequence(void) {
+	CSequence *sequence = m_owner->GetSequence();
 
-	assert( sequence );
-	if ( sequence == NULL )
+	assert(sequence);
+	if (sequence == NULL)
 		return NULL;
 
-	//The rest is handled internally to the class
-	m_sequenceMap[ sequence->GetID() ] = sequence;
+	// The rest is handled internally to the class
+	m_sequenceMap[sequence->GetID()] = sequence;
 
-	//Add it to the list
-	m_sequences.insert( m_sequences.end(), sequence );
+	// Add it to the list
+	m_sequences.insert(m_sequences.end(), sequence);
 
-	//FIXME: Temp fix
-	sequence->SetFlag( SQ_PENDING );
+	// FIXME: Temp fix
+	sequence->SetFlag(SQ_PENDING);
 
 	return sequence;
 }
 
-CSequence *CSequencer::AddSequence( CSequence *parent, CSequence *returnSeq, int flags )
-{
-	CSequence	*sequence = m_owner->GetSequence();
+CSequence *CSequencer::AddSequence(CSequence *parent, CSequence *returnSeq, int flags) {
+	CSequence *sequence = m_owner->GetSequence();
 
-	assert( sequence );
-	if ( sequence == NULL )
+	assert(sequence);
+	if (sequence == NULL)
 		return NULL;
 
-	//The rest is handled internally to the class
-	m_sequenceMap[ sequence->GetID() ] = sequence;
+	// The rest is handled internally to the class
+	m_sequenceMap[sequence->GetID()] = sequence;
 
-	//Add it to the list
-	m_sequences.insert( m_sequences.end(), sequence );
+	// Add it to the list
+	m_sequences.insert(m_sequences.end(), sequence);
 
-	sequence->SetFlags( flags );
-	sequence->SetParent( parent );
-	sequence->SetReturn( returnSeq );
-	
+	sequence->SetFlags(flags);
+	sequence->SetParent(parent);
+	sequence->SetReturn(returnSeq);
+
 	return sequence;
 }
 
@@ -291,15 +272,14 @@ Retrieves a sequence by its ID
 ========================
 */
 
-CSequence *CSequencer::GetSequence( int id )
-{
+CSequence *CSequencer::GetSequence(int id) {
 	sequenceID_m::iterator mi;
-	
-	mi = m_sequenceMap.find( id );
 
-	if ( mi == m_sequenceMap.end() )
+	mi = m_sequenceMap.find(id);
+
+	if (mi == m_sequenceMap.end())
 		return NULL;
-	
+
 	return (*mi).second;
 }
 
@@ -309,15 +289,14 @@ Interrupt
 -------------------------
 */
 
-void CSequencer::Interrupt( void )
-{
-	CBlock	*command = m_taskManager->GetCurrentTask();
+void CSequencer::Interrupt(void) {
+	CBlock *command = m_taskManager->GetCurrentTask();
 
-	if ( command == NULL )
+	if (command == NULL)
 		return;
 
-	//Save it
-	PushCommand( command, PUSH_BACK );
+	// Save it
+	PushCommand(command, PUSH_BACK);
 }
 
 /*
@@ -327,28 +306,25 @@ Run
 Runs a script
 ========================
 */
-int CSequencer::Run( char *buffer, long size )
-{
-	bstream_t		*blockStream;
-	
+int CSequencer::Run(char *buffer, long size) {
+	bstream_t *blockStream;
+
 	Recall();
 
-	//Create a new stream
+	// Create a new stream
 	blockStream = AddStream();
-	
-	//Open the stream as an IBI stream
-	if (!blockStream->stream->Open( buffer, size ))
-	{
-		m_ie->I_DPrintf( WL_ERROR, "invalid stream" );
+
+	// Open the stream as an IBI stream
+	if (!blockStream->stream->Open(buffer, size)) {
+		m_ie->I_DPrintf(WL_ERROR, "invalid stream");
 		return SEQ_FAILED;
 	}
 
-	CSequence *sequence = AddSequence( NULL, m_curSequence, SQ_COMMON );
+	CSequence *sequence = AddSequence(NULL, m_curSequence, SQ_COMMON);
 
-	// Interpret the command blocks and route them properly 
-	if ( S_FAILED( Route( sequence, blockStream )) )
-	{
-		//Error code is set inside of Route()
+	// Interpret the command blocks and route them properly
+	if (S_FAILED(Route(sequence, blockStream))) {
+		// Error code is set inside of Route()
 		return SEQ_FAILED;
 	}
 
@@ -363,49 +339,45 @@ Parses a user triggered run command
 ========================
 */
 
-int CSequencer::ParseRun( CBlock *block )
-{
-	CSequence	*new_sequence;
-	bstream_t	*new_stream;
-	char		*buffer;
-	char		newname[ MAX_STRING_SIZE ];
-	int			buffer_size;
+int CSequencer::ParseRun(CBlock *block) {
+	CSequence *new_sequence;
+	bstream_t *new_stream;
+	char *buffer;
+	char newname[MAX_STRING_SIZE];
+	int buffer_size;
 
-	//Get the name and format it
-	COM_StripExtension( (char*) block->GetMemberData( 0 ), (char *) newname, sizeof(newname) );
+	// Get the name and format it
+	COM_StripExtension((char *)block->GetMemberData(0), (char *)newname, sizeof(newname));
 
-	//Get the file from the game engine
-  	buffer_size = m_ie->I_LoadFile( newname, (void **) &buffer );
+	// Get the file from the game engine
+	buffer_size = m_ie->I_LoadFile(newname, (void **)&buffer);
 
-	if ( buffer_size <= 0 )
-	{
-		m_ie->I_DPrintf( WL_ERROR, "'%s' : could not open file\n", (char*) block->GetMemberData( 0 ));
+	if (buffer_size <= 0) {
+		m_ie->I_DPrintf(WL_ERROR, "'%s' : could not open file\n", (char *)block->GetMemberData(0));
 		delete block;
 		block = NULL;
 		return SEQ_FAILED;
 	}
 
-	//Create a new stream for this file
+	// Create a new stream for this file
 	new_stream = AddStream();
 
-	//Begin streaming the file
-	if (!new_stream->stream->Open( buffer, buffer_size ))
-	{
-		m_ie->I_DPrintf( WL_ERROR, "invalid stream" );
+	// Begin streaming the file
+	if (!new_stream->stream->Open(buffer, buffer_size)) {
+		m_ie->I_DPrintf(WL_ERROR, "invalid stream");
 		delete block;
 		block = NULL;
 		return SEQ_FAILED;
 	}
 
-	//Create a new sequence
-	new_sequence = AddSequence( m_curSequence, m_curSequence, ( SQ_RUN | SQ_PENDING ) );
+	// Create a new sequence
+	new_sequence = AddSequence(m_curSequence, m_curSequence, (SQ_RUN | SQ_PENDING));
 
-	m_curSequence->AddChild( new_sequence );
+	m_curSequence->AddChild(new_sequence);
 
-	// Interpret the command blocks and route them properly 
-	if ( S_FAILED( Route( new_sequence, new_stream )) )
-	{
-		//Error code is set inside of Route()
+	// Interpret the command blocks and route them properly
+	if (S_FAILED(Route(new_sequence, new_stream))) {
+		// Error code is set inside of Route()
 		delete block;
 		block = NULL;
 		return SEQ_FAILED;
@@ -413,10 +385,10 @@ int CSequencer::ParseRun( CBlock *block )
 
 	m_curSequence = m_curSequence->GetReturn();
 
-	assert( m_curSequence );
+	assert(m_curSequence);
 
-	block->Write( TK_FLOAT, (float) new_sequence->GetID() );
-	PushCommand( block, PUSH_FRONT );
+	block->Write(TK_FLOAT, (float)new_sequence->GetID());
+	PushCommand(block, PUSH_FRONT);
 
 	return SEQ_OK;
 }
@@ -429,32 +401,30 @@ Parses an if statement
 ========================
 */
 
-int CSequencer::ParseIf( CBlock *block, bstream_t *bstream )
-{
-	CSequence	*sequence;
-		
-	//Create the container sequence
-	sequence = AddSequence( m_curSequence, m_curSequence, SQ_CONDITIONAL );
-	
-	assert( sequence );
-	if ( sequence == NULL )
-	{
-		m_ie->I_DPrintf( WL_ERROR, "ParseIf: failed to allocate container sequence" );
+int CSequencer::ParseIf(CBlock *block, bstream_t *bstream) {
+	CSequence *sequence;
+
+	// Create the container sequence
+	sequence = AddSequence(m_curSequence, m_curSequence, SQ_CONDITIONAL);
+
+	assert(sequence);
+	if (sequence == NULL) {
+		m_ie->I_DPrintf(WL_ERROR, "ParseIf: failed to allocate container sequence");
 		delete block;
 		block = NULL;
 		return SEQ_FAILED;
 	}
 
-	m_curSequence->AddChild( sequence );
+	m_curSequence->AddChild(sequence);
 
-	//Add a unique conditional identifier to the block for reference later
-	block->Write( TK_FLOAT, (float) sequence->GetID() );
+	// Add a unique conditional identifier to the block for reference later
+	block->Write(TK_FLOAT, (float)sequence->GetID());
 
-	//Push this onto the stack to mark the conditional entrance
-	PushCommand( block, PUSH_FRONT );
-	
-	//Recursively obtain the conditional body
-	Route( sequence, bstream );
+	// Push this onto the stack to mark the conditional entrance
+	PushCommand(block, PUSH_FRONT);
+
+	// Recursively obtain the conditional body
+	Route(sequence, bstream);
 
 	m_elseValid = 2;
 	m_elseOwner = block;
@@ -470,40 +440,37 @@ Parses an else statement
 ========================
 */
 
-int CSequencer::ParseElse( CBlock *block, bstream_t *bstream )
-{
-	//The else is not retained
+int CSequencer::ParseElse(CBlock *block, bstream_t *bstream) {
+	// The else is not retained
 	delete block;
 	block = NULL;
-	
-	CSequence	*sequence;
-		
-	//Create the container sequence
-	sequence = AddSequence( m_curSequence, m_curSequence, SQ_CONDITIONAL );
-	
-	assert( sequence );
-	if ( sequence == NULL )
-	{
-		m_ie->I_DPrintf( WL_ERROR, "ParseIf: failed to allocate container sequence" );
+
+	CSequence *sequence;
+
+	// Create the container sequence
+	sequence = AddSequence(m_curSequence, m_curSequence, SQ_CONDITIONAL);
+
+	assert(sequence);
+	if (sequence == NULL) {
+		m_ie->I_DPrintf(WL_ERROR, "ParseIf: failed to allocate container sequence");
 		return SEQ_FAILED;
 	}
 
-	m_curSequence->AddChild( sequence );
+	m_curSequence->AddChild(sequence);
 
-	//Add a unique conditional identifier to the block for reference later
-	//TODO: Emit warning
-	if ( m_elseOwner == NULL )
-	{
-		m_ie->I_DPrintf( WL_ERROR, "Invalid 'else' found!\n" );
+	// Add a unique conditional identifier to the block for reference later
+	// TODO: Emit warning
+	if (m_elseOwner == NULL) {
+		m_ie->I_DPrintf(WL_ERROR, "Invalid 'else' found!\n");
 		return SEQ_FAILED;
 	}
 
-	m_elseOwner->Write( TK_FLOAT, (float) sequence->GetID() );
-	
-	m_elseOwner->SetFlag( BF_ELSE );
+	m_elseOwner->Write(TK_FLOAT, (float)sequence->GetID());
 
-	//Recursively obtain the conditional body
-	Route( sequence, bstream );
+	m_elseOwner->SetFlag(BF_ELSE);
+
+	// Recursively obtain the conditional body
+	Route(sequence, bstream);
 
 	m_elseValid = 0;
 	m_elseOwner = NULL;
@@ -519,54 +486,49 @@ Parses a loop command
 ========================
 */
 
-int CSequencer::ParseLoop( CBlock *block, bstream_t *bstream )
-{
-	CSequence		*sequence;
-	CBlockMember	*bm;
-	float			min, max;
-	int				rIter;
-	int				memberNum = 0;
-		
-	//Set the parent
-	sequence = AddSequence( m_curSequence, m_curSequence, ( SQ_LOOP | SQ_RETAIN ) );
-	
-	assert( sequence );
-	if ( sequence == NULL )
-	{
-		m_ie->I_DPrintf( WL_ERROR, "ParseLoop : failed to allocate container sequence" );
+int CSequencer::ParseLoop(CBlock *block, bstream_t *bstream) {
+	CSequence *sequence;
+	CBlockMember *bm;
+	float min, max;
+	int rIter;
+	int memberNum = 0;
+
+	// Set the parent
+	sequence = AddSequence(m_curSequence, m_curSequence, (SQ_LOOP | SQ_RETAIN));
+
+	assert(sequence);
+	if (sequence == NULL) {
+		m_ie->I_DPrintf(WL_ERROR, "ParseLoop : failed to allocate container sequence");
 		delete block;
-		block = NULL;	
+		block = NULL;
 		return SEQ_FAILED;
 	}
 
-	m_curSequence->AddChild( sequence );
+	m_curSequence->AddChild(sequence);
 
-	//Set the number of iterations of this sequence
-	
-	bm = block->GetMember( memberNum++ );
+	// Set the number of iterations of this sequence
 
-	if ( bm->GetID() == ID_RANDOM )
-	{
-		//Parse out the random number
-		min = *(float *) block->GetMemberData( memberNum++ );
-		max = *(float *) block->GetMemberData( memberNum++ );
-		
-		rIter = (int) m_ie->I_Random( min, max );
-		sequence->SetIterations( rIter );
+	bm = block->GetMember(memberNum++);
+
+	if (bm->GetID() == ID_RANDOM) {
+		// Parse out the random number
+		min = *(float *)block->GetMemberData(memberNum++);
+		max = *(float *)block->GetMemberData(memberNum++);
+
+		rIter = (int)m_ie->I_Random(min, max);
+		sequence->SetIterations(rIter);
+	} else {
+		sequence->SetIterations((int)(*(float *)bm->GetData()));
 	}
-	else
-	{
-		sequence->SetIterations ( (int) (*(float *) bm->GetData()) );
-	}
-	
-	//Add a unique loop identifier to the block for reference later
-	block->Write( TK_FLOAT, (float) sequence->GetID() );
 
-	//Push this onto the stack to mark the loop entrance
-	PushCommand( block, PUSH_FRONT );
-	
-	//Recursively obtain the loop
-	Route( sequence, bstream );
+	// Add a unique loop identifier to the block for reference later
+	block->Write(TK_FLOAT, (float)sequence->GetID());
+
+	// Push this onto the stack to mark the loop entrance
+	PushCommand(block, PUSH_FRONT);
+
+	// Recursively obtain the loop
+	Route(sequence, bstream);
 
 	return SEQ_OK;
 }
@@ -579,31 +541,29 @@ Adds a sequence that is saved until the affect is called by the parent
 ========================
 */
 
-int CSequencer::AddAffect( bstream_t *bstream, int retain, int *id )
-{
-	CSequence	*sequence = AddSequence();
-	bstream_t	new_stream;
+int CSequencer::AddAffect(bstream_t *bstream, int retain, int *id) {
+	CSequence *sequence = AddSequence();
+	bstream_t new_stream;
 
-	sequence->SetFlag( SQ_AFFECT | SQ_PENDING );
+	sequence->SetFlag(SQ_AFFECT | SQ_PENDING);
 
-	if ( retain )
-		sequence->SetFlag( SQ_RETAIN );
+	if (retain)
+		sequence->SetFlag(SQ_RETAIN);
 
-	//This will be replaced once it's actually used, but this will restore the route state properly
-	sequence->SetReturn( m_curSequence );
-	
-	//We need this as a temp holder
+	// This will be replaced once it's actually used, but this will restore the route state properly
+	sequence->SetReturn(m_curSequence);
+
+	// We need this as a temp holder
 	new_stream.last = m_curStream;
 	new_stream.stream = bstream->stream;
 
-	if S_FAILED( Route( sequence, &new_stream ) )
-	{
+	if S_FAILED (Route(sequence, &new_stream)) {
 		return SEQ_FAILED;
 	}
 
 	*id = sequence->GetID();
 
-	sequence->SetReturn( NULL );
+	sequence->SetReturn(NULL);
 
 	return SEQ_OK;
 }
@@ -616,130 +576,121 @@ Parses an affect command
 ========================
 */
 
-int CSequencer::ParseAffect( CBlock *block, bstream_t *bstream )
-{
-	CSequencer	*stream_sequencer = NULL;
-	char		*entname = NULL;
-	int			ret;
-	gentity_t	*ent = 0;
+int CSequencer::ParseAffect(CBlock *block, bstream_t *bstream) {
+	CSequencer *stream_sequencer = NULL;
+	char *entname = NULL;
+	int ret;
+	gentity_t *ent = 0;
 
-	entname	= (char*) block->GetMemberData( 0 );
-	ent		= m_ie->I_GetEntityByName( entname );
+	entname = (char *)block->GetMemberData(0);
+	ent = m_ie->I_GetEntityByName(entname);
 
-	if( !ent ) // if there wasn't a valid entname in the affect, we need to check if it's a get command
+	if (!ent) // if there wasn't a valid entname in the affect, we need to check if it's a get command
 	{
-		//try to parse a 'get' command that is embeded in this 'affect'
-	
-		int				id;
-		char			*p1 = NULL;
-		char			*name = 0;
-		CBlockMember	*bm = NULL;
+		// try to parse a 'get' command that is embeded in this 'affect'
+
+		int id;
+		char *p1 = NULL;
+		char *name = 0;
+		CBlockMember *bm = NULL;
 		//
 		//	Get the first parameter (this should be the get)
 		//
-		bm = block->GetMember( 0 );
+		bm = block->GetMember(0);
 		id = bm->GetID();
-	
-		switch ( id )
-		{
-			// these 3 cases probably aren't necessary
-			case TK_STRING:
-			case TK_IDENTIFIER:
-			case TK_CHAR:
-				p1 = (char *) bm->GetData();
+
+		switch (id) {
+		// these 3 cases probably aren't necessary
+		case TK_STRING:
+		case TK_IDENTIFIER:
+		case TK_CHAR:
+			p1 = (char *)bm->GetData();
 			break;
 
-			case ID_GET:		
+		case ID_GET: {
+			int type;
+
+			// get( TYPE, NAME )
+			type = (int)(*(float *)block->GetMemberData(1));
+			name = (char *)block->GetMemberData(2);
+
+			switch (type) // what type are they attempting to get
 			{
-				int		type;				
 
-				//get( TYPE, NAME )
-				type = (int) (*(float *) block->GetMemberData( 1 ));
-				name = (char *) block->GetMemberData( 2 );
-
-				switch ( type ) // what type are they attempting to get
-				{
-			
-					case TK_STRING:
-						//only string is acceptable for affect, store result in p1
-						if ( m_ie->I_GetString( m_ownerID, type, name, &p1 ) == false)
-						{
-							delete block;
-							block = NULL;
-							return false;
-						}
-						break;
-					default:
-						//FIXME: Make an enum id for the error...
-						m_ie->I_DPrintf( WL_ERROR, "Invalid parameter type on affect _1" );
-						delete block;
-						block = NULL;
-						return false;
-						break;
+			case TK_STRING:
+				// only string is acceptable for affect, store result in p1
+				if (m_ie->I_GetString(m_ownerID, type, name, &p1) == false) {
+					delete block;
+					block = NULL;
+					return false;
 				}
-
 				break;
-			}
-
 			default:
-			//FIXME: Make an enum id for the error...
-				m_ie->I_DPrintf( WL_ERROR, "Invalid parameter type on affect _2" );
+				// FIXME: Make an enum id for the error...
+				m_ie->I_DPrintf(WL_ERROR, "Invalid parameter type on affect _1");
 				delete block;
 				block = NULL;
 				return false;
 				break;
-		}//end id switch
+			}
 
-		if(p1)
-		{
-			ent = m_ie->I_GetEntityByName( p1 );
+			break;
 		}
-		if(!ent)
-		{	// a valid entity name was not returned from the get command
-			m_ie->I_DPrintf( WL_WARNING, "'%s' : invalid affect() target\n");
+
+		default:
+			// FIXME: Make an enum id for the error...
+			m_ie->I_DPrintf(WL_ERROR, "Invalid parameter type on affect _2");
+			delete block;
+			block = NULL;
+			return false;
+			break;
+		} // end id switch
+
+		if (p1) {
+			ent = m_ie->I_GetEntityByName(p1);
 		}
-	
+		if (!ent) { // a valid entity name was not returned from the get command
+			m_ie->I_DPrintf(WL_WARNING, "'%s' : invalid affect() target\n");
+		}
+
 	} // end if(!ent)
 
-	if( ent )
-	{
+	if (ent) {
 		stream_sequencer = ent->sequencer;
 	}
 
-	if (stream_sequencer == NULL)
-	{
-		m_ie->I_DPrintf( WL_WARNING, "'%s' : invalid affect() target\n", entname );
-		
-		//Fast-forward out of this affect block onto the next valid code
+	if (stream_sequencer == NULL) {
+		m_ie->I_DPrintf(WL_WARNING, "'%s' : invalid affect() target\n", entname);
+
+		// Fast-forward out of this affect block onto the next valid code
 		CSequence *backSeq = m_curSequence;
 
 		CSequence *trashSeq = m_owner->GetSequence();
-		Route( trashSeq, bstream );
+		Route(trashSeq, bstream);
 		Recall();
-		DestroySequence( trashSeq );
+		DestroySequence(trashSeq);
 		m_curSequence = backSeq;
 		delete block;
 		block = NULL;
 		return SEQ_OK;
 	}
 
-	if S_FAILED ( stream_sequencer->AddAffect( bstream, (int) m_curSequence->HasFlag( SQ_RETAIN ), &ret ) )
-	{
+	if S_FAILED (stream_sequencer->AddAffect(bstream, (int)m_curSequence->HasFlag(SQ_RETAIN), &ret)) {
 		delete block;
 		block = NULL;
 		return SEQ_FAILED;
 	}
 
-	//Hold onto the id for later use
-	//FIXME: If the target sequence is freed, what then?		(!suspect!)
+	// Hold onto the id for later use
+	// FIXME: If the target sequence is freed, what then?		(!suspect!)
 
-	block->Write( TK_FLOAT, (float) ret );
-	
-	PushCommand( block, PUSH_FRONT );
+	block->Write(TK_FLOAT, (float)ret);
+
+	PushCommand(block, PUSH_FRONT);
 	/*
 	//Don't actually do these right now, we're just pre-processing (parsing) the affect
 	if( ent )
-	{	// ents need to update upon being affected 
+	{	// ents need to update upon being affected
 		ent->taskManager->Update();
 	}
 	*/
@@ -753,43 +704,41 @@ ParseTask
 -------------------------
 */
 
-int CSequencer::ParseTask( CBlock *block, bstream_t *bstream )
-{
-	CSequence	*sequence;
-	CTaskGroup	*group;
-	const char	*taskName;
+int CSequencer::ParseTask(CBlock *block, bstream_t *bstream) {
+	CSequence *sequence;
+	CTaskGroup *group;
+	const char *taskName;
 
-	//Setup the container sequence
-	sequence = AddSequence( m_curSequence, m_curSequence, SQ_TASK | SQ_RETAIN );
-	m_curSequence->AddChild( sequence );
+	// Setup the container sequence
+	sequence = AddSequence(m_curSequence, m_curSequence, SQ_TASK | SQ_RETAIN);
+	m_curSequence->AddChild(sequence);
 
-	//Get the name of this task for reference later
-	taskName = (const char *) block->GetMemberData( 0 );
+	// Get the name of this task for reference later
+	taskName = (const char *)block->GetMemberData(0);
 
-	//Get a new task group from the task manager
-	group = m_taskManager->AddTaskGroup( taskName );
+	// Get a new task group from the task manager
+	group = m_taskManager->AddTaskGroup(taskName);
 
-	if ( group == NULL )
-	{
-		m_ie->I_DPrintf( WL_ERROR, "error : unable to allocate a new task group" );
+	if (group == NULL) {
+		m_ie->I_DPrintf(WL_ERROR, "error : unable to allocate a new task group");
 		delete block;
 		block = NULL;
 		return SEQ_FAILED;
 	}
 
-	//The current group is set to this group, all subsequent commands (until a block end) will fall into this task group
-	group->SetParent( m_curGroup );
+	// The current group is set to this group, all subsequent commands (until a block end) will fall into this task group
+	group->SetParent(m_curGroup);
 	m_curGroup = group;
-	
-	//Keep an association between this task and the container sequence
-	AddTaskSequence( sequence, group );
 
-	//PushCommand( block, PUSH_FRONT );
+	// Keep an association between this task and the container sequence
+	AddTaskSequence(sequence, group);
+
+	// PushCommand( block, PUSH_FRONT );
 	delete block;
 	block = NULL;
 
-	//Recursively obtain the loop
-	Route( sequence, bstream );
+	// Recursively obtain the loop
+	Route(sequence, bstream);
 
 	return SEQ_OK;
 }
@@ -802,111 +751,105 @@ Properly handles and routes commands to the sequencer
 ========================
 */
 
-//FIXME: Re-entering this code will produce unpredictable results if a script has already been routed and is running currently
+// FIXME: Re-entering this code will produce unpredictable results if a script has already been routed and is running currently
 
-//FIXME: A sequencer cannot properly affect itself
+// FIXME: A sequencer cannot properly affect itself
 
-int CSequencer::Route( CSequence *sequence, bstream_t *bstream )
-{
-	CBlockStream	*stream;
-	CBlock			*block;
+int CSequencer::Route(CSequence *sequence, bstream_t *bstream) {
+	CBlockStream *stream;
+	CBlock *block;
 
-	//Take the stream as the current stream
+	// Take the stream as the current stream
 	m_curStream = bstream;
 	stream = bstream->stream;
 
 	m_curSequence = sequence;
 
-	//Obtain all blocks
-	while ( stream->BlockAvailable() )
-	{
-		block = new CBlock;		//deleted in Free()
-		stream->ReadBlock( block );
+	// Obtain all blocks
+	while (stream->BlockAvailable()) {
+		block = new CBlock; // deleted in Free()
+		stream->ReadBlock(block);
 
-		//TEMP: HACK!
-		if ( m_elseValid )
+		// TEMP: HACK!
+		if (m_elseValid)
 			m_elseValid--;
 
-		switch( block->GetBlockID() )
-		{
-		//Marks the end of a blocked section
+		switch (block->GetBlockID()) {
+		// Marks the end of a blocked section
 		case ID_BLOCK_END:
-			
-			//Save this as a pre-process marker
-			PushCommand( block, PUSH_FRONT );
-	
-			if ( m_curSequence->HasFlag( SQ_RUN ) || m_curSequence->HasFlag( SQ_AFFECT ) )
-			{
-				//Go back to the last stream
+
+			// Save this as a pre-process marker
+			PushCommand(block, PUSH_FRONT);
+
+			if (m_curSequence->HasFlag(SQ_RUN) || m_curSequence->HasFlag(SQ_AFFECT)) {
+				// Go back to the last stream
 				m_curStream = bstream->last;
 			}
 
-			if ( m_curSequence->HasFlag( SQ_TASK ) )
-			{
-				//Go back to the last stream
+			if (m_curSequence->HasFlag(SQ_TASK)) {
+				// Go back to the last stream
 				m_curStream = bstream->last;
 				m_curGroup = m_curGroup->GetParent();
 			}
-	
+
 			m_curSequence = m_curSequence->GetReturn();
 
 			return SEQ_OK;
 			break;
 
-		//Affect pre-processor
+		// Affect pre-processor
 		case ID_AFFECT:
 
-			if S_FAILED( ParseAffect( block, bstream ) )
+			if S_FAILED (ParseAffect(block, bstream))
 				return SEQ_FAILED;
 
 			break;
 
-		//Run pre-processor
+		// Run pre-processor
 		case ID_RUN:
 
-			if S_FAILED( ParseRun( block ) )
+			if S_FAILED (ParseRun(block))
 				return SEQ_FAILED;
 
 			break;
 
-		//Loop pre-processor
+		// Loop pre-processor
 		case ID_LOOP:
-			
-			if S_FAILED( ParseLoop( block, bstream ) )
+
+			if S_FAILED (ParseLoop(block, bstream))
 				return SEQ_FAILED;
 
 			break;
 
-		//Conditional pre-processor
+		// Conditional pre-processor
 		case ID_IF:
 
-			if S_FAILED( ParseIf( block, bstream ) )
+			if S_FAILED (ParseIf(block, bstream))
 				return SEQ_FAILED;
 
 			break;
 
 		case ID_ELSE:
 
-			//TODO: Emit warning
-			if ( m_elseValid == 0 )
-			{
-				m_ie->I_DPrintf( WL_ERROR, "Invalid 'else' found!\n" );
+			// TODO: Emit warning
+			if (m_elseValid == 0) {
+				m_ie->I_DPrintf(WL_ERROR, "Invalid 'else' found!\n");
 				return SEQ_FAILED;
 			}
 
-			if S_FAILED( ParseElse( block, bstream ) )
+			if S_FAILED (ParseElse(block, bstream))
 				return SEQ_FAILED;
 
 			break;
 
 		case ID_TASK:
-			
-			if S_FAILED( ParseTask( block, bstream ) )
+
+			if S_FAILED (ParseTask(block, bstream))
 				return SEQ_FAILED;
 
 			break;
 
-		//FIXME: For now this is to catch problems, but can ultimately be removed
+		// FIXME: For now this is to catch problems, but can ultimately be removed
 		case ID_WAIT:
 		case ID_PRINT:
 		case ID_SOUND:
@@ -925,26 +868,25 @@ int CSequencer::Route( CSequence *sequence, bstream_t *bstream )
 		case ID_WAITSIGNAL:
 		case ID_PLAY:
 
-			//Commands go directly into the sequence without pre-process
-			PushCommand( block, PUSH_FRONT );
+			// Commands go directly into the sequence without pre-process
+			PushCommand(block, PUSH_FRONT);
 			break;
 
-		//Error
+		// Error
 		default:
-			
-			m_ie->I_DPrintf( WL_ERROR, "'%d' : invalid block ID", block->GetBlockID() );
-			
+
+			m_ie->I_DPrintf(WL_ERROR, "'%d' : invalid block ID", block->GetBlockID());
+
 			return SEQ_FAILED;
 			break;
 		}
 	}
 
-	//Check for a run sequence, it must be marked
-	if ( m_curSequence->HasFlag( SQ_RUN ) )
-	{
+	// Check for a run sequence, it must be marked
+	if (m_curSequence->HasFlag(SQ_RUN)) {
 		block = new CBlock;
-		block->Create( ID_BLOCK_END );
-		PushCommand( block, PUSH_FRONT );	//mark the end of the run
+		block->Create(ID_BLOCK_END);
+		PushCommand(block, PUSH_FRONT); // mark the end of the run
 
 		/*
 		//Free the stream
@@ -955,18 +897,17 @@ int CSequencer::Route( CSequence *sequence, bstream_t *bstream )
 		return SEQ_OK;
 	}
 
-	//Check to start the communication
-	if ( ( bstream->last == NULL ) && ( m_numCommands > 0 ) )
-	{	
-		//Everything is routed, so get it all rolling
-		Prime( m_taskManager, PopCommand( POP_BACK ) );
+	// Check to start the communication
+	if ((bstream->last == NULL) && (m_numCommands > 0)) {
+		// Everything is routed, so get it all rolling
+		Prime(m_taskManager, PopCommand(POP_BACK));
 	}
 
 	m_curStream = bstream->last;
 
-	//Free the stream
-	DeleteStream( bstream );
-		
+	// Free the stream
+	DeleteStream(bstream);
+
 	return SEQ_OK;
 }
 
@@ -978,81 +919,69 @@ Checks for run command pre-processing
 ========================
 */
 
-//Directly changes the parameter to avoid excess push/pop
+// Directly changes the parameter to avoid excess push/pop
 
-void CSequencer::CheckRun( CBlock **command )
-{
-	CBlock	*block = *command;
+void CSequencer::CheckRun(CBlock **command) {
+	CBlock *block = *command;
 
-	if ( block == NULL )
+	if (block == NULL)
 		return;
 
-	//Check for a run command
-	if ( block->GetBlockID() == ID_RUN )
-	{
-		int id = (int) (*(float *) block->GetMemberData( 1 ));
+	// Check for a run command
+	if (block->GetBlockID() == ID_RUN) {
+		int id = (int)(*(float *)block->GetMemberData(1));
 
-		m_ie->I_DPrintf( WL_DEBUG, "%4d run( \"%s\" ); [%d]", m_ownerID, (char *) block->GetMemberData(0), m_ie->I_GetTime() );
+		m_ie->I_DPrintf(WL_DEBUG, "%4d run( \"%s\" ); [%d]", m_ownerID, (char *)block->GetMemberData(0), m_ie->I_GetTime());
 
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 
 			*command = NULL;
 		}
 
-		m_curSequence = GetSequence( id );
-		
-		//TODO: Emit warning
-		assert( m_curSequence );
-		if ( m_curSequence == NULL )
-		{
-			m_ie->I_DPrintf( WL_ERROR, "Unable to find 'run' sequence!\n" );
+		m_curSequence = GetSequence(id);
+
+		// TODO: Emit warning
+		assert(m_curSequence);
+		if (m_curSequence == NULL) {
+			m_ie->I_DPrintf(WL_ERROR, "Unable to find 'run' sequence!\n");
 			*command = NULL;
 			return;
 		}
 
-		if ( m_curSequence->GetNumCommands() > 0 )
-		{
-			*command = PopCommand( POP_BACK );
-			
-			Prep( command );	//Account for any other pre-processes
+		if (m_curSequence->GetNumCommands() > 0) {
+			*command = PopCommand(POP_BACK);
+
+			Prep(command); // Account for any other pre-processes
 			return;
 		}
 
 		return;
 	}
-	
-	//Check for the end of a run
-	if ( ( block->GetBlockID() == ID_BLOCK_END ) && ( m_curSequence->HasFlag( SQ_RUN ) ) )
-	{
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+
+	// Check for the end of a run
+	if ((block->GetBlockID() == ID_BLOCK_END) && (m_curSequence->HasFlag(SQ_RUN))) {
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
 
-		m_curSequence = ReturnSequence( m_curSequence );
+		m_curSequence = ReturnSequence(m_curSequence);
 
-		if ( m_curSequence && m_curSequence->GetNumCommands() > 0 )
-		{
-			*command = PopCommand( POP_BACK );
-			
-			Prep( command );	//Account for any other pre-processes
+		if (m_curSequence && m_curSequence->GetNumCommands() > 0) {
+			*command = PopCommand(POP_BACK);
+
+			Prep(command); // Account for any other pre-processes
 			return;
-		}	
+		}
 
-		//FIXME: Check this...
+		// FIXME: Check this...
 	}
 }
 
@@ -1062,45 +991,42 @@ EvaluateConditional
 -------------------------
 */
 
-//FIXME: This function will be written better later once the functionality of the ideas here are tested
+// FIXME: This function will be written better later once the functionality of the ideas here are tested
 
-int CSequencer::EvaluateConditional( CBlock *block )
-{
-	CBlockMember	*bm;
-	char			tempString1[128], tempString2[128];
-	vector_t		vec;
-	int				id, i, oper, memberNum = 0;
-	char			*p1 = NULL, *p2 = NULL;
-	int				t1, t2;
+int CSequencer::EvaluateConditional(CBlock *block) {
+	CBlockMember *bm;
+	char tempString1[128], tempString2[128];
+	vector_t vec;
+	int id, i, oper, memberNum = 0;
+	char *p1 = NULL, *p2 = NULL;
+	int t1, t2;
 
 	//
 	//	Get the first parameter
 	//
 
-	bm = block->GetMember( memberNum++ );
+	bm = block->GetMember(memberNum++);
 	id = bm->GetID();
 
 	t1 = id;
 
-	switch ( id )
-	{
+	switch (id) {
 	case TK_FLOAT:
-		Com_sprintf( tempString1, sizeof( tempString1 ), "%.3f", *(float *) bm->GetData() );
-		p1 = (char *) tempString1;
+		Com_sprintf(tempString1, sizeof(tempString1), "%.3f", *(float *)bm->GetData());
+		p1 = (char *)tempString1;
 		break;
 
 	case TK_VECTOR:
 
 		tempString1[0] = '\0';
 
-		for ( i = 0; i < 3; i++ )
-		{
-			bm = block->GetMember( memberNum++ );
-			vec[i] = *(float *) bm->GetData();
+		for (i = 0; i < 3; i++) {
+			bm = block->GetMember(memberNum++);
+			vec[i] = *(float *)bm->GetData();
 		}
 
-		Com_sprintf( tempString1, sizeof( tempString1 ), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
-		p1 = (char *) tempString1;
+		Com_sprintf(tempString1, sizeof(tempString1), "%.3f %.3f %.3f", vec[0], vec[1], vec[2]);
+		p1 = (char *)tempString1;
 
 		break;
 
@@ -1108,115 +1034,106 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	case TK_IDENTIFIER:
 	case TK_CHAR:
 
-		p1 = (char *) bm->GetData();
+		p1 = (char *)bm->GetData();
 		break;
 
-	case ID_GET:		
-	{
-			int		type;
-			char	*name;
+	case ID_GET: {
+		int type;
+		char *name;
 
-			//get( TYPE, NAME )
-			type = (int) (*(float *) block->GetMemberData( memberNum++ ));
-			name = (char *) block->GetMemberData( memberNum++ );
+		// get( TYPE, NAME )
+		type = (int)(*(float *)block->GetMemberData(memberNum++));
+		name = (char *)block->GetMemberData(memberNum++);
 
-			//Get the type returned and hold onto it
-			t1 = type;
+		// Get the type returned and hold onto it
+		t1 = type;
 
-			switch ( type )
-			{
-			case TK_FLOAT:
-				{
-					float	fVal;
+		switch (type) {
+		case TK_FLOAT: {
+			float fVal;
 
-					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
-						return false;
+			if (m_ie->I_GetFloat(m_ownerID, type, name, &fVal) == false)
+				return false;
 
-					Com_sprintf( tempString1, sizeof( tempString1 ), "%.3f", fVal );
-					p1 = (char *) tempString1;
-				}
-				
-				break;
+			Com_sprintf(tempString1, sizeof(tempString1), "%.3f", fVal);
+			p1 = (char *)tempString1;
+		}
 
-			case TK_INT:
-				{
-					float	fVal;
+		break;
 
-					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
-						return false;
+		case TK_INT: {
+			float fVal;
 
-					Com_sprintf( tempString1, sizeof( tempString1 ), "%d", (int) fVal );
-					p1 = (char *) tempString1;
-				}
-				break;
+			if (m_ie->I_GetFloat(m_ownerID, type, name, &fVal) == false)
+				return false;
 
-			case TK_STRING:
+			Com_sprintf(tempString1, sizeof(tempString1), "%d", (int)fVal);
+			p1 = (char *)tempString1;
+		} break;
 
-				if ( m_ie->I_GetString( m_ownerID, type, name, &p1 ) == false)
-					return false;
-			
-				break;
+		case TK_STRING:
 
-			case TK_VECTOR:
-				{
-					vector_t	vVal;
+			if (m_ie->I_GetString(m_ownerID, type, name, &p1) == false)
+				return false;
 
-					if ( m_ie->I_GetVector( m_ownerID, type, name, vVal ) == false)
-						return false;
+			break;
 
-					Com_sprintf( tempString1, sizeof( tempString1 ), "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2] );
-					p1 = (char *) tempString1;
-				}
-				
-				break;
+		case TK_VECTOR: {
+			vector_t vVal;
+
+			if (m_ie->I_GetVector(m_ownerID, type, name, vVal) == false)
+				return false;
+
+			Com_sprintf(tempString1, sizeof(tempString1), "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2]);
+			p1 = (char *)tempString1;
+		}
+
+		break;
 		}
 
 		break;
 	}
 
-	case ID_RANDOM:
-		{
-			float	min, max;
-			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
+	case ID_RANDOM: {
+		float min, max;
+		// FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
-			min	= *(float *) block->GetMemberData( memberNum++ );
-			max	= *(float *) block->GetMemberData( memberNum++ );
+		min = *(float *)block->GetMemberData(memberNum++);
+		max = *(float *)block->GetMemberData(memberNum++);
 
-			//A float value is returned from the function
-			t1 = TK_FLOAT;
+		// A float value is returned from the function
+		t1 = TK_FLOAT;
 
-			Com_sprintf( tempString1, sizeof( tempString1 ), "%.3f", m_ie->I_Random( min, max ) );
-			p1 = (char *) tempString1;
+		Com_sprintf(tempString1, sizeof(tempString1), "%.3f", m_ie->I_Random(min, max));
+		p1 = (char *)tempString1;
+	}
+
+	break;
+
+	case ID_TAG: {
+		char *name;
+		float type;
+
+		name = (char *)block->GetMemberData(memberNum++);
+		type = *(float *)block->GetMemberData(memberNum++);
+
+		t1 = TK_VECTOR;
+
+		// TODO: Emit warning
+		if (m_ie->I_GetTag(m_ownerID, name, (int)type, vec) == false) {
+			m_ie->I_DPrintf(WL_ERROR, "Unable to find tag \"%s\"!\n", name);
+			return false;
 		}
+
+		Com_sprintf(tempString1, sizeof(tempString1), "%.3f %.3f %.3f", vec[0], vec[1], vec[2]);
+		p1 = (char *)tempString1;
 
 		break;
-
-	case ID_TAG:
-		{
-			char	*name;
-			float	type;
-
-			name = (char *) block->GetMemberData( memberNum++ );
-			type = *(float *) block->GetMemberData( memberNum++ );
-
-			t1 = TK_VECTOR;
-
-			//TODO: Emit warning
-			if ( m_ie->I_GetTag( m_ownerID, name, (int) type, vec ) == false)
-			{
-				m_ie->I_DPrintf( WL_ERROR, "Unable to find tag \"%s\"!\n", name );
-				return false;
-			}
-
-			Com_sprintf( tempString1, sizeof( tempString1 ), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
-			p1 = (char *) tempString1;
-
-			break;
-		}
+	}
 
 	default:
-		//FIXME: Make an enum id for the error...
-		m_ie->I_DPrintf( WL_ERROR, "Invalid parameter type on conditional" );
+		// FIXME: Make an enum id for the error...
+		m_ie->I_DPrintf(WL_ERROR, "Invalid parameter type on conditional");
 		return false;
 		break;
 	}
@@ -1225,11 +1142,10 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	//	Get the comparison operator
 	//
 
-	bm = block->GetMember( memberNum++ );
+	bm = block->GetMember(memberNum++);
 	id = bm->GetID();
 
-	switch ( id )
-	{
+	switch (id) {
 	case TK_EQUALS:
 	case TK_GREATER_THAN:
 	case TK_LESS_THAN:
@@ -1238,8 +1154,8 @@ int CSequencer::EvaluateConditional( CBlock *block )
 		break;
 
 	default:
-		m_ie->I_DPrintf( WL_ERROR, "Invalid operator type found on conditional!\n" );
-		return false;	//FIXME: Emit warning
+		m_ie->I_DPrintf(WL_ERROR, "Invalid operator type found on conditional!\n");
+		return false; // FIXME: Emit warning
 		break;
 	}
 
@@ -1247,30 +1163,28 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	//	Get the second parameter
 	//
 
-	bm = block->GetMember( memberNum++ );
+	bm = block->GetMember(memberNum++);
 	id = bm->GetID();
 
 	t2 = id;
 
-	switch ( id )
-	{
+	switch (id) {
 	case TK_FLOAT:
-		Com_sprintf( tempString2, sizeof( tempString2 ), "%.3f", *(float *) bm->GetData() );
-		p2 = (char *) tempString2;
+		Com_sprintf(tempString2, sizeof(tempString2), "%.3f", *(float *)bm->GetData());
+		p2 = (char *)tempString2;
 		break;
 
 	case TK_VECTOR:
 
 		tempString2[0] = '\0';
 
-		for ( i = 0; i < 3; i++ )
-		{
-			bm = block->GetMember( memberNum++ );
-			vec[i] = *(float *) bm->GetData();
+		for (i = 0; i < 3; i++) {
+			bm = block->GetMember(memberNum++);
+			vec[i] = *(float *)bm->GetData();
 		}
 
-		Com_sprintf( tempString2, sizeof( tempString2 ), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
-		p2 = (char *) tempString2;
+		Com_sprintf(tempString2, sizeof(tempString2), "%.3f %.3f %.3f", vec[0], vec[1], vec[2]);
+		p2 = (char *)tempString2;
 
 		break;
 
@@ -1278,122 +1192,115 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	case TK_IDENTIFIER:
 	case TK_CHAR:
 
-		p2 = (char *) bm->GetData();
+		p2 = (char *)bm->GetData();
 		break;
 
-	case ID_GET:		
-	{
-			int		type;
-			char	*name;
+	case ID_GET: {
+		int type;
+		char *name;
 
-			//get( TYPE, NAME )
-			type = (int) (*(float *) block->GetMemberData( memberNum++ ));
-			name = (char *) block->GetMemberData( memberNum++ );
+		// get( TYPE, NAME )
+		type = (int)(*(float *)block->GetMemberData(memberNum++));
+		name = (char *)block->GetMemberData(memberNum++);
 
-			//Get the type returned and hold onto it
-			t2 = type;
+		// Get the type returned and hold onto it
+		t2 = type;
 
-			switch ( type )
-			{
-			case TK_FLOAT:
-				{
-					float	fVal;
+		switch (type) {
+		case TK_FLOAT: {
+			float fVal;
 
-					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
-						return false;
+			if (m_ie->I_GetFloat(m_ownerID, type, name, &fVal) == false)
+				return false;
 
-					Com_sprintf( tempString2, sizeof( tempString2 ), "%.3f", fVal );
-					p2 = (char *) tempString2;
-				}
-				
-				break;
+			Com_sprintf(tempString2, sizeof(tempString2), "%.3f", fVal);
+			p2 = (char *)tempString2;
+		}
 
-			case TK_INT:
-				{
-					float	fVal;
+		break;
 
-					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
-						return false;
+		case TK_INT: {
+			float fVal;
 
-					Com_sprintf( tempString2, sizeof( tempString2 ), "%d", (int) fVal );
-					p2 = (char *) tempString2;
-				}
-				break;
+			if (m_ie->I_GetFloat(m_ownerID, type, name, &fVal) == false)
+				return false;
 
-			case TK_STRING:
+			Com_sprintf(tempString2, sizeof(tempString2), "%d", (int)fVal);
+			p2 = (char *)tempString2;
+		} break;
 
-				if ( m_ie->I_GetString( m_ownerID, type, name, &p2 ) == false)
-					return false;
-			
-				break;
+		case TK_STRING:
 
-			case TK_VECTOR:
-				{
-					vector_t	vVal;
+			if (m_ie->I_GetString(m_ownerID, type, name, &p2) == false)
+				return false;
 
-					if ( m_ie->I_GetVector( m_ownerID, type, name, vVal ) == false)
-						return false;
+			break;
 
-					Com_sprintf( tempString2, sizeof( tempString2 ), "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2] );
-					p2 = (char *) tempString2;
-				}
-				
-				break;
+		case TK_VECTOR: {
+			vector_t vVal;
+
+			if (m_ie->I_GetVector(m_ownerID, type, name, vVal) == false)
+				return false;
+
+			Com_sprintf(tempString2, sizeof(tempString2), "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2]);
+			p2 = (char *)tempString2;
+		}
+
+		break;
 		}
 
 		break;
 	}
 
 	case ID_RANDOM:
-		
-		{
-			float	min, max;
-			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
-			min	= *(float *) block->GetMemberData( memberNum++ );
-			max	= *(float *) block->GetMemberData( memberNum++ );
+	{
+		float min, max;
+		// FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
-			//A float value is returned from the function
-			t2 = TK_FLOAT;
+		min = *(float *)block->GetMemberData(memberNum++);
+		max = *(float *)block->GetMemberData(memberNum++);
 
-			Com_sprintf( tempString2, sizeof( tempString2 ), "%.3f", m_ie->I_Random( min, max ) );
-			p2 = (char *) tempString2;
-		}
+		// A float value is returned from the function
+		t2 = TK_FLOAT;
 
-		break;
+		Com_sprintf(tempString2, sizeof(tempString2), "%.3f", m_ie->I_Random(min, max));
+		p2 = (char *)tempString2;
+	}
+
+	break;
 
 	case ID_TAG:
 
-		{
-			char	*name;
-			float	type;
+	{
+		char *name;
+		float type;
 
-			name = (char *) block->GetMemberData( memberNum++ );
-			type = *(float *) block->GetMemberData( memberNum++ );
+		name = (char *)block->GetMemberData(memberNum++);
+		type = *(float *)block->GetMemberData(memberNum++);
 
-			t2 = TK_VECTOR;
+		t2 = TK_VECTOR;
 
-			//TODO: Emit warning
-			if ( m_ie->I_GetTag( m_ownerID, name, (int) type, vec ) == false)
-			{
-				m_ie->I_DPrintf( WL_ERROR, "Unable to find tag \"%s\"!\n", name );
-				return false;
-			}
-
-			Com_sprintf( tempString2, sizeof( tempString2 ), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
-			p2 = (char *) tempString2;
-
-			break;
+		// TODO: Emit warning
+		if (m_ie->I_GetTag(m_ownerID, name, (int)type, vec) == false) {
+			m_ie->I_DPrintf(WL_ERROR, "Unable to find tag \"%s\"!\n", name);
+			return false;
 		}
 
+		Com_sprintf(tempString2, sizeof(tempString2), "%.3f %.3f %.3f", vec[0], vec[1], vec[2]);
+		p2 = (char *)tempString2;
+
+		break;
+	}
+
 	default:
-		//FIXME: Make an enum id for the error...
-		m_ie->I_DPrintf( WL_ERROR, "Invalid parameter type on conditional" );
+		// FIXME: Make an enum id for the error...
+		m_ie->I_DPrintf(WL_ERROR, "Invalid parameter type on conditional");
 		return false;
 		break;
 	}
 
-	return m_ie->I_Evaluate( t1, p1, t2, p2, oper );
+	return m_ie->I_Evaluate(t1, p1, t2, p2, oper);
 }
 
 /*
@@ -1404,149 +1311,125 @@ Checks for if statement pre-processing
 ========================
 */
 
-void CSequencer::CheckIf( CBlock **command )
-{
-	CBlock		*block = *command;
-	int			successID, failureID;
-	CSequence	*successSeq, *failureSeq;
+void CSequencer::CheckIf(CBlock **command) {
+	CBlock *block = *command;
+	int successID, failureID;
+	CSequence *successSeq, *failureSeq;
 
-	if ( block == NULL )
+	if (block == NULL)
 		return;
 
-	if ( block->GetBlockID() == ID_IF )
-	{
-		int ret = EvaluateConditional( block );
+	if (block->GetBlockID() == ID_IF) {
+		int ret = EvaluateConditional(block);
 
-		if ( ret /*TRUE*/ )
-		{
-			if ( block->HasFlag( BF_ELSE ) )
-			{
-				successID = (int) (*(float *) block->GetMemberData( block->GetNumMembers() - 2 ));
-			}
-			else
-			{
-				successID = (int) (*(float *) block->GetMemberData( block->GetNumMembers() - 1 ));
+		if (ret /*TRUE*/) {
+			if (block->HasFlag(BF_ELSE)) {
+				successID = (int)(*(float *)block->GetMemberData(block->GetNumMembers() - 2));
+			} else {
+				successID = (int)(*(float *)block->GetMemberData(block->GetNumMembers() - 1));
 			}
 
-			successSeq = GetSequence( successID );
+			successSeq = GetSequence(successID);
 
-			//TODO: Emit warning
-			assert( successSeq );
-			if ( successSeq == NULL )
-			{
-				m_ie->I_DPrintf( WL_ERROR, "Unable to find conditional success sequence!\n" );
+			// TODO: Emit warning
+			assert(successSeq);
+			if (successSeq == NULL) {
+				m_ie->I_DPrintf(WL_ERROR, "Unable to find conditional success sequence!\n");
 				*command = NULL;
 				return;
 			}
 
-			//Only save the conditional statement if the calling sequence is retained
-			if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-			{
-				PushCommand( block, PUSH_FRONT );
-			}
-			else
-			{
+			// Only save the conditional statement if the calling sequence is retained
+			if (m_curSequence->HasFlag(SQ_RETAIN)) {
+				PushCommand(block, PUSH_FRONT);
+			} else {
 				delete block;
 				block = NULL;
 				*command = NULL;
 			}
-			
+
 			m_curSequence = successSeq;
 
-			//Recursively work out any other pre-processors
-			*command = PopCommand( POP_BACK );
-			Prep( command );
-			
-			return;			
+			// Recursively work out any other pre-processors
+			*command = PopCommand(POP_BACK);
+			Prep(command);
+
+			return;
 		}
 
-		if ( ( ret == false ) && ( block->HasFlag( BF_ELSE ) ) )
-		{
-			failureID = (int) (*(float *) block->GetMemberData( block->GetNumMembers() - 1 ));
-			failureSeq = GetSequence( failureID );
+		if ((ret == false) && (block->HasFlag(BF_ELSE))) {
+			failureID = (int)(*(float *)block->GetMemberData(block->GetNumMembers() - 1));
+			failureSeq = GetSequence(failureID);
 
-			//TODO: Emit warning
-			assert( failureSeq );
-			if ( failureSeq == NULL )
-			{
-				m_ie->I_DPrintf( WL_ERROR, "Unable to find conditional failure sequence!\n" );
+			// TODO: Emit warning
+			assert(failureSeq);
+			if (failureSeq == NULL) {
+				m_ie->I_DPrintf(WL_ERROR, "Unable to find conditional failure sequence!\n");
 				*command = NULL;
 				return;
 			}
 
-			//Only save the conditional statement if the calling sequence is retained
-			if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-			{
-				PushCommand( block, PUSH_FRONT );
-			}
-			else
-			{
+			// Only save the conditional statement if the calling sequence is retained
+			if (m_curSequence->HasFlag(SQ_RETAIN)) {
+				PushCommand(block, PUSH_FRONT);
+			} else {
 				delete block;
 				block = NULL;
 				*command = NULL;
 			}
-			
+
 			m_curSequence = failureSeq;
 
-			//Recursively work out any other pre-processors
-			*command = PopCommand( POP_BACK );
-			Prep( command );
-			
-			return;			
+			// Recursively work out any other pre-processors
+			*command = PopCommand(POP_BACK);
+			Prep(command);
+
+			return;
 		}
 
-		//Only save the conditional statement if the calling sequence is retained
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		// Only save the conditional statement if the calling sequence is retained
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
 
-		//Conditional failed, just move on to the next command
-		*command = PopCommand( POP_BACK );
-		Prep( command );
-		
-		return;			
+		// Conditional failed, just move on to the next command
+		*command = PopCommand(POP_BACK);
+		Prep(command);
+
+		return;
 	}
 
-	if ( ( block->GetBlockID() == ID_BLOCK_END ) && ( m_curSequence->HasFlag( SQ_CONDITIONAL ) ) )
-	{
-		assert( m_curSequence->GetReturn() );
-		if ( m_curSequence->GetReturn() == NULL )
-		{
+	if ((block->GetBlockID() == ID_BLOCK_END) && (m_curSequence->HasFlag(SQ_CONDITIONAL))) {
+		assert(m_curSequence->GetReturn());
+		if (m_curSequence->GetReturn() == NULL) {
 			*command = NULL;
 			return;
 		}
 
-		//Check to retain it
-		if ( m_curSequence->GetParent()->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		// Check to retain it
+		if (m_curSequence->GetParent()->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
-		
-		//Back out of the conditional and resume the previous sequence
-		m_curSequence = ReturnSequence( m_curSequence );
-		
-		//This can safely happen
-		if ( m_curSequence == NULL )
-		{
+
+		// Back out of the conditional and resume the previous sequence
+		m_curSequence = ReturnSequence(m_curSequence);
+
+		// This can safely happen
+		if (m_curSequence == NULL) {
 			*command = NULL;
 			return;
 		}
 
-		*command = PopCommand( POP_BACK );
-		Prep( command );
+		*command = PopCommand(POP_BACK);
+		Prep(command);
 	}
 }
 
@@ -1558,132 +1441,113 @@ Checks for loop command pre-processing
 ========================
 */
 
-void CSequencer::CheckLoop( CBlock **command )
-{
-	CBlockMember	*bm;
-	CBlock			*block = *command;
-	float			min, max;
-	int				iterations;
-	int				loopID;
-	int				memberNum = 0;
-			
-	if ( block == NULL )
+void CSequencer::CheckLoop(CBlock **command) {
+	CBlockMember *bm;
+	CBlock *block = *command;
+	float min, max;
+	int iterations;
+	int loopID;
+	int memberNum = 0;
+
+	if (block == NULL)
 		return;
 
-	//Check for a loop
-	if ( block->GetBlockID() == ID_LOOP )
-	{
-		//Get the loop ID
-		bm = block->GetMember( memberNum++ );
+	// Check for a loop
+	if (block->GetBlockID() == ID_LOOP) {
+		// Get the loop ID
+		bm = block->GetMember(memberNum++);
 
-		if ( bm->GetID() == ID_RANDOM )
-		{
-			//Parse out the random number
-			min = *(float *) block->GetMemberData( memberNum++ );
-			max = *(float *) block->GetMemberData( memberNum++ );
-			
-			iterations = (int) m_ie->I_Random( min, max );
-		}
-		else
-		{
-			iterations = (int) (*(float *) bm->GetData());
-		}
-		
-		loopID = (int) (*(float *) block->GetMemberData( memberNum++ ));
+		if (bm->GetID() == ID_RANDOM) {
+			// Parse out the random number
+			min = *(float *)block->GetMemberData(memberNum++);
+			max = *(float *)block->GetMemberData(memberNum++);
 
-		CSequence *loop = GetSequence( loopID );
-				
-		//TODO: Emit warning
-		assert( loop );
-		if ( loop == NULL )
-		{
-			m_ie->I_DPrintf( WL_ERROR, "Unable to find 'loop' sequence!\n" );
+			iterations = (int)m_ie->I_Random(min, max);
+		} else {
+			iterations = (int)(*(float *)bm->GetData());
+		}
+
+		loopID = (int)(*(float *)block->GetMemberData(memberNum++));
+
+		CSequence *loop = GetSequence(loopID);
+
+		// TODO: Emit warning
+		assert(loop);
+		if (loop == NULL) {
+			m_ie->I_DPrintf(WL_ERROR, "Unable to find 'loop' sequence!\n");
 			*command = NULL;
 			return;
 		}
 
-		assert( loop->GetParent() );
-		if ( loop->GetParent() == NULL )
-		{
+		assert(loop->GetParent());
+		if (loop->GetParent() == NULL) {
 			*command = NULL;
 			return;
 		}
 
-		//Restore the count if it has been lost
-		loop->SetIterations( iterations );
+		// Restore the count if it has been lost
+		loop->SetIterations(iterations);
 
-		//Only save the loop command if the calling sequence is retained
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		// Only save the loop command if the calling sequence is retained
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
-		
+
 		m_curSequence = loop;
 
-		//Recursively work out any other pre-processors
-		*command = PopCommand( POP_BACK );
-		Prep( command );
-		
+		// Recursively work out any other pre-processors
+		*command = PopCommand(POP_BACK);
+		Prep(command);
+
 		return;
 	}
-	
-	//Check for the end of the loop
-	if ( ( block->GetBlockID() == ID_BLOCK_END ) && ( m_curSequence->HasFlag( SQ_LOOP ) ) )
-	{
-		//We don't want to decrement -1
-		if ( m_curSequence->GetIterations() > 0 )
-			m_curSequence->SetIterations( m_curSequence->GetIterations()-1 );	//Nice, eh?
 
-		//Either there's another iteration, or it's infinite
-		if ( m_curSequence->GetIterations() != 0 )
-		{
-			//Another iteration is going to happen, so this will need to be considered again
-			PushCommand( block, PUSH_FRONT );
-			
-			*command = PopCommand( POP_BACK );
-			Prep( command );
-			
+	// Check for the end of the loop
+	if ((block->GetBlockID() == ID_BLOCK_END) && (m_curSequence->HasFlag(SQ_LOOP))) {
+		// We don't want to decrement -1
+		if (m_curSequence->GetIterations() > 0)
+			m_curSequence->SetIterations(m_curSequence->GetIterations() - 1); // Nice, eh?
+
+		// Either there's another iteration, or it's infinite
+		if (m_curSequence->GetIterations() != 0) {
+			// Another iteration is going to happen, so this will need to be considered again
+			PushCommand(block, PUSH_FRONT);
+
+			*command = PopCommand(POP_BACK);
+			Prep(command);
+
 			return;
-		}
-		else
-		{
-			assert( m_curSequence->GetReturn() );
-			if ( m_curSequence->GetReturn() == NULL )
-			{
+		} else {
+			assert(m_curSequence->GetReturn());
+			if (m_curSequence->GetReturn() == NULL) {
 				*command = NULL;
 				return;
 			}
 
-			//Check to retain it
-			if ( m_curSequence->GetParent()->HasFlag( SQ_RETAIN ) )
-			{
-				PushCommand( block, PUSH_FRONT );
-			}
-			else
-			{
+			// Check to retain it
+			if (m_curSequence->GetParent()->HasFlag(SQ_RETAIN)) {
+				PushCommand(block, PUSH_FRONT);
+			} else {
 				delete block;
 				block = NULL;
 				*command = NULL;
 			}
-			
-			//Back out of the loop and resume the previous sequence
-			m_curSequence = ReturnSequence( m_curSequence );
-			
-			//This can safely happen
-			if ( m_curSequence == NULL )
-			{
+
+			// Back out of the loop and resume the previous sequence
+			m_curSequence = ReturnSequence(m_curSequence);
+
+			// This can safely happen
+			if (m_curSequence == NULL) {
 				*command = NULL;
 				return;
 			}
 
-			*command = PopCommand( POP_BACK );
-			Prep( command );
+			*command = PopCommand(POP_BACK);
+			Prep(command);
 		}
 	}
 }
@@ -1696,33 +1560,28 @@ Checks for flush command pre-processing
 ========================
 */
 
-void CSequencer::CheckFlush( CBlock **command )
-{
-	sequence_l::iterator	sli;
-	CBlock *block =			*command;
+void CSequencer::CheckFlush(CBlock **command) {
+	sequence_l::iterator sli;
+	CBlock *block = *command;
 
-	if ( block == NULL )
+	if (block == NULL)
 		return;
 
-	if ( block->GetBlockID() == ID_FLUSH )
-	{
-		//Flush the sequence
-		Flush( m_curSequence );
+	if (block->GetBlockID() == ID_FLUSH) {
+		// Flush the sequence
+		Flush(m_curSequence);
 
-		//Check to retain it
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		// Check to retain it
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
 
-		*command = PopCommand( POP_BACK );
-		Prep( command );
+		*command = PopCommand(POP_BACK);
+		Prep(command);
 
 		return;
 	}
@@ -1736,163 +1595,141 @@ Checks for affect command pre-processing
 ========================
 */
 
-void CSequencer::CheckAffect( CBlock **command )
-{
+void CSequencer::CheckAffect(CBlock **command) {
 	CBlock *block = *command;
-	gentity_t	*ent = NULL;
-	char		*entname = NULL;
-	int			memberNum = 0;
+	gentity_t *ent = NULL;
+	char *entname = NULL;
+	int memberNum = 0;
 
-	if ( block == NULL )
-	{
+	if (block == NULL) {
 		return;
 	}
 
-	if ( block->GetBlockID() == ID_AFFECT )
-	{
-		CSequencer *sequencer	= NULL;
-		entname = (char*) block->GetMemberData( memberNum++ );
-		ent		= m_ie->I_GetEntityByName( entname );
-		
-		if( !ent ) // if there wasn't a valid entname in the affect, we need to check if it's a get command
+	if (block->GetBlockID() == ID_AFFECT) {
+		CSequencer *sequencer = NULL;
+		entname = (char *)block->GetMemberData(memberNum++);
+		ent = m_ie->I_GetEntityByName(entname);
+
+		if (!ent) // if there wasn't a valid entname in the affect, we need to check if it's a get command
 		{
-			//try to parse a 'get' command that is embeded in this 'affect'
-		
-			int				id;
-			char			*p1 = NULL;
-			char			*name = 0;
-			CBlockMember	*bm = NULL;
+			// try to parse a 'get' command that is embeded in this 'affect'
+
+			int id;
+			char *p1 = NULL;
+			char *name = 0;
+			CBlockMember *bm = NULL;
 			//
 			//	Get the first parameter (this should be the get)
 			//
-			bm = block->GetMember( 0 );
+			bm = block->GetMember(0);
 			id = bm->GetID();
-		
-			switch ( id )
-			{
-				// these 3 cases probably aren't necessary
-				case TK_STRING:
-				case TK_IDENTIFIER:
-				case TK_CHAR:
-					p1 = (char *) bm->GetData();
+
+			switch (id) {
+			// these 3 cases probably aren't necessary
+			case TK_STRING:
+			case TK_IDENTIFIER:
+			case TK_CHAR:
+				p1 = (char *)bm->GetData();
 				break;
 
-				case ID_GET:		
+			case ID_GET: {
+				int type;
+
+				// get( TYPE, NAME )
+				type = (int)(*(float *)block->GetMemberData(memberNum++));
+				name = (char *)block->GetMemberData(memberNum++);
+
+				switch (type) // what type are they attempting to get
 				{
-					int		type;				
 
-					//get( TYPE, NAME )
-					type = (int) (*(float *) block->GetMemberData( memberNum++ ));
-					name = (char *) block->GetMemberData( memberNum++ );
-
-					switch ( type ) // what type are they attempting to get
-					{
-				
-						case TK_STRING:
-							//only string is acceptable for affect, store result in p1
-							if ( m_ie->I_GetString( m_ownerID, type, name, &p1 ) == false)
-							{
-								return;
-							}
-							break;
-						default:
-							//FIXME: Make an enum id for the error...
-							m_ie->I_DPrintf( WL_ERROR, "Invalid parameter type on affect _1" );
-							return;
-							break;
+				case TK_STRING:
+					// only string is acceptable for affect, store result in p1
+					if (m_ie->I_GetString(m_ownerID, type, name, &p1) == false) {
+						return;
 					}
-
+					break;
+				default:
+					// FIXME: Make an enum id for the error...
+					m_ie->I_DPrintf(WL_ERROR, "Invalid parameter type on affect _1");
+					return;
 					break;
 				}
 
-				default:
-				//FIXME: Make an enum id for the error...
-					m_ie->I_DPrintf( WL_ERROR, "Invalid parameter type on affect _2" );
-					return;
-					break;
-			}//end id switch
+				break;
+			}
 
-			if(p1)
-			{
-				ent = m_ie->I_GetEntityByName( p1 );
+			default:
+				// FIXME: Make an enum id for the error...
+				m_ie->I_DPrintf(WL_ERROR, "Invalid parameter type on affect _2");
+				return;
+				break;
+			} // end id switch
+
+			if (p1) {
+				ent = m_ie->I_GetEntityByName(p1);
 			}
-			if(!ent)
-			{	// a valid entity name was not returned from the get command
-				m_ie->I_DPrintf( WL_WARNING, "'%s' : invalid affect() target\n");
+			if (!ent) { // a valid entity name was not returned from the get command
+				m_ie->I_DPrintf(WL_WARNING, "'%s' : invalid affect() target\n");
 			}
-		
+
 		} // end if(!ent)
 
-		if( ent )
-		{
+		if (ent) {
 			sequencer = ent->sequencer;
 		}
-		if(memberNum == 0)
-		{	//there was no get, increment manually before next step
+		if (memberNum == 0) { // there was no get, increment manually before next step
 			memberNum++;
 		}
-		int	type	= (int) (*(float *) block->GetMemberData( memberNum ));  
-		int	id		= (int) (*(float *) block->GetMemberData( memberNum+1 ));
-		
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		int type = (int)(*(float *)block->GetMemberData(memberNum));
+		int id = (int)(*(float *)block->GetMemberData(memberNum + 1));
+
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
-		
-		//NOTENOTE: If this isn't found, continue on to the next command
-		if ( sequencer == NULL )
-		{
-			*command = PopCommand( POP_BACK );
-			Prep( command );
+
+		// NOTENOTE: If this isn't found, continue on to the next command
+		if (sequencer == NULL) {
+			*command = PopCommand(POP_BACK);
+			Prep(command);
 			return;
 		}
 
-		sequencer->Affect( id, type );
+		sequencer->Affect(id, type);
 
-		*command = PopCommand( POP_BACK );
-		Prep( command );
-		if( ent )
-		{	// ents need to update upon being affected 
+		*command = PopCommand(POP_BACK);
+		Prep(command);
+		if (ent) { // ents need to update upon being affected
 			ent->taskManager->Update();
 		}
 
 		return;
 	}
 
-	if ( ( block->GetBlockID() == ID_BLOCK_END ) && ( m_curSequence->HasFlag( SQ_AFFECT ) ) )
-	{
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+	if ((block->GetBlockID() == ID_BLOCK_END) && (m_curSequence->HasFlag(SQ_AFFECT))) {
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
-		
-		m_curSequence = ReturnSequence( m_curSequence );
 
-		if ( m_curSequence == NULL )
-		{
+		m_curSequence = ReturnSequence(m_curSequence);
+
+		if (m_curSequence == NULL) {
 			*command = NULL;
 			return;
 		}
 
-		*command = PopCommand( POP_BACK );
-		Prep( command );
-		if( ent )
-		{	// ents need to update upon being affected 
+		*command = PopCommand(POP_BACK);
+		Prep(command);
+		if (ent) { // ents need to update upon being affected
 			ent->taskManager->Update();
 		}
-
 	}
 }
 
@@ -1902,97 +1739,85 @@ CheckDo
 -------------------------
 */
 
-void CSequencer::CheckDo( CBlock **command )
-{
+void CSequencer::CheckDo(CBlock **command) {
 	CBlock *block = *command;
 
-	if ( block == NULL )
+	if (block == NULL)
 		return;
 
-	if ( block->GetBlockID() == ID_DO )
-	{
-		//Get the sequence
-		const char	*groupName = (const char *) block->GetMemberData( 0 );
-		CTaskGroup	*group = m_taskManager->GetTaskGroup( groupName );
-		CSequence	*sequence = GetTaskSequence( group );
+	if (block->GetBlockID() == ID_DO) {
+		// Get the sequence
+		const char *groupName = (const char *)block->GetMemberData(0);
+		CTaskGroup *group = m_taskManager->GetTaskGroup(groupName);
+		CSequence *sequence = GetTaskSequence(group);
 
-		//TODO: Emit warning
-		assert( group );
-		if ( group == NULL )
-		{
-			//TODO: Give name/number of entity trying to execute, too
-			m_ie->I_DPrintf( WL_ERROR, "ICARUS Unable to find task group \"%s\"!\n", groupName );
+		// TODO: Emit warning
+		assert(group);
+		if (group == NULL) {
+			// TODO: Give name/number of entity trying to execute, too
+			m_ie->I_DPrintf(WL_ERROR, "ICARUS Unable to find task group \"%s\"!\n", groupName);
 			*command = NULL;
 			return;
 		}
 
-		//TODO: Emit warning
-		assert( sequence );
-		if ( sequence == NULL )
-		{
-			//TODO: Give name/number of entity trying to execute, too
-			m_ie->I_DPrintf( WL_ERROR, "ICARUS Unable to find task 'group' sequence!\n", groupName );
+		// TODO: Emit warning
+		assert(sequence);
+		if (sequence == NULL) {
+			// TODO: Give name/number of entity trying to execute, too
+			m_ie->I_DPrintf(WL_ERROR, "ICARUS Unable to find task 'group' sequence!\n", groupName);
 			*command = NULL;
 			return;
 		}
 
-		//Only save the loop command if the calling sequence is retained
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+		// Only save the loop command if the calling sequence is retained
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
 
-		//Set this to our current sequence
-		sequence->SetReturn( m_curSequence );
+		// Set this to our current sequence
+		sequence->SetReturn(m_curSequence);
 		m_curSequence = sequence;
 
-		group->SetParent( m_curGroup );
+		group->SetParent(m_curGroup);
 		m_curGroup = group;
 
-		//Mark all the following commands as being in the task
-		m_taskManager->MarkTask( group->GetGUID(), TASK_START );
+		// Mark all the following commands as being in the task
+		m_taskManager->MarkTask(group->GetGUID(), TASK_START);
 
-		//Recursively work out any other pre-processors
-		*command = PopCommand( POP_BACK );
-		Prep( command );
-		
+		// Recursively work out any other pre-processors
+		*command = PopCommand(POP_BACK);
+		Prep(command);
+
 		return;
 	}
 
-	if ( ( block->GetBlockID() == ID_BLOCK_END ) && ( m_curSequence->HasFlag( SQ_TASK ) ) )
-	{
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )
-		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+	if ((block->GetBlockID() == ID_BLOCK_END) && (m_curSequence->HasFlag(SQ_TASK))) {
+		if (m_curSequence->HasFlag(SQ_RETAIN)) {
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 			*command = NULL;
 		}
-		
-		m_taskManager->MarkTask( m_curGroup->GetGUID(), TASK_END );
+
+		m_taskManager->MarkTask(m_curGroup->GetGUID(), TASK_END);
 		m_curGroup = m_curGroup->GetParent();
 
-		CSequence *returnSeq = ReturnSequence( m_curSequence );
-		m_curSequence->SetReturn( NULL );
+		CSequence *returnSeq = ReturnSequence(m_curSequence);
+		m_curSequence->SetReturn(NULL);
 		m_curSequence = returnSeq;
 
-		if ( m_curSequence == NULL )
-		{
+		if (m_curSequence == NULL) {
 			*command = NULL;
 			return;
 		}
 
-		*command = PopCommand( POP_BACK );
-		Prep( command );
+		*command = PopCommand(POP_BACK);
+		Prep(command);
 	}
 }
 
@@ -2004,15 +1829,14 @@ Handles internal sequencer maintenance
 ========================
 */
 
-void CSequencer::Prep( CBlock **command )
-{
-	//Check all pre-processes
-	CheckAffect( command );
-	CheckFlush( command );
-	CheckLoop( command );
-	CheckRun( command );
-	CheckIf( command );
-	CheckDo( command );
+void CSequencer::Prep(CBlock **command) {
+	// Check all pre-processes
+	CheckAffect(command);
+	CheckFlush(command);
+	CheckLoop(command);
+	CheckRun(command);
+	CheckIf(command);
+	CheckDo(command);
 }
 
 /*
@@ -2023,13 +1847,11 @@ Starts communication between the task manager and this sequencer
 ========================
 */
 
-int CSequencer::Prime( CTaskManager *taskManager, CBlock *command )
-{
-	Prep( &command );
+int CSequencer::Prime(CTaskManager *taskManager, CBlock *command) {
+	Prep(&command);
 
-	if ( command )
-	{
-		taskManager->SetCommand( command, PUSH_BACK );
+	if (command) {
+		taskManager->SetCommand(command, PUSH_BACK);
 	}
 
 	return SEQ_OK;
@@ -2043,51 +1865,45 @@ Handles a completed task and returns a new task to be completed
 ========================
 */
 
-int CSequencer::Callback( CTaskManager *taskManager, CBlock *block, int returnCode )
-{
-	CBlock	*command;
+int CSequencer::Callback(CTaskManager *taskManager, CBlock *block, int returnCode) {
+	CBlock *command;
 
-	if (returnCode == TASK_RETURN_COMPLETE)
-	{
-		//There are no more pending commands
-		if ( m_curSequence == NULL )
-		{
+	if (returnCode == TASK_RETURN_COMPLETE) {
+		// There are no more pending commands
+		if (m_curSequence == NULL) {
 			delete block;
 			block = NULL;
 			return SEQ_OK;
 		}
 
-		//Check to retain the command
-		if ( m_curSequence->HasFlag( SQ_RETAIN ) )	//This isn't true for affect sequences...?
+		// Check to retain the command
+		if (m_curSequence->HasFlag(SQ_RETAIN)) // This isn't true for affect sequences...?
 		{
-			PushCommand( block, PUSH_FRONT );
-		}
-		else
-		{
+			PushCommand(block, PUSH_FRONT);
+		} else {
 			delete block;
 			block = NULL;
 		}
 
-		//Check for pending commands
-		if ( m_curSequence->GetNumCommands() <= 0 )
-		{
-			if ( m_curSequence->GetReturn() == NULL)
+		// Check for pending commands
+		if (m_curSequence->GetNumCommands() <= 0) {
+			if (m_curSequence->GetReturn() == NULL)
 				return SEQ_OK;
 
 			m_curSequence = m_curSequence->GetReturn();
 		}
 
-		command = PopCommand( POP_BACK );
-		Prep( &command );
+		command = PopCommand(POP_BACK);
+		Prep(&command);
 
-		if ( command )
-			taskManager->SetCommand( command, PUSH_FRONT );
+		if (command)
+			taskManager->SetCommand(command, PUSH_FRONT);
 
 		return SEQ_OK;
 	}
 
-	//FIXME: This could be more descriptive
-	m_ie->I_DPrintf( WL_ERROR,  "command could not be called back\n" );
+	// FIXME: This could be more descriptive
+	m_ie->I_DPrintf(WL_ERROR, "command could not be called back\n");
 	assert(0);
 
 	return SEQ_FAILED;
@@ -2099,18 +1915,13 @@ Recall
 -------------------------
 */
 
-int CSequencer::Recall( void )
-{
-	CBlock	*block	= NULL;
+int CSequencer::Recall(void) {
+	CBlock *block = NULL;
 
-	while ( ( block = m_taskManager->RecallTask() ) != NULL )
-	{
-		if (m_curSequence)
-		{
-			PushCommand( block, PUSH_BACK );
-		}
-		else
-		{
+	while ((block = m_taskManager->RecallTask()) != NULL) {
+		if (m_curSequence) {
+			PushCommand(block, PUSH_BACK);
+		} else {
 			delete block;
 			block = NULL;
 		}
@@ -2125,48 +1936,44 @@ Affect
 -------------------------
 */
 
-int CSequencer::Affect( int id, int type )
-{
-	CSequence	*sequence = GetSequence( id );
+int CSequencer::Affect(int id, int type) {
+	CSequence *sequence = GetSequence(id);
 
-	if ( sequence == NULL )
-	{
+	if (sequence == NULL) {
 		return SEQ_FAILED;
 	}
 
-	switch ( type )
-	{
+	switch (type) {
 
 	case TYPE_FLUSH:
 
-		//Get rid of all old code
-		Flush( sequence );
+		// Get rid of all old code
+		Flush(sequence);
 
-		sequence->RemoveFlag( SQ_PENDING, true );	
-		
+		sequence->RemoveFlag(SQ_PENDING, true);
+
 		m_curSequence = sequence;
 
-		Prime( m_taskManager, PopCommand( POP_BACK ) );
+		Prime(m_taskManager, PopCommand(POP_BACK));
 
 		break;
-		
+
 	case TYPE_INSERT:
 
 		Recall();
-		
-		sequence->SetReturn( m_curSequence );
-		
-		sequence->RemoveFlag( SQ_PENDING, true );
-		
+
+		sequence->SetReturn(m_curSequence);
+
+		sequence->RemoveFlag(SQ_PENDING, true);
+
 		m_curSequence = sequence;
 
-		Prime( m_taskManager, PopCommand( POP_BACK ) );
+		Prime(m_taskManager, PopCommand(POP_BACK));
 
 		break;
 
-
 	default:
-		m_ie->I_DPrintf( WL_ERROR, "unknown affect type found" );
+		m_ie->I_DPrintf(WL_ERROR, "unknown affect type found");
 		break;
 	}
 
@@ -2181,17 +1988,16 @@ Pushes a commands onto the current sequence
 ========================
 */
 
-int CSequencer::PushCommand( CBlock *command, int flag )
-{
-	//Make sure everything is ok
-	assert( m_curSequence );
-	if ( m_curSequence == NULL )
+int CSequencer::PushCommand(CBlock *command, int flag) {
+	// Make sure everything is ok
+	assert(m_curSequence);
+	if (m_curSequence == NULL)
 		return SEQ_FAILED;
 
-	m_curSequence->PushCommand( command, flag );
+	m_curSequence->PushCommand(command, flag);
 	m_numCommands++;
-	
-	//Invalid flag
+
+	// Invalid flag
 	return SEQ_OK;
 }
 
@@ -2203,16 +2009,15 @@ Pops a command off the current sequence
 ========================
 */
 
-CBlock *CSequencer::PopCommand( int flag )
-{
-	//Make sure everything is ok
-	assert( m_curSequence );
-	if ( m_curSequence == NULL )
+CBlock *CSequencer::PopCommand(int flag) {
+	// Make sure everything is ok
+	assert(m_curSequence);
+	if (m_curSequence == NULL)
 		return NULL;
 
-	CBlock *block = m_curSequence->PopCommand( flag );	
+	CBlock *block = m_curSequence->PopCommand(flag);
 
-	if ( block != NULL )
+	if (block != NULL)
 		m_numCommands--;
 
 	return block;
@@ -2224,70 +2029,59 @@ RemoveSequence
 -------------------------
 */
 
-//NOTENOTE: This only removes references to the sequence, IT DOES NOT FREE THE ALLOCATED MEMORY!  You've be warned! =)
+// NOTENOTE: This only removes references to the sequence, IT DOES NOT FREE THE ALLOCATED MEMORY!  You've be warned! =)
 
-int CSequencer::RemoveSequence( CSequence *sequence )
-{
+int CSequencer::RemoveSequence(CSequence *sequence) {
 	CSequence *temp;
 
 	int numChildren = sequence->GetNumChildren();
 
-	//Add all the children
-	for ( int i = 0; i < numChildren; i++ )
-	{
-		temp = sequence->GetChild( i );
+	// Add all the children
+	for (int i = 0; i < numChildren; i++) {
+		temp = sequence->GetChild(i);
 
-		//TODO: Emit warning
-		assert( temp );
-		if ( temp == NULL )
-		{
-			m_ie->I_DPrintf( WL_WARNING, "Unable to find child sequence on RemoveSequence call!\n" );
+		// TODO: Emit warning
+		assert(temp);
+		if (temp == NULL) {
+			m_ie->I_DPrintf(WL_WARNING, "Unable to find child sequence on RemoveSequence call!\n");
 			continue;
 		}
 
-		//Remove the references to this sequence
-		temp->SetParent( NULL );
-		temp->SetReturn( NULL );
-
+		// Remove the references to this sequence
+		temp->SetParent(NULL);
+		temp->SetReturn(NULL);
 	}
-		
+
 	return SEQ_OK;
 }
 
-int CSequencer::DestroySequence( CSequence *sequence )
-{
-	m_sequenceMap.erase( sequence->GetID() );
-	m_sequences.remove( sequence );
+int CSequencer::DestroySequence(CSequence *sequence) {
+	m_sequenceMap.erase(sequence->GetID());
+	m_sequences.remove(sequence);
 
-	taskSequence_m::iterator	tsi;
-	for ( tsi = m_taskSequences.begin(); tsi != m_taskSequences.end(); )
-	{
-		if((*tsi).second == sequence)
-		{
+	taskSequence_m::iterator tsi;
+	for (tsi = m_taskSequences.begin(); tsi != m_taskSequences.end();) {
+		if ((*tsi).second == sequence) {
 			m_taskSequences.erase(tsi++);
-		}
-		else
-		{
+		} else {
 			++tsi;
 		}
 	}
 
-	CSequence* parent = sequence->GetParent();
-	if ( parent )
-	{
-		parent->RemoveChild( sequence );
+	CSequence *parent = sequence->GetParent();
+	if (parent) {
+		parent->RemoveChild(sequence);
 		parent = NULL;
 	}
 
 	int curChild = sequence->GetNumChildren();
-	while(curChild)
-	{
+	while (curChild) {
 		curChild--;
-		DestroySequence(sequence->GetChild( curChild ));
+		DestroySequence(sequence->GetChild(curChild));
 	}
 
-	m_owner->DeleteSequence( sequence );
-		
+	m_owner->DeleteSequence(sequence);
+
 	return SEQ_OK;
 }
 
@@ -2297,23 +2091,21 @@ ReturnSequence
 -------------------------
 */
 
-inline CSequence *CSequencer::ReturnSequence( CSequence *sequence )
-{
-	while ( sequence->GetReturn() )
-	{
-		assert(sequence != sequence->GetReturn() );
-		if ( sequence == sequence->GetReturn() )
+inline CSequence *CSequencer::ReturnSequence(CSequence *sequence) {
+	while (sequence->GetReturn()) {
+		assert(sequence != sequence->GetReturn());
+		if (sequence == sequence->GetReturn())
 			return NULL;
 
 		sequence = sequence->GetReturn();
 
-		if ( sequence->GetNumCommands() > 0 )
+		if (sequence->GetNumCommands() > 0)
 			return sequence;
 	}
 	return NULL;
 }
 
-//Save / Load
+// Save / Load
 
 /*
 -------------------------
@@ -2321,82 +2113,61 @@ Save
 -------------------------
 */
 
-int	CSequencer::Save( void )
-{
-	sequence_l::iterator		si;
-	taskSequence_m::iterator	ti;
-	int							numSequences = 0, id, numTasks;
+int CSequencer::Save(void) {
+	sequence_l::iterator si;
+	taskSequence_m::iterator ti;
+	int numSequences = 0, id, numTasks;
 
-	//Get the number of sequences to save out
+	// Get the number of sequences to save out
 	numSequences = m_sequences.size();
 
-	ojk::SavedGameHelper saved_game(
-		m_ie->saved_game);
+	ojk::SavedGameHelper saved_game(m_ie->saved_game);
 
-	//Save out the owner sequence
-	saved_game.write_chunk<int32_t>(
-		INT_ID('S', 'Q', 'R', 'E'),
-		m_ownerID);
+	// Save out the owner sequence
+	saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', 'R', 'E'), m_ownerID);
 
-	//Write out the number of sequences we need to read
-	saved_game.write_chunk<int32_t>(
-		INT_ID('S', 'Q', 'R', '#'),
-		numSequences);
+	// Write out the number of sequences we need to read
+	saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', 'R', '#'), numSequences);
 
-	//Second pass, save out all sequences, in order
-	STL_ITERATE( si, m_sequences )
-	{
+	// Second pass, save out all sequences, in order
+	STL_ITERATE(si, m_sequences) {
 		id = (*si)->GetID();
 
-		saved_game.write_chunk<int32_t>(
-			INT_ID('S', 'Q', 'R', 'I'),
-			id);
+		saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', 'R', 'I'), id);
 	}
 
-	//Save out the taskManager
+	// Save out the taskManager
 	m_taskManager->Save();
 
-	//Save out the task sequences mapping the name to the GUIDs
+	// Save out the task sequences mapping the name to the GUIDs
 	numTasks = m_taskSequences.size();
 
-	saved_game.write_chunk<int32_t>(
-		INT_ID('S', 'Q', 'T', '#'),
-		numTasks);
+	saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', 'T', '#'), numTasks);
 
-	STL_ITERATE( ti, m_taskSequences )
-	{	
-		//Save the task group's ID
+	STL_ITERATE(ti, m_taskSequences) {
+		// Save the task group's ID
 		id = ((*ti).first)->GetGUID();
 
-		saved_game.write_chunk<int32_t>(
-			INT_ID('S', 'T', 'I', 'D'),
-			id);
+		saved_game.write_chunk<int32_t>(INT_ID('S', 'T', 'I', 'D'), id);
 
-		//Save the sequence's ID
+		// Save the sequence's ID
 		id = ((*ti).second)->GetID();
 
-		saved_game.write_chunk<int32_t>(
-			INT_ID('S', 'S', 'I', 'D'),
-			id);
+		saved_game.write_chunk<int32_t>(INT_ID('S', 'S', 'I', 'D'), id);
 	}
 
-	int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
+	int curGroupID = (m_curGroup == NULL) ? -1 : m_curGroup->GetGUID();
 
-	saved_game.write_chunk<int32_t>(
-		INT_ID('S', 'Q', 'C', 'T'),
-		curGroupID);
+	saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', 'C', 'T'), curGroupID);
 
-	//Output the number of commands
-	saved_game.write_chunk<int32_t>(
-		INT_ID('S', 'Q', '#', 'C'),
-		m_numCommands);	//FIXME: This can be reconstructed
+	// Output the number of commands
+	saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', '#', 'C'),
+									m_numCommands); // FIXME: This can be reconstructed
 
-	//Output the ID of the current sequence
-	id = ( m_curSequence != NULL ) ? m_curSequence->GetID() : -1;
+	// Output the ID of the current sequence
+	id = (m_curSequence != NULL) ? m_curSequence->GetID() : -1;
 
-	saved_game.write_chunk<int32_t>(
-		INT_ID('S', 'Q', 'C', 'S'),
-		id);
+	saved_game.write_chunk<int32_t>(INT_ID('S', 'Q', 'C', 'S'), id);
 
 	return true;
 }
@@ -2407,101 +2178,79 @@ Load
 -------------------------
 */
 
-int	CSequencer::Load( void )
-{	
+int CSequencer::Load(void) {
 	int i;
 
-	ojk::SavedGameHelper saved_game(
-		m_ie->saved_game);
+	ojk::SavedGameHelper saved_game(m_ie->saved_game);
 
-	//Get the owner of this sequencer
-	saved_game.read_chunk<int32_t>(
-		INT_ID('S', 'Q', 'R', 'E'),
-		m_ownerID);
+	// Get the owner of this sequencer
+	saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', 'R', 'E'), m_ownerID);
 
-	//Link the entity back to the sequencer
-	m_ie->I_LinkEntity( m_ownerID, this, m_taskManager );
+	// Link the entity back to the sequencer
+	m_ie->I_LinkEntity(m_ownerID, this, m_taskManager);
 
-	CTaskGroup	*taskGroup;
-	CSequence	*seq;
-	int			numSequences = 0, seqID = 0, taskID = 0, numTasks = 0;
+	CTaskGroup *taskGroup;
+	CSequence *seq;
+	int numSequences = 0, seqID = 0, taskID = 0, numTasks = 0;
 
-	//Get the number of sequences to read
-	saved_game.read_chunk<int32_t>(
-		INT_ID('S', 'Q', 'R', '#'),
-		numSequences);
+	// Get the number of sequences to read
+	saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', 'R', '#'), numSequences);
 
-	//Read in all the sequences
-	for ( i = 0; i < numSequences; i++ )
-	{
-		saved_game.read_chunk<int32_t>(
-			INT_ID('S', 'Q', 'R', 'I'),
-			seqID);
+	// Read in all the sequences
+	for (i = 0; i < numSequences; i++) {
+		saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', 'R', 'I'), seqID);
 
-		seq = m_owner->GetSequence( seqID );
+		seq = m_owner->GetSequence(seqID);
 
-		assert( seq );
+		assert(seq);
 
-		STL_INSERT( m_sequences, seq );
-		m_sequenceMap[ seqID ] = seq;
+		STL_INSERT(m_sequences, seq);
+		m_sequenceMap[seqID] = seq;
 	}
 
-	//Setup the task manager
-	m_taskManager->Init( this );
+	// Setup the task manager
+	m_taskManager->Init(this);
 
-	//Load the task manager
+	// Load the task manager
 	m_taskManager->Load();
 
-	//Get the number of tasks in the map
-	saved_game.read_chunk<int32_t>(
-		INT_ID('S', 'Q', 'T', '#'),
-		numTasks);
+	// Get the number of tasks in the map
+	saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', 'T', '#'), numTasks);
 
-	//Read in, and reassociate the tasks to the sequences
-	for ( i = 0; i < numTasks; i++ )
-	{
-		//Read in the task's ID
-		saved_game.read_chunk<int32_t>(
-			INT_ID('S', 'T', 'I', 'D'),
-			taskID);
-		
-		//Read in the sequence's ID
-		saved_game.read_chunk<int32_t>(
-			INT_ID('S', 'S', 'I', 'D'),
-			seqID);
+	// Read in, and reassociate the tasks to the sequences
+	for (i = 0; i < numTasks; i++) {
+		// Read in the task's ID
+		saved_game.read_chunk<int32_t>(INT_ID('S', 'T', 'I', 'D'), taskID);
 
-		taskGroup = m_taskManager->GetTaskGroup( taskID );
+		// Read in the sequence's ID
+		saved_game.read_chunk<int32_t>(INT_ID('S', 'S', 'I', 'D'), seqID);
 
-		assert( taskGroup );
+		taskGroup = m_taskManager->GetTaskGroup(taskID);
 
-		seq = m_owner->GetSequence( seqID );
+		assert(taskGroup);
 
-		assert( seq );
+		seq = m_owner->GetSequence(seqID);
 
-		//Associate the values
-		m_taskSequences[ taskGroup ] = seq;
+		assert(seq);
+
+		// Associate the values
+		m_taskSequences[taskGroup] = seq;
 	}
 
-	int	curGroupID = 0;
+	int curGroupID = 0;
 
-	//Get the current task group
-	saved_game.read_chunk<int32_t>(
-		INT_ID('S', 'Q', 'C', 'T'),
-		curGroupID);
+	// Get the current task group
+	saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', 'C', 'T'), curGroupID);
 
-	m_curGroup = ( curGroupID == -1 ) ? NULL : m_taskManager->GetTaskGroup( curGroupID );
+	m_curGroup = (curGroupID == -1) ? NULL : m_taskManager->GetTaskGroup(curGroupID);
 
-	//Get the number of commands
-	saved_game.read_chunk<int32_t>(
-		INT_ID('S', 'Q', '#', 'C'),
-		m_numCommands);
+	// Get the number of commands
+	saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', '#', 'C'), m_numCommands);
 
-	//Get the current sequence
-	saved_game.read_chunk<int32_t>(
-		INT_ID('S', 'Q', 'C', 'S'),
-		seqID);
+	// Get the current sequence
+	saved_game.read_chunk<int32_t>(INT_ID('S', 'Q', 'C', 'S'), seqID);
 
-	m_curSequence = ( seqID != -1 ) ? m_owner->GetSequence( seqID ) : NULL;
+	m_curSequence = (seqID != -1) ? m_owner->GetSequence(seqID) : NULL;
 
 	return true;
 }

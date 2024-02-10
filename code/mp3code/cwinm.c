@@ -2,8 +2,8 @@
 
 	FreeAmp - The Free MP3 Player
 
-        MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
-        Corp.  http://www.xingtech.com
+		MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
+		Corp.  http://www.xingtech.com
 
 	Portions Copyright (C) 1998-1999 EMusic.com
 
@@ -37,8 +37,8 @@ portable C
 #include <float.h>
 #include <math.h>
 
-const float wincoef[264] =
-{				/* window coefs */
+const float wincoef[264] = {
+	/* window coefs */
 #include "tableawd.h"
 };
 

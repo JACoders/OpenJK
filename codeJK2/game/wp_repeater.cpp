@@ -33,43 +33,37 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //-------------------
 
 //---------------------------------------------------------
-static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
+static void WP_RepeaterMainFire(gentity_t *ent, vec3_t dir)
 //---------------------------------------------------------
 {
-	vec3_t	start;
-	int		damage	= weaponData[WP_REPEATER].damage;
+	vec3_t start;
+	int damage = weaponData[WP_REPEATER].damage;
 
-	VectorCopy( wpMuzzle, start );
-	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
+	VectorCopy(wpMuzzle, start);
+	WP_TraceSetStart(ent, start, vec3_origin, vec3_origin); // make sure our start point isn't on the other side of a wall
 
-	gentity_t *missile = CreateMissile( start, dir, REPEATER_VELOCITY, 10000, ent );
+	gentity_t *missile = CreateMissile(start, dir, REPEATER_VELOCITY, 10000, ent);
 
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
 
 	// Do the damages
-	if ( ent->s.number != 0 )
-	{
-		if ( g_spskill->integer == 0 )
-		{
+	if (ent->s.number != 0) {
+		if (g_spskill->integer == 0) {
 			damage = REPEATER_NPC_DAMAGE_EASY;
-		}
-		else if ( g_spskill->integer == 1 )
-		{
+		} else if (g_spskill->integer == 1) {
 			damage = REPEATER_NPC_DAMAGE_NORMAL;
-		}
-		else
-		{
+		} else {
 			damage = REPEATER_NPC_DAMAGE_HARD;
 		}
 	}
 
-//	if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-//	{
-//		// in overcharge mode, so doing double damage
-//		missile->flags |= FL_OVERCHARGED;
-//		damage *= 2;
-//	}
+	//	if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
+	//	{
+	//		// in overcharge mode, so doing double damage
+	//		missile->flags |= FL_OVERCHARGED;
+	//		damage *= 2;
+	//	}
 
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
@@ -81,23 +75,20 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 }
 
 //---------------------------------------------------------
-static void WP_RepeaterAltFire( gentity_t *ent )
+static void WP_RepeaterAltFire(gentity_t *ent)
 //---------------------------------------------------------
 {
-	vec3_t	start;
-	int		damage	= weaponData[WP_REPEATER].altDamage;
+	vec3_t start;
+	int damage = weaponData[WP_REPEATER].altDamage;
 	gentity_t *missile = NULL;
 
-	VectorCopy( wpMuzzle, start );
-	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
+	VectorCopy(wpMuzzle, start);
+	WP_TraceSetStart(ent, start, vec3_origin, vec3_origin); // make sure our start point isn't on the other side of a wall
 
-	if ( ent->client && ent->client->NPC_class == CLASS_GALAKMECH )
-	{
-		missile = CreateMissile( start, ent->client->hiddenDir, ent->client->hiddenDist, 10000, ent, qtrue );
-	}
-	else
-	{
-		missile = CreateMissile( start, wpFwd, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
+	if (ent->client && ent->client->NPC_class == CLASS_GALAKMECH) {
+		missile = CreateMissile(start, ent->client->hiddenDir, ent->client->hiddenDist, 10000, ent, qtrue);
+	} else {
+		missile = CreateMissile(start, wpFwd, REPEATER_ALT_VELOCITY, 10000, ent, qtrue);
 	}
 
 	missile->classname = "repeater_alt_proj";
@@ -105,33 +96,27 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	missile->mass = 10;
 
 	// Do the damages
-	if ( ent->s.number != 0 )
-	{
-		if ( g_spskill->integer == 0 )
-		{
+	if (ent->s.number != 0) {
+		if (g_spskill->integer == 0) {
 			damage = REPEATER_ALT_NPC_DAMAGE_EASY;
-		}
-		else if ( g_spskill->integer == 1 )
-		{
+		} else if (g_spskill->integer == 1) {
 			damage = REPEATER_ALT_NPC_DAMAGE_NORMAL;
-		}
-		else
-		{
+		} else {
 			damage = REPEATER_ALT_NPC_DAMAGE_HARD;
 		}
 	}
 
-	VectorSet( missile->maxs, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE );
-	VectorScale( missile->maxs, -1, missile->mins );
+	VectorSet(missile->maxs, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE);
+	VectorScale(missile->maxs, -1, missile->mins);
 	missile->s.pos.trType = TR_GRAVITY;
-	missile->s.pos.trDelta[2] += 40.0f; //give a slight boost in the upward direction
+	missile->s.pos.trDelta[2] += 40.0f; // give a slight boost in the upward direction
 
-//	if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-//	{
-//		// in overcharge mode, so doing double damage
-//		missile->flags |= FL_OVERCHARGED;
-//		damage *= 2;
-//	}
+	//	if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
+	//	{
+	//		// in overcharge mode, so doing double damage
+	//		missile->flags |= FL_OVERCHARGED;
+	//		damage *= 2;
+	//	}
 
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
@@ -146,39 +131,31 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 }
 
 //---------------------------------------------------------
-void WP_FireRepeater( gentity_t *ent, qboolean alt_fire )
+void WP_FireRepeater(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	vec3_t	dir, angs;
+	vec3_t dir, angs;
 
-	vectoangles( wpFwd, angs );
+	vectoangles(wpFwd, angs);
 
-	if ( alt_fire )
-	{
-		WP_RepeaterAltFire( ent );
-	}
-	else
-	{
+	if (alt_fire) {
+		WP_RepeaterAltFire(ent);
+	} else {
 		// Troopers use their aim values as well as the gun's inherent inaccuracy
 		// so check for all classes of stormtroopers and anyone else that has aim error
-		if ( ent->client && ent->NPC &&
-			( ent->client->NPC_class == CLASS_STORMTROOPER ||
-			  ent->client->NPC_class == CLASS_SWAMPTROOPER ||
-			  ent->client->NPC_class == CLASS_SHADOWTROOPER ) )
-		{
-			angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (REPEATER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f) );
-			angs[YAW]	+= ( Q_flrand(-1.0f, 1.0f) * (REPEATER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f) );
-		}
-		else
-		{
+		if (ent->client && ent->NPC &&
+			(ent->client->NPC_class == CLASS_STORMTROOPER || ent->client->NPC_class == CLASS_SWAMPTROOPER || ent->client->NPC_class == CLASS_SHADOWTROOPER)) {
+			angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (REPEATER_NPC_SPREAD + (6 - ent->NPC->currentAim) * 0.25f));
+			angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (REPEATER_NPC_SPREAD + (6 - ent->NPC->currentAim) * 0.25f));
+		} else {
 			// add some slop to the alt-fire direction
 			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
-			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
 		}
 
-		AngleVectors( angs, dir, NULL, NULL );
+		AngleVectors(angs, dir, NULL, NULL);
 
 		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-		WP_RepeaterMainFire( ent, dir );
+		WP_RepeaterMainFire(ent, dir);
 	}
 }

@@ -26,20 +26,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_media.h"
 #include "FxScheduler.h"
 
-
 /*
 ---------------------------
 FX_ATSTMainProjectileThink
 ---------------------------
 */
-void FX_ATSTMainProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon )
-{
+void FX_ATSTMainProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon) {
 	vec3_t forward;
 
-	if ( VectorNormalize2( cent->gent->s.pos.trDelta, forward ) == 0.0f )
-	{
-		if ( VectorNormalize2( cent->currentState.pos.trDelta, forward ) == 0.0f )
-		{
+	if (VectorNormalize2(cent->gent->s.pos.trDelta, forward) == 0.0f) {
+		if (VectorNormalize2(cent->currentState.pos.trDelta, forward) == 0.0f) {
 			forward[2] = 1.0f;
 		}
 	}
@@ -47,19 +43,17 @@ void FX_ATSTMainProjectileThink( centity_t *cent, const struct weaponInfo_s *wea
 	// hack the scale of the forward vector if we were just fired or bounced...this will shorten up the tail for a split second so tails don't clip so harshly
 	int dif = cg.time - cent->gent->s.pos.trTime;
 
-	if ( dif < 30 )
-	{
-		if ( dif < 0 )
-		{
+	if (dif < 30) {
+		if (dif < 0) {
 			dif = 0;
 		}
 
-		float scale = ( dif / 30.0f ) * 0.95f + 0.05f;
+		float scale = (dif / 30.0f) * 0.95f + 0.05f;
 
-		VectorScale( forward, scale, forward );
+		VectorScale(forward, scale, forward);
 	}
 
-	theFxScheduler.PlayEffect( "atst/shot", cent->lerpOrigin, forward );
+	theFxScheduler.PlayEffect("atst/shot", cent->lerpOrigin, forward);
 }
 
 /*
@@ -67,25 +61,18 @@ void FX_ATSTMainProjectileThink( centity_t *cent, const struct weaponInfo_s *wea
 FX_ATSTMainHitWall
 ---------------------------
 */
-void FX_ATSTMainHitWall( vec3_t origin, vec3_t normal )
-{
-	theFxScheduler.PlayEffect( "atst/wall_impact", origin, normal );
-}
+void FX_ATSTMainHitWall(vec3_t origin, vec3_t normal) { theFxScheduler.PlayEffect("atst/wall_impact", origin, normal); }
 
 /*
 ---------------------------
 FX_ATSTMainHitPlayer
 ---------------------------
 */
-void FX_ATSTMainHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid )
-{
-	if ( humanoid )
-	{
-		theFxScheduler.PlayEffect( "atst/flesh_impact", origin, normal );
-	}
-	else
-	{
-		theFxScheduler.PlayEffect( "atst/droid_impact", origin, normal );
+void FX_ATSTMainHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid) {
+	if (humanoid) {
+		theFxScheduler.PlayEffect("atst/flesh_impact", origin, normal);
+	} else {
+		theFxScheduler.PlayEffect("atst/droid_impact", origin, normal);
 	}
 }
 
@@ -94,16 +81,14 @@ void FX_ATSTMainHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid )
 FX_ATSTSideAltProjectileThink
 ---------------------------
 */
-void FX_ATSTSideAltProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon )
-{
+void FX_ATSTSideAltProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon) {
 	vec3_t forward;
 
-	if ( VectorNormalize2( cent->currentState.pos.trDelta, forward ) == 0.0f )
-	{
+	if (VectorNormalize2(cent->currentState.pos.trDelta, forward) == 0.0f) {
 		forward[2] = 1.0f;
 	}
 
-	theFxScheduler.PlayEffect( "atst/side_alt_shot", cent->lerpOrigin, forward );
+	theFxScheduler.PlayEffect("atst/side_alt_shot", cent->lerpOrigin, forward);
 }
 
 /*
@@ -111,14 +96,12 @@ void FX_ATSTSideAltProjectileThink( centity_t *cent, const struct weaponInfo_s *
 FX_ATSTSideMainProjectileThink
 ---------------------------
 */
-void FX_ATSTSideMainProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon )
-{
+void FX_ATSTSideMainProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon) {
 	vec3_t forward;
 
-	if ( VectorNormalize2( cent->currentState.pos.trDelta, forward ) == 0.0f )
-	{
+	if (VectorNormalize2(cent->currentState.pos.trDelta, forward) == 0.0f) {
 		forward[2] = 1.0f;
 	}
 
-	theFxScheduler.PlayEffect( "atst/side_main_shot", cent->lerpOrigin, forward );
+	theFxScheduler.PlayEffect("atst/side_main_shot", cent->lerpOrigin, forward);
 }

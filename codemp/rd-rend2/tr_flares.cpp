@@ -54,55 +54,53 @@ up to five or more times in a frame with 3D status bar icons).
 =============================================================================
 */
 
-
 // flare states maintain visibility over multiple frames for fading
 // layers: view, mirror, menu
 typedef struct flare_s {
-	struct		flare_s	*next;		// for active chain
+	struct flare_s *next; // for active chain
 
-	int			addedFrame;
+	int addedFrame;
 
-	qboolean	inPortal;				// true if in a portal view of the scene
-	int			frameSceneNum;
-	void		*surface;
-	int			fogNum;
+	qboolean inPortal; // true if in a portal view of the scene
+	int frameSceneNum;
+	void *surface;
+	int fogNum;
 
-	int			fadeTime;
+	int fadeTime;
 
-	qboolean	visible;			// state of last test
-	float		drawIntensity;		// may be non 0 even if !visible due to fading
+	qboolean visible;	 // state of last test
+	float drawIntensity; // may be non 0 even if !visible due to fading
 
-	int			windowX, windowY;
-	float		eyeZ;
+	int windowX, windowY;
+	float eyeZ;
 
-	vec3_t		origin;
-	vec3_t		color;
-	vec3_t		normal;
+	vec3_t origin;
+	vec3_t color;
+	vec3_t normal;
 } flare_t;
 
-#define		MAX_FLARES		128
+#define MAX_FLARES 128
 
-flare_t		r_flareStructs[MAX_FLARES];
-flare_t		*r_activeFlares, *r_inactiveFlares;
+flare_t r_flareStructs[MAX_FLARES];
+flare_t *r_activeFlares, *r_inactiveFlares;
 
 /*
 ==================
 R_ClearFlares
 ==================
 */
-void R_ClearFlares( void ) {
-	int		i;
+void R_ClearFlares(void) {
+	int i;
 
-	Com_Memset( r_flareStructs, 0, sizeof( r_flareStructs ) );
+	Com_Memset(r_flareStructs, 0, sizeof(r_flareStructs));
 	r_activeFlares = NULL;
 	r_inactiveFlares = NULL;
 
-	for ( i = 0 ; i < MAX_FLARES ; i++ ) {
+	for (i = 0; i < MAX_FLARES; i++) {
 		r_flareStructs[i].next = r_inactiveFlares;
 		r_inactiveFlares = &r_flareStructs[i];
 	}
 }
-
 
 /*
 ==================
@@ -111,52 +109,48 @@ RB_AddFlare
 This is called at surface tesselation time
 ==================
 */
-void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t normal ) {
-	int				i;
-	flare_t			*f;
-	vec3_t			local;
-	float			d = 1.0f;
-	vec4_t			eye, clip, normalized, window;
+void RB_AddFlare(void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t normal) {
+	int i;
+	flare_t *f;
+	vec3_t local;
+	float d = 1.0f;
+	vec4_t eye, clip, normalized, window;
 
 	backEnd.pc.c_flareAdds++;
 
-	if(normal && (normal[0] || normal[1] || normal[2]))
-	{
-		VectorSubtract( backEnd.viewParms.ori.origin, point, local );
+	if (normal && (normal[0] || normal[1] || normal[2])) {
+		VectorSubtract(backEnd.viewParms.ori.origin, point, local);
 		VectorNormalizeFast(local);
 		d = DotProduct(local, normal);
 	}
 
 	// if the point is off the screen, don't bother adding it
 	// calculate screen coordinates and depth
-	R_TransformModelToClip( point, backEnd.ori.modelViewMatrix,
-		backEnd.viewParms.projectionMatrix, eye, clip );
+	R_TransformModelToClip(point, backEnd.ori.modelViewMatrix, backEnd.viewParms.projectionMatrix, eye, clip);
 
 	// check to see if the point is completely off screen
-	for ( i = 0 ; i < 3 ; i++ ) {
-		if ( clip[i] >= clip[3] || clip[i] <= -clip[3] ) {
+	for (i = 0; i < 3; i++) {
+		if (clip[i] >= clip[3] || clip[i] <= -clip[3]) {
 			return;
 		}
 	}
 
-	R_TransformClipToWindow( clip, &backEnd.viewParms, normalized, window );
+	R_TransformClipToWindow(clip, &backEnd.viewParms, normalized, window);
 
-	if ( window[0] < 0 || window[0] >= backEnd.viewParms.viewportWidth
-		|| window[1] < 0 || window[1] >= backEnd.viewParms.viewportHeight ) {
-		return;	// shouldn't happen, since we check the clip[] above, except for FP rounding
+	if (window[0] < 0 || window[0] >= backEnd.viewParms.viewportWidth || window[1] < 0 || window[1] >= backEnd.viewParms.viewportHeight) {
+		return; // shouldn't happen, since we check the clip[] above, except for FP rounding
 	}
 
 	// see if a flare with a matching surface, scene, and view exists
-	for ( f = r_activeFlares ; f ; f = f->next ) {
-		if ( f->surface == surface && f->frameSceneNum == backEnd.viewParms.frameSceneNum
-			&& f->inPortal == backEnd.viewParms.isPortal ) {
+	for (f = r_activeFlares; f; f = f->next) {
+		if (f->surface == surface && f->frameSceneNum == backEnd.viewParms.frameSceneNum && f->inPortal == backEnd.viewParms.isPortal) {
 			break;
 		}
 	}
 
 	// allocate a new one
-	if (!f ) {
-		if ( !r_inactiveFlares ) {
+	if (!f) {
+		if (!r_inactiveFlares) {
 			// the list is completely full
 			return;
 		}
@@ -171,7 +165,7 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 		f->addedFrame = -1;
 	}
 
-	if ( f->addedFrame != backEnd.viewParms.frameCount - 1 ) {
+	if (f->addedFrame != backEnd.viewParms.frameCount - 1) {
 		f->visible = qfalse;
 		f->fadeTime = backEnd.refdef.time - 2000;
 	}
@@ -180,12 +174,12 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 	f->fogNum = fogNum;
 
 	VectorCopy(point, f->origin);
-	VectorCopy( color, f->color );
-	VectorCopy( normal, f->normal);
+	VectorCopy(color, f->color);
+	VectorCopy(normal, f->normal);
 
 	// fade the intensity of the flare down as the
 	// light surface turns away from the viewer
-	VectorScale( f->color, d, f->color ); 
+	VectorScale(f->color, d, f->color);
 
 	// save info needed to test
 	f->windowX = backEnd.viewParms.viewportX + window[0];
@@ -199,44 +193,42 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 RB_AddDlightFlares
 ==================
 */
-void RB_AddDlightFlares( void ) {
-	dlight_t		*l;
-	int				i, j, k;
-	fog_t			*fog = NULL;
+void RB_AddDlightFlares(void) {
+	dlight_t *l;
+	int i, j, k;
+	fog_t *fog = NULL;
 
-	if ( !r_flares->integer ) {
+	if (!r_flares->integer) {
 		return;
 	}
 
 	l = backEnd.refdef.dlights;
 
-	if(tr.world)
+	if (tr.world)
 		fog = tr.world->fogs;
 
-	for (i=0 ; i<backEnd.refdef.num_dlights ; i++, l++) {
+	for (i = 0; i < backEnd.refdef.num_dlights; i++, l++) {
 
-		if(fog)
-		{
-			// find which fog volume the light is in 
-			for ( j = 1 ; j < tr.world->numfogs ; j++ ) {
+		if (fog) {
+			// find which fog volume the light is in
+			for (j = 1; j < tr.world->numfogs; j++) {
 				fog = &tr.world->fogs[j];
-				for ( k = 0 ; k < 3 ; k++ ) {
-					if ( l->origin[k] < fog->bounds[0][k] || l->origin[k] > fog->bounds[1][k] ) {
+				for (k = 0; k < 3; k++) {
+					if (l->origin[k] < fog->bounds[0][k] || l->origin[k] > fog->bounds[1][k]) {
 						break;
 					}
 				}
-				if ( k == 3 ) {
+				if (k == 3) {
 					break;
 				}
 			}
-			if ( j == tr.world->numfogs ) {
+			if (j == tr.world->numfogs) {
 				j = 0;
 			}
-		}
-		else
+		} else
 			j = 0;
 
-		RB_AddFlare( (void *)l, j, l->origin, l->color, NULL );
+		RB_AddFlare((void *)l, j, l->origin, l->color, NULL);
 	}
 }
 
@@ -253,45 +245,42 @@ FLARE BACK END
 RB_TestFlare
 ==================
 */
-void RB_TestFlare( flare_t *f ) {
-	float			depth;
-	qboolean		visible;
-	float			fade;
-	float			screenZ;
-	FBO_t           *oldFbo;
+void RB_TestFlare(flare_t *f) {
+	float depth;
+	qboolean visible;
+	float fade;
+	float screenZ;
+	FBO_t *oldFbo;
 
 	backEnd.pc.c_flareTests++;
 
 	// if we're doing multisample rendering, read from the correct FBO
 	oldFbo = glState.currentFBO;
-	if (tr.msaaResolveFbo)
-	{
+	if (tr.msaaResolveFbo) {
 		FBO_Bind(tr.msaaResolveFbo);
 	}
 
 	// read back the z buffer contents, which is bad
 	// TODO: Don't use glReadPixels
-	qglReadPixels( f->windowX, f->windowY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth );
+	qglReadPixels(f->windowX, f->windowY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
 
 	// if we're doing multisample rendering, switch to the old FBO
-	if (tr.msaaResolveFbo)
-	{
+	if (tr.msaaResolveFbo) {
 		FBO_Bind(oldFbo);
 	}
 
-	screenZ = backEnd.viewParms.projectionMatrix[14] / 
-		( ( 2*depth - 1 ) * backEnd.viewParms.projectionMatrix[11] - backEnd.viewParms.projectionMatrix[10] );
+	screenZ = backEnd.viewParms.projectionMatrix[14] / ((2 * depth - 1) * backEnd.viewParms.projectionMatrix[11] - backEnd.viewParms.projectionMatrix[10]);
 
-	visible = (qboolean)(( -f->eyeZ - -screenZ ) < 24);
+	visible = (qboolean)((-f->eyeZ - -screenZ) < 24);
 
-	if ( visible ) {
-		if ( !f->visible ) {
+	if (visible) {
+		if (!f->visible) {
 			f->visible = qtrue;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
-		fade = ( ( backEnd.refdef.time - f->fadeTime ) / 500.0f );
+		fade = ((backEnd.refdef.time - f->fadeTime) / 500.0f);
 	} else {
-		// Dont fade out when flare is occluded. Will result in the ability to see 
+		// Dont fade out when flare is occluded. Will result in the ability to see
 		// flares through surfaces on high movement speeds
 		/*if ( f->visible ) {
 			f->visible = qfalse;
@@ -301,40 +290,39 @@ void RB_TestFlare( flare_t *f ) {
 		fade = 0.0f;
 	}
 
-	if ( fade < 0 ) {
+	if (fade < 0) {
 		fade = 0;
 	}
-	if ( fade > 1 ) {
+	if (fade > 1) {
 		fade = 1;
 	}
 
 	f->drawIntensity = fade;
 }
 
-
 /*
 ==================
 RB_RenderFlare
 ==================
 */
-void RB_RenderFlare( flare_t *f ) {
-	vec4_t			color;
+void RB_RenderFlare(flare_t *f) {
+	vec4_t color;
 
 	backEnd.pc.c_flareRenders++;
 
 	srfFlare_t *flare = (srfFlare_t *)f->surface;
 
 	backEnd.currentEntity = &tr.worldEntity;
-	RB_BeginSurface( flare->shader, f->fogNum, 0 );
+	RB_BeginSurface(flare->shader, f->fogNum, 0);
 
-	vec3_t		dir;
-	vec3_t		left, up;
-	vec3_t		origin;
-	float		d, dist;
+	vec3_t dir;
+	vec3_t left, up;
+	vec3_t origin;
+	float d, dist;
 
 	// calculate the xyz locations for the four corners
 	VectorMA(f->origin, 3, f->normal, origin);
-	float* snormal = f->normal;
+	float *snormal = f->normal;
 
 	VectorSubtract(origin, backEnd.viewParms.ori.origin, dir);
 	dist = VectorNormalize(dir);
@@ -349,15 +337,13 @@ void RB_RenderFlare( flare_t *f ) {
 	color[0] = d;
 	color[1] = d;
 	color[2] = d;
-	color[3] = 1.0f;	//only gets used if the shader has cgen exact_vertex!
+	color[3] = 1.0f; // only gets used if the shader has cgen exact_vertex!
 
 	float radius = tess.shader->portalRange ? tess.shader->portalRange : 30;
-	if (dist < 512.0f)
-	{
+	if (dist < 512.0f) {
 		radius = radius * dist / 512.0f;
 	}
-	if (radius < 5.0f)
-	{
+	if (radius < 5.0f) {
 		radius = 5.0f;
 	}
 	VectorScale(backEnd.viewParms.ori.axis[1], radius, left);
@@ -387,12 +373,12 @@ when occluded by something in the main view, and portal flares that should
 extend past the portal edge will be overwritten.
 ==================
 */
-void RB_RenderFlares (void) {
-	flare_t		*f;
-	flare_t		**prev;
-	qboolean	draw;
+void RB_RenderFlares(void) {
+	flare_t *f;
+	flare_t **prev;
+	qboolean draw;
 
-	if ( !r_flares->integer ) {
+	if (!r_flares->integer) {
 		return;
 	}
 
@@ -404,14 +390,14 @@ void RB_RenderFlares (void) {
 	backEnd.currentEntity = &tr.worldEntity;
 	backEnd.ori = backEnd.viewParms.world;
 
-//	RB_AddDlightFlares();
+	//	RB_AddDlightFlares();
 
 	// perform z buffer readback on each flare in this view
 	draw = qfalse;
 	prev = &r_activeFlares;
-	while ( ( f = *prev ) != NULL ) {
+	while ((f = *prev) != NULL) {
 		// throw out any flares that weren't added last frame
-		if ( f->addedFrame < backEnd.viewParms.frameCount - 1 ) {
+		if (f->addedFrame < backEnd.viewParms.frameCount - 1) {
 			*prev = f->next;
 			f->next = r_inactiveFlares;
 			r_inactiveFlares = f;
@@ -420,10 +406,9 @@ void RB_RenderFlares (void) {
 
 		// don't draw any here that aren't from this scene / portal
 		f->drawIntensity = 0;
-		if ( f->frameSceneNum == backEnd.viewParms.frameSceneNum
-			&& f->inPortal == backEnd.viewParms.isPortal ) {
-			RB_TestFlare( f );
-			if ( f->drawIntensity ) {
+		if (f->frameSceneNum == backEnd.viewParms.frameSceneNum && f->inPortal == backEnd.viewParms.isPortal) {
+			RB_TestFlare(f);
+			if (f->drawIntensity) {
 				draw = qtrue;
 			} else {
 				// this flare has completely faded out, so remove it from the chain
@@ -437,20 +422,13 @@ void RB_RenderFlares (void) {
 		prev = &f->next;
 	}
 
-	if ( !draw ) {
-		return;		// none visible
+	if (!draw) {
+		return; // none visible
 	}
 
-	for ( f = r_activeFlares ; f ; f = f->next ) {
-		if ( f->frameSceneNum == backEnd.viewParms.frameSceneNum
-			&& f->inPortal == backEnd.viewParms.isPortal
-			&& f->drawIntensity ) {
-			RB_RenderFlare( f );
+	for (f = r_activeFlares; f; f = f->next) {
+		if (f->frameSceneNum == backEnd.viewParms.frameSceneNum && f->inPortal == backEnd.viewParms.isPortal && f->drawIntensity) {
+			RB_RenderFlare(f);
 		}
 	}
 }
-
-
-
-
-
