@@ -2451,38 +2451,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	if ( !isBot && firstTime )
-	{
-		if ( g_antiFakePlayer.integer )
-		{// patched, check for > g_maxConnPerIP connections from same IP
-			int count=0, i=0;
-			for ( i=0; i<sv_maxclients.integer; i++ )
-			{
-				#if 0
-					if ( level.clients[i].pers.connected != CON_DISCONNECTED && i != clientNum )
-					{
-						if ( CompareIPs( clientNum, i ) )
-						{
-							if ( !level.security.clientConnectionActive[i] )
-							{//This IP has a dead connection pending, wait for it to time out
-							//	client->pers.connected = CON_DISCONNECTED;
-								return "Please wait, another connection from this IP is still pending...";
-							}
-						}
-					}
-				#else
-					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
-						count++;
-				#endif
-			}
-			if ( count > g_maxConnPerIP.integer )
-			{
-			//	client->pers.connected = CON_DISCONNECTED;
-				return "Too many connections from the same IP";
-			}
-		}
-	}
-
 	if ( ent->inuse )
 	{// if a player reconnects quickly after a disconnect, the client disconnect may never be called, thus flag can get lost in the ether
 		G_LogPrintf( "Forcing disconnect on active client: %i\n", clientNum );
