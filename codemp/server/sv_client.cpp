@@ -320,11 +320,11 @@ gotnewcl:
 		// check for > sv_maxConnPerIP connections from same IP
 		int count = 0, i = 0;
 		for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
-			if (NET_CompareBaseAdr(svs.clients[clientNum].netchan.remoteAddress, svs.clients[i].netchan.remoteAddress)) {
+			if (cl->state >= CS_CONNECTED && NET_CompareBaseAdr(svs.clients[clientNum].netchan.remoteAddress, svs.clients[i].netchan.remoteAddress)) {
 				count++;
 			}
 		}
-		if (count > sv_maxConnPerIP->integer) {
+		if (count >= sv_maxConnPerIP->integer) {
 			cl->state = CS_FREE;
 			denied = "Too many connections from the same IP";
 			NET_OutOfBandPrint(NS_SERVER, from, "print\n%s\n", denied);
