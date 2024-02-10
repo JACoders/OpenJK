@@ -2452,7 +2452,7 @@ float IdealDistance ( gentity_t *self )
 	case WP_THERMAL:
 		ideal += 50;
 		break;
-        
+
 	case WP_SABER:
 	case WP_BRYAR_PISTOL:
 //	case WP_BLASTER_PISTOL:

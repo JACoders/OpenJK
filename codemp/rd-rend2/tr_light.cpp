@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	DLIGHT_AT_RADIUS		16
 // at the edge of a dlight's influence, this amount of light will be added
 
-#define	DLIGHT_MINIMUM_RADIUS	16		
+#define	DLIGHT_MINIMUM_RADIUS	16
 // never calculate a range less than this to prevent huge light numbers
 
 
@@ -203,7 +203,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 		}
 
 		data = world->lightGridData + *(world->lightGridArray+gridPos);
-		if ( data->styles[0] == LS_LSNONE ) 
+		if ( data->styles[0] == LS_LSNONE )
 		{
 			continue;	// ignore samples in walls
 		}
@@ -327,7 +327,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	vec3_t			lightDir;
 	vec3_t			lightOrigin;
 
-	// lighting calculations 
+	// lighting calculations
 	if ( ent->lightingCalculated ) {
 		return;
 	}
@@ -346,13 +346,13 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 
 	// if NOWORLDMODEL, only use dynamic lights (menu system, etc)
-	if ( !(refdef->rdflags & RDF_NOWORLDMODEL ) 
+	if ( !(refdef->rdflags & RDF_NOWORLDMODEL )
 		&& tr.world->lightGridData ) {
 		R_SetupEntityLightingGrid( ent, tr.world );
 	} else {
-		ent->ambientLight[0] = ent->ambientLight[1] = 
+		ent->ambientLight[0] = ent->ambientLight[1] =
 			ent->ambientLight[2] = tr.identityLight * 150;
-		ent->directedLight[0] = ent->directedLight[1] = 
+		ent->directedLight[0] = ent->directedLight[1] =
 			ent->directedLight[2] = tr.identityLight * 150;
 		VectorCopy( tr.sunDirection, ent->lightDir );
 	}
@@ -409,7 +409,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	((byte *)&ent->ambientLightInt)[1] = Q_ftol(ent->ambientLight[1]);
 	((byte *)&ent->ambientLightInt)[2] = Q_ftol(ent->ambientLight[2]);
 	((byte *)&ent->ambientLightInt)[3] = 0xff;
-	
+
 	// transform the direction to local space
 	VectorNormalize( lightDir );
 	VectorCopy(lightDir, ent->lightDir);
@@ -427,7 +427,7 @@ R_LightForPoint
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir )
 {
 	trRefEntity_t ent;
-	
+
 	if ( tr.world->lightGridData == NULL )
 	  return qfalse;
 
@@ -445,7 +445,7 @@ int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, ve
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world )
 {
 	trRefEntity_t ent;
-	
+
 	if ( world->lightGridData == NULL )
 	  return qfalse;
 
@@ -471,7 +471,7 @@ int R_DLightsForPoint(const vec3_t point, const float radius)
 	for (int i = 0; i < tr.refdef.num_dlights; i++)
 	{
 		currentDlight = tr.refdef.dlights[i];
-		
+
 		VectorSubtract(point, currentDlight.origin, delta);
 		distance = VectorLength(delta);
 		radiusSum = radius + currentDlight.radius;

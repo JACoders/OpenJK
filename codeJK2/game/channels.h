@@ -24,9 +24,9 @@ typedef enum //# soundChannel_e
 {
 	CHAN_AUTO,	//## %s !!"W:\game\base\!!sound\*.wav;*.mp3" # Auto-picks an empty channel to play sound on
 	CHAN_LOCAL,	//## %s !!"W:\game\base\!!sound\*.wav;*.mp3" # menu sounds, etc
-	CHAN_WEAPON,//## %s !!"W:\game\base\!!sound\*.wav;*.mp3" 
+	CHAN_WEAPON,//## %s !!"W:\game\base\!!sound\*.wav;*.mp3"
 	CHAN_VOICE, //## %s !!"W:\game\base\!!sound\voice\*.wav;*.mp3" # Voice sounds cause mouth animation
-	CHAN_VOICE_ATTEN, //## %s !!"W:\game\base\!!sound\voice\*.wav;*.mp3" # Causes mouth animation but still use normal sound falloff 
+	CHAN_VOICE_ATTEN, //## %s !!"W:\game\base\!!sound\voice\*.wav;*.mp3" # Causes mouth animation but still use normal sound falloff
 	CHAN_ITEM,  //## %s !!"W:\game\base\!!sound\*.wav;*.mp3"
 	CHAN_BODY,	//## %s !!"W:\game\base\!!sound\*.wav;*.mp3"
 	CHAN_AMBIENT,//## %s !!"W:\game\base\!!sound\*.wav;*.mp3" # added for ambient sounds

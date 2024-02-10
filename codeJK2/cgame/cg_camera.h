@@ -50,7 +50,7 @@ typedef struct camera_s
 	//Position / Facing information
 	vec3_t	origin;
 	vec3_t	angles;
-	
+
 	vec3_t	origin2;
 	vec3_t	angles2;
 
@@ -95,7 +95,7 @@ typedef struct camera_s
 	float	bar_alpha_source;
 	float	bar_alpha_dest;
 	float	bar_time;
-	
+
 	float	bar_height_source;
 	float	bar_height_dest;
 	float	bar_height;
@@ -123,9 +123,9 @@ typedef struct camera_s
 
 
 	// ROFF information
-	char	sRoff[MAX_QPATH];	// name of a cached roff 
+	char	sRoff[MAX_QPATH];	// name of a cached roff
 	int		roff_frame;		// current frame in the roff data
-	int		next_roff_time;	// time when it's ok to apply the next roff frame 
+	int		next_roff_time;	// time when it's ok to apply the next roff frame
 
 } camera_t;
 

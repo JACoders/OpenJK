@@ -1,6 +1,6 @@
 // ICARUS Engine Interface File
 //
-//	This file is the only section of the ICARUS systems that 
+//	This file is the only section of the ICARUS systems that
 //	is not directly portable from engine to engine.
 //
 //	-- jweier

@@ -93,7 +93,7 @@ typedef enum {
 } pmtype_t;
 
 typedef enum {
-	WEAPON_READY, 
+	WEAPON_READY,
 	WEAPON_RAISING,
 	WEAPON_DROPPING,
 	WEAPON_FIRING,
@@ -154,7 +154,7 @@ typedef struct {
 
 	// callbacks to test the world
 	// these will be different functions during game and cgame
-	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 						const int passEntityNum, const int contentMask, const EG2_Collision eG2TraceType/* = (EG2_Collision)0*/, const int useLod/* = 0 */);
 	int			(*pointcontents)( const vec3_t point, int passEntityNum );
 } pmove_t;
@@ -191,7 +191,7 @@ void PM_SetSaberMove(short newMove);
 typedef enum {
 	PERS_SCORE,						// !!! MUST NOT CHANGE, SERVER AND GAME BOTH REFERENCE !!!
 	PERS_HITS,						// total points damage inflicted so damage beeps can sound on change
-	PERS_TEAM,				
+	PERS_TEAM,
 	PERS_SPAWN_COUNT,				// incremented every respawn
 //	PERS_REWARD_COUNT,				// incremented for each reward sound
 	PERS_ATTACKER,					// clientnum of last damage inflicter
@@ -200,7 +200,7 @@ typedef enum {
 	PERS_ACCURACY_SHOTS,			// scoreboard - number of player shots
 	PERS_ACCURACY_HITS,				// scoreboard - number of player shots that hit an enemy
 	PERS_ENEMIES_KILLED,			// scoreboard - number of enemies player killed
-	PERS_TEAMMATES_KILLED			// scoreboard - number of teammates killed 
+	PERS_TEAMMATES_KILLED			// scoreboard - number of teammates killed
 } persEnum_t;
 
 
@@ -273,7 +273,7 @@ typedef enum {
 
 typedef enum {
 	EV_NONE,
- 
+
 	EV_FOOTSTEP,
 	EV_FOOTSTEP_METAL,
 	EV_FOOTSPLASH,
@@ -474,7 +474,7 @@ public:
 
 #define	MAX_RANDOM_ANIMSOUNDS	8
 
-typedef struct animsounds_s 
+typedef struct animsounds_s
 {
 	int		keyFrame;			//Frame to play sound on
 	int		soundIndex[MAX_RANDOM_ANIMSOUNDS];			//sound file to play - FIXME: should be an index, handle random some other way?
@@ -558,7 +558,7 @@ typedef enum {
 //---------------------------------------------------------
 
 // gitem_t->type
-typedef enum 
+typedef enum
 {
 	IT_BAD,
 	IT_WEAPON,
@@ -568,7 +568,7 @@ typedef enum
 	IT_HOLDABLE,
 	IT_BATTERY,
 	IT_HOLOCRON,
-							
+
 } itemType_t;
 
 
@@ -599,7 +599,7 @@ extern	const int		bg_numItems;
 //==============================================================================
 
 /*
-typedef struct ginfoitem_s 
+typedef struct ginfoitem_s
 {
 	char				*infoString;// Text message
 	vec3_t				color;		// Text color

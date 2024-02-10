@@ -40,7 +40,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define NPCAI_LOST				0x00002000	//Can't nav to his goal
 #define NPCAI_SHIELDS			0x00004000	//Has shields, borg can adapt
 #define NPCAI_GREET_ALLIES		0x00008000	//Say hi to nearby allies
-#define NPCAI_FORM_TELE_NAV		0x00010000	//Tells formation people to use nav info to get to 
+#define NPCAI_FORM_TELE_NAV		0x00010000	//Tells formation people to use nav info to get to
 #define NPCAI_ENROUTE_TO_HOMEWP 0x00020000	//Lets us know to run our lostenemyscript when we get to homeWp
 #define NPCAI_MATCHPLAYERWEAPON 0x00040000	//Match the player's weapon except when it changes during cinematics
 #define NPCAI_DIE_ON_IMPACT		0x00100000	//Next time you crashland, die!
@@ -249,7 +249,7 @@ public:
 	int			investigateSoundDebounceTime;
 	int			greetingDebounceTime;//when we can greet someone next
 	gentity_t	*eventOwner;
-	
+
 	//bState-specific fields
 	gentity_t	*coverTarg;
 	jumpState_t	jumpState;
@@ -316,7 +316,7 @@ public:
 	int			goalRadius;
 
 	//FIXME: These may be redundant
-	
+
 	/*
 	int			weaponTime;		//Time until refire is valid
 	int			jumpTime;
@@ -341,7 +341,7 @@ public:
 	gentity_t	*watchTarget;	//for BS_CINEMATIC, keeps facing this ent
 
 	int			ffireCount;		//sigh... you'd think I'd be able to find a way to do this without having to use 3 int fields, but...
-	int			ffireDebounce;	
+	int			ffireDebounce;
 	int			ffireFadeDebounce;
 
 

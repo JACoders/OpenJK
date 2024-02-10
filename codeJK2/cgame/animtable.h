@@ -36,24 +36,24 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_DEATH5),			//# Fifth Death anim
 	ENUM2STRING(BOTH_DEATH6),			//# Sixth Death anim
 	ENUM2STRING(BOTH_DEATH7),			//# Seventh Death anim
-	ENUM2STRING(BOTH_DEATH8),			//# 
-	ENUM2STRING(BOTH_DEATH9),			//# 
-	ENUM2STRING(BOTH_DEATH10),			//# 
+	ENUM2STRING(BOTH_DEATH8),			//#
+	ENUM2STRING(BOTH_DEATH9),			//#
+	ENUM2STRING(BOTH_DEATH10),			//#
 	ENUM2STRING(BOTH_DEATH11),			//#
-	ENUM2STRING(BOTH_DEATH12),			//# 
-	ENUM2STRING(BOTH_DEATH13),			//# 
-	ENUM2STRING(BOTH_DEATH14),			//# 
-	ENUM2STRING(BOTH_DEATH15),			//# 
-	ENUM2STRING(BOTH_DEATH16),			//# 
-	ENUM2STRING(BOTH_DEATH17),			//# 
-	ENUM2STRING(BOTH_DEATH18),			//# 
-	ENUM2STRING(BOTH_DEATH19),			//# 
-	ENUM2STRING(BOTH_DEATH20),			//# 
-	ENUM2STRING(BOTH_DEATH21),			//# 
-	ENUM2STRING(BOTH_DEATH22),			//# 
-	ENUM2STRING(BOTH_DEATH23),			//# 
-	ENUM2STRING(BOTH_DEATH24),			//# 
-	ENUM2STRING(BOTH_DEATH25),			//# 
+	ENUM2STRING(BOTH_DEATH12),			//#
+	ENUM2STRING(BOTH_DEATH13),			//#
+	ENUM2STRING(BOTH_DEATH14),			//#
+	ENUM2STRING(BOTH_DEATH15),			//#
+	ENUM2STRING(BOTH_DEATH16),			//#
+	ENUM2STRING(BOTH_DEATH17),			//#
+	ENUM2STRING(BOTH_DEATH18),			//#
+	ENUM2STRING(BOTH_DEATH19),			//#
+	ENUM2STRING(BOTH_DEATH20),			//#
+	ENUM2STRING(BOTH_DEATH21),			//#
+	ENUM2STRING(BOTH_DEATH22),			//#
+	ENUM2STRING(BOTH_DEATH23),			//#
+	ENUM2STRING(BOTH_DEATH24),			//#
+	ENUM2STRING(BOTH_DEATH25),			//#
 
 	ENUM2STRING(BOTH_DEATHFORWARD1),		//# First Death in which they get thrown forward
 	ENUM2STRING(BOTH_DEATHFORWARD2),		//# Second Death in which they get thrown forward
@@ -85,24 +85,24 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_DEAD5),				//# Fifth Death finished pose
 	ENUM2STRING(BOTH_DEAD6),				//# Sixth Death finished pose
 	ENUM2STRING(BOTH_DEAD7),				//# Seventh Death finished pose
-	ENUM2STRING(BOTH_DEAD8),				//# 
-	ENUM2STRING(BOTH_DEAD9),				//# 
-	ENUM2STRING(BOTH_DEAD10),			//# 
+	ENUM2STRING(BOTH_DEAD8),				//#
+	ENUM2STRING(BOTH_DEAD9),				//#
+	ENUM2STRING(BOTH_DEAD10),			//#
 	ENUM2STRING(BOTH_DEAD11),			//#
-	ENUM2STRING(BOTH_DEAD12),			//# 
-	ENUM2STRING(BOTH_DEAD13),			//# 
-	ENUM2STRING(BOTH_DEAD14),			//# 
-	ENUM2STRING(BOTH_DEAD15),			//# 
-	ENUM2STRING(BOTH_DEAD16),			//# 
-	ENUM2STRING(BOTH_DEAD17),			//# 
-	ENUM2STRING(BOTH_DEAD18),			//# 
-	ENUM2STRING(BOTH_DEAD19),			//# 
-	ENUM2STRING(BOTH_DEAD20),			//# 
-	ENUM2STRING(BOTH_DEAD21),			//# 
-	ENUM2STRING(BOTH_DEAD22),			//# 
-	ENUM2STRING(BOTH_DEAD23),			//# 
-	ENUM2STRING(BOTH_DEAD24),			//# 
-	ENUM2STRING(BOTH_DEAD25),			//# 
+	ENUM2STRING(BOTH_DEAD12),			//#
+	ENUM2STRING(BOTH_DEAD13),			//#
+	ENUM2STRING(BOTH_DEAD14),			//#
+	ENUM2STRING(BOTH_DEAD15),			//#
+	ENUM2STRING(BOTH_DEAD16),			//#
+	ENUM2STRING(BOTH_DEAD17),			//#
+	ENUM2STRING(BOTH_DEAD18),			//#
+	ENUM2STRING(BOTH_DEAD19),			//#
+	ENUM2STRING(BOTH_DEAD20),			//#
+	ENUM2STRING(BOTH_DEAD21),			//#
+	ENUM2STRING(BOTH_DEAD22),			//#
+	ENUM2STRING(BOTH_DEAD23),			//#
+	ENUM2STRING(BOTH_DEAD24),			//#
+	ENUM2STRING(BOTH_DEAD25),			//#
 	ENUM2STRING(BOTH_DEADFORWARD1),		//# First thrown forward death finished pose
 	ENUM2STRING(BOTH_DEADFORWARD2),		//# Second thrown forward death finished pose
 	ENUM2STRING(BOTH_DEADBACKWARD1),		//# First thrown backward death finished pose
@@ -115,7 +115,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_DEADFLOP2),		//# React to being shot from Second Death finished pose
 	ENUM2STRING(BOTH_DEADFLOP3),		//# React to being shot from Third Death finished pose
 	ENUM2STRING(BOTH_DEADFLOP4),		//# React to being shot from Fourth Death finished pose
-	ENUM2STRING(BOTH_DEADFLOP5),		//# React to being shot from Fifth Death finished pose 
+	ENUM2STRING(BOTH_DEADFLOP5),		//# React to being shot from Fifth Death finished pose
 	ENUM2STRING(BOTH_DEADFORWARD1_FLOP),		//# React to being shot First thrown forward death finished pose
 	ENUM2STRING(BOTH_DEADFORWARD2_FLOP),		//# React to being shot Second thrown forward death finished pose
 	ENUM2STRING(BOTH_DEADBACKWARD1_FLOP),	//# React to being shot First thrown backward death finished pose
@@ -138,17 +138,17 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_PAIN6),				//# Sixth take pain anim - from behind
 	ENUM2STRING(BOTH_PAIN7),				//# Seventh take pain anim - from behind
 	ENUM2STRING(BOTH_PAIN8),				//# Eigth take pain anim - from behind
-	ENUM2STRING(BOTH_PAIN9),				//# 
-	ENUM2STRING(BOTH_PAIN10),			//# 
-	ENUM2STRING(BOTH_PAIN11),			//# 
-	ENUM2STRING(BOTH_PAIN12),			//# 
-	ENUM2STRING(BOTH_PAIN13),			//# 
-	ENUM2STRING(BOTH_PAIN14),			//# 
-	ENUM2STRING(BOTH_PAIN15),			//# 
-	ENUM2STRING(BOTH_PAIN16),			//# 
-	ENUM2STRING(BOTH_PAIN17),			//# 
-	ENUM2STRING(BOTH_PAIN18),			//# 
-	ENUM2STRING(BOTH_PAIN19),			//# 
+	ENUM2STRING(BOTH_PAIN9),				//#
+	ENUM2STRING(BOTH_PAIN10),			//#
+	ENUM2STRING(BOTH_PAIN11),			//#
+	ENUM2STRING(BOTH_PAIN12),			//#
+	ENUM2STRING(BOTH_PAIN13),			//#
+	ENUM2STRING(BOTH_PAIN14),			//#
+	ENUM2STRING(BOTH_PAIN15),			//#
+	ENUM2STRING(BOTH_PAIN16),			//#
+	ENUM2STRING(BOTH_PAIN17),			//#
+	ENUM2STRING(BOTH_PAIN18),			//#
+	ENUM2STRING(BOTH_PAIN19),			//#
 	ENUM2STRING(BOTH_PAIN20),			//# GETTING SHOCKED
 
 	//# #sep ENUM2STRING(BOTH_ ATTACKS
@@ -679,9 +679,9 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_STAND5_REELO),		//# Reelo in his stand5 position (cin #18)
 	ENUM2STRING(BOTH_STAND1TOSTAND5),	//# Transition from stand1 to stand5
 	ENUM2STRING(BOTH_STAND5TOSTAND1),	//# Transition from stand5 to stand1
-	ENUM2STRING(BOTH_STAND5TOAIM),		//# Transition of Kye aiming his gun at Desann (cin #9) 
-	ENUM2STRING(BOTH_STAND5STARTLEDLOOKLEFT),	//# Kyle turning to watch the bridge drop (cin #9) 
-	ENUM2STRING(BOTH_STARTLEDLOOKLEFTTOSTAND5),	//# Kyle returning to stand 5 from watching the bridge drop (cin #9) 
+	ENUM2STRING(BOTH_STAND5TOAIM),		//# Transition of Kye aiming his gun at Desann (cin #9)
+	ENUM2STRING(BOTH_STAND5STARTLEDLOOKLEFT),	//# Kyle turning to watch the bridge drop (cin #9)
+	ENUM2STRING(BOTH_STARTLEDLOOKLEFTTOSTAND5),	//# Kyle returning to stand 5 from watching the bridge drop (cin #9)
 	ENUM2STRING(BOTH_STAND5TOSTAND8),	//# Transition from stand5 to stand8
 	ENUM2STRING(BOTH_STAND7TOSTAND8),	//# Tavion putting hands on back of chair (cin #11)
 	ENUM2STRING(BOTH_STAND8TOSTAND5),	//# Transition from stand8 to stand5
@@ -698,11 +698,11 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_CONSOLE1START),	//# typing at a console
 	ENUM2STRING(BOTH_CONSOLE1),			//# typing at a console
 	ENUM2STRING(BOTH_CONSOLE1STOP),		//# typing at a console
-	ENUM2STRING(BOTH_CONSOLE2START),	//# typing at a console with comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2),			//# typing at a console with comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2STOP),		//# typing at a console with comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTART),	//# lean in to type at console while holding comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTOP),	//# lean away after typing at console while holding comm link in hand (cin #5) 
+	ENUM2STRING(BOTH_CONSOLE2START),	//# typing at a console with comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2),			//# typing at a console with comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2STOP),		//# typing at a console with comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTART),	//# lean in to type at console while holding comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTOP),	//# lean away after typing at console while holding comm link in hand (cin #5)
 
 	ENUM2STRING(BOTH_GUARD_LOOKAROUND1),	//# Cradling weapon and looking around
 	ENUM2STRING(BOTH_GUARD_IDLE1),		//# Cradling weapon and standing
@@ -732,9 +732,9 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_TALKGESTURE7START),	//# Start touches Kyle on shoulder
 	ENUM2STRING(BOTH_TALKGESTURE7),		//# Hold touches Kyle on shoulder
 	ENUM2STRING(BOTH_TALKGESTURE7STOP),	//# Ending touches Kyle on shoulder
-	ENUM2STRING(BOTH_TALKGESTURE8START),	//# Lando's chin hold 
-	ENUM2STRING(BOTH_TALKGESTURE8),			//# Lando's chin hold 
-	ENUM2STRING(BOTH_TALKGESTURE8STOP),	//# Lando's chin hold 
+	ENUM2STRING(BOTH_TALKGESTURE8START),	//# Lando's chin hold
+	ENUM2STRING(BOTH_TALKGESTURE8),			//# Lando's chin hold
+	ENUM2STRING(BOTH_TALKGESTURE8STOP),	//# Lando's chin hold
 	ENUM2STRING(BOTH_TALKGESTURE9),			//# Same as gesture 2 but with the right hand
 	ENUM2STRING(BOTH_TALKGESTURE10),		//# Shoulder shrug
 	ENUM2STRING(BOTH_TALKGESTURE11START),	//# Arms folded across chest
@@ -779,9 +779,9 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_REACH1START),		//# Monmothma reaching for crystal
 	ENUM2STRING(BOTH_REACH1STOP),		//# Monmothma reaching for crystal
 
-	ENUM2STRING(BOTH_EXAMINE1START),	//# Start Mon Mothma examining crystal 
-	ENUM2STRING(BOTH_EXAMINE1),			//# Mon Mothma examining crystal 
-	ENUM2STRING(BOTH_EXAMINE1STOP),		//# Stop Mon Mothma examining crystal 
+	ENUM2STRING(BOTH_EXAMINE1START),	//# Start Mon Mothma examining crystal
+	ENUM2STRING(BOTH_EXAMINE1),			//# Mon Mothma examining crystal
+	ENUM2STRING(BOTH_EXAMINE1STOP),		//# Stop Mon Mothma examining crystal
 	ENUM2STRING(BOTH_EXAMINE2START),	//# Start Kyle tossing crystal
 	ENUM2STRING(BOTH_EXAMINE2),			//# Hold Kyle tossing crystal
 	ENUM2STRING(BOTH_EXAMINE2STOP),		//# End Kyle tossing crystal
@@ -960,7 +960,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_WALKBACK2),			//# Walk2 backwards
 	ENUM2STRING(BOTH_RUNBACK1),			//# Run1 backwards
 	ENUM2STRING(BOTH_RUNBACK2),			//# Run1 backwards
-	
+
 	//# #sep BOTH_ JUMPING
 	ENUM2STRING(BOTH_JUMP1),				//# Jump - wind-up and leave ground
 	ENUM2STRING(BOTH_INAIR1),			//# In air loop (from jump)
@@ -1024,24 +1024,24 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_DIVE1),				//# Dive!
 
 	ENUM2STRING(BOTH_ENGAGETAUNT),
-	ENUM2STRING(BOTH_ARIAL_LEFT),		//# 
-	ENUM2STRING(BOTH_ARIAL_RIGHT),		//# 
-	ENUM2STRING(BOTH_CARTWHEEL_LEFT),	//# 
-	ENUM2STRING(BOTH_CARTWHEEL_RIGHT),	//# 
-	ENUM2STRING(BOTH_FLIP_LEFT),			//# 
-	ENUM2STRING(BOTH_FLIP_BACK1),		//# 
-	ENUM2STRING(BOTH_FLIP_BACK2),		//# 
-	ENUM2STRING(BOTH_FLIP_BACK3),		//# 
-	ENUM2STRING(BOTH_BUTTERFLY_LEFT),	//# 
-	ENUM2STRING(BOTH_BUTTERFLY_RIGHT),	//# 
-	ENUM2STRING(BOTH_WALL_RUN_RIGHT),	//# 
+	ENUM2STRING(BOTH_ARIAL_LEFT),		//#
+	ENUM2STRING(BOTH_ARIAL_RIGHT),		//#
+	ENUM2STRING(BOTH_CARTWHEEL_LEFT),	//#
+	ENUM2STRING(BOTH_CARTWHEEL_RIGHT),	//#
+	ENUM2STRING(BOTH_FLIP_LEFT),			//#
+	ENUM2STRING(BOTH_FLIP_BACK1),		//#
+	ENUM2STRING(BOTH_FLIP_BACK2),		//#
+	ENUM2STRING(BOTH_FLIP_BACK3),		//#
+	ENUM2STRING(BOTH_BUTTERFLY_LEFT),	//#
+	ENUM2STRING(BOTH_BUTTERFLY_RIGHT),	//#
+	ENUM2STRING(BOTH_WALL_RUN_RIGHT),	//#
 	ENUM2STRING(BOTH_WALL_RUN_RIGHT_FLIP),//#
-	ENUM2STRING(BOTH_WALL_RUN_RIGHT_STOP),//# 
-	ENUM2STRING(BOTH_WALL_RUN_LEFT),		//# 
+	ENUM2STRING(BOTH_WALL_RUN_RIGHT_STOP),//#
+	ENUM2STRING(BOTH_WALL_RUN_LEFT),		//#
 	ENUM2STRING(BOTH_WALL_RUN_LEFT_FLIP),//#
-	ENUM2STRING(BOTH_WALL_RUN_LEFT_STOP),//# 
-	ENUM2STRING(BOTH_WALL_FLIP_RIGHT),	//# 
-	ENUM2STRING(BOTH_WALL_FLIP_LEFT),	//# 
+	ENUM2STRING(BOTH_WALL_RUN_LEFT_STOP),//#
+	ENUM2STRING(BOTH_WALL_FLIP_RIGHT),	//#
+	ENUM2STRING(BOTH_WALL_FLIP_LEFT),	//#
 	ENUM2STRING(BOTH_WALL_FLIP_FWD),		//#
 	ENUM2STRING(BOTH_KNOCKDOWN1),		//# knocked backwards
 	ENUM2STRING(BOTH_KNOCKDOWN2),		//# knocked backwards hard
@@ -1112,7 +1112,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	//# #sep BOTH_ SWIMMING
 	ENUM2STRING(BOTH_SWIM_IDLE1),		//# Swimming Idle 1
 	ENUM2STRING(BOTH_SWIMFORWARD),		//# Swim forward loop
-	
+
 	//# #sep ENUM2STRING(BOTH_ LYING
 	ENUM2STRING(BOTH_LIE_DOWN1),			//# From a stand position), get down on ground), face down
 	ENUM2STRING(BOTH_LIE_DOWN2),			//# From a stand position), get down on ground), face up
@@ -1128,7 +1128,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_INJURED2),			//# Injured pose 2
 	ENUM2STRING(BOTH_INJURED3),			//# Injured pose 3
 	ENUM2STRING(BOTH_INJURED6),			//# Injured pose 6
-	ENUM2STRING(BOTH_INJURED6ATTACKSTART),	//# Start attack while in injured 6 pose 
+	ENUM2STRING(BOTH_INJURED6ATTACKSTART),	//# Start attack while in injured 6 pose
 	ENUM2STRING(BOTH_INJURED6ATTACKSTOP),	//# End attack while in injured 6 pose
 	ENUM2STRING(BOTH_INJURED6COMBADGE),	//# Hit combadge while in injured 6 pose
 	ENUM2STRING(BOTH_INJURED6POINT),		//# Chang points to door while in injured state
@@ -1145,7 +1145,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_SLEEP6START),		//# Kyle leaning back to sleep (cin 20)
 	ENUM2STRING(BOTH_SLEEP6STOP),		//# Kyle waking up and shaking his head (cin 21)
 	ENUM2STRING(BOTH_SLEEP1GETUP),		//# alarmed and getting up out of sleep1 pose to stand
-	ENUM2STRING(BOTH_SLEEP1GETUP2),		//# 
+	ENUM2STRING(BOTH_SLEEP1GETUP2),		//#
 	ENUM2STRING(BOTH_SLEEP2GETUP),		//# alarmed and getting up out of sleep2 pose to stand
 	ENUM2STRING(BOTH_SLEEP3GETUP),		//# alarmed and getting up out of sleep3 pose to stand
 	ENUM2STRING(BOTH_SLEEP3DEATH),		//# death in chair), from sleep3 idle
@@ -1220,7 +1220,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 
 	ENUM2STRING(BOTH_COCKPIT_CONSOLE1),			//# type at controls
 	ENUM2STRING(BOTH_COCKPIT_CONSOLE2),			//# type at controls
-	ENUM2STRING(BOTH_COCKPIT_CONSOLE2_PARTIAL),	//# last part of console2 anim (cin #1) used by Jan	
+	ENUM2STRING(BOTH_COCKPIT_CONSOLE2_PARTIAL),	//# last part of console2 anim (cin #1) used by Jan
 
 	ENUM2STRING(BOTH_COCKPIT_HEADNOD),			//# nod head yes while sitting
 	ENUM2STRING(BOTH_COCKPIT_HEADSHAKE),			//# shake head no while sitting
@@ -1234,11 +1234,11 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE7STOP),			//# Lando's supporting hand away from Kyle (cin #21)
 	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE8START),		//# Hand to Lando's chin (cin #21)
 	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE8STOP),			//# hand away from Lando's chin *cin #21)
-	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE11START),		//# 
-	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE11STOP),		//# 
+	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE11START),		//#
+	ENUM2STRING(BOTH_COCKPIT_TALKGESTURE11STOP),		//#
 
-	ENUM2STRING(BOTH_COCKPIT_SLEEP6START),	//# 
-	ENUM2STRING(BOTH_COCKPIT_SLEEP6STOP),		//# 
+	ENUM2STRING(BOTH_COCKPIT_SLEEP6START),	//#
+	ENUM2STRING(BOTH_COCKPIT_SLEEP6STOP),		//#
 
 	//=================================================
 	//ANIMS IN WHICH ONLY THE UPPER OBJECTS ARE IN MD3
@@ -1377,10 +1377,10 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(FACE_TALK2),			//# semi-quiet
 	ENUM2STRING(FACE_TALK3),			//# semi-loud
 	ENUM2STRING(FACE_TALK4),			//# loud
-	ENUM2STRING(FACE_ALERT),				//# 
-	ENUM2STRING(FACE_SMILE),				//# 
-	ENUM2STRING(FACE_FROWN),				//# 
-	ENUM2STRING(FACE_DEAD),				//# 
+	ENUM2STRING(FACE_ALERT),				//#
+	ENUM2STRING(FACE_SMILE),				//#
+	ENUM2STRING(FACE_FROWN),				//#
+	ENUM2STRING(FACE_DEAD),				//#
 
 	//must be terminated
 	{NULL,-1}

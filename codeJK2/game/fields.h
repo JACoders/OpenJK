@@ -39,17 +39,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define STOFS(x) offsetof(spawn_temp_t, x)
 #define LLOFS(x) offsetof(level_locals_t, x)
 #define CLOFS(x) offsetof(gclient_t, x)
-#define NPCOFS(x) offsetof(gNPC_t, x) 
+#define NPCOFS(x) offsetof(gNPC_t, x)
 //
 #define strFOFS(x)	 #x,FOFS(x)
 #define	strSTOFS(x)  #x,STOFS(x)
-#define	strLLOFS(x)	 #x,LLOFS(x)	
+#define	strLLOFS(x)	 #x,LLOFS(x)
 #define	strCLOFS(x)  #x,CLOFS(x)
 #define strNPCOFS(x) #x,NPCOFS(x)
 
 typedef enum
 {
-//	F_INT, 
+//	F_INT,
 //	F_SHORT,
 //	F_FLOAT,
 	F_STRING,		// string
@@ -65,7 +65,7 @@ typedef enum
 
 //	F_PLAYERSTATE,
 
-	F_BEHAVIORSET,		// special scripting string ptr array handler	
+	F_BEHAVIORSET,		// special scripting string ptr array handler
 	F_ALERTEVENT,		// special handler for alertevent struct in level_locals_t
 	F_AIGROUPS,			// some AI grouping stuff of Mike's
 

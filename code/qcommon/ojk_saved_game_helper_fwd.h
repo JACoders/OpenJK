@@ -291,7 +291,7 @@ class SavedGameClassArchiver
 {
 public:
 	enum { is_implemented = false };
-	
+
 	static void sg_export(
 		SavedGameHelper& saved_game,
 		const T& instance)

@@ -96,8 +96,8 @@ void sentry_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 NPC_Sentry_Pain
 -------------------------
 */
-void NPC_Sentry_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc ) 
-{		
+void NPC_Sentry_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
+{
 	NPC_Pain( self, inflictor, other, point, damage, mod );
 
 	if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT )
@@ -106,7 +106,7 @@ void NPC_Sentry_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, v
 		TIMER_Set( self, "attackDelay", Q_irand( 9000, 12000) );
 		self->flags |= FL_SHIELDED;
 		NPC_SetAnim( self, SETANIM_BOTH, BOTH_FLY_SHIELDED, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-		G_SoundOnEnt( self, CHAN_AUTO, "sound/chars/sentry/misc/sentry_pain" );		
+		G_SoundOnEnt( self, CHAN_AUTO, "sound/chars/sentry/misc/sentry_pain" );
 
 		self->NPC->localState = LSTATE_ACTIVE;
 	}
@@ -154,7 +154,7 @@ void Sentry_Fire (void)
 	{
 		NPCInfo->localState = LSTATE_POWERING_UP;
 
-		G_SoundOnEnt( NPC, CHAN_AUTO, "sound/chars/sentry/misc/sentry_shield_open" );		
+		G_SoundOnEnt( NPC, CHAN_AUTO, "sound/chars/sentry/misc/sentry_shield_open" );
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_POWERUP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		TIMER_Set( NPC, "powerup", 250 );
 		return;
@@ -171,17 +171,17 @@ void Sentry_Fire (void)
 	switch( which )
 	{
 	case 0:
-		bolt = NPC->genericBolt1; 
+		bolt = NPC->genericBolt1;
 		break;
 	case 1:
-		bolt = NPC->genericBolt2; 
+		bolt = NPC->genericBolt2;
 		break;
 	case 2:
 	default:
-		bolt = NPC->genericBolt3; 
+		bolt = NPC->genericBolt3;
 	}
 
-	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel, 
+	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel,
 				bolt,
 				&boltMatrix, NPC->currentAngles, NPC->currentOrigin, (cg.time?cg.time:level.time),
 				NULL, NPC->s.modelScale );
@@ -225,7 +225,7 @@ Sentry_MaintainHeight
 -------------------------
 */
 void Sentry_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	NPC->s.loopSound = G_SoundIndex( "sound/chars/sentry/misc/sentry_hover_1_lp" );
@@ -237,7 +237,7 @@ void Sentry_MaintainHeight( void )
 	if ( NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPC->enemy->currentOrigin[2]+NPC->enemy->maxs[2]) - NPC->currentOrigin[2]; 
+		dif = (NPC->enemy->currentOrigin[2]+NPC->enemy->maxs[2]) - NPC->currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 8 )
@@ -503,7 +503,7 @@ void Sentry_AttackDecision( void )
 	}
 
 	// Rate our distance to the target and visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 

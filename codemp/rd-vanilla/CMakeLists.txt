@@ -99,7 +99,7 @@ set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererRdCommon
 set(MPVanillaRendererCommonFiles
 	"${MPDir}/qcommon/matcomp.cpp"
 	"${MPDir}/qcommon/q_shared.cpp"
-	
+
 	${SharedCommonFiles})
 source_group("common" FILES ${MPVanillaRendererCommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonFiles})

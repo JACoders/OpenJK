@@ -152,7 +152,7 @@ painFunc_t NPC_PainFunc( gentity_t *ent )
 		case CLASS_MARK2:
 			func = painF_NPC_Mark2_Pain;
 			break;
-		case CLASS_ATST:  
+		case CLASS_ATST:
 			func = painF_NPC_ATST_Pain;
 			break;
 		case CLASS_GALAKMECH:
@@ -200,7 +200,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 	case TEAM_PLAYER:
 		//ent->flags |= FL_NO_KNOCKBACK;
 		if ( ent->client->NPC_class == CLASS_SEEKER )
-		{		
+		{
 			ent->NPC->defaultBehavior = BS_DEFAULT;
 			ent->client->ps.gravity = 0;
 			ent->svFlags |= SVF_CUSTOM_GRAVITY;
@@ -266,9 +266,9 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		}
 		break;
 
-	case TEAM_NEUTRAL: 
+	case TEAM_NEUTRAL:
 
-		if ( Q_stricmp( ent->NPC_type, "gonk" ) == 0 ) 
+		if ( Q_stricmp( ent->NPC_type, "gonk" ) == 0 )
 		{
 			// I guess we generically make them player usable
 			ent->svFlags |= SVF_PLAYER_USABLE;
@@ -277,14 +277,14 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 			switch ( g_spskill->integer )
 			{
 			case 0:	//	EASY
-				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f; 
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f;
 				break;
 			case 1:	//	MEDIUM
-				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.75f; 
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.75f;
 				break;
 			default :
 			case 2:	//	HARD
-				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.5f; 
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.5f;
 				break;
 			}
 		}
@@ -317,13 +317,13 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 			}
 			else if( ent->client->NPC_class == CLASS_PROBE || ent->client->NPC_class == CLASS_REMOTE ||
 						ent->client->NPC_class == CLASS_INTERROGATOR || ent->client->NPC_class == CLASS_SENTRY)
-			{		
+			{
 				ent->NPC->defaultBehavior = BS_DEFAULT;
 				ent->client->ps.gravity = 0;
 				ent->svFlags |= SVF_CUSTOM_GRAVITY;
 				ent->NPC->stats.moveType = MT_FLYSWIM;
 			}
-			else 
+			else
 			{
 				G_CreateG2AttachedWeaponModel( ent, weaponData[ent->client->ps.weapon].weaponMdl );
 				switch ( ent->client->ps.weapon )
@@ -406,9 +406,9 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 
 //	case TEAM_IMPERIAL:
 	case TEAM_ENEMY:
-		if ( Q_stricmp( "tavion", NPC_type ) == 0 || 
-			Q_strncmp( "reborn", NPC_type, 6 ) == 0 || 
-			Q_stricmp( "desann", NPC_type ) == 0 || 
+		if ( Q_stricmp( "tavion", NPC_type ) == 0 ||
+			Q_strncmp( "reborn", NPC_type, 6 ) == 0 ||
+			Q_stricmp( "desann", NPC_type ) == 0 ||
 			Q_strncmp( "shadowtrooper", NPC_type, 13 ) == 0 )
 			return ( 1 << WP_SABER);
 //			return ( 1 << WP_IMPERIAL_BLADE);
@@ -504,11 +504,11 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		if (( Q_stricmp( "probe", NPC_type ) == 0 ) || ( Q_stricmp( "seeker", NPC_type ) == 0 ))
 		{
 			return ( 1 << WP_BOT_LASER);
-		}	
+		}
 		if ( Q_stricmp( "remote", NPC_type ) == 0 )
 		{
 			return ( 1 << WP_BOT_LASER );
-		}	
+		}
 		if ( Q_stricmp( "trandoshan", NPC_type ) == 0 )
 		{
 			return (1<<WP_REPEATER);
@@ -538,10 +538,10 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		break;
 
 	case TEAM_PLAYER:
-		
+
 		if(spawnflags & SFB_RIFLEMAN)
 			return ( 1 << WP_REPEATER);
-		
+
 		if(spawnflags & SFB_PHASER)
 			return ( 1 << WP_BLASTER_PISTOL);
 
@@ -571,15 +571,15 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		if ( Q_stricmp( "mark1", NPC_type ) == 0 )
 		{
 			return WP_NONE;
-		}	
+		}
 		if ( Q_stricmp( "mark2", NPC_type ) == 0 )
 		{
 			return WP_NONE;
-		}	
+		}
 		if ( Q_strncmp( "ugnaught", NPC_type, 8 ) == 0 )
 		{
 			return WP_NONE;
-		}	
+		}
 		if ( Q_stricmp( "bartender", NPC_type ) == 0 )
 		{
 			return WP_NONE;
@@ -588,7 +588,7 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		{
 			return WP_NONE;
 		}
-	
+
 		break;
 
 	// these no longer exist
@@ -823,16 +823,16 @@ void NPC_Begin (gentity_t *ent)
 	}
 	else if ( ent->NPC->stats.health )	// Was health supplied in NPC.cfg?
 	{
-		
+
 		if ( ent->client->NPC_class != CLASS_REBORN
-			&& ent->client->NPC_class != CLASS_SHADOWTROOPER 
+			&& ent->client->NPC_class != CLASS_SHADOWTROOPER
 			//&& ent->client->NPC_class != CLASS_TAVION
-			//&& ent->client->NPC_class != CLASS_DESANN 
+			//&& ent->client->NPC_class != CLASS_DESANN
 			&& ent->client->NPC_class != CLASS_JEDI )
 		{// up everyone except jedi
 			ent->NPC->stats.health += ent->NPC->stats.health/4 * g_spskill->integer; // 100% on easy, 125% on medium, 150% on hard
 		}
-		
+
 		ent->max_health = client->pers.maxHealth = client->ps.stats[STAT_MAX_HEALTH] = ent->NPC->stats.health;
 	}
 	else
@@ -928,7 +928,7 @@ void NPC_Begin (gentity_t *ent)
 	ent->e_DieFunc = dieF_player_die;
 	ent->waterlevel = 0;
 	ent->watertype = 0;
-	
+
 	//visible to player and NPCs
 	if ( ent->client->NPC_class != CLASS_R2D2 &&
 		ent->client->NPC_class != CLASS_R5D2 &&
@@ -941,7 +941,7 @@ void NPC_Begin (gentity_t *ent)
 	ent->s.eFlags &= ~EF_NODRAW;
 
 	NPC_SetFX_SpawnStates( ent );
-	
+
 	client->ps.friction = 6;
 
 	NPC_SetWeapons(ent);
@@ -1046,7 +1046,7 @@ void NPC_Begin (gentity_t *ent)
 	// initialize animations and other things
 	memset( &ucmd, 0, sizeof( ucmd ) );
 	VectorCopyM( client->pers.cmd_angles, ucmd.angles );
-	
+
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 
 	if ( ent->NPC->aiFlags & NPCAI_MATCHPLAYERWEAPON )
@@ -1089,14 +1089,14 @@ gNPC_t *New_NPC_t()
 NPC_StasisSpawn_Go
 -------------------------
 */
-/*	
+/*
 qboolean NPC_StasisSpawn_Go( gentity_t *ent )
 {
 	//Setup an owner pointer if we need it
 	if VALIDSTRING( ent->ownername )
 	{
 		ent->owner = G_Find( NULL, FOFS( targetname ), ent->ownername );
-		
+
 		if ( ( ent->owner ) && ( ent->owner->health <= 0 ) )
 		{//our spawner thing is broken
 			if ( ent->target2 && ent->target2[0] )
@@ -1180,7 +1180,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	if( ent->count != -1 )
 	{
 		ent->count--;
-		
+
 		if( ent->count <= 0 )
 		{
 			ent->e_UseFunc = useF_NULL;//never again
@@ -1190,28 +1190,28 @@ void NPC_Spawn_Go( gentity_t *ent )
 
 	newent = G_Spawn();
 
-	if ( newent == NULL ) 
+	if ( newent == NULL )
 	{
 		gi.Printf ( S_COLOR_RED"ERROR: NPC G_Spawn failed\n" );
-		
+
 		goto finish;
 		return;
 	}
-	
+
 	newent->svFlags |= SVF_NPC;
 	newent->fullName = ent->fullName;
 
-	newent->NPC = New_NPC_t();	
-	if ( newent->NPC == NULL ) 
-	{		
-		gi.Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );		
+	newent->NPC = New_NPC_t();
+	if ( newent->NPC == NULL )
+	{
+		gi.Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );
 		goto finish;
 		return;
-	}	
+	}
 
 	newent->NPC->tempGoal = G_Spawn();
-	
-	if ( newent->NPC->tempGoal == NULL ) 
+
+	if ( newent->NPC->tempGoal == NULL )
 	{
 		newent->NPC = NULL;
 		goto finish;
@@ -1223,19 +1223,19 @@ void NPC_Spawn_Go( gentity_t *ent )
 	newent->NPC->tempGoal->svFlags |= SVF_NOCLIENT;
 
 	newent->client = (gclient_t *)G_Alloc (sizeof(gclient_t));
-	
-	if ( newent->client == NULL ) 
+
+	if ( newent->client == NULL )
 	{
 		gi.Printf ( S_COLOR_RED"ERROR: NPC G_Alloc client failed\n" );
 		goto finish;
 		return;
 	}
-	
+
 	memset ( newent->client, 0, sizeof(*newent->client) );
 
 //==NPC_Connect( newent, net_name );===================================
 
-	if ( ent->NPC_type == NULL ) 
+	if ( ent->NPC_type == NULL )
 	{
 		ent->NPC_type = "random";
 	}
@@ -1256,7 +1256,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	{
 		newent->svFlags |= SVF_NO_EXTRA_SOUNDS;
 	}
-	
+
 	if ( ent->message )
 	{//has a key
 		newent->message = ent->message;//transfer the key name
@@ -1280,9 +1280,9 @@ void NPC_Spawn_Go( gentity_t *ent )
 		else if ( !Q_stricmp( ent->NPC_type, "test" ) )
 		{
 			int	n;
-			for ( n = 0; n < 1 ; n++) 
+			for ( n = 0; n < 1 ; n++)
 			{
-				if ( !(g_entities[n].svFlags & SVF_NPC) && g_entities[n].client) 
+				if ( !(g_entities[n].svFlags & SVF_NPC) && g_entities[n].client)
 				{
 					VectorCopy(g_entities[n].s.origin, newent->s.origin);
 					newent->client->playerTeam = g_entities[n].client->playerTeam;
@@ -1304,7 +1304,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	newent->target3 = ent->target3;//???
 	newent->target4 = ent->target4;//ffire death
 	newent->wait = ent->wait;
-	
+
 	for( index = BSET_FIRST; index < NUM_BSETS; index++)
 	{
 		if ( ent->behaviorSet[index] )
@@ -1316,7 +1316,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	newent->classname = "NPC";
 	newent->NPC_type = ent->NPC_type;
 	gi.unlinkentity(newent);
-	
+
 	VectorCopy(ent->s.origin, newent->s.origin);
 	VectorCopy(ent->s.origin, newent->client->ps.origin);
 	VectorCopy(ent->s.origin, newent->currentOrigin);
@@ -1326,7 +1326,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	VectorCopy(ent->s.angles, newent->currentAngles);
 	VectorCopy(ent->s.angles, newent->client->ps.viewangles);
 	newent->NPC->desiredYaw =ent->s.angles[YAW];
-	
+
 	gi.linkentity(newent);
 	newent->spawnflags = ent->spawnflags;
 
@@ -1341,7 +1341,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 
 //==New stuff=====================================================================
 	newent->s.eType	= ET_PLAYER;
-	
+
 	//FIXME: Call CopyParms
 	if ( ent->parms )
 	{
@@ -1367,7 +1367,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	VectorCopy( newent->currentOrigin, newent->s.apos.trBase );
 	VectorClear( newent->s.apos.trDelta );
 	newent->s.apos.trDuration = 0;
-	
+
 	newent->NPC->combatPoint = -1;
 
 	newent->flags |= FL_NOTARGET;//So he's ignored until he's fully spawned
@@ -1418,9 +1418,9 @@ void NPC_StasisSpawnEffect( gentity_t *ent )
 		AngleVectors( ent->s.angles, forward, NULL, NULL );
 		VectorMA( ent->currentOrigin,  24, forward, end );
 		VectorMA( ent->currentOrigin, -20, forward, start );
-		
+
 		start[2] += 64;
-		
+
 		taper = qtrue;
 	}
 	else
@@ -1906,14 +1906,14 @@ void SP_NPC_Jedi( gentity_t *self)
 		{
 			self->NPC_type = "jeditrainer";
 		}
-		else 
+		else
 		{
 			/*
 			if ( !Q_irand( 0, 2 ) )
 			{
 				self->NPC_type = "JediF";
 			}
-			else 
+			else
 			*/if ( Q_irand( 0, 1 ) )
 			{
 				self->NPC_type = "Jedi";
@@ -2076,7 +2076,7 @@ void SP_NPC_Ugnaught( gentity_t *self)
 /*QUAKED NPC_Gran(1 0 0) (-16 -16 -24) (16 16 40) SHOOTER BOXER x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 Uses grenade
 
-SHOOTER - uses blaster instead of 
+SHOOTER - uses blaster instead of
 BOXER - uses fists only
 DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
 CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
@@ -2353,7 +2353,7 @@ void SP_NPC_Reborn( gentity_t *self)
 			self->NPC_type = "reborn";
 		}
 	}
-	
+
 	WP_SetSaberModel( NULL, CLASS_REBORN );
 	SP_NPC_spawner( self );
 }
@@ -2378,7 +2378,7 @@ void SP_NPC_ShadowTrooper( gentity_t *self)
 			self->NPC_type = "ShadowTrooper2";
 		}
 	}
-	
+
 	NPC_ShadowTrooper_Precache();
 	WP_SetSaberModel( NULL, CLASS_SHADOWTROOPER );
 
@@ -2711,7 +2711,7 @@ NOTSOLID - Starts not solid
 STARTINSOLID - Don't try to fix if spawn in solid
 SHY - Spawner is shy
 
-R2D2 Droid - you probably know this one already. 
+R2D2 Droid - you probably know this one already.
 
 NOTARGET by default
 */
@@ -2789,12 +2789,12 @@ void SP_NPC_Droid_Protocol( gentity_t *self)
 NPC_Spawn_f
 */
 
-static void NPC_Spawn_f(void) 
+static void NPC_Spawn_f(void)
 {
 	gentity_t		*NPCspawner = G_Spawn();
 	vec3_t			forward, end;
 	trace_t			trace;
-	
+
 	if(!NPCspawner)
 	{
 		gi.Printf( S_COLOR_RED"NPC_Spawn Error: Out of entities!\n" );
@@ -2803,7 +2803,7 @@ static void NPC_Spawn_f(void)
 
 	NPCspawner->e_ThinkFunc = thinkF_G_FreeEntity;
 	NPCspawner->nextthink = level.time + FRAMETIME;
-	
+
 	const char	*npc_type = gi.argv( 2 );
 	if (!*npc_type )
 	{
@@ -2917,7 +2917,7 @@ static void NPC_Spawn_f(void)
 NPC_Kill_f
 */
 
-void NPC_Kill_f( void ) 
+void NPC_Kill_f( void )
 {
 	int			n;
 	gentity_t	*player;
@@ -2976,7 +2976,7 @@ void NPC_Kill_f( void )
 		}
 	}
 
-	for ( n = 1; n < ENTITYNUM_MAX_NORMAL; n++) 
+	for ( n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
 	{
 		player = &g_entities[n];
 		if (!player->inuse) {
@@ -3042,13 +3042,13 @@ Svcmd_NPC_f
 parse and dispatch bot commands
 */
 qboolean	showBBoxes = qfalse;
-void Svcmd_NPC_f( void ) 
+void Svcmd_NPC_f( void )
 {
 	char	*cmd;
 
 	cmd = gi.argv( 1 );
 
-	if ( !*cmd ) 
+	if ( !*cmd )
 	{
 		gi.Printf( "Valid NPC commands are:\n" );
 		gi.Printf( " spawn [NPC type (from NCPCs.cfg)]\n" );
@@ -3056,11 +3056,11 @@ void Svcmd_NPC_f( void )
 		gi.Printf( " showbounds (draws exact bounding boxes of NPCs)\n" );
 		gi.Printf( " score [NPC targetname] (prints number of kills per NPC)\n" );
 	}
-	else if ( Q_stricmp( cmd, "spawn" ) == 0 ) 
+	else if ( Q_stricmp( cmd, "spawn" ) == 0 )
 	{
 		NPC_Spawn_f();
 	}
-	else if ( Q_stricmp( cmd, "kill" ) == 0 ) 
+	else if ( Q_stricmp( cmd, "kill" ) == 0 )
 	{
 		NPC_Kill_f();
 	}

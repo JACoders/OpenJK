@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 extern vmCvar_t	fx_debug;
 extern vmCvar_t	fx_freeze;
 
-extern void	CG_CalcEntityLerpPositions( centity_t * );	
+extern void	CG_CalcEntityLerpPositions( centity_t * );
 
 struct SFxHelper
 {

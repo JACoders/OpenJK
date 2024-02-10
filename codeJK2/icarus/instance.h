@@ -55,7 +55,7 @@ public:
 	interface_export_t	*GetInterface( void )	const	{	return	m_interface;	}
 
 	//These are overriddable for "worst-case" save / loads
-	virtual int Save( void /*FIXME*/ );	
+	virtual int Save( void /*FIXME*/ );
 	virtual int Load( void /*FIXME*/ );
 
 	void Signal( const char *identifier );

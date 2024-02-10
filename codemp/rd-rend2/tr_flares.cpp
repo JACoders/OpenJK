@@ -185,7 +185,7 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 
 	// fade the intensity of the flare down as the
 	// light surface turns away from the viewer
-	VectorScale( f->color, d, f->color ); 
+	VectorScale( f->color, d, f->color );
 
 	// save info needed to test
 	f->windowX = backEnd.viewParms.viewportX + window[0];
@@ -217,7 +217,7 @@ void RB_AddDlightFlares( void ) {
 
 		if(fog)
 		{
-			// find which fog volume the light is in 
+			// find which fog volume the light is in
 			for ( j = 1 ; j < tr.world->numfogs ; j++ ) {
 				fog = &tr.world->fogs[j];
 				for ( k = 0 ; k < 3 ; k++ ) {
@@ -279,7 +279,7 @@ void RB_TestFlare( flare_t *f ) {
 		FBO_Bind(oldFbo);
 	}
 
-	screenZ = backEnd.viewParms.projectionMatrix[14] / 
+	screenZ = backEnd.viewParms.projectionMatrix[14] /
 		( ( 2*depth - 1 ) * backEnd.viewParms.projectionMatrix[11] - backEnd.viewParms.projectionMatrix[10] );
 
 	visible = (qboolean)(( -f->eyeZ - -screenZ ) < 24);
@@ -291,7 +291,7 @@ void RB_TestFlare( flare_t *f ) {
 		}
 		fade = ( ( backEnd.refdef.time - f->fadeTime ) / 500.0f );
 	} else {
-		// Dont fade out when flare is occluded. Will result in the ability to see 
+		// Dont fade out when flare is occluded. Will result in the ability to see
 		// flares through surfaces on high movement speeds
 		/*if ( f->visible ) {
 			f->visible = qfalse;
