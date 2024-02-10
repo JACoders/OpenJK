@@ -108,7 +108,7 @@ void main()
 
 	if (dot(cross(BmA,CmA), -u_ModelLightDir.xyz) > 0.0) {
 		vec3 L = u_ModelLightDir.xyz*u_LocalLightRadius;
-		
+
 		// front cap
 		gl_Position = MVP * vec4(var_Position[0].xyz, 1.0);
 		EmitVertex();
@@ -117,12 +117,12 @@ void main()
 		gl_Position = MVP * vec4(var_Position[2].xyz, 1.0);
 		EmitVertex();
 		EndPrimitive();
-		
+
 		// sides
 		quad(var_Position[0], var_Position[1], L, MVP);
 		quad(var_Position[1], var_Position[2], L, MVP);
 		quad(var_Position[2], var_Position[0], L, MVP);
-		
+
 		// back cap
 		gl_Position = MVP * vec4(var_Position[2].xyz - L, 1.0);
 		EmitVertex();

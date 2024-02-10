@@ -190,7 +190,7 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 
 	vec2 texOffset = sin(offsetPos * (2.0 * M_PI / 1024.0) + vec2(phase));
 
-	return st2 + texOffset * amplitude;	
+	return st2 + texOffset * amplitude;
 }
 #endif
 
@@ -462,26 +462,26 @@ float random( const vec2 p )
     23.1406926327792690,  // e^pi (Gelfond's constant)
      2.6651441426902251); // 2^sqrt(2) (Gelfond-Schneider constant)
   //return fract( cos( mod( 123456789., 1e-7 + 256. * dot(p,r) ) ) );
-  return mod( 123456789., 1e-7 + 256. * dot(p,r) );  
+  return mod( 123456789., 1e-7 + 256. * dot(p,r) );
 }
 
-const vec2 poissonDisk[16] = vec2[16]( 
-	vec2( -0.94201624, -0.39906216 ), 
-	vec2( 0.94558609, -0.76890725 ), 
-	vec2( -0.094184101, -0.92938870 ), 
-	vec2( 0.34495938, 0.29387760 ), 
-	vec2( -0.91588581, 0.45771432 ), 
-	vec2( -0.81544232, -0.87912464 ), 
-	vec2( -0.38277543, 0.27676845 ), 
-	vec2( 0.97484398, 0.75648379 ), 
-	vec2( 0.44323325, -0.97511554 ), 
-	vec2( 0.53742981, -0.47373420 ), 
-	vec2( -0.26496911, -0.41893023 ), 
-	vec2( 0.79197514, 0.19090188 ), 
-	vec2( -0.24188840, 0.99706507 ), 
-	vec2( -0.81409955, 0.91437590 ), 
-	vec2( 0.19984126, 0.78641367 ), 
-	vec2( 0.14383161, -0.14100790 ) 
+const vec2 poissonDisk[16] = vec2[16](
+	vec2( -0.94201624, -0.39906216 ),
+	vec2( 0.94558609, -0.76890725 ),
+	vec2( -0.094184101, -0.92938870 ),
+	vec2( 0.34495938, 0.29387760 ),
+	vec2( -0.91588581, 0.45771432 ),
+	vec2( -0.81544232, -0.87912464 ),
+	vec2( -0.38277543, 0.27676845 ),
+	vec2( 0.97484398, 0.75648379 ),
+	vec2( 0.44323325, -0.97511554 ),
+	vec2( 0.53742981, -0.47373420 ),
+	vec2( -0.26496911, -0.41893023 ),
+	vec2( 0.79197514, 0.19090188 ),
+	vec2( -0.24188840, 0.99706507 ),
+	vec2( -0.81409955, 0.91437590 ),
+	vec2( 0.19984126, 0.78641367 ),
+	vec2( 0.14383161, -0.14100790 )
 );
 
 float PCF(const sampler2DArrayShadow shadowmap, const float layer, const vec2 st, const float dist, float PCFScale)
@@ -524,7 +524,7 @@ float PCF(const sampler2DArrayShadow shadowmap, const float layer, const vec2 st
 	}
 	mult *= 1.0 / 17.0;
 #endif
-		
+
 	return mult;
 }
 
@@ -581,7 +581,7 @@ float sunShadow(in vec3 viewOrigin, in vec3 viewDir, in vec3 biasOffset)
 			}
 		}
 	}
-	
+
 	return result;
 }
 #endif
@@ -610,10 +610,10 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 	for(int i = 0; i < linearSearchSteps - 1; ++i)
 	{
 		depth += size;
-		
+
 		// height is flipped before uploaded to the gpu
 		float t = textureGrad(normalMap, dp + ds * depth, dx, dy).r;
-		
+
 		if(depth >= t)
 		{
 			bestDepth = depth;	// store best depth
@@ -627,10 +627,10 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 	for(int i = 0; i < binarySearchSteps; ++i)
 	{
 		size *= 0.5;
-		
+
 		// height is flipped before uploaded to the gpu
 		float t = textureGrad(normalMap, dp + ds * depth, dx, dy).r;
-		
+
 		if(depth >= t)
 		{
 			bestDepth = depth;
@@ -858,7 +858,7 @@ float pcfShadow(in sampler2DArrayShadow depthMap, in vec3 L, in float distance, 
 {
 	const int samples = 9;
 	const float diskRadius = M_PI / 512.0;
-	
+
 	vec2 polarL = vec2(atan(L.z, L.x), acos(L.y));
 	float shadow = 0.0;
 
@@ -912,7 +912,7 @@ vec3 CalcDynamicLightContribution(
 			continue;
 		}
 		Light light = u_Lights[i];
-		
+
 		vec3  L  = light.origin.xyz - position;
 		float sqrLightDist = dot(L, L);
 
@@ -1066,7 +1066,7 @@ void main()
 	float shadowValue = sunShadow(u_ViewOrigin, viewDir, normalBias) * NPL;
 
 	// surfaces not facing the light are always shadowed
-	
+
 	//shadowValue = mix(0.0, shadowValue, dot(N, primaryLightDir) > 0.0);
 
     #if defined(SHADOWMAP_MODULATE)
@@ -1113,7 +1113,7 @@ void main()
 
 	specular.rgb = mix(vec3(0.08) * ORMS.w, diffuse.rgb, ORMS.z);
 	diffuse.rgb *= vec3(1.0 - ORMS.z);
-	
+
 	roughness = mix(0.01, 1.0, ORMS.y);
 	AO = min(ORMS.x, AO);
   #else
@@ -1148,7 +1148,7 @@ void main()
 
 	out_Color.rgb  = lightColor * reflectance * (attenuation * NL);
 	out_Color.rgb += ambientColor * diffuse.rgb;
-	
+
   #if defined(USE_PRIMARY_LIGHT)
 	vec3  L2   = normalize(u_PrimaryLightOrigin.xyz);
 	vec3  H2   = normalize(L2 + E);
@@ -1166,18 +1166,18 @@ void main()
 
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
-	
+
 	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, vertexNormal);
 	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb * AO);
 #else
 	lightColor = var_Color.rgb;
-  #if defined(USE_LIGHTMAP) 
+  #if defined(USE_LIGHTMAP)
 	lightColor *= lightmapColor.rgb;
   #endif
 
     out_Color.rgb = diffuse.rgb * lightColor;
 #endif
-	
+
 	out_Color.a = diffuse.a;
 
 #if defined(USE_GLOW_BUFFER)

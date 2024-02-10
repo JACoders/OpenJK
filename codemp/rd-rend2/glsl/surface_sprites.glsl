@@ -77,7 +77,7 @@ void main()
 		vec3( halfWidth,  halfWidth, 0.0),
 		vec3(-halfWidth,  halfWidth, 0.0),
 		vec3(-halfWidth, -halfWidth, 0.0)
-#else 
+#else
 		vec3( halfWidth, 0.0, 0.0),
 		vec3( halfWidth, 0.0, height),
 		vec3(-halfWidth, 0.0, height),
@@ -236,7 +236,7 @@ void main()
 #else
 	const float alphaTestValue = 0.5;
 #endif
-	
+
 	out_Color = texture(u_DiffuseMap, var_TexCoords);
 	out_Color.rgb *= var_Color;
 	out_Color.a *= var_Alpha*(1.0 - alphaTestValue) + alphaTestValue;
@@ -278,7 +278,7 @@ void main()
 			discard;
 	}
 #endif
-	
+
 #if defined(USE_FOG)
 	Fog fog = u_Fogs[u_FogIndex];
 	float fogFactor = CalcFog(u_ViewOrigin, var_WSPosition, fog);
@@ -292,6 +292,6 @@ void main()
 #if defined(ADDITIVE_BLEND)
 	out_Color.rgb *= out_Color.a;
 #endif
-	
+
 	out_Glow = vec4(0.0);
 }

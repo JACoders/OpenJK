@@ -166,7 +166,7 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 
 	vec3 outNormal = normal;
 	const float scale = 0.98;
-	
+
 	outNormal.x += amplitude * GetNoiseValue(
 		position.x * scale,
 		position.y * scale,
