@@ -2,8 +2,8 @@
 
 	FreeAmp - The Free MP3 Player
 
-        MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
-        Corp.  http://www.xingtech.com
+		MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
+		Corp.  http://www.xingtech.com
 
 	Portions Copyright (C) 1998-1999 EMusic.com
 
@@ -55,200 +55,166 @@ int s[14];} sfBandTable[3] =
 ----------*/
 
 /*--------------------------------*/
-static const int pretab[2][22] =
-{
-   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0},
+static const int pretab[2][22] = {
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0},
 };
-
 
 ////@@@@extern int nBand[2][22];	/* long = nBand[0][i], short = nBand[1][i] */
 
 /* 8 bit plus 2 lookup x = pow(2.0, 0.25*(global_gain-210)) */
 /* two extra slots to do 1/sqrt(2) scaling for ms */
 /* 4 extra slots to do 1/2 scaling for cvt to mono */
-static float look_global[256 + 2 + 4];		// effectively constant
+static float look_global[256 + 2 + 4]; // effectively constant
 
 /*-------- scaling lookup
 x = pow(2.0, -0.5*(1+scalefact_scale)*scalefac + preemp)
 look_scale[scalefact_scale][preemp][scalefac]
 -----------------------*/
-static float look_scale[2][4][32];			// effectively constant
+static float look_scale[2][4][32]; // effectively constant
 typedef float LS[4][32];
-
 
 /*--- iSample**(4/3) lookup, -32<=i<=31 ---*/
 #define ISMAX 32
-static float look_pow[2 * ISMAX];			// effectively constant
+static float look_pow[2 * ISMAX]; // effectively constant
 
 /*-- pow(2.0, -0.25*8.0*subblock_gain) --*/
-static float look_subblock[8];				// effectively constant
+static float look_subblock[8]; // effectively constant
 
 /*-- reorder buffer ---*/
-static float re_buf[192][3];				// used by dequant() below, but only during func (as workspace)
+static float re_buf[192][3]; // used by dequant() below, but only during func (as workspace)
 typedef float ARRAY3[3];
 
-
 /*=============================================================*/
-float *quant_init_global_addr()
-{
-   return look_global;
-}
+float *quant_init_global_addr() { return look_global; }
 /*-------------------------------------------------------------*/
-LS *quant_init_scale_addr()
-{
-   return look_scale;
-}
+LS *quant_init_scale_addr() { return look_scale; }
 /*-------------------------------------------------------------*/
-float *quant_init_pow_addr()
-{
-   return look_pow;
-}
+float *quant_init_pow_addr() { return look_pow; }
 /*-------------------------------------------------------------*/
-float *quant_init_subblock_addr()
-{
-   return look_subblock;
-}
+float *quant_init_subblock_addr() { return look_subblock; }
 /*=============================================================*/
 
-void dequant(SAMPLE Sample[], int *nsamp,
-	     SCALEFACT * sf,
-	     GR * gr,
-	     CB_INFO * cb_info, int ncbl_mixed)
-{
-   int i, j;
-   int cb, n, w;
-   float x0, xs;
-   float xsb[3];
-   double tmp;
-   int ncbl;
-   int cbs0;
-   ARRAY3 *buf;			/* short block reorder */
-   int nbands;
-   int i0;
-   int non_zero;
-   int cbmax[3];
+void dequant(SAMPLE Sample[], int *nsamp, SCALEFACT *sf, GR *gr, CB_INFO *cb_info, int ncbl_mixed) {
+	int i, j;
+	int cb, n, w;
+	float x0, xs;
+	float xsb[3];
+	double tmp;
+	int ncbl;
+	int cbs0;
+	ARRAY3 *buf; /* short block reorder */
+	int nbands;
+	int i0;
+	int non_zero;
+	int cbmax[3];
 
-   nbands = *nsamp;
+	nbands = *nsamp;
 
+	ncbl = 22; /* long block cb end */
+	cbs0 = 12; /* short block cb start */
+			   /* ncbl_mixed = 8 or 6  mpeg1 or 2 */
+	if (gr->block_type == 2) {
+		ncbl = 0;
+		cbs0 = 0;
+		if (gr->mixed_block_flag) {
+			ncbl = ncbl_mixed;
+			cbs0 = 3;
+		}
+	}
+	/* fill in cb_info -- */
+	/* This doesn't seem used anywhere...
+	cb_info->lb_type = gr->block_type;
+	if (gr->block_type == 2)
+	   cb_info->lb_type;
+	*/
+	cb_info->cbs0 = cbs0;
+	cb_info->ncbl = ncbl;
 
-   ncbl = 22;			/* long block cb end */
-   cbs0 = 12;			/* short block cb start */
-/* ncbl_mixed = 8 or 6  mpeg1 or 2 */
-   if (gr->block_type == 2)
-   {
-      ncbl = 0;
-      cbs0 = 0;
-      if (gr->mixed_block_flag)
-      {
-	 ncbl = ncbl_mixed;
-	 cbs0 = 3;
-      }
-   }
-/* fill in cb_info -- */
-   /* This doesn't seem used anywhere...
-   cb_info->lb_type = gr->block_type;
-   if (gr->block_type == 2)
-      cb_info->lb_type;
-   */
-   cb_info->cbs0 = cbs0;
-   cb_info->ncbl = ncbl;
+	cbmax[2] = cbmax[1] = cbmax[0] = 0;
+	/* global gain pre-adjusted by 2 if ms_mode, 0 otherwise */
+	x0 = look_global[(2 + 4) + gr->global_gain];
+	i = 0;
+	/*----- long blocks ---*/
+	for (cb = 0; cb < ncbl; cb++) {
+		non_zero = 0;
+		xs = x0 * look_scale[gr->scalefac_scale][pretab[gr->preflag][cb]][sf->l[cb]];
+		n = pMP3Stream->nBand[0][cb];
+		for (j = 0; j < n; j++, i++) {
+			if (Sample[i].s == 0)
+				Sample[i].x = 0.0F;
+			else {
+				non_zero = 1;
+				if ((Sample[i].s >= (-ISMAX)) && (Sample[i].s < ISMAX))
+					Sample[i].x = xs * look_pow[ISMAX + Sample[i].s];
+				else {
+					float tmpConst = (float)(1.0 / 3.0);
+					tmp = (double)Sample[i].s;
+					Sample[i].x = (float)(xs * tmp * pow(fabs(tmp), tmpConst));
+				}
+			}
+		}
+		if (non_zero)
+			cbmax[0] = cb;
+		if (i >= nbands)
+			break;
+	}
 
-   cbmax[2] = cbmax[1] = cbmax[0] = 0;
-/* global gain pre-adjusted by 2 if ms_mode, 0 otherwise */
-   x0 = look_global[(2 + 4) + gr->global_gain];
-   i = 0;
-/*----- long blocks ---*/
-   for (cb = 0; cb < ncbl; cb++)
-   {
-      non_zero = 0;
-      xs = x0 * look_scale[gr->scalefac_scale][pretab[gr->preflag][cb]][sf->l[cb]];
-      n = pMP3Stream->nBand[0][cb];
-      for (j = 0; j < n; j++, i++)
-      {
-	 if (Sample[i].s == 0)
-	    Sample[i].x = 0.0F;
-	 else
-	 {
-	    non_zero = 1;
-	    if ((Sample[i].s >= (-ISMAX)) && (Sample[i].s < ISMAX))
-	       Sample[i].x = xs * look_pow[ISMAX + Sample[i].s];
-	    else
-	    {
-		float tmpConst = (float)(1.0/3.0);
-	       tmp = (double) Sample[i].s;
-	       Sample[i].x = (float) (xs * tmp * pow(fabs(tmp), tmpConst));
-	    }
-	 }
-      }
-      if (non_zero)
-	 cbmax[0] = cb;
-      if (i >= nbands)
-	 break;
-   }
+	cb_info->cbmax = cbmax[0];
+	cb_info->cbtype = 0; // type = long
 
-   cb_info->cbmax = cbmax[0];
-   cb_info->cbtype = 0;		// type = long
+	if (cbs0 >= 12)
+		return;
+	/*---------------------------
+	block type = 2  short blocks
+	----------------------------*/
+	cbmax[2] = cbmax[1] = cbmax[0] = cbs0;
+	i0 = i; /* save for reorder */
+	buf = re_buf;
+	for (w = 0; w < 3; w++)
+		xsb[w] = x0 * look_subblock[gr->subblock_gain[w]];
+	for (cb = cbs0; cb < 13; cb++) {
+		n = pMP3Stream->nBand[1][cb];
+		for (w = 0; w < 3; w++) {
+			non_zero = 0;
+			xs = xsb[w] * look_scale[gr->scalefac_scale][0][sf->s[w][cb]];
+			for (j = 0; j < n; j++, i++) {
+				if (Sample[i].s == 0)
+					buf[j][w] = 0.0F;
+				else {
+					non_zero = 1;
+					if ((Sample[i].s >= (-ISMAX)) && (Sample[i].s < ISMAX))
+						buf[j][w] = xs * look_pow[ISMAX + Sample[i].s];
+					else {
+						float tmpConst = (float)(1.0 / 3.0);
+						tmp = (double)Sample[i].s;
+						buf[j][w] = (float)(xs * tmp * pow(fabs(tmp), tmpConst));
+					}
+				}
+			}
+			if (non_zero)
+				cbmax[w] = cb;
+		}
+		if (i >= nbands)
+			break;
+		buf += n;
+	}
 
-   if (cbs0 >= 12)
-      return;
-/*---------------------------
-block type = 2  short blocks
-----------------------------*/
-   cbmax[2] = cbmax[1] = cbmax[0] = cbs0;
-   i0 = i;			/* save for reorder */
-   buf = re_buf;
-   for (w = 0; w < 3; w++)
-      xsb[w] = x0 * look_subblock[gr->subblock_gain[w]];
-   for (cb = cbs0; cb < 13; cb++)
-   {
-      n = pMP3Stream->nBand[1][cb];
-      for (w = 0; w < 3; w++)
-      {
-	 non_zero = 0;
-	 xs = xsb[w] * look_scale[gr->scalefac_scale][0][sf->s[w][cb]];
-	 for (j = 0; j < n; j++, i++)
-	 {
-	    if (Sample[i].s == 0)
-	       buf[j][w] = 0.0F;
-	    else
-	    {
-	       non_zero = 1;
-	       if ((Sample[i].s >= (-ISMAX)) && (Sample[i].s < ISMAX))
-		  buf[j][w] = xs * look_pow[ISMAX + Sample[i].s];
-	       else
-	       {
-		  float tmpConst = (float)(1.0/3.0);
-		  tmp = (double) Sample[i].s;
-		  buf[j][w] = (float) (xs * tmp * pow(fabs(tmp), tmpConst));
-	       }
-	    }
-	 }
-	 if (non_zero)
-	    cbmax[w] = cb;
-      }
-      if (i >= nbands)
-	 break;
-      buf += n;
-   }
+	memmove(&Sample[i0].x, &re_buf[0][0], sizeof(float) * (i - i0));
 
+	*nsamp = i; /* update nsamp */
+	cb_info->cbmax_s[0] = cbmax[0];
+	cb_info->cbmax_s[1] = cbmax[1];
+	cb_info->cbmax_s[2] = cbmax[2];
+	if (cbmax[1] > cbmax[0])
+		cbmax[0] = cbmax[1];
+	if (cbmax[2] > cbmax[0])
+		cbmax[0] = cbmax[2];
 
-   memmove(&Sample[i0].x, &re_buf[0][0], sizeof(float) * (i - i0));
+	cb_info->cbmax = cbmax[0];
+	cb_info->cbtype = 1; /* type = short */
 
-   *nsamp = i;			/* update nsamp */
-   cb_info->cbmax_s[0] = cbmax[0];
-   cb_info->cbmax_s[1] = cbmax[1];
-   cb_info->cbmax_s[2] = cbmax[2];
-   if (cbmax[1] > cbmax[0])
-      cbmax[0] = cbmax[1];
-   if (cbmax[2] > cbmax[0])
-      cbmax[0] = cbmax[2];
-
-   cb_info->cbmax = cbmax[0];
-   cb_info->cbtype = 1;		/* type = short */
-
-
-   return;
+	return;
 }
 
 /*-------------------------------------------------------------*/

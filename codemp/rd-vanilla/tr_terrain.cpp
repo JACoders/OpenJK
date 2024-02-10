@@ -12,22 +12,20 @@
 #include "qcommon/cm_landscape.h"
 #include "tr_landscape.h"
 
-cvar_t		*r_drawTerrain;
-cvar_t		*r_showFrameVariance;
-cvar_t		*r_terrainTessellate;
-cvar_t		*r_terrainWaterOffset;
+cvar_t *r_drawTerrain;
+cvar_t *r_showFrameVariance;
+cvar_t *r_terrainTessellate;
+cvar_t *r_terrainWaterOffset;
 
-static int		TerrainFog = 0;
-static float	TerrainDistanceCull;
+static int TerrainFog = 0;
+static float TerrainDistanceCull;
 
 //
 // Render the tree.
 //
-void CTRPatch::RenderCorner(ivec5_t corner)
-{
-	if((corner[3] < 0) || (tess.registration != corner[4]))
-	{
-		CTerVert	*vert;
+void CTRPatch::RenderCorner(ivec5_t corner) {
+	if ((corner[3] < 0) || (tess.registration != corner[4])) {
+		CTerVert *vert;
 
 		vert = mRenderMap + (corner[1] * owner->GetRealWidth()) + corner[0];
 
@@ -37,28 +35,24 @@ void CTRPatch::RenderCorner(ivec5_t corner)
 		*(ulong *)tess.vertexColors[tess.numVertexes] = *(ulong *)vert->tint;
 		*(ulong *)tess.vertexAlphas[tess.numVertexes] = corner[2];
 
-		tess.texCoords[tess.numVertexes][0][0] = vert->tex[0]; //rwwRMG - reverse coords array from sof2
+		tess.texCoords[tess.numVertexes][0][0] = vert->tex[0]; // rwwRMG - reverse coords array from sof2
 		tess.texCoords[tess.numVertexes][0][1] = vert->tex[1];
 
 		tess.indexes[tess.numIndexes++] = tess.numVertexes;
 		corner[3] = tess.numVertexes++;
 		corner[4] = tess.registration;
-	}
-	else
-	{
+	} else {
 		tess.indexes[tess.numIndexes++] = corner[3];
 	}
 }
 
-void CTRPatch::RecurseRender(int depth, ivec5_t left, ivec5_t right, ivec5_t apex)
-{
+void CTRPatch::RecurseRender(int depth, ivec5_t left, ivec5_t right, ivec5_t apex) {
 	// All non-leaf nodes have both children, so just check for one
-	if (depth >= 0)
-	{
-		ivec5_t		center;
-		byte		*centerAlphas;
-		byte		*leftAlphas;
-		byte		*rightAlphas;
+	if (depth >= 0) {
+		ivec5_t center;
+		byte *centerAlphas;
+		byte *leftAlphas;
+		byte *rightAlphas;
 
 		// Work out the centre of the hypoteneuse
 		center[0] = (left[0] + right[0]) >> 1;
@@ -78,31 +72,26 @@ void CTRPatch::RecurseRender(int depth, ivec5_t left, ivec5_t right, ivec5_t ape
 		center[3] = -1;
 		center[4] = 0;
 
-		if (apex[0] == left[0] && apex[0] == center[0])
-		{
+		if (apex[0] == left[0] && apex[0] == center[0]) {
 			depth = 0;
 		}
 
-		RecurseRender(depth-1, apex, left, center);
-		RecurseRender(depth-1, right, apex, center);
-	}
-	else
-	{
-		if (left[0] == right[0] && left[0] == apex[0])
-		{
+		RecurseRender(depth - 1, apex, left, center);
+		RecurseRender(depth - 1, right, apex, center);
+	} else {
+		if (left[0] == right[0] && left[0] == apex[0]) {
 			return;
 		}
-		if (left[1] == right[1] && left[1] == apex[1])
-		{
+		if (left[1] == right[1] && left[1] == apex[1]) {
 			return;
 		}
 		// A leaf node!  Output a triangle to be rendered.
 		RB_CheckOverflow(4, 4);
 
-//		assert(left[0] != right[0] || left[1] != right[1]);
-//		assert(left[0] != apex[0] || left[1] != apex[1]);
+		//		assert(left[0] != right[0] || left[1] != right[1]);
+		//		assert(left[0] != apex[0] || left[1] != apex[1]);
 
-	  	RenderCorner(left);
+		RenderCorner(left);
 		RenderCorner(right);
 		RenderCorner(apex);
 	}
@@ -113,52 +102,43 @@ void CTRPatch::RecurseRender(int depth, ivec5_t left, ivec5_t right, ivec5_t ape
 //
 // The order of triangles is critical to the subdivision working
 
-void CTRPatch::Render(int Part)
-{
-	ivec5_t		TL, TR, BL, BR;
+void CTRPatch::Render(int Part) {
+	ivec5_t TL, TR, BL, BR;
 
 	VectorSet5M(TL, 0, 0, TEXTURE_ALPHA_TL, -1, 0);
 	VectorSet5M(TR, owner->GetTerxels(), 0, TEXTURE_ALPHA_TR, -1, 0);
 	VectorSet5M(BL, 0, owner->GetTerxels(), TEXTURE_ALPHA_BL, -1, 0);
 	VectorSet5M(BR, owner->GetTerxels(), owner->GetTerxels(), TEXTURE_ALPHA_BR, -1, 0);
 
-	if ((Part & PI_TOP) && mTLShader)
-	{
-/*		float		d;
+	if ((Part & PI_TOP) && mTLShader) {
+		/*		float		d;
 
-		d = DotProduct (backEnd.refdef.vieworg, mNormal[0]) - mDistance[0];
+				d = DotProduct (backEnd.refdef.vieworg, mNormal[0]) - mDistance[0];
 
-		if (d <= 0.0)*/
-		{
-			RecurseRender(r_terrainTessellate->integer, BL, TR, TL);
-		}
+				if (d <= 0.0)*/
+		{ RecurseRender(r_terrainTessellate->integer, BL, TR, TL); }
 	}
 
-	if ((Part & PI_BOTTOM) && mBRShader)
-	{
-/*		float		d;
+	if ((Part & PI_BOTTOM) && mBRShader) {
+		/*		float		d;
 
-		d = DotProduct (backEnd.refdef.vieworg, mNormal[1]) - mDistance[1];
+				d = DotProduct (backEnd.refdef.vieworg, mNormal[1]) - mDistance[1];
 
-		if (d >= 0.0)*/
-		{
-			RecurseRender(r_terrainTessellate->integer, TR, BL, BR);
-		}
+				if (d >= 0.0)*/
+		{ RecurseRender(r_terrainTessellate->integer, TR, BL, BR); }
 	}
 }
 
 //
 // At this point the patch is visible and at least part of it is below water level
 //
-int CTRPatch::RenderWaterVert(int x, int y)
-{
-	CTerVert	*vert;
+int CTRPatch::RenderWaterVert(int x, int y) {
+	CTerVert *vert;
 
 	vert = mRenderMap + x + (y * owner->GetRealWidth());
 
-	if(vert->tessRegistration == tess.registration)
-	{
-		return(vert->tessIndex);
+	if (vert->tessRegistration == tess.registration) {
+		return (vert->tessIndex);
 	}
 	tess.xyz[tess.numVertexes][0] = vert->coords[0];
 	tess.xyz[tess.numVertexes][1] = vert->coords[1];
@@ -166,18 +146,17 @@ int CTRPatch::RenderWaterVert(int x, int y)
 
 	*(ulong *)tess.vertexColors[tess.numVertexes] = 0xffffffff;
 
-	tess.texCoords[tess.numVertexes][0][0] = vert->tex[0]; //rwwRMG - reverse coords from sof2mp
+	tess.texCoords[tess.numVertexes][0][0] = vert->tex[0]; // rwwRMG - reverse coords from sof2mp
 	tess.texCoords[tess.numVertexes][0][1] = vert->tex[1];
 
 	vert->tessIndex = tess.numVertexes;
 	vert->tessRegistration = tess.registration;
 
 	tess.numVertexes++;
-	return(vert->tessIndex);
+	return (vert->tessIndex);
 }
 
-void CTRPatch::RenderWater(void)
-{
+void CTRPatch::RenderWater(void) {
 	RB_CheckOverflow(4, 6);
 
 	// Get the neighbouring patches
@@ -197,28 +176,20 @@ void CTRPatch::RenderWater(void)
 	tess.indexes[tess.numIndexes++] = BR;
 }
 
-const bool CTRPatch::HasWater(void) const
-{
-	owner->SetRealWaterHeight( owner->GetBaseWaterHeight() + r_terrainWaterOffset->integer );
-	return(common->GetMins()[2] < owner->GetWaterHeight());
+const bool CTRPatch::HasWater(void) const {
+	owner->SetRealWaterHeight(owner->GetBaseWaterHeight() + r_terrainWaterOffset->integer);
+	return (common->GetMins()[2] < owner->GetWaterHeight());
 }
 
-void CTRPatch::SetVisibility(bool visCheck)
-{
-	if(visCheck)
-	{
-		if(DistanceSquared(mCenter, backEnd.refdef.vieworg) > TerrainDistanceCull)
-		{
+void CTRPatch::SetVisibility(bool visCheck) {
+	if (visCheck) {
+		if (DistanceSquared(mCenter, backEnd.refdef.vieworg) > TerrainDistanceCull) {
 			misVisible = false;
-		}
-		else
-		{
+		} else {
 			// Set the visibility of the patch
 			misVisible = !ri.CM_CullWorldBox(backEnd.viewParms.frustum, GetBounds());
 		}
-	}
-	else
-	{
+	} else {
 		misVisible = true;
 	}
 }
@@ -257,45 +228,37 @@ void CTRPatch::CalcNormal(void)
 //
 // Reset all patches, recompute variance if needed
 //
-void CTRLandScape::Reset(bool visCheck)
-{
-	int			x, y;
-	CTRPatch	*patch;
+void CTRLandScape::Reset(bool visCheck) {
+	int x, y;
+	CTRPatch *patch;
 
 	TerrainDistanceCull = tr.distanceCull + mPatchSize;
 	TerrainDistanceCull *= TerrainDistanceCull;
 
 	// Go through the patches performing resets, compute variances, and linking.
-	for(y = mPatchMiny; y < mPatchMaxy; y++)
-	{
-		for(x = mPatchMinx; x < mPatchMaxx; x++, patch++)
-		{
+	for (y = mPatchMiny; y < mPatchMaxy; y++) {
+		for (x = mPatchMinx; x < mPatchMaxx; x++, patch++) {
 			patch = GetPatch(x, y);
 			patch->SetVisibility(visCheck);
 		}
 	}
 }
 
-
 //
 // Render each patch of the landscape & adjust the frame variance.
 //
 
-void CTRLandScape::Render(void)
-{
-	int			x, y;
-	CTRPatch	*patch;
-	TPatchInfo	*current;
-	int			i;
+void CTRLandScape::Render(void) {
+	int x, y;
+	CTRPatch *patch;
+	TPatchInfo *current;
+	int i;
 
 	// Render all the visible patches
 	current = mSortedPatches;
-	for(i=0;i<mSortedCount;i++)
-	{
-		if (current->mPatch->isVisible())
-		{
-			if (tess.shader != current->mShader)
-			{
+	for (i = 0; i < mSortedCount; i++) {
+		if (current->mPatch->isVisible()) {
+			if (tess.shader != current->mShader) {
 				RB_EndSurface();
 				RB_BeginSurface(current->mShader, TerrainFog);
 			}
@@ -307,17 +270,13 @@ void CTRLandScape::Render(void)
 
 	// Render all the water for visible patches
 	// Done as a separate iteration to reduce the number of tesses created
-	if(mWaterShader && (mWaterShader != tr.defaultShader))
-	{
-		RB_BeginSurface( mWaterShader, tr.world->globalFog );
+	if (mWaterShader && (mWaterShader != tr.defaultShader)) {
+		RB_BeginSurface(mWaterShader, tr.world->globalFog);
 
-		for(y = mPatchMiny; y < mPatchMaxy; y++ )
-		{
-			for(x = mPatchMinx; x < mPatchMaxx; x++ )
-			{
+		for (y = mPatchMiny; y < mPatchMaxy; y++) {
+			for (x = mPatchMinx; x < mPatchMaxx; x++) {
 				patch = GetPatch(x, y);
-				if(patch->isVisible() && patch->HasWater())
-				{
+				if (patch->isVisible() && patch->HasWater()) {
 					patch->RenderWater();
 				}
 			}
@@ -326,11 +285,10 @@ void CTRLandScape::Render(void)
 	}
 }
 
-void CTRLandScape::CalculateRegion(void)
-{
-	vec3_t	mins, maxs, size, offset;
+void CTRLandScape::CalculateRegion(void) {
+	vec3_t mins, maxs, size, offset;
 
-#if	_DEBUG
+#if _DEBUG
 	mCycleCount++;
 #endif
 	VectorCopy(GetPatchSize(), size);
@@ -349,17 +307,14 @@ void CTRLandScape::CalculateRegion(void)
 	mPatchMaxy = Com_Clampi(0, GetBlockHeight(), ceilf(maxs[1] / size[1]));
 }
 
-void CTRLandScape::CalculateRealCoords(void)
-{
-	int			x, y;
+void CTRLandScape::CalculateRealCoords(void) {
+	int x, y;
 
 	// Work out the real world coordinates of each heightmap entry
-	for(y = 0; y < GetRealHeight(); y++)
-	{
-		for(x = 0; x < GetRealWidth(); x++)
-		{
-			ivec3_t		icoords;
-			int			offset;
+	for (y = 0; y < GetRealHeight(); y++) {
+		for (x = 0; x < GetRealWidth(); x++) {
+			ivec3_t icoords;
+			int offset;
 
 			offset = (y * GetRealWidth()) + x;
 
@@ -369,16 +324,13 @@ void CTRLandScape::CalculateRealCoords(void)
 	}
 }
 
-void CTRLandScape::CalculateNormals(void)
-{
-	int		x, y, offset = 0;
+void CTRLandScape::CalculateNormals(void) {
+	int x, y, offset = 0;
 
 	// Work out the normals for every face
-	for(y = 0; y < GetHeight(); y++)
-	{
-		for(x = 0; x < GetWidth(); x++)
-		{
-			vec3_t		vcenter, vleft;
+	for (y = 0; y < GetHeight(); y++) {
+		for (x = 0; x < GetWidth(); x++) {
+			vec3_t vcenter, vleft;
 
 			offset = (y * GetRealWidth()) + x;
 
@@ -393,46 +345,38 @@ void CTRLandScape::CalculateNormals(void)
 	}
 	// Duplicate bottom line
 	offset = GetHeight() * GetRealWidth();
-	for(x = 0; x < GetRealWidth(); x++)
-	{
+	for (x = 0; x < GetRealWidth(); x++) {
 		VectorCopy(mRenderMap[offset - GetRealWidth() + x].normal, mRenderMap[offset + x].normal);
 	}
 }
 
-void CTRLandScape::CalculateLighting(void)
-{
-	int		x, y, offset = 0;
+void CTRLandScape::CalculateLighting(void) {
+	int x, y, offset = 0;
 
 	// Work out the vertex normal (average of every attached face normal) and apply to the direction of the light
-	for(y = 0; y < GetHeight(); y++)
-	{
-		for(x = 0; x < GetWidth(); x++)
-		{
-			vec3_t		ambient;
-			vec3_t		directed, direction;
-			vec3_t		total, tint;
-			float		dp;
+	for (y = 0; y < GetHeight(); y++) {
+		for (x = 0; x < GetWidth(); x++) {
+			vec3_t ambient;
+			vec3_t directed, direction;
+			vec3_t total, tint;
+			float dp;
 
 			offset = (y * GetRealWidth()) + x;
 
 			// Work out average normal
-		   	VectorCopy(GetRenderMap(x, y)->normal, total);
-		   	VectorAdd(total, GetRenderMap(x + 1, y)->normal, total);
-		   	VectorAdd(total, GetRenderMap(x + 1, y + 1)->normal, total);
-		   	VectorAdd(total, GetRenderMap(x, y + 1)->normal, total);
+			VectorCopy(GetRenderMap(x, y)->normal, total);
+			VectorAdd(total, GetRenderMap(x + 1, y)->normal, total);
+			VectorAdd(total, GetRenderMap(x + 1, y + 1)->normal, total);
+			VectorAdd(total, GetRenderMap(x, y + 1)->normal, total);
 			VectorNormalize(total);
 
-			if (!R_LightForPoint(mRenderMap[offset].coords, ambient, directed, direction))
-			{
-				mRenderMap[offset].tint[0] =
-					mRenderMap[offset].tint[1] =
-					mRenderMap[offset].tint[2] = 255 >> tr.overbrightBits;
+			if (!R_LightForPoint(mRenderMap[offset].coords, ambient, directed, direction)) {
+				mRenderMap[offset].tint[0] = mRenderMap[offset].tint[1] = mRenderMap[offset].tint[2] = 255 >> tr.overbrightBits;
 				mRenderMap[offset].tint[3] = 255;
 				continue;
 			}
 
-			if(mRenderMap[offset].coords[2] < common->GetBaseWaterHeight())
-			{
+			if (mRenderMap[offset].coords[2] < common->GetBaseWaterHeight()) {
 				VectorScale(ambient, 0.75f, ambient);
 			}
 
@@ -442,9 +386,9 @@ void CTRLandScape::CalculateLighting(void)
 			VectorScale(ambient, (1.0 - dp) * 0.5, ambient);
 			VectorMA(ambient, dp, directed, tint);
 
-			mRenderMap[offset].tint[0] = (byte)Com_Clampi(0.0f, 255.0f, tint[0] ) >> tr.overbrightBits;
-			mRenderMap[offset].tint[1] = (byte)Com_Clampi(0.0f, 255.0f, tint[1] ) >> tr.overbrightBits;
-			mRenderMap[offset].tint[2] = (byte)Com_Clampi(0.0f, 255.0f, tint[2] ) >> tr.overbrightBits;
+			mRenderMap[offset].tint[0] = (byte)Com_Clampi(0.0f, 255.0f, tint[0]) >> tr.overbrightBits;
+			mRenderMap[offset].tint[1] = (byte)Com_Clampi(0.0f, 255.0f, tint[1]) >> tr.overbrightBits;
+			mRenderMap[offset].tint[2] = (byte)Com_Clampi(0.0f, 255.0f, tint[2]) >> tr.overbrightBits;
 			mRenderMap[offset].tint[3] = 0xff;
 
 			/*
@@ -460,8 +404,7 @@ void CTRLandScape::CalculateLighting(void)
 	}
 	// Duplicate bottom line
 	offset = GetHeight() * GetRealWidth();
-	for(x = 0; x < GetRealWidth(); x++)
-	{
+	for (x = 0; x < GetRealWidth(); x++) {
 		mRenderMap[offset + x].tint[0] = mRenderMap[offset - GetRealWidth() + x].tint[0];
 		mRenderMap[offset + x].tint[1] = mRenderMap[offset - GetRealWidth() + x].tint[1];
 		mRenderMap[offset + x].tint[2] = mRenderMap[offset - GetRealWidth() + x].tint[2];
@@ -469,14 +412,11 @@ void CTRLandScape::CalculateLighting(void)
 	}
 }
 
-void CTRLandScape::CalculateTextureCoords(void)
-{
-	int		x, y;
+void CTRLandScape::CalculateTextureCoords(void) {
+	int x, y;
 
-	for(y = 0; y < GetRealHeight(); y++)
-	{
-		for(x = 0; x < GetRealWidth(); x++)
-		{
+	for (y = 0; y < GetRealHeight(); y++) {
+		for (x = 0; x < GetRealWidth(); x++) {
 			int offset = (y * GetRealWidth()) + x;
 
 			mRenderMap[offset].tex[0] = x * mTextureScale * GetTerxelSize()[0];
@@ -485,37 +425,31 @@ void CTRLandScape::CalculateTextureCoords(void)
 	}
 }
 
-void CTRLandScape::SetShaders(const int height, const qhandle_t shader)
-{
-	int		i;
+void CTRLandScape::SetShaders(const int height, const qhandle_t shader) {
+	int i;
 
-	for(i = height; shader && (i < HEIGHT_RESOLUTION); i++)
-	{
-		if(!mHeightDetails[i].GetShader())
-		{
+	for (i = height; shader && (i < HEIGHT_RESOLUTION); i++) {
+		if (!mHeightDetails[i].GetShader()) {
 			mHeightDetails[i].SetShader(shader);
 		}
 	}
 }
 
-void CTRLandScape::LoadTerrainDef(const char *td)
-{
-	char			terrainDef[MAX_QPATH];
-	CGenericParser2	parse;
-	CGPGroup		*basegroup, *classes, *items;
+void CTRLandScape::LoadTerrainDef(const char *td) {
+	char terrainDef[MAX_QPATH];
+	CGenericParser2 parse;
+	CGPGroup *basegroup, *classes, *items;
 
 	Com_sprintf(terrainDef, MAX_QPATH, "ext_data/RMG/%s.terrain", td);
-	ri.Printf( PRINT_ALL, "R_Terrain: Loading and parsing terrainDef %s.....\n", td);
+	ri.Printf(PRINT_ALL, "R_Terrain: Loading and parsing terrainDef %s.....\n", td);
 
 	mWaterShader = NULL;
-	mFlatShader  = NULL_HANDLE;
+	mFlatShader = NULL_HANDLE;
 
-	if(!Com_ParseTextFile(terrainDef, parse))
-	{
+	if (!Com_ParseTextFile(terrainDef, parse)) {
 		Com_sprintf(terrainDef, MAX_QPATH, "ext_data/arioche/%s.terrain", td);
-		if(!Com_ParseTextFile(terrainDef, parse))
-		{
-			ri.Printf( PRINT_ALL, "Could not open %s\n", terrainDef);
+		if (!Com_ParseTextFile(terrainDef, parse)) {
+			ri.Printf(PRINT_ALL, "Could not open %s\n", terrainDef);
 			return;
 		}
 	}
@@ -524,40 +458,31 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 
 	// The root { } struct
 	classes = basegroup->GetSubGroups();
-	while(classes)
-	{
+	while (classes) {
 		items = classes->GetSubGroups();
-		while(items)
-		{
-			const char* type = items->GetName ( );
+		while (items) {
+			const char *type = items->GetName();
 
-			if(!Q_stricmp( type, "altitudetexture"))
-			{
-				int			height;
-				const char	*shaderName;
-			  	qhandle_t	shader;
+			if (!Q_stricmp(type, "altitudetexture")) {
+				int height;
+				const char *shaderName;
+				qhandle_t shader;
 
 				// Height must exist - the rest are optional
 				height = atol(items->FindPairValue("height", "0"));
 
 				// Shader for this height
 				shaderName = items->FindPairValue("shader", "");
-				if(strlen(shaderName))
-				{
+				if (strlen(shaderName)) {
 					shader = RE_RegisterShader(shaderName);
-					if(shader)
-					{
+					if (shader) {
 						SetShaders(height, shader);
 					}
 				}
-			}
-			else if(!Q_stricmp(type, "water"))
-			{
+			} else if (!Q_stricmp(type, "water")) {
 				mWaterShader = R_GetShaderByHandle(RE_RegisterShader(items->FindPairValue("shader", "")));
-			}
-			else if(!Q_stricmp(type, "flattexture"))
-			{
-				mFlatShader = RE_RegisterShader ( items->FindPairValue("shader", "") );
+			} else if (!Q_stricmp(type, "flattexture")) {
+				mFlatShader = RE_RegisterShader(items->FindPairValue("shader", ""));
 			}
 
 			items = (CGPGroup *)items->GetNext();
@@ -568,118 +493,94 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 	Com_ParseTextFileDestroy(parse);
 }
 
-qhandle_t CTRLandScape::GetBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites)
-{
-	qhandle_t	blended;
+qhandle_t CTRLandScape::GetBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites) {
+	qhandle_t blended;
 
 	// Special case single pass shader
-	if((a == b) && (a == c))
-	{
-		return(a);
+	if ((a == b) && (a == c)) {
+		return (a);
 	}
 
-	blended = R_CreateBlendedShader(a, b, c, surfaceSprites );
-	return(blended);
+	blended = R_CreateBlendedShader(a, b, c, surfaceSprites);
+	return (blended);
 }
 
-static int ComparePatchInfo(const TPatchInfo *arg1, const TPatchInfo *arg2)
-{
-	shader_t	*s1, *s2;
+static int ComparePatchInfo(const TPatchInfo *arg1, const TPatchInfo *arg2) {
+	shader_t *s1, *s2;
 
-	if ((arg1->mPart & PI_TOP))
-	{
+	if ((arg1->mPart & PI_TOP)) {
 		s1 = arg1->mPatch->GetTLShader();
-	}
-	else
-	{
+	} else {
 		s1 = arg1->mPatch->GetBRShader();
 	}
 
-	if ((arg2->mPart & PI_TOP))
-	{
+	if ((arg2->mPart & PI_TOP)) {
 		s2 = arg2->mPatch->GetTLShader();
-	}
-	else
-	{
+	} else {
 		s2 = arg2->mPatch->GetBRShader();
 	}
 
-	if (s1 < s2)
-	{
+	if (s1 < s2) {
 		return -1;
-	}
-	else if (s1 > s2)
-	{
+	} else if (s1 > s2) {
 		return 1;
 	}
 
 	return 0;
 }
 
-void CTRLandScape::CalculateShaders(void)
-{
-	int						x, y;
-	int						width, height;
-	int						offset;
-//	int						offsets[4];
-	qhandle_t				handles[4];
-	CTRPatch				*patch;
-	qhandle_t				*shaders;
-	TPatchInfo				*current = mSortedPatches;
+void CTRLandScape::CalculateShaders(void) {
+	int x, y;
+	int width, height;
+	int offset;
+	//	int						offsets[4];
+	qhandle_t handles[4];
+	CTRPatch *patch;
+	qhandle_t *shaders;
+	TPatchInfo *current = mSortedPatches;
 
-	width  = GetWidth ( ) / common->GetTerxels ( );
-	height = GetHeight ( ) / common->GetTerxels ( );
+	width = GetWidth() / common->GetTerxels();
+	height = GetHeight() / common->GetTerxels();
 
-	shaders = new qhandle_t [ (width+1) * (height+1) ];
+	shaders = new qhandle_t[(width + 1) * (height + 1)];
 
 	// On the first pass determine all of the shaders for the entire
 	// terrain assuming no flat ground
 	offset = 0;
-	for ( y = 0; y < height + 1; y ++ )
-	{
-		if ( y <= height )
-		{
-			offset = common->GetTerxels ( ) * y * GetRealWidth ( );
-		}
-		else
-		{
-			offset = common->GetTerxels ( ) * (y-1) * GetRealWidth ( );
-			offset += GetRealWidth ( );
+	for (y = 0; y < height + 1; y++) {
+		if (y <= height) {
+			offset = common->GetTerxels() * y * GetRealWidth();
+		} else {
+			offset = common->GetTerxels() * (y - 1) * GetRealWidth();
+			offset += GetRealWidth();
 		}
 
-		for ( x = 0; x < width + 1; x ++, offset += common->GetTerxels ( ) )
-		{
+		for (x = 0; x < width + 1; x++, offset += common->GetTerxels()) {
 			// Save the shader
-			shaders[y * width + x] = GetHeightDetail(mRenderMap[offset].height)->GetShader ( );
+			shaders[y * width + x] = GetHeightDetail(mRenderMap[offset].height)->GetShader();
 		}
 	}
 
 	// On the second pass determine flat ground and replace the shader
 	// at that point with the flat ground shader
-	if ( mFlatShader )
-	{
-		for ( y = 1; y < height; y ++ )
-		{
-			for ( x = 1; x < width; x ++ )
-			{
-				int		offset;
-				int		xx;
-				int		yy;
-				byte*	flattenMap = common->GetFlattenMap ( );
-				bool	flat	   = false;
+	if (mFlatShader) {
+		for (y = 1; y < height; y++) {
+			for (x = 1; x < width; x++) {
+				int offset;
+				int xx;
+				int yy;
+				byte *flattenMap = common->GetFlattenMap();
+				bool flat = false;
 
-				offset  = (x) * common->GetTerxels ( );
-				offset += (y) * common->GetTerxels ( ) * GetRealWidth();
+				offset = (x)*common->GetTerxels();
+				offset += (y)*common->GetTerxels() * GetRealWidth();
 
 				offset -= GetRealWidth();
 				offset -= 1;
 
-				for ( yy = 0; yy < 3 && !flat; yy++ )
-				{
-					for ( xx = 0; xx < 3 && !flat; xx++ )
-					{
-						if ( flattenMap [ offset + xx] & 0x80)
-						{
+				for (yy = 0; yy < 3 && !flat; yy++) {
+					for (xx = 0; xx < 3 && !flat; xx++) {
+						if (flattenMap[offset + xx] & 0x80) {
 							flat = true;
 							break;
 						}
@@ -688,52 +589,50 @@ void CTRLandScape::CalculateShaders(void)
 					offset += GetRealWidth();
 				}
 
-/*
-				// Calculate the height map offset
-				offset  = x * common->GetTerxels ( );
-				offset += (y * common->GetTerxels ( ) * GetRealWidth());
+				/*
+								// Calculate the height map offset
+								offset  = x * common->GetTerxels ( );
+								offset += (y * common->GetTerxels ( ) * GetRealWidth());
 
-				// Calculate the offsets around this particular shader location
-				offsets[INDEX_TL] = offset - 1 - GetRealWidth();
-				offsets[INDEX_TR] = offsets[INDEX_TL] + 1;
-				offsets[INDEX_BL] = offsets[INDEX_TL] + GetRealWidth();
-				offsets[INDEX_BR] = offsets[INDEX_BL] + 1;
+								// Calculate the offsets around this particular shader location
+								offsets[INDEX_TL] = offset - 1 - GetRealWidth();
+								offsets[INDEX_TR] = offsets[INDEX_TL] + 1;
+								offsets[INDEX_BL] = offsets[INDEX_TL] + GetRealWidth();
+								offsets[INDEX_BR] = offsets[INDEX_BL] + 1;
 
-				// If not equal to the top left one then skip
-				if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_TL]].height )
-				{
-					continue;
-				}
+								// If not equal to the top left one then skip
+								if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_TL]].height )
+								{
+									continue;
+								}
 
-				// If not equal to the top right one then skip
-				if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_TR]].height )
-				{
-					continue;
-				}
+								// If not equal to the top right one then skip
+								if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_TR]].height )
+								{
+									continue;
+								}
 
-				// If not equal to the bottom left one then skip
-				if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_BL]].height )
-				{
-					continue;
-				}
+								// If not equal to the bottom left one then skip
+								if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_BL]].height )
+								{
+									continue;
+								}
 
-				// If not equal to the bottom right one then skip
-				if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_BR]].height )
-				{
-					continue;
-				}
-	*/
+								// If not equal to the bottom right one then skip
+								if ( mRenderMap[offset].height != mRenderMap[offsets[INDEX_BR]].height )
+								{
+									continue;
+								}
+					*/
 
 				// This shader is now a flat shader
-				if ( flat )
-				{
+				if (flat) {
 					shaders[y * width + x] = mFlatShader;
 				}
 
 #ifdef _DEBUG
-				Com_OPrintf("Flat Area:  %f %f\n",
-									GetMins()[0] + (GetMaxs()[0]-GetMins()[0])/width * x,
-									GetMins()[1] + (GetMaxs()[1]-GetMins()[1])/height * y );
+				Com_OPrintf("Flat Area:  %f %f\n", GetMins()[0] + (GetMaxs()[0] - GetMins()[0]) / width * x,
+							GetMins()[1] + (GetMaxs()[1] - GetMins()[1]) / height * y);
 #endif
 			}
 		}
@@ -742,22 +641,16 @@ void CTRLandScape::CalculateShaders(void)
 	// Now that the shaders have been determined, set them for each patch
 	patch = mTRPatches;
 	mSortedCount = 0;
-	for ( y = 0; y < height; y ++ )
-	{
-		for ( x = 0; x < width; x ++, patch++ )
-		{
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++, patch++) {
 			bool surfaceSprites = true;
 
-			handles[INDEX_TL] = shaders[ x + y * width ];
-			handles[INDEX_TR] = shaders[ x + 1 + y * width ];
-			handles[INDEX_BL] = shaders[ x + (y + 1) * width ];
-			handles[INDEX_BR] = shaders[ x + 1 + (y + 1) * width ];
+			handles[INDEX_TL] = shaders[x + y * width];
+			handles[INDEX_TR] = shaders[x + 1 + y * width];
+			handles[INDEX_BL] = shaders[x + (y + 1) * width];
+			handles[INDEX_BR] = shaders[x + 1 + (y + 1) * width];
 
-			if ( handles[INDEX_TL] == mFlatShader ||
-				 handles[INDEX_TR] == mFlatShader ||
-				 handles[INDEX_BL] == mFlatShader ||
-				 handles[INDEX_BR] == mFlatShader    )
-			{
+			if (handles[INDEX_TL] == mFlatShader || handles[INDEX_TR] == mFlatShader || handles[INDEX_BL] == mFlatShader || handles[INDEX_BR] == mFlatShader) {
 				surfaceSprites = false;
 			}
 
@@ -767,12 +660,9 @@ void CTRLandScape::CalculateShaders(void)
 			current->mPart = PI_TOP;
 
 			patch->SetBRShader(GetBlendedShader(handles[INDEX_TR], handles[INDEX_BL], handles[INDEX_BR], surfaceSprites));
-			if (patch->GetBRShader() == current->mShader)
-			{
+			if (patch->GetBRShader() == current->mShader) {
 				current->mPart |= PI_BOTTOM;
-			}
-			else
-			{
+			} else {
 				mSortedCount++;
 				current++;
 
@@ -788,21 +678,16 @@ void CTRLandScape::CalculateShaders(void)
 	// Cleanup our temporary array
 	delete[] shaders;
 
-	qsort(mSortedPatches, mSortedCount, sizeof(*mSortedPatches), (int (QDECL *)(const void *,const void *))ComparePatchInfo);
-
+	qsort(mSortedPatches, mSortedCount, sizeof(*mSortedPatches), (int(QDECL *)(const void *, const void *))ComparePatchInfo);
 }
 
-void CTRPatch::SetRenderMap(const int x, const int y)
-{
-	mRenderMap = localowner->GetRenderMap(x, y);
-}
+void CTRPatch::SetRenderMap(const int x, const int y) { mRenderMap = localowner->GetRenderMap(x, y); }
 
-void InitRendererPatches( CCMPatch *patch, void *userdata )
-{
-	int			  	tx, ty, bx, by;
-	CTRPatch	  	*localpatch;
-	CCMLandScape	*owner;
-	CTRLandScape	*localowner;
+void InitRendererPatches(CCMPatch *patch, void *userdata) {
+	int tx, ty, bx, by;
+	CTRPatch *localpatch;
+	CCMLandScape *owner;
+	CTRLandScape *localowner;
 
 	// Set owning landscape
 	localowner = (CTRLandScape *)userdata;
@@ -822,47 +707,40 @@ void InitRendererPatches( CCMPatch *patch, void *userdata )
 	localpatch->SetLocalOwner(localowner);
 	localpatch->SetRenderMap(tx, ty);
 	localpatch->SetCenter();
-//	localpatch->CalcNormal();
+	//	localpatch->CalcNormal();
 }
 
-void CTRLandScape::CopyHeightMap(void)
-{
-	const CCMLandScape	*common = GetCommon();
-	const byte			*heightMap = common->GetHeightMap();
-	CTerVert			*renderMap = mRenderMap;
-	int					i;
+void CTRLandScape::CopyHeightMap(void) {
+	const CCMLandScape *common = GetCommon();
+	const byte *heightMap = common->GetHeightMap();
+	CTerVert *renderMap = mRenderMap;
+	int i;
 
-	for(i = 0; i < common->GetRealArea(); i++)
-	{
+	for (i = 0; i < common->GetRealArea(); i++) {
 		renderMap->height = *heightMap;
 		renderMap++;
 		heightMap++;
 	}
 }
 
-CTRLandScape::~CTRLandScape(void)
-{
-	if(mTRPatches)
-	{
+CTRLandScape::~CTRLandScape(void) {
+	if (mTRPatches) {
 		Z_Free(mTRPatches);
 		mTRPatches = NULL;
 	}
-	if (mSortedPatches)
-	{
+	if (mSortedPatches) {
 		Z_Free(mSortedPatches);
 		mSortedPatches = 0;
 	}
-	if(mRenderMap)
-	{
+	if (mRenderMap) {
 		Z_Free(mRenderMap);
 		mRenderMap = NULL;
 	}
 }
 
-CTRLandScape::CTRLandScape(const char *configstring)
-{
-	int					shaderNum;
-	const CCMLandScape	*common;
+CTRLandScape::CTRLandScape(const char *configstring) {
+	int shaderNum;
+	const CCMLandScape *common;
 
 	memset(this, 0, sizeof(*this));
 
@@ -899,7 +777,7 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	// Calculate texture coords (not projected - real)
 	CalculateTextureCoords();
 
-	ri.Printf( PRINT_ALL, "R_Terrain: Creating renderer patches.....\n");
+	ri.Printf(PRINT_ALL, "R_Terrain: Creating renderer patches.....\n");
 	// Initialise all terrain patches
 	mTRPatches = (CTRPatch *)Z_Malloc(sizeof(CTRPatch) * common->GetBlockCount(), TAG_R_TERRAIN);
 
@@ -912,20 +790,20 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	CalculateShaders();
 
 	// Get the contents shader
-	shaderNum = atol(Info_ValueForKey(configstring, "shader"));;
+	shaderNum = atol(Info_ValueForKey(configstring, "shader"));
+	;
 	mShader = R_GetShaderByHandle(R_GetShaderByNum(shaderNum, *tr.world));
 
 	mPatchSize = VectorLength(common->GetPatchSize());
 
-#if	_DEBUG
+#if _DEBUG
 	mCycleCount = 0;
 #endif
 }
 
 // ---------------------------------------------------------------------
 
-void RB_SurfaceTerrain( surfaceInfo_t *surf )
-{
+void RB_SurfaceTerrain(surfaceInfo_t *surf) {
 	/*
 	if(backEnd.refdef.rdflags & RDF_PROJECTION2D)
 	{
@@ -939,77 +817,64 @@ void RB_SurfaceTerrain( surfaceInfo_t *surf )
 
 	landscape->CalculateRegion();
 	landscape->Reset();
-//	landscape->Tessellate();
+	//	landscape->Tessellate();
 	landscape->Render();
 }
 
-void R_CalcTerrainVisBounds(CTRLandScape *landscape)
-{
+void R_CalcTerrainVisBounds(CTRLandScape *landscape) {
 	const CCMLandScape *common = landscape->GetCommon();
 
 	// Set up the visbounds using terrain data
-	if ( common->GetMins()[0] < tr.viewParms.visBounds[0][0] )
-	{
+	if (common->GetMins()[0] < tr.viewParms.visBounds[0][0]) {
 		tr.viewParms.visBounds[0][0] = common->GetMins()[0];
 	}
-	if ( common->GetMins()[1] < tr.viewParms.visBounds[0][1] )
-	{
+	if (common->GetMins()[1] < tr.viewParms.visBounds[0][1]) {
 		tr.viewParms.visBounds[0][1] = common->GetMins()[1];
 	}
-	if ( common->GetMins()[2] < tr.viewParms.visBounds[0][2] )
-	{
+	if (common->GetMins()[2] < tr.viewParms.visBounds[0][2]) {
 		tr.viewParms.visBounds[0][2] = common->GetMins()[2];
 	}
 
-	if ( common->GetMaxs()[0] > tr.viewParms.visBounds[1][0] )
-	{
+	if (common->GetMaxs()[0] > tr.viewParms.visBounds[1][0]) {
 		tr.viewParms.visBounds[1][0] = common->GetMaxs()[0];
 	}
-	if ( common->GetMaxs()[1] > tr.viewParms.visBounds[1][1] )
-	{
+	if (common->GetMaxs()[1] > tr.viewParms.visBounds[1][1]) {
 		tr.viewParms.visBounds[1][1] = common->GetMaxs()[1];
 	}
-	if ( common->GetMaxs()[2] > tr.viewParms.visBounds[1][2] )
-	{
+	if (common->GetMaxs()[2] > tr.viewParms.visBounds[1][2]) {
 		tr.viewParms.visBounds[1][2] = common->GetMaxs()[2];
 	}
 }
 
-void R_AddTerrainSurfaces(void)
-{
-	CTRLandScape	*landscape;
+void R_AddTerrainSurfaces(void) {
+	CTRLandScape *landscape;
 
-	if (!r_drawTerrain->integer || (tr.refdef.rdflags & RDF_NOWORLDMODEL))
-	{
+	if (!r_drawTerrain->integer || (tr.refdef.rdflags & RDF_NOWORLDMODEL)) {
 		return;
 	}
 
 	landscape = tr.landScape.landscape;
-	if(landscape)
-	{
-		R_AddDrawSurf( (surfaceType_t *)(&tr.landScape), landscape->GetShader(), 0, qfalse );
+	if (landscape) {
+		R_AddDrawSurf((surfaceType_t *)(&tr.landScape), landscape->GetShader(), 0, qfalse);
 		R_CalcTerrainVisBounds(landscape);
 	}
 }
 
-void RE_InitRendererTerrain( const char *info )
-{
-	//CTRLandScape	*ls;
+void RE_InitRendererTerrain(const char *info) {
+	// CTRLandScape	*ls;
 
-	if ( !info || !info[0] )
-	{
-		ri.Printf( PRINT_ALL, "RE_RegisterTerrain: NULL name\n" );
+	if (!info || !info[0]) {
+		ri.Printf(PRINT_ALL, "RE_RegisterTerrain: NULL name\n");
 		return;
 	}
 
-	ri.Printf( PRINT_ALL, "R_Terrain: Creating RENDERER data.....\n");
+	ri.Printf(PRINT_ALL, "R_Terrain: Creating RENDERER data.....\n");
 
 	// Create and register a new landscape structure
-	/*ls = */new CTRLandScape(info);
+	/*ls = */ new CTRLandScape(info);
 }
 
-void R_TerrainInit(void)
-{
+void R_TerrainInit(void) {
 	tr.landScape.surfaceType = SF_TERRAIN;
 	tr.landScape.landscape = NULL;
 
@@ -1022,14 +887,12 @@ void R_TerrainInit(void)
 	tr.distanceCullSquared = tr.distanceCull * tr.distanceCull;
 }
 
-void R_TerrainShutdown(void)
-{
-	CTRLandScape	*ls;
+void R_TerrainShutdown(void) {
+	CTRLandScape *ls;
 
-//	ri.Printf( PRINT_ALL, "R_Terrain: Shutting down RENDERER terrain.....\n");
+	//	ri.Printf( PRINT_ALL, "R_Terrain: Shutting down RENDERER terrain.....\n");
 	ls = tr.landScape.landscape;
-	if(ls)
-	{
+	if (ls) {
 		ri.CM_ShutdownTerrain(0);
 		delete ls;
 		tr.landScape.landscape = NULL;

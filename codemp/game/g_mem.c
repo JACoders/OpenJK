@@ -42,40 +42,38 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
   http://www.altdevblogaday.com/2011/02/12/alternatives-to-malloc-and-new/
 */
 
-#define POOLSIZE	(4 * 1024 * 1024) // (256*1024)
+#define POOLSIZE (4 * 1024 * 1024) // (256*1024)
 
-static char		memoryPool[POOLSIZE];
-static int		allocPoint;
+static char memoryPool[POOLSIZE];
+static int allocPoint;
 
-void *G_Alloc( int size ) {
-	char	*p;
+void *G_Alloc(int size) {
+	char *p;
 
-	if ( size <= 0 ) {
-		trap->Error( ERR_DROP, "G_Alloc: zero-size allocation\n", size );
+	if (size <= 0) {
+		trap->Error(ERR_DROP, "G_Alloc: zero-size allocation\n", size);
 		return NULL;
 	}
 
-	if ( g_debugAlloc.integer ) {
-		trap->Print( "G_Alloc of %i bytes (%i left)\n", size, POOLSIZE - allocPoint - ( ( size + 31 ) & ~31 ) );
+	if (g_debugAlloc.integer) {
+		trap->Print("G_Alloc of %i bytes (%i left)\n", size, POOLSIZE - allocPoint - ((size + 31) & ~31));
 	}
 
-	if ( allocPoint + size > POOLSIZE ) {
-		trap->Error( ERR_DROP, "G_Alloc: failed on allocation of %i bytes\n", size ); // bk010103 - was %u, but is signed
+	if (allocPoint + size > POOLSIZE) {
+		trap->Error(ERR_DROP, "G_Alloc: failed on allocation of %i bytes\n", size); // bk010103 - was %u, but is signed
 		return NULL;
 	}
 
 	p = &memoryPool[allocPoint];
 
-	allocPoint += ( size + 31 ) & ~31;
+	allocPoint += (size + 31) & ~31;
 
 	return p;
 }
 
-void G_InitMemory( void ) {
-	allocPoint = 0;
-}
+void G_InitMemory(void) { allocPoint = 0; }
 
-void Svcmd_GameMem_f( void ) {
+void Svcmd_GameMem_f(void) {
 	float f = allocPoint;
 	f /= POOLSIZE;
 	f *= 100;

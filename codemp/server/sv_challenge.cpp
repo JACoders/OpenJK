@@ -38,8 +38,7 @@ BufferToHexString
 Format a byte buffer as a lower-case hex string.
 ====================
 */
-static const char *BufferToHexString(byte *buffer, size_t bufferLen)
-{
+static const char *BufferToHexString(byte *buffer, size_t bufferLen) {
 	static char hexString[1023];
 	static const size_t maxBufferLen = (sizeof(hexString) - 1) / 2;
 	static const char *hex = "0123456789abcdef";
@@ -62,8 +61,7 @@ SV_ChallengeInit
 Initialize the HMAC context for generating challenges.
 ====================
 */
-void SV_ChallengeInit()
-{
+void SV_ChallengeInit() {
 	if (challengerInitialized) {
 		SV_ChallengeShutdown();
 	}
@@ -90,8 +88,7 @@ SV_ChallengeShutdown
 Clear the HMAC context used to generate challenges.
 ====================
 */
-void SV_ChallengeShutdown()
-{
+void SV_ChallengeShutdown() {
 	if (challengerInitialized) {
 		memset(&challenger, 0, sizeof(challenger));
 		challengerInitialized = qfalse;
@@ -105,15 +102,14 @@ SV_CreateChallenge (internal)
 Create a challenge for the given client address and timestamp.
 ====================
 */
-static int SV_CreateChallenge(int timestamp, netadr_t from)
-{
+static int SV_CreateChallenge(int timestamp, netadr_t from) {
 	const char *clientParams = NET_AdrToString(from);
 	size_t clientParamsLen = strlen(clientParams);
 
 	// Create an unforgeable, temporal challenge for this client using HMAC(secretKey, clientParams + timestamp)
 	byte digest[MD5_DIGEST_SIZE];
-	HMAC_MD5_Update(&challenger, (byte*)clientParams, clientParamsLen);
-	HMAC_MD5_Update(&challenger, (byte*)&timestamp, sizeof(timestamp));
+	HMAC_MD5_Update(&challenger, (byte *)clientParams, clientParamsLen);
+	HMAC_MD5_Update(&challenger, (byte *)&timestamp, sizeof(timestamp));
 	HMAC_MD5_Final(&challenger, digest);
 	HMAC_MD5_Reset(&challenger);
 
@@ -126,8 +122,8 @@ static int SV_CreateChallenge(int timestamp, netadr_t from)
 	challenge |= (unsigned int)(timestamp & 0x1) << 31;
 
 #ifdef DEBUG_SV_CHALLENGE
-	if ( com_developer->integer ) {
-		Com_Printf( "Generated challenge %d (timestamp = %d) for %s\n", challenge, timestamp, NET_AdrToString( from ) );
+	if (com_developer->integer) {
+		Com_Printf("Generated challenge %d (timestamp = %d) for %s\n", challenge, timestamp, NET_AdrToString(from));
 	}
 #endif
 
@@ -141,8 +137,7 @@ SV_CreateChallenge
 Create an unforgeable, temporal challenge for the given client address.
 ====================
 */
-int SV_CreateChallenge(netadr_t from)
-{
+int SV_CreateChallenge(netadr_t from) {
 	if (!challengerInitialized) {
 		Com_Error(ERR_FATAL, "SV_CreateChallenge: The challenge subsystem has not been initialized");
 	}
@@ -160,8 +155,7 @@ SV_VerifyChallenge
 Verify a challenge received by the client matches the expected challenge.
 ====================
 */
-qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from)
-{
+qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from) {
 	if (!challengerInitialized) {
 		Com_Error(ERR_FATAL, "SV_VerifyChallenge: The challenge subsystem has not been initialized");
 	}
@@ -176,8 +170,8 @@ qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from)
 	int challengeTimestamp = currentTimestamp - (currentPeriod ^ challengePeriod);
 
 #ifdef DEBUG_SV_CHALLENGE
-	if ( com_developer->integer ) {
-		Com_Printf( "Verifying challenge %d (timestamp = %d) for %s\n", receivedChallenge, challengeTimestamp, NET_AdrToString( from ) );
+	if (com_developer->integer) {
+		Com_Printf("Verifying challenge %d (timestamp = %d) for %s\n", receivedChallenge, challengeTimestamp, NET_AdrToString(from));
 	}
 #endif
 

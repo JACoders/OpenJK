@@ -25,17 +25,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #ifdef _G2_GORE
 
-R2GoreTextureCoordinates::R2GoreTextureCoordinates()
-{
-	Com_Memset (tex, 0, sizeof (tex));
-}
+R2GoreTextureCoordinates::R2GoreTextureCoordinates() { Com_Memset(tex, 0, sizeof(tex)); }
 
-R2GoreTextureCoordinates::~R2GoreTextureCoordinates()
-{
-	for ( int i = 0; i < MAX_LODS; i++ )
-	{
-		if ( tex[i] )
-		{
+R2GoreTextureCoordinates::~R2GoreTextureCoordinates() {
+	for (int i = 0; i < MAX_LODS; i++) {
+		if (tex[i]) {
 			ri.Z_Free(tex[i]->verts);
 			tex[i]->verts = NULL;
 			ri.Z_Free(tex[i]->indexes);

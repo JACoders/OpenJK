@@ -37,42 +37,36 @@ Creates and sends the server command necessary to update the CS index for the
 given client
 ===============
 */
-static void SV_SendConfigstring(client_t *client, int index)
-{
+static void SV_SendConfigstring(client_t *client, int index) {
 	int maxChunkSize = MAX_STRING_CHARS - 24;
 	int len;
 
 	len = strlen(sv.configstrings[index]);
 
-	if( len >= maxChunkSize ) {
-		int		sent = 0;
-		int		remaining = len;
-		char	*cmd;
-		char	buf[MAX_STRING_CHARS];
+	if (len >= maxChunkSize) {
+		int sent = 0;
+		int remaining = len;
+		char *cmd;
+		char buf[MAX_STRING_CHARS];
 
-		while (remaining > 0 ) {
-			if ( sent == 0 ) {
+		while (remaining > 0) {
+			if (sent == 0) {
 				cmd = "bcs0";
-			}
-			else if( remaining < maxChunkSize ) {
+			} else if (remaining < maxChunkSize) {
 				cmd = "bcs2";
-			}
-			else {
+			} else {
 				cmd = "bcs1";
 			}
-			Q_strncpyz( buf, &sv.configstrings[index][sent],
-				maxChunkSize );
+			Q_strncpyz(buf, &sv.configstrings[index][sent], maxChunkSize);
 
-			SV_SendServerCommand( client, "%s %i \"%s\"\n", cmd,
-				index, buf );
+			SV_SendServerCommand(client, "%s %i \"%s\"\n", cmd, index, buf);
 
 			sent += (maxChunkSize - 1);
 			remaining -= (maxChunkSize - 1);
 		}
 	} else {
 		// standard cs, just send it
-		SV_SendServerCommand( client, "cs %i \"%s\"\n", index,
-			sv.configstrings[index] );
+		SV_SendServerCommand(client, "cs %i \"%s\"\n", index, sv.configstrings[index]);
 	}
 }
 
@@ -84,18 +78,16 @@ Called when a client goes from CS_PRIMED to CS_ACTIVE.  Updates all
 Configstring indexes that have changed while the client was in CS_PRIMED
 ===============
 */
-void SV_UpdateConfigstrings(client_t *client)
-{
+void SV_UpdateConfigstrings(client_t *client) {
 	int index;
 
-	for( index = 0; index < MAX_CONFIGSTRINGS; index++ ) {
+	for (index = 0; index < MAX_CONFIGSTRINGS; index++) {
 		// if the CS hasn't changed since we went to CS_PRIMED, ignore
-		if(!client->csUpdated[index])
+		if (!client->csUpdated[index])
 			continue;
 
 		// do not always send server info to all clients
-		if ( index == CS_SERVERINFO && client->gentity &&
-			(client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
+		if (index == CS_SERVERINFO && client->gentity && (client->gentity->r.svFlags & SVF_NOSERVERINFO)) {
 			continue;
 		}
 		SV_SendConfigstring(client, index);
@@ -109,40 +101,40 @@ SV_SetConfigstring
 
 ===============
 */
-void SV_SetConfigstring (int index, const char *val) {
-	int		i;
-	client_t	*client;
+void SV_SetConfigstring(int index, const char *val) {
+	int i;
+	client_t *client;
 
-	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
-		Com_Error (ERR_DROP, "SV_SetConfigstring: bad index %i\n", index);
+	if (index < 0 || index >= MAX_CONFIGSTRINGS) {
+		Com_Error(ERR_DROP, "SV_SetConfigstring: bad index %i\n", index);
 	}
 
-	if ( !val ) {
+	if (!val) {
 		val = "";
 	}
 
 	// don't bother broadcasting an update if no change
-	if ( !strcmp( val, sv.configstrings[ index ] ) ) {
+	if (!strcmp(val, sv.configstrings[index])) {
 		return;
 	}
 
 	// change the string in sv
-	Z_Free( sv.configstrings[index] );
-	sv.configstrings[index] = CopyString( val );
+	Z_Free(sv.configstrings[index]);
+	sv.configstrings[index] = CopyString(val);
 
 	// send it to all the clients if we aren't
 	// spawning a new server
-	if ( sv.state == SS_GAME || sv.restarting ) {
+	if (sv.state == SS_GAME || sv.restarting) {
 
 		// send the data to all relevent clients
-		for (i = 0, client = svs.clients; i < sv_maxclients->integer ; i++, client++) {
-			if ( client->state < CS_ACTIVE ) {
-				if ( client->state == CS_PRIMED )
-					client->csUpdated[ index ] = qtrue;
+		for (i = 0, client = svs.clients; i < sv_maxclients->integer; i++, client++) {
+			if (client->state < CS_ACTIVE) {
+				if (client->state == CS_PRIMED)
+					client->csUpdated[index] = qtrue;
 				continue;
 			}
 			// do not always send server info to all clients
-			if ( index == CS_SERVERINFO && client->gentity && (client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
+			if (index == CS_SERVERINFO && client->gentity && (client->gentity->r.svFlags & SVF_NOSERVERINFO)) {
 				continue;
 			}
 
@@ -157,19 +149,19 @@ SV_GetConfigstring
 
 ===============
 */
-void SV_GetConfigstring( int index, char *buffer, int bufferSize ) {
-	if ( bufferSize < 1 ) {
-		Com_Error( ERR_DROP, "SV_GetConfigstring: bufferSize == %i", bufferSize );
+void SV_GetConfigstring(int index, char *buffer, int bufferSize) {
+	if (bufferSize < 1) {
+		Com_Error(ERR_DROP, "SV_GetConfigstring: bufferSize == %i", bufferSize);
 	}
-	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
-		Com_Error (ERR_DROP, "SV_GetConfigstring: bad index %i\n", index);
+	if (index < 0 || index >= MAX_CONFIGSTRINGS) {
+		Com_Error(ERR_DROP, "SV_GetConfigstring: bad index %i\n", index);
 	}
-	if ( !sv.configstrings[index] ) {
+	if (!sv.configstrings[index]) {
 		buffer[0] = 0;
 		return;
 	}
 
-	Q_strncpyz( buffer, sv.configstrings[index], bufferSize );
+	Q_strncpyz(buffer, sv.configstrings[index], bufferSize);
 }
 
 /*
@@ -178,17 +170,17 @@ SV_SetUserinfo
 
 ===============
 */
-void SV_SetUserinfo( int index, const char *val ) {
-	if ( index < 0 || index >= sv_maxclients->integer ) {
-		Com_Error (ERR_DROP, "SV_SetUserinfo: bad index %i\n", index);
+void SV_SetUserinfo(int index, const char *val) {
+	if (index < 0 || index >= sv_maxclients->integer) {
+		Com_Error(ERR_DROP, "SV_SetUserinfo: bad index %i\n", index);
 	}
 
-	if ( !val ) {
+	if (!val) {
 		val = "";
 	}
 
-	Q_strncpyz( svs.clients[index].userinfo, val, sizeof( svs.clients[ index ].userinfo ) );
-	Q_strncpyz( svs.clients[index].name, Info_ValueForKey( val, "name" ), sizeof(svs.clients[index].name) );
+	Q_strncpyz(svs.clients[index].userinfo, val, sizeof(svs.clients[index].userinfo));
+	Q_strncpyz(svs.clients[index].name, Info_ValueForKey(val, "name"), sizeof(svs.clients[index].name));
 }
 
 /*
@@ -197,14 +189,14 @@ SV_GetUserinfo
 
 ===============
 */
-void SV_GetUserinfo( int index, char *buffer, int bufferSize ) {
-	if ( bufferSize < 1 ) {
-		Com_Error( ERR_DROP, "SV_GetUserinfo: bufferSize == %i", bufferSize );
+void SV_GetUserinfo(int index, char *buffer, int bufferSize) {
+	if (bufferSize < 1) {
+		Com_Error(ERR_DROP, "SV_GetUserinfo: bufferSize == %i", bufferSize);
 	}
-	if ( index < 0 || index >= sv_maxclients->integer ) {
-		Com_Error (ERR_DROP, "SV_GetUserinfo: bad index %i\n", index);
+	if (index < 0 || index >= sv_maxclients->integer) {
+		Com_Error(ERR_DROP, "SV_GetUserinfo: bad index %i\n", index);
 	}
-	Q_strncpyz( buffer, svs.clients[ index ].userinfo, bufferSize );
+	Q_strncpyz(buffer, svs.clients[index].userinfo, bufferSize);
 }
 
 /*
@@ -216,11 +208,11 @@ to the clients -- only the fields that differ from the
 baseline will be transmitted
 ================
 */
-void SV_CreateBaseline( void ) {
+void SV_CreateBaseline(void) {
 	sharedEntity_t *svent;
-	int				entnum;
+	int entnum;
 
-	for ( entnum = 1; entnum < sv.num_entities ; entnum++ ) {
+	for (entnum = 1; entnum < sv.num_entities; entnum++) {
 		svent = SV_GentityNum(entnum);
 		if (!svent->r.linked) {
 			continue;
@@ -240,16 +232,16 @@ SV_BoundMaxClients
 
 ===============
 */
-void SV_BoundMaxClients( int minimum ) {
+void SV_BoundMaxClients(int minimum) {
 	// get the current maxclients value
-	Cvar_Get( "sv_maxclients", "8", 0 );
+	Cvar_Get("sv_maxclients", "8", 0);
 
 	sv_maxclients->modified = qfalse;
 
-	if ( sv_maxclients->integer < minimum ) {
-		Cvar_Set( "sv_maxclients", va("%i", minimum) );
-	} else if ( sv_maxclients->integer > MAX_CLIENTS ) {
-		Cvar_Set( "sv_maxclients", va("%i", MAX_CLIENTS) );
+	if (sv_maxclients->integer < minimum) {
+		Cvar_Set("sv_maxclients", va("%i", minimum));
+	} else if (sv_maxclients->integer > MAX_CLIENTS) {
+		Cvar_Set("sv_maxclients", va("%i", MAX_CLIENTS));
 	}
 }
 
@@ -263,17 +255,17 @@ NOT cause this to be called, unless the game is exited to
 the menu system first.
 ===============
 */
-void SV_Startup( void ) {
-	if ( svs.initialized ) {
-		Com_Error( ERR_FATAL, "SV_Startup: svs.initialized" );
+void SV_Startup(void) {
+	if (svs.initialized) {
+		Com_Error(ERR_FATAL, "SV_Startup: svs.initialized");
 	}
-	SV_BoundMaxClients( 1 );
+	SV_BoundMaxClients(1);
 
-	svs.clients = (struct client_s *)Z_Malloc (sizeof(client_t) * sv_maxclients->integer, TAG_CLIENTS, qtrue );
-	if ( com_dedicated->integer ) {
+	svs.clients = (struct client_s *)Z_Malloc(sizeof(client_t) * sv_maxclients->integer, TAG_CLIENTS, qtrue);
+	if (com_dedicated->integer) {
 		svs.numSnapshotEntities = sv_maxclients->integer * PACKET_BACKUP * MAX_SNAPSHOT_ENTITIES;
-		Cvar_Set( "r_ghoul2animsmooth", "0");
-		Cvar_Set( "r_ghoul2unsqashaftersmooth", "0");
+		Cvar_Set("r_ghoul2animsmooth", "0");
+		Cvar_Set("r_ghoul2unsqashaftersmooth", "0");
 
 	} else {
 		// we don't need nearly as many when playing locally
@@ -283,19 +275,18 @@ void SV_Startup( void ) {
 	svs.initialized = qtrue;
 
 	// Don't respect sv_killserver unless a server is actually running
-	if ( sv_killserver->integer ) {
-		Cvar_Set( "sv_killserver", "0" );
+	if (sv_killserver->integer) {
+		Cvar_Set("sv_killserver", "0");
 	}
 
-	Cvar_Set( "sv_running", "1" );
+	Cvar_Set("sv_running", "1");
 }
 
 /*
 Ghoul2 Insert Start
 */
 
- void SV_InitSV(void)
-{
+void SV_InitSV(void) {
 	// clear out most of the sv struct
 	memset(&sv, 0, (sizeof(sv)));
 	sv.mLocalSubBSPIndex = -1;
@@ -309,16 +300,16 @@ Ghoul2 Insert End
 SV_ChangeMaxClients
 ==================
 */
-void SV_ChangeMaxClients( void ) {
-	int		oldMaxClients;
-	int		i;
-	client_t	*oldClients;
-	int		count;
+void SV_ChangeMaxClients(void) {
+	int oldMaxClients;
+	int i;
+	client_t *oldClients;
+	int count;
 
 	// get the highest client number in use
 	count = 0;
-	for ( i = 0 ; i < sv_maxclients->integer ; i++ ) {
-		if ( svs.clients[i].state >= CS_CONNECTED ) {
+	for (i = 0; i < sv_maxclients->integer; i++) {
+		if (svs.clients[i].state >= CS_CONNECTED) {
 			if (i > count)
 				count = i;
 		}
@@ -327,42 +318,41 @@ void SV_ChangeMaxClients( void ) {
 
 	oldMaxClients = sv_maxclients->integer;
 	// never go below the highest client number in use
-	SV_BoundMaxClients( count );
+	SV_BoundMaxClients(count);
 	// if still the same
-	if ( sv_maxclients->integer == oldMaxClients ) {
+	if (sv_maxclients->integer == oldMaxClients) {
 		return;
 	}
 
-	oldClients = (struct client_s *)Hunk_AllocateTempMemory( count * sizeof(client_t) );
+	oldClients = (struct client_s *)Hunk_AllocateTempMemory(count * sizeof(client_t));
 	// copy the clients to hunk memory
-	for ( i = 0 ; i < count ; i++ ) {
-		if ( svs.clients[i].state >= CS_CONNECTED ) {
+	for (i = 0; i < count; i++) {
+		if (svs.clients[i].state >= CS_CONNECTED) {
 			oldClients[i] = svs.clients[i];
-		}
-		else {
+		} else {
 			Com_Memset(&oldClients[i], 0, sizeof(client_t));
 		}
 	}
 
 	// free old clients arrays
-	Z_Free( svs.clients );
+	Z_Free(svs.clients);
 
 	// allocate new clients
-	svs.clients = (struct client_s *)Z_Malloc ( sv_maxclients->integer * sizeof(client_t), TAG_CLIENTS, qtrue );
-	Com_Memset( svs.clients, 0, sv_maxclients->integer * sizeof(client_t) );
+	svs.clients = (struct client_s *)Z_Malloc(sv_maxclients->integer * sizeof(client_t), TAG_CLIENTS, qtrue);
+	Com_Memset(svs.clients, 0, sv_maxclients->integer * sizeof(client_t));
 
 	// copy the clients over
-	for ( i = 0 ; i < count ; i++ ) {
-		if ( oldClients[i].state >= CS_CONNECTED ) {
+	for (i = 0; i < count; i++) {
+		if (oldClients[i].state >= CS_CONNECTED) {
 			svs.clients[i] = oldClients[i];
 		}
 	}
 
 	// free the old clients on the hunk
-	Hunk_FreeTempMemory( oldClients );
+	Hunk_FreeTempMemory(oldClients);
 
 	// allocate new snapshot entities
-	if ( com_dedicated->integer ) {
+	if (com_dedicated->integer) {
 		svs.numSnapshotEntities = sv_maxclients->integer * PACKET_BACKUP * MAX_SNAPSHOT_ENTITIES;
 	} else {
 		// we don't need nearly as many when playing locally
@@ -378,25 +368,25 @@ SV_ClearServer
 void SV_ClearServer(void) {
 	int i;
 
-	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
-		if ( sv.configstrings[i] ) {
-			Z_Free( sv.configstrings[i] );
+	for (i = 0; i < MAX_CONFIGSTRINGS; i++) {
+		if (sv.configstrings[i]) {
+			Z_Free(sv.configstrings[i]);
 		}
 	}
 
-//	CM_ClearMap();
+	//	CM_ClearMap();
 
 	/*
 Ghoul2 Insert Start
 */
 
 	// nope, can't do this anymore.. sv contains entitystates with STL in them.
-//	memset (&sv, 0, sizeof(sv));
- 	SV_InitSV();
-/*
-Ghoul2 Insert End
-*/
-//	Com_Memset (&sv, 0, sizeof(sv));
+	//	memset (&sv, 0, sizeof(sv));
+	SV_InitSV();
+	/*
+	Ghoul2 Insert End
+	*/
+	//	Com_Memset (&sv, 0, sizeof(sv));
 }
 
 /*
@@ -407,38 +397,32 @@ SV_TouchCGame
 ================
 */
 void SV_TouchCGame(void) {
-	fileHandle_t	f;
+	fileHandle_t f;
 	char filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof(filename), "cgamex86.dll" );
+	Com_sprintf(filename, sizeof(filename), "cgamex86.dll");
 
-	FS_FOpenFileRead( filename, &f, qfalse );
-	if ( f ) {
-		FS_FCloseFile( f );
+	FS_FOpenFileRead(filename, &f, qfalse);
+	if (f) {
+		FS_FCloseFile(f);
 	}
 }
 
-void SV_SendMapChange(void)
-{
-	int		i;
+void SV_SendMapChange(void) {
+	int i;
 
-	if (svs.clients)
-	{
-		for (i=0 ; i<sv_maxclients->integer ; i++)
-		{
-			if (svs.clients[i].state >= CS_CONNECTED)
-			{
-				if ( svs.clients[i].netchan.remoteAddress.type != NA_BOT ||
-					svs.clients[i].demo.demorecording )
-				{
-					SV_SendClientMapChange( &svs.clients[i] ) ;
+	if (svs.clients) {
+		for (i = 0; i < sv_maxclients->integer; i++) {
+			if (svs.clients[i].state >= CS_CONNECTED) {
+				if (svs.clients[i].netchan.remoteAddress.type != NA_BOT || svs.clients[i].demo.demorecording) {
+					SV_SendClientMapChange(&svs.clients[i]);
 				}
 			}
 		}
 	}
 }
 
-extern void SV_SendClientGameState( client_t *client );
+extern void SV_SendClientGameState(client_t *client);
 /*
 ================
 SV_SpawnServer
@@ -448,12 +432,12 @@ clients along with it.
 This is NOT called for map_restart
 ================
 */
-void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload ) {
-	int			i;
-	int			checksum;
-	qboolean	isBot;
-	char		systemInfo[16384];
-	const char	*p;
+void SV_SpawnServer(char *server, qboolean killBots, ForceReload_e eForceReload) {
+	int i;
+	int checksum;
+	qboolean isBot;
+	char systemInfo[16384];
+	const char *p;
 
 	SV_StopAutoRecordDemos();
 
@@ -465,21 +449,20 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 	SV_ShutdownGameProgs();
 	svs.gameStarted = qfalse;
 
-	Com_Printf ("------ Server Initialization ------\n");
-	Com_Printf ("Server: %s\n",server);
+	Com_Printf("------ Server Initialization ------\n");
+	Com_Printf("Server: %s\n", server);
 
-/*
-Ghoul2 Insert Start
-*/
- 	// de allocate the snapshot entities
-	if (svs.snapshotEntities)
-	{
+	/*
+	Ghoul2 Insert Start
+	*/
+	// de allocate the snapshot entities
+	if (svs.snapshotEntities) {
 		delete[] svs.snapshotEntities;
 		svs.snapshotEntities = NULL;
 	}
-/*
-Ghoul2 Insert End
-*/
+	/*
+	Ghoul2 Insert End
+	*/
 
 	SV_SendMapChange();
 
@@ -489,7 +472,7 @@ Ghoul2 Insert End
 
 #ifndef DEDICATED
 	// make sure all the client stuff is unloaded
-	CL_ShutdownAll( qfalse );
+	CL_ShutdownAll(qfalse);
 #endif
 
 	CM_ClearMap();
@@ -501,21 +484,21 @@ Ghoul2 Insert End
 	re->InitShaders(qtrue);
 
 	// init client structures and svs.numSnapshotEntities
-	if ( !Cvar_VariableValue("sv_running") ) {
+	if (!Cvar_VariableValue("sv_running")) {
 		SV_Startup();
 	} else {
 		// check for maxclients change
-		if ( sv_maxclients->modified ) {
+		if (sv_maxclients->modified) {
 			SV_ChangeMaxClients();
 		}
 	}
 
 	SV_SendMapChange();
 
-/*
-Ghoul2 Insert Start
-*/
- 	// clear out those shaders, images and Models as long as this
+	/*
+	Ghoul2 Insert Start
+	*/
+	// clear out those shaders, images and Models as long as this
 	// isnt a dedicated server.
 	/*
 	if ( !com_dedicated->integer )
@@ -530,8 +513,7 @@ Ghoul2 Insert Start
 	}
 	else
 	*/
-	if (com_dedicated->integer)
-	{
+	if (com_dedicated->integer) {
 		re->SVModelInit();
 	}
 
@@ -540,21 +522,21 @@ Ghoul2 Insert Start
 	// clear pak references
 	FS_ClearPakReferences(0);
 
-/*
-Ghoul2 Insert Start
-*/
+	/*
+	Ghoul2 Insert Start
+	*/
 	// allocate the snapshot entities on the hunk
-//	svs.snapshotEntities = (struct entityState_s *)Hunk_Alloc( sizeof(entityState_t)*svs.numSnapshotEntities, h_high );
+	//	svs.snapshotEntities = (struct entityState_s *)Hunk_Alloc( sizeof(entityState_t)*svs.numSnapshotEntities, h_high );
 	svs.nextSnapshotEntities = 0;
 
 	// allocate the snapshot entities
 	svs.snapshotEntities = new entityState_s[svs.numSnapshotEntities];
 	// we CAN afford to do this here, since we know the STL vectors in Ghoul2 are empty
-	memset(svs.snapshotEntities, 0, sizeof(entityState_t)*svs.numSnapshotEntities);
+	memset(svs.snapshotEntities, 0, sizeof(entityState_t) * svs.numSnapshotEntities);
 
-/*
-Ghoul2 Insert End
-*/
+	/*
+	Ghoul2 Insert End
+	*/
 
 	// toggle the server bit so clients can detect that a
 	// server has changed
@@ -562,10 +544,10 @@ Ghoul2 Insert End
 
 	// set nextmap to the same map, but it may be overriden
 	// by the game startup or another console command
-	Cvar_Set( "nextmap", "map_restart 0");
-//	Cvar_Set( "nextmap", va("map %s", server) );
+	Cvar_Set("nextmap", "map_restart 0");
+	//	Cvar_Set( "nextmap", va("map %s", server) );
 
-	for (i=0 ; i<sv_maxclients->integer ; i++) {
+	for (i = 0; i < sv_maxclients->integer; i++) {
 		// save when the server started for each client already connected
 		if (svs.clients[i].state >= CS_CONNECTED) {
 			svs.clients[i].oldServerTime = svs.time;
@@ -574,41 +556,41 @@ Ghoul2 Insert End
 
 	// wipe the entire per-level structure
 	SV_ClearServer();
-	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
+	for (i = 0; i < MAX_CONFIGSTRINGS; i++) {
 		sv.configstrings[i] = CopyString("");
 	}
 
-	//rww - RAGDOLL_BEGIN
-	re->G2API_SetTime(sv.time,0);
-	//rww - RAGDOLL_END
+	// rww - RAGDOLL_BEGIN
+	re->G2API_SetTime(sv.time, 0);
+	// rww - RAGDOLL_END
 
 	// make sure we are not paused
 	Cvar_Set("cl_paused", "0");
 
 	// get a new checksum feed and restart the file system
 	srand(Com_Milliseconds());
-	sv.checksumFeed = ( ((int) rand() << 16) ^ rand() ) ^ Com_Milliseconds();
-	FS_Restart( sv.checksumFeed );
+	sv.checksumFeed = (((int)rand() << 16) ^ rand()) ^ Com_Milliseconds();
+	FS_Restart(sv.checksumFeed);
 
-	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
+	CM_LoadMap(va("maps/%s.bsp", server), qfalse, &checksum);
 
 	SV_SendMapChange();
 
 	// set serverinfo visible name
-	Cvar_Set( "mapname", server );
+	Cvar_Set("mapname", server);
 
-	Cvar_Set( "sv_mapChecksum", va("%i",checksum) );
+	Cvar_Set("sv_mapChecksum", va("%i", checksum));
 
 	// serverid should be different each time
 	sv.serverId = com_frameTime;
 	sv.restartedServerId = sv.serverId; // I suppose the init here is just to be safe
-	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
+	Cvar_Set("sv_serverid", va("%i", sv.serverId));
 
-	time( &sv.realMapTimeStarted );
+	time(&sv.realMapTimeStarted);
 	sv.demosPruned = qfalse;
 
 	// clear physics interaction links
-	SV_ClearWorld ();
+	SV_ClearWorld();
 
 	// media configstring setting should be done during
 	// the loading stage, so connected clients don't have
@@ -622,112 +604,109 @@ Ghoul2 Insert End
 	sv_gametype->modified = qfalse;
 
 	// run a few frames to allow everything to settle
-	for ( i = 0 ;i < 3 ; i++ ) {
-		//rww - RAGDOLL_BEGIN
-		re->G2API_SetTime(sv.time,0);
-		//rww - RAGDOLL_END
-		GVM_RunFrame( sv.time );
-		SV_BotFrame( sv.time );
+	for (i = 0; i < 3; i++) {
+		// rww - RAGDOLL_BEGIN
+		re->G2API_SetTime(sv.time, 0);
+		// rww - RAGDOLL_END
+		GVM_RunFrame(sv.time);
+		SV_BotFrame(sv.time);
 		sv.time += 100;
 		svs.time += 100;
 	}
-	//rww - RAGDOLL_BEGIN
-	re->G2API_SetTime(sv.time,0);
-	//rww - RAGDOLL_END
+	// rww - RAGDOLL_BEGIN
+	re->G2API_SetTime(sv.time, 0);
+	// rww - RAGDOLL_END
 
 	// create a baseline for more efficient communications
-	SV_CreateBaseline ();
+	SV_CreateBaseline();
 
-	for (i=0 ; i<sv_maxclients->integer ; i++) {
+	for (i = 0; i < sv_maxclients->integer; i++) {
 		// send the new gamestate to all connected clients
 		if (svs.clients[i].state >= CS_CONNECTED) {
-			char	*denied;
+			char *denied;
 
-			if ( svs.clients[i].netchan.remoteAddress.type == NA_BOT ) {
-				if ( killBots ) {
-					SV_DropClient( &svs.clients[i], "" );
+			if (svs.clients[i].netchan.remoteAddress.type == NA_BOT) {
+				if (killBots) {
+					SV_DropClient(&svs.clients[i], "");
 					continue;
 				}
 				isBot = qtrue;
-			}
-			else {
+			} else {
 				isBot = qfalse;
 			}
 
 			// connect the client again
-			denied = GVM_ClientConnect( i, qfalse, isBot );	// firstTime = qfalse
-			if ( denied ) {
+			denied = GVM_ClientConnect(i, qfalse, isBot); // firstTime = qfalse
+			if (denied) {
 				// this generally shouldn't happen, because the client
 				// was connected before the level change
-				SV_DropClient( &svs.clients[i], denied );
+				SV_DropClient(&svs.clients[i], denied);
 			} else {
-				if( !isBot ) {
+				if (!isBot) {
 					// when we get the next packet from a connected client,
 					// the new gamestate will be sent
 					svs.clients[i].state = CS_CONNECTED;
-				}
-				else {
-					client_t		*client;
-					sharedEntity_t	*ent;
+				} else {
+					client_t *client;
+					sharedEntity_t *ent;
 
 					client = &svs.clients[i];
 					client->state = CS_ACTIVE;
-					ent = SV_GentityNum( i );
+					ent = SV_GentityNum(i);
 					ent->s.number = i;
 					client->gentity = ent;
 
 					client->deltaMessage = -1;
-					client->nextSnapshotTime = svs.time;	// generate a snapshot immediately
+					client->nextSnapshotTime = svs.time; // generate a snapshot immediately
 
-					GVM_ClientBegin( i );
+					GVM_ClientBegin(i);
 				}
 			}
 		}
 	}
 
 	// run another frame to allow things to look at all the players
-	GVM_RunFrame( sv.time );
-	SV_BotFrame( sv.time );
+	GVM_RunFrame(sv.time);
+	SV_BotFrame(sv.time);
 	sv.time += 100;
 	svs.time += 100;
-	//rww - RAGDOLL_BEGIN
-	re->G2API_SetTime(sv.time,0);
-	//rww - RAGDOLL_END
+	// rww - RAGDOLL_BEGIN
+	re->G2API_SetTime(sv.time, 0);
+	// rww - RAGDOLL_END
 
-	if ( sv_pure->integer ) {
+	if (sv_pure->integer) {
 		// the server sends these to the clients so they will only
 		// load pk3s also loaded at the server
 		p = FS_LoadedPakChecksums();
-		Cvar_Set( "sv_paks", p );
+		Cvar_Set("sv_paks", p);
 		if (strlen(p) == 0) {
-			Com_Printf( "WARNING: sv_pure set but no PK3 files loaded\n" );
+			Com_Printf("WARNING: sv_pure set but no PK3 files loaded\n");
 		}
 		p = FS_LoadedPakNames();
-		Cvar_Set( "sv_pakNames", p );
+		Cvar_Set("sv_pakNames", p);
 
 		// if a dedicated pure server we need to touch the cgame because it could be in a
 		// seperate pk3 file and the client will need to load the latest cgame.qvm
-		if ( com_dedicated->integer ) {
+		if (com_dedicated->integer) {
 			SV_TouchCGame();
 		}
-	}
-	else {
-		Cvar_Set( "sv_paks", "" );
-		Cvar_Set( "sv_pakNames", "" );
+	} else {
+		Cvar_Set("sv_paks", "");
+		Cvar_Set("sv_pakNames", "");
 	}
 	// the server sends these to the clients so they can figure
 	// out which pk3s should be auto-downloaded
 	p = FS_ReferencedPakChecksums();
-	Cvar_Set( "sv_referencedPaks", p );
+	Cvar_Set("sv_referencedPaks", p);
 	p = FS_ReferencedPakNames();
-	Cvar_Set( "sv_referencedPakNames", p );
+	Cvar_Set("sv_referencedPakNames", p);
 
 	// save systeminfo and serverinfo strings
-	Q_strncpyz( systemInfo, Cvar_InfoString_Big( CVAR_SYSTEMINFO ), sizeof( systemInfo ) );
+	Q_strncpyz(systemInfo, Cvar_InfoString_Big(CVAR_SYSTEMINFO), sizeof(systemInfo));
 	cvar_modifiedFlags &= ~CVAR_SYSTEMINFO;
-	SV_SetConfigstring( CS_SYSTEMINFO, systemInfo );
+	SV_SetConfigstring(CS_SYSTEMINFO, systemInfo);
 
-	SV_SetConfigstring( CS_SERVERINFO, Cvar_InfoString( CVAR_SERVERINFO ) );
+	SV_SetConfigstring(CS_SERVERINFO, Cvar_InfoString(CVAR_SERVERINFO));
 	cvar_modifiedFlags &= ~CVAR_SERVERINFO;
 
 	// any media configstring setting now should issue a warning
@@ -748,17 +727,16 @@ Ghoul2 Insert End
 	}
 	*/
 
-	for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++) {
+	for (client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++) {
 		// bots will not request gamestate, so it must be manually sent
 		// cannot do this above where it says it will because mapname is not set at that time
-		if ( client->netchan.remoteAddress.type == NA_BOT && client->demo.demorecording ) {
-			SV_SendClientGameState( client );
+		if (client->netchan.remoteAddress.type == NA_BOT && client->demo.demorecording) {
+			SV_SendClientGameState(client);
 		}
 	}
 
 	SV_BeginAutoRecordDemos();
 }
-
 
 /*
 ===============
@@ -775,7 +753,6 @@ void SV_BotInitBotLib(void);
 IHeapAllocator *G2VertSpaceServer = NULL;
 CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
-
 /*
 ================
 CL_RefPrintf
@@ -783,61 +760,59 @@ CL_RefPrintf
 DLL glue
 ================
 */
-void QDECL SV_RefPrintf( int print_level, const char *fmt, ...) {
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
+void QDECL SV_RefPrintf(int print_level, const char *fmt, ...) {
+	va_list argptr;
+	char msg[MAXPRINTMSG];
 
-	va_start (argptr,fmt);
+	va_start(argptr, fmt);
 	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
+	va_end(argptr);
 
-	if ( print_level == PRINT_ALL ) {
-		Com_Printf ("%s", msg);
-	} else if ( print_level == PRINT_WARNING ) {
-		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
-	} else if ( print_level == PRINT_DEVELOPER ) {
-		Com_DPrintf (S_COLOR_RED "%s", msg);		// red
+	if (print_level == PRINT_ALL) {
+		Com_Printf("%s", msg);
+	} else if (print_level == PRINT_WARNING) {
+		Com_Printf(S_COLOR_YELLOW "%s", msg); // yellow
+	} else if (print_level == PRINT_DEVELOPER) {
+		Com_DPrintf(S_COLOR_RED "%s", msg); // red
 	}
 }
 
 qboolean Com_TheHunkMarkHasBeenMade(void);
 
-//qcommon/vm.cpp
+// qcommon/vm.cpp
 extern vm_t *currentVM;
 
-//qcommon/cm_load.cpp
+// qcommon/cm_load.cpp
 extern void *gpvCachedMapDiskImage;
 extern qboolean gbUsingCachedMapDataRightNow;
 
-static char *GetSharedMemory( void ) { return sv.mSharedMemory; }
-static vm_t *GetCurrentVM( void ) { return currentVM; }
-static void *CM_GetCachedMapDiskImage( void ) { return gpvCachedMapDiskImage; }
-static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr; }
-static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
+static char *GetSharedMemory(void) { return sv.mSharedMemory; }
+static vm_t *GetCurrentVM(void) { return currentVM; }
+static void *CM_GetCachedMapDiskImage(void) { return gpvCachedMapDiskImage; }
+static void CM_SetCachedMapDiskImage(void *ptr) { gpvCachedMapDiskImage = ptr; }
+static void CM_SetUsingCache(qboolean usingCache) { gbUsingCachedMapDataRightNow = usingCache; }
 
-//server stuff D:
-extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
-extern void SV_SetConfigstring( int index, const char *val );
+// server stuff D:
+extern void SV_GetConfigstring(int index, char *buffer, int bufferSize);
+extern void SV_SetConfigstring(int index, const char *val);
 
-static IHeapAllocator *GetG2VertSpaceServer( void ) {
-	return G2VertSpaceServer;
-}
+static IHeapAllocator *GetG2VertSpaceServer(void) { return G2VertSpaceServer; }
 
-refexport_t	*re = NULL;
+refexport_t *re = NULL;
 
-static void SV_InitRef( void ) {
+static void SV_InitRef(void) {
 	static refimport_t ri;
 	refexport_t *ret;
 
-	Com_Printf( "----- Initializing Renderer ----\n" );
+	Com_Printf("----- Initializing Renderer ----\n");
 
-	memset( &ri, 0, sizeof( ri ) );
+	memset(&ri, 0, sizeof(ri));
 
-	//set up the import table
+	// set up the import table
 	ri.Printf = SV_RefPrintf;
 	ri.Error = Com_Error;
 	ri.OPrintf = Com_OPrintf;
-	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
+	ri.Milliseconds = Sys_Milliseconds2; // FIXME: unix+mac need this
 	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
 	ri.Hunk_Alloc = Hunk_Alloc;
@@ -875,144 +850,144 @@ static void SV_InitRef( void ) {
 	ri.FS_WriteFile = FS_WriteFile;
 	ri.CM_BoxTrace = CM_BoxTrace;
 	ri.CM_DrawDebugSurface = CM_DrawDebugSurface;
-//	ri.CM_CullWorldBox = CM_CullWorldBox;
-//	ri.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
-//	ri.CM_RegisterTerrain = CM_RegisterTerrain;
-//	ri.CM_ShutdownTerrain = CM_ShutdownTerrain;
+	//	ri.CM_CullWorldBox = CM_CullWorldBox;
+	//	ri.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
+	//	ri.CM_RegisterTerrain = CM_RegisterTerrain;
+	//	ri.CM_ShutdownTerrain = CM_ShutdownTerrain;
 	ri.CM_ClusterPVS = CM_ClusterPVS;
 	ri.CM_LeafArea = CM_LeafArea;
 	ri.CM_LeafCluster = CM_LeafCluster;
 	ri.CM_PointLeafnum = CM_PointLeafnum;
 	ri.CM_PointContents = CM_PointContents;
 	ri.Com_TheHunkMarkHasBeenMade = Com_TheHunkMarkHasBeenMade;
-//	ri.S_RestartMusic = S_RestartMusic;
-//	ri.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
-//	ri.CIN_RunCinematic = CIN_RunCinematic;
-//	ri.CIN_PlayCinematic = CIN_PlayCinematic;
-//	ri.CIN_UploadCinematic = CIN_UploadCinematic;
-//	ri.CL_WriteAVIVideoFrame = CL_WriteAVIVideoFrame;
+	//	ri.S_RestartMusic = S_RestartMusic;
+	//	ri.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
+	//	ri.CIN_RunCinematic = CIN_RunCinematic;
+	//	ri.CIN_PlayCinematic = CIN_PlayCinematic;
+	//	ri.CIN_UploadCinematic = CIN_UploadCinematic;
+	//	ri.CL_WriteAVIVideoFrame = CL_WriteAVIVideoFrame;
 
 	// g2 data access
 	ri.GetSharedMemory = GetSharedMemory;
 
 	// (c)g vm callbacks
 	ri.GetCurrentVM = GetCurrentVM;
-//	ri.CGVMLoaded = CGVMLoaded;
-//	ri.CGVM_RagCallback = CGVM_RagCallback;
+	//	ri.CGVMLoaded = CGVMLoaded;
+	//	ri.CGVM_RagCallback = CGVM_RagCallback;
 
 	// ugly win32 backend
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
 	ri.CM_SetUsingCache = CM_SetUsingCache;
 
-	//FIXME: Might have to do something about this...
+	// FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	G2VertSpaceServer = &IHeapAllocator_singleton;
 
-	ret = GetRefAPI( REF_API_VERSION, &ri );
+	ret = GetRefAPI(REF_API_VERSION, &ri);
 
-//	Com_Printf( "-------------------------------\n");
+	//	Com_Printf( "-------------------------------\n");
 
-	if ( !ret ) {
-		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
+	if (!ret) {
+		Com_Error(ERR_FATAL, "Couldn't initialize refresh");
 	}
 
 	re = ret;
 }
 #endif
 
-void SV_Init (void) {
+void SV_Init(void) {
 
-	time( &svs.startTime );
+	time(&svs.startTime);
 
-	SV_AddOperatorCommands ();
+	SV_AddOperatorCommands();
 
 	// serverinfo vars
-	Cvar_Get ("dmflags", "0", CVAR_SERVERINFO);
-	Cvar_Get ("fraglimit", "20", CVAR_SERVERINFO);
-	Cvar_Get ("timelimit", "0", CVAR_SERVERINFO);
-	Cvar_Get ("capturelimit", "0", CVAR_SERVERINFO);
+	Cvar_Get("dmflags", "0", CVAR_SERVERINFO);
+	Cvar_Get("fraglimit", "20", CVAR_SERVERINFO);
+	Cvar_Get("timelimit", "0", CVAR_SERVERINFO);
+	Cvar_Get("capturelimit", "0", CVAR_SERVERINFO);
 
 	// Get these to establish them and to make sure they have a default before the menus decide to stomp them.
-	Cvar_Get ("g_maxHolocronCarry", "3", CVAR_SERVERINFO);
-	Cvar_Get ("g_privateDuel", "1", CVAR_SERVERINFO );
-	Cvar_Get ("g_saberLocking", "1", CVAR_SERVERINFO );
-	Cvar_Get ("g_maxForceRank", "7", CVAR_SERVERINFO );
-	Cvar_Get ("duel_fraglimit", "10", CVAR_SERVERINFO);
-	Cvar_Get ("g_forceBasedTeams", "0", CVAR_SERVERINFO);
-	Cvar_Get ("g_duelWeaponDisable", "1", CVAR_SERVERINFO);
+	Cvar_Get("g_maxHolocronCarry", "3", CVAR_SERVERINFO);
+	Cvar_Get("g_privateDuel", "1", CVAR_SERVERINFO);
+	Cvar_Get("g_saberLocking", "1", CVAR_SERVERINFO);
+	Cvar_Get("g_maxForceRank", "7", CVAR_SERVERINFO);
+	Cvar_Get("duel_fraglimit", "10", CVAR_SERVERINFO);
+	Cvar_Get("g_forceBasedTeams", "0", CVAR_SERVERINFO);
+	Cvar_Get("g_duelWeaponDisable", "1", CVAR_SERVERINFO);
 
-	sv_gametype = Cvar_Get ("g_gametype", "0", CVAR_SERVERINFO | CVAR_LATCH, "Server gametype value" );
-	sv_needpass = Cvar_Get ("g_needpass", "0", CVAR_SERVERINFO | CVAR_ROM, "Server needs password to join" );
-	Cvar_Get ("sv_keywords", "", CVAR_SERVERINFO);
-	Cvar_Get ("protocol", va("%i", PROTOCOL_VERSION), CVAR_SERVERINFO | CVAR_ROM);
-	sv_mapname = Cvar_Get ("mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM);
-	sv_privateClients = Cvar_Get ("sv_privateClients", "0", CVAR_SERVERINFO, "Number of reserved client slots available with password" );
-	Cvar_CheckRange( sv_privateClients, 0, MAX_CLIENTS, qtrue );
-	sv_hostname = Cvar_Get ("sv_hostname", "*Jedi*", CVAR_SERVERINFO | CVAR_ARCHIVE, "The name of the server that is displayed in the serverlist" );
-	sv_maxclients = Cvar_Get ("sv_maxclients", "8", CVAR_SERVERINFO | CVAR_LATCH, "Max. connected clients" );
+	sv_gametype = Cvar_Get("g_gametype", "0", CVAR_SERVERINFO | CVAR_LATCH, "Server gametype value");
+	sv_needpass = Cvar_Get("g_needpass", "0", CVAR_SERVERINFO | CVAR_ROM, "Server needs password to join");
+	Cvar_Get("sv_keywords", "", CVAR_SERVERINFO);
+	Cvar_Get("protocol", va("%i", PROTOCOL_VERSION), CVAR_SERVERINFO | CVAR_ROM);
+	sv_mapname = Cvar_Get("mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM);
+	sv_privateClients = Cvar_Get("sv_privateClients", "0", CVAR_SERVERINFO, "Number of reserved client slots available with password");
+	Cvar_CheckRange(sv_privateClients, 0, MAX_CLIENTS, qtrue);
+	sv_hostname = Cvar_Get("sv_hostname", "*Jedi*", CVAR_SERVERINFO | CVAR_ARCHIVE, "The name of the server that is displayed in the serverlist");
+	sv_maxclients = Cvar_Get("sv_maxclients", "8", CVAR_SERVERINFO | CVAR_LATCH, "Max. connected clients");
 
-
-	//cvar_t	*sv_ratePolicy;		// 1-2
-	//cvar_t	*sv_clientRate;
-	sv_ratePolicy = Cvar_Get( "sv_ratePolicy", "1", CVAR_ARCHIVE_ND, "Determines which policy of enforcement is used for client's \"rate\" cvar" );
+	// cvar_t	*sv_ratePolicy;		// 1-2
+	// cvar_t	*sv_clientRate;
+	sv_ratePolicy = Cvar_Get("sv_ratePolicy", "1", CVAR_ARCHIVE_ND, "Determines which policy of enforcement is used for client's \"rate\" cvar");
 	Cvar_CheckRange(sv_ratePolicy, 1, 2, qtrue);
-	sv_clientRate = Cvar_Get( "sv_clientRate", "50000", CVAR_ARCHIVE_ND);
-	sv_minRate = Cvar_Get ("sv_minRate", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Min bandwidth rate allowed on server. Use 0 for unlimited." );
-	sv_maxRate = Cvar_Get ("sv_maxRate", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Max bandwidth rate allowed on server. Use 0 for unlimited." );
-	sv_minPing = Cvar_Get ("sv_minPing", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO );
-	sv_maxPing = Cvar_Get ("sv_maxPing", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO );
-	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO, "Protect against flooding of server commands" );
-	sv_floodProtectSlow = Cvar_Get ("sv_floodProtectSlow", "1", CVAR_ARCHIVE | CVAR_SERVERINFO, "Use original method of delaying commands with flood protection" );
+	sv_clientRate = Cvar_Get("sv_clientRate", "50000", CVAR_ARCHIVE_ND);
+	sv_minRate = Cvar_Get("sv_minRate", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Min bandwidth rate allowed on server. Use 0 for unlimited.");
+	sv_maxRate = Cvar_Get("sv_maxRate", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Max bandwidth rate allowed on server. Use 0 for unlimited.");
+	sv_minPing = Cvar_Get("sv_minPing", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO);
+	sv_maxPing = Cvar_Get("sv_maxPing", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO);
+	sv_floodProtect = Cvar_Get("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO, "Protect against flooding of server commands");
+	sv_floodProtectSlow =
+		Cvar_Get("sv_floodProtectSlow", "1", CVAR_ARCHIVE | CVAR_SERVERINFO, "Use original method of delaying commands with flood protection");
 	// systeminfo
-	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM, "Allow cheats on server if set to 1" );
-	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
-	sv_pure = Cvar_Get ("sv_pure", "0", CVAR_SYSTEMINFO, "Pure server" );
-	Cvar_Get ("sv_paks", "", CVAR_SYSTEMINFO | CVAR_ROM );
-	Cvar_Get ("sv_pakNames", "", CVAR_SYSTEMINFO | CVAR_ROM );
-	Cvar_Get ("sv_referencedPaks", "", CVAR_SYSTEMINFO | CVAR_ROM );
-	Cvar_Get ("sv_referencedPakNames", "", CVAR_SYSTEMINFO | CVAR_ROM );
+	Cvar_Get("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM, "Allow cheats on server if set to 1");
+	sv_serverid = Cvar_Get("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM);
+	sv_pure = Cvar_Get("sv_pure", "0", CVAR_SYSTEMINFO, "Pure server");
+	Cvar_Get("sv_paks", "", CVAR_SYSTEMINFO | CVAR_ROM);
+	Cvar_Get("sv_pakNames", "", CVAR_SYSTEMINFO | CVAR_ROM);
+	Cvar_Get("sv_referencedPaks", "", CVAR_SYSTEMINFO | CVAR_ROM);
+	Cvar_Get("sv_referencedPakNames", "", CVAR_SYSTEMINFO | CVAR_ROM);
 
 	// server vars
-	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
-	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
-	sv_snapsMin = Cvar_Get ("sv_snapsMin", "10", CVAR_ARCHIVE_ND ); // 1 <=> sv_snapsMax
-	sv_snapsMax = Cvar_Get ("sv_snapsMax", "40", CVAR_ARCHIVE_ND ); // sv_snapsMin <=> sv_fps
-	sv_snapsPolicy = Cvar_Get ("sv_snapsPolicy", "1", CVAR_ARCHIVE_ND, "Determines which policy of enforcement is used for client's \"snaps\" cvar");
+	sv_rconPassword = Cvar_Get("rconPassword", "", CVAR_TEMP);
+	sv_privatePassword = Cvar_Get("sv_privatePassword", "", CVAR_TEMP);
+	sv_snapsMin = Cvar_Get("sv_snapsMin", "10", CVAR_ARCHIVE_ND); // 1 <=> sv_snapsMax
+	sv_snapsMax = Cvar_Get("sv_snapsMax", "40", CVAR_ARCHIVE_ND); // sv_snapsMin <=> sv_fps
+	sv_snapsPolicy = Cvar_Get("sv_snapsPolicy", "1", CVAR_ARCHIVE_ND, "Determines which policy of enforcement is used for client's \"snaps\" cvar");
 	Cvar_CheckRange(sv_snapsPolicy, 0, 2, qtrue);
-	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_SERVERINFO, "Server frames per second" );
-	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
-	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
-	Cvar_Get ("nextmap", "", CVAR_TEMP );
+	sv_fps = Cvar_Get("sv_fps", "40", CVAR_SERVERINFO, "Server frames per second");
+	sv_timeout = Cvar_Get("sv_timeout", "200", CVAR_TEMP);
+	sv_zombietime = Cvar_Get("sv_zombietime", "2", CVAR_TEMP);
+	Cvar_Get("nextmap", "", CVAR_TEMP);
 
-	sv_allowDownload = Cvar_Get ("sv_allowDownload", "0", CVAR_SERVERINFO, "Allow clients to download mod files via UDP from the server");
-	sv_master[0] = Cvar_Get ("sv_master1", MASTER_SERVER_NAME, CVAR_PROTECTED );
-	sv_master[1] = Cvar_Get ("sv_master2", JKHUB_MASTER_SERVER_NAME, CVAR_PROTECTED);
-	for(int index = 2; index < MAX_MASTER_SERVERS; index++)
-		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE_ND|CVAR_PROTECTED);
-	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "3", 0);
-	sv_showghoultraces = Cvar_Get ("sv_showghoultraces", "0", 0);
-	sv_showloss = Cvar_Get ("sv_showloss", "0", 0);
-	sv_padPackets = Cvar_Get ("sv_padPackets", "0", 0);
-	sv_killserver = Cvar_Get ("sv_killserver", "0", 0);
-	sv_mapChecksum = Cvar_Get ("sv_mapChecksum", "", CVAR_ROM);
-	sv_lanForceRate = Cvar_Get ("sv_lanForceRate", "1", CVAR_ARCHIVE_ND );
+	sv_allowDownload = Cvar_Get("sv_allowDownload", "0", CVAR_SERVERINFO, "Allow clients to download mod files via UDP from the server");
+	sv_master[0] = Cvar_Get("sv_master1", MASTER_SERVER_NAME, CVAR_PROTECTED);
+	sv_master[1] = Cvar_Get("sv_master2", JKHUB_MASTER_SERVER_NAME, CVAR_PROTECTED);
+	for (int index = 2; index < MAX_MASTER_SERVERS; index++)
+		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE_ND | CVAR_PROTECTED);
+	sv_reconnectlimit = Cvar_Get("sv_reconnectlimit", "3", 0);
+	sv_showghoultraces = Cvar_Get("sv_showghoultraces", "0", 0);
+	sv_showloss = Cvar_Get("sv_showloss", "0", 0);
+	sv_padPackets = Cvar_Get("sv_padPackets", "0", 0);
+	sv_killserver = Cvar_Get("sv_killserver", "0", 0);
+	sv_mapChecksum = Cvar_Get("sv_mapChecksum", "", CVAR_ROM);
+	sv_lanForceRate = Cvar_Get("sv_lanForceRate", "1", CVAR_ARCHIVE_ND);
 
-	sv_filterCommands = Cvar_Get( "sv_filterCommands", "1", CVAR_ARCHIVE );
+	sv_filterCommands = Cvar_Get("sv_filterCommands", "1", CVAR_ARCHIVE);
 
-//	sv_debugserver = Cvar_Get ("sv_debugserver", "0", 0);
+	//	sv_debugserver = Cvar_Get ("sv_debugserver", "0", 0);
 
-	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Automatically take server-side demos" );
-	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE_ND, "Record server-side demos for bots" );
-	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE_ND );
+	sv_autoDemo = Cvar_Get("sv_autoDemo", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Automatically take server-side demos");
+	sv_autoDemoBots = Cvar_Get("sv_autoDemoBots", "0", CVAR_ARCHIVE_ND, "Record server-side demos for bots");
+	sv_autoDemoMaxMaps = Cvar_Get("sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE_ND);
 
-	sv_legacyFixes = Cvar_Get( "sv_legacyFixes", "1", CVAR_ARCHIVE );
+	sv_legacyFixes = Cvar_Get("sv_legacyFixes", "1", CVAR_ARCHIVE);
 
-	sv_banFile = Cvar_Get( "sv_banFile", "serverbans.dat", CVAR_ARCHIVE, "File to use to store bans and exceptions" );
+	sv_banFile = Cvar_Get("sv_banFile", "serverbans.dat", CVAR_ARCHIVE, "File to use to store bans and exceptions");
 
-	sv_maxOOBRate = Cvar_Get("sv_maxOOBRate", "1000", CVAR_ARCHIVE, "Maximum rate of handling incoming server commands" );
-	sv_maxOOBRateIP = Cvar_Get("sv_maxOOBRateIP", "1", CVAR_ARCHIVE, "Maximum rate of handling incoming server commands per IP address" );
-	sv_autoWhitelist = Cvar_Get("sv_autoWhitelist", "1", CVAR_ARCHIVE, "Save player IPs to allow them using server during DOS attack" );
+	sv_maxOOBRate = Cvar_Get("sv_maxOOBRate", "1000", CVAR_ARCHIVE, "Maximum rate of handling incoming server commands");
+	sv_maxOOBRateIP = Cvar_Get("sv_maxOOBRateIP", "1", CVAR_ARCHIVE, "Maximum rate of handling incoming server commands per IP address");
+	sv_autoWhitelist = Cvar_Get("sv_autoWhitelist", "1", CVAR_ARCHIVE, "Save player IPs to allow them using server during DOS attack");
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();
@@ -1033,7 +1008,6 @@ void SV_Init (void) {
 #endif
 }
 
-
 /*
 ==================
 SV_FinalMessage
@@ -1044,27 +1018,26 @@ not just stuck on the outgoing message list, because the server is going
 to totally exit after returning from this function.
 ==================
 */
-void SV_FinalMessage( char *message ) {
-	int			i, j;
-	client_t	*cl;
+void SV_FinalMessage(char *message) {
+	int i, j;
+	client_t *cl;
 
 	// send it twice, ignoring rate
-	for ( j = 0 ; j < 2 ; j++ ) {
-		for (i=0, cl = svs.clients ; i < sv_maxclients->integer ; i++, cl++) {
+	for (j = 0; j < 2; j++) {
+		for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
 			if (cl->state >= CS_CONNECTED) {
 				// don't send a disconnect to a local client
-				if ( cl->netchan.remoteAddress.type != NA_LOOPBACK ) {
-					SV_SendServerCommand( cl, "print \"%s\"", message );
-					SV_SendServerCommand( cl, "disconnect" );
+				if (cl->netchan.remoteAddress.type != NA_LOOPBACK) {
+					SV_SendServerCommand(cl, "print \"%s\"", message);
+					SV_SendServerCommand(cl, "disconnect");
 				}
 				// force a snapshot to be sent
 				cl->nextSnapshotTime = -1;
-				SV_SendClientSnapshot( cl );
+				SV_SendClientSnapshot(cl);
 			}
 		}
 	}
 }
-
 
 /*
 ================
@@ -1074,17 +1047,15 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown( char *finalmsg )
-{
-	if ( !com_sv_running || !com_sv_running->integer )
-	{
+void SV_Shutdown(char *finalmsg) {
+	if (!com_sv_running || !com_sv_running->integer) {
 		return;
 	}
 
-//	Com_Printf( "----- Server Shutdown -----\n" );
+	//	Com_Printf( "----- Server Shutdown -----\n" );
 
-	if ( svs.clients && !com_errorEntered ) {
-		SV_FinalMessage( finalmsg );
+	if (svs.clients && !com_errorEntered) {
+		SV_FinalMessage(finalmsg);
 	}
 
 	SV_RemoveOperatorCommands();
@@ -1092,32 +1063,31 @@ void SV_Shutdown( char *finalmsg )
 	SV_ChallengeShutdown();
 	SV_ShutdownGameProgs();
 	svs.gameStarted = qfalse;
-/*
-Ghoul2 Insert Start
-*/
- 	// de allocate the snapshot entities
-	if (svs.snapshotEntities)
-	{
+	/*
+	Ghoul2 Insert Start
+	*/
+	// de allocate the snapshot entities
+	if (svs.snapshotEntities) {
 		delete[] svs.snapshotEntities;
 		svs.snapshotEntities = NULL;
 	}
 
 	// free current level
 	SV_ClearServer();
-	CM_ClearMap();//jfm: add a clear here since it's commented out in clearServer.  This prevents crashing cmShaderTable on exit.
+	CM_ClearMap(); // jfm: add a clear here since it's commented out in clearServer.  This prevents crashing cmShaderTable on exit.
 
 	// free server static data
-	if ( svs.clients ) {
-		Z_Free( svs.clients );
+	if (svs.clients) {
+		Z_Free(svs.clients);
 	}
-	Com_Memset( &svs, 0, sizeof( svs ) );
+	Com_Memset(&svs, 0, sizeof(svs));
 
-	Cvar_Set( "sv_running", "0" );
+	Cvar_Set("sv_running", "0");
 	Cvar_Set("ui_singlePlayerActive", "0");
 
-//	Com_Printf( "---------------------------\n" );
+	//	Com_Printf( "---------------------------\n" );
 
 	// disconnect any local clients
-	if( sv_killserver->integer != 2 )
-		CL_Disconnect( qfalse );
+	if (sv_killserver->integer != 2)
+		CL_Disconnect(qfalse);
 }

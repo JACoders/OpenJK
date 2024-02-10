@@ -28,44 +28,22 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 qboolean gbInsideLoadSound = qfalse; // important to default to this!!!
 
-qboolean SNDDMA_Init(void)
-{
-	return qfalse;
-}
+qboolean SNDDMA_Init(void) { return qfalse; }
 
-int	SNDDMA_GetDMAPos(void)
-{
-	return 0;
-}
+int SNDDMA_GetDMAPos(void) { return 0; }
 
-void SNDDMA_Shutdown(void)
-{
-}
+void SNDDMA_Shutdown(void) {}
 
-void SNDDMA_BeginPainting (void)
-{
-}
+void SNDDMA_BeginPainting(void) {}
 
-void SNDDMA_Submit(void)
-{
-}
+void SNDDMA_Submit(void) {}
 
-sfxHandle_t S_RegisterSound( const char *name ) {
-	return 0;
-}
+sfxHandle_t S_RegisterSound(const char *name) { return 0; }
 
-void S_StartLocalSound( sfxHandle_t sfxHandle, int channelNum ) {
-}
+void S_StartLocalSound(sfxHandle_t sfxHandle, int channelNum) {}
 
-void S_ClearSoundBuffer( void ) {
-}
+void S_ClearSoundBuffer(void) {}
 
-qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel)
-{
-	return qfalse;
-}
+qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel) { return qfalse; }
 
-int SND_FreeOldestSound(void)
-{
-	return 0;
-}
+int SND_FreeOldestSound(void) { return 0; }

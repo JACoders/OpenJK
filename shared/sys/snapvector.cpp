@@ -23,22 +23,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 #if _MSC_VER
-# include <float.h>
-# pragma fenv_access (on)
+#include <float.h>
+#pragma fenv_access(on)
 #else
-# include <fenv.h>
+#include <fenv.h>
 #endif
 
 #if _MSC_VER
-static inline float roundfloat(float n)
-{
-	return (n < 0.0f) ? ceilf(n - 0.5f) : floorf(n + 0.5f);
-}
+static inline float roundfloat(float n) { return (n < 0.0f) ? ceilf(n - 0.5f) : floorf(n + 0.5f); }
 #endif
 
-extern "C"
-void Sys_SnapVector(float *v)
-{
+extern "C" void Sys_SnapVector(float *v) {
 #if _MSC_VER
 	unsigned int oldcontrol;
 	unsigned int newcontrol;

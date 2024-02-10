@@ -31,11 +31,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 /*
 Debug_Printf
 */
-void Debug_Printf (cvar_t *cv, int debugLevel, char *fmt, ...)
-{
-	char		*color;
-	va_list		argptr;
-	char		msg[1024];
+void Debug_Printf(cvar_t *cv, int debugLevel, char *fmt, ...) {
+	char *color;
+	va_list argptr;
+	char msg[1024];
 
 	if (cv->value < debugLevel)
 		return;
@@ -51,30 +50,26 @@ void Debug_Printf (cvar_t *cv, int debugLevel, char *fmt, ...)
 	else
 		color = S_COLOR_RED;
 
-	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
+	va_start(argptr, fmt);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
+	va_end(argptr);
 
 	gi.Printf("%s%5i:%s", color, level.time, msg);
 }
 
-
 /*
 Debug_NPCPrintf
 */
-void Debug_NPCPrintf (gentity_t *printNPC, cvar_t *cv, int debugLevel, char *fmt, ...)
-{
-	int			color;
-	va_list		argptr;
-	char		msg[1024];
+void Debug_NPCPrintf(gentity_t *printNPC, cvar_t *cv, int debugLevel, char *fmt, ...) {
+	int color;
+	va_list argptr;
+	char msg[1024];
 
-	if (cv->value < debugLevel)
-	{
+	if (cv->value < debugLevel) {
 		return;
 	}
 
-	if ( debugNPCName->string[0] && Q_stricmp( debugNPCName->string, printNPC->targetname) != 0 ) 
-	{
+	if (debugNPCName->string[0] && Q_stricmp(debugNPCName->string, printNPC->targetname) != 0) {
 		return;
 	}
 
@@ -89,9 +84,9 @@ void Debug_NPCPrintf (gentity_t *printNPC, cvar_t *cv, int debugLevel, char *fmt
 	else
 		color = COLOR_RED;
 
-	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
+	va_start(argptr, fmt);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
+	va_end(argptr);
 
-	gi.Printf ("%c%c%5i (%s) %s", Q_COLOR_ESCAPE, color, level.time, printNPC->targetname, msg);
+	gi.Printf("%c%c%5i (%s) %s", Q_COLOR_ESCAPE, color, level.time, printNPC->targetname, msg);
 }

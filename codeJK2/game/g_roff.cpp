@@ -28,13 +28,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../code/qcommon/ojk_saved_game_helper.h"
 
 // The list of precached ROFFs
-roff_list_t	roffs[MAX_ROFFS];
-int			num_roffs = 0;
+roff_list_t roffs[MAX_ROFFS];
+int num_roffs = 0;
 
-extern void	Q3_TaskIDComplete( gentity_t *ent, taskID_t taskType );
+extern void Q3_TaskIDComplete(gentity_t *ent, taskID_t taskType);
 
-void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
-{
+void G_RoffNotetrackCallback(gentity_t *cent, const char *notetrack) {
 	int i = 0, r = 0, r2 = 0, objectID = 0, anglesGathered = 0, posoffsetGathered = 0;
 	char type[256];
 	char argument[512];
@@ -45,32 +44,27 @@ void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 	int addlArgs = 0;
 	vec3_t parsedAngles, parsedOffset, useAngles, useOrigin, forward, right, up;
 
-	if (!cent || !notetrack)
-	{
+	if (!cent || !notetrack) {
 		return;
 	}
 
-	//notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
+	// notetrack = "effect effects/explosion1.efx 0+0+64 0-0-1";
 
-	while (notetrack[i] && notetrack[i] != ' ')
-	{
+	while (notetrack[i] && notetrack[i] != ' ') {
 		type[i] = notetrack[i];
 		i++;
 	}
 
 	type[i] = '\0';
 
-	if (notetrack[i] != ' ')
-	{ //didn't pass in a valid notetrack type, or forgot the argument for it
+	if (notetrack[i] != ' ') { // didn't pass in a valid notetrack type, or forgot the argument for it
 		return;
 	}
 
 	i++;
 
-	while (notetrack[i] && notetrack[i] != ' ')
-	{
-		if (notetrack[i] != '\n' && notetrack[i] != '\r')
-		{ //don't read line ends for an argument
+	while (notetrack[i] && notetrack[i] != ' ') {
+		if (notetrack[i] != '\n' && notetrack[i] != '\r') { // don't read line ends for an argument
 			argument[r] = notetrack[i];
 			r++;
 		}
@@ -78,19 +72,16 @@ void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 	}
 	argument[r] = '\0';
 
-	if (!r)
-	{
+	if (!r) {
 		return;
 	}
 
-	if (notetrack[i] == ' ')
-	{ //additional arguments...
+	if (notetrack[i] == ' ') { // additional arguments...
 		addlArgs = 1;
 
 		i++;
 		r = 0;
-		while (notetrack[i])
-		{
+		while (notetrack[i]) {
 			addlArg[r] = notetrack[i];
 			r++;
 			i++;
@@ -98,29 +89,24 @@ void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 		addlArg[r] = '\0';
 	}
 
-	if (strcmp(type, "effect") == 0)
-	{
-		if (!addlArgs)
-		{
+	if (strcmp(type, "effect") == 0) {
+		if (!addlArgs) {
 			VectorClear(parsedOffset);
 			goto defaultoffsetposition;
 		}
 
 		i = 0;
 
-		while (posoffsetGathered < 3)
-		{
+		while (posoffsetGathered < 3) {
 			r = 0;
-			while (addlArg[i] && addlArg[i] != '+' && addlArg[i] != ' ')
-			{
+			while (addlArg[i] && addlArg[i] != '+' && addlArg[i] != ' ') {
 				t[r] = addlArg[i];
 				r++;
 				i++;
 			}
 			t[r] = '\0';
 			i++;
-			if (!r)
-			{ //failure..
+			if (!r) { // failure..
 				VectorClear(parsedOffset);
 				i = 0;
 				goto defaultoffsetposition;
@@ -129,41 +115,35 @@ void G_RoffNotetrackCallback( gentity_t *cent, const char *notetrack)
 			posoffsetGathered++;
 		}
 
-		if (posoffsetGathered < 3)
-		{
+		if (posoffsetGathered < 3) {
 			sprintf(errMsg, "Offset position argument for 'effect' type is invalid.");
 			goto functionend;
 		}
 
 		i--;
 
-		if (addlArg[i] != ' ')
-		{
+		if (addlArg[i] != ' ') {
 			addlArgs = 0;
 		}
 
-defaultoffsetposition:
+	defaultoffsetposition:
 
 		r = 0;
-		if (argument[r] == '/')
-		{
+		if (argument[r] == '/') {
 			r++;
 		}
-		while (argument[r] && argument[r] != '/')
-		{
+		while (argument[r] && argument[r] != '/') {
 			teststr[r2] = argument[r];
 			r2++;
 			r++;
 		}
 		teststr[r2] = '\0';
 
-		if (r2 && strstr(teststr, "effects"))
-		{ //get rid of the leading "effects" since it's auto-inserted
+		if (r2 && strstr(teststr, "effects")) { // get rid of the leading "effects" since it's auto-inserted
 			r++;
 			r2 = 0;
 
-			while (argument[r])
-			{
+			while (argument[r]) {
 				teststr[r2] = argument[r];
 				r2++;
 				r++;
@@ -176,16 +156,12 @@ defaultoffsetposition:
 		objectID = G_EffectIndex(argument);
 		r = 0;
 
-		if (objectID)
-		{
-			if (addlArgs)
-			{ //if there is an additional argument for an effect it is expected to be XANGLE-YANGLE-ZANGLE
+		if (objectID) {
+			if (addlArgs) { // if there is an additional argument for an effect it is expected to be XANGLE-YANGLE-ZANGLE
 				i++;
-				while (anglesGathered < 3)
-				{
+				while (anglesGathered < 3) {
 					r = 0;
-					while (addlArg[i] && addlArg[i] != '-')
-					{
+					while (addlArg[i] && addlArg[i] != '-') {
 						t[r] = addlArg[i];
 						r++;
 						i++;
@@ -193,8 +169,7 @@ defaultoffsetposition:
 					t[r] = '\0';
 					i++;
 
-					if (!r)
-					{ //failed to get a new part of the vector
+					if (!r) { // failed to get a new part of the vector
 						anglesGathered = 0;
 						break;
 					}
@@ -203,17 +178,12 @@ defaultoffsetposition:
 					anglesGathered++;
 				}
 
-				if (anglesGathered)
-				{
+				if (anglesGathered) {
 					VectorCopy(parsedAngles, useAngles);
-				}
-				else
-				{ //failed to parse angles from the extra argument provided..
+				} else { // failed to parse angles from the extra argument provided..
 					VectorCopy(cent->s.apos.trBase, useAngles);
 				}
-			}
-			else
-			{ //if no constant angles, play in direction entity is facing
+			} else { // if no constant angles, play in direction entity is facing
 				VectorCopy(cent->s.apos.trBase, useAngles);
 			}
 
@@ -221,38 +191,32 @@ defaultoffsetposition:
 
 			VectorCopy(cent->s.pos.trBase, useOrigin);
 
-			//forward
-			useOrigin[0] += forward[0]*parsedOffset[0];
-			useOrigin[1] += forward[1]*parsedOffset[0];
-			useOrigin[2] += forward[2]*parsedOffset[0];
+			// forward
+			useOrigin[0] += forward[0] * parsedOffset[0];
+			useOrigin[1] += forward[1] * parsedOffset[0];
+			useOrigin[2] += forward[2] * parsedOffset[0];
 
-			//right
-			useOrigin[0] += right[0]*parsedOffset[1];
-			useOrigin[1] += right[1]*parsedOffset[1];
-			useOrigin[2] += right[2]*parsedOffset[1];
+			// right
+			useOrigin[0] += right[0] * parsedOffset[1];
+			useOrigin[1] += right[1] * parsedOffset[1];
+			useOrigin[2] += right[2] * parsedOffset[1];
 
-			//up
-			useOrigin[0] += up[0]*parsedOffset[2];
-			useOrigin[1] += up[1]*parsedOffset[2];
-			useOrigin[2] += up[2]*parsedOffset[2];
+			// up
+			useOrigin[0] += up[0] * parsedOffset[2];
+			useOrigin[1] += up[1] * parsedOffset[2];
+			useOrigin[2] += up[2] * parsedOffset[2];
 
 			G_PlayEffect(objectID, useOrigin, useAngles);
 		}
-	}
-	else if (strcmp(type, "sound") == 0)
-	{
+	} else if (strcmp(type, "sound") == 0) {
 		objectID = G_SoundIndex(argument);
 		cgi_S_StartSound(cent->s.pos.trBase, cent->s.number, CHAN_BODY, objectID);
 	}
-	//else if ...
-	else
-	{
-		if (type[0])
-		{
+	// else if ...
+	else {
+		if (type[0]) {
 			Com_Printf("Warning: \"%s\" is an invalid ROFF notetrack function\n", type);
-		}
-		else
-		{
+		} else {
 			Com_Printf("Warning: Notetrack is missing function and/or arguments\n");
 		}
 	}
@@ -264,16 +228,13 @@ functionend:
 	return;
 }
 
-qboolean G_ValidRoff( roff_hdr2_t *header )
-{
-	if ( !strncmp( header->mHeader, "ROFF", 4 ))
-	{
-		if ( LittleLong(header->mVersion) == ROFF_VERSION2 && LittleLong(header->mCount) > 0 )
-		{
+qboolean G_ValidRoff(roff_hdr2_t *header) {
+	if (!strncmp(header->mHeader, "ROFF", 4)) {
+		if (LittleLong(header->mVersion) == ROFF_VERSION2 && LittleLong(header->mCount) > 0) {
 			return qtrue;
-		}
-		else if ( LittleLong(header->mVersion) == ROFF_VERSION && LittleFloat(((roff_hdr_t*)header)->mCount) > 0.0f )
-		{ // version 1 defines the count as a float, so we best do the count check as a float or we'll get bogus results
+		} else if (LittleLong(header->mVersion) == ROFF_VERSION &&
+				   LittleFloat(((roff_hdr_t *)header)->mCount) >
+					   0.0f) { // version 1 defines the count as a float, so we best do the count check as a float or we'll get bogus results
 			return qtrue;
 		}
 	}
@@ -281,36 +242,32 @@ qboolean G_ValidRoff( roff_hdr2_t *header )
 	return qfalse;
 }
 
-qboolean G_InitRoff( char *file, unsigned char *data )
-{
+qboolean G_InitRoff(char *file, unsigned char *data) {
 	roff_hdr_t *header = (roff_hdr_t *)data;
-	int	count;
+	int count;
 	int i;
 
-	roffs[num_roffs].fileName = G_NewString( file );
+	roffs[num_roffs].fileName = G_NewString(file);
 
-	if ( LittleLong(header->mVersion) == ROFF_VERSION )
-	{
+	if (LittleLong(header->mVersion) == ROFF_VERSION) {
 		count = (int)LittleFloat(header->mCount);
 
 		// We are Old School(tm)
-		roffs[num_roffs].data = (void *) G_Alloc( count * sizeof( move_rotate_t ) );
-		move_rotate_t *mem	= (move_rotate_t *)roffs[num_roffs].data;
+		roffs[num_roffs].data = (void *)G_Alloc(count * sizeof(move_rotate_t));
+		move_rotate_t *mem = (move_rotate_t *)roffs[num_roffs].data;
 
 		roffs[num_roffs].mFrameTime = 100; // old school ones have a hard-coded frame time
 		roffs[num_roffs].mLerp = 10;
 
-		if ( mem )
-		{
+		if (mem) {
 			// The allocation worked, so stash this stuff off so we can reference the data later if needed
-			roffs[num_roffs].frames		= count;
+			roffs[num_roffs].frames = count;
 
 			// Step past the header to get to the goods
-			move_rotate_t *roff_data = ( move_rotate_t *)&header[1];
+			move_rotate_t *roff_data = (move_rotate_t *)&header[1];
 
 			// Copy all of the goods into our ROFF cache
-			for ( i = 0; i < count; i++, roff_data++, mem++ )
-			{
+			for (i = 0; i < count; i++, roff_data++, mem++) {
 				// Copy just the delta position and orientation which can be applied to anything at a later point
 #ifdef Q3_BIG_ENDIAN
 				mem->origin_delta[0] = LittleFloat(roff_data->origin_delta[0]);
@@ -320,40 +277,34 @@ qboolean G_InitRoff( char *file, unsigned char *data )
 				mem->rotate_delta[1] = LittleFloat(roff_data->rotate_delta[1]);
 				mem->rotate_delta[2] = LittleFloat(roff_data->rotate_delta[2]);
 #else
-				VectorCopy( roff_data->origin_delta, mem->origin_delta );
-				VectorCopy( roff_data->rotate_delta, mem->rotate_delta );
+				VectorCopy(roff_data->origin_delta, mem->origin_delta);
+				VectorCopy(roff_data->rotate_delta, mem->rotate_delta);
 #endif
 			}
-		}
-		else
-		{
+		} else {
 			return qfalse;
 		}
-	}
-	else
-	{
+	} else {
 		// Version 2.0, heck yeah!
 		roff_hdr2_t *hdr = (roff_hdr2_t *)data;
 		count = LittleLong(hdr->mCount);
 
-		roffs[num_roffs].frames				= count;
-		roffs[num_roffs].data	= (void *) G_Alloc( count * sizeof( move_rotate2_t ));		
-		move_rotate2_t *mem		= (move_rotate2_t *)roffs[num_roffs].data;
+		roffs[num_roffs].frames = count;
+		roffs[num_roffs].data = (void *)G_Alloc(count * sizeof(move_rotate2_t));
+		move_rotate2_t *mem = (move_rotate2_t *)roffs[num_roffs].data;
 
-		if ( mem )
-		{
-			roffs[num_roffs].mFrameTime			= LittleLong(hdr->mFrameRate);
-			roffs[num_roffs].mLerp				= 1000 / LittleLong(hdr->mFrameRate);
-			roffs[num_roffs].mNumNoteTracks		= LittleLong(hdr->mNumNotes);
+		if (mem) {
+			roffs[num_roffs].mFrameTime = LittleLong(hdr->mFrameRate);
+			roffs[num_roffs].mLerp = 1000 / LittleLong(hdr->mFrameRate);
+			roffs[num_roffs].mNumNoteTracks = LittleLong(hdr->mNumNotes);
 
-			 // Step past the header to get to the goods
-			move_rotate2_t *roff_data = ( move_rotate2_t *)&hdr[1];
+			// Step past the header to get to the goods
+			move_rotate2_t *roff_data = (move_rotate2_t *)&hdr[1];
 
-			roffs[num_roffs].type = 2; //rww - any reason this wasn't being set already?
+			roffs[num_roffs].type = 2; // rww - any reason this wasn't being set already?
 
 			// Copy all of the goods into our ROFF cache
-			for ( i = 0; i < count; i++ )
-			{
+			for (i = 0; i < count; i++) {
 #ifdef Q3_BIG_ENDIAN
 				mem[i].origin_delta[0] = LittleFloat(roff_data[i].origin_delta[0]);
 				mem[i].origin_delta[1] = LittleFloat(roff_data[i].origin_delta[1]);
@@ -362,24 +313,22 @@ qboolean G_InitRoff( char *file, unsigned char *data )
 				mem[i].rotate_delta[1] = LittleFloat(roff_data[i].rotate_delta[1]);
 				mem[i].rotate_delta[2] = LittleFloat(roff_data[i].rotate_delta[2]);
 #else
-				VectorCopy( roff_data[i].origin_delta, mem[i].origin_delta );
-				VectorCopy( roff_data[i].rotate_delta, mem[i].rotate_delta );
+				VectorCopy(roff_data[i].origin_delta, mem[i].origin_delta);
+				VectorCopy(roff_data[i].rotate_delta, mem[i].rotate_delta);
 #endif
 
 				mem[i].mStartNote = LittleLong(roff_data[i].mStartNote);
 				mem[i].mNumNotes = LittleLong(roff_data[i].mNumNotes);
 			}
 
-			if ( LittleLong(hdr->mNumNotes) )
-			{
-				int		size;
-				char	*ptr, *start;
+			if (LittleLong(hdr->mNumNotes)) {
+				int size;
+				char *ptr, *start;
 
 				ptr = start = (char *)&roff_data[i];
 				size = 0;
 
-				for( i = 0; i < LittleLong(hdr->mNumNotes); i++ )
-				{
+				for (i = 0; i < LittleLong(hdr->mNumNotes); i++) {
 					size += strlen(ptr) + 1;
 					ptr += strlen(ptr) + 1;
 				}
@@ -389,15 +338,12 @@ qboolean G_InitRoff( char *file, unsigned char *data )
 				ptr = roffs[num_roffs].mNoteTrackIndexes[0] = new char[size];
 				memcpy(roffs[num_roffs].mNoteTrackIndexes[0], start, size);
 
-				for( i = 1; i < LittleLong(hdr->mNumNotes); i++ )
-				{
+				for (i = 1; i < LittleLong(hdr->mNumNotes); i++) {
 					ptr += strlen(ptr) + 1;
 					roffs[num_roffs].mNoteTrackIndexes[i] = ptr;
 				}
 			}
-		}
-		else
-		{
+		} else {
 			return qfalse;
 		}
 	}
@@ -413,42 +359,37 @@ qboolean G_InitRoff( char *file, unsigned char *data )
 //	ID to the cached file.
 //-------------------------------------------------------
 
-int G_LoadRoff( const char *fileName )
-{
-	char	file[MAX_QPATH];
-	byte	*data;
-	int		len, i, roff_id = 0;
+int G_LoadRoff(const char *fileName) {
+	char file[MAX_QPATH];
+	byte *data;
+	int len, i, roff_id = 0;
 
 	// Before even bothering with all of this, make sure we have a place to store it.
-	if ( num_roffs >= MAX_ROFFS )
-	{
-		Com_Printf( S_COLOR_RED"MAX_ROFFS count exceeded.  Skipping load of .ROF '%s'\n", fileName );
+	if (num_roffs >= MAX_ROFFS) {
+		Com_Printf(S_COLOR_RED "MAX_ROFFS count exceeded.  Skipping load of .ROF '%s'\n", fileName);
 		return roff_id;
 	}
 
 	// The actual path
-	sprintf( file, "%s/%s.rof", Q3_SCRIPT_DIR, fileName );
+	sprintf(file, "%s/%s.rof", Q3_SCRIPT_DIR, fileName);
 
 	// See if I'm already precached
-	for ( i = 0; i < num_roffs; i++ )
-	{
-		if ( Q_stricmp( file, roffs[i].fileName ) == 0 )
-		{
+	for (i = 0; i < num_roffs; i++) {
+		if (Q_stricmp(file, roffs[i].fileName) == 0) {
 			// Good, just return me...avoid zero index
 			return i + 1;
 		}
 	}
 
 #ifdef _DEBUG
-	Com_Printf( S_COLOR_GREEN"Caching ROF: '%s'\n", file );
+	Com_Printf(S_COLOR_GREEN "Caching ROF: '%s'\n", file);
 #endif
 
 	// Read the file in one fell swoop
-	len = gi.FS_ReadFile( file, (void**) &data);
+	len = gi.FS_ReadFile(file, (void **)&data);
 
-	if ( len <= 0 )
-	{
-		Com_Printf( S_COLOR_RED"Could not open .ROF file '%s'\n", fileName );
+	if (len <= 0) {
+		Com_Printf(S_COLOR_RED "Could not open .ROF file '%s'\n", fileName);
 		return roff_id;
 	}
 
@@ -456,23 +397,19 @@ int G_LoadRoff( const char *fileName )
 	roff_hdr2_t *header = (roff_hdr2_t *)data;
 
 	// ..and make sure it's reasonably valid
-	if ( !G_ValidRoff( header ))
-	{
-		Com_Printf( S_COLOR_RED"Invalid roff format '%s'\n", fileName );
-	}
-	else
-	{
-		G_InitRoff( file, data );
+	if (!G_ValidRoff(header)) {
+		Com_Printf(S_COLOR_RED "Invalid roff format '%s'\n", fileName);
+	} else {
+		G_InitRoff(file, data);
 
 		// Done loading this roff, so save off an id to it..increment first to avoid zero index
 		roff_id = ++num_roffs;
 	}
 
-	gi.FS_FreeFile( data );
+	gi.FS_FreeFile(data);
 
 	return roff_id;
 }
-
 
 //-------------------------------------------------------
 // G_Roff
@@ -480,141 +417,120 @@ int G_LoadRoff( const char *fileName )
 // Handles applying the roff data to the specified ent
 //-------------------------------------------------------
 
-void G_Roff( gentity_t *ent )
-{
-	if ( !ent->next_roff_time )
-	{
-		return;
-	}
-	
-	if ( ent->next_roff_time > level.time )
-	{// either I don't think or it's just not time to have me think yet
+void G_Roff(gentity_t *ent) {
+	if (!ent->next_roff_time) {
 		return;
 	}
 
-	const int roff_id = G_LoadRoff( ent->roff );
+	if (ent->next_roff_time > level.time) { // either I don't think or it's just not time to have me think yet
+		return;
+	}
 
-	if ( !roff_id )
-	{	// Couldn't cache this rof
+	const int roff_id = G_LoadRoff(ent->roff);
+
+	if (!roff_id) { // Couldn't cache this rof
 		return;
 	}
 
 	// The ID is one higher than the array index
-	const roff_list_t *  roff	= &roffs[ roff_id - 1 ];
-	vec3_t	org, ang;
+	const roff_list_t *roff = &roffs[roff_id - 1];
+	vec3_t org, ang;
 
-	if ( roff->type == 2 )
-	{
-		move_rotate2_t	*data	= &((move_rotate2_t *)roff->data)[ ent->roff_ctr ];
-		VectorCopy( data->origin_delta, org );
-		VectorCopy( data->rotate_delta, ang );
-		if (data->mStartNote != -1 || data->mNumNotes)
-		{
+	if (roff->type == 2) {
+		move_rotate2_t *data = &((move_rotate2_t *)roff->data)[ent->roff_ctr];
+		VectorCopy(data->origin_delta, org);
+		VectorCopy(data->rotate_delta, ang);
+		if (data->mStartNote != -1 || data->mNumNotes) {
 			G_RoffNotetrackCallback(ent, roffs[roff_id - 1].mNoteTrackIndexes[data->mStartNote]);
 		}
-	}
-	else
-	{
-		move_rotate_t	*data	= &((move_rotate_t *)roff->data)[ ent->roff_ctr ];
-		VectorCopy( data->origin_delta, org );
-		VectorCopy( data->rotate_delta, ang );
+	} else {
+		move_rotate_t *data = &((move_rotate_t *)roff->data)[ent->roff_ctr];
+		VectorCopy(data->origin_delta, org);
+		VectorCopy(data->rotate_delta, ang);
 	}
 
 #ifdef _DEBUG
-	if ( g_developer->integer )
-	{
-		Com_Printf( S_COLOR_GREEN"ROFF dat: num: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n", 
-					ent->roff_ctr,
-					org[0], org[1], org[2],
-					ang[0], ang[1], ang[2] );
+	if (g_developer->integer) {
+		Com_Printf(S_COLOR_GREEN "ROFF dat: num: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n", ent->roff_ctr, org[0], org[1], org[2], ang[0], ang[1], ang[2]);
 	}
 #endif
 
-	if ( ent->client )
-	{
+	if (ent->client) {
 		// Set up the angle interpolation
 		//-------------------------------------
-		VectorAdd( ent->s.apos.trBase, ang, ent->s.apos.trBase );
+		VectorAdd(ent->s.apos.trBase, ang, ent->s.apos.trBase);
 		ent->s.apos.trTime = level.time;
 		ent->s.apos.trType = TR_INTERPOLATE;
 
 		// Store what the next apos->trBase should be
-		VectorCopy( ent->s.apos.trBase, ent->client->ps.viewangles );
-		VectorCopy( ent->s.apos.trBase, ent->currentAngles );
-		VectorCopy( ent->s.apos.trBase, ent->s.angles );
-		if ( ent->NPC )
-		{
-			//ent->NPC->desiredPitch = ent->s.apos.trBase[PITCH];
+		VectorCopy(ent->s.apos.trBase, ent->client->ps.viewangles);
+		VectorCopy(ent->s.apos.trBase, ent->currentAngles);
+		VectorCopy(ent->s.apos.trBase, ent->s.angles);
+		if (ent->NPC) {
+			// ent->NPC->desiredPitch = ent->s.apos.trBase[PITCH];
 			ent->NPC->desiredYaw = ent->s.apos.trBase[YAW];
 		}
 
 		// Set up the origin interpolation
 		//-------------------------------------
-		VectorAdd( ent->s.pos.trBase, org, ent->s.pos.trBase );
+		VectorAdd(ent->s.pos.trBase, org, ent->s.pos.trBase);
 		ent->s.pos.trTime = level.time;
 		ent->s.pos.trType = TR_INTERPOLATE;
 
 		// Store what the next pos->trBase should be
-		VectorCopy( ent->s.pos.trBase, ent->client->ps.origin );
-		VectorCopy( ent->s.pos.trBase, ent->currentOrigin );
-		//VectorCopy( ent->s.pos.trBase, ent->s.origin );
-	}
-	else
-	{
+		VectorCopy(ent->s.pos.trBase, ent->client->ps.origin);
+		VectorCopy(ent->s.pos.trBase, ent->currentOrigin);
+		// VectorCopy( ent->s.pos.trBase, ent->s.origin );
+	} else {
 		// Set up the angle interpolation
 		//-------------------------------------
-		VectorScale( ang, roff->mLerp, ent->s.apos.trDelta );
-		VectorCopy( ent->pos2, ent->s.apos.trBase );
+		VectorScale(ang, roff->mLerp, ent->s.apos.trDelta);
+		VectorCopy(ent->pos2, ent->s.apos.trBase);
 		ent->s.apos.trTime = level.time;
 		ent->s.apos.trType = TR_LINEAR;
 
 		// Store what the next apos->trBase should be
-		VectorAdd( ent->pos2, ang, ent->pos2 );
+		VectorAdd(ent->pos2, ang, ent->pos2);
 
 		// Set up the origin interpolation
 		//-------------------------------------
-		VectorScale( org, roff->mLerp, ent->s.pos.trDelta );
-		VectorCopy( ent->pos1, ent->s.pos.trBase );
+		VectorScale(org, roff->mLerp, ent->s.pos.trDelta);
+		VectorCopy(ent->pos1, ent->s.pos.trBase);
 		ent->s.pos.trTime = level.time;
 		ent->s.pos.trType = TR_LINEAR;
 
 		// Store what the next apos->trBase should be
-		VectorAdd( ent->pos1, org, ent->pos1 );
+		VectorAdd(ent->pos1, org, ent->pos1);
 
-		//make it true linear... FIXME: sticks around after ROFF is done, but do we really care?
+		// make it true linear... FIXME: sticks around after ROFF is done, but do we really care?
 		ent->alt_fire = qtrue;
 
-		if ( !ent->e_ThinkFunc 
-			&& ent->s.eType != ET_MISSILE
-			&& ent->s.eType != ET_ITEM
-			&& ent->s.eType != ET_MOVER )
-		{//will never set currentAngles & currentOrigin itself
-			EvaluateTrajectory( &ent->s.apos, level.time, ent->currentAngles );
-			EvaluateTrajectory( &ent->s.pos, level.time, ent->currentOrigin );
+		if (!ent->e_ThinkFunc && ent->s.eType != ET_MISSILE && ent->s.eType != ET_ITEM &&
+			ent->s.eType != ET_MOVER) { // will never set currentAngles & currentOrigin itself
+			EvaluateTrajectory(&ent->s.apos, level.time, ent->currentAngles);
+			EvaluateTrajectory(&ent->s.pos, level.time, ent->currentOrigin);
 		}
 	}
 
 	// See if the ROFF playback is done
 	//-------------------------------------
-	if ( ++ent->roff_ctr >= roff->frames )
-	{
+	if (++ent->roff_ctr >= roff->frames) {
 		// We are done, so let me think no more, then tell the task that we're done.
 		ent->next_roff_time = 0;
 
 		// Stop any rotation or movement.
-		VectorClear( ent->s.pos.trDelta );
-		VectorClear( ent->s.apos.trDelta );
+		VectorClear(ent->s.pos.trDelta);
+		VectorClear(ent->s.apos.trDelta);
 
-		Q3_TaskIDComplete( ent, TID_MOVE_NAV );
+		Q3_TaskIDComplete(ent, TID_MOVE_NAV);
 
 		return;
 	}
 
 	// Lock me to a 20hz update rate
 	ent->next_roff_time = level.time + roff->mFrameTime;
-	assert( roff->mFrameTime >= 50 );//HAS to be at least 50
+	assert(roff->mFrameTime >= 50); // HAS to be at least 50
 }
-
 
 //-------------------------------------------------------
 // G_SaveCachedRoffs
@@ -622,35 +538,24 @@ void G_Roff( gentity_t *ent )
 // Really fun savegame stuff
 //-------------------------------------------------------
 
-void G_SaveCachedRoffs()
-{
+void G_SaveCachedRoffs() {
 	int i, len;
 
-	ojk::SavedGameHelper saved_game(
-		::gi.saved_game);
+	ojk::SavedGameHelper saved_game(::gi.saved_game);
 
 	// Write out the number of cached ROFFs
-	saved_game.write_chunk<int32_t>(
-		INT_ID('R', 'O', 'F', 'F'),
-		::num_roffs);
+	saved_game.write_chunk<int32_t>(INT_ID('R', 'O', 'F', 'F'), ::num_roffs);
 
 	// Now dump out the cached ROFF file names in order so they can be loaded on the other end
-	for ( i = 0; i < num_roffs; i++ )
-	{
+	for (i = 0; i < num_roffs; i++) {
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
-		len = strlen( roffs[i].fileName ) + 1;
+		len = strlen(roffs[i].fileName) + 1;
 
-		saved_game.write_chunk<int32_t>(
-			INT_ID('S', 'L', 'E', 'N'),
-			len);
+		saved_game.write_chunk<int32_t>(INT_ID('S', 'L', 'E', 'N'), len);
 
-		saved_game.write_chunk(
-			INT_ID('R', 'S', 'T', 'R'),
-			::roffs[i].fileName,
-			len);
+		saved_game.write_chunk(INT_ID('R', 'S', 'T', 'R'), ::roffs[i].fileName, len);
 	}
 }
-
 
 //-------------------------------------------------------
 // G_LoadCachedRoffs
@@ -658,36 +563,25 @@ void G_SaveCachedRoffs()
 // Really fun loadgame stuff
 //-------------------------------------------------------
 
-void G_LoadCachedRoffs()
-{
-	int		i, count = 0, len = 0;
-	char	buffer[MAX_QPATH];
+void G_LoadCachedRoffs() {
+	int i, count = 0, len = 0;
+	char buffer[MAX_QPATH];
 
-	ojk::SavedGameHelper saved_game(
-		::gi.saved_game);
+	ojk::SavedGameHelper saved_game(::gi.saved_game);
 
 	// Get the count of goodies we need to revive
-	saved_game.read_chunk<int32_t>(
-		INT_ID('R', 'O', 'F', 'F'),
-		count);
+	saved_game.read_chunk<int32_t>(INT_ID('R', 'O', 'F', 'F'), count);
 
 	// Now bring 'em back to life
-	for ( i = 0; i < count; i++ )
-	{
-		saved_game.read_chunk<int32_t>(
-			INT_ID('S', 'L', 'E', 'N'),
-			len);
+	for (i = 0; i < count; i++) {
+		saved_game.read_chunk<int32_t>(INT_ID('S', 'L', 'E', 'N'), len);
 
-		if (len < 0 || static_cast<size_t>(len) >= sizeof(buffer))
-		{
+		if (len < 0 || static_cast<size_t>(len) >= sizeof(buffer)) {
 			::G_Error("invalid length for RSTR string in save game: %d bytes\n", len);
 		}
 
-		saved_game.read_chunk(
-			INT_ID('R', 'S', 'T', 'R'),
-			buffer,
-			len);
+		saved_game.read_chunk(INT_ID('R', 'S', 'T', 'R'), buffer, len);
 
-		G_LoadRoff( buffer );
+		G_LoadRoff(buffer);
 	}
 }

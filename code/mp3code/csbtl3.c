@@ -3,8 +3,8 @@
 
 	FreeAmp - The Free MP3 Player
 
-        MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
-        Corp.  http://www.xingtech.com
+		MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
+		Corp.  http://www.xingtech.com
 
 	Portions Copyright (C) 1998 EMusic.com
 
@@ -35,13 +35,11 @@ layer III
 /*============================================================*/
 /*============ Layer III =====================================*/
 /*============================================================*/
-void sbt_mono_L3(float *sample, short *pcm, int ch)
-{
+void sbt_mono_L3(float *sample, short *pcm, int ch) {
 	int i;
 
 	ch = 0;
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		fdct32(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 		window(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 		sample += 32;
@@ -50,25 +48,19 @@ void sbt_mono_L3(float *sample, short *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-void sbt_dual_L3(float *sample, short *pcm, int ch)
-{
+void sbt_dual_L3(float *sample, short *pcm, int ch) {
 	int i;
 
-	if (ch == 0)
-	{
-		for (i = 0; i < 18; i++)
-		{
+	if (ch == 0) {
+		for (i = 0; i < 18; i++) {
 			fdct32(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 			window_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 			sample += 32;
 			pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 32) & 511;
 			pcm += 64;
 		}
-	}
-	else
-	{
-		for (i = 0; i < 18; i++)
-		{
+	} else {
+		for (i = 0; i < 18; i++) {
 			fdct32(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
 			window_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
 			sample += 32;
@@ -81,13 +73,11 @@ void sbt_dual_L3(float *sample, short *pcm, int ch)
 /*------------------------------------------------------------*/
 /*---------------- 16 pt sbt's  -------------------------------*/
 /*------------------------------------------------------------*/
-void sbt16_mono_L3(float *sample, short *pcm, int ch)
-{
+void sbt16_mono_L3(float *sample, short *pcm, int ch) {
 	int i;
 
 	ch = 0;
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		fdct16(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 		window16(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 		sample += 32;
@@ -96,43 +86,35 @@ void sbt16_mono_L3(float *sample, short *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-void sbt16_dual_L3(float *sample, short *pcm, int ch)
-{
-   int i;
+void sbt16_dual_L3(float *sample, short *pcm, int ch) {
+	int i;
 
-   if (ch == 0)
-   {
-	   for (i = 0; i < 18; i++)
-	   {
-		   fdct16(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
-		   window16_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
-		   sample += 32;
-		   pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 16) & 255;
-		   pcm += 32;
-	   }
-   }
-   else
-   {
-	   for (i = 0; i < 18; i++)
-	   {
-		   fdct16(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
-		   window16_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
-		   sample += 32;
-		   pMP3Stream->vb2_ptr = (pMP3Stream->vb2_ptr - 16) & 255;
-		   pcm += 32;
-	   }
-   }
+	if (ch == 0) {
+		for (i = 0; i < 18; i++) {
+			fdct16(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
+			window16_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
+			sample += 32;
+			pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 16) & 255;
+			pcm += 32;
+		}
+	} else {
+		for (i = 0; i < 18; i++) {
+			fdct16(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
+			window16_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
+			sample += 32;
+			pMP3Stream->vb2_ptr = (pMP3Stream->vb2_ptr - 16) & 255;
+			pcm += 32;
+		}
+	}
 }
 /*------------------------------------------------------------*/
 /*---------------- 8 pt sbt's  -------------------------------*/
 /*------------------------------------------------------------*/
-void sbt8_mono_L3(float *sample, short *pcm, int ch)
-{
+void sbt8_mono_L3(float *sample, short *pcm, int ch) {
 	int i;
 
 	ch = 0;
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		fdct8(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 		window8(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 		sample += 32;
@@ -141,25 +123,19 @@ void sbt8_mono_L3(float *sample, short *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-void sbt8_dual_L3(float *sample, short *pcm, int ch)
-{
+void sbt8_dual_L3(float *sample, short *pcm, int ch) {
 	int i;
 
-	if (ch == 0)
-	{
-		for (i = 0; i < 18; i++)
-		{
+	if (ch == 0) {
+		for (i = 0; i < 18; i++) {
 			fdct8(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 			window8_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 			sample += 32;
 			pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 8) & 127;
 			pcm += 16;
 		}
-	}
-	else
-	{
-		for (i = 0; i < 18; i++)
-		{
+	} else {
+		for (i = 0; i < 18; i++) {
 			fdct8(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
 			window8_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
 			sample += 32;
@@ -171,13 +147,11 @@ void sbt8_dual_L3(float *sample, short *pcm, int ch)
 /*------------------------------------------------------------*/
 /*------- 8 bit output ---------------------------------------*/
 /*------------------------------------------------------------*/
-void sbtB_mono_L3(float *sample, unsigned char *pcm, int ch)
-{
+void sbtB_mono_L3(float *sample, unsigned char *pcm, int ch) {
 	int i;
 
 	ch = 0;
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		fdct32(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 		windowB(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 		sample += 32;
@@ -186,25 +160,19 @@ void sbtB_mono_L3(float *sample, unsigned char *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-void sbtB_dual_L3(float *sample, unsigned char *pcm, int ch)
-{
+void sbtB_dual_L3(float *sample, unsigned char *pcm, int ch) {
 	int i;
 
-	if (ch == 0)
-	{
-		for (i = 0; i < 18; i++)
-		{
+	if (ch == 0) {
+		for (i = 0; i < 18; i++) {
 			fdct32(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 			windowB_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 			sample += 32;
 			pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 32) & 511;
 			pcm += 64;
 		}
-	}
-	else
-	{
-		for (i = 0; i < 18; i++)
-		{
+	} else {
+		for (i = 0; i < 18; i++) {
 			fdct32(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
 			windowB_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
 			sample += 32;
@@ -217,13 +185,11 @@ void sbtB_dual_L3(float *sample, unsigned char *pcm, int ch)
 /*------------------------------------------------------------*/
 /*---------------- 16 pt sbtB's  -------------------------------*/
 /*------------------------------------------------------------*/
-void sbtB16_mono_L3(float *sample, unsigned char *pcm, int ch)
-{
+void sbtB16_mono_L3(float *sample, unsigned char *pcm, int ch) {
 	int i;
 
 	ch = 0;
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		fdct16(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 		windowB16(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 		sample += 32;
@@ -232,25 +198,19 @@ void sbtB16_mono_L3(float *sample, unsigned char *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-void sbtB16_dual_L3(float *sample, unsigned char *pcm, int ch)
-{
+void sbtB16_dual_L3(float *sample, unsigned char *pcm, int ch) {
 	int i;
 
-	if (ch == 0)
-	{
-		for (i = 0; i < 18; i++)
-		{
+	if (ch == 0) {
+		for (i = 0; i < 18; i++) {
 			fdct16(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 			windowB16_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 			sample += 32;
 			pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 16) & 255;
 			pcm += 32;
 		}
-	}
-	else
-	{
-		for (i = 0; i < 18; i++)
-		{
+	} else {
+		for (i = 0; i < 18; i++) {
 			fdct16(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
 			windowB16_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
 			sample += 32;
@@ -262,13 +222,11 @@ void sbtB16_dual_L3(float *sample, unsigned char *pcm, int ch)
 /*------------------------------------------------------------*/
 /*---------------- 8 pt sbtB's  -------------------------------*/
 /*------------------------------------------------------------*/
-void sbtB8_mono_L3(float *sample, unsigned char *pcm, int ch)
-{
+void sbtB8_mono_L3(float *sample, unsigned char *pcm, int ch) {
 	int i;
 
 	ch = 0;
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		fdct8(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 		windowB8(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 		sample += 32;
@@ -277,25 +235,19 @@ void sbtB8_mono_L3(float *sample, unsigned char *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-void sbtB8_dual_L3(float *sample, unsigned char *pcm, int ch)
-{
+void sbtB8_dual_L3(float *sample, unsigned char *pcm, int ch) {
 	int i;
 
-	if (ch == 0)
-	{
-		for (i = 0; i < 18; i++)
-		{
+	if (ch == 0) {
+		for (i = 0; i < 18; i++) {
 			fdct8(sample, pMP3Stream->vbuf + pMP3Stream->vb_ptr);
 			windowB8_dual(pMP3Stream->vbuf, pMP3Stream->vb_ptr, pcm);
 			sample += 32;
 			pMP3Stream->vb_ptr = (pMP3Stream->vb_ptr - 8) & 127;
 			pcm += 16;
 		}
-	}
-	else
-	{
-		for (i = 0; i < 18; i++)
-		{
+	} else {
+		for (i = 0; i < 18; i++) {
 			fdct8(sample, pMP3Stream->vbuf2 + pMP3Stream->vb2_ptr);
 			windowB8_dual(pMP3Stream->vbuf2, pMP3Stream->vb2_ptr, pcm + 1);
 			sample += 32;
@@ -305,4 +257,4 @@ void sbtB8_dual_L3(float *sample, unsigned char *pcm, int ch)
 	}
 }
 /*------------------------------------------------------------*/
-#endif	// #ifdef COMPILE_ME
+#endif // #ifdef COMPILE_ME

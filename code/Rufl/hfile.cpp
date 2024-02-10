@@ -30,8 +30,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -41,58 +39,42 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 #include "hfile.h"
 #if !defined(RATL_HANDLE_POOL_VS_INC)
-	#include "../Ratl/handle_pool_vs.h"
+#include "../Ratl/handle_pool_vs.h"
 #endif
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "../Ratl/vector_vs.h"
+#include "../Ratl/vector_vs.h"
 #endif
 #if !defined(RUFL_HSTRING_INC)
-	#include "hstring.h"
+#include "hstring.h"
 #endif
 
-
-
-
-extern bool	HFILEopen_read(int& handle,	const char* filepath);
-extern bool	HFILEopen_write(int& handle, const char* filepath);
-extern bool	HFILEread(int& handle,		void*		data, int size);
-extern bool	HFILEwrite(int& handle,		const void* data, int size);
-extern bool	HFILEclose(int& handle);
-
-
-
-
+extern bool HFILEopen_read(int &handle, const char *filepath);
+extern bool HFILEopen_write(int &handle, const char *filepath);
+extern bool HFILEread(int &handle, void *data, int size);
+extern bool HFILEwrite(int &handle, const void *data, int size);
+extern bool HFILEclose(int &handle);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////////////////////////
-#define MAX_OPEN_FILES			20
-
+#define MAX_OPEN_FILES 20
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-struct SOpenFile
-{
-	hstring			mPath;
-	bool			mForRead;
-	int				mHandle;
-	float			mVersion;
-	int				mChecksum;
+struct SOpenFile {
+	hstring mPath;
+	bool mForRead;
+	int mHandle;
+	float mVersion;
+	int mChecksum;
 };
-typedef	ratl::handle_pool_vs<SOpenFile, MAX_OPEN_FILES>		TFilePool;
+typedef ratl::handle_pool_vs<SOpenFile, MAX_OPEN_FILES> TFilePool;
 
-static TFilePool& Pool()
-{
+static TFilePool &Pool() {
 	static TFilePool TFP;
 	return TFP;
 }
-
-
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -100,22 +82,20 @@ static TFilePool& Pool()
 // Allocates a new OpenFile structure and initializes it.  DOES NOT OPEN!
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-hfile::hfile(const char* file)
-{
-	if (Pool().full())
-	{
+hfile::hfile(const char *file) {
+	if (Pool().full()) {
 		mHandle = 0;
-		assert("HFILE: Too Many Files Open, Unable To Grab An Unused Handle"==0);
+		assert("HFILE: Too Many Files Open, Unable To Grab An Unused Handle" == 0);
 		return;
 	}
 
 	mHandle = Pool().alloc();
 
-	SOpenFile&	sfile = Pool()[mHandle];
+	SOpenFile &sfile = Pool()[mHandle];
 
-	sfile.mPath		= file;
-	sfile.mHandle	= 0;
-	sfile.mForRead	= true;
+	sfile.mPath = file;
+	sfile.mHandle = 0;
+	sfile.mForRead = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -124,15 +104,12 @@ hfile::hfile(const char* file)
 // Releases the open file structure for resue.  Also closes the file if open.
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-hfile::~hfile()
-{
-	if (is_open())
-	{
+hfile::~hfile() {
+	if (is_open()) {
 		close();
 	}
 
-	if (mHandle && Pool().is_used(mHandle))
-	{
+	if (mHandle && Pool().is_used(mHandle)) {
 		Pool().free(mHandle);
 	}
 	mHandle = 0;
@@ -141,11 +118,9 @@ hfile::~hfile()
 ////////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::is_open(void)	const
-{
-	if (mHandle && Pool().is_used(mHandle))
-	{
-		return (Pool()[mHandle].mHandle!=0);
+bool hfile::is_open(void) const {
+	if (mHandle && Pool().is_used(mHandle)) {
+		return (Pool()[mHandle].mHandle != 0);
 	}
 	return false;
 }
@@ -153,12 +128,10 @@ bool		hfile::is_open(void)	const
 ////////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::is_open_for_read(void)	const
-{
-	if (mHandle && Pool().is_used(mHandle))
-	{
-		SOpenFile&	sfile = Pool()[mHandle];
-		return (sfile.mHandle!=0 && sfile.mForRead);
+bool hfile::is_open_for_read(void) const {
+	if (mHandle && Pool().is_used(mHandle)) {
+		SOpenFile &sfile = Pool()[mHandle];
+		return (sfile.mHandle != 0 && sfile.mForRead);
 	}
 	return false;
 }
@@ -166,100 +139,80 @@ bool		hfile::is_open_for_read(void)	const
 ////////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::is_open_for_write(void)	const
-{
-	if (mHandle && Pool().is_used(mHandle))
-	{
-		SOpenFile&	sfile = Pool()[mHandle];
-		return (sfile.mHandle!=0 && !sfile.mForRead);
+bool hfile::is_open_for_write(void) const {
+	if (mHandle && Pool().is_used(mHandle)) {
+		SOpenFile &sfile = Pool()[mHandle];
+		return (sfile.mHandle != 0 && !sfile.mForRead);
 	}
 	return false;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::open(float version, int checksum, bool read)
-{
+bool hfile::open(float version, int checksum, bool read) {
 	// Make Sure This Is A Valid Handle
 	//----------------------------------
-	if (!mHandle || !Pool().is_used(mHandle))
-	{
-		assert("HFILE: Invalid Handle"==0);
+	if (!mHandle || !Pool().is_used(mHandle)) {
+		assert("HFILE: Invalid Handle" == 0);
 		return false;
 	}
 
 	// Make Sure The File Is Not ALREADY Open
 	//----------------------------------------
-	SOpenFile&	sfile = Pool()[mHandle];
-	if (sfile.mHandle!=0)
-	{
-		assert("HFILE: Attempt To Open An Already Open File"==0);
+	SOpenFile &sfile = Pool()[mHandle];
+	if (sfile.mHandle != 0) {
+		assert("HFILE: Attempt To Open An Already Open File" == 0);
 		return false;
 	}
 
 	sfile.mForRead = read;
-	if (read)
-	{
+	if (read) {
 		HFILEopen_read(sfile.mHandle, *sfile.mPath);
-	}
-	else
-	{
+	} else {
 		HFILEopen_write(sfile.mHandle, *sfile.mPath);
 	}
 
 	// If The Open Failed, Report It And Free The SOpenFile
 	//------------------------------------------------------
-	if (sfile.mHandle==0)
-	{
-		if (!read)
-		{
-			assert("HFILE: Unable To Open File"==0);
+	if (sfile.mHandle == 0) {
+		if (!read) {
+			assert("HFILE: Unable To Open File" == 0);
 		}
 		return false;
 	}
 
-
 	// Read The File's Header
 	//------------------------
-	if (read)
-	{
-		if (!HFILEread(sfile.mHandle, &sfile.mVersion, sizeof(sfile.mVersion)))
-		{
-			assert("HFILE: Unable To Read File Header"==0);
+	if (read) {
+		if (!HFILEread(sfile.mHandle, &sfile.mVersion, sizeof(sfile.mVersion))) {
+			assert("HFILE: Unable To Read File Header" == 0);
 			close();
 			return false;
 		}
-		if (!HFILEread(sfile.mHandle, &sfile.mChecksum, sizeof(sfile.mChecksum)))
-		{
-			assert("HFILE: Unable To Read File Header"==0);
+		if (!HFILEread(sfile.mHandle, &sfile.mChecksum, sizeof(sfile.mChecksum))) {
+			assert("HFILE: Unable To Read File Header" == 0);
 			close();
 			return false;
 		}
 
 		// Make Sure The Checksum & Version Match
 		//----------------------------------------
-		if (sfile.mVersion!=version || sfile.mChecksum!=checksum)
-		{
+		if (sfile.mVersion != version || sfile.mChecksum != checksum) {
 			close();
-			return false;	// Failed To Match Checksum Or Version Number -> Old Data
+			return false; // Failed To Match Checksum Or Version Number -> Old Data
 		}
-	}
-	else
-	{
+	} else {
 		sfile.mVersion = version;
 		sfile.mChecksum = checksum;
 
-		if (!HFILEwrite(sfile.mHandle, &sfile.mVersion, sizeof(sfile.mVersion)))
-		{
-			assert("HFILE: Unable To Write File Header"==0);
+		if (!HFILEwrite(sfile.mHandle, &sfile.mVersion, sizeof(sfile.mVersion))) {
+			assert("HFILE: Unable To Write File Header" == 0);
 			close();
 			return false;
 		}
-		if (!HFILEwrite(sfile.mHandle, &sfile.mChecksum, sizeof(sfile.mChecksum)))
-		{
-			assert("HFILE: Unable To Write File Header"==0);
+		if (!HFILEwrite(sfile.mHandle, &sfile.mChecksum, sizeof(sfile.mChecksum))) {
+			assert("HFILE: Unable To Write File Header" == 0);
 			close();
 			return false;
 		}
@@ -271,25 +224,21 @@ bool		hfile::open(float version, int checksum, bool read)
 ////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::close()
-{
-	if (!mHandle || !Pool().is_used(mHandle))
-	{
-		assert("HFILE: Invalid Handle"==0);
+bool hfile::close() {
+	if (!mHandle || !Pool().is_used(mHandle)) {
+		assert("HFILE: Invalid Handle" == 0);
 		return false;
 	}
 
-	SOpenFile&	sfile = Pool()[mHandle];
-	if (sfile.mHandle==0)
-	{
-		assert("HFILE: Unable TO Close Unopened File"==0);
+	SOpenFile &sfile = Pool()[mHandle];
+	if (sfile.mHandle == 0) {
+		assert("HFILE: Unable TO Close Unopened File" == 0);
 		return false;
 	}
 
-	if (!HFILEclose(sfile.mHandle))
-	{
+	if (!HFILEclose(sfile.mHandle)) {
 		sfile.mHandle = 0;
-		assert("HFILE: Unable To Close File"==0);
+		assert("HFILE: Unable To Close File" == 0);
 		return false;
 	}
 	sfile.mHandle = 0;
@@ -300,15 +249,12 @@ bool		hfile::close()
 ////////////////////////////////////////////////////////////////////////////////////
 // Searches for the first block with the matching data size, and reads it in.
 ////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::load(void* data, int datasize)
-{
+bool hfile::load(void *data, int datasize) {
 	// Go Ahead And Open The File For Reading
 	//----------------------------------------
 	bool auto_opened = false;
-	if (!is_open())
-	{
-		if (!open_read())
-		{
+	if (!is_open()) {
+		if (!open_read()) {
 			return false;
 		}
 		auto_opened = true;
@@ -316,25 +262,20 @@ bool		hfile::load(void* data, int datasize)
 
 	// Make Sure That The File Is Readable
 	//-------------------------------------
-	SOpenFile&	sfile = Pool()[mHandle];
-	if (!sfile.mForRead)
-	{
-		assert("HFILE: Unable to load from a file that is opened for save"==0);
-		if (auto_opened)
-		{
+	SOpenFile &sfile = Pool()[mHandle];
+	if (!sfile.mForRead) {
+		assert("HFILE: Unable to load from a file that is opened for save" == 0);
+		if (auto_opened) {
 			close();
 		}
 		return false;
 	}
 
-
 	// Now Read It
 	//-------------
-	if (!HFILEread(sfile.mHandle, data, datasize))
-	{
-		assert("HFILE: Unable To Read Object"==0);
-		if (auto_opened)
-		{
+	if (!HFILEread(sfile.mHandle, data, datasize)) {
+		assert("HFILE: Unable To Read Object" == 0);
+		if (auto_opened) {
 			close();
 		}
 		return false;
@@ -342,8 +283,7 @@ bool		hfile::load(void* data, int datasize)
 
 	// Success!
 	//----------
-	if (auto_opened)
-	{
+	if (auto_opened) {
 		close();
 	}
 	return true;
@@ -352,15 +292,12 @@ bool		hfile::load(void* data, int datasize)
 ////////////////////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////////////////////
-bool		hfile::save(void* data, int datasize)
-{
+bool hfile::save(void *data, int datasize) {
 	// Go Ahead And Open The File For Reading
 	//----------------------------------------
 	bool auto_opened = false;
-	if (!is_open())
-	{
-		if (!open_write())
-		{
+	if (!is_open()) {
+		if (!open_write()) {
 			return false;
 		}
 		auto_opened = true;
@@ -368,32 +305,26 @@ bool		hfile::save(void* data, int datasize)
 
 	// Make Sure That The File Is Readable
 	//-------------------------------------
-	SOpenFile&	sfile = Pool()[mHandle];
-	if (sfile.mForRead)
-	{
-		assert("HFILE: Unable to save to a file that is opened for read"==0);
-		if (auto_opened)
-		{
+	SOpenFile &sfile = Pool()[mHandle];
+	if (sfile.mForRead) {
+		assert("HFILE: Unable to save to a file that is opened for read" == 0);
+		if (auto_opened) {
 			close();
 		}
 		return false;
 	}
-
 
 	// Write The Actual Object
 	//-------------------------
-	if (!HFILEwrite(sfile.mHandle, data, datasize))
-	{
-		assert("HFILE: Unable To Write File Data"==0);
-		if (auto_opened)
-		{
+	if (!HFILEwrite(sfile.mHandle, data, datasize)) {
+		assert("HFILE: Unable To Write File Data" == 0);
+		if (auto_opened) {
 			close();
 		}
 		return false;
 	}
 
-	if (auto_opened)
-	{
+	if (auto_opened) {
 		close();
 	}
 	return true;

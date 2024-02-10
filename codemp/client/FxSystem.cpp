@@ -25,28 +25,20 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "FxScheduler.h"
 #include "ghoul2/G2.h"
 
-cvar_t	*fx_debug;
+cvar_t *fx_debug;
 #ifdef _DEBUG
-cvar_t	*fx_freeze;
+cvar_t *fx_freeze;
 #endif
-cvar_t	*fx_countScale;
-cvar_t	*fx_nearCull;
+cvar_t *fx_countScale;
+cvar_t *fx_nearCull;
 
-#define DEFAULT_EXPLOSION_RADIUS	512
+#define DEFAULT_EXPLOSION_RADIUS 512
 
 // Stuff for the FxHelper
 //------------------------------------------------------
-SFxHelper::SFxHelper() :
-	mTime(0),
-	mOldTime(0),
-	mFrameTime(0),
-	mTimeFrozen(false),
-	refdef(0)
-{
-}
+SFxHelper::SFxHelper() : mTime(0), mOldTime(0), mFrameTime(0), mTimeFrozen(false), refdef(0) {}
 
-void SFxHelper::ReInit(refdef_t* pRefdef)
-{
+void SFxHelper::ReInit(refdef_t *pRefdef) {
 	mTime = 0;
 	mOldTime = 0;
 	mFrameTime = 0;
@@ -55,52 +47,46 @@ void SFxHelper::ReInit(refdef_t* pRefdef)
 }
 
 //------------------------------------------------------
-void SFxHelper::Print( const char *msg, ... )
-{
-	va_list		argptr;
-	char		text[1024];
+void SFxHelper::Print(const char *msg, ...) {
+	va_list argptr;
+	char text[1024];
 
-	va_start( argptr, msg );
+	va_start(argptr, msg);
 	Q_vsnprintf(text, sizeof(text), msg, argptr);
-	va_end( argptr );
+	va_end(argptr);
 
-	Com_DPrintf( text );
+	Com_DPrintf(text);
 }
 
 //------------------------------------------------------
-void SFxHelper::AdjustTime( int frametime )
-{
+void SFxHelper::AdjustTime(int frametime) {
 #ifdef _DEBUG
-	if ( fx_freeze->integer || ( frametime <= 0 ))
+	if (fx_freeze->integer || (frametime <= 0))
 #else
-	if ( frametime <= 0 )
+	if (frametime <= 0)
 #endif
 	{
 		// Allow no time progression when we are paused.
 		mFrameTime = 0;
 		mRealTime = 0.0f;
-	}
-	else
-	{
+	} else {
 		mOldTime = mTime;
 		mTime = frametime;
 		mFrameTime = mTime - mOldTime;
 
 		mRealTime = mFrameTime * 0.001f;
 
+		/*		mFrameTime = frametime;
+				mTime += mFrameTime;
+				mRealTime = mFrameTime * 0.001f;*/
 
-/*		mFrameTime = frametime;
-		mTime += mFrameTime;
-		mRealTime = mFrameTime * 0.001f;*/
-
-//		mHalfRealTimeSq = mRealTime * mRealTime * 0.5f;
+		//		mHalfRealTimeSq = mRealTime * mRealTime * 0.5f;
 	}
 }
 
 //------------------------------------------------------
-void SFxHelper::CameraShake( vec3_t origin, float intensity, int radius, int time )
-{
-	TCGCameraShake	*data = (TCGCameraShake *)cl.mSharedMemory;
+void SFxHelper::CameraShake(vec3_t origin, float intensity, int radius, int time) {
+	TCGCameraShake *data = (TCGCameraShake *)cl.mSharedMemory;
 
 	VectorCopy(origin, data->mOrigin);
 	data->mIntensity = intensity;
@@ -111,23 +97,20 @@ void SFxHelper::CameraShake( vec3_t origin, float intensity, int radius, int tim
 }
 
 //------------------------------------------------------
-qboolean SFxHelper::GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/axis[3])
-{
+qboolean SFxHelper::GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, int modelNum, int boltNum, vec3_t /*out*/ origin, vec3_t /*out*/ axis[3]) {
 	qboolean doesBoltExist;
-	mdxaBone_t 		boltMatrix;
-	TCGGetBoltData	*data = (TCGGetBoltData*)cl.mSharedMemory;
+	mdxaBone_t boltMatrix;
+	TCGGetBoltData *data = (TCGGetBoltData *)cl.mSharedMemory;
 	data->mEntityNum = mEntNum;
-	CGVM_GetLerpData();//this func will zero out pitch and roll for players, and ridable vehicles
+	CGVM_GetLerpData(); // this func will zero out pitch and roll for players, and ridable vehicles
 
-	//Fixme: optimize these VM calls away by storing
+	// Fixme: optimize these VM calls away by storing
 
 	// go away and get me the bolt position for this frame please
-	doesBoltExist = re->G2API_GetBoltMatrix(*pGhoul2, modelNum, boltNum,
-		&boltMatrix, data->mAngles, data->mOrigin, theFxHelper.mOldTime, 0, data->mScale);
+	doesBoltExist = re->G2API_GetBoltMatrix(*pGhoul2, modelNum, boltNum, &boltMatrix, data->mAngles, data->mOrigin, theFxHelper.mOldTime, 0, data->mScale);
 
-	if (doesBoltExist)
-	{	// set up the axis and origin we need for the actual effect spawning
-	   	origin[0] = boltMatrix.matrix[0][3];
+	if (doesBoltExist) { // set up the axis and origin we need for the actual effect spawning
+		origin[0] = boltMatrix.matrix[0][3];
 		origin[1] = boltMatrix.matrix[1][3];
 		origin[2] = boltMatrix.matrix[2][3];
 

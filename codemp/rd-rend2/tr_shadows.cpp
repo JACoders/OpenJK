@@ -73,24 +73,23 @@ void RB_ShadowFinish(void) {
 	qglStencilFunc(GL_ALWAYS, 0, 0xff);
 }
 
-
 /*
 =================
 RB_ProjectionShadowDeform
 
 =================
 */
-void RB_ProjectionShadowDeform( void ) {
-	float	*xyz;
-	int		i;
-	float	h;
-	vec3_t	ground;
-	vec3_t	light;
-	float	groundDist;
-	float	d;
-	vec3_t	lightDir;
+void RB_ProjectionShadowDeform(void) {
+	float *xyz;
+	int i;
+	float h;
+	vec3_t ground;
+	vec3_t light;
+	float groundDist;
+	float d;
+	vec3_t lightDir;
 
-	xyz = ( float * ) tess.xyz;
+	xyz = (float *)tess.xyz;
 
 	ground[0] = backEnd.ori.axis[0][2];
 	ground[1] = backEnd.ori.axis[1][2];
@@ -98,12 +97,12 @@ void RB_ProjectionShadowDeform( void ) {
 
 	groundDist = backEnd.ori.origin[2] - backEnd.currentEntity->e.shadowPlane;
 
-	VectorCopy( backEnd.currentEntity->modelLightDir, lightDir );
-	d = DotProduct( lightDir, ground );
+	VectorCopy(backEnd.currentEntity->modelLightDir, lightDir);
+	d = DotProduct(lightDir, ground);
 	// don't let the shadows get too long or go negative
-	if ( d < 0.5 ) {
-		VectorMA( lightDir, (0.5 - d), ground, lightDir );
-		d = DotProduct( lightDir, ground );
+	if (d < 0.5) {
+		VectorMA(lightDir, (0.5 - d), ground, lightDir);
+		d = DotProduct(lightDir, ground);
 	}
 	d = 1.0 / d;
 
@@ -111,8 +110,8 @@ void RB_ProjectionShadowDeform( void ) {
 	light[1] = lightDir[1] * d;
 	light[2] = lightDir[2] * d;
 
-	for ( i = 0; i < tess.numVertexes; i++, xyz += 4 ) {
-		h = DotProduct( xyz, ground ) + groundDist;
+	for (i = 0; i < tess.numVertexes; i++, xyz += 4) {
+		h = DotProduct(xyz, ground) + groundDist;
 
 		xyz[0] -= light[0] * h;
 		xyz[1] -= light[1] * h;
