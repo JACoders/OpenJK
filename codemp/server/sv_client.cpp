@@ -316,8 +316,8 @@ gotnewcl:
 	// save the userinfo
 	Q_strncpyz( newcl->userinfo, userinfo, sizeof(newcl->userinfo) );
 
+	// check for >= sv_maxConnPerIP connections from same IP
 	if (sv_antiFakePlayer->integer) {
-		// check for > sv_maxConnPerIP connections from same IP
 		int count = 0, i = 0;
 		for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
 			if (cl->state >= CS_CONNECTED && NET_CompareBaseAdr(svs.clients[clientNum].netchan.remoteAddress, svs.clients[i].netchan.remoteAddress)) {

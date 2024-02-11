@@ -2396,13 +2396,14 @@ restarts.
 ============
 */
 
-static qboolean CompareIPs( const char *ip1, const char *ip2 )
-{
-	while ( 1 ) {
-		if ( *ip1 != *ip2 )
+static qboolean CompareIPs(const char *ip1, const char *ip2) {
+	while (1) {
+		if (*ip1 != *ip2) {
 			return qfalse;
-		if ( !*ip1 || *ip1 == ':' )
+		}
+		if (!*ip1 || *ip1 == ':') {
 			break;
+		}
 		ip1++;
 		ip2++;
 	}
@@ -2448,6 +2449,20 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 			static char sTemp[1024];
 			Q_strncpyz(sTemp, G_GetStringEdString("MP_SVGAME","INVALID_ESCAPE_TO_MAIN"), sizeof (sTemp) );
 			return sTemp;// return "Invalid password";
+		}
+	}
+
+	// check for >= g_maxConnPerIP connections from same IP
+	if (g_antiFakePlayer.integer && !isBot && firstTime) {
+		int count = 0, i = 0;
+		gclient_t *cl;
+		for (i = 0, cl = level.clients; i < sv_maxclients.integer; i++, cl++) {
+			if (cl->pers.connected >= CON_CONNECTING && CompareIPs(tmpIP, cl->sess.IP)) {
+				count++;
+			}
+		}
+		if (count >= g_maxConnPerIP.integer) {
+			return "Too many connections from the same IP";
 		}
 	}
 
