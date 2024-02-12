@@ -2,8 +2,9 @@ name: build
 
 # runs every 4 months
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 1 */4 *'
+    - cron: "0 0 1 */4 *"
 
 jobs:
   msvcxp:
