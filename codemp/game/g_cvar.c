@@ -46,12 +46,16 @@ static void UpdateLegacyFixesConfigstring( legacyFixes_t legacyFix, qboolean ena
 
 static void CVU_FixSaberMoveData(void) {
 	BG_FixSaberMoveData();
-	UpdateLegacyFixesConfigstring( LEGACYFIX_SABERMOVEDATA, g_fixSaberMoveData.integer );
+	UpdateLegacyFixesConfigstring(LEGACYFIX_SABERMOVEDATA, g_fixSaberMoveData.integer);
+}
+
+static void CVU_FixRunWalkAnims(void) {
+	UpdateLegacyFixesConfigstring(LEGACYFIX_RUNWALKANIMS, g_fixRunWalkAnims.integer);
 }
 
 static void CVU_FixWeaponAttackAnim(void) {
 	BG_FixWeaponAttackAnim();
-	UpdateLegacyFixesConfigstring( LEGACYFIX_WEAPONATTACKANIM, g_fixWeaponAttackAnim.integer );
+	UpdateLegacyFixesConfigstring(LEGACYFIX_WEAPONATTACKANIM, g_fixWeaponAttackAnim.integer);
 }
 
 //

@@ -305,11 +305,6 @@ if(BuildPortableVersion)
 	set(BUILD_PORTABLE ON)
 endif()
 
-# TODO: this should eventually be removed completely
-if(BuildMPWithCompatMode)
-	set(SharedDefines ${SharedDefines} "BASE_COMPAT")
-endif()
-
 #=============================================================================
 #
 # Generate version file

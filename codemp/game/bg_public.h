@@ -159,6 +159,7 @@ Ghoul2 Insert End
 typedef enum legacyFixes_e {
 	LEGACYFIX_SABERMOVEDATA = 0,
 	LEGACYFIX_WEAPONATTACKANIM,
+	LEGACYFIX_RUNWALKANIMS,
 	/*
 	m    m                        ""#      "             m                    m
 	#    #  mmm   m   m             #    mmm     mmm   mm#mm   mmm   m mm     #
