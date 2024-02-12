@@ -5481,7 +5481,7 @@ static void PM_Footsteps( void ) {
 			}
 			else
 			{
-#ifndef BASE_COMPAT					// FIXME: this doesn't break base compatibility at all, remove #ifndef
+#ifndef BASE_COMPAT
 				if ( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_RUN1;
@@ -5547,7 +5547,7 @@ static void PM_Footsteps( void ) {
 			bobmove = 0.2f;	// walking bobs slow
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
-#ifndef BASE_COMPAT // fixme, doesn't break base compat if enabled (I tested this to be sure)
+#ifndef BASE_COMPAT
 				if( pm->ps->weapon != WP_SABER )
 				{
 					desiredAnim = BOTH_WALKBACK1;

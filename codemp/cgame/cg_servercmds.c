@@ -911,8 +911,9 @@ static void CG_ConfigStringModified( void ) {
 		CG_ShaderStateChanged();
 	}
 	else if ( num == CS_LEGACY_FIXES ) {
-		// LEGACYFIX_SABERMOVEDATA may have changed
+		// LEGACYFIX_SABERMOVEDATA etc may have changed
 		BG_FixSaberMoveData();
+		BG_FixWeaponAttackAnim();
 	}
 	else if ( num >= CS_LIGHT_STYLES && num < CS_LIGHT_STYLES + (MAX_LIGHT_STYLES * 3))
 	{

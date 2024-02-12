@@ -2631,6 +2631,7 @@ Ghoul2 Insert End
 	CG_ParseEntitiesFromString();
 
 	BG_FixSaberMoveData();
+	BG_FixWeaponAttackAnim();
 }
 
 //makes sure returned string is in localized format

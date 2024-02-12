@@ -158,6 +158,7 @@ Ghoul2 Insert End
 
 typedef enum legacyFixes_e {
 	LEGACYFIX_SABERMOVEDATA = 0,
+	LEGACYFIX_WEAPONATTACKANIM,
 	/*
 	m    m                        ""#      "             m                    m
 	#    #  mmm   m   m             #    mmm     mmm   mm#mm   mmm   m mm     #
@@ -714,10 +715,8 @@ typedef enum {
 typedef enum {
 	PW_NONE,
 
-	#ifdef BASE_COMPAT
-		PW_QUAD,
-		PW_BATTLESUIT,
-	#endif // BASE_COMPAT
+	PW_QUAD,
+	PW_BATTLESUIT,
 
 	PW_PULL,
 
@@ -924,10 +923,8 @@ typedef enum {
 	EV_DEATH3,
 	EV_OBITUARY,
 
-	#ifdef BASE_COMPAT
-		EV_POWERUP_QUAD,
-		EV_POWERUP_BATTLESUIT,
-	#endif // BASE_COMPAT
+	EV_POWERUP_QUAD,
+	EV_POWERUP_BATTLESUIT,
 
 	EV_FORCE_DRAINED,
 
@@ -1734,6 +1731,7 @@ qboolean BG_InSaberLockOld( int anim );
 qboolean BG_InSaberLock( int anim );
 
 void BG_FixSaberMoveData( void );
+void BG_FixWeaponAttackAnim( void );
 
 void BG_SaberStartTransAnim( int clientNum, int saberAnimLevel, int weapon, int anim, float *animSpeed, int broken );
 
