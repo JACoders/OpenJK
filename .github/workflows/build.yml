@@ -269,7 +269,7 @@ jobs:
           mv ./OpenJO-macos-arm64-Release-Non-Portable/* OpenJO-macos-arm64.tar.gz
 
       - name: Create latest build
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: crowbarmaster/GH-Automatic-Releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           automatic_release_tag: "latest"
