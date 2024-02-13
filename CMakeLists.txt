@@ -327,6 +327,7 @@ endif()
 # ideally we would separate the hash suffix into its own variable, but sed is not available everywhere
 execute_process(
 	COMMAND "git" "describe" "--tag"
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	OUTPUT_VARIABLE GIT_TAG
 	RESULT_VARIABLE GIT_TAG_ERROR
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
