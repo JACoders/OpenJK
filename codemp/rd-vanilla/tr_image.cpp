@@ -874,7 +874,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 
 //	int iNumImages = AllocatedImages.size();	// more for curiosity, really.
 
-	qboolean imageDeleted = qtrue;
+	qboolean imageDeleted = qfalse;
 	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* blank */)
 	{
 		qboolean bEraseOccured = qfalse;
