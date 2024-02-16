@@ -3266,7 +3266,7 @@ static void R_CreateEnvBrdfLUT(void) {
 
 			scale /= numSamples;
 			bias /= numSamples;
-			velvet /= numSamples;
+			velvet /= numSamples * 2.0f * M_PI;
 
 			data[y][x][0] = FloatToHalf(scale);
 			data[y][x][1] = FloatToHalf(bias);
