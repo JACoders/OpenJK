@@ -658,7 +658,7 @@ static void RB_SurfaceBeam( void )
 	tess.minIndex = 0;
 	tess.maxIndex = 0;
 
-	for ( i = 0; i < NUM_BEAM_SEGS; i++ ) {
+	for ( i = 0; i <= NUM_BEAM_SEGS; i++ ) {
 		VectorCopy(start_points[ i % NUM_BEAM_SEGS ], tess.xyz[tess.numVertexes++]);
 		VectorCopy(end_points  [ i % NUM_BEAM_SEGS ], tess.xyz[tess.numVertexes++]);
 	}
