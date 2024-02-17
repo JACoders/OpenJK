@@ -224,6 +224,7 @@ typedef struct {
 	//
 	qhandle_t	qhFontSmall;
 	qhandle_t	qhFontMedium;
+	qhandle_t	qhFontBig;
 
 	// special effects models / etc.
 	qhandle_t	personalShieldShader;

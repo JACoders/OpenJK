@@ -127,8 +127,7 @@ int MenuFontToHandle(int iMenuFont)
 		case FONT_SMALL:	return cgDC.Assets.qhSmallFont;
 		case FONT_SMALL2:	return cgDC.Assets.qhSmall2Font;
 		case FONT_MEDIUM:	return cgDC.Assets.qhMediumFont;
-		case FONT_LARGE:	return cgDC.Assets.qhMediumFont;//cgDC.Assets.qhBigFont;
-			//fixme? Big fonr isn't registered...?
+		case FONT_LARGE:	return cgDC.Assets.qhBigFont;
 	}
 
 	return cgDC.Assets.qhMediumFont;
