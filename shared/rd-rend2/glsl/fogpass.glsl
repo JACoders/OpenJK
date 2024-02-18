@@ -27,12 +27,11 @@ layout(std140) uniform Entity
 	mat4 u_ModelMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
-	float u_LocalLightRadius;
+	float u_entityTime;
 	vec3 u_DirectedLight;
 	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
-	vec3 u_LocalViewOrigin;
 };
 
 layout(std140) uniform ShaderInstance
@@ -226,10 +225,10 @@ void main()
 	normal = DeformNormal( position, normal );
 #endif
 
-	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
-	gl_Position = MVP * vec4(position, 1.0);
+	vec4 wsPosition = u_ModelMatrix * vec4(position, 1.0);
+	gl_Position = u_viewProjectionMatrix * wsPosition;
 
-	var_WSPosition = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+	var_WSPosition = wsPosition.xyz;
 #if defined(USE_ALPHA_TEST)
 	var_TexCoords = attr_TexCoord0;
 #endif
@@ -281,12 +280,11 @@ layout(std140) uniform Entity
 	mat4 u_ModelMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
-	float u_LocalLightRadius;
+	float u_entityTime;
 	vec3 u_DirectedLight;
 	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
-	vec3 u_LocalViewOrigin;
 };
 
 uniform int u_FogIndex;

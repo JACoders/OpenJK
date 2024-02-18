@@ -12,12 +12,11 @@ layout(std140) uniform Entity
 	mat4 u_ModelMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
-	float u_LocalLightRadius;
+	float u_entityTime;
 	vec3 u_DirectedLight;
 	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
-	vec3 u_LocalViewOrigin;
 };
 
 #if defined(USE_SKELETAL_ANIMATION)
@@ -76,12 +75,11 @@ layout(std140) uniform Entity
 	mat4 u_ModelMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
-	float u_LocalLightRadius;
+	float u_entityTime;
 	vec3 u_DirectedLight;
 	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
-	vec3 u_LocalViewOrigin;
 };
 
 in vec3	  var_Position[];
@@ -107,14 +105,14 @@ void main()
 	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
 
 	if (dot(cross(BmA,CmA), -u_ModelLightDir.xyz) > 0.0) {
-		vec3 L = u_ModelLightDir.xyz*u_LocalLightRadius;
+		vec3 L = u_ModelLightDir.xyz*u_LocalLightOrigin.w;
 		
-		// front cap
-		gl_Position = MVP * vec4(var_Position[0].xyz, 1.0);
+		// front cap, avoids z-fighting with other shaders by NOT using the MVP, the other surfaces won't create z-fighting
+		gl_Position = u_viewProjectionMatrix * u_ModelMatrix * vec4(var_Position[0].xyz, 1.0);
 		EmitVertex();
-		gl_Position = MVP * vec4(var_Position[1].xyz, 1.0);
+		gl_Position = u_viewProjectionMatrix * u_ModelMatrix * vec4(var_Position[1].xyz, 1.0);
 		EmitVertex();
-		gl_Position = MVP * vec4(var_Position[2].xyz, 1.0);
+		gl_Position = u_viewProjectionMatrix * u_ModelMatrix * vec4(var_Position[2].xyz, 1.0);
 		EmitVertex();
 		EndPrimitive();
 		

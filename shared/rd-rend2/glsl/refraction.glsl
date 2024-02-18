@@ -43,13 +43,11 @@ layout(std140) uniform Entity
 	mat4 u_ModelMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
-	float u_LocalLightRadius;
+	float u_entityTime;
 	vec3 u_DirectedLight;
 	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
-	vec3 u_LocalViewOrigin;
-	float u_entityTime;
 };
 
 #if defined(USE_DEFORM_VERTEXES) || defined(USE_RGBAGEN)
@@ -231,14 +229,14 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 	}
 	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED)
 	{
-		vec3 viewer = normalize(u_LocalViewOrigin - position);
+		vec3 viewer = normalize(u_ViewOrigin - position);
 		vec2 ref = reflect(viewer, normal).yz;
 		tex.s = ref.x * -0.5 + 0.5;
 		tex.t = ref.y *  0.5 + 0.5;
 	}
 	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED_SP)
 	{
-		vec3 viewer = normalize(u_LocalViewOrigin - position);
+		vec3 viewer = normalize(u_ViewOrigin - position);
 		vec2 ref = reflect(viewer, normal).xy;
 		tex.s = ref.x * -0.5;
 		tex.t = ref.y * -0.5;
@@ -288,7 +286,7 @@ vec4 CalcColor(vec3 position, vec3 normal)
 		color.rgb = clamp(u_DirectedLight * incoming + u_AmbientLight, 0.0, 1.0);
 	}
 
-	vec3 viewer = u_LocalViewOrigin - position;
+	vec3 viewer = u_ViewOrigin - position;
 
 	if (u_AlphaGen == AGEN_LIGHTING_SPECULAR)
 	{
@@ -349,11 +347,11 @@ void main()
 	normal = DeformNormal( position, normal );
 #endif
 
-	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
-	gl_Position = MVP * vec4(position, 1.0);
+	vec4 wsPosition = u_ModelMatrix * vec4(position, 1.0);
+	gl_Position = u_viewProjectionMatrix * wsPosition;
 
 #if defined(USE_TCGEN)
-	vec2 tex = GenTexCoords(u_TCGen0, position, normal, u_TCGen0Vector0, u_TCGen0Vector1);
+	vec2 tex = GenTexCoords(u_TCGen0, wsPosition.xyz, normal, u_TCGen0Vector0, u_TCGen0Vector1);
 #else
 	vec2 tex = attr_TexCoord0.st;
 #endif
@@ -382,7 +380,6 @@ void main()
 #endif
 	}
 
-	vec3 ws_Position	= mat3(u_ModelMatrix) * position;
 	vec3 ws_Normal		= normalize(mat3(u_ModelMatrix) * normal);
 	vec3 ws_ViewDir		= (u_ViewForward + u_ViewLeft * -gl_Position.x) + u_ViewUp * gl_Position.y;
 
@@ -393,19 +390,20 @@ void main()
 	#endif
 
 	mat3 inverseModel = inverse(mat3(u_ModelMatrix));
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
 
 	vec3 refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaR));
-	vec3 new_pos = (distance * refraction_vec) + ws_Position;
+	vec3 new_pos = (distance * refraction_vec) + wsPosition.xyz;
 	var_RefractPosR = vec4(inverseModel * new_pos, 1.0);
 	var_RefractPosR = MVP * var_RefractPosR;
 	
 	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaG));
-	new_pos = (distance * refraction_vec) + ws_Position;
+	new_pos = (distance * refraction_vec) + wsPosition.xyz;
 	var_RefractPosG = vec4(inverseModel * new_pos, 1.0);
 	var_RefractPosG = MVP * var_RefractPosG;
 	
 	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaB));
-	new_pos = (distance * refraction_vec) + ws_Position;
+	new_pos = (distance * refraction_vec) + wsPosition.xyz;
 	var_RefractPosB = vec4(inverseModel * new_pos, 1.0);
 	var_RefractPosB = MVP * var_RefractPosB;
 }
@@ -428,13 +426,11 @@ layout(std140) uniform Entity
 	mat4 u_ModelMatrix;
 	vec4 u_LocalLightOrigin;
 	vec3 u_AmbientLight;
-	float u_LocalLightRadius;
+	float u_entityTime;
 	vec3 u_DirectedLight;
 	float u_FXVolumetricBase;
 	vec3 u_ModelLightDir;
 	float u_VertexLerp;
-	vec3 u_LocalViewOrigin;
-	float u_entityTime;
 };
 
 uniform sampler2D u_TextureMap;
