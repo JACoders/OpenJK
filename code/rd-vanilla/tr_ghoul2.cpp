@@ -3611,7 +3611,11 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #ifndef JK2_MODE
 	else
 	{
-		assert (tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
+		// let us mix JK2/JKA models and animations
+		if (tr.models[mdxm->animIndex]->mdxa->numBones != 53 && tr.models[mdxm->animIndex]->mdxa->numBones != 72 && mdxm->numBones != 53 &&
+			mdxm->numBones != 72) {
+			assert(tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
+		}
 		if (tr.models[mdxm->animIndex]->mdxa->numBones != mdxm->numBones)
 		{
 			if ( isAnOldModelFile )
