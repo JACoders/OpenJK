@@ -255,6 +255,8 @@ cvar_t	*r_aviMotionJpegQuality;
 cvar_t	*r_screenshotJpegQuality;
 cvar_t	*r_surfaceSprites;
 
+cvar_t	*r_patchStitching;
+
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
 #define	DEFAULT_MAX_POLYS		600
@@ -1654,6 +1656,7 @@ void R_Register( void )
 	r_maxpolys = ri_Cvar_Get_NoComm( "r_maxpolys", XSTRING( DEFAULT_MAX_POLYS ), 0, "");
 	r_maxpolyverts = ri_Cvar_Get_NoComm( "r_maxpolyverts", XSTRING( DEFAULT_MAX_POLYVERTS ), 0, "" );
 
+	r_patchStitching = ri_Cvar_Get_NoComm("r_patchStitching", "1", CVAR_ARCHIVE, "Enable stitching of neighbouring patch surfaces" );
 	/*
 	Ghoul2 Insert Start
 	*/
