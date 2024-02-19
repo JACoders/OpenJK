@@ -269,7 +269,7 @@ static qhandle_t RE_RegisterBSP(const char *name)
 	}
 
 	char bspModelIdent[MAX_QPATH];
-	Com_sprintf(bspModelIdent, sizeof(bspModelIdent), "*%d-0", bspIndex);
+	Com_sprintf(bspModelIdent, sizeof(bspModelIdent), "*%d-0", bspIndex+1);
 
 	qhandle_t modelHandle = CModelCache->GetModelHandle(bspModelIdent);
 	if (modelHandle == -1)

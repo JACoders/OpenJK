@@ -2474,7 +2474,7 @@ static void R_LoadSubmodels( world_t *worldData, int worldIndex, lump_t *l ) {
 		model->data.bmodel = out;
 		if (worldIndex >= 0)
 		{
-			Com_sprintf( model->name, sizeof( model->name ), "*%d-%d", worldIndex, i );
+			Com_sprintf( model->name, sizeof( model->name ), "*%d-%d", worldIndex+1, i );
 		}
 		else
 		{
