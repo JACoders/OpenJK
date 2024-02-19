@@ -347,8 +347,9 @@ void main()
 	normal = DeformNormal( position, normal );
 #endif
 
-	vec4 wsPosition = u_ModelMatrix * vec4(position, 1.0);
-	gl_Position = u_viewProjectionMatrix * wsPosition;
+	vec3 wsPosition = mat3(u_ModelMatrix) * position;
+	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
+	gl_Position = MVP * vec4(position, 1.0);
 
 #if defined(USE_TCGEN)
 	vec2 tex = GenTexCoords(u_TCGen0, wsPosition.xyz, normal, u_TCGen0Vector0, u_TCGen0Vector1);
@@ -390,7 +391,6 @@ void main()
 	#endif
 
 	mat3 inverseModel = inverse(mat3(u_ModelMatrix));
-	mat4 MVP = u_viewProjectionMatrix * u_ModelMatrix;
 
 	vec3 refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaR));
 	vec3 new_pos = (distance * refraction_vec) + wsPosition.xyz;
