@@ -1047,7 +1047,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 			Com_Printf( "Disabling eax field because current platform does not support EAX.\n");
 		}
 	}
-	
+
 	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && (item->cvarFlags & CVAR_HIDE) ) {
 		if( item->parent )
 		{
@@ -1085,7 +1085,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 			Com_Printf( "Extended sound quality field to contain very high option.\n");
 		}
 	}
-	
+
 	if ( item->type == ITEM_TYPE_MULTI && item->window.name && !Q_stricmp( item->window.name, "voice") && item->cvar && !Q_stricmp( item->cvar, "g_subtitles" ) ) {
 		multiDef_t *multiPtr = (multiDef_t *)item->typeData;
 		int i;

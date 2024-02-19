@@ -1284,7 +1284,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 					case eTaiwanese:
 					case eJapanese:
 #ifndef JK2_MODE
-					case eChinese:	
+					case eChinese:
 #endif
 									m_AsianGlyph.horizAdvance	= iCappedHeight + 3;	// need to force some spacing for these
 //					case eThai:	// this is done dynamically elsewhere, since Thai glyphs are variable width

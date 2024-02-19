@@ -30,7 +30,7 @@ extern qboolean G_StandardHumanoid( const char *modelName );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
 extern qboolean Q3_TaskIDPending( gentity_t *ent, taskID_t taskType );
 extern void NPC_AimAdjust( int change );
-extern qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask, 
+extern qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask,
 				vec3_t velocity, qboolean tracePath, int ignoreEntNum, int enemyNum,
 				float minSpeed, float maxSpeed, float idealSpeed, qboolean mustHit );
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
@@ -126,7 +126,7 @@ static void GM_CreateExplosion( gentity_t *self, const int boltID, qboolean doSm
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					boltID,
 					&boltMatrix, self->currentAngles, self->currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -255,7 +255,7 @@ NPC_GM_Pain
 */
 
 extern void NPC_SetPainEvent( gentity_t *self );
-void NPC_GM_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_GM_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, vec3_t point, int damage, int mod,int hitLoc )
 {
 	if ( self->client->ps.powerups[PW_GALAK_SHIELD] == 0 )
 	{//shield is currently down
@@ -387,13 +387,13 @@ static qboolean GM_Move( void )
 
 	qboolean	moved = NPC_MoveToGoal( qtrue );
 	navInfo_t	info;
-	
+
 	//Get the move info
 	NAV_GetLastMove( info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
 	//If we hit our target, then stop and fire!
-	if ( info.flags & NIF_COLLISION ) 
+	if ( info.flags & NIF_COLLISION )
 	{
 		if ( info.blocker == NPC->enemy )
 		{
@@ -454,7 +454,7 @@ static void GM_CheckMoveState( void )
 	if ( ( NPCInfo->goalEntity != NPC->enemy ) && ( NPCInfo->goalEntity != NULL ) )
 	{
 		//Did we make it?
-		if ( NAV_HitNavGoal( NPC->currentOrigin, NPC->mins, NPC->maxs, NPCInfo->goalEntity->currentOrigin, 16, qfalse ) || 
+		if ( NAV_HitNavGoal( NPC->currentOrigin, NPC->mins, NPC->maxs, NPCInfo->goalEntity->currentOrigin, 16, qfalse ) ||
 			( !Q3_TaskIDPending( NPC, TID_MOVE_NAV ) && enemyLOS && enemyDist <= 10000 ) )
 		{//either hit our navgoal or our navgoal was not a crucial (scripted) one (maybe a combat point) and we're scouting and found our enemy
 			NPC_ReachedGoal();
@@ -602,7 +602,7 @@ void NPC_BSGM_Attack( void )
 	}
 
 	//FIXME: if killed enemy, use victory anim
-	if ( NPC->enemy && NPC->enemy->health <= 0 
+	if ( NPC->enemy && NPC->enemy->health <= 0
 		&& !NPC->enemy->s.number )
 	{//my enemy is dead
 		if ( NPC->client->ps.torsoAnim == BOTH_STAND2TO1 )
@@ -693,7 +693,7 @@ void NPC_BSGM_Attack( void )
 				VectorNormalize( smackDir );
 				//hurt them
 				G_Sound( NPC->enemy, G_SoundIndex( "sound/weapons/galak/skewerhit.wav" ) );
-				G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
+				G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_CRUSH );
 				if ( NPC->client->ps.torsoAnim == BOTH_ATTACK4 )
 				{//smackdown
 					int knockAnim = BOTH_KNOCKDOWN1;
@@ -800,10 +800,10 @@ void NPC_BSGM_Attack( void )
 			}
 		}
 	}
-	else 
+	else
 	{//Okay, we're not in a special attack, see if we should switch weapons or start a special attack
 		/*
-		if ( NPC->s.weapon == WP_REPEATER 
+		if ( NPC->s.weapon == WP_REPEATER
 			&& !(NPCInfo->scriptFlags & SCF_ALT_FIRE)//using rapid-fire
 			&& NPC->enemy->s.weapon == WP_SABER //enemy using saber
 			&& NPC->client && (NPC->client->ps.saberEventFlags&SEF_DEFLECTED)
@@ -818,9 +818,9 @@ void NPC_BSGM_Attack( void )
 			}
 		}
 		else*/
-		if ( !NPC->client->ps.powerups[PW_GALAK_SHIELD] 
-			&& enemyDist < MELEE_DIST_SQUARED 
-			&& InFront( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 0.3f ) 
+		if ( !NPC->client->ps.powerups[PW_GALAK_SHIELD]
+			&& enemyDist < MELEE_DIST_SQUARED
+			&& InFront( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 0.3f )
 			&& G_StandardHumanoid( NPC->enemy->NPC_type ) )//within 80 and in front
 		{//our shield is down, and enemy within 80, if very close, use melee attack to slap away
 			if ( TIMER_Done( NPC, "attackDelay" ) )
@@ -848,13 +848,13 @@ void NPC_BSGM_Attack( void )
 			&& TIMER_Done( NPC, "attackDelay" )
 			&& InFront( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 0.3f )
 			&& ((!Q_irand( 0, 10*(2-g_spskill->integer))&& enemyDist > MIN_LOB_DIST_SQUARED&& enemyDist < MAX_LOB_DIST_SQUARED)
-				||(!TIMER_Done( NPC, "noLob" )&&!TIMER_Done( NPC, "noRapid" ))) 
+				||(!TIMER_Done( NPC, "noLob" )&&!TIMER_Done( NPC, "noRapid" )))
 			&& NPC->enemy->s.weapon != WP_TURRET )
 		{//sometimes use the laser beam attack, but only after he's taken down our generator
 			shoot = qfalse;
 			NPC_GM_StartLaser();
 		}
-		else if ( enemyDist < MIN_LOB_DIST_SQUARED 
+		else if ( enemyDist < MIN_LOB_DIST_SQUARED
 			&& (NPC->enemy->s.weapon != WP_TURRET || Q_stricmp( "PAS", NPC->enemy->classname ))
 			&& TIMER_Done( NPC, "noRapid" ) )//256
 		{//enemy within 256
@@ -902,7 +902,7 @@ void NPC_BSGM_Attack( void )
 			{
 				int hit = NPC_ShotEntity( NPC->enemy, impactPos );
 				gentity_t *hitEnt = &g_entities[hit];
-				if ( hit == NPC->enemy->s.number 
+				if ( hit == NPC->enemy->s.number
 					|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam )
 					|| ( hitEnt && hitEnt->takedamage ) )
 				{//can hit enemy or will hit glass or other breakable, so shoot anyway
@@ -961,7 +961,7 @@ void NPC_BSGM_Attack( void )
 
 		int hit = NPC_ShotEntity( NPC->enemy, impactPos );
 		gentity_t *hitEnt = &g_entities[hit];
-		if ( hit == NPC->enemy->s.number 
+		if ( hit == NPC->enemy->s.number
 			|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam )
 			|| ( hitEnt && hitEnt->takedamage ) )
 		{//can hit enemy or will hit glass or other breakable, so shoot anyway
@@ -1021,7 +1021,7 @@ void NPC_BSGM_Attack( void )
 		vec3_t mins = {-REPEATER_ALT_SIZE,-REPEATER_ALT_SIZE,-REPEATER_ALT_SIZE}, maxs = {REPEATER_ALT_SIZE,REPEATER_ALT_SIZE,REPEATER_ALT_SIZE};
 
 		CalcEntitySpot( NPC, SPOT_WEAPON, muzzle );
-		
+
 		VectorCopy( NPC->enemy->currentOrigin, target );
 
 		target[0] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-NPCInfo->currentAim)*2);
@@ -1029,7 +1029,7 @@ void NPC_BSGM_Attack( void )
 		target[2] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-NPCInfo->currentAim)*2);
 
 		//Find the desired angles
-		qboolean clearshot = WP_LobFire( NPC, muzzle, target, mins, maxs, MASK_SHOT|CONTENTS_LIGHTSABER, 
+		qboolean clearshot = WP_LobFire( NPC, muzzle, target, mins, maxs, MASK_SHOT|CONTENTS_LIGHTSABER,
 			velocity, qtrue, NPC->s.number, NPC->enemy->s.number,
 			300, 1100, 1500, qtrue );
 		if ( VectorCompare( vec3_origin, velocity ) || (!clearshot&&enemyLOS&&enemyCS)  )
@@ -1077,11 +1077,11 @@ void NPC_BSGM_Attack( void )
 
 	if ( AImove && !NPC->lockCount )
 	{//move toward goal
-		if ( NPCInfo->goalEntity 
+		if ( NPCInfo->goalEntity
 			&& NPC->client->ps.legsAnim != BOTH_ALERT1
-			&& NPC->client->ps.legsAnim != BOTH_ATTACK2 
+			&& NPC->client->ps.legsAnim != BOTH_ATTACK2
 			&& NPC->client->ps.legsAnim != BOTH_ATTACK4
-			&& NPC->client->ps.legsAnim != BOTH_ATTACK5 
+			&& NPC->client->ps.legsAnim != BOTH_ATTACK5
 			&& NPC->client->ps.legsAnim != BOTH_ATTACK7 )
 		{
 			AImove = GM_Move();
@@ -1146,11 +1146,11 @@ void NPC_BSGM_Attack( void )
 			if ( NPC->client->ps.powerups[PW_GALAK_SHIELD] > 0 )
 			{
 				NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
-				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE ); 
+				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE );
 			}
 			else
 			{
-				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
+				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_CRUSH );
 			}
 		}
 	}
@@ -1170,7 +1170,7 @@ void NPC_BSGM_Attack( void )
 			VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, smackDir );
 			smackDir[2] += 30;
 			VectorNormalize( smackDir );
-			G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE ); 
+			G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE );
 			//throw them
 			G_Throw( NPC->enemy, smackDir, 100 );
 			NPC->enemy->s.powerups |= ( 1 << PW_SHOCKED );
@@ -1212,7 +1212,7 @@ void NPC_BSGM_Default( void )
 	{
 		WeaponThink( qtrue );
 	}
-	
+
 	if ( NPC->client->ps.stats[STAT_ARMOR] <= 0 )
 	{//armor gone
 		if ( !NPCInfo->investigateDebounceTime )

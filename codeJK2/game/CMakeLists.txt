@@ -1,17 +1,17 @@
 #============================================================================
 # Copyright (C) 2013 - 2018, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
@@ -127,7 +127,7 @@ set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/wp_stun_baton.cpp"
 	"${JK2SPDir}/game/wp_thermal.cpp"
 	"${JK2SPDir}/game/wp_trip_mine.cpp"
-	"${JK2SPDir}/game/Q3_Interface.h"	
+	"${JK2SPDir}/game/Q3_Interface.h"
 	"${JK2SPDir}/game/Q3_Registers.h"
 	"${JK2SPDir}/game/ai.h"
 	"${JK2SPDir}/game/anims.h"

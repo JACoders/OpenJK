@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // tr_shade.c
 
-#include "tr_local.h" 
+#include "tr_local.h"
 #include "tr_allocator.h"
 
 /*
@@ -52,7 +52,7 @@ void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex
 }
 
 
-static void R_DrawMultiElementsVBO( int multiDrawPrimitives, glIndex_t *multiDrawMinIndex, glIndex_t *multiDrawMaxIndex, 
+static void R_DrawMultiElementsVBO( int multiDrawPrimitives, glIndex_t *multiDrawMinIndex, glIndex_t *multiDrawMaxIndex,
 	GLsizei *multiDrawNumIndexes, glIndex_t **multiDrawFirstIndex)
 {
 	GL_MultiDrawIndexed(
@@ -195,7 +195,7 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 	for ( tm = 0; tm < bundle->numTexMods ; tm++ ) {
 		switch ( bundle->texMods[tm].type )
 		{
-			
+
 		case TMOD_NONE:
 			tm = TR_MAX_TEXMODS;		// break out of for loop
 			break;
@@ -217,9 +217,9 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 			RB_CalcScaleTexMatrix( bundle->texMods[tm].scale,
 								  matrix );
 			break;
-		
+
 		case TMOD_STRETCH:
-			RB_CalcStretchTexMatrix( &bundle->texMods[tm].wave, 
+			RB_CalcStretchTexMatrix( &bundle->texMods[tm].wave,
 								   matrix );
 			break;
 
@@ -239,7 +239,7 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 		}
 
 		switch ( bundle->texMods[tm].type )
-		{	
+		{
 		case TMOD_NONE:
 		case TMOD_TURBULENT:
 		default:
@@ -276,14 +276,14 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 	colorGen_t rgbGen = pStage->rgbGen;
 	alphaGen_t alphaGen = pStage->alphaGen;
 
-	baseColor[0] =  
-   	baseColor[1] = 
-   	baseColor[2] = 
-   	baseColor[3] = 1.0f; 
-   	
-   	vertColor[0] = 
-   	vertColor[1] = 
-   	vertColor[2] = 
+	baseColor[0] =
+   	baseColor[1] =
+   	baseColor[2] =
+   	baseColor[3] = 1.0f;
+
+   	vertColor[0] =
+   	vertColor[1] =
+   	vertColor[2] =
    	vertColor[3] = 0.0f;
 
 	if ( forceRGBGen != NULL && *forceRGBGen != CGEN_BAD )
@@ -299,20 +299,20 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 	switch ( rgbGen )
 	{
 		case CGEN_IDENTITY_LIGHTING:
-			baseColor[0] = 
+			baseColor[0] =
 			baseColor[1] =
 			baseColor[2] = tr.identityLight;
 			break;
 		case CGEN_EXACT_VERTEX:
 		case CGEN_EXACT_VERTEX_LIT:
-			baseColor[0] = 
+			baseColor[0] =
 			baseColor[1] =
-			baseColor[2] = 
+			baseColor[2] =
 			baseColor[3] = 0.0f;
 
 			vertColor[0] =
 			vertColor[1] =
-			vertColor[2] = 
+			vertColor[2] =
 			vertColor[3] = 1.0f;
 			break;
 		case CGEN_CONST:
@@ -322,7 +322,7 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			baseColor[3] = pStage->constantColor[3];
 			break;
 		case CGEN_VERTEX:
-			baseColor[0] = 
+			baseColor[0] =
 			baseColor[1] =
 			baseColor[2] =
 			baseColor[3] = 0.0f;
@@ -333,18 +333,18 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			vertColor[3] = 1.0f;
 			break;
 		case CGEN_VERTEX_LIT:
-			baseColor[0] = 
+			baseColor[0] =
 			baseColor[1] =
-			baseColor[2] = 
+			baseColor[2] =
 			baseColor[3] = 0.0f;
 
 			vertColor[0] =
 			vertColor[1] =
-			vertColor[2] = 
+			vertColor[2] =
 			vertColor[3] = tr.identityLight;
 			break;
 		case CGEN_ONE_MINUS_VERTEX:
-			baseColor[0] = 
+			baseColor[0] =
 			baseColor[1] =
 			baseColor[2] = tr.identityLight;
 
@@ -359,8 +359,8 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			}
 			break;
 		case CGEN_WAVEFORM:
-			baseColor[0] = 
-			baseColor[1] = 
+			baseColor[0] =
+			baseColor[1] =
 			baseColor[2] = RB_CalcWaveColorSingle( &pStage->rgbWave );
 			break;
 		case CGEN_ENTITY:
@@ -460,9 +460,9 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 	{
 		*forceRGBGen = rgbGen;
 	}
-	
+
 	// multiply color by overbrightbits if this isn't a blend
-	if (tr.overbrightBits 
+	if (tr.overbrightBits
 	 && !((blend & GLS_SRCBLEND_BITS) == GLS_SRCBLEND_DST_COLOR)
 	 && !((blend & GLS_SRCBLEND_BITS) == GLS_SRCBLEND_ONE_MINUS_DST_COLOR)
 	 && !((blend & GLS_DSTBLEND_BITS) == GLS_DSTBLEND_SRC_COLOR)
@@ -484,7 +484,7 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 	if(r_greyscale->integer)
 	{
 		int scale;
-		
+
 		for(i = 0; i < tess.numVertexes; i++)
 		{
 			scale = (tess.svars.colors[i][0] + tess.svars.colors[i][1] + tess.svars.colors[i][2]) / 3;
@@ -1044,7 +1044,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	else if (glState.skeletalAnimation)
 		shaderBits |= FOGDEF_USE_SKELETAL_ANIMATION;
 
-	if (tr.world && tr.world->globalFog && 
+	if (tr.world && tr.world->globalFog &&
 		input->fogNum != tr.world->globalFogIndex &&
 		input->shader->sort != SS_FOG)
 		shaderBits |= FOGDEF_USE_FALLBACK_GLOBAL_FOG;
@@ -1052,7 +1052,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	if (input->numPasses > 0)
 		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
 			shaderBits |= FOGDEF_USE_ALPHA_TEST;
-	
+
 	shaderProgram_t *sp = tr.fogShader + shaderBits;
 
 	backEnd.pc.c_fogDraws++;
@@ -1062,7 +1062,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
 	if (input->numPasses > 0)
 		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
-	
+
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	if ( tess.shader->fogPass == FP_EQUAL )
 		stateBits |= GLS_DEPTHFUNC_EQUAL;
@@ -1310,7 +1310,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 				if (glState.skeletalAnimation)
 				{
 					index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
-				} 
+				}
 			}
 
 			if ( !useAlphaTestGE192 )
@@ -1482,7 +1482,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		assert(sp);
 
 		uniformDataWriter.Start(sp);
-		
+
 		if ( input->fogNum ) {
 			vec4_t fogColorMask;
 			ComputeFogColorMask(pStage, fogColorMask);
@@ -1521,7 +1521,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 			if (backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA)
 			{
-				baseColor[3] = backEnd.currentEntity->e.shaderRGBA[3] / 255.0f; 
+				baseColor[3] = backEnd.currentEntity->e.shaderRGBA[3] / 255.0f;
 				vertColor[3] = 0.0f;
 			}
 
@@ -1586,7 +1586,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			texMatrix[0] = texMatrix[3] = input->texCoords[input->firstIndex][0][0];
 		else
 #endif
-			ComputeTexMods(pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb); 
+			ComputeTexMods(pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb);
 
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
@@ -1759,7 +1759,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[0], 0);
 			samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[1], 1);
 		}
-		else 
+		else
 		{
 			//
 			// set state
@@ -1785,7 +1785,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
 		}
-		
+
 		if (enableDLights)
 		{
 			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, tess.dlightBits);
@@ -1854,7 +1854,7 @@ void RB_StageIteratorGeneric( void )
 	//
 	// log this call
 	//
-	if ( r_logFile->integer ) 
+	if ( r_logFile->integer )
 	{
 		// don't just call LogComment, or we will get
 		// a call to va() every frame!
@@ -1863,7 +1863,7 @@ void RB_StageIteratorGeneric( void )
 
 	//
 	// update vertex buffer data
-	// 
+	//
 	uint32_t vertexAttribs = RB_CalcShaderVertexAttribs( input->shader );
 	if (tess.useInternalVBO)
 	{
@@ -1982,7 +1982,7 @@ void RB_EndSurface( void ) {
 
 	if (input->indexes[SHADER_MAX_INDEXES-1] != 0) {
 		ri.Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_INDEXES hit");
-	}	
+	}
 	if (input->xyz[SHADER_MAX_VERTEXES-1][0] != 0) {
 		ri.Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_VERTEXES hit");
 	}

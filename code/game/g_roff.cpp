@@ -86,7 +86,7 @@ static void G_RoffNotetrackCallback( gentity_t *ent, const char *notetrack)
 	//					notetrack = "loop rof relative";
 	//					notetrack = "loop sfx sound/vehicles/tie/loop.wav";
 	//					notetrack = "loop sfx kill";
-	//'loop rof' notes:  
+	//'loop rof' notes:
 	//		(1) absolute ==> reset rof to original delta position/rotation world location before looping.
 	//		(2) relative ==> reset rof to original delta position/rotation at current location before looping.
 	//'loop sfx' notes:
@@ -742,7 +742,7 @@ void G_Roff( gentity_t *ent )
 		move_rotate2_t	*data	= &((move_rotate2_t *)roff->data)[ ent->roff_ctr ];
 		VectorCopy( data->origin_delta, org );
 		VectorCopy( data->rotate_delta, ang );
-		
+
 		if ( data->mStartNote != -1 )
 		{
 			for ( int n = 0; n < data->mNumNotes; n++ )

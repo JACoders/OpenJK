@@ -344,7 +344,7 @@ void FBO_Bind(FBO_t * fbo)
 {
 	if (glState.currentFBO == fbo)
 		return;
-		
+
 	if (r_logFile->integer)
 	{
 		// don't just call LogComment, or we will get a call to va() every frame!
@@ -415,7 +415,7 @@ void FBO_Init(void)
 	{
 		ri.Cvar_SetValue("r_ext_framebuffer_multisample", (float)multisample);
 	}
-	
+
 	// only create a render FBO if we need to resolve MSAA or do HDR
 	// otherwise just render straight to the screen (tr.renderFbo = NULL)
 	if (multisample)
@@ -844,7 +844,7 @@ void FBO_BlitFromTexture(struct image_s *src, vec4i_t inSrcBox, vec2_t inSrcTexS
 	GL_State( blend );
 
 	GLSL_BindProgram(shaderProgram);
-	
+
 	GLSL_SetUniformMatrix4x4(shaderProgram, UNIFORM_MODELVIEWPROJECTIONMATRIX, projection);
 	GLSL_SetUniformVec4(shaderProgram, UNIFORM_COLOR, color);
 	GLSL_SetUniformVec2(shaderProgram, UNIFORM_INVTEXRES, invTexRes);

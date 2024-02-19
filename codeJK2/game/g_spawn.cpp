@@ -100,9 +100,9 @@ qboolean	G_SpawnVector4( const char *key, const char *defaultString, float *out 
 qboolean	G_SpawnFlag( const char *key, int flag, int *out )
 {
 	//find that key
-	for ( int i = 0 ; i < numSpawnVars ; i++ ) 
+	for ( int i = 0 ; i < numSpawnVars ; i++ )
 	{
-		if ( !strcmp( key, spawnVars[i][0] ) ) 
+		if ( !strcmp( key, spawnVars[i][0] ) )
 		{
 			//found the key
 			if ( atoi( spawnVars[i][1] ) != 0 )
@@ -147,7 +147,7 @@ stringID_table_t flagTable [] =
 // fields are needed for spawning from the entity string
 //
 typedef enum {
-	F_INT, 
+	F_INT,
 	F_FLOAT,
 	F_LSTRING,			// string on disk, pointer in memory, TAG_LEVEL
 	F_GSTRING,			// string on disk, pointer in memory, TAG_GAME
@@ -578,7 +578,7 @@ spawn_t	spawns[] = {
 	{"misc_ion_cannon", SP_misc_ion_cannon},
 	{"misc_sentry_turret", SP_PAS},
 	{"misc_maglock", SP_misc_maglock},
-	
+
 	{"misc_model_ghoul", SP_misc_model_ghoul},
 	{"misc_model_breakable", SP_misc_model_breakable},
 	{"misc_portal_surface", SP_misc_portal_surface},
@@ -609,7 +609,7 @@ spawn_t	spawns[] = {
 	{"misc_atst_drivable", SP_misc_atst_drivable},
 
 	{"misc_cubemap", SP_misc_cubemap},
-	
+
 	{"shooter_rocket", SP_shooter_rocket},
 	{"shooter_grenade", SP_shooter_grenade},
 	{"shooter_plasma", SP_shooter_plasma},
@@ -677,7 +677,7 @@ spawn_t	spawns[] = {
 	{"waypoint_navgoal_4", SP_waypoint_navgoal_4},
 	{"waypoint_navgoal_2", SP_waypoint_navgoal_2},
 	{"waypoint_navgoal_1", SP_waypoint_navgoal_1},
-	
+
 	{"fx_runner", SP_fx_runner},
 	{"fx_explosion_trail", SP_fx_explosion_trail},
 	{"fx_target_beam", SP_fx_target_beam},
@@ -768,7 +768,7 @@ char *G_NewString( const char *string ) {
 			*new_p++ = string[i];
 		}
 	}
-	
+
 	return newb;
 }
 
@@ -1009,7 +1009,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	}
 
 	// go through all the key / value pairs
-	while ( 1 ) {	
+	while ( 1 ) {
 		// parse key
 		com_token = COM_Parse( data );
 		if ( com_token[0] == '}' ) {
@@ -1021,8 +1021,8 @@ qboolean G_ParseSpawnVars( const char **data ) {
 		}
 
 		Q_strncpyz( keyname, com_token, sizeof(keyname) );
-		
-		// parse value	
+
+		// parse value
 		com_token = COM_Parse( data );
 		if ( com_token[0] == '}' ) {
 			COM_EndParseSession();
@@ -1045,7 +1045,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	return qtrue;
 }
 
-static	char *defaultStyles[LS_NUM_STYLES][3] = 
+static	char *defaultStyles[LS_NUM_STYLES][3] =
 {
 	{	// 0 normal
 		"z",
@@ -1233,7 +1233,7 @@ void SP_worldspawn( void ) {
 	int		i;
 
 	gi.cvar_set( "region", "0" );
-	for ( i = 0 ; i < numSpawnVars ; i++ ) 
+	for ( i = 0 ; i < numSpawnVars ; i++ )
 	{
 		if ( Q_stricmp( "spawnscript", spawnVars[i][0] ) == 0 )
 		{//ONly let them set spawnscript, we don't want them setting an angle or something on the world.
@@ -1294,10 +1294,10 @@ void SP_worldspawn( void ) {
 
 		if (lengthRed != lengthGreen || lengthGreen != lengthBlue)
 		{
-			Com_Error(ERR_DROP, "Style %d has inconsistent lengths: R %d, G %d, B %d", 
+			Com_Error(ERR_DROP, "Style %d has inconsistent lengths: R %d, G %d, B %d",
 				i, lengthRed, lengthGreen, lengthBlue);
 		}
-	}	
+	}
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
@@ -1368,14 +1368,14 @@ void G_SpawnEntitiesFromString( const char *entityString ) {
 	if ( !G_ParseSpawnVars( &entities ) ) {
 		G_Error( "SpawnEntities: no entities" );
 	}
-	
+
 	SP_worldspawn();
 
 	// parse ents
-	while( G_ParseSpawnVars( &entities ) ) 
+	while( G_ParseSpawnVars( &entities ) )
 	{
 		G_SpawnGEntityFromSpawnVars();
-	}	
+	}
 
 	//Search the entities for precache information
 	G_ParsePrecaches();

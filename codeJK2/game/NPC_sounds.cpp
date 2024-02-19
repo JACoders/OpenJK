@@ -67,12 +67,12 @@ void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime )
 		return;
 	}
 
-	
+
 	if ( (self->NPC->scriptFlags&SCF_NO_COMBAT_TALK) && ( (event >= EV_ANGER1 && event <= EV_VICTORY3) || (event >= EV_CHASE1 && event <= EV_SUSPICIOUS5) ) )//(event < EV_FF_1A || event > EV_FF_3C) && (event < EV_RESPOND1 || event > EV_MISSION3) )
 	{
 		return;
 	}
-	
+
 	if ( (self->NPC->scriptFlags&SCF_NO_ALERT_TALK) && (event >= EV_GIVEUP1 && event <= EV_SUSPICIOUS5) )
 	{
 		return;
@@ -110,7 +110,7 @@ void NPC_PlayConfusionSound( gentity_t *self )
 	//reset him to be totally unaware again
 	TIMER_Set( self, "enemyLastVisible", 0 );
 	self->NPC->tempBehavior = BS_DEFAULT;
-	
+
 	//self->NPC->behaviorState = BS_PATROL;
 	G_ClearEnemy( self );//FIXME: or just self->enemy = NULL;?
 

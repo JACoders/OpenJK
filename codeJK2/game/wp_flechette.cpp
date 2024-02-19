@@ -86,9 +86,9 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 //		{
 //			missile->flags |= FL_OVERCHARGED;
 //		}
-			
+
 		missile->dflags = (DAMAGE_DEATH_KNOCKBACK|DAMAGE_EXTRA_KNOCKBACK);
-		
+
 		missile->methodOfDeath = MOD_FLECHETTE;
 		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
@@ -162,7 +162,7 @@ void prox_mine_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 	self->owner = NULL;
 
 	WP_Stick( self, trace );
-	
+
 	self->e_ThinkFunc = thinkF_prox_mine_think;
 	self->nextthink = level.time + 450;
 
@@ -198,7 +198,7 @@ static void WP_FlechetteProxMine( gentity_t *ent )
 	missile->clipmask = MASK_SHOT;
 
 	// we don't want it to bounce forever
-	missile->bounceCount = 0; 
+	missile->bounceCount = 0;
 }
 */
 //----------------------------------------------
@@ -218,7 +218,7 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 //------------------------------------------------------------------------------
 {
 	gentity_t	*missile = CreateMissile( start, fwd, 950 + Q_flrand(0.0f, 1.0f) * 700, 1500 + Q_flrand(0.0f, 1.0f) * 2000, self, qtrue );
-	
+
 	missile->e_ThinkFunc = thinkF_WP_flechette_alt_blow;
 
 	missile->s.weapon = WP_FLECHETTE;

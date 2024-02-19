@@ -127,7 +127,7 @@ static void NPC_LadderMove( vec3_t dir )
 	//ALSO: Need to be able to get off at top
 	//ALSO: Need to play an anim
 	//ALSO: Need transitionary anims?
-	
+
 	if ( ( dir[2] > 0 ) || ( dir[2] < 0 && NPC->client->ps.groundEntityNum == ENTITYNUM_NONE ) )
 	{
 		//Set our movement direction
@@ -155,7 +155,7 @@ inline qboolean NPC_GetMoveInformation( vec3_t dir, float *distance )
 	//Get our move info
 	VectorSubtract( NPCInfo->goalEntity->currentOrigin, NPC->currentOrigin, dir );
 	*distance = VectorNormalize( dir );
-	
+
 	VectorCopy( NPCInfo->goalEntity->currentOrigin, NPCInfo->blockedDest );
 
 	return qtrue;
@@ -210,7 +210,7 @@ qboolean NPC_GetMoveDirection( vec3_t out, float *distance )
 		{
 			//Can't reach goal, just face
 			vectoangles( frameNavInfo.direction, angles );
-			NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );		
+			NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );
 			VectorCopy( frameNavInfo.direction, out );
 			*distance = frameNavInfo.distance;
 			return qfalse;
@@ -224,7 +224,7 @@ qboolean NPC_GetMoveDirection( vec3_t out, float *distance )
 	{
 		//FIXME: Emit a warning, this is a worst case scenario
 		//FIXME: if we have a clear path to our goal (exluding bodies), but then this
-		//			check (against bodies only) fails, shouldn't we fall back 
+		//			check (against bodies only) fails, shouldn't we fall back
 		//			to macro navigation?  Like so:
 		if ( !(frameNavInfo.flags&NIF_MACRO_NAV) )
 		{//we had a clear path to goal and didn't try macro nav, but can't avoid collision so try macro nav here
@@ -233,7 +233,7 @@ qboolean NPC_GetMoveDirection( vec3_t out, float *distance )
 			{
 				//Can't reach goal, just face
 				vectoangles( frameNavInfo.direction, angles );
-				NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );		
+				NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );
 				VectorCopy( frameNavInfo.direction, out );
 				*distance = frameNavInfo.distance;
 				return qfalse;
@@ -291,7 +291,7 @@ qboolean NPC_GetMoveDirectionAltRoute( vec3_t out, float *distance, qboolean try
 		{
 			//Can't reach goal, just face
 			vectoangles( frameNavInfo.direction, angles );
-			NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );		
+			NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );
 			VectorCopy( frameNavInfo.direction, out );
 			*distance = frameNavInfo.distance;
 			return qfalse;
@@ -313,7 +313,7 @@ qboolean NPC_GetMoveDirectionAltRoute( vec3_t out, float *distance, qboolean try
 				{
 					//Can't reach goal, just face
 					vectoangles( frameNavInfo.direction, angles );
-					NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );		
+					NPCInfo->desiredYaw	= AngleNormalize360( angles[YAW] );
 					VectorCopy( frameNavInfo.direction, out );
 					*distance = frameNavInfo.distance;
 					return qfalse;
@@ -377,7 +377,7 @@ void G_UcmdMoveForDir( gentity_t *self, usercmd_t *cmd, vec3_t dir )
 
 	/*
 	vec3_t	wishvel;
-	for ( int i = 0 ; i < 3 ; i++ ) 
+	for ( int i = 0 ; i < 3 ; i++ )
 	{
 		wishvel[i] = forward[i]*cmd->forwardmove + right[i]*cmd->rightmove;
 	}
@@ -399,7 +399,7 @@ NPC_MoveToGoal
 #if	AI_TIMERS
 extern int navTime;
 #endif//	AI_TIMERS
-qboolean NPC_MoveToGoal( qboolean tryStraight ) 
+qboolean NPC_MoveToGoal( qboolean tryStraight )
 {
 #if	AI_TIMERS
 	int	startTime = GetTime(0);
@@ -443,12 +443,12 @@ qboolean NPC_MoveToGoal( qboolean tryStraight )
 		//FIXME: strafe instead of turn if change in dir is small and temporary
 		NPCInfo->desiredPitch	= 0.0f;
 		NPCInfo->desiredYaw		= AngleNormalize360( NPCInfo->lastPathAngles[YAW] );
-		
+
 		//Pitch towards the goal and also update if flying or swimming
 		if ( NPCInfo->stats.moveType == MT_FLYSWIM )
 		{
 			NPCInfo->desiredPitch = AngleNormalize360( NPCInfo->lastPathAngles[PITCH] );
-			
+
 			if ( dir[2] )
 			{
 				float scale = (dir[2] * distance);
@@ -487,7 +487,7 @@ qboolean NPC_SlideMoveToGoal( void )
 	float	saveYaw = NPC->client->ps.viewangles[YAW];
 
 	NPCInfo->combatMove = qtrue;
-	
+
 	qboolean ret = NPC_MoveToGoal( qtrue );
 
 	NPCInfo->desiredYaw	= saveYaw;

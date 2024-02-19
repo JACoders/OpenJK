@@ -3569,7 +3569,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
 	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
-	
+
 	char	animGLAName[MAX_QPATH];
 	char	*strippedName;
 	char	*slash = NULL;
@@ -3593,7 +3593,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			RE_RegisterModel(va("models/players/%s_%s/%s_%s.gla", strippedName, mapname, strippedName, mapname));
 		}
-	}		
+	}
 
 #ifndef JK2_MODE
 	bool isAnOldModelFile = false;

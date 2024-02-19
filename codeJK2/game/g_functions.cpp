@@ -38,43 +38,43 @@ void GEntity_ThinkFunc(gentity_t *self)
 
 	switch (self->e_ThinkFunc)
 	{
-	case thinkF_NULL:																	
+	case thinkF_NULL:
 		break;
 
-	THINKCASE( funcBBrushDieGo )			
-	THINKCASE( ExplodeDeath )				
-	THINKCASE( RespawnItem )				
-	THINKCASE( G_FreeEntity )				
-	THINKCASE( FinishSpawningItem )			
-	THINKCASE( locateCamera )				
-	THINKCASE( G_RunObject )				
-	THINKCASE( ReturnToPos1 )				
-	THINKCASE( Use_BinaryMover_Go )			
-	THINKCASE( Think_MatchTeam )			
-	THINKCASE( Think_BeginMoving )			
-	THINKCASE( Think_SetupTrainTargets )	
-	THINKCASE( Think_SpawnNewDoorTrigger )	
-	THINKCASE( ref_link )						
-	THINKCASE( Think_Target_Delay )			
-	THINKCASE( target_laser_think )			
-	THINKCASE( target_laser_start )			
-	THINKCASE( target_location_linkup )		
-	THINKCASE( scriptrunner_run )			
-	THINKCASE( multi_wait )					
-	THINKCASE( multi_trigger_run )			
-	THINKCASE( trigger_always_think )		
-	THINKCASE( AimAtTarget )				
-	THINKCASE( func_timer_think )			
-	THINKCASE( NPC_RemoveBody )				
-	THINKCASE( Disappear )					
-	THINKCASE( NPC_Think )					
-	THINKCASE( NPC_Spawn_Go )				
-	THINKCASE( NPC_Begin )					
+	THINKCASE( funcBBrushDieGo )
+	THINKCASE( ExplodeDeath )
+	THINKCASE( RespawnItem )
+	THINKCASE( G_FreeEntity )
+	THINKCASE( FinishSpawningItem )
+	THINKCASE( locateCamera )
+	THINKCASE( G_RunObject )
+	THINKCASE( ReturnToPos1 )
+	THINKCASE( Use_BinaryMover_Go )
+	THINKCASE( Think_MatchTeam )
+	THINKCASE( Think_BeginMoving )
+	THINKCASE( Think_SetupTrainTargets )
+	THINKCASE( Think_SpawnNewDoorTrigger )
+	THINKCASE( ref_link )
+	THINKCASE( Think_Target_Delay )
+	THINKCASE( target_laser_think )
+	THINKCASE( target_laser_start )
+	THINKCASE( target_location_linkup )
+	THINKCASE( scriptrunner_run )
+	THINKCASE( multi_wait )
+	THINKCASE( multi_trigger_run )
+	THINKCASE( trigger_always_think )
+	THINKCASE( AimAtTarget )
+	THINKCASE( func_timer_think )
+	THINKCASE( NPC_RemoveBody )
+	THINKCASE( Disappear )
+	THINKCASE( NPC_Think )
+	THINKCASE( NPC_Spawn_Go )
+	THINKCASE( NPC_Begin )
 	THINKCASE( moverCallback )
 	THINKCASE( anglerCallback )
-	THINKCASE( RemoveOwner )				
-	THINKCASE( MakeOwnerInvis )				
-	THINKCASE( MakeOwnerEnergy )			
+	THINKCASE( RemoveOwner )
+	THINKCASE( MakeOwnerInvis )
+	THINKCASE( MakeOwnerEnergy )
 	THINKCASE( func_usable_think )
 	THINKCASE( misc_dlight_think )
 	THINKCASE( health_think )
@@ -128,7 +128,7 @@ void GEntity_ThinkFunc(gentity_t *self)
 	THINKCASE( panel_turret_think )
 	THINKCASE( welder_think )
 	THINKCASE( gas_random_jet )
-	THINKCASE( poll_converter ) // dumb loop sound handling 
+	THINKCASE( poll_converter ) // dumb loop sound handling
 	THINKCASE( spawn_rack_goods ) // delay spawn of goods to help on ents
 
 	default:
@@ -161,12 +161,12 @@ void CEntity_ThinkFunc(centity_s *cent)
 
 
 void GEntity_ReachedFunc(gentity_t *self)
-{	
+{
 //#define REACHEDCASE(blah) case reachedF_ ## blah: blah(self); OutputDebugString(va("%s\n",#blah));break;
 #define REACHEDCASE(blah) case reachedF_ ## blah: blah(self); break;
 
 	switch (self->e_ReachedFunc)
-	{	
+	{
 	case reachedF_NULL:
 		break;
 
@@ -193,8 +193,8 @@ void GEntity_BlockedFunc(gentity_t *self, gentity_t *other)
 	case blockedF_NULL:
 		break;
 
-	BLOCKEDCASE( Blocked_Door )		
-	BLOCKEDCASE( Blocked_Mover )		
+	BLOCKEDCASE( Blocked_Door )
+	BLOCKEDCASE( Blocked_Mover )
 
 	default:
 		Com_Error(ERR_DROP, "GEntity_BlockedFunc: case %d not handled!\n",self->e_BlockedFunc);

@@ -45,7 +45,7 @@ CG_Scissor
 Coordinates are 640*480 virtual values
 =================
 */
-void CG_Scissor( float x, float y, float width, float height) 
+void CG_Scissor( float x, float y, float width, float height)
 {
 
 	cgi_R_Scissor( x, y, width, height);
@@ -74,7 +74,7 @@ A width of 0 will draw with the original image width
 Can also specify the exact texture coordinates
 =================
 */
-void CG_DrawPic2( float x, float y, float width, float height, float s1, float t1, float s2, float t2, qhandle_t hShader ) 
+void CG_DrawPic2( float x, float y, float width, float height, float s1, float t1, float s2, float t2, qhandle_t hShader )
 {
 	cgi_R_DrawStretchPic( x, y, width, height, s1, t1, s2, t2, hShader );
 }
@@ -137,8 +137,8 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	size = 0.0625;
 
 	cgi_R_DrawStretchPic( ax, ay, aw, ah,
-					   fcol, frow, 
-					   fcol + size, frow + size, 
+					   fcol, frow,
+					   fcol + size, frow + size,
 					   cgs.media.charsetShader );
 */
 
@@ -149,7 +149,7 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	size = 0.03125;
 	size2 = 0.0625;
 
-	cgi_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol + size, frow + size2, 
+	cgi_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol + size, frow + size2,
 		cgs.media.charsetShader );
 
 }
@@ -165,7 +165,7 @@ to a fixed color.
 Coordinates are at 640 by 480 virtual resolution
 ==================
 */
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
+void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		qboolean forceColor, qboolean shadow, int charWidth, int charHeight ) {
 	vec4_t		color;
 	const char	*s;
@@ -272,7 +272,7 @@ void CG_TileClear( void ) {
 	w = cgs.glconfig.vidWidth;
 	h = cgs.glconfig.vidHeight;
 
-	if ( cg.refdef.x == 0 && cg.refdef.y == 0 && 
+	if ( cg.refdef.x == 0 && cg.refdef.y == 0 &&
 		cg.refdef.width == w && cg.refdef.height == h ) {
 		return;		// full screen rendering
 	}
@@ -335,7 +335,7 @@ Take x,y positions as if 640 x 480 and scales them to the proper resolution
 
 ==============
 */
-void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill) 
+void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill)
 {
 	char	num[16], *ptr;
 	int		l;
@@ -450,7 +450,7 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 CG_DrawProportionalString
 =================
 */
-void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color ) 
+void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color )
 {
 	//assert(!style);//call this directly if you need style (OR it into the font handle)
 	cgi_R_Font_DrawString (x, y, str, color, cgs.media.qhFontMedium, -1, 1.0f);

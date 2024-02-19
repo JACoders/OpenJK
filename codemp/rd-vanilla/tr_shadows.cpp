@@ -400,7 +400,7 @@ void RB_DoShadowTessEnd( vec3_t lightPos )
 
 	// reenable writing to the color buffer
 	qglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	
+
 #ifdef _DEBUG_STENCIL_SHADOWS
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif

@@ -1,7 +1,7 @@
 // Tokenizer.cpp
 #ifndef NOT_USING_MODULES
 // !!! if you are not using modules, read BELOW !!!
-#include "module.h" // if you are not using modules, 
+#include "module.h" // if you are not using modules,
 					// create an empty Module.h in your
 					// project -- use of modules allows
 					// the error handler to be overridden
@@ -226,7 +226,7 @@ void CSymbolTable::Delete()
 bool CSymbolTable::AddSymbol(CSymbol* theSymbol)
 {
 	LPCTSTR name = theSymbol->GetName();
-	
+
 	symbolmap_t::iterator iter = m_symbols.find(name);
 	if (iter != m_symbols.end())
 	{
@@ -377,7 +377,7 @@ void CParsePutBack::Init(byte theByte, int curLine, LPCTSTR filename)
 		m_curFile = (char*)malloc(strlen(filename) + 1);
 		strcpy(m_curFile, filename);
 	}
-	else 
+	else
 	{
 		m_curFile = NULL;
 	}
@@ -426,7 +426,7 @@ CParseFile::~CParseFile()
 CParseFile* CParseFile::Create()
 {
 	CParseFile* theParseFile = new CParseFile();
-	
+
 	if ( !theParseFile->Init() )
 	{
 		delete theParseFile;
@@ -439,7 +439,7 @@ CParseFile* CParseFile::Create()
 CParseFile* CParseFile::Create(LPCTSTR filename, CTokenizer* tokenizer)
 {
 	CParseFile* theParseFile = new CParseFile();
-	
+
 	if ( theParseFile->Init(filename, tokenizer) )
 		return theParseFile;
 
@@ -1490,7 +1490,7 @@ void CTokenizer::Error(LPCTSTR errString, int theError)
 		m_errorProc(errString);
 	}
 #ifdef USES_MODULES
-	else 
+	else
 	{
 		ReportError(theError, errString);
 	}
@@ -1656,7 +1656,7 @@ CToken* CTokenizer::GetToEndOfLine(int tokenType)
 	//	the default string size of only 128 chars...
 	//
 	if (tokenType == TK_STRING)
-	{		
+	{
 		#define iRETURN_STRING_SIZE 2048
 		char theString[iRETURN_STRING_SIZE];
 		theString[0] = ' ';
@@ -1673,15 +1673,15 @@ CToken* CTokenizer::GetToEndOfLine(int tokenType)
 			}
 			theString[i] = '\0';
 
-			return CStringToken::Create(theString);			
+			return CStringToken::Create(theString);
 		}
 
 		// line would maks a string too big to fit in buffer...
-		//			
+		//
 		Error(TKERR_STRINGLENGTHEXCEEDED);
 	}
 	else
-	{		
+	{
 		char theString[MAX_IDENTIFIER_LENGTH];
 		theString[0] = ' ';
 		while (theString[0] == ' ')
@@ -1712,7 +1712,7 @@ CToken* CTokenizer::GetToEndOfLine(int tokenType)
 			}
 		}
 		Error(TKERR_IDENTIFIERLENGTHEXCEEDED);
-	}	
+	}
 	return NULL;
 }
 

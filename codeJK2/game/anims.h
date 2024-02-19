@@ -39,24 +39,24 @@ typedef enum //# animNumber_e
 	BOTH_DEATH5,			//# Fifth Death anim
 	BOTH_DEATH6,			//# Sixth Death anim
 	BOTH_DEATH7,			//# Seventh Death anim
-	BOTH_DEATH8,			//# 
-	BOTH_DEATH9,			//# 
-	BOTH_DEATH10,			//# 
+	BOTH_DEATH8,			//#
+	BOTH_DEATH9,			//#
+	BOTH_DEATH10,			//#
 	BOTH_DEATH11,			//#
-	BOTH_DEATH12,			//# 
-	BOTH_DEATH13,			//# 
-	BOTH_DEATH14,			//# 
-	BOTH_DEATH15,			//# 
-	BOTH_DEATH16,			//# 
-	BOTH_DEATH17,			//# 
-	BOTH_DEATH18,			//# 
-	BOTH_DEATH19,			//# 
-	BOTH_DEATH20,			//# 
-	BOTH_DEATH21,			//# 
-	BOTH_DEATH22,			//# 
-	BOTH_DEATH23,			//# 
-	BOTH_DEATH24,			//# 
-	BOTH_DEATH25,			//# 
+	BOTH_DEATH12,			//#
+	BOTH_DEATH13,			//#
+	BOTH_DEATH14,			//#
+	BOTH_DEATH15,			//#
+	BOTH_DEATH16,			//#
+	BOTH_DEATH17,			//#
+	BOTH_DEATH18,			//#
+	BOTH_DEATH19,			//#
+	BOTH_DEATH20,			//#
+	BOTH_DEATH21,			//#
+	BOTH_DEATH22,			//#
+	BOTH_DEATH23,			//#
+	BOTH_DEATH24,			//#
+	BOTH_DEATH25,			//#
 
 	BOTH_DEATHFORWARD1,		//# First Death in which they get thrown forward
 	BOTH_DEATHFORWARD2,		//# Second Death in which they get thrown forward
@@ -88,24 +88,24 @@ typedef enum //# animNumber_e
 	BOTH_DEAD5,				//# Fifth Death finished pose
 	BOTH_DEAD6,				//# Sixth Death finished pose
 	BOTH_DEAD7,				//# Seventh Death finished pose
-	BOTH_DEAD8,				//# 
-	BOTH_DEAD9,				//# 
-	BOTH_DEAD10,			//# 
+	BOTH_DEAD8,				//#
+	BOTH_DEAD9,				//#
+	BOTH_DEAD10,			//#
 	BOTH_DEAD11,			//#
-	BOTH_DEAD12,			//# 
-	BOTH_DEAD13,			//# 
-	BOTH_DEAD14,			//# 
-	BOTH_DEAD15,			//# 
-	BOTH_DEAD16,			//# 
-	BOTH_DEAD17,			//# 
-	BOTH_DEAD18,			//# 
-	BOTH_DEAD19,			//# 
-	BOTH_DEAD20,			//# 
-	BOTH_DEAD21,			//# 
-	BOTH_DEAD22,			//# 
-	BOTH_DEAD23,			//# 
-	BOTH_DEAD24,			//# 
-	BOTH_DEAD25,			//# 
+	BOTH_DEAD12,			//#
+	BOTH_DEAD13,			//#
+	BOTH_DEAD14,			//#
+	BOTH_DEAD15,			//#
+	BOTH_DEAD16,			//#
+	BOTH_DEAD17,			//#
+	BOTH_DEAD18,			//#
+	BOTH_DEAD19,			//#
+	BOTH_DEAD20,			//#
+	BOTH_DEAD21,			//#
+	BOTH_DEAD22,			//#
+	BOTH_DEAD23,			//#
+	BOTH_DEAD24,			//#
+	BOTH_DEAD25,			//#
 	BOTH_DEADFORWARD1,		//# First thrown forward death finished pose
 	BOTH_DEADFORWARD2,		//# Second thrown forward death finished pose
 	BOTH_DEADBACKWARD1,		//# First thrown backward death finished pose
@@ -118,7 +118,7 @@ typedef enum //# animNumber_e
 	BOTH_DEADFLOP2,		//# React to being shot from Second Death finished pose
 	BOTH_DEADFLOP3,		//# React to being shot from Third Death finished pose
 	BOTH_DEADFLOP4,		//# React to being shot from Fourth Death finished pose
-	BOTH_DEADFLOP5,		//# React to being shot from Fifth Death finished pose 
+	BOTH_DEADFLOP5,		//# React to being shot from Fifth Death finished pose
 	BOTH_DEADFORWARD1_FLOP,		//# React to being shot First thrown forward death finished pose
 	BOTH_DEADFORWARD2_FLOP,		//# React to being shot Second thrown forward death finished pose
 	BOTH_DEADBACKWARD1_FLOP,	//# React to being shot First thrown backward death finished pose
@@ -141,17 +141,17 @@ typedef enum //# animNumber_e
 	BOTH_PAIN6,				//# Sixth take pain anim - from behind
 	BOTH_PAIN7,				//# Seventh take pain anim - from behind
 	BOTH_PAIN8,				//# Eigth take pain anim - from behind
-	BOTH_PAIN9,				//# 
-	BOTH_PAIN10,			//# 
-	BOTH_PAIN11,			//# 
-	BOTH_PAIN12,			//# 
-	BOTH_PAIN13,			//# 
-	BOTH_PAIN14,			//# 
-	BOTH_PAIN15,			//# 
-	BOTH_PAIN16,			//# 
-	BOTH_PAIN17,			//# 
-	BOTH_PAIN18,			//# 
-	BOTH_PAIN19,			//# 
+	BOTH_PAIN9,				//#
+	BOTH_PAIN10,			//#
+	BOTH_PAIN11,			//#
+	BOTH_PAIN12,			//#
+	BOTH_PAIN13,			//#
+	BOTH_PAIN14,			//#
+	BOTH_PAIN15,			//#
+	BOTH_PAIN16,			//#
+	BOTH_PAIN17,			//#
+	BOTH_PAIN18,			//#
+	BOTH_PAIN19,			//#
 	BOTH_PAIN20,			//# GETTING SHOCKED
 
 	//# #sep BOTH_ ATTACKS
@@ -682,9 +682,9 @@ typedef enum //# animNumber_e
 	BOTH_STAND5_REELO,		//# Reelo in his stand5 position (cin #18)
 	BOTH_STAND1TOSTAND5,	//# Transition from stand1 to stand5
 	BOTH_STAND5TOSTAND1,	//# Transition from stand5 to stand1
-	BOTH_STAND5TOAIM,		//# Transition of Kye aiming his gun at Desann (cin #9) 
-	BOTH_STAND5STARTLEDLOOKLEFT,	//# Kyle turning to watch the bridge drop (cin #9) 
-	BOTH_STARTLEDLOOKLEFTTOSTAND5,	//# Kyle returning to stand 5 from watching the bridge drop (cin #9) 
+	BOTH_STAND5TOAIM,		//# Transition of Kye aiming his gun at Desann (cin #9)
+	BOTH_STAND5STARTLEDLOOKLEFT,	//# Kyle turning to watch the bridge drop (cin #9)
+	BOTH_STARTLEDLOOKLEFTTOSTAND5,	//# Kyle returning to stand 5 from watching the bridge drop (cin #9)
 	BOTH_STAND5TOSTAND8,	//# Transition from stand5 to stand8
 	BOTH_STAND7TOSTAND8,	//# Tavion putting hands on back of chair (cin #11)
 	BOTH_STAND8TOSTAND5,	//# Transition from stand8 to stand5
@@ -701,11 +701,11 @@ typedef enum //# animNumber_e
 	BOTH_CONSOLE1START,		//# typing at a console
 	BOTH_CONSOLE1,			//# typing at a console
 	BOTH_CONSOLE1STOP,		//# typing at a console
-	BOTH_CONSOLE2START,		//# typing at a console with comm link in hand (cin #5) 
-	BOTH_CONSOLE2,			//# typing at a console with comm link in hand (cin #5) 
-	BOTH_CONSOLE2STOP,		//# typing at a console with comm link in hand (cin #5) 
-	BOTH_CONSOLE2HOLDCOMSTART,	//# lean in to type at console while holding comm link in hand (cin #5) 
-	BOTH_CONSOLE2HOLDCOMSTOP,	//# lean away after typing at console while holding comm link in hand (cin #5) 
+	BOTH_CONSOLE2START,		//# typing at a console with comm link in hand (cin #5)
+	BOTH_CONSOLE2,			//# typing at a console with comm link in hand (cin #5)
+	BOTH_CONSOLE2STOP,		//# typing at a console with comm link in hand (cin #5)
+	BOTH_CONSOLE2HOLDCOMSTART,	//# lean in to type at console while holding comm link in hand (cin #5)
+	BOTH_CONSOLE2HOLDCOMSTOP,	//# lean away after typing at console while holding comm link in hand (cin #5)
 
 	BOTH_GUARD_LOOKAROUND1,	//# Cradling weapon and looking around
 	BOTH_GUARD_IDLE1,		//# Cradling weapon and standing
@@ -734,9 +734,9 @@ typedef enum //# animNumber_e
 	BOTH_TALKGESTURE7START,	//# Start touches Kyle on shoulder
 	BOTH_TALKGESTURE7,		//# Hold touches Kyle on shoulder
 	BOTH_TALKGESTURE7STOP,	//# Ending touches Kyle on shoulder
-	BOTH_TALKGESTURE8START,	//# Lando's chin hold 
-	BOTH_TALKGESTURE8,			//# Lando's chin hold 
-	BOTH_TALKGESTURE8STOP,	//# Lando's chin hold 
+	BOTH_TALKGESTURE8START,	//# Lando's chin hold
+	BOTH_TALKGESTURE8,			//# Lando's chin hold
+	BOTH_TALKGESTURE8STOP,	//# Lando's chin hold
 	BOTH_TALKGESTURE9,		//# Same as gesture 2 but with the right hand
 	BOTH_TALKGESTURE10,		//# Shoulder shrug
 	BOTH_TALKGESTURE11START,	//# Arms folded across chest
@@ -776,13 +776,13 @@ typedef enum //# animNumber_e
 	BOTH_SITHEADSHAKE,			//# Head shake NO from seated position
 	BOTH_SIT2HEADTILTLSTART,	//# Head tilt to left from seated position 2
 	BOTH_SIT2HEADTILTLSTOP,		//# Head tilt to left from seated position 2
- 
+
 	BOTH_REACH1START,		//# Monmothma reaching for crystal
 	BOTH_REACH1STOP,		//# Monmothma reaching for crystal
 
-	BOTH_EXAMINE1START,		//# Start Mon Mothma examining crystal 
-	BOTH_EXAMINE1,			//# Mon Mothma examining crystal 
-	BOTH_EXAMINE1STOP,		//# Stop Mon Mothma examining crystal 
+	BOTH_EXAMINE1START,		//# Start Mon Mothma examining crystal
+	BOTH_EXAMINE1,			//# Mon Mothma examining crystal
+	BOTH_EXAMINE1STOP,		//# Stop Mon Mothma examining crystal
 	BOTH_EXAMINE2START,	//# Start Kyle tossing crystal
 	BOTH_EXAMINE2,			//# Hold Kyle tossing crystal
 	BOTH_EXAMINE2STOP,		//# End Kyle tossing crystal
@@ -959,7 +959,7 @@ typedef enum //# animNumber_e
 	BOTH_WALKBACK2,			//# Walk2 backwards
 	BOTH_RUNBACK1,			//# Run1 backwards
 	BOTH_RUNBACK2,			//# Run1 backwards
-	
+
 	//# #sep BOTH_ JUMPING
 	BOTH_JUMP1,				//# Jump - wind-up and leave ground
 	BOTH_INAIR1,			//# In air loop (from jump)
@@ -1023,24 +1023,24 @@ typedef enum //# animNumber_e
 	BOTH_DIVE1,				//# Dive!
 
 	BOTH_ENGAGETAUNT,
-	BOTH_ARIAL_LEFT,		//# 
-	BOTH_ARIAL_RIGHT,		//# 
-	BOTH_CARTWHEEL_LEFT,	//# 
-	BOTH_CARTWHEEL_RIGHT,	//# 
-	BOTH_FLIP_LEFT,			//# 
-	BOTH_FLIP_BACK1,		//# 
-	BOTH_FLIP_BACK2,		//# 
-	BOTH_FLIP_BACK3,		//# 
-	BOTH_BUTTERFLY_LEFT,	//# 
-	BOTH_BUTTERFLY_RIGHT,	//# 
-	BOTH_WALL_RUN_RIGHT,	//# 
+	BOTH_ARIAL_LEFT,		//#
+	BOTH_ARIAL_RIGHT,		//#
+	BOTH_CARTWHEEL_LEFT,	//#
+	BOTH_CARTWHEEL_RIGHT,	//#
+	BOTH_FLIP_LEFT,			//#
+	BOTH_FLIP_BACK1,		//#
+	BOTH_FLIP_BACK2,		//#
+	BOTH_FLIP_BACK3,		//#
+	BOTH_BUTTERFLY_LEFT,	//#
+	BOTH_BUTTERFLY_RIGHT,	//#
+	BOTH_WALL_RUN_RIGHT,	//#
 	BOTH_WALL_RUN_RIGHT_FLIP,//#
-	BOTH_WALL_RUN_RIGHT_STOP,//# 
-	BOTH_WALL_RUN_LEFT,		//# 
+	BOTH_WALL_RUN_RIGHT_STOP,//#
+	BOTH_WALL_RUN_LEFT,		//#
 	BOTH_WALL_RUN_LEFT_FLIP,//#
-	BOTH_WALL_RUN_LEFT_STOP,//# 
-	BOTH_WALL_FLIP_RIGHT,	//# 
-	BOTH_WALL_FLIP_LEFT,	//# 
+	BOTH_WALL_RUN_LEFT_STOP,//#
+	BOTH_WALL_FLIP_RIGHT,	//#
+	BOTH_WALL_FLIP_LEFT,	//#
 	BOTH_WALL_FLIP_FWD,		//#
 	BOTH_KNOCKDOWN1,		//# knocked backwards
 	BOTH_KNOCKDOWN2,		//# knocked backwards hard
@@ -1127,7 +1127,7 @@ typedef enum //# animNumber_e
 	BOTH_INJURED2,			//# Injured pose 2
 	BOTH_INJURED3,			//# Injured pose 3
 	BOTH_INJURED6,			//# Injured pose 6
-	BOTH_INJURED6ATTACKSTART,	//# Start attack while in injured 6 pose 
+	BOTH_INJURED6ATTACKSTART,	//# Start attack while in injured 6 pose
 	BOTH_INJURED6ATTACKSTOP,	//# End attack while in injured 6 pose
 	BOTH_INJURED6COMBADGE,	//# Hit combadge while in injured 6 pose
 	BOTH_INJURED6POINT,		//# Chang points to door while in injured state
@@ -1144,7 +1144,7 @@ typedef enum //# animNumber_e
 	BOTH_SLEEP6START,		//# Kyle leaning back to sleep (cin 20)
 	BOTH_SLEEP6STOP,		//# Kyle waking up and shaking his head (cin 21)
 	BOTH_SLEEP1GETUP,		//# alarmed and getting up out of sleep1 pose to stand
-	BOTH_SLEEP1GETUP2,		//# 
+	BOTH_SLEEP1GETUP2,		//#
 	BOTH_SLEEP2GETUP,		//# alarmed and getting up out of sleep2 pose to stand
 	BOTH_SLEEP3GETUP,		//# alarmed and getting up out of sleep3 pose to stand
 	BOTH_SLEEP3DEATH,		//# death in chair, from sleep3 idle
@@ -1220,7 +1220,7 @@ typedef enum //# animNumber_e
 
 	BOTH_COCKPIT_CONSOLE1,			//# type at controls
 	BOTH_COCKPIT_CONSOLE2,			//# type at controls
-	BOTH_COCKPIT_CONSOLE2_PARTIAL,	//# last part of console2 anim (cin #1) used by Jan	
+	BOTH_COCKPIT_CONSOLE2_PARTIAL,	//# last part of console2 anim (cin #1) used by Jan
 
 	BOTH_COCKPIT_HEADNOD,			//# nod head yes while sitting
 	BOTH_COCKPIT_HEADSHAKE,			//# shake head no while sitting
@@ -1234,11 +1234,11 @@ typedef enum //# animNumber_e
 	BOTH_COCKPIT_TALKGESTURE7STOP,		//# Lando's supporting hand away from Kyle (cin #21)
 	BOTH_COCKPIT_TALKGESTURE8START,		//# Hand to Lando's chin (cin #21)
 	BOTH_COCKPIT_TALKGESTURE8STOP,		//# hand away from Lando's chin *cin #21)
-	BOTH_COCKPIT_TALKGESTURE11START,	//# 
-	BOTH_COCKPIT_TALKGESTURE11STOP,		//# 
+	BOTH_COCKPIT_TALKGESTURE11START,	//#
+	BOTH_COCKPIT_TALKGESTURE11STOP,		//#
 
-	BOTH_COCKPIT_SLEEP6START,		//# 
-	BOTH_COCKPIT_SLEEP6STOP,		//# 
+	BOTH_COCKPIT_SLEEP6START,		//#
+	BOTH_COCKPIT_SLEEP6STOP,		//#
 
 	//=================================================
 	//ANIMS IN WHICH ONLY THE UPPER OBJECTS ARE IN MD3
@@ -1375,10 +1375,10 @@ typedef enum //# animNumber_e
 	FACE_TALK2,			//# semi-quiet
 	FACE_TALK3,			//# semi-loud
 	FACE_TALK4,			//# loud
-	FACE_ALERT,				//# 
-	FACE_SMILE,				//# 
-	FACE_FROWN,				//# 
-	FACE_DEAD,				//# 
+	FACE_ALERT,				//#
+	FACE_SMILE,				//#
+	FACE_FROWN,				//#
+	FACE_DEAD,				//#
 
 	//# #eol
 	MAX_ANIMATIONS,
