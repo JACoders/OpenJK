@@ -31,6 +31,7 @@ const char *Q_stristr( const char *s, const char *find);
 
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );
+int Q_PrintStrLenTo(const char *str, int chars, char *color);
 
 // removes color sequences from string
 char *Q_CleanStr( char *string );
