@@ -21,18 +21,29 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <inttypes.h>
+
 #include "g_local.h"
+#include "game/bg_public.h"
 
 //
 // Cvar callbacks
 //
 
-/*
-static void CVU_Derpity( void ) {
-	// ...
-}
-*/
+static void CVU_FixSaberMoveData(void) {
+	BG_FixSaberMoveData();
 
+	char sLegacyFixes[32];
+	trap->GetConfigstring(CS_LEGACY_FIXES, sLegacyFixes, sizeof(sLegacyFixes));
+
+	uint32_t legacyFixes = strtoul(sLegacyFixes, NULL, 0);
+	if (g_fixSaberMoveData.integer) {
+		legacyFixes |= (1 << LEGACYFIX_SABERMOVEDATA);
+	} else {
+		legacyFixes &= ~(1 << LEGACYFIX_SABERMOVEDATA);
+	}
+	trap->SetConfigstring(CS_LEGACY_FIXES, va("%" PRIu32, legacyFixes));
+}
 
 //
 // Cvar table

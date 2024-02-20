@@ -109,6 +109,16 @@ qboolean G_CanBeEnemy( gentity_t *self, gentity_t *enemy )
 	if ( !self->inuse || !enemy->inuse || !self->client || !enemy->client )
 		return qfalse;
 
+	if (self->client->ps.duelInProgress && self->client->ps.duelIndex != enemy->s.number)
+	{ //dueling but not with this person
+		return qfalse;
+	}
+
+	if (enemy->client->ps.duelInProgress && enemy->client->ps.duelIndex != self->s.number)
+	{ //other guy dueling but not with me
+		return qfalse;
+	}
+
 	if (level.gametype < GT_TEAM)
 		return qtrue;
 
@@ -6745,7 +6755,8 @@ qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner
 	if ( other && other->client )
 	{
 		disarmChance += other->client->saber[0].disarmBonus;
-		if ( other->client->saber[1].model[0]
+		if ( g_fixSaberDisarmBonus.integer
+			&& other->client->saber[1].model[0]
 			&& !other->client->ps.saberHolstered )
 		{
 			disarmChance += other->client->saber[1].disarmBonus;
@@ -6829,7 +6840,8 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 		if ( other && other->client )
 		{
 			disarmChance += other->client->saber[0].disarmBonus;
-			if ( other->client->saber[1].model[0]
+			if ( g_fixSaberDisarmBonus.integer
+				&& other->client->saber[1].model[0]
 				&& !other->client->ps.saberHolstered )
 			{
 				disarmChance += other->client->saber[1].disarmBonus;
