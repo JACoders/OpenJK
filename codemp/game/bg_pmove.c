@@ -190,6 +190,16 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	840
 };
 
+static qboolean BG_FixWaterJump(void) {
+#if defined(_GAME)
+	return !!g_fixWaterJump.integer;
+#elif defined(_CGAME)
+	const char *cs = CG_ConfigString(CS_LEGACY_FIXES);
+	const uint32_t legacyFixes = strtoul(cs, NULL, 0);
+	return !!(legacyFixes & (1 << LEGACYFIX_WATERJUMP));
+#endif
+}
+
 //rww - Get a pointer to the bgEntity by the index
 bgEntity_t *PM_BGEntForNum( int num )
 {
@@ -2775,7 +2785,7 @@ static qboolean	PM_CheckWaterJump( void ) {
 
 	spot[2] += 16;
 	cont = pm->pointcontents (spot, pm->ps->clientNum );
-	if ( cont & (CONTENTS_SOLID|CONTENTS_PLAYERCLIP|CONTENTS_BODY) ) {
+	if (cont) {
 		return qfalse;
 	}
 
@@ -2830,6 +2840,14 @@ static void PM_WaterMove( void ) {
 		PM_WaterJumpMove();
 		return;
 	}
+	else if ( BG_FixWaterJump() && pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0 && pm->waterlevel < 3 )
+	{
+		if ( PM_CheckJump () ) {
+			// jumped away
+			return;
+		}
+	}
+
 #if 0
 	// jump = head for surface
 	if ( pm->cmd.upmove >= 10 ) {
