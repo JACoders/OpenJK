@@ -757,6 +757,7 @@ void Con_DrawNotify (void)
 			continue;
 		text = con.text + (i % con.totallines)*con.rowwidth;
 		if (con_timestamps->integer == 0 || con_timestamps->integer == 2) {
+			// don't show timestamps in the notify lines
 			text += CON_TIMESTAMP_LEN;
 			lineLimit -= CON_TIMESTAMP_LEN;
 		}
