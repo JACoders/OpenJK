@@ -7437,7 +7437,6 @@ static void UI_BuildServerDisplayList(int force) {
 	lanSource = UI_SourceForLAN();
 
 	if (force) {
-		// numinvisible = 0;
 		// clear number of displayed servers
 		uiInfo.serverStatus.numDisplayServers = 0;
 		uiInfo.serverStatus.numPlayersOnServers = 0;
@@ -7532,7 +7531,6 @@ static void UI_BuildServerDisplayList(int force) {
 			// done with this server
 			if (ping > 0) {
 				trap->LAN_MarkServerVisible(lanSource, i, qfalse);
-				// numinvisible++;
 			}
 		}
 	}
@@ -7742,7 +7740,6 @@ static void UI_BuildFindPlayerList(qboolean force) {
 	//					sizeof(uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers-1]),
 	//						"searching %d...", uiInfo.pendingServerStatus.num);
 		numFound = 0;
-		// numTimeOuts++;
 	}
 	for (i = 0; i < MAX_SERVERSTATUSREQUESTS; i++) {
 		// if this pending server is valid
@@ -7793,7 +7790,7 @@ static void UI_BuildFindPlayerList(qboolean force) {
 		if (!uiInfo.pendingServerStatus.server[i].valid ||
 			uiInfo.pendingServerStatus.server[i].startTime < uiInfo.uiDC.realTime - ui_serverStatusTimeOut.integer) {
 			if (uiInfo.pendingServerStatus.server[i].valid) {
-				// numTimeOuts++;
+				// timed out
 			}
 			// reset server status request for this address
 			UI_GetServerStatusInfo( uiInfo.pendingServerStatus.server[i].adrstr, NULL );
