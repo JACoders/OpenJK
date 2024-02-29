@@ -193,3 +193,4 @@ pip-log.txt
 #############
 [Bb]uild*/
 cmake-build-*
+CMakeUserPresets.json
