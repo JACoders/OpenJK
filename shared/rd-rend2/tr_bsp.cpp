@@ -4024,7 +4024,7 @@ static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 	for (int i = 0; i < tr.numShaders; i++)
 	{
 		const shader_t *shader = tr.shaders[i];
-		if (shader->spriteUbo != NULL)
+		if (shader->spriteUbo != -1)
 			continue;
 
 		numSpriteStages += shader->numSurfaceSpriteStages;
