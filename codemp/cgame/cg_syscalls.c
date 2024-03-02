@@ -386,7 +386,7 @@ void trap_Key_SetCatcher( int catcher ) {
 int trap_Key_GetKey( const char *binding ) {
 	return Q_syscall( CG_KEY_GETKEY, binding );
 }
-int trap_PC_AddGlobalDefine( char *define ) {
+int trap_PC_AddGlobalDefine( const char *define ) {
 	return Q_syscall( CG_PC_ADD_GLOBAL_DEFINE, define );
 }
 int trap_PC_LoadSource( const char *filename ) {

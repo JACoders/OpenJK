@@ -421,7 +421,7 @@ int trap_BotLibVarSet(char *var_name, char *value) {
 int trap_BotLibVarGet(char *var_name, char *value, int size) {
 	return Q_syscall( BOTLIB_LIBVAR_GET, var_name, value, size );
 }
-int trap_BotLibDefine(char *string) {
+int trap_BotLibDefine(const char *string) {
 	return Q_syscall( BOTLIB_PC_ADD_GLOBAL_DEFINE, string );
 }
 int trap_BotLibStartFrame(float time) {

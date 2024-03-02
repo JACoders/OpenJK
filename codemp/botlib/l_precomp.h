@@ -115,7 +115,8 @@ typedef struct source_s
 	token_t token;							//last read token
 } source_t;
 
-
+// initialise the precompiler
+void PC_Init(void);
 //read a token from the source
 int PC_ReadToken(source_t *source, token_t *token);
 //expect a certain token
@@ -139,9 +140,9 @@ int PC_ReadLine(source_t *source, token_t *token);
 //returns true if there was a white space in front of the token
 int PC_WhiteSpaceBeforeToken(token_t *token);
 //add a define to the source
-int PC_AddDefine(source_t *source, char *string);
+int PC_AddDefine(source_t *source, const char *string);
 //add a globals define that will be added to all opened sources
-int PC_AddGlobalDefine(char *string);
+int PC_AddGlobalDefine(const char *string);
 //remove the given global define
 int PC_RemoveGlobalDefine(char *name);
 //remove all globals defines
