@@ -70,6 +70,7 @@ cvar_t	*cl_sensitivity;
 cvar_t	*cl_mouseAccel;
 cvar_t	*cl_mouseAccelOffset;
 cvar_t	*cl_mouseAccelStyle;
+cvar_t	*cl_mouseAspectScaling;
 cvar_t	*cl_showMouseRate;
 
 cvar_t	*m_pitchVeh;
@@ -2733,6 +2734,8 @@ void CL_Init( void ) {
 	// offset for the power function (for style 1, ignored otherwise)
 	// this should be set to the max rate value
 	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE_ND, "Mouse acceleration offset for style 1" );
+
+	cl_mouseAspectScaling = Cvar_Get( "cl_mouseAspectScaling", "0", CVAR_ARCHIVE_ND, "Scale mouse movement correctly in menus based on your desktop aspect ratio" );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);

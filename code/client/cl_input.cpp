@@ -447,7 +447,13 @@ CL_MouseEvent
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
 	if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
-		_UI_MouseEvent( dx, dy );
+		float dxScaled = dx;
+		float dyScaled = dy;
+		if ( cl_mouseAspectScaling->integer ) {
+			dxScaled *= (SCREEN_WIDTH / (float)cls.glconfig.vidWidth);
+			dyScaled *= (SCREEN_HEIGHT / (float)cls.glconfig.vidHeight);
+		}
+		_UI_MouseEvent( dxScaled, dyScaled );
 	}
 	else {
 		cl.mouseDx[cl.mouseIndex] += dx;
