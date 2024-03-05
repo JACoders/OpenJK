@@ -111,7 +111,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CS_FLAGSTATUS			23		// string indicating flag status in CTF
 #define CS_SHADERSTATE			24
 #define CS_BOTINFO				25
-#define CS_LEGACY_FIXES			26
+
 #define	CS_ITEMS				27		// string of 0's and 1's that tell which items are present
 
 #define CS_CLIENT_JEDIMASTER	28		// current jedi master
@@ -119,6 +119,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CS_CLIENT_DUELISTS		30		// client numbers for both current duelists. Needed for a number of client-side things.
 #define CS_CLIENT_DUELHEALTHS	31		// nmckenzie: DUEL_HEALTH.  Hopefully adding this cs is safe and good?
 #define CS_GLOBAL_AMBIENT_SET	32
+
+#define CS_LEGACY_FIXES			36
 
 #define CS_AMBIENT_SET			37
 
