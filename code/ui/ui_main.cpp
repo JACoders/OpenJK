@@ -3082,7 +3082,7 @@ qboolean Asset_Parse(char **buffer)
 				return qfalse;
 			}
 
-			UI_RegisterFont(tempStr);
+			uiInfo.uiDC.Assets.qhSmallFont = UI_RegisterFont(tempStr);
 
 			//not used anymore
 			if (PC_ParseInt(&pointSize))

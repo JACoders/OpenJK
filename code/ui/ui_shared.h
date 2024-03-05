@@ -117,6 +117,7 @@ typedef struct multiDef_s {
 #define	NUM_CROSSHAIRS			9
 
 typedef struct {
+	qhandle_t	qhSmallFont;
 	qhandle_t	qhMediumFont;
 	qhandle_t	cursor;
 	qhandle_t	gradientBar;
