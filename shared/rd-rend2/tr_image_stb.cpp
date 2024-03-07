@@ -66,6 +66,11 @@ void R_LoadHDRImage( const char *filename, byte **data, int *width, int *height 
 	int len = ri.FS_ReadFile (filename, (void **)&buf);
 	if ( len <= 0 || buf == NULL )
 	{
+		// reset output varialbes
+		*data = NULL;
+		*width = 0;
+		*height = 0;
+
 		return;
 	}
 	stbi_set_flip_vertically_on_load(0);
