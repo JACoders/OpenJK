@@ -2391,10 +2391,11 @@ qboolean G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model
 	{
 		ghlInfo->mModel = RE_RegisterModel(ghlInfo->mFileName);
 		ghlInfo->currentModel = R_GetModelByHandle(ghlInfo->mModel);
-		if (ghlInfo->currentModel)
+		if (ghlInfo->currentModel &&
+			ghlInfo->currentModel->type == MOD_MDXM) //Rend2 - data is a union now, so we need to make sure it's also a glm that is loaded
 		{
-			//Rend2 - Not sure why, but we need MOD_MDXM here to stop ghoul2 crashes.
-			if (ghlInfo->currentModel->type == MOD_MDXM && ghlInfo->currentModel->data.glm && ghlInfo->currentModel->data.glm->header)
+			if (ghlInfo->currentModel->data.glm &&
+				ghlInfo->currentModel->data.glm->header)
 			{
 				mdxmHeader_t *mdxm = ghlInfo->currentModel->data.glm->header;
 				if (ghlInfo->currentModelSize)
