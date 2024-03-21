@@ -382,13 +382,8 @@ static void AutospriteDeform( void ) {
 	tess.numIndexes = 0;
 	tess.firstIndex = 0;
 
-	if ( backEnd.currentEntity != &tr.worldEntity ) {
-		GlobalVectorToLocal( backEnd.viewParms.ori.axis[1], leftDir );
-		GlobalVectorToLocal( backEnd.viewParms.ori.axis[2], upDir );
-	} else {
-		VectorCopy( backEnd.viewParms.ori.axis[1], leftDir );
-		VectorCopy( backEnd.viewParms.ori.axis[2], upDir );
-	}
+	VectorCopy( backEnd.viewParms.ori.axis[1], leftDir );
+	VectorCopy( backEnd.viewParms.ori.axis[2], upDir );
 
 	for ( i = 0 ; i < oldVerts ; i+=4 ) {
 		// find the midpoint
@@ -455,11 +450,7 @@ static void Autosprite2Deform( void ) {
 		ri.Printf( PRINT_WARNING, "Autosprite2 shader %s had odd index count\n", tess.shader->name );
 	}
 
-	if ( backEnd.currentEntity != &tr.worldEntity ) {
-		GlobalVectorToLocal( backEnd.viewParms.ori.axis[0], forward );
-	} else {
-		VectorCopy( backEnd.viewParms.ori.axis[0], forward );
-	}
+	VectorCopy( backEnd.viewParms.ori.axis[0], forward );
 
 	// this is a lot of work for two triangles...
 	// we could precalculate a lot of it is an issue, but it would mess up
