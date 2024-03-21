@@ -328,10 +328,9 @@ typedef enum
 	IMGFLAG_GENNORMALMAP   = 0x0100,
 	IMGFLAG_MUTABLE        = 0x0200,
 	IMGFLAG_HDR            = 0x0400,
-	IMGFLAG_HDR_LIGHTMAP   = 0x0800,
-	IMGFLAG_2D_ARRAY       = 0x1000,
-	IMGFLAG_3D             = 0x2000,
-	IMGLFAG_SHADOWCOMP     = 0x4000,
+	IMGFLAG_2D_ARRAY       = 0x0800,
+	IMGFLAG_3D             = 0x1000,
+	IMGLFAG_SHADOWCOMP     = 0x2000,
 } imgFlags_t;
 
 typedef enum
@@ -2656,8 +2655,6 @@ typedef struct trGlobals_s {
 	// Specific to Jedi Academy
 	int						numBSPModels;
 	int						currentLevel;
-
-	bool					explicitToneMap;
 } trGlobals_t;
 
 struct glconfigExt_t

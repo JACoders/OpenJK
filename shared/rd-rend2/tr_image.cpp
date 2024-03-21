@@ -2965,11 +2965,11 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 	//
 	// load the pic from disk
 	//
-	if (r_hdr->integer && (flags & IMGFLAG_HDR || flags & IMGFLAG_HDR_LIGHTMAP))
+	if (r_hdr->integer && flags & IMGFLAG_HDR)
 	{
 		char filename[MAX_QPATH];
 		Com_sprintf(filename, sizeof(filename), "%s.hdr", name);
-		float	*floatBuffer;
+		
 		R_LoadHDRImage(filename, &pic, &width, &height);
 		if (pic == NULL)
 		{
@@ -2977,23 +2977,13 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		}
 		else 
 		{
+			float *floatBuffer = (float*)pic;
 			for (int i = 0; i < width*height; i++)
 			{
-				vec4_t color;
-				floatBuffer = (float*)pic;
-				memcpy(color, &floatBuffer[i*3], 12);
-				if (flags & IMGFLAG_HDR_LIGHTMAP)
-				{
-					color[0] = color[0] / M_PI;
-					color[1] = color[1] / M_PI;
-					color[2] = color[2] / M_PI;
-				}
-				color[3] = 1.0f;
-
 				uint16_t *hdr_color = (uint16_t *)(&pic[i * 8]);
-				hdr_color[0] = FloatToHalf(color[0]);
-				hdr_color[1] = FloatToHalf(color[1]);
-				hdr_color[2] = FloatToHalf(color[2]);
+				hdr_color[0] = FloatToHalf(floatBuffer[i * 3]);
+				hdr_color[1] = FloatToHalf(floatBuffer[i * 3 + 1]);
+				hdr_color[2] = FloatToHalf(floatBuffer[i * 3 + 2]);
 				hdr_color[3] = FloatToHalf(1.0f);
 			}
 			internalFormat = GL_RGBA16F;
