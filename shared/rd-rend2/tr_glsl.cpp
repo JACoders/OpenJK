@@ -355,6 +355,10 @@ static size_t GLSL_GetShaderHeader(
 		va("#define MAX_GPU_FOGS %i\n",
 			MAX_GPU_FOGS));
 
+	Q_strcat(dest, size,
+		va("#define MAX_DLIGHTS %i\n",
+			MAX_DLIGHTS));
+
 	fbufWidthScale = (float)glConfig.vidWidth;
 	fbufHeightScale = (float)glConfig.vidHeight;
 	Q_strcat(dest, size,

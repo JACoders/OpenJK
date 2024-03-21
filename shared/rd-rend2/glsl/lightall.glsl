@@ -920,7 +920,7 @@ vec3 CalcDynamicLightContribution(
 	vec3 outColor = vec3(0.0);
 	vec3 position = viewOrigin - viewDir;
 
-	for ( int i = 0; i < u_NumLights; i++ )
+	for ( int i = 0; i < min(u_NumLights, MAX_DLIGHTS); i++ )
 	{
 		if ( ( u_LightMask & ( 1 << i ) ) == 0 ) {
 			continue;
