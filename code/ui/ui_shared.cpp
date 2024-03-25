@@ -3074,12 +3074,29 @@ qboolean ItemParse_name( itemDef_t *item)
 
 int MenuFontToReal( int menuFontIndex )
 {
+	static int fonthandle_aurabesh;
+	static int fonthandle_ergoec;
+	static int fonthandle_anewhope;
+	static int fonthandle_arialnb;
+
+	static qboolean fontsRegistered = qfalse;
+
+	if ( !fontsRegistered )
+	{ // Only try registering the fonts once
+		fonthandle_aurabesh = UI_RegisterFont( "aurabesh" );
+		fonthandle_ergoec   = UI_RegisterFont( "ergoec" );
+		fonthandle_anewhope = UI_RegisterFont( "anewhope" );
+		fonthandle_arialnb  = UI_RegisterFont( "arialnb" );
+
+		fontsRegistered = qtrue;
+	}
+
 	// Default fonts from a clean installation
 	switch ( menuFontIndex ) {
-		case 1: return UI_RegisterFont( "aurabesh" );
-		case 2: return UI_RegisterFont( "ergoec" );
-		case 3: return UI_RegisterFont( "anewhope" );
-		case 4: return UI_RegisterFont( "arialnb" );
+		case 1: return fonthandle_aurabesh;
+		case 2: return fonthandle_ergoec;
+		case 3: return fonthandle_anewhope;
+		case 4: return fonthandle_arialnb;
 
 		default:
 			return DC->Assets.qhMediumFont;
