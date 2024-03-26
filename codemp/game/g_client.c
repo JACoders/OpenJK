@@ -2396,13 +2396,14 @@ restarts.
 ============
 */
 
-static qboolean CompareIPs( const char *ip1, const char *ip2 )
-{
-	while ( 1 ) {
-		if ( *ip1 != *ip2 )
+static qboolean CompareIPs(const char *ip1, const char *ip2) {
+	while (1) {
+		if (*ip1 != *ip2) {
 			return qfalse;
-		if ( !*ip1 || *ip1 == ':' )
+		}
+		if (!*ip1 || *ip1 == ':') {
 			break;
+		}
 		ip1++;
 		ip2++;
 	}
@@ -2451,35 +2452,17 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	if ( !isBot && firstTime )
-	{
-		if ( g_antiFakePlayer.integer )
-		{// patched, check for > g_maxConnPerIP connections from same IP
-			int count=0, i=0;
-			for ( i=0; i<sv_maxclients.integer; i++ )
-			{
-				#if 0
-					if ( level.clients[i].pers.connected != CON_DISCONNECTED && i != clientNum )
-					{
-						if ( CompareIPs( clientNum, i ) )
-						{
-							if ( !level.security.clientConnectionActive[i] )
-							{//This IP has a dead connection pending, wait for it to time out
-							//	client->pers.connected = CON_DISCONNECTED;
-								return "Please wait, another connection from this IP is still pending...";
-							}
-						}
-					}
-				#else
-					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
-						count++;
-				#endif
+	// check for >= g_maxConnPerIP connections from same IP
+	if (g_antiFakePlayer.integer && !isBot && firstTime) {
+		int count = 0, i = 0;
+		gclient_t *cl;
+		for (i = 0, cl = level.clients; i < sv_maxclients.integer; i++, cl++) {
+			if (cl->pers.connected >= CON_CONNECTING && CompareIPs(tmpIP, cl->sess.IP)) {
+				count++;
 			}
-			if ( count > g_maxConnPerIP.integer )
-			{
-			//	client->pers.connected = CON_DISCONNECTED;
-				return "Too many connections from the same IP";
-			}
+		}
+		if (count >= g_maxConnPerIP.integer) {
+			return "Too many connections from the same IP";
 		}
 	}
 
