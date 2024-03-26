@@ -62,6 +62,11 @@ void Sys_PlatformExit( void )
 {
 }
 
+int Sys_PID( void )
+{
+	return getpid( );
+}
+
 /*
 ================
 Sys_Milliseconds
@@ -611,4 +616,44 @@ void Sys_AnsiColorPrint( const char *msg )
 		buffer[length] = '\0';
 		fputs( buffer, stderr );
 	}
+}
+
+/*
+===============
+Sys_ResolvePath
+===============
+*/
+const char *Sys_ResolvePath( const char *path )
+{	// There seems to be no function to resolve paths of files that don't exist
+	// on unix, so we just return the input path. This shouldn't be an issue,
+	// as we just need to resolve paths for those on windows anyway.
+
+	return path;
+}
+
+/*
+===============
+Sys_RealPath
+===============
+*/
+const char *Sys_RealPath( const char *path )
+{
+	static char realPath[PATH_MAX+1];
+	if ( realpath(path, realPath) )
+		return realPath;
+	return path;
+}
+
+/*
+===============
+Sys_FindFunctions
+===============
+*/
+int Sys_FindFunctions( void )
+{
+	// We only use this function on Windows to find functions that might not be
+	// available on all OS versions, but that may be required for some Sys_
+	// functions to be fully operational. On unix we can just return 0.
+
+	return 0;
 }

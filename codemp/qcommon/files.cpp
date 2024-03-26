@@ -312,6 +312,77 @@ FILE*		missingFiles = NULL;
 #  endif
 #endif
 
+const char *get_filename_ext(const char *filename) {
+	const char *dot = strrchr(filename, '.');
+	if (!dot || dot == filename) return "";
+	return dot + 1;
+}
+
+// We don't want VMs to be able to access the following file extensions
+static char *invalidExtensions[] = {
+	"dll",
+	"exe",
+	"bat",
+	"cmd",
+	"dylib",
+	"so",
+	"qvm",
+	"pk3",
+};
+static int invalidExtensionsAmount = sizeof(invalidExtensions) / sizeof(invalidExtensions[0]);
+
+qboolean FS_IsInvalidExtension( const char *ext ) {
+	int i;
+
+	// Compare against the list of forbidden extensions
+	for ( i = 0; i < invalidExtensionsAmount; i++ ) {
+		if ( !Q_stricmp(ext, invalidExtensions[i]) )
+			return qtrue;
+	}
+
+	// Additional check we don't currently need, but if support for another platform is added and the list above is not
+	// updated we catch it with this check.
+	if ( !Q_stricmp(va(".%s", ext), DLL_EXT) )
+		return qtrue;
+
+	return qfalse;
+}
+
+// Invalid characters. Originally intended to be OS-specific, but considering that VMs run on different systems it's
+// probably not a bad idea to share the same behavior on all systems.
+qboolean FS_ContainsInvalidCharacters( const char *filename ) {
+	static char *invalidCharacters = "<>:\"|?*";
+	char *ptr = invalidCharacters;
+
+	while ( *ptr ) {
+		if ( strchr(filename, *ptr) )
+			return qtrue;
+		ptr++;
+	}
+
+	return qfalse;
+}
+
+qboolean FS_IsInvalidWriteOSPath(const char *ospath) {
+	const char *resolved;
+	const char *realPath;
+
+	// Resolve paths
+	resolved = Sys_ResolvePath( ospath );
+	if ( !strlen(resolved) ) return qtrue;
+	realPath = Sys_RealPath( resolved );
+	if ( !strlen(realPath) ) return qtrue;
+
+	// Check all three, the original input, the resolved and the real path, in case there is a symlink
+	// NOTE: Checking the ospath shouldn't be required, because we resolved the path, but let's check it anyway.
+	if ( FS_IsInvalidExtension(get_filename_ext(ospath)) || FS_IsInvalidExtension(get_filename_ext(resolved)) || FS_IsInvalidExtension(get_filename_ext(realPath)) ) {
+		Com_Printf( "FS_IsInvalidWriteOSPath: blocked writing binary file \"%s\" (%s) [%s].\n", ospath, resolved, realPath );
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
 /*
 ==============
 FS_Initialized
@@ -572,11 +643,10 @@ ERR_FATAL if trying to maniuplate a file with the platform library, or pk3 exten
 */
 static void FS_CheckFilenameIsMutable( const char *filename, const char *function )
 {
-	// Check if the filename ends with the library, or pk3 extension
-	if( COM_CompareExtension( filename, DLL_EXT )
-		|| COM_CompareExtension( filename, ".pk3" ) )
+	// Call FS_InvalidWriteOSPath from JK2MV, because it handles symlinks and some Windows specific tricks to bypass these checks.
+	if ( FS_IsInvalidWriteOSPath(filename) )
 	{
-		Com_Error( ERR_FATAL, "%s: Not allowed to manipulate '%s' due "
+		Com_Error( ERR_DROP, "%s: Not allowed to manipulate '%s' due "
 			"to %s extension", function, filename, COM_GetExtension( filename ) );
 	}
 }
@@ -592,6 +662,11 @@ void FS_CopyFile( char *fromOSPath, char *toOSPath ) {
 	FILE	*f;
 	int		len;
 	byte	*buf;
+
+	if ( FS_ContainsInvalidCharacters(toOSPath) ) {
+		Com_Printf( "FS_CopyFile: invalid filename (%s)\n", toOSPath );
+		return;
+	}
 
 	FS_CheckFilenameIsMutable( fromOSPath, __func__ );
 
@@ -3949,6 +4024,13 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
 	qboolean	sync;
 
 	sync = qfalse;
+
+	// Only check the unresolved path for invalid characters, the os probably knows what it's doing
+	if ( FS_ContainsInvalidCharacters(qpath) ) {
+		Com_Printf( "FS_FOpenFileByMode: invalid filename (%s)\n", qpath );
+		*f = 0;
+		return -1;
+	}
 
 	switch( mode ) {
 	case FS_READ:

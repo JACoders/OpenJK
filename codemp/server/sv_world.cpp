@@ -36,18 +36,18 @@ given entity.  If the entity is a bsp model, the headnode will
 be returned, otherwise a custom box tree will be constructed.
 ================
 */
-clipHandle_t SV_ClipHandleForEntity( const sharedEntity_t *ent ) {
-	if ( ent->r.bmodel ) {
+clipHandle_t SV_ClipHandleForEntity( const sharedEntityMapper_t *ent ) {
+	if ( ent->r->bmodel ) {
 		// explicit hulls in the BSP model
-		return CM_InlineModel( ent->s.modelindex );
+		return CM_InlineModel( ent->s->modelindex );
 	}
-	if ( ent->r.svFlags & SVF_CAPSULE ) {
+	if ( ent->r->svFlags & SVF_CAPSULE ) {
 		// create a temp capsule from bounding box sizes
-		return CM_TempBoxModel( ent->r.mins, ent->r.maxs, qtrue );
+		return CM_TempBoxModel( ent->r->mins, ent->r->maxs, qtrue );
 	}
 
 	// create a temp tree from bounding box sizes
-	return CM_TempBoxModel( ent->r.mins, ent->r.maxs, qfalse );
+	return CM_TempBoxModel( ent->r->mins, ent->r->maxs, qfalse );
 }
 
 
@@ -168,14 +168,14 @@ SV_UnlinkEntity
 
 ===============
 */
-void SV_UnlinkEntity( sharedEntity_t *gEnt ) {
+void SV_UnlinkEntity( sharedEntityMapper_t *gEnt ) {
 	svEntity_t		*ent;
 	svEntity_t		*scan;
 	worldSector_t	*ws;
 
-	ent = SV_SvEntityForGentity( gEnt );
+	ent = SV_SvEntityForGentityMapper( gEnt );
 
-	gEnt->r.linked = qfalse;
+	gEnt->r->linked = qfalse;
 
 	ws = ent->worldSector;
 	if ( !ws ) {
@@ -206,7 +206,7 @@ SV_LinkEntity
 ===============
 */
 #define MAX_TOTAL_ENT_LEAFS		128
-void SV_LinkEntity( sharedEntity_t *gEnt ) {
+void SV_LinkEntity( sharedEntityMapper_t *gEnt ) {
 	worldSector_t	*node;
 	int			leafs[MAX_TOTAL_ENT_LEAFS];
 	int			cluster;
@@ -217,77 +217,77 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	float		*origin, *angles;
 	svEntity_t	*ent;
 
-	ent = SV_SvEntityForGentity( gEnt );
+	ent = SV_SvEntityForGentityMapper( gEnt );
 
 	if ( ent->worldSector ) {
 		SV_UnlinkEntity( gEnt );	// unlink from old position
 	}
 
 	// encode the size into the entityState_t for client prediction
-	if ( gEnt->r.bmodel ) {
-		gEnt->s.solid = SOLID_BMODEL;		// a solid_box will never create this value
-	} else if ( gEnt->r.contents & ( CONTENTS_SOLID | CONTENTS_BODY ) ) {
+	if ( gEnt->r->bmodel ) {
+		gEnt->s->solid = SOLID_BMODEL;		// a solid_box will never create this value
+	} else if ( gEnt->r->contents & ( CONTENTS_SOLID | CONTENTS_BODY ) ) {
 		// assume that x/y are equal and symetric
-		i = gEnt->r.maxs[0];
+		i = gEnt->r->maxs[0];
 		if (i<1)
 			i = 1;
 		if (i>255)
 			i = 255;
 
 		// z is not symetric
-		j = (-gEnt->r.mins[2]);
+		j = (-gEnt->r->mins[2]);
 		if (j<1)
 			j = 1;
 		if (j>255)
 			j = 255;
 
 		// and z maxs can be negative...
-		k = (gEnt->r.maxs[2]+32);
+		k = (gEnt->r->maxs[2]+32);
 		if (k<1)
 			k = 1;
 		if (k>255)
 			k = 255;
 
-		gEnt->s.solid = (k<<16) | (j<<8) | i;
+		gEnt->s->solid = (k<<16) | (j<<8) | i;
 
-		if (gEnt->s.solid == SOLID_BMODEL)
+		if (gEnt->s->solid == SOLID_BMODEL)
 		{ //yikes, this would make everything explode violently.
-			gEnt->s.solid = (k<<16) | (j<<8) | (i-1);
+			gEnt->s->solid = (k<<16) | (j<<8) | (i-1);
 		}
 	}
 	else
 	{
-		gEnt->s.solid = 0;
+		gEnt->s->solid = 0;
 	}
 
 	// get the position
-	origin = gEnt->r.currentOrigin;
-	angles = gEnt->r.currentAngles;
+	origin = gEnt->r->currentOrigin;
+	angles = gEnt->r->currentAngles;
 
 	// set the abs box
-	if ( gEnt->r.bmodel && (angles[0] || angles[1] || angles[2]) ) {
+	if ( gEnt->r->bmodel && (angles[0] || angles[1] || angles[2]) ) {
 		// expand for rotation
 		float		max;
 
-		max = RadiusFromBounds( gEnt->r.mins, gEnt->r.maxs );
+		max = RadiusFromBounds( gEnt->r->mins, gEnt->r->maxs );
 		for (i=0 ; i<3 ; i++) {
-			gEnt->r.absmin[i] = origin[i] - max;
-			gEnt->r.absmax[i] = origin[i] + max;
+			gEnt->r->absmin[i] = origin[i] - max;
+			gEnt->r->absmax[i] = origin[i] + max;
 		}
 	} else {
 		// normal
-		VectorAdd (origin, gEnt->r.mins, gEnt->r.absmin);
-		VectorAdd (origin, gEnt->r.maxs, gEnt->r.absmax);
+		VectorAdd (origin, gEnt->r->mins, gEnt->r->absmin);
+		VectorAdd (origin, gEnt->r->maxs, gEnt->r->absmax);
 	}
 
 	// because movement is clipped an epsilon away from an actual edge,
 	// we must fully check even when bounding boxes don't quite touch
-	gEnt->r.absmin[0] -= 1;
-	gEnt->r.absmin[1] -= 1;
-	gEnt->r.absmin[2] -= 1;
-	gEnt->r.absmax[0] += 1;
-	gEnt->r.absmax[1] += 1;
-	gEnt->r.absmax[2] += 1;
+	gEnt->r->absmin[0] -= 1;
+	gEnt->r->absmin[1] -= 1;
+	gEnt->r->absmin[2] -= 1;
+	gEnt->r->absmax[0] += 1;
+	gEnt->r->absmax[1] += 1;
+	gEnt->r->absmax[2] += 1;
 
 	// link to PVS leafs
 	ent->numClusters = 0;
@@ -296,7 +296,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	ent->areanum2 = -1;
 
 	//get all leafs, including solids
-	num_leafs = CM_BoxLeafnums( gEnt->r.absmin, gEnt->r.absmax,
+	num_leafs = CM_BoxLeafnums( gEnt->r->absmin, gEnt->r->absmax,
 		leafs, MAX_TOTAL_ENT_LEAFS, &lastLeaf );
 
 	// if none of the leafs were inside the map, the
@@ -314,8 +314,8 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 			if (ent->areanum != -1 && ent->areanum != area) {
 				if (ent->areanum2 != -1 && ent->areanum2 != area && sv.state == SS_LOADING) {
 					Com_DPrintf ("Object %i touching 3 areas at %f %f %f\n",
-					gEnt->s.number,
-					gEnt->r.absmin[0], gEnt->r.absmin[1], gEnt->r.absmin[2]);
+					gEnt->s->number,
+					gEnt->r->absmin[0], gEnt->r->absmin[1], gEnt->r->absmin[2]);
 				}
 				ent->areanum2 = area;
 			} else {
@@ -341,7 +341,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 		ent->lastCluster = CM_LeafCluster( lastLeaf );
 	}
 
-	gEnt->r.linkcount++;
+	gEnt->r->linkcount++;
 
 	// find the first world sector node that the ent's box crosses
 	node = sv_worldSectors;
@@ -349,9 +349,9 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	{
 		if (node->axis == -1)
 			break;
-		if ( gEnt->r.absmin[node->axis] > node->dist)
+		if ( gEnt->r->absmin[node->axis] > node->dist)
 			node = node->children[0];
-		else if ( gEnt->r.absmax[node->axis] < node->dist)
+		else if ( gEnt->r->absmax[node->axis] < node->dist)
 			node = node->children[1];
 		else
 			break;		// crosses the node
@@ -362,7 +362,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	ent->nextEntityInWorldSector = node->entities;
 	node->entities = ent;
 
-	gEnt->r.linked = qtrue;
+	gEnt->r->linked = qtrue;
 }
 
 /*
@@ -391,19 +391,19 @@ SV_AreaEntities_r
 */
 void SV_AreaEntities_r( worldSector_t *node, areaParms_t *ap ) {
 	svEntity_t	*check, *next;
-	sharedEntity_t *gcheck;
+	sharedEntityMapper_t *gcheck;
 
 	for ( check = node->entities  ; check ; check = next ) {
 		next = check->nextEntityInWorldSector;
 
-		gcheck = SV_GEntityForSvEntity( check );
+		gcheck = SV_GEntityMapperForSvEntity( check );
 
-		if ( gcheck->r.absmin[0] > ap->maxs[0]
-		|| gcheck->r.absmin[1] > ap->maxs[1]
-		|| gcheck->r.absmin[2] > ap->maxs[2]
-		|| gcheck->r.absmax[0] < ap->mins[0]
-		|| gcheck->r.absmax[1] < ap->mins[1]
-		|| gcheck->r.absmax[2] < ap->mins[2]) {
+		if ( gcheck->r->absmin[0] > ap->maxs[0]
+		|| gcheck->r->absmin[1] > ap->maxs[1]
+		|| gcheck->r->absmin[2] > ap->maxs[2]
+		|| gcheck->r->absmax[0] < ap->mins[0]
+		|| gcheck->r->absmax[1] < ap->mins[1]
+		|| gcheck->r->absmax[2] < ap->mins[2]) {
 			continue;
 		}
 
@@ -484,17 +484,17 @@ SV_ClipToEntity
 ====================
 */
 void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int entityNum, int contentmask, int capsule ) {
-	sharedEntity_t	*touch;
+	sharedEntityMapper_t	*touch;
 	clipHandle_t	clipHandle;
 	float			*origin, *angles;
 
-	touch = SV_GentityNum( entityNum );
+	touch = SV_GentityMapperNum( entityNum );
 
 	Com_Memset(trace, 0, sizeof(trace_t));
 
 	// if it doesn't have any brushes of a type we
 	// are looking for, ignore it
-	if ( ! ( contentmask & touch->r.contents ) ) {
+	if ( ! ( contentmask & touch->r->contents ) ) {
 		trace->fraction = 1.0;
 		return;
 	}
@@ -502,10 +502,10 @@ void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, con
 	// might intersect, so do an exact clip
 	clipHandle = SV_ClipHandleForEntity (touch);
 
-	origin = touch->r.currentOrigin;
-	angles = touch->r.currentAngles;
+	origin = touch->r->currentOrigin;
+	angles = touch->r->currentAngles;
 
-	if ( !touch->r.bmodel ) {
+	if ( !touch->r->bmodel ) {
 		angles = vec3_origin;	// boxes don't rotate
 	}
 
@@ -514,7 +514,7 @@ void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, con
 		origin, angles, capsule);
 
 	if ( trace->fraction < 1 ) {
-		trace->entityNum = touch->s.number;
+		trace->entityNum = touch->s->number;
 	}
 }
 
@@ -538,42 +538,39 @@ static float VectorDistance(vec3_t p1, vec3_t p2)
 static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 	static int	touchlist[MAX_GENTITIES];
 	int			i, num;
-	sharedEntity_t *touch;
-	int			passOwnerNum;
+	sharedEntityMapper_t *touch;
+	int			passOwnerNum = -1; // Default to -1
 	trace_t		trace, oldTrace= {0};
 	clipHandle_t	clipHandle;
 	float		*origin, *angles;
 	int			thisOwnerShared = 1;
+	sharedEntityMapper_t *passEnt = SV_GentityMapperNum( clip->passEntityNum );
 
 	num = SV_AreaEntities( clip->boxmins, clip->boxmaxs, touchlist, MAX_GENTITIES);
 
-	if ( clip->passEntityNum != ENTITYNUM_NONE ) {
-		passOwnerNum = ( SV_GentityNum( clip->passEntityNum ) )->r.ownerNum;
-		if ( passOwnerNum == ENTITYNUM_NONE ) {
-			passOwnerNum = -1;
+	if ( passEnt && passEnt->r ) {
+		if ( clip->passEntityNum != ENTITYNUM_NONE && passEnt->r->ownerNum != ENTITYNUM_NONE ) {
+			passOwnerNum = passEnt->r->ownerNum;
 		}
-	} else {
-		passOwnerNum = -1;
-	}
 
-	if ( SV_GentityNum(clip->passEntityNum)->r.svFlags & SVF_OWNERNOTSHARED )
-	{
-		thisOwnerShared = 0;
+		if ( passEnt->r->svFlags & SVF_OWNERNOTSHARED ) {
+			thisOwnerShared = 0;
+		}
 	}
 
 	for ( i=0 ; i<num ; i++ ) {
 		if ( clip->trace.allsolid ) {
 			return;
 		}
-		touch = SV_GentityNum( touchlist[i] );
+		touch = SV_GentityMapperNum( touchlist[i] );
 
 		// see if we should ignore this entity
 		if ( clip->passEntityNum != ENTITYNUM_NONE ) {
 			if ( touchlist[i] == clip->passEntityNum ) {
 				continue;	// don't clip against the pass entity
 			}
-			if ( touch->r.ownerNum == clip->passEntityNum) {
-				if (touch->r.svFlags & SVF_OWNERNOTSHARED)
+			if ( touch->r->ownerNum == clip->passEntityNum) {
+				if (touch->r->svFlags & SVF_OWNERNOTSHARED)
 				{
 					if ( clip->contentmask != (MASK_SHOT | CONTENTS_LIGHTSABER) &&
 						clip->contentmask != (MASK_SHOT))
@@ -586,15 +583,15 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 					continue;	// don't clip against own missiles
 				}
 			}
-			if ( touch->r.ownerNum == passOwnerNum &&
-				!(touch->r.svFlags & SVF_OWNERNOTSHARED) &&
+			if ( touch->r->ownerNum == passOwnerNum &&
+				!(touch->r->svFlags & SVF_OWNERNOTSHARED) &&
 				thisOwnerShared ) {
 				continue;	// don't clip against other missiles from our owner
 			}
 
-			if (touch->s.eType == ET_MISSILE &&
-				!(touch->r.svFlags & SVF_OWNERNOTSHARED) &&
-				touch->r.ownerNum == passOwnerNum)
+			if (touch->s->eType == ET_MISSILE &&
+				!(touch->r->svFlags & SVF_OWNERNOTSHARED) &&
+				touch->r->ownerNum == passOwnerNum)
 			{ //blah, hack
 				continue;
 			}
@@ -602,11 +599,11 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 
 		// if it doesn't have any brushes of a type we
 		// are looking for, ignore it
-		if ( ! ( clip->contentmask & touch->r.contents ) ) {
+		if ( ! ( clip->contentmask & touch->r->contents ) ) {
 			continue;
 		}
 
-		if ((clip->contentmask == (MASK_SHOT|CONTENTS_LIGHTSABER) || clip->contentmask == MASK_SHOT) && (touch->r.contents > 0 && (touch->r.contents & CONTENTS_NOSHOT)))
+		if ((clip->contentmask == (MASK_SHOT|CONTENTS_LIGHTSABER) || clip->contentmask == MASK_SHOT) && (touch->r->contents > 0 && (touch->r->contents & CONTENTS_NOSHOT)))
 		{
 			continue;
 		}
@@ -614,11 +611,11 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity (touch);
 
-		origin = touch->r.currentOrigin;
-		angles = touch->r.currentAngles;
+		origin = touch->r->currentOrigin;
+		angles = touch->r->currentAngles;
 
 
-		if ( !touch->r.bmodel ) {
+		if ( !touch->r->bmodel ) {
 			angles = vec3_origin;	// boxes don't rotate
 		}
 
@@ -634,13 +631,13 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 
 		if ( trace.allsolid ) {
 			clip->trace.allsolid = qtrue;
-			trace.entityNum = touch->s.number;
+			trace.entityNum = touch->s->number;
 		} else if ( trace.startsolid ) {
 			clip->trace.startsolid = qtrue;
-			trace.entityNum = touch->s.number;
+			trace.entityNum = touch->s->number;
 
 			//rww - added this because we want to get the number of an ent even if our trace starts inside it.
-			clip->trace.entityNum = touch->s.number;
+			clip->trace.entityNum = touch->s->number;
 		}
 
 		if ( trace.fraction < clip->trace.fraction ) {
@@ -649,7 +646,7 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			// make sure we keep a startsolid from a previous trace
 			oldStart = clip->trace.startsolid;
 
-			trace.entityNum = touch->s.number;
+			trace.entityNum = touch->s->number;
 			clip->trace = trace;
 			clip->trace.startsolid = (qboolean)((unsigned)clip->trace.startsolid | (unsigned)oldStart);
 		}
@@ -658,10 +655,10 @@ Ghoul2 Insert Start
 */
 #if 0
 		// decide if we should do the ghoul2 collision detection right here
-		if ((trace.entityNum == touch->s.number) && (clip->traceFlags))
+		if ((trace.entityNum == touch->s->number) && (clip->traceFlags))
 		{
 			// do we actually have a ghoul2 model here?
-			if (touch->s.ghoul2)
+			if (touch->s->ghoul2)
 			{
 				int			oldTraceRecSize = 0;
 				int			newTraceRecSize = 0;
@@ -680,8 +677,8 @@ Ghoul2 Insert Start
 					}
 				}
 
-				G2API_CollisionDetect(&clip->trace.G2CollisionMap[0], *((CGhoul2Info_v *)touch->s.ghoul2),
-					touch->s.angles, touch->s.origin, sv.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->traceFlags, clip->useLod);
+				G2API_CollisionDetect(&clip->trace.G2CollisionMap[0], *((CGhoul2Info_v *)touch->s->ghoul2),
+					touch->s->angles, touch->s->origin, sv.time, touch->s->number, clip->start, clip->end, touch->s->modelScale, G2VertSpaceServer, clip->traceFlags, clip->useLod);
 
 				// set our new trace record size
 
@@ -703,7 +700,7 @@ Ghoul2 Insert Start
 #else
 		//rww - since this is multiplayer and we don't have the luxury of violating networking rules in horrible ways,
 		//this must be done somewhat differently.
-		if ((clip->traceFlags & G2TRFLAG_DOGHOULTRACE) && trace.entityNum == touch->s.number && touch->ghoul2 && ((clip->traceFlags & G2TRFLAG_HITCORPSES) || !(touch->s.eFlags & EF_DEAD)))
+		if ((clip->traceFlags & G2TRFLAG_DOGHOULTRACE) && trace.entityNum == touch->s->number && SV_EntityMapperReadGhoul2(touch->ghoul2) && ((clip->traceFlags & G2TRFLAG_HITCORPSES) || !(touch->s->eFlags & EF_DEAD)))
 		{ //standard behavior will be to ignore g2 col on dead ents, but if traceFlags is set to allow, then we'll try g2 col on EF_DEAD people too.
 			static G2Trace_t G2Trace;
 			vec3_t angles;
@@ -732,13 +729,13 @@ Ghoul2 Insert Start
 				tN++;
 			}
 
-			if (touch->s.number < MAX_CLIENTS)
+			if (touch->s->number < MAX_CLIENTS)
 			{
-				VectorCopy(touch->s.apos.trBase, angles);
+				VectorCopy(touch->s->apos.trBase, angles);
 			}
 			else
 			{
-				VectorCopy(touch->r.currentAngles, angles);
+				VectorCopy(touch->r->currentAngles, angles);
 			}
 			angles[ROLL] = angles[PITCH] = 0;
 
@@ -747,27 +744,27 @@ Ghoul2 Insert Start
 #ifndef FINAL_BUILD
 			if (sv_showghoultraces->integer)
 			{
-				Com_Printf( "Ghoul2 trace   lod=%1d   length=%6.0f   to %s\n",clip->useLod,VectorDistance(clip->start, clip->end), re->G2API_GetModelName (*(CGhoul2Info_v *)touch->ghoul2, 0));
+				Com_Printf( "Ghoul2 trace   lod=%1d   length=%6.0f   to %s\n",clip->useLod,VectorDistance(clip->start, clip->end), re->G2API_GetModelName(*(SV_G2Map_GetG2FromHandle((g2handleptr_t)SV_EntityMapperReadGhoul2(touch->ghoul2))), 0));
 			}
 #endif
 
 			if (com_optvehtrace &&
 				com_optvehtrace->integer &&
-				touch->s.eType == ET_NPC &&
-				touch->s.NPC_class == CLASS_VEHICLE &&
-				touch->m_pVehicle)
+				touch->s->eType == ET_NPC &&
+				touch->s->NPC_class == CLASS_VEHICLE &&
+				SV_EntityMapperReadVehicle(touch->m_pVehicle))
 			{ //for vehicles cache the transform data.
-				re->G2API_CollisionDetectCache(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
+				re->G2API_CollisionDetectCache(G2Trace, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)SV_EntityMapperReadGhoul2(touch->ghoul2))), angles, touch->r->currentOrigin, sv.time, touch->s->number, clip->start, clip->end, *touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
 			}
 			else
 			{
-				re->G2API_CollisionDetect(G2Trace, *((CGhoul2Info_v *)touch->ghoul2), angles, touch->r.currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
+				re->G2API_CollisionDetect(G2Trace, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)SV_EntityMapperReadGhoul2(touch->ghoul2))), angles, touch->r->currentOrigin, sv.time, touch->s->number, clip->start, clip->end, *touch->modelScale, G2VertSpaceServer, 0, clip->useLod, fRadius);
 			}
 
 			tN = 0;
 			while (tN < MAX_G2_COLLISIONS)
 			{
-				if (G2Trace[tN].mEntityNum == touch->s.number)
+				if (G2Trace[tN].mEntityNum == touch->s->number)
 				{ //ok, valid
 					bestTr = tN;
 					break;
@@ -885,7 +882,7 @@ SV_PointContents
 */
 int SV_PointContents( const vec3_t p, int passEntityNum ) {
 	int			touch[MAX_GENTITIES];
-	sharedEntity_t *hit;
+	sharedEntityMapper_t *hit;
 	int			i, num;
 	int			contents, c2;
 	clipHandle_t	clipHandle;
@@ -900,11 +897,11 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 		if ( touch[i] == passEntityNum ) {
 			continue;
 		}
-		hit = SV_GentityNum( touch[i] );
+		hit = SV_GentityMapperNum( touch[i] );
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity( hit );
 
-		c2 = CM_TransformedPointContents (p, clipHandle, hit->r.currentOrigin, hit->r.currentAngles);
+		c2 = CM_TransformedPointContents (p, clipHandle, hit->r->currentOrigin, hit->r->currentAngles);
 
 		contents |= c2;
 	}

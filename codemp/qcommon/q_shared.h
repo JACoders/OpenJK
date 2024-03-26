@@ -147,7 +147,8 @@ typedef union fileBuffer_u {
 	byte *b;
 } fileBuffer_t;
 
-typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
+typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t, g2handle_t;
+typedef intptr_t g2handleptr_t;
 
 #define NULL_HANDLE ((qhandle_t)0)
 #define NULL_SOUND ((sfxHandle_t)0)

@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/RoffSystem.h"
 #include "Q3_Interface.h"
 #include "server/sv_gameapi.h"
+#include "qcommon/vm_local.h"
 
 ICARUS_Instance		*iICARUS;
 bufferlist_t		ICARUS_BufferList;
@@ -84,13 +85,13 @@ ICARUS_RunScript
 Runs the script by the given name
 =============
 */
-int ICARUS_RunScript( sharedEntity_t *ent, const char *name )
+int ICARUS_RunScript( sharedEntityMapper_t *ent, const char *name )
 {
 	char *buf;
 	int len;
 
 	//Make sure the caller is valid
-	if ( gSequencers[ent->s.number] == NULL )
+	if ( gSequencers[ent->s->number] == NULL )
 	{
 		//Com_Printf( "%s : entity is not a valid script user\n", ent->classname );
 		return false;
@@ -139,12 +140,12 @@ int ICARUS_RunScript( sharedEntity_t *ent, const char *name )
 	}
 
 	//Attempt to run the script
-	if S_FAILED(gSequencers[ent->s.number]->Run( buf, len ))
+	if S_FAILED(gSequencers[ent->s->number]->Run( buf, len ))
 		return false;
 
-	if ( ( ICARUS_entFilter == -1 ) || ( ICARUS_entFilter == ent->s.number ) )
+	if ( ( ICARUS_entFilter == -1 ) || ( ICARUS_entFilter == ent->s->number ) )
 	{
-		Q3_DebugPrint( WL_VERBOSE, "%d Script %s executed by %s %s\n", svs.time, (char *) name, ent->classname, ent->targetname );
+		Q3_DebugPrint( WL_VERBOSE, "%d Script %s executed by %s %s\n", svs.time, (char *) name, SV_EntityMapperReadString(ent->classname), SV_EntityMapperReadString(ent->targetname) );
 	}
 
 	return true;
@@ -184,19 +185,19 @@ Frees up ICARUS resources from all entities
 void ICARUS_Shutdown( void )
 {
 	bufferlist_t::iterator	ei;
-	sharedEntity_t				*ent = SV_GentityNum(0);
+	sharedEntityMapper_t				*ent = SV_GentityMapperNum(0);
 
 	//Release all ICARUS resources from the entities
 	for ( int i = 0; i < /*globals.num_entities*/MAX_GENTITIES; i++ )
 	{
-		ent = SV_GentityNum(i);
+		ent = SV_GentityMapperNum(i);
 
 		if (gSequencers[i])
 		{
-			if (ent->s.number >= MAX_GENTITIES ||
-				ent->s.number < 0)
+			if (ent->s->number >= MAX_GENTITIES ||
+				ent->s->number < 0)
 			{
-				ent->s.number = i;
+				ent->s->number = i;
 				assert(0);
 			}
 			ICARUS_FreeEnt( ent );
@@ -235,27 +236,29 @@ FIXME: shouldn't ICARUS handle this internally?
 
 ==============
 */
-void ICARUS_FreeEnt( sharedEntity_t *ent )
+void ICARUS_FreeEnt( sharedEntityMapper_t *ent )
 {
+	const char *script_targetname;
 	assert( iICARUS );
 
-	if (ent->s.number >= MAX_GENTITIES ||
-		ent->s.number < 0)
+	if (ent->s->number >= MAX_GENTITIES ||
+		ent->s->number < 0)
 	{
 		assert(0);
 		return;
 	}
 
 	//Make sure the ent is valid
-	if ( gSequencers[ent->s.number] == NULL )
+	if ( gSequencers[ent->s->number] == NULL )
 		return;
 
 	//Remove them from the ICARUSE_EntList list so that when their g_entity index is reused, ICARUS doesn't try to affect the new (incorrect) ent.
-	if VALIDSTRING( ent->script_targetname )
+	script_targetname = SV_EntityMapperReadString( ent->script_targetname );
+	if VALIDSTRING( script_targetname )
 	{
 		char	temp[1024];
 
-		strncpy( (char *) temp, ent->script_targetname, 1023 );
+		strncpy( (char *) temp, script_targetname, 1023 );
 		temp[ 1023 ] = 0;
 
 		entlist_t::iterator it = ICARUS_EntList.find( Q_strupr(temp) );
@@ -267,11 +270,11 @@ void ICARUS_FreeEnt( sharedEntity_t *ent )
 	}
 
 	//Delete the sequencer and the task manager
-	iICARUS->DeleteSequencer( gSequencers[ent->s.number] );
+	iICARUS->DeleteSequencer( gSequencers[ent->s->number] );
 
 	//Clean up the pointers
-	gSequencers[ent->s.number]		= NULL;
-	gTaskManagers[ent->s.number]	= NULL;
+	gSequencers[ent->s->number]		= NULL;
+	gTaskManagers[ent->s->number]	= NULL;
 }
 
 
@@ -283,18 +286,19 @@ Determines whether or not an entity needs ICARUS information
 ==============
 */
 
-bool ICARUS_ValidEnt( sharedEntity_t *ent )
+bool ICARUS_ValidEnt( sharedEntityMapper_t *ent )
 {
+	const char *script_targetname = SV_EntityMapperReadString( ent->script_targetname );
 	int i;
 
 	//Targeted by a script
-	if VALIDSTRING( ent->script_targetname )
+	if VALIDSTRING( script_targetname )
 		return true;
 
 	//Potentially able to call a script
 	for ( i = 0; i < NUM_BSETS; i++ )
 	{
-		if VALIDSTRING( ent->behaviorSet[i] )
+		if VALIDSTRING( SV_EntityMapperReadString(ent->behaviorSet[i]) )
 		{
 			//Com_Printf( "WARNING: Entity %d (%s) has behaviorSet but no script_targetname -- using targetname\n", ent->s.number, ent->targetname );
 
@@ -302,11 +306,17 @@ bool ICARUS_ValidEnt( sharedEntity_t *ent )
 			//rww - You CANNOT do things like this now. We're switching memory around to be able to read this memory from vm land,
 			//and while this allows us to read it on our "fake" entity here, we can't modify pointers like this. We can however do
 			//something completely hackish such as the following.
-			assert(ent->s.number >= 0 && ent->s.number < MAX_GENTITIES);
-			sharedEntity_t *trueEntity = SV_GentityNum(ent->s.number);
+			assert(ent->s->number >= 0 && ent->s->number < MAX_GENTITIES);
+			sharedEntity_t *trueEntity = SV_GentityNum(ent->s->number);
+
 			//This works because we're modifying the actual shared game vm data and turning one pointer into another.
 			//While these pointers both look like garbage to us in here, they are not.
-			trueEntity->script_targetname = trueEntity->targetname;
+			if ( VM_IsCurrentQVM() )
+			{
+				sharedEntity_qvm_t *trueEntityQVM = (sharedEntity_qvm_t*)trueEntity;
+				trueEntityQVM->script_targetname = trueEntityQVM->targetname;
+			}
+			else trueEntity->script_targetname = trueEntity->targetname;
 			return true;
 		}
 	}
@@ -322,17 +332,18 @@ Associate the entity's id and name so that it can be referenced later
 ==============
 */
 
-void ICARUS_AssociateEnt( sharedEntity_t *ent )
+void ICARUS_AssociateEnt( sharedEntityMapper_t *ent )
 {
+	const char *script_targetname = SV_EntityMapperReadString( ent->script_targetname );
 	char	temp[1024];
 
-	if ( VALIDSTRING( ent->script_targetname ) == false )
+	if ( VALIDSTRING( script_targetname ) == false )
 		return;
 
-	strncpy( (char *) temp, ent->script_targetname, 1023 );
+	strncpy( (char *) temp, script_targetname, 1023 );
 	temp[ 1023 ] = 0;
 
-	ICARUS_EntList[ Q_strupr( (char *) temp ) ] = ent->s.number;
+	ICARUS_EntList[ Q_strupr( (char *) temp ) ] = ent->s->number;
 }
 
 /*
@@ -628,19 +639,20 @@ Precache all scripts being used by the entity
 ==============
 */
 
-void ICARUS_PrecacheEnt( sharedEntity_t *ent )
+void ICARUS_PrecacheEnt( sharedEntityMapper_t *ent )
 {
+	const char *behaviorStr;
 	char	newname[MAX_FILENAME_LENGTH];
 	int		i;
 
 	for ( i = 0; i < NUM_BSETS; i++ )
 	{
-		if ( ent->behaviorSet[i] == NULL )
+		if ( !(behaviorStr = SV_EntityMapperReadString(ent->behaviorSet[i])) )
 			continue;
 
-		if ( GetIDForString( BSTable, ent->behaviorSet[i] ) == -1 )
+		if ( GetIDForString( BSTable, behaviorStr ) == -1 )
 		{//not a behavior set
-			Com_sprintf( newname, sizeof(newname), "%s/%s", Q3_SCRIPT_DIR, ent->behaviorSet[i] );
+			Com_sprintf( newname, sizeof(newname), "%s/%s", Q3_SCRIPT_DIR, behaviorStr );
 
 			//Precache this, and all internally referenced scripts
 			ICARUS_InterrogateScript( newname );
@@ -657,25 +669,25 @@ Allocates a sequencer and task manager only if an entity is a potential script u
 */
 
 void Q3_TaskIDClear( int *taskID );
-void ICARUS_InitEnt( sharedEntity_t *ent )
+void ICARUS_InitEnt( sharedEntityMapper_t *ent )
 {
 	//Make sure this is a fresh ent
 	assert( iICARUS );
-	assert( gTaskManagers[ent->s.number] == NULL );
-	assert( gSequencers[ent->s.number] == NULL );
+	assert( gTaskManagers[ent->s->number] == NULL );
+	assert( gSequencers[ent->s->number] == NULL );
 
-	if ( gSequencers[ent->s.number] != NULL )
+	if ( gSequencers[ent->s->number] != NULL )
 		return;
 
-	if ( gTaskManagers[ent->s.number] != NULL )
+	if ( gTaskManagers[ent->s->number] != NULL )
 		return;
 
 	//Create the sequencer and setup the task manager
-	gSequencers[ent->s.number]		= iICARUS->GetSequencer( ent->s.number );
-	gTaskManagers[ent->s.number]	= gSequencers[ent->s.number]->GetTaskManager();
+	gSequencers[ent->s->number]		= iICARUS->GetSequencer( ent->s->number );
+	gTaskManagers[ent->s->number]	= gSequencers[ent->s->number]->GetTaskManager();
 
 	//Initialize all taskIDs to -1
-	memset( &ent->taskID, -1, sizeof( ent->taskID ) );
+	memset( ent->taskID, -1, sizeof( *(ent->taskID) ) );
 
 	//Add this entity to a map of valid associated ents for quick retrieval later
 	ICARUS_AssociateEnt( ent );
@@ -692,13 +704,13 @@ ICARUS_LinkEntity
 
 int ICARUS_LinkEntity( int entID, CSequencer *sequencer, CTaskManager *taskManager )
 {
-	sharedEntity_t	*ent = SV_GentityNum(entID);
+	sharedEntityMapper_t	*ent = SV_GentityMapperNum(entID);
 
 	if ( ent == NULL )
 		return false;
 
-	gSequencers[ent->s.number] = sequencer;
-	gTaskManagers[ent->s.number] = taskManager;
+	gSequencers[ent->s->number] = sequencer;
+	gTaskManagers[ent->s->number] = taskManager;
 
 	ICARUS_AssociateEnt( ent );
 
@@ -722,9 +734,9 @@ void Svcmd_ICARUS_f( void )
 		//g_ICARUSDebug->integer = WL_DEBUG;
 		if ( VALIDSTRING( Cmd_Argv( 2 ) ) )
 		{
-			sharedEntity_t	*ent = G_Find( NULL, FOFS( script_targetname ), gi.argv(2) );
+			sharedEntityMapper_t	*ent = G_Find( NULL, FOFS( script_targetname ), gi.argv(2) );
 
-			if ( ent == NULL )
+			if ( *ent == NULL )
 			{
 				Com_Printf( "Entity \"%s\" not found!\n", gi.argv(2) );
 				return;
@@ -733,7 +745,7 @@ void Svcmd_ICARUS_f( void )
 			//Start logging
 			Com_Printf("Logging ICARUS info for entity %s\n", gi.argv(2) );
 
-			ICARUS_entFilter		= ( ent->s.number == ICARUS_entFilter ) ? -1 : ent->s.number;
+			ICARUS_entFilter		= ( ent->s->number == ICARUS_entFilter ) ? -1 : ent->s->number;
 
 			return;
 		}

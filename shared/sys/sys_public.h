@@ -156,6 +156,12 @@ qboolean Sys_LowPhysicalMemory();
 
 void Sys_SetProcessorAffinity( void );
 
+int Sys_PID( void );
+
+const char *Sys_ResolvePath( const char *path );
+const char *Sys_RealPath( const char *path );
+int Sys_FindFunctions( void );
+
 typedef enum graphicsApi_e
 {
 	GRAPHICS_API_GENERIC,

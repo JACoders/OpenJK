@@ -202,7 +202,8 @@ int SV_BotAllocateClient(void) {
 	}
 
 	cl->gentity = SV_GentityNum( i );
-	cl->gentity->s.number = i;
+	cl->gentityMapper = SV_GentityMapperNum( i );
+	cl->gentityMapper->s->number = i;
 	cl->state = CS_ACTIVE;
 	cl->lastPacketTime = svs.time;
 	cl->netchan.remoteAddress.type = NA_BOT;
@@ -226,8 +227,8 @@ void SV_BotFreeClient( int clientNum ) {
 	cl = &svs.clients[clientNum];
 	cl->state = CS_FREE;
 	cl->name[0] = 0;
-	if ( cl->gentity ) {
-		cl->gentity->r.svFlags &= ~SVF_BOT;
+	if ( cl->gentityMapper ) {
+		cl->gentityMapper->r->svFlags &= ~SVF_BOT;
 	}
 
 	if ( cl->demo.demorecording ) {

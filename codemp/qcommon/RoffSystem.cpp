@@ -624,17 +624,17 @@ qboolean CROFFSystem::List( int id )
 //---------------------------------------------------------------------------
 qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean isClient )
 {
-	sharedEntity_t *ent = NULL;
+	sharedEntityMapper_t *ent = NULL;
 
 	if ( !isClient )
 	{
-		ent = SV_GentityNum( entID );
+		ent = SV_GentityMapperNum( entID );
 
 		if ( ent == NULL )
 		{ // shame on you..
 			return qfalse;
 		}
-		ent->r.mIsRoffing = qtrue;
+		ent->r->mIsRoffing = qtrue;
 
 		/*rjr	if(ent->GetPhysics() == PHYSICS_TYPE_NONE)
 		{
@@ -655,7 +655,7 @@ qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean 
 	roffing_ent->mIsClient		= isClient;
 
 	if ( !isClient )
-		VectorCopy(ent->s.apos.trBase, roffing_ent->mStartAngles);
+		VectorCopy(ent->s->apos.trBase, roffing_ent->mStartAngles);
 
 	mROFFEntList.push_back( roffing_ent );
 
@@ -859,7 +859,7 @@ void CROFFSystem::UpdateEntities(qboolean isClient)
 qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff )
 {
 	vec3_t			f, r, u, result;
-	sharedEntity_t	*ent = NULL;
+	sharedEntityMapper_t	*ent = NULL;
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
 	float			*origin = NULL, *angle = NULL;
 
@@ -884,17 +884,17 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 #endif
 	{
 		// Find the entity to apply the roff to
-		ent = SV_GentityNum( roff_ent->mEntID );
+		ent = SV_GentityMapperNum( roff_ent->mEntID );
 
 		if ( ent == 0 )
 		{	// bad stuff
 			return qfalse;
 		}
 
-		originTrajectory = &ent->s.pos;
-		angleTrajectory = &ent->s.apos;
-		origin = ent->r.currentOrigin;
-		angle = ent->r.currentAngles;
+		originTrajectory = &ent->s->pos;
+		angleTrajectory = &ent->s->apos;
+		origin = ent->r->currentOrigin;
+		angle = ent->r->currentAngles;
 	}
 
 
@@ -904,7 +904,7 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 		SetLerp( angleTrajectory, TR_STATIONARY, angle, NULL, sv.time, roff->mLerp );
 		if (!roff_ent->mIsClient)
 		{
-			ent->r.mIsRoffing = qfalse;
+			ent->r->mIsRoffing = qfalse;
 		}
 		return qfalse;
 	}
@@ -944,7 +944,7 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 
 	//rww - npcs need to know when they're getting roff'd
 	if ( !roff_ent->mIsClient )
-		ent->next_roff_time = roff_ent->mNextROFFTime;
+		*(ent->next_roff_time) = roff_ent->mNextROFFTime;
 
 
 	return qtrue;
@@ -1012,7 +1012,7 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 //---------------------------------------------------------------------------
 qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 {
-	sharedEntity_t	*ent = NULL;
+	sharedEntityMapper_t	*ent = NULL;
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
 	float			*origin = NULL, *angle = NULL;
 
@@ -1031,17 +1031,17 @@ qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 #endif
 	{
 		// Find the entity to apply the roff to
-		ent = SV_GentityNum( roff_ent->mEntID );
+		ent = SV_GentityMapperNum( roff_ent->mEntID );
 
 		if ( ent == 0 )
 		{	// bad stuff
 			return qfalse;
 		}
 
-		originTrajectory = &ent->s.pos;
-		angleTrajectory = &ent->s.apos;
-		origin = ent->r.currentOrigin;
-		angle = ent->r.currentAngles;
+		originTrajectory = &ent->s->pos;
+		angleTrajectory = &ent->s->apos;
+		origin = ent->r->currentOrigin;
+		angle = ent->r->currentAngles;
 	}
 
 	SetLerp( originTrajectory, TR_STATIONARY, origin, NULL, sv.time, ROFF_SAMPLE_RATE );

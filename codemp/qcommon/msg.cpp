@@ -1207,7 +1207,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 		print = 1;
 		if (sv.state)
 		{
-			Com_Printf( "%3i: #%-3i (%s) ", msg->readcount, number, SV_GentityNum(number)->classname );
+			Com_Printf( "%3i: #%-3i (%s) ", msg->readcount, number, SV_EntityMapperReadString(SV_GentityMapperNum(number)->classname) );
 		}
 		else
 		{

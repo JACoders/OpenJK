@@ -939,7 +939,7 @@ void CNavigator::ShowNodes( void )
 		//if( NAVDEBUG_showRadius )
 		if (0)
 		{
-			dist = DistanceSquared( SV_GentityNum(0)->r.currentOrigin, position );
+			dist = DistanceSquared( SV_GentityMapperNum(0)->r->currentOrigin, position );
 			radius = (*ni)->GetRadius();
 			// if player within node radius or 256, draw radius (sometimes the radius is really small, so we check for 256 to catch everything)
 			if( (dist <= radius*radius) || dist <= 65536 )
@@ -949,11 +949,11 @@ void CNavigator::ShowNodes( void )
 		}
 		else
 		{
-			dist = DistanceSquared( SV_GentityNum(0)->r.currentOrigin, position );
+			dist = DistanceSquared( SV_GentityMapperNum(0)->r->currentOrigin, position );
 		}
 		if ( dist < 1048576 )
 		{
-			if ( SV_inPVS( SV_GentityNum(0)->r.currentOrigin, position ) )
+			if ( SV_inPVS( SV_GentityMapperNum(0)->r->currentOrigin, position ) )
 			{
 				(*ni)->Draw(showRadius);
 			}
@@ -981,12 +981,12 @@ void CNavigator::ShowEdges( void )
 	STL_ITERATE( ni, m_nodes )
 	{
 		(*ni)->GetPosition( start );
-		if ( DistanceSquared( SV_GentityNum(0)->r.currentOrigin, start ) >= 1048576 )
+		if ( DistanceSquared( SV_GentityMapperNum(0)->r->currentOrigin, start ) >= 1048576 )
 		{
 			continue;
 		}
 
-		if (!SV_inPVS(SV_GentityNum(0)->r.currentOrigin, start))
+		if (!SV_inPVS(SV_GentityMapperNum(0)->r->currentOrigin, start))
 		{
 			continue;
 		}
@@ -1012,12 +1012,12 @@ void CNavigator::ShowEdges( void )
 			//Set this as drawn
 			drawMap[id][(*ni)->GetID()] = true;
 
-			if ( DistanceSquared( SV_GentityNum(0)->r.currentOrigin, end ) >= 1048576 )
+			if ( DistanceSquared( SV_GentityMapperNum(0)->r->currentOrigin, end ) >= 1048576 )
 			{
 				continue;
 			}
 
-			if ( !SV_inPVS( SV_GentityNum(0)->r.currentOrigin, end ) )
+			if ( !SV_inPVS( SV_GentityMapperNum(0)->r->currentOrigin, end ) )
 				continue;
 
 			/*
@@ -1156,7 +1156,7 @@ TestNodePath
 -------------------------
 */
 
-int CNavigator::TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts )
+int CNavigator::TestNodePath( sharedEntityMapper_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts )
 { //rwwFIXMEFIXME: Share clipmask?
 	int clipmask = MASK_SOLID;//ent->clipmask;
 
@@ -1165,7 +1165,7 @@ int CNavigator::TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t pos
 		clipmask &= ~CONTENTS_BODY;
 	}
 	//Check the path
-	if ( GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, position, clipmask, okToHitEntNum ) == false )
+	if ( GVM_NAV_ClearPathToPoint( ent->s->number, ent->r->mins, ent->r->maxs, position, clipmask, okToHitEntNum ) == false )
 		return false;
 
 	return true;
@@ -1177,9 +1177,9 @@ TestNodeLOS
 -------------------------
 */
 
-int CNavigator::TestNodeLOS( sharedEntity_t *ent, vec3_t position )
+int CNavigator::TestNodeLOS( sharedEntityMapper_t *ent, vec3_t position )
 {
-	return GVM_NPC_ClearLOS2( ent->s.number, position );
+	return GVM_NPC_ClearLOS2( ent->s->number, position );
 }
 
 /*
@@ -1188,7 +1188,7 @@ TestBestFirst
 -------------------------
 */
 
-int	CNavigator::TestBestFirst( sharedEntity_t *ent, int lastID, int flags )
+int	CNavigator::TestBestFirst( sharedEntityMapper_t *ent, int lastID, int flags )
 {
 	//Must be a valid one to begin with
 	if ( lastID == NODE_NONE )
@@ -1208,7 +1208,7 @@ int	CNavigator::TestBestFirst( sharedEntity_t *ent, int lastID, int flags )
 
 	//Setup our last node as our root, and search for a closer one according to its edges
 	int bestNode = ( TestNodePath( ent, ENTITYNUM_NONE, nodePos, qtrue ) ) ? lastID : NODE_NONE;
-	float bestDist = ( bestNode == NODE_NONE ) ? Q3_INFINITE : DistanceSquared( ent->r.currentOrigin, nodePos );
+	float bestDist = ( bestNode == NODE_NONE ) ? Q3_INFINITE : DistanceSquared( ent->r->currentOrigin, nodePos );
 
 	//Test all these edges first
 	for ( int i = 0; i < numEdges; i++ )
@@ -1223,21 +1223,21 @@ int	CNavigator::TestBestFirst( sharedEntity_t *ent, int lastID, int flags )
 
 		testNode->GetPosition( nodePos );
 
-		dist = DistanceSquared( ent->r.currentOrigin, nodePos );
+		dist = DistanceSquared( ent->r->currentOrigin, nodePos );
 
 		//Test against current best
 		if ( dist < bestDist )
 		{
 			//See if this node is valid
-			if ( CheckedNode(testNode->GetID(),ent->s.number) == CHECKED_PASSED || TestNodePath( ent, ENTITYNUM_NONE, nodePos, qtrue ) )
+			if ( CheckedNode(testNode->GetID(),ent->s->number) == CHECKED_PASSED || TestNodePath( ent, ENTITYNUM_NONE, nodePos, qtrue ) )
 			{
 				bestDist = dist;
 				bestNode = testNode->GetID();
-				SetCheckedNode(testNode->GetID(),ent->s.number,CHECKED_PASSED);
+				SetCheckedNode(testNode->GetID(),ent->s->number,CHECKED_PASSED);
 			}
 			else
 			{
-				SetCheckedNode(testNode->GetID(),ent->s.number,CHECKED_FAILED);
+				SetCheckedNode(testNode->GetID(),ent->s->number,CHECKED_FAILED);
 			}
 		}
 	}
@@ -1326,7 +1326,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 	return collected;
 }
 
-int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goal, int flags )
+int CNavigator::GetBestPathBetweenEnts( sharedEntityMapper_t *ent, sharedEntityMapper_t *goal, int flags )
 {
 	//Must have nodes
 	if ( m_nodes.size() == 0 )
@@ -1340,8 +1340,8 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 	nodeChain_l::iterator	nci2;
 
 	//Collect all nodes within a certain radius
-	CollectNearestNodes( ent->r.currentOrigin, NODE_COLLECT_RADIUS, NODE_COLLECT_MAX, nodeChain );
-	CollectNearestNodes( goal->r.currentOrigin, NODE_COLLECT_RADIUS, NODE_COLLECT_MAX, nodeChain2 );
+	CollectNearestNodes( ent->r->currentOrigin, NODE_COLLECT_RADIUS, NODE_COLLECT_MAX, nodeChain );
+	CollectNearestNodes( goal->r->currentOrigin, NODE_COLLECT_RADIUS, NODE_COLLECT_MAX, nodeChain2 );
 
 	vec3_t				position;
 	vec3_t				position2;
@@ -1353,8 +1353,8 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 	int					nodeFlags = 0;
 //	bool				recalc = false;
 
-	ent->waypoint = NODE_NONE;
-	goal->waypoint = NODE_NONE;
+	*ent->waypoint = NODE_NONE;
+	*goal->waypoint = NODE_NONE;
 
 	//Look through all nodes
 	STL_ITERATE( nci, nodeChain )
@@ -1364,34 +1364,34 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 
 		node->GetPosition( position );
 
-		if ( CheckedNode(nodeNum,ent->s.number) == CHECKED_FAILED )
+		if ( CheckedNode(nodeNum,ent->s->number) == CHECKED_FAILED )
 		{//already checked this node against ent and it failed
 			continue;
 		}
-		if ( CheckedNode(nodeNum,ent->s.number) == CHECKED_PASSED )
+		if ( CheckedNode(nodeNum,ent->s->number) == CHECKED_PASSED )
 		{//already checked this node against ent and it passed
 		}
 		else
 		{//haven't checked this node against ent yet
 			if ( NodeFailed( ent, nodeNum ) )
 			{
-				SetCheckedNode( nodeNum, ent->s.number, CHECKED_FAILED );
+				SetCheckedNode( nodeNum, ent->s->number, CHECKED_FAILED );
 				continue;
 			}
 			//okay, since we only have to do this once, let's check to see if this node is even usable (could help us short-circuit a whole loop of the dest nodes)
 			radius	= node->GetRadius();
 
 			//If we're not within the known clear radius of this node OR out of Z height range...
-			if ( (int)(*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
+			if ( (int)(*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->r->currentOrigin[2] ) >= MAX_Z_DELTA ) )
 			{
 				//We're not *within* this node, so check clear path, etc.
 
 				//FIXME: any way to call G_FindClosestPointOnLineSegment and see if I can at least get to the waypoint's path
 				if ( flags & NF_CLEAR_PATH )//|| flags & NF_CLEAR_LOS )
 				{//need a clear path or LOS
-					if ( !SV_inPVS( ent->r.currentOrigin, position ) )
+					if ( !SV_inPVS( ent->r->currentOrigin, position ) )
 					{//not even potentially clear
-						SetCheckedNode( nodeNum, ent->s.number, CHECKED_FAILED );
+						SetCheckedNode( nodeNum, ent->s->number, CHECKED_FAILED );
 						continue;
 					}
 				}
@@ -1399,14 +1399,14 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 				//Do we need a clear path?
 				if ( flags & NF_CLEAR_PATH )
 				{
-					if ( TestNodePath( ent, goal->s.number, position, qtrue ) == false )
+					if ( TestNodePath( ent, goal->s->number, position, qtrue ) == false )
 					{
-						SetCheckedNode( nodeNum, ent->s.number, CHECKED_FAILED );
+						SetCheckedNode( nodeNum, ent->s->number, CHECKED_FAILED );
 						continue;
 					}
 				}
 			}//otherwise, inside the node so it must be clear (?)
-			SetCheckedNode( nodeNum, ent->s.number, CHECKED_PASSED );
+			SetCheckedNode( nodeNum, ent->s->number, CHECKED_PASSED );
 		}
 
 		if ( d_altRoutes->integer )
@@ -1437,7 +1437,7 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 
 			node2->GetPosition( position2 );
 			//Okay, first get the entire path cost, including distance to first node from ents' positions
-			cost = floor(Distance( ent->r.currentOrigin, position ) + Distance( goal->r.currentOrigin, position2 ));
+			cost = floor(Distance( ent->r->currentOrigin, position ) + Distance( goal->r->currentOrigin, position2 ));
 
 			if ( d_altRoutes->integer )
 			{
@@ -1455,60 +1455,60 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 			}
 
 			//okay, this is the shortest path we've found yet, check clear path, etc.
-			if ( CheckedNode( nodeNum2, goal->s.number ) == CHECKED_FAILED )
+			if ( CheckedNode( nodeNum2, goal->s->number ) == CHECKED_FAILED )
 			{//already checked this node against goal and it failed
 				continue;
 			}
-			if ( CheckedNode( nodeNum2, goal->s.number ) == CHECKED_PASSED )
+			if ( CheckedNode( nodeNum2, goal->s->number ) == CHECKED_PASSED )
 			{//already checked this node against goal and it passed
 			}
 			else
 			{//haven't checked this node against goal yet
 				if ( NodeFailed( goal, nodeNum2 ) )
 				{
-					SetCheckedNode( nodeNum2, goal->s.number, CHECKED_FAILED );
+					SetCheckedNode( nodeNum2, goal->s->number, CHECKED_FAILED );
 					continue;
 				}
 				radius	= node2->GetRadius();
 
 				//If we're not within the known clear radius of this node OR out of Z height range...
-				if ( (int)(*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
+				if ( (int)(*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->r->currentOrigin[2] ) >= MAX_Z_DELTA ) )
 				{
 					//We're not *within* this node, so check clear path, etc.
 
 					if ( flags & NF_CLEAR_PATH )//|| flags & NF_CLEAR_LOS )
 					{//need a clear path or LOS
-						if ( !SV_inPVS( goal->r.currentOrigin, position2 ) )
+						if ( !SV_inPVS( goal->r->currentOrigin, position2 ) )
 						{//not even potentially clear
-							SetCheckedNode( nodeNum2, goal->s.number, CHECKED_FAILED );
+							SetCheckedNode( nodeNum2, goal->s->number, CHECKED_FAILED );
 							continue;
 						}
 					}
 					//Do we need a clear path?
 					if ( flags & NF_CLEAR_PATH )
 					{
-						if ( TestNodePath( goal, ent->s.number, position2, qfalse ) == false )//qtrue?
+						if ( TestNodePath( goal, ent->s->number, position2, qfalse ) == false )//qtrue?
 						{
-							SetCheckedNode( nodeNum2, goal->s.number, CHECKED_FAILED );
+							SetCheckedNode( nodeNum2, goal->s->number, CHECKED_FAILED );
 							continue;
 						}
 					}
 				}//otherwise, inside the node so it must be clear (?)
-				SetCheckedNode( nodeNum2, goal->s.number, CHECKED_PASSED );
+				SetCheckedNode( nodeNum2, goal->s->number, CHECKED_PASSED );
 			}
 
 			bestCost = cost;
 			bestNode = nextNode;
-			ent->waypoint = (*nci).nodeID;
-			goal->waypoint = (*nci2).nodeID;
+			*ent->waypoint = (*nci).nodeID;
+			*goal->waypoint = (*nci2).nodeID;
 		}
 	}
 
 	if ( !d_altRoutes->integer )
 	{//bestNode would not have been set by GetBestNodeAltRoute above, so get it here
-		if ( ent->waypoint != NODE_NONE && goal->waypoint != NODE_NONE )
+		if ( *ent->waypoint != NODE_NONE && *goal->waypoint != NODE_NONE )
 		{//have 2 valid waypoints which means a valid path
-			bestNode = GetBestNodeAltRoute( ent->waypoint, goal->waypoint, &bestCost, NODE_NONE );
+			bestNode = GetBestNodeAltRoute( *ent->waypoint, *goal->waypoint, &bestCost, NODE_NONE );
 		}
 	}
 	return bestNode;
@@ -1520,7 +1520,7 @@ GetNearestWaypoint
 -------------------------
 */
 
-int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int targetID )
+int CNavigator::GetNearestNode( sharedEntityMapper_t *ent, int lastID, int flags, int targetID )
 {
 	int	bestNode = NODE_NONE;
 	//Must have nodes
@@ -1546,7 +1546,7 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 	nodeChain_l::iterator	nci;
 
 	//Collect all nodes within a certain radius
-	CollectNearestNodes( ent->r.currentOrigin, NODE_COLLECT_RADIUS, NODE_COLLECT_MAX, nodeChain );
+	CollectNearestNodes( ent->r->currentOrigin, NODE_COLLECT_RADIUS, NODE_COLLECT_MAX, nodeChain );
 
 	vec3_t				position;
 	int					radius;
@@ -1570,7 +1570,7 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 		if ( (int)(*nci).distance < (radius*radius) )
 		{
 			//Do a z-difference sanity check
-			if ( fabs( position[2] - ent->r.currentOrigin[2] ) < MAX_Z_DELTA )
+			if ( fabs( position[2] - ent->r->currentOrigin[2] ) < MAX_Z_DELTA )
 			{
 				//Found one
 				return (*nci).nodeID;
@@ -1578,11 +1578,11 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 		}
 
 		//We're not *within* this node, so...
-		if ( CheckedNode((*nci).nodeID,ent->s.number) == CHECKED_FAILED )
+		if ( CheckedNode((*nci).nodeID,ent->s->number) == CHECKED_FAILED )
 		{
 			continue;
 		}
-		else if ( CheckedNode((*nci).nodeID,ent->s.number) == CHECKED_FAILED )
+		else if ( CheckedNode((*nci).nodeID,ent->s->number) == CHECKED_FAILED )
 		{
 			continue;
 		}
@@ -1593,7 +1593,7 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 			{
 				if ( TestNodePath( ent, ENTITYNUM_NONE, position, qfalse ) == false )//qtrue?
 				{
-					SetCheckedNode((*nci).nodeID,ent->s.number,CHECKED_FAILED);
+					SetCheckedNode((*nci).nodeID,ent->s->number,CHECKED_FAILED);
 					continue;
 				}
 			}
@@ -1604,12 +1604,12 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 			{
 				if ( TestNodeLOS( ent, position ) == false )
 				{
-					nodeChecked[(*nci).nodeID][ent->s.number] = CHECKED_FAILED;
+					nodeChecked[(*nci).nodeID][ent->s->number] = CHECKED_FAILED;
 					continue;
 				}
 			}
 			*/
-			SetCheckedNode((*nci).nodeID,ent->s.number,CHECKED_PASSED);
+			SetCheckedNode((*nci).nodeID,ent->s->number,CHECKED_PASSED);
 		}
 
 		if ( targetID != WAYPOINT_NONE )
@@ -1730,7 +1730,7 @@ void CNavigator::SetCheckedNode(int wayPoint,int ent,byte value)
 #define	CHECK_FAILED_EDGE_INTERVAL	1000
 #define	CHECK_FAILED_EDGE_INTITIAL	5000//10000
 
-void CNavigator::CheckFailedNodes( sharedEntity_t *ent )
+void CNavigator::CheckFailedNodes( sharedEntityMapper_t *ent )
 {
 	vec3_t	nodePos;
 	int		j;
@@ -1739,56 +1739,56 @@ void CNavigator::CheckFailedNodes( sharedEntity_t *ent )
 	if ( m_nodes.size() == 0 )
 		return;
 
-	if ( ent->failedWaypointCheckTime && ent->failedWaypointCheckTime < svs.time )
+	if ( *ent->failedWaypointCheckTime && *ent->failedWaypointCheckTime < svs.time )
 	{
 		int failed = 0;
 		//do this only once every 1 second
 		for ( j = 0; j < MAX_FAILED_NODES; j++ )
 		{
-			if ( ent->failedWaypoints[j] != 0 )
+			if ( (*ent->failedWaypoints)[j] != 0 )
 			{
 				failed++;
 				//-1 because 0 is a valid node but also the default, so we add one when we add one
-				m_nodes[ent->failedWaypoints[j]-1]->GetPosition( nodePos );
-				if ( !GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, nodePos, (CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP), ENTITYNUM_NONE ) )
+				m_nodes[(*ent->failedWaypoints)[j]-1]->GetPosition( nodePos );
+				if ( !GVM_NAV_ClearPathToPoint( ent->s->number, ent->r->mins, ent->r->maxs, nodePos, (CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP), ENTITYNUM_NONE ) )
 				{//no path clear of architecture, so clear this since we can't check against entities
-					ent->failedWaypoints[j] = 0;
+					(*ent->failedWaypoints)[j] = 0;
 					failed--;
 				}
 				//have clear architectural path, now check against ents only
-				else if ( GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, nodePos, CONTENTS_BODY, ENTITYNUM_NONE ) )
+				else if ( GVM_NAV_ClearPathToPoint( ent->s->number, ent->r->mins, ent->r->maxs, nodePos, CONTENTS_BODY, ENTITYNUM_NONE ) )
 				{//clear of ents, too, so all clear, clear this one out
-					ent->failedWaypoints[j] = 0;
+					(*ent->failedWaypoints)[j] = 0;
 					failed--;
 				}
 			}
 		}
 		if ( !failed )
 		{
-			ent->failedWaypointCheckTime = 0;
+			*ent->failedWaypointCheckTime = 0;
 		}
 		else
 		{
-			ent->failedWaypointCheckTime = svs.time + CHECK_FAILED_EDGE_INTERVAL + Q_irand( 0, 1000 );
+			*ent->failedWaypointCheckTime = svs.time + CHECK_FAILED_EDGE_INTERVAL + Q_irand( 0, 1000 );
 		}
 	}
 }
 
-void CNavigator::AddFailedNode( sharedEntity_t *ent, int nodeID )
+void CNavigator::AddFailedNode( sharedEntityMapper_t *ent, int nodeID )
 {
 	int j;
 	for ( j = 0; j < MAX_FAILED_NODES; j++ )
 	{
-		if ( ent->failedWaypoints[j] == 0 )
+		if ( (*ent->failedWaypoints)[j] == 0 )
 		{
-			ent->failedWaypoints[j] = nodeID+1;//+1 because 0 is the default value and that's a valid node, so we take the +1 out when we check the node above
-			if ( !ent->failedWaypointCheckTime )
+			(*ent->failedWaypoints)[j] = nodeID+1;//+1 because 0 is the default value and that's a valid node, so we take the +1 out when we check the node above
+			if ( !*ent->failedWaypointCheckTime )
 			{
-				ent->failedWaypointCheckTime = svs.time + CHECK_FAILED_EDGE_INTITIAL;
+				*ent->failedWaypointCheckTime = svs.time + CHECK_FAILED_EDGE_INTITIAL;
 			}
 			return;
 		}
-		if ( ent->failedWaypoints[j] == nodeID+1 )
+		if ( (*ent->failedWaypoints)[j] == nodeID+1 )
 		{//already have this one marked as failed
 			return;
 		}
@@ -1797,21 +1797,22 @@ void CNavigator::AddFailedNode( sharedEntity_t *ent, int nodeID )
 	{//ran out of failed nodes, get rid of first one, shift rest up
 		for ( j = 0; j < MAX_FAILED_NODES-1; j++ )
 		{
-			ent->failedWaypoints[j] = ent->failedWaypoints[j+1];
+			(*ent->failedWaypoints)[j] = (*ent->failedWaypoints)[j+1];
 		}
 	}
-	ent->failedWaypoints[MAX_FAILED_NODES-1] = nodeID+1;
-	if ( !ent->failedWaypointCheckTime )
+	(*ent->failedWaypoints)[MAX_FAILED_NODES-1] = nodeID+1;
+	if ( !*ent->failedWaypointCheckTime )
 	{
-		ent->failedWaypointCheckTime = svs.time + CHECK_FAILED_EDGE_INTITIAL;
+		*ent->failedWaypointCheckTime = svs.time + CHECK_FAILED_EDGE_INTITIAL;
 	}
 }
 
-qboolean CNavigator::NodeFailed( sharedEntity_t *ent, int nodeID )
+qboolean CNavigator::NodeFailed( sharedEntityMapper_t *ent, int nodeID )
 {
 	for ( int j = 0; j < MAX_FAILED_NODES; j++ )
 	{
-		if ( (ent->failedWaypoints[j]-1) == nodeID )
+		//if ( ((*(ent->failedWaypoints))[j])-1) == nodeID )
+		if ( ((((int*)(*(ent->failedWaypoints)))[j])-1) == nodeID ) // QVM-FIXME: Is this correct?
 		{
 			return qtrue;
 		}
@@ -2077,11 +2078,11 @@ qboolean CNavigator::CheckFailedEdge( failedEdge_t *failedEdge )
 		{
 			vec3_t		start, end, mins, maxs;
 			int			ignore, clipmask;
-			sharedEntity_t	*ent = SV_GentityNum(failedEdge->entID); //(failedEdge->entID<ENTITYNUM_WORLD)?&g_entities[failedEdge->entID]:NULL;
+			sharedEntityMapper_t	*ent = SV_GentityMapperNum(failedEdge->entID); //(failedEdge->entID<ENTITYNUM_WORLD)?&g_entities[failedEdge->entID]:NULL;
 			int			hitEntNum;
 
-			if ( !ent || /*!ent->inuse || !ent->client || ent->health <= 0*/ (ent->s.eType != ET_PLAYER && ent->s.eType != ET_NPC) ||
-				(ent->s.eFlags & EF_DEAD))
+			if ( !ent || /*!ent->inuse || !ent->client || ent->health <= 0*/ (ent->s->eType != ET_PLAYER && ent->s->eType != ET_NPC) ||
+				(ent->s->eFlags & EF_DEAD))
 			{
 				VectorSet( mins, -15, -15, DEFAULT_MINS_2+STEPSIZE );
 				VectorSet( maxs, 15, 15, DEFAULT_MAXS_2 );
@@ -2090,9 +2091,9 @@ qboolean CNavigator::CheckFailedEdge( failedEdge_t *failedEdge )
 			}
 			else
 			{
-				VectorCopy( ent->r.mins, mins );
+				VectorCopy( ent->r->mins, mins );
 				mins[2] += STEPSIZE;
-				VectorCopy( ent->r.maxs, maxs );
+				VectorCopy( ent->r->maxs, maxs );
 				ignore = failedEdge->entID;
 				clipmask = MASK_SOLID;//ent->clipmask; //rwwFIXMEFIXME: share clipmask?
 			}

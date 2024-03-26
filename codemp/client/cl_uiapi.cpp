@@ -28,6 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_ambient.h"
 #include "FXExport.h"
 #include "FxUtil.h"
+#include "qcommon/vm_local.h"
+
+#include <unordered_map>
 
 extern IHeapAllocator *G2VertSpaceClient;
 extern botlib_export_t *botlib_export;
@@ -35,6 +38,62 @@ extern botlib_export_t *botlib_export;
 // ui interface
 static uiExport_t *uie; // ui export table
 static vm_t *uivm; // ui vm, valid for legacy and new api
+
+typedef std::unordered_map<g2handle_t, CGhoul2Info_v*> g2HandleToG2_m;
+
+static g2HandleToG2_m g2Mapping;
+static g2handle_t g2NextHandle = (g2handle_t)1; // Start at 1, because 0 has special meaning
+
+static inline CGhoul2Info_v *CL_UI_G2Map_GetG2FromHandle( g2handleptr_t g2h )
+{ // Returns the pointer to the g2 object if the handle is valid
+	// Native libraries should not use the pointer, but in theory they could use
+	// it. Thus we don't perform any mapping for native libraries to avoid
+	// issues with custom modules.
+	if ( uivm->dllHandle ) return (CGhoul2Info_v*)g2h;
+
+	g2handle_t g2handle = (g2handle_t)g2h;
+	g2HandleToG2_m::iterator ghlIt = g2Mapping.find(g2handle);
+
+	if (ghlIt == g2Mapping.end()) return NULL;
+	return g2Mapping[g2handle];
+}
+
+static inline CGhoul2Info_v **CL_UI_G2Map_GetG2PtrFromHandle( g2handleptr_t *g2h )
+{ // Returns a pointer to the g2 object pointer in the map so g2 functions can update the pointer
+	// Native libraries should not use the pointer, but in theory they could use
+	// it. Thus we don't perform any mapping for native libraries to avoid
+	// issues with custom modules.
+	if ( uivm->dllHandle ) return (CGhoul2Info_v **)g2h;
+
+	g2handle_t g2handle = *((g2handle_t*)g2h);
+	if ( !g2handle )
+	{ // Special case: the g2 handle is not valid, yet. Return a pointer to a static temporary pointer. Insertion is handled by calling CL_UI_G2Map_Update after calling the G2API
+		static CGhoul2Info_v *g2Tmp;
+		g2Tmp = NULL;
+		return &g2Tmp;
+	}
+	return &g2Mapping[g2handle];
+}
+
+static void CL_UI_G2Map_Update( g2handleptr_t *g2h, CGhoul2Info_v *g2Ptr )
+{ // Inserts and/or erases to/from the map and updates the handle pointer
+	if ( uivm->dllHandle ) return;
+
+	g2handle_t *g2handle = (g2handle_t*)g2h;
+	if ( !*g2handle && g2Ptr )
+	{ // Got a 0 handle, but a non-0 pointer: add to map and set handle
+		// Unlikely to happen, but should we ever cycle through the whole integer range start searching for gaps
+		while ( CL_UI_G2Map_GetG2FromHandle(g2NextHandle) || !g2NextHandle ) g2NextHandle++;
+
+		g2Mapping[g2NextHandle] = g2Ptr;
+		*g2handle = g2NextHandle++;
+	}
+	else if ( *g2h && !g2Ptr )
+	{ // Got a non-0 handle, but 0 pointer: remove from map and set handle to 0
+		g2Mapping.erase( *g2handle );
+		*g2handle = 0;
+	}
+}
 
 //
 // ui vmMain calls
@@ -154,7 +213,42 @@ static void CL_GetClientState( uiClientState_t *state ) {
 }
 
 static void CL_GetGlconfig( glconfig_t *config ) {
-	*config = cls.glconfig;
+	if ( uivm->dllHandle ) {
+		// For native libraries we can just copy the struct over cause they should be identical
+		*config = cls.glconfig;
+	} else {
+		// As the QVM is 32 bit internally the size of our glconfig_t is bigger on 64 bit, because of the 4 string
+		// pointers. Instead of just assigning the glconfig we have to manually copy it over.
+		glconfig_qvm_t *glconfig_qvm = (glconfig_qvm_t*)config;
+
+		// We now reserve additional memory when loading the QVM. The QVM shouldn't try to access it on its own, but it
+		// is valid inside the QVM and if we set a pointer to it the QVM should be able to access it. Thus we now claim
+		// some of this extra memory in QVM-scope to write our glconfig strings in there and tell the QVM where to find
+		// them.
+		// FIXME: It would probably be a good idea to keep a reference to this extra memory ourselves in case a module
+		//        decides to call this functions multiple times. Currently we would claim additional memory each time.
+		glconfig_qvm->renderer_string   = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.renderer_string   ) );
+		glconfig_qvm->vendor_string     = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.vendor_string     ) );
+		glconfig_qvm->version_string    = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.version_string    ) );
+		glconfig_qvm->extensions_string = VM_PtrToOffset( uivm, VM_ExtraMemory_ClaimString( uivm, cls.glconfig.extensions_string ) );
+
+		// Assign the rest of the values
+		glconfig_qvm->maxTextureSize = cls.glconfig.maxTextureSize;
+		glconfig_qvm->maxActiveTextures = cls.glconfig.maxActiveTextures;
+		glconfig_qvm->maxTextureFilterAnisotropy = cls.glconfig.maxTextureFilterAnisotropy;
+		glconfig_qvm->colorBits = cls.glconfig.colorBits;
+		glconfig_qvm->depthBits = cls.glconfig.depthBits;
+		glconfig_qvm->stencilBits = cls.glconfig.stencilBits;
+		glconfig_qvm->deviceSupportsGamma = cls.glconfig.deviceSupportsGamma;
+		glconfig_qvm->textureCompression = cls.glconfig.textureCompression;
+		glconfig_qvm->textureEnvAddAvailable = cls.glconfig.textureEnvAddAvailable;
+		glconfig_qvm->clampToEdgeAvailable = cls.glconfig.clampToEdgeAvailable;
+		glconfig_qvm->vidWidth = cls.glconfig.vidWidth;
+		glconfig_qvm->vidHeight = cls.glconfig.vidHeight;
+		glconfig_qvm->displayFrequency = cls.glconfig.displayFrequency;
+		glconfig_qvm->isFullscreen = cls.glconfig.isFullscreen;
+		glconfig_qvm->stereoEnabled = cls.glconfig.stereoEnabled;
+	}
 }
 
 static void GetClipboardData( char *buf, int buflen ) {
@@ -236,6 +330,28 @@ static void CL_R_ShaderNameFromIndex( char *name, int index ) {
 		name[0] = '\0';
 }
 
+void CL_R_AddRefEntityToScene( const refEntity_t *refEnt ) {
+	if ( uivm->dllHandle ) {
+		// We can directly pass the refEnt for native libraries
+		re->AddRefEntityToScene( refEnt );
+		return;
+	}
+
+	// The renderer should look up the handle on its own, but as we have to stay compatible with the modular renderer
+	// system we can't change the renderer for this and have to meet its expectations instead...
+
+	// Get a copy of the refEntity data. For a QVM mod the ghoul2 pointer at the end might contain some additional data,
+	// because the QVM stores it as 32 bit and if the engine is 64 bit it is going to read slightly out of bounds of the
+	// struct in the QVM, but CL_UI_G2Map_GetG2FromHandle should take care of that by casting.
+	refEntity_t refEntCopy = *refEnt;
+
+	// Get the ghoul2 instance from the handle
+	refEntCopy.ghoul2 = CL_UI_G2Map_GetG2FromHandle( (g2handleptr_t)refEnt->ghoul2 );
+
+	// Pass our copy
+	re->AddRefEntityToScene( &refEntCopy );
+}
+
 static void CL_G2API_ListModelSurfaces( void *ghlInfo ) {
 	if ( !ghlInfo ) {
 		return;
@@ -257,7 +373,7 @@ static void CL_G2API_SetGhoul2ModelIndexes( void *ghoul2, qhandle_t *modelList, 
 		return;
 	}
 
-	re->G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)ghoul2), modelList, skinList );
+	re->G2API_SetGhoul2ModelIndexes( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelList, skinList );
 }
 
 static qboolean CL_G2API_HaveWeGhoul2Models( void *ghoul2) {
@@ -265,7 +381,7 @@ static qboolean CL_G2API_HaveWeGhoul2Models( void *ghoul2) {
 		return qfalse;
 	}
 
-	return re->G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)ghoul2) );
+	return re->G2API_HaveWeGhoul2Models( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)) );
 }
 
 static qboolean CL_G2API_GetBoltMatrix( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
@@ -273,7 +389,7 @@ static qboolean CL_G2API_GetBoltMatrix( void *ghoul2, const int modelIndex, cons
 		return qfalse;
 
 	}
-	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static qboolean CL_G2API_GetBoltMatrix_NoReconstruct( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
@@ -282,7 +398,7 @@ static qboolean CL_G2API_GetBoltMatrix_NoReconstruct( void *ghoul2, const int mo
 	}
 
 	re->G2API_BoltMatrixReconstruction( qfalse );
-	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static qboolean CL_G2API_GetBoltMatrix_NoRecNoRot( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
@@ -292,7 +408,7 @@ static qboolean CL_G2API_GetBoltMatrix_NoRecNoRot( void *ghoul2, const int model
 
 	re->G2API_BoltMatrixReconstruction( qfalse );
 	re->G2API_BoltMatrixSPMethod( qtrue );
-	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static int CL_G2API_InitGhoul2Model( void **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias ) {
@@ -303,7 +419,10 @@ static int CL_G2API_InitGhoul2Model( void **ghoul2Ptr, const char *fileName, int
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	return re->G2API_InitGhoul2Model( (CGhoul2Info_v **)ghoul2Ptr, fileName, modelIndex, customSkin, customShader, modelFlags, lodBias );
+	CGhoul2Info_v **g2Ptr = CL_UI_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghoul2Ptr );
+	int ret = re->G2API_InitGhoul2Model( g2Ptr, fileName, modelIndex, customSkin, customShader, modelFlags, lodBias );
+	CL_UI_G2Map_Update( (g2handleptr_t*)ghoul2Ptr, *g2Ptr );
+	return ret;
 }
 
 static qboolean CL_G2API_SetSkin( void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin ) {
@@ -311,13 +430,13 @@ static qboolean CL_G2API_SetSkin( void *ghoul2, int modelIndex, qhandle_t custom
 		return qfalse;
 	}
 
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_SetSkin( g2, modelIndex, customSkin, renderSkin );
 }
 
 static void CL_G2API_CollisionDetect(
 	CollisionRecord_t *collRecMap,
-	void* ghoul2,
+	void *ghoul2,
 	const vec3_t angles,
 	const vec3_t position,
 	int frameNumber,
@@ -335,7 +454,7 @@ static void CL_G2API_CollisionDetect(
 
 	re->G2API_CollisionDetect(
 		collRecMap,
-		*((CGhoul2Info_v *)ghoul2),
+		*(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)),
 		angles,
 		position,
 		frameNumber,
@@ -351,7 +470,7 @@ static void CL_G2API_CollisionDetect(
 
 static void CL_G2API_CollisionDetectCache(
 	CollisionRecord_t *collRecMap,
-	void* ghoul2,
+	void *ghoul2,
 	const vec3_t angles,
 	const vec3_t position,
 	int frameNumber,
@@ -369,7 +488,7 @@ static void CL_G2API_CollisionDetectCache(
 
 	re->G2API_CollisionDetectCache(
 		collRecMap,
-		*((CGhoul2Info_v *)ghoul2),
+		*(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)),
 		angles,
 		position,
 		frameNumber,
@@ -391,7 +510,10 @@ static void CL_G2API_CleanGhoul2Models( void **ghoul2Ptr ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	re->G2API_CleanGhoul2Models( (CGhoul2Info_v **)ghoul2Ptr );
+
+	CGhoul2Info_v **g2Ptr = CL_UI_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghoul2Ptr );
+	re->G2API_CleanGhoul2Models( g2Ptr );
+	CL_UI_G2Map_Update( (g2handleptr_t*)ghoul2Ptr, *g2Ptr );
 }
 
 static qboolean CL_G2API_SetBoneAngles(
@@ -412,7 +534,7 @@ static qboolean CL_G2API_SetBoneAngles(
 	}
 
 	return re->G2API_SetBoneAngles(
-		*((CGhoul2Info_v *)ghoul2),
+		*(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)),
 		modelIndex,
 		boneName,
 		angles,
@@ -442,7 +564,7 @@ static qboolean CL_G2API_SetBoneAnim(
 	}
 
 	return re->G2API_SetBoneAnim(
-		*((CGhoul2Info_v *)ghoul2),
+		*(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)),
 		modelIndex,
 		boneName,
 		startFrame,
@@ -470,7 +592,7 @@ static qboolean CL_G2API_GetBoneAnim(
 		return qfalse;
 	}
 
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_GetBoneAnim(
 		g2,
 		modelIndex,
@@ -496,7 +618,7 @@ static qboolean CL_G2API_GetBoneFrame(
 		return qfalse;
 	}
 
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
 	float fDontCare1 = 0;
 
@@ -520,7 +642,7 @@ static void CL_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
 		return;
 	}
 
-	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
+	char *tmp = re->G2API_GetGLAName( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex );
 	if ( tmp )
 		strcpy( fillBuf, tmp );
 	else
@@ -532,7 +654,7 @@ static int CL_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex
 		return 0;
 	}
 
-	return re->G2API_CopyGhoul2Instance( *((CGhoul2Info_v *)g2From), *((CGhoul2Info_v *)g2To), modelIndex );
+	return re->G2API_CopyGhoul2Instance( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)g2From)), *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)g2To)), modelIndex );
 }
 
 static void CL_G2API_CopySpecificGhoul2Model( void *g2From, int modelFrom, void *g2To, int modelTo ) {
@@ -540,7 +662,7 @@ static void CL_G2API_CopySpecificGhoul2Model( void *g2From, int modelFrom, void 
 		return;
 	}
 
-	re->G2API_CopySpecificG2Model( *((CGhoul2Info_v *)g2From), modelFrom, *((CGhoul2Info_v *)g2To), modelTo );
+	re->G2API_CopySpecificG2Model( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)g2From)), modelFrom, *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)g2To)), modelTo );
 }
 
 static void CL_G2API_DuplicateGhoul2Instance( void *g2From, void **g2To ) {
@@ -551,7 +673,10 @@ static void CL_G2API_DuplicateGhoul2Instance( void *g2From, void **g2To ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	re->G2API_DuplicateGhoul2Instance( *((CGhoul2Info_v *)g2From), (CGhoul2Info_v **)g2To );
+
+	CGhoul2Info_v **g2ToPtr = CL_UI_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)g2To );
+	re->G2API_DuplicateGhoul2Instance( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)g2From)), g2ToPtr );
+	CL_UI_G2Map_Update( (g2handleptr_t*)g2To, *g2ToPtr );
 }
 
 static qboolean CL_G2API_HasGhoul2ModelOnIndex( void *ghlInfo, int modelIndex ) {
@@ -559,7 +684,10 @@ static qboolean CL_G2API_HasGhoul2ModelOnIndex( void *ghlInfo, int modelIndex ) 
 		return qfalse;
 	}
 
-	return re->G2API_HasGhoul2ModelOnIndex( (CGhoul2Info_v **)ghlInfo, modelIndex );
+	CGhoul2Info_v **g2Ptr = CL_UI_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghlInfo );
+	qboolean ret = re->G2API_HasGhoul2ModelOnIndex( g2Ptr, modelIndex );
+	CL_UI_G2Map_Update( (g2handleptr_t*)ghlInfo, *g2Ptr );
+	return ret;
 }
 
 static qboolean CL_G2API_RemoveGhoul2Model( void *ghlInfo, int modelIndex ) {
@@ -570,7 +698,11 @@ static qboolean CL_G2API_RemoveGhoul2Model( void *ghlInfo, int modelIndex ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	return re->G2API_RemoveGhoul2Model( (CGhoul2Info_v **)ghlInfo, modelIndex );
+
+	CGhoul2Info_v **g2Ptr = CL_UI_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghlInfo );
+	qboolean ret = re->G2API_RemoveGhoul2Model( g2Ptr, modelIndex );
+	CL_UI_G2Map_Update( (g2handleptr_t*)ghlInfo, *g2Ptr );
+	return ret;
 }
 
 static int CL_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
@@ -578,7 +710,7 @@ static int CL_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName 
 		return -1;
 	}
 
-	return re->G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
+	return re->G2API_AddBolt( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boneName );
 }
 
 static void CL_G2API_SetBoltInfo( void *ghoul2, int modelIndex, int boltInfo ) {
@@ -586,7 +718,7 @@ static void CL_G2API_SetBoltInfo( void *ghoul2, int modelIndex, int boltInfo ) {
 		return;
 	}
 
-	re->G2API_SetBoltInfo( *((CGhoul2Info_v *)ghoul2), modelIndex, boltInfo );
+	re->G2API_SetBoltInfo( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltInfo );
 }
 
 static qboolean CL_G2API_SetRootSurface( void *ghoul2, const int modelIndex, const char *surfaceName ) {
@@ -594,7 +726,7 @@ static qboolean CL_G2API_SetRootSurface( void *ghoul2, const int modelIndex, con
 		return qfalse;
 	}
 
-	return re->G2API_SetRootSurface( *((CGhoul2Info_v *)ghoul2), modelIndex, surfaceName );
+	return re->G2API_SetRootSurface( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, surfaceName );
 }
 
 static qboolean CL_G2API_SetSurfaceOnOff( void *ghoul2, const char *surfaceName, const int flags ) {
@@ -602,7 +734,7 @@ static qboolean CL_G2API_SetSurfaceOnOff( void *ghoul2, const char *surfaceName,
 		return qfalse;
 	}
 
-	return re->G2API_SetSurfaceOnOff( *((CGhoul2Info_v *)ghoul2), surfaceName, flags );
+	return re->G2API_SetSurfaceOnOff( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), surfaceName, flags );
 }
 
 static qboolean CL_G2API_SetNewOrigin( void *ghoul2, const int boltIndex ) {
@@ -610,7 +742,7 @@ static qboolean CL_G2API_SetNewOrigin( void *ghoul2, const int boltIndex ) {
 		return qfalse;
 	}
 
-	return re->G2API_SetNewOrigin( *((CGhoul2Info_v *)ghoul2), boltIndex );
+	return re->G2API_SetNewOrigin( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boltIndex );
 }
 
 static int CL_G2API_GetTime( void ) {
@@ -629,7 +761,7 @@ static void CL_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
 	CRagDollParams rdParams;
 
 	if ( !params ) {
-		re->G2API_ResetRagDoll( *((CGhoul2Info_v *)ghoul2) );
+		re->G2API_ResetRagDoll( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)) );
 		return;
 	}
 
@@ -652,7 +784,7 @@ static void CL_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
 	rdParams.RagPhase = (CRagDollParams::ERagPhase)params->RagPhase;
 	rdParams.effectorsToTurnOff = (CRagDollParams::ERagEffector)params->effectorsToTurnOff;
 
-	re->G2API_SetRagDoll( *((CGhoul2Info_v *)ghoul2), &rdParams );
+	re->G2API_SetRagDoll( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), &rdParams );
 }
 
 static void CL_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdateParams_t *params ) {
@@ -673,7 +805,7 @@ static void CL_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdat
 	rduParams.me = params->me;
 	rduParams.settleFrame = params->settleFrame;
 
-	re->G2API_AnimateG2ModelsRag( *((CGhoul2Info_v *)ghoul2), time, &rduParams );
+	re->G2API_AnimateG2ModelsRag( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), time, &rduParams );
 }
 
 static qboolean CL_G2API_SetBoneIKState( void *ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params ) {
@@ -681,7 +813,7 @@ static qboolean CL_G2API_SetBoneIKState( void *ghoul2, int time, const char *bon
 		return qfalse;
 	}
 
-	return re->G2API_SetBoneIKState( *((CGhoul2Info_v *)ghoul2), time, boneName, ikState, params );
+	return re->G2API_SetBoneIKState( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), time, boneName, ikState, params );
 }
 
 static qboolean CL_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *params ) {
@@ -689,7 +821,7 @@ static qboolean CL_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *p
 		return qfalse;
 	}
 
-	return re->G2API_IKMove( *((CGhoul2Info_v *)ghoul2), time, params );
+	return re->G2API_IKMove( *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), time, params );
 }
 
 static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
@@ -697,7 +829,7 @@ static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelInde
 		return;
 	}
 
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	char *tmp = re->G2API_GetSurfaceName( g2, modelIndex, surfNumber );
 	strcpy( fillBuf, tmp );
 }
@@ -707,8 +839,8 @@ static qboolean CL_G2API_AttachG2Model( void *ghoul2From, int modelIndexFrom, vo
 		return qfalse;
 	}
 
-	CGhoul2Info_v *g2From = ((CGhoul2Info_v *)ghoul2From);
-	CGhoul2Info_v *g2To = ((CGhoul2Info_v *)ghoul2To);
+	CGhoul2Info_v *g2From = (CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2From));
+	CGhoul2Info_v *g2To = (CL_UI_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2To));
 
 	return re->G2API_AttachG2Model(*g2From, modelIndexFrom, *g2To, toBoltIndex, toModel);
 }
@@ -888,7 +1020,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_R_ADDREFENTITYTOSCENE:
-		re->AddRefEntityToScene( (const refEntity_t *)VMA(1) );
+		CL_R_AddRefEntityToScene( (refEntity_t*)VMA(1) );
 		return 0;
 
 	case UI_R_ADDPOLYTOSCENE:
@@ -1144,20 +1276,20 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_G2_HAVEWEGHOULMODELS:
-		return CL_G2API_HaveWeGhoul2Models( VMA(1) );
+		return CL_G2API_HaveWeGhoul2Models( (void*)args[1] );
 
 	case UI_G2_SETMODELS:
-		CL_G2API_SetGhoul2ModelIndexes( VMA(1),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		CL_G2API_SetGhoul2ModelIndexes( (void*)args[1],(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
 		return 0;
 
 	case UI_G2_GETBOLT:
-		return CL_G2API_GetBoltMatrix(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix((void*)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case UI_G2_GETBOLT_NOREC:
-		return CL_G2API_GetBoltMatrix_NoReconstruct(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix_NoReconstruct((void*)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case UI_G2_GETBOLT_NOREC_NOROT:
-		return CL_G2API_GetBoltMatrix_NoRecNoRot(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return CL_G2API_GetBoltMatrix_NoRecNoRot((void*)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case UI_G2_INITGHOUL2MODEL:
 #ifdef _FULL_G2_LEAK_CHECKING
@@ -1170,7 +1302,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0; //not supported for ui
 
 	case UI_G2_ANGLEOVERRIDE:
-		return CL_G2API_SetBoneAngles(VMA(1), args[2], (const char *)VMA(3), (float *)VMA(4), args[5], (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8], (qhandle_t *)VMA(9), args[10], args[11] );
+		return CL_G2API_SetBoneAngles((void*)args[1], args[2], (const char *)VMA(3), (float *)VMA(4), args[5], (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8], (qhandle_t *)VMA(9), args[10], args[11] );
 
 	case UI_G2_CLEANMODELS:
 #ifdef _FULL_G2_LEAK_CHECKING
@@ -1180,30 +1312,30 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_G2_PLAYANIM:
-		return CL_G2API_SetBoneAnim(VMA(1), args[2], (const char *)VMA(3), args[4], args[5], args[6], VMF(7), args[8], VMF(9), args[10]);
+		return CL_G2API_SetBoneAnim((void*)args[1], args[2], (const char *)VMA(3), args[4], args[5], args[6], VMF(7), args[8], VMF(9), args[10]);
 
 	case UI_G2_GETBONEANIM:
-		return CL_G2API_GetBoneAnim(VMA(1), (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9), args[10]);
+		return CL_G2API_GetBoneAnim((void*)args[1], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9), args[10]);
 
 	case UI_G2_GETBONEFRAME:
-		return CL_G2API_GetBoneFrame(VMA(1), (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), args[6]);
+		return CL_G2API_GetBoneFrame((void*)args[1], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), args[6]);
 
 	case UI_G2_GETGLANAME:
-		CL_G2API_GetGLAName( VMA(1), args[2], (char *)VMA(3) );
+		CL_G2API_GetGLAName( (void*)args[1], args[2], (char *)VMA(3) );
 		return 0;
 
 	case UI_G2_COPYGHOUL2INSTANCE:
-		return (int)CL_G2API_CopyGhoul2Instance(VMA(1), VMA(2), args[3]);
+		return (int)CL_G2API_CopyGhoul2Instance((void*)args[1], (void*)args[2], args[3]);
 
 	case UI_G2_COPYSPECIFICGHOUL2MODEL:
-		CL_G2API_CopySpecificGhoul2Model(VMA(1), args[2], VMA(3), args[4]);
+		CL_G2API_CopySpecificGhoul2Model((void*)args[1], args[2], (void*)args[3], args[4]);
 		return 0;
 
 	case UI_G2_DUPLICATEGHOUL2INSTANCE:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		CL_G2API_DuplicateGhoul2Instance(VMA(1), (void **)VMA(2));
+		CL_G2API_DuplicateGhoul2Instance((void*)args[1], (void **)VMA(2));
 		return 0;
 
 	case UI_G2_HASGHOUL2MODELONINDEX:
@@ -1216,20 +1348,20 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return (int)CL_G2API_RemoveGhoul2Model(VMA(1), args[2]);
 
 	case UI_G2_ADDBOLT:
-		return CL_G2API_AddBolt(VMA(1), args[2], (const char *)VMA(3));
+		return CL_G2API_AddBolt((void*)args[1], args[2], (const char *)VMA(3));
 
 	case UI_G2_SETBOLTON:
-		CL_G2API_SetBoltInfo(VMA(1), args[2], args[3]);
+		CL_G2API_SetBoltInfo((void*)args[1], args[2], args[3]);
 		return 0;
 
 	case UI_G2_SETROOTSURFACE:
-		return CL_G2API_SetRootSurface(VMA(1), args[2], (const char *)VMA(3));
+		return CL_G2API_SetRootSurface((void*)args[1], args[2], (const char *)VMA(3));
 
 	case UI_G2_SETSURFACEONOFF:
-		return CL_G2API_SetSurfaceOnOff(VMA(1), (const char *)VMA(2), args[3]);
+		return CL_G2API_SetSurfaceOnOff((void*)args[1], (const char *)VMA(2), args[3]);
 
 	case UI_G2_SETNEWORIGIN:
-		return CL_G2API_SetNewOrigin(VMA(1), args[2]);
+		return CL_G2API_SetNewOrigin((void*)args[1], args[2]);
 
 	case UI_G2_GETTIME:
 		return CL_G2API_GetTime();
@@ -1247,20 +1379,20 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		break;
 
 	case UI_G2_SETBONEIKSTATE:
-		return CL_G2API_SetBoneIKState(VMA(1), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
+		return CL_G2API_SetBoneIKState((void*)args[1], args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
 
 	case UI_G2_IKMOVE:
-		return CL_G2API_IKMove(VMA(1), args[2], (sharedIKMoveParams_t *)VMA(3));
+		return CL_G2API_IKMove((void*)args[1], args[2], (sharedIKMoveParams_t *)VMA(3));
 
 	case UI_G2_GETSURFACENAME:
-		CL_G2API_GetSurfaceName( (void *)args[1], args[2], args[3], (char *)VMA( 4 ) );
+		CL_G2API_GetSurfaceName( (void*)args[1], args[2], args[3], (char *)VMA( 4 ) );
 		return 0;
 
 	case UI_G2_SETSKIN:
-		return CL_G2API_SetSkin(VMA(1), args[2], args[3], args[4]);
+		return CL_G2API_SetSkin((void*)args[1], args[2], args[3], args[4]);
 
 	case UI_G2_ATTACHG2MODEL:
-		return CL_G2API_AttachG2Model(VMA(1), args[2], VMA(3), args[4], args[5]);
+		return CL_G2API_AttachG2Model((void*)args[1], args[2], (void*)args[3], args[4], args[5]);
 
 	default:
 		Com_Error( ERR_DROP, "Bad UI system trap: %ld", (long int) args[0] );
@@ -1370,7 +1502,7 @@ void CL_BindUI( void ) {
 
 		uii.R_AddLightToScene					= re->AddLightToScene;
 		uii.R_AddPolysToScene					= re->AddPolyToScene;
-		uii.R_AddRefEntityToScene				= re->AddRefEntityToScene;
+		uii.R_AddRefEntityToScene				= CL_R_AddRefEntityToScene;
 		uii.R_ClearScene						= re->ClearScene;
 		uii.R_DrawStretchPic					= re->DrawStretchPic;
 		uii.R_Font_DrawString					= re->Font_DrawString;

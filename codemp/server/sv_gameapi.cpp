@@ -30,12 +30,71 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "icarus/GameInterface.h"
 #include "qcommon/timing.h"
 #include "NPCNav/navigator.h"
+#include "qcommon/vm_local.h"
+
+#include <unordered_map>
 
 botlib_export_t	*botlib_export;
 
 // game interface
 static gameExport_t *ge; // game export table
 static vm_t *gvm; // game vm, valid for legacy and new api
+
+typedef std::unordered_map<g2handle_t, CGhoul2Info_v*> g2HandleToG2_m;
+
+static g2HandleToG2_m g2Mapping;
+static g2handle_t g2NextHandle = (g2handle_t)1; // Start at 1, because 0 has special meaning
+
+CGhoul2Info_v *SV_G2Map_GetG2FromHandle( g2handleptr_t g2h )
+{ // Returns the pointer to the g2 object if the handle is valid
+	// Native libraries should not use the pointer, but in theory they could use
+	// it. Thus we don't perform any mapping for native libraries to avoid
+	// issues with custom modules.
+	if ( gvm->dllHandle ) return (CGhoul2Info_v*)g2h;
+
+	g2handle_t g2handle = (g2handle_t)g2h;
+	g2HandleToG2_m::iterator ghlIt = g2Mapping.find(g2handle);
+
+	if (ghlIt == g2Mapping.end()) return NULL;
+	return g2Mapping[g2handle];
+}
+
+ CGhoul2Info_v **SV_G2Map_GetG2PtrFromHandle( g2handleptr_t *g2h )
+{ // Returns a pointer to the g2 object pointer in the map so g2 functions can update the pointer
+	// Native libraries should not use the pointer, but in theory they could use
+	// it. Thus we don't perform any mapping for native libraries to avoid
+	// issues with custom modules.
+	if ( gvm->dllHandle ) return (CGhoul2Info_v **)g2h;
+
+	g2handle_t g2handle = *((g2handle_t*)g2h);
+	if ( !g2handle )
+	{ // Special case: the g2 handle is not valid, yet. Return a pointer to a static temporary pointer. Insertion is handled by calling SV_G2Map_Update after calling the G2API
+		static CGhoul2Info_v *g2Tmp;
+		g2Tmp = NULL;
+		return &g2Tmp;
+	}
+	return &g2Mapping[g2handle];
+}
+
+void SV_G2Map_Update( g2handleptr_t *g2h, CGhoul2Info_v *g2Ptr )
+{ // Inserts and/or erases to/from the map and updates the handle pointer
+	if ( gvm->dllHandle ) return;
+
+	g2handle_t *g2handle = (g2handle_t*)g2h;
+	if ( !*g2handle && g2Ptr )
+	{ // Got a 0 handle, but a non-0 pointer: add to map and set handle
+		// Unlikely to happen, but should we ever cycle through the whole integer range start searching for gaps
+		while ( SV_G2Map_GetG2FromHandle(g2NextHandle) || !g2NextHandle ) g2NextHandle++;
+
+		g2Mapping[g2NextHandle] = g2Ptr;
+		*g2handle = g2NextHandle++;
+	}
+	else if ( *g2h && !g2Ptr )
+	{ // Got a non-0 handle, but 0 pointer: remove from map and set handle to 0
+		g2Mapping.erase( *g2handle );
+		*g2handle = 0;
+	}
+}
 
 //
 // game vmMain calls
@@ -63,7 +122,7 @@ void GVM_ShutdownGame( int restart ) {
 
 char *GVM_ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	if ( gvm->isLegacy )
-		return (char *)VM_Call( gvm, GAME_CLIENT_CONNECT, clientNum, firstTime, isBot );
+		return (char*)VM_ExplicitArgPtr( gvm, VM_Call(gvm, GAME_CLIENT_CONNECT, clientNum, firstTime, isBot) );
 	VMSwap v( gvm );
 
 	return ge->ClientConnect( clientNum, firstTime, isBot );
@@ -109,7 +168,18 @@ void GVM_ClientCommand( int clientNum ) {
 
 void GVM_ClientThink( int clientNum, usercmd_t *ucmd ) {
 	if ( gvm->isLegacy ) {
-		VM_Call( gvm, GAME_CLIENT_THINK, clientNum, reinterpret_cast< intptr_t >( ucmd ) );
+		usercmd_t *ucmd_ptr;
+
+		if ( !gvm->dllHandle ) {
+			ucmd_ptr = (usercmd_t*)(intptr_t)(VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (usercmd_t*)ucmd, sizeof(usercmd_t)) ) );
+		} else {
+			ucmd_ptr = ucmd;
+		}
+		VM_Call( gvm, GAME_CLIENT_THINK, clientNum, reinterpret_cast< intptr_t >( ucmd_ptr ) );
+		if ( !gvm->dllHandle ) {
+			// Memory may only be released in reverse order.
+			if ( ucmd_ptr ) VM_ExtraMemory_Release( gvm, sizeof(usercmd_t) );
+		}
 		return;
 	}
 	VMSwap v( gvm );
@@ -145,7 +215,20 @@ int GVM_BotAIStartFrame( int time ) {
 
 void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	if ( gvm->isLegacy ) {
-		VM_Call( gvm, GAME_ROFF_NOTETRACK_CALLBACK, entID, reinterpret_cast< intptr_t >( notetrack ) );
+		int notetrack_length = 0;
+		const char *notetrack_ptr;
+
+		if ( !gvm->dllHandle ) {
+			notetrack_length = strlen( notetrack ) + 1; // +1 for the terminating 0-byte, which ClaimString automatically allocates, too
+			notetrack_ptr = (const char*)(intptr_t)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimString(gvm, notetrack) );
+		} else {
+			notetrack_ptr = notetrack;
+		}
+		VM_Call( gvm, GAME_ROFF_NOTETRACK_CALLBACK, entID, reinterpret_cast< intptr_t >( notetrack_ptr ) );
+		if ( !gvm->dllHandle ) {
+			// Memory may only be released in reverse order.
+			if ( notetrack_ptr && notetrack_length ) VM_ExtraMemory_Release( gvm, notetrack_length );
+		}
 		return;
 	}
 	VMSwap v( gvm );
@@ -319,25 +402,95 @@ int GVM_ICARUS_GetSetIDForString( void ) {
 	return ge->ICARUS_GetSetIDForString();
 }
 
+static size_t vec3_size = sizeof(vec3_t);
 qboolean GVM_NAV_ClearPathToPoint( int entID, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEnt ) {
-	if ( gvm->isLegacy )
-		return (qboolean)VM_Call( gvm, GAME_NAV_CLEARPATHTOPOINT, entID, reinterpret_cast< intptr_t >( pmins ), reinterpret_cast< intptr_t >( pmaxs ), reinterpret_cast< intptr_t >( point ), clipmask, okToHitEnt );
+	if ( gvm->isLegacy ) {
+
+		qboolean ret;
+
+		float *pmins_ptr;
+		float *pmaxs_ptr;
+		float *point_ptr;
+
+		if ( !gvm->dllHandle ) {
+			pmins_ptr = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)pmins, vec3_size) );
+			pmaxs_ptr = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)pmaxs, vec3_size) );
+			point_ptr = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)point, vec3_size) );
+		} else {
+			pmins_ptr = pmins;
+			pmaxs_ptr = pmaxs;
+			point_ptr = point;
+		}
+		ret = (qboolean)VM_Call( gvm, GAME_NAV_CLEARPATHTOPOINT, entID, reinterpret_cast< intptr_t >( pmins_ptr ), reinterpret_cast< intptr_t >( pmaxs_ptr ), reinterpret_cast< intptr_t >( point_ptr ), clipmask, okToHitEnt );
+
+		if ( !gvm->dllHandle ) {
+			// Memory may only be released in reverse order.
+			if ( point_ptr ) VM_ExtraMemory_Release( gvm, vec3_size );
+			if ( pmaxs_ptr ) VM_ExtraMemory_Release( gvm, vec3_size );
+			if ( pmins_ptr ) VM_ExtraMemory_Release( gvm, vec3_size );
+		}
+
+		return ret;
+	}
 	VMSwap v( gvm );
 
 	return ge->NAV_ClearPathToPoint( entID, pmins, pmaxs, point, clipmask, okToHitEnt );
 }
 
 qboolean GVM_NPC_ClearLOS2( int entID, const vec3_t end ) {
-	if ( gvm->isLegacy )
-		return (qboolean)VM_Call( gvm, GAME_NAV_CLEARLOS, entID, reinterpret_cast< intptr_t >( end ) );
+	if ( gvm->isLegacy ) {
+		qboolean ret;
+		const float *end_ptr;
+		if ( !gvm->dllHandle ) {
+			end_ptr = (const float*)VM_ExtraMemory_ClaimData( gvm, (float*)end, vec3_size );
+		} else {
+			end_ptr = (const float*)end;
+		}
+		ret = (qboolean)VM_Call( gvm, GAME_NAV_CLEARLOS, entID, reinterpret_cast< intptr_t >( end_ptr ) );
+
+		if ( !gvm->dllHandle ) {
+			if ( end_ptr ) VM_ExtraMemory_Release( gvm, vec3_size );
+		}
+
+		return ret;
+	}
 	VMSwap v( gvm );
 
 	return ge->NPC_ClearLOS2( entID, end );
 }
 
 int GVM_NAVNEW_ClearPathBetweenPoints( vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, int ignore, int clipmask ) {
-	if ( gvm->isLegacy )
-		return VM_Call( gvm, GAME_NAV_CLEARPATHBETWEENPOINTS, reinterpret_cast< intptr_t >( start ), reinterpret_cast< intptr_t >( end ), reinterpret_cast< intptr_t >( mins ), reinterpret_cast< intptr_t >( maxs ), ignore, clipmask );
+	if ( gvm->isLegacy ) {
+		int ret;
+
+		float *start_ptr;
+		float *end_ptr;
+		float *mins_ptr;
+		float *maxs_ptr;
+
+		if ( !gvm->dllHandle ) {
+			start_ptr = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)start, vec3_size) );
+			end_ptr   = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)end,   vec3_size) );
+			mins_ptr  = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)mins,  vec3_size) );
+			maxs_ptr  = (float*)VM_PtrToOffset( gvm, VM_ExtraMemory_ClaimData(gvm, (float*)maxs,  vec3_size) );
+		} else {
+			start_ptr = start;
+			end_ptr = end;
+			mins_ptr = mins;
+			maxs_ptr = maxs;
+		}
+		ret = VM_Call( gvm, GAME_NAV_CLEARPATHBETWEENPOINTS, reinterpret_cast< intptr_t >( start_ptr ), reinterpret_cast< intptr_t >( end_ptr ), reinterpret_cast< intptr_t >( mins_ptr ), reinterpret_cast< intptr_t >( maxs_ptr ), ignore, clipmask );
+
+		if ( !gvm->dllHandle ) {
+			// Memory may only be released in reverse order.
+			if ( maxs_ptr  ) VM_ExtraMemory_Release( gvm, vec3_size );
+			if ( mins_ptr  ) VM_ExtraMemory_Release( gvm, vec3_size );
+			if ( end_ptr   ) VM_ExtraMemory_Release( gvm, vec3_size );
+			if ( start_ptr ) VM_ExtraMemory_Release( gvm, vec3_size );
+		}
+
+		return ret;
+	}
 	VMSwap v( gvm );
 
 	return ge->NAVNEW_ClearPathBetweenPoints( start, end, mins, maxs, ignore, clipmask );
@@ -415,9 +568,9 @@ int CM_ModelContents( clipHandle_t model, int subBSPIndex );
 int CM_LoadSubBSP( const char *name, qboolean clientload );
 int CM_FindSubBSP( int modelIndex );
 char *CM_SubBSPEntityString( int index );
-qboolean Q3_TaskIDPending( sharedEntity_t *ent, taskID_t taskType );
-void Q3_TaskIDSet( sharedEntity_t *ent, taskID_t taskType, int taskID );
-void Q3_TaskIDComplete( sharedEntity_t *ent, taskID_t taskType );
+qboolean Q3_TaskIDPending( sharedEntityMapper_t *ent, taskID_t taskType );
+void Q3_TaskIDSet( sharedEntityMapper_t *ent, taskID_t taskType, int taskID );
+void Q3_TaskIDComplete( sharedEntityMapper_t *ent, taskID_t taskType );
 void Q3_SetVar( int taskID, int entID, const char *type_name, const char *data );
 int Q3_VariableDeclared( const char *name );
 int Q3_GetFloatVariable( const char *name, float *value );
@@ -426,13 +579,124 @@ int Q3_GetVectorVariable( const char *name, vec3_t value );
 void SV_BotWaypointReception( int wpnum, wpobject_t **wps );
 void SV_BotCalculatePaths( int rmg );
 
+static void SV_UpdateSharedEntitiesMapping( void ) {
+	int i, j;
+	int entCount = Com_Clampi( 0, ARRAY_LEN(sv.gentitiesMapper), sv.num_entities );
+	sharedEntityMapper_t *entM;
+
+	if ( gvm->dllHandle ) {
+		sharedEntity_t *ent;
+		for ( i = 0; i < entCount; i++ ) {
+			// Get the shared entity and the mapper
+			ent = (sharedEntity_t *)((byte *)sv.gentities + sv.gentitySize*(i));
+			entM = &sv.gentitiesMapper[i];
+
+			// Assign all values
+			entM->s                       = &ent->s;
+			entM->playerState             = &ent->playerState;
+			entM->m_pVehicle              = &ent->m_pVehicle;
+			entM->ghoul2                  = &ent->ghoul2;
+			entM->localAnimIndex          = &ent->localAnimIndex;
+			entM->modelScale              = &ent->modelScale;
+			entM->r                       = &ent->r;
+			entM->taskID                  = &ent->taskID;
+			entM->parms                   = &ent->parms;
+			for ( j = 0; j < NUM_BSETS; j++ ) {
+				entM->behaviorSet[j]      = &(ent->behaviorSet[j]);
+			}
+			entM->script_targetname       = &ent->script_targetname;
+			entM->delayScriptTime         = &ent->delayScriptTime;
+			entM->fullName                = &ent->fullName;
+			entM->targetname              = &ent->targetname;
+			entM->classname               = &ent->classname;
+			entM->waypoint                = &ent->waypoint;
+			entM->lastWaypoint            = &ent->lastWaypoint;
+			entM->lastValidWaypoint       = &ent->lastValidWaypoint;
+			entM->noWaypointTime          = &ent->noWaypointTime;
+			entM->combatPoint             = &ent->combatPoint;
+			entM->failedWaypoints         = &ent->failedWaypoints;
+			entM->failedWaypointCheckTime = &ent->failedWaypointCheckTime;
+			entM->next_roff_time          = &ent->next_roff_time;
+		}
+	} else {
+		sharedEntity_qvm_t *ent;
+		for ( i = 0; i < entCount; i++ ) {
+			// Get the shared entity and the mapper
+			ent = (sharedEntity_qvm_t *)((byte *)sv.gentities + sv.gentitySize*(i));
+			entM = &sv.gentitiesMapper[i];
+
+			// Assign all values
+			entM->s                       = &ent->s;
+			entM->playerState             = (playerState_t**)&ent->playerState;
+#if (!defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__))
+			entM->m_pVehicle              = (Vehicle_t**)&ent->m_pVehicle;
+#else
+			entM->m_pVehicle              = (struct Vehicle_s**)&ent->m_pVehicle;
+#endif
+			entM->ghoul2                  = (void**)&ent->ghoul2;
+			entM->localAnimIndex          = &ent->localAnimIndex;
+			entM->modelScale              = &ent->modelScale;
+			entM->r                       = &ent->r;
+			entM->taskID                  = &ent->taskID;
+			entM->parms                   = (parms_t**)&ent->parms;
+			for ( j = 0; j < NUM_BSETS; j++ ) {
+				entM->behaviorSet[j]      = (char**)&(ent->behaviorSet[j]);
+			}
+			entM->script_targetname       = (char**)&ent->script_targetname;
+			entM->delayScriptTime         = &ent->delayScriptTime;
+			entM->fullName                = (char**)&ent->fullName;
+			entM->targetname              = (char**)&ent->targetname;
+			entM->classname               = (char**)&ent->classname;
+			entM->waypoint                = &ent->waypoint;
+			entM->lastWaypoint            = &ent->lastWaypoint;
+			entM->lastValidWaypoint       = &ent->lastValidWaypoint;
+			entM->noWaypointTime          = &ent->noWaypointTime;
+			entM->combatPoint             = &ent->combatPoint;
+			entM->failedWaypoints         = &ent->failedWaypoints;
+			entM->failedWaypointCheckTime = &ent->failedWaypointCheckTime;
+			entM->next_roff_time          = &ent->next_roff_time;
+		}
+	}
+}
+
+#define ENTITYMAP_READER( type, funcName ) \
+	type funcName( type *inPtr ) { \
+		if ( gvm->dllHandle ) { \
+			return *inPtr; \
+		} else { \
+			return (type)VM_ArgPtr((intptr_t)(*(uint32_t*)inPtr)); \
+		} \
+	}
+
+ENTITYMAP_READER( char*, SV_EntityMapperReadString );
+ENTITYMAP_READER( void*, SV_EntityMapperReadData );
+ENTITYMAP_READER( playerState_t*, SV_EntityMapperReadPlayerState );
+#if (!defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__))
+	ENTITYMAP_READER( Vehicle_t*, SV_EntityMapperReadVehicle );
+#else
+	ENTITYMAP_READER( struct Vehicle_s*, SV_EntityMapperReadVehicle );
+#endif
+ENTITYMAP_READER( parms_t*, SV_EntityMapperReadParms );
+
+void *SV_EntityMapperReadGhoul2( void **inPtr ) {
+	if ( gvm->dllHandle ) {
+		return *inPtr;
+	} else {
+		// For QVMs the address is actually a handle we have to interpret as uint32_t
+		return (void*)(intptr_t)(*(uint32_t*)inPtr);
+	}
+}
+
 static void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGameClient ) {
+
 	sv.gentities = gEnts;
 	sv.gentitySize = sizeofGEntity_t;
 	sv.num_entities = numGEntities;
 
 	sv.gameClients = clients;
 	sv.gameClientSize = sizeofGameClient;
+
+	SV_UpdateSharedEntitiesMapping();
 }
 
 static void SV_GameDropClient( int clientNum, const char *reason ) {
@@ -458,11 +722,13 @@ static qboolean SV_EntityContact( const vec3_t mins, const vec3_t maxs, const sh
 	clipHandle_t	ch;
 	trace_t			trace;
 
-	// check for exact collision
-	origin = gEnt->r.currentOrigin;
-	angles = gEnt->r.currentAngles;
+	sharedEntityMapper_t *gEntM = SV_GEntityMapperForGentity( gEnt );
 
-	ch = SV_ClipHandleForEntity( gEnt );
+	// check for exact collision
+	origin = gEntM->r->currentOrigin;
+	angles = gEntM->r->currentAngles;
+
+	ch = SV_ClipHandleForEntity( gEntM );
 	CM_TransformedBoxTrace ( &trace, vec3_origin, vec3_origin, mins, maxs,
 		ch, -1, origin, angles, capsule );
 
@@ -473,6 +739,8 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 	clipHandle_t	h;
 	vec3_t			mins, maxs;
 
+	sharedEntityMapper_t *gEntM = SV_GEntityMapperForGentity( ent );
+
 	if (!name)
 	{
 		Com_Error( ERR_DROP, "SV_SetBrushModel: NULL" );
@@ -480,36 +748,36 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 
 	if (name[0] == '*')
 	{
-		ent->s.modelindex = atoi( name + 1 );
+		gEntM->s->modelindex = atoi( name + 1 );
 
 		if (sv.mLocalSubBSPIndex != -1)
 		{
-			ent->s.modelindex += sv.mLocalSubBSPModelOffset;
+			gEntM->s->modelindex += sv.mLocalSubBSPModelOffset;
 		}
 
-		h = CM_InlineModel( ent->s.modelindex );
+		h = CM_InlineModel( gEntM->s->modelindex );
 
 		CM_ModelBounds(h, mins, maxs);
 
-		VectorCopy (mins, ent->r.mins);
-		VectorCopy (maxs, ent->r.maxs);
-		ent->r.bmodel = qtrue;
-		ent->r.contents = CM_ModelContents( h, -1 );
+		VectorCopy (mins, gEntM->r->mins);
+		VectorCopy (maxs, gEntM->r->maxs);
+		gEntM->r->bmodel = qtrue;
+		gEntM->r->contents = CM_ModelContents( h, -1 );
 	}
 	else if (name[0] == '#')
 	{
-		ent->s.modelindex = CM_LoadSubBSP(va("maps/%s.bsp", name + 1), qfalse);
-		CM_ModelBounds( ent->s.modelindex, mins, maxs );
+		gEntM->s->modelindex = CM_LoadSubBSP(va("maps/%s.bsp", name + 1), qfalse);
+		CM_ModelBounds( gEntM->s->modelindex, mins, maxs );
 
-		VectorCopy (mins, ent->r.mins);
-		VectorCopy (maxs, ent->r.maxs);
-		ent->r.bmodel = qtrue;
+		VectorCopy (mins, gEntM->r->mins);
+		VectorCopy (maxs, gEntM->r->maxs);
+		gEntM->r->bmodel = qtrue;
 
 		//rwwNOTE: We don't ever want to set contents -1, it includes CONTENTS_LIGHTSABER.
 		//Lots of stuff will explode if there's a brush with CONTENTS_LIGHTSABER that isn't attached to a client owner.
 		//ent->contents = -1;		// we don't know exactly what is in the brushes
-		h = CM_InlineModel( ent->s.modelindex );
-		ent->r.contents = CM_ModelContents( h, CM_FindSubBSP(ent->s.modelindex) );
+		h = CM_InlineModel( gEntM->s->modelindex );
+		gEntM->r->contents = CM_ModelContents( h, CM_FindSubBSP(gEntM->s->modelindex) );
 	}
 	else
 	{
@@ -561,38 +829,6 @@ static void SV_GetUsercmd( int clientNum, usercmd_t *cmd ) {
 		return;
 	}
 	*cmd = svs.clients[clientNum].lastUsercmd;
-}
-
-static sharedEntity_t gLocalModifier;
-static sharedEntity_t *ConvertedEntity( sharedEntity_t *ent ) { //Return an entity with the memory shifted around to allow reading/modifying VM memory
-	int i = 0;
-
-	assert(ent);
-
-	gLocalModifier.s = ent->s;
-	gLocalModifier.r = ent->r;
-	while (i < NUM_TIDS)
-	{
-		gLocalModifier.taskID[i] = ent->taskID[i];
-		i++;
-	}
-	i = 0;
-	gLocalModifier.parms = (parms_t *)VM_ArgPtr((intptr_t)ent->parms);
-	while (i < NUM_BSETS)
-	{
-		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)ent->behaviorSet[i]);
-		i++;
-	}
-	i = 0;
-	gLocalModifier.script_targetname = (char *)VM_ArgPtr((intptr_t)ent->script_targetname);
-	gLocalModifier.delayScriptTime = ent->delayScriptTime;
-	gLocalModifier.fullName = (char *)VM_ArgPtr((intptr_t)ent->fullName);
-	gLocalModifier.targetname = (char *)VM_ArgPtr((intptr_t)ent->targetname);
-	gLocalModifier.classname = (char *)VM_ArgPtr((intptr_t)ent->classname);
-
-	gLocalModifier.ghoul2 = ent->ghoul2;
-
-	return &gLocalModifier;
 }
 
 static const char *SV_SetActiveSubBSP( int index ) {
@@ -683,7 +919,7 @@ static qboolean SV_ICARUS_RegisterScript( const char *name, qboolean bCalledDuri
 }
 
 static qboolean SV_ICARUS_ValidEnt( sharedEntity_t *ent ) {
-	return (qboolean)ICARUS_ValidEnt( ent );
+	return (qboolean)ICARUS_ValidEnt( SV_GEntityMapperForGentity(ent) );
 }
 
 static qboolean ICARUS_IsInitialized( int entID ) {
@@ -708,15 +944,15 @@ static qboolean ICARUS_IsRunning( int entID ) {
 }
 
 static qboolean ICARUS_TaskIDPending( sharedEntity_t *ent, int taskID ) {
-	return Q3_TaskIDPending( ent, (taskID_t)taskID );
+	return Q3_TaskIDPending( SV_GEntityMapperForGentity(ent), (taskID_t)taskID );
 }
 
 static void SV_ICARUS_TaskIDSet( sharedEntity_t *ent, int taskType, int taskID ) {
-	Q3_TaskIDSet( ent, (taskID_t)taskType, taskID );
+	Q3_TaskIDSet( SV_GEntityMapperForGentity(ent), (taskID_t)taskType, taskID );
 }
 
 static void SV_ICARUS_TaskIDComplete( sharedEntity_t *ent, int taskType ) {
-	Q3_TaskIDComplete( ent, (taskID_t)taskType );
+	Q3_TaskIDComplete( SV_GEntityMapperForGentity(ent), (taskID_t)taskType );
 }
 
 static int SV_ICARUS_GetStringVariable( const char *name, const char *value ) {
@@ -768,7 +1004,7 @@ static void SV_Nav_ShowPath( int start, int end ) {
 }
 
 static int SV_Nav_GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int targetID ) {
-	return navigator.GetNearestNode( ent, lastID, flags, targetID );
+	return navigator.GetNearestNode( SV_GEntityMapperForGentity(ent), lastID, flags, targetID );
 }
 
 static int SV_Nav_GetBestNode( int startID, int endID, int rejectID ) {
@@ -808,15 +1044,15 @@ static int SV_Nav_GetProjectedNode( vec3_t origin, int nodeID ) {
 }
 
 static void SV_Nav_CheckFailedNodes( sharedEntity_t *ent ) {
-	navigator.CheckFailedNodes( ent );
+	navigator.CheckFailedNodes( SV_GEntityMapperForGentity(ent) );
 }
 
 static void SV_Nav_AddFailedNode( sharedEntity_t *ent, int nodeID ) {
-	navigator.AddFailedNode( ent, nodeID );
+	navigator.AddFailedNode( SV_GEntityMapperForGentity(ent), nodeID );
 }
 
 static qboolean SV_Nav_NodeFailed( sharedEntity_t *ent, int nodeID ) {
-	return navigator.NodeFailed( ent, nodeID );
+	return navigator.NodeFailed( SV_GEntityMapperForGentity(ent), nodeID );
 }
 
 static qboolean SV_Nav_NodesAreNeighbors( int startID, int endID ) {
@@ -860,7 +1096,7 @@ static int SV_Nav_GetBestNodeAltRoute2( int startID, int endID, int rejectID ) {
 }
 
 static int SV_Nav_GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goal, int flags ) {
-	return navigator.GetBestPathBetweenEnts( ent, goal, flags );
+	return navigator.GetBestPathBetweenEnts( SV_GEntityMapperForGentity(ent), SV_GEntityMapperForGentity(goal), flags );
 }
 
 static int SV_Nav_GetNodeRadius( int nodeID ) {
@@ -1467,75 +1703,81 @@ static void SV_G2API_ListModelBones( void *ghlInfo, int frame ) {
 
 static void SV_G2API_SetGhoul2ModelIndexes( void *ghoul2, qhandle_t *modelList, qhandle_t *skinList ) {
 	if ( !ghoul2 ) return;
-	re->G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)ghoul2), modelList, skinList );
+	re->G2API_SetGhoul2ModelIndexes( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelList, skinList );
 }
 
 static qboolean SV_G2API_HaveWeGhoul2Models( void *ghoul2) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)ghoul2) );
+	return re->G2API_HaveWeGhoul2Models( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)) );
 }
 
 static qboolean SV_G2API_GetBoltMatrix( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static qboolean SV_G2API_GetBoltMatrix_NoReconstruct( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
 	if ( !ghoul2 ) return qfalse;
 	re->G2API_BoltMatrixReconstruction( qfalse );
-	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static qboolean SV_G2API_GetBoltMatrix_NoRecNoRot( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
 	if ( !ghoul2 ) return qfalse;
 	re->G2API_BoltMatrixReconstruction( qfalse );
 	re->G2API_BoltMatrixSPMethod( qtrue );
-	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static int SV_G2API_InitGhoul2Model( void **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 1;
 #endif
-	return re->G2API_InitGhoul2Model( (CGhoul2Info_v **)ghoul2Ptr, fileName, modelIndex, customSkin, customShader, modelFlags, lodBias );
+	CGhoul2Info_v **g2Ptr = SV_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghoul2Ptr );
+	int ret = re->G2API_InitGhoul2Model( g2Ptr, fileName, modelIndex, customSkin, customShader, modelFlags, lodBias );
+	SV_G2Map_Update( (g2handleptr_t*)ghoul2Ptr, *g2Ptr );
+	return ret;
 }
 
 static qboolean SV_G2API_SetSkin( void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin ) {
 	if ( !ghoul2 ) return qfalse;
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_SetSkin( g2, modelIndex, customSkin, renderSkin );
 }
 
 static void SV_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) {
 	if ( !ghoul2 ) return;
-	re->G2API_CollisionDetect( collRecMap, *((CGhoul2Info_v *)ghoul2), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceServer, traceFlags, useLod, fRadius );
+	re->G2API_CollisionDetect( collRecMap, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceServer, traceFlags, useLod, fRadius );
 }
 
 static void SV_G2API_CollisionDetectCache( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) {
 	if ( !ghoul2 ) return;
-	re->G2API_CollisionDetectCache( collRecMap, *((CGhoul2Info_v *)ghoul2), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceServer, traceFlags, useLod, fRadius );
+	re->G2API_CollisionDetectCache( collRecMap, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceServer, traceFlags, useLod, fRadius );
 }
 
 static void SV_G2API_CleanGhoul2Models( void **ghoul2Ptr ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 1;
 #endif
-	re->G2API_CleanGhoul2Models( (CGhoul2Info_v **)ghoul2Ptr );
+
+	CGhoul2Info_v **g2Ptr = SV_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghoul2Ptr );
+	re->G2API_CleanGhoul2Models( g2Ptr );
+	SV_G2Map_Update( (g2handleptr_t*)ghoul2Ptr, *g2Ptr );
 }
 
 static qboolean SV_G2API_SetBoneAngles( void *ghoul2, int modelIndex, const char *boneName, const vec3_t angles, const int flags, const int up, const int right, const int forward, qhandle_t *modelList, int blendTime , int currentTime ) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_SetBoneAngles( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName, angles, flags, (const Eorientations)up, (const Eorientations)right, (const Eorientations)forward, modelList, blendTime , currentTime );
+	return re->G2API_SetBoneAngles( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boneName, angles, flags, (const Eorientations)up, (const Eorientations)right, (const Eorientations)forward, modelList, blendTime , currentTime );
 }
 
 static qboolean SV_G2API_SetBoneAnim( void *ghoul2, const int modelIndex, const char *boneName, const int startFrame, const int endFrame, const int flags, const float animSpeed, const int currentTime, const float setFrame, const int blendTime ) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_SetBoneAnim( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName, startFrame, endFrame, flags, animSpeed, currentTime, setFrame, blendTime );
+	return re->G2API_SetBoneAnim( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boneName, startFrame, endFrame, flags, animSpeed, currentTime, setFrame, blendTime );
 }
 
 static qboolean SV_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *modelList, const int modelIndex ) {
 	if ( !ghoul2 ) return qfalse;
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_GetBoneAnim( g2, modelIndex, boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
 }
 
@@ -1546,7 +1788,7 @@ static void SV_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
 		return;
 	}
 
-	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
+	char *tmp = re->G2API_GetGLAName( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex );
 	if ( tmp )
 		strcpy( fillBuf, tmp );
 	else
@@ -1555,12 +1797,12 @@ static void SV_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
 
 static int SV_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex ) {
 	if ( !g2From || !g2To ) return 0;
-	return re->G2API_CopyGhoul2Instance( *((CGhoul2Info_v *)g2From), *((CGhoul2Info_v *)g2To), modelIndex );
+	return re->G2API_CopyGhoul2Instance( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)g2From)), *(SV_G2Map_GetG2FromHandle((g2handleptr_t)g2To)), modelIndex );
 }
 
 static void SV_G2API_CopySpecificGhoul2Model( void *g2From, int modelFrom, void *g2To, int modelTo ) {
 	if ( !g2From || !g2To ) return;
-	re->G2API_CopySpecificG2Model( *((CGhoul2Info_v *)g2From), modelFrom, *((CGhoul2Info_v *)g2To), modelTo );
+	re->G2API_CopySpecificG2Model( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)g2From)), modelFrom, *(SV_G2Map_GetG2FromHandle((g2handleptr_t)g2To)), modelTo );
 }
 
 static void SV_G2API_DuplicateGhoul2Instance( void *g2From, void **g2To ) {
@@ -1568,72 +1810,84 @@ static void SV_G2API_DuplicateGhoul2Instance( void *g2From, void **g2To ) {
 		g_G2AllocServer = 1;
 #endif
 	if ( !g2From || !g2To ) return;
-	re->G2API_DuplicateGhoul2Instance( *((CGhoul2Info_v *)g2From), (CGhoul2Info_v **)g2To );
+
+	CGhoul2Info_v **g2ToPtr = SV_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)g2To );
+	re->G2API_DuplicateGhoul2Instance( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)g2From)), g2ToPtr );
+	SV_G2Map_Update( (g2handleptr_t*)g2To, *g2ToPtr );
 }
 
 static qboolean SV_G2API_HasGhoul2ModelOnIndex( void *ghlInfo, int modelIndex ) {
-	return re->G2API_HasGhoul2ModelOnIndex( (CGhoul2Info_v **)ghlInfo, modelIndex );
+	CGhoul2Info_v **g2Ptr = SV_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghlInfo );
+	qboolean ret = re->G2API_HasGhoul2ModelOnIndex( g2Ptr, modelIndex );
+	SV_G2Map_Update( (g2handleptr_t*)ghlInfo, *g2Ptr );
+	return ret;
 }
 
 static qboolean SV_G2API_RemoveGhoul2Model( void *ghlInfo, int modelIndex ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 1;
 #endif
-	return re->G2API_RemoveGhoul2Model( (CGhoul2Info_v **)ghlInfo, modelIndex );
+	CGhoul2Info_v **g2Ptr = SV_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghlInfo );
+	qboolean ret = re->G2API_RemoveGhoul2Model( g2Ptr, modelIndex );
+	SV_G2Map_Update( (g2handleptr_t*)ghlInfo, *g2Ptr );
+	return ret;
 }
 
 static qboolean SV_G2API_RemoveGhoul2Models( void *ghlInfo ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 	g_G2AllocServer = 1;
 #endif
-	return re->G2API_RemoveGhoul2Models( (CGhoul2Info_v **)ghlInfo );
+	CGhoul2Info_v **g2Ptr = SV_G2Map_GetG2PtrFromHandle( (g2handleptr_t*)ghlInfo );
+	qboolean ret = re->G2API_RemoveGhoul2Models( g2Ptr );
+	SV_G2Map_Update( (g2handleptr_t*)ghlInfo, *g2Ptr );
+	return ret;
 }
 
 static int SV_G2API_Ghoul2Size( void *ghlInfo ) {
 	if ( !ghlInfo ) return 0;
-	return re->G2API_Ghoul2Size( *((CGhoul2Info_v *)ghlInfo) );
+	return re->G2API_Ghoul2Size( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghlInfo)) );
 }
 
 static int SV_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
 	if ( !ghoul2 ) return -1;
-	return re->G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
+	return re->G2API_AddBolt( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boneName );
 }
 
 static void SV_G2API_SetBoltInfo( void *ghoul2, int modelIndex, int boltInfo ) {
 	if ( !ghoul2 ) return;
-	re->G2API_SetBoltInfo( *((CGhoul2Info_v *)ghoul2), modelIndex, boltInfo );
+	re->G2API_SetBoltInfo( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, boltInfo );
 }
 
 static qboolean SV_G2API_SetRootSurface( void *ghoul2, const int modelIndex, const char *surfaceName ) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_SetRootSurface( *((CGhoul2Info_v *)ghoul2), modelIndex, surfaceName );
+	return re->G2API_SetRootSurface( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), modelIndex, surfaceName );
 }
 
 static qboolean SV_G2API_SetSurfaceOnOff( void *ghoul2, const char *surfaceName, const int flags ) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_SetSurfaceOnOff( *((CGhoul2Info_v *)ghoul2), surfaceName, flags );
+	return re->G2API_SetSurfaceOnOff( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), surfaceName, flags );
 }
 
 static qboolean SV_G2API_SetNewOrigin( void *ghoul2, const int boltIndex ) {
 	if ( !ghoul2 ) return qfalse;
-	return re->G2API_SetNewOrigin( *((CGhoul2Info_v *)ghoul2), boltIndex );
+	return re->G2API_SetNewOrigin( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boltIndex );
 }
 
 static qboolean SV_G2API_DoesBoneExist( void *ghoul2, int modelIndex, const char *boneName ) {
 	if ( !ghoul2 ) return qfalse;
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_DoesBoneExist( g2, modelIndex, boneName );
 }
 
 static int SV_G2API_GetSurfaceRenderStatus( void *ghoul2, const int modelIndex, const char *surfaceName ) {
 	if ( !ghoul2 ) return -1;
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_GetSurfaceRenderStatus( g2, modelIndex, surfaceName );
 }
 
 static void SV_G2API_AbsurdSmoothing( void *ghoul2, qboolean status ) {
 	if ( !ghoul2 ) return;
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	re->G2API_AbsurdSmoothing( g2, status );
 }
 
@@ -1643,7 +1897,7 @@ static void SV_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
 	CRagDollParams rdParams;
 
 	if ( !params ) {
-		re->G2API_ResetRagDoll( *((CGhoul2Info_v *)ghoul2) );
+		re->G2API_ResetRagDoll( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)) );
 		return;
 	}
 
@@ -1666,7 +1920,7 @@ static void SV_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
 	rdParams.RagPhase = (CRagDollParams::ERagPhase)params->RagPhase;
 	rdParams.effectorsToTurnOff = (CRagDollParams::ERagEffector)params->effectorsToTurnOff;
 
-	re->G2API_SetRagDoll( *((CGhoul2Info_v *)ghoul2), &rdParams );
+	re->G2API_SetRagDoll( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), &rdParams );
 }
 
 static void SV_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdateParams_t *params ) {
@@ -1683,48 +1937,48 @@ static void SV_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdat
 	rduParams.me = params->me;
 	rduParams.settleFrame = params->settleFrame;
 
-	re->G2API_AnimateG2ModelsRag( *((CGhoul2Info_v *)ghoul2), time, &rduParams );
+	re->G2API_AnimateG2ModelsRag( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), time, &rduParams );
 }
 
 static qboolean SV_G2API_RagPCJConstraint( void *ghoul2, const char *boneName, vec3_t min, vec3_t max ) {
-	return re->G2API_RagPCJConstraint( *((CGhoul2Info_v *)ghoul2), boneName, min, max );
+	return re->G2API_RagPCJConstraint( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boneName, min, max );
 }
 
 static qboolean SV_G2API_RagPCJGradientSpeed( void *ghoul2, const char *boneName, const float speed ) {
-	return re->G2API_RagPCJGradientSpeed( *((CGhoul2Info_v *)ghoul2), boneName, speed );
+	return re->G2API_RagPCJGradientSpeed( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boneName, speed );
 }
 
 static qboolean SV_G2API_RagEffectorGoal( void *ghoul2, const char *boneName, vec3_t pos ) {
-	return re->G2API_RagEffectorGoal( *((CGhoul2Info_v *)ghoul2), boneName, pos );
+	return re->G2API_RagEffectorGoal( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boneName, pos );
 }
 
 static qboolean SV_G2API_GetRagBonePos( void *ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale ) {
-	return re->G2API_GetRagBonePos( *((CGhoul2Info_v *)ghoul2), boneName, pos, entAngles, entPos, entScale );
+	return re->G2API_GetRagBonePos( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boneName, pos, entAngles, entPos, entScale );
 }
 
 static qboolean SV_G2API_RagEffectorKick( void *ghoul2, const char *boneName, vec3_t velocity ) {
-	return re->G2API_RagEffectorKick( *((CGhoul2Info_v *)ghoul2), boneName, velocity );
+	return re->G2API_RagEffectorKick( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), boneName, velocity );
 }
 
 static qboolean SV_G2API_RagForceSolve( void *ghoul2, qboolean force ) {
-	return re->G2API_RagForceSolve( *((CGhoul2Info_v *)ghoul2), force );
+	return re->G2API_RagForceSolve( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), force );
 }
 
 static qboolean SV_G2API_SetBoneIKState( void *ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params ) {
-	return re->G2API_SetBoneIKState( *((CGhoul2Info_v *)ghoul2), time, boneName, ikState, params );
+	return re->G2API_SetBoneIKState( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), time, boneName, ikState, params );
 }
 
 static qboolean SV_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *params ) {
-	return re->G2API_IKMove( *((CGhoul2Info_v *)ghoul2), time, params );
+	return re->G2API_IKMove( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), time, params );
 }
 
 static qboolean SV_G2API_RemoveBone( void *ghoul2, const char *boneName, int modelIndex ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	return re->G2API_RemoveBone( g2, modelIndex, boneName );
 }
 
 static void SV_G2API_AttachInstanceToEntNum( void *ghoul2, int entityNum, qboolean server ) {
-	re->G2API_AttachInstanceToEntNum( *((CGhoul2Info_v *)ghoul2), entityNum, server );
+	re->G2API_AttachInstanceToEntNum( *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2)), entityNum, server );
 }
 
 static void SV_G2API_ClearAttachedInstance( int entityNum ) {
@@ -1736,18 +1990,39 @@ static void SV_G2API_CleanEntAttachments( void ) {
 }
 
 static qboolean SV_G2API_OverrideServer( void *serverInstance ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)serverInstance);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)serverInstance));
 	return re->G2API_OverrideServerWithClientData( g2, 0 );
 }
 
 static void SV_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
+	CGhoul2Info_v &g2 = *(SV_G2Map_GetG2FromHandle((g2handleptr_t)ghoul2));
 	char *tmp = re->G2API_GetSurfaceName( g2, modelIndex, surfNumber );
 	strcpy( fillBuf, tmp );
 }
 
 static void GVM_Cvar_Set( const char *var_name, const char *value ) {
 	Cvar_VM_Set( var_name, value, VM_GAME );
+}
+
+static void GVM_LinkEntity( sharedEntity_t *gEnt ) {
+	SV_LinkEntity( SV_GEntityMapperForGentity(gEnt) );
+}
+
+static void GVM_UnlinkEntity( sharedEntity_t *gEnt ) {
+	SV_UnlinkEntity( SV_GEntityMapperForGentity(gEnt) );
+}
+
+int SV_ICARUS_RunScript( sharedEntity_t *ent, const char *name ) {
+    return ICARUS_RunScript( SV_GEntityMapperForGentity(ent), name );
+}
+void SV_ICARUS_InitEnt( sharedEntity_t *ent ) {
+    ICARUS_InitEnt( SV_GEntityMapperForGentity(ent) );
+}
+void SV_ICARUS_FreeEnt( sharedEntity_t *ent ) {
+    ICARUS_FreeEnt( SV_GEntityMapperForGentity(ent) );
+}
+void SV_ICARUS_AssociateEnt( sharedEntity_t *ent ) {
+    ICARUS_AssociateEnt( SV_GEntityMapperForGentity(ent) );
 }
 
 // legacy syscall
@@ -1891,11 +2166,11 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_LINKENTITY:
-		SV_LinkEntity( (sharedEntity_t *)VMA(1) );
+		SV_LinkEntity( SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)) );
 		return 0;
 
 	case G_UNLINKENTITY:
-		SV_UnlinkEntity( (sharedEntity_t *)VMA(1) );
+		SV_UnlinkEntity( SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)) );
 		return 0;
 
 	case G_ENTITIES_IN_BOX:
@@ -2034,7 +2309,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 	//rww - icarus traps
 	case G_ICARUS_RUNSCRIPT:
-		return ICARUS_RunScript(ConvertedEntity((sharedEntity_t *)VMA(1)), (const char *)VMA(2));
+		return ICARUS_RunScript(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (const char *)VMA(2));
 
 	case G_ICARUS_REGISTERSCRIPT:
 		return ICARUS_RegisterScript((const char *)VMA(1), (qboolean)args[2]);
@@ -2044,7 +2319,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_ICARUS_VALIDENT:
-		return ICARUS_ValidEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		return ICARUS_ValidEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 
 	case G_ICARUS_ISINITIALIZED:
 		return ICARUS_IsInitialized( args[1] );
@@ -2056,18 +2331,18 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return ICARUS_IsRunning( args[1] );
 
 	case G_ICARUS_TASKIDPENDING:
-		return Q3_TaskIDPending((sharedEntity_t *)VMA(1), (taskID_t)args[2]);
+		return Q3_TaskIDPending(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2]);
 
 	case G_ICARUS_INITENT:
-		ICARUS_InitEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		ICARUS_InitEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 
 	case G_ICARUS_FREEENT:
-		ICARUS_FreeEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		ICARUS_FreeEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 
 	case G_ICARUS_ASSOCIATEENT:
-		ICARUS_AssociateEnt(ConvertedEntity((sharedEntity_t *)VMA(1)));
+		ICARUS_AssociateEnt(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 
 	case G_ICARUS_SHUTDOWN:
@@ -2078,12 +2353,12 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		//rww - note that we are passing in the true entity here.
 		//This is because we allow modification of certain non-pointer values,
 		//which is valid.
-		Q3_TaskIDSet((sharedEntity_t *)VMA(1), (taskID_t)args[2], args[3]);
+		Q3_TaskIDSet(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2], args[3]);
 		return 0;
 
 	case G_ICARUS_TASKIDCOMPLETE:
 		//same as above.
-		Q3_TaskIDComplete((sharedEntity_t *)VMA(1), (taskID_t)args[2]);
+		Q3_TaskIDComplete(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), (taskID_t)args[2]);
 		return 0;
 
 	case G_ICARUS_SETVAR:
@@ -2135,7 +2410,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		navigator.ShowPath(args[1], args[2]);
 		return 0;
 	case G_NAV_GETNEARESTNODE:
-		return navigator.GetNearestNode((sharedEntity_t *)VMA(1), args[2], args[3], args[4]);
+		return navigator.GetNearestNode(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), args[2], args[3], args[4]);
 	case G_NAV_GETBESTNODE:
 		return navigator.GetBestNode(args[1], args[2], args[3]);
 	case G_NAV_GETNODEPOSITION:
@@ -2155,13 +2430,13 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_NAV_GETPROJECTEDNODE:
 		return navigator.GetProjectedNode((float *)VMA(1), args[2]);
 	case G_NAV_CHECKFAILEDNODES:
-		navigator.CheckFailedNodes((sharedEntity_t *)VMA(1));
+		navigator.CheckFailedNodes(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)));
 		return 0;
 	case G_NAV_ADDFAILEDNODE:
-		navigator.AddFailedNode((sharedEntity_t *)VMA(1), args[2]);
+		navigator.AddFailedNode(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), args[2]);
 		return 0;
 	case G_NAV_NODEFAILED:
-		return navigator.NodeFailed((sharedEntity_t *)VMA(1), args[2]);
+		return navigator.NodeFailed(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), args[2]);
 	case G_NAV_NODESARENEIGHBORS:
 		return navigator.NodesAreNeighbors(args[1], args[2]);
 	case G_NAV_CLEARFAILEDEDGE:
@@ -2187,7 +2462,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_NAV_GETBESTNODEALT2:
 		return navigator.GetBestNodeAltRoute(args[1], args[2], args[3]);
 	case G_NAV_GETBESTPATHBETWEENENTS:
-		return navigator.GetBestPathBetweenEnts((sharedEntity_t *)VMA(1), (sharedEntity_t *)VMA(2), args[3]);
+		return navigator.GetBestPathBetweenEnts(SV_GEntityMapperForGentity((sharedEntity_t *)VMA(1)), SV_GEntityMapperForGentity((sharedEntity_t *)VMA(2)), args[3]);
 	case G_NAV_GETNODERADIUS:
 		return navigator.GetNodeRadius(args[1]);
 	case G_NAV_CHECKBLOCKEDEDGES:
@@ -2418,6 +2693,8 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		botlib_export->ai.BotRemoveConsoleMessage( args[1], args[2] );
 		return 0;
 	case BOTLIB_AI_NEXT_CONSOLE_MESSAGE:
+		// QVM-FIXME: bot_consolemessage_s contains pointers and needs translation for 64 bit engine version, but
+		//            vanilla modules don't event call it.
 		return botlib_export->ai.BotNextConsoleMessage( args[1], (struct bot_consolemessage_s *)VMA(2) );
 	case BOTLIB_AI_NUM_CONSOLE_MESSAGE:
 		return botlib_export->ai.BotNumConsoleMessages( args[1] );
@@ -2597,20 +2874,20 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_G2_HAVEWEGHOULMODELS:
-		return SV_G2API_HaveWeGhoul2Models( VMA(1) );
+		return SV_G2API_HaveWeGhoul2Models( (void*)args[1] );
 
 	case G_G2_SETMODELS:
-		SV_G2API_SetGhoul2ModelIndexes( VMA(1),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		SV_G2API_SetGhoul2ModelIndexes( (void*)args[1],(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
 		return 0;
 
 	case G_G2_GETBOLT:
-		return SV_G2API_GetBoltMatrix(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return SV_G2API_GetBoltMatrix((void*)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case G_G2_GETBOLT_NOREC:
-		return SV_G2API_GetBoltMatrix_NoReconstruct(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return SV_G2API_GetBoltMatrix_NoReconstruct((void*)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case G_G2_GETBOLT_NOREC_NOROT:
-		return SV_G2API_GetBoltMatrix_NoRecNoRot(VMA(1), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return SV_G2API_GetBoltMatrix_NoRecNoRot((void*)args[1], args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case G_G2_INITGHOUL2MODEL:
 #ifdef _FULL_G2_LEAK_CHECKING
@@ -2620,47 +2897,47 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 									  (qhandle_t) args[5], args[6], args[7]);
 
 	case G_G2_SETSKIN:
-		return SV_G2API_SetSkin(VMA(1), args[2], args[3], args[4]);
+		return SV_G2API_SetSkin((void*)args[1], args[2], args[3], args[4]);
 
 	case G_G2_SIZE:
-		return SV_G2API_Ghoul2Size ( VMA(1) );
+		return SV_G2API_Ghoul2Size ( (void*)args[1] );
 
 	case G_G2_ADDBOLT:
-		return SV_G2API_AddBolt(VMA(1), args[2], (const char *)VMA(3));
+		return SV_G2API_AddBolt((void*)args[1], args[2], (const char *)VMA(3));
 
 	case G_G2_SETBOLTINFO:
-		SV_G2API_SetBoltInfo(VMA(1), args[2], args[3]);
+		SV_G2API_SetBoltInfo((void*)args[1], args[2], args[3]);
 		return 0;
 
 	case G_G2_ANGLEOVERRIDE:
-		return SV_G2API_SetBoneAngles(VMA(1), args[2], (const char *)VMA(3), (float *)VMA(4), args[5],
+		return SV_G2API_SetBoneAngles((void*)args[1], args[2], (const char *)VMA(3), (float *)VMA(4), args[5],
 							 (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8],
 							 (qhandle_t *)VMA(9), args[10], args[11] );
 
 	case G_G2_PLAYANIM:
-		return SV_G2API_SetBoneAnim(VMA(1), args[2], (const char *)VMA(3), args[4], args[5],
+		return SV_G2API_SetBoneAnim((void*)args[1], args[2], (const char *)VMA(3), args[4], args[5],
 								args[6], VMF(7), args[8], VMF(9), args[10]);
 
 	case G_G2_GETBONEANIM:
-		return SV_G2API_GetBoneAnim(VMA(1), (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5),
+		return SV_G2API_GetBoneAnim((void*)args[1], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5),
 								(int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9), args[10]);
 
 	case G_G2_GETGLANAME:
-		SV_G2API_GetGLAName( VMA(1), args[2], (char *)VMA(3) );
+		SV_G2API_GetGLAName( (void*)args[1], args[2], (char *)VMA(3) );
 		return 0;
 
 	case G_G2_COPYGHOUL2INSTANCE:
-		return (int)SV_G2API_CopyGhoul2Instance(VMA(1), VMA(2), args[3]);
+		return (int)SV_G2API_CopyGhoul2Instance((void*)args[1], (void*)args[2], args[3]);
 
 	case G_G2_COPYSPECIFICGHOUL2MODEL:
-		SV_G2API_CopySpecificGhoul2Model(VMA(1), args[2], VMA(3), args[4]);
+		SV_G2API_CopySpecificGhoul2Model((void*)args[1], args[2], (void*)args[3], args[4]);
 		return 0;
 
 	case G_G2_DUPLICATEGHOUL2INSTANCE:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 1;
 #endif
-		SV_G2API_DuplicateGhoul2Instance(VMA(1), (void **)VMA(2));
+		SV_G2API_DuplicateGhoul2Instance((void*)args[1], (void **)VMA(2));
 		return 0;
 
 	case G_G2_HASGHOUL2MODELONINDEX:
@@ -2689,64 +2966,64 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_G2_COLLISIONDETECT:
-		SV_G2API_CollisionDetect ( (CollisionRecord_t*)VMA(1), VMA(2), (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
+		SV_G2API_CollisionDetect ( (CollisionRecord_t*)VMA(1), (void*)args[2], (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
 		return 0;
 
 	case G_G2_COLLISIONDETECTCACHE:
-		SV_G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), VMA(2), (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
+		SV_G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), (void*)args[2], (const float*)VMA(3), (const float*)VMA(4), args[5], args[6], (float*)VMA(7), (float*)VMA(8), (float*)VMA(9), args[10], args[11], VMF(12) );
 		return 0;
 
 	case G_G2_SETROOTSURFACE:
-		return SV_G2API_SetRootSurface(VMA(1), args[2], (const char *)VMA(3));
+		return SV_G2API_SetRootSurface((void*)args[1], args[2], (const char *)VMA(3));
 
 	case G_G2_SETSURFACEONOFF:
-		return SV_G2API_SetSurfaceOnOff(VMA(1), (const char *)VMA(2), /*(const int)VMA(3)*/args[3]);
+		return SV_G2API_SetSurfaceOnOff((void*)args[1], (const char *)VMA(2), /*(const int)VMA(3)*/args[3]);
 
 	case G_G2_SETNEWORIGIN:
-		return SV_G2API_SetNewOrigin(VMA(1), /*(const int)VMA(2)*/args[2]);
+		return SV_G2API_SetNewOrigin((void*)args[1], /*(const int)VMA(2)*/args[2]);
 
 	case G_G2_DOESBONEEXIST:
-		return SV_G2API_DoesBoneExist(VMA(1), args[2], (const char *)VMA(3));
+		return SV_G2API_DoesBoneExist((void*)args[1], args[2], (const char *)VMA(3));
 
 	case G_G2_GETSURFACERENDERSTATUS:
-		return SV_G2API_GetSurfaceRenderStatus(VMA(1), args[2], (const char *)VMA(3));
+		return SV_G2API_GetSurfaceRenderStatus((void*)args[1], args[2], (const char *)VMA(3));
 
 	case G_G2_ABSURDSMOOTHING:
-		SV_G2API_AbsurdSmoothing(VMA(1), (qboolean)args[2]);
+		SV_G2API_AbsurdSmoothing((void*)args[1], (qboolean)args[2]);
 		return 0;
 
 	case G_G2_SETRAGDOLL:
-		SV_G2API_SetRagDoll( VMA(1), (sharedRagDollParams_t *)VMA(2) );
+		SV_G2API_SetRagDoll( (void*)args[1], (sharedRagDollParams_t *)VMA(2) );
 		return 0;
 
 	case G_G2_ANIMATEG2MODELS:
-		SV_G2API_AnimateG2Models( VMA(1), args[2], (sharedRagDollUpdateParams_t *)VMA(3) );
+		SV_G2API_AnimateG2Models( (void*)args[1], args[2], (sharedRagDollUpdateParams_t *)VMA(3) );
 		return 0;
 
 	//additional ragdoll options -rww
 	case G_G2_RAGPCJCONSTRAINT:
-		return SV_G2API_RagPCJConstraint(VMA(1), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4));
+		return SV_G2API_RagPCJConstraint((void*)args[1], (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4));
 	case G_G2_RAGPCJGRADIENTSPEED:
-		return SV_G2API_RagPCJGradientSpeed(VMA(1), (const char *)VMA(2), VMF(3));
+		return SV_G2API_RagPCJGradientSpeed((void*)args[1], (const char *)VMA(2), VMF(3));
 	case G_G2_RAGEFFECTORGOAL:
-		return SV_G2API_RagEffectorGoal(VMA(1), (const char *)VMA(2), (float *)VMA(3));
+		return SV_G2API_RagEffectorGoal((void*)args[1], (const char *)VMA(2), (float *)VMA(3));
 	case G_G2_GETRAGBONEPOS:
-		return SV_G2API_GetRagBonePos(VMA(1), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4), (float *)VMA(5), (float *)VMA(6));
+		return SV_G2API_GetRagBonePos((void*)args[1], (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4), (float *)VMA(5), (float *)VMA(6));
 	case G_G2_RAGEFFECTORKICK:
-		return SV_G2API_RagEffectorKick(VMA(1), (const char *)VMA(2), (float *)VMA(3));
+		return SV_G2API_RagEffectorKick((void*)args[1], (const char *)VMA(2), (float *)VMA(3));
 	case G_G2_RAGFORCESOLVE:
-		return SV_G2API_RagForceSolve(VMA(1), (qboolean)args[2]);
+		return SV_G2API_RagForceSolve((void*)args[1], (qboolean)args[2]);
 
 	case G_G2_SETBONEIKSTATE:
-		return SV_G2API_SetBoneIKState(VMA(1), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
+		return SV_G2API_SetBoneIKState((void*)args[1], args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
 	case G_G2_IKMOVE:
-		return SV_G2API_IKMove(VMA(1), args[2], (sharedIKMoveParams_t *)VMA(3));
+		return SV_G2API_IKMove((void*)args[1], args[2], (sharedIKMoveParams_t *)VMA(3));
 
 	case G_G2_REMOVEBONE:
-		return SV_G2API_RemoveBone(VMA(1), (const char *)VMA(2), args[3]);
+		return SV_G2API_RemoveBone((void*)args[1], (const char *)VMA(2), args[3]);
 
 	case G_G2_ATTACHINSTANCETOENTNUM:
-		SV_G2API_AttachInstanceToEntNum(VMA(1), args[2], (qboolean)args[3]);
+		SV_G2API_AttachInstanceToEntNum((void*)args[1], args[2], (qboolean)args[3]);
 		return 0;
 	case G_G2_CLEARATTACHEDINSTANCE:
 		SV_G2API_ClearAttachedInstance(args[1]);
@@ -2755,10 +3032,10 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		SV_G2API_CleanEntAttachments();
 		return 0;
 	case G_G2_OVERRIDESERVER:
-		return SV_G2API_OverrideServer(VMA(1));
+		return SV_G2API_OverrideServer((void*)args[1]);
 
 	case G_G2_GETSURFACENAME:
-		SV_G2API_GetSurfaceName(VMA(1), args[2], args[3], (char *)VMA(4));
+		SV_G2API_GetSurfaceName((void*)args[1], args[2], args[3], (char *)VMA(4));
 		return 0;
 
 	case G_SET_ACTIVE_SUBBSP:
@@ -2793,8 +3070,10 @@ void SV_InitGame( qboolean restart ) {
 
 	// clear level pointers
 	sv.entityParsePoint = CM_EntityString();
-	for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ )
+	for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
 		cl->gentity = NULL;
+		cl->gentityMapper = NULL;
+	}
 
 	GVM_InitGame( sv.time, Com_Milliseconds(), restart );
 }
@@ -2846,7 +3125,7 @@ void SV_BindGame( void ) {
 		gi.GetUserinfo							= SV_GetUserinfo;
 		gi.InPVS								= SV_inPVS;
 		gi.InPVSIgnorePortals					= SV_inPVSIgnorePortals;
-		gi.LinkEntity							= SV_LinkEntity;
+		gi.LinkEntity							= GVM_LinkEntity;
 		gi.LocateGameData						= SV_LocateGameData;
 		gi.PointContents						= SV_PointContents;
 		gi.SendConsoleCommand					= Cbuf_ExecuteText;
@@ -2857,13 +3136,13 @@ void SV_BindGame( void ) {
 		gi.SetUserinfo							= SV_SetUserinfo;
 		gi.SiegePersSet							= SV_SiegePersSet;
 		gi.SiegePersGet							= SV_SiegePersGet;
-		gi.UnlinkEntity							= SV_UnlinkEntity;
+		gi.UnlinkEntity							= GVM_UnlinkEntity;
 		gi.ROFF_Clean							= SV_ROFF_Clean;
 		gi.ROFF_UpdateEntities					= SV_ROFF_UpdateEntities;
 		gi.ROFF_Cache							= SV_ROFF_Cache;
 		gi.ROFF_Play							= SV_ROFF_Play;
 		gi.ROFF_Purge_Ent						= SV_ROFF_Purge_Ent;
-		gi.ICARUS_RunScript						= ICARUS_RunScript;
+		gi.ICARUS_RunScript						= SV_ICARUS_RunScript;
 		gi.ICARUS_RegisterScript				= SV_ICARUS_RegisterScript;
 		gi.ICARUS_Init							= ICARUS_Init;
 		gi.ICARUS_ValidEnt						= SV_ICARUS_ValidEnt;
@@ -2871,9 +3150,9 @@ void SV_BindGame( void ) {
 		gi.ICARUS_MaintainTaskManager			= ICARUS_MaintainTaskManager;
 		gi.ICARUS_IsRunning						= ICARUS_IsRunning;
 		gi.ICARUS_TaskIDPending					= ICARUS_TaskIDPending;
-		gi.ICARUS_InitEnt						= ICARUS_InitEnt;
-		gi.ICARUS_FreeEnt						= ICARUS_FreeEnt;
-		gi.ICARUS_AssociateEnt					= ICARUS_AssociateEnt;
+		gi.ICARUS_InitEnt						= SV_ICARUS_InitEnt;
+		gi.ICARUS_FreeEnt						= SV_ICARUS_FreeEnt;
+		gi.ICARUS_AssociateEnt					= SV_ICARUS_AssociateEnt;
 		gi.ICARUS_Shutdown						= ICARUS_Shutdown;
 		gi.ICARUS_TaskIDSet						= SV_ICARUS_TaskIDSet;
 		gi.ICARUS_TaskIDComplete				= SV_ICARUS_TaskIDComplete;

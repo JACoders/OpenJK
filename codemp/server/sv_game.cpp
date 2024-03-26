@@ -35,12 +35,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // these functions must be used instead of pointer arithmetic, because
 // the game allocates gentities with private information after the server shared part
-int	SV_NumForGentity( sharedEntity_t *ent ) {
+int	SV_NumForGentity( const sharedEntity_t *ent ) {
 	int		num;
 
 	num = ( (byte *)ent - (byte *)sv.gentities ) / sv.gentitySize;
 
 	return num;
+}
+
+int	SV_NumForGentityMapper( const sharedEntityMapper_t *ent ) {
+	return ent - sv.gentitiesMapper;
 }
 
 sharedEntity_t *SV_GentityNum( int num ) {
@@ -49,6 +53,11 @@ sharedEntity_t *SV_GentityNum( int num ) {
 	ent = (sharedEntity_t *)((byte *)sv.gentities + sv.gentitySize*(num));
 
 	return ent;
+}
+
+sharedEntityMapper_t *SV_GentityMapperNum( int num ) {
+	if ( num < 0 || num >= (int)ARRAY_LEN(sv.gentitiesMapper) ) return NULL;
+	return &sv.gentitiesMapper[num];
 }
 
 playerState_t *SV_GameClientNum( int num ) {
@@ -66,11 +75,29 @@ svEntity_t	*SV_SvEntityForGentity( sharedEntity_t *gEnt ) {
 	return &sv.svEntities[ gEnt->s.number ];
 }
 
+svEntity_t	*SV_SvEntityForGentityMapper( sharedEntityMapper_t *gEnt ) {
+	if ( !gEnt || gEnt->s->number < 0 || gEnt->s->number >= MAX_GENTITIES ) {
+		Com_Error( ERR_DROP, "SV_SvEntityForGentity: bad gEnt" );
+	}
+	return &sv.svEntities[ gEnt->s->number ];
+}
+
 sharedEntity_t *SV_GEntityForSvEntity( svEntity_t *svEnt ) {
 	int		num;
 
 	num = svEnt - sv.svEntities;
 	return SV_GentityNum( num );
+}
+
+sharedEntityMapper_t *SV_GEntityMapperForSvEntity( svEntity_t *svEnt ) {
+	int		num;
+
+	num = svEnt - sv.svEntities;
+	return SV_GentityMapperNum( num );
+}
+
+sharedEntityMapper_t *SV_GEntityMapperForGentity( const sharedEntity_t *gEnt ) {
+	return SV_GentityMapperNum( SV_NumForGentity(gEnt) );
 }
 
 /*

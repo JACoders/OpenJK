@@ -34,6 +34,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#include <setjmp.h>
+
+static jmp_buf abortframe;
 
 FILE *debuglogfile;
 fileHandle_t logfile;
@@ -43,6 +46,7 @@ fileHandle_t	com_journalDataFile;		// config files are written here
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_dedicated;
+cvar_t	*com_dedicatedForceErrorsToFatal;
 cvar_t	*com_timescale;
 cvar_t	*com_fixedtime;
 cvar_t	*com_journal;
@@ -294,7 +298,7 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	// ERR_DROPs on dedicated drop to an interactive console
 	// which doesn't make sense for dedicated as it's generally
 	// run unattended
-	if ( com_dedicated && com_dedicated->integer ) {
+	if ( com_dedicated && com_dedicated->integer && com_dedicatedForceErrorsToFatal && com_dedicatedForceErrorsToFatal->integer ) {
 		code = ERR_FATAL;
 	}
 
@@ -319,7 +323,7 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 
 	if ( code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT || code == ERR_DROP || code == ERR_NEED_CD ) {
-		throw code;
+		longjmp(abortframe, code+1); // +1 to avoid 0 value
 	} else {
 		CL_Shutdown ();
 		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
@@ -1156,10 +1160,17 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 	int		qport;
+	int		errCode;
 
 	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
-	try
+	if ( (errCode = setjmp(abortframe)) )
+	{
+		errCode--;
+		Com_CatchError( errCode );
+		Sys_Error( "Error during initialization: %s", Com_ErrorString(errCode)) ;
+	}
+	else
 	{
 		// initialize the weak pseudo-random number generator for use later.
 		Com_InitRand();
@@ -1222,6 +1233,7 @@ void Com_Init( char *commandLine ) {
 	#ifdef DEDICATED
 		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_INIT);
 		Cvar_CheckRange( com_dedicated, 1, 2, qtrue );
+		com_dedicatedForceErrorsToFatal = Cvar_Get( "com_dedicatedForceErrorsToFatal", "1", CVAR_ARCHIVE );
 	#else
 		//OJKFIXME: Temporarily disabled dedicated server when not using the dedicated server binary.
 		//			Issue is the server not having a renderer when not using ^^^^^
@@ -1324,11 +1336,6 @@ void Com_Init( char *commandLine ) {
 
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
-	}
-	catch ( int code )
-	{
-		Com_CatchError (code);
-		Sys_Error ("Error during initialization: %s", Com_ErrorString (code));
 	}
 }
 
@@ -1492,8 +1499,15 @@ Com_Frame
 =================
 */
 void Com_Frame( void ) {
-
-	try
+	int errCode;
+	if ( (errCode = setjmp(abortframe)) )
+	{
+		errCode--;
+		Com_CatchError( errCode );
+		Com_Printf ("%s\n", Com_ErrorString(errCode) );
+		return;
+	}
+	else
 	{
 #ifdef G2_PERFORMANCE_ANALYSIS
 		G2PerformanceTimer_PreciseFrame.Start();
@@ -1669,11 +1683,6 @@ void Com_Frame( void ) {
 		}
 
 		com_frameNumber++;
-	}
-	catch (int code) {
-		Com_CatchError (code);
-		Com_Printf ("%s\n", Com_ErrorString (code));
-		return;
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS

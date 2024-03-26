@@ -121,12 +121,12 @@ void Q3_TaskIDClear( int *taskID )
 
 /*
 -------------------------
-qboolean Q3_TaskIDPending( sharedEntity_t *ent, taskID_t taskType )
+qboolean Q3_TaskIDPending( sharedEntityMapper_t *ent, taskID_t taskType )
 -------------------------
 */
-qboolean Q3_TaskIDPending( sharedEntity_t *ent, taskID_t taskType )
+qboolean Q3_TaskIDPending( sharedEntityMapper_t *ent, taskID_t taskType )
 {
-	if ( !gSequencers[ent->s.number] || !gTaskManagers[ent->s.number] )
+	if ( !gSequencers[ent->s->number] || !gTaskManagers[ent->s->number] )
 	{
 		return qfalse;
 	}
@@ -136,7 +136,7 @@ qboolean Q3_TaskIDPending( sharedEntity_t *ent, taskID_t taskType )
 		return qfalse;
 	}
 
-	if ( ent->taskID[taskType] >= 0 )//-1 is none
+	if ( (*(ent->taskID))[taskType] >= 0 )//-1 is none
 	{
 		return qtrue;
 	}
@@ -146,43 +146,43 @@ qboolean Q3_TaskIDPending( sharedEntity_t *ent, taskID_t taskType )
 
 /*
 -------------------------
-void Q3_TaskIDComplete( sharedEntity_t *ent, taskID_t taskType )
+void Q3_TaskIDComplete( sharedEntityMapper_t *ent, taskID_t taskType )
 -------------------------
 */
-void Q3_TaskIDComplete( sharedEntity_t *ent, taskID_t taskType )
+void Q3_TaskIDComplete( sharedEntityMapper_t *ent, taskID_t taskType )
 {
 	if ( taskType < TID_CHAN_VOICE || taskType >= NUM_TIDS )
 	{
 		return;
 	}
 
-	if ( gTaskManagers[ent->s.number] && Q3_TaskIDPending( ent, taskType ) )
+	if ( gTaskManagers[ent->s->number] && Q3_TaskIDPending( ent, taskType ) )
 	{//Complete it
-		gTaskManagers[ent->s.number]->Completed( ent->taskID[taskType] );
+		gTaskManagers[ent->s->number]->Completed( (*(ent->taskID))[taskType] );
 
 		//See if any other tasks have the name number and clear them so we don't complete more than once
-		int	clearTask = ent->taskID[taskType];
+		int	clearTask = (*(ent->taskID))[taskType];
 		for ( int tid = 0; tid < NUM_TIDS; tid++ )
 		{
-			if ( ent->taskID[tid] == clearTask )
+			if ( (*(ent->taskID))[tid] == clearTask )
 			{
-				Q3_TaskIDClear( &ent->taskID[tid] );
+				Q3_TaskIDClear( &((*(ent->taskID))[tid]) );
 			}
 		}
 
 		//clear it - should be cleared in for loop above
-		//Q3_TaskIDClear( &ent->taskID[taskType] );
+		//Q3_TaskIDClear( &((*(ent->taskID)))[taskType] );
 	}
 	//otherwise, wasn't waiting for a task to complete anyway
 }
 
 /*
 -------------------------
-void Q3_SetTaskID( sharedEntity_t *ent, taskID_t taskType, int taskID )
+void Q3_SetTaskID( sharedEntityMapper_t *ent, taskID_t taskType, int taskID )
 -------------------------
 */
 
-void Q3_TaskIDSet( sharedEntity_t *ent, taskID_t taskType, int taskID )
+void Q3_TaskIDSet( sharedEntityMapper_t *ent, taskID_t taskType, int taskID )
 {
 	if ( taskType < TID_CHAN_VOICE || taskType >= NUM_TIDS )
 	{
@@ -192,7 +192,7 @@ void Q3_TaskIDSet( sharedEntity_t *ent, taskID_t taskType, int taskID )
 	//Might be stomping an old task, so complete and clear previous task if there was one
 	Q3_TaskIDComplete( ent, taskType );
 
-	ent->taskID[taskType] = taskID;
+	(*(ent->taskID))[taskType] = taskID;
 }
 
 
@@ -236,9 +236,9 @@ Q3_GetEntityByName
 Returns the sequencer of the entity by the given name
 =============
 */
-static sharedEntity_t *Q3_GetEntityByName( const char *name )
+static sharedEntityMapper_t *Q3_GetEntityByName( const char *name )
 {
-	sharedEntity_t				*ent;
+	sharedEntityMapper_t				*ent;
 	entlist_t::iterator		ei;
 	char					temp[1024];
 
@@ -253,13 +253,13 @@ static sharedEntity_t *Q3_GetEntityByName( const char *name )
 	if ( ei == ICARUS_EntList.end() )
 		return NULL;
 
-	ent = SV_GentityNum((*ei).second);
+	ent = SV_GentityMapperNum((*ei).second);
 
 	return ent;
 	// this now returns the ent instead of the sequencer -- dmv 06/27/01
 //	if (ent == NULL)
 //		return NULL;
-//	return gSequencers[ent->s.number];
+//	return gSequencers[ent->s->number];
 }
 
 /*
@@ -694,7 +694,7 @@ void Q3_DebugPrint( int level, const char *format, ... )
 				if ( ( entNum < 0 ) || ( entNum >= MAX_GENTITIES ) )
 					entNum = 0;
 
-				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", SV_GentityNum(entNum)->script_targetname, entNum, buffer );
+				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", SV_EntityMapperReadString(SV_GentityMapperNum(entNum)->script_targetname), entNum, buffer );
 				break;
 			}
 		default:

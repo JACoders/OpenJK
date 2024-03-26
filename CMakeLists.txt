@@ -112,6 +112,11 @@ endif()
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
 if(WIN32)
+
+	if(MSVC)
+		enable_language(ASM_MASM)
+	endif()
+
 	set(X86 ON)
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		set(Architecture "x86_64")
@@ -126,6 +131,7 @@ else()
 		set(Architecture "arm64")
 		add_definitions(-DPNG_ARM_NEON_OPT=0)
 	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+		set(ARM32 ON)
 		set(Architecture "arm")
 	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^i.86$")
 		set(X86 ON)
@@ -225,6 +231,8 @@ if(MSVC)
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /safeseh:no")
 
 	# We don't try to control symbol visibility under MSVC.
 	set(OPENJK_VISIBILITY_FLAGS "")

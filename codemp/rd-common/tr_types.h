@@ -370,3 +370,32 @@ typedef struct glconfig_s {
 	qboolean				isFullscreen;
 	qboolean				stereoEnabled;
 } glconfig_t;
+
+// Copy of glconfig_t to use with qvms
+typedef struct {
+	uint32_t				renderer_string;
+	uint32_t				vendor_string;
+	uint32_t				version_string;
+	uint32_t				extensions_string;
+
+	int						maxTextureSize;			// queried from GL
+	int						maxActiveTextures;		// multitexture ability
+	float					maxTextureFilterAnisotropy;
+
+	int						colorBits, depthBits, stencilBits;
+
+	qboolean				deviceSupportsGamma;
+	textureCompression_t	textureCompression;
+	qboolean				textureEnvAddAvailable;
+	qboolean				clampToEdgeAvailable;
+
+	int						vidWidth, vidHeight;
+
+	int						displayFrequency;
+
+	// synonymous with "does rendering consume the entire screen?", therefore
+	// a Voodoo or Voodoo2 will have this set to TRUE, as will a Win32 ICD that
+	// used CDS.
+	qboolean				isFullscreen;
+	qboolean				stereoEnabled;
+} glconfig_qvm_t;

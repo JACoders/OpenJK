@@ -618,7 +618,7 @@ int CSequencer::ParseAffect( CBlock *block, bstream_t *bstream )
 	CSequencer	*stream_sequencer = NULL;
 	char		*entname = NULL;
 	int			ret;
-	sharedEntity_t	*ent = 0;
+	sharedEntityMapper_t	*ent = 0;
 
 	entname	= (char*) block->GetMemberData( 0 );
 	ent		= m_ie->I_GetEntityByName( entname );
@@ -700,7 +700,7 @@ int CSequencer::ParseAffect( CBlock *block, bstream_t *bstream )
 
 	if( ent )
 	{
-		stream_sequencer = gSequencers[ent->s.number];//ent->sequencer;
+		stream_sequencer = gSequencers[ent->s->number];//ent->sequencer;
 	}
 
 	if (stream_sequencer == NULL)
@@ -1735,7 +1735,7 @@ Checks for affect command pre-processing
 void CSequencer::CheckAffect( CBlock **command )
 {
 	CBlock *block = *command;
-	sharedEntity_t	*ent = NULL;
+	sharedEntityMapper_t	*ent = NULL;
 	char		*entname = NULL;
 	int			memberNum = 0;
 
@@ -1821,7 +1821,7 @@ void CSequencer::CheckAffect( CBlock **command )
 
 		if( ent )
 		{
-			sequencer = gSequencers[ent->s.number];//ent->sequencer;
+			sequencer = gSequencers[ent->s->number];//ent->sequencer;
 		}
 		if(memberNum == 0)
 		{	//there was no get, increment manually before next step
@@ -1856,7 +1856,7 @@ void CSequencer::CheckAffect( CBlock **command )
 		if( ent )
 		{	// ents need to update upon being affected
 			//ent->taskManager->Update();
-			gTaskManagers[ent->s.number]->Update();
+			gTaskManagers[ent->s->number]->Update();
 		}
 
 		return;
@@ -1888,7 +1888,7 @@ void CSequencer::CheckAffect( CBlock **command )
 		if( ent )
 		{	// ents need to update upon being affected
 			//ent->taskManager->Update();
-			gTaskManagers[ent->s.number]->Update();
+			gTaskManagers[ent->s->number]->Update();
 		}
 
 	}

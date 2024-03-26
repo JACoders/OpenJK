@@ -339,7 +339,7 @@ static int QDECL SV_QsortEntityNumbers( const void *a, const void *b ) {
 SV_AddEntToSnapshot
 ===============
 */
-static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntity_t *gEnt, snapshotEntityNumbers_t *eNums ) {
+static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntityMapper_t *gEnt, snapshotEntityNumbers_t *eNums ) {
 	// if we have already added this entity to this snapshot, don't add again
 	if ( svEnt->snapshotCounter == sv.snapshotCounter ) {
 		return;
@@ -351,7 +351,7 @@ static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntity_t *gEnt, snapsh
 		return;
 	}
 
-	eNums->snapshotEntities[ eNums->numSnapshotEntities ] = gEnt->s.number;
+	eNums->snapshotEntities[ eNums->numSnapshotEntities ] = gEnt->s->number;
 	eNums->numSnapshotEntities++;
 }
 
@@ -364,7 +364,7 @@ float g_svCullDist = -1.0f;
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame,
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
 	int		e, i;
-	sharedEntity_t *ent;
+	sharedEntityMapper_t *ent;
 	svEntity_t	*svEnt;
 	int		l;
 	int		clientarea, clientcluster;
@@ -391,42 +391,42 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	clientpvs = CM_ClusterPVS (clientcluster);
 
 	for ( e = 0 ; e < sv.num_entities ; e++ ) {
-		ent = SV_GentityNum(e);
+		ent = SV_GentityMapperNum(e);
 
 		// never send entities that aren't linked in
-		if ( !ent->r.linked ) {
+		if ( !ent->r->linked ) {
 			continue;
 		}
 
-		if (ent->s.eFlags & EF_PERMANENT)
+		if (ent->s->eFlags & EF_PERMANENT)
 		{	// he's permanent, so don't send him down!
 			continue;
 		}
 
-		if (ent->s.number != e) {
+		if (ent->s->number != e) {
 			Com_DPrintf ("FIXING ENT->S.NUMBER!!!\n");
-			ent->s.number = e;
+			ent->s->number = e;
 		}
 
 		// entities can be flagged to explicitly not be sent to the client
-		if ( ent->r.svFlags & SVF_NOCLIENT ) {
+		if ( ent->r->svFlags & SVF_NOCLIENT ) {
 			continue;
 		}
 
 		// entities can be flagged to be sent to only one client
-		if ( ent->r.svFlags & SVF_SINGLECLIENT ) {
-			if ( ent->r.singleClient != frame->ps.clientNum ) {
+		if ( ent->r->svFlags & SVF_SINGLECLIENT ) {
+			if ( ent->r->singleClient != frame->ps.clientNum ) {
 				continue;
 			}
 		}
 		// entities can be flagged to be sent to everyone but one client
-		if ( ent->r.svFlags & SVF_NOTSINGLECLIENT ) {
-			if ( ent->r.singleClient == frame->ps.clientNum ) {
+		if ( ent->r->svFlags & SVF_NOTSINGLECLIENT ) {
+			if ( ent->r->singleClient == frame->ps.clientNum ) {
 				continue;
 			}
 		}
 
-		svEnt = SV_SvEntityForGentity( ent );
+		svEnt = SV_SvEntityForGentityMapper( ent );
 
 		// don't double add an entity through portals
 		if ( svEnt->snapshotCounter == sv.snapshotCounter ) {
@@ -434,20 +434,20 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		}
 
 		// entities can request not to be sent to certain clients (NOTE: always send to ourselves)
-		if ( e != frame->ps.clientNum && (ent->r.svFlags & SVF_BROADCASTCLIENTS)
-			&& !(ent->r.broadcastClients[frame->ps.clientNum/32] & (1 << (frame->ps.clientNum % 32))) )
+		if ( e != frame->ps.clientNum && (ent->r->svFlags & SVF_BROADCASTCLIENTS)
+			&& !(ent->r->broadcastClients[frame->ps.clientNum/32] & (1 << (frame->ps.clientNum % 32))) )
 		{
 			continue;
 		}
 		// broadcast entities are always sent, and so is the main player so we don't see noclip weirdness
-		if ( (ent->r.svFlags & SVF_BROADCAST) || e == frame->ps.clientNum
-			|| (ent->r.broadcastClients[frame->ps.clientNum/32] & (1 << (frame->ps.clientNum % 32))) )
+		if ( (ent->r->svFlags & SVF_BROADCAST) || e == frame->ps.clientNum
+			|| (ent->r->broadcastClients[frame->ps.clientNum/32] & (1 << (frame->ps.clientNum % 32))) )
 		{
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
 		}
 
-		if (ent->s.isPortalEnt)
+		if (ent->s->isPortalEnt)
 		{ //rww - portal entities are always sent as well
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
@@ -496,13 +496,13 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 
 		if (g_svCullDist != -1.0f)
 		{ //do a distance cull check
-			VectorAdd(ent->r.absmax, ent->r.absmin, difference);
+			VectorAdd(ent->r->absmax, ent->r->absmin, difference);
 			VectorScale(difference, 0.5f, difference);
 			VectorSubtract(origin, difference, difference);
 			length = VectorLength(difference);
 
 			// calculate the diameter
-			VectorSubtract(ent->r.absmax, ent->r.absmin, difference);
+			VectorSubtract(ent->r->absmax, ent->r->absmin, difference);
 			radius = VectorLength(difference);
 			if (length-radius >= g_svCullDist)
 			{ //then don't add it
@@ -514,15 +514,15 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		SV_AddEntToSnapshot( svEnt, ent, eNums );
 
 		// if its a portal entity, add everything visible from its camera position
-		if ( ent->r.svFlags & SVF_PORTAL ) {
-			if ( ent->s.generic1 ) {
+		if ( ent->r->svFlags & SVF_PORTAL ) {
+			if ( ent->s->generic1 ) {
 				vec3_t dir;
-				VectorSubtract(ent->s.origin, origin, dir);
-				if ( VectorLengthSquared(dir) > (float) ent->s.generic1 * ent->s.generic1 ) {
+				VectorSubtract(ent->s->origin, origin, dir);
+				if ( VectorLengthSquared(dir) > (float) ent->s->generic1 * ent->s->generic1 ) {
 					continue;
 				}
 			}
-			SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
+			SV_AddEntitiesVisibleFromPoint( ent->s->origin2, frame, eNums, qtrue );
 		}
 	}
 }
@@ -545,10 +545,10 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	clientSnapshot_t			*frame;
 	snapshotEntityNumbers_t		entityNumbers;
 	int							i;
-	sharedEntity_t				*ent;
+	sharedEntityMapper_t		*ent;
 	entityState_t				*state;
 	svEntity_t					*svEnt;
-	sharedEntity_t				*clent;
+	sharedEntityMapper_t		*clent;
 	playerState_t				*ps;
 
 	// bump the counter used to prevent double adding
@@ -563,7 +563,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 	frame->num_entities = 0;
 
-	clent = client->gentity;
+	clent = client->gentityMapper;
 	if ( !clent || client->state == CS_ZOMBIE ) {
 		return;
 	}
@@ -578,12 +578,11 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 	if (ps->m_iVehicleNum)
 	{ //get the vehicle's playerstate too then
-		sharedEntity_t *veh = SV_GentityNum(ps->m_iVehicleNum);
+		sharedEntityMapper_t *veh = SV_GentityMapperNum(ps->m_iVehicleNum);
+		playerState_t *vps;
 
-		if (veh && veh->playerState)
+		if (veh && (vps = SV_EntityMapperReadPlayerState(veh->playerState)))
 		{ //Now VMA it and we've got ourselves a playerState
-			playerState_t *vps = ((playerState_t *)VM_ArgPtr((intptr_t)veh->playerState));
-
             frame->vps = *vps;
 #ifdef _ONEBIT_COMBO
 			frame->pDeltaOneBitVeh = &vps->deltaOneBits;
@@ -628,9 +627,9 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	frame->num_entities = 0;
 	frame->first_entity = svs.nextSnapshotEntities;
 	for ( i = 0 ; i < entityNumbers.numSnapshotEntities ; i++ ) {
-		ent = SV_GentityNum(entityNumbers.snapshotEntities[i]);
+		ent = SV_GentityMapperNum(entityNumbers.snapshotEntities[i]);
 		state = &svs.snapshotEntities[svs.nextSnapshotEntities % svs.numSnapshotEntities];
-		*state = ent->s;
+		*state = *ent->s;
 		svs.nextSnapshotEntities++;
 		// this should never hit, map should always be restarted first in SV_Frame
 		if ( svs.nextSnapshotEntities >= 0x7FFFFFFE ) {

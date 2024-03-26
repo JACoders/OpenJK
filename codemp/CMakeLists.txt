@@ -259,10 +259,29 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/tags.h"
 		"${MPDir}/qcommon/timing.h"
 		"${MPDir}/qcommon/vm.cpp"
+		"${MPDir}/qcommon/vm_local.h"
+		"${MPDir}/qcommon/vm_interpreted.cpp"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 
 		${SharedCommonFiles}
 		)
+
+	if(X86)
+		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles}
+			"${MPDir}/qcommon/vm_x86.cpp"
+		)
+	elseif(ARM32)
+		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles}
+			"${MPDir}/qcommon/vm_arm.cpp"
+		)
+	endif()
+
+	if(MSVC)
+		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles}
+			"${MPDir}/win32/q3asm.asm"
+		)
+	endif()
+
 	if(WIN32)
 		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles})
 	endif(WIN32)

@@ -336,9 +336,9 @@ Update
 
 int CTaskManager::Update( void )
 {
-	sharedEntity_t *owner = SV_GentityNum(m_ownerID);
+	sharedEntityMapper_t *owner = SV_GentityMapperNum(m_ownerID);
 
-	if ( (owner->r.svFlags&SVF_ICARUS_FREEZE) )
+	if ( (owner->r->svFlags&SVF_ICARUS_FREEZE) )
 	{
 		return TASK_FAILED;
 	}
