@@ -286,7 +286,7 @@ int trap_LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int s
 int trap_MemoryRemaining( void ) {
 	return Q_syscall( UI_MEMORY_REMAINING );
 }
-int trap_PC_AddGlobalDefine( char *define ) {
+int trap_PC_AddGlobalDefine( const char *define ) {
 	return Q_syscall( UI_PC_ADD_GLOBAL_DEFINE, define );
 }
 int trap_PC_LoadSource( const char *filename ) {
