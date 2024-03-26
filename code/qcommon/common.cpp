@@ -1124,6 +1124,7 @@ void Com_Init( char *commandLine ) {
 		// init commands and vars
 		//
 		Cmd_AddCommand ("quit", Com_Quit_f);
+		Cmd_AddCommand ("exit", Com_Quit_f);
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
