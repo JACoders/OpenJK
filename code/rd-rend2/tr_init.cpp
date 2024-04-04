@@ -1122,17 +1122,18 @@ RB_TakeVideoFrameCmd
 const void *RB_TakeVideoFrameCmd( const void *data )
 {
 	const videoFrameCommand_t	*cmd;
-	byte				*cBuf;
-	size_t				memcount, linelen;
-	int				padwidth, avipadwidth, padlen, avipadlen;
-	GLint packAlign;
-
+	
 	// finish any 2D drawing if needed
 	if (tess.numIndexes)
 		RB_EndSurface();
 
 	cmd = (const videoFrameCommand_t *)data;
 #ifndef REND2_SP
+	byte				*cBuf;
+	size_t				memcount, linelen;
+	int				padwidth, avipadwidth, padlen, avipadlen;
+	GLint packAlign;
+
 	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
 
 	linelen = cmd->width * 3;

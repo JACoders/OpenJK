@@ -925,7 +925,7 @@ R_AComputeFogNum
 */
 static int R_GComputeFogNum( trRefEntity_t *ent ) {
 
-	int				i, j;
+	int				i;
 	float			frameRadius;
 	fog_t			*fog;
 	vec3_t			localOrigin;
@@ -937,6 +937,7 @@ static int R_GComputeFogNum( trRefEntity_t *ent ) {
 	VectorCopy(ent->e.origin, localOrigin);
 	frameRadius = ent->e.radius;
 #ifndef REND2_SP
+	int j;
 	for ( i = 1 ; i < tr.world->numfogs ; i++ ) {
 		fog = &tr.world->fogs[i];
 		for ( j = 0 ; j < 3 ; j++ ) {

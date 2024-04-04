@@ -136,7 +136,7 @@ R_MDRComputeFogNum
 */
 
 int R_MDRComputeFogNum( mdrHeader_t *header, trRefEntity_t *ent ) {
-	int				i, j;
+	int				i;
 	float			frameRadius;
 	fog_t			*fog;
 	mdrFrame_t		*mdrFrame;
@@ -154,6 +154,7 @@ int R_MDRComputeFogNum( mdrHeader_t *header, trRefEntity_t *ent ) {
 	VectorAdd( ent->e.origin, mdrFrame->localOrigin, localOrigin );
 	frameRadius = mdrFrame->radius;
 #ifndef REND2_SP
+	int j;
 	for (i = 1; i < tr.world->numfogs; i++) {
 		fog = &tr.world->fogs[i];
 		for (j = 0; j < 3; j++) {

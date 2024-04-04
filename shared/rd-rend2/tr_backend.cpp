@@ -2139,7 +2139,7 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	if (r_drawSun->integer)
 	{
-		RB_DrawSun(0.1, tr.sunShader);
+		RB_DrawSun(0.1f, tr.sunShader);
 	}
 
 	if (r_drawSunRays->integer)
@@ -2153,7 +2153,7 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 		tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
 		qglBeginQuery(GL_SAMPLES_PASSED, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
 
-		RB_DrawSun(0.3, tr.sunFlareShader);
+		RB_DrawSun(0.3f, tr.sunFlareShader);
 
 		qglEndQuery(GL_SAMPLES_PASSED);
 

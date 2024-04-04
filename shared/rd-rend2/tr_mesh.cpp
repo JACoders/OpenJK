@@ -168,7 +168,6 @@ RE_GetModelBounds
 void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2)
 {
 	mdvFrame_t		*frame;
-	md3Header_t		*header;
 	model_t			*model;
 
 	assert(refEnt);
@@ -269,7 +268,7 @@ R_ComputeFogNum
 =================
 */
 int R_ComputeFogNum( mdvModel_t *model, trRefEntity_t *ent ) {
-	int				i, j;
+	int				i;
 	float			frameRadius;
 	fog_t			*fog;
 	mdvFrame_t		*mdvFrame;
@@ -284,6 +283,7 @@ int R_ComputeFogNum( mdvModel_t *model, trRefEntity_t *ent ) {
 	VectorAdd( ent->e.origin, mdvFrame->localOrigin, localOrigin );
 	frameRadius = mdvFrame->radius;
 #ifndef REND2_SP
+	int j;
 	for ( i = 1 ; i < tr.world->numfogs ; i++ ) {
 		fog = &tr.world->fogs[i];
 		for ( j = 0 ; j < 3 ; j++ ) {

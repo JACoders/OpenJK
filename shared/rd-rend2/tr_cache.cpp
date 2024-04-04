@@ -185,6 +185,7 @@ void CModelCacheManager::DumpNonPure( void )
 		int iInPak = ri.FS_FileIsInPAK( it->path, &iChecksum );
 #else
 		int iInPak = ri.FS_FileIsInPAK(it->path);
+		iChecksum = it->iPAKChecksum;
 #endif
 
 		if( iInPak == -1 || iChecksum != it->iPAKChecksum )
