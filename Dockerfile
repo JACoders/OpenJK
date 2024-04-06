@@ -16,7 +16,7 @@ RUN mkdir /usr/src/openjk/build.i386 &&\
 	cmake -DCMAKE_TOOLCHAIN_FILE=/usr/src/openjk/cmake/Toolchains/linux-i686.cmake \
 		-DCMAKE_INSTALL_PREFIX=/opt \
 		-DBuildMPCGame=OFF -DBuildMPEngine=OFF -DBuildMPRdVanilla=OFF -DBuildMPUI=OFF \
-		-DBuildSPEngine=OFF -DBuildSPGame=OFF -DBuildSPRdVanilla=OFF \
+		-DBuildSPEngine=OFF -DBuildSPGame=OFF -DBuildSPRdVanilla=OFF -DBuildMPRend2=OFF \
 		.. &&\
 	make &&\
 	make install
@@ -26,7 +26,7 @@ RUN mkdir /usr/src/openjk/build.x86_64 &&\
 	cd /usr/src/openjk/build.x86_64 &&\
 	cmake -DCMAKE_INSTALL_PREFIX=/opt \
 		-DBuildMPCGame=OFF -DBuildMPEngine=OFF -DBuildMPRdVanilla=OFF -DBuildMPUI=OFF \
-		-DBuildSPEngine=OFF -DBuildSPGame=OFF -DBuildSPRdVanilla=OFF \
+		-DBuildSPEngine=OFF -DBuildSPGame=OFF -DBuildSPRdVanilla=OFF -DBuildMPRend2=OFF \
 		.. &&\
 	make &&\
 	make install

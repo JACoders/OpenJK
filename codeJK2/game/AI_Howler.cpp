@@ -20,7 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 #include "g_headers.h"
-	    
+
 #include "b_local.h"
 
 // These define the working combat range for these suckers
@@ -91,7 +91,7 @@ void Howler_Patrol( void )
 		return;
 	}
 }
- 
+
 /*
 -------------------------
 Howler_Move
@@ -169,7 +169,7 @@ void Howler_Combat( void )
 	// Sometimes I have problems with facing the enemy I'm attacking, so force the issue so I don't look dumb
 	NPC_FaceEnemy( qtrue );
 
-	float	distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float	distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 
 	qboolean	advance = (qboolean)( distance > MIN_DISTANCE_SQR ? qtrue : qfalse  );
 
@@ -195,7 +195,7 @@ void Howler_Combat( void )
 NPC_Howler_Pain
 -------------------------
 */
-void NPC_Howler_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Howler_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
 {
 	if ( damage >= 10 )
 	{

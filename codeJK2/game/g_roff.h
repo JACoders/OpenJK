@@ -40,9 +40,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 typedef struct roff_hdr_s
 {
 	char	mHeader[4];		// should be "ROFF" (Rotation, Origin File Format)
-	int	mVersion;	
+	int	mVersion;
 	float	mCount;			// There isn't any reason for this to be anything other than an int, sigh...
-		//						
+		//
 		//		Move - Rotate data follows....vec3_t delta_origin, vec3_t delta_rotation
 		//
 } roff_hdr_t;

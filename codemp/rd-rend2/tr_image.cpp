@@ -132,7 +132,7 @@ void GL_TextureMode( const char *string ) {
 
 	gl_filter_min = modes[i].minimize;
 	gl_filter_max = modes[i].maximize;
-	
+
 	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 	{
 		ri.Cvar_SetValue ("r_ext_texture_filter_anisotropic", glConfig.maxTextureFilterAnisotropy);
@@ -145,7 +145,7 @@ void GL_TextureMode( const char *string ) {
 			GL_Bind (glt);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-			
+
 			if ( r_ext_texture_filter_anisotropic->value > 0.0f )
 			{
 				if ( glConfig.maxTextureFilterAnisotropy > 1.0f )
@@ -299,7 +299,7 @@ void R_ImageList_f( void ) {
 		if (image->flags & IMGFLAG_MIPMAP)
 			estSize += estSize / 2;
 
-		float printSize = GetReadableSize(estSize, &sizeSuffix); 
+		float printSize = GetReadableSize(estSize, &sizeSuffix);
 
 		ri.Printf(PRINT_ALL, "%4i: %4ix%4i %s %7.2f%s %s\n", i, image->uploadWidth, image->uploadHeight, format, printSize, sizeSuffix, image->imgName);
 		estTotalSize += estSize;
@@ -323,11 +323,11 @@ Used to resample images in a more general than quartering fashion.
 This will only be filtered properly if the resampled size
 is greater than half the original size.
 
-If a larger shrinking is needed, use the mipmap function 
+If a larger shrinking is needed, use the mipmap function
 before or after.
 ================
 */
-static void ResampleTexture( byte *in, int inwidth, int inheight, byte *out,  
+static void ResampleTexture( byte *in, int inwidth, int inheight, byte *out,
 							int outwidth, int outheight ) {
 	int		i, j;
 	byte	*inrow, *inrow2;
@@ -337,7 +337,7 @@ static void ResampleTexture( byte *in, int inwidth, int inheight, byte *out,
 
 	if (outwidth>2048)
 		ri.Error(ERR_DROP, "ResampleTexture: max width");
-								
+
 	fracstep = inwidth*0x10000/outwidth;
 
 	frac = fracstep>>2;
@@ -557,7 +557,7 @@ static void DoFCBI(byte *in, byte *out, int width, int height, int component)
 			inbyte += 8;
 		}
 	}
-	
+
 	for (y = 3; y < height - 3; y += 2)
 	{
 		// diagonals
@@ -707,7 +707,7 @@ static void DoFCBI(byte *in, byte *out, int width, int height, int component)
 			inbyte += 8;
 		}
 	}
-	
+
 	for (y = 2; y < height - 3; y++)
 	{
 		// horizontal & vertical
@@ -747,7 +747,7 @@ static void DoFCBI(byte *in, byte *out, int width, int height, int component)
 
 		//x = (y + 1) % 2;
 		x = (y + 1) % 2 + 2;
-		
+
 		// optimization one
 		//            SAMPLE2(sa, x-1, y-2);
 		//SAMPLE2(sc, x-2, y-1); SAMPLE2(sd, x,   y-1);
@@ -804,7 +804,7 @@ static void DoFCBI(byte *in, byte *out, int width, int height, int component)
 			sj = *line4; line4 += 8;
 			sl = *line5; line5 += 8;
 
-			hp = sf + sg; 
+			hp = sf + sg;
 			vp = sd + si;
 			hd = abs(sf - sg);
 			vd = abs(sd - si);
@@ -828,7 +828,7 @@ static void DoFCBI(byte *in, byte *out, int width, int height, int component)
 
 				if (hdd > vdd)
 					*outbyte = hp >> 1;
-				else 
+				else
 					*outbyte = vp >> 1;
 			}
 
@@ -920,7 +920,7 @@ static void DoFCBIQuick(byte *in, byte *out, int width, int height, int componen
 			inbyte += 8;
 		}
 	}
-	
+
 	for (y = 2; y < height - 3; y++)
 	{
 		byte sd, sf, sg, si;
@@ -943,8 +943,8 @@ static void DoFCBIQuick(byte *in, byte *out, int width, int height, int componen
 			sd = *line2; line2 += 8;
 			sg = *line3; line3 += 8;
 			si = *line4; line4 += 8;
-			
-			hp = sf + sg; 
+
+			hp = sf + sg;
 			vp = sd + si;
 			hd = abs(sf - sg);
 			vd = abs(sd - si);
@@ -1005,7 +1005,7 @@ static void DoLinear(byte *in, byte *out, int width, int height)
 			COPYSAMPLE(si, line3); line3 += 8;
 
 			for (i = 0; i < 4; i++)
-			{	
+			{
 				*outbyte++ = (sd[i] + si[i] + se[i] + sh[i]) >> 2;
 			}
 
@@ -1031,7 +1031,7 @@ static void DoLinear(byte *in, byte *out, int width, int height)
 			inbyte += 8;
 		}
 	}
-	
+
 	for (y = 1; y < height - 1; y++)
 	{
 		byte sd[4], sf[4], sg[4], si[4];
@@ -1169,7 +1169,7 @@ static void FCBIByBlock(byte *data, int width, int height, qboolean clampToEdge,
 				}
 
 				outbyte = workdata + y2   * fullworkwidth * 4;
-				inbyte  = data     + srcy * width         * 4;		
+				inbyte  = data     + srcy * width         * 4;
 
 				for (x2 = 0; x2 < fullworkwidth; x2 += 2)
 				{
@@ -1328,7 +1328,7 @@ static void R_MipMap2( byte *in, int inWidth, int inHeight ) {
 		for ( j = 0 ; j < outWidth ; j++ ) {
 			outpix = (byte *) ( temp + i * outWidth + j );
 			for ( k = 0 ; k < 4 ; k++ ) {
-				total = 
+				total =
 					1 * (&in[ 4*(((i*2-1)&inHeightMask)*inWidth + ((j*2-1)&inWidthMask)) ])[k] +
 					2 * (&in[ 4*(((i*2-1)&inHeightMask)*inWidth + ((j*2  )&inWidthMask)) ])[k] +
 					2 * (&in[ 4*(((i*2-1)&inHeightMask)*inWidth + ((j*2+1)&inWidthMask)) ])[k] +
@@ -1435,8 +1435,8 @@ static void R_MipMapLuminanceAlpha (const byte *in, byte *out, int width, int he
 	if ( width == 0 || height == 0 ) {
 		width += height;	// get largest
 		for (i=0 ; i<width ; i++, out+=4, in+=8 ) {
-			out[0] = 
-			out[1] = 
+			out[0] =
+			out[1] =
 			out[2] = (in[0] + in[4]) >> 1;
 			out[3] = (in[3] + in[7]) >> 1;
 		}
@@ -1445,8 +1445,8 @@ static void R_MipMapLuminanceAlpha (const byte *in, byte *out, int width, int he
 
 	for (i=0 ; i<height ; i++, in+=row) {
 		for (j=0 ; j<width ; j++, out+=4, in+=8) {
-			out[0] = 
-			out[1] = 
+			out[0] =
+			out[1] =
 			out[2] = (in[0] + in[4] + in[row  ] + in[row+4]) >> 2;
 			out[3] = (in[3] + in[7] + in[row+3] + in[row+7]) >> 2;
 		}
@@ -1472,7 +1472,7 @@ static void R_MipMapNormalHeight (const byte *in, byte *out, int width, int heig
 	row = width * 4;
 	width >>= 1;
 	height >>= 1;
-	
+
 	for (i=0 ; i<height ; i++, in+=row) {
 		for (j=0 ; j<width ; j++, out+=4, in+=8) {
 			vec3_t v;
@@ -1602,7 +1602,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 	if ( r_roundImagesDown->integer && scaled_height > height )
 		scaled_height >>= 1;
 
-	if ( picmip && data && resampledBuffer && r_imageUpsample->integer && 
+	if ( picmip && data && resampledBuffer && r_imageUpsample->integer &&
 	     scaled_width < r_imageUpsampleMaxSize->integer && scaled_height < r_imageUpsampleMaxSize->integer)
 	{
 		int finalwidth, finalheight;
@@ -1730,7 +1730,7 @@ static qboolean RawImage_HasAlpha(const byte *scan, int numPixels)
 
 	for ( i = 0; i < numPixels; i++ )
 	{
-		if ( scan[i*4 + 3] != 255 ) 
+		if ( scan[i*4 + 3] != 255 )
 		{
 			return qtrue;
 		}
@@ -2017,7 +2017,7 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 		// the data is NULL. All levels have already been allocated by glTexStorage2D.
 
 		int miplevel = 0;
-		
+
 		while (width > 1 || height > 1)
 		{
 			if (data)
@@ -2042,7 +2042,7 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 					R_MipMap( data, width, height );
 				}
 			}
-			
+
 			width >>= 1;
 			height >>= 1;
 			if (width < 1)
@@ -2110,7 +2110,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, int fla
 	//
 	c = width*height;
 	scan = data;
-	
+
 	if( r_greyscale->integer )
 	{
 		for ( i = 0; i < c; i++ )
@@ -2152,7 +2152,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, int fla
 	}
 
 	// copy or resample data as appropriate for first MIP level
-	if ( ( scaled_width == width ) && 
+	if ( ( scaled_width == width ) &&
 		( scaled_height == height ) ) {
 		if (!(flags & IMGFLAG_MIPMAP))
 		{
@@ -2488,7 +2488,7 @@ R_Create2DImageArray
 This is the only way any 2d array sampler image_t are created
 ================
 */
-image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height, int layers, imgType_t type, int flags, int internalFormat) 
+image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height, int layers, imgType_t type, int flags, int internalFormat)
 {
 	image_t		*image;
 	long		hash;
@@ -2543,7 +2543,7 @@ image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height
 	case GL_DEPTH_COMPONENT16:
 	case GL_DEPTH_COMPONENT24:
 	case GL_DEPTH_COMPONENT32:
-		
+
 		qglTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		qglTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		if (flags & IMGLFAG_SHADOWCOMP)
@@ -2609,10 +2609,10 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 	scaledBuffer = (byte *)ri.Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	GL_SelectTexture( image->TMU );
-	GL_Bind(image);	
+	GL_Bind(image);
 
 	// copy or resample data as appropriate for first MIP level
-	if ( ( scaled_width == width ) && 
+	if ( ( scaled_width == width ) &&
 		( scaled_height == height ) ) {
 		if (!(image->flags & IMGFLAG_MIPMAP))
 		{
@@ -2666,7 +2666,7 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 	RawImage_UploadTexture( (byte *)data, scaled_x, scaled_y, scaled_width, scaled_height, image->internalFormat, image->type, image->flags, qtrue );
 
 done:
-	
+
 	GL_SelectTexture( 0 );
 
 	GL_CheckErrors();
@@ -2729,7 +2729,7 @@ void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName
 	image = R_GetLoadedImage(packedName, flags);
 	if (image != NULL)
 	{
-		// Don't scale occlusion, roughness and metalness 
+		// Don't scale occlusion, roughness and metalness
 		stage->specularScale[0] =
 		stage->specularScale[2] =
 		stage->specularScale[3] = 1.0f;
@@ -2744,12 +2744,12 @@ void R_LoadPackedMaterialImage(shaderStage_t *stage, const char *packedImageName
 		return;
 	}
 
-	// Don't scale occlusion, roughness and metalness 
+	// Don't scale occlusion, roughness and metalness
 	stage->specularScale[0] =
 	stage->specularScale[2] =
 	stage->specularScale[3] = 1.0f;
 	stage->specularScale[1] = baseSpecularScale;
-	
+
 	GLint swizzle[4] = { GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA };
 
 	switch (stage->specularType)
@@ -2822,7 +2822,7 @@ image_t *R_BuildSDRSpecGlossImage(shaderStage_t *stage, const char *specImageNam
 		currentColor[1] = ByteToFloat(specPic[i + 1]);
 		currentColor[2] = ByteToFloat(specPic[i + 2]);
 
-		float ratio = 
+		float ratio =
 			(sRGBtoRGB(currentColor[0]) + sRGBtoRGB(currentColor[1]) + sRGBtoRGB(currentColor[1])) /
 			(currentColor[0] + currentColor[1] + currentColor[2]);
 
@@ -2842,26 +2842,26 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 	image_t *normalImage;
 	int normalWidth, normalHeight;
 	int normalFlags;
-	
+
 	normalFlags = (flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
-	
+
 	COM_StripExtension(name, normalName, sizeof(normalName));
 	Q_strcat(normalName, sizeof(normalName), "_n");
-	
+
 	// find normalmap in case it's there
 	normalImage = R_FindImageFile(normalName, IMGTYPE_NORMAL, normalFlags);
-	
+
 	// if not, generate it
 	if (normalImage == NULL)
 	{
 		byte *normalPic;
 		int x, y;
-		
+
 		normalWidth = width;
 		normalHeight = height;
 		normalPic = (byte *)Z_Malloc(width * height * 4, TAG_GENERAL);
 		RGBAtoNormal(pic, normalPic, width, height, (qboolean)(flags & IMGFLAG_CLAMPTOEDGE));
-		
+
 #if 1
 		// Brighten up the original image to work with the normal map
 		RGBAtoYCoCgA(pic, pic, width, height);
@@ -2882,44 +2882,44 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 		// Blur original image's luma to work with the normal map
 		{
 			byte *blurPic;
-			
+
 			RGBAtoYCoCgA(pic, pic, width, height);
 			blurPic = ri.Malloc(width * height);
-			
+
 			for (y = 1; y < height - 1; y++)
 			{
 				byte *picbyte  = pic     + y * width * 4;
 				byte *blurbyte = blurPic + y * width;
-				
+
 				picbyte += 4;
 				blurbyte += 1;
-				
+
 				for (x = 1; x < width - 1; x++)
 				{
 					int result;
-					
+
 					result = *(picbyte - (width + 1) * 4) + *(picbyte - width * 4) + *(picbyte - (width - 1) * 4) +
 					*(picbyte -          1  * 4) + *(picbyte            ) + *(picbyte +          1  * 4) +
 					*(picbyte + (width - 1) * 4) + *(picbyte + width * 4) + *(picbyte + (width + 1) * 4);
-					
+
 					result /= 9;
-					
+
 					*blurbyte = result;
 					picbyte += 4;
 					blurbyte += 1;
 				}
 			}
-			
+
 			// FIXME: do borders
-			
+
 			for (y = 1; y < height - 1; y++)
 			{
 				byte *picbyte  = pic     + y * width * 4;
 				byte *blurbyte = blurPic + y * width;
-				
+
 				picbyte += 4;
 				blurbyte += 1;
-				
+
 				for (x = 1; x < width - 1; x++)
 				{
 					picbyte[0] = *blurbyte;
@@ -2927,13 +2927,13 @@ static void R_CreateNormalMap ( const char *name, byte *pic, int width, int heig
 					blurbyte += 1;
 				}
 			}
-			
+
 			ri.Free(blurPic);
-			
+
 			YCoCgAtoRGBA(pic, pic, width, height);
 		}
 #endif
-		
+
 		R_CreateImage( normalName, normalPic, normalWidth, normalHeight, IMGTYPE_NORMAL, normalFlags, 0 );
 		Z_Free( normalPic );
 	}
@@ -2975,7 +2975,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		{
 			R_LoadImage(name, &pic, &width, &height);
 		}
-		else 
+		else
 		{
 			for (int i = 0; i < width*height; i++)
 			{
@@ -3026,7 +3026,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 
 	image = R_CreateImage( name, pic, width, height, type, loadFlags, internalFormat);
 	Z_Free( pic );
-	
+
 	return image;
 }
 
@@ -3066,10 +3066,10 @@ static void R_CreateDlightImage( void ) {
 				} else if ( b < 75 ) {
 					b = 0;
 				}
-				data[y][x][0] = 
-				data[y][x][1] = 
+				data[y][x][0] =
+				data[y][x][1] =
 				data[y][x][2] = b;
-				data[y][x][3] = 255;			
+				data[y][x][3] = 255;
 			}
 		}
 		tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, 0 );
@@ -3086,7 +3086,7 @@ void R_InitFogTable( void ) {
 	int		i;
 	float	d;
 	float	exp;
-	
+
 	exp = 0.5;
 
 	for ( i = 0 ; i < FOG_TABLE_SIZE ; i++ ) {
@@ -3151,8 +3151,8 @@ static void R_CreateFogImage( void ) {
 		for (y=0 ; y<FOG_T ; y++) {
 			d = R_FogFactor( ( x + 0.5f ) / FOG_S, ( y + 0.5f ) / FOG_T );
 
-			data[(y*FOG_S+x)*4+0] = 
-			data[(y*FOG_S+x)*4+1] = 
+			data[(y*FOG_S+x)*4+0] =
+			data[(y*FOG_S+x)*4+1] =
 			data[(y*FOG_S+x)*4+2] = 255;
 			data[(y*FOG_S+x)*4+3] = 255*d;
 		}
@@ -3356,8 +3356,8 @@ void R_CreateBuiltinImages( void ) {
 	// full color, for default lightmaps, etc
 	for (x = 0; x < DEFAULT_SIZE; x++) {
 		for (y  =0; y < DEFAULT_SIZE; y++) {
-			data[y][x][0] = 
-			data[y][x][1] = 
+			data[y][x][0] =
+			data[y][x][1] =
 			data[y][x][2] = tr.identityLightByte;
 			data[y][x][3] = 255;
 		}
@@ -3482,11 +3482,11 @@ void R_CreateBuiltinImages( void ) {
 	if (r_shadows->integer == 4)
 	{
 		tr.pshadowArrayImage = R_Create2DImageArray(
-			va("*pshadowmapArray"), 
-			NULL, 
+			va("*pshadowmapArray"),
+			NULL,
 			PSHADOW_MAP_SIZE,
-			PSHADOW_MAP_SIZE, 
-			MAX_DRAWN_PSHADOWS, 
+			PSHADOW_MAP_SIZE,
+			MAX_DRAWN_PSHADOWS,
 			IMGTYPE_COLORALPHA,
 			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP | IMGFLAG_MUTABLE,
 			GL_DEPTH_COMPONENT16);
@@ -3521,10 +3521,10 @@ void R_CreateBuiltinImages( void ) {
 			hdrFormat);
 
 		tr.renderCubeDepthImage = R_CreateImage(
-			"*renderdepth", NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, 
+			"*renderdepth", NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE,
 			IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION | 
-			IMGFLAG_CLAMPTOEDGE, 
+			IMGFLAG_NO_COMPRESSION |
+			IMGFLAG_CLAMPTOEDGE,
 			GL_DEPTH24_STENCIL8);
 	}
 

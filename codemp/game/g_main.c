@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_nav.h"
 #include "bg_saga.h"
 #include "b_local.h"
+#include "game/bg_public.h"
 #include "qcommon/q_version.h"
 
 NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
@@ -201,6 +202,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap->Print ("------- Game Initialization -------\n");
 	trap->Print ("gamename: %s\n", GAMEVERSION);
 	trap->Print ("gamedate: %s\n", SOURCE_DATE);
+
+	// init as zero, to be updated by the following cvar registration
+	// relevant cvars call their update func to modify CS_LEGACY_FIXES when necessary
+	trap->SetConfigstring(CS_LEGACY_FIXES, "0");
 
 	G_RegisterCvars();
 

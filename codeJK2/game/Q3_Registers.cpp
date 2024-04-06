@@ -87,7 +87,7 @@ void Q3_DeclareVariable( int type, const char *name )
 		varFloats[ name ] = 0.0f;
 		break;
 
-	case TK_STRING:		
+	case TK_STRING:
 		varStrings[ name ] = "NULL";
 		break;
 
@@ -238,7 +238,7 @@ int Q3_SetFloatVariable( const char *name, float value )
 		return VTYPE_FLOAT;
 
 	(*vfi).second = value;
-	
+
 	return true;
 }
 
@@ -302,7 +302,7 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 	{
 		//Save out the map id
 		int	idSize = strlen( ((*vfi).first).c_str() );
-		
+
 		//Save out the real data
 		saved_game.write_chunk<int32_t>(
 			INT_ID('F', 'I', 'D', 'L'),
@@ -342,7 +342,7 @@ void Q3_VariableSaveStrings( varString_m &smap )
 	{
 		//Save out the map id
 		int	idSize = strlen( ((*vsi).first).c_str() );
-		
+
 		//Save out the real data
 		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'I', 'D', 'L'),
@@ -403,7 +403,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize = 0;
-		
+
 		saved_game.read_chunk<int32_t>(
 			INT_ID('F', 'I', 'D', 'L'),
 			idSize);
@@ -453,7 +453,7 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize = 0;
-		
+
 		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'I', 'D', 'L'),
 			idSize);

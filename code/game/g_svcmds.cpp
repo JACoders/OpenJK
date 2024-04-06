@@ -907,7 +907,7 @@ static svcmd_t svcmds[] = {
 	{ "saberColor",					Svcmd_SaberColor_f,							CMD_CHEAT },
 	{ "saber",						Svcmd_Saber_f,								CMD_CHEAT },
 	{ "saberBlade",					Svcmd_SaberBlade_f,							CMD_CHEAT },
-	
+
 	{ "setForceJump",				Svcmd_ForceSetLevel_f<FP_LEVITATION>,		CMD_CHEAT },
 	{ "setSaberThrow",				Svcmd_ForceSetLevel_f<FP_SABERTHROW>,		CMD_CHEAT },
 	{ "setForceHeal",				Svcmd_ForceSetLevel_f<FP_HEAL>,				CMD_CHEAT },
@@ -926,29 +926,29 @@ static svcmd_t svcmds[] = {
 	{ "setForceSight",				Svcmd_ForceSetLevel_f<FP_SEE>,				CMD_CHEAT },
 	{ "setForceAll",				Svcmd_SetForceAll_f,						CMD_CHEAT },
 	{ "setSaberAll",				Svcmd_SetSaberAll_f,						CMD_CHEAT },
-	
+
 	{ "saberAttackCycle",			Svcmd_SaberAttackCycle_f,					CMD_NONE },
-	
+
 	{ "runscript",					Svcmd_RunScript_f,							CMD_CHEAT },
-	
+
 	{ "playerTeam",					Svcmd_PlayerTeam_f,							CMD_CHEAT },
-	
+
 	{ "control",					Svcmd_Control_f,							CMD_CHEAT },
 	{ "grab",						Svcmd_Grab_f,								CMD_CHEAT },
 	{ "knockdown",					Svcmd_Knockdown_f,							CMD_CHEAT },
 
 	{ "playerModel",				Svcmd_PlayerModel_f,						CMD_NONE },
 	{ "playerTint",					Svcmd_PlayerTint_f,							CMD_NONE },
-	
+
 	{ "nexttestaxes",				G_NextTestAxes,								CMD_NONE },
-	
+
 	{ "exitview",					Svcmd_ExitView_f,							CMD_NONE },
-	
+
 	{ "iknowkungfu",				Svcmd_IKnowKungfu_f,						CMD_CHEAT },
-	
+
 	{ "secrets",					Svcmd_Secrets_f,							CMD_NONE },
 	{ "difficulty",					Svcmd_Difficulty_f,							CMD_NONE },
-	
+
 	//{ "say",						Svcmd_Say_f,						qtrue },
 	//{ "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },
 	//{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
@@ -966,7 +966,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( !command )
 		return qfalse;
-	
+
 	if ( (command->flags & CMD_CHEAT)
 		&& !g_cheats->integer )
 	{

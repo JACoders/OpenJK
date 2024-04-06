@@ -337,7 +337,7 @@ qboolean G_InitRoff( char *file, unsigned char *data )
 		count = LittleLong(hdr->mCount);
 
 		roffs[num_roffs].frames				= count;
-		roffs[num_roffs].data	= (void *) G_Alloc( count * sizeof( move_rotate2_t ));		
+		roffs[num_roffs].data	= (void *) G_Alloc( count * sizeof( move_rotate2_t ));
 		move_rotate2_t *mem		= (move_rotate2_t *)roffs[num_roffs].data;
 
 		if ( mem )
@@ -486,7 +486,7 @@ void G_Roff( gentity_t *ent )
 	{
 		return;
 	}
-	
+
 	if ( ent->next_roff_time > level.time )
 	{// either I don't think or it's just not time to have me think yet
 		return;
@@ -523,7 +523,7 @@ void G_Roff( gentity_t *ent )
 #ifdef _DEBUG
 	if ( g_developer->integer )
 	{
-		Com_Printf( S_COLOR_GREEN"ROFF dat: num: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n", 
+		Com_Printf( S_COLOR_GREEN"ROFF dat: num: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n",
 					ent->roff_ctr,
 					org[0], org[1], org[2],
 					ang[0], ang[1], ang[2] );
@@ -584,7 +584,7 @@ void G_Roff( gentity_t *ent )
 		//make it true linear... FIXME: sticks around after ROFF is done, but do we really care?
 		ent->alt_fire = qtrue;
 
-		if ( !ent->e_ThinkFunc 
+		if ( !ent->e_ThinkFunc
 			&& ent->s.eType != ET_MISSILE
 			&& ent->s.eType != ET_ITEM
 			&& ent->s.eType != ET_MOVER )

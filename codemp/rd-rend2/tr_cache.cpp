@@ -38,7 +38,7 @@ CModelCacheManager::FileCache::iterator CModelCacheManager::FindFile( const char
 		});
 }
 
-static const byte FakeGLAFile[] = 
+static const byte FakeGLAFile[] =
 {
 	0x32, 0x4C, 0x47, 0x41, 0x06, 0x00, 0x00, 0x00, 0x2A, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6C, 0x74,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -86,7 +86,7 @@ qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffe
 		memcpy(pvFakeGLAFile, &FakeGLAFile[0], sizeof (FakeGLAFile));
 		*ppFileBuffer = pvFakeGLAFile;
 
-		return qtrue;	
+		return qtrue;
 	}
 
 	int len = ri.FS_ReadFile(path, ppFileBuffer);
@@ -195,7 +195,7 @@ void CModelCacheManager::DumpNonPure( void )
 		}
 	}
 
-	ri.Printf( PRINT_DEVELOPER, "CCacheManager::DumpNonPure(): Ok\n");	
+	ri.Printf( PRINT_DEVELOPER, "CCacheManager::DumpNonPure(): Ok\n");
 }
 
 CModelCacheManager::AssetCache::iterator CModelCacheManager::FindAsset( const char *path )
@@ -262,7 +262,7 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 		}
 	}
 
-	ri.Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd(): Ok\n");	
+	ri.Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd(): Ok\n");
 
 	return bAtLeastOneModelFreed;
 }
@@ -302,7 +302,7 @@ void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const 
 		assert(0);
 		return;
 	}
-	
+
 	int iNameOffset =		  psShaderName		- (char *)file->pDiskImage;
 	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)file->pDiskImage;
 
@@ -335,9 +335,9 @@ void CModelCacheManager::AllocateShaders( const char *psFileName )
 		int  *piShaderPokePtr	= (int *)((char*)file->pDiskImage + shader.pokeOffset);
 
 		shader_t *sh = R_FindShader(psShaderName, lightmapsNone, stylesDefault, qtrue);
-		if ( sh->defaultShader ) 
+		if ( sh->defaultShader )
 			*piShaderPokePtr = 0;
-		else 
+		else
 			*piShaderPokePtr = sh->index;
 	}
 }

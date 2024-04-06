@@ -2358,6 +2358,12 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	char	arg1[MAX_CVAR_VALUE_STRING] = {0};
 	char	arg2[MAX_CVAR_VALUE_STRING] = {0};
 
+	if ( g_gametype.integer < GT_TEAM )
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot call a team vote in a non-team gametype!\n\"" );
+		return;
+	}
+
 	if ( team == TEAM_RED )
 		cs_offset = 0;
 	else if ( team == TEAM_BLUE )

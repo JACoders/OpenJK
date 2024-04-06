@@ -251,7 +251,7 @@ inline qboolean NPC_ClearLOS( const vec3_t end )
 {
 	return G_ClearLOS( NPC, end );
 }
-inline qboolean NPC_ClearLOS( gentity_t *ent ) 
+inline qboolean NPC_ClearLOS( gentity_t *ent )
 {
 	return G_ClearLOS( NPC, ent );
 }

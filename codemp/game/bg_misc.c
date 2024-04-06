@@ -312,15 +312,39 @@ int WeaponAttackAnim[WP_NUM_WEAPONS] =
 	BOTH_THERMAL_THROW,//WP_THERMAL,
 	BOTH_ATTACK3,//BOTH_ATTACK11,//WP_TRIP_MINE,
 	BOTH_ATTACK3,//BOTH_ATTACK12,//WP_DET_PACK,
-	#ifndef BASE_COMPAT
-		BOTH_ATTACK3,//WP_CONCUSSION,
-	#endif // BASE_COMPAT
+	BOTH_ATTACK3,//WP_CONCUSSION,
 	BOTH_ATTACK2,//WP_BRYAR_OLD,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
 	BOTH_ATTACK1//WP_TURRET,
 };
+
+void BG_FixWeaponAttackAnim(void) {
+#if defined(_GAME)
+	const qboolean doFix = !!g_fixWeaponAttackAnim.integer;
+#elif defined(_CGAME)
+	const char *cs = CG_ConfigString(CS_LEGACY_FIXES);
+	const uint32_t legacyFixes = strtoul(cs, NULL, 0);
+	const qboolean doFix = !!(legacyFixes & (1 << LEGACYFIX_WEAPONATTACKANIM));
+#elif defined(UI_BUILD)
+	const qboolean doFix = qtrue; // no chance of prediction error from UI code
+#endif
+	int *move;
+
+	for (move = WeaponAttackAnim; move - WeaponAttackAnim < ARRAY_LEN(WeaponAttackAnim); move++) {
+		const weapon_t wpIndex = (weapon_t)(move - WeaponAttackAnim);
+		if (wpIndex == WP_CONCUSSION) {
+			*move = doFix ? BOTH_ATTACK3 : BOTH_ATTACK2;
+		} else if (wpIndex == WP_BRYAR_OLD) {
+			*move = doFix ? BOTH_ATTACK2 : BOTH_STAND1;
+		} else if (wpIndex == WP_EMPLACED_GUN) {
+			*move = doFix ? BOTH_STAND1 : BOTH_ATTACK1;
+		} else if (wpIndex == WP_TURRET) {
+			*move = doFix ? BOTH_ATTACK1 : BOTH_ATTACK2; // better than UB?
+		}
+	}
+}
 
 qboolean BG_FileExists( const char *fileName ) {
 	if ( fileName && fileName[0] ) {
@@ -2056,8 +2080,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		{//force powers and saber only
 			if ( item->giType != IT_TEAM //not a flag
 				&& item->giType != IT_ARMOR//not shields
-				&& (item->giType != IT_WEAPON
-									|| item->giTag != WP_SABER)//not a saber
+				&& (item->giType != IT_WEAPON || item->giTag != WP_SABER)//not a saber
 				&& (item->giType != IT_HOLDABLE || item->giTag != HI_SEEKER)//not a seeker
 				&& (item->giType != IT_POWERUP || item->giTag == PW_YSALAMIRI) )//not a force pick-up
 			{
@@ -2440,10 +2463,8 @@ const char *eventnames[EV_NUM_ENTITY_EVENTS] = {
 	"EV_DEATH3",
 	"EV_OBITUARY",
 
-	#ifdef BASE_COMPAT
-		"EV_POWERUP_QUAD",
-		"EV_POWERUP_BATTLESUIT",
-	#endif // BASE_COMPAT
+	"EV_POWERUP_QUAD",
+	"EV_POWERUP_BATTLESUIT",
 	//"EV_POWERUP_REGEN",
 
 	"EV_FORCE_DRAINED",

@@ -185,7 +185,7 @@ public:
 
 protected:
 	void Init(long value);
-	
+
 	long			m_value;
 };
 
@@ -437,7 +437,7 @@ public:
 	const char *LookupToken(int tokenID, keywordArray_t* theTable = NULL);
 
 protected:
-	void SetError(int theError, const char *errString); 
+	void SetError(int theError, const char *errString);
 	virtual void Init(unsigned dwFlags = 0);
 	CToken* FetchToken();
 	bool AddDefineSymbol(CDirectiveSymbol* definesymbol);

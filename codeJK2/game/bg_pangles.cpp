@@ -47,7 +47,7 @@ void BG_G2SetBoneAngles( centity_t *cent, gentity_t *gent, int boneIndex, const 
 {
 	if (boneIndex!=-1)
 	{
-		gi.G2API_SetBoneAnglesIndex( &cent->gent->ghoul2[0], boneIndex, angles, flags, up, left, forward, modelList, 0, 0 ); 
+		gi.G2API_SetBoneAnglesIndex( &cent->gent->ghoul2[0], boneIndex, angles, flags, up, left, forward, modelList, 0, 0 );
 	}
 }
 
@@ -60,7 +60,7 @@ void PM_ScaleUcmd( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 		//clamp the turn rate
 		int maxPitchSpeed = MAX_PITCHSPEED_X_WING;//switch, eventually?  Or read from file?
 		int diff = AngleNormalize180(SHORT2ANGLE((cmd->angles[PITCH]+ps->delta_angles[PITCH]))) - floor(ps->viewangles[PITCH]);
-	
+
 		if ( diff > maxPitchSpeed )
 		{
 			cmd->angles[PITCH] = ANGLE2SHORT( ps->viewangles[PITCH] + maxPitchSpeed ) - ps->delta_angles[PITCH];
@@ -113,7 +113,7 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 	if (( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT || ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT ) && ent->client->ps.legsAnimTimer > 500 )
 	{//wall-running and not at end of anim
 		//stick to wall, if there is one
-		vec3_t	rt, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};		
+		vec3_t	rt, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};
 		trace_t	trace;
 		float	dist, yawAdjust;
 
@@ -317,7 +317,7 @@ qboolean PM_AdjustAnglesForBackAttack( gentity_t *ent, usercmd_t *ucmd )
 			ucmd->angles[PITCH] = ANGLE2SHORT( ent->client->ps.viewangles[PITCH] ) - ent->client->ps.delta_angles[PITCH];
 			ucmd->angles[YAW] = ANGLE2SHORT( ent->client->ps.viewangles[YAW] ) - ent->client->ps.delta_angles[YAW];
 		}
-		else 
+		else
 		{//keep player facing away from their enemy
 			vec3_t enemyBehindDir;
 			VectorSubtract( ent->currentOrigin, ent->enemy->currentOrigin, enemyBehindDir );
@@ -397,7 +397,7 @@ are being updated isntead of a full move
 //FIXME: Now that they pmove twice per think, they snap-look really fast
 ================
 */
-void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent ) 
+void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 {
 	short		temp;
 	float		pitchMin=-75, pitchMax=75, yawMin=0, yawMax=0;	//just to shut up warnings
@@ -406,12 +406,12 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 	trace_t		trace;
 	qboolean	lockedYaw = qfalse;
 
-	if ( ps->pm_type == PM_INTERMISSION ) 
+	if ( ps->pm_type == PM_INTERMISSION )
 	{
 		return;		// no view changes at all
 	}
 
-	if ( ps->pm_type != PM_SPECTATOR && ps->stats[STAT_HEALTH] <= 0 ) 
+	if ( ps->pm_type != PM_SPECTATOR && ps->stats[STAT_HEALTH] <= 0 )
 	{
 		return;		// no view changes at all
 	}
@@ -426,7 +426,7 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 		{
 			pitchMin = 0 - gent->client->renderInfo.headPitchRangeUp - gent->client->renderInfo.torsoPitchRangeUp;
 			pitchMax = gent->client->renderInfo.headPitchRangeDown + gent->client->renderInfo.torsoPitchRangeDown;
-			
+
 			yawMin = 0 - gent->client->renderInfo.headYawRangeLeft - gent->client->renderInfo.torsoYawRangeLeft;
 			yawMax = gent->client->renderInfo.headYawRangeRight + gent->client->renderInfo.torsoYawRangeRight;
 
@@ -450,32 +450,32 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 	const short pitchClampMax = ANGLE2SHORT(pitchMax);
 
 	// circularly clamp the angles with deltas
-	for (i=0 ; i<3 ; i++) 
+	for (i=0 ; i<3 ; i++)
 	{
 		temp = cmd->angles[i] + ps->delta_angles[i];
-		if ( i == PITCH ) 
+		if ( i == PITCH )
 		{
 			//FIXME get this limit from the NPCs stats?
 			// don't let the player look up or down more than 90 degrees
-			if ( temp > pitchClampMax ) 
+			if ( temp > pitchClampMax )
 			{
 				ps->delta_angles[i] = (pitchClampMax - cmd->angles[i]) & 0xffff;	//& clamp to short
 				temp = pitchClampMax;
-			} 
-			else if ( temp < pitchClampMin ) 
+			}
+			else if ( temp < pitchClampMin )
 			{
 				ps->delta_angles[i] = (pitchClampMin - cmd->angles[i]) & 0xffff;	//& clamp to short
 				temp = pitchClampMin;
 			}
 		}
-		if ( i == ROLL && ps->vehicleModel != 0 ) 
+		if ( i == ROLL && ps->vehicleModel != 0 )
 		{
-			if ( temp > pitchClampMax ) 
+			if ( temp > pitchClampMax )
 			{
 				ps->delta_angles[i] = (pitchClampMax - cmd->angles[i]) & 0xffff;
 				temp = pitchClampMax;
-			} 
-			else if ( temp < pitchClampMin ) 
+			}
+			else if ( temp < pitchClampMin )
 			{
 				ps->delta_angles[i] = (pitchClampMin - cmd->angles[i]) & 0xffff;
 				temp = pitchClampMin;
@@ -484,14 +484,14 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 		//FIXME: Are we losing precision here?  Is this why it jitters?
 		ps->viewangles[i] = SHORT2ANGLE(temp);
 
-		if ( i == YAW && lockedYaw) 
+		if ( i == YAW && lockedYaw)
 		{
 			// don't let the player look left or right more than the clamp, if any
-			if ( AngleSubtract(ps->viewangles[i], gent->client->renderInfo.lockYaw) > yawMax ) 
+			if ( AngleSubtract(ps->viewangles[i], gent->client->renderInfo.lockYaw) > yawMax )
 			{
 				ps->viewangles[i] = yawMax;
-			} 
-			else if ( AngleSubtract(ps->viewangles[i], gent->client->renderInfo.lockYaw) < yawMin ) 
+			}
+			else if ( AngleSubtract(ps->viewangles[i], gent->client->renderInfo.lockYaw) < yawMin )
 			{
 				ps->viewangles[i] = yawMin;
 			}

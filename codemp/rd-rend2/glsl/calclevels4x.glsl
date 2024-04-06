@@ -51,12 +51,12 @@ void main()
 	current = GetValues(vec2(-0.5, -1.5), current);
 	current = GetValues(vec2( 0.5, -1.5), current);
 	current = GetValues(vec2( 1.5, -1.5), current);
-	
+
 	current = GetValues(vec2(-1.5, -0.5), current);
 	current = GetValues(vec2(-0.5, -0.5), current);
 	current = GetValues(vec2( 0.5, -0.5), current);
 	current = GetValues(vec2( 1.5, -0.5), current);
-	
+
 	current = GetValues(vec2(-1.5,  0.5), current);
 	current = GetValues(vec2(-0.5,  0.5), current);
 	current = GetValues(vec2( 0.5,  0.5), current);

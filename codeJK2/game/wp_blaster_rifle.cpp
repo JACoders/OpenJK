@@ -43,7 +43,7 @@ static void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qbo
 	if ( ent->client && ent->client->ps.clientNum != 0 )
 	{
 		if ( g_spskill->integer < 2 )
-		{		
+		{
 			velocity *= BLASTER_NPC_VEL_CUT;
 		}
 		else

@@ -182,6 +182,7 @@ pip-log.txt
 ## clangd
 #############
 .clangd
+compile_commands.json
 
 #############
 ## CLion

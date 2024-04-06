@@ -1047,7 +1047,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 			Com_Printf( "Disabling eax field because current platform does not support EAX.\n");
 		}
 	}
-	
+
 	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && (item->cvarFlags & CVAR_HIDE) ) {
 		if( item->parent )
 		{
@@ -1085,7 +1085,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 			Com_Printf( "Extended sound quality field to contain very high option.\n");
 		}
 	}
-	
+
 	if ( item->type == ITEM_TYPE_MULTI && item->window.name && !Q_stricmp( item->window.name, "voice") && item->cvar && !Q_stricmp( item->cvar, "g_subtitles" ) ) {
 		multiDef_t *multiPtr = (multiDef_t *)item->typeData;
 		int i;
@@ -3072,7 +3072,36 @@ qboolean ItemParse_name( itemDef_t *item)
 	return qtrue;
 }
 
+int MenuFontToReal( int menuFontIndex )
+{
+	static int fonthandle_aurabesh;
+	static int fonthandle_ergoec;
+	static int fonthandle_anewhope;
+	static int fonthandle_arialnb;
 
+	static qboolean fontsRegistered = qfalse;
+
+	if ( !fontsRegistered )
+	{ // Only try registering the fonts once
+		fonthandle_aurabesh = UI_RegisterFont( "aurabesh" );
+		fonthandle_ergoec   = UI_RegisterFont( "ergoec" );
+		fonthandle_anewhope = UI_RegisterFont( "anewhope" );
+		fonthandle_arialnb  = UI_RegisterFont( "arialnb" );
+
+		fontsRegistered = qtrue;
+	}
+
+	// Default fonts from a clean installation
+	switch ( menuFontIndex ) {
+		case 1: return fonthandle_aurabesh;
+		case 2: return fonthandle_ergoec;
+		case 3: return fonthandle_anewhope;
+		case 4: return fonthandle_arialnb;
+
+		default:
+			return DC->Assets.qhMediumFont;
+	}
+}
 
 qboolean ItemParse_font( itemDef_t *item )
 {
@@ -3080,6 +3109,10 @@ qboolean ItemParse_font( itemDef_t *item )
 	{
 		return qfalse;
 	}
+
+	// Translate to real font
+	item->font = MenuFontToReal( item->font );
+
 	return qtrue;
 }
 
@@ -8261,7 +8294,7 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 				while (1)
 				{
 					// FIXME - add some type of parameter in the menu file like descfont to specify the font for the descriptions for this menu.
-					textWidth = DC->textWidth(textPtr, fDescScale, 4);	//  item->font);
+					textWidth = DC->textWidth(textPtr, fDescScale, MenuFontToReal(4));	//  item->font);
 
 					if (parent->descAlignment == ITEM_ALIGN_RIGHT)
 					{
@@ -8297,7 +8330,7 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 					}
 
 					// FIXME - add some type of parameter in the menu file like descfont to specify the font for the descriptions for this menu.
-					DC->drawText(xPos, parent->descY + iYadj, fDescScale, parent->descColor, textPtr, 0, parent->descTextStyle, 4);	//item->font);
+					DC->drawText(xPos, parent->descY + iYadj, fDescScale, parent->descColor, textPtr, 0, parent->descTextStyle, MenuFontToReal(4));	//item->font);
 					break;
 				}
 			}

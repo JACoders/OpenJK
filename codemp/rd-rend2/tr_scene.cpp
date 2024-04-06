@@ -137,7 +137,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 		poly->hShader = hShader;
 		poly->numVerts = numVerts;
 		poly->verts = &backEndData->polyVerts[r_numpolyverts];
-		
+
 		Com_Memcpy( poly->verts, &verts[numVerts*j], numVerts * sizeof( *verts ) );
 
 		// done.
@@ -159,7 +159,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 				AddPointToBounds( poly->verts[i].xyz, bounds[0], bounds[1] );
 			}
 			for ( fogIndex = 1 ; fogIndex < tr.world->numfogs ; fogIndex++ ) {
-				fog = &tr.world->fogs[fogIndex]; 
+				fog = &tr.world->fogs[fogIndex];
 				if ( bounds[1][0] >= fog->bounds[0][0]
 					&& bounds[1][1] >= fog->bounds[0][1]
 					&& bounds[1][2] >= fog->bounds[0][2]
@@ -262,7 +262,7 @@ void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, floa
 	dl->color[1] = g;
 	dl->color[2] = b;
 
-	if (r_hdr->integer) 
+	if (r_hdr->integer)
 	{
 		float maxValue = MAX(r, MAX(g, b));
 		if (maxValue > 1.0f)
@@ -272,7 +272,7 @@ void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, floa
 		}
 		dl->radius = MIN(dl->radius, 65535.0f);
 	}
-	
+
 	dl->additive = additive;
 }
 
@@ -432,7 +432,7 @@ void RE_BeginScene(const refdef_t *fd)
 			VectorCopy(extra->sunCol,    tr.refdef.sunCol);
 			VectorCopy(extra->sunAmbCol, tr.refdef.sunAmbCol);
 		}
-	} 
+	}
 	else
 	{
 		tr.refdef.blurFactor = 0.0f;
@@ -518,7 +518,7 @@ Rendering a scene may require multiple views to be rendered
 to handle mirrors,
 @@@@@@@@@@@@@@@@@@@@@
 */
-void RE_RenderScene( const refdef_t *fd ) 
+void RE_RenderScene( const refdef_t *fd )
 {
 	int				startTime;
 

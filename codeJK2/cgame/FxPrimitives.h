@@ -85,7 +85,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	FX_DEPTH_HACK		0x00100000
 #define	FX_RELATIVE			0x00200000
 #define	FX_SET_SHADER_TIME	0x00400000		// by having the effects system set the shader time, we can make animating textures start at the correct time
-#define FX_EXPENSIVE_PHYSICS 0x00800000		
+#define FX_EXPENSIVE_PHYSICS 0x00800000
 
 #define FX_ATTACHED_MODEL	0x01000000
 
@@ -138,7 +138,7 @@ public:
 	{	// Game pausing can cause dumb time things to happen, so kill the effect in this instance
 		if ( mTimeStart > theFxHelper.mTime ) {
 			return false;
-		}	
+		}
 		return true;
 	}
 
@@ -222,7 +222,7 @@ protected:
 
 	void Draw()
 	{
-		theFxHelper.AddLightToScene( mOrigin1, mRefEnt.radius, 
+		theFxHelper.AddLightToScene( mOrigin1, mRefEnt.radius,
 			mRefEnt.lightingOrigin[0], mRefEnt.lightingOrigin[1], mRefEnt.lightingOrigin[2] );
 	}
 
@@ -231,7 +231,7 @@ public:
 	CLight() {}
 	virtual ~CLight() {}
 	virtual bool Update();
-	
+
 	inline void SetSizeStart( float sz )	{ mSizeStart = sz;			}
 	inline void SetSizeEnd( float sz )		{ mSizeEnd = sz;			}
 	inline void SetSizeParm( float parm )	{ mSizeParm = parm;			}
@@ -277,7 +277,7 @@ protected:
 	vec3_t		mRGBStart;
 	vec3_t		mRGBEnd;
 	float		mRGBParm;
-	
+
 	float		mAlphaStart;
 	float		mAlphaEnd;
 	float		mAlphaParm;
@@ -297,7 +297,7 @@ protected:
 
 	bool Cull();
 	void Draw();
-	
+
 public:
 
 	inline CParticle() { mRefEnt.reType = RT_SPRITE; mClientID = -1; }
@@ -375,7 +375,7 @@ public:
 	virtual void Die() {}
 
 	virtual bool Update();
-	
+
 	void DrawSegment( vec3_t start, vec3_t end, float texcoord1, float texcoord2 );
 
 	inline void SetControlPoints( const vec3_t ctrl1, const vec3_t ctrl2 )	{ VectorCopy( ctrl1, mControl1 ); VectorCopy( ctrl2, mControl2 ); }
@@ -496,10 +496,10 @@ protected:
 
 	vec3_t		mOldOrigin;		// we use these to do some nice
 	vec3_t		mLastOrigin;	//	tricks...
-	vec3_t		mOldVelocity;	//	
+	vec3_t		mOldVelocity;	//
 	int			mOldTime;
 
-	vec3_t		mAngles;		// for a rotating thing, using a delta  
+	vec3_t		mAngles;		// for a rotating thing, using a delta
 	vec3_t		mAngleDelta;	//	as opposed to an end angle is probably much easier
 
 	int			mEmitterFxID;	// if we have emitter fx, this is our id
@@ -514,7 +514,7 @@ protected:
 public:
 
 	CEmitter() {
-		// There may or may not be a model, but if there isn't one, 
+		// There may or may not be a model, but if there isn't one,
 		//	we just won't bother adding the refEnt in our Draw func
 		mRefEnt.reType = RT_MODEL;
 	}

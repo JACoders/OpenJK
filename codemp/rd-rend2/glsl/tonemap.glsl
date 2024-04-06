@@ -39,11 +39,11 @@ vec3 FilmicTonemap(vec3 x)
 	const float TS  = 0.20; // Toe Strength
 	const float TAN = 0.01; // Toe Angle Numerator
 	const float TAD = 0.30; // Toe Angle Denominator
-	
+
 	vec3 SSxx = SS * x * x;
 	vec3 LSx = LS * x;
 	vec3 LALSx = LSx * LA;
-	
+
 	return ((SSxx + LALSx + TS * TAN) / (SSxx + LSx + TS * TAD)) - TAN / TAD;
 
 	//return ((x*(SS*x+LA*LS)+TS*TAN)/(x*(SS*x+LS)+TS*TAD)) - TAN/TAD;
@@ -96,7 +96,7 @@ void main()
 	vec4 color = texture(u_TextureMap, var_TexCoords) * u_Color;
 	vec3 minAvgMax = texture(u_LevelsMap, var_TexCoords).rgb;
 	vec3 logMinAvgMaxLum = clamp(minAvgMax * 20.0 - 10.0, -u_AutoExposureMinMax.y, -u_AutoExposureMinMax.x);
-		
+
 	float avgLum = exp2(logMinAvgMaxLum.y);
 	//float maxLum = exp2(logMinAvgMaxLum.z);
 

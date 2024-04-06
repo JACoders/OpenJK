@@ -112,7 +112,7 @@ struct gentity_s {
 Ghoul2 Insert Start
 */
 	// this marker thing of Jake's is used for memcpy() length calcs, so don't put any ordinary fields (like above)
-	//	below this point or they won't work, and will mess up all sorts of stuff. 
+	//	below this point or they won't work, and will mess up all sorts of stuff.
 	//
 	CGhoul2Info_v	ghoul2;
 /*
@@ -211,12 +211,12 @@ typedef struct {
 	void	(*SetBrushModel)( gentity_t *ent, const char *name );
 
 	// collision detection against all linked entities
-	void	(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+	void	(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 			const int passEntityNum, const int contentmask , const EG2_Collision eG2TraceType , const int useLod );
 
 	// point contents against all linked entities
 	int		(*pointcontents)( const vec3_t point, int passEntityNum );
-	// what contents are on the map? 
+	// what contents are on the map?
 	int		(*totalMapContents)();
 
 	qboolean	(*inPVS)( const vec3_t p1, const vec3_t p2 );
@@ -264,7 +264,7 @@ Ghoul2 Insert Start
 	qboolean	(*G2API_SetBoneAnglesMatrix)(CGhoul2Info *ghlInfo, const char *boneName, const mdxaBone_t &matrix, const int flags,
 									  qhandle_t *modelList, int blendTime , int currentTime );
 	void		(*G2API_CopyGhoul2Instance)(CGhoul2Info_v &ghoul2From, CGhoul2Info_v &ghoul2To, int modelIndex );
-	qboolean	(*G2API_SetBoneAnimIndex)(CGhoul2Info *ghlInfo, const int index, const int startFrame, const int endFrame, const int flags, 
+	qboolean	(*G2API_SetBoneAnimIndex)(CGhoul2Info *ghlInfo, const int index, const int startFrame, const int endFrame, const int flags,
 							const float animSpeed, const int currentTime, const float setFrame , const int blendTime );
 
 	qboolean	(*G2API_SetLodBias)(CGhoul2Info *ghlInfo, int lodBias);
@@ -295,7 +295,7 @@ Ghoul2 Insert Start
 	qboolean	(*G2API_AttachEnt)(int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum);
 	void		(*G2API_DetachEnt)(int *boltInfo);
 
-	qboolean	(*G2API_GetBoltMatrix)(CGhoul2Info_v &ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, 
+	qboolean	(*G2API_GetBoltMatrix)(CGhoul2Info_v &ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
 			const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, const vec3_t scale);
 
 	void		(*G2API_ListSurfaces)(CGhoul2Info *ghlInfo);
@@ -384,7 +384,7 @@ typedef struct {
 	// init and shutdown will be called every single level
 	// levelTime will be near zero, while globalTime will be a large number
 	// that can be used to track spectator entry times across restarts
-	void		(*Init)( const char *mapname, const char *spawntarget, int checkSum, const char *entstring, 
+	void		(*Init)( const char *mapname, const char *spawntarget, int checkSum, const char *entstring,
 		int levelTime, int randomSeed, int globalTime, SavedGameJustLoaded_e eSavedGameJustLoaded, qboolean qbLoadTransition );
 	void		(*Shutdown) (void);
 
@@ -423,7 +423,7 @@ typedef struct {
 
 	// The gentities array is allocated in the game dll so it
 	// can vary in size from one game to another.
-	// 
+	//
 	// The size will be fixed when ge->Init() is called
 	// the server can't just use pointer arithmetic on gentities, because the
 	// server's sizeof(struct gentity_s) doesn't equal gentitySize
