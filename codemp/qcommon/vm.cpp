@@ -1136,7 +1136,7 @@ void *VM_ExtraMemory_Claim( vm_t *vm, int amount )
 	vm->extraMemUse += amount;
 
 	// Return address that we can write to
-	return (void *)(currentVM->dataBase + (retBlock & currentVM->dataMask));
+	return (void *)(vm->dataBase + (retBlock & vm->dataMask));
 }
 
 void VM_ExtraMemory_Release( vm_t *vm, int amount )
