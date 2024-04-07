@@ -113,14 +113,12 @@ elseif(WIN32)
 		RUNTIME
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
-	if (WIN64)
-		# Don't do this on 32-bit Windows to avoid overwriting
-		# vanilla JKA's DLLs
-		install(TARGETS ${MPUI}
-			RUNTIME
-			DESTINATION "${JKAInstallDir}/base"
-			COMPONENT ${JKAMPCoreComponent})
-	endif()
+
+	# Use OpenJK modules as default
+	install(TARGETS ${MPUI}
+		RUNTIME
+		DESTINATION "${JKAInstallDir}/base"
+		COMPONENT ${JKAMPCoreComponent})
 else()
 	install(TARGETS ${MPUI}
 		LIBRARY

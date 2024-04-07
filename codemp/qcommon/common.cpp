@@ -1196,6 +1196,9 @@ void Com_Init( char *commandLine ) {
 
 		com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT);
 
+		// Init network before filesystem
+		NET_Init();
+
 		FS_InitFilesystem ();
 
 		Com_InitJournaling();

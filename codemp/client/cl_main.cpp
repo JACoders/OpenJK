@@ -106,6 +106,10 @@ cvar_t  *cl_lanForcePackets;
 
 cvar_t	*cl_drawRecording;
 
+cvar_t	*cl_downloadName;
+cvar_t	*cl_downloadPrompt;
+cvar_t	*cl_downloadOverlay;
+
 cvar_t	*cl_filterGames;
 
 vec3_t cl_windVec;
@@ -1331,6 +1335,7 @@ Called when all downloading has been completed
 =================
 */
 void CL_DownloadsComplete( void ) {
+	clc.downloadMenuActive = qfalse;
 
 	// if we downloaded files we need to restart the file system
 	if (clc.downloadRestart) {
@@ -1340,6 +1345,7 @@ void CL_DownloadsComplete( void ) {
 
 		// inform the server so we get new gamestate info
 		CL_AddReliableCommand( "donedl", qfalse );
+		clc.downloadFinished = qtrue;
 
 		// by sending the donedl command we request a new gamestate
 		// so we don't want to load stuff yet
@@ -1388,13 +1394,29 @@ game directory.
 =================
 */
 
-void CL_BeginDownload( const char *localName, const char *remoteName ) {
+void CL_BeginDownloadConfirm( void ) {
+	clc.downloadWaitingOnUser = qfalse;
+
+	if ( !cl_downloadOverlay->integer ) {
+		clc.downloadMenuActive = qfalse;
+	}
 
 	Com_DPrintf("***** CL_BeginDownload *****\n"
 				"Localname: %s\n"
 				"Remotename: %s\n"
-				"****************************\n", localName, remoteName);
+				"****************************\n", clc.downloadName, cl_downloadName->string);
 
+	clc.downloadBlock = 0; // Starting new file
+	clc.downloadCount = 0;
+	clc.downloadTime = cls.realtime;
+
+	// Set current time to make sure the module knows the real start time after the delay
+	Cvar_SetValue( "cl_downloadTime", (float) cls.realtime );
+
+	CL_AddReliableCommand( va("download %s", cl_downloadName->string), qfalse );
+}
+
+void CL_BeginDownload( const char *localName, const char *remoteName ) {
 	Q_strncpyz ( clc.downloadName, localName, sizeof(clc.downloadName) );
 	Com_sprintf( clc.downloadTempName, sizeof(clc.downloadTempName), "%s.tmp", localName );
 
@@ -1404,10 +1426,13 @@ void CL_BeginDownload( const char *localName, const char *remoteName ) {
 	Cvar_Set( "cl_downloadCount", "0" );
 	Cvar_SetValue( "cl_downloadTime", (float) cls.realtime );
 
-	clc.downloadBlock = 0; // Starting new file
-	clc.downloadCount = 0;
-
-	CL_AddReliableCommand( va("download %s", remoteName), qfalse );
+	// Prompt the user (unless they disabled it)
+	if ( cl_downloadPrompt->integer ) {
+		clc.downloadMenuActive = qtrue;
+		clc.downloadWaitingOnUser = qtrue;
+	} else {
+		CL_BeginDownloadConfirm();
+	}
 }
 
 /*
@@ -1421,8 +1446,10 @@ void CL_NextDownload(void) {
 	char *s;
 	char *remoteName, *localName;
 
+	clc.downloadWaitingOnUser = qfalse;
+
 	// A download has finished, check whether this matches a referenced checksum
-	if(*clc.downloadName)
+	if(*clc.downloadName && clc.downloadSize)
 	{
 		char *zippath = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), clc.downloadName, "");
 		zippath[strlen(zippath)-1] = '\0';
@@ -1487,6 +1514,18 @@ and determine if we need to download them
 void CL_InitDownloads(void) {
   char missingfiles[1024];
 
+	if ( clc.downloadFinished ) {
+		// If we just finished a download with a "donedl" we are getting another gamestate and we would be asked to
+		// download skipped files again. To avoid this we just skip this one...
+		clc.downloadFinished = qfalse;
+		CL_DownloadsComplete();
+		return;
+	}
+
+	if ( cl_downloadOverlay->integer ) {
+		clc.downloadMenuActive = qtrue;
+	}
+
 	if ( !cl_allowDownload->integer )
 	{
 		// autodownload is disabled on the client
@@ -1501,10 +1540,15 @@ void CL_InitDownloads(void) {
 		}
 	}
 	else if ( FS_ComparePaks( clc.downloadList, sizeof( clc.downloadList ) , qtrue ) ) {
+		const char *serverInfo = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SERVERINFO ];
+		const char *serverAllowDownloads = Info_ValueForKey( serverInfo, "sv_allowDownload" );
 
 		Com_Printf("Need paks: %s\n", clc.downloadList );
 
-		if ( *clc.downloadList ) {
+		if ( serverAllowDownloads[0] && !atoi(serverAllowDownloads) ) {
+			// The server has an "sv_allowDownload" value set, but it's 0
+			Com_Printf("Skipping downloads, because the server does not allow downloads\n");
+		} else if ( *clc.downloadList ) {
 			// if autodownloading is not enabled on the server
 			cls.state = CA_CONNECTED;
 
@@ -2298,6 +2342,9 @@ void CL_InitRenderer( void ) {
 	cls.consoleShader = re->RegisterShader( "console" );
 	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 	g_consoleField.widthInChars = g_console_field_width;
+
+	cls.cursorShader = re->RegisterShaderNoMip("cursor");
+	cls.menuFont = re->RegisterFont( "ocr_a" );
 }
 
 /*
@@ -2736,7 +2783,7 @@ void CL_Init( void ) {
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
-	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE_ND, "Allow downloading custom paks from server");
+	cl_allowDownload = Cvar_Get ("cl_allowDownload", "1", CVAR_ARCHIVE_ND, "Allow downloading custom paks from server");
 	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE_ND, "Enables use of ALT+ENTER keyboard combo to toggle fullscreen" );
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE_ND );
@@ -2780,6 +2827,10 @@ void CL_Init( void ) {
 	cl_consoleShiftRequirement = Cvar_Get( "cl_consoleShiftRequirement", "0", CVAR_ARCHIVE, "Require shift key to be pressed for native console key detection" );
 
 	cl_filterGames = Cvar_Get( "cl_filterGames", "MBII MBIIOpenBeta", CVAR_ARCHIVE_ND, "List of fs_game to filter (space separated)" );
+
+	cl_downloadName = Cvar_Get( "cl_downloadName", "", CVAR_INTERNAL );
+	cl_downloadPrompt = Cvar_Get( "cl_downloadPrompt", "1", CVAR_ARCHIVE, "Confirm pk3 downloads from the server" );
+	cl_downloadOverlay = Cvar_Get( "cl_downloadOverlay", "1", CVAR_ARCHIVE, "Draw download info overlay" );
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE_ND, "Player name" );
@@ -3742,3 +3793,298 @@ void CL_ShowIP_f(void) {
 	Sys_ShowIP();
 }
 
+/*
+==================
+  Internal Menu
+==================
+*/
+
+void CL_DrawMenuRect( float x, float y, float width, float height, float borderSize, vec4_t elementBackgroundColor, vec4_t elementBorderColor ) {
+	// Draw the background
+	if ( elementBackgroundColor ) {
+		re->SetColor( elementBackgroundColor );
+		re->DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
+	}
+
+	// Draw the borders
+	if ( elementBorderColor ) {
+		re->SetColor( elementBorderColor );
+		re->DrawStretchPic( x, y, width, borderSize, 0, 0, 0, 0, cls.whiteShader );
+		re->DrawStretchPic( x, y + height - borderSize, width, borderSize, 0, 0, 0, 0, cls.whiteShader );
+		re->DrawStretchPic( x, y, borderSize, height, 0, 0, 0, 0, cls.whiteShader );
+		re->DrawStretchPic( x + width - borderSize, y, borderSize, height, 0, 0, 0, 0, cls.whiteShader );
+	}
+
+	// Prevent color from leaking
+	re->SetColor( NULL );
+}
+
+void CL_DrawCenterStringAt( int x, int y, const char *str, int font, float scale ) {
+	int lenX = re->Font_StrLenPixels( str, font, scale );
+	int lenY = re->Font_HeightPixels( font, scale );
+	re->Font_DrawString( x - (lenX/2), y - (lenY/2), str, colorWhite, font, -1, scale );
+}
+
+typedef struct menuButton_s {
+	int x;
+	int y;
+	float width;
+	float height;
+	const char *text;
+	int font;
+	float scale;
+	void (*action)( void );
+} menuButton_t;
+static menuButton_t menuButtons[16]; // No need for dynamic lists. We currently got exactly one menu with max. 3 buttons
+static int menuButtonsActive = 0;
+
+static menuButton_t *CL_RegisterMenuButtonArea( int x, int y, float width, float height, const char *text, int font, float scale, void (*action)(void) ) {
+	// Too many buttons? Silently discard it to avoid console spam
+	if ( menuButtonsActive >= (int)ARRAY_LEN(menuButtons) ) return NULL;
+
+	// Set the values
+	menuButtons[menuButtonsActive].x = x;
+	menuButtons[menuButtonsActive].y = y;
+	menuButtons[menuButtonsActive].width = width;
+	menuButtons[menuButtonsActive].height = height;
+	menuButtons[menuButtonsActive].text = text;
+	menuButtons[menuButtonsActive].font = font;
+	menuButtons[menuButtonsActive].scale = scale;
+	menuButtons[menuButtonsActive].action = action;
+
+	// Increment counter
+	return &menuButtons[menuButtonsActive++];
+}
+
+static qboolean CL_IsCursorOnMenuButton( menuButton_t *button ) {
+	if ( cls.cursorX >= button->x && cls.cursorX <= button->x+button->width && cls.cursorY >= button->y && cls.cursorY <= button->y+button->height )
+		return qtrue;
+	return qfalse;
+}
+
+static void CL_DrawMenuButton( menuButton_t *button, vec4_t buttonBackgroundColor, vec4_t buttonBorderColor ) {
+	if ( !button ) return;
+	CL_DrawMenuRect( button->x, button->y, button->width, button->height, 3, buttonBackgroundColor, buttonBorderColor );
+	CL_DrawCenterStringAt( button->x + (button->width/2), button->y + 5, button->text, button->font, button->scale );
+}
+
+static const char *CL_ByteCountToHumanString( int byteCount )
+{
+	#define GB_BYTES (1024 * 1024 * 1024)
+	#define MB_BYTES (1024 * 1024)
+	#define KB_BYTES (1024)
+
+	     if ( byteCount > GB_BYTES ) return va( "%.02f GB", (float)byteCount / GB_BYTES );
+	else if ( byteCount > MB_BYTES ) return va( "%.02f MB", (float)byteCount / MB_BYTES );
+	else if ( byteCount > KB_BYTES ) return va( "%.1f KB", (float)byteCount / KB_BYTES );
+	else return va( "%i B", byteCount );
+}
+
+static const char *CL_DurationSecToString( int duration )
+{ // SkyMod: Duration seconds to string
+	#define TIME_YEAR   (60 * 60 * 24 * 365)
+	#define TIME_WEEK   (60 * 60 * 24 * 7)
+	#define TIME_DAY    (60 * 60 * 24)
+	#define TIME_HOUR   (60 * 60)
+	#define TIME_MINUTE (60)
+
+	static int call;
+	static char bufs[2][128];
+	char *durationStr = bufs[call&1];
+	int years = 0, weeks = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
+	call++;
+
+	while ( duration )
+	{
+		if ( duration >= TIME_YEAR )
+		{
+			duration -= TIME_YEAR;
+			years++;
+		}
+		else if ( duration >= TIME_WEEK )
+		{
+			duration -= TIME_WEEK;
+			weeks++;
+		}
+		else if ( duration >= TIME_DAY )
+		{
+			duration -= TIME_DAY;
+			days++;
+		}
+		else if ( duration >= TIME_HOUR )
+		{
+			duration -= TIME_HOUR;
+			hours++;
+		}
+		else if ( duration >= TIME_MINUTE )
+		{
+			duration -= TIME_MINUTE;
+			minutes++;
+		}
+		else
+		{
+			seconds = duration;
+			duration = 0;
+		}
+	}
+
+	*durationStr = 0;
+	if ( years ) Q_strcat( durationStr, sizeof(bufs[0]), va("%iy ", years) );
+	if ( weeks ) Q_strcat( durationStr, sizeof(bufs[0]), va("%iw ", weeks) );
+	if ( days ) Q_strcat( durationStr, sizeof(bufs[0]), va("%id ", days) );
+	if ( hours ) Q_strcat( durationStr, sizeof(bufs[0]), va("%ih ", hours) );
+	if ( minutes ) Q_strcat( durationStr, sizeof(bufs[0]), va("%im ", minutes) );
+	if ( seconds ) Q_strcat( durationStr, sizeof(bufs[0]), va("%is ", seconds) );
+
+	if ( *durationStr )
+	{ // Strip tailing space
+		char *ptr = durationStr;
+		while ( *ptr ) ptr++;
+		if ( *(ptr-1) == ' ' ) *(ptr-1) = 0;
+	}
+
+	return durationStr;
+}
+
+void CL_DrawDownloadRequest( void ) {
+	// Menu values
+	static vec4_t backgroundColor = { 0.1f, 0.2f, 0.45f, 0.9f };
+	static vec4_t borderColor = { 0.05f, 0.1f, 0.35f, 1.0f };
+	static float width = SCREEN_WIDTH / 6;
+	static float height = SCREEN_HEIGHT / 4;
+
+	static float centerX = SCREEN_WIDTH / 2;
+	static float centerY = SCREEN_HEIGHT / 2;
+
+	static float scale = 1.0f;
+
+	// Button values
+	static vec4_t buttonBackgroundColor = { 0.1f, 0.1f, 0.4f, 0.9f };
+	static vec4_t buttonBorderColor = { 0.05f, 0.05f, 0.2f, 1.0f };
+	menuButton_t *button;
+
+	// Draw frame
+	CL_DrawMenuRect( width, height, width*4, height*2, 6, backgroundColor, borderColor );
+
+	// Header
+	CL_DrawCenterStringAt( centerX, height + 10, "^1[ ^7File Download ^1]", cls.menuFont, scale );
+
+	// File name
+	CL_DrawCenterStringAt( centerX, centerY - (height/2), cl_downloadName->string, cls.menuFont, scale );
+
+	if ( clc.downloadWaitingOnUser ) {
+		// Tell user that we're waiting on their decision
+		CL_DrawCenterStringAt( centerX, centerY-10, "Do you want to download this file?", cls.menuFont, scale );
+		CL_DrawCenterStringAt( centerX, centerY+10, "Please select an option", cls.menuFont, scale );
+	} else {
+		// Draw Progress Bar
+		static vec4_t barBackgroundColor = { 0.1f, 0.8f, 0.4f, 0.9f };
+		static vec4_t barBorderColor = { 0.05f, 0.6f, 0.2f, 1.0f };
+		float dlFrac = clc.downloadSize ? (float)clc.downloadCount / clc.downloadSize : 0.0f;
+
+		// Download speed
+		int dlTime = (float)(cls.realtime - clc.downloadTime) / 1000.0f;
+		static int dlRate;
+		static int dlLastTime;
+		static int dlLastCount;
+
+		// Bar with percentage
+		CL_DrawCenterStringAt( centerX, centerY - 10, "Progress:", cls.menuFont, scale );
+		CL_DrawMenuRect( centerX - width*2 + 10, centerY+5, (width * 4 - 20 - 3) * dlFrac, 20, 3, barBackgroundColor, NULL );
+		CL_DrawMenuRect( centerX - width*2 + 10, centerY+5, width * 4 - 20 - 3, 20, 3, NULL, barBorderColor );
+		CL_DrawCenterStringAt( centerX, centerY+10, va("%.02f%%", dlFrac * 100), cls.menuFont, scale );
+
+		// Draw size info
+		re->Font_DrawString( width + 10, centerY+30, va("File Size: %s", CL_ByteCountToHumanString(clc.downloadSize)) , colorWhite, cls.menuFont, -1, scale );
+		re->Font_DrawString( width + 10, centerY+50, va("Downloaded: %s", CL_ByteCountToHumanString(clc.downloadCount)) , colorWhite, cls.menuFont, -1, scale );
+
+		// Download Speed
+		if ( dlTime >= 1 ) {
+			if ( dlTime != dlLastTime ) {
+				// Second passed, update measured values
+				dlRate = clc.downloadCount - dlLastCount;
+				dlLastTime = dlTime;
+				dlLastCount = clc.downloadCount;
+			}
+
+			// Draw info texts
+			re->Font_DrawString( width + 10, centerY+70, va("Transfer Rate: %s/sec", CL_ByteCountToHumanString(dlRate)) , colorWhite, cls.menuFont, -1, scale );
+			re->Font_DrawString( width + 10, centerY+90, va("Estimated Time Left: %s", dlRate ? CL_DurationSecToString(clc.downloadSize/dlRate - dlLastCount/dlRate) : "unknown" ) , colorWhite, cls.menuFont, -1, scale );
+		} else {
+			// Set defaults - if we somehow don't get here and start with dlTime >= 1 we get incorrect values for one second, but that's okay
+			dlLastCount = clc.downloadCount;
+			dlLastTime = 0;
+			dlRate = 0;
+
+			re->Font_DrawString( width + 10, centerY+70, "Transfer Rate: estimating" , colorWhite, cls.menuFont, -1, scale );
+			re->Font_DrawString( width + 10, centerY+90, "Estimated Time Left: estimating" , colorWhite, cls.menuFont, -1, scale );
+		}
+	}
+
+	// Draw Buttons
+	if ( clc.downloadWaitingOnUser ) {
+		// Only show yes/no if we're waiting on a user decision
+		button = CL_RegisterMenuButtonArea( width + 10, (height * 3) - 30, 40, 20, "Yes", cls.menuFont, scale, CL_BeginDownloadConfirm );
+		CL_DrawMenuButton( button, buttonBackgroundColor, buttonBorderColor );
+
+		button = CL_RegisterMenuButtonArea( width + 60, (height * 3) - 30, 40, 20, "No", cls.menuFont, scale, CL_NextDownload );
+		CL_DrawMenuButton( button, buttonBackgroundColor, buttonBorderColor );
+	}
+
+	// The user can always abort if they change their mind
+	button = CL_RegisterMenuButtonArea( SCREEN_WIDTH - width - 13 - 80, (height * 3) - 30, 80, 20, "Abort", cls.menuFont, scale, CL_Disconnect_f );
+	CL_DrawMenuButton( button, buttonBackgroundColor, buttonBorderColor );
+}
+
+void CL_DrawEngineMenus( void ) {
+	if ( clc.downloadMenuActive ) {
+		// Accept cursor movement
+		cls.cursorActive = qtrue;
+	} else {
+		// Disable movement
+		cls.cursorActive = qfalse;
+	}
+
+	// Reset all menu buttons, the menu set them if required
+	menuButtonsActive = 0;
+
+	// Draw menus
+	if ( clc.downloadMenuActive ) {
+		CL_DrawDownloadRequest();
+	}
+
+	// Draw cursor
+	if ( cls.cursorActive ) {
+		int i;
+
+		// Re-draw the buttons the user is hovering over, but use a different color
+		static vec4_t buttonHoverBackground = { 0.75f, 0.5f, 0.0f, 1.0f };
+		static vec4_t buttonHoverFrame = { 0.50f, 0.25f, 0.0f, 1.0f };
+		for ( i = 0; i < menuButtonsActive; i++ ) {
+			if ( CL_IsCursorOnMenuButton(&menuButtons[i]) ) {
+				CL_DrawMenuButton( &menuButtons[i], buttonHoverBackground, buttonHoverFrame );
+			}
+		}
+
+		// Draw the actual cursor
+		re->DrawStretchPic( cls.cursorX, cls.cursorY, 48, 48, 0, 0, 1, 1, cls.cursorShader );
+	}
+}
+
+void CL_UpdateCursorPosition( int dx, int dy ) {
+	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) return;
+
+	cls.cursorX = Com_Clampi( 0, SCREEN_WIDTH, cls.cursorX + dx );
+	cls.cursorY = Com_Clampi( 0, SCREEN_HEIGHT, cls.cursorY + dy );
+}
+
+void CL_CursorButton( int key ) {
+	int i;
+	if ( key == A_MOUSE1 ) {
+		for ( i = 0; i < menuButtonsActive; i++ ) {
+			if ( CL_IsCursorOnMenuButton(&menuButtons[i]) ) {
+				menuButtons[i].action();
+			}
+		}
+	}
+}
