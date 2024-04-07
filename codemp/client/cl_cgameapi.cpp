@@ -276,16 +276,21 @@ static size_t vec3_size = sizeof(vec3_t);
 void CGVM_GetOrigin( int entID, vec3_t out ) {
 	if ( cgvm->isLegacy ) {
 		float *out_ptr;
+		float *out_ptr_vm;
 
 		if ( !cgvm->dllHandle ) {
-			out_ptr = (float*)VM_PtrToOffset( cgvm, VM_ExtraMemory_ClaimData(cgvm, (float*)out, vec3_size) );
+			out_ptr = (float*)VM_ExtraMemory_ClaimData(cgvm, (float*)out, vec3_size);
+			out_ptr_vm = (float*)VM_PtrToOffset( cgvm, (void*)out_ptr );
 		} else {
-			out_ptr = out;
+			out_ptr_vm = out_ptr = out;
 		}
-		VM_Call( cgvm, CG_GET_ORIGIN, entID, reinterpret_cast< intptr_t >( out_ptr ) );
+		VM_Call( cgvm, CG_GET_ORIGIN, entID, reinterpret_cast< intptr_t >( out_ptr_vm ) );
 		if ( !cgvm->dllHandle ) {
 			// Memory may only be released in reverse order.
-			if ( out_ptr ) VM_ExtraMemory_Release( cgvm, vec3_size );
+			if ( out_ptr ) {
+				VectorCopy( out_ptr, out );
+				VM_ExtraMemory_Release( cgvm, vec3_size );
+			}
 		}
 		return;
 	}
@@ -297,16 +302,21 @@ void CGVM_GetOrigin( int entID, vec3_t out ) {
 void CGVM_GetAngles( int entID, vec3_t out ) {
 	if ( cgvm->isLegacy ) {
 		float *out_ptr;
+		float *out_ptr_vm;
 
 		if ( !cgvm->dllHandle ) {
-			out_ptr = (float*)VM_PtrToOffset( cgvm, VM_ExtraMemory_ClaimData(cgvm, (float*)out, vec3_size) );
+			out_ptr = (float*)VM_ExtraMemory_ClaimData(cgvm, (float*)out, vec3_size);
+			out_ptr_vm = (float*)VM_PtrToOffset( cgvm, (void*)out_ptr );
 		} else {
-			out_ptr = out;
+			out_ptr_vm = out_ptr = out;
 		}
-		VM_Call( cgvm, CG_GET_ANGLES, entID, reinterpret_cast< intptr_t >( out ) );
+		VM_Call( cgvm, CG_GET_ANGLES, entID, reinterpret_cast< intptr_t >( out_ptr_vm ) );
 		if ( !cgvm->dllHandle ) {
 			// Memory may only be released in reverse order.
-			if ( out_ptr ) VM_ExtraMemory_Release( cgvm, vec3_size );
+			if ( out_ptr ) {
+				VectorCopy( out_ptr, out );
+				VM_ExtraMemory_Release( cgvm, vec3_size );
+			}
 		}
 		return;
 	}
