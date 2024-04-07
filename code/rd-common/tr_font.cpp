@@ -1019,6 +1019,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 	m_fAltSBCSFontScaleFactor = -1;
 #endif
 	m_bIsFakeAlienLanguage = !strcmp(_fontName,"aurabesh");	// dont try and make SBCS or asian overrides for this
+	m_isVariant = qfalse;
 
 	len = ri.FS_ReadFile(fontName, NULL);
 	if (len == sizeof(dfontdat_t))
