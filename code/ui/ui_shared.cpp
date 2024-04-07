@@ -352,7 +352,7 @@ qboolean MenuParse_font( itemDef_t *item)
 
 	if (!DC->Assets.fontRegistered)
 	{
-		DC->Assets.qhMediumFont = DC->registerFont(menu->font);
+		DC->Assets.qhMediumFont = UI_RegisterFont(menu->font);
 		DC->Assets.fontRegistered = qtrue;
 	}
 	return qtrue;
@@ -3072,35 +3072,19 @@ qboolean ItemParse_name( itemDef_t *item)
 	return qtrue;
 }
 
-int MenuFontToReal( int menuFontIndex )
+int UI_MenuFontToReal( int menuFontIndex )
 {
-	static int fonthandle_aurabesh;
-	static int fonthandle_ergoec;
-	static int fonthandle_anewhope;
-	static int fonthandle_arialnb;
+	// The font array starts at 0, but the valid font indexes start at 1. As the
+	// original menu files have direct font indexes we need to subtract 1 from
+	// the given index to get the correct index for our mapping array.
+	menuFontIndex--;
 
-	static qboolean fontsRegistered = qfalse;
+	// Make sure we don't go out of bound, fallback to medium font
+	if ( menuFontIndex < 0 || menuFontIndex >= registeredFontsCount )
+		return DC->Assets.qhMediumFont;
 
-	if ( !fontsRegistered )
-	{ // Only try registering the fonts once
-		fonthandle_aurabesh = UI_RegisterFont( "aurabesh" );
-		fonthandle_ergoec   = UI_RegisterFont( "ergoec" );
-		fonthandle_anewhope = UI_RegisterFont( "anewhope" );
-		fonthandle_arialnb  = UI_RegisterFont( "arialnb" );
-
-		fontsRegistered = qtrue;
-	}
-
-	// Default fonts from a clean installation
-	switch ( menuFontIndex ) {
-		case 1: return fonthandle_aurabesh;
-		case 2: return fonthandle_ergoec;
-		case 3: return fonthandle_anewhope;
-		case 4: return fonthandle_arialnb;
-
-		default:
-			return DC->Assets.qhMediumFont;
-	}
+	// Use the mapped index
+	return registeredFonts[menuFontIndex];
 }
 
 qboolean ItemParse_font( itemDef_t *item )
@@ -3111,7 +3095,7 @@ qboolean ItemParse_font( itemDef_t *item )
 	}
 
 	// Translate to real font
-	item->font = MenuFontToReal( item->font );
+	item->font = UI_MenuFontToReal( item->font );
 
 	return qtrue;
 }
@@ -8294,7 +8278,7 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 				while (1)
 				{
 					// FIXME - add some type of parameter in the menu file like descfont to specify the font for the descriptions for this menu.
-					textWidth = DC->textWidth(textPtr, fDescScale, MenuFontToReal(4));	//  item->font);
+					textWidth = DC->textWidth(textPtr, fDescScale, UI_MenuFontToReal(4));	//  item->font);
 
 					if (parent->descAlignment == ITEM_ALIGN_RIGHT)
 					{
@@ -8330,7 +8314,7 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 					}
 
 					// FIXME - add some type of parameter in the menu file like descfont to specify the font for the descriptions for this menu.
-					DC->drawText(xPos, parent->descY + iYadj, fDescScale, parent->descColor, textPtr, 0, parent->descTextStyle, MenuFontToReal(4));	//item->font);
+					DC->drawText(xPos, parent->descY + iYadj, fDescScale, parent->descColor, textPtr, 0, parent->descTextStyle, UI_MenuFontToReal(4));	//item->font);
 					break;
 				}
 			}
