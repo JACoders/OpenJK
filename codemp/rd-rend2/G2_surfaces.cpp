@@ -13,7 +13,7 @@ public:
 	int				*boneUsedList;
 	surfaceInfo_v	&rootSList;
 	model_t			*currentModel;
-	boneInfo_v		&boneList; 
+	boneInfo_v		&boneList;
 
 	CConstructBoneList(
 	int				initsurfaceNum,
@@ -59,7 +59,7 @@ int G2_IsSurfaceLegal(void *mod, const char *surfaceName, int *flags)
 	mdxmHeader_t *mdxm = mod_m->data.glm->header;
 	surf = (mdxmSurfHierarchy_t *) ( (byte *)mdxm + mdxm->ofsSurfHierarchy );
 
-	for ( int i = 0 ; i < mdxm->numSurfaces ; i++) 
+	for ( int i = 0 ; i < mdxm->numSurfaces ; i++)
 	{
 	 	if (!Q_stricmp(surfaceName, surf->name))
 	 	{
@@ -104,7 +104,7 @@ mdxmSurface_t *G2_FindSurface(CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const 
 		}
 		return 0;
 	}
-   
+
  	// first find if we already have this surface in the list
 	for (i = slist.size() - 1; i >= 0; i--)
 	{
@@ -139,7 +139,7 @@ qboolean G2_SetSurfaceOnOff (CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const c
 {
 	int					surfIndex = -1;
 	surfaceInfo_t		temp_slist_entry;
-	mdxmSurface_t		*surf;	
+	mdxmSurface_t		*surf;
 	// find the model we want
 	model_t				*mod = (model_t *)ghlInfo->currentModel;
 
@@ -149,7 +149,7 @@ qboolean G2_SetSurfaceOnOff (CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const c
 		assert(0);
 		return qfalse;
 	}
- 
+
  	// first find if we already have this surface in the list
 	surf = G2_FindSurface(ghlInfo, slist, surfaceName, &surfIndex);
 	if (surf)
@@ -179,7 +179,7 @@ qboolean G2_SetSurfaceOnOff (CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const c
 			{	// insert here then because it changed, no need to add an override otherwise
 				temp_slist_entry.offFlags = newflags;
 				temp_slist_entry.surface = surfaceNum;
-				
+
 				slist.push_back(temp_slist_entry);
 			}
 			return qtrue;
@@ -203,7 +203,7 @@ void G2_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t renderSkin)
 		if ( !strcmp( ((shader_t *)skin->surfaces[j]->shader)->name, "*off") ) {
 			G2_SetSurfaceOnOff(ghlInfo, ghlInfo->mSlist, skin->surfaces[j]->name, G2SURFACEFLAG_OFF);
 		}
-		else 
+		else
 		{
 			int	flags;
 			int surfaceNum = G2_IsSurfaceLegal((void *)ghlInfo->currentModel, skin->surfaces[j]->name, &flags);
@@ -228,7 +228,7 @@ int G2_IsSurfaceOff (CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const char *sur
 	{
 		return 0;
 	}
-   
+
  	// first find if we already have this surface in the list
 	surf = G2_FindSurface(ghlInfo, slist, surfaceName, &surfIndex);
 	if (surf)
@@ -240,7 +240,7 @@ int G2_IsSurfaceOff (CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const char *sur
 
 	mdxmSurfHierarchy_t	*surface = (mdxmSurfHierarchy_t *) ( (byte *)mdxm + mdxm->ofsSurfHierarchy );
 
-	for ( int i = 0 ; i < mdxm->numSurfaces ; i++) 
+	for ( int i = 0 ; i < mdxm->numSurfaces ; i++)
 	{
 	 	if (!Q_stricmp(surfaceName, surface->name))
 	 	{
@@ -367,7 +367,7 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 		G2_FindRecursiveSurface(mod_m, surf, ghoul2[modelIndex].mSlist, activeSurfaces);
 
 		// now generate the used bone list
-		CConstructBoneList	CBL(ghoul2[modelIndex].mSurfaceRoot, 
+		CConstructBoneList	CBL(ghoul2[modelIndex].mSurfaceRoot,
 							activeBones,
 							ghoul2[modelIndex].mSlist,
 							mod_m,
@@ -393,8 +393,8 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 				int	boltMod = (ghoul2[i].mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
 				int	boltNum = (ghoul2[i].mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
 				// if either the bolt list is too small, or the bolt we are pointing at references nothing, remove this model
-				if (((int)ghoul2[boltMod].mBltlist.size() <= boltNum) || 
-					((ghoul2[boltMod].mBltlist[boltNum].boneNumber == -1) && 
+				if (((int)ghoul2[boltMod].mBltlist.size() <= boltNum) ||
+					((ghoul2[boltMod].mBltlist[boltNum].boneNumber == -1) &&
 					 (ghoul2[boltMod].mBltlist[boltNum].surfaceNumber == -1)))
 				{
 					CGhoul2Info_v *g2i = &ghoul2;
@@ -415,7 +415,7 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 	{
 		CGhoul2Info_v &ghoul2 = *((CGhoul2Info_v *)entstate->ghoul2);
 		model_t				*mod_m = R_GetModelByHandle(RE_RegisterModel(ghoul2[modelIndex].mFileName));
-		model_t				*mod_a = R_GetModelByHandle(mod_m->mdxm->animIndex); 
+		model_t				*mod_a = R_GetModelByHandle(mod_m->mdxm->animIndex);
 		int					surf;
 		int					flags;
 		int					*activeSurfaces, *activeBones;
@@ -451,7 +451,7 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 			G2_FindRecursiveSurface(mod_m, surf, ghoul2[modelIndex].mSlist, activeSurfaces);
 
 			// now generate the used bone list
-			CConstructBoneList	CBL(ghoul2[modelIndex].mSurfaceRoot, 
+			CConstructBoneList	CBL(ghoul2[modelIndex].mSurfaceRoot,
 								activeBones,
 								ghoul2[modelIndex].mSlist,
 								mod_m,
@@ -477,8 +477,8 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 					int	boltMod = (ghoul2[i].mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
 					int	boltNum = (ghoul2[i].mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
 					// if either the bolt list is too small, or the bolt we are pointing at references nothing, remove this model
-					if ((ghoul2[boltMod].mBltlist.size() <= boltNum) || 
-						((ghoul2[boltMod].mBltlist[boltNum].boneNumber == -1) && 
+					if ((ghoul2[boltMod].mBltlist.size() <= boltNum) ||
+						((ghoul2[boltMod].mBltlist[boltNum].boneNumber == -1) &&
 						 (ghoul2[boltMod].mBltlist[boltNum].surfaceNumber == -1)))
 					{
 						G2API_RemoveGhoul2Model(entstate, i);
@@ -595,7 +595,7 @@ int G2_GetSurfaceIndex(CGhoul2Info *ghlInfo, const char *surfaceName)
 {
 	model_t		*mod = (model_t *)ghlInfo->currentModel;
 	int			flags;
-	
+
 	return G2_IsSurfaceLegal(mod, surfaceName, &flags);
 }
 
@@ -632,7 +632,7 @@ int G2_IsSurfaceRendered(CGhoul2Info *ghlInfo, const char *surfaceName, surfaceI
 			//G2 was bug, above comment was accurate, but we don't want the original flags, we want the parent flags
 			G2_IsSurfaceLegal((model_t *)ghlInfo->currentModel, parentSurfInfo->name, &parentFlags);
 
-			// now see if we already have overriden this surface in the slist 
+			// now see if we already have overriden this surface in the slist
 			parentSurf = G2_FindSurface(ghlInfo, slist, parentSurfInfo->name, &surfIndex);
 			if (parentSurf)
 			{
@@ -643,7 +643,7 @@ int G2_IsSurfaceRendered(CGhoul2Info *ghlInfo, const char *surfaceName, surfaceI
 			if (parentFlags & G2SURFACEFLAG_NODESCENDANTS)
 			{
 				flags |= G2SURFACEFLAG_OFF;
-				break; 
+				break;
 			}
 			// set up scan of next parent
 			surfNum = parentSurfInfo->parentIndex;
@@ -655,7 +655,7 @@ int G2_IsSurfaceRendered(CGhoul2Info *ghlInfo, const char *surfaceName, surfaceI
 	}
 	if ( flags == 0 )
 	{//it's not being overridden by a parent
-		// now see if we already have overriden this surface in the slist 
+		// now see if we already have overriden this surface in the slist
 		const mdxmSurface_t *surf = G2_FindSurface(ghlInfo, slist, surfaceName, &surfIndex);
 		if (surf)
 		{

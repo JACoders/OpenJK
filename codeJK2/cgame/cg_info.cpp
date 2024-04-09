@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 static const int missionYpos = 79;
 
-const char *showLoadPowersName[] = 
+const char *showLoadPowersName[] =
 {
 	"INGAME_HEAL2",
 	"INGAME_JUMP2",
@@ -71,7 +71,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 /*	CG_DisplayBoxedText(70,50,500,300,finalText,
 						cgs.media.qhFontSmall,
 						1.0f,
-						colorTable[color]	
+						colorTable[color]
 						);
 */
 	if (pixelLen < 500)	// One shot - small enough to print entirely on one line
@@ -102,7 +102,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 		holdText2[1] = '\0';
 		strBegin = str;
 
-		while( *str ) 
+		while( *str )
 		{
 			holdText2[0] = *str;
 			pixelLen += cgi_R_Font_StrLenPixels(holdText2, cgs.media.qhFontMedium, 1.0f);
@@ -110,7 +110,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 			pixelLen += 2; // For kerning
 			++charLen;
 
-			if (pixelLen > 500 ) 
+			if (pixelLen > 500 )
 			{	//Reached max length of this line
 				//step back until we find a space
 				while ((charLen) && (*str != ' ' ))
@@ -134,7 +134,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 
 				CG_DrawProportionalString(108, y, holdText, CG_SMALLFONT, colorTable[color] );
 				++missionYcnt;
-			} 
+			}
 			else if (*(str+1) == '\0')
 			{
 				++charLen;
@@ -146,10 +146,10 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 				++missionYcnt;
 				break;
 			}
-			++str; 
+			++str;
 
 
-		} 
+		}
 	}
 
 	// Special case hack
@@ -272,7 +272,7 @@ static void CG_DrawForceCount( const int force, int x, float *y, const int pad,q
 
 	sscanf( s, "%d",&val );
 
-	if ((val<1) || (val> NUM_FORCE_POWERS))	
+	if ((val<1) || (val> NUM_FORCE_POWERS))
 	{
 		return;
 	}
@@ -293,7 +293,7 @@ static void CG_DrawForceCount( const int force, int x, float *y, const int pad,q
 
 		for ( int i = 0; i < val; i++ )
 		{
-			CG_DrawPic( x - iconSize - i * (iconSize + 10) , *y, iconSize, iconSize, force_icons[force] ); 
+			CG_DrawPic( x - iconSize - i * (iconSize + 10) , *y, iconSize, iconSize, force_icons[force] );
 		}
 	}
 
@@ -333,9 +333,9 @@ static void CG_LoadScreen_PersonalInfo(void)
 	CG_DrawForceCount( FP_SABERTHROW, x, &y, pad,&hasForcePowers );
 	CG_DrawForceCount( FP_SABER_OFFENSE, x, &y, pad,&hasForcePowers );
 	CG_DrawForceCount( FP_SABER_DEFENSE, x, &y, pad,&hasForcePowers );
-	
+
 	if (hasForcePowers)
-	{	
+	{
 		cgi_SP_GetStringTextString( "INGAME_CURRENTFORCEPOWERS", text, sizeof(text) );
 		CG_DrawProportionalString( 200, 65, text, CG_CENTER | CG_BIGFONT, colorTable[CT_WHITE] );
 	}
@@ -397,7 +397,7 @@ void CG_DrawInformation( void ) {
 		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
 
 	if (!levelshot) {
-		levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+		levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );
 	}
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
@@ -450,15 +450,15 @@ void CG_DrawInformation( void ) {
 	// map-specific message (long map name)
 	s = CG_ConfigString( CS_MESSAGE );
 
-	if ( s[0] ) 
+	if ( s[0] )
 	{
 		if (s[0] == '@')
-		{	
+		{
 			char text[1024]={0};
 			cgi_SP_GetStringTextString( s+1, text, sizeof(text) );
 			cgi_R_Font_DrawString( 15, y, va("\"%s\"",text),colorTable[CT_WHITE],cgs.media.qhFontMedium, -1, 1.0f );
 		}
-		else 
+		else
 		{
 			cgi_R_Font_DrawString( 15, y, va("\"%s\"",s),colorTable[CT_WHITE],cgs.media.qhFontMedium, -1, 1.0f );
 		}

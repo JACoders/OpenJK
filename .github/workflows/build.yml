@@ -82,81 +82,6 @@ jobs:
           path: ${{ github.workspace }}/build/bin/JediOutcast
           if-no-files-found: error
 
-  msvcxp:
-    name: WinXP ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
-    runs-on: windows-2022
-    strategy:
-      matrix:
-        arch: [x86, x86_64]
-        build_type: [Release]
-        portable: [Non-Portable]
-        include:
-          - arch: x86
-            platform: Win32
-          - arch: x86_64
-            platform: x64
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install v141_xp Toolchain
-        continue-on-error: true
-        shell: powershell
-        run: |
-          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
-          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
-          $WorkLoads = '--add Microsoft.VisualStudio.Component.WinXP'
-          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"", $WorkLoads, '--quiet', '--norestart', '--nocache')
-          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-          if ($process.ExitCode -eq 0) {
-              Write-Host "components have been successfully added"
-          } else {
-              Write-Host "components were not installed"
-          }
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.1
-
-      - name: Create Build Environment
-        run: cmake -E make_directory ${{ github.workspace }}/build
-
-      - name: Configure CMake
-        shell: bash
-        working-directory: ${{ github.workspace }}/build
-        run: |
-          OPTIONS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=bin"
-          if [ "${{ matrix.portable }}" == "Portable" ]; then
-            OPTIONS+=" -DBuildPortableVersion=ON"
-          else
-            OPTIONS+=" -DBuildPortableVersion=OFF"
-          fi
-          OPTIONS+=" -DBuildJK2SPEngine=ON -DBuildJK2SPGame=ON -DBuildJK2SPRdVanilla=ON"
-          cmake $GITHUB_WORKSPACE -T v141_xp -A ${{ matrix.platform }} $OPTIONS
-
-      - name: Build
-        working-directory: ${{ github.workspace }}/build
-        shell: bash
-        run: cmake --build . --config ${{ matrix.build_type }} -j $NUMBER_OF_PROCESSORS
-
-      - name: Install
-        if: ${{ matrix.build_type == 'Release' }}
-        working-directory: ${{ github.workspace }}/build
-        shell: bash
-        run: cmake --install . --config ${{ matrix.build_type }}
-
-      - uses: actions/upload-artifact@v3
-        if: ${{ matrix.build_type == 'Release' }}
-        with:
-          name: OpenJK-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
-          path: ${{ github.workspace }}/build/bin/JediAcademy
-          if-no-files-found: error
-
-      - uses: actions/upload-artifact@v3
-        if: ${{ matrix.build_type == 'Release' }}
-        with:
-          name: OpenJO-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
-          path: ${{ github.workspace }}/build/bin/JediOutcast
-          if-no-files-found: error
-
   ubuntu:
     name: Ubuntu ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
     runs-on: ubuntu-22.04
@@ -240,13 +165,18 @@ jobs:
 
   macos:
     name: macOS ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable}})
-    runs-on: macos-12
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64]
+        runner: [macos-12, macos-14]
         build_type: [Debug, Release]
         portable: [Non-Portable]
+        include:
+          - runner: macos-12
+            arch: x86_64
+          - runner: macos-14
+            arch: arm64
 
     steps:
       - uses: actions/checkout@v3
@@ -285,7 +215,7 @@ jobs:
         working-directory: ${{ github.workspace }}/install/JediAcademy
         shell: bash
         run: |
-          chmod +x openjk.x86_64.app/Contents/MacOS/openjk.x86_64
+          chmod +x openjk.${{ matrix.arch }}.app/Contents/MacOS/openjk.${{ matrix.arch }}
           tar -czvf openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - name: Create OpenJO binary archive
@@ -293,7 +223,7 @@ jobs:
         working-directory: ${{ github.workspace }}/install/JediOutcast
         shell: bash
         run: |
-          chmod +x openjo_sp.x86_64.app/Contents/MacOS/openjo_sp.x86_64
+          chmod +x openjo_sp.${{ matrix.arch }}.app/Contents/MacOS/openjo_sp.${{ matrix.arch }}
           tar -czvf openjo_sp-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - uses: actions/upload-artifact@v3
@@ -329,12 +259,14 @@ jobs:
           mv ./OpenJK-linux-x86-Release-Non-Portable/* OpenJK-linux-x86.tar.gz
           mv ./OpenJK-linux-x86_64-Release-Non-Portable/* OpenJK-linux-x86_64.tar.gz
           mv ./OpenJK-macos-x86_64-Release-Non-Portable/* OpenJK-macos-x86_64.tar.gz
+          mv ./OpenJK-macos-arm64-Release-Non-Portable/* OpenJK-macos-arm64.tar.gz
 
           7z a -r OpenJO-windows-x86.zip ./OpenJO-windows-x86-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           7z a -r OpenJO-windows-x86_64.zip ./OpenJO-windows-x86_64-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           mv ./OpenJO-linux-x86-Release-Non-Portable/* OpenJO-linux-x86.tar.gz
           mv ./OpenJO-linux-x86_64-Release-Non-Portable/* OpenJO-linux-x86_64.tar.gz
           mv ./OpenJO-macos-x86_64-Release-Non-Portable/* OpenJO-macos-x86_64.tar.gz
+          mv ./OpenJO-macos-arm64-Release-Non-Portable/* OpenJO-macos-arm64.tar.gz
 
       - name: Create latest build
         uses: marvinpinto/action-automatic-releases@latest
@@ -375,6 +307,10 @@ jobs:
             artifact_name: OpenJK-macos-x86_64.tar.gz
             zip: false
 
+          - artifact_dir: OpenJK-macos-arm64-Release-Non-Portable
+            artifact_name: OpenJK-macos-arm64.tar.gz
+            zip: false
+
           - artifact_dir: OpenJO-windows-x86-Release-Non-Portable/JediOutcast
             artifact_name: OpenJO-windows-x86.zip
             zip: true
@@ -393,6 +329,10 @@ jobs:
 
           - artifact_dir: OpenJO-macos-x86_64-Release-Non-Portable
             artifact_name: OpenJO-macos-x86_64.tar.gz
+            zip: false
+
+          - artifact_dir: OpenJO-macos-arm64-Release-Non-Portable
+            artifact_name: OpenJO-macos-arm64.tar.gz
             zip: false
 
     steps:

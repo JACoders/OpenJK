@@ -532,7 +532,7 @@ static void Saber_ParseSaberType( saberInfo_t *saber, const char **p ) {
 	if ( COM_ParseString( p, &value ) )
 		return;
 	saberType = GetIDForString( saberTable, value );
-	if ( saberType >= SABER_SINGLE && saberType <= NUM_SABERS )
+	if ( saberType >= SABER_SINGLE && saberType < NUM_SABERS )
 		saber->type = (saberType_t)saberType;
 }
 static void Saber_ParseSaberModel( saberInfo_t *saber, const char **p ) {

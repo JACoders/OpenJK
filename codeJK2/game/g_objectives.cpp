@@ -47,7 +47,7 @@ void OBJ_SetPendingObjectives(gentity_t *ent)
 
 	for (i=0;i<MAX_OBJECTIVES;++i)
 	{
-		if ((ent->client->sess.mission_objectives[i].status == OBJECTIVE_STAT_PENDING) && 
+		if ((ent->client->sess.mission_objectives[i].status == OBJECTIVE_STAT_PENDING) &&
 			(ent->client->sess.mission_objectives[i].display))
 		{
 			ent->client->sess.mission_objectives[i].status = OBJECTIVE_STAT_FAILED;

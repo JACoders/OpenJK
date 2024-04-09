@@ -100,12 +100,12 @@ void FX_DEMP2_AltDetonate( vec3_t org, float size )
 
 	ex->startTime = cg.time;
 	ex->endTime = ex->startTime + 1300;
-	
+
 	ex->radius = size;
 	ex->refEntity.customShader = cgi_R_RegisterShader( "gfx/effects/demp2shell" );
 
 	ex->refEntity.hModel = cgi_R_RegisterModel( "models/items/sphere.md3" );
 	VectorCopy( org, ex->refEntity.origin );
-		
+
 	ex->color[0] = ex->color[1] = ex->color[2] = 255.0f;
 }

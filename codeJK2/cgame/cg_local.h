@@ -55,9 +55,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Zoom vars
 #define	ZOOM_TIME			150		// not currently used?
 #define MAX_ZOOM_FOV		3.0f
-#define ZOOM_IN_TIME		1500.0f	
+#define ZOOM_IN_TIME		1500.0f
 #define ZOOM_OUT_TIME		100.0f
-#define ZOOM_START_PERCENT	0.3f	
+#define ZOOM_START_PERCENT	0.3f
 
 #define	ITEM_BLOB_TIME		200
 #define	MUZZLE_FLASH_TIME	20
@@ -120,7 +120,7 @@ typedef struct {
 	float		pitchAngle;
 	qboolean	pitching;
 
-	int			animationNumber;	
+	int			animationNumber;
 	animation_t	*animation;
 	int			animationTime;		// time when the first frame of the animation will be exact
 } lerpFrame_t;
@@ -143,7 +143,7 @@ typedef struct {
 
 // centity_t have a direct corespondence with gentity_t in the game, but
 // only the entityState_t is directly communicated to the cgame
-struct centity_s 
+struct centity_s
 {
 	entityState_t	currentState;	// from cg.frame
 	entityState_t	nextState;		// from cg.nextFrame, if available
@@ -164,7 +164,7 @@ struct centity_s
 	int				errorTime;		// decay the error from this time
 	vec3_t			errorOrigin;
 	vec3_t			errorAngles;
-	
+
 	qboolean		extrapolated;	// false if origin / angles is an interpolation
 	vec3_t			rawOrigin;
 	vec3_t			rawAngles;
@@ -174,7 +174,7 @@ struct centity_s
 	// exact interpolated position of entity on this frame
 	vec3_t			lerpOrigin;
 	vec3_t			lerpAngles;
-	
+
 	//Pointer to corresponding gentity
 	gentity_t		*gent;
 };
@@ -218,7 +218,7 @@ typedef enum {
 	LEF_NO_RANDOM_ROTATE= 0x0008			// MakeExplosion adds random rotate which could be bad in some cases
 } leFlag_t;
 
-typedef enum 
+typedef enum
 {
 	LEBS_NONE,
 	LEBS_METAL,
@@ -299,10 +299,10 @@ typedef struct {
 
 // all cg.stepTime, cg.duckTime, cg.landTime, etc are set to cg.time when the action
 // occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
- 
+
 typedef struct {
 	int			clientFrame;		// incremented each frame
-	
+
 	qboolean	levelShot;			// taking a level menu screenshot
 
 	// there are only one or two snapshot_t that are relevent at a time
@@ -342,7 +342,7 @@ typedef struct {
 
 	float		landChange;				// for landing hard
 	int			landTime;
-	
+
 	// input state sent to server
 	int			weaponSelect;
 	int			saberAnimLevelPending;
@@ -380,8 +380,8 @@ typedef struct {
 	int			centerPrintLines;
 
 	// Scrolling text, caption text and LCARS text use this
-	char		printText[MAX_PRINTTEXT][128];	
-	int			printTextY;			 	
+	char		printText[MAX_PRINTTEXT][128];
+	int			printTextY;
 
 	char		captionText[MAX_CAPTIONTEXT][256/*128*/];	// bosted for taiwanese squealy radio static speech in kejim post
 	int			captionTextY;
@@ -504,7 +504,7 @@ Ghoul2 Insert End
 
 
 #define MAX_SHOWPOWERS 7
-extern int showPowers[MAX_SHOWPOWERS]; 
+extern int showPowers[MAX_SHOWPOWERS];
 extern char *showPowersName[MAX_SHOWPOWERS];
 extern int force_icons[NUM_FORCE_POWERS];
 #define MAX_DPSHOWPOWERS 11
@@ -529,7 +529,7 @@ typedef struct
 	char			*file;		// File name of graphic/ text if STRING
 	int				ingameEnum;	// Index to ingame_text[]
 	qhandle_t		graphic;	// Handle of graphic if GRAPHIC
-	int				min;		// 
+	int				min;		//
 	int				max;
 	int				target;		// Final value
 	int				inc;
@@ -711,14 +711,14 @@ void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader 
 void CG_DrawPic2( float x, float y, float width, float height, float s1, float t1, float s2, float t2, qhandle_t hShader );
 void CG_DrawRotatePic( float x, float y, float width, float height,float angle, qhandle_t hShader );
 void CG_DrawRotatePic2( float x, float y, float width, float height,float angle, qhandle_t hShader );
-void CG_DrawString( float x, float y, const char *string, 
+void CG_DrawString( float x, float y, const char *string,
 				   float charWidth, float charHeight, const float *modulate );
 void CG_PrintInterfaceGraphics(int min,int max);
 void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill);
 void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
 
 
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
+void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		qboolean forceColor, qboolean shadow, int charWidth, int charHeight );
 void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color );
 
@@ -744,7 +744,7 @@ void CG_GameText(int y );
 //
 void CG_DrawScrollText( void );
 void CG_DrawCaptionText( void );
-void CG_DrawCenterString( void ); 
+void CG_DrawCenterString( void );
 
 
 //
@@ -759,7 +759,7 @@ void CG_GetTagWorldPosition( refEntity_t *model, char *tag, vec3_t pos, vec3_t a
 // cg_predict.c
 //
 int	CG_PointContents( const vec3_t point, int passEntityNum );
-void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 					 const int skipNumber, const int mask, const EG2_Collision eG2TraceType=G2_NOCOLLIDE, const int useLod=0 );
 void CG_PredictPlayerState( void );
 
@@ -779,9 +779,9 @@ void CG_AddPacketEntities( void );
 void CG_Beam( centity_t *cent, int color );
 void CG_AdjustPositionForMover( const vec3_t in, int moverNum, int atTime, vec3_t out );
 
-void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							qhandle_t parentModel, char *tagName );
-void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							qhandle_t parentModel, char *tagName, orientation_t *tagOrient );
 
 /*
@@ -818,7 +818,7 @@ void CG_AddViewWeapon (playerState_t *ps);
 void CG_DrawWeaponSelect( void );
 
 void CG_OutOfAmmoChange( void );	// should this be in pmove?
-void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t min, const vec3_t maxs, 
+void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t min, const vec3_t maxs,
 					float speed, int numChunks, material_t chunkType, int customChunk, float baseScale );
 
 
@@ -827,11 +827,11 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t min,
 //
 void	CG_InitMarkPolys( void );
 void	CG_AddMarks( void );
-void	CG_ImpactMark( qhandle_t markShader, 
-				    const vec3_t origin, const vec3_t dir, 
-					float orientation, 
-				    float r, float g, float b, float a, 
-					qboolean alphaFade, 
+void	CG_ImpactMark( qhandle_t markShader,
+				    const vec3_t origin, const vec3_t dir,
+					float orientation,
+				    float r, float g, float b, float a,
+					qboolean alphaFade,
 					float radius, qboolean temporary );
 
 //
@@ -845,11 +845,11 @@ void	CG_AddLocalEntities( void );
 // cg_effects.c
 //
 
-/*localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir, 
+/*localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 								qhandle_t hModel, int numframes, qhandle_t shader, int msec,
 								qboolean isSprite, float scale = 1.0f );// Overloaded
 
-localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir, 
+localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 								qhandle_t hModel, int numframes, qhandle_t shader, int msec,
 								qboolean isSprite, float scale, int flags );// Overloaded
 */
@@ -965,7 +965,7 @@ void	cgi_CM_TransformedBoxTrace( trace_t *results, const vec3_t start, const vec
 						  const vec3_t origin, const vec3_t angles );
 
 // Returns the projection of a polygon onto the solid brushes in the world
-int		cgi_CM_MarkFragments( int numPoints, const vec3_t *points, 
+int		cgi_CM_MarkFragments( int numPoints, const vec3_t *points,
 				const vec3_t projection,
 				int maxPoints, vec3_t pointBuffer,
 				int maxFragments, markFragment_t *fragmentBuffer );
@@ -992,7 +992,7 @@ void	cgi_R_LoadWorldMap( const char *mapname );
 // all media should be registered during level startup to prevent
 // hitches during gameplay
 qhandle_t	cgi_R_RegisterModel( const char *name );			// returns rgb axis if not found
-qhandle_t	cgi_R_RegisterSkin( const char *name );			
+qhandle_t	cgi_R_RegisterSkin( const char *name );
 qhandle_t	cgi_R_RegisterShader( const char *name );			// returns default shader if not found
 qhandle_t	cgi_R_RegisterShaderNoMip( const char *name );			// returns all white if not found
 qhandle_t	cgi_R_RegisterFont( const char *name );
@@ -1017,18 +1017,18 @@ void	cgi_R_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *v
 void	cgi_R_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void	cgi_R_RenderScene( const refdef_t *fd );
 void	cgi_R_SetColor( const float *rgba );	// NULL = 1,1,1,1
-void	cgi_R_DrawStretchPic( float x, float y, float w, float h, 
+void	cgi_R_DrawStretchPic( float x, float y, float w, float h,
 	float s1, float t1, float s2, float t2, qhandle_t hShader );
 void	cgi_R_DrawScreenShot( float x, float y, float w, float h);
 
 void	cgi_R_ModelBounds( qhandle_t model, vec3_t mins, vec3_t maxs );
-void	cgi_R_LerpTag( orientation_t *tag, qhandle_t mod, int startFrame, int endFrame, 
+void	cgi_R_LerpTag( orientation_t *tag, qhandle_t mod, int startFrame, int endFrame,
 					 float frac, const char *tagName );
 // Does weird, barely controllable rotation behaviour
-void	cgi_R_DrawRotatePic( float x, float y, float w, float h, 
+void	cgi_R_DrawRotatePic( float x, float y, float w, float h,
 	float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
 // rotates image around exact center point of passed in coords
-void	cgi_R_DrawRotatePic2( float x, float y, float w, float h, 
+void	cgi_R_DrawRotatePic2( float x, float y, float w, float h,
 	float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
 void	cgi_R_LAGoggles( void );
 void	cgi_R_Scissor( float x, float y, float w, float h);
@@ -1061,7 +1061,7 @@ qboolean	cgi_GetServerCommand( int serverCommandNumber );
 // this will always be at least one higher than the number in the current
 // snapshot, and it may be quite a few higher if it is a fast computer on
 // a lagged connection
-int			cgi_GetCurrentCmdNumber( void );	
+int			cgi_GetCurrentCmdNumber( void );
 qboolean	cgi_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
 
 // used for the weapon select and zoom

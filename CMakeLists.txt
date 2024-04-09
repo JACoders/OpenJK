@@ -40,6 +40,7 @@ option(BuildMPGame "Whether to create projects for the MP server-side gamecode (
 option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" ON)
 option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
 option(BuildMPRend2 "Whether to create projects for the EXPERIMENTAL MP rend2 renderer (rd-rend2_x86.dll)" ON)
+
 option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.exe)" ON)
 option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" ON)
 option(BuildSPRdVanilla "Whether to create projects for the SP default renderer (rdsp-vanilla_x86.dll)" ON)
@@ -96,6 +97,14 @@ endif()
 #
 #=============================================================================
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
+
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+	add_custom_target(
+		copy-compile-commands ALL
+		${CMAKE_COMMAND} -E copy_if_different
+		${CMAKE_BINARY_DIR}/compile_commands.json
+		${CMAKE_CURRENT_LIST_DIR})
+endif()
 
 #=============================================================================
 #
@@ -197,11 +206,11 @@ if(WIN64)
 endif()
 
 if (APPLE)
-	set(SharedDefines "MACOS_X")
+	set(SharedDefines ${SharedDefines} "MACOS_X")
 endif()
 
 if (NOT WIN32 AND NOT APPLE)
-	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
+	set(SharedDefines ${SharedDefines} "ARCH_STRING=\"${Architecture}\"")
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "BSD")

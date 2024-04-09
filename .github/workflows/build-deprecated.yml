@@ -1,0 +1,83 @@
+name: build
+
+# runs every 4 months
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 */4 *"
+
+jobs:
+  msvcxp:
+    name: WinXP ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        arch: [x86, x86_64]
+        build_type: [Release]
+        portable: [Non-Portable]
+        include:
+          - arch: x86
+            platform: Win32
+          - arch: x86_64
+            platform: x64
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install v141_xp Toolchain
+        continue-on-error: true
+        shell: powershell
+        run: |
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $WorkLoads = '--add Microsoft.VisualStudio.Component.WinXP'
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"", $WorkLoads, '--quiet', '--norestart', '--nocache')
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -eq 0) {
+              Write-Host "components have been successfully added"
+          } else {
+              Write-Host "components were not installed"
+          }
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{ github.workspace }}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ github.workspace }}/build
+        run: |
+          OPTIONS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=bin"
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS+=" -DBuildPortableVersion=ON"
+          else
+            OPTIONS+=" -DBuildPortableVersion=OFF"
+          fi
+          OPTIONS+=" -DBuildJK2SPEngine=ON -DBuildJK2SPGame=ON -DBuildJK2SPRdVanilla=ON"
+          cmake $GITHUB_WORKSPACE -T v141_xp -A ${{ matrix.platform }} $OPTIONS
+
+      - name: Build
+        working-directory: ${{ github.workspace }}/build
+        shell: bash
+        run: cmake --build . --config ${{ matrix.build_type }} -j $NUMBER_OF_PROCESSORS
+
+      - name: Install
+        if: ${{ matrix.build_type == 'Release' }}
+        working-directory: ${{ github.workspace }}/build
+        shell: bash
+        run: cmake --install . --config ${{ matrix.build_type }}
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }}
+        with:
+          name: OpenJK-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ github.workspace }}/build/bin/JediAcademy
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.build_type == 'Release' }}
+        with:
+          name: OpenJO-windowsxp-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
+          path: ${{ github.workspace }}/build/bin/JediOutcast
+          if-no-files-found: error

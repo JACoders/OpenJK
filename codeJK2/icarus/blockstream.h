@@ -40,7 +40,7 @@ const	int		MAX_FILENAME_LENGTH = 1024;
 
 typedef	float	vector_t[3];
 
-enum 
+enum
 {
 	POP_FRONT,
 	POP_BACK,
@@ -56,7 +56,7 @@ class CBlockMember
 {
 public:
 
-	CBlockMember();	
+	CBlockMember();
 	~CBlockMember();
 
 	void Free( void );
@@ -110,7 +110,7 @@ protected:
 	int		m_size;		//Size of the data member variable
 	void	*m_data;	//Data for this member
 };
-	
+
 //CBlock
 
 class CBlock
@@ -149,7 +149,7 @@ public:
 
 	void SetFlags( unsigned char flags )	{	m_flags = flags;	}
 	void SetFlag( unsigned char flag )		{	m_flags |= flag;	}
-	
+
 	int HasFlag( unsigned char flag )	const	{	return ( m_flags & flag );	}
 	unsigned char GetFlags( void )		const	{	return m_flags;				}
 
@@ -180,19 +180,19 @@ public:
 
 	int WriteBlock( CBlock * );	//Write the block out
 	int ReadBlock( CBlock * );	//Read the block in
-	
+
 	int Open( char *, long );	//Open a stream for reading / writing
 
 protected:
 
 	unsigned	GetUnsignedInteger( void );
 	int			GetInteger( void );
-	
+
 	char	GetChar( void );
 	long	GetLong( void );
 	float	GetFloat( void );
 
-	long	m_fileSize;							//Size of the file	
+	long	m_fileSize;							//Size of the file
 	FILE	*m_fileHandle;						//Global file handle of current I/O source
 	char	m_fileName[MAX_FILENAME_LENGTH];	//Name of the current file
 

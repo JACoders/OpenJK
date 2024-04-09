@@ -109,7 +109,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize ) {
 	assert(src);
 	assert(dest);
 	assert(destsize);
-	
+
 	strncpy( dest, src, destsize-1 );
 	dest[destsize-1] = 0;
 }

@@ -90,7 +90,7 @@ void MineMonster_Patrol( void )
 	}
 
 	//rwwFIXMEFIXME: Care about all clients, not just client 0
-	//OJKFIXME: clietnum 0
+	//OJKFIXME: clientnum 0
 	VectorSubtract( g_entities[0].r.currentOrigin, NPCS.NPC->r.currentOrigin, dif );
 
 	if ( VectorLengthSquared( dif ) < 256 * 256 )

@@ -58,7 +58,7 @@ namespace
 			}
 			return;
 		}
-		
+
 		wo->targetVelocityTimeRemaining--;
 		vec3_t deltaVelocity;
 		VectorSubtract(wo->targetVelocity, wo->currentVelocity, deltaVelocity);
@@ -134,7 +134,7 @@ namespace
 		vec3_t mapSize;
 		vec3_t halfMapSize;
 		VectorSubtract(
-			tr.world->bmodels[0].bounds[0], 
+			tr.world->bmodels[0].bounds[0],
 			tr.world->bmodels[0].bounds[1],
 			mapSize);
 		VectorScale(mapSize, -0.5f, halfMapSize);
@@ -150,7 +150,7 @@ namespace
 
 		orientationr_t orientation;
 		R_SetOrientationOriginAndAxis(orientation, viewOrigin, forward, left, up);
-		
+
 		const vec3_t viewBounds[2] = {
 			{ 0.0f, -halfMapSize[1], -halfMapSize[0] },
 			{ halfMapSize[2] * 2.0f, halfMapSize[1], halfMapSize[0] }
@@ -173,7 +173,7 @@ namespace
 			FBO_Bind(tr.weatherDepthFbo);
 
 			GL_SetViewportAndScissor(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
-	
+
 			if (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE) // used outside brushes
 			{
 				qglClearDepth(0.0f);
@@ -298,8 +298,8 @@ namespace
 							continue;
 
 						// Just draw it when batch is full
-						if (tess.numVertexes + 4 >= SHADER_MAX_VERTEXES || tess.numIndexes + 6 >= SHADER_MAX_INDEXES) 
-						{ 
+						if (tess.numVertexes + 4 >= SHADER_MAX_VERTEXES || tess.numIndexes + 6 >= SHADER_MAX_INDEXES)
+						{
 							RB_UpdateVBOs(ATTR_POSITION);
 							GLSL_VertexAttribsState(ATTR_POSITION, NULL);
 							GLSL_BindProgram(&tr.textureColorShader);
@@ -317,7 +317,7 @@ namespace
 							tess.multiDrawPrimitives = 0;
 							tess.externalIBO = nullptr;
 						}
-						
+
 						RB_AddQuadStamp(rayPos, left, up, color);
 					}
 				}
@@ -384,7 +384,7 @@ namespace
 
 	void RB_SimulateWeather(weatherObject_t *ws, vec2_t *zoneOffsets, int zoneIndex)
 	{
-		if (ws->vboLastUpdateFrame == backEndData->realFrameNumber || 
+		if (ws->vboLastUpdateFrame == backEndData->realFrameNumber ||
 			tr.weatherSystem->frozen)
 		{
 			// Already simulated for this frame
@@ -662,8 +662,8 @@ void RE_WorldEffectCommand(const char *command)
 		else
 			VectorMA(
 				tr.weatherSystem->constWindDirection,
-				0.001f, 
-				parsedWind, 
+				0.001f,
+				parsedWind,
 				tr.weatherSystem->constWindDirection);
 	}
 
@@ -900,8 +900,8 @@ void RE_WorldEffectCommand(const char *command)
 
 		VectorSet4(tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].color, 0.75f, 0.75f, 0.75f, 0.75f);
 		VectorScale(
-			tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].color, 
-			0.75f, 
+			tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].color,
+			0.75f,
 			tr.weatherSystem->weatherSlots[WEATHER_SPACEDUST].color);
 	}
 
@@ -1000,7 +1000,7 @@ void RE_WorldEffectCommand(const char *command)
 
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].particleCount = 70;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].active = true;
-		tr.weatherSystem->weatherSlots[WEATHER_FOG].gravity = 0.0f; 
+		tr.weatherSystem->weatherSlots[WEATHER_FOG].gravity = 0.0f;
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].fadeDistance = 2400.f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_FOG].size[0] = 300.f;

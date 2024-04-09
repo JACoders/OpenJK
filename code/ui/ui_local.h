@@ -246,4 +246,8 @@ void			trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum );
 
 void _UI_Refresh( int realtime );
 
+#define MAX_FONTS 64
+extern int registeredFontsCount;
+extern int registeredFonts[MAX_FONTS];
+
 #endif

@@ -131,7 +131,7 @@ void CSequence::RemoveChild( CSequence *child )
 	assert( child );
 	if ( child == NULL )
 		return;
-	
+
 	//Remove the child
 	m_children.remove( child );
 	m_numChildren--;
@@ -177,7 +177,7 @@ void CSequence::SetParent( CSequence *parent )
 		m_flags |= SQ_RETAIN;
 
 	if ( parent->m_flags & SQ_PENDING )
-		m_flags |= SQ_PENDING;	
+		m_flags |= SQ_PENDING;
 }
 
 /*
@@ -203,7 +203,7 @@ CBlock *CSequence::PopCommand( int type )
 		command = m_commands.front();
 		m_commands.pop_front();
 		m_numCommands--;
-	
+
 		return command;
 		break;
 
@@ -212,7 +212,7 @@ CBlock *CSequence::PopCommand( int type )
 		command = m_commands.back();
 		m_commands.pop_back();
 		m_numCommands--;
-		
+
 		return command;
 		break;
 	}
@@ -236,7 +236,7 @@ int CSequence::PushCommand( CBlock *block, int type )
 	switch ( type )
 	{
 	case PUSH_FRONT:
-		
+
 		m_commands.push_front( block );
 		m_numCommands++;
 
@@ -377,14 +377,14 @@ int CSequence::SaveCommand( CBlock *block )
 		saved_game.write_chunk<int32_t>(
 			INT_ID('B', 'M', 'I', 'D'),
 			bID);
-		
+
 		//Save out the data size
 		size = bm->GetSize();
 
 		saved_game.write_chunk<int32_t>(
 			INT_ID('B', 'S', 'I', 'Z'),
 			size);
-		
+
 		//Save out the raw data
         const uint8_t* raw_data = static_cast<const uint8_t*>(bm->GetData());
 
@@ -425,7 +425,7 @@ int CSequence::Save( void )
 	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'R', 'I', 'D'),
 		id);
-	
+
 	//Save the number of children
 	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'N', 'C', 'H'),
@@ -473,7 +473,7 @@ Load
 
 int CSequence::Load( void )
 {
-	unsigned char	flags = 0; 
+	unsigned char	flags = 0;
 	CSequence		*sequence;
 	CBlock			*block;
 	int				id = 0, numMembers = 0;
@@ -491,7 +491,7 @@ int CSequence::Load( void )
 		id);
 
 	m_parent = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
-	
+
 	//Get the return sequence
 	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'R', 'I', 'D'),
@@ -515,7 +515,7 @@ int CSequence::Load( void )
 		//Get the desired sequence
 		if ( ( sequence = m_owner->GetSequence( id ) ) == NULL )
 			return false;
-		
+
 		//Insert this into the list
 		STL_INSERT( m_children, sequence );
 
@@ -523,7 +523,7 @@ int CSequence::Load( void )
 		m_childrenMap[ i ] = sequence;
 	}
 
-	
+
 	//Get the sequence flags
 	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'F', 'L', 'G'),
@@ -550,9 +550,9 @@ int CSequence::Load( void )
 			id);
 
 		block = new CBlock;
-		
+
 		block->Create( id );
-		
+
 		//Read the block's flags
 		saved_game.read_chunk<uint8_t>(
 			INT_ID('B', 'F', 'L', 'G'),
@@ -566,7 +566,7 @@ int CSequence::Load( void )
 		saved_game.read_chunk<int32_t>(
 			INT_ID('B', 'N', 'U', 'M'),
 			numMembers);
-		
+
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			bID = 0;
@@ -630,7 +630,7 @@ int CSequence::Load( void )
 			case ID_RANDOM:
 				block->Write( ID_RANDOM, *(float *) bData );//(float) ID_RANDOM );
 				break;
-			
+
 			case TK_EQUALS:
 			case TK_GREATER_THAN:
 			case TK_LESS_THAN:
@@ -643,7 +643,7 @@ int CSequence::Load( void )
 				return false;
 				break;
 			}
-			
+
 			//Get rid of the temp memory
 			ICARUS_Free( bData );
 		}

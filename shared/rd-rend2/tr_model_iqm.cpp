@@ -108,7 +108,7 @@ static void Matrix34Invert( float *inMat, float *outMat )
 {
 	vec3_t trans;
 	float invSqrLen, *v;
- 
+
 	outMat[ 0] = inMat[ 0]; outMat[ 1] = inMat[ 4]; outMat[ 2] = inMat[ 8];
 	outMat[ 4] = inMat[ 1]; outMat[ 5] = inMat[ 5]; outMat[ 6] = inMat[ 9];
 	outMat[ 8] = inMat[ 2]; outMat[ 9] = inMat[ 6]; outMat[10] = inMat[10];
@@ -308,7 +308,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 		LL( triangle->vertex[0] );
 		LL( triangle->vertex[1] );
 		LL( triangle->vertex[2] );
-		
+
 		if( triangle->vertex[0] > header->num_vertexes ||
 		    triangle->vertex[1] > header->num_vertexes ||
 		    triangle->vertex[2] > header->num_vertexes ) {
@@ -337,14 +337,14 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 		}
 
 		// check ioq3 limits
-		if ( mesh->num_vertexes >= SHADER_MAX_VERTEXES ) 
+		if ( mesh->num_vertexes >= SHADER_MAX_VERTEXES )
 		{
 			ri.Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %i verts on %s (%i).\n",
 				  mod_name, SHADER_MAX_VERTEXES-1, meshName[0] ? meshName : "a surface",
 				  mesh->num_vertexes );
 			return qfalse;
 		}
-		if ( mesh->num_triangles*3 >= SHADER_MAX_INDEXES ) 
+		if ( mesh->num_triangles*3 >= SHADER_MAX_INDEXES )
 		{
 			ri.Printf(PRINT_WARNING, "R_LoadIQM: %s has more than %i triangles on %s (%i).\n",
 				  mod_name, ( SHADER_MAX_INDEXES / 3 ) - 1, meshName[0] ? meshName : "a surface",
@@ -534,10 +534,10 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 	joint = (iqmJoint_t *)((byte *)header + header->ofs_joints);
 	for( i = 0; i < header->num_joints; i++, joint++ ) {
 		float baseFrame[12], invBaseFrame[12];
- 
+
 		JointToMatrix( joint->rotate, joint->scale, joint->translate, baseFrame );
 		Matrix34Invert( baseFrame, invBaseFrame );
- 
+
 		if ( joint->parent >= 0 )
 		{
 			Matrix34Multiply( iqmData->jointMats + 12 * joint->parent, baseFrame, mat );
@@ -600,14 +600,14 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 
 			// construct transformation matrix
 			JointToMatrix( rotate, scale, translate, mat1 );
-			
+
 			if( pose->parent >= 0 ) {
 				Matrix34Multiply( iqmData->jointMats + 12 * pose->parent,
 						  mat1, mat2 );
 			} else {
 				Com_Memcpy( mat2, mat1, sizeof(mat1) );
 			}
-			
+
 			Matrix34Multiply( mat2, jointInvMats + 12 * j, mat );
 			mat += 12;
 		}
@@ -862,7 +862,7 @@ void R_AddIQMSurfaces( trRefEntity_t *ent, int entityNum ) {
 	// when the surfaces are rendered, they don't need to be
 	// range checked again.
 	//
-	if ( (ent->e.frame >= data->num_frames) 
+	if ( (ent->e.frame >= data->num_frames)
 	     || (ent->e.frame < 0)
 	     || (ent->e.oldframe >= data->num_frames)
 	     || (ent->e.oldframe < 0) ) {
@@ -913,9 +913,9 @@ void R_AddIQMSurfaces( trRefEntity_t *ent, int entityNum ) {
 
 		// stencil shadows can't do personal models unless I polyhedron clip
 		if ( !personalModel
-			&& r_shadows->integer == 2 
+			&& r_shadows->integer == 2
 			&& fogNum == 0
-			&& !(ent->e.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) ) 
+			&& !(ent->e.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) )
 			&& shader->sort == SS_OPAQUE ) {
 			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, tr.shadowShader, 0, 0, R_IsPostRenderEntity(ent), 0 );
 		}
@@ -968,7 +968,7 @@ static void ComputePoseMats( iqmData_t *data, int frame, int oldframe,
 	} else  {
 		mat1 = data->poseMats + 12 * data->num_poses * frame;
 		mat2 = data->poseMats + 12 * data->num_poses * oldframe;
-		
+
 		for( i = 0; i < data->num_poses; i++, joint++ ) {
 			if( *joint >= 0 ) {
 				float tmpMat[12];
@@ -976,7 +976,7 @@ static void ComputePoseMats( iqmData_t *data, int frame, int oldframe,
 						   backlerp, tmpMat );
 				Matrix34Multiply( mat + 12 * *joint,
 						  tmpMat, mat + 12*i );
-				
+
 			} else {
 				InterpolateMatrix( mat1 + 12*i, mat2 + 12*i,
 						   backlerp, mat );
@@ -1150,7 +1150,7 @@ void RB_IQMSurfaceAnim( surfaceType_t *surface ) {
 }
 
 int R_IQMLerpTag( orientation_t *tag, iqmData_t *data,
-		  int startFrame, int endFrame, 
+		  int startFrame, int endFrame,
 		  float frac, const char *tagName ) {
 	float	jointMats[IQM_MAX_JOINTS * 12];
 	int	joint;

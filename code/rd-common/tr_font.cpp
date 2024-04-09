@@ -1019,6 +1019,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 	m_fAltSBCSFontScaleFactor = -1;
 #endif
 	m_bIsFakeAlienLanguage = !strcmp(_fontName,"aurabesh");	// dont try and make SBCS or asian overrides for this
+	m_isVariant = qfalse;
 
 	len = ri.FS_ReadFile(fontName, NULL);
 	if (len == sizeof(dfontdat_t))
@@ -1284,7 +1285,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 					case eTaiwanese:
 					case eJapanese:
 #ifndef JK2_MODE
-					case eChinese:	
+					case eChinese:
 #endif
 									m_AsianGlyph.horizAdvance	= iCappedHeight + 3;	// need to force some spacing for these
 //					case eThai:	// this is done dynamically elsewhere, since Thai glyphs are variable width

@@ -120,6 +120,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CS_CLIENT_DUELHEALTHS	31		// nmckenzie: DUEL_HEALTH.  Hopefully adding this cs is safe and good?
 #define CS_GLOBAL_AMBIENT_SET	32
 
+#define CS_LEGACY_FIXES			36
+
 #define CS_AMBIENT_SET			37
 
 #define CS_SIEGE_STATE			(CS_AMBIENT_SET+MAX_AMBIENT_SETS)
@@ -155,6 +157,24 @@ Ghoul2 Insert End
 #if (CS_MAX) > MAX_CONFIGSTRINGS
 #error overflow: (CS_MAX) > MAX_CONFIGSTRINGS
 #endif
+
+typedef enum legacyFixes_e {
+	LEGACYFIX_SABERMOVEDATA = 0,
+	LEGACYFIX_WEAPONATTACKANIM,
+	LEGACYFIX_RUNWALKANIMS,
+	/*
+	m    m                        ""#      "             m                    m
+	#    #  mmm   m   m             #    mmm     mmm   mm#mm   mmm   m mm     #
+	#mmmm# #"  #  "m m"             #      #    #   "    #    #"  #  #"  #    #
+	#    # #""""   #m#              #      #     """m    #    #""""  #   #    "
+	#    # "#mm"   "#      #        "mm  mm#mm  "mmm"    "mm  "#mm"  #   #    #
+	               m"     "
+	              ""
+	Forks of OpenJK should NOT add to or modify the legacy fixes values
+	Removal, replacement or adding of new flags might lead to incompatibilities
+	Forks should define their own configstring or serverinfo cvar instead of modifying this
+	*/
+} legacyFixes_t;
 
 typedef enum {
 	G2_MODELPART_HEAD = 10,
@@ -698,10 +718,8 @@ typedef enum {
 typedef enum {
 	PW_NONE,
 
-	#ifdef BASE_COMPAT
-		PW_QUAD,
-		PW_BATTLESUIT,
-	#endif // BASE_COMPAT
+	PW_QUAD,
+	PW_BATTLESUIT,
 
 	PW_PULL,
 
@@ -908,10 +926,8 @@ typedef enum {
 	EV_DEATH3,
 	EV_OBITUARY,
 
-	#ifdef BASE_COMPAT
-		EV_POWERUP_QUAD,
-		EV_POWERUP_BATTLESUIT,
-	#endif // BASE_COMPAT
+	EV_POWERUP_QUAD,
+	EV_POWERUP_BATTLESUIT,
 
 	EV_FORCE_DRAINED,
 
@@ -1716,6 +1732,9 @@ qboolean BG_InRoll( playerState_t *ps, int anim );
 qboolean BG_InDeathAnim( int anim );
 qboolean BG_InSaberLockOld( int anim );
 qboolean BG_InSaberLock( int anim );
+
+void BG_FixSaberMoveData( void );
+void BG_FixWeaponAttackAnim( void );
 
 void BG_SaberStartTransAnim( int clientNum, int saberAnimLevel, int weapon, int anim, float *animSpeed, int broken );
 

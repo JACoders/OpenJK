@@ -1361,25 +1361,28 @@ void CL_KeyDownEvent( int key, unsigned time )
 			return;
 		}
 
-		UIVM_KeyEvent( key, qtrue );
+		if ( !cls.cursorActive ) UIVM_KeyEvent( key, qtrue );
 		return;
 	}
 
 	// send the bound action
-	CL_ParseBinding( key, qtrue, time );
+	if ( !cls.cursorActive ) CL_ParseBinding( key, qtrue, time );
 
 	// distribute the key down event to the appropriate handler
 	// console
 	if ( Key_GetCatcher() & KEYCATCH_CONSOLE )
 		Console_Key( key );
+	else if ( cls.cursorActive ) {
+		CL_CursorButton( key );
+	}
 	// ui
 	else if ( Key_GetCatcher() & KEYCATCH_UI ) {
-		if ( cls.uiStarted )
+		if ( cls.uiStarted && !cls.cursorActive )
 			UIVM_KeyEvent( key, qtrue );
 	}
 	// cgame
 	else if ( Key_GetCatcher() & KEYCATCH_CGAME ) {
-		if ( cls.cgameStarted )
+		if ( cls.cgameStarted && !cls.cursorActive )
 			CGVM_KeyEvent( key, qtrue );
 	}
 	// chatbox

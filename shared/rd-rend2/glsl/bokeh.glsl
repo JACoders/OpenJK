@@ -56,7 +56,7 @@ void main()
 	tc = var_TexCoords + u_InvTexRes * vec2( -c[3], -c[3]);  color += texture(u_TextureMap, tc);
 	tc = var_TexCoords + u_InvTexRes * vec2( -c[4], -c[2]);  color += texture(u_TextureMap, tc);
 	tc = var_TexCoords + u_InvTexRes * vec2( -c[5], -c[1]);  color += texture(u_TextureMap, tc);
-	
+
 	out_Color = color * 0.04166667 * u_Color;
 #endif
 
@@ -81,6 +81,6 @@ void main()
 	tc = var_TexCoords + u_InvTexRes * vec2( -c[1], -c[3]);  color += texture(u_TextureMap, tc);
 	tc = var_TexCoords + u_InvTexRes * vec2( -c[2], -c[2]);  color += texture(u_TextureMap, tc);
 	tc = var_TexCoords + u_InvTexRes * vec2( -c[3], -c[1]);  color += texture(u_TextureMap, tc);
-	
+
 	out_Color = color * 0.0625 * u_Color;
 }

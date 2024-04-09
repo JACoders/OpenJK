@@ -2685,6 +2685,29 @@ void FS_Which_f( void ) {
 	Com_Printf( "File not found: \"%s\"\n", filename );
 }
 
+/*
+============
+FS_Restart_f
+============
+*/
+static qboolean FS_CanRestartInPlace( void ) {
+	int i;
+	for ( i = 1; i < MAX_FILE_HANDLES; i++ ) {
+		// If we have an active filehandle for a module that references a zip file we cannot restart.
+		if ( fsh[i].fileSize ) {
+			if ( fsh[i].zipFile ) return qfalse;
+		}
+	}
+	return qtrue;
+}
+static void FS_Restart_f( void ) {
+	if ( !FS_CanRestartInPlace() ) {
+		Com_Printf( "^3WARNING: Cannot restart file system due to active file handles for pk3 files inside of modules.\n" );
+		return;
+	}
+	FS_Restart( qtrue );
+}
+
 //===========================================================================
 
 static int QDECL paksort( const void *a, const void *b ) {
@@ -2704,7 +2727,6 @@ Sets fs_gamedir, adds the directory to the head of the path,
 then loads the zip headers
 ================
 */
-#define	MAX_PAKFILES	1024
 static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	searchpath_t	*sp;
 	int				i;
@@ -2714,7 +2736,6 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	char			curpath[MAX_OSPATH + 1], *pakfile;
 	int				numfiles;
 	char			**pakfiles;
-	char			*sorted[MAX_PAKFILES];
 
 	// this fixes the case where fs_basepath is the same as fs_cdpath
 	// which happens on full installs
@@ -2748,20 +2769,13 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 
 	pakfiles = Sys_ListFiles( curpath, ".pk3", NULL, &numfiles, qfalse );
 
-	// sort them so that later alphabetic matches override
-	// earlier ones.  This makes pak1.pk3 override pak0.pk3
-	if ( numfiles > MAX_PAKFILES ) {
-		numfiles = MAX_PAKFILES;
-	}
-	for ( i = 0 ; i < numfiles ; i++ ) {
-		sorted[i] = pakfiles[i];
+	if ( numfiles > 1 ) {
+		qsort( pakfiles, numfiles, sizeof(char*), paksort );
 	}
 
-	qsort( sorted, numfiles, sizeof(char*), paksort );
-
 	for ( i = 0 ; i < numfiles ; i++ ) {
-		pakfile = FS_BuildOSPath( path, dir, sorted[i] );
-		if ( ( pak = FS_LoadZipFile( pakfile, sorted[i] ) ) == 0 )
+		pakfile = FS_BuildOSPath( path, dir, pakfiles[i] );
+		if ( ( pak = FS_LoadZipFile( pakfile, pakfiles[i] ) ) == 0 )
 			continue;
 		Q_strncpyz(pak->pakPathname, curpath, sizeof(pak->pakPathname));
 		// store the game name for downloading
@@ -2819,13 +2833,14 @@ FS_Shutdown
 Frees all resources and closes all files
 ================
 */
-void FS_Shutdown( void ) {
+void FS_Shutdown( qboolean keepModuleFiles ) {
 	searchpath_t	*p, *next;
 	int	i;
 
 	for(i = 0; i < MAX_FILE_HANDLES; i++) {
 		if (fsh[i].fileSize) {
-			FS_FCloseFile(i);
+			if ( !keepModuleFiles ) FS_FCloseFile(i);
+			else if ( fsh[i].zipFile ) Com_Error(ERR_FATAL, "FS_Shutdown: tried to keep module files when at least one module file is inside of a pak");
 		}
 	}
 
@@ -2850,6 +2865,7 @@ void FS_Shutdown( void ) {
 	Cmd_RemoveCommand( "fdir" );
 	Cmd_RemoveCommand( "touchFile" );
 	Cmd_RemoveCommand( "which" );
+	Cmd_RemoveCommand( "fs_restart" );
 }
 
 /*
@@ -2935,6 +2951,7 @@ void FS_Startup( const char *gameName ) {
 	Cmd_AddCommand ("fdir", FS_NewDir_f );
 	Cmd_AddCommand ("touchFile", FS_TouchFile_f );
 	Cmd_AddCommand ("which", FS_Which_f );
+	Cmd_AddCommand ("fs_restart", FS_Restart_f );
 
 	// print the current search paths
 	FS_Path_f();
@@ -2998,10 +3015,10 @@ void FS_InitFilesystem( void ) {
 FS_Restart
 ================
 */
-void FS_Restart( void ) {
+void FS_Restart( qboolean inPlace ) {
 
 	// free anything we currently have loaded
-	FS_Shutdown();
+	FS_Shutdown( inPlace );
 
 	// try to start up normally
 	FS_Startup( BASEGAME );

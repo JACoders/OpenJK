@@ -367,7 +367,7 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
 
 			xx = rect->x + 1;
-			for (j = 0; j <= PW_NUM_POWERUPS; j++) {
+			for (j = 0; j < PW_NUM_POWERUPS; j++) {
 				if (ci->powerups & (1 << j)) {
 
 					item = BG_FindItemForPowerup( j );

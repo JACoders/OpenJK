@@ -214,7 +214,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		if ( !give_all )
 			return;
 	}
-	
+
 	if ( !give_all && !Q_stricmp( name, "weaponnum" ) )
 	{
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi( args ));
@@ -312,7 +312,7 @@ void Cmd_Fx( gentity_t *ent )
 		if ( gi.argc() == 3 )
 		{
 			// I guess, only allow one active at a time
-			while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL ) 
+			while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL )
 			{
 				G_FreeEntity( fx_ent );
 			}
@@ -336,7 +336,7 @@ extern void SP_fx_runner( gentity_t *ent );
 	}
 	else if ( Q_stricmp( gi.argv(1), "stop" ) == 0 )
 	{
-		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL ) 
+		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL )
 		{
 			G_FreeEntity( fx_ent );
 		}
@@ -345,7 +345,7 @@ extern void SP_fx_runner( gentity_t *ent );
 	}
 	else if ( Q_stricmp( gi.argv(1), "delay" ) == 0 )
 	{
-		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL ) 
+		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL )
 		{
 			if ( gi.argc() == 3 )
 			{
@@ -361,7 +361,7 @@ extern void SP_fx_runner( gentity_t *ent );
 	}
 	else if ( Q_stricmp( gi.argv(1), "random" ) == 0 )
 	{
-		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL ) 
+		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL )
 		{
 			if ( gi.argc() == 3 )
 			{
@@ -377,7 +377,7 @@ extern void SP_fx_runner( gentity_t *ent );
 	}
 	else if ( Q_stricmp( gi.argv(1), "origin" ) == 0 )
 	{
-		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL ) 
+		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL )
 		{
 			if ( gi.argc() == 5 )
 			{
@@ -389,7 +389,7 @@ extern void SP_fx_runner( gentity_t *ent );
 			}
 			else
 			{
-				gi.Printf( S_COLOR_GREEN"FX: current origin is: <%6.2f %6.2f %6.2f>\n", 
+				gi.Printf( S_COLOR_GREEN"FX: current origin is: <%6.2f %6.2f %6.2f>\n",
 									fx_ent->currentOrigin[0], fx_ent->currentOrigin[1], fx_ent->currentOrigin[2] );
 			}
 
@@ -398,7 +398,7 @@ extern void SP_fx_runner( gentity_t *ent );
 	}
 	else if ( Q_stricmp( gi.argv(1), "dir" ) == 0 )
 	{
-		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL ) 
+		while (( fx_ent = G_Find( fx_ent, FOFS(classname), "cmd_fx")) != NULL )
 		{
 			if ( gi.argc() == 5 )
 			{
@@ -414,7 +414,7 @@ extern void SP_fx_runner( gentity_t *ent );
 			}
 			else
 			{
-				gi.Printf( S_COLOR_GREEN"FX: current dir is: <%6.2f %6.2f %6.2f>\n", 
+				gi.Printf( S_COLOR_GREEN"FX: current dir is: <%6.2f %6.2f %6.2f>\n",
 									fx_ent->s.angles[0], fx_ent->s.angles[1], fx_ent->s.angles[2] );
 			}
 
@@ -426,7 +426,7 @@ extern void SP_fx_runner( gentity_t *ent );
 	gi.Printf( S_COLOR_CYAN"commands:              sample usage:\n" );
 	gi.Printf( S_COLOR_CYAN"----------------------------------------------------------\n" );
 	gi.Printf( S_COLOR_CYAN"fx play <filename>     fx play sparks, fx play env/fire\n" );
-	gi.Printf( S_COLOR_CYAN"fx stop                fx stop\n" );		
+	gi.Printf( S_COLOR_CYAN"fx stop                fx stop\n" );
 	gi.Printf( S_COLOR_CYAN"fx delay <#>           fx delay 1000\n" );
 	gi.Printf( S_COLOR_CYAN"fx random <#>          fx random 200\n" );
 	gi.Printf( S_COLOR_CYAN"fx origin <#><#><#>    fx origin 10 20 30\n" );
@@ -472,7 +472,7 @@ void Cmd_Undying_f (gentity_t *ent)
 {
 	const char	*msg;
 
-	if ( !CheatsOk( ent ) ) 
+	if ( !CheatsOk( ent ) )
 	{
 		return;
 	}
@@ -605,7 +605,7 @@ void Cmd_Where_f( gentity_t *ent ) {
 	const char *s = gi.argv(1);
 	const int len = strlen(s);
 	gentity_t	*check;
-	
+
 	if ( gi.argc () < 2 ) {
 		gi.Printf("usage: where classname\n");
 		return;
@@ -639,7 +639,7 @@ void UserSpawn( gentity_t *ent, const char *name )
 	vec3_t		vf;
 	vec3_t		angles;
 	gentity_t	*ent2;
-	
+
 	//Spawn the ent
 	ent2 = G_Spawn();
 	ent2->classname = G_NewString( name );	//FIXME: This will leave floating memory...
@@ -719,13 +719,13 @@ void Cmd_SetViewpos_f( gentity_t *ent ) {
 Cmd_SetObjective_f
 =================
 */
-void Cmd_SetObjective_f( gentity_t *ent ) 
+void Cmd_SetObjective_f( gentity_t *ent )
 {
 	int objectiveI,status,displayStatus;
 
 	if ( gi.argc() == 2 ) {
 		objectiveI = atoi(gi.argv(1));
-		gi.Printf("objective #%d  display status=%d, status=%d\n",objectiveI, 
+		gi.Printf("objective #%d  display status=%d, status=%d\n",objectiveI,
 			ent->client->sess.mission_objectives[objectiveI].display,
 			ent->client->sess.mission_objectives[objectiveI].status
 			);
@@ -736,7 +736,7 @@ void Cmd_SetObjective_f( gentity_t *ent )
 		return;
 	}
 
-	if ( !CheatsOk( ent ) ) 
+	if ( !CheatsOk( ent ) )
 	{
 		return;
 	}
@@ -754,7 +754,7 @@ void Cmd_SetObjective_f( gentity_t *ent )
 Cmd_ViewObjective_f
 =================
 */
-void Cmd_ViewObjective_f( gentity_t *ent ) 
+void Cmd_ViewObjective_f( gentity_t *ent )
 {
 	int objectiveI;
 
@@ -876,7 +876,7 @@ void Cmd_UseSeeker_f( gentity_t *ent )
 	if ( ent->client && ent->client->ps.inventory[INV_SEEKER] > 0 && level.time > ent->client->ps.powerups[PW_SEEKER] )
 	{
 		gentity_t	*tent = G_Spawn();
-	
+
 		if ( tent )
 		{
 			vec3_t	fwd, right, spot;
@@ -1024,7 +1024,7 @@ void ClientCommand( int clientNum ) {
 		Cmd_Spawn( ent );
 		return;
 	}
-	
+
 	if (Q_stricmp (cmd, "give") == 0)
 		Cmd_Give_f (ent);
 	else if (Q_stricmp (cmd, "god") == 0)

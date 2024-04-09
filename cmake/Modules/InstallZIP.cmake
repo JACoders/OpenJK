@@ -41,35 +41,35 @@ if(WIN32)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" -P "<ARCHIVE>" <FILES>)
     endif()
   endif()
-  
+
   if(NOT ZIP_EXECUTABLE)
     find_program(ZIP_EXECUTABLE wzzip PATHS "$ENV{ProgramW6432}/WinZip")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" -P "<ARCHIVE>" <FILES>)
     endif()
   endif()
-  
+
   if(NOT ZIP_EXECUTABLE)
     find_program(ZIP_EXECUTABLE 7z PATHS "$ENV{ProgramFiles}/7-Zip")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a -tzip "<ARCHIVE>" <FILES>)
     endif()
   endif()
-  
+
   if(NOT ZIP_EXECUTABLE)
     find_program(ZIP_EXECUTABLE 7z PATHS "$ENV{ProgramW6432}/7-Zip")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a -tzip "<ARCHIVE>" <FILES>)
     endif()
   endif()
-  
+
   if(NOT ZIP_EXECUTABLE)
     find_program(ZIP_EXECUTABLE winrar PATHS "$ENV{ProgramFiles}/WinRAR")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a "<ARCHIVE>" <FILES>)
     endif()
   endif()
-  
+
   if(NOT ZIP_EXECUTABLE)
     find_program(ZIP_EXECUTABLE winrar PATHS "$ENV{ProgramW6432}/WinRAR")
     if(ZIP_EXECUTABLE)
@@ -85,7 +85,7 @@ if(NOT ZIP_EXECUTABLE)
   else()
     find_program(ZIP_EXECUTABLE zip)
   endif()
-  
+
   if(ZIP_EXECUTABLE)
     set(ZIP_COMMAND "${ZIP_EXECUTABLE}" -r "<ARCHIVE>" . -i<FILES>)
   endif()
@@ -94,7 +94,7 @@ endif()
 function(add_zip_command output)
   set(MultiValueArgs FILES DEPENDS)
   cmake_parse_arguments(ARGS "" "" "${MultiValueArgs}" ${ARGN})
-  
+
   set(ZipCommand ${ZIP_COMMAND})
   string(REPLACE <ARCHIVE> "${output}" ZipCommand "${ZipCommand}")
   string(REPLACE <FILES> "${ARGS_FILES}" ZipCommand "${ZipCommand}")

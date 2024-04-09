@@ -195,7 +195,7 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 
 	vec3 outNormal = normal;
 	const float scale = 0.98;
-	
+
 	outNormal.x += amplitude * GetNoiseValue(
 		position.x * scale,
 		position.y * scale,
@@ -252,7 +252,7 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 	{
 		tex = vec2(dot(position, TCGenVector0), dot(position, TCGenVector1));
 	}
-	
+
 	return tex;
 }
 #endif
@@ -267,10 +267,10 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 	st2.y = st.x * texMatrix.y + (st.y * texMatrix.w + offTurb.y);
 
 	vec2 offsetPos = vec2(position.x + position.z, position.y);
-	
+
 	vec2 texOffset = sin(offsetPos * (2.0 * M_PI / 1024.0) + vec2(phase));
-	
-	return st2 + texOffset * amplitude;	
+
+	return st2 + texOffset * amplitude;
 }
 #endif
 
@@ -278,7 +278,7 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 vec4 CalcColor(vec3 position, vec3 normal)
 {
 	vec4 color = u_VertColor * attr_Color + u_BaseColor;
-	
+
 	if (u_ColorGen == CGEN_LIGHTING_DIFFUSE)
 	{
 		float incoming = clamp(dot(normal, u_ModelLightDir), 0.0, 1.0);
@@ -292,7 +292,7 @@ vec4 CalcColor(vec3 position, vec3 normal)
 	{
 		vec3 lightDir = normalize(vec3(-960.0, 1980.0, 96.0) - position);
 		vec3 reflected = -reflect(lightDir, normal);
-		
+
 		color.a = clamp(dot(reflected, normalize(viewer)), 0.0, 1.0);
 		color.a *= color.a;
 		color.a *= color.a;
@@ -301,7 +301,7 @@ vec4 CalcColor(vec3 position, vec3 normal)
 	{
 		color.a = clamp(length(viewer) / u_PortalRange, 0.0, 1.0);
 	}
-	
+
 	return color;
 }
 #endif
@@ -396,12 +396,12 @@ void main()
 	vec3 new_pos = (distance * refraction_vec) + wsPosition.xyz;
 	var_RefractPosR = vec4(inverseModel * new_pos, 1.0);
 	var_RefractPosR = MVP * var_RefractPosR;
-	
+
 	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaG));
 	new_pos = (distance * refraction_vec) + wsPosition.xyz;
 	var_RefractPosG = vec4(inverseModel * new_pos, 1.0);
 	var_RefractPosG = MVP * var_RefractPosG;
-	
+
 	refraction_vec = normalize(refract(ws_ViewDir, ws_Normal, etaB));
 	new_pos = (distance * refraction_vec) + wsPosition.xyz;
 	var_RefractPosB = vec4(inverseModel * new_pos, 1.0);
@@ -467,11 +467,11 @@ vec3 FilmicTonemap(vec3 x)
 	const float TS  = 0.20; // Toe Strength
 	const float TAN = 0.01; // Toe Angle Numerator
 	const float TAD = 0.30; // Toe Angle Denominator
-	
+
 	vec3 SSxx = SS * x * x;
 	vec3 LSx = LS * x;
 	vec3 LALSx = LSx * LA;
-	
+
 	return ((SSxx + LALSx + TS * TAN) / (SSxx + LSx + TS * TAD)) - TAN / TAD;
 }
 
@@ -488,7 +488,7 @@ void main()
 	color.a = var_Color.a;
 	color.rgb *= var_Color.rgb;
 	color.rgb *= u_Color.rgb;
-	
+
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -516,7 +516,7 @@ void main()
 	vec3 minAvgMax = texture(u_LevelsMap, texG).rgb;
 	vec3 logMinAvgMaxLum = clamp(minAvgMax * 20.0 - 10.0, -u_AutoExposureMinMax.y, -u_AutoExposureMinMax.x);
 	float avgLum = exp2(logMinAvgMaxLum.y);
-	
+
 	color.rgb *= u_ToneMinAvgMaxLinear.y / avgLum;
 	color.rgb = max(vec3(0.0), color.rgb - vec3(u_ToneMinAvgMaxLinear.x));
 

@@ -49,7 +49,7 @@ void SFxHelper::Print( const char *msg, ... )
 	va_start( argptr, msg );
 	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end( argptr );
- 
+
 	gi.Printf( text );
 
 #endif
@@ -108,7 +108,7 @@ void SFxHelper::PlaySound( vec3_t org, int entityNum, int entchannel, int sfxHan
 }
 
 //------------------------------------------------------
-void SFxHelper::Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, 
+void SFxHelper::Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max,
 						vec3_t end, int skipEntNum, int flags )
 {
 	CG_Trace( tr, start, min, max, end, skipEntNum, flags );

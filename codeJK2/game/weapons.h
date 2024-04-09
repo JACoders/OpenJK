@@ -60,7 +60,7 @@ typedef enum //# weapon_e
 
 	WP_BOT_LASER,		// Probe droid	- Laser blast
 
-	WP_TURRET,			// turret guns 
+	WP_TURRET,			// turret guns
 
 	WP_ATST_MAIN,
 	WP_ATST_SIDE,
@@ -122,7 +122,7 @@ typedef struct weaponData_s
 	int		energyPerShot;		// Amount of energy used per shot
 	int		fireTime;			// Amount of time between firings
 	int		range;				// Range of weapon
-	
+
 	int		altEnergyPerShot;	// Amount of energy used for alt-fire
 	int		altFireTime;		// Amount of time between alt-firings
 	int		altRange;			// Range of alt-fire
@@ -288,8 +288,8 @@ typedef struct ammoData_s
 
 // ATST Main Gun
 //--------------
-#define ATST_MAIN_VEL				4000	// 
-#define ATST_MAIN_DAMAGE			25		// 
+#define ATST_MAIN_VEL				4000	//
+#define ATST_MAIN_DAMAGE			25		//
 #define ATST_MAIN_SIZE				3		// make it easier to hit things
 
 // ATST Side Gun

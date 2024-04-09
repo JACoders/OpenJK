@@ -66,7 +66,7 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 		// blend with old log luminance for gradual change
 		VectorSet4(srcBox, 0, 0, 0, 0);
 
-		color[0] = 
+		color[0] =
 		color[1] =
 		color[2] = 1.0f;
 
@@ -97,14 +97,14 @@ RB_BokehBlur
 
 Blurs a part of one framebuffer to another.
 
-Framebuffers can be identical. 
+Framebuffers can be identical.
 =============
 */
 void RB_BokehBlur(FBO_t *src, vec4i_t srcBox, FBO_t *dst, vec4i_t dstBox, float blur)
 {
 //	vec4i_t srcBox, dstBox;
 	vec4_t color;
-	
+
 	blur *= 10.0f;
 
 	if (blur < 0.004f)
@@ -229,7 +229,7 @@ static void RB_RadialBlur(FBO_t *srcFbo, FBO_t *dstFbo, int passes, float stretc
 	{
 		vec2_t texScale;
 
-		texScale[0] = 
+		texScale[0] =
 		texScale[1] = 1.0f;
 
 		alpha *= inc;
@@ -263,7 +263,7 @@ static void RB_RadialBlur(FBO_t *srcFbo, FBO_t *dstFbo, int passes, float stretc
 				srcBox[2] = (s1 - s0) * glConfig.vidWidth;
 				srcBox[3] = (t1 - t0) * glConfig.vidHeight;
 			}
-			
+
 			FBO_Blit(srcFbo, srcBox, texScale, dstFbo, dstBox, &tr.textureColorShader, color, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE );
 
 			scale *= mul;
@@ -295,7 +295,7 @@ static qboolean RB_UpdateSunFlareVis(void)
 
 		ri.Printf(PRINT_DEVELOPER, "Waited %d iterations\n", iter);
 	}
-	
+
 	qglGetQueryObjectuiv(tr.sunFlareQuery[tr.sunFlareQueryIndex], GL_QUERY_RESULT, &sampleCount);
 	return (qboolean)(sampleCount > 0);
 }
@@ -348,7 +348,7 @@ void RB_SunRays(FBO_t *srcFbo, vec4i_t srcBox, FBO_t *dstFbo, vec4i_t dstBox)
 		vec2_t texScale;
 		vec4i_t rayBox, quarterBox;
 
-		texScale[0] = 
+		texScale[0] =
 		texScale[1] = 1.0f;
 
 		VectorSet4(color, mul, mul, mul, 1);
@@ -396,13 +396,13 @@ void RB_SunRays(FBO_t *srcFbo, vec4i_t srcBox, FBO_t *dstFbo, vec4i_t dstBox)
 			stretch += stretch_add;
 		}
 	}
-	
+
 	// add result back on top of the main buffer
 	{
 		float mul = 1.f;
 		vec2_t texScale;
 
-		texScale[0] = 
+		texScale[0] =
 		texScale[1] = 1.0f;
 
 		VectorSet4(color, mul, mul, mul, 1);
@@ -437,7 +437,7 @@ static void RB_BlurAxis(FBO_t *srcFbo, FBO_t *dstFbo, float strength, qboolean h
 		vec4_t color;
 		vec2_t texScale;
 
-		texScale[0] = 
+		texScale[0] =
 		texScale[1] = 1.0f;
 
 		VectorSet4(color, weights[0], weights[0], weights[0], 1.0f);

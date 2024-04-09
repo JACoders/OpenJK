@@ -111,7 +111,7 @@ void main()
 		gl_Position = positions[2];
 		EmitVertex();
 		EndPrimitive();
-		
+
 		// sides
 		gl_Position = positions[0];
 		EmitVertex();

@@ -1160,7 +1160,7 @@ void IN_Frame (void) {
 		// Console is down in windowed mode
 		IN_DeactivateMouse( );
 	}
-	else if( !cls.glconfig.isFullscreen && loading )
+	else if( !cls.glconfig.isFullscreen && loading && !cls.cursorActive )
 	{
 		// Loading in windowed mode
 		IN_DeactivateMouse( );

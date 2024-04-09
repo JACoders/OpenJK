@@ -73,7 +73,7 @@ void CG_TransitionEntity( centity_t *cent ) {
 CG_SetInitialSnapshot
 
 This will only happen on the very first snapshot, or
-on tourney restarts.  All other times will use 
+on tourney restarts.  All other times will use
 CG_TransitionSnapshot instead.
 ==================
 */
@@ -144,7 +144,7 @@ void CG_TransitionSnapshot( void ) {
 	// sort out solid entities
 	//CG_BuildSolidList();
 
-	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) 
+	for ( i = 0 ; i < cg.snap->numEntities ; i++ )
 	{
 		if ( 1 )//cg.snap->entities[ i ].number != 0 ) // I guess the player adds his/her events elsewhere, so doing this also gives us double events for the player!
 		{
@@ -180,9 +180,9 @@ void CG_SetEntityNextState( centity_t *cent, entityState_t *state ) {
 	cent->nextState = *state;
 
 	// since we can't interpolate ghoul2 stuff from one frame to another, I'm just going to copy the ghoul2 info directly into the current state now
-//	CGhoul2Info *currentModel = &state->ghoul2[1]; 
+//	CGhoul2Info *currentModel = &state->ghoul2[1];
 //	cent->gent->ghoul2 = state->ghoul2;
-//	CGhoul2Info *newModel = &cent->gent->ghoul2[1]; 
+//	CGhoul2Info *newModel = &cent->gent->ghoul2[1];
 
 
 	// if this frame is a teleport, or the entity wasn't in the
@@ -399,7 +399,7 @@ void CG_ProcessSnapshots( void ) {
 		CG_TransitionSnapshot();
 	} while ( 1 );
 
-	if ( cg.snap->serverTime > cg.time ) 
+	if ( cg.snap->serverTime > cg.time )
 	{
 		cg.time=cg.snap->serverTime;
 #if _DEBUG
@@ -407,7 +407,7 @@ void CG_ProcessSnapshots( void ) {
 #endif
 
 	}
-	if ( cg.nextSnap != NULL && cg.nextSnap->serverTime <= cg.time ) 
+	if ( cg.nextSnap != NULL && cg.nextSnap->serverTime <= cg.time )
 	{
 		cg.time=cg.nextSnap->serverTime-1;
 #if _DEBUG

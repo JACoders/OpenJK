@@ -99,12 +99,12 @@ vec3 PrefilterEnvMap( float Roughness, vec3 R )
 			float NH = max(dot ( N, H ), 0.0);
 			float HV = max(dot ( H, V ), 0.0);
 			float D   = D_GGX(NH, Roughness);
-			float pdf = (D * NH / (4.0 * HV)) + 0.0001; 
+			float pdf = (D * NH / (4.0 * HV)) + 0.0001;
 
 			float saTexel  = 4.0 * M_PI / (6.0 * CUBEMAP_RESOLUTION * CUBEMAP_RESOLUTION);
 			float saSample = 1.0 / (float(NumSamples) * pdf + 0.0001);
 
-			float mipLevel = Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
+			float mipLevel = Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
 			PrefilteredColor += textureLod(u_CubeMap, L, mipLevel).rgb * NoL;
 			TotalWeight += NoL;
@@ -119,7 +119,7 @@ void main()
 	// from http://www.codinglabs.net/article_physically_based_rendering.aspx
 
 	vec3 normal = normalize(vec3(-vector.x, -vector.y, -1.0));
-	
+
 	if (cubeFace == 0)
 		normal = normalize(vec3(1.0, -vector.y, -vector.x));
 	else if (cubeFace == 1)
@@ -129,13 +129,13 @@ void main()
 	else if (cubeFace == 3)
 		normal = normalize(vec3(vector.x, -1.0, -vector.y));
 	else if (cubeFace == 4)
-		normal = normalize(vec3(vector.x, -vector.y, 1.0)); 
+		normal = normalize(vec3(vector.x, -vector.y, 1.0));
 
 	float roughness = u_ViewInfo.w;
 
 	vec3 result = PrefilterEnvMap(roughness, normal);
 	if (roughness == 0.0)
 		result = textureLod(u_CubeMap, normal, 0.0).rgb;
-			
+
 	out_Color = vec4(result, 1.0);
 }

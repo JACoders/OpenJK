@@ -80,7 +80,7 @@ namespace Zone
 			using other = Allocator< U, tag >;
 		};
 	};
-	
+
 	template< typename T >
 	using UniquePtr = std::unique_ptr< T, Deleter >;
 
