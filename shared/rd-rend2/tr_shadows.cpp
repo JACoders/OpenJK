@@ -39,15 +39,12 @@ void RB_ShadowFinish(void) {
 		return;
 	}
 
-	GL_Cull(CT_TWO_SIDED);
-
 	GL_BindToTMU(tr.whiteImage, TB_COLORMAP);
 
 	GL_State(GLS_STENCILTEST_ENABLE | GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO);
 
 	qglStencilFunc(GL_NOTEQUAL, 0, 0xff);
-	qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
-	qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+	GL_SetViewportAndScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
 	matrix_t projection;
 	Matrix16Ortho(0, glConfig.vidWidth, glConfig.vidHeight, 0, 0, 1, projection);
 

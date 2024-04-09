@@ -819,8 +819,7 @@ void FBO_BlitFromTexture(struct image_s *src, vec4i_t inSrcBox, vec2_t inSrcTexS
 		height = glConfig.vidHeight;
 	}
 
-	qglViewport( 0, 0, width, height );
-	qglScissor( 0, 0, width, height );
+	GL_SetViewportAndScissor(0, 0, width, height);
 
 	Matrix16Ortho(0, width, height, 0, 0, 1, projection);
 

@@ -491,8 +491,7 @@ void RB_BloomDownscale(image_t *sourceImage, FBO_t *destFBO)
 
 	FBO_Bind(destFBO);
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
-
-	qglViewport(0, 0, destFBO->width, destFBO->height);
+	GL_SetViewportAndScissor(0, 0, destFBO->width, destFBO->height);
 	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 
 	GLSL_BindProgram(&tr.dglowDownsample);
@@ -515,8 +514,7 @@ void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO)
 
 	FBO_Bind(destFBO);
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
-
-	glViewport(0, 0, destFBO->width, destFBO->height);
+	GL_SetViewportAndScissor(0, 0, destFBO->width, destFBO->height);
 	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 
 	GLSL_BindProgram(&tr.dglowUpsample);
