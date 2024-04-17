@@ -283,7 +283,8 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 
 		case TCGEN_ENVIRONMENT_MAPPED:
 		{
-			vec3 viewer = normalize(u_ViewOrigin - position);
+			vec3 localOrigin = (inverse(u_ModelMatrix) * vec4(u_ViewOrigin, 1.0)).xyz;
+			vec3 viewer = normalize(localOrigin - position);
 			vec2 ref = reflect(viewer, normal).yz;
 			tex.s = ref.x * -0.5 + 0.5;
 			tex.t = ref.y *  0.5 + 0.5;
@@ -292,7 +293,8 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 
 		case TCGEN_ENVIRONMENT_MAPPED_SP:
 		{
-			vec3 viewer = normalize(u_ViewOrigin - position);
+			vec3 localOrigin = (inverse(u_ModelMatrix) * vec4(u_ViewOrigin, 1.0)).xyz;
+			vec3 viewer = normalize(localOrigin - position);
 			vec2 ref = reflect(viewer, normal).xy;
 			tex.s = ref.x * -0.5;
 			tex.t = ref.y * -0.5;
@@ -379,7 +381,8 @@ vec4 CalcColor(vec3 position, vec3 normal)
 		return color;
 	}
 
-	vec3 viewer = u_ViewOrigin - position;
+	vec3 localOrigin = (inverse(u_ModelMatrix) * vec4(u_ViewOrigin, 1.0)).xyz;
+	vec3 viewer = localOrigin - position;
 
 	if (u_AlphaGen == AGEN_LIGHTING_SPECULAR)
 	{
@@ -441,7 +444,7 @@ void main()
 	gl_Position = u_viewProjectionMatrix * wsPosition;
 
 #if defined(USE_TCGEN)
-	vec2 tex = GenTexCoords(u_TCGen0, wsPosition.xyz, normal, u_TCGen0Vector0, u_TCGen0Vector1);
+	vec2 tex = GenTexCoords(u_TCGen0, position.xyz, normal, u_TCGen0Vector0, u_TCGen0Vector1);
 #else
 	vec2 tex = attr_TexCoord0.st;
 #endif
@@ -464,7 +467,7 @@ void main()
 	else
 	{
 #if defined(USE_RGBAGEN)
-		var_Color = CalcColor(wsPosition.xyz, normal);
+		var_Color = CalcColor(position.xyz, normal);
 #else
 		var_Color = u_VertColor * attr_Color + u_BaseColor;
 #endif
