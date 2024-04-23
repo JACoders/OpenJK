@@ -1249,6 +1249,11 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 			{
 				index |= LIGHTDEF_USE_ALPHA_TEST;
 			}
+			
+			// TODO: remove light vertex def and fix parallax usage on unlit stages like glow stages
+			if (stage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
+				stage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
+				index |= LIGHTDEF_USE_PARALLAXMAP | LIGHTDEF_USE_LIGHT_VERTEX;
 
 			result = &stage->glslShaderGroup[index];
 			backEnd.pc.c_lightallDraws++;
@@ -1676,6 +1681,23 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
 			else if ( pStage->bundle[TB_COLORMAP].image[0] != 0 )
 				samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_COLORMAP], TB_COLORMAP);
+
+			// TODO: remove light requirement
+			if (pStage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
+				pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
+			{
+				vec4_t enableTextures = {};
+				if (pStage->bundle[TB_NORMALMAP].image[0])
+				{
+					samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_NORMALMAP], TB_NORMALMAP);
+					enableTextures[0] = 1.0f;
+				}
+				else if (r_normalMapping->integer)
+				{
+					samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_NORMALMAP);
+				}
+				uniformDataWriter.SetUniformVec4(UNIFORM_ENABLETEXTURES, enableTextures);
+			}
 		}
 		else if ( pStage->glslShaderGroup == tr.lightallShader )
 		{
