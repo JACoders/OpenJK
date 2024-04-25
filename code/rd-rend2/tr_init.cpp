@@ -1782,7 +1782,7 @@ static void R_InitGoreVao()
 {
 	tr.goreVBO = R_CreateVBO(
 		nullptr,
-		sizeof(g2GoreVert_t) * MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES,
+		sizeof(g2GoreVert_t) * MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES,
 		VBO_USAGE_DYNAMIC);
 	tr.goreVBO->offsets[ATTR_INDEX_POSITION] = offsetof(g2GoreVert_t, position);
 	tr.goreVBO->offsets[ATTR_INDEX_NORMAL] = offsetof(g2GoreVert_t, normal);
@@ -1807,11 +1807,13 @@ static void R_InitGoreVao()
 
 	tr.goreIBO = R_CreateIBO(
 		nullptr,
-		sizeof(glIndex_t) * MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES,
+		sizeof(glIndex_t) * MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES,
 		VBO_USAGE_DYNAMIC);
 
 	tr.goreIBOCurrentIndex = 0;
 	tr.goreVBOCurrentIndex = 0;
+
+	GL_CheckErrors();
 }
 #endif
 

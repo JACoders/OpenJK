@@ -686,7 +686,7 @@ void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
 	goreSurface->firstVert = tr.goreVBOCurrentIndex;
 	goreSurface->firstIndex = tr.goreIBOCurrentIndex;
 
-	if (tr.goreVBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES))
+	if (tr.goreVBOCurrentIndex + goreSurface->numVerts >= (MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES))
 		tr.goreVBOCurrentIndex = 0;
 
 	R_BindVBO(tr.goreVBO);
@@ -698,7 +698,7 @@ void RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface)
 	);
 	tr.goreVBOCurrentIndex += goreSurface->numVerts;
 
-	if (tr.goreIBOCurrentIndex + goreSurface->numVerts >= (MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES))
+	if (tr.goreIBOCurrentIndex + goreSurface->numIndexes >= (MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES))
 		tr.goreIBOCurrentIndex = 0;
 
 	R_BindIBO(tr.goreIBO);
