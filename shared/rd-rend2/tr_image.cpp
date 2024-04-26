@@ -37,6 +37,7 @@ static struct ImagesPool
 	image_t *pPool;
 	ImagesPool *pNext;
 } *imagesPool;
+static bool imagePoolInitialized = false;
 
 static image_t *hashTable[FILE_HASH_SIZE];
 
@@ -3599,11 +3600,14 @@ Initialise the images pool allocator
 */
 void R_InitImagesPool()
 {
+	if (imagePoolInitialized)
+		return;
 	Com_Memset(hashTable, 0, sizeof(hashTable));
 
 	imagesPool = NULL;
 	tr.imagesFreeList = NULL;
 	R_ExtendImagesPool();
+	imagePoolInitialized = true;
 }
 
 /*
@@ -3644,6 +3648,7 @@ void R_DeleteTextures( void ) {
 		imagesPool = pNext;
 	}
 
+	imagePoolInitialized = false;
 	Com_Memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
 	GL_SelectTexture( 1 );
 	qglBindTexture( GL_TEXTURE_2D, 0 );

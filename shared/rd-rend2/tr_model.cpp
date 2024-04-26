@@ -1598,9 +1598,6 @@ void R_SVModelInit()
 
 	R_InitImagesPool();
 	R_InitImages();
-	R_InitGPUBuffers();
-	FBO_Init();
-	GLSL_LoadGPUShaders();
 	R_InitShaders(qfalse);
 #endif
 
