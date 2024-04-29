@@ -1546,7 +1546,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				vertColor[3] = 0.0f;
 			}
 
-			if (backEnd.currentEntity->e.hModel != NULL)
+			if (backEnd.currentEntity->e.hModel != NULL_HANDLE)
 			{
 				model_t *model = R_GetModelByHandle(backEnd.currentEntity->e.hModel);
 				if (model->type != MOD_BRUSH)
