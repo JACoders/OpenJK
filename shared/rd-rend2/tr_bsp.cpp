@@ -3303,12 +3303,6 @@ static void R_RenderAllCubemaps()
 	R_IssuePendingRenderCommands();
 	R_InitNextFrame();
 
-	GLenum cubemapFormat = GL_RGBA8;
-	if (r_hdr->integer)
-	{
-		cubemapFormat = GL_RGBA16F;
-	}
-
 	for (int k = 0; k <= r_cubeMappingBounces->integer; k++)
 	{
 		bool bounce = k != 0;
@@ -3332,7 +3326,7 @@ void R_LoadWeatherZones(world_t *worldData, lump_t *brushesLump, lump_t *sidesLu
 {
 	dbrush_t 	*brushes;
 	dbrushside_t	*sides;
-	int			brushesCount, sidesCount;
+	int			brushesCount;
 
 	brushes = (dbrush_t *)(fileBase + brushesLump->fileofs);
 	if (brushesLump->filelen % sizeof(*brushes)) {
@@ -3344,7 +3338,6 @@ void R_LoadWeatherZones(world_t *worldData, lump_t *brushesLump, lump_t *sidesLu
 	if (sidesLump->filelen % sizeof(*sides)) {
 		ri.Error(ERR_DROP, "LoadMap: funny lump size in %s", worldData->name);
 	}
-	sidesCount = sidesLump->filelen / sizeof(*sides);
 
 	tr.weatherSystem->weatherBrushType = WEATHER_BRUSHES_NONE;
 

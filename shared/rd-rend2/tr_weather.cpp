@@ -284,7 +284,6 @@ namespace
 						// Now test if the intersected point is actually on the brush
 						for (int j = 0; j < currentWeatherBrush->numPlanes; j++)
 						{
-							vec4_t *plane = &currentWeatherBrush->planes[j];
 							vec3_t normal = {
 								currentWeatherBrush->planes[j][0],
 								currentWeatherBrush->planes[j][1],
