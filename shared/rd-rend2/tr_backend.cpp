@@ -2520,7 +2520,7 @@ static void ComputeDeformValues(
 
 void RB_AddShaderToShaderInstanceUBO(shader_t *shader)
 {
-	if (shader->numDeforms != 1 && !shader->portalRange)
+	if (shader->numDeforms != 1 && !shader->portalRange && !shader->timeOffset)
 	{
 		shader->ShaderInstanceUboOffset = -1;
 		return;
