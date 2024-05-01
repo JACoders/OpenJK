@@ -2582,7 +2582,7 @@ void R_SetupViewParms(const trRefdef_t *refdef)
 
 qboolean R_AddPortalView(const trRefdef_t *refdef)
 {
-	if (!tr.world)
+	if (!tr.world || refdef->rdflags & RDF_NOWORLDMODEL)
 		return qfalse;
 
 	for (int i = 0; i < tr.world->numWorldSurfaces; i++)
