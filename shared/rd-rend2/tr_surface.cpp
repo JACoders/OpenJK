@@ -2632,7 +2632,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	SamplerBindingsWriter samplerBindingsWriter;
 	samplerBindingsWriter.AddAnimatedImage(&firstStage->bundle[0], TB_COLORMAP);
 
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	const GLuint currentSpriteUbo = shader->spriteUbo;
 	const UniformBlockBinding uniformBlockBindings[] = {
 		{ currentSpriteUbo, ss->spriteUboOffset, UNIFORM_BLOCK_SURFACESPRITE },

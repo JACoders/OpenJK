@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static size_t STATIC_UNIFORM_BUFFER_SIZE = 1 * 1024 * 1024;
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
+static size_t FRAME_SCENE_UNIFORM_BUFFER_SIZE = 1 * 1024 * 1024;
 static size_t FRAME_VERTEX_BUFFER_SIZE = 12*1024*1024;
 static size_t FRAME_INDEX_BUFFER_SIZE = 4*1024*1024;
 
@@ -1673,23 +1674,27 @@ static void R_InitBackEndFrameData()
 	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
 	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
 
-	GLuint ubos[MAX_FRAMES];
-	qglGenBuffers(MAX_FRAMES, ubos);
+	GLuint ubos[MAX_FRAMES * MAX_SCENCES];
+	qglGenBuffers(MAX_FRAMES * MAX_SCENCES, ubos);
 
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
 		const GLbitfield mapBits = GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT;
 
-		frame->ubo = ubos[i];
-		frame->uboWriteOffset = 0;
-		frame->uboSize = FRAME_UNIFORM_BUFFER_SIZE;
-		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
-		glState.currentGlobalUBO = frame->ubo;
+		for (byte j = 0; j < MAX_SCENCES; j++)
+		{
+			size_t BUFFER_SIZE = j == 0 ? FRAME_UNIFORM_BUFFER_SIZE : FRAME_SCENE_UNIFORM_BUFFER_SIZE;
+			frame->ubo[j] = ubos[i * MAX_SCENCES + j];
+			frame->uboWriteOffset[j] = 0;
+			frame->uboSize[j] = BUFFER_SIZE;
+			qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo[j]);
+			glState.currentGlobalUBO = frame->ubo[j];
 
-		// TODO: persistently mapped UBOs
-		qglBufferData(GL_UNIFORM_BUFFER, FRAME_UNIFORM_BUFFER_SIZE,
+			// TODO: persistently mapped UBOs
+			qglBufferData(GL_UNIFORM_BUFFER, BUFFER_SIZE,
 				nullptr, GL_DYNAMIC_DRAW);
+		}
 
 		frame->dynamicVbo = R_CreateVBO(nullptr, FRAME_VERTEX_BUFFER_SIZE,
 				VBO_USAGE_DYNAMIC);
@@ -1886,7 +1891,7 @@ static void R_ShutdownBackEndFrameData()
 			frame->sync = NULL;
 		}
 
-		qglDeleteBuffers(1, &frame->ubo);
+		qglDeleteBuffers(MAX_SCENCES, frame->ubo);
 
 		if ( glRefConfig.immutableBuffers )
 		{

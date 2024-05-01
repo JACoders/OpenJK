@@ -745,16 +745,17 @@ int RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data)
 {
 	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
 	gpuFrame_t *thisFrame = backEndData->currentFrame;
-	const int offset = thisFrame->uboWriteOffset;
+	const byte currentFrameScene = thisFrame->currentScene;
+	const int offset = thisFrame->uboWriteOffset[currentFrameScene];
 
-	RB_BindUniformBlock(thisFrame->ubo, block, offset);
+	RB_BindUniformBlock(thisFrame->ubo[currentFrameScene], block, offset);
 
 	qglBufferSubData(GL_UNIFORM_BUFFER,
-			thisFrame->uboWriteOffset, blockInfo->size, data);
+			thisFrame->uboWriteOffset[currentFrameScene], blockInfo->size, data);
 
 	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
 	const size_t alignedBlockSize = (blockInfo->size + alignment) & ~alignment;
-	thisFrame->uboWriteOffset += alignedBlockSize;
+	thisFrame->uboWriteOffset[currentFrameScene] += alignedBlockSize;
 
 	return offset;
 }
@@ -780,10 +781,11 @@ int RB_AddShaderInstanceBlock(void *data)
 
 void RB_BeginConstantsUpdate(gpuFrame_t *frame)
 {
-	if (glState.currentGlobalUBO != frame->ubo)
+	const byte currentFrameScene = frame->currentScene;
+	if (glState.currentGlobalUBO != frame->ubo[currentFrameScene])
 	{
-		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
-		glState.currentGlobalUBO = frame->ubo;
+		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo[currentFrameScene]);
+		glState.currentGlobalUBO = frame->ubo[currentFrameScene];
 	}
 
 	const GLbitfield mapFlags =
@@ -791,35 +793,37 @@ void RB_BeginConstantsUpdate(gpuFrame_t *frame)
 		GL_MAP_UNSYNCHRONIZED_BIT |
 		GL_MAP_FLUSH_EXPLICIT_BIT;
 
-	frame->uboMapBase = frame->uboWriteOffset;
-	frame->uboMemory = qglMapBufferRange(
+	frame->uboMapBase[currentFrameScene] = frame->uboWriteOffset[currentFrameScene];
+	frame->uboMemory[currentFrameScene] = qglMapBufferRange(
 		GL_UNIFORM_BUFFER,
-		frame->uboWriteOffset,
-		frame->uboSize - frame->uboWriteOffset,
+		frame->uboWriteOffset[currentFrameScene],
+		frame->uboSize[currentFrameScene] - frame->uboWriteOffset[currentFrameScene],
 		mapFlags);
 }
 
 int RB_AppendConstantsData(
 	gpuFrame_t *frame, const void *data, size_t dataSize)
 {
-	const size_t writeOffset = frame->uboWriteOffset;
-	const size_t relativeOffset = writeOffset - frame->uboMapBase;
+	const byte currentFrameScene = frame->currentScene;
+	const size_t writeOffset = frame->uboWriteOffset[currentFrameScene];
+	const size_t relativeOffset = writeOffset - frame->uboMapBase[currentFrameScene];
 
-	memcpy((char *)frame->uboMemory + relativeOffset, data, dataSize);
+	memcpy((char *)frame->uboMemory[currentFrameScene] + relativeOffset, data, dataSize);
 
 	const int alignment = glRefConfig.uniformBufferOffsetAlignment - 1;
 	const size_t alignedBlockSize = (dataSize + alignment) & ~alignment;
 
-	frame->uboWriteOffset += alignedBlockSize;
-	assert(frame->uboWriteOffset > 0);
+	frame->uboWriteOffset[currentFrameScene] += alignedBlockSize;
+	assert(frame->uboWriteOffset[currentFrameScene] > 0);
 	return writeOffset;
 }
 
 void RB_EndConstantsUpdate(const gpuFrame_t *frame)
 {
+	const byte currentFrameScene = frame->currentScene;
 	qglFlushMappedBufferRange(
 		GL_UNIFORM_BUFFER,
-		frame->uboMapBase,
-		frame->uboWriteOffset - frame->uboMapBase);
+		frame->uboMapBase[currentFrameScene],
+		frame->uboWriteOffset[currentFrameScene] - frame->uboMapBase[currentFrameScene]);
 	qglUnmapBuffer(GL_UNIFORM_BUFFER);
 }

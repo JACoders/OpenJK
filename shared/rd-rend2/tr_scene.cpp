@@ -522,6 +522,11 @@ void RE_EndScene()
 	tr.refdef.doLAGoggles = false;
 	tr.refdef.doFullbright = false;
 #endif
+	backEndData->currentFrame->currentScene++;
+	if (backEndData->currentFrame->currentScene > MAX_SCENCES)
+	{
+		ri.Error(ERR_DROP, "Tried to render to many subscenes per frame");
+	}
 }
 
 /*

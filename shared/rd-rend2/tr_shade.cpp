@@ -692,7 +692,8 @@ void RB_FillDrawCommand(
 static UniformBlockBinding GetCameraBlockUniformBinding(
 	const trRefEntity_t *refEntity)
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.block = UNIFORM_BLOCK_CAMERA;
 
@@ -716,7 +717,8 @@ static UniformBlockBinding GetCameraBlockUniformBinding(
 
 static UniformBlockBinding GetLightsBlockUniformBinding()
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.block = UNIFORM_BLOCK_LIGHTS;
 
@@ -735,7 +737,8 @@ static UniformBlockBinding GetLightsBlockUniformBinding()
 
 static UniformBlockBinding GetSceneBlockUniformBinding()
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.block = UNIFORM_BLOCK_SCENE;
 
@@ -754,7 +757,8 @@ static UniformBlockBinding GetSceneBlockUniformBinding()
 
 static UniformBlockBinding GetFogsBlockUniformBinding()
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.block = UNIFORM_BLOCK_FOGS;
 
@@ -774,7 +778,8 @@ static UniformBlockBinding GetFogsBlockUniformBinding()
 static UniformBlockBinding GetEntityBlockUniformBinding(
 	const trRefEntity_t *refEntity)
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.block = UNIFORM_BLOCK_ENTITY;
 
@@ -808,7 +813,8 @@ static UniformBlockBinding GetEntityBlockUniformBinding(
 static UniformBlockBinding GetBonesBlockUniformBinding(
 	const trRefEntity_t *refEntity)
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.ubo = currentFrameUbo;
 	binding.block = UNIFORM_BLOCK_BONES;
@@ -828,7 +834,8 @@ static UniformBlockBinding GetBonesBlockUniformBinding(
 static UniformBlockBinding GetShaderInstanceBlockUniformBinding(
 	const trRefEntity_t *refEntity, const shader_t *shader)
 {
-	const GLuint currentFrameUbo = backEndData->currentFrame->ubo;
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
 	UniformBlockBinding binding = {};
 	binding.ubo = tr.shaderInstanceUbo;
 	binding.block = UNIFORM_BLOCK_SHADER_INSTANCE;

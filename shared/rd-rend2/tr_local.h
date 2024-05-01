@@ -3677,14 +3677,16 @@ struct screenshotReadback_t
 };
 
 #define MAX_GPU_TIMERS (512)
+#define MAX_SCENCES (3)
 struct gpuFrame_t
 {
 	GLsync sync;
-	GLuint ubo;
-	size_t uboWriteOffset;
-	size_t uboSize;
-	size_t uboMapBase;
-	void *uboMemory;
+	byte   currentScene;
+	GLuint ubo[MAX_SCENCES];
+	size_t uboWriteOffset[MAX_SCENCES];
+	size_t uboSize[MAX_SCENCES];
+	size_t uboMapBase[MAX_SCENCES];
+	void *uboMemory[MAX_SCENCES];
 
 	screenshotReadback_t screenshotReadback;
 
