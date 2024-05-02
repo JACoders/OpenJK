@@ -1674,18 +1674,18 @@ static void R_InitBackEndFrameData()
 	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
 	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
 
-	GLuint ubos[MAX_FRAMES * MAX_SCENCES];
-	qglGenBuffers(MAX_FRAMES * MAX_SCENCES, ubos);
+	GLuint ubos[MAX_FRAMES * MAX_SCENES];
+	qglGenBuffers(MAX_FRAMES * MAX_SCENES, ubos);
 
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
 		const GLbitfield mapBits = GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT;
 
-		for (byte j = 0; j < MAX_SCENCES; j++)
+		for (byte j = 0; j < MAX_SCENES; j++)
 		{
 			size_t BUFFER_SIZE = j == 0 ? FRAME_UNIFORM_BUFFER_SIZE : FRAME_SCENE_UNIFORM_BUFFER_SIZE;
-			frame->ubo[j] = ubos[i * MAX_SCENCES + j];
+			frame->ubo[j] = ubos[i * MAX_SCENES + j];
 			frame->uboWriteOffset[j] = 0;
 			frame->uboSize[j] = BUFFER_SIZE;
 			qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo[j]);
@@ -1891,7 +1891,7 @@ static void R_ShutdownBackEndFrameData()
 			frame->sync = NULL;
 		}
 
-		qglDeleteBuffers(MAX_SCENCES, frame->ubo);
+		qglDeleteBuffers(MAX_SCENES, frame->ubo);
 
 		if ( glRefConfig.immutableBuffers )
 		{

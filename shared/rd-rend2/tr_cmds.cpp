@@ -552,7 +552,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 					qglDeleteSync( sync );
 					thisFrame->sync = NULL;
 
-					for (byte i = 0; i < MAX_SCENCES; i++)
+					for (byte i = 0; i < MAX_SCENES; i++)
 					{
 						thisFrame->uboWriteOffset[i] = 0;
 					}
@@ -579,7 +579,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 			R_SaveScreenshot(&thisFrame->screenshotReadback);
 
 		// Resets resources
-		for (byte i = 0; i < MAX_SCENCES; i++)
+		for (byte i = 0; i < MAX_SCENES; i++)
 		{
 			qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo[i]);
 			glState.currentGlobalUBO = thisFrame->ubo[i];
