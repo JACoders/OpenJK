@@ -3235,14 +3235,14 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 		defs |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
 	}
 
-	if (stage->glow)
-		defs |= LIGHTDEF_USE_GLOW_BUFFER;
+	/*if (stage->glow)
+		defs |= LIGHTDEF_USE_GLOW_BUFFER;*/
 
 	if (stage->cloth)
 		defs |= LIGHTDEF_USE_CLOTH_BRDF;
 
-	if (stage->alphaTestType != ALPHA_TEST_NONE)
-		defs |= LIGHTDEF_USE_ALPHA_TEST;
+	/*if (stage->alphaTestType != ALPHA_TEST_NONE)
+		defs |= LIGHTDEF_USE_ALPHA_TEST;*/
 
 	//ri.Printf(PRINT_ALL, ".\n");
 

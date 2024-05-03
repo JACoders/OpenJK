@@ -523,6 +523,8 @@ uniform sampler2D u_DiffuseMap;
 uniform int u_AlphaTestType;
 #endif
 uniform int u_FogIndex;
+// x = glow out, y = deluxe, z = screen shadow, w = cube
+uniform vec4 u_EnableTextures;
 
 in vec2 var_DiffuseTex;
 in vec4 var_Color;
@@ -599,10 +601,5 @@ void main()
 #endif
 
 	out_Color = vec4(color.rgb * var_Color.rgb, color.a);
-
-#if defined(USE_GLOW_BUFFER)
-	out_Glow = out_Color;
-#else
-	out_Glow = vec4(0.0);
-#endif
+	out_Glow = mix(vec4(0.0, 0.0, 0.0, out_Color.a), out_Color, u_EnableTextures.x);
 }

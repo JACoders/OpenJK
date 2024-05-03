@@ -285,7 +285,8 @@ static void RE_Blit(float fX0, float fY0, float fX1, float fY1, float fX2, float
 	GL_Cull(CT_TWO_SIDED);
 	GL_BindToTMU(pImage, TB_COLORMAP);
 
-	shaderProgram_t *shaderProgram = atest ? &tr.genericShader[GENERICDEF_USE_ALPHA_TEST] : &tr.genericShader[0];
+	//shaderProgram_t *shaderProgram = atest ? &tr.genericShader[GENERICDEF_USE_ALPHA_TEST] : &tr.genericShader[0];
+	shaderProgram_t *shaderProgram = &tr.genericShader[0];
 	GLSL_BindProgram(shaderProgram);
 
 	RB_BindUniformBlock(tr.staticUbo, UNIFORM_BLOCK_CAMERA, tr.camera2DUboOffset);

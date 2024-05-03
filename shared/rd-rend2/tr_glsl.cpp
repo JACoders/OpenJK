@@ -347,6 +347,8 @@ static size_t GLSL_GetShaderHeader(
 						ALPHA_TEST_GE128,
 						ALPHA_TEST_GE192));
 
+	Q_strcat(dest, size, "#define USE_ALPHA_TEST\n");
+
 	Q_strcat(dest, size,
 					va("#define MAX_G2_BONES %i\n",
 						MAX_G2_BONES));
@@ -1474,11 +1476,11 @@ static int GLSL_LoadGPUProgramGeneric(
 		if (i & GENERICDEF_USE_RGBAGEN)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
 
-		if (i & GENERICDEF_USE_GLOW_BUFFER)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");
+		/*if (i & GENERICDEF_USE_GLOW_BUFFER)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");*/
 
-		if (i & GENERICDEF_USE_ALPHA_TEST)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
+		/*if (i & GENERICDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 
 		if (!GLSL_LoadGPUShader(builder, &tr.genericShader[i], "generic", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
@@ -1540,8 +1542,8 @@ static int GLSL_LoadGPUProgramFogPass(
 		if (i & FOGDEF_USE_FALLBACK_GLOBAL_FOG)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_FALLBACK_GLOBAL_FOG\n");
 
-		if (i & FOGDEF_USE_ALPHA_TEST)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
+		/*if (i & FOGDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 
 		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], "fogpass", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
@@ -1552,7 +1554,7 @@ static int GLSL_LoadGPUProgramFogPass(
 		GLSL_InitUniforms(&tr.fogShader[i]);
 
 		qglUseProgram(tr.fogShader[i].program);
-		if (i & FOGDEF_USE_ALPHA_TEST)
+		//if (i & FOGDEF_USE_ALPHA_TEST)
 			GLSL_SetUniformInt(&tr.fogShader[i], UNIFORM_DIFFUSEMAP, 0);
 		qglUseProgram(0);
 
@@ -1603,8 +1605,8 @@ static int GLSL_LoadGPUProgramRefraction(
 		if (i & REFRACTIONDEF_USE_RGBAGEN)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
 
-		if (i & REFRACTIONDEF_USE_ALPHA_TEST)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
+		/*if (i & REFRACTIONDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 
 		if (i & REFRACTIONDEF_USE_SRGB_TRANSFORM)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LINEAR_LIGHT\n");
@@ -1769,11 +1771,11 @@ static int GLSL_LoadGPUProgramLightAll(
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
-		if (i & LIGHTDEF_USE_ALPHA_TEST)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
+		/*if (i & LIGHTDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 
-		if (i & LIGHTDEF_USE_GLOW_BUFFER)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");
+		/*if (i & LIGHTDEF_USE_GLOW_BUFFER)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");*/
 
 		if (!GLSL_LoadGPUShader(builder, &tr.lightallShader[i], "lightall", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
@@ -2238,9 +2240,9 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define USE_FOG\n");
 
-		if ( i & SSDEF_ALPHA_TEST )
+		/*if ( i & SSDEF_ALPHA_TEST )
 			Q_strcat(extradefines, sizeof(extradefines),
-					"#define ALPHA_TEST\n");
+					"#define USE_ALPHA_TEST\n");*/
 
 		if (i & SSDEF_ADDITIVE)
 			Q_strcat(extradefines, sizeof(extradefines),
@@ -2584,8 +2586,8 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	shaderStage_t *pStage = tess.xstages[stage];
 	int shaderAttribs = 0;
 
-	if ( pStage->alphaTestType != ALPHA_TEST_NONE )
-		shaderAttribs |= GENERICDEF_USE_ALPHA_TEST;
+	/*if ( pStage->alphaTestType != ALPHA_TEST_NONE )
+		shaderAttribs |= GENERICDEF_USE_ALPHA_TEST;*/
 
 	if (backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1 | RF_DISINTEGRATE2))
 		shaderAttribs |= GENERICDEF_USE_RGBAGEN;
@@ -2642,10 +2644,10 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 		shaderAttribs |= GENERICDEF_USE_TCGEN_AND_TCMOD;
 	}
 
-	if (pStage->glow)
+	/*if (pStage->glow)
 	{
 		shaderAttribs |= GENERICDEF_USE_GLOW_BUFFER;
-	}
+	}*/
 
 	return &tr.genericShader[shaderAttribs];
 }

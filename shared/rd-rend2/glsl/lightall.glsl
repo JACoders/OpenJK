@@ -427,10 +427,8 @@ uniform samplerCube u_CubeMap;
 uniform sampler2D u_EnvBrdfMap;
 #endif
 
-#if defined(USE_NORMALMAP) || defined(USE_DELUXEMAP) || defined(USE_SPECULARMAP) || defined(USE_CUBEMAP)
-// y = deluxe, w = cube
+// x = glow out, y = deluxe, z = screen shadow, w = cube
 uniform vec4 u_EnableTextures;
-#endif
 
 uniform vec4 u_NormalScale;
 uniform vec4 u_SpecularScale;
@@ -1195,10 +1193,5 @@ void main()
 #endif
 
 	out_Color.a = diffuse.a;
-
-#if defined(USE_GLOW_BUFFER)
-	out_Glow = out_Color;
-#else
-	out_Glow = vec4(0.0, 0.0, 0.0, out_Color.a);
-#endif
+	out_Glow = mix(vec4(0.0, 0.0, 0.0, out_Color.a), out_Color, u_EnableTextures.x);
 }

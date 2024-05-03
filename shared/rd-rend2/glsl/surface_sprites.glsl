@@ -183,7 +183,7 @@ uniform int u_FogIndex;
 uniform vec4 u_FogColorMask;
 #endif
 
-#if defined(ALPHA_TEST)
+#if defined(USE_ALPHA_TEST)
 uniform int u_AlphaTestType;
 #endif
 
@@ -223,7 +223,7 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 
 void main()
 {
-#if defined(ALPHA_TEST)
+#if defined(USE_ALPHA_TEST)
 	float alphaTestValue = 0.5;
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -256,7 +256,7 @@ void main()
 	}
 #endif
 
-#if defined(ALPHA_TEST)
+#if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
 		if (out_Color.a == 0.0)
