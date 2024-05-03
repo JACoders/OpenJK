@@ -1971,6 +1971,7 @@ void R_ClearStuffToStopGhoul2CrashingThings(void)
 	memset(&tr, 0, sizeof(tr));
 }
 
+static bool r_inited = false;
 /*
 ===============
 R_Init
@@ -1979,6 +1980,9 @@ R_Init
 void R_Init( void ) {
 	byte *ptr;
 	int i;
+
+	if (r_inited)
+		return;
 	
 	ri.Printf( PRINT_ALL, "----- R_Init -----\n" );
 
@@ -2092,6 +2096,7 @@ void R_Init( void ) {
 
 	// print info
 	GfxInfo_f();
+	r_inited = true;
 	ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
 
@@ -2117,21 +2122,23 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	R_ShutdownWeatherSystem();
 
 	R_ShutdownFonts();
-	if ( tr.registered ) {
+
+	if (r_inited)
+	{
 		R_ShutDownQueries();
 		FBO_Shutdown();
 		R_DeleteTextures();
 		R_DestroyGPUBuffers();
 		GLSL_ShutdownGPUShaders();
+	}
 
-		if ( destroyWindow && restarting )
-		{
-			ri.Z_Free((void *)glConfig.extensions_string);
-			ri.Z_Free((void *)glConfigExt.originalExtensionString);
+	if (destroyWindow && restarting && tr.registered)
+	{
+		ri.Z_Free((void *)glConfig.extensions_string);
+		ri.Z_Free((void *)glConfigExt.originalExtensionString);
 
-			qglDeleteVertexArrays(1, &tr.globalVao);
-			SaveGhoul2InfoArray();
-		}
+		qglDeleteVertexArrays(1, &tr.globalVao);
+		SaveGhoul2InfoArray();
 	}
 
 	// shut down platform specific OpenGL stuff
@@ -2140,6 +2147,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	}
 
 	tr.registered = qfalse;
+	r_inited = false;
 	backEndData = NULL;
 }
 

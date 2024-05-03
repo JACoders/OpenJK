@@ -1592,16 +1592,11 @@ void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 
 void R_SVModelInit()
 {
-#ifdef REND2_SP
-	tr.numShaders = 0;
-	tr.numImages = 0;
-
-	R_InitImagesPool();
-	R_InitImages();
-	R_InitShaders(qfalse);
-#endif
-
-	R_ModelInit();
+	// Vanilla SP setups textures, shaders and models only
+	// Rend2 requires gpu buffer access for shaders already so, just do renderer setup already
+	// Shouldn't hurt to do so in MP too
+	// R_Init now makes sure its only doing its thing once unless everything is destructed again
+	R_Init();
 }
 
 /*
