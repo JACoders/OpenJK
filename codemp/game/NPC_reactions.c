@@ -220,7 +220,6 @@ NPC_ChoosePainAnimation
 extern int G_PickPainAnim( gentity_t *self, vec3_t point, int damage, int hitLoc );
 void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, int damage, int mod, int hitLoc, int voiceEvent )
 {
-	int		pain_anim = -1;
 	float	pain_chance;
 
 	//If we've already taken pain, then don't take it again
@@ -287,7 +286,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 	//See if we're going to flinch
 	if ( Q_flrand(0.0f, 1.0f) < pain_chance )
 	{
-		int animLength;
+		int pain_anim = -1;
 
 		//Pick and play our animation
 		if ( self->client->ps.fd.forceGripBeingGripped < level.time )
@@ -363,7 +362,13 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 			self->painDebounceTime = level.time + 4000;
 		}
 		*/
-		animLength = bgAllAnims[self->localAnimIndex].anims[pain_anim].numFrames * fabs((float)(bgHumanoidAnimations[pain_anim].frameLerp));
+		int animLength = 0;
+		
+		if ((self->localAnimIndex >= 0) && (self->localAnimIndex < MAX_ANIM_FILES)
+			&& (pain_anim >= 0) && (pain_anim < MAX_TOTALANIMATIONS)) {
+			animLength = bgAllAnims[self->localAnimIndex].anims[pain_anim].numFrames * fabs((float)(bgHumanoidAnimations[pain_anim].frameLerp));
+		}
+
 
 		self->painDebounceTime = level.time + animLength;
 		self->client->ps.weaponTime = 0;
