@@ -3372,6 +3372,14 @@ static qboolean CollapseStagesToGLSL(void)
 			if (pStage->bundle[0].tcGen >= TCGEN_LIGHTMAP && pStage->bundle[0].tcGen <= TCGEN_LIGHTMAP3)
 				continue;
 
+			if (i > 0)
+			{
+				int blendBits = pStage->stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS);
+				if (blendBits == (GLS_DSTBLEND_SRC_COLOR | GLS_SRCBLEND_ZERO) ||
+					blendBits == (GLS_DSTBLEND_ZERO | GLS_SRCBLEND_DST_COLOR))
+					continue;
+			}
+
 			diffuse  = pStage;
 			parallax = qfalse;
 			lightmap = NULL;
