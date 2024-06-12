@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static size_t STATIC_UNIFORM_BUFFER_SIZE = 1 * 1024 * 1024;
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
+static size_t FRAME_SCENE_UNIFORM_BUFFER_SIZE = 1 * 1024 * 1024;
 static size_t FRAME_VERTEX_BUFFER_SIZE = 12*1024*1024;
 static size_t FRAME_INDEX_BUFFER_SIZE = 4*1024*1024;
 
@@ -280,7 +281,7 @@ static void R_Splash()
 {
 	const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	qglViewport( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
+	GL_SetViewportAndScissor( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
 	qglClearBufferfv(GL_COLOR, 0, black);
 	qglClear(GL_DEPTH_BUFFER_BIT);
 
@@ -1204,6 +1205,7 @@ void GL_SetDefaultState( void )
 	qglEnable(GL_PROGRAM_POINT_SIZE);
 	qglDisable( GL_CULL_FACE );
 	qglDisable( GL_BLEND );
+	glState.blend = false;
 
 	qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
@@ -1672,23 +1674,27 @@ static void R_InitBackEndFrameData()
 	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
 	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
 
-	GLuint ubos[MAX_FRAMES];
-	qglGenBuffers(MAX_FRAMES, ubos);
+	GLuint ubos[MAX_FRAMES * MAX_SCENES];
+	qglGenBuffers(MAX_FRAMES * MAX_SCENES, ubos);
 
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
 		const GLbitfield mapBits = GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT;
 
-		frame->ubo = ubos[i];
-		frame->uboWriteOffset = 0;
-		frame->uboSize = FRAME_UNIFORM_BUFFER_SIZE;
-		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
-		glState.currentGlobalUBO = frame->ubo;
+		for (byte j = 0; j < MAX_SCENES; j++)
+		{
+			size_t BUFFER_SIZE = j == 0 ? FRAME_UNIFORM_BUFFER_SIZE : FRAME_SCENE_UNIFORM_BUFFER_SIZE;
+			frame->ubo[j] = ubos[i * MAX_SCENES + j];
+			frame->uboWriteOffset[j] = 0;
+			frame->uboSize[j] = BUFFER_SIZE;
+			qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo[j]);
+			glState.currentGlobalUBO = frame->ubo[j];
 
-		// TODO: persistently mapped UBOs
-		qglBufferData(GL_UNIFORM_BUFFER, FRAME_UNIFORM_BUFFER_SIZE,
+			// TODO: persistently mapped UBOs
+			qglBufferData(GL_UNIFORM_BUFFER, BUFFER_SIZE,
 				nullptr, GL_DYNAMIC_DRAW);
+		}
 
 		frame->dynamicVbo = R_CreateVBO(nullptr, FRAME_VERTEX_BUFFER_SIZE,
 				VBO_USAGE_DYNAMIC);
@@ -1731,7 +1737,7 @@ static void R_InitGoreVao()
 {
 	tr.goreVBO = R_CreateVBO(
 		nullptr,
-		sizeof(g2GoreVert_t) * MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES,
+		sizeof(g2GoreVert_t) * MAX_GORE_RECORDS * MAX_GORE_VERTS * MAX_FRAMES,
 		VBO_USAGE_DYNAMIC);
 	tr.goreVBO->offsets[ATTR_INDEX_POSITION] = offsetof(g2GoreVert_t, position);
 	tr.goreVBO->offsets[ATTR_INDEX_NORMAL] = offsetof(g2GoreVert_t, normal);
@@ -1756,11 +1762,13 @@ static void R_InitGoreVao()
 
 	tr.goreIBO = R_CreateIBO(
 		nullptr,
-		sizeof(glIndex_t) * MAX_LODS * MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES,
+		sizeof(glIndex_t) * MAX_GORE_RECORDS * MAX_GORE_INDECIES * MAX_FRAMES,
 		VBO_USAGE_DYNAMIC);
 
 	tr.goreIBOCurrentIndex = 0;
 	tr.goreVBOCurrentIndex = 0;
+
+	GL_CheckErrors();
 }
 #endif
 
@@ -1883,7 +1891,7 @@ static void R_ShutdownBackEndFrameData()
 			frame->sync = NULL;
 		}
 
-		qglDeleteBuffers(1, &frame->ubo);
+		qglDeleteBuffers(MAX_SCENES, frame->ubo);
 
 		if ( glRefConfig.immutableBuffers )
 		{
@@ -1901,6 +1909,7 @@ static void R_ShutdownBackEndFrameData()
 	}
 }
 
+static bool r_inited = false;
 /*
 ===============
 R_Init
@@ -1909,6 +1918,9 @@ R_Init
 void R_Init( void ) {
 	byte *ptr;
 	int i;
+
+	if (r_inited)
+		return;
 
 	ri.Printf( PRINT_ALL, "----- R_Init -----\n" );
 
@@ -2022,6 +2034,7 @@ void R_Init( void ) {
 
 	// print info
 	GfxInfo_f();
+	r_inited = true;
 	ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
 
@@ -2047,21 +2060,23 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	R_ShutdownWeatherSystem();
 
 	R_ShutdownFonts();
-	if ( tr.registered ) {
+	
+	if (r_inited)
+	{
 		R_ShutDownQueries();
 		FBO_Shutdown();
 		R_DeleteTextures();
 		R_DestroyGPUBuffers();
 		GLSL_ShutdownGPUShaders();
+	}
 
-		if ( destroyWindow && restarting )
-		{
-			ri.Z_Free((void *)glConfig.extensions_string);
-			ri.Z_Free((void *)glConfigExt.originalExtensionString);
+	if (destroyWindow && restarting && tr.registered)
+	{
+		ri.Z_Free((void *)glConfig.extensions_string);
+		ri.Z_Free((void *)glConfigExt.originalExtensionString);
 
-			qglDeleteVertexArrays(1, &tr.globalVao);
-			SaveGhoul2InfoArray();
-		}
+		qglDeleteVertexArrays(1, &tr.globalVao);
+		SaveGhoul2InfoArray();
 	}
 
 	// shut down platform specific OpenGL stuff
@@ -2070,6 +2085,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	}
 
 	tr.registered = qfalse;
+	r_inited = false;
 	backEndData = NULL;
 }
 
