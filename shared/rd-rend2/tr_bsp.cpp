@@ -3823,7 +3823,8 @@ static int R_CreateSurfaceSpritesVertexData(
 	const srfVert_t *verts = bspSurf->verts;
 	const glIndex_t *indexes = bspSurf->indexes;
 
-	vec4_t color = { 1.0, 1.0, 1.0, 1.0 };
+#if 0
+	vec4_t color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	if (stage->rgbGen == CGEN_CONST)
 	{
 		color[0] = stage->constantColor[0];
@@ -3835,6 +3836,13 @@ static int R_CreateSurfaceSpritesVertexData(
 		stage->rgbGen == CGEN_EXACT_VERTEX ||
 		stage->rgbGen == CGEN_VERTEX_LIT ||
 		stage->rgbGen == CGEN_EXACT_VERTEX_LIT);
+#else
+	// Vanilla behaviour is always: color by vertex color of the emitting surface
+	// even just the blue component used for all three color channels to be exact
+	// in pseudo code: outVert.rgb = inVert.bbb;
+	bool vertexLit = true;
+	vec4_t color = { 1.0f, 1.0f, 1.0f, 1.0f };
+#endif
 
 	int numSprites = 0;
 	for ( int i = 0, numIndexes = bspSurf->numIndexes; i < numIndexes; i += 3 )
