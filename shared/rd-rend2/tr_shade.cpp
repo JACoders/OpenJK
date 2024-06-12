@@ -1256,6 +1256,9 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 			{
 				index |= LIGHTDEF_USE_ALPHA_TEST;
 			}*/
+
+			if (stage->bundle[0].tcGen != TCGEN_TEXTURE || (stage->bundle[0].numTexMods))
+				index |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
 			
 			// TODO: remove light vertex def and fix parallax usage on unlit stages like glow stages
 			if (stage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
