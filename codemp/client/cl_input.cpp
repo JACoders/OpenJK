@@ -1451,7 +1451,7 @@ qboolean CL_ReadyToSendPacket( void ) {
 	}
 
 	// send every frame for LAN
-	if ( cl_lanForcePackets->integer && Sys_IsLANAddress( clc.netchan.remoteAddress ) ) {
+	if ( cl_lanForcePackets->integer && Sys_IsLANAddress( &clc.netchan.remoteAddress ) ) {
 		return qtrue;
 	}
 

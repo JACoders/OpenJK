@@ -59,7 +59,7 @@ to their packets, to make it more difficult for malicious servers
 to hi-jack client connections.
 =================
 */
-void SV_GetChallenge( netadr_t from ) {
+void SV_GetChallenge( const netadr_t *from ) {
 	int		challenge;
 	int		clientChallenge;
 
@@ -91,7 +91,7 @@ Check whether a certain address is banned
 ==================
 */
 
-static qboolean SV_IsBanned( netadr_t *from, qboolean isexception )
+static qboolean SV_IsBanned( const netadr_t *from, qboolean isexception )
 {
 	int index;
 	serverBan_t *curban;
@@ -113,7 +113,7 @@ static qboolean SV_IsBanned( netadr_t *from, qboolean isexception )
 
 		if ( curban->isexception == isexception )
 		{
-			if ( NET_CompareBaseAdrMask( curban->ip, *from, curban->subnet ) )
+			if ( NET_CompareBaseAdrMask( &curban->ip, from, curban->subnet ) )
 				return qtrue;
 		}
 	}
@@ -128,7 +128,7 @@ SV_DirectConnect
 A "connect" OOB command has been received
 ==================
 */
-void SV_DirectConnect( netadr_t from ) {
+void SV_DirectConnect( const netadr_t *from ) {
 	char		userinfo[MAX_INFO_STRING];
 	int			i;
 	client_t	*cl, *newcl;
@@ -147,7 +147,7 @@ void SV_DirectConnect( netadr_t from ) {
 	Com_DPrintf ("SVC_DirectConnect ()\n");
 
 	// Check whether this client is banned.
-	if ( SV_IsBanned( &from, qfalse ) )
+	if ( SV_IsBanned( from, qfalse ) )
 	{
 		NET_OutOfBandPrint( NS_SERVER, from, "print\nYou are banned from this server.\n" );
 		Com_DPrintf( "    rejected connect from %s (banned)\n", NET_AdrToString(from) );
@@ -178,9 +178,9 @@ void SV_DirectConnect( netadr_t from ) {
 		}
 */
 
-		if ( NET_CompareBaseAdr( from, cl->netchan.remoteAddress )
+		if ( NET_CompareBaseAdr( from, &cl->netchan.remoteAddress )
 			&& ( cl->netchan.qport == qport
-			|| from.port == cl->netchan.remoteAddress.port ) ) {
+			|| from->port == cl->netchan.remoteAddress.port ) ) {
 			if (( svs.time - cl->lastConnectTime)
 				< (sv_reconnectlimit->integer * 1000)) {
 				NET_OutOfBandPrint( NS_SERVER, from, "print\nReconnect rejected : too soon\n" );
@@ -223,9 +223,9 @@ void SV_DirectConnect( netadr_t from ) {
 		if ( cl->state == CS_FREE ) {
 			continue;
 		}
-		if ( NET_CompareBaseAdr( from, cl->netchan.remoteAddress )
+		if ( NET_CompareBaseAdr( from, &cl->netchan.remoteAddress )
 			&& ( cl->netchan.qport == qport
-			|| from.port == cl->netchan.remoteAddress.port ) ) {
+			|| from->port == cl->netchan.remoteAddress.port ) ) {
 			Com_Printf ("%s:reconnect\n", NET_AdrToString (from));
 			newcl = cl;
 			// VVFIXME - both SOF2 and Wolf remove this call, claiming it blows away the user's info
@@ -553,7 +553,7 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 	client->state = CS_ACTIVE;
 
 	if (sv_autoWhitelist->integer) {
-		SVC_WhitelistAdr( client->netchan.remoteAddress );
+		SVC_WhitelistAdr( &client->netchan.remoteAddress );
 	}
 
 	// resend all configstrings using the cs commands since these are
@@ -1071,7 +1071,7 @@ void SV_UserinfoChanged( client_t *cl ) {
 
 	// if the client is on the same subnet as the server and we aren't running an
 	// internet public server, assume they don't need a rate choke
-	if ( Sys_IsLANAddress( cl->netchan.remoteAddress ) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1 ) {
+	if ( Sys_IsLANAddress( &cl->netchan.remoteAddress ) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1 ) {
 		cl->rate = 100000;	// lans should not rate limit
 	} else {
 		val = Info_ValueForKey (cl->userinfo, "rate");
@@ -1125,10 +1125,10 @@ void SV_UserinfoChanged( client_t *cl ) {
 	// TTimo
 	// maintain the IP information
 	// the banning code relies on this being consistently present
-	if( NET_IsLocalAddress(cl->netchan.remoteAddress) )
+	if( NET_IsLocalAddress(&cl->netchan.remoteAddress) )
 		ip = "localhost";
 	else
-		ip = (char*)NET_AdrToString( cl->netchan.remoteAddress );
+		ip = (char*)NET_AdrToString( &cl->netchan.remoteAddress );
 
 	val = Info_ValueForKey( cl->userinfo, "ip" );
 	if( val[0] )

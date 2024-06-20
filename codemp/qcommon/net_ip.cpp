@@ -168,7 +168,7 @@ char *NET_ErrorString( void ) {
 #endif
 }
 
-static void NetadrToSockadr( netadr_t *a, struct sockaddr_in *s ) {
+static void NetadrToSockadr( const netadr_t *a, struct sockaddr_in *s ) {
 	memset( s, 0, sizeof(*s) );
 
 	if( a->type == NA_BROADCAST ) {
@@ -292,7 +292,7 @@ qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 	}
 
 	if( ret >= net_message->maxsize ) {
-		Com_Printf( "Oversize packet from %s\n", NET_AdrToString (*net_from) );
+		Com_Printf( "Oversize packet from %s\n", NET_AdrToString (net_from) );
 		return qfalse;
 	}
 
@@ -309,11 +309,11 @@ static char socksBuf[4096];
 Sys_SendPacket
 ==================
 */
-void Sys_SendPacket( int length, const void *data, netadr_t to ) {
+void Sys_SendPacket( int length, const void *data, const netadr_t *to ) {
 	int					ret;
 	struct sockaddr_in	addr;
 
-	if ( to.type != NA_BROADCAST && to.type != NA_IP ) {
+	if ( to->type != NA_BROADCAST && to->type != NA_IP ) {
 		Com_Error( ERR_FATAL, "Sys_SendPacket: bad address type" );
 		return;
 	}
@@ -322,9 +322,9 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		return;
 	}
 
-	NetadrToSockadr( &to, &addr );
+	NetadrToSockadr( to, &addr );
 
-	if( usingSocks && to.type == NA_IP ) {
+	if( usingSocks && to->type == NA_IP ) {
 		socksBuf[0] = 0;	// reserved
 		socksBuf[1] = 0;
 		socksBuf[2] = 0;	// fragment (not fragmented)
@@ -346,7 +346,7 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		}
 
 		// some PPP links do not allow broadcasts and return an error
-		if( err == EADDRNOTAVAIL && to.type == NA_BROADCAST ) {
+		if( err == EADDRNOTAVAIL && to->type == NA_BROADCAST ) {
 			return;
 		}
 
@@ -363,31 +363,31 @@ Sys_IsLANAddress
 LAN clients will have their rate var ignored
 ==================
 */
-qboolean Sys_IsLANAddress( netadr_t adr ) {
+qboolean Sys_IsLANAddress( const netadr_t *adr ) {
 	if ( !net_forcenonlocal )
 		net_forcenonlocal = Cvar_Get( "net_forcenonlocal", "0", 0 );
 
 	if ( net_forcenonlocal && net_forcenonlocal->integer )
 		return qfalse;
 
-	if( adr.type == NA_LOOPBACK )
+	if( adr->type == NA_LOOPBACK )
 		return qtrue;
 
-	if( adr.type != NA_IP )
+	if( adr->type != NA_IP )
 		return qfalse;
 
 	// RFC1918:
 	// 10.0.0.0        -   10.255.255.255  (10/8 prefix)
 	// 172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
 	// 192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
-	if ( adr.ip[0] == 10 )
+	if ( adr->ip[0] == 10 )
 		return qtrue;
-	if ( adr.ip[0] == 172 && (adr.ip[1]&0xf0) == 16 )
+	if ( adr->ip[0] == 172 && (adr->ip[1]&0xf0) == 16 )
 		return qtrue;
-	if ( adr.ip[0] == 192 && adr.ip[1] == 168 )
+	if ( adr->ip[0] == 192 && adr->ip[1] == 168 )
 		return qtrue;
 
-	if ( adr.ip[0] == 127 )
+	if ( adr->ip[0] == 127 )
 		return qtrue;
 
 	// choose which comparison to use based on the class of the address being tested
@@ -395,7 +395,7 @@ qboolean Sys_IsLANAddress( netadr_t adr ) {
 
 	// Class C
 	for ( int i=0; i<numIP; i++ ) {
-		if( memcmp( adr.ip, localIP[i], 3 ) == 0 )
+		if( memcmp( adr->ip, localIP[i], 3 ) == 0 )
 			return qtrue;
 	}
 	return qfalse;
@@ -418,7 +418,7 @@ void Sys_ShowIP(void) {
 NET_IPSocket
 ====================
 */
-SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
+static SOCKET NET_IPSocket( const char *net_interface, int port, int *err ) {
 	SOCKET				newsocket;
 	struct sockaddr_in	address;
 	u_long				_true = 1;
@@ -468,7 +468,7 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 		address.sin_port = 0;
 	}
 	else {
-		address.sin_port = htons( port );
+		address.sin_port = htons( (short)port );
 	}
 
 	if( bind( newsocket, (const struct sockaddr *)&address, sizeof(address) ) == SOCKET_ERROR ) {
@@ -1025,7 +1025,7 @@ void NET_Event(fd_set *fdr)
 			if(com_sv_running->integer)
 				Com_RunAndTimeServerPacket(&from, &netmsg);
 			else
-				CL_PacketEvent(from, &netmsg);
+				CL_PacketEvent(&from, &netmsg);
 		}
 		else
 			break;
