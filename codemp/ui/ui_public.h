@@ -269,7 +269,7 @@ typedef struct uiImport_s {
 	void			(*Key_SetCatcher)						( int catcher );
 	void			(*Key_SetOverstrikeMode)				( qboolean state );
 
-	int				(*PC_AddGlobalDefine)					( char *define );
+	int				(*PC_AddGlobalDefine)					( const char *define );
 	int				(*PC_FreeSource)						( int handle );
 	int				(*PC_LoadGlobalDefines)					( const char* filename );
 	int				(*PC_LoadSource)						( const char *filename );
