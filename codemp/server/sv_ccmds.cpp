@@ -24,8 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
-#include "server/sv_gameapi.h"
 #include "qcommon/game_version.h"
+#include "server/sv_gameapi.h"
 
 /*
 ===============================================================================

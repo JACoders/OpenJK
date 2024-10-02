@@ -59,7 +59,7 @@ IDI_ICON1               ICON                    "starwars.ico"
 //
 // Version
 //
-#include "AutoVersion.h"
+#include "../qcommon/game_version.h"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSION_MAJOR_RELEASE,VERSION_MINOR_RELEASE,VERSION_EXTERNAL_BUILD,VERSION_INTERNAL_BUILD
