@@ -4187,6 +4187,12 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		LL(mdxm->ofsEnd);
 	}
 
+	if (mdxm->numBones > MAX_G2_BONES)
+	{
+		Com_Printf(S_COLOR_YELLOW  "R_LoadMDXM: model %s has too many bones for rend2\n", mdxm->name);
+		return qfalse;
+	}
+
 	// first up, go load in the animation file we need that has the skeletal
 	// animation info for this model
 	mdxm->animIndex = RE_RegisterModel(va("%s.gla", mdxm->animName));
