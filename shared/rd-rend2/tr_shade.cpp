@@ -1666,7 +1666,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 								&& input->cubemapIndex > 0
 								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
 		bool enableDLights = (	tess.dlightBits
-								&& tess.shader->sort <= SS_OPAQUE
+								&& (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
 								&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
 								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
 
