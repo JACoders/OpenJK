@@ -1484,8 +1484,8 @@ void R_Register( void )
 
 	r_autoExposure = ri.Cvar_Get( "r_autoExposure", "1", CVAR_ARCHIVE, "Disable/enable auto exposure" );
 	r_forceAutoExposure = ri.Cvar_Get( "r_forceAutoExposure", "0", CVAR_CHEAT, "" );
-	r_forceAutoExposureMin = ri.Cvar_Get( "r_forceAutoExposureMin", "-2.5", CVAR_CHEAT, "" );
-	r_forceAutoExposureMax = ri.Cvar_Get( "r_forceAutoExposureMax", "1.5", CVAR_CHEAT, "" );
+	r_forceAutoExposureMin = ri.Cvar_Get( "r_forceAutoExposureMin", "-3.0", CVAR_CHEAT, "" );
+	r_forceAutoExposureMax = ri.Cvar_Get( "r_forceAutoExposureMax", "1.0", CVAR_CHEAT, "" );
 
 	r_cameraExposure = ri.Cvar_Get( "r_cameraExposure", "0", CVAR_CHEAT, "" );
 

@@ -4395,8 +4395,8 @@ void RE_LoadWorldMap( const char *name ) {
 	VectorNormalize(tr.sunDirection);
 
 	// set default autoexposure settings
-	tr.autoExposureMinMax[0] = -2.5f;
-	tr.autoExposureMinMax[1] = 1.5f;
+	tr.autoExposureMinMax[0] = -3.0f;
+	tr.autoExposureMinMax[1] = 1.0f;
 
 	// set default tone mapping settings
 	tr.toneMinAvgMaxLevel[0] = -8.0f;
