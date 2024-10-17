@@ -570,7 +570,7 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 void main()
 {
 	vec4 color  = texture(u_DiffuseMap, var_DiffuseTex);
-	color.a *= var_Color.a;
+	color *= var_Color;
 #if defined(USE_ALPHA_TEST)
 	if (u_AlphaTestType == ALPHA_TEST_GT0)
 	{
@@ -600,6 +600,6 @@ void main()
 	color *= vec4(1.0) - u_FogColorMask * fogFactor;
 #endif
 
-	out_Color = vec4(color.rgb * var_Color.rgb, color.a);
-	out_Glow = mix(vec4(0.0, 0.0, 0.0, out_Color.a), out_Color, u_EnableTextures.x);
+	out_Color = color;
+	out_Glow = mix(vec4(0.0, 0.0, 0.0, color.a), color, u_EnableTextures.x);
 }
