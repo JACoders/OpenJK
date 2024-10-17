@@ -4216,6 +4216,13 @@ static shader_t *FinishShader( void ) {
 		hasLightmapStage = qfalse;
 	}
 
+	// Handle special glow case
+	if (stage == 1 && stages[0].glow && shader.sort < SS_OPAQUE)
+	{
+		shader.sort = SS_BLEND1;
+		stages[0].stateBits |= GLS_COLORMASK_BUF1;
+	}
+
 	//
 	// look for multitexture potential
 	//

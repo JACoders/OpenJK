@@ -303,6 +303,20 @@ void GL_State( uint32_t stateBits )
 		}
 	}
 
+	// Color mask just the first drawbuffer
+	else if (diff & GLS_COLORMASK_BUF1)
+	{
+		if (stateBits & GLS_COLORMASK_BUF1)
+		{
+			qglColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+			qglColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+		else
+		{
+			qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+	}
+
 	//
 	// check stenciltest
 	//
@@ -2856,7 +2870,7 @@ const void *RB_PostProcess(const void *data)
 
 		if ( r_dynamicGlow->integer )
 		{
-			FBO_FastBlitIndexed(tr.renderFbo, tr.msaaResolveFbo, 1, 1, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			FBO_FastBlitIndexed(tr.renderFbo, tr.msaaResolveFbo, 1, 1, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 	}
 

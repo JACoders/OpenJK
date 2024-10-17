@@ -1120,6 +1120,8 @@ enum
 
 	GLS_POLYGON_OFFSET_FILL				= (1 << 28),
 
+	GLS_COLORMASK_BUF1					= (1 << 29),
+
 	GLS_DEFAULT							= GLS_DEPTHMASK_TRUE
 };
 

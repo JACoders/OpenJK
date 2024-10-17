@@ -570,6 +570,7 @@ extern PFNGLGETQUERYOBJECTUIVPROC qglGetQueryObjectuiv;
 
 // GL state
 extern PFNGLGETSTRINGIPROC qglGetStringi;
+extern PFNGLCOLORMASKIPROC qglColorMaski;
 
 // Sync objects and fences
 extern PFNGLFENCESYNCPROC qglFenceSync;
