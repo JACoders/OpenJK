@@ -36,15 +36,15 @@ typedef enum //# team_e
 } team_t;
 
 // This list is made up from the model directories, this MUST be in the same order as the ClassNames array in NPC_stats.cpp
-typedef enum 
+typedef enum
 {
 	CLASS_NONE,				// hopefully this will never be used by an npc, just covering all bases
 	CLASS_ATST,				// technically droid...
 	CLASS_BARTENDER,
-	CLASS_BESPIN_COP,		
+	CLASS_BESPIN_COP,
 	CLASS_CLAW,
 	CLASS_COMMANDO,
-	CLASS_DESANN,			
+	CLASS_DESANN,
 	CLASS_FISH,
 	CLASS_FLIER2,
 	CLASS_GALAK,
@@ -54,18 +54,18 @@ typedef enum
 	CLASS_HOWLER,
 	CLASS_IMPERIAL,
 	CLASS_IMPWORKER,
-	CLASS_INTERROGATOR,		// droid 
-	CLASS_JAN,				
-	CLASS_JEDI,				
-	CLASS_KYLE,				
-	CLASS_LANDO,			
+	CLASS_INTERROGATOR,		// droid
+	CLASS_JAN,
+	CLASS_JEDI,
+	CLASS_KYLE,
+	CLASS_LANDO,
 	CLASS_LIZARD,
-	CLASS_LUKE,				
+	CLASS_LUKE,
 	CLASS_MARK1,			// droid
 	CLASS_MARK2,			// droid
 	CLASS_GALAKMECH,		// droid
 	CLASS_MINEMONSTER,
-	CLASS_MONMOTHA,			
+	CLASS_MONMOTHA,
 	CLASS_MORGANKATARN,
 	CLASS_MOUSE,			// droid
 	CLASS_MURJJ,
@@ -89,7 +89,7 @@ typedef enum
 	CLASS_TRANDOSHAN,
 	CLASS_UGNAUGHT,
 	CLASS_WEEQUAY,
-	
+
 	CLASS_NUM_CLASSES
 } class_t;
 

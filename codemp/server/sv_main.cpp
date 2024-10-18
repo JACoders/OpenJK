@@ -273,15 +273,15 @@ void SV_MasterHeartbeat( void ) {
 			if ( !strstr( ":", sv_master[i]->string ) ) {
 				adr[i].port = BigShort( PORT_MASTER );
 			}
-			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(adr[i]) );
+			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(&adr[i]) );
 
-			SVC_WhitelistAdr( adr[i] );
+			SVC_WhitelistAdr( &adr[i] );
 		}
 
 		Com_Printf ("Sending heartbeat to %s\n", sv_master[i]->string );
 		// this command should be changed if the server info / status format
 		// ever incompatably changes
-		NET_OutOfBandPrint( NS_SERVER, adr[i], "heartbeat %s\n", HEARTBEAT_GAME );
+		NET_OutOfBandPrint( NS_SERVER, &adr[i], "heartbeat %s\n", HEARTBEAT_GAME );
 	}
 }
 
@@ -323,11 +323,11 @@ Find or allocate a bucket for an address
 */
 #include <map>
 
-static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int period, int now ) {
+static leakyBucket_t *SVC_BucketForAddress( const netadr_t *address, int burst, int period, int now ) {
 	static std::map<int, leakyBucket_t> bucketMap;
 	static int lastGC = 0;
 
-	if (address.type != NA_IP) {
+	if (address->type != NA_IP) {
 		return NULL;
 	}
 
@@ -361,7 +361,7 @@ static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int per
 		}
 	}
 
-	return &bucketMap[address.ipi];
+	return &bucketMap[address->ipi];
 }
 
 /*
@@ -402,7 +402,7 @@ SVC_RateLimitAddress
 Rate limit for a particular address
 ================
 */
-qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period, int now ) {
+qboolean SVC_RateLimitAddress( const netadr_t *from, int burst, int period, int now ) {
 	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period, now );
 
 	return SVC_RateLimit( bucket, burst, period, now );
@@ -417,7 +417,7 @@ and all connected players.  Used for getting detailed information after
 the simple info query.
 ================
 */
-void SVC_Status( netadr_t from ) {
+void SVC_Status( const netadr_t *from ) {
 	char	player[1024];
 	char	status[MAX_MSGLEN];
 	int		i;
@@ -473,7 +473,7 @@ Responds with a short info message that should be enough to determine
 if a user is interested in a server to do a full status
 ================
 */
-void SVC_Info( netadr_t from ) {
+void SVC_Info( const netadr_t *from ) {
 	int		i, count, humans, wDisable;
 	char	*gamedir;
 	char	infostring[MAX_INFO_STRING];
@@ -560,7 +560,7 @@ SVC_FlushRedirect
 ================
 */
 void SV_FlushRedirect( char *outputbuf ) {
-	NET_OutOfBandPrint( NS_SERVER, svs.redirectAddress, "print\n%s", outputbuf );
+	NET_OutOfBandPrint( NS_SERVER, &svs.redirectAddress, "print\n%s", outputbuf );
 }
 
 /*
@@ -572,7 +572,7 @@ Shift down the remaining args
 Redirect all printfs
 ===============
 */
-void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
+void SVC_RemoteCommand( const netadr_t *from, msg_t *msg ) {
 	qboolean	valid;
 	char		remaining[1024];
 	// TTimo - scaled down to accumulate, but not overflow anything network wise, print wise etc.
@@ -591,7 +591,7 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	}
 
 	// start redirecting all print outputs to the packet
-	svs.redirectAddress = from;
+	svs.redirectAddress = *from;
 	Com_BeginRedirect (sv_outputbuf, SV_OUTPUTBUF_LENGTH, SV_FlushRedirect);
 
 	if ( !strlen( sv_rconPassword->string ) ) {
@@ -654,14 +654,14 @@ void SVC_LoadWhitelist( void ) {
 	data = NULL;
 }
 
-void SVC_WhitelistAdr( netadr_t adr ) {
+void SVC_WhitelistAdr( const netadr_t *adr ) {
 	fileHandle_t f;
 
-	if (adr.type != NA_IP) {
+	if (adr->type != NA_IP) {
 		return;
 	}
 
-	if (!svc_whitelist.insert(adr.ipi).second) {
+	if (!svc_whitelist.insert(adr->ipi).second) {
 		return;
 	}
 
@@ -673,13 +673,13 @@ void SVC_WhitelistAdr( netadr_t adr ) {
 		return;
 	}
 
-	FS_Write(adr.ip, sizeof(adr.ip), f);
+	FS_Write(adr->ip, sizeof(adr->ip), f);
 	FS_FCloseFile(f);
 }
 
-static qboolean SVC_IsWhitelisted( netadr_t adr ) {
-	if (adr.type == NA_IP) {
-		return (qboolean)(svc_whitelist.find(adr.ipi) != svc_whitelist.end());
+static qboolean SVC_IsWhitelisted( const netadr_t *adr ) {
+	if (adr->type == NA_IP) {
+		return (qboolean)(svc_whitelist.find(adr->ipi) != svc_whitelist.end());
 	} else {
 		return qtrue;
 	}
@@ -695,7 +695,7 @@ Clients that are in the game can still send
 connectionless packets.
 =================
 */
-void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
+void SV_ConnectionlessPacket( const netadr_t *from, msg_t *msg ) {
 	static	leakyBucket_t	bucket;
 	static	int	dropped = 0;
 	static	int	lastMsg = 0;
@@ -783,7 +783,7 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 SV_ReadPackets
 =================
 */
-void SV_PacketEvent( netadr_t from, msg_t *msg ) {
+void SV_PacketEvent( const netadr_t *from, msg_t *msg ) {
 	int			i;
 	client_t	*cl;
 	int			qport;
@@ -805,7 +805,7 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		if (cl->state == CS_FREE) {
 			continue;
 		}
-		if ( !NET_CompareBaseAdr( from, cl->netchan.remoteAddress ) ) {
+		if ( !NET_CompareBaseAdr( from, &cl->netchan.remoteAddress ) ) {
 			continue;
 		}
 		// it is possible to have multiple clients from a single IP
@@ -817,9 +817,9 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		// the IP port can't be used to differentiate them, because
 		// some address translating routers periodically change UDP
 		// port assignments
-		if (cl->netchan.remoteAddress.port != from.port) {
+		if (cl->netchan.remoteAddress.port != from->port) {
 			Com_Printf( "SV_ReadPackets: fixing up a translated port\n" );
-			cl->netchan.remoteAddress.port = from.port;
+			cl->netchan.remoteAddress.port = from->port;
 		}
 
 		// make sure it is a valid, in sequence packet
@@ -1029,7 +1029,7 @@ void SV_CheckCvars( void ) {
 			for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
 				// if the client is on the same subnet as the server and we aren't running an
 				// internet public server, assume they don't need a rate choke
-				if (Sys_IsLANAddress(cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1) {
+				if (Sys_IsLANAddress(&cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1) {
 					cl->rate = 100000;	// lans should not rate limit
 				}
 				else {
@@ -1049,7 +1049,7 @@ void SV_CheckCvars( void ) {
 			for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
 				// if the client is on the same subnet as the server and we aren't running an
 				// internet public server, assume they don't need a rate choke
-				if (Sys_IsLANAddress(cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1) {
+				if (Sys_IsLANAddress(&cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1) {
 					cl->rate = 100000;	// lans should not rate limit
 				}
 				else {

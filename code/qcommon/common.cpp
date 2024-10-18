@@ -73,6 +73,8 @@ cvar_t	*com_G2Report;
 
 cvar_t *com_affinity;
 
+cvar_t	*com_timestamps;
+
 // com_speeds times
 int		time_game;
 int		time_frontend;		// renderer frontend time
@@ -137,6 +139,7 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 void QDECL Com_Printf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
+	const char *p;
 
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -153,26 +156,53 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	CL_ConsolePrint( msg );
 
-	// echo to dedicated console and early console
-	Sys_Print( msg );
+	p = msg;
+	while (*p) {
+		static qboolean	newLine = qtrue;
+		char			line[MAXPRINTMSG];
+		size_t			lineLen;
+
+		if (newLine && com_timestamps && com_timestamps->integer) {
+			time_t t = time( NULL );
+			struct tm *tms = localtime( &t );
+			Com_sprintf(line, sizeof(line), "%04i-%02i-%02i %02i:%02i:%02i ",
+				1900 + tms->tm_year, 1 + tms->tm_mon, tms->tm_mday, tms->tm_hour, tms->tm_min, tms->tm_sec);
+			lineLen = strlen(line);
+			newLine = qfalse;
+		} else {
+			if (const char *s = strchr(p, '\n')) {
+				lineLen = (size_t)(s - p + 1);
+				newLine = qtrue;
+			} else {
+				lineLen = strlen(p);
+			}
+
+			Com_Memcpy(line, p, lineLen);
+			line[lineLen] = '\0';
+			p += lineLen;
+		}
+
+		// echo to dedicated console and early console
+		Sys_Print( line );
 
 
 #ifdef OUTPUT_TO_BUILD_WINDOW
-	OutputDebugString(msg);
+		OutputDebugString(line);
 #endif
 
-	// logfile
-	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile && FS_Initialized() ) {
-			logfile = FS_FOpenFileWrite( "qconsole.log" );
-			if ( com_logfile->integer > 1 ) {
-				// force it to not buffer so we get valid
-				// data even if we are crashing
-				FS_ForceFlush(logfile);
+		// logfile
+		if ( com_logfile && com_logfile->integer ) {
+			if ( !logfile && FS_Initialized() ) {
+				logfile = FS_FOpenFileWrite( "qconsole.log" );
+				if ( com_logfile->integer > 1 ) {
+					// force it to not buffer so we get valid
+					// data even if we are crashing
+					FS_ForceFlush(logfile);
+				}
 			}
-		}
-		if ( logfile ) {
-			FS_Write(msg, strlen(msg), logfile);
+			if ( logfile ) {
+				FS_Write(line, strlen(line), logfile);
+			}
 		}
 	}
 }
@@ -1075,6 +1105,9 @@ void Com_Init( char *commandLine ) {
 
 		com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT);
 
+		// Init network before filesystem
+		NET_Init();
+
 		FS_InitFilesystem ();	//uses z_malloc
 		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 
@@ -1120,6 +1153,8 @@ void Com_Init( char *commandLine ) {
 		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE_ND );
+
+		com_timestamps = Cvar_Get( "com_timestamps", "1", CVAR_ARCHIVE_ND );
 
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);

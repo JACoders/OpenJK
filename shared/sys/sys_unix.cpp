@@ -32,6 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <libgen.h>
 #include <sched.h>
 #include <signal.h>
+#include <sys/resource.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
@@ -42,7 +43,11 @@ qboolean stdinIsATTY = qfalse;
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
 
-void Sys_PlatformInit( void )
+// Max open file descriptors. Mostly used by pk3 files with
+// MAX_SEARCH_PATHS limit.
+#define MAX_OPEN_FILES	4096
+
+void Sys_PlatformInit( int argc, char *argv[] )
 {
 	const char* term = getenv( "TERM" );
 
@@ -56,6 +61,25 @@ void Sys_PlatformInit( void )
 		stdinIsATTY = qtrue;
 	else
 		stdinIsATTY = qfalse;
+
+	// raise open file limit to allow more pk3 files
+	int retval;
+	struct rlimit rlim;
+	rlim_t maxfds = MAX_OPEN_FILES;
+
+	for (int i = 1; i + 1 < argc; i++) {
+		if (!Q_stricmp(argv[i], "-maxfds")) {
+			maxfds = atoi(argv[i + 1]);
+		}
+	}
+
+	getrlimit(RLIMIT_NOFILE, &rlim);
+	rlim.rlim_cur = Q_min(maxfds, rlim.rlim_max);
+	retval = setrlimit(RLIMIT_NOFILE, &rlim);
+
+	if (retval == -1) {
+		Com_Printf("Warning: Failed to raise open file limit. %s\n", strerror(errno));
+	}
 }
 
 void Sys_PlatformExit( void )
@@ -164,9 +188,11 @@ qboolean Sys_LowPhysicalMemory( void )
 Sys_Basename
 ==================
 */
-const char *Sys_Basename( char *path )
+const char *Sys_Basename( const char *path )
 {
-	return basename( path );
+	static char buf[ MAX_OSPATH ];
+	Q_strncpyz( buf, path, sizeof(buf) );
+	return basename( buf );
 }
 
 /*
@@ -174,9 +200,11 @@ const char *Sys_Basename( char *path )
 Sys_Dirname
 ==================
 */
-const char *Sys_Dirname( char *path )
+const char *Sys_Dirname( const char *path )
 {
-	return dirname( path );
+	static char buf[ MAX_OSPATH ];
+	Q_strncpyz( buf, path, sizeof(buf) );
+	return dirname( buf );
 }
 
 /*

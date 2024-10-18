@@ -68,7 +68,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire );
 void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire );
 void thermalDetonatorExplode( gentity_t *ent );
 void thermal_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int dFlags, int hitLoc );
-qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask, 
+qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask,
 				vec3_t velocity, qboolean tracePath, int ignoreEntNum, int enemyNum,
 				float minSpeed = 0, float maxSpeed = 0, float idealSpeed = 0, qboolean mustHit = qfalse );
 void WP_ThermalThink( gentity_t *ent );

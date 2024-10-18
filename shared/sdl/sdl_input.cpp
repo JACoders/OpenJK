@@ -253,6 +253,23 @@ static void IN_TranslateNumpad( SDL_Keysym *keysym, fakeAscii_t *key )
 
 /*
 ===============
+IN_ModTogglesConsole
+===============
+*/
+static qboolean IN_ModTogglesConsole( int mod ) {
+	switch (cl_consoleShiftRequirement->integer) {
+	case 0:
+		return qtrue;
+	case 2:
+		return (qboolean)!!(mod & KMOD_SHIFT);
+	case 1:
+	default:
+		return (qboolean)((mod & KMOD_SHIFT) || (Key_GetCatcher() & KEYCATCH_CONSOLE));
+	}
+}
+
+/*
+===============
 IN_TranslateSDLToJKKey
 ===============
 */
@@ -376,11 +393,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	{
 		if ( keysym->scancode == SDL_SCANCODE_GRAVE )
 		{
-			SDL_Keycode translated = SDL_GetKeyFromScancode( SDL_SCANCODE_GRAVE );
-
-			if ( (translated != SDLK_CARET) || (translated == SDLK_CARET && (keysym->mod & KMOD_SHIFT)) )
-			{
-				// Console keys can't be bound or generate characters
+			if ( IN_ModTogglesConsole(keysym->mod) ) {
 				key = A_CONSOLE;
 			}
 		}
@@ -842,7 +855,7 @@ static void IN_ProcessEvents( void )
 						uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
 						if( utf32 != 0 )
 						{
-							if( IN_IsConsoleKey( A_NULL, utf32 ) )
+							if( IN_IsConsoleKey( A_NULL, utf32 ) && !cl_consoleUseScanCode->integer )
 							{
 								Sys_QueEvent( 0, SE_KEY, A_CONSOLE, qtrue, 0, NULL );
 								Sys_QueEvent( 0, SE_KEY, A_CONSOLE, qfalse, 0, NULL );
@@ -1147,7 +1160,7 @@ void IN_Frame (void) {
 		// Console is down in windowed mode
 		IN_DeactivateMouse( );
 	}
-	else if( !cls.glconfig.isFullscreen && loading )
+	else if( !cls.glconfig.isFullscreen && loading && !cls.cursorActive )
 	{
 		// Loading in windowed mode
 		IN_DeactivateMouse( );

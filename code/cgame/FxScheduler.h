@@ -278,41 +278,41 @@ public:
 private:
 
 	// Lower level parsing utilities
-	bool ParseVector( const gsl::cstring_view& val, vec3_t min, vec3_t max );
-	bool ParseFloat( const gsl::cstring_view& val, float& min, float& max );
-	bool ParseGroupFlags( const gsl::cstring_view& val, int& flags );
+	bool ParseVector( const gsl::cstring_span& val, vec3_t min, vec3_t max );
+	bool ParseFloat( const gsl::cstring_span& val, float& min, float& max );
+	bool ParseGroupFlags( const gsl::cstring_span& val, int& flags );
 
 	// Base key processing
 	// Note that these all have their own parse functions in case it becomes important to do certain kinds
 	//	of validation specific to that type.
-	bool ParseMin( const gsl::cstring_view& val );
-	bool ParseMax( const gsl::cstring_view& val );
-	bool ParseDelay( const gsl::cstring_view& val );
-	bool ParseCount( const gsl::cstring_view& val );
-	bool ParseLife( const gsl::cstring_view& val );
-	bool ParseElasticity( const gsl::cstring_view& val );
-	bool ParseFlags( const gsl::cstring_view& val );
-	bool ParseSpawnFlags( const gsl::cstring_view& val );
+	bool ParseMin( const gsl::cstring_span& val );
+	bool ParseMax( const gsl::cstring_span& val );
+	bool ParseDelay( const gsl::cstring_span& val );
+	bool ParseCount( const gsl::cstring_span& val );
+	bool ParseLife( const gsl::cstring_span& val );
+	bool ParseElasticity( const gsl::cstring_span& val );
+	bool ParseFlags( const gsl::cstring_span& val );
+	bool ParseSpawnFlags( const gsl::cstring_span& val );
 
-	bool ParseOrigin1( const gsl::cstring_view& val );
-	bool ParseOrigin2( const gsl::cstring_view& val );
-	bool ParseRadius( const gsl::cstring_view& val );
-	bool ParseHeight( const gsl::cstring_view& val );
-	bool ParseWindModifier( const gsl::cstring_view& val );
-	bool ParseRotation( const gsl::cstring_view& val );
-	bool ParseRotationDelta( const gsl::cstring_view& val );
-	bool ParseAngle( const gsl::cstring_view& val );
-	bool ParseAngleDelta( const gsl::cstring_view& val );
-	bool ParseVelocity( const gsl::cstring_view& val );
-	bool ParseAcceleration( const gsl::cstring_view& val );
-	bool ParseGravity( const gsl::cstring_view& val );
-	bool ParseDensity( const gsl::cstring_view& val );
-	bool ParseVariance( const gsl::cstring_view& val );
+	bool ParseOrigin1( const gsl::cstring_span& val );
+	bool ParseOrigin2( const gsl::cstring_span& val );
+	bool ParseRadius( const gsl::cstring_span& val );
+	bool ParseHeight( const gsl::cstring_span& val );
+	bool ParseWindModifier( const gsl::cstring_span& val );
+	bool ParseRotation( const gsl::cstring_span& val );
+	bool ParseRotationDelta( const gsl::cstring_span& val );
+	bool ParseAngle( const gsl::cstring_span& val );
+	bool ParseAngleDelta( const gsl::cstring_span& val );
+	bool ParseVelocity( const gsl::cstring_span& val );
+	bool ParseAcceleration( const gsl::cstring_span& val );
+	bool ParseGravity( const gsl::cstring_span& val );
+	bool ParseDensity( const gsl::cstring_span& val );
+	bool ParseVariance( const gsl::cstring_span& val );
 
 	/// Case insensitive map from cstring_view to Value
 	template< typename Value >
-	using StringViewIMap = std::map< gsl::cstring_view, Value, Q::CStringViewILess >;
-	using ParseMethod = bool ( CPrimitiveTemplate::* )( const gsl::cstring_view& );
+	using StringViewIMap = std::map< gsl::cstring_span, Value, Q::CStringViewILess >;
+	using ParseMethod = bool ( CPrimitiveTemplate::* )( const gsl::cstring_span& );
 	// Group type processing
 	bool ParseGroup( const CGPGroup& grp, const StringViewIMap< ParseMethod >& parseMethods, gsl::czstring name );
 	bool ParseRGB( const CGPGroup& grp );
@@ -331,30 +331,30 @@ private:
 	bool ParsePlayFxStrings( const CGPProperty& grp );
 
 	// Group keys
-	bool ParseRGBStart( const gsl::cstring_view& val );
-	bool ParseRGBEnd( const gsl::cstring_view& val );
-	bool ParseRGBParm( const gsl::cstring_view& val );
-	bool ParseRGBFlags( const gsl::cstring_view& val );
+	bool ParseRGBStart( const gsl::cstring_span& val );
+	bool ParseRGBEnd( const gsl::cstring_span& val );
+	bool ParseRGBParm( const gsl::cstring_span& val );
+	bool ParseRGBFlags( const gsl::cstring_span& val );
 
-	bool ParseAlphaStart( const gsl::cstring_view& val );
-	bool ParseAlphaEnd( const gsl::cstring_view& val );
-	bool ParseAlphaParm( const gsl::cstring_view& val );
-	bool ParseAlphaFlags( const gsl::cstring_view& val );
+	bool ParseAlphaStart( const gsl::cstring_span& val );
+	bool ParseAlphaEnd( const gsl::cstring_span& val );
+	bool ParseAlphaParm( const gsl::cstring_span& val );
+	bool ParseAlphaFlags( const gsl::cstring_span& val );
 
-	bool ParseSizeStart( const gsl::cstring_view& val );
-	bool ParseSizeEnd( const gsl::cstring_view& val );
-	bool ParseSizeParm( const gsl::cstring_view& val );
-	bool ParseSizeFlags( const gsl::cstring_view& val );
+	bool ParseSizeStart( const gsl::cstring_span& val );
+	bool ParseSizeEnd( const gsl::cstring_span& val );
+	bool ParseSizeParm( const gsl::cstring_span& val );
+	bool ParseSizeFlags( const gsl::cstring_span& val );
 
-	bool ParseSize2Start( const gsl::cstring_view& val );
-	bool ParseSize2End( const gsl::cstring_view& val );
-	bool ParseSize2Parm( const gsl::cstring_view& val );
-	bool ParseSize2Flags( const gsl::cstring_view& val );
+	bool ParseSize2Start( const gsl::cstring_span& val );
+	bool ParseSize2End( const gsl::cstring_span& val );
+	bool ParseSize2Parm( const gsl::cstring_span& val );
+	bool ParseSize2Flags( const gsl::cstring_span& val );
 
-	bool ParseLengthStart( const gsl::cstring_view& val );
-	bool ParseLengthEnd( const gsl::cstring_view& val );
-	bool ParseLengthParm( const gsl::cstring_view& val );
-	bool ParseLengthFlags( const gsl::cstring_view& val );
+	bool ParseLengthStart( const gsl::cstring_span& val );
+	bool ParseLengthEnd( const gsl::cstring_span& val );
+	bool ParseLengthParm( const gsl::cstring_span& val );
+	bool ParseLengthFlags( const gsl::cstring_span& val );
 
 
 public:

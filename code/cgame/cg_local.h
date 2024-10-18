@@ -1231,4 +1231,6 @@ void	CG_ClearLightStyles( void );
 void	CG_RunLightStyles( void );
 void	CG_SetLightstyle( int i );
 
+int CG_MagicFontToReal( int menuFontIndex );
+
 #endif	//__CG_LOCAL_H__

@@ -137,7 +137,7 @@ int LAN_AddServer(int source, const char *name, const char *address) {
 	if (servers && *count < max) {
 		NET_StringToAdr( address, &adr );
 		for ( i = 0; i < *count; i++ ) {
-			if (NET_CompareAdr(servers[i].adr, adr)) {
+			if (NET_CompareAdr(&servers[i].adr, &adr)) {
 				break;
 			}
 		}
@@ -164,7 +164,7 @@ int LAN_AddFavAddr( const char *address ) {
 		}
 
 		for ( int i = 0; i < cls.numfavoriteservers; i++ ) {
-			if ( NET_CompareAdr( cls.favoriteServers[i].adr, adr ) ) {
+			if ( NET_CompareAdr( &cls.favoriteServers[i].adr, &adr ) ) {
 				return 0;
 			}
 		}
@@ -207,7 +207,7 @@ void LAN_RemoveServer(int source, const char *addr) {
 		netadr_t comp;
 		NET_StringToAdr( addr, &comp );
 		for (i = 0; i < *count; i++) {
-			if (NET_CompareAdr( comp, servers[i].adr)) {
+			if (NET_CompareAdr( &comp, &servers[i].adr)) {
 				int j = i;
 				while (j < *count - 1) {
 					Com_Memcpy(&servers[j], &servers[j+1], sizeof(servers[j]));
@@ -251,20 +251,20 @@ void LAN_GetServerAddressString( int source, int n, char *buf, int buflen ) {
 	switch (source) {
 		case AS_LOCAL :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.localServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( &cls.localServers[n].adr) , buflen );
 				return;
 			}
 			break;
 		case AS_MPLAYER:
 		case AS_GLOBAL :
 			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.globalServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( &cls.globalServers[n].adr) , buflen );
 				return;
 			}
 			break;
 		case AS_FAVORITES :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.favoriteServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( &cls.favoriteServers[n].adr) , buflen );
 				return;
 			}
 			break;
@@ -315,7 +315,7 @@ void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 		Info_SetValueForKey( info, "fdisable", va("%i", server->forceDisable ) );
 		Info_SetValueForKey( info, "game", server->game);
 		Info_SetValueForKey( info, "gametype", va("%i",server->gameType));
-		Info_SetValueForKey( info, "addr", NET_AdrToString(server->adr));
+		Info_SetValueForKey( info, "addr", NET_AdrToString(&server->adr));
 		Info_SetValueForKey( info, "g_humanplayers", va( "%i", server->humans ) );
 		Info_SetValueForKey( info, "bots", va( "%i", server->bots ) );
 //		Info_SetValueForKey( info, "sv_allowAnonymous", va("%i", server->allowAnonymous));

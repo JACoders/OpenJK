@@ -206,21 +206,43 @@ typedef struct {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
+	int			consoleFont;
+
+	// Cursor
+	qboolean	cursorActive;
+	qhandle_t	cursorShader;
+	int			cursorX;
+	int			cursorY;
+
+	// Engine menu
+	int			menuFont;
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768
 #define	NUM_CON_TIMES	4
 
+typedef union {
+	struct {
+		unsigned char	color;
+		char			character;
+	} f;
+	unsigned short	compare;
+} conChar_t;
+
 typedef struct {
 	qboolean	initialized;
 
-	short	text[CON_TEXTSIZE];
+	conChar_t	text[CON_TEXTSIZE];
 	int		current;		// line where next message will be printed
 	int		x;				// offset in current line for next print
 	int		display;		// bottom of console displays this line
 
 	int 	linewidth;		// characters across screen
+	int		rowwidth;		// timestamp, text and line wrap character
 	int		totallines;		// total lines in console scrollback
+
+	int		charWidth;		// Scaled console character width
+	int		charHeight;		// Scaled console character height
 
 	float	xadjust;		// for wide aspect screens
 	float	yadjust;
@@ -279,6 +301,7 @@ extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_consoleKeys;
 extern	cvar_t	*cl_consoleUseScanCode;
+extern	cvar_t	*cl_consoleShiftRequirement;
 
 //=================================================
 

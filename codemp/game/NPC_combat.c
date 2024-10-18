@@ -1494,7 +1494,7 @@ gentity_t *NPC_PickEnemy( gentity_t *closestTo, int enemyTeam, qboolean checkVis
 		minVis = VIS_360;
 	}
 
-	//OJKFIXME: care about clients other than 0
+	//OJKFIXME: clientnum 0
 	//OJKFIXME: choice[] is not size checked?
 	if( findPlayersFirst )
 	{//try to find a player first
@@ -2178,7 +2178,7 @@ qboolean NPC_EvaluateShot( int hit, qboolean glassOK )
 		return qfalse;
 	}
 
-	if ( hit == NPCS.NPC->enemy->s.number || (&g_entities[hit] != NULL && (g_entities[hit].r.svFlags&SVF_GLASS_BRUSH)) )
+	if ( hit == NPCS.NPC->enemy->s.number || (g_entities[hit].inuse && (g_entities[hit].r.svFlags&SVF_GLASS_BRUSH)) )
 	{//can hit enemy or will hit glass, so shoot anyway
 		return qtrue;
 	}
@@ -2452,7 +2452,7 @@ float IdealDistance ( gentity_t *self )
 	case WP_THERMAL:
 		ideal += 50;
 		break;
-        
+
 	case WP_SABER:
 	case WP_BRYAR_PISTOL:
 //	case WP_BLASTER_PISTOL:

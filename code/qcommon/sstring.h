@@ -61,7 +61,7 @@ public:
 		//strcpy(mStorage.data,s);
 		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
 	}
-	sstring( const gsl::cstring_view& v )
+	sstring( const gsl::cstring_span& v )
 	{
 		if( v.size() + 1 > sizeof( mStorage.data ) )
 		{

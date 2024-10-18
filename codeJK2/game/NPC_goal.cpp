@@ -30,17 +30,17 @@ extern qboolean FlyingCreature( gentity_t *ent );
 SetGoal
 */
 
-void SetGoal( gentity_t *goal, float rating ) 
+void SetGoal( gentity_t *goal, float rating )
 {
 	NPCInfo->goalEntity = goal;
 //	NPCInfo->goalEntityNeed = rating;
 	NPCInfo->goalTime = level.time;
 //	NAV_ClearLastRoute(NPC);
-	if ( goal ) 
+	if ( goal )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: %s @ %s (%f)\n", goal->classname, vtos( goal->currentOrigin), rating );
 	}
-	else 
+	else
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: NONE\n" );
 	}
@@ -51,26 +51,26 @@ void SetGoal( gentity_t *goal, float rating )
 NPC_SetGoal
 */
 
-void NPC_SetGoal( gentity_t *goal, float rating ) 
+void NPC_SetGoal( gentity_t *goal, float rating )
 {
-	if ( goal == NPCInfo->goalEntity ) 
+	if ( goal == NPCInfo->goalEntity )
 	{
 		return;
 	}
 
-	if ( !goal ) 
+	if ( !goal )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_ERROR, "NPC_SetGoal: NULL goal\n" );
 		return;
 	}
 
-	if ( goal->client ) 
+	if ( goal->client )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_ERROR, "NPC_SetGoal: goal is a client\n" );
 		return;
 	}
 
-	if ( NPCInfo->goalEntity ) 
+	if ( NPCInfo->goalEntity )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: push %s\n", NPCInfo->goalEntity->classname );
 		NPCInfo->lastGoalEntity = NPCInfo->goalEntity;
@@ -85,11 +85,11 @@ void NPC_SetGoal( gentity_t *goal, float rating )
 NPC_ClearGoal
 */
 
-void NPC_ClearGoal( void ) 
+void NPC_ClearGoal( void )
 {
 	gentity_t	*goal;
 
-	if ( !NPCInfo->lastGoalEntity ) 
+	if ( !NPCInfo->lastGoalEntity )
 	{
 		SetGoal( NULL, 0.0 );
 		return;
@@ -98,7 +98,7 @@ void NPC_ClearGoal( void )
 	goal = NPCInfo->lastGoalEntity;
 	NPCInfo->lastGoalEntity = NULL;
 //	NAV_ClearLastRoute(NPC);
-	if ( goal->inuse && !(goal->s.eFlags & EF_NODRAW) ) 
+	if ( goal->inuse && !(goal->s.eFlags & EF_NODRAW) )
 	{
 //		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_ClearGoal: pop %s\n", goal->classname );
 		SetGoal( goal, 0 );//, NPCInfo->lastGoalEntityNeed
@@ -156,7 +156,7 @@ ReachedGoal
 id removed checks against waypoints and is now checking surfaces
 */
 //qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, gentity_t *goal, qboolean flying );
-qboolean ReachedGoal( gentity_t *goal ) 
+qboolean ReachedGoal( gentity_t *goal )
 {
 	//FIXME: For script waypoints, need a special check
 /*
@@ -170,18 +170,18 @@ qboolean ReachedGoal( gentity_t *goal )
 		return NAV_HitNavGoal( NPC->currentOrigin, NPC->mins, NPC->maxs, goal, FlyingCreature( NPC ) );
 	}
 
-	if ( goal == NPCInfo->tempGoal && !(goal->svFlags & SVF_NAVGOAL)) 
+	if ( goal == NPCInfo->tempGoal && !(goal->svFlags & SVF_NAVGOAL))
 	{//MUST touch waypoints, even if moving to it
 		//This is odd, it just checks to see if they are on the same
 		//surface and the tempGoal in in the FOV - does NOT check distance!
 		// are we on same surface?
-		
+
 		//FIXME: NPC->waypoint reset every frame, need to find it first
 		//Should we do that here?  (Still will do it only once per frame)
 		if ( NPC->waypoint >= 0 && NPC->waypoint < num_waypoints )
 		{
 			goalWpNum = NAV_FindWaypointAt ( goal->currentOrigin );
-			if ( NPC->waypoint != goalWpNum ) 
+			if ( NPC->waypoint != goalWpNum )
 			{
 				return qfalse;
 			}
@@ -193,7 +193,7 @@ qboolean ReachedGoal( gentity_t *goal )
 		// is it in our FOV
 		vectoangles ( vec, angles );
 		delta = AngleDelta ( NPC->client->ps.viewangles[YAW], angles[YAW] );
-		if ( fabs ( delta ) > NPCInfo->stats.hfov ) 
+		if ( fabs ( delta ) > NPCInfo->stats.hfov )
 		{
 			return qfalse;
 		}
@@ -219,16 +219,16 @@ qboolean ReachedGoal( gentity_t *goal )
 		return qfalse;
 	}
 */
-	if ( NPCInfo->aiFlags & NPCAI_TOUCHED_GOAL ) 
+	if ( NPCInfo->aiFlags & NPCAI_TOUCHED_GOAL )
 	{
 		NPCInfo->aiFlags &= ~NPCAI_TOUCHED_GOAL;
 		return qtrue;
 	}
 /*
-	if ( goal->s.eFlags & EF_NODRAW ) 
+	if ( goal->s.eFlags & EF_NODRAW )
 	{
 		goalWpNum = NAV_FindWaypointAt( goal->currentOrigin );
-		if ( NPC->waypoint == goalWpNum ) 
+		if ( NPC->waypoint == goalWpNum )
 		{
 			return qtrue;
 		}
@@ -238,7 +238,7 @@ qboolean ReachedGoal( gentity_t *goal )
 	if(goal->client && goal->health <= 0)
 	{//trying to get to dead guy
 		goalWpNum = NAV_FindWaypointAt( goal->currentOrigin );
-		if ( NPC->waypoint == goalWpNum ) 
+		if ( NPC->waypoint == goalWpNum )
 		{
 			VectorSubtract(NPC->currentOrigin, goal->currentOrigin, vec);
 			vec[2] = 0;
@@ -249,12 +249,12 @@ qboolean ReachedGoal( gentity_t *goal )
 			}
 		}
 	}
-*/	
+*/
 	return NAV_HitNavGoal( NPC->currentOrigin, NPC->mins, NPC->maxs, goal->currentOrigin, NPCInfo->goalRadius, FlyingCreature( NPC ) );
 }
 
 /*
-static gentity_t *UpdateGoal( void ) 
+static gentity_t *UpdateGoal( void )
 
 Id removed a lot of shit here... doesn't seem to handle waypoints independantly of goalentity
 
@@ -263,11 +263,11 @@ In fact, doesn't seem to be any waypoint info on entities at all any more?
 MCG - Since goal is ALWAYS goalEntity, took out a lot of sending goal entity pointers around for no reason
 */
 
-gentity_t *UpdateGoal( void ) 
+gentity_t *UpdateGoal( void )
 {
 	gentity_t	*goal;
 
-	if ( !NPCInfo->goalEntity ) 
+	if ( !NPCInfo->goalEntity )
 	{
 		return NULL;
 	}
@@ -280,7 +280,7 @@ gentity_t *UpdateGoal( void )
 
 	goal = NPCInfo->goalEntity;
 
-	if ( ReachedGoal( goal ) ) 
+	if ( ReachedGoal( goal ) )
 	{
 		NPC_ReachedGoal();
 		goal = NULL;//so they don't keep trying to move to it

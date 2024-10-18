@@ -49,7 +49,7 @@ void SFxHelper::Print( const char *msg, ... )
 	va_start( argptr, msg );
 	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end( argptr );
- 
+
 	gi.Printf( text );
 
 #endif
@@ -108,7 +108,7 @@ void SFxHelper::PlaySound( vec3_t org, int entityNum, int entchannel, int sfxHan
 }
 
 //------------------------------------------------------
-void SFxHelper::Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, 
+void SFxHelper::Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max,
 						vec3_t end, int skipEntNum, int flags )
 {
 	CG_Trace( tr, start, min, max, end, skipEntNum, flags );
@@ -121,21 +121,21 @@ void SFxHelper::AddFxToScene( refEntity_t *ent )
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterShader( const gsl::cstring_view& shader )
+int SFxHelper::RegisterShader( const gsl::cstring_span& shader )
 {
 	// TODO: it would be nice to change the ABI here to allow for passing of string views
 	return cgi_R_RegisterShader( std::string( shader.begin(), shader.end() ).c_str() );
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterSound( const gsl::cstring_view& sound )
+int SFxHelper::RegisterSound( const gsl::cstring_span& sound )
 {
 	// TODO: it would be nice to change the ABI here to allow for passing of string views
 	return cgi_S_RegisterSound( std::string( sound.begin(), sound.end() ).c_str() );
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterModel( const gsl::cstring_view& model )
+int SFxHelper::RegisterModel( const gsl::cstring_span& model )
 {
 	return cgi_R_RegisterModel( std::string( model.begin(), model.end() ).c_str() );
 }

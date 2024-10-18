@@ -763,6 +763,30 @@ bool COrientedParticle::Update()
 //----------------------------
 
 //----------------------------
+bool CLine::Cull( void )
+{
+	vec3_t	dir;
+
+	VectorSubtract( mOrigin1, cg.refdef.vieworg, dir );
+
+	//Check if it's in front of the viewer
+	if ( (DotProduct( cg.refdef.viewaxis[0], dir )) >= 0 )
+	{
+		return false;	//don't cull
+	}
+
+	VectorSubtract( mOrigin2, cg.refdef.vieworg, dir );
+
+	//Check if it's in front of the viewer
+	if ( (DotProduct( cg.refdef.viewaxis[0], dir )) >= 0 )
+	{
+		return false;
+	}
+
+	return true; //all points behind viewer
+}
+
+//----------------------------
 void CLine::Draw()
 {
 	if ( mFlags & FX_DEPTH_HACK )

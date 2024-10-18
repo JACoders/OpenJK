@@ -44,7 +44,7 @@ namespace FS
 		{
 			return _buffer != nullptr;
 		}
-		gsl::cstring_view view() const NOEXCEPT
+		gsl::cstring_span view() const NOEXCEPT
 		{
 			return{ begin(), end() };
 		}
@@ -87,7 +87,7 @@ namespace FS
 		{
 			return static_cast< std::size_t >( _end - begin() );
 		}
-		
+
 	private:
 		// TODO: this should really be const; it's a matter of making FS_ListFiles' result const.
 		char** _begin = nullptr;

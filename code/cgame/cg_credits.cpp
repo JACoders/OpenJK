@@ -216,7 +216,7 @@ static bool SortBySurname(const StringAndSize_t &str1, const StringAndSize_t &st
 {
 	std::string::const_reverse_iterator rstart1 = std::find_if(str1.str.rbegin(), str1.str.rend(), isspace);
 	std::string::const_reverse_iterator rstart2 = std::find_if(str2.str.rbegin(), str2.str.rend(), isspace);
-	
+
 
 	return Q_stricmp(&*rstart1.base(), &*rstart2.base()) < 0;
 }

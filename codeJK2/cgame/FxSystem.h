@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 extern vmCvar_t	fx_debug;
 extern vmCvar_t	fx_freeze;
 
-extern void	CG_CalcEntityLerpPositions( centity_t * );	
+extern void	CG_CalcEntityLerpPositions( centity_t * );
 
 struct SFxHelper
 {
@@ -59,7 +59,7 @@ struct SFxHelper
 
 	// Sound
 	void	PlaySound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-	int		RegisterSound( const gsl::cstring_view& sound );
+	int		RegisterSound( const gsl::cstring_span& sound );
 
 	// Physics/collision
 	void	Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end, int skipEntNum, int flags );
@@ -67,8 +67,8 @@ struct SFxHelper
 	void	AddFxToScene( refEntity_t *ent );
 	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue );
 
-	int		RegisterShader( const gsl::cstring_view& shader );
-	int		RegisterModel( const gsl::cstring_view& model );
+	int		RegisterShader( const gsl::cstring_span& shader );
+	int		RegisterModel( const gsl::cstring_span& model );
 
 	void	AddPolyToScene( int shader, int count, polyVert_t *verts );
 

@@ -123,12 +123,12 @@ bool Sys_RandomBytes( byte *string, int len );
 
 void	Sys_SetErrorText( const char *text );
 
-void	Sys_SendPacket( int length, const void *data, netadr_t to );
+void	Sys_SendPacket( int length, const void *data, const netadr_t *to );
 
 qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
 //Does NOT parse port numbers, only base addresses.
 
-qboolean	Sys_IsLANAddress (netadr_t adr);
+qboolean	Sys_IsLANAddress (const netadr_t *adr);
 void		Sys_ShowIP(void);
 
 qboolean	Sys_Mkdir( const char *path );
@@ -141,8 +141,8 @@ char    *Sys_DefaultAppPath(void);
 #endif
 
 char	*Sys_DefaultHomePath(void);
-const char *Sys_Dirname( char *path );
-const char *Sys_Basename( char *path );
+const char *Sys_Dirname( const char *path );
+const char *Sys_Basename( const char *path );
 
 bool Sys_PathCmp( const char *path1, const char *path2 );
 

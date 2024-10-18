@@ -49,9 +49,9 @@ static int TIMER_GetCount(int num)
 		count++;
 		p = p->next;
 	}
-	
+
 	return count;
-}	
+}
 
 
 /*
@@ -184,7 +184,7 @@ void TIMER_Save( void )
 		saved_game.write_chunk<int32_t>(
 			INT_ID('T', 'I', 'M', 'E'),
 			numTimers);
-	
+
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
 
@@ -253,7 +253,7 @@ void TIMER_Load( void )
 			saved_game.read_chunk<int32_t>(
 				INT_ID('T', 'S', 'L', 'N'),
 				length);
-			
+
 			if ( length >= 1024 ) {
 				assert( 0 );
 				continue;
@@ -325,9 +325,9 @@ gtimer_t *TIMER_GetExisting(int num, const char *identifier)
 
 		p = p->next;
 	}
-	
+
 	return NULL;
-}	
+}
 
 
 
@@ -389,8 +389,8 @@ qboolean TIMER_Done( gentity_t *ent, const char *identifier )
 -------------------------
 TIMER_Done2
 
-Returns false if timer has been 
-started but is not done...or if 
+Returns false if timer has been
+started but is not done...or if
 timer was never started
 -------------------------
 */

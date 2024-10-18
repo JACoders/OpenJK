@@ -50,7 +50,7 @@ void NPC_Remote_Precache(void)
 NPC_Remote_Pain
 -------------------------
 */
-void NPC_Remote_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Remote_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
 {
 	SaveNPCGlobals();
 	SetNPCGlobals( self );
@@ -66,7 +66,7 @@ Remote_MaintainHeight
 -------------------------
 */
 void Remote_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -89,7 +89,7 @@ void Remote_MaintainHeight( void )
 			TIMER_Set( NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPC->enemy->currentOrigin[2] +  Q_irand( 0, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2]; 
+			dif = (NPC->enemy->currentOrigin[2] +  Q_irand( 0, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 2 )
@@ -259,7 +259,7 @@ void Remote_Fire (void)
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );
 	VectorCopy( NPC->currentOrigin, muzzle1 );
-	
+
 	VectorSubtract (enemy_org1, muzzle1, delta1);
 
 	vectoangles ( delta1, angleToEnemy1 );
@@ -315,7 +315,7 @@ void Remote_Attack( void )
 	if ( TIMER_Done(NPC,"spin") )
 	{
 		TIMER_Set( NPC, "spin", Q_irand( 250, 1500 ) );
-		NPCInfo->desiredYaw += Q_irand( -200, 200 ); 
+		NPCInfo->desiredYaw += Q_irand( -200, 200 );
 	}
 	// Always keep a good height off the ground
 	Remote_MaintainHeight();
@@ -328,7 +328,7 @@ void Remote_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 //	distance_e	distRate	= ( distance > MIN_MELEE_RANGE_SQR ) ? DIST_LONG : DIST_MELEE;
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	float		idealDist	= MIN_DISTANCE_SQR+(MIN_DISTANCE_SQR*Q_flrand( 0, 1 ));

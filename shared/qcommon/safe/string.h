@@ -16,20 +16,20 @@ namespace Q
 		EQ = 0,
 		GT = 1
 	};
-	Ordering stricmp( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs ) NOEXCEPT;
+	Ordering stricmp( const gsl::cstring_span& lhs, const gsl::cstring_span& rhs ) NOEXCEPT;
 	/// Case-insensitive less comparator for cstring_view; e.g. for case insensitive std::map
 	struct CStringViewILess
 	{
-		bool operator()( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs ) const NOEXCEPT
+		bool operator()( const gsl::cstring_span& lhs, const gsl::cstring_span& rhs ) const NOEXCEPT
 		{
 			return stricmp( lhs, rhs ) == Ordering::LT;
 		}
 	};
 
-	gsl::cstring_view substr( const gsl::cstring_view& lhs, const std::string::size_type pos = 0, const std::string::size_type count = std::string::npos );
+	gsl::cstring_span substr( const gsl::cstring_span& lhs, const std::string::size_type pos = 0, const std::string::size_type count = std::string::npos );
 
-	int svtoi( const gsl::cstring_view& view );
-	float svtof( const gsl::cstring_view& view );
+	int svtoi( const gsl::cstring_span& view );
+	float svtof( const gsl::cstring_span& view );
 }
 
 // operator<< overloads

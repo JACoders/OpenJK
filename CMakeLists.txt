@@ -1,17 +1,17 @@
 #============================================================================
 # Copyright (C) 2013 - 2018, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
@@ -39,6 +39,8 @@ option(BuildMPDed "Whether to create projects for the MP dedicated server (openj
 option(BuildMPGame "Whether to create projects for the MP server-side gamecode (jampgamex86.dll)" ON)
 option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" ON)
 option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
+option(BuildMPRend2 "Whether to create projects for the EXPERIMENTAL MP rend2 renderer (rd-rend2_x86.dll)" ON)
+
 option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.exe)" ON)
 option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" ON)
 option(BuildSPRdVanilla "Whether to create projects for the SP default renderer (rdsp-vanilla_x86.dll)" ON)
@@ -64,7 +66,7 @@ set(UseInternalPNGDefault    OFF)
 set(UseInternalJPEGDefault   OFF)
 set(UseInternalSDL2Default   OFF)
 
-if(WIN32)
+if(UseInternalLibs OR WIN32)
   set(UseInternalOpenALDefault ON)
   set(UseInternalZlibDefault   ON)
   set(UseInternalPNGDefault    ON)
@@ -94,6 +96,14 @@ endif()
 #=============================================================================
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+	add_custom_target(
+		copy-compile-commands ALL
+		${CMAKE_COMMAND} -E copy_if_different
+		${CMAKE_BINARY_DIR}/compile_commands.json
+		${CMAKE_CURRENT_LIST_DIR})
+endif()
+
 #=============================================================================
 #
 # Architecture/OS defines
@@ -112,7 +122,10 @@ if(WIN32)
 	endif()
 else()
 	set(X86 OFF)
-	if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+	if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
+		set(Architecture "arm64")
+		add_definitions(-DPNG_ARM_NEON_OPT=0)
+	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
 		set(Architecture "arm")
 	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^i.86$")
 		set(X86 ON)
@@ -154,6 +167,7 @@ set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
 set(MPCGame "cgame${Architecture}")
 set(MPUI "ui${Architecture}")
+set(MPRend2 "rd-rend2_${Architecture}")
 set(JK2SPEngine "openjo_sp.${Architecture}")
 set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
@@ -188,11 +202,11 @@ if(WIN64)
 endif()
 
 if (APPLE)
-	set(SharedDefines "MACOS_X")
+	set(SharedDefines ${SharedDefines} "MACOS_X")
 endif()
 
 if (NOT WIN32 AND NOT APPLE)
-	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
+	set(SharedDefines ${SharedDefines} "ARCH_STRING=\"${Architecture}\"")
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "BSD")
@@ -243,7 +257,7 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" M
 
 	# enable somewhat modern C++
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	
+
 	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")

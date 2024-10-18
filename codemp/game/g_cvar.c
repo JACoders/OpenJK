@@ -21,18 +21,42 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <inttypes.h>
+
+#include "bg_public.h"
 #include "g_local.h"
+#include "game/bg_public.h"
 
 //
 // Cvar callbacks
 //
 
-/*
-static void CVU_Derpity( void ) {
-	// ...
-}
-*/
+static void UpdateLegacyFixesConfigstring( legacyFixes_t legacyFix, qboolean enabled ) {
+	char sLegacyFixes[32];
+	trap->GetConfigstring(CS_LEGACY_FIXES, sLegacyFixes, sizeof(sLegacyFixes));
 
+	uint32_t legacyFixes = strtoul(sLegacyFixes, NULL, 0);
+	if (enabled) {
+		legacyFixes |= (1 << legacyFix);
+	} else {
+		legacyFixes &= ~(1 << legacyFix);
+	}
+	trap->SetConfigstring(CS_LEGACY_FIXES, va("%" PRIu32, legacyFixes));
+}
+
+static void CVU_FixSaberMoveData(void) {
+	BG_FixSaberMoveData();
+	UpdateLegacyFixesConfigstring(LEGACYFIX_SABERMOVEDATA, g_fixSaberMoveData.integer);
+}
+
+static void CVU_FixRunWalkAnims(void) {
+	UpdateLegacyFixesConfigstring(LEGACYFIX_RUNWALKANIMS, g_fixRunWalkAnims.integer);
+}
+
+static void CVU_FixWeaponAttackAnim(void) {
+	BG_FixWeaponAttackAnim();
+	UpdateLegacyFixesConfigstring(LEGACYFIX_WEAPONATTACKANIM, g_fixWeaponAttackAnim.integer);
+}
 
 //
 // Cvar table

@@ -42,26 +42,14 @@ void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time
 	// Getting the bolt here
 	if ( inMouth )
 	{//in mouth
-	#if defined(_GAME)
 		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "jaw_bone");
-	#elif defined(_CGAME)
-		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "jaw_bone");
-	#endif
 	}
 	else
 	{//in right hand
-	#if defined(_GAME)
 		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "*r_hand");
-	#elif defined(_CGAME)
-		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "*r_hand");
-	#endif
 	}
 	VectorSet( rancAngles, 0, rancYaw, 0 );
-#if defined(_GAME)
 	trap->G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
-#elif defined(_CGAME)
-	trap->G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
-#endif
 	// Storing ent position, bolt position, and bolt axis
 	if ( out_origin )
 	{
@@ -112,11 +100,7 @@ void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time
 #define	MAX_VARIANTS 8
 qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, char *returnSurfName, int returnSize )
 {
-#if defined(_GAME)
 	if ( !ghoul2 || !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
-#elif defined(_CGAME)
-	if ( !ghoul2 || !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
-#endif
 	{//see if the basic name without variants is on
 		Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 		return qtrue;
@@ -127,11 +111,7 @@ qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, 
 		for ( i = 0; i < MAX_VARIANTS; i++ )
 		{
 			Com_sprintf( returnSurfName, returnSize, "%s%c", rootSurfName, 'a'+i );
-		#if defined(_GAME)
 			if ( !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
-		#elif defined(_CGAME)
-			if ( !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
-		#endif
 			{
 				return qtrue;
 			}

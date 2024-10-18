@@ -109,7 +109,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize ) {
 	assert(src);
 	assert(dest);
 	assert(destsize);
-	
+
 	strncpy( dest, src, destsize-1 );
 	dest[destsize-1] = 0;
 }
@@ -264,6 +264,27 @@ int Q_PrintStrlen( const char *string ) {
 	}
 
 	return len;
+}
+
+int Q_PrintStrLenTo(const char *str, int chars, char *color) {
+	int		offset = 0;
+	char	lastColor = 0;
+	int		i;
+
+	for (i = 0; i < chars && str[i]; i++) {
+		if (Q_IsColorString(&str[i])) {
+			i++;
+			lastColor = str[i];
+		} else {
+			offset++;
+		}
+	}
+
+	if (color) {
+		*color = lastColor;
+	}
+
+	return offset;
 }
 
 

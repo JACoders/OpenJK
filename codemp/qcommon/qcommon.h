@@ -136,23 +136,23 @@ void		NET_Shutdown( void );
 void		NET_Restart_f( void );
 void		NET_Config( qboolean enableNetworking );
 
-void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
-void		NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
-void		NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
+void		NET_SendPacket (netsrc_t sock, int length, const void *data, const netadr_t *to);
+void		NET_OutOfBandPrint( netsrc_t net_socket, const netadr_t *adr, const char *format, ...);
+void		NET_OutOfBandData( netsrc_t sock, const netadr_t *adr, byte *format, int len );
 
-qboolean	NET_CompareAdr (netadr_t a, netadr_t b);
-qboolean	NET_CompareBaseAdrMask( netadr_t a, netadr_t b, int netmask );
-qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b);
-qboolean	NET_IsLocalAddress (netadr_t adr);
-const char	*NET_AdrToString (netadr_t a);
+qboolean	NET_CompareAdr (const netadr_t *a, const netadr_t *b);
+qboolean	NET_CompareBaseAdrMask( const netadr_t *a, const netadr_t *b, unsigned int netmask );
+qboolean	NET_CompareBaseAdr (const netadr_t *a, const netadr_t *b);
+qboolean	NET_IsLocalAddress (const netadr_t *adr);
+const char	*NET_AdrToString (const netadr_t *a);
 qboolean	NET_StringToAdr ( const char *s, netadr_t *a);
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
 void		NET_Sleep(int msec);
 
-void		Sys_SendPacket( int length, const void *data, netadr_t to );
+void		Sys_SendPacket( int length, const void *data, const netadr_t *to );
 //Does NOT parse port numbers, only base addresses.
 qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
-qboolean	Sys_IsLANAddress (netadr_t adr);
+qboolean	Sys_IsLANAddress (const netadr_t *adr);
 void		Sys_ShowIP(void);
 
 
@@ -195,7 +195,7 @@ typedef struct netchan_s {
 } netchan_t;
 
 void Netchan_Init( int qport );
-void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport );
+void Netchan_Setup( netsrc_t sock, netchan_t *chan, const netadr_t *adr, int qport );
 
 void Netchan_Transmit( netchan_t *chan, int length, const byte *data );
 void Netchan_TransmitNextFragment( netchan_t *chan );
@@ -577,10 +577,10 @@ issues.
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
-void	FS_Shutdown( qboolean closemfp );
+void	FS_Shutdown( qboolean closemfp, qboolean keepModuleFiles = qfalse );
 
 qboolean	FS_ConditionalRestart( int checksumFeed );
-void	FS_Restart( int checksumFeed );
+void	FS_Restart( int checksumFeed, qboolean inPlace = qfalse );
 // shutdown and restart the filesystem so changes to fs_gamedir can take effect
 
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
@@ -706,6 +706,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
 
 qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
+const char *FS_MV_VerifyDownloadPath(const char *pk3file);
 
 
 /*
@@ -763,7 +764,7 @@ int			Com_Filter(char *filter, char *name, int casesensitive);
 int			Com_FilterPath(char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_t *qtime);
 qboolean	Com_SafeMode( void );
-void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
+void		Com_RunAndTimeServerPacket(const netadr_t *evFrom, msg_t *buf);
 
 void		Com_StartupVariable( const char *match );
 // checks for and removes command line "+set var arg" constructs
@@ -935,7 +936,7 @@ void CL_MouseEvent( int dx, int dy, int time );
 
 void CL_JoystickEvent( int axis, int value, int time );
 
-void CL_PacketEvent( netadr_t from, msg_t *msg );
+void CL_PacketEvent( const netadr_t *from, msg_t *msg );
 
 void CL_ConsolePrint( const char *text );
 
@@ -983,7 +984,7 @@ void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
 void SV_Init( void );
 void SV_Shutdown( char *finalmsg );
 void SV_Frame( int msec );
-void SV_PacketEvent( netadr_t from, msg_t *msg );
+void SV_PacketEvent( const netadr_t *from, msg_t *msg );
 int SV_FrameMsec( void );
 qboolean SV_GameCommand( void );
 
@@ -1034,9 +1035,9 @@ void	Huff_Decompress(msg_t *buf, int offset);
 void	Huff_Init(huffman_t *huff);
 void	Huff_addRef(huff_t* huff, byte ch);
 int		Huff_Receive (node_t *node, int *ch, byte *fin);
-void	Huff_transmit (huff_t *huff, int ch, byte *fout);
-void	Huff_offsetReceive (node_t *node, int *ch, byte *fin, int *offset);
-void	Huff_offsetTransmit (huff_t *huff, int ch, byte *fout, int *offset);
+void	Huff_transmit (huff_t *huff, int ch, byte *fout, int maxoffset);
+void	Huff_offsetReceive (node_t *node, int *ch, byte *fin, int *offset, int maxoffset);
+void	Huff_offsetTransmit (huff_t *huff, int ch, byte *fout, int *offset, int maxoffset);
 void	Huff_putBit( int bit, byte *fout, int *offset);
 int		Huff_getBit( byte *fout, int *offset);
 

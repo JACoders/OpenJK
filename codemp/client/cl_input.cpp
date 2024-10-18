@@ -922,7 +922,9 @@ CL_MouseEvent
 =================
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
-	if (g_clAutoMapMode && cls.cgameStarted)
+	if (cls.cursorActive) {
+		CL_UpdateCursorPosition( dx, dy );
+	} else if (g_clAutoMapMode && cls.cgameStarted)
 	{ //automap input
 		autoMapInput_t *data = (autoMapInput_t *)cl.mSharedMemory;
 
@@ -1449,7 +1451,7 @@ qboolean CL_ReadyToSendPacket( void ) {
 	}
 
 	// send every frame for LAN
-	if ( cl_lanForcePackets->integer && Sys_IsLANAddress( clc.netchan.remoteAddress ) ) {
+	if ( cl_lanForcePackets->integer && Sys_IsLANAddress( &clc.netchan.remoteAddress ) ) {
 		return qtrue;
 	}
 

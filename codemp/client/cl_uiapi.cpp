@@ -271,7 +271,7 @@ static qboolean CL_G2API_HaveWeGhoul2Models( void *ghoul2) {
 static qboolean CL_G2API_GetBoltMatrix( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
 	if ( !ghoul2 ) {
 		return qfalse;
-	
+
 	}
 	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }

@@ -34,6 +34,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../qcommon/strippublic.h"
 #endif
 
+cvar_t *r_fontSharpness;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // This file is shared in the single and multiplayer codebases, so be CAREFUL WHAT YOU ADD/CHANGE!!!!!
@@ -218,6 +220,8 @@ struct ThaiCodes_t
 #define GLYPH_MAX_THAI_SHADERS		3
 #define GLYPH_MAX_ASIAN_SHADERS		4	// this MUST equal the larger of the above defines
 
+#define MAX_FONT_VARIANTS 8
+
 class CFontInfo
 {
 private:
@@ -260,6 +264,11 @@ public:
 #endif
 	bool			m_bIsFakeAlienLanguage;	// ... if true, don't process as MBCS or override as SBCS etc
 
+	CFontInfo		*m_variants[MAX_FONT_VARIANTS];
+	int				m_numVariants;
+	int				m_handle;
+	qboolean		m_isVariant;
+
 	CFontInfo(const char *fontName);
 //	CFontInfo(int fill) { memset(this, fill, sizeof(*this)); }	// wtf?
 	~CFontInfo(void) {}
@@ -284,6 +293,12 @@ public:
 	bool AsianGlyphsAvailable(void) const { return !!(m_hAsianShaders[0]); }
 
 	void UpdateAsianIfNeeded( bool bForceReEval = false);
+
+	int GetHandle();
+
+	void AddVariant(CFontInfo *variant);
+	int GetNumVariants();
+	CFontInfo *GetVariant(int index);
 };
 
 //================================================
@@ -979,6 +994,11 @@ qboolean Language_UsesSpaces(void)
 //  If path present, it's a special language hack for SBCS override languages, eg: "lcd/russian", which means
 //	  just treat the file as "russian", but with the "lcd" part ensuring we don't find a different registered russian font
 //
+static const char *FontDatPath( const char *_fontName ) {
+	static char fontName[MAX_QPATH];
+	sprintf( fontName,"fonts/%s.fontdat",COM_SkipPath(const_cast<char*>(_fontName)) );	// COM_SkipPath should take a const char *, but it's just possible people use it as a char * I guess, so I have to hack around like this <groan>
+	return fontName;
+}
 CFontInfo::CFontInfo(const char *_fontName)
 {
 	int			len, i;
@@ -987,8 +1007,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 
 	// remove any special hack name insertions...
 	//
-	char fontName[MAX_QPATH];
-	sprintf(fontName,"fonts/%s.fontdat",COM_SkipPath(const_cast<char*>(_fontName)));	// COM_SkipPath should take a const char *, but it's just possible people use it as a char * I guess, so I have to hack around like this <groan>
+	const char *fontName = FontDatPath( _fontName );
 
 	// clear some general things...
 	//
@@ -1000,6 +1019,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 	m_fAltSBCSFontScaleFactor = -1;
 #endif
 	m_bIsFakeAlienLanguage = !strcmp(_fontName,"aurabesh");	// dont try and make SBCS or asian overrides for this
+	m_isVariant = qfalse;
 
 	len = ri.FS_ReadFile(fontName, NULL);
 	if (len == sizeof(dfontdat_t))
@@ -1056,6 +1076,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 
 	// finished...
 	g_vFontArray.resize(g_iCurrentFontIndex + 1);
+	m_handle = g_iCurrentFontIndex;
 	g_vFontArray[g_iCurrentFontIndex++] = this;
 
 
@@ -1137,6 +1158,24 @@ CFontInfo::CFontInfo(const char *_fontName)
 			}
 		}
 	}
+
+	m_numVariants = 0;
+}
+
+int CFontInfo::GetHandle() {
+	return m_handle;
+}
+
+void CFontInfo::AddVariant(CFontInfo * replacer) {
+	m_variants[m_numVariants++] = replacer;
+}
+
+int CFontInfo::GetNumVariants() {
+	return m_numVariants;
+}
+
+CFontInfo *CFontInfo::GetVariant(int index) {
+	return m_variants[index];
 }
 
 void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
@@ -1246,7 +1285,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 					case eTaiwanese:
 					case eJapanese:
 #ifndef JK2_MODE
-					case eChinese:	
+					case eChinese:
 #endif
 									m_AsianGlyph.horizAdvance	= iCappedHeight + 3;	// need to force some spacing for these
 //					case eThai:	// this is done dynamically elsewhere, since Thai glyphs are variable width
@@ -1287,6 +1326,30 @@ static CFontInfo *GetFont_Actual(int index)
 	return(NULL);
 }
 
+static CFontInfo *RE_Font_GetVariant(CFontInfo *font, float *scale) {
+	int variants = font->GetNumVariants();
+
+	if (variants > 0) {
+		CFontInfo *variant;
+		int requestedSize = font->GetPointSize() * *scale *
+			r_fontSharpness->value * (glConfig.vidHeight / SCREEN_HEIGHT);
+
+		if (requestedSize <= font->GetPointSize())
+			return font;
+
+		for (int i = 0; i < variants; i++) {
+			variant = font->GetVariant(i);
+
+			if (requestedSize <= variant->GetPointSize())
+				break;
+		}
+
+		*scale *= (float)font->GetPointSize() / variant->GetPointSize();
+		return variant;
+	}
+
+	return font;
+}
 
 // needed to add *piShader param because of multiple TPs,
 //	if not passed in, then I also skip S,T calculations for re-usable static asian glyphinfo struct...
@@ -1534,8 +1597,9 @@ CFontInfo *GetFont(int index)
 }
 
 
-int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
+int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScaleIn)
 {
+	float fScale = fScaleIn;
 #ifdef JK2_MODE
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
 	float		fMaxWidth = 0.0f;
@@ -1547,6 +1611,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 	{
 		return(0);
 	}
+	curfont = RE_Font_GetVariant(curfont, &fScale);
 
 	float fScaleAsian = fScale;
 	if (Language_IsAsian() && fScale > 0.7f )
@@ -1586,6 +1651,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 	{
 		return(0);
 	}
+	curfont = RE_Font_GetVariant(curfont, &fScale);
 
 	float fScaleAsian = fScale;
 	if (Language_IsAsian() && fScale > 0.7f )
@@ -1673,14 +1739,17 @@ int RE_Font_StrLenChars(const char *psText)
 	return iCharCount;
 }
 
-int RE_Font_HeightPixels(const int iFontHandle, const float fScale)
+int RE_Font_HeightPixels(const int iFontHandle, const float fScaleIn)
 {
+	float fScale = fScaleIn;
 	CFontInfo	*curfont;
 
 	curfont = GetFont(iFontHandle);
 	if(curfont)
 	{
-		float fValue = curfont->GetPointSize() * fScale;
+		float fValue;
+		curfont = RE_Font_GetVariant(curfont, &fScale);
+		fValue = curfont->GetPointSize() * fScale;
 		return curfont->mbRoundCalcs ? Round(fValue) : fValue;
 	}
 	return(0);
@@ -1688,8 +1757,10 @@ int RE_Font_HeightPixels(const int iFontHandle, const float fScale)
 
 // iMaxPixelWidth is -1 for "all of string", else pixel display count...
 //
-void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, const int iFontHandle, int iMaxPixelWidth, const float fScale)
+void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, const int iFontHandleIn, int iMaxPixelWidth, const float fScaleIn)
 {
+	int iFontHandle = iFontHandleIn;
+	float fScale = fScaleIn;
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
 #ifdef JK2_MODE
 	static qboolean gbInShadow = qfalse;	// MUST default to this
@@ -1732,6 +1803,8 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		return;
 	}
+	curfont = RE_Font_GetVariant(curfont, &fScale);
+	iFontHandle = curfont->GetHandle() | (iFontHandle & ~SET_MASK);
 
 	float fScaleAsian = fScale;
 	float fAsianYAdjust = 0.0f;
@@ -1904,6 +1977,8 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		return;
 	}
+	curfont = RE_Font_GetVariant(curfont, &fScale);
+	iFontHandle = curfont->GetHandle() | (iFontHandle & ~SET_MASK);
 
 	float fScaleAsian = fScale;
 	float fAsianYAdjust = 0.0f;
@@ -2032,7 +2107,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 #endif
 }
 
-int RE_RegisterFont(const char *psName)
+int RE_RegisterFont_Real(const char *psName)
 {
 	FontIndexMap_t::iterator it = g_mapFontIndexes.find(psName);
 	if (it != g_mapFontIndexes.end() )
@@ -2063,10 +2138,42 @@ int RE_RegisterFont(const char *psName)
 	return 0;
 }
 
+int RE_RegisterFont(const char *psName) {
+	int oriFontHandle = RE_RegisterFont_Real(psName);
+	if (oriFontHandle) {
+		CFontInfo *oriFont = GetFont_Actual(oriFontHandle);
+
+		if (oriFont->GetNumVariants() == 0) {
+			for (int i = 0; i < MAX_FONT_VARIANTS; i++) {
+				const char *variantName = va( "%s_sharp%i", psName, i + 1 );
+				const char *fontDatPath = FontDatPath( variantName );
+				if ( ri.FS_ReadFile(fontDatPath, NULL) > 0 ) {
+					int replacerFontHandle = RE_RegisterFont_Real(variantName);
+					if (replacerFontHandle) {
+						CFontInfo *replacerFont = GetFont_Actual(replacerFontHandle);
+						replacerFont->m_isVariant = qtrue;
+						oriFont->AddVariant(replacerFont);
+					} else {
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+		}
+	} else {
+		ri.Printf( PRINT_WARNING, "RE_RegisterFont: Couldn't find font %s\n", psName );
+	}
+
+	return oriFontHandle;
+}
+
 void R_InitFonts(void)
 {
 	g_iCurrentFontIndex = 1;			// entry 0 is reserved for "missing/invalid"
 	g_iNonScaledCharRange = INT_MAX;	// default all chars to have no special scaling (other than user supplied)
+
+	r_fontSharpness = ri.Cvar_Get( "r_fontSharpness", "1", CVAR_ARCHIVE_ND );
 }
 
 /*
@@ -2119,6 +2226,8 @@ void R_ReloadFonts_f(void)
 	for (; iFontToFind < g_iCurrentFontIndex; iFontToFind++)
 	{
 		FontIndexMap_t::iterator it = g_mapFontIndexes.begin();
+		CFontInfo *font = GetFont( iFontToFind );
+		if ( font && font->m_isVariant ) continue;
 		for (; it != g_mapFontIndexes.end(); ++it)
 		{
 			if (iFontToFind == (*it).second)

@@ -33,9 +33,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <cctype>
 
 
-static void skipWhitespace( gsl::cstring_view& text, const bool allowLineBreaks )
+static void skipWhitespace( gsl::cstring_span& text, const bool allowLineBreaks )
 {
-	gsl::cstring_view::iterator whitespaceEnd = text.begin();
+	gsl::cstring_span::iterator whitespaceEnd = text.begin();
 	while( whitespaceEnd != text.end() // No EOF
 		&& std::isspace( *whitespaceEnd ) // No End of Whitespace
 		&& ( allowLineBreaks || *whitespaceEnd != '\n' ) ) // No unwanted newline
@@ -45,7 +45,7 @@ static void skipWhitespace( gsl::cstring_view& text, const bool allowLineBreaks 
 	text = { whitespaceEnd, text.end() };
 }
 
-static void skipWhitespaceAndComments( gsl::cstring_view& text, const bool allowLineBreaks )
+static void skipWhitespaceAndComments( gsl::cstring_span& text, const bool allowLineBreaks )
 {
 	skipWhitespace( text, allowLineBreaks );
 	// skip single line comment
@@ -87,7 +87,7 @@ static void skipWhitespaceAndComments( gsl::cstring_view& text, const bool allow
 	return;
 }
 
-static gsl::cstring_view removeTrailingWhitespace( const gsl::cstring_view& text )
+static gsl::cstring_span removeTrailingWhitespace( const gsl::cstring_span& text )
 {
 	return{
 		text.begin(),
@@ -106,7 +106,7 @@ A token can be:
 - EOL- or comment-delimited (if readToEOL == true); i.e. reads to end of line or the first // or /*
 @param text adjusted to start beyond the read token
 */
-static gsl::cstring_view GetToken( gsl::cstring_view& text, bool allowLineBreaks, bool readToEOL = false )
+static gsl::cstring_span GetToken( gsl::cstring_span& text, bool allowLineBreaks, bool readToEOL = false )
 {
 	skipWhitespaceAndComments( text, allowLineBreaks );
 	// EOF
@@ -121,13 +121,13 @@ static gsl::cstring_view GetToken( gsl::cstring_view& text, bool allowLineBreaks
 		auto tokenEnd = std::find( text.begin() + 1, text.end(), '"' );
 		if( tokenEnd == text.end() )
 		{
-			gsl::cstring_view token = { text.begin() + 1, text.end() };
+			gsl::cstring_span token = { text.begin() + 1, text.end() };
 			text = { text.end(), text.end() };
 			return token;
 		}
 		else
 		{
-			gsl::cstring_view token = { text.begin() + 1, tokenEnd };
+			gsl::cstring_span token = { text.begin() + 1, tokenEnd };
 			text = { tokenEnd + 1, text.end() };
 			return token;
 		}
@@ -150,7 +150,7 @@ static gsl::cstring_view GetToken( gsl::cstring_view& text, bool allowLineBreaks
 					)
 				);
 		}
-		gsl::cstring_view token{ text.begin(), tokenEnd };
+		gsl::cstring_span token{ text.begin(), tokenEnd };
 		text = { tokenEnd, text.end() };
 		return removeTrailingWhitespace( token );
 	}
@@ -158,7 +158,7 @@ static gsl::cstring_view GetToken( gsl::cstring_view& text, bool allowLineBreaks
 	{
 		// consume until first whitespace (if allowLineBreaks == false, that may be text.begin(); in that case token is empty.)
 		auto tokenEnd = std::find_if( text.begin(), text.end(), static_cast< int( *)( int ) >( std::isspace ) );
-		gsl::cstring_view token{ text.begin(), tokenEnd };
+		gsl::cstring_span token{ text.begin(), tokenEnd };
 		text = { tokenEnd, text.end() };
 		return token;
 	}
@@ -168,7 +168,7 @@ static gsl::cstring_view GetToken( gsl::cstring_view& text, bool allowLineBreaks
 
 
 
-CGPProperty::CGPProperty( gsl::cstring_view initKey, gsl::cstring_view initValue )
+CGPProperty::CGPProperty( gsl::cstring_span initKey, gsl::cstring_span initValue )
 	: mKey( initKey )
 {
 	if( !initValue.empty() )
@@ -177,7 +177,7 @@ CGPProperty::CGPProperty( gsl::cstring_view initKey, gsl::cstring_view initValue
 	}
 }
 
-void CGPProperty::AddValue( gsl::cstring_view newValue )
+void CGPProperty::AddValue( gsl::cstring_span newValue )
 {
 	mValues.push_back( newValue );
 }
@@ -197,16 +197,16 @@ void CGPProperty::AddValue( gsl::cstring_view newValue )
 
 
 
-CGPGroup::CGPGroup( const gsl::cstring_view& initName )
+CGPGroup::CGPGroup( const gsl::cstring_span& initName )
 	: mName( initName )
 {
 }
 
-bool CGPGroup::Parse( gsl::cstring_view& data, const bool topLevel )
+bool CGPGroup::Parse( gsl::cstring_span& data, const bool topLevel )
 {
 	while( true )
 	{
-		gsl::cstring_view token = GetToken( data, true );
+		gsl::cstring_span token = GetToken( data, true );
 
 		if( token.empty() )
 		{
@@ -234,7 +234,7 @@ bool CGPGroup::Parse( gsl::cstring_view& data, const bool topLevel )
 				return true;
 			}
 		}
-		gsl::cstring_view lastToken = token;
+		gsl::cstring_span lastToken = token;
 
 		// read ahead to see what we are doing
 		token = GetToken( data, true, true );

@@ -294,9 +294,9 @@ struct leakyBucket_s {
 extern leakyBucket_t outboundLeakyBucket;
 
 qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period, int now );
-qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period, int now );
+qboolean SVC_RateLimitAddress( const netadr_t *from, int burst, int period, int now );
 void SVC_LoadWhitelist( void );
-void SVC_WhitelistAdr( netadr_t adr );
+void SVC_WhitelistAdr( const netadr_t *adr );
 void SV_FinalMessage (char *message);
 void QDECL SV_SendServerCommand( client_t *cl, const char *fmt, ...);
 
@@ -331,15 +331,15 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 //
 void SV_ChallengeInit();
 void SV_ChallengeShutdown();
-int SV_CreateChallenge(netadr_t from);
-qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from);
+int SV_CreateChallenge(const netadr_t *from);
+qboolean SV_VerifyChallenge(int receivedChallenge, const netadr_t *from);
 
 //
 // sv_client.c
 //
-void SV_GetChallenge( netadr_t from );
+void SV_GetChallenge( const netadr_t *from );
 
-void SV_DirectConnect( netadr_t from );
+void SV_DirectConnect( const netadr_t *from );
 
 void SV_SendClientMapChange( client_t *client );
 void SV_ExecuteClientMessage( client_t *cl, msg_t *msg );

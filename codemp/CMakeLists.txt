@@ -43,6 +43,11 @@ if(BuildMPRdVanilla)
 	add_subdirectory("${MPDir}/rd-vanilla")
 endif(BuildMPRdVanilla)
 
+#	Add rend2 JKA Renderer Project
+if(BuildMPRend2)
+	add_subdirectory("${MPDir}/rd-rend2")
+endif(BuildMPRend2)
+
 #    Common things between Engine and Dedicated Server
 if(BuildMPEngine OR BuildMPDed)
 
@@ -135,7 +140,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/qcommon.h"
 		"${MPDir}/qcommon/qfiles.h"
 		"${MPDir}/qcommon/tags.h"
-		
+
 		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${MPBotlibCommonFiles})
@@ -263,7 +268,7 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(WIN32)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonFiles})
-	
+
 	set(MPEngineAndDedCommonSafeFiles
 		"${SharedDir}/qcommon/safe/files.cpp"
 		"${SharedDir}/qcommon/safe/files.h"

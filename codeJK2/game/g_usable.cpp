@@ -125,12 +125,12 @@ void func_usable_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 		self->svFlags &= ~SVF_PLAYER_USABLE;
 		//also remove ability to call any use func at all!
 		self->e_UseFunc = useF_NULL;
-		
+
 		if(self->target && self->target[0])
 		{
 			G_UseTargets(self, activator);
 		}
-		
+
 		if ( self->wait )
 		{
 			self->e_ThinkFunc = thinkF_func_usable_think;
@@ -180,7 +180,7 @@ void func_usable_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
 
 /*QUAKED func_usable (0 .5 .8) ? STARTOFF AUTOANIMATE ANIM_ONCE ALWAYS_ON BLOCKCHECK NPC_USE PLAYER_USE INACTIVE
 START_OFF - the wall will not be there
-AUTOANIMATE - if a model is used it will animate				
+AUTOANIMATE - if a model is used it will animate
 ANIM_ONCE - When turned on, goes through anim once
 ALWAYS_ON - Doesn't toggle on and off when used, just runs usescript and fires target
 NPC_ONLY - Only NPCs can directly use this
@@ -201,7 +201,7 @@ A bmodel that just sits there, doing nothing.  Can be used for conditional walls
 "endframe"	Will make it animate to next shader frame when used, not turn on/off... set this to number of frames in the shader, minus 1
 */
 
-void SP_func_usable( gentity_t *self ) 
+void SP_func_usable( gentity_t *self )
 {
 	gi.SetBrushModel( self, self->model );
 	InitMover( self );
