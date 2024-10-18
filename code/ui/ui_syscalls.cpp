@@ -26,7 +26,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../server/exe_headers.h"
 #include "ui_local.h"
 
-// Refactor with validation for null or empty values
 float trap_Cvar_VariableValue(const char *var_name) {
     if (!var_name || var_name[0] == '\0') return 0.0f;
     return Cvar_VariableValue(var_name);
@@ -57,7 +56,6 @@ void trap_R_DrawStretchPic(float x, float y, float w, float h, float s1, float t
 }
 
 void trap_R_ModelBounds(clipHandle_t model, vec3_t mins, vec3_t maxs) {
-    if (!mins || !maxs) return;
     ui.R_ModelBounds(model, mins, maxs);
 }
 
@@ -100,6 +98,12 @@ void trap_Key_SetCatcher(int catcher) {
     Key_SetCatcher(catcher);
 }
 
+void trap_GetClientState(uiClientState_t *state) {
+    if (!state) return;
+    syscall(UI_GETCLIENTSTATE, state);
+}
+
+void CL_GetGlconfig(glconfig_t *glconfig);
 
 void trap_GetGlconfig(glconfig_t *glconfig) {
     if (!glconfig) return;
@@ -115,4 +119,3 @@ int trap_CIN_StopCinematic(int handle) {
     if (handle < 0) return -1;
     return CIN_StopCinematic(handle);
 }
-

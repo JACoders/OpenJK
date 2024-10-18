@@ -994,7 +994,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			if (uiInfo.modList[uiInfo.modIndex].modName)
 			{
 				Cvar_Set( "fs_game", uiInfo.modList[uiInfo.modIndex].modName);
-				extern	void FS_Restart( void );
+				extern	void FS_Restart( qboolean inPlace = qfalse );
 				FS_Restart();
 				Cbuf_ExecuteText( EXEC_APPEND, "vid_restart;" );
 			}
@@ -2432,7 +2432,7 @@ void UI_FreeAllSpecies( void )
 		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
 	}
 	free(uiInfo.playerSpecies);
-	
+
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpecies = NULL;
 }

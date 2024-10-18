@@ -441,12 +441,31 @@ UI_RegisterFont
 =================
 */
 
+int registeredFontsCount = 0;
+int registeredFonts[MAX_FONTS];
+
 int UI_RegisterFont(const char *fontName)
 {
 	int iFontIndex = ui.R_RegisterFont(fontName);
 	if (iFontIndex == 0)
 	{
 		iFontIndex = ui.R_RegisterFont("ergoec");	// fall back
+	}
+
+	// Store font
+	if ( iFontIndex )
+	{
+		int i;
+		for ( i = 0; i < registeredFontsCount; i++ )
+		{
+			if ( registeredFonts[i] == iFontIndex ) break;
+		}
+
+		if ( i == registeredFontsCount )
+		{ // It's not in the list: add it
+			if ( registeredFontsCount >= MAX_FONTS ) Com_Printf( "^3UI_RegisterFont: MAX_FONTS (%i) exceeded\n", MAX_FONTS );
+			else registeredFonts[registeredFontsCount++] = iFontIndex;
+		}
 	}
 
 	return iFontIndex;
