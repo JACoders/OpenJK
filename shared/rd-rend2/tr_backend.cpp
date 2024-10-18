@@ -289,24 +289,15 @@ void GL_State( uint32_t stateBits )
 	}
 
 	//
-	// check colormask
+	// check colormasks
 	//
-	if ( diff & GLS_COLORMASK_BITS )
+	if ( diff & (GLS_COLORMASK_BITS | GLS_COLORMASK_BUF1))
 	{
 		if ( stateBits & GLS_COLORMASK_BITS )
 		{
 			qglColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
 		}
-		else
-		{
-			qglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-		}
-	}
-
-	// Color mask just the first drawbuffer
-	else if (diff & GLS_COLORMASK_BUF1)
-	{
-		if (stateBits & GLS_COLORMASK_BUF1)
+		else if ( stateBits & GLS_COLORMASK_BUF1 )
 		{
 			qglColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 			qglColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
