@@ -76,6 +76,7 @@ endif()
 
 if(APPLE)
   set(UseInternalJPEGDefault ON)
+  set(UseInternalPNGDefault  ON)
 endif()
 
 option(UseInternalOpenAL "If set, use bundled OpenAL."  ${UseInternalOpenALDefault})
