@@ -70,6 +70,7 @@ void main()
 	height += var_Effectpos * height * u_FxGrow.y;
 #endif
 
+#if !defined(FACE_FLATTENED)
 	float halfWidth = width * 0.5;
 	vec3 offsets[] = vec3[](
 #if defined(FACE_UP)
@@ -80,11 +81,19 @@ void main()
 #else
 		vec3( halfWidth, 0.0, 0.0),
 		vec3( halfWidth, 0.0, height),
-		vec3(-halfWidth, 0.0, height),
+		vec3(-halfWidth, 0.2, height), // Offset this upper vertex to make sprite visable from above
 		vec3(-halfWidth, 0.0, 0.0)
 #endif
 	);
-
+#else
+	float offsetValue = mix(width, height, attr_Position.w);
+	vec3 offsets[] = vec3[](
+		vec3( offsetValue, 0.0, 0.0),
+		vec3( offsetValue, 0.0, height),
+		vec3(-offsetValue, 0.2, height), // Offset this upper vertex to make sprite visable from above
+		vec3(-offsetValue, 0.0, 0.0)
+	);
+#endif
 	const vec2 texcoords[] = vec2[](
 		vec2(1.0, 1.0),
 		vec2(1.0, 0.0),
@@ -94,17 +103,17 @@ void main()
 
 	vec3 offset = offsets[gl_VertexID % 4];
 
-
 #if defined(FACE_CAMERA)
-	vec2 toCamera = normalize(V.xy);
-	offset.xy = offset.x*vec2(toCamera.y, -toCamera.x);
+	offset = (offset.x * normalize(u_ViewLeft)) + (offset.z * normalize(u_ViewUp));
 #elif defined(FACE_FLATTENED)
 	// Make this sprite face in some direction
-	offset.xy = offset.x * attr_Normal.xy;
+	vec3 fwdVec = cross(attr_Normal, vec3(0.0, 0.0, 1.0));
+	offset.xy = (offset.x * attr_Normal.xy) + (offset.y * width * fwdVec.xy);
 #elif !defined(FACE_UP)
 	// Make this sprite face in some direction in direction of the camera
-	vec2 toCamera = normalize(V.xy);
-	offset.xy = offset.x * (attr_Normal.xy + 3.0 * vec2(toCamera.y, -toCamera.x)) * 0.25;
+	vec3 lftVec = normalize(u_ViewLeft);
+	vec3 fwdVec = cross(lftVec, vec3(0.0, 0.0, 1.0));
+	offset.xy = (offset.x * normalize(attr_Normal.xy + 2.0 * lftVec.xy)) + (offset.y * width * fwdVec.xy);
 #endif
 
 #if !defined(FACE_UP) && !defined(FX_SPRITE)

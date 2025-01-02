@@ -2592,18 +2592,17 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	uint32_t shaderFlags = 0;
 	/*if ( surf->alphaTestType != ALPHA_TEST_NONE )
 		shaderFlags |= SSDEF_ALPHA_TEST;*/
-
 	if ( ss->type == SURFSPRITE_ORIENTED )
 		shaderFlags |= SSDEF_FACE_CAMERA;
+	else if (ss->type == SURFSPRITE_FLATTENED)
+		shaderFlags |= SSDEF_FLATTENED;
+	else if (ss->type == SURFSPRITE_EFFECT)
+		shaderFlags |= SSDEF_FX_SPRITE | SSDEF_FACE_CAMERA;
+	else if (ss->type == SURFSPRITE_WEATHERFX)
+		shaderFlags |= SSDEF_FX_SPRITE; // ???
 
 	if (ss->facing == SURFSPRITE_FACING_UP)
-		shaderFlags |= SSDEF_FACE_UP;
-
-	if (ss->facing == SURFSPRITE_FACING_NORMAL)
-		shaderFlags |= SSDEF_FLATTENED;
-
-	if (ss->type == SURFSPRITE_EFFECT || ss->type == SURFSPRITE_WEATHERFX)
-		shaderFlags |= SSDEF_FX_SPRITE;
+		shaderFlags = (shaderFlags & ~SSDEF_FACE_CAMERA) | SSDEF_FACE_UP;
 
 	if ((firstStage->stateBits & (GLS_SRCBLEND_BITS|GLS_DSTBLEND_BITS)) == (GLS_SRCBLEND_ONE|GLS_DSTBLEND_ONE))
 		shaderFlags |= SSDEF_ADDITIVE;
@@ -2655,6 +2654,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 
 		DrawItem item = {};
 		item.renderState.stateBits = firstStage->stateBits;
+		if (ss->facing == SURFSPRITE_FACING_UP)
+			item.renderState.stateBits |= GLS_POLYGON_OFFSET_FILL;
 		item.renderState.cullType = CT_TWO_SIDED;
 		item.renderState.depthRange = DepthRange{ 0.0f, 1.0f };
 		item.program = program;
