@@ -1715,12 +1715,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			vec4_t enableTextures = {};
 			enableTextures[0] = (float)pStage->glow;
 
-			if (r_sunlightMode->integer &&
-					(backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
-					(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
+			if (r_sunlightMode->integer)
 			{
 				samplerBindingsWriter.AddStaticImage(tr.sunShadowArrayImage, TB_SHADOWMAP);
-				enableTextures[2] = 1.0f;
+				if ((backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
+					(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
+				{
+					enableTextures[2] = 1.0f;
+				}
 			}
 			else
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SHADOWMAP);
