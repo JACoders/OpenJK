@@ -2893,6 +2893,22 @@ const void *RB_PostProcess(const void *data)
 	if (r_dynamicGlow->integer)
 	{
 		RB_BloomDownscale(tr.glowImage, tr.glowFboScaled[0]);
+
+		if (r_dynamicGlowBloom->value > 0.0f)
+		{
+			FBO_Bind(tr.glowFboScaled[0]);
+			GL_State(GLS_DEPTHTEST_DISABLE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE);
+			GL_SetViewportAndScissor(0, 0, tr.renderFbo->width, tr.renderFbo->height);
+
+			GLSL_BindProgram(&tr.highpassShader);
+			GL_BindToTMU(tr.renderImage, 0);
+			GLSL_SetUniformVec3(&tr.highpassShader, UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
+			GLSL_SetUniformFloat(&tr.highpassShader, UNIFORM_BLOOMSTRENGTH, r_dynamicGlowBloom->value);
+
+			// Draw fullscreen triangle
+			qglDrawArrays(GL_TRIANGLES, 0, 3);
+		}
+
 		int numPasses = Com_Clampi(1, ARRAY_LEN(tr.glowFboScaled), r_dynamicGlowPasses->integer);
 		for ( int i = 1; i < numPasses; i++ )
 			RB_BloomDownscale(tr.glowFboScaled[i - 1], tr.glowFboScaled[i]);

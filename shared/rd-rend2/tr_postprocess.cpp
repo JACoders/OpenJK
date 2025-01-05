@@ -490,7 +490,7 @@ void RB_BloomDownscale(image_t *sourceImage, FBO_t *destFBO)
 	vec2_t invTexRes = { 1.0f / sourceImage->width, 1.0f / sourceImage->height };
 
 	FBO_Bind(destFBO);
-	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+	GL_State(GLS_DEPTHTEST_DISABLE);
 	GL_SetViewportAndScissor(0, 0, destFBO->width, destFBO->height);
 	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 
@@ -513,7 +513,7 @@ void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO)
 	vec2_t invTexRes = { 1.0f / sourceImage->width, 1.0f / sourceImage->height };
 
 	FBO_Bind(destFBO);
-	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+	GL_State(GLS_DEPTHTEST_DISABLE);
 	GL_SetViewportAndScissor(0, 0, destFBO->width, destFBO->height);
 	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 

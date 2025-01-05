@@ -131,6 +131,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_EnvForce",				GLSL_VEC3, 1 },
 	{ "u_RandomOffset",			GLSL_VEC4, 1 },
 	{ "u_ChunkParticles",		GLSL_INT, 1 },
+	{ "u_BloomStrength",		GLSL_FLOAT, 1 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
@@ -2047,6 +2048,28 @@ static int GLSL_LoadGPUProgramCalcLuminanceLevel(
 	return numPrograms;
 }
 
+static int GLSL_LoadGPUProgramHighPass(
+	ShaderProgramBuilder& builder,
+	Allocator& scratchAlloc)
+{
+	GLSL_LoadGPUProgramBasic(
+		builder,
+		scratchAlloc,
+		&tr.highpassShader,
+		"highpass",
+		fallback_highpassProgram);
+
+	GLSL_InitUniforms(&tr.highpassShader);
+
+	qglUseProgram(tr.highpassShader.program);
+	GLSL_SetUniformInt(&tr.highpassShader, UNIFORM_SCREENIMAGEMAP, TB_COLORMAP);
+	qglUseProgram(0);
+
+	GLSL_FinishGPUShader(&tr.highpassShader);
+
+	return 1;
+}
+
 static int GLSL_LoadGPUProgramSSAO(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
@@ -2374,6 +2397,7 @@ void GLSL_LoadGPUShaders()
 	numEtcShaders += GLSL_LoadGPUProgramBokeh(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTonemap(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramCalcLuminanceLevel(builder, allocator);
+	numEtcShaders += GLSL_LoadGPUProgramHighPass(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramSSAO(builder, allocator);
 	if (r_cubeMapping->integer)
 		numEtcShaders += GLSL_LoadGPUProgramPrefilterEnvMap(builder, allocator);
@@ -2427,6 +2451,7 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < 2; i++)
 		GLSL_DeleteGPUShader(&tr.calclevels4xShader[i]);
 
+	GLSL_DeleteGPUShader(&tr.highpassShader);
 	GLSL_DeleteGPUShader(&tr.ssaoShader);
 
 	for ( i = 0; i < 2; i++)

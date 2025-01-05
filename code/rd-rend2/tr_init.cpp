@@ -274,6 +274,7 @@ cvar_t	*r_dynamicGlowIntensity;
 cvar_t	*r_dynamicGlowSoft;
 cvar_t	*r_dynamicGlowWidth;
 cvar_t	*r_dynamicGlowHeight;
+cvar_t	*r_dynamicGlowBloom;
 
 cvar_t *r_debugContext;
 cvar_t *r_debugWeather;
@@ -1488,6 +1489,8 @@ void R_Register( void )
 	r_dynamicGlowSoft					= ri_Cvar_Get_NoComm( "r_dynamicGlowSoft",		"1",		CVAR_ARCHIVE, "" );
 	r_dynamicGlowWidth					= ri_Cvar_Get_NoComm( "r_dynamicGlowWidth",		"320",		CVAR_ARCHIVE|CVAR_LATCH, "" );
 	r_dynamicGlowHeight					= ri_Cvar_Get_NoComm( "r_dynamicGlowHeight",	"240",		CVAR_ARCHIVE|CVAR_LATCH, "" );
+	r_dynamicGlowBloom					= ri_Cvar_Get_NoComm( "r_dynamicGlowBloom",		"0.0",		CVAR_ARCHIVE, "" );
+	ri.Cvar_CheckRange(r_dynamicGlowBloom, 0.f, 2.f, qfalse);
 
 	r_debugContext						= ri_Cvar_Get_NoComm( "r_debugContext",			"0",		CVAR_LATCH, "" );
 	r_debugWeather						= ri_Cvar_Get_NoComm( "r_debugWeather",			"0",		CVAR_ARCHIVE, "" );
