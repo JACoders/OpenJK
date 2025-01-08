@@ -63,6 +63,11 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_ScreenImageMap", GLSL_INT, 1 },
 	{ "u_ScreenDepthMap", GLSL_INT, 1 },
 
+	{ "u_EdgeMap", GLSL_INT, 1 },
+	{ "u_AreaMap", GLSL_INT, 1 },
+	{ "u_SearchMap", GLSL_INT, 1 },
+	{ "u_BlendMap", GLSL_INT, 1 },
+
 	{ "u_ShadowMap",  GLSL_INT, 1 },
 	{ "u_ShadowMap2", GLSL_INT, 1 },
 
@@ -1985,6 +1990,18 @@ static int GLSL_LoadGPUProgramTonemap(
 	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 
 	extradefines[0] = '\0';
+	if (r_smaa->integer)
+	{
+		Q_strcat(extradefines, sizeof(extradefines),
+			va( "#define USE_SMAA\n"
+				"#define SMAA_RT_METRICS vec4(1.0 / %f, 1.0 / %f, %f, %f)\n",
+				(float)glConfig.vidWidth,
+				(float)glConfig.vidHeight,
+				(float)glConfig.vidWidth,
+				(float)glConfig.vidHeight));
+
+	}
+
 	if (!GLSL_LoadGPUShader(builder, &tr.tonemapShader[0], "tonemap", attribs, NO_XFB_VARS,
 		extradefines, *programDesc))
 	{
@@ -2004,6 +2021,9 @@ static int GLSL_LoadGPUProgramTonemap(
 		qglUseProgram(tr.tonemapShader[i].program);
 		GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_TEXTUREMAP, TB_COLORMAP);
 		GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_LEVELSMAP, TB_LEVELSMAP);
+		if (r_smaa->integer)
+			GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_BLENDMAP, 2);
+
 		qglUseProgram(0);
 		GLSL_FinishGPUShader(&tr.tonemapShader[i]);
 	}
@@ -2320,6 +2340,96 @@ static int GLSL_LoadGPUProgramWeather(
 	return 2;
 }
 
+static int GLSL_LoadGPUProgramSMAA(
+	ShaderProgramBuilder& builder,
+	Allocator& scratchAlloc)
+{
+	char extradefines[1200];
+	extradefines[0] = '\0';
+	
+	Q_strcat(extradefines, sizeof(extradefines),
+		va(	"#define SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR 2.0\n"
+			"#define SMAA_RT_METRICS vec4(1.0 / %f, 1.0 / %f, %f, %f)\n",
+			(float)glConfig.vidWidth,
+			(float)glConfig.vidHeight,
+			(float)glConfig.vidWidth,
+			(float)glConfig.vidHeight));
+	if (r_smaa_quality->integer == 0)
+	{
+		Q_strcat(extradefines, sizeof(extradefines),
+			"#define SMAA_THRESHOLD 0.15\n"
+			"#define SMAA_MAX_SEARCH_STEPS 4\n"
+			"#define SMAA_DISABLE_DIAG_DETECTION\n"
+			"#define SMAA_DISABLE_CORNER_DETECTION\n"
+		);
+	}
+	else if (r_smaa_quality->integer == 1)
+	{
+		Q_strcat(extradefines, sizeof(extradefines),
+			"#define SMAA_THRESHOLD 0.1\n"
+			"#define SMAA_MAX_SEARCH_STEPS 8\n"
+			"#define SMAA_DISABLE_DIAG_DETECTION\n"
+			"#define SMAA_DISABLE_CORNER_DETECTION\n"
+		);
+	}
+	else if (r_smaa_quality->integer == 2)
+	{
+		Q_strcat(extradefines, sizeof(extradefines),
+			"#define SMAA_THRESHOLD 0.1\n"
+			"#define SMAA_MAX_SEARCH_STEPS 16\n"
+			"#define SMAA_MAX_SEARCH_STEPS_DIAG 8\n"
+			"#define SMAA_CORNER_ROUNDING 25\n"
+		);
+	}
+	else
+	{
+		Q_strcat(extradefines, sizeof(extradefines),
+			"#define SMAA_THRESHOLD 0.05\n"
+			"#define SMAA_MAX_SEARCH_STEPS 32\n"
+			"#define SMAA_MAX_SEARCH_STEPS_DIAG 16\n"
+			"#define SMAA_CORNER_ROUNDING 25\n"
+		);
+	}
+	
+	{
+		GLSL_LoadGPUProgramBasicWithDefinitions(
+			builder,
+			scratchAlloc,
+			&tr.smaaEdgeShader,
+			"smaaEdge",
+			fallback_smaaEdgeProgram,
+			extradefines);
+
+		GLSL_InitUniforms(&tr.smaaEdgeShader);
+
+		qglUseProgram(tr.smaaEdgeShader.program);
+		GLSL_SetUniformInt(&tr.smaaEdgeShader, UNIFORM_SCREENIMAGEMAP, 0);
+		qglUseProgram(0);
+
+		GLSL_FinishGPUShader(&tr.smaaEdgeShader);
+	}
+	{
+		GLSL_LoadGPUProgramBasicWithDefinitions(
+			builder,
+			scratchAlloc,
+			&tr.smaaBlendShader,
+			"smaaBlend",
+			fallback_smaaBlendProgram,
+			extradefines);
+
+		GLSL_InitUniforms(&tr.smaaBlendShader);
+
+		qglUseProgram(tr.smaaBlendShader.program);
+		GLSL_SetUniformInt(&tr.smaaBlendShader, UNIFORM_EDGEMAP, 0);
+		GLSL_SetUniformInt(&tr.smaaBlendShader, UNIFORM_AREAMAP, 1);
+		GLSL_SetUniformInt(&tr.smaaBlendShader, UNIFORM_SEARCHMAP, 2);
+		qglUseProgram(0);
+
+		GLSL_FinishGPUShader(&tr.smaaBlendShader);
+	}
+	return 2;
+}
+
 void GLSL_LoadGPUShaders()
 {
 #if 0
@@ -2407,6 +2517,8 @@ void GLSL_LoadGPUShaders()
 	numEtcShaders += GLSL_LoadGPUProgramDynamicGlowDownsample(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramSurfaceSprites(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramWeather(builder, allocator);
+	if (r_smaa->integer)
+		numEtcShaders += GLSL_LoadGPUProgramSMAA(builder, allocator);
 
 	ri.Printf(PRINT_ALL, "loaded %i GLSL shaders (%i gen %i light %i etc) in %5.2f seconds\n",
 		numGenShaders + numLightShaders + numEtcShaders, numGenShaders, numLightShaders,
@@ -2472,6 +2584,9 @@ void GLSL_ShutdownGPUShaders(void)
 
 	GLSL_DeleteGPUShader(&tr.weatherUpdateShader);
 	GLSL_DeleteGPUShader(&tr.weatherShader);
+
+	GLSL_DeleteGPUShader(&tr.smaaEdgeShader);
+	GLSL_DeleteGPUShader(&tr.smaaBlendShader);
 
 	glState.currentProgram = 0;
 	qglUseProgram(0);

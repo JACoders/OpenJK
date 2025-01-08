@@ -481,6 +481,25 @@ void FBO_Init(void)
 		}
 	}
 
+	if (r_smaa->integer)
+	{
+		tr.smaaEdgeFbo = FBO_Create(
+			"_smaaEdge", tr.smaaEdgeImage->width,
+			tr.smaaEdgeImage->height);
+		FBO_Bind(tr.smaaEdgeFbo);
+		FBO_AttachTextureImage(tr.smaaEdgeImage, 0);
+		FBO_SetupDrawBuffers();
+		R_CheckFBO(tr.smaaEdgeFbo);
+
+		tr.smaaBlendFbo = FBO_Create(
+			"_smaaBlend", tr.smaaBlendImage->width,
+			tr.smaaBlendImage->height);
+		FBO_Bind(tr.smaaBlendFbo);
+		FBO_AttachTextureImage(tr.smaaBlendImage, 0);
+		FBO_SetupDrawBuffers();
+		R_CheckFBO(tr.smaaBlendFbo);
+	}
+
 	if (r_drawSunRays->integer)
 	{
 		tr.sunRaysFbo = FBO_Create(

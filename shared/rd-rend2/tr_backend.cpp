@@ -2892,6 +2892,7 @@ const void *RB_PostProcess(const void *data)
 
 	if (r_dynamicGlow->integer)
 	{
+		GL_Cull(CT_TWO_SIDED);
 		RB_BloomDownscale(tr.glowImage, tr.glowFboScaled[0]);
 
 		if (r_dynamicGlowBloom->value > 0.0f)
@@ -2920,6 +2921,28 @@ const void *RB_PostProcess(const void *data)
 	srcBox[1] = backEnd.viewParms.viewportY;
 	srcBox[2] = backEnd.viewParms.viewportWidth;
 	srcBox[3] = backEnd.viewParms.viewportHeight;
+
+	if (r_smaa->integer)
+	{
+		GL_Cull(CT_TWO_SIDED);
+		GL_State(GLS_DEPTHTEST_DISABLE);
+		
+		FBO_Bind(tr.smaaEdgeFbo);
+		GL_SetViewportAndScissor(0, 0, tr.smaaEdgeFbo->width, tr.smaaEdgeFbo->height);
+		qglClearBufferfv(GL_COLOR, 0, colorBlack);
+		GLSL_BindProgram(&tr.smaaEdgeShader);
+		GL_BindToTMU(tr.renderImage, 0);
+		qglDrawArrays(GL_TRIANGLES, 0, 3);
+
+		FBO_Bind(tr.smaaBlendFbo);
+		GL_SetViewportAndScissor(0, 0, tr.smaaBlendFbo->width, tr.smaaBlendFbo->height);
+		qglClearBufferfv(GL_COLOR, 0, colorBlack);
+		GLSL_BindProgram(&tr.smaaBlendShader);
+		GL_BindToTMU(tr.smaaEdgeImage, 0);
+		GL_BindToTMU(tr.smaaAreaImage, 1);
+		GL_BindToTMU(tr.smaaSearchImage, 2);
+		qglDrawArrays(GL_TRIANGLES, 0, 3);
+	}
 
 	if (srcFbo)
 	{

@@ -146,6 +146,9 @@ extern cvar_t  *r_arb_half_float_pixel;
 extern cvar_t  *r_ext_framebuffer_multisample;
 extern cvar_t  *r_arb_seamless_cube_map;
 
+extern cvar_t  *r_smaa;
+extern cvar_t  *r_smaa_quality;
+
 extern cvar_t  *r_cameraExposure;
 
 extern cvar_t  *r_hdr;
@@ -1364,6 +1367,11 @@ typedef enum
 	UNIFORM_SCREENIMAGEMAP,
 	UNIFORM_SCREENDEPTHMAP,
 
+	UNIFORM_EDGEMAP,
+	UNIFORM_AREAMAP,
+	UNIFORM_SEARCHMAP,
+	UNIFORM_BLENDMAP,
+
 	UNIFORM_SHADOWMAP,
 	UNIFORM_SHADOWMAP2,
 
@@ -2476,6 +2484,10 @@ typedef struct trGlobals_s {
 	image_t					*envBrdfImage;
 	image_t					*textureDepthImage;
 	image_t					*weatherDepthImage;
+	image_t					*smaaSearchImage;
+	image_t					*smaaAreaImage;
+	image_t					*smaaEdgeImage;
+	image_t					*smaaBlendImage;
 
 	FBO_t					*renderFbo;
 	FBO_t					*glowFboScaled[6];
@@ -2495,6 +2507,8 @@ typedef struct trGlobals_s {
 	FBO_t                   *renderCubeFbo[6];
 	FBO_t                   *filterCubeFbo;
 	FBO_t					*weatherDepthFbo;
+	FBO_t					*smaaEdgeFbo;
+	FBO_t					*smaaBlendFbo;
 
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
@@ -2551,6 +2565,9 @@ typedef struct trGlobals_s {
 	shaderProgram_t spriteShader[SSDEF_COUNT];
 	shaderProgram_t weatherUpdateShader;
 	shaderProgram_t weatherShader;
+	shaderProgram_t smaaEdgeShader;
+	shaderProgram_t smaaBlendShader;
+	shaderProgram_t smaaResolveShader;
 
 	GLuint staticUbo;
 	GLuint spriteUbos[MAX_SUB_BSP + 1];

@@ -117,6 +117,9 @@ cvar_t	*r_arb_buffer_storage;
 cvar_t  *r_mergeMultidraws;
 cvar_t  *r_mergeLeafSurfaces;
 
+cvar_t  *r_smaa;
+cvar_t  *r_smaa_quality;
+
 cvar_t  *r_cameraExposure;
 
 cvar_t  *r_externalGLSL;
@@ -1526,6 +1529,9 @@ void R_Register( void )
 	r_forceAutoExposure = ri_Cvar_Get_NoComm( "r_forceAutoExposure", "0", CVAR_CHEAT, "" );
 	r_forceAutoExposureMin = ri_Cvar_Get_NoComm( "r_forceAutoExposureMin", "-2.0", CVAR_CHEAT, "" );
 	r_forceAutoExposureMax = ri_Cvar_Get_NoComm( "r_forceAutoExposureMax", "2.0", CVAR_CHEAT, "" );
+
+	r_smaa = ri_Cvar_Get_NoComm("r_smaa", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable SMAA");
+	r_smaa_quality = ri_Cvar_Get_NoComm("r_smaa_quality", "2", CVAR_ARCHIVE | CVAR_LATCH, "0: LOW | 1: MEDIUM | 2: HIGH | 3: ULTRA");
 
 	r_cameraExposure = ri_Cvar_Get_NoComm( "r_cameraExposure", "0", CVAR_CHEAT, "" );
 
