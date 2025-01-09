@@ -21,7 +21,7 @@ in vec2 var_TexCoords;
 
 out vec4 out_Color;
 
-const vec3  LUMINANCE_VECTOR = vec3(0.299, 0.587, 0.114);
+const vec3  LUMINANCE_VECTOR = vec3(0.2126, 0.7152, 0.0722);
 
 vec3 GetValues(vec2 offset, vec3 current)
 {
