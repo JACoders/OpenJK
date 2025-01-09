@@ -955,6 +955,12 @@ vec3 CalcDynamicLightContribution(
 	return outColor;
 }
 
+float luma(vec3 color)
+{
+	const vec3 weight = vec3(0.2126, 0.7152, 0.0722);
+	return dot(color, weight);
+}
+
 vec3 CalcIBLContribution(
 	in float roughness,
 	in vec3 N,
@@ -962,25 +968,29 @@ vec3 CalcIBLContribution(
 	in vec3 viewOrigin,
 	in vec3 viewDir,
 	in float NE,
-	in vec3 specular
+	in vec3 specular,
+	in vec3 lighting
 )
 {
 #if defined(PER_PIXEL_LIGHTING) && defined(USE_CUBEMAP)
-	vec3 R = reflect(-E, N);
-
 	// parallax corrected cubemap (cheaper trick)
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
 	vec3 parallax = u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
-	vec3 cubeLightColor = textureLod(u_CubeMap, R - parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
+
+	vec3 R = reflect(-E, N) - parallax;
+	vec4 cubeLightColor = textureLod(u_CubeMap, R, roughness * ROUGHNESS_MIPS) * u_EnableTextures.w;
+
+	// Scale reflection based on current light luminance / max luminance of the cubemap 
+	cubeLightColor.rgb *= clamp(luma(lighting) / cubeLightColor.a, 0.0, 1.0);
 
 	// Base BRDF
 	#if !defined(USE_CLOTH_BRDF)
 		vec2 EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).rg;
-		return cubeLightColor * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
+		return cubeLightColor.rgb * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
 	// Cloth BRDF
 	#else
 		float EnvBRDF = texture(u_EnvBrdfMap, vec2(roughness, NE)).b;
-		return cubeLightColor * EnvBRDF;
+		return cubeLightColor.rgb * EnvBRDF;
 	#endif
 #else
 	return vec3(0.0);
@@ -1163,6 +1173,9 @@ void main()
 	out_Color.rgb  = lightColor * reflectance * (attenuation * NL);
 	out_Color.rgb += ambientColor * diffuse.rgb;
 
+	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, vertexNormal);
+	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb * AO, lightColor + ambientColor);
+
   #if defined(USE_PRIMARY_LIGHT)
 	vec3  L2   = normalize(u_PrimaryLightOrigin.xyz);
 	vec3  H2   = normalize(L2 + E);
@@ -1180,9 +1193,6 @@ void main()
 
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
-
-	out_Color.rgb += CalcDynamicLightContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, diffuse.rgb, specular.rgb, vertexNormal);
-	out_Color.rgb += CalcIBLContribution(roughness, N, E, u_ViewOrigin, viewDir, NE, specular.rgb * AO);
 #else
 	lightColor = var_Color.rgb;
   #if defined(USE_LIGHTMAP)

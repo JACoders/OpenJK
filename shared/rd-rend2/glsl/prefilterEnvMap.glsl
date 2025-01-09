@@ -137,5 +137,8 @@ void main()
 	if (roughness == 0.0)
 		result = textureLod(u_CubeMap, normal, 0.0).rgb;
 
-	out_Color = vec4(result, 1.0);
+	// As long as we have no need for something more important,
+	// store the direct light luma in the alpha value for cubemap 
+	// light scaling purposes.
+	out_Color = vec4(result, u_ViewInfo.x);
 }

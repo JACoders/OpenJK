@@ -2017,6 +2017,15 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 	int height = cmd->cubemap->image->height;
 	float roughnessMips = (float)CUBE_MAP_ROUGHNESS_MIPS;
 
+	GL_State(GLS_DEPTHTEST_DISABLE);
+	GL_Cull(CT_TWO_SIDED);
+
+	vec3_t directLight, ambientLight, direction;
+	R_LightForPoint(cmd->cubemap->origin, ambientLight, directLight, direction);
+	VectorScale(directLight, 1.0f / 255.0f, directLight);
+	const vec3_t lumaVec = { 0.2126f, 0.7152f, 0.0722f };
+	float maxLuma = DotProduct(directLight, lumaVec);
+
 	for (int level = 0; level <= CUBE_MAP_ROUGHNESS_MIPS; level++)
 	{
 		FBO_Bind(tr.filterCubeFbo);
@@ -2027,7 +2036,7 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 		GL_SetViewportAndScissor(0, 0, width, height);
 
 		vec4_t viewInfo;
-		VectorSet4(viewInfo, 0, level, roughnessMips, level / roughnessMips);
+		VectorSet4(viewInfo, maxLuma, level, roughnessMips, level / roughnessMips);
 		GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
 		RB_InstantTriangle();
 		width = width / 2;
