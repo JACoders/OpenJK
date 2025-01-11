@@ -489,10 +489,10 @@ void RE_BeginScene(const refdef_t *fd)
 		// Don't update constants yet. Store everything and render everything next scene
 		return;
 	}
-	else
+	else if (backEndData->currentFrame->currentScene == 0)
 	{
-		// pasted this from SP
 		// cdr - only change last time for the real render, not the portal
+		// nor other scenes to be rendered like ui scenes
 		tr.refdef.lastTime = fd->time;
 	}
 
