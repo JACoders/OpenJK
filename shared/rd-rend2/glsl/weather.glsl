@@ -20,7 +20,7 @@ void main()
 	var_Velocity = attr_Color;
 	var_Velocity.z = min(-0.00001, var_Velocity.z);
 
-	vec4 velocitiyOffset = u_ViewInfo.y * vec4(-var_Velocity.xy/var_Velocity.z, var_Velocity.z, 0.0);
+	vec4 velocitiyOffset = u_ViewInfo.y * vec4(var_Velocity.xy/var_Velocity.z, var_Velocity.z, 0.0);
 	velocitiyOffset.xyz = mix(vec3(0.0), velocitiyOffset.xyz, float(attr_Color.z != 0.0));
 	var_Velocity.z *= u_ViewInfo.z;
 
@@ -28,15 +28,12 @@ void main()
 	depthPosition.xyz = depthPosition.xyz / depthPosition.w * 0.5 + 0.5;
 	float depthSample = texture(u_ShadowMap, depthPosition.xy).r;
 
-	//TODO: Do this to the texture instead of sampling the texture 5 times here over and over again
-	vec2 dx = vec2(0.5 / 1024.0, 0.0);
-	vec2 dy = vec2(0.0, 0.5 / 1024.0);
-	depthSample = min(texture(u_ShadowMap, depthPosition.xy + dx).r, depthSample);
-	depthSample = min(texture(u_ShadowMap, depthPosition.xy - dx).r, depthSample);
-	depthSample = min(texture(u_ShadowMap, depthPosition.xy - dy).r, depthSample);
-	depthSample = min(texture(u_ShadowMap, depthPosition.xy + dy).r, depthSample);
-
 	var_Culled = int(depthPosition.z > depthSample);
+	if (var_Culled == 0)
+	{
+		depthPosition = u_ShadowMvp * (gl_Position + velocitiyOffset -(vec4(0.0, 0.0, u_ViewInfo.y, 0.0)));
+		var_Culled -= int((depthPosition.z / depthPosition.w * 0.5 + 0.5) > depthSample);
+	}
 }
 
 /*[Geometry]*/
@@ -76,7 +73,7 @@ void main()
 		vec2(0.0, 0.0)
 	);
 
-	if (var_Culled[0] == 0)
+	if (var_Culled[0] <= 0)
 	{
 		vec3 P = gl_in[0].gl_Position.xyz;
 		vec3 V = u_ViewOrigin - P;
@@ -91,6 +88,8 @@ void main()
 
 			float distance = distance(u_ViewOrigin, worldPos.xyz);
 			float alpha = (u_ViewInfo.w - distance) / u_ViewInfo.w;
+			if (var_Culled[0] < 0 && offsets[i].y < 0.0)
+				alpha = 0.0;
 
 			var_TexCoordAlpha = vec3(texcoords[i], clamp(alpha, 0.0, 1.0));
 			EmitVertex();

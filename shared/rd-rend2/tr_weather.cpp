@@ -73,9 +73,7 @@ namespace
 
 	void GenerateRainModel( weatherObject_t& ws, const int maxParticleCount )
 	{
-		const int mapExtentZ = (int)(tr.world->bmodels[0].bounds[1][2] - tr.world->bmodels[0].bounds[0][2]);
-		const int PARTICLE_COUNT = (int)(maxParticleCount * mapExtentZ / CHUNK_EXTENDS);
-		std::vector<rainVertex_t> rainVertices(PARTICLE_COUNT * CHUNK_COUNT);
+		std::vector<rainVertex_t> rainVertices(maxParticleCount * CHUNK_COUNT);
 
 		for ( int i = 0; i < rainVertices.size(); ++i )
 		{
@@ -200,13 +198,13 @@ namespace
 			};
 
 			vec3_t up = {
-				stepSize[0] * 0.5f,
+				stepSize[0] * 1.05f,
 				0.0f,
 				0.0f
 			};
 			vec3_t left = {
 				0.0f,
-				stepSize[1] * 0.5f,
+				stepSize[1] * 1.05f,
 				0.0f
 			};
 			vec3_t traceVec = {
@@ -317,7 +315,34 @@ namespace
 							tess.externalIBO = nullptr;
 						}
 
-						RB_AddQuadStamp(rayPos, left, up, color);
+						int ndx = tess.numVertexes;
+
+						tess.indexes[tess.numIndexes] = ndx;
+						tess.indexes[tess.numIndexes + 1] = ndx + 1;
+						tess.indexes[tess.numIndexes + 2] = ndx + 3;
+
+						tess.indexes[tess.numIndexes + 3] = ndx + 3;
+						tess.indexes[tess.numIndexes + 4] = ndx + 1;
+						tess.indexes[tess.numIndexes + 5] = ndx + 2;
+
+						tess.xyz[ndx][0] = rayPos[0] - left[0];
+						tess.xyz[ndx][1] = rayPos[1] - left[1];
+						tess.xyz[ndx][2] = rayPos[2] - left[2];
+
+						tess.xyz[ndx + 1][0] = rayPos[0] + up[0];
+						tess.xyz[ndx + 1][1] = rayPos[1] + up[1];
+						tess.xyz[ndx + 1][2] = rayPos[2] + up[2];
+
+						tess.xyz[ndx + 2][0] = rayPos[0] + left[0];
+						tess.xyz[ndx + 2][1] = rayPos[1] + left[1];
+						tess.xyz[ndx + 2][2] = rayPos[2] + left[2];
+
+						tess.xyz[ndx + 3][0] = rayPos[0] - up[0];
+						tess.xyz[ndx + 3][1] = rayPos[1] - up[1];
+						tess.xyz[ndx + 3][2] = rayPos[2] - up[2];
+
+						tess.numVertexes += 4;
+						tess.numIndexes += 6;
 					}
 				}
 				R_NewFrameSync();
@@ -711,8 +736,6 @@ void RE_WorldEffectCommand(const char *command)
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].size[1] = 14.0f;
 
 		tr.weatherSystem->weatherSlots[WEATHER_RAIN].velocityOrientationScale = 1.0f;
-
-		
 
 		VectorSet4(tr.weatherSystem->weatherSlots[WEATHER_RAIN].color, 0.5f, 0.5f, 0.5f, 0.5f);
 		VectorScale(
