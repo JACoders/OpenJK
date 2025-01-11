@@ -1658,18 +1658,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			useAlphaTestGE192 ? ALPHA_TEST_GE192 : pStage->alphaTestType;
 		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, alphaTestType);
 
-		//
-		// do multitexture
-		//
-		bool enableCubeMaps = (	r_cubeMapping->integer
-								&& !(tr.viewParms.flags & VPF_NOCUBEMAPS)
-								&& input->cubemapIndex > 0
-								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
-		bool enableDLights = (	tess.dlightBits
-								&& (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
-								&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
-								&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE );
-
 		if (forceRefraction)
 		{
 			FBO_t *srcFbo = tr.renderFbo;
@@ -1693,14 +1681,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_COLORMAP], TB_COLORMAP);
 
 			// TODO: remove light requirement
-			if (pStage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
+			if (pStage->glslShaderGroup == tr.lightallShader &&
+				pStage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
 				pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
 			{
 				vec4_t enableTextures = {};
 				if (pStage->bundle[TB_NORMALMAP].image[0])
 				{
 					samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_NORMALMAP], TB_NORMALMAP);
-					enableTextures[0] = 1.0f;
 				}
 				else if (r_normalMapping->integer)
 				{
@@ -1715,6 +1703,15 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			vec4_t enableTextures = {};
 			enableTextures[0] = (float)pStage->glow;
 
+			bool enableCubeMaps = (r_cubeMapping->integer
+				&& !(tr.viewParms.flags & VPF_NOCUBEMAPS)
+				&& input->cubemapIndex > 0
+				&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE);
+			bool enableDLights = (tess.dlightBits
+				&& (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
+				&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
+				&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE);
+
 			if (r_sunlightMode->integer)
 			{
 				samplerBindingsWriter.AddStaticImage(tr.sunShadowArrayImage, TB_SHADOWMAP);
@@ -1724,8 +1721,15 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					enableTextures[2] = 1.0f;
 				}
 			}
+
+			if (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK &&
+				r_dlightMode->integer > 1)
+				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAPARRAY);
+
+			if (enableDLights)
+				uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, tess.dlightBits);
 			else
-				samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SHADOWMAP);
+				uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, 0);
 
 			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) &&
 				(pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap))
@@ -1800,16 +1804,28 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SPECULARMAP);
 					}
 
+					if (enableCubeMaps)
+					{
+						vec4_t vec;
+						cubemap_t *cubemap = &tr.cubemaps[input->cubemapIndex - 1];
+
+						samplerBindingsWriter.AddStaticImage(cubemap->image, TB_CUBEMAP);
+						samplerBindingsWriter.AddStaticImage(tr.envBrdfImage, TB_ENVBRDFMAP);
+						enableTextures[3] = 1.0f;
+
+						VectorSubtract(cubemap->origin, backEnd.viewParms.ori.origin, vec);
+						vec[3] = 1.0f;
+
+						VectorScale4(vec, 1.0f / cubemap->parallaxRadius, vec);
+
+						uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
+					}
+
 					if (r_ssao->integer && tr.world && backEnd.framePostProcessed == qfalse)
 						samplerBindingsWriter.AddStaticImage(tr.screenSsaoImage, TB_SSAOMAP);
 					else if (r_ssao->integer)
 						samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_SSAOMAP);
 
-				}
-
-				if ( enableCubeMaps )
-				{
-					enableTextures[3] =  1.0f;
 				}
 			}
 
@@ -1834,34 +1850,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			enableTextures[0] = (float)pStage->glow;
 			uniformDataWriter.SetUniformVec4(UNIFORM_ENABLETEXTURES, enableTextures);
 		}
-
-		//
-		// testing cube map
-		//
-		if ( enableCubeMaps )
-		{
-			vec4_t vec;
-			cubemap_t *cubemap = &tr.cubemaps[input->cubemapIndex - 1];
-
-			samplerBindingsWriter.AddStaticImage(cubemap->image, TB_CUBEMAP);
-			samplerBindingsWriter.AddStaticImage(tr.envBrdfImage, TB_ENVBRDFMAP);
-
-			VectorSubtract(cubemap->origin, backEnd.viewParms.ori.origin, vec);
-			vec[3] = 1.0f;
-
-			VectorScale4(vec, 1.0f / cubemap->parallaxRadius, vec);
-
-			uniformDataWriter.SetUniformVec4(UNIFORM_CUBEMAPINFO, vec);
-		}
-
-		if (enableDLights)
-		{
-			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, tess.dlightBits);
-			if (r_dlightMode->integer > 1)
-				samplerBindingsWriter.AddStaticImage(tr.pointShadowArrayImage, TB_SHADOWMAPARRAY);
-		}
-		else
-			uniformDataWriter.SetUniformInt(UNIFORM_LIGHTMASK, 0);
 
 		CaptureDrawData(input, pStage, index, stage);
 
