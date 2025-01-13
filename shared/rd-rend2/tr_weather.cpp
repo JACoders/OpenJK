@@ -171,23 +171,22 @@ namespace
 			FBO_Bind(tr.weatherDepthFbo);
 
 			GL_SetViewportAndScissor(0, 0, tr.weatherDepthFbo->width, tr.weatherDepthFbo->height);
+			uint32_t glState = GLS_DEPTHMASK_TRUE;
 
 			if (tr.weatherSystem->weatherBrushType == WEATHER_BRUSHES_OUTSIDE) // used outside brushes
 			{
 				qglClearDepth(0.0f);
-				GL_State(GLS_DEPTHMASK_TRUE | GLS_DEPTHFUNC_GREATER);
+				glState = GLS_DEPTHMASK_TRUE | GLS_DEPTHFUNC_GREATER;
 			}
 			else // used inside brushes
 			{
 				qglClearDepth(1.0f);
-				GL_State(GLS_DEPTHMASK_TRUE);
 			}
 
+			GL_State(glState);
 			qglClear(GL_DEPTH_BUFFER_BIT);
 			qglClearDepth(1.0f);
-			qglEnable(GL_DEPTH_CLAMP);
 
-			GL_Cull(CT_TWO_SIDED);
 			vec4_t color = { 0.0f, 0.0f, 0.0f, 1.0f };
 			backEnd.currentEntity = &tr.worldEntity;
 
@@ -216,6 +215,11 @@ namespace
 			for (int i = 0; i < tr.weatherSystem->numWeatherBrushes; i++)
 			{
 				RE_BeginFrame(STEREO_CENTER);
+
+				GL_State(glState);
+				qglEnable(GL_DEPTH_CLAMP);
+				GL_Cull(CT_TWO_SIDED);
+
 				weatherBrushes_t *currentWeatherBrush = &tr.weatherSystem->weatherBrushes[i];
 
 				// RBSP brushes actually store their bounding box in the first 6 planes! Nice
