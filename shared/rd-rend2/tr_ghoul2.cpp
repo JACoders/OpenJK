@@ -4367,7 +4367,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 
 		byte *data;
 		int dataSize = 0;
-		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents;
+		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights, ofsTangents, ofsColor, ofsLMCoords, ofsLightDir;;
 		int stride = 0;
 		int numVerts = 0;
 		int numTriangles = 0;
@@ -4402,6 +4402,7 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		dataSize += numVerts * sizeof (*weights) * 4;
 		dataSize += numVerts * sizeof (*bonerefs) * 4;
 		dataSize += numVerts * sizeof (*tangents);
+		dataSize += sizeof(vec4_t) + sizeof(vec2_t) + sizeof(uint32_t);
 
 		// Allocate and write to memory
 		data = (byte *)Hunk_AllocateTempMemory (dataSize);
@@ -4429,6 +4430,18 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		ofsTangents = stride;
 		tangents = (uint32_t *)(data + ofsTangents);
 		stride += sizeof (*tangents);
+
+		ofsColor = dataSize - (sizeof(vec4_t) + sizeof(vec2_t) + sizeof(uint32_t));
+		float *color = (float *)(data + ofsColor);
+		VectorSet4(color, 1.0f, 1.0f, 1.0f, 1.0f);
+
+		ofsLMCoords = dataSize - (sizeof(vec2_t) + sizeof(uint32_t));
+		float *lmTcs = (float *)(data + ofsLMCoords);
+		VectorSet2(lmTcs, 0.0f, 0.0f);
+
+		ofsLightDir = dataSize - sizeof(uint32_t);
+		uint32_t *lightdir = (uint32_t*)(data + ofsLightDir);
+		*lightdir = 0;
 
 		// Fill in the index buffer and compute tangents
 		glIndex_t *indices = (glIndex_t *)Hunk_AllocateTempMemory(sizeof(glIndex_t) * numTriangles * 3);
@@ -4569,6 +4582,13 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->offsets[ATTR_INDEX_BONE_WEIGHTS] = ofsWeights;
 		vbo->offsets[ATTR_INDEX_TANGENT] = ofsTangents;
 
+		vbo->offsets[ATTR_INDEX_COLOR] = ofsColor;
+		vbo->offsets[ATTR_INDEX_TEXCOORD1] = ofsLMCoords;
+		vbo->offsets[ATTR_INDEX_TEXCOORD2] = ofsLMCoords;
+		vbo->offsets[ATTR_INDEX_TEXCOORD3] = ofsLMCoords;
+		vbo->offsets[ATTR_INDEX_TEXCOORD4] = ofsLMCoords;
+		vbo->offsets[ATTR_INDEX_LIGHTDIRECTION] = ofsLightDir;
+
 		vbo->strides[ATTR_INDEX_POSITION] = stride;
 		vbo->strides[ATTR_INDEX_NORMAL] = stride;
 		vbo->strides[ATTR_INDEX_TEXCOORD0] = stride;
@@ -4576,12 +4596,33 @@ qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &
 		vbo->strides[ATTR_INDEX_BONE_WEIGHTS] = stride;
 		vbo->strides[ATTR_INDEX_TANGENT] = stride;
 
+		vbo->strides[ATTR_INDEX_COLOR] = sizeof(vec4_t);
+		vbo->strides[ATTR_INDEX_TEXCOORD1] = sizeof(vec2_t);
+		vbo->strides[ATTR_INDEX_TEXCOORD2] = sizeof(vec2_t);
+		vbo->strides[ATTR_INDEX_TEXCOORD3] = sizeof(vec2_t);
+		vbo->strides[ATTR_INDEX_TEXCOORD4] = sizeof(vec2_t);
+		vbo->strides[ATTR_INDEX_LIGHTDIRECTION] = sizeof(uint32_t);
+
 		vbo->sizes[ATTR_INDEX_POSITION] = sizeof(*verts);
 		vbo->sizes[ATTR_INDEX_NORMAL] = sizeof(*normals);
 		vbo->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(*texcoords);
 		vbo->sizes[ATTR_INDEX_BONE_WEIGHTS] = sizeof(*weights);
 		vbo->sizes[ATTR_INDEX_BONE_INDEXES] = sizeof(*bonerefs);
 		vbo->sizes[ATTR_INDEX_TANGENT] = sizeof(*tangents);
+
+		vbo->sizes[ATTR_INDEX_COLOR] = sizeof(vec4_t);
+		vbo->sizes[ATTR_INDEX_TEXCOORD1] = sizeof(vec2_t);
+		vbo->sizes[ATTR_INDEX_TEXCOORD2] = sizeof(vec2_t);
+		vbo->sizes[ATTR_INDEX_TEXCOORD3] = sizeof(vec2_t);
+		vbo->sizes[ATTR_INDEX_TEXCOORD4] = sizeof(vec2_t);
+		vbo->sizes[ATTR_INDEX_LIGHTDIRECTION] = sizeof(uint32_t);
+
+		vbo->stepRates[ATTR_INDEX_COLOR] = MAX_INSTANCES;
+		vbo->stepRates[ATTR_INDEX_TEXCOORD1] = MAX_INSTANCES;
+		vbo->stepRates[ATTR_INDEX_TEXCOORD2] = MAX_INSTANCES;
+		vbo->stepRates[ATTR_INDEX_TEXCOORD3] = MAX_INSTANCES;
+		vbo->stepRates[ATTR_INDEX_TEXCOORD4] = MAX_INSTANCES;
+		vbo->stepRates[ATTR_INDEX_LIGHTDIRECTION] = MAX_INSTANCES;
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 
