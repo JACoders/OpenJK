@@ -2130,13 +2130,7 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 		// need the depth in a texture we can do GL_LINEAR sampling on, so
 		// copy it to an HDR image
 		FBO_t *oldFbo = glState.currentFBO;
-		const vec4_t white = { 1.0f, 1.0f, 1.0f, 1.0f };
-		FBO_Bind(tr.hdrDepthFbo);
-		GL_SetViewportAndScissor(0, 0, tr.hdrDepthFbo->width, tr.hdrDepthFbo->height);
-		GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE]);
-		GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
-		GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_COLOR, white);
-		RB_InstantTriangle();
+		FBO_FastBlitFromTexture(tr.renderDepthImage, tr.hdrDepthFbo, NULL, NULL, 0);
 		FBO_Bind(oldFbo);
 	}
 }
@@ -2981,7 +2975,7 @@ const void *RB_PostProcess(const void *data)
 			color[2] = pow(2, r_cameraExposure->value); //exp2(r_cameraExposure->value);
 			color[3] = 1.0f;
 
-			FBO_Blit(srcFbo, srcBox, NULL, NULL, dstBox, NULL, color, 0);
+			FBO_FastBlitFromTexture(srcFbo->colorImage[0], NULL, dstBox, color, 0);
 		}
 
 		// Copy depth buffer to the backbuffer for depth culling refractive surfaces
@@ -3065,7 +3059,7 @@ const void *RB_PostProcess(const void *data)
 			color[0] = color[1] = color[2] = r_dynamicGlowIntensity->value;
 		}
 
-		FBO_BlitFromTexture (tr.glowFboScaled[0]->colorImage[0], NULL, NULL, NULL, NULL, NULL, color, blendFunc);
+		FBO_FastBlitFromTexture(tr.glowFboScaled[0]->colorImage[0], NULL, dstBox, color, blendFunc);
 	}
 
 	backEnd.framePostProcessed = qtrue;

@@ -28,10 +28,6 @@
  */
 
 /*[Vertex]*/
-in vec3 attr_Position;
-in vec4 attr_TexCoord0;
-
-uniform mat4 u_ModelViewProjectionMatrix;
 out vec2 var_TexCoords;
 
 #if defined(USE_SMAA)
@@ -48,8 +44,9 @@ void SMAANeighborhoodBlendingVS(vec2 texcoord,
 
 void main()
 {
-	gl_Position = u_ModelViewProjectionMatrix * vec4(attr_Position, 1.0);
-	var_TexCoords = attr_TexCoord0.st;
+	vec2 position = vec2(2.0 * float(gl_VertexID & 2) - 1.0, 4.0 * float(gl_VertexID & 1) - 1.0);
+	gl_Position = vec4(position, 0.0, 1.0);
+	var_TexCoords = position * 0.5 + vec2(0.5);
 	#if defined(USE_SMAA)
 	SMAANeighborhoodBlendingVS(var_TexCoords, var_offset);
 	#endif

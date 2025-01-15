@@ -91,7 +91,16 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 	if (r_smaa->integer)
 		GL_BindToTMU(tr.smaaBlendImage, 2);
 
-	FBO_Blit(hdrFbo, hdrBox, NULL, ldrFbo, ldrBox, shader, color, 0);
+	FBO_Bind(NULL);
+	GL_SetViewportAndScissor(ldrBox[0], ldrBox[1], ldrBox[2], ldrBox[3]);
+	GL_Cull(CT_TWO_SIDED);
+	GL_State(GLS_DEPTHTEST_DISABLE);
+	GLSL_BindProgram(shader);
+	GL_BindToTMU(hdrFbo->colorImage[0], TB_COLORMAP);
+	GLSL_SetUniformVec4(shader, UNIFORM_COLOR, color);
+	GLSL_SetUniformVec2(shader, UNIFORM_AUTOEXPOSUREMINMAX, tr.refdef.autoExposureMinMax);
+	GLSL_SetUniformVec3(shader, UNIFORM_TONEMINAVGMAXLINEAR, tr.refdef.toneMinAvgMaxLinear);
+	RB_InstantTriangle();
 }
 
 /*

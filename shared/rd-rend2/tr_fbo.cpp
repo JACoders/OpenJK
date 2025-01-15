@@ -751,6 +751,27 @@ void R_FBOList_f(void)
 	ri.Printf(PRINT_ALL, " %i FBOs\n", tr.numFBOs);
 }
 
+void FBO_FastBlitFromTexture(struct image_s *src, FBO_t *dst, vec4i_t dstBox, vec4_t inColor, int blend)
+{
+	if (!src)
+		return;
+
+	FBO_Bind(dst);
+	if (dstBox)
+		GL_SetViewportAndScissor(dstBox[0], dstBox[1], dstBox[2], dstBox[3]);
+	else
+		GL_SetViewportAndScissor(0, 0, dst->width, dst->height);
+	GL_Cull(CT_TWO_SIDED);
+	GL_State(GLS_DEPTHTEST_DISABLE | blend);
+	GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE]);
+	GL_BindToTMU(src, TB_COLORMAP);
+	if (inColor)
+		GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_COLOR, inColor);
+	else
+		GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_COLOR, colorWhite);
+	RB_InstantTriangle();
+}
+
 void FBO_BlitFromTexture(struct image_s *src, vec4i_t inSrcBox, vec2_t inSrcTexScale, FBO_t *dst, vec4i_t inDstBox, struct shaderProgram_s *shaderProgram, vec4_t inColor, int blend)
 {
 	vec4i_t dstBox, srcBox;

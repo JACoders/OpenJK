@@ -3,22 +3,9 @@ out vec2 var_TexCoords;
 
 void main()
 {
-	const vec2 positions[4] = vec2[](
-		vec2 (-1.0, -1.0),
-		vec2 (1.0, -1.0),
-		vec2 (1.0, 1.0),
-		vec2 (-1.0, 1.0)
-	);
-
-	const vec2 texcoords[4] = vec2[](
-		vec2 (0.0, 0.0),
-		vec2 (1.0, 0.0),
-		vec2 (1.0, 1.0),
-		vec2 (0.0, 1.0)
-	);
-
-	gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
-	var_TexCoords = texcoords[gl_VertexID];
+	vec2 position = vec2(2.0 * float(gl_VertexID & 2) - 1.0, 4.0 * float(gl_VertexID & 1) - 1.0);
+	gl_Position = vec4(position, 0.0, 1.0);
+	var_TexCoords = position * 0.5 + vec2(0.5);
 }
 
 /*[Fragment]*/
