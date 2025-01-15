@@ -822,7 +822,7 @@ void FBO_BlitFromTexture(struct image_s *src, vec4i_t inSrcBox, vec2_t inSrcTexS
 
 	if (!shaderProgram)
 	{
-		shaderProgram = &tr.textureColorShader;
+		shaderProgram = &tr.textureColorShader[TEXCOLORDEF_USE_VERTICES];
 	}
 
 	FBO_Bind(dst);

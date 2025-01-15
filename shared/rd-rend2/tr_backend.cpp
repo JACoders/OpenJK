@@ -1623,10 +1623,10 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	VectorSet2(texCoords[2], (cols - 0.5f) / cols, (rows - 0.5f) / rows);
 	VectorSet2(texCoords[3], 0.5f / cols,          (rows - 0.5f) / rows);
 
-	GLSL_BindProgram(&tr.textureColorShader);
+	GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
 
-	GLSL_SetUniformMatrix4x4(&tr.textureColorShader, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-	GLSL_SetUniformVec4(&tr.textureColorShader, UNIFORM_COLOR, colorWhite);
+	GLSL_SetUniformMatrix4x4(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_COLOR, colorWhite);
 
 	RB_InstantQuad2(quadVerts, texCoords);
 }
@@ -2129,16 +2129,15 @@ static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 	{
 		// need the depth in a texture we can do GL_LINEAR sampling on, so
 		// copy it to an HDR image
-		vec4i_t srcBox;
-		VectorSet4(srcBox, 0, tr.renderDepthImage->height, tr.renderDepthImage->width, -tr.renderDepthImage->height);
-		FBO_BlitFromTexture(
-			tr.renderDepthImage,
-			srcBox,
-			nullptr,
-			tr.hdrDepthFbo,
-			nullptr,
-			nullptr,
-			nullptr, 0);
+		FBO_t *oldFbo = glState.currentFBO;
+		const vec4_t white = { 1.0f, 1.0f, 1.0f, 1.0f };
+		FBO_Bind(tr.hdrDepthFbo);
+		GL_SetViewportAndScissor(0, 0, tr.hdrDepthFbo->width, tr.hdrDepthFbo->height);
+		GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE]);
+		GL_BindToTMU(tr.renderDepthImage, TB_COLORMAP);
+		GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_COLOR, white);
+		RB_InstantTriangle();
+		FBO_Bind(oldFbo);
 	}
 }
 

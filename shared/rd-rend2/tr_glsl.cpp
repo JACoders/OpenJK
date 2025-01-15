@@ -1865,22 +1865,41 @@ static int GLSL_LoadGPUProgramTextureColor(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
 {
-	GLSL_LoadGPUProgramBasic(
+	const char *extradefines = "#define USE_VERTICES\n";
+	GLSL_LoadGPUProgramBasicWithDefinitions(
 		builder,
 		scratchAlloc,
-		&tr.textureColorShader,
+		&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES],
 		"texturecolor",
-		fallback_texturecolorProgram);
+		fallback_texturecolorProgram,
+		extradefines);
 
-	GLSL_InitUniforms(&tr.textureColorShader);
+	GLSL_InitUniforms(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
 
-	qglUseProgram(tr.textureColorShader.program);
-	GLSL_SetUniformInt(&tr.textureColorShader, UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
+	qglUseProgram(tr.textureColorShader[TEXCOLORDEF_USE_VERTICES].program);
+	GLSL_SetUniformInt(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
 	qglUseProgram(0);
 
-	GLSL_FinishGPUShader(&tr.textureColorShader);
+	GLSL_FinishGPUShader(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
 
-	return 1;
+	GLSL_LoadGPUProgramBasicWithDefinitions(
+		builder,
+		scratchAlloc,
+		&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE],
+		"texturecolor",
+		fallback_texturecolorProgram,
+		"",
+		0);
+
+	GLSL_InitUniforms(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE]);
+
+	qglUseProgram(tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE].program);
+	GLSL_SetUniformInt(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
+	qglUseProgram(0);
+
+	GLSL_FinishGPUShader(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE]);
+
+	return 2;
 }
 
 static int GLSL_LoadGPUProgramPShadow(
@@ -2544,7 +2563,8 @@ void GLSL_ShutdownGPUShaders(void)
 	for (i = 0; i < REFRACTIONDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.refractionShader[i]);
 
-	GLSL_DeleteGPUShader(&tr.textureColorShader);
+	for (i = 0; i < TEXCOLORDEF_COUNT; i++)
+		GLSL_DeleteGPUShader(&tr.textureColorShader[i]);
 
 	for ( i = 0; i < FOGDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.fogShader[i]);

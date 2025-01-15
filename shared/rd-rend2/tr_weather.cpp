@@ -303,9 +303,9 @@ namespace
 						{
 							RB_UpdateVBOs(ATTR_POSITION);
 							GLSL_VertexAttribsState(ATTR_POSITION, NULL);
-							GLSL_BindProgram(&tr.textureColorShader);
+							GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
 							GLSL_SetUniformMatrix4x4(
-								&tr.textureColorShader,
+								&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES],
 								UNIFORM_MODELVIEWPROJECTIONMATRIX,
 								tr.weatherSystem->weatherMVP);
 							R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
@@ -355,9 +355,9 @@ namespace
 			// draw remaining quads
 			RB_UpdateVBOs(ATTR_POSITION);
 			GLSL_VertexAttribsState(ATTR_POSITION, NULL);
-			GLSL_BindProgram(&tr.textureColorShader);
+			GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
 			GLSL_SetUniformMatrix4x4(
-				&tr.textureColorShader,
+				&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES],
 				UNIFORM_MODELVIEWPROJECTIONMATRIX,
 				tr.weatherSystem->weatherMVP);
 			R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);

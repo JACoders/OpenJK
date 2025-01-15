@@ -49,11 +49,11 @@ void RB_ShadowFinish(void) {
 	Matrix16Ortho(0, glConfig.vidWidth, glConfig.vidHeight, 0, 0, 1, projection);
 
 	GL_Cull(CT_TWO_SIDED);
-	GLSL_BindProgram(&tr.textureColorShader);
+	GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
 	vec4_t color;
 	VectorSet4(color, 0.6f, 0.6f, 0.6f, 1.0f);
-	GLSL_SetUniformVec4(&tr.textureColorShader, UNIFORM_COLOR, color);
-	GLSL_SetUniformMatrix4x4(&tr.textureColorShader, UNIFORM_MODELVIEWPROJECTIONMATRIX, projection);
+	GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_COLOR, color);
+	GLSL_SetUniformMatrix4x4(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_MODELVIEWPROJECTIONMATRIX, projection);
 
 	vec4i_t dstBox;
 	vec4_t quadVerts[4];

@@ -1207,6 +1207,15 @@ enum
 
 enum
 {
+	TEXCOLORDEF_USE_VERTICES			= 0x0000,
+	TEXCOLORDEF_SCREEN_TRIANGLE			= 0x0001,
+
+	TEXCOLORDEF_ALL						= 0x0001,
+	TEXCOLORDEF_COUNT					= TEXCOLORDEF_ALL + 1,
+};
+
+enum
+{
 	FOGDEF_USE_DEFORM_VERTEXES  		= 0x0001,
 	FOGDEF_USE_SKELETAL_ANIMATION 		= 0x0002,
 	//FOGDEF_USE_ALPHA_TEST				= 0x0004,
@@ -2544,7 +2553,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t splashScreenShader;
 	shaderProgram_t genericShader[GENERICDEF_COUNT];
 	shaderProgram_t refractionShader[REFRACTIONDEF_COUNT];
-	shaderProgram_t textureColorShader;
+	shaderProgram_t textureColorShader[TEXCOLORDEF_COUNT];
 	shaderProgram_t fogShader[FOGDEF_COUNT];
 	shaderProgram_t lightallShader[LIGHTDEF_COUNT];
 	shaderProgram_t pshadowShader;
