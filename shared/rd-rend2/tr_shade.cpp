@@ -810,8 +810,7 @@ static UniformBlockBinding GetEntityBlockUniformBinding(
 	return binding;
 }
 
-static UniformBlockBinding GetBonesBlockUniformBinding(
-	const trRefEntity_t *refEntity)
+static UniformBlockBinding GetBonesBlockUniformBinding()
 {
 	const byte currentFrameScene = backEndData->currentFrame->currentScene;
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
@@ -819,14 +818,10 @@ static UniformBlockBinding GetBonesBlockUniformBinding(
 	binding.ubo = currentFrameUbo;
 	binding.block = UNIFORM_BLOCK_BONES;
 
-	if (refEntity == &tr.worldEntity)
-		binding.offset = 0;
-	else if (refEntity == &backEnd.entity2D)
-		binding.offset = 0;
-	else
-	{
+	if (glState.skeletalAnimation)
 		binding.offset = tr.animationBoneUboOffset;
-	}
+	else
+		binding.offset = 0;
 
 	return binding;
 }
@@ -895,7 +890,7 @@ static void DrawTris(shaderCommands_t *input, const VertexArraysProperties *vert
 			GetEntityBlockUniformBinding(backEnd.currentEntity),
 			GetShaderInstanceBlockUniformBinding(
 				backEnd.currentEntity, input->shader),
-			GetBonesBlockUniformBinding(backEnd.currentEntity)
+			GetBonesBlockUniformBinding()
 		};
 
 		samplerBindingsWriter.AddStaticImage(tr.whiteImage, TB_DIFFUSEMAP);
@@ -1085,7 +1080,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		GetEntityBlockUniformBinding(backEnd.currentEntity),
 		GetShaderInstanceBlockUniformBinding(
 			backEnd.currentEntity, input->shader),
-		GetBonesBlockUniformBinding(backEnd.currentEntity)
+		GetBonesBlockUniformBinding()
 	};
 
 	SamplerBindingsWriter samplerBindingsWriter;
@@ -1385,7 +1380,7 @@ void RB_ShadowTessEnd(shaderCommands_t *input, const VertexArraysProperties *ver
 	const UniformBlockBinding uniformBlockBindings[] = {
 		GetCameraBlockUniformBinding(backEnd.currentEntity),
 		GetEntityBlockUniformBinding(backEnd.currentEntity),
-		GetBonesBlockUniformBinding(backEnd.currentEntity)
+		GetBonesBlockUniformBinding()
 	};
 
 	DrawItem item = {};
@@ -1712,11 +1707,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				&& !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))
 				&& pStage->rgbGen != CGEN_LIGHTMAPSTYLE);
 
-			if (r_sunlightMode->integer)
+			if (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK &&
+				r_sunlightMode->integer)
 			{
 				samplerBindingsWriter.AddStaticImage(tr.sunShadowArrayImage, TB_SHADOWMAP);
-				if ((backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
-					(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
+				if (backEnd.viewParms.flags & VPF_USESUNLIGHT)
 				{
 					enableTextures[2] = 1.0f;
 				}
@@ -1861,7 +1856,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			GetEntityBlockUniformBinding(backEnd.currentEntity),
 			GetShaderInstanceBlockUniformBinding(
 				backEnd.currentEntity, input->shader),
-			GetBonesBlockUniformBinding(backEnd.currentEntity)
+			GetBonesBlockUniformBinding()
 		};
 
 		DrawItem item = {};

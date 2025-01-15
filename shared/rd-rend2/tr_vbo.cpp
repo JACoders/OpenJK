@@ -199,8 +199,6 @@ void R_BindVBO(VBO_t * vbo)
 		glState.vertexAttribsInterpolation = 0;
 		glState.vertexAttribsOldFrame = 0;
 		glState.vertexAttribsNewFrame = 0;
-		glState.vertexAttribsTexCoordOffset[0] = 0;
-		glState.vertexAttribsTexCoordOffset[1] = 1;
 		glState.vertexAnimation = qfalse;
 		glState.skeletalAnimation = qfalse;
 

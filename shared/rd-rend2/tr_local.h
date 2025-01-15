@@ -785,6 +785,19 @@ struct EntityBlock
 	float fxVolumetricBase;
 	vec3_t modelLightDir;
 	float vertexLerp;
+	bool operator == (const EntityBlock &other) const
+	{
+		return (
+			Matrix16Compare(this->modelMatrix, other.modelMatrix) == qtrue &&
+			VectorCompare4(this->lightOrigin, other.lightOrigin) == qtrue &&
+			VectorCompare(this->ambientLight, other.ambientLight) == qtrue &&
+			this->entityTime == other.entityTime &&
+			VectorCompare(this->directedLight, other.directedLight) == qtrue &&
+			this->fxVolumetricBase == other.fxVolumetricBase &&
+			VectorCompare(this->modelLightDir, other.modelLightDir) == qtrue &&
+			this->vertexLerp == other.vertexLerp
+			);
+	}
 };
 
 struct ShaderInstanceBlock
@@ -2287,7 +2300,6 @@ typedef struct glstate_s {
 	uint32_t        vertexAttribsNewFrame;
 	uint32_t        vertexAttribsOldFrame;
 	float           vertexAttribsInterpolation;
-	int				vertexAttribsTexCoordOffset[2];
 	qboolean        vertexAnimation;
 	qboolean		skeletalAnimation;
 	qboolean		genShadows;

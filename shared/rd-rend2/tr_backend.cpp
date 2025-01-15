@@ -2550,9 +2550,21 @@ static void RB_UpdateEntityConstants(
 	gpuFrame_t *frame, const trRefdef_t *refdef)
 {
 	memset(tr.entityUboOffsets, 0, sizeof(tr.entityUboOffsets));
+
+	trRefEntity_t *ent = &tr.worldEntity;
+	R_SetupEntityLighting(refdef, ent);
+
+	EntityBlock worldEntityBlock = {};
+	RB_UpdateEntityLightConstants(worldEntityBlock, ent);
+	RB_UpdateEntityMatrixConstants(worldEntityBlock, ent);
+	RB_UpdateEntityModelConstants(worldEntityBlock, ent);
+
+	tr.entityUboOffsets[REFENTITYNUM_WORLD] = RB_AppendConstantsData(
+		frame, &worldEntityBlock, sizeof(worldEntityBlock));
+
 	for (int i = 0; i < refdef->num_entities; i++)
 	{
-		trRefEntity_t *ent = &refdef->entities[i];
+		ent = &refdef->entities[i];
 
 		R_SetupEntityLighting(refdef, ent);
 
@@ -2561,18 +2573,15 @@ static void RB_UpdateEntityConstants(
 		RB_UpdateEntityMatrixConstants(entityBlock, ent);
 		RB_UpdateEntityModelConstants(entityBlock, ent);
 
+		if (entityBlock == worldEntityBlock)
+		{
+			tr.entityUboOffsets[i] = tr.entityUboOffsets[REFENTITYNUM_WORLD];
+			continue;
+		}
+
 		tr.entityUboOffsets[i] = RB_AppendConstantsData(
 			frame, &entityBlock, sizeof(entityBlock));
 	}
-
-	const trRefEntity_t *ent = &tr.worldEntity;
-	EntityBlock entityBlock = {};
-	RB_UpdateEntityLightConstants(entityBlock, ent);
-	RB_UpdateEntityMatrixConstants(entityBlock, ent);
-	RB_UpdateEntityModelConstants(entityBlock, ent);
-
-	tr.entityUboOffsets[REFENTITYNUM_WORLD] = RB_AppendConstantsData(
-		frame, &entityBlock, sizeof(entityBlock));
 
 	RB_UpdateSkyEntityConstants(frame, refdef);
 }
