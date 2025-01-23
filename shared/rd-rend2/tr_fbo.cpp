@@ -562,16 +562,6 @@ void FBO_Init(void)
 
 			R_CheckFBO(tr.sunShadowFbo[i]);
 		}
-
-		tr.screenShadowFbo = FBO_Create(
-			"_screenshadow", tr.screenShadowImage->width,
-			tr.screenShadowImage->height);
-
-		FBO_Bind(tr.screenShadowFbo);
-		FBO_AttachTextureImage(tr.screenShadowImage, 0);
-		FBO_SetupDrawBuffers();
-
-		R_CheckFBO(tr.screenShadowFbo);
 	}
 
 	for (i = 0; i < 2; i++)

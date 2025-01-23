@@ -3530,10 +3530,6 @@ void R_CreateBuiltinImages( void ) {
 			IMGTYPE_COLORALPHA,
 			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGLFAG_SHADOWCOMP | IMGFLAG_MUTABLE,
 			GL_DEPTH_COMPONENT16);
-
-		tr.screenShadowImage = R_CreateImage(
-			"*screenShadow", NULL, width, height, IMGTYPE_COLORALPHA,
-			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_R8);
 	}
 
 	if (r_cubeMapping->integer)
