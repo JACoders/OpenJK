@@ -1047,6 +1047,11 @@ void main()
 		if (diffuse.a < 0.75)
 			discard;
 	}
+	else if (u_AlphaTestType == ALPHA_TEST_E255)
+	{
+		if (diffuse.a < 1.00)
+			discard;
+	}
 #endif
 
 #if defined(PER_PIXEL_LIGHTING)

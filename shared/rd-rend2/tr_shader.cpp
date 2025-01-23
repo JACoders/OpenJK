@@ -264,6 +264,8 @@ static void ParseAlphaTestFunc( shaderStage_t *stage, const char *funcname )
 		stage->alphaTestType = ALPHA_TEST_GE128;
 	else if ( !Q_stricmp( funcname, "GE192" ) )
 		stage->alphaTestType = ALPHA_TEST_GE192;
+	else if (!Q_stricmp(funcname, "E255"))
+		stage->alphaTestType = ALPHA_TEST_E255;
 	else
 		ri.Printf( PRINT_WARNING,
 				"WARNING: invalid alphaFunc name '%s' in shader '%s'\n",

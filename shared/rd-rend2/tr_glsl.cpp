@@ -344,20 +344,20 @@ static size_t GLSL_GetShaderHeader(
 						AGEN_PORTAL));
 
 	Q_strcat(dest, size,
-					 va("#define ALPHA_TEST_GT0 %d\n"
-						"#define ALPHA_TEST_LT128 %d\n"
-						"#define ALPHA_TEST_GE128 %d\n"
-						"#define ALPHA_TEST_GE192 %d\n",
+					 va("#define ALPHA_TEST_GT0 %i\n"
+						"#define ALPHA_TEST_LT128 %i\n"
+						"#define ALPHA_TEST_GE128 %i\n"
+						"#define ALPHA_TEST_GE192 %i\n"
+						"#define ALPHA_TEST_E255 %i\n",
 						ALPHA_TEST_GT0,
 						ALPHA_TEST_LT128,
 						ALPHA_TEST_GE128,
-						ALPHA_TEST_GE192));
-
-	Q_strcat(dest, size, "#define USE_ALPHA_TEST\n");
+						ALPHA_TEST_GE192,
+						ALPHA_TEST_E255));
 
 	Q_strcat(dest, size,
-					va("#define MAX_G2_BONES %i\n",
-						MAX_G2_BONES));
+		va("#define MAX_G2_BONES %i\n",
+			MAX_G2_BONES));
 
 	Q_strcat(dest, size,
 		va("#define MAX_GPU_FOGS %i\n",
@@ -376,19 +376,19 @@ static size_t GLSL_GetShaderHeader(
 						fbufWidthScale,
 						fbufHeightScale));
 
+	if (r_deluxeSpecular->value > 0.000001f)
+		Q_strcat(dest, size, va("#define r_deluxeSpecular %f\n", r_deluxeSpecular->value));
+
 	if (r_cubeMapping->integer)
 	{
 		Q_strcat(dest, size, va("#define CUBEMAP_RESOLUTION float(%i)\n", CUBE_MAP_SIZE));
 		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%i)\n", CUBE_MAP_ROUGHNESS_MIPS));
 	}
 
+	Q_strcat(dest, size, "#define USE_ALPHA_TEST\n");
+
 	if (r_ssao->integer)
 		Q_strcat(dest, size, "#define USE_SSAO\n");
-
-	if (r_deluxeSpecular->value > 0.000001f)
-	{
-		Q_strcat(dest, size, va("#define r_deluxeSpecular %f\n", r_deluxeSpecular->value));
-	}
 
 	if (r_hdr->integer && (r_toneMap->integer || r_forceToneMap->integer))
 		Q_strcat(dest, size, "#define USE_TONEMAPPING\n");

@@ -905,6 +905,7 @@ enum AlphaTestType
 	ALPHA_TEST_LT128,
 	ALPHA_TEST_GE128,
 	ALPHA_TEST_GE192,
+	ALPHA_TEST_E255,
 };
 
 // any change in the LIGHTMAP_* defines here MUST be reflected in

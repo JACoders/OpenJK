@@ -286,6 +286,11 @@ void main()
 		if (out_Color.a < 0.75)
 			discard;
 	}
+	else if (u_AlphaTestType == ALPHA_TEST_E255)
+	{
+		if (out_Color.a < 1.00)
+			discard;
+	}
 #endif
 
 #if defined(USE_FOG)

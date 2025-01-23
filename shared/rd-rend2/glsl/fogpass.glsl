@@ -364,6 +364,11 @@ void main()
 		if (alpha < 0.75)
 			discard;
 	}
+	else if (u_AlphaTestType == ALPHA_TEST_E255)
+	{
+		if (alpha < 1.00)
+			discard;
+	}
 #endif
 	Fog fog = u_Fogs[u_FogIndex];
 	out_Color = CalcFog(u_ViewOrigin, var_WSPosition, fog);
