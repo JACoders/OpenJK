@@ -204,25 +204,27 @@ void main()
 {
 #if defined(USE_VERTEX_ANIMATION)
 	vec3 position = mix(attr_Position, attr_Position2, u_VertexLerp);
-	vec3 normal   = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
-	normal = normalize(normal - vec3(0.5));
 #elif defined(USE_SKELETAL_ANIMATION)
 	mat4x3 influence =
 		GetBoneMatrix(attr_BoneIndexes[0]) * attr_BoneWeights[0] +
         GetBoneMatrix(attr_BoneIndexes[1]) * attr_BoneWeights[1] +
         GetBoneMatrix(attr_BoneIndexes[2]) * attr_BoneWeights[2] +
         GetBoneMatrix(attr_BoneIndexes[3]) * attr_BoneWeights[3];
-
     vec3 position = influence * vec4(attr_Position, 1.0);
-    vec3 normal = normalize(influence * vec4(attr_Normal - vec3(0.5), 0.0));
 #else
 	vec3 position = attr_Position;
-	vec3 normal   = attr_Normal * 2.0 - vec3(1.0);
 #endif
 
 #if defined(USE_DEFORM_VERTEXES)
+	#if defined(USE_VERTEX_ANIMATION)
+		vec3 normal   = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
+		normal = normalize(normal - vec3(0.5));
+	#elif defined(USE_SKELETAL_ANIMATION)
+		vec3 normal = normalize(influence * vec4(attr_Normal - vec3(0.5), 0.0));
+	#else
+		vec3 normal   = attr_Normal * 2.0 - vec3(1.0);
+	#endif
 	position = DeformPosition(position, normal, attr_TexCoord0.st);
-	normal = DeformNormal( position, normal );
 #endif
 
 	vec4 wsPosition = u_ModelMatrix * vec4(position, 1.0);
@@ -372,10 +374,5 @@ void main()
 #endif
 	Fog fog = u_Fogs[u_FogIndex];
 	out_Color = CalcFog(u_ViewOrigin, var_WSPosition, fog);
-
-#if defined(USE_GLOW_BUFFER)
-	out_Glow = out_Color;
-#else
 	out_Glow = vec4(0.0, 0.0, 0.0, out_Color.a);
-#endif
 }
