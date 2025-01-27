@@ -2995,16 +2995,7 @@ const void *RB_PostProcess(const void *data)
 		FBO_BlitFromTexture(tr.weatherDepthImage, NULL, NULL, NULL, nullptr, NULL, NULL, 0);
 	}
 
-	if (0)
-	{
-		vec4i_t dstBox;
-		VectorSet4(dstBox, 256, glConfig.vidHeight - 256, 256, 256);
-		FBO_BlitFromTexture(tr.renderDepthImage, NULL, NULL, NULL, dstBox, NULL, NULL, 0);
-		VectorSet4(dstBox, 512, glConfig.vidHeight - 256, 256, 256);
-		FBO_BlitFromTexture(tr.screenShadowImage, NULL, NULL, NULL, dstBox, NULL, NULL, 0);
-	}
-
-	if (0 && r_ssao->integer)
+	if (r_ssao->integer == 2)
 	{
 		vec4i_t dstBox;
 		VectorSet4(dstBox, 0, glConfig.vidHeight, 512, -512);
