@@ -1480,6 +1480,8 @@ void R_Register( void )
 	r_ext_texture_float = ri_Cvar_Get_NoComm( "r_ext_texture_float", "1", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable floating-point textures" );
 	r_arb_half_float_pixel = ri_Cvar_Get_NoComm( "r_arb_half_float_pixel", "1", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable ARB_half_float GL extension" );
 	r_ext_framebuffer_multisample = ri_Cvar_Get_NoComm( "r_ext_multisample", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable framebuffer MSAA" );
+	// We do MSAA resolving manually in rend2, so don't bother with the default framebuffer
+	ri.Cvar_Set("r_ext_multisample_default_fb", "0");
 	r_arb_seamless_cube_map = ri_Cvar_Get_NoComm( "r_arb_seamless_cube_map", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable seamless cube map filtering GL extension" );
 	r_arb_vertex_type_2_10_10_10_rev = ri_Cvar_Get_NoComm( "r_arb_vertex_type_2_10_10_10_rev", "1", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable 1010102 UI data type" );
 	r_arb_buffer_storage = ri_Cvar_Get_NoComm( "r_arb_buffer_storage", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable buffer storage GL extension" );
