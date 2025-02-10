@@ -17,7 +17,7 @@ in vec2 var_ScreenTex;
 
 out vec4 out_Color;
 
-const vec3 LUMINANCE_VECTOR = vec3(0.299, 0.587, 0.114);
+const vec3 LUMINANCE_VECTOR = vec3(0.2126, 0.7152, 0.0722);
 
 void main()
 {
@@ -33,5 +33,5 @@ void main()
 		weight *= maxLum / luminance;
 	}
 
-	out_Color = vec4(weight * screenImage, 1.0);
+	out_Color = max(vec4(weight * screenImage, 1.0), vec4(0.0));
 }
