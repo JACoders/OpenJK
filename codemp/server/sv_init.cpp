@@ -568,7 +568,7 @@ Ghoul2 Insert End
 	for (i=0 ; i<sv_maxclients->integer ; i++) {
 		// save when the server started for each client already connected
 		if (svs.clients[i].state >= CS_CONNECTED) {
-			svs.clients[i].oldServerTime = svs.time;
+			svs.clients[i].oldServerTime = sv.time;
 		}
 	}
 

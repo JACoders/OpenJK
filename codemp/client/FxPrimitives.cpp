@@ -751,6 +751,30 @@ CLine::CLine(void)
 }
 
 //----------------------------
+bool CLine::Cull( void )
+{
+	vec3_t	dir;
+
+	VectorSubtract( mOrigin1, theFxHelper.refdef->vieworg, dir );
+
+	//Check if it's in front of the viewer
+	if ( (DotProduct( theFxHelper.refdef->viewaxis[0], dir )) >= 0 )
+	{
+		return false;	//don't cull
+	}
+
+	VectorSubtract( mOrigin2, theFxHelper.refdef->vieworg, dir );
+
+	//Check if it's in front of the viewer
+	if ( (DotProduct( theFxHelper.refdef->viewaxis[0], dir )) >= 0 )
+	{
+		return false;
+	}
+
+	return true; //all points behind viewer
+}
+
+//----------------------------
 void CLine::Draw(void)
 {
 	if ( mFlags & FX_DEPTH_HACK )
