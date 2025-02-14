@@ -424,6 +424,7 @@ public:
 	// GPU Data
 	mat3x4_t boneMatrices[MAX_G2_BONES];
 	int      uboOffset;
+	int		 uboPreviousOffset;
 	int	     uboGPUFrame;
 
 	CBoneCache( const model_t *amod, const mdxaHeader_t *aheader )
@@ -439,6 +440,7 @@ public:
 		, mUnsquash(false)
 		, mSmoothFactor(0.0f)
 		, uboOffset(-1)
+		, uboPreviousOffset(-1)
 		, uboGPUFrame(-1)
 	{
 		assert(amod);
@@ -3577,6 +3579,47 @@ void RB_TransformBones(const trRefEntity_t *ent, const trRefdef_t *refdef, int c
 
 		bc->uboOffset = uboOffset;
 		bc->uboGPUFrame = currentFrameNum;
+
+		if (!backEndData->cachePreviousFrameUbos)
+		{
+			bc->uboPreviousOffset = -1;
+			return;
+		}
+
+		if (frame->numCachedGhoulUboOffsets == MAX_GENTITIES)
+		{
+			ri.Printf(PRINT_DEVELOPER, "Too many ghoul2 models to cache, skipping now.\n");
+		}
+		else
+		{
+			frame->cachedGhoulUboOffsets[frame->numCachedGhoulUboOffsets].ghoulPointer = ent->e.ghoul2;
+			frame->cachedGhoulUboOffsets[frame->numCachedGhoulUboOffsets].model = g2Info.mModel;
+			frame->cachedGhoulUboOffsets[frame->numCachedGhoulUboOffsets].boltIndex = g2Info.mModelBoltLink;
+			frame->cachedGhoulUboOffsets[frame->numCachedGhoulUboOffsets].boneUboOffset = uboOffset;
+			frame->numCachedGhoulUboOffsets++;
+		}
+
+		int foundCache = -1;
+		for (int c = 0; c < backEndData->previousFrame->numCachedGhoulUboOffsets; c++)
+		{
+			ghoul2UboCache_t *currentCache = &backEndData->previousFrame->cachedGhoulUboOffsets[c];
+			if (currentCache->ghoulPointer != ent->e.ghoul2)
+				continue;
+			if (currentCache->model != g2Info.mModel)
+				continue;
+			if (currentCache->boltIndex != g2Info.mModelBoltLink && foundCache == -1)
+			{
+				foundCache = c;
+				continue;
+			}
+			foundCache = c;
+			break;
+		}
+
+		if (foundCache == -1)
+			bc->uboPreviousOffset = 0;
+		else
+			bc->uboPreviousOffset = backEndData->previousFrame->cachedGhoulUboOffsets[foundCache].boneUboOffset;
 	}
 }
 
@@ -3584,6 +3627,14 @@ int RB_GetBoneUboOffset(CRenderableSurface *surf)
 {
 	if (surf->boneCache)
 		return surf->boneCache->uboOffset;
+	else
+		return -1;
+}
+
+int RB_GetPreviousBoneUboOffset(CRenderableSurface *surf)
+{
+	if (surf->boneCache)
+		return surf->boneCache->uboPreviousOffset;
 	else
 		return -1;
 }

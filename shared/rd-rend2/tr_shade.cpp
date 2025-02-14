@@ -755,6 +755,25 @@ static UniformBlockBinding GetSceneBlockUniformBinding()
 	return binding;
 }
 
+static UniformBlockBinding GetTemporalBlockUniformBinding()
+{
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];
+	UniformBlockBinding binding = {};
+	binding.block = UNIFORM_BLOCK_TEMPORAL_INFO;
+	binding.ubo = currentFrameUbo;
+
+	if (tr.temporalInfoUboOffset == -1)
+	{
+		binding.offset = 0;
+	}
+	else
+	{
+		binding.offset = tr.temporalInfoUboOffset;
+	}
+	return binding;
+}
+
 static UniformBlockBinding GetFogsBlockUniformBinding()
 {
 	const byte currentFrameScene = backEndData->currentFrame->currentScene;
@@ -807,6 +826,48 @@ static UniformBlockBinding GetEntityBlockUniformBinding(
 		}
 	}
 
+	if (binding.offset == -1)
+		binding.offset = 0;
+
+	return binding;
+}
+
+static UniformBlockBinding GetPreviousEntityBlockUniformBinding(
+	const trRefEntity_t *refEntity)
+{
+	const byte currentFrameScene = backEndData->currentFrame->currentScene;
+	const GLuint currentFrameUbo = backEndData->previousFrame->ubo[currentFrameScene];
+	UniformBlockBinding binding = {};
+	binding.block = UNIFORM_BLOCK_PREVIOUS_ENTITY;
+
+	if (refEntity == &backEnd.entity2D)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.entity2DUboOffset;
+	}
+	else if (refEntity == &backEnd.entityFlare)
+	{
+		binding.ubo = tr.staticUbo;
+		binding.offset = tr.entityFlareUboOffset;
+	}
+	else
+	{
+		binding.ubo = currentFrameUbo;
+		if (!refEntity || refEntity == &tr.worldEntity)
+		{
+			binding.ubo = backEndData->currentFrame->ubo[currentFrameScene];
+			binding.offset = tr.entityUboOffsets[REFENTITYNUM_WORLD];
+		}
+		else
+		{
+			const int refEntityNum = refEntity - backEnd.refdef.entities;
+			binding.offset = tr.previousEntityUboOffsets[refEntityNum];
+		}
+	}
+
+	if (binding.offset == -1)
+		binding.offset = 0;
+
 	return binding;
 }
 
@@ -821,6 +882,28 @@ static UniformBlockBinding GetBonesBlockUniformBinding()
 	if (glState.skeletalAnimation)
 		binding.offset = tr.animationBoneUboOffset;
 	else
+		binding.offset = 0;
+
+	if (binding.offset == -1)
+		binding.offset = 0;
+
+	return binding;
+}
+
+static UniformBlockBinding GetPreviousBonesBlockUniformBinding()
+{
+	const byte frameScene = backEndData->currentFrame->currentScene;
+	const GLuint frameUbo = backEndData->previousFrame->ubo[frameScene];
+	UniformBlockBinding binding = {};
+	binding.ubo = frameUbo;
+	binding.block = UNIFORM_BLOCK_PREVIOUS_BONES;
+
+	if (glState.skeletalAnimation)
+		binding.offset = tr.previousAnimationBoneUboOffset;
+	else
+		binding.offset = 0;
+
+	if (binding.offset == -1)
 		binding.offset = 0;
 
 	return binding;
@@ -1224,7 +1307,27 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 	if (backEnd.depthFill)
 	{
-		if (glslShaderGroup == tr.lightallShader)
+		if (tr.depthVelocityFbo != nullptr && glState.currentFBO == tr.depthVelocityFbo)
+		{
+			index = 0;
+			if (glState.skeletalAnimation)
+				index |= VELOCITYDEF_USE_SKELETAL_ANIMATION;
+			if (tess.shader->numDeforms && !ShaderRequiresCPUDeforms(tess.shader))
+				index |= VELOCITYDEF_USE_DEFORM_VERTEXES;
+			if (stage->bundle[0].tcGen != TCGEN_TEXTURE || (stage->bundle[0].numTexMods))
+				index |= VELOCITYDEF_USE_TCGEN_AND_TCMOD;
+			if (backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1 | RF_DISINTEGRATE2))
+				index |= VELOCITYDEF_USE_RGBAGEN;
+			if (backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE2)
+				index |= VELOCITYDEF_USE_DEFORM_VERTEXES;
+			if (glslShaderGroup == tr.lightallShader &&
+				stage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
+				stage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) // TODO: remove light requirement
+				index |= VELOCITYDEF_USE_PARALLAXMAP;
+			result = &tr.velocityShader[index];
+		}
+		else 
+			if (glslShaderGroup == tr.lightallShader)
 		{
 			index = 0;
 
@@ -1855,9 +1958,12 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			GetSceneBlockUniformBinding(),
 			GetFogsBlockUniformBinding(),
 			GetEntityBlockUniformBinding(backEnd.currentEntity),
+			GetPreviousEntityBlockUniformBinding(backEnd.currentEntity),
 			GetShaderInstanceBlockUniformBinding(
 				backEnd.currentEntity, input->shader),
-			GetBonesBlockUniformBinding()
+			GetBonesBlockUniformBinding(),
+			GetPreviousBonesBlockUniformBinding(),
+			GetTemporalBlockUniformBinding()
 		};
 
 		DrawItem item = {};

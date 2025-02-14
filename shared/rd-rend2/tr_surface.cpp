@@ -2609,6 +2609,13 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	if (surf->fogIndex > 0 && r_drawfog->integer)
 		shaderFlags |= SSDEF_USE_FOG;
 
+	if (backEnd.depthFill &&
+		tr.depthVelocityFbo != nullptr &&
+		glState.currentFBO == tr.depthVelocityFbo)
+	{
+		shaderFlags |= SSDEF_VELOCITY;
+	}
+
 	shaderProgram_t *program = programGroup + shaderFlags;
 	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
 
@@ -2637,7 +2644,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 		{ currentSpriteUbo, ss->spriteUboOffset, UNIFORM_BLOCK_SURFACESPRITE },
 		{ currentFrameUbo, tr.sceneUboOffset, UNIFORM_BLOCK_SCENE },
 		{ currentFrameUbo, tr.cameraUboOffsets[tr.viewParms.currentViewParm], UNIFORM_BLOCK_CAMERA },
-		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS }
+		{ currentFrameUbo, tr.fogsUboOffset, UNIFORM_BLOCK_FOGS },
+		{ currentFrameUbo, tr.temporalInfoUboOffset, UNIFORM_BLOCK_TEMPORAL_INFO }
 	};
 
 	uint32_t numBindings;

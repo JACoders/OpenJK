@@ -88,7 +88,7 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 	bool srgbTransform = tr.hdrLighting == qtrue;
 	shaderProgram_t *shader = srgbTransform ? &tr.tonemapShader[1] : &tr.tonemapShader[0];
 
-	if (r_smaa->integer)
+	if (r_smaa->integer == 1)
 		GL_BindToTMU(tr.smaaBlendImage, 2);
 
 	FBO_Bind(NULL);

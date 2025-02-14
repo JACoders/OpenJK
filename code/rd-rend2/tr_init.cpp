@@ -1735,9 +1735,24 @@ static void R_InitBackEndFrameData()
 	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
 	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
 
-	GLuint ubos[MAX_FRAMES * MAX_SCENES];
-	qglGenBuffers(MAX_FRAMES * MAX_SCENES, ubos);
+	// For temporal data we need ubo buffers between frames for 
+	// reading last frame data without fear of writing next frames data into them
+	bool reserveTemporalUbo = (r_smaa->integer == 2
+		// || r_smaa->integer == 4
+		// || r_taa->integer
+		// || r_ssr->integer
+		// || r_motionBlur->integer
+		);
 
+	if (reserveTemporalUbo)
+		backEndData->numFrameUbos = (MAX_FRAMES + 1) * MAX_SCENES;
+	else
+		backEndData->numFrameUbos = MAX_FRAMES * MAX_SCENES;
+
+	backEndData->frameUbos = (uint32_t*)Z_Malloc(backEndData->numFrameUbos * sizeof(*backEndData->frameUbos), TAG_GENERAL);
+	backEndData->cachePreviousFrameUbos = reserveTemporalUbo;
+
+	qglGenBuffers(backEndData->numFrameUbos, backEndData->frameUbos);
 
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
@@ -1747,7 +1762,7 @@ static void R_InitBackEndFrameData()
 		for (byte j = 0; j < MAX_SCENES; j++)
 		{
 			size_t BUFFER_SIZE = j == 0 ? FRAME_UNIFORM_BUFFER_SIZE : FRAME_SCENE_UNIFORM_BUFFER_SIZE;
-			frame->ubo[j] = ubos[i * MAX_SCENES + j];
+			frame->ubo[j] = backEndData->frameUbos[i * MAX_SCENES + j];
 			frame->uboWriteOffset[j] = 0;
 			frame->uboSize[j] = BUFFER_SIZE;
 			qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo[j]);
@@ -1792,6 +1807,25 @@ static void R_InitBackEndFrameData()
 		{
 			gpuTimer_t *timer = frame->timers + j;
 			timer->queryName = timerQueries[i*MAX_GPU_TIMERS + j];
+		}
+	}
+
+	if (reserveTemporalUbo)
+	{
+		// Allocate the spare ubo for last frame infos
+		gpuFrame_t *frame = &backEndData->frames[0];
+		for (byte j = 0; j < MAX_SCENES; j++)
+		{
+			size_t BUFFER_SIZE = j == 0 ? FRAME_UNIFORM_BUFFER_SIZE : FRAME_SCENE_UNIFORM_BUFFER_SIZE;
+			frame->ubo[j] = backEndData->frameUbos[MAX_FRAMES * MAX_SCENES + j];
+			frame->uboWriteOffset[j] = 0;
+			frame->uboSize[j] = BUFFER_SIZE;
+			qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo[j]);
+			glState.currentGlobalUBO = frame->ubo[j];
+
+			// TODO: persistently mapped UBOs
+			qglBufferData(GL_UNIFORM_BUFFER, BUFFER_SIZE,
+				nullptr, GL_DYNAMIC_DRAW);
 		}
 	}
 
@@ -1947,6 +1981,9 @@ static void R_ShutdownBackEndFrameData()
 	if ( !backEndData )
 		return;
 
+	qglDeleteBuffers(backEndData->numFrameUbos, backEndData->frameUbos);
+	Z_Free(backEndData->frameUbos);
+
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
@@ -1956,8 +1993,6 @@ static void R_ShutdownBackEndFrameData()
 			qglDeleteSync(frame->sync);
 			frame->sync = NULL;
 		}
-
-		qglDeleteBuffers(MAX_SCENES, frame->ubo);
 
 		if ( glRefConfig.immutableBuffers )
 		{

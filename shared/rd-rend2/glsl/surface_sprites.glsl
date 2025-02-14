@@ -38,6 +38,18 @@ layout(std140) uniform SurfaceSprite
 	float u_FxAlphaEnd;
 };
 
+#if defined(VELOCITY_PASS)
+layout(std140) uniform TemporalInfo
+{
+	mat4 u_previousViewProjectionMatrix;
+	vec2 u_currentJitter;
+	vec2 u_previousJitter;
+	float u_previousFrameTime;
+};
+out vec4 var_Position;
+out vec4 var_prevPosition;
+#endif
+
 out vec2 var_TexCoords;
 out float var_Alpha;
 out vec3 var_Color;
@@ -50,21 +62,15 @@ out float var_Effectpos;
 out vec3 var_WSPosition;
 #endif
 
-void main()
+vec3 CalculateVertexOffset( in int vertex_id, in float sprite_time, in float fadeScale)
 {
-	vec3 V = u_ViewOrigin - attr_Position.xyz;
-
 	float width = attr_Position2.x;
 	float height = attr_Position2.y;
 	vec2 skew = attr_Position2.zw;
-
-	float distanceToCamera = length(V);
-	float fadeScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
-						distanceToCamera);
+	
 	width += u_FadeScale * fadeScale * width;
 
 #if defined(FX_SPRITE)
-	float sprite_time = u_frameTime * 1000.0;
 	var_Effectpos = fract((sprite_time+10000.0*attr_Position.w) / u_FxDuration);
 	width += var_Effectpos * width * u_FxGrow.x;
 	height += var_Effectpos * height * u_FxGrow.y;
@@ -94,14 +100,8 @@ void main()
 		vec3(-offsetValue, 0.0, 0.0)
 	);
 #endif
-	const vec2 texcoords[] = vec2[](
-		vec2(1.0, 1.0),
-		vec2(1.0, 0.0),
-		vec2(0.0, 0.0),
-		vec2(0.0, 1.0)
-	);
 
-	vec3 offset = offsets[gl_VertexID % 4];
+	vec3 offset = offsets[vertex_id];
 
 #if defined(FACE_CAMERA)
 	offset = (offset.x * normalize(u_ViewLeft)) + (offset.z * normalize(u_ViewUp));
@@ -119,24 +119,64 @@ void main()
 #if !defined(FACE_UP) && !defined(FX_SPRITE)
 	float isLowerVertex = float(offset.z == 0.0);
 	offset.xy += mix(skew, vec2(0.0), isLowerVertex);
-	float sprite_time = u_frameTime * 1000.0;
 	float angle = (attr_Position.x + attr_Position.y) * 0.02 + (sprite_time * 0.0015);
 	float windsway = mix(height* u_WindIdle * 0.075, 0.0, isLowerVertex);
 	offset.xy += vec2(cos(angle), sin(angle)) * windsway;
 #endif
+	return offset;
+}
+
+void main()
+{
+	vec3 V = u_ViewOrigin - attr_Position.xyz;
+	float distanceToCamera = length(V);
+	float fadeScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
+						distanceToCamera);
+
+	float sprite_time = u_frameTime * 1000.0;
+	int vertex_id = gl_VertexID % 4;
+	vec3 offset = CalculateVertexOffset(vertex_id, sprite_time, fadeScale);
 
 	vec4 worldPos = vec4(attr_Position.xyz + offset, 1.0);
 	gl_Position = u_viewProjectionMatrix * worldPos;
-	var_TexCoords = texcoords[gl_VertexID % 4];
+#if defined(USE_FOG)
+	var_WSPosition = worldPos.xyz;
+#endif
+
+#if defined(VELOCITY_PASS)
+	var_Position = gl_Position;
+	sprite_time = u_previousFrameTime * 1000.0;
+	offset = CalculateVertexOffset(vertex_id, sprite_time, fadeScale);
+	worldPos = vec4(attr_Position.xyz + offset, 1.0);
+	var_prevPosition = u_previousViewProjectionMatrix * worldPos;
+#endif
+
+	const vec2 texcoords[] = vec2[](
+		vec2(1.0, 1.0),
+		vec2(1.0, 0.0),
+		vec2(0.0, 0.0),
+		vec2(0.0, 1.0)
+	);
+	var_TexCoords = texcoords[vertex_id];
 	var_Color = attr_Color;
 	var_Alpha = 1.0 - fadeScale;
-	#if defined(USE_FOG)
-	var_WSPosition = worldPos.xyz;
-	#endif
+
 }
 
 /*[Fragment]*/
 uniform sampler2D u_DiffuseMap;
+
+#if defined(VELOCITY_PASS)
+layout(std140) uniform TemporalInfo
+{
+	mat4 u_previousViewProjectionMatrix;
+	vec2 u_currentJitter;
+	vec2 u_previousJitter;
+	float u_previousFrameTime;
+};
+in vec4 var_Position;
+in vec4 var_prevPosition;
+#endif
 
 in vec2 var_TexCoords;
 in vec3 var_Color;
@@ -197,7 +237,9 @@ uniform int u_AlphaTestType;
 #endif
 
 out vec4 out_Color;
+#if !defined(VELOCITY_PASS)
 out vec4 out_Glow;
+#endif
 
 #if defined(USE_FOG)
 float CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
@@ -307,5 +349,17 @@ void main()
 	out_Color.rgb *= out_Color.a;
 #endif
 
+#if defined(VELOCITY_PASS)
+	vec2 currentPos = (var_Position.xy / var_Position.w) * 0.5 + 0.5;
+	vec2 prevPos = (var_prevPosition.xy / var_prevPosition.w) * 0.5 + 0.5;
+	vec2 motionVector = currentPos - prevPos;
+
+	motionVector -= u_currentJitter / r_FBufScale.xy;
+	motionVector -= u_previousJitter / r_FBufScale.xy;
+
+	out_Color = vec4(motionVector, 0.0, 1.0);
+#else
 	out_Glow = vec4(0.0);
+#endif
+	
 }

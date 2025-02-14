@@ -142,6 +142,7 @@ void FBO_CreateBuffer(FBO_t *fbo, int format, int index, int multisample)
 
 	switch(format)
 	{
+		case GL_RG16F:
 		case GL_RGB:
 		case GL_RGBA:
 		case GL_RGB8:
@@ -481,6 +482,47 @@ void FBO_Init(void)
 		}
 	}
 
+	if (tr.velocityImage != nullptr)
+	{
+		if (multisample)
+		{
+			tr.depthVelocityFbo = FBO_Create(
+				"_velocity", tr.renderDepthImage->width,
+				tr.renderDepthImage->height);
+
+			FBO_Bind(tr.depthVelocityFbo);
+			FBO_CreateBuffer(tr.depthVelocityFbo, GL_RG16F, 0, multisample);
+			qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, tr.renderFbo->packedDepthStencilBuffer);
+			qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, tr.renderFbo->packedDepthStencilBuffer);
+			FBO_SetupDrawBuffers();
+
+			R_CheckFBO(tr.depthVelocityFbo);
+
+			tr.msaaResolveVelocityFbo = FBO_Create(
+				"_msaaVelocityResolve", tr.renderDepthImage->width,
+				tr.renderDepthImage->height);
+
+			FBO_Bind(tr.msaaResolveVelocityFbo);
+			FBO_AttachTextureImage(tr.velocityImage, 0);
+			FBO_SetupDrawBuffers();
+
+			R_CheckFBO(tr.msaaResolveVelocityFbo);
+		}
+		else
+		{
+			tr.depthVelocityFbo = FBO_Create(
+				"_velocity", tr.renderDepthImage->width,
+				tr.renderDepthImage->height);
+
+			FBO_Bind(tr.depthVelocityFbo);
+			FBO_AttachTextureImage(tr.velocityImage, 0);
+			R_AttachFBOTexturePackedDepthStencil(tr.renderDepthImage->texnum);
+			FBO_SetupDrawBuffers();
+
+			R_CheckFBO(tr.depthVelocityFbo);
+		}
+	}
+
 	if (r_smaa->integer)
 	{
 		tr.smaaEdgeFbo = FBO_Create(
@@ -498,6 +540,33 @@ void FBO_Init(void)
 		FBO_AttachTextureImage(tr.smaaBlendImage, 0);
 		FBO_SetupDrawBuffers();
 		R_CheckFBO(tr.smaaBlendFbo);
+	}
+
+	if (r_smaa->integer == 2)
+	{
+		tr.smaaResolveFbo = FBO_Create(
+			"_smaaResolve", tr.smaaResolveImage->width,
+			tr.smaaResolveImage->height);
+		FBO_Bind(tr.smaaResolveFbo);
+		FBO_AttachTextureImage(tr.smaaResolveImage, 0);
+		FBO_SetupDrawBuffers();
+		R_CheckFBO(tr.smaaResolveFbo);
+
+		tr.temporalResolveFbo = FBO_Create(
+			"_temporalResolve", tr.temporalResolveImage->width,
+			tr.temporalResolveImage->height);
+		FBO_Bind(tr.temporalResolveFbo);
+		FBO_AttachTextureImage(tr.temporalResolveImage, 0);
+		FBO_SetupDrawBuffers();
+		R_CheckFBO(tr.temporalResolveFbo);
+
+		tr.historyFbo = FBO_Create(
+			"_history", tr.historyImage->width,
+			tr.historyImage->height);
+		FBO_Bind(tr.historyFbo);
+		FBO_AttachTextureImage(tr.historyImage, 0);
+		FBO_SetupDrawBuffers();
+		R_CheckFBO(tr.historyFbo);
 	}
 
 	if (r_drawSunRays->integer)

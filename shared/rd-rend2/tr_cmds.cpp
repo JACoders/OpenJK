@@ -531,6 +531,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		return;
 	}
 
+	backEndData->previousFrame = backEndData->currentFrame;
 	int frameNumber = backEndData->realFrameNumber;
 	gpuFrame_t *thisFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
 	backEndData->currentFrame = thisFrame;
@@ -581,10 +582,16 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		// Resets resources
 		for (byte i = 0; i < MAX_SCENES; i++)
 		{
+			if (backEndData->cachePreviousFrameUbos)
+				thisFrame->ubo[i] = backEndData->frameUbos[(frameNumber % (MAX_FRAMES + 1) * (MAX_FRAMES + 1)) + i];
+
 			qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo[i]);
 			glState.currentGlobalUBO = thisFrame->ubo[i];
 			thisFrame->uboWriteOffset[i] = 0;
 		}
+
+		thisFrame->numCachedGhoulUboOffsets = 0;
+		thisFrame->numCachedModelUboOffsets = 0;
 
 		thisFrame->dynamicIboCommitOffset = 0;
 		thisFrame->dynamicIboWriteOffset = 0;

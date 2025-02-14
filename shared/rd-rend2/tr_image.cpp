@@ -3449,6 +3449,36 @@ void R_CreateBuiltinImages( void ) {
 		IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
 		GL_DEPTH_COMPONENT24);
 
+	bool needVelocityBuffer = (
+		r_smaa->integer == 2
+		// || r_smaa->integer == 4
+		// || r_ssr->integer
+		// || r_motionBlur->integer
+		// || r_taa->integer
+		);
+	if (needVelocityBuffer)
+	{
+		tr.velocityImage = R_CreateImage(
+			"*velocity", NULL, width, height,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			GL_RG16F);
+	}
+	if (r_smaa->integer == 2)
+	{
+		tr.smaaResolveImage = R_CreateImage(
+			"*smaaResolve", NULL, width, height,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			hdrFormat);
+		tr.temporalResolveImage = R_CreateImage(
+			"*temporalResolve", NULL, width, height,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			hdrFormat);
+		tr.historyImage = R_CreateImage(
+			"*history", NULL, width, height,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			hdrFormat);
+	}
+
 	{
 		unsigned short sdata[4];
 		void *p;

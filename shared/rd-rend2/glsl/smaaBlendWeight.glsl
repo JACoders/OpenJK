@@ -87,6 +87,7 @@ void main()
 uniform sampler2D u_EdgeMap;
 uniform sampler2D u_AreaMap;
 uniform sampler2D u_SearchMap;
+uniform vec4 u_ViewInfo; // subsampleIndices
 
 in vec2 var_ScreenTex;
 in vec2 var_pixcoord;
@@ -512,5 +513,5 @@ void main()
 		u_EdgeMap,
         u_AreaMap,
         u_SearchMap,
-        vec4(0.0));
+        u_ViewInfo);
 }

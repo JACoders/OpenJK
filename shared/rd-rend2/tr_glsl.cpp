@@ -32,8 +32,11 @@ const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
 	{ 2, "Lights", sizeof(LightsBlock) },
 	{ 3, "Fogs", sizeof(FogsBlock) },
 	{ 4, "Entity", sizeof(EntityBlock) },
-	{ 5, "ShaderInstance", sizeof(ShaderInstanceBlock) },
-	{ 6, "Bones", sizeof(SkeletonBoneMatricesBlock) },
+	{ 5, "PreviousEntity", sizeof(EntityBlock) },
+	{ 6, "ShaderInstance", sizeof(ShaderInstanceBlock) },
+	{ 7, "Bones", sizeof(SkeletonBoneMatricesBlock) },
+	{ 8, "PreviousBones", sizeof(SkeletonBoneMatricesBlock) },
+	{ 9, "TemporalInfo", sizeof(TemporalBlock) },
 	{ 10, "SurfaceSprite", sizeof(SurfaceSpriteBlock) },
 };
 
@@ -67,6 +70,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_AreaMap", GLSL_INT, 1 },
 	{ "u_SearchMap", GLSL_INT, 1 },
 	{ "u_BlendMap", GLSL_INT, 1 },
+	{ "u_VelocityMap", GLSL_INT, 1 },
 
 	{ "u_ShadowMap",  GLSL_INT, 1 },
 	{ "u_ShadowMap2", GLSL_INT, 1 },
@@ -1572,6 +1576,79 @@ static int GLSL_LoadGPUProgramFogPass(
 	return numPrograms;
 }
 
+static int GLSL_LoadGPUProgramVelocityPass(
+	ShaderProgramBuilder& builder,
+	Allocator& scratchAlloc)
+{
+	int numPrograms = 0;
+	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
+
+	char extradefines[1200];
+	const GPUProgramDesc *programDesc =
+		LoadProgramSource("velocity", allocator, fallback_velocityProgram);
+	for (int i = 0; i < VELOCITYDEF_COUNT; i++)
+	{
+		if (!GLSL_IsValidPermutationForFog(i))
+		{
+			continue;
+		}
+
+		uint32_t attribs =
+			(ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0);
+		extradefines[0] = '\0';
+
+		if (i & VELOCITYDEF_USE_DEFORM_VERTEXES)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
+#ifdef REND2_SP_MD3
+		if (i & FOGDEF_USE_VERTEX_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
+			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
+		}
+#endif // REND2_SP
+		if (i & VELOCITYDEF_USE_SKELETAL_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
+			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
+		}
+
+		if (i & VELOCITYDEF_USE_TCGEN_AND_TCMOD)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
+		}
+
+		if (i & VELOCITYDEF_USE_RGBAGEN)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
+
+		if (i & VELOCITYDEF_USE_PARALLAXMAP && r_parallaxMapping->integer)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_PARALLAXMAP\n");
+			attribs |= ATTR_TANGENT;
+		}
+
+		if (!GLSL_LoadGPUShader(builder, &tr.velocityShader[i], "velocity", attribs, NO_XFB_VARS,
+			extradefines, *programDesc))
+		{
+			ri.Error(ERR_FATAL, "Could not load velocity shader!");
+		}
+
+		GLSL_InitUniforms(&tr.velocityShader[i]);
+
+		qglUseProgram(tr.velocityShader[i].program);
+		//if (i & FOGDEF_USE_ALPHA_TEST)
+		GLSL_SetUniformInt(&tr.velocityShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
+		GLSL_SetUniformInt(&tr.velocityShader[i], UNIFORM_NORMALMAP, TB_NORMALMAP);
+		qglUseProgram(0);
+
+		GLSL_FinishGPUShader(&tr.velocityShader[i]);
+
+		++numPrograms;
+	}
+
+	return numPrograms;
+}
+
 static int GLSL_LoadGPUProgramRefraction(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc)
@@ -2009,7 +2086,7 @@ static int GLSL_LoadGPUProgramTonemap(
 	const uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 
 	extradefines[0] = '\0';
-	if (r_smaa->integer)
+	if (r_smaa->integer == 1)
 	{
 		Q_strcat(extradefines, sizeof(extradefines),
 			va( "#define USE_SMAA\n"
@@ -2040,7 +2117,7 @@ static int GLSL_LoadGPUProgramTonemap(
 		qglUseProgram(tr.tonemapShader[i].program);
 		GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_TEXTUREMAP, TB_COLORMAP);
 		GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_LEVELSMAP, TB_LEVELSMAP);
-		if (r_smaa->integer)
+		if (r_smaa->integer == 1)
 			GLSL_SetUniformInt(&tr.tonemapShader[i], UNIFORM_BLENDMAP, 2);
 
 		qglUseProgram(0);
@@ -2310,6 +2387,10 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define ADDITIVE_BLEND\n");
 
+		if (i & SSDEF_VELOCITY)
+			Q_strcat(extradefines, sizeof(extradefines),
+				"#define VELOCITY_PASS\n");
+
 		shaderProgram_t *program = tr.spriteShader + i;
 		if (!GLSL_LoadGPUShader(builder, program, "surface_sprites", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
@@ -2368,6 +2449,7 @@ static int GLSL_LoadGPUProgramSMAA(
 	
 	Q_strcat(extradefines, sizeof(extradefines),
 		va(	"#define SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR 2.0\n"
+			"#define SMAA_REPROJECTION_WEIGHT_SCALE 30.0\n"
 			"#define SMAA_RT_METRICS vec4(1.0 / %f, 1.0 / %f, %f, %f)\n",
 			(float)glConfig.vidWidth,
 			(float)glConfig.vidHeight,
@@ -2407,6 +2489,14 @@ static int GLSL_LoadGPUProgramSMAA(
 			"#define SMAA_MAX_SEARCH_STEPS 32\n"
 			"#define SMAA_MAX_SEARCH_STEPS_DIAG 16\n"
 			"#define SMAA_CORNER_ROUNDING 25\n"
+
+		);
+	}
+
+	if (r_smaa->integer == 2)
+	{
+		Q_strcat(extradefines, sizeof(extradefines),
+			"#define SMAA_REPROJECTION 1\n"
 		);
 	}
 	
@@ -2432,8 +2522,8 @@ static int GLSL_LoadGPUProgramSMAA(
 			builder,
 			scratchAlloc,
 			&tr.smaaBlendShader,
-			"smaaBlend",
-			fallback_smaaBlendProgram,
+			"smaaBlendWeight",
+			fallback_smaaBlendWeightProgram,
 			extradefines);
 
 		GLSL_InitUniforms(&tr.smaaBlendShader);
@@ -2446,7 +2536,46 @@ static int GLSL_LoadGPUProgramSMAA(
 
 		GLSL_FinishGPUShader(&tr.smaaBlendShader);
 	}
-	return 2;
+	{
+		GLSL_LoadGPUProgramBasicWithDefinitions(
+			builder,
+			scratchAlloc,
+			&tr.smaaResolveShader,
+			"smaaResolve",
+			fallback_smaaResolveProgram,
+			extradefines);
+
+		GLSL_InitUniforms(&tr.smaaResolveShader);
+
+		qglUseProgram(tr.smaaResolveShader.program);
+		GLSL_SetUniformInt(&tr.smaaResolveShader, UNIFORM_TEXTUREMAP, 0);
+		GLSL_SetUniformInt(&tr.smaaResolveShader, UNIFORM_BLENDMAP, 1);
+		if (r_smaa->integer == 2)
+			GLSL_SetUniformInt(&tr.smaaResolveShader, UNIFORM_VELOCITYMAP, 2);
+		qglUseProgram(0);
+
+		GLSL_FinishGPUShader(&tr.smaaResolveShader);
+	}
+	{
+		GLSL_LoadGPUProgramBasicWithDefinitions(
+			builder,
+			scratchAlloc,
+			&tr.smaaTemporalResolveShader,
+			"smaaTemporalResolve",
+			fallback_smaaTemporalResolveProgram,
+			extradefines);
+
+		GLSL_InitUniforms(&tr.smaaTemporalResolveShader);
+
+		qglUseProgram(tr.smaaTemporalResolveShader.program);
+		GLSL_SetUniformInt(&tr.smaaTemporalResolveShader, UNIFORM_TEXTUREMAP, 0);
+		GLSL_SetUniformInt(&tr.smaaTemporalResolveShader, UNIFORM_BLENDMAP, 1);
+		GLSL_SetUniformInt(&tr.smaaTemporalResolveShader, UNIFORM_VELOCITYMAP, 2);
+		qglUseProgram(0);
+
+		GLSL_FinishGPUShader(&tr.smaaTemporalResolveShader);
+	}
+	return 4;
 }
 
 void GLSL_LoadGPUShaders()
@@ -2518,6 +2647,7 @@ void GLSL_LoadGPUShaders()
 	numGenShaders += GLSL_LoadGPUProgramGeneric(builder, allocator);
 	numLightShaders += GLSL_LoadGPUProgramLightAll(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramFogPass(builder, allocator);
+	numEtcShaders += GLSL_LoadGPUProgramVelocityPass(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramRefraction(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramTextureColor(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramPShadow(builder, allocator);
@@ -2569,6 +2699,9 @@ void GLSL_ShutdownGPUShaders(void)
 	for ( i = 0; i < FOGDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.fogShader[i]);
 
+	for (i = 0; i < VELOCITYDEF_COUNT; i++)
+		GLSL_DeleteGPUShader(&tr.velocityShader[i]);
+
 	for ( i = 0; i < LIGHTDEF_COUNT; i++)
 		GLSL_DeleteGPUShader(&tr.lightallShader[i]);
 
@@ -2607,6 +2740,8 @@ void GLSL_ShutdownGPUShaders(void)
 
 	GLSL_DeleteGPUShader(&tr.smaaEdgeShader);
 	GLSL_DeleteGPUShader(&tr.smaaBlendShader);
+	GLSL_DeleteGPUShader(&tr.smaaResolveShader);
+	GLSL_DeleteGPUShader(&tr.smaaTemporalResolveShader);
 
 	glState.currentProgram = 0;
 	qglUseProgram(0);

@@ -553,21 +553,14 @@ void RB_BeginDrawingView (void) {
 
 	// FIXME: HUGE HACK: render to the screen fbo if we've already postprocessed the frame and aren't drawing more world
 	// drawing more world check is in case of double renders, such as skyportals
-	if (backEnd.viewParms.targetFbo == NULL)
+	FBO_t *targetFBO = backEnd.viewParms.targetFbo;
+	if (backEnd.viewParms.targetFbo == NULL &&
+		tr.renderFbo &&
+		!(backEnd.framePostProcessed && (backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
 	{
-		if (!tr.renderFbo || (backEnd.framePostProcessed && (backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
-		{
-			FBO_Bind(NULL);
-		}
-		else
-		{
-			FBO_Bind(tr.renderFbo);
-		}
+		targetFBO = tr.renderFbo;
 	}
-	else
-	{
-		FBO_Bind(backEnd.viewParms.targetFbo);
-	}
+	FBO_Bind(targetFBO);
 
 	//
 	// set the modelview matrix for the viewer
@@ -624,8 +617,7 @@ void RB_BeginDrawingView (void) {
 	if (backEnd.viewParms.targetFbo == NULL)
 	{
 		// Clear the glow target
-		float black[] = {0.0f, 0.0f, 0.0f, 1.0f};
-		qglClearBufferfv (GL_COLOR, 1, black);
+		qglClearBufferfv (GL_COLOR, 1, colorBlack);
 	}
 
 	if ( ( backEnd.refdef.rdflags & RDF_HYPERSPACE ) )
@@ -633,6 +625,17 @@ void RB_BeginDrawingView (void) {
 		RB_Hyperspace();
 		return;
 	}
+
+	if (clearBits &&
+		!(backEnd.viewParms.flags & VPF_NOCLEAR) &&
+		!(backEnd.viewParms.flags & VPF_DEPTHSHADOW) &&
+		tr.depthVelocityFbo != nullptr)
+	{
+		FBO_Bind(tr.depthVelocityFbo);
+		qglClearBufferfv(GL_COLOR, 0, colorBlack);
+	}
+
+	FBO_Bind(targetFBO);
 
 	// we will only draw a sun if there was sky rendered in this view
 	backEnd.skyRenderedThisView = qfalse;
@@ -1246,6 +1249,7 @@ static void RB_SubmitDrawSurfsForDepthFill(
 				RB_BeginSurface(shader, 0, 0);
 				oldBoneCache = ((CRenderableSurface*)drawSurf->surface)->boneCache;
 				tr.animationBoneUboOffset = RB_GetBoneUboOffset((CRenderableSurface*)drawSurf->surface);
+				tr.previousAnimationBoneUboOffset = RB_GetPreviousBoneUboOffset((CRenderableSurface*)drawSurf->surface);
 			}
 		}
 
@@ -1329,6 +1333,7 @@ static void RB_SubmitDrawSurfs(
 				RB_BeginSurface(shader, fogNum, cubemapIndex);
 				oldBoneCache = ((CRenderableSurface*)drawSurf->surface)->boneCache;
 				tr.animationBoneUboOffset = RB_GetBoneUboOffset((CRenderableSurface*)drawSurf->surface);
+				tr.previousAnimationBoneUboOffset = RB_GetPreviousBoneUboOffset((CRenderableSurface*)drawSurf->surface);
 			}
 		}
 
@@ -2094,14 +2099,38 @@ static void RB_RenderSSAO()
 static void RB_RenderDepthOnly( drawSurf_t *drawSurfs, int numDrawSurfs )
 {
 	backEnd.depthFill = qtrue;
-	qglColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	bool needVelocityBuffer = 
+		!(backEnd.viewParms.flags & VPF_DEPTHSHADOW) &&
+		tr.depthVelocityFbo != nullptr;
+	FBO_t *oldFbo = glState.currentFBO;
+	if (needVelocityBuffer)
+	{
+		FBO_Bind(tr.depthVelocityFbo);
+	}
+	else 
+	{
+		qglColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	}
 	RB_RenderDrawSurfList(drawSurfs, numDrawSurfs);
+	if (needVelocityBuffer)
+		FBO_Bind(oldFbo);
+
 	qglColorMask(
 		!backEnd.colorMask[0],
 		!backEnd.colorMask[1],
 		!backEnd.colorMask[2],
 		!backEnd.colorMask[3]);
 	backEnd.depthFill = qfalse;
+
+	if (tr.msaaResolveVelocityFbo && needVelocityBuffer)
+	{
+		FBO_FastBlit(
+			tr.depthVelocityFbo, NULL,
+			tr.msaaResolveVelocityFbo, NULL,
+			GL_COLOR_BUFFER_BIT,
+			GL_NEAREST);
+	}
 
 	// Only resolve the main pass depth
 	if (tr.msaaResolveFbo && backEnd.viewParms.targetFbo == tr.renderFbo)
@@ -2243,9 +2272,38 @@ static void RB_UpdateCameraConstants(gpuFrame_t *frame)
 		VectorCopy(viewBasis[2], cameraBlock.viewUp);
 		VectorCopy(tr.cachedViewParms[i].ori.origin, cameraBlock.viewOrigin);
 
+		if (backEnd.viewParms.viewParmType == VPT_MAIN && frame->currentScene == 0)
+			memcpy(frame->viewProjectionMatrix, cameraBlock.viewProjectionMatrix, sizeof(matrix_t));
+
 		tr.cameraUboOffsets[tr.cachedViewParms[i].currentViewParm] = RB_AppendConstantsData(
 			frame, &cameraBlock, sizeof(cameraBlock));
 	}
+}
+
+static void RB_UpdateTemporalConstants(gpuFrame_t *frame, gpuFrame_t *previousFrame)
+{
+	if (tr.depthVelocityFbo == nullptr || !frame || !previousFrame)
+	{
+		tr.temporalInfoUboOffset = -1;
+		return;
+	}
+
+	TemporalBlock tempBlock = {};
+	memcpy(tempBlock.previousViewProjectionMatrix, previousFrame->viewProjectionMatrix, sizeof(matrix_t));
+	tempBlock.previousTime = previousFrame->time;
+
+	if (r_smaa->integer == 2)
+	{
+		const vec2_t jitterPos[2] =
+		{
+			{0.25f, -.25f},
+			{-.25f, 0.25f}
+		};
+		VectorCopy2(jitterPos[backEndData->realFrameNumber % 2], tempBlock.currentJitter);
+		VectorCopy2(jitterPos[(backEndData->realFrameNumber + 1) % 2], tempBlock.previousJitter);
+	}
+	tr.temporalInfoUboOffset = RB_AppendConstantsData(
+		frame, &tempBlock, sizeof(tempBlock));
 }
 
 static void RB_UpdateSceneConstants(gpuFrame_t *frame, const trRefdef_t *refdef)
@@ -2260,6 +2318,7 @@ static void RB_UpdateSceneConstants(gpuFrame_t *frame, const trRefdef_t *refdef)
 		sceneBlock.globalFogIndex = -1;
 	sceneBlock.currentTime = refdef->floatTime;
 	sceneBlock.frameTime = refdef->frameTime;
+	frame->time = refdef->floatTime;
 
 	tr.sceneUboOffset = RB_AppendConstantsData(
 		frame, &sceneBlock, sizeof(sceneBlock));
@@ -2544,6 +2603,7 @@ static void RB_UpdateEntityConstants(
 	gpuFrame_t *frame, const trRefdef_t *refdef)
 {
 	memset(tr.entityUboOffsets, 0, sizeof(tr.entityUboOffsets));
+	memset(tr.previousEntityUboOffsets, 0, sizeof(tr.previousEntityUboOffsets));
 
 	trRefEntity_t *ent = &tr.worldEntity;
 	R_SetupEntityLighting(refdef, ent);
@@ -2568,13 +2628,92 @@ static void RB_UpdateEntityConstants(
 		RB_UpdateEntityModelConstants(entityBlock, ent);
 
 		if (entityBlock == worldEntityBlock)
-		{
 			tr.entityUboOffsets[i] = tr.entityUboOffsets[REFENTITYNUM_WORLD];
+		else
+			tr.entityUboOffsets[i] = RB_AppendConstantsData(
+				frame, &entityBlock, sizeof(entityBlock));
+		tr.previousEntityUboOffsets[i] = -1;
+
+		if (!backEndData->cachePreviousFrameUbos)
 			continue;
+
+		// We only want to track models as these might have different model matrices across frames
+		if (ent->e.reType != RT_MODEL)
+			continue;
+
+		model_t *model = R_GetModelByHandle(ent->e.hModel);
+		if (!model)
+			continue;
+
+		if (frame->numCachedModelUboOffsets >= MAX_REFENTITIES)
+		{
+			ri.Printf(PRINT_DEVELOPER, "Too many models to cache, skipping now.\n");
+		}
+		else
+		{
+			frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].type = model->type;
+			frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].hModel = ent->e.hModel;
+			if ((model->type == MOD_MDXM || model->type == MOD_BAD) && ent->e.ghoul2)
+				frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].ghoulPointer = ent->e.ghoul2;
+			else
+				frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].ghoulPointer = nullptr;
+
+			VectorCopy(ent->e.origin, frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].origin);
+			VectorClear(frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].velocity);
+			frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets].modelUboOffset = tr.entityUboOffsets[i];
+			frame->numCachedModelUboOffsets++;
 		}
 
-		tr.entityUboOffsets[i] = RB_AppendConstantsData(
-			frame, &entityBlock, sizeof(entityBlock));
+		if (!backEndData->previousFrame)
+			continue;
+
+		float shortestDistance = 9999999.0f;
+		int foundCache = -1;
+		for (int j = 0; j < backEndData->previousFrame->numCachedModelUboOffsets; j++)
+		{
+			modelUboCache_t *currentCache = &backEndData->previousFrame->cachedModelUboOffsets[j];
+			if (currentCache->type != model->type)
+				continue;
+
+			// ghoul2 models have a unique pointer, so no need to guess later
+			if ((model->type == MOD_MDXM || model->type == MOD_BAD) && currentCache->ghoulPointer == ent->e.ghoul2)
+			{
+				shortestDistance = 0;
+				foundCache = j;
+				break;
+			}
+			if (currentCache->hModel != ent->e.hModel)
+				continue;
+			
+			// shortest path, model hasn't moved between frames
+			if (VectorCompare(currentCache->origin, ent->e.origin))
+			{
+				foundCache = j;
+				shortestDistance = 0.f;
+				break;
+			}
+
+			// use the predicted position for matching models
+			vec3_t predictedOrigin;
+			VectorAdd(currentCache->origin, currentCache->velocity, predictedOrigin);
+			float sqrDist = DistanceSquared(predictedOrigin, ent->e.origin);
+			if (sqrDist < shortestDistance)
+			{
+				foundCache = j;
+				shortestDistance = sqrDist;
+			}
+		}
+
+		if (foundCache == -1)
+			continue;
+
+		if (frame->numCachedModelUboOffsets <= MAX_REFENTITIES)
+			VectorSubtract(
+				ent->e.origin,
+				backEndData->previousFrame->cachedModelUboOffsets[foundCache].origin,
+				frame->cachedModelUboOffsets[frame->numCachedModelUboOffsets-1].velocity);
+
+		tr.previousEntityUboOffsets[i] = backEndData->previousFrame->cachedModelUboOffsets[foundCache].modelUboOffset;
 	}
 
 	RB_UpdateSkyEntityConstants(frame, refdef);
@@ -2615,6 +2754,7 @@ void RB_UpdateConstants(const trRefdef_t *refdef)
 
 	RB_UpdateCameraConstants(frame);
 	RB_UpdateSceneConstants(frame, refdef);
+	RB_UpdateTemporalConstants(frame, backEndData->previousFrame);
 	RB_UpdateLightsConstants(frame, refdef);
 	RB_UpdateFogsConstants(frame);
 	RB_UpdateGhoul2Constants(frame, refdef);
@@ -2949,10 +3089,44 @@ const void *RB_PostProcess(const void *data)
 		GL_SetViewportAndScissor(0, 0, tr.smaaBlendFbo->width, tr.smaaBlendFbo->height);
 		qglClearBufferfv(GL_COLOR, 0, colorBlack);
 		GLSL_BindProgram(&tr.smaaBlendShader);
+		vec4_t subsamplesIndices;
+		if (r_smaa->integer == 1 || r_smaa->integer == 3)
+			VectorSet4(subsamplesIndices, 0.f, 0.f, 0.f, 0.f);
+		else if (r_smaa->integer == 2)
+		{
+			if (backEndData->realFrameNumber % 2 == 0)
+				VectorSet4(subsamplesIndices, 1.f, 1.f, 1.f, 0.f);
+			else
+				VectorSet4(subsamplesIndices, 2.f, 2.f, 2.f, 0.f);
+		}
+		GLSL_SetUniformVec4(&tr.smaaBlendShader, UNIFORM_VIEWINFO, subsamplesIndices);
 		GL_BindToTMU(tr.smaaEdgeImage, 0);
 		GL_BindToTMU(tr.smaaAreaImage, 1);
 		GL_BindToTMU(tr.smaaSearchImage, 2);
 		qglDrawArrays(GL_TRIANGLES, 0, 3);
+
+		if (r_smaa->integer == 2)
+		{
+			FBO_Bind(tr.smaaResolveFbo);
+			GL_SetViewportAndScissor(0, 0, tr.smaaResolveFbo->width, tr.smaaResolveFbo->height);
+			GLSL_BindProgram(&tr.smaaResolveShader);
+			GL_BindToTMU(tr.renderImage, 0);
+			GL_BindToTMU(tr.smaaBlendImage, 1);
+			GL_BindToTMU(tr.velocityImage, 2);
+			GLSL_SetUniformVec4(&tr.smaaResolveShader, UNIFORM_COLOR, colorWhite);
+			qglDrawArrays(GL_TRIANGLES, 0, 3);
+
+			FBO_Bind(srcFbo);
+			GL_SetViewportAndScissor(0, 0, srcFbo->width, srcFbo->height);
+			GLSL_BindProgram(&tr.smaaTemporalResolveShader);
+			GL_BindToTMU(tr.smaaResolveImage, 0);
+			GL_BindToTMU(tr.historyImage, 1);
+			GL_BindToTMU(tr.velocityImage, 2);
+			GLSL_SetUniformVec4(&tr.smaaResolveShader, UNIFORM_COLOR, colorWhite);
+			qglDrawArrays(GL_TRIANGLES, 0, 3);
+
+			FBO_FastBlitFromTexture(tr.renderImage, tr.historyFbo, dstBox, NULL, 0);
+		}
 	}
 
 	if (srcFbo)
