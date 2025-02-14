@@ -12,6 +12,17 @@ in uvec4 attr_BoneIndexes;
 in vec4 attr_BoneWeights;
 #endif
 
+layout(std140) uniform Scene
+{
+	vec4 u_PrimaryLightOrigin;
+	vec3 u_PrimaryLightAmbient;
+	int  u_globalFogIndex;
+	vec3 u_PrimaryLightColor;
+	float u_PrimaryLightRadius;
+	float u_frameTime;
+	float u_deltaTime;
+};
+
 layout(std140) uniform Camera
 {
 	mat4 u_viewProjectionMatrix;
@@ -103,9 +114,16 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float bulgeWidth = u_DeformParams0.z; // phase
 			float bulgeSpeed = u_DeformParams0.w; // frequency
 
-			float scale = CalculateDeformScale( WF_SIN, u_Time, bulgeWidth * st.x, bulgeSpeed );
+			float scale = CalculateDeformScale( WF_SIN, (u_entityTime + u_frameTime + u_Time), bulgeWidth * st.x, bulgeSpeed );
 
 			return pos + normal * scale * bulgeHeight;
+		}
+
+		case DEFORM_BULGE_UNIFORM:
+		{
+			float bulgeHeight = u_DeformParams0.y; // amplitude
+
+			return pos + normal * bulgeHeight;
 		}
 
 		case DEFORM_WAVE:
@@ -117,7 +135,7 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float spread = u_DeformParams1.x;
 
 			float offset = dot( pos.xyz, vec3( spread ) );
-			float scale = CalculateDeformScale( u_DeformFunc, u_Time, phase + offset, frequency );
+			float scale = CalculateDeformScale( u_DeformFunc, (u_entityTime + u_frameTime + u_Time), phase + offset, frequency );
 
 			return pos + normal * (base + scale * amplitude);
 		}
@@ -130,7 +148,7 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 			float frequency = u_DeformParams0.w;
 			vec3 direction = u_DeformParams1.xyz;
 
-			float scale = CalculateDeformScale( u_DeformFunc, u_Time, phase, frequency );
+			float scale = CalculateDeformScale( u_DeformFunc, (u_entityTime + u_frameTime + u_Time), phase, frequency );
 
 			return pos + direction * (base + scale * amplitude);
 		}
