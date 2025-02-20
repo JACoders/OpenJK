@@ -89,7 +89,7 @@ void G2Time_ReportTimers(void)
 extern cvar_t* sv_mapname;
 #endif
 
-static const int MAX_RENDERABLE_SURFACES = 2048;
+static const int MAX_RENDERABLE_SURFACES = 4096;
 static CRenderableSurface renderSurfHeap[MAX_RENDERABLE_SURFACES];
 static int currentRenderSurfIndex = 0;
 
