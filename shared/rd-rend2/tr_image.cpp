@@ -2482,6 +2482,8 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 			qglGenerateMipmap(GL_TEXTURE_2D);
 	}
 
+	if (glRefConfig.annotateResources) qglObjectLabel(GL_TEXTURE, image->texnum, -1, image->imgName);
+
 	GL_SelectTexture( 0 );
 
 	hash = generateHashValue(name);
@@ -2577,6 +2579,8 @@ image_t *R_Create2DImageArray(const char *name, byte *pic, int width, int height
 		qglTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, glWrapClampMode);
 		break;
 	}
+
+	if (glRefConfig.annotateResources) qglObjectLabel(GL_TEXTURE, image->texnum, -1, image->imgName);
 	qglBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 	GL_SelectTexture(0);
 
@@ -2637,6 +2641,10 @@ image_t *R_CreateImage3D(const char *name, byte *data, int width, int height, in
 	hash = generateHashValue(name);
 	image->next = hashTable[hash];
 	hashTable[hash] = image;
+
+	if (glRefConfig.annotateResources) qglObjectLabel(GL_TEXTURE, image->texnum, -1, image->imgName);
+	qglBindTexture(GL_TEXTURE_3D, 0);
+	GL_SelectTexture(0);
 
 	return image;
 }
@@ -3477,7 +3485,7 @@ void R_CreateBuiltinImages( void ) {
 	int rgbFormat = GL_RGBA8;
 
 	tr.renderImage = R_CreateImage(
-		"_render", NULL, width, height, IMGTYPE_COLORALPHA,
+		"*render", NULL, width, height, IMGTYPE_COLORALPHA,
 		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
 
 	tr.glowImage = R_CreateImage(

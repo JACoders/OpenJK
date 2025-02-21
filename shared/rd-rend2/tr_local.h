@@ -63,6 +63,7 @@ typedef unsigned int glIndex_t;
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
 // see QSORT_SHADERNUM_SHIFT
+#define MAX_FRAMES (2)
 #define SHADERNUM_BITS	14
 #define MAX_SHADERS		(1<<SHADERNUM_BITS)
 
@@ -1831,6 +1832,9 @@ typedef struct srfG2GoreSurface_s
 	int             firstVert;
 	int             firstIndex;
 
+	// VBO cache info
+	bool			cachedInFrame[MAX_FRAMES];
+
 } srfG2GoreSurface_t;
 #endif
 
@@ -2407,6 +2411,8 @@ typedef struct {
 	qboolean timerQuery;
 
 	qboolean floatLightmap;
+
+	qboolean annotateResources;
 } glRefConfig_t;
 
 enum
@@ -2635,10 +2641,8 @@ typedef struct trGlobals_s {
 	shaderProgram_t ssaoShader;
 	shaderProgram_t highpassShader;
 	shaderProgram_t depthBlurShader[2];
-	shaderProgram_t testcubeShader;
 	shaderProgram_t prefilterEnvMapShader;
 	shaderProgram_t gaussianBlurShader[2];
-	shaderProgram_t glowCompositeShader;
 	shaderProgram_t dglowDownsample;
 	shaderProgram_t dglowUpsample;
 	shaderProgram_t spriteShader[SSDEF_COUNT];
@@ -2730,12 +2734,7 @@ typedef struct trGlobals_s {
 	int						numIBOs;
 	IBO_t					*ibos[MAX_IBOS];
 
-#ifdef _G2_GORE
-	VBO_t					*goreVBO;
-	int						goreVBOCurrentIndex;
-	IBO_t					*goreIBO;
-	int						goreIBOCurrentIndex;
-#endif
+
 
 	// shader indexes from other modules will be looked up in tr.shaders[]
 	// shader indexes from drawsurfs will be looked up in sortedShaders[]
@@ -3354,8 +3353,8 @@ uint32_t R_VboPackNormal(vec3_t v);
 void R_VboUnpackTangent(vec4_t v, uint32_t b);
 void R_VboUnpackNormal(vec3_t v, uint32_t b);
 
-VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage);
-IBO_t          *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage);
+VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage, const char *debugName);
+IBO_t          *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage, const char *debugName);
 
 void            R_BindVBO(VBO_t * vbo);
 void            R_BindNullVBO(void);
@@ -3369,7 +3368,7 @@ void            R_VBOList_f(void);
 
 void            RB_UpdateVBOs(unsigned int attribBits);
 #ifdef _G2_GORE
-void			RB_UpdateGoreVBO(srfG2GoreSurface_t *goreSurface);
+void			RB_UpdateGoreVertexData(struct gpuFrame_t* currentFrame, srfG2GoreSurface_t* goreSurface, bool updateFirstVertAndIndex);
 #endif
 void			RB_CommitInternalBufferData();
 
@@ -3828,6 +3827,13 @@ struct gpuFrame_t
 	size_t dynamicIboWriteOffset;
 	size_t dynamicIboCommitOffset;
 
+#ifdef _G2_GORE
+	VBO_t					*goreVBO;
+	int						goreVBOCurrentIndex;
+	IBO_t					*goreIBO;
+	int						goreIBOCurrentIndex;
+#endif
+
 	int numTimers;
 	int numTimedBlocks;
 
@@ -3846,7 +3852,7 @@ struct gpuFrame_t
 
 // all of the information needed by the back end must be
 // contained in a backEndData_t.
-#define MAX_FRAMES (2)
+
 #define PER_FRAME_MEMORY_BYTES (32 * 1024 * 1024)
 class Allocator;
 struct Pass;

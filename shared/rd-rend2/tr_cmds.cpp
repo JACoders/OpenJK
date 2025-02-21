@@ -564,6 +564,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 					thisFrame->dynamicVboCommitOffset = 0;
 					thisFrame->dynamicVboWriteOffset = 0;
 
+#ifdef _G2_GORE
+					thisFrame->goreVBOCurrentIndex = 0;
+					thisFrame->goreIBOCurrentIndex = 0;
+#endif // _G2_GORE
 					backEndData->perFrameMemory->Reset();
 
 					ri.Error(ERR_DROP, "OpenGL: Failed to wait for fence. Context lost. (0x%x)\n", qglGetError());
@@ -598,6 +602,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 		thisFrame->dynamicVboCommitOffset = 0;
 		thisFrame->dynamicVboWriteOffset = 0;
+#ifdef _G2_GORE
+		thisFrame->goreVBOCurrentIndex = backEndData->previousFrame->goreVBOCurrentIndex;
+		thisFrame->goreIBOCurrentIndex = backEndData->previousFrame->goreIBOCurrentIndex;
+#endif
 
 		backEndData->perFrameMemory->Reset();
 	}

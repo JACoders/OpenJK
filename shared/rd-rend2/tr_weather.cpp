@@ -89,11 +89,11 @@ namespace
 		ws.lastVBO = R_CreateVBO(
 			nullptr,
 			sizeof(rainVertex_t) * rainVertices.size(),
-			VBO_USAGE_XFB);
+			VBO_USAGE_XFB, "Weather_ping");
 		ws.vbo = R_CreateVBO(
 			(byte *)rainVertices.data(),
 			sizeof(rainVertex_t) * rainVertices.size(),
-			VBO_USAGE_XFB);
+			VBO_USAGE_XFB, "Weather_pong");
 		ws.vboLastUpdateFrame = 0;
 
 		ws.attribsTemplate[0].index = ATTR_INDEX_POSITION;

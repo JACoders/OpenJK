@@ -243,6 +243,12 @@ PFNGLQUERYCOUNTERPROC qglQueryCounter;
 PFNGLGETQUERYOBJECTI64VPROC qglGetQueryObjecti64v;
 PFNGLGETQUERYOBJECTUI64VPROC qglGetQueryObjectui64v;
 
+// GL_KHR_debug
+PFNGLPUSHDEBUGGROUPPROC qglPushDebugGroupKHR;
+PFNGLPOPDEBUGGROUPPROC qglPopDebugGroupKHR;
+PFNGLOBJECTLABELPROC qglObjectLabel;
+PFNGLOBJECTPTRLABELPROC qglObjectPtrLabel;
+
 static qboolean GLimp_HaveExtension(const char *ext)
 {
 	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
@@ -681,6 +687,21 @@ void GLimp_InitExtensions()
 		loaded = (qboolean)(loaded && GetGLFunction(qglGetQueryObjectui64v, "glGetQueryObjectui64v", qfalse));
 
 		glRefConfig.timerQuery = loaded;
+
+		ri.Printf(PRINT_ALL, result[loaded], extension);
+	}
+
+	extension = "GL_KHR_debug";
+	if ( GLimp_HaveExtension( extension ) )
+	{
+		qboolean loaded = qtrue;
+
+		loaded = (qboolean)(loaded && GetGLFunction(qglPushDebugGroupKHR, "glPushDebugGroup", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction(qglPopDebugGroupKHR, "glPopDebugGroup", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction(qglObjectLabel, "glObjectLabel", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction(qglObjectPtrLabel, "glObjectPtrLabel", qfalse));
+
+		glRefConfig.annotateResources = loaded;
 
 		ri.Printf(PRINT_ALL, result[loaded], extension);
 	}

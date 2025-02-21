@@ -2228,8 +2228,8 @@ static void R_CreateWorldVBOs( world_t *worldData )
 
 		R_CalcMikkTSpaceBSPSurface(numIndexes/3, verts, indexes);
 
-		vbo = R_CreateVBO((byte *)verts, sizeof (packedVertex_t) * numVerts, VBO_USAGE_STATIC);
-		ibo = R_CreateIBO((byte *)indexes, numIndexes * sizeof (glIndex_t), VBO_USAGE_STATIC);
+		vbo = R_CreateVBO((byte *)verts, sizeof (packedVertex_t) * numVerts, VBO_USAGE_STATIC, va("%s_%i", worldData->baseName, k));
+		ibo = R_CreateIBO((byte *)indexes, numIndexes * sizeof (glIndex_t), VBO_USAGE_STATIC, va("%s_%i", worldData->baseName, k));
 
 		// Setup the offsets and strides
 		vbo->offsets[ATTR_INDEX_POSITION] = offsetof(packedVertex_t, position);
@@ -4047,6 +4047,7 @@ static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 	if (glState.currentGlobalUBO != tr.spriteUbos[worldIndex])
 	{
 		qglBindBuffer(GL_UNIFORM_BUFFER, tr.spriteUbos[worldIndex]);
+		if (glRefConfig.annotateResources) qglObjectLabel(GL_BUFFER, tr.spriteUbos[worldIndex], -1, va("SpriteUBO_%i", worldIndex));
 		glState.currentGlobalUBO = tr.spriteUbos[worldIndex];
 	}
 	qglBufferData(
@@ -4113,11 +4114,12 @@ static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 			int vert_index = face_indices[i % 6] + (int(i / 6) * 4);
 			sprites_index_data.push_back(vert_index);
 		}
-		ibo = R_CreateIBO((byte *)sprites_index_data.data(), sprites_index_data.size() * sizeof(uint16_t), VBO_USAGE_STATIC);
+		ibo = R_CreateIBO((byte *)sprites_index_data.data(), sprites_index_data.size() * sizeof(uint16_t), VBO_USAGE_STATIC, "Quads");
 	}
 
 	std::vector<srfSprites_t *> currentBatch;
 	currentBatch.reserve(65535); // worst case, theres at least 65535 surfaces with exactly one sprite
+	int numSpriteVbos = 0;
 
 	for ( int i = 0, numSurfaces = world->numsurfaces; i < numSurfaces; ++i )
 	{
@@ -4160,8 +4162,8 @@ static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 					if ((sprites_data.size() + numCurrentSurfaceSprites * 4) > 65535)
 					{
 						VBO_t *vbo = R_CreateVBO((byte *)sprites_data.data(),
-							sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC);
-
+							sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC, va("Sprites_%i", numSpriteVbos));
+						numSpriteVbos++;
 						for (srfSprites_t *sp : currentBatch)
 						{
 							sp->vbo = vbo;
@@ -4193,7 +4195,8 @@ static void R_GenerateSurfaceSprites( const world_t *world, int worldIndex )
 		return;
 
 	VBO_t *vbo = R_CreateVBO((byte *)sprites_data.data(),
-		sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC);
+		sizeof(sprite_t) * sprites_data.size(), VBO_USAGE_STATIC, va("Sprites_%i", numSpriteVbos));
+	numSpriteVbos++;
 
 	for (srfSprites_t *sp : currentBatch)
 	{
