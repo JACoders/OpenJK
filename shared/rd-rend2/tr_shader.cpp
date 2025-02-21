@@ -5192,6 +5192,15 @@ static void CreateInternalShaders( void ) {
 	Q_strncpyz(shader.name, "<weather>", sizeof(shader.name));
 	shader.sort = SS_SEE_THROUGH;
 	tr.weatherInternalShader = FinishShader();
+
+	// volumetric fog cap shader
+	Q_strncpyz(shader.name, "<volumetric fog cap>", sizeof(shader.name));
+	shader.sort = SS_ENVIRONMENT;
+	//shader.isSky = qtrue;
+	shader.fogPass = FP_LE;
+	stages[0].bundle[0].image[0] = tr.whiteImage;
+	stages[0].stateBits = GLS_DEPTH_CLAMP;
+	tr.volumetricFogCapShader = FinishShader();
 }
 
 static void CreateExternalShaders( void ) {

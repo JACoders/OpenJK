@@ -96,6 +96,11 @@ cvar_t	*r_facePlaneCull;
 cvar_t	*r_showcluster;
 cvar_t	*r_nocurves;
 
+cvar_t	*r_volumetricFog;
+cvar_t	*r_volumetricFogDefaultScale;
+cvar_t	*r_volumetricFogSamples;
+cvar_t	*r_volumetricFogScale;
+
 cvar_t	*r_allowExtensions;
 
 cvar_t	*r_ext_compressed_textures;
@@ -1565,6 +1570,12 @@ void R_Register( void )
 	r_forceSunAmbientScale = ri_Cvar_Get_NoComm( "r_forceSunAmbientScale", "0.5", CVAR_CHEAT, "" );
 	r_drawSunRays = ri_Cvar_Get_NoComm( "r_drawSunRays", "0", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_sunlightMode = ri_Cvar_Get_NoComm( "r_sunlightMode", "1", CVAR_ARCHIVE | CVAR_LATCH, "" );
+
+	r_volumetricFog = ri_Cvar_Get_NoComm("r_volumetricFog", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable lightgrid lighting on fog volumes");
+	r_volumetricFogDefaultScale = ri_Cvar_Get_NoComm("r_volumetricFogDefaultScale", "1.0", CVAR_ARCHIVE | CVAR_LATCH, "Scales volumetric fog density unless scale has been explicitly defined");
+	r_volumetricFogSamples = ri_Cvar_Get_NoComm("r_volumetricFogSamples", "48", CVAR_ARCHIVE | CVAR_LATCH, "How many ray samples to take");
+	ri.Cvar_CheckRange(r_volumetricFogSamples, 16, 128, qfalse);
+	r_volumetricFogScale = ri_Cvar_Get_NoComm("r_volumetricFogScale", "1.0", CVAR_TEMP, "Temporarily scales volumetric fog density");
 
 	r_sunShadows = ri_Cvar_Get_NoComm( "r_sunShadows", "1", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_shadowFilter = ri_Cvar_Get_NoComm( "r_shadowFilter", "1", CVAR_ARCHIVE | CVAR_LATCH, "" );

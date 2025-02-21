@@ -2630,12 +2630,44 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 		UNIFORM_ALPHA_TEST_TYPE, surf->alphaTestType);
 
 	if (surf->fogIndex != -1)
+	{
 		uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, surf->fogIndex - 1);
 
+		if (r_volumetricFog->integer)
+		{
+			if (tr.world)
+			{
+				vec3_t sampleOrigin;
+				VectorMA(tr.world->lightGridOrigin, -0.5f, tr.world->lightGridSize, sampleOrigin);
+				uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, sampleOrigin);
+				uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, tr.world->lightGridInverseSize);
+			}
+			else
+			{
+				const vec3_t origin = { 0.0f, 0.0f, 0.0f };
+				const vec3_t size = { 1.0f, 1.0f, 1.0f };
+				uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, origin);
+				uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, size);
+			}
+			uniformDataWriter.SetUniformFloat(UNIFOMR_VOLUMETRICLIGHTGRIDSCALE, tr.volumetricFogScale * r_volumetricFogScale->value);
+		}
+	}
 	Allocator& frameAllocator = *backEndData->perFrameMemory;
 
 	SamplerBindingsWriter samplerBindingsWriter;
 	samplerBindingsWriter.AddAnimatedImage(&firstStage->bundle[0], TB_COLORMAP);
+
+	if (surf->fogIndex != -1 && r_volumetricFog->integer)
+	{
+		if (tr.world && tr.world->lightGridData)
+		{
+			samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
+		}
+		else
+		{
+			samplerBindingsWriter.AddStaticImage(tr.whiteImage3D, 2);
+		}
+	}
 
 	const byte currentFrameScene = backEndData->currentFrame->currentScene;
 	const GLuint currentFrameUbo = backEndData->currentFrame->ubo[currentFrameScene];

@@ -131,6 +131,11 @@ extern cvar_t	*r_facePlaneCull;
 extern cvar_t	*r_showcluster;
 extern cvar_t	*r_nocurves;
 
+extern cvar_t	*r_volumetricFog;
+extern cvar_t	*r_volumetricFogDefaultScale;
+extern cvar_t	*r_volumetricFogSamples;
+extern cvar_t	*r_volumetricFogScale;
+
 extern cvar_t	*r_allowExtensions;
 
 extern cvar_t	*r_ext_compressed_textures;
@@ -200,7 +205,7 @@ extern cvar_t	*r_stencilbits;
 extern cvar_t	*r_depthbits;
 extern cvar_t	*r_colorbits;
 extern cvar_t	*r_texturebits;
-extern cvar_t  *r_ext_multisample;
+extern cvar_t	*r_ext_multisample;
 
 extern cvar_t	*r_drawBuffer;
 extern cvar_t	*r_lightmap;
@@ -1149,6 +1154,8 @@ enum
 
 	GLS_COLORMASK_BUF1					= (1 << 29),
 
+	GLS_DEPTH_CLAMP						= (1 << 30),
+
 	GLS_DEFAULT							= GLS_DEPTHMASK_TRUE
 };
 
@@ -1401,6 +1408,7 @@ struct GPUProgramDesc
 	GPUShaderDesc *shaders;
 };
 
+// Needs to stay in sync with uniformInfo_t in tr_glsl.cpp
 typedef enum
 {
 	UNIFORM_DIFFUSEMAP = 0,
@@ -1423,6 +1431,12 @@ typedef enum
 	UNIFORM_SEARCHMAP,
 	UNIFORM_BLENDMAP,
 	UNIFORM_VELOCITYMAP,
+
+	UNIFORM_VOLUMETRICLIGHTMAP,
+	UNIFOMR_VOLUMETRICLIGHTGRIDSCALE,
+
+	UNIFORM_LIGHTGRIDORIGIN,
+	UNIFORM_LIGHTGRIDCELLINVERSESIZE,
 
 	UNIFORM_SHADOWMAP,
 	UNIFORM_SHADOWMAP2,
@@ -2095,6 +2109,7 @@ typedef struct {
 	word		*lightGridArray;
 	int			numGridArrayElements;
 
+	image_t		*volumetricLightMaps[MAXLIGHTMAPS];
 
 	int			skyboxportal;
 	int			numClusters;
@@ -2514,6 +2529,7 @@ typedef struct trGlobals_s {
 	image_t					*dlightImage;	// inverse-quare highlight for projective adding
 	image_t					*flareImage;
 	image_t					*whiteImage;			// full of 0xff
+	image_t					*whiteImage3D;
 	image_t					*identityLightImage;	// full of tr.identityLightByte
 
 	image_t					*renderImage;
@@ -2579,6 +2595,8 @@ typedef struct trGlobals_s {
 	shader_t				*flareShader;
 	shader_t				*sunShader;
 	shader_t				*sunFlareShader;
+
+	shader_t				*volumetricFogCapShader;
 
 	int						numLightmaps;
 	int						lightmapSize;
@@ -2681,6 +2699,8 @@ typedef struct trGlobals_s {
 	qboolean                sunShadows;
 	vec3_t					sunLight;			// from the sky shader for this level
 	vec3_t					sunDirection;
+
+	float					volumetricFogScale;
 
 	frontEndCounters_t		pc;
 	int						frontEndMsec;		// not in pc due to clearing issue
@@ -3918,6 +3938,7 @@ qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);
 image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgType_t type, int flags, int internalFormat );
+image_t *R_CreateImage3D(const char *name, byte *data, int width, int height, int depth, int internalFormat);
 
 float ProjectRadius( float r, vec3_t location );
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);

@@ -260,6 +260,14 @@ uniform int u_AlphaTestType;
 uniform sampler2D u_DiffuseMap;
 #endif
 
+#if defined(USE_VOLUMETRIC_FOG)
+uniform sampler3D u_VolumetricLightMap;
+
+uniform vec3 u_LightGridOrigin;
+uniform vec3 u_LightGridCellInverseSize;
+uniform float u_VolumetricLightGridScale;
+#endif
+
 layout(std140) uniform Scene
 {
 	vec4 u_PrimaryLightOrigin;
@@ -317,6 +325,34 @@ in vec2 var_TexCoords;
 out vec4 out_Color;
 out vec4 out_Glow;
 
+#if defined(USE_VOLUMETRIC_FOG)
+vec3 CalcVolumetricFogColor(in vec3 startPosition, in vec3 endPosition, in Fog fog)
+{
+	ivec3 gridSize = textureSize(u_VolumetricLightMap, 0);
+	vec3 invGridSize = u_LightGridCellInverseSize / vec3(gridSize);
+	
+	const int steps = r_volumetricFogSamples;
+	vec3 step = (endPosition - startPosition) / steps;
+	float z = fog.depthToOpaque * length(step);
+
+	vec3 position = startPosition;
+	float transmittance  = 1.0;
+	vec3 color = vec3(0.0);
+	for (int i = 0; i < steps; i++)
+	{
+		float currentTransmittance = exp(-z);
+		float currentOpacity = 1.0 - currentTransmittance;
+
+		vec3 gridCell = (position - u_LightGridOrigin) * invGridSize;
+		color += texture(u_VolumetricLightMap, gridCell).rgb * transmittance * currentOpacity;
+		transmittance *= currentTransmittance;
+		
+		position += step;
+	}
+	return color * u_VolumetricLightGridScale;
+}
+#endif
+
 vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 {
 	bool inFog = dot(viewOrigin, fog.plane.xyz) - fog.plane.w >= 0.0 || !fog.hasPlane;
@@ -331,23 +367,47 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 
 	// fogPlane is inverted in tr_bsp for some reason.
 	float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
+	bool intersects = (t > 0.0 && t < 0.995);
 
 	// only use this for objects with potentially two contibuting fogs
 	#if defined(USE_FALLBACK_GLOBAL_FOG)
-	bool intersects = (t > 0.0 && t < 0.995);
 	if (inFog == intersects)
 	{
 		Fog globalFog = u_Fogs[u_globalFogIndex];
 
 		float distToVertex = length(V);
 		float distFromIntersection = distToVertex - (t * distToVertex);
-		float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
+		float distThroughFog = mix(distToVertex, distFromIntersection, intersects);
+		float z = globalFog.depthToOpaque * distThroughFog;
+	#if defined(USE_VOLUMETRIC_FOG)
+		vec3 startPosition = mix(viewOrigin, (V * t) + viewOrigin, intersects);
+		vec3 endPosition = (normalize(V) * distThroughFog) + startPosition;
+		vec3 color = CalcVolumetricFogColor(viewOrigin, endPosition, fog);
+		return vec4(color * globalFog.color.rgb, 1.0 - clamp(exp(-z), 0.0, 1.0));
+	#else
 		return vec4(globalFog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+	#endif
+	}
+	#elif defined(USE_VOLUMETRIC_FOG)
+	if (inFog == intersects)
+	{
+		if (u_FogIndex == u_globalFogIndex)
+		{
+			float distToVertexFromViewOrigin = length(V);
+			float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
+			float z = fog.depthToOpaque * distToIntersectionFromViewOrigin;
+			vec3 startPosition = viewOrigin;
+			vec3 endPosition = (normalize(V) * distToIntersectionFromViewOrigin) + startPosition;
+			vec3 color = CalcVolumetricFogColor(startPosition, endPosition, fog);
+			return vec4(color * fog.color.rgb, 1.0 - clamp(exp(-z), 0.0, 1.0));
+		}
+		return vec4(0.0);
 	}
 	#else
-	bool intersects = (t > 0.0 && t < 0.995);
 	if (inFog == intersects)
+	{
 		return vec4(0.0);
+	}
 	#endif
 
 	float distToVertexFromViewOrigin = length(V);
@@ -357,7 +417,15 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 	float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
 
 	float z = fog.depthToOpaque * distThroughFog;
+
+#if defined(USE_VOLUMETRIC_FOG)
+	vec3 startPosition = mix((V * t) + viewOrigin, viewOrigin, inFog);
+	vec3 endPosition = (normalize(V) * distThroughFog) + startPosition;
+	vec3 color = CalcVolumetricFogColor(startPosition, endPosition, fog);
+	return vec4(color * fog.color.rgb, 1.0 - clamp(exp(-z), 0.0, 1.0));
+#else
 	return vec4(fog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+#endif
 }
 
 void main()

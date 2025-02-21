@@ -338,6 +338,18 @@ void GL_State( uint32_t stateBits )
 		}
 	}
 
+	if ( diff & GLS_DEPTH_CLAMP )
+	{
+		if ( stateBits & GLS_DEPTH_CLAMP )
+		{
+			qglEnable(GL_DEPTH_CLAMP);
+		}
+		else
+		{
+			qglDisable(GL_DEPTH_CLAMP);
+		}
+	}
+
 	//
 	// fill/line mode
 	//
@@ -1483,6 +1495,45 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 	else
 	{
 		RB_SubmitDrawSurfs(drawSurfs, numDrawSurfs, originalTime);
+
+		// TODO: Find a better place to add the fog cap surface
+		if (r_volumetricFog->integer 
+			&& !(backEnd.viewParms.flags & VPF_DEPTHSHADOW)
+			&& !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL)
+			&& !(backEnd.viewParms.isSkyPortal)
+			&& tr.world->globalFog
+			&& backEnd.framePostProcessed == qfalse
+			)
+		{
+			RB_EndSurface();
+
+			backEnd.currentEntity = &tr.worldEntity;
+			RB_BeginSurface(tr.volumetricFogCapShader, tr.world->globalFogIndex, 0);
+			vec3_t origin, left, up;
+			vec4_t color;
+			VectorCopy4(tr.world->globalFog->color, color);
+
+			float depthToRenderTo = tr.world->globalFog->parms.depthForOpaque * 1.5f;
+
+			const float ymax = depthToRenderTo * tanf(backEnd.viewParms.fovY * M_PI / 360.0f);
+			const float xmax = depthToRenderTo * tanf(backEnd.viewParms.fovX * M_PI / 360.0f);
+
+			VectorNormalize(backEnd.viewParms.ori.axis[0]);
+			VectorNormalize(backEnd.viewParms.ori.axis[1]);
+			VectorNormalize(backEnd.viewParms.ori.axis[2]);
+
+			VectorScale(backEnd.viewParms.ori.axis[1], xmax, left);
+			VectorScale(backEnd.viewParms.ori.axis[2], ymax, up);
+
+			VectorMA(
+				backEnd.viewParms.ori.origin,
+				depthToRenderTo,
+				backEnd.viewParms.ori.axis[0],
+				origin);
+
+			RB_AddQuadStamp(origin, left, up, colorWhite);
+			RB_EndSurface();
+		}
 	}
 
 	// Do the drawing and release memory
@@ -2378,7 +2429,7 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 
 		VectorCopy4(fog->surface, fogData->plane);
 		VectorCopy4(fog->color, fogData->color);
-		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
+		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque * tr.volumetricFogScale * r_volumetricFogScale->value;
 		fogData->hasPlane = fog->hasSurface;
 	}
 #ifdef REND2_SP

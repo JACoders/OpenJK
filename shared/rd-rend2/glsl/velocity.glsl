@@ -450,7 +450,7 @@ in vec3 var_TangentViewDir;
 
 out vec4 out_Color;
 
-#if defined(USE_PARALLAXMAP)
+#if defined(USE_ALPHA_TEST) && defined(USE_PARALLAXMAP)
 float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, in float parallaxBias)
 {
 	const int linearSearchSteps = 16;

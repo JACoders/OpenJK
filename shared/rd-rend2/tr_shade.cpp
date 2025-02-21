@@ -1150,12 +1150,37 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	if (input->numPasses > 0)
 		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
 
+	if (r_volumetricFog->integer)
+	{
+		if (tr.world)
+		{
+			vec3_t sampleOrigin;
+			VectorMA(tr.world->lightGridOrigin, -0.5f, tr.world->lightGridSize, sampleOrigin);
+			uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, sampleOrigin);
+			uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, tr.world->lightGridInverseSize);
+		}
+		else
+		{
+			const vec3_t origin = { 0.0f, 0.0f, 0.0f };
+			const vec3_t size = { 1.0f, 1.0f, 1.0f };
+			uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, origin);
+			uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, size);
+		}
+		uniformDataWriter.SetUniformFloat(UNIFOMR_VOLUMETRICLIGHTGRIDSCALE, 1.0f);
+	}
+
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+	if (tr.world && r_volumetricFog->integer)
+		stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+
 	if ( tess.shader->fogPass == FP_EQUAL )
 		stateBits |= GLS_DEPTHFUNC_EQUAL;
 
 	if (input->shader->polygonOffset == qtrue)
 		stateBits |= GLS_POLYGON_OFFSET_FILL;
+
+	if (input->numPasses > 0 && input->xstages[0]->stateBits & GLS_DEPTH_CLAMP)
+		stateBits |= GLS_DEPTH_CLAMP;
 
 	const UniformBlockBinding uniformBlockBindings[] = {
 		GetCameraBlockUniformBinding(backEnd.currentEntity),
@@ -1169,8 +1194,19 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	SamplerBindingsWriter samplerBindingsWriter;
 	if (input->numPasses > 0)
+	{
 		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
 			samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
+
+		if (tr.world && r_volumetricFog->integer && tr.world->lightGridData)
+		{
+			samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
+		}
+		else if (r_volumetricFog->integer)
+		{
+			samplerBindingsWriter.AddStaticImage(tr.whiteImage3D, 2);
+		}
+	}
 
 	Allocator& frameAllocator = *backEndData->perFrameMemory;
 	DrawItem item = {};
@@ -1217,6 +1253,15 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 			SamplerBindingsWriter samplerBindingsWriter;
 			if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
 				samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
+
+			if (tr.world && r_volumetricFog->integer && tr.world->lightGridData)
+			{
+				samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
+			}
+			else if (r_volumetricFog->integer)
+			{
+				samplerBindingsWriter.AddStaticImage(tr.whiteImage3D, 2);
+			}
 		}
 
 		DrawItem backItem = {};
@@ -1322,7 +1367,8 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 				index |= VELOCITYDEF_USE_DEFORM_VERTEXES;
 			if (glslShaderGroup == tr.lightallShader &&
 				stage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
-				stage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) // TODO: remove light requirement
+				stage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK && // TODO: remove light requirement
+				!(backEnd.viewParms.flags & VPF_DEPTHSHADOW)) // Don't use expensive parallax shaders in shadows
 				index |= VELOCITYDEF_USE_PARALLAXMAP;
 			result = &tr.velocityShader[index];
 		}
@@ -1618,6 +1664,33 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			ComputeFogColorMask(pStage, fogColorMask);
 			uniformDataWriter.SetUniformVec4(UNIFORM_FOGCOLORMASK, fogColorMask);
 			uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
+			if (r_volumetricFog->integer)
+			{
+				if (tr.world)
+				{
+					vec3_t sampleOrigin;
+					VectorMA(tr.world->lightGridOrigin, -0.5f, tr.world->lightGridSize, sampleOrigin);
+					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, sampleOrigin);
+					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, tr.world->lightGridInverseSize);
+				}
+				else
+				{
+					const vec3_t origin = { 0.0f, 0.0f, 0.0f };
+					const vec3_t size = { 1.0f, 1.0f, 1.0f };
+					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, origin);
+					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, size);
+				}
+				uniformDataWriter.SetUniformFloat(UNIFOMR_VOLUMETRICLIGHTGRIDSCALE, tr.volumetricFogScale * r_volumetricFogScale->value);
+
+				if (tr.world && tr.world->lightGridData)
+				{
+					samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
+				}
+				else
+				{
+					samplerBindingsWriter.AddStaticImage(tr.whiteImage3D, 2);
+				}
+			}
 		}
 
 		float volumetricBaseValue = -1.0f;
@@ -1782,7 +1855,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			// TODO: remove light requirement
 			if (pStage->glslShaderGroup == tr.lightallShader &&
 				pStage->glslShaderIndex & LIGHTDEF_USE_PARALLAXMAP &&
-				pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK)
+				pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK &&
+				!(backEnd.viewParms.flags & VPF_DEPTHSHADOW))
 			{
 				vec4_t enableTextures = {};
 				if (pStage->bundle[TB_NORMALMAP].image[0])
@@ -2057,7 +2131,10 @@ void RB_StageIteratorGeneric( void )
 	}
 	else
 	{
-		RB_IterateStagesGeneric( input, &vertexArrays );
+		if (input->shader != tr.volumetricFogCapShader)
+		{
+			RB_IterateStagesGeneric(input, &vertexArrays);
+		}
 
 		//
 		// pshadows!

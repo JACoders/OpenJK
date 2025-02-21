@@ -72,6 +72,12 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_BlendMap", GLSL_INT, 1 },
 	{ "u_VelocityMap", GLSL_INT, 1 },
 
+	{ "u_VolumetricLightMap", GLSL_INT, 1 },
+	{ "u_VolumetricLightGridScale", GLSL_FLOAT, 1 },
+
+	{ "u_LightGridOrigin", GLSL_VEC3, 1 },
+	{ "u_LightGridCellInverseSize", GLSL_VEC3, 1 },
+
 	{ "u_ShadowMap",  GLSL_INT, 1 },
 	{ "u_ShadowMap2", GLSL_INT, 1 },
 
@@ -382,6 +388,9 @@ static size_t GLSL_GetShaderHeader(
 
 	if (r_deluxeSpecular->value > 0.000001f)
 		Q_strcat(dest, size, va("#define r_deluxeSpecular %f\n", r_deluxeSpecular->value));
+
+	if (r_volumetricFog->integer)
+		Q_strcat(dest, size, va("#define r_volumetricFogSamples %i\n", r_volumetricFogSamples->integer));
 
 	if (r_cubeMapping->integer)
 	{
@@ -1481,7 +1490,11 @@ static int GLSL_LoadGPUProgramGeneric(
 		}
 
 		if (i & GENERICDEF_USE_FOG)
+		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_FOG\n");
+			if (r_volumetricFog->integer)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VOLUMETRIC_FOG\n");
+		}
 
 		if (i & GENERICDEF_USE_RGBAGEN)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
@@ -1503,6 +1516,7 @@ static int GLSL_LoadGPUProgramGeneric(
 		qglUseProgram(tr.genericShader[i].program);
 		GLSL_SetUniformInt(&tr.genericShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
 		GLSL_SetUniformInt(&tr.genericShader[i], UNIFORM_LIGHTMAP,   TB_LIGHTMAP);
+		GLSL_SetUniformInt(&tr.genericShader[i], UNIFORM_VOLUMETRICLIGHTMAP, 2);
 		qglUseProgram(0);
 
 		GLSL_FinishGPUShader(&tr.genericShader[i]);
@@ -1554,6 +1568,8 @@ static int GLSL_LoadGPUProgramFogPass(
 
 		/*if (i & FOGDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
+		if (r_volumetricFog->integer)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VOLUMETRIC_FOG\n");
 
 		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], "fogpass", attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
@@ -1565,7 +1581,9 @@ static int GLSL_LoadGPUProgramFogPass(
 
 		qglUseProgram(tr.fogShader[i].program);
 		//if (i & FOGDEF_USE_ALPHA_TEST)
-			GLSL_SetUniformInt(&tr.fogShader[i], UNIFORM_DIFFUSEMAP, 0);
+		GLSL_SetUniformInt(&tr.fogShader[i], UNIFORM_DIFFUSEMAP, 0);
+		GLSL_SetUniformInt(&tr.fogShader[i], UNIFORM_VOLUMETRICLIGHTMAP, 2);
+
 		qglUseProgram(0);
 
 		GLSL_FinishGPUShader(&tr.fogShader[i]);
@@ -2376,8 +2394,12 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 				"#define FX_SPRITE\n");
 
 		if ( i & SSDEF_USE_FOG )
+		{
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define USE_FOG\n");
+			if (r_volumetricFog->integer)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VOLUMETRIC_FOG\n");
+		}
 
 		/*if ( i & SSDEF_ALPHA_TEST )
 			Q_strcat(extradefines, sizeof(extradefines),
@@ -2399,6 +2421,10 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 		}
 
 		GLSL_InitUniforms(program);
+		qglUseProgram(program->program);
+		GLSL_SetUniformInt(program, UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
+		GLSL_SetUniformInt(program, UNIFORM_VOLUMETRICLIGHTMAP, 2);
+		qglUseProgram(0);
 		GLSL_FinishGPUShader(program);
 		++numPrograms;
 	}
