@@ -73,7 +73,6 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_VelocityMap", GLSL_INT, 1 },
 
 	{ "u_VolumetricLightMap", GLSL_INT, 1 },
-	{ "u_VolumetricLightGridScale", GLSL_FLOAT, 1 },
 
 	{ "u_LightGridOrigin", GLSL_VEC3, 1 },
 	{ "u_LightGridCellInverseSize", GLSL_VEC3, 1 },

@@ -2649,7 +2649,6 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 				uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, origin);
 				uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, size);
 			}
-			uniformDataWriter.SetUniformFloat(UNIFOMR_VOLUMETRICLIGHTGRIDSCALE, tr.volumetricFogScale * r_volumetricFogScale->value);
 		}
 	}
 	Allocator& frameAllocator = *backEndData->perFrameMemory;

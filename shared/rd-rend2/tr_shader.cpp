@@ -3774,7 +3774,7 @@ static shader_t *GeneratePermanentShader( void ) {
 	if (newShader->fogPass == FP_EQUAL)
 	{
 		newShader->fogPass = FP_LE;
-		bool allPassesAlpha = true;
+		bool allPassesModulate = true;
 		for (int stage = 0; stage < MAX_SHADER_STAGES; stage++) {
 			shaderStage_t *pStage = &stages[stage];
 
@@ -3784,8 +3784,8 @@ static shader_t *GeneratePermanentShader( void ) {
 			if (pStage->glow && stage > 0)
 				continue;
 
-			if (pStage->adjustColorsForFog != ACFF_MODULATE_ALPHA)
-				allPassesAlpha = false;
+			if (pStage->adjustColorsForFog == ACFF_NONE)
+				allPassesModulate = false;
 
 			if (pStage->stateBits & GLS_DEPTHMASK_TRUE)
 			{
@@ -3794,7 +3794,7 @@ static shader_t *GeneratePermanentShader( void ) {
 			}
 		}
 
-		if (allPassesAlpha)
+		if (allPassesModulate)
 			newShader->fogPass = FP_NONE;
 	}
 

@@ -1147,8 +1147,10 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	UniformDataWriter uniformDataWriter;
 	uniformDataWriter.Start(sp);
 	uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
-	if (input->numPasses > 0)
+	if (input->numPasses > 0 && tess.shader->fogPass != FP_EQUAL)
 		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
+	else
+		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, ALPHA_TEST_NONE);
 
 	if (r_volumetricFog->integer)
 	{
@@ -1166,7 +1168,6 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 			uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, origin);
 			uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, size);
 		}
-		uniformDataWriter.SetUniformFloat(UNIFOMR_VOLUMETRICLIGHTGRIDSCALE, 1.0f);
 	}
 
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
@@ -1195,8 +1196,10 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	SamplerBindingsWriter samplerBindingsWriter;
 	if (input->numPasses > 0)
 	{
-		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
+		if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE && tess.shader->fogPass != FP_EQUAL)
 			samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
+		else
+			samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
 
 		if (tr.world && r_volumetricFog->integer && tr.world->lightGridData)
 		{
@@ -1247,18 +1250,19 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		UniformDataWriter uniformDataWriterBack;
 		uniformDataWriterBack.Start(sp);
 		uniformDataWriterBack.SetUniformInt(UNIFORM_FOGINDEX, tr.world->globalFogIndex - 1);
-		if (input->numPasses > 0)
-		{
-			uniformDataWriterBack.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, input->xstages[0]->alphaTestType);
-			SamplerBindingsWriter samplerBindingsWriter;
-			if (input->xstages[0]->alphaTestType != ALPHA_TEST_NONE)
-				samplerBindingsWriter.AddStaticImage(input->xstages[0]->bundle[0].image[0], 0);
 
-			if (tr.world && r_volumetricFog->integer && tr.world->lightGridData)
+		// Fog planes shouldn't have any form of blending or alpha testing
+		if (r_volumetricFog->integer)
+		{
+			uniformDataWriterBack.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, ALPHA_TEST_NONE);
+			SamplerBindingsWriter samplerBindingsWriter;
+			samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
+
+			if (tr.world && tr.world->lightGridData)
 			{
 				samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
 			}
-			else if (r_volumetricFog->integer)
+			else
 			{
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage3D, 2);
 			}
@@ -1661,19 +1665,21 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		if ( input->fogNum
 			 && pStage->glslShaderGroup != tr.lightallShader
-			 && backEnd.depthFill ) {
+			 && !backEnd.depthFill 
+			 && !input->shader->fogPass) {
 			vec4_t fogColorMask;
 			ComputeFogColorMask(pStage, fogColorMask);
 			uniformDataWriter.SetUniformVec4(UNIFORM_FOGCOLORMASK, fogColorMask);
 			uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
 			if (r_volumetricFog->integer)
 			{
-				if (tr.world)
+				if (tr.world  && tr.world->lightGridData)
 				{
 					vec3_t sampleOrigin;
 					VectorMA(tr.world->lightGridOrigin, -0.5f, tr.world->lightGridSize, sampleOrigin);
 					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, sampleOrigin);
 					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, tr.world->lightGridInverseSize);
+					samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
 				}
 				else
 				{
@@ -1681,15 +1687,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					const vec3_t size = { 1.0f, 1.0f, 1.0f };
 					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDORIGIN, origin);
 					uniformDataWriter.SetUniformVec3(UNIFORM_LIGHTGRIDCELLINVERSESIZE, size);
-				}
-				uniformDataWriter.SetUniformFloat(UNIFOMR_VOLUMETRICLIGHTGRIDSCALE, tr.volumetricFogScale * r_volumetricFogScale->value);
-
-				if (tr.world && tr.world->lightGridData)
-				{
-					samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
-				}
-				else
-				{
 					samplerBindingsWriter.AddStaticImage(tr.whiteImage3D, 2);
 				}
 			}

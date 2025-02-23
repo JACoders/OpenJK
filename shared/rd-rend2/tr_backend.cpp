@@ -1513,7 +1513,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 			vec4_t color;
 			VectorCopy4(tr.world->globalFog->color, color);
 
-			float depthToRenderTo = tr.world->globalFog->parms.depthForOpaque * 1.5f;
+			float depthToRenderTo = tr.world->globalFog->parms.depthForOpaque;
 
 			const float ymax = depthToRenderTo * tanf(backEnd.viewParms.fovY * M_PI / 360.0f);
 			const float xmax = depthToRenderTo * tanf(backEnd.viewParms.fovX * M_PI / 360.0f);
@@ -2429,7 +2429,15 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 
 		VectorCopy4(fog->surface, fogData->plane);
 		VectorCopy4(fog->color, fogData->color);
-		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque * tr.volumetricFogScale * r_volumetricFogScale->value;
+		if (r_volumetricFog->integer)
+		{
+			fogData->depthToOpaque = (-logf(1.5f / 255.0f)) / fog->parms.depthForOpaque * tr.volumetricFogScale * r_volumetricFogScale->value;
+		}
+		else
+		{
+			fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
+		}
+		
 		fogData->hasPlane = fog->hasSurface;
 	}
 #ifdef REND2_SP
@@ -2443,7 +2451,10 @@ static void RB_UpdateFogsConstants(gpuFrame_t *frame)
 			0.07f,
 			1.0f
 		};
-		const float depthForOpaque = sqrtf(-logf(1.0f / 255.0f)) / 700.f;
+		const float depthForOpaque = (
+			r_volumetricFog->integer ? 
+			(-logf(1.0f / 255.0f)) / 700.f :
+			sqrtf(-logf(1.0f / 255.0f)) / 700.f);
 
 		VectorCopy4(color, fogData->color);
 		fogData->depthToOpaque = depthForOpaque;

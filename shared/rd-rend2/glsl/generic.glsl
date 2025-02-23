@@ -503,7 +503,6 @@ uniform sampler3D u_VolumetricLightMap;
 
 uniform vec3 u_LightGridOrigin;
 uniform vec3 u_LightGridCellInverseSize;
-uniform float u_VolumetricLightGridScale;
 #endif
 
 layout(std140) uniform Camera
@@ -572,7 +571,7 @@ vec3 CalcVolumetricFogColor(in vec3 startPosition, in vec3 endPosition, in Fog f
 		
 		position += step;
 	}
-	return color * u_VolumetricLightGridScale;
+	return color;
 }
 #endif
 
@@ -649,9 +648,12 @@ void main()
 	Fog fog = u_Fogs[u_FogIndex];
 	vec4 fogColorOpacity = CalcFog(u_ViewOrigin, var_WSPosition, fog);
 #if defined(USE_VOLUMETRIC_FOG)
+	color.rgb *= 1.0 - u_FogColorMask.a * fogColorOpacity.a;
 	color.rgb += u_FogColorMask.a * fogColorOpacity.rgb;
-#endif
+	color.rgb *= vec3(1.0) - u_FogColorMask.rgb * fogColorOpacity.a;
+#else
 	color *= vec4(1.0) - u_FogColorMask * fogColorOpacity.a;
+#endif
 #endif
 
 	out_Color = color;

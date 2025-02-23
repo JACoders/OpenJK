@@ -265,7 +265,6 @@ uniform sampler3D u_VolumetricLightMap;
 
 uniform vec3 u_LightGridOrigin;
 uniform vec3 u_LightGridCellInverseSize;
-uniform float u_VolumetricLightGridScale;
 #endif
 
 layout(std140) uniform Scene
@@ -349,7 +348,7 @@ vec3 CalcVolumetricFogColor(in vec3 startPosition, in vec3 endPosition, in Fog f
 		
 		position += step;
 	}
-	return color * u_VolumetricLightGridScale;
+	return color;
 }
 #endif
 
