@@ -4246,6 +4246,7 @@ static shader_t *FinishShader( void ) {
 	if (stage == 0 && !shader.isSky)
 		shader.sort = SS_FOG;
 
+	shader.depthPrepass = DEPTHPREPASS_ALPHATESTED;
 	// determain if the shader can be simplified when beeing rendered to depth
 	if (shader.sort == SS_OPAQUE &&
 		shader.numDeforms == 0)
@@ -4257,10 +4258,13 @@ static shader_t *FinishShader( void ) {
 				continue;
 
 			if (pStage->stateBits & (GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS))
+			{
+				shader.depthPrepass = DEPTHPREPASS_SKIP;
 				break;
+			}
 
 			if (pStage->alphaTestType == ALPHA_TEST_NONE)
-				shader.useSimpleDepthShader = qtrue;
+				shader.depthPrepass = DEPTHPREPASS_SIMPLE;
 			break;
 		}
 	}

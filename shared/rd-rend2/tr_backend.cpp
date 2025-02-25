@@ -651,6 +651,7 @@ void RB_BeginDrawingView (void) {
 
 	// we will only draw a sun if there was sky rendered in this view
 	backEnd.skyRenderedThisView = qfalse;
+	backEnd.skyNumber = 0;
 
 	// clip to the plane of the portal
 	if ( backEnd.viewParms.isPortal ) {
@@ -1244,13 +1245,13 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemapIndex, &postRender);
 		assert(shader != nullptr);
 
-		if (shader->sort != SS_OPAQUE || shader->useDistortion)
+		if (shader->sort != SS_OPAQUE || shader->useDistortion || shader->depthPrepass == DEPTHPREPASS_SKIP)
 		{
 			// Don't draw yet, let's see what's to come
 			continue;
 		}
 
-		if (shader->useSimpleDepthShader == qtrue)
+		if (shader->depthPrepass == DEPTHPREPASS_SIMPLE)
 			shader = tr.defaultShader;
 
 		if (*drawSurf->surface == SF_MDX)

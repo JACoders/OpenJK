@@ -1857,7 +1857,7 @@ void R_AddDrawSurf(
 	surf->surface = surface;
 
 	if (tr.viewParms.flags & VPF_DEPTHSHADOW &&
-		shader->useSimpleDepthShader == qtrue)
+		shader->depthPrepass == DEPTHPREPASS_SIMPLE)
 	{
 		surf->sort = R_CreateSortKey(entityNum, tr.defaultShader->sortedIndex, 0, 0);
 		surf->dlightBits = 0;
