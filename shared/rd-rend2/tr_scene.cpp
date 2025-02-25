@@ -503,6 +503,7 @@ void RE_BeginScene(const refdef_t *fd)
 	// each scene / view.
 	tr.frameSceneNum++;
 	tr.sceneCount++;
+	tr.portalRenderedThisFrame = qfalse;
 
 	//ri.Printf(PRINT_ALL, "RE_BeginScene Frame: %i, skyportal: %i, entities: %i\n", backEndData->realFrameNumber, int(tr.world->skyboxportal && (tr.refdef.rdflags & RDF_SKYBOXPORTAL)), tr.refdef.num_entities);
 	R_GatherFrameViews(&tr.refdef);

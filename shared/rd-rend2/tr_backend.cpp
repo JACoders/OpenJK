@@ -1549,6 +1549,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 	backEnd.refdef.floatTime = originalTime;
 	FBO_Bind(fbo);
 	GL_SetModelviewMatrix(backEnd.viewParms.world.modelViewMatrix);
+
+	if (backEnd.viewParms.viewParmType == VPT_PORTAL || backEnd.viewParms.viewParmType == VPT_SKYPORTAL)
+		tr.portalRenderedThisFrame = qtrue;
 }
 
 

@@ -464,6 +464,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	};
 
 	DrawItem item = {};
+	item.renderState.stateBits = tr.portalRenderedThisFrame ? 0 : GLS_DEPTHTEST_DISABLE;
 	item.renderState.cullType = CT_TWO_SIDED;
 	item.renderState.depthRange = RB_GetDepthRange(backEnd.currentEntity, tess.shader);
 	item.program = sp;
