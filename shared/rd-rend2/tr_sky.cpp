@@ -482,7 +482,8 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, &tess);
 	item.draw.params.indexed.numIndices -= tess.firstIndex;
 
-	uint32_t key = RB_CreateSortKey(item, 0, SS_ENVIRONMENT);
+	int skyNumber = MAX(0, 7 - backEnd.skyNumber);
+	uint32_t key = RB_CreateSortKey(item, skyNumber, SS_ENVIRONMENT);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
 
 	RB_CommitInternalBufferData();
@@ -867,6 +868,7 @@ void RB_StageIteratorSky( void ) {
 
 	// note that sky was drawn so we will draw a sun later
 	backEnd.skyRenderedThisView = qtrue;
+	backEnd.skyNumber++;
 }
 
 

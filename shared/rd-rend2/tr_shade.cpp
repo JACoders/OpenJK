@@ -2056,7 +2056,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-		uint32_t key = RB_CreateSortKey(item, stage, input->shader->sort);
+		uint32_t key;
+		if (input->shader->sort == SS_ENVIRONMENT)
+			key = RB_CreateSortKey(item, stage+8, input->shader->sort);
+		else
+			key = RB_CreateSortKey(item, stage, input->shader->sort);
 
 		RB_AddDrawItem(backEndData->currentPass, key, item);
 
