@@ -49,23 +49,13 @@ void RB_ShadowFinish(void) {
 	Matrix16Ortho(0, glConfig.vidWidth, glConfig.vidHeight, 0, 0, 1, projection);
 
 	GL_Cull(CT_TWO_SIDED);
-	GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES]);
+	GLSL_BindProgram(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE]);
 	vec4_t color;
 	VectorSet4(color, 0.6f, 0.6f, 0.6f, 1.0f);
-	GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_COLOR, color);
-	GLSL_SetUniformMatrix4x4(&tr.textureColorShader[TEXCOLORDEF_USE_VERTICES], UNIFORM_MODELVIEWPROJECTIONMATRIX, projection);
+	GLSL_SetUniformVec4(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_COLOR, color);
+	GLSL_SetUniformMatrix4x4(&tr.textureColorShader[TEXCOLORDEF_SCREEN_TRIANGLE], UNIFORM_MODELVIEWPROJECTIONMATRIX, projection);
 
-	vec4i_t dstBox;
-	vec4_t quadVerts[4];
-	vec2_t texCoords[4];
-	VectorSet4(dstBox, 0, glConfig.vidHeight, glConfig.vidWidth, 0);
-
-	VectorSet4(quadVerts[0], dstBox[0], dstBox[1], 0, 1);
-	VectorSet4(quadVerts[1], dstBox[2], dstBox[1], 0, 1);
-	VectorSet4(quadVerts[2], dstBox[2], dstBox[3], 0, 1);
-	VectorSet4(quadVerts[3], dstBox[0], dstBox[3], 0, 1);
-
-	RB_InstantQuad2(quadVerts, texCoords);
+	RB_InstantTriangle();
 
 	qglStencilFunc(GL_ALWAYS, 0, 0xff);
 }
