@@ -2105,10 +2105,7 @@ static void RB_SurfaceLathe()
 			i = oldpt[0] * 0.1f + oldpt[1] * 0.1f;
 			tess.texCoords[tess.numVertexes][0][0] = (t - latheStep) / 360.0f;
 			tess.texCoords[tess.numVertexes][0][1] = mu - bezierStep + cos(i + backEnd.refdef.floatTime) * pain;
-			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
-			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
-			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			VectorScale4(e->shaderRGBA, 1.0f / 255.0f, tess.vertexColors[tess.numVertexes]);
 			tess.numVertexes++;
 
 			VectorSet(normal, oldpt2[0], oldpt2[1], l_oldpt2[1]);
@@ -2118,10 +2115,7 @@ static void RB_SurfaceLathe()
 			i = oldpt2[0] * 0.1f + oldpt2[1] * 0.1f;
 			tess.texCoords[tess.numVertexes][0][0] = (t - latheStep) / 360.0f;
 			tess.texCoords[tess.numVertexes][0][1] = mu + cos(i + backEnd.refdef.floatTime) * pain;
-			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
-			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
-			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			VectorScale4(e->shaderRGBA, 1.0f / 255.0f, tess.vertexColors[tess.numVertexes]);
 			tess.numVertexes++;
 
 			VectorSet(normal, pt[0], pt[1], l_oldpt[1]);
@@ -2131,10 +2125,7 @@ static void RB_SurfaceLathe()
 			i = pt[0] * 0.1f + pt[1] * 0.1f;
 			tess.texCoords[tess.numVertexes][0][0] = t / 360.0f;
 			tess.texCoords[tess.numVertexes][0][1] = mu - bezierStep + cos(i + backEnd.refdef.floatTime) * pain;
-			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
-			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
-			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			VectorScale4(e->shaderRGBA, 1.0f / 255.0f, tess.vertexColors[tess.numVertexes]);
 			tess.numVertexes++;
 
 			VectorSet(normal, pt2[0], pt2[1], l_oldpt2[1]);
@@ -2144,10 +2135,7 @@ static void RB_SurfaceLathe()
 			i = pt2[0] * 0.1f + pt2[1] * 0.1f;
 			tess.texCoords[tess.numVertexes][0][0] = t / 360.0f;
 			tess.texCoords[tess.numVertexes][0][1] = mu + cos(i + backEnd.refdef.floatTime) * pain;
-			tess.vertexColors[tess.numVertexes][0] = e->shaderRGBA[0];
-			tess.vertexColors[tess.numVertexes][1] = e->shaderRGBA[1];
-			tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[2];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+			VectorScale4(e->shaderRGBA, 1.0f / 255.0f, tess.vertexColors[tess.numVertexes]);
 			tess.numVertexes++;
 
 			tess.indexes[tess.numIndexes++] = vbase;
@@ -2288,8 +2276,8 @@ static void RB_SurfaceClouds()
 			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
 			tess.vertexColors[tess.numVertexes][0] =
 				tess.vertexColors[tess.numVertexes][1] =
-				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i] / 255.0f;
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3] / 255.0f;
 			tess.numVertexes++;
 
 			VectorAdd(e->origin, oldpt2, tess.xyz[tess.numVertexes]);
@@ -2297,8 +2285,8 @@ static void RB_SurfaceClouds()
 			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
 			tess.vertexColors[tess.numVertexes][0] =
 				tess.vertexColors[tess.numVertexes][1] =
-				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i + 1];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i + 1] / 255.0f;
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3] / 255.0f;
 			tess.numVertexes++;
 
 			VectorAdd(e->origin, pt, tess.xyz[tess.numVertexes]);
@@ -2306,8 +2294,8 @@ static void RB_SurfaceClouds()
 			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
 			tess.vertexColors[tess.numVertexes][0] =
 				tess.vertexColors[tess.numVertexes][1] =
-				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i] / 255.0f;
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3] / 255.0f;
 			tess.numVertexes++;
 
 			VectorAdd(e->origin, pt2, tess.xyz[tess.numVertexes]);
@@ -2315,8 +2303,8 @@ static void RB_SurfaceClouds()
 			tess.texCoords[tess.numVertexes][0][1] = tess.xyz[tess.numVertexes][1] * 0.1f;
 			tess.vertexColors[tess.numVertexes][0] =
 				tess.vertexColors[tess.numVertexes][1] =
-				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i + 1];
-			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3];
+				tess.vertexColors[tess.numVertexes][2] = e->shaderRGBA[0] * alphaDef[i + 1] / 255.0f;
+			tess.vertexColors[tess.numVertexes][3] = e->shaderRGBA[3] / 255.0f;
 			tess.numVertexes++;
 
 			tess.indexes[tess.numIndexes++] = vbase;
