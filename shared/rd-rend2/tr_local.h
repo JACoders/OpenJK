@@ -1595,10 +1595,8 @@ typedef struct {
 
 	float       autoExposureMinMax[2];
 	float       toneMinAvgMaxLinear[3];
-#ifdef REND2_SP
 	bool		doLAGoggles;
 	bool		doFullbright;
-#endif
 } trRefdef_t;
 
 
@@ -3673,13 +3671,11 @@ typedef struct rotatePicCommand_s {
 	float	a;
 } rotatePicCommand_t;
 
-#ifdef REND2_SP
 typedef struct scissorCommand_s {
 	int	commandId;
 	float x, y;
 	float w, h;
 } scissorCommand_t;
-#endif
 
 typedef struct drawSurfsCommand_s {
 	int		commandId;

@@ -1201,7 +1201,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		else
 			samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
 
-		if (tr.world && r_volumetricFog->integer && tr.world->lightGridData)
+		if (tr.world && r_volumetricFog->integer && tr.world->lightGridData && !tr.refdef.doLAGoggles)
 		{
 			samplerBindingsWriter.AddStaticImage(tr.world->volumetricLightMaps[0], 2);
 		}
@@ -1673,7 +1673,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformInt(UNIFORM_FOGINDEX, input->fogNum - 1);
 			if (r_volumetricFog->integer)
 			{
-				if (tr.world  && tr.world->lightGridData)
+				if (tr.world  && tr.world->lightGridData && !tr.refdef.doLAGoggles)
 				{
 					vec3_t sampleOrigin;
 					VectorMA(tr.world->lightGridOrigin, -0.5f, tr.world->lightGridSize, sampleOrigin);

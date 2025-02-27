@@ -487,7 +487,6 @@ void R_SetColorMode(GLboolean *rgba, stereoFrame_t stereoFrame, int colormode)
 	}
 }
 
-#ifdef REND2_SP
 void RE_LAGoggles(void)
 {
 	tr.refdef.doLAGoggles = true;
@@ -513,7 +512,6 @@ void RE_Scissor(float x, float y, float w, float h)
 	cmd->w = w;
 	cmd->h = h;
 }
-#endif
 
 /*
 ====================

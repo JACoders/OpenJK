@@ -519,10 +519,8 @@ void RE_EndScene()
 	r_firstScenePoly = r_numpolys;
 	tr.skyPortalEntities = 0;
 	tr.numCachedViewParms = 0;
-#ifdef REND2_SP
 	tr.refdef.doLAGoggles = false;
 	tr.refdef.doFullbright = false;
-#endif
 	backEndData->currentFrame->currentScene++;
 	if (backEndData->currentFrame->currentScene > MAX_SCENES)
 	{
