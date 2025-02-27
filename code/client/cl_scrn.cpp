@@ -554,6 +554,8 @@ void SCR_PrecacheScreenshot()
 
 }
 
+// Returns a SG_SCR_WIDTH x SG_SCR_HEIGHT screenshot buffer
+// Must match color components with DrawStretchRaw: 4
 byte *SCR_GetScreenshot(qboolean *qValid)
 {
 	if (!screenDataValid) {
