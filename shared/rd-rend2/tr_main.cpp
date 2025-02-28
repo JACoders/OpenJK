@@ -2310,8 +2310,8 @@ void R_SetupPshadowMaps(trRefdef_t *refdef)
 		if((ent->e.renderfx & (RF_FIRST_PERSON | RF_NOSHADOW | RF_DEPTHHACK)))
 			continue;
 
-		//if((ent->e.renderfx & RF_THIRD_PERSON))
-			//continue;
+		if((ent->e.renderfx & RF_THIRD_PERSON))
+			continue;
 
 		if (ent->e.reType == RT_MODEL)
 		{
