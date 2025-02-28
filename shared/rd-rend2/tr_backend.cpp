@@ -2682,6 +2682,15 @@ static void RB_UpdateEntityConstants(
 	{
 		ent = &refdef->entities[i];
 
+		if (ent->e.reType != RT_MODEL 
+			&& ent->e.shaderTime == -worldEntityBlock.entityTime
+			&& !(ent->e.renderfx & RF_VOLUMETRIC))
+		{
+			tr.entityUboOffsets[i] = tr.entityUboOffsets[REFENTITYNUM_WORLD];
+			tr.previousEntityUboOffsets[i] = -1;
+			continue;
+		}
+
 		R_SetupEntityLighting(refdef, ent);
 
 		EntityBlock entityBlock = {};
