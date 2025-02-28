@@ -379,7 +379,7 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 		float distThroughFog = mix(distToVertex, distFromIntersection, intersects);
 		float z = globalFog.depthToOpaque * distThroughFog;
 	#if defined(USE_VOLUMETRIC_FOG)
-		vec3 startPosition = mix(viewOrigin, (V * t) + viewOrigin, intersects);
+		vec3 startPosition = mix(viewOrigin, (V * t) + viewOrigin, vec3(intersects));
 		vec3 endPosition = (normalize(V) * distThroughFog) + startPosition;
 		vec3 color = CalcVolumetricFogColor(viewOrigin, endPosition, fog);
 		return vec4(color * globalFog.color.rgb, 1.0 - clamp(exp(-z), 0.0, 1.0));
@@ -418,7 +418,7 @@ vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in Fog fog)
 	float z = fog.depthToOpaque * distThroughFog;
 
 #if defined(USE_VOLUMETRIC_FOG)
-	vec3 startPosition = mix((V * t) + viewOrigin, viewOrigin, inFog);
+	vec3 startPosition = mix((V * t) + viewOrigin, viewOrigin, vec3(inFog));
 	vec3 endPosition = (normalize(V) * distThroughFog) + startPosition;
 	vec3 color = CalcVolumetricFogColor(startPosition, endPosition, fog);
 	return vec4(color * fog.color.rgb, 1.0 - clamp(exp(-z), 0.0, 1.0));
