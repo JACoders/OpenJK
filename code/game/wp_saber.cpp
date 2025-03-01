@@ -13348,6 +13348,11 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 	float				dist;
 	extern usercmd_t	ucmd;
 
+	//Prevent High FPS to activate the force power too quickly
+	if (self->client->ps.forcePowerTime < level.time) {
+		return;
+	}
+	self->client->ps.forcePowerTime = level.time + 33; //33ms => max 30 times per second
 	switch( (int)forcePower )
 	{
 	case FP_HEAL:
