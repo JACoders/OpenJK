@@ -108,6 +108,7 @@ struct gentity_s {
 
 	vec3_t		absmin, absmax;		// derived from mins/maxs and origin + rotation
 
+	int			forcePowerTime;		//Delay between force power activation
 	// currentOrigin will be used for all collision detection and world linking.
 	// it will not necessarily be the same as the trajectory evaluation for the current
 	// time, because each entity must be moved one at a time after time is advanced
