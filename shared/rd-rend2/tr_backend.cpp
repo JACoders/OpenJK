@@ -3224,7 +3224,7 @@ const void *RB_PostProcess(const void *data)
 		}
 
 		// Copy depth buffer to the backbuffer for depth culling refractive surfaces
-		FBO_FastBlit(tr.renderFbo, srcBox, NULL, dstBox, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+		FBO_FastBlit(srcFbo, srcBox, NULL, dstBox, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	}
 
 	if (r_drawSunRays->integer)
