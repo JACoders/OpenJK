@@ -4539,6 +4539,8 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.worldMapLoaded = qtrue;
 	tr.world = world;
 
+	R_PushDebugGroup(AL_SCENE, "World loading");
+	R_PushDebugGroup(AL_VIEW, "Weather depth");
 	R_InitWeatherForMap();
 
 	// Render all cubemaps

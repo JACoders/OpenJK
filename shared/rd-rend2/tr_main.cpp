@@ -2525,6 +2525,7 @@ void R_RenderCubemapSide(int cubemapIndex, int cubemapSide, bool bounce)
 			if (!bounce)
 				tr.cachedViewParms[i].flags |= VPF_NOCUBEMAPS;
 		}
+		R_PushDebugGroup(AL_VIEW, va("Cubemap %i, side %i", cubemapIndex, cubemapSide));
 		R_RenderView(&tr.cachedViewParms[i]);
 		R_IssuePendingRenderCommands();
 		tr.refdef.numDrawSurfs = 0;

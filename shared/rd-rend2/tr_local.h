@@ -318,6 +318,16 @@ End Cvars
 
 typedef enum
 {
+	AL_NONE,
+	AL_SCENE,
+	AL_VIEW,
+	AL_STAGE
+} annotationLayer_t;
+
+void R_PushDebugGroup(annotationLayer_t layer, const char* name);
+
+typedef enum
+{
 	IMGTYPE_COLORALPHA, // for color, lightmap, diffuse, and specular
 	IMGTYPE_NORMAL,
 	IMGTYPE_NORMALHEIGHT,

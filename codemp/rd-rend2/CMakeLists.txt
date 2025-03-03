@@ -32,6 +32,7 @@ set(MPRend2Files
 	"${SharedDir}/rd-rend2/tr_cache.h"
 	"${SharedDir}/rd-rend2/tr_cmds.cpp"
 	"${SharedDir}/rd-rend2/tr_curve.cpp"
+	"${SharedDir}/rd-rend2/tr_debug.cpp"
 	"${SharedDir}/rd-rend2/tr_decals.cpp"
 	"${SharedDir}/rd-rend2/tr_extensions.cpp"
 	"${SharedDir}/rd-rend2/tr_extramath.cpp"

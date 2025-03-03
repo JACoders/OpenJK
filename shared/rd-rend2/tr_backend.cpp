@@ -1489,10 +1489,12 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	if ( backEnd.depthFill )
 	{
+		R_PushDebugGroup(AL_STAGE, "Depthpass");
 		RB_SubmitDrawSurfsForDepthFill(drawSurfs, numDrawSurfs, originalTime);
 	}
 	else
 	{
+		R_PushDebugGroup(AL_STAGE, "Mainpass");
 		RB_SubmitDrawSurfs(drawSurfs, numDrawSurfs, originalTime);
 
 		// TODO: Find a better place to add the fog cap surface
@@ -3044,6 +3046,8 @@ static const void	*RB_SwapBuffers( const void *data ) {
 	R_NewFrameSync();
 
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
+
+	R_PushDebugGroup(AL_NONE, "Done with frame");
 
 	ri.WIN_Present( &window );
 

@@ -1457,6 +1457,9 @@ static int GLSL_LoadGPUProgramGeneric(
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
+	char name[64];
+	size_t nameLen = strlen("generic\0");
+
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("generic", allocator, fallback_genericProgram);
@@ -1468,46 +1471,54 @@ static int GLSL_LoadGPUProgramGeneric(
 		}
 
 		uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_NORMAL | ATTR_COLOR;
+		Q_strncpyz(name, "generic\0", nameLen + 1);
 		extradefines[0] = '\0';
 
 		if (i & GENERICDEF_USE_DEFORM_VERTEXES)
+		{
+			Q_strcat(name, sizeof(name), "_DEFORM");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
+		}
 
 		if (i & GENERICDEF_USE_TCGEN_AND_TCMOD)
 		{
+			Q_strcat(name, sizeof(name), "_TCGENMOD");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
 #ifdef REND2_SP_MD3
 		if (i & GENERICDEF_USE_VERTEX_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_VA");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
 #endif // REND2_SP
 		if (i & GENERICDEF_USE_SKELETAL_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_SK");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
 		if (i & GENERICDEF_USE_FOG)
 		{
+			Q_strcat(name, sizeof(name), "_FOG");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_FOG\n");
 			if (r_volumetricFog->integer)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VOLUMETRIC_FOG\n");
 		}
 
 		if (i & GENERICDEF_USE_RGBAGEN)
+		{
+			Q_strcat(name, sizeof(name), "_RGBGEN");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
-
-		/*if (i & GENERICDEF_USE_GLOW_BUFFER)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");*/
+		}
 
 		/*if (i & GENERICDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 
-		if (!GLSL_LoadGPUShader(builder, &tr.genericShader[i], "generic", attribs, NO_XFB_VARS,
+		if (!GLSL_LoadGPUShader(builder, &tr.genericShader[i], name, attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load generic shader!");
@@ -1536,6 +1547,9 @@ static int GLSL_LoadGPUProgramFogPass(
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
+	char name[64];
+	size_t nameLen = strlen("fogpass\0");
+
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("fogpass", allocator, fallback_fogpassProgram);
@@ -1548,32 +1562,44 @@ static int GLSL_LoadGPUProgramFogPass(
 
 		uint32_t attribs =
 			(ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0);
+		Q_strncpyz(name, "fogpass\0", nameLen + 1);
 		extradefines[0] = '\0';
 
 		if (i & FOGDEF_USE_DEFORM_VERTEXES)
+		{
+			Q_strcat(name, sizeof(name), "_DEFORM");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
+		}
+
 #ifdef REND2_SP_MD3
 		if (i & FOGDEF_USE_VERTEX_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_VA");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
 #endif // REND2_SP
 		if (i & FOGDEF_USE_SKELETAL_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_SK");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
 		if (i & FOGDEF_USE_FALLBACK_GLOBAL_FOG)
+		{
+			Q_strcat(name, sizeof(name), "_FALLBACK");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_FALLBACK_GLOBAL_FOG\n");
-
+		}
 		/*if (i & FOGDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 		if (r_volumetricFog->integer)
+		{
+			Q_strcat(name, sizeof(name), "_VOLUMETRIC");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VOLUMETRIC_FOG\n");
+		}
 
-		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], "fogpass", attribs, NO_XFB_VARS,
+		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], name, attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load fogpass shader!");
@@ -1603,6 +1629,9 @@ static int GLSL_LoadGPUProgramVelocityPass(
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
+	char name[64];
+	size_t nameLen = strlen("velocity\0");
+
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("velocity", allocator, fallback_velocityProgram);
@@ -1615,39 +1644,51 @@ static int GLSL_LoadGPUProgramVelocityPass(
 
 		uint32_t attribs =
 			(ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0);
+		Q_strncpyz(name, "velocity\0", nameLen + 1);
 		extradefines[0] = '\0';
 
 		if (i & VELOCITYDEF_USE_DEFORM_VERTEXES)
+		{
+			Q_strcat(name, sizeof(name), "_DEFORM");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
+		}
+
+		if (i & VELOCITYDEF_USE_TCGEN_AND_TCMOD)
+		{
+			Q_strcat(name, sizeof(name), "_TCGENMOD");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
+		}
+
+		if (i & VELOCITYDEF_USE_RGBAGEN)
+		{
+			Q_strcat(name, sizeof(name), "_RGBGEN");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
+		}
+
 #ifdef REND2_SP_MD3
 		if (i & FOGDEF_USE_VERTEX_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_VA");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
 #endif // REND2_SP
 		if (i & VELOCITYDEF_USE_SKELETAL_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_SK");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
-		if (i & VELOCITYDEF_USE_TCGEN_AND_TCMOD)
-		{
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
-		}
-
-		if (i & VELOCITYDEF_USE_RGBAGEN)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
-
 		if (i & VELOCITYDEF_USE_PARALLAXMAP && r_parallaxMapping->integer)
 		{
+			Q_strcat(name, sizeof(name), "_NH");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_PARALLAXMAP\n");
 			attribs |= ATTR_TANGENT;
 		}
 
-		if (!GLSL_LoadGPUShader(builder, &tr.velocityShader[i], "velocity", attribs, NO_XFB_VARS,
+		if (!GLSL_LoadGPUShader(builder, &tr.velocityShader[i], name, attribs, NO_XFB_VARS,
 			extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load velocity shader!");
@@ -1676,45 +1717,61 @@ static int GLSL_LoadGPUProgramRefraction(
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
+	char name[64];
+	size_t nameLen = strlen("refraction\0");
+
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("refraction", allocator, fallback_refractionProgram);
 	for (int i = 0; i < REFRACTIONDEF_COUNT; i++)
 	{
 		uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_NORMAL | ATTR_COLOR;
+		Q_strncpyz(name, "refraction\0", nameLen + 1);
 		extradefines[0] = '\0';
 
 		if (i & REFRACTIONDEF_USE_DEFORM_VERTEXES)
+		{
+			Q_strcat(name, sizeof(name), "_DEFORM");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
+		}
 
 		if (i & REFRACTIONDEF_USE_TCGEN_AND_TCMOD)
 		{
+			Q_strcat(name, sizeof(name), "_TCGENMOD");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
+		}
+
+		if (i & REFRACTIONDEF_USE_RGBAGEN)
+		{
+			Q_strcat(name, sizeof(name), "_RGBGEN");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
 		}
 #ifdef REND2_SP_MD3
 		if (i & REFRACTIONDEF_USE_VERTEX_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_VA");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
 #endif // REND2_SP
 		if (i & REFRACTIONDEF_USE_SKELETAL_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_SK");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
-
-		if (i & REFRACTIONDEF_USE_RGBAGEN)
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_RGBAGEN\n");
 
 		/*if (i & REFRACTIONDEF_USE_ALPHA_TEST)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");*/
 
 		if (i & REFRACTIONDEF_USE_SRGB_TRANSFORM)
+		{
+			Q_strcat(name, sizeof(name), "_SRGB");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LINEAR_LIGHT\n");
+		}
 
-		if (!GLSL_LoadGPUShader(builder, &tr.refractionShader[i], "refraction", attribs, NO_XFB_VARS,
+		if (!GLSL_LoadGPUShader(builder, &tr.refractionShader[i], name, attribs, NO_XFB_VARS,
 			extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load refraction shader!");
@@ -1743,6 +1800,9 @@ static int GLSL_LoadGPUProgramLightAll(
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
+	char name[64];
+	size_t nameLen = strlen("lightall\0");
+
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("lightall", allocator, fallback_lightallProgram);
@@ -1758,6 +1818,7 @@ static int GLSL_LoadGPUProgramLightAll(
 
 		uint32_t attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_COLOR | ATTR_NORMAL;
 
+		Q_strncpyz(name, "lightall\0", nameLen + 1);
 		extradefines[0] = '\0';
 
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
@@ -1768,8 +1829,10 @@ static int GLSL_LoadGPUProgramLightAll(
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT\n");
 
 			if (useFastLight)
+			{
+				Q_strcat(name, sizeof(name), "_FAST");
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_FAST_LIGHT\n");
-
+			}
 			if (r_dlightMode->integer >= 2)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_DSHADOWS\n");
 
@@ -1777,6 +1840,7 @@ static int GLSL_LoadGPUProgramLightAll(
 			{
 				case LIGHTDEF_USE_LIGHTMAP:
 				{
+					Q_strcat(name, sizeof(name), "_LMAP");
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHTMAP\n");
 
 					if (r_deluxeMapping->integer && !useFastLight)
@@ -1788,12 +1852,14 @@ static int GLSL_LoadGPUProgramLightAll(
 
 				case LIGHTDEF_USE_LIGHT_VECTOR:
 				{
+					Q_strcat(name, sizeof(name), "_GRID");
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VECTOR\n");
 					break;
 				}
 
 				case LIGHTDEF_USE_LIGHT_VERTEX:
 				{
+					Q_strcat(name, sizeof(name), "_VERT");
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VERTEX\n");
 					attribs |= ATTR_LIGHTDIRECTION;
 					break;
@@ -1805,11 +1871,14 @@ static int GLSL_LoadGPUProgramLightAll(
 
 			if (r_normalMapping->integer)
 			{
+				Q_strcat(name, sizeof(name), "_N");
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_NORMALMAP\n");
 
 				if ((i & LIGHTDEF_USE_PARALLAXMAP) && r_parallaxMapping->integer)
+				{
+					Q_strcat(name, sizeof(name), "H");
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_PARALLAXMAP\n");
-
+				}
 				attribs |= ATTR_TANGENT;
 			}
 
@@ -1817,15 +1886,26 @@ static int GLSL_LoadGPUProgramLightAll(
 			{
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_SPECULARMAP\n");
 				if (i & LIGHTDEF_USE_SPEC_GLOSS)
+				{
+					Q_strcat(name, sizeof(name), "_SPECGLOSS");
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_SPECGLOSS\n");
+				}
+				else
+				{
+					Q_strcat(name, sizeof(name), "_METALROUGH");
+				}
 			}
 
 			if (r_cubeMapping->integer)
+			{
+				Q_strcat(name, sizeof(name), "_CUBE");
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_CUBEMAP\n");
+			}
 		}
 
 		if (r_sunlightMode->integer)
 		{
+			Q_strcat(name, sizeof(name), "_SUN");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOWMAP\n");
 
 			if (r_sunlightMode->integer == 1)
@@ -1849,17 +1929,20 @@ static int GLSL_LoadGPUProgramLightAll(
 
 		if (i & LIGHTDEF_USE_TCGEN_AND_TCMOD)
 		{
+			Q_strcat(name, sizeof(name), "_TCGENMOD");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCGEN\n");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
 
 		if (i & LIGHTDEF_USE_CLOTH_BRDF)
 		{
+			Q_strcat(name, sizeof(name), "_CLOTH");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_CLOTH_BRDF\n");
 		}
 #ifdef REND2_SP_MD3
 		if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
 		{
+			Q_strcat(name, sizeof(extradefines), "_VA");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 
@@ -1870,6 +1953,7 @@ static int GLSL_LoadGPUProgramLightAll(
 #endif // REND2_SP
 		if (i & LIGHTDEF_USE_SKELETAL_ANIMATION)
 		{
+			Q_strcat(name, sizeof(name), "_SK");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
@@ -1880,7 +1964,7 @@ static int GLSL_LoadGPUProgramLightAll(
 		/*if (i & LIGHTDEF_USE_GLOW_BUFFER)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");*/
 
-		if (!GLSL_LoadGPUShader(builder, &tr.lightallShader[i], "lightall", attribs, NO_XFB_VARS,
+		if (!GLSL_LoadGPUShader(builder, &tr.lightallShader[i], name, attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load lightall shader!");
@@ -2125,7 +2209,7 @@ static int GLSL_LoadGPUProgramTonemap(
 	}
 
 	Q_strcat(extradefines, sizeof(extradefines), "#define USE_LINEAR_LIGHT\n");
-	if (!GLSL_LoadGPUShader(builder, &tr.tonemapShader[1], "tonemap", attribs, NO_XFB_VARS,
+	if (!GLSL_LoadGPUShader(builder, &tr.tonemapShader[1], "tonemap_SRGB", attribs, NO_XFB_VARS,
 		extradefines, *programDesc))
 	{
 		ri.Error(ERR_FATAL, "Could not load tonemap shader!");
@@ -2370,33 +2454,48 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 	int numPrograms = 0;
 	Allocator allocator(scratchAlloc.Base(), scratchAlloc.GetSize());
 
+	char name[64];
+	size_t nameLen = strlen("surface_sprites\0");
+
 	char extradefines[1200];
 	const GPUProgramDesc *programDesc =
 		LoadProgramSource("surface_sprites", allocator, fallback_surface_spritesProgram);
 	const uint32_t attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_COLOR;
 	for ( int i = 0; i < SSDEF_COUNT; ++i )
 	{
+		Q_strncpyz(name, "surface_sprites\0", nameLen + 1);
 		extradefines[0] = '\0';
 
 		if ( (i & SSDEF_FACE_CAMERA) && (i & SSDEF_FACE_UP) )
 			continue;
 
-		if ( i & SSDEF_FACE_CAMERA )
+		if (i & SSDEF_FACE_CAMERA)
+		{
+			Q_strcat(name, sizeof(name), "_FACE_CAM");
 			Q_strcat(extradefines, sizeof(extradefines),
-					"#define FACE_CAMERA\n");
-		else if ( i & SSDEF_FACE_UP )
+				"#define FACE_CAMERA\n");
+		}
+		else if (i & SSDEF_FACE_UP)
+		{
+			Q_strcat(name, sizeof(name), "_FACE_UP");
 			Q_strcat(extradefines, sizeof(extradefines),
-					"#define FACE_UP\n");
+				"#define FACE_UP\n");
+		}
 		else if (i & SSDEF_FLATTENED)
+		{
+			Q_strcat(name, sizeof(name), "_FLATTENED");
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define FACE_FLATTENED\n");
-
+		}
 		if (i & SSDEF_FX_SPRITE)
+		{
+			Q_strcat(name, sizeof(name), "_FX");
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define FX_SPRITE\n");
-
+		}
 		if ( i & SSDEF_USE_FOG )
 		{
+			Q_strcat(name, sizeof(name), "_FOG");
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define USE_FOG\n");
 			if (r_volumetricFog->integer)
@@ -2408,15 +2507,19 @@ static int GLSL_LoadGPUProgramSurfaceSprites(
 					"#define USE_ALPHA_TEST\n");*/
 
 		if (i & SSDEF_ADDITIVE)
+		{
+			Q_strcat(name, sizeof(name), "_ADDITIVE");
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define ADDITIVE_BLEND\n");
-
+		}
 		if (i & SSDEF_VELOCITY)
+		{
+			Q_strcat(name, sizeof(name), "_VELOCITY");
 			Q_strcat(extradefines, sizeof(extradefines),
 				"#define VELOCITY_PASS\n");
-
+		}
 		shaderProgram_t *program = tr.spriteShader + i;
-		if (!GLSL_LoadGPUShader(builder, program, "surface_sprites", attribs, NO_XFB_VARS,
+		if (!GLSL_LoadGPUShader(builder, program, name, attribs, NO_XFB_VARS,
 				extradefines, *programDesc))
 		{
 			ri.Error(ERR_FATAL, "Could not load surface sprites shader!");
