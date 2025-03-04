@@ -482,8 +482,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, &tess);
 	item.draw.params.indexed.numIndices -= tess.firstIndex;
 
-	int skyNumber = MAX(0, 7 - backEnd.skyNumber);
-	uint32_t key = RB_CreateSortKey(item, skyNumber, SS_ENVIRONMENT);
+	uint32_t key = RB_CreateSkySortKey(item, 0, backEnd.skyNumber, SS_ENVIRONMENT);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
 
 	RB_CommitInternalBufferData();

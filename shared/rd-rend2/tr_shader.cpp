@@ -5200,7 +5200,7 @@ static void CreateInternalShaders( void ) {
 	// volumetric fog cap shader
 	Q_strncpyz(shader.name, "<volumetric fog cap>", sizeof(shader.name));
 	shader.sort = SS_ENVIRONMENT;
-	//shader.isSky = qtrue;
+	shader.isSky = qfalse;
 	shader.fogPass = FP_LE;
 	stages[0].bundle[0].image[0] = tr.whiteImage;
 	stages[0].stateBits = GLS_DEPTH_CLAMP;

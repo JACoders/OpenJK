@@ -2487,7 +2487,7 @@ typedef struct {
 	backEndCounters_t	pc;
 	trRefEntity_t	*currentEntity;
 	qboolean	skyRenderedThisView;	// flag for drawing sun
-	byte		skyNumber;
+	uint32_t	skyNumber;
 
 	qboolean	projection2D;	// if qtrue, drawstretchpic doesn't need to change modes
 	float		color2D[4];
@@ -4140,6 +4140,7 @@ void RB_FillDrawCommand(
 	const shaderCommands_t *input
 );
 
+uint32_t RB_CreateSkySortKey(const DrawItem& item, int stage, int skyNumber, int layer);
 uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
 void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
 DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader );

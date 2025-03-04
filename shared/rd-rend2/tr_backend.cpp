@@ -651,7 +651,7 @@ void RB_BeginDrawingView (void) {
 
 	// we will only draw a sun if there was sky rendered in this view
 	backEnd.skyRenderedThisView = qfalse;
-	backEnd.skyNumber = 0;
+	backEnd.skyNumber = 1;
 
 	// clip to the plane of the portal
 	if ( backEnd.viewParms.isPortal ) {

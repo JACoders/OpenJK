@@ -568,6 +568,21 @@ static void CaptureDrawData(const shaderCommands_t *input, shaderStage_t *stage,
 	}
 }
 
+uint32_t RB_CreateSkySortKey(const DrawItem& item, int stage, int skyNumber, int layer)
+{
+	uint32_t key = 0;
+	uintptr_t shaderProgram = (uintptr_t)item.program;
+
+	assert(stage < 16);
+	layer = Q_min(layer, 15);
+
+	key |= (layer & 0xf) << 28;
+	key |= ((255 - skyNumber) & 0xff) << 20;
+	key |= (stage & 0xf) << 16;
+	key |= shaderProgram & 0x0000ffff;
+	return key;
+}
+
 uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer )
 {
 	uint32_t key = 0;
@@ -1229,7 +1244,12 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
-	const uint32_t key = RB_CreateSortKey(item, 14, input->shader->sort);
+	uint32_t key;
+	if (input->shader->sort == SS_ENVIRONMENT)
+		key = RB_CreateSkySortKey(item, 14, input->shader->isSky ? backEnd.skyNumber : 0, input->shader->sort);
+	else
+		key = RB_CreateSortKey(item, 14, input->shader->sort);
+
 	RB_AddDrawItem(backEndData->currentPass, key, item);
 
 	// invert fog planes and render global fog into them
@@ -2058,7 +2078,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		uint32_t key;
 		if (input->shader->sort == SS_ENVIRONMENT)
-			key = RB_CreateSortKey(item, stage+8, input->shader->sort);
+			key = RB_CreateSkySortKey(item, stage + 1, input->shader->isSky ? backEnd.skyNumber : 0, input->shader->sort);
 		else
 			key = RB_CreateSortKey(item, stage, input->shader->sort);
 
