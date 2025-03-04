@@ -3211,6 +3211,29 @@ const void *RB_PostProcess(const void *data)
 			autoExposure = (qboolean)(r_autoExposure->integer || r_forceAutoExposure->integer);
 			RB_ToneMap(srcFbo, srcBox, NULL, dstBox, autoExposure);
 		}
+		else if (r_smaa->integer == 1)
+		{
+			FBO_Bind(NULL);
+			GL_SetViewportAndScissor(0, 0, srcFbo->width, srcFbo->height);
+			GLSL_BindProgram(&tr.smaaResolveShader);
+			GL_BindToTMU(tr.renderImage, 0);
+			GL_BindToTMU(tr.smaaBlendImage, 1);
+			GL_BindToTMU(tr.velocityImage, 2);
+			if (r_cameraExposure->value == 0.0f)
+			{
+				GLSL_SetUniformVec4(&tr.smaaResolveShader, UNIFORM_COLOR, colorWhite);
+			}
+			else
+			{
+				vec4_t color;
+				color[0] =
+				color[1] =
+				color[2] = pow(2, r_cameraExposure->value);
+				color[3] = 1.0f;
+				GLSL_SetUniformVec4(&tr.smaaResolveShader, UNIFORM_COLOR, color);
+			}
+			qglDrawArrays(GL_TRIANGLES, 0, 3);
+		}
 		else if (r_cameraExposure->value == 0.0f)
 		{
 			FBO_FastBlit(srcFbo, srcBox, NULL, dstBox, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -3221,7 +3244,7 @@ const void *RB_PostProcess(const void *data)
 
 			color[0] =
 			color[1] =
-			color[2] = pow(2, r_cameraExposure->value); //exp2(r_cameraExposure->value);
+			color[2] = pow(2, r_cameraExposure->value);
 			color[3] = 1.0f;
 
 			FBO_FastBlitFromTexture(srcFbo->colorImage[0], NULL, dstBox, color, 0);
