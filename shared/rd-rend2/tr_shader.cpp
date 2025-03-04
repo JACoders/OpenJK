@@ -3383,6 +3383,34 @@ static qboolean CollapseStagesToGLSL(void)
 					continue;
 			}
 
+			// Convert glow stages with parallax depth to a lightall stage
+			if (pStage->glow)
+			{
+				if (pStage->bundle[TB_NORMALMAP].image[0])
+				{
+					if (pStage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT &&
+						r_parallaxMapping->integer)
+					{
+						int defs = LIGHTDEF_USE_LIGHT_VERTEX | LIGHTDEF_USE_PARALLAXMAP;
+						pStage->normalScale[0] =
+							pStage->normalScale[1] = 0.f;
+						pStage->specularScale[0] = 0.f;
+						pStage->specularScale[1] = 0.f;
+						pStage->specularScale[2] = 1.f;
+						pStage->specularScale[3] = 1.f;
+
+						if (pStage->bundle[0].numTexMods)
+						{
+							defs |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
+						}
+
+						pStage->glslShaderGroup = tr.lightallShader;
+						pStage->glslShaderIndex = defs;
+					}
+				}
+				continue;
+			}
+
 			diffuse  = pStage;
 			parallax = qfalse;
 			lightmap = NULL;
