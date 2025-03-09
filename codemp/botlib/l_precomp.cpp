@@ -176,6 +176,17 @@ void QDECL SourceWarning(source_t *source, char *str, ...)
 	Log_Print("warning: file %s, line %d: %s\n", source->scriptstack->filename, source->scriptstack->line, text);
 #endif //BSPC
 } //end of the function ScriptWarning
+
+void PC_Init(void) {
+	// PC_InitTokenHeap();
+
+#if DEFINEHASHING
+	if (!globaldefines) {
+		globaldefines = (struct define_s **)GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
+	}
+#endif
+}
+
 //============================================================================
 //
 // Parameter:				-
@@ -1130,7 +1141,9 @@ int PC_Directive_undef(source_t *source)
 {
 	token_t token;
 	define_t *define, *lastdefine;
+#if DEFINEHASHING
 	int hash;
+#endif
 
 	if (source->skip > 0) return qtrue;
 	//
@@ -1341,12 +1354,15 @@ int PC_Directive_define(source_t *source)
 // Returns:					-
 // Changes Globals:		-
 //============================================================================
-define_t *PC_DefineFromString(char *string)
+define_t *PC_DefineFromString(const char *string)
 {
 	script_t *script;
 	source_t src;
 	token_t *t;
-	int res, i;
+	int res;
+#if DEFINEHASHING
+	int i;
+#endif // DEFINEHASHING
 	define_t *def;
 
 	PC_InitTokenHeap();
@@ -1367,7 +1383,7 @@ define_t *PC_DefineFromString(char *string)
 		src.tokens = src.tokens->next;
 		PC_FreeToken(t);
 	} //end for
-#ifdef DEFINEHASHING
+#if DEFINEHASHING
 	def = NULL;
 	for (i = 0; i < DEFINEHASHSIZE; i++)
 	{
@@ -1399,7 +1415,7 @@ define_t *PC_DefineFromString(char *string)
 // Returns:					-
 // Changes Globals:		-
 //============================================================================
-int PC_AddDefine(source_t *source, char *string)
+int PC_AddDefine(source_t *source, const char *string)
 {
 	define_t *define;
 
@@ -1425,9 +1441,19 @@ int PC_AddDefine(source_t *source, char *string)
 // Returns:					-
 // Changes Globals:		-
 //============================================================================
-int PC_AddGlobalDefine(char *string)
+int PC_AddGlobalDefine(const char *string)
 {
-#if !DEFINEHASHING
+#if DEFINEHASHING
+	define_t *define = PC_DefineFromString(string);
+	if (!define) {
+		return qfalse;
+	}
+
+	qboolean savedAGD = addGlobalDefine;
+	addGlobalDefine = qtrue;
+	PC_AddDefineToHash(define, NULL);
+	addGlobalDefine = savedAGD;
+#else
 	define_t *define;
 
 	define = PC_DefineFromString(string);
@@ -1446,7 +1472,22 @@ int PC_AddGlobalDefine(char *string)
 //============================================================================
 int PC_RemoveGlobalDefine(char *name)
 {
-#if !DEFINEHASHING
+#if DEFINEHASHING
+	if (globaldefines) {
+		int i;
+		for (i = 0; i < DEFINEHASHSIZE; i++) {
+			define_t *define;
+			for (define = globaldefines[i]; define; define = define->globalnext) {
+				if (strcmp(define->name, name)) {
+					globaldefines[i] = define->globalnext;
+					PC_FreeDefine(define);
+					return qtrue;
+				}
+			}
+		}
+	}
+	return qfalse;
+#else
 	define_t *define;
 
 	define = PC_FindDefine(globaldefines, name);
@@ -3143,8 +3184,10 @@ void FreeSource(source_t *source)
 	token_t *token;
 	define_t *define;
 	indent_t *indent;
+#if DEFINEHASHING
 	define_t *nextdefine;
 	int i;
+#endif
 
 	//PC_PrintDefineHashTable(source->definehash);
 	//free all the scripts

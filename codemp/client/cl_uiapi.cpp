@@ -1071,7 +1071,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return re->AnyLanguage_ReadCharFromString( (const char *)VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
 
 	case UI_PC_ADD_GLOBAL_DEFINE:
-		return botlib_export->PC_AddGlobalDefine( (char *)VMA(1) );
+		return botlib_export->PC_AddGlobalDefine( (const char *)VMA(1) );
 
 	case UI_PC_LOAD_SOURCE:
 		return botlib_export->PC_LoadSourceHandle( (const char *)VMA(1) );
