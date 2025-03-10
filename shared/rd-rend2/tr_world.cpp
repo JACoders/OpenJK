@@ -725,7 +725,7 @@ static mnode_t *R_PointInLeaf( const vec3_t p ) {
 		}
 		plane = node->plane;
 		d = DotProduct (p,plane->normal) - plane->dist;
-		if (d > 0) {
+		if (d >= 0) {
 			node = node->children[0];
 		} else {
 			node = node->children[1];
