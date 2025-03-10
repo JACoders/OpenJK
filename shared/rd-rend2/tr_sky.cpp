@@ -453,6 +453,8 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 		UNIFORM_DIFFUSETEXOFFTURB, 0.0f, 0.0f, 0.0f, 0.0f);
 	uniformDataWriter.SetUniformVec4(
 		UNIFORM_ENABLETEXTURES, 0.0f, 0.0f, 0.0f, 0.0f);
+	uniformDataWriter.SetUniformInt(
+		UNIFORM_ALPHA_TEST_TYPE, ALPHA_TEST_NONE);
 
 	samplerBindingsWriter.AddStaticImage(image, TB_DIFFUSEMAP);
 
