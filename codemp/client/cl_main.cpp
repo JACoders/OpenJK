@@ -31,6 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/cm_public.h"
 #include "qcommon/MiniHeap.h"
 #include "qcommon/stringed_ingame.h"
+#include "qcommon/game_version.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
 #include "cl_lan.h"
@@ -929,7 +930,7 @@ void CL_RequestMotd( void ) {
 	Info_SetValueForKey( info, "challenge", cls.updateChallenge );
 	Info_SetValueForKey( info, "renderer", cls.glconfig.renderer_string );
 	Info_SetValueForKey( info, "rvendor", cls.glconfig.vendor_string );
-	Info_SetValueForKey( info, "version", com_version->string );
+	Info_SetValueForKey( info, "version", JK_VERSION_OLD " " PLATFORM_STRING " " SOURCE_DATE );
 
 	//If raven starts filtering for this, add this code back in
 #if 0

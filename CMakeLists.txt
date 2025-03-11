@@ -332,10 +332,19 @@ else()
 	message(STATUS "SOURCE_DATE_EPOCH is set ($ENV{SOURCE_DATE_EPOCH}): SOURCE_DATE set to \"${SOURCE_DATE}\"")
 endif()
 
-# Current Git SHA1 hash
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC GIT_HASH)
-message(STATUS "Git revision is ${GIT_HASH}")
+# Current Git tag/version
+# ideally we would separate the hash suffix into its own variable, but sed is not available everywhere
+execute_process(
+	COMMAND "git" "describe" "--tag"
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	OUTPUT_VARIABLE GIT_TAG
+	RESULT_VARIABLE GIT_TAG_ERROR
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(GIT_TAG_ERROR AND NOT GIT_TAG_ERROR EQUAL 0)
+	message(WARNING "Unable to determine Git tag")
+	set(GIT_TAG vUNKNOWN)
+endif()
+message(STATUS "Git tag is ${GIT_TAG}")
 
 configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
 
