@@ -1030,6 +1030,7 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 
 	byte *pbRawScreenShot = NULL;
 	byte *byBlank = NULL;
+	byte *src, *dst;
 
 	if( qbAutosave )
 	{
@@ -1037,12 +1038,12 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 		//
 		int iWidth = SG_SCR_WIDTH;
 		int iHeight= SG_SCR_HEIGHT;
-		const size_t	bySize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 4;
-		byte *src, *dst;
-
+		const size_t bySize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 4;
+		
 		byBlank = new byte[bySize];
-		pbRawScreenShot = SCR_TempRawImage_ReadFromFile(va("levelshots/%s.tga",psMapName), &iWidth, &iHeight, byBlank, qtrue);	// qtrue = vert flip
+		pbRawScreenShot = SCR_TempRawImage_ReadFromFile(va("levelshots/%s.tga",psMapName), &iWidth, &iHeight, byBlank, qfalse);	// qfalse = vert flip
 
+		// SaveJPGToBuffer expects a 3 component RGB image, so resample
 		if (pbRawScreenShot)
 		{
 			for (int y = 0; y < iHeight; y++)
@@ -1061,23 +1062,36 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 
 	if (!pbRawScreenShot)
 	{
-		pbRawScreenShot = SCR_GetScreenshot(0);
-	}
+		const size_t bySize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 3;
 
+		byBlank = new byte[bySize];
+		pbRawScreenShot = SCR_GetScreenshot(0);
+		
+		// We can't just do the same resampling as with qbAutosave as we would alter the cached buffer
+		// That might be used elsewhere and is expected to have RGBA data, like for drawing the level transition screenshot
+		if (pbRawScreenShot)
+		{
+			for (int y = 0; y < SG_SCR_HEIGHT; y++)
+			{
+				for (int x = 0; x < SG_SCR_WIDTH; x++)
+				{
+					src = pbRawScreenShot + 4 * (y * SG_SCR_WIDTH + x);
+					dst = byBlank + 3 * (y * SG_SCR_WIDTH + x);
+					dst[0] = src[0];
+					dst[1] = src[1];
+					dst[2] = src[2];
+				}
+			}
+			pbRawScreenShot = byBlank;
+		}
+	}
 
 	size_t iJPGDataSize = 0;
 	size_t bufSize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 3;
 	byte *pJPGData = (byte *)Z_Malloc( static_cast<int>(bufSize), TAG_TEMP_WORKSPACE, qfalse, 4 );
 
-#ifdef JK2_MODE
-	bool flip_vertical = true;
-#else
-	bool flip_vertical = false;
-#endif // JK2_MODE
-
-	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0, flip_vertical );
-	if ( qbAutosave )
-		delete[] byBlank;
+	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0, false );
+	delete[] byBlank;
 
 	saved_game.write_chunk<uint32_t>(
 		INT_ID('S', 'H', 'L', 'N'),

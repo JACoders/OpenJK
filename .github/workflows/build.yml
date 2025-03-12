@@ -68,14 +68,14 @@ jobs:
         shell: bash
         run: cmake --install . --config ${{ matrix.build_type }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{ github.workspace }}/build/bin/JediAcademy
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJO-windows-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
@@ -149,14 +149,14 @@ jobs:
         shell: bash
         run: tar -czvf OpenJO-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{github.workspace}}/install/JediAcademy/OpenJK-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJO-linux-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
@@ -169,11 +169,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [macos-12, macos-14]
+        runner: [macos-13, macos-14]
         build_type: [Debug, Release]
         portable: [Non-Portable]
         include:
-          - runner: macos-12
+          - runner: macos-13
             arch: x86_64
           - runner: macos-14
             arch: arm64
@@ -226,14 +226,14 @@ jobs:
           chmod +x openjo_sp.${{ matrix.arch }}.app/Contents/MacOS/openjo_sp.${{ matrix.arch }}
           tar -czvf openjo_sp-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJK-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
           path: ${{ github.workspace }}/install/JediAcademy/openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
         with:
           name: OpenJO-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}
@@ -250,7 +250,7 @@ jobs:
           submodules: recursive
 
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Create binary archives
         run: |
@@ -341,7 +341,7 @@ jobs:
           submodules: recursive
 
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Create archive
         run: |
