@@ -23,9 +23,7 @@
 
 # This only has effect in this directory (lib/png).
 include_directories(include/)
-if(WIN32)
-	include_directories(../zlib/include/)
-endif()
+include_directories(${ZLIB_INCLUDE_DIR})
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
