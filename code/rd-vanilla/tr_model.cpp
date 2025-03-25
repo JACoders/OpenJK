@@ -1118,7 +1118,7 @@ static md3Tag_t *R_GetTag( md3Header_t *mod, int frame, const char *tagName ) {
 R_LerpTag
 ================
 */
-void	R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame,
+int	R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame,
 					 float frac, const char *tagName ) {
 	md3Tag_t	*start, *finish;
 	int		i;
@@ -1135,13 +1135,13 @@ void	R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFra
 	{
 		AxisClear( tag->axis );
 		VectorClear( tag->origin );
-		return;
+		return qfalse;
 	}
 
 	if ( !start || !finish ) {
 		AxisClear( tag->axis );
 		VectorClear( tag->origin );
-		return;
+		return qfalse;
 	}
 
 	frontLerp = frac;
@@ -1156,6 +1156,7 @@ void	R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFra
 	VectorNormalize( tag->axis[0] );
 	VectorNormalize( tag->axis[1] );
 	VectorNormalize( tag->axis[2] );
+	return qtrue;
 }
 
 
