@@ -1264,6 +1264,14 @@ void GL_SetDefaultState( void )
 
 	// set default vertex color
 	qglVertexAttrib4f(ATTR_INDEX_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	// invalidate all vertex step rates
+	// this ensures that attributes that have a set divisor will have a 
+	// correct divisor set after GL_SetDefaultState is called
+	for (int i = 0; i < ATTR_INDEX_MAX; i++)
+	{
+		glState.currentVaoAttribs[i].stepRate = -1;
+	}
 }
 
 /*
