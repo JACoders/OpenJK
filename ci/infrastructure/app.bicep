@@ -1,13 +1,14 @@
 @minLength(4)
 param prefix string
 param acrName string
+param acrResourceGroup string
 param imageName string
 
 // var loadBalancerName = '${prefix}-lb'
 
 resource acrResource 'Microsoft.ContainerRegistry/registries@2024-11-01-preview' existing = {
   name: acrName
-  scope: resourceGroup()
+  scope: resourceGroup(acrResourceGroup)
 }
 
 // resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
