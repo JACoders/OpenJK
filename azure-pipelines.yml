@@ -67,6 +67,7 @@ stages:
       inputs:
         archiveFilePatterns: '$(Build.SourcesDirectory)/temp/assets.zip'
         destinationFolder: '$(Build.SourcesDirectory)/ci/assets/'
+        cleanDestinationFolder: false # server.cfg is in there
 
     - task: AzureCLI@2
       displayName: Build and push Docker image
