@@ -19,7 +19,7 @@ if ($LASTEXITCODE) {
 # Deploy ACR bicep
 az deployment group create `
     --resource-group $resourceGroup `
-    --template-file 'acr.bicep' `
+    --template-file "$PSScriptRoot/acr.bicep" `
     --parameters acrName=$acrName;
 
 if ($LASTEXITCODE) {
@@ -34,7 +34,7 @@ if ($LASTEXITCODE) {
 }
 
 # Build & tag image
-docker build -t $imageName ../src/
+docker build -t $imageName .
 
 if ($LASTEXITCODE) {
     exit $LASTEXITCODE;
@@ -51,7 +51,7 @@ if ($LASTEXITCODE) {
 
 # Deploy the Container App
 az deployment group create --resource-group $resourceGroup `
-    --template-file 'app.bicep' `
+    --template-file "$PSScriptRoot/app.bicep" `
     --parameters `
         imageName=${imageName}:${imageTag} `
         prefix=$deploymentPrefix `
