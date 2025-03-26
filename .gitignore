@@ -194,3 +194,15 @@ compile_commands.json
 #############
 [Bb]uild*/
 cmake-build-*
+
+directx/
+Install/
+
+*.dll
+*.exe
+*.so
+
+openjk*
+
+*.pk3
+*.vdf
