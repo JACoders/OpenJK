@@ -52,7 +52,7 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           # Download assets zip
-          az storage blob download \
+          mkdir ./temp && az storage blob download \
             --account-name "$storageAccountName" \
             --container-name assets \
             --name assets.zip \
