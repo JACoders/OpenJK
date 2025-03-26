@@ -22,10 +22,9 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '26763943-9c74-4296-8301-bd44efb91061'
+  dockerRegistryServiceConnection: 'jkadedacr'
   azureRmServiceConnection: 'azure-sp'
   imageRepository: 'jkded'
-  containerRegistry: 'jkadedacr.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: 'latest'
   resourceGroupName: 'jkaded-rg'
