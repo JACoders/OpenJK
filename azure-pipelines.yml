@@ -1,0 +1,100 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    exclude:
+      - ./github/*
+      - ./ci/*
+      - ./*.txt
+      - ./cmake/*
+      - ./tests/*
+      - ./tools/*
+      - ./scripts/*
+      - ./docs/*
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '26763943-9c74-4296-8301-bd44efb91061'
+  azureRmServiceConnection: 'azure-sp'
+  imageRepository: 'jkded'
+  containerRegistry: 'jkadedacr.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: 'latest'
+  resourceGroupName: 'jkaded-rg'
+  appName: 'jkaded-app'
+  storageAccountName: 'jkadedassets'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureCLI@2
+      displayName: Download assets
+      inputs:
+        azureSubscription: $(azureRmServiceConnection)
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          # Download assets zip
+          az storage blob download `
+            --account-name $Env:storageAccountName `
+            --container-name assets `
+            --name assets.zip `
+            --file ./temp/assets.zip `
+            --auth-mode login;
+
+          # Unzip assets
+          tar -xzf ./temp/assets.zip --directory $Env:targetDirectory;
+
+          # Clean up zip
+          rm ./temp/assets.zip
+      env:
+        storageAccountName: $(storageAccountName)
+        targetDirectory: $(Build.SourcesDirectory)/ci/assets/
+
+    - task: Docker@2
+      displayName: Build and push image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+
+    - task: AzureCLI@2
+      displayName: Conditional deployment
+      inputs:
+        azureSubscription: $(azureRmServiceConnection)
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          $appIsDeployed = az container show `
+            --name $Env:appName `
+            --resource-group $Env:resourceGroupName;
+
+          if ($appIsDeployed) {
+            # Restart the app to pull in the latest image
+            az container restart `
+              --name $Env:appName `
+              --resource-group $Env:resourceGroupName;
+          }
+      env:
+        appName: $(appName)
+        resourceGroupName: $(resourceGroupName)
