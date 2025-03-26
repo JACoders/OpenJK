@@ -48,15 +48,15 @@ stages:
       displayName: Download assets
       inputs:
         azureSubscription: $(azureRmServiceConnection)
-        scriptType: ps
+        scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
           # Download assets zip
-          az storage blob download `
-            --account-name $Env:storageAccountName `
-            --container-name assets `
-            --name assets.zip `
-            --file ./temp/assets.zip `
+          az storage blob download \
+            --account-name $Env:storageAccountName \
+            --container-name assets \
+            --name assets.zip \
+            --file ./temp/assets.zip \
             --auth-mode login;
 
           # Unzip assets
@@ -79,22 +79,16 @@ stages:
           $(tag)
 
     - task: AzureCLI@2
-      displayName: Conditional deployment
+      displayName: Restart container
       inputs:
         azureSubscription: $(azureRmServiceConnection)
-        scriptType: ps
+        scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
-          $appIsDeployed = az container show `
-            --name $Env:appName `
-            --resource-group $Env:resourceGroupName;
-
-          if ($appIsDeployed) {
-            # Restart the app to pull in the latest image
-            az container restart `
-              --name $Env:appName `
-              --resource-group $Env:resourceGroupName;
-          }
+            az container restart \
+              --name "$appName" \
+              --resource-group "$resourceGroupName \
+              || true;
       env:
         appName: $(appName)
         resourceGroupName: $(resourceGroupName)
