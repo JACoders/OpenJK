@@ -53,14 +53,14 @@ stages:
         inlineScript: |
           # Download assets zip
           az storage blob download \
-            --account-name $Env:storageAccountName \
+            --account-name "$storageAccountName" \
             --container-name assets \
             --name assets.zip \
             --file ./temp/assets.zip \
             --auth-mode login;
 
           # Unzip assets
-          tar -xzf ./temp/assets.zip --directory $Env:targetDirectory;
+          tar -xzf ./temp/assets.zip --directory "$targetDirectory";
 
           # Clean up zip
           rm ./temp/assets.zip
