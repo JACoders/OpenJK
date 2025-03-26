@@ -28,7 +28,7 @@ variables:
   imageRepository: 'jkded'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: 'latest'
-  resourceGroupName: 'jkaded-rg'
+  resourceGroupName: 'jka-ded-rg'
   appName: 'jkaded-app'
   storageAccountName: 'jkadedassets'
 

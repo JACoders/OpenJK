@@ -4,7 +4,7 @@ $resourceGroup = 'jka-ded-rg'
 $acrResourceGroup = 'jkaded-persistent-rg'
 
 $deploymentPrefix = 'jkaded'
-$imageName = 'jkaded'
+$imageName = 'jkded'
 $imageTag = 'latest'
 $acrName = "${deploymentPrefix}acr"
 
