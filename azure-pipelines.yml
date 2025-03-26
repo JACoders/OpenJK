@@ -97,7 +97,7 @@ stages:
         inlineScript: |
             az container restart \
               --name "$appName" \
-              --resource-group "$resourceGroupName \
+              --resource-group "$resourceGroupName" \
               || true;
       env:
         appName: $(appName)
