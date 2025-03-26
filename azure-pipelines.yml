@@ -23,6 +23,7 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'jkadedacr'
+  acrName: 'jkadedacr'
   azureRmServiceConnection: 'azure-sp'
   imageRepository: 'jkded'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
@@ -67,22 +68,26 @@ stages:
         archiveFilePatterns: '$(Build.SourcesDirectory)/temp/assets.zip'
         destinationFolder: '$(Build.SourcesDirectory)/ci/assets/'
 
-    - task: Docker@2
-      displayName: Login to ACR
+    - task: AzureCLI@2
+      displayName: Build and push Docker image
       inputs:
-        command: login
-        containerRegistry: $(dockerRegistryServiceConnection)
+        azureSubscription: $(dockerRegistryServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          # Authenticate to the ACR
+          az acr login --name $acrName
 
-    - task: Docker@2
-      displayName: Build and push image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+          # Build & tag image
+          docker build -t $imageName .
 
+          docker tag $imageName $acrFullImageName;
+          docker push $acrFullImageName;
+      env:
+        acrName: $(acrName)
+        imageName: jkded
+        acrFullImageName: $(acrName).azurecr.io/jkded:latest
+  
     - task: AzureCLI@2
       displayName: Restart container
       inputs:
