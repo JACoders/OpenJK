@@ -71,7 +71,7 @@ stages:
     - task: AzureCLI@2
       displayName: Build and push Docker image
       inputs:
-        azureSubscription: $(dockerRegistryServiceConnection)
+        azureSubscription: $(azureRmServiceConnection)
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
