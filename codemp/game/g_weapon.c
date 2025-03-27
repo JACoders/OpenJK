@@ -35,16 +35,19 @@ static vec3_t muzzle;
 
 // Bryar Pistol
 //--------
-#define BRYAR_PISTOL_VEL			1600
-#define BRYAR_PISTOL_DAMAGE			10
+#define BRYAR_PISTOL_VEL			4600
+#define BRYAR_PISTOL_DAMAGE			15
 #define BRYAR_CHARGE_UNIT			200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
 #define BRYAR_ALT_SIZE				1.0f
 
 // E11 Blaster
 //---------
-#define BLASTER_SPREAD				1.6f//1.2f
-#define BLASTER_VELOCITY			2300
-#define BLASTER_DAMAGE				20
+#define BLASTER_SPREAD				1.2f
+#define BLASTER_VELOCITY			4600
+#define BLASTER_DAMAGE				25
+#define BLASTER_FIRE_RATE			0.5f // twice per second
+#define BLASTER_ALT_VELOCITY		3000
+#define BLASTER_ALT_DAMAGE			20
 
 // Tenloss Disruptor
 //----------
