@@ -98,9 +98,9 @@ static vec3_t muzzle;
 // Golan Arms Flechette
 //---------
 #define FLECHETTE_SHOTS				5
-#define FLECHETTE_SPREAD			4.0f
+#define FLECHETTE_SPREAD			3.5f
 #define FLECHETTE_DAMAGE			12//15
-#define FLECHETTE_VEL				3500
+#define FLECHETTE_VEL				6000
 #define FLECHETTE_SIZE				1
 #define FLECHETTE_MINE_RADIUS_CHECK	256
 #define FLECHETTE_ALT_DAMAGE		60
