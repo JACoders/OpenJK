@@ -12,6 +12,8 @@ then
         nohup ./openjkded.i386 \
                 +set dedicated 2 \
                 +set fs_game base \
+                +set net_ip 0.0.0.0 \
+                +set net_port 29070 \
                 +exec server.cfg > echo;
             
         sleep 10;

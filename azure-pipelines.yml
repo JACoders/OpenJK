@@ -16,6 +16,7 @@ trigger:
       - ./tools/*
       - ./scripts/*
       - ./docs/*
+      - ./README.md
 
 resources:
 - repo: self
