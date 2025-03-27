@@ -45,7 +45,6 @@ static vec3_t muzzle;
 #define BLASTER_SPREAD				1.2f
 #define BLASTER_VELOCITY			4600
 #define BLASTER_DAMAGE				25
-#define BLASTER_FIRE_RATE			0.5f // twice per second
 #define BLASTER_ALT_VELOCITY		3000
 #define BLASTER_ALT_DAMAGE			20
 
@@ -63,7 +62,7 @@ static vec3_t muzzle;
 // Wookiee Bowcaster
 //----------
 #define	BOWCASTER_DAMAGE			50
-#define	BOWCASTER_VELOCITY			1300
+#define	BOWCASTER_VELOCITY			3000
 #define BOWCASTER_SPLASH_DAMAGE		0
 #define BOWCASTER_SPLASH_RADIUS		0
 #define BOWCASTER_SIZE				2
@@ -76,7 +75,7 @@ static vec3_t muzzle;
 //----------
 #define REPEATER_SPREAD				1.4f
 #define	REPEATER_DAMAGE				14
-#define	REPEATER_VELOCITY			1600
+#define	REPEATER_VELOCITY			7000
 
 #define REPEATER_ALT_SIZE				3	// half of bbox size
 #define	REPEATER_ALT_DAMAGE				60
@@ -110,7 +109,7 @@ static vec3_t muzzle;
 
 // Personal Rocket Launcher
 //---------
-#define	ROCKET_VELOCITY				900
+#define	ROCKET_VELOCITY				1800
 #define	ROCKET_DAMAGE				100
 #define	ROCKET_SPLASH_DAMAGE		100
 #define	ROCKET_SPLASH_RADIUS		160
@@ -122,7 +121,7 @@ static vec3_t muzzle;
 //primary
 //man, this thing is too absurdly powerful. having to
 //slash the values way down from sp.
-#define	CONC_VELOCITY				3000
+#define	CONC_VELOCITY				2300
 #define	CONC_DAMAGE					75 //150
 #define	CONC_NPC_DAMAGE_EASY		40
 #define	CONC_NPC_DAMAGE_NORMAL		80
@@ -433,8 +432,16 @@ BLASTER
 void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire )
 //---------------------------------------------------------
 {
-	int velocity	= BLASTER_VELOCITY;
-	int	damage		= BLASTER_DAMAGE;
+	int velocity = 0;
+	int damage = 0;
+	if (altFire) {
+		velocity = BLASTER_ALT_VELOCITY;
+		damage = BLASTER_ALT_DAMAGE;
+	} else {
+		velocity = BLASTER_VELOCITY;
+		damage = BLASTER_DAMAGE;
+	}
+
 	gentity_t *missile;
 
 	if (ent->s.eType == ET_NPC)
