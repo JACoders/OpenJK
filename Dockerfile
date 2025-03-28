@@ -7,7 +7,7 @@ RUN dpkg --add-architecture i386 &&\
 	rm -rf /var/lib/apt/lists/*
 
 # Copy sources
-COPY . /usr/src/openjk
+COPY ./src/ /usr/src/openjk
 
 # Build i386 arch
 RUN mkdir /usr/src/openjk/build.i386 &&\

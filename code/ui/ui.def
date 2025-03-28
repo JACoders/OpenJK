@@ -1,4 +1,0 @@
-EXPORTS
-	GetUIAPI
-	vmMain
-	dllEntry
