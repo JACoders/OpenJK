@@ -21,6 +21,9 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
+# Define a new variable to hold the files from the /game/rel_force/ directory
+file(GLOB REL_FORCE_FILES "${MPDir}/game/rel_force/*.*")
+
 set(MPGameIncludeDirectories
 	"${MPDir}"
 	"${SharedDir}"
@@ -143,7 +146,7 @@ set(MPGameGameFiles
 	"${MPDir}/game/w_saber.h"
 	)
 source_group("game" FILES ${MPGameGameFiles})
-set(MPGameFiles ${MPGameFiles} ${MPGameGameFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameGameFiles} ${REL_FORCE_FILES})
 
 set(MPGameCommonFiles
 	"${MPDir}/qcommon/q_shared.c"
