@@ -34,6 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <signal.h>
 #include <sys/resource.h>
 
+#include "qcommon/q_version.h"
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
 #include "sys_local.h"
@@ -475,7 +476,12 @@ bool Sys_PathCmp( const char *path1, const char *path2 )
 Sys_DefaultHomePath
 ==================
 */
-#ifdef MACOS_X
+#if defined(BUILD_PORTABLE)
+char *Sys_DefaultHomePath(void)
+{
+	return NULL;
+}
+#elif defined(MACOS_X)
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
