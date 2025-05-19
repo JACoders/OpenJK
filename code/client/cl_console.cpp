@@ -600,6 +600,7 @@ Draws the last few lines of output transparently over the game top
 void Con_DrawNotify (void)
 {
 	int		x, v;
+	int		lineLimit = con.linewidth;
 	conChar_t		*text;
 	int		i;
 	int		time;
@@ -631,8 +632,11 @@ void Con_DrawNotify (void)
 		if (time > con_notifytime->value*1000)
 			continue;
 		text = con.text + (i % con.totallines)*con.rowwidth;
-		if (!con_timestamps->integer)
+		if (con_timestamps->integer == 0 || con_timestamps->integer == 2) {
+			// don't show timestamps in the notify lines
 			text += CON_TIMESTAMP_LEN;
+			lineLimit -= CON_TIMESTAMP_LEN;
+		}
 
 		// asian language needs to use the new font system to print glyphs...
 		//
@@ -644,7 +648,7 @@ void Con_DrawNotify (void)
 			//
 			char sTemp[4096];	// ott
 			sTemp[0] = '\0';
-			for (x = 0 ; x < con.linewidth ; x++)
+			for (x = 0 ; x < lineLimit ; x++)
 			{
 				if ( text[x].f.color != currentColor ) {
 					currentColor = text[x].f.color;
@@ -662,7 +666,7 @@ void Con_DrawNotify (void)
 		}
 		else
 		{
-			for (x = 0 ; x < con.linewidth ; x++) {
+			for (x = 0 ; x < lineLimit ; x++) {
 				if ( text[x].f.character == ' ' ) {
 					continue;
 				}
