@@ -2037,7 +2037,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	//FIXME: should really send forcePowersActive over network onto cg.snap->ps...
 	const int fpActive = cg_entities[0].gent->client->ps.forcePowersActive;
 	const bool matrixMode = !!(fpActive & ((1 << FP_SPEED) | (1 << FP_RAGE)));
-	float speed = cg.refdef.fov_y / 75.0 * (matrixMode ? 1.0f : cg_timescale.value);
+	float speed = cg.refdef.fov_y / 75.0 * (matrixMode ? 1.0f : Q_min(cg_timescale.value, 1.0f));
 
 //FIXME: junk code, BUG:168
 
