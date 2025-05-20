@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "qcommon/stringed_ingame.h"
-#include "qcommon/stv_version.h"
+#include "qcommon/game_version.h"
 
 int g_console_field_width = 78;
 
@@ -733,11 +733,11 @@ void Con_DrawSolidConsole( float frac )
 	re.SetColor( console_color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
-	i = strlen( Q3_VERSION );
+	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * con.charWidth,
-			(lines-(con.charHeight+con.charHeight/2)), Q3_VERSION[x] );
+			(lines-(con.charHeight+con.charHeight/2)), JK_VERSION[x] );
 	}
 
 	// draw the input prompt, user text, and cursor if desired

@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/game_version.h"
+#include "qcommon/q_version.h"
 
 
 int g_console_field_width = 78;

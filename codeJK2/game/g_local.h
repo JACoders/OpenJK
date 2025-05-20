@@ -37,9 +37,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 //==================================================================
 
-// the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"base"
-
 #define BODY_QUEUE_SIZE		8
 
 #define Q3_INFINITE			16777216

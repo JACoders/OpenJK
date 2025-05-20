@@ -26,10 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "q_shared.h"
 #include "qcommon.h"
-#include "qcommon/q_version.h"
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stringed_ingame.h"
-#include "stv_version.h"
+#include "game_version.h"
 #include "../shared/sys/sys_local.h"
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -1081,7 +1080,7 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 
-	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
+	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
 	try {
 		Com_InitZoneMemory();
@@ -1162,8 +1161,7 @@ void Com_Init( char *commandLine ) {
 			Cmd_AddCommand ("freeze", Com_Freeze_f);
 		}
 
-		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
-		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
+		com_version = Cvar_Get ("version", JK_VERSION " " PLATFORM_STRING " " SOURCE_DATE, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifdef JK2_MODE
 		JK2SP_Init();

@@ -36,10 +36,21 @@ jobs:
             platform: x64
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v1.3.2
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{ github.workspace }}/build
@@ -93,7 +104,18 @@ jobs:
         portable: [Non-Portable]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Create Build Environment
         run: |
@@ -179,7 +201,18 @@ jobs:
             arch: arm64
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Create Build Environment
         run: |
@@ -214,17 +247,13 @@ jobs:
         if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ github.workspace }}/install/JediAcademy
         shell: bash
-        run: |
-          chmod +x openjk.${{ matrix.arch }}.app/Contents/MacOS/openjk.${{ matrix.arch }}
-          tar -czvf openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
+        run: tar -czvf openjk-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - name: Create OpenJO binary archive
         if: ${{ matrix.build_type == 'Release' }}
         working-directory: ${{ github.workspace }}/install/JediOutcast
         shell: bash
-        run: |
-          chmod +x openjo_sp.${{ matrix.arch }}.app/Contents/MacOS/openjo_sp.${{ matrix.arch }}
-          tar -czvf openjo_sp-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
+        run: tar -czvf openjo_sp-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz *
 
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' }}
@@ -245,7 +274,7 @@ jobs:
     needs: [msvc, ubuntu, macos]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -269,10 +298,11 @@ jobs:
           mv ./OpenJO-macos-arm64-Release-Non-Portable/* OpenJO-macos-arm64.tar.gz
 
       - name: Create latest build
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: softprops/action-gh-release@v1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: "latest"
+          generate_release_notes: true
+          tag_name: "latest"
           prerelease: false
           title: Latest Build
           files: |
@@ -336,7 +366,7 @@ jobs:
             zip: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
