@@ -3659,8 +3659,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	{
 		isAnOldModelFile = true;
 	}
-#endif
-#ifdef JK2_MODE
+#else
 	bool isANewModelFile = false;
 	if (mdxm->numBones == 53 && strstr(mdxm->animName, "_humanoid"))
 	{
@@ -3726,8 +3725,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			surfInfo->name[strlen(surfInfo->name)-4]=0;	//remove "_off" from name
 		}
-#endif
-#ifdef JK2_MODE
+#else
 		if ( isANewModelFile )
 		{
 			Q_strlwr(surfInfo->name);	//just in case
@@ -3877,8 +3875,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 					}
 				}
 			}
-#endif
-#ifdef JK2_MODE
+#else
 			if (isANewModelFile)
 			{
 				int *boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
