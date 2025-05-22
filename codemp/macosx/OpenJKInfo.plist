@@ -6,8 +6,6 @@
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
-	<key>CFBundleGetInfoString</key>
-	<string>${MACOSX_BUNDLE_INFO_STRING}</string>
 	<key>CFBundleIconFile</key>
 	<string>${MACOSX_BUNDLE_ICON_FILE}</string>
 	<key>CFBundleIdentifier</key>
@@ -32,6 +30,15 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.9</string>
+	<key>LSArchitecturePriority</key>
+	<array>
+		<string>arm64</string>
+		<string>x86_64</string>
+	</array>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 	<key>CFBundleDisplayName</key>
 	<string>${MACOSX_BUNDLE_DISPLAY_NAME}</string>
 </dict>
