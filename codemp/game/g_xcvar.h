@@ -71,7 +71,7 @@ XCVAR_DEF( g_allowHighPingDuelist,		"1",			NULL,						CVAR_NONE,										qtrue 
 XCVAR_DEF( g_allowNPC,					"1",			NULL,						CVAR_CHEAT,										qtrue )
 XCVAR_DEF( g_allowTeamVote,				"1",			NULL,						CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_allowVote,					"-1",			NULL,						CVAR_ARCHIVE,									qfalse )
-XCVAR_DEF( g_antiFakePlayer,			"1",			NULL,						CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_antiFakePlayer,			"0",			NULL,						CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_armBreakage,				"0",			NULL,						CVAR_NONE,										qtrue )
 XCVAR_DEF( g_austrian,					"0",			NULL,						CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_autoMapCycle,				"0",			NULL,						CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
