@@ -991,14 +991,73 @@ void Key_SetBinding( int keynum, const char *binding ) {
 		return;
 
 	// free old bindings
-	if ( kg.keys[keynames[keynum].upper].binding ) {
-		Z_Free( kg.keys[keynames[keynum].upper].binding );
-		kg.keys[keynames[keynum].upper].binding = NULL;
+	if ( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_NONE] ) {
+		Z_Free( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_NONE] );
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_NONE] = NULL;
 	}
 
 	// allocate memory for new binding
 	if ( binding )
-		kg.keys[keynames[keynum].upper].binding = CopyString( binding );
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_NONE] = CopyString( binding );
+
+	// consider this like modifying an archived cvar, so the
+	// file write will be triggered at the next oportunity
+	cvar_modifiedFlags |= CVAR_ARCHIVE;
+}
+
+void Key_SetBindingAlt( int keynum, const char *binding ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS || keynum == A_ALT || keynum == A_ALT2 )
+		return;
+
+	// free old bindings
+	if ( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_ALT] ) {
+		Z_Free( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_ALT] );
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_ALT] = NULL;
+	}
+
+	// allocate memory for new binding
+	if ( binding )
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_ALT] = CopyString( binding );
+
+	// consider this like modifying an archived cvar, so the
+	// file write will be triggered at the next oportunity
+	cvar_modifiedFlags |= CVAR_ARCHIVE;
+}
+
+void Key_SetBindingCtrl( int keynum, const char *binding ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS || keynum == A_CTRL || keynum == A_CTRL2 )
+		return;
+
+	// free old bindings
+	if ( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_CTRL] ) {
+		Z_Free( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_CTRL] );
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_CTRL] = NULL;
+	}
+
+	// allocate memory for new binding
+	if ( binding )
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_CTRL] = CopyString( binding );
+
+	// consider this like modifying an archived cvar, so the
+	// file write will be triggered at the next oportunity
+	cvar_modifiedFlags |= CVAR_ARCHIVE;
+}
+
+void Key_SetBindingShift( int keynum, const char *binding ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS || keynum == A_SHIFT || keynum == A_SHIFT2 )
+		return;
+
+	// free old bindings
+	if ( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_SHIFT] ) {
+		Z_Free( kg.keys[keynames[keynum].upper].binding[BINDINGMOD_SHIFT] );
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_SHIFT] = NULL;
+	}
+
+	// allocate memory for new binding
+	if ( binding )
+		kg.keys[keynames[keynum].upper].binding[BINDINGMOD_SHIFT] = CopyString( binding );
+
+
 
 	// consider this like modifying an archived cvar, so the
 	// file write will be triggered at the next oportunity
@@ -1014,7 +1073,7 @@ char *Key_GetBinding( int keynum ) {
 	if ( keynum < 0 || keynum >= MAX_KEYS )
 		return "";
 
-	return kg.keys[keynum].binding;
+	return kg.keys[keynum].binding[BINDINGMOD_NONE];
 }
 
 /*
@@ -1025,7 +1084,7 @@ Key_GetKey
 int Key_GetKey( const char *binding ) {
 	if ( binding ) {
 		for ( int i=0; i<MAX_KEYS; i++ ) {
-			if ( kg.keys[i].binding && !Q_stricmp( binding, kg.keys[i].binding ) )
+			if ( kg.keys[i].binding[BINDINGMOD_NONE] && !Q_stricmp( binding, kg.keys[i].binding[BINDINGMOD_NONE] ) )
 				return i;
 		}
 	}
@@ -1040,17 +1099,44 @@ Key_Unbind_f
 */
 void Key_Unbind_f( void ) {
 	if ( Cmd_Argc() != 2 ) {
-		Com_Printf( "unbind <key> : remove commands from a key\n" );
+		Com_Printf( "unbind <key> : remove commands from a key\noptionally use ctrl+, shift+, or alt+ key modifier\n" );
 		return;
 	}
 
-	int b = Key_StringToKeynum( Cmd_Argv( 1 ) );
+	char *keyStr = Cmd_Argv( 1 );
+	int len = strlen( Cmd_Argv( 1 ) );
+	bindingModifier_t mod = BINDINGMOD_NONE;
+	if ( !Q_stricmpn( Cmd_Argv( 1 ), "alt+", 4 ) && len > 4 ) {
+		keyStr += 4;
+		mod = BINDINGMOD_ALT;
+	}
+	if ( !Q_stricmpn( Cmd_Argv( 1 ), "ctrl+", 5 ) && len > 5 ) {
+		keyStr += 5;
+		mod = BINDINGMOD_CTRL;
+	}
+	else if ( !Q_stricmpn( Cmd_Argv( 1 ), "shift+", 6 ) && len > 6 ) {
+		keyStr += 6;
+		mod = BINDINGMOD_SHIFT;
+	}
+
+	int b = Key_StringToKeynum( keyStr );
 	if ( b == -1 ) {
-		Com_Printf( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ) );
+		Com_Printf( "\"%s\" isn't a valid key\n", keyStr );
+		return;
+	}
+	if ( ( ( b == A_ALT || b == A_ALT2 ) && mod == BINDINGMOD_ALT ) ||
+		( ( b == A_CTRL || b == A_CTRL2 ) && mod == BINDINGMOD_CTRL ) ||
+		( ( b == A_SHIFT || b == A_SHIFT2 ) && mod == BINDINGMOD_SHIFT ) ) {
+		Com_Printf( "\"%s\" isn't a valid key combination\n", Cmd_Argv( 1 ) );
 		return;
 	}
 
-	Key_SetBinding( b, "" );
+	switch ( mod ) {
+		case BINDINGMOD_ALT:	Key_SetBindingAlt( b, "" );		break;
+		case BINDINGMOD_CTRL:	Key_SetBindingCtrl( b, "" );	break;
+		case BINDINGMOD_SHIFT:	Key_SetBindingShift( b, "" );	break;
+		default:				Key_SetBinding( b, "" );		break;
+	}
 }
 
 /*
@@ -1060,8 +1146,14 @@ Key_Unbindall_f
 */
 void Key_Unbindall_f( void ) {
 	for ( int i=0; i<MAX_KEYS; i++ ) {
-		if ( kg.keys[i].binding )
+		if ( kg.keys[i].binding[BINDINGMOD_NONE] )
 			Key_SetBinding( i, "" );
+		if ( kg.keys[i].binding[BINDINGMOD_ALT] )
+			Key_SetBindingAlt( i, "" );
+		if ( kg.keys[i].binding[BINDINGMOD_CTRL] )
+			Key_SetBindingCtrl( i, "" );
+		if ( kg.keys[i].binding[BINDINGMOD_SHIFT] )
+			Key_SetBindingShift( i, "" );
 	}
 }
 
@@ -1074,25 +1166,73 @@ void Key_Bind_f( void ) {
 	int c = Cmd_Argc();
 
 	if ( c < 2 ) {
-		Com_Printf( "bind <key> [command] : attach a command to a key\n" );
+		Com_Printf( "bind <key> [command] : attach a command to a key\noptionally use ctrl+, shift+, or alt+ key modifier\n" );
 		return;
 	}
 
-	int b = Key_StringToKeynum( Cmd_Argv( 1 ) );
+	char *keyStr = Cmd_Argv( 1 );
+	int len = strlen( Cmd_Argv( 1 ) );
+	bindingModifier_t mod = BINDINGMOD_NONE;
+	if ( !Q_stricmpn( Cmd_Argv( 1 ), "alt+", 4 ) && len > 4 ) {
+		keyStr += 4;
+		mod = BINDINGMOD_ALT;
+	}
+	if ( !Q_stricmpn( Cmd_Argv( 1 ), "ctrl+", 5 ) && len > 5 ) {
+		keyStr += 5;
+		mod = BINDINGMOD_CTRL;
+	}
+	else if ( !Q_stricmpn( Cmd_Argv( 1 ), "shift+", 6 ) && len > 6 ) {
+		keyStr += 6;
+		mod = BINDINGMOD_SHIFT;
+	}
+
+	int b = Key_StringToKeynum( keyStr );
 	if ( b == -1 ) {
-		Com_Printf( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ) );
+		Com_Printf( "\"%s\" isn't a valid key\n", keyStr );
+		return;
+	}
+	if ( ( ( b == A_ALT || b == A_ALT2 ) && mod == BINDINGMOD_ALT ) ||
+		( ( b == A_CTRL || b == A_CTRL2 ) && mod == BINDINGMOD_CTRL ) ||
+		( ( b == A_SHIFT || b == A_SHIFT2 ) && mod == BINDINGMOD_SHIFT ) ) {
+		Com_Printf( "\"%s\" isn't a valid key combination\n", Cmd_Argv( 1 ) );
 		return;
 	}
 
 	if ( c == 2 ) {
-		if ( kg.keys[b].binding && kg.keys[b].binding[0] )
-			Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding );
-		else
-			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
+		if ( !mod ) {
+			if ( VALIDSTRING( kg.keys[b].binding[BINDINGMOD_NONE] ) )
+				Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding[BINDINGMOD_NONE] );
+			else
+				Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
+		}
+
+		if ( ( !mod || mod == BINDINGMOD_ALT ) ) {
+			if ( VALIDSTRING( kg.keys[b].binding[BINDINGMOD_ALT] ) )
+				Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "Alt+%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding[BINDINGMOD_ALT] );
+			else if ( mod ) // only explicity tell them it's not bound if they requested this modifier
+				Com_Printf( "\"Alt+%s\" is not bound\n", Key_KeynumToString( b ) );
+		}
+		if ( ( !mod || mod == BINDINGMOD_CTRL ) ) {
+			if ( VALIDSTRING( kg.keys[b].binding[BINDINGMOD_CTRL] ) )
+				Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "Ctrl+%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding[BINDINGMOD_CTRL] );
+			else if ( mod ) // only explicity tell them it's not bound if they requested this modifier
+				Com_Printf( "\"Ctrl+%s\" is not bound\n", Key_KeynumToString( b ) );
+		}
+		if ( ( !mod || mod == BINDINGMOD_SHIFT ) ) {
+			if ( VALIDSTRING( kg.keys[b].binding[BINDINGMOD_SHIFT] ) )
+				Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "Shift+%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding[BINDINGMOD_SHIFT] );
+			else if ( mod ) // only explicity tell them it's not bound if they requested this modifier
+				Com_Printf( "\"Shift+%s\" is not bound\n", Key_KeynumToString( b ) );
+		}
 		return;
 	}
 
-	Key_SetBinding( b, Cmd_ArgsFrom( 2 ) );
+	switch ( mod ) {
+		case BINDINGMOD_ALT:	Key_SetBindingAlt( b, Cmd_ArgsFrom( 2 ) );		break;
+		case BINDINGMOD_CTRL:	Key_SetBindingCtrl( b, Cmd_ArgsFrom( 2 ) );		break;
+		case BINDINGMOD_SHIFT:	Key_SetBindingShift( b, Cmd_ArgsFrom( 2 ) );	break;
+		default:				Key_SetBinding( b, Cmd_ArgsFrom( 2 ) );			break;
+	}
 }
 
 /*
@@ -1105,14 +1245,35 @@ Writes lines containing "bind key value"
 void Key_WriteBindings( fileHandle_t f ) {
 	FS_Printf( f, "unbindall\n" );
 	for ( size_t i=0; i<MAX_KEYS; i++ ) {
-		if ( kg.keys[i].binding && kg.keys[i].binding[0] ) {
-			const char *name = Key_KeynumToString( i );
+		const char *name = Key_KeynumToString( i );
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_NONE] ) ) {
 
 			// handle the escape character nicely
 			if ( !strcmp( name, "\\" ) )
-				FS_Printf( f, "bind \"\\\" \"%s\"\n", kg.keys[i].binding );
+				FS_Printf( f, "bind \"\\\" \"%s\"\n", kg.keys[i].binding[BINDINGMOD_NONE] );
 			else
-				FS_Printf( f, "bind \"%s\" \"%s\"\n", name, kg.keys[i].binding );
+				FS_Printf( f, "bind \"%s\" \"%s\"\n", name, kg.keys[i].binding[BINDINGMOD_NONE] );
+		}
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_ALT] ) ) {
+			// handle the escape character nicely
+			if ( !strcmp( name, "\\" ) )
+				FS_Printf( f, "bind \"ALT+\\\" \"%s\"\n", kg.keys[i].binding[BINDINGMOD_ALT] );
+			else
+				FS_Printf( f, "bind \"ALT+%s\" \"%s\"\n", name, kg.keys[i].binding[BINDINGMOD_ALT] );
+		}
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_CTRL] ) ) {
+			// handle the escape character nicely
+			if ( !strcmp( name, "\\" ) )
+				FS_Printf( f, "bind \"CTRL+\\\" \"%s\"\n", kg.keys[i].binding[BINDINGMOD_CTRL] );
+			else
+				FS_Printf( f, "bind \"CTRL+%s\" \"%s\"\n", name, kg.keys[i].binding[BINDINGMOD_CTRL] );
+		}
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_SHIFT] ) ) {
+			// handle the escape character nicely
+			if ( !strcmp( name, "\\" ) )
+				FS_Printf( f, "bind \"SHIFT+\\\" \"%s\"\n", kg.keys[i].binding[BINDINGMOD_SHIFT] );
+			else
+				FS_Printf( f, "bind \"SHIFT+%s\" \"%s\"\n", name, kg.keys[i].binding[BINDINGMOD_SHIFT] );
 		}
 	}
 }
@@ -1125,8 +1286,14 @@ Key_Bindlist_f
 */
 void Key_Bindlist_f( void ) {
 	for ( size_t i=0; i<MAX_KEYS; i++ ) {
-		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
-			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s (%s) = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_NONE] ) )
+			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( i ), kg.keys[i].binding[BINDINGMOD_NONE] );
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_ALT] ) )
+			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "Alt+%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( i ), kg.keys[i].binding[BINDINGMOD_ALT] );
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_CTRL] ) )
+			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "Ctrl+%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( i ), kg.keys[i].binding[BINDINGMOD_CTRL] );
+		if ( VALIDSTRING( kg.keys[i].binding[BINDINGMOD_SHIFT] ) )
+			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "Shift+%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( i ), kg.keys[i].binding[BINDINGMOD_SHIFT] );
 	}
 }
 
@@ -1228,9 +1395,40 @@ void CL_ParseBinding( int key, qboolean down, unsigned time )
 
 	if( cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == 0 )
 		return;
-	if( !kg.keys[keynames[key].upper].binding || !kg.keys[keynames[key].upper].binding[0] )
+
+	// for rshift/ralt/rctrl, prefer the specific rshift/rctrl/ralt bind if
+	// it exists; otherwise, fallback to the generic shift/ctrl/alt bind
+	const char *binding = NULL;
+	qkey_t *keyPtr = &kg.keys[keynames[key].upper];
+	qkey_t *genericKeyPtr = NULL;
+	switch ( key ) {
+		case A_ALT2:	genericKeyPtr = &kg.keys[keynames[A_ALT].upper];	break;
+		case A_CTRL2:	genericKeyPtr = &kg.keys[keynames[A_CTRL].upper];	break;
+		case A_SHIFT2:	genericKeyPtr = &kg.keys[keynames[A_SHIFT].upper];	break;
+	}
+	if ( VALIDSTRING( keyPtr->binding[BINDINGMOD_ALT] ) && ( kg.keys[A_ALT].down /*|| kg.keys[A_ALT2].down*/) && key != A_ALT && key != A_ALT2 )
+		binding = keyPtr->binding[BINDINGMOD_ALT];
+	else if ( VALIDSTRING( keyPtr->binding[BINDINGMOD_CTRL] ) && ( kg.keys[A_CTRL].down /*|| kg.keys[A_CTRL2].down*/) && key != A_CTRL && key != A_CTRL2 )
+		binding = keyPtr->binding[BINDINGMOD_CTRL];
+	else if ( VALIDSTRING( keyPtr->binding[BINDINGMOD_SHIFT] ) && ( kg.keys[A_SHIFT].down /*|| kg.keys[A_SHIFT2].down*/) && key != A_SHIFT && key != A_SHIFT2 )
+		binding = keyPtr->binding[BINDINGMOD_SHIFT];
+	else
+		binding = keyPtr->binding[BINDINGMOD_NONE];
+
+	if ( !VALIDSTRING( binding ) && genericKeyPtr ) {
+		if ( VALIDSTRING( genericKeyPtr->binding[BINDINGMOD_ALT] ) && ( kg.keys[A_ALT].down /*|| kg.keys[A_ALT2].down*/ ) && key != A_ALT && key != A_ALT2 )
+			binding = genericKeyPtr->binding[BINDINGMOD_ALT];
+		else if ( VALIDSTRING( genericKeyPtr->binding[BINDINGMOD_CTRL] ) && ( kg.keys[A_CTRL].down /*|| kg.keys[A_CTRL2].down*/ ) && key != A_CTRL && key != A_CTRL2 )
+			binding = genericKeyPtr->binding[BINDINGMOD_CTRL];
+		else if ( VALIDSTRING( genericKeyPtr->binding[BINDINGMOD_SHIFT] ) && ( kg.keys[A_SHIFT].down /*|| kg.keys[A_SHIFT2].down*/ ) && key != A_SHIFT && key != A_SHIFT2 )
+			binding = genericKeyPtr->binding[BINDINGMOD_SHIFT];
+		else
+			binding = genericKeyPtr->binding[BINDINGMOD_NONE];
+	}
+
+	if ( !VALIDSTRING( binding ) )
 		return;
-	Q_strncpyz( buf, kg.keys[keynames[key].upper].binding, sizeof( buf ) );
+	Q_strncpyz( buf, binding, sizeof( buf ) );
 
 	// run all bind commands if console, ui, etc aren't reading keys
 	allCommands = (qboolean)( Key_GetCatcher( ) == 0 );
