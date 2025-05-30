@@ -824,10 +824,10 @@ int Key_StringToKeynum( char *str ) {
 	}
 
 	// check for hex code
-	if ( strlen( str ) == 4 ) {
-		int n = Com_HexStrToInt( str );
+	if ( strlen( str ) >= 3 ) {
+		size_t n = Com_HexStrToInt( str );
 
-		if ( n >= 0 )
+		if ( n >= 0 && n < ARRAY_LEN(keynames) )
 			return n;
 	}
 
