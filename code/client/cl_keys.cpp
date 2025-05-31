@@ -1286,7 +1286,7 @@ void CL_InitKeyCommands( void ) {
 	// Register cvars (the default values should have legacy configs play the same way without behavior changes)
 	cl_keyModifiersOnlyIfUnbound = Cvar_Get( "cl_keyModifiersOnlyIfUnbound", "1", CVAR_ARCHIVE_ND );
 	cl_keyModifiersFallbackToDefault = Cvar_Get( "cl_keyModifiersFallbackToDefault", "1", CVAR_ARCHIVE_ND );
-	cl_keyModifiersEnableLocks = Cvar_Get( "cl_keyModifiersEnableLocks", "1", CVAR_ARCHIVE_ND );
+	cl_keyModifiersEnableLocks = Cvar_Get( "cl_keyModifiersEnableLocks", "0", CVAR_ARCHIVE_ND );
 	cl_keyModifiersPassToUI = Cvar_Get( "cl_keyModifiersPassToUI", "0", CVAR_ARCHIVE_ND );
 }
 

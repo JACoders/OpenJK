@@ -1344,7 +1344,7 @@ void CL_InitKeyCommands( void ) {
 	// Register cvars (the default values should have legacy configs play the same way without behavior changes)
 	cl_keyModifiersOnlyIfUnbound = Cvar_Get( "cl_keyModifiersOnlyIfUnbound", "1", CVAR_ARCHIVE_ND, "If set modifiers (like LCTRL, LALT, LSHIFT, LSUPER, RCTRL, RALT, RSHIFT, RSUPER, CAPSLOCK, NUMLOCK) are only usable when the associated key is unbound (CTRL, ALT, SHIFT, CAPSLOCK, KP_NUMLOCK)." );
 	cl_keyModifiersFallbackToDefault = Cvar_Get( "cl_keyModifiersFallbackToDefault", "1", CVAR_ARCHIVE_ND, "If a key is not bound on a modifier layer, fallback to the bind without a modifier." );
-	cl_keyModifiersEnableLocks = Cvar_Get( "cl_keyModifiersEnableLocks", "1", CVAR_ARCHIVE_ND, "If enabled the CAPSLOCK and NUMLOCK keys switch to another keyboard layer." );
+	cl_keyModifiersEnableLocks = Cvar_Get( "cl_keyModifiersEnableLocks", "0", CVAR_ARCHIVE_ND, "If enabled the CAPSLOCK and NUMLOCK keys switch to another keyboard layer." );
 }
 
 /*
