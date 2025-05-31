@@ -212,7 +212,7 @@ extern uiInfo_t uiInfo;
 void _UI_Init( qboolean inGameLoad );
 void _UI_DrawRect( float x, float y, float width, float height, float size, const float *color );
 void _UI_MouseEvent( int dx, int dy );
-void _UI_KeyEvent( int key, qboolean down );
+void _UI_KeyEvent( int key, int modifiers, qboolean down );
 void UI_Report(void);
 
 extern char GoToMenu[];
@@ -229,7 +229,7 @@ void			trap_GetGlconfig( glconfig_t *glconfig );
 void			trap_Key_ClearStates( void );
 int				trap_Key_GetCatcher( void );
 qboolean		trap_Key_GetOverstrikeMode( void );
-void			trap_Key_SetBinding( int keynum, const char *binding );
+void			trap_Key_SetBinding( int keynum, int modifiers, const char *binding );
 void			trap_Key_SetCatcher( int catcher );
 void			trap_Key_SetOverstrikeMode( qboolean state );
 void			trap_R_DrawStretchPic( float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t hShader );

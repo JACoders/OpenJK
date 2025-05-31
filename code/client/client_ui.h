@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../ui/ui_public.h"
 
-void _UI_KeyEvent( int key, qboolean down );
+void _UI_KeyEvent( int key, int modifiers, qboolean down );
 void UI_SetActiveMenu( const char* menuname,const char *menuID );
 void UI_UpdateConnectionMessageString( char *string );
 qboolean UI_ConsoleCommand( void ) ;

@@ -731,6 +731,7 @@ void CL_Shutdown( void );
 void CL_Frame( int msec,float fractionMsec );
 qboolean CL_GameCommand( void );
 void CL_KeyEvent (int key, qboolean down, unsigned time);
+void CL_ModifierEvent( int modifiers );
 
 void CL_CharEvent( int key );
 // char events are for field typing, not game control
@@ -759,7 +760,7 @@ void CL_FlushMemory( void );
 
 void CL_StartHunkUsers( void );
 
-void Key_KeynameCompletion ( callbackFunc_t callback );
+void Key_Completion( void(*callback)( const char *s ), const char *input );
 // for keyname autocompletion
 
 void Key_WriteBindings( fileHandle_t f );
