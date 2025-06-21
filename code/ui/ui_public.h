@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../client/keycodes.h"
 
 
-#define UI_API_VERSION	3
+#define UI_API_VERSION	4
 
 
 typedef struct {
@@ -84,7 +84,7 @@ typedef struct {
 	// Nothing is drawn until R_RenderScene is called.
 	void		(*R_ClearScene)( void );
 	void		(*R_AddRefEntityToScene)( const refEntity_t *re );
-	void		(*R_AddPolyToScene)( qhandle_t hShader , int numVerts, const polyVert_t *verts );
+	void		(*R_AddPolyToScene)( qhandle_t hShader , int numVerts, const polyVert_t *verts, int numPolys );
 	void		(*R_AddLightToScene)( const vec3_t org, float intensity, float r, float g, float b );
 	void		(*R_RenderScene)( const refdef_t *fd );
 
@@ -105,7 +105,7 @@ typedef struct {
 	//========= model collision ===============
 
 	// R_LerpTag is only valid for md3 models
-	void		(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
+	int			(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
 						 float frac, const char *tagName );
 
 	// =========== sound function calls ===============

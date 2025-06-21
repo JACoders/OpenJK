@@ -2575,7 +2575,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 	}
 
 	assert (ent->e.ghoul2);	//entity is foo if it has a glm model handle but no ghoul2 pointer!
-	CGhoul2Info_v	&ghoul2 = *ent->e.ghoul2;
+	CGhoul2Info_v	&ghoul2 = *((CGhoul2Info_v *)ent->e.ghoul2);
 
 	if (!G2_SetupModelPointers(ghoul2))
 	{
