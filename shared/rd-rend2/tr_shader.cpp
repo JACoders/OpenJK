@@ -3133,9 +3133,10 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 		if (stage->bundle[TB_NORMALMAP].image[0])
 		{
 			if (stage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT &&
-				r_parallaxMapping->integer &&
 				defs & LIGHTDEF_LIGHTTYPE_MASK)
+			{
 				defs |= LIGHTDEF_USE_PARALLAXMAP;
+			}
 			//ri.Printf(PRINT_ALL, ", normalmap %s", stage->bundle[TB_NORMALMAP].image[0]->imgName);
 		}
 		else if ((lightmap || useLightVector || useLightVertex) && (diffuseImg = stage->bundle[TB_DIFFUSEMAP].image[0]) != NULL)
@@ -3143,18 +3144,13 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 			char normalName[MAX_QPATH];
 			image_t *normalImg;
 			int normalFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
-			qboolean parallax = qfalse;
 			// try a normalheight image first
 			COM_StripExtension(diffuseImg->imgName, normalName, sizeof(normalName));
 			Q_strcat(normalName, sizeof(normalName), "_nh");
 
 			normalImg = R_FindImageFile(normalName, IMGTYPE_NORMALHEIGHT, normalFlags);
 
-			if (normalImg)
-			{
-				parallax = qtrue;
-			}
-			else
+			if (!normalImg)
 			{
 				// try a normal image ("_n" suffix)
 				normalName[strlen(normalName) - 1] = '\0';
@@ -3167,7 +3163,7 @@ static void CollapseStagesToLightall(shaderStage_t *stage, shaderStage_t *lightm
 				stage->bundle[TB_NORMALMAP].numImageAnimations = 0;
 				stage->bundle[TB_NORMALMAP].image[0] = normalImg;
 
-				if (parallax && r_parallaxMapping->integer)
+				if (normalImg->type == IMGTYPE_NORMALHEIGHT)
 					defs |= LIGHTDEF_USE_PARALLAXMAP;
 
 				VectorSet4(stage->normalScale, r_baseNormalX->value, r_baseNormalY->value, 1.0f, r_baseParallax->value);
@@ -3388,8 +3384,7 @@ static qboolean CollapseStagesToGLSL(void)
 			{
 				if (pStage->bundle[TB_NORMALMAP].image[0])
 				{
-					if (pStage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT &&
-						r_parallaxMapping->integer)
+					if (pStage->bundle[TB_NORMALMAP].image[0]->type == IMGTYPE_NORMALHEIGHT)
 					{
 						int defs = LIGHTDEF_USE_LIGHT_VERTEX | LIGHTDEF_USE_PARALLAXMAP;
 						pStage->normalScale[0] =

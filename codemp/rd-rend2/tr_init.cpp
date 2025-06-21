@@ -1523,7 +1523,6 @@ void R_Register( void )
 	r_specularMapping = ri.Cvar_Get( "r_specularMapping", "1", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable specular mapping" );
 	r_deluxeMapping = ri.Cvar_Get( "r_deluxeMapping", "1", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable reading deluxemaps when compiled with q3map2" );
 	r_deluxeSpecular = ri.Cvar_Get("r_deluxeSpecular", "1", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable/scale the specular response from deluxemaps");
-	r_parallaxMapping = ri.Cvar_Get( "r_parallaxMapping", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable parallax mapping" );
 	r_cubeMapping = ri.Cvar_Get( "r_cubeMapping", "0", CVAR_ARCHIVE | CVAR_LATCH, "Disable/enable cubemapping" );
 	r_cubeMappingBounces = ri.Cvar_Get("r_cubeMappingBounces", "0", CVAR_ARCHIVE | CVAR_LATCH, "Renders cubemaps multiple times to get reflections in reflections");
 	ri.Cvar_CheckRange(r_cubeMappingBounces, 0, 2, qfalse);
@@ -1588,6 +1587,8 @@ void R_Register( void )
 	r_markcount = ri.Cvar_Get( "r_markcount", "100", CVAR_ARCHIVE, "" );
 	r_gamma = ri.Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE, "" );
 	r_facePlaneCull = ri.Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE, "" );
+
+	r_parallaxMapping = ri.Cvar_Get("r_parallaxMapping", "0", CVAR_ARCHIVE, "Disable/enable parallax mapping");
 
 	r_ambientScale = ri.Cvar_Get( "r_ambientScale", "0.6", CVAR_CHEAT, "" );
 	r_directedScale = ri.Cvar_Get( "r_directedScale", "1", CVAR_CHEAT, "" );

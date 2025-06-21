@@ -1358,9 +1358,6 @@ static bool GLSL_IsValidPermutationForFog (int shaderCaps)
 
 static bool GLSL_IsValidPermutationForLight (int lightType, int shaderCaps)
 {
-	if ((shaderCaps & LIGHTDEF_USE_PARALLAXMAP) && !r_parallaxMapping->integer)
-		return false;
-
 	if (!lightType && (shaderCaps & LIGHTDEF_USE_PARALLAXMAP))
 		return false;
 
@@ -1681,7 +1678,7 @@ static int GLSL_LoadGPUProgramVelocityPass(
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
-		if (i & VELOCITYDEF_USE_PARALLAXMAP && r_parallaxMapping->integer)
+		if (i & VELOCITYDEF_USE_PARALLAXMAP)
 		{
 			Q_strcat(name, sizeof(name), "_NH");
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_PARALLAXMAP\n");
@@ -1874,7 +1871,7 @@ static int GLSL_LoadGPUProgramLightAll(
 				Q_strcat(name, sizeof(name), "_N");
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_NORMALMAP\n");
 
-				if ((i & LIGHTDEF_USE_PARALLAXMAP) && r_parallaxMapping->integer)
+				if (i & LIGHTDEF_USE_PARALLAXMAP)
 				{
 					Q_strcat(name, sizeof(name), "H");
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_PARALLAXMAP\n");
