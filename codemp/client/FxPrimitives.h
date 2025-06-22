@@ -401,6 +401,7 @@ public:
 	virtual void Die() {}
 
 	virtual bool Update();
+	virtual bool Cull();
 
 	inline void SetOrigin2( vec3_t org2 )	{ VectorCopy( org2, mOrigin2 ); }
 };

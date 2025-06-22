@@ -4151,7 +4151,7 @@ void			STEER::Activate(gentity_t* actor)
 	gentity_t*	neighbor = 0;
 
 	int	numFound = gi.EntitiesInBox(Mins.v, Maxs.v, EntityList, MAX_GENTITIES);
-	for (int i=0; i<numFound; i++)
+	for (int i=0; i<numFound && !suser.mNeighbors.full(); i++)
 	{
 		neighbor = EntityList[i];
 		assert(neighbor!=0);
@@ -5490,7 +5490,7 @@ bool	STEER::Reached(gentity_t* actor, NAV::TNodeHandle target, float targetRadiu
 ////////////////////////////////////////////////////////////////////////////////////
 bool	STEER::Reached(gentity_t* actor, const vec3_t& target, float targetRadius, bool flying)
 {
-	if (!actor || !target)
+	if (!actor || VectorCompare(target, vec3_origin) )
 	{
 		return false;
 	}

@@ -2373,7 +2373,7 @@ static qboolean ParseShader( const char **text )
 	// functioned because rgbGen identity doesn't work with setcolor.
 	//
 	// We match against retail version of gfx/menus/radar/arrow_w by calculating
-	// the hash value of the shader text, and comparing it against a 
+	// the hash value of the shader text, and comparing it against a
 	// precalculated value.
 	if ( shaderHash == RETAIL_ARROW_W_SHADER_HASH &&
 		Q_stricmp( shader.name, "gfx/menus/radar/arrow_w" ) == 0 )

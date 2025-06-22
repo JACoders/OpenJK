@@ -666,7 +666,7 @@ Touch all known used data to make sure it is paged in
 void Com_TouchMemory( void ) {
 //	int		start, end;
 	int		i, j;
-	int		sum;
+	unsigned int		sum;
 
 //	start = Sys_Milliseconds();
 	Z_Validate();
@@ -679,7 +679,7 @@ void Com_TouchMemory( void ) {
 		byte *pMem = (byte *) &pMemory[1];
 		j = pMemory->iSize >> 2;
 		for (i=0; i<j; i+=64){
-			sum += ((int*)pMem)[i];
+			sum += ((unsigned int*)pMem)[i];
 		}
 
 		pMemory = pMemory->pNext;

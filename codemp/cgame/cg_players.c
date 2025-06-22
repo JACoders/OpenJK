@@ -4499,11 +4499,9 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 		return;
 	}
 
-	#ifdef BASE_COMPAT
-		// quad gives a dlight
-		if ( powerups & ( 1 << PW_QUAD ) )
-			trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
-	#endif // BASE_COMPAT
+	// quad gives a dlight
+	if ( powerups & ( 1 << PW_QUAD ) )
+		trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
 
 	if (cent->currentState.eType == ET_NPC)
 		assert(cent->npcClient);
@@ -10118,7 +10116,7 @@ stillDoSaber:
 					}
 					else
 					{
-						trap->G2API_InitGhoul2Model(&saberEnt->ghoul2, "models/weapons2/saber/saber_w.glm", 0, 0, 0, 0, 0);
+						trap->G2API_InitGhoul2Model(&saberEnt->ghoul2, DEFAULT_SABER_MODEL, 0, 0, 0, 0, 0);
 					}
 					//trap->G2API_DuplicateGhoul2Instance(cent->ghoul2, &saberEnt->ghoul2);
 

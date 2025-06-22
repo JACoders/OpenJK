@@ -273,6 +273,9 @@ extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
 extern	cvar_t	*sv_legacyFixes;
 extern	cvar_t	*sv_banFile;
+extern	cvar_t	*sv_maxOOBRate;
+extern	cvar_t	*sv_maxOOBRateIP;
+extern	cvar_t	*sv_autoWhitelist;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
@@ -284,24 +287,16 @@ extern	int serverBansCount;
 //
 typedef struct leakyBucket_s leakyBucket_t;
 struct leakyBucket_s {
-	netadrtype_t	type;
-
-	union {
-		byte	_4[4];
-	} ipv;
-
 	int					lastTime;
-	signed char			burst;
-
-	long				hash;
-
-	leakyBucket_t *prev, *next;
+	unsigned short		burst;
 };
 
 extern leakyBucket_t outboundLeakyBucket;
 
-qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period );
-qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period );
+qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period, int now );
+qboolean SVC_RateLimitAddress( const netadr_t *from, int burst, int period, int now );
+void SVC_LoadWhitelist( void );
+void SVC_WhitelistAdr( const netadr_t *adr );
 void SV_FinalMessage (char *message);
 void QDECL SV_SendServerCommand( client_t *cl, const char *fmt, ...);
 
@@ -336,15 +331,15 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 //
 void SV_ChallengeInit();
 void SV_ChallengeShutdown();
-int SV_CreateChallenge(netadr_t from);
-qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from);
+int SV_CreateChallenge(const netadr_t *from);
+qboolean SV_VerifyChallenge(int receivedChallenge, const netadr_t *from);
 
 //
 // sv_client.c
 //
-void SV_GetChallenge( netadr_t from );
+void SV_GetChallenge( const netadr_t *from );
 
-void SV_DirectConnect( netadr_t from );
+void SV_DirectConnect( const netadr_t *from );
 
 void SV_SendClientMapChange( client_t *client );
 void SV_ExecuteClientMessage( client_t *cl, msg_t *msg );

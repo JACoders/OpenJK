@@ -2524,7 +2524,7 @@ void CG_ClearHealthBarEnts( void )
 	if ( cg_numHealthBarEnts )
 	{
 		cg_numHealthBarEnts = 0;
-		memset( &cg_healthBarEnts, 0, MAX_HEALTH_BAR_ENTS );
+		memset( &cg_healthBarEnts, 0, sizeof(cg_healthBarEnts) );
 	}
 }
 /*

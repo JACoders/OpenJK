@@ -185,6 +185,9 @@ cvar_t	*com_buildScript;
 cvar_t	*r_environmentMapping;
 cvar_t *r_screenshotJpegQuality;
 
+#if !defined(__APPLE__)
+PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+#endif
 
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
@@ -669,6 +672,16 @@ static void GLimp_InitExtensions( void )
 		g_bDynamicGlowSupported = false;
 		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
+
+#if !defined(__APPLE__)
+	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
+	if (qglStencilOpSeparate)
+	{
+		glConfig.doStencilShadowsInOneDrawcall = qtrue;
+	}
+#else
+	glConfig.doStencilShadowsInOneDrawcall = qtrue;
+#endif
 }
 
 /*

@@ -77,7 +77,7 @@ void NPC_Mark2_Part_Explode( gentity_t *self, int bolt )
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					bolt,
 					&boltMatrix, self->currentAngles, self->currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -99,10 +99,10 @@ NPC_Mark2_Pain
 - look at what was hit and see if it should be removed from the model.
 -------------------------
 */
-void NPC_Mark2_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Mark2_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
 {
 	int newBolt,i;
-	
+
 	NPC_Pain( self, inflictor, other, point, damage, mod );
 
 	for (i=0;i<3;i++)
@@ -110,7 +110,7 @@ void NPC_Mark2_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, ve
 		if ((hitLoc==HL_GENERIC1+i) && (self->locationDamage[HL_GENERIC1+i] > AMMO_POD_HEALTH))	// Blow it up?
 		{
 			if (self->locationDamage[hitLoc] >= AMMO_POD_HEALTH)
-			{			
+			{
 				newBolt = gi.G2API_AddBolt( &self->ghoul2[self->playerModel], va("torso_canister%d",(i+1)) );
 				if ( newBolt != -1 )
 				{
@@ -162,7 +162,7 @@ void Mark2_FireBlaster(qboolean advance)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 
-	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel, 
+	gi.G2API_GetBoltMatrix( NPC->ghoul2, NPC->playerModel,
 				NPC->genericBolt1,
 				&boltMatrix, NPC->currentAngles, NPC->currentOrigin, (cg.time?cg.time:level.time),
 				NULL, NPC->s.modelScale );
@@ -232,7 +232,7 @@ void Mark2_AttackDecision( void )
 {
 	NPC_FaceEnemy( qtrue );
 
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
@@ -241,7 +241,7 @@ void Mark2_AttackDecision( void )
 	{
 		NPC->flags &= ~FL_SHIELDED;
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1START, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
-		if ((NPC->client->ps.legsAnimTimer==0) && 
+		if ((NPC->client->ps.legsAnimTimer==0) &&
 			NPC->client->ps.torsoAnim == BOTH_RUN1START )
 		{
 			NPCInfo->localState = LSTATE_NONE;	// He's up again.

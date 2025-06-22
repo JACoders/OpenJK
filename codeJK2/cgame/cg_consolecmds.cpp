@@ -63,7 +63,7 @@ Debugging command to print the current position
 */
 static void CG_Viewpos_f (void) {
 	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2],
 		(int)cg.refdefViewAngles[YAW]);
 }
 
@@ -74,7 +74,7 @@ void CG_WriteCam_f (void)
 	static	int	numCams;
 
 	numCams++;
-	
+
 	targetname = CG_Argv(1);
 
 	if( !targetname || !targetname[0] )
@@ -184,10 +184,10 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
-void CG_LoadHud_f( void) 
+void CG_LoadHud_f( void)
 {
 	const char *hudSet = cg_hudFiles.string;
-	if ( hudSet[0] == '\0' ) 
+	if ( hudSet[0] == '\0' )
 		hudSet = "ui/jk2hud.txt";
 
 	CG_LoadMenus(hudSet);

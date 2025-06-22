@@ -3829,7 +3829,7 @@ static void CG_PlayerFootsteps( centity_t *const cent, footstepType_t footStepTy
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, sideOrigin );
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, footDownDir );
 		VectorMA( sideOrigin, -8.0f, footDownDir, sideOrigin );//was [2] += 15;	//fudge up a bit for coplanar
-		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle-90, 6, cent, footStepType );
+		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle, 6, cent, footStepType );
 	}
 }
 
@@ -5928,7 +5928,7 @@ static void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 	}
 }
 
-extern void FX_AddPrimitive( CEffect **effect, int killTime );
+extern void FX_AddPrimitive( CEffect *effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles )
 {
@@ -6691,7 +6691,7 @@ Ghoul2 Insert End
 					fx->mVerts[3].destST[1] = 0.99f;
 
 	//				fx->SetFlags( FX_USE_ALPHA );
-					FX_AddPrimitive( (CEffect**)&fx, duration );//SABER_TRAIL_TIME );
+					FX_AddPrimitive( fx, duration );//SABER_TRAIL_TIME );
 				}
 			}
 

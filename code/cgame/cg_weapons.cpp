@@ -1685,7 +1685,7 @@ void CG_DrawDataPadWeaponSelect( void )
 			textboxXPos, textboxYPos,
 			textboxWidth, textboxHeight,
 			text,
-			4,
+			CG_MagicFontToReal(4),
 			textScale,
 			colorTable[CT_WHITE]
 				);

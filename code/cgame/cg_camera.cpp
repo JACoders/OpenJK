@@ -95,7 +95,7 @@ void CGCam_Enable( void )
 
 	client_camera.next_roff_time = 0;
 
-	if ( &g_entities[0] && g_entities[0].client )
+	if ( g_entities[0].inuse && g_entities[0].client )
 	{
 		//Player zero not allowed to do anything
 		VectorClear( g_entities[0].client->ps.velocity );
@@ -148,7 +148,7 @@ void CGCam_Disable( void )
 
 	client_camera.info_state |= CAMERA_BAR_FADING;
 
-	if ( &g_entities[0] && g_entities[0].client )
+	if ( g_entities[0].inuse && g_entities[0].client )
 	{
 		g_entities[0].contents = CONTENTS_BODY;//MASK_PLAYERSOLID;
 	}

@@ -34,6 +34,8 @@ ICARUS_Instance		*iICARUS;
 bufferlist_t		ICARUS_BufferList;
 entlist_t			ICARUS_EntList;
 
+cvarlist_t			ICARUS_CvarList;
+
 extern uint32_t Com_BlockChecksum (const void *buffer, int length);
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
@@ -136,6 +138,8 @@ void ICARUS_Init( void )
 		Com_Error( ERR_DROP, "Unable to initialize ICARUS instance\n" );
 		return;
 	}
+
+	ICARUS_CvarList.clear();
 }
 
 /*
@@ -152,11 +156,11 @@ void ICARUS_Shutdown( void )
 	gentity_t				*ent = &g_entities[0];;
 
 	//Release all ICARUS resources from the entities
-	for ( int i = 0; i < globals.num_entities; i++, ent++ ) 
+	for ( int i = 0; i < globals.num_entities; i++, ent++ )
 	{
 		if ( !ent->inuse )
 			continue;
-		
+
 		ICARUS_FreeEnt( ent );
 	}
 
@@ -171,6 +175,8 @@ void ICARUS_Shutdown( void )
 
 	//Clear the name map
 	ICARUS_EntList.clear();
+
+	ICARUS_CvarList.clear();
 
 	//Free this instance
 	if ( iICARUS )
@@ -203,7 +209,7 @@ void ICARUS_FreeEnt( gentity_t *ent )
 	if VALIDSTRING( ent->script_targetname )
 	{
 		char	temp[1024];
-		
+
 		strncpy( (char *) temp, ent->script_targetname, 1023 );
 		temp[ 1023 ] = 0;
 
@@ -217,7 +223,7 @@ void ICARUS_FreeEnt( gentity_t *ent )
 
 	//Delete the sequencer and the task manager
 	iICARUS->DeleteSequencer( ent->sequencer );
-	
+
 	//Clean up the pointers
 	ent->sequencer		= NULL;
 	ent->taskManager	= NULL;
@@ -228,7 +234,7 @@ void ICARUS_FreeEnt( gentity_t *ent )
 ==============
 ICARUS_ValidEnt
 
-Determines whether or not an entity needs ICARUS information  
+Determines whether or not an entity needs ICARUS information
 ==============
 */
 
@@ -265,7 +271,7 @@ Associate the entity's id and name so that it can be referenced later
 void ICARUS_AssociateEnt( gentity_t *ent )
 {
 	char	temp[1024];
-	
+
 	if ( VALIDSTRING( ent->script_targetname ) == false )
 		return;
 
@@ -300,8 +306,8 @@ bool ICARUS_RegisterScript( const char *name, bool bCalledDuringInterrogate /* =
 	//
 	if ( ei != ICARUS_BufferList.end() )
 		return (bCalledDuringInterrogate)?false:true;
-	
-	sprintf((char *) newname, "%s%s", name, IBI_EXT );	
+
+	sprintf((char *) newname, "%s%s", name, IBI_EXT );
 
 
 	// small update here, if called during interrogate, don't let gi.FS_ReadFile() complain because it can't
@@ -309,15 +315,15 @@ bool ICARUS_RegisterScript( const char *name, bool bCalledDuringInterrogate /* =
 	//	the ifndef, this just cuts down on internal error reports while testing release mode...
 	//
 	qboolean qbIgnoreFileRead = qfalse;
-	// 
+	//
 	// NOTENOTE: For the moment I've taken this back out, to avoid doubling the number of fopen()'s per file.
-#if 0//#ifndef FINAL_BUILD		
+#if 0//#ifndef FINAL_BUILD
 	if (bCalledDuringInterrogate)
 	{
 		fileHandle_t file;
 
 		gi.FS_FOpenFile( newname, &file, FS_READ );
-		
+
 		if ( file == NULL )
 		{
 			qbIgnoreFileRead = qtrue;	// warn disk code further down not to try FS_ReadFile()
@@ -335,7 +341,7 @@ bool ICARUS_RegisterScript( const char *name, bool bCalledDuringInterrogate /* =
 	{
 		// File not found, but keep quiet during interrogate stage, because of stuff like BS_RUN_AND_SHOOT as scriptname
 		//
-		if (!bCalledDuringInterrogate)	
+		if (!bCalledDuringInterrogate)
 		{
 			Com_Printf(S_COLOR_RED"Could not open file '%s'\n", newname );
 		}
@@ -344,7 +350,7 @@ bool ICARUS_RegisterScript( const char *name, bool bCalledDuringInterrogate /* =
 
 	pscript = new pscript_t;
 
-	pscript->buffer = (char *) gi.Malloc(length, TAG_ICARUS, qfalse); 
+	pscript->buffer = (char *) gi.Malloc(length, TAG_ICARUS, qfalse);
 	memcpy (pscript->buffer, buffer, length);
 	pscript->length = length;
 
@@ -433,7 +439,7 @@ void ICARUS_InterrogateScript( const char *filename )
 			break;
 
 		case ID_PLAY:	// to cache ROFF files
-			
+
 			sVal1 = (const char *) block.GetMemberData( 0 );
 
 			if (!Q_stricmp(sVal1,"PLAY_ROFF"))
@@ -441,19 +447,19 @@ void ICARUS_InterrogateScript( const char *filename )
 				sVal1 = (const char *) block.GetMemberData( 1 );
 
 				G_LoadRoff(sVal1);
-			}			
+			}
 			break;
 
 		//Run commands
 		case ID_RUN:
-			
+
 			sVal1 = (const char *) block.GetMemberData( 0 );
-			
+
 			COM_StripExtension( sVal1, (char *) temp, sizeof( temp ) );
 			ICARUS_InterrogateScript( (const char *) &temp );
-			
+
 			break;
-		
+
 		case ID_SOUND:
 			sVal1 = (const char *) block.GetMemberData( 1 );	//0 is channel, 1 is filename
 			G_SoundIndex(sVal1);
@@ -469,7 +475,7 @@ void ICARUS_InterrogateScript( const char *filename )
 			{
 				sVal1 = (const char *) block.GetMemberData( 0 );
 				sVal2 = (const char *) block.GetMemberData( 1 );
-		
+
 				//Get the id for this set identifier
 				setID = GetIDForString( setTable, sVal1 );
 
@@ -504,7 +510,7 @@ extern	cvar_t	*com_buildScript;
 					{
 						fileHandle_t file;
 						char	name[MAX_OSPATH];
-						
+
 						if (strstr(sVal2, "/") == NULL && strstr(sVal2, "\\") == NULL) {
 							Com_sprintf (name, sizeof(name), "video/%s", sVal2);
 						} else {
@@ -644,11 +650,11 @@ void Svcmd_ICARUS_f( void )
 	{
 		g_ICARUSDebug->integer = WL_DEBUG;
 		if ( VALIDSTRING( gi.argv( 2 ) ) )
-		{	
+		{
 			gentity_t	*ent = G_Find( NULL, FOFS( script_targetname ), gi.argv(2) );
 
 			if ( ent == NULL )
-			{	
+			{
 				Com_Printf( "Entity \"%s\" not found!\n", gi.argv(2) );
 				return;
 			}
@@ -660,9 +666,9 @@ void Svcmd_ICARUS_f( void )
 
 			return;
 		}
-	
+
 		Com_Printf("Logging ICARUS info for all entities\n");
-	
+
 		return;
 	}
 }

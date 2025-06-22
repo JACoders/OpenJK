@@ -101,7 +101,7 @@ This is the only way control passes into the cgame module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-extern "C" Q_EXPORT intptr_t QDECL vmMain( intptr_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7  ) {
+extern "C" Q_EXPORT intptr_t QDECL vmMain( int command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7  ) {
 	centity_t		*cent;
 
 	switch ( command ) {
@@ -1613,7 +1613,7 @@ Ghoul2 Insert End
 
 	for (i=0 ; i < ENTITYNUM_WORLD ; i++)
 	{
-		if(&g_entities[i])
+		if(g_entities[i].inuse)
 		{
 			if(g_entities[i].client)
 			{
@@ -4353,10 +4353,47 @@ void CG_DrawDataPadForceSelect( void )
 		const float	textScale = 1.0f;
 
 		CG_DisplayBoxedText(textboxXPos,textboxYPos,textboxWidth,textboxHeight,va("%s%s",text,text2),
-													4,
+													CG_MagicFontToReal(4),
 													textScale,
 													colorTable[CT_WHITE]
 													);
+	}
+}
+
+int CG_MagicFontToReal( int menuFontIndex )
+{
+	// As the engine supports multiple renderers now we can no longer assume the
+	// order of fontindex values to be the same as it was on vanilla jasp with
+	// vanilla assets. Sadly the code uses magic numbers in various places that
+	// no longer match. This function tries to map these magic numbers to the
+	// fonts the would refer to on vanilla jasp with vanilla assets.
+
+	static int fonthandle_aurabesh;
+	static int fonthandle_ergoec;
+	static int fonthandle_anewhope;
+	static int fonthandle_arialnb;
+
+	static qboolean fontsRegistered = qfalse;
+
+	if ( !fontsRegistered )
+	{ // Only try registering the fonts once
+		fonthandle_aurabesh = cgi_R_RegisterFont( "aurabesh" );
+		fonthandle_ergoec   = cgi_R_RegisterFont( "ergoec" );
+		fonthandle_anewhope = cgi_R_RegisterFont( "anewhope" );
+		fonthandle_arialnb  = cgi_R_RegisterFont( "arialnb" );
+
+		fontsRegistered = qtrue;
+	}
+
+	// Default fonts from a clean installation
+	switch ( menuFontIndex ) {
+		case 1: return fonthandle_aurabesh;
+		case 2: return fonthandle_ergoec;
+		case 3: return fonthandle_anewhope;
+		case 4: return fonthandle_arialnb;
+
+		default:
+			return cgs.media.qhFontMedium;
 	}
 }
 

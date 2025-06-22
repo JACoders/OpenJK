@@ -139,7 +139,7 @@ void CG_ParseServerinfo( void ) {
 			{
 				// failed again, give up for now...
 				//
-			} 
+			}
 		}
 		if (!Q_stricmp(cgs.stripLevelName[0],"BESPIN_PLATFORM"))
 		{
@@ -148,7 +148,7 @@ void CG_ParseServerinfo( void ) {
 			{
 				// failed again, give up for now...
 				//
-			} 
+			}
 		}
 	}
 }
@@ -179,7 +179,7 @@ static void CG_ConfigStringModified( void ) {
 	if ( num == CS_ITEMS ) {
 		int i;
 		for ( i = 1 ; i < bg_numItems ; i++ ) {
-			if ( str[ i ] == '1' ) 
+			if ( str[ i ] == '1' )
 			{
 				if (bg_itemlist[i].classname)
 				{
@@ -204,11 +204,11 @@ static void CG_ConfigStringModified( void ) {
 		if ( str[0] != '*' ) {
 			cgs.sound_precache[ num-CS_SOUNDS] = cgi_S_RegisterSound( str );
 		}
-	} 
-	else if ( num >= CS_EFFECTS && num < CS_EFFECTS + MAX_FX ) 
+	}
+	else if ( num >= CS_EFFECTS && num < CS_EFFECTS + MAX_FX )
 	{
 		theFxScheduler.RegisterEffect( str );
-	} 
+	}
 	else if ( num >= CS_PLAYERS && num < CS_PLAYERS+MAX_CLIENTS ) {
 		CG_NewClientinfo( num - CS_PLAYERS );
 		CG_RegisterClientModels( num - CS_PLAYERS );

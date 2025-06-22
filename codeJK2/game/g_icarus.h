@@ -35,6 +35,7 @@ extern	bool ICARUS_RegisterScript( const char *name, bool bCalledDuringInterroga
 extern ICARUS_Instance	*iICARUS;
 extern bufferlist_t		ICARUS_BufferList;
 extern entlist_t		ICARUS_EntList;
+extern cvarlist_t       ICARUS_CvarList;
 
 //
 //	g_ICARUS.cpp

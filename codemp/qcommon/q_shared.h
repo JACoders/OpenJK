@@ -44,10 +44,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define MAX_TEAMNAME 32
 #define MAX_MASTER_SERVERS      5	// number of supported master servers
 
-#define BASE_COMPAT // some unused and leftover code has been stripped out, but this breaks compatibility
-					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
-					// leave this defined to ensure compatibility
-
 #include "qcommon/q_math.h"
 #include "qcommon/q_color.h"
 #include "qcommon/q_string.h"
@@ -687,8 +683,8 @@ qboolean Info_NextPair( const char **s, char *key, char *value );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
 #if defined( _GAME ) || defined( _CGAME ) || defined( UI_BUILD )
-	NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
-	void (*Com_Printf)( const char *msg, ... );
+	extern NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
+	extern void (*Com_Printf)( const char *msg, ... );
 #else
 	void NORETURN QDECL Com_Error( int level, const char *error, ... );
 	void QDECL Com_Printf( const char *msg, ... );

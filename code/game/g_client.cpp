@@ -238,7 +238,7 @@ gentity_t *SelectRandomDeathmatchSpawnPoint( team_t team ) {
 	count = 0;
 	spot = NULL;
 
-	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL && count < MAX_SPAWN_POINTS) {
 		/*if ( team == TEAM_RED && ( spot->spawnflags & 2 ) ) {
 			continue;
 		}
@@ -661,11 +661,11 @@ void Player_CacheFromPrevLevel(void)
 
 extern gitem_t	*FindItemForInventory( int inv );
 
-		for ( i = 1 ; i < 16 ; i++ )
+		for ( i = 0 ; i < 16 ; i++ )
 		{
 			if ( ibits & ( 1 << i ) )
 			{
-				RegisterItem( FindItemForInventory( i-1 ));
+				RegisterItem( FindItemForInventory( i ));
 			}
 		}
 	}

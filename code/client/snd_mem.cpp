@@ -236,7 +236,7 @@ void ResampleSfx (sfx_t *sfx, int iInRate, int iInWidth, byte *pData)
 		if (iInWidth == 2) {
 			iSample = LittleShort ( ((short *)pData)[iSrcSample] );
 		} else {
-			iSample = (int)( (unsigned char)(pData[iSrcSample]) - 128) << 8;
+			iSample = (unsigned int)( (unsigned char)(pData[iSrcSample]) - 128) << 8;
 		}
 
 		sfx->pSoundData[i] = (short)iSample;
@@ -258,10 +258,10 @@ void ResampleSfx (sfx_t *sfx, int iInRate, int iInWidth, byte *pData)
 
 void S_LoadSound_Finalize(wavinfo_t	*info, sfx_t *sfx, byte *data)
 {
-	float	stepscale	= (float)info->rate / dma.speed;
-	int		len			= (int)(info->samples / stepscale);
+	//float	stepscale	= (float)info->rate / dma.speed;
+	//int		len			= (int)(info->samples / stepscale);
 
-	len *= info->width;
+	//len *= info->width;
 
 	sfx->eSoundCompressionMethod = ct_16;
 	sfx->iSoundLengthInSamples	 = info->samples;

@@ -890,7 +890,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 {
 	//ri.Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd():\n");
 
-	qboolean imageDeleted = qtrue;
+	qboolean imageDeleted = qfalse;
 	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* blank */)
 	{
 		qboolean bEraseOccured = qfalse;

@@ -26,6 +26,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 
 #include "ui/ui_shared.h"
+
+NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
+void (*Com_Printf)( const char *msg, ... );
+
 // display context for new ui stuff
 displayContextDef_t cgDC;
 
@@ -1619,6 +1623,9 @@ CG_ConfigString
 =================
 */
 const char *CG_ConfigString( int index ) {
+	// FIXME: don't read configstrings before initialisation
+	// assert( cgs.gameState.dataCount != 0 );
+
 	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
 		trap->Error( ERR_DROP, "CG_ConfigString: bad index: %i", index );
 	}
@@ -2399,6 +2406,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 	const char	*s;
 	int i = 0;
 
+	Rand_Init( trap->Milliseconds() );
+
 	BG_InitAnimsets(); //clear it out
 
 	trap->RegisterSharedMemory( cg.sharedBuffer.raw );
@@ -2620,6 +2629,9 @@ Ghoul2 Insert End
 	cg.distanceCull = trap->R_GetDistanceCull();
 
 	CG_ParseEntitiesFromString();
+
+	BG_FixSaberMoveData();
+	BG_FixWeaponAttackAnim();
 }
 
 //makes sure returned string is in localized format

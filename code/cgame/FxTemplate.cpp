@@ -193,7 +193,7 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseFloat( const gsl::cstring_view& val, float& min, float& max )
+bool CPrimitiveTemplate::ParseFloat( const gsl::cstring_span& val, float& min, float& max )
 {
 	// attempt to read out the values
 	int v = Q::sscanf( val, min, max );
@@ -224,7 +224,7 @@ bool CPrimitiveTemplate::ParseFloat( const gsl::cstring_view& val, float& min, f
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseVector( const gsl::cstring_view& val, vec3_t min, vec3_t max )
+bool CPrimitiveTemplate::ParseVector( const gsl::cstring_span& val, vec3_t min, vec3_t max )
 {
 	// we don't allow passing in a null
 	if ( min == nullptr || max == nullptr )
@@ -256,7 +256,7 @@ namespace detail
 	struct ScanStrings
 	{
 		template< std::size_t count, typename... Args >
-		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
+		static int call( const gsl::cstring_span& val, std::array< gsl::cstring_span, count >& arr, Args&... args )
 		{
 			return ScanStrings< remaining - 1 >::call( val, arr, arr[ remaining - 1 ], args... );
 		}
@@ -266,7 +266,7 @@ namespace detail
 	struct ScanStrings< 0 >
 	{
 		template< std::size_t count, typename... Args >
-		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
+		static int call( const gsl::cstring_span& val, std::array< gsl::cstring_span, count >& arr, Args&... args )
 		{
 			return Q::sscanf( val, args... );
 		}
@@ -274,7 +274,7 @@ namespace detail
 }
 
 template< std::size_t count >
-static gsl::array_view< gsl::cstring_view > scanStrings( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr )
+static gsl::span< gsl::cstring_span > scanStrings( const gsl::cstring_span& val, std::array< gsl::cstring_span, count >& arr )
 {
 	int numParsed = detail::ScanStrings< count >::call( val, arr );
 	return{ arr.data(), arr.data() + numParsed };
@@ -293,10 +293,10 @@ static gsl::array_view< gsl::cstring_view > scanStrings( const gsl::cstring_view
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseGroupFlags( const gsl::cstring_view& val, int& flags )
+bool CPrimitiveTemplate::ParseGroupFlags( const gsl::cstring_span& val, int& flags )
 {
 	// For a sub group, really you probably only have one or two flags set
-	std::array< gsl::cstring_view, 4 > flag;
+	std::array< gsl::cstring_span, 4 > flag;
 
 	const auto availableFlag = scanStrings( val, flag );
 
@@ -338,7 +338,7 @@ bool CPrimitiveTemplate::ParseGroupFlags( const gsl::cstring_view& val, int& fla
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseMin( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseMin( const gsl::cstring_span& val )
 {
 	vec3_t min;
 
@@ -364,7 +364,7 @@ bool CPrimitiveTemplate::ParseMin( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseMax( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseMax( const gsl::cstring_span& val )
 {
 	vec3_t max;
 
@@ -390,7 +390,7 @@ bool CPrimitiveTemplate::ParseMax( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLife( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseLife( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -413,7 +413,7 @@ bool CPrimitiveTemplate::ParseLife( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseDelay( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseDelay( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -436,7 +436,7 @@ bool CPrimitiveTemplate::ParseDelay( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseCount( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseCount( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -459,7 +459,7 @@ bool CPrimitiveTemplate::ParseCount( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseElasticity( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseElasticity( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -486,7 +486,7 @@ bool CPrimitiveTemplate::ParseElasticity( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseOrigin1( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseOrigin1( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -511,7 +511,7 @@ bool CPrimitiveTemplate::ParseOrigin1( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseOrigin2( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseOrigin2( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -536,7 +536,7 @@ bool CPrimitiveTemplate::ParseOrigin2( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRadius( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRadius( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -559,7 +559,7 @@ bool CPrimitiveTemplate::ParseRadius( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseHeight( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseHeight( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -582,7 +582,7 @@ bool CPrimitiveTemplate::ParseHeight( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseWindModifier( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseWindModifier( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -605,7 +605,7 @@ bool CPrimitiveTemplate::ParseWindModifier( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRotation( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRotation( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -628,7 +628,7 @@ bool CPrimitiveTemplate::ParseRotation( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRotationDelta( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRotationDelta( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -651,7 +651,7 @@ bool CPrimitiveTemplate::ParseRotationDelta( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAngle( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAngle( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -676,7 +676,7 @@ bool CPrimitiveTemplate::ParseAngle( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAngleDelta( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAngleDelta( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -701,7 +701,7 @@ bool CPrimitiveTemplate::ParseAngleDelta( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseVelocity( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseVelocity( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -727,10 +727,10 @@ bool CPrimitiveTemplate::ParseVelocity( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseFlags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseFlags( const gsl::cstring_span& val )
 {
 	// For a primitive, really you probably only have two or less flags set
-	std::array< gsl::cstring_view, 7 > flag;
+	std::array< gsl::cstring_span, 7 > flag;
 
 	const auto availableFlag = scanStrings( val, flag );
 
@@ -780,9 +780,9 @@ bool CPrimitiveTemplate::ParseFlags( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSpawnFlags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSpawnFlags( const gsl::cstring_span& val )
 {
-	std::array< gsl::cstring_view, 7 > flag;
+	std::array< gsl::cstring_span, 7 > flag;
 
 	// For a primitive, really you probably only have two or less flags set
 	const auto availableFlag = scanStrings( val, flag );
@@ -830,7 +830,7 @@ bool CPrimitiveTemplate::ParseSpawnFlags( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAcceleration( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAcceleration( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -855,7 +855,7 @@ bool CPrimitiveTemplate::ParseAcceleration( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseGravity( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseGravity( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -880,7 +880,7 @@ bool CPrimitiveTemplate::ParseGravity( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseDensity( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseDensity( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -906,7 +906,7 @@ bool CPrimitiveTemplate::ParseDensity( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseVariance( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseVariance( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -929,7 +929,7 @@ bool CPrimitiveTemplate::ParseVariance( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBStart( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRGBStart( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -954,7 +954,7 @@ bool CPrimitiveTemplate::ParseRGBStart( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBEnd( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRGBEnd( const gsl::cstring_span& val )
 {
 	vec3_t min, max;
 
@@ -979,7 +979,7 @@ bool CPrimitiveTemplate::ParseRGBEnd( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBParm( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRGBParm( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1002,7 +1002,7 @@ bool CPrimitiveTemplate::ParseRGBParm( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBFlags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseRGBFlags( const gsl::cstring_span& val )
 {
 	int flags;
 
@@ -1026,7 +1026,7 @@ bool CPrimitiveTemplate::ParseRGBFlags( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaStart( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAlphaStart( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1049,7 +1049,7 @@ bool CPrimitiveTemplate::ParseAlphaStart( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaEnd( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAlphaEnd( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1072,7 +1072,7 @@ bool CPrimitiveTemplate::ParseAlphaEnd( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaParm( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAlphaParm( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1095,7 +1095,7 @@ bool CPrimitiveTemplate::ParseAlphaParm( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaFlags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseAlphaFlags( const gsl::cstring_span& val )
 {
 	int flags;
 
@@ -1119,7 +1119,7 @@ bool CPrimitiveTemplate::ParseAlphaFlags( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeStart( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSizeStart( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1142,7 +1142,7 @@ bool CPrimitiveTemplate::ParseSizeStart( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeEnd( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSizeEnd( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1165,7 +1165,7 @@ bool CPrimitiveTemplate::ParseSizeEnd( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeParm( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSizeParm( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1188,7 +1188,7 @@ bool CPrimitiveTemplate::ParseSizeParm( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeFlags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSizeFlags( const gsl::cstring_span& val )
 {
 	int flags;
 
@@ -1212,7 +1212,7 @@ bool CPrimitiveTemplate::ParseSizeFlags( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2Start( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSize2Start( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1235,7 +1235,7 @@ bool CPrimitiveTemplate::ParseSize2Start( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2End( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSize2End( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1258,7 +1258,7 @@ bool CPrimitiveTemplate::ParseSize2End( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2Parm( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSize2Parm( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1281,7 +1281,7 @@ bool CPrimitiveTemplate::ParseSize2Parm( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2Flags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseSize2Flags( const gsl::cstring_span& val )
 {
 	int flags;
 
@@ -1305,7 +1305,7 @@ bool CPrimitiveTemplate::ParseSize2Flags( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthStart( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseLengthStart( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1328,7 +1328,7 @@ bool CPrimitiveTemplate::ParseLengthStart( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthEnd( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseLengthEnd( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1351,7 +1351,7 @@ bool CPrimitiveTemplate::ParseLengthEnd( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthParm( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseLengthParm( const gsl::cstring_span& val )
 {
 	float min, max;
 
@@ -1374,7 +1374,7 @@ bool CPrimitiveTemplate::ParseLengthParm( const gsl::cstring_view& val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthFlags( const gsl::cstring_view& val )
+bool CPrimitiveTemplate::ParseLengthFlags( const gsl::cstring_span& val )
 {
 	int flags;
 

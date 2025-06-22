@@ -21,7 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "g_headers.h"
-    
+
 #include "b_local.h"
 
 
@@ -65,7 +65,7 @@ static void ATST_PlayEffect( gentity_t *self, const int boltID, const char *fx )
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					boltID,
 					&boltMatrix, self->currentAngles, self->currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -88,7 +88,7 @@ Called by NPC's and player in an ATST
 void G_ATSTCheckPain( gentity_t *self, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
 {
 	int newBolt;
-	
+
 	if ( rand() & 1 )
 	{
 		G_SoundOnEnt( self, CHAN_LESS_ATTEN, "sound/chars/atst/atst_damaged1" );
@@ -116,7 +116,7 @@ void G_ATSTCheckPain( gentity_t *self, gentity_t *other, vec3_t point, int damag
 	else if ((hitLoc==HL_ARM_RT) && (self->locationDamage[HL_ARM_RT] > RIGHT_ARM_HEALTH))	// Blow it up?
 	{
 		if (self->locationDamage[hitLoc] >= RIGHT_ARM_HEALTH)
-		{			
+		{
 			newBolt = gi.G2API_AddBolt( &self->ghoul2[self->playerModel], "*flash4" );
 			if ( newBolt != -1 )
 			{
@@ -134,7 +134,7 @@ void G_ATSTCheckPain( gentity_t *self, gentity_t *other, vec3_t point, int damag
 NPC_ATST_Pain
 -------------------------
 */
-void NPC_ATST_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_ATST_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
 {
 	G_ATSTCheckPain( self, other, point, damage, mod, hitLoc );
 	NPC_Pain( self, inflictor, other, point, damage, mod );
@@ -206,7 +206,7 @@ void ATST_Attack( void )
 	NPC_FaceEnemy( qtrue );
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	distance_e	distRate	= ( distance > MIN_MELEE_RANGE_SQR ) ? DIST_LONG : DIST_MELEE;
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
@@ -259,7 +259,7 @@ void ATST_Attack( void )
 		{
 			altAttack = qtrue;
 		}
-		else 
+		else
 		{
 			NPC_ChangeWeapon( WP_NONE );
 		}
@@ -328,7 +328,7 @@ void NPC_BSATST_Default( void )
 	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		ATST_Patrol();
-	} 
+	}
 	else
 	{
 		ATST_Idle();

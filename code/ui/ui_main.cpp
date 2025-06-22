@@ -47,8 +47,8 @@ USER INTERFACE MAIN
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../qcommon/stringed_ingame.h"
-#include "../qcommon/stv_version.h"
 #include "../qcommon/q_shared.h"
+#include "../qcommon/game_version.h"
 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
@@ -994,7 +994,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			if (uiInfo.modList[uiInfo.modIndex].modName)
 			{
 				Cvar_Set( "fs_game", uiInfo.modList[uiInfo.modIndex].modName);
-				extern	void FS_Restart( void );
+				extern	void FS_Restart( qboolean inPlace = qfalse );
 				FS_Restart();
 				Cbuf_ExecuteText( EXEC_APPEND, "vid_restart;" );
 			}
@@ -2432,6 +2432,9 @@ void UI_FreeAllSpecies( void )
 		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
 	}
 	free(uiInfo.playerSpecies);
+
+	uiInfo.playerSpeciesCount = 0;
+	uiInfo.playerSpecies = NULL;
 }
 
 /*
@@ -3693,9 +3696,9 @@ static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontInde
 {
 	int width;
 
-	width = DC->textWidth(Q3_VERSION, scale, 0);
+	width = DC->textWidth(JK_VERSION, scale, 0);
 
-	DC->drawText(rect->x - width, rect->y, scale, color, Q3_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
+	DC->drawText(rect->x - width, rect->y, scale, color, JK_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
 }
 
 /*
@@ -4640,6 +4643,34 @@ static void UI_SetPowerTitleText ( qboolean showAllocated )
 	}
 }
 
+#ifndef JK2_MODE
+static int UI_CountForcePowers( void ) {
+	const client_t *cl = &svs.clients[0];
+
+	if ( cl && cl->gentity ) {
+		const playerState_t *ps = cl->gentity->client;
+		return		ps->forcePowerLevel[FP_HEAL] +
+					ps->forcePowerLevel[FP_TELEPATHY] +
+					ps->forcePowerLevel[FP_PROTECT] +
+					ps->forcePowerLevel[FP_ABSORB] +
+					ps->forcePowerLevel[FP_GRIP] +
+					ps->forcePowerLevel[FP_LIGHTNING] +
+					ps->forcePowerLevel[FP_RAGE] +
+					ps->forcePowerLevel[FP_DRAIN];
+	}
+	else {
+		return		uiInfo.forcePowerLevel[FP_HEAL] +
+					uiInfo.forcePowerLevel[FP_TELEPATHY] +
+					uiInfo.forcePowerLevel[FP_PROTECT] +
+					uiInfo.forcePowerLevel[FP_ABSORB] +
+					uiInfo.forcePowerLevel[FP_GRIP] +
+					uiInfo.forcePowerLevel[FP_LIGHTNING] +
+					uiInfo.forcePowerLevel[FP_RAGE] +
+					uiInfo.forcePowerLevel[FP_DRAIN];
+	}
+}
+#endif
+
 //. Find weapons button and make active/inactive  (Used by Force Power Allocation screen)
 static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 {
@@ -4651,9 +4682,13 @@ static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 		return;
 	}
 
-	// Cheats are on so lets always let us pass
-	if(trap_Cvar_VariableValue("helpUsObi") != 0)
-		activeFlag = qtrue;
+#ifndef JK2_MODE
+	if (!activeFlag) {
+		// total light and dark powers are at maximum level 3    ( 3 levels * ( 4ls + 4ds ) = 24 )
+		if ( UI_CountForcePowers() >= 24 )
+			activeFlag = qtrue;
+	}
+#endif
 
 	// Find weaponsbutton
 	itemDef_t	*item;

@@ -658,7 +658,7 @@ void ScaleModelAxis(refEntity_t	*ent)
 Ghoul2 Insert End
 */
 
-char *forceHolocronModels[] = {
+char *forceHolocronModels[NUM_FORCE_POWERS] = {
 	"models/map_objects/mp/lt_heal.md3",		//FP_HEAL,
 	"models/map_objects/mp/force_jump.md3",		//FP_LEVITATION,
 	"models/map_objects/mp/force_speed.md3",	//FP_SPEED,
@@ -2472,7 +2472,7 @@ static void CG_Missile( centity_t *cent ) {
 			}
 			else
 			{
-				trap->G2API_InitGhoul2Model(&cent->ghoul2, "models/weapons2/saber/saber_w.glm", 0, 0, 0, 0, 0);
+				trap->G2API_InitGhoul2Model(&cent->ghoul2, DEFAULT_SABER_MODEL, 0, 0, 0, 0, 0);
 			}
 			return;
 		}

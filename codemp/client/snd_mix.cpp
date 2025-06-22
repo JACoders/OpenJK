@@ -443,8 +443,20 @@ void S_PaintChannels( int endtime ) {
 				}
 
 				count = end - ltime;
-				if ( sampleOffset + count > sc->iSoundLengthInSamples ) {
-					count = sc->iSoundLengthInSamples - sampleOffset;
+				if ( ch->doppler && ch->dopplerScale > 1 ) {
+					if ( sampleOffset + (count * ch->dopplerScale) > sc->iSoundLengthInSamples ) {
+						count = (sc->iSoundLengthInSamples - sampleOffset) / ch->dopplerScale;
+
+						// avoid infinite loop once length of remaining pSoundData (numerator)
+						//	is smaller than dopplerScale (denominator), resulting in 0.
+						if ( count == 0 ) {
+							break;
+						}
+					}
+				} else {
+					if ( sampleOffset + count > sc->iSoundLengthInSamples ) {
+						count = sc->iSoundLengthInSamples - sampleOffset;
+					}
 				}
 
 				if ( count > 0 ) {

@@ -93,18 +93,18 @@ void Interrogator_PartsMove(void)
 
 		if ((NPC->pos1[1] < 60) || (NPC->pos1[1] > 300))
 		{
-			NPC->pos1[1]+=Q_irand( -20, 20 );	// Pitch	
+			NPC->pos1[1]+=Q_irand( -20, 20 );	// Pitch
 		}
 		else if (NPC->pos1[1] > 180)
 		{
-			NPC->pos1[1]=Q_irand( 300, 360 );	// Pitch	
+			NPC->pos1[1]=Q_irand( 300, 360 );	// Pitch
 		}
-		else 
+		else
 		{
-			NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch	
+			NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch
 		}
 
-		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 ); 
+		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 );
 		TIMER_Set( NPC, "syringeDelay", Q_irand( 100, 1000 ) );
 	}
 
@@ -133,13 +133,13 @@ void Interrogator_PartsMove(void)
 		}
 
 		NPC->pos2[0] = AngleNormalize360( NPC->pos2[0]);
-		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 ); 
+		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 );
 	}
 
 	// Claw
 	NPC->pos3[1] += Q_irand( 10, 30 );
 	NPC->pos3[1] = AngleNormalize360( NPC->pos3[1]);
-	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 ); 
+	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 );
 
 }
 
@@ -152,7 +152,7 @@ Interrogator_MaintainHeight
 -------------------------
 */
 void Interrogator_MaintainHeight( void )
-{	
+{
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
@@ -165,7 +165,7 @@ void Interrogator_MaintainHeight( void )
 	if ( NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPC->enemy->currentOrigin[2] + NPC->enemy->maxs[2]) - NPC->currentOrigin[2]; 
+		dif = (NPC->enemy->currentOrigin[2] + NPC->enemy->maxs[2]) - NPC->currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 2 )
@@ -277,7 +277,7 @@ void Interrogator_Strafe( void )
 		if ( NPC->enemy )
 		{
 			// Find the height difference
-			dif = (NPC->enemy->currentOrigin[2] + 32) - NPC->currentOrigin[2]; 
+			dif = (NPC->enemy->currentOrigin[2] + 32) - NPC->currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 8 )
@@ -289,7 +289,7 @@ void Interrogator_Strafe( void )
 
 		}
 
-		// Set the strafe start time 
+		// Set the strafe start time
 		NPC->fx_time = level.time;
 		NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
@@ -415,7 +415,7 @@ void Interrogator_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= (int) DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE*MIN_DISTANCE );
 

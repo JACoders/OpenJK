@@ -137,7 +137,7 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 		return;
 	}
 
-	if ( y < -SMALLCHAR_HEIGHT ) {
+	if ( y < -con.charHeight ) {
 		return;
 	}
 
@@ -155,7 +155,7 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	size2 = 0.0625;
 
 	re->DrawStretchPic( x * con.xadjust, y * con.yadjust,
-						SMALLCHAR_WIDTH * con.xadjust, SMALLCHAR_HEIGHT * con.yadjust,
+					   con.charWidth * con.xadjust, con.charHeight * con.yadjust,
 					   fcol, frow,
 					   fcol + size, frow + size2,
 					   cls.charSetShader );
@@ -263,7 +263,7 @@ void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 			}
 		}
 		SCR_DrawSmallChar( xx, y, *s );
-		xx += SMALLCHAR_WIDTH;
+		xx += con.charWidth;
 		s++;
 	}
 	re->SetColor( NULL );
@@ -471,6 +471,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	if ( Key_GetCatcher( ) & KEYCATCH_UI && cls.uiStarted ) {
 		UIVM_Refresh( cls.realtime );
 	}
+
+	// Engine internal menu
+	CL_DrawEngineMenus();
 
 	// console draws next
 	Con_DrawConsole ();

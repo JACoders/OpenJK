@@ -26,7 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __ITEMS_H__
 
 // Items enums
-enum 
+enum
 {
 ITM_NONE,
 
@@ -90,7 +90,7 @@ ITM_GOODIE_KEY_PICKUP,
 ITM_SECURITY_KEY_PICKUP,
 
 ITM_NUM_ITEMS
-}; 
+};
 
 // Inventory item enums
 enum //# item_e
@@ -99,7 +99,7 @@ enum //# item_e
 	INV_BACTA_CANISTER,
 	INV_SEEKER,
 	INV_LIGHTAMP_GOGGLES,
-	INV_SENTRY,		
+	INV_SENTRY,
 	//# #eol
 	INV_GOODIE_KEY,	// don't want to include keys in the icarus list
 	INV_SECURITY_KEY,

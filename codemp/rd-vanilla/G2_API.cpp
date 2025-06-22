@@ -668,8 +668,9 @@ void RestoreGhoul2InfoArray()
 #endif
 			singleton->Deserialize ((const char *)data, size);
 		Z_Free ((void *)data);
-
+#ifdef _DEBUG
 		assert (read == size);
+#endif
 	}
 }
 
@@ -681,9 +682,9 @@ void SaveGhoul2InfoArray()
 	size_t written =
 #endif
 		singleton->Serialize ((char *)data);
-
+#ifdef _DEBUG
 	assert (written == size);
-
+#endif
 	if ( !ri.PD_Store (PERSISTENT_G2DATA, data, size) )
 	{
 		Com_Printf (S_COLOR_RED "ERROR: Failed to store persistent renderer data.\n");
@@ -2731,6 +2732,11 @@ qboolean G2API_SkinlessModel(CGhoul2Info_v& ghoul2, int modelIndex)
 	return qtrue;
 }
 
+int G2API_Ghoul2Size(CGhoul2Info_v &ghoul2)
+{
+	return ghoul2.size();
+}
+
 //#ifdef _SOF2
 #ifdef _G2_GORE
 void ResetGoreTag(); // put here to reduce coupling
@@ -2765,11 +2771,6 @@ void G2API_ClearSkinGore ( CGhoul2Info_v &ghoul2 )
 			ghoul2[i].mGoreSetTag = 0;
 		}
 	}
-}
-
-int G2API_Ghoul2Size ( CGhoul2Info_v &ghoul2 )
-{
-	return ghoul2.size();
 }
 
 extern int		G2_DecideTraceLod(CGhoul2Info &ghoul2, int useLod);

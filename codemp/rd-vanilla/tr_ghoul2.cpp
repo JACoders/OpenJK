@@ -1067,19 +1067,12 @@ void Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in)
 }
 
 
-static int G2_GetBonePoolIndex(	const mdxaHeader_t *pMDXAHeader, int iFrame, int iBone)
+static int G2_GetBonePoolIndex(const mdxaHeader_t *pMDXAHeader, int iFrame, int iBone)
 {
-	const int iOffsetToIndex = (iFrame * pMDXAHeader->numBones * 3) + (iBone * 3);
+	const int iOffsetToIndex	= (iFrame * pMDXAHeader->numBones * 3) + (iBone * 3);
+	mdxaIndex_t *pIndex			= (mdxaIndex_t *)((byte*)pMDXAHeader + pMDXAHeader->ofsFrames + iOffsetToIndex);
 
-	mdxaIndex_t *pIndex = (mdxaIndex_t *) ((byte*) pMDXAHeader + pMDXAHeader->ofsFrames + iOffsetToIndex);
-
-#ifdef Q3_BIG_ENDIAN
-	int tmp = pIndex->iIndex & 0xFFFFFF00;
-	LL(tmp);
-	return tmp;
-#else
-	return pIndex->iIndex & 0x00FFFFFF;
-#endif
+	return (pIndex->iIndex[2] << 16) + (pIndex->iIndex[1] << 8) + (pIndex->iIndex[0]);
 }
 
 
@@ -4657,6 +4650,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mdxaCompQuatBone_t	*pCompBonePool;
 	unsigned short		*pwIn;
 	mdxaIndex_t			*pIndex;
+	int					tmp;
 #endif
 
  	pinmodel = (mdxaHeader_t *)buffer;
@@ -4875,24 +4869,24 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		}
 	}
 
-	// find the largest index, since the actual number of compressed bone pools is not stored anywhere
-	for ( i = 0 ; i < mdxa->numFrames ; i++ )
-	{
-		for ( j = 0 ; j < mdxa->numBones ; j++ )
-		{
-			k = (i * mdxa->numBones * 3) + (j * 3); // iOffsetToIndex
-			pIndex = (mdxaIndex_t *) ((byte*) mdxa + mdxa->ofsFrames + k);
+	// Determine the amount of compressed bones.
 
-			// 3 byte ints, yeah...
-			int tmp = pIndex->iIndex & 0xFFFFFF00;
-			LL(tmp);
+	// Find the largest index by iterating through all frames.
+	// It is not guaranteed that the compressed bone pool resides
+	// at the end of the file.
+	for(i = 0; i < mdxa->numFrames; i++){
+		for(j = 0; j < mdxa->numBones; j++){
+			k		= (i * mdxa->numBones * 3) + (j * 3);	// iOffsetToIndex
+			pIndex	= (mdxaIndex_t *) ((byte *)mdxa + mdxa->ofsFrames + k);
+			tmp		= (pIndex->iIndex[2] << 16) + (pIndex->iIndex[1] << 8) + (pIndex->iIndex[0]);
 
-			if (maxBoneIndex < tmp)
+			if(maxBoneIndex < tmp){
 				maxBoneIndex = tmp;
+			}
 		}
 	}
 
-	// swap the compressed bones
+	// Swap the compressed bones.
 	pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)mdxa + mdxa->ofsCompBonePool);
 	for ( i = 0 ; i <= maxBoneIndex ; i++ )
 	{

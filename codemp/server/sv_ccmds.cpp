@@ -24,8 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
-#include "server/sv_gameapi.h"
 #include "qcommon/game_version.h"
+#include "server/sv_gameapi.h"
 
 /*
 ===============================================================================
@@ -682,7 +682,7 @@ static void SV_WriteBans( void )
 			curban = &serverBans[index];
 
 			Com_sprintf( writebuf, sizeof( writebuf ), "%d %s %d\n",
-				curban->isexception, NET_AdrToString( curban->ip ), curban->subnet );
+				curban->isexception, NET_AdrToString( &curban->ip ), curban->subnet );
 			FS_Write( writebuf, strlen( writebuf ), writeto );
 		}
 
@@ -847,24 +847,24 @@ static void SV_AddBanToList( qboolean isexception )
 
 		if ( curban->subnet <= mask )
 		{
-			if ( (curban->isexception || !isexception) && NET_CompareBaseAdrMask( curban->ip, ip, curban->subnet ) )
+			if ( (curban->isexception || !isexception) && NET_CompareBaseAdrMask( &curban->ip, &ip, curban->subnet ) )
 			{
-				Q_strncpyz( addy2, NET_AdrToString( ip ), sizeof( addy2 ) );
+				Q_strncpyz( addy2, NET_AdrToString( &ip ), sizeof( addy2 ) );
 
 				Com_Printf( "Error: %s %s/%d supersedes %s %s/%d\n", curban->isexception ? "Exception" : "Ban",
-					NET_AdrToString( curban->ip ), curban->subnet,
+					NET_AdrToString( &curban->ip ), curban->subnet,
 					isexception ? "exception" : "ban", addy2, mask );
 				return;
 			}
 		}
 		if ( curban->subnet >= mask )
 		{
-			if ( !curban->isexception && isexception && NET_CompareBaseAdrMask( curban->ip, ip, mask ) )
+			if ( !curban->isexception && isexception && NET_CompareBaseAdrMask( &curban->ip, &ip, mask ) )
 			{
-				Q_strncpyz( addy2, NET_AdrToString( curban->ip ), sizeof( addy2 ) );
+				Q_strncpyz( addy2, NET_AdrToString( &curban->ip ), sizeof( addy2 ) );
 
 				Com_Printf( "Error: %s %s/%d supersedes already existing %s %s/%d\n", isexception ? "Exception" : "Ban",
-					NET_AdrToString( ip ), mask,
+					NET_AdrToString( &ip ), mask,
 					curban->isexception ? "exception" : "ban", addy2, curban->subnet );
 				return;
 			}
@@ -877,7 +877,7 @@ static void SV_AddBanToList( qboolean isexception )
 	{
 		curban = &serverBans[index];
 
-		if ( curban->subnet > mask && (!curban->isexception || isexception) && NET_CompareBaseAdrMask( curban->ip, ip, mask ) )
+		if ( curban->subnet > mask && (!curban->isexception || isexception) && NET_CompareBaseAdrMask( &curban->ip, &ip, mask ) )
 			SV_DelBanEntryFromList( index );
 		else
 			index++;
@@ -892,7 +892,7 @@ static void SV_AddBanToList( qboolean isexception )
 	SV_WriteBans();
 
 	Com_Printf( "Added %s: %s/%d\n", isexception ? "ban exception" : "ban",
-		NET_AdrToString( ip ), mask );
+		NET_AdrToString( &ip ), mask );
 }
 
 /*
@@ -941,11 +941,11 @@ static void SV_DelBanFromList( qboolean isexception )
 
 			if ( curban->isexception == isexception		&&
 				curban->subnet >= mask 			&&
-				NET_CompareBaseAdrMask( curban->ip, ip, mask ) )
+				NET_CompareBaseAdrMask( &curban->ip, &ip, mask ) )
 			{
 				Com_Printf( "Deleting %s %s/%d\n",
 					isexception ? "exception" : "ban",
-					NET_AdrToString( curban->ip ), curban->subnet );
+					NET_AdrToString( &curban->ip ), curban->subnet );
 
 				SV_DelBanEntryFromList( index );
 			}
@@ -973,7 +973,7 @@ static void SV_DelBanFromList( qboolean isexception )
 				{
 					Com_Printf( "Deleting %s %s/%d\n",
 						isexception ? "exception" : "ban",
-						NET_AdrToString( serverBans[index].ip ), serverBans[index].subnet );
+						NET_AdrToString( &serverBans[index].ip ), serverBans[index].subnet );
 
 					SV_DelBanEntryFromList( index );
 
@@ -1015,7 +1015,7 @@ static void SV_ListBans_f( void )
 			count++;
 
 			Com_Printf( "Ban #%d: %s/%d\n", count,
-				NET_AdrToString( ban->ip ), ban->subnet );
+				NET_AdrToString( &ban->ip ), ban->subnet );
 		}
 	}
 	// List all exceptions
@@ -1027,7 +1027,7 @@ static void SV_ListBans_f( void )
 			count++;
 
 			Com_Printf( "Except #%d: %s/%d\n", count,
-				NET_AdrToString( ban->ip ), ban->subnet );
+				NET_AdrToString( &ban->ip ), ban->subnet );
 		}
 	}
 }
@@ -1194,7 +1194,7 @@ static void SV_Status_f( void )
 		}
 
 		ps = SV_GameClientNum( i );
-		s = NET_AdrToString( cl->netchan.remoteAddress );
+		s = NET_AdrToString( &cl->netchan.remoteAddress );
 
 		if (!avoidTruncation)
 		{
@@ -1906,6 +1906,29 @@ static void SV_Record_f( void ) {
 	SV_RecordDemo( cl, demoName );
 }
 
+/*
+=================
+SV_WhitelistIP_f
+=================
+*/
+static void SV_WhitelistIP_f( void ) {
+	if ( Cmd_Argc() < 2 ) {
+		Com_Printf ("Usage: whitelistip <ip>...\n");
+		return;
+	}
+
+	for ( int i = 1; i < Cmd_Argc(); i++ ) {
+		netadr_t	adr;
+
+		if ( NET_StringToAdr( Cmd_Argv(i), &adr ) ) {
+			SVC_WhitelistAdr( &adr );
+			Com_Printf("Added %s to the IP whitelist\n", NET_AdrToString(&adr));
+		} else {
+			Com_Printf("Incorrect IP address: %s\n", Cmd_Argv(i));
+		}
+	}
+}
+
 //===========================================================
 
 /*
@@ -1966,6 +1989,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("sv_bandel", SV_BanDel_f, "Removes a ban" );
 	Cmd_AddCommand ("sv_exceptdel", SV_ExceptDel_f, "Removes a ban exception" );
 	Cmd_AddCommand ("sv_flushbans", SV_FlushBans_f, "Removes all bans and exceptions" );
+	Cmd_AddCommand ("whitelistip", SV_WhitelistIP_f, "Add IP to the whitelist" );
 }
 
 /*

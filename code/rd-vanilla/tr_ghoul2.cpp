@@ -925,21 +925,15 @@ void Multiply_3x4Matrix(mdxaBone_t *out,const  mdxaBone_t *in2,const mdxaBone_t 
 	out->matrix[2][3] = (in2->matrix[2][0] * in->matrix[0][3]) + (in2->matrix[2][1] * in->matrix[1][3]) + (in2->matrix[2][2] * in->matrix[2][3]) + in2->matrix[2][3];
 }
 
-static int G2_GetBonePoolIndex(	const mdxaHeader_t *pMDXAHeader, int iFrame, int iBone)
+static int G2_GetBonePoolIndex(const mdxaHeader_t *pMDXAHeader, int iFrame, int iBone)
 {
 	assert(iFrame>=0&&iFrame<pMDXAHeader->numFrames);
 	assert(iBone>=0&&iBone<pMDXAHeader->numBones);
-	const int iOffsetToIndex = (iFrame * pMDXAHeader->numBones * 3) + (iBone * 3);
 
-	mdxaIndex_t *pIndex = (mdxaIndex_t *) ((byte*) pMDXAHeader + pMDXAHeader->ofsFrames + iOffsetToIndex);
+	const int iOffsetToIndex	= (iFrame * pMDXAHeader->numBones * 3) + (iBone * 3);
+	mdxaIndex_t *pIndex			= (mdxaIndex_t *)((byte*)pMDXAHeader + pMDXAHeader->ofsFrames + iOffsetToIndex);
 
-#ifdef Q3_BIG_ENDIAN
-	int tmp = pIndex->iIndex & 0xFFFFFF00;
-	LL(tmp);
-	return tmp;
-#else
-	return pIndex->iIndex & 0x00FFFFFF;
-#endif
+	return (pIndex->iIndex[2] << 16) + (pIndex->iIndex[1] << 8) + (pIndex->iIndex[0]);
 }
 
 
@@ -3500,6 +3494,64 @@ Bone  52:   "face_always_":
 
 */
 
+#ifdef JK2_MODE
+int NewToOldRemapTable[53] = {
+		0,  // JKA Bone 00 model_root           to JK2 Bone 00 model_root
+		1,  // JKA Bone 01 pelvis               to JK2 Bone 01 pelvis
+		2,  // JKA Bone 02 Motion               to JK2 Bone 02 Motion
+		3,  // JKA Bone 03 lfemurYZ             to JK2 Bone 03 lfemurYZ
+		4,  // JKA Bone 04 lfemurX              to JK2 Bone 04 lfemurX
+		5,  // JKA Bone 05 ltibia               to JK2 Bone 05 ltibia
+		6,  // JKA Bone 06 ltalus               to JK2 Bone 06 ltalus
+		8,  // JKA Bone 07 rfemurYZ             to JK2 Bone 08 rfemurYZ
+		9,  // JKA Bone 08 rfemurX              to JK2 Bone 09 rfemurX
+		10, // JKA Bone 09 rtibia               to JK2 Bone 10 rtibia
+		11, // JKA Bone 10 rtalus               to JK2 Bone 11 rtalus
+		13, // JKA Bone 11 lower_lumbar         to JK2 Bone 13 lower_lumbar
+		14, // JKA Bone 12 upper_lumbar         to JK2 Bone 14 upper_lumbar
+		15, // JKA Bone 13 thoracic             to JK2 Bone 15 thoracic
+		16, // JKA Bone 14 cervical             to JK2 Bone 16 cervical
+		17, // JKA Bone 15 cranium              to JK2 Bone 17 cranium
+		18, // JKA Bone 16 ceyebrow             to JK2 Bone 18 ceyebrow
+		19, // JKA Bone 17 jaw                  to JK2 Bone 19 jaw
+		20, // JKA Bone 18 lblip2               to JK2 Bone 20 lblip2
+		21, // JKA Bone 19 leye                 to JK2 Bone 21 leye
+		22, // JKA Bone 20 rblip2               to JK2 Bone 22 rblip2
+		23, // JKA Bone 21 ltlip2               to JK2 Bone 23 ltlip2
+		24, // JKA Bone 22 rtlip2               to JK2 Bone 24 rtlip2
+		25, // JKA Bone 23 reye                 to JK2 Bone 25 reye
+		26, // JKA Bone 24 rclavical            to JK2 Bone 26 rclavical
+		27, // JKA Bone 25 rhumerus             to JK2 Bone 27 rhumerus
+		28, // JKA Bone 26 rhumerusX            to JK2 Bone 28 rhumerusX
+		29, // JKA Bone 27 rradius              to JK2 Bone 29 rradius
+		30, // JKA Bone 28 rradiusX             to JK2 Bone 30 rradiusX
+		31, // JKA Bone 29 rhand                to JK2 Bone 31 rhand
+		36, // JKA Bone 30 r_d1_j1              to JK2 Bone 36 r_d1_j1
+		37, // JKA Bone 31 r_d1_j2              to JK2 Bone 37 r_d1_j2
+		39, // JKA Bone 32 r_d2_j1              to JK2 Bone 39 r_d2_j1
+		40, // JKA Bone 33 r_d2_j2              to JK2 Bone 40 r_d2_j2
+		45, // JKA Bone 34 r_d4_j1              to JK2 Bone 45 r_d4_j1
+		46, // JKA Bone 35 r_d4_j2              to JK2 Bone 46 r_d4_j2
+		48, // JKA Bone 36 rhang_tag_bone       to JK2 Bone 48 rhang_tag_bone
+		49, // JKA Bone 37 lclavical            to JK2 Bone 49 lclavical
+		50, // JKA Bone 38 lhumerus             to JK2 Bone 50 lhumerus
+		51, // JKA Bone 39 lhumerusX            to JK2 Bone 51 lhumerusX
+		52, // JKA Bone 40 lradius              to JK2 Bone 52 lradius
+		53, // JKA Bone 41 lradiusX             to JK2 Bone 53 lradiusX
+		54, // JKA Bone 42 lhand                to JK2 Bone 54 lhand
+		59, // JKA Bone 43 l_d4_j1              to JK2 Bone 59 l_d4_j1
+		60, // JKA Bone 44 l_d4_j2              to JK2 Bone 60 l_d4_j2
+		65, // JKA Bone 45 l_d2_j1              to JK2 Bone 65 l_d2_j1
+		66, // JKA Bone 46 l_d2_j2              to JK2 Bone 66 l_d2_j2
+		68, // JKA Bone 47 l_d1_j1              to JK2 Bone 68 l_d1_j1
+		69, // JKA Bone 48 l_d1_j2              to JK2 Bone 69 l_d1_j2
+		3,  // JKA Bone 49 ltail                to JK2 Bone 03 lfemurYZ
+		8,  // JKA Bone 50 rtail                to JK2 Bone 08 rfemurYZ
+		54, // JKA Bone 51 lhang_tag_bone       to JK2 Bone 54 lhand
+		71  // JKA Bone 52 face                 to JK2 Bone 71 face
+};
+#endif
+
 qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
 	int					i, l, j;
 	mdxmHeader_t		*pinmodel, *mdxm;
@@ -3575,16 +3627,29 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
 	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
-	if (!strcmp(mdxm->animName,"models/players/_humanoid/_humanoid"))
-	{	//if we're loading the humanoid, look for a cinematic gla for this map
-		const char*mapname = sv_mapname->string;
-		if (strcmp(mapname,"nomap") )
+
+	char	animGLAName[MAX_QPATH];
+	char	*strippedName;
+	char	*slash = NULL;
+	const char*mapname = sv_mapname->string;
+
+	if (strcmp(mapname,"nomap") )
+	{
+		if (strrchr(mapname,'/') )	//maps in subfolders use the root name, ( presuming only one level deep!)
 		{
-			if (strrchr(mapname,'/') )	//maps in subfolders use the root name, ( presuming only one level deep!)
-			{
-				mapname = strrchr(mapname,'/')+1;
-			}
-			RE_RegisterModel(va ("models/players/_humanoid_%s/_humanoid_%s.gla",mapname,mapname));
+			mapname = strrchr(mapname,'/')+1;
+		}
+		//stripped name of GLA for this model
+		Q_strncpyz(animGLAName, mdxm->animName, sizeof(animGLAName));
+		slash = strrchr(animGLAName, '/');
+		if (slash)
+		{
+			*slash = 0;
+		}
+		strippedName = COM_SkipPath(animGLAName);
+		if (VALIDSTRING(strippedName))
+		{
+			RE_RegisterModel(va("models/players/%s_%s/%s_%s.gla", strippedName, mapname, strippedName, mapname));
 		}
 	}
 
@@ -3593,6 +3658,12 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
 	{
 		isAnOldModelFile = true;
+	}
+#else
+	bool isANewModelFile = false;
+	if (mdxm->numBones == 53 && strstr(mdxm->animName, "_humanoid"))
+	{
+		isANewModelFile = true;
 	}
 #endif
 
@@ -3604,7 +3675,11 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #ifndef JK2_MODE
 	else
 	{
-		assert (tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
+		// let us mix JK2/JKA models and animations
+		if (tr.models[mdxm->animIndex]->mdxa->numBones != 53 && tr.models[mdxm->animIndex]->mdxa->numBones != 72 && mdxm->numBones != 53 &&
+			mdxm->numBones != 72) {
+			assert(tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
+		}
 		if (tr.models[mdxm->animIndex]->mdxa->numBones != mdxm->numBones)
 		{
 			if ( isAnOldModelFile )
@@ -3649,6 +3724,15 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		if ( !strcmp( &surfInfo->name[strlen(surfInfo->name)-4],"_off") )
 		{
 			surfInfo->name[strlen(surfInfo->name)-4]=0;	//remove "_off" from name
+		}
+#else
+		if ( isANewModelFile )
+		{
+			Q_strlwr(surfInfo->name);	//just in case
+			if ( !strcmp( &surfInfo->name[strlen(surfInfo->name)-4],"_off") )
+			{
+				surfInfo->name[strlen(surfInfo->name)-4]=0;	//remove "_off" from name
+			}
 		}
 #endif
 
@@ -3791,6 +3875,23 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 					}
 				}
 			}
+#else
+			if (isANewModelFile)
+			{
+				int *boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
+				for ( j = 0 ; j < surf->numBoneReferences ; j++ )
+				{
+					assert(boneRef[j] >= 0 && boneRef[j] < 53);
+					if (boneRef[j] >= 0 && boneRef[j] < 53)
+					{
+						boneRef[j]=NewToOldRemapTable[boneRef[j]];
+					}
+					else
+					{
+						boneRef[j]=0;
+					}
+				}
+			}
 #endif
 			// find the next surface
 			surf = (mdxmSurface_t *)( (byte *)surf + surf->ofsEnd );
@@ -3821,6 +3922,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mdxaCompQuatBone_t	*pCompBonePool;
 	unsigned short		*pwIn;
 	mdxaIndex_t			*pIndex;
+	int					tmp;
 #endif
 
  	pinmodel = (mdxaHeader_t *)buffer;
@@ -3909,24 +4011,24 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		}
 	}
 
-	// find the largest index, since the actual number of compressed bone pools is not stored anywhere
-	for ( i = 0 ; i < mdxa->numFrames ; i++ )
-	{
-		for ( j = 0 ; j < mdxa->numBones ; j++ )
-		{
-			k = (i * mdxa->numBones * 3) + (j * 3); // iOffsetToIndex
-			pIndex = (mdxaIndex_t *) ((byte*) mdxa + mdxa->ofsFrames + k);
+	// Determine the amount of compressed bones.
 
-			// 3 byte ints, yeah...
-			int tmp = pIndex->iIndex & 0xFFFFFF00;
-			LL(tmp);
+	// Find the largest index by iterating through all frames.
+	// It is not guaranteed that the compressed bone pool resides
+	// at the end of the file.
+	for(i = 0; i < mdxa->numFrames; i++){
+		for(j = 0; j < mdxa->numBones; j++){
+			k		= (i * mdxa->numBones * 3) + (j * 3);	// iOffsetToIndex
+			pIndex	= (mdxaIndex_t *) ((byte *)mdxa + mdxa->ofsFrames + k);
+			tmp		= (pIndex->iIndex[2] << 16) + (pIndex->iIndex[1] << 8) + (pIndex->iIndex[0]);
 
-			if (maxBoneIndex < tmp)
+			if(maxBoneIndex < tmp){
 				maxBoneIndex = tmp;
+			}
 		}
 	}
 
-	// swap the compressed bones
+	// Swap the compressed bones.
 	pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)mdxa + mdxa->ofsCompBonePool);
 	for ( i = 0 ; i <= maxBoneIndex ; i++ )
 	{

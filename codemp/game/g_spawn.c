@@ -890,7 +890,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	int			i;
 	gentity_t	*ent;
 	char		*s, *value, *gametypeName;
-	static char *gametypeNames[] = {"ffa", "holocron", "jedimaster", "duel", "powerduel", "single", "team", "siege", "ctf", "cty"};
+	static char *gametypeNames[GT_MAX_GAME_TYPE] = {"ffa", "holocron", "jedimaster", "duel", "powerduel", "single", "team", "siege", "ctf", "cty"};
 
 	// get the next free entity
 	ent = G_Spawn();
@@ -1418,18 +1418,18 @@ void SP_worldspawn( void )
 	{
 		int defSkin;
 
-		trap->G2API_InitGhoul2Model(&precachedKyle, "models/players/kyle/model.glm", 0, 0, -20, 0, 0);
+		trap->G2API_InitGhoul2Model(&precachedKyle, "models/players/" DEFAULT_MODEL "/model.glm", 0, 0, -20, 0, 0);
 
 		if (precachedKyle)
 		{
-			defSkin = trap->R_RegisterSkin("models/players/kyle/model_default.skin");
+			defSkin = trap->R_RegisterSkin("models/players/" DEFAULT_MODEL "/model_default.skin");
 			trap->G2API_SetSkin(precachedKyle, 0, defSkin, defSkin);
 		}
 	}
 
 	if (!g2SaberInstance)
 	{
-		trap->G2API_InitGhoul2Model(&g2SaberInstance, "models/weapons2/saber/saber_w.glm", 0, 0, -20, 0, 0);
+		trap->G2API_InitGhoul2Model(&g2SaberInstance, DEFAULT_SABER_MODEL, 0, 0, -20, 0, 0);
 
 		if (g2SaberInstance)
 		{

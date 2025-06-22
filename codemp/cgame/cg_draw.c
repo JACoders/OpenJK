@@ -3064,7 +3064,7 @@ static float CG_DrawEnemyInfo ( float y )
 		clientNum = cgs.duelWinner;
 	}
 
-	if ( clientNum >= MAX_CLIENTS || !(&cgs.clientinfo[ clientNum ]) )
+	if ( clientNum < 0 || clientNum >= MAX_CLIENTS || !cgs.clientinfo[clientNum].infoValid )
 	{
 		return y;
 	}
@@ -3978,7 +3978,7 @@ static float CG_DrawTeamOverlay( float y, qboolean right, qboolean upper ) {
 			} else {
 				xx = x + w - TINYCHAR_WIDTH;
 			}
-			for (j = 0; j <= PW_NUM_POWERUPS; j++) {
+			for (j = 0; j < PW_NUM_POWERUPS; j++) {
 				if (ci->powerups & (1 << j)) {
 
 					item = BG_FindItemForPowerup( j );
@@ -5225,7 +5225,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 
 	if ( !hShader )
 	{
-		hShader = cgs.media.crosshairShader[ cg_drawCrosshair.integer % NUM_CROSSHAIRS ];
+		hShader = cgs.media.crosshairShader[Com_Clampi( 1, NUM_CROSSHAIRS, cg_drawCrosshair.integer ) - 1];
 	}
 
 	chX = x + cg.refdef.x + 0.5 * (640 - w);

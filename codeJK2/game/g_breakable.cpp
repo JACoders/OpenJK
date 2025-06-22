@@ -88,7 +88,7 @@ void funcBBrushDieGo (gentity_t *self)
 	float		scale;
 	int			numChunks, size = 0;
 	material_t	chunkType = self->material;
-	
+
 	// if a missile is stuck to us, blow it up so we don't look dumb
 	for ( int i = 0; i < MAX_GENTITIES; i++ )
 	{
@@ -102,7 +102,7 @@ void funcBBrushDieGo (gentity_t *self)
 	self->s.solid = 0;
 	self->contents = 0;
 	self->clipmask = 0;
-	gi.linkentity(self); 
+	gi.linkentity(self);
 
 	VectorSet(up, 0, 0, 1);
 
@@ -149,7 +149,7 @@ void funcBBrushDieGo (gentity_t *self)
 	else
 	{
 		VectorCopy(up, dir);
-	} 
+	}
 
 	if ( !(self->spawnflags & 2048) ) // NO_EXPLOSION
 	{
@@ -249,7 +249,7 @@ void funcBBrushPain(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, 
 		else
 		{
 			VectorSet( dir, 0, 0, 1 );
-		} 
+		}
 		CG_Chunks( self->s.number, org, dir, self->mins, self->maxs, 300, Q_irand( 1, 3 ), self->material, 0, scale );
 	}
 
@@ -262,23 +262,23 @@ void funcBBrushPain(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, 
 	self->painDebounceTime = level.time + self->wait;
 }
 
-static void InitBBrush ( gentity_t *ent ) 
+static void InitBBrush ( gentity_t *ent )
 {
 	float		light;
 	vec3_t		color;
 	qboolean	lightSet, colorSet;
 
 	VectorCopy( ent->s.origin, ent->pos1 );
-	
+
 	gi.SetBrushModel( ent, ent->model );
 
 	ent->e_DieFunc = dieF_funcBBrushDie;
-	
+
 	ent->svFlags |= SVF_BBRUSH;
 
 	// if the "model2" key is set, use a seperate model
 	// for drawing, but clip against the brushes
-	if ( ent->model2 ) 
+	if ( ent->model2 )
 	{
 		ent->s.modelindex2 = G_ModelIndex( ent->model2 );
 	}
@@ -286,7 +286,7 @@ static void InitBBrush ( gentity_t *ent )
 	// if the "color" or "light" keys are set, setup constantLight
 	lightSet = G_SpawnFloat( "light", "100", &light );
 	colorSet = G_SpawnVector( "color", "1 1 1", color );
-	if ( lightSet || colorSet ) 
+	if ( lightSet || colorSet )
 	{
 		int		r, g, b, i;
 
@@ -356,13 +356,13 @@ Damage: default is none
 	"neutral"
 	"enemy"
 
-Don't know if these work:  
+Don't know if these work:
 "color"		constantLight color
 "light"		constantLight radius
 
 "material" - default is "0 - MAT_METAL" - choose from this list:
 0 = MAT_METAL		(basic blue-grey scorched-DEFAULT)
-1 = MAT_GLASS		
+1 = MAT_GLASS
 2 = MAT_ELECTRICAL	(sparks only)
 3 = MAT_ELEC_METAL	(METAL2 chunks and sparks)
 4 =	MAT_DRK_STONE	(brown stone chunks)
@@ -379,7 +379,7 @@ Don't know if these work:
 15 = MAT_WHITE_METAL (white angular chunks for Stu, NS_hideout )
 
 */
-void SP_func_breakable( gentity_t *self ) 
+void SP_func_breakable( gentity_t *self )
 {
 	if(!(self->spawnflags & 1))
 	{
@@ -398,7 +398,7 @@ void SP_func_breakable( gentity_t *self )
 		self->flags |= FL_DMG_BY_HEAVY_WEAP_ONLY;
 	}
 
-	if (self->health) 
+	if (self->health)
 	{
 		self->takedamage = qtrue;
 	}
@@ -448,7 +448,7 @@ void misc_model_breakable_pain ( gentity_t *self, gentity_t *inflictor, gentity_
 	}
 }
 
-void misc_model_breakable_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc ) 
+void misc_model_breakable_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc )
 {
 	int		numChunks;
 	float	size = 0, scale;
@@ -458,7 +458,7 @@ void misc_model_breakable_die( gentity_t *self, gentity_t *inflictor, gentity_t 
 	//Turn off animation
 	self->s.frame = self->startFrame = self->endFrame = 0;
 	self->svFlags &= ~SVF_ANIMATING;
-			
+
 	self->health = 0;
 
 	//Throw some chunks
@@ -639,7 +639,7 @@ void misc_model_breakable_init( gentity_t *ent )
 
 	if (type == MDL_OTHER)
 	{
-		ent->e_UseFunc = useF_misc_model_use;	
+		ent->e_UseFunc = useF_misc_model_use;
 	}
 	else if ( type == MDL_ARMOR_HEALTH )
 	{
@@ -662,7 +662,7 @@ void misc_model_breakable_init( gentity_t *ent )
 		ent->health = 60;
 	}
 
-	if ( ent->health ) 
+	if ( ent->health )
 	{
 		G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");
 		ent->max_health = ent->health;
@@ -695,7 +695,7 @@ void TieFighterThink ( gentity_t *self )
 		fighterSpeed = VectorNormalize( fighterDir )*1000;
 		AngleVectors( self->currentAngles, fwd, rt, NULL );
 
-		if ( fighterSpeed ) 
+		if ( fighterSpeed )
 		{
 			float	side;
 
@@ -723,7 +723,7 @@ void TieFighterThink ( gentity_t *self )
 						gentity_t	*bolt;
 
 						bolt = G_Spawn();
-						
+
 						bolt->classname = "tie_proj";
 						bolt->nextthink = level.time + 10000;
 						bolt->e_ThinkFunc = thinkF_G_FreeEntity;
@@ -866,7 +866,7 @@ Damage: default is none
 
 "material" - default is "8 - MAT_NONE" - choose from this list:
 0 = MAT_METAL		(grey metal)
-1 = MAT_GLASS		
+1 = MAT_GLASS
 2 = MAT_ELECTRICAL	(sparks only)
 3 = MAT_ELEC_METAL	(METAL chunks and sparks)
 4 =	MAT_DRK_STONE	(brown stone chunks)
@@ -881,18 +881,18 @@ Damage: default is none
 13 = MAT_ROPE		(for yavin_trial, no chunks, just wispy bits )
 14 = MAT_CRATE2		(red multi-colored crate chunks)
 15 = MAT_WHITE_METAL (white angular chunks for Stu, NS_hideout )
-FIXME/TODO: 
+FIXME/TODO:
 set size better?
 multiple damage models?
 custom explosion effect/sound?
 */
-void SP_misc_model_breakable( gentity_t *ent ) 
+void SP_misc_model_breakable( gentity_t *ent )
 {
 	char	damageModel[MAX_QPATH];
 	char	chunkModel[MAX_QPATH];
 	char	useModel[MAX_QPATH];
 	int		len;
-	
+
 	// Chris F. requested default for misc_model_breakable to be NONE...so don't arbitrarily change this.
 	G_SpawnInt( "material", "8", (int*)&ent->material );
 	G_SpawnFloat( "radius", "1", &ent->radius ); // used to scale chunk code if desired by a designer
@@ -905,14 +905,14 @@ void SP_misc_model_breakable( gentity_t *ent )
 	damageModel[len] = 0;	//chop extension
 	strncpy( chunkModel, damageModel, sizeof(chunkModel));
 	strncpy( useModel, damageModel, sizeof(useModel));
-	
+
 	if (ent->takedamage) {
 		//Dead/damaged model
 		if( !(ent->spawnflags & 8) ) {	//no dmodel
 			strcat( damageModel, "_d1.md3" );
 			ent->s.modelindex2 = G_ModelIndex( damageModel );
 		}
-		
+
 		//Chunk model
 		strcat( chunkModel, "_c1.md3" );
 		ent->s.modelindex3 = G_ModelIndex( chunkModel );
@@ -954,7 +954,7 @@ void SP_misc_model_breakable( gentity_t *ent )
 			G_Error("team name %s not recognized", ent->team);
 		}
 	}
-	
+
 	ent->team = NULL;
 
 	//HACK
@@ -991,7 +991,7 @@ void SP_misc_model_breakable( gentity_t *ent )
 //----------------------------------
 
 // Really naughty cheating.  Put in an EVENT at some point...
-extern void cgi_R_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal );	
+extern void cgi_R_GetBModelVerts(int bmodelIndex, vec3_t *verts, vec3_t normal );
 extern void CG_DoGlass( vec3_t verts[4], vec3_t normal, vec3_t dmgPt, vec3_t dmgDir, float dmgRadius );
 extern	cgs_t			cgs;
 
@@ -1021,7 +1021,7 @@ void funcGlassDie( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, i
 	self->s.solid = 0;
 	self->contents = 0;
 	self->clipmask = 0;
-	gi.linkentity(self); 
+	gi.linkentity(self);
 
 	if ( self->target && attacker != NULL )
 	{
@@ -1069,7 +1069,7 @@ INVINCIBLE - can only be broken by being used
 "health"	default is 1
 */
 //-----------------------------------------------------
-void SP_func_glass( gentity_t *self ) 
+void SP_func_glass( gentity_t *self )
 {
 	if ( !(self->spawnflags & 1 ))
 	{
@@ -1079,7 +1079,7 @@ void SP_func_glass( gentity_t *self )
 		}
 	}
 
-	if ( self->health ) 
+	if ( self->health )
 	{
 		self->takedamage = qtrue;
 	}
@@ -1088,7 +1088,7 @@ void SP_func_glass( gentity_t *self )
 	self->e_DieFunc = dieF_funcGlassDie;
 
 	VectorCopy( self->s.origin, self->pos1 );
-	
+
 	gi.SetBrushModel( self, self->model );
 	self->svFlags |= (SVF_GLASS_BRUSH|SVF_BBRUSH);
 	self->material = MAT_GLASS;

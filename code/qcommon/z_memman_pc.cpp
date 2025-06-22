@@ -993,15 +993,15 @@ Touch all known used data to make sure it is paged in
 void Com_TouchMemory( void ) {
 	//int		start, end;
 	int		i, j;
-	int		sum;
-	int		totalTouched;
+	unsigned int		sum;
+	//int		totalTouched;
 
 	Z_Validate();
 
 	//start = Sys_Milliseconds();
 
 	sum = 0;
-	totalTouched=0;
+	//totalTouched=0;
 
 	zoneHeader_t *pMemory = TheZone.Header.pNext;
 	while (pMemory)
@@ -1009,9 +1009,9 @@ void Com_TouchMemory( void ) {
 		byte *pMem = (byte *) &pMemory[1];
 		j = pMemory->iSize >> 2;
 		for (i=0; i<j; i+=64){
-			sum += ((int*)pMem)[i];
+			sum += ((unsigned int*)pMem)[i];
 		}
-		totalTouched+=pMemory->iSize;
+		//totalTouched+=pMemory->iSize;
 		pMemory = pMemory->pNext;
 	}
 

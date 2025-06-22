@@ -451,7 +451,7 @@ typedef enum {
 	EV_DEBUG_LINE,
 	EV_KOTHOS_BEAM,
 
-
+	EV_NUM_ENTITY_EVENTS
 } entity_event_t;
 
 class animation_t

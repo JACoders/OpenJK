@@ -1198,13 +1198,13 @@ void FinishSpawningItem( gentity_t *ent ) {
 		gi.trace( &tr, ent->s.origin, ent->mins, ent->maxs, dest, ent->s.number, MASK_SOLID|CONTENTS_PLAYERCLIP, (EG2_Collision)0, 0 );
 		if ( tr.startsolid )
 		{
-			if ( &g_entities[tr.entityNum] != NULL )
+			if ( g_entities[tr.entityNum].inuse )
 			{
 				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin), g_entities[tr.entityNum].classname );
 			}
 			else
 			{
-				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin) );
+				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s\n", ent->classname, vtos(ent->s.origin) );
 			}
 			assert( 0 && "item starting in solid");
 			if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region

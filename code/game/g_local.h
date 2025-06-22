@@ -36,9 +36,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 //==================================================================
 
-// the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK"
-
 #define BODY_QUEUE_SIZE		8
 
 #define Q3_INFINITE			16777216
@@ -617,8 +614,8 @@ extern qboolean INV_GoodieKeyGive( gentity_t *target );
 extern qboolean INV_GoodieKeyTake( gentity_t *target );
 extern int INV_GoodieKeyCheck( gentity_t *target );
 extern qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname );
-extern void INV_SecurityKeyTake( gentity_t *target, char *keyname );
-extern qboolean INV_SecurityKeyCheck( gentity_t *target, char *keyname );
+extern void INV_SecurityKeyTake( gentity_t *target, const char *keyname );
+extern qboolean INV_SecurityKeyCheck( gentity_t *target, const char *keyname );
 
 //
 // g_team.c

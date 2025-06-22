@@ -1240,7 +1240,7 @@ static bool G2_TracePolys(const mdxmSurface_t *surface, const mdxmSurfHierarchy_
 			}
 			if (i == MAX_G2_COLLISIONS)
 			{
-				assert(i!=MAX_G2_COLLISIONS);		// run out of collision record space - will probalbly never happen
+				//assert(i!=MAX_G2_COLLISIONS);		// run out of collision record space - will probalbly never happen
 				TS.hitOne = true;	//force stop recursion
 				return true;	// return true to avoid wasting further time, but no hit will result without a record
 			}

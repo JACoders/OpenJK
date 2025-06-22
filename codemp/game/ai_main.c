@@ -625,7 +625,7 @@ void BotInputToUserCommand(bot_input_t *bi, usercmd_t *ucmd, int delta_angles[3]
 	//set the view independent movement
 	f = DotProduct(forward, bi->dir);
 	r = DotProduct(right, bi->dir);
-	u = abs(forward[2]) * bi->dir[2];
+	u = fabs(forward[2]) * bi->dir[2];
 	m = fabs(f);
 
 	if (fabs(r) > m) {
@@ -3119,7 +3119,7 @@ int Siege_TargetClosestObjective(bot_state_t *bs, int flag)
 	maxs[2] = 1;
 
 	if ( bs->wpDestination && (bs->wpDestination->flags & flag) && bs->wpDestination->associated_entity != ENTITYNUM_NONE &&
-		 &g_entities[bs->wpDestination->associated_entity] && g_entities[bs->wpDestination->associated_entity].use )
+		 g_entities[bs->wpDestination->associated_entity].inuse && g_entities[bs->wpDestination->associated_entity].use )
 	{
 		goto hasPoint;
 	}
@@ -3127,7 +3127,7 @@ int Siege_TargetClosestObjective(bot_state_t *bs, int flag)
 	while (i < gWPNum)
 	{
 		if ( gWPArray[i] && gWPArray[i]->inuse && (gWPArray[i]->flags & flag) && gWPArray[i]->associated_entity != ENTITYNUM_NONE &&
-			 &g_entities[gWPArray[i]->associated_entity] && g_entities[gWPArray[i]->associated_entity].use )
+			 g_entities[gWPArray[i]->associated_entity].inuse && g_entities[gWPArray[i]->associated_entity].use )
 		{
 			VectorSubtract(gWPArray[i]->origin, bs->origin, a);
 			testdistance = VectorLength(a);

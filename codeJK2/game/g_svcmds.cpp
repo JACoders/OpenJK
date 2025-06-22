@@ -176,9 +176,9 @@ extern cvar_t	*g_skippingcin;
 
 gentity_t *G_GetSelfForPlayerCmd( void )
 {
-	if ( g_entities[0].client->ps.viewEntity > 0 
-		&& g_entities[0].client->ps.viewEntity < ENTITYNUM_WORLD 
-		&& g_entities[g_entities[0].client->ps.viewEntity].client 
+	if ( g_entities[0].client->ps.viewEntity > 0
+		&& g_entities[0].client->ps.viewEntity < ENTITYNUM_WORLD
+		&& g_entities[g_entities[0].client->ps.viewEntity].client
 		&& g_entities[g_entities[0].client->ps.viewEntity].s.weapon == WP_SABER )
 	{//you're controlling another NPC
 		return (&g_entities[g_entities[0].client->ps.viewEntity]);
@@ -199,7 +199,7 @@ static void Svcmd_SaberColor_f()
 
 		return;
 	}
-	
+
 	gentity_t *self = G_GetSelfForPlayerCmd();
 
 	if ( !Q_stricmp( color, "red" ))
@@ -259,7 +259,7 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 	{
 		return;
 	}
-	if ( !g_cheats->integer ) 
+	if ( !g_cheats->integer )
 	{
 		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 		return;
@@ -563,7 +563,7 @@ static svcmd_t svcmds[] = {
 	{ "ICARUS",						Svcmd_ICARUS_f,								CMD_CHEAT },
 
 	{ "saberColor",					Svcmd_SaberColor_f,							CMD_CHEAT },
-	
+
 	{ "setForceJump",				Svcmd_ForceSetLevel_f<FP_LEVITATION>,		CMD_CHEAT },
 	{ "setSaberThrow",				Svcmd_ForceSetLevel_f<FP_SABERTHROW>,		CMD_CHEAT },
 	{ "setForceHeal",				Svcmd_ForceSetLevel_f<FP_HEAL>,				CMD_CHEAT },
@@ -577,20 +577,20 @@ static svcmd_t svcmds[] = {
 	{ "setSaberOffense",			Svcmd_ForceSetLevel_f<FP_SABER_OFFENSE>,	CMD_CHEAT },
 	{ "setForceAll",				Svcmd_SetForceAll_f,						CMD_CHEAT },
 	{ "setSaberAll",				Svcmd_SetSaberAll_f,						CMD_CHEAT },
-	
+
 	{ "saberAttackCycle",			Svcmd_SaberAttackCycle_f,					CMD_NONE },
-	
+
 	{ "runscript",					Svcmd_RunScript_f,							CMD_CHEAT },
-	
+
 	{ "playerTeam",					Svcmd_PlayerTeam_f,							CMD_CHEAT },
-	
+
 	{ "control",					Svcmd_Control_f,							CMD_CHEAT },
 
 	{ "exitview",					Svcmd_ExitView_f,							CMD_NONE },
-	
+
 	{ "secrets",					Svcmd_Secrets_f,							CMD_NONE },
 	{ "difficulty",					Svcmd_Difficulty_f,							CMD_NONE },
-	
+
 	//{ "say",						Svcmd_Say_f,						qtrue },
 	//{ "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },
 	//{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
@@ -608,7 +608,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( !command )
 		return qfalse;
-	
+
 	if ( (command->flags & CMD_CHEAT)
 		&& !g_cheats->integer )
 	{

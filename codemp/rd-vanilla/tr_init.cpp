@@ -216,6 +216,12 @@ cvar_t *se_language;
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
+cvar_t	*r_patchStitching;
+
+#if !defined(__APPLE__)
+PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
+#endif
+
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
@@ -725,6 +731,16 @@ static void GLimp_InitExtensions( void )
 		g_bDynamicGlowSupported = false;
 		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
+
+#if !defined(__APPLE__)
+	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
+	if ( qglStencilOpSeparate )
+	{
+		glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
+	}
+#else
+	glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
+#endif
 }
 
 // Truncates the GL extensions string by only allowing up to 'maxExtensions' extensions in the string.
@@ -737,7 +753,7 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 
 	char *truncatedExtensions;
 
-	while ( (q = strchr (p, ' ')) != NULL && numExtensions <= maxExtensions )
+	while ( (q = strchr (p, ' ')) != NULL && numExtensions < maxExtensions )
 	{
 		p = q + 1;
 		numExtensions++;
@@ -1690,6 +1706,8 @@ Ghoul2 Insert End
 
 	ri.Cvar_CheckRange( r_aviMotionJpegQuality, 10, 100, qtrue );
 	ri.Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
+
+	r_patchStitching = ri.Cvar_Get("r_patchStitching", "1", CVAR_ARCHIVE, "Enable stitching of neighbouring patch surfaces" );
 
 	for ( size_t i = 0; i < numCommands; i++ )
 		ri.Cmd_AddCommand( commands[i].cmd, commands[i].func, "" );

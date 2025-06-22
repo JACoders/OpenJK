@@ -751,6 +751,30 @@ CLine::CLine(void)
 }
 
 //----------------------------
+bool CLine::Cull( void )
+{
+	vec3_t	dir;
+
+	VectorSubtract( mOrigin1, theFxHelper.refdef->vieworg, dir );
+
+	//Check if it's in front of the viewer
+	if ( (DotProduct( theFxHelper.refdef->viewaxis[0], dir )) >= 0 )
+	{
+		return false;	//don't cull
+	}
+
+	VectorSubtract( mOrigin2, theFxHelper.refdef->vieworg, dir );
+
+	//Check if it's in front of the viewer
+	if ( (DotProduct( theFxHelper.refdef->viewaxis[0], dir )) >= 0 )
+	{
+		return false;
+	}
+
+	return true; //all points behind viewer
+}
+
+//----------------------------
 void CLine::Draw(void)
 {
 	if ( mFlags & FX_DEPTH_HACK )
@@ -2278,7 +2302,7 @@ void CFlash::Draw( void )
 	drawnFx++;
 }
 
-void FX_AddPrimitive( CEffect **pEffect, int killTime );
+void FX_AddPrimitive( CEffect *pEffect, int killTime );
 void FX_FeedTrail(effectTrailArgStruct_t *a)
 {
 	CTrail *fx = new CTrail;
@@ -2306,6 +2330,6 @@ void FX_FeedTrail(effectTrailArgStruct_t *a)
 
 	fx->mShader = a->mShader;
 
-	FX_AddPrimitive((CEffect **)&fx, a->mKillTime);
+	FX_AddPrimitive(fx, a->mKillTime);
 }
 // end

@@ -114,7 +114,7 @@ void misc_camera_track_think (gentity_t *self)
 			self->enemy = NULL;
 		}
 	}
-	
+
 	if( !self->enemy)
 	{
 		if( self->target && self->target[0] )
@@ -212,7 +212,7 @@ void cam_point_link( gentity_t *ent )
 }
 
 void cam_ctrl_point_link( gentity_t *ent )
-{	
+{
 /*	gentity_t	*target2 = NULL;
 
 	target2 = G_Find( NULL, FOFS(targetname), ent->target2 );
@@ -227,7 +227,7 @@ void cam_ctrl_point_link( gentity_t *ent )
 
 	// Store the control point here
 	VectorCopy( target2->s.origin, ent->pos1 );
-	
+
 	//---------------------
 	if ( ent->target )
 	{

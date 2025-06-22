@@ -360,6 +360,7 @@ public:
 	virtual ~CLine() {}
 	virtual void Die() {}
 	virtual bool Update();
+	virtual bool Cull();
 
 
 	inline void SetOrigin2( const vec3_t org2 )	{ VectorCopy( org2, mOrigin2 ); }

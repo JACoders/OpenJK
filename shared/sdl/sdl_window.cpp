@@ -421,7 +421,11 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 
 	if( fullscreen )
 	{
-		flags |= SDL_WINDOW_FULLSCREEN;
+#ifdef MACOS_X
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+#else
+        flags |= SDL_WINDOW_FULLSCREEN;
+#endif
 		glConfig->isFullscreen = qtrue;
 	}
 	else
@@ -810,8 +814,17 @@ void WIN_Shutdown( void )
 
 	IN_Shutdown();
 
+	if ( opengl_context ) {
+		SDL_GL_DeleteContext( opengl_context );
+		opengl_context = NULL;
+	}
+
+	if ( screen ) {
+		SDL_DestroyWindow( screen );
+		screen = NULL;
+	}
+
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
-	screen = NULL;
 }
 
 void GLimp_EnableLogging( qboolean enable )

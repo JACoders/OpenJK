@@ -19,6 +19,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include "qcommon/game_version.h"
 #include "sys_local.h"
 #include "sys_loadlib.h"
 #include <direct.h>
@@ -38,7 +39,7 @@ static UINT timerResolution = 0;
 Sys_Basename
 ==============
 */
-const char *Sys_Basename( char *path )
+const char *Sys_Basename( const char *path )
 {
 	static char base[ MAX_OSPATH ] = { 0 };
 	int length;
@@ -68,7 +69,7 @@ const char *Sys_Basename( char *path )
 Sys_Dirname
 ==============
 */
-const char *Sys_Dirname( char *path )
+const char *Sys_Dirname( const char *path )
 {
 	static char dir[ MAX_OSPATH ] = { 0 };
 	int length;
@@ -157,7 +158,7 @@ char *Sys_GetCurrentUser( void )
 */
 char *Sys_DefaultHomePath( void )
 {
-#if defined(_PORTABLE_VERSION)
+#if defined(BUILD_PORTABLE)
 	Com_Printf( "Portable install requested, skipping homepath support\n" );
 	return NULL;
 #else
@@ -542,7 +543,12 @@ Sys_PlatformInit
 Platform-specific initialization
 ================
 */
-void Sys_PlatformInit( void ) {
+
+// Max open file descriptors. Mostly used by pk3 files with
+// MAX_SEARCH_PATHS limit.
+#define MAX_OPEN_FILES	4096
+
+void Sys_PlatformInit( int argc, char *argv[] ) {
 	TIMECAPS ptc;
 	if ( timeGetDevCaps( &ptc, sizeof( ptc ) ) == MMSYSERR_NOERROR )
 	{
@@ -558,6 +564,21 @@ void Sys_PlatformInit( void ) {
 	}
 	else
 		timerResolution = 0;
+
+	// raise open file limit to allow more pk3 files
+	int maxfds = MAX_OPEN_FILES;
+
+	for (int i = 1; i + 1 < argc; i++) {
+		if (!Q_stricmp(argv[i], "-maxfds")) {
+			maxfds = atoi(argv[i + 1]);
+		}
+	}
+
+	maxfds = _setmaxstdio(maxfds);
+
+	if (maxfds == -1) {
+		Com_Printf("Warning: Failed to increase open file limit. %s\n", strerror(errno));
+	}
 }
 
 /*

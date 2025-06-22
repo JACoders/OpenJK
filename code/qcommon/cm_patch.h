@@ -62,7 +62,7 @@ properly.
 
 
 #define	MAX_FACETS			1024
-#define	MAX_PATCH_PLANES	2048
+#define	MAX_PATCH_PLANES	4096 // Was 2048 on vanilla jka
 
 typedef struct {
 	float	plane[4];

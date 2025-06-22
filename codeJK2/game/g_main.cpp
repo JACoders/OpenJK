@@ -36,6 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
 #include "time.h"
 #include "../code/qcommon/ojk_saved_game_helper.h"
+#include "../code/qcommon/game_version.h"
 
 extern CNavigator		navigator;
 
@@ -557,7 +558,7 @@ void G_InitCvars( void ) {
 	g_developer = gi.cvar ("developer", "", 0);
 
 	// noset vars
-	gi.cvar( "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM );
+	gi.cvar( "gamename", JK_VERSION , CVAR_SERVERINFO | CVAR_ROM );
 	gi.cvar( "gamedate", SOURCE_DATE , CVAR_ROM );
 	g_skippingcin = gi.cvar ("skippingCinematic", "0", CVAR_ROM);
 
@@ -583,7 +584,7 @@ void G_InitCvars( void ) {
 	com_buildScript = gi.cvar ("com_buildscript", "0", 0);
 
 	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_ARCHIVE|CVAR_CHEAT );//must press +block button to do any blocking
-	g_saberRealisticCombat = gi.cvar( "g_saberRealisticCombat", "0", CVAR_ARCHIVE|CVAR_CHEAT );//makes collision more precise, increases damage
+	g_saberRealisticCombat = gi.cvar( "g_saberRealisticCombat", "0", CVAR_ARCHIVE );//makes collision more precise, increases damage
 	g_saberMoveSpeed = gi.cvar( "g_saberMoveSpeed", "1", CVAR_ARCHIVE|CVAR_CHEAT );//how fast you run while attacking with a saber
 	g_saberAnimSpeed = gi.cvar( "g_saberAnimSpeed", "1", CVAR_ARCHIVE|CVAR_CHEAT );//how fast saber animations run
 	g_saberAutoAim = gi.cvar( "g_saberAutoAim", "1", CVAR_ARCHIVE|CVAR_CHEAT );//auto-aims at enemies when not moving or when just running forward
@@ -619,7 +620,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	g_qbLoadTransition = qbLoadTransition;
 
 	gi.Printf ("------- Game Initialization -------\n");
-	gi.Printf ("gamename: %s\n", GAMEVERSION);
+	gi.Printf ("gamename: %s\n", JK_VERSION);
 	gi.Printf ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );

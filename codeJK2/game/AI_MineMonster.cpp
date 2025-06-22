@@ -20,7 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 #include "g_headers.h"
-	    
+
 #include "b_local.h"
 
 extern void G_SoundOnEnt( gentity_t *ent, soundChannel_t channel, const char *soundPath );
@@ -103,7 +103,7 @@ void MineMonster_Patrol( void )
 		return;
 	}
 }
- 
+
 /*
 -------------------------
 MineMonster_Move
@@ -153,7 +153,7 @@ void MineMonster_Attack( void )
 	if ( !TIMER_Exists( NPC, "attacking" ))
 	{
 		// usually try and play a jump attack if the player somehow got above them....or just really rarely
-		if ( NPC->enemy && ((NPC->enemy->currentOrigin[2] - NPC->currentOrigin[2] > 10 && Q_flrand(0.0f, 1.0f) > 0.1f ) 
+		if ( NPC->enemy && ((NPC->enemy->currentOrigin[2] - NPC->currentOrigin[2] > 10 && Q_flrand(0.0f, 1.0f) > 0.1f )
 						|| Q_flrand(0.0f, 1.0f) > 0.8f ))
 		{
 			// Going to do ATTACK4
@@ -224,7 +224,7 @@ void MineMonster_Combat( void )
 	// Sometimes I have problems with facing the enemy I'm attacking, so force the issue so I don't look dumb
 	NPC_FaceEnemy( qtrue );
 
-	float	distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float	distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 
 	qboolean	advance = (qboolean)( distance > MIN_DISTANCE_SQR ? qtrue : qfalse  );
 
@@ -250,7 +250,7 @@ void MineMonster_Combat( void )
 NPC_MineMonster_Pain
 -------------------------
 */
-void NPC_MineMonster_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_MineMonster_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t point, int damage, int mod,int hitLoc )
 {
 	G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
 

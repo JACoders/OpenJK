@@ -20,3 +20,7 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Set line endings to LF, even on Windows. Otherwise, execution within Docker fails.
+# See https://help.github.com/articles/dealing-with-line-endings/
+*.sh text eol=lf

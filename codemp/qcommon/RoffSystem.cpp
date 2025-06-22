@@ -647,7 +647,7 @@ qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean 
 
 	roffing_ent->mEntID			= entID;
 	roffing_ent->mROFFID		= id;
-	roffing_ent->mNextROFFTime	= svs.time;
+	roffing_ent->mNextROFFTime	= sv.time;
 	roffing_ent->mROFFFrame		= 0;
 	roffing_ent->mKill			= qfalse;
 	roffing_ent->mSignal		= qtrue; // TODO: hook up the real signal code
@@ -864,24 +864,24 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	float			*origin = NULL, *angle = NULL;
 
 
-	if ( svs.time < roff_ent->mNextROFFTime )
+	if ( sv.time < roff_ent->mNextROFFTime )
 	{ // Not time to roff yet
 		return qtrue;
 	}
 
+#ifndef DEDICATED
+	vec3_t		originTemp, angleTemp;
 	if (roff_ent->mIsClient)
 	{
-#ifndef DEDICATED
-		vec3_t		originTemp, angleTemp;
 		originTrajectory = CGVM_GetOriginTrajectory( roff_ent->mEntID );
 		angleTrajectory = CGVM_GetAngleTrajectory( roff_ent->mEntID );
 		CGVM_GetOrigin( roff_ent->mEntID, originTemp );
 		origin = originTemp;
 		CGVM_GetAngles( roff_ent->mEntID, angleTemp );
 		angle = angleTemp;
-#endif
 	}
 	else
+#endif
 	{
 		// Find the entity to apply the roff to
 		ent = SV_GentityNum( roff_ent->mEntID );
@@ -900,8 +900,8 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 
 	if ( roff_ent->mROFFFrame >= roff->mROFFEntries )
 	{ // we are done roffing, so stop moving and flag this ent to be removed
-		SetLerp( originTrajectory, TR_STATIONARY, origin, NULL, svs.time, roff->mLerp );
-		SetLerp( angleTrajectory, TR_STATIONARY, angle, NULL, svs.time, roff->mLerp );
+		SetLerp( originTrajectory, TR_STATIONARY, origin, NULL, sv.time, roff->mLerp );
+		SetLerp( angleTrajectory, TR_STATIONARY, angle, NULL, sv.time, roff->mLerp );
 		if (!roff_ent->mIsClient)
 		{
 			ent->r.mIsRoffing = qfalse;
@@ -922,11 +922,11 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	}
 
 	// Set up our origin interpolation
-	SetLerp( originTrajectory, TR_LINEAR, origin, result, svs.time, roff->mLerp );
+	SetLerp( originTrajectory, TR_LINEAR, origin, result, sv.time, roff->mLerp );
 
 	// Set up our angle interpolation
 	SetLerp( angleTrajectory, TR_LINEAR, angle,
-				roff->mMoveRotateList[roff_ent->mROFFFrame].mRotateOffset, svs.time, roff->mLerp );
+				roff->mMoveRotateList[roff_ent->mROFFFrame].mRotateOffset, sv.time, roff->mLerp );
 
 	if (roff->mMoveRotateList[roff_ent->mROFFFrame].mStartNote >= 0)
 	{
@@ -940,7 +940,7 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 
 	// Advance ROFF frames and lock to a 10hz cycle
 	roff_ent->mROFFFrame++;
-	roff_ent->mNextROFFTime = svs.time + roff->mFrameTime;
+	roff_ent->mNextROFFTime = sv.time + roff->mFrameTime;
 
 	//rww - npcs need to know when they're getting roff'd
 	if ( !roff_ent->mIsClient )
@@ -982,7 +982,7 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 		{
 			temp[size++] = note[pos++];
 		}
-		temp[size] = 0;
+		temp[size] = '\0';
 
 		if (size)
 		{
@@ -1016,19 +1016,19 @@ qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
 	float			*origin = NULL, *angle = NULL;
 
+#ifndef DEDICATED
+	vec3_t		originTemp, angleTemp;
 	if (roff_ent->mIsClient)
 	{
-#ifndef DEDICATED
-		vec3_t		originTemp, angleTemp;
 		originTrajectory = CGVM_GetOriginTrajectory( roff_ent->mEntID );
 		angleTrajectory = CGVM_GetAngleTrajectory( roff_ent->mEntID );
 		CGVM_GetOrigin( roff_ent->mEntID, originTemp );
 		origin = originTemp;
 		CGVM_GetAngles( roff_ent->mEntID, angleTemp );
 		angle = angleTemp;
-#endif
 	}
 	else
+#endif
 	{
 		// Find the entity to apply the roff to
 		ent = SV_GentityNum( roff_ent->mEntID );
@@ -1044,8 +1044,8 @@ qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 		angle = ent->r.currentAngles;
 	}
 
-	SetLerp( originTrajectory, TR_STATIONARY, origin, NULL, svs.time, ROFF_SAMPLE_RATE );
-	SetLerp( angleTrajectory, TR_STATIONARY, angle, NULL, svs.time, ROFF_SAMPLE_RATE );
+	SetLerp( originTrajectory, TR_STATIONARY, origin, NULL, sv.time, ROFF_SAMPLE_RATE );
+	SetLerp( angleTrajectory, TR_STATIONARY, angle, NULL, sv.time, ROFF_SAMPLE_RATE );
 
 	return qtrue;
 }

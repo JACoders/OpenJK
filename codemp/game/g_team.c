@@ -1034,7 +1034,7 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team, int siegeClas
 	int			count;
 	int			selection;
 	gentity_t	*spots[MAX_TEAM_SPAWN_POINTS];
-	char		*classname;
+	const char	*classname;
 	qboolean	mustBeEnabled = qfalse;
 
 	if (level.gametype == GT_SIEGE)

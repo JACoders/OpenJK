@@ -42,18 +42,18 @@ Modifies the entities position and axis by the given
 tag location
 ======================
 */
-void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							qhandle_t parentModel, char *tagName ) {
 	int				i;
 	orientation_t	lerped;
-	
+
 	// lerp the tag
 	cgi_R_LerpTag( &lerped, parentModel, parent->oldframe, parent->frame,
 		1.0f - parent->backlerp, tagName );
 
 	// FIXME: allow origin offsets along tag?
 	VectorCopy( parent->origin, entity->origin );
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		VectorMA( entity->origin, lerped.origin[i], parent->axis[i], entity->origin );
 	}
@@ -71,7 +71,7 @@ Modifies the entities position and axis by the given
 tag location
 ======================
 */
-void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							qhandle_t parentModel, char *tagName, orientation_t *tagOrient ) {
 	int				i;
 	orientation_t	lerped;
@@ -84,7 +84,7 @@ void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 	if ( tagOrient )
 	{
 		VectorCopy( lerped.origin, tagOrient->origin );
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
 			VectorCopy( lerped.axis[i], tagOrient->axis[i] );
 		}
@@ -149,9 +149,9 @@ static void CG_EntityEffects( centity_t *cent ) {
 	VectorCopy(*CG_SetEntitySoundPosition( cent ),v3Origin);
 
 	// add loop sound
-	if ( cent->currentState.loopSound ) 
+	if ( cent->currentState.loopSound )
 	{
-		
+
 		sfxHandle_t	sfx = ( cent->currentState.eType == ET_MOVER ) ? cent->currentState.loopSound : cgs.sound_precache[ cent->currentState.loopSound ];
 
 		cgi_S_AddLoopingSound( cent->currentState.number, v3Origin/*cent->lerpOrigin*/, vec3_origin, sfx );
@@ -178,7 +178,7 @@ void CG_AddRefEntWithTransportEffect ( centity_t *cent, refEntity_t *ent )
 
 	if ( ent->renderfx & RF_PULSATE && cent->gent->owner && cent->gent->owner->health &&
 		!cent->gent->owner->s.number && cent->gent->owner->client && //only for player
-			cent->gent->owner->client->ps.saberEntityState == SES_RETURNING && 
+			cent->gent->owner->client->ps.saberEntityState == SES_RETURNING &&
 			cent->currentState.saberActive == qfalse )
 	{
 		// if we are the saber and we have been dropped, do a glow so it can be spotted easier
@@ -351,7 +351,7 @@ CG_General
 ==================
 */
 extern int CG_SaberHumSoundForEnt( gentity_t *gent );
-static void CG_General( centity_t *cent ) 
+static void CG_General( centity_t *cent )
 {
 	refEntity_t			ent;
 	entityState_t		*s1;
@@ -424,7 +424,7 @@ Ghoul2 Insert End
 	}
 
 	// player model
-	if (s1->number == cg.snap->ps.clientNum) 
+	if (s1->number == cg.snap->ps.clientNum)
 	{
 		ent.renderfx |= RF_THIRD_PERSON;	// only draw from mirrors
 	}
@@ -441,7 +441,7 @@ Ghoul2 Insert Start
 		//-------------------------------------------------------
 		// Start of chair
 		//-------------------------------------------------------
-		if ( cent->gent->s.weapon == WP_EMPLACED_GUN || ( cent->gent->activator && cent->gent->activator->owner && 
+		if ( cent->gent->s.weapon == WP_EMPLACED_GUN || ( cent->gent->activator && cent->gent->activator->owner &&
 				cent->gent->activator->s.eFlags & EF_LOCKED_TO_WEAPON ))
 		{
 			vec3_t	temp;
@@ -453,9 +453,9 @@ Ghoul2 Insert Start
 				VectorSet( temp, 0, 0, 1 );
 
 				// add a big scorch mark under the gun
-				CG_ImpactMark( cgs.media.scavMarkShader, cent->lerpOrigin, temp, 
+				CG_ImpactMark( cgs.media.scavMarkShader, cent->lerpOrigin, temp,
 					0, 1,1,1, 1.0f, qfalse, 92, qtrue );
-				CG_ImpactMark( cgs.media.scavMarkShader, cent->lerpOrigin, temp, 
+				CG_ImpactMark( cgs.media.scavMarkShader, cent->lerpOrigin, temp,
 					90, 1,1,1, 1.0f, qfalse, 48, qtrue );
 			}
 			else
@@ -468,13 +468,13 @@ Ghoul2 Insert Start
 				}
 
 				// shadow under the gun
-				CG_ImpactMark( cgs.media.shadowMarkShader, cent->lerpOrigin, temp, 
+				CG_ImpactMark( cgs.media.shadowMarkShader, cent->lerpOrigin, temp,
 					0, 1,1,1, 1.0f, qfalse, 32, qtrue );
 			}
 		}
 
-		if ( cent->gent->activator && cent->gent->activator->owner && 
-				cent->gent->activator->s.eFlags & EF_LOCKED_TO_WEAPON && 
+		if ( cent->gent->activator && cent->gent->activator->owner &&
+				cent->gent->activator->s.eFlags & EF_LOCKED_TO_WEAPON &&
 				cent->gent->activator->owner->s.number == cent->currentState.number ) // gun number must be same as current entities number
 		{
 			centity_t *cc = &cg_entities[cent->gent->activator->s.number];
@@ -491,7 +491,7 @@ const weaponData_t  *wData = NULL;
 				// not animating..pausing was leaving the barrels in a bad state
 				gi.G2API_PauseBoneAnim( &cent->gent->ghoul2[cent->gent->playerModel], "model_root", cg.time );
 
-//				gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone, 
+//				gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone,
 //						0, 0, BONE_ANIM_OVERRIDE, 1.0f, cg.time );
 			}
 
@@ -504,7 +504,7 @@ const weaponData_t  *wData = NULL;
 				bolt = cent->gent->handLBolt;
 			}
 
-			gi.G2API_GetBoltMatrix( cent->gent->ghoul2, 0, bolt, 
+			gi.G2API_GetBoltMatrix( cent->gent->ghoul2, 0, bolt,
 					&boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
 					cgs.model_draw, cent->currentState.modelScale );
 
@@ -536,13 +536,13 @@ const weaponData_t  *wData = NULL;
 
 				if ( cc->currentState.eFlags & EF_FIRING || cc->currentState.eFlags & EF_ALT_FIRING )
 				{
-					gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone, 
+					gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone,
 						0, 3, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
-		
+
 					if ( effect )
 					{
 						// We got an effect and we're firing, so let 'er rip.
-						theFxScheduler.PlayEffect( effect, cc->gent->client->renderInfo.muzzlePoint, 
+						theFxScheduler.PlayEffect( effect, cc->gent->client->renderInfo.muzzlePoint,
 													cc->gent->client->renderInfo.muzzleDir );
 					}
 				}
@@ -570,14 +570,14 @@ const weaponData_t  *wData = NULL;
 				{
 					if ( cent->gent->owner->client->ps.saberLength > 0 )
 					{
-						CG_AddSaberBlade( &cg_entities[cent->gent->owner->s.number], 
-							&cg_entities[cent->gent->s.number], NULL, ent.renderfx, 
+						CG_AddSaberBlade( &cg_entities[cent->gent->owner->s.number],
+							&cg_entities[cent->gent->s.number], NULL, ent.renderfx,
 							cent->gent->weaponModel, cent->lerpOrigin, cent->lerpAngles );
 					}
 					else if ( cent->gent->owner->client->ps.saberEventFlags & SEF_INWATER )
 					{
-						CG_CheckSaberInWater( &cg_entities[cent->gent->owner->s.number], 
-							&cg_entities[cent->gent->s.number], cent->gent->weaponModel, 
+						CG_CheckSaberInWater( &cg_entities[cent->gent->owner->s.number],
+							&cg_entities[cent->gent->s.number], cent->gent->weaponModel,
 							cent->lerpOrigin, cent->lerpAngles );
 					}
 				}
@@ -589,8 +589,8 @@ const weaponData_t  *wData = NULL;
 				{//saber is in-flight and active, play a sound on it
 					if ( cent->gent->owner->client->ps.saberEntityState == SES_RETURNING )
 					{
-						cgi_S_AddLoopingSound( cent->currentState.number, 
-							cent->lerpOrigin, vec3_origin, 
+						cgi_S_AddLoopingSound( cent->currentState.number,
+							cent->lerpOrigin, vec3_origin,
 							CG_SaberHumSoundForEnt( cent->gent->owner ) );
 					}
 					else
@@ -609,7 +609,7 @@ const weaponData_t  *wData = NULL;
 							spinSound = cgi_S_RegisterSound( "sound/weapons/saber/saberspin1.wav" );
 							break;
 						}
-						cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, 
+						cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin,
 							vec3_origin, spinSound );
 						/*
 						if ( cg_weapons[WP_SABER].missileSound )
@@ -623,14 +623,14 @@ const weaponData_t  *wData = NULL;
 				{
 					if ( cent->gent->owner->client->ps.saberLength > 0 )
 					{//only add the blade if it's on
-						CG_AddSaberBlade( &cg_entities[cent->gent->owner->s.number], 
-							&cg_entities[cent->gent->s.number], NULL, ent.renderfx, 
+						CG_AddSaberBlade( &cg_entities[cent->gent->owner->s.number],
+							&cg_entities[cent->gent->s.number], NULL, ent.renderfx,
 							0, cent->lerpOrigin, cent->lerpAngles );
 					}
 					else if ( cent->gent->owner->client->ps.saberEventFlags & SEF_INWATER )
 					{
-						CG_CheckSaberInWater( &cg_entities[cent->gent->owner->s.number], 
-							&cg_entities[cent->gent->s.number], 0, cent->lerpOrigin, 
+						CG_CheckSaberInWater( &cg_entities[cent->gent->owner->s.number],
+							&cg_entities[cent->gent->s.number], 0, cent->lerpOrigin,
 							cent->lerpAngles );
 					}
 				}
@@ -653,7 +653,7 @@ const weaponData_t  *wData = NULL;
 				{
 					if ( cg_weapons[WP_SABER].firingSound )
 					{
-						cgi_S_AddLoopingSound( cent->currentState.number, 
+						cgi_S_AddLoopingSound( cent->currentState.number,
 							cent->lerpOrigin, vec3_origin, cg_weapons[WP_SABER].firingSound );
 					}
 				}
@@ -673,7 +673,7 @@ const weaponData_t  *wData = NULL;
 						spinSound = cgi_S_RegisterSound( "sound/weapons/saber/saberspin1.wav" );
 						break;
 					}
-					cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, 
+					cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin,
 						vec3_origin, spinSound );
 					/*
 					if ( cg_weapons[WP_SABER].missileSound )
@@ -683,7 +683,7 @@ const weaponData_t  *wData = NULL;
 					*/
 				}
 			}
-			CG_AddSaberBlade( &cg_entities[cent->gent->owner->s.number], 
+			CG_AddSaberBlade( &cg_entities[cent->gent->owner->s.number],
 				NULL, &ent, ent.renderfx, 0, NULL, NULL );
 
 			if ( cent->gent->owner->health )
@@ -736,7 +736,7 @@ Ghoul2 Insert End
 		VectorMA( ent.origin, 6.6f, ent.axis[0], beamOrg );// forward
 
 		// overriding the effect, so give us a copy first
-		temp = theFxScheduler.GetEffectCopy( "tripMine/laser", &handle );	
+		temp = theFxScheduler.GetEffectCopy( "tripMine/laser", &handle );
 
 		if ( temp )
 		{
@@ -808,7 +808,7 @@ Ghoul2 Insert End
 				float t = (float)(cent->gent->painDebounceTime - cg.time ) / 1000.0f;
 
 				// Only display when we have damage
-				if ( t >= 0.0f && t <= 1.0f ) 
+				if ( t >= 0.0f && t <= 1.0f )
 				{
 					t *= Q_flrand(0.0f, 1.0f);
 
@@ -817,7 +817,7 @@ Ghoul2 Insert End
 					ent.renderfx &= ~RF_ALPHA_FADE;
 					ent.renderfx |= RF_RGB_TINT;
 					ent.customShader = cgi_R_RegisterShader( "gfx/misc/ion_shield" );
-				
+
 					cgi_R_AddRefEntityToScene( &ent );
 				}
 			}
@@ -853,7 +853,7 @@ static void CG_Speaker( centity_t *cent ) {
 CG_Item
 ==================
 */
-static void CG_Item( centity_t *cent ) 
+static void CG_Item( centity_t *cent )
 {
 	refEntity_t			ent;
 	entityState_t		*es;
@@ -863,7 +863,7 @@ static void CG_Item( centity_t *cent )
 	float				scale;
 
 	es = &cent->currentState;
-	if ( es->modelindex >= bg_numItems ) 
+	if ( es->modelindex >= bg_numItems )
 	{
 		CG_Error( "Bad item index %i on entity", es->modelindex );
 	}
@@ -872,7 +872,7 @@ Ghoul2 Insert Start
 */
 
 	// if set to invisible, skip
-	if ( (!es->modelindex && !cent->gent->ghoul2.IsValid() ) || ( es->eFlags & EF_NODRAW ) ) 
+	if ( (!es->modelindex && !cent->gent->ghoul2.IsValid() ) || ( es->eFlags & EF_NODRAW ) )
 	{
 		return;
 	}
@@ -887,7 +887,7 @@ Ghoul2 Insert End
 
 	item = &bg_itemlist[ es->modelindex ];
 
-	if ( cg_simpleItems.integer ) 
+	if ( cg_simpleItems.integer )
 	{
 		memset( &ent, 0, sizeof( ent ) );
 		ent.reType = RT_SPRITE;
@@ -932,15 +932,15 @@ Ghoul2 Insert End
 //		weaponInfo_t	*wi;
 //
 //		wi = &cg_weapons[item->giTag];
-//		cent->lerpOrigin[0] -= 
+//		cent->lerpOrigin[0] -=
 //			wi->weaponMidpoint[0] * ent.axis[0][0] +
 //			wi->weaponMidpoint[1] * ent.axis[1][0] +
 //			wi->weaponMidpoint[2] * ent.axis[2][0];
-//		cent->lerpOrigin[1] -= 
+//		cent->lerpOrigin[1] -=
 //			wi->weaponMidpoint[0] * ent.axis[0][1] +
 //			wi->weaponMidpoint[1] * ent.axis[1][1] +
 //			wi->weaponMidpoint[2] * ent.axis[2][1];
-//		cent->lerpOrigin[2] -= 
+//		cent->lerpOrigin[2] -=
 //			wi->weaponMidpoint[0] * ent.axis[0][2] +
 //			wi->weaponMidpoint[1] * ent.axis[1][2] +
 //			wi->weaponMidpoint[2] * ent.axis[2][2];
@@ -956,7 +956,7 @@ Ghoul2 Insert End
 /*
 Ghoul2 Insert Start
 */
-	CG_SetGhoul2Info(&ent, cent);  
+	CG_SetGhoul2Info(&ent, cent);
 /*
 Ghoul2 Insert End
 */
@@ -971,7 +971,7 @@ Ghoul2 Insert End
 	{	//VectorClear( spinAngles );
 		spinAngles[PITCH] -= 75;
 	}
-	
+
 	if( item->giType != IT_HOLOCRON )
 	{
 		AnglesToAxis( spinAngles, ent.axis );
@@ -979,7 +979,7 @@ Ghoul2 Insert End
 
 	// items without glow textures need to keep a minimum light value
 	// so they are always visible
-/*	if (( item->giType == IT_WEAPON ) || ( item->giType == IT_ARMOR )) 
+/*	if (( item->giType == IT_WEAPON ) || ( item->giType == IT_ARMOR ))
 	{
 		ent.renderfx |= RF_MINLIGHT;
 	}
@@ -1052,12 +1052,12 @@ static void CG_Missile( centity_t *cent ) {
 	if ( cent->gent->alt_fire )
 	{
 		// add trails
-		if ( weapon->alt_missileTrailFunc )  
+		if ( weapon->alt_missileTrailFunc )
 			weapon->alt_missileTrailFunc( cent, weapon );
 
 		// add dynamic light
 		if ( wData->alt_missileDlight )
-				cgi_R_AddLightToScene(cent->lerpOrigin, wData->alt_missileDlight, 
+				cgi_R_AddLightToScene(cent->lerpOrigin, wData->alt_missileDlight,
 					wData->alt_missileDlightColor[0], wData->alt_missileDlightColor[1], wData->alt_missileDlightColor[2] );
 
 		// add missile sound
@@ -1071,12 +1071,12 @@ static void CG_Missile( centity_t *cent ) {
 	else
 	{
 		// add trails
-		if ( weapon->missileTrailFunc )  
+		if ( weapon->missileTrailFunc )
 			weapon->missileTrailFunc( cent, weapon );
 
 		// add dynamic light
 		if ( wData->missileDlight )
-			cgi_R_AddLightToScene(cent->lerpOrigin, wData->missileDlight, 
+			cgi_R_AddLightToScene(cent->lerpOrigin, wData->missileDlight,
 				wData->missileDlightColor[0], wData->missileDlightColor[1], wData->missileDlightColor[2] );
 
 		// add missile sound
@@ -1095,7 +1095,7 @@ static void CG_Missile( centity_t *cent ) {
 /*
 Ghoul2 Insert Start
 */
-	CG_SetGhoul2Info(&ent, cent);  
+	CG_SetGhoul2Info(&ent, cent);
 
 /*
 Ghoul2 Insert End
@@ -1168,7 +1168,7 @@ static void CG_Mover( centity_t *cent ) {
 Ghoul2 Insert Start
 */
 
-	CG_SetGhoul2Info(&ent, cent);  
+	CG_SetGhoul2Info(&ent, cent);
 /*
 Ghoul2 Insert End
 */
@@ -1198,7 +1198,7 @@ Ghoul2 Insert End
 	}
 
 	// add the secondary model
-	if ( s1->solid == SOLID_BMODEL && s1->modelindex2 ) 
+	if ( s1->solid == SOLID_BMODEL && s1->modelindex2 )
 	{
 //		vec3_t	org;
 		if ( !(s1->eFlags & EF_NODRAW) )
@@ -1277,7 +1277,7 @@ void CG_Beam( centity_t *cent, int color ) {
 /*
 Ghoul2 Insert Start
 */
-	CG_SetGhoul2Info(&ent, cent);  
+	CG_SetGhoul2Info(&ent, cent);
 
 /*
 Ghoul2 Insert End
@@ -1287,12 +1287,12 @@ Ghoul2 Insert End
 	cgi_R_AddRefEntityToScene(&ent);
 }
 
-static vec2_t st[] = 
+static vec2_t st[] =
 {
 	{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }
 };
 
-void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha ) 
+void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha )
 {
 	vec3_t	point[4], rot={0,0,0};
 	int		vec[3];
@@ -1316,22 +1316,22 @@ void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha )
 
 		point[2][vec[1]] = maxs[vec[1]];
 		point[2][vec[2]] = maxs[vec[2]];
-		
+
 		point[3][vec[1]] = maxs[vec[1]];
 		point[3][vec[2]] = mins[vec[2]];
 
 		//- face
 		point[0][vec[0]] = point[1][vec[0]] = point[2][vec[0]] = point[3][vec[0]] = mins[vec[0]];
 
-		FX_AddPoly( point, st, 4, NULL, NULL, alpha, alpha, 0.0f, 
-						color, color, 0.0f, rot, 0.0f, 0.0f, 
+		FX_AddPoly( point, st, 4, NULL, NULL, alpha, alpha, 0.0f,
+						color, color, 0.0f, rot, 0.0f, 0.0f,
 						100, cgs.media.solidWhiteShader, 0 );
 
 		//+ face
 		point[0][vec[0]] = point[1][vec[0]] = point[2][vec[0]] = point[3][vec[0]] = maxs[vec[0]];
 
-		FX_AddPoly( point, st, 4, NULL, NULL, alpha, alpha, 0.0f, 
-						color, color, 0.0f, rot, 0.0f, 0.0f, 
+		FX_AddPoly( point, st, 4, NULL, NULL, alpha, alpha, 0.0f,
+						color, color, 0.0f, rot, 0.0f, 0.0f,
 						100, cgs.media.solidWhiteShader, 0 );
 	}
 }
@@ -1360,7 +1360,7 @@ void CG_CubeOutline( vec3_t mins, vec3_t maxs, int time, unsigned int color, flo
 
 		point3[vec[1]] = maxs[vec[1]];
 		point3[vec[2]] = maxs[vec[2]];
-		
+
 		point4[vec[1]] = maxs[vec[1]];
 		point4[vec[2]] = mins[vec[2]];
 
@@ -1382,7 +1382,7 @@ void CG_CubeOutline( vec3_t mins, vec3_t maxs, int time, unsigned int color, flo
 	}
 }
 
-void CG_Line( vec3_t start, vec3_t end, vec3_t color, float alpha ) 
+void CG_Line( vec3_t start, vec3_t end, vec3_t color, float alpha )
 {
 	/*FX_AddLine( start,
 				end,
@@ -1391,8 +1391,8 @@ void CG_Line( vec3_t start, vec3_t end, vec3_t color, float alpha )
 				1.0f,
 				alpha,
 				alpha,
-				color, 
-				color, 
+				color,
+				color,
 				100.0f,
 				cgs.media.whiteShader );*/
 }
@@ -1432,7 +1432,7 @@ static void CG_Portal( centity_t *cent ) {
 /*
 Ghoul2 Insert Start
 */
-	CG_SetGhoul2Info(&ent, cent);  
+	CG_SetGhoul2Info(&ent, cent);
 /*
 Ghoul2 Insert End
 */
@@ -1503,7 +1503,7 @@ Ghoul2 Insert End
 */
 		return;
 	}
-	
+
 	//FIXME: prediction on clients in timescale results in jerky positional translation
 	if ( cent->interpolate )
 	{
@@ -1549,7 +1549,7 @@ Ghoul2 Insert End
 	Ghoul2 Insert End
 	*/
 		}
-		if ( cent->currentState.pos.trType == TR_INTERPOLATE ) 
+		if ( cent->currentState.pos.trType == TR_INTERPOLATE )
 		{
 			// this will linearize a sine or parabolic curve, but it is important
 			// to not extrapolate player positions if more recent data is available
@@ -1575,7 +1575,7 @@ Ghoul2 Insert End
 		{
 			EvaluateTrajectory( &cent->currentState.apos, cg.snap->serverTime, cent->lerpAngles );
 		}
-		if ( cent->currentState.pos.trType == TR_INTERPOLATE ) 
+		if ( cent->currentState.pos.trType == TR_INTERPOLATE )
 		{
 			EvaluateTrajectory( &cent->currentState.pos, cg.snap->serverTime, cent->lerpOrigin );
 			/*
@@ -1587,7 +1587,7 @@ Ghoul2 Insert End
 			return;
 		}
 	}
-	
+
 	// FIXME: if it's blocked, it wigs out, draws it in a predicted spot, but never
 	// makes it there - we need to predict it in the right place if this is happens...
 
@@ -1637,7 +1637,7 @@ Ghoul2 Insert End
 	// FIXME: perform general error decay?
 }
 #else
-void CG_CalcEntityLerpPositions( centity_t *cent ) 
+void CG_CalcEntityLerpPositions( centity_t *cent )
 {
 	if ( cent->currentState.number == cg.snap->ps.clientNum)
 	{
@@ -1676,7 +1676,7 @@ OutputDebugString(va("[%3d] nonext %4.2f t=%6d  st = %6d  nst = %6d     b=%6.2f 
 }
 
 	//FIXME: prediction on clients in timescale results in jerky positional translation
-	if (cent->interpolate && 
+	if (cent->interpolate &&
 		(cent->currentState.number == cg.snap->ps.clientNum ||
 		cent->interpolate && cent->currentState.pos.trType == TR_INTERPOLATE ) )
 	{
@@ -1685,7 +1685,7 @@ OutputDebugString(va("[%3d] nonext %4.2f t=%6d  st = %6d  nst = %6d     b=%6.2f 
 
 		// it would be an internal error to find an entity that interpolates without
 		// a snapshot ahead of the current one
-		if ( cg.nextSnap == NULL ) 
+		if ( cg.nextSnap == NULL )
 		{
 			CG_Error( "CG_AddCEntity: cg.nextSnap == NULL" );
 		}
@@ -1769,7 +1769,7 @@ void CG_DLightThink ( centity_t *cent )
 		vec4_t	currentRGBA;
 		gentity_t	*owner = NULL;
 		int		i;
-		
+
 		if ( percentage >= 1.0f )
 		{//We hit the end
 			percentage = 1.0f;
@@ -1810,7 +1810,7 @@ void CG_DLightThink ( centity_t *cent )
 				cent->gent->e_clThinkFunc = clThinkF_NULL;
 				cent->gent->s.eType = ET_GENERAL;
 				cent->gent->svFlags &= ~SVF_BROADCAST;
-				return;		
+				return;
 				break;
 			default:
 				break;
@@ -1917,7 +1917,7 @@ extern cvar_t	*g_saberRealisticCombat;
 					owner->weaponModel = -1;
 				}
 			}
-			if ( owner->client->NPC_class == CLASS_PROTOCOL 
+			if ( owner->client->NPC_class == CLASS_PROTOCOL
 				|| g_dismemberment->integer >= 11381138
 				|| g_saberRealisticCombat->integer )
 			{
@@ -1942,7 +1942,7 @@ void CG_MatrixEffect ( centity_t *cent )
 	float totalElapsedTime = (float)(cg.time - cent->currentState.time);
 	float elapsedTime = totalElapsedTime;
 	if ( totalElapsedTime > cent->currentState.eventParm //MATRIX_EFFECT_TIME
-		|| (cent->currentState.weapon&&g_entities[cent->currentState.otherEntityNum].client&&g_entities[cent->currentState.otherEntityNum].client->ps.groundEntityNum!=ENTITYNUM_NONE) 
+		|| (cent->currentState.weapon&&g_entities[cent->currentState.otherEntityNum].client&&g_entities[cent->currentState.otherEntityNum].client->ps.groundEntityNum!=ENTITYNUM_NONE)
 		|| cg.missionStatusShow )
 	{//time is up or this is a falling spin and they hit the ground or mission end screen is up
 		cg.overrides.active &= ~(/*CG_OVERRIDE_3RD_PERSON_ENT|*/CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_ANG|CG_OVERRIDE_3RD_PERSON_POF);
@@ -1955,14 +1955,14 @@ void CG_MatrixEffect ( centity_t *cent )
 		cent->gent->e_clThinkFunc = clThinkF_NULL;
 		return;
 	}
-	else 
+	else
 	{
 		while ( elapsedTime > MATRIX_EFFECT_TIME )
 		{
 			elapsedTime -= MATRIX_EFFECT_TIME;
 		}
 	}
-	
+
 	MatrixMode = qtrue;
 
 	//FIXME: move the position towards them and back?
@@ -1973,7 +1973,7 @@ void CG_MatrixEffect ( centity_t *cent )
 	cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ANG;
 	cg.overrides.thirdPersonAngle = 360.0f*elapsedTime/MATRIX_EFFECT_TIME;
 
-	if ( !cent->currentState.weapon ) 
+	if ( !cent->currentState.weapon )
 	{//go ahead and do all the slowdown and vert bob stuff
 		//slowdown
 		float timescale = (elapsedTime/MATRIX_EFFECT_TIME);
@@ -2052,7 +2052,7 @@ static void CG_Clouds( centity_t *cent )
 	if ( cent->gent->spawnflags & 1 ) // TUBE type, the one with a hole in the middle
 	{
 		ent.rotation = cent->gent->random;
-		ent.renderfx = RF_GROW;// tube flag 
+		ent.renderfx = RF_GROW;// tube flag
 	}
 
 	if ( cent->gent->spawnflags & 2 ) // ALT type, uses a different shader
@@ -2063,7 +2063,7 @@ static void CG_Clouds( centity_t *cent )
 	{
 		ent.customShader = cgi_R_RegisterShader( "gfx/world/haze" );
 	}
-	
+
 	cgi_R_AddRefEntityToScene( &ent );
 }
 
@@ -2073,7 +2073,7 @@ CG_AddCEntity
 
 ===============
 */
-static void CG_AddCEntity( centity_t *cent ) 
+static void CG_AddCEntity( centity_t *cent )
 {
 	// event-only entities will have been dealt with already
 	if ( cent->currentState.eType >= ET_EVENTS ) {
@@ -2168,24 +2168,24 @@ void CG_AddPacketEntities( void ) {
 	playerState_t		*ps;
 
 	// set cg.frameInterpolation
-	if ( cg.nextSnap ) 
+	if ( cg.nextSnap )
 	{
 		int		delta;
 
 		delta = (cg.nextSnap->serverTime - cg.snap->serverTime);
-		if ( delta == 0 ) 
+		if ( delta == 0 )
 		{
 			cg.frameInterpolation = 0;
-		} 
-		else 
+		}
+		else
 		{
 			cg.frameInterpolation = (float)( cg.time - cg.snap->serverTime ) / delta;
 		}
 //OutputDebugString(va("interp %4.2f ct=%6d nt=%6d st=%6d\n",cg.frameInterpolation,cg.time,cg.nextSnap->serverTime,cg.snap->serverTime));
-	} 
-	else 
+	}
+	else
 	{
-		cg.frameInterpolation = 0;	// actually, it should never be used, because 
+		cg.frameInterpolation = 0;	// actually, it should never be used, because
 									// no entities should be marked as interpolating
 //OutputDebugString(va("noterp %4.2f ct=%6d nt=%6d st=%6d\n",cg.frameInterpolation,cg.time,0,cg.snap->serverTime));
 	}
