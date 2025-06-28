@@ -306,9 +306,12 @@ static void RB_SurfaceOrientedQuad( void )
 
 	// calculate the xyz locations for the four corners
 	radius = backEnd.currentEntity->e.radius;
-//	MakeNormalVectors( backEnd.currentEntity->e.axis[0], left, up );
+#ifdef REND2_SP
+	MakeNormalVectors( backEnd.currentEntity->e.axis[0], left, up );
+#else
 	VectorCopy( backEnd.currentEntity->e.axis[1], left );
 	VectorCopy( backEnd.currentEntity->e.axis[2], up );
+#endif // REND2_SP
 
 	if ( backEnd.currentEntity->e.rotation == 0 )
 	{
