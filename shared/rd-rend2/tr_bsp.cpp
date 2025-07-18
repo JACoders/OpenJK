@@ -2204,11 +2204,7 @@ static void R_CreateWorldVBOs( world_t *worldData )
 
 				VectorCopy (bspSurf->verts[i].xyz, vert.position);
 				vert.normal = R_VboPackNormal (bspSurf->verts[i].normal);
-
-				if (VectorLengthSquared(bspSurf->verts[i].tangent) > 0.001f)
-					vert.tangent = R_VboPackTangent(bspSurf->verts[i].tangent);
-				else
-					vert.tangent = 0u;
+				vert.tangent = 0u;
 
 				VectorCopy2 (bspSurf->verts[i].st, vert.texcoords[0]);
 
