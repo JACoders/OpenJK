@@ -225,8 +225,11 @@ static void vk_create_instance( void )
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Quake3";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
-
+#ifdef _DEBUG
+	appInfo.apiVersion = VK_API_VERSION_1_1;
+#else
+	appInfo.apiVersion = VK_API_VERSION_1_0;
+#endif
 	flags = 0;
     count = 0;
     extension_count = 0;
@@ -532,6 +535,13 @@ qboolean vk_select_surface_format( VkPhysicalDevice physical_device, VkSurfaceKH
 
 static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_index ) {
 
+#ifdef _DEBUG
+	VkPhysicalDeviceTimelineSemaphoreFeatures timeline_semaphore;
+	VkPhysicalDeviceVulkanMemoryModelFeatures memory_model;
+	VkPhysicalDeviceBufferDeviceAddressFeatures devaddr_features;
+	VkPhysicalDevice8BitStorageFeatures storage_8bit_features;
+#endif
+
 	ri.Printf(PRINT_ALL, "selected physical device: %i\n\n", device_index);
 
 	// select surface format
@@ -575,7 +585,7 @@ static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_i
 	// create VkDevice
 	{
 		char *str;
-		const char *device_extension_list[5];
+		const char *device_extension_list[9];
 		uint32_t device_extension_count;
 		const char *ext, *end;
 		const float priority = 1.0;
@@ -590,6 +600,13 @@ static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_i
 		qboolean memoryRequirements2 = qfalse;
 		qboolean debugMarker = qfalse;
 		qboolean toolingInfo = qfalse;
+#ifdef _DEBUG
+		qboolean timelineSemaphore = qfalse;
+		qboolean memoryModel = qfalse;
+		qboolean devAddrFeat = qfalse;
+		qboolean storage8bit = qfalse;
+		const void** pNextPtr;
+#endif
 		uint32_t i, len, count = 0;
 
 		VK_CHECK(qvkEnumerateDeviceExtensionProperties(physical_device, NULL, &count, NULL));
@@ -603,20 +620,30 @@ static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_i
 
 		for (i = 0; i < count; i++) {
 			ext = extension_properties[i].extensionName;
-			if (strcmp(ext, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
+			if ( strcmp( ext, VK_KHR_SWAPCHAIN_EXTENSION_NAME ) == 0 ) {
 				swapchainSupported = qtrue;
 			}
-			else if (strcmp(ext, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0) {
+			else if (strcmp( ext, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME ) == 0 ) {
 				dedicatedAllocation = qtrue;
 			}
-			else if (strcmp(ext, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0) {
+			else if (strcmp( ext, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME ) == 0 ) {
 				memoryRequirements2 = qtrue;
 			}
-			else if (strcmp(ext, VK_EXT_DEBUG_MARKER_EXTENSION_NAME) == 0) {
-				debugMarker = qtrue;
+			else if (strcmp( ext, VK_EXT_DEBUG_MARKER_EXTENSION_NAME ) == 0 ) {
+				debugMarker = qtrue; 
 			}
-			else if (strcmp(ext, VK_EXT_TOOLING_INFO_EXTENSION_NAME) == 0) {
+			else if ( strcmp( ext, VK_EXT_TOOLING_INFO_EXTENSION_NAME ) == 0 ) {
 				toolingInfo = qtrue;
+#ifdef _DEBUG
+			} else if ( strcmp( ext, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME ) == 0 ) {
+				timelineSemaphore = qtrue;
+			} else if ( strcmp( ext, VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME ) == 0 ) {
+				memoryModel = qtrue;
+			} else if ( strcmp( ext, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME ) == 0 ) {
+				devAddrFeat = qtrue;
+			} else if ( strcmp( ext, VK_KHR_8BIT_STORAGE_EXTENSION_NAME ) == 0 ) {
+				storage8bit = qtrue;
+#endif
 			}
 
 			// add this device extension to glConfig
@@ -664,6 +691,22 @@ static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_i
 		if ( toolingInfo )
 			device_extension_list[device_extension_count++] = VK_EXT_TOOLING_INFO_EXTENSION_NAME;
 
+#ifdef _DEBUG
+		if ( timelineSemaphore ) {
+			device_extension_list[ device_extension_count++ ] = VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME;
+		}
+
+		if ( memoryModel ) {
+			device_extension_list[ device_extension_count++ ] = VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME;
+		}
+		if ( devAddrFeat ) {
+			device_extension_list[ device_extension_count++ ] = VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME;
+		}
+		if ( storage8bit ) {
+			device_extension_list[ device_extension_count++ ] = VK_KHR_8BIT_STORAGE_EXTENSION_NAME;
+		}
+#endif // _DEBUG
+
 		qvkGetPhysicalDeviceFeatures(physical_device, &device_features);
 
 		if (device_features.fillModeNonSolid == VK_FALSE) {
@@ -681,6 +724,11 @@ static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_i
 		Com_Memset(&features, 0, sizeof(features));
 		features.fillModeNonSolid = VK_TRUE;
 
+#ifdef _DEBUG
+		if ( device_features.shaderInt64 ) {
+			features.shaderInt64 = VK_TRUE;
+		}
+#endif
 		if (device_features.wideLines) { // needed for RB_SurfaceAxis
 			features.wideLines = VK_TRUE;
 			//vk.wideLines = qtrue;
@@ -716,6 +764,45 @@ static qboolean vk_create_device( VkPhysicalDevice physical_device, int device_i
 		device_desc.enabledExtensionCount = device_extension_count;
 		device_desc.ppEnabledExtensionNames = device_extension_list;
 		device_desc.pEnabledFeatures = &features;
+
+#ifdef _DEBUG
+		pNextPtr = (const void **)&device_desc.pNext;
+
+		if ( timelineSemaphore ) {
+			*pNextPtr = &timeline_semaphore;
+			timeline_semaphore.pNext = NULL;
+			timeline_semaphore.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+			timeline_semaphore.timelineSemaphore = VK_TRUE;
+			pNextPtr = (const void **)&timeline_semaphore.pNext;
+		}
+		if ( memoryModel ) {
+			*pNextPtr = &memory_model;
+			memory_model.pNext = NULL;
+			memory_model.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES;
+			memory_model.vulkanMemoryModel = VK_TRUE;
+			memory_model.vulkanMemoryModelAvailabilityVisibilityChains = VK_FALSE;
+			memory_model.vulkanMemoryModelDeviceScope = VK_TRUE;
+			pNextPtr = (const void **)&memory_model.pNext;
+		}
+		if ( devAddrFeat ) {
+			*pNextPtr = &devaddr_features;
+			devaddr_features.pNext = NULL;
+			devaddr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+			devaddr_features.bufferDeviceAddress = VK_TRUE;
+			devaddr_features.bufferDeviceAddressCaptureReplay = VK_FALSE;
+			devaddr_features.bufferDeviceAddressMultiDevice = VK_FALSE;
+			pNextPtr = (const void **)&devaddr_features.pNext;
+		}
+		if ( storage8bit ) {
+			*pNextPtr = &storage_8bit_features;
+			storage_8bit_features.pNext = NULL;
+			storage_8bit_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES;
+			storage_8bit_features.storageBuffer8BitAccess = VK_TRUE;
+			storage_8bit_features.storagePushConstant8 = VK_FALSE;
+			storage_8bit_features.uniformAndStorageBuffer8BitAccess = VK_TRUE;
+			pNextPtr = (const void **)&storage_8bit_features.pNext;
+		}
+#endif
 
 		result = qvkCreateDevice(physical_device, &device_desc, NULL, &vk.device);
 		if (result < 0) {

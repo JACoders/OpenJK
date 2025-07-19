@@ -35,6 +35,11 @@ void vk_restart_swapchain( const char *funcname )
         qvkResetCommandBuffer( vk.tess[i].command_buffer, 0 );
     }
 
+#ifdef USE_UPLOAD_QUEUE
+	qvkResetCommandBuffer( vk.staging_command_buffer, 0 );
+
+#endif
+
     vk_destroy_pipelines(qfalse);
     vk_destroy_framebuffers();
     vk_destroy_render_passes();
@@ -64,6 +69,7 @@ static const char *vk_pmode_to_str( VkPresentModeKHR mode )
         case VK_PRESENT_MODE_MAILBOX_KHR:       return "MAILBOX";
         case VK_PRESENT_MODE_FIFO_KHR:          return "FIFO";
         case VK_PRESENT_MODE_FIFO_RELAXED_KHR:  return "FIFO_RELAXED";
+        case VK_PRESENT_MODE_FIFO_LATEST_READY_EXT: return "FIFO_LATEST_READY";
         default: sprintf(buf, "mode#%x", mode); return buf;
     };
 }
@@ -98,13 +104,13 @@ void vk_create_swapchain( VkPhysicalDevice physical_device, VkDevice device,
 	if ( image_extent.width < gls.windowWidth) image_extent.width = gls.windowWidth;
 	if ( image_extent.height < gls.windowHeight) image_extent.height = gls.windowHeight;
 
-    vk.fastSky = qtrue;
+    vk.clearAttachment = qtrue;
 
     if ( !vk.fboActive ) {
         // VK_IMAGE_USAGE_TRANSFER_DST_BIT is required by image clear operations.
         if ( ( surface_caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT ) == 0 ) {
-            vk.fastSky = qfalse;
-            ri.Printf( PRINT_WARNING, "VK_IMAGE_USAGE_TRANSFER_DST_BIT is not supported by the swapchain\n" );
+            vk.clearAttachment = qfalse;
+            ri.Printf( PRINT_WARNING, "VK_IMAGE_USAGE_TRANSFER_DST_BIT is not supported by the swapchain, \\r_clear might not work\n" );
         }
 
         // VK_IMAGE_USAGE_TRANSFER_SRC_BIT is required in order to take screenshots.
@@ -230,16 +236,25 @@ void vk_create_swapchain( VkPhysicalDevice physical_device, VkDevice device,
         VK_SET_OBJECT_NAME( vk.swapchain_image_views[i], va( "swapchain image %i", i ), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT );
     }
 
+	for ( i = 0; i < vk.swapchain_image_count; i++ ) {
+		VkSemaphoreCreateInfo s;
+		s.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		s.pNext = NULL;
+		s.flags = 0;
+		VK_CHECK( qvkCreateSemaphore( vk.device, &s, NULL, &vk.swapchain_rendering_finished[i] ) );
+		VK_SET_OBJECT_NAME( vk.swapchain_rendering_finished[i], va( "swapchain_rendering_finished semaphore %i", i ), VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT );
+	}
+
     if ( vk.initSwapchainLayout != VK_IMAGE_LAYOUT_UNDEFINED ) {
         VkCommandBuffer command_buffer = vk_begin_command_buffer();
 
         for (i = 0; i < vk.swapchain_image_count; i++) {
             vk_record_image_layout_transition( command_buffer, vk.swapchain_images[i], VK_IMAGE_ASPECT_COLOR_BIT,
                 VK_IMAGE_LAYOUT_UNDEFINED,
-                vk.initSwapchainLayout );
+                vk.initSwapchainLayout, 0, 0 );
         }
         
-        vk_end_command_buffer( command_buffer );
+        vk_end_command_buffer( command_buffer, __func__ );
     }
 }
 
@@ -251,6 +266,10 @@ void vk_destroy_swapchain ( void ) {
             qvkDestroyImageView( vk.device, vk.swapchain_image_views[i], NULL );
             vk.swapchain_image_views[i] = VK_NULL_HANDLE;
         }
+		if ( vk.swapchain_rendering_finished[i] != VK_NULL_HANDLE ) {
+			qvkDestroySemaphore( vk.device, vk.swapchain_rendering_finished[i], NULL );
+			vk.swapchain_rendering_finished[i] = VK_NULL_HANDLE;
+		}
     }
 
     qvkDestroySwapchainKHR( vk.device, vk.swapchain, NULL );

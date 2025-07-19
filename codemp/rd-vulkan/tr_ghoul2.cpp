@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "ghoul2/g2_local.h"
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"
+#include "G2_gore_r2.h"
 #endif
 
 #include "qcommon/disablewarnings.h"
@@ -2541,13 +2542,13 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 				{
 					kcur=k;
 					++k;
-					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
+					R2GoreTextureCoordinates  *tex=FindR2GoreRecord((*kcur).second.mGoreTag);
 					if (!tex ||											 // it is gone, lets get rid of it
 						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
 					{
 						if (tex)
 						{
-							(*tex).~GoreTextureCoordinates();
+							(*tex).~R2GoreTextureCoordinates();	 // ~sunny, hmm
 							//I don't know what's going on here, it should call the destructor for
 							//this when it erases the record but sometimes it doesn't. -rww
 						}
@@ -2559,7 +2560,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 						CRenderableSurface *newSurf2 = AllocGhoul2RenderableSurface();
 						*newSurf2=*newSurf;
 						newSurf2->goreChain=0;
-						newSurf2->alternateTex=tex->tex[RS.lod];
+						newSurf2->alternateTex = (void*)tex->tex[RS.lod];
 						newSurf2->scale=1.0f;
 						newSurf2->fade=1.0f;
 						newSurf2->impactTime=1.0f;	// done with
@@ -3667,8 +3668,26 @@ void RB_SurfaceGhoul(CRenderableSurface* surf)
 			int maxIndex = surface->maxIndex;
 			int indexOffset = surface->indexOffset;
 
-			tess.surfType = SF_MDX;
-			tess.vbo_model_index = surf->vboMesh->vbo->index;
+	tess.surfType = SF_MDX;
+
+#ifdef _G2_GORE
+	if ( surf->alternateTex && tr.goreVBO != NULL )
+	{
+		tess.vbo_model_index = tr.goreVBO->index;
+
+		auto *alternateTex = (srfG2GoreSurface_t*)surf->alternateTex;
+
+		numIndexes	= alternateTex->numIndexes;
+		numVertexes = alternateTex->numVerts;
+		minIndex	= alternateTex->firstVert;
+		maxIndex	= alternateTex->firstVert + alternateTex->numVerts;
+		indexOffset = alternateTex->firstIndex;
+	}
+	else
+#endif
+	{
+		tess.vbo_model_index = surf->vboMesh->vbo->index;
+	}
 
 			int i, mergeForward, mergeBack;
 			GLvoid *firstIndexOffset, *lastIndexOffset;

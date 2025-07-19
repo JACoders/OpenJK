@@ -5,7 +5,7 @@ layout(push_constant) uniform Transform {
 	mat4 mvp;
 };
 
-layout(set = 1, binding = 0) uniform UBO {
+layout(set = 0, binding = 0) uniform UBO {
 	// light/env parameters:
 	vec4 eyePos;				// vertex
 	vec4 lightPos;				// vertex: light origin

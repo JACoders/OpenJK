@@ -53,6 +53,20 @@ void vk_create_command_buffer( void )
 
         vk_debug( va("Create command buffer: vk.cmd->command_buffer[%d] \n", i ) );
     }
+
+#ifdef USE_UPLOAD_QUEUE
+	{
+		VkCommandBufferAllocateInfo alloc_info;
+
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.pNext = NULL;
+		alloc_info.commandPool = vk.command_pool;
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		alloc_info.commandBufferCount = 1;
+
+		VK_CHECK( qvkAllocateCommandBuffers( vk.device, &alloc_info, &vk.staging_command_buffer ) );
+	}
+#endif
 }
 
 VkCommandBuffer vk_begin_command_buffer( void )
@@ -77,10 +91,15 @@ VkCommandBuffer vk_begin_command_buffer( void )
     return command_buffer;
 }
 
-void vk_end_command_buffer( VkCommandBuffer command_buffer )
+void vk_end_command_buffer( VkCommandBuffer command_buffer, const char *location )
 {
+#ifdef USE_UPLOAD_QUEUE
+	const VkPipelineStageFlags wait_dst_stage_mask = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	VkSemaphore waits;
+#endif
     VkSubmitInfo submit_info;
     VkCommandBuffer cmdbuf[1];
+    VkResult res;
 
     cmdbuf[0] = command_buffer;
 
@@ -88,16 +107,28 @@ void vk_end_command_buffer( VkCommandBuffer command_buffer )
 
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.pNext = NULL;
-    submit_info.waitSemaphoreCount = 0;
-    submit_info.pWaitSemaphores = NULL;
-    submit_info.pWaitDstStageMask = NULL;
+#ifdef USE_UPLOAD_QUEUE
+	if ( vk.rendering_finished != VK_NULL_HANDLE ) {
+		waits = vk.rendering_finished;
+		vk.rendering_finished = VK_NULL_HANDLE;
+		submit_info.waitSemaphoreCount = 1;
+		submit_info.pWaitSemaphores = &waits;
+		submit_info.pWaitDstStageMask = &wait_dst_stage_mask;
+	} else 
+#endif
+	{
+		submit_info.waitSemaphoreCount = 0;
+		submit_info.pWaitSemaphores = NULL;
+		submit_info.pWaitDstStageMask = NULL;
+	}
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = cmdbuf;
     submit_info.signalSemaphoreCount = 0;
     submit_info.pSignalSemaphores = NULL;
 
-    VK_CHECK(qvkQueueSubmit(vk.queue, 1, &submit_info, VK_NULL_HANDLE));
-    VK_CHECK(qvkQueueWaitIdle(vk.queue));
+    VK_CHECK( qvkQueueSubmit( vk.queue, 1, &submit_info, VK_NULL_HANDLE ) );
+
+	VK_CHECK( qvkQueueWaitIdle( vk.queue ) );
 
     qvkFreeCommandBuffers(vk.device, vk.command_pool, 1, cmdbuf);
 }

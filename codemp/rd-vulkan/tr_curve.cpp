@@ -132,9 +132,7 @@ static void MakeMeshNormals( int width, int height, drawVert_t ctrl[MAX_GRID_SIZ
 	qboolean	good[8];
 	qboolean	wrapWidth, wrapHeight;
 	float		len;
-static	int	neighbors[8][2] = {
-	{0,1}, {1,1}, {1,0}, {1,-1}, {0,-1}, {-1,-1}, {-1,0}, {-1,1}
-	};
+	static const int neighbors[8][2] = { {0,1}, {1,1}, {1,0}, {1,-1}, {0,-1}, {-1,-1}, {-1,0}, {-1,1} };
 
 	wrapWidth = qfalse;
 	for ( i = 0 ; i < height ; i++ ) {
@@ -219,6 +217,9 @@ static	int	neighbors[8][2] = {
 				count = 1;
 			}
 			VectorNormalize2( sum, dv->normal );
+			for ( k = 0; k < 3; k++ ) {
+				dv->normal[k] = R_ClampDenorm( dv->normal[k] );
+			}
 		}
 	}
 }

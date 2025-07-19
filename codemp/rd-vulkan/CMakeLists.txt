@@ -36,6 +36,8 @@ set(MPVulkanRendererFiles
 	"${MPDir}/rd-vulkan/G2_API.cpp"
 	"${MPDir}/rd-vulkan/G2_bolts.cpp"
 	"${MPDir}/rd-vulkan/G2_bones.cpp"
+	"${MPDir}/rd-vulkan/G2_gore_r2.cpp"
+	"${MPDir}/rd-vulkan/G2_gore_r2.h"
 	"${MPDir}/rd-vulkan/G2_misc.cpp"
 	"${MPDir}/rd-vulkan/G2_surfaces.cpp"
 	"${MPDir}/rd-vulkan/tr_backend.cpp"

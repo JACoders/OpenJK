@@ -1,5 +1,11 @@
 #version 450
 
+#define M_PI 3.1415926535897932384626433832795
+
+#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#define USE_VBO_MODEL
+#endif
+
 #ifdef USE_TX2
 #define USE_TX1
 #endif
@@ -15,7 +21,7 @@ layout(push_constant) uniform Transform {
 
 
 #if defined(USE_FOG) || defined(USE_ENV)
-layout(set = 1, binding = 0) uniform UBO {
+layout(set = 0, binding = 0) uniform UBO {
 	// light/env/material parameters:
 	vec4 eyePos;
 	vec4 lightPos;
@@ -27,73 +33,81 @@ layout(set = 1, binding = 0) uniform UBO {
 	vec4 fogDepthVector;
 	vec4 fogEyeT;
 	vec4 fogColor;
+
+#if defined(USE_FOG) && !defined(USE_VBO_MODEL)
+	mat4 u_ModelMatrix;
+#endif
 };
 #endif
 
-#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
-struct tcMod_t {
-	vec4	matrix;
-	vec4	offTurb;
-};
+#if defined(USE_FOG)
+	layout(set = 0, binding = 1) uniform Camera {
+		vec4 u_ViewOrigin;
+	};
+#endif
 
-struct tcGen_t {
-	vec3	vector0;
-	vec3	vector1;
-	int		type;
-};
+#if defined(USE_VBO_MODEL)
+	struct tcMod_t {
+		vec4	matrix;
+		vec4	offTurb;
+	};
 
-struct vkBundle_t {
-	vec4	baseColor;
-	vec4	vertColor;
-	tcMod_t	tcMod;
-	tcGen_t	tcGen;
-	int		rgbGen;
-	int		alphaGen;
-	int		numTexMods;
-};
+	struct tcGen_t {
+		vec3	vector0;
+		vec3	vector1;
+		int		type;
+	};
 
-struct vkDisintegration_t {
-	vec3	origin;
-	float	threshold;
-};
+	struct vkBundle_t {
+		vec4	baseColor;
+		vec4	vertColor;
+		tcMod_t	tcMod;
+		tcGen_t	tcGen;
+		int		rgbGen;
+		int		alphaGen;
+		int		numTexMods;
+	};
 
-struct vkDeform_t {
-	float	base;
-	float	amplitude;
-	float	phase;
-	float	frequency;
+	struct vkDisintegration_t {
+		vec3	origin;
+		float	threshold;
+	};
 
-	vec3	vector;
-	float	time;
+	struct vkDeform_t {
+		float	base;
+		float	amplitude;
+		float	phase;
+		float	frequency;
 
-	int		type;
-	int		func;
-};
+		vec3	vector;
+		float	time;
 
-layout(set = 1, binding = 1) uniform UBOG2 {
-	vec4 u_localViewOrigin;
-	vec4 ambientLight;
-	vec4 directedLight;
-	vec4 lightDir;
+		int		type;
+		int		func;
+	};
 
-	vkBundle_t			u_bundle[3];
-	vkDisintegration_t	u_disintegration;
-	vkDeform_t			u_deform;
+	layout(set = 0, binding = 2) uniform Entity {
+		vec4 u_ambientLight;
+		vec4 u_directedLight;
+		vec4 u_LocalLightOrigin;
+		vec4 u_localViewOrigin;
+		mat4 u_ModelMatrix;
+	};
 
-	float	u_portalRange;
+	layout(set = 0, binding = 3) uniform Bones {
+		mat3x4 u_BoneMatrices[72];
+	};
 
-	mat4 u_ModelMatrix;
-};	
+	layout(set = 0, binding = 5) uniform Global {
+		vkBundle_t			u_bundle[3];
+		vkDisintegration_t	u_disintegration;
+		vkDeform_t			u_deform;
+		float				u_portalRange;
+	};
 
-layout(set = 1, binding = 2) uniform Bones {
-	mat3x4 u_BoneMatrices[72];
-};
-
-#define M_PI 3.1415926535897932384626433832795
-
-layout(location = 7) out vec4 var_Normal;
-layout(location = 8) out vec4 var_LightDir;
-//layout(location = 9) out vec4 var_ViewDir;
+	layout(location = 7) out vec4 var_Normal;
+	layout(location = 8) out vec4 var_LightDir;
+	//layout(location = 9) out vec4 var_ViewDir;
 #endif
 
 layout(location = 0) in vec3 in_position;
@@ -109,21 +123,21 @@ layout(location = 3) in vec2 in_tex_coord1;
 layout(location = 4) in vec2 in_tex_coord2;
 #endif
 
-#if defined(USE_ENV) || defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+#if defined(USE_ENV) || defined(USE_VBO_MODEL)
 layout(location = 5) in vec3 in_normal;
 #endif
 
 #if defined (USE_CLX_IDENT) || defined (USE_FIXED_COLOR)
 // use either 1.0 or fixed (rgb+a) color from spec.constants
 #else
-	#if !defined(USE_VBO_GHOUL2) && !defined(USE_VBO_MDV)
+	#if !defined(USE_VBO_MODEL)
 		layout(location = 1) in vec4 in_color0;
 	#endif
 
-	#if defined(USE_CL1) && !defined(USE_VBO_GHOUL2) && !defined(USE_VBO_MDV)
+	#if defined(USE_CL1) && !defined(USE_VBO_MODEL)
 	layout(location = 6) in vec4 in_color1;
 	#endif
-	#if defined(USE_CL2) && !defined(USE_VBO_GHOUL2) && !defined(USE_VBO_MDV)
+	#if defined(USE_CL2) && !defined(USE_VBO_MODEL)
 	layout(location = 7) in vec4 in_color2;
 	#endif
 
@@ -145,7 +159,7 @@ layout(location = 3) out vec2 frag_tex_coord2;
 #endif
 
 #ifdef USE_FOG
-layout(location = 4) out vec2 fog_tex_coord;
+layout(location = 4) out vec3 fog_tex_coord;
 #endif
 
 #if defined(USE_VBO_GHOUL2)
@@ -153,11 +167,15 @@ layout(location = 8) in uvec4 in_bones;
 layout(location = 9) in vec4 in_weights;
 #endif
 
+#ifdef USE_FOG
+	layout (constant_id = 0) const int hw_fog = 0;
+#endif
+
 out gl_PerVertex {
 	vec4 gl_Position;
 };
 
-#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+#if defined(USE_VBO_MODEL)
 vec4 CalcColor( int index, in vec3 position, in vec3 normal ) {
 	vec4 color = ( u_bundle[index].vertColor * vec4( 0.0 ) ) + u_bundle[index].baseColor;		// skip vertColor?
 
@@ -194,7 +212,7 @@ vec4 CalcColor( int index, in vec3 position, in vec3 normal ) {
 		case 6: // AGEN_LIGHTING_SPECULAR
 		{
 			vec3 viewer = normalize( u_localViewOrigin.xyz - position );
-			vec3 lightDirection = ( transpose(u_ModelMatrix) * vec4( lightDir.xyz, 0.0 ) ).xyz;
+			vec3 lightDirection = ( transpose(u_ModelMatrix) * vec4( u_LocalLightOrigin.xyz, 0.0 ) ).xyz;
 			vec3 reflected = -reflect( lightDirection, normal );
 			color.a = clamp( dot( reflected, normalize( viewer ) ), 0.0, 1.0 );
 			color.a *= color.a;
@@ -432,21 +450,21 @@ void main() {
 #if defined (USE_CLX_IDENT) || defined (USE_FIXED_COLOR)
 	// use either 1.0 or fixed (rgb+a) color from spec.constants
 #else
-	#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#if defined(USE_VBO_MODEL)
 		frag_color0 = CalcColor( 0, position, normal );
 	#else
 		frag_color0 = in_color0;
 	#endif
 
 	#ifdef USE_CL1
-		#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+		#if defined(USE_VBO_MODEL)
 			frag_color1 = CalcColor( 1, position, normal );
 		#else
 			frag_color1 = in_color1;
 		#endif
 	#endif
 	#ifdef USE_CL2
-		#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+		#if defined(USE_VBO_MODEL)
 			frag_color2 = CalcColor( 2, position, normal );
 		#else
 			frag_color2 = in_color2;
@@ -457,7 +475,7 @@ void main() {
 	gl_Position = mvp * vec4(position, 1.0);
 
 #ifdef USE_ENV
-	#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#if defined(USE_VBO_MODEL)
 		vec3 viewer = normalize(u_localViewOrigin.xyz - position);
 	#else
 		vec3 viewer = normalize(eyePos.xyz - position);
@@ -480,7 +498,7 @@ void main() {
 #endif
 
 // tcGen & tcMod
-#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+#if defined(USE_VBO_MODEL)
 	#ifndef USE_ENV
 		frag_tex_coord0 = GenTexCoords( in_tex_coord0.st, u_bundle[0].tcGen.type, position, normal, u_bundle[0].tcGen.vector0, u_bundle[0].tcGen.vector1 );
 	#endif
@@ -501,34 +519,50 @@ void main() {
 	#endif
 #endif
 
-#ifdef USE_FOG
-	float s = dot(position, fogDistanceVector.xyz) + fogDistanceVector.w;
-	float t = dot(position, fogDepthVector.xyz) + fogDepthVector.w;
-
-	if ( fogEyeT.y == 1.0 ) {
-		if ( t < 0.0 ) {
-			t = 1.0 / 32.0;
-		} else {
-			t = 31.0 / 32.0;
-		}
-	} else {
-		if ( t < 1.0 ) {
-			t = 1.0 / 32.0;
-		} else {
-			t = 1.0 / 32.0 + (30.0 / 32.0 * t) / ( t - fogEyeT.x );
-		}
+#ifdef USE_FOG	
+	if ( hw_fog == 1 ) 
+	{
+		#ifdef USE_VBO_MODEL
+			fog_tex_coord = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+		#else
+			// when model vbos are disabled, but the shader still requires
+			// the modelmatrix to get world space positions.
+			// store the modelmatrix in main uniform
+			fog_tex_coord = (int(fogDistanceVector[3]) == 1)
+				? (u_ModelMatrix * vec4(position, 1.0)).xyz
+				: position;
+		#endif
 	}
+	else 
+	{
+		float s = dot(position, fogDistanceVector.xyz) + fogDistanceVector.w;
+		float t = dot(position, fogDepthVector.xyz) + fogDepthVector.w;
 
-	fog_tex_coord = vec2(s, t);
-#endif // USE_FOG
+		if ( fogEyeT.y == 1.0 ) {
+			if ( t < 0.0 ) {
+				t = 1.0 / 32.0;
+			} else {
+				t = 31.0 / 32.0;
+			}
+		} else {
+			if ( t < 1.0 ) {
+				t = 1.0 / 32.0;
+			} else {
+				t = 1.0 / 32.0 + (30.0 / 32.0 * t) / ( t - fogEyeT.x );
+			}
+		}
 
-#if !defined(USE_CLX_IDENT) && (defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV))
+		fog_tex_coord.xy = vec2(s, t);
+	}
+#endif
+
+#if !defined(USE_CLX_IDENT) && defined(USE_VBO_MODEL)
 	position		= (u_ModelMatrix * vec4(position, 1.0)).xyz;
 	normal			= normalize(mat3(u_ModelMatrix) * normal);
 
 	//vec3 viewDir = u_ViewOrigin.xyz - position;
 
-	vec3 L	= lightDir.xyz - (position * lightDir.w);
+	vec3 L	= u_LocalLightOrigin.xyz - (position * u_LocalLightOrigin.w);
 
 	var_LightDir	= vec4(L, 0.0);	
 	var_Normal		= vec4(normal, 0.0);

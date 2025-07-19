@@ -36,7 +36,8 @@ qboolean vk_begin_dglow_blur( void )
 	vk_record_image_layout_transition( vk.cmd->command_buffer, vk.dglow_image[0],
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		0, 0 );
 
 	for ( i = 0; i < VK_NUM_BLUR_PASSES * 2; i += 2 ) {
 
@@ -50,7 +51,8 @@ qboolean vk_begin_dglow_blur( void )
 		vk_record_image_layout_transition( vk.cmd->command_buffer, vk.dglow_image[i],
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			0, 0 );
 
 		// vectical blur
 		vk_begin_dglow_blur_render_pass( i + 1 );
@@ -62,7 +64,8 @@ qboolean vk_begin_dglow_blur( void )
 		vk_record_image_layout_transition( vk.cmd->command_buffer, vk.dglow_image[i + 1],
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			0, 0 );
 	}
 
 	vk_begin_post_blend_render_pass( vk.render_pass.dglow.blend, qtrue );
@@ -88,22 +91,24 @@ qboolean vk_begin_dglow_blur( void )
 		// force depth range and viewport/scissor updates
 		vk.cmd->depth_range = DEPTH_RANGE_COUNT;
 
-		uint32_t offsets[4], offset_count;
+		uint32_t offsets[VK_DESC_UNIFORM_COUNT], offset_count;
 
 		// restore clobbered descriptor sets
 		//for ( i = 0; i < ( ( vk.maxBoundDescriptorSets >= 6 ) ? 7 : 4 ); i++ ) {
 		for ( i = 0; i < VK_DESC_COUNT; i++ ) {
 			if ( vk.cmd->descriptor_set.current[i] != VK_NULL_HANDLE ) {
-				if ( i == VK_DESC_STORAGE || i == VK_DESC_UNIFORM ) {
+				if ( /*i == VK_DESC_STORAGE ||*/ i == VK_DESC_UNIFORM ) {
 					offset_count = 0;
 
 					offsets[offset_count++] = vk.cmd->descriptor_set.offset[i];
-#ifdef USE_VBO_GHOUL2
-					if ( vk.vboGhoul2Active && i == VK_DESC_UNIFORM ) {
-						offsets[offset_count++] = vk.cmd->descriptor_set.offset[i + 1];
-						offsets[offset_count++] = vk.cmd->descriptor_set.offset[i + 2];
-					}
-#endif
+
+					// not required for dot storage flare test, chances are slim thats the previous pipeline.
+					offsets[offset_count++] = vk.cmd->descriptor_set.offset[VK_DESC_UNIFORM_CAMERA_BINDING];
+					offsets[offset_count++] = vk.cmd->descriptor_set.offset[VK_DESC_UNIFORM_ENTITY_BINDING];
+					offsets[offset_count++] = vk.cmd->descriptor_set.offset[VK_DESC_UNIFORM_BONES_BINDING];
+					offsets[offset_count++] = vk.cmd->descriptor_set.offset[VK_DESC_UNIFORM_FOGS_BINDING];
+					offsets[offset_count++] = vk.cmd->descriptor_set.offset[VK_DESC_UNIFORM_GLOBAL_BINDING];
+
 					qvkCmdBindDescriptorSets( vk.cmd->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk.pipeline_layout, i, 1, &vk.cmd->descriptor_set.current[i], offset_count, offsets );
 				}
 				else

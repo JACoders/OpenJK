@@ -417,6 +417,9 @@ static void VarInfo( void )
 
     if ( r_vertexLight->integer )
         ri.Printf( PRINT_ALL, "HACK: using vertex lightmap approximation\n" );
+
+	if ( r_finish->integer )
+		ri.Printf( PRINT_ALL, "Forcing glFinish\n" );
 }
 
 /*
@@ -444,15 +447,15 @@ void vk_info_f( void ) {
             i, vk_world.image_chunks[i].items, (int)(vk_world.image_chunks[i].size / 1024), (int)(vk_world.image_chunks[i].used / 1024));
 
 #ifdef USE_VBO
-    const int vbo_mode = MIN( r_vbo->integer, 2 );
-    const char *vbo_mode_string[4] = { "off", "world only", "world + models" };
     const char *yesno[] = {"no ", "yes"};
+    const int vbo_mode = MIN( r_vbo->integer, 1 );
+    const int vbo_models_mode = MIN( r_vbo_models->integer, 1 );
 
-    ri.Printf( PRINT_ALL, "VBO mode: %s\n", vbo_mode_string[vbo_mode] );
+    ri.Printf( PRINT_ALL, "VBO world caching: %s\n", yesno[vbo_mode] );
+    ri.Printf( PRINT_ALL, "VBO model caching: %s", yesno[vbo_models_mode] );
 
-    if( vbo_mode == 2 )
-        ri.Printf( PRINT_ALL, "VBO model buffers: %i", tr.numVBOs );
-
+    if ( vbo_models_mode )
+        ri.Printf( PRINT_ALL, ", num buffers: %i \n", tr.numVBOs );
 #endif
 #else
     ri.Printf(PRINT_ALL, "vk_info statistics are not enabled in this build.\n");

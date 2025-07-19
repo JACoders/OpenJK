@@ -49,6 +49,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define MAX_TEXTURE_SIZE		2048 // must be less or equal to 32768
 #define MAX_TEXTURE_UNITS		8
 
+#define USE_BUFFER_CLEAR		/* clear attachments on render pass begin */
+
 #include "qcommon/qfiles.h"
 #include "rd-common/tr_public.h"
 #include "rd-common/tr_common.h"
@@ -282,12 +284,27 @@ typedef struct VBO_s
 	VkDeviceMemory	memory;
 
 	uint32_t		offsets[12];
+
+	int				size;
+	void			*mapped;
+	struct {
+		VkBuffer		buffer;
+		VkDeviceMemory	memory;
+	} staging;
 } VBO_t;
 
 typedef struct IBO_s
 {
 	VkBuffer		buffer;
 	VkDeviceMemory	memory;
+
+	int				size;
+	void			*mapped;
+
+	struct {
+		VkBuffer		buffer;
+		VkDeviceMemory	memory;
+	} staging;	
 } IBO_t;
 
 //===============================================================================
@@ -525,7 +542,8 @@ typedef struct textureBundle_s {
 
 	qboolean		isLightmap;
 	qboolean		isVideoMap;
-	qboolean		isScreenMap;
+	unsigned int 	isScreenMap : 1;
+	unsigned int 	dlight : 1;
 
 	int				videoMapHandle;
 	bool glow;
@@ -539,7 +557,7 @@ typedef struct shaderStage_s {
 	bool			isDetail;
 
 	byte			index;						// index of stage
-	byte			lightmapStyle;
+	byte			lightmapStyle[2];
 
 	textureBundle_t	bundle[NUM_TEXTURE_BUNDLES];
 
@@ -742,7 +760,7 @@ typedef struct trRefdef_s {
 //=================================================================================
 
 // skins allow models to be retextured without modifying the model file
-#if 0
+#ifndef USE_OPENJK
 // this isn't done yet in OpenJK master
 typedef struct {
 	char		name[MAX_QPATH];
@@ -884,6 +902,37 @@ typedef struct srfFlare_s {
 #define	VERTEX_COLOR		( 5 + ( MAXLIGHTMAPS * 2 ) )
 #define	VERTEX_FINAL_COLOR	( 5 + ( MAXLIGHTMAPS * 3 ) )
 
+
+#ifdef _G2_GORE
+typedef struct
+{
+	vec4_t		verts;
+	vec4_t		normals;
+	vec2_t		texcoords;
+	byte		bonerefs[4];
+	byte		weights[4];
+	vec4_t		tangents;
+} g2GoreVert_t;
+
+typedef struct srfG2GoreSurface_s
+{
+	surfaceType_t   surfaceType;
+
+	// indexes
+	int             numIndexes;
+	glIndex_t      *indexes;
+
+	// vertexes
+	int             numVerts;
+	g2GoreVert_t    *verts;
+
+	// BSP VBO offsets
+	int             firstVert;
+	int             firstIndex;
+
+} srfG2GoreSurface_t;
+
+#endif
 typedef struct srfGridMesh_s {
 	surfaceType_t	surfaceType;
 
@@ -1549,6 +1598,14 @@ typedef struct trGlobals_s {
 	int						numIBOs;
 	IBO_t					*ibos[4069];
 
+#ifdef _G2_GORE
+	VBO_t					*goreVBO;
+	int						*goreVBOIndex;
+	int						goreVBOCurrentIndex;
+	IBO_t					*goreIBO;
+	int						goreIBOCurrentIndex;
+#endif
+
 	// shader indexes from other modules will be looked up in tr.shaders[]
 	// shader indexes from drawsurfs will be looked up in sortedShaders[]
 	// lower indexed sortedShaders must be rendered first (opaque surfaces before translucent)
@@ -1582,7 +1639,7 @@ typedef struct trGlobals_s {
 	int						lastRenderCommand;
 	int						numFogs; // read before parsing shaders
 
-	vec4_t					*fastskyColor;
+	vec4_t					clearColor;
 } trGlobals_t;
 
 struct glconfigExt_t
@@ -1802,6 +1859,7 @@ extern cvar_t	*r_roundImagesDown;
 extern cvar_t	*r_nomip;				// apply picmip only on worldspawn textures
 #ifdef USE_VBO
 extern cvar_t	*r_vbo;
+extern cvar_t	*r_vbo_models;
 #endif
 
 /*
@@ -1892,6 +1950,7 @@ float		R_SumOfUsedImages( qboolean bUseFormat );
 void		R_InitSkins( void );
 skin_t		*R_GetSkinByHandle( qhandle_t hSkin );
 const void	*RB_TakeVideoFrameCmd( const void *data );
+float		R_ClampDenorm( float v );
 void		RE_HunkClearCrap( void );
 
 //
@@ -2150,7 +2209,8 @@ public:
 #endif
 	mdxmSurface_t	*surfaceData;		// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
 #ifdef _G2_GORE
-	float			*alternateTex;		// alternate texture coordinates.
+	///float			*alternateTex;		// alternate texture coordinates.
+	void *alternateTex;		// alternate texture coordinates.
 	void			*goreChain;
 
 	float			scale;
@@ -2164,8 +2224,10 @@ public:
 		ident			= src.ident;
 		boneCache		= src.boneCache;
 		surfaceData		= src.surfaceData;
+#ifdef _G2_GORE
 		alternateTex	= src.alternateTex;
 		goreChain		= src.goreChain;
+#endif
 #ifdef USE_VBO_GHOUL2
 		vboMesh			= src.vboMesh;
 #endif
@@ -2194,8 +2256,10 @@ CRenderableSurface():
 		ident			= SF_MDX;
 		boneCache		= nullptr;
 		surfaceData		= nullptr;
+#ifdef _G2_GORE
 		alternateTex	= nullptr;
 		goreChain		= nullptr;
+#endif
 #ifdef USE_VBO_GHOUL2
 		vboMesh			= nullptr;
 #endif
@@ -2446,10 +2510,13 @@ char		*GenerateImageMappingName( const char *name );
 void		R_Add_AllocatedImage( image_t *image );
 
 void		vk_bind( image_t *image );
+void		vk_flush_staging_buffer( qboolean final );
+void		vk_alloc_staging_buffer( VkDeviceSize size );
 void		vk_upload_image( image_t *image, byte *pic );
 void		vk_upload_image_data( image_t *image, int x, int y, int width, int height, int mipmaps, byte *pixels, int size, qboolean update ) ;
 void		vk_generate_image_upload_data( image_t *image, byte *data, Image_Upload_Data *upload_data );
 void		vk_create_image( image_t *image, int width, int height, int mip_levels );
+void		vk_clean_staging_buffer( void );
 
 // ghoul2
 void		RB_TransformBones( const trRefEntity_t *ent, const trRefdef_t *refdef );
@@ -2478,6 +2545,10 @@ void		ComputeTexCoords( const int b, const textureBundle_t *bundle );
 extern void R_BuildWorldVBO( msurface_t *surf, int surfCount );
 extern void R_BuildMDXM( model_t *mod, mdxmHeader_t *mdxm );
 extern void R_BuildMD3( model_t *mod, mdvModel_t *mdvModel );
+#ifdef _G2_GORE
+extern void R_CreateGoreVBO( void );
+extern void R_UpdateGoreVBO( srfG2GoreSurface_t *goreSurface );
+#endif
 
 extern void VBO_PushData( int itemIndex, shaderCommands_t *input );
 extern void VBO_UnBind( void );

@@ -149,11 +149,14 @@ static void vk_alloc_attachment_memory( void )
     // perform layout transition
     command_buffer = vk_begin_command_buffer();
     for (i = 0; i < num_attachments; i++) {
-        vk_record_image_layout_transition( command_buffer, attachments[i].descriptor, attachments[i].aspect_flags,
+        vk_record_image_layout_transition( command_buffer, 
+            attachments[i].descriptor, 
+            attachments[i].aspect_flags,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            attachments[i].image_layout );
+            attachments[i].image_layout, 
+            0, 0 );
     }
-    vk_end_command_buffer(command_buffer);
+    vk_end_command_buffer( command_buffer, __func__ );
 
     num_attachments = 0;
 }
@@ -459,8 +462,7 @@ void vk_clear_depthstencil_attachments( qboolean clear_stencil ) {
 void vk_clear_color_attachments( const vec4_t color )
 {
     VkClearAttachment attachment;
-    VkClearRect clear_rect[2];
-    uint32_t rect_count;
+    VkClearRect clear_rect;
     
     if ( !vk.active )
         return;
@@ -472,13 +474,11 @@ void vk_clear_color_attachments( const vec4_t color )
     attachment.clearValue.color.float32[3] = color[3];
     attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
+    get_scissor_rect( &clear_rect.rect );
+    clear_rect.baseArrayLayer = 0;
+    clear_rect.layerCount = 1;
 
-    get_scissor_rect( &clear_rect[0].rect );
-    clear_rect[0].baseArrayLayer = 0;
-    clear_rect[0].layerCount = 1;
-    rect_count = 1;
-
-    qvkCmdClearAttachments( vk.cmd->command_buffer, 1, &attachment, rect_count, clear_rect );
+    qvkCmdClearAttachments( vk.cmd->command_buffer, 1, &attachment, 1, &clear_rect );
 }
 
 void vk_destroy_attachments( void )

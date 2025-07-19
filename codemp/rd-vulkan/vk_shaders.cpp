@@ -52,6 +52,68 @@ static VkShaderModule SHADER_MODULE( const uint8_t *bytes, const int count ) {
 
 #include "shaders/spirv/shader_binding.c"
 
+#ifdef _DEBUG
+static void vk_test_generated_shaders( void )
+{
+    int i, j, k, l, m;
+
+    // fog
+    for (i = 0; i < 2; i++) {
+        assert (vk.shaders.frag.fog[i] != VK_NULL_HANDLE);
+
+        for (j = 0; j < 3; j++)
+            assert (vk.shaders.vert.fog[j][i] != VK_NULL_HANDLE);
+    }
+
+    // general
+    for ( i = 0; i < 3; i++ ) {             // vbo
+        // refraction
+        assert (vk.shaders.refraction_vs[i] != VK_NULL_HANDLE);
+
+        for ( j = 0; j < 3; j++ ) {         // tx
+            for ( l = 0; l < 2; l++ ) {     // env
+
+                assert (vk.shaders.frag.gen[i][j][0][l] != VK_NULL_HANDLE);
+                for ( m = 0; m < 2; m++ )   // fog
+                    assert(vk.shaders.vert.gen[i][j][0][l][m] != VK_NULL_HANDLE);
+                
+                // only tx1 && tx2 require cl
+                if ( j == 0 ) 
+                    continue;    
+               
+                assert (vk.shaders.frag.gen[i][j][1][l] != VK_NULL_HANDLE);
+                for ( m = 0; m < 2; m++ )   // fog
+                    assert(vk.shaders.vert.gen[i][j][1][l][m] != VK_NULL_HANDLE);
+            }
+        }
+    }
+
+    // light
+    for ( i = 0; i < 2; i++ ) {
+        assert (vk.shaders.vert.light[i] != VK_NULL_HANDLE);
+
+		for ( j = 0; j < 2; j++ ) {
+            assert (vk.shaders.frag.light[i][j] != VK_NULL_HANDLE);
+        }
+    }
+
+    // ident and fixed
+    for ( i = 0; i < 3; i++ ) {             // vbo
+        for ( j = 0; j < 2; j++ ) {         // tx
+		    for ( k = 0; k < 2; k++ ) {     // env
+                assert (vk.shaders.frag.ident1[i][j][k] != VK_NULL_HANDLE);
+                assert (vk.shaders.frag.fixed[i][j][k] != VK_NULL_HANDLE);
+
+			    for ( m = 0; m < 2; m++ ) { // fog
+                    assert (vk.shaders.vert.ident1[i][j][k][m] != VK_NULL_HANDLE);
+                    assert (vk.shaders.vert.fixed[i][j][k][m] != VK_NULL_HANDLE);
+			    }
+		    }
+	    }
+    }
+}
+#endif
+
 void vk_create_shader_modules( void )
 {
     vk_bind_generated_shaders();
@@ -77,20 +139,14 @@ void vk_create_shader_modules( void )
     vk.shaders.refraction_fs = SHADER_MODULE(refraction_frag_spv);
     VK_SET_OBJECT_NAME(vk.shaders.refraction_fs, "refraction vertex module", VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT);
 
+#ifdef _DEBUG
+    vk_test_generated_shaders();
+#endif
+
     vk.shaders.color_fs = SHADER_MODULE(color_frag_spv);
     vk.shaders.color_vs = SHADER_MODULE(color_vert_spv);
     VK_SET_OBJECT_NAME(vk.shaders.color_vs, "refraction vertex module", VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT);
     VK_SET_OBJECT_NAME(vk.shaders.color_fs, "refraction fragment module", VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT);
-
-
-    vk.shaders.fog_vs[0] = SHADER_MODULE(fog_vert_spv);
-    vk.shaders.fog_fs = SHADER_MODULE(fog_frag_spv);
-    VK_SET_OBJECT_NAME(vk.shaders.fog_vs[0], "fog-only vertex module", VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT);
-    VK_SET_OBJECT_NAME(vk.shaders.fog_fs, "fog-only fragment module", VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT);
-#ifdef USE_VBO_GHOUL2
-    vk.shaders.fog_vs[1] = SHADER_MODULE(fog_ghoul2_vert_spv);
-    VK_SET_OBJECT_NAME(vk.shaders.fog_vs[1], "fog-only ghoul2 vbo vertex module", VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT);
-#endif
 
     vk.shaders.dot_vs = SHADER_MODULE(dot_vert_spv);
     vk.shaders.dot_fs = SHADER_MODULE(dot_frag_spv);
@@ -185,6 +241,20 @@ void vk_destroy_shader_modules( void )
 	    }
     }
 
+    for (i = 0; i < 2; i++) {
+        if (vk.shaders.frag.fog[i] != VK_NULL_HANDLE) {
+            qvkDestroyShaderModule(vk.device, vk.shaders.frag.fog[i], NULL);
+            vk.shaders.frag.fog[i] = VK_NULL_HANDLE;
+        }
+
+        for (j = 0; j < 3; j++) {
+            if (vk.shaders.vert.fog[j][i] != VK_NULL_HANDLE) {
+                qvkDestroyShaderModule(vk.device, vk.shaders.vert.fog[j][i], NULL);
+                vk.shaders.vert.fog[j][i] = VK_NULL_HANDLE;
+            }
+        }
+    }
+
     qvkDestroyShaderModule(vk.device, vk.shaders.frag.gen0_df, NULL);
 
     qvkDestroyShaderModule(vk.device, vk.shaders.color_fs, NULL);
@@ -194,12 +264,6 @@ void vk_destroy_shader_modules( void )
         qvkDestroyShaderModule(vk.device, vk.shaders.refraction_vs[i], NULL);
 
     qvkDestroyShaderModule(vk.device, vk.shaders.refraction_fs, NULL);
-
-    qvkDestroyShaderModule(vk.device, vk.shaders.fog_vs[0], NULL);
-    qvkDestroyShaderModule(vk.device, vk.shaders.fog_fs, NULL);
-#ifdef USE_VBO_GHOUL2
-    qvkDestroyShaderModule(vk.device, vk.shaders.fog_vs[1], NULL);
-#endif
 
     qvkDestroyShaderModule(vk.device, vk.shaders.dot_vs, NULL);
     qvkDestroyShaderModule(vk.device, vk.shaders.dot_fs, NULL);

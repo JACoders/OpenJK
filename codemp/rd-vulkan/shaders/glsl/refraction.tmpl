@@ -2,6 +2,10 @@
 
 #define M_PI 3.1415926535897932384626433832795
 
+#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#define USE_VBO_MODEL
+#endif
+
 // 64 bytes
 layout(push_constant) uniform Transform {
 	mat4 mvp;
@@ -18,14 +22,14 @@ struct tcGen_t {
 	int		type;
 };
 
-layout(set = 1, binding = 0) uniform UBO {
+layout(set = 0, binding = 0) uniform UBO {
 	// light/env/material parameters:
 	vec4 eyePos;
 	vec4 lightPos;
 	vec4 lightColor;
 	vec4 lightVector;
 	
-#if !defined(USE_VBO_GHOUL2) && !defined(USE_VBO_MDV)
+#if !defined(USE_VBO_MODEL)
 	// refraction parameters:
 	tcMod_t u_tcMod;
 	tcGen_t u_tcGen;
@@ -35,53 +39,53 @@ layout(set = 1, binding = 0) uniform UBO {
 #endif
 };
 
-#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
-struct vkBundle_t {
-	vec4	baseColor;
-	vec4	vertColor;
-	tcMod_t	tcMod;
-	tcGen_t	tcGen;
-	int		rgbGen;
-	int		alphaGen;
-	int		numTexMods;
-};
+#if defined(USE_VBO_MODEL)
+	struct vkBundle_t {
+		vec4	baseColor;
+		vec4	vertColor;
+		tcMod_t	tcMod;
+		tcGen_t	tcGen;
+		int		rgbGen;
+		int		alphaGen;
+		int		numTexMods;
+	};
 
-struct vkDisintegration_t {
-	vec3	origin;
-	float	threshold;
-};
+	struct vkDisintegration_t {
+		vec3	origin;
+		float	threshold;
+	};
 
-struct vkDeform_t {
-	float	base;
-	float	amplitude;
-	float	phase;
-	float	frequency;
+	struct vkDeform_t {
+		float	base;
+		float	amplitude;
+		float	phase;
+		float	frequency;
 
-	vec3	vector;
-	float	time;
+		vec3	vector;
+		float	time;
 
-	int		type;
-	int		func;
-};
+		int		type;
+		int		func;
+	};
 
-layout(set = 1, binding = 1) uniform UBOG2 {
-	vec4 u_localViewOrigin;
-	vec4 ambientLight;
-	vec4 directedLight;
-	vec4 lightDir;
+	layout(set = 0, binding = 2) uniform Entity {
+		vec4 u_ambientLight;
+		vec4 u_directedLight;
+		vec4 u_LocalLightOrigin;
+		vec4 u_localViewOrigin;
+		mat4 u_ModelMatrix;
+	};
 
-	vkBundle_t			u_bundle[3];
-	vkDisintegration_t	u_disintegration;
-	vkDeform_t			u_deform;
-
-	float	u_portalRange;
-
-	mat4 u_ModelMatrix;
-};	
+	layout(set = 0, binding = 5) uniform Global {
+		vkBundle_t			u_bundle[3];
+		vkDisintegration_t	u_disintegration;
+		vkDeform_t			u_deform;
+		float				u_portalRange;
+	};
 #endif
 
 #if defined(USE_VBO_GHOUL2)
-layout(set = 1, binding = 2) uniform Bones {
+layout(set = 0, binding = 3) uniform Bones {
 	mat3x4 u_BoneMatrices[72];
 };
 
@@ -120,7 +124,7 @@ const float etaG = 1.0 / 1.20;
 const float etaB = 1.0 / 1.05;
 
 
-#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+#if defined(USE_VBO_MODEL)
 vec4 CalcColor( int index, in vec3 position, in vec3 normal ) {
 	vec4 color = ( u_bundle[index].vertColor * vec4( 0.0 ) ) + u_bundle[index].baseColor;		// skip vertColor?
 
@@ -157,7 +161,7 @@ vec4 CalcColor( int index, in vec3 position, in vec3 normal ) {
 		case 6: // AGEN_LIGHTING_SPECULAR
 		{
 			vec3 viewer = normalize( u_localViewOrigin.xyz - position );
-			vec3 lightDirection = ( transpose(u_ModelMatrix) * vec4( lightDir.xyz, 0.0 ) ).xyz;
+			vec3 lightDirection = ( transpose(u_ModelMatrix) * vec4( u_LocalLightOrigin.xyz, 0.0 ) ).xyz;
 			vec3 reflected = -reflect( lightDirection, normal );
 			color.a = clamp( dot( reflected, normalize( viewer ) ), 0.0, 1.0 );
 			color.a *= color.a;
@@ -384,7 +388,7 @@ void main() {
 
 	gl_Position = mvp * vec4(position, 1.0);
 
-	#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#if defined(USE_VBO_MODEL)
 		frag_color = CalcColor( 0, position, normal );
 
 		vec2 tex			= GenTexCoords( u_bundle[0].tcGen.type, position, normal, u_bundle[0].tcGen.vector0, u_bundle[0].tcGen.vector1 );

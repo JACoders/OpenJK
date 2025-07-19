@@ -1,6 +1,6 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform UBO {
+layout(set = 0, binding = 0) uniform UBO {
 	// light/env parameters:
 	vec4 eyePos;				// vertex
 	vec4 lightPos;				// vertex: light origin
@@ -15,9 +15,9 @@ layout(set = 1, binding = 0) uniform UBO {
 #endif
 };
 
-layout(set = 2, binding = 0) uniform sampler2D texture0;
+layout(set = 1, binding = 0) uniform sampler2D texture0;
 #ifdef USE_FOG
-layout(set = 3, binding = 0) uniform sampler2D fogtexture;
+layout(set = 2, binding = 0) uniform sampler2D fogtexture;
 #endif
 
 layout(location = 0) centroid in vec2 frag_tex_coord;
@@ -35,7 +35,8 @@ layout (constant_id = 1) const float alpha_test_value = 0.0;
 //layout (constant_id = 2) const float depth_fragment = 0.85;
 layout (constant_id = 3) const int alpha_to_coverage = 0;
 //layout (constant_id = 4) const int color_mode = 0;
-layout (constant_id = 5) const int abs_light = 0;
+//layout (constant_id = 5) const int hw_fog = 0;
+layout (constant_id = 6) const int abs_light = 0;
 
 float CorrectAlpha(float threshold, float alpha, vec2 tc)
 {

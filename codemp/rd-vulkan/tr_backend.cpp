@@ -158,6 +158,15 @@ to actually render the visible surfaces for this view
 */
 static void RB_BeginDrawingView( void ) {
 
+	// sync with gl if needed
+	if ( r_finish->integer == 1 && !glState.finishCalled ) {
+		vk_queue_wait_idle();
+
+		glState.finishCalled = qtrue;
+	} else if ( r_finish->integer == 0 ) {
+		glState.finishCalled = qtrue;
+	}
+
 	// we will need to change the projection matrix before drawing
 	// 2D images again
 	backEnd.projection2D = qfalse;
@@ -279,9 +288,9 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		if ( shader != oldShader || fogNum != oldFogNum || dlighted != oldDlighted
 			|| ( entityNum != oldEntityNum && !shader->entityMergable ) )
 		{
-			if (oldShader != NULL) {
+			//if (oldShader != NULL) {
 				RB_EndSurface();
-			}
+			//}
 #ifdef USE_PMLIGHT
 #define INSERT_POINT SS_FOG
 			if (backEnd.refdef.numLitSurfs && oldShaderSort < INSERT_POINT && shader->sort >= INSERT_POINT) {
@@ -864,6 +873,83 @@ static void RB_LightingPass( void )
 }
 #endif
 
+static void vk_update_camera_constants( const trRefdef_t *refdef, const viewParms_t *viewParms ) 
+{
+	// set
+	vkUniformCamera_t uniform = {};
+
+	Com_Memcpy( uniform.viewOrigin, refdef->vieworg, sizeof( vec3_t) );
+	uniform.viewOrigin[3] = 0.0f;
+
+	/*
+	const float* p = viewParms->projectionMatrix;
+	float proj[16];
+	Com_Memcpy(proj, p, 64);
+
+	proj[5] = -p[5];
+	//myGlMultMatrix(vk_world.modelview_transform, proj, uniform.mvp);
+	myGlMultMatrix(viewParms->world.modelViewMatrix, proj, uniform.mvp);
+	*/
+
+	vk.cmd->camera_ubo_offset = vk_append_uniform( &uniform, sizeof(uniform), vk.uniform_camera_item_size );
+}
+
+static void vk_update_entity_light_constants( vkUniformEntity_t &uniform, const trRefEntity_t *refEntity ) 
+{
+	static const float normalizeFactor = 1.0f / 255.0f;
+
+	VectorScale(refEntity->ambientLight, normalizeFactor, uniform.ambientLight);
+	VectorScale(refEntity->directedLight, normalizeFactor, uniform.directedLight);
+	VectorCopy(refEntity->lightDir, uniform.lightOrigin);
+
+	uniform.lightOrigin[3] = 0.0f;
+}
+
+static void vk_update_entity_matrix_constants( vkUniformEntity_t &uniform, const trRefEntity_t *refEntity ) 
+{
+	orientationr_t ori;
+
+	// backend ref cant be right
+	/*if ( refEntity == &tr.worldEntity ) {
+		ori = backEnd.viewParms.world;
+		Matrix16Identity( uniform.modelMatrix );
+	}else{
+		R_RotateForEntity( refEntity, &backEnd.viewParms, &ori );
+		Matrix16Copy( ori.modelMatrix, uniform.modelMatrix );
+	}*/
+
+	R_RotateForEntity(refEntity, &backEnd.viewParms, &ori);
+	Matrix16Copy(ori.modelMatrix, uniform.modelMatrix);
+	VectorCopy(ori.viewOrigin, uniform.localViewOrigin);
+
+	Com_Memcpy( &uniform.localViewOrigin, ori.viewOrigin, sizeof( vec3_t) );
+	uniform.localViewOrigin[3] = 0.0f;
+}
+
+static void vk_update_entity_constants( const trRefdef_t *refdef ) {
+	uint32_t i;
+	Com_Memset( vk.cmd->entity_ubo_offset, 0, sizeof(vk.cmd->entity_ubo_offset) );
+
+	for ( i = 0; i < refdef->num_entities; i++ ) {
+		trRefEntity_t *ent = &refdef->entities[i];
+
+		R_SetupEntityLighting( refdef, ent );
+
+		vkUniformEntity_t uniform = {};
+		vk_update_entity_light_constants( uniform, ent );
+		vk_update_entity_matrix_constants( uniform, ent );
+
+		vk.cmd->entity_ubo_offset[i] = vk_append_uniform( &uniform, sizeof(uniform), vk.uniform_entity_item_size );
+	}
+
+	const trRefEntity_t *ent = &tr.worldEntity;
+	vkUniformEntity_t uniform = {};
+	vk_update_entity_light_constants( uniform, ent );
+	vk_update_entity_matrix_constants( uniform, ent );
+
+	vk.cmd->entity_ubo_offset[REFENTITYNUM_WORLD] = vk_append_uniform( &uniform, sizeof(uniform), vk.uniform_entity_item_size );
+}
+
 static void vk_update_ghoul2_constants( const trRefdef_t *refdef ) {
 	uint32_t i;
 
@@ -896,9 +982,44 @@ static void vk_update_ghoul2_constants( const trRefdef_t *refdef ) {
 	}
 
 }
+
+static void vk_update_fog_constants(const trRefdef_t* refdef)
+{
+	uint32_t i;
+	size_t size;
+	vkUniformFog_t uniform = {};
+
+	uniform.num_fogs = tr.world ? ( tr.world->numfogs - 1 ) : 0;
+
+	size = sizeof(vec4_t);
+
+	for ( i = 0; i < uniform.num_fogs; ++i )
+	{
+		const fog_t *fog = tr.world->fogs + i + 1;
+		vkUniformFogEntry_t *fogData = uniform.fogs + i;
+
+		VectorCopy4( fog->surface, fogData->plane );
+		VectorCopy4( fog->color, fogData->color );
+		fogData->depthToOpaque = sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque;
+		fogData->hasPlane = fog->hasSurface;
+	}
+
+	size += (i * sizeof(vkUniformFogEntry_t));
+
+	vk.cmd->fogs_ubo_offset = vk_append_uniform( &uniform, size, vk.uniform_fogs_item_size );
+}
+
 static void RB_UpdateUniformConstants( const trRefdef_t *refdef, const viewParms_t *viewParms ) 
 {
-	vk_update_ghoul2_constants( refdef );
+	vk_update_camera_constants( refdef, viewParms );
+
+	if ( vk.vboGhoul2Active ) 
+	{
+		vk_update_entity_constants( refdef );
+		vk_update_ghoul2_constants( refdef );
+	}
+
+	vk_update_fog_constants( refdef );
 }
 
 /*
@@ -1015,8 +1136,9 @@ const void	*RB_DrawBuffer( const void *data ) {
 	// force depth range and viewport/scissor updates
 	vk.cmd->depth_range = DEPTH_RANGE_COUNT;
 
-	if (r_clear->integer) {
+	if ( r_clear->integer && vk.clearAttachment ) {
 		const vec4_t color = { 1, 0, 0.5, 1 };
+
 		backEnd.projection2D = qtrue; // to ensure we have viewport that occupies entire window
 		vk_clear_color_attachments( color );
 		backEnd.projection2D = qfalse;
@@ -1048,6 +1170,10 @@ const void	*RB_SwapBuffers( const void *data ) {
 	tr.needScreenMap = 0;
 
 	vk_end_frame();
+
+	if ( backEnd.doneSurfaces && !glState.finishCalled ) {
+		vk_queue_wait_idle();
+	}
 
 	if (backEnd.screenshotMask && vk.cmd->waitForFence) {
 		if (backEnd.screenshotMask & SCREENSHOT_TGA && backEnd.screenshotTGA[0]) {
@@ -1118,7 +1244,7 @@ static const void *RB_ClearColor( const void *data )
 	backEnd.projection2D = qtrue;
 
 	if ( r_fastsky->integer )
-		vk_clear_color_attachments( (float*)tr.fastskyColor );
+		vk_clear_color_attachments( (float*)tr.clearColor );
 	else
 		vk_clear_color_attachments( (float*)tr.world->fogs[tr.world->globalFog].color );
 
@@ -1178,9 +1304,7 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_END_OF_LIST:
 		default:
 			// stop rendering
-			if (vk.frame_count) {
-				vk_end_frame();
-			}
+			vk_end_frame();
 			t2 = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 			backEnd.pc.msec = t2 - t1;
 			return;

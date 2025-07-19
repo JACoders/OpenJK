@@ -1,5 +1,9 @@
 #version 450
 
+#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#define USE_VBO_MODEL
+#endif
+
 #ifdef USE_TX2
 #define USE_TX1
 #endif
@@ -9,79 +13,127 @@
 #endif
 
 #if defined (USE_FOG)
-layout(set = 1, binding = 0) uniform UBO {
-	// light/env/material parameters:
-	vec4 eyePos;
-	vec4 lightPos;
-	vec4 lightColor;
-	vec4 lightVector;
-//#ifdef USE_FOG	
-	// fog parameters:
-	vec4 fogDistanceVector;
-	vec4 fogDepthVector;
-	vec4 fogEyeT;
-	vec4 fogColor;
-//#endif
-};
+	layout(set = 0, binding = 0) uniform UBO {
+		// light/env/material parameters:
+		vec4 eyePos;
+		vec4 lightPos;
+		vec4 lightColor;
+		vec4 lightVector;
+	//#ifdef USE_FOG	
+		// fog parameters:
+		vec4 fogDistanceVector;
+		vec4 fogDepthVector;
+		vec4 fogEyeT;
+		vec4 fogColor;
+	//#endif
+	};
+
+	struct vkUniformFogEntry_t {
+		vec4	plane;
+		vec4	color;
+		float	depthToOpaque;
+		int		hasPlane;
+	};
+
+	struct vkUniformFog_t {
+		int					num_fogs;
+		vkUniformFogEntry_t	fogs[16];
+	};
+
+	layout(set = 0, binding = 1) uniform Camera {
+		vec4 u_ViewOrigin;
+	};
+
+	layout(set = 0, binding = 4) uniform Fog {
+		vkUniformFog_t u_fogs;
+	};
 #endif
 
-#if !defined(USE_CLX_IDENT) && (defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV))
-struct tcMod_t {
-	vec4	matrix;
-	vec4	offTurb;
-};
+#if !defined(USE_CLX_IDENT) && defined(USE_VBO_MODEL)
+	struct tcMod_t {
+		vec4	matrix;
+		vec4	offTurb;
+	};
 
-struct tcGen_t {
-	vec3	vector0;
-	vec3	vector1;
-	int		type;
-};
+	struct tcGen_t {
+		vec3	vector0;
+		vec3	vector1;
+		int		type;
+	};
 
-struct vkBundle_t {
-	vec4	baseColor;
-	vec4	vertColor;
-	tcMod_t	tcMod;
-	tcGen_t	tcGen;
-	int		rgbGen;
-	int		alphaGen;
-	int		numTexMods;
-};
+	struct vkBundle_t {
+		vec4	baseColor;
+		vec4	vertColor;
+		tcMod_t	tcMod;
+		tcGen_t	tcGen;
+		int		rgbGen;
+		int		alphaGen;
+		int		numTexMods;
+	};
 
-layout(set = 1, binding = 1) uniform UBOG2 {
-	vec4 u_localViewOrigin;
-	vec4 ambientLight;
-	vec4 directedLight;
-	vec4 lightDir;
+	struct vkDisintegration_t {
+		vec3	origin;
+		float	threshold;
+	};
 
-	vkBundle_t			u_bundle[3];
-};	
+	struct vkDeform_t {
+		float	base;
+		float	amplitude;
+		float	phase;
+		float	frequency;
 
-layout(location = 7) in vec4 var_Normal;
-layout(location = 8) in vec4 var_LightDir;
-//layout(location = 9) in vec4 var_ViewDir;
+		vec3	vector;
+		float	time;
 
-bool needsShading( in int rgbType ) {
-	return ( rgbType >= 9 && rgbType != 11 && rgbType != 12 && rgbType != 13 ) ? true : false;
-}
+		int		type;
+		int		func;
+	};
 
-float CalcLightAttenuation(float point, float normDist)
-{
-	// zero light at 1.0, approximating q3 style
-	// also don't attenuate directional light
-	float attenuation = ( 0.5 * normDist - 1.5 ) * point + 1.0;
-	return clamp( attenuation, 0.0, 1.0 );
-}
+	layout(set = 0, binding = 2) uniform Entity {
+		vec4 u_ambientLight;
+		vec4 u_directedLight;
+		vec4 u_LocalLightOrigin;
+		vec4 u_localViewOrigin;
+		mat4 u_ModelMatrix;
+	};
+
+	layout(set = 0, binding = 3) uniform Bones {
+		mat3x4 u_BoneMatrices[72];
+	};
+
+	layout(set = 0, binding = 5) uniform Global {
+		vkBundle_t			u_bundle[3];
+		vkDisintegration_t	u_disintegration;
+		vkDeform_t			u_deform;
+		float				u_portalRange;
+	};	
+
+	layout(location = 7) in vec4 var_Normal;
+	layout(location = 8) in vec4 var_LightDir;
+	//layout(location = 9) in vec4 var_ViewDir;
+
+	bool needsShading( in int rgbType ) {
+		return ( rgbType >= 9 && rgbType != 11 && rgbType != 12 && rgbType != 13 ) ? true : false;
+	}
+
+	float CalcLightAttenuation(float point, float normDist)
+	{
+		// zero light at 1.0, approximating q3 style
+		// also don't attenuate directional light
+		float attenuation = ( 0.5 * normDist - 1.5 ) * point + 1.0;
+		return clamp( attenuation, 0.0, 1.0 );
+	}
 #endif
 
-layout(set = 2, binding = 0) uniform sampler2D texture0;
+layout(set = 1, binding = 0) uniform sampler2D texture0;
 #ifdef USE_TX1
-layout(set = 3, binding = 0) uniform sampler2D texture1;
+layout(set = 2, binding = 0) uniform sampler2D texture1;
 #endif
 #ifdef USE_TX2
-layout(set = 4, binding = 0) uniform sampler2D texture2;
+layout(set = 3, binding = 0) uniform sampler2D texture2;
 #endif
 #ifdef USE_FOG
-layout(set = 5, binding = 0) uniform sampler2D fog_texture;
+layout(set = 4, binding = 0) uniform sampler2D fog_texture;
 #endif
 
 #ifdef USE_CLX_IDENT
@@ -109,7 +161,7 @@ layout(location = 2) centroid in vec2 frag_tex_coord1;
 layout(location = 3) centroid in vec2 frag_tex_coord2;
 #endif
 #ifdef USE_FOG
-layout(location = 4) in vec2 fog_tex_coord;
+layout(location = 4) in vec3 fog_tex_coord;
 #endif
 
 #ifdef USE_DF
@@ -128,18 +180,19 @@ layout (constant_id = 2) const float depth_fragment = 0.85;
 
 layout (constant_id = 3) const int alpha_to_coverage = 0;
 //layout (constant_id = 4) const int color_mode = 0;
-//layout (constant_id = 5) const int abs_light = 0;
+layout (constant_id = 5) const int hw_fog = 0;
+//layout (constant_id = 6) const int abs_light = 0;
 #if defined (USE_TX1) || defined(USE_TX2)
-layout (constant_id = 6) const int tex_mode = 0; // modulate, add (identity), add(non-identity) etc
+layout (constant_id = 7) const int tex_mode = 0; // modulate, add (identity), add(non-identity) etc
 #endif
-layout (constant_id = 7) const int discard_mode = 0;
+layout (constant_id = 8) const int discard_mode = 0;
 #ifdef USE_FIXED_COLOR
-layout (constant_id = 8) const float identity_color = 1.0;
-layout (constant_id = 9) const float identity_alpha = 1.0;
+layout (constant_id = 9) const float identity_color = 1.0;
+layout (constant_id = 10) const float identity_alpha = 1.0;
 #endif
 
 #ifdef USE_FOG
-layout (constant_id = 10) const int acff = 0; // NONE, RGB, RGBA, ALPHA
+layout (constant_id = 11) const int acff = 0; // NONE, RGB, RGBA, ALPHA
 #endif
 
 #ifdef USE_ATEST
@@ -155,15 +208,73 @@ float CorrectAlpha(float threshold, float alpha, vec2 tc)
 }
 #endif
 
+
+#ifdef USE_FOG
+	void ApplyACFF(inout vec4 base, in vec4 fogColor, in float fogAlpha)
+	{
+		if ( acff == 1 )		// ACFF_RGB
+			base.rgb *= ( 1.0 - fogAlpha );        
+
+		else if ( acff == 2 )		// ACFF_RGBA
+			base *= ( 1.0 - fogAlpha );            
+
+		else if ( acff == 3 )		// ACFF_ALPHA
+			base.a *= ( 1.0 - fogAlpha );         
+
+		else			// default: ACFF_NONE
+			base = mix( base, fogColor, fogAlpha ); 
+	}
+
+	vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in vkUniformFogEntry_t fog)
+	{
+		bool inFog = dot(viewOrigin, fog.plane.xyz) - fog.plane.w >= 0.0 || (fog.hasPlane == 0);
+
+		// line: x = o + tv
+		// plane: (x . n) + d = 0
+		// intersects: dot(o + tv, n) + d = 0
+		//             dot(o + tv, n) = -d
+		//             dot(o, n) + t*dot(n, v) = -d
+		//             t = -(d + dot(o, n)) / dot(n, v)
+		vec3 V = position - viewOrigin;
+
+		// fogPlane is inverted in tr_bsp for some reason.
+		float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
+
+		// only use this for objects with potentially two contibuting fogs
+		#if defined(USE_FALLBACK_GLOBAL_FOG)
+			bool intersects = (t > 0.0 && t < 0.995);
+			if (inFog == intersects)
+			{
+				int u_globalFogIndex = int(fogDistanceVector[0]);
+				Fog globalFog = u_fogs.fogs[u_globalFogIndex];
+
+				float distToVertex = length(V);
+				float distFromIntersection = distToVertex - (t * distToVertex);
+				float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
+				return vec4(globalFog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+			}
+		#else
+			bool intersects = (t > 0.0 && t < 0.995);
+			if (inFog == intersects)
+				return vec4(0.0);
+		#endif
+
+		float distToVertexFromViewOrigin = length(V);
+		float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
+
+		float distOutsideFog = max(distToVertexFromViewOrigin - distToIntersectionFromViewOrigin, 0.0);
+		float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
+
+		float z = fog.depthToOpaque * distThroughFog;
+		return vec4(fog.color.rgb * fogDistanceVector[2], 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+	}
+#endif
+
 void main() {
 	vec4 diffuse;
 	float attenuation;
 	vec3 lightColor, ambientColor;
 	vec3 L, N;
-
-#ifdef USE_FOG
-	vec4 fog = texture(fog_texture, fog_tex_coord);
-#endif
 
 #ifdef USE_FIXED_COLOR
 	const vec4 frag_color = vec4(identity_color, identity_color,identity_color, identity_alpha);
@@ -511,14 +622,14 @@ void main() {
 	base = color0;
 #endif
 
-#if !defined(USE_CLX_IDENT) && (defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV))
+#if !defined(USE_CLX_IDENT) && defined(USE_VBO_MODEL)
 	L = var_LightDir.xyz;
 	float sqrLightDist = dot(L, L);
 	L /= sqrt(sqrLightDist);
 
 	if ( needsShading( u_bundle[0].rgbGen ) ) {
-		lightColor = ( directedLight.xyz * 1.2 ) * base.rgb;
-		ambientColor = ( ambientLight.rgb ) * base.rgb;
+		lightColor = ( u_directedLight.xyz * 1.2 ) * base.rgb;
+		ambientColor = ( u_ambientLight.rgb ) * base.rgb;
 
 		vec3 nL = normalize( L );
 		float LdotL = dot( L, L );
@@ -535,18 +646,15 @@ void main() {
 #endif
 
 #ifdef USE_FOG
-	if ( acff == 1 ) {
-		// ACFF_RGB
-		base.rgb = base.rgb * (1.0 - fog.w);
-	} else if ( acff == 2 ) {
-		// ACFF_RGBA
-		base = base * (1.0 - fog.w);
-	} else if ( acff == 3 ) {
-		// ACFF_ALPHA
-		base.a = base.a * (1.0 - fog.w);
-	} else {
-		// default: ACFF_NONE
-		base = mix( base, fog * fogColor, fog.a );
+	if ( hw_fog == 1 ) {
+		int u_fogIndex = int(fogDistanceVector[1]);
+		vec4 fog_color = CalcFog( u_ViewOrigin.rgb, fog_tex_coord, u_fogs.fogs[u_fogIndex] );
+		ApplyACFF( base, fog_color, fog_color.a );
+	} 
+	else {
+		vec4 fog = texture( fog_texture, fog_tex_coord.xy );
+		vec4 fog_color = fog * fogColor;
+		ApplyACFF( base, fog_color, fog.a );
 	}
 #endif
 

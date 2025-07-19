@@ -1,0 +1,109 @@
+#version 450
+
+layout(set = 0, binding = 0) uniform UBO {
+	// light/env/material parameters:
+	vec4 eyePos;
+	vec4 lightPos;
+	vec4 lightColor;
+	vec4 lightVector;
+//#ifdef USE_FOG	
+	// fog parameters:
+	vec4 fogDistanceVector;
+	vec4 fogDepthVector;
+	vec4 fogEyeT;
+	vec4 fogColor;
+//#endif
+};
+
+#ifdef USE_FOG_EXP
+	layout(set = 0, binding = 1) uniform Camera {
+		vec4 u_ViewOrigin;
+	};
+
+	struct vkUniformFogEntry_t {
+		vec4	plane;
+		vec4	color;
+		float	depthToOpaque;
+		int		hasPlane;
+	};
+
+	struct vkUniformFog_t {
+		int					num_fogs;
+		vkUniformFogEntry_t	fogs[16];
+	};
+
+	layout(set = 0, binding = 4) uniform Fog {
+		vkUniformFog_t u_fogs;
+	};
+#endif
+
+layout(set = 2, binding = 0) uniform sampler2D fog_texture;
+
+#ifdef USE_FOG_LINEAR
+	layout(location = 4) in vec2 fog_tex_coord;
+#endif
+#ifdef USE_FOG_EXP
+	layout(location = 4) in vec3 ws_position;
+#endif
+
+layout(location = 0) out vec4 out_color;
+
+//layout(constant_id = 0) const int alpha_test_func = 0;
+
+#ifdef USE_FOG_EXP
+	vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in vkUniformFogEntry_t fog)
+	{
+		bool inFog = dot(viewOrigin, fog.plane.xyz) - fog.plane.w >= 0.0 || (fog.hasPlane == 0);
+
+		// line: x = o + tv
+		// plane: (x . n) + d = 0
+		// intersects: dot(o + tv, n) + d = 0
+		//             dot(o + tv, n) = -d
+		//             dot(o, n) + t*dot(n, v) = -d
+		//             t = -(d + dot(o, n)) / dot(n, v)
+		vec3 V = position - viewOrigin;
+
+		// fogPlane is inverted in tr_bsp for some reason.
+		float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
+
+		// only use this for objects with potentially two contibuting fogs
+		#if defined(USE_FALLBACK_GLOBAL_FOG)
+			bool intersects = (t > 0.0 && t < 0.995);
+			if (inFog == intersects)
+			{
+				int u_globalFogIndex = int(fogDistanceVector[0]);
+				Fog globalFog = u_fogs.fogs[u_globalFogIndex];
+
+				float distToVertex = length(V);
+				float distFromIntersection = distToVertex - (t * distToVertex);
+				float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
+				return vec4(globalFog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+			}
+		#else
+			bool intersects = (t > 0.0 && t < 0.995);
+			if (inFog == intersects)
+				return vec4(0.0);
+		#endif
+
+		float distToVertexFromViewOrigin = length(V);
+		float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
+
+		float distOutsideFog = max(distToVertexFromViewOrigin - distToIntersectionFromViewOrigin, 0.0);
+		float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
+
+		float z = fog.depthToOpaque * distThroughFog;
+		return vec4(fog.color.rgb * fogDistanceVector[2], 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+	}
+#endif
+
+void main() {
+	#ifdef USE_FOG_LINEAR
+		vec4 fog = texture(fog_texture, fog_tex_coord);
+		out_color = fog * fogColor;
+	#endif
+
+	#ifdef USE_FOG_EXP
+		int u_fogIndex = int(fogDistanceVector[1]);
+		out_color = CalcFog( u_ViewOrigin.rgb, ws_position, u_fogs.fogs[u_fogIndex] );
+	#endif
+}

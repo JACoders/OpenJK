@@ -214,6 +214,7 @@ cvar_t	*r_roundImagesDown;
 cvar_t	*r_nomip;
 #ifdef USE_VBO
 cvar_t	*r_vbo;
+cvar_t	*r_vbo_models;
 #endif
 
 // the limits apply to the sum of all scenes in a frame --
@@ -865,10 +866,11 @@ void R_Register( void )
 	r_windPointY						= ri.Cvar_Get( "r_windPointY",						"0",						CVAR_NONE, "" );
 	r_nocurves							= ri.Cvar_Get( "r_nocurves",						"0",						CVAR_CHEAT, "" );
 	r_drawworld							= ri.Cvar_Get( "r_drawworld",						"1",						CVAR_CHEAT, "" );
-	r_drawfog							= ri.Cvar_Get("r_drawfog",							"2",						CVAR_ARCHIVE_ND, "Fog mode\n"
+	r_drawfog							= ri.Cvar_Get("r_drawfog",							"2",						CVAR_ARCHIVE_ND | CVAR_LATCH, "Fog mode\n"
 		" 0 - disabled\n"
 		" 1 - legacy fog\n"
-		" 2 - fog collapse\n");
+		" 2 - \"hardware\" fog + collapse\n"
+		" 3 - legacy fog + collapse\n");
 	r_lightmap							= ri.Cvar_Get( "r_lightmap",						"0",						CVAR_ARCHIVE_ND, "" );
 	r_distanceCull						= ri.Cvar_Get( "r_distanceCull",					"0",						CVAR_ARCHIVE_ND, "" );
 	r_portalOnly						= ri.Cvar_Get( "r_portalOnly",						"0",						CVAR_CHEAT, "" );
@@ -955,7 +957,8 @@ void R_Register( void )
 	r_nomip								= ri.Cvar_Get("r_nomip",							"0",						CVAR_ARCHIVE | CVAR_LATCH, "Apply picmip only on worldspawn textures");
 	ri.Cvar_CheckRange(r_nomip, 0, 1, qtrue);
 #ifdef USE_VBO
-	r_vbo								= ri.Cvar_Get("r_vbo",								"0",						CVAR_ARCHIVE | CVAR_LATCH, "Cache static surfaces:\n 0 - off\n 1 - world\n 2 - world + models");
+	r_vbo								= ri.Cvar_Get("r_vbo",								"0",						CVAR_ARCHIVE | CVAR_LATCH, "Cache static world surfaces");
+	r_vbo_models						= ri.Cvar_Get("r_vbo_models",						"1",						CVAR_ARCHIVE | CVAR_LATCH, "Cache ghoul2 and md3 model surfaces");
 #endif
 	r_renderWidth						= ri.Cvar_Get("r_renderWidth",						"800",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
 	r_renderHeight						= ri.Cvar_Get("r_renderHeight",						"600",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
@@ -1035,6 +1038,7 @@ void R_Init( void ) {
 	// init function tables
 	//
 	for (i = 0; i < FUNCTABLE_SIZE; i++) {
+#if 0
 		if (i == 0) {
 			tr.sinTable[i] = EPSILON;
 		}
@@ -1044,6 +1048,9 @@ void R_Init( void ) {
 		else {
 			tr.sinTable[i] = sin(DEG2RAD(i * 360.0f / ((float)(FUNCTABLE_SIZE - 1))));
 		}
+#else
+		tr.sinTable[i] = sin( DEG2RAD( i * 360.0f / FUNCTABLE_SIZE ) + 0.0001f );
+#endif
 		tr.squareTable[i] = (i < FUNCTABLE_SIZE / 2) ? 1.0f : -1.0f;
 		if (i == 0) {
 			tr.sawToothTable[i] = EPSILON;
@@ -1100,8 +1107,11 @@ void R_Init( void ) {
 	R_Set2DRatio();
 	R_InitImages();	
 
+#ifdef _G2_GORE
+	R_CreateGoreVBO();
+#endif
 	vk_create_pipelines();	// Vulkan
-	vk_set_fastsky_color();
+	vk_set_clearcolor();
 
 	R_InitShaders(qfalse);
 	R_InitSkins();
@@ -1131,17 +1141,20 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	R_ShutdownFonts();
 
 	// contains vulkan resources/state, reinitialized on a map change.
-	if (tr.registered) {
+	//if (tr.registered) {
 
 		if (destroyWindow){
-			vk_delete_textures();
+			//vk_delete_textures();
 
 			if (restarting)
 				SaveGhoul2InfoArray();
 		}
 
+		vk_delete_textures();
 		vk_release_resources();
-	}
+	//}
+
+	//vk_release_resources(); not merged yet (https://github.com/ec-/Quake3e/commit/d31b84ebf2ab702686e98dff40b7673473026b30)
 
 	if (destroyWindow) {
 		vk_shutdown();

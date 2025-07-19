@@ -1431,8 +1431,11 @@ void R_SortDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			if (r_portalOnly->integer) {
 				return;
 			}
-
-			if (r_fastsky->integer == 0 || !vk.fastSky) {
+#ifndef USE_BUFFER_CLEAR
+			if ( r_fastsky->integer == 0 || !vk.clearAttachment  ) {
+#else
+			if ( r_fastsky->integer == 0 ) {
+#endif
 				break;	// only one mirror view at a time
 			}
 		}

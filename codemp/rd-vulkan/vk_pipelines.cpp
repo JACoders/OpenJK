@@ -32,36 +32,36 @@ static qboolean is_ghoul2_vbo;
 static qboolean is_mdv_vbo;
 #endif
 
+static void vk_push_layout_binding( VkDescriptorSetLayoutBinding *bind, VkDescriptorType type,
+    uint32_t binding,VkShaderStageFlags flags ) 
+{
+    bind[binding].binding = binding;
+    bind[binding].descriptorType = type;
+    bind[binding].descriptorCount = 1;
+    bind[binding].stageFlags = flags;
+    bind[binding].pImmutableSamplers = NULL;
+}
+
 static void vk_create_layout_binding( int binding, VkDescriptorType type, 
     VkShaderStageFlags flags, VkDescriptorSetLayout *layout, qboolean is_uniform ) 
 {
-    uint32_t count = 0;
-    VkDescriptorSetLayoutBinding bind[3];
+    uint32_t count = 1;
+    VkDescriptorSetLayoutBinding bind[VK_DESC_UNIFORM_COUNT];
     VkDescriptorSetLayoutCreateInfo desc;
     
-    bind[count].binding = binding;
-    bind[count].descriptorType = type;
-    bind[count].descriptorCount = 1;
-    bind[count].stageFlags = flags;
-    bind[count].pImmutableSamplers = NULL;
-    count++;
-#if defined(USE_VBO_GHOUL2)
-    if ( is_uniform && vk.vboGhoul2Active ) {
-        bind[count].binding = binding + 1; // binding 1 
-        bind[count].descriptorType = type;
-        bind[count].descriptorCount = 1;
-        bind[count].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        bind[count].pImmutableSamplers = NULL;
-        count++;
+   vk_push_layout_binding( bind, type, binding, flags );
 
-        bind[count].binding = binding + 2; // binding 2 
-        bind[count].descriptorType = type;
-        bind[count].descriptorCount = 1;
-        bind[count].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        bind[count].pImmutableSamplers = NULL;
-        count++;  
+    if ( is_uniform ) {
+        const VkShaderStageFlags uniform_flags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        vk_push_layout_binding( bind, type, VK_DESC_UNIFORM_CAMERA_BINDING, uniform_flags );
+        vk_push_layout_binding( bind, type, VK_DESC_UNIFORM_ENTITY_BINDING, uniform_flags );
+        vk_push_layout_binding( bind, type, VK_DESC_UNIFORM_BONES_BINDING, VK_SHADER_STAGE_VERTEX_BIT );
+        vk_push_layout_binding( bind, type, VK_DESC_UNIFORM_FOGS_BINDING, VK_SHADER_STAGE_FRAGMENT_BIT );
+        vk_push_layout_binding( bind, type, VK_DESC_UNIFORM_GLOBAL_BINDING, uniform_flags );
+
+        count = VK_DESC_UNIFORM_COUNT;
     }
-#endif
+
     desc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     desc.pNext = NULL;
     desc.flags = 0;
@@ -85,12 +85,7 @@ void vk_create_descriptor_layout( void )
         pool_size[0].descriptorCount = MAX_DRAWIMAGES + 1 + 1 + 1 + ( VK_NUM_BLUR_PASSES * 4 ) + 1;
 
         pool_size[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        pool_size[1].descriptorCount = NUM_COMMAND_BUFFERS;
-
-#if defined(USE_VBO_GHOUL2)
-        if ( vk.vboGhoul2Active )
-            pool_size[1].descriptorCount += NUM_COMMAND_BUFFERS * 2;
-#endif
+        pool_size[1].descriptorCount = VK_DESC_UNIFORM_COUNT * NUM_COMMAND_BUFFERS;
 
         pool_size[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         pool_size[2].descriptorCount = 1;
@@ -128,13 +123,12 @@ void vk_create_pipeline_layout( void )
     push_range.offset = 0;
     push_range.size = 64; // 16 mvp floats + 16
 
-    // Main pipeline layout
-    set_layouts[0] = vk.set_layout_storage; // storage for testing flare visibility
-    set_layouts[1] = vk.set_layout_uniform; // fog/dlight parameters
-    set_layouts[2] = vk.set_layout_sampler; // diffuse
-    set_layouts[3] = vk.set_layout_sampler; // lightmap / fog-only
-    set_layouts[4] = vk.set_layout_sampler; // blend
-    set_layouts[5] = vk.set_layout_sampler; // collapsed fog texture
+    // standard pipelines
+    set_layouts[0] = vk.set_layout_uniform; // fog/dlight parameters
+    set_layouts[1] = vk.set_layout_sampler; // diffuse
+    set_layouts[2] = vk.set_layout_sampler; // lightmap / fog-only
+    set_layouts[3] = vk.set_layout_sampler; // blend
+    set_layouts[4] = vk.set_layout_sampler; // collapsed fog texture
 
     desc.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     desc.pNext = NULL;
@@ -147,7 +141,8 @@ void vk_create_pipeline_layout( void )
     VK_SET_OBJECT_NAME(vk.pipeline_layout, "pipeline layout - main", VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT);
 
     // flare test pipeline
-   /* set_layouts[0] = vk.set_layout; // dynamic storage buffer
+    set_layouts[0] = vk.set_layout_storage; // dynamic storage buffer
+
     desc.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     desc.pNext = NULL;
     desc.flags = 0;
@@ -155,7 +150,8 @@ void vk_create_pipeline_layout( void )
     desc.pSetLayouts = set_layouts;
     desc.pushConstantRangeCount = 1;
     desc.pPushConstantRanges = &push_range;
-    VK_CHECK(qvkCreatePipelineLayout(vk.device, &desc, NULL, &vk.pipeline_layout_storage));*/
+
+    VK_CHECK( qvkCreatePipelineLayout( vk.device, &desc, NULL, &vk.pipeline_layout_storage ) );
 
     // post-processing pipeline
     set_layouts[0] = vk.set_layout_sampler; // sampler
@@ -182,20 +178,21 @@ void vk_create_pipeline_layout( void )
 
 static uint32_t vk_bind_stride( uint32_t in ) 
 {
+#ifdef USE_VBO
     if ( is_ghoul2_vbo )
         return get_mdxm_stride();
-
     else if ( is_mdv_vbo )
         return get_mdv_stride();
-
+#endif
     return in;
 }
 
 static void vk_push_bind( uint32_t binding, uint32_t stride )
 {
+#ifdef USE_VBO
     if ( ( is_ghoul2_vbo || is_mdv_vbo ) && ( binding == 1 || binding == 6 || binding == 7 ) )
         return; // skip in_color bindings
-
+#endif
     bindings[num_binds].binding = binding;
     bindings[num_binds].stride = vk_bind_stride( stride );
     bindings[num_binds].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -204,9 +201,10 @@ static void vk_push_bind( uint32_t binding, uint32_t stride )
 
 static void vk_push_attr( uint32_t location, uint32_t binding, VkFormat format )
 {
+#ifdef USE_VBO
     if ( ( is_ghoul2_vbo || is_mdv_vbo ) && ( binding == 1 || binding == 6 || binding == 7 ) )
         return; // skip in_color bindings
-
+#endif
     attribs[num_attrs].location = location;
     attribs[num_attrs].binding = binding;
     attribs[num_attrs].format = format;
@@ -220,10 +218,10 @@ static void vk_push_attr( uint32_t location, uint32_t binding, VkFormat format )
 // from memory throughout the vertices
 static void vk_push_vertex_input_binding_attribute( const Vk_Pipeline_Def *def ) {
     num_binds = num_attrs = 0; // reset
-
+#ifdef USE_VBO
     is_ghoul2_vbo = def->vbo_ghoul2;
     is_mdv_vbo = def->vbo_mdv;
-
+#endif
     switch ( def->shader_type ) {
         case TYPE_FOG_ONLY:
         case TYPE_DOT:
@@ -474,8 +472,8 @@ static void vk_push_vertex_input_binding_attribute( const Vk_Pipeline_Def *def )
             break;
     }
 
-#if defined(USE_VBO_GHOUL2)
-    if ( is_ghoul2_vbo || is_mdv_vbo ) {
+#if defined(USE_VBO)
+    if ( def->vbo_ghoul2 || def->vbo_mdv ) {
         if ( ( def->shader_type == TYPE_FOG_ONLY || def->shader_type == TYPE_REFRACTION ) || 
              ( def->shader_type >= TYPE_GENERIC_BEGIN && def->shader_type <= TYPE_GENERIC_END ) )
         {
@@ -517,7 +515,7 @@ static void vk_push_vertex_input_binding_attribute( const Vk_Pipeline_Def *def )
                     break;
             }
 
-            if ( is_ghoul2_vbo ) 
+            if ( def->vbo_ghoul2 ) 
             {
                 vk_push_bind( 8, sizeof( vec4_t ) );		// bone indexes
                 vk_push_attr( 8, 8, VK_FORMAT_R8G8B8A8_UINT );
@@ -611,7 +609,7 @@ static void set_shader_stage_desc( VkPipelineShaderStageCreateInfo *desc, VkShad
     desc->pSpecializationInfo = NULL;
 }
 
-VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPassIndex )
+VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPassIndex, uint32_t def_index )
 {
     VkPipeline  pipeline;
     VkShaderModule *vs_module = NULL;
@@ -628,14 +626,15 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     VkPipelineDynamicStateCreateInfo dynamic_state;
     VkDynamicState dynamic_state_array[3] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_DEPTH_BIAS };
     VkGraphicsPipelineCreateInfo create_info;
-    //int32_t vert_spec_data[1]; // clipping (def->clipping_plane). NULL  
-    //VkSpecializationInfo vert_spec_info;
+    int32_t vert_spec_data[1]; // clipping (def->clipping_plane). NULL  
+    VkSpecializationInfo vert_spec_info;
     struct FragSpecData {
         int32_t alpha_test_func; 
         float   alpha_test_value;
         float   depth_fragment;
         int32_t alpha_to_coverage;
         int32_t color_mode;
+        int32_t hw_fog;
         int32_t abs_light; 
         int32_t tex_mode;
         int32_t discard_mode;
@@ -643,15 +642,17 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
         float   identity_alpha;
         int32_t acff;
     } frag_spec_data; 
-    VkSpecializationMapEntry spec_entries[12];
+    VkSpecializationMapEntry spec_entries[13];
     VkSpecializationInfo frag_spec_info;
     VkBool32 alphaToCoverage = VK_FALSE;
     unsigned int atest_bits;
     unsigned int state_bits = def->state_bits;
 
     int vbo = 0;
+#ifdef USE_VBO
     if ( def->vbo_ghoul2 )  vbo = 1;
     if ( def->vbo_mdv )     vbo = 2;
+#endif
 
     switch ( def->shader_type ) {
         case TYPE_REFRACTION:
@@ -810,8 +811,8 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
 
         case TYPE_FOG_ONLY:
             // ghoul2 requires strides & bones, mdv only strides
-            vs_module = &vk.shaders.fog_vs[ def->vbo_ghoul2 ? 1 : 0 ]; 
-            fs_module = &vk.shaders.fog_fs;
+            vs_module = &vk.shaders.vert.fog[vbo][vk.hw_fog]; 
+            fs_module = &vk.shaders.frag.fog[vk.hw_fog];
             break;
 
         case TYPE_DOT:
@@ -990,11 +991,13 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
 		frag_spec_data.acff = 0;
 	}
 
+	frag_spec_data.hw_fog = vert_spec_data[0] = vk.hw_fog;
+
 	//
 	// vertex module specialization data
 	//
- #if 0
-    spec_entries[0].constantID = 0; // clip_plane
+
+    spec_entries[0].constantID = 0; // hw_fog
     spec_entries[0].offset = 0 * sizeof( int32_t );
     spec_entries[0].size = sizeof( int32_t );
 
@@ -1003,7 +1006,7 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     vert_spec_info.dataSize = ARRAY_LEN( vert_spec_data ) * sizeof( int32_t );
     vert_spec_info.pData = &vert_spec_data[0];
     shader_stages[0].pSpecializationInfo = &vert_spec_info;
-#endif
+
 
     //
     // fragment module specialization data
@@ -1029,30 +1032,34 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     spec_entries[5].size = sizeof(frag_spec_data.color_mode);
 
     spec_entries[6].constantID = 5;
-    spec_entries[6].offset = offsetof(struct FragSpecData, abs_light);
-    spec_entries[6].size = sizeof(frag_spec_data.abs_light);
+    spec_entries[6].offset = offsetof(struct FragSpecData, hw_fog);
+    spec_entries[6].size = sizeof(frag_spec_data.hw_fog);
 
     spec_entries[7].constantID = 6;
-    spec_entries[7].offset = offsetof(struct FragSpecData, tex_mode);
-    spec_entries[7].size = sizeof(frag_spec_data.tex_mode);
+    spec_entries[7].offset = offsetof(struct FragSpecData, abs_light);
+    spec_entries[7].size = sizeof(frag_spec_data.abs_light);
 
     spec_entries[8].constantID = 7;
-    spec_entries[8].offset = offsetof(struct FragSpecData, discard_mode);
-    spec_entries[8].size = sizeof(frag_spec_data.discard_mode);
+    spec_entries[8].offset = offsetof(struct FragSpecData, tex_mode);
+    spec_entries[8].size = sizeof(frag_spec_data.tex_mode);
 
     spec_entries[9].constantID = 8;
-    spec_entries[9].offset = offsetof(struct FragSpecData, identity_color);
-    spec_entries[9].size = sizeof(frag_spec_data.identity_color);
+    spec_entries[9].offset = offsetof(struct FragSpecData, discard_mode);
+    spec_entries[9].size = sizeof(frag_spec_data.discard_mode);
 
     spec_entries[10].constantID = 9;
-    spec_entries[10].offset = offsetof(struct FragSpecData, identity_alpha);
-    spec_entries[10].size = sizeof(frag_spec_data.identity_alpha);
+    spec_entries[10].offset = offsetof(struct FragSpecData, identity_color);
+    spec_entries[10].size = sizeof(frag_spec_data.identity_color);
 
     spec_entries[11].constantID = 10;
-    spec_entries[11].offset = offsetof(struct FragSpecData, acff);
-    spec_entries[11].size = sizeof(frag_spec_data.acff);
+    spec_entries[11].offset = offsetof(struct FragSpecData, identity_alpha);
+    spec_entries[11].size = sizeof(frag_spec_data.identity_alpha);
 
-    frag_spec_info.mapEntryCount = 11;
+    spec_entries[12].constantID = 11;
+    spec_entries[12].offset = offsetof(struct FragSpecData, acff);
+    spec_entries[12].size = sizeof(frag_spec_data.acff);
+
+    frag_spec_info.mapEntryCount = 12;
     frag_spec_info.pMapEntries = spec_entries + 1;
     frag_spec_info.dataSize = sizeof( frag_spec_data );
     frag_spec_info.pData = &frag_spec_data;
@@ -1151,7 +1158,7 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     multisample_state.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisample_state.pNext = NULL;
     multisample_state.flags = 0;
-    multisample_state.rasterizationSamples = (vk.renderPassIndex == RENDER_PASS_SCREENMAP) ? (VkSampleCountFlagBits)vk.screenMapSamples : (VkSampleCountFlagBits)vkSamples;
+    multisample_state.rasterizationSamples = (renderPassIndex == RENDER_PASS_SCREENMAP) ? (VkSampleCountFlagBits)vk.screenMapSamples : (VkSampleCountFlagBits)vkSamples;
     multisample_state.sampleShadingEnable = VK_FALSE;
     multisample_state.minSampleShading = 1.0f;
     multisample_state.pSampleMask = NULL;
@@ -1272,7 +1279,11 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     create_info.pDepthStencilState = &depth_stencil_state;
     create_info.pColorBlendState = &blend_state;
     create_info.pDynamicState = &dynamic_state;
-    create_info.layout = vk.pipeline_layout;
+
+	if ( def->shader_type == TYPE_DOT )
+		create_info.layout = vk.pipeline_layout_storage;
+	else
+		create_info.layout = vk.pipeline_layout;
 
     if ( renderPassIndex == RENDER_PASS_SCREENMAP )
         create_info.renderPass = vk.render_pass.screenmap;
@@ -1286,7 +1297,7 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     create_info.basePipelineIndex = -1;
 
     VK_CHECK( qvkCreateGraphicsPipelines( vk.device, vk.pipelineCache, 1, &create_info, NULL, &pipeline ) );
-    //VK_SET_OBJECT_NAME(&pipeline, va("Pipeline: %d", vk.pipeline_create_count), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT);
+    VK_SET_OBJECT_NAME( pipeline, va( "pipeline def#%i, pass#%i", def_index, renderPassIndex ), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT );
     vk.pipeline_create_count++;
 
     return pipeline;
@@ -1416,6 +1427,12 @@ static void vk_create_post_process_pipeline( int program_index, uint32_t width, 
     frag_spec_data.bloom_threshold_mode = r_bloom_threshold_mode->integer;
     frag_spec_data.bloom_modulate = r_bloom_modulate->integer;
     frag_spec_data.dither = r_dither->integer;
+
+    if ( program_index == 4 ) 
+    {
+        // adjust for legacy bias: r_DynamicGlowIntensity default ~1.13, subtract 1.0 to align with old bloom intensity defaults
+        frag_spec_data.bloom_intensity = MAX( 0.01f, MIN( (r_DynamicGlowIntensity->value - 1.0f), 4.0f ) );
+    }
 
     if ( !vk_surface_format_color_depth( vk.present_format.format, &frag_spec_data.depth_r, &frag_spec_data.depth_g, &frag_spec_data.depth_b ) )
         ri.Printf(PRINT_ALL, "Format %s not recognized, dither to assume 8bpc\n", vk_format_string(vk.base_format.format));
@@ -1798,7 +1815,7 @@ static void vk_create_blur_pipeline( char *name, int program_index, uint32_t ind
     VK_SET_OBJECT_NAME( *pipeline, va( "%s %s blur pipeline %i", name, horizontal_pass ? "horizontal" : "vertical", index / 2 + 1 ), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT );
 }
 
-uint32_t vk_alloc_pipeline( const Vk_Pipeline_Def *def ) {
+static uint32_t vk_alloc_pipeline( const Vk_Pipeline_Def *def ) {
     VK_Pipeline_t* pipeline;
 
     if (vk.pipelines_count >= MAX_VK_PIPELINES) {
@@ -1819,9 +1836,11 @@ uint32_t vk_alloc_pipeline( const Vk_Pipeline_Def *def ) {
 VkPipeline vk_gen_pipeline( uint32_t index ) {
     if (index < vk.pipelines_count) {
         VK_Pipeline_t* pipeline = vk.pipelines + index;
-        if (pipeline->handle[vk.renderPassIndex] == VK_NULL_HANDLE)
-            pipeline->handle[vk.renderPassIndex] = vk_create_pipeline(&pipeline->def, vk.renderPassIndex);
-        return pipeline->handle[vk.renderPassIndex];
+		const renderPass_t pass = vk.renderPassIndex;
+		if ( pipeline->handle[ pass ] == VK_NULL_HANDLE ) {
+			pipeline->handle[ pass ] = vk_create_pipeline( &pipeline->def, pass, index );
+		}
+		return pipeline->handle[ pass ];
     }
     else {
         return VK_NULL_HANDLE;
@@ -1938,8 +1957,11 @@ void vk_alloc_persistent_pipelines( void )
         //    GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL			// additive
         //};
         qboolean polygon_offset[2] = { qfalse, qtrue };
-        int i, j, k, l;
- 
+        int i, j, k;
+#ifdef USE_PMLIGHT
+		int l;
+#endif
+
         Com_Memset(&def, 0, sizeof(def));
         def.shader_type = TYPE_SINGLE_TEXTURE;
         def.mirror = qfalse;
@@ -1962,19 +1984,22 @@ void vk_alloc_persistent_pipelines( void )
                     def.shader_type = TYPE_SINGLE_TEXTURE;
 #endif
                     def.state_bits = fog_state;
+#ifdef USE_VBO  
                     def.vbo_ghoul2 = qfalse;
                     def.vbo_mdv = qfalse;
+#endif
                     vk.std_pipeline.fog_pipelines[0][i][j][k] = vk_find_pipeline_ext(0, &def, qtrue);
-#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)                     
-                    if( vk.vboGhoul2Active ) {
+#ifdef USE_VBO                   
+                    if ( vk.vboGhoul2Active ) {
                         def.vbo_ghoul2 = qtrue;
                         vk.std_pipeline.fog_pipelines[1][i][j][k] = vk_find_pipeline_ext(0, &def, qtrue);
+                        def.vbo_ghoul2 = qfalse;
                     }
 
                     if ( vk.vboMdvActive ) {
-                        def.vbo_ghoul2 = qfalse;
                         def.vbo_mdv = qtrue;
                         vk.std_pipeline.fog_pipelines[2][i][j][k] = vk_find_pipeline_ext(0, &def, qtrue);
+                        def.vbo_mdv = qfalse;
                     }
 #endif
                    // def.shader_type = TYPE_SINGLE_TEXTURE;

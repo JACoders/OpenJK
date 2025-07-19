@@ -219,26 +219,26 @@ void DrawNormals( const shaderCommands_t *input)
 	int		i;
 
 #ifdef USE_VBO	
-	if (tess.vbo_world_index)
+	if ( tess.vbo_world_index )
 		return; // must be handled specially
 #endif
 
 	vk_bind(tr.whiteImage);
 
 	tess.numIndexes = 0;
-	for (i = 0; i < tess.numVertexes; i++) {
-		VectorMA(tess.xyz[i], 2.0, tess.normal[i], tess.xyz[i + tess.numVertexes]);
-		tess.indexes[tess.numIndexes + 0] = i;
-		tess.indexes[tess.numIndexes + 1] = i + tess.numVertexes;
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		VectorMA( tess.xyz[i], 2.0, tess.normal[i], tess.xyz[i + tess.numVertexes] );
+		tess.indexes[ tess.numIndexes + 0 ] = i;
+		tess.indexes[ tess.numIndexes + 1 ] = i + tess.numVertexes;
 		tess.numIndexes += 2;
 	}
 	tess.numVertexes *= 2;
-	Com_Memset(tess.svars.colors[0], tr.identityLightByte, tess.numVertexes * sizeof(color4ub_t));
+	Com_Memset( tess.svars.colors[0], tr.identityLightByte, tess.numVertexes * sizeof( color4ub_t ) );
 
-	vk_bind_pipeline(vk.std_pipeline.normals_debug_pipeline);
+	vk_bind_pipeline( vk.std_pipeline.normals_debug_pipeline );
 	vk_bind_index();
-	vk_bind_geometry(TESS_XYZ | TESS_RGBA0);
-	vk_draw_geometry(DEPTH_RANGE_ZERO, qtrue);
+	vk_bind_geometry( TESS_XYZ | TESS_ST0 | TESS_RGBA0 );
+	vk_draw_geometry( DEPTH_RANGE_ZERO, qtrue );
 }
 
 /*
