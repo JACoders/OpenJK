@@ -47,8 +47,8 @@ USER INTERFACE MAIN
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../qcommon/stringed_ingame.h"
-#include "../qcommon/stv_version.h"
 #include "../qcommon/q_shared.h"
+#include "../qcommon/game_version.h"
 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
@@ -3696,9 +3696,9 @@ static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontInde
 {
 	int width;
 
-	width = DC->textWidth(Q3_VERSION, scale, 0);
+	width = DC->textWidth(JK_VERSION, scale, 0);
 
-	DC->drawText(rect->x - width, rect->y, scale, color, Q3_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
+	DC->drawText(rect->x - width, rect->y, scale, color, JK_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
 }
 
 /*

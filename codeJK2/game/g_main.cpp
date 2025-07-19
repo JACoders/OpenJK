@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
 #include "time.h"
 #include "../code/qcommon/ojk_saved_game_helper.h"
-#include "qcommon/q_version.h"
+#include "../code/qcommon/game_version.h"
 
 extern CNavigator		navigator;
 
@@ -558,7 +558,7 @@ void G_InitCvars( void ) {
 	g_developer = gi.cvar ("developer", "", 0);
 
 	// noset vars
-	gi.cvar( "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM );
+	gi.cvar( "gamename", JK_VERSION , CVAR_SERVERINFO | CVAR_ROM );
 	gi.cvar( "gamedate", SOURCE_DATE , CVAR_ROM );
 	g_skippingcin = gi.cvar ("skippingCinematic", "0", CVAR_ROM);
 
@@ -620,7 +620,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	g_qbLoadTransition = qbLoadTransition;
 
 	gi.Printf ("------- Game Initialization -------\n");
-	gi.Printf ("gamename: %s\n", GAMEVERSION);
+	gi.Printf ("gamename: %s\n", JK_VERSION);
 	gi.Printf ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );

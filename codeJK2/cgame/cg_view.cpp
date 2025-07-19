@@ -1862,7 +1862,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 
 	// let the client system know what our weapon and zoom settings are
 	//FIXME: should really send forcePowersActive over network onto cg.snap->ps...
-	float speed = cg.refdef.fov_y / 75.0 * ((cg_entities[0].gent->client->ps.forcePowersActive&(1<<FP_SPEED))?1.0f:cg_timescale.value);
+	float speed = cg.refdef.fov_y / 75.0 * ((cg_entities[0].gent->client->ps.forcePowersActive&(1<<FP_SPEED))?1.0f:Q_min(cg_timescale.value, 1.0f));
 
 //FIXME: junk code, BUG:168
 

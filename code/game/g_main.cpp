@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //rww - RAGDOLL_END
 
 #include "qcommon/ojk_saved_game_helper.h"
-#include "qcommon/q_version.h"
+#include "qcommon/game_version.h"
 
 extern void WP_SaberLoadParms( void );
 extern qboolean G_PlayerSpawned( void );
@@ -617,7 +617,7 @@ void G_InitCvars( void ) {
 	g_developer = gi.cvar ("developer", "", 0);
 
 	// noset vars
-	gi.cvar( "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM );
+	gi.cvar( "gamename", JK_VERSION , CVAR_SERVERINFO | CVAR_ROM );
 	gi.cvar( "gamedate", SOURCE_DATE , CVAR_ROM );
 	g_skippingcin = gi.cvar ("skippingCinematic", "0", CVAR_ROM);
 
@@ -734,7 +734,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	g_qbLoadTransition = qbLoadTransition;
 
 	gi.Printf ("------- Game Initialization -------\n");
-	gi.Printf ("gamename: %s\n", GAMEVERSION);
+	gi.Printf ("gamename: %s\n", JK_VERSION);
 	gi.Printf ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );

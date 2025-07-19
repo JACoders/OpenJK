@@ -27,9 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/weapons.h"
 #include "../game/g_items.h"
 #include "../game/statindex.h"
-
-#include "../win32/AutoVersion.h"
-
+#include "../qcommon/game_version.h"
 
 /*
 ===============================================================================
@@ -386,7 +384,7 @@ static void SV_Status_f( void ) {
 
 	Com_Printf( "name    : %s^7\n", cl->name );
 	Com_Printf( "score   : %i\n", cl->gentity->client->persistant[PERS_SCORE] );
-	Com_Printf( "version : %s %s %i\n", STATUS_OS, VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+	Com_Printf( "version : %s %s %i\n", STATUS_OS, JK_VERSION, PROTOCOL_VERSION );
 #ifdef JK2_MODE
 	Com_Printf( "game    : Jedi Outcast %s\n", FS_GetCurrentGameDir() );
 #else

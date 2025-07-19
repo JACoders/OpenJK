@@ -4368,7 +4368,7 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 	}
 }
 
-extern void FX_AddPrimitive( CEffect **effect, int killTime );
+extern void FX_AddPrimitive( CEffect *effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, vec3_t origin, vec3_t angles )
 {
@@ -4716,7 +4716,7 @@ Ghoul2 Insert End
 
 				fx->mShader = cgs.media.saberBlurShader;
 //				fx->SetFlags( FX_USE_ALPHA );
-				FX_AddPrimitive( (CEffect**)&fx, SABER_TRAIL_TIME );
+				FX_AddPrimitive( fx, SABER_TRAIL_TIME );
 			}
 		}
 

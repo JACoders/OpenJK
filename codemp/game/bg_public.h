@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	MAX_SPAWN_VARS			64
 #define	MAX_SPAWN_VARS_CHARS	4096
 
-
+// like a protocol version, but for mods
 #define	GAME_VERSION		"basejka-1"
 
 #define DEFAULT_SABER			"Kyle"
