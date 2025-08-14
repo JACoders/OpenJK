@@ -753,12 +753,7 @@ static const byte *R_ClusterPVS (int cluster) {
 R_inPVS
 =================
 */
-#ifndef REND2_SP
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask ) {
-#else
-qboolean R_inPVS(vec3_t p1, vec3_t p2) {
-	byte *mask;
-#endif
 	mnode_t* leaf = R_PointInLeaf(p1);
 
 	//agh, the damn snapshot mask doesn't work for this

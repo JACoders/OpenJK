@@ -3262,11 +3262,7 @@ void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef );
 void R_MarkLeaves(void);
 void R_RecursiveWorldNode(mnode_t *node, int planeBits, int dlightBits, int pshadowBits);
-#ifndef REND2_SP
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
-#else
-qboolean R_inPVS(vec3_t p1, vec3_t p2);
-#endif
 
 /*
 ============================================================

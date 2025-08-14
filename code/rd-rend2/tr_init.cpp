@@ -2465,7 +2465,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.R_InitWorldEffects = stub_R_InitWorldEffects;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;
-	re.R_inPVS = R_inPVS;
+	re.inPVS = R_inPVS;
 
 	re.tr_distortionAlpha = stub_get_tr_distortionAlpha;
 	re.tr_distortionStretch = stub_get_tr_distortionStretch;

@@ -250,7 +250,7 @@ typedef struct {
 	// Misc
 	void	(*R_InitWorldEffects)(void);
 	void	(*R_ClearStuffToStopGhoul2CrashingThings)(void);
-	qboolean (*R_inPVS)(vec3_t p1, vec3_t p2);
+	qboolean (*inPVS)( const vec3_t p1, const vec3_t p2, byte *mask );
 
 	void	(*SVModelInit)(void);
 
