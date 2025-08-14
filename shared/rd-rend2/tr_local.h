@@ -474,7 +474,7 @@ typedef enum
 typedef struct VBO_s
 {
 	uint32_t        vertexesVBO;
-	int             vertexesSize;	// amount of memory data allocated for all vertices in bytes
+	size_t          vertexesSize;	// amount of memory data allocated for all vertices in bytes
 
 	uint32_t		offsets[ATTR_INDEX_MAX];
 	uint32_t		strides[ATTR_INDEX_MAX];
@@ -485,7 +485,7 @@ typedef struct VBO_s
 typedef struct IBO_s
 {
 	uint32_t        indexesVBO;
-	int             indexesSize;	// amount of memory data allocated for all triangles in bytes
+	size_t          indexesSize;	// amount of memory data allocated for all triangles in bytes
 //  uint32_t        ofsIndexes;
 } IBO_t;
 
@@ -862,7 +862,7 @@ struct surfaceSprite_t
 	vec2_t fxGrow;
 	surfaceSpriteOrientation_t facing;
 
-	int spriteUboOffset;
+	size_t spriteUboOffset;
 };
 
 #define	MAX_IMAGE_ANIMATIONS	(32)
@@ -2342,8 +2342,8 @@ struct vertexAttribute_t
 struct bufferBinding_t
 {
 	GLuint buffer;
-	int offset;
-	int size;
+	size_t offset;
+	size_t size;
 };
 
 // the renderer front end should never modify glstate_t
@@ -2455,7 +2455,7 @@ typedef struct {
 
 	int     c_staticVboDraws;
 	int     c_dynamicVboDraws;
-	int		c_dynamicVboTotalSize;
+	size_t  c_dynamicVboTotalSize;
 
 	int     c_multidraws;
 	int     c_multidrawsMerged;
@@ -2669,26 +2669,26 @@ typedef struct trGlobals_s {
 	GLuint staticUbo;
 	GLuint spriteUbos[MAX_SUB_BSP + 1];
 	GLuint shaderInstanceUbo;
-	int shaderInstanceUboWriteOffset;
-	int entity2DUboOffset;
-	int camera2DUboOffset;
-	int entityFlareUboOffset;
-	int cameraFlareUboOffset;
-	int defaultLightsUboOffset;
-	int defaultSceneUboOffset;
-	int defaultFogsUboOffset;
-	int defaultShaderInstanceUboOffset;
+	size_t shaderInstanceUboWriteOffset;
+	size_t entity2DUboOffset;
+	size_t camera2DUboOffset;
+	size_t entityFlareUboOffset;
+	size_t cameraFlareUboOffset;
+	size_t defaultLightsUboOffset;
+	size_t defaultSceneUboOffset;
+	size_t defaultFogsUboOffset;
+	size_t defaultShaderInstanceUboOffset;
 
-	int cameraUboOffsets[3 + MAX_DLIGHTS * 6 + 3 + MAX_DRAWN_PSHADOWS];
-	int sceneUboOffset;
-	int temporalInfoUboOffset;
-	int lightsUboOffset;
-	int fogsUboOffset;
-	int skyEntityUboOffset;
-	int entityUboOffsets[REFENTITYNUM_WORLD + 1];
-	int previousEntityUboOffsets[REFENTITYNUM_WORLD + 1];
-	int animationBoneUboOffset;
-	int previousAnimationBoneUboOffset;
+	size_t cameraUboOffsets[3 + MAX_DLIGHTS * 6 + 3 + MAX_DRAWN_PSHADOWS];
+	size_t sceneUboOffset;
+	size_t temporalInfoUboOffset;
+	size_t lightsUboOffset;
+	size_t fogsUboOffset;
+	size_t skyEntityUboOffset;
+	size_t entityUboOffsets[REFENTITYNUM_WORLD + 1];
+	size_t previousEntityUboOffsets[REFENTITYNUM_WORLD + 1];
+	size_t animationBoneUboOffset;
+	size_t previousAnimationBoneUboOffset;
 
 	// -----------------------------------------
 
@@ -3050,7 +3050,7 @@ void	GL_DepthRange( float min, float max );
 void	GL_VertexAttribPointers(size_t numAttributes,
 								vertexAttribute_t *attributes);
 void	GL_DrawIndexed(GLenum primitiveType, int numIndices, GLenum indexType,
-						int offset, int numInstances, int baseVertex);
+						size_t offset, int numInstances, int baseVertex);
 void	GL_MultiDrawIndexed(GLenum primitiveType, int *numIndices,
 							glIndex_t **offsets, int numDraws);
 void	GL_Draw( GLenum primitiveType, int firstVertex, int numVertices, int numInstances );
@@ -3354,12 +3354,12 @@ struct VertexArraysProperties
 	int numVertexArrays;
 
 	int enabledAttributes[ATTR_INDEX_MAX];
-	int offsets[ATTR_INDEX_MAX];
-	int sizes[ATTR_INDEX_MAX];
-	int strides[ATTR_INDEX_MAX];
-	int streamStrides[ATTR_INDEX_MAX];
+	size_t offsets[ATTR_INDEX_MAX];
+	size_t sizes[ATTR_INDEX_MAX];
+	size_t strides[ATTR_INDEX_MAX];
+	size_t streamStrides[ATTR_INDEX_MAX];
 	void *streams[ATTR_INDEX_MAX];
-	int stepRates[ATTR_INDEX_MAX];
+	size_t stepRates[ATTR_INDEX_MAX];
 };
 
 uint32_t R_VboPackTangent(vec4_t v);
@@ -3367,8 +3367,8 @@ uint32_t R_VboPackNormal(vec3_t v);
 void R_VboUnpackTangent(vec4_t v, uint32_t b);
 void R_VboUnpackNormal(vec3_t v, uint32_t b);
 
-VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage, const char *debugName);
-IBO_t          *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage, const char *debugName);
+VBO_t          *R_CreateVBO(byte * vertexes, size_t vertexesSize, vboUsage_t usage, const char *debugName);
+IBO_t          *R_CreateIBO(byte * indexes, size_t indexesSize, vboUsage_t usage, const char *debugName);
 
 void            R_BindVBO(VBO_t * vbo);
 void            R_BindNullVBO(void);
@@ -3386,14 +3386,14 @@ void			RB_UpdateGoreVertexData(struct gpuFrame_t* currentFrame, srfG2GoreSurface
 #endif
 void			RB_CommitInternalBufferData();
 
-void			RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, int offset);
-int				RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data);
+void			RB_BindUniformBlock(GLuint ubo, uniformBlock_t block, size_t offset);
+size_t			RB_BindAndUpdateFrameUniformBlock(uniformBlock_t block, void *data);
 void			RB_AddShaderToShaderInstanceUBO(shader_t *shader);
-int				RB_AddShaderInstanceBlock(void *data);
+size_t			RB_AddShaderInstanceBlock(void *data);
 void			RB_UpdateConstants(const trRefdef_t *refdef);
 void			RB_BeginConstantsUpdate(struct gpuFrame_t *frame);
 void			RB_EndConstantsUpdate(const struct gpuFrame_t *frame);
-int				RB_AppendConstantsData(struct gpuFrame_t *frame, const void *data, size_t dataSize);
+size_t			RB_AppendConstantsData(struct gpuFrame_t *frame, const void *data, size_t dataSize);
 void			CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties);
 void			CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties);
 
@@ -3552,6 +3552,9 @@ public:
 		, boneCache(nullptr)
 		, vboMesh(nullptr)
 		, surfaceData(nullptr)
+		, dlightBits(0)
+		, pshadowBits(0)
+		, genShadows(qfalse)
 #ifdef _G2_GORE
 		, alternateTex(nullptr)
 		, goreChain(nullptr)
@@ -3982,7 +3985,7 @@ struct SamplerBinding
 struct UniformBlockBinding
 {
 	GLuint ubo;
-	int offset;
+	size_t offset;
 	uniformBlock_t block;
 };
 

@@ -45,7 +45,7 @@ R_DrawElements
 
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex )
 {
-	int offset = firstIndex * sizeof(glIndex_t) +
+	size_t offset = firstIndex * sizeof(glIndex_t) +
 		(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
 	GL_DrawIndexed(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, offset, 1, 0);
@@ -548,7 +548,7 @@ static void CaptureDrawData(const shaderCommands_t *input, shaderStage_t *stage,
 				glState.currentVBO->vertexesVBO,
 				glState.currentIBO->indexesVBO,
 				numIndexes / 3);
-		ri.FS_Write(data, strlen(data), tr.debugFile);
+		ri.FS_Write(data, int(strlen(data)), tr.debugFile);
 	}
 	else
 	{
@@ -564,7 +564,7 @@ static void CaptureDrawData(const shaderCommands_t *input, shaderStage_t *stage,
 				glState.currentVBO->vertexesVBO,
 				glState.currentIBO->indexesVBO,
 				input->numIndexes / 3);
-		ri.FS_Write(data, strlen(data), tr.debugFile);
+		ri.FS_Write(data, int(strlen(data)), tr.debugFile);
 	}
 }
 
@@ -693,12 +693,12 @@ void RB_FillDrawCommand(
 	}
 	else
 	{
-		int offset = input->firstIndex * sizeof(glIndex_t) +
+		size_t offset = input->firstIndex * sizeof(glIndex_t) +
 			(input->useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
 		drawCmd.type = DRAW_COMMAND_INDEXED;
 		drawCmd.params.indexed.indexType = GL_INDEX_TYPE;
-		drawCmd.params.indexed.firstIndex = offset;
+		drawCmd.params.indexed.firstIndex = (glIndex_t)offset;
 		drawCmd.params.indexed.numIndices = input->numIndexes;
 		drawCmd.params.indexed.baseVertex = 0;
 	}
