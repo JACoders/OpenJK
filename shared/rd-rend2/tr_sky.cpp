@@ -799,37 +799,25 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 		return;
 	}
 
-	// FIXME: this could be a lot cleaner
-	matrix_t translation, modelview;
-
-	Matrix16Translation( backEnd.viewParms.ori.origin, translation );
-	Matrix16Multiply( backEnd.viewParms.world.modelViewMatrix, translation, modelview );
-	GL_SetModelviewMatrix( modelview );
+	backEnd.currentEntity = &tr.worldEntity;
 
 	dist = 	backEnd.viewParms.zFar / 1.75;		// div sqrt(3)
 	size = dist * scale;
 
 	VectorScale( tr.sunDirection, dist, origin );
+	VectorAdd( origin, backEnd.viewParms.ori.origin, origin );
 	PerpendicularVector( vec1, tr.sunDirection );
 	CrossProduct( tr.sunDirection, vec1, vec2 );
 
 	VectorScale( vec1, size, vec1 );
 	VectorScale( vec2, size, vec2 );
 
-	// farthest depth range
-	GL_DepthRange(1.0f, 1.0f);
-
 	RB_BeginSurface( shader, 0, 0 );
 
 	RB_AddQuadStamp(origin, vec1, vec2, colorWhite);
 
 	RB_EndSurface();
-
-	// back to normal depth range
-	GL_DepthRange(0.0f, 1.0f);
 }
-
-
 
 
 /*
@@ -871,8 +859,3 @@ void RB_StageIteratorSky( void ) {
 	backEnd.skyRenderedThisView = qtrue;
 	backEnd.skyNumber++;
 }
-
-
-
-
-
