@@ -2250,7 +2250,8 @@ void RB_SurfaceVBOMDVMesh( srfVBOMDVMesh_t *surf )
 		return;
 
 	tess.surfType = surf->surfaceType;
-	tess.vbo_model_index = surf->vbo->index;
+	tess.vbo_model = surf->vbo;
+	tess.ibo_model = surf->ibo;
 
 	int i, mergeForward, mergeBack;
 	GLvoid *firstIndexOffset, *lastIndexOffset;
@@ -2347,6 +2348,9 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceFlare,		// SF_FLARE,
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
 #ifdef USE_VBO_MDV
-	(void(*)(void*))RB_SurfaceVBOMDVMesh	// SF_VBO_MDVMESH
+	(void(*)(void*))RB_SurfaceVBOMDVMesh,	// SF_VBO_MDVMESH
+#endif
+#ifdef USE_VBO_SS
+	(void(*)(void*))RB_SurfaceSpritesVBO	// SF_SPRITES
 #endif
 };

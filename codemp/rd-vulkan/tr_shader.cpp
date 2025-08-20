@@ -413,7 +413,7 @@ ParseSurfaceSprites
 //
 // NOTE:  This parsing function used to be 12 pages long and very complex.  The new version of surfacesprites
 // utilizes optional parameters parsed in ParseSurfaceSpriteOptional.
-static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
+static bool ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 {
 	const char *token;
 	const char **text = &_text;
@@ -428,7 +428,7 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	if (token[0] == 0)
 	{
 		vk_debug("WARNING: missing surfaceSprites params in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 
 	if (!Q_stricmp(token, "vertical"))
@@ -450,7 +450,7 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	else
 	{
 		vk_debug("WARNING: invalid type in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 
 	//
@@ -460,13 +460,13 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	if (token[0] == 0)
 	{
 		vk_debug("WARNING: missing surfaceSprites params in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 	width = atof(token);
 	if (width <= 0)
 	{
 		vk_debug("WARNING: invalid width in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 
 	//
@@ -476,13 +476,13 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	if (token[0] == 0)
 	{
 		vk_debug("WARNING: missing surfaceSprites params in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 	height = atof(token);
 	if (height <= 0)
 	{
 		vk_debug("WARNING: invalid height in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 
 	//
@@ -492,13 +492,13 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	if (token[0] == 0)
 	{
 		vk_debug("WARNING: missing surfaceSprites params in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 	density = atof(token);
 	if (density <= 0)
 	{
 		vk_debug("WARNING: invalid density in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 
 	//
@@ -508,13 +508,13 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	if (token[0] == 0)
 	{
 		vk_debug("WARNING: missing surfaceSprites params in shader '%s'\n", shader.name);
-		return;
+		return false;
 	}
 	fadedist = atof(token);
 	if (fadedist < 32)
 	{
 		vk_debug("WARNING: invalid fadedist (%f < 32) in shader '%s'\n", fadedist, shader.name);
-		return;
+		return false;
 	}
 
 	if (!stage->ss)
@@ -523,7 +523,7 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	}
 
 	// These are all set by the command lines.
-	stage->ss->surfaceSpriteType = sstype;
+	stage->ss->type = sstype;
 	stage->ss->width = width;
 	stage->ss->height = height;
 	stage->ss->density = density;
@@ -547,6 +547,8 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	stage->ss->fxGrow[1] = 0.0;
 	stage->ss->fxAlphaStart = 1.0;
 	stage->ss->fxAlphaEnd = 0.0;
+
+	return true;
 }
 
 /*
@@ -572,7 +574,7 @@ ParseSurfaceSpritesOptional
 //
 // Optional parameters that will override the defaults set in the surfacesprites command above.
 //
-static void ParseSurfaceSpritesOptional( const char *param, const char *_text, shaderStage_t *stage )
+static bool ParseSurfaceSpritesOptional( const char *param, const char *_text, shaderStage_t *stage )
 {
 	const char *token;
 	const char **text = &_text;
@@ -591,16 +593,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite fademax in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value <= stage->ss->fadeDist)
 		{
 			vk_debug("WARNING: invalid surfacesprite fademax (%.2f <= fadeDist(%.2f)) in shader '%s'\n", value, stage->ss->fadeDist, shader.name);
-			return;
+			return false;
 		}
 		stage->ss->fadeMax = value;
-		return;
+		return true;
 	}
 
 	//
@@ -612,11 +614,11 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite fadescale in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		stage->ss->fadeScale = value;
-		return;
+		return true;
 	}
 
 	//
@@ -628,13 +630,13 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite variance width in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0)
 		{
 			vk_debug("WARNING: invalid surfacesprite variance width in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->variance[0] = value;
 
@@ -642,16 +644,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite variance height in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0)
 		{
 			vk_debug("WARNING: invalid surfacesprite variance height in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->variance[1] = value;
-		return;
+		return true;
 	}
 
 	//
@@ -662,10 +664,10 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (stage->ss->facing != SURFSPRITE_FACING_NORMAL)
 		{
 			vk_debug("WARNING: Hangdown facing overrides previous facing in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->facing = SURFSPRITE_FACING_DOWN;
-		return;
+		return true;
 	}
 
 	//
@@ -676,10 +678,10 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (stage->ss->facing != SURFSPRITE_FACING_NORMAL)
 		{
 			vk_debug("WARNING: Anyangle facing overrides previous facing in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->facing = SURFSPRITE_FACING_ANY;
-		return;
+		return true;
 	}
 
 	//
@@ -690,10 +692,10 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (stage->ss->facing != SURFSPRITE_FACING_NORMAL)
 		{
 			vk_debug("WARNING: Faceup facing overrides previous facing in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->facing = SURFSPRITE_FACING_UP;
-		return;
+		return true;
 	}
 
 	//
@@ -705,20 +707,20 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite wind in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0.0)
 		{
 			vk_debug("WARNING: invalid surfacesprite wind in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->wind = value;
 		if (stage->ss->windIdle <= 0)
 		{	// Also override the windidle, it usually is the same as wind
 			stage->ss->windIdle = value;
 		}
-		return;
+		return true;
 	}
 
 	//
@@ -730,16 +732,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite windidle in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0.0)
 		{
 			vk_debug("WARNING: invalid surfacesprite windidle in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->windIdle = value;
-		return;
+		return true;
 	}
 
 	//
@@ -751,16 +753,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite vertskew in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0.0)
 		{
 			vk_debug("WARNING: invalid surfacesprite vertskew in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->vertSkew = value;
-		return;
+		return true;
 	}
 
 	//
@@ -772,16 +774,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite duration in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value <= 0)
 		{
 			vk_debug("WARNING: invalid surfacesprite duration in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->fxDuration = value;
-		return;
+		return true;
 	}
 
 	//
@@ -793,13 +795,13 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite grow width in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0)
 		{
 			vk_debug("WARNING: invalid surfacesprite grow width in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->fxGrow[0] = value;
 
@@ -807,16 +809,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite grow height in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0)
 		{
 			vk_debug("WARNING: invalid surfacesprite grow height in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->fxGrow[1] = value;
-		return;
+		return true;
 	}
 
 	//
@@ -828,13 +830,13 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite fxalpha start in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0 || value > 1.0)
 		{
 			vk_debug("WARNING: invalid surfacesprite fxalpha start in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->fxAlphaStart = value;
 
@@ -842,16 +844,16 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		if (token[0] == 0)
 		{
 			vk_debug("WARNING: missing surfacesprite fxalpha end in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		value = atof(token);
 		if (value < 0 || value > 1.0)
 		{
 			vk_debug("WARNING: invalid surfacesprite fxalpha end in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
 		stage->ss->fxAlphaEnd = value;
-		return;
+		return true;
 	}
 
 	//
@@ -859,20 +861,20 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 	//
 	if (!Q_stricmp(param, "ssFXWeather"))
 	{
-		if (stage->ss->surfaceSpriteType != SURFSPRITE_EFFECT)
+		if (stage->ss->type != SURFSPRITE_EFFECT)
 		{
 			vk_debug("WARNING: weather applied to non-effect surfacesprite in shader '%s'\n", shader.name);
-			return;
+			return false;
 		}
-		stage->ss->surfaceSpriteType = SURFSPRITE_WEATHERFX;
-		return;
+		stage->ss->type = SURFSPRITE_WEATHERFX;
+		return true;
 	}
 
 	//
 	// invalid ss command.
 	//
 	vk_debug("WARNING: invalid optional surfacesprite param '%s' in shader '%s'\n", param, shader.name);
-	return;
+	return false;
 }
 
 /*
@@ -1768,7 +1770,11 @@ static qboolean ParseStage(shaderStage_t *stage, const char **text)
 				Q_strcat(buffer, sizeof(buffer), " ");
 			}
 
-			ParseSurfaceSprites(buffer, stage);
+			bool hasSS = (stage->ss != nullptr);
+			if ( ParseSurfaceSprites( buffer, stage ) && !hasSS )
+			{
+				shader.surface_sprites.num_stages++;
+			}
 
 			continue;
 		}
@@ -1800,7 +1806,11 @@ static qboolean ParseStage(shaderStage_t *stage, const char **text)
 				Q_strcat(buffer, sizeof(buffer), " ");
 			}
 
-			ParseSurfaceSpritesOptional(param, buffer, stage);
+			bool hasSS = (stage->ss != nullptr);
+			if ( ParseSurfaceSpritesOptional( param, buffer, stage ) && !hasSS )
+			{
+				shader.surface_sprites.num_stages++;
+			}
 
 			continue;
 		}
@@ -3041,6 +3051,24 @@ static void ScanAndLoadShaderFiles( void )
 	return;
 }
 
+shader_t *R_CreateShaderFromTextureBundle( const char *name, const textureBundle_t *bundle, uint32_t stateBits )
+{
+	shader_t *result = R_FindShaderByName(name);
+	if ( result == tr.defaultShader )
+	{
+		Com_Memset(&shader, 0, sizeof(shader));
+		Com_Memset(&stages, 0, sizeof(stages));
+
+		Q_strncpyz(shader.name, name, sizeof(shader.name));
+
+		stages[0].active = qtrue;
+		stages[0].bundle[0] = *bundle;
+		stages[0].stateBits = stateBits;
+		result = FinishShader();
+	}
+	return result;
+}
+
 /*
 ===============
 InitShader
@@ -3070,6 +3098,11 @@ static void InitShader( const char *name, const int *lightmapIndex, const byte *
 	}
 
 	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;
+
+#ifdef USE_VBO_SS
+	shader.surface_sprites.num_stages = 0;
+	shader.surface_sprites.ssbo_index = ~0U;
+#endif
 }
 
 /*
@@ -3311,6 +3344,10 @@ static int CollapseMultitexture( unsigned int st0bits, shaderStage_t *st0, shade
 	if (!st0->active || !st1->active) {
 		return 0;
 	}
+
+	// do not collapse surface sprite stages
+	if ( st0->ss || st1->ss )
+		return 0;
 
 	if (st0->depthFragment || (st0->stateBits & GLS_ATEST_BITS)) {
 		return 0;
@@ -4474,7 +4511,7 @@ shader_t *FinishShader( void )
 			}
 
 
-			if (pStage->ss && pStage->ss->surfaceSpriteType) {
+			if (pStage->ss && pStage->ss->type) {
 				def.face_culling = CT_TWO_SIDED;
 			}
 

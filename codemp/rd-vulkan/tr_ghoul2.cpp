@@ -3673,7 +3673,8 @@ void RB_SurfaceGhoul(CRenderableSurface* surf)
 #ifdef _G2_GORE
 	if ( surf->alternateTex && tr.goreVBO != NULL )
 	{
-		tess.vbo_model_index = tr.goreVBO->index;
+		tess.vbo_model = tr.goreVBO;
+		tess.ibo_model = tr.goreIBO;
 
 		auto *alternateTex = (srfG2GoreSurface_t*)surf->alternateTex;
 
@@ -3686,7 +3687,8 @@ void RB_SurfaceGhoul(CRenderableSurface* surf)
 	else
 #endif
 	{
-		tess.vbo_model_index = surf->vboMesh->vbo->index;
+		tess.vbo_model = surf->vboMesh->vbo;
+		tess.ibo_model = surf->vboMesh->ibo;
 	}
 
 			int i, mergeForward, mergeBack;

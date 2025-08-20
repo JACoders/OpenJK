@@ -879,7 +879,7 @@ static void vk_update_camera_constants( const trRefdef_t *refdef, const viewParm
 	vkUniformCamera_t uniform = {};
 
 	Com_Memcpy( uniform.viewOrigin, refdef->vieworg, sizeof( vec3_t) );
-	uniform.viewOrigin[3] = 0.0f;
+	uniform.viewOrigin[3] = refdef->floatTime;
 
 	/*
 	const float* p = viewParms->projectionMatrix;

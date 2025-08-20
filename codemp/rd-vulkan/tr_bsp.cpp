@@ -41,6 +41,13 @@ static	byte		*fileBase;
 
 static int			c_gridVerts;
 
+#ifdef USE_VBO_SS
+static inline void vk_init_surf_sprites( msurface_t *surf )
+{
+	surf->surface_sprites.num_stages = 0;
+	surf->surface_sprites.stage = nullptr;
+}
+#endif
 //===============================================================================
 
 static void HSVtoRGB( float h, float s, float v, float rgb[3] )
@@ -578,6 +585,10 @@ static void ParseFace( const dsurface_t *ds, const mapVert_t *verts, msurface_t 
 		lightmapNum[i] = FatLightmap( LittleLong( ds->lightmapNum[i] ) );
 	}
 
+#ifdef USE_VBO_SS
+	vk_init_surf_sprites( surf );
+#endif
+
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 	if (index && !surf->fogIndex && tr.world->globalFog != -1)
@@ -694,6 +705,10 @@ static void ParseMesh ( const dsurface_t *ds, const mapVert_t *verts, msurface_t
 		lightmapNum[i] = FatLightmap( LittleLong( ds->lightmapNum[i] ) );
 	}
 
+#ifdef USE_VBO_SS
+	vk_init_surf_sprites( surf );
+#endif
+
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 	if (index && !surf->fogIndex && tr.world->globalFog != -1)
@@ -770,6 +785,10 @@ static void ParseTriSurf( const dsurface_t *ds, const mapVert_t *verts, msurface
 
 	for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		lightmapNum[j] = FatLightmap(LittleLong (ds->lightmapNum[j]));
+
+#ifdef USE_VBO_SS
+	vk_init_surf_sprites( surf );
+#endif
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -848,6 +867,10 @@ static void ParseFlare( const dsurface_t *ds, const mapVert_t *verts, msurface_t
 	srfFlare_t		*flare;
 	int				i;
 	int				lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_BY_VERTEX };
+
+#ifdef USE_VBO_SS
+	vk_init_surf_sprites( surf );
+#endif
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -2391,6 +2414,10 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 		tr.mapLoading = qfalse;
 	}
+
+#ifdef USE_VBO_SS
+	R_BuildSurfaceSpritesVBO( worldData, index );
+#endif
 
 	if (ri.CM_GetCachedMapDiskImage())
 	{

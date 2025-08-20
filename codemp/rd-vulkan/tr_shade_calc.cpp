@@ -597,7 +597,7 @@ static void Autosprite2Deform( void ) {
 qboolean ShaderRequiresCPUDeforms( const shader_t *shader ) {
 
 	// only do this for ghoul2
-	if( tess.vbo_model_index && tess.surfType == SF_MDX  ){
+	if( tess.vbo_model && tess.surfType == SF_MDX  ){
 
 		if ( shader->numDeforms > 1 )
 			return qtrue;

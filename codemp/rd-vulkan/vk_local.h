@@ -434,6 +434,13 @@ typedef union floatint_u
 	byte		b[4];
 } floatint_t;
 
+typedef struct vk_storage_buffer_s {
+	VkBuffer			buffer;
+	byte				*buffer_ptr;
+	VkDeviceMemory		memory;
+	VkDescriptorSet		descriptor;
+} vk_storage_buffer_t;
+
 typedef enum {
 	DEPTH_RANGE_NORMAL, // [0..1]
 	DEPTH_RANGE_ZERO, // [0..0]
@@ -464,6 +471,7 @@ typedef struct {
 	Vk_Shader_Type			shader_type;	
 	Vk_Shadow_Phase			shadow_phase;
 	Vk_Primitive_Topology	primitives;
+	uint32_t				surface_sprite_flags;
 
 	int line_width;
 	int fog_stage; // off, fog-in / fog-out
@@ -826,12 +834,7 @@ typedef struct {
 	vk_tess_t tess[NUM_COMMAND_BUFFERS], *cmd;
 	int cmd_index;
 
-	struct {
-		VkBuffer		buffer;
-		byte			*buffer_ptr;
-		VkDeviceMemory	memory;
-		VkDescriptorSet	descriptor;
-	} storage;
+	vk_storage_buffer_t storage;
 
 	uint32_t uniform_item_size;
 	uint32_t uniform_alignment;
@@ -853,8 +856,13 @@ typedef struct {
 		VkDeviceMemory	buffer_memory;
 	} vbo;
 
-	int vbo_index;
 	int vbo_world_index;
+
+#ifdef USE_VBO_SS
+	vk_storage_buffer_t surface_sprites_ssbo[MAX_SUB_BSP + 1];
+	uint32_t			surface_sprites_ssbo_item_size;
+	uint32_t			surface_sprites_ssbo_count;
+#endif
 
 	// statistics
 	struct {
@@ -881,6 +889,9 @@ typedef struct {
 	// pipeline(s)
 	VkPipelineLayout pipeline_layout;				// default shaders
 	VkPipelineLayout pipeline_layout_storage;		// flare test shader layout
+#ifdef USE_VBO_SS
+	VkPipelineLayout pipeline_layout_surface_sprite;// surface sprites
+#endif
 	VkPipelineLayout pipeline_layout_post_process;	// post-processing
 	VkPipelineLayout pipeline_layout_blend;			// post-processing
 
@@ -958,6 +969,9 @@ typedef struct {
 			VkShaderModule light[2][2]; // linear[0,1] fog[0,1]
 			VkShaderModule fog[2];	// vbo[0,1,2], fog mode[0,1]
 		}	frag;
+
+		VkShaderModule surface_sprite_fs[2];
+		VkShaderModule surface_sprite_vs[2];
 
 		VkShaderModule dot_fs;
 		VkShaderModule dot_vs;
@@ -1164,7 +1178,7 @@ uint32_t	vk_tess_index( uint32_t numIndexes, const void *src );
 #ifdef USE_VBO
 void		vk_draw_indexed( uint32_t indexCount, uint32_t firstIndex );
 #endif
-void		vk_bind_index_buffer( VkBuffer buffer, uint32_t offset );
+void		vk_bind_index_buffer( VkBuffer buffer, uint32_t offset, VkIndexType type = VK_INDEX_TYPE_UINT32 );
 void		vk_bind_index( void );
 void		vk_bind_index_ext( const int numIndexes, const uint32_t *indexes );
 void		vk_bind_pipeline( uint32_t pipeline );
@@ -1174,7 +1188,7 @@ void		vk_bind_geometry( uint32_t flags );
 void		vk_bind_lighting( int stage, int bundle );
 void		vk_reset_descriptor( int index);
 void		vk_update_uniform_descriptor( VkDescriptorSet descriptor, VkBuffer buffer );
-void		vk_create_storage_buffer( uint32_t size );
+void		vk_create_storage_buffer( vk_storage_buffer_t *out, uint32_t size, const char *name );
 void		vk_update_descriptor_offset( int index, uint32_t offset );
 void		vk_init_descriptors( void );
 void		vk_create_vertex_buffer( VkDeviceSize size );

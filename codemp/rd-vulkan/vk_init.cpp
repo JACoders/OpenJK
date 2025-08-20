@@ -415,6 +415,7 @@ void vk_initialize( void )
 	vk.uniform_fogs_item_size	= PAD( sizeof(vkUniformFog_t),		(size_t)vk.uniform_alignment );
 
 	vk.storage_alignment = MAX( props.limits.minStorageBufferOffsetAlignment, sizeof(uint32_t) ); //for flare visibility tests
+	vk.surface_sprites_ssbo_item_size = PAD( sizeof(SurfaceSpriteBlock), (size_t)props.limits.minStorageBufferOffsetAlignment );
 
 	vk.defaults.geometry_size = VERTEX_BUFFER_SIZE;
 	vk.defaults.staging_size = STAGING_BUFFER_SIZE;
@@ -577,7 +578,7 @@ void vk_initialize( void )
 	vk.indirect_buffer_size_new = sizeof(VkDrawIndexedIndirectCommand) * 1024 * 1024;
 	vk_create_vertex_buffer( vk.geometry_buffer_size_new );
 	vk_create_indirect_buffer( vk.indirect_buffer_size_new );
-	vk_create_storage_buffer( MAX_FLARES * vk.storage_alignment );
+	vk_create_storage_buffer( &vk.storage, MAX_FLARES * vk.storage_alignment, "storage (flares)" );
 	vk_create_shader_modules();
 
 	{
@@ -635,6 +636,9 @@ void vk_shutdown( void )
 
 	qvkDestroyPipelineLayout(vk.device, vk.pipeline_layout, NULL);
 	qvkDestroyPipelineLayout(vk.device, vk.pipeline_layout_storage, NULL);
+#ifdef USE_VBO_SS
+	qvkDestroyPipelineLayout(vk.device, vk.pipeline_layout_surface_sprite, NULL);
+#endif
 	qvkDestroyPipelineLayout(vk.device, vk.pipeline_layout_post_process, NULL);
 	qvkDestroyPipelineLayout(vk.device, vk.pipeline_layout_blend, NULL);
 
@@ -654,6 +658,10 @@ void vk_shutdown( void )
 	// storage buffer
 	qvkDestroyBuffer(vk.device, vk.storage.buffer, NULL);
 	qvkFreeMemory(vk.device, vk.storage.memory, NULL);
+
+#ifdef USE_VBO_SS
+	vk_clean_surface_sprites();
+#endif
 
     vk_destroy_shader_modules();
 

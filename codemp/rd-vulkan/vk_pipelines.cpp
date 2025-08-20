@@ -23,6 +23,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "tr_local.h"
 
+#define ALLOC_SPEC_ENTRY( arr, index, struct_type, struct_data, member ) \
+    arr[index].constantID = (index); \
+    arr[index].offset = offsetof(struct_type, member); \
+    arr[index].size = sizeof(struct_data.member);
+
+#define INIT_SPEC_ENTRY_VERT( index, member ) \
+    ALLOC_SPEC_ENTRY( vert_spec_entries, index, struct VertSpecData, vert_spec_data, member )
+
+#define INIT_SPEC_ENTRY_FRAG( index, member ) \
+    ALLOC_SPEC_ENTRY( frag_spec_entries, index, struct FragSpecData, frag_spec_data, member )
+
 static VkVertexInputBindingDescription bindings[10];
 static VkVertexInputAttributeDescription attribs[8];
 static uint32_t num_binds;
@@ -49,7 +60,7 @@ static void vk_create_layout_binding( int binding, VkDescriptorType type,
     VkDescriptorSetLayoutBinding bind[VK_DESC_UNIFORM_COUNT];
     VkDescriptorSetLayoutCreateInfo desc;
     
-   vk_push_layout_binding( bind, type, binding, flags );
+    vk_push_layout_binding( bind, type, binding, flags );
 
     if ( is_uniform ) {
         const VkShaderStageFlags uniform_flags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -89,6 +100,9 @@ void vk_create_descriptor_layout( void )
 
         pool_size[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         pool_size[2].descriptorCount = 1;
+#ifdef USE_VBO_SS
+        pool_size[2].descriptorCount += (MAX_SUB_BSP + 1);
+#endif
 
         for (i = 0, maxSets = 0; i < ARRAY_LEN(pool_size); i++) {
             maxSets += pool_size[i].descriptorCount;
@@ -140,6 +154,13 @@ void vk_create_pipeline_layout( void )
     VK_CHECK(qvkCreatePipelineLayout(vk.device, &desc, NULL, &vk.pipeline_layout));
     VK_SET_OBJECT_NAME(vk.pipeline_layout, "pipeline layout - main", VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT);
 
+#ifdef USE_VBO_SS
+    // surface sprites ssbo
+    set_layouts[1] = vk.set_layout_storage; 
+    VK_CHECK(qvkCreatePipelineLayout(vk.device, &desc, NULL, &vk.pipeline_layout_surface_sprite));
+    VK_SET_OBJECT_NAME(vk.pipeline_layout_surface_sprite, "pipeline layout - surface sprites", VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT);
+#endif
+
     // flare test pipeline
     set_layouts[0] = vk.set_layout_storage; // dynamic storage buffer
 
@@ -187,6 +208,18 @@ static uint32_t vk_bind_stride( uint32_t in )
     return in;
 }
 
+static void vk_push_bind_instance(uint32_t binding, uint32_t stride)
+{
+#ifdef USE_VBO
+    if ((is_ghoul2_vbo || is_mdv_vbo) && (binding == 1 || binding == 6 || binding == 7))
+        return; // skip in_color bindings
+#endif
+    bindings[num_binds].binding = binding;
+    bindings[num_binds].stride = vk_bind_stride(stride);
+    bindings[num_binds].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+    num_binds++;
+}
+
 static void vk_push_bind( uint32_t binding, uint32_t stride )
 {
 #ifdef USE_VBO
@@ -221,6 +254,28 @@ static void vk_push_vertex_input_binding_attribute( const Vk_Pipeline_Def *def )
 #ifdef USE_VBO
     is_ghoul2_vbo = def->vbo_ghoul2;
     is_mdv_vbo = def->vbo_mdv;
+#endif
+#ifdef USE_VBO_SS
+    if ( def->surface_sprite_flags )
+    {
+        // quad mesh
+        vk_push_bind( 0, sizeof( uint32_t ) );					    // xyz array
+        vk_push_attr( 0, 0, VK_FORMAT_R32_UINT );
+        
+        // instance
+        const size_t stride = sizeof( sprite_t );
+        vk_push_bind_instance( 1, stride );                         // xyz array
+        vk_push_bind_instance( 2, stride );                         // normal
+        vk_push_bind_instance( 3, stride );                         // color
+        vk_push_bind_instance( 4, stride );                         // width height
+        vk_push_bind_instance( 5, stride );                         // skew
+        vk_push_attr( 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT );
+        vk_push_attr( 2, 2, VK_FORMAT_R32G32B32_SFLOAT );
+        vk_push_attr( 3, 3, VK_FORMAT_R8G8B8A8_UNORM );
+        vk_push_attr( 4, 4, VK_FORMAT_R32G32_SFLOAT );
+        vk_push_attr( 5, 5, VK_FORMAT_R32G32_SFLOAT );
+        return;
+    }
 #endif
     switch ( def->shader_type ) {
         case TYPE_FOG_ONLY:
@@ -626,8 +681,27 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     VkPipelineDynamicStateCreateInfo dynamic_state;
     VkDynamicState dynamic_state_array[3] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_DEPTH_BIAS };
     VkGraphicsPipelineCreateInfo create_info;
-    int32_t vert_spec_data[1]; // clipping (def->clipping_plane). NULL  
+
+#ifdef USE_VBO_SS
+    typedef struct {
+        int32_t kFaceCamera;
+        int32_t kFaceUp;
+        int32_t kFaceFlattened;
+        int32_t kFxSprite;
+        int32_t kAdditive;
+        int32_t kUseFog; 
+    } SurfaceSpritesData;
+#endif
+
+    struct VertSpecData {
+        int32_t hw_fog;
+#ifdef USE_VBO_SS
+        SurfaceSpritesData ss;
+#endif
+    } vert_spec_data;
+    VkSpecializationMapEntry vert_spec_entries[7];
     VkSpecializationInfo vert_spec_info;
+
     struct FragSpecData {
         int32_t alpha_test_func; 
         float   alpha_test_value;
@@ -641,9 +715,13 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
         float   identity_color;
         float   identity_alpha;
         int32_t acff;
+#ifdef USE_VBO_SS
+        SurfaceSpritesData ss;
+#endif
     } frag_spec_data; 
-    VkSpecializationMapEntry spec_entries[13];
+    VkSpecializationMapEntry frag_spec_entries[18];
     VkSpecializationInfo frag_spec_info;
+
     VkBool32 alphaToCoverage = VK_FALSE;
     unsigned int atest_bits;
     unsigned int state_bits = def->state_bits;
@@ -825,6 +903,14 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
             return 0;
     }
 
+#ifdef USE_VBO_SS
+    if ( def->surface_sprite_flags ) 
+    {
+        vs_module = &vk.shaders.surface_sprite_vs[0];
+        fs_module = &vk.shaders.surface_sprite_fs[0];
+    }
+#endif
+
     if ( def->fog_stage ) {
         switch ( def->shader_type ) {
             case TYPE_FOG_ONLY:
@@ -991,78 +1077,77 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
 		frag_spec_data.acff = 0;
 	}
 
-	frag_spec_data.hw_fog = vert_spec_data[0] = vk.hw_fog;
+	frag_spec_data.hw_fog = vert_spec_data.hw_fog = vk.hw_fog;
 
 	//
 	// vertex module specialization data
 	//
+    INIT_SPEC_ENTRY_VERT( 0, hw_fog )
 
-    spec_entries[0].constantID = 0; // hw_fog
-    spec_entries[0].offset = 0 * sizeof( int32_t );
-    spec_entries[0].size = sizeof( int32_t );
-
-    vert_spec_info.mapEntryCount = ARRAY_LEN( vert_spec_data );
-    vert_spec_info.pMapEntries = spec_entries + 0;
-    vert_spec_info.dataSize = ARRAY_LEN( vert_spec_data ) * sizeof( int32_t );
-    vert_spec_info.pData = &vert_spec_data[0];
-    shader_stages[0].pSpecializationInfo = &vert_spec_info;
-
+    vert_spec_info.mapEntryCount = ARRAY_LEN( vert_spec_entries );
+    vert_spec_info.pMapEntries = vert_spec_entries;
+    vert_spec_info.dataSize = sizeof( vert_spec_data );
+    vert_spec_info.pData = &vert_spec_data;
+    shader_stages[0].pSpecializationInfo = &vert_spec_info;     
 
     //
     // fragment module specialization data
     //
-    spec_entries[1].constantID = 0;
-    spec_entries[1].offset = offsetof(struct FragSpecData, alpha_test_func);
-    spec_entries[1].size = sizeof(frag_spec_data.alpha_test_func);
+    INIT_SPEC_ENTRY_FRAG( 0,    alpha_test_func )
+    INIT_SPEC_ENTRY_FRAG( 1,    alpha_test_value )
+    INIT_SPEC_ENTRY_FRAG( 2,    depth_fragment )
+    INIT_SPEC_ENTRY_FRAG( 3,    alpha_to_coverage )
+    INIT_SPEC_ENTRY_FRAG( 4,    color_mode )
+    INIT_SPEC_ENTRY_FRAG( 5,    hw_fog )
+    INIT_SPEC_ENTRY_FRAG( 6,    abs_light )
+    INIT_SPEC_ENTRY_FRAG( 7,    tex_mode )
+    INIT_SPEC_ENTRY_FRAG( 8,    discard_mode )
+    INIT_SPEC_ENTRY_FRAG( 9,    identity_color )
+    INIT_SPEC_ENTRY_FRAG( 10,   identity_alpha )
+    INIT_SPEC_ENTRY_FRAG( 11,   acff )
 
-    spec_entries[2].constantID = 1;
-    spec_entries[2].offset = offsetof(struct FragSpecData, alpha_test_value);
-    spec_entries[2].size = sizeof(frag_spec_data.alpha_test_value);
-
-    spec_entries[3].constantID = 2;
-    spec_entries[3].offset = offsetof(struct FragSpecData, depth_fragment);
-    spec_entries[3].size = sizeof(frag_spec_data.depth_fragment);
-
-    spec_entries[4].constantID = 3;
-    spec_entries[4].offset = offsetof(struct FragSpecData, alpha_to_coverage);
-    spec_entries[4].size = sizeof(frag_spec_data.alpha_to_coverage);
-
-    spec_entries[5].constantID = 4;
-    spec_entries[5].offset = offsetof(struct FragSpecData, color_mode);
-    spec_entries[5].size = sizeof(frag_spec_data.color_mode);
-
-    spec_entries[6].constantID = 5;
-    spec_entries[6].offset = offsetof(struct FragSpecData, hw_fog);
-    spec_entries[6].size = sizeof(frag_spec_data.hw_fog);
-
-    spec_entries[7].constantID = 6;
-    spec_entries[7].offset = offsetof(struct FragSpecData, abs_light);
-    spec_entries[7].size = sizeof(frag_spec_data.abs_light);
-
-    spec_entries[8].constantID = 7;
-    spec_entries[8].offset = offsetof(struct FragSpecData, tex_mode);
-    spec_entries[8].size = sizeof(frag_spec_data.tex_mode);
-
-    spec_entries[9].constantID = 8;
-    spec_entries[9].offset = offsetof(struct FragSpecData, discard_mode);
-    spec_entries[9].size = sizeof(frag_spec_data.discard_mode);
-
-    spec_entries[10].constantID = 9;
-    spec_entries[10].offset = offsetof(struct FragSpecData, identity_color);
-    spec_entries[10].size = sizeof(frag_spec_data.identity_color);
-
-    spec_entries[11].constantID = 10;
-    spec_entries[11].offset = offsetof(struct FragSpecData, identity_alpha);
-    spec_entries[11].size = sizeof(frag_spec_data.identity_alpha);
-
-    spec_entries[12].constantID = 11;
-    spec_entries[12].offset = offsetof(struct FragSpecData, acff);
-    spec_entries[12].size = sizeof(frag_spec_data.acff);
-
-    frag_spec_info.mapEntryCount = 12;
-    frag_spec_info.pMapEntries = spec_entries + 1;
+    frag_spec_info.mapEntryCount = ARRAY_LEN( frag_spec_entries );
+    frag_spec_info.pMapEntries = frag_spec_entries;
     frag_spec_info.dataSize = sizeof( frag_spec_data );
     frag_spec_info.pData = &frag_spec_data;
+
+#ifdef USE_VBO_SS
+    if ( def->surface_sprite_flags ) {
+        #define SET_SSDEF( field, flag ) \
+                vert_spec_data.ss.field = frag_spec_data.ss.field = ((def->surface_sprite_flags & (flag)) ? 1 : 0);
+            SET_SSDEF( kFaceCamera,      SSDEF_FACE_CAMERA )
+            SET_SSDEF( kFaceUp,          SSDEF_FACE_UP )
+            SET_SSDEF( kFaceFlattened,   SSDEF_FLATTENED )
+            SET_SSDEF( kFxSprite,        SSDEF_FX_SPRITE )
+            SET_SSDEF( kAdditive,        SSDEF_ADDITIVE )
+            SET_SSDEF( kUseFog,          SSDEF_USE_FOG )
+        #undef SET_SSDEF
+
+        INIT_SPEC_ENTRY_VERT( 1,   ss.kFaceCamera )
+        INIT_SPEC_ENTRY_VERT( 2,   ss.kFaceUp )
+        INIT_SPEC_ENTRY_VERT( 3,   ss.kFaceFlattened )
+        INIT_SPEC_ENTRY_VERT( 4,   ss.kFxSprite )
+        INIT_SPEC_ENTRY_VERT( 5,   ss.kAdditive )
+        INIT_SPEC_ENTRY_VERT( 6,   ss.kUseFog )
+
+        INIT_SPEC_ENTRY_FRAG( 12,   ss.kFaceCamera )
+        INIT_SPEC_ENTRY_FRAG( 13,   ss.kFaceUp )
+        INIT_SPEC_ENTRY_FRAG( 14,   ss.kFaceFlattened )
+        INIT_SPEC_ENTRY_FRAG( 15,   ss.kFxSprite )
+        INIT_SPEC_ENTRY_FRAG( 16,   ss.kAdditive )
+        INIT_SPEC_ENTRY_FRAG( 17,   ss.kUseFog )
+    }
+    else
+    {
+        const uint32_t num_ss_data = (sizeof(SurfaceSpritesData) / sizeof(int32_t));
+        vert_spec_info.mapEntryCount -= num_ss_data;
+        vert_spec_info.dataSize -= sizeof( SurfaceSpritesData );
+
+        frag_spec_info.mapEntryCount -= num_ss_data;
+        frag_spec_info.dataSize -= sizeof( SurfaceSpritesData );
+    }
+#endif
+
     shader_stages[1].pSpecializationInfo = &frag_spec_info;     
 
     // vertex input state (binding and attributes)
@@ -1282,6 +1367,10 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
 
 	if ( def->shader_type == TYPE_DOT )
 		create_info.layout = vk.pipeline_layout_storage;
+#ifdef USE_VBO_SS
+	else if ( def->surface_sprite_flags )
+		create_info.layout = vk.pipeline_layout_surface_sprite;
+#endif
 	else
 		create_info.layout = vk.pipeline_layout;
 
@@ -1317,8 +1406,6 @@ static void vk_create_post_process_pipeline( int program_index, uint32_t width, 
     VkGraphicsPipelineCreateInfo create_info;
     VkViewport viewport;
     VkRect2D scissor;
-    VkSpecializationMapEntry spec_entries[11];
-    VkSpecializationInfo frag_spec_info;
     VkPipeline *pipeline;
     VkShaderModule fs_module;
     VkRenderPass renderpass;
@@ -1339,6 +1426,8 @@ static void vk_create_post_process_pipeline( int program_index, uint32_t width, 
         int depth_g;
         int depth_b;
     } frag_spec_data;
+    VkSpecializationMapEntry frag_spec_entries[11];
+    VkSpecializationInfo frag_spec_info;
 
     switch ( program_index ) {
         case 1: // bloom extraction
@@ -1437,52 +1526,20 @@ static void vk_create_post_process_pipeline( int program_index, uint32_t width, 
     if ( !vk_surface_format_color_depth( vk.present_format.format, &frag_spec_data.depth_r, &frag_spec_data.depth_g, &frag_spec_data.depth_b ) )
         ri.Printf(PRINT_ALL, "Format %s not recognized, dither to assume 8bpc\n", vk_format_string(vk.base_format.format));
 
-    spec_entries[0].constantID = 0;
-    spec_entries[0].offset = offsetof(struct FragSpecData, gamma);
-    spec_entries[0].size = sizeof(frag_spec_data.gamma);
+    INIT_SPEC_ENTRY_FRAG( 0,    gamma )
+    INIT_SPEC_ENTRY_FRAG( 1,    overbright )
+    INIT_SPEC_ENTRY_FRAG( 2,    greyscale )
+    INIT_SPEC_ENTRY_FRAG( 3,    bloom_threshold )
+    INIT_SPEC_ENTRY_FRAG( 4,    bloom_intensity )
+    INIT_SPEC_ENTRY_FRAG( 5,    bloom_threshold_mode )
+    INIT_SPEC_ENTRY_FRAG( 6,    bloom_modulate )
+    INIT_SPEC_ENTRY_FRAG( 7,    dither )
+    INIT_SPEC_ENTRY_FRAG( 8,    depth_r )
+    INIT_SPEC_ENTRY_FRAG( 9,    depth_g )
+    INIT_SPEC_ENTRY_FRAG( 10,    depth_b )
 
-    spec_entries[1].constantID = 1;
-    spec_entries[1].offset = offsetof(struct FragSpecData, overbright);
-    spec_entries[1].size = sizeof(frag_spec_data.overbright);
-
-    spec_entries[2].constantID = 2;
-    spec_entries[2].offset = offsetof(struct FragSpecData, greyscale);
-    spec_entries[2].size = sizeof(frag_spec_data.greyscale);
-
-    spec_entries[3].constantID = 3;
-    spec_entries[3].offset = offsetof(struct FragSpecData, bloom_threshold);
-    spec_entries[3].size = sizeof(frag_spec_data.bloom_threshold);
-
-    spec_entries[4].constantID = 4;
-    spec_entries[4].offset = offsetof(struct FragSpecData, bloom_intensity);
-    spec_entries[4].size = sizeof(frag_spec_data.bloom_intensity);
-
-    spec_entries[5].constantID = 5;
-    spec_entries[5].offset = offsetof( struct FragSpecData, bloom_threshold_mode );
-    spec_entries[5].size = sizeof( frag_spec_data.bloom_threshold_mode );
-
-    spec_entries[6].constantID = 6;
-    spec_entries[6].offset = offsetof( struct FragSpecData, bloom_modulate );
-    spec_entries[6].size = sizeof( frag_spec_data.bloom_modulate );
-
-    spec_entries[7].constantID = 7;
-    spec_entries[7].offset = offsetof(struct FragSpecData, dither);
-    spec_entries[7].size = sizeof(frag_spec_data.dither);
-
-    spec_entries[8].constantID = 8;
-    spec_entries[8].offset = offsetof(struct FragSpecData, depth_r);
-    spec_entries[8].size = sizeof(frag_spec_data.depth_r);
-
-    spec_entries[9].constantID = 9;
-    spec_entries[9].offset = offsetof(struct FragSpecData, depth_g);
-    spec_entries[9].size = sizeof(frag_spec_data.depth_g);
-
-    spec_entries[10].constantID = 10;
-    spec_entries[10].offset = offsetof(struct FragSpecData, depth_b);
-    spec_entries[10].size = sizeof(frag_spec_data.depth_b);
-
-    frag_spec_info.mapEntryCount = 11;
-    frag_spec_info.pMapEntries = spec_entries;
+    frag_spec_info.mapEntryCount = ARRAY_LEN( frag_spec_entries );
+    frag_spec_info.pMapEntries = frag_spec_entries;
     frag_spec_info.dataSize = sizeof(frag_spec_data);
     frag_spec_info.pData = &frag_spec_data;
 
@@ -1638,7 +1695,7 @@ static void vk_create_blur_pipeline( char *name, int program_index, uint32_t ind
         float   texoffset_y;
         float   correction;
     } frag_spec_data; 
-    VkSpecializationMapEntry spec_entries[3];
+    VkSpecializationMapEntry frag_spec_entries[3];
     VkSpecializationInfo frag_spec_info;
     VkRenderPass renderpass;
     VkPipeline *pipeline;
@@ -1702,15 +1759,13 @@ static void vk_create_blur_pipeline( char *name, int program_index, uint32_t ind
         frag_spec_data.texoffset_x = 0.0;
     }
 
-    for( i = 0; i < 3; i++ ) {
-        spec_entries[i].constantID = i;
-        spec_entries[i].offset = i * sizeof(float);
-        spec_entries[i].size = sizeof(float);  
-    }
+    INIT_SPEC_ENTRY_FRAG( 0,    texoffset_x )
+    INIT_SPEC_ENTRY_FRAG( 1,    texoffset_y )
+    INIT_SPEC_ENTRY_FRAG( 2,    correction )
 
-    frag_spec_info.mapEntryCount = 3;
-    frag_spec_info.pMapEntries = spec_entries;
-    frag_spec_info.dataSize = 3 * sizeof(float);
+    frag_spec_info.mapEntryCount = ARRAY_LEN( frag_spec_entries );
+    frag_spec_info.pMapEntries = frag_spec_entries;
+    frag_spec_info.dataSize = sizeof(frag_spec_data);
     frag_spec_info.pData = &frag_spec_data;
 
     shader_stages[1].pSpecializationInfo = &frag_spec_info;

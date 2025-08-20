@@ -1321,6 +1321,10 @@ void vk_release_resources( void ) {
     if (vk.staging_buffer.memory != VK_NULL_HANDLE)
         qvkFreeMemory(vk.device, vk.staging_buffer.memory, NULL);
 
+#ifdef USE_VBO_SS
+    vk_clean_surface_sprites();
+#endif
+
     // vk_destroy_samplers();
 
     for (i = vk.pipelines_world_base; i < vk.pipelines_count; i++) {
@@ -1379,6 +1383,7 @@ void vk_end_frame( void )
         return;
 
     vk.frame_count = 0;
+    tr.ss.groups_count = 0;
 
     if ( vk.geometry_buffer_size_new )
     {

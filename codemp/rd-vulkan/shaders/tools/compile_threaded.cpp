@@ -238,6 +238,13 @@ static void compile_and_convert_template_shaders( void )
     create_shader_task( "light_frag.tmpl", "frag", "frag_light_line", NULL, "-DUSE_LINE");
     create_shader_task( "light_frag.tmpl", "frag", "frag_light_line_fog", NULL, "-DUSE_LINE -DUSE_FOG");
 
+    // surface sprites
+    create_shader_task( "surface_sprite_vert.tmpl", "vert", "vert_surface_sprites", NULL, "");
+    create_shader_task( "surface_sprite_vert.tmpl", "vert", "vert_surface_sprites_fog", NULL, "-DUSE_FOG");
+    
+    create_shader_task( "surface_sprite_frag.tmpl", "frag", "frag_surface_sprites", NULL, "-DUSE_ATEST");
+    create_shader_task( "surface_sprite_frag.tmpl", "frag", "frag_surface_sprites_fog", NULL, "-DUSE_ATEST -DUSE_FOG");
+
     std::string underscore = "";
 
     // fog-only shaders

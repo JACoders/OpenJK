@@ -170,7 +170,8 @@ void RB_EndSurface( void ) {
 
 #ifdef USE_VBO
 	tess.vbo_world_index = 0;
-	tess.vbo_model_index = 0;
+	tess.vbo_model = nullptr;
+	tess.ibo_model = nullptr;
 	//VBO_ClearQueue();
 #endif
 }

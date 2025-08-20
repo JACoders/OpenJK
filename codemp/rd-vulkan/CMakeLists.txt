@@ -87,6 +87,7 @@ set(MPVulkanRendererFiles
 	"${MPDir}/rd-vulkan/vk_shade_geometry.cpp"
 	"${MPDir}/rd-vulkan/vk_swapchain.cpp"
 	"${MPDir}/rd-vulkan/vk_vbo.cpp"
+	"${MPDir}/rd-vulkan/vk_vbo_surfacesprites.cpp"
 	)
 source_group("renderer" FILES ${MPVulkanRendererFiles})
 

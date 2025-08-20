@@ -401,6 +401,12 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		r_fastsky->modified = qfalse;
 	}
 
+	if ( r_surfaceSprites->modified ) 
+	{
+		tr.ss.groups_count = 0;
+		r_surfaceSprites->modified = qfalse;
+	}
+
 	//
 	// draw buffer stuff
 	//
