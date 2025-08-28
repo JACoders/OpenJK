@@ -32,6 +32,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 #
 #=============================================================================
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
+option(BuildReleaseVersion "Build release version, does not shut down program on assertion fault" OFF)
 
 option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)" ON)
 option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-vanilla_x86.dll)" ON)
@@ -323,6 +324,10 @@ set(SharedDefines ${SharedDefines} "$<$<NOT:$<CONFIG:Debug>>:FINAL_BUILD>")
 
 if(BuildPortableVersion)
 	set(BUILD_PORTABLE ON)
+endif()
+
+if(BuildReleaseVersion)
+    add_definitions(-DCMAKE_BUILD_TYPE=Release)
 endif()
 
 #=============================================================================
