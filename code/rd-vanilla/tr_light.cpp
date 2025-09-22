@@ -227,7 +227,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 		}
 		data = tr.world->lightGridData + *gridPos;
 
-		if ( data->styles[0] == LS_NONE )
+		if ( data->styles[0] == LS_LSNONE )
 		{
 			continue;	// ignore samples in walls
 		}
@@ -243,7 +243,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 
 		for(j=0;j<MAXLIGHTMAPS;j++)
 		{
-			if (data->styles[j] != LS_NONE)
+			if (data->styles[j] != LS_LSNONE)
 			{
 				const byte	style= data->styles[j];
 
