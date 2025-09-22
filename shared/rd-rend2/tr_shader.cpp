@@ -4587,7 +4587,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndexes, const byte
 		flags |= IMGFLAG_CLAMPTOEDGE;
 	}
 
-	image = R_FindImageFile( name, IMGTYPE_COLORALPHA, flags );
+	image = R_FindImageFile( strippedName, IMGTYPE_COLORALPHA, flags );
 	if ( !image ) {
 		ri.Printf( PRINT_DEVELOPER, "Couldn't find image file for shader %s\n", name );
 		shader.defaultShader = qtrue;
