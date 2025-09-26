@@ -198,7 +198,7 @@ static int GetConfigString(int index, char *buf, int size)
 static void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 	char	*value;
 
-	value = Key_GetBinding( keynum );
+	value = Key_GetBinding( keynum, 0 );
 	if ( value ) {
 		Q_strncpyz( buf, value, buflen );
 	}
@@ -713,6 +713,10 @@ static qboolean CL_G2API_AttachG2Model( void *ghoul2From, int modelIndexFrom, vo
 	return re->G2API_AttachG2Model(*g2From, modelIndexFrom, *g2To, toBoltIndex, toModel);
 }
 
+static void CL_Key_SetBinding( int keynum, const char *binding ) {
+	Key_SetBinding( keynum, 0, binding );
+}
+
 static void CL_Key_SetCatcher( int catcher ) {
 	// Don't allow the ui module to close the console
 	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
@@ -939,7 +943,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_KEY_SETBINDING:
-		Key_SetBinding( args[1], (const char *)VMA(2) );
+		Key_SetBinding( args[1], 0, (const char *)VMA(2) );
 		return 0;
 
 	case UI_KEY_ISDOWN:
@@ -1316,7 +1320,7 @@ void CL_BindUI( void ) {
 		uii.Key_GetBindingBuf					= Key_GetBindingBuf;
 		uii.Key_IsDown							= Key_IsDown;
 		uii.Key_KeynumToStringBuf				= Key_KeynumToStringBuf;
-		uii.Key_SetBinding						= Key_SetBinding;
+		uii.Key_SetBinding						= CL_Key_SetBinding;
 		uii.Key_GetCatcher						= Key_GetCatcher;
 		uii.Key_GetOverstrikeMode				= Key_GetOverstrikeMode;
 		uii.Key_SetCatcher						= CL_Key_SetCatcher;
