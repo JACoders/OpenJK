@@ -278,7 +278,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 
 	if ( keysym->sym >= A_LOW_A && keysym->sym <= A_LOW_Z )
 		key = (fakeAscii_t)(A_CAP_A + (keysym->sym - A_LOW_A));
-	else if ( keysym->sym >= A_LOW_AGRAVE && keysym->sym <= A_LOW_THORN && keysym->sym != A_KP_SLASH )
+	else if ( keysym->sym >= A_LOW_AGRAVE && keysym->sym <= A_LOW_THORN && keysym->sym != A_DIVIDE )
 		key = (fakeAscii_t)(A_CAP_AGRAVE + (keysym->sym - A_LOW_AGRAVE));
 	else if ( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
 		key = (fakeAscii_t)keysym->sym;
@@ -338,16 +338,16 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 			case SDLK_KP_5:         key = A_KP_5;          break;
 			case SDLK_INSERT:       key = A_INSERT;        break;
 			case SDLK_KP_0:         key = A_KP_0;          break;
-			case SDLK_KP_MULTIPLY:  key = A_KP_STAR;       break;
+			case SDLK_KP_MULTIPLY:  key = A_MULTIPLY;      break;
 			case SDLK_KP_PLUS:      key = A_KP_PLUS;       break;
 			case SDLK_KP_MINUS:     key = A_KP_MINUS;      break;
-			case SDLK_KP_DIVIDE:    key = A_KP_SLASH;      break;
+			case SDLK_KP_DIVIDE:    key = A_DIVIDE;        break;
 
 			case SDLK_SCROLLLOCK:   key = A_SCROLLLOCK;    break;
 			case SDLK_NUMLOCKCLEAR: key = A_NUMLOCK;       break;
 			case SDLK_CAPSLOCK:     key = A_CAPSLOCK;      break;
 
-			case L'\u00D7':			key = A_KP_STAR;		break;
+			case L'\u00D7':			key = A_MULTIPLY;		break;
 			case L'\u00E0':			key = A_LOW_AGRAVE;		break;
 			case L'\u00E1':			key = A_LOW_AACUTE;		break;
 			case L'\u00E2':			key = A_LOW_ACIRCUMFLEX; break;
@@ -371,7 +371,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 			case L'\u00F4':			key = A_LOW_OCIRCUMFLEX; break;
 			case L'\u00F5':			key = A_LOW_OTILDE;		break;
 			case L'\u00F6':			key = A_LOW_ODIERESIS;	break;
-			case L'\u00F7':			key = A_KP_SLASH;		break;
+			case L'\u00F7':			key = A_DIVIDE;			break;
 			case L'\u00F8':			key = A_LOW_OSLASH;		break;
 			case L'\u00F9':			key = A_LOW_UGRAVE;		break;
 			case L'\u00FA':			key = A_LOW_UACUTE;		break;
