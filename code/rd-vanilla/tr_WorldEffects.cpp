@@ -697,6 +697,14 @@ public:
 			return;
 		}
 
+		// Record The Extents Of The World Incase No Other Weather Zones Exist
+		//---------------------------------------------------------------------
+		if (!mWeatherZones.size())
+		{
+			Com_Printf("WARNING: No Weather Zones Encountered\n");
+			AddWeatherZone(tr.world->bmodels[0].bounds[0], tr.world->bmodels[0].bounds[1]);
+		}
+
 		// all this piece of code does really is fill in the bool "SWeatherZone::mMarkedOutside", plus the mPointCache[] for each zone,
 		//	so we can diskload those. Maybe.
 		fileHandle_t f = ReadCachedWeatherFile();
@@ -719,15 +727,6 @@ public:
 			bool		curPosOutside;
 			uint32_t		contents;
 			uint32_t		bit;
-
-
-			// Record The Extents Of The World Incase No Other Weather Zones Exist
-			//---------------------------------------------------------------------
-			if (!mWeatherZones.size())
-			{
-				Com_Printf("WARNING: No Weather Zones Encountered\n");
-				AddWeatherZone(tr.world->bmodels[0].bounds[0], tr.world->bmodels[0].bounds[1]);
-			}
 
 			f = WriteCachedWeatherFile();
 
