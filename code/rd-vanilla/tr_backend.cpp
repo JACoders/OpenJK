@@ -1752,7 +1752,7 @@ static inline void RB_BlurGlowTexture()
 	/////////////////////////////////////////////////////////
 
 	// How much to offset each texel by.
-	float fTexelWidthOffset = 0.1f, fTexelHeightOffset = 0.1f;
+	float texelOffset = 0.1f;
 
 	GLuint uiTex = tr.screenGlow;
 
@@ -1783,10 +1783,10 @@ static inline void RB_BlurGlowTexture()
 	for ( int iNumBlurPasses = 0; iNumBlurPasses < r_dynamicGlowPasses->integer; iNumBlurPasses++ )
 	{
 		// Load the Texel Offsets into the Vertex Program.
-		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 0, -fTexelWidthOffset, -fTexelWidthOffset, 0.0f, 0.0f );
-		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 1, -fTexelWidthOffset, fTexelWidthOffset, 0.0f, 0.0f );
-		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 2, fTexelWidthOffset, -fTexelWidthOffset, 0.0f, 0.0f );
-		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 3, fTexelWidthOffset, fTexelWidthOffset, 0.0f, 0.0f );
+		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 0, -texelOffset, -texelOffset, 0.0f, 0.0f );
+		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 1, -texelOffset, texelOffset, 0.0f, 0.0f );
+		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 2, texelOffset, -texelOffset, 0.0f, 0.0f );
+		qglProgramEnvParameter4fARB( GL_VERTEX_PROGRAM_ARB, 3, texelOffset, texelOffset, 0.0f, 0.0f );
 
 		// After first pass put the tex coords to the viewport size.
 		if ( iNumBlurPasses == 1 )
@@ -1843,8 +1843,7 @@ static inline void RB_BlurGlowTexture()
 		// make it look better (at a much higher cost of course). This is cheap though and still looks pretty great. In the future
 		// I might want to use an actual gaussian equation to correctly calculate the pixel coefficients and attenuates, texel
 		// offsets, gaussian amplitude and radius...
-		fTexelWidthOffset += r_dynamicGlowDelta->value;
-		fTexelHeightOffset += r_dynamicGlowDelta->value;
+		texelOffset += r_dynamicGlowDelta->value;
 	}
 
 	// Disable multi-texturing.
