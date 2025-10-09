@@ -3811,7 +3811,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	// the glow is rendered _second_!!! If that changes, change this!
 	extern bool g_bRenderGlowingObjects;
 	extern bool g_bDynamicGlowSupported;
-	if ( !tess.shader->hasGlow || g_bRenderGlowingObjects || !g_bDynamicGlowSupported || !r_DynamicGlow->integer )
+	if ( !tess.shader->hasGlow || g_bRenderGlowingObjects || !g_bDynamicGlowSupported || !r_dynamicGlow->integer )
 	{
 		delete storeSurf;
 	}
