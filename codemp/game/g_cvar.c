@@ -54,6 +54,10 @@ static void CVU_FixRunWalkAnims(void) {
 	UpdateLegacyFixesConfigstring(LEGACYFIX_RUNWALKANIMS, g_fixRunWalkAnims.integer);
 }
 
+static void CVU_FixWaterJump(void) {
+	UpdateLegacyFixesConfigstring(LEGACYFIX_WATERJUMP, g_fixWaterJump.integer);
+}
+
 static void CVU_FixWeaponAttackAnim(void) {
 	BG_FixWeaponAttackAnim();
 	UpdateLegacyFixesConfigstring(LEGACYFIX_WEAPONATTACKANIM, g_fixWeaponAttackAnim.integer);
