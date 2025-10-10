@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // sv_client.c -- server code for dealing with clients
 
+#include "qcommon/q_shared.h"
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
 
@@ -314,6 +315,23 @@ gotnewcl:
 
 	// save the userinfo
 	Q_strncpyz( newcl->userinfo, userinfo, sizeof(newcl->userinfo) );
+
+	// check for >= sv_maxConnPerIP connections from same IP
+	if (sv_antiFakePlayer->integer) {
+		int count = 0, i = 0;
+		for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
+			if (cl->state >= CS_CONNECTED && NET_CompareBaseAdr(svs.clients[clientNum].netchan.remoteAddress, svs.clients[i].netchan.remoteAddress)) {
+				count++;
+			}
+		}
+		if (count >= sv_maxConnPerIP->integer) {
+			cl->state = CS_FREE;
+			denied = "Too many connections from the same IP";
+			NET_OutOfBandPrint(NS_SERVER, from, "print\n%s\n", denied);
+			Com_DPrintf("Game rejected a connection: %s.\n", denied);
+			return;
+		}
+	}
 
 	// get the game a chance to reject this connection or modify the userinfo
 	denied = GVM_ClientConnect( clientNum, qtrue, qfalse ); // firstTime = qtrue
