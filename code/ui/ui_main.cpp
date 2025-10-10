@@ -2050,8 +2050,8 @@ extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
 */
 }
 
-void Key_KeynumToStringBuf( int keynum, char *buf, int buflen );
-void Key_GetBindingBuf( int keynum, char *buf, int buflen );
+void Key_KeynumToStringBuf( int keynum, int modifiers, char *buf, int buflen );
+void Key_GetBindingBuf( int keynum, int modifiers, char *buf, int buflen );
 
 static qboolean UI_Crosshair_HandleKey(int flags, float *special, int key)
 {
@@ -4042,7 +4042,7 @@ void _UI_MouseEvent( int dx, int dy )
 UI_KeyEvent
 =================
 */
-void _UI_KeyEvent( int key, qboolean down )
+void _UI_KeyEvent( int key, int modifiers, qboolean down )
 {
 /*	extern qboolean SwallowBadNumLockedKPKey( int iKey );
 	if (SwallowBadNumLockedKPKey(key)){
@@ -4062,7 +4062,7 @@ void _UI_KeyEvent( int key, qboolean down )
 			}
 			else
 			{
-				Menu_HandleKey(menu, key, down );
+				Menu_HandleKey(menu, key, modifiers, down );
 			}
 		}
 		else

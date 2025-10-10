@@ -5570,28 +5570,33 @@ static const char *g_bindCommands[] = {
 #define g_bindCount ARRAY_LEN(g_bindCommands)
 
 static int g_bindKeys[g_bindCount][2];
+static int g_bindModifiers[g_bindCount][2];
 
 /*
 =================
 Controls_GetKeyAssignment
 =================
 */
-static void Controls_GetKeyAssignment( const char *command, int *twokeys )
+static void Controls_GetKeyAssignment( const char *command, int *twokeys, int *twomodifiers )
 {
 	int		count;
 	int		j;
 	char	b[256];
+	int		modifiers;
 
 	twokeys[0] = twokeys[1] = -1;
 	count = 0;
 
-	for ( j=0; j<MAX_KEYS; j++ ) {
-		DC->getBindingBuf( j, b, sizeof( b ) );
-		if ( *b && !Q_stricmp( b, command ) ) {
-			twokeys[count] = j;
-			count++;
-			if ( count == 2 )
-				break;
+	for ( modifiers=0; modifiers<KEYMOD_COMBINATIONS; modifiers++ ) {
+		for ( j=0; j<MAX_KEYS; j++ ) {
+			DC->getBindingBuf( j, modifiers, b, sizeof( b ) );
+			if ( *b && !Q_stricmp( b, command ) ) {
+				twokeys[count] = j;
+				twomodifiers[count] = modifiers;
+				count++;
+				if ( count == 2 )
+					break;
+			}
 		}
 	}
 }
@@ -5607,7 +5612,7 @@ void Controls_GetConfig( void )
 
 	// iterate each command, get its numeric binding
 	for ( i = 0; i < g_bindCount; i++ )
-		Controls_GetKeyAssignment( g_bindCommands[i], g_bindKeys[i] );
+		Controls_GetKeyAssignment( g_bindCommands[i], g_bindKeys[i], g_bindModifiers[i] );
 }
 
 
@@ -6894,6 +6899,7 @@ BindingFromName
 void BindingFromName( const char *cvar ) {
 	size_t	i;
 	int		b1, b2;
+	int		b1mod, b2mod;
 	char	sOR[32];
 
 	// iterate each command, set its default binding
@@ -6901,15 +6907,17 @@ void BindingFromName( const char *cvar ) {
 		if ( !Q_stricmp(cvar, g_bindCommands[i] ) ) {
 			b2 = g_bindKeys[i][1];
 			b1 = g_bindKeys[i][0];
+			b2mod = g_bindModifiers[i][1];
+			b1mod = g_bindModifiers[i][0];
 			if ( b1 == -1 )
 				break;
 
 			if ( b2 != -1 ) {
 				char keyname[2][32];
 
-				DC->keynumToStringBuf( b1, keyname[0], sizeof( keyname[0] ) );
+				DC->keynumToStringBuf( b1, b1mod, keyname[0], sizeof( keyname[0] ) );
 // do NOT do this or it corrupts asian text!!!					Q_strupr(keyname[0]);
-				DC->keynumToStringBuf( b2, keyname[1], sizeof( keyname[1] ) );
+				DC->keynumToStringBuf( b2, b2mod, keyname[1], sizeof( keyname[1] ) );
 // do NOT do this or it corrupts asian text!!!					Q_strupr(keyname[1]);
 
 #ifdef JK2_MODE
@@ -6921,7 +6929,7 @@ void BindingFromName( const char *cvar ) {
 				Com_sprintf( g_nameBind, sizeof( g_nameBind ), "%s %s %s", keyname[0], sOR, keyname[1] );
 			}
 			else {
-				DC->keynumToStringBuf( b1, g_nameBind, sizeof( g_nameBind ) );
+				DC->keynumToStringBuf( b1, b1mod, g_nameBind, sizeof( g_nameBind ) );
 // do NOT do this or it corrupts asian text!!!					Q_strupr(g_nameBind);
 			}
 			return;
@@ -9497,10 +9505,10 @@ void Controls_SetConfig( void )
 	// iterate each command, get its numeric binding
 	for ( i=0; i<g_bindCount; i++ ) {
 		if ( g_bindKeys[i][0] != -1 ) {
-			DC->setBinding( g_bindKeys[i][0], g_bindCommands[i] );
+			DC->setBinding( g_bindKeys[i][0], g_bindModifiers[i][0], g_bindCommands[i] );
 
 			if ( g_bindKeys[i][1] != -1 )
-				DC->setBinding( g_bindKeys[i][1], g_bindCommands[i] );
+				DC->setBinding( g_bindKeys[i][1], g_bindModifiers[i][1], g_bindCommands[i] );
 		}
 	}
 }
@@ -9512,6 +9520,9 @@ void Controls_SetDefaults( void )
 	for ( i=0; i<g_bindCount; i++ ) {
 		g_bindKeys[i][0] = -1;
 		g_bindKeys[i][1] = -1;
+
+		g_bindModifiers[i][0] = 0;
+		g_bindModifiers[i][1] = 0;
 	}
 }
 
@@ -9537,7 +9548,7 @@ void Item_Bind_Ungrey(itemDef_t *item)
 Item_Bind_HandleKey
 =================
 */
-qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
+qboolean Item_Bind_HandleKey(itemDef_t *item, int key, int modifiers, qboolean down)
 {
 	int			id;
 	int			i;
@@ -9609,13 +9620,16 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 				if ( id != -1 )
 				{
 					if ( g_bindKeys[id][0] != -1 )
-						DC->setBinding( g_bindKeys[id][0], "" );
+						DC->setBinding( g_bindKeys[id][0], g_bindModifiers[id][0], "" );
 
 					if ( g_bindKeys[id][1] != -1 )
-						DC->setBinding( g_bindKeys[id][1], "" );
+						DC->setBinding( g_bindKeys[id][1], g_bindModifiers[id][1], "" );
 
 					g_bindKeys[id][0] = -1;
 					g_bindKeys[id][1] = -1;
+
+					g_bindModifiers[id][0] = 0;
+					g_bindModifiers[id][1] = 0;
 				}
 				Controls_SetConfig();
 				g_waitingForKey = qfalse;
@@ -9634,12 +9648,16 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 
 		for ( b=0; b<g_bindCount; b++ )
 		{
-			if ( g_bindKeys[b][1] == key )
+			if ( g_bindKeys[b][1] == key && g_bindModifiers[b][1] == modifiers ) {
 				g_bindKeys[b][1] = -1;
+				g_bindModifiers[b][1] = 0;
+			}
 
-			if ( g_bindKeys[b][0] == key ) {
+			if ( g_bindKeys[b][0] == key && g_bindModifiers[b][0] == modifiers ) {
 				g_bindKeys[b][0] = g_bindKeys[b][1];
 				g_bindKeys[b][1] = -1;
+				g_bindModifiers[b][0] = g_bindModifiers[b][1];
+				g_bindModifiers[b][1] = 0;
 			}
 		}
 	}
@@ -9649,23 +9667,31 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 	if ( id != -1 ) {
 		if ( key == -1 ) {
 			if ( g_bindKeys[id][0] != -1 ) {
-				DC->setBinding( g_bindKeys[id][0], "" );
+				DC->setBinding( g_bindKeys[id][0], g_bindModifiers[id][0], "" );
 				g_bindKeys[id][0] = -1;
+				g_bindModifiers[id][0] = 0;
 			}
 			if ( g_bindKeys[id][1] != -1 ) {
-				DC->setBinding( g_bindKeys[id][1], "" );
+				DC->setBinding( g_bindKeys[id][1], g_bindModifiers[id][1], "" );
 				g_bindKeys[id][1] = -1;
+				g_bindModifiers[id][1] = 0;
 			}
 		}
-		else if ( g_bindKeys[id][0] == -1 )
+		else if ( g_bindKeys[id][0] == -1 ) {
 			g_bindKeys[id][0] = key;
-		else if ( g_bindKeys[id][0] != key && g_bindKeys[id][1] == -1 )
+			g_bindModifiers[id][0] = modifiers;
+		}
+		else if ( g_bindKeys[id][0] != key && g_bindKeys[id][1] == -1 ) {
 			g_bindKeys[id][1] = key;
+			g_bindModifiers[id][1] = modifiers;
+		}
 		else {
-			DC->setBinding( g_bindKeys[id][0], "" );
-			DC->setBinding( g_bindKeys[id][1], "" );
+			DC->setBinding( g_bindKeys[id][0], g_bindModifiers[id][0], "" );
+			DC->setBinding( g_bindKeys[id][1], g_bindModifiers[id][1], "" );
 			g_bindKeys[id][0] = key;
 			g_bindKeys[id][1] = -1;
+			g_bindModifiers[id][0] = modifiers;
+			g_bindModifiers[id][1] = 0;
 		}
 	}
 
@@ -10136,7 +10162,7 @@ static void Display_CloseCinematics()
 Menus_HandleOOBClick
 =================
 */
-void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down)
+void Menus_HandleOOBClick(menuDef_t *menu, int key, int modifiers, qboolean down)
 {
 	if (menu)
 	{
@@ -10158,7 +10184,7 @@ void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down)
 				menu->window.flags &= ~(WINDOW_HASFOCUS | WINDOW_VISIBLE);
 			//	Menus_Activate(&Menus[i]);
 				Menu_HandleMouseMove(&Menus[i], DC->cursorx, DC->cursory);
-				Menu_HandleKey(&Menus[i], key, down);
+				Menu_HandleKey(&Menus[i], key, modifiers, down);
 			}
 		}
 
@@ -11024,7 +11050,7 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 Item_HandleKey
 =================
 */
-qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
+qboolean Item_HandleKey(itemDef_t *item, int key, int modifiers, qboolean down)
 {
 
 	if (itemCapture)
@@ -11082,7 +11108,7 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 			return Item_OwnerDraw_HandleKey(item, key);
 			break;
 		case ITEM_TYPE_BIND:
-			return Item_Bind_HandleKey(item, key, down);
+			return Item_Bind_HandleKey(item, key, modifiers, down);
 			break;
 		case ITEM_TYPE_SLIDER:
 			return Item_Slider_HandleKey(item, key, down);
@@ -11172,7 +11198,7 @@ void Item_Action(itemDef_t *item)
 Menu_HandleKey
 =================
 */
-void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
+void Menu_HandleKey(menuDef_t *menu, int key, int modifiers, qboolean down)
 {
 	int i;
 	itemDef_t *item = NULL;
@@ -11186,7 +11212,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	inHandler = qtrue;
 	if (g_waitingForKey && down)
 	{
-		Item_Bind_HandleKey(g_bindItem, key, down);
+		Item_Bind_HandleKey(g_bindItem, key, modifiers, down);
 		inHandler = qfalse;
 		return;
 	}
@@ -11226,7 +11252,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 		if (!inHandleKey && (key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3))
 		{
 			inHandleKey = qtrue;
-			Menus_HandleOOBClick(menu, key, down);
+			Menus_HandleOOBClick(menu, key, modifiers, down);
 			inHandleKey = qfalse;
 			inHandler = qfalse;
 			return;
@@ -11251,7 +11277,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 
 	if (item != NULL)
 	{
-		if (Item_HandleKey(item, key, down))
+		if (Item_HandleKey(item, key, modifiers, down))
 //JLFLISTBOX
 		{
 			// It is possible for an item to be disable after Item_HandleKey is run (like in Voice Chat)
@@ -11275,7 +11301,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	if (!(key & K_CHAR_FLAG) )
 	{	//only check keys not chars
 		char	b[256];
-		DC->getBindingBuf( key, b, 256 );
+		DC->getBindingBuf( key, modifiers, b, 256 );
 		if (Q_stricmp(b,"datapad") == 0)	// They hit the datapad key again.
 		{
 			if (( Q_stricmp(menu->window.name,"datapadMissionMenu") == 0) ||

@@ -911,6 +911,9 @@ int Com_EventLoop( void ) {
 			Cbuf_AddText( (char *)ev.evPtr );
 			Cbuf_AddText( "\n" );
 			break;
+		case SE_MODIFIER:
+			CL_ModifierEvent( ev.evValue );
+			break;
 		}
 
 		// free any block data
@@ -1799,10 +1802,10 @@ void Field_CompleteKeyname( void )
 	matchCount = 0;
 	shortestMatch[ 0 ] = 0;
 
-	Key_KeynameCompletion( FindMatches );
+	Key_Completion( FindMatches, completionString );
 
 	if( !Field_Complete( ) )
-		Key_KeynameCompletion( PrintKeyMatches );
+		Key_Completion( PrintKeyMatches, completionString );
 }
 
 /*

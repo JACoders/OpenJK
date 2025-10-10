@@ -129,9 +129,9 @@ typedef struct {
 	// =========== data shared with the client system =============
 
 	// keyboard and key binding interaction
-	void		(*Key_KeynumToStringBuf)( int keynum, char *buf, int buflen );
-	void		(*Key_GetBindingBuf)( int keynum, char *buf, int buflen );
-	void		(*Key_SetBinding)( int keynum, const char *binding );
+	void		(*Key_KeynumToStringBuf)( int keynum, int modifiers, char *buf, int buflen );
+	void		(*Key_GetBindingBuf)( int keynum, int modifiers, char *buf, int buflen );
+	void		(*Key_SetBinding)( int keynum, int modifiers, const char *binding );
 	qboolean	(*Key_IsDown)( int keynum );
 	qboolean	(*Key_GetOverstrikeMode)( void );
 	void		(*Key_SetOverstrikeMode)( qboolean state );
