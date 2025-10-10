@@ -684,6 +684,11 @@ static void GLimp_InitExtensions( void )
 #endif
 }
 
+static void R_CheckCvars(void) {
+	ri.Cvar_CheckRange( r_dynamicGlowWidth, 0.0f, glConfig.vidWidth, qfalse );
+	ri.Cvar_CheckRange( r_dynamicGlowHeight, 0.0f, glConfig.vidHeight, qfalse );
+}
+
 /*
 ** InitOpenGL
 **
@@ -711,6 +716,8 @@ static void InitOpenGL( void )
 		memset(&glConfig, 0, sizeof(glConfig));
 
 		window = ri.WIN_Init(&windowDesc, &glConfig);
+
+		R_CheckCvars();
 
 		// get our config strings
 		glConfig.vendor_string = (const char *)qglGetString (GL_VENDOR);

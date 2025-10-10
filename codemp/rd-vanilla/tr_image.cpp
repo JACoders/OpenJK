@@ -1340,14 +1340,6 @@ void R_CreateBuiltinImages( void ) {
 	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
 	// Create the minimized scene blur image.
-	if ( r_dynamicGlowWidth->integer > glConfig.vidWidth  )
-	{
-		r_dynamicGlowWidth->integer = glConfig.vidWidth;
-	}
-	if ( r_dynamicGlowHeight->integer > glConfig.vidHeight  )
-	{
-		r_dynamicGlowHeight->integer = glConfig.vidHeight;
-	}
     const int dglowWidth = (r_dynamicGlowWidth->value < 1.0f) ? glConfig.vidWidth * r_dynamicGlowWidth->value : r_dynamicGlowWidth->integer;
     const int dglowHeight = (r_dynamicGlowHeight->value < 1.0f) ? glConfig.vidHeight * r_dynamicGlowHeight->value : r_dynamicGlowHeight->integer;
 	tr.blurImage = 1024 + giTextureBindNum++;

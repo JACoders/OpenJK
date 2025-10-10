@@ -772,6 +772,11 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 	return truncatedExtensions;
 }
 
+static void R_CheckCvars(void) {
+	ri.Cvar_CheckRange( r_dynamicGlowWidth, 0.0f, glConfig.vidWidth, qfalse );
+	ri.Cvar_CheckRange( r_dynamicGlowHeight, 0.0f, glConfig.vidHeight, qfalse );
+}
+
 /*
 ** InitOpenGL
 **
@@ -800,6 +805,8 @@ static void InitOpenGL( void )
 		memset(&glConfigExt, 0, sizeof(glConfigExt));
 
 		window = ri.WIN_Init(&windowDesc, &glConfig);
+
+		R_CheckCvars();
 
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 
