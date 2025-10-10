@@ -642,3 +642,25 @@ void Sys_AnsiColorPrint( const char *msg )
 		fputs( buffer, stderr );
 	}
 }
+
+/*
+================
+Sys_SteamInit
+
+Only Windows has this feature at the moment.
+================
+*/
+void Sys_SteamInit()
+{
+}
+
+/*
+================
+Sys_SteamShutdown
+
+Only Windows has this feature at the moment.
+================
+*/
+void Sys_SteamShutdown()
+{
+}
