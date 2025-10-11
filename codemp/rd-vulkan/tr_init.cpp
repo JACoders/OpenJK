@@ -958,7 +958,7 @@ void R_Register( void )
 	ri.Cvar_CheckRange(r_nomip, 0, 1, qtrue);
 #ifdef USE_VBO
 	r_vbo								= ri.Cvar_Get("r_vbo",								"0",						CVAR_ARCHIVE | CVAR_LATCH, "Cache static world surfaces");
-	r_vbo_models						= ri.Cvar_Get("r_vbo_models",						"1",						CVAR_ARCHIVE | CVAR_LATCH, "Cache ghoul2 and md3 model surfaces");
+	r_vbo_models						= ri.Cvar_Get("r_vbo_models",						"0",						CVAR_ARCHIVE | CVAR_LATCH, "Cache ghoul2 and md3 model surfaces");
 #endif
 	r_renderWidth						= ri.Cvar_Get("r_renderWidth",						"800",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
 	r_renderHeight						= ri.Cvar_Get("r_renderHeight",						"600",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
