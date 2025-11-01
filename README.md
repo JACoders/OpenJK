@@ -76,7 +76,7 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 ### Using OpenJK as a base for a new mod
 
 - [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
-- Change the `GAMEVERSION` define in [codemp/game/g_local.h](https://github.com/JACoders/OpenJK/blob/master/codemp/game/g_local.h) from "OpenJK" to your project name
+- Change the JK_VERSION define in codemp/qcommon/game_version.h from "OpenJK" to your project name
 - If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
 
 ## Maintainers (full list: [@JACoders](https://github.com/orgs/JACoders/people))

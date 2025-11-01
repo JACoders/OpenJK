@@ -16,7 +16,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+# The <min>...<policy_max> syntax is needed to remain compatible with 3.1, but also newer versions that dropped 3.1 compatibility
+# More info here: https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html
+cmake_minimum_required(VERSION 3.1...3.31)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
 set(InOpenJK ON)
@@ -52,6 +54,8 @@ option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (
 option(BuildJK2SPRdRend2 "Whether to create projects for the EXPERIMENTAL jk2 SP rend2 renderer (rdjosp-rend2_x86.dll)" OFF)
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
+option(UseAddressSanitizer "Whether to enable runtime address sanitizer" OFF)
+option(UseUndefinedSanitizer "Whether to enable runtime Undefined Behavior sanitizer" OFF)
 
 include(CMakeDependentOption)
 cmake_dependent_option(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
@@ -248,6 +252,16 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" M
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
+	if(UseAddressSanitizer)
+		# also raise stack size drastically (to 64MiB), since the sanitizer adds overhead to stack frames
+		add_compile_options(-fsanitize=address)
+		add_link_options(-fsanitize=address -z stack-size=4000000)
+	endif()
+	if(UseUndefinedSanitizer)
+		add_compile_options(-fsanitize=undefined)
+		add_link_options(-fsanitize=undefined)
+	endif()
+
 	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
@@ -336,10 +350,19 @@ else()
 	message(STATUS "SOURCE_DATE_EPOCH is set ($ENV{SOURCE_DATE_EPOCH}): SOURCE_DATE set to \"${SOURCE_DATE}\"")
 endif()
 
-# Current Git SHA1 hash
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC GIT_HASH)
-message(STATUS "Git revision is ${GIT_HASH}")
+# Current Git tag/version
+# ideally we would separate the hash suffix into its own variable, but sed is not available everywhere
+execute_process(
+	COMMAND "git" "describe" "--tag"
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	OUTPUT_VARIABLE GIT_TAG
+	RESULT_VARIABLE GIT_TAG_ERROR
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(GIT_TAG_ERROR AND NOT GIT_TAG_ERROR EQUAL 0)
+	message(WARNING "Unable to determine Git tag")
+	set(GIT_TAG vUNKNOWN)
+endif()
+message(STATUS "Git tag is ${GIT_TAG}")
 
 configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
 

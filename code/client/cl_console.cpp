@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "qcommon/stringed_ingame.h"
-#include "qcommon/stv_version.h"
+#include "qcommon/game_version.h"
 
 int g_console_field_width = 78;
 
@@ -600,6 +600,7 @@ Draws the last few lines of output transparently over the game top
 void Con_DrawNotify (void)
 {
 	int		x, v;
+	int		lineLimit = con.linewidth;
 	conChar_t		*text;
 	int		i;
 	int		time;
@@ -631,8 +632,11 @@ void Con_DrawNotify (void)
 		if (time > con_notifytime->value*1000)
 			continue;
 		text = con.text + (i % con.totallines)*con.rowwidth;
-		if (!con_timestamps->integer)
+		if (con_timestamps->integer == 0 || con_timestamps->integer == 2) {
+			// don't show timestamps in the notify lines
 			text += CON_TIMESTAMP_LEN;
+			lineLimit -= CON_TIMESTAMP_LEN;
+		}
 
 		// asian language needs to use the new font system to print glyphs...
 		//
@@ -644,7 +648,7 @@ void Con_DrawNotify (void)
 			//
 			char sTemp[4096];	// ott
 			sTemp[0] = '\0';
-			for (x = 0 ; x < con.linewidth ; x++)
+			for (x = 0 ; x < lineLimit ; x++)
 			{
 				if ( text[x].f.color != currentColor ) {
 					currentColor = text[x].f.color;
@@ -662,7 +666,7 @@ void Con_DrawNotify (void)
 		}
 		else
 		{
-			for (x = 0 ; x < con.linewidth ; x++) {
+			for (x = 0 ; x < lineLimit ; x++) {
 				if ( text[x].f.character == ' ' ) {
 					continue;
 				}
@@ -729,11 +733,11 @@ void Con_DrawSolidConsole( float frac )
 	re.SetColor( console_color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
-	i = strlen( Q3_VERSION );
+	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * con.charWidth,
-			(lines-(con.charHeight+con.charHeight/2)), Q3_VERSION[x] );
+			(lines-(con.charHeight+con.charHeight/2)), JK_VERSION[x] );
 	}
 
 	// draw the input prompt, user text, and cursor if desired
