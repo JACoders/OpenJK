@@ -1147,6 +1147,9 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			Vehicle_t tempVehicle;
 
+			// initialize the vehicle cache g_vehicleInfo
+			int vehicleIndex = BG_VehicleGetIndex(pEnt->NPC_type);
+
 			EvaluateFields(savefields_gVHIC, &tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'));
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
