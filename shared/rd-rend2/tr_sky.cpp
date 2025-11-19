@@ -812,7 +812,8 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 	VectorScale( vec1, size, vec1 );
 	VectorScale( vec2, size, vec2 );
 
-	RB_BeginSurface( shader, 0, 0 );
+	shader_t *state = (shader->remappedShader) ? shader->remappedShader : shader;
+	RB_BeginSurface( state, 0, 0 );
 
 	RB_AddQuadStamp(origin, vec1, vec2, colorWhite);
 
