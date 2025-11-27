@@ -971,7 +971,7 @@ typedef struct gameImport_s {
 	int			(*BotLibShutdown)						( void );
 	int			(*BotLibVarSet)							( char *var_name, char *value );
 	int			(*BotLibVarGet)							( char *var_name, char *value, int size );
-	int			(*BotLibDefine)							( char *string );
+	int			(*BotLibDefine)							( const char *string );
 	int			(*BotLibStartFrame)						( float time );
 	int			(*BotLibLoadMap)						( const char *mapname );
 	int			(*BotLibUpdateEntity)					( int ent, void *bue );

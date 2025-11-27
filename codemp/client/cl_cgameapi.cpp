@@ -1262,7 +1262,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return Key_GetKey( (const char *)VMA(1) );
 
 	case CG_PC_ADD_GLOBAL_DEFINE:
-		return botlib_export->PC_AddGlobalDefine( (char *)VMA(1) );
+		return botlib_export->PC_AddGlobalDefine( (const char *)VMA(1) );
 
 	case CG_PC_LOAD_SOURCE:
 		return botlib_export->PC_LoadSourceHandle( (const char *)VMA(1) );

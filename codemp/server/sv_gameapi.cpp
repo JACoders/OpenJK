@@ -1211,7 +1211,7 @@ static int SV_BotLibVarGet( char *var_name, char *value, int size ) {
 	return botlib_export->BotLibVarGet( var_name, value, size );
 }
 
-static int SV_BotLibDefine( char *string ) {
+static int SV_BotLibDefine( const char *string ) {
 	return botlib_export->PC_AddGlobalDefine( string );
 }
 
@@ -2226,7 +2226,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return botlib_export->BotLibVarGet( (char *)VMA(1), (char *)VMA(2), args[3] );
 
 	case BOTLIB_PC_ADD_GLOBAL_DEFINE:
-		return botlib_export->PC_AddGlobalDefine( (char *)VMA(1) );
+		return botlib_export->PC_AddGlobalDefine( (const char *)VMA(1) );
 	case BOTLIB_PC_LOAD_SOURCE:
 		return botlib_export->PC_LoadSourceHandle( (const char *)VMA(1) );
 	case BOTLIB_PC_FREE_SOURCE:

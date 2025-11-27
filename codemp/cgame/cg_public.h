@@ -614,7 +614,7 @@ typedef struct cgameImport_s {
 	void			(*Key_SetCatcher)						( int catcher );
 
 	// preprocessor (botlib_export->PC_***)
-	int				(*PC_AddGlobalDefine)					( char *string );
+	int				(*PC_AddGlobalDefine)					( const char *string );
 	int				(*PC_FreeSource)						( int handle );
 	int				(*PC_LoadGlobalDefines)					( const char *filename );
 	int				(*PC_LoadSource)						( const char *filename );
