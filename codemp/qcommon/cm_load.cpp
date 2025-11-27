@@ -757,7 +757,12 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	//	for the renderer to chew on... (but not if this gets ported to a big-endian machine, because some of the
 	//	map data will have been Little-Long'd, but some hasn't).
 	//
-	if (Sys_LowPhysicalMemory()
+	// For sub BSPs, always free immediately since caching only applies to main maps
+	if ( newBuff && newBuff != gpvCachedMapDiskImage )
+	{
+		Z_Free(newBuff);
+	}
+	else if (Sys_LowPhysicalMemory()
 		|| com_dedicated->integer
 //		|| we're on a big-endian machine
 		)
