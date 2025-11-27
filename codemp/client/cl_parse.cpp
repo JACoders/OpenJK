@@ -28,15 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
 
-#ifdef USE_INTERNAL_ZLIB
-#include "zlib/zlib.h"
-#else
-#include <zlib.h>
-#endif
-
 static char hiddenCvarVal[128];
 
-char *svc_strings[256] = {
+const char *svc_strings[256] = {
 	"svc_bad",
 
 	"svc_nop",
@@ -50,7 +44,7 @@ char *svc_strings[256] = {
 	"svc_mapchange",
 };
 
-void SHOWNET( msg_t *msg, char *s) {
+void SHOWNET( msg_t *msg, const char *s) {
 	if ( cl_shownet->integer >= 2) {
 		Com_Printf ("%3i:%s\n", msg->readcount-1, s);
 	}

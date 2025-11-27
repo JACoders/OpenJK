@@ -390,22 +390,27 @@ set(SharedCommonSafeFiles
 # Adding all of the projects
 #
 #=============================================================================
-if(UseInternalJPEG)
-  add_subdirectory(lib/jpeg-9a)
-else()
-  find_package(JPEG REQUIRED)
+
+# only include image libraries if we're building renderers
+# FIXME: the renderers should declare their own dependencies
+if(BuildMPRdVanilla OR BuildMPRend2 OR BuildSPRdVanilla OR BuildJK2SPRdVanilla)
+	if(UseInternalJPEG)
+	add_subdirectory(lib/jpeg-9a)
+	else()
+	find_package(JPEG REQUIRED)
+	endif()
+
+	if(UseInternalPNG)
+	add_subdirectory(lib/libpng)
+	else()
+	find_package(PNG REQUIRED)
+	endif()
 endif()
 
 if(UseInternalZlib)
-  add_subdirectory(lib/zlib)
+add_subdirectory(lib/zlib)
 else()
-  find_package(ZLIB REQUIRED)
-endif()
-
-if(UseInternalPNG)
-  add_subdirectory(lib/libpng)
-else()
-  find_package(PNG REQUIRED)
+find_package(ZLIB REQUIRED)
 endif()
 
 # Always use bundled minizip (sets MINIZIP_{LIBRARIES,INCLUDE_DIR})
