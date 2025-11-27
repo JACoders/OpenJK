@@ -478,6 +478,11 @@ static const char *GetGLExtensionsString()
 	return extensionString;
 }
 
+static void R_CheckCvars(void) {
+	ri.Cvar_CheckRange( r_dynamicGlowWidth, 0.0f, glConfig.vidWidth, qfalse );
+	ri.Cvar_CheckRange( r_dynamicGlowHeight, 0.0f, glConfig.vidHeight, qfalse );
+}
+
 /*
 ** InitOpenGL
 **
@@ -512,6 +517,8 @@ static void InitOpenGL( void )
 			windowDesc.gl.contextFlags = GLCONTEXT_DEBUG;
 
 		window = ri.WIN_Init(&windowDesc, &glConfig);
+
+		R_CheckCvars();
 
 		GLimp_InitCoreFunctions();
 
@@ -1447,8 +1454,8 @@ void R_Register( void )
 	r_dynamicGlowDelta					= ri.Cvar_Get( "r_dynamicGlowDelta",		"0.8f",		CVAR_ARCHIVE, "" );
 	r_dynamicGlowIntensity				= ri.Cvar_Get( "r_dynamicGlowIntensity",	"1.13f",	CVAR_ARCHIVE, "" );
 	r_dynamicGlowSoft					= ri.Cvar_Get( "r_dynamicGlowSoft",		"1",		CVAR_ARCHIVE, "" );
-	r_dynamicGlowWidth					= ri.Cvar_Get( "r_dynamicGlowWidth",		"320",		CVAR_ARCHIVE|CVAR_LATCH, "" );
-	r_dynamicGlowHeight					= ri.Cvar_Get( "r_dynamicGlowHeight",		"240",		CVAR_ARCHIVE|CVAR_LATCH, "" );
+	r_dynamicGlowWidth					= ri.Cvar_Get( "r_dynamicGlowWidth",		"0.25",		CVAR_ARCHIVE|CVAR_LATCH, "" );
+	r_dynamicGlowHeight					= ri.Cvar_Get( "r_dynamicGlowHeight",		"0.25",		CVAR_ARCHIVE|CVAR_LATCH, "" );
 
 	r_debugContext						= ri.Cvar_Get( "r_debugContext",			"0",		CVAR_LATCH, "" );
 	r_debugWeather						= ri.Cvar_Get( "r_debugWeather",			"0",		CVAR_ARCHIVE, "" );

@@ -104,13 +104,13 @@ cvar_t	*r_gammaShaders;
 
 cvar_t	*r_environmentMapping;
 
-cvar_t	*r_DynamicGlow;
-cvar_t	*r_DynamicGlowPasses;
-cvar_t	*r_DynamicGlowDelta;
-cvar_t	*r_DynamicGlowIntensity;
-cvar_t	*r_DynamicGlowSoft;
-cvar_t	*r_DynamicGlowWidth;
-cvar_t	*r_DynamicGlowHeight;
+cvar_t	*r_dynamicGlow;
+cvar_t	*r_dynamicGlowPasses;
+cvar_t	*r_dynamicGlowDelta;
+cvar_t	*r_dynamicGlowIntensity;
+cvar_t	*r_dynamicGlowSoft;
+cvar_t	*r_dynamicGlowWidth;
+cvar_t	*r_dynamicGlowHeight;
 
 cvar_t	*r_ignoreGLErrors;
 cvar_t	*r_logFile;
@@ -443,7 +443,7 @@ static void GLimp_InitExtensions( void )
 	{
 		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		ri.Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_dynamicGlow","0" );
 		return;
 	}
 
@@ -724,12 +724,12 @@ static void GLimp_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = true;
 		// this would overwrite any achived setting gwg
-		// ri.Cvar_Set( "r_DynamicGlow", "1" );
+		// ri.Cvar_Set( "r_dynamicGlow", "1" );
 	}
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		ri.Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_dynamicGlow","0" );
 	}
 
 #if !defined(__APPLE__)
@@ -772,6 +772,11 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 	return truncatedExtensions;
 }
 
+static void R_CheckCvars(void) {
+	ri.Cvar_CheckRange( r_dynamicGlowWidth, 0.0f, glConfig.vidWidth, qfalse );
+	ri.Cvar_CheckRange( r_dynamicGlowHeight, 0.0f, glConfig.vidHeight, qfalse );
+}
+
 /*
 ** InitOpenGL
 **
@@ -800,6 +805,8 @@ static void InitOpenGL( void )
 		memset(&glConfigExt, 0, sizeof(glConfigExt));
 
 		window = ri.WIN_Init(&windowDesc, &glConfig);
+
+		R_CheckCvars();
 
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 
@@ -1499,7 +1506,7 @@ void GfxInfo_f( void )
 		else
 			ri.Printf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
 	}
-	ri.Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer ? 1 : 0] );
+	ri.Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_dynamicGlow->integer ? 1 : 0] );
 	if (g_bTextureRectangleHack) ri.Printf( PRINT_ALL, "Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
@@ -1574,13 +1581,13 @@ void R_Register( void )
 	r_ext_texture_filter_anisotropic	= ri.Cvar_Get( "r_ext_texture_filter_anisotropic",	"16",						CVAR_ARCHIVE_ND, "" );
 	r_gammaShaders						= ri.Cvar_Get( "r_gammaShaders",					"0",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_environmentMapping				= ri.Cvar_Get( "r_environmentMapping",				"1",						CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlow						= ri.Cvar_Get( "r_DynamicGlow",					"0",						CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlowPasses					= ri.Cvar_Get( "r_DynamicGlowPasses",				"5",						CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlowDelta					= ri.Cvar_Get( "r_DynamicGlowDelta",				"0.8f",						CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlowIntensity				= ri.Cvar_Get( "r_DynamicGlowIntensity",			"1.13f",					CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",				"1",						CVAR_ARCHIVE_ND, "" );
-	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
-	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_dynamicGlow						= ri.Cvar_Get( "r_dynamicGlow",					"0",						CVAR_ARCHIVE_ND, "" );
+	r_dynamicGlowPasses					= ri.Cvar_Get( "r_dynamicGlowPasses",				"5",						CVAR_ARCHIVE_ND, "" );
+	r_dynamicGlowDelta					= ri.Cvar_Get( "r_dynamicGlowDelta",				"0.8f",						CVAR_ARCHIVE_ND, "" );
+	r_dynamicGlowIntensity				= ri.Cvar_Get( "r_dynamicGlowIntensity",			"1.13f",					CVAR_ARCHIVE_ND, "" );
+	r_dynamicGlowSoft					= ri.Cvar_Get( "r_dynamicGlowSoft",				"1",						CVAR_ARCHIVE_ND, "" );
+	r_dynamicGlowWidth					= ri.Cvar_Get( "r_dynamicGlowWidth",				"0.25",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
+	r_dynamicGlowHeight					= ri.Cvar_Get( "r_dynamicGlowHeight",				"0.25",						CVAR_ARCHIVE_ND|CVAR_LATCH, "" );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH, "" );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH, "" );
@@ -1822,7 +1829,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	for ( size_t i = 0; i < numCommands; i++ )
 		ri.Cmd_RemoveCommand( commands[i].cmd );
 
-	if ( r_DynamicGlow && r_DynamicGlow->integer )
+	if ( r_dynamicGlow && r_dynamicGlow->integer )
 	{
 		// Release the Glow Vertex Shader.
 		if ( tr.glowVShader )
