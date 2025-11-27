@@ -655,14 +655,15 @@ void Window_Init(windowDef_t *w) {
 void Fade(int *flags, float *f, float clamp, int *nextTime, int offsetTime, qboolean bFlags, float fadeAmount) {
 	if ( *flags & ( WINDOW_FADINGOUT | WINDOW_FADINGIN ) ) {
 		if ( DC->realTime > *nextTime ) {
-			*nextTime = DC->realTime + offsetTime;
+			const float tAdjust = DC->frameTime / (1000.0 / UI_TARGET_FPS);
+			*nextTime = DC->realTime + (offsetTime * tAdjust);
 			if ( *flags & WINDOW_FADINGOUT ) {
-				*f -= fadeAmount;
+				*f -= fadeAmount * tAdjust;
 				if ( bFlags && *f <= 0.0 )
 					*flags &= ~( WINDOW_FADINGOUT | WINDOW_VISIBLE );
 			}
 			else {
-				*f += fadeAmount;
+				*f += fadeAmount * tAdjust;
 				if ( *f >= clamp ) {
 					*f = clamp;
 					if ( bFlags )
@@ -5949,6 +5950,7 @@ void Item_Paint(itemDef_t *item)
 	menuDef_t *parent;
 	int			xPos,textWidth;
 	vec4_t		color = {1, 1, 1, 1};
+	const float tAdjust = DC->frameTime / (1000.0 / UI_TARGET_FPS);
 
 	red[0] = red[3] = 1;
 	red[1] = red[2] = 0;
@@ -5966,17 +5968,17 @@ void Item_Paint(itemDef_t *item)
 		{
 			float rx, ry, a, c, s, w, h;
 
-			item->window.nextTime = DC->realTime + item->window.offsetTime;
+			item->window.nextTime = DC->realTime + (item->window.offsetTime * tAdjust);
 			// translate
 			w = item->window.rectClient.w / 2;
 			h = item->window.rectClient.h / 2;
-			rx = item->window.rectClient.x + w - item->window.rectEffects.x;
-			ry = item->window.rectClient.y + h - item->window.rectEffects.y;
+			rx = item->window.rectClient.x + w - ((item->window.rectEffects.x) * tAdjust);
+			ry = item->window.rectClient.y + h - ((item->window.rectEffects.y) * tAdjust);
 			a = 3 * M_PI / 180;
 			c = cos(a);
 			s = sin(a);
-			item->window.rectClient.x = (rx * c - ry * s) + item->window.rectEffects.x - w;
-			item->window.rectClient.y = (rx * s + ry * c) + item->window.rectEffects.y - h;
+			item->window.rectClient.x = (rx * c - ry * s) + ((item->window.rectEffects.x - w) * tAdjust);
+			item->window.rectClient.y = (rx * s + ry * c) + ((item->window.rectEffects.y - h) * tAdjust);
 			Item_UpdatePosition(item);
 		}
 	}
@@ -5987,7 +5989,7 @@ void Item_Paint(itemDef_t *item)
 		if (DC->realTime > item->window.nextTime)
 		{
 			int done = 0;
-			item->window.nextTime = DC->realTime + item->window.offsetTime;
+			item->window.nextTime = DC->realTime + (item->window.offsetTime * tAdjust);
 
 			// transition the x,y
 			if (item->window.rectClient.x == item->window.rectEffects.x)
@@ -5998,7 +6000,7 @@ void Item_Paint(itemDef_t *item)
 			{
 				if (item->window.rectClient.x < item->window.rectEffects.x)
 				{
-					item->window.rectClient.x += item->window.rectEffects2.x;
+					item->window.rectClient.x += item->window.rectEffects2.x * tAdjust;
 					if (item->window.rectClient.x > item->window.rectEffects.x)
 					{
 						item->window.rectClient.x = item->window.rectEffects.x;
@@ -6007,7 +6009,7 @@ void Item_Paint(itemDef_t *item)
 				}
 				else
 				{
-					item->window.rectClient.x -= item->window.rectEffects2.x;
+					item->window.rectClient.x -= item->window.rectEffects2.x * tAdjust;
 					if (item->window.rectClient.x < item->window.rectEffects.x)
 					{
 						item->window.rectClient.x = item->window.rectEffects.x;
@@ -6024,7 +6026,7 @@ void Item_Paint(itemDef_t *item)
 			{
 				if (item->window.rectClient.y < item->window.rectEffects.y)
 				{
-					item->window.rectClient.y += item->window.rectEffects2.y;
+					item->window.rectClient.y += item->window.rectEffects2.y * tAdjust;
 					if (item->window.rectClient.y > item->window.rectEffects.y)
 					{
 						item->window.rectClient.y = item->window.rectEffects.y;
@@ -6033,7 +6035,7 @@ void Item_Paint(itemDef_t *item)
 				}
 				else
 				{
-					item->window.rectClient.y -= item->window.rectEffects2.y;
+					item->window.rectClient.y -= item->window.rectEffects2.y * tAdjust;
 					if (item->window.rectClient.y < item->window.rectEffects.y)
 					{
 						item->window.rectClient.y = item->window.rectEffects.y;
@@ -6050,7 +6052,7 @@ void Item_Paint(itemDef_t *item)
 			{
 				if (item->window.rectClient.w < item->window.rectEffects.w)
 				{
-					item->window.rectClient.w += item->window.rectEffects2.w;
+					item->window.rectClient.w += item->window.rectEffects2.w * tAdjust;
 					if (item->window.rectClient.w > item->window.rectEffects.w)
 					{
 						item->window.rectClient.w = item->window.rectEffects.w;
@@ -6059,7 +6061,7 @@ void Item_Paint(itemDef_t *item)
 				}
 				else
 				{
-					item->window.rectClient.w -= item->window.rectEffects2.w;
+					item->window.rectClient.w -= item->window.rectEffects2.w * tAdjust;
 					if (item->window.rectClient.w < item->window.rectEffects.w)
 					{
 						item->window.rectClient.w = item->window.rectEffects.w;
@@ -6076,7 +6078,7 @@ void Item_Paint(itemDef_t *item)
 			{
 				if (item->window.rectClient.h < item->window.rectEffects.h)
 				{
-					item->window.rectClient.h += item->window.rectEffects2.h;
+					item->window.rectClient.h += item->window.rectEffects2.h * tAdjust;
 					if (item->window.rectClient.h > item->window.rectEffects.h)
 					{
 						item->window.rectClient.h = item->window.rectEffects.h;
@@ -6085,7 +6087,7 @@ void Item_Paint(itemDef_t *item)
 				}
 				else
 				{
-					item->window.rectClient.h -= item->window.rectEffects2.h;
+					item->window.rectClient.h -= item->window.rectEffects2.h * tAdjust;
 					if (item->window.rectClient.h < item->window.rectEffects.h)
 					{
 						item->window.rectClient.h = item->window.rectEffects.h;
@@ -6120,7 +6122,7 @@ void Item_Paint(itemDef_t *item)
 			if (DC->realTime > item->window.nextTime)
 			{
 				int done = 0;
-				item->window.nextTime = DC->realTime + item->window.offsetTime;
+				item->window.nextTime = DC->realTime + (item->window.offsetTime * tAdjust);
 
 
 // transition the x,y,z max
@@ -6132,7 +6134,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->g2maxs[0] < modelptr->g2maxs2[0])
 					{
-						modelptr->g2maxs[0] += modelptr->g2maxsEffect[0];
+						modelptr->g2maxs[0] += modelptr->g2maxsEffect[0] * tAdjust;
 						if (modelptr->g2maxs[0] > modelptr->g2maxs2[0])
 						{
 							modelptr->g2maxs[0] = modelptr->g2maxs2[0];
@@ -6141,7 +6143,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->g2maxs[0] -= modelptr->g2maxsEffect[0];
+						modelptr->g2maxs[0] -= modelptr->g2maxsEffect[0] * tAdjust;
 						if (modelptr->g2maxs[0] < modelptr->g2maxs2[0])
 						{
 							modelptr->g2maxs[0] = modelptr->g2maxs2[0];
@@ -6158,7 +6160,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->g2maxs[1] < modelptr->g2maxs2[1])
 					{
-						modelptr->g2maxs[1] += modelptr->g2maxsEffect[1];
+						modelptr->g2maxs[1] += modelptr->g2maxsEffect[1] * tAdjust;
 						if (modelptr->g2maxs[1] > modelptr->g2maxs2[1])
 						{
 							modelptr->g2maxs[1] = modelptr->g2maxs2[1];
@@ -6167,7 +6169,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->g2maxs[1] -= modelptr->g2maxsEffect[1];
+						modelptr->g2maxs[1] -= modelptr->g2maxsEffect[1] * tAdjust;
 						if (modelptr->g2maxs[1] < modelptr->g2maxs2[1])
 						{
 							modelptr->g2maxs[1] = modelptr->g2maxs2[1];
@@ -6187,7 +6189,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->g2maxs[2] < modelptr->g2maxs2[2])
 					{
-						modelptr->g2maxs[2] += modelptr->g2maxsEffect[2];
+						modelptr->g2maxs[2] += modelptr->g2maxsEffect[2] * tAdjust;
 						if (modelptr->g2maxs[2] > modelptr->g2maxs2[2])
 						{
 							modelptr->g2maxs[2] = modelptr->g2maxs2[2];
@@ -6196,7 +6198,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->g2maxs[2] -= modelptr->g2maxsEffect[2];
+						modelptr->g2maxs[2] -= modelptr->g2maxsEffect[2] * tAdjust;
 						if (modelptr->g2maxs[2] < modelptr->g2maxs2[2])
 						{
 							modelptr->g2maxs[2] = modelptr->g2maxs2[2];
@@ -6214,7 +6216,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->g2mins[0] < modelptr->g2mins2[0])
 					{
-						modelptr->g2mins[0] += modelptr->g2minsEffect[0];
+						modelptr->g2mins[0] += modelptr->g2minsEffect[0] * tAdjust;
 						if (modelptr->g2mins[0] > modelptr->g2mins2[0])
 						{
 							modelptr->g2mins[0] = modelptr->g2mins2[0];
@@ -6223,7 +6225,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->g2mins[0] -= modelptr->g2minsEffect[0];
+						modelptr->g2mins[0] -= modelptr->g2minsEffect[0] * tAdjust;
 						if (modelptr->g2mins[0] < modelptr->g2mins2[0])
 						{
 							modelptr->g2mins[0] = modelptr->g2mins2[0];
@@ -6240,7 +6242,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->g2mins[1] < modelptr->g2mins2[1])
 					{
-						modelptr->g2mins[1] += modelptr->g2minsEffect[1];
+						modelptr->g2mins[1] += modelptr->g2minsEffect[1] * tAdjust;
 						if (modelptr->g2mins[1] > modelptr->g2mins2[1])
 						{
 							modelptr->g2mins[1] = modelptr->g2mins2[1];
@@ -6249,7 +6251,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->g2mins[1] -= modelptr->g2minsEffect[1];
+						modelptr->g2mins[1] -= modelptr->g2minsEffect[1] * tAdjust;
 						if (modelptr->g2mins[1] < modelptr->g2mins2[1])
 						{
 							modelptr->g2mins[1] = modelptr->g2mins2[1];
@@ -6269,7 +6271,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->g2mins[2] < modelptr->g2mins2[2])
 					{
-						modelptr->g2mins[2] += modelptr->g2minsEffect[2];
+						modelptr->g2mins[2] += modelptr->g2minsEffect[2] * tAdjust;
 						if (modelptr->g2mins[2] > modelptr->g2mins2[2])
 						{
 							modelptr->g2mins[2] = modelptr->g2mins2[2];
@@ -6278,7 +6280,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->g2mins[2] -= modelptr->g2minsEffect[2];
+						modelptr->g2mins[2] -= modelptr->g2minsEffect[2] * tAdjust;
 						if (modelptr->g2mins[2] < modelptr->g2mins2[2])
 						{
 							modelptr->g2mins[2] = modelptr->g2mins2[2];
@@ -6298,7 +6300,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->fov_x < modelptr->fov_x2)
 					{
-						modelptr->fov_x += modelptr->fov_Effectx;
+						modelptr->fov_x += modelptr->fov_Effectx * tAdjust;
 						if (modelptr->fov_x > modelptr->fov_x2)
 						{
 							modelptr->fov_x = modelptr->fov_x2;
@@ -6307,7 +6309,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->fov_x -= modelptr->fov_Effectx;
+						modelptr->fov_x -= modelptr->fov_Effectx * tAdjust;
 						if (modelptr->fov_x < modelptr->fov_x2)
 						{
 							modelptr->fov_x = modelptr->fov_x2;
@@ -6325,7 +6327,7 @@ void Item_Paint(itemDef_t *item)
 				{
 					if (modelptr->fov_y < modelptr->fov_y2)
 					{
-						modelptr->fov_y += modelptr->fov_Effecty;
+						modelptr->fov_y += modelptr->fov_Effecty * tAdjust;
 						if (modelptr->fov_y > modelptr->fov_y2)
 						{
 							modelptr->fov_y = modelptr->fov_y2;
@@ -6334,7 +6336,7 @@ void Item_Paint(itemDef_t *item)
 					}
 					else
 					{
-						modelptr->fov_y -= modelptr->fov_Effecty;
+						modelptr->fov_y -= modelptr->fov_Effecty * tAdjust;
 						if (modelptr->fov_y < modelptr->fov_y2)
 						{
 							modelptr->fov_y = modelptr->fov_y2;
