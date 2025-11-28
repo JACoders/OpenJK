@@ -2265,12 +2265,12 @@ bool G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is 
 	return ghlInfo->mValid;
 }
 
-bool G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is properly set up
+qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is properly set up
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 	if (!ghlInfo)
 	{
-		return false;
+		return qfalse;
 	}
 	ghlInfo->mValid=false;
 //	G2WARNING(ghlInfo->mModelindex != -1,"Setup request on non-used info slot?");
@@ -2327,17 +2327,17 @@ bool G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is
 		ghlInfo->currentAnimModelSize=0;
 		ghlInfo->aHeader=0;
 	}
-	return ghlInfo->mValid;
+	return (qboolean)ghlInfo->mValid;
 }
 
-bool G2_SetupModelPointers(CGhoul2Info_v &ghoul2) // returns true if any model is properly set up
+qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2) // returns true if any model is properly set up
 {
-	bool ret=false;
+	qboolean ret=qfalse;
 	int i;
 	for (i=0; i<ghoul2.size(); i++)
 	{
-		bool r=G2_SetupModelPointers(&ghoul2[i]);
-		ret=ret||r;
+		qboolean r=G2_SetupModelPointers(&ghoul2[i]);
+		ret=(qboolean)(ret||r);
 	}
 	return ret;
 }

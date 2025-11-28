@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_WorldEffects.h"
 
 glconfig_t	glConfig;
+glconfigExt_t glConfigExt;
 glstate_t	glState;
 window_t	window;
 
@@ -677,10 +678,10 @@ static void GLimp_InitExtensions( void )
 	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
 	if (qglStencilOpSeparate)
 	{
-		glConfig.doStencilShadowsInOneDrawcall = qtrue;
+		glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
 	}
 #else
-	glConfig.doStencilShadowsInOneDrawcall = qtrue;
+	glConfigExt.doStencilShadowsInOneDrawcall = qtrue;
 #endif
 }
 
@@ -1521,6 +1522,8 @@ void R_Register( void )
 	r_ext_compiled_vertex_array = ri.Cvar_Get( "r_ext_compiled_vertex_array", "1", CVAR_ARCHIVE_ND | CVAR_LATCH);
 	r_ext_texture_env_add = ri.Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE_ND | CVAR_LATCH);
 	r_ext_texture_filter_anisotropic = ri.Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE_ND );
+	// MSAA shall be computed on OpenGls default framebuffer
+	ri.Cvar_Set("r_ext_multisample_default_fb", "1");
 
 	r_DynamicGlow = ri.Cvar_Get( "r_DynamicGlow", "0", CVAR_ARCHIVE_ND );
 	r_DynamicGlowPasses = ri.Cvar_Get( "r_DynamicGlowPasses", "5", CVAR_ARCHIVE_ND );
@@ -1952,9 +1955,9 @@ GetRefAPI
 */
 extern void R_LoadImage( const char *shortname, byte **pic, int *width, int *height );
 extern void R_WorldEffectCommand(const char *command);
-extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
 extern void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 extern void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params);
+extern qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
 extern qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale);
 extern qboolean G2API_RagEffectorKick(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity);
 extern qboolean G2API_RagForceSolve(CGhoul2Info_v &ghoul2, qboolean force);
@@ -2071,7 +2074,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 
 	re.R_InitWorldEffects = R_InitWorldEffects;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;
-	re.R_inPVS = R_inPVS;
+	re.inPVS = R_inPVS;
 
 	re.tr_distortionAlpha = get_tr_distortionAlpha;
 	re.tr_distortionStretch = get_tr_distortionStretch;
