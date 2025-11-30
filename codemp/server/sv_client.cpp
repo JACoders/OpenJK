@@ -961,8 +961,14 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 				break;
 			}
 			// store checksums since tokenization is not re-entrant
-			for (i = 0; nCurArg < nClientPaks; i++) {
+			for (i = 0; nCurArg < nClientPaks && i < 1024; i++) {
 				nClientChkSum[i] = atoi(Cmd_Argv(nCurArg++));
+			}
+
+			// check for overflow - client sent too many checksums
+			if (i >= 1024) {
+				bGood = qfalse;
+				break;
 			}
 
 			// store number to compare against (minus one cause the last is the number of checksums)
