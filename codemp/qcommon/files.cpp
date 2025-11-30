@@ -2147,6 +2147,15 @@ static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 		unzGoToNextFile(uf);
 	}
 
+	// Validate number_entry to prevent integer overflow in allocation calculations
+	// Use conservative limit that prevents overflow on both 32-bit and 64-bit systems
+	const size_t maxEntries = (SIZE_MAX - len) / sizeof( fileInPack_t );
+	if ( gi.number_entry == 0 || gi.number_entry > maxEntries ) {
+		Com_Printf( "FS_LoadZipFile: %s has invalid entry count\n", zipfile );
+		unzClose( uf );
+		return NULL;
+	}
+
 	buildBuffer = (struct fileInPack_s *)Z_Malloc( (gi.number_entry * sizeof( fileInPack_t )) + len, TAG_FILESYS, qtrue );
 	namePtr = ((char *) buildBuffer) + gi.number_entry * sizeof( fileInPack_t );
 	fs_headerLongs = (int *)Z_Malloc( ( gi.number_entry + 1 ) * sizeof(int), TAG_FILESYS, qtrue );
