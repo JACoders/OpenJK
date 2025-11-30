@@ -3960,10 +3960,15 @@ static void R_GenerateSurfaceSprites(
 	// FIXME: Need a better way to handle this.
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
 			bundle, stage->stateBits);
+	if ( !out->shader ) {
+		return;
+	}
 	out->shader->spriteUbo = shader->spriteUbo;
 
 	out->shader->cullType = shader->cullType;
-	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
+	if ( out->shader->stages[0] ) {
+		out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
+	}
 	out->alphaTestType = stage->alphaTestType;
 
 	out->numAttributes = 4;

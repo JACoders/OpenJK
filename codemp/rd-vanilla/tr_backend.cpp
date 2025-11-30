@@ -1418,6 +1418,9 @@ const void *RB_RotatePic ( const void *data )
 	cmd = (const rotatePicCommand_t *)data;
 
 	shader = cmd->shader;
+	if ( !shader || !shader->stages ) {
+		return (const void *)(cmd + 1);
+	}
 	image = &shader->stages[0].bundle[0].image[0];
 
 	if ( image ) {

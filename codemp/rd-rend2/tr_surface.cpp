@@ -2200,6 +2200,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 
 	// TODO: Check which pass (z-prepass/shadow/forward) we're rendering for?
 	shader_t *shader = surf->shader;
+	if ( !shader || !shader->stages[0] )
+		return;
 	shaderStage_t *firstStage = shader->stages[0];
 	shaderProgram_t *programGroup = firstStage->glslShaderGroup;
 	const surfaceSprite_t *ss = surf->sprite;
