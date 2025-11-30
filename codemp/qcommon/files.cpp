@@ -3191,6 +3191,14 @@ qboolean FS_CheckDirTraversal(const char *checkdir)
 	if(strstr(checkdir, "../") || strstr(checkdir, "..\\"))
 		return qtrue;
 
+	// Check for absolute paths (Unix-style or Windows drive letters)
+	if(checkdir[0] == '/' || checkdir[0] == '\\')
+		return qtrue;
+
+	// Check for Windows drive letters (e.g., "C:")
+	if(checkdir[0] && checkdir[1] == ':')
+		return qtrue;
+
 	return qfalse;
 }
 
