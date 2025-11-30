@@ -244,8 +244,16 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 
 	// read the fragment information
 	if ( fragmented ) {
-		fragmentStart  = (unsigned short)MSG_ReadShort( msg );
-		fragmentLength = (unsigned short)MSG_ReadShort( msg );
+		fragmentStart  = MSG_ReadShort( msg );
+		fragmentLength = MSG_ReadShort( msg );
+		// Validate fragment values - negative values indicate malformed packet
+		if ( fragmentStart < 0 || fragmentLength < 0 ) {
+			if ( showdrop->integer || showpackets->integer ) {
+				Com_Printf( "%s:negative fragment offset/length\n",
+					NET_AdrToString( &chan->remoteAddress ) );
+			}
+			return qfalse;
+		}
 	} else {
 		fragmentStart = 0;		// stop warning message
 		fragmentLength = 0;
