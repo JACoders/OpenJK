@@ -7058,7 +7058,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 		int skinID;
 		char *slash;
 
-		strcpy(modelName, cModelName);
+		Q_strncpyz(modelName, cModelName, sizeof(modelName));
 
 		if (cent->currentState.NPC_class == CLASS_VEHICLE && modelName[0] == '$')
 		{ //vehicles pass their veh names over as model names, then we get the model name from the veh type
@@ -7108,7 +7108,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			{
 				skinID = trap->R_RegisterSkin(va("models/players/%s/model_default.skin", modelName));
 			}
-			strcpy(modelName, va("models/players/%s/model.glm", modelName));
+			Com_sprintf(modelName, sizeof(modelName), "models/players/%s/model.glm", modelName);
 
 			//this sound is *only* used for vehicles now
 			cgs.media.noAmmoSound = trap->S_RegisterSound( "sound/weapons/noammo.wav" );

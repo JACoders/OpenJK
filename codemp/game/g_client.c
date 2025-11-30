@@ -1639,14 +1639,14 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 			{
 				if (skinName && skinName[0])
 				{
-					strcpy(skin, skinName);
-					strcpy(truncModelName, modelname);
+					Q_strncpyz(skin, skinName, sizeof(skin));
+					Q_strncpyz(truncModelName, modelname, sizeof(truncModelName));
 				}
 				else
 				{
 					strcpy(skin, "default");
 
-					strcpy(truncModelName, modelname);
+					Q_strncpyz(truncModelName, modelname, sizeof(truncModelName));
 					p = Q_strrchr(truncModelName, '/');
 
 					if (p)
@@ -1718,7 +1718,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 				skinHandle = trap->R_RegisterSkin(useSkinName);
 			}
 
-			strcpy(modelFullPath, va("models/players/%s/model.glm", truncModelName));
+			Com_sprintf(modelFullPath, sizeof(modelFullPath), "models/players/%s/model.glm", truncModelName);
 			handle = trap->G2API_InitGhoul2Model(&ent->ghoul2, modelFullPath, 0, skinHandle, -20, 0, 0);
 
 			if (handle<0)
