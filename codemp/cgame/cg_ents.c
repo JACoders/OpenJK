@@ -894,7 +894,8 @@ static void CG_General( centity_t *cent ) {
 		}
 	}
 
-	if (cent->currentState.boltToPlayer)
+	if (cent->currentState.boltToPlayer > 0 &&
+		cent->currentState.boltToPlayer <= MAX_CLIENTS)
 	{ //Shove it into the player's left hand then.
 		centity_t *pl = &cg_entities[cent->currentState.boltToPlayer-1];
 		if (CG_IsMindTricked(pl->currentState.trickedentindex,
@@ -907,8 +908,6 @@ static void CG_General( centity_t *cent ) {
 		}
 		if (!CG_RenderTimeEntBolt(cent))
 		{ //If this function returns qfalse we shouldn't render this ent at all.
-			if (cent->currentState.boltToPlayer > 0 &&
-				cent->currentState.boltToPlayer <= MAX_CLIENTS)
 			{
 				VectorCopy(pl->lerpOrigin, cent->lerpOrigin);
 
@@ -1029,13 +1028,17 @@ static void CG_General( centity_t *cent ) {
 
 		doNotSetModel = qtrue;
 
-		if (cent->currentState.modelindex >= 0)
+		if (cent->currentState.modelindex >= 0 && cent->currentState.modelindex < MAX_GENTITIES)
 		{
 			clEnt = &cg_entities[cent->currentState.modelindex];
 		}
-		else
+		else if (cent->currentState.otherEntityNum2 >= 0 && cent->currentState.otherEntityNum2 < MAX_GENTITIES)
 		{
 			clEnt = &cg_entities[cent->currentState.otherEntityNum2];
+		}
+		else
+		{
+			return; // Invalid entity index
 		}
 
 		if (!dismember_settings)
@@ -3091,7 +3094,8 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		}
 	}
 
-	if (cg.predictedPlayerState.m_iVehicleNum &&
+	if (cg.predictedPlayerState.m_iVehicleNum > 0 &&
+		cg.predictedPlayerState.m_iVehicleNum < MAX_GENTITIES &&
 		cg.predictedPlayerState.m_iVehicleNum == cent->currentState.number &&
 		cent->currentState.eType == ET_NPC && cent->currentState.NPC_class == CLASS_VEHICLE)
 	{ //special case for vehicle we are riding
@@ -3456,7 +3460,8 @@ void CG_AddPacketEntities( qboolean isPortal ) {
 	CG_CheckPlayerG2Weapons(ps, &cg_entities[cg.predictedPlayerState.clientNum]);
 	BG_PlayerStateToEntityState( ps, &cg_entities[cg.predictedPlayerState.clientNum].currentState, qfalse );
 
-	if (cg.predictedPlayerState.m_iVehicleNum)
+	if (cg.predictedPlayerState.m_iVehicleNum > 0 &&
+		cg.predictedPlayerState.m_iVehicleNum < MAX_GENTITIES)
 	{ //add the vehicle I'm riding first
 		//BG_PlayerStateToEntityState( &cg.predictedVehicleState, &cg_entities[cg.predictedPlayerState.m_iVehicleNum].currentState, qfalse );
 		//cg_entities[cg.predictedPlayerState.m_iVehicleNum].currentState.eType = ET_NPC;
