@@ -1350,6 +1350,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_CLIENTJOIN");
 
 		//Slight hack to force a local reinit of client entity on join.
+		if (es->eventParm < 0 || es->eventParm >= MAX_GENTITIES)
+		{
+			break;
+		}
 		cl_ent = &cg_entities[es->eventParm];
 
 		if (cl_ent)
@@ -1857,6 +1861,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			int		index;
 			qboolean	newindex = qfalse;
 
+			if (es->eventParm < 0 || es->eventParm >= MAX_GENTITIES)
+			{
+				break;
+			}
 			index = cg_entities[es->eventParm].currentState.modelindex;		// player predicted
 
 			if (index < 1 && cg_entities[es->eventParm].currentState.isJediMaster)
@@ -2796,15 +2804,25 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	case EV_SIEGE_ROUNDOVER:
 		DEBUGNAME("EV_SIEGE_ROUNDOVER");
-		CG_SiegeRoundOver(&cg_entities[cent->currentState.weapon], cent->currentState.eventParm);
+		if (cent->currentState.weapon >= 0 && cent->currentState.weapon < MAX_GENTITIES)
+		{
+			CG_SiegeRoundOver(&cg_entities[cent->currentState.weapon], cent->currentState.eventParm);
+		}
 		break;
 	case EV_SIEGE_OBJECTIVECOMPLETE:
 		DEBUGNAME("EV_SIEGE_OBJECTIVECOMPLETE");
-		CG_SiegeObjectiveCompleted(&cg_entities[cent->currentState.weapon], cent->currentState.eventParm, cent->currentState.trickedentindex);
+		if (cent->currentState.weapon >= 0 && cent->currentState.weapon < MAX_GENTITIES)
+		{
+			CG_SiegeObjectiveCompleted(&cg_entities[cent->currentState.weapon], cent->currentState.eventParm, cent->currentState.trickedentindex);
+		}
 		break;
 
 	case EV_DESTROY_GHOUL2_INSTANCE:
 		DEBUGNAME("EV_DESTROY_GHOUL2_INSTANCE");
+		if (es->eventParm < 0 || es->eventParm >= MAX_GENTITIES)
+		{
+			break;
+		}
 		if (cg_entities[es->eventParm].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[es->eventParm].ghoul2))
 		{
 			if (es->eventParm < MAX_CLIENTS)
@@ -2820,6 +2838,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_DESTROY_WEAPON_MODEL:
 		DEBUGNAME("EV_DESTROY_WEAPON_MODEL");
+		if (es->eventParm < 0 || es->eventParm >= MAX_GENTITIES)
+		{
+			break;
+		}
 		if (cg_entities[es->eventParm].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[es->eventParm].ghoul2) &&
 			trap->G2API_HasGhoul2ModelOnIndex(&(cg_entities[es->eventParm].ghoul2), 1))
 		{
@@ -3119,6 +3141,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_MUTE_SOUND:
 		DEBUGNAME("EV_MUTE_SOUND");
+		if (es->trickedentindex2 < 0 || es->trickedentindex2 >= MAX_GENTITIES)
+		{
+			break;
+		}
 		if (cg_entities[es->trickedentindex2].currentState.eFlags & EF_SOUNDTRACKER)
 		{
 			cg_entities[es->trickedentindex2].currentState.eFlags &= ~EF_SOUNDTRACKER;
