@@ -512,17 +512,9 @@ char *MSG_ReadString( msg_t *msg ) {
 
 		string[l] = c;
 		l++;
-	} while (l <= sizeof(string)-1);
+	} while (l < sizeof(string)-1);
 
-	// some bonus protection, shouldn't occur cause server doesn't write such things
-	if (l <= sizeof(string)-1)
-	{
-		string[l] = 0;
-	}
-	else
-	{
-		string[sizeof(string)-1] = 0;
-	}
+	string[l] = 0;
 
 	return string;
 }
