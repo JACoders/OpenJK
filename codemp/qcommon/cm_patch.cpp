@@ -1057,6 +1057,7 @@ static inline void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) 
 			}
 
 			if ( numFacets == MAX_FACETS ) {
+				Z_Free(facets);
 				Com_Error( ERR_DROP, "MAX_FACETS" );
 			}
 			facet = &facets[numFacets];
@@ -1103,6 +1104,7 @@ static inline void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) 
 				}
 
 				if ( numFacets == MAX_FACETS ) {
+					Z_Free(facets);
 					Com_Error( ERR_DROP, "MAX_FACETS" );
 				}
 				facet = &facets[numFacets];
