@@ -284,7 +284,10 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 			{
 				s = -s;
 			}
-			angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+			if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+			{
+				angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+			}
 			if (angDif > maxDif)
 			{
 				angDif = maxDif;
@@ -443,7 +446,14 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	// Percentage of maximum speed relative to current speed.
 	//float fSpeed = VectorLength( client->ps.velocity );
-	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
+	if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+	{
+		fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
+	}
+	else
+	{
+		fSpeedPercToMax = 0.0f;
+	}
 
 
 	// Going in reverse...
@@ -500,7 +510,14 @@ static void AnimateRiders( Vehicle_t *pVeh )
 	}
 
 	// Percentage of maximum speed relative to current speed.
-	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
+	if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+	{
+		fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
+	}
+	else
+	{
+		fSpeedPercToMax = 0.0f;
+	}
 
 	// Going in reverse...
 	if (0)

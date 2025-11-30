@@ -583,7 +583,10 @@ void ProcessOrientCommands( Vehicle_t *pVeh )
 		{
 			s = -s;
 		}
-		angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+		{
+			angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		}
 		if (angDif > maxDif)
 		{
 			angDif = maxDif;

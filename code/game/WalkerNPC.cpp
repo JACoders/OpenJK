@@ -407,7 +407,14 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	// Percentage of maximum speed relative to current speed.
 	//float fSpeed = VectorLength( client->ps.velocity );
-	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
+	if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+	{
+		fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
+	}
+	else
+	{
+		fSpeedPercToMax = 0.0f;
+	}
 
 	// If we're moving...
 	if ( fSpeedPercToMax > 0.0f ) //fSpeedPercToMax >= 0.85f )

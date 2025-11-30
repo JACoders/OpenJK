@@ -1131,7 +1131,10 @@ void FighterYawAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *pa
 		{
 			s = -s;
 		}
-		angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+		{
+			angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		}
 		if (angDif > maxDif)
 		{
 			angDif = maxDif;
@@ -1157,7 +1160,10 @@ void FighterPitchAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *
 		{
 			s = -s;
 		}
-		angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		if (pVeh->m_pVehicleInfo->speedMax > 0.0f)
+		{
+			angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		}
 		if (angDif > maxDif)
 		{
 			angDif = maxDif;
