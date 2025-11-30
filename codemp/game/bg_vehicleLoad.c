@@ -762,6 +762,12 @@ void BG_VehicleClampData( vehicleInfo_t *vehicle )
 	{
 		vehicle->maxPassengers = 0;
 	}
+
+	// Validate mass to prevent division by zero.
+	if ( vehicle->mass <= 0 )
+	{
+		vehicle->mass = VEH_DEFAULT_MASS;
+	}
 }
 
 static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmName, char *pValue )
