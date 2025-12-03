@@ -1710,6 +1710,11 @@ void BG_ClearAnimsets(void)
 animation_t *BG_AnimsetAlloc(void)
 {
 	assert (bgNumAllAnims < MAX_ANIM_FILES);
+	if (bgNumAllAnims >= MAX_ANIM_FILES)
+	{
+		Com_Printf(S_COLOR_YELLOW "BG_AnimsetAlloc: MAX_ANIM_FILES reached (%d)\n", MAX_ANIM_FILES);
+		return NULL;
+	}
 	bgAllAnims[bgNumAllAnims].anims = (animation_t *) BG_Alloc(sizeof(animation_t)*MAX_TOTALANIMATIONS);
 
 	return bgAllAnims[bgNumAllAnims].anims;
@@ -2129,7 +2134,7 @@ This file's presence is not required
 
 ======================
 */
-bgLoadedEvents_t bgAllEvents[MAX_ANIM_FILES];
+bgLoadedEvents_t bgAllEvents[MAX_ANIM_EVENT_FILES];
 int bgNumAnimEvents = 1;
 static int bg_animParseIncluding = 0;
 int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int eventFileIndex )
@@ -2148,7 +2153,7 @@ int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int ev
 	int				forcedIndex;
 
 	assert(animFileIndex < MAX_ANIM_FILES);
-	assert(eventFileIndex < MAX_ANIM_FILES);
+	assert(eventFileIndex < MAX_ANIM_EVENT_FILES);
 
 	if (eventFileIndex == -1)
 	{
@@ -2157,6 +2162,12 @@ int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int ev
 	else
 	{
 		forcedIndex = eventFileIndex;
+	}
+
+	if (forcedIndex >= MAX_ANIM_EVENT_FILES)
+	{
+		Com_Printf(S_COLOR_YELLOW "BG_ParseAnimationEvtFile: MAX_ANIM_EVENT_FILES reached (%d), using index 0 for %s\n", MAX_ANIM_EVENT_FILES, as_filename);
+		return 0;
 	}
 
 	if (bg_animParseIncluding <= 0)
