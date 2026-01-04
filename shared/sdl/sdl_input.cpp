@@ -1268,6 +1268,51 @@ static void IN_ProcessEvents( void )
 	{
 		switch( e.type )
 		{
+			case SDL_CONTROLLERDEVICEADDED:
+			case SDL_JOYDEVICEADDED:
+				// Hotplug support: if a controller/joystick is connected after startup,
+				// attempt to (re)initialize joystick input so it becomes available without restart.
+				if ( in_joystick && in_joystick->integer && !stick )
+				{
+					Com_Printf( "Controller connected.\n" );
+					IN_InitJoystick( );
+				}
+				break;
+
+			case SDL_CONTROLLERDEVICEREMOVED:
+			{
+				// If the active GameController was removed, re-init to cleanly drop input
+				// and/or pick another connected device.
+				if ( gamepad )
+				{
+					SDL_JoystickID removedId = e.cdevice.which;
+					SDL_JoystickID currentId = SDL_JoystickInstanceID( SDL_GameControllerGetJoystick( gamepad ) );
+					if ( removedId == currentId )
+					{
+						Com_Printf( "Controller disconnected.\n" );
+						IN_InitJoystick( );
+					}
+				}
+				break;
+			}
+
+			case SDL_JOYDEVICEREMOVED:
+			{
+				// If the active joystick device was removed, re-init to cleanly drop input
+				// and/or pick another connected device.
+				if ( stick )
+				{
+					SDL_JoystickID removedId = e.jdevice.which;
+					SDL_JoystickID currentId = SDL_JoystickInstanceID( stick );
+					if ( removedId == currentId )
+					{
+						Com_Printf( "Joystick disconnected.\n" );
+						IN_InitJoystick( );
+					}
+				}
+				break;
+			}
+
 			case SDL_KEYDOWN:
 				key = IN_TranslateSDLToJKKey( &e.key.keysym, qtrue );
 				if ( key != A_NULL )
