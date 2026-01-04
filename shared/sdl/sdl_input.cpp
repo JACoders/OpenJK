@@ -1391,6 +1391,10 @@ static void IN_ProcessEvents( void )
 void IN_Frame (void) {
 	qboolean loading;
 
+	// Process SDL events first so joystick/controller state is up-to-date
+	// before we generate input movement for this frame.
+	IN_ProcessEvents();
+
 	IN_JoyMove( );
 
 	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
@@ -1413,8 +1417,6 @@ void IN_Frame (void) {
 	}
 	else
 		IN_ActivateMouse( );
-
-	IN_ProcessEvents();
 }
 
 
