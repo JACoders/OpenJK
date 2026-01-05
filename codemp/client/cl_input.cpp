@@ -1419,6 +1419,21 @@ usercmd_t CL_CreateCmd( void ) {
 	// get basic movement from joystick
 	CL_JoystickMove( &cmd );
 
+	// MP anti-cheat clears BUTTON_WALKING when forward/right magnitudes exceed 64
+	// (see bg_pmove.c). Clamp while walking so analog movement can still "feather"
+	// without unexpectedly being forced into run/no-walk by the server.
+	if ( cmd.buttons & BUTTON_WALKING )
+	{
+		const int forward = (int)cmd.forwardmove;
+		const int side = (int)cmd.rightmove;
+
+		if ( forward > 64 ) cmd.forwardmove = 64;
+		else if ( forward < -64 ) cmd.forwardmove = -64;
+
+		if ( side > 64 ) cmd.rightmove = 64;
+		else if ( side < -64 ) cmd.rightmove = -64;
+	}
+
 	// check to make sure the angles haven't wrapped
 	if ( cl.viewangles[PITCH] - oldAngles[PITCH] > 90 ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] + 90;

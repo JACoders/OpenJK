@@ -750,6 +750,20 @@ usercmd_t CL_CreateCmd( void ) {
 	// get basic movement from joystick
 	CL_JoystickMove( &cmd );
 
+	// Clamp move values while walking to keep controller/joystick "walk" compatible
+	// with the engine's typical walk magnitude (and MP's 64-threshold behavior).
+	if ( cmd.buttons & BUTTON_WALKING )
+	{
+		const int forward = (int)cmd.forwardmove;
+		const int side = (int)cmd.rightmove;
+
+		if ( forward > 64 ) cmd.forwardmove = 64;
+		else if ( forward < -64 ) cmd.forwardmove = -64;
+
+		if ( side > 64 ) cmd.rightmove = 64;
+		else if ( side < -64 ) cmd.rightmove = -64;
+	}
+
 	// check to make sure the angles haven't wrapped
 	if ( cl.viewangles[PITCH] - oldAngles[PITCH] > 90 ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] + 90;
