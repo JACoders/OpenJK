@@ -359,6 +359,9 @@ cvar_t	*cl_run;
 
 cvar_t	*cl_anglespeedkey;
 
+// Joystick/controller look sensitivity scalar (1.0 = default behavior)
+cvar_t	*cl_joystickSensitivity;
+
 
 /*
 ================
@@ -490,6 +493,7 @@ CL_JoystickMove
 */
 void CL_JoystickMove( usercmd_t *cmd ) {
 	float	anglespeed;
+	float	joystickSensitivity;
 
 	if ( !in_joystick->integer )
 	{
@@ -506,10 +510,14 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		cmd->buttons |= BUTTON_WALKING;
 	}
 
+	joystickSensitivity = cl_joystickSensitivity ? cl_joystickSensitivity->value : 1.0f;
+	if ( joystickSensitivity < 0.0f )
+		joystickSensitivity = 0.0f;
+
 	if ( in_speed.active ) {
-		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		anglespeed = 0.001f * cls.frametime * cl_anglespeedkey->value * joystickSensitivity;
 	} else {
-		anglespeed = 0.001 * cls.frametime;
+		anglespeed = 0.001f * cls.frametime * joystickSensitivity;
 	}
 
 	if ( !in_strafe.active ) {
@@ -1086,6 +1094,8 @@ void CL_InitInput( void ) {
 	//end buttons
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
+
+	cl_joystickSensitivity = Cvar_Get( "cl_joystickSensitivity", "1.0", CVAR_ARCHIVE_ND );
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
