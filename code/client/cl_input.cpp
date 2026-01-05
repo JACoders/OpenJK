@@ -359,6 +359,10 @@ cvar_t	*cl_run;
 
 cvar_t	*cl_anglespeedkey;
 
+// Optional modern controller behavior (opt-in; defaults preserve legacy joystick semantics)
+static cvar_t *in_joystickDualStick;
+static cvar_t *in_joystickWalkThreshold;
+
 
 /*
 ================
@@ -493,6 +497,63 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 
 	if ( !in_joystick->integer )
 	{
+		return;
+	}
+
+	// Dual-stick mode (opt-in): left stick always moves, right stick always looks.
+	// This avoids legacy "mlook/strafe swaps axes" behavior and matches modern gamepad expectations.
+	if ( in_joystickDualStick && in_joystickDualStick->integer )
+	{
+		const int sideMove = cl.joystickAxis[AXIS_SIDE];
+		const int forwardMove = cl.joystickAxis[AXIS_FORWARD];
+
+		// Analog walk/run based on stick magnitude (0..1). MP-safe default is 0.5 (~64/127).
+		if ( in_joystickWalkThreshold )
+		{
+			float walkThreshold = in_joystickWalkThreshold->value;
+			if ( walkThreshold < 0.0f ) walkThreshold = 0.0f;
+			if ( walkThreshold > 1.0f ) walkThreshold = 1.0f;
+
+			const float magSq = (float)(sideMove * sideMove + forwardMove * forwardMove) / (127.0f * 127.0f);
+			const float walkThrSq = walkThreshold * walkThreshold;
+
+			// Use squared magnitude to avoid sqrt() dependency.
+			if ( magSq > (0.01f * 0.01f) && magSq < walkThrSq )
+			{
+				cmd->buttons |= BUTTON_WALKING;
+			}
+		}
+
+		if ( in_speed.active ) {
+			anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		} else {
+			anglespeed = 0.001 * cls.frametime;
+		}
+
+		// Left stick: movement
+		cmd->rightmove = ClampChar( cmd->rightmove + sideMove );
+		cmd->forwardmove = ClampChar( cmd->forwardmove + forwardMove );
+		cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+
+		// Right stick: look
+		if ( cl_mYawOverride )
+		{
+			cl.viewangles[YAW] -= 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_YAW];
+		}
+		else
+		{
+			cl.viewangles[YAW] -= anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_YAW];
+		}
+
+		if ( cl_mPitchOverride )
+		{
+			cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_PITCH];
+		}
+		else
+		{
+			cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_PITCH];
+		}
+
 		return;
 	}
 
@@ -1089,5 +1150,8 @@ void CL_InitInput( void ) {
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
+
+	in_joystickDualStick = Cvar_Get( "in_joystickDualStick", "0", CVAR_ARCHIVE_ND );
+	in_joystickWalkThreshold = Cvar_Get( "in_joystickWalkThreshold", "0.5", CVAR_ARCHIVE_ND );
 }
 
