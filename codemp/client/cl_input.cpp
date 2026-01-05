@@ -26,7 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
-#ifndef _WIN32
+#ifdef _WIN32
+#include <math.h>
+#else
 #include <cmath>
 #endif
 unsigned	frame_msec;
@@ -811,6 +813,24 @@ cvar_t	*cl_run;
 
 cvar_t	*cl_anglespeedkey;
 
+// Joystick/controller look response curve (1.0 = linear)
+cvar_t	*cl_joystickLookCurve;
+
+static float CL_ApplyJoystickLookCurve( int v, float curve )
+{
+	// Map [-127..127] -> [-1..1], apply curve to magnitude, return back to [-127..127]
+	float x = (float)v / 127.0f;
+	if ( x > 1.0f ) x = 1.0f;
+	if ( x < -1.0f ) x = -1.0f;
+
+	const float sign = (x < 0.0f) ? -1.0f : 1.0f;
+	float a = (x < 0.0f) ? -x : x;
+	if ( curve != 1.0f )
+		a = powf( a, curve );
+
+	return sign * a * 127.0f;
+}
+
 
 /*
 ================
@@ -981,16 +1001,23 @@ extern cvar_t *j_up_axis;
 
 void CL_JoystickMove( usercmd_t *cmd ) {
 	float	anglespeed;
+	float	lookCurve;
 
 	if ( !in_joystick->integer )
 	{
 		return;
 	}
 
-	float yaw     = j_yaw->value     * cl.joystickAxis[j_yaw_axis->integer];
+	lookCurve = cl_joystickLookCurve ? cl_joystickLookCurve->value : 1.0f;
+	if ( lookCurve < 0.1f )
+		lookCurve = 0.1f;
+	if ( lookCurve > 5.0f )
+		lookCurve = 5.0f;
+
+	float yaw     = j_yaw->value     * CL_ApplyJoystickLookCurve( cl.joystickAxis[j_yaw_axis->integer], lookCurve );
 	float right   = j_side->value    * cl.joystickAxis[j_side_axis->integer];
 	float forward = j_forward->value * cl.joystickAxis[j_forward_axis->integer];
-	float pitch   = j_pitch->value   * cl.joystickAxis[j_pitch_axis->integer];
+	float pitch   = j_pitch->value   * CL_ApplyJoystickLookCurve( cl.joystickAxis[j_pitch_axis->integer], lookCurve );
 	float up      = j_up->value      * cl.joystickAxis[j_up_axis->integer];
 
 	if ( !(in_speed.active ^ cl_run->integer) ) {
@@ -1829,6 +1856,8 @@ CL_InitInput
 */
 void CL_InitInput( void ) {
 	Cmd_AddCommandList( inputCmds );
+
+	cl_joystickLookCurve = Cvar_Get( "cl_joystickLookCurve", "1.0", CVAR_ARCHIVE_ND );
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
