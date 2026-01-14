@@ -1123,7 +1123,7 @@ void main()
 
   #if defined(USE_SHADOWMAP)
 	vec3 primaryLightDir = normalize(u_PrimaryLightOrigin.xyz);
-	float NPL = clamp(dot(N, primaryLightDir), -1.0, 1.0);
+	float NPL = clamp(dot(N, primaryLightDir), 0.0, 1.0);
 	vec3 normalBias = vertexNormal * (1.0 - NPL);
 	float shadowValue = sunShadow(u_ViewOrigin, viewDir, normalBias, u_ShadowMap) * NPL;
 
