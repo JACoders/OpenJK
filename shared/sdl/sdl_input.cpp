@@ -338,10 +338,10 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 			case SDLK_KP_5:         key = A_KP_5;          break;
 			case SDLK_INSERT:       key = A_INSERT;        break;
 			case SDLK_KP_0:         key = A_KP_0;          break;
-			case SDLK_KP_MULTIPLY:  key = A_STAR;          break;
+			case SDLK_KP_MULTIPLY:  key = A_MULTIPLY;      break;
 			case SDLK_KP_PLUS:      key = A_KP_PLUS;       break;
 			case SDLK_KP_MINUS:     key = A_KP_MINUS;      break;
-			case SDLK_KP_DIVIDE:    key = A_FORWARD_SLASH; break;
+			case SDLK_KP_DIVIDE:    key = A_DIVIDE;        break;
 
 			case SDLK_SCROLLLOCK:   key = A_SCROLLLOCK;    break;
 			case SDLK_NUMLOCKCLEAR: key = A_NUMLOCK;       break;
