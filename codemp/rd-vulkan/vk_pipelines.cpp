@@ -1699,7 +1699,6 @@ static void vk_create_blur_pipeline( char *name, int program_index, uint32_t ind
     VkSpecializationInfo frag_spec_info;
     VkRenderPass renderpass;
     VkPipeline *pipeline;
-    uint32_t i;
 
     switch( program_index ){
         case 1:

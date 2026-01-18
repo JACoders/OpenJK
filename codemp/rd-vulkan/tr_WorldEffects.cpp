@@ -206,7 +206,7 @@ struct	SFloatRange
 	inline void	Clear()
 	{
 		mMin = 0;
-		mMin = 0;
+		mMax = 0;
 	}
 	inline void Pick(float& V)
 	{
@@ -226,7 +226,7 @@ struct	SIntRange
 	inline void	Clear()
 	{
 		mMin = 0;
-		mMin = 0;
+		mMax = 0;
 	}
 	inline void Pick(int& V)
 	{
