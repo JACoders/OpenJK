@@ -80,6 +80,10 @@ uniform vec4 u_VertColor;
 uniform vec4 u_Disintegration;
 uniform int u_ColorGen;
 
+#if defined(PER_PIXEL_LIGHTING) && defined(USE_NORMALMAP) && defined(USE_PARALLAXMAP)
+uniform sampler2D u_NormalMap;
+#endif
+
 out vec4 var_TexCoords;
 out vec4 var_Color;
 
@@ -87,14 +91,10 @@ out vec4 var_Color;
 out vec4 var_Normal;
 out vec4 var_Tangent;
 out vec4 var_ViewDir;
-out vec4 var_TangentViewDir;
+out vec4 var_LightDir;
 #else
 out vec3 var_Position;
 out vec3 var_Normal;
-#endif
-
-#if defined(PER_PIXEL_LIGHTING)
-out vec4 var_LightDir;
 #endif
 
 vec4 CalcColor(vec3 position)
@@ -327,15 +327,30 @@ void main()
 
 #if defined(PER_PIXEL_LIGHTING)
 	vec3 viewDir = u_ViewOrigin.xyz - position;
-
-	// store view direction in tangent space to save on outs
-	var_Normal  = vec4(normal,    0.0);
 	var_Tangent = vec4(tangent,   (attr_Tangent.w * 2.0 - 1.0));
-	var_ViewDir = vec4(viewDir.xyz, 0.0);
 
-	vec3 bitangent = cross(normal, tangent) * var_Tangent.w;
-	mat3 TBN = mat3(tangent, bitangent, normal);
-	var_TangentViewDir = vec4(var_ViewDir.xyz * TBN, 0.0);
+	#if defined(USE_NORMALMAP) && defined(USE_PARALLAXMAP)
+	  vec3 bitangent = cross(normal, tangent) * var_Tangent.w;
+	  mat3 TBN = mat3(tangent, bitangent, normal);
+	  vec3 tangentViewDir = viewDir * TBN;
+
+	  // normal map aspect correction for parallax mapping
+	  vec2 normalSize = vec2(textureSize(u_NormalMap, 0));
+	  float normalMapAspect = normalSize.y / normalSize.x;
+
+	  tangentViewDir *= vec3(
+	  	max(1.0, normalMapAspect),
+	  	max(1.0, 1.0 / normalMapAspect),
+	  	1.0
+	  );
+	#else
+	  vec3 tangentViewDir = vec3(0.0);
+	#endif
+
+	// store tangent view direction in other outs to save space
+	var_LightDir.w = tangentViewDir.x;
+	var_Normal  = vec4(normal,    tangentViewDir.y);
+	var_ViewDir = vec4(viewDir,   tangentViewDir.z);
 #else
 	var_Normal = normal;
 	var_Position = position;
@@ -456,7 +471,6 @@ in vec4 var_Color;
 in vec4 var_Normal;
 in vec4 var_Tangent;
 in vec4 var_ViewDir;
-in vec4 var_TangentViewDir;
 in vec4 var_LightDir;
 #else
 in vec3 var_Position;
@@ -676,9 +690,7 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 vec2 GetParallaxOffset(in vec2 texCoords, in vec3 tangentDir)
 {
 #if defined(USE_PARALLAXMAP)
-	ivec2 normalSize = textureSize(u_NormalMap, 0);
-	vec3 nonSquareScale = mix(vec3(normalSize.y / normalSize.x, 1.0, 1.0), vec3(1.0, normalSize.x / normalSize.y, 1.0), float(normalSize.y <= normalSize.x));
-	vec3 offsetDir = normalize(tangentDir * nonSquareScale);
+	vec3 offsetDir = normalize(tangentDir);
 	offsetDir.xy *= -u_NormalScale.a / offsetDir.z;
 
 	return offsetDir.xy * RayIntersectDisplaceMap(texCoords, offsetDir.xy, u_NormalMap, u_ParallaxBias);
@@ -1052,7 +1064,9 @@ void main()
 	vec2 texCoords = var_TexCoords.xy;
 	vec2 lmCoords = var_TexCoords.zw;
 #if defined(PER_PIXEL_LIGHTING)
-	vec2 tex_offset = GetParallaxOffset(texCoords, var_TangentViewDir.xyz);
+	// Unpack tangent view direction
+	vec3 tangentViewDir = vec3(var_LightDir.w, var_Normal.w, var_ViewDir.w);
+	vec2 tex_offset = GetParallaxOffset(texCoords, tangentViewDir);
 	texCoords += tex_offset;
 #endif
 
