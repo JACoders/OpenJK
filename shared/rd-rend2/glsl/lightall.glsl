@@ -1127,10 +1127,6 @@ void main()
 	vec3 normalBias = vertexNormal * (1.0 - NPL);
 	float shadowValue = sunShadow(u_ViewOrigin, viewDir, normalBias, u_ShadowMap) * NPL;
 
-	// surfaces not facing the light are always shadowed
-
-	//shadowValue = mix(0.0, shadowValue, dot(N, primaryLightDir) > 0.0);
-
     #if defined(SHADOWMAP_MODULATE)
 	vec3 ambientScale = mix(vec3(1.0), u_PrimaryLightAmbient, u_EnableTextures.z);
 	lightColor = mix(ambientScale * lightColor, lightColor, shadowValue);
