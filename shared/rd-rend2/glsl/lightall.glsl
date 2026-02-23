@@ -629,7 +629,7 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 	const int linearSearchSteps = 16;
 	const int binarySearchSteps = 8;
 
-	vec2 dp = inDp - parallaxBias * ds;
+	vec2 dp = fract(inDp - parallaxBias * ds);
 
 	// current size of search window
 	float size = 1.0 / float(linearSearchSteps);
@@ -643,8 +643,16 @@ float RayIntersectDisplaceMap(in vec2 inDp, in vec2 ds, in sampler2D normalMap, 
 	vec2 dx = dFdx(inDp);
 	vec2 dy = dFdy(inDp);
 
+	// try sampling at least one border pixel
+	vec2 tMin = (vec2(0.0) - dp) / ds;
+	vec2 tMax = (vec2(1.0) - dp) / ds;
+	vec2 t = max(tMin, tMax);
+	float tExit  = min(t.x, t.y);
+	float stepFraction = fract(tExit / size) * size;
+	depth -= size-stepFraction;
+
 	// search front to back for first point inside object
-	for(int i = 0; i < linearSearchSteps - 1; ++i)
+	for(int i = 0; i < linearSearchSteps; ++i)
 	{
 		depth += size;
 
