@@ -132,6 +132,12 @@ void main()
 	float distanceToCamera = length(V);
 	float fadeScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
 						distanceToCamera);
+	
+	if (fadeScale >= 1.0)
+	{
+		gl_Position = vec4(0.0);
+		return;
+	}
 
 	float sprite_time = u_frameTime * 1000.0;
 	int vertex_id = gl_VertexID % 4;
