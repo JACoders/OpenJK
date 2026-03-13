@@ -567,7 +567,6 @@ void SP_CreateRain( gentity_t *ent )
 	{
 		G_FindConfigstringIndex("lightrain", CS_WORLD_FX, MAX_WORLD_FX, qtrue);
 		G_FindConfigstringIndex("wind", CS_WORLD_FX, MAX_WORLD_FX, qtrue);
-		return;
 	}
 
 
