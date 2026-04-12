@@ -7463,6 +7463,9 @@ static void UI_BuildServerDisplayList(int force) {
 	trap->Cvar_Update( &ui_serverFilterType );
 	trap->Cvar_Update( &ui_joinGametype );
 
+	// Reset player count before re-counting to prevent accumulation across refreshes
+	uiInfo.serverStatus.numPlayersOnServers = 0;
+
 //	visible = qfalse;
 	for (i = 0; i < count; i++) {
 		// if we already got info for this server
