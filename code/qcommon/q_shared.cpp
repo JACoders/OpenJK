@@ -157,7 +157,7 @@ void COM_EndParseSession( void )
 #endif
 }
 
-int COM_GetCurrentParseLine( int index )
+int COM_GetCurrentParseLine( void )
 {
 	if(parseDataCount < 0)
 		Com_Error(ERR_FATAL, "COM_GetCurrentParseLine: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
@@ -516,6 +516,33 @@ void SkipBracedSection ( const char **program) {
 		}
 
 	} while (depth && *program);
+}
+
+/*
+=================
+SkipBracedSection
+
+The next token should be an open brace or set depth to 1 if already parsed it.
+Skips until a matching close brace is found.
+Internal brace depths are properly skipped.
+=================
+*/
+qboolean SkipBracedSection (const char **program, int depth) {
+	char			*token;
+
+	do {
+		token = COM_ParseExt( program, qtrue );
+		if( token[1] == 0 ) {
+			if( token[0] == '{' ) {
+				depth++;
+			}
+			else if( token[0] == '}' ) {
+				depth--;
+			}
+		}
+	} while( depth && *program );
+
+	return (qboolean)( depth == 0 );
 }
 
 /*

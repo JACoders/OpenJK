@@ -91,9 +91,9 @@ const int lightmapsFullBright[MAXLIGHTMAPS] =
 const byte stylesDefault[MAXLIGHTMAPS] =
 {
 	LS_NORMAL,
-	LS_NONE,
-	LS_NONE,
-	LS_NONE
+	LS_LSNONE,
+	LS_LSNONE,
+	LS_LSNONE
 };
 
 static void ClearGlobalShader(void)

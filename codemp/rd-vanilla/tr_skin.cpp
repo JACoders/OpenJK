@@ -160,7 +160,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			break;
 		}
 		surf = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), h_low );
-		skin->surfaces[skin->numSurfaces] = (_skinSurface_t *)surf;
+		skin->surfaces[skin->numSurfaces] = (skinSurface_t *)surf;
 
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
 
@@ -393,7 +393,7 @@ void	R_InitSkins( void ) {
 	skin = tr.skins[0] = (struct skin_s *)ri.Hunk_Alloc( sizeof( skin_t ), h_low );
 	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
 	skin->numSurfaces = 1;
-	skin->surfaces[0] = (_skinSurface_t *)ri.Hunk_Alloc( sizeof( skinSurface_t ), h_low );
+	skin->surfaces[0] = (skinSurface_t *)ri.Hunk_Alloc( sizeof( skinSurface_t ), h_low );
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 
