@@ -2430,6 +2430,18 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 		RB_SurfaceAxis();
 		break;
 	}
+
+	// Tell the backend to merge the drawcalls except 
+	// for types that can't be merged
+	// TODO: Create RT_BEAM internal shader and make it compatible with pass system 
+	switch( backEnd.currentEntity->e.reType ) {
+	case RT_BEAM:
+	case RT_ENT_CHAIN:
+		break;
+	default:
+		tess.shader->entityMergable = qtrue;
+		break;
+	}
 }
 
 static void RB_SurfaceBad( surfaceType_t *surfType ) {
