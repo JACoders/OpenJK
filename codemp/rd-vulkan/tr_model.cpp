@@ -1075,7 +1075,7 @@ Ghoul2 Insert End
 			if ( strrchr( filename, '.' ) ) {
 				*strrchr( filename, '.' ) = 0;
 			}
-			sprintf( namebuf, "_%d.md3", lod );
+			Com_sprintf( namebuf, sizeof(namebuf), "_%d.md3", lod );
 			strcat( filename, namebuf );
 		}
 
@@ -1286,7 +1286,7 @@ Ghoul2 Insert End
 			if ( strrchr( filename, '.' ) ) {
 				*strrchr( filename, '.' ) = 0;
 			}
-			sprintf( namebuf, "_%d.md3", lod );
+			Com_sprintf( namebuf, sizeof(namebuf), "_%d.md3", lod );
 			strcat( filename, namebuf );
 		}
 

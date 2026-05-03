@@ -516,6 +516,8 @@ static uint32_t vk_surface_sprites_create_vertex_data( const msurface_t *surf, f
 		case SF_TRIANGLES:
 			vk_surface_sprites_create_vertex_data_tri( (srfTriangles_t*)surf->data, density, stage, sprites, &count, &color, vertexLit );
 			break;
+		default:
+			break;
 	}
 
 	return count;

@@ -659,7 +659,7 @@ typedef struct vk_tess_s {
 	
 	VkBuffer			vertex_buffer;
 	byte				*vertex_buffer_ptr; // pointer to mapped vertex buffer
-	VkDeviceSize		vertex_buffer_offset;
+	VkDeviceSize		vertex_buffer_offset; // moved to uint32_t in q3e:63d6d7402d78254bebe28035006fe600f645c8de
 
 	VkBuffer			indirect_buffer;
 	byte				*indirect_buffer_ptr; // pointer to mapped indirect buffer
@@ -1076,6 +1076,8 @@ typedef struct {
 		VkDeviceSize staging_size;
 		VkDeviceSize geometry_size;
 	} defaults;
+
+	char driverNote[200];
 
 	struct {
 		VkDescriptorSet *descriptor;

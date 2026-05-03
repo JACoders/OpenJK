@@ -3467,7 +3467,7 @@ static int CollapseMultitexture( unsigned int st0bits, shaderStage_t *st0, shade
 	}
 
 	// preserve lightmap style
-	if (st1->lightmapStyle)
+	if (st1->lightmapStyle[0])
 	{
 		st0->lightmapStyle[1] = st1->lightmapStyle[0];
 	}
@@ -3558,7 +3558,7 @@ Key complex shaders to validate/check:
 ====================
 */
 static void FindLightingStage( const int stage ) {
-	int i, selected, lightmap;
+	int i, selected, lightmap, whiteImage;
 
 	shader.lightingBundle = 0;
 	shader.lightingStage = -1;
@@ -3569,6 +3569,7 @@ static void FindLightingStage( const int stage ) {
 
 	selected = -2;
 	lightmap = -2;
+	whiteImage = -1;
 	for ( i = 0; i < stage; i++ ) {
 		const shaderStage_t *st = &stages[i];
 		const textureBundle_t *b = &st->bundle[0];
@@ -3583,7 +3584,13 @@ static void FindLightingStage( const int stage ) {
 			lightmap = i;
 			continue;
 		}
-		if ( b->image[0] == tr.whiteImage || b->tcGen != TCGEN_TEXTURE ) {
+		if ( b->tcGen != TCGEN_TEXTURE ) {
+			continue;
+		}
+		if ( b->image[0] == tr.whiteImage ) {
+			if ( whiteImage < 0 ) {
+				whiteImage = i;
+			}
 			continue;
 		}
 		if ( selected >= 0 ) {
@@ -3617,6 +3624,11 @@ static void FindLightingStage( const int stage ) {
 		if ( i == lightmap + 1 ) {
 			break;
 		}
+	}
+
+	// 7. special case for simpsons_q3 textures/simpsons/generic_white - use the only available lighmap
+	if ( selected < 0 /*&& whiteImage >= 0*/ && lightmap >= 0 ) {
+		selected = lightmap;
 	}
 
 	if ( selected >= 0 ) {
@@ -4183,6 +4195,22 @@ shader_t *FinishShader( void )
 		//stage = 1;
 		//rww - since this does bad things, I am commenting it out for now. If you want to attempt a fix, feel free.
 		hasLightmapStage = qfalse;
+	}
+
+	// identity texture + "filter" whiteimage rgbGen == texture + rgbGen
+	if ( stage > 1 ) {
+		if ( stages[0].bundle[0].rgbGen == CGEN_IDENTITY && stages[0].bundle[0].alphaGen == AGEN_SKIP && stages[1].bundle[0].alphaGen == AGEN_SKIP ) {
+			if ( ( stages[1].stateBits & GLS_BLEND_BITS ) == ( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO ) ) {
+				if ( stages[1].bundle[0].image[0] == tr.whiteImage && !stages[1].bundle[0].dlight ) {
+					stages[0].bundle[0].rgbGen = stages[1].bundle[0].rgbGen;
+					if ( stage > 2 ) {
+						memmove( &stages[1], &stages[2], sizeof( stages[0] ) * ( stage - 2 ) );
+					}
+					stages[stage - 1].active = qfalse;
+					stage--;
+				}
+			}
+		}
 	}
 
 	// whiteimage + "filter" texture == texture

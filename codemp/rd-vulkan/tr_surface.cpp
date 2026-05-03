@@ -1705,6 +1705,7 @@ static float	LodErrorForVolume( vec3_t local, float radius ) {
 	return r_lodCurveError->value / d;
 }
 
+#ifdef USE_VBO_GRID
 void RB_SurfaceGridEstimate( srfGridMesh_t *cv, int *numVertexes, int *numIndexes )
 {
 	int		lodWidth, lodHeight;
@@ -1769,6 +1770,7 @@ void RB_SurfaceGridEstimate( srfGridMesh_t *cv, int *numVertexes, int *numIndexe
 	tess.numVertexes = 0;
 	tess.numIndexes = 0;
 }
+#endif // USE_VBO_GRID
 
 /*
 =============
@@ -1791,7 +1793,7 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 	int		lodWidth, lodHeight;
 	int		numVertexes;
 
-#ifdef USE_VBO
+#ifdef USE_VBO_GRID
 	if (tess.allowVBO && cv->vboItemIndex) {
 		// transition to vbo render list
 		if (tess.vbo_world_index == 0) {
@@ -1810,9 +1812,13 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 	}
 
 	VBO_Flush();
-#endif // USE_VBO
-
+#else
 #ifdef USE_VBO
+	VBO_Flush();
+#endif
+#endif
+
+#ifdef USE_VBO_GRID
 	tess.surfType = SF_GRID;
 
 	// determine the allowable discrepance
@@ -1823,10 +1829,8 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 #endif
 		lodError = r_lodCurveError->value; // fixed quality for VBO
 	else
-#endif
-
-	// determine the allowable discrepance
-	lodError = LodErrorForVolume( cv->lodOrigin, cv->lodRadius );
+#endif // USE_VBO_GRID
+		lodError = LodErrorForVolume( cv->lodOrigin, cv->lodRadius ); // determine the allowable discrepance
 
 	// determine which rows and columns of the subdivision
 	// we are actually going to use
@@ -1867,14 +1871,14 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 			if ( vrows < 2 || irows < 1 ) {
 				if (tr.mapLoading) {
 					// estimate and flush
-#ifdef USE_VBO
+#ifdef USE_VBO_GRID
 					if (cv->vboItemIndex) {
 						VBO_PushData( cv->vboItemIndex, &tess );
 						tess.numIndexes = 0;
 						tess.numVertexes = 0;
 					}
 					else
-#endif
+#endif // USE_VBO_GRID
 						ri.Error(ERR_DROP, "Unexpected grid flush during map loading!\n");
 				}
 				else {
@@ -2051,6 +2055,8 @@ void RB_SurfaceEntity( const surfaceType_t *surfType ) {
 #ifdef USE_VBO
 	VBO_Flush();
 #endif
+	qboolean allow_merge = qtrue;
+
 	switch( backEnd.currentEntity->e.reType ) {
 	case RT_SPRITE:
 		RB_SurfaceSprite();
@@ -2059,6 +2065,7 @@ void RB_SurfaceEntity( const surfaceType_t *surfType ) {
 		RB_SurfaceOrientedQuad();
 		break;
 	case RT_BEAM:
+		allow_merge = qfalse;
 		RB_SurfaceBeam();
 		break;
 	case RT_ELECTRICITY:
@@ -2098,9 +2105,12 @@ void RB_SurfaceEntity( const surfaceType_t *surfType ) {
 
 				RB_SurfaceEntity(surfType);
 			}
+
+			allow_merge = qfalse;
 		}
 		break;
 	default:
+		allow_merge = qfalse;
 		RB_SurfaceAxis();
 		break;
 	}
@@ -2110,7 +2120,8 @@ void RB_SurfaceEntity( const surfaceType_t *surfType ) {
 #endif
 
 	// FIX ME: just a testing hack. Pretty sure we can merge all of these
-	tess.shader->entityMergable = qtrue;
+	//tess.shader->entityMergable = qtrue;
+	tess.shader->entityMergable = (allow_merge && tess.shader != tr.defaultShader)  ? qtrue : qfalse;;
 	return;
 }
 

@@ -67,14 +67,20 @@ float ProjectRadius( float r, vec3_t location )
 R_CullModel
 =============
 */
-static int R_CullModel( mdvModel_t *model, const trRefEntity_t *ent ) {
-	vec3_t		bounds[2];
+static int R_CullModel( mdvModel_t *model, const trRefEntity_t *ent, vec3_t bounds[] ) {
+	//vec3_t		bounds[2];
 	mdvFrame_t	*oldFrame, *newFrame;
 	int			i;
 
 	// compute frame pointers
 	newFrame = model->frames + ent->e.frame;
 	oldFrame = model->frames + ent->e.oldframe;
+
+	// calculate a bounding box in the current coordinate system
+	for (i = 0 ; i < 3 ; i++) {
+		bounds[0][i] = oldFrame->bounds[0][i] < newFrame->bounds[0][i] ? oldFrame->bounds[0][i] : newFrame->bounds[0][i];
+		bounds[1][i] = oldFrame->bounds[1][i] > newFrame->bounds[1][i] ? oldFrame->bounds[1][i] : newFrame->bounds[1][i];
+	}
 
 	// cull bounding sphere ONLY if this is not an upscaled entity
 	if ( !ent->e.nonNormalizedAxes )
@@ -125,12 +131,6 @@ static int R_CullModel( mdvModel_t *model, const trRefEntity_t *ent ) {
 				}
 			}
 		}
-	}
-
-	// calculate a bounding box in the current coordinate system
-	for (i = 0 ; i < 3 ; i++) {
-		bounds[0][i] = oldFrame->bounds[0][i] < newFrame->bounds[0][i] ? oldFrame->bounds[0][i] : newFrame->bounds[0][i];
-		bounds[1][i] = oldFrame->bounds[1][i] > newFrame->bounds[1][i] ? oldFrame->bounds[1][i] : newFrame->bounds[1][i];
 	}
 
 	switch ( R_CullLocalBox( bounds ) )
@@ -325,7 +325,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	// cull the entire model if merged bounding box of both frames
 	// is outside the view frustum.
 	//
-	cull = R_CullModel ( model, ent );
+	cull = R_CullModel ( model, ent, bounds );
 	if ( cull == CULL_OUT ) {
 		return;
 	}
@@ -383,12 +383,9 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 			else if (shader->defaultShader) {
 				ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "WARNING: shader %s in skin %s not found\n", shader->name, skin->name);
 			}
-		//} else if ( surface->numShaders <= 0 ) {
-		//	shader = tr.defaultShader;
+		} else if ( surface->numShaderIndexes <= 0 ) {
+			shader = tr.defaultShader;
 		} else {
-			//md3Shader = (md3Shader_t *) ( (byte *)surface + surface->ofsShaders );
-			//md3Shader += ent->e.skinNum % surface->numShaders;
-			//shader = tr.shaders[ md3Shader->shaderIndex ];
 			shader = tr.shaders[ surface->shaderIndexes[ ent->e.skinNum % surface->numShaderIndexes ] ];
 		}
 

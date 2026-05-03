@@ -95,6 +95,10 @@ void vk_update_mvp( const float *m ) {
 
 void vk_set_2d( void ) 
 {
+	if ( backEnd.projection2D ) {
+		return;
+	}
+
 	backEnd.projection2D = qtrue;
 
 	vk_update_mvp(NULL);
@@ -311,6 +315,7 @@ void vk_bind_geometry( uint32_t flags )
 			case SF_MDX:		return vk_vbo_bind_geometry_ghoul2( flags );
 			case SF_VBO_MDVMESH:return vk_vbo_bind_geometry_mdv( flags );
 			case SF_SPRITES:	return vk_vbo_bind_geometry_surface_sprites( flags );
+			default:			break;
 		}
 	}
 

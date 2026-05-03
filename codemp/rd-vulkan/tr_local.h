@@ -34,6 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define USE_VBO_GHOUL2
 	#define USE_VBO_MDV	
 	#define USE_VBO_SS
+	#define USE_VBO_GRID		/* put SF_GRID to VBO */
 #endif
 
 #define USE_FOG_ONLY
@@ -798,22 +799,16 @@ typedef struct trRefdef_s {
 //=================================================================================
 
 // skins allow models to be retextured without modifying the model file
-#ifndef USE_OPENJK
-// this isn't done yet in OpenJK master
 typedef struct {
 	char		name[MAX_QPATH];
 	shader_t	*shader;
 } skinSurface_t;
-
 
 typedef struct skin_s {
 	char			name[MAX_QPATH];		// game path, including extension
 	int				numSurfaces;
 	skinSurface_t	*surfaces[128];
 } skin_t;
-#else
-typedef _skinSurface_t skinSurface_t;
-#endif
 
 typedef struct fog_s {
 	int				originalBrushNumber;
@@ -2097,7 +2092,9 @@ void		R_CreateDefaultShadingCmds( image_t *image );
 //
 // tr_surface.c
 //
+#ifdef USE_VBO_GRID
 void		RB_SurfaceGridEstimate(srfGridMesh_t *cv, int *numVertexes, int *numIndexes);
+#endif
 
 /*
 ====================================================================

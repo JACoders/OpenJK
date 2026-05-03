@@ -675,6 +675,8 @@ void RB_DeformTessGeometry( void ) {
 		case DEFORM_TEXT7:
 			DeformText( backEnd.refdef.text[ds->deformation - DEFORM_TEXT0] );
 			break;
+		default:
+			break;
 		}
 	}
 }
