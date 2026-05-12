@@ -563,6 +563,11 @@ void SP_CreateRain( gentity_t *ent )
 		G_EffectIndex( "world/acid_fizz" );
 		G_FindConfigstringIndex("acidrain", CS_WORLD_FX, MAX_WORLD_FX, qtrue);
 	}
+	else
+	{
+		G_FindConfigstringIndex("lightrain", CS_WORLD_FX, MAX_WORLD_FX, qtrue);
+		G_FindConfigstringIndex("wind", CS_WORLD_FX, MAX_WORLD_FX, qtrue);
+	}
 
 
 	// OUTSIDE SHAKE

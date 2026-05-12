@@ -287,6 +287,7 @@ void SP_CreateSnow( gentity_t *ent )
 		sprintf( temp, "snow init %i", (int)( ent->count * r_weatherScale->value ));
 
 		G_FindConfigstringIndex( temp, CS_WORLD_FX, MAX_WORLD_FX, qtrue );
+		G_FindConfigstringIndex( "wind", CS_WORLD_FX, MAX_WORLD_FX, qtrue );
 
 		level.worldFlags |= WF_SNOWING;
 	}
@@ -311,6 +312,7 @@ void SP_CreateRain( gentity_t *ent )
 		sprintf( temp, "rain init %i", (int)( ent->count * r_weatherScale->value ));
 
 		G_FindConfigstringIndex( temp, CS_WORLD_FX, MAX_WORLD_FX, qtrue );
+		G_FindConfigstringIndex( "wind", CS_WORLD_FX, MAX_WORLD_FX, qtrue );
 
 		level.worldFlags |= WF_RAINING;
 	}
