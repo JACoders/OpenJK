@@ -803,6 +803,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 ServerLoadMDXM - load a Ghoul 2 Mesh file
 =================
 */
+extern int OldToNewRemapTable[72];
 qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
 	int					i,l, j;
 	mdxmHeader_t		*pinmodel, *mdxm;
@@ -884,6 +885,12 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	if (bAlreadyFound)
 	{
 		return qtrue;	// All done. Stop, go no further, do not LittleLong(), do not pass Go...
+	}
+
+	bool isAnOldModelFile = false;
+	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
+	{
+		isAnOldModelFile = true;
 	}
 
 	surfInfo = (mdxmSurfHierarchy_t *)( (byte *)mdxm + mdxm->ofsSurfHierarchy);
@@ -997,7 +1004,22 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 				v++;
 			}
 #endif
-
+			if (isAnOldModelFile)
+			{
+				int *boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
+				for ( j = 0 ; j < surf->numBoneReferences ; j++ )
+				{
+					assert(boneRef[j] >= 0 && boneRef[j] < 72);
+					if (boneRef[j] >= 0 && boneRef[j] < 72)
+					{
+						boneRef[j]=OldToNewRemapTable[boneRef[j]];
+					}
+					else
+					{
+						boneRef[j]=0;
+					}
+				}
+			}
 			// find the next surface
 			surf = (mdxmSurface_t *)( (byte *)surf + surf->ofsEnd );
 		}
