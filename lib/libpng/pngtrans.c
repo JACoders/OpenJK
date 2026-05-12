@@ -1,4 +1,3 @@
-
 /* pngtrans.c - transforms the data in a row (used by both readers and writers)
  *
  * Last changed in libpng 1.6.15 [November 20, 2014]
