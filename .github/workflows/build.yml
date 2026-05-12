@@ -191,13 +191,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [macos-13, macos-14]
+        runner: [macos-15-intel, macos-15]
         build_type: [Debug, Release]
         portable: [Non-Portable]
         include:
-          - runner: macos-13
+          - runner: macos-15-intel
             arch: x86_64
-          - runner: macos-14
+          - runner: macos-15
             arch: arm64
 
     steps:
