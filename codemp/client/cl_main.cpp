@@ -122,7 +122,7 @@ clientStatic_t		cls;
 
 netadr_t rcon_address;
 
-char cl_reconnectArgs[MAX_OSPATH] = {0};
+cvar_t	*cl_reconnectArgs;
 
 // Structure containing functions exported from refresh DLL
 refexport_t	*re = NULL;
@@ -992,11 +992,11 @@ CL_Reconnect_f
 ================
 */
 void CL_Reconnect_f( void ) {
-	if ( !strlen( cl_reconnectArgs ) ) {
+	if ( !strlen( cl_reconnectArgs->string ) ) {
 		return;
 	}
 	Cvar_Set("ui_singlePlayerActive", "0");
-	Cbuf_AddText( va("connect %s\n", cl_reconnectArgs ) );
+	Cbuf_AddText( va("connect %s\n", cl_reconnectArgs->string ) );
 }
 
 /*
@@ -1015,7 +1015,7 @@ void CL_Connect_f( void ) {
 	}
 
 	// save arguments for reconnect
-	Q_strncpyz( cl_reconnectArgs, Cmd_Args(), sizeof( cl_reconnectArgs ) );
+	Cvar_Set("cl_reconnectArgs", Cmd_Args());
 
 	Cvar_Set("ui_singlePlayerActive", "0");
 
@@ -2832,6 +2832,8 @@ void CL_Init( void ) {
 	cl_downloadName = Cvar_Get( "cl_downloadName", "", CVAR_INTERNAL );
 	cl_downloadPrompt = Cvar_Get( "cl_downloadPrompt", "1", CVAR_ARCHIVE, "Confirm pk3 downloads from the server" );
 	cl_downloadOverlay = Cvar_Get( "cl_downloadOverlay", "1", CVAR_ARCHIVE, "Draw download info overlay" );
+
+	cl_reconnectArgs = Cvar_Get( "cl_reconnectArgs", "", CVAR_ARCHIVE, "Arguments provided when last connecting to a server" );
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE_ND, "Player name" );
