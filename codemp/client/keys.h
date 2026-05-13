@@ -27,14 +27,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 typedef struct qkey_s {
 	qboolean	down;
+	int			downModifiers;
 	int			repeats; // if > 1, it is autorepeating
-	char		*binding;
+	char		*binding[KEYMOD_COMBINATIONS];
 } qkey_t;
 
 typedef struct keyGlobals_s {
 	qboolean	anykeydown;
 	qboolean	key_overstrikeMode;
 	int			keyDownCount;
+	int			modifiers;
 
 	qkey_t		keys[MAX_KEYS];
 } keyGlobals_t;
@@ -65,11 +67,14 @@ void	Field_CharEvent		( field_t *edit, int ch );
 void	Field_Draw			( field_t *edit, int x, int y, qboolean showCursor, qboolean noColorEscape );
 void	Field_BigDraw		( field_t *edit, int x, int y, qboolean showCursor, qboolean noColorEscape );
 
-void		Key_SetBinding			( int keynum, const char *binding );
-char *		Key_GetBinding			( int keynum );
+int 		Key_ModifiersFromString ( const char *str );
+const char *Key_SkipModifiers		( const char *str );
+char *		Key_ModifiersStringFromModifiers( int modifiers );
+void		Key_SetBinding			( int keynum, int modifiers, const char *binding );
+char *		Key_GetBinding			( int keynum, int modifiers );
 qboolean	Key_IsDown				( int keynum );
-int			Key_StringToKeynum		( char *str );
+int			Key_StringToKeynum		( const char *str );
 qboolean	Key_GetOverstrikeMode	( void );
 void		Key_SetOverstrikeMode	( qboolean state );
 void		Key_ClearStates			( void );
-int			Key_GetKey				( const char *binding );
+int			Key_GetKey				( const char *binding, int modifiers );

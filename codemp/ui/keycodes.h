@@ -365,3 +365,16 @@ typedef enum
 // to avoid duplicating the paths, the char events are just
 // distinguished by or'ing in K_CHAR_FLAG (ugly)
 #define	K_CHAR_FLAG		1024
+
+// Supported modifiers
+#define KEYMOD_LSHIFT       (1)
+#define KEYMOD_RSHIFT       (1 << 1)
+#define KEYMOD_LCTRL        (1 << 2)
+#define KEYMOD_RCTRL        (1 << 3)
+#define KEYMOD_LALT         (1 << 4)
+#define KEYMOD_RALT         (1 << 5)
+#define KEYMOD_LSUPER       (1 << 6)
+#define KEYMOD_RSUPER       (1 << 7)
+#define KEYMOD_NUMLOCK      (1 << 8)
+#define KEYMOD_CAPSLOCK     (1 << 9)
+#define KEYMOD_COMBINATIONS ((1 << 10)-1) // NOTE: This must be the last entry
