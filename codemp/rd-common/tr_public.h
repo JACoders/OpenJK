@@ -346,6 +346,12 @@ typedef struct refimport_s {
 	// Persistent data store
 	bool			(*PD_Store)							( const char *name, const void *data, size_t size );
 	const void *	(*PD_Load)							( const char *name, size_t *size );
+
+	// Vulkan
+	qboolean		(*VK_IsMinimized)					( void );
+	void			*(*VK_GetInstanceProcAddress)		( void );
+	qboolean		(*VK_createSurfaceImpl)				( void *instance, void **surface );
+	void			(*VK_destroyWindow)					( void);
 } refimport_t;
 
 // this is the only function actually exported at the linker level

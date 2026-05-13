@@ -1,0 +1,680 @@
+#version 450
+
+#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#define USE_VBO_MODEL
+#endif
+
+#ifdef USE_TX2
+#define USE_TX1
+#endif
+
+#ifdef USE_CL2
+#define USE_CL1
+#endif
+
+#if defined (USE_FOG)
+	layout(set = 0, binding = 0) uniform UBO {
+		// light/env/material parameters:
+		vec4 eyePos;
+		vec4 lightPos;
+		vec4 lightColor;
+		vec4 lightVector;
+	//#ifdef USE_FOG	
+		// fog parameters:
+		vec4 fogDistanceVector;
+		vec4 fogDepthVector;
+		vec4 fogEyeT;
+		vec4 fogColor;
+	//#endif
+	};
+
+	struct vkUniformFogEntry_t {
+		vec4	plane;
+		vec4	color;
+		float	depthToOpaque;
+		int		hasPlane;
+	};
+
+	struct vkUniformFog_t {
+		int					num_fogs;
+		vkUniformFogEntry_t	fogs[16];
+	};
+
+	layout(set = 0, binding = 1) uniform Camera {
+		vec4 u_ViewOrigin;
+	};
+
+	layout(set = 0, binding = 4) uniform Fog {
+		vkUniformFog_t u_fogs;
+	};
+#endif
+
+#if !defined(USE_CLX_IDENT) && defined(USE_VBO_MODEL)
+	struct tcMod_t {
+		vec4	matrix;
+		vec4	offTurb;
+	};
+
+	struct tcGen_t {
+		vec3	vector0;
+		vec3	vector1;
+		int		type;
+	};
+
+	struct vkBundle_t {
+		vec4	baseColor;
+		vec4	vertColor;
+		tcMod_t	tcMod;
+		tcGen_t	tcGen;
+		int		rgbGen;
+		int		alphaGen;
+		int		numTexMods;
+	};
+
+	struct vkDisintegration_t {
+		vec3	origin;
+		float	threshold;
+	};
+
+	struct vkDeform_t {
+		float	base;
+		float	amplitude;
+		float	phase;
+		float	frequency;
+
+		vec3	vector;
+		float	time;
+
+		int		type;
+		int		func;
+	};
+
+	layout(set = 0, binding = 2) uniform Entity {
+		vec4 u_ambientLight;
+		vec4 u_directedLight;
+		vec4 u_LocalLightOrigin;
+		vec4 u_localViewOrigin;
+		mat4 u_ModelMatrix;
+	};
+
+	layout(set = 0, binding = 3) uniform Bones {
+		mat3x4 u_BoneMatrices[72];
+	};
+
+	layout(set = 0, binding = 5) uniform Global {
+		vkBundle_t			u_bundle[3];
+		vkDisintegration_t	u_disintegration;
+		vkDeform_t			u_deform;
+		float				u_portalRange;
+	};	
+
+	layout(location = 7) in vec4 var_Normal;
+	layout(location = 8) in vec4 var_LightDir;
+	//layout(location = 9) in vec4 var_ViewDir;
+
+	bool needsShading( in int rgbType ) {
+		return ( rgbType >= 9 && rgbType != 11 && rgbType != 12 && rgbType != 13 ) ? true : false;
+	}
+
+	float CalcLightAttenuation(float point, float normDist)
+	{
+		// zero light at 1.0, approximating q3 style
+		// also don't attenuate directional light
+		float attenuation = ( 0.5 * normDist - 1.5 ) * point + 1.0;
+		return clamp( attenuation, 0.0, 1.0 );
+	}
+#endif
+
+layout(set = 1, binding = 0) uniform sampler2D texture0;
+#ifdef USE_TX1
+layout(set = 2, binding = 0) uniform sampler2D texture1;
+#endif
+#ifdef USE_TX2
+layout(set = 3, binding = 0) uniform sampler2D texture2;
+#endif
+#ifdef USE_FOG
+layout(set = 4, binding = 0) uniform sampler2D fog_texture;
+#endif
+
+#ifdef USE_CLX_IDENT
+// fixed identity (1.0) color for all textures
+#else
+	#ifdef USE_FIXED_COLOR
+	// use fixed color from spec.constant.8
+	#else
+	layout(location = 0) in vec4 frag_color0;
+	#endif
+
+	#ifdef USE_CL1
+	layout(location = 5) in vec4 frag_color1;
+	#endif
+	#ifdef USE_CL2
+	layout(location = 6) in vec4 frag_color2;
+	#endif
+#endif
+
+layout(location = 1) centroid in vec2 frag_tex_coord0;
+#ifdef USE_TX1
+layout(location = 2) centroid in vec2 frag_tex_coord1;
+#endif
+#ifdef USE_TX2
+layout(location = 3) centroid in vec2 frag_tex_coord2;
+#endif
+#ifdef USE_FOG
+layout(location = 4) in vec3 fog_tex_coord;
+#endif
+
+#ifdef USE_DF
+layout(depth_less) out float gl_FragDepth;
+#else
+layout(location = 0) out vec4 out_color;
+#endif
+
+#ifdef USE_ATEST
+layout (constant_id = 0) const int alpha_test_func = 0;
+layout (constant_id = 1) const float alpha_test_value = 0.0;
+#ifdef USE_DF
+layout (constant_id = 2) const float depth_fragment = 0.85;
+#endif
+#endif
+
+layout (constant_id = 3) const int alpha_to_coverage = 0;
+//layout (constant_id = 4) const int color_mode = 0;
+layout (constant_id = 5) const int hw_fog = 0;
+//layout (constant_id = 6) const int abs_light = 0;
+#if defined (USE_TX1) || defined(USE_TX2)
+layout (constant_id = 7) const int tex_mode = 0; // modulate, add (identity), add(non-identity) etc
+#endif
+layout (constant_id = 8) const int discard_mode = 0;
+#ifdef USE_FIXED_COLOR
+layout (constant_id = 9) const float identity_color = 1.0;
+layout (constant_id = 10) const float identity_alpha = 1.0;
+#endif
+
+#ifdef USE_FOG
+layout (constant_id = 11) const int acff = 0; // NONE, RGB, RGBA, ALPHA
+#endif
+
+#ifdef USE_ATEST
+float CorrectAlpha(float threshold, float alpha, vec2 tc)
+{
+	ivec2 ts = textureSize(texture0, 0);
+	float dx = max(abs(dFdx(tc.x * float(ts.x))), 0.001);
+	float dy = max(abs(dFdy(tc.y * float(ts.y))), 0.001);
+	float dxy = max(dx, dy); // apply the smallest boost
+	float scale = max(1.0 / dxy, 1.0);
+	float ac = threshold + (alpha - threshold) * scale;
+	return ac;
+}
+#endif
+
+
+#ifdef USE_FOG
+	void ApplyACFF(inout vec4 base, in vec4 fogColor, in float fogAlpha)
+	{
+		if ( acff == 1 )		// ACFF_RGB
+			base.rgb *= ( 1.0 - fogAlpha );        
+
+		else if ( acff == 2 )		// ACFF_RGBA
+			base *= ( 1.0 - fogAlpha );            
+
+		else if ( acff == 3 )		// ACFF_ALPHA
+			base.a *= ( 1.0 - fogAlpha );         
+
+		else			// default: ACFF_NONE
+			base = mix( base, fogColor, fogAlpha ); 
+	}
+
+	vec4 CalcFog(in vec3 viewOrigin, in vec3 position, in vkUniformFogEntry_t fog)
+	{
+		bool inFog = dot(viewOrigin, fog.plane.xyz) - fog.plane.w >= 0.0 || (fog.hasPlane == 0);
+
+		// line: x = o + tv
+		// plane: (x . n) + d = 0
+		// intersects: dot(o + tv, n) + d = 0
+		//             dot(o + tv, n) = -d
+		//             dot(o, n) + t*dot(n, v) = -d
+		//             t = -(d + dot(o, n)) / dot(n, v)
+		vec3 V = position - viewOrigin;
+
+		// fogPlane is inverted in tr_bsp for some reason.
+		float t = -(fog.plane.w + dot(viewOrigin, -fog.plane.xyz)) / dot(V, -fog.plane.xyz);
+
+		// only use this for objects with potentially two contibuting fogs
+		#if defined(USE_FALLBACK_GLOBAL_FOG)
+			bool intersects = (t > 0.0 && t < 0.995);
+			if (inFog == intersects)
+			{
+				int u_globalFogIndex = int(fogDistanceVector[0]);
+				Fog globalFog = u_fogs.fogs[u_globalFogIndex];
+
+				float distToVertex = length(V);
+				float distFromIntersection = distToVertex - (t * distToVertex);
+				float z = globalFog.depthToOpaque * mix(distToVertex, distFromIntersection, intersects);
+				return vec4(globalFog.color.rgb, 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+			}
+		#else
+			bool intersects = (t > 0.0 && t < 0.995);
+			if (inFog == intersects)
+				return vec4(0.0);
+		#endif
+
+		float distToVertexFromViewOrigin = length(V);
+		float distToIntersectionFromViewOrigin = t * distToVertexFromViewOrigin;
+
+		float distOutsideFog = max(distToVertexFromViewOrigin - distToIntersectionFromViewOrigin, 0.0);
+		float distThroughFog = mix(distOutsideFog, distToVertexFromViewOrigin, inFog);
+
+		float z = fog.depthToOpaque * distThroughFog;
+		return vec4(fog.color.rgb * fogDistanceVector[2], 1.0 - clamp(exp(-(z * z)), 0.0, 1.0));
+	}
+#endif
+
+void main() {
+	vec4 diffuse;
+	float attenuation;
+	vec3 lightColor, ambientColor;
+	vec3 L, N;
+
+#ifdef USE_FIXED_COLOR
+	const vec4 frag_color = vec4(identity_color, identity_color,identity_color, identity_alpha);
+	vec4 color0 = texture(texture0, frag_tex_coord0) * frag_color;
+#else
+#ifdef USE_CLX_IDENT
+	vec4 color0 = texture(texture0, frag_tex_coord0);
+#else
+	vec4 color0 = texture(texture0, frag_tex_coord0) * frag_color0;
+#endif
+#endif
+
+	vec4 base;
+
+	// triple-texture with non-identity colors in color1 and color2
+#if defined (USE_TX2)
+#ifdef USE_CL2
+	// special blend modes for non-identity colors
+	if ( tex_mode == 1 || tex_mode == 2 )
+	{
+		// add
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+
+		base = vec4( color0.rgb + color1.rgb + color2.rgb, color0.a * color1.a * color2.a );
+	}
+	else if ( tex_mode == 3 )
+	{
+		// modulate by alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+		color0 *= color0.a;
+		color1 *= color1.a;
+		color2 *= color2.a;
+		base = vec4( color0.rgb + color1.rgb + color2.rgb, color0.a * color1.a * color2.a );
+	}
+	else if ( tex_mode == 4 )
+	{
+		// modulate by 1.0-alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+		color0 *= 1.0-color0.a;
+		color1 *= 1.0-color1.a;
+		color2 *= 1.0-color2.a;
+		base = vec4( color0.rgb + color1.rgb + color2.rgb, color0.a * color1.a * color2.a );
+	}
+	else if ( tex_mode == 5 )
+	{
+		// mix by src alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+		//base = mix( color0, color1, color1.a );
+		//base = mix( base, color2, color2.a );
+		base = mix( mix( color0, color1, color1.a ), color2, color2.a );
+	}
+	else if ( tex_mode == 6 )
+	{
+		// mix by 1-src alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+		//base = mix( color1, color0, color1.a );
+		//base = mix( color2, base, color2.a );
+		base = mix( color2, mix( color1, color0, color1.a ), color2.a );
+	}
+	else if ( tex_mode == 7 ) // 0 + 2x GLS_DSTBLEND_SRC_ALPHA | GLS_SRCBLEND_DST_COLOR
+	{
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+		base = (color2 + color2.a) * (color1 + color1.a) * color0;
+	}
+	else
+	{
+		// default case, modulate
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color2;
+#endif
+#endif
+		base = color0 * color1 * color2;
+	}
+#else // !USE_CL2
+	// triple-texture with identity colors (1.0) in color1 and color2
+	if ( tex_mode == 1 )
+	{
+		// add (identity color0 == 1.0)
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+		base = vec4(color0.rgb + color1.rgb + color2.rgb, color0.a * color1.a * color2.a);
+	}
+	else if ( tex_mode == 2 )
+	{
+		// add (color0 != 1.0)
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color0;
+		vec4 color2 = texture(texture2, frag_tex_coord2) * frag_color0;
+#endif
+#endif
+		base = vec4(color0.rgb + color1.rgb + color2.rgb, color0.a * color1.a * color2.a);
+	}
+	else 
+	{
+		// default case, modulate
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		vec4 color2 = texture(texture2, frag_tex_coord2);
+		base = color0 * color1 * color2;
+	}
+#endif // !USE_TX2
+#elif defined(USE_TX1)
+	// double-texture with non-identity colors in color1
+#ifdef USE_CL1
+	// special blend modes for non-identity colors
+	if ( tex_mode == 1 || tex_mode == 2 )
+	{
+		// add
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		base = vec4( color0.rgb + color1.rgb, color0.a * color1.a );
+	}
+	else if ( tex_mode == 3 ) // 2x GLS_DSTBLEND_ONE | GLS_SRCBLEND_SRC_ALPHA
+	{
+		// modulate by alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		color0 *= color0.a;
+		color1 *= color1.a;
+		base = vec4( color0.rgb + color1.rgb, color0.a * color1.a );
+	}
+	else if ( tex_mode == 4 ) // 2x GLS_DSTBLEND_ONE | GLS_SRCBLEND_ONE_MINUS_SRC_ALPHA
+	{
+		// modulate by 1.0-alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		color0 *= 1.0-color0.a;
+		color1 *= 1.0-color1.a;
+		base = vec4( color0.rgb + color1.rgb, color0.a * color1.a );
+	}
+	else if ( tex_mode == 5 ) // 0 + GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_SRCBLEND_SRC_ALPHA
+	{
+		// mix by src alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		base = mix( color0, color1, color1.a );
+	}
+	else if ( tex_mode == 6 ) // 0 + GLS_DSTBLEND_SRC_ALPHA | GLS_SRCBLEND_ONE_MINUS_SRC_ALPHA
+	{
+		// mix by 1-src alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		base = mix( color1, color0, color1.a );
+	}
+	else if ( tex_mode == 7 ) // 0 + GLS_DSTBLEND_SRC_ALPHA | GLS_SRCBLEND_DST_COLOR
+	{
+		// modulate color1 by color0
+		// moduleta color0 by color1.alpha
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		base = (color1 + color1.a) * color0;
+	}
+	else
+	{
+		// default case, modulate
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color1;
+#endif
+#endif
+		base = color0 * color1;
+	}
+#else
+	// double-texture with identity colors (1.0) in color1
+	if ( tex_mode == 1 )
+	{
+		// add (identity)
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+		base = vec4(color0.rgb + color1.rgb, color0.a * color1.a);
+	}
+	else if ( tex_mode == 2 )
+	{
+		// add
+#ifdef USE_CLX_IDENT
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#else
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color0;
+#endif
+#endif
+		base = vec4(color0.rgb + color1.rgb, color0.a * color1.a);
+	}
+	else // default case
+	{
+		// modulate
+#ifdef USE_FIXED_COLOR
+		vec4 color1 = texture(texture1, frag_tex_coord1) * frag_color;
+#else
+		vec4 color1 = texture(texture1, frag_tex_coord1);
+#endif
+		base = color0 * color1;
+	}
+#endif // !USE_CL1
+#endif // !USE_TX1
+
+#ifdef USE_ATEST
+	if (alpha_to_coverage != 0) {
+		if (alpha_test_func == 1) {
+			base.a =  base.a > 0.0 ? 1.0 : 0.0;
+		} else if (alpha_test_func == 2) {
+			base.a = CorrectAlpha(alpha_test_value, 1.0 - base.a, frag_tex_coord0);
+		} else if (alpha_test_func == 3) {
+			base.a = CorrectAlpha(alpha_test_value, base.a, frag_tex_coord0);
+		}
+	} else
+	// specialization: alpha-test function
+	if (alpha_test_func == 1) {
+		if (color0.a == alpha_test_value) discard;
+	} else if (alpha_test_func == 2) {
+		if (color0.a >= alpha_test_value) discard;
+	} else if (alpha_test_func == 3) {
+		if (color0.a < alpha_test_value) discard;
+	}
+#endif
+
+#if !defined(USE_TX1) && !defined(USE_TX2)
+	base = color0;
+#endif
+
+#if !defined(USE_CLX_IDENT) && defined(USE_VBO_MODEL)
+	L = var_LightDir.xyz;
+	float sqrLightDist = dot(L, L);
+	L /= sqrt(sqrLightDist);
+
+	if ( needsShading( u_bundle[0].rgbGen ) ) {
+		lightColor = ( u_directedLight.xyz * 1.2 ) * base.rgb;
+		ambientColor = ( u_ambientLight.rgb ) * base.rgb;
+
+		vec3 nL = normalize( L );
+		float LdotL = dot( L, L );
+		attenuation = CalcLightAttenuation( float( var_LightDir.w > 0.0 ), var_LightDir.w / LdotL );
+
+		float NdotL = clamp( dot( var_Normal.xyz, L ), 0.001, 1.0 );
+		vec3 diffuse = max( dot( var_Normal.xyz, nL ), 0.5 ) * vec3( 1.7 );
+
+		vec3 color = lightColor * ( attenuation * NdotL );
+		color += ambientColor * diffuse;
+
+		base.rgb = color;
+	}
+#endif
+
+#ifdef USE_FOG
+	if ( hw_fog == 1 ) {
+		int u_fogIndex = int(fogDistanceVector[1]);
+		vec4 fog_color = CalcFog( u_ViewOrigin.rgb, fog_tex_coord, u_fogs.fogs[u_fogIndex] );
+		ApplyACFF( base, fog_color, fog_color.a );
+	} 
+	else {
+		vec4 fog = texture( fog_texture, fog_tex_coord.xy );
+		vec4 fog_color = fog * fogColor;
+		ApplyACFF( base, fog_color, fog.a );
+	}
+#endif
+
+	if ( discard_mode == 1 ) {
+		if ( base.a == 0.0 ) {
+			discard;
+		}
+	} else if ( discard_mode == 2 ) {
+		if ( dot( base.rgb, base.rgb ) == 0.0 ) {
+			discard;
+		}
+	}
+
+#ifdef USE_DF
+	if ( base.a < depth_fragment )
+		discard;
+
+	gl_FragDepth = gl_FragCoord.z;
+#else
+
+	out_color = base;
+#endif
+}

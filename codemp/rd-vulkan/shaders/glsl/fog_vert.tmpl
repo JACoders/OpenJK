@@ -1,0 +1,121 @@
+#version 450
+
+#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#define USE_VBO_MODEL
+#endif
+
+// 64 bytes
+layout(push_constant) uniform Transform {
+	mat4 mvp;
+};
+
+layout(set = 0, binding = 0) uniform UBO {
+	// light/env/material parameters:
+	vec4 eyePos;
+	vec4 lightPos;
+	vec4 lightColor;
+	vec4 lightVector;
+//#ifdef USE_FOG	
+	// fog parameters:
+	vec4 fogDistanceVector;
+	vec4 fogDepthVector;
+	vec4 fogEyeT;
+	vec4 fogColor;
+//#endif
+#if !defined(USE_VBO_MODEL)
+	mat4 u_ModelMatrix;
+#endif
+};
+
+#if defined(USE_VBO_MODEL)
+	layout(set = 0, binding = 2) uniform Entity {
+		vec4 u_ambientLight;
+		vec4 u_directedLight;
+		vec4 u_LocalLightOrigin;
+		vec4 u_localViewOrigin;
+		mat4 u_ModelMatrix;
+	};
+#endif
+
+#ifdef USE_VBO_GHOUL2
+	layout(set = 0, binding = 3) uniform Bones {
+		mat3x4 u_BoneMatrices[72];
+	};	
+	layout(location = 8) in uvec4 in_bones;
+	layout(location = 9) in vec4 in_weights;
+
+	mat4x3 GetBoneMatrix(uint index)
+	{
+		mat3x4 bone = u_BoneMatrices[index];
+		return mat4x3(
+			bone[0].x, bone[1].x, bone[2].x,
+			bone[0].y, bone[1].y, bone[2].y,
+			bone[0].z, bone[1].z, bone[2].z,
+			bone[0].w, bone[1].w, bone[2].w);
+	}
+#endif
+
+layout(location = 0) in vec3 in_position;
+
+#ifdef USE_FOG_LINEAR
+	layout(location = 4) out vec2 fog_tex_coord;
+#endif
+#ifdef USE_FOG_EXP
+	layout(location = 4) out vec3 ws_position;
+#endif
+
+out gl_PerVertex {
+	vec4 gl_Position;
+};
+
+void main() {
+	#ifdef USE_VBO_GHOUL2
+		mat4x3 skin_matrix =
+			GetBoneMatrix(in_bones.x) * in_weights.x +
+			GetBoneMatrix(in_bones.y) * in_weights.y +
+			GetBoneMatrix(in_bones.z) * in_weights.z +
+			GetBoneMatrix(in_bones.w) * in_weights.w;
+
+		vec3 position = skin_matrix * vec4(in_position, 1.0);
+
+		gl_Position = mvp * vec4(position, 1.0);
+	#else
+		gl_Position = mvp * vec4(in_position, 1.0);
+	#endif
+
+	#ifdef USE_FOG_LINEAR
+		float s = dot(in_position, fogDistanceVector.xyz) + fogDistanceVector.w;
+		float t = dot(in_position, fogDepthVector.xyz) + fogDepthVector.w;
+
+		if ( fogEyeT.y == 1.0 ) {
+			if ( t < 0.0 ) {
+				t = 1.0 / 32.0;
+			} else {
+				t = 31.0 / 32.0;
+			}
+		} else {
+			if ( t < 1.0 ) {
+				t = 1.0 / 32.0;
+			} else {
+				t = 1.0 / 32.0 + (30.0 / 32.0 * t) / ( t - fogEyeT.x );
+			}
+		}
+
+		fog_tex_coord = vec2(s, t);
+	#endif
+
+	#ifdef USE_FOG_EXP
+		#if defined(USE_VBO_MDV)
+			ws_position = (u_ModelMatrix * vec4(in_position, 1.0)).xyz;
+		#elif defined(USE_VBO_GHOUL2)
+			ws_position = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+		#else
+			// when model vbos are disabled, but the shader still requires
+			// the modelmatrix to get world space positions.
+			// store the modelmatrix in main uniform
+			ws_position = (int(fogDistanceVector[3]) == 1)
+				? (u_ModelMatrix * vec4(in_position, 1.0)).xyz
+				: in_position;
+		#endif
+	#endif
+}

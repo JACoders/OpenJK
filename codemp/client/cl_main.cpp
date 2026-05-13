@@ -2529,6 +2529,12 @@ void CL_InitRef( void ) {
 	ri.PD_Store = PD_Store;
 	ri.PD_Load = PD_Load;
 
+	// Vulkan 
+	ri.VK_IsMinimized = WIN_VK_IsMinimized;
+	ri.VK_GetInstanceProcAddress = WIN_VK_GetInstanceProcAddress;
+	ri.VK_createSurfaceImpl = WIN_VK_createSurfaceImpl;
+	ri.VK_destroyWindow = WIN_VK_destroyWindow;
+
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
 //	Com_Printf( "-------------------------------\n");

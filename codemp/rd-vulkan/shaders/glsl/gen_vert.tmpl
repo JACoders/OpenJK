@@ -1,0 +1,571 @@
+#version 450
+
+#define M_PI 3.1415926535897932384626433832795
+
+#if defined(USE_VBO_GHOUL2) || defined(USE_VBO_MDV)
+	#define USE_VBO_MODEL
+#endif
+
+#ifdef USE_TX2
+#define USE_TX1
+#endif
+
+#ifdef USE_CL2
+#define USE_CL1
+#endif
+
+// 64 bytes
+layout(push_constant) uniform Transform {
+	mat4 mvp;
+};
+
+
+#if defined(USE_FOG) || defined(USE_ENV)
+layout(set = 0, binding = 0) uniform UBO {
+	// light/env/material parameters:
+	vec4 eyePos;
+	vec4 lightPos;
+	vec4 lightColor;
+	vec4 lightVector;
+	
+	// fog parameters:
+	vec4 fogDistanceVector;
+	vec4 fogDepthVector;
+	vec4 fogEyeT;
+	vec4 fogColor;
+
+#if defined(USE_FOG) && !defined(USE_VBO_MODEL)
+	mat4 u_ModelMatrix;
+#endif
+};
+#endif
+
+#if defined(USE_FOG)
+	layout(set = 0, binding = 1) uniform Camera {
+		vec4 u_ViewOrigin;
+	};
+#endif
+
+#if defined(USE_VBO_MODEL)
+	struct tcMod_t {
+		vec4	matrix;
+		vec4	offTurb;
+	};
+
+	struct tcGen_t {
+		vec3	vector0;
+		vec3	vector1;
+		int		type;
+	};
+
+	struct vkBundle_t {
+		vec4	baseColor;
+		vec4	vertColor;
+		tcMod_t	tcMod;
+		tcGen_t	tcGen;
+		int		rgbGen;
+		int		alphaGen;
+		int		numTexMods;
+	};
+
+	struct vkDisintegration_t {
+		vec3	origin;
+		float	threshold;
+	};
+
+	struct vkDeform_t {
+		float	base;
+		float	amplitude;
+		float	phase;
+		float	frequency;
+
+		vec3	vector;
+		float	time;
+
+		int		type;
+		int		func;
+	};
+
+	layout(set = 0, binding = 2) uniform Entity {
+		vec4 u_ambientLight;
+		vec4 u_directedLight;
+		vec4 u_LocalLightOrigin;
+		vec4 u_localViewOrigin;
+		mat4 u_ModelMatrix;
+	};
+
+	layout(set = 0, binding = 3) uniform Bones {
+		mat3x4 u_BoneMatrices[72];
+	};
+
+	layout(set = 0, binding = 5) uniform Global {
+		vkBundle_t			u_bundle[3];
+		vkDisintegration_t	u_disintegration;
+		vkDeform_t			u_deform;
+		float				u_portalRange;
+	};
+
+	layout(location = 7) out vec4 var_Normal;
+	layout(location = 8) out vec4 var_LightDir;
+	//layout(location = 9) out vec4 var_ViewDir;
+#endif
+
+layout(location = 0) in vec3 in_position;
+
+#ifndef USE_ENV
+layout(location = 2) in vec2 in_tex_coord0;
+#endif
+
+#ifdef USE_TX1
+layout(location = 3) in vec2 in_tex_coord1;
+#endif
+#ifdef USE_TX2
+layout(location = 4) in vec2 in_tex_coord2;
+#endif
+
+#if defined(USE_ENV) || defined(USE_VBO_MODEL)
+layout(location = 5) in vec3 in_normal;
+#endif
+
+#if defined (USE_CLX_IDENT) || defined (USE_FIXED_COLOR)
+// use either 1.0 or fixed (rgb+a) color from spec.constants
+#else
+	#if !defined(USE_VBO_MODEL)
+		layout(location = 1) in vec4 in_color0;
+	#endif
+
+	#if defined(USE_CL1) && !defined(USE_VBO_MODEL)
+	layout(location = 6) in vec4 in_color1;
+	#endif
+	#if defined(USE_CL2) && !defined(USE_VBO_MODEL)
+	layout(location = 7) in vec4 in_color2;
+	#endif
+
+	layout(location = 0) out vec4 frag_color0;
+	#ifdef USE_CL1
+	layout(location = 5) out vec4 frag_color1;
+	#endif
+	#ifdef USE_CL2
+	layout(location = 6) out vec4 frag_color2;
+	#endif
+#endif
+
+layout(location = 1) out vec2 frag_tex_coord0;
+#ifdef USE_TX1
+layout(location = 2) out vec2 frag_tex_coord1;
+#endif
+#ifdef USE_TX2
+layout(location = 3) out vec2 frag_tex_coord2;
+#endif
+
+#ifdef USE_FOG
+layout(location = 4) out vec3 fog_tex_coord;
+#endif
+
+#if defined(USE_VBO_GHOUL2)
+layout(location = 8) in uvec4 in_bones;
+layout(location = 9) in vec4 in_weights;
+#endif
+
+#ifdef USE_FOG
+	layout (constant_id = 0) const int hw_fog = 0;
+#endif
+
+out gl_PerVertex {
+	vec4 gl_Position;
+};
+
+#if defined(USE_VBO_MODEL)
+vec4 CalcColor( int index, in vec3 position, in vec3 normal ) {
+	vec4 color = ( u_bundle[index].vertColor * vec4( 0.0 ) ) + u_bundle[index].baseColor;		// skip vertColor?
+
+	switch ( u_bundle[index].rgbGen ) {
+		case 14:// CGEN_DISINTEGRATION_1
+		{
+			vec3 delta = u_disintegration.origin - position;
+			float sqrDistance = dot( delta, delta );
+
+			if ( sqrDistance < u_disintegration.threshold )
+				color *= 0.0;
+			else if ( sqrDistance < u_disintegration.threshold + 60.0 )
+				color *= vec4( 0.0, 0.0, 0.0, 1.0 );
+			else if ( sqrDistance < u_disintegration.threshold + 150.0 )
+				color *= vec4( 0.435295, 0.435295, 0.435295, 1.0 );
+			else if ( sqrDistance < u_disintegration.threshold + 180.0 )
+				color *= vec4( 0.6862745, 0.6862745, 0.6862745, 1.0 );
+
+			return color;
+		}
+		case 15:// CGEN_DISINTEGRATION_2
+		{
+			vec3 delta = u_disintegration.origin - position;
+			float sqrDistance = dot( delta, delta );
+
+			if ( sqrDistance < u_disintegration.threshold )
+				return vec4(0.0);
+
+			return color;
+		}
+	}
+
+	switch ( u_bundle[index].alphaGen ) {
+		case 6: // AGEN_LIGHTING_SPECULAR
+		{
+			vec3 viewer = normalize( u_localViewOrigin.xyz - position );
+			vec3 lightDirection = ( transpose(u_ModelMatrix) * vec4( u_LocalLightOrigin.xyz, 0.0 ) ).xyz;
+			vec3 reflected = -reflect( lightDirection, normal );
+			color.a = clamp( dot( reflected, normalize( viewer ) ), 0.0, 1.0 );
+			color.a *= color.a;
+			color.a *= color.a;
+			break;
+		}
+		case 8: // AGEN_PORTAL
+		{
+			vec3 viewer = normalize( u_localViewOrigin.xyz - position );
+			color.a = clamp( length( viewer ) / u_portalRange, 0.0, 1.0 );
+			break;
+		}
+	}
+
+	return color;
+}
+
+float GetNoiseValue( float x, float y, float z, float t )
+{
+	// Variation on the 'one-liner random function'.
+	// Not sure if this is still 'correctly' random
+	return fract( sin( dot(
+		vec4( x, y, z, t ),
+		vec4( 12.9898, 78.233, 12.9898, 78.233 )
+	)) * 43758.5453 );
+}
+
+float CalculateDeformScale( in int func, in float time, in float phase, in float frequency )
+{
+	float value = phase + time * frequency;
+
+	switch ( func ) {
+		case 1: // GF_SIN
+			return sin(value * 2.0 * M_PI);
+		case 2: // GF_SQUARE
+			return sign(0.5 - fract(value));
+		case 3: // GF_TRIANGLE
+			return abs(fract(value + 0.75) - 0.5) * 4.0 - 1.0;
+		case 4: // GF_SAWTOOTH
+			return fract(value);
+		case 5:	// GF_INVERSE_SAWTOOTH
+			return 1.0 - fract(value);
+		default:// GF_NONE
+			return 0.0;
+	}
+}
+
+vec3 DeformPosition( const vec3 pos, const vec3 normal, const vec2 st )
+{
+	switch ( u_deform.type ) {
+		default:
+		{
+			return pos;
+		}
+
+		case 3: // DEFORM_BULGE
+		{
+			float bulgeHeight	= u_deform.amplitude;
+			float bulgeWidth	= u_deform.phase;
+			float bulgeSpeed	= u_deform.frequency;
+
+			float scale = CalculateDeformScale( 1, u_deform.time, bulgeWidth * st.x, bulgeSpeed );
+
+			return pos + normal * scale * bulgeHeight;
+		}
+
+		case 4: // DEFORM_BULGE_UNIFORM
+		{
+			float bulgeHeight = u_deform.amplitude;
+
+			return pos + normal * bulgeHeight;
+		}
+
+		case 1: // DEFORM_WAVE
+		{
+			float base		= u_deform.base;
+			float amplitude = u_deform.amplitude;
+			float phase		= u_deform.phase;
+			float frequency = u_deform.frequency;
+			float spread	= u_deform.vector.x;
+
+			float offset = dot( pos.xyz, vec3( spread ) );
+			float scale = CalculateDeformScale( u_deform.func, u_deform.time, phase + offset, frequency );
+
+			return pos + normal * (base + scale * amplitude);
+		}
+
+		case 5: // DEFORM_MOVE
+		{
+			float base		= u_deform.base;
+			float amplitude = u_deform.amplitude;
+			float phase		= u_deform.phase;
+			float frequency = u_deform.frequency;
+			vec3 direction	= u_deform.vector;
+
+			float scale = CalculateDeformScale( u_deform.func, u_deform.time, phase, frequency );
+
+			return pos + direction * (base + scale * amplitude);
+		}
+
+		case 6: // DEFORM_PROJECTION_SHADOW
+		{
+			vec3 ground = vec3(
+				u_deform.base,
+				u_deform.amplitude,
+				u_deform.phase
+			);
+
+			float groundDist	= u_deform.frequency;
+			vec3 lightDir		= u_deform.vector;
+
+			float d = 1.0 / dot( lightDir, ground );
+			vec3 lightPos = lightDir * d;
+			return pos - lightPos * (dot( pos, ground ) + groundDist);
+		}
+
+		case 17: // DEFORM_DISINTEGRATION
+		{
+			vec3 delta = u_disintegration.origin - pos;
+			float sqrDistance = dot(delta, delta);
+			vec3 normalScale = vec3(-0.01);
+			if ( sqrDistance < u_disintegration.threshold )
+			{
+				normalScale = vec3(2.0, 2.0, 0.5);
+			}
+			else if ( sqrDistance < u_disintegration.threshold + 50 )
+			{
+				normalScale = vec3(1.0, 1.0, 0.0);
+			}
+			return pos + normal * normalScale;
+		}
+	}
+}
+
+vec3 DeformNormal( const in vec3 position, const in vec3 normal )
+{
+	if ( u_deform.type != 2 ) // DEFORM_NORMALS
+		return normal;
+
+	float amplitude = u_deform.amplitude;
+	float frequency = u_deform.frequency;
+
+	vec3 outNormal = normal;
+	const float scale = 0.98;
+	
+	outNormal.x += amplitude * GetNoiseValue(
+		position.x * scale,
+		position.y * scale,
+		position.z * scale,
+		u_deform.time * frequency );
+
+	outNormal.y += amplitude * GetNoiseValue(
+		100.0 * position.x * scale,
+		position.y * scale,
+		position.z * scale,
+		u_deform.time * frequency );
+
+	outNormal.z += amplitude * GetNoiseValue(
+		200.0 * position.x * scale,
+		position.y * scale,
+		position.z * scale,
+		u_deform.time * frequency );
+
+	return outNormal;
+}
+
+vec2 GenTexCoords(const in vec2 tc, int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3 TCGenVector1)
+{
+	vec2 tex = tc;
+
+	if ( TCGen == 9 ) // TCGEN_VECTOR
+		tex = vec2(dot(position, TCGenVector0), dot(position, TCGenVector1));
+
+	return tex;
+}
+
+vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
+{
+	float amplitude = offTurb.z;
+	float phase = offTurb.w * 2.0 * M_PI;
+	vec2 st2;
+	st2.x = st.x * texMatrix.x + (st.y * texMatrix.z + offTurb.x);
+	st2.y = st.x * texMatrix.y + (st.y * texMatrix.w + offTurb.y);
+
+	vec2 offsetPos = vec2(position.x + position.z, position.y);
+	
+	vec2 texOffset = sin(offsetPos * (2.0 * M_PI / 1024.0) + vec2(phase));
+	
+	return st2 + texOffset * amplitude;	
+}
+
+mat4x3 GetBoneMatrix(uint index)
+{
+	mat3x4 bone = u_BoneMatrices[index];
+	return mat4x3(
+		bone[0].x, bone[1].x, bone[2].x,
+		bone[0].y, bone[1].y, bone[2].y,
+		bone[0].z, bone[1].z, bone[2].z,
+		bone[0].w, bone[1].w, bone[2].w);
+}
+#endif
+
+
+
+void main() {
+#if defined(USE_VBO_MDV)
+	vec3 position = in_position;
+	vec3 normal = normalize(in_normal);
+
+	if ( u_deform.type != 0 ){ // !DEFORM_NONE
+		position	= DeformPosition( position, normal, frag_tex_coord0 );
+		normal		= DeformNormal( position, normal );
+	}
+#elif defined(USE_VBO_GHOUL2)
+	mat4x3 skin_matrix =
+		GetBoneMatrix(in_bones.x) * in_weights.x +
+        GetBoneMatrix(in_bones.y) * in_weights.y +
+        GetBoneMatrix(in_bones.z) * in_weights.z +
+        GetBoneMatrix(in_bones.w) * in_weights.w;
+
+	vec3 position = skin_matrix * vec4(in_position, 1.0);
+	vec3 normal = normalize(skin_matrix * vec4(in_normal, 0.0));
+
+	if ( u_deform.type != 0 ){ // !DEFORM_NONE
+		position	= DeformPosition( position, normal, frag_tex_coord0 );
+		normal		= DeformNormal( position, normal );
+	}
+#else
+	vec3 position = in_position;
+	#if defined(USE_ENV)
+		vec3 normal = in_normal;
+	#endif
+#endif
+
+#if defined (USE_CLX_IDENT) || defined (USE_FIXED_COLOR)
+	// use either 1.0 or fixed (rgb+a) color from spec.constants
+#else
+	#if defined(USE_VBO_MODEL)
+		frag_color0 = CalcColor( 0, position, normal );
+	#else
+		frag_color0 = in_color0;
+	#endif
+
+	#ifdef USE_CL1
+		#if defined(USE_VBO_MODEL)
+			frag_color1 = CalcColor( 1, position, normal );
+		#else
+			frag_color1 = in_color1;
+		#endif
+	#endif
+	#ifdef USE_CL2
+		#if defined(USE_VBO_MODEL)
+			frag_color2 = CalcColor( 2, position, normal );
+		#else
+			frag_color2 = in_color2;
+		#endif
+	#endif
+#endif
+
+	gl_Position = mvp * vec4(position, 1.0);
+
+#ifdef USE_ENV
+	#if defined(USE_VBO_MODEL)
+		vec3 viewer = normalize(u_localViewOrigin.xyz - position);
+	#else
+		vec3 viewer = normalize(eyePos.xyz - position);
+	#endif
+
+	float d = dot(normal, viewer); 
+	vec2 reflected = normal.yz * 2 * d - viewer.yz;
+
+	frag_tex_coord0.s = 0.5 + reflected.x * 0.5;
+	frag_tex_coord0.t = 0.5 - reflected.y * 0.5;
+#else
+	frag_tex_coord0 = in_tex_coord0;
+#endif
+
+#ifdef USE_TX1
+	frag_tex_coord1 = in_tex_coord1;
+#endif
+#ifdef USE_TX2
+	frag_tex_coord2 = in_tex_coord2;
+#endif
+
+// tcGen & tcMod
+#if defined(USE_VBO_MODEL)
+	#ifndef USE_ENV
+		frag_tex_coord0 = GenTexCoords( in_tex_coord0.st, u_bundle[0].tcGen.type, position, normal, u_bundle[0].tcGen.vector0, u_bundle[0].tcGen.vector1 );
+	#endif
+
+	if ( u_bundle[0].numTexMods > 0 ) {
+		frag_tex_coord0 = ModTexCoords( frag_tex_coord0, position, u_bundle[0].tcMod.matrix, u_bundle[0].tcMod.offTurb );
+	}
+	#ifdef USE_TX1
+		if ( u_bundle[1].numTexMods > 0 ) {
+			frag_tex_coord1 = ModTexCoords( frag_tex_coord1, position, u_bundle[1].tcMod.matrix, u_bundle[1].tcMod.offTurb );
+		}
+	#endif
+
+	#ifdef USE_TX2
+		if ( u_bundle[2].numTexMods > 0 ) {
+			frag_tex_coord2 = ModTexCoords( frag_tex_coord2, position, u_bundle[2].tcMod.matrix, u_bundle[2].tcMod.offTurb );
+		}
+	#endif
+#endif
+
+#ifdef USE_FOG	
+	if ( hw_fog == 1 ) 
+	{
+		#ifdef USE_VBO_MODEL
+			fog_tex_coord = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+		#else
+			// when model vbos are disabled, but the shader still requires
+			// the modelmatrix to get world space positions.
+			// store the modelmatrix in main uniform
+			fog_tex_coord = (int(fogDistanceVector[3]) == 1)
+				? (u_ModelMatrix * vec4(position, 1.0)).xyz
+				: position;
+		#endif
+	}
+	else 
+	{
+		float s = dot(position, fogDistanceVector.xyz) + fogDistanceVector.w;
+		float t = dot(position, fogDepthVector.xyz) + fogDepthVector.w;
+
+		if ( fogEyeT.y == 1.0 ) {
+			if ( t < 0.0 ) {
+				t = 1.0 / 32.0;
+			} else {
+				t = 31.0 / 32.0;
+			}
+		} else {
+			if ( t < 1.0 ) {
+				t = 1.0 / 32.0;
+			} else {
+				t = 1.0 / 32.0 + (30.0 / 32.0 * t) / ( t - fogEyeT.x );
+			}
+		}
+
+		fog_tex_coord.xy = vec2(s, t);
+	}
+#endif
+
+#if !defined(USE_CLX_IDENT) && defined(USE_VBO_MODEL)
+	position		= (u_ModelMatrix * vec4(position, 1.0)).xyz;
+	normal			= normalize(mat3(u_ModelMatrix) * normal);
+
+	//vec3 viewDir = u_ViewOrigin.xyz - position;
+
+	vec3 L	= u_LocalLightOrigin.xyz - (position * u_LocalLightOrigin.w);
+
+	var_LightDir	= vec4(L, 0.0);	
+	var_Normal		= vec4(normal, 0.0);
+	//var_ViewDir		= vec4(viewDir, 0.0);
+#endif
+}
