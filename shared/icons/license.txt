@@ -1,8 +1,11 @@
 The OpenJK icon was made by Antonio Aiello and is released under
 the MIT/X11 license, as quoted here.
 
-code*/macosx/OpenJK.icns, code/win32/starwars.ico,
-codemp/win32/icon.ico and shared/sdl/sdl_icon.h are derived works
+Rework was made by SomaZ, no change of the license. 
+
+openjkcmd.ico was contributed by SirYodaJedi
+
+code*/macosx/OpenJK.icns and shared/sdl/sdl_icon.h are derived works
 under the same terms.
 
 ----
