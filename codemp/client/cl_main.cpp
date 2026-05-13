@@ -1267,6 +1267,9 @@ void CL_Snd_Restart_f( void ) {
 
 	extern void S_RestartMusic( void );
 	S_RestartMusic();
+
+	extern void AS_ParseSets( void );
+	AS_ParseSets();
 }
 
 
