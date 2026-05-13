@@ -321,7 +321,8 @@ typedef struct animation_s {
 extern qboolean			BGPAFtextLoaded;
 extern animation_t		bgHumanoidAnimations[MAX_TOTALANIMATIONS];
 
-#define MAX_ANIM_FILES	16
+#define MAX_ANIM_FILES	64
+#define MAX_ANIM_EVENT_FILES	128
 #define MAX_ANIM_EVENTS 300
 
 typedef enum
@@ -417,7 +418,7 @@ extern bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 //On the bright side this also means we're cutting a rather large size out of
 //required game-side memory.
 #ifndef _GAME
-extern bgLoadedEvents_t bgAllEvents[MAX_ANIM_FILES];
+extern bgLoadedEvents_t bgAllEvents[MAX_ANIM_EVENT_FILES];
 extern int bgNumAnimEvents;
 #endif
 
