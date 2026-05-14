@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client/snd_local.h"
 
 extern dma_t		dma;
-SDL_AudioDeviceID	dev;
+SDL_AudioDeviceID	dev = 0;
 qboolean snd_inited = qfalse;
 
 cvar_t *s_sdlBits;
@@ -38,6 +38,7 @@ cvar_t *s_sdlSpeed;
 cvar_t *s_sdlChannels;
 cvar_t *s_sdlDevSamps;
 cvar_t *s_sdlMixSamps;
+cvar_t *s_sdlDriver;
 
 /* The audio callback. All the magic happens here. */
 static int dmapos = 0;
@@ -136,10 +137,12 @@ static int SNDDMA_ExpandSampleFrequencyKHzToHz(int khz)
 {
 	switch (khz)
 	{
+		case 48: return 48000;
 		default:
 		case 44: return 44100;
 		case 22: return 22050;
 		case 11: return 11025;
+		case  8: return  8000;
 	}
 }
 
@@ -162,13 +165,19 @@ qboolean SNDDMA_Init(int sampleFrequencyInKHz)
 		s_sdlChannels = Cvar_Get("s_sdlChannels", "2", CVAR_ARCHIVE_ND);
 		s_sdlDevSamps = Cvar_Get("s_sdlDevSamps", "0", CVAR_ARCHIVE_ND);
 		s_sdlMixSamps = Cvar_Get("s_sdlMixSamps", "0", CVAR_ARCHIVE_ND);
+		s_sdlDriver = Cvar_Get("s_sdlDriver", "", CVAR_ARCHIVE_ND|CVAR_LATCH);
+	}
+
+	if ( s_sdlDriver->string[0] != '\0' )
+	{
+		SDL_setenv("SDL_AUDIODRIVER", s_sdlDriver->string, 0);
 	}
 
 	Com_Printf( "SDL_Init( SDL_INIT_AUDIO )... " );
 
 	if (!SDL_WasInit(SDL_INIT_AUDIO))
 	{
-		if (SDL_Init(SDL_INIT_AUDIO) == -1)
+		if (SDL_Init(SDL_INIT_AUDIO) != 0)
 		{
 			Com_Printf( "FAILED (%s)\n", SDL_GetError( ) );
 			return qfalse;
@@ -273,15 +282,20 @@ SNDDMA_Shutdown
 */
 void SNDDMA_Shutdown(void)
 {
-	Com_Printf("Closing SDL audio device...\n");
-	SDL_PauseAudioDevice(dev, 1);
-	SDL_CloseAudioDevice(dev);
+	if (dev)
+	{
+		Com_Printf("Closing SDL audio playback device...\n");
+		SDL_PauseAudioDevice(dev, 1); // not sure if this is needed on shutdown
+		SDL_CloseAudioDevice(dev);
+		Com_Printf("SDL audio playback device closed.\n");
+		dev = 0;
+	}
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	free(dma.buffer);
 	dma.buffer = NULL;
 	dmapos = dmasize = 0;
 	snd_inited = qfalse;
-	Com_Printf("SDL audio device shut down.\n");
+	Com_Printf("SDL audio shut down.\n");
 }
 
 /*
