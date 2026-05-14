@@ -580,6 +580,8 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 {
 	client->ps.fd.forceDoInit = 1; //every time we change teams make sure our force powers are set right
 
+	G_LogPrintf( "ChangeTeam: %i [%s] (%s) \"%s^7\" %s -> %s\n", (int)(client - level.clients), client->sess.IP, client->pers.guid, client->pers.netname, TeamName( oldTeam ), TeamName( client->sess.sessionTeam ) );
+
 	if (level.gametype == GT_SIEGE)
 	{ //don't announce these things in siege
 		return;
@@ -598,8 +600,6 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
 	}
-
-	G_LogPrintf( "ChangeTeam: %i [%s] (%s) \"%s^7\" %s -> %s\n", (int)(client - level.clients), client->sess.IP, client->pers.guid, client->pers.netname, TeamName( oldTeam ), TeamName( client->sess.sessionTeam ) );
 }
 
 qboolean G_PowerDuelCheckFail(gentity_t *ent)
