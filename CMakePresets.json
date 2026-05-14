@@ -1,0 +1,44 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "x86-Debug",
+            "displayName": "x86-Debug",
+            "description": "Visual Studio 16 2019 - x86 - Debug mode",
+            "generator": "Visual Studio 16 2019",
+            "toolset": "host=x86",
+            "architecture": "win32",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}"
+            }
+        },
+        {
+            "name": "x86-Release",
+            "displayName": "x86-Release",
+            "description": "Visual Studio 16 2019 - x86 - Release mode",
+            "generator": "Visual Studio 16 2019",
+            "toolset": "host=x86",
+            "architecture": "win32",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}"
+            }
+        },
+        {
+            "name": "x86-RelWithDebInfo",
+            "displayName": "x86-RelWithDebInfo",
+            "description": "Visual Studio 16 2019 - x86 - Release mode with Debug Info",
+            "generator": "Visual Studio 16 2019",
+            "toolset": "host=x86",
+            "architecture": "win32",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}"
+            }
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "x86-Debug-install",
+            "displayName": "x86-Debug-install",
+            "description": "Visual Studio 16 2019 - x86 - Debug mode - installs binaries to Jedi Academy install directory",
+            "inherits": "x86-Debug",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "<steam folder>/steamapps/common/Jedi Academy/GameData"
+            }
+        },
+        {
+            "name": "x86-Release-install",
+            "displayName": "x86-Release-install",
+            "description": "Visual Studio 16 2019 - x86 - Release mode - installs binaries to Jedi Academy install directory",
+            "inherits": "x86-Release",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "<steam folder>/steamapps/common/Jedi Academy/GameData"
+            }
+        },
+        {
+            "name": "x86-RelWithDebInfo-install",
+            "displayName": "x86-RelWithDebInfo-install",
+            "description": "Visual Studio 16 2019 - x86 - Release mode with Debug Info - installs binaries to Jedi Academy install directory",
+            "inherits": "x86-RelWithDebInfo",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "<steam folder>/steamapps/common/Jedi Academy/GameData"
+            }
+        }        
+    ]
+}
