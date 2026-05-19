@@ -158,11 +158,11 @@ else(WIN32)
 	endif()
 endif()
 
-set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
+target_compile_definitions(${MPVanillaRenderer} PRIVATE ${SharedDefines})
 
 # Hide symbols not explicitly marked public.
 set_property(TARGET ${MPVanillaRenderer} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
+target_include_directories(${MPVanillaRenderer} PRIVATE ${MPVanillaRendererIncludeDirectories})
 set_target_properties(${MPVanillaRenderer} PROPERTIES PROJECT_LABEL "MP Vanilla Renderer")
-target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})
+target_link_libraries(${MPVanillaRenderer} PRIVATE ${MPVanillaRendererLibraries})

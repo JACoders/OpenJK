@@ -131,14 +131,14 @@ else()
 		COMPONENT ${JKAMPCoreComponent})
 endif()
 
-set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS "${MPUIDefines}")
+target_compile_definitions(${MPUI} PRIVATE ${MPUIDefines})
 
 # Hide symbols not explicitly marked public.
 set_property(TARGET ${MPUI} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")
+target_include_directories(${MPUI} PRIVATE ${MPUIIncludeDirectories})
 set_target_properties(${MPUI} PROPERTIES PROJECT_LABEL "MP UI Library")
 # no libraries used
 if(MPUILibraries)
-	target_link_libraries(${MPUI} ${MPUILibraries})
+	target_link_libraries(${MPUI} PRIVATE ${MPUILibraries})
 endif(MPUILibraries)

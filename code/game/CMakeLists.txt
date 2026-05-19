@@ -402,10 +402,10 @@ else(WIN32)
 	endif()
 endif()
 
-set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS "${SPGameDefines}")
-set_target_properties(${SPGame} PROPERTIES INCLUDE_DIRECTORIES "${SPGameIncludeDirectories}")
+target_compile_definitions(${SPGame} PRIVATE ${SPGameDefines})
+target_include_directories(${SPGame} PRIVATE ${SPGameIncludeDirectories})
 set_target_properties(${SPGame} PROPERTIES PROJECT_LABEL "SP Game Library")
 # no libraries used
 if(SPGameLibraries)
-	target_link_libraries(${SPGame} ${SPGameLibraries})
+	target_link_libraries(${SPGame} PRIVATE ${SPGameLibraries})
 endif(SPGameLibraries)

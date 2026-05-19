@@ -166,8 +166,8 @@ if(BuildMPEngine OR BuildMPDed)
 	# Hide symbols not explicitly marked public.
 	set_property(TARGET ${MPBotLib} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-	set_target_properties(${MPBotLib} PROPERTIES COMPILE_DEFINITIONS "${MPBotlibDefines}")
-	set_target_properties(${MPBotLib} PROPERTIES INCLUDE_DIRECTORIES "${MPBotlibIncludeDirectories}")
+	target_compile_definitions(${MPBotLib} PRIVATE ${MPBotlibDefines})
+	target_include_directories(${MPBotLib} PRIVATE ${MPBotlibIncludeDirectories})
 	set_target_properties(${MPBotLib} PROPERTIES PROJECT_LABEL "Bot Library")
 
 	#    Common files/libraries/defines of both Engine and Dedicated Server
@@ -569,14 +569,16 @@ if(BuildMPEngine)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
 		if(UseInternalSDL2)
 			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
-					)
+				set(_sdl2_dll "${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll")
 			else()
-				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
-					)
+				set(_sdl2_dll "${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll")
 			endif()
+			set(MPEngineExtraInstallFiles "${_sdl2_dll}")
+			add_custom_command(TARGET ${MPEngine} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy_if_different
+					"${_sdl2_dll}"
+					"$<TARGET_FILE_DIR:${MPEngine}>"
+				COMMENT "Copying SDL2.dll to ${MPEngine} output")
 		endif()
 	else(WIN32)
 		if(MakeApplicationBundles)
@@ -610,14 +612,14 @@ if(BuildMPEngine)
 		endif()
 	endif(MakeApplicationBundles)
 
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines}")
+	target_compile_definitions(${MPEngine} PRIVATE ${MPEngineDefines})
 
 	# Hide symbols not explicitly marked public.
 	set_property(TARGET ${MPEngine} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
+	target_include_directories(${MPEngine} PRIVATE ${MPEngineIncludeDirectories})
 	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client")
-	target_link_libraries(${MPEngine} ${MPEngineLibraries})
+	target_link_libraries(${MPEngine} PRIVATE ${MPEngineLibraries})
 endif(BuildMPEngine)
 
 #        Dedicated Server (Engine) (jampded.exe)
@@ -702,12 +704,12 @@ if(BuildMPDed)
 		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPServerComponent})
 
-	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines}")
+	target_compile_definitions(${MPDed} PRIVATE ${MPDedDefines})
 
 	# Hide symbols not explicitly marked public.
 	set_property(TARGET ${MPDed} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
+	target_include_directories(${MPDed} PRIVATE ${MPDedIncludeDirectories})
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server")
-	target_link_libraries(${MPDed} ${MPDedLibraries})
+	target_link_libraries(${MPDed} PRIVATE ${MPDedLibraries})
 endif(BuildMPDed)

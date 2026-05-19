@@ -387,14 +387,16 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			add_executable(${ProjectName} WIN32 ${SPEngineFiles})
 			if(UseInternalSDL2)
 				if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-					set(SPEngineExtraInstallFiles
-						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
-						)
+					set(_sdl2_dll "${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll")
 				else()
-					set(SPEngineExtraInstallFiles
-						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
-						)
+					set(_sdl2_dll "${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll")
 				endif()
+				set(SPEngineExtraInstallFiles "${_sdl2_dll}")
+				add_custom_command(TARGET ${ProjectName} POST_BUILD
+					COMMAND ${CMAKE_COMMAND} -E copy_if_different
+						"${_sdl2_dll}"
+						"$<TARGET_FILE_DIR:${ProjectName}>"
+					COMMENT "Copying SDL2.dll to ${ProjectName} output")
 			endif()
 		else(WIN32)
 			if(MakeApplicationBundles)
@@ -433,15 +435,15 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			endif()
 		endif(MakeApplicationBundles)
 
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPEngineDefines}")
+		target_compile_definitions(${ProjectName} PRIVATE ${SPEngineDefines})
 
 		# Hide symbols not explicitly marked public.
 		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPEngineIncludeDirectories}")
+		target_include_directories(${ProjectName} PRIVATE ${SPEngineIncludeDirectories})
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 		if(SPEngineLibraries)
-			target_link_libraries(${ProjectName} ${SPEngineLibraries})
+			target_link_libraries(${ProjectName} PRIVATE ${SPEngineLibraries})
 		endif(SPEngineLibraries)
 	endfunction(add_sp_project)
 	if(BuildSPEngine)

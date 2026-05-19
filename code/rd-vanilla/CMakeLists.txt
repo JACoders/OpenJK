@@ -181,15 +181,15 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 			endif()
 		endif()
 
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPRDVanillaDefines}")
+		target_compile_definitions(${ProjectName} PRIVATE ${SPRDVanillaDefines})
 
 		# Hide symbols not explicitly marked public.
 		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
+		target_include_directories(${ProjectName} PRIVATE ${SPRDVanillaRendererIncludeDirectories})
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 
-		target_link_libraries(${ProjectName} ${SPRDVanillaRendererLibraries})
+		target_link_libraries(${ProjectName} PRIVATE ${SPRDVanillaRendererLibraries})
 	endfunction(add_sp_renderer_project)
 
 	if(BuildSPRdVanilla)

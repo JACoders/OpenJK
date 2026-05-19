@@ -1,0 +1,150 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 3,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-msvc-debug",
+      "displayName": "Windows MSVC Debug",
+      "description": "Debug build using Visual Studio 2026 + MSVC",
+      "generator": "Visual Studio 18 2026",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "displayName": "Windows MSVC Release",
+      "description": "Release build using Visual Studio 2026 + MSVC",
+      "generator": "Visual Studio 18 2026",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    },
+    {
+      "name": "linux-gcc-debug",
+      "displayName": "Linux GCC Debug",
+      "description": "Debug build using Ninja + GCC",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    },
+    {
+      "name": "linux-gcc-release",
+      "displayName": "Linux GCC Release",
+      "description": "Release build using Ninja + GCC",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    },
+    {
+      "name": "macos-clang-debug",
+      "displayName": "macOS Clang Debug",
+      "description": "Debug build using Ninja + Apple Clang",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    },
+    {
+      "name": "macos-clang-release",
+      "displayName": "macOS Clang Release",
+      "description": "Release build using Ninja + Apple Clang",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    },
+    {
+      "name": "linux-i686-debug",
+      "displayName": "Linux x86 Debug",
+      "description": "32-bit Linux debug using toolchain file",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/Toolchains/linux-i686.cmake",
+        "BuildJK2SPEngine": "ON",
+        "BuildJK2SPGame": "ON",
+        "BuildJK2SPRdVanilla": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-gcc-debug",
+      "configurePreset": "linux-gcc-debug"
+    },
+    {
+      "name": "linux-gcc-release",
+      "configurePreset": "linux-gcc-release"
+    },
+    {
+      "name": "macos-clang-debug",
+      "configurePreset": "macos-clang-debug"
+    },
+    {
+      "name": "macos-clang-release",
+      "configurePreset": "macos-clang-release"
+    },
+    {
+      "name": "linux-i686-debug",
+      "configurePreset": "linux-i686-debug"
+    }
+  ]
+}

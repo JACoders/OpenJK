@@ -64,8 +64,20 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 
 ### Building OpenJK
 
-- [Compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
-- [Debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging)
+CMake 4.3+ is required.
+
+**Quick start (presets):**
+
+```bash
+cmake --preset windows-msvc-debug    # configure
+cmake --build --preset windows-msvc-debug -j 8   # build
+```
+
+Presets available: `windows-msvc-debug/release`, `linux-gcc-debug/release`, `linux-i686-debug`, `macos-clang-debug/release`.
+
+**Legacy workflow:**
+
+See the [Compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide) and [Debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging) for platform-specific details.
 
 ### Contributing to OpenJK
 

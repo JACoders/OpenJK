@@ -16,9 +16,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-# The <min>...<policy_max> syntax is needed to remain compatible with 3.1, but also newer versions that dropped 3.1 compatibility
-# More info here: https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html
-cmake_minimum_required(VERSION 3.1...3.31)
+cmake_minimum_required(VERSION 4.3)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
 set(InOpenJK ON)
@@ -129,7 +127,7 @@ else()
 	set(X86 OFF)
 	if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
 		set(Architecture "arm64")
-		add_definitions(-DPNG_ARM_NEON_OPT=0)
+		add_compile_definitions(PNG_ARM_NEON_OPT=0)
 	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
 		set(Architecture "arm")
 	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^i.86$")
@@ -215,7 +213,7 @@ if (NOT WIN32 AND NOT APPLE)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "BSD")
-  add_definitions(-DIOAPI_NO_64)
+  add_compile_definitions(IOAPI_NO_64)
 endif()
 
 # Compiler settings

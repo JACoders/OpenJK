@@ -52,10 +52,10 @@ set(TestIncludeDirectories
 set(TestDefines "${SharedDefines}")
 
 add_executable(${TestTarget} ${TestFiles})
-set_target_properties(${TestTarget} PROPERTIES COMPILE_DEFINITIONS "${TestDefines}")
-set_target_properties(${TestTarget} PROPERTIES INCLUDE_DIRECTORIES "${TestIncludeDirectories}")
+target_compile_definitions(${TestTarget} PRIVATE ${TestDefines})
+target_include_directories(${TestTarget} PRIVATE ${TestIncludeDirectories})
 set_target_properties(${TestTarget} PROPERTIES PROJECT_LABEL "Unit Tests")
-target_link_libraries(${TestTarget} ${TestLibraries})
+target_link_libraries(${TestTarget} PRIVATE ${TestLibraries})
 install(TARGETS ${TestTarget} DESTINATION ".")
 
 if(NOT MSVC)

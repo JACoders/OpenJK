@@ -173,13 +173,13 @@ else(WIN32)
 	endif()
 endif()
 
-set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
+target_compile_definitions(${MPRend2} PRIVATE ${SharedDefines})
 
 # Hide symbols not explicitly marked public.
 set_property(TARGET ${MPRend2} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
-set_target_properties(${MPRend2} PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
+target_include_directories(${MPRend2} PRIVATE ${MPRend2IncludeDirectories})
 set_target_properties(${MPRend2} PROPERTIES PROJECT_LABEL "MP Rend2 Renderer")
-target_link_libraries(${MPRend2} ${MPRend2Libraries})
+target_link_libraries(${MPRend2} PRIVATE ${MPRend2Libraries})
 target_include_directories(${MPRend2} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # GLSL shader file generator

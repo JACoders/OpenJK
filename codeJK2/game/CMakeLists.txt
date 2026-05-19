@@ -301,14 +301,14 @@ else(WIN32)
 	endif(MakeApplicationBundles AND BuildJK2SPEngine)
 endif(WIN32)
 
-set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS "${JK2SPGameDefines}")
+target_compile_definitions(${JK2SPGame} PRIVATE ${JK2SPGameDefines})
 
 # Hide symbols not explicitly marked public.
 set_property(TARGET ${JK2SPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 
-set_target_properties(${JK2SPGame} PROPERTIES INCLUDE_DIRECTORIES "${JK2SPGameIncludeDirectories}")
+target_include_directories(${JK2SPGame} PRIVATE ${JK2SPGameIncludeDirectories})
 set_target_properties(${JK2SPGame} PROPERTIES PROJECT_LABEL "JK2 SP Game Library")
 # no libraries used
 if(JK2SPGameLibraries)
-	target_link_libraries(${JK2SPGame} ${JK2SPGameLibraries})
+	target_link_libraries(${JK2SPGame} PRIVATE ${JK2SPGameLibraries})
 endif(JK2SPGameLibraries)
