@@ -1315,7 +1315,7 @@ static qboolean PM_CheckJump( void )
 
 								PM_SetAnim( pm, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 							}
-							else if ( pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
+							else if ( pm->ps->forcePowerLevel[FP_LEVITATION] >= FORCE_LEVEL_1 )
 							{//FIXME: really want to know how far off ground we are, probably...
 								vec3_t facingFwd, facingRight, facingAngles = {0, pm->ps->viewangles[YAW], 0};
 								int	anim = -1;
@@ -1590,9 +1590,9 @@ static qboolean PM_CheckJump( void )
 					}
 				}
 			}
-			else if ( pm->cmd.rightmove > 0 && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
+			else if ( pm->cmd.rightmove > 0 && pm->ps->forcePowerLevel[FP_LEVITATION] >= FORCE_LEVEL_1 )
 			{//strafing right
-				if ( pm->cmd.forwardmove > 0 )
+				if ( pm->cmd.forwardmove > 0 && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1)
 				{//wall-run
 					if ( !(pm->ps->saber[0].saberFlags&SFL_NO_WALL_RUNS)
 						&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_WALL_RUNS)) )
@@ -1611,9 +1611,9 @@ static qboolean PM_CheckJump( void )
 					}
 				}
 			}
-			else if ( pm->cmd.rightmove < 0 && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
+			else if ( pm->cmd.rightmove < 0 && pm->ps->forcePowerLevel[FP_LEVITATION] >= FORCE_LEVEL_1 )
 			{//strafing left
-				if ( pm->cmd.forwardmove > 0 )
+				if ( pm->cmd.forwardmove > 0 && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1)
 				{//wall-run
 					if ( !(pm->ps->saber[0].saberFlags&SFL_NO_WALL_RUNS)
 						&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_WALL_RUNS)) )
@@ -1635,7 +1635,7 @@ static qboolean PM_CheckJump( void )
 			else if ( /*pm->ps->clientNum >= MAX_CLIENTS//not the player
 				&& !PM_ControlledByPlayer() //not controlled by player
 				&&*/ pm->cmd.forwardmove > 0 //pushing forward
-				&& pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )//have jump 2 or higher
+				&& pm->ps->forcePowerLevel[FP_LEVITATION] >= FORCE_LEVEL_1 )//have jump 1 or higher
 			{//step off wall, flip backwards
 				if ( VectorLengthSquared( pm->ps->velocity ) > 40000 /*200*200*/)
 				{//have to be moving... FIXME: make sure it's opposite the wall... or at least forward?
