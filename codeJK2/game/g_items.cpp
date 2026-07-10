@@ -888,7 +888,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 			}
 			else
 			{
-				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin) );
+				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s\n", ent->classname, vtos(ent->s.origin) );
 			}
 			assert( 0 && "item starting in solid");
 #ifndef FINAL_BUILD
