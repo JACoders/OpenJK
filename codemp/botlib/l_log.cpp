@@ -80,7 +80,10 @@ void Log_Open(char *filename)
 		botimport.Print(PRT_ERROR, "can't open the log file %s\n", filename);
 		return;
 	} //end if
-	strncpy(logfile.filename, filename, MAX_LOGFILENAMESIZE);
+	strncpy(logfile.filename, filename, MAX_LOGFILENAMESIZE - 1);
+	// Ensure null-termination as strncpy will not add a null terminator if
+	// filename is >= MAX_LOGFILENAMESIZE
+	logfile.filename[MAX_LOGFILENAMESIZE - 1] = '\0';
 	botimport.Print(PRT_MESSAGE, "Opened log %s\n", logfile.filename);
 } //end of the function Log_Create
 //===========================================================================

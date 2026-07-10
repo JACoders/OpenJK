@@ -126,9 +126,11 @@ typedef struct levelitem_s
 	struct levelitem_s *prev, *next;
 } levelitem_t;
 
+#define ITEMINFO_CLASSNAME_SIZE 32
+
 typedef struct iteminfo_s
 {
-	char classname[32];					//classname of the item
+	char classname[ITEMINFO_CLASSNAME_SIZE];					//classname of the item
 	char name[MAX_STRINGFIELD];			//name of the item
 	char model[MAX_STRINGFIELD];		//model of the item
 	int modelindex;						//model index
@@ -287,7 +289,8 @@ itemconfig_t *LoadItemConfig(char *filename)
 		LibVarSet( "max_iteminfo", "256" );
 	}
 
-	strncpy( path, filename, MAX_PATH );
+	strncpy( path, filename, MAX_PATH - 1 );
+	path[MAX_PATH - 1] = '\0';
 	PC_SetBaseFolder(BOTFILESBASEFOLDER);
 	source = LoadSourceFile( path );
 	if( !source ) {
@@ -321,6 +324,7 @@ itemconfig_t *LoadItemConfig(char *filename)
 			} //end if
 			StripDoubleQuotes(token.string);
 			strncpy(ii->classname, token.string, sizeof(ii->classname)-1);
+			ii->classname[ITEMINFO_CLASSNAME_SIZE - 1] = '\0';
 			if (!ReadStructure(source, &iteminfo_struct, (char *) ii))
 			{
 				FreeMemory(ic);

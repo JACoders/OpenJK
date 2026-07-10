@@ -811,7 +811,8 @@ int PS_ReadPunctuation(script_t *script, token_t *token)
 			//if the script contains the punctuation
 			if (!Q_strncmp(script->script_p, p, len))
 			{
-				strncpy(token->string, p, MAX_TOKEN);
+				strncpy(token->string, p, MAX_TOKEN - 1);
+				token->string[MAX_TOKEN - 1] = '\0';
 				script->script_p += len;
 				token->type = TT_PUNCTUATION;
 				//sub type is the number of the punctuation
