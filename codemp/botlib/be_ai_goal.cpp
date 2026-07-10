@@ -689,6 +689,7 @@ void BotInitLevelItems(void)
 //===========================================================================
 void BotGoalName(int number, char *name, int size)
 {
+	const size_t max_len = (size_t)(size - 1);
 	levelitem_t *li;
 
 	if (!itemconfig) return;
@@ -697,9 +698,10 @@ void BotGoalName(int number, char *name, int size)
 	{
 		if (li->number == number)
 		{
-			int len = (int)strlen( itemconfig->iteminfo[li->iteminfo].name );
-			memcpy(name, itemconfig->iteminfo[li->iteminfo].name, ( len < size ? len : size ) - 1 );
-			name[size - 1] = '\0';
+			const size_t len = strlen( itemconfig->iteminfo[li->iteminfo].name );
+			const size_t count = len < max_len ? len : max_len;
+			memcpy(name, itemconfig->iteminfo[li->iteminfo].name, count );
+			name[count] = '\0';
 			return;
 		} //end for
 	} //end for
