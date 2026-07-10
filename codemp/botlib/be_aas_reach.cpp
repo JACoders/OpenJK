@@ -2113,7 +2113,10 @@ int AAS_Reachability_Jump(int area1num, int area2num)
 	int stopevent, areas[10], numareas;
 	float phys_jumpvel, maxjumpdistance, maxjumpheight, height, bestdist, speed;
 	float *v1, *v2, *v3, *v4;
-	vec3_t beststart, beststart2, bestend, bestend2;
+	vec3_t beststart = {};
+	vec3_t beststart2 = {};
+	vec3_t bestend = {};
+	vec3_t bestend2 = {};
 	vec3_t teststart, testend, dir, velocity, cmdmove, up = {0, 0, 1}, sidewards;
 	aas_area_t *area1, *area2;
 	aas_face_t *face1, *face2;
