@@ -168,6 +168,8 @@ typedef struct itemconfig_s
 	iteminfo_t *iteminfo;
 } itemconfig_t;
 
+#define MAX_GOAL_NAME_LEN 32
+
 //goal state
 typedef struct bot_goalstate_s
 {
@@ -695,8 +697,9 @@ void BotGoalName(int number, char *name, int size)
 	{
 		if (li->number == number)
 		{
-			strncpy(name, itemconfig->iteminfo[li->iteminfo].name, size-1);
-			name[size-1] = '\0';
+			int len = (int)strlen( itemconfig->iteminfo[li->iteminfo].name );
+			memcpy(name, itemconfig->iteminfo[li->iteminfo].name, ( len < size ? len : size ) - 1 );
+			name[size - 1] = '\0';
 			return;
 		} //end for
 	} //end for
@@ -728,7 +731,7 @@ void BotDumpAvoidGoals(int goalstate)
 {
 	int i;
 	bot_goalstate_t *gs;
-	char name[32];
+	char name[MAX_GOAL_NAME_LEN];
 
 	gs = BotGoalStateFromHandle(goalstate);
 	if (!gs) return;
@@ -736,7 +739,7 @@ void BotDumpAvoidGoals(int goalstate)
 	{
 		if (gs->avoidgoaltimes[i] >= AAS_Time())
 		{
-			BotGoalName(gs->avoidgoals[i], name, 32);
+			BotGoalName(gs->avoidgoals[i], name, MAX_GOAL_NAME_LEN);
 			Log_Write("avoid goal %s, number %d for %f seconds", name,
 				gs->avoidgoals[i], gs->avoidgoaltimes[i] - AAS_Time());
 		} //end if
@@ -1192,13 +1195,13 @@ void BotDumpGoalStack(int goalstate)
 {
 	int i;
 	bot_goalstate_t *gs;
-	char name[32];
+	char name[MAX_GOAL_NAME_LEN];
 
 	gs = BotGoalStateFromHandle(goalstate);
 	if (!gs) return;
 	for (i = 1; i <= gs->goalstacktop; i++)
 	{
-		BotGoalName(gs->goalstack[i].number, name, 32);
+		BotGoalName(gs->goalstack[i].number, name, MAX_GOAL_NAME_LEN);
 		Log_Write("%d: %s", i, name);
 	} //end for
 } //end of the function BotDumpGoalStack
