@@ -2123,7 +2123,8 @@ bot_chat_t *BotLoadInitialChat(char *chatfile, char *chatname)
 						if (pass)
 						{
 							chattype = (bot_chattype_t *) ptr;
-							strncpy(chattype->name, token.string, MAX_CHATTYPE_NAME);
+							strncpy(chattype->name, token.string, MAX_CHATTYPE_NAME - 1);
+							chattype->name[MAX_CHATTYPE_NAME - 1] = '\0';
 							chattype->firstchatmessage = NULL;
 							//add the chat type to the chat
 							chattype->next = chat->types;
