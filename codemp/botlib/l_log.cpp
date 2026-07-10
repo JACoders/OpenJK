@@ -81,8 +81,6 @@ void Log_Open(char *filename)
 		return;
 	} //end if
 	strncpy(logfile.filename, filename, MAX_LOGFILENAMESIZE - 1);
-	// Ensure null-termination as strncpy will not add a null terminator if
-	// filename is >= MAX_LOGFILENAMESIZE
 	logfile.filename[MAX_LOGFILENAMESIZE - 1] = '\0';
 	botimport.Print(PRT_MESSAGE, "Opened log %s\n", logfile.filename);
 } //end of the function Log_Create
