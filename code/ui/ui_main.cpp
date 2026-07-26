@@ -47,6 +47,9 @@ USER INTERFACE MAIN
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../qcommon/stringed_ingame.h"
+#ifdef JK2_MODE
+#include "../qcommon/strippublic.h"
+#endif
 #include "../qcommon/q_shared.h"
 #include "../qcommon/game_version.h"
 
@@ -489,8 +492,11 @@ void _UI_Refresh( int realtime )
 		return;
 	}
 
-	extern void SE_CheckForLanguageUpdates(void);
+#ifdef JK2_MODE
+	JK2SP_CheckForLanguageUpdates();
+#else
 	SE_CheckForLanguageUpdates();
+#endif
 
 	if ( Menus_AnyFullScreenVisible() )
 	{//if not in full screen, don't mess with ghoul2
