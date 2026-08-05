@@ -83,7 +83,11 @@ const vidmode_t r_vidModes[] = {
     { "Mode  9: 1600x1200",		1600,	1200 },
     { "Mode 10: 2048x1536",		2048,	1536 },
     { "Mode 11: 856x480 (wide)", 856,	 480 },
-    { "Mode 12: 2400x600(surround)",2400,600 }
+    { "Mode 12: 2400x600(surround)",2400,600 },
+	{ "Mode 13: 1280x720 (wide)", 2400, 600 },
+	{ "Mode 14: 1600x900 (wide)", 1600, 900 },
+	{ "Mode 15: 1920x1080 (wide)", 1920, 1080},
+	{ "Mode 16: 2560x1440 (wide)", 2560, 1440}
 };
 static const int	s_numVidModes = ARRAY_LEN( r_vidModes );
 
