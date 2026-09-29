@@ -196,11 +196,13 @@ static void Sys_ErrorDialog( const char *error )
 
 	time( &rawtime );
 	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
+	const char *homePath = Sys_DefaultHomePath();
+	const char *logPath = ( homePath && homePath[0] ) ? homePath : Sys_DefaultInstallPath();
 	Com_sprintf( crashLogPath, sizeof( crashLogPath ),
 					"%s%ccrashlog-%s.txt",
-					Sys_DefaultHomePath(), PATH_SEP, timeStr );
+					logPath, PATH_SEP, timeStr );
 
-	Sys_Mkdir( Sys_DefaultHomePath() );
+	Sys_Mkdir( logPath );
 
 	FILE *fp = fopen( crashLogPath, "w" );
 	if ( fp )
