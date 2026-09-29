@@ -848,8 +848,8 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 
 	if ( cg_fovViewmodel.integer )
 	{
-		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
-		float fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
+		float fracDistFOV = tanf( cg_fov.value * ( M_PI/180 ) * 0.5f );
+		float fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cg_fovViewmodel.value * ( M_PI/180 ) * 0.5f );
 		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
 	}
 
