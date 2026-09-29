@@ -38,6 +38,10 @@ void		Sys_SigHandler( int signal );
 void		Sys_AnsiColorPrint( const char *msg );
 #endif
 
+// Steam integration
+void		Sys_SteamInit();
+void		Sys_SteamShutdown();
+
 struct UnpackDLLResult
 {
 	bool succeeded;
