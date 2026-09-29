@@ -18,7 +18,7 @@ inline gsl::cstring_span vs2013hack_cstring_view_literal( const char (&str)[leng
 #else
 # define CSTRING_VIEW(x) x ## _v
 /** gsl::cstring_span from string literal (without null-termination) */
-inline gsl::cstring_span operator"" _v( const char* str, std::size_t length )
+inline gsl::cstring_span operator""_v( const char* str, std::size_t length )
 {
 	return{ str, str + length };
 }

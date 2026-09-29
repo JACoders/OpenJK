@@ -106,7 +106,6 @@ typedef struct bot_moveresult_s
 	vec3_t ideal_viewangles;	//ideal viewangles for the movement
 } bot_moveresult_t;
 
-#define bot_moveresult_t_cleared(x) bot_moveresult_t (x) = {0, 0, 0, 0, 0, 0, 0, {0, 0, 0}, {0, 0, 0}}
 
 typedef struct bot_avoidspot_s
 {
