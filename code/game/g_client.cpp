@@ -1111,7 +1111,7 @@ void G_BoneOrientationsForClass( int NPC_class, const char *boneName, Eorientati
 	}
 }
 
-extern void G_LoadAnimFileSet( gentity_t *ent, const char *modelName );
+extern void G_LoadAnimFileSet( gentity_t *ent, const char *modelName, const char *npcType=0 );
 qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const char *customSkin, const char *surfOff, const char *surfOn )
 {
 	if ( ent->playerModel != -1 )
@@ -1159,7 +1159,7 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], "l_arm_key", 0 );
 		}
 
-		G_LoadAnimFileSet( ent, modelName );
+		G_LoadAnimFileSet( ent, modelName, ent->NPC_type );
 
 		ent->headBolt = ent->cervicalBolt = ent->torsoBolt = ent->gutBolt = ent->chestBolt =
 			ent->crotchBolt = ent->elbowLBolt = ent->elbowRBolt = ent->handLBolt =

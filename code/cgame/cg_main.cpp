@@ -35,7 +35,7 @@ typedef	std::map< sstring_t, unsigned char  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
-extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
+extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0, const char *npcType=0);
 extern void CG_DrawDataPadInventorySelect( void );
 
 void CG_Init( int serverCommandSequence );

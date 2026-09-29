@@ -2579,7 +2579,7 @@ void NPC_InitAnimTable( void )
 	}
 }
 
-extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
+extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0, const char *npcType=0);
 void NPC_InitGame( void )
 {
 //	globals.NPCs = (gNPC_t *) gi.TagMalloc(game.maxclients * sizeof(game.bots[0]), TAG_GAME);
