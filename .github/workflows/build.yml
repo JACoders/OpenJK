@@ -269,9 +269,141 @@ jobs:
           path: ${{ github.workspace }}/install/JediOutcast/openjo_sp-macos-${{ matrix.arch }}-${{ matrix.build_type }}-${{ matrix.portable }}.tar.gz
           if-no-files-found: error
 
+  macos-ub2:
+    name: ${{ matrix.name }} macOS universal2 Binary
+    needs: [macos]
+    runs-on: macos-13
+    strategy:
+      matrix:
+        include:
+          - name: OpenJK
+            artifact_prefix: OpenJK
+            target_folder: JediAcademy
+            has_mp: true
+            has_dedicated: true
+            sp_prefix: openjk_sp
+            sp_archive_name: OpenJK-macos-universal2-Release-Non-Portable
+          - name: OpenJO
+            artifact_prefix: OpenJO
+            target_folder: JediOutcast
+            has_mp: false
+            has_dedicated: false
+            sp_prefix: openjo_sp
+            sp_archive_name: OpenJO-macos-universal2-Release-Non-Portable
+
+    steps:
+      - name: Download x86_64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact_prefix }}-macos-x86_64-Release-Non-Portable
+          path: x86_64-build
+
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact_prefix }}-macos-arm64-Release-Non-Portable
+          path: arm64-build
+
+      - name: Extract archives
+        run: |
+          mkdir -p x86_64-extracted
+          mkdir -p arm64-extracted
+          
+          if [ "${{ matrix.name }}" == "OpenJO" ]; then
+            tar -xzf x86_64-build/${{ matrix.sp_prefix }}-macos-x86_64-Release-Non-Portable.tar.gz -C x86_64-extracted
+            tar -xzf arm64-build/${{ matrix.sp_prefix }}-macos-arm64-Release-Non-Portable.tar.gz -C arm64-extracted
+          else
+            tar -xzf x86_64-build/${{ matrix.artifact_prefix }}-macos-x86_64-Release-Non-Portable.tar.gz -C x86_64-extracted
+            tar -xzf arm64-build/${{ matrix.artifact_prefix }}-macos-arm64-Release-Non-Portable.tar.gz -C arm64-extracted
+          fi
+
+      - name: Create MP Universal 2 Binary
+        if: ${{ matrix.has_mp }}
+        run: |
+          mkdir -p universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/{MacOS/OpenJK,MacOS/base,Resources,Frameworks}
+  
+          cp -R x86_64-extracted/openjk.x86_64.app/Contents/Info.plist   universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/
+          cp -R x86_64-extracted/openjk.x86_64.app/Contents/PkgInfo      universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/ 2>/dev/null || true
+          cp -R x86_64-extracted/openjk.x86_64.app/Contents/Resources/*  universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/Resources/
+  
+          sed -i '' 's/x86_64/ub2/g' universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/Info.plist
+  
+          lipo -create -output universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/openjk.ub2 \
+            x86_64-extracted/openjk.x86_64.app/Contents/MacOS/openjk.x86_64 \
+            arm64-extracted/openjk.arm64.app/Contents/MacOS/openjk.arm64
+  
+          lipo -create -output universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/Frameworks/libSDL2-2.0.0.dylib \
+            x86_64-extracted/openjk.x86_64.app/Contents/Frameworks/libSDL2-2.0.0.dylib \
+            arm64-extracted/openjk.arm64.app/Contents/Frameworks/libSDL2-2.0.0.dylib
+  
+          cp -v x86_64-extracted/openjk.x86_64.app/Contents/MacOS/rd*_x86_64.dylib universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/
+          cp -v arm64-extracted/openjk.arm64.app/Contents/MacOS/rd*_arm64.dylib universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/
+  
+          cp -v x86_64-extracted/openjk.x86_64.app/Contents/MacOS/OpenJK/*x86_64.dylib universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/OpenJK/
+          cp -v arm64-extracted/openjk.arm64.app/Contents/MacOS/OpenJK/*arm64.dylib universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/OpenJK/
+  
+          cp -v x86_64-extracted/openjk.x86_64.app/Contents/MacOS/base/*x86_64.dylib universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/base/
+          cp -v arm64-extracted/openjk.arm64.app/Contents/MacOS/base/*arm64.dylib universal2-app/${{ matrix.target_folder }}/openjk.app/Contents/MacOS/base/
+
+      - name: Create SP Universal 2 Binary
+        run: |
+          mkdir -p universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/{MacOS/OpenJK,Resources,Frameworks}
+          
+          cp -R x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/Info.plist   universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/
+          cp -R x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/PkgInfo      universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/ 2>/dev/null || true
+          cp -R x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/Resources/*  universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/Resources/
+  
+          sed -i '' 's/x86_64/ub2/g' universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/Info.plist
+  
+          lipo -create -output universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/MacOS/${{ matrix.sp_prefix }}.ub2 \
+            x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/MacOS/${{ matrix.sp_prefix }}.x86_64 \
+            arm64-extracted/${{ matrix.sp_prefix }}.arm64.app/Contents/MacOS/${{ matrix.sp_prefix }}.arm64
+  
+          lipo -create -output universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/Frameworks/libSDL2-2.0.0.dylib \
+            x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/Frameworks/libSDL2-2.0.0.dylib \
+            arm64-extracted/${{ matrix.sp_prefix }}.arm64.app/Contents/Frameworks/libSDL2-2.0.0.dylib
+  
+          cp -v x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/MacOS/rd*_x86_64.dylib universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/MacOS/
+          cp -v arm64-extracted/${{ matrix.sp_prefix }}.arm64.app/Contents/MacOS/rd*_arm64.dylib universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/MacOS/
+  
+          cp -v x86_64-extracted/${{ matrix.sp_prefix }}.x86_64.app/Contents/MacOS/OpenJK/*x86_64.dylib universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/MacOS/OpenJK/
+          cp -v arm64-extracted/${{ matrix.sp_prefix }}.arm64.app/Contents/MacOS/OpenJK/*arm64.dylib universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_prefix }}.app/Contents/MacOS/OpenJK/
+
+      - name: Create Dedicated Server Universal 2 Binary
+        if: ${{ matrix.has_dedicated }}
+        run: |
+          lipo -create -output universal2-app/${{ matrix.target_folder }}/openjkded \
+          x86_64-extracted/openjkded.x86_64 \
+          arm64-extracted/openjkded.arm64
+
+      - name: Create binary archive
+        working-directory: ${{ github.workspace }}/universal2-app/${{ matrix.target_folder }}/
+        shell: bash
+        run: |
+          chmod +x ${{ matrix.sp_prefix }}.app/Contents/MacOS/${{ matrix.sp_prefix }}.ub2
+          
+          if [ "${{ matrix.has_mp }}" == "true" ]; then
+            chmod +x openjk.app/Contents/MacOS/openjk.ub2
+            codesign --force --deep --sign - openjk.app
+          fi
+          
+          if [ "${{ matrix.has_dedicated }}" == "true" ]; then
+            chmod +x openjkded
+            codesign --force --deep --sign - openjkded
+          fi
+          
+          codesign --force --deep --sign - ${{ matrix.sp_prefix }}.app
+          tar -czvf ${{ matrix.sp_archive_name }}.tar.gz *
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_prefix }}-macos-universal2-Release-Non-Portable
+          path: universal2-app/${{ matrix.target_folder }}/${{ matrix.sp_archive_name }}.tar.gz
+          if-no-files-found: error
+
   create-latest:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: [msvc, ubuntu, macos]
+    needs: [msvc, ubuntu, macos, macos-ub2]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -289,6 +421,7 @@ jobs:
           mv ./OpenJK-linux-x86_64-Release-Non-Portable/* OpenJK-linux-x86_64.tar.gz
           mv ./OpenJK-macos-x86_64-Release-Non-Portable/* OpenJK-macos-x86_64.tar.gz
           mv ./OpenJK-macos-arm64-Release-Non-Portable/* OpenJK-macos-arm64.tar.gz
+          mv ./OpenJK-macos-universal2-Release-Non-Portable/* OpenJK-macos-ub2.tar.gz
 
           7z a -r OpenJO-windows-x86.zip ./OpenJO-windows-x86-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
           7z a -r OpenJO-windows-x86_64.zip ./OpenJO-windows-x86_64-Release-Non-Portable/* '-x!msvcp*.*' '-x!vcruntime*.*' '-x!concrt*.*'
@@ -296,6 +429,7 @@ jobs:
           mv ./OpenJO-linux-x86_64-Release-Non-Portable/* OpenJO-linux-x86_64.tar.gz
           mv ./OpenJO-macos-x86_64-Release-Non-Portable/* OpenJO-macos-x86_64.tar.gz
           mv ./OpenJO-macos-arm64-Release-Non-Portable/* OpenJO-macos-arm64.tar.gz
+          mv ./OpenJO-macos-universal2-Release-Non-Portable/* OpenJO-macos-ub2.tar.gz
 
       - name: Create latest build
         uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1 # latest
@@ -310,7 +444,7 @@ jobs:
 
   create-release:
     if: github.event_name == 'release'
-    needs: [msvc, ubuntu, macos]
+    needs: [msvc, ubuntu, macos, macos-ub2]
     runs-on: ubuntu-22.04
 
     strategy:
@@ -340,6 +474,10 @@ jobs:
             artifact_name: OpenJK-macos-arm64.tar.gz
             zip: false
 
+          - artifact_dir: OpenJK-macos-universal2-Release-Non-Portable
+            artifact_name: OpenJK-macos-ub2.tar.gz
+            zip: false
+
           - artifact_dir: OpenJO-windows-x86-Release-Non-Portable/JediOutcast
             artifact_name: OpenJO-windows-x86.zip
             zip: true
@@ -362,6 +500,10 @@ jobs:
 
           - artifact_dir: OpenJO-macos-arm64-Release-Non-Portable
             artifact_name: OpenJO-macos-arm64.tar.gz
+            zip: false
+
+          - artifact_dir: OpenJO-macos-universal2-Release-Non-Portable
+            artifact_name: OpenJO-macos-ub2.tar.gz
             zip: false
 
     steps:
