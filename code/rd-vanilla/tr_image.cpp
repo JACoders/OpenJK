@@ -1408,14 +1408,17 @@ void R_SetColorMappings( void ) {
 
 	// setup the overbright lighting
 	tr.overbrightBits = r_overBrightBits->integer;
+	tr.overbrightBitsEmulation = qfalse;
 	if ( !glConfig.deviceSupportsGamma ) {
-		tr.overbrightBits = 0;		// need hardware gamma for overbright
+		tr.overbrightBitsEmulation = qtrue;
+		//tr.overbrightBits = 0;		// need hardware gamma for overbright
 	}
 
 	// never overbright in windowed mode
 	if ( !glConfig.isFullscreen )
 	{
-		tr.overbrightBits = 0;
+		tr.overbrightBitsEmulation = qtrue;
+		//tr.overbrightBits = 0;
 	}
 
 	if ( tr.overbrightBits > 1 ) {
@@ -1441,7 +1444,7 @@ void R_SetColorMappings( void ) {
 
 	g = r_gamma->value;
 
-	shift = tr.overbrightBits;
+	shift = tr.overbrightBitsEmulation ? 0 : tr.overbrightBits;
 
 	for ( i = 0; i < 256; i++ ) {
 		if ( g == 1 ) {
@@ -1467,7 +1470,7 @@ void R_SetColorMappings( void ) {
 		s_intensitytable[i] = j;
 	}
 
-	if ( glConfig.deviceSupportsGamma )
+	if ( !tr.overbrightBitsEmulation )
 	{
 		ri.WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
 	}

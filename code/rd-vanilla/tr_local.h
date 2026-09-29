@@ -1016,6 +1016,7 @@ typedef struct {
 	float					identityLight;		// 1.0 / ( 1 << overbrightBits )
 	int						identityLightByte;	// identityLight * 255
 	int						overbrightBits;		// r_overbrightBits->integer, but set to 0 if no hw gamma
+	qboolean				overbrightBitsEmulation;
 
 	orientationr_t			ori;					// for current entity
 

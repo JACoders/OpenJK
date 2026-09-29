@@ -1521,6 +1521,31 @@ void RB_ShowImages( void ) {
 	//ri.Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 
+const void RB_EmulateOBB( void )
+{
+	if ( !backEnd.projection2D ) {
+		RB_SetGL2D();
+	}
+
+	GL_Bind( tr.whiteImage );
+	GL_State(
+		GLS_DEPTHTEST_DISABLE
+		| GLS_DSTBLEND_SRC_COLOR
+		| GLS_SRCBLEND_DST_COLOR
+	);
+	GL_Cull(CT_TWO_SIDED);
+
+	for (int i = 0; i < tr.overbrightBits; i++)
+	{
+		qglBegin (GL_TRIANGLES);
+			qglTexCoord2f( 0.5f, 0.5f );
+			qglColor3ub( 255, 255, 255);
+			qglVertex2f( 0, 0 );
+			qglVertex2f( 2 * glConfig.vidWidth, 0 );
+			qglVertex2f( 0, 2 * glConfig.vidHeight );
+		qglEnd();
+	}
+}
 
 /*
 =============
@@ -1540,6 +1565,10 @@ const void	*RB_SwapBuffers( const void *data ) {
 	// texture swapping test
 	if ( r_showImages->integer ) {
 		RB_ShowImages();
+	}
+
+	if ( tr.overbrightBitsEmulation ) {
+		RB_EmulateOBB();
 	}
 
 	cmd = (const swapBuffersCommand_t *)data;
