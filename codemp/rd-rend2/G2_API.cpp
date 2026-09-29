@@ -649,11 +649,15 @@ void RestoreGhoul2InfoArray()
 		{
 			return;
 		}
-
+#ifdef _DEBUG
 		size_t read = singleton->Deserialize ((const char *)data, size);
 		Z_Free ((void *)data);
 
 		assert (read == size);
+#else
+		singleton->Deserialize ((const char *)data, size);
+		Z_Free ((void *)data);
+#endif
 	}
 }
 
@@ -661,10 +665,12 @@ void SaveGhoul2InfoArray()
 {
 	size_t size = singleton->GetSerializedSize();
 	void *data = Z_Malloc (size, TAG_GHOUL2);
+#ifdef _DEBUG
 	size_t written = singleton->Serialize ((char *)data);
-
 	assert (written == size);
-
+#else
+	singleton->Serialize ((char *)data);
+#endif
 	if ( !ri.PD_Store (PERSISTENT_G2DATA, data, size) )
 	{
 		Com_Printf (S_COLOR_RED "ERROR: Failed to store persistent renderer data.\n");
@@ -2988,7 +2994,8 @@ qboolean G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model
 			ghlInfo->mModel = RE_RegisterModel(ghlInfo->mFileName);
 		}
 		ghlInfo->currentModel = R_GetModelByHandle(ghlInfo->mModel);
-		if (ghlInfo->currentModel)
+		if (ghlInfo->currentModel &&
+			ghlInfo->currentModel->type == MOD_MDXM) //Rend2 - data is a union now, so we need to make sure it's also a glm that is loaded
 		{
 			if (ghlInfo->currentModel->data.glm &&
 				ghlInfo->currentModel->data.glm->header)

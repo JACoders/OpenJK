@@ -54,8 +54,6 @@ extern sfxHandle_t AS_GetBModelSound( const char *name, int stage );
 extern void	AS_AddPrecacheEntry( const char *name );
 extern menuDef_t *Menus_FindByName(const char *p);
 
-extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
-
 void UI_SetActiveMenu( const char* menuname,const char *menuID );
 
 qboolean CL_InitCGameVM( void *gameLibrary )
@@ -1001,12 +999,12 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_R_INPVS:
-		return re.R_inPVS((float *) VMA(1), (float *) VMA(2));
+		return re.inPVS((float *) VMA(1), (float *) VMA(2), (byte *) VMA(3));
 
 	case CG_R_GETLIGHTING:
 		return re.GetLighting( (const float * ) VMA(1), (float *) VMA(2), (float *) VMA(3), (float *) VMA(4) );
 	case CG_R_ADDPOLYTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t *) VMA(3) );
+		re.AddPolyToScene( args[1], args[2], (const polyVert_t *) VMA(3), 1 );
 		return 0;
 	case CG_R_ADDLIGHTTOSCENE:
 		re.AddLightToScene( (const float *) VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
