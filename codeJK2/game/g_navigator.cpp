@@ -556,6 +556,9 @@ void CNavigator::Free( void )
 	{
 		delete (*ni);
 	}
+
+	m_nodes.clear();
+	m_edgeLookupMap.clear();
 }
 
 /*
