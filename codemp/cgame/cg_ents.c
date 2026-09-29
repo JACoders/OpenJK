@@ -3464,8 +3464,16 @@ void CG_AddPacketEntities( qboolean isPortal ) {
 
 		if (veh->currentState.owner == cg.predictedPlayerState.clientNum)
 		{
+			//the vehicle's own predicted playerstate (vps) never carries iModelScale over the network
+			//(see vehPlayerStateFields in msg.cpp), so BG_PlayerStateToEntityState() below would zero out
+			//the scale that already arrived correctly via the normal entity snapshot. Preserve it across
+			//the overwrite so a scaled vehicle (set via "scale" in its .npc file) renders correctly for
+			//its own rider too, not just for observers.
+			int savedModelScale = veh->currentState.iModelScale;
+
 			BG_PlayerStateToEntityState( &cg.predictedVehicleState, &veh->currentState, qfalse );
 			veh->currentState.eType = ET_NPC;
+			veh->currentState.iModelScale = savedModelScale;
 
 			veh->currentState.pos.trType = TR_INTERPOLATE;
 		}
