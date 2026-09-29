@@ -1220,7 +1220,9 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		}
 	}
 
-	hstring myModel = g_entities[entNum].NPC_type;		//apparently NPC_type is always the same as the model name???
+	// Use the anim file set's model name instead of NPC_type, since NPC variants
+	// (e.g., "stormtrooper2") share the same model and anim events as the base NPC
+	hstring myModel = level.knownAnimFileSets[animFileIndex].filename;
 
 	// Check for anim event
 	for ( i=0; i < MAX_ANIM_EVENTS; ++i )
