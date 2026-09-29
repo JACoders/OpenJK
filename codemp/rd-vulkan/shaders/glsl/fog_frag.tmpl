@@ -1,0 +1,57 @@
+#version 450
+#extension GL_GOOGLE_include_directive : enable
+
+#include "global.h"
+
+layout(set = VK_DESC_UNIFORM, binding = VK_DESC_UNIFORM_MAIN_BINDING) uniform UBO {
+	// light/env/material parameters:
+	vec4 eyePos;
+	vec4 lightPos;
+	vec4 lightColor;
+	vec4 lightVector;
+//#ifdef USE_FOG	
+	// fog parameters:
+	vec4 fogDistanceVector;
+	vec4 fogDepthVector;
+	vec4 fogEyeT;
+	vec4 fogColor;
+//#endif
+};
+
+#ifdef USE_FOG_EXP
+	layout(set = VK_DESC_UNIFORM, binding = VK_DESC_UNIFORM_CAMERA_BINDING) uniform Camera {
+		vkUniformCamera_t u_camera;
+	};
+
+	layout(set = VK_DESC_UNIFORM, binding = VK_DESC_UNIFORM_FOGS_BINDING) uniform Fog {
+		vkUniformFog_t u_fogs;
+	};
+#endif
+
+layout(set = VK_DESC_FOG_ONLY, binding = 0) uniform sampler2D fog_texture;
+
+#ifdef USE_FOG_LINEAR
+	layout(location = 4) in vec2 fog_tex_coord;
+#endif
+#ifdef USE_FOG_EXP
+	layout(location = 4) in vec3 ws_position;
+#endif
+
+layout(location = 0) out vec4 out_color;
+
+//layout(constant_id = 0) const int alpha_test_func = 0;
+
+#define SHADER_FRAG
+#include "common/fog.glsl"
+
+void main() {
+	#ifdef USE_FOG_LINEAR
+		vec4 fog = texture(fog_texture, fog_tex_coord);
+		out_color = fog * fogColor;
+	#endif
+
+	#ifdef USE_FOG_EXP
+		int u_fogIndex = int(fogDistanceVector[1]);
+		out_color = CalcFog( u_camera.viewOrigin.rgb, ws_position, u_fogs.fogs[u_fogIndex] );
+	#endif
+}

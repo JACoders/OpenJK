@@ -1,0 +1,141 @@
+#version 450
+#extension GL_GOOGLE_include_directive : enable
+
+#include "global.h"
+// based on OpenJK rend2 surface_sprites.glsl
+
+#ifdef USE_ATEST
+layout (constant_id = 0) const int alpha_test_func = 0;
+layout (constant_id = 1) const float alpha_test_value = 0.0;
+#ifdef USE_DF
+layout (constant_id = 2) const float depth_fragment = 0.85;
+#endif
+#endif
+layout (constant_id = 3) const int alpha_to_coverage = 0;
+layout (constant_id = 8) const int discard_mode = 0;
+
+#ifdef USE_FOG
+layout (constant_id = 5) const int hw_fog = 0;
+layout (constant_id = 11) const int acff = 0; // NONE, RGB, RGBA, ALPHA
+#endif
+layout (constant_id = 12) const int kFaceCamera = 0;
+layout (constant_id = 13) const int kFaceUp = 0;
+layout (constant_id = 14) const int kFaceFlattened = 0;
+layout (constant_id = 15) const int kFxSprite = 0;
+layout (constant_id = 16) const int kAdditive = 0;
+layout (constant_id = 17) const int kUseFog = 0;
+
+
+#if defined (USE_FOG)
+	layout(set = VK_DESC_UNIFORM, binding = VK_DESC_UNIFORM_MAIN_BINDING) uniform UBO {
+		// light/env/material parameters:
+		vec4 eyePos;
+		vec4 lightPos;
+		vec4 lightColor;
+		vec4 lightVector;
+
+		// fog parameters:
+		vec4 fogDistanceVector;
+		vec4 fogDepthVector;
+		vec4 fogEyeT;
+		vec4 fogColor;
+	};
+
+	layout(set = VK_DESC_UNIFORM, binding = VK_DESC_UNIFORM_CAMERA_BINDING) uniform Camera {
+		vkUniformCamera_t u_camera;
+	};
+
+	layout(set = VK_DESC_UNIFORM, binding = VK_DESC_UNIFORM_FOGS_BINDING) uniform Fog {
+		vkUniformFog_t u_fogs;
+	};
+#endif
+
+layout(set = 1, binding = 0) buffer SurfaceSprite
+{
+	SurfaceSpriteBlock u_ss;
+};
+
+layout(set = 2, binding = 0) uniform sampler2D texture0;
+#ifdef USE_FOG
+layout(set = 3, binding = 0) uniform sampler2D fog_texture;
+#endif
+
+layout(location = 0) in vec4 frag_color0;
+layout(location = 1) in vec2 frag_tex_coord0;
+layout(location = 2) in float var_Effectpos;
+#ifdef USE_FOG
+layout(location = 3) in vec3 fog_tex_coord;	// or ws_worldpos
+#endif
+
+layout(location = 0) out vec4 out_color;
+
+#define SHADER_FRAG
+#include "common/utils.glsl"
+#include "common/fog.glsl"
+
+void main() {
+	vec4 base;
+	vec4 color0 = texture(texture0, frag_tex_coord0);
+	color0.rgb *= frag_color0.rgb;
+	base = color0;
+
+	if ( kFxSprite > 0 ) {
+		float fxalpha = u_ss.fxAlphaEnd - u_ss.fxAlphaStart;
+		if (u_ss.fxAlphaEnd < 0.05)
+		{
+			if (var_Effectpos > 0.5)
+				base.a *= u_ss.fxAlphaStart + (fxalpha * (var_Effectpos - 0.5) * 2.0);
+			else
+				base.a *= u_ss.fxAlphaStart + (fxalpha * (0.5 - var_Effectpos) * 2.0);
+		}
+		else
+		{
+			base.a *= u_ss.fxAlphaStart + (fxalpha * var_Effectpos);
+		}
+	}
+
+#ifdef USE_ATEST
+	if (alpha_to_coverage != 0) {
+		if (alpha_test_func == 1) {
+			base.a =  base.a > 0.0 ? 1.0 : 0.0;
+		} else if (alpha_test_func == 2) {
+			base.a = CorrectAlpha(alpha_test_value, 1.0 - base.a, frag_tex_coord0);
+		} else if (alpha_test_func == 3) {
+			base.a = CorrectAlpha(alpha_test_value, base.a, frag_tex_coord0);
+		}
+	} else
+	// specialization: alpha-test function
+	if (alpha_test_func == 1) {
+		if (color0.a == alpha_test_value) discard;
+	} else if (alpha_test_func == 2) {
+		if (color0.a >= alpha_test_value) discard;
+	} else if (alpha_test_func == 3) {
+		if (color0.a < alpha_test_value) discard;
+	}
+#endif
+
+#ifdef USE_FOG
+	if ( hw_fog == 1 ) {
+		int u_fogIndex = int(fogDistanceVector[1]);
+		vec4 fog_color = CalcFog( u_camera.viewOrigin.rgb, fog_tex_coord, u_fogs.fogs[u_fogIndex] );
+		ApplyACFF( base, fog_color, fog_color.a );
+	} 
+	else {
+		vec4 fog = texture( fog_texture, fog_tex_coord.xy );
+		vec4 fog_color = fog * fogColor;
+		ApplyACFF( base, fog_color, fog.a );
+	}
+#endif
+
+	if ( discard_mode == 1 ) {
+		if ( base.a == 0.0 ) {
+			discard;
+		}
+	} else if ( discard_mode == 2 ) {
+		if ( dot( base.rgb, base.rgb ) == 0.0 ) {
+			discard;
+		}
+	}
+
+	out_color = base;
+}
