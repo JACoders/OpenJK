@@ -86,9 +86,9 @@ sfxHandle_t	trap_S_RegisterSound( const char *sample, qboolean compressed )
 	return S_RegisterSound(sample);
 }
 
-void trap_Key_SetBinding( int keynum, const char *binding )
+void trap_Key_SetBinding( int keynum, int modifiers, const char *binding )
 {
-	Key_SetBinding( keynum, binding);
+	Key_SetBinding( keynum, modifiers, binding);
 }
 
 qboolean trap_Key_GetOverstrikeMode( void )

@@ -42,6 +42,11 @@ field_t		historyEditLines[COMMAND_HISTORY];
 
 keyGlobals_t	kg;
 
+cvar_t *cl_keyModifiersOnlyIfUnbound;
+cvar_t *cl_keyModifiersFallbackToDefault;
+cvar_t *cl_keyModifiersEnableLocks;
+cvar_t *cl_keyModifiersPassToUI;
+
 // do NOT blithely change any of the key names (3rd field) here, since they have to match the key binds
 //	in the CFG files, they're also prepended with "KEYNAME_" when looking up StripEd references
 //
@@ -809,9 +814,12 @@ the K_* names are matched up.
 to be configured even if they don't have defined names.
 ===================
 */
-int Key_StringToKeynum( char *str ) {
+int Key_StringToKeynum( const char *str ) {
 	if ( !VALIDSTRING( str ) )
 		return -1;
+
+	// Skip all modifiers
+	str = Key_SkipModifiers( str );
 
 	// If single char bind, presume ascii char bind
 	if ( !str[1] )
@@ -824,10 +832,10 @@ int Key_StringToKeynum( char *str ) {
 	}
 
 	// check for hex code
-	if ( strlen( str ) == 4 ) {
-		int n = Com_HexStrToInt( str );
+	if ( strlen( str ) >= 3 ) {
+		size_t n = Com_HexStrToInt( str );
 
-		if ( n >= 0 )
+		if ( n >= 0 && n < ARRAY_LEN(keynames) )
 			return n;
 	}
 
@@ -924,22 +932,103 @@ const char *Key_KeynumToString( int keynum ) {
 
 /*
 ===================
+Key_ModifiersFromString
+===================
+*/
+static stringID_table_t keyModifiers[] {
+	// Regular modifiers
+	{ "LSHIFT",       KEYMOD_LSHIFT       },
+	{ "RSHIFT",       KEYMOD_RSHIFT       },
+	{ "LCTRL",        KEYMOD_LCTRL        },
+	{ "RCTRL",        KEYMOD_RCTRL        },
+	{ "LALT",         KEYMOD_LALT         },
+	{ "RALT",         KEYMOD_RALT         },
+	{ "LSUPER",       KEYMOD_LSUPER       },
+	{ "RSUPER",       KEYMOD_RSUPER       },
+
+	// LOCK modifiers
+	{ "NUMLOCK",      KEYMOD_NUMLOCK      },
+	{ "CAPSLOCK",     KEYMOD_CAPSLOCK     },
+};
+static int keyModifiersAmount = ARRAY_LEN( keyModifiers );
+
+int Key_ModifiersFromString( const char *str ) {
+	int modifiers = 0;
+
+	int i = 0;
+	int strLen = strlen( str );
+	int modLen;
+
+	for ( i = 0; i < keyModifiersAmount; i++ ) {
+		modLen = strlen( keyModifiers[i].name );
+		if ( strLen < modLen+1 ) continue;
+		if ( !Q_stricmpn(str, keyModifiers[i].name, modLen) && str[modLen] == '+' ) {
+			modifiers |= keyModifiers[i].id;
+			str += modLen+1;
+			i = -1; // Reset loop
+		}
+	}
+	return modifiers;
+}
+
+/*
+===================
+Key_SkipModifiers
+===================
+*/
+const char *Key_SkipModifiers( const char *str ) {
+	int i = 0;
+	int strLen = strlen( str );
+	int modLen;
+
+	for ( i = 0; i < keyModifiersAmount; i++ ) {
+		modLen = strlen( keyModifiers[i].name );
+		if ( strLen < modLen+1 ) continue;
+		if ( !Q_stricmpn(str, keyModifiers[i].name, modLen) && str[modLen] == '+' ) {
+			str += modLen+1;
+			i = -1; // Reset loop
+		}
+	}
+	return str;
+}
+
+/*
+===================
+Key_ModifiersStringFromModifiers
+===================
+*/
+char *Key_ModifiersStringFromModifiers( int modifiers ) {
+	static char modifiersStr[128]; // All current modifier strings above, sepearated by '+' are 66 chars in length.
+	int i;
+
+	modifiersStr[0] = 0;
+	for ( i = 0; i < keyModifiersAmount; i++ ) {
+		if ( modifiers & keyModifiers[i].id ) {
+			Q_strcat( modifiersStr, sizeof(modifiersStr), keyModifiers[i].name );
+			Q_strcat( modifiersStr, sizeof(modifiersStr), "+" );
+		}
+	}
+	return modifiersStr;
+}
+
+/*
+===================
 Key_SetBinding
 ===================
 */
-void Key_SetBinding( int keynum, const char *binding ) {
+void Key_SetBinding( int keynum, int modifiers, const char *binding ) {
 	if ( keynum < 0 || keynum >= MAX_KEYS )
 		return;
 
 	// free old bindings
-	if ( kg.keys[keynames[keynum].upper].binding ) {
-		Z_Free( kg.keys[keynames[keynum].upper].binding );
-		kg.keys[keynames[keynum].upper].binding = NULL;
+	if ( kg.keys[keynames[keynum].upper].binding[modifiers] ) {
+		Z_Free( kg.keys[keynames[keynum].upper].binding[modifiers] );
+		kg.keys[keynames[keynum].upper].binding[modifiers] = NULL;
 	}
 
 	// allocate memory for new binding
 	if ( binding )
-		kg.keys[keynames[keynum].upper].binding = CopyString( binding );
+		kg.keys[keynames[keynum].upper].binding[modifiers] = CopyString( binding );
 
 	// consider this like modifying an archived cvar, so the
 	// file write will be triggered at the next oportunity
@@ -951,11 +1040,11 @@ void Key_SetBinding( int keynum, const char *binding ) {
 Key_GetBinding
 ===================
 */
-const char *Key_GetBinding( int keynum ) {
+const char *Key_GetBinding( int keynum, int modifiers ) {
 	if ( keynum < 0 || keynum >= MAX_KEYS )
 		return "";
 
-	return kg.keys[keynum].binding;
+	return kg.keys[keynum].binding[modifiers];
 }
 
 /*
@@ -963,10 +1052,10 @@ const char *Key_GetBinding( int keynum ) {
 Key_GetKey
 ===================
 */
-int Key_GetKey( const char *binding ) {
+int Key_GetKey( const char *binding, int modifiers ) {
 	if ( binding ) {
 		for ( int i=0; i<MAX_KEYS; i++ ) {
-			if ( kg.keys[i].binding && !Q_stricmp( binding, kg.keys[i].binding ) )
+			if ( kg.keys[i].binding[modifiers] && !Q_stricmp( binding, kg.keys[i].binding[modifiers] ) )
 				return i;
 		}
 	}
@@ -991,7 +1080,9 @@ void Key_Unbind_f( void ) {
 		return;
 	}
 
-	Key_SetBinding( b, "" );
+	int modifiers = Key_ModifiersFromString( Cmd_Argv(1) );
+
+	Key_SetBinding( b, modifiers, "" );
 }
 
 /*
@@ -1000,9 +1091,11 @@ Key_Unbindall_f
 ===================
 */
 void Key_Unbindall_f( void ) {
-	for ( int i=0; i<MAX_KEYS; i++ ) {
-		if ( kg.keys[i].binding )
-			Key_SetBinding( i, "" );
+	for ( int j=0; j<KEYMOD_COMBINATIONS; j++ ) {
+		for ( int i=0; i<MAX_KEYS; i++ ) {
+			if ( kg.keys[i].binding[j] )
+				Key_SetBinding( i, j, "" );
+		}
 	}
 }
 
@@ -1025,15 +1118,17 @@ void Key_Bind_f( void ) {
 		return;
 	}
 
+	int modifiers = Key_ModifiersFromString( Cmd_Argv(1) );
+
 	if ( c == 2 ) {
-		if ( kg.keys[b].binding && kg.keys[b].binding[0] )
-			Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding );
+		if ( kg.keys[b].binding[modifiers] && kg.keys[b].binding[modifiers][0] )
+			Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "%s%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_ModifiersStringFromModifiers( modifiers ), Key_KeynumToString( b ), kg.keys[b].binding[modifiers] );
 		else
-			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
+			Com_Printf( "\"%s%s\" is not bound\n", Key_ModifiersStringFromModifiers( modifiers ), Key_KeynumToString( b ) );
 		return;
 	}
 
-	Key_SetBinding( b, Cmd_ArgsFrom( 2 ) );
+	Key_SetBinding( b, modifiers, Cmd_ArgsFrom( 2 ) );
 }
 
 /*
@@ -1045,15 +1140,17 @@ Writes lines containing "bind key value"
 */
 void Key_WriteBindings( fileHandle_t f ) {
 	FS_Printf( f, "unbindall\n" );
-	for ( size_t i=0; i<MAX_KEYS; i++ ) {
-		if ( kg.keys[i].binding && kg.keys[i].binding[0] ) {
-			const char *name = Key_KeynumToString( i );
+	for ( int j = 0; j<KEYMOD_COMBINATIONS; j++ ) {
+		for ( size_t i=0; i<MAX_KEYS; i++ ) {
+			if ( kg.keys[i].binding[j] && kg.keys[i].binding[j][0] ) {
+				const char *name = Key_KeynumToString( i );
 
-			// handle the escape character nicely
-			if ( !strcmp( name, "\\" ) )
-				FS_Printf( f, "bind \"\\\" \"%s\"\n", kg.keys[i].binding );
-			else
-				FS_Printf( f, "bind \"%s\" \"%s\"\n", name, kg.keys[i].binding );
+				// handle the escape character nicely
+				if ( !strcmp( name, "\\" ) )
+					FS_Printf( f, "bind \"%s\\\" \"%s\"\n", Key_ModifiersStringFromModifiers(j), kg.keys[i].binding[j] );
+				else
+					FS_Printf( f, "bind \"%s%s\" \"%s\"\n", Key_ModifiersStringFromModifiers(j), name, kg.keys[i].binding[j] );
+			}
 		}
 	}
 }
@@ -1065,21 +1162,72 @@ Key_Bindlist_f
 ============
 */
 void Key_Bindlist_f( void ) {
-	for ( size_t i=0; i<MAX_KEYS; i++ ) {
-		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
-			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s (%s) = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
+	for ( int j=0; j<KEYMOD_COMBINATIONS; j++) {
+		for ( size_t i=0; i<MAX_KEYS; i++ ) {
+			if ( kg.keys[i].binding[j] && kg.keys[i].binding[j][0] )
+				Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s%s (%s%s) = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_ModifiersStringFromModifiers( j ), Key_KeynumToAscii( i ), Key_ModifiersStringFromModifiers( j ), Key_KeynumToString( i ), kg.keys[i].binding[j] );
+		}
 	}
 }
 
 /*
 ============
-Key_KeynameCompletion
+Key_Completion
 ============
 */
-void Key_KeynameCompletion( callbackFunc_t callback ) {
-	for ( size_t i=0; i<numKeynames; i++ ) {
-		if ( keynames[i].name )
-			callback( keynames[i].name );
+void Key_Completion( callbackFunc_t callback, const char *input ) {
+	char suggestion[MAX_STRING_CHARS];
+	int modifiers = Key_ModifiersFromString( input );
+	const char *skipped = Key_SkipModifiers( input );
+
+	const char *lastModifierMatch = NULL;
+	int modifierMatches = 0;
+	int keyMatches = 0;
+
+	int mod;
+	size_t key;
+
+	if ( skipped-input < 0 ) {
+		Com_Printf( "Key_Completion: invalid skip\n" );
+		return;
+	} else if ( (size_t)(skipped-input) >= sizeof(suggestion) ) {
+		Com_Printf( "Key_Completion: input too long\n" );
+		return;
+	} else {
+		if ( skipped-input <= 0 ) suggestion[0] = 0;
+		else {
+			Q_strncpyz( suggestion, input, skipped-input );
+			Q_strcat( suggestion, sizeof(suggestion), "+" );
+		}
+	}
+
+	for ( mod = 0; mod < keyModifiersAmount; mod++ ) {
+		if ( keyModifiers[mod].name && !Q_stricmpn(keyModifiers[mod].name, skipped, strlen(skipped)) ) {
+			modifierMatches++;
+			lastModifierMatch = keyModifiers[mod].name;
+		}
+	}
+	for ( key = 0; key < numKeynames; key++ ) {
+		if ( keynames[key].name && !Q_stricmpn(keynames[key].name, skipped, strlen(skipped)) ) {
+			keyMatches++;
+		}
+	}
+
+	if ( modifierMatches == 1 && keyMatches == 0 )
+	{ // We want to complete the modifier and suggest all keys with that modifier
+		Q_strcat( suggestion, sizeof(suggestion), lastModifierMatch );
+		Q_strcat( suggestion, sizeof(suggestion), "+" );
+	}
+
+	for ( mod = 0; mod < keyModifiersAmount; mod++ ) {
+		if ( keyModifiers[mod].name && !(modifiers & keyModifiers[mod].id) ) {
+			callback( va("%s%s+", suggestion, keyModifiers[mod].name) );
+		}
+	}
+	for ( key = 0; key < numKeynames; key++ ) {
+		if ( keynames[key].name ) {
+			callback( va("%s%s", suggestion, keynames[key].name) );
+		}
 	}
 }
 
@@ -1134,6 +1282,12 @@ void CL_InitKeyCommands( void ) {
 	Cmd_SetCommandCompletionFunc( "unbind", Key_CompleteUnbind );
 	Cmd_AddCommand( "unbindall", Key_Unbindall_f );
 	Cmd_AddCommand( "bindlist", Key_Bindlist_f );
+
+	// Register cvars (the default values should have legacy configs play the same way without behavior changes)
+	cl_keyModifiersOnlyIfUnbound = Cvar_Get( "cl_keyModifiersOnlyIfUnbound", "1", CVAR_ARCHIVE_ND );
+	cl_keyModifiersFallbackToDefault = Cvar_Get( "cl_keyModifiersFallbackToDefault", "1", CVAR_ARCHIVE_ND );
+	cl_keyModifiersEnableLocks = Cvar_Get( "cl_keyModifiersEnableLocks", "0", CVAR_ARCHIVE_ND );
+	cl_keyModifiersPassToUI = Cvar_Get( "cl_keyModifiersPassToUI", "0", CVAR_ARCHIVE_ND );
 }
 
 /*
@@ -1162,16 +1316,21 @@ CL_ParseBinding
 Execute the commands in the bind string
 ===================
 */
-void CL_ParseBinding( int key, qboolean down, unsigned time )
+void CL_ParseBinding( int key, int modifiers, qboolean down, unsigned time )
 {
 	char buf[ MAX_STRING_CHARS ], *p = buf, *end;
 	qboolean allCommands, allowUpCmds;
 
 	if( cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == 0 )
 		return;
-	if( !kg.keys[keynames[key].upper].binding || !kg.keys[keynames[key].upper].binding[0] )
-		return;
-	Q_strncpyz( buf, kg.keys[keynames[key].upper].binding, sizeof( buf ) );
+	if( !kg.keys[keynames[key].upper].binding[modifiers] || !kg.keys[keynames[key].upper].binding[modifiers][0] ) {
+		if ( !modifiers || !cl_keyModifiersFallbackToDefault->integer ) return;
+		else modifiers = 0;
+
+		if( !kg.keys[keynames[key].upper].binding[modifiers] || !kg.keys[keynames[key].upper].binding[modifiers][0] )
+			return;
+	}
+	Q_strncpyz( buf, kg.keys[keynames[key].upper].binding[modifiers], sizeof( buf ) );
 
 	// run all bind commands if console, ui, etc aren't reading keys
 	allCommands = (qboolean)( Key_GetCatcher( ) == 0 );
@@ -1224,6 +1383,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 	kg.keys[keynames[key].upper].down = qtrue;
 	kg.keys[keynames[key].upper].repeats++;
 	if( kg.keys[keynames[key].upper].repeats == 1 ) {
+		kg.keys[keynames[key].upper].downModifiers = kg.modifiers;
 		kg.keyDownCount++;
 		kg.anykeydown = qtrue;
 	}
@@ -1267,18 +1427,23 @@ void CL_KeyDownEvent( int key, unsigned time )
 			return;
 		}
 
-		_UI_KeyEvent( key, qtrue );
+		_UI_KeyEvent( key, cl_keyModifiersPassToUI->integer ? kg.keys[keynames[key].upper].downModifiers : 0, qtrue );
 		return;
 	}
 
 	// send the bound action
-	CL_ParseBinding( key, qtrue, time );
+	if ( !cls.cursorActive ) CL_ParseBinding( key, kg.keys[keynames[key].upper].downModifiers, qtrue, time );
 
 	// distribute the key down event to the apropriate handler
 	if ( Key_GetCatcher() & KEYCATCH_CONSOLE ) {
 		Console_Key( key );
 	} else if ( Key_GetCatcher() & KEYCATCH_UI ) {
-		_UI_KeyEvent( key, qtrue );
+		if ( cl_keyModifiersPassToUI->integer ) {
+			if ( key == A_ALT && (kg.modifiersReal & (KEYMOD_LALT|KEYMOD_RALT)) ) return;
+			if ( key == A_CTRL && (kg.modifiersReal & (KEYMOD_LCTRL|KEYMOD_RCTRL)) ) return;
+			if ( key == A_SHIFT && (kg.modifiersReal & (KEYMOD_LSHIFT|KEYMOD_RSHIFT)) ) return;
+		}
+		_UI_KeyEvent( key, cl_keyModifiersPassToUI->integer ? kg.modifiersReal : 0, qtrue );
 	} else if ( cls.state == CA_DISCONNECTED ) {
 		Console_Key( key );
 	}
@@ -1293,8 +1458,10 @@ Called by CL_KeyEvent to handle a keyrelease
 */
 void CL_KeyUpEvent( int key, unsigned time )
 {
+	int modifiers = kg.keys[keynames[key].upper].downModifiers;
 	kg.keys[keynames[key].upper].repeats = 0;
 	kg.keys[keynames[key].upper].down = qfalse;
+	kg.keys[keynames[key].upper].downModifiers = 0;
 	kg.keyDownCount--;
 
 	if (kg.keyDownCount <= 0) {
@@ -1312,10 +1479,10 @@ void CL_KeyUpEvent( int key, unsigned time )
 	// console mode and menu mode, to keep the character from continuing
 	// an action started before a mode switch.
 	//
-	CL_ParseBinding( key, qfalse, time );
+	CL_ParseBinding( key, modifiers, qfalse, time );
 
 	if ( Key_GetCatcher( ) & KEYCATCH_UI )
-		_UI_KeyEvent( key, qfalse );
+		_UI_KeyEvent( key, cl_keyModifiersPassToUI->integer ? modifiers : 0, qfalse );
 }
 
 /*
@@ -1346,8 +1513,46 @@ void CL_CharEvent( int key ) {
 
 	// distribute the key down event to the apropriate handler
 		 if ( Key_GetCatcher() & KEYCATCH_CONSOLE )		Field_CharEvent( &g_consoleField, key );
-	else if ( Key_GetCatcher() & KEYCATCH_UI )			_UI_KeyEvent( key|K_CHAR_FLAG, qtrue );
+	else if ( Key_GetCatcher() & KEYCATCH_UI )			_UI_KeyEvent( key|K_CHAR_FLAG, 0, qtrue );
 	else if ( cls.state == CA_DISCONNECTED )			Field_CharEvent( &g_consoleField, key );
+}
+
+/*
+===================
+CL_ModifierEvent
+===================
+*/
+void CL_ModifierEvent( int modifiers ) {
+	kg.modifiers = modifiers;
+	kg.modifiersReal = modifiers;
+
+	if ( cl_keyModifiersOnlyIfUnbound->integer ) {
+		if ( kg.keys[A_SHIFT].binding[0] && kg.keys[A_SHIFT].binding[0][0] ) {
+			kg.modifiers &= ~KEYMOD_LSHIFT;
+			kg.modifiers &= ~KEYMOD_RSHIFT;
+		}
+		if ( kg.keys[A_CTRL].binding[0] && kg.keys[A_CTRL].binding[0][0] ) {
+			kg.modifiers &= ~KEYMOD_LCTRL;
+			kg.modifiers &= ~KEYMOD_RCTRL;
+		}
+		if ( kg.keys[A_ALT].binding[0] && kg.keys[A_ALT].binding[0][0] ) {
+			kg.modifiers &= ~KEYMOD_LALT;
+			kg.modifiers &= ~KEYMOD_RALT;
+		}
+		if ( cl_keyModifiersOnlyIfUnbound->integer != 2 ) {
+			// Special case: the lock modifiers are not held down, they are toggled. So we might want to bind something to the toggle.
+			if ( kg.keys[A_CAPSLOCK].binding[0] && kg.keys[A_CAPSLOCK].binding[0][0] ) {
+				kg.modifiers &= ~KEYMOD_CAPSLOCK;
+			}
+			if ( kg.keys[A_NUMLOCK].binding[0] && kg.keys[A_NUMLOCK].binding[0][0] ) {
+				kg.modifiers &= ~KEYMOD_NUMLOCK;
+			}
+		}
+	}
+	if ( !cl_keyModifiersEnableLocks->integer ) {
+		kg.modifiers &= ~KEYMOD_CAPSLOCK;
+		kg.modifiers &= ~KEYMOD_NUMLOCK;
+	}
 }
 
 /*
@@ -1364,6 +1569,7 @@ void Key_ClearStates( void ) {
 			CL_KeyEvent( i, qfalse, 0 );
 		kg.keys[i].down = qfalse;
 		kg.keys[i].repeats = 0;
+		kg.keys[i].downModifiers = 0;
 	}
 }
 

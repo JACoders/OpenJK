@@ -60,6 +60,9 @@ qboolean CL_GameCommand( void ) {
 void CL_KeyEvent (int key, qboolean down, unsigned time) {
 }
 
+void CL_ModifierEvent( int modifiers ) {
+}
+
 qboolean UI_GameCommand( void ) {
 	return qfalse;
 }

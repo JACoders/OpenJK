@@ -412,6 +412,28 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 
 /*
 ===============
+IN_TranslateModifiers
+===============
+*/
+static int IN_TranslateModifiers( SDL_Keysym *keysym )
+{
+	int modifiers = 0;
+	if( keysym->mod & KMOD_LSHIFT ) modifiers |= KEYMOD_LSHIFT;
+	if( keysym->mod & KMOD_RSHIFT ) modifiers |= KEYMOD_RSHIFT;
+	if( keysym->mod & KMOD_LCTRL  ) modifiers |= KEYMOD_LCTRL;
+	if( keysym->mod & KMOD_RCTRL  ) modifiers |= KEYMOD_RCTRL;
+	if( keysym->mod & KMOD_LALT   ) modifiers |= KEYMOD_LALT;
+	if( keysym->mod & KMOD_RALT   ) modifiers |= KEYMOD_RALT;
+	if( keysym->mod & KMOD_MODE   ) modifiers |= KEYMOD_RALT;     // Mode is Alt GR depending on keyboard layout, so just consider it Right Alt
+	if( keysym->mod & KMOD_LGUI   ) modifiers |= KEYMOD_LSUPER;
+	if( keysym->mod & KMOD_RGUI   ) modifiers |= KEYMOD_RSUPER;
+	if( keysym->mod & KMOD_NUM    ) modifiers |= KEYMOD_NUMLOCK;
+	if( keysym->mod & KMOD_CAPS   ) modifiers |= KEYMOD_CAPSLOCK;
+	return modifiers;
+}
+
+/*
+===============
 IN_GobbleMotionEvents
 ===============
 */
@@ -819,6 +841,9 @@ static void IN_ProcessEvents( void )
 	fakeAscii_t key = A_NULL;
 	static fakeAscii_t lastKeyDown = A_NULL;
 
+	static int lastModifiers = 0;
+	int modifiers = 0;
+
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 			return;
 
@@ -828,6 +853,12 @@ static void IN_ProcessEvents( void )
 		{
 			case SDL_KEYDOWN:
 				key = IN_TranslateSDLToJKKey( &e.key.keysym, qtrue );
+				modifiers = IN_TranslateModifiers( &e.key.keysym );
+				if ( modifiers != lastModifiers )
+				{ // Send changes to modifiers as events. That way the gamecode can remember the latest modifiers and apply them to mouse buttons etc. as well and we don't have to extend the events to support 3 values.
+					lastModifiers = modifiers;
+					Sys_QueEvent( 0, SE_MODIFIER, modifiers, 0, 0, NULL );
+				}
 				if ( key != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
 
@@ -841,6 +872,12 @@ static void IN_ProcessEvents( void )
 
 			case SDL_KEYUP:
 				key = IN_TranslateSDLToJKKey( &e.key.keysym, qfalse );
+				modifiers = IN_TranslateModifiers( &e.key.keysym );
+				if ( modifiers != lastModifiers )
+				{ // Send changes to modifiers as events. That way the gamecode can remember the latest modifiers and apply them to mouse buttons etc. as well and we don't have to extend the events to support 3 values.
+					lastModifiers = modifiers;
+					Sys_QueEvent( 0, SE_MODIFIER, modifiers, 0, 0, NULL );
+				}
 				if( key != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qfalse, 0, NULL );
 
