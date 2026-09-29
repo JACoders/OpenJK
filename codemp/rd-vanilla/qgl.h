@@ -31,6 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #elif defined(MACOS_X)
 // Prevent OS X from including its own out-of-date glext.h
 #	define GL_GLEXT_LEGACY
+#   define GL_SILENCE_DEPRECATION
 #	include <OpenGL/gl.h>
 #elif defined( __linux__ )
 #	include <GL/gl.h>

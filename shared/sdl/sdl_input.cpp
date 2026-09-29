@@ -44,6 +44,10 @@ static SDL_Window *SDL_window = NULL;
 
 #define CTRL(a) ((a)-'a'+1)
 
+#if !SDL_VERSION_ATLEAST(2, 0, 17)
+#define KMOD_SCROLL KMOD_RESERVED
+#endif
+
 /*
 ===============
 IN_PrintKey
@@ -71,7 +75,7 @@ static void IN_PrintKey( const SDL_Keysym *keysym, fakeAscii_t key, qboolean dow
 	if( keysym->mod & KMOD_NUM )      Com_Printf( " KMOD_NUM" );
 	if( keysym->mod & KMOD_CAPS )     Com_Printf( " KMOD_CAPS" );
 	if( keysym->mod & KMOD_MODE )     Com_Printf( " KMOD_MODE" );
-	if( keysym->mod & KMOD_RESERVED ) Com_Printf( " KMOD_RESERVED" );
+	if( keysym->mod & KMOD_SCROLL )   Com_Printf( " KMOD_SCROLL" );
 
 	Com_Printf( " Q:0x%02x(%s)\n", key, Key_KeynumToString( key ) );
 }
@@ -554,7 +558,7 @@ static void IN_InitJoystick( void )
 	if (!SDL_WasInit(SDL_INIT_JOYSTICK))
 	{
 		Com_DPrintf("Calling SDL_Init(SDL_INIT_JOYSTICK)...\n");
-		if (SDL_Init(SDL_INIT_JOYSTICK) == -1)
+		if (SDL_Init(SDL_INIT_JOYSTICK) != 0)
 		{
 			Com_DPrintf("SDL_Init(SDL_INIT_JOYSTICK) failed: %s\n", SDL_GetError());
 			return;
