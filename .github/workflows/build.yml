@@ -215,19 +215,133 @@ jobs:
           fetch-tags: true
 
       - name: Create Build Environment
+        shell: bash
+        env:
+          SDL2_VERSION: "2.32.10"
         run: |
-          brew install zlib libjpeg libpng sdl2
-          cmake -E make_directory ${{ github.workspace }}/build
+          set -euo pipefail
+
+          brew install libjpeg libpng
+
+          BUILD_DIR="${{ github.workspace }}/build"
+          SDL_PREFIX="${{ github.workspace }}/sdl-prefix"
+          SDL_DMG="${{ runner.temp }}/SDL2-${SDL2_VERSION}.dmg"
+          SDL_MOUNT="${{ runner.temp }}/SDL2-${SDL2_VERSION}"
+
+          cmake -E make_directory "$BUILD_DIR"
+          cmake -E make_directory "$SDL_PREFIX/include/SDL2"
+          cmake -E make_directory "$SDL_PREFIX/lib"
+          cmake -E make_directory "$SDL_MOUNT"
+
+          echo "Downloading official SDL2 ${SDL2_VERSION} framework..."
+          curl --fail --location --show-error \
+            "https://www.libsdl.org/release/SDL2-${SDL2_VERSION}.dmg" \
+            --output "$SDL_DMG"
+
+          cleanup() {
+            hdiutil detach "$SDL_MOUNT" -quiet 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          hdiutil attach "$SDL_DMG" \
+            -mountpoint "$SDL_MOUNT" \
+            -nobrowse \
+            -readonly \
+            -quiet
+
+          SDL_FRAMEWORK="$SDL_MOUNT/SDL2.framework"
+          SDL_FRAMEWORK_BINARY="$SDL_FRAMEWORK/Versions/A/SDL2"
+
+          test -d "$SDL_FRAMEWORK"
+          test -f "$SDL_FRAMEWORK_BINARY"
+          test -d "$SDL_FRAMEWORK/Headers"
+
+          echo "Official SDL framework architectures:"
+          lipo -archs "$SDL_FRAMEWORK_BINARY"
+
+          lipo "$SDL_FRAMEWORK_BINARY" -verify_arch x86_64 arm64
+
+          echo "Extracting the ${{ matrix.arch }} SDL2 library..."
+          lipo "$SDL_FRAMEWORK_BINARY" \
+            -thin "${{ matrix.arch }}" \
+            -output "$SDL_PREFIX/lib/libSDL2-2.0.0.dylib"
+
+          cp -R "$SDL_FRAMEWORK/Headers/." "$SDL_PREFIX/include/SDL2/"
+
+          install_name_tool \
+            -id "@rpath/libSDL2-2.0.0.dylib" \
+            "$SDL_PREFIX/lib/libSDL2-2.0.0.dylib"
+
+          ln -s "libSDL2-2.0.0.dylib" \
+            "$SDL_PREFIX/lib/libSDL2-2.0.dylib"
+
+          ln -s "libSDL2-2.0.0.dylib" \
+            "$SDL_PREFIX/lib/libSDL2.dylib"
+
+          cmake -E make_directory "$SDL_PREFIX/lib/cmake/SDL2"
+
+          cat > "$SDL_PREFIX/lib/cmake/SDL2/SDL2Config.cmake" <<'EOF'
+          get_filename_component(SDL2_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+
+          if(NOT TARGET SDL2::SDL2)
+            add_library(SDL2::SDL2 SHARED IMPORTED)
+            set_target_properties(SDL2::SDL2 PROPERTIES
+              IMPORTED_LOCATION "${SDL2_PREFIX}/lib/libSDL2-2.0.0.dylib"
+              INTERFACE_INCLUDE_DIRECTORIES "${SDL2_PREFIX}/include;${SDL2_PREFIX}/include/SDL2"
+            )
+          endif()
+
+          if(NOT TARGET SDL2::SDL2main)
+            add_library(SDL2::SDL2main INTERFACE IMPORTED)
+          endif()
+
+          set(SDL2_FOUND TRUE)
+          set(SDL2_INCLUDE_DIRS
+            "${SDL2_PREFIX}/include"
+            "${SDL2_PREFIX}/include/SDL2"
+          )
+          set(SDL2_LIBRARIES SDL2::SDL2)
+          EOF
+
+          cat > "$SDL_PREFIX/lib/cmake/SDL2/SDL2ConfigVersion.cmake" <<EOF
+          set(PACKAGE_VERSION "${SDL2_VERSION}")
+
+          if(PACKAGE_FIND_VERSION VERSION_GREATER PACKAGE_VERSION)
+            set(PACKAGE_VERSION_COMPATIBLE FALSE)
+          else()
+            set(PACKAGE_VERSION_COMPATIBLE TRUE)
+
+            if(PACKAGE_FIND_VERSION VERSION_EQUAL PACKAGE_VERSION)
+              set(PACKAGE_VERSION_EXACT TRUE)
+            endif()
+          endif()
+          EOF
+
+          codesign --force --sign - \
+            "$SDL_PREFIX/lib/libSDL2-2.0.0.dylib"
+
+          echo "Prepared SDL2 library:"
+          file "$SDL_PREFIX/lib/libSDL2-2.0.0.dylib"
+          lipo -archs "$SDL_PREFIX/lib/libSDL2-2.0.0.dylib"
+          otool -D "$SDL_PREFIX/lib/libSDL2-2.0.0.dylib"
+
+          cleanup
+          trap - EXIT
 
       - name: Configure CMake
         shell: bash
         working-directory: ${{ github.workspace }}/build
         run: |
           OPTIONS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install"
+          OPTIONS+=" -DCMAKE_PREFIX_PATH=${{ github.workspace }}/sdl-prefix"
+          OPTIONS+=" -DSDL2_DIR=${{ github.workspace }}/sdl-prefix/lib/cmake/SDL2"
+          OPTIONS+=" -DUseInternalLibs=OFF"
+          OPTIONS+=" -DUseInternalSDL2=OFF"
+
           if [ "${{ matrix.portable }}" == "Portable" ]; then
-            OPTIONS+=" -DUseInternalLibs=ON -DBuildPortableVersion=ON"
+            OPTIONS+=" -DBuildPortableVersion=ON"
           else
-            OPTIONS+=" -DUseInternalLibs=OFF -DBuildPortableVersion=OFF"
+            OPTIONS+=" -DBuildPortableVersion=OFF"
           fi
           OPTIONS+=" -DBuildJK2SPEngine=ON -DBuildJK2SPGame=ON -DBuildJK2SPRdVanilla=ON"
           cmake $GITHUB_WORKSPACE $OPTIONS
@@ -242,6 +356,55 @@ jobs:
         working-directory: ${{ github.workspace }}/build
         shell: bash
         run: cmake --install .
+
+      - name: Verify macOS dependencies
+        if: ${{ matrix.build_type == 'Release' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APP_LIST="${{ runner.temp }}/openjk-apps.txt"
+
+          find "${{ github.workspace }}/install" \
+            -type d \
+            -name '*.app' \
+            -print > "$APP_LIST"
+
+          if [ ! -s "$APP_LIST" ]; then
+            echo "No macOS app bundles were found"
+            exit 1
+          fi
+
+          while IFS= read -r APP; do
+            FRAMEWORKS="$APP/Contents/Frameworks"
+            SDL_DYLIB="$FRAMEWORKS/libSDL2-2.0.0.dylib"
+
+            echo "Checking $APP"
+
+            test -f "$SDL_DYLIB"
+            lipo "$SDL_DYLIB" -verify_arch "${{ matrix.arch }}"
+
+            file "$SDL_DYLIB"
+            otool -D "$SDL_DYLIB"
+
+            find "$APP/Contents/MacOS" -type f -print0 |
+            while IFS= read -r -d '' BINARY; do
+              if file "$BINARY" | grep -q 'Mach-O'; then
+                echo "Dependencies for $BINARY:"
+                otool -L "$BINARY"
+
+                if otool -L "$BINARY" |
+                  tail -n +2 |
+                  grep -E '/opt/homebrew|/usr/local|/Users/runner|sdl-prefix'; then
+                  echo "Found a non-portable dependency in $BINARY"
+                  exit 1
+                fi
+              fi
+            done
+
+            codesign --force --deep --sign - "$APP"
+            codesign --verify --deep --strict "$APP"
+          done < "$APP_LIST"
 
       - name: Create OpenJK binary archive
         if: ${{ matrix.build_type == 'Release' }}
