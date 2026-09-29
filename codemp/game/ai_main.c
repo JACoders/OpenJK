@@ -7573,6 +7573,9 @@ int BotAIStartFrame(int time) {
 		if( !botstates[i] || !botstates[i]->inuse ) {
 			continue;
 		}
+		if ( g_splitScreenLocalClient[i] ) {
+			continue;
+		}
 		//
 		botstates[i]->botthink_residual += elapsed_time;
 		//
@@ -7588,6 +7591,9 @@ int BotAIStartFrame(int time) {
 	// execute bot user commands every frame
 	for( i = 0; i < MAX_CLIENTS; i++ ) {
 		if( !botstates[i] || !botstates[i]->inuse ) {
+			continue;
+		}
+		if ( g_splitScreenLocalClient[i] ) {
 			continue;
 		}
 		if( g_entities[i].client->pers.connected != CON_CONNECTED ) {

@@ -140,52 +140,64 @@ set(MPCGameGFiles
 source_group("ghoul2" FILES ${MPCGameG2Files})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameG2Files})
 
-add_library(${MPCGame} SHARED ${MPCGameFiles})
-
-if(NOT MSVC)
-	# remove "lib" prefix for .so/.dylib files
-	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
+set(MPCGameTargets ${MPCGame})
+if(BuildMPEngine)
+	foreach(SplitPlayer RANGE 2 4)
+		list(APPEND MPCGameTargets "cgame${SplitPlayer}${Architecture}")
+	endforeach()
 endif()
 
+foreach(MPCGameTarget IN LISTS MPCGameTargets)
+	add_library(${MPCGameTarget} SHARED ${MPCGameFiles})
+
+	if(NOT MSVC)
+		# remove "lib" prefix for .so/.dylib files
+		set_target_properties(${MPCGameTarget} PROPERTIES PREFIX "")
+	endif()
+
+	set_target_properties(${MPCGameTarget} PROPERTIES COMPILE_DEFINITIONS "${MPCGameDefines}")
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPCGameTarget} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
+	set_target_properties(${MPCGameTarget} PROPERTIES INCLUDE_DIRECTORIES "${MPCGameIncludeDirectories}")
+	if(MPCGameTarget STREQUAL MPCGame)
+		set_target_properties(${MPCGameTarget} PROPERTIES PROJECT_LABEL "MP Client Game Library")
+	else()
+		set_target_properties(${MPCGameTarget} PROPERTIES PROJECT_LABEL "MP Split Client Game Library")
+	endif()
+	if(MPCGameLibraries)
+		target_link_libraries(${MPCGameTarget} ${MPCGameLibraries})
+	endif()
+endforeach()
+
 if(MakeApplicationBundles AND BuildMPEngine)
-	install(TARGETS ${MPCGame}
+	install(TARGETS ${MPCGameTargets}
 		LIBRARY
 		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
-	install(TARGETS ${MPCGame}
+	install(TARGETS ${MPCGameTargets}
 		LIBRARY
 		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/base"
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
-	install(TARGETS ${MPCGame}
+	install(TARGETS ${MPCGameTargets}
 		RUNTIME
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 
 	# Use OpenJK modules as default
-	install(TARGETS ${MPCGame}
+	install(TARGETS ${MPCGameTargets}
 		RUNTIME
 		DESTINATION "${JKAInstallDir}/base"
 		COMPONENT ${JKAMPCoreComponent})
 else()
-	install(TARGETS ${MPCGame}
+	install(TARGETS ${MPCGameTargets}
 		LIBRARY
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
-	install(TARGETS ${MPCGame}
+	install(TARGETS ${MPCGameTargets}
 		LIBRARY
 		DESTINATION "${JKAInstallDir}/base"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
-
-set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS "${MPCGameDefines}")
-
-# Hide symbols not explicitly marked public.
-set_property(TARGET ${MPCGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
-
-set_target_properties(${MPCGame} PROPERTIES INCLUDE_DIRECTORIES "${MPCGameIncludeDirectories}")
-set_target_properties(${MPCGame} PROPERTIES PROJECT_LABEL "MP Client Game Library")
-# no libraries used
-if(MPCGameLibraries)
-	target_link_libraries(${MPCGame} ${MPCGameLibraries})
-endif(MPCGameLibraries)

@@ -1316,8 +1316,9 @@ void SP_waypoint ( gentity_t *ent )
 			ent->r.maxs[2] = CROUCH_MAXS_2;
 			if(G_CheckInSolid (ent, qtrue))
 			{
-				Com_Printf(S_COLOR_RED"ERROR: Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->r.currentOrigin));
-				assert(0 && "Waypoint in solid!");
+				Com_Printf(S_COLOR_YELLOW"WARNING: Ignoring waypoint %s at %s because it is in solid geometry.\n", ent->targetname, vtos(ent->r.currentOrigin));
+				// Stock Siege maps can rebuild navigation when their packaged nav checksum differs.
+				// Ignore malformed map waypoints just as release builds have always done.
 				G_FreeEntity(ent);
 				return;
 			}

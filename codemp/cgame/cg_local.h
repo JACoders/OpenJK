@@ -1023,6 +1023,10 @@ Ghoul2 Insert End
 #endif
 
 	qboolean spawning;
+	qboolean splitDrawRadarOverride;
+	qboolean splitDrawRadar;
+	qboolean splitThirdPersonOverride;
+	qboolean splitThirdPerson;
 	int	numSpawnVars;
 	char *spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
 	int numSpawnVarChars;
@@ -1744,6 +1748,14 @@ void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, 
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
 void CG_DrawSides(float x, float y, float w, float h, float size);
 void CG_DrawTopBottom(float x, float y, float w, float h, float size);
+void CG_Set2DViewportTransform( qboolean active, float x, float y, float w, float h );
+void CG_Transform2DRect( float *x, float *y, float *w, float *h );
+float CG_Transform2DScale( float scale );
+float CG_Transform2DWidth( float width );
+float CG_Transform2DHeight( float height );
+qboolean CG_2DViewportTransformActive( void );
+void CG_DrawPicUV( float x, float y, float width, float height,
+	float s1, float t1, float s2, float t2, qhandle_t hShader );
 
 //
 // cg_draw.c, cg_newDraw.c
@@ -1757,6 +1769,7 @@ void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
 void CG_CenterPrint( const char *str, int y, int charWidth );
 void CG_DrawHead( float x, float y, float w, float h, int clientNum, vec3_t headAngles );
 void CG_DrawActive( stereoFrame_t stereoView );
+void CG_DrawActive2D( void );
 void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean force2D );
 void CG_DrawTeamBackground( int x, int y, int w, int h, float alpha, int team );
 void CG_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle,int font);

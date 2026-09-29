@@ -1,0 +1,33 @@
+{
+	menuDef
+	{
+		name					"splitscreen"
+		visible					0
+		fullscreen				0
+		rect					0 0 640 480
+		focusColor				1 1 1 1
+		style					WINDOW_STYLE_EMPTY
+
+		onOpen
+		{
+			close				splitscreen_players ;
+			close				ingame_player ;
+			close				ingame_player2 ;
+			close				ingame_playerforce ;
+			close				ingame_saber ;
+			setcvar				"cl_splitScreen" "1" ;
+			setcvar				"in_joystick" "1" ;
+			setcvar				"ui_splitScreenConfiguring" "1" ;
+			setcvar				"ui_splitScreenMenuMode" "top" ;
+		}
+
+		onClose
+		{
+		}
+
+		onESC
+		{
+			uiScript			closeingame
+		}
+	}
+}

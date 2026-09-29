@@ -100,11 +100,40 @@ static cvar_t	*net_dropsim;
 static struct sockaddr_in	socksRelayAddr;
 
 static SOCKET	ip_socket = INVALID_SOCKET;
+static SOCKET	split_ip_sockets[5] = { INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET };
 static SOCKET	socks_socket = INVALID_SOCKET;
 
 #define	MAX_IPS		16
 static	int		numIP;
 static	byte	localIP[MAX_IPS][4];
+
+static SOCKET NET_SocketForSource( netsrc_t sock )
+{
+	switch ( sock ) {
+		case NS_CLIENT2:
+			return split_ip_sockets[2];
+		case NS_CLIENT3:
+			return split_ip_sockets[3];
+		case NS_CLIENT4:
+			return split_ip_sockets[4];
+		default:
+			return ip_socket;
+	}
+}
+
+static netsrc_t NET_SourceForSplitIndex( int index )
+{
+	switch ( index ) {
+		case 2:
+			return NS_CLIENT2;
+		case 3:
+			return NS_CLIENT3;
+		case 4:
+			return NS_CLIENT4;
+		default:
+			return NS_CLIENT;
+	}
+}
 
 //=============================================================================
 
@@ -247,12 +276,12 @@ Receive one packet
 int	recvfromCount;
 #endif
 
-qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
+static qboolean NET_GetPacketFromSocket( netsrc_t source, SOCKET socket, netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 	int ret, err;
 	socklen_t fromlen;
 	struct sockaddr_in from;
 
-	if ( ip_socket == INVALID_SOCKET || !FD_ISSET(ip_socket, fdr) ) {
+	if ( socket == INVALID_SOCKET || !FD_ISSET(socket, fdr) ) {
 		return qfalse;
 	}
 
@@ -260,7 +289,8 @@ qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 #ifdef _DEBUG
 	recvfromCount++;		// performance check
 #endif
-	ret = recvfrom( ip_socket, (char *)net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen );
+	(void)source;
+	ret = recvfrom( socket, (char *)net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen );
 
 	if ( ret == SOCKET_ERROR ) {
 		err = socketError;
@@ -300,6 +330,10 @@ qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 	return qtrue;
 }
 
+qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
+	return NET_GetPacketFromSocket( NS_CLIENT, ip_socket, net_from, net_message, fdr );
+}
+
 //=============================================================================
 
 static char socksBuf[4096];
@@ -309,16 +343,17 @@ static char socksBuf[4096];
 Sys_SendPacket
 ==================
 */
-void Sys_SendPacket( int length, const void *data, const netadr_t *to ) {
+void Sys_SendPacket( netsrc_t sock, int length, const void *data, const netadr_t *to ) {
 	int					ret;
 	struct sockaddr_in	addr;
+	SOCKET				socket = NET_SocketForSource( sock );
 
 	if ( to->type != NA_BROADCAST && to->type != NA_IP ) {
 		Com_Error( ERR_FATAL, "Sys_SendPacket: bad address type" );
 		return;
 	}
 
-	if ( ip_socket == INVALID_SOCKET ) {
+	if ( socket == INVALID_SOCKET ) {
 		return;
 	}
 
@@ -332,10 +367,10 @@ void Sys_SendPacket( int length, const void *data, const netadr_t *to ) {
 		memcpy( &socksBuf[4], &addr.sin_addr, 4 );
 		memcpy( &socksBuf[8], &addr.sin_port, 2 );
 		memcpy( &socksBuf[10], data, length );
-		ret = sendto( ip_socket, socksBuf, length+10, 0, (sockaddr *)&socksRelayAddr, sizeof(socksRelayAddr) );
+		ret = sendto( socket, socksBuf, length+10, 0, (sockaddr *)&socksRelayAddr, sizeof(socksRelayAddr) );
 	}
 	else {
-		ret = sendto( ip_socket, (const char *)data, length, 0, (sockaddr *)&addr, sizeof(addr) );
+		ret = sendto( socket, (const char *)data, length, 0, (sockaddr *)&addr, sizeof(addr) );
 	}
 	if( ret == SOCKET_ERROR ) {
 		int err = socketError;
@@ -818,6 +853,7 @@ void NET_OpenIP( void )
 {
 	int port = net_port->integer;
 	int err;
+	int player;
 
 	NET_GetLocalAddress();
 
@@ -842,6 +878,16 @@ void NET_OpenIP( void )
 		}
 		if ( ip_socket == INVALID_SOCKET )
 			Com_Printf( "WARNING: Couldn't bind to a v4 ip address.\n");
+	}
+
+	for ( player = 2; player <= 4; player++ ) {
+		if ( split_ip_sockets[player] != INVALID_SOCKET ) {
+			continue;
+		}
+		split_ip_sockets[player] = NET_IPSocket( net_ip->string, PORT_ANY, &err );
+		if ( split_ip_sockets[player] == INVALID_SOCKET && err != EAFNOSUPPORT ) {
+			Com_Printf( "WARNING: Couldn't bind split-screen client socket %i.\n", player );
+		}
 	}
 }
 
@@ -939,9 +985,17 @@ void NET_Config( qboolean enableNetworking ) {
 	}
 
 	if ( stop ) {
+		int player;
+
 		if ( ip_socket != INVALID_SOCKET ) {
 			closesocket( ip_socket );
 			ip_socket = INVALID_SOCKET;
+		}
+		for ( player = 2; player <= 4; player++ ) {
+			if ( split_ip_sockets[player] != INVALID_SOCKET ) {
+				closesocket( split_ip_sockets[player] );
+				split_ip_sockets[player] = INVALID_SOCKET;
+			}
 		}
 
 		if ( socks_socket != INVALID_SOCKET ) {
@@ -1003,7 +1057,7 @@ Called from NET_Sleep which uses select() to determine which sockets have seen a
 ====================
 */
 
-void NET_Event(fd_set *fdr)
+static void NET_EventForSocket( netsrc_t source, SOCKET socket, fd_set *fdr )
 {
 	byte bufData[MAX_MSGLEN + 1];
 	netadr_t from;
@@ -1013,7 +1067,7 @@ void NET_Event(fd_set *fdr)
 	{
 		MSG_Init(&netmsg, bufData, sizeof(bufData));
 
-		if(NET_GetPacket(&from, &netmsg, fdr))
+		if(NET_GetPacketFromSocket(source, socket, &from, &netmsg, fdr))
 		{
 			if(net_dropsim->value > 0.0f && net_dropsim->value <= 100.0f)
 			{
@@ -1022,13 +1076,25 @@ void NET_Event(fd_set *fdr)
 					continue;          // drop this packet
 			}
 
-			if(com_sv_running->integer)
+			if(source == NS_CLIENT && com_sv_running->integer)
 				Com_RunAndTimeServerPacket(&from, &netmsg);
+#ifndef DEDICATED
 			else
-				CL_PacketEvent(&from, &netmsg);
+				CL_PacketEventFromSource(source, &from, &netmsg);
+#endif
 		}
 		else
 			break;
+	}
+}
+
+void NET_Event(fd_set *fdr)
+{
+	int player;
+
+	NET_EventForSocket( NS_CLIENT, ip_socket, fdr );
+	for ( player = 2; player <= 4; player++ ) {
+		NET_EventForSocket( NET_SourceForSplitIndex( player ), split_ip_sockets[player], fdr );
 	}
 }
 
@@ -1043,6 +1109,7 @@ void NET_Sleep( int msec ) {
 	struct timeval timeout;
 	fd_set	fdset;
 	int retval;
+	int player;
 	SOCKET highestfd = INVALID_SOCKET;
 
 	if (msec < 0)
@@ -1052,6 +1119,14 @@ void NET_Sleep( int msec ) {
 	if (ip_socket != INVALID_SOCKET) {
 		FD_SET(ip_socket, &fdset); // network socket
 		highestfd = ip_socket;
+	}
+	for ( player = 2; player <= 4; player++ ) {
+		if ( split_ip_sockets[player] != INVALID_SOCKET ) {
+			FD_SET( split_ip_sockets[player], &fdset );
+			if ( split_ip_sockets[player] > highestfd ) {
+				highestfd = split_ip_sockets[player];
+			}
+		}
 	}
 
 #ifdef _WIN32

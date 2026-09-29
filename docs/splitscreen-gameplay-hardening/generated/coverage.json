@@ -1,0 +1,826 @@
+{
+  "schema_version": 1,
+  "build": {
+    "git_commit": "aed48b4164b863075209e172585d8a0c3029c5f7",
+    "binary": "build-x86_64/openjk.x86_64.app/Contents/MacOS/openjk.x86_64",
+    "binary_sha256": "737fcd8c3cfdbc78f220e7d2b63dac3ba44b49e7f8b71d82b7ccee4029277c13",
+    "provenance": "Phase 5 frozen x86_64 candidate. Historical imported logs remain legacy-unverified because they do not embed this hash."
+  },
+  "states": [
+    "setup",
+    "spawn",
+    "input",
+    "combat",
+    "score",
+    "death",
+    "respawn",
+    "objective",
+    "spectate_rejoin",
+    "intermission",
+    "restart",
+    "next_map",
+    "clean_exit"
+  ],
+  "build_correlation": "legacy-unverified",
+  "modes": {
+    "ffa": 0,
+    "holocron": 1,
+    "jedimaster": 2,
+    "duel": 3,
+    "powerduel": 4,
+    "team": 6,
+    "siege": 7,
+    "ctf": 8,
+    "cty": 9
+  },
+  "evidence": [
+    {
+      "id": "ffa-2p-lightning",
+      "players": 2,
+      "mode": "ffa",
+      "endpoint_class": "local-listen",
+      "devices": [
+        "keyboard_mouse",
+        "controller1"
+      ],
+      "runner": {
+        "path": "tests/splitscreen/rendering/certification/gameplay/run.sh",
+        "sha256": "45ddc23ba2f71a948df113f163ccaf5c8e27b555c238bc27fc9a274b7e250e4e"
+      },
+      "config": {
+        "path": "tests/splitscreen/rendering/certification/gameplay/lightning_duel.cfg",
+        "sha256": "42765e3def1aec0afcd2aa60bd04bf18f1d0c4f85cce4d55da4255a81439c5dd"
+      },
+      "log": {
+        "path": "tests/splitscreen/rendering/certification/gameplay/artifacts/gameplay.stdout.txt",
+        "sha256": "6993a09a0d0c017c2ce4fa3429e01f7fee5742aee4d50930ec0ac68d96b93f05"
+      },
+      "screenshots": [
+        {
+          "path": "tests/splitscreen/rendering/certification/gameplay/artifacts/acceptance_kyle_lightning_kill.png",
+          "sha256": "3f7dda5c6af315cfcd76fd1ddb13b1c6a656eb8cf0f6f1deba7897d8c311aee5"
+        }
+      ],
+      "claims": {
+        "setup": "SplitNet party: all 2 local players active",
+        "spawn": "SplitNetLifecycleAssert: PASS player=2 expected=ALIVE actual=ALIVE",
+        "input": "SplitInputAssertCmd: PASS player=1",
+        "combat": "SplitNetStatAssert: PASS player=1 field=health op=lt",
+        "score": "SplitNetStatAssert: PASS player=1 field=score op=ge expected=1 actual=1",
+        "death": "SplitNetLifecycleAssert: PASS player=2 expected=DEAD actual=DEAD"
+      }
+    },
+    {
+      "id": "ffa-4p-respawn",
+      "players": 4,
+      "mode": "ffa",
+      "endpoint_class": "local-listen",
+      "devices": [
+        "keyboard_mouse",
+        "controller1",
+        "controller2",
+        "controller3"
+      ],
+      "runner": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/run_frozen_matrix.sh",
+        "sha256": "6d0dd2a4f8c431a86faafa79cd688c727dba6ed1e5e3f13efc10591e0b82f317"
+      },
+      "config": {
+        "path": "tests/splitscreen/cfg/respawn_flow.cfg",
+        "sha256": "a509f4d0dcc13a53bb7d57746d930e1937ad5638889d8d09620343b0af6fa61a"
+      },
+      "log": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/respawn_flow.stdout.txt",
+        "sha256": "05e3478839aece8a368513bfe71586a67af215fb999d61879633c3081ba2d4f7"
+      },
+      "screenshots": [
+        {
+          "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/splitqa_respawn_flow_after.png",
+          "sha256": "1afe36cb0fe9724818bf599917059670a6079433868baa89e9e835ed52d4c428"
+        }
+      ],
+      "claims": {
+        "setup": "SplitNet party: all 4 local players active",
+        "spawn": "SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE",
+        "death": "SplitNetLifecycleAssert: PASS player=4 expected=DEAD actual=DEAD",
+        "respawn": "SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE pm=0 health=122"
+      }
+    },
+    {
+      "id": "ffa-4p-spectate",
+      "players": 4,
+      "mode": "ffa",
+      "endpoint_class": "local-listen",
+      "devices": [
+        "keyboard_mouse",
+        "controller1",
+        "controller2",
+        "controller3"
+      ],
+      "runner": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/run_frozen_matrix.sh",
+        "sha256": "6d0dd2a4f8c431a86faafa79cd688c727dba6ed1e5e3f13efc10591e0b82f317"
+      },
+      "config": {
+        "path": "tests/splitscreen/cfg/join_spectate_flow.cfg",
+        "sha256": "13b813d18bed443b64ce7cab051b2e9d5addcc1ddb378c862126bee72b6d03ec"
+      },
+      "log": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/join_spectate_flow.stdout.txt",
+        "sha256": "6ae3880bbd04d1acee0a3ec5e4bf3140f1f578785fae4e5f8440a702df4829d8"
+      },
+      "screenshots": [
+        {
+          "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/splitqa_join_spectate_flow.png",
+          "sha256": "0f1996022189dc19ac0ad894a70ec6a4e00c6d40e2e101d58db50c5dd57bc63b"
+        }
+      ],
+      "claims": {
+        "setup": "SplitNet party: all 4 local players active",
+        "spawn": "SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE",
+        "spectate_rejoin": "SplitNetLifecycleAssert: PASS player=4 expected=SPECTATOR actual=SPECTATOR"
+      }
+    },
+    {
+      "id": "ffa-4p-intermission",
+      "players": 4,
+      "mode": "ffa",
+      "endpoint_class": "local-listen",
+      "devices": [
+        "keyboard_mouse",
+        "controller1",
+        "controller2",
+        "controller3"
+      ],
+      "runner": {
+        "path": "tests/splitscreen/rendering/certification/intermission/run.sh",
+        "sha256": "6edcdf790a6f9e847c9bb4883c6a67b707f5ef3180ad59cac4ecdfe541a3e179"
+      },
+      "config": {
+        "path": "tests/splitscreen/rendering/certification/intermission/intermission_4p.cfg",
+        "sha256": "ad037789f3d8917da5a89c4f2a0b11c561b04a11b8446e69eeaa5c6f9bfb1bef"
+      },
+      "log": {
+        "path": "tests/splitscreen/rendering/certification/intermission/artifacts/intermission.stdout.txt",
+        "sha256": "b6c737345fccdc9aa71b6aed1e42fb5e6e230088912e9fd0063041e251580065"
+      },
+      "screenshots": [
+        {
+          "path": "tests/splitscreen/rendering/certification/intermission/artifacts/cert_intermission_4p.png",
+          "sha256": "a86cf6984bdc169327822bc70b79df3bd7ed278d7ebfc9a315805beb49d288c9"
+        }
+      ],
+      "claims": {
+        "setup": "SplitNet party: all 4 local players active",
+        "spawn": "SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE",
+        "input": "SplitInputSim: button device=controller1 player=2 button=0 pressed=1",
+        "combat": "SplitNetStagePair: PASS attacker=2 victim=1",
+        "score": "SplitNetStatAssert: PASS player=2 field=score op=ge expected=1 actual=1",
+        "intermission": "SplitNetLifecycleAssert: PASS player=4 expected=INTERMISSION actual=INTERMISSION"
+      }
+    },
+    {
+      "id": "team-4p-restart",
+      "players": 4,
+      "mode": "team",
+      "endpoint_class": "local-listen",
+      "devices": [
+        "keyboard_mouse",
+        "controller1",
+        "controller2",
+        "controller3"
+      ],
+      "runner": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/run_frozen_matrix.sh",
+        "sha256": "6d0dd2a4f8c431a86faafa79cd688c727dba6ed1e5e3f13efc10591e0b82f317"
+      },
+      "config": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/map_team_matrix.cfg",
+        "sha256": "0669722717c53759131f79ab084a175a4f551fed0854484bf50f1de97003842d"
+      },
+      "log": {
+        "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/map_team_matrix.stdout.txt",
+        "sha256": "3864c2c881b4f90ae8cc37954dfa9f6e024ed217801e9a604bfee8d4db076b4b"
+      },
+      "screenshots": [
+        {
+          "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/cert_lifecycle_team_before_restart.png",
+          "sha256": "91e3de5c082da4a45d939ad377505d98b15e5093cbe0e3d8836d715e834eda75"
+        },
+        {
+          "path": "tests/splitscreen/rendering/certification/lifecycle/artifacts/cert_lifecycle_team_after_restart.png",
+          "sha256": "b6d47e28da9e9dec408fb14b32f84ad99c9503a4e5105b0028254fbfb21a3dcd"
+        }
+      ],
+      "claims": {
+        "setup": "SplitNet party: all 4 local players active",
+        "spawn": "SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE",
+        "restart": "SplitNetStatAssert: PASS player=4 field=team op=eq expected=2 actual=2"
+      }
+    }
+  ],
+  "cells": [
+    {
+      "players": 2,
+      "mode": "ffa",
+      "classification": "partial",
+      "states": {
+        "setup": "pass",
+        "spawn": "pass",
+        "input": "pass",
+        "combat": "pass",
+        "score": "pass",
+        "death": "pass",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [
+        "ffa-2p-lightning"
+      ],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "holocron",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "jedimaster",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "duel",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "powerduel",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "team",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "siege",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "ctf",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 2,
+      "mode": "cty",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "ffa",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "holocron",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "jedimaster",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "duel",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "powerduel",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "team",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "siege",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "ctf",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 3,
+      "mode": "cty",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "ffa",
+      "classification": "partial",
+      "states": {
+        "setup": "pass",
+        "spawn": "pass",
+        "input": "pass",
+        "combat": "pass",
+        "score": "pass",
+        "death": "pass",
+        "respawn": "pass",
+        "objective": "missing",
+        "spectate_rejoin": "pass",
+        "intermission": "pass",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [
+        "ffa-4p-respawn",
+        "ffa-4p-spectate",
+        "ffa-4p-intermission"
+      ],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "holocron",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "jedimaster",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "duel",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "powerduel",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "team",
+      "classification": "smoke",
+      "states": {
+        "setup": "pass",
+        "spawn": "pass",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "pass",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [
+        "team-4p-restart"
+      ],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "siege",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "ctf",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    },
+    {
+      "players": 4,
+      "mode": "cty",
+      "classification": "missing",
+      "states": {
+        "setup": "missing",
+        "spawn": "missing",
+        "input": "missing",
+        "combat": "missing",
+        "score": "missing",
+        "death": "missing",
+        "respawn": "missing",
+        "objective": "missing",
+        "spectate_rejoin": "missing",
+        "intermission": "missing",
+        "restart": "missing",
+        "next_map": "missing",
+        "clean_exit": "missing"
+      },
+      "evidence": [],
+      "seal_eligible": false
+    }
+  ]
+}

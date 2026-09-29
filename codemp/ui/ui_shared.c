@@ -4895,6 +4895,156 @@ static const char *g_bindCommands[] = {
 #define g_bindCount ARRAY_LEN(g_bindCommands)
 
 static int g_bindKeys[g_bindCount][2];
+char g_nameBind[96];
+
+static const char *g_splitScreenControllerBindCommands[] = {
+	"+forward", "+back", "+left", "+right", "+speed", "+moveleft", "+moveright", "+strafe", "+moveup", "+movedown",
+	"+attack", "+altattack", "saberAttackCycle", "+use", "+button2", "invnext", "invprev", "+lookup", "+lookdown", "+mlook", "centerview",
+	"weapon 1", "weapon 2", "weapon 3", "weapon 4", "weapon 5", "weapon 6", "weapon 7", "weapon 8", "weapon 13", "weapon 9", "weapon 10", "weapnext", "weapprev",
+	"force_throw", "force_pull", "force_speed", "force_seeing", "+useforce", "forcenext", "forceprev",
+	"force_protect", "force_absorb", "force_heal", "force_healother", "force_distract", "+force_grip", "+force_drain", "+force_lightning", "force_rage", "force_forcepowerother",
+	"sensitivity", "ui_mousePitch", "movesideaxis", "moveforwardaxis", "lookyawaxis", "lookpitchaxis",
+	"cl_run", "cg_autoswitch", "messagemode", "messagemode2", "voicechat", "automap_toggle", "+scores", "engage_duel", "cg_thirdperson !", "taunt", "bow", "meditate", "flourish", "gloat"
+};
+
+static int SplitScreenControllerBindIndexFromName( const char *command ) {
+	size_t i;
+
+	if ( !command || !command[0] ) {
+		return -1;
+	}
+
+	for ( i = 0; i < ARRAY_LEN( g_splitScreenControllerBindCommands ); i++ ) {
+		if ( !Q_stricmp( command, g_splitScreenControllerBindCommands[i] ) ) {
+			return (int)i;
+		}
+	}
+
+	return -1;
+}
+
+static int SplitScreenDefaultControllerBindForCommand( const char *command, int bindIndex ) {
+	(void)bindIndex;
+	if ( !Q_stricmp( command, "+attack" ) ) return 0;
+	if ( !Q_stricmp( command, "+altattack" ) ) return 1;
+	if ( !Q_stricmp( command, "+use" ) ) return 2;
+	if ( !Q_stricmp( command, "+moveup" ) ) return 3;
+	if ( !Q_stricmp( command, "+scores" ) ) return 4;
+	if ( !Q_stricmp( command, "+movedown" ) ) return 7;
+	if ( !Q_stricmp( command, "saberAttackCycle" ) ) return 8;
+	if ( !Q_stricmp( command, "+button2" ) ) return 9;
+	if ( !Q_stricmp( command, "+useforce" ) ) return 10;
+	if ( !Q_stricmp( command, "weapnext" ) ) return 11;
+	if ( !Q_stricmp( command, "weapprev" ) ) return 12;
+	if ( !Q_stricmp( command, "forceprev" ) ) return 13;
+	if ( !Q_stricmp( command, "forcenext" ) ) return 14;
+	return -1;
+}
+
+static const char *SplitScreenControllerButtonName( int button ) {
+	static const char *names[16] = {
+		"A", "B", "X", "Y", "BACK", "GUIDE", "START", "LEFT STICK",
+		"RIGHT STICK", "LEFT BUMPER", "RIGHT BUMPER", "DPAD UP", "DPAD DOWN",
+		"DPAD LEFT", "DPAD RIGHT", "BUTTON 16"
+	};
+
+	return button >= 0 && button < (int)ARRAY_LEN( names ) ? names[button] : "UNBOUND";
+}
+
+static qboolean SplitScreenControllerIndirectBindingFromName( const char *command ) {
+	if ( !Q_stricmpn( command, "weapon ", 7 ) ) {
+		Q_strncpyz( g_nameBind, "DPAD UP / DOWN", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmpn( command, "force_", 6 ) || !Q_stricmpn( command, "+force_", 7 ) ) {
+		Q_strncpyz( g_nameBind, "DPAD LEFT / RIGHT + RB", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	return qfalse;
+}
+
+static qboolean SplitScreenControllerBindingFromName( const char *command ) {
+	char inputName[32] = {0};
+	char paintPlayer[8] = {0};
+	char bindValue[16] = {0};
+	int player;
+	int bindIndex;
+	int button;
+
+	trap->Cvar_VariableStringBuffer( "ui_splitScreenControlsPaintPlayer", paintPlayer, sizeof( paintPlayer ) );
+	player = atoi( paintPlayer );
+	if ( player < 1 || player > 4 ) {
+		return qfalse;
+	}
+
+	trap->Cvar_VariableStringBuffer( va( "ui_splitScreenP%iInput", player ), inputName, sizeof( inputName ) );
+	if ( Q_stricmpn( inputName, "controller", 10 ) ) {
+		return qfalse;
+	}
+	if ( !Q_stricmp( command, "+forward" ) ) {
+		Q_strncpyz( g_nameBind, "LEFT STICK UP", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+back" ) ) {
+		Q_strncpyz( g_nameBind, "LEFT STICK DOWN", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+moveleft" ) ) {
+		Q_strncpyz( g_nameBind, "LEFT STICK LEFT", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+moveright" ) ) {
+		Q_strncpyz( g_nameBind, "LEFT STICK RIGHT", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+left" ) ) {
+		Q_strncpyz( g_nameBind, "RIGHT STICK LEFT", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+right" ) ) {
+		Q_strncpyz( g_nameBind, "RIGHT STICK RIGHT", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+lookup" ) ) {
+		Q_strncpyz( g_nameBind, "RIGHT STICK UP", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+lookdown" ) ) {
+		Q_strncpyz( g_nameBind, "RIGHT STICK DOWN", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+speed" ) ) {
+		Q_strncpyz( g_nameBind, "ANALOG", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+	if ( !Q_stricmp( command, "+strafe" ) ) {
+		Q_strncpyz( g_nameBind, "LEFT STICK", sizeof( g_nameBind ) );
+		return qtrue;
+	}
+
+	bindIndex = SplitScreenControllerBindIndexFromName( command );
+	if ( bindIndex < 0 ) {
+		return qfalse;
+	}
+
+	trap->Cvar_VariableStringBuffer( va( "cl_splitScreenP%iBind%02i", player, bindIndex ), bindValue, sizeof( bindValue ) );
+	if ( !bindValue[0] ) {
+		button = SplitScreenDefaultControllerBindForCommand( command, bindIndex );
+	} else {
+		button = atoi( bindValue );
+	}
+
+	if ( button < 0 || button > 15 ) {
+		if ( SplitScreenControllerIndirectBindingFromName( command ) ) {
+			return qtrue;
+		}
+		Q_strncpyz( g_nameBind, "UNBOUND", sizeof( g_nameBind ) );
+	} else {
+		Q_strncpyz( g_nameBind, SplitScreenControllerButtonName( button ), sizeof( g_nameBind ) );
+	}
+
+	return qtrue;
+}
 
 /*
 =================
@@ -4976,12 +5126,14 @@ int BindingIDFromName( const char *name ) {
 	return -1;
 }
 
-char g_nameBind[96];
-
 void BindingFromName( const char *cvar ) {
 	size_t	i;
 	int		b1, b2;
 	char	sOR[32];
+
+	if ( SplitScreenControllerBindingFromName( cvar ) ) {
+		return;
+	}
 
 	// iterate each command, set its default binding
 	for ( i=0; i < g_bindCount; i++ ) {
@@ -5116,6 +5268,18 @@ void Item_Bind_Paint(itemDef_t *item)
 
 qboolean Display_KeyBindPending( void ) {
 	return g_waitingForKey;
+}
+
+const char *Display_KeyBindCommand( void ) {
+	if ( !g_waitingForKey || !g_bindItem || !g_bindItem->cvar ) {
+		return NULL;
+	}
+	return g_bindItem->cvar;
+}
+
+void Display_ClearKeyBindPending( void ) {
+	g_waitingForKey = qfalse;
+	g_bindItem = NULL;
 }
 
 qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
@@ -5332,6 +5496,9 @@ void Item_Model_Paint(itemDef_t *item)
 	y = item->window.rect.y+1;
 	w = item->window.rect.w-2;
 	h = item->window.rect.h-2;
+#ifndef _CGAME
+	UI_TransformRect( &x, &y, &w, &h );
+#endif
 
 	refdef.x = x * DC->xscale;
 	refdef.y = y * DC->yscale;
@@ -6584,10 +6751,38 @@ void Menu_SetFeederSelection(menuDef_t *menu, int feeder, int index, const char 
 		int i;
 		for (i = 0; i < menu->itemCount; i++) {
 			if (menu->items[i]->special == feeder) {
-				if (index == 0) {
-					listBoxDef_t *listPtr = menu->items[i]->typeData.listbox;
-					listPtr->cursorPos = 0;
-					listPtr->startPos = 0;
+				listBoxDef_t *listPtr = menu->items[i]->typeData.listbox;
+				if ( listPtr ) {
+					int viewmax = 1;
+					if ( index < 0 ) {
+						index = 0;
+					}
+					if ( listPtr->elementStyle == LISTBOX_IMAGE ) {
+						int cols = listPtr->elementWidth > 0 ? (int)( menu->items[i]->window.rect.w / listPtr->elementWidth ) : 1;
+						int rows = listPtr->elementHeight > 0 ? (int)( menu->items[i]->window.rect.h / listPtr->elementHeight ) : 1;
+						if ( cols < 1 ) {
+							cols = 1;
+						}
+						if ( rows < 1 ) {
+							rows = 1;
+						}
+						viewmax = cols * rows;
+						listPtr->startPos = ( index / cols ) * cols;
+					} else if ( listPtr->elementHeight > 0 ) {
+						viewmax = (int)( menu->items[i]->window.rect.h / listPtr->elementHeight );
+						if ( viewmax < 1 ) {
+							viewmax = 1;
+						}
+						if ( index < listPtr->startPos ) {
+							listPtr->startPos = index;
+						} else if ( index >= listPtr->startPos + viewmax ) {
+							listPtr->startPos = index - viewmax + 1;
+						}
+					}
+					if ( listPtr->startPos < 0 ) {
+						listPtr->startPos = 0;
+					}
+					listPtr->cursorPos = index;
 				}
 				menu->items[i]->cursorPos = index;
 				DC->feederSelection(menu->items[i]->special, menu->items[i]->cursorPos, NULL);

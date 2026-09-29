@@ -32,13 +32,19 @@ vm_t *currentVM = NULL;
 static const char *vmNames[MAX_VM] = {
 	"jampgame",
 	"cgame",
-	"ui"
+	"ui",
+	"cgame2",
+	"cgame3",
+	"cgame4"
 };
 
 const char *vmStrs[MAX_VM] = {
 	"GameVM",
 	"CGameVM",
 	"UIVM",
+	"CGame2VM",
+	"CGame3VM",
+	"CGame4VM",
 };
 
 // VM slots are automatically allocated by VM_Create, and freed by VM_Free

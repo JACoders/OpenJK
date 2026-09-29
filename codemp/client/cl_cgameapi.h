@@ -49,4 +49,9 @@ void			CGVM_MiscEnt				( void );
 void			CGVM_CameraShake			( void );
 
 void CL_BindCGame( void );
+void CL_BindCGamePlayer( int player );
 void CL_UnbindCGame( void );
+void CL_UnbindCGamePlayer( int player );
+qboolean CGVM_SelectPlayer( int player );
+qboolean CGVM_PlayerBound( int player );
+int CGVM_ActivePlayer( void );

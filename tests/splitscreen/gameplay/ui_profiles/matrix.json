@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "ticket": "GP1-01",
+  "cells": [
+    {"players": 2, "required": ["count_switch", "back_cancel", "names", "models_skins", "force", "sabers", "teams", "devices", "live_userinfo", "reopen_isolation", "relaunch", "vid_restart", "in_restart", "map_change", "fresh_defaults"]},
+    {"players": 3, "required": ["count_switch", "back_cancel", "names", "models_skins", "force", "sabers", "teams", "devices", "live_userinfo", "reopen_isolation", "relaunch", "vid_restart", "in_restart", "map_change", "fresh_defaults"]},
+    {"players": 4, "required": ["count_switch", "back_cancel", "names", "models_skins", "force", "sabers", "teams", "devices", "live_userinfo", "reopen_isolation", "relaunch", "vid_restart", "in_restart", "map_change", "fresh_defaults"]}
+  ],
+  "forbidden_profile_writes": "set\\s+(?:name|model|forcepowers|saber(?:2)?|color[12]|team|ui_splitScreenP[1-4](?:Name|Model|ForcePowers|Saber|Saber2|Color|Team))\\b"
+}

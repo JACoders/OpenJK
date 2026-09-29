@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "cases": [
+    {
+      "manifest": "good-2.json",
+      "expected": "PASS",
+      "returncode": 0,
+      "codes": [],
+      "result": "PASS"
+    },
+    {
+      "manifest": "good-3.json",
+      "expected": "PASS",
+      "returncode": 0,
+      "codes": [],
+      "result": "PASS"
+    },
+    {
+      "manifest": "good-4.json",
+      "expected": "PASS",
+      "returncode": 0,
+      "codes": [],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-duplicate.json",
+      "expected": "IMAGE_DUPLICATE_PANE",
+      "returncode": 1,
+      "codes": [
+        "IMAGE_DUPLICATE_PANE"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-blank.json",
+      "expected": "IMAGE_BLANK",
+      "returncode": 1,
+      "codes": [
+        "IMAGE_BLANK"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-stale.json",
+      "expected": "STATE_STALE_SNAPSHOT",
+      "returncode": 1,
+      "codes": [
+        "STATE_STALE_SNAPSHOT"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-cross-pane.json",
+      "expected": "IMAGE_HUD_OWNER",
+      "returncode": 1,
+      "codes": [
+        "IMAGE_HUD_OWNER"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-wrong-client.json",
+      "expected": "STATE_USERINFO",
+      "returncode": 1,
+      "codes": [
+        "STATE_USERINFO"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-silent.json",
+      "expected": "AUDIO_EVENT_TRACE",
+      "returncode": 1,
+      "codes": [
+        "AUDIO_EVENT_TRACE",
+        "AUDIO_EVENT_TRACE"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-leaked-socket.json",
+      "expected": "RESOURCE_SOCKET_LEAK",
+      "returncode": 1,
+      "codes": [
+        "RESOURCE_SOCKET_LEAK"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-truncated.json",
+      "expected": "STATE_TRUNCATED",
+      "returncode": 1,
+      "codes": [
+        "STATE_TRUNCATED"
+      ],
+      "result": "PASS"
+    },
+    {
+      "manifest": "bad-hash.json",
+      "expected": "ARTIFACT_HASH",
+      "returncode": 1,
+      "codes": [
+        "ARTIFACT_HASH"
+      ],
+      "result": "PASS"
+    }
+  ]
+}

@@ -142,6 +142,10 @@ void UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ) {
 		t1 = 1;
 	}
 
+	UI_TransformPicRect( &x, &y, &w, &h, &s0, &t0, &s1, &t1 );
+	if ( w <= 0.0f || h <= 0.0f ) {
+		return;
+	}
 	trap->R_DrawStretchPic( x, y, w, h, s0, t0, s1, t1, hShader );
 }
 
@@ -153,17 +157,20 @@ Coordinates are 640*480 virtual values
 =================
 */
 void UI_FillRect( float x, float y, float width, float height, const float *color ) {
+	UI_TransformRect( &x, &y, &width, &height );
 	trap->R_SetColor( color );
 	trap->R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
 	trap->R_SetColor( NULL );
 }
 
 void UI_DrawSides(float x, float y, float w, float h) {
+	UI_TransformRect( &x, &y, &w, &h );
 	trap->R_DrawStretchPic( x, y, 1, h, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
 	trap->R_DrawStretchPic( x + w - 1, y, 1, h, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
 }
 
 void UI_DrawTopBottom(float x, float y, float w, float h) {
+	UI_TransformRect( &x, &y, &w, &h );
 	trap->R_DrawStretchPic( x, y, w, 1, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
 	trap->R_DrawStretchPic( x, y + h - 1, w, 1, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
 }

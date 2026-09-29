@@ -272,10 +272,8 @@ static void CG_Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4
 
 	// this is kinda dirty, but...
 	//
-	int iFontIndex = MenuFontToHandle(iMenuFont);
-
 	//float fMax = *maxX;
-	int iPixelLen = trap->R_Font_StrLenPixels(text, iFontIndex, scale);
+	int iPixelLen = CG_Text_Width(text, scale, iMenuFont);
 	if (x + iPixelLen > *maxX)
 	{
 		// whole text won't fit, so we need to print just the amount that does...
@@ -287,7 +285,7 @@ static void CG_Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4
 		char *psOutLastGood = psOut;
 		unsigned int uiLetter;
 
-		while (*psText && (x + trap->R_Font_StrLenPixels(sTemp, iFontIndex, scale)<=*maxX)
+		while (*psText && (x + CG_Text_Width(sTemp, scale, iMenuFont)<=*maxX)
 			&& psOut < &sTemp[sizeof(sTemp)-1]	// sanity
 		)
 		{

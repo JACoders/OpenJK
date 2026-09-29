@@ -1320,6 +1320,7 @@ void DeathmatchScoreboardMessage (gentity_t *client);
 extern vmCvar_t g_ff_objectives;
 extern qboolean gDoSlowMoDuel;
 extern int gSlowMoDuelTime;
+extern qboolean g_splitScreenLocalClient[MAX_CLIENTS];
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 

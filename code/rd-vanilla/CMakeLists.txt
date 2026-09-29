@@ -190,6 +190,15 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 
 		target_link_libraries(${ProjectName} ${SPRDVanillaRendererLibraries})
+
+		if(APPLE AND MakeApplicationBundles)
+			add_custom_command(TARGET ${ProjectName} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E make_directory
+					"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${EngineName}.app/Contents/MacOS"
+				COMMAND ${CMAKE_COMMAND} -E copy_if_different
+					"$<TARGET_FILE:${ProjectName}>"
+					"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${EngineName}.app/Contents/MacOS/$<TARGET_FILE_NAME:${ProjectName}>")
+		endif()
 	endfunction(add_sp_renderer_project)
 
 	if(BuildSPRdVanilla)

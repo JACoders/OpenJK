@@ -385,6 +385,10 @@ qboolean CL_GetServerCommand( int serverCommandNumber ) {
 		// reliable commands then the client never got those first reliable commands
 		if ( clc.demoplaying )
 			return qfalse;
+		if ( cl_splitNetParsingPacket || ( Cvar_VariableIntegerValue( "cl_splitScreen" ) && !Cvar_VariableIntegerValue( "cl_splitScreenLocalCmds" ) ) ) {
+			clc.lastExecutedServerCommand = clc.serverCommandSequence;
+			return qfalse;
+		}
 
 		while (i < MAX_RELIABLE_COMMANDS)
 		{ //spew out the reliable command buffer
@@ -491,15 +495,54 @@ CL_ShutdonwCGame
 
 ====================
 */
-void CL_ShutdownCGame( void ) {
-	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
+void CL_ShutdownSplitCGame( int player ) {
+	clientActive_t savedCl;
+	clientConnection_t savedClc;
+	connstate_t savedState;
+	splitScreenClient_t *split;
 
-	if ( !cls.cgameStarted )
+	if ( player < 2 || player > MAX_SPLITSCREEN_PLAYERS ) {
 		return;
+	}
+	Key_SetCGameCatcher( player, 0 );
+	split = &cl_splitClients[player];
+	if ( !split->cgameStarted || !CGVM_PlayerBound( player ) ) {
+		split->cgameStarted = qfalse;
+		return;
+	}
+
+	savedCl = cl;
+	savedClc = clc;
+	savedState = cls.state;
+	cl = split->active;
+	clc = split->connection;
+	cls.state = split->state;
+	CL_UnbindCGamePlayer( player );
+	split->active = cl;
+	split->connection = clc;
+	cl = savedCl;
+	clc = savedClc;
+	cls.state = savedState;
+	split->cgameStarted = qfalse;
+}
+
+void CL_ShutdownCGame( void ) {
+	int player;
+
+	Key_SetCGameCatcher( 1, 0 );
+
+	for ( player = 2; player <= MAX_SPLITSCREEN_PLAYERS; player++ ) {
+		CL_ShutdownSplitCGame( player );
+	}
+
+	if ( !cls.cgameStarted ) {
+		return;
+	}
 
 	cls.cgameStarted = qfalse;
-
-	CL_UnbindCGame();
+	if ( CGVM_SelectPlayer( 1 ) ) {
+		CL_UnbindCGamePlayer( 1 );
+	}
 }
 
 /*
@@ -510,15 +553,17 @@ Should only be called by CL_StartHunkUsers
 ====================
 */
 
-void CL_InitCGame( void ) {
+void CL_InitCGamePlayer( int player ) {
 	const char			*info;
 	const char			*mapname;
 	int					t1, t2;
+	qboolean			primary = (qboolean)( player == 1 );
 
 	t1 = Sys_Milliseconds();
 
-	// put away the console
-	Con_Close();
+	if ( primary ) {
+		Con_Close();
+	}
 
 	// find the current mapname
 	info = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SERVERINFO ];
@@ -526,44 +571,60 @@ void CL_InitCGame( void ) {
 	Com_sprintf( cl.mapname, sizeof( cl.mapname ), "maps/%s.bsp", mapname );
 
 	// load the dll
-	CL_BindCGame();
+	CL_BindCGamePlayer( player );
+	CGVM_SelectPlayer( player );
+	Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", player ) );
+	if ( primary && Cvar_VariableIntegerValue( "cl_splitScreen" ) ) {
+		Cvar_Set( "r_splitScreen", "0" );
+	}
 
-	cls.state = CA_LOADING;
+	if ( primary ) {
+		cls.state = CA_LOADING;
+	}
 
 	// init for this gamestate
 	// use the lastExecutedServerCommand instead of the serverCommandSequence
 	// otherwise server commands sent just before a gamestate are dropped
 	CGVM_Init( clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
 
-	int clRate = Cvar_VariableIntegerValue( "rate" );
-	if ( clRate == 4000 ) {
-		Com_Printf( S_COLOR_YELLOW "WARNING: Old default /rate value detected (4000). Suggest typing /rate 25000 into console for a smoother connection!\n" );
+	if ( primary ) {
+		int clRate = Cvar_VariableIntegerValue( "rate" );
+		if ( clRate == 4000 ) {
+			Com_Printf( S_COLOR_YELLOW "WARNING: Old default /rate value detected (4000). Suggest typing /rate 25000 into console for a smoother connection!\n" );
+		}
+
+		// reset any CVAR_CHEAT cvars registered by cgame
+		if ( !clc.demoplaying && !cl_connectedToCheatServer ) {
+			Cvar_SetCheatState();
+		}
+
+		// we will send a usercmd this frame, which
+		// will cause the server to send us the first snapshot
+		cls.state = CA_PRIMED;
 	}
-
-	// reset any CVAR_CHEAT cvars registered by cgame
-	if ( !clc.demoplaying && !cl_connectedToCheatServer )
-		Cvar_SetCheatState();
-
-	// we will send a usercmd this frame, which
-	// will cause the server to send us the first snapshot
-	cls.state = CA_PRIMED;
 
 	t2 = Sys_Milliseconds();
 
-	Com_Printf( "CL_InitCGame: %5.2f seconds\n", (t2-t1)/1000.0 );
+	Com_Printf( "CL_InitCGame P%i: %5.2f seconds\n", player, (t2-t1)/1000.0 );
 
-	// have the renderer touch all its images, so they are present
-	// on the card even if the driver does deferred loading
-	re->EndRegistration();
+	if ( primary ) {
+		// have the renderer touch all its images, so they are present
+		// on the card even if the driver does deferred loading
+		re->EndRegistration();
 
-	// make sure everything is paged in
+		// make sure everything is paged in
 //	if (!Sys_LowPhysicalMemory())
-	{
-		Com_TouchMemory();
-	}
+		{
+			Com_TouchMemory();
+		}
 
-	// clear anything that got printed
-	Con_ClearNotify ();
+		// clear anything that got printed
+		Con_ClearNotify ();
+	}
+}
+
+void CL_InitCGame( void ) {
+	CL_InitCGamePlayer( 1 );
 }
 
 
@@ -578,7 +639,108 @@ qboolean CL_GameCommand( void ) {
 	if ( !cls.cgameStarted )
 		return qfalse;
 
+	CGVM_SelectPlayer( 1 );
 	return CGVM_ConsoleCommand();
+}
+
+void CL_CGameKeyEventForPlayer( int player, int key, qboolean down ) {
+	clientActive_t primaryCl;
+	clientConnection_t primaryClc;
+	connstate_t primaryState;
+	splitScreenClient_t *split;
+
+	if ( player <= 1 ) {
+		if ( cls.cgameStarted && CGVM_SelectPlayer( 1 ) ) {
+			Cvar_Set( "cl_splitScreenRenderPlayer", "1" );
+			CGVM_KeyEvent( key, down );
+		}
+		return;
+	}
+	if ( player > MAX_SPLITSCREEN_PLAYERS ) {
+		return;
+	}
+
+	split = &cl_splitClients[player];
+	if ( !split->enabled || !split->cgameStarted || !CGVM_SelectPlayer( player ) ) {
+		CGVM_SelectPlayer( 1 );
+		return;
+	}
+
+	primaryCl = cl;
+	primaryClc = clc;
+	primaryState = cls.state;
+	cl = split->active;
+	clc = split->connection;
+	cls.state = split->state;
+	Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", player ) );
+	CGVM_KeyEvent( key, down );
+	split->active = cl;
+	split->connection = clc;
+	split->state = cls.state;
+
+	cl = primaryCl;
+	clc = primaryClc;
+	cls.state = primaryState;
+	Cvar_Set( "cl_splitScreenRenderPlayer", "1" );
+	CGVM_SelectPlayer( 1 );
+}
+
+static void CL_SwapSplitClientMemory( void *left, void *right, size_t size ) {
+	byte scratch[4096];
+	byte *a = (byte *)left;
+	byte *b = (byte *)right;
+
+	while ( size ) {
+		const size_t chunk = size < sizeof( scratch ) ? size : sizeof( scratch );
+		Com_Memcpy( scratch, a, chunk );
+		Com_Memcpy( a, b, chunk );
+		Com_Memcpy( b, scratch, chunk );
+		a += chunk;
+		b += chunk;
+		size -= chunk;
+	}
+}
+
+void CL_CGameConsoleCommandForPlayer( int player, const char *command ) {
+	char savedCommand[BIG_INFO_STRING];
+	connstate_t primaryState;
+	splitScreenClient_t *split;
+	const int savedCGamePlayer = CGVM_ActivePlayer();
+
+	if ( !command || !command[0] || player < 1 || player > MAX_SPLITSCREEN_PLAYERS ) {
+		return;
+	}
+	Q_strncpyz( savedCommand, Cmd_Cmd(), sizeof( savedCommand ) );
+	Cmd_TokenizeString( command );
+	if ( player == 1 ) {
+		if ( cls.cgameStarted && CGVM_SelectPlayer( 1 ) ) {
+			CGVM_ConsoleCommand();
+		}
+		CGVM_SelectPlayer( savedCGamePlayer );
+		Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", savedCGamePlayer ) );
+		Cmd_TokenizeString( savedCommand );
+		return;
+	}
+	split = &cl_splitClients[player];
+	if ( !split->enabled || !split->cgameStarted || !CGVM_SelectPlayer( player ) ) {
+		CGVM_SelectPlayer( savedCGamePlayer );
+		Cmd_TokenizeString( savedCommand );
+		return;
+	}
+	primaryState = cls.state;
+	CL_SwapSplitClientMemory( &cl, &split->active, sizeof( cl ) );
+	CL_SwapSplitClientMemory( &clc, &split->connection, sizeof( clc ) );
+	cls.state = split->state;
+	Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", player ) );
+	CGVM_ConsoleCommand();
+	split->state = cls.state;
+	CL_SwapSplitClientMemory( &cl, &split->active, sizeof( cl ) );
+	CL_SwapSplitClientMemory( &clc, &split->connection, sizeof( clc ) );
+	cls.state = primaryState;
+	Cvar_Set( "cl_splitScreenRenderPlayer", "1" );
+	CGVM_SelectPlayer( savedCGamePlayer );
+	Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", savedCGamePlayer ) );
+	Cmd_TokenizeString( savedCommand );
 }
 
 
@@ -589,15 +751,57 @@ CL_CGameRendering
 =====================
 */
 void CL_CGameRendering( stereoFrame_t stereo ) {
-	//rww - RAGDOLL_BEGIN
-	if (!com_sv_running->integer)
-	{ //set the server time to match the client time, if we don't have a server going.
-		re->G2API_SetTime(cl.serverTime, 0);
-	}
-	re->G2API_SetTime(cl.serverTime, 1);
-	//rww - RAGDOLL_END
+	clientActive_t primaryCl;
+	clientConnection_t primaryClc;
+	connstate_t primaryState;
+	int player;
+	int playerCount = Cvar_VariableIntegerValue( "ui_splitScreenPlayerCount" );
 
+	if ( playerCount < 2 ) {
+		playerCount = 2;
+	} else if ( playerCount > MAX_SPLITSCREEN_PLAYERS ) {
+		playerCount = MAX_SPLITSCREEN_PLAYERS;
+	}
+
+	CGVM_SelectPlayer( 1 );
+	Cvar_Set( "cl_splitScreenRenderPlayer", "1" );
+	if ( !com_sv_running->integer ) {
+		re->G2API_SetTime( cl.serverTime, 0 );
+	}
+	re->G2API_SetTime( cl.serverTime, 1 );
 	CGVM_DrawActiveFrame( cl.serverTime, stereo, clc.demoplaying );
+
+	if ( !Cvar_VariableIntegerValue( "cl_splitScreen" ) ) {
+		return;
+	}
+
+	primaryCl = cl;
+	primaryClc = clc;
+	primaryState = cls.state;
+
+	for ( player = 2; player <= playerCount; player++ ) {
+		splitScreenClient_t *split = &cl_splitClients[player];
+
+		if ( !split->enabled || !split->cgameStarted || split->state != CA_ACTIVE || !CGVM_SelectPlayer( player ) ) {
+			continue;
+		}
+
+		cl = split->active;
+		clc = split->connection;
+		cls.state = split->state;
+		Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", player ) );
+		re->G2API_SetTime( cl.serverTime, 1 );
+		CGVM_DrawActiveFrame( cl.serverTime, stereo, clc.demoplaying );
+		split->active = cl;
+		split->connection = clc;
+	}
+
+	cl = primaryCl;
+	clc = primaryClc;
+	cls.state = primaryState;
+	Cvar_Set( "cl_splitScreenRenderPlayer", "1" );
+	CGVM_SelectPlayer( 1 );
+	re->G2API_SetTime( cl.serverTime, 1 );
 }
 
 
@@ -684,7 +888,9 @@ void CL_FirstSnapshot( void ) {
 		return;
 	}
 
-	re->RegisterMedia_LevelLoadEnd();
+	if ( CGVM_ActivePlayer() == 1 ) {
+		re->RegisterMedia_LevelLoadEnd();
+	}
 
 	cls.state = CA_ACTIVE;
 
@@ -698,7 +904,7 @@ void CL_FirstSnapshot( void ) {
 	// execute the contents of activeAction now
 	// this is to allow scripting a timedemo to start right
 	// after loading
-	if ( cl_activeAction->string[0] ) {
+	if ( CGVM_ActivePlayer() == 1 && cl_activeAction->string[0] ) {
 		Cbuf_AddText( cl_activeAction->string );
 		Cvar_Set( "activeAction", "" );
 	}
@@ -827,4 +1033,70 @@ void CL_SetCGameTime( void ) {
 			return;		// end of demo
 		}
 	}
+}
+
+void CL_SplitCGameFrame( void ) {
+	clientActive_t primaryCl;
+	clientConnection_t primaryClc;
+	connstate_t primaryState;
+	int player;
+
+	if ( !cls.cgameStarted || !Cvar_VariableIntegerValue( "cl_splitScreen" ) ) {
+		return;
+	}
+
+	primaryCl = cl;
+	primaryClc = clc;
+	primaryState = cls.state;
+
+	for ( player = 2; player <= MAX_SPLITSCREEN_PLAYERS; player++ ) {
+		splitScreenClient_t *split = &cl_splitClients[player];
+
+		if ( !split->enabled ) {
+			continue;
+		}
+
+		cl = split->active;
+		clc = split->connection;
+		cls.state = split->state;
+
+		if ( split->cgameNeedsRestart && split->cgameStarted ) {
+			CGVM_SelectPlayer( player );
+			CL_UnbindCGamePlayer( player );
+			split->cgameStarted = qfalse;
+			split->cgameNeedsRestart = qfalse;
+		}
+
+		if ( split->receivedGameState && !split->cgameStarted && primaryState >= CA_PRIMED ) {
+			cls.state = CA_LOADING;
+			CL_InitCGamePlayer( player );
+			split->cgameStarted = qtrue;
+			split->receivedGameState = qfalse;
+			split->cgameNeedsRestart = qfalse;
+			cls.state = CA_PRIMED;
+			// Pure servers validate every network client independently. The
+			// secondary clients share the primary filesystem, but still need
+			// their own reliable checksum command on their own netchan.
+			CL_SendSplitPureChecksums( player );
+			CL_WritePacket();
+			CL_WritePacket();
+			CL_WritePacket();
+		}
+
+		if ( split->cgameStarted ) {
+			CGVM_SelectPlayer( player );
+			Cvar_Set( "cl_splitScreenRenderPlayer", va( "%i", player ) );
+			CL_SetCGameTime();
+		}
+
+		split->active = cl;
+		split->connection = clc;
+		split->state = cls.state;
+	}
+
+	cl = primaryCl;
+	clc = primaryClc;
+	cls.state = primaryState;
+	Cvar_Set( "cl_splitScreenRenderPlayer", "1" );
+	CGVM_SelectPlayer( 1 );
 }

@@ -25,6 +25,123 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "qcommon/q_shared.h"
 
+static qboolean cg_2DViewportTransformActive = qfalse;
+static float cg_2DViewportX = 0.0f;
+static float cg_2DViewportY = 0.0f;
+static float cg_2DViewportW = SCREEN_WIDTH;
+static float cg_2DViewportH = SCREEN_HEIGHT;
+
+void CG_Set2DViewportTransform( qboolean active, float x, float y, float w, float h )
+{
+	cg_2DViewportTransformActive = active;
+	cg_2DViewportX = x;
+	cg_2DViewportY = y;
+	cg_2DViewportW = w;
+	cg_2DViewportH = h;
+}
+
+void CG_Transform2DRect( float *x, float *y, float *w, float *h )
+{
+	if ( !cg_2DViewportTransformActive ) {
+		return;
+	}
+
+	*x = cg_2DViewportX + ( *x * cg_2DViewportW / SCREEN_WIDTH );
+	*y = cg_2DViewportY + ( *y * cg_2DViewportH / SCREEN_HEIGHT );
+	*w = *w * cg_2DViewportW / SCREEN_WIDTH;
+	*h = *h * cg_2DViewportH / SCREEN_HEIGHT;
+}
+
+float CG_Transform2DScale( float scale )
+{
+	float xScale;
+	float yScale;
+
+	if ( !cg_2DViewportTransformActive ) {
+		return scale;
+	}
+
+	xScale = cg_2DViewportW / SCREEN_WIDTH;
+	yScale = cg_2DViewportH / SCREEN_HEIGHT;
+	return scale * ( xScale < yScale ? xScale : yScale );
+}
+
+/* Return viewport-local text metrics.  Callers perform alignment before the
+ * origin is transformed, so compensate for the axis transform here. */
+float CG_Transform2DWidth( float width )
+{
+	float xScale;
+
+	if ( !cg_2DViewportTransformActive ) {
+		return width;
+	}
+	xScale = cg_2DViewportW / SCREEN_WIDTH;
+	return width * CG_Transform2DScale( 1.0f ) / xScale;
+}
+
+float CG_Transform2DHeight( float height )
+{
+	float yScale;
+
+	if ( !cg_2DViewportTransformActive ) {
+		return height;
+	}
+	yScale = cg_2DViewportH / SCREEN_HEIGHT;
+	return height * CG_Transform2DScale( 1.0f ) / yScale;
+}
+
+qboolean CG_2DViewportTransformActive( void )
+{
+	return cg_2DViewportTransformActive;
+}
+
+/* Axis-aligned HUD primitive with software clipping at the local viewport.
+ * The input is in 640x480 viewport-local coordinates. */
+void CG_DrawPicUV( float x, float y, float width, float height,
+	float s1, float t1, float s2, float t2, qhandle_t hShader )
+{
+	float right, bottom, ds, dt;
+
+	CG_Transform2DRect( &x, &y, &width, &height );
+	if ( width <= 0.0f || height <= 0.0f ) {
+		return;
+	}
+
+	right = x + width;
+	bottom = y + height;
+	ds = s2 - s1;
+	dt = t2 - t1;
+	if ( cg_2DViewportTransformActive ) {
+		const float clipRight = cg_2DViewportX + cg_2DViewportW;
+		const float clipBottom = cg_2DViewportY + cg_2DViewportH;
+		if ( right <= cg_2DViewportX || bottom <= cg_2DViewportY ||
+			x >= clipRight || y >= clipBottom ) {
+			return;
+		}
+		if ( x < cg_2DViewportX ) {
+			s1 += ds * ( cg_2DViewportX - x ) / width;
+			width -= cg_2DViewportX - x;
+			x = cg_2DViewportX;
+		}
+		if ( y < cg_2DViewportY ) {
+			t1 += dt * ( cg_2DViewportY - y ) / height;
+			height -= cg_2DViewportY - y;
+			y = cg_2DViewportY;
+		}
+		ds = s2 - s1;
+		dt = t2 - t1;
+		if ( right > clipRight ) {
+			s2 -= ds * ( right - clipRight ) / width;
+			width = clipRight - x;
+		}
+		if ( bottom > clipBottom ) {
+			t2 -= dt * ( bottom - clipBottom ) / height;
+			height = clipBottom - y;
+		}
+	}
+	trap->R_DrawStretchPic( x, y, width, height, s1, t1, s2, t2, hShader );
+}
+
 
 /*
 ================
@@ -95,15 +212,13 @@ Coords are virtual 640x480
 ================
 */
 void CG_DrawSides(float x, float y, float w, float h, float size) {
-	size *= cgs.screenXScale;
-	trap->R_DrawStretchPic( x, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
-	trap->R_DrawStretchPic( x + w - size, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
+	CG_DrawPicUV( x, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
+	CG_DrawPicUV( x + w - size, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
 }
 
 void CG_DrawTopBottom(float x, float y, float w, float h, float size) {
-	size *= cgs.screenYScale;
-	trap->R_DrawStretchPic( x, y, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
-	trap->R_DrawStretchPic( x, y + h - size, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
+	CG_DrawPicUV( x, y, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
+	CG_DrawPicUV( x, y + h - size, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
 }
 
 /*
@@ -127,7 +242,7 @@ Coordinates are 640*480 virtual values
 */
 void CG_FillRect( float x, float y, float width, float height, const float *color ) {
 	trap->R_SetColor( color );
-	trap->R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader);
+	CG_DrawPicUV( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader);
 	trap->R_SetColor( NULL );
 }
 
@@ -141,7 +256,7 @@ A width of 0 will draw with the original image width
 =================
 */
 void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader ) {
-	trap->R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
+	CG_DrawPicUV( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
 /*
@@ -154,6 +269,11 @@ rotates around the upper right corner of the passed in point
 =================
 */
 void CG_DrawRotatePic( float x, float y, float width, float height,float angle, qhandle_t hShader ) {
+	if ( cg_2DViewportTransformActive ) {
+		CG_DrawPic( x, y, width, height, hShader );
+		return;
+	}
+	CG_Transform2DRect( &x, &y, &width, &height );
 	trap->R_DrawRotatePic( x, y, width, height, 0, 0, 1, 1, angle, hShader );
 }
 
@@ -167,6 +287,11 @@ Actually rotates around the center point of the passed in coordinates
 =================
 */
 void CG_DrawRotatePic2( float x, float y, float width, float height,float angle, qhandle_t hShader ) {
+	if ( cg_2DViewportTransformActive ) {
+		CG_DrawPic( x - width * 0.5f, y - height * 0.5f, width, height, hShader );
+		return;
+	}
+	CG_Transform2DRect( &x, &y, &width, &height );
 	trap->R_DrawRotatePic2( x, y, width, height, 0, 0, 1, 1, angle, hShader );
 }
 
@@ -181,7 +306,6 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	int row, col;
 	float frow, fcol;
 	float size;
-	float	ax, ay, aw, ah;
 	float size2;
 
 	ch &= 255;
@@ -189,11 +313,6 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	if ( ch == ' ' ) {
 		return;
 	}
-
-	ax = x;
-	ay = y;
-	aw = width;
-	ah = height;
 
 	row = ch>>4;
 	col = ch&15;
@@ -203,7 +322,8 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	size = 0.03125;
 	size2 = 0.0625;
 
-	trap->R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol + size, frow + size2, cgs.media.charsetShader );
+	CG_DrawPicUV( x, y, width, height, fcol, frow,
+		fcol + size, frow + size2, cgs.media.charsetShader );
 
 }
 

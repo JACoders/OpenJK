@@ -1,0 +1,468 @@
+tty console mode disabled
+(debug)OpenJK-MP: latest-28-gaed48b41 macosx-x86_64-debug Jul 22 2026
+Opening IP socket: localhost:29322
+Opening IP socket: localhost:-1
+Opening IP socket: localhost:-1
+Opening IP socket: localhost:-1
+----- FS_Startup -----
+Current search path:
+/private/tmp/openjk-r2-02-lifecycle/base
+/Users/joshabb/Documents/Jedi Academy/openjk/build-x86_64/openjk.x86_64.app/Contents/MacOS/base
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/saberbuilder_adx.pk3 (78 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/darksaber.pk3 (63 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets6.pk3 (29 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets3.pk3 (16 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets2.pk3 (62 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets1.pk3 (8320 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets0.pk3 (15346 files)
+/Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base
+
+----------------------
+23914 files in pk3 files
+execing mpdefault.cfg
+execing openjk.cfg
+couldn't exec autoexec.cfg
+2026-07-22 11:47:37 ----- Initializing Renderer ----
+2026-07-22 11:47:37 Trying to load "rd-vanilla_x86_64.dylib" from "/Users/joshabb/Documents/Jedi Academy/openjk/build-x86_64/openjk.x86_64.app/Contents/MacOS"...
+2026-07-22 11:47:37 QKEY found.
+2026-07-22 11:47:37 SDL using driver "cocoa"
+2026-07-22 11:47:37 Initializing display
+2026-07-22 11:47:37 Display aspect: 1.778
+2026-07-22 11:47:37 ...setting mode 3: 640 480
+2026-07-22 11:47:37 Using 24 color bits, 24 depth, 8 stencil display.
+2026-07-22 11:47:37 Available modes: '960x540 1120x630 1152x648 1280x720 1600x900 1680x945 1920x1080 2240x1260 2560x1440 3200x1800 3840x2160 4480x2520'
+2026-07-22 11:47:37 GL_RENDERER: Apple M1
+2026-07-22 11:47:37 Initializing OpenGL extensions
+2026-07-22 11:47:37 ...GL_EXT_texture_compression_s3tc available
+2026-07-22 11:47:37 ...no tc preference specified
+2026-07-22 11:47:37 .....using GL_EXT_texture_compression_s3tc
+2026-07-22 11:47:37 ...using GL_EXT_texture_env_add
+2026-07-22 11:47:37 ...GL_EXT_texture_filter_anisotropic available
+2026-07-22 11:47:37 ...using GL_EXT_texture_filter_anisotropic
+2026-07-22 11:47:37 ...using GL_EXT_texture_edge_clamp
+2026-07-22 11:47:37 ...using GL_ARB_multitexture
+2026-07-22 11:47:37 ...GL_EXT_compiled_vertex_array not found
+2026-07-22 11:47:37 ...GL_NV_register_combiners not found
+2026-07-22 11:47:37
+2026-07-22 11:47:37 GL_VENDOR: Apple
+2026-07-22 11:47:37 GL_RENDERER: Apple M1
+2026-07-22 11:47:37 GL_VERSION: 2.1 Metal - 90.5
+2026-07-22 11:47:37 GL_ARB_color_buffer_float GL_ARB_depth_buffer_float GL_ARB_depth_clamp GL_ARB_depth_texture GL_ARB_draw_buffers GL_ARB_draw_elements_base_vertex GL_ARB_draw_instanced GL_ARB_fragment_program GL_ARB_fragment_program_shadow GL_ARB_fragment_shader GL_ARB_framebuffer_object GL_ARB_framebuffer_sRGB GL_ARB_half_float_pixel GL_ARB_half_float_vertex GL_ARB_imaging GL_ARB_instanced_arrays GL_ARB_multisample GL_ARB_multitexture GL_ARB_occlusion_query GL_ARB_pixel_buffer_object GL_ARB_point_parameters GL_ARB_point_sprite GL_ARB_provoking_vertex GL_ARB_seamless_cube_map GL_ARB_shader_objects GL_ARB_shader_texture_lod GL_ARB_shading_language_100 GL_ARB_shadow GL_ARB_shadow_ambient GL_ARB_sync GL_ARB_texture_border_clamp GL_ARB_texture_compression GL_ARB_texture_compression_rgtc GL_ARB_texture_cube_map GL_ARB_texture_env_add GL_ARB_texture_env_combine GL_ARB_texture_env_crossbar GL_ARB_texture_env_dot3 GL_ARB_texture_float GL_ARB_texture_mirrored_repeat GL_ARB_texture_non_power_of_two GL_ARB_texture_rectangle GL_ARB_texture_rg GL_ARB_transpose_matrix GL_ARB_vertex_array_bgra GL_ARB_vertex_blend GL_ARB_vertex_buffer_object GL_ARB_vertex_program GL_ARB_vertex_shader GL_ARB_window_pos GL_EXT_abgr GL_EXT_bgra GL_EXT_bindable_uniform GL_EXT_blend_color GL_EXT_blend_equation_separate GL_EXT_blend_func_separate GL_EXT_blend_minmax GL_EXT_blend_subtract GL_EXT_clip_volume_hint GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_draw_buffers2 GL_EXT_draw_range_elements GL_EXT_fog_coord GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_geometry_shader4 GL_EXT_gpu_program_parameters GL_EXT_gpu_shader4 GL_EXT_multi_draw_arrays GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_provoking_vertex GL_EXT_rescale_normal GL_EXT_secondary_color GL_EXT_separate_specular_color GL_EXT_shadow_funcs GL_EXT_stencil_two_side GL_EXT_stencil_wrap GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_s3tc GL_EXT_texture_env_add GL_EXT_texture_filter_anisotropic GL_EXT_texture_integer GL_EXT_texture_lod_bias GL_EXT_texture_rectangle GL_EXT_texture_shared_exponent GL_EXT_texture_sRGB GL_EXT_texture_sRGB_decode GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_APPLE_aux_depth_stencil GL_APPLE_client_storage GL_APPLE_element_array GL_APPLE_fence GL_APPLE_float_pixels GL_APPLE_flush_buffer_range GL_APPLE_flush_render GL_APPLE_packed_pixels GL_APPLE_pixel_buffer GL_APPLE_rgb_422 GL_APPLE_row_bytes GL_APPLE_specular_vector GL_APPLE_texture_range GL_APPLE_transform_hint GL_APPLE_vertex_array_object GL_APPLE_vertex_point_size GL_APPLE_vertex_program_evaluators GL_APPLE_ycbcr_422 GL_ATI_separate_stencil GL_ATI_texture_env_combine3 GL_ATI_texture_float GL_IBM_rasterpos_clip GL_NV_blend_square GL_NV_conditional_render GL_NV_depth_clamp GL_NV_fog_distance GL_NV_fragment_program_option GL_NV_fragment_program2 GL_NV_light_max_exponent GL_NV_texgen_reflection GL_NV_texture_barrier GL_NV_vertex_program2_option GL_NV_vertex_program3 GL_SGI_color_matrix GL_SGIS_generate_mipmap GL_SGIS_texture_edge_clamp GL_SGIS_texture_lod
+2026-07-22 11:47:37 GL_MAX_TEXTURE_SIZE: 16384
+2026-07-22 11:47:37 GL_MAX_TEXTURE_UNITS_ARB: 8
+2026-07-22 11:47:37
+2026-07-22 11:47:37 PIXELFORMAT: color(24-bits) Z(24-bit) stencil(8-bits)
+2026-07-22 11:47:37 MODE: 3, 640 x 480 windowed hz:N/A
+2026-07-22 11:47:37 GAMMA: hardware w/ 0 overbright bits
+2026-07-22 11:47:37 rendering primitives: multiple glArrayElement
+2026-07-22 11:47:37 texturemode: GL_LINEAR_MIPMAP_NEAREST
+2026-07-22 11:47:37 picmip: 0
+2026-07-22 11:47:37 texture bits: 0
+2026-07-22 11:47:37 multitexture: enabled
+2026-07-22 11:47:37 compiled vertex arrays: disabled
+2026-07-22 11:47:37 texenv add: enabled
+2026-07-22 11:47:37 compressed textures: enabled
+2026-07-22 11:47:37 compressed lightmaps: disabled
+2026-07-22 11:47:37 texture compression method: GL_EXT_texture_compression_s3tc
+2026-07-22 11:47:37 anisotropic filtering: enabled  (16 of 16)
+2026-07-22 11:47:37 Dynamic Glow: disabled
+2026-07-22 11:47:37
+2026-07-22 11:47:37 ------- sound initialization -------
+2026-07-22 11:47:37 not initializing.
+2026-07-22 11:47:37 ------------------------------------
+2026-07-22 11:47:37 Sound memory manager started
+2026-07-22 11:47:37 VM_Create: uix86_64.dylib succeeded
+2026-07-22 11:47:38 Extended player name field using cvar ui_Name to 32 characters
+2026-07-22 11:47:38 Extended sound quality field to contain very high setting.
+2026-07-22 11:47:38 Extended player name field using cvar ui_findplayer to 32 characters
+2026-07-22 11:47:38 Extended create favorite address edit field length to hold an IPv6 address
+2026-07-22 11:47:38 Extended player name field using cvar ui_Name to 32 characters
+2026-07-22 11:47:38 Extended sound quality field to contain very high setting.
+2026-07-22 11:47:38 Disabling eax field because current platform does not support EAX.
+2026-07-22 11:47:38 Hiding eax_icon object because current platform does not support EAX.
+2026-07-22 11:47:39 --- Common Initialization Complete ---
+2026-07-22 11:47:39 SDL Version Compiled: 2.30.8
+2026-07-22 11:47:39 SDL Version Linked: 2.30.8
+2026-07-22 11:47:39 execing splitqa/respawn_flow.cfg
+2026-07-22 11:47:39 SplitNet party: waiting for primary client at localhost
+2026-07-22 11:47:39 ------ Server Initialization ------
+2026-07-22 11:47:39 Server: mp/ffa3
+2026-07-22 11:47:39 ----- FS_Startup -----
+2026-07-22 11:47:39 Current search path:
+2026-07-22 11:47:39 /private/tmp/openjk-r2-02-lifecycle/base
+2026-07-22 11:47:39 /Users/joshabb/Documents/Jedi Academy/openjk/build-x86_64/openjk.x86_64.app/Contents/MacOS/base
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/saberbuilder_adx.pk3 (78 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/darksaber.pk3 (63 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets6.pk3 (29 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets3.pk3 (16 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets2.pk3 (62 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets1.pk3 (8320 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base/assets0.pk3 (15346 files)
+2026-07-22 11:47:39 /Users/joshabb/Library/Application Support/Steam/steamapps/common/Jedi Academy/SWJKJA.app/Contents/base
+2026-07-22 11:47:39
+2026-07-22 11:47:39 handle 1: video/ja01.roq
+2026-07-22 11:47:39 ----------------------
+2026-07-22 11:47:39 23914 files in pk3 files
+2026-07-22 11:47:40 VM_Create: jampgamex86_64.dylib succeeded
+2026-07-22 11:47:40 ------- Game Initialization -------
+2026-07-22 11:47:40 gamename: (debug)OpenJK-MP: latest
+2026-07-22 11:47:40 gamedate: Jul  3 2026
+2026-07-22 11:47:40 Logging to games.log
+2026-07-22 11:47:40 Logging to security.log
+2026-07-22 11:47:40
+2026-07-22 11:47:40 GL_VENDOR: Apple
+2026-07-22 11:47:40 GL_RENDERER: Apple M1
+2026-07-22 11:47:40 GL_VERSION: 2.1 Metal - 90.5
+2026-07-22 11:47:40 GL_ARB_color_buffer_float GL_ARB_depth_buffer_float GL_ARB_depth_clamp GL_ARB_depth_texture GL_ARB_draw_buffers GL_ARB_draw_elements_base_vertex GL_ARB_draw_instanced GL_ARB_fragment_program GL_ARB_fragment_program_shadow GL_ARB_fragment_shader GL_ARB_framebuffer_object GL_ARB_framebuffer_sRGB GL_ARB_half_float_pixel GL_ARB_half_float_vertex GL_ARB_imaging GL_ARB_instanced_arrays GL_ARB_multisample GL_ARB_multitexture GL_ARB_occlusion_query GL_ARB_pixel_buffer_object GL_ARB_point_parameters GL_ARB_point_sprite GL_ARB_provoking_vertex GL_ARB_seamless_cube_map GL_ARB_shader_objects GL_ARB_shader_texture_lod GL_ARB_shading_language_100 GL_ARB_shadow GL_ARB_shadow_ambient GL_ARB_sync GL_ARB_texture_border_clamp GL_ARB_texture_compression GL_ARB_texture_compression_rgtc GL_ARB_texture_cube_map GL_ARB_texture_env_add GL_ARB_texture_env_combine GL_ARB_texture_env_crossbar GL_ARB_texture_env_dot3 GL_ARB_texture_float GL_ARB_texture_mirrored_repeat GL_ARB_texture_non_power_of_two GL_ARB_texture_rectangle GL_ARB_texture_rg GL_ARB_transpose_matrix GL_ARB_vertex_array_bgra GL_ARB_vertex_blend GL_ARB_vertex_buffer_object GL_ARB_vertex_program GL_ARB_vertex_shader GL_ARB_window_pos GL_EXT_abgr GL_EXT_bgra GL_EXT_bindable_uniform GL_EXT_blend_color GL_EXT_blend_equation_separate GL_EXT_blend_func_separate GL_EXT_blend_minmax GL_EXT_blend_subtract GL_EXT_clip_volume_hint GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_draw_buffers2 GL_EXT_draw_range_elements GL_EXT_fog_coord GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_geometry_shader4 GL_EXT_gpu_program_parameters GL_EXT_gpu_shader4 GL_EXT_multi_draw_arrays GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_provoking_vertex GL_EXT_rescale_normal GL_EXT_secondary_color GL_EXT_separate_specular_color GL_EXT_shadow_funcs GL_EXT_stencil_two_side GL_EXT_stencil_wrap GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_s3tc GL_EXT_texture_env_add GL_EXT_texture_filter_anisotropic GL_EXT_texture_integer GL_EXT_texture_lod_bias GL_EXT_texture_rectangle GL_EXT_texture_shared_exponent GL_EXT_texture_sRGB GL_EXT_texture_sRGB_decode GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_APPLE_aux_depth_stencil GL_APPLE_client_storage GL_APPLE_element_array GL_APPLE_fence GL_APPLE_float_pixels GL_APPLE_flush_buffer_range GL_APPLE_flush_render GL_APPLE_packed_pixels GL_APPLE_pixel_buffer GL_APPLE_rgb_422 GL_APPLE_row_bytes GL_APPLE_specular_vector GL_APPLE_texture_range GL_APPLE_transform_hint GL_APPLE_vertex_array_object GL_APPLE_vertex_point_size GL_APPLE_vertex_program_evaluators GL_APPLE_ycbcr_422 GL_ATI_separate_stencil GL_ATI_texture_env_combine3 GL_ATI_texture_float GL_IBM_rasterpos_clip GL_NV_blend_square GL_NV_conditional_render GL_NV_depth_clamp GL_NV_fog_distance GL_NV_fragment_program_option GL_NV_fragment_program2 GL_NV_light_max_exponent GL_NV_texgen_reflection GL_NV_texture_barrier GL_NV_vertex_program2_option GL_NV_vertex_program3 GL_SGI_color_matrix GL_SGIS_generate_mipmap GL_SGIS_texture_edge_clamp GL_SGIS_texture_lod
+2026-07-22 11:47:40 GL_MAX_TEXTURE_SIZE: 16384
+2026-07-22 11:47:40 GL_MAX_TEXTURE_UNITS_ARB: 8
+2026-07-22 11:47:40
+2026-07-22 11:47:40 PIXELFORMAT: color(24-bits) Z(24-bit) stencil(8-bits)
+2026-07-22 11:47:40 MODE: 3, 640 x 480 windowed hz:N/A
+2026-07-22 11:47:40 GAMMA: hardware w/ 0 overbright bits
+2026-07-22 11:47:40 rendering primitives: multiple glArrayElement
+2026-07-22 11:47:40 texturemode: GL_LINEAR_MIPMAP_NEAREST
+2026-07-22 11:47:40 picmip: 0
+2026-07-22 11:47:40 texture bits: 0
+2026-07-22 11:47:40 multitexture: enabled
+2026-07-22 11:47:40 compiled vertex arrays: disabled
+2026-07-22 11:47:40 texenv add: enabled
+2026-07-22 11:47:40 compressed textures: enabled
+2026-07-22 11:47:40 compressed lightmaps: disabled
+2026-07-22 11:47:40 texture compression method: GL_EXT_texture_compression_s3tc
+2026-07-22 11:47:40 anisotropic filtering: enabled  (16 of 16)
+2026-07-22 11:47:40 Dynamic Glow: disabled
+2026-07-22 11:47:40 VM_Create: uix86_64.dylib succeeded
+2026-07-22 11:47:40 Extended player name field using cvar ui_Name to 32 characters
+2026-07-22 11:47:40 Extended sound quality field to contain very high setting.
+2026-07-22 11:47:40 Disabling eax field because current platform does not support EAX.
+2026-07-22 11:47:40 Hiding eax_icon object because current platform does not support EAX.
+2026-07-22 11:47:41 VM_Create: cgamex86_64.dylib succeeded
+2026-07-22 11:47:42 ^1Lightmap requested but none available for shader models/map_objects/hoth/light_floor_bulbs
+2026-07-22 11:47:43 ^1Lightmap requested but none available for shader models/map_objects/bounty/cache_panel
+2026-07-22 11:47:44 ...loaded 4426 faces, 526 meshes, 88 trisurfs, 0 flares
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:46 CL_InitCGame P1:  5.29 seconds
+2026-07-22 11:47:46 SplitNet P2: 127.0.0.1:29322 resolved to 127.0.0.1:29322 qport=25273
+2026-07-22 11:47:46 SplitNet P3: 127.0.0.1:29322 resolved to 127.0.0.1:29322 qport=25274
+2026-07-22 11:47:46 SplitNet P4: 127.0.0.1:29322 resolved to 127.0.0.1:29322 qport=25275
+2026-07-22 11:47:46 SplitNet P2 connected to 127.0.0.1:29322
+2026-07-22 11:47:46 SplitNet P3 connected to 127.0.0.1:29322
+2026-07-22 11:47:46 SplitNet P4 connected to 127.0.0.1:29322
+2026-07-22 11:47:46 SplitNet party: all 4 local players active
+2026-07-22 11:47:46 QA_Respawn2^7 connected
+2026-07-22 11:47:46 QA_Respawn3^7 connected
+2026-07-22 11:47:46 QA_Respawn4^7 connected
+2026-07-22 11:47:47 VM_Create: cgame2x86_64.dylib succeeded
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 CL_InitCGame P2:  0.35 seconds
+2026-07-22 11:47:47 VM_Create: cgame3x86_64.dylib succeeded
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 CL_InitCGame P3:  0.35 seconds
+2026-07-22 11:47:47 VM_Create: cgame4x86_64.dylib succeeded
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspinoff.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/movers/objects/objecthit.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/push.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin2.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberhitwall1.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/force/pull.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saberspin.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/weapons/saber/saber_catch.mp3 does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/land1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/fallsplat.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 ^1ParseAnimationSndBlock: sound sound/player/roll1.wav does not exist (animevents.cfg models/players/_humanoid/)!
+2026-07-22 11:47:47 CL_InitCGame P4:  0.35 seconds
+2026-07-22 11:47:58 QA_Respawn2^7 entered the game
+2026-07-22 11:47:58 QA_Respawn3^7 entered the game
+2026-07-22 11:47:58 QA_Respawn4^7 entered the game
+2026-07-22 11:47:58 QA_Respawn1^7 entered the game
+2026-07-22 11:47:58 QA_Respawn2^7 entered the game
+2026-07-22 11:47:58 QA_Respawn3^7 entered the game
+2026-07-22 11:47:58 QA_Respawn4^7 entered the game
+2026-07-22 11:47:58 QA_Respawn1^7 entered the game
+2026-07-22 11:47:58 QA_Respawn2^7 entered the game
+2026-07-22 11:47:58 QA_Respawn3^7 entered the game
+2026-07-22 11:47:58 QA_Respawn4^7 entered the game
+2026-07-22 11:47:58 QA_Respawn1^7 entered the game
+2026-07-22 11:47:58 QA_Respawn2^7 entered the game
+2026-07-22 11:47:58 QA_Respawn3^7 entered the game
+2026-07-22 11:47:58 QA_Respawn4^7 entered the game
+2026-07-22 11:47:58 QA_Respawn1^7 entered the game
+2026-07-22 11:48:01 SplitNetLifecycleAssert: PASS player=1 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=0 connectionClientNum=0
+2026-07-22 11:48:01 SplitNetLifecycleAssert: PASS player=2 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=1 connectionClientNum=1
+2026-07-22 11:48:01 SplitNetLifecycleAssert: PASS player=3 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=2 connectionClientNum=2
+2026-07-22 11:48:01 SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=3 connectionClientNum=3
+2026-07-22 11:48:01 QA_Respawn2^7 killed himself
+2026-07-22 11:48:01 QA_Respawn3^7 killed himself
+2026-07-22 11:48:01 QA_Respawn4^7 killed himself
+2026-07-22 11:48:01 QA_Respawn1^7 killed himself
+2026-07-22 11:48:01 QA_Respawn2^7 killed himself
+2026-07-22 11:48:01 QA_Respawn3^7 killed himself
+2026-07-22 11:48:01 QA_Respawn4^7 killed himself
+2026-07-22 11:48:01 QA_Respawn1^7 killed himself
+2026-07-22 11:48:01 QA_Respawn2^7 killed himself
+2026-07-22 11:48:01 QA_Respawn3^7 killed himself
+2026-07-22 11:48:01 QA_Respawn4^7 killed himself
+2026-07-22 11:48:01 QA_Respawn1^7 killed himself
+2026-07-22 11:48:01 QA_Respawn2^7 killed himself
+2026-07-22 11:48:01 QA_Respawn3^7 killed himself
+2026-07-22 11:48:01 QA_Respawn4^7 killed himself
+2026-07-22 11:48:01 QA_Respawn1^7 killed himself
+2026-07-22 11:48:03 SplitNetLifecycleAssert: PASS player=1 expected=DEAD actual=DEAD pm=5 health=-39 team=FREE clientNum=0 connectionClientNum=0
+2026-07-22 11:48:03 SplitNetLifecycleAssert: PASS player=2 expected=DEAD actual=DEAD pm=5 health=-39 team=FREE clientNum=1 connectionClientNum=1
+2026-07-22 11:48:03 SplitNetLifecycleAssert: PASS player=3 expected=DEAD actual=DEAD pm=5 health=-39 team=FREE clientNum=2 connectionClientNum=2
+2026-07-22 11:48:03 SplitNetLifecycleAssert: PASS player=4 expected=DEAD actual=DEAD pm=5 health=-39 team=FREE clientNum=3 connectionClientNum=3
+2026-07-22 11:48:10 SplitInputSim: button device=controller1 player=2 button=0 pressed=1
+2026-07-22 11:48:10 SplitInputSim: button device=controller2 player=3 button=0 pressed=1
+2026-07-22 11:48:10 SplitInputSim: button device=controller3 player=4 button=0 pressed=1
+2026-07-22 11:48:11 SplitInputSim: button device=controller1 player=2 button=0 pressed=0
+2026-07-22 11:48:11 SplitInputSim: button device=controller2 player=3 button=0 pressed=0
+2026-07-22 11:48:11 SplitInputSim: button device=controller3 player=4 button=0 pressed=0
+2026-07-22 11:48:14 SplitNetLifecycleAssert: PASS player=1 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=0 connectionClientNum=0
+2026-07-22 11:48:14 SplitNetLifecycleAssert: PASS player=2 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=1 connectionClientNum=1
+2026-07-22 11:48:14 SplitNetLifecycleAssert: PASS player=3 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=2 connectionClientNum=2
+2026-07-22 11:48:14 SplitNetLifecycleAssert: PASS player=4 expected=ALIVE actual=ALIVE pm=0 health=122 team=FREE clientNum=3 connectionClientNum=3
+2026-07-22 11:48:14 SplitNet party: state=active players=4 target=localhost primaryState=8 primaryServer=localhost
+2026-07-22 11:48:14 SplitNet P2: enabled=1 state=8 qport=25273 clientNum=1 snap=1 message=822 time=27750 server=127.0.0.1:29322 packets=0
+2026-07-22 11:48:14 SplitNet P3: enabled=1 state=8 qport=25274 clientNum=2 snap=1 message=822 time=27750 server=127.0.0.1:29322 packets=0
+2026-07-22 11:48:14 SplitNet P4: enabled=1 state=8 qport=25275 clientNum=3 snap=1 message=822 time=27750 server=127.0.0.1:29322 packets=0
+2026-07-22 11:48:14 Wrote screenshots/splitqa_respawn_flow_after.png
+2026-07-22 11:48:14 Dumped console text to splitqa_respawn_flow_console.txt.
+2026-07-22 11:48:14 Automatically freeing 4288 blocks making up 14932691 bytes
+ICARUS Instance successfully created
+
+ICARUS Instance Debug Info:
+---------------------------
+Sequencers Allocated:	12
+Sequencers Freed:		12
+Sequencers Residual:	0
+
+Sequences Allocated:	0
+Sequences Freed:		0
+Sequences Residual:		0

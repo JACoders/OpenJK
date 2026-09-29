@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+players="${1:?players required}"
+suite="${2:?suite directory required}"
+expected="${3:?frozen sha required}"
+run_id="${4:?run id required}"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+build="${OPENJK_BUILD_DIR:-$root/build-x86_64}"
+bin="$build/openjk.x86_64.app/Contents/MacOS/openjk.x86_64"
+ded="$build/openjkded.x86_64"
+results="$suite/asymmetric-recovery"
+
+case "$players" in 2|3) ;; *) exit 2 ;; esac
+test "$(shasum -a 256 "$bin" | awk '{print $1}')" = "$expected"
+mkdir -p "$results"
+printf -v server_command '%q' \
+	"$root/tests/splitscreen/gameplay/network/recovery/server_driver.sh"
+printf -v client_command '%q' \
+	"$root/tests/splitscreen/gameplay/certification/asymmetric_recovery_client.sh"
+set +e
+output="$(
+	"$root/tests/splitscreen/gameplay/run_e2e.sh" \
+		--case "cert-asymmetric-${players}p-$run_id" --players "$players" \
+		--timeout 150 --artifact-root "$results/runs" \
+		--hash "$bin" --hash "$ded" \
+		--hash "$build/codemp/ui/uix86_64.dylib" \
+		--hash "$build/codemp/game/jampgamex86_64.dylib" \
+		--hash "$build/codemp/cgame/cgamex86_64.dylib" \
+		--server-command "$server_command" --client-command "$client_command"
+)"
+status=$?
+set -e
+manifest="$(printf '%s\n' "$output" | tail -n 1)"
+test "$status" -eq 0
+"$root/tests/splitscreen/gameplay/run_e2e.sh" --validate-only "$manifest"
+client_log="$(awk -F '\t' '$1 == "process.client.log" {print $2}' "$manifest")"
+screenshots="$(awk -F '\t' '$1 == "screenshots" {print $2}' "$manifest")"
+report="$results/report.json"
+python3 "$root/tests/splitscreen/gameplay/certification/analyze_asymmetric_recovery.py" \
+	--players "$players" --run-id "$run_id" --frozen-sha "$expected" \
+	--log "$client_log" --screenshots "$screenshots" --output "$report"
+index="$suite/asymmetric-network-recovery.tsv"
+"$root/tests/splitscreen/gameplay/certification/write_aux_index.sh" \
+	asymmetric_network_recovery "$players" "$run_id" "$expected" \
+	"$manifest" "$report" "$index"
+printf 'asymmetric_network_recovery\t%s\t%s\n' "$index" \
+	"$(shasum -a 256 "$index" | awk '{print $1}')" >>"$suite/aux.tsv"

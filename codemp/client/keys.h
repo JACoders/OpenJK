@@ -54,6 +54,10 @@ extern field_t		g_consoleField;
 extern int			nextHistoryLine;	// the last line in the history buffer, not masked
 extern int			historyLine;		// the line being displayed from history buffer will be <= nextHistoryLine
 extern field_t		historyEditLines[COMMAND_HISTORY];
+int			Key_GetConsolePlayer		( void );
+void		Key_SetConsolePlayer		( int player );
+void		Key_InitConsolePlayers	( int widthInChars );
+void		Key_SetConsoleWidth		( int widthInChars );
 
 // chat
 extern field_t		chatField;

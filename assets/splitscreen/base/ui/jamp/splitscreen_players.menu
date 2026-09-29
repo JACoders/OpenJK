@@ -1,0 +1,28 @@
+{
+	menuDef
+	{
+		name					"splitscreen_players"
+		visible					0
+		fullscreen				1
+		rect					0 0 640 480
+		focusColor				1 1 1 1
+
+		onOpen
+		{
+			uiScript			SplitScreenBeginSetup ;
+			uiScript			getsaberhiltinfo ;
+			close				splitscreen_players ;
+			open				ingame_player ;
+		}
+
+		onClose
+		{
+		}
+
+		onESC
+		{
+			close				splitscreen_players ;
+			open				splitscreen_start
+		}
+	}
+}

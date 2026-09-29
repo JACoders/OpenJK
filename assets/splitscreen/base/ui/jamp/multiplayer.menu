@@ -1,0 +1,173 @@
+{
+	menuDef
+	{
+		name					"multiplayermenu"
+		visible					1
+		fullscreen				1
+		rect					0 0 640 480
+		focusColor				1 1 1 1
+		style					WINDOW_STYLE_FILLED
+		backcolor				0.02 0.03 0.05 1
+
+		onESC
+		{
+			close				all ;
+			open				mainMenu
+		}
+
+		itemDef
+		{
+			name				title
+			text				"START PLAYING"
+			rect				120 58 400 36
+			type				ITEM_TYPE_TEXT
+			font				3
+			textscale			1
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			2
+			forecolor			.549 .854 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			name				splitscreen
+			text				"SPLIT SCREEN"
+			rect				210 125 220 34
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.85
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			textaligny			3
+			forecolor			1 .682 0 1
+			backcolor			.12 .18 .28 .9
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+				close			multiplayermenu ;
+				open			splitscreen_start
+			}
+		}
+
+		itemDef
+		{
+			name				quickserver_button
+			text				"SOLO GAME"
+			rect				210 170 220 30
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.75
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			.08 .10 .16 .9
+			visible				1
+			action { close multiplayermenu ; open quickgame }
+		}
+
+		itemDef
+		{
+			name				joinserver_button
+			text				"JOIN SERVER"
+			rect				210 210 220 30
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.75
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			.08 .10 .16 .9
+			visible				1
+			action { close multiplayermenu ; open joinserver }
+		}
+
+		itemDef
+		{
+			name				startserver_button
+			text				"CREATE SERVER"
+			rect				210 250 220 30
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.75
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			.08 .10 .16 .9
+			visible				1
+			action { close multiplayermenu ; open createserver }
+		}
+
+		itemDef
+		{
+			name				rules_button
+			text				"RULES"
+			rect				210 290 220 30
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.75
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			.08 .10 .16 .9
+			visible				1
+			action { close multiplayermenu ; open rulesMenu }
+		}
+
+		itemDef
+		{
+			name				back
+			text				"BACK"
+			rect				210 360 100 28
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.7
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			50
+			textaligny			1
+			forecolor			1 .682 0 1
+			backcolor			.08 .10 .16 .9
+			visible				1
+			action { close all ; open mainMenu }
+		}
+
+		itemDef
+		{
+			name				exitgamebutton
+			text				"EXIT"
+			rect				330 360 100 28
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.7
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			50
+			textaligny			1
+			forecolor			1 .682 0 1
+			backcolor			.08 .10 .16 .9
+			visible				1
+			action { close all ; open quitMenu }
+		}
+	}
+}

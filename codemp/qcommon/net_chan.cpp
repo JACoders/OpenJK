@@ -110,8 +110,8 @@ void Netchan_TransmitNextFragment( netchan_t *chan ) {
 	MSG_WriteLong( &send, chan->outgoingSequence | FRAGMENT_BIT );
 
 	// send the qport if we are a client
-	if ( chan->sock == NS_CLIENT ) {
-		MSG_WriteShort( &send, qport->integer );
+	if ( chan->sock == NS_CLIENT || chan->sock == NS_CLIENT2 || chan->sock == NS_CLIENT3 || chan->sock == NS_CLIENT4 ) {
+		MSG_WriteShort( &send, chan->qport );
 	}
 
 	// copy the reliable message to the packet first
@@ -189,8 +189,8 @@ void Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 	chan->outgoingSequence++;
 
 	// send the qport if we are a client
-	if ( chan->sock == NS_CLIENT ) {
-		MSG_WriteShort( &send, qport->integer );
+	if ( chan->sock == NS_CLIENT || chan->sock == NS_CLIENT2 || chan->sock == NS_CLIENT3 || chan->sock == NS_CLIENT4 ) {
+		MSG_WriteShort( &send, chan->qport );
 	}
 
 	MSG_WriteData( &send, data, length );
@@ -510,7 +510,7 @@ typedef struct loopback_s {
 	int			get, send;
 } loopback_t;
 
-loopback_t	loopbacks[2];
+loopback_t	loopbacks[5];
 
 
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message)
@@ -573,7 +573,7 @@ void NET_SendPacket( netsrc_t sock, int length, const void *data, const netadr_t
 		return;
 	}
 
-	Sys_SendPacket( length, data, to );
+	Sys_SendPacket( sock, length, data, to );
 }
 
 /*
@@ -678,4 +678,3 @@ qboolean	NET_StringToAdr( const char *s, netadr_t *a ) {
 
 	return qtrue;
 }
-

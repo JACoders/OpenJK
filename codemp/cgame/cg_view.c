@@ -2414,6 +2414,104 @@ extern void CG_ActualLoadDeferredPlayers( void );
 
 static int cg_siegeClassIndex = -2;
 
+static qboolean CG_SplitScreenEnabled( void ) {
+	char renderReady[16];
+
+	if ( !cl_splitScreen.integer ) {
+		return qfalse;
+	}
+	trap->Cvar_VariableStringBuffer( "cl_splitScreenRenderReady", renderReady,
+		sizeof( renderReady ) );
+	/*
+	 * An unset value preserves local/synthetic split-screen behavior. Network
+	 * party startup explicitly holds this at zero until every requested view
+	 * has a live cgame, avoiding an empty black viewport during handshakes.
+	 */
+	return ( !renderReady[0] || atoi( renderReady ) ) ? qtrue : qfalse;
+}
+
+static int CG_SplitScreenPlayerCount( void ) {
+	char buffer[16];
+	int playerCount;
+
+	trap->Cvar_VariableStringBuffer( "ui_splitScreenPlayerCount", buffer, sizeof( buffer ) );
+	playerCount = atoi( buffer );
+
+	if ( playerCount < 2 ) {
+		playerCount = 2;
+	} else if ( playerCount > 4 ) {
+		playerCount = 4;
+	}
+	return playerCount;
+}
+
+static int CG_SplitScreenActivePlayer( void ) {
+	char buffer[16];
+	int player;
+
+	trap->Cvar_VariableStringBuffer( "cl_splitScreenRenderPlayer", buffer, sizeof( buffer ) );
+	player = atoi( buffer );
+	if ( player < 1 ) {
+		player = 1;
+	} else if ( player > CG_SplitScreenPlayerCount() ) {
+		player = CG_SplitScreenPlayerCount();
+	}
+	return player;
+}
+
+static void CG_ApplySplitScreenRect( int viewIndex ) {
+	const qboolean vertical = ( cl_splitScreenLayout.integer != 0 ) ? qtrue : qfalse;
+	const int playerCount = CG_SplitScreenPlayerCount();
+
+	if ( playerCount == 3 ) {
+		const int halfWidth = cgs.glconfig.vidWidth / 2;
+		const int halfHeight = cgs.glconfig.vidHeight / 2;
+
+		if ( viewIndex == 0 ) {
+			cg.refdef.x = 0;
+			cg.refdef.y = 0;
+			cg.refdef.width = cgs.glconfig.vidWidth;
+			cg.refdef.height = halfHeight;
+		} else {
+			cg.refdef.x = viewIndex == 1 ? 0 : halfWidth;
+			cg.refdef.y = halfHeight;
+			cg.refdef.width = viewIndex == 1 ? halfWidth : cgs.glconfig.vidWidth - halfWidth;
+			cg.refdef.height = cgs.glconfig.vidHeight - halfHeight;
+		}
+
+		return;
+	}
+
+	if ( playerCount > 3 ) {
+		const int halfWidth = cgs.glconfig.vidWidth / 2;
+		const int halfHeight = cgs.glconfig.vidHeight / 2;
+
+		cg.refdef.x = ( viewIndex % 2 ) ? halfWidth : 0;
+		cg.refdef.y = ( viewIndex >= 2 ) ? halfHeight : 0;
+		cg.refdef.width = ( viewIndex % 2 ) ? cgs.glconfig.vidWidth - halfWidth : halfWidth;
+		cg.refdef.height = ( viewIndex >= 2 ) ? cgs.glconfig.vidHeight - halfHeight : halfHeight;
+
+		return;
+	}
+
+	if ( vertical ) {
+		const int leftWidth = cgs.glconfig.vidWidth / 2;
+
+		cg.refdef.x = viewIndex == 0 ? 0 : leftWidth;
+		cg.refdef.y = 0;
+		cg.refdef.width = viewIndex == 0 ? leftWidth : cgs.glconfig.vidWidth - leftWidth;
+		cg.refdef.height = cgs.glconfig.vidHeight;
+	} else {
+		const int topHeight = cgs.glconfig.vidHeight / 2;
+
+		cg.refdef.x = 0;
+		cg.refdef.y = viewIndex == 0 ? 0 : topHeight;
+		cg.refdef.width = cgs.glconfig.vidWidth;
+		cg.refdef.height = viewIndex == 0 ? topHeight : cgs.glconfig.vidHeight - topHeight;
+	}
+
+}
+
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 	int		inwater;
 	const char *cstr;
@@ -2478,6 +2576,27 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// set up cg.snap and possibly cg.nextSnap
 	CG_ProcessSnapshots();
+
+	{
+		char telemetry[8];
+		trap->Cvar_VariableStringBuffer( "cl_splitScreenTelemetry", telemetry, sizeof( telemetry ) );
+		if ( atoi( telemetry ) ) {
+		static int lastSnapshotNumber = -2;
+		static int lastSnapshotFlags = -2;
+		static int lastClientNum = -2;
+		int snapshotFlags = cg.snap ? cg.snap->snapFlags : -1;
+		int clientNum = cg.snap ? cg.snap->ps.clientNum : -1;
+
+		if ( cgs.processedSnapshotNum != lastSnapshotNumber || snapshotFlags != lastSnapshotFlags || clientNum != lastClientNum ) {
+			trap->Print( "SplitRenderCG P%i frame=%i latest=%i processed=%i snap=%i flags=%i client=%i\n",
+				CG_SplitScreenActivePlayer(), serverTime, cg.latestSnapshotNum, cgs.processedSnapshotNum,
+				cg.snap ? cg.snap->serverTime : -1, snapshotFlags, clientNum );
+			lastSnapshotNumber = cgs.processedSnapshotNum;
+			lastSnapshotFlags = snapshotFlags;
+			lastClientNum = clientNum;
+		}
+		}
+	}
 
 	trap->ROFF_UpdateEntities();
 
@@ -2569,7 +2688,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_PredictPlayerState();
 
 	// decide on third person view
-	cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0);
+	cg.renderingThirdPerson =
+		( cg.splitThirdPersonOverride ? cg.splitThirdPerson : cg_thirdPerson.integer ) ||
+		(cg.snap->ps.stats[STAT_HEALTH] <= 0);
 
 	if (cg.snap->ps.stats[STAT_HEALTH] > 0)
 	{
@@ -2612,6 +2733,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
+	if ( CG_SplitScreenEnabled() ) {
+		CG_ApplySplitScreenRect( CG_SplitScreenActivePlayer() - 1 );
+	}
 	CG_SetupFrustum();
 
 	if (cg_linearFogOverride)
@@ -2726,7 +2850,18 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	}
 
 	// actually issue the rendering calls
+	if ( CG_SplitScreenEnabled() ) {
+		if ( CG_SplitScreenActivePlayer() == 1 ) {
+			trap->R_SetColor( colorBlack );
+			trap->R_DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0, 0, cgs.media.whiteShader );
+			trap->R_SetColor( NULL );
+		}
+		CG_ApplySplitScreenRect( CG_SplitScreenActivePlayer() - 1 );
+	}
 	CG_DrawActive( stereoView );
+	if ( CG_SplitScreenEnabled() ) {
+		CG_DrawActive2D();
+	}
 
 	CG_DrawAutoMap();
 
@@ -2734,4 +2869,3 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		trap->Print( "cg.clientFrame:%i\n", cg.clientFrame );
 	}
 }
-

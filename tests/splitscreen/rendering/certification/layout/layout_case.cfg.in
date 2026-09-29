@@ -1,0 +1,28 @@
+set cl_splitScreen 1
+set ui_splitScreenPlayerCount @PLAYERS@
+set cl_splitScreenLayout @LAYOUT@
+set cl_splitScreenLocalCmds 0
+set con_notifytime 0
+set name Layout_P1
+set ui_splitScreenP1Name Layout_P1
+set ui_splitScreenP2Name Layout_P2
+set ui_splitScreenP3Name Layout_P3
+set ui_splitScreenP4Name Layout_P4
+set ui_splitScreenPartyState configuring
+splitnet_party_connect localhost
+devmap mp/ffa3
+wait 720
+closemenu
+wait 20
+cmd team free
+splitnet_cmd 2 team free
+splitnet_cmd 3 team free
+splitnet_cmd 4 team free
+wait 180
+splitnet_status
+screenshot_png @CASE@_gameplay
+splitscreen_topmenu 1
+wait 40
+screenshot_png @CASE@_menu
+wait 20
+quit

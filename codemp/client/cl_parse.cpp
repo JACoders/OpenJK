@@ -613,9 +613,14 @@ void CL_ParseGamestate( msg_t *msg ) {
 		//clc.downloadRestart = qtrue;
 	}
 
-	// This used to call CL_StartHunkUsers, but now we enter the download state before loading the
-	// cgame
-	CL_InitDownloads();
+	// Secondary local clients share the process filesystem and renderer that the
+	// primary client already prepared. Re-entering CL_DownloadsComplete here would
+	// flush the primary hunk and reinitialize its cgame with the wrong client state.
+	if ( cl_splitNetParsingPacket ) {
+		CL_SplitNetNotifyGameState();
+	} else {
+		CL_InitDownloads();
+	}
 
 	// make sure the game starts
 	Cvar_Set( "cl_paused", "0" );

@@ -2471,8 +2471,16 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 						}
 					}
 				#else
-					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
+					// A recently disconnected client retains its session IP until
+					// the slot is reused.  Counting that stale value rejects a
+					// same-IP party member that immediately rejoins, even though
+					// the abandoned slot no longer occupies the server.
+					if ( i != clientNum &&
+						level.clients[i].pers.connected != CON_DISCONNECTED &&
+						CompareIPs( tmpIP, level.clients[i].sess.IP ) )
+					{
 						count++;
+					}
 				#endif
 			}
 			if ( count > g_maxConnPerIP.integer )
@@ -4033,5 +4041,4 @@ void ClientDisconnect( int clientNum ) {
 
 	G_ClearClientLog(clientNum);
 }
-
 

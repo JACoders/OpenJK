@@ -1,0 +1,21 @@
+GP0-01 invalid/stale artifact validation
+Date: 2026-07-23
+
+Command:
+python3 -m unittest discover -s tests/splitscreen/gameplay/coverage -p 'test_*.py' -v
+
+Result:
+Ran 9 tests in 0.106s
+OK
+
+Covered rejection cases:
+- missing artifact
+- stale artifact hash
+- wrong binary hash
+- missing assertion marker
+- contradictory lifecycle claim
+- missing build-correlation classification
+
+Additional positive policy checks:
+- every generated Markdown evidence link resolves to an existing file
+- legacy-unverified imports are never seal-eligible

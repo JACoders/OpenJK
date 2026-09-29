@@ -36,6 +36,38 @@ extern botlib_export_t *botlib_export;
 // cgame interface
 static cgameExport_t *cge; // cgame export table
 static vm_t *cgvm; // cgame vm, valid for legacy and new api
+static cgameExport_t *cgameExports[MAX_SPLITSCREEN_PLAYERS + 1];
+static vm_t *cgameVMs[MAX_SPLITSCREEN_PLAYERS + 1];
+static cgameImport_t cgameImports[MAX_SPLITSCREEN_PLAYERS + 1];
+static int activeCGamePlayer = 1;
+
+static vmSlots_t CGVM_SlotForPlayer( int player ) {
+	switch ( player ) {
+		case 2: return VM_CGAME2;
+		case 3: return VM_CGAME3;
+		case 4: return VM_CGAME4;
+		default: return VM_CGAME;
+	}
+}
+
+qboolean CGVM_SelectPlayer( int player ) {
+	if ( player < 1 || player > MAX_SPLITSCREEN_PLAYERS || !cgameVMs[player] ) {
+		return qfalse;
+	}
+
+	activeCGamePlayer = player;
+	cgvm = cgameVMs[player];
+	cge = cgameExports[player];
+	return qtrue;
+}
+
+qboolean CGVM_PlayerBound( int player ) {
+	return (qboolean)( player >= 1 && player <= MAX_SPLITSCREEN_PLAYERS && cgameVMs[player] != NULL );
+}
+
+int CGVM_ActivePlayer( void ) {
+	return activeCGamePlayer;
+}
 
 //
 // cgame vmMain calls
@@ -315,16 +347,35 @@ void FX_FeedTrail( effectTrailArgStruct_t *a ); //FxPrimitives.cpp
 // wrappers and such
 
 static void CL_AddCgameCommand( const char *cmdName ) {
+	if ( currentVM && currentVM->slot != VM_CGAME ) {
+		return;
+	}
 	Cmd_AddCommand( cmdName, NULL );
 }
 
 static void CL_CM_LoadMap( const char *mapname, qboolean subBSP ) {
+	if ( currentVM && currentVM->slot != VM_CGAME ) {
+		return;
+	}
 	if ( subBSP )	CM_LoadSubBSP( va( "maps/%s.bsp", mapname+1 ), qfalse );
 	else			CM_LoadMap( mapname, qtrue, NULL );
 }
 
+static void CL_R_LoadWorld( const char *mapname ) {
+	if ( currentVM && currentVM->slot != VM_CGAME ) {
+		return;
+	}
+	re->LoadWorld( mapname );
+}
+
 static void CL_GetGlconfig( glconfig_t *glconfig ) {
 	*glconfig = cls.glconfig;
+}
+
+static void CL_CGameUpdateScreen( void ) {
+	if ( !currentVM || currentVM->slot == VM_CGAME ) {
+		SCR_UpdateScreen();
+	}
 }
 
 static void CL_GetGameState( gameState_t *gs ) {
@@ -353,7 +404,61 @@ static int CL_S_GetVoiceVolume( int entID ) {
 }
 
 static void CL_S_Shutup( qboolean shutup ) {
-	s_shutUp = shutup;
+	if ( CGVM_ActivePlayer() == 1 ) {
+		s_shutUp = shutup;
+	}
+}
+
+static qboolean CGVM_OwnsPhysicalAudio( void ) {
+	return (qboolean)( CGVM_ActivePlayer() == 1 );
+}
+
+static int CGVM_S_AddLocalSet( const char *name, vec3_t listenerOrigin, vec3_t origin, int entID, int time ) {
+	return CGVM_OwnsPhysicalAudio() ? S_AddLocalSet( name, listenerOrigin, origin, entID, time ) : 0;
+}
+
+static void CGVM_S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_AddLoopingSound( entityNum, origin, velocity, sfx );
+}
+
+static void CGVM_S_ClearLoopingSounds( void ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_ClearLoopingSounds();
+}
+
+static void CGVM_S_MuteSound( int entityNum, int entchannel ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_MuteSound( entityNum, entchannel );
+}
+
+static void CGVM_S_Respatialize( int entityNum, const vec3_t origin, matrix3_t axis, int inwater ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_Respatialize( entityNum, origin, axis, inwater );
+}
+
+static void CGVM_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean returnWithoutStarting ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_StartBackgroundTrack( intro, loop, returnWithoutStarting );
+}
+
+static void CGVM_S_StartLocalSound( sfxHandle_t sfx, int channelNum ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_StartLocalSound( sfx, channelNum );
+}
+
+static void CGVM_S_StartSound( const vec3_t origin, int entnum, int entchannel, sfxHandle_t sfx ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_StartSound( origin, entnum, entchannel, sfx );
+}
+
+static void CGVM_S_StopBackgroundTrack( void ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_StopBackgroundTrack();
+}
+
+static void CGVM_S_StopLoopingSound( int entityNum ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_StopLoopingSound( entityNum );
+}
+
+static void CGVM_S_UpdateEntityPosition( int entityNum, const vec3_t origin ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_UpdateEntityPosition( entityNum, origin );
+}
+
+static void CGVM_S_UpdateAmbientSet( const char *name, vec3_t origin ) {
+	if ( CGVM_OwnsPhysicalAudio() ) S_UpdateAmbientSet( name, origin );
 }
 
 static int CL_GetCurrentCmdNumber( void ) {
@@ -366,6 +471,23 @@ static void _CL_SetUserCmdValue( int stateValue, float sensitivityScale, float m
 }
 
 static void CL_OpenUIMenu( int menuID ) {
+	/*
+	 * Force-rank/team server commands automatically request the stock global
+	 * player/class menu. In split-screen every profile was already selected by
+	 * the routed setup UI; opening this global overlay paints all panes and
+	 * destroys modal ownership before a player-scoped menu is requested.
+	 * Explicit split-screen top/setup menus use UIVM_SetActiveMenu directly and
+	 * are therefore unaffected.
+	 */
+	if ( Cvar_VariableIntegerValue( "cl_splitScreen" ) &&
+		( menuID == UIMENU_PLAYERCONFIG || menuID == UIMENU_CLASSSEL ) ) {
+		Com_DPrintf( "Split-screen: suppressed automatic global UI menu %i for player %i\n",
+			menuID, CGVM_ActivePlayer() );
+		return;
+	}
+	if ( CL_SplitNetSuppressAutomaticMenu( CGVM_ActivePlayer(), menuID ) ) {
+		return;
+	}
 	UIVM_SetActiveMenu( (uiMenuCommand_t)menuID );
 }
 
@@ -816,17 +938,95 @@ static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelInde
 	strcpy( fillBuf, tmp );
 }
 
+static int CL_Key_GetCatcher( void ) {
+	return Key_GetCatcherForPlayer( CGVM_ActivePlayer() );
+}
+
 static void CL_Key_SetCatcher( int catcher ) {
-	// Don't allow the cgame module to close the console
-	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
+	Key_SetCGameCatcher( CGVM_ActivePlayer(), catcher );
+}
+
+static const char *CGVM_ProfileCvarName( int player, const char *name ) {
+	if ( !Q_stricmp( name, "name" ) ) return va( "ui_splitScreenP%iName", player );
+	if ( !Q_stricmp( name, "model" ) ) return va( "ui_splitScreenP%iModel", player );
+	if ( !Q_stricmp( name, "forcepowers" ) ) return va( "ui_splitScreenP%iForcePowers", player );
+	if ( !Q_stricmp( name, "saber" ) || !Q_stricmp( name, "saber1" ) ) return va( "ui_splitScreenP%iSaber1", player );
+	if ( !Q_stricmp( name, "saber2" ) ) return va( "ui_splitScreenP%iSaber2", player );
+	if ( !Q_stricmp( name, "color" ) || !Q_stricmp( name, "color1" ) ) return va( "ui_splitScreenP%iColor1", player );
+	if ( !Q_stricmp( name, "color2" ) ) return va( "ui_splitScreenP%iColor2", player );
+	if ( !Q_stricmp( name, "char_color_red" ) ) return va( "ui_splitScreenP%iCharRed", player );
+	if ( !Q_stricmp( name, "char_color_green" ) ) return va( "ui_splitScreenP%iCharGreen", player );
+	if ( !Q_stricmp( name, "char_color_blue" ) ) return va( "ui_splitScreenP%iCharBlue", player );
+	return NULL;
+}
+
+static const char *CGVM_CvarName( const char *name, qboolean *profile ) {
+	const int player = CGVM_ActivePlayer();
+	const char *profileName;
+
+	if ( profile ) {
+		*profile = qfalse;
+	}
+	if ( player <= 1 ) {
+		return name;
+	}
+
+	profileName = CGVM_ProfileCvarName( player, name );
+	if ( profileName ) {
+		if ( profile ) {
+			*profile = qtrue;
+		}
+		return profileName;
+	}
+
+	if ( !Q_stricmpn( name, "cg_", 3 ) || !Q_stricmpn( name, "r_autoMap", 9 ) ||
+		!Q_stricmpn( name, "ui_about_", 9 ) || !Q_stricmpn( name, "ui_tm", 5 ) ||
+		!Q_stricmp( name, "ui_myteam" ) || !Q_stricmp( name, "broadsword" ) ||
+		!Q_stricmp( name, "teamoverlay" ) ) {
+		return va( "cl_splitScreenP%i_%s", player, name );
+	}
+
+	return name;
+}
+
+static void CGVM_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags ) {
+	const int player = CGVM_ActivePlayer();
+	const char *mappedName = CGVM_CvarName( varName, NULL );
+
+	/*
+	 * A secondary cgame's cvars are local state, even when the stock cgame
+	 * declares the original name as USERINFO.  Letting a namespaced P2-P4
+	 * cvar retain that flag dirties Player 1's aggregate userinfo and can send
+	 * a primary-client update every time a secondary view changes it.
+	 * Secondary profiles are sent explicitly by splitnet_applyprofile.
+	 */
+	if ( player > 1 && Q_stricmp( mappedName, varName ) ) {
+		flags &= ~CVAR_USERINFO;
+	}
+	Cvar_Register( vmCvar, mappedName, defaultValue, flags );
 }
 
 static void CGVM_Cvar_Set( const char *var_name, const char *value ) {
-	Cvar_VM_Set( var_name, value, VM_CGAME );
+	qboolean profile;
+	const int player = CGVM_ActivePlayer();
+	const char *mappedName = CGVM_CvarName( var_name, &profile );
+
+	Cvar_VM_Set( mappedName, value, currentVM ? currentVM->slot : VM_CGAME );
+	if ( profile && player > 1 ) {
+		Cbuf_AddText( va( "splitnet_applyprofile %i\n", player ) );
+	}
+}
+
+static void CGVM_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize ) {
+	Cvar_VariableStringBuffer( CGVM_CvarName( var_name, NULL ), buffer, bufsize );
 }
 
 static void CGVM_Cmd_RemoveCommand( const char *cmd_name ) {
-	Cmd_VM_RemoveCommand( cmd_name, VM_CGAME );
+	vmSlots_t slot = currentVM ? currentVM->slot : VM_CGAME;
+	if ( slot != VM_CGAME ) {
+		return;
+	}
+	Cmd_VM_RemoveCommand( cmd_name, slot );
 }
 
 // legacy syscall
@@ -911,7 +1111,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return CL_PrecisionTimerEnd( (void *)args[1] );
 
 	case CG_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] );
+		CGVM_Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] );
 		return 0;
 
 	case CG_CVAR_UPDATE:
@@ -919,11 +1119,11 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_CVAR_SET:
-		Cvar_VM_Set( (const char *)VMA(1), (const char *)VMA(2), VM_CGAME );
+		CGVM_Cvar_Set( (const char *)VMA(1), (const char *)VMA(2) );
 		return 0;
 
 	case CG_CVAR_VARIABLESTRINGBUFFER:
-		Cvar_VariableStringBuffer( (const char *)VMA(1), (char *)VMA(2), args[3] );
+		CGVM_Cvar_VariableStringBuffer( (const char *)VMA(1), (char *)VMA(2), args[3] );
 		return 0;
 
 	case CG_CVAR_GETHIDDENVALUE:
@@ -1028,39 +1228,39 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return CL_S_GetVoiceVolume( args[1] );
 
 	case CG_S_MUTESOUND:
-		S_MuteSound( args[1], args[2] );
+		CGVM_S_MuteSound( args[1], args[2] );
 		return 0;
 
 	case CG_S_STARTSOUND:
-		S_StartSound( (float *)VMA(1), args[2], args[3], args[4] );
+		CGVM_S_StartSound( (float *)VMA(1), args[2], args[3], args[4] );
 		return 0;
 
 	case CG_S_STARTLOCALSOUND:
-		S_StartLocalSound( args[1], args[2] );
+		CGVM_S_StartLocalSound( args[1], args[2] );
 		return 0;
 
 	case CG_S_CLEARLOOPINGSOUNDS:
-		S_ClearLoopingSounds();
+		CGVM_S_ClearLoopingSounds();
 		return 0;
 
 	case CG_S_ADDLOOPINGSOUND:
-		S_AddLoopingSound( args[1], (const float *)VMA(2), (const float *)VMA(3), args[4] );
+		CGVM_S_AddLoopingSound( args[1], (const float *)VMA(2), (const float *)VMA(3), args[4] );
 		return 0;
 
 	case CG_S_ADDREALLOOPINGSOUND:
-		/*S_AddRealLoopingSound*/S_AddLoopingSound( args[1], (const float *)VMA(2), (const float *)VMA(3), args[4] );
+		CGVM_S_AddLoopingSound( args[1], (const float *)VMA(2), (const float *)VMA(3), args[4] );
 		return 0;
 
 	case CG_S_STOPLOOPINGSOUND:
-		S_StopLoopingSound( args[1] );
+		CGVM_S_StopLoopingSound( args[1] );
 		return 0;
 
 	case CG_S_UPDATEENTITYPOSITION:
-		S_UpdateEntityPosition( args[1], (const float *)VMA(2) );
+		CGVM_S_UpdateEntityPosition( args[1], (const float *)VMA(2) );
 		return 0;
 
 	case CG_S_RESPATIALIZE:
-		S_Respatialize( args[1], (const float *)VMA(2), (vec3_t *)VMA(3), args[4] );
+		CGVM_S_Respatialize( args[1], (const float *)VMA(2), (vec3_t *)VMA(3), args[4] );
 		return 0;
 
 	case CG_S_SHUTUP:
@@ -1071,11 +1271,11 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return S_RegisterSound( (const char *)VMA(1) );
 
 	case CG_S_STARTBACKGROUNDTRACK:
-		S_StartBackgroundTrack( (const char *)VMA(1), (const char *)VMA(2), args[3]?qtrue:qfalse );
+		CGVM_S_StartBackgroundTrack( (const char *)VMA(1), (const char *)VMA(2), args[3]?qtrue:qfalse );
 		return 0;
 
 	case CG_S_UPDATEAMBIENTSET:
-		S_UpdateAmbientSet((const char *)VMA(1), (float *)VMA(2));
+		CGVM_S_UpdateAmbientSet((const char *)VMA(1), (float *)VMA(2));
 		return 0;
 
 	case CG_AS_PARSESETS:
@@ -1087,13 +1287,13 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_S_ADDLOCALSET:
-		return S_AddLocalSet((const char *)VMA(1), (float *)VMA(2), (float *)VMA(3), args[4], args[5]);
+		return CGVM_S_AddLocalSet((const char *)VMA(1), (float *)VMA(2), (float *)VMA(3), args[4], args[5]);
 
 	case CG_AS_GETBMODELSOUND:
 		return AS_GetBModelSound((const char *)VMA(1), args[2]);
 
 	case CG_R_LOADWORLDMAP:
-		re->LoadWorld( (const char *)VMA(1) );
+		CL_R_LoadWorld( (const char *)VMA(1) );
 		return 0;
 
 	case CG_R_REGISTERMODEL:
@@ -1252,7 +1452,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return Key_IsDown( args[1] );
 
 	case CG_KEY_GETCATCHER:
-		return Key_GetCatcher();
+		return CL_Key_GetCatcher();
 
 	case CG_KEY_SETCATCHER:
 		CL_Key_SetCatcher( args[1] );
@@ -1284,7 +1484,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_S_STOPBACKGROUNDTRACK:
-		S_StopBackgroundTrack();
+		CGVM_S_StopBackgroundTrack();
 		return 0;
 
 	case CG_REAL_TIME:
@@ -1695,15 +1895,29 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 // Stub function for old RMG system.
 static void RE_InitRendererTerrain ( const char * /*info*/ ) {}
 
-void CL_BindCGame( void ) {
-	static cgameImport_t cgi;
+void CL_BindCGamePlayer( int player ) {
+	cgameImport_t &cgi = cgameImports[player];
 	cgameExport_t		*ret;
 	GetCGameAPI_t		GetCGameAPI;
-	char				dllName[MAX_OSPATH] = "cgame" ARCH_STRING DLL_EXT;
+	char				dllName[MAX_OSPATH];
+	vmSlots_t			vmSlot;
+
+	if ( player < 1 || player > MAX_SPLITSCREEN_PLAYERS ) {
+		Com_Error( ERR_FATAL, "CL_BindCGamePlayer: bad player %i", player );
+		return;
+	}
+	if ( cgameVMs[player] ) {
+		CGVM_SelectPlayer( player );
+		return;
+	}
+
+	vmSlot = CGVM_SlotForPlayer( player );
+	Com_sprintf( dllName, sizeof( dllName ), "cgame%s" ARCH_STRING DLL_EXT,
+		player == 1 ? "" : va( "%i", player ) );
 
 	memset( &cgi, 0, sizeof( cgi ) );
 
-	cgvm = VM_Create( VM_CGAME );
+	cgvm = VM_Create( vmSlot );
 	if ( cgvm && !cgvm->isLegacy ) {
 		cgi.Print								= Com_Printf;
 		cgi.Error								= Com_Error;
@@ -1716,10 +1930,10 @@ void CL_BindCGame( void ) {
 		cgi.RealTime							= Com_RealTime;
 		cgi.PrecisionTimerStart					= CL_PrecisionTimerStart;
 		cgi.PrecisionTimerEnd					= CL_PrecisionTimerEnd;
-		cgi.Cvar_Register						= Cvar_Register;
+		cgi.Cvar_Register						= CGVM_Cvar_Register;
 		cgi.Cvar_Set							= CGVM_Cvar_Set;
 		cgi.Cvar_Update							= Cvar_Update;
-		cgi.Cvar_VariableStringBuffer			= Cvar_VariableStringBuffer;
+		cgi.Cvar_VariableStringBuffer			= CGVM_Cvar_VariableStringBuffer;
 		cgi.AddCommand							= CL_AddCgameCommand;
 		cgi.Cmd_Argc							= Cmd_Argc;
 		cgi.Cmd_Args							= Cmd_ArgsBuffer;
@@ -1732,7 +1946,7 @@ void CL_BindCGame( void ) {
 		cgi.FS_Open								= FS_FOpenFileByMode;
 		cgi.FS_Read								= FS_Read;
 		cgi.FS_Write							= FS_Write;
-		cgi.UpdateScreen						= SCR_UpdateScreen;
+		cgi.UpdateScreen						= CL_CGameUpdateScreen;
 		cgi.CM_InlineModel						= CM_InlineModel;
 		cgi.CM_LoadMap							= CL_CM_LoadMap;
 		cgi.CM_NumInlineModels					= CM_NumInlineModels;
@@ -1743,21 +1957,21 @@ void CL_BindCGame( void ) {
 		cgi.CM_TransformedPointContents			= CM_TransformedPointContents;
 		cgi.CM_TransformedTrace					= CM_TransformedBoxTrace;
 		cgi.RMG_Init							= CL_RMG_Init;
-		cgi.S_AddLocalSet						= S_AddLocalSet;
-		cgi.S_AddLoopingSound					= S_AddLoopingSound;
-		cgi.S_ClearLoopingSounds				= S_ClearLoopingSounds;
+		cgi.S_AddLocalSet						= CGVM_S_AddLocalSet;
+		cgi.S_AddLoopingSound					= CGVM_S_AddLoopingSound;
+		cgi.S_ClearLoopingSounds				= CGVM_S_ClearLoopingSounds;
 		cgi.S_GetVoiceVolume					= CL_S_GetVoiceVolume;
-		cgi.S_MuteSound							= S_MuteSound;
+		cgi.S_MuteSound							= CGVM_S_MuteSound;
 		cgi.S_RegisterSound						= S_RegisterSound;
-		cgi.S_Respatialize						= S_Respatialize;
+		cgi.S_Respatialize						= CGVM_S_Respatialize;
 		cgi.S_Shutup							= CL_S_Shutup;
-		cgi.S_StartBackgroundTrack				= S_StartBackgroundTrack;
-		cgi.S_StartLocalSound					= S_StartLocalSound;
-		cgi.S_StartSound						= S_StartSound;
-		cgi.S_StopBackgroundTrack				= S_StopBackgroundTrack;
-		cgi.S_StopLoopingSound					= S_StopLoopingSound;
-		cgi.S_UpdateEntityPosition				= S_UpdateEntityPosition;
-		cgi.S_UpdateAmbientSet					= S_UpdateAmbientSet;
+		cgi.S_StartBackgroundTrack				= CGVM_S_StartBackgroundTrack;
+		cgi.S_StartLocalSound					= CGVM_S_StartLocalSound;
+		cgi.S_StartSound						= CGVM_S_StartSound;
+		cgi.S_StopBackgroundTrack				= CGVM_S_StopBackgroundTrack;
+		cgi.S_StopLoopingSound					= CGVM_S_StopLoopingSound;
+		cgi.S_UpdateEntityPosition				= CGVM_S_UpdateEntityPosition;
+		cgi.S_UpdateAmbientSet					= CGVM_S_UpdateAmbientSet;
 		cgi.AS_AddPrecacheEntry					= AS_AddPrecacheEntry;
 		cgi.AS_GetBModelSound					= AS_GetBModelSound;
 		cgi.AS_ParseSets						= AS_ParseSets;
@@ -1788,7 +2002,7 @@ void CL_BindCGame( void ) {
 		cgi.R_Language_UsesSpaces				= re->Language_UsesSpaces;
 		cgi.R_LerpTag							= re->LerpTag;
 		cgi.R_LightForPoint						= re->LightForPoint;
-		cgi.R_LoadWorld							= re->LoadWorld;
+		cgi.R_LoadWorld							= CL_R_LoadWorld;
 		cgi.R_MarkFragments						= re->MarkFragments;
 		cgi.R_ModelBounds						= re->ModelBounds;
 		cgi.R_RegisterFont						= re->RegisterFont;
@@ -1816,7 +2030,7 @@ void CL_BindCGame( void ) {
 		cgi.OpenUIMenu							= CL_OpenUIMenu;
 		cgi.SetClientForceAngle					= CL_SetClientForceAngle;
 		cgi.SetUserCmdValue						= _CL_SetUserCmdValue;
-		cgi.Key_GetCatcher						= Key_GetCatcher;
+		cgi.Key_GetCatcher						= CL_Key_GetCatcher;
 		cgi.Key_GetKey							= Key_GetKey;
 		cgi.Key_IsDown							= Key_IsDown;
 		cgi.Key_SetCatcher						= CL_Key_SetCatcher;
@@ -1913,27 +2127,56 @@ void CL_BindCGame( void ) {
 		cgi.ext.R_Font_StrLenPixels				= re->ext.Font_StrLenPixels;
 
 		GetCGameAPI = (GetCGameAPI_t)cgvm->GetModuleAPI;
-		ret = GetCGameAPI( CGAME_API_VERSION, &cgi );
+		{
+			VMSwap v( cgvm );
+			ret = GetCGameAPI( CGAME_API_VERSION, &cgi );
+		}
 		if ( !ret ) {
 			//free VM?
 			cls.cgameStarted = qfalse;
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		cge = ret;
+		cgameVMs[player] = cgvm;
+		cgameExports[player] = cge;
+		activeCGamePlayer = player;
 
 		return;
 	}
 
 	// fall back to legacy syscall/vm_call api
-	cgvm = VM_CreateLegacy( VM_CGAME, CL_CgameSystemCalls );
+	cgvm = VM_CreateLegacy( vmSlot, CL_CgameSystemCalls );
 	if ( !cgvm ) {
 		cls.cgameStarted = qfalse;
 		Com_Error( ERR_DROP, "VM_CreateLegacy on cgame failed" );
 	}
+	cgameVMs[player] = cgvm;
+	cgameExports[player] = NULL;
+	activeCGamePlayer = player;
+}
+
+void CL_BindCGame( void ) {
+	CL_BindCGamePlayer( 1 );
+}
+
+void CL_UnbindCGamePlayer( int player ) {
+	if ( !CGVM_SelectPlayer( player ) ) {
+		return;
+	}
+	CGVM_Shutdown();
+	VM_Free( cgvm );
+	cgameVMs[player] = NULL;
+	cgameExports[player] = NULL;
+	cgvm = NULL;
+	cge = NULL;
+	activeCGamePlayer = 1;
+	CGVM_SelectPlayer( 1 );
 }
 
 void CL_UnbindCGame( void ) {
-	CGVM_Shutdown();
-	VM_Free( cgvm );
-	cgvm = NULL;
+	int player;
+
+	for ( player = MAX_SPLITSCREEN_PLAYERS; player >= 1; player-- ) {
+		CL_UnbindCGamePlayer( player );
+	}
 }

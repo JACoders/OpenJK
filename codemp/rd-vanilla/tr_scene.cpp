@@ -232,12 +232,17 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 		return;
 	}
 
-#ifdef _DEBUG
-	if (ent->reType == RT_MODEL)
+	if ( ent->reType == RT_MODEL && !ent->hModel && !ent->ghoul2 && !ent->customShader )
 	{
-		assert(ent->hModel || ent->ghoul2 || ent->customShader);
+		static qboolean warnedMissingModel = qfalse;
+		if ( !warnedMissingModel )
+		{
+			warnedMissingModel = qtrue;
+			ri.Printf( PRINT_WARNING,
+				"RE_AddRefEntityToScene: dropping RT_MODEL with no model, Ghoul2 instance, or custom shader\n" );
+		}
+		return;
 	}
-#endif
 
 	if ( (int)ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) {
 		Com_Error( ERR_DROP, "RE_AddRefEntityToScene: bad reType %i", ent->reType );
@@ -544,6 +549,9 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	VectorCopy( fd->vieworg, parms.pvsOrigin );
 
+	// Cgame submits one already-partitioned refdef for each local player.
+	// Rendering that rectangle exactly once keeps viewport ownership in one
+	// layer and prevents a stale r_splitScreen value from subdividing it again.
 	R_RenderView( &parms );
 
 	// the next scene rendered in this frame will tack on after this one

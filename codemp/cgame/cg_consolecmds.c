@@ -219,6 +219,22 @@ static void CG_StartOrbit_f( void ) {
 	}
 }
 
+static void CG_SplitScreenToggleRadar_f( void ) {
+	if ( !cg.splitDrawRadarOverride ) {
+		cg.splitDrawRadar = (qboolean)cg_drawRadar.integer;
+		cg.splitDrawRadarOverride = qtrue;
+	}
+	cg.splitDrawRadar = (qboolean)!cg.splitDrawRadar;
+}
+
+static void CG_SplitScreenToggleThirdPerson_f( void ) {
+	if ( !cg.splitThirdPersonOverride ) {
+		cg.splitThirdPerson = (qboolean)cg_thirdPerson.integer;
+		cg.splitThirdPersonOverride = qtrue;
+	}
+	cg.splitThirdPerson = (qboolean)!cg.splitThirdPerson;
+}
+
 void CG_SiegeBriefingDisplay(int team, int dontshow);
 static void CG_SiegeBriefing_f(void)
 {
@@ -309,6 +325,8 @@ static consoleCommand_t	commands[] = {
 	{ "prevskin",					CG_TestModelPrevSkin_f },
 	{ "siegeCompleteCvarUpdate",	CG_SiegeCompleteCvarUpdate_f },
 	{ "siegeCvarUpdate",			CG_SiegeCvarUpdate_f },
+	{ "splitscreen_automap_toggle",	CG_SplitScreenToggleRadar_f },
+	{ "splitscreen_thirdperson_toggle", CG_SplitScreenToggleThirdPerson_f },
 	{ "sizedown",					CG_SizeDown_f },
 	{ "sizeup",						CG_SizeUp_f },
 	{ "startOrbit",					CG_StartOrbit_f },

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "ticket": "GP2-01",
+  "frozen_binary_sha256": "223e8a126722a5728076fa1cbba2d4954f2cf51a849951c6af25a9ae25eabc33",
+  "modes": ["ffa", "holocron", "jedimaster"],
+  "players": [2, 3, 4],
+  "required": ["spawn", "routed_combat", "score", "death", "respawn", "spectate_rejoin", "objective_role", "intermission", "restart", "next_map", "unique_attachment"],
+  "unsupported_without_assertion_hook": {
+    "holocron": ["objective_role"],
+    "jedimaster": ["objective_role"]
+  },
+  "remote_fifth_control": "unsupported-no-runner-peer-contract"
+}

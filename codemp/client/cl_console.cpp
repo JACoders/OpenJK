@@ -62,19 +62,99 @@ vec4_t	console_color = {0.509f, 0.609f, 0.847f, 1.0f};
 Con_ToggleConsole_f
 ================
 */
-void Con_ToggleConsole_f (void) {
+void Con_ToggleConsoleForPlayer( int player ) {
+	qboolean consoleOpen;
+
 	// closing a full screen console restarts the demo loop
-	if ( cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == KEYCATCH_CONSOLE ) {
+	if ( player <= 1 && cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == KEYCATCH_CONSOLE ) {
 		CL_StartDemoLoop();
 		return;
 	}
 
+	consoleOpen = (qboolean)( Key_GetCatcher( ) & KEYCATCH_CONSOLE );
+	if ( consoleOpen && Key_GetConsolePlayer() != player ) {
+		// An already-open console belongs exclusively to its opening device.
+		return;
+	}
+
+	Key_SetConsolePlayer( player );
 	if( con_autoclear->integer )
 		Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
 
 	Con_ClearNotify ();
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
+}
+
+void Con_ToggleConsole_f (void) {
+	int player = 1;
+
+	if ( Cmd_Argc() > 1 ) {
+		player = atoi( Cmd_Argv( 1 ) );
+	}
+	Con_ToggleConsoleForPlayer( player );
+}
+
+static void Con_ToggleConsole2_f( void ) { Con_ToggleConsoleForPlayer( 2 ); }
+static void Con_ToggleConsole3_f( void ) { Con_ToggleConsoleForPlayer( 3 ); }
+static void Con_ToggleConsole4_f( void ) { Con_ToggleConsoleForPlayer( 4 ); }
+
+static int Con_SplitScreenPlayerCount( void )
+{
+	int playerCount = Cvar_VariableIntegerValue( "ui_splitScreenPlayerCount" );
+
+	if ( playerCount < 2 ) {
+		playerCount = 2;
+	} else if ( playerCount > MAX_SPLITSCREEN_PLAYERS ) {
+		playerCount = MAX_SPLITSCREEN_PLAYERS;
+	}
+
+	return playerCount;
+}
+
+static qboolean Con_SplitScreenViewportForPlayer( int player, float *x, float *y, float *w, float *h )
+{
+	int playerCount;
+
+	if ( !Cvar_VariableIntegerValue( "cl_splitScreen" ) ) {
+		return qfalse;
+	}
+
+	playerCount = Con_SplitScreenPlayerCount();
+	if ( player < 1 ) {
+		player = 1;
+	} else if ( player > playerCount ) {
+		player = playerCount;
+	}
+
+	if ( playerCount <= 2 ) {
+		*x = 0.0f;
+		*y = player == 1 ? 0.0f : ( SCREEN_HEIGHT / 2.0f );
+		*w = SCREEN_WIDTH;
+		*h = SCREEN_HEIGHT / 2.0f;
+		return qtrue;
+	}
+
+	if ( playerCount == 3 ) {
+		if ( player == 1 ) {
+			*x = 0.0f;
+			*y = 0.0f;
+			*w = SCREEN_WIDTH;
+			*h = SCREEN_HEIGHT / 2.0f;
+			return qtrue;
+		}
+		*x = player == 2 ? 0.0f : ( SCREEN_WIDTH / 2.0f );
+		*y = SCREEN_HEIGHT / 2.0f;
+		*w = SCREEN_WIDTH / 2.0f;
+		*h = SCREEN_HEIGHT / 2.0f;
+		return qtrue;
+	}
+
+	*w = SCREEN_WIDTH / 2.0f;
+	*h = SCREEN_HEIGHT / 2.0f;
+	*x = ( ( player - 1 ) % 2 ) ? ( SCREEN_WIDTH / 2.0f ) : 0.0f;
+	*y = ( player > 2 ) ? ( SCREEN_HEIGHT / 2.0f ) : 0.0f;
+	return qtrue;
 }
 
 /*
@@ -93,12 +173,7 @@ Con_MessageMode_f
 ================
 */
 void Con_MessageMode_f (void) {	//yell
-	chat_playerNum = -1;
-	chat_team = qfalse;
-	Field_Clear( &chatField );
-	chatField.widthInChars = 30;
-
-	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
+	Con_MessageModeForPlayer( 1, qfalse );
 }
 
 /*
@@ -107,11 +182,20 @@ Con_MessageMode2_f
 ================
 */
 void Con_MessageMode2_f (void) {	//team chat
+	Con_MessageModeForPlayer( 1, qtrue );
+}
+
+void Con_MessageModeForPlayer( int player, qboolean team ) {
+	if ( ( Key_GetCatcher() & KEYCATCH_MESSAGE ) && Key_GetConsolePlayer() != player ) {
+		// Another local device must not steal or close the active chat field.
+		return;
+	}
+	Key_SetConsolePlayer( player );
 	chat_playerNum = -1;
-	chat_team = qtrue;
+	chat_team = team;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 25;
-	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
+	chatField.widthInChars = team ? 25 : 30;
+	Key_SetCatcher( Key_GetCatcher() ^ KEYCATCH_MESSAGE );
 }
 
 /*
@@ -121,17 +205,23 @@ Con_MessageMode3_f
 */
 void Con_MessageMode3_f (void)
 {		//target chat
+	if ( ( Key_GetCatcher() & KEYCATCH_MESSAGE ) && Key_GetConsolePlayer() != 1 ) {
+		// A primary target-chat bind must not steal another local player's chat.
+		return;
+	}
 	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
 		return;
 	}
 
+	CGVM_SelectPlayer( 1 );
 	chat_playerNum = CGVM_CrosshairPlayer();
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
 		return;
 	}
+	Key_SetConsolePlayer( 1 );
 	chat_team = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
@@ -145,17 +235,23 @@ Con_MessageMode4_f
 */
 void Con_MessageMode4_f (void)
 {	//attacker
+	if ( ( Key_GetCatcher() & KEYCATCH_MESSAGE ) && Key_GetConsolePlayer() != 1 ) {
+		// A primary attacker-chat bind must not steal another local player's chat.
+		return;
+	}
 	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
 		return;
 	}
 
+	CGVM_SelectPlayer( 1 );
 	chat_playerNum = CGVM_LastAttacker();
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
 		return;
 	}
+	Key_SetConsolePlayer( 1 );
 	chat_team = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
@@ -463,6 +559,7 @@ void Con_CheckResize (void)
 	con.xadjust = ((float)SCREEN_WIDTH) / cls.glconfig.vidWidth;
 	con.yadjust = ((float)SCREEN_HEIGHT) / cls.glconfig.vidHeight;
 	g_consoleField.widthInChars = width - 1; // Command prompt
+	Key_SetConsoleWidth( width - 1 );
 
 	if (con.rowwidth != rowwidth)
 	{
@@ -502,12 +599,16 @@ void Con_Init (void) {
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
+	Key_InitConsolePlayers( g_console_field_width );
 	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
 		Field_Clear( &historyEditLines[i] );
 		historyEditLines[i].widthInChars = g_console_field_width;
 	}
 
 	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f, "Show/hide console" );
+	Cmd_AddCommand( "toggleconsole2", Con_ToggleConsole2_f, "Show/hide Player 2 console" );
+	Cmd_AddCommand( "toggleconsole3", Con_ToggleConsole3_f, "Show/hide Player 3 console" );
+	Cmd_AddCommand( "toggleconsole4", Con_ToggleConsole4_f, "Show/hide Player 4 console" );
 	Cmd_AddCommand( "togglemenu", Con_ToggleMenu_f, "Show/hide the menu" );
 	Cmd_AddCommand( "messagemode", Con_MessageMode_f, "Global Chat" );
 	Cmd_AddCommand( "messagemode2", Con_MessageMode2_f, "Team Chat" );
@@ -529,6 +630,9 @@ Con_Shutdown
 void Con_Shutdown(void)
 {
 	Cmd_RemoveCommand("toggleconsole");
+	Cmd_RemoveCommand("toggleconsole2");
+	Cmd_RemoveCommand("toggleconsole3");
+	Cmd_RemoveCommand("toggleconsole4");
 	Cmd_RemoveCommand("togglemenu");
 	Cmd_RemoveCommand("messagemode");
 	Cmd_RemoveCommand("messagemode2");
@@ -829,6 +933,8 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
+		const vec4_t chatBackdrop = { 0.10f, 0.16f, 0.42f, 0.95f };
+		SCR_FillRect( 0, v - 4, 320, BIGCHAR_HEIGHT + 12, chatBackdrop );
 		if (chat_team)
 		{
 			chattext = SE_GetString("MP_SVGAME", "SAY_TEAM");
@@ -895,7 +1001,7 @@ void Con_DrawSolidConsole( float frac ) {
 	// draw the bottom bar and version number
 
 	re->SetColor( console_color );
-	re->DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
+	SCR_FillRect( 0, y, SCREEN_WIDTH, 2, console_color );
 
 	i = strlen( JK_VERSION );
 
@@ -1008,11 +1114,18 @@ Con_DrawConsole
 ==================
 */
 void Con_DrawConsole( void ) {
+	float viewportX;
+	float viewportY;
+	float viewportW;
+	float viewportH;
+	qboolean splitViewport;
+
 	// check for console width changes from a vid mode change
 	Con_CheckResize ();
 
 	// if disconnected, render console full screen
-	if ( cls.state == CA_DISCONNECTED ) {
+	if ( cls.state == CA_DISCONNECTED &&
+		( !Cvar_VariableIntegerValue( "cl_splitScreen" ) || Key_GetConsolePlayer() <= 1 ) ) {
 		if ( !( Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME)) ) {
 			Con_DrawSolidConsole( 1.0 );
 			return;
@@ -1020,11 +1133,31 @@ void Con_DrawConsole( void ) {
 	}
 
 	if ( con.displayFrac ) {
+		splitViewport = Con_SplitScreenViewportForPlayer( Key_GetConsolePlayer(), &viewportX, &viewportY, &viewportW, &viewportH );
+		if ( splitViewport ) {
+			SCR_SetViewportTransform( qtrue, viewportX, viewportY, viewportW, viewportH );
+		}
 		Con_DrawSolidConsole( con.displayFrac );
+		if ( splitViewport ) {
+			SCR_SetViewportTransform( qfalse, 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT );
+		}
 	} else {
 		// draw notify lines
-		if ( cls.state == CA_ACTIVE ) {
+		const int modalPlayer = Key_GetConsolePlayer();
+		const qboolean modalPlayerActive = (qboolean)( modalPlayer <= 1
+			? cls.state == CA_ACTIVE
+			: cl_splitClients[modalPlayer].enabled && cl_splitClients[modalPlayer].state == CA_ACTIVE );
+		if ( modalPlayerActive ) {
+			splitViewport = (qboolean)( ( Key_GetCatcher() & KEYCATCH_MESSAGE ) &&
+				Con_SplitScreenViewportForPlayer( Key_GetConsolePlayer(),
+					&viewportX, &viewportY, &viewportW, &viewportH ) );
+			if ( splitViewport ) {
+				SCR_SetViewportTransform( qtrue, viewportX, viewportY, viewportW, viewportH );
+			}
 			Con_DrawNotify ();
+			if ( splitViewport ) {
+				SCR_SetViewportTransform( qfalse, 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT );
+			}
 		}
 	}
 }

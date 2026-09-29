@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "records": {
+    "state": {
+      "path": "state.json",
+      "sha256": "644ca60b7cc3294ca6acbb1b58e43630e9dd65f2f825da115234a7fc5344af15"
+    },
+    "image": {
+      "path": "image.json",
+      "sha256": "11386ced5c062e981bd7862cde8996bb39d0a9883d17f4d81c4761a6d65d63b0"
+    },
+    "audio": {
+      "path": "audio.json",
+      "sha256": "9d6269f60cfad84d88133d4d5b539b3b4f6c4e2ef8bcf57c450eba77c152c371"
+    },
+    "resources": {
+      "path": "resources.json",
+      "sha256": "bedb05bce40d896cecafd00a1b36c2554f6ef071c36cec80f5b2d1c508eeda55"
+    }
+  },
+  "attachments": [
+    {
+      "path": "frame.capture",
+      "sha256": "ce91e03694ac25d5defa91ed10a24df0e2e1ae617f2a4a8464abb95f0836d337"
+    }
+  ]
+}

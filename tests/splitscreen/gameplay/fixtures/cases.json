@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "cases": {
+    "good2": {"template": "good", "players": 2},
+    "good3": {"template": "good", "players": 3},
+    "good4": {"template": "good", "players": 4},
+    "duplicate": {"template": "good", "players": 2, "mutation": "duplicate"},
+    "blank": {"template": "good", "players": 2, "mutation": "blank"},
+    "stale": {"template": "good", "players": 2, "mutation": "stale"},
+    "cross_pane": {"template": "good", "players": 2, "mutation": "cross_pane"},
+    "wrong_client": {"template": "good", "players": 2, "mutation": "wrong_client"},
+    "silent": {"template": "good", "players": 2, "mutation": "silent"},
+    "leaked_socket": {"template": "good", "players": 2, "mutation": "leaked_socket"},
+    "truncated": {"template": "good", "players": 2, "mutation": "truncated"}
+  }
+}

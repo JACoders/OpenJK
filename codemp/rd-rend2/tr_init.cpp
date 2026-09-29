@@ -253,8 +253,8 @@ cvar_t	*r_surfaceSprites;
 
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
-#define	DEFAULT_MAX_POLYS		600
-#define	DEFAULT_MAX_POLYVERTS	3000
+#define	DEFAULT_MAX_POLYS		2400
+#define	DEFAULT_MAX_POLYVERTS	12000
 cvar_t	*r_maxpolys;
 cvar_t	*r_maxpolyverts;
 int		max_polys;

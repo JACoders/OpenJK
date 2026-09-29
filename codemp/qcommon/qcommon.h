@@ -128,7 +128,10 @@ NET
 
 typedef enum {
 	NS_CLIENT,
-	NS_SERVER
+	NS_SERVER,
+	NS_CLIENT2,
+	NS_CLIENT3,
+	NS_CLIENT4
 } netsrc_t;
 
 void		NET_Init( void );
@@ -149,7 +152,7 @@ qboolean	NET_StringToAdr ( const char *s, netadr_t *a);
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
 void		NET_Sleep(int msec);
 
-void		Sys_SendPacket( int length, const void *data, const netadr_t *to );
+void		Sys_SendPacket( netsrc_t sock, int length, const void *data, const netadr_t *to );
 //Does NOT parse port numbers, only base addresses.
 qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
 qboolean	Sys_IsLANAddress (const netadr_t *adr);
@@ -267,11 +270,14 @@ typedef enum vmSlots_e {
 	VM_GAME=0,
 	VM_CGAME,
 	VM_UI,
+	VM_CGAME2,
+	VM_CGAME3,
+	VM_CGAME4,
 	MAX_VM
 } vmSlots_t;
 
 typedef struct vm_s {
-	vmSlots_t	slot; // VM_GAME, VM_CGAME, VM_UI
+	vmSlots_t	slot;
     char		name[MAX_QPATH];
 	void		*dllHandle;
 	qboolean	isLegacy; // uses the legacy syscall/vm_call api, is set by VM_CreateLegacy
@@ -937,6 +943,7 @@ void CL_MouseEvent( int dx, int dy, int time );
 void CL_JoystickEvent( int axis, int value, int time );
 
 void CL_PacketEvent( const netadr_t *from, msg_t *msg );
+void CL_PacketEventFromSource( netsrc_t source, const netadr_t *from, msg_t *msg );
 
 void CL_ConsolePrint( const char *text );
 

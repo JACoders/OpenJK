@@ -249,6 +249,27 @@ typedef struct clientConnection_s {
 } clientConnection_t;
 
 extern	clientConnection_t clc;
+extern	qboolean cl_splitNetParsingPacket;
+extern	int cl_splitNetParsingPlayer;
+
+#define	MAX_SPLITSCREEN_PLAYERS	4
+
+typedef struct splitScreenClient_s {
+	qboolean			enabled;
+	qboolean			wantsConnect;
+	qboolean			receivedGameState;
+	qboolean			cgameStarted;
+	qboolean			cgameNeedsRestart;
+	int					player;
+	int					qport;
+	int					duplicateClientNumSince;
+	connstate_t			state;
+	char				servername[MAX_OSPATH];
+	clientActive_t		active;
+	clientConnection_t	connection;
+} splitScreenClient_t;
+
+extern	splitScreenClient_t	cl_splitClients[MAX_SPLITSCREEN_PLAYERS + 1];
 
 /*
 ==================================================================
@@ -456,6 +477,10 @@ void CL_ShutdownAll( qboolean shutdownRef );
 void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd );
 
 void CL_StartHunkUsers( void );
+void CL_SplitNetCheckForResend( void );
+qboolean CL_SplitNetConnectionlessPacket( netsrc_t source, const netadr_t *from, msg_t *msg );
+void CL_SplitNetDisconnectAll( void );
+qboolean CL_SplitNetPacketEvent( netsrc_t source, const netadr_t *from, msg_t *msg );
 
 qboolean CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot );
 qboolean CL_GetDefaultState( int index, entityState_t *state );
@@ -504,8 +529,13 @@ void CL_InitInput (void);
 void CL_ShutdownInput(void);
 void CL_SendCmd (void);
 void CL_ClearState (void);
+void CL_SplitScreenSetControllerAxis( int player, int axis, int value );
+void CL_SplitScreenSetControllerButton( int player, int button, qboolean pressed );
+void CL_SplitNetSendCmds( void );
 
 void CL_WritePacket( void );
+void CL_SendPureChecksums( void );
+void CL_SendSplitPureChecksums( int player );
 
 float CL_KeyState (kbutton_t *key);
 const char *Key_KeynumToString( int keynum/*, qboolean bTranslate */ ); //note: translate is only called for menu display not configs
@@ -538,6 +568,7 @@ void Con_Init (void);
 void Con_Shutdown(void);
 void Con_Clear_f (void);
 void Con_ToggleConsole_f (void);
+void Con_ToggleConsoleForPlayer( int player );
 void Con_DrawNotify (void);
 void Con_ClearNotify (void);
 void Con_RunConsole (void);
@@ -568,6 +599,7 @@ void	SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noCol
 void	SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, qboolean noColorEscape );	// ignores embedded color control characters
 void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape );
 void	SCR_DrawSmallChar( int x, int y, int ch );
+void	SCR_SetViewportTransform( qboolean active, float x, float y, float w, float h );
 
 
 //
@@ -591,10 +623,19 @@ void CIN_CloseAllVideos(void);
 // cl_cgame.c
 //
 void CL_InitCGame( void );
+void CL_InitCGamePlayer( int player );
 void CL_ShutdownCGame( void );
+void CL_ShutdownSplitCGame( int player );
 qboolean CL_GameCommand( void );
 void CL_CGameRendering( stereoFrame_t stereo );
 void CL_SetCGameTime( void );
+void CL_SplitCGameFrame( void );
+void CL_SplitNetNotifyGameState( void );
+qboolean CL_SplitNetSuppressAutomaticMenu( int player, int menuID );
+void CL_CGameKeyEventForPlayer( int player, int key, qboolean down );
+void CL_CGameConsoleCommandForPlayer( int player, const char *command );
+void Con_MessageModeForPlayer( int player, qboolean team );
+void CL_AddReliableCommandForPlayer( int player, const char *command );
 void CL_FirstSnapshot( void );
 void CL_ShaderStateChanged(void);
 
@@ -605,6 +646,9 @@ void CL_InitUI( void );
 void CL_ShutdownUI( void );
 int Key_GetCatcher( void );
 void Key_SetCatcher( int catcher );
+int Key_GetCatcherForPlayer( int player );
+void Key_SetCGameCatcher( int player, int catcher );
+void CL_SplitScreenKeyEvent( int player, int key, qboolean down, unsigned time );
 void LAN_LoadCachedServers();
 void LAN_SaveServersToCache();
 

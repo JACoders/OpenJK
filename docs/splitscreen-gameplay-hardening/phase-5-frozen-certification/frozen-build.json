@@ -1,0 +1,17 @@
+{
+  "format": "openjk-splitscreen-frozen-build-v1",
+  "frozen_utc": "2026-07-23T22:34:15Z",
+  "source_commit": "aed48b4164b863075209e172585d8a0c3029c5f7",
+  "artifacts": {
+    "build-x86_64/openjk.x86_64.app/Contents/MacOS/openjk.x86_64": "737fcd8c3cfdbc78f220e7d2b63dac3ba44b49e7f8b71d82b7ccee4029277c13",
+    "build-x86_64/openjkded.x86_64": "b6c6998a815a65929a0ca297590c5159d0e11385dea62a46801a69062c60039d",
+    "build-x86_64/codemp/ui/uix86_64.dylib": "28a7982e9bce9aab3cb8f3b47e37be65d7bcd277f9b717f39d34e5714e1da2c7",
+    "build-x86_64/codemp/game/jampgamex86_64.dylib": "dfacdf3723c34f56d3c95ff973dada5f8efee0741f81f0ec7e6493098260d8f6",
+    "build-x86_64/codemp/cgame/cgamex86_64.dylib": "4fbb40894800c4c98d4cfeebfcbb886b22a02805982ee1acbae2ec4150b8e13d",
+    "build-x86_64/codemp/cgame/cgame2x86_64.dylib": "3fd41c0039377991d1b3594e1c421d5b0d8aefddbb9903f57bac9c174bf8ac4f",
+    "build-x86_64/codemp/cgame/cgame3x86_64.dylib": "7e65fe798c9decf9f2a298deadaf5a5237de80d12897497e0be29d04037439ab",
+    "build-x86_64/codemp/cgame/cgame4x86_64.dylib": "50b9289f64955b205b798829c5bf90b4fffec4c0cb4edcb0a81aac1f83ff05d1",
+    "build-x86_64/codemp/rd-vanilla/rd-vanilla_x86_64.dylib": "d813890a6444d646aff268ceff36aecf09f343e0098c0ec0aa78d6c6d2b65d16",
+    "build-x86_64/openjk.x86_64.app/Contents/MacOS/rd-vanilla_x86_64.dylib": "77358b164b8a04c963e6c1a4df4a3473d6bac133a0e1e6d342f31740cd5571fa"
+  }
+}

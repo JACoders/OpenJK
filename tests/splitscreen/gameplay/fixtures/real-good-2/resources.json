@@ -1,0 +1,1 @@
+{"rss_samples_kb":[200000,201000,201500],"fds_baseline":40,"fds_final":41,"sockets_final":0,"threads_baseline":12,"threads_final":12,"frame_times_ms":[8,9,10,11,12,13,14,15,16,17,8,9,10,11,12,13,14,15,16,17],"renderer_restarts":1,"vm_restarts":2,"crash_markers":[]}

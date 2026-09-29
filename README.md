@@ -22,6 +22,11 @@ Our aims are to:
 | Jedi Academy | ✅ Stable | ✅ Stable |
 | Jedi Outcast | 😧 Works, needs attention | 🙅 Not supported - consider [JK2MV](https://jk2mv.org) |
 
+This fork also provides native Apple Silicon two-, three-, and four-player
+Jedi Academy multiplayer split screen in one process, including local hosting,
+vanilla server joining, independent stock menus, controls, profiles, consoles,
+and controller routing. See the [split-screen guide](docs/splitscreen/README.md).
+
 Please direct support queries, discussions and feature requests to the JKHub sub-forum or Discord linked above.
 
 ## License

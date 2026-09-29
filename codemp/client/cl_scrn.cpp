@@ -36,6 +36,33 @@ cvar_t		*cl_graphheight;
 cvar_t		*cl_graphscale;
 cvar_t		*cl_graphshift;
 
+static qboolean scr_viewportTransformActive = qfalse;
+static float scr_viewportTransformX = 0.0f;
+static float scr_viewportTransformY = 0.0f;
+static float scr_viewportTransformW = SCREEN_WIDTH;
+static float scr_viewportTransformH = SCREEN_HEIGHT;
+
+void SCR_SetViewportTransform( qboolean active, float x, float y, float w, float h )
+{
+	scr_viewportTransformActive = active;
+	scr_viewportTransformX = x;
+	scr_viewportTransformY = y;
+	scr_viewportTransformW = w;
+	scr_viewportTransformH = h;
+}
+
+static void SCR_ApplyViewportTransform( float *x, float *y, float *w, float *h )
+{
+	if ( !scr_viewportTransformActive ) {
+		return;
+	}
+
+	*x = scr_viewportTransformX + ( *x * scr_viewportTransformW / SCREEN_WIDTH );
+	*y = scr_viewportTransformY + ( *y * scr_viewportTransformH / SCREEN_HEIGHT );
+	*w = *w * scr_viewportTransformW / SCREEN_WIDTH;
+	*h = *h * scr_viewportTransformH / SCREEN_HEIGHT;
+}
+
 /*
 ================
 SCR_DrawNamedPic
@@ -49,6 +76,7 @@ void SCR_DrawNamedPic( float x, float y, float width, float height, const char *
 	assert( width != 0 );
 
 	hShader = re->RegisterShader( picname );
+	SCR_ApplyViewportTransform( &x, &y, &width, &height );
 	re->DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
@@ -63,6 +91,7 @@ Coordinates are 640*480 virtual values
 void SCR_FillRect( float x, float y, float width, float height, const float *color ) {
 	re->SetColor( color );
 
+	SCR_ApplyViewportTransform( &x, &y, &width, &height );
 	re->DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
 
 	re->SetColor( NULL );
@@ -77,6 +106,7 @@ Coordinates are 640*480 virtual values
 =================
 */
 void SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader ) {
+	SCR_ApplyViewportTransform( &x, &y, &width, &height );
 	re->DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
@@ -105,6 +135,7 @@ static void SCR_DrawChar( int x, int y, float size, int ch ) {
 	ay = y;
 	aw = size;
 	ah = size;
+	SCR_ApplyViewportTransform( &ax, &ay, &aw, &ah );
 
 	row = ch>>4;
 	col = ch&15;
@@ -154,8 +185,13 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 
 	size2 = 0.0625;
 
-	re->DrawStretchPic( x * con.xadjust, y * con.yadjust,
-					   con.charWidth * con.xadjust, con.charHeight * con.yadjust,
+	float ax = x * con.xadjust;
+	float ay = y * con.yadjust;
+	float aw = con.charWidth * con.xadjust;
+	float ah = con.charHeight * con.yadjust;
+	SCR_ApplyViewportTransform( &ax, &ay, &aw, &ah );
+
+	re->DrawStretchPic( ax, ay, aw, ah,
 					   fcol, frow,
 					   fcol + size, frow + size2,
 					   cls.charSetShader );

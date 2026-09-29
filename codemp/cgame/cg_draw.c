@@ -139,14 +139,14 @@ int CG_Text_Width(const char *text, float scale, int iMenuFont)
 {
 	int iFontIndex = MenuFontToHandle(iMenuFont);
 
-	return trap->R_Font_StrLenPixels(text, iFontIndex, scale);
+	return (int)CG_Transform2DWidth( trap->R_Font_StrLenPixels(text, iFontIndex, scale) );
 }
 
 int CG_Text_Height(const char *text, float scale, int iMenuFont)
 {
 	int iFontIndex = MenuFontToHandle(iMenuFont);
 
-	return trap->R_Font_HeightPixels(iFontIndex, scale);
+	return (int)CG_Transform2DHeight( trap->R_Font_HeightPixels(iFontIndex, scale) );
 }
 
 #include "qcommon/qfiles.h"	// for STYLE_BLINK etc
@@ -154,6 +154,11 @@ void CG_Text_Paint(float x, float y, float scale, vec4_t color, const char *text
 {
 	int iStyleOR = 0;
 	int iFontIndex = MenuFontToHandle(iMenuFont);
+	float w = 0.0f;
+	float h = 0.0f;
+
+	CG_Transform2DRect( &x, &y, &w, &h );
+	scale = CG_Transform2DScale( scale );
 
 	switch (style)
 	{
@@ -414,12 +419,14 @@ static void CG_DrawZoomMask( void )
 				max = 1.0f;
 			}
 
-			trap->R_DrawStretchPic(257, 435, 134*max, 34, 0, 0, max, 1, cgs.media.disruptorChargeShader);
+			CG_DrawPicUV(257, 435, 134*max, 34, 0, 0, max, 1, cgs.media.disruptorChargeShader);
 		}
 //		trap->R_SetColor( colorTable[CT_WHITE] );
 //		CG_DrawPic( 0, 0, 640, 480, cgs.media.disruptorMask );
 
 	}
+
+	trap->R_SetColor( NULL );
 }
 
 
@@ -4090,7 +4097,7 @@ static void CG_DrawUpperRight( void ) {
 	}
 
 	if ( ( cgs.gametype >= GT_TEAM || cg.predictedPlayerState.m_iVehicleNum )
-		&& cg_drawRadar.integer )
+		&& ( cg.splitDrawRadarOverride ? cg.splitDrawRadar : cg_drawRadar.integer ) )
 	{//draw Radar in Siege mode or when in a vehicle of any kind
 		y = CG_DrawRadar ( y );
 	}
@@ -4339,7 +4346,7 @@ static void CG_DrawLagometer( void ) {
 			if ( v > range ) {
 				v = range;
 			}
-			trap->R_DrawStretchPic ( ax + aw - a, mid - v, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
+			CG_DrawPic( ax + aw - a, mid - v, 1, v, cgs.media.whiteShader );
 		} else if ( v < 0 ) {
 			if ( color != 2 ) {
 				color = 2;
@@ -4349,7 +4356,7 @@ static void CG_DrawLagometer( void ) {
 			if ( v > range ) {
 				v = range;
 			}
-			trap->R_DrawStretchPic( ax + aw - a, mid, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
+			CG_DrawPic( ax + aw - a, mid, 1, v, cgs.media.whiteShader );
 		}
 	}
 
@@ -4376,13 +4383,13 @@ static void CG_DrawLagometer( void ) {
 			if ( v > range ) {
 				v = range;
 			}
-			trap->R_DrawStretchPic( ax + aw - a, ay + ah - v, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
+			CG_DrawPic( ax + aw - a, ay + ah - v, 1, v, cgs.media.whiteShader );
 		} else if ( v < 0 ) {
 			if ( color != 4 ) {
 				color = 4;		// RED for dropped snapshots
 				trap->R_SetColor( g_color_table[ColorIndex(COLOR_RED)] );
 			}
-			trap->R_DrawStretchPic( ax + aw - a, ay + ah - range, 1, range, 0, 0, 0, 0, cgs.media.whiteShader );
+			CG_DrawPic( ax + aw - a, ay + ah - range, 1, range, cgs.media.whiteShader );
 		}
 	}
 
@@ -5228,9 +5235,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		hShader = cgs.media.crosshairShader[Com_Clampi( 1, NUM_CROSSHAIRS, cg_drawCrosshair.integer ) - 1];
 	}
 
-	chX = x + cg.refdef.x + 0.5 * (640 - w);
-	chY = y + cg.refdef.y + 0.5 * (480 - h);
-	trap->R_DrawStretchPic( chX, chY, w, h, 0, 0, 1, 1, hShader );
+	chX = x + 0.5 * (640 - w);
+	chY = y + 0.5 * (480 - h);
+	CG_DrawPic( chX, chY, w, h, hShader );
 
 	//draw a health bar directly under the crosshair if we're looking at something
 	//that takes damage
@@ -5283,9 +5290,8 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		w *= 2.0f;
 		h *= 2.0f;
 
-		trap->R_DrawStretchPic( x + cg.refdef.x + 0.5 * (640 - w),
-			y + cg.refdef.y + 0.5 * (480 - h),
-			w, h, 0, 0, 1, 1, cgs.media.forceCoronaShader );
+		CG_DrawPic( x + 0.5 * (640 - w), y + 0.5 * (480 - h),
+			w, h, cgs.media.forceCoronaShader );
 	}
 
 	trap->R_SetColor( NULL );
@@ -8403,6 +8409,23 @@ CG_DrawActive
 Perform all drawing needed to completely fill the screen
 =====================
 */
+void CG_DrawActive2D( void )
+{
+	if ( cl_splitScreen.integer ) {
+		trap->R_SetColor( NULL );
+		CG_Set2DViewportTransform( qtrue,
+			cg.refdef.x * SCREEN_WIDTH / (float)cgs.glconfig.vidWidth,
+			cg.refdef.y * SCREEN_HEIGHT / (float)cgs.glconfig.vidHeight,
+			cg.refdef.width * SCREEN_WIDTH / (float)cgs.glconfig.vidWidth,
+			cg.refdef.height * SCREEN_HEIGHT / (float)cgs.glconfig.vidHeight );
+		CG_Draw2D();
+		trap->R_SetColor( NULL );
+		CG_Set2DViewportTransform( qfalse, 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT );
+	} else {
+		CG_Draw2D();
+	}
+}
+
 void CG_DrawActive( stereoFrame_t stereoView ) {
 	float		separation;
 	vec3_t		baseOrg;
@@ -8437,7 +8460,9 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 
 
 	// clear around the rendered view if sized down
-	CG_TileClear();
+	if ( !cl_splitScreen.integer ) {
+		CG_TileClear();
+	}
 
 	// offset vieworg appropriately if we're doing stereo separation
 	VectorCopy( cg.refdef.vieworg, baseOrg );
@@ -8460,9 +8485,7 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		VectorCopy( baseOrg, cg.refdef.vieworg );
 	}
 
-	// draw status bar and other floating elements
- 	CG_Draw2D();
+	if ( !cl_splitScreen.integer ) {
+		CG_DrawActive2D();
+	}
 }
-
-
-

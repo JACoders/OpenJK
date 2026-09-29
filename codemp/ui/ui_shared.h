@@ -508,6 +508,8 @@ void Menu_PostParse(menuDef_t *menu);
 menuDef_t *Menu_GetFocused();
 void Menu_HandleKey(menuDef_t *menu, int key, qboolean down);
 void Menu_HandleMouseMove(menuDef_t *menu, float x, float y);
+qboolean Item_SetFocus(itemDef_t *item, float x, float y);
+qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag);
 void Menu_ScrollFeeder(menuDef_t *menu, int feeder, qboolean down);
 qboolean Float_Parse(char **p, float *f);
 qboolean Color_Parse(char **p, vec4_t *c);
