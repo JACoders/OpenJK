@@ -106,6 +106,7 @@ static const field_t savefields_gNPC[] =
 	{strNPCOFS(defendEnt),			F_GENTITY},
 	{strNPCOFS(greetEnt),			F_GENTITY},
 	{strNPCOFS(group),				F_GROUP},
+	{strNPCOFS(watchTarget),		F_GENTITY},
 
 	{NULL, 0, F_IGNORE}
 };
@@ -233,7 +234,7 @@ intptr_t GetGEntityNum(gentity_t* ent)
 
 gentity_t *GetGEntityPtr(intptr_t iEntNum)
 {
-	if (iEntNum == -1)
+	if (iEntNum < 0 || iEntNum >= MAX_GENTITIES)
 	{
 		return NULL;
 	}
