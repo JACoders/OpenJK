@@ -30,6 +30,7 @@ enum {
 	SSF_PNG
 };
 
+#define UI_TARGET_FPS 60
 #define MAX_TOKENLENGTH		1024
 #define MAX_OPEN_MENUS 16
 #define	MAX_TEXTSCROLL_LINES		256
