@@ -486,7 +486,7 @@ public:
 	}
 }; // animation_t
 
-#define MAX_ANIM_FILES	16
+#define MAX_ANIM_FILES	64
 #define MAX_ANIM_EVENTS 300
 
 //size of Anim eventData array...
