@@ -752,7 +752,7 @@ static void CG_RegisterSounds( void ) {
 		if ( soundName[0] == '*' ) {
 			continue;	// custom sound
 		}
-		if (i&31) {
+		if ((i & 31) == 0 ) {
 			CG_LoadingString( soundName );
 		}
 		cgs.sound_precache[i] = cgi_S_RegisterSound( soundName );
