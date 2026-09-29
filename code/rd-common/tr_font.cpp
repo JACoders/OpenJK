@@ -65,13 +65,23 @@ static Language_e GetLanguageEnum()
 	static Language_e	eLanguage = eWestern;
 #ifdef JK2_MODE
 	if ( !sp_language )
-		return eLanguage;
-	else if ( sp_language->integer == SP_LANGUAGE_KOREAN )
-		eLanguage = eKorean;
-	else if ( sp_language->integer == SP_LANGUAGE_JAPANESE )
-		eLanguage = eJapanese;
-	else if ( sp_language->integer == SP_LANGUAGE_TAIWANESE )
-		eLanguage = eTaiwanese;
+		return eWestern;
+
+	switch ( sp_language->integer )
+	{
+		case SP_LANGUAGE_KOREAN:
+			eLanguage = eKorean;
+			break;
+		case SP_LANGUAGE_JAPANESE:
+			eLanguage = eJapanese;
+			break;
+		case SP_LANGUAGE_TAIWANESE:
+			eLanguage = eTaiwanese;
+			break;
+		default:
+			eLanguage = eWestern;
+			break;
+	}
 
 	return eLanguage;
 #else
@@ -735,7 +745,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 	const byte *psString = (const byte *) psText;	// avoid sign-promote bug
 	unsigned int uiLetter;
 
-	if ( Language_IsKorean() )
+	if ( GetLanguageEnum() == eKorean )
 	{
 		if ( Korean_ValidKSC5601Hangul( psString[0], psString[1] ))
 		{
@@ -755,7 +765,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 		}
 	}
 	else
-	if ( Language_IsTaiwanese() )
+	if ( GetLanguageEnum() == eTaiwanese )
 	{
 		if ( Taiwanese_ValidBig5Code( (psString[0] * 256) + psString[1] ))
 		{
@@ -774,7 +784,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 		}
 	}
 	else
-	if ( Language_IsJapanese() )
+	if ( GetLanguageEnum() == eJapanese )
 	{
 		if ( Japanese_ValidShiftJISCode( psString[0], psString[1] ))
 		{
