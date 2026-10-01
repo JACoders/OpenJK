@@ -126,6 +126,19 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
+	// On widescreen displays keep the video's proportions: centre it, and black out the bars on either side
+	// if it fills the whole 640x480 area.
+	const float bias = R_Get2DBias();
+	if ( bias > 0.0f )
+	{
+		if ( x <= 0 && y <= 0 && x + w >= SCREEN_WIDTH && y + h >= SCREEN_HEIGHT )
+		{
+			qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+			qglClear( GL_COLOR_BUFFER_BIT );
+		}
+		x += bias;
+	}
+
 	qglBegin (GL_QUADS);
 	qglTexCoord2f ( 0.5f / cols,  0.5f / rows );
 	qglVertex2f (x, y);
@@ -508,7 +521,7 @@ qboolean RE_ProcessDissolve(void)
 			qglClear( GL_DEPTH_BUFFER_BIT );
 
 
-			float fXScaleFactor = (float)SCREEN_WIDTH / (float)Dissolve.iWidth;
+			float fXScaleFactor = R_Get2DVirtualWidth() / (float)Dissolve.iWidth;
 			float fYScaleFactor = (float)SCREEN_HEIGHT/ (float)Dissolve.iHeight;
 			float x0,y0, x1,y1,	x2,y2, x3,y3;
 

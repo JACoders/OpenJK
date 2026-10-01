@@ -149,6 +149,7 @@ cvar_t	*r_debugSort;
 cvar_t	*r_debugStyle;
 
 cvar_t	*r_modelpoolmegs;
+cvar_t	*r_wideUI;
 
 cvar_t	*r_noGhoul2;
 cvar_t	*r_Ghoul2AnimSmooth;
@@ -1672,6 +1673,7 @@ Ghoul2 Insert End
 	com_buildScript = ri.Cvar_Get ( "com_buildScript", "0", 0 );
 
 	r_modelpoolmegs = ri.Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
+	r_wideUI = ri.Cvar_Get("r_wideUI", "1", CVAR_ARCHIVE|CVAR_LATCH);
 	if (ri.LowPhysicalMemory() )
 	{
 		ri.Cvar_Set("r_modelpoolmegs", "0");

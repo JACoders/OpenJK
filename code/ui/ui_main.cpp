@@ -2657,9 +2657,11 @@ void _UI_Init( qboolean inGameLoad )
 	// for 640x480 virtualized screen
 	uiInfo.uiDC.yscale = uiInfo.uiDC.glconfig.vidHeight * (1.0/480.0);
 	uiInfo.uiDC.xscale = uiInfo.uiDC.glconfig.vidWidth * (1.0/640.0);
-	if ( uiInfo.uiDC.glconfig.vidWidth * 480 > uiInfo.uiDC.glconfig.vidHeight * 640 )
+	if ( uiInfo.uiDC.glconfig.vidWidth * 480 > uiInfo.uiDC.glconfig.vidHeight * 640 && Cvar_VariableIntegerValue( "r_wideUI" ) )
 	{
-		// wide screen
+		// wide screen: the renderer keeps the 640x480 area proportional and centred (see R_Get2DVirtualWidth),
+		// so pixel positions derived from it (e.g. 3D models) must use the same uniform scale and offset
+		uiInfo.uiDC.xscale = uiInfo.uiDC.yscale;
 		uiInfo.uiDC.bias = 0.5 * ( uiInfo.uiDC.glconfig.vidWidth - ( uiInfo.uiDC.glconfig.vidHeight * (640.0/480.0) ) );
 	}
 	else
@@ -3506,7 +3508,6 @@ static void UI_Update(const char *name)
 				Cvar_SetValue( "ui_r_colorbits", 32 );
 				Cvar_SetValue( "ui_r_depthbits", 24 );
 				Cvar_SetValue( "ui_r_picmip", 0 );
-				Cvar_SetValue( "ui_r_mode", 4 );
 				Cvar_SetValue( "ui_r_texturebits", 32 );
 				Cvar_SetValue( "ui_r_fastSky", 0 );
 				Cvar_SetValue( "ui_r_inGameVideo", 1 );
@@ -3521,7 +3522,6 @@ static void UI_Update(const char *name)
 				Cvar_SetValue( "ui_r_colorbits", 0 );
 				Cvar_SetValue( "ui_r_depthbits", 24 );
 				Cvar_SetValue( "ui_r_picmip", 1 );
-				Cvar_SetValue( "ui_r_mode", 3 );
 				Cvar_SetValue( "ui_r_texturebits", 0 );
 				Cvar_SetValue( "ui_r_fastSky", 0 );
 				Cvar_SetValue( "ui_r_inGameVideo", 1 );
@@ -3537,7 +3537,6 @@ static void UI_Update(const char *name)
 				Cvar_SetValue( "ui_r_colorbits", 0 );
 				Cvar_SetValue( "ui_r_depthbits", 0 );
 				Cvar_SetValue( "ui_r_picmip", 2 );
-				Cvar_SetValue( "ui_r_mode", 3 );
 				Cvar_SetValue( "ui_r_texturebits", 0 );
 				Cvar_SetValue( "ui_r_fastSky", 1 );
 				Cvar_SetValue( "ui_r_inGameVideo", 0 );
@@ -3552,7 +3551,6 @@ static void UI_Update(const char *name)
 				Cvar_SetValue( "ui_r_lodbias", 2 );
 				Cvar_SetValue( "ui_r_colorbits", 16 );
 				Cvar_SetValue( "ui_r_depthbits", 16 );
-				Cvar_SetValue( "ui_r_mode", 3 );
 				Cvar_SetValue( "ui_r_picmip", 3 );
 				Cvar_SetValue( "ui_r_texturebits", 16 );
 				Cvar_SetValue( "ui_r_fastSky", 1 );
@@ -4205,7 +4203,19 @@ you to discard your changes if you did something you didnt want
 */
 void UI_UpdateVideoSetup ( void )
 {
-	Cvar_Set ( "r_mode", Cvar_VariableString ( "ui_r_mode" ) );
+	// the resolution is selected through ui_r_resolution: "desktop" or "WIDTHxHEIGHT"
+	const char *resolution = Cvar_VariableString ( "ui_r_resolution" );
+	int width, height;
+	if ( sscanf ( resolution, "%dx%d", &width, &height ) == 2 && width > 0 && height > 0 )
+	{
+		Cvar_Set ( "r_customwidth", va ( "%d", width ) );
+		Cvar_Set ( "r_customheight", va ( "%d", height ) );
+		Cvar_Set ( "r_mode", "-1" );
+	}
+	else
+	{
+		Cvar_Set ( "r_mode", "-2" );
+	}
 	Cvar_Set ( "r_fullscreen", Cvar_VariableString ( "ui_r_fullscreen" ) );
 	Cvar_Set ( "r_colorbits", Cvar_VariableString ( "ui_r_colorbits" ) );
 	Cvar_Set ( "r_lodbias", Cvar_VariableString ( "ui_r_lodbias" ) );
@@ -4239,6 +4249,7 @@ void UI_GetVideoSetup ( void )
 
 	// Make sure the cvars are registered as read only.
 	Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_resolution",			"desktop", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_fullscreen",			"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_lodbias",				"0", CVAR_ROM );
@@ -4257,6 +4268,15 @@ void UI_GetVideoSetup ( void )
 
 	// Copy over the real video cvars into their temporary counterparts
 	Cvar_Set ( "ui_r_mode", Cvar_VariableString ( "r_mode" ) );
+	if ( Cvar_VariableIntegerValue ( "r_mode" ) == -2 )
+	{
+		Cvar_Set ( "ui_r_resolution", "desktop" );
+	}
+	else
+	{
+		// r_mode may be a fixed mode or a custom size, either way the real size is what the renderer is using
+		Cvar_Set ( "ui_r_resolution", va ( "%dx%d", uiInfo.uiDC.glconfig.vidWidth, uiInfo.uiDC.glconfig.vidHeight ) );
+	}
 	Cvar_Set ( "ui_r_colorbits", Cvar_VariableString ( "r_colorbits" ) );
 	Cvar_Set ( "ui_r_fullscreen", Cvar_VariableString ( "r_fullscreen" ) );
 	Cvar_Set ( "ui_r_lodbias", Cvar_VariableString ( "r_lodbias" ) );
