@@ -33,3 +33,6 @@ void	SNDDMA_Shutdown(void);
 void	SNDDMA_BeginPainting (void);
 
 void	SNDDMA_Submit(void);
+
+// number of sample frames the device asks for per callback (the granularity at which the play position advances)
+int		SNDDMA_GetDeviceChunkSamples(void);
