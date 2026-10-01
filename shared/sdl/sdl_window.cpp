@@ -114,6 +114,30 @@ qboolean R_GetModeInfo( int *width, int *height, int mode ) {
 }
 
 /*
+===============
+GLimp_FullscreenFlags
+
+When the requested size is the desktop size, use a borderless fullscreen window at the desktop resolution instead of
+switching the display mode. It's instant, doesn't disturb other windows/monitors and behaves well with Wayland and
+alt-tabbing. Other sizes use a real display mode switch.
+===============
+*/
+static Uint32 GLimp_FullscreenFlags( int width, int height, int display )
+{
+#ifdef MACOS_X
+	return SDL_WINDOW_FULLSCREEN_DESKTOP;
+#else
+	SDL_DisplayMode desktopMode;
+	if ( display >= 0 && SDL_GetDesktopDisplayMode( display, &desktopMode ) == 0 &&
+		desktopMode.w == width && desktopMode.h == height )
+	{
+		return SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
+	return SDL_WINDOW_FULLSCREEN;
+#endif
+}
+
+/*
 ** R_ModeList_f
 */
 static void R_ModeList_f( void )
@@ -179,7 +203,14 @@ void WIN_Present( window_t *window )
 
 		if ( needToToggle )
 		{
-			sdlToggled = SDL_SetWindowFullscreen( screen, r_fullscreen->integer ) >= 0;
+			Uint32 fullscreenFlags = 0;
+			if ( r_fullscreen->integer )
+			{
+				int width, height;
+				SDL_GetWindowSize( screen, &width, &height );
+				fullscreenFlags = GLimp_FullscreenFlags( width, height, SDL_GetWindowDisplayIndex( screen ) );
+			}
+			sdlToggled = SDL_SetWindowFullscreen( screen, fullscreenFlags ) >= 0;
 
 			// SDL_WM_ToggleFullScreen didn't work, so do it the slow way
 			if ( !sdlToggled )
@@ -421,11 +452,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 
 	if( fullscreen )
 	{
-#ifdef MACOS_X
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-#else
-        flags |= SDL_WINDOW_FULLSCREEN;
-#endif
+		flags |= GLimp_FullscreenFlags( glConfig->vidWidth, glConfig->vidHeight, display );
 		glConfig->isFullscreen = qtrue;
 	}
 	else
@@ -582,7 +609,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 			SDL_SetWindowIcon( screen, icon );
 #endif
 
-			if( fullscreen )
+			if( fullscreen && ( flags & SDL_WINDOW_FULLSCREEN_DESKTOP ) != SDL_WINDOW_FULLSCREEN_DESKTOP )
 			{
 				SDL_DisplayMode mode;
 
@@ -736,14 +763,23 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	r_allowSoftwareGL	= Cvar_Get( "r_allowSoftwareGL",	"0",		CVAR_ARCHIVE_ND|CVAR_LATCH );
 
 	// Window cvars
+#ifdef _JK2EXE
+	// Singleplayer: out of the box, run fullscreen at the desktop resolution so no setup is needed on modern displays
+	r_fullscreen		= Cvar_Get( "r_fullscreen",			"1",		CVAR_ARCHIVE|CVAR_LATCH );
+#else
 	r_fullscreen		= Cvar_Get( "r_fullscreen",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
+#endif
 	r_noborder			= Cvar_Get( "r_noborder",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_centerWindow		= Cvar_Get( "r_centerWindow",		"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_customwidth		= Cvar_Get( "r_customwidth",		"1600",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_customheight		= Cvar_Get( "r_customheight",		"1024",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_swapInterval		= Cvar_Get( "r_swapInterval",		"0",		CVAR_ARCHIVE_ND );
 	r_stereo			= Cvar_Get( "r_stereo",				"0",		CVAR_ARCHIVE_ND|CVAR_LATCH );
+#ifdef _JK2EXE
+	r_mode				= Cvar_Get( "r_mode",				"-2",		CVAR_ARCHIVE|CVAR_LATCH );
+#else
 	r_mode				= Cvar_Get( "r_mode",				"4",		CVAR_ARCHIVE|CVAR_LATCH );
+#endif
 	r_displayRefresh	= Cvar_Get( "r_displayRefresh",		"0",		CVAR_LATCH );
 	Cvar_CheckRange( r_displayRefresh, 0, 240, qtrue );
 

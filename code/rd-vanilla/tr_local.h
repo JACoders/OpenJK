@@ -1084,6 +1084,7 @@ extern window_t		window;
 // cvars
 //
 extern cvar_t	*r_ignore;				// used for debugging anything
+extern cvar_t	*r_wideUI;				// keep 2D (menus/HUD) proportional on widescreen displays
 extern cvar_t	*r_verbose;				// used for verbose debug spew
 
 extern cvar_t	*r_znear;				// near Z clip plane
@@ -1175,6 +1176,9 @@ extern	cvar_t	*r_swapInterval;
 extern	cvar_t	*r_textureMode;
 extern	cvar_t	*r_offsetFactor;
 extern	cvar_t	*r_offsetUnits;
+
+float	R_Get2DVirtualWidth( void );	// width of the 2D virtual screen (height is always SCREEN_HEIGHT)
+float	R_Get2DBias( void );			// horizontal offset that centres the 640x480 area in the 2D virtual screen
 
 extern	cvar_t	*r_fullbright;					// avoid lightmap pass
 extern	cvar_t	*r_lightmap;					// render lightmaps only
