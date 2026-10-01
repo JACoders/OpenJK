@@ -26,33 +26,60 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../server/exe_headers.h"
 
 #include "snd_local.h"
+#include <math.h>
 
 portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
 int 	*snd_p, snd_linear_count, snd_vol;
 short	*snd_out;
 
+// Statistics on how often the mix exceeded full scale, reported by S_Update when developer is on
+int		s_clippedSamples;	// samples over full scale since the last report
+int		s_clipPeak;			// largest absolute value seen since the last report (16 bit scale, before limiting)
+
+/*
+===================
+S_LimitSample
+
+Brings a mixed sample (16 bit scale, but can be far outside it when many loud sounds overlap) into 16 bit range.
+
+Hard clipping chops the tops off the waveform, which sounds like harsh distortion. Instead, anything within the top
+quarter of the range is passed through untouched, and louder peaks are smoothly compressed towards full scale.
+Quiet and normal-volume sound is completely unaffected.
+===================
+*/
+#define LIMITER_THRESHOLD	24576		// 0.75 of full scale
+static inline short S_LimitSample( int val )
+{
+	const int abs_val = (val < 0) ? -val : val;
+
+	if ( abs_val <= LIMITER_THRESHOLD )
+	{
+		return (short)val;
+	}
+
+	if ( abs_val > 0x7fff )
+	{
+		s_clippedSamples++;
+	}
+	if ( abs_val > s_clipPeak )
+	{
+		s_clipPeak = abs_val;
+	}
+
+	const float range = (float)( 0x7fff - LIMITER_THRESHOLD );
+	const int limited = LIMITER_THRESHOLD + (int)( range * tanhf( (abs_val - LIMITER_THRESHOLD) / range ) );
+
+	return (short)( (val < 0) ? -limited : limited );
+}
+
 void S_WriteLinearBlastStereo16 (void)
 {
 	int		i;
-	int		val;
 
 	for (i=0 ; i<snd_linear_count ; i+=2)
 	{
-		val = snd_p[i]>>8;
-		if (val > 0x7fff)
-			snd_out[i] = 0x7fff;
-		else if (val < (short)0x8000)
-			snd_out[i] = (short)0x8000;
-		else
-			snd_out[i] = val;
-
-		val = snd_p[i+1]>>8;
-		if (val > 0x7fff)
-			snd_out[i+1] = 0x7fff;
-		else if (val < (short)0x8000)
-			snd_out[i+1] = (short)0x8000;
-		else
-			snd_out[i+1] = val;
+		snd_out[i]   = S_LimitSample( snd_p[i]>>8 );
+		snd_out[i+1] = S_LimitSample( snd_p[i+1]>>8 );
 	}
 }
 
@@ -134,11 +161,7 @@ void S_TransferPaintBuffer(int endtime)
 			{
 				val = *p >> 8;
 				p+= step;
-				if (val > 0x7fff)
-					val = 0x7fff;
-				else if (val < (short)0x8000)
-					val = (short)0x8000;
-				out[out_idx] = (short)val;
+				out[out_idx] = S_LimitSample( val );
 				out_idx = (out_idx + 1) & out_mask;
 			}
 		}
@@ -147,12 +170,8 @@ void S_TransferPaintBuffer(int endtime)
 			unsigned char *out = (unsigned char *) pbuf;
 			while (count--)
 			{
-				val = *p >> 8;
+				val = S_LimitSample( *p >> 8 );
 				p+= step;
-				if (val > 0x7fff)
-					val = 0x7fff;
-				else if (val < (short)0x8000)
-					val = (short)0x8000;
 				out[out_idx] = (short)((val>>8) + 128);
 				out_idx = (out_idx + 1) & out_mask;
 			}

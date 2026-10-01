@@ -194,8 +194,15 @@ extern	int		s_rawend;
 extern	vec3_t	listener_origin;
 extern	dma_t	dma;
 
-#define	MAX_RAW_SAMPLES	16384
+// Raw sample ring (cinematic audio, streamed music). Must be a power of two. It has to hold more than the first audio
+// packet of a cinematic: those are ~0.5 seconds long, which is 23520 samples at 44.1kHz and overflowed the old 16384 ring.
+#define	MAX_RAW_SAMPLES	65536
+// How far ahead of the current sound time streamed music is buffered. Kept at the original ring size so music
+// still reacts quickly to volume and dynamic-music state changes.
+#define	MUSIC_RAW_LOOKAHEAD	16384
 extern	portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
+
+extern	cvar_t	*s_quality;			// 0 fast, 1 good, 2 best: quality of sample rate conversion when loading sounds
 portable_samplepair_t *S_GetRawSamplePointer();	// TA added this, but it just returns the s_rawsamples[] array above. Oh well...
 
 extern cvar_t *s_allowDynamicMusic;

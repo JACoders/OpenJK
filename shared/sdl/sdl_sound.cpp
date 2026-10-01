@@ -40,6 +40,7 @@ cvar_t *s_sdlDevSamps;
 cvar_t *s_sdlMixSamps;
 
 /* The audio callback. All the magic happens here. */
+static int deviceChunkSamples = 1024;
 static int dmapos = 0;
 static int dmasize = 0;
 
@@ -195,15 +196,18 @@ qboolean SNDDMA_Init(int sampleFrequencyInKHz)
 		desired.samples = s_sdlDevSamps->value;
 	else
 	{
-		// just pick a sane default.
+		// Pick a default of roughly 10ms of audio per callback (it used to be 23ms). The callback only copies
+		// already-mixed sound out of the ring buffer, so small buffers cost next to nothing, and the play position
+		// (and with it how soon a new sound can start) advances in steps of this size.
+		// Override with s_sdlDevSamps if a system needs larger buffers.
 		if (desired.freq <= 11025)
-			desired.samples = 256;
+			desired.samples = 128;
 		else if (desired.freq <= 22050)
+			desired.samples = 256;
+		else if (desired.freq <= 48000)
 			desired.samples = 512;
-		else if (desired.freq <= 44100)
-			desired.samples = 1024;
 		else
-			desired.samples = 2048;  // (*shrug*)
+			desired.samples = 1024;
 	}
 
 	desired.channels = (int) s_sdlChannels->value;
@@ -228,7 +232,13 @@ qboolean SNDDMA_Init(int sampleFrequencyInKHz)
 	//  reasonable...this is why I let the user override.
 	tmp = s_sdlMixSamps->value;
 	if (!tmp)
+	{
 		tmp = (obtained.samples * obtained.channels) * 10;
+		// keep the ring buffer as big as it was with the old, larger callback size: it limits how far ahead
+		// sound can be mixed, which is what protects against stutter when a frame takes long
+		if (tmp < 32768)
+			tmp = 32768;
+	}
 
 	if (tmp & (tmp - 1))  // not a power of two? Seems to confuse something.
 	{
@@ -240,6 +250,7 @@ qboolean SNDDMA_Init(int sampleFrequencyInKHz)
 	}
 
 	dmapos = 0;
+	deviceChunkSamples = obtained.samples;
 	dma.samplebits = obtained.format & 0xFF;  // first byte of format is bits.
 	dma.channels = obtained.channels;
 	dma.samples = tmp;
@@ -254,6 +265,16 @@ qboolean SNDDMA_Init(int sampleFrequencyInKHz)
 	Com_Printf("SDL audio initialized.\n");
 	snd_inited = qtrue;
 	return qtrue;
+}
+
+/*
+===============
+SNDDMA_GetDeviceChunkSamples
+===============
+*/
+int SNDDMA_GetDeviceChunkSamples(void)
+{
+	return deviceChunkSamples;
 }
 
 /*
