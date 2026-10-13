@@ -1036,6 +1036,8 @@ qboolean G2API_RemoveGhoul2Model(CGhoul2Info_v **ghlRemove, const int modelIndex
 
 	   	 // set us to be the 'not active' state
 		ghlInfo[modelIndex].mModelindex = -1;
+		ghlInfo[modelIndex].mValid = false;
+		ghlInfo[modelIndex].mMeshFrameNum = 0;
 
 		int newSize = ghlInfo.size();
 		// now look through the list from the back and see if there is a block of -1's we can resize off the end of the list
@@ -2921,7 +2923,8 @@ qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the mode
 	// within a frame - and CG_Player asks for it 8 to 25 times per character.
 	const int ptrFrameBits = (tr.frameCount << VK_G2_POINTER_FRAME_SHIFT) | (tr.g2PtrInvalidation & VK_G2_POINTER_INVALIDATE_MASK);
 	
-	if ( ghlInfo->mValid && ghlInfo->mMeshFrameNum == ptrFrameBits)
+	// A slot freed by G2API_RemoveGhoul2Model keeps its stale mValid/stamp; never trust it.
+	if ( ghlInfo->mValid && ghlInfo->mModelindex != -1 && ghlInfo->mMeshFrameNum == ptrFrameBits)
 	{
 		return qtrue;
 	}

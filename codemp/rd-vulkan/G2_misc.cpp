@@ -589,11 +589,12 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 	{
 		CGhoul2Info &g=ghoul2[i];
 		// don't bother with models that we don't care about.
-		if (!g.mValid)
+		// Freed slots (mModelindex == -1) and models whose skeleton was never built have no
+		// bone cache; G2_TransformSurfaces would dereference it (G2_TraceModels skips these too).
+		if (!g.mValid || g.mModelindex == -1 || !g.mBoneCache)
 		{
 			continue;
 		}
-		assert(g.mBoneCache);
 //		assert(G2_MODEL_OK(&g));
 #ifndef VK_G2_POINTER_FRAMECACHE
 		// stop us building this model more than once per frame
@@ -1589,7 +1590,8 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, Colli
 #endif
 
 		// don't bother with models that we don't care about.
-		if (!ghoul2[i].mValid)
+		// (no bone cache => G2_TransformModel skipped it, so its transformed verts are stale)
+		if (!ghoul2[i].mValid || ghoul2[i].mModelindex == -1 || !ghoul2[i].mBoneCache)
 		{
 			continue;
 		}
