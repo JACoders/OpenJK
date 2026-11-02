@@ -637,6 +637,7 @@ typedef struct shader_s {
 	int			lightmapSearchIndex[MAXLIGHTMAPS];	// for a shader to match, both name and lightmapIndex must match
 	int			lightmapIndex[MAXLIGHTMAPS];		// for a shader to match, both name and lightmapIndex must match
 	byte		styles[MAXLIGHTMAPS];
+	byte		surfaceStyles[MAXLIGHTMAPS];		// OpenJK-rpmod: the styles the surface asked for (lightmapSearchIndex's), for a remap
 
 	int			index;								// this shader == tr.shaders[index]
 	int			sortedIndex;						// this shader == tr.sortedShaders[sortedIndex]

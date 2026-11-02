@@ -276,7 +276,10 @@ static void vk_render_splash( void )
 }
 
 void vk_set_clearcolor( void ) {
-	vec4_t clr = { 0.75, 0.75, 0.75, 1.0 };
+	// OpenJK-rpmod: black, as the OpenGL renderer clears, not TaystJK's light grey, which showed
+	// white wherever nothing is drawn: round the shader manager's panel beside the narrowed view,
+	// or where the map editor hides the map's triangles
+	vec4_t clr = { 0.0, 0.0, 0.0, 1.0 };
 
 	if ( r_fastsky->integer ) 
 	{

@@ -2292,12 +2292,59 @@ qhandle_t RE_RegisterShaderLightMap( const char *name, const int *lightmapIndex,
 	return sh->index;
 }
 
+/*
+===============
+R_RemapLightmaps
+
+OpenJK-rpmod (as in rd-vanilla): how to build the new shader for one copy of the old: no
+lightmap means a model, unless the old shader is lit by vertex colours, as world surfaces
+without a lightmap are. Built for a model, a plain texture would get the entity lighting the
+world doesn't have
+===============
+*/
+static const int *R_RemapLightmaps( const shader_t *sh ) {
+	if ( sh->lightmapSearchIndex[0] != LIGHTMAP_NONE )
+		return sh->lightmapSearchIndex;
+	for ( int i = 0; i < sh->numUnfoggedPasses; i++ ) {
+		if ( !sh->stages[i] )
+			break;
+		switch ( sh->stages[i]->bundle[0].rgbGen ) {
+		case CGEN_EXACT_VERTEX:
+		case CGEN_VERTEX:
+		case CGEN_ONE_MINUS_VERTEX:
+		case CGEN_LIGHTMAPSTYLE:
+			return lightmapsVertex;
+		default:
+			break;
+		}
+	}
+	return sh->lightmapSearchIndex;
+}
+
+// OpenJK-rpmod: as in rd-vanilla. TaystJK's pointed every copy of the old shader (the world's
+// lightmapped one, the model one, the 2D one) at the one copy of the new it found first, and
+// remapping a shader back to itself pointed them all at whichever copy of it came first. The
+// shader manager's live preview left the map's surfaces drawn with a 2D copy: no lightmap and no
+// depth, dark and see-through, until the map was loaded again
 void R_RemapShader( const char *shaderName, const char *newShaderName, const char *timeOffset )
 {
 	char		strippedName[MAX_QPATH];
+	char		strippedNew[MAX_QPATH];
 	int			hash;
 	shader_t	*sh, *sh2;
 	qhandle_t	h;
+
+	// remapped to itself: back to normal, every lightmap and 2D copy of it alike
+	COM_StripExtension( shaderName, strippedName, sizeof( strippedName ) );
+	COM_StripExtension( newShaderName, strippedNew, sizeof( strippedNew ) );
+	if ( !Q_stricmp( strippedName, strippedNew ) ) {
+		hash = generateHashValue( strippedName, FILE_HASH_SIZE );
+		for ( sh = hashTable[hash]; sh; sh = sh->next ) {
+			if ( !Q_stricmp( sh->name, strippedName ) )
+				sh->remappedShader = NULL;
+		}
+		return;
+	}
 
 	sh = R_FindShaderByName( shaderName );
 	if (sh == NULL || sh == tr.defaultShader) {
@@ -2309,42 +2356,21 @@ void R_RemapShader( const char *shaderName, const char *newShaderName, const cha
 		return;
 	}
 
-	sh2 = R_FindShaderByName( newShaderName );
-	if (sh2 == NULL || sh2 == tr.defaultShader) {
-		h = RE_RegisterShaderLightMap(newShaderName, lightmapsNone, stylesDefault);
-		sh2 = R_GetShaderByHandle(h);
-	}
-
-	if (sh2 == NULL || sh2 == tr.defaultShader) {
-		ri.Printf( PRINT_WARNING, "WARNING: RE_RemapShader: new shader %s not found\n", newShaderName );
-		return;
-	}
-
-	COM_StripExtension(shaderName, strippedName, sizeof(strippedName));
-	hash = generateHashValue(strippedName, FILE_HASH_SIZE);
-	sh = hashTable[hash];
-
-	// remap all the shaders with the given name
-	// even tho they might have different lightmaps
-	while (sh)
-	{
-		if (Q_stricmp(sh->name, strippedName) == 0)
-		{
-			if (sh != sh2)
-			{
-				sh->remappedShader = sh2;
-			}
-			else
-			{
-				sh->remappedShader = NULL;
-			}
+	// every copy of the old shader gets a copy of the new one built the same way: lightmaps on
+	// the world, entity lighting on models, flat in 2D
+	hash = generateHashValue( strippedName, FILE_HASH_SIZE );
+	for ( sh = hashTable[hash]; sh; sh = sh->next ) {
+		if ( Q_stricmp( sh->name, strippedName ) )
+			continue;
+		h = RE_RegisterShaderLightMap( newShaderName, R_RemapLightmaps( sh ), sh->surfaceStyles );
+		sh2 = R_GetShaderByHandle( h );
+		if ( sh2 == NULL || sh2 == tr.defaultShader ) {
+			ri.Printf( PRINT_WARNING, "WARNING: RE_RemapShader: new shader %s not found\n", newShaderName );
+			return;
 		}
-		sh = sh->next;
-	}
-
-	if (timeOffset)
-	{
-		sh2->timeOffset = atof(timeOffset);
+		sh->remappedShader = sh2;
+		if ( timeOffset )
+			sh2->timeOffset = atof( timeOffset );
 	}
 }
 
@@ -3179,6 +3205,7 @@ static void InitShader( const char *name, const int *lightmapIndex, const byte *
 	// because shader search functions expects this
 	// otherwise they will fail and cause massive duplication
 	Com_Memcpy(shader.lightmapSearchIndex, shader.lightmapIndex, sizeof(shader.lightmapSearchIndex));
+	Com_Memcpy(shader.surfaceStyles, shader.styles, sizeof(shader.surfaceStyles)); // OpenJK-rpmod: for a remap
 
 	for (i = 0; i < MAX_SHADER_STAGES; i++) {
 		stages[i].bundle[0].texMods = texMods[i];
