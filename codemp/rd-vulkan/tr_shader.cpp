@@ -4396,6 +4396,15 @@ shader_t *FinishShader( void )
 						if ( blendBits == (GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE) ) {
 							stages[i].bundle[0].adjustColorsForFog = ACFF_MODULATE_RGBA;
 						}
+						// OpenJK-rpmod: the other blends where black leaves the picture as it is fade to black
+						// in fog too. Left out, the stage mixed in fog color over its whole surface: leaves
+						// with an alpha test and a GL_ONE GL_ONE_MINUS_SRC_COLOR glow stage (duneeden's
+						// trees) drew as fog-tinted rectangles. OpenGL fogs only what the first stage drew
+						else if ( blendBits == (GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE_MINUS_SRC_COLOR)
+							|| blendBits == (GLS_SRCBLEND_ZERO | GLS_DSTBLEND_ONE_MINUS_SRC_COLOR) ) {
+							if ( stages[i].bundle[0].adjustColorsForFog == ACFF_NONE )
+								stages[i].bundle[0].adjustColorsForFog = ACFF_MODULATE_RGB;
+						}
 					}
 				}
 			}

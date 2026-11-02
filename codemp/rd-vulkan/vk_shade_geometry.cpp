@@ -1864,6 +1864,14 @@ static void vk_compute_colors( const int b, const shaderStage_t *pStage, int for
 	if ( !forceRGBGen )
 		rgbGen = pStage->bundle[b].rgbGen;
 
+	// OpenJK-rpmod: a cached md3 model has no vertex colors either (see RB_MeshVertexColors):
+	// "rgbGen vertex" takes the model's lighting instead of full white
+	if ( tess.surfType == SF_VBO_MDVMESH && ( rgbGen == CGEN_VERTEX || rgbGen == CGEN_EXACT_VERTEX ) ) {
+		rgbGen = CGEN_LIGHTING_DIFFUSE;
+		if ( alphaGen == AGEN_VERTEX )
+			alphaGen = AGEN_IDENTITY;
+	}
+
 	switch ( rgbGen) {
 		case CGEN_IDENTITY_LIGHTING: 
 			baseColor[0] = baseColor[1] = baseColor[2] = tr.identityLight;

@@ -1534,6 +1534,38 @@ static void LerpMeshVertexes(mdvSurface_t *surf, float backlerp)
 RB_SurfaceMesh
 =============
 */
+/*
+=============
+RB_MeshVertexColors
+
+OpenJK-rpmod: md3 models carry no vertex colors, yet some map models' shaders use "rgbGen vertex"
+(duneeden's glowing trees). Nothing filled them in, so those stages took whatever an earlier surface
+left behind: in OpenGL the map's own dark colors, here mostly white, which drew the trees' leaves
+glaring white with their see-through edges showing. The model's lighting is used instead, with full
+alpha so the shader's alpha test only uses the texture
+=============
+*/
+static void RB_MeshVertexColors( int first, int count ) {
+	const trRefEntity_t *ent = backEnd.currentEntity;
+	const float *normal = tess.normal[first];
+	byte *color = tess.vertexColors[first];
+	int i, k, j;
+
+	for ( i = 0; i < count; i++, normal += 4, color += 4 ) {
+		const float incoming = DotProduct( normal, ent->modelLightDir );
+
+		if ( incoming <= 0 ) {
+			*(int *)color = ent->ambientLightInt;
+			continue;
+		}
+		for ( k = 0; k < 3; k++ ) {
+			j = Q_ftol( ent->ambientLight[k] + incoming * ent->directedLight[k] );
+			color[k] = j > 255 ? 255 : j;
+		}
+		color[3] = 255;
+	}
+}
+
 void RB_SurfaceMesh( mdvSurface_t *surface ) {
 	uint32_t		j;
 	float			backlerp;
@@ -1571,6 +1603,8 @@ void RB_SurfaceMesh( mdvSurface_t *surface ) {
 		tess.texCoords[0][Doug + j][1] = texCoords[j].st[1];
 		// FIXME: fill in lightmapST for completeness?
 	}
+
+	RB_MeshVertexColors( Doug, numVerts ); // OpenJK-rpmod
 
 	tess.numVertexes += surface->numVerts;
 }

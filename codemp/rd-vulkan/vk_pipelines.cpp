@@ -1630,6 +1630,12 @@ static void vk_create_post_process_pipeline( int program_index, uint32_t width, 
         attachment_blend_state.blendEnable = VK_TRUE;
         attachment_blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
         attachment_blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+
+        // OpenJK-rpmod: dynamic glow blends softly with r_DynamicGlowSoft (the default), as the OpenGL
+        // renderer does: GL_ONE GL_ONE_MINUS_SRC_COLOR adds less the brighter the picture already is.
+        // Added straight, glowing surfaces burned out to flat white with a big white halo
+        if ( program_index == VK_POSTFX_PIPELINE_DGLOW_BLEND && r_DynamicGlowSoft->integer )
+            attachment_blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
     }
     else {
         attachment_blend_state.blendEnable = VK_FALSE;
