@@ -824,6 +824,11 @@ typedef struct fog_s {
 	// for clipping distance in fog when outside
 	qboolean		hasSurface;
 	float			surface[4];
+
+	// OpenJK-rpmod: the map editor's fog: as the map has it, kept when the client changes it;
+	// overridden while it's the client's
+	fogParms_t		original;
+	qboolean		changed, overridden;
 } fog_t;
 
 typedef struct {
@@ -1119,6 +1124,7 @@ typedef struct msurface_s {
 	int					viewCount;		// if == tr.viewCount, already added
 	struct shader_s		*shader;
 	int					fogIndex;
+	int					mapFogIndex;	// OpenJK-rpmod: the map's, while the client adds fogs of its own
 #ifdef USE_PMLIGHT
 	int					vcVisible;		// if == tr.viewCount, is actually VISIBLE in this frame, i.e. passed facecull and has been added to the drawsurf list
 	int					lightCount;		// if == tr.lightCount, already added to the litsurf list for the current light
@@ -1194,6 +1200,10 @@ typedef struct world_s {
 	int			numfogs;
 	fog_t		*fogs;
 	int			globalFog;
+
+	// OpenJK-rpmod: the client's fogs go after the map's, up to maxFogs; fogsSaved once the map's are kept
+	int			maxFogs, numMapFogs;
+	qboolean	fogsSaved;
 
 
 	vec3_t		lightGridOrigin;
@@ -2302,6 +2312,12 @@ void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, flo
 void RE_RenderScene( const refdef_t *fd );
 void RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift );	// OpenJK-rpmod
 void RE_SetSkyZoom( float zoom );													// OpenJK-rpmod
+// OpenJK-rpmod: the map editor's fog
+#define MAX_ADDED_FOGS 16		// fog volumes the client adds
+int RE_GetFogs( vec3_t *colors, float *depths, vec3_t *mins, vec3_t *maxs, int *global, int max );
+void RE_SetFog( int fog, const float *color, float depth );
+int RE_AddFog( const vec3_t mins, const vec3_t maxs, const float *color, float depth );
+void RE_ClearAddedFogs( void );
 
 /*
 =============================================================

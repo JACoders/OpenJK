@@ -348,7 +348,7 @@ Edit the map on your own screen: move or hide any part of it, place models, ligh
 - **Hold use**: a use trigger can be held, in milliseconds as JKA's `usetime`: it's only used once the use key has been held on it that long, a bar showing how far along, while the character works the console (`emconsole`) and stops when it's done or let go
 - **Sounds**: speakers that play any music or sound, heard near them or everywhere, looping
 - **Styles**: give the map's switchable lights a new pattern (flicker, pulse, strobe...) and color, change its existing light styles, or the lighting of the whole map
-- **Fog**: the color and thickness of each of the map's fogs, `No fog` to take one away, or fog volumes of your own. *Needs the rd-vanilla_x86.dll from the release.*
+- **Fog**: the color and thickness of each of the map's fogs, `No fog` to take one away, or fog volumes of your own. *Needs the release's renderer, OpenGL (rd-vanilla_x86.dll) or Vulkan (rd-vulkan_x86.dll); with Vulkan's own fog (`r_drawfog 2`, its default) up to 16 fogs in all.*
 - **Locks**: every door and trigger_multiple in the map with its lock. Lock one to a rank (*-1* for no one) with a name shown to whoever it refuses, change it or unlock it, or remove every lock, through RPMod's `rplock`; locked ones are drawn in red. These are the server's, so everyone is held by them
 - A map always starts without edits: they show when you load one of its layouts, or when someone shares theirs, so no one's edits load against anyone else's (`rpc_mapEdits 0` only shows them in the editor)
 - They're saved as entities a server could spawn, ready for when RPMod supports it
@@ -630,7 +630,7 @@ Know when there's a newer OpenJK-rpmod.
 - Anti-aliasing (`r_ext_multisample 2`, 4 or 8), bloom (`r_bloom 1`), HDR (`r_hdr`), dithering (`r_dither 1`) and a render resolution of its own (`r_renderScale`, `r_renderWidth`, `r_renderHeight`); most of them need `r_fbo 1`
 - `r_vbo 1` and `r_vbo_models 1` keep the map's and the models' surfaces on the graphics card, for more frames per second
 - `r_device` picks the graphics card when there's more than one
-- Every tool works with it, but some of what they change in the picture isn't in it yet: the map editor's fog and hiding or moving the map's triangles, the shader manager's sky portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before. Those say so or do nothing
+- Every tool works with it, but some of what they change in the picture isn't in it yet: hiding or moving the map's triangles, the shader manager's sky portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before. Those say so or do nothing
 - Its supersampling (`r_ext_supersample`) is left off for now: it loses the graphics device, in TaystJK's own build too
 - On macOS it needs MoltenVK, which macOS doesn't come with
 
