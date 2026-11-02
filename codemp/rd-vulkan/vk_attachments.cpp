@@ -243,7 +243,7 @@ static void create_color_attachment( uint32_t width, uint32_t height, VkSampleCo
 }
 
 static void create_depth_attachment( uint32_t width, uint32_t height, VkSampleCountFlagBits samples, 
-    VkImage *image, VkImageView *image_view, qboolean allowTransient )
+    VkImage *image, VkImageView *image_view, qboolean allowTransient, qboolean sampled )
 {
     VkImageCreateInfo desc;
     VkMemoryRequirements memory_requirements;
@@ -266,6 +266,10 @@ static void create_depth_attachment( uint32_t width, uint32_t height, VkSampleCo
 	desc.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	if ( allowTransient ) {
 		desc.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+	}
+	// OpenJK-rpmod: read by the cinematic camera's depth of field (vk_rpmod_post.cpp)
+	if ( sampled ) {
+		desc.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
 	}
     desc.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     desc.queueFamilyIndexCount = 0;
@@ -350,7 +354,7 @@ void vk_create_attachments( void )
 
         // screenmap depth
         create_depth_attachment( vk.screenMapWidth, vk.screenMapHeight, (VkSampleCountFlagBits)vk.screenMapSamples,
-            &vk.screenMap.depth_image, &vk.screenMap.depth_image_view, qtrue );
+            &vk.screenMap.depth_image, &vk.screenMap.depth_image_view, qtrue, qfalse );
         
         // refraction
         if ( vk.refractionActive )
@@ -365,9 +369,12 @@ void vk_create_attachments( void )
         }
 
         // MSAA
+        // OpenJK-rpmod: not transient: the post passes (the cinematic camera's depth of field and
+        // filter, bloom, refraction) end the view's render pass and go back into it, loading this,
+        // and a transient image's contents needn't last from one pass to the next. Was qtrue
         if (vk.msaaActive) {
             create_color_attachment( glConfig.vidWidth, glConfig.vidHeight, (VkSampleCountFlagBits)vkSamples, vk.color_format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                &vk.msaa_image, &vk.msaa_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, qtrue );
+                &vk.msaa_image, &vk.msaa_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, qfalse );
         }
 
         // SSAA
@@ -389,9 +396,13 @@ void vk_create_attachments( void )
     // depth
     create_depth_attachment( glConfig.vidWidth, glConfig.vidHeight, (VkSampleCountFlagBits)vkSamples,
         &vk.depth_image, &vk.depth_image_view, 
-        ( vk.fboActive && ( vk.bloomActive || vk.dglowActive ) ) ? qfalse : qtrue );
+        // OpenJK-rpmod: kept and readable with the post effects, for the depth of field: was
+        // ( vk.fboActive && ( vk.bloomActive || vk.dglowActive ) ) ? qfalse : qtrue
+        vk.fboActive ? qfalse : qtrue,
+        (qboolean)( vk.fboActive && vk_rpmod_depth_readable() ) );
 
     vk_alloc_attachment_memory();
+    vk_rpmod_create_attachments(); // OpenJK-rpmod
 
     for ( i = 0; i < vk.image_memory_count; i++ )
     {
@@ -497,6 +508,8 @@ static void vk_destroy_image( VkImage *image, VkImageView *image_view )
 void vk_destroy_attachments( void )
 {
     uint32_t i;
+
+    vk_rpmod_destroy_attachments(); // OpenJK-rpmod
 
     vk_destroy_image( &vk.depth_image, &vk.depth_image_view );
     vk_destroy_image( &vk.msaa_image, &vk.msaa_image_view );

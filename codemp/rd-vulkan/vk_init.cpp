@@ -584,6 +584,7 @@ void vk_initialize( void )
 	vk_create_indirect_buffer( vk.indirect_buffer_size_new );
 	vk_create_storage_buffer( &vk.storage, MAX_FLARES * vk.storage_alignment, "storage (flares)" );
 	vk_create_shader_modules();
+	vk_rpmod_init(); // OpenJK-rpmod
 
 	{
 		VkPipelineCacheCreateInfo ci;
@@ -632,6 +633,7 @@ void vk_shutdown( void )
 
 	qvkDestroyCommandPool(vk.device, vk.command_pool, NULL);
 
+	vk_rpmod_shutdown(); // OpenJK-rpmod
 	qvkDestroyDescriptorPool(vk.device, vk.descriptor_pool, NULL);
 
 	qvkDestroyDescriptorSetLayout(vk.device, vk.set_layout_sampler, NULL);

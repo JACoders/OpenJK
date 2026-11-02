@@ -789,6 +789,13 @@ typedef struct trRefdef_s {
 	vec3_t				skyTint;
 	matrix3_t			skyAxis;
 	float				skyZoom;		// the sky shader drawn this much nearer, 1 as it is
+
+	// OpenJK-rpmod: the cinematic camera's depth of field: sharp dofFocus from the camera give or
+	// take dofRange, blurred up to dofBlur pixels on a 480 high screen away from it; 0 is none.
+	// And its filter, over the view after the depth of field (vk_rpmod_post.cpp)
+	float				dofFocus, dofRange, dofBlur;
+	qboolean			filterOn;
+	screenFilter_t		filter;
 } trRefdef_t;
 
 
@@ -1784,6 +1791,11 @@ typedef struct trGlobals_s {
 	vec3_t					portalSkyOrg;
 	qboolean				portalSkyDrawn;		// a sky portal scene came since the last world scene
 	qboolean				inPortalSky;		// drawing it now
+
+	// OpenJK-rpmod: the cinematic camera's depth of field and filter the next world scene takes
+	float					dofNext[3];			// focus, range and blur
+	qboolean				filterNextOn;
+	screenFilter_t			filterNext;
 } trGlobals_t;
 
 struct glconfigExt_t
@@ -2320,6 +2332,8 @@ void RE_RenderScene( const refdef_t *fd );
 void RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift );	// OpenJK-rpmod
 void RE_SetSkyZoom( float zoom );													// OpenJK-rpmod
 void RE_SetSkyPortal( const vec3_t origin );										// OpenJK-rpmod
+void RE_SetDepthOfField( float focus, float range, float blur );					// OpenJK-rpmod
+void RE_SetScreenFilter( const screenFilter_t *filter );							// OpenJK-rpmod
 int RE_ForgetMissing( const char **shaderFiles, int numShaderFiles );				// OpenJK-rpmod: loadpk3
 int R_ForgetBadSkins( void );														// OpenJK-rpmod: loadpk3
 // OpenJK-rpmod: the map editor's fog

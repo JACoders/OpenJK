@@ -322,8 +322,8 @@ Make a whole cut scene on one timeline, the camera's shots and what the players 
 - Preview it on your own screen, from the start or the moment picked
 - **Play for everyone** sends it whole (a part a second), then it plays on every screen with this client at the same time; **End for everyone** stops it. NPCs are brought on the server to where their moves end, so players without this client see them there too
 - Cinematics are saved by name and played with the Storyteller's Play cinematic step, or `/cinematicmanager send <name>`. Camera shots made before open as a cinematic of one shot
-- **Depth of field**: sharp at the distance you set, on whatever the camera looks at, or on a player or NPC as they move, or on a moving spot, blurred in front and behind; each shot keeps its own, and each spot can change it. A moving spot is a circle in the view as wide as what stays sharp: drag it onto what is to be in focus, then at another moment of the timeline drag it again for another key, and the focus goes from key to key; the wheel on it makes it deeper or shallower, and its keys drag along the timeline. *Needs the rd-vanilla_x86.dll from the release.*
-- **Filters** for each shot: black and white, noir, sepia, old film, night vision, thermal, security camera, VHS tape, hologram, warm, cold, faded or negative. *Needs the rd-vanilla_x86.dll from the release.*
+- **Depth of field**: sharp at the distance you set, on whatever the camera looks at, or on a player or NPC as they move, or on a moving spot, blurred in front and behind; each shot keeps its own, and each spot can change it. A moving spot is a circle in the view as wide as what stays sharp: drag it onto what is to be in focus, then at another moment of the timeline drag it again for another key, and the focus goes from key to key; the wheel on it makes it deeper or shallower, and its keys drag along the timeline. *Needs the rd-vanilla_x86.dll from the release, or the Vulkan renderer with `r_fbo 1`.*
+- **Filters** for each shot: black and white, noir, sepia, old film, night vision, thermal, security camera, VHS tape, hologram, warm, cold, faded or negative. *Needs the rd-vanilla_x86.dll from the release, or the Vulkan renderer with `r_fbo 1`.*
 - **Transitions** in and out of each shot: a fade, or a wipe from the left, the right, the top or the bottom, in black or any color, as long as you like
 - Players moved or animated, you too, are only seen that way by those with this client, and go back where they were when it ends
 - With the HUD hidden, the chat box is hidden too, so chat shows as subtitles at the bottom of the screen: NPC talk, and the players' chat your `rpc_chatRange_*` settings would show, green like the chat box unless the line has its own colors
@@ -630,7 +630,7 @@ Know when there's a newer OpenJK-rpmod.
 - Anti-aliasing (`r_ext_multisample 2`, 4 or 8), bloom (`r_bloom 1`), HDR (`r_hdr`), dithering (`r_dither 1`) and a render resolution of its own (`r_renderScale`, `r_renderWidth`, `r_renderHeight`); most of them need `r_fbo 1`
 - `r_vbo 1` and `r_vbo_models 1` keep the map's and the models' surfaces on the graphics card, for more frames per second
 - `r_device` picks the graphics card when there's more than one
-- Every tool works with it, but some of what they change in the picture isn't in it yet: the cinematic camera's depth of field and filters. Those say so or do nothing
+- Every tool works with it; the cinematic camera's depth of field and filters need `r_fbo 1`
 - Its supersampling (`r_ext_supersample`) is left off for now: it loses the graphics device, in TaystJK's own build too
 - On macOS it needs MoltenVK, which macOS doesn't come with
 

@@ -99,7 +99,8 @@ void vk_create_descriptor_layout( void )
         uint32_t i, maxSets;
 
         pool_size[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_size[0].descriptorCount = MAX_DRAWIMAGES + 1 + 1 + 1 + ( VK_NUM_BLUR_PASSES * 4 ) + 1;
+        pool_size[0].descriptorCount = MAX_DRAWIMAGES + 1 + 1 + 1 + ( VK_NUM_BLUR_PASSES * 4 ) + 1
+            + 5; // OpenJK-rpmod: vk_rpmod_post.cpp's
 
         pool_size[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         pool_size[1].descriptorCount = VK_DESC_UNIFORM_COUNT * NUM_COMMAND_BUFFERS;
@@ -2296,6 +2297,7 @@ void vk_update_post_process_pipelines( void )
 
         vk_create_bloom_pipelines();
         vk_create_dglow_pipelines();
+        vk_rpmod_create_pipelines(); // OpenJK-rpmod
     }
 }
 
@@ -2337,4 +2339,6 @@ void vk_destroy_pipelines( qboolean resetCounter )
 
     for ( i = 0; i < ARRAY_LEN( vk.dglow_blur_pipeline ); i++ )
         vk_destroy_pipeline( &vk.dglow_blur_pipeline[i] );
+
+    vk_rpmod_destroy_pipelines(); // OpenJK-rpmod
 }

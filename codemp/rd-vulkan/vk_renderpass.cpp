@@ -145,7 +145,9 @@ static void vk_create_main_renderpass( void )
     def->attachments[1].samples              = (VkSampleCountFlagBits)vkSamples;
     def->attachments[1].loadOp               = VK_ATTACHMENT_LOAD_OP_CLEAR;
     def->attachments[1].stencilLoadOp        = glConfig.stencilBits ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    if ( vk.bloomActive || vk.dglowActive || vk.refractionActive ) {
+    // OpenJK-rpmod: with the post effects, always: the cinematic camera's depth of field reads it,
+    // and its passes go back into this one. Was ( vk.bloomActive || vk.dglowActive || vk.refractionActive )
+    if ( vk.fboActive ) {
         def->attachments[1].storeOp          = VK_ATTACHMENT_STORE_OP_STORE; // keep it for post-bloom/dynamic-glow pass
         def->attachments[1].stencilStoreOp   = glConfig.stencilBits ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
     }
@@ -166,7 +168,7 @@ static void vk_create_main_renderpass( void )
 #else
         def->attachments[2].loadOp           = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 #endif
-        if ( vk.bloomActive || vk.dglowActive || vk.refractionActive )
+        if ( vk.fboActive ) // OpenJK-rpmod: as the depth above
             def->attachments[2].storeOp      = VK_ATTACHMENT_STORE_OP_STORE; // keep it for post-bloom/dynamic-glow pass
         else
             def->attachments[2].storeOp      = VK_ATTACHMENT_STORE_OP_DONT_CARE; // Intermediate storage (not written)
@@ -630,6 +632,8 @@ void vk_create_render_passes()
 
     if ( vk.capture.image )
         vk_create_capture_renderpass();
+
+    vk_rpmod_create_render_passes(); // OpenJK-rpmod
 }
 
 static void vk_destroy_render_pass( vkRenderPass_t *render_pass )
@@ -655,6 +659,7 @@ void vk_destroy_render_passes( void )
     vk_destroy_render_pass( &vk.render_pass.capture );
     vk_destroy_render_pass( &vk.render_pass.dglow.extract );
     vk_destroy_render_pass( &vk.render_pass.dglow.blend );
+    vk_rpmod_destroy_render_passes(); // OpenJK-rpmod
 
     for ( i = 0; i < ARRAY_LEN( vk.render_pass.bloom.blur ); i++ )
         vk_destroy_render_pass( &vk.render_pass.bloom.blur[i] );

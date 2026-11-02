@@ -1093,6 +1093,10 @@ const void	*RB_DrawSurfs( const void *data ) {
 		backEnd.refractionFill = qfalse;
 	}
 
+	// OpenJK-rpmod: the cinematic camera's depth of field: the view's distances, before dynamic
+	// glow clears the depth buffer
+	vk_rpmod_depth();
+
 	// checked in previous RB_RenderDrawSurfList() if there is at least one glowing surface
 	if ( vk.dglowActive && !( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) && backEnd.hasGlowSurfaces )
 	{
@@ -1106,6 +1110,9 @@ const void	*RB_DrawSurfs( const void *data ) {
 		vk_begin_dglow_blur();
 		backEnd.isGlowPass = qfalse;
 	}
+
+	// OpenJK-rpmod: and its depth of field and filter over the view and its glow
+	vk_rpmod_post();
 
 	//TODO Maybe check for rdf_noworld stuff but q3mme has full 3d ui
 	backEnd.doneSurfaces = qtrue; // for bloom

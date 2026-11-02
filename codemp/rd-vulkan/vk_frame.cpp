@@ -289,6 +289,7 @@ void vk_create_framebuffers()
             }
         }
 
+        vk_rpmod_create_framebuffers(); // OpenJK-rpmod
         vk_debug("Created vk.framebuffers with fbo on\n");
     }
 
@@ -330,6 +331,8 @@ void vk_destroy_framebuffers( void )
 
     for ( i = 0; i < ARRAY_LEN( vk.framebuffers.dglow.blur ); i++ )
         vk_destroy_framebuffer( &vk.framebuffers.dglow.blur[i] );
+
+    vk_rpmod_destroy_framebuffers(); // OpenJK-rpmod
 }
 
 static qboolean vk_find_screenmap_drawsurfs( void )
@@ -599,6 +602,7 @@ void vk_release_resources( void ) {
     vk.pipelines_count = vk.pipelines_world_base;
 
     VK_CHECK(qvkResetDescriptorPool(vk.device, vk.descriptor_pool, 0));
+    vk_rpmod_forget_descriptors(); // OpenJK-rpmod
 
     if (vk_world.num_image_chunks > 1) {
         // if we allocated more than 2 image chunks - use doubled default size

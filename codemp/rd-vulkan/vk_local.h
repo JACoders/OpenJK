@@ -1139,6 +1139,24 @@ uint32_t	vk_find_pipeline_ext( uint32_t base, const Vk_Pipeline_Def *def, qboole
 VkPipeline	vk_gen_pipeline( uint32_t index );
 void		vk_begin_render_pass( VkRenderPass renderPass, VkFramebuffer frameBuffer, qboolean clearValues, uint32_t width, uint32_t height );
 void		vk_end_render_pass( void );
+
+// OpenJK-rpmod: vk_rpmod_post.cpp, the cinematic camera's depth of field and filter
+qboolean	vk_rpmod_depth_readable( void );
+void		vk_rpmod_init( void );
+void		vk_rpmod_shutdown( void );
+void		vk_rpmod_init_descriptors( void );
+void		vk_rpmod_forget_descriptors( void );
+void		vk_rpmod_update_descriptors( void );
+void		vk_rpmod_create_attachments( void );
+void		vk_rpmod_destroy_attachments( void );
+void		vk_rpmod_create_render_passes( void );
+void		vk_rpmod_destroy_render_passes( void );
+void		vk_rpmod_create_framebuffers( void );
+void		vk_rpmod_destroy_framebuffers( void );
+void		vk_rpmod_create_pipelines( void );
+void		vk_rpmod_destroy_pipelines( void );
+void		vk_rpmod_depth( void );
+void		vk_rpmod_post( void );
 void		vk_begin_screenmap_render_pass( void );
 void		vk_begin_main_render_pass( void );
 void		vk_get_pipeline_def( uint32_t pipeline, Vk_Pipeline_Def *def );

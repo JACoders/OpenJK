@@ -583,6 +583,8 @@ void vk_update_attachment_descriptors( void ) {
 			}
 		}
 	}
+
+	vk_rpmod_update_descriptors(); // OpenJK-rpmod
 }
 
 void vk_init_descriptors( void ) {
@@ -657,6 +659,7 @@ void vk_init_descriptors( void ) {
 		VK_CHECK( qvkAllocateDescriptorSets( vk.device, &alloc, &vk.screenMap.color_descriptor ) ); // screenmap
 
 		vk_update_attachment_descriptors();
+		vk_rpmod_init_descriptors(); // OpenJK-rpmod
 	}
 }
 
