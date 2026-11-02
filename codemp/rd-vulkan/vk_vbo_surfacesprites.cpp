@@ -327,10 +327,21 @@ static void vk_surface_sprites_estimate_tri( srfTriangles_t *tri, float density,
 	}
 }
 
-static void vk_surface_sprites_estimate_grid( srfGridMesh_t *grid, float density, const shaderStage_t *stage, uint32_t *count ) 
+// OpenJK-rpmod: curved patches get their sprites too. They weren't supported, so grass and bushes
+// on a patch (all of duneeden's ground bushes) only showed with r_vbo 0. A patch is a grid of
+// vertexes: each cell is two triangles
+static void vk_surface_sprites_estimate_grid( srfGridMesh_t *grid, float density, const shaderStage_t *stage, uint32_t *count )
 {
-	(*count) = 0;
-	return;
+	int i, j;
+
+	for ( j = 0; j < grid->height - 1; j++ ) {
+		for ( i = 0; i < grid->width - 1; i++ ) {
+			const drawVert_t *v = grid->verts + j * grid->width + i;
+
+			vk_surface_sprites_estimate_in_triangle( &v[0].xyz, &v[grid->width].xyz, &v[1].xyz, density, count );
+			vk_surface_sprites_estimate_in_triangle( &v[1].xyz, &v[grid->width].xyz, &v[grid->width + 1].xyz, density, count );
+		}
+	}
 }
 
 static uint32_t vk_surface_sprites_estimate( const msurface_t *surf, float density, const shaderStage_t *stage )
@@ -497,6 +508,44 @@ static void vk_surface_sprites_create_vertex_data_tri( const srfTriangles_t *tri
 	}
 }
 
+// OpenJK-rpmod: see vk_surface_sprites_estimate_grid
+static void vk_surface_sprites_create_vertex_data_grid( const srfGridMesh_t *grid, float density,
+	const shaderStage_t *stage, sprite_t *sprites, uint32_t *count, vec4_t *color, bool vertexLit )
+{
+	int i, j, k, t;
+
+	for ( j = 0; j < grid->height - 1; j++ )
+	{
+		for ( i = 0; i < grid->width - 1; i++ )
+		{
+			const drawVert_t *cell = grid->verts + j * grid->width + i;
+			const drawVert_t *tris[2][3] = {
+				{ &cell[0], &cell[grid->width], &cell[1] },
+				{ &cell[1], &cell[grid->width], &cell[grid->width + 1] },
+			};
+
+			for ( t = 0; t < 2; t++ )
+			{
+				vec3_t p0, p1, p2;
+				vec4_t c0, c1, c2;
+
+				VectorCopy( tris[t][0]->xyz, p0 );
+				VectorCopy( tris[t][1]->xyz, p1 );
+				VectorCopy( tris[t][2]->xyz, p2 );
+
+				for ( k = 0; k < 4; k++ )
+				{
+					c0[k] = tris[t][0]->color[0][k] / 255.0f;
+					c1[k] = tris[t][1]->color[0][k] / 255.0f;
+					c2[k] = tris[t][2]->color[0][k] / 255.0f;
+				}
+
+				vk_surface_sprites_create_vertex_data_in_triangle( density, stage, sprites, count, color, vertexLit, &p0, &p1, &p2, &c0, &c1, &c2 );
+			}
+		}
+	}
+}
+
 static uint32_t vk_surface_sprites_create_vertex_data( const msurface_t *surf, float density, 
 	const shaderStage_t *stage, sprite_t *sprites )
 {
@@ -518,7 +567,8 @@ static uint32_t vk_surface_sprites_create_vertex_data( const msurface_t *surf, f
 		case SF_FACE:
 			vk_surface_sprites_create_vertex_data_face( (srfSurfaceFace_t*)surf->data, density, stage, sprites, &count, &color, vertexLit );
 			break;
-		case SF_GRID:
+		case SF_GRID: // OpenJK-rpmod: was left out
+			vk_surface_sprites_create_vertex_data_grid( (srfGridMesh_t*)surf->data, density, stage, sprites, &count, &color, vertexLit );
 			break;
 		case SF_TRIANGLES:
 			vk_surface_sprites_create_vertex_data_tri( (srfTriangles_t*)surf->data, density, stage, sprites, &count, &color, vertexLit );
