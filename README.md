@@ -31,10 +31,8 @@ A few features reach other players hidden inside RPMod's `rpnotify`, until RPMod
 You need Jedi Academy installed, from [Steam](https://store.steampowered.com/app/6020/) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy) for example.
 
 1. [Download the latest release](https://github.com/Ber-til/OpenJK-rpmod/releases/latest) for your system: `OpenJK-windows-x86.zip` on Windows.
-2. Extract the zip (right-click it, **Extract All...**), open the folder it makes and double-click **Install-OpenJK-rpmod.bat**. It finds Jedi Academy (Steam, GOG or the CD version) and asks before copying; if it can't find it, it asks you for the `GameData` folder. Files it replaces are kept in `GameData/OpenJK-rpmod-backup`. If Windows warns about the script, pick **More info**, then **Run anyway**.
+2. Extract everything in it into Jedi Academy's `GameData` folder, the renderer (`rd-vanilla_x86.dll`) included: several features need it. For Steam that's `<Steam folder>/steamapps/common/Jedi Academy/GameData/`. On Linux and macOS, extract the archive there the same way.
 3. If you already used OpenJK, you're ready. If not, tick **Use OpenJK if available** in the RPMod launcher.
-
-To install by hand instead, extract everything in the zip into Jedi Academy's `GameData` folder, the renderer (`rd-vanilla_x86.dll`) included: several features need it. For Steam that's `<Steam folder>/steamapps/common/Jedi Academy/GameData/`. On Linux and macOS, extract the archive there the same way.
 
 ## Building
 

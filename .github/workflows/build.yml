@@ -40,10 +40,6 @@ jobs:
         shell: bash
         run: cmake --install . --config Release
 
-      - name: Add the installer script
-        shell: bash
-        run: cp scripts/windows/Install-OpenJK-rpmod.bat build/bin/JediAcademy/
-
       - uses: actions/upload-artifact@v4
         with:
           name: OpenJK-windows-x86-Release-Non-Portable
