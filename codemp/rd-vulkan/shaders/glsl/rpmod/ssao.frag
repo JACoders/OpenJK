@@ -86,9 +86,13 @@ void main()
 			continue;
 
 		const float sceneZ = Dist( Pixel( S ) );
-		// in front of the sample: it's hidden, if what hides it is near enough to count
-		const float range = clamp( radius / max( abs( z - sceneZ ), 1e-3 ), 0.0, 1.0 );
-		hidden += ( sceneZ < S.z - bias ? 1.0 : 0.0 ) * range;
+		// in front of the sample: it's hidden, if what hides it is just in front of it. Something
+		// well in front (a player's head and shoulders seen from above, over the floor around their
+		// feet) passes over it rather than enclosing it: counted, it left a dark halo round them
+		const float inFront = S.z - sceneZ;
+		const float thickness = radius * 0.5;
+		const float range = 1.0 - smoothstep( thickness, thickness * 2.0, inFront );
+		hidden += ( inFront > bias ? 1.0 : 0.0 ) * range;
 	}
 
 	const float ao = clamp( 1.0 - 2.0 * pc.a.w * hidden / float( SAMPLES ), 0.0, 1.0 );
