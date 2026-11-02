@@ -918,7 +918,8 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     }
 #endif
 
-    // OpenJK-rpmod: soft particles: our fragment shader for the single texture one (never fogged)
+    // OpenJK-rpmod: soft particles: our fragment shader for the single texture one; fogged, the
+    // switch below takes the next one, our fogged one
     if ( def->rpmod_soft && vk_rpmod_soft_module( def->shader_type ) )
         fs_module = vk_rpmod_soft_module( def->shader_type );
 
@@ -1164,7 +1165,8 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     // OpenJK-rpmod: and its constants
     if ( def->rpmod_soft && vk_rpmod_soft_module( def->shader_type ) )
         shader_stages[1].pSpecializationInfo = vk_rpmod_soft_spec( def->rpmod_soft, frag_spec_data.alpha_test_func,
-            frag_spec_data.alpha_test_value, frag_spec_data.identity_color, frag_spec_data.identity_alpha );     
+            frag_spec_data.alpha_test_value, frag_spec_data.identity_color, frag_spec_data.identity_alpha,
+            frag_spec_data.hw_fog, frag_spec_data.acff );     
 
     // vertex input state (binding and attributes)
     vk_push_vertex_input_binding_attribute( def );

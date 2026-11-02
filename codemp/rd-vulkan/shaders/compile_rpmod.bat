@@ -30,8 +30,11 @@ call :frag rpmod_ssao_frag_spv glsl\rpmod\ssao.frag || exit /b 1
 call :frag rpmod_aoblur_frag_spv glsl\rpmod\aoblur.frag || exit /b 1
 call :frag rpmod_aoapply_frag_spv glsl\rpmod\aoapply.frag || exit /b 1
 call :frag rpmod_soft_gen_frag_spv glsl\rpmod\soft.frag -DSOFT_GEN || exit /b 1
+call :frag rpmod_soft_gen_fog_frag_spv glsl\rpmod\soft.frag -DSOFT_GEN -DUSE_FOG || exit /b 1
 call :frag rpmod_soft_ident_frag_spv glsl\rpmod\soft.frag -DSOFT_IDENT || exit /b 1
+call :frag rpmod_soft_ident_fog_frag_spv glsl\rpmod\soft.frag -DSOFT_IDENT -DUSE_FOG || exit /b 1
 call :frag rpmod_soft_fixed_frag_spv glsl\rpmod\soft.frag -DSOFT_FIXED || exit /b 1
+call :frag rpmod_soft_fixed_fog_frag_spv glsl\rpmod\soft.frag -DSOFT_FIXED -DUSE_FOG || exit /b 1
 call :frag rpmod_shafts_mask_frag_spv glsl\rpmod\shafts.frag -DSHAFTS_MASK || exit /b 1
 call :frag rpmod_shafts_blur_frag_spv glsl\rpmod\shafts.frag -DSHAFTS_BLUR || exit /b 1
 call :frag rpmod_shafts_add_frag_spv glsl\rpmod\shafts.frag -DSHAFTS_ADD || exit /b 1
@@ -45,6 +48,6 @@ echo done: %outf%
 exit /b 0
 
 :frag
-%cl% -S frag -V -o %tmpf% %2 %3 || exit /b 1
+%cl% -S frag -V -o %tmpf% %2 %3 %4 || exit /b 1
 %bh% %tmpf% +%outf% %1 || exit /b 1
 exit /b 0

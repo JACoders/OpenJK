@@ -1983,8 +1983,9 @@ extern cvar_t	*r_defaultImage;
 extern cvar_t	*r_device;
 extern cvar_t	*r_ext_multisample;
 extern cvar_t	*r_ext_supersample;
-// OpenJK-rpmod: supersampling stays off whatever r_ext_supersample says: TaystJK's loses the graphics
-// device on the first frame (its own build too, on an NVIDIA RTX 3060 Ti), so it's left out until fixed
+// OpenJK-rpmod: TaystJK's own supersampling (a capture image the window's size, the rest twice that)
+// stays off: it lost the graphics device, then drew nothing. r_ext_supersample renders at twice the
+// size the way r_renderScale does instead, scaled down by the gamma pass (vk_init.cpp)
 #define R_SUPERSAMPLE	0
 extern cvar_t	*r_ext_alpha_to_coverage;
 extern cvar_t	*r_fbo;

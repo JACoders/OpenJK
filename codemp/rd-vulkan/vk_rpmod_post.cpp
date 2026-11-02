@@ -60,7 +60,8 @@ static struct {
 	qboolean			ready;			// everything is there for this window
 
 	VkShaderModule		depthFs, depthMsFs, dofFs, filterFs, copyFs;
-	VkShaderModule		ssaoFs, aoBlurFs, aoApplyFs, softFs[3], shaftsFs[3], mblurFs, gradeFs, fxaaFs, casFs;
+	VkShaderModule		ssaoFs, aoBlurFs, aoApplyFs, shaftsFs[3], mblurFs, gradeFs, fxaaFs, casFs;
+	VkShaderModule		softFs[6];		// in pairs, unfogged then fogged: vk_create_pipeline takes the next one for fog
 	VkPipelineLayout	layout;			// two image sets, 128 bytes of push constants
 
 	// the screen's size: two images the passes go between, the distances, ambient occlusion
@@ -238,8 +239,11 @@ void vk_rpmod_init( void ) {
 	RP_MODULE( rp.aoBlurFs, rpmod_aoblur_frag_spv, "rpmod ambient occlusion blur" );
 	RP_MODULE( rp.aoApplyFs, rpmod_aoapply_frag_spv, "rpmod ambient occlusion apply" );
 	RP_MODULE( rp.softFs[0], rpmod_soft_gen_frag_spv, "rpmod soft particles" );
-	RP_MODULE( rp.softFs[1], rpmod_soft_ident_frag_spv, "rpmod soft particles identity" );
-	RP_MODULE( rp.softFs[2], rpmod_soft_fixed_frag_spv, "rpmod soft particles fixed colour" );
+	RP_MODULE( rp.softFs[1], rpmod_soft_gen_fog_frag_spv, "rpmod soft particles fogged" );
+	RP_MODULE( rp.softFs[2], rpmod_soft_ident_frag_spv, "rpmod soft particles identity" );
+	RP_MODULE( rp.softFs[3], rpmod_soft_ident_fog_frag_spv, "rpmod soft particles identity fogged" );
+	RP_MODULE( rp.softFs[4], rpmod_soft_fixed_frag_spv, "rpmod soft particles fixed colour" );
+	RP_MODULE( rp.softFs[5], rpmod_soft_fixed_fog_frag_spv, "rpmod soft particles fixed colour fogged" );
 	RP_MODULE( rp.shaftsFs[0], rpmod_shafts_mask_frag_spv, "rpmod sun shafts mask" );
 	RP_MODULE( rp.shaftsFs[1], rpmod_shafts_blur_frag_spv, "rpmod sun shafts blur" );
 	RP_MODULE( rp.shaftsFs[2], rpmod_shafts_add_frag_spv, "rpmod sun shafts add" );
@@ -263,7 +267,7 @@ void vk_rpmod_init( void ) {
 
 void vk_rpmod_shutdown( void ) {
 	VkShaderModule *modules[] = { &rp.depthFs, &rp.depthMsFs, &rp.dofFs, &rp.filterFs, &rp.copyFs,
-		&rp.ssaoFs, &rp.aoBlurFs, &rp.aoApplyFs, &rp.softFs[0], &rp.softFs[1], &rp.softFs[2],
+		&rp.ssaoFs, &rp.aoBlurFs, &rp.aoApplyFs, &rp.softFs[0], &rp.softFs[1], &rp.softFs[2], &rp.softFs[3], &rp.softFs[4], &rp.softFs[5],
 		&rp.shaftsFs[0], &rp.shaftsFs[1], &rp.shaftsFs[2], &rp.mblurFs, &rp.gradeFs, &rp.fxaaFs, &rp.casFs };
 
 	for ( size_t i = 0; i < ARRAY_LEN( modules ); i++ ) {
@@ -996,7 +1000,7 @@ uint32_t vk_rpmod_soft_pipeline( uint32_t pipeline ) {
 	int mode;
 
 	vk_get_pipeline_def( pipeline, &def );
-	if ( def.rpmod_soft || def.fog_stage || def.surface_sprite_flags || def.shadow_phase != SHADOW_DISABLED
+	if ( def.rpmod_soft || def.surface_sprite_flags || def.shadow_phase != SHADOW_DISABLED
 		|| def.primitives != TRIANGLE_LIST
 #ifdef USE_VBO
 		|| def.vbo_ghoul2 || def.vbo_mdv
@@ -1034,7 +1038,8 @@ uint32_t vk_rpmod_soft_pipeline( uint32_t pipeline ) {
 	return vk_find_pipeline_ext( 0, &def, qfalse );
 }
 
-// for vk_create_pipeline: our fragment shader for the renderer's single texture one
+// for vk_create_pipeline: our fragment shader for the renderer's single texture one; the fogged one
+// is the next, as the renderer's own are
 VkShaderModule *vk_rpmod_soft_module( int shaderType ) {
 	switch ( shaderType ) {
 		case TYPE_SINGLE_TEXTURE:
@@ -1042,17 +1047,17 @@ VkShaderModule *vk_rpmod_soft_module( int shaderType ) {
 			return &rp.softFs[0];
 		case TYPE_SINGLE_TEXTURE_IDENTITY:
 		case TYPE_SINGLE_TEXTURE_IDENTITY_ENV:
-			return &rp.softFs[1];
+			return &rp.softFs[2];
 		case TYPE_SINGLE_TEXTURE_FIXED_COLOR:
 		case TYPE_SINGLE_TEXTURE_FIXED_COLOR_ENV:
-			return &rp.softFs[2];
+			return &rp.softFs[4];
 		default:
 			return NULL;
 	}
 }
 
-// and its constants: the alpha test and fixed colour as the renderer's, how it fades
-const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, float alphaTestValue, float identityColor, float identityAlpha ) {
+// and its constants: the alpha test, fixed colour and fog as the renderer's, how it fades
+const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, float alphaTestValue, float identityColor, float identityAlpha, int hwFog, int acff ) {
 	static struct {
 		int32_t		alphaTestFunc;
 		float		alphaTestValue;
@@ -1060,10 +1065,12 @@ const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, flo
 		float		identityAlpha;
 		float		scale;
 		int32_t		mode;
+		int32_t		hwFog;
+		int32_t		acff;
 	} data;
-	static VkSpecializationMapEntry entries[6];
+	static VkSpecializationMapEntry entries[8];
 	static VkSpecializationInfo info;
-	const uint32_t ids[6] = { 0, 1, 9, 10, 20, 21 };
+	const uint32_t ids[8] = { 0, 1, 9, 10, 20, 21, 5, 11 };
 
 	data.alphaTestFunc = alphaTestFunc;
 	data.alphaTestValue = alphaTestValue;
@@ -1071,8 +1078,10 @@ const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, flo
 	data.identityAlpha = identityAlpha;
 	data.scale = 1.0f / (float)MAX( 1, soft >> 2 );
 	data.mode = soft & 3;
+	data.hwFog = hwFog;
+	data.acff = acff;
 
-	for ( int i = 0; i < 6; i++ ) {
+	for ( int i = 0; i < 8; i++ ) {
 		entries[i].constantID = ids[i];
 		entries[i].offset = i * 4;
 		entries[i].size = 4;

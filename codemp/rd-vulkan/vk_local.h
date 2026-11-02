@@ -1166,7 +1166,7 @@ qboolean	vk_rpmod_soft_active( void );
 VkDescriptorSet vk_rpmod_soft_set( void );
 uint32_t	vk_rpmod_soft_pipeline( uint32_t pipeline );
 VkShaderModule *vk_rpmod_soft_module( int shaderType );
-const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, float alphaTestValue, float identityColor, float identityAlpha );
+const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, float alphaTestValue, float identityColor, float identityAlpha, int hwFog, int acff );
 void		vk_begin_screenmap_render_pass( void );
 void		vk_begin_main_render_pass( void );
 void		vk_get_pipeline_def( uint32_t pipeline, Vk_Pipeline_Def *def );

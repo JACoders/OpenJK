@@ -24,6 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // the UI reads them. The button and the rows are copies of the menu's own DEFAULTS button and VIDEO
 // QUALITY row, so they look as the rest of it does whoever made it; a menu without those is left be.
 //
+// Two pages: JKA's Setup menu has room for 15 rows, and a button at the end of each goes to the other.
+//
 // The page's rows are ui_rd_* copies of the settings: most of them only take with a vid_restart, and
 // a latched cvar reads as it was until then. "renderersettings sync" fills the copies as the page
 // opens, and the video restart's Yes runs "renderersettings apply" before its vid_restart.
@@ -35,68 +37,85 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // botlib/l_script.cpp: a script file read, before it's parsed
 extern const char *( *LoadScriptFile_Patch )( const char *filename, const char *text, int *length );
 
-#define RM_GROUP		"renderer"
+#define RM_GROUP		"renderer"		// the first page
+#define RM_GROUP2		"renderer2"		// the second
 #define RM_BUTTON		"renderermenubutton"
 #define RM_GLOW			"rendererbutton_glow"
 #define RM_VULKAN		"rd-vulkan"
 
 typedef struct {
-	const char	*ui;			// the page's copy
+	const char	*ui;			// the page's copy; NULL for the button to the other page
 	const char	*real;			// the setting
 	const char	*def;			// when the renderer that has it hasn't made it yet
 	const char	*label;
 	const char	*desc;
 	const char	*list;			// cvarStrList (commas between) or cvarFloatList (none), braces and all
 	qboolean	vulkanOnly;		// shown when Vulkan is picked
+	int			page;			// 0 or 1
 } rmRow_t;
 
 static const rmRow_t rmRows[] = {
 	{ "ui_rd_renderer", "cl_renderer", "rd-vanilla", "Renderer:",
 		"OpenGL is the usual one; Vulkan is TaystJK's, with more effects (experimental)",
-		"cvarStrList { \"OpenGL\" , \"rd-vanilla\" , \"Vulkan\" , \"rd-vulkan\" }", qfalse },
+		"cvarStrList { \"OpenGL\" , \"rd-vanilla\" , \"Vulkan\" , \"rd-vulkan\" }", qfalse, 0 },
 	{ "ui_rd_msaa", "r_ext_multisample", "0", "Anti-aliasing:",
 		"Smooths jagged edges; more costs more frames",
-		"cvarFloatList { \"Off\" 0 \"2x\" 2 \"4x\" 4 \"8x\" 8 }", qfalse },
+		"cvarFloatList { \"Off\" 0 \"2x\" 2 \"4x\" 4 \"8x\" 8 }", qfalse, 0 },
 	{ "ui_rd_glow", "r_DynamicGlow", "0", "Dynamic Glow:",
 		"Glowing lights and sabers; with Vulkan it needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qfalse },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qfalse, 0 },
 	{ "ui_rd_fbo", "r_fbo", "0", "Post Effects:",
-		"Draws to a picture first: needed for bloom, HDR, dithering and glow",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"Draws to a picture first: needed for bloom, HDR, dithering, glow and the effects on the next page",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
 	{ "ui_rd_bloom", "r_bloom", "0", "Bloom:",
 		"Bright light bleeds into its surroundings; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
 	{ "ui_rd_hdr", "r_hdr", "1", "HDR:",
 		"More colour depth in the picture, less banding; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
 	{ "ui_rd_dither", "r_dither", "0", "Dithering:",
 		"Hides banding in smooth gradients; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
 	{ "ui_rd_vbo", "r_vbo", "0", "World Caching:",
 		"Keeps the map on the graphics card: more frames per second",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
 	{ "ui_rd_vbomodels", "r_vbo_models", "0", "Model Caching:",
 		"Keeps models on the graphics card: more frames per second",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
-	// Vulkan's own additions (rd-vulkan's vk_rpmod_post.cpp); JKA's Setup menu has room for 15 rows
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
 	{ "ui_rd_ssao", "r_ssao", "0", "Ambient Occlusion:",
 		"Darkens corners, creases and the ground under things; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
+	{ NULL, NULL, NULL, "More Settings >",
+		"Supersampling, soft particles, FXAA, sharpening, sun shafts, tone mapping, motion blur",
+		NULL, qtrue, 0 },
+	// the second page: Vulkan's own additions (rd-vulkan's vk_rpmod_post.cpp)
+	{ "ui_rd_ssaa", "r_ext_supersample", "0", "Supersampling:",
+		"Draws the picture at twice the size and scales it down: smooths every edge, costs about four times the drawing; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
 	{ "ui_rd_soft", "r_softParticles", "0", "Soft Particles:",
 		"Smoke and fire fade where they meet walls instead of cutting into them; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
 	{ "ui_rd_fxaa", "r_fxaa", "0", "FXAA:",
 		"Smooths edges over the finished picture, grass and fences too; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
 	{ "ui_rd_sharpen", "r_sharpen", "0", "Sharpening:",
-		"Crisper detail, against the softness of FXAA or a lower render scale; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"Low\" 0.4 \"High\" 0.8 }", qtrue },
+		"Crisper detail, against the softness of FXAA or supersampling; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"Low\" 0.4 \"High\" 0.8 }", qtrue, 1 },
 	{ "ui_rd_shafts", "r_sunShafts", "0", "Sun Shafts:",
 		"Beams of light from the sun through gaps, on maps with a sun; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+	{ "ui_rd_shaftsstrength", "r_sunShaftsIntensity", "1", "Sun Shaft Strength:",
+		"How bright the sun shafts are",
+		"cvarFloatList { \"Low\" 0.5 \"Medium\" 1 \"High\" 2 \"Very High\" 3 }", qtrue, 1 },
 	{ "ui_rd_tonemap", "r_tonemap", "0", "Tone Mapping:",
 		"Bright light rolls off like film instead of clipping to white; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+	{ "ui_rd_mblur", "r_motionBlur", "0", "Motion Blur:",
+		"The picture smears as the camera moves or turns; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"Low\" 0.3 \"Medium\" 0.6 \"High\" 1 }", qtrue, 1 },
+	{ NULL, NULL, NULL, "< Back",
+		"The renderer, anti-aliasing, glow, post effects and the rest",
+		NULL, qtrue, 1 },
 };
 static const int rmNumRows = (int)ARRAY_LEN( rmRows );
 
@@ -117,11 +136,17 @@ static void RM_Settings_f( void ) {
 	const char *how = Cmd_Argv( 1 );
 
 	if ( !Q_stricmp( how, "sync" ) ) {
-		for ( int i = 0; i < rmNumRows; i++ )
-			Cvar_Set( rmRows[i].ui, RM_Effective( &rmRows[i] ) );
+		for ( int i = 0; i < rmNumRows; i++ ) {
+			if ( rmRows[i].ui )
+				Cvar_Set( rmRows[i].ui, RM_Effective( &rmRows[i] ) );
+		}
 	} else if ( !Q_stricmp( how, "apply" ) ) {
 		for ( int i = 0; i < rmNumRows; i++ ) {
-			const char *want = Cvar_VariableString( rmRows[i].ui );
+			const char *want;
+
+			if ( !rmRows[i].ui )
+				continue;
+			want = Cvar_VariableString( rmRows[i].ui );
 
 			if ( want[0] && Q_stricmp( want, RM_Effective( &rmRows[i] ) ) )
 				Cvar_Set( rmRows[i].real, want );
@@ -278,6 +303,17 @@ static void RM_SetRectY( std::string &item, float y ) {
 	item.replace( start, end - start, va( "%g", y ) );
 }
 
+// the word `key` and the token after it taken out
+static void RM_RemoveValue( std::string &item, const char *key ) {
+	const size_t at = RM_FindWord( item, key, 0 );
+	size_t end;
+
+	if ( at == RM_NONE )
+		return;
+	RM_Token( item, at + strlen( key ), &end );
+	item.erase( at, end - at );
+}
+
 // every `from`, on its own, made `to`
 static void RM_ReplaceWord( std::string &s, const char *from, const std::string &to ) {
 	for ( size_t at = RM_FindWord( s, from, 0 ); at != RM_NONE; at = RM_FindWord( s, from, at + to.size() ) )
@@ -395,8 +431,8 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 		RM_SetValue( button, "text", RM_Quote( "RENDERER" ) );
 		RM_SetValue( button, "descText", RM_Quote( "OpenGL or Vulkan, and their graphics settings" ) );
 		RM_SetRectY( button, y );
-		// its page instead of DEFAULTS', with the settings as they are
-		RM_ReplaceCommand( button, "show", "defaults", "hide defaults show " RM_GROUP " exec \"renderersettings sync\"" );
+		// its first page instead of DEFAULTS', with the settings as they are
+		RM_ReplaceCommand( button, "show", "defaults", "hide defaults hide " RM_GROUP2 " show " RM_GROUP " exec \"renderersettings sync\"" );
 
 		RM_ReplaceWord( shine, "gamedefaultsbutton_glow", RM_GLOW );
 		RM_SetRectY( shine, y );
@@ -404,35 +440,45 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 		add += "\n" + shine + "\n" + button + "\n";
 	}
 
-	// the rows, as VIDEO QUALITY is
-	for ( int i = 0; i < rmNumRows; i++ ) {
+	// the rows, as VIDEO QUALITY is, each page from the top; the buttons to the other page as they are
+	// but for the setting
+	for ( int i = 0, onPage[2] = { 0, 0 }; i < rmNumRows; i++ ) {
 		const rmRow_t *rr = &rmRows[i];
 		std::string item = s.substr( row->start, row->end - row->start );
+		const int at = onPage[rr->page]++;
 		char highlight[32];
 
 		RM_SetValue( item, "name", va( "rd_row%i", i ) );
-		RM_SetValue( item, "group", RM_GROUP );
+		RM_SetValue( item, "group", rr->page ? RM_GROUP2 : RM_GROUP );
 		RM_SetValue( item, "text", RM_Quote( rr->label ) );
 		RM_SetValue( item, "descText", RM_Quote( rr->desc ) );
 		RM_SetValue( item, "visible", "0" );
-		RM_SetValue( item, "cvar", RM_Quote( rr->ui ) );
-		RM_SetRectY( item, rowY + rowStep * i );
+		RM_SetRectY( item, rowY + rowStep * at );
 		RM_ReplaceBlock( item, "cvarFloatList", "" );
 		RM_ReplaceBlock( item, "cvarStrList", "" );
-		RM_ReplaceBlock( item, "action", "action { play \"sound/interface/button1\" show applyChanges }" );
-		Com_sprintf( highlight, sizeof( highlight ), "highlight%i", i + 1 );
+		Com_sprintf( highlight, sizeof( highlight ), "highlight%i", at + 1 );
 		RM_ReplaceWord( item, "highlight1", highlight );
-		item.insert( item.rfind( '}' ), std::string( rr->list ) + "\n" );
+		if ( !rr->ui ) {
+			RM_RemoveValue( item, "cvar" );
+			RM_SetValue( item, "type", "ITEM_TYPE_BUTTON" );
+			RM_ReplaceBlock( item, "action", rr->page
+				? "action { play \"sound/interface/button1\" hide " RM_GROUP2 " show " RM_GROUP " }"
+				: "action { play \"sound/interface/button1\" hide " RM_GROUP " show " RM_GROUP2 " }" );
+		} else {
+			RM_SetValue( item, "cvar", RM_Quote( rr->ui ) );
+			RM_ReplaceBlock( item, "action", "action { play \"sound/interface/button1\" show applyChanges }" );
+			item.insert( item.rfind( '}' ), std::string( rr->list ) + "\n" );
+		}
 		if ( rr->vulkanOnly )
 			item.insert( item.rfind( '}' ), "cvarTest \"ui_rd_renderer\" showCvar { \"" RM_VULKAN "\" }\n" );
 		add += item + "\n";
 	}
 
-	// the menu's own scripts: its other pages hide this one, and the restart applies it
-	RM_AfterCommand( s, "show", "video2", " hide " RM_GROUP );
-	RM_AfterCommand( s, "hide", "video2", " hide " RM_GROUP );
-	RM_AfterCommand( s, "show", "defaults", " hide " RM_GROUP );
-	RM_AfterCommand( s, "hide", "defaults", " hide " RM_GROUP );
+	// the menu's own scripts: its other pages hide these two, and the restart applies them
+	RM_AfterCommand( s, "show", "video2", " hide " RM_GROUP " hide " RM_GROUP2 );
+	RM_AfterCommand( s, "hide", "video2", " hide " RM_GROUP " hide " RM_GROUP2 );
+	RM_AfterCommand( s, "show", "defaults", " hide " RM_GROUP " hide " RM_GROUP2 );
+	RM_AfterCommand( s, "hide", "defaults", " hide " RM_GROUP " hide " RM_GROUP2 );
 	{
 		const std::string apply = "exec \"renderersettings apply\" ";
 
@@ -463,8 +509,10 @@ init
 */
 
 void CL_RenderMenu_Init( void ) {
-	for ( int i = 0; i < rmNumRows; i++ )
-		Cvar_Get( rmRows[i].ui, rmRows[i].def, 0, "The Setup menu's RENDERER page: renderersettings apply sets it" );
+	for ( int i = 0; i < rmNumRows; i++ ) {
+		if ( rmRows[i].ui )
+			Cvar_Get( rmRows[i].ui, rmRows[i].def, 0, "The Setup menu's RENDERER page: renderersettings apply sets it" );
+	}
 	Cmd_AddCommand( "renderersettings", RM_Settings_f, "The Setup menu's RENDERER page: sync or apply" );
 	LoadScriptFile_Patch = RM_Patch;
 }

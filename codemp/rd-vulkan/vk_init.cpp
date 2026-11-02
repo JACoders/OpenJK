@@ -67,7 +67,7 @@ static void vk_set_render_scale( void )
 		vk.windowAdjusted = qtrue;
 	}
 
-	if (r_fbo->integer && R_SUPERSAMPLE && !r_renderScale->integer) // OpenJK-rpmod: was r_ext_supersample->integer
+	if (r_fbo->integer && r_ext_supersample->integer && !r_renderScale->integer) // OpenJK-rpmod: supersampling, as above
 	{
 		vk.blitFilter = GL_LINEAR;
 	}
@@ -342,6 +342,12 @@ void vk_create_window( void ) {
 			if (r_renderScale->integer){
 				glConfig.vidWidth = r_renderWidth->integer;
 				glConfig.vidHeight = r_renderHeight->integer;
+			}
+			// OpenJK-rpmod: supersampling: drawn at twice the size, as a render resolution of its own,
+			// and scaled down to the window by the gamma pass (vk_set_render_scale: linear filtering)
+			else if ( r_ext_supersample->integer ) {
+				glConfig.vidWidth *= 2;
+				glConfig.vidHeight *= 2;
 			}
 
 			gls.captureWidth = glConfig.vidWidth;
