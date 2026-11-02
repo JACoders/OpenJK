@@ -576,7 +576,8 @@ void vk_initialize( void )
 
 	vk.geometry_buffer_size_new = vk.defaults.geometry_size;
 	vk.indirect_buffer_size_new = sizeof(VkDrawIndexedIndirectCommand) * 1024 * 1024;
-	vk_create_vertex_buffer( vk.geometry_buffer_size_new );
+	if ( !vk_create_vertex_buffer( vk.geometry_buffer_size_new ) )
+		ri.Error( ERR_FATAL, "Vulkan: out of memory for frame geometry (%i MB)", (int)( vk.geometry_buffer_size_new >> 20 ) );
 	vk_create_indirect_buffer( vk.indirect_buffer_size_new );
 	vk_create_storage_buffer( &vk.storage, MAX_FLARES * vk.storage_alignment, "storage (flares)" );
 	vk_create_shader_modules();

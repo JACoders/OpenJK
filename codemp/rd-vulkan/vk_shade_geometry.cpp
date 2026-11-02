@@ -131,7 +131,7 @@ static void vk_bind_attr( int index, unsigned int item_size, const void *src ) {
 
 	if (offset + size > vk.geometry_buffer_size) {
 		// schedule geometry buffer resize
-		vk.geometry_buffer_size_new = log2pad(offset + size, 1);
+		vk_schedule_geometry_resize( (VkDeviceSize)offset + size );
 	}
 	else {
 		vk.cmd->buf_offset[index] = offset;
@@ -148,7 +148,7 @@ uint32_t vk_tess_index( uint32_t numIndexes, const void *src ) {
 
 	if (offset + size > vk.geometry_buffer_size) {
 		// schedule geometry buffer resize
-		vk.geometry_buffer_size_new = log2pad(offset + size, 1);
+		vk_schedule_geometry_resize( (VkDeviceSize)offset + size );
 		return ~0U;
 	}
 	else {
@@ -721,7 +721,28 @@ void vk_create_indirect_buffer( VkDeviceSize size )
 
 }
 
-void vk_create_vertex_buffer( VkDeviceSize size )
+// OpenJK-rpmod: a frame's geometry didn't fit: the frame isn't shown, and the buffer grows before the
+// next one. Past a size a bigger one already failed at, it's tried again only every few seconds
+#define GEOMETRY_RETRY_MS	5000
+
+void vk_schedule_geometry_resize( VkDeviceSize needed )
+{
+	const VkDeviceSize size = log2pad( (unsigned int)needed, 1 );
+
+	vk.geometry_overflow = qtrue;
+
+	if ( vk.geometry_buffer_max && size > vk.geometry_buffer_max ) {
+		if ( ri.Milliseconds() - vk.geometry_buffer_max_time < GEOMETRY_RETRY_MS )
+			return;
+		vk.geometry_buffer_max = 0;
+	}
+
+	vk.geometry_buffer_size_new = size;
+}
+
+// qfalse when the memory couldn't be had (a 32-bit game runs out of room to map it): nothing is
+// left made, and the old buffer is already gone
+qboolean vk_create_vertex_buffer( VkDeviceSize size )
 {
 	VkMemoryRequirements vb_memory_requirements;
 	VkDeviceSize vertex_buffer_offset;
@@ -759,8 +780,16 @@ void vk_create_vertex_buffer( VkDeviceSize size )
 
 	vk_debug("Allocate device memory for Vertex Buffer: %ld bytes. \n", alloc_info.allocationSize);
 
-	VK_ALLOCATE_MEMORY_CHECK(vk.device, &alloc_info, &vk.geometry_buffer_memory, "vertex_memory" );
-	VK_CHECK(qvkMapMemory(vk.device, vk.geometry_buffer_memory, 0, VK_WHOLE_SIZE, 0, &data));
+	// OpenJK-rpmod: checked; unchecked, a failed allocation went on to be mapped and crashed the driver
+	if ( qvkAllocateMemory( vk.device, &alloc_info, NULL, &vk.geometry_buffer_memory ) != VK_SUCCESS ) {
+		vk.geometry_buffer_memory = VK_NULL_HANDLE;
+		vk_release_geometry_buffers();
+		return qfalse;
+	}
+	if ( qvkMapMemory( vk.device, vk.geometry_buffer_memory, 0, VK_WHOLE_SIZE, 0, &data ) != VK_SUCCESS ) {
+		vk_release_geometry_buffers();
+		return qfalse;
+	}
 
 	vertex_buffer_offset = 0;
 
@@ -779,6 +808,8 @@ void vk_create_vertex_buffer( VkDeviceSize size )
 	vk.geometry_buffer_size_new = 0;
 
 	Com_Memset(&vk.stats, 0, sizeof(vk.stats));
+
+	return qtrue;
 }
 
 void vk_reset_descriptor( int index )
@@ -879,7 +910,7 @@ static void vk_update_depth_range( Vk_Depth_Range depth_range )
 void vk_draw_geometry( Vk_Depth_Range depth_range, qboolean indexed )
 {
 	// geometry buffer overflow happened this frame
-	if ( vk.geometry_buffer_size_new )
+	if ( vk.geometry_overflow )
 		return;
 
 	vk_bind_descriptor_sets();
@@ -938,7 +969,7 @@ void vk_draw_geometry( Vk_Depth_Range depth_range, qboolean indexed )
 void vk_draw_dot( uint32_t storage_offset )
 {
 	// geometry buffer overflow happened this frame
-	if ( vk.geometry_buffer_size_new )
+	if ( vk.geometry_overflow )
 		return;
 
 	qvkCmdBindDescriptorSets( vk.cmd->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk.pipeline_layout_storage, VK_DESC_STORAGE, 1, &vk.storage.descriptor, 1, &storage_offset );
@@ -1226,8 +1257,12 @@ avoidGen:
 void *vk_reserve_uniform( size_t size, uint32_t *offset ) {
 	*offset = PAD(vk.cmd->vertex_buffer_offset, (VkDeviceSize)vk.uniform_alignment);
 
-	if (*offset + size > vk.geometry_buffer_size)
+	// OpenJK-rpmod: the shaders read a whole vkUniformBones_t from here (72 bones), however few the model has:
+	// it all has to be in the buffer, or a frame at its end reads past it and the device is lost
+	if (*offset + Q_max( size, sizeof(vkUniformBones_t) ) > vk.geometry_buffer_size) {
+		vk_schedule_geometry_resize( (VkDeviceSize)*offset + Q_max( size, sizeof(vkUniformBones_t) ) ); // OpenJK-rpmod
 		return NULL;
+	}
 
 	vk.cmd->vertex_buffer_offset = *offset + size;
 
@@ -1237,8 +1272,10 @@ void *vk_reserve_uniform( size_t size, uint32_t *offset ) {
 uint32_t vk_append_uniform( const void *uniform, size_t size, uint32_t min_offset ) {
 	const uint32_t offset = PAD(vk.cmd->vertex_buffer_offset, (VkDeviceSize)vk.uniform_alignment);
 
-	if ( offset + min_offset > vk.geometry_buffer_size )
+	if ( offset + min_offset > vk.geometry_buffer_size ) {
+		vk_schedule_geometry_resize( (VkDeviceSize)offset + min_offset ); // OpenJK-rpmod
 		return ~0U;
+	}
 
 	Com_Memcpy( vk.cmd->vertex_buffer_ptr + offset, uniform, size );
 	vk.cmd->vertex_buffer_offset = offset + min_offset;

@@ -801,6 +801,13 @@ typedef struct {
 	VkDeviceMemory		geometry_buffer_memory;
 	VkDeviceSize		geometry_buffer_size;
 	VkDeviceSize		geometry_buffer_size_new;
+	// OpenJK-rpmod: the most it can grow to, once a bigger one couldn't be had (0 no limit), since when,
+	// and whether that was said
+	VkDeviceSize		geometry_buffer_max;
+	int					geometry_buffer_max_time;
+	qboolean			geometry_buffer_max_said;
+	// OpenJK-rpmod: this frame's geometry didn't all fit: nothing more is drawn in it
+	qboolean			geometry_overflow;
 
 	// host visible memory that holds indirect drawdata
 	VkDeviceMemory		indirect_buffer_memory;
@@ -1120,7 +1127,8 @@ void		vk_update_uniform_descriptor( VkDescriptorSet descriptor, VkBuffer buffer 
 void		vk_create_storage_buffer( vk_storage_buffer_t *out, uint32_t size, const char *name );
 void		vk_update_descriptor_offset( int index, uint32_t offset );
 void		vk_init_descriptors( void );
-void		vk_create_vertex_buffer( VkDeviceSize size );
+qboolean	vk_create_vertex_buffer( VkDeviceSize size );
+void		vk_schedule_geometry_resize( VkDeviceSize needed );
 void		vk_create_indirect_buffer( VkDeviceSize size );
 VkBuffer	vk_get_vertex_buffer( void );
 void		vk_update_descriptor( int tmu, VkDescriptorSet curDesSet );

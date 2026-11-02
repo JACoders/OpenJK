@@ -454,6 +454,7 @@ _retry:
 
 	// dynamic vertex buffer layout
     vk.cmd->vertex_buffer_offset = 0;
+    vk.geometry_overflow = qfalse; // OpenJK-rpmod
     vk.cmd->indirect_buffer_offset = 0;
     Com_Memset( vk.cmd->buf_offset, 0, sizeof( vk.cmd->buf_offset ) );
     Com_Memset( vk.cmd->vbo_offset, 0, sizeof( vk.cmd->vbo_offset ) );
@@ -501,6 +502,8 @@ void vk_release_geometry_buffers( void )
 
 static void vk_resize_geometry_buffer( void )
 {
+    const VkDeviceSize oldSize = vk.geometry_buffer_size;
+    const VkDeviceSize newSize = vk.geometry_buffer_size_new;
     uint32_t i;
 
     vk_end_render_pass();
@@ -514,12 +517,38 @@ static void vk_resize_geometry_buffer( void )
 
     vk_release_geometry_buffers();
 
-    vk_create_vertex_buffer(vk.geometry_buffer_size_new);
+    // OpenJK-rpmod: no room for the bigger one (a 32-bit game's memory): back to the size it had. Frames
+    // that need more aren't shown, and it's tried again in a few seconds
+    if ( !vk_create_vertex_buffer( newSize ) ) {
+        vk.geometry_buffer_max = oldSize;
+        vk.geometry_buffer_max_time = ri.Milliseconds();
+        if ( !vk.geometry_buffer_max_said ) {
+            ri.Printf( PRINT_WARNING, "Vulkan: no memory for %i MB of frame geometry; it stays at %i MB, and frames "
+                "that need more aren't shown until there is\n", (int)( newSize >> 20 ), (int)( oldSize >> 20 ) );
+            vk.geometry_buffer_max_said = qtrue;
+        }
+        if ( !vk_create_vertex_buffer( oldSize ) )
+            ri.Error( ERR_FATAL, "Vulkan: out of memory for frame geometry (%i MB)", (int)( oldSize >> 20 ) );
+    } else if ( vk.geometry_buffer_size >= 32 * 1024 * 1024 ) {
+        // rare: said, to learn what makes a frame this heavy
+        ri.Printf( PRINT_ALL, "Vulkan: frame geometry grew to %i MB\n", (int)( vk.geometry_buffer_size >> 20 ) );
+    }
 
     for (i = 0; i < NUM_COMMAND_BUFFERS; i++)
         vk_update_uniform_descriptor(vk.tess[i].uniform_descriptor, vk.tess[i].vertex_buffer);
 
     ri.Printf(PRINT_DEVELOPER, "...geometry buffer resized to %iK\n", (int)(vk.geometry_buffer_size / 1024));
+}
+
+// OpenJK-rpmod: a frame whose geometry didn't fit, and the buffer can't grow yet: not submitted, as a
+// frame that grows it isn't. Submitted, its draws past the end would lose the device
+static void vk_drop_frame( void )
+{
+    vk_end_render_pass();
+
+    VK_CHECK(qvkEndCommandBuffer(vk.cmd->command_buffer));
+
+    vk_wait_idle();
 }
 
 void vk_wait_idle( void )
@@ -620,6 +649,12 @@ void vk_end_frame( void )
         vk_resize_geometry_buffer();
 		// issue: one frame may be lost during video recording
 		// solution: re-record all commands again? (might be complicated though)
+        return;
+    }
+
+    if ( vk.geometry_overflow )
+    {
+        vk_drop_frame();
         return;
     }
 
