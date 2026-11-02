@@ -280,6 +280,31 @@ static int Con_Left( void ) {
 	return ( con_margin ? Com_Clampi( 0, 30, con_margin->integer ) : 0 ) * con.charWidth;
 }
 
+// the size a font is drawn at in the console, a letter as tall as the console's own
+static float Con_FontScale( int font ) {
+	const float height = (float)re->Font_HeightPixels( font, 1.0f );
+
+	return height > 0.0f ? con.charHeight * con.yadjust / height : 1.0f;
+}
+
+// how far into a row its first col letters reach, in the console's pixels. In a font each letter
+// is as wide as it is, so they're measured all together, the rounding not adding up
+static float Con_ColX( const conChar_t *text, int col ) {
+	const int font = Con_Font();
+	char buf[MAX_STRING_CHARS];
+	int n;
+
+	if ( col <= 0 )
+		return 0.0f;
+	if ( !font || con.xadjust <= 0.0f )
+		return (float)( col * con.charWidth );
+	n = Q_min( col, (int)sizeof( buf ) - 1 );
+	for ( int i = 0; i < n; i++ )
+		buf[i] = text[i].f.character ? text[i].f.character : ' ';
+	buf[n] = '\0';
+	return re->Font_StrLenPixels( buf, font, Con_FontScale( font ) ) / con.xadjust;
+}
+
 // a letter in its cell, the console's own or in the font picked
 static void Con_GlyphRaw( int x, int y, int ch, const float *color ) {
 	const int font = Con_Font();
@@ -326,14 +351,15 @@ static void Con_DrawRow( int x0, int y, const conChar_t *text, int count, qboole
 	const vec4_t dark = { 0.0f, 0.0f, 0.0f, 0.9f };
 
 	if ( font ) {
-		const float height = (float)re->Font_HeightPixels( font, 1.0f );
-		const float scale = height > 0.0f ? con.charHeight * con.yadjust / height : 1.0f;
+		const float scale = Con_FontScale( font );
 
+		// a run goes where the letters before it end, not in the console's own letters' columns
 		for ( int x = 0; x < count; ) {
 			char run[MAX_STRING_CHARS];
 			const int start = x;
 			int n = 0;
 			const float *color;
+			float px;
 
 			if ( text[x].f.character == ' ' ) {
 				x++;
@@ -345,16 +371,17 @@ static void Con_DrawRow( int x0, int y, const conChar_t *text, int count, qboole
 				n--;
 			run[n] = '\0';
 			color = Con_FadedColor( text[start].f.color, text[start].f.fade, rpmod );
+			px = x0 + Con_ColX( text, start );
 			if ( mode ) {
 				vec4_t shade;
 
 				VectorCopy4( dark, shade );
 				shade[3] *= color[3];
 				if ( mode >= 2 )
-					re->Font_DrawString( (int)( ( x0 + start * con.charWidth - o ) * con.xadjust ), (int)( ( y - o ) * con.yadjust ), run, shade, font, -1, scale );
-				re->Font_DrawString( (int)( ( x0 + start * con.charWidth + o ) * con.xadjust ), (int)( ( y + o ) * con.yadjust ), run, shade, font, -1, scale );
+					re->Font_DrawString( (int)( ( px - o ) * con.xadjust ), (int)( ( y - o ) * con.yadjust ), run, shade, font, -1, scale );
+				re->Font_DrawString( (int)( ( px + o ) * con.xadjust ), (int)( ( y + o ) * con.yadjust ), run, shade, font, -1, scale );
 			}
-			re->Font_DrawString( (int)( ( x0 + start * con.charWidth ) * con.xadjust ), (int)( y * con.yadjust ), run, color, font, -1, scale );
+			re->Font_DrawString( (int)( px * con.xadjust ), (int)( y * con.yadjust ), run, color, font, -1, scale );
 		}
 		return;
 	}
@@ -1256,11 +1283,32 @@ static qboolean Con_HitPos( int px, int py, conPos_t *pos ) {
 		return qfalse;
 	k = (int)floorf( (float)( cm.bottomY + h - 1 - py ) / h );
 	k = Com_Clampi( 0, cm.rows - 1, k );
-	// the characters are drawn from one character in, after the margin
-	caret = (int)floorf( (float)( px - Con_Left() ) / con.charWidth + 0.5f ) - 1;
 	pos->row = cm.bottomRow - k;
-	pos->caret = cm.firstCol + Com_Clampi( 0, cm.firstCol ? con.rowwidth - 1 - cm.firstCol : con.rowwidth - 1, caret );
-	return Con_RowValid( pos->row );
+	if ( !Con_RowValid( pos->row ) )
+		return qfalse;
+	// the characters are drawn from one character in, after the margin
+	{
+		const float at = (float)( px - Con_Left() - con.charWidth );
+		const int last = cm.firstCol ? con.rowwidth - 1 - cm.firstCol : con.rowwidth - 1;
+
+		if ( Con_Font() ) {
+			// in a font, the letter boundary nearest
+			const conChar_t *text = Con_Row( pos->row ) + cm.firstCol;
+			float left = 0.0f;
+
+			for ( caret = 0; caret < last; caret++ ) {
+				const float right = Con_ColX( text, caret + 1 );
+
+				if ( at < ( left + right ) * 0.5f )
+					break;
+				left = right;
+			}
+		} else {
+			caret = (int)floorf( at / con.charWidth + 0.5f );
+		}
+		pos->caret = cm.firstCol + Com_Clampi( 0, last, caret );
+	}
+	return qtrue;
 }
 
 static void Con_ClearSelection( void ) {
@@ -1693,14 +1741,19 @@ static void Con_FindRefresh( void ) {
 
 // the selection and the matches lit up on a row of text, before its characters
 static void Con_DrawRowMarks( int row, int y, int firstCol ) {
-	const float cw = (float)con.charWidth;
+	const float left = (float)( Con_Left() + con.charWidth );
 	const int n = strlen( cm.find );
+	const conChar_t *text = Con_Row( row ) + firstCol;
 
 	if ( cm.findOpen && n ) {
 		for ( int i = 0; i < cm.numMatches; i++ ) {
-			if ( cm.matches[i].row != row )
+			const int c = cm.matches[i].col - firstCol;
+			float x1;
+
+			if ( cm.matches[i].row != row || c < 0 )
 				continue;
-			Con_Fill( Con_Left() + ( cm.matches[i].col - firstCol + 1 ) * cw, (float)y, n * cw, (float)con.charHeight, i == cm.cur ? conCurColor : conMatchColor );
+			x1 = Con_ColX( text, c );
+			Con_Fill( left + x1, (float)y, Con_ColX( text, c + n ) - x1, (float)con.charHeight, i == cm.cur ? conCurColor : conMatchColor );
 		}
 	}
 	if ( cm.haveSel || cm.selecting ) {
@@ -1713,8 +1766,11 @@ static void Con_DrawRowMarks( int row, int y, int firstCol ) {
 		from = row == a.row ? a.caret : firstCol;
 		to = row == b.row ? b.caret : con.rowwidth - 1;
 		from = Q_max( from, firstCol );
-		if ( to > from )
-			Con_Fill( Con_Left() + ( from - firstCol + 1 ) * cw, (float)y, ( to - from ) * cw, (float)con.charHeight, conSelColor );
+		if ( to > from ) {
+			const float x1 = Con_ColX( text, from - firstCol );
+
+			Con_Fill( left + x1, (float)y, Con_ColX( text, to - firstCol ) - x1, (float)con.charHeight, conSelColor );
+		}
 	}
 }
 

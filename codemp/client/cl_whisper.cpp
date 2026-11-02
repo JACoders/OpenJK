@@ -34,12 +34,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // chat range's is (CL_ChatSenderDistance). Your own whispers always show.
 //
 // The notice is RPMod's own, an "info" the cgame is handed after the chat (CL_QueueCgameCommand):
-//   info <ms> <icon> 29 8 "<text>", icon 2 the "i", as rpnotify sends it.
+//   info <ms> <icon> <sound> 8 "<text>", icon 2 the "i", as rpnotify sends it. The sound is a
+//   slot in the server's sound list (CS_SOUNDS), which isn't the same on every map or server:
+//   info.wav's slot is looked up; when the server hasn't got it, slot 0 (silent) and the client
+//   plays info.wav itself.
 
 #include "client.h"
 
 #define WH_COLOR			'k'
-#define WH_NOTICE			"info 5000 2 29 8 \":: You hear %s" S_COLOR_WHITE " whispering... ::\""
+#define WH_NOTICE			"info 5000 2 %i 8 \":: You hear %s" S_COLOR_WHITE " whispering... ::\""
+#define WH_SOUND			"sound/effects/info"	// RPMod's info sound, in RPMod-Client-Assets.pk3
 #define WH_REPEAT_MS		3000		// the same one whispering again this soon: no second notice
 #define WH_LABEL			S_COLOR_YELLOW "::"	// a language's ::Name:: before what's said
 
@@ -51,6 +55,34 @@ static struct {
 	char	name[MAX_STRING_CHARS];		// the last noticed whispering
 	int		time;
 } wh;
+
+// the slot of RPMod's info sound in the server's sound list, 0 if it isn't there
+static int WH_InfoSoundSlot( void ) {
+	for ( int i = 1; i < MAX_SOUNDS; i++ ) {
+		const int ofs = cl.gameState.stringOffsets[CS_SOUNDS + i];
+		char name[MAX_QPATH];
+
+		if ( !ofs )
+			continue;
+		COM_StripExtension( cl.gameState.stringData + ofs, name, sizeof( name ) );
+		if ( !Q_stricmp( name, WH_SOUND ) )
+			return i;
+	}
+	return 0;
+}
+
+// the notice for the cgame, with the info sound
+static const char *WH_Notice( const char *name ) {
+	const int slot = WH_InfoSoundSlot();
+
+	if ( !slot ) {
+		const sfxHandle_t sfx = S_RegisterSound( WH_SOUND ".wav" );
+
+		if ( sfx )
+			S_StartLocalSound( sfx, CHAN_LOCAL_SOUND );
+	}
+	return va( WH_NOTICE, slot, name );
+}
 
 void CL_Whisper_Init( void ) {
 	cl_whisper = Cvar_Get( "cl_whisper", "0", CVAR_ARCHIVE_ND,
@@ -208,7 +240,7 @@ void CL_Whisper_ServerCommand( void ) {
 	WH_Strip( message, stripped, sizeof( stripped ) );
 	if ( WH_Empty( stripped ) ) {
 		// all of it a whisper: the notice in its place, or nothing
-		Cmd_TokenizeString( notice ? va( WH_NOTICE, name ) : "print \"\"" );
+		Cmd_TokenizeString( notice ? WH_Notice( name ) : "print \"\"" );
 		return;
 	}
 
@@ -226,6 +258,6 @@ void CL_Whisper_ServerCommand( void ) {
 		Q_strcat( rebuilt, sizeof( rebuilt ), va( " \"%s\"", part ) );
 	}
 	if ( notice )
-		CL_QueueCgameCommand( va( WH_NOTICE, name ) );
+		CL_QueueCgameCommand( WH_Notice( name ) );
 	Cmd_TokenizeString( rebuilt );
 }

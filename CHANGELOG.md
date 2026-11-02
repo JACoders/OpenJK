@@ -4,6 +4,11 @@ What changed in OpenJK-rpmod from version to version, newest first. What each fe
 
 OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
+## 0.7.4 (unreleased)
+
+- [Fixed] `Whispers`. The notice "You hear <name> whispering..." always plays RPMod's info sound (sound/effects/info.wav). It used to play whatever sound sat in one fixed slot of the server's sound list, which differs from map to map: a ping, a saber turning on.
+- [Fixed] `Console fonts`. In a font picked in /consolesettings, text in several colours no longer has wide gaps where the colour changes; selecting text and the find highlights follow the letters.
+
 ## 0.7.3 - Oct 31st 2026
 
 - [Added] `Fuse maps`. In the map editor's Models tab, another map in your game can be placed whole (type map in the list): Add puts its middle at the crosshair, then move, turn and scale it like a model, around that spot. Its sky and fog are left out. Drawn only, not walked on; shared with those who have that map.
