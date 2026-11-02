@@ -43,6 +43,11 @@ if(BuildMPRdVanilla)
 	add_subdirectory("${MPDir}/rd-vanilla")
 endif(BuildMPRdVanilla)
 
+#	 Add Vulkan JKA Renderer Project (from TaystJK)
+if(BuildMPRdVulkan)
+	add_subdirectory("${MPDir}/rd-vulkan")
+endif(BuildMPRdVulkan)
+
 #	Add rend2 JKA Renderer Project
 if(BuildMPRend2)
 	add_subdirectory("${MPDir}/rd-rend2")
