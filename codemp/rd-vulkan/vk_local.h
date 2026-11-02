@@ -843,6 +843,7 @@ typedef struct {
 	// Standard pipeline(s)
 	struct  {
 		uint32_t skybox_pipeline;
+		uint32_t skybox_tinted_pipeline; // OpenJK-rpmod: the sky look's tint, from vertex colors
 		uint32_t worldeffect_pipeline[2];
 
 		// dim 0: 0 - front side, 1 - back size

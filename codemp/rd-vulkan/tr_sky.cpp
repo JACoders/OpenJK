@@ -271,6 +271,15 @@ static void RB_ClipSkyPolygons( const shaderCommands_t *input )
 			VectorSubtract(input->xyz[input->indexes[i + j]],
 				backEnd.viewParms. ori .origin,
 				p[j]);
+			// OpenJK-rpmod: the sky look turns the sky: where it is along the sky's own axes
+			if ( backEnd.refdef.skyTurned ) {
+				vec3_t world;
+				int k;
+
+				VectorCopy( p[j], world );
+				for ( k = 0; k < 3; k++ )
+					p[j][k] = DotProduct( world, backEnd.refdef.skyAxis[k] );
+			}
 		}
 		ClipSkyPolygon(3, p[0], 0);
 	}
@@ -328,6 +337,23 @@ static void MakeSkyVec( float s, float t, int axis, vec3_t outXYZ )
 	}
 }
 
+// OpenJK-rpmod: the sky look and zoom. A sky point (around the view, along the sky's axes) in the
+// world: turned with the sky. Zoomed, the sky is drawn through another lens than the view's
+static qboolean sky_zoomed;
+
+static void SkyPointToWorld( const vec3_t p, float *out )
+{
+	if ( backEnd.refdef.skyTurned ) {
+		int k;
+
+		VectorCopy( backEnd.viewParms.ori.origin, out );
+		for ( k = 0; k < 3; k++ )
+			VectorMA( out, p[k], backEnd.refdef.skyAxis[k], out );
+	} else {
+		VectorAdd( p, backEnd.viewParms.ori.origin, out );
+	}
+}
+
 /*
 =================
 CullPoints
@@ -364,21 +390,25 @@ static qboolean CullSkySide( const int mins[2], const int maxs[2] )
 	if (r_nocull->integer)
 		return qfalse;
 
+	// OpenJK-rpmod: zoomed out, more shows than the view's frustum holds
+	if ( sky_zoomed )
+		return qfalse;
+
 	s = mins[0] + HALF_SKY_SUBDIVISIONS;
 	t = mins[1] + HALF_SKY_SUBDIVISIONS;
-	VectorAdd(s_skyPoints[t][s], backEnd.viewParms.ori.origin, v[0]);
+	SkyPointToWorld(s_skyPoints[t][s], v[0]);
 
 	s = mins[0] + HALF_SKY_SUBDIVISIONS;
 	t = maxs[1] + HALF_SKY_SUBDIVISIONS;
-	VectorAdd(s_skyPoints[t][s], backEnd.viewParms.ori.origin, v[1]);
+	SkyPointToWorld(s_skyPoints[t][s], v[1]);
 
 	s = maxs[0] + HALF_SKY_SUBDIVISIONS;
 	t = mins[1] + HALF_SKY_SUBDIVISIONS;
-	VectorAdd(s_skyPoints[t][s], backEnd.viewParms.ori.origin, v[2]);
+	SkyPointToWorld(s_skyPoints[t][s], v[2]);
 
 	s = maxs[0] + HALF_SKY_SUBDIVISIONS;
 	t = maxs[1] + HALF_SKY_SUBDIVISIONS;
-	VectorAdd(s_skyPoints[t][s], backEnd.viewParms.ori.origin, v[3]);
+	SkyPointToWorld(s_skyPoints[t][s], v[3]);
 
 	if (CullPoints(v, 4))
 		return qtrue;
@@ -410,7 +440,7 @@ static void FillSkySide( const int mins[2], const int maxs[2], float skyTexCoord
 	{
 		for (s = mins[0] + HALF_SKY_SUBDIVISIONS; s <= maxs[0] + HALF_SKY_SUBDIVISIONS; s++)
 		{
-			VectorAdd(s_skyPoints[t][s], backEnd.viewParms.ori.origin, tess.xyz[tess.numVertexes]);
+			SkyPointToWorld(s_skyPoints[t][s], tess.xyz[tess.numVertexes]); // OpenJK-rpmod: was the view's origin added
 			tess.texCoords[0][tess.numVertexes][0] = skyTexCoords[t][s][0];
 			tess.texCoords[0][tess.numVertexes][1] = skyTexCoords[t][s][1];
 			tess.numVertexes++;
@@ -451,9 +481,25 @@ static void DrawSkySide( image_t *image, const int mins[2], const int maxs[2] )
 
 		tess.svars.texcoordPtr[0] = tess.texCoords[0];
 
-		vk_bind_pipeline(vk.std_pipeline.skybox_pipeline);
-		vk_bind_index();
-		vk_bind_geometry(TESS_XYZ | TESS_ST0);
+		// OpenJK-rpmod: the sky look's tint, as vertex colors
+		if ( backEnd.refdef.skyTinted ) {
+			byte color[4];
+			int i, c;
+
+			for ( c = 0; c < 3; c++ )
+				color[c] = (byte)Com_Clampi( 0, 255, (int)( tr.identityLightByte * backEnd.refdef.skyTint[c] ) );
+			color[3] = 255;
+			for ( i = 0; i < tess.numVertexes; i++ )
+				Com_Memcpy( tess.svars.colors[0][i], color, 4 );
+
+			vk_bind_pipeline(vk.std_pipeline.skybox_tinted_pipeline);
+			vk_bind_index();
+			vk_bind_geometry(TESS_XYZ | TESS_ST0 | TESS_RGBA0);
+		} else {
+			vk_bind_pipeline(vk.std_pipeline.skybox_pipeline);
+			vk_bind_index();
+			vk_bind_geometry(TESS_XYZ | TESS_ST0);
+		}
 		vk_draw_geometry(r_showsky->integer ? DEPTH_RANGE_ZERO : DEPTH_RANGE_ONE, qtrue);
 
 		tess.numVertexes = 0;
@@ -820,6 +866,26 @@ void RB_StageIteratorSky( void )
 	// to be drawn
 	RB_ClipSkyPolygons( &tess );
 
+	// OpenJK-rpmod: the shader manager's sky zoom: the sky drawn through a narrower or wider lens
+	// than the view. Zoomed, what shows through the sky's surfaces isn't the part of the box they
+	// cover, so all of it is drawn; the world drawn after covers what isn't sky
+	float savedProjection[16];
+
+	sky_zoomed = (qboolean)( backEnd.refdef.skyZoom > 0.0f && backEnd.refdef.skyZoom != 1.0f
+		&& !( backEnd.refdef.rdflags & RDF_SKYBOXPORTAL ) );
+	if ( sky_zoomed ) {
+		int k;
+
+		for ( k = 0; k < 6; k++ ) {
+			sky_mins[0][k] = sky_mins[1][k] = -1.0f;
+			sky_maxs[0][k] = sky_maxs[1][k] = 1.0f;
+		}
+		Com_Memcpy( savedProjection, backEnd.viewParms.projectionMatrix, sizeof( savedProjection ) );
+		backEnd.viewParms.projectionMatrix[0] *= backEnd.refdef.skyZoom;
+		backEnd.viewParms.projectionMatrix[5] *= backEnd.refdef.skyZoom;
+		vk_update_mvp( NULL );
+	}
+
 	// r_showsky will let all the sky blocks be drawn in
 	// front of everything to allow developers to see how
 	// much sky is getting sucked in
@@ -842,6 +908,13 @@ void RB_StageIteratorSky( void )
 	// draw the inner skybox
 	if ( tess.numVertexes ) {
 		RB_StageIteratorGeneric();
+	}
+
+	// OpenJK-rpmod: back to the view's lens
+	if ( sky_zoomed ) {
+		Com_Memcpy( backEnd.viewParms.projectionMatrix, savedProjection, sizeof( savedProjection ) );
+		vk_update_mvp( NULL );
+		sky_zoomed = qfalse;
 	}
 
 	// back to normal depth range

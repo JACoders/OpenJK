@@ -176,7 +176,7 @@ Click any surface, see what it's made of, and swap its texture for everyone on t
 - Zoom it, from 0.25x to 4x, to make the sky look nearer or farther; a 3D skybox or sky portal zooms its view
 - On a map with a 3D skybox, the whole skybox turns, and can be moved too
 - Shown on your screen as you change it; **Share with all** *(experimental)* sends it to everyone with this client until the map changes, **Reset for all** puts the map's sky back
-- Click a sky in the free camera and *Sky look...* takes you there. *Needs the rd-vanilla_x86.dll from the release.*
+- Click a sky in the free camera and *Sky look...* takes you there. *Needs the release's renderer, OpenGL (rd-vanilla_x86.dll) or Vulkan (rd-vulkan_x86.dll); Vulkan has no sky portal yet.*
 - **Sky portal**: the map seen from a spot in place of the sky, as a 3D skybox does, even on a map without one. Pick the map's own 3D skybox, or add the free camera's spot; the spots are kept per map. Turn and move it with the sliders above, and Share with all sends it too
 
 ### Player shaders (Mine tab)
@@ -630,7 +630,7 @@ Know when there's a newer OpenJK-rpmod.
 - Anti-aliasing (`r_ext_multisample 2`, 4 or 8), bloom (`r_bloom 1`), HDR (`r_hdr`), dithering (`r_dither 1`) and a render resolution of its own (`r_renderScale`, `r_renderWidth`, `r_renderHeight`); most of them need `r_fbo 1`
 - `r_vbo 1` and `r_vbo_models 1` keep the map's and the models' surfaces on the graphics card, for more frames per second
 - `r_device` picks the graphics card when there's more than one
-- Every tool works with it, but some of what they change in the picture isn't in it yet: the map editor's fog and hiding or moving the map's triangles, the shader manager's sky look, zoom and portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before. Those say so or do nothing
+- Every tool works with it, but some of what they change in the picture isn't in it yet: the map editor's fog and hiding or moving the map's triangles, the shader manager's sky portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before. Those say so or do nothing
 - Its supersampling (`r_ext_supersample`) is left off for now: it loses the graphics device, in TaystJK's own build too
 - On macOS it needs MoltenVK, which macOS doesn't come with
 

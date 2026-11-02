@@ -418,6 +418,58 @@ to handle mirrors,
 */
 void RE_RenderWorldEffects( void );
 void RE_RenderAutoMap( void );
+/*
+=====================
+OpenJK-rpmod: the shader manager's sky look and zoom (as in rd-vanilla)
+=====================
+*/
+void RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift ) {
+	tr.skyLookOn = (qboolean)( tint != NULL );
+	if ( !tint )
+		return;
+	VectorCopy( tint, tr.skyLookTint );
+	VectorCopy( angles, tr.skyLookAngles );
+	VectorCopy( shift, tr.skyLookShift );
+}
+
+void RE_SetSkyZoom( float zoom ) {
+	tr.skyZoom = Com_Clamp( 0.1f, 10.0f, zoom );
+}
+
+// the sky look on this scene: a 3D skybox's view turned the other way round its sky and moved,
+// the sky shader turned in the other views
+static void R_SkyLook( const refdef_t *fd ) {
+	matrix3_t axis;
+
+	// the zoom: a 3D skybox's view narrower or wider, the sky shader drawn so in the backend
+	tr.refdef.skyZoom = tr.skyZoom > 0.0f ? tr.skyZoom : 1.0f;
+	if ( ( fd->rdflags & RDF_SKYBOXPORTAL ) && !( fd->rdflags & RDF_NOWORLDMODEL ) && tr.refdef.skyZoom != 1.0f ) {
+		tr.refdef.fov_x = RAD2DEG( 2.0f * atanf( tanf( DEG2RAD( fd->fov_x ) * 0.5f ) / tr.refdef.skyZoom ) );
+		tr.refdef.fov_y = RAD2DEG( 2.0f * atanf( tanf( DEG2RAD( fd->fov_y ) * 0.5f ) / tr.refdef.skyZoom ) );
+	}
+
+	tr.refdef.skyTinted = tr.refdef.skyTurned = qfalse;
+	if ( !tr.skyLookOn || ( fd->rdflags & RDF_NOWORLDMODEL ) )
+		return;
+	VectorCopy( tr.skyLookTint, tr.refdef.skyTint );
+	tr.refdef.skyTinted = (qboolean)( tr.skyLookTint[0] != 1.0f || tr.skyLookTint[1] != 1.0f || tr.skyLookTint[2] != 1.0f );
+	if ( VectorCompare( tr.skyLookAngles, vec3_origin ) && ( !( fd->rdflags & RDF_SKYBOXPORTAL ) || VectorCompare( tr.skyLookShift, vec3_origin ) ) )
+		return;
+	AnglesToAxis( tr.skyLookAngles, axis );
+	if ( fd->rdflags & RDF_SKYBOXPORTAL ) {
+		// what lies along a direction in the turned sky lies along it turned back in the skybox
+		for ( int i = 0; i < 3; i++ ) {
+			for ( int j = 0; j < 3; j++ )
+				tr.refdef.viewaxis[i][j] = DotProduct( fd->viewaxis[i], axis[j] );
+		}
+		VectorAdd( fd->vieworg, tr.skyLookShift, tr.refdef.vieworg );
+	} else {
+		tr.refdef.skyTurned = qtrue;
+		for ( int i = 0; i < 3; i++ )
+			VectorCopy( axis[i], tr.refdef.skyAxis[i] );
+	}
+}
+
 void RE_RenderScene( const refdef_t *fd ) {
 	renderCommand_t	lastRenderCommand;
 	viewParms_t		parms;
@@ -484,6 +536,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 		tr.refdef.frametime = 0;
 	}
 	tr.refdef.rdflags = fd->rdflags;
+	R_SkyLook( fd ); // OpenJK-rpmod
 
 	// copy the areamask data over and note if it has changed, which
 	// will force a reset of the visible leafs even if the view hasn't moved

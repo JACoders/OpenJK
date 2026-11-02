@@ -781,6 +781,13 @@ typedef struct trRefdef_s {
 
 	qboolean			switchRenderPass;
 	qboolean			needScreenMap;
+
+	// OpenJK-rpmod: the shader manager's sky look: the sky shader tinted by skyTint, and drawn with
+	// its axes along skyAxis when skyTurned; a 3D skybox's view is turned itself, so its sky isn't
+	qboolean			skyTinted, skyTurned;
+	vec3_t				skyTint;
+	matrix3_t			skyAxis;
+	float				skyZoom;		// the sky shader drawn this much nearer, 1 as it is
 } trRefdef_t;
 
 
@@ -1755,6 +1762,11 @@ typedef struct trGlobals_s {
 	int						numFogs; // read before parsing shaders
 
 	vec4_t					clearColor;
+
+	// OpenJK-rpmod: the shader manager's sky look and zoom, as the client last set them
+	qboolean				skyLookOn;
+	vec3_t					skyLookTint, skyLookAngles, skyLookShift;
+	float					skyZoom;			// 0 or 1 for none
 } trGlobals_t;
 
 struct glconfigExt_t
@@ -2288,6 +2300,8 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b );
 void RE_RenderScene( const refdef_t *fd );
+void RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift );	// OpenJK-rpmod
+void RE_SetSkyZoom( float zoom );													// OpenJK-rpmod
 
 /*
 =============================================================

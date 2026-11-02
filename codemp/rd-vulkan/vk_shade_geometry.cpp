@@ -2510,6 +2510,12 @@ void RB_StageIteratorGeneric( void )
 
 		tess_flags |= pStage->tessFlags;
 
+		// OpenJK-rpmod: the sky look's tint on the sky's clouds: their colors worked out (and a
+		// pipeline that takes them), then tinted below
+		const qboolean skyTint = (qboolean)( tess.shader->sky && backEnd.refdef.skyTinted && !tess.vbo_model );
+		if ( skyTint && !forceRGBGen )
+			forceRGBGen = pStage->bundle[0].rgbGen ? pStage->bundle[0].rgbGen : CGEN_IDENTITY;
+
 		// refraction
 #ifdef RF_DISTORTION
 		if ( tess.shader->useDistortion == qtrue || backEnd.currentEntity->e.renderfx & RF_DISTORTION )
@@ -2562,6 +2568,13 @@ void RB_StageIteratorGeneric( void )
 
 				if ( (tess_flags & (TESS_RGBA0 << i)) || forceRGBGen )
 					ComputeColors( i, tess.svars.colors[i], pStage, forceRGBGen );
+
+				if ( skyTint ) { // OpenJK-rpmod
+					for ( int v = 0; v < tess.numVertexes; v++ ) {
+						for ( int c = 0; c < 3; c++ )
+							tess.svars.colors[i][v][c] = (byte)Com_Clampi( 0, 255, (int)( tess.svars.colors[i][v][c] * backEnd.refdef.skyTint[c] ) );
+					}
+				}
 			}
 		}
 	

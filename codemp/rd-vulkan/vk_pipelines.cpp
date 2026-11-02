@@ -1961,6 +1961,12 @@ void vk_alloc_persistent_pipelines( void )
         def.mirror = qfalse;
 
         vk.std_pipeline.skybox_pipeline = vk_find_pipeline_ext(0, &def, qtrue);
+
+        // OpenJK-rpmod: the same, colored per vertex, for the shader manager's sky tint
+        def.shader_type = TYPE_SINGLE_TEXTURE;
+        def.color.rgb = 0;
+        def.color.alpha = 0;
+        vk.std_pipeline.skybox_tinted_pipeline = vk_find_pipeline_ext(0, &def, qtrue);
     }
 
     vk_debug("Create worldeffect pipeline \n");
