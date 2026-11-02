@@ -29,6 +29,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   toolaccess check    asks again, the reply shown
 //
 // A server run on this computer has no RPMod to ask: the tools open there as always.
+// Logging in or out of an RPMod account ("You are now logged in as ...") can change the rank:
+// the answer is forgotten, the next tool opened asks again.
 
 #include "client.h"
 
@@ -51,6 +53,7 @@ typedef enum {
 static struct {
 	raState_t	state;
 	int			askTime, lastLineTime, answerTime;
+	int			accountTime;		// logged in or out then: an answer asked before it doesn't count
 	qboolean	show;				// asked from the console: the reply is shown
 	qboolean	sawLabel;			// a line had the admin rank in it, a rank or not
 	char		rank[RA_RANK_LEN];
@@ -129,10 +132,32 @@ qboolean CL_RpAdmin_Allow( const char *tool, const char *command ) {
 	return qfalse;
 }
 
+// RPMod's "You are now logged in as ..." or a logout: the rank may be another now
+static qboolean RA_AccountChanged( const char *text ) {
+	char plain[RA_LINE_LEN];
+	const char *p = plain;
+
+	Q_strncpyz( plain, text, sizeof( plain ) );
+	Q_StripColor( plain );
+	while ( *p == ' ' || *p == '\n' )
+		p++;
+	if ( Q_stricmpn( p, "you", 3 ) )
+		return qfalse;
+	return (qboolean)( Q_stristr( p, "logged in as" ) || Q_stristr( p, "logged out" ) );
+}
+
 // a print while it waits for the answer: qtrue keeps it out of the console
 qboolean CL_RpAdmin_ServerPrint( const char *text ) {
 	char line[RA_LINE_LEN];
 
+	if ( RA_AccountChanged( text ) ) {
+		ra.accountTime = cls.realtime;
+		if ( ra.state != RA_ASKING ) {
+			ra.state = RA_UNKNOWN;
+			ra.rank[0] = '\0';
+		}
+		return qfalse;
+	}
 	if ( ra.state != RA_ASKING || ( cls.realtime - ra.askTime > RA_TIMEOUT && !ra.lastLineTime ) )
 		return qfalse;
 	while ( *text ) {
@@ -155,6 +180,12 @@ void CL_RpAdmin_Frame( void ) {
 	if ( ra.lastLineTime ? cls.realtime - ra.lastLineTime < RA_LINE_GAP : cls.realtime - ra.askTime < RA_TIMEOUT )
 		return;
 
+	// logged in while it asked, and no rank: the reply may be from before, asked again
+	if ( !ra.rank[0] && ra.accountTime && ra.accountTime >= ra.askTime ) {
+		ra.accountTime = 0;
+		RA_Ask( ra.show );
+		return;
+	}
 	ra.answerTime = cls.realtime;
 	ra.state = ra.rank[0] ? RA_ADMIN : RA_NOT_ADMIN;
 	if ( ra.show ) {

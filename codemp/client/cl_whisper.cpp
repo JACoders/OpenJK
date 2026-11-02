@@ -162,6 +162,24 @@ static void WH_Strip( const char *in, char *out, int size ) {
 	out[o] = '\0';
 }
 
+// an RPMod comm: "Comm-<name>: ...", colours and all
+static qboolean WH_IsComm( const char *p ) {
+	static const char comm[] = "comm-";
+	int i = 0;
+
+	while ( *p == ' ' )
+		p++;
+	for ( ; *p && comm[i]; p++ ) {
+		if ( WH_IsCode( p ) ) {
+			p++;
+			continue;
+		}
+		if ( tolower( (unsigned char)*p ) != comm[i++] )
+			return qfalse;
+	}
+	return (qboolean)( !comm[i] && strchr( p, ':' ) != NULL );
+}
+
 // nothing left to read: no text, or only a language's ::Name:: with nothing said in it
 static qboolean WH_Empty( const char *text ) {
 	const char *p = text, *end;
@@ -213,6 +231,9 @@ void CL_Whisper_ServerCommand( void ) {
 	}
 	message = arg + keep;
 	if ( !WH_Has( message ) )
+		return;
+	// a comm goes straight to the one it's for: whispered, it's still heard in full
+	if ( WH_IsComm( message ) )
 		return;
 
 	// RPMod's chat says how far; a /me doesn't, nor does chat elsewhere

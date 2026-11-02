@@ -8,6 +8,8 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 - [Fixed] `Whispers`. The notice "You hear <name> whispering..." always plays RPMod's info sound (sound/effects/info.wav). It used to play whatever sound sat in one fixed slot of the server's sound list, which differs from map to map: a ping, a saber turning on.
 - [Fixed] `Console fonts`. In a font picked in /consolesettings, text in several colours no longer has wide gaps where the colour changes; selecting text and the find highlights follow the letters.
+- [Changed] `Whispers`. Comms ("Comm-<name>:") aren't touched by whispers: a comm goes straight to the one it's for, so a whispered one is heard in full, no notice. It used to show as an empty "Comm-<name>:".
+- [Fixed] `Admin tools`. Logging in to your RPMod account ("You are now logged in as ...") or out checks your admin rank again: a tool opened before logging in no longer stays shut after it.
 
 ## 0.7.3 - Oct 31st 2026
 
