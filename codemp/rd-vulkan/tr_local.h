@@ -2320,6 +2320,8 @@ void RE_RenderScene( const refdef_t *fd );
 void RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift );	// OpenJK-rpmod
 void RE_SetSkyZoom( float zoom );													// OpenJK-rpmod
 void RE_SetSkyPortal( const vec3_t origin );										// OpenJK-rpmod
+int RE_ForgetMissing( const char **shaderFiles, int numShaderFiles );				// OpenJK-rpmod: loadpk3
+int R_ForgetBadSkins( void );														// OpenJK-rpmod: loadpk3
 // OpenJK-rpmod: the map editor's fog
 #define MAX_ADDED_FOGS 16		// fog volumes the client adds
 int RE_GetFogs( vec3_t *colors, float *depths, vec3_t *mins, vec3_t *maxs, int *global, int max );

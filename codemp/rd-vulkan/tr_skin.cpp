@@ -430,3 +430,26 @@ void	R_SkinList_f( void ) {
 	}
 	ri.Printf( PRINT_ALL,  "------------------\n");
 }
+
+// OpenJK-rpmod (as in rd-vanilla): loadpk3: the skins that had a shader made default, or no
+// surfaces at all, are looked for again the next time they're asked for. How many
+int R_ForgetBadSkins( void ) {
+	int count = 0;
+
+	for ( int i = 1; i < tr.numSkins; i++ ) {
+		skin_t *skin = tr.skins[i];
+		qboolean bad = (qboolean)( skin->numSurfaces == 0 );
+
+		for ( int s = 0; s < skin->numSurfaces && !bad; s++ ) {
+			const shader_t *sh = (const shader_t *)skin->surfaces[s]->shader;
+
+			if ( sh && sh->defaultShader )
+				bad = qtrue;
+		}
+		if ( bad && skin->name[0] ) {
+			skin->name[0] = '\0';
+			count++;
+		}
+	}
+	return count;
+}
