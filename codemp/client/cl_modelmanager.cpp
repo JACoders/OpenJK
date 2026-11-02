@@ -38,6 +38,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "qcommon/cm_public.h"
+#include "cl_gizmo.h"
+#include "cl_widgets.h"
 
 #define MM_ROOT				"models"			// where models are listed from, and what RPMod's names are relative to
 #define MM_SKIP				"models/players/"	// the player models are no use here
@@ -276,6 +278,8 @@ static struct {
 	int			snap;
 	qboolean	hideHelp;
 	mmNaming_t	naming;			// typing a name, and what for
+	qboolean	barClick;		// a click on a list's scrollbar, for the frame to take
+	float		barClickX, barClickY;
 	char		saveName[MM_NAME_LEN];
 	char		tmplName[MM_NAME_LEN];	// what the model or construct in hand is called, to offer as its name
 	char		message[MAX_STRING_CHARS];
@@ -312,6 +316,13 @@ static struct {
 	qboolean	haveView;
 	vec3_t		viewOrg, viewAng;
 	int			viewFrame;		// cls.framecount the main view was last re-aimed on
+	float		fovX, fovY;		// the free camera's
+
+	// the move arrows: the mouse a cursor, an arrow dragged moves the selection along it
+	qboolean	gizmo;
+	qboolean	gzDragging;
+	gzDrag_t	gzDrag;
+	int			gzHot;
 } mm;
 
 static vec4_t mmWhite		= { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -2713,8 +2724,33 @@ static void MM_ToggleFavorite( int model ) {
 	}
 }
 
+// the browser's lists have a scrollbar when there are more than fit
+static qboolean MM_RowsBar( void ) {
+	return (qboolean)( mm.numRows > MM_VISIBLE_ROWS );
+}
+
+static qboolean MM_ModelsBar( void ) {
+	return (qboolean)( mm.numView > MM_VISIBLE_ROWS );
+}
+
+static float MM_SearchLabelW( void ) {
+	return (float)re->Font_StrLenPixels( "Search: ", mm.font, MM_TEXT_SCALE ) + 4.0f;
+}
+
 static void MM_BrowseClick( void ) {
 	int row;
+
+	if ( ( MM_RowsBar() && MM_InRect( MM_FOLDER_X + MM_FOLDER_W - WG_SCROLL_W - 1, MM_LIST_Y, WG_SCROLL_W + 1, MM_LIST_H ) )
+		|| ( MM_ModelsBar() && MM_InRect( MM_MODEL_X + MM_MODEL_W - WG_SCROLL_W - 1, MM_LIST_Y, WG_SCROLL_W + 1, MM_LIST_H ) ) ) {
+		mm.barClick = qtrue;
+		mm.barClickX = mm.cursorX;
+		mm.barClickY = mm.cursorY;
+		return;
+	}
+	if ( MM_InRect( MM_FOLDER_X, MM_SEARCH_Y, MM_SEARCH_W, 16 ) ) {
+		WG_FieldClick( mm.search, mm.cursorX, mm.cursorY );
+		return;
+	}
 
 	for ( int i = 0; i < MM_FILTER_COUNT; i++ ) {
 		if ( MM_InRect( MM_FOLDER_X + MM_SEARCH_W + MM_FILTER_GAP + i * ( MM_FILTER_W + MM_FILTER_GAP ), MM_SEARCH_Y, MM_FILTER_W, 16 ) ) {
@@ -2756,29 +2792,36 @@ static void MM_BrowseClick( void ) {
 		MM_EnterCamera();
 }
 
-static void MM_BrowseChar( int ch ) {
-	int len = strlen( mm.search );
+static qboolean MM_SearchChar( int ch ) {
+	return (qboolean)( ch >= 32 && ch < 127 );
+}
 
-	if ( ch >= 32 && ch < 127 && len < (int)sizeof( mm.search ) - 1 ) {
-		mm.search[len] = (char)ch;
-		mm.search[len + 1] = '\0';
+static void MM_BrowseChar( int ch ) {
+	if ( WG_EditChar( mm.search, sizeof( mm.search ), ch, MM_SearchChar ) ) {
 		mm.selRow = mm.modelScroll = 0;
 		MM_RebuildView();
 	}
 }
 
 static void MM_BrowseKey( int key ) {
-	int len;
+	const qboolean ctrl = (qboolean)( Key_IsDown( A_CTRL ) || Key_IsDown( A_CTRL2 ) );
+	const qboolean shift = (qboolean)( Key_IsDown( A_SHIFT ) || Key_IsDown( A_SHIFT2 ) );
 
-	switch ( key ) {
-	case A_BACKSPACE:
-		len = strlen( mm.search );
-		if ( len ) {
-			mm.search[len - 1] = '\0';
+	// the search box: backspace, the clipboard, and with Ctrl or Shift its cursor and selection;
+	// the plain arrows, Home and End stay the lists'
+	if ( key == A_BACKSPACE || ( ctrl && key != A_MOUSE1 && key != A_MWHEELUP && key != A_MWHEELDOWN )
+		|| ( shift && ( key == A_INSERT || key == A_CURSOR_LEFT || key == A_CURSOR_RIGHT || key == A_HOME || key == A_END ) ) ) {
+		const int edit = WG_EditKey( mm.search, sizeof( mm.search ), key, MM_SearchChar );
+
+		if ( edit & WG_EDIT_CHANGED ) {
 			mm.selRow = mm.modelScroll = 0;
 			MM_RebuildView();
 		}
-		break;
+		if ( edit )
+			return;
+	}
+
+	switch ( key ) {
 	case A_DELETE:
 		mm.search[0] = '\0';
 		MM_RebuildView();
@@ -2839,6 +2882,12 @@ static void MM_BrowseKey( int key ) {
 }
 
 // the name box, offering a name where there is one to offer
+static void MM_GzView( gzView_t *v );
+
+static qboolean MM_SaveNameAllow( int ch ) {
+	return MM_SaveNameChar( ch );
+}
+
 static void MM_StartNaming( mmNaming_t naming ) {
 	const mmPiece_t *first = MM_FirstSelected();
 
@@ -2868,8 +2917,8 @@ static void MM_StartNaming( mmNaming_t naming ) {
 }
 
 static void MM_NameKey( int key ) {
-	int len = strlen( mm.saveName );
-
+	if ( WG_EditKey( mm.saveName, sizeof( mm.saveName ), key, MM_SaveNameAllow ) )
+		return;
 	switch ( key ) {
 	case A_ENTER:
 	case A_KP_ENTER:
@@ -2880,16 +2929,35 @@ static void MM_NameKey( int key ) {
 			mm.naming = MM_NAMING_NONE;
 		}
 		break;
-	case A_BACKSPACE:
-		if ( len )
-			mm.saveName[len - 1] = '\0';
-		break;
 	default:
 		break;
 	}
 }
 
 static void MM_CameraKey( int key ) {
+	// the arrows: one grabbed moves the selection along it; the right button only looks
+	if ( key == GZ_KEY ) {
+		mm.gizmo = (qboolean)!mm.gizmo;
+		mm.gzDragging = qfalse;
+		mm.cursorX = SCREEN_WIDTH * 0.5f;
+		mm.cursorY = SCREEN_HEIGHT * 0.5f;
+		MM_Message( mm.gizmo ? "Move arrows: drag X, Y or Z to move the selection along it; hold the right mouse button to look; J hides them"
+			: "Move arrows hidden" );
+		return;
+	}
+	if ( mm.gizmo && key == A_MOUSE2 )
+		return;
+	if ( mm.gizmo && key == A_MOUSE1 && mm.gzHot >= 0 && MM_NumSelected() && MM_Pickup( qtrue ) ) {
+		gzView_t v;
+		vec3_t pivot;
+
+		MM_GzView( &v );
+		MM_Pivot( pivot );
+		GZ_Begin( &mm.gzDrag, &v, pivot, mm.gzHot, mm.cursorX, mm.cursorY );
+		mm.gzDragging = mm.gzDrag.on;
+		mm.locked = qtrue;
+		return;
+	}
 	switch ( key ) {
 	case A_MOUSE1:
 		if ( mm.carrying )
@@ -3001,6 +3069,13 @@ void CL_ModelManager_KeyEvent( int key, qboolean down ) {
 
 	if ( key >= 0 && key < MAX_KEYS )
 		mm.held[key] = down;
+	// an arrow let go: what's moved goes down, a model being placed stays in hand
+	if ( !down && key == A_MOUSE1 && mm.gzDragging ) {
+		mm.gzDragging = qfalse;
+		if ( !MM_CarryingTemplate() )
+			MM_Drop();
+		return;
+	}
 	if ( !down )
 		return;
 
@@ -3021,17 +3096,15 @@ void CL_ModelManager_CharEvent( int ch ) {
 	if ( mm.state == MM_BROWSE ) {
 		MM_BrowseChar( ch );
 	} else if ( mm.naming ) {
-		int len = strlen( mm.saveName );
-
-		if ( MM_SaveNameChar( ch ) && len < (int)sizeof( mm.saveName ) - 1 ) {
-			mm.saveName[len] = (char)ch;
-			mm.saveName[len + 1] = '\0';
-		}
+		WG_EditChar( mm.saveName, sizeof( mm.saveName ), ch, MM_SaveNameAllow );
 	}
 }
 
 void CL_ModelManager_MouseEvent( int dx, int dy ) {
 	if ( mm.state == MM_BROWSE ) {
+		mm.cursorX = Com_Clamp( 0, SCREEN_WIDTH, mm.cursorX + dx );
+		mm.cursorY = Com_Clamp( 0, SCREEN_HEIGHT, mm.cursorY + dy );
+	} else if ( mm.state == MM_CAMERA && mm.gizmo && !mm.held[A_MOUSE2] ) {
 		mm.cursorX = Com_Clamp( 0, SCREEN_WIDTH, mm.cursorX + dx );
 		mm.cursorY = Com_Clamp( 0, SCREEN_HEIGHT, mm.cursorY + dy );
 	} else if ( mm.state == MM_CAMERA ) {
@@ -3181,14 +3254,31 @@ static float MM_RayBox( const vec3_t start, const vec3_t dir, const vec3_t origi
 	return inside ? -1.0f : tmin;
 }
 
-// the model under the crosshair and in front of the world; -1 = none
-static int MM_PieceUnderCrosshair( void ) {
-	vec3_t forward, end, origin, angles, mins, maxs;
+static void MM_GzView( gzView_t *v ) {
+	GZ_ViewFromAngles( v, mm.camOrg, mm.camAng, mm.fovX > 0.0f ? mm.fovX : 90.0f, mm.fovY > 0.0f ? mm.fovY : 73.74f );
+}
+
+// the way the mouse points, from the camera
+static void MM_CursorDir( vec3_t dir ) {
+	const float fx = mm.fovX > 0.0f ? mm.fovX : 90.0f, fy = mm.fovY > 0.0f ? mm.fovY : 73.74f;
+	const float x = ( mm.cursorX / ( SCREEN_WIDTH * 0.5f ) - 1.0f ) * tanf( DEG2RAD( fx * 0.5f ) );
+	const float y = ( mm.cursorY / ( SCREEN_HEIGHT * 0.5f ) - 1.0f ) * tanf( DEG2RAD( fy * 0.5f ) );
+	vec3_t axis[3];
+
+	AnglesToAxis( mm.camAng, axis );
+	VectorCopy( axis[0], dir );
+	VectorMA( dir, -x, axis[1], dir );
+	VectorMA( dir, -y, axis[2], dir );
+	VectorNormalize( dir );
+}
+
+// the model along forward from the camera and in front of the world; -1 = none
+static int MM_PieceAlong( const vec3_t forward ) {
+	vec3_t end, origin, angles, mins, maxs;
 	trace_t tr;
 	float best, d;
 	int found = -1, scale;
 
-	AngleVectors( mm.camAng, forward, NULL, NULL );
 	VectorMA( mm.camOrg, MM_TRACE_DIST, forward, end );
 	CM_BoxTrace( &tr, mm.camOrg, end, vec3_origin, vec3_origin, 0, MM_TRACE_MASK, qfalse );
 	best = tr.fraction * MM_TRACE_DIST + 4.0f;	// models often sit a little in the floor or a wall
@@ -3208,6 +3298,38 @@ static int MM_PieceUnderCrosshair( void ) {
 		}
 	}
 	return found;
+}
+
+// the model under the crosshair, or under the mouse with the arrows up; -1 = none
+static int MM_PieceUnderCrosshair( void ) {
+	vec3_t forward;
+
+	if ( mm.gizmo )
+		MM_CursorDir( forward );
+	else
+		AngleVectors( mm.camAng, forward, NULL, NULL );
+	return MM_PieceAlong( forward );
+}
+
+// the arrow held: the selection goes where it says along its axis
+static void MM_GizmoFrame( void ) {
+	gzView_t v;
+	vec3_t pivot, to, delta;
+
+	mm.gzHot = -1;
+	if ( !mm.gizmo || !MM_NumSelected() )
+		return;
+	MM_GzView( &v );
+	MM_Pivot( pivot );
+	if ( mm.gzDragging ) {
+		GZ_Target( &mm.gzDrag, mm.cursorX, mm.cursorY, mmSnaps[mm.snap].grid, to );
+		VectorSubtract( to, pivot, delta );
+		if ( VectorLengthSquared( delta ) > 0.0001f )
+			MM_TranslateSelection( delta );
+		mm.gzHot = mm.gzDrag.axis;
+		return;
+	}
+	mm.gzHot = GZ_Hit( &v, pivot, mm.cursorX, mm.cursorY );
 }
 
 // called every frame before the cgame draws
@@ -3240,7 +3362,8 @@ void CL_ModelManager_Frame( void ) {
 
 	if ( mm.state == MM_CAMERA ) {
 		MM_UpdateCamera( dt );
-		if ( mm.carrying && !mm.locked )
+		MM_GizmoFrame();
+		if ( mm.carrying && !mm.locked && !mm.gzDragging )
 			MM_FollowCrosshair();
 		mm.hover = mm.carrying ? -1 : MM_PieceUnderCrosshair();
 		mm.peek = ( mm.hideBoxes && !mm.naming && ( mm.held[A_CAP_O] || mm.held[A_MOUSE3] ) ) ? MM_PieceUnderCrosshair() : -1;
@@ -3426,6 +3549,8 @@ void CL_ModelManager_RenderScene( const refdef_t *fd ) {
 	VectorCopy( mm.camOrg, view.vieworg );
 	VectorCopy( mm.camAng, view.viewangles );
 	AnglesToAxis( mm.camAng, view.viewaxis );
+	mm.fovX = view.fov_x;
+	mm.fovY = view.fov_y;
 	view.viewContents = CM_PointContents( mm.camOrg, 0 );
 	// the snapshot's area mask is from the player's position, the camera can be anywhere
 	memset( view.areamask, 0, sizeof( view.areamask ) );
@@ -3476,6 +3601,18 @@ static void MM_TextClipped( float x, float y, float w, const char *text, const f
 		buf[len] = '\0';
 	}
 	MM_Text( x, y, buf, color );
+}
+
+static void MM_FieldStyle( wgStyle_t *style ) {
+	style->font = mm.font;
+	style->scale = MM_TEXT_SCALE;
+	style->lineH = MM_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 3.0f;
+	style->fill = mmPanelOpaque;
+	style->border = mmBorder;
+	style->text = mmWhite;
+	style->dim = mmDim;
 }
 
 // clicks on it are handled in MM_BrowseClick
@@ -3606,7 +3743,12 @@ static void MM_DrawPreview( int sel ) {
 }
 
 static void MM_DrawRows( void ) {
+	float rw = MM_FOLDER_W;
+
 	MM_Box( MM_FOLDER_X, MM_LIST_Y, MM_FOLDER_W, MM_LIST_H, mmPanelLight );
+	if ( WG_Scrollbar( MM_FOLDER_X + MM_FOLDER_W - WG_SCROLL_W - 1, MM_LIST_Y + 1, MM_LIST_H - 2, mm.numRows, MM_VISIBLE_ROWS, &mm.rowScroll,
+		mm.cursorX, mm.cursorY, &mm.barClick, mm.barClickX, mm.barClickY ) )
+		rw -= WG_SCROLL_W + 1;
 	for ( int i = 0; i < MM_VISIBLE_ROWS; i++ ) {
 		const int row = mm.rowScroll + i;
 		const mmRow_t *r;
@@ -3618,9 +3760,9 @@ static void MM_DrawRows( void ) {
 			break;
 		r = &mm.rows[row];
 		if ( row == mm.row && !mm.search[0] )
-			MM_Fill( MM_FOLDER_X + 1, y, MM_FOLDER_W - 2, MM_ROW_H, mmHighlight );
-		else if ( MM_InRect( MM_FOLDER_X, y, MM_FOLDER_W, MM_ROW_H ) )
-			MM_Fill( MM_FOLDER_X + 1, y, MM_FOLDER_W - 2, MM_ROW_H, mmHover );
+			MM_Fill( MM_FOLDER_X + 1, y, rw - 2, MM_ROW_H, mmHighlight );
+		else if ( MM_InRect( MM_FOLDER_X, y, rw, MM_ROW_H ) )
+			MM_Fill( MM_FOLDER_X + 1, y, rw - 2, MM_ROW_H, mmHover );
 
 		switch ( r->type ) {
 		case MM_ROW_SAVED:
@@ -3650,7 +3792,7 @@ static void MM_DrawRows( void ) {
 			label = va( "%s " S_COLOR_GREY "(%i)", MM_FolderLabel( r->name ), r->count );
 			break;
 		}
-		MM_TextClipped( MM_FOLDER_X + 4 + indent, y + 1, MM_FOLDER_W - 8 - indent, label, mm.search[0] ? mmDim : mmWhite );
+		MM_TextClipped( MM_FOLDER_X + 4 + indent, y + 1, rw - 8 - indent, label, mm.search[0] ? mmDim : mmWhite );
 	}
 }
 
@@ -3669,9 +3811,15 @@ static void MM_DrawBrowser( void ) {
 		MM_Text( MM_FOLDER_X, 28, S_COLOR_GREY "Type to search everything. Enter places the model, Tab edits the map's models.", mmWhite );
 
 	// search box
-	MM_Box( MM_FOLDER_X, MM_SEARCH_Y, MM_SEARCH_W, 16, mmPanelLight );
-	Com_sprintf( buf, sizeof( buf ), "Search: %s%s", mm.search, ( cls.realtime >> 8 ) & 1 ? "_" : "" );
-	MM_Text( MM_FOLDER_X + 4, MM_SEARCH_Y + 3, buf, mm.search[0] ? mmWhite : mmDim );
+	{
+		const float lw = MM_SearchLabelW();
+		wgStyle_t style;
+
+		MM_FieldStyle( &style );
+		MM_Box( MM_FOLDER_X, MM_SEARCH_Y, MM_SEARCH_W, 16, mmPanelLight );
+		MM_Text( MM_FOLDER_X + 4, MM_SEARCH_Y + 3, "Search:", mm.search[0] ? mmWhite : mmDim );
+		WG_Field( &style, MM_FOLDER_X + lw - 4, MM_SEARCH_Y, MM_SEARCH_W - lw + 4, 16, mm.search, qtrue, "", mm.cursorX, mm.cursorY );
+	}
 
 	// filter bar
 	for ( int i = 0; i < MM_FILTER_COUNT; i++ ) {
@@ -3685,7 +3833,13 @@ static void MM_DrawBrowser( void ) {
 	MM_DrawRows();
 
 	// models, or saved constructs
+	float mw = MM_MODEL_W;
+
 	MM_Box( MM_MODEL_X, MM_LIST_Y, MM_MODEL_W, MM_LIST_H, mmPanelLight );
+	if ( WG_Scrollbar( MM_MODEL_X + MM_MODEL_W - WG_SCROLL_W - 1, MM_LIST_Y + 1, MM_LIST_H - 2, mm.numView, MM_VISIBLE_ROWS, &mm.modelScroll,
+		mm.cursorX, mm.cursorY, &mm.barClick, mm.barClickX, mm.barClickY ) )
+		mw -= WG_SCROLL_W + 1;
+	mm.barClick = qfalse;
 	if ( !mm.numView )
 		MM_Text( MM_MODEL_X + 4, MM_LIST_Y + 1, mm.viewSaves ? "None yet: select models, press K"
 			: mm.viewStates ? "None yet: Shift+K in the free camera"
@@ -3700,9 +3854,9 @@ static void MM_DrawBrowser( void ) {
 			break;
 		y = MM_LIST_Y + i * MM_ROW_H;
 		if ( row == mm.selRow )
-			MM_Fill( MM_MODEL_X + 1, y, MM_MODEL_W - 2, MM_ROW_H, mmHighlight );
-		else if ( MM_InRect( MM_MODEL_X, y, MM_MODEL_W, MM_ROW_H ) )
-			MM_Fill( MM_MODEL_X + 1, y, MM_MODEL_W - 2, MM_ROW_H, mmHover );
+			MM_Fill( MM_MODEL_X + 1, y, mw - 2, MM_ROW_H, mmHighlight );
+		else if ( MM_InRect( MM_MODEL_X, y, mw, MM_ROW_H ) )
+			MM_Fill( MM_MODEL_X + 1, y, mw - 2, MM_ROW_H, mmHover );
 		if ( mm.viewSaves ) {
 			label = mm.saves[mm.view[row]];
 		} else if ( mm.viewStates ) {
@@ -3717,10 +3871,10 @@ static void MM_DrawBrowser( void ) {
 			label = ( mm.search[0] || r->type != MM_ROW_FOLDER ) ? MM_FolderLabel( m->path ) : m->base;
 			// the star: click it for a favorite
 			MM_Text( MM_MODEL_X + 4, y + 1, CL_Fav_Star( CL_Fav_Has( MM_FAV_LIST, m->path ) ), mmWhite );
-			MM_TextClipped( MM_MODEL_X + 4 + MM_STAR_W, y + 1, MM_MODEL_W - 8 - MM_STAR_W, label, failed ? mmRed : mmWhite );
+			MM_TextClipped( MM_MODEL_X + 4 + MM_STAR_W, y + 1, mw - 8 - MM_STAR_W, label, failed ? mmRed : mmWhite );
 			continue;
 		}
-		MM_TextClipped( MM_MODEL_X + 4, y + 1, MM_MODEL_W - 8, label, failed ? mmRed : mmWhite );
+		MM_TextClipped( MM_MODEL_X + 4, y + 1, mw - 8, label, failed ? mmRed : mmWhite );
 	}
 
 	// preview and details
@@ -3758,6 +3912,7 @@ static void MM_DrawBrowser( void ) {
 		Key_GetKey( MM_TOGGLE_CMD ) >= 0 || Key_GetKey( MM_OLD_TOGGLE_CMD ) >= 0 ? "Your modelmanager bind closes" : "Tip: bind a key to modelmanager" );
 	MM_Text( MM_FOLDER_X, 452, buf, mmWhite );
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( mm.cursorX, mm.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }
 
@@ -3792,6 +3947,7 @@ static void MM_DrawCamera( void ) {
 		"L              read the map's models again",
 		"WASD Space C   fly (Shift fast, Ctrl slow)",
 		"Esc / Tab      cancel a move / browser",
+		"J              move arrows (drag X Y Z; RMB looks)",
 		"H              hide this help",
 	};
 	const float x = 10, w = 270, cx = SCREEN_WIDTH * 0.5f, cy = SCREEN_HEIGHT * 0.5f;
@@ -3804,6 +3960,20 @@ static void MM_DrawCamera( void ) {
 	// crosshair
 	MM_Fill( cx - 6, cy - 0.5f, 12, 1, mmWhite );
 	MM_Fill( cx - 0.5f, cy - 6, 1, 12, mmWhite );
+
+	// the move arrows over the selection, and the mouse
+	if ( mm.gizmo ) {
+		gzView_t v;
+		vec3_t pivot;
+
+		if ( count ) {
+			MM_GzView( &v );
+			MM_Pivot( pivot );
+			GZ_Draw( &v, pivot, mm.gzHot );
+		}
+		if ( !mm.held[A_MOUSE2] && !mm.naming )
+			GZ_DrawCursor( mm.cursorX, mm.cursorY );
+	}
 
 	if ( mm.carrying )
 		status = va( "%s %s", MM_CarryingTemplate() ? S_COLOR_GREEN "PLACING" : S_COLOR_MAGENTA "MOVING",
@@ -3914,11 +4084,15 @@ static void MM_DrawCamera( void ) {
 
 		MM_Box( bx, by, bw, note ? 58 : 46, mmPanelOpaque );
 		MM_TextClipped( bx + 8, by + 4, bw - 16, title, mmWhite );
+		wgStyle_t style;
+
+		MM_FieldStyle( &style );
 		MM_Box( bx + 8, by + 18, bw - 16, 16, mmPanelLight );
-		MM_Text( bx + 12, by + 21, va( "%s%s", mm.saveName, ( cls.realtime >> 8 ) & 1 ? "_" : "" ), mmWhite );
+		WG_Field( &style, bx + 8, by + 18, bw - 16, 16, mm.saveName, qtrue, "", mm.cursorX, mm.cursorY );
 		MM_TextClipped( bx + 8, by + 36, bw - 16, hint, mmWhite );
 		if ( note )
 			MM_TextClipped( bx + 8, by + 48, bw - 16, note, mmWhite );
+		WG_DrawOverlay();
 	}
 }
 

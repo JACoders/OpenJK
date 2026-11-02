@@ -37,6 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "client.h"
 #include "qcommon/cm_public.h"
 #include "ghoul2/G2.h"
+#include "cl_widgets.h"
 
 #define NM_TOGGLE_CMD		"npcmanager"
 #define NM_LIST_HEADER		"List of all NPCs in the map"
@@ -3300,6 +3301,10 @@ static qboolean NM_FieldAllows( nmField_t f, int ch ) {
 	return (qboolean)( ch >= ' ' && ch < 127 );
 }
 
+static qboolean NM_AllowChar( int ch ) {
+	return NM_FieldAllows( NM_ActiveField(), ch );
+}
+
 static void NM_FieldChanged( nmField_t f ) {
 	switch ( f ) {
 	case NM_F_TYPE_SEARCH:
@@ -3369,7 +3374,6 @@ static void NM_SpawnOrPlace( void ) {
 
 void CL_NpcManager_KeyEvent( int key, qboolean down ) {
 	nmField_t f;
-	int len;
 
 	if ( !nm.open )
 		return;
@@ -3440,6 +3444,16 @@ void CL_NpcManager_KeyEvent( int key, qboolean down ) {
 	if ( nm.experimentalBox && key != A_MOUSE1 )
 		return;
 	f = NM_ActiveField();
+	if ( key != A_MOUSE1 && key != A_MWHEELUP && key != A_MWHEELDOWN && !( nm.preview && nm.picker == NM_PICKER_NONE )
+		&& !( !nm.fields[f][0] && ( key == A_CURSOR_LEFT || key == A_CURSOR_RIGHT || key == A_HOME || key == A_END ) ) ) {
+		const int edit = WG_EditKey( nm.fields[f], NM_FIELD_LEN, key, NM_AllowChar );
+
+		if ( edit ) {
+			if ( edit & WG_EDIT_CHANGED )
+				NM_FieldChanged( f );
+			return;
+		}
+	}
 	if ( nm.saving != NM_SAVING_NONE && nm.picker == NM_PICKER_NONE ) {
 		// only the name box takes keys
 		switch ( key ) {
@@ -3502,17 +3516,6 @@ void CL_NpcManager_KeyEvent( int key, qboolean down ) {
 	case A_MWHEELDOWN:
 		nm.wheel += 3;
 		break;
-	case A_BACKSPACE:
-		len = strlen( nm.fields[f] );
-		if ( len ) {
-			nm.fields[f][len - 1] = '\0';
-			NM_FieldChanged( f );
-		}
-		break;
-	case A_DELETE:
-		nm.fields[f][0] = '\0';
-		NM_FieldChanged( f );
-		break;
 	case A_TAB:
 		if ( nm.picker == NM_PICKER_NONE )
 			NM_SetTab( (nmTab_t)( ( nm.tab + 1 ) % ( NM_TAB_ROUTES + 1 ) ) );
@@ -3541,17 +3544,12 @@ void CL_NpcManager_KeyEvent( int key, qboolean down ) {
 
 void CL_NpcManager_CharEvent( int ch ) {
 	nmField_t f;
-	int len;
 
 	if ( !nm.open || nm.pick != NM_PICK_NONE || nm.experimentalBox || ( nm.preview && nm.picker == NM_PICKER_NONE ) )
 		return;
 	f = NM_ActiveField();
-	len = strlen( nm.fields[f] );
-	if ( NM_FieldAllows( f, ch ) && len < NM_FIELD_LEN - 1 ) {
-		nm.fields[f][len] = (char)ch;
-		nm.fields[f][len + 1] = '\0';
+	if ( WG_EditChar( nm.fields[f], NM_FIELD_LEN, ch, NM_AllowChar ) )
 		NM_FieldChanged( f );
-	}
 }
 
 void CL_NpcManager_MouseEvent( int dx, int dy ) {
@@ -3664,24 +3662,30 @@ static qboolean NM_DangerButton( float x, float y, float w, const char *label, n
 	return qfalse;
 }
 
-static void NM_Field( nmField_t f, float x, float y, float w, const char *placeholder ) {
-	qboolean focused = (qboolean)( NM_ActiveField() == f );
-	const char *text = nm.fields[f];
-	char buf[NM_FIELD_LEN + 2];
+static void NM_FieldStyle( wgStyle_t *style ) {
+	style->font = nm.font;
+	style->scale = NM_TEXT_SCALE;
+	style->lineH = NM_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 2.0f;
+	style->fill = nmPanelFocus;
+	style->border = nmBorder;
+	style->text = nmWhite;
+	style->dim = nmDim;
+}
 
+// a text box, grown down while it's typed in and long; a click puts the cursor there
+static void NM_Field( nmField_t f, float x, float y, float w, const char *placeholder ) {
+	const qboolean focused = (qboolean)( NM_ActiveField() == f );
+	wgStyle_t style;
+
+	NM_FieldStyle( &style );
 	NM_Box( x, y, w, NM_CTRL_H, focused ? nmPanelFocus : nmPanelLight );
-	if ( !text[0] && !focused ) {
-		NM_TextClipped( x + 4, y + 2, w - 8, placeholder, nmDim );
-	} else {
-		// keep the end in view
-		Com_sprintf( buf, sizeof( buf ), "%s%s", text, focused && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" );
-		const char *shown = buf;
-		while ( shown[1] && NM_TextWidth( shown ) > w - 8 )
-			shown++;
-		NM_Text( x + 4, y + 2, shown, nmWhite );
-	}
-	if ( NM_Clicked( x, y, w, NM_CTRL_H ) )
+	WG_Field( &style, x, y, w, NM_CTRL_H, nm.fields[f], focused, placeholder, nm.cursorX, nm.cursorY );
+	if ( NM_Clicked( x, y, w, WG_FieldHeight( &style, w, NM_CTRL_H, nm.fields[f], focused ) ) ) {
 		nm.focus = ( f == NM_F_TYPE_SEARCH || f == NM_F_NPC_SEARCH || f == NM_F_PICKER_SEARCH || f == NM_F_SAVE_NAME ) ? NM_F_NONE : f;
+		WG_FieldClick( nm.fields[f], nm.clickX, nm.clickY );
+	}
 }
 
 static void NM_Label( float y, const char *label ) {
@@ -3689,6 +3693,11 @@ static void NM_Label( float y, const char *label ) {
 }
 
 typedef void ( *nmRowFunc_t )( int row, float x, float y, float w );
+
+// the room a list's scrollbar takes, 0 when all its rows fit
+static float NM_ListBarW( int count, float h ) {
+	return count > (int)( h / NM_ROW_H ) ? WG_SCROLL_W + 1 : 0.0f;
+}
 
 // returns the row double-clicked, -1 if none
 static int NM_List( nmList_t *list, int count, float x, float y, float w, float h, nmRowFunc_t drawRow ) {
@@ -3700,6 +3709,9 @@ static int NM_List( nmList_t *list, int count, float x, float y, float w, float 
 		nm.wheel = 0;
 	}
 	NM_ListClamp( list, count, visible );
+	NM_Box( x, y, w, h, nmPanelLight );
+	if ( WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, visible, &list->scroll, nm.cursorX, nm.cursorY, &nm.click, nm.clickX, nm.clickY ) )
+		w -= WG_SCROLL_W + 1;
 
 	if ( NM_Clicked( x, y, w, h ) ) {
 		row = list->scroll + (int)( ( nm.clickY - y ) / NM_ROW_H );
@@ -3715,7 +3727,6 @@ static int NM_List( nmList_t *list, int count, float x, float y, float w, float 
 		}
 	}
 
-	NM_Box( x, y, w, h, nmPanelLight );
 	for ( int i = 0; i < visible; i++ ) {
 		float ry = y + i * NM_ROW_H;
 
@@ -3837,19 +3848,21 @@ static void NM_DrawPlaced( void ) {
 		nm.wheel = 0;
 	}
 	nm.placedScroll = Com_Clampi( 0, Q_max( 0, nm.numPlaced - NM_PLACED_ROWS ), nm.placedScroll );
+	const float placedBar = WG_Scrollbar( NM_RIGHT_X + NM_RIGHT_W - WG_SCROLL_W - 1, by + 1, bh - 2, nm.numPlaced, NM_PLACED_ROWS,
+		&nm.placedScroll, nm.cursorX, nm.cursorY, &nm.click, nm.clickX, nm.clickY ) ? WG_SCROLL_W + 1 : 0.0f;
 	if ( !any ) {
 		NM_TextClipped( NM_RIGHT_X + 4, by + 3, NM_RIGHT_W - 8, S_COLOR_GREY "Put NPCs down on the map, then spawn them all", nmWhite );
 		NM_TextClipped( NM_RIGHT_X + 4, by + 3 + NM_ROW_H, NM_RIGHT_W - 8, S_COLOR_GREY "at once, or save them as a construct", nmWhite );
 	}
 	for ( int i = 0; i < NM_PLACED_ROWS; i++ ) {
 		const int row = nm.placedScroll + i;
-		const float ry = by + 2 + i * NM_ROW_H, xx = NM_RIGHT_X + NM_RIGHT_W - 20;
+		const float ry = by + 2 + i * NM_ROW_H, xx = NM_RIGHT_X + NM_RIGHT_W - 20 - placedBar;
 		const nmSpawn_t *p;
 
 		if ( row >= nm.numPlaced )
 			break;
 		p = &nm.placed[row];
-		NM_TextClipped( NM_RIGHT_X + 4, ry, NM_RIGHT_W - 28, va( "%s %s" S_COLOR_GREY "at %i %i %i, yaw %i", p->type,
+		NM_TextClipped( NM_RIGHT_X + 4, ry, NM_RIGHT_W - 28 - placedBar, va( "%s %s" S_COLOR_GREY "at %i %i %i, yaw %i", p->type,
 			p->targetname[0] ? va( S_COLOR_CYAN "%s ", p->targetname ) : "", (int)p->pos[0], (int)p->pos[1], (int)p->pos[2], p->yaw ), nmWhite );
 		// takes it back
 		if ( NM_InRect( xx, ry, 16, NM_ROW_H ) )
@@ -3920,7 +3933,7 @@ static void NM_DrawSpawn( void ) {
 	{
 		const int before = nm.rowList.sel;
 		// the list puts "none" on the first row: only a click picks one, and leaves the search
-		const qboolean clicked = (qboolean)( nm.click && nm.clickX >= NM_LEFT_X && nm.clickX < NM_LEFT_X + NM_TREE_W
+		const qboolean clicked = (qboolean)( nm.click && nm.clickX >= NM_LEFT_X && nm.clickX < NM_LEFT_X + NM_TREE_W - NM_ListBarW( nm.numRows, NM_TYPE_LIST_H )
 			&& nm.clickY >= NM_TYPE_LIST_Y && nm.clickY < NM_TYPE_LIST_Y + NM_TYPE_LIST_H );
 
 		NM_List( &nm.rowList, nm.numRows, NM_LEFT_X, NM_TYPE_LIST_Y, NM_TREE_W, NM_TYPE_LIST_H, NM_DrawTreeRow );
@@ -4220,7 +4233,7 @@ static void NM_DrawManage( void ) {
 
 	NM_Field( NM_F_NPC_SEARCH, NM_LEFT_X, NM_SEARCH_Y, NM_LEFT_W, "Type to filter by number, type or name" );
 	// Ctrl+click marks several, to walk them together
-	if ( ( nm.held[A_CTRL] || nm.held[A_CTRL2] ) && NM_Clicked( NM_LEFT_X, NM_LIST_Y, NM_LEFT_W, NM_LIST_H ) ) {
+	if ( ( nm.held[A_CTRL] || nm.held[A_CTRL2] ) && NM_Clicked( NM_LEFT_X, NM_LIST_Y, NM_LEFT_W - NM_ListBarW( nm.numNpcView, NM_LIST_H ), NM_LIST_H ) ) {
 		const int row = nm.npcList.scroll + (int)( ( nm.clickY - NM_LIST_Y ) / NM_ROW_H );
 
 		if ( row < nm.numNpcView ) {
@@ -4468,7 +4481,7 @@ static void NM_DrawRoutes( void ) {
 			NM_RebuildNpcView();
 		}
 	}
-	if ( ( nm.held[A_CTRL] || nm.held[A_CTRL2] ) && NM_Clicked( NM_LEFT_X, NM_TYPE_LIST_Y, NM_LEFT_W, NM_TYPE_LIST_H ) ) {
+	if ( ( nm.held[A_CTRL] || nm.held[A_CTRL2] ) && NM_Clicked( NM_LEFT_X, NM_TYPE_LIST_Y, NM_LEFT_W - NM_ListBarW( nm.numNpcView, NM_TYPE_LIST_H ), NM_TYPE_LIST_H ) ) {
 		const int row = nm.npcList.scroll + (int)( ( nm.clickY - NM_TYPE_LIST_Y ) / NM_ROW_H );
 
 		if ( row < nm.numNpcView ) {
@@ -4578,7 +4591,8 @@ static void NM_DrawRoutes( void ) {
 	// the walks going on; a click selects the NPC
 	y = NM_WALK_LIST_Y;
 	NM_Label( y, "Walking" );
-	sel = nm.click && nm.clickX >= NM_CTRL_X && nm.clickX < NM_CTRL_X + NM_CTRL_W && nm.clickY >= y && nm.clickY < y + NM_WALK_LIST_H;
+	sel = nm.click && nm.clickX >= NM_CTRL_X && nm.clickX < NM_CTRL_X + NM_CTRL_W - NM_ListBarW( nm.numWalks, NM_WALK_LIST_H )
+		&& nm.clickY >= y && nm.clickY < y + NM_WALK_LIST_H;
 	NM_List( &nm.walkList, nm.numWalks, NM_CTRL_X, y, NM_CTRL_W, NM_WALK_LIST_H, NM_DrawWalkRow );
 	if ( !nm.numWalks )
 		NM_Text( NM_CTRL_X + 4, y + 1, "No NPC walks a route", nmDim );
@@ -5014,5 +5028,6 @@ void CL_NpcManager_Draw( void ) {
 	nm.click = qfalse;
 	nm.wheel = 0;
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( nm.cursorX, nm.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }

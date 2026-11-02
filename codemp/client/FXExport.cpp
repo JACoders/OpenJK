@@ -34,6 +34,12 @@ void FX_SetOwner( int owner )
 	theFxScheduler.mOwner = owner;
 }
 
+// the next effect played is drawn this big
+void FX_NextScale( float scale )
+{
+	theFxScheduler.mNextScale = scale > 0.0f ? scale : 1.0f;
+}
+
 int	FX_RegisterEffect(const char *file)
 {
 	return theFxScheduler.RegisterEffect(file, true);

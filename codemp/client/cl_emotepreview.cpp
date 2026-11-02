@@ -282,6 +282,26 @@ static void EP_Load( void ) {
 	EP_AddBuiltIn();
 }
 
+// the emotes known, for the cinematic manager: their names and the animation each plays
+int CL_EmotePreview_Count( void ) {
+	EP_Load();
+	return epNumEmotes;
+}
+
+const char *CL_EmotePreview_Name( int index ) {
+	EP_Load();
+	return index >= 0 && index < epNumEmotes ? epEmotes[index].emote : NULL;
+}
+
+// the animation an emote plays, NULL if it isn't known
+const char *CL_EmotePreview_Anim( const char *emote ) {
+	const epEmote_t *e;
+
+	EP_Load();
+	e = EP_Find( emote );
+	return e ? e->torso : NULL;
+}
+
 static void EP_Save( void ) {
 	fileHandle_t f = FS_FOpenFileWrite( EP_FILE );
 
@@ -389,7 +409,7 @@ static void EP_Free( void ) {
 
 // one animation from the animation.cfg beside the model's .gla, on the bone; how long it plays
 // in ms, 0 if it loops, -1 if it isn't there
-static int EP_SetAnim( const char *cfg, const char *anim, const char *bone ) {
+static int EP_SetAnim( CGhoul2Info_v &g2, const char *cfg, const char *anim, const char *bone ) {
 	const char *p = cfg, *token;
 
 	COM_BeginParseSession( "emotepreview" );
@@ -414,9 +434,9 @@ static int EP_SetAnim( const char *cfg, const char *anim, const char *bone ) {
 		// end to its start; one that doesn't loop stays on its last frame
 		flags = loop == -1 ? BONE_ANIM_OVERRIDE_FREEZE : BONE_ANIM_OVERRIDE_LOOP;
 		if ( fps > 0.0f )
-			re->G2API_SetBoneAnim( *ep.g2, 0, bone, first, first + num, flags, fps / 20.0f, re->G2API_GetTime( cl.serverTime ), -1, -1 );
+			re->G2API_SetBoneAnim( g2, 0, bone, first, first + num, flags, fps / 20.0f, re->G2API_GetTime( cl.serverTime ), -1, -1 );
 		else
-			re->G2API_SetBoneAnim( *ep.g2, 0, bone, first + num, first, flags, fps / 20.0f, re->G2API_GetTime( cl.serverTime ), -1, -1 );
+			re->G2API_SetBoneAnim( g2, 0, bone, first + num, first, flags, fps / 20.0f, re->G2API_GetTime( cl.serverTime ), -1, -1 );
 		return loop == -1 ? (int)( num * 1000.0f / fabsf( fps ) ) : 0;
 	}
 }
@@ -439,13 +459,13 @@ static void EP_Animate( const epEmote_t *e ) {
 		return;
 	}
 	// as cgame: the legs on the whole, the torso over them from the waist up
-	ms = EP_SetAnim( buf, e->legs, "model_root" );
+	ms = EP_SetAnim( *ep.g2, buf, e->legs, "model_root" );
 	if ( ms < 0 )
-		ms = EP_SetAnim( buf, e->torso, "model_root" );
+		ms = EP_SetAnim( *ep.g2, buf, e->torso, "model_root" );
 	if ( ms < 0 ) {
 		ep.error = "Its animation isn't in this model's";
 	} else if ( Q_stricmp( e->torso, e->legs ) ) {
-		const int torsoMs = EP_SetAnim( buf, e->torso, "lower_lumbar" );
+		const int torsoMs = EP_SetAnim( *ep.g2, buf, e->torso, "lower_lumbar" );
 
 		ms = Q_max( ms, torsoMs );
 	}
@@ -453,6 +473,33 @@ static void EP_Animate( const epEmote_t *e ) {
 	// played once, it holds its last pose a while and starts over
 	ep.animStart = cls.realtime;
 	ep.cycleMs = ms > 0 ? ms + EP_HOLD_MS : 0;
+}
+
+// a player's animations, by number as the server sends them, put on a ghoul2 instance as cgame
+// does: the legs on the whole, the torso from the waist up. For a model the cgame just made, which
+// would stand in its bind pose until the animation next changes
+void CL_EmotePreview_PlayerAnims( void *ghoul2, int legsAnim, int torsoAnim ) {
+	CGhoul2Info_v &g2 = *(CGhoul2Info_v *)ghoul2;
+	const char *gla, *legs = EP_AnimName( legsAnim ), *torso = EP_AnimName( torsoAnim );
+	char path[MAX_QPATH], *buf, *slash;
+
+	if ( !ghoul2 || !re->G2API_HaveWeGhoul2Models( g2 ) )
+		return;
+	gla = re->G2API_GetGLAName( g2, 0 );
+	if ( !gla || !gla[0] )
+		return;
+	Q_strncpyz( path, gla, sizeof( path ) );
+	if ( !( slash = strrchr( path, '/' ) ) )
+		return;
+	slash[1] = '\0';
+	Q_strcat( path, sizeof( path ), "animation.cfg" );
+	if ( FS_ReadFile( path, (void **)&buf ) <= 0 || !buf )
+		return;
+	if ( legs )
+		EP_SetAnim( g2, buf, legs, "model_root" );
+	if ( torso )
+		EP_SetAnim( g2, buf, torso, "lower_lumbar" );
+	FS_FreeFile( buf );
 }
 
 // the player's own model, as everyone sees it

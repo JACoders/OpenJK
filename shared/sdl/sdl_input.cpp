@@ -391,7 +391,8 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 
 	if ( cl_consoleUseScanCode->integer )
 	{
-		if ( keysym->scancode == SDL_SCANCODE_GRAVE )
+		// the key under Esc, unless cl_consoleTildeKey makes it a key as others
+		if ( keysym->scancode == SDL_SCANCODE_GRAVE && Cvar_VariableIntegerValue( "cl_consoleTildeKey" ) )
 		{
 			if ( IN_ModTogglesConsole(keysym->mod) ) {
 				key = A_CONSOLE;
@@ -400,7 +401,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	}
 	else
 	{
-		if ( IN_IsConsoleKey( key, 0 ) )
+		if ( IN_IsConsoleKey( key, 0 ) && Cvar_VariableIntegerValue( "cl_consoleTildeKey" ) )
 		{
 			// Console keys can't be bound or generate characters
 			key = A_CONSOLE;
@@ -858,7 +859,7 @@ static void IN_ProcessEvents( void )
 						uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
 						if( utf32 != 0 )
 						{
-							if( IN_IsConsoleKey( A_NULL, utf32 ) && !cl_consoleUseScanCode->integer )
+							if( IN_IsConsoleKey( A_NULL, utf32 ) && !cl_consoleUseScanCode->integer && Cvar_VariableIntegerValue( "cl_consoleTildeKey" ) )
 							{
 								Sys_QueEvent( 0, SE_KEY, A_CONSOLE, qtrue, 0, NULL );
 								Sys_QueEvent( 0, SE_KEY, A_CONSOLE, qfalse, 0, NULL );

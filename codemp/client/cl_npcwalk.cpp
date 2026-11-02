@@ -224,6 +224,68 @@ static struct {
 	int			time;
 } nwSent;
 
+// players and NPCs a cinematic holds where it has them, on this screen only
+#define NW_MAX_POSES		32
+static struct {
+	int			num;
+	vec3_t		pos;				// its origin, on the floor
+	vec3_t		real;				// where the server has it
+	float		yaw;
+	int			pace;				// 0 stands, 1 walks, 2 runs
+	float		pitch;				// where they look, up or down
+	qboolean	full;				// st too: a recording's
+	npcPoseState_t	st;
+	qboolean	tilt;				// the whole body tipped: tiltAng's pitch and roll
+	vec3_t		tiltAng;
+} nwPose[NW_MAX_POSES];
+static int nwNumPoses;
+
+// what a cinematic's recording has them do that the cgame hears of as an event (a swing, a
+// jump...): handed over a snapshot at a time, the last kept on them so nothing old comes back
+#define NW_MAX_EVENTS		32
+static struct {
+	int			num, event, parm, time;
+} nwEvents[NW_MAX_EVENTS];
+static int nwNumEvents;
+static int nwEventHeld[MAX_GENTITIES], nwEventParmHeld[MAX_GENTITIES];
+
+void CL_NpcWalk_PoseEvent( int num, int event, int parm ) {
+	if ( num < 0 || num >= MAX_GENTITIES || event <= 0 )
+		return;
+	// old ones, never handed over, go
+	while ( nwNumEvents && ( nwNumEvents == NW_MAX_EVENTS || cls.realtime - nwEvents[0].time > 1000 ) ) {
+		nwNumEvents--;
+		memmove( &nwEvents[0], &nwEvents[1], nwNumEvents * sizeof( nwEvents[0] ) );
+	}
+	nwEvents[nwNumEvents].num = num;
+	nwEvents[nwNumEvents].event = event & ~EV_EVENT_BITS;
+	nwEvents[nwNumEvents].parm = parm;
+	nwEvents[nwNumEvents].time = cls.realtime;
+	nwNumEvents++;
+}
+
+// its next event, with other bits than the last so the cgame takes it as new; the last kept
+// otherwise
+static int NW_TakeEvent( int num, int *parm ) {
+	if ( num < 0 || num >= MAX_GENTITIES )
+		return 0;
+	for ( int i = 0; i < nwNumEvents; i++ ) {
+		int bits;
+
+		if ( nwEvents[i].num != num )
+			continue;
+		bits = ( ( ( nwEventHeld[num] & EV_EVENT_BITS ) >> 8 ) + 1 ) & 3;
+		nwEventHeld[num] = nwEvents[i].event | ( bits << 8 );
+		nwEventParmHeld[num] = nwEvents[i].parm;
+		nwNumEvents--;
+		memmove( &nwEvents[i], &nwEvents[i + 1], ( nwNumEvents - i ) * sizeof( nwEvents[0] ) );
+		break;
+	}
+	*parm = nwEventParmHeld[num];
+	return nwEventHeld[num];
+}
+
+
 // a walk waiting for the NPC list, its NPC given by name
 static struct {
 	char		target[MAX_QPATH];
@@ -599,6 +661,15 @@ static qboolean NW_WalkedBy( int num, const vec3_t org, int serverTime ) {
 	return qfalse;
 }
 
+// the NPC is held by a cinematic, or the spot is near where one is or really stands
+static qboolean NW_PosedBy( int num, const vec3_t org ) {
+	for ( int i = 0; i < nwNumPoses; i++ ) {
+		if ( nwPose[i].num == num || Distance( nwPose[i].pos, org ) < NW_QUIET_NEAR || Distance( nwPose[i].real, org ) < NW_QUIET_NEAR * 4 )
+			return qtrue;
+	}
+	return qfalse;
+}
+
 static void NW_Debug( const entityState_t *es, int serverTime ) {
 	if ( !cl_npcWalkDebug )
 		cl_npcWalkDebug = Cvar_Get( "cl_npcWalkDebug", "0", 0, "Print what changes on NPCs walking a route" );
@@ -643,11 +714,54 @@ qboolean CL_NpcWalk_Entity( entityState_t *es, int serverTime ) {
 	if ( nwActive )
 		NW_Debug( es, serverTime );
 	if ( es->eType > ET_EVENTS ) {
-		if ( NW_IsTeleportEvent( es->eType - ET_EVENTS, es->eventParm ) && NW_WalkedBy( es->clientNum, es->pos.trBase, serverTime ) )
+		if ( NW_IsTeleportEvent( es->eType - ET_EVENTS, es->eventParm )
+			&& ( NW_WalkedBy( es->clientNum, es->pos.trBase, serverTime ) || NW_PosedBy( es->clientNum, es->pos.trBase ) ) )
 			return qfalse;
 		return qtrue;
 	}
 	if ( !nwActive || !( w = NW_Find( es->number ) ) ) {
+		// held where a cinematic has it: an NPC, or a player on screens with this client. The
+		// teleports that bring a real NPC along neither flash nor cloak it
+		for ( int i = 0; i < nwNumPoses; i++ ) {
+			if ( nwPose[i].num != es->number || ( es->eType != ET_NPC && es->eType != ET_PLAYER ) || ( es->eFlags & EF_DEAD ) )
+				continue;
+			if ( es->eType == ET_NPC ) {
+				if ( NW_IsTeleportEvent( es->event, es->eventParm ) )
+					es->event = 0;
+				es->powerups &= ~( 1 << PW_CLOAKED );
+				es->eFlags &= ~EF_TELEPORT_BIT;
+			}
+			es->pos.trType = TR_INTERPOLATE;
+			es->pos.trTime = serverTime;
+			VectorCopy( nwPose[i].pos, es->pos.trBase );
+			VectorClear( es->pos.trDelta );
+			VectorCopy( nwPose[i].pos, es->origin );
+			es->apos.trType = TR_INTERPOLATE;
+			VectorSet( es->apos.trBase, 0, nwPose[i].yaw, 0 );
+			VectorClear( es->apos.trDelta );
+			VectorSet( es->angles, 0, nwPose[i].yaw, 0 );
+			if ( nwPose[i].full ) {
+				const npcPoseState_t *st = &nwPose[i].st;
+
+				es->apos.trBase[PITCH] = es->angles[PITCH] = nwPose[i].pitch;
+				es->legsAnim = st->legsAnim;
+				es->torsoAnim = st->torsoAnim;
+				es->legsFlip = st->legsFlip;
+				es->torsoFlip = st->torsoFlip;
+				es->forcePowersActive = st->forcePowersActive;
+				es->saberHolstered = st->saberHolstered;
+				es->saberMove = st->saberMove;
+				// what it does that's heard, not what the real one does
+				es->event = NW_TakeEvent( es->number, &es->eventParm );
+			} else if ( nwPose[i].pace ) {
+				const int anim = nwPose[i].pace > 1 ? BOTH_RUN1 : BOTH_WALK1;
+
+				if ( es->torsoAnim == es->legsAnim )
+					es->torsoAnim = anim;
+				es->legsAnim = anim;
+			}
+			return qtrue;
+		}
 		// just let go: the last teleport's uncloak may be yet to come
 		for ( int i = 0; i < NW_MAX_WALKS; i++ ) {
 			if ( nwQuiet[i].until && serverTime < nwQuiet[i].until && nwQuiet[i].num == es->number && !nw[i].active ) {
@@ -879,6 +993,7 @@ void CL_NpcWalk_Reset( void ) {
 	nwNextSend = nwTurn = nwListAsk = 0;
 	nwSent.time = 0;
 	nwPending.time = 0;
+	nwNumPoses = 0;
 }
 
 // the NPC manager has just read the whole NPC list: a walk whose NPC isn't in it any more, or
@@ -1122,6 +1237,171 @@ static qboolean NW_NpcOrigin( int num, vec3_t out ) {
 		}
 	}
 	return CL_NpcManager_NpcOrigin( num, out );
+}
+
+/*
+===============================================================================
+
+For the cinematic manager: where a move has its NPCs at any moment, and holding them there
+
+===============================================================================
+*/
+
+qboolean CL_NpcWalk_NpcOrigin( int num, vec3_t out ) {
+	return NW_NpcOrigin( num, out );
+}
+
+// every NPC a target names, numbers as they are; -1 if a name isn't in the NPC list
+int CL_NpcWalk_Targets( const char *target, int *nums, int max ) {
+	return NW_Resolve( target, nums, max, qtrue );
+}
+
+// how fast npcmanager walk's walk and run go
+float CL_NpcWalk_PaceSpeed( qboolean run ) {
+	return run ? NW_RUN_SPEED : NW_WALK_SPEED;
+}
+
+static void NW_Plan( nwWalk_t *w, const vec3_t *pts, int numPts, float speed ) {
+	memset( w, 0, sizeof( *w ) );
+	w->numPts = Com_Clampi( 1, NW_MAX_ROUTE_POINTS + 1, numPts );
+	w->speed = Q_max( 1.0f, speed );
+	for ( int i = 0; i < w->numPts; i++ )
+		VectorCopy( pts[i], w->pts[i] );
+	NW_Times( w );
+}
+
+// how long walking from pts[0] through the others takes
+int CL_NpcWalk_RouteMs( const vec3_t *pts, int numPts, float speed ) {
+	nwWalk_t w;
+
+	if ( numPts < 2 )
+		return 0;
+	NW_Plan( &w, pts, numPts, speed );
+	return w.arrive[w.numPts - 1];
+}
+
+// where it is t ms after setting off from pts[0], and which way it faces; qfalse once it's there
+qboolean CL_NpcWalk_RouteAt( const vec3_t *pts, int numPts, float speed, int t, vec3_t pos, float *yaw ) {
+	nwWalk_t w;
+	vec3_t velocity;
+
+	if ( numPts < 1 )
+		return qfalse;
+	NW_Plan( &w, pts, numPts, speed );
+	return NW_At( &w, t, pos, yaw, velocity );
+}
+
+// held at pos as a walk would have it, on the floor as it stands now (where pos says when free),
+// facing angles' yaw, until the poses are cleared; pace 0 stands, 1 walks, 2 runs. A recording's
+// st has their animations and all, a tilt their whole body tipped by angles' pitch and roll. In
+// place of one it had already
+void CL_NpcWalk_PoseEx( int num, const vec3_t pos, const vec3_t angles, int pace, qboolean free, const npcPoseState_t *st, qboolean tilt ) {
+	vec3_t real;
+	float ground, ofs = NW_GROUND_HEIGHT;
+	int i = 0;
+
+	while ( i < nwNumPoses && nwPose[i].num != num )
+		i++;
+	if ( i == NW_MAX_POSES )
+		return;
+	if ( i == nwNumPoses )
+		nwNumPoses++;
+	VectorCopy( pos, real );
+	if ( num == clc.clientNum )
+		VectorCopy( cl.snap.ps.origin, real );
+	if ( ( num == clc.clientNum || NW_NpcOrigin( num, real ) ) && NW_Ground( real, &ground ) )
+		ofs = Com_Clamp( 0.0f, 128.0f, real[2] - ground );
+	nwPose[i].num = num;
+	VectorCopy( real, nwPose[i].real );
+	VectorCopy( pos, nwPose[i].pos );
+	if ( !free && NW_Ground( pos, &ground ) )
+		nwPose[i].pos[2] = ground + ofs;
+	nwPose[i].yaw = angles[YAW];
+	nwPose[i].pitch = AngleNormalize180( angles[PITCH] );
+	nwPose[i].pace = pace;
+	nwPose[i].full = (qboolean)( st != NULL );
+	if ( st )
+		nwPose[i].st = *st;
+	nwPose[i].tilt = (qboolean)( tilt && ( AngleNormalize180( angles[PITCH] ) || AngleNormalize180( angles[ROLL] ) ) );
+	VectorCopy( angles, nwPose[i].tiltAng );
+}
+
+void CL_NpcWalk_Pose( int num, const vec3_t pos, float yaw, int pace ) {
+	const vec3_t angles = { 0.0f, yaw, 0.0f };
+
+	CL_NpcWalk_PoseEx( num, pos, angles, pace, qfalse, NULL, qfalse );
+}
+
+// the bodies tipped over, for the renderer: where they are and how they're turned
+int CL_NpcWalk_Tilts( vec3_t *pos, vec3_t *angles, int max ) {
+	int count = 0;
+
+	for ( int i = 0; i < nwNumPoses && count < max; i++ ) {
+		if ( !nwPose[i].tilt )
+			continue;
+		VectorCopy( nwPose[i].pos, pos[count] );
+		VectorCopy( nwPose[i].tiltAng, angles[count] );
+		count++;
+	}
+	return count;
+}
+
+void CL_NpcWalk_ClearPoses( void ) {
+	nwNumPoses = 0;
+}
+
+// your own player held where a cinematic has you: the snapshot's player state the cgame draws
+// you from, with its prediction off meanwhile (see cl_cinematic.cpp)
+void CL_NpcWalk_PosePlayer( playerState_t *ps ) {
+	for ( int i = 0; i < nwNumPoses; i++ ) {
+		if ( nwPose[i].num != ps->clientNum )
+			continue;
+		VectorCopy( nwPose[i].pos, ps->origin );
+		VectorClear( ps->velocity );
+		VectorSet( ps->viewangles, 0, nwPose[i].yaw, 0 );
+		if ( nwPose[i].full ) {
+			const npcPoseState_t *st = &nwPose[i].st;
+
+			ps->viewangles[PITCH] = nwPose[i].pitch;
+			ps->legsAnim = st->legsAnim;
+			ps->torsoAnim = st->torsoAnim;
+			ps->legsFlip = st->legsFlip;
+			ps->torsoFlip = st->torsoFlip;
+			ps->fd.forcePowersActive = st->forcePowersActive;
+			ps->saberHolstered = st->saberHolstered;
+			ps->saberMove = st->saberMove;
+			ps->externalEvent = NW_TakeEvent( ps->clientNum, &ps->externalEventParm );
+		} else if ( nwPose[i].pace ) {
+			const int anim = nwPose[i].pace > 1 ? BOTH_RUN1 : BOTH_WALK1;
+
+			if ( ps->torsoAnim == ps->legsAnim )
+				ps->torsoAnim = anim;
+			ps->legsAnim = anim;
+		}
+		return;
+	}
+}
+
+// which way a cinematic has it facing; qfalse if it doesn't hold it
+qboolean CL_NpcWalk_PoseYaw( int num, float *yaw ) {
+	for ( int i = 0; i < nwNumPoses; i++ ) {
+		if ( nwPose[i].num == num ) {
+			*yaw = nwPose[i].yaw;
+			return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+// where a cinematic holds it; qfalse if it doesn't
+qboolean CL_NpcWalk_PoseOf( int num, vec3_t out ) {
+	for ( int i = 0; i < nwNumPoses; i++ ) {
+		if ( nwPose[i].num == num ) {
+			VectorCopy( nwPose[i].pos, out );
+			return qtrue;
+		}
+	}
+	return qfalse;
 }
 
 static float NW_ParseSpeed( const char *s, float route ) {

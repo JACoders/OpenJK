@@ -48,6 +48,8 @@ CFxScheduler::CFxScheduler()
 {
 	mOwner = -1;
 	mNextFree2DEffect = 0;
+	mScale = mNextScale = 1.0f;
+	mInCreate = false;
 	memset( &mEffectTemplates, 0, sizeof( mEffectTemplates ));
 	memset( &mLoopedEffectArray, 0, sizeof( mLoopedEffectArray ));
 }
@@ -822,13 +824,24 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 	int						count = 0, delay = 0;
 	float					factor = 0.0f, fxscale;
 	bool					forceScheduling = false;
+	float					size;
 
 	if ( id < 1 || id >= FX_MAX_EFFECTS || !mEffectTemplates[id].mInUse )
 	{
 		// Now you've done it!
 		ReportPlayEffectError(id);
+		mNextScale = 1.0f;
 		return;
 	}
+
+	// how big: as the one it plays from, as asked for, or as the effect manager has it there
+	if ( mInCreate )
+		size = mScale;
+	else if ( mNextScale != 1.0f )
+		size = mNextScale;
+	else
+		size = CL_EffectManager_FxScale( mEffectTemplates[id].mEffectName, origin );
+	mNextScale = 1.0f;
 
 #ifdef _DEBUG
 	// Don't bother scheduling the effect if the system is currently frozen
@@ -936,6 +949,9 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 			// if the delay is so small, we may as well just create this bit right now
 			if ( delay < 1 && !forceScheduling && !isPortal )
 			{
+				const float	wasScale = mScale;
+
+				mScale = size;
 				if ( boltInfo == -1 && entityNum != -1 )
 				{
 					// Find out where the entity currently is
@@ -949,6 +965,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 				{
 					CreateEffect( prim, origin, axis, -delay, fxParm );
 				}
+				mScale = wasScale;
 			}
 			else
 			{
@@ -964,6 +981,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 				sfx->mpTemplate = prim;
 				sfx->mIsRelative = isRelative;
 				sfx->mOwner = (short)mOwner;
+				sfx->mScale = size;
 				sfx->mPortalEffect = isPortal;
 
 				if ( boltInfo == -1 )
@@ -1104,8 +1122,9 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 
 		if (portal == effect->mPortalEffect && effect->mStartTime <= theFxHelper.mTime )
 		{ //only render portal fx on the skyportal pass and vice versa
-			// whose it is was decided when it was played
+			// whose it is, and how big, was decided when it was played
 			mOwner = effect->mOwner;
+			mScale = effect->mScale;
 			if (effect->mBoltNum == -1)
 			{// ok, are we spawning a bolt on effect or a normal one?
 				if ( effect->mEntNum != ENTITYNUM_NONE )
@@ -1159,6 +1178,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 			}
 
 			mOwner = -1;
+			mScale = 1.0f;
 			mScheduledEffectsPool.Free (effect);
 			itr = mFxSchedule.erase(itr);
 		}
@@ -1245,6 +1265,11 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 				ax[3];
 	trace_t	tr;
 	int		emitterModel;
+	const float	sc = mScale > 0.0f ? mScale : 1.0f;		// how big it's drawn
+	const bool	wasInCreate = mInCreate;
+
+	// what it plays from here is as big
+	mInCreate = true;
 
 	// We may modify the axis, so make a work copy
 	AxisCopy( axis, ax );
@@ -1296,6 +1321,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		VectorMA( org, fx->mOrigin1Z.GetVal(), ax[2], org );
 	}
 
+	VectorScale( org, sc, org );
+
 	// We always add our calculated offset to the passed in origin, unless relative!
 	if( !(flags & FX_RELATIVE) )
 	{
@@ -1311,8 +1338,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		x = DEG2RAD( flrand(0.0f, 360.0f) );
 		y = DEG2RAD( flrand(0.0f, 180.0f) );
 
-		width = fx->mRadius.GetVal();
-		height = fx->mHeight.GetVal();
+		width = fx->mRadius.GetVal() * sc;
+		height = fx->mHeight.GetVal() * sc;
 
 		// calculate point on ellipse
 		VectorSet( temp, sin(x) * width * sin(y), cos(x) * width * sin(y), cos(y) * height ); // sinx * siny, cosx * siny, cosy
@@ -1330,8 +1357,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		vec3_t	pt;
 
 		// set up our point, then rotate around the current direction to.  Make unrotated cylinder centered around 0,0,0
-		VectorScale( ax[1], fx->mRadius.GetVal(), pt );
-		VectorMA( pt, flrand(-1.0f, 1.0f) * 0.5f * fx->mHeight.GetVal(), ax[0], pt );
+		VectorScale( ax[1], fx->mRadius.GetVal() * sc, pt );
+		VectorMA( pt, flrand(-1.0f, 1.0f) * 0.5f * fx->mHeight.GetVal() * sc, ax[0], pt );
 		RotatePointAroundVector( temp, ax[0], pt, flrand(0.0f, 360.0f) );
 
 		VectorAdd( org, temp, org );
@@ -1407,6 +1434,10 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		// NOTE: I only effect Z ( up/down in the Quake world )
 		accel[2] += fx->mGravity.GetVal();
 
+		// bigger, it goes out as far in the same time
+		VectorScale( vel, sc, vel );
+		VectorScale( accel, sc, accel );
+
 		// There may be a lag between when the effect should be created and when it actually gets created.
 		//	Since we know what the discrepancy is, we can attempt to compensate...
 		if ( lateTime > 0 )
@@ -1472,6 +1503,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 				VectorMA( org2, fx->mOrigin2Y.GetVal(), ax[1], org2 );
 				VectorMA( org2, fx->mOrigin2Z.GetVal(), ax[2], org2 );
 			}
+			VectorScale( org2, sc, org2 );
 			if( !(flags & FX_RELATIVE) )
 			{
 				VectorAdd( org2, origin, org2 );
@@ -1495,7 +1527,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	//---------
 
 		FX_AddParticle( org, vel, accel,
-						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+						fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mRotation.GetVal(), fx->mRotationDelta.GetVal(),
@@ -1510,7 +1542,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	//---------
 
 		FX_AddLine( org, org2,
-						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+						fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mLife.GetVal(), MineMedia( fx->mMediaHandles.GetHandle() ), flags, fx->mMatImpactFX, fxParm,
@@ -1522,8 +1554,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	//---------
 
 		FX_AddTail( org, vel, accel,
-						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
-						fx->mLengthStart.GetVal(), fx->mLengthEnd.GetVal(), fx->mLengthParm.GetVal(),
+						fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
+						fx->mLengthStart.GetVal() * sc, fx->mLengthEnd.GetVal() * sc, fx->mLengthParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
@@ -1537,7 +1569,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	//----------------
 
 		FX_AddElectricity( org, org2,
-						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+						fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mElasticity.GetVal(), fx->mLife.GetVal(), MineMedia( fx->mMediaHandles.GetHandle() ), flags,
@@ -1550,9 +1582,9 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	//---------
 
 		FX_AddCylinder( org, ax[0],
-						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
-						fx->mSize2Start.GetVal(), fx->mSize2End.GetVal(), fx->mSize2Parm.GetVal(),
-						fx->mLengthStart.GetVal(), fx->mLengthEnd.GetVal(), fx->mLengthParm.GetVal(),
+						fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
+						fx->mSize2Start.GetVal() * sc, fx->mSize2End.GetVal() * sc, fx->mSize2Parm.GetVal(),
+						fx->mLengthStart.GetVal() * sc, fx->mLengthEnd.GetVal() * sc, fx->mLengthParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mLife.GetVal(), MineMedia( fx->mMediaHandles.GetHandle() ), flags, fx->mMatImpactFX, fxParm,
@@ -1581,7 +1613,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		emitterModel = fx->mMediaHandles.GetHandle();
 
 		FX_AddEmitter( org, vel, accel,
-						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+						fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						ang, angDelta,
@@ -1601,7 +1633,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		// We shouldn't always need this, only for big hits or when a decal is very close-up.
 
 		// If the impact size is greater than 6, don't even try to use cheap sprites.  Big marks need real decals.
-		if (fx->mSizeStart.GetVal()<6)
+		if (fx->mSizeStart.GetVal() * sc<6)
 		{
 			vec3_t dest, normal;
 			int findmarkret;
@@ -1619,7 +1651,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 					FX_AddOrientedParticle( effectCloud, org, ax[0],
 							zerovec,	// velocity
 							zerovec,	// acceleration
-							fx->mSizeStart.GetVal(), fx->mSizeStart.GetVal(), 0,	// size params
+							fx->mSizeStart.GetVal() * sc, fx->mSizeStart.GetVal() * sc, 0,	// size params
 							fx->mAlphaStart.GetVal(), 0, 0.75,						// alpha params (start fading at 75% life)
 							sRGB, sRGB, 0,											// rgb params
 							fx->mRotation.GetVal(), 0,								// rotation delta
@@ -1642,7 +1674,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 
 					CG_ImpactMark( MineMedia( fx->mMediaHandles.GetHandle() ), org, ax[0],
 								fx->mRotation.GetVal(), color.c, 12000, 8000,
-								true, fx->mSizeStart.GetVal(), false );
+								true, fx->mSizeStart.GetVal() * sc, false );
 				}
 			}
 		}
@@ -1655,14 +1687,14 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 
 			CG_ImpactMark( MineMedia( fx->mMediaHandles.GetHandle() ), org, ax[0],
 						fx->mRotation.GetVal(), color.c, 12000, 8000,
-						true, fx->mSizeStart.GetVal(), false );
+						true, fx->mSizeStart.GetVal() * sc, false );
 		} */
 
-		theFxHelper.AddDecalToScene ( MineMedia( fx->mMediaHandles.GetHandle() ), org, ax[0], fx->mRotation.GetVal(), sRGB[0], sRGB[1], sRGB[2], fx->mAlphaStart.GetVal(), qtrue, fx->mSizeStart.GetVal(), qfalse );
+		theFxHelper.AddDecalToScene ( MineMedia( fx->mMediaHandles.GetHandle() ), org, ax[0], fx->mRotation.GetVal(), sRGB[0], sRGB[1], sRGB[2], fx->mAlphaStart.GetVal(), qtrue, fx->mSizeStart.GetVal() * sc, qfalse );
 
 		if (fx->mFlags & FX_GHOUL2_DECALS)
 		{
-			theFxHelper.AddGhoul2Decal(MineMedia( fx->mMediaHandles.GetHandle() ), org, ax[0], fx->mSizeStart.GetVal());
+			theFxHelper.AddGhoul2Decal(MineMedia( fx->mMediaHandles.GetHandle() ), org, ax[0], fx->mSizeStart.GetVal() * sc);
 		}
 
 		break;
@@ -1672,7 +1704,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	//-------------------
 
 		FX_AddOrientedParticle( org, ax[0], vel, accel,
-					fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+					fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 					fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 					sRGB, eRGB, fx->mRGBParm.GetVal(),
 					fx->mRotation.GetVal(), fx->mRotationDelta.GetVal(),
@@ -1706,7 +1738,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	case Light:
 	//---------
 
-		FX_AddLight( org, fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+		FX_AddLight( org, fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mLife.GetVal(), flags, fx->mMatImpactFX, fxParm,
 						ghoul2, entNum, modelNum, boltNum);
@@ -1725,7 +1757,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 	case ScreenFlash:
 	//--------------
 
-		FX_AddFlash( org, fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
+		FX_AddFlash( org, fx->mSizeStart.GetVal() * sc, fx->mSizeEnd.GetVal() * sc, fx->mSizeParm.GetVal(),
 					fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 					sRGB, eRGB, fx->mRGBParm.GetVal(),
 					fx->mLife.GetVal(), MineMedia( fx->mMediaHandles.GetHandle() ), flags, fx->mMatImpactFX, fxParm );
@@ -1735,6 +1767,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ma
 		assert(0);
 		break;
 	}
+
+	mInCreate = wasInCreate;
 
 	// Track when we need to clean ourselves up if we are a copy
 	if ( fx->mCopy )

@@ -4623,3 +4623,139 @@ const char *FS_MV_VerifyDownloadPath(const char *pk3file) {
 
 	return NULL;
 }
+
+/*
+================
+Packs added while the game runs (loadpk3)
+================
+*/
+
+#define FS_MAX_ADDED_PAKS	64
+
+static pack_t	*fs_addedPaks[FS_MAX_ADDED_PAKS];	// the last FS_AddNewPaks', for what it added
+static int		fs_numAddedPaks;
+
+// whether a pure server lists the packs the client may use: one added now wouldn't be
+qboolean FS_ServerIsPure( void ) {
+	return (qboolean)( fs_numServerPaks != 0 );
+}
+
+// the pk3s in the game's folders not loaded yet, loaded in front of every other: only the one
+// named, if only is given (with or without .pk3). Their names in names; how many
+int FS_AddNewPaks( const char *only, char (*names)[MAX_QPATH], int maxNames ) {
+	char want[MAX_QPATH];
+
+	fs_numAddedPaks = 0;
+	want[0] = '\0';
+	if ( only && only[0] ) {
+		Q_strncpyz( want, only, sizeof( want ) );
+		if ( strlen( want ) > 4 && !Q_stricmp( want + strlen( want ) - 4, ".pk3" ) )
+			want[strlen( want ) - 4] = '\0';
+	}
+
+	for ( searchpath_t *dirSp = fs_searchpaths; dirSp; dirSp = dirSp->next ) {
+		directory_t *dir = dirSp->dir;
+		char **pakfiles;
+		int numfiles;
+
+		if ( !dir )
+			continue;
+		pakfiles = Sys_ListFiles( dir->fullpath, ".pk3", NULL, &numfiles, qfalse );
+		for ( int i = 0; i < numfiles && fs_numAddedPaks < FS_MAX_ADDED_PAKS; i++ ) {
+			char base[MAX_OSPATH], pakfile[MAX_OSPATH];
+			qboolean loaded = qfalse;
+			pack_t *pak;
+			searchpath_t *search;
+
+			Q_strncpyz( base, pakfiles[i], sizeof( base ) );
+			if ( strlen( base ) > 4 && !Q_stricmp( base + strlen( base ) - 4, ".pk3" ) )
+				base[strlen( base ) - 4] = '\0';
+			if ( want[0] && Q_stricmp( base, want ) )
+				continue;
+			// only loaded when the server asks for them
+			if ( !Q_stricmpn( base, "dl_", 3 ) )
+				continue;
+			Q_strncpyz( pakfile, FS_BuildOSPath( dir->path, dir->gamedir, pakfiles[i] ), sizeof( pakfile ) );
+			for ( searchpath_t *sp = fs_searchpaths; sp; sp = sp->next ) {
+				if ( sp->pack && Sys_PathCmp( sp->pack->pakFilename, pakfile ) ) {
+					loaded = qtrue;
+					break;
+				}
+			}
+			if ( loaded )
+				continue;
+			if ( ( pak = FS_LoadZipFile( pakfile, pakfiles[i] ) ) == 0 )
+				continue;
+
+			Q_strncpyz( pak->pakPathname, dir->fullpath, sizeof( pak->pakPathname ) );
+			Q_strncpyz( pak->pakGamename, dir->gamedir, sizeof( pak->pakGamename ) );
+			if ( Q_stricmpn( pak->pakGamename, BASEGAME, (int)strlen( BASEGAME ) ) )
+				pak->referenced |= FS_GENERAL_REF;
+			fs_packFiles += pak->numfiles;
+
+			search = (searchpath_s *)Z_Malloc( sizeof( searchpath_t ), TAG_FILESYS, qtrue );
+			search->pack = pak;
+			search->next = fs_searchpaths;
+			fs_searchpaths = search;
+
+			if ( fs_numAddedPaks < maxNames )
+				Com_sprintf( names[fs_numAddedPaks], MAX_QPATH, "%s/%s.pk3", pak->pakGamename, pak->pakBasename );
+			fs_addedPaks[fs_numAddedPaks++] = pak;
+		}
+		Sys_FreeFileList( pakfiles );
+	}
+	return fs_numAddedPaks;
+}
+
+// whether a file in the packs the last FS_AddNewPaks added starts with start
+qboolean FS_AddedPaksHave( const char *start ) {
+	char want[MAX_QPATH];
+	const int len = (int)strlen( start );
+
+	Q_strncpyz( want, start, sizeof( want ) );
+	Q_strlwr( want );
+	for ( char *c = want; *c; c++ ) {
+		if ( *c == '\\' )
+			*c = '/';
+	}
+	for ( int p = 0; p < fs_numAddedPaks; p++ ) {
+		const pack_t *pak = fs_addedPaks[p];
+
+		for ( int h = 0; h < pak->hashSize; h++ ) {
+			for ( const fileInPack_t *f = pak->hashTable[h]; f; f = f->next ) {
+				if ( !strncmp( f->name, want, len ) )
+					return qtrue;
+			}
+		}
+	}
+	return qfalse;
+}
+
+// the files in dir with that extension in the packs the last FS_AddNewPaks added, each once
+// ("shaders/x.shader"); how many
+int FS_AddedPaksFiles( const char *dir, const char *ext, char (*names)[MAX_QPATH], int maxNames ) {
+	const int dirLen = (int)strlen( dir ), extLen = (int)strlen( ext );
+	int count = 0;
+
+	for ( int p = 0; p < fs_numAddedPaks; p++ ) {
+		const pack_t *pak = fs_addedPaks[p];
+
+		for ( int h = 0; h < pak->hashSize; h++ ) {
+			for ( const fileInPack_t *f = pak->hashTable[h]; f && count < maxNames; f = f->next ) {
+				const int len = (int)strlen( f->name );
+				qboolean dup = qfalse;
+
+				if ( len <= dirLen + extLen || Q_stricmpn( f->name, dir, dirLen ) || Q_stricmp( f->name + len - extLen, ext )
+					|| strchr( f->name + dirLen, '/' ) )
+					continue;
+				for ( int i = 0; i < count; i++ ) {
+					if ( !Q_stricmp( names[i], f->name ) )
+						dup = qtrue;
+				}
+				if ( !dup )
+					Q_strncpyz( names[count++], f->name, MAX_QPATH );
+			}
+		}
+	}
+	return count;
+}

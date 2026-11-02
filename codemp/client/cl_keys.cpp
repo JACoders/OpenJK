@@ -441,8 +441,59 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int size, qboolean sho
 	Com_Memcpy( str, edit->buffer + prestep, drawLen );
 	str[ drawLen ] = 0;
 
-	// draw it
-	if ( size == con.charWidth ) {
+	// the selection, under the letters
+	{
+		int a, b;
+
+		if ( Field_Selection( edit, &a, &b ) ) {
+			const vec4_t sel = { 0.25f, 0.45f, 0.9f, 0.55f };
+
+			a = Q_max( a, prestep ) - prestep;
+			b = Q_min( b, prestep + drawLen ) - prestep;
+			if ( b > a ) {
+				if ( size == con.charWidth ) {
+					re->SetColor( sel );
+					re->DrawStretchPic( ( x + a * size ) * con.xadjust, y * con.yadjust, ( b - a ) * size * con.xadjust, con.charHeight * con.yadjust, 0, 0, 0, 0, cls.whiteShader );
+					re->SetColor( NULL );
+				} else {
+					SCR_FillRect( x + a * size * cls.widthRatioCoef, (float)y, ( b - a ) * size * cls.widthRatioCoef, (float)BIGCHAR_HEIGHT, sel );
+				}
+			}
+		}
+	}
+
+	// draw it: the codes shown, in the colour they give (RPMod's too), from the one the text
+	// scrolled out of view leaves off in
+	if ( noColorEscape ) {
+		const vec4_t white = { 1.0f, 1.0f, 1.0f, 1.0f }, shadow = { 0.0f, 0.0f, 0.0f, 1.0f };
+		const float *color = white;
+		const qboolean small = (qboolean)( size == con.charWidth );
+		const float step = small ? (float)size : size * cls.widthRatioCoef;
+
+		for ( i = 0; i < prestep; i++ ) {
+			const float *c = Con_TypedColor( edit->buffer + i );
+
+			if ( c )
+				color = c;
+		}
+		if ( !small ) {
+			re->SetColor( shadow );
+			for ( i = 0; str[i]; i++ )
+				SCR_DrawChar( (int)( x + i * step ) + 2, y + 2, (float)size, str[i] );
+		}
+		for ( i = 0; str[i]; i++ ) {
+			const float *c = Con_TypedColor( edit->buffer + prestep + i );
+
+			if ( c )
+				color = c;
+			re->SetColor( color );
+			if ( small )
+				SCR_DrawSmallChar( (int)( x + i * step ), y, str[i] );
+			else
+				SCR_DrawChar( (int)( x + i * step ), y, (float)size, str[i] );
+		}
+		re->SetColor( NULL );
+	} else if ( size == con.charWidth ) {
 		float	color[4];
 
 		color[0] = color[1] = color[2] = color[3] = 1.0;
@@ -488,6 +539,108 @@ void Field_BigDraw( field_t *edit, int x, int y, qboolean showCursor, qboolean n
 
 /*
 ================
+FIELD SELECTION
+
+One field at a time has a selection, from its anchor to its cursor: Shift with the arrows, Home
+and End, Ctrl+A, or the mouse in the console. Typing over it replaces it, Backspace and Delete
+remove it, Ctrl+C and Ctrl+X copy and cut it.
+================
+*/
+
+static field_t	*fieldSelOf;
+static int		fieldSelAnchor;
+
+// con_modernInput: the selection, Ctrl with the arrows, Ctrl+A/X; off, the fields are as they were
+static qboolean Field_Modern( void ) {
+	return (qboolean)( Con_ModernInput() != 0 );
+}
+
+// the selection in the field, a to b; qfalse if none
+qboolean Field_Selection( const field_t *edit, int *a, int *b ) {
+	const int len = (int)strlen( edit->buffer );
+
+	if ( !Field_Modern() || fieldSelOf != edit || fieldSelAnchor == edit->cursor || fieldSelAnchor > len || edit->cursor > len ) {
+		*a = *b = edit->cursor;
+		return qfalse;
+	}
+	*a = Q_min( fieldSelAnchor, edit->cursor );
+	*b = Q_max( fieldSelAnchor, edit->cursor );
+	return qtrue;
+}
+
+// from anchor to the cursor; an anchor < 0 lets it go
+void Field_Select( field_t *edit, int anchor ) {
+	fieldSelOf = anchor >= 0 && Field_Modern() ? edit : NULL;
+	fieldSelAnchor = anchor;
+}
+
+void Field_ClearSelection( void ) {
+	fieldSelOf = NULL;
+}
+
+// the anchor: where the selection began, else the cursor
+static int Field_Anchor( const field_t *edit ) {
+	int a, b;
+
+	if ( !Field_Selection( edit, &a, &b ) )
+		return edit->cursor;
+	return fieldSelAnchor;
+}
+
+static void Field_DeleteRange( field_t *edit, int a, int b ) {
+	memmove( edit->buffer + a, edit->buffer + b, strlen( edit->buffer + b ) + 1 );
+	edit->cursor = a;
+	if ( edit->scroll > a )
+		edit->scroll = a;
+	Field_ClearSelection();
+}
+
+// the selection removed; qtrue if there was one
+static qboolean Field_DeleteSelection( field_t *edit ) {
+	int a, b;
+
+	if ( !Field_Selection( edit, &a, &b ) )
+		return qfalse;
+	Field_DeleteRange( edit, a, b );
+	return qtrue;
+}
+
+static void Field_CopySelection( const field_t *edit ) {
+	char text[MAX_EDIT_LINE];
+	int a, b;
+
+	if ( !Field_Selection( edit, &a, &b ) )
+		return;
+	Q_strncpyz( text, edit->buffer + a, Q_min( (int)sizeof( text ), b - a + 1 ) );
+	Sys_SetClipboardData( text );
+}
+
+static int Field_WordLeft( const field_t *edit, int at ) {
+	while ( at > 0 && edit->buffer[at - 1] == ' ' )
+		at--;
+	while ( at > 0 && edit->buffer[at - 1] != ' ' )
+		at--;
+	return at;
+}
+
+static int Field_WordRight( const field_t *edit, int at ) {
+	while ( edit->buffer[at] && edit->buffer[at] != ' ' )
+		at++;
+	while ( edit->buffer[at] == ' ' )
+		at++;
+	return at;
+}
+
+static qboolean Field_Ctrl( void ) {
+	return (qboolean)( Field_Modern() && ( kg.keys[A_CTRL].down || kg.keys[A_CTRL2].down ) );
+}
+
+static qboolean Field_Shift( void ) {
+	return (qboolean)( kg.keys[A_SHIFT].down || kg.keys[A_SHIFT2].down );
+}
+
+/*
+================
 Field_Paste
 ================
 */
@@ -499,12 +652,17 @@ void Field_Paste( field_t *edit ) {
 	if ( !cbd ) {
 		return;
 	}
+	Field_DeleteSelection( edit );
 
-	// send as if typed, so insert / overstrike works properly
+	// send as if typed, so insert / overstrike works properly; a line break is a space
 	while( *c )
 	{
 		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
-		Field_CharEvent( edit, ConvertUTF32ToExpectedCharset( utf32 ) );
+		int ch = ConvertUTF32ToExpectedCharset( utf32 );
+
+		if ( ch == '\n' || ch == '\r' || ch == '\t' )
+			ch = ' ';
+		Field_CharEvent( edit, ch );
 	}
 
 	Z_Free( cbd );
@@ -518,46 +676,66 @@ Performs the basic line editing functions for the console,
 in-game talk, and menu fields
 
 Key events are used for non-printable characters, others are gotten from char events.
+Ctrl with the arrows goes a word, Shift selects.
 =================
 */
 void Field_KeyDownEvent( field_t *edit, int key ) {
-	int		len;
+	const qboolean ctrl = Field_Ctrl(), shift = Field_Shift(), shiftSelects = (qboolean)( shift && Field_Modern() );
+	const int anchor = Field_Anchor( edit );
+	int		len, a, b;
+	qboolean moved = qfalse, hadSel;
 
-	// shift-insert is paste
-	if ( ( ( key == A_INSERT ) || ( key == A_KP_0 ) ) && kg.keys[A_SHIFT].down ) {
+	// shift-insert is paste, ctrl-insert copies
+	if ( ( ( key == A_INSERT ) || ( key == A_KP_0 ) ) && shift ) {
 		Field_Paste( edit );
+		return;
+	}
+	if ( key == A_INSERT && ctrl ) {
+		Field_CopySelection( edit );
 		return;
 	}
 
 	key = tolower( key );
 	len = strlen( edit->buffer );
+	hadSel = Field_Selection( edit, &a, &b );
 
 	switch ( key ) {
 		case A_DELETE:
-			if ( edit->cursor < len ) {
-				memmove( edit->buffer + edit->cursor,
-					edit->buffer + edit->cursor + 1, len - edit->cursor );
+			if ( hadSel ) {
+				Field_DeleteRange( edit, a, b );
+			} else if ( edit->cursor < len ) {
+				Field_DeleteRange( edit, edit->cursor, ctrl ? Field_WordRight( edit, edit->cursor ) : edit->cursor + 1 );
 			}
 			break;
 
 		case A_CURSOR_RIGHT:
-			if ( edit->cursor < len ) {
+			if ( hadSel && !shiftSelects )
+				edit->cursor = b;
+			else if ( ctrl )
+				edit->cursor = Field_WordRight( edit, edit->cursor );
+			else if ( edit->cursor < len )
 				edit->cursor++;
-			}
+			moved = qtrue;
 			break;
 
 		case A_CURSOR_LEFT:
-			if ( edit->cursor > 0 ) {
+			if ( hadSel && !shiftSelects )
+				edit->cursor = a;
+			else if ( ctrl )
+				edit->cursor = Field_WordLeft( edit, edit->cursor );
+			else if ( edit->cursor > 0 )
 				edit->cursor--;
-			}
+			moved = qtrue;
 			break;
 
 		case A_HOME:
 			edit->cursor = 0;
+			moved = qtrue;
 			break;
 
 		case A_END:
 			edit->cursor = len;
+			moved = qtrue;
 			break;
 
 		case A_INSERT:
@@ -567,6 +745,13 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 		default:
 			break;
  	}
+
+	if ( moved ) {
+		if ( shiftSelects )
+			Field_Select( edit, anchor );
+		else
+			Field_ClearSelection();
+	}
 
 	// Change scroll if cursor is no longer visible
 	if ( edit->cursor < edit->scroll ) {
@@ -589,35 +774,49 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'c' - 'a' + 1 ) {	// ctrl-c clears the field
+	if ( ch == 'c' - 'a' + 1 ) {	// ctrl-c copies the selection, or clears the field
+		int a, b;
+
+		if ( Field_Selection( edit, &a, &b ) ) {
+			Field_CopySelection( edit );
+			return;
+		}
 		Field_Clear( edit );
+		Field_ClearSelection();
+		return;
+	}
+
+	if ( ch == 'x' - 'a' + 1 && Field_Modern() ) {	// ctrl-x cuts the selection
+		Field_CopySelection( edit );
+		Field_DeleteSelection( edit );
 		return;
 	}
 
 	len = strlen( edit->buffer );
 
-	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
-		if ( edit->cursor > 0 ) {
-			memmove( edit->buffer + edit->cursor - 1,
-				edit->buffer + edit->cursor, len + 1 - edit->cursor );
-			edit->cursor--;
-			if ( edit->cursor < edit->scroll )
-			{
-				edit->scroll--;
-			}
-		}
+	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace; with ctrl held, a word
+		if ( Field_DeleteSelection( edit ) )
+			return;
+		if ( edit->cursor > 0 )
+			Field_DeleteRange( edit, Field_Ctrl() ? Field_WordLeft( edit, edit->cursor ) : edit->cursor - 1, edit->cursor );
 		return;
 	}
 
-	if ( ch == 'a' - 'a' + 1 ) {	// ctrl-a is home
-		edit->cursor = 0;
-		edit->scroll = 0;
+	if ( ch == 'a' - 'a' + 1 ) {	// ctrl-a selects it all; as it was, it's home
+		if ( Field_Modern() ) {
+			edit->cursor = len;
+			Field_Select( edit, 0 );
+		} else {
+			edit->cursor = 0;
+			edit->scroll = 0;
+		}
 		return;
 	}
 
 	if ( ch == 'e' - 'a' + 1 ) {	// ctrl-e is end
 		edit->cursor = len;
 		edit->scroll = edit->cursor - edit->widthInChars;
+		Field_ClearSelection();
 		return;
 	}
 
@@ -627,6 +826,10 @@ void Field_CharEvent( field_t *edit, int ch ) {
 	if ( ch < 32 ) {
 		return;
 	}
+
+	// typed over the selection
+	if ( Field_DeleteSelection( edit ) )
+		len = strlen( edit->buffer );
 
 	if ( kg.key_overstrikeMode ) {
 		// - 2 to leave room for the leading slash and trailing \0
@@ -718,6 +921,7 @@ void Console_Key( int key ) {
 		}
 
 		// copy line to history buffer
+		Field_ClearSelection();
 		historyEditLines[nextHistoryLine % COMMAND_HISTORY] = g_consoleField;
 		nextHistoryLine++;
 		historyLine = nextHistoryLine;
@@ -736,6 +940,7 @@ void Console_Key( int key ) {
 
 	// tab completion
 	if ( key == A_TAB ) {
+		Field_ClearSelection();
 		Field_AutoComplete( &g_consoleField );
 		return;
 	}
@@ -748,6 +953,7 @@ void Console_Key( int key ) {
 		if ( nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0 )
 			historyLine--;
 		g_consoleField = historyEditLines[historyLine % COMMAND_HISTORY];
+		Field_ClearSelection();
 
 		return;
 	}
@@ -764,6 +970,7 @@ void Console_Key( int key ) {
 			return;
 		}
 		g_consoleField = historyEditLines[historyLine % COMMAND_HISTORY];
+		Field_ClearSelection();
 		return;
 	}
 
@@ -819,11 +1026,13 @@ void Message_Key( int key ) {
 
 	if ( key == A_ENTER || key == A_KP_ENTER ) {
 		if ( chatField.buffer[0] && cls.state == CA_ACTIVE ) {
-				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer );
-			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer );
-			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
+				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"", chat_playerNum, chatField.buffer );
+			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"", chatField.buffer );
+			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"", chatField.buffer );
 
-			CL_AddReliableCommand( buffer, qfalse );
+			// as the console's: given its capitals, and in parts when too long
+			Cmd_TokenizeString( buffer );
+			CL_ForwardCommandToServer( buffer );
 		}
 		Key_SetCatcher( Key_GetCatcher() & ~KEYCATCH_MESSAGE );
 		Field_Clear( &chatField );
@@ -1189,6 +1398,8 @@ static void Key_CompleteBind( char *args, int argNum ) {
 CL_InitKeyCommands
 ===================
 */
+static void Key_ConsoleKey_f( void );
+
 void CL_InitKeyCommands( void ) {
 	// register our functions
 	Cmd_AddCommand( "bind", Key_Bind_f, "Bind a key to a console command" );
@@ -1197,6 +1408,12 @@ void CL_InitKeyCommands( void ) {
 	Cmd_SetCommandCompletionFunc( "unbind", Key_CompleteUnbind );
 	Cmd_AddCommand( "unbindall", Key_Unbindall_f, "Delete all key bindings" );
 	Cmd_AddCommand( "bindlist", Key_Bindlist_f, "Show all bindings in the console" );
+	Cmd_AddCommand( "con_keybind", Key_ConsoleKey_f, "The key that opens the console: con_keybind <key> | none" );
+}
+
+// a key that types a letter
+static qboolean Key_TypesLetter( int key ) {
+	return (qboolean)( ( key >= A_SPACE && key <= A_TILDE ) || ( key >= A_CAP_AGRAVE && key <= A_LOW_YDIERESIS ) );
 }
 
 /*
@@ -1206,16 +1423,69 @@ CL_BindUICommand
 Returns qtrue if bind command should be executed while user interface is shown
 ===================
 */
-static qboolean CL_BindUICommand( const char *cmd ) {
+static qboolean CL_BindUICommand( const char *cmd, int key ) {
+	// the console's key opens and closes it over anything, but one that types a letter only in game
+	if ( !Q_stricmp( cmd, "toggleconsole" ) )
+		return (qboolean)!Key_TypesLetter( key );
+
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
 		return qfalse;
 
-	if ( !Q_stricmp( cmd, "toggleconsole" ) )
-		return qtrue;
 	if ( !Q_stricmp( cmd, "togglemenu" ) )
 		return qtrue;
 
 	return qfalse;
+}
+
+// the first key bound to open the console, -1 for none: ` and ~ bound to it are the key under Esc
+int Key_ConsoleKey( void ) {
+	for ( int i = 0; i < MAX_KEYS; i++ ) {
+		if ( i == A_LEFT_SINGLE_QUOTE || i == A_TILDE )
+			continue;
+		if ( kg.keys[i].binding && !Q_stricmp( kg.keys[i].binding, "toggleconsole" ) )
+			return i;
+	}
+	return -1;
+}
+
+// the key that opens the console, the others bound to it before let go; -1 none but the one under Esc
+void Key_SetConsoleKey( int keynum ) {
+	for ( int i = 0; i < MAX_KEYS; i++ ) {
+		if ( kg.keys[i].binding && !Q_stricmp( kg.keys[i].binding, "toggleconsole" ) )
+			Key_SetBinding( i, NULL );
+	}
+	if ( keynum > 0 && keynum < MAX_KEYS )
+		Key_SetBinding( keynum, "toggleconsole" );
+	// with no key of its own, the one under Esc opens it again
+	if ( Key_ConsoleKey() < 0 )
+		Cvar_Set( "cl_consoleTildeKey", "1" );
+}
+
+static void Key_ConsoleKey_f( void ) {
+	const int now = Key_ConsoleKey();
+	int keynum;
+
+	if ( Cmd_Argc() < 2 ) {
+		Com_Printf( "Console key: %s%s\n", now >= 0 ? Key_KeynumToString( now ) : "none of its own",
+			cl_consoleTildeKey->integer ? ", and the key under Esc" : "" );
+		Com_Printf( "  con_keybind <key> | none; cl_consoleTildeKey 0 makes the key under Esc a key as others. Shift+Esc always opens it\n" );
+		return;
+	}
+	if ( !Q_stricmp( Cmd_Argv( 1 ), "none" ) ) {
+		Key_SetConsoleKey( -1 );
+		Com_Printf( "Console key: only the key under Esc\n" );
+		return;
+	}
+	keynum = Key_StringToKeynum( Cmd_Argv( 1 ) );
+	if ( keynum <= 0 || keynum == A_ESCAPE || keynum == A_CONSOLE ) {
+		Com_Printf( "\"%s\" can't be the console key\n", Cmd_Argv( 1 ) );
+		return;
+	}
+	if ( kg.keys[keynames[keynum].upper].binding && kg.keys[keynames[keynum].upper].binding[0] && Q_stricmp( kg.keys[keynames[keynum].upper].binding, "toggleconsole" ) )
+		Com_Printf( "%s was bound to \"%s\"\n", Key_KeynumToString( keynum ), kg.keys[keynames[keynum].upper].binding );
+	Key_SetConsoleKey( keynum );
+	Com_Printf( "Console key: %s%s\n", Key_KeynumToString( keynum ),
+		Key_TypesLetter( keynum ) ? " (it types its letter: it opens the console only in game, not in the chat box or a menu)" : "" );
 }
 
 /*
@@ -1264,7 +1534,7 @@ void CL_ParseBinding( int key, qboolean down, unsigned time )
 		else if( down )
 		{
 			// normal commands only execute on key press
-			if ( allCommands || CL_BindUICommand( p ) ) {
+			if ( allCommands || CL_BindUICommand( p, key ) ) {
 				// down-only command
 				if ( cls.cgameStarted && cl.mSharedMemory ) {
 					// don't do this unless cgame is inited and shared memory is valid
@@ -1324,6 +1594,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 		Key_ClearStates ();
 		return;
 	}
+
+	// a cinematic's recording ended with its key, whatever it's bound to
+	if ( CL_Cinematic_RecordKey( key ) )
+		return;
 
 	// keys can still be used for bound actions
 	if ( cls.state == CA_CINEMATIC && !Key_GetCatcher() ) {
@@ -1395,6 +1669,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_Languages_Escape();
 			return;
 		}
+		if ( Key_GetCatcher() & KEYCATCH_CONSETTINGS ) {
+			CL_ConSettings_Escape();
+			return;
+		}
 
 		// escape always gets out of CGAME stuff
 		if ( Key_GetCatcher() & KEYCATCH_CGAME ) {
@@ -1430,8 +1708,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 	if ( !cls.cursorActive ) CL_ParseBinding( key, qtrue, time );
 
 	// distribute the key down event to the appropriate handler
+	// the console settings window, over the console
+	if ( Key_GetCatcher() & KEYCATCH_CONSETTINGS )
+		CL_ConSettings_KeyEvent( key, qtrue );
 	// console
-	if ( Key_GetCatcher() & KEYCATCH_CONSOLE )
+	else if ( Key_GetCatcher() & KEYCATCH_CONSOLE )
 		Console_Key( key );
 	else if ( cls.cursorActive ) {
 		CL_CursorButton( key );
@@ -1572,7 +1853,8 @@ void CL_CharEvent( int key ) {
 		return;
 
 	// distribute the key down event to the appropriate handler
-		 if ( Key_GetCatcher() & KEYCATCH_CONSOLE )		{ if ( !Con_CharEvent( key ) ) Field_CharEvent( &g_consoleField, key ); }
+		 if ( Key_GetCatcher() & KEYCATCH_CONSETTINGS )	CL_ConSettings_CharEvent( key );
+	else if ( Key_GetCatcher() & KEYCATCH_CONSOLE )		{ if ( !Con_CharEvent( key ) ) Field_CharEvent( &g_consoleField, key ); }
 	else if ( Key_GetCatcher() & KEYCATCH_UI )			UIVM_KeyEvent( key|K_CHAR_FLAG, qtrue );
 	else if ( Key_GetCatcher() & KEYCATCH_MODELMANAGER )	CL_ModelManager_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_NPCMANAGER )	CL_NpcManager_CharEvent( key );

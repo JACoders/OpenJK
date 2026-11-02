@@ -431,3 +431,32 @@ void	R_SkinList_f( void ) {
 	}
 	ri.Printf( PRINT_ALL,  "------------------\n");
 }
+
+/*
+================
+R_ForgetBadSkins
+
+loadpk3: skins with nothing in them, or a shader that couldn't be found, lose their name so the
+next RE_RegisterSkin for it reads the file again; their handles stay. How many
+================
+*/
+int R_ForgetBadSkins( void ) {
+	int count = 0;
+
+	for ( int i = 1; i < tr.numSkins; i++ ) {
+		skin_t *skin = tr.skins[i];
+		qboolean bad = (qboolean)( skin->numSurfaces == 0 );
+
+		for ( int s = 0; s < skin->numSurfaces && !bad; s++ ) {
+			const shader_t *sh = ( (skinSurface_t *)skin->surfaces[s] )->shader;
+
+			if ( sh && sh->defaultShader )
+				bad = qtrue;
+		}
+		if ( bad && skin->name[0] ) {
+			skin->name[0] = '\0';
+			count++;
+		}
+	}
+	return count;
+}

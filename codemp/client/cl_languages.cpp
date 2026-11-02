@@ -43,6 +43,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Kept in languages.txt in the game folder.
 
 #include "client.h"
+#include "cl_widgets.h"
 
 #define LG_FILE				"languages.txt"
 #define LG_COMMAND			"languages"
@@ -98,6 +99,7 @@ static struct {
 	float		clickX, clickY;
 	qboolean	click;
 	int			wheel;
+	int			charShownSel, langShownSel;	// the selections last kept in view: only a new one is again
 	int			charScroll;
 	int			langSel, langScroll;
 	lgField_t	focus;
@@ -511,7 +513,8 @@ CHAT
 */
 
 // what's said, in the language, the emotes left out of it:
-// ^3::Language:: << said >> ^7:: emote :: ^3<< said >>; NULL if there are only emotes
+// ^3::Language:: << said >> ^7:: emote :: ^3<< said >>; NULL if there are only emotes.
+// What's said keeps the colours typed in it, the << >> stay in the language's
 static const char *LG_InLanguage( const char *lang, const char *text ) {
 	static char out[MAX_STRING_CHARS];
 	qboolean afterEmote = qfalse, spoke = qfalse;
@@ -527,18 +530,11 @@ static const char *LG_InLanguage( const char *lang, const char *text ) {
 			afterEmote = qtrue;
 			continue;
 		}
-		// what's said up to the next emote, without the spaces around it nor the colour it starts
-		// with (the chat's, put back after an emote), as it's in the language's
+		// what's said up to the next emote, without the spaces around it nor colours at its end
 		for ( end = p; *end && !LG_Emote( end ); end++ )
 			;
-		for ( start = p; start < end; ) {
-			if ( *start == ' ' )
-				start++;
-			else if ( start[0] == Q_COLOR_ESCAPE && start + 1 < end && start[1] != Q_COLOR_ESCAPE )
-				start += 2;
-			else
-				break;
-		}
+		for ( start = p; start < end && *start == ' '; )
+			start++;
 		p = end;
 		while ( end > start ) {
 			if ( end[-1] == ' ' )
@@ -548,10 +544,27 @@ static const char *LG_InLanguage( const char *lang, const char *text ) {
 			else
 				break;
 		}
-		if ( end == start )
-			continue;
-		// after an emote in its own colour, what's said is back in the language's
-		Q_strcat( out, sizeof( out ), va( " %s<< %.*s >>", afterEmote ? LG_LABEL_COLOR : "", (int)( end - start ), start ) );
+		// nothing said, or only colours
+		{
+			const char *t = start;
+
+			while ( t < end && ( *t == ' ' || ( t[0] == Q_COLOR_ESCAPE && t + 1 < end && t[1] != Q_COLOR_ESCAPE ) ) )
+				t += *t == ' ' ? 1 : 2;
+			if ( t == end )
+				continue;
+		}
+		// the << >> in the language's colour, after an emote or a colour typed; what's said without
+		// a colour of its own in the language's too
+		{
+			qboolean colored = qfalse;
+
+			for ( const char *t = start; t + 1 < end; t++ ) {
+				if ( t[0] == Q_COLOR_ESCAPE && t[1] != Q_COLOR_ESCAPE )
+					colored = qtrue;
+			}
+			Q_strcat( out, sizeof( out ), va( " %s<< %.*s%s >>", afterEmote ? LG_LABEL_COLOR : "",
+				(int)( end - start ), start, colored ? LG_LABEL_COLOR : "" ) );
+		}
 		afterEmote = qfalse;
 		spoke = qtrue;
 	}
@@ -977,6 +990,18 @@ static void LG_Window_f( void ) {
 		LG_Open();
 }
 
+// a character the focused box takes
+static qboolean LG_AllowChar( int ch ) {
+	int size;
+
+	if ( !LG_FieldText( lg.focus, &size ) || ch < ' ' || ch >= 127 || ch == '"' || ch == ';' )
+		return qfalse;
+	// a language's name sits between :: in chat, and isn't coloured
+	if ( lg.focus == LG_F_NEWLANG && ( ch == ':' || ch == '<' || ch == '>' || ch == Q_COLOR_ESCAPE ) )
+		return qfalse;
+	return qtrue;
+}
+
 void CL_Languages_KeyEvent( int key, qboolean down ) {
 	const char *binding;
 	char *text;
@@ -991,6 +1016,10 @@ void CL_Languages_KeyEvent( int key, qboolean down ) {
 		CL_Languages_Close();
 		return;
 	}
+
+	text = LG_FieldText( lg.focus, &size );
+	if ( text && key != A_MOUSE1 && key != A_MWHEELUP && key != A_MWHEELDOWN && WG_EditKey( text, size, key, LG_AllowChar ) )
+		return;
 
 	switch ( key ) {
 	case A_MOUSE1:
@@ -1014,11 +1043,6 @@ void CL_Languages_KeyEvent( int key, qboolean down ) {
 	case A_TAB:
 		LG_SetFocus( lg.focus == LG_F_NEWLANG ? LG_F_NONE : LG_F_NEWLANG );
 		return;
-	case A_BACKSPACE:
-		text = LG_FieldText( lg.focus, &size );
-		if ( text && text[0] )
-			text[strlen( text ) - 1] = '\0';
-		return;
 	case A_CURSOR_UP:
 	case A_CURSOR_DOWN:
 		if ( lg.focus == LG_F_NONE && LG_Active() && LG_Active()->numLangs )
@@ -1031,19 +1055,12 @@ void CL_Languages_KeyEvent( int key, qboolean down ) {
 
 void CL_Languages_CharEvent( int ch ) {
 	char *text;
-	int size, len;
+	int size;
 
 	text = LG_FieldText( lg.focus, &size );
-	if ( !lg.open || !text || ch < ' ' || ch >= 127 || ch == '"' || ch == ';' )
+	if ( !lg.open || !text )
 		return;
-	// a language's name sits between :: in chat, and isn't coloured
-	if ( lg.focus == LG_F_NEWLANG && ( ch == ':' || ch == '<' || ch == '>' || ch == Q_COLOR_ESCAPE ) )
-		return;
-	len = strlen( text );
-	if ( len < size - 1 ) {
-		text[len] = (char)ch;
-		text[len + 1] = '\0';
-	}
+	WG_EditChar( text, size, ch, LG_AllowChar );
 }
 
 void CL_Languages_MouseEvent( int dx, int dy ) {
@@ -1134,46 +1151,64 @@ static qboolean LG_DangerButton( float x, float y, float w, const char *label, i
 	return qfalse;
 }
 
+static void LG_FieldStyle( wgStyle_t *style ) {
+	style->font = lg.font;
+	style->scale = LG_TEXT_SCALE;
+	style->lineH = LG_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 2.0f;
+	style->fill = lgPanelFocus;
+	style->border = lgBorder;
+	style->text = lgWhite;
+	style->dim = lgDim;
+}
+
 static void LG_Field( lgField_t f, float x, float y, float w, const char *placeholder ) {
 	const qboolean focused = (qboolean)( lg.focus == f );
-	char buf[LG_NAME_LEN + 2];
 	int size;
-	const char *text = LG_FieldText( f, &size );
+	char *text = LG_FieldText( f, &size );
+	wgStyle_t style;
 
 	LG_Box( x, y, w, LG_CTRL_H, focused ? lgPanelFocus : lgPanelLight, lgBorder );
-	if ( !text || ( !text[0] && !focused ) ) {
+	if ( !text ) {
 		LG_TextClipped( x + 4, y + 2, w - 8, placeholder, lgDim );
-	} else {
-		Com_sprintf( buf, sizeof( buf ), "%s%s", text, focused && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" );
-		const char *shown = buf;
-		while ( shown[1] && LG_TextWidth( shown ) > w - 8 )
-			shown++;
-		LG_Text( x + 4, y + 2, shown, lgWhite );
+		return;
 	}
-	if ( text && LG_Clicked( x, y, w, LG_CTRL_H ) )
+	LG_FieldStyle( &style );
+	WG_Field( &style, x, y, w, LG_CTRL_H, text, focused, placeholder, lg.cursorX, lg.cursorY );
+	if ( LG_Clicked( x, y, w, WG_FieldHeight( &style, w, LG_CTRL_H, text, focused ) ) ) {
 		LG_SetFocus( f );
+		WG_FieldClick( text, lg.clickX, lg.clickY );
+	}
 }
 
 static void LG_Label( float x, float y, const char *label ) {
 	LG_Text( x, y + 2, label, lgDim );
 }
 
-// the list's scroll kept to it, and the row the wheel or a click is on
-static int LG_ListRow( int count, int *scroll, int sel, float x, float y, float w, float h ) {
+// the list's box, its scroll kept to a new selection, and a scrollbar when there are more than
+// fit; how many rows show, and *rowW how wide they are
+static int LG_ListRow( int count, int *scroll, int sel, int *shownSel, float x, float y, float w, float h, float *rowW ) {
 	const int visible = (int)( h / LG_ROW_H );
 
 	if ( lg.wheel && LG_InRect( x, y, w, h ) ) {
 		*scroll += lg.wheel;
 		lg.wheel = 0;
 	}
-	if ( sel >= 0 && sel < *scroll )
-		*scroll = sel;
-	if ( sel >= *scroll + visible )
-		*scroll = sel - visible + 1;
+	if ( sel != *shownSel ) {
+		if ( sel >= 0 && sel < *scroll )
+			*scroll = sel;
+		if ( sel >= *scroll + visible )
+			*scroll = sel - visible + 1;
+		*shownSel = sel;
+	}
 	if ( *scroll > count - visible )
 		*scroll = count - visible;
 	if ( *scroll < 0 )
 		*scroll = 0;
+	LG_Box( x, y, w, h, lgPanelLight, lgBorder );
+	*rowW = WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, visible, scroll, lg.cursorX, lg.cursorY, &lg.click, lg.clickX, lg.clickY )
+		? w - WG_SCROLL_W - 1 : w;
 	return visible;
 }
 
@@ -1185,11 +1220,11 @@ static void LG_Checkbox( float x, float y, qboolean on, qboolean enabled ) {
 
 static void LG_DrawChars( void ) {
 	const float x = LG_CHAR_X, w = LG_CHAR_W;
-	const int visible = LG_ListRow( lgNumChars, &lg.charScroll, lgActive, x, LG_LIST_Y, w, LG_LIST_H );
+	float rw;
+	const int visible = LG_ListRow( lgNumChars, &lg.charScroll, lgActive, &lg.charShownSel, x, LG_LIST_Y, w, LG_LIST_H, &rw );
 	float y = LG_EDIT_Y;
 
 	LG_Label( x, 48, "Characters" );
-	LG_Box( x, LG_LIST_Y, w, LG_LIST_H, lgPanelLight, lgBorder );
 	for ( int i = 0; i < visible; i++ ) {
 		const int row = lg.charScroll + i;
 		const float ry = LG_LIST_Y + i * LG_ROW_H;
@@ -1197,11 +1232,11 @@ static void LG_DrawChars( void ) {
 		if ( row >= lgNumChars )
 			break;
 		if ( row == lgActive )
-			LG_Fill( x + 1, ry, w - 2, LG_ROW_H, lgHighlight );
-		else if ( LG_InRect( x, ry, w, LG_ROW_H ) )
-			LG_Fill( x + 1, ry, w - 2, LG_ROW_H, lgHover );
-		LG_TextClipped( x + 4, ry + 1, w - 8, lgChars[row].name, lgWhite );
-		if ( LG_Clicked( x, ry, w, LG_ROW_H ) && row != lgActive )
+			LG_Fill( x + 1, ry, rw - 2, LG_ROW_H, lgHighlight );
+		else if ( LG_InRect( x, ry, rw, LG_ROW_H ) )
+			LG_Fill( x + 1, ry, rw - 2, LG_ROW_H, lgHover );
+		LG_TextClipped( x + 4, ry + 1, rw - 8, lgChars[row].name, lgWhite );
+		if ( LG_Clicked( x, ry, rw, LG_ROW_H ) && row != lgActive )
 			LG_PlayAs( row );
 	}
 	if ( !lgNumChars )
@@ -1221,17 +1256,18 @@ static void LG_DrawChars( void ) {
 
 static void LG_DrawLangs( void ) {
 	lgChar_t *c = LG_Active();
-	const float x = LG_LANG_X, w = LG_LANG_W, speakX = x + w - LG_CHECK_W * 2, knowX = x + w - LG_CHECK_W;
+	const float x = LG_LANG_X, w = LG_LANG_W;
 	const char *spoken = LG_Spoken();
 	const lgLang_t *sel;
 	int numLangs = c ? c->numLangs : 0;
-	const int visible = LG_ListRow( numLangs, &lg.langScroll, lg.langSel, x, LG_LIST_Y, w, LG_LIST_H );
+	float rw;
+	const int visible = LG_ListRow( numLangs, &lg.langScroll, lg.langSel, &lg.langShownSel, x, LG_LIST_Y, w, LG_LIST_H, &rw );
+	const float speakX = x + rw - LG_CHECK_W * 2, knowX = x + rw - LG_CHECK_W;
 	float y = LG_EDIT_Y;
 
 	LG_Label( x, 48, c ? va( "Languages of %s", c->name ) : "Languages" );
 	LG_Text( speakX + ( LG_CHECK_W - LG_TextWidth( "Speaks" ) ) * 0.5f, 50, "Speaks", lgDim );
 	LG_Text( knowX + ( LG_CHECK_W - LG_TextWidth( "Understands" ) ) * 0.5f, 50, "Understands", lgDim );
-	LG_Box( x, LG_LIST_Y, w, LG_LIST_H, lgPanelLight, lgBorder );
 	for ( int i = 0; c && i < visible; i++ ) {
 		const int row = lg.langScroll + i;
 		const float ry = LG_LIST_Y + i * LG_ROW_H;
@@ -1241,9 +1277,9 @@ static void LG_DrawLangs( void ) {
 			break;
 		l = &c->langs[row];
 		if ( row == lg.langSel )
-			LG_Fill( x + 1, ry, w - 2, LG_ROW_H, lgHighlight );
-		else if ( LG_InRect( x, ry, w, LG_ROW_H ) )
-			LG_Fill( x + 1, ry, w - 2, LG_ROW_H, lgHover );
+			LG_Fill( x + 1, ry, rw - 2, LG_ROW_H, lgHighlight );
+		else if ( LG_InRect( x, ry, rw, LG_ROW_H ) )
+			LG_Fill( x + 1, ry, rw - 2, LG_ROW_H, lgHover );
 		LG_TextClipped( x + 4, ry + 1, speakX - x - 8, !Q_stricmp( spoken, l->name ) ? va( "%s" S_COLOR_YELLOW "  speaking", l->name ) : l->name, lgWhite );
 		LG_Checkbox( speakX + ( LG_CHECK_W - 10 ) * 0.5f, ry, l->speak, qtrue );
 		// understood whenever it's spoken
@@ -1259,7 +1295,7 @@ static void LG_DrawLangs( void ) {
 				LG_Message( va( "Untick Speaks first: %s can't speak %s without understanding it", c->name, l->name ) );
 			else
 				LG_Message( "Remove forgets it altogether" );
-		} else if ( LG_Clicked( x, ry, w, LG_ROW_H ) ) {
+		} else if ( LG_Clicked( x, ry, rw, LG_ROW_H ) ) {
 			lg.langSel = row;
 		}
 	}
@@ -1317,6 +1353,7 @@ void CL_Languages_Draw( void ) {
 	lg.click = qfalse;
 	lg.wheel = 0;
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( lg.cursorX, lg.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }
 

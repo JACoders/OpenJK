@@ -1,224 +1,177 @@
-This file will generally summarise the Github repo commit history
-Key: [-] removed, [+] added, [\*] modified
+# Changelog
 
-# Features
+What changed in OpenJK-rpmod from version to version, newest first. What each feature does now is in [FEATURES.md](FEATURES.md), its commands in [COMMANDS.md](COMMANDS.md).
 
-## Single- and Multiplayer
+OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
-* [\*] OpenJK now writes configs/screenshots/etc to `fs_homepath` directory. No longer have to run as administrator on Windows. (Multi-User support)
-* [+] Added mouse-wheel to console
-* [+] Add `r_noborder` option (windowed mode feature).
-* [+] Add `r_centerWindow` option (windowed mode feature).
-* [+] Add `r_mode -2` option to use desktop resolution.
-* [\*] Removed cheat protection from `r_we` cmd, `r_dynamicGlow*` cvars
-* [-] Removed CD Check Code
-* [-] Removed Anti-Tamper Code. (It serves no purpose with source code available.)
-* [\*] Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
-* [\*] Escape key will now close the console before anything else if the console is open
-* [\*] Removed shift key requirement to open console
-* [+] Raw Mouse Input is now available on all platforms with the in_mouse cvar at the current default value. (SDL2 uses raw mouse input by default)
-* [\*] Drastically improved command/cvar tab-completion including auto-completion of arguments (e.g. `map mp/ffa1`)
-* [+] Clipboard paste support added to all supported platforms now with SDL2.
-* [+] Add `stopmusic` command
-* [\*] Fixed segfault crashing in ragdoll code.
-* [\*] Fixed `r_overbrightbits 1` resulting in blackness.
-* [\*] Made the md4 (filesys) checksum code compatible with 64-bit operating systems.
-* [\*] Fixed radar and rocket locking drawing not rendering properly.  Can now support all types of shaders with multiple images if wanted too.
-* [\*] MAX_PATCH_PLANES does not occur on some maps anymore with OpenJK (this isn't related because OpenJK specifically changed something to cause the error, but because of newer compilers affecting optimizations on decimal numbers)
-* [\*] `OpenJK` folder is now searched as a fallback location if `base` and `fs_game` folders do not contain the appropriate gamecode to load.
-* [\*] Error log on crashing exits are now reported to a crashlog text file in your OpenJK homepath.
-* [-] Removed `r_allowSoftwareGL` cvar as it is no longer useful or needed.
-* [+] Added filename completion to `cinematic` command.
-* [\*] No more viewlog console for client or server.
-* [+] Added improved dedicated server console with color (0-7) support and arrow key support and tab completion that functions the same as in-game console.
-* [-] Removed blackbars around screen when rendering in widescreen.
-* [\*] Fixed white screen during load with aformentioned black bar removal.
+## 0.7.4 - Nov 2nd 2026
 
-## Singleplayer only
+- [Removed] `Installer`. The Windows release no longer comes with Install-OpenJK-rpmod.bat: the zip is extracted into GameData by hand, as the README says. Installing and updating will be a separate program's.
+- [Added] `Update check`. As the game starts, at most once a day, it asks GitHub whether there's a newer OpenJK-rpmod; when there is, the console says so, with the link, and the main menu shows it. `/version` shows your version and the newest, `/version check` asks again. `cl_updateCheck 0` never asks. On Linux and macOS it uses the computer's libcurl, and is left out where there's none.
+- [Fixed] `Whispers`. The notice "You hear <name> whispering..." always plays RPMod's info sound (sound/effects/info.wav). It used to play whatever sound sat in one fixed slot of the server's sound list, which differs from map to map: a ping, a saber turning on.
+- [Fixed] `Console fonts`. In a font picked in /consolesettings, text in several colours no longer has wide gaps where the colour changes; selecting text and the find highlights follow the letters.
+- [Changed] `Whispers`. Comms ("Comm-<name>:") aren't touched by whispers: a comm goes straight to the one it's for, so a whispered one is heard in full, no notice. It used to show as an empty "Comm-<name>:".
+- [Fixed] `Admin tools`. Logging in to your RPMod account ("You are now logged in as ...") or out checks your admin rank again: a tool opened before logging in no longer stays shut after it.
 
-* [+] Now searches for jagamex86.dll (or equivalent) in the mod's folder, too, meaning SP Code mods are possible.
-* [+] NPCs support alternate saber colours
-* [\*] Fallback location for jagame mod bin is now `OpenJK` instead of `base`
-* [+] Add `modelscale` and `modelscale_vec` support to `misc_model_ghoul`
-* [\*] Fix external lightmap support
-* [\*] `r_flares` defaults to 1 now like Multiplayer.
+## 0.7.3 - Oct 31st 2026
 
-### Gamecode (only available in `fs_game openjk` and derived mods)
+- [Added] `Fuse maps`. In the map editor's Models tab, another map in your game can be placed whole (type map in the list): Add puts its middle at the crosshair, then move, turn and scale it like a model, around that spot. Its sky and fog are left out. Drawn only, not walked on; shared with those who have that map.
+- [Added] `Load a pk3 while playing`. /loadpk3 loads the pk3s put in the game's folders since it started (/loadpk3 &lt;name> only that one), without a vid_restart: models, skins, shaders and sounds that couldn't be found are looked for again, and players using a model from the new pk3 change from Kyle to it at once. Files the game already had, and maps, still need a vid_restart. Not on pure servers.
+- [Added] `Whispers` (off by default). /cl_whisper 1: chat in ^k, the whisper color, shows only up to cl_whisperHear (128) units away; up to cl_whisperNotice (384) it's left out and RPMod's notification says :: You hear &lt;name> whispering... ::, the name in its colors; farther, it's only left out. The rest of the line shows as ever. For say and /me, in the chat box, the console and subtitles.
+- [Fixed] `Languages`. What you say in a language keeps the colors you type in it, from its first word too; the &lt;&lt; >> around it and what has no color of its own stay yellow, after an emote as well.
+- [Fixed] `Console settings`. /consolesettings writes in the same narrow letters as the other tools, so every label and value fits in its box.
+- [Fixed] `Long chat`. The -- that starts the next part is in the color the part before ended in, not the chat's own.
+- [Changed] `Console settings`. Capitals' first choice reads disabled instead of as typed.
+- [Changed] `Chat range in the console`. /me lines fade or stay out too, with the same rpc_chatRangeConsole_* settings as say, by how far the player is from you; someone out of sight counts as beyond the max range.
 
-* [+] Added `cg_smoothCamera` (default 1)
-* [+] Added `cg_dynamicCrosshair` (default 1)
-* [+] Added simple hud from multiplayer with tweaks to match real HUD options. `cg_hudFiles 1`
+## 0.7.2 - Oct 29th 2026
 
-## Multiplayer only
+- [Added] `Cinematic sounds`. A new Sounds tab in the cinematic manager: pick a sound in the soundmanager (its button says Add to cinematic) and it goes in the cinematic at the moment picked, played for everyone it plays for. Once or over and over, heard everywhere or from a spot dragged in the view or with the move arrows; it has its own row on the timeline.
+- [Added] `Saber light` (off by default). /cg_saberlight 1: every lightsaber blade lights what's around it in its own color, RGB blades too, pulsing and following the blade along its length; 2 only your own. It takes the place of the game's steady saber light, on your screen only. Needs r_dynamiclight 1.
+- [Added] `Chat capitals` (off by default). /cl_chatCapital 1: a message and each sentence in it start with a capital, after a . ! or ? and a space (not after ..., nor in 3.5 or a web address). /cl_chatCapitalEmotes 1: each ::emote::'s first letter too. In say, say_team and /me (cl_chatCapitalCommands), or Capitals in /consolesettings.
+- [Added] `Console key`. /con_keybind &lt;key> makes any key open and close the console, over menus and the managers too unless it's a key that types something; /con_keybind none takes it away. /cl_consoleTildeKey 0 makes the key under Esc an ordinary key, to type \` and ~ or bind it. Shift+Esc always opens the console.
+- [Added] `Typing and keys tab`. A new tab in /consolesettings: the console line, long chat, capitals, the console's own key and whether the key under Esc opens it.
+- [Added] `Colors while typing`. What you type in the console and the chat box shows in its colors as you type it, RPMod's too, the codes still showing.
+- [Added] `Installer`. The Windows release comes with Install-OpenJK-rpmod.bat: double-click it after extracting the zip and it finds Jedi Academy (Steam, GOG or the CD version), or asks for the GameData folder, and copies the files there, keeping the ones it replaces in GameData/OpenJK-rpmod-backup. It asks for administrator rights only when the folder needs them.
+- [Changed] `Long chat`. A long /me is split too (cl_chatSplitCommands is now say say_team tell:1 me), and so is what you type in the chat box.
 
-* [\*] Gamecode DLL files on Windows are no longer extracted to homepath or basepath, but a temporary file path.
-* [\*] Drastically improved status (server) command
-* [\*] Tweaked `forcetoggle` rcon command.
-* [+] Added `weapontoggle` rcon server command similar to `forcetoggle` command.
-* [\*] Fixed memory leak related to NPC navigation on map changes.
-* [+] Cheats are now defaulted to 1 in menu. Do not be alarmed, starting normally will disable them or connecting to a non-cheat server. This allows cheats to work properly while playing back demos.
-* [+] Add `sv_lanForceRate` (Defaults to 1) Feature was already enabled, but not toggleable.
-* [\*] `globalservers` master server command now supports multiple master servers with the `sv_master1..5` cvars
-* [+] Added `fontlist` command.  Useful for when making mods with custom fonts.
-* [+] New serverside kick commands `kickall`, `kickbots` and `kicknum` (alias to `clientkick`).
-* [-] Removed demo restriction code.
-* [\*] `svsay` command prints to dedicated console
-* [\*] Cvars will be sorted alphabetically when saved to disk
-* [+] Added `ja_guid` userinfo field to uniquely track players for statistics
-* [+] Added `cvar_modified` to show which cvars have been changed from default values
-* [+] Added `s_doppler` sound effect for moving sound sources (rockets)
-* [+] Added support for `surfaceSprites flattened` in MP.  (Fixes surface sprites on t2_trip)
-* [+] Added in-engine ban code from ioquake3. Cmds: `sv_rehashbans`, `sv_listbans`, `sv_banaddr`, `sv_exceptaddr`, `sv_bandel`, `sv_exceptdel`, `sv_flushbans`. CVar: `sv_banFile`
-* [+] `addFavorite` command added to add current or specified server to favorites list.
-* [+] Add ability to paste in text files in the UI
-* [+] Add `cl_motdServer1..5` cvars. `cl_motd` points to which one is used or 0 to turn off
-* [+] Add QuakeLive style mouse accel option (`cl_mouseAccelStyle`, `cl_mouseAccelOffset`)
-* [+] Server side demo recording per client (from their pov) support
-* [+] Add `sv_blockJumpSelect` cvar to help prevent use of modded clients using an exploit with `FP_LEVITATION` with old mods
-* [+] Add external lightmap support from SP
-* [+] Added ability to substitute BSP entities with ones from an external .ent file when loading a map (for easier entity modding)
+## 0.7.1 - Oct 27th 2026
 
-### Gamecode (only available in `fs_game openjk` and derived mods)
+- [Added] `Scrollbars`. Every list in every window (the managers, the Storyteller, the cinematic manager, radial menus, languages, console settings) has a bar on its right side when it's longer than the box: drag it, or click beside it to jump there.
+- [Added] `Better text boxes`. Click anywhere in the text to put the cursor there, the arrows and Home/End move it, Ctrl+arrows jump a word. Select with Shift or the mouse (double-click a word), then Ctrl+C, Ctrl+X, Ctrl+V or Ctrl+A. A long text goes on to the lines below while you type it, so a Say, an NPC talk or a center message can be read and fixed whole.
+- [Added] `Console typing` (off by default). /con_modernInput 1, or Console line in /consolesettings: a long line in the console goes on to more rows instead of off the side, Ctrl+arrows jump a word, Shift or the mouse select (double-click a word, right-click copies), Ctrl+A, Ctrl+C, Ctrl+X and Ctrl+V; the chat box gets the same keys. The console holds up to about 1000 letters.
+- [Added] `Long chat in parts` (off by default). /cl_chatSplit 1, or Long chat in /consolesettings: a message longer than the server keeps is sent in parts a second apart, "--" at the end of one and the start of the next, its colour carried on. cl_chatSplitLength (149), cl_chatSplitMark, cl_chatSplitDelay and cl_chatSplitCommands (say say_team tell:1) set it up.
+- [Added] `Hold use`. A map editor use trigger can be held: set Hold use (in milliseconds, as JKA's usetime) and it's only used once the use key has been held on it that long, a bar showing how far along. Your character works the console (emconsole) while holding, and stops when it's done or let go. Saved and shared with the edits.
+- [Changed] `Storyteller triggers`. "When someone comes" is now one action for each kind: When someone enters a map trigger, comes near a spot, comes near an effect, When a door moves, When someone says, When someone uses a trigger. "Door or button" is just "door". Stories saved before open as they were.
+- [Changed] `If only under a When`. If, Else and End if can only go under a "When" step, so they look when it's set off; until there's one above, they're greyed out. One left above every When shows in red, and the story stops there.
 
-* [\*] Tweaked simple hud with adjustments to match real HUD options. `cg_hudFiles 1`
-* [+] Added `pmove_float` cvar (default off) for no velocity snapping resulting in framerate-dependent jump heights.
-* [+] `clientlist` displays clients by id/name and if they are a bot. (Shows real client id unlike `serverstatus`)
-* [+] Added `cg_fovAspectAdjust` to correct field of view on non-4:3 aspect ratios
-* [+] Added `cg_fovViewmodel` to adjust the field of view for first-person weapons
-* [+] Added `cg_chatBeep` and `cg_teamChatBeep` to toggle the chat message sound
-* [+] Added JK2 gametypes
-* [\*] Rewrote `callvote` code to allow disabling specific votes, added more options (e.g. display map list)
-* [+] Add server command `toggleallowvote` to easily adjust the bit values of `g_allowVote`
-* [+] Add userinfo validation options (`g_userinfoValidate`)
-* [+] Add server command `toggleuserinfovalidation` to easily adjust the bit values of `g_userinfoValidate`
-* [+] `fx_wind` entity
-* [\*] `fx_rain` entity supports most options from SP now. LIGHTNING/shaking not supported, acidrain doesn't actually hurt
-* [\*] more `customRGBA` options from SP on NPCs
-* [+] Force Sight surfaces (cgame modification required)
-* [+] Human Merc NPC spawner
-* [\*] Make `target_location` entities logical (no gentity space used in most cases)
+## 0.7.0 - Oct 25th 2026
 
-# Increased/lifted limits
+- [Added] `Move arrows`. Press J in the modelmanager's or effectmanager's free camera: X, Y and Z arrows over what's selected or being placed, and the mouse becomes a cursor. Drag an arrow to move it along that axis only; hold the right mouse button to look around.
+- [Added] `Effect size` (experimental). Make an effect bigger or smaller, from 0.1x to 8x, before you send it ([ and ], or next to Once/Loop) or once it's on the map (Size in the Active tab, or [ and ] on the selection). Everyone with this client sees it that size.
+- [Added] `Cinematic effects`. A new Effects tab in the cinematic manager: pick an effect in the effectmanager and it goes in the cinematic at the moment picked, played for everyone it plays for. Drag it in the view or with the move arrows, set when it starts, once or over and over, its size and its angles; it has its own row on the timeline.
+- [Added] `Console settings`. /consolesettings: opacity, letter size, height, background, font, shadow or outline, line spacing, margins, text colour, contrast, colour-blind colours, fading, timestamps, lines over the game
+- [Added] `Sky zoom`. A Zoom slider in the Sky tab: the sky looks nearer above 1x, farther below, from 0.25x to 4x; a 3D skybox or a sky portal zooms its view. Shared with Share with all.
+- [Added] `Cinematic manager`. /cinematicmanager replaces the camera editor: a whole cinematic on one timeline, its camera shots one after the other (a path, a still or an orbit, each with its own focus, filter and fades), and who's in it and what they do. Pick anyone on the server or in the NPC list in the Entities tab, then add actions: moves (the spots where they go, picked and dragged right in the view), animations, RPMod emotes, lines said (as the Storyteller's Say and NPC talk), positions (anywhere, turned any way, X Y Z yaw pitch roll in keys over time: someone thrown by an explosion) and recordings (act it out yourself, moving, jumping, saber, force, F10 stops, and they do it; you see through their eyes while the rest of the cinematic plays along, crossing blades clash anywhere along them and blades through someone cut them; swings, jumps and rolls are heard when it plays back). Depth of field can focus on a moving spot: a circle in the view shows what stays sharp, dragged at each moment of the timeline to key where the focus goes. Making a shot longer or shorter takes what's in it and after it along. Click or drag to any moment on the timeline to see it then, through the cinematic's camera or your free camera, everyone where they'd be; drag the bars to retime things. Play for everyone sends it whole, then it plays on every screen with this client at once; NPCs are brought to where they end up on the server too. Experimental. Players moved, you too, are only seen moving by those with this client, and go back where they were after.
+- [Added] `Depth of field per shot`. Each shot of a camera cut keeps its own focus, so it can change as the cinematic goes on.
+- [Changed] `Storyteller: Play cinematic`. One step plays a cinematic from the manager and waits for it to end; Start cinematic, Camera shot, Camera zoom, Black bars and End cinematic leave the list (stories that have them still play them). The old camera shots open in the manager as a cinematic of one shot.
+- [Changed] `Animations one after another`. Several animations on the same player or NPC in a shot now play in turn; before, the last one listed replaced the others.
 
-## Single- and Multiplayer
+## 0.6.0 - Oct 23rd 2026
 
-* [\*] Increased Command Buffer from 16384 to 128*1024
-* [\*] Increased max cvars from 1224 to 8192
+- [Added] `Player shaders`. A new Mine tab in the shadermanager: change the shaders of your own force powers, sabers and shields (white lightning, a different drain...). Only yours change: someone else using the same power keeps the standard look. Turn on Shared and everyone with this client sees yours on you too. Sharing is experimental
+- [Added] `Sky portals`. The Sky tab can show the map seen from a spot in place of the sky: the map's own 3D skybox, or spots you pick with the free camera, kept per map. Turn and move it with the Sky tab's sliders; Share with all sends it too.
+- [Added] `Favorites`. A star on every row of the modelmanager, effectmanager and shadermanager lists: click it to keep that model, effect or shader as a favorite. The model and effect browsers get a Favorites row, the shadermanager a Faves filter for the shaders on what you clicked and for the replacements, skies included.
+- [Added] `Radial menu looks`. Give each menu its own size and look, boxes or round icons, and its text a size and color; give each item its own color, text size and color, and an image: one of your own from the radialicons folder, or any image the game has. All in /radialsettings.
+- [Added] `Depth of field on someone`. In the camera editor the focus can follow a player or an NPC, so someone moving stays sharp.
+- [Added] `Depth of field per shot`. Each shot of a camera cut keeps its own focus, so it can change as the cinematic goes on.
+- [Added] `Camera filters`. Pick a filter for each shot: black and white, noir, sepia, old film, night vision, thermal, security camera, VHS tape, hologram, warm, cold, faded or negative.
+- [Added] `Any brush in the map editor`. Every brush of the map can now be moved with the X, Y and Z arrows, or hidden, not only the map's props.
+- [Added] `Light styles and map lighting`. Change the map's existing light styles, and the lighting of the whole map.
+- [Added] `Use triggers`. A new kind of map editor trigger that players use (+use) instead of walking into: a name shown when you look at it, and your character reaches out to it. Shared with the map's edits, and the storyteller can wait for one.
+- [Added] `Fog`. Change the color and thickness of the map's fogs, take one away with No fog, or add fog volumes of your own.
+- [Added] `When someone uses`. A new storyteller condition for "When someone comes" and If: someone uses one of the map editor's use triggers. Pick the trigger by looking at it or in a free camera; map triggers and doors can now be picked in a free camera or from a list too.
+- [Added] `People out of sight`. Armed stories now also notice players too far away to be seen: those with this client say when they walk into a watched area, and an admin's client asks RPMod where the others are. Experimental.
+- [Added] `Wall stick`. /cl_wallstick: grab a wall holding jump and you stay on it, even while you chat or type in the console, until you press jump again to push off.
+- [Added] `Model safeguards`. A model with more than 999 verts on a surface disconnects you when it loads. /cl_safeModels 1 shows such a map object as a missing model instead, /cl_safePlayerModels 1 shows such a player model as Kyle, each with a warning in the console.
+- [Added] `rpexperimental`. /rpexperimental on keeps the experimental features on every time the game starts, so you no longer have to toggle them each time.
+- [Changed] `Map edits only come from layouts`. A map no longer loads edits by itself: they show when you load a layout, or when someone shares theirs, so people's edits never load against each other. Save keeps them as a layout; edits saved the old way show as the old-saved-edits layout. /mapedit clear takes away what's shown.
 
-## Singleplayer only
+## 0.5.0 - Oct 19th 2026
 
-* [\*] `MAX_SHADER_FILES` bumped to 4096 from 1024 to match MP
+- [Added] `Animations in camera shots`. The camera editor has a new Anims page: force JKA's own animations on players and NPCs while a shot plays. Pick who and which animation, then a range of its frames, a single frame held, or the animation played backwards, once or looping, at the speed you choose, starting and lasting when you want. The one you're making is shown on its model as you change it. Saved with the shot and played for everyone with this client. /cincam anim tries one on your screen only. Experimental.
+- [Added] `Conditions in the storyteller`. New If, Else and End if steps: check how many players, NPCs or people are in a map trigger or near a spot or an effect (at least, at most or exactly), or whether someone said certain words, and play different steps either way. Ifs can sit inside Ifs.
+- [Added] `Stay for a while`. "When someone comes" has a new For field: they have to stay in the area that many seconds before it goes off.
+- [Added] `When someone says`. "When someone comes" can also wait for someone to say one of the words you give, separated by |.
+- [Added] `Notification step`. A new storyteller step for rpnotify: a notification in the top left corner for everyone or one player, with a live countdown (&lt;timer>) if you want one.
+- [Added] `Locks in the map editor`. A new Locks tab: every door and trigger_multiple in the map and its lock, picked in the world or the list. Lock one to a rank (-1 for no one) with a name, change or unlock it, or remove every lock, through RPMod's rplock. Locked ones are drawn in red. Trace on/off too.
+- [Added] `Lock step`. Lock, unlock or unlock all from the storyteller, picked in the map editor's Locks tab.
+- [Added] `Routes tab`. A new tab in the npcmanager for NPC routes: every NPC with the route it walks or none, filtered by walking or not. Give a route to one NPC, to those named alike or to the marked ones together; stop one or all. Make, change and delete saved routes there. Routes on map... shows every route being walked in a free camera, each its own color, with the outlines shown or hidden and only the hovered one shown if you want. Also /npcmanager routing. Experimental.
+- [Added] `Console selection and find`. Drag the mouse over the console to select text, Ctrl+C or right click to copy it (right click with nothing selected pastes), double-click a word. Ctrl+F with the mouse over the console opens a find box at the bottom right: everything matching is lit up, Enter and the arrows go from one to the next.
+- [Fixed] `NPC routes on the wrong entity`. A route is now unhooked from an NPC when it dies, is gone from the map, or its number is taken by something else (a model or another NPC, after an rpdump), and nothing that isn't an NPC can walk one.
+- [Fixed] `Say as a player`. Names with : or / in them (like ::JEDI:: tags) now show whole.
 
+## 0.4.0 - Oct 17th 2026
 
-# Bugfixes
+- [Added] `Languages`. Give each of your characters the languages it speaks or only understands with /languages (or /language). Anything said as ^3::Language:: &lt;&lt; text >> in a language your character doesn't know shows as gibberish, the same words always the same gibberish, in the chat box, the console and cinematic subtitles; the language's name still shows. Pick a language to speak and what you say goes out in it on its own. RP emotes (^7:: he bows ::) stay outside the &lt;&lt; >> and are never turned into gibberish, and the color you pick after an emote is kept. Team chat, private messages and OOC (( )) are never changed. Nothing changes until you make a character.
+- [Added] `NPC routes`. Draw a route on the map in the npcmanager's Manage tab (Walk row) and the NPC walks it, at a walk or a run, once or round and round, with its legs moving. Mark several NPCs (Ctrl+click in the list or on the map) and they walk it together, keeping their places around each other. Also /npcmanager walk and /npcmanager routes. Players with this client see them walk; the others see them hop from spot to spot. Experimental.
+- [Added] `Screen overlays`. A new Overlays tab in the shadermanager: search a shader, set where it goes on the screen and its fade, preview it on your side, then add it over everyone's screen with rpshader overlay. List the server's overlays and remove one or all of them.
+- [Added] `Sky look`. A new Sky tab in the shadermanager (or Sky look... when a sky is selected): tint the map's sky, spin it slowly at a speed you choose for a moving sky, and turn or tilt it. On maps with a 3D skybox, the whole skybox turns and can be moved. Shown on your screen as you change it; Share with all sends it to everyone with this client until the map changes. Sharing is experimental.
+- [Added] `Storyteller tabs`. Open several stories at once, each in a numbered tab, and copy steps between them. The story playing keeps playing from its own tab. /storyteller open &lt;name> opens one in a new tab.
+- [Added] `Storyteller multiselect`. Ctrl+click and Shift+click pick several steps; copy, cut, paste and delete them with the buttons or Ctrl+C, Ctrl+X, Ctrl+V and Del. Ctrl+A picks them all.
+- [Added] `Story markers`. Where your armed stories wait is drawn in the world, on your screen only: a ring round a spot or an effect, a box round a map trigger or a door, with the story's name over it. /storyteller markers on|off.
+- [Added] `New storyteller steps`. Walk NPC (an NPC route, picked from your saved ones), Screen overlay and Sky look, each fillable from the npcmanager or shadermanager.
+- [Added] `Say as a player`. The storyteller's Say step can now speak as one of the players on the server (by number or part of the name), shown in chat as theirs. Experimental.
+- [Added] `Camera shot options`. Depth of field (sharp at a distance you set, or on what the camera looks at, blurred around it) and transitions in and out of each shot: fades and wipes from either side, from the top or the bottom, black or any color. Set in the camera editor's Focus, fades page.
+- [Added] `NPCs walking in camera shots`. The camera editor's NPCs page has NPCs walk a route while the shot plays, with the route drawn in the editor and walked in the preview.
+- [Added] `Map editor sounds`. A new Sounds tab: place a speaker playing any music or sound, heard near it or everywhere, looping, saved with the map's edits.
+- [Added] `Model placing in front`. In the modelmanager's free camera, P switches between the usual placing onto whatever you aim at and keeping the model in front of you, so it no longer jumps far away when you look into the distance. Ctrl+Wheel brings it nearer or farther; it still stops on a closer wall.
+- [Changed] `Subtitle colors`. In cinematic subtitles, players' chat and NPC talk are now green like the chat box, unless the line uses its own colors.
+- [Fixed] `Glow in the managers`. Glowing surfaces no longer look wrong while a manager's side panel narrows the view.
 
-## Single- and Multiplayer
+## 0.3.1 - Oct 15th 2026
 
-* [\*] Fixed incorrect `alphagen` enum usage.
-* [\*] Fixed widescreen resolution changes causing black screen when UI restarted.
-* [\*] Fixed crash when trying to run custom resolutions with a listen server.
-* [\*] Fixed Gamma Clamp on WinXP+
-* [\*] Fixed weather system incorrectly throwing up a warning with shader data if weather system was unable to parse a vector correctly.
-* [\*] Windows now uses correct memory status code for > 2gb when checking if low on physical memory.
-* [\*] Tweaks to the cvar code to make it more strict in terms of read only/cheats/init. Fixes a lot of broken rules with cvars.
-* [\*] Fixed cvar commands that allow you to `cg_thirdPerson !` (i.e. use a value of `!`) prevent you from typing out longer strings starting with a `!` as the value.
-* [\*] FX Flashes now properly scale to fov and window aspect.
-* [\*] Fixed a lot of formatting security holes.
-* [\*] Several Out-of-bounds memory access and memory leaks fixed.
-* [\*] Improved command line parsing based off of ioquake3 patches.
-* [\*] Improved `echo` command by preserving colors based off of ioquake3 patches.
-* [\*] Improved `GL_Extensions` printing using ioquake3 fix to prevent crashes on newer cards.
-* [\*] Alt-tab works properly
-* [\*] ~~Fix Windows issue where pressing alt key in windowed mode caused a temporary freeze~~
-* [\*] Fixed never fading shadow in text
-* [\*] Fix up font renderer glyph positioning
-* [\*] Fixed a hang with some weird music sample rates
-* [\*] Fixed a crash at startup when `r_dynamicGlow` was set to 2
-* [\*] Fix Out-Of-Bounds access in `CM_EdgePlaneNum`
-* [\*] Clamp `scr_conspeed` to be in the range 1-100
-* [\*] Fix stencil shadows not working if a model has more than 500 vertexes.
+- [Added] `Talk through an NPC`. /npcmanager select &lt;npc> [display name] and everything you say in chat is said by that NPC instead, with the name you give it (RPMod colors work), until /npcmanager select off or the map changes. /npcmanager talk &lt;npc> &lt;message> says a single line. Team chat and private messages stay your own. Experimental, needs TOGGLE EXPERIMENTAL like the rest of NPC talk.
+- [Added] `Chat subtitles in cinematics`. During a cinematic with the HUD hidden, players' chat now shows as subtitles at the bottom of the screen, as NPC talk already did. Chat your rpc_chatRange_\* settings would leave out of the chat box isn't shown, and chat they'd fade shows faded.
+- [Changed] `Widescreen text`. Now off by default; /cl_ratioFix 1 turns it on.
+- [Fixed] `NPC Subtitles during cutscenes`. Now NPC talk should display properly during a cinematic shot.
 
-### Gamecode (only available in `fs_game openjk` and derived mods)
+## 0.3.0 - Oct 14th 2026
 
-* [\*] Fixed overstrike mode when using any UI edit box
-* [\*] Fix crash when standing on an NPC who has been knocked down
+- [Added] `Storyteller`. Assemble a mission out of steps and play it with /storyteller. Steps cover waits, a "wait for me" pause you continue yourself, chat and center messages, console commands, spawning/teleporting/commanding NPCs, placing models, playing effects, sounds and music, screen effects, shader remaps and cinematic camera shots. Most steps can be filled in by picking straight from the NPC, model, effect, shader, sound and music managers. Commands are spaced out so the server's flood protection doesn't drop them, and a story keeps playing with the window closed. Stories are saved and loaded by name.
+- [Added] `Story arming`. A story that starts with "When someone comes" can be armed: it waits in the background and plays by itself when a player or NPC walks into a map trigger, comes near a spot or an effect, or a door/button moves. It can fire once, every time, or a set number of times (/storyteller arm &lt;name> [again|&lt;times>]). Only people close enough to you to be seen can set it off.
+- [Added] `NPC talk`. Make an NPC say a line in chat as a player would, with its own name, name color and an optional emote. Available as a storyteller step and in the npcmanager's Manage tab. During a cinematic with the HUD hidden, the lines show as subtitles. Experimental, see below.
+- [Added] `Objectives`. Give everyone a list of mission objectives, shown on the left while the Esc menu is up. Add, strike through, remove or clear them with /objective or a storyteller step. Experimental, see below.
+- [Added] `Cinematic camera`. Take every player's camera for a cut scene: paths, cuts, orbits, zooms and black bars. Shots are made in a camera editor (/cincam edit) with a free camera, previewed on your own screen, saved by name and played with /cincam play or the storyteller's camera steps. Players can opt out with /rpc_cinematics 0. Experimental, see below.
+- [Added] `Map editor`. Edit the map on your own screen with /mapedit: browse the map's entities and their keys, hide brush entities, place models, lift the map's own props out to move or remove them, add dynamic lights, give the map's light styles new patterns and colors, and add triggers that run a command when you walk in. Edits are saved per map in mapedits/&lt;map>.ent, written as entities a server could spawn later.
+- [Added] `Map editor layouts`. Keep several sets of edits per map by name (Layouts panel, or /mapedit save &lt;name> and /mapedit load &lt;name>).
+- [Added] `Map editor sharing`. Share your edits with everyone on the map who uses this client, and take them back with Unshare. Shared edits replace the receiver's own on their screen without touching their files; players can opt out with /rpc_mapShare 0. Only the look of the map changes: hidden walls still block and moved props have no collision, since the server knows nothing of it. Triggers are never shared. Experimental, see below.
+- [Added] `Soundmanager`. Browse every sound your game can find (Base and Custom, by pk3 and folder), hear it on your side first, then send it with rpsound: once to everyone, you or another player, looping everywhere, on a player or at a spot, or local. The Playing tab lists the looping sounds in the map to remove one or all of them.
+- [Added] `Musicmanager`. Browse every music track the same way, preview it on your side (the map's music comes back when you stop), then play it for everyone with rpmusic, or go back to the map's own music or none.
+- [Added] `Experimental toggle`. Features that travel hidden inside rpnotify (NPC talk, objectives, cinematic camera, map edit sharing) are greyed out until you press TOGGLE EXPERIMENTAL in the storyteller, npcmanager or the map editor's Layouts panel and accept the warning. They are a work in progress, should not be used on Temple, and can only be seen by players in game with OpenJK-rpmod installed and up to date; everyone else sees the raw line in their console. These 'workarounds' will eventually be removed in favor of server support.
+- [Added] `Admin tools safeguard`. The npcmanager, effectmanager, shadermanager, storyteller and map editor now only open for RPMod admins.
+- [Added] `Radial menus`. Hold a key and a ring of commands opens around the middle of the screen: point the mouse at one and let go to run it, or press its number (1-0). A quick tap keeps it open until you click. You can keep moving while it's open. Make your own menus and bind keys to them in /radialsettings. Comes with three menus: tools (every manager), styles (saber styles) and gestures (taunt, bow, meditate, flourish, gloat).
+- [Added] `Saber style selection`. Choose which styles your saberAttackCycle key goes through and in what order with /saberstyles (e.g. /saberstyles medium tavion strong; /saberstyles all to go back), or jump straight to one with /saberstyle &lt;style>. The server only knows "next style", so the client cycles for you until you're there; the styles in between show for a moment.
+- [Added] `Emote preview`. Click an emote in the Help menu's Emote Commands and your own character plays it in a panel next to the list, like the singleplayer datapad. Every RPMod emote is built in; emotes added later are learned the first time you do them. /emotepreview lists them.
+- [Added] `Widescreen text`. Text no longer looks stretched on widescreen monitors: HUD, scoreboard, chat, menus and the console's chat line keep their proper shape, like TaystJK's cl_ratioFix. On by default, /cl_ratioFix 0 turns it off. Needs the rd-vanilla_x86.dll from this release.
+- [Changed] `Version name`. The game version now reads OpenJK-rpmod instead of OpenJK-MP.
+- [Fixed] `Npcmanager search bar`. Typing in the Spawn tab's search box no longer clears it after every letter.
 
-## Singleplayer only
+## 0.2.1 - Oct 11th 2026
 
-* [\*] Fixed a nasty memory issue with clipboard pasting
-* [\*] Fixed `MiniHeapSize` issue
-* [\*] Fixed intro cinematic only displaying as white screen when on non 4:3 aspect ratio.
-* [\*] Fixed potential out of bounds in sound code.
-* [\*] Fixed buffer overflow in filesystem code which prevented use of some maps (atlantica). Raven made a `Com_Error` to prevent this from happening, we removed that as well.
-* [\*] Rosh no longer randomly dies due to falling damage on the first level.
-* [\*] Fix force absorb capping to 100 instead of maximum force points
-* [\*] Fix some invalid chunk length errors on x86_64 platforms
+- [Added] `Modelmanager`. This tool replaces modelplacer entirely (although the previous command has been kept as an alias momentarily until future updates). Model manager will allow you to edit existing one or multiple rpmodels in the server, delete them or group rpmodels together. You may save multiple models together in what is called 'a construct' that can be loaded at your convenience. An outline toggle (B hotkey) has been added to temporarily hide model outlines during placement/edit. You may as well choose to only apply the outline only for a single model (O hotkey). You may give models or a construct a name so that it may be removed with /modelmanager remove &lt;name>
+- [Added] `State logic`. Similar yet not to be confused with rpdumps. States allow for additional information regarding a model or effect to be kept client-wise should the player quit the game whilst rpmodels/rpeffects are present in-game or should they be spawned later with a rpdump. Serves to allow removal of models or effects that have been named, as otherwise information of the name would be lost unless the player remains connected after set-up.
+- [Added] `Npcmanager enhanced`. This tool now allows you to place multiple NPCs before submitting them to server, as well as save parametric configurations for NPCs and use them at a later time. Constructs are also applicable to NPCs now.
+- [Added] `Effectmanager enhanced`. This tool now allows you to place multiple effects before submitting them to server. Constructs are also applicable to effects now.
+- [Added] `Shadermanager custom input`. This tool now allows you to insert the new shader path yourself instead of selecting it from the list.
+- [Added] `Manager browsers enhancement`. The manager UIs will now feature: specifics on where the assets come from, as well as the chance to filter only Base or Custom assets.
+- [Added] `Free camera in npcmanager`. Allows the player to use a freecamera whilst placing NPCs around the map
+- [Added] `Remap effect's shaders`. Allows the player to use shadermanager to remap effects, you may do so per each individual shader that is part of the effect.
+- [Added] `Execs Unlocked`. You will no longer be stuck in waiting limbo while an exec is running, and you may run multiple of them. Additionally, you may use /execlist to list running exec's and run /execstop &lt;name> to stop them. If &lt;name> parameter is not provided, it will stop all running exec's.
+- [Added] `Console Chat Range`. Allows the player to set a chat range for console much like the game's standard chat.
+  - /rpc_chatRangeConsole_mode: 0 -> default, 1 -> fade by distance, 2 -> print outside console's maxchat range, 3 -> only below min range
+  - /rpc_chatRangeConsole_min: messages closer than this many units is solid (128 default)
+  - /rpc_chatRangeConsole_max: messages farther than this many units is at min. alpha or left out in mode 2 (1024 default)
+  - /rpc_chatRangeConsole_alpha: How see-through chat console gets, in percent (25 default)
+- [Added] `Crouch Toggle`. Allows the player to toggle themselves in a state of permanent crouching with /cl_crouch
+- [Added] `Allow the client to accomodate up to 64 players`. This one was missing due to it being a fork of the standard OpenJK client. Now it should be up to par to what is being shipped with RPMod currently.
+- [Fixed] `Selecting a skybox with shadermanager leads to a game crash.`.
 
-## Multiplayer only
+## 0.2.0 - Oct 09th 2026
 
-* [\*] Fixed several parsers that broke with characters which wrapped to being negative.
-* [+] Added misc security fixes to allow servers to deal with connectionless packets.
-* [\*] Added security fixes to prevent servers from spoofing clients with connect packets.
-* [\*] Added security fixes to prevent anyone from spoofing clients with print packets.
-* [\*] Fixed clients being able to set IP via cvar.
-* [\*] Dedicated server binaries now correctly print sectioned prints without adding newlines erroneously.
-* [\*] Fixed client crash related to ragnos NPC
-* [\*] Fixed some item prediction errors in team games. (Item prediction still sucks in general though)
-* [\*] Fixed buffer overflow in client side rcon command.
-* [\*] Fixes names that contain `*` or `**` at start incorrectly showing up in notify top box and chat box when sending messages.
-* [\*] Server side / `viewlog` console now strips the `[skipnotify]` and `*` properly too.
-* [+] (Un)pausing the game in solo play now results in smoother transition.
-* [\*] `timescale` frametime fixes. Frametime < 1 is no longer possible (bad things happen)
-* [\*] Fixed invalid `r_textureBitsLM` resulting in fullbright mode without cheats
-* [\*] CVar code in engine is more robust.  Protects against clients setting systeminfo cvars they should not etc.  More accurate warning messages when servers/vms/clients set cvars they should not.
-* [\*] Fix exploit with `usercmd` bytes set to -128
+- [Added] `npcmanager` tool that opens a full-screen window for RPMod's npc commands.
+- [Added] `shadermanager` tool. It opens a free camera; hovering above a surface displays its shader. You can pick a surface and use it to quickly remap using a built-in list of the currently installed shader assets. You can as well manage currently set remaps.
+- [Added] `effectmanager` tool. It allows you to preview, place or bolt effects in-game.
+- [Added] `HQ Video Cinematics`. The client is no longer restricted to using 512x512 .ROQ files. H.264, H.265 and VP9 video, with AAC, Opus, Vorbis or MP3 sound are all supported. Any resolution up to 2048 px on the longest side; anything bigger, such as 4K, is scaled down.
+- [Added] `RPMod Color Codes in Console`. The console will now properly show color codes in console whilst rpc_removeExtraColorsInConsole is set to 0. /colorcodes added to display your own name's color codes, or additionally /colorcodes [text] for custom text viewing.
 
-### Gamecode (only available in fs_game openjk and derived mods)
+## 0.1.1 - Oct 08th 2026
 
-* [\*] Fixed very bad out of bounds access in `G_LogWeaponFire` with NPCs.
-* [\*] Fixed some voting issues relating to clients disconnecting and/or switching teams.
-* [\*] Fixed some voting issues relating to bad percentage calculation for passing/failing.
-* [\*] Fixed color code stacking in names where colors were supposed to be stripped. (This relates to engine and gamecode for full effect)
-* [\*] Fixed saber lock crash
-* [\*] Force updates of clients at a fixed interval to prevent certain exploits.
-* [\*] Prevent fast teamswitch exploit
-* [\*] Disable "scoreboard" team
-* [\*] Fix some looping sound issues
-* [\*] Fix spectators being stuck when they stop following dead/disintegrated players
-* [\*] Precache weapons on `map_restart` if `g_weaponDisable` changes
-* [\*] Properly detect server settings (weapon/force disable)
-* [\*] Filter multiple "@" characters in a name resulting in a localised string lookup (translation)
-* [\*] Default/missing model+saber is now "kyle"
-* [\*] Fixed tournament queueing (for duel/power duel)
-* [\*] Fixed issues where spectators had trouble flying through doors close together
-* [\*] Fix `cg_smoothClients` affecting local player negatively
-* [\*] Fix 2d screen tints with some effects being too dark (protect/abosrb/rage/ysalamiri/inlava/inwater/inslime)
-* [+] Filter out servers with invalid chars in their information from the browser (`ui_browserFilterInvalidInfo`)
-* [+] UI now supports multiple master servers
-* [\*] Fix teamoverlay not making you look dead in siege when in limbo
-* [\*] Fix glowing lights bugs on players and dead spectators in siege (in client mod)
-* [\*] Properly load siege sounds for all models that have them, fallback to old broken location if necessary.
+- [Fixed] `modelplacer` no longer drops you from the server when previewing models with more than 999 verts on a surface. They are shown in red with the reason, and can't be placed.
+- [Added] Fighter takeoff guard: holding jump to take off no longer turns into a boost once the ship clears the ground. The engine mirrors the game's takeoff check (speed, flat ground within the ship's landingHeight from its .veh file, lag-compensated) and stops sending jump just before takeoff ends, until the key is released. A fresh jump press in the air still boosts. Runs in the engine, so it works whatever game module the server's mod loads. Toggle with cl_fighterTakeoffGuard (default 1)
+  - +vehboost fires a fighter's boost on its own key
+  - e.g. `bind shift +vehboost`
 
+## 0.1.0 - Oct 07th 2026
 
-# Cleanup
-
-## Single- and Multiplayer
-
-* [-] MPlayer code removed.
-* [-] Removed force feedback code (requires unavailable commercial library)
-* [\*] Updated the JPG library
-* [\*] Updated the PNG library
-* [\*] Updated the zLib and minizip libraries
-* [\*] Refactor binds code in the UI
-* [-] Removed (unused) RMG code
-* [\*] General buffer safety cleanup
-
-## Multiplayer only
-
-* [\*] Tweaked serverbrowser client engine code.
-* [\*] Pure server code cleanups in client and server.
-
-### Gamecode (only available in fs_game openjk and derived mods)
-
-* [\*] Optimised .sab parsing and fixed some potential memory corruption
-* [\*] Optimised .veh and .vwp parsing
+- [Added] modelplacer

@@ -36,6 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // window, so what has to look round, the icons and their images, is drawn narrower to make up for it.
 
 #include "client.h"
+#include "cl_widgets.h"
 
 #define RM_FILE				"radialmenus.txt"
 #define RM_COMMAND			"radialsettings"
@@ -148,6 +149,7 @@ typedef enum {
 typedef struct {
 	int			sel, scroll;
 	int			lastClickRow, lastClickTime;
+	int			shownSel;		// the selection last kept in view: only a new one is again
 } rsList_t;
 
 // the settings
@@ -1122,6 +1124,22 @@ static void RS_ListMove( int delta ) {
 	rs.itemList.sel = Com_Clampi( 0, m->numItems - 1, ( rs.itemList.sel < 0 ? 0 : rs.itemList.sel ) + delta );
 }
 
+// a character the focused box takes
+static qboolean RS_AllowChar( int ch ) {
+	int size;
+	const char *text = RS_FieldText( rs.focus, &size );
+
+	if ( !text || ch < ' ' || ch >= 127 )
+		return qfalse;
+	// the file keeps them in quotes; a name is in binds too
+	if ( ch == '"' || ( rs.focus == RS_F_NAME && ch == ';' ) )
+		return qfalse;
+	// a colour is hex digits, a # before them at most
+	if ( RS_IsColorField( rs.focus ) && !isxdigit( ch ) && !( ch == '#' && !strchr( text, '#' ) ) )
+		return qfalse;
+	return qtrue;
+}
+
 void CL_RadialMenu_KeyEvent( int key, qboolean down ) {
 	const char *binding;
 	char *text;
@@ -1145,6 +1163,17 @@ void CL_RadialMenu_KeyEvent( int key, qboolean down ) {
 		return;
 	}
 
+	text = RS_FieldText( rs.focus, &size );
+	if ( text && key != A_MOUSE1 && key != A_MWHEELUP && key != A_MWHEELDOWN ) {
+		const int edit = WG_EditKey( text, size, key, RS_AllowChar );
+
+		if ( edit ) {
+			if ( edit & WG_EDIT_CHANGED )
+				RS_Changed();
+			return;
+		}
+	}
+
 	switch ( key ) {
 	case A_MOUSE1:
 		rs.click = qtrue;
@@ -1163,13 +1192,6 @@ void CL_RadialMenu_KeyEvent( int key, qboolean down ) {
 		// on to the next box
 		RS_SetFocus( rs.focus == RS_F_LABEL ? RS_F_CMD : RS_F_NONE );
 		return;
-	case A_BACKSPACE:
-		text = RS_FieldText( rs.focus, &size );
-		if ( text && text[0] ) {
-			text[strlen( text ) - 1] = '\0';
-			RS_Changed();
-		}
-		return;
 	case A_CURSOR_UP:
 		if ( rs.focus == RS_F_NONE )
 			RS_ListMove( -1 );
@@ -1185,23 +1207,13 @@ void CL_RadialMenu_KeyEvent( int key, qboolean down ) {
 
 void CL_RadialMenu_CharEvent( int ch ) {
 	char *text;
-	int size, len;
+	int size;
 
 	text = RS_FieldText( rs.focus, &size );
-	if ( !rs.open || !text || ch < ' ' || ch >= 127 )
+	if ( !rs.open || !text )
 		return;
-	// the file keeps them in quotes; a name is in binds too
-	if ( ch == '"' || ( rs.focus == RS_F_NAME && ch == ';' ) )
-		return;
-	// a colour is hex digits, a # before them at most
-	if ( RS_IsColorField( rs.focus ) && !isxdigit( ch ) && !( ch == '#' && !text[0] ) )
-		return;
-	len = strlen( text );
-	if ( len < size - 1 ) {
-		text[len] = (char)ch;
-		text[len + 1] = '\0';
+	if ( WG_EditChar( text, size, ch, RS_AllowChar ) )
 		RS_Changed();
-	}
 }
 
 void CL_RadialMenu_SettingsMouseEvent( int dx, int dy ) {
@@ -1282,29 +1294,35 @@ static qboolean RS_DangerButton( float x, float y, float w, const char *label, q
 	return qfalse;
 }
 
+static void RS_FieldStyle( wgStyle_t *style ) {
+	style->font = rs.font;
+	style->scale = RM_TEXT_SCALE;
+	style->lineH = RS_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 2.0f;
+	style->fill = rsPanelFocus;
+	style->border = rsBorder;
+	style->text = rmWhite;
+	style->dim = rmDim;
+}
+
 static void RS_Field( rsField_t f, float x, float y, float w, const char *placeholder ) {
 	const qboolean focused = (qboolean)( rs.focus == f );
-	char buf[RM_CMD_LEN + 2];
 	int size;
-	const char *text = RS_FieldText( f, &size );
+	char *text = RS_FieldText( f, &size );
+	wgStyle_t style;
 
 	RM_Box( x, y, w, RS_CTRL_H, focused ? rsPanelFocus : rsPanelLight, rsBorder );
 	if ( !text ) {
 		RS_TextClipped( x + 4, y + 2, w - 8, placeholder, rmDim );
 		return;
 	}
-	if ( !text[0] && !focused ) {
-		RS_TextClipped( x + 4, y + 2, w - 8, placeholder, rmDim );
-	} else {
-		// keep the end in view
-		Com_sprintf( buf, sizeof( buf ), "%s%s", text, focused && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" );
-		const char *shown = buf;
-		while ( shown[1] && RS_TextWidth( shown ) > w - 8 )
-			shown++;
-		RS_Text( x + 4, y + 2, shown, rmWhite );
-	}
-	if ( RS_Clicked( x, y, w, RS_CTRL_H ) )
+	RS_FieldStyle( &style );
+	WG_Field( &style, x, y, w, RS_CTRL_H, text, focused, placeholder, rs.cursorX, rs.cursorY );
+	if ( RS_Clicked( x, y, w, WG_FieldHeight( &style, w, RS_CTRL_H, text, focused ) ) ) {
 		RS_SetFocus( f );
+		WG_FieldClick( text, rs.clickX, rs.clickY );
+	}
 }
 
 static void RS_Label( float x, float y, const char *label ) {
@@ -1323,14 +1341,21 @@ static void RS_List( rsList_t *list, int count, float x, float y, float w, float
 		list->scroll += rs.wheel;
 		rs.wheel = 0;
 	}
-	if ( list->sel >= 0 && list->sel < list->scroll )
-		list->scroll = list->sel;
-	if ( list->sel >= list->scroll + visible )
-		list->scroll = list->sel - visible + 1;
+	if ( list->sel != list->shownSel ) {
+		if ( list->sel >= 0 && list->sel < list->scroll )
+			list->scroll = list->sel;
+		if ( list->sel >= list->scroll + visible )
+			list->scroll = list->sel - visible + 1;
+		list->shownSel = list->sel;
+	}
 	if ( list->scroll > count - visible )
 		list->scroll = count - visible;
 	if ( list->scroll < 0 )
 		list->scroll = 0;
+
+	RM_Box( x, y, w, h, rsPanelLight, rsBorder );
+	if ( WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, visible, &list->scroll, rs.cursorX, rs.cursorY, &rs.click, rs.clickX, rs.clickY ) )
+		w -= WG_SCROLL_W + 1;
 
 	if ( RS_Clicked( x, y, w, h ) ) {
 		row = list->scroll + (int)( ( rs.clickY - y ) / RS_ROW_H );
@@ -1338,7 +1363,6 @@ static void RS_List( rsList_t *list, int count, float x, float y, float w, float
 			*clicked = row;
 	}
 
-	RM_Box( x, y, w, h, rsPanelLight, rsBorder );
 	for ( int i = 0; i < visible; i++ ) {
 		const float ry = y + i * RS_ROW_H;
 
@@ -1537,6 +1561,8 @@ static void RS_DrawPicker( void ) {
 	}
 	rs.pickScroll = Com_Clampi( 0, Q_max( 0, rows - RS_PICK_ROWS ), rs.pickScroll );
 	RM_Box( RS_PICK_X, RS_PICK_Y, w, h, rsPanelLight, rsBorder );
+	WG_Scrollbar( RS_PICK_X + w - WG_SCROLL_W - 1, RS_PICK_Y + 1, h - 2, rows, RS_PICK_ROWS, &rs.pickScroll,
+		rs.cursorX, rs.cursorY, &rs.click, rs.clickX, rs.clickY );
 
 	if ( !rs.numPicks ) {
 		RS_TextClipped( RS_PICK_X + 6, RS_PICK_Y + 8, w - 12, "None yet. Put .png, .tga or .jpg", rmWhite );
@@ -1700,6 +1726,7 @@ void CL_RadialMenu_DrawSettings( void ) {
 	rs.click = qfalse;
 	rs.wheel = 0;
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( rs.cursorX, rs.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }
 

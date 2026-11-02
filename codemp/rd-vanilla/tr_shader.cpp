@@ -3252,11 +3252,30 @@ return NULL if not found
 If found, it will return a valid shader
 =====================
 */
+// loadpk3: the .shader files of pk3s added while the game runs, newest first; until the
+// shaders are loaded again
+#define MAX_ADDED_SHADER_TEXTS	64
+static char *s_addedShaderText[MAX_ADDED_SHADER_TEXTS];
+static int s_numAddedShaderText;
+
 static const char *FindShaderInShaderText( const char *shadername ) {
 	char *token;
 	const char *p;
 
 	int i, hash;
+
+	// an added pk3's own first
+	for ( i = s_numAddedShaderText - 1; i >= 0; i-- ) {
+		p = s_addedShaderText[i];
+		while ( 1 ) {
+			token = COM_ParseExt( &p, qtrue );
+			if ( !token[0] )
+				break;
+			if ( !Q_stricmp( token, shadername ) )
+				return p;
+			SkipBracedSection( &p, 0 );
+		}
+	}
 
 	hash = generateHashValue(shadername, MAX_SHADERTEXT_HASH);
 
@@ -4223,6 +4242,8 @@ void R_InitShaders(qboolean server)
 	//ri.Printf( PRINT_ALL, "Initializing Shaders\n" );
 
 	memset(hashTable, 0, sizeof(hashTable));
+	// the added pk3s' are in the shader files now
+	s_numAddedShaderText = 0;
 
 	if ( !server )
 	{
@@ -4232,4 +4253,75 @@ void R_InitShaders(qboolean server)
 
 		CreateExternalShaders();
 	}
+}
+
+/*
+================
+RE_ForgetMissing
+
+loadpk3: pk3s were added while the game runs. Their .shader files are read; the shaders made
+default because nothing was found for them, the skins with one and the models that failed are
+looked for again the next time they're asked for. How many were forgotten
+================
+*/
+int RE_ForgetMissing( const char **shaderFiles, int numShaderFiles ) {
+	int count = 0;
+
+	R_IssuePendingRenderCommands();
+
+	for ( int i = 0; i < numShaderFiles && s_numAddedShaderText < MAX_ADDED_SHADER_TEXTS; i++ ) {
+		char *buffer = NULL, *text;
+		const char *p;
+		qboolean ok = qtrue;
+		int len = ri.FS_ReadFile( shaderFiles[i], (void **)&buffer );
+
+		if ( !buffer || len <= 0 )
+			continue;
+		// one bad file doesn't spoil the rest, as when they're all read
+		p = buffer;
+		COM_BeginParseSession( shaderFiles[i] );
+		while ( ok ) {
+			char *token = COM_ParseExt( &p, qtrue );
+
+			if ( !token[0] )
+				break;
+			if ( token[0] == '#' ) {
+				SkipRestOfLine( &p );
+				continue;
+			}
+			token = COM_ParseExt( &p, qtrue );
+			if ( token[0] != '{' || token[1] != '\0' || !SkipBracedSection( &p, 1 ) )
+				ok = qfalse;
+		}
+		if ( !ok ) {
+			ri.Printf( PRINT_WARNING, "WARNING: loadpk3: ignoring %s, its braces don't match\n", shaderFiles[i] );
+			ri.FS_FreeFile( buffer );
+			continue;
+		}
+		text = (char *)ri.Hunk_Alloc( len + 2, h_low );
+		memcpy( text, buffer, len );
+		text[len] = '\0';
+		ri.FS_FreeFile( buffer );
+		COM_CompressShader( text );
+		s_addedShaderText[s_numAddedShaderText++] = text;
+	}
+
+	// the skins first: they tell their bad shaders by the default flag
+	count += R_ForgetBadSkins();
+
+	for ( int h = 0; h < FILE_HASH_SIZE; h++ ) {
+		for ( shader_t **link = &hashTable[h]; *link; ) {
+			shader_t *sh = *link;
+
+			if ( sh->defaultShader && sh != tr.defaultShader && sh->name[0] != '<' && sh->name[0] != '*' ) {
+				*link = sh->next;
+				count++;
+				continue;
+			}
+			link = &sh->next;
+		}
+	}
+
+	count += R_ForgetBadModels();
+	return count;
 }

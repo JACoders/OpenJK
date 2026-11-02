@@ -63,6 +63,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "client.h"
 #include "qcommon/cm_public.h"
 #include "ghoul2/G2.h"
+#include "cl_widgets.h"
 
 extern IHeapAllocator *G2VertSpaceClient;
 
@@ -252,6 +253,7 @@ typedef struct smSky_s {
 	vec3_t		shift;			// a 3D skybox's view moved this far
 	qboolean	portalOn;		// the map seen from portalOrg in place of the sky
 	vec3_t		portalOrg;
+	float		zoom;			// the sky drawn this much nearer, 1 as it is
 } smSky_t;
 
 // a spot a sky portal can show the map from
@@ -603,15 +605,21 @@ static void SM_MyOrigin( vec3_t out ) {
 // the player whose own what is at org, or bolted to entity entNum, is: the player entity, else
 // the player it started within reach of and nearer than any other player or NPC; -1 for none
 int CL_ShaderManager_Owner( const vec3_t org, int entNum ) {
-	vec3_t me;
-	float best = SM_MINE_REACH, dist;
-	int owner = -1;
-
 	if ( sm.mapped.empty() || !cl.snap.valid )
 		return -1;
 	if ( entNum >= 0 && entNum < ENTITYNUM_WORLD )
 		return entNum < MAX_CLIENTS ? entNum : -1;
-	if ( !org )
+	return CL_ShaderManager_NearestPlayer( org );
+}
+
+// the player what's at org is nearest, within reach and nearer than any other player or NPC;
+// -1 for none
+int CL_ShaderManager_NearestPlayer( const vec3_t org ) {
+	vec3_t me;
+	float best = SM_MINE_REACH, dist;
+	int owner = -1;
+
+	if ( !org || !cl.snap.valid )
 		return -1;
 	// the player the view is of: this one where cgame predicts them, or the one followed
 	if ( cl.snap.ps.pm_type != PM_SPECTATOR ) {
@@ -672,8 +680,7 @@ qhandle_t CL_ShaderManager_MineFor( qhandle_t shader, const vec3_t org, int entN
 const refEntity_t *CL_ShaderManager_MineEntity( const refEntity_t *ent, refEntity_t *copy ) {
 	qhandle_t shader;
 
-	if ( sm.mapped.empty() )
-		return ent;
+	// where this player is, for the saber light too
 	if ( ent->reType == RT_MODEL && ent->ghoul2 && cl.snap.valid && cl.snap.ps.clientNum == clc.clientNum ) {
 		vec3_t me;
 
@@ -683,6 +690,8 @@ const refEntity_t *CL_ShaderManager_MineEntity( const refEntity_t *ent, refEntit
 			sm.myOrgFrame = cls.framecount;
 		}
 	}
+	if ( sm.mapped.empty() )
+		return ent;
 	shader = CL_ShaderManager_MineFor( ent->customShader, ent->origin, -1 );
 	if ( shader == ent->customShader )
 		return ent;
@@ -2306,9 +2315,34 @@ static int SM_ShaderRows( void ) {
 static void SM_AddOverlay( void );
 static void SM_MineEnter( void );
 
+static void SM_FieldChanged( smField_t f ) {
+	if ( f == SM_F_SEARCH ) {
+		sm.shaderList.scroll = 0;
+		SM_RebuildShaderView();
+	} else if ( f == SM_F_PATH ) {
+		SM_PathChanged();
+	} else if ( f == SM_F_OV_SEARCH ) {
+		sm.overlayShaders.scroll = 0;
+		SM_RebuildOverlayView();
+	}
+}
+
+static qboolean SM_AllowChar( int ch ) {
+	const smField_t f = SM_TypingField();
+
+	if ( ch < ' ' || ch > '~' )
+		return qfalse;
+	if ( ( f == SM_F_OFFSET || ( f >= SM_F_OV_FADE && f <= SM_F_OV_H ) ) && !( isdigit( ch ) || ch == '.' || ch == '-' ) )
+		return qfalse;
+	// goes on the command line as one word
+	if ( f == SM_F_PATH && ( ch == ' ' || ch == '"' || ch == ';' ) )
+		return qfalse;
+	return qtrue;
+}
+
 static void SM_EditKey( int key ) {
 	smList_t *list;
-	int count, visible, delta, len;
+	int count, visible, delta;
 	smField_t f = SM_TypingField();
 
 	switch ( key ) {
@@ -2339,29 +2373,24 @@ static void SM_EditKey( int key ) {
 		else if ( sm.tab == SM_TAB_MINE )
 			SM_MineEnter();
 		return;
-	case A_BACKSPACE:
-		len = strlen( sm.fields[f] );
-		if ( len ) {
-			sm.fields[f][len - 1] = '\0';
-			if ( f == SM_F_SEARCH )
-				SM_RebuildShaderView();
-			else if ( f == SM_F_PATH )
-				SM_PathChanged();
-			else if ( f == SM_F_OV_SEARCH )
-				SM_RebuildOverlayView();
-		}
-		return;
-	case A_DELETE:
-		sm.fields[f][0] = '\0';
-		if ( f == SM_F_SEARCH )
-			SM_RebuildShaderView();
-		else if ( f == SM_F_PATH )
-			SM_PathChanged();
-		else if ( f == SM_F_OV_SEARCH )
-			SM_RebuildOverlayView();
-		return;
 	default:
 		break;
+	}
+
+	// a box clicked takes the editing keys; typed in without a click, the arrows, home and end
+	// are the lists' and delete empties it
+	if ( sm.focus != SM_F_NONE || !( key == A_CURSOR_LEFT || key == A_CURSOR_RIGHT || key == A_CURSOR_UP
+		|| key == A_CURSOR_DOWN || key == A_HOME || key == A_END || key == A_DELETE ) ) {
+		const int edit = WG_EditKey( sm.fields[f], SM_FIELD_LEN, key, SM_AllowChar );
+
+		if ( edit & WG_EDIT_CHANGED )
+			SM_FieldChanged( f );
+		if ( edit )
+			return;
+	} else if ( key == A_DELETE ) {
+		sm.fields[f][0] = '\0';
+		SM_FieldChanged( f );
+		return;
 	}
 
 	if ( sm.tab == SM_TAB_OBJECT || sm.tab == SM_TAB_MINE ) {
@@ -2428,30 +2457,12 @@ void CL_ShaderManager_KeyEvent( int key, qboolean down ) {
 
 void CL_ShaderManager_CharEvent( int ch ) {
 	smField_t f;
-	int len;
 
-	if ( sm.state != SM_EDIT || sm.looking || ch < ' ' || ch > '~' )
+	if ( sm.state != SM_EDIT || sm.looking )
 		return;
 	f = SM_TypingField();
-	if ( ( f == SM_F_OFFSET || ( f >= SM_F_OV_FADE && f <= SM_F_OV_H ) ) && !( isdigit( ch ) || ch == '.' || ch == '-' ) )
-		return;
-	// goes on the command line as one word
-	if ( f == SM_F_PATH && ( ch == ' ' || ch == '"' || ch == ';' ) )
-		return;
-	len = strlen( sm.fields[f] );
-	if ( len < SM_FIELD_LEN - 1 ) {
-		sm.fields[f][len] = (char)ch;
-		sm.fields[f][len + 1] = '\0';
-		if ( f == SM_F_SEARCH ) {
-			sm.shaderList.scroll = 0;
-			SM_RebuildShaderView();
-		} else if ( f == SM_F_PATH ) {
-			SM_PathChanged();
-		} else if ( f == SM_F_OV_SEARCH ) {
-			sm.overlayShaders.scroll = 0;
-			SM_RebuildOverlayView();
-		}
-	}
+	if ( WG_EditChar( sm.fields[f], SM_FIELD_LEN, ch, SM_AllowChar ) )
+		SM_FieldChanged( f );
 }
 
 void CL_ShaderManager_MouseEvent( int dx, int dy ) {
@@ -3005,17 +3016,25 @@ static qboolean SM_Button( float x, float y, float w, const char *label, qboolea
 }
 
 static void SM_Field( smField_t f, float x, float y, float w, const char *placeholder ) {
-	qboolean active = (qboolean)( SM_TypingField() == f );
+	const qboolean active = (qboolean)( SM_TypingField() == f );
+	wgStyle_t style;
 
+	style.font = sm.font;
+	style.scale = SM_TEXT_SCALE;
+	style.lineH = SM_ROW_H;
+	style.padX = 4.0f;
+	style.padY = 2.0f;
+	style.fill = smPanelFocus;
+	style.border = smBorder;
+	style.text = smWhite;
+	style.dim = smDim;
 	SM_Box( x, y, w, SM_CTRL_H, active ? smPanelFocus : smPanelLight );
-	if ( sm.fields[f][0] )
-		SM_TextClipped( x + 4, y + 2, w - 12, sm.fields[f], smWhite );
-	else
-		SM_TextClipped( x + 4, y + 2, w - 8, placeholder, smDim );
-	if ( active && ( cls.realtime / 500 ) % 2 )
-		SM_Text( x + 4 + Q_min( SM_TextWidth( sm.fields[f] ), w - 12 ), y + 2, "_", smWhite );
-	if ( SM_Clicked( x, y, w, SM_CTRL_H ) )
+	WG_Field( &style, x, y, w, SM_CTRL_H, sm.fields[f], active, placeholder, sm.cursorX, sm.cursorY );
+	// a click: typed in, the cursor where it was clicked
+	if ( SM_Clicked( x, y, w, WG_FieldHeight( &style, w, SM_CTRL_H, sm.fields[f], active ) ) ) {
 		sm.focus = f;
+		WG_FieldClick( sm.fields[f], sm.clickX, sm.clickY );
+	}
 }
 
 typedef void ( *smRowFunc_t )( int row, float x, float y, float w );
@@ -3031,6 +3050,11 @@ static int SM_List( smList_t *list, int count, float x, float y, float w, int ro
 	}
 	list->scroll = Com_Clampi( 0, Q_max( count - rows, 0 ), list->scroll );
 	list->sel = Com_Clampi( 0, Q_max( count - 1, 0 ), list->sel );
+	SM_Box( x, y, w, h, smPanelLight );
+	if ( count > rows ) {
+		WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, rows, &list->scroll, sm.cursorX, sm.cursorY, &sm.click, sm.clickX, sm.clickY );
+		w -= WG_SCROLL_W + 1;
+	}
 
 	if ( SM_Clicked( x, y, w, h ) ) {
 		row = list->scroll + (int)( ( sm.clickY - y ) / SM_ROW_H );
@@ -3040,7 +3064,6 @@ static int SM_List( smList_t *list, int count, float x, float y, float w, int ro
 		}
 	}
 
-	SM_Box( x, y, w, h, smPanelLight );
 	for ( int i = 0; i < rows; i++ ) {
 		float ry = y + i * SM_ROW_H;
 
@@ -3555,6 +3578,7 @@ SKY
 static void SM_SkyDefault( smSky_t *sky ) {
 	memset( sky, 0, sizeof( *sky ) );
 	sky->tint[0] = sky->tint[1] = sky->tint[2] = 255.0f;
+	sky->zoom = 1.0f;
 }
 
 static qboolean SM_SkyAltered( const smSky_t *sky ) {
@@ -3577,6 +3601,8 @@ void CL_ShaderManager_SkyLook( void ) {
 	SM_MineFrame();
 	if ( re->ext.SetSkyPortal )
 		re->ext.SetSkyPortal( sm.sky.portalOn ? sm.sky.portalOrg : NULL );
+	if ( re->ext.SetSkyZoom )
+		re->ext.SetSkyZoom( sm.sky.zoom );
 	if ( !re->ext.SetSkyLook )
 		return;
 	if ( !SM_SkyAltered( &sm.sky ) ) {
@@ -3592,7 +3618,7 @@ void CL_ShaderManager_SkyLook( void ) {
 	sm.skySet = qtrue;
 }
 
-// cmd:sky/<r g b>/<spin>/<pitch yaw roll>/<x y z>[/<portal x y z>]: the sky look an admin shared; cmd:sky/off
+// cmd:sky/<r g b>/<spin>/<pitch yaw roll>/<x y z>[/<portal x y z>|-[/<zoom>]]: the sky look an admin shared; cmd:sky/off
 void CL_ShaderManager_SkyHook( char **argv, int argc ) {
 	smSky_t sky;
 
@@ -3607,6 +3633,8 @@ void CL_ShaderManager_SkyHook( char **argv, int argc ) {
 			sscanf( argv[3], "%f %f %f", &sky.shift[0], &sky.shift[1], &sky.shift[2] );
 		if ( argc >= 5 && sscanf( argv[4], "%f %f %f", &sky.portalOrg[0], &sky.portalOrg[1], &sky.portalOrg[2] ) == 3 )
 			sky.portalOn = qtrue;
+		if ( argc >= 6 && atof( argv[5] ) > 0.0f )
+			sky.zoom = Com_Clamp( 0.25f, 4.0f, (float)atof( argv[5] ) );
 		for ( int i = 0; i < 3; i++ )
 			sky.tint[i] = Com_Clamp( 0.0f, 255.0f, sky.tint[i] );
 	}
@@ -3685,12 +3713,16 @@ static void SM_DrawSkyTab( float x, float y, float w ) {
 	SM_Slider( x, y, w, "Speed", &sm.sky.spin, -20, 20, 0.1f, "%.1f/s", qtrue );
 	y += 22;
 
-	SM_Text( x, y, "Turn", smWhite );
+	SM_Text( x, y, "Turn and zoom", smWhite );
 	y += 13;
 	SM_Slider( x, y, w, "Around", &sm.sky.angles[YAW], 0, 360, 1, "%.0f", qtrue );
 	SM_Slider( x, y + 17, w, "Tilt", &sm.sky.angles[PITCH], -90, 90, 1, "%.0f", qtrue );
 	SM_Slider( x, y + 34, w, "Roll", &sm.sky.angles[ROLL], -180, 180, 1, "%.0f", qtrue );
-	y += 56;
+	// above 1 nearer, below 1 farther; a 3D skybox or sky portal's view zooms
+	SM_Slider( x, y + 51, w, "Zoom", &sm.sky.zoom, 0.25f, 4.0f, 0.05f, "%.2fx", qtrue );
+	if ( fabsf( sm.sky.zoom - 1.0f ) < 0.01f )
+		sm.sky.zoom = 1.0f;	// back to the map's own, not a step's rounding off it
+	y += 73;
 
 	y = SM_DrawPortals( x, y, w, portal );
 
@@ -3710,9 +3742,10 @@ static void SM_DrawSkyTab( float x, float y, float w ) {
 		else if ( !SM_SkyAltered( &sm.sky ) )
 			SM_Send( "rpnotify -1 1 cmd:sky/off" );
 		else
-			SM_Send( va( "rpnotify -1 1 cmd:sky/%g %g %g/%g/%g %g %g/%g %g %g%s", sm.sky.tint[0], sm.sky.tint[1], sm.sky.tint[2], sm.sky.spin,
+			SM_Send( va( "rpnotify -1 1 cmd:sky/%g %g %g/%g/%g %g %g/%g %g %g%s%s", sm.sky.tint[0], sm.sky.tint[1], sm.sky.tint[2], sm.sky.spin,
 				sm.sky.angles[0], sm.sky.angles[1], sm.sky.angles[2], sm.sky.shift[0], sm.sky.shift[1], sm.sky.shift[2],
-				sm.sky.portalOn ? va( "/%g %g %g", sm.sky.portalOrg[0], sm.sky.portalOrg[1], sm.sky.portalOrg[2] ) : "" ) );
+				sm.sky.portalOn ? va( "/%g %g %g", sm.sky.portalOrg[0], sm.sky.portalOrg[1], sm.sky.portalOrg[2] ) : sm.sky.zoom != 1.0f ? "/-" : "",
+				sm.sky.zoom != 1.0f ? va( "/%g", sm.sky.zoom ) : "" ) );
 	}
 	if ( SM_Button( x + 164, y, w - 164, "Reset for all", qfalse, qtrue ) ) {
 		if ( !CL_RpHooks_Experimental() ) {
@@ -4362,6 +4395,7 @@ void CL_ShaderManager_Draw( void ) {
 		sm.focus = SM_F_NONE;
 	sm.click = qfalse;
 	sm.wheel = 0;
+	WG_DrawOverlay();
 	if ( !sm.looking )
 		re->DrawStretchPic( sm.cursorX, sm.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }

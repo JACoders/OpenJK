@@ -580,6 +580,7 @@ typedef struct trRefdef_s {
 	qboolean	skyTinted, skyTurned;
 	vec3_t		skyTint;
 	matrix3_t	skyAxis;
+	float		skyZoom;		// the sky shader drawn this much nearer, 1 as it is
 } trRefdef_t;
 
 
@@ -1070,6 +1071,8 @@ typedef struct trGlobals_s {
 	qboolean				skyLookOn;
 	vec3_t					skyLookTint, skyLookAngles, skyLookShift;
 
+	float					skyZoom;			// the client's sky zoom, 0 or 1 for none
+
 	// the client's sky portal: the map seen from portalSkyOrg in place of the sky
 	qboolean				portalSkyOn;
 	vec3_t					portalSkyOrg;
@@ -1449,6 +1452,10 @@ int			RE_AddFog( const vec3_t mins, const vec3_t maxs, const float *color, float
 void		RE_ClearAddedFogs( void );
 void		RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift );
 void		RE_SetSkyPortal( const vec3_t origin );
+void		RE_SetSkyZoom( float zoom );
+int			RE_ForgetMissing( const char **shaderFiles, int numShaderFiles );
+int			R_ForgetBadModels( void );
+int			R_ForgetBadSkins( void );
 qhandle_t	RE_WorldPieceModel( const int *surfaces, const int *triangles, int count, const vec3_t origin );
 
 void    	R_Init( void );

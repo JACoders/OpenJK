@@ -35,6 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "qcommon/cm_public.h"
+#include "cl_widgets.h"
 
 #define SM_SOUND_ROOT		"sound"
 #define SM_MUSIC_ROOT		"music"
@@ -509,7 +510,8 @@ typedef struct {
 static struct {
 	smOpen_t	open;
 	int			font;
-	qboolean	forStory;		// opened from a storyteller step
+	qboolean	forStory;		// opened from a storyteller step, or the cinematic manager
+	qboolean	forCine;		// opened from the cinematic manager
 
 	// input; clicks and the wheel are handled where the control under them is drawn
 	float		cursorX, cursorY;
@@ -599,7 +601,9 @@ static int SM_CommandGap( void ) {
 }
 
 static void SM_Queue( const char *cmd ) {
-	// opened from the storyteller, it goes in the story instead
+	// opened from the cinematic manager or the storyteller, it goes in that instead
+	if ( CL_Cinematic_CaptureSound( cmd ) )
+		return;
 	if ( CL_Storyteller_Capture( cmd ) )
 		return;
 	if ( sm.numQueue >= SM_MAX_QUEUE ) {
@@ -944,6 +948,7 @@ static qboolean SM_Open( smOpen_t which ) {
 		SM_BuildIndex( b );
 	sm.open = which;
 	sm.forStory = qfalse;
+	sm.forCine = qfalse;
 	sm.focus = SM_F_NONE;
 	sm.playerPicker = qfalse;
 	sm.cursorX = SCREEN_WIDTH * 0.5f;
@@ -970,6 +975,16 @@ void CL_SoundManager_OpenForStory( void ) {
 		sm.forStory = qtrue;
 		sm.tab = SM_TAB_SOUNDS;
 		SM_Message( S_COLOR_GREEN "For the story: what you send here goes in it as steps, not to the server" );
+	}
+}
+
+// opened from the cinematic manager's Sounds tab
+void CL_SoundManager_OpenForCinematic( void ) {
+	if ( SM_Open( SM_SOUND ) ) {
+		sm.forStory = qtrue;
+		sm.forCine = qtrue;
+		sm.tab = SM_TAB_SOUNDS;
+		SM_Message( S_COLOR_GREEN "For the cinematic: pick a sound and add it; it goes in the cinematic, not to the server" );
 	}
 }
 
@@ -1113,6 +1128,16 @@ static qboolean SM_IsToggleKey( int key ) {
 	return (qboolean)( VALIDSTRING( binding ) && !Q_stricmp( binding, sm.open == SM_MUSIC ? SM_MUSIC_CMD : SM_SOUND_CMD ) );
 }
 
+static qboolean SM_AllowChar( int ch ) {
+	const smField_t f = SM_ActiveField();
+
+	if ( f == SM_F_NONE || ch < ' ' || ch >= 127 )
+		return qfalse;
+	if ( f != SM_F_SEARCH && !( ( ch >= '0' && ch <= '9' ) || ch == '-' || ch == '.' ) )
+		return qfalse;
+	return qtrue;
+}
+
 static void SM_FieldChanged( smField_t f ) {
 	if ( f == SM_F_SEARCH ) {
 		smBrowser_t *b = SM_Browser();
@@ -1182,8 +1207,6 @@ static void SM_ListKey( int key ) {
 
 void CL_SoundManager_KeyEvent( int key, qboolean down ) {
 	smField_t f;
-	char *text;
-	int len;
 
 	if ( sm.open == SM_OFF || !down )
 		return;
@@ -1221,41 +1244,30 @@ void CL_SoundManager_KeyEvent( int key, qboolean down ) {
 		else if ( !( sm.open == SM_SOUND && sm.tab == SM_TAB_PLAYING ) )
 			SM_Send();
 		return;
-	case A_BACKSPACE:
-		f = SM_ActiveField();
-		if ( f == SM_F_NONE )
-			return;
-		text = SM_FieldText( f );
-		len = strlen( text );
-		if ( len ) {
-			text[len - 1] = '\0';
-			SM_FieldChanged( f );
-		}
-		return;
 	default:
-		SM_ListKey( key );
-		return;
+		break;
 	}
+
+	f = SM_ActiveField();
+	if ( f != SM_F_NONE && ( sm.focus != SM_F_NONE || !( key == A_CURSOR_LEFT || key == A_CURSOR_RIGHT || key == A_CURSOR_UP
+		|| key == A_CURSOR_DOWN || key == A_HOME || key == A_END ) ) ) {
+		const int edit = WG_EditKey( SM_FieldText( f ), SM_FIELD_LEN, key, SM_AllowChar );
+
+		if ( edit & WG_EDIT_CHANGED )
+			SM_FieldChanged( f );
+		if ( edit )
+			return;
+	}
+	SM_ListKey( key );
 }
 
 void CL_SoundManager_CharEvent( int ch ) {
-	smField_t f = SM_ActiveField();
-	char *text;
-	int len;
+	const smField_t f = SM_ActiveField();
 
 	if ( sm.open == SM_OFF || f == SM_F_NONE )
 		return;
-	if ( f != SM_F_SEARCH && !( ( ch >= '0' && ch <= '9' ) || ch == '-' || ch == '.' ) )
-		return;
-	if ( ch < ' ' || ch >= 127 )
-		return;
-	text = SM_FieldText( f );
-	len = strlen( text );
-	if ( len < SM_FIELD_LEN - 1 ) {
-		text[len] = (char)ch;
-		text[len + 1] = '\0';
+	if ( WG_EditChar( SM_FieldText( f ), SM_FIELD_LEN, ch, SM_AllowChar ) )
 		SM_FieldChanged( f );
-	}
 }
 
 void CL_SoundManager_MouseEvent( int dx, int dy ) {
@@ -1355,22 +1367,25 @@ static qboolean SM_DangerButton( float x, float y, float w, const char *label, q
 
 static void SM_Field( smField_t f, float x, float y, float w, const char *placeholder ) {
 	const qboolean focused = (qboolean)( SM_ActiveField() == f );
-	const char *text = SM_FieldText( f );
-	char buf[SM_FIELD_LEN + 2];
+	char *text = SM_FieldText( f );
+	wgStyle_t style;
 
+	style.font = sm.font;
+	style.scale = SM_TEXT_SCALE;
+	style.lineH = SM_ROW_H;
+	style.padX = 4.0f;
+	style.padY = 2.0f;
+	style.fill = smPanelFocus;
+	style.border = smBorder;
+	style.text = smWhite;
+	style.dim = smDim;
 	SM_Box( x, y, w, SM_CTRL_H, focused ? smPanelFocus : smPanelLight );
-	if ( !text[0] && !focused ) {
-		SM_TextClipped( x + 4, y + 2, w - 8, placeholder, smDim );
-	} else {
-		// keep the end in view
-		Com_sprintf( buf, sizeof( buf ), "%s%s", text, focused && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" );
-		const char *shown = buf;
-		while ( shown[1] && SM_TextWidth( shown ) > w - 8 )
-			shown++;
-		SM_Text( x + 4, y + 2, shown, smWhite );
+	WG_Field( &style, x, y, w, SM_CTRL_H, text, focused, placeholder, sm.cursorX, sm.cursorY );
+	// a click: typed in, the cursor where it was clicked; the search clicked takes the arrows too
+	if ( SM_Clicked( x, y, w, WG_FieldHeight( &style, w, SM_CTRL_H, text, focused ) ) ) {
+		sm.focus = f;
+		WG_FieldClick( text, sm.clickX, sm.clickY );
 	}
-	if ( SM_Clicked( x, y, w, SM_CTRL_H ) )
-		sm.focus = f == SM_F_SEARCH ? SM_F_NONE : f;
 }
 
 static void SM_Label( float x, float y, const char *label ) {
@@ -1394,6 +1409,11 @@ static int SM_List( smList_t *list, int count, float x, float y, float w, float 
 		list->scroll = count - visible;
 	if ( list->scroll < 0 )
 		list->scroll = 0;
+	SM_Box( x, y, w, h, smPanelLight );
+	if ( count > visible ) {
+		WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, visible, &list->scroll, sm.cursorX, sm.cursorY, &sm.click, sm.clickX, sm.clickY );
+		w -= WG_SCROLL_W + 1;
+	}
 
 	if ( SM_Clicked( x, y, w, h ) ) {
 		row = list->scroll + (int)( ( sm.clickY - y ) / SM_ROW_H );
@@ -1411,7 +1431,6 @@ static int SM_List( smList_t *list, int count, float x, float y, float w, float 
 		}
 	}
 
-	SM_Box( x, y, w, h, smPanelLight );
 	for ( int i = 0; i < visible; i++ ) {
 		const float ry = y + i * SM_ROW_H;
 
@@ -1607,7 +1626,7 @@ static void SM_DrawSounds( void ) {
 
 	cmd = SM_SoundCommand( &why );
 	SM_DrawCommand( cmd, a ? why : NULL );
-	if ( SM_Button( SM_RIGHT_X, SM_BUTTON_Y, 100, sm.forStory ? "Add to story" : "Send  (Enter)", qfalse, (qboolean)( cmd != NULL ) ) )
+	if ( SM_Button( SM_RIGHT_X, SM_BUTTON_Y, 100, sm.forCine ? "Add to cinematic" : sm.forStory ? "Add to story" : "Send  (Enter)", qfalse, (qboolean)( cmd != NULL ) ) )
 		SM_SendSound();
 }
 
@@ -1817,5 +1836,6 @@ void CL_SoundManager_Draw( void ) {
 	sm.click = qfalse;
 	sm.wheel = 0;
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( sm.cursorX, sm.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }

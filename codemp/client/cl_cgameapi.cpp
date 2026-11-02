@@ -329,7 +329,20 @@ static void CL_R_AddRefEntityToScene( const refEntity_t *ent ) {
 	ent = CL_ShaderManager_MineEntity( ent, &copy );
 	CL_ShaderManager_AddEntity( ent );
 	CL_EffectManager_AddEntity( ent );
+	// a lightsaber's blade lights what's around it
+	CL_SaberLight_Entity( ent );
 	re->AddRefEntityToScene( ent );
+}
+
+// cgame's lights wait for the scene, so the saber light can leave out the one it gives a blade
+static void CL_R_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b ) {
+	if ( !CL_SaberLight_GameLight( org, intensity, r, g, b ) )
+		re->AddLightToScene( org, intensity, r, g, b );
+}
+
+static void CL_R_ClearScene( void ) {
+	CL_SaberLight_ClearScene();
+	re->ClearScene();
 }
 
 // polys cgame draws: a player's own take their shader manager player shaders
@@ -360,6 +373,8 @@ static void CL_FX_PlayEntityEffectID( int id, vec3_t org, matrix3_t axis, const 
 }
 
 static void CL_R_RenderScene( const refdef_t *fd ) {
+	// the lights held back, and the blades' own
+	CL_SaberLight_RenderScene();
 	// the sky's look the shader manager set, spinning
 	CL_ShaderManager_SkyLook();
 	// the map editor's models and lights are in every main view
@@ -918,6 +933,8 @@ static qboolean CL_G2API_RemoveBone( void *ghoul2, const char *boneName, int mod
 }
 
 static void CL_G2API_AttachInstanceToEntNum( void *ghoul2, int entityNum, qboolean server ) {
+	// a player loadpk3 loaded again: their animation on the new model
+	CL_LoadPk3_Attached( ghoul2, entityNum );
 	if ( !ghoul2 ) return;
 	re->G2API_AttachInstanceToEntNum( *((CGhoul2Info_v *)ghoul2), entityNum, server );
 }
@@ -1267,7 +1284,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return re->AnyLanguage_ReadCharFromString( (const char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
 
 	case CG_R_CLEARSCENE:
-		re->ClearScene();
+		CL_R_ClearScene();
 		return 0;
 
 	case CG_R_CLEARDECALS:
@@ -1294,7 +1311,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return re->LightForPoint( (float *)VMA(1), (float *)VMA(2), (float *)VMA(3), (float *)VMA(4) );
 
 	case CG_R_ADDLIGHTTOSCENE:
-		re->AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+		CL_R_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 		return 0;
 
 	case CG_R_ADDADDITIVELIGHTTOSCENE:
@@ -1907,13 +1924,13 @@ void CL_BindCGame( void ) {
 		cgi.AS_ParseSets						= AS_ParseSets;
 		cgi.R_AddAdditiveLightToScene			= re->AddAdditiveLightToScene;
 		cgi.R_AddDecalToScene					= re->AddDecalToScene;
-		cgi.R_AddLightToScene					= re->AddLightToScene;
+		cgi.R_AddLightToScene					= CL_R_AddLightToScene;
 		cgi.R_AddPolysToScene					= CL_R_AddPolysToScene;
 		cgi.R_AddRefEntityToScene				= CL_R_AddRefEntityToScene;
 		cgi.R_AnyLanguage_ReadCharFromString	= re->AnyLanguage_ReadCharFromString;
 		cgi.R_AutomapElevationAdjustment		= re->AutomapElevationAdjustment;
 		cgi.R_ClearDecals						= re->ClearDecals;
-		cgi.R_ClearScene						= re->ClearScene;
+		cgi.R_ClearScene						= CL_R_ClearScene;
 		cgi.R_DrawStretchPic					= CL_R_DrawStretchPic;
 		cgi.R_DrawRotatePic						= CL_R_DrawRotatePic;
 		cgi.R_DrawRotatePic2					= CL_R_DrawRotatePic2;

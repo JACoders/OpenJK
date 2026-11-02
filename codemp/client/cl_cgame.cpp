@@ -92,6 +92,105 @@ qboolean	CL_GetParseEntityState( int parseEntityNumber, entityState_t *state ) {
 }
 
 /*
+===============================================================================
+
+Commands of the client's own for the cgame
+
+CL_QueueCgameCommand gives the cgame a command the server never sent, right after the server
+command being given to it (a whisper's notice after its chat). The cgame numbers them in with
+the server's: a server command's number for the cgame is its own plus how many of these came
+before it. With none, the numbers are the server's.
+
+===============================================================================
+*/
+
+#define CL_MAX_OWN_CMDS		256
+
+static struct {
+	int		after;						// the server command it follows
+	char	*text;
+}			clOwnCmds[CL_MAX_OWN_CMDS];	// oldest first
+static int	clNumOwnCmds;
+static int	clOwnCmdsGone;				// older ones let go, before any command the cgame can still ask for
+static int	clLastCgameCommand;			// the cgame's number for the last command it was given
+
+// the connection is wiped: the numbers are the server's again
+void CL_ResetCgameCommands( void ) {
+	for ( int i = 0; i < clNumOwnCmds; i++ )
+		Z_Free( clOwnCmds[i].text );
+	clNumOwnCmds = 0;
+	clOwnCmdsGone = 0;
+	clLastCgameCommand = 0;
+}
+
+// how many of ours come before server command num
+static int CL_OwnCmdsBefore( int num ) {
+	int count = clOwnCmdsGone;
+
+	for ( int i = 0; i < clNumOwnCmds; i++ ) {
+		if ( clOwnCmds[i].after < num )
+			count++;
+	}
+	return count;
+}
+
+// a server command's number for the cgame
+static int CL_CgameNumber( int num ) {
+	return num + CL_OwnCmdsBefore( num );
+}
+
+// the cgame's number for the last command it has, ours after server command num included
+static int CL_CgameSequence( int num ) {
+	return num + CL_OwnCmdsBefore( num + 1 );
+}
+
+// a command for the cgame after the server command it's being given now; the cgame's number for it
+int CL_QueueCgameCommand( const char *text ) {
+	const int after = clc.lastExecutedServerCommand;
+	int sameAfter = 0;
+
+	// what the cgame can no longer ask for, or the oldest if there are too many
+	while ( clNumOwnCmds && ( clOwnCmds[0].after <= clc.serverCommandSequence - MAX_RELIABLE_COMMANDS || clNumOwnCmds == CL_MAX_OWN_CMDS ) ) {
+		Z_Free( clOwnCmds[0].text );
+		memmove( &clOwnCmds[0], &clOwnCmds[1], sizeof( clOwnCmds[0] ) * ( clNumOwnCmds - 1 ) );
+		clNumOwnCmds--;
+		clOwnCmdsGone++;
+	}
+	clOwnCmds[clNumOwnCmds].after = after;
+	clOwnCmds[clNumOwnCmds].text = CopyString( text );
+	clNumOwnCmds++;
+	for ( int i = 0; i < clNumOwnCmds; i++ ) {
+		if ( clOwnCmds[i].after == after )
+			sameAfter++;
+	}
+	return CL_CgameNumber( after ) + sameAfter;
+}
+
+// the cgame's number for the last command it was given, the client's own counted
+int CL_LastCgameCommand( void ) {
+	return clLastCgameCommand;
+}
+
+// the cgame's number as one of ours, its index; -1 if it's the server's
+static int CL_OwnCmd( int cgameNum ) {
+	for ( int i = 0, n = 0; i < clNumOwnCmds; i++ ) {
+		n = i && clOwnCmds[i - 1].after == clOwnCmds[i].after ? n + 1 : 1;
+		if ( CL_CgameNumber( clOwnCmds[i].after ) + n == cgameNum )
+			return i;
+	}
+	return -1;
+}
+
+// the cgame's number as the server's; -1 if it was one of ours, let go
+static int CL_ServerNumber( int cgameNum ) {
+	int num = cgameNum - clOwnCmdsGone - clNumOwnCmds;
+
+	while ( CL_CgameNumber( num ) < cgameNum )
+		num++;
+	return CL_CgameNumber( num ) == cgameNum ? num : -1;
+}
+
+/*
 ====================
 CL_GetSnapshot
 ====================
@@ -123,7 +222,7 @@ qboolean CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
 
 	// write the snapshot
 	snapshot->snapFlags = clSnap->snapFlags;
-	snapshot->serverCommandSequence = clSnap->serverCommandNum;
+	snapshot->serverCommandSequence = CL_CgameSequence( clSnap->serverCommandNum );
 	snapshot->ping = clSnap->ping;
 	snapshot->serverTime = clSnap->serverTime;
 	Com_Memcpy( snapshot->areamask, clSnap->areamask, sizeof( snapshot->areamask ) );
@@ -131,6 +230,8 @@ qboolean CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
 	snapshot->vps = clSnap->vps; //get the vehicle ps
 	// a camera shot's animation let go: the cgame starts its own again
 	CL_RpCinematic_SnapPlayer( &snapshot->ps );
+	// and moved where a cinematic has them
+	CL_NpcWalk_PosePlayer( &snapshot->ps );
 	count = clSnap->numEntities;
 	if ( count > MAX_ENTITIES_IN_SNAPSHOT ) {
 		Com_DPrintf( "CL_GetSnapshot: truncated %i entities to %i\n", count, MAX_ENTITIES_IN_SNAPSHOT );
@@ -383,6 +484,27 @@ qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	char	*cmd;
 	static char bigConfigString[BIG_INFO_STRING];
 
+	// one of ours, or the server's number for it
+	{
+		const int own = CL_OwnCmd( serverCommandNumber );
+
+		if ( own >= 0 ) {
+			clLastCgameCommand = serverCommandNumber;
+			Com_DPrintf( "clientCommand for cgame: %i : %s\n", serverCommandNumber, clOwnCmds[own].text );
+			Cmd_TokenizeString( clOwnCmds[own].text );
+			// a configstring of ours (loadpk3's players) is the cgame's to read, as the server's is
+			if ( !strcmp( Cmd_Argv( 0 ), "cs" ) ) {
+				CL_ConfigstringModified();
+				Cmd_TokenizeString( clOwnCmds[own].text );
+			}
+			return qtrue;
+		}
+		clLastCgameCommand = serverCommandNumber;
+		serverCommandNumber = CL_ServerNumber( serverCommandNumber );
+		if ( serverCommandNumber < 0 )
+			return qfalse;
+	}
+
 	// if we have irretrievably lost a reliable command, drop the connection
 	if ( serverCommandNumber <= clc.serverCommandSequence - MAX_RELIABLE_COMMANDS )
 	{
@@ -551,6 +673,8 @@ rescan:
 
 	// we may want to put a "connect to other server" command here
 
+	// whispers (^k) heard only up close, a notice a little farther (cl_whisper)
+	CL_Whisper_ServerCommand();
 	// the storyteller hears chat as said, for "someone says"; its hidden messages never show
 	if ( CL_Storyteller_ChatLine() ) {
 		Cmd_TokenizeString( "print \"\"" );
@@ -629,7 +753,8 @@ void CL_InitCGame( void ) {
 	// init for this gamestate
 	// use the lastExecutedServerCommand instead of the serverCommandSequence
 	// otherwise server commands sent just before a gamestate are dropped
-	CGVM_Init( clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
+	// (the cgame's number for it, with the client's own commands)
+	CGVM_Init( clc.serverMessageSequence, clLastCgameCommand, clc.clientNum );
 
 	int clRate = Cvar_VariableIntegerValue( "rate" );
 	if ( clRate == 4000 ) {

@@ -40,6 +40,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cl_cgameapi.h"
 #include "FXExport.h"
 #include "FxScheduler.h"
+#include "cl_gizmo.h"
+#include "cl_widgets.h"
 
 #define EM_ROOT				"effects"
 #define EM_EXT				".efx"
@@ -260,6 +262,7 @@ typedef struct emItem_s {
 	int			targetClient, targetNpc;
 	char		targetName[MAX_QPATH];
 	char		tag[EM_NAME_LEN];
+	float		scale;				// how big it's drawn, 0 or 1 as made
 	int			nextPlay;			// its preview, waiting
 	qboolean	selected;			// in the free camera
 	vec3_t		carryFrom, carryOffset, carryAngles;
@@ -488,6 +491,18 @@ static struct {
 	int			sentTime;
 	char		reply[MAX_STRING_CHARS];
 	int			replyTime;
+
+	// how big the form's effect goes down, 1 as made (experimental: for everyone with this client)
+	float		scale;
+	int			sharePlayers;		// players on the server, to see someone join
+	int			shareAt;			// the sizes this client set go out again then, 0 not
+	qboolean	shareWarned;
+
+	// the move arrows in the free camera: the mouse a cursor, an arrow dragged moves along it
+	qboolean	gizmo;
+	qboolean	gzDragging;
+	gzDrag_t	gzDrag;
+	int			gzHot;
 } em;
 
 static vec4_t emWhite		= { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -515,6 +530,8 @@ static int EM_ReadConstruct( const char *name, emCPiece_t *out, int max );
 static void EM_ListConstructs( void );
 static void EM_HandItem( int i, const vec3_t anchor, emItem_t *out );
 static void EM_StartNaming( emNaming_t naming );
+static float EM_ClampScale( float scale );
+static float EM_ScaleAt( const char *path, const vec3_t org );
 
 /*
 ===============================================================================
@@ -1514,6 +1531,7 @@ static void EM_PreviewWaiting( void ) {
 			length += EM_ONCE_GAP;
 		it->nextPlay = cls.realtime + Q_max( EM_MIN_PERIOD, length );
 		EM_ItemDirection( it, dir );
+		FX_NextScale( EM_ClampScale( it->scale ) );
 		FX_PlayEffectID( id, it->pos, dir, -1, -1 );
 	}
 
@@ -1539,6 +1557,7 @@ static void EM_PreviewWaiting( void ) {
 			AngleVectors( a->angles, dir, NULL, NULL );
 		else
 			VectorSet( dir, 0, 0, 1 );
+		FX_NextScale( EM_ScaleAt( a->path, a->origin ) );
 		FX_PlayEffectID( id, a->pos, dir, -1, -1 );
 	}
 }
@@ -1637,6 +1656,7 @@ static void EM_PreviewFrame( void ) {
 	else if ( !EM_WindowPoint( org ) )
 		return;
 	EM_Direction( dir );
+	FX_NextScale( EM_ClampScale( em.scale ) );
 	FX_PlayEffectID( id, org, dir, -1, -1 );
 }
 
@@ -1649,6 +1669,9 @@ COMMANDS
 */
 
 static void EM_Queue( const char *cmd, qboolean echo ) {
+	// opened from the cinematic manager, an effect put down goes in the cinematic
+	if ( CL_Cinematic_CaptureEffect( cmd, em.scale ) )
+		return;
 	// opened from the storyteller, it goes in the story instead
 	if ( CL_Storyteller_Capture( cmd ) )
 		return;
@@ -1710,6 +1733,226 @@ static void EM_Message( const char *text ) {
 	em.messageTime = cls.realtime;
 }
 
+/*
+===============================================================================
+
+SIZES (experimental)
+
+An effect can be drawn bigger or smaller than it was made, on this screen: the effects system
+asks CL_EffectManager_FxScale how big one is as it plays, and finds it here by where it is.
+Shared, the sizes go to everyone with this client in an rpnotify:
+	cmd:fxscale/<x y z>/<size>[/once]: <effect>
+a size of 1 putting it back; once, for an effect that only plays once, lasts a moment.
+They're kept until the map changes, and sent again a little after someone joins.
+
+===============================================================================
+*/
+
+#define EM_MAX_SCALED		128
+#define EM_SCALE_NEAR		4.0f		// an effect this near where a size was set is that one
+#define EM_SCALE_MIN		0.1f
+#define EM_SCALE_MAX		8.0f
+#define EM_SCALE_STEP		1.25f
+#define EM_SCALE_ONCE_MS	4000		// a one-off effect's size lasts this long
+#define EM_SCALE_JOIN_MS	4000
+#define EM_SCALE_WORD		30			// RPMod chokes on long words: a space every so often
+
+typedef struct {
+	char		key[MAX_QPATH];		// the effect, as EM_ScaleKey has it
+	vec3_t		org;
+	float		scale;
+	int			until;				// cls.realtime it goes, 0 never
+	qboolean	mine;				// set here, sent again when someone joins
+} emScaled_t;
+
+static emScaled_t emScaled[EM_MAX_SCALED];
+static int emNumScaled;
+static char emScaledMap[MAX_QPATH];
+
+static float EM_ClampScale( float scale ) {
+	return scale > 0.0f ? Com_Clamp( EM_SCALE_MIN, EM_SCALE_MAX, scale ) : 1.0f;
+}
+
+// an effect's name as the effects system keys it: no effects/ in front, no .efx, lower case
+static void EM_ScaleKey( const char *in, char *out, int size ) {
+	char *c;
+
+	while ( *in == '/' || *in == '\\' )
+		in++;
+	if ( !Q_stricmpn( in, "effects/", 8 ) || !Q_stricmpn( in, "effects\\", 8 ) )
+		in += 8;
+	COM_StripExtension( in, out, size );
+	for ( c = out; *c; c++ ) {
+		if ( *c == '\\' )
+			*c = '/';
+	}
+	Q_strlwr( out );
+}
+
+// a new map starts with none; one-offs go once played
+static void EM_ScaleTidy( void ) {
+	int keep = 0;
+
+	if ( Q_stricmp( emScaledMap, cl.mapname ) ) {
+		Q_strncpyz( emScaledMap, cl.mapname, sizeof( emScaledMap ) );
+		emNumScaled = 0;
+		return;
+	}
+	for ( int i = 0; i < emNumScaled; i++ ) {
+		if ( emScaled[i].until && cls.realtime > emScaled[i].until )
+			continue;
+		emScaled[keep++] = emScaled[i];
+	}
+	emNumScaled = keep;
+}
+
+static emScaled_t *EM_FindScaled( const char *key, const vec3_t org ) {
+	emScaled_t *best = NULL;
+	float bestDist = EM_SCALE_NEAR;
+
+	for ( int i = 0; i < emNumScaled; i++ ) {
+		const float d = Distance( emScaled[i].org, org );
+
+		if ( d <= bestDist && !strcmp( emScaled[i].key, key ) ) {
+			bestDist = d;
+			best = &emScaled[i];
+		}
+	}
+	return best;
+}
+
+// how big the effect playing here is drawn, 1 as made
+float CL_EffectManager_FxScale( const char *effect, const vec3_t org ) {
+	char key[MAX_QPATH];
+	const emScaled_t *e;
+
+	if ( !emNumScaled || !org || !effect )
+		return 1.0f;
+	EM_ScaleTidy();
+	EM_ScaleKey( effect, key, sizeof( key ) );
+	e = EM_FindScaled( key, org );
+	return e && ( !e->until || cls.realtime <= e->until ) ? e->scale : 1.0f;
+}
+
+static float EM_ScaleAt( const char *path, const vec3_t org ) {
+	return CL_EffectManager_FxScale( path, org );
+}
+
+static void EM_StoreScale( const char *path, const vec3_t org, float scale, qboolean once, qboolean mine ) {
+	char key[MAX_QPATH];
+	emScaled_t *e;
+
+	EM_ScaleTidy();
+	EM_ScaleKey( path, key, sizeof( key ) );
+	e = EM_FindScaled( key, org );
+	scale = EM_ClampScale( scale );
+	// as made: forgotten
+	if ( fabsf( scale - 1.0f ) < 0.001f ) {
+		if ( e ) {
+			*e = emScaled[--emNumScaled];
+		}
+		return;
+	}
+	if ( !e ) {
+		if ( emNumScaled >= EM_MAX_SCALED )
+			memmove( &emScaled[0], &emScaled[1], ( --emNumScaled ) * sizeof( emScaled[0] ) );
+		e = &emScaled[emNumScaled++];
+		Q_strncpyz( e->key, key, sizeof( e->key ) );
+	}
+	VectorCopy( org, e->org );
+	e->scale = scale;
+	e->until = once ? cls.realtime + EM_SCALE_ONCE_MS : 0;
+	e->mine = mine;
+}
+
+static void EM_Queue( const char *cmd, qboolean echo );
+
+// to everyone with this client, if it can be
+static void EM_ShareScale( const char *path, const vec3_t org, float scale, qboolean once ) {
+	char split[MAX_QPATH * 2];
+	int run = 0, n = 0;
+
+	if ( !CL_RpHooks_Experimental() ) {
+		if ( !em.shareWarned ) {
+			em.shareWarned = qtrue;
+			EM_Message( S_COLOR_YELLOW "Sizes show on your screen only: TOGGLE EXPERIMENTAL in the npcmanager to share them" );
+		}
+		return;
+	}
+	// the name with a space now and then, taken out again where it's read
+	for ( const char *c = path; *c && n < (int)sizeof( split ) - 2; c++ ) {
+		split[n++] = *c;
+		if ( ++run >= EM_SCALE_WORD || *c == '/' ) {
+			split[n++] = ' ';
+			run = 0;
+		}
+	}
+	split[n] = '\0';
+	EM_Queue( va( "rpnotify -1 1 cmd:fxscale/%i %i %i/%g%s: %s", (int)floorf( org[0] + 0.5f ), (int)floorf( org[1] + 0.5f ), (int)floorf( org[2] + 0.5f ),
+		floorf( EM_ClampScale( scale ) * 100.0f + 0.5f ) / 100.0f, once ? "/once" : "", split ), qfalse );
+}
+
+// a size set here: shown now, and shared
+static void EM_SetScale( const char *path, const vec3_t org, float scale, qboolean once ) {
+	vec3_t at;
+
+	for ( int i = 0; i < 3; i++ )
+		at[i] = floorf( org[i] + 0.5f );
+	EM_StoreScale( path, at, scale, once, qtrue );
+	EM_ShareScale( path, at, scale, once );
+}
+
+// an effect sent at a place, as big as it was asked to be
+static void EM_SentScale( const emItem_t *it ) {
+	if ( CL_Cinematic_PickingEffect() || it->bolted || !it->havePos || fabsf( EM_ClampScale( it->scale ) - 1.0f ) < 0.001f )
+		return;
+	EM_SetScale( it->path, it->pos, it->scale, (qboolean)!it->loop );
+}
+
+// cmd:fxscale/<x y z>/<size>[/once]: <effect>
+void CL_EffectManager_ScaleHook( char **argv, int argc, const char *message ) {
+	char path[MAX_QPATH];
+	vec3_t org;
+	int n = 0;
+
+	if ( argc < 2 || sscanf( argv[0], "%f %f %f", &org[0], &org[1], &org[2] ) != 3 )
+		return;
+	for ( const char *c = message; *c && n < (int)sizeof( path ) - 1; c++ ) {
+		if ( *c != ' ' )
+			path[n++] = *c;
+	}
+	path[n] = '\0';
+	if ( !path[0] )
+		return;
+	EM_StoreScale( path, org, (float)atof( argv[1] ), (qboolean)( argc > 2 && !Q_stricmp( argv[2], "once" ) ), qfalse );
+}
+
+// someone joining gets the sizes set here a little later
+static void EM_ScaleShareFrame( void ) {
+	int players = 0, mine = 0;
+
+	if ( cls.state != CA_ACTIVE )
+		return;
+	for ( int c = 0; c < MAX_CLIENTS; c++ ) {
+		if ( cl.gameState.stringData[cl.gameState.stringOffsets[CS_PLAYERS + c]] )
+			players++;
+	}
+	for ( int i = 0; i < emNumScaled; i++ ) {
+		if ( emScaled[i].mine && !emScaled[i].until )
+			mine++;
+	}
+	if ( players > em.sharePlayers && em.sharePlayers && mine )
+		em.shareAt = cls.realtime + EM_SCALE_JOIN_MS;
+	em.sharePlayers = players;
+	if ( em.shareAt && cls.realtime >= em.shareAt ) {
+		em.shareAt = 0;
+		for ( int i = 0; i < emNumScaled; i++ ) {
+			if ( emScaled[i].mine && !emScaled[i].until )
+				EM_ShareScale( emScaled[i].key, emScaled[i].org, emScaled[i].scale, qfalse );
+		}
+	}
+}
+
 // the effect the form describes, where it would go now; qfalse if something is missing
 static qboolean EM_FormItem( emItem_t *out ) {
 	const emEffect_t *e = EM_Effect();
@@ -1719,6 +1962,7 @@ static qboolean EM_FormItem( emItem_t *out ) {
 		return qfalse;
 	Q_strncpyz( out->path, e->path, sizeof( out->path ) );
 	out->loop = em.loop;
+	out->scale = EM_ClampScale( em.scale );
 	Q_strncpyz( out->tag, em.fields[EM_F_NAME], sizeof( out->tag ) );
 
 	if ( em.where == EM_WHERE_BOLT ) {
@@ -1806,6 +2050,7 @@ static void EM_SendItem( const emItem_t *it ) {
 		EM_SendAndRefresh( EM_ItemCommand( it ) );
 	else
 		EM_Queue( EM_ItemCommand( it ), qtrue );
+	EM_SentScale( it );
 }
 
 static void EM_Send( void ) {
@@ -1843,6 +2088,7 @@ static void EM_SendWaiting( void ) {
 	for ( int i = 0; i < count; i++ ) {
 		EM_Expect( &em.waiting[i] );
 		EM_Queue( EM_ItemCommand( &em.waiting[i] ), qtrue );
+		EM_SentScale( &em.waiting[i] );
 	}
 	EM_RequestList();
 	em.numWaiting = 0;
@@ -2474,16 +2720,17 @@ static void EM_ClearSelection( void ) {
 		em.active[i].selected = qfalse;
 }
 
-// the one nearest the crosshair on screen, -1 if none is near enough
+// the one nearest the crosshair on screen, or the mouse with the arrows up; -1 if none is near enough
 static int EM_HoverAtCrosshair( void ) {
 	float best = EM_HOVER_PIXELS * EM_HOVER_PIXELS, x, y, d;
+	const float ax = em.gizmo ? em.cursorX : SCREEN_WIDTH * 0.5f, ay = em.gizmo ? em.cursorY : SCREEN_HEIGHT * 0.5f;
 	emHandle_t hd;
 	int found = -1;
 
 	for ( int h = EM_FirstHandle(); h < EM_EndHandle(); h = EM_NextHandle( h ) ) {
 		if ( !EM_GetHandle( h, &hd ) || !EM_Project( hd.pos, &x, &y ) )
 			continue;
-		d = Square( x - SCREEN_WIDTH * 0.5f ) + Square( y - SCREEN_HEIGHT * 0.5f );
+		d = Square( x - ax ) + Square( y - ay );
 		if ( d < best ) {
 			best = d;
 			found = h;
@@ -2638,8 +2885,13 @@ static int EM_SendActiveChanges( qboolean selectedOnly ) {
 		VectorCopy( a->angles, it.angles );
 		Q_strncpyz( it.tag, a->tag, sizeof( it.tag ) );
 		it.selected = a->selected;
+		it.scale = EM_ScaleAt( a->path, a->origin );
 		EM_Expect( &it );
 		EM_Queue( EM_ItemCommand( &it ), qtrue );
+		if ( fabsf( it.scale - 1.0f ) > 0.001f ) {
+			EM_SetScale( a->path, a->origin, 1.0f, qfalse );
+			EM_SentScale( &it );
+		}
 		a->sent = qtrue;
 		count++;
 	}
@@ -3382,6 +3634,13 @@ qboolean CL_EffectManager_GetActive( int index, int *num, const char **path, vec
 }
 
 // opened from a storyteller step
+// for the cinematic manager: what's put down goes in the cinematic
+void CL_EffectManager_OpenForCinematic( void ) {
+	EM_Open();
+	if ( em.state != EM_OFF )
+		EM_Message( S_COLOR_GREEN "For the cinematic: pick an effect and put it down; it goes in the cinematic, not to the server" );
+}
+
 void CL_EffectManager_OpenForStory( void ) {
 	EM_Open();
 	if ( em.state != EM_OFF )
@@ -3568,6 +3827,18 @@ static qboolean EM_FieldAllows( emField_t f, int ch ) {
 	return (qboolean)( ch >= ' ' && ch < 127 );
 }
 
+// a character the field typed in takes
+static qboolean EM_AllowChar( int ch ) {
+	const emField_t f = EM_ActiveField();
+
+	return (qboolean)( f != EM_F_NONE && EM_FieldAllows( f, ch ) );
+}
+
+// a search box typed in without a click: the list keeps its keys
+static qboolean EM_ImplicitField( void ) {
+	return (qboolean)( em.naming == EM_NAMING_NONE && ( em.picker != EM_PICKER_NONE || em.focus == EM_F_NONE ) );
+}
+
 static void EM_FieldChanged( int f ) {
 	switch ( f ) {
 	case EM_F_SEARCH:
@@ -3632,7 +3903,28 @@ static void EM_BrowseListKey( int key ) {
 
 static void EM_BrowseKey( int key ) {
 	emField_t f = EM_ActiveField();
-	int len;
+
+	if ( f != EM_F_NONE && key != A_MOUSE1 && key != A_MWHEELUP && key != A_MWHEELDOWN ) {
+		qboolean toField = qtrue;
+
+		// a search box the list shares: up, down, page, home and end are the list's, left and
+		// right too while it's empty
+		if ( EM_ImplicitField() ) {
+			if ( key == A_CURSOR_UP || key == A_CURSOR_DOWN || key == A_PAGE_UP || key == A_PAGE_DOWN || key == A_HOME || key == A_END )
+				toField = qfalse;
+			else if ( ( key == A_CURSOR_LEFT || key == A_CURSOR_RIGHT ) && !em.fields[f][0] )
+				toField = qfalse;
+		}
+		if ( toField ) {
+			const int edit = WG_EditKey( em.fields[f], EM_FIELD_LEN, key, EM_AllowChar );
+
+			if ( edit ) {
+				if ( edit & WG_EDIT_CHANGED )
+					EM_FieldChanged( f );
+				return;
+			}
+		}
+	}
 
 	switch ( key ) {
 	case A_MOUSE1:
@@ -3645,21 +3937,6 @@ static void EM_BrowseKey( int key ) {
 		break;
 	case A_MWHEELDOWN:
 		em.wheel += 3;
-		break;
-	case A_BACKSPACE:
-		if ( f == EM_F_NONE )
-			break;
-		len = strlen( em.fields[f] );
-		if ( len ) {
-			em.fields[f][len - 1] = '\0';
-			EM_FieldChanged( f );
-		}
-		break;
-	case A_DELETE:
-		if ( f == EM_F_NONE )
-			break;
-		em.fields[f][0] = '\0';
-		EM_FieldChanged( f );
 		break;
 	case A_TAB:
 		if ( em.picker == EM_PICKER_NONE )
@@ -3680,6 +3957,104 @@ static void EM_BrowseKey( int key ) {
 	default:
 		EM_BrowseListKey( key );
 		break;
+	}
+}
+
+static void EM_GzView( gzView_t *v ) {
+	VectorCopy( em.viewOrg, v->org );
+	AxisCopy( em.viewAxis, v->axis );
+	v->fovX = em.fovX;
+	v->fovY = em.fovY;
+}
+
+// what the arrows move: the selection, or the effect being put down; qfalse if nothing
+static qboolean EM_GzPivot( vec3_t pivot ) {
+	if ( em.selecting ) {
+		if ( !EM_NumSelected() )
+			return qfalse;
+		EM_Pivot( pivot );
+		return qtrue;
+	}
+	if ( em.where == EM_WHERE_BOLT && !em.handConstruct )
+		return qfalse;
+	VectorCopy( em.origin, pivot );
+	return qtrue;
+}
+
+// the arrow held: what it moves goes where it says along its axis
+static void EM_GizmoFrame( void ) {
+	gzView_t v;
+	vec3_t pivot, to, delta;
+	emHandle_t hd;
+
+	em.gzHot = -1;
+	if ( !em.gizmo || !em.haveView || !EM_GzPivot( pivot ) )
+		return;
+	EM_GzView( &v );
+	if ( !em.gzDragging ) {
+		em.gzHot = GZ_Hit( &v, pivot, em.cursorX, em.cursorY );
+		return;
+	}
+	em.gzHot = em.gzDrag.axis;
+	GZ_Target( &em.gzDrag, em.cursorX, em.cursorY, emSnaps[em.snap].grid, to );
+	if ( !em.selecting ) {
+		VectorCopy( to, em.origin );
+		return;
+	}
+	VectorSubtract( to, pivot, delta );
+	for ( int h = EM_FirstHandle(); h < EM_EndHandle(); h = EM_NextHandle( h ) ) {
+		if ( EM_GetHandle( h, &hd ) && *hd.selected )
+			VectorAdd( hd.pos, delta, hd.pos );
+	}
+}
+
+// the arrows' key and mouse: qtrue if they took it
+static qboolean EM_GizmoKey( int key ) {
+	vec3_t pivot;
+	gzView_t v;
+
+	if ( key == GZ_KEY ) {
+		em.gizmo = (qboolean)!em.gizmo;
+		em.gzDragging = qfalse;
+		em.cursorX = SCREEN_WIDTH * 0.5f;
+		em.cursorY = SCREEN_HEIGHT * 0.5f;
+		EM_Message( em.gizmo ? "Move arrows: drag X, Y or Z to move it along; hold the right mouse button to look; J hides them" : "Move arrows hidden" );
+		return qtrue;
+	}
+	if ( !em.gizmo )
+		return qfalse;
+	if ( key == A_MOUSE2 )
+		return qtrue;
+	if ( key != A_MOUSE1 || em.gzHot < 0 || !EM_GzPivot( pivot ) )
+		return qfalse;
+	EM_GzView( &v );
+	GZ_Begin( &em.gzDrag, &v, pivot, em.gzHot, em.cursorX, em.cursorY );
+	em.gzDragging = em.gzDrag.on;
+	// held where the arrow puts it, not where the crosshair is
+	if ( em.selecting )
+		em.carryLocked = qtrue;
+	else
+		em.locked = qtrue;
+	return qtrue;
+}
+
+// how big: the effect being put down, or the selection
+static void EM_ScaleKeyPressed( int sign ) {
+	const float f = sign > 0 ? EM_SCALE_STEP : 1.0f / EM_SCALE_STEP;
+	emHandle_t hd;
+
+	if ( !em.selecting ) {
+		em.scale = EM_ClampScale( EM_ClampScale( em.scale ) * f );
+		EM_Message( va( "Size x%.2g " S_COLOR_GREY "(experimental: everyone with this client sees it)", em.scale ) );
+		return;
+	}
+	for ( int h = EM_FirstHandle(); h < EM_EndHandle(); h = EM_NextHandle( h ) ) {
+		if ( !EM_GetHandle( h, &hd ) || !*hd.selected )
+			continue;
+		if ( hd.active )
+			EM_SetScale( hd.active->path, hd.active->origin, EM_ScaleAt( hd.active->path, hd.active->origin ) * f, qfalse );
+		else
+			em.waiting[h].scale = EM_ClampScale( EM_ClampScale( em.waiting[h].scale ) * f );
 	}
 }
 
@@ -3785,6 +4160,13 @@ static void EM_SelectKey( int key ) {
 static void EM_PlaceKey( int key ) {
 	const qboolean bolted = (qboolean)( em.where == EM_WHERE_BOLT );
 
+	if ( EM_GizmoKey( key ) )
+		return;
+	if ( ( key == A_OPEN_SQUARE || key == A_CLOSE_SQUARE || key == A_MINUS || key == A_EQUALS || key == A_KP_MINUS || key == A_KP_PLUS )
+		&& !em.handConstruct && ( em.selecting || !bolted ) ) {
+		EM_ScaleKeyPressed( key == A_CLOSE_SQUARE || key == A_EQUALS || key == A_KP_PLUS ? 1 : -1 );
+		return;
+	}
 	if ( em.selecting ) {
 		EM_SelectKey( key );
 		return;
@@ -4012,24 +4394,11 @@ static void EM_ConfirmNaming( void ) {
 // the keys the name box takes; qtrue if it took this one
 static qboolean EM_NamingKey( int key ) {
 	const emField_t f = EM_ActiveField();
-	int len;
 
-	switch ( key ) {
-	case A_ENTER:
-	case A_KP_ENTER:
+	if ( WG_EditKey( em.fields[f], EM_FIELD_LEN, key, EM_AllowChar ) )
+		return qtrue;
+	if ( key == A_ENTER || key == A_KP_ENTER )
 		EM_ConfirmNaming();
-		break;
-	case A_BACKSPACE:
-		len = strlen( em.fields[f] );
-		if ( len )
-			em.fields[f][len - 1] = '\0';
-		break;
-	case A_DELETE:
-		em.fields[f][0] = '\0';
-		break;
-	default:
-		break;
-	}
 	return qtrue;
 }
 
@@ -4040,6 +4409,13 @@ void CL_EffectManager_KeyEvent( int key, qboolean down ) {
 	// letters typed into the name box don't fly the camera
 	if ( key >= 0 && key < MAX_KEYS )
 		em.held[key] = (qboolean)( down && em.naming == EM_NAMING_NONE );
+	// an arrow let go: moved ones of the map's go out as they would on a click
+	if ( !down && key == A_MOUSE1 && em.gzDragging ) {
+		em.gzDragging = qfalse;
+		if ( em.selecting && em.instant )
+			EM_SendActiveChanges( qtrue );
+		return;
+	}
 	if ( !down )
 		return;
 
@@ -4076,23 +4452,18 @@ void CL_EffectManager_KeyEvent( int key, qboolean down ) {
 
 void CL_EffectManager_CharEvent( int ch ) {
 	emField_t f;
-	int len;
 
 	if ( em.state != EM_BROWSE && em.naming == EM_NAMING_NONE )
 		return;
 	f = EM_ActiveField();
 	if ( f == EM_F_NONE )
 		return;
-	len = strlen( em.fields[f] );
-	if ( EM_FieldAllows( f, ch ) && len < EM_FIELD_LEN - 1 ) {
-		em.fields[f][len] = (char)ch;
-		em.fields[f][len + 1] = '\0';
+	if ( WG_EditChar( em.fields[f], EM_FIELD_LEN, ch, EM_AllowChar ) )
 		EM_FieldChanged( f );
-	}
 }
 
 void CL_EffectManager_MouseEvent( int dx, int dy ) {
-	if ( em.state == EM_PLACE ) {
+	if ( em.state == EM_PLACE && !( em.gizmo && !em.held[A_MOUSE2] ) ) {
 		em.camAng[YAW] -= dx * cl_sensitivity->value * m_yaw->value;
 		em.camAng[PITCH] = Com_Clamp( -89.0f, 89.0f, em.camAng[PITCH] + dy * cl_sensitivity->value * m_pitch->value );
 		return;
@@ -4192,6 +4563,7 @@ void CL_EffectManager_Frame( void ) {
 	// queued commands go out, and lists are read, even with the manager closed
 	EM_RunQueue();
 	EM_ExpireModels();
+	EM_ScaleShareFrame();
 
 	// a list read whole
 	if ( em.listLineTime && cls.realtime - em.listLineTime >= EM_LIST_LINE_GAP ) {
@@ -4228,6 +4600,7 @@ void CL_EffectManager_Frame( void ) {
 	em.lastFrameTime = cls.realtime;
 	if ( em.state == EM_PLACE ) {
 		EM_UpdateCamera( dt );
+		EM_GizmoFrame();
 		if ( em.selecting ) {
 			if ( em.carrying && !em.carryLocked )
 				EM_FollowSelection();
@@ -4530,24 +4903,31 @@ static qboolean EM_DangerButton( float x, float y, float w, const char *label, e
 	return qfalse;
 }
 
-static void EM_Field( emField_t f, float x, float y, float w, const char *placeholder ) {
-	qboolean focused = (qboolean)( EM_ActiveField() == f );
-	const char *text = em.fields[f];
-	char buf[EM_FIELD_LEN + 2];
+static void EM_FieldStyle( wgStyle_t *style ) {
+	style->font = em.font;
+	style->scale = EM_TEXT_SCALE;
+	style->lineH = EM_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 2.0f;
+	style->fill = emPanelFocus;
+	style->border = emBorder;
+	style->text = emWhite;
+	style->dim = emDim;
+}
 
+static void EM_Field( emField_t f, float x, float y, float w, const char *placeholder ) {
+	const qboolean focused = (qboolean)( EM_ActiveField() == f );
+	wgStyle_t style;
+	float h;
+
+	EM_FieldStyle( &style );
 	EM_Box( x, y, w, EM_CTRL_H, focused ? emPanelFocus : emPanelLight );
-	if ( !text[0] && !focused ) {
-		EM_TextClipped( x + 4, y + 2, w - 8, placeholder, emDim );
-	} else {
-		// keep the end in view
-		Com_sprintf( buf, sizeof( buf ), "%s%s", text, focused && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" );
-		const char *shown = buf;
-		while ( shown[1] && EM_TextWidth( shown ) > w - 8 )
-			shown++;
-		EM_Text( x + 4, y + 2, shown, emWhite );
-	}
-	if ( EM_Clicked( x, y, w, EM_CTRL_H ) )
+	WG_Field( &style, x, y, w, EM_CTRL_H, em.fields[f], focused, placeholder, em.cursorX, em.cursorY );
+	h = WG_FieldHeight( &style, w, EM_CTRL_H, em.fields[f], focused );
+	if ( EM_Clicked( x, y, w, h ) ) {
 		em.focus = ( f == EM_F_SEARCH || f == EM_F_ACTIVE_SEARCH || f == EM_F_PICKER_SEARCH ) ? EM_F_NONE : f;
+		WG_FieldClick( em.fields[f], em.clickX, em.clickY );
+	}
 }
 
 static void EM_Label( float x, float y, const char *label ) {
@@ -4568,6 +4948,11 @@ static int EM_List( emList_t *list, int count, float x, float y, float w, float 
 		em.wheel = 0;
 	}
 	EM_ListClamp( list, count, visible );
+	if ( count > visible ) {
+		EM_Box( x, y, w, h, emPanelLight );
+		WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, visible, &list->scroll, em.cursorX, em.cursorY, &em.click, em.clickX, em.clickY );
+		w -= WG_SCROLL_W + 1;
+	}
 
 	if ( EM_Clicked( x, y, w, h ) ) {
 		row = list->scroll + (int)( ( em.clickY - y ) / EM_ROW_H );
@@ -4585,7 +4970,8 @@ static int EM_List( emList_t *list, int count, float x, float y, float w, float 
 		}
 	}
 
-	EM_Box( x, y, w, h, emPanelLight );
+	if ( count <= visible )
+		EM_Box( x, y, w, h, emPanelLight );
 	for ( int i = 0; i < visible; i++ ) {
 		float ry = y + i * EM_ROW_H;
 
@@ -4957,6 +5343,12 @@ static void EM_DrawEffects( void ) {
 		em.loop = qfalse;
 	if ( EM_Button( EM_CTRL_X + 78, y, 74, "Loop (add)", em.loop, qtrue ) )
 		em.loop = qtrue;
+	// how big, experimental
+	if ( EM_Button( EM_CTRL_X + 158, y, 16, "-", qfalse, (qboolean)( em.where != EM_WHERE_BOLT ) ) )
+		em.scale = EM_ClampScale( EM_ClampScale( em.scale ) / EM_SCALE_STEP );
+	EM_TextClipped( EM_CTRL_X + 176, y + 2, 36, em.where == EM_WHERE_BOLT ? S_COLOR_GREY "size" : va( "%sx%.2g", fabsf( EM_ClampScale( em.scale ) - 1.0f ) > 0.001f ? S_COLOR_CYAN : S_COLOR_GREY, EM_ClampScale( em.scale ) ), emWhite );
+	if ( EM_Button( EM_CTRL_X + 212, y, 16, "+", qfalse, (qboolean)( em.where != EM_WHERE_BOLT ) ) )
+		em.scale = EM_ClampScale( EM_ClampScale( em.scale ) * EM_SCALE_STEP );
 
 	y += 20;
 	EM_Label( EM_RIGHT_X, y, "Where" );
@@ -5081,6 +5473,31 @@ static void EM_DrawActive( void ) {
 	if ( EM_Button( cx + ( w + 4 ) * 2, y, w, "Invert", qfalse, (qboolean)( em.numActiveView > 0 ) ) ) {
 		for ( int i = 0; i < em.numActiveView; i++ )
 			em.active[em.activeView[i]].checked = (qboolean)!em.active[em.activeView[i]].checked;
+	}
+
+	// how big the checked ones are drawn, or the one picked; experimental, shared
+	y += 24;
+	EM_Label( rx, y, "Size" );
+	{
+		const float shown = a ? EM_ScaleAt( a->path, a->origin ) : 1.0f;
+		int dir = 0;
+
+		if ( EM_Button( cx, y, 20, "-", qfalse, (qboolean)( checked > 0 || a ) ) )
+			dir = -1;
+		EM_TextClipped( cx + 24, y + 2, w * 2 - 28, va( "x%.2g  " S_COLOR_GREY "%s", shown, checked ? va( "the %i checked", checked ) : a ? "this one" : "check some" ), emWhite );
+		if ( EM_Button( cx + w * 2, y, 20, "+", qfalse, (qboolean)( checked > 0 || a ) ) )
+			dir = 1;
+		if ( EM_Button( cx + w * 2 + 24, y, w - 20, "x1", qfalse, (qboolean)( checked > 0 || a ) ) )
+			dir = 2;
+		for ( int i = 0; dir && i < em.numActive; i++ ) {
+			emActive_t *t = &em.active[i];
+			float now;
+
+			if ( checked ? !t->checked : t != a )
+				continue;
+			now = EM_ScaleAt( t->path, t->origin );
+			EM_SetScale( t->path, t->origin, dir == 2 ? 1.0f : now * ( dir > 0 ? EM_SCALE_STEP : 1.0f / EM_SCALE_STEP ), qfalse );
+		}
 	}
 
 	y += 24;
@@ -5244,8 +5661,11 @@ static void EM_DrawNaming( void ) {
 
 	EM_Box( bx, by, bw, note ? 58 : 46, emPanelOpaque );
 	EM_TextClipped( bx + 8, by + 4, bw - 16, title, emWhite );
+	wgStyle_t style;
+
+	EM_FieldStyle( &style );
 	EM_Box( bx + 8, by + 18, bw - 16, 16, emPanelLight );
-	EM_Text( bx + 12, by + 21, va( "%s%s", field, ( cls.realtime >> 8 ) & 1 ? "_" : "" ), emWhite );
+	WG_Field( &style, bx + 8, by + 18, bw - 16, 16, em.fields[EM_ActiveField()], qtrue, "", em.cursorX, em.cursorY );
 	EM_TextClipped( bx + 8, by + 36, bw - 16, hint, emWhite );
 	if ( note )
 		EM_TextClipped( bx + 8, by + 48, bw - 16, note, emWhite );
@@ -5315,6 +5735,7 @@ static void EM_DrawBrowse( void ) {
 	em.click = qfalse;
 	em.wheel = 0;
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( em.cursorX, em.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }
 
@@ -5443,6 +5864,8 @@ static void EM_DrawPlace( void ) {
 		"G              cycle snap",
 		"Arrows PgUp/Dn nudge (locks)",
 		"V              select and move effects",
+		"[ ] or - +     size (experimental, shared)",
+		"J              move arrows (drag X Y Z; RMB looks)",
 		"WASD Space C   fly (Shift fast, Ctrl slow)",
 		"Tab / Esc      back to the manager",
 		"H              hide this help",
@@ -5500,7 +5923,8 @@ static void EM_DrawPlace( void ) {
 		EM_Text( x + 6, y, va( "Origin  %i %i %i", (int)floorf( em.origin[0] + 0.5f ), (int)floorf( em.origin[1] + 0.5f ), (int)floorf( em.origin[2] + 0.5f ) ), emWhite ); y += EM_ROW_H;
 		EM_Text( x + 6, y, EM_HaveAngles() ? va( "Angles  %i %i %i%s", EM_NormalizeAngle( angles[PITCH] ), EM_NormalizeAngle( angles[YAW] ), EM_NormalizeAngle( angles[ROLL] ), em.align ? S_COLOR_GREY "  (surface)" : "" )
 			: "Angles  straight up", emWhite ); y += EM_ROW_H;
-		EM_Text( x + 6, y, va( "Snap    %i deg / %i units", emSnaps[em.snap].angle, emSnaps[em.snap].grid ), emWhite ); y += EM_ROW_H;
+		EM_Text( x + 6, y, va( "Snap    %i deg / %i units%s", emSnaps[em.snap].angle, emSnaps[em.snap].grid,
+			fabsf( EM_ClampScale( em.scale ) - 1.0f ) > 0.001f ? va( S_COLOR_CYAN "   size x%.2g", EM_ClampScale( em.scale ) ) : "" ), emWhite ); y += EM_ROW_H;
 		if ( em.playError )
 			EM_TextClipped( x + 6, y, w - 12, em.playError, emRed );
 		y += EM_ROW_H;
@@ -5529,8 +5953,10 @@ static void EM_DrawPlace( void ) {
 				em.numQueue ? va( S_COLOR_YELLOW "   %i more to go", em.numQueue ) : "" ), emWhite );
 	}
 
-	if ( em.naming != EM_NAMING_NONE )
+	if ( em.naming != EM_NAMING_NONE ) {
 		EM_DrawNaming();
+		WG_DrawOverlay();
+	}
 }
 
 // numbers over the active effects in view, checked ones highlighted
@@ -5554,11 +5980,26 @@ static void EM_DrawPick( void ) {
 	re->DrawStretchPic( em.cursorX, em.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }
 
+// the move arrows over what they move, and the mouse
+static void EM_DrawGizmo( void ) {
+	gzView_t v;
+	vec3_t pivot;
+
+	if ( !em.gizmo )
+		return;
+	if ( em.haveView && EM_GzPivot( pivot ) ) {
+		EM_GzView( &v );
+		GZ_Draw( &v, pivot, em.gzHot );
+	}
+	if ( !em.held[A_MOUSE2] && em.naming == EM_NAMING_NONE )
+		GZ_DrawCursor( em.cursorX, em.cursorY );
+}
+
 // drawn over the cgame, under the UI and console
 void CL_EffectManager_Draw( void ) {
 	switch ( em.state ) {
 	case EM_BROWSE:	EM_DrawBrowse();	break;
-	case EM_PLACE:	EM_DrawPlace();		break;
+	case EM_PLACE:	EM_DrawPlace();	EM_DrawGizmo();	break;
 	case EM_PICK:	EM_DrawPick();		break;
 	default:		break;
 	}

@@ -23,8 +23,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // A free camera over the map, the panel on the right in tabs:
 // Map: the map's own entities, triggers boxed in orange and brush entities in blue, with
 // all their keys; a brush entity can be hidden.
-// Models: models placed here, carried to the crosshair, turned and scaled; and the map's
-// own props. Those were melted into the map when it was built, so a click finds the
+// Models: models placed here, carried to the crosshair, turned and scaled; other maps too,
+// whole ("#name", as misc_bsp has them), to fuse with this one; and the map's own props. Those were melted into the map when it was built, so a click finds the
 // triangles under the cursor and the ones joined to them; lifted out, they're hidden in
 // the world and drawn as a model of their own, with the light they had. What's joined to
 // the whole map is taken a brush at a time instead: the faces lying on the brush clicked.
@@ -61,6 +61,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "qcommon/cm_public.h"
+#include "cl_widgets.h"
 
 #define ME_TOGGLE_CMD		"mapedit"
 #define ME_DIR				"mapedits"
@@ -104,6 +105,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define ME_SOUND_NEAR		256.0f		// a speaker's sound is at its loudest this near
 #define ME_GIZMO_PX			6.0f		// an arrow is pointed at this near, on the 640x480 screen
 #define ME_USE_REACH		96.0f		// a use trigger is used from this near
+#define ME_MAX_USETIME		60000		// ms a use trigger can be held for
+#define ME_CROUCH_MS		120			// a held use trigger's emote ended with a crouch this long
+#define ME_CROUCH_KEY		"1023"		// the crouch's own key number: the player's C isn't let go with it
 #define ME_MAX_FOGS			64
 #define ME_FOG_NONE			65536.0f	// a fog this thin isn't seen
 
@@ -191,6 +195,7 @@ typedef struct {
 	qboolean	use;
 	char		name[48];			// what the storyteller knows it by
 	char		display[48];		// what a use trigger is shown as, looked at
+	int			usetime;			// a use trigger: the use key held this many ms, 0 a press (JKA's usetime)
 
 	// a fog volume: the box as a trigger's, its colour as a light's, and how deep it takes to
 	// see nothing through it
@@ -407,6 +412,11 @@ typedef struct {
 	// use triggers: the use key as it was, and the one looked at
 	qboolean	useDown;
 	int			useAim;
+	int			holdItem;			// held on with the use key, -1 none
+	int			holdStart;
+	qboolean	holdDone;			// used: not again until the key is let go
+	qboolean	holdEmote;			// emconsole played while it's held
+	int			crouchUntil;		// the crouch ending it, let go then; 0 none
 
 	// opened from the storyteller to click a trigger for a step: 0 a map trigger, 1 a door or
 	// button, 2 a use trigger; -1 not
@@ -1640,6 +1650,43 @@ static meItem_t *ME_NewItem( int kind ) {
 }
 
 // where a new thing goes: on what the crosshair is on, or in front of the camera
+static const char *ME_ShownName( const char *name );
+static void ME_ItemAxis( const meItem_t *it, matrix3_t axis );
+
+// a placed map ("#name") turns and scales around its bottom middle, the point it was put down by,
+// not its origin, which can be far from it. That point in its own space; qfalse if it isn't a map
+static qboolean ME_MapPivot( const meItem_t *it, vec3_t pivot ) {
+	vec3_t mins, maxs;
+
+	if ( it->kind != ME_ITEM_MODEL || it->model[0] != '#' || !it->h )
+		return qfalse;
+	re->ModelBounds( it->h, mins, maxs );
+	pivot[0] = ( mins[0] + maxs[0] ) * 0.5f;
+	pivot[1] = ( mins[1] + maxs[1] ) * 0.5f;
+	pivot[2] = mins[2];
+	return qtrue;
+}
+
+// a point in the item's own space, where it is in the world
+static void ME_ItemPoint( const meItem_t *it, const vec3_t local, vec3_t out ) {
+	matrix3_t axis;
+
+	ME_ItemAxis( it, axis );
+	VectorCopy( it->org, out );
+	for ( int i = 0; i < 3; i++ )
+		VectorMA( out, local[i], axis[i], out );
+}
+
+// the item moved so a point in its own space is at that place in the world
+static void ME_PutPointAt( meItem_t *it, const vec3_t local, const vec3_t world ) {
+	matrix3_t axis;
+
+	ME_ItemAxis( it, axis );
+	VectorCopy( world, it->org );
+	for ( int i = 0; i < 3; i++ )
+		VectorMA( it->org, -local[i], axis[i], it->org );
+}
+
 static void ME_PlaceAt( meItem_t *it, const vec3_t at, const vec3_t normal ) {
 	switch ( it->kind ) {
 	case ME_ITEM_MODEL:
@@ -1680,7 +1727,8 @@ static void ME_AddItem( int kind ) {
 	}
 	if ( kind == ME_ITEM_MODEL ) {
 		Q_strncpyz( it->model, me.pickModel, sizeof( it->model ) );
-		it->ang[YAW] = AngleNormalize360( ME_Round( ( me.camAng[YAW] + 180.0f ) / 15.0f ) * 15.0f );
+		if ( it->model[0] != '#' )
+			it->ang[YAW] = AngleNormalize360( ME_Round( ( me.camAng[YAW] + 180.0f ) / 15.0f ) * 15.0f );
 	}
 	// what the middle of the screen is on
 	AngleVectors( me.camAng, forward, NULL, NULL );
@@ -1694,6 +1742,16 @@ static void ME_AddItem( int kind ) {
 		VectorSet( normal, 0, 0, 1 );
 	}
 	ME_PlaceAt( it, at, normal );
+	if ( kind == ME_ITEM_MODEL && it->model[0] == '#' ) {
+		vec3_t pivot;
+
+		ME_RegisterItem( it );
+		if ( !ME_MapPivot( it, pivot ) ) {
+			ME_Message( va( S_COLOR_YELLOW "%s couldn't be loaded", ME_ShownName( it->model ) ) );
+			return;
+		}
+		ME_PutPointAt( it, pivot, at );
+	}
 	me.numItems++;
 	ME_Select( ME_SEL_ITEM, me.numItems - 1 );
 	me.tab = ME_ItemTab( kind );
@@ -2056,6 +2114,8 @@ static int ME_SaveTo( const char *path ) {
 				ME_Print( f, "targetname", it->name );
 			if ( it->display[0] )
 				ME_Print( f, "displayname", it->display );
+			if ( it->usetime > 0 )
+				ME_Print( f, "usetime", va( "%i", it->usetime ) );
 		}
 		FS_Printf( f, "}\n" );
 		count++;
@@ -2196,6 +2256,7 @@ static void ME_LoadEntity( const meKv_t *kv, int num ) {
 		it->use = (qboolean)( atoi( ME_Value( kv, num, "use", "0" ) ) != 0 );
 		Q_strncpyz( it->name, ME_Value( kv, num, "targetname", "" ), sizeof( it->name ) );
 		Q_strncpyz( it->display, ME_Value( kv, num, "displayname", "" ), sizeof( it->display ) );
+		it->usetime = Com_Clampi( 0, ME_MAX_USETIME, atoi( ME_Value( kv, num, "usetime", "0" ) ) );
 		me.numItems++;
 	} else if ( !Q_stricmp( classname, "rpm_lightstyle" ) ) {
 		const int style = atoi( ME_Value( kv, num, "style", "-1" ) );
@@ -2405,10 +2466,14 @@ static const char *ME_ShareItem( const meItem_t *it ) {
 		Q_strcat( out, sizeof( out ), va( "l %s %i %g %g %g %i", ME_Vec( it->org ), ME_Round( it->radius ),
 			it->color[0], it->color[1], it->color[2], it->style ) );
 	} else if ( it->kind == ME_ITEM_TRIGGER && it->use ) {
-		char words[sizeof( it->name ) + sizeof( it->display ) + 2];
+		char words[sizeof( it->name ) + sizeof( it->display ) + 16];
 
-		// the name and what it's shown as, ~ between, spaces as `: the edit's spaces are taken out
-		Com_sprintf( words, sizeof( words ), "%s~%s", it->name, it->display );
+		// the name and what it's shown as, ~ between, spaces as `: the edit's spaces are taken out.
+		// Held, the ms after another ~
+		if ( it->usetime > 0 )
+			Com_sprintf( words, sizeof( words ), "%s~%s~%i", it->name, it->display, it->usetime );
+		else
+			Com_sprintf( words, sizeof( words ), "%s~%s", it->name, it->display );
 		for ( char *c = words; *c; c++ ) {
 			if ( *c == ' ' )
 				*c = '`';
@@ -2609,16 +2674,22 @@ static void ME_ApplyShared( const char *edit ) {
 				*c = ' ';
 		}
 		{
-			char *bar = strchr( rest, '~' );
+			char *bar = strchr( rest, '~' ), *held = NULL;
 
-			if ( bar )
+			if ( bar ) {
 				*bar++ = '\0';
+				held = strchr( bar, '~' );
+				if ( held )
+					*held++ = '\0';
+			}
 			ME_KV( "classname", "rpm_trigger" );
 			ME_KV( "origin", va( "%g %g %g", f[0], f[1], f[2] ) );
 			ME_KV( "size", va( "%g %g %g", f[3], f[4], f[5] ) );
 			ME_KV( "use", "1" );
 			ME_KV( "targetname", rest );
 			ME_KV( "displayname", bar ? bar : "" );
+			if ( held )
+				ME_KV( "usetime", held );
 		}
 		break;
 	case 'v':
@@ -2781,6 +2852,31 @@ static void ME_AddName( const char *name, void *ctx ) {
 	me.names[me.numNames++] = stored;
 }
 
+// another map, by its name in maps/ without .bsp: "#mp/ffa3", as the renderer takes it; not
+// the one loaded
+static void ME_AddMapName( const char *name, void *ctx ) {
+	char map[MAX_QPATH], current[MAX_QPATH];
+
+	if ( Q_stricmpn( name, "maps/", 5 ) )
+		return;
+	COM_StripExtension( name + 5, map, sizeof( map ) );
+	COM_StripExtension( cl.mapname[0] ? cl.mapname + 5 : "", current, sizeof( current ) );
+	for ( char *c = map; *c; c++ ) {
+		if ( *c == '\\' )
+			*c = '/';
+	}
+	if ( !map[0] || !Q_stricmp( map, current ) )
+		return;
+	ME_AddName( va( "#%s", map ), ctx );
+}
+
+// a name in the list as it's shown: a model's without "models/", a map's as one
+static const char *ME_ShownName( const char *name ) {
+	if ( name[0] == '#' )
+		return va( "map: %s", name + 1 );
+	return !Q_stricmpn( name, "models/", 7 ) ? name + 7 : name;
+}
+
 static int QDECL ME_CompareNames( const void *a, const void *b ) {
 	return strcmp( *(const char **)a, *(const char **)b );
 }
@@ -2790,6 +2886,7 @@ static void ME_IndexModels( void ) {
 
 	me.numNames = me.poolUsed = 0;
 	FS_ListFilesRecursive( "models", ".md3", ME_AddName, NULL );
+	FS_ListFilesRecursive( "maps", ".bsp", ME_AddMapName, NULL );
 	qsort( me.names, me.numNames, sizeof( me.names[0] ), ME_CompareNames );
 	// a model in a pk3 and loose shows once
 	for ( int i = 0; i < me.numNames; i++ ) {
@@ -3321,6 +3418,8 @@ static void ME_FieldEdited( void ) {
 	}
 }
 
+static qboolean ME_AllowChar( int ch );
+
 void CL_MapEditor_KeyEvent( int key, qboolean down ) {
 	if ( !me.open )
 		return;
@@ -3395,11 +3494,11 @@ void CL_MapEditor_KeyEvent( int key, qboolean down ) {
 	if ( me.field ) {
 		int size;
 		char *buf = ME_FieldBuffer( &size );
-		const int len = buf ? strlen( buf ) : 0;
+		const int edit = buf ? WG_EditKey( buf, size, key, ME_AllowChar ) : WG_EDIT_NONE;
 
-		if ( key == A_BACKSPACE && len ) {
-			buf[len - 1] = '\0';
-			ME_FieldEdited();
+		if ( edit ) {
+			if ( edit & WG_EDIT_CHANGED )
+				ME_FieldEdited();
 		} else if ( key == A_ENTER || key == A_KP_ENTER ) {
 			if ( me.field == ME_FIELD_LAYOUT )
 				ME_SaveLayout( me.layoutName );
@@ -3467,22 +3566,23 @@ static qboolean ME_FieldChar( int field, int ch ) {
 	}
 }
 
+// a character the box typed in takes
+static qboolean ME_AllowChar( int ch ) {
+	return ME_FieldChar( me.field, ch );
+}
+
 void CL_MapEditor_CharEvent( int ch ) {
-	int size, len;
+	int size;
 	char *buf;
 
 	if ( !me.open || !me.field || me.flying || me.experimentalBox )
 		return;
 	if ( me.field == ME_FIELD_PATTERN && ch >= 'A' && ch <= 'Z' )
 		ch += 'a' - 'A';
-	if ( !ME_FieldChar( me.field, ch ) || !( buf = ME_FieldBuffer( &size ) ) )
+	if ( !( buf = ME_FieldBuffer( &size ) ) )
 		return;
-	len = strlen( buf );
-	if ( len < size - 1 ) {
-		buf[len] = (char)ch;
-		buf[len + 1] = '\0';
+	if ( WG_EditChar( buf, size, ch, ME_AllowChar ) )
 		ME_FieldEdited();
-	}
 }
 
 void CL_MapEditor_MouseEvent( int dx, int dy ) {
@@ -3565,11 +3665,27 @@ const char *CL_MapEditor_AimedUseTrigger( void ) {
 }
 
 // a use trigger does nothing of its own: the player reaches out to it (RPMod's emote), and the
-// storytellers hear it was used; their stories decide what it does
-static void ME_UseTrigger( meItem_t *it ) {
-	if ( cls.state == CA_ACTIVE )
+// storytellers hear it was used; their stories decide what it does. A held one has its own emote
+static void ME_UseTrigger( meItem_t *it, qboolean reach ) {
+	if ( reach && cls.state == CA_ACTIVE )
 		CL_AddReliableCommand( "emreach", qfalse );
 	CL_Storyteller_TriggerUsed( it->name );
+}
+
+// held: the player works the console (RPMod's emconsole) until it's used or let go
+static void ME_HoldEmote( qboolean on ) {
+	if ( on == me.holdEmote )
+		return;
+	me.holdEmote = on;
+	if ( cls.state != CA_ACTIVE )
+		return;
+	if ( on ) {
+		CL_AddReliableCommand( "emconsole", qfalse );
+		return;
+	}
+	// ended as the player would: a tap of crouch
+	Cbuf_AddText( "+movedown " ME_CROUCH_KEY "\n" );
+	me.crouchUntil = cls.realtime + ME_CROUCH_MS;
 }
 
 // our triggers: walking into one runs its command, and pressing use looking at a use one
@@ -3577,16 +3693,48 @@ static void ME_RunTriggers( void ) {
 	vec3_t mins, maxs;
 	qboolean useDown = (qboolean)( ( cl.cmds[cl.cmdNumber & CMD_MASK].buttons & BUTTON_USE ) != 0 );
 
+	// the crouch that ended a held emote, let go
+	if ( me.crouchUntil && cls.realtime >= me.crouchUntil ) {
+		me.crouchUntil = 0;
+		Cbuf_AddText( "-movedown " ME_CROUCH_KEY "\n" );
+	}
 	if ( me.open || !ME_Shown() || cl.snap.ps.pm_type == PM_SPECTATOR || cl.snap.ps.stats[STAT_HEALTH] <= 0 ) {
 		for ( int i = 0; i < me.numItems; i++ )
 			me.items[i].inside = qfalse;
 		me.useAim = -1;
+		me.holdItem = -1;
+		ME_HoldEmote( qfalse );
 		me.useDown = useDown;
 		return;
 	}
 	me.useAim = ME_UseAimed();
-	if ( useDown && !me.useDown && me.useAim >= 0 )
-		ME_UseTrigger( &me.items[me.useAim] );
+	// a press uses it; one with a usetime only once it's been held that long on it
+	if ( useDown && me.useAim >= 0 ) {
+		meItem_t *it = &me.items[me.useAim];
+
+		if ( !me.useDown ) {
+			me.holdItem = me.useAim;
+			me.holdStart = cls.realtime;
+			me.holdDone = qfalse;
+			if ( it->usetime <= 0 ) {
+				ME_UseTrigger( it, qtrue );
+				me.holdDone = qtrue;
+			} else {
+				ME_HoldEmote( qtrue );
+			}
+		} else if ( me.holdItem != me.useAim ) {
+			me.holdItem = -1;	// looked away: let go
+		}
+		if ( me.holdItem == me.useAim && !me.holdDone && it->usetime > 0 && cls.realtime - me.holdStart >= it->usetime ) {
+			ME_UseTrigger( it, qfalse );
+			me.holdDone = qtrue;
+		}
+	} else {
+		me.holdItem = -1;
+	}
+	// used, let go or looked away: the emote ends
+	if ( me.holdEmote && ( me.holdItem < 0 || me.holdDone ) )
+		ME_HoldEmote( qfalse );
 	me.useDown = useDown;
 	// the player's box
 	VectorSet( mins, cl.snap.ps.origin[0] - 15, cl.snap.ps.origin[1] - 15, cl.snap.ps.origin[2] - 24 );
@@ -4213,29 +4361,46 @@ static void ME_AdjustAngle( float *value, int steps, float step ) {
 	ME_Changed();
 }
 
-// a text box; a click on it starts typing
-static void ME_TextBox( float x, float y, float w, int field, const char *text, const char *empty ) {
-	const qboolean typing = (qboolean)( me.field == field );
-	const char *label = text[0] || typing ? va( "%s%s", text, typing && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" )
-		: va( S_COLOR_GREY "%s", empty );
-
-	ME_Box( x, y, w, ME_CTRL_H, typing ? meFocus : mePanelLight );
-	if ( typing )
-		ME_TextTail( x + 4, y + 2, w - 8, label, meWhite );
-	else
-		ME_TextClipped( x + 4, y + 2, w - 8, label, meWhite );
-	if ( ME_Clicked( x, y, w, ME_CTRL_H ) )
-		me.field = field;
+static void ME_FieldStyle( wgStyle_t *style ) {
+	style->font = me.font;
+	style->scale = ME_TEXT_SCALE;
+	style->lineH = ME_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 2.0f;
+	style->fill = meFocus;
+	style->border = meBorder;
+	style->text = meWhite;
+	style->dim = meDim;
 }
 
-// a scrolling list; returns the row clicked, -1 none
-static int ME_ListRows( float x, float y, float w, int rows, int count, int *scroll ) {
+// a text box; a click on it starts typing, the cursor where it was clicked. Typed in and long,
+// it grows down over what's below
+static void ME_TextBox( float x, float y, float w, int field, char *text, const char *empty ) {
+	const qboolean typing = (qboolean)( me.field == field );
+	wgStyle_t style;
+
+	ME_FieldStyle( &style );
+	ME_Box( x, y, w, ME_CTRL_H, typing ? meFocus : mePanelLight );
+	WG_Field( &style, x, y, w, ME_CTRL_H, text, typing, empty, me.cursorX, me.cursorY );
+	if ( ME_Clicked( x, y, w, WG_FieldHeight( &style, w, ME_CTRL_H, text, typing ) ) ) {
+		me.field = field;
+		WG_FieldClick( text, me.clickX, me.clickY );
+	}
+}
+
+// a scrolling list, with a scrollbar at its side when it's longer than shown; returns the row
+// clicked, -1 none. *rowW is the rows' width, less the scrollbar's
+static int ME_ListRows( float x, float y, float w, int rows, int count, int *scroll, float *rowW ) {
 	if ( me.wheel && ME_InRect( x, y, w, rows * ME_ROW_H ) ) {
 		*scroll += me.wheel;
 		me.wheel = 0;
 	}
 	*scroll = Com_Clampi( 0, Q_max( 0, count - rows ), *scroll );
 	ME_Box( x, y, w, rows * ME_ROW_H + 2, mePanelLight );
+	if ( WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, rows * ME_ROW_H, count, rows, scroll, me.cursorX, me.cursorY,
+		&me.click, me.clickX, me.clickY ) )
+		w -= WG_SCROLL_W + 1;
+	*rowW = w;
 	for ( int i = 0; i < rows && *scroll + i < count; i++ ) {
 		const float ry = y + 1 + i * ME_ROW_H;
 
@@ -4320,11 +4485,13 @@ static void ME_DrawLocksTab( float x, float y, float w ) {
 	ME_TextBox( x, y, w, ME_FIELD_FILTER, me.filter, "type to find a class or name" );
 	y += ME_CTRL_H + ME_GAP;
 
-	clicked = ME_ListRows( x, y, w, rows, numMatches, &ml.scroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, numMatches, &ml.scroll, &rowW );
 	if ( selRow >= 0 )
-		ME_RowHighlight( x, y, w, selRow, ml.scroll, rows );
+		ME_RowHighlight( x, y, rowW, selRow, ml.scroll, rows );
 	for ( int r = 0; r < rows && ml.scroll + r < numMatches; r++ )
-		ME_DrawLockRow( x + 4, y + 1 + r * ME_ROW_H, w - 8, &me.ents[matches[ml.scroll + r]] );
+		ME_DrawLockRow( x + 4, y + 1 + r * ME_ROW_H, rowW - 8, &me.ents[matches[ml.scroll + r]] );
 	if ( !numMatches )
 		ME_Text( x + 4, y + 1, S_COLOR_GREY "No doors or triggers to lock", meWhite );
 	if ( clicked >= 0 ) {
@@ -4422,13 +4589,15 @@ static void ME_DrawMapTab( float x, float y, float w ) {
 	}
 	ME_Text( x, y, va( "Entities (%i of %i)", numMatches, me.numEnts ), meWhite );
 	y += ME_ROW_H + 2;
-	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.entScroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.entScroll, &rowW );
 	if ( selRow >= 0 )
-		ME_RowHighlight( x, y, w, selRow, me.entScroll, rows );
+		ME_RowHighlight( x, y, rowW, selRow, me.entScroll, rows );
 	for ( int r = 0; r < rows && me.entScroll + r < numMatches; r++ ) {
 		const meEnt_t *row = &me.ents[matches[me.entScroll + r]];
 
-		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, w - 8, va( "%s%i " S_COLOR_WHITE "%s",
+		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, rowW - 8, va( "%s%i " S_COLOR_WHITE "%s",
 			row->kind == ME_ENT_TRIGGER ? S_COLOR_ORANGE : row->kind == ME_ENT_BRUSH ? S_COLOR_CYAN : S_COLOR_GREEN,
 			matches[me.entScroll + r], ME_EntName( row ) ), meWhite );
 	}
@@ -4458,12 +4627,14 @@ static void ME_DrawMapTab( float x, float y, float w ) {
 	}
 	if ( me.kvEnt != me.sel )
 		ME_ReadKeys( me.sel );
-	clicked = ME_ListRows( x, y, w, kvRows, me.numKv, &me.kvScroll );
+	float kvW;
+
+	clicked = ME_ListRows( x, y, w, kvRows, me.numKv, &me.kvScroll, &kvW );
 	for ( int r = 0; r < kvRows && me.kvScroll + r < me.numKv; r++ ) {
 		const float ry = y + 1 + r * ME_ROW_H;
 
 		ME_TextClipped( x + 4, ry, 70, me.kv[me.kvScroll + r][0], meDim );
-		ME_TextClipped( x + 78, ry, w - 82, me.kv[me.kvScroll + r][1], meWhite );
+		ME_TextClipped( x + 78, ry, kvW - 82, me.kv[me.kvScroll + r][1], meWhite );
 	}
 	// a click on a target finds what it targets
 	if ( clicked >= 0 && ( !Q_stricmp( me.kv[clicked][0], "target" ) || !Q_stricmp( me.kv[clicked][0], "target2" ) ) ) {
@@ -4495,9 +4666,11 @@ static meItem_t *ME_DrawItemList( float *py, float x, float w, int kind, const c
 			matches[numMatches++] = i;
 		}
 	}
-	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.itemScroll[tab] );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.itemScroll[tab], &rowW );
 	if ( selRow >= 0 )
-		ME_RowHighlight( x, y, w, selRow, me.itemScroll[tab], rows );
+		ME_RowHighlight( x, y, rowW, selRow, me.itemScroll[tab], rows );
 	for ( int r = 0; r < rows && me.itemScroll[tab] + r < numMatches; r++ ) {
 		const meItem_t *row = &me.items[matches[me.itemScroll[tab] + r]];
 		const float ry = y + 1 + r * ME_ROW_H;
@@ -4519,7 +4692,7 @@ static meItem_t *ME_DrawItemList( float *py, float x, float w, int kind, const c
 			text = row->use ? va( "%i  " S_COLOR_CYAN "use " S_COLOR_WHITE "%s" S_COLOR_GREY "  %s", r + me.itemScroll[tab] + 1,
 				row->name[0] ? row->name : S_COLOR_YELLOW "no name", row->display )
 				: va( "%i  %s%s", r + me.itemScroll[tab] + 1, row->name[0] ? va( "%s: ", row->name ) : "", row->command[0] ? row->command : S_COLOR_GREY "no command" );
-		ME_TextClipped( x + 4, ry, w - 8, text, meWhite );
+		ME_TextClipped( x + 4, ry, rowW - 8, text, meWhite );
 	}
 	if ( !numMatches )
 		ME_Text( x + 4, y + 2, S_COLOR_GREY "None yet", meWhite );
@@ -4620,8 +4793,12 @@ static void ME_DrawModelsTab( float x, float y, float w ) {
 	}
 
 	if ( it ) {
+		vec3_t pivot, pivotAt;
+		const qboolean isMap = ME_MapPivot( it, pivot );
 		int steps;
 
+		if ( isMap )
+			ME_ItemPoint( it, pivot, pivotAt );
 		steps = ME_Stepper( x, y, w, "Yaw", va( "%i", ME_Round( it->ang[YAW] ) ) );
 		ME_AdjustAngle( &it->ang[YAW], steps, 15.0f );
 		y += ME_CTRL_H + ME_GAP;
@@ -4634,6 +4811,9 @@ static void ME_DrawModelsTab( float x, float y, float w ) {
 		steps = ME_Stepper( x, y, w, "Scale", va( "%.2f", it->scale ) );
 		ME_Adjust( &it->scale, steps, 0.1f, 0.05f, 50.0f );
 		y += ME_CTRL_H + ME_GAP + 4;
+		// a map turned or scaled stays where it was put
+		if ( isMap )
+			ME_PutPointAt( it, pivot, pivotAt );
 	} else {
 		y += 4;
 	}
@@ -4644,16 +4824,18 @@ static void ME_DrawModelsTab( float x, float y, float w ) {
 	Q_strncpyz( lower, me.search, sizeof( lower ) );
 	Q_strlwr( lower );
 	for ( int i = 0; i < me.numNames; i++ ) {
-		if ( !lower[0] || strstr( me.names[i] + 7, lower ) )
+		if ( !lower[0] || Q_stristr( ME_ShownName( me.names[i] ), lower ) )
 			matches[numMatches++] = i;
 	}
-	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.searchScroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.searchScroll, &rowW );
 	for ( int r = 0; r < rows && me.searchScroll + r < numMatches; r++ ) {
 		const char *name = me.names[matches[me.searchScroll + r]];
 
 		if ( !Q_stricmp( name, me.pickModel ) )
-			ME_Fill( x + 1, y + 1 + r * ME_ROW_H, w - 2, ME_ROW_H, meHighlight );
-		ME_TextTail( x + 4, y + 1 + r * ME_ROW_H, w - 8, name + 7, meWhite );
+			ME_Fill( x + 1, y + 1 + r * ME_ROW_H, rowW - 2, ME_ROW_H, meHighlight );
+		ME_TextTail( x + 4, y + 1 + r * ME_ROW_H, rowW - 8, ME_ShownName( name ), meWhite );
 	}
 	if ( clicked >= 0 ) {
 		Q_strncpyz( me.pickModel, me.names[matches[clicked]], sizeof( me.pickModel ) );
@@ -4665,7 +4847,7 @@ static void ME_DrawModelsTab( float x, float y, float w ) {
 		}
 	}
 	y += rows * ME_ROW_H + 4;
-	ME_TextTail( x, y, w, me.pickModel[0] ? va( "Adds %s", me.pickModel + 7 ) : "Pick one, then Add puts it at the crosshair", meDim );
+	ME_TextTail( x, y, w, me.pickModel[0] ? va( "Adds %s", ME_ShownName( me.pickModel ) ) : "Pick a model or a map (type map), then Add puts it at the crosshair", meDim );
 }
 
 static void ME_DrawLightsTab( float x, float y, float w ) {
@@ -4742,6 +4924,15 @@ static void ME_DrawTriggersTab( float x, float y, float w ) {
 	if ( it->use ) {
 		ME_Text( x, y + 2, "Shown as", meDim );
 		ME_TextBox( x + 52, y, w - 52, ME_FIELD_TRIGGERDISPLAY, it->display, "what players see: [key] ..." );
+		y += ME_CTRL_H + ME_GAP;
+		// JKA's usetime, in milliseconds
+		steps = ME_Stepper( x, y, w, "Hold use", it->usetime > 0 ? va( "%i ms (%.2g s)", it->usetime, it->usetime / 1000.0f ) : "no, a press" );
+		if ( steps ) {
+			float held = (float)it->usetime;
+
+			ME_Adjust( &held, steps, 250.0f, 0.0f, (float)ME_MAX_USETIME );
+			it->usetime = (int)( held + 0.5f );
+		}
 		y += ME_CTRL_H + ME_GAP;
 	}
 	steps = ME_Stepper( x, y, w, "Width", va( "%i", ME_Round( it->size[0] * 2 ) ) );
@@ -4857,13 +5048,15 @@ static void ME_DrawSoundsTab( float x, float y, float w ) {
 		if ( !it->noise[0] || Q_stristr( me.sounds[i], it->noise ) )
 			matches[numMatches++] = i;
 	}
-	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.soundScroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.soundScroll, &rowW );
 	for ( int r = 0; r < rows && me.soundScroll + r < numMatches; r++ ) {
 		const char *name = me.sounds[matches[me.soundScroll + r]];
 
 		if ( !Q_stricmp( name, it->noise ) )
-			ME_RowHighlight( x, y, w, r + me.soundScroll, me.soundScroll, rows );
-		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, w - 8, name, meWhite );
+			ME_RowHighlight( x, y, rowW, r + me.soundScroll, me.soundScroll, rows );
+		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, rowW - 8, name, meWhite );
 	}
 	if ( !numMatches )
 		ME_Text( x + 4, y + 2, S_COLOR_GREY "None match", meWhite );
@@ -4967,9 +5160,11 @@ static void ME_DrawMapFogs( float x, float y, float w ) {
 	}
 	if ( me.selKind == ME_SEL_FOG && me.sel >= 1 && me.sel < me.numFogs )
 		selRow = me.sel - 1;
-	clicked = ME_ListRows( x, y, w, rows, me.numFogs - 1, &me.fogScroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, me.numFogs - 1, &me.fogScroll, &rowW );
 	if ( selRow >= 0 )
-		ME_RowHighlight( x, y, w, selRow, me.fogScroll, rows );
+		ME_RowHighlight( x, y, rowW, selRow, me.fogScroll, rows );
 	for ( int r = 0; r < rows && me.fogScroll + r < me.numFogs - 1; r++ ) {
 		const int i = me.fogScroll + r + 1;
 		const meFog_t *row = &me.fogs[i];
@@ -4982,7 +5177,7 @@ static void ME_DrawMapFogs( float x, float y, float w ) {
 		c[3] = 1.0f;
 		ME_Fill( x + 4, ry + 2, 8, ME_ROW_H - 4, c );
 		VectorSubtract( row->maxs, row->mins, size );
-		ME_TextClipped( x + 16, ry, w - 20, va( "%s%s" S_COLOR_GREY "  %s", row->override ? S_COLOR_YELLOW : "",
+		ME_TextClipped( x + 16, ry, rowW - 20, va( "%s%s" S_COLOR_GREY "  %s", row->override ? S_COLOR_YELLOW : "",
 			i == me.globalFog ? "The whole map" : va( "Fog volume %i", i ),
 			none ? "taken away" : i == me.globalFog ? va( "opaque at %i", ME_Round( row->override ? row->depth : row->mapDepth ) )
 			: va( "%i x %i x %i", ME_Round( size[0] ), ME_Round( size[1] ), ME_Round( size[2] ) ) ), meWhite );
@@ -5107,15 +5302,17 @@ static void ME_DrawStylesTab( float x, float y, float w ) {
 			matches[numMatches++] = i;
 		}
 	}
-	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.styleScroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, numMatches, &me.styleScroll, &rowW );
 	if ( selRow >= 0 )
-		ME_RowHighlight( x, y, w, selRow, me.styleScroll, rows );
+		ME_RowHighlight( x, y, rowW, selRow, me.styleScroll, rows );
 	for ( int r = 0; r < rows && me.styleScroll + r < numMatches; r++ ) {
 		const int i = matches[me.styleScroll + r];
 		const meStyle_t *row = &me.styles[i];
 		const char *pattern = row->override ? row->pattern : ME_ServerPattern( i );
 
-		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, w - 8, va( "%s%i  " S_COLOR_GREY "%s  %s%s", row->override ? S_COLOR_YELLOW : S_COLOR_WHITE, i,
+		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, rowW - 8, va( "%s%i  " S_COLOR_GREY "%s  %s%s", row->override ? S_COLOR_YELLOW : S_COLOR_WHITE, i,
 			i ? va( "%i surfaces", row->surfaces ) : "the whole map", row->override ? S_COLOR_YELLOW : S_COLOR_WHITE,
 			pattern[0] ? pattern : "steady" ), meWhite );
 	}
@@ -5306,11 +5503,13 @@ static void ME_DrawLayouts( float x, float y, float w ) {
 	if ( ME_Button( x + w - 60, y, 60, "Save as", qfalse, ME_LayoutNameOk( me.layoutName ) ) )
 		ME_SaveLayout( me.layoutName );
 	y += ME_CTRL_H + ME_GAP;
-	clicked = ME_ListRows( x, y, w, rows, me.numLayouts, &me.layoutScroll );
+	float rowW;
+
+	clicked = ME_ListRows( x, y, w, rows, me.numLayouts, &me.layoutScroll, &rowW );
 	if ( me.layoutSel >= 0 )
-		ME_RowHighlight( x, y, w, me.layoutSel, me.layoutScroll, rows );
+		ME_RowHighlight( x, y, rowW, me.layoutSel, me.layoutScroll, rows );
 	for ( int r = 0; r < rows && me.layoutScroll + r < me.numLayouts; r++ )
-		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, w - 8, me.layouts[me.layoutScroll + r], meWhite );
+		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, rowW - 8, me.layouts[me.layoutScroll + r], meWhite );
 	if ( !me.numLayouts )
 		ME_Text( x + 4, y + 1, S_COLOR_GREY "None for this map yet", meWhite );
 	if ( clicked >= 0 ) {
@@ -5433,7 +5632,7 @@ static void ME_DrawEditor( void ) {
 	ME_Text( 8, 40, va( "Map editor" S_COLOR_GREY "   %s   fov %i", me.map, ME_Round( me.camFov ) ), meWhite );
 	if ( me.storyPick >= 0 )
 		ME_Text( 8, 40 + ME_ROW_H, va( S_COLOR_CYAN "For the story: click the %s it waits on   " S_COLOR_GREY "Esc goes back",
-			me.storyPick == 0 ? "map trigger" : me.storyPick == 1 ? "door or button" : "use trigger" ), meWhite );
+			me.storyPick == 0 ? "map trigger" : me.storyPick == 1 ? "door" : "use trigger" ), meWhite );
 	else if ( me.grabbing )
 		ME_Text( 8, 40 + ME_ROW_H, S_COLOR_CYAN "Carrying: it goes where you point; click or G puts it down, Esc puts it back", meWhite );
 	if ( me.message[0] && cls.realtime - me.messageTime < ME_MESSAGE_MS )
@@ -5492,6 +5691,8 @@ static void ME_DrawEditor( void ) {
 	default:				ME_DrawStylesTab( x, y, w );	break;
 	}
 
+	WG_DrawOverlay();
+
 	if ( popup && me.experimentalBox ) {
 		me.click = click;
 		me.wheel = wheel;
@@ -5530,6 +5731,17 @@ void CL_MapEditor_Draw( void ) {
 				me.font = cls.menuFont;
 		}
 		ME_Text( ( SCREEN_WIDTH - ME_TextWidth( text ) ) * 0.5f, SCREEN_HEIGHT * 0.5f + 20, text, meWhite );
+		// held: how far along
+		if ( it->usetime > 0 && me.holdItem == me.useAim && !me.holdDone ) {
+			const float bw = 120.0f, frac = Com_Clamp( 0.0f, 1.0f, (float)( cls.realtime - me.holdStart ) / it->usetime );
+
+			ME_Fill( ( SCREEN_WIDTH - bw ) * 0.5f, SCREEN_HEIGHT * 0.5f + 36, bw, 5, mePanel );
+			ME_Fill( ( SCREEN_WIDTH - bw ) * 0.5f + 1, SCREEN_HEIGHT * 0.5f + 37, ( bw - 2 ) * frac, 3, meHighlight );
+		} else if ( it->usetime > 0 ) {
+			const char *hold = va( S_COLOR_GREY "hold %.2g s", it->usetime / 1000.0f );
+
+			ME_Text( ( SCREEN_WIDTH - ME_TextWidth( hold ) ) * 0.5f, SCREEN_HEIGHT * 0.5f + 34, hold, meWhite );
+		}
 	}
 }
 
@@ -5614,6 +5826,7 @@ void CL_MapEditor_Init( void ) {
 	me.candBrush = -1;
 	me.gizmoAxis = me.dragAxis = -1;
 	me.useAim = -1;
+	me.holdItem = -1;
 	me.storyPick = -1;
 	memset( &ml, 0, sizeof( ml ) );
 	ml.showDoors = ml.showTriggers = qtrue;

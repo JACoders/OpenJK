@@ -446,6 +446,7 @@ extern	cvar_t	*cl_inGameVideo;
 
 extern	cvar_t	*cl_consoleKeys;
 extern	cvar_t	*cl_consoleUseScanCode;
+extern	cvar_t	*cl_consoleTildeKey;
 extern	cvar_t	*cl_consoleShiftRequirement;
 
 extern  cvar_t  *cl_lanForcePackets;
@@ -553,6 +554,9 @@ void Con_ClearNotify (void);
 void Con_SetPrintFade( int fade );
 void Con_RunConsole (void);
 void Con_DrawConsole (void);
+void Con_FontsLost( void );
+const char *Con_FontName( int index );
+int Con_NumFonts( void );
 void Con_PageUp( void );
 void Con_PageDown( void );
 void Con_Top( void );
@@ -584,6 +588,8 @@ void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *
 void	SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noColorEscape );			// draws a string with embedded color control characters with fade
 void	SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, qboolean noColorEscape );	// ignores embedded color control characters
 void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape );
+const float *Con_TypedColor( const char *p );
+void	SCR_DrawChar( int x, int y, float size, int ch );
 void	SCR_DrawSmallChar( int x, int y, int ch );
 
 
@@ -678,7 +684,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_SOUNDMANAGER	0x0800	// engine only, the sound or the music manager owns keyboard and mouse
 #define KEYCATCH_RADIALMENU		0x1000	// engine only, the radial menus' settings own keyboard and mouse
 #define KEYCATCH_LANGUAGES		0x2000	// engine only, the languages window owns keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES )	// mods never see or clear these
+#define KEYCATCH_CONSETTINGS	0x4000	// engine only, the console settings window owns keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -716,6 +723,31 @@ const char *CL_NpcWalk_RouteOf( int num );
 void CL_NpcWalk_ListRead( int listTime );
 qboolean CL_NpcWalk_SaveRoute( const char *name, const vec3_t *pts, int numPts, float speed );
 int CL_NpcWalk_LoadRoute( const char *name, vec3_t *pts, int maxPts, float *speed );
+qboolean CL_NpcWalk_NpcOrigin( int num, vec3_t out );
+int CL_NpcWalk_Targets( const char *target, int *nums, int max );
+float CL_NpcWalk_PaceSpeed( qboolean run );
+int CL_NpcWalk_RouteMs( const vec3_t *pts, int numPts, float speed );
+qboolean CL_NpcWalk_RouteAt( const vec3_t *pts, int numPts, float speed, int t, vec3_t pos, float *yaw );
+void CL_NpcWalk_Pose( int num, const vec3_t pos, float yaw, int pace );
+void CL_NpcWalk_ClearPoses( void );
+qboolean CL_NpcWalk_PoseOf( int num, vec3_t out );
+qboolean CL_NpcWalk_PoseYaw( int num, float *yaw );
+void CL_NpcWalk_PosePlayer( playerState_t *ps );
+// what a cinematic's recording has someone doing, beyond where they are
+typedef struct {
+	int			legsAnim, torsoAnim;
+	qboolean	legsFlip, torsoFlip;
+	int			forcePowersActive;
+	int			saberHolstered;
+	int			saberMove;
+} npcPoseState_t;
+void CL_NpcWalk_PoseEvent( int num, int event, int parm );
+void CL_NpcWalk_PoseEx( int num, const vec3_t pos, const vec3_t angles, int pace, qboolean free, const npcPoseState_t *st, qboolean tilt );
+int CL_NpcWalk_Tilts( vec3_t *pos, vec3_t *angles, int max );
+int CL_EmotePreview_Count( void );
+const char *CL_EmotePreview_Name( int index );
+const char *CL_EmotePreview_Anim( const char *emote );
+qboolean CL_Cinematic_RecordKey( int key );
 qboolean CL_NpcManager_Active( void );
 void CL_NpcManager_Frame( void );
 void CL_NpcManager_Close( void );
@@ -803,6 +835,13 @@ qboolean CL_EffectManager_RenderScene( const refdef_t *fd );
 qboolean CL_EffectManager_Camera( vec3_t origin, vec3_t angles );
 qboolean CL_EffectManager_ServerPrint( const char *text );
 void CL_EffectManager_Draw( void );
+float CL_EffectManager_FxScale( const char *effect, const vec3_t org );
+void CL_EffectManager_OpenForCinematic( void );
+qboolean CL_Cinematic_CaptureEffect( const char *cmd, float scale );
+qboolean CL_Cinematic_CaptureSound( const char *cmd );
+void CL_SoundManager_OpenForCinematic( void );
+qboolean CL_Cinematic_PickingEffect( void );
+void CL_EffectManager_ScaleHook( char **argv, int argc, const char *message );
 
 // cl_mapeditor.cpp
 void CL_MapEditor_Init( void );
@@ -880,6 +919,8 @@ void CL_RpCinematic_EditorKeyEvent( int key, qboolean down );
 void CL_RpCinematic_EditorCharEvent( int ch );
 void CL_RpCinematic_EditorMouseEvent( int dx, int dy );
 void CL_RpCinematic_EditorEscape( void );
+void CL_Cinematic_Hook( char **argv, int argc, const char *message );
+int CL_Cinematic_PlayMs( const char *name );
 
 // cl_storyteller.cpp
 // cl_soundmanager.cpp
@@ -916,6 +957,19 @@ void CL_RadialMenu_SettingsMouseEvent( int dx, int dy );
 void CL_RadialMenu_SettingsEscape( void );
 void CL_RadialMenu_DrawSettings( void );
 
+// cl_consettings.cpp
+void CL_ConSettings_Init( void );
+void CL_ConSettings_Shutdown( void );
+qboolean CL_ConSettings_Active( void );
+void CL_ConSettings_Close( void );
+void CL_ConSettings_Draw( void );
+void CL_ConSettings_KeyEvent( int key, qboolean down );
+void CL_ConSettings_CharEvent( int ch );
+void CL_ConSettings_MouseEvent( int dx, int dy );
+void CL_ConSettings_Escape( void );
+qhandle_t CL_ConSettings_Background( void );
+void CL_ConSettings_RendererRestarted( void );
+
 // cl_languages.cpp
 void CL_Languages_Init( void );
 void CL_Languages_Shutdown( void );
@@ -928,6 +982,28 @@ void CL_Languages_CharEvent( int ch );
 void CL_Languages_MouseEvent( int dx, int dy );
 void CL_Languages_Escape( void );
 const char *CL_Languages_OutgoingChat( const char *cmd );
+
+//
+// cl_chatsplit.cpp
+//
+void CL_ChatSplit_Init( void );
+int Con_ModernInput( void );	// cl_console.cpp: con_modernInput
+void CL_ChatSplit_Frame( void );
+qboolean CL_ChatSplit_Forward( void );
+void CL_ChatCaps_Text( const char *cmd, char *text );
+qboolean CL_ChatCaps_Forward( char *out, int size );
+
+//
+// cl_saberlight.cpp
+//
+void CL_SaberLight_Init( void );
+void CL_SaberLight_Shutdown( void );
+void CL_SaberLight_RendererRestarted( void );
+void CL_SaberLight_Entity( const refEntity_t *ent );
+qboolean CL_SaberLight_GameLight( const vec3_t org, float radius, float r, float g, float b );
+void CL_SaberLight_ClearScene( void );
+void CL_SaberLight_RenderScene( void );
+int CL_ShaderManager_NearestPlayer( const vec3_t org );	// cl_shadermanager.cpp
 void CL_Languages_ServerCommand( void );
 const char *CL_Languages_Filter( const char *text );
 
@@ -950,6 +1026,12 @@ void CL_RpAdmin_Disconnect( void );
 qboolean CL_RpAdmin_Allow( const char *tool, const char *command );
 qboolean CL_RpAdmin_ServerPrint( const char *text );
 void CL_RpAdmin_Frame( void );
+
+// cl_update.cpp
+void CL_Update_Init( void );
+void CL_Update_Shutdown( void );
+void CL_Update_Frame( void );
+void CL_Update_Draw( void );
 
 void CL_Storyteller_Init( void );
 void CL_Storyteller_Shutdown( void );
@@ -980,6 +1062,30 @@ void CL_FighterAssist_FilterCmd( usercmd_t *cmd, qboolean boost );
 void CL_ChatRange_Init( void );
 void CL_ChatRange_Shutdown( void );
 void CL_ChatRange_ServerCommand( void );
+void CL_ChatRange_OutgoingCommand( const char *cmd );
+qboolean CL_ChatSenderDistance( const char *line, float *distance );
+
+//
+// cl_whisper.cpp
+//
+void CL_Whisper_Init( void );
+void CL_Whisper_ServerCommand( void );
+
+//
+// cl_cgame.cpp: the client's own commands for the cgame
+//
+int CL_QueueCgameCommand( const char *text );
+int CL_LastCgameCommand( void );
+void CL_ResetCgameCommands( void );
+
+//
+// cl_loadpk3.cpp
+//
+void CL_LoadPk3_Init( void );
+void CL_LoadPk3_Frame( void );
+void CL_LoadPk3_Attached( void *ghoul2, int entityNum );
+void CL_EmotePreview_PlayerAnims( void *ghoul2, int legsAnim, int torsoAnim );
+int S_ForgetMissing( void );
 void CL_ChatRange_CgamePrint( const char *text );
 
 //

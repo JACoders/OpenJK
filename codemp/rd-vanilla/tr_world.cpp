@@ -376,7 +376,7 @@ static float g_playerHeight = 0.0f;
 R_AddWorldSurface
 ======================
 */
-static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse )
+static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse, qboolean noFog = qfalse )
 {
 	if (!noViewCount)
 	{
@@ -516,7 +516,7 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 	else
 #endif
 	{
-		R_AddDrawSurf( surf->data, surf->shader, surf->fogIndex, dlightBits );
+		R_AddDrawSurf( surf->data, surf->shader, noFog ? 0 : surf->fogIndex, dlightBits );
 	}
 }
 
@@ -563,8 +563,17 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent ) {
 //		R_DlightBmodel( bmodel, true );
 //	}
 
+	// another map drawn as a model ("*N-0", the map editor's): its sky is drawn as the world's
+	// sky, where the world's surfaces are, so it's left out; its fog numbers are its own map's,
+	// not this one's
+	const qboolean otherMap = (qboolean)( pModel->name[0] == '*' && strchr( pModel->name, '-' ) != NULL );
+
 	for ( i = 0 ; i < bmodel->numSurfaces ; i++ ) {
-		R_AddWorldSurface( bmodel->firstSurface + i, tr.currentEntity->dlightBits, qtrue );
+		msurface_t *surf = bmodel->firstSurface + i;
+
+		if ( otherMap && surf->shader && ( surf->shader->sky || surf->shader->fogParms || ( surf->shader->surfaceFlags & SURF_SKY ) ) )
+			continue;
+		R_AddWorldSurface( surf, tr.currentEntity->dlightBits, qtrue, otherMap );
 	}
 }
 

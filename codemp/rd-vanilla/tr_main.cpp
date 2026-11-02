@@ -113,6 +113,13 @@ int R_CullLocalPointAndRadius( const vec3_t pt, float radius )
 	vec3_t transformed;
 
 	R_LocalPointToWorld( pt, transformed );
+	if ( tr.currentEntity && tr.currentEntity->e.nonNormalizedAxes ) {
+		const float scale = Q_max( VectorLength( tr.currentEntity->e.axis[0] ),
+			Q_max( VectorLength( tr.currentEntity->e.axis[1] ), VectorLength( tr.currentEntity->e.axis[2] ) ) );
+
+		if ( scale > 0.0f )
+			radius *= scale;
+	}
 
 	return R_CullPointAndRadius( transformed, radius );
 }

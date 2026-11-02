@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // one step a line: its action, 1 or 0 for whether it runs, and its settings.
 //
 // "When someone comes" waits for a player or NPC to come into a map trigger, or near a
-// spot or an effect, or for a door or button to move. A story starting with it can be
+// spot or an effect, or for a door to move. A story starting with it can be
 // armed: a copy of it waits in the background and plays when that happens, once or
 // every time, several at once. The server only sends this client who is near it, so the
 // rest of the map is watched two more ways (see FAR AWAY): players with this client are
@@ -51,6 +51,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "qcommon/cm_public.h"
+#include "cl_widgets.h"
 
 #define ST_TOGGLE_CMD		"storyteller"
 #define ST_SAVE_DIR			"storyteller"		// in the game folder
@@ -123,6 +124,7 @@ typedef enum {
 	ST_A_LOCK,
 	ST_A_SOUND,
 	ST_A_MUSIC,
+	ST_A_CINEMATIC,
 	ST_A_CIN_START,
 	ST_A_CAM_SHOT,
 	ST_A_CAM_FOV,
@@ -150,7 +152,7 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 	{ "pause", "Wait for me", "Flow", "Stops until you press Continue, or run /storyteller continue (bind it to a key). The note shows while it waits.", -1, -1, 1, {
 		{ "Note", ST_K_TEXT, "", NULL } } },
 	{ "trigger", "When someone comes", "Flow", "Waits until someone comes into a map trigger or near a spot or an effect, a door moves, someone says one of the words (| between them), or someone uses one of the map editor's use triggers (by its name). With For, they have to stay in that many seconds. A story starting with it can be armed. Players out of sight are found too: those with this client say where they are (with experimental on), the others are asked for with rporigin.", 5, -1, 9, {
-		{ "Where", ST_K_CHOICE, "map trigger", "map trigger|near a spot|near an effect|door or button|someone says|someone uses" },
+		{ "Where", ST_K_CHOICE, "map trigger", "map trigger|near a spot|near an effect|door|someone says|someone uses" },
 		{ "Which", ST_K_TEXT, "", NULL },
 		{ "Who", ST_K_CHOICE, "any player", "any player|any NPC|anyone|me|named" },
 		{ "Name", ST_K_TEXT, "", NULL },
@@ -159,7 +161,7 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 		{ "Y", ST_K_NUMBER, "", NULL },
 		{ "Z", ST_K_NUMBER, "", NULL },
 		{ "For (s)", ST_K_NUMBER, "0", NULL } } },
-	{ "if", "If", "Flow", "Looks once, there and then: how many are in a map trigger or near a spot or an effect, or whether someone has said one of the words (| between them), or used the use trigger by that name, since the story began. True, the steps after it play; false, the ones after its Else, or after its End if.", 5, -1, 10, {
+	{ "if", "If", "Flow", "Goes under a When step, and looks once, when the story gets to it: how many are in a map trigger or near a spot or an effect, or whether someone has said one of the words (| between them), or used the use trigger by that name, since the story began. True, the steps after it play; false, the ones after its Else, or after its End if.", 5, -1, 10, {
 		{ "Where", ST_K_CHOICE, "map trigger", "map trigger|near a spot|near an effect|someone says|someone uses" },
 		{ "Which", ST_K_TEXT, "", NULL },
 		{ "Who", ST_K_CHOICE, "any player", "any player|any NPC|anyone|me|named" },
@@ -281,6 +283,9 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 	{ "music", "Change music", "World", "Changes the music for everyone with rpmusic: a file from the music folder, the map's own again, or none. Pick it in the music manager to hear it first.", -1, -1, 2, {
 		{ "Do", ST_K_CHOICE, "play", "play|map default|none" },
 		{ "Music", ST_K_TEXT, "", NULL } } },
+	{ "cinematic", "Play cinematic", "Cinematic", "Plays a cinematic made in the cinematic manager for everyone with this client: its camera shots, and what the players and NPCs in it do. Edit opens it there (or /cinematicmanager <name>). It goes out a part a second first, then plays; the story waits for it to end unless told not to.", -1, -1, 2, {
+		{ "Cinematic", ST_K_TEXT, "", NULL },
+		{ "Wait", ST_K_CHOICE, "until it ends", "until it ends|no" } } },
 	{ "cinstart", "Start cinematic", "Cinematic", "Takes everyone with this client from their own view to the cinematic camera, starting where each of them looks from. Camera shots start one too. Players can leave it with /cincam stop.", -1, -1, 2, {
 		{ "HUD", ST_K_CHOICE, "hide", "hide|show" },
 		{ "Bars", ST_K_CHOICE, "on", "on|off" } } },
@@ -305,6 +310,7 @@ typedef struct {
 
 typedef struct {
 	int			sel, scroll;
+	int			shownSel;		// the selection last brought into view
 	int			lastClickTime, lastClickRow;
 } stList_t;
 
@@ -373,7 +379,34 @@ typedef enum {
 typedef struct {
 	const char	*header;		// NULL for an action
 	stAction_t	action;
+	int			kind;			// a "when": which of stWhenKinds, else -1
 } stActionRow_t;
+
+// the kinds of "when", each its own action in the list; its Where, in the story file
+#define ST_WHEN_ARMED	" A story starting with it can be armed: it plays each time it's set off."
+#define ST_WHEN_FAR		" Players out of sight are found too: those with this client say where they are (with experimental on), the others are asked for with rporigin."
+static const struct {
+	const char	*where;
+	const char	*name;
+	const char	*desc;
+} stWhenKinds[] = {
+	{ "map trigger", "When someone enters a map trigger", "Waits until someone comes into one of the map's own triggers: stand in it and press I stand in, or pick it from the list. With For, they have to stay in that many seconds." ST_WHEN_ARMED ST_WHEN_FAR },
+	{ "near a spot", "When someone comes near a spot", "Waits until someone comes within the radius of a spot, where you stand when it's added. With For, they have to stay that many seconds." ST_WHEN_ARMED ST_WHEN_FAR },
+	{ "near an effect", "When someone comes near an effect", "Waits until someone comes within the radius of an effect placed with the effect manager. With For, they have to stay that many seconds." ST_WHEN_ARMED ST_WHEN_FAR },
+	{ "door", "When a door moves", "Waits until one of the map's doors opens or closes: aim at it, or pick it from the list. Your game only sees a door while it's near you." ST_WHEN_ARMED },
+	{ "someone says", "When someone says", "Waits until someone says one of the words in chat, | between them." ST_WHEN_ARMED },
+	{ "someone uses", "When someone uses a trigger", "Waits until someone uses one of the map editor's use triggers, by its name: one with Hold use only once it's been held that long." ST_WHEN_ARMED },
+};
+
+static int ST_WhenKind( const char *where ) {
+	if ( !Q_stricmp( where, "door or button" ) )
+		where = "door";
+	for ( int i = 0; i < (int)ARRAY_LEN( stWhenKinds ); i++ ) {
+		if ( !Q_stricmp( where, stWhenKinds[i].where ) )
+			return i;
+	}
+	return 0;
+}
 
 static struct {
 	qboolean	open;
@@ -395,7 +428,7 @@ static struct {
 	byte		marked[ST_MAX_STEPS];	// picked with Ctrl or Shift, with the selected one
 	int			anchor;				// where a Shift+click picks from
 
-	stActionRow_t	actionRows[ST_NUM_ACTIONS * 2];
+	stActionRow_t	actionRows[ST_NUM_ACTIONS * 2 + 8];
 	int				numActionRows;
 	stList_t		actionList;
 
@@ -609,7 +642,7 @@ static qboolean ST_TriggerEffect( const stStep_t *s ) {
 }
 
 static qboolean ST_TriggerDoor( const stStep_t *s ) {
-	return (qboolean)!Q_stricmp( s->values[0], "door or button" );
+	return (qboolean)( !Q_stricmp( s->values[0], "door" ) || !Q_stricmp( s->values[0], "door or button" ) );
 }
 
 static qboolean ST_TriggerChat( const stStep_t *s ) {
@@ -674,6 +707,8 @@ static qboolean ST_FieldShown( const stStep_t *s, int field ) {
 		return qtrue;
 	if ( !ST_Watches( s ) )
 		return qtrue;
+	if ( s->action == ST_A_TRIGGER && field == 0 )
+		return qfalse;
 	if ( ST_TriggerChat( s ) || ST_TriggerUse( s ) )
 		return (qboolean)( field <= 2 || ( field == 3 && !Q_stricmp( s->values[2], "named" ) ) );
 	switch ( field ) {
@@ -776,6 +811,7 @@ static qboolean ST_Experimental( stAction_t action ) {
 	case ST_A_NPC_TALK:
 	case ST_A_NPC_WALK:
 	case ST_A_OBJECTIVE:
+	case ST_A_CINEMATIC:
 	case ST_A_CIN_START:
 	case ST_A_CAM_SHOT:
 	case ST_A_CAM_FOV:
@@ -785,6 +821,13 @@ static qboolean ST_Experimental( stAction_t action ) {
 	default:
 		return qfalse;
 	}
+}
+
+// the camera steps from before the cinematic manager: stories that have them still play them,
+// but they're no longer in the list to add
+static qboolean ST_OldAction( int action ) {
+	return (qboolean)( action == ST_A_CIN_START || action == ST_A_CAM_SHOT || action == ST_A_CAM_FOV
+		|| action == ST_A_CIN_BARS || action == ST_A_CIN_END );
 }
 
 // an action from the list can go in the story
@@ -910,7 +953,7 @@ static const char *ST_StepCommand( const stStep_t *s, qboolean *local, const cha
 				return NULL;
 			}
 		} else if ( !ST_TriggerNear( s ) && !ST_ModelNum( v[1] ) ) {
-			*error = ST_TriggerDoor( s ) ? "Pick the door or button: aim at it, or pick it from the list"
+			*error = ST_TriggerDoor( s ) ? "Pick the door: aim at it, or pick it from the list"
 				: "Pick the trigger: stand in it, or pick it from the list";
 			return NULL;
 		}
@@ -1006,6 +1049,24 @@ static const char *ST_StepCommand( const stStep_t *s, qboolean *local, const cha
 		else
 			Com_sprintf( cmd, sizeof( cmd ), "rpnotify -1 1 cmd:objective/%s", v[0] );
 		return cmd;
+
+	case ST_A_CINEMATIC: {
+		static char why[MAX_STRING_CHARS];
+
+		if ( !v[0][0] ) {
+			*error = "Name the cinematic, then Edit to make it";
+			return NULL;
+		}
+		if ( CL_Cinematic_PlayMs( v[0] ) < 0 ) {
+			Com_sprintf( why, sizeof( why ), "No cinematic called %s yet: Edit makes it", v[0] );
+			*error = why;
+			return NULL;
+		}
+		// it sends itself, a part at a time
+		*local = qtrue;
+		Com_sprintf( cmd, sizeof( cmd ), "cinematicmanager send %s", v[0] );
+		return cmd;
+	}
 
 	case ST_A_CIN_START:
 		Com_sprintf( cmd, sizeof( cmd ), "rpnotify -1 1 cmd:cin/start%s%s", !Q_stricmp( v[0], "show" ) ? "/hud" : "",
@@ -1807,6 +1868,10 @@ static const char *ST_StepSummary( const stStep_t *s ) {
 	case ST_A_OBJECTIVE:
 		Com_sprintf( buf, sizeof( buf ), "Objective %s%s%s", s->values[0], s->values[1][0] ? ": " : "", s->values[1] );
 		break;
+	case ST_A_CINEMATIC:
+		Com_sprintf( buf, sizeof( buf ), "Cinematic %s%s", s->values[0][0] ? s->values[0] : "?",
+			!Q_stricmp( s->values[1], "no" ) ? " (goes on)" : "" );
+		break;
 	case ST_A_CIN_START:
 		Com_sprintf( buf, sizeof( buf ), "Start cinematic (HUD %s, bars %s)", s->values[0], s->values[1] );
 		break;
@@ -1866,6 +1931,34 @@ static const char *ST_StepSummary( const stStep_t *s ) {
 	return buf;
 }
 
+// an action's name, a "when" by its kind
+static const char *ST_StepName( const stStep_t *s ) {
+	if ( s->action == ST_A_TRIGGER )
+		return stWhenKinds[ST_WhenKind( s->values[0] )].name;
+	return ST_Def( s )->name;
+}
+
+static const char *ST_RowName( const stActionRow_t *r ) {
+	return r->kind >= 0 ? stWhenKinds[r->kind].name : stActions[r->action].name;
+}
+
+static const char *ST_RowDesc( const stActionRow_t *r ) {
+	return r->kind >= 0 ? stWhenKinds[r->kind].desc : stActions[r->action].desc;
+}
+
+// an If, an Else or an End if: they go under a "when", and look when it's set off
+static qboolean ST_IsCondition( stAction_t action ) {
+	return (qboolean)( action == ST_A_IF || action == ST_A_ELSE || action == ST_A_ENDIF );
+}
+
+static qboolean ST_UnderWhen( const stStep_t *steps, int row ) {
+	for ( int i = 0; i < row; i++ ) {
+		if ( steps[i].action == ST_A_TRIGGER )
+			return qtrue;
+	}
+	return qfalse;
+}
+
 static qboolean ST_StepUsable( const stStep_t *s ) {
 	qboolean local;
 	const char *error;
@@ -1885,6 +1978,11 @@ static void ST_SelectStep( int index ) {
 	st.focus = ST_F_NONE;
 }
 
+// where a new step goes: after the selected one
+static int ST_InsertAt( void ) {
+	return ( st.stepList.sel >= 0 && st.stepList.sel < st.numSteps ) ? st.stepList.sel + 1 : st.numSteps;
+}
+
 // a new step of this action, after the selected one
 static void ST_AddStep( stAction_t action ) {
 	int at;
@@ -1894,7 +1992,11 @@ static void ST_AddStep( stAction_t action ) {
 		ST_Message( S_COLOR_RED "The story is full" );
 		return;
 	}
-	at = ( st.stepList.sel >= 0 && st.stepList.sel < st.numSteps ) ? st.stepList.sel + 1 : st.numSteps;
+	at = ST_InsertAt();
+	if ( ST_IsCondition( action ) && !ST_UnderWhen( st.steps, at ) ) {
+		ST_Message( S_COLOR_YELLOW "An If, Else or End if goes under a When step: add the When first, then select it" );
+		return;
+	}
 	memmove( &st.steps[at + 1], &st.steps[at], ( st.numSteps - at ) * sizeof( st.steps[0] ) );
 	st.numSteps++;
 	if ( ST_RunHere() && st.run.pc >= at )
@@ -1908,6 +2010,17 @@ static void ST_AddStep( stAction_t action ) {
 	ST_FillHere( s );
 	ST_SelectStep( at );
 	ST_Changed();
+}
+
+// a row of the actions list put in the story: a "when" of its kind
+static void ST_AddRow( const stActionRow_t *r ) {
+	const int before = st.numSteps;
+
+	ST_AddStep( r->action );
+	if ( r->kind >= 0 && st.numSteps > before && st.stepList.sel >= 0 ) {
+		Q_strncpyz( st.steps[st.stepList.sel].values[0], stWhenKinds[r->kind].where, ST_VALUE_LEN );
+		ST_FillHere( &st.steps[st.stepList.sel] );
+	}
 }
 
 // the steps picked, in order: the marked ones, or the selected one; how many
@@ -2137,6 +2250,11 @@ static qboolean ST_Play( stRun_t *r, stStep_t *steps, int numSteps, const char *
 			r->pc++;
 			continue;
 		}
+		if ( ST_IsCondition( s->action ) && !ST_UnderWhen( steps, r->pc ) ) {
+			Com_Printf( S_COLOR_YELLOW "%sstep %i: an If, Else or End if goes under a When step; the story stops here\n", prefix, r->pc + 1 );
+			r->pc = numSteps;
+			return qtrue;
+		}
 
 		switch ( s->action ) {
 		case ST_A_WAIT:
@@ -2230,6 +2348,13 @@ static qboolean ST_Play( stRun_t *r, stStep_t *steps, int numSteps, const char *
 			r->sent++;
 			// a console command may well send one too
 			st.nextSend = cls.realtime + ST_CommandGap();
+			// a cinematic goes out and plays out
+			if ( s->action == ST_A_CINEMATIC && Q_stricmp( s->values[1], "no" ) ) {
+				const int ms = CL_Cinematic_PlayMs( s->values[0] );
+
+				if ( ms > 0 )
+					r->shotUntil = cls.realtime + ms;
+			}
 			if ( s->action == ST_A_CAM_SHOT ) {
 				char hook[MAX_STRING_CHARS];
 				int ms;
@@ -2494,6 +2619,9 @@ static int ST_ReadStory( const char *name, stStep_t *steps, int max, int *skippe
 		ST_SetDefaults( s );
 		for ( int i = 2; i < argc && i - 2 < ST_Def( s )->numFields; i++ )
 			Q_strncpyz( s->values[i - 2], argv[i], ST_VALUE_LEN );
+		// as older stories have it
+		if ( s->action == ST_A_TRIGGER && !Q_stricmp( s->values[0], "door or button" ) )
+			Q_strncpyz( s->values[0], "door", ST_VALUE_LEN );
 	}
 	FS_FreeFile( buf );
 	return count;
@@ -2694,14 +2822,20 @@ static void ST_BuildActionRows( void ) {
 
 	st.numActionRows = 0;
 	for ( int i = 0; i < ST_NUM_ACTIONS; i++ ) {
+		if ( ST_OldAction( i ) )
+			continue;
 		if ( !category || Q_stricmp( category, stActions[i].category ) ) {
 			category = stActions[i].category;
 			st.actionRows[st.numActionRows].header = category;
 			st.numActionRows++;
 		}
-		st.actionRows[st.numActionRows].header = NULL;
-		st.actionRows[st.numActionRows].action = (stAction_t)i;
-		st.numActionRows++;
+		// a "when", once for each kind
+		for ( int k = 0; k < ( i == ST_A_TRIGGER ? (int)ARRAY_LEN( stWhenKinds ) : 1 ); k++ ) {
+			st.actionRows[st.numActionRows].header = NULL;
+			st.actionRows[st.numActionRows].action = (stAction_t)i;
+			st.actionRows[st.numActionRows].kind = i == ST_A_TRIGGER ? k : -1;
+			st.numActionRows++;
+		}
 	}
 }
 
@@ -2755,11 +2889,18 @@ void CL_Storyteller_Open( void ) {
 		ST_Open();
 }
 
-// the camera editor saved a shot it was opened on: the step takes the name it went under
+// the cinematic manager saved what it was opened on: the step takes the name it went under; an
+// old Camera shot step plays it as a cinematic from now on, waiting for it or not as it did
 void CL_Storyteller_ShotSaved( const char *name ) {
 	stStep_t *s = ST_SelectedStep();
 
-	if ( s && s->action == ST_A_CAM_SHOT && Q_stricmp( s->values[0], name ) ) {
+	if ( !s || ( s->action != ST_A_CINEMATIC && s->action != ST_A_CAM_SHOT ) )
+		return;
+	if ( s->action == ST_A_CAM_SHOT ) {
+		s->action = ST_A_CINEMATIC;
+		ST_Changed();
+	}
+	if ( Q_stricmp( s->values[0], name ) ) {
 		Q_strncpyz( s->values[0], name, ST_VALUE_LEN );
 		ST_Changed();
 	}
@@ -4034,6 +4175,20 @@ static void ST_NextField( void ) {
 	st.focus = ST_F_NONE;
 }
 
+// a character the focused box takes
+static qboolean ST_AllowChar( int ch ) {
+	int size;
+	stKind_t kind;
+
+	if ( !ST_FocusText( &size, &kind ) || ch < ' ' || ch == '"' || ch > 126 )
+		return qfalse;
+	if ( st.focus == ST_F_SAVE_NAME )
+		return ST_NameChar( ch );
+	if ( kind == ST_K_NUMBER && !isdigit( ch ) && ch != '-' && ch != '.' )
+		return qfalse;
+	return qtrue;
+}
+
 static void ST_ListMove( stList_t *list, int count, int delta ) {
 	if ( !count )
 		return;
@@ -4073,14 +4228,14 @@ void CL_Storyteller_KeyEvent( int key, qboolean down ) {
 
 	text = ST_FocusText( &size, &kind );
 	if ( text ) {
-		switch ( key ) {
-		case A_BACKSPACE:
-			if ( text[0] ) {
-				text[strlen( text ) - 1] = '\0';
-				if ( st.focus != ST_F_SAVE_NAME )
-					ST_Changed();
-			}
+		const int edit = WG_EditKey( text, size, key, ST_AllowChar );
+
+		if ( edit ) {
+			if ( ( edit & WG_EDIT_CHANGED ) && st.focus != ST_F_SAVE_NAME )
+				ST_Changed();
 			return;
+		}
+		switch ( key ) {
 		case A_ENTER:
 		case A_KP_ENTER:
 			if ( st.focus == ST_F_SAVE_NAME )
@@ -4164,7 +4319,7 @@ void CL_Storyteller_KeyEvent( int key, qboolean down ) {
 	case A_KP_ENTER:
 		if ( st.actionList.sel >= 0 && st.actionList.sel < st.numActionRows && !st.actionRows[st.actionList.sel].header
 			&& ST_CanAdd( st.actionRows[st.actionList.sel].action ) )
-			ST_AddStep( st.actionRows[st.actionList.sel].action );
+			ST_AddRow( &st.actionRows[st.actionList.sel] );
 		break;
 	default:
 		break;
@@ -4172,25 +4327,14 @@ void CL_Storyteller_KeyEvent( int key, qboolean down ) {
 }
 
 void CL_Storyteller_CharEvent( int ch ) {
-	int size, len;
+	int size;
 	stKind_t kind;
 	char *text;
 
 	if ( !st.open )
 		return;
 	text = ST_FocusText( &size, &kind );
-	if ( !text || ch < ' ' || ch == '"' || ch > 126 )
-		return;
-	if ( st.focus == ST_F_SAVE_NAME && !ST_NameChar( ch ) )
-		return;
-	if ( kind == ST_K_NUMBER && !isdigit( ch ) && ch != '-' && ch != '.' )
-		return;
-	len = strlen( text );
-	if ( len >= size - 1 )
-		return;
-	text[len] = (char)ch;
-	text[len + 1] = '\0';
-	if ( st.focus != ST_F_SAVE_NAME )
+	if ( text && WG_EditChar( text, size, ch, ST_AllowChar ) && st.focus != ST_F_SAVE_NAME )
 		ST_Changed();
 }
 
@@ -4356,20 +4500,34 @@ static qboolean ST_Button( float x, float y, float w, const char *label, qboolea
 	return (qboolean)( ST_Clicked( x, y, w, ST_CTRL_H ) && enabled );
 }
 
-static void ST_TextBox( float x, float y, float w, const char *text, qboolean focused, const char *placeholder ) {
-	char buf[ST_VALUE_LEN + 2];
+static void ST_FieldStyle( wgStyle_t *style ) {
+	style->font = st.font;
+	style->scale = ST_TEXT_SCALE;
+	style->lineH = ST_ROW_H;
+	style->padX = 4.0f;
+	style->padY = 2.0f;
+	style->fill = stPanelFocus;
+	style->border = stBorder;
+	style->text = stWhite;
+	style->dim = stDim;
+}
 
+// a text box; its height now, grown down while it's typed in and long
+static float ST_TextBox( float x, float y, float w, char *text, qboolean focused, const char *placeholder ) {
+	wgStyle_t style;
+
+	ST_FieldStyle( &style );
 	ST_Box( x, y, w, ST_CTRL_H, focused ? stPanelFocus : stPanelLight );
-	if ( !text[0] && !focused ) {
-		ST_TextClipped( x + 4, y + 2, w - 8, placeholder, stDim );
-		return;
-	}
-	// keep the end in view
-	Com_sprintf( buf, sizeof( buf ), "%s%s", text, focused && ( ( cls.realtime >> 8 ) & 1 ) ? "_" : "" );
-	const char *shown = buf;
-	while ( shown[1] && ST_RawWidth( shown ) > w - 8 )
-		shown++;
-	ST_RawText( x + 4, y + 2, shown, stWhite );
+	WG_Field( &style, x, y, w, ST_CTRL_H, text, focused, placeholder, st.cursorX, st.cursorY );
+	return WG_FieldHeight( &style, w, ST_CTRL_H, text, focused );
+}
+
+// a click in a text box: it's typed in, the cursor where it was clicked
+static qboolean ST_TextBoxClicked( float x, float y, float w, float h, char *text ) {
+	if ( !ST_Clicked( x, y, w, h ) )
+		return qfalse;
+	WG_FieldClick( text, st.clickX, st.clickY );
+	return qtrue;
 }
 
 typedef void ( *stRowFunc_t )( int row, float x, float y, float w );
@@ -4383,10 +4541,20 @@ static int ST_List( stList_t *list, int count, float x, float y, float w, float 
 		list->scroll += st.wheel;
 		st.wheel = 0;
 	}
-	// keep the selection in view when it moved by key
-	if ( list->sel >= 0 && list->sel < list->scroll )
-		list->scroll = list->sel;
+	// the selection brought into view when it moves, not again while the list is scrolled
+	if ( list->sel != list->shownSel ) {
+		list->shownSel = list->sel;
+		if ( list->sel >= 0 && list->sel < list->scroll )
+			list->scroll = list->sel;
+		else if ( list->sel >= list->scroll + visible )
+			list->scroll = list->sel - visible + 1;
+	}
 	list->scroll = Com_Clampi( 0, Q_max( 0, count - visible ), list->scroll );
+	if ( count > visible ) {
+		ST_Box( x, y, w, h, stPanelLight );
+		WG_Scrollbar( x + w - WG_SCROLL_W - 1, y + 1, h - 2, count, visible, &list->scroll, st.cursorX, st.cursorY, &st.click, st.clickX, st.clickY );
+		w -= WG_SCROLL_W + 1;
+	}
 
 	if ( ST_Clicked( x, y, w, h ) ) {
 		row = list->scroll + (int)( ( st.clickY - y ) / ST_ROW_H );
@@ -4402,7 +4570,8 @@ static int ST_List( stList_t *list, int count, float x, float y, float w, float 
 		}
 	}
 
-	ST_Box( x, y, w, h, stPanelLight );
+	if ( count <= visible )
+		ST_Box( x, y, w, h, stPanelLight );
 	for ( int i = 0; i < visible; i++ ) {
 		const float ry = y + i * ST_ROW_H;
 		const float *fill;
@@ -4427,10 +4596,11 @@ static void ST_DrawActionRow( int row, float x, float y, float w ) {
 
 	if ( r->header )
 		ST_Text( x, y, va( S_COLOR_YELLOW "%s", r->header ), stWhite );
-	else if ( ST_Experimental( r->action ) && !CL_RpHooks_Experimental() )
-		ST_TextClipped( x + 8, y, w - 8, va( S_COLOR_GREY "%s", stActions[r->action].name ), stWhite );
+	else if ( ( ST_Experimental( r->action ) && !CL_RpHooks_Experimental() )
+		|| ( ST_IsCondition( r->action ) && !ST_UnderWhen( st.steps, ST_InsertAt() ) ) )
+		ST_TextClipped( x + 8, y, w - 8, va( S_COLOR_GREY "%s", ST_RowName( r ) ), stWhite );
 	else
-		ST_TextClipped( x + 8, y, w - 8, stActions[r->action].name, stWhite );
+		ST_TextClipped( x + 8, y, w - 8, ST_RowName( r ), stWhite );
 }
 
 static void ST_DrawStepRow( int row, float x, float y, float w ) {
@@ -4446,6 +4616,10 @@ static void ST_DrawStepRow( int row, float x, float y, float w ) {
 	const float indent = 24.0f + Q_min( 6, ST_Depth( st.steps, row ) ) * 10.0f;
 
 	ST_Text( x + 18 - ST_TextWidth( num ), y, num, stDim );
+	if ( s->enabled && ST_IsCondition( s->action ) && !ST_UnderWhen( st.steps, row ) ) {
+		ST_TextClipped( x + indent, y, w - indent, va( S_COLOR_RED "needs a When above: " S_COLOR_WHITE "%s", summary ), stWhite );
+		return;
+	}
 	ST_TextClipped( x + indent, y, w - indent, s->enabled ? summary : va( "(off) %s", summary ),
 		s->enabled && ( s->action == ST_A_IF || s->action == ST_A_ELSE || s->action == ST_A_ENDIF ) && ST_StepUsable( s ) ? stAccent : color );
 }
@@ -4468,7 +4642,7 @@ static void ST_DrawActions( void ) {
 		&& st.actionList.sel + 1 < st.numActionRows )
 		st.actionList.sel++;
 	if ( picked >= 0 && !st.actionRows[picked].header && ST_CanAdd( st.actionRows[picked].action ) )
-		ST_AddStep( st.actionRows[picked].action );
+		ST_AddRow( &st.actionRows[picked] );
 
 	if ( st.actionList.sel < 0 || st.actionList.sel >= st.numActionRows )
 		return;
@@ -4477,11 +4651,14 @@ static void ST_DrawActions( void ) {
 		return;
 	const qboolean off = (qboolean)( ST_Experimental( r->action ) && !CL_RpHooks_Experimental() );
 
-	if ( ST_Button( ST_ACTIONS_X, listY + ST_ACTIONS_H + 4, ST_ACTIONS_W, va( "Add \"%s\"", stActions[r->action].name ), qfalse, (qboolean)!off ) )
-		ST_AddStep( r->action );
+	const qboolean noWhen = (qboolean)( ST_IsCondition( r->action ) && !ST_UnderWhen( st.steps, ST_InsertAt() ) );
+
+	if ( ST_Button( ST_ACTIONS_X, listY + ST_ACTIONS_H + 4, ST_ACTIONS_W, va( "Add \"%s\"", ST_RowName( r ) ), qfalse, (qboolean)( !off && !noWhen ) ) )
+		ST_AddRow( r );
 	ST_TextWrapped( ST_ACTIONS_X, listY + ST_ACTIONS_H + 24, ST_ACTIONS_W,
-		off ? va( S_COLOR_YELLOW "Experimental, off: " RP_EXPERIMENTAL_LABEL " turns it on. " S_COLOR_GREY "%s", stActions[r->action].desc )
-		: stActions[r->action].desc, stDim, 7 );
+		off ? va( S_COLOR_YELLOW "Experimental, off: " RP_EXPERIMENTAL_LABEL " turns it on. " S_COLOR_GREY "%s", ST_RowDesc( r ) )
+		: noWhen ? va( S_COLOR_YELLOW "Goes under a When step: add one, then select it. " S_COLOR_GREY "%s", ST_RowDesc( r ) )
+		: ST_RowDesc( r ), stDim, 7 );
 }
 
 static void ST_DrawSteps( void ) {
@@ -4496,7 +4673,7 @@ static void ST_DrawSteps( void ) {
 		int row = -1;
 
 		// the row a click is on, before the list takes it
-		if ( st.click && ST_InRect( ST_STEPS_X, listY, ST_STEPS_W, ST_STEPS_H ) ) {
+		if ( st.click && ST_InRect( ST_STEPS_X, listY, ST_STEPS_W - ( st.numSteps > (int)( ST_STEPS_H / ST_ROW_H ) ? WG_SCROLL_W + 1 : 0 ), ST_STEPS_H ) ) {
 			row = st.stepList.scroll + (int)( ( st.clickY - listY ) / ST_ROW_H );
 			if ( row >= st.numSteps )
 				row = -1;
@@ -4562,7 +4739,7 @@ static void ST_DrawEdit( void ) {
 		return;
 	}
 	def = ST_Def( s );
-	ST_Text( ST_EDIT_X, ST_TOP_Y, va( "Step %i" S_COLOR_GREY "  %s", st.stepList.sel + 1, def->name ), stWhite );
+	ST_Text( ST_EDIT_X, ST_TOP_Y, va( "Step %i" S_COLOR_GREY "  %s", st.stepList.sel + 1, ST_StepName( s ) ), stWhite );
 
 	for ( int i = 0; i < def->numFields; y += ST_FieldShown( s, i ) ? ST_CTRL_H + 3 : 0, i++ ) {
 		const stFieldDef_t *f = &def->fields[i];
@@ -4584,8 +4761,8 @@ static void ST_DrawEdit( void ) {
 			}
 			continue;
 		}
-		ST_TextBox( fx, y, fw, s->values[i], (qboolean)( st.focus == i ), f->kind == ST_K_NUMBER ? "number" : "type here" );
-		if ( ST_Clicked( fx, y, fw, ST_CTRL_H ) )
+		const float fh = ST_TextBox( fx, y, fw, s->values[i], (qboolean)( st.focus == i ), f->kind == ST_K_NUMBER ? "number" : "type here" );
+		if ( ST_TextBoxClicked( fx, y, fw, fh, s->values[i] ) )
 			st.focus = i;
 	}
 
@@ -4621,7 +4798,7 @@ static void ST_DrawEdit( void ) {
 				Com_sprintf( s->values[1], ST_VALUE_LEN, "*%i", m );
 				ST_Changed();
 			} else {
-				ST_Message( door ? S_COLOR_YELLOW "Aim at a door or button first" : S_COLOR_YELLOW "Stand in one of the map's triggers first" );
+				ST_Message( door ? S_COLOR_YELLOW "Aim at a door first" : S_COLOR_YELLOW "Stand in one of the map's triggers first" );
 			}
 		}
 		if ( ST_Button( ST_EDIT_X + ( bw + 4 ) * 2, y, bw, "From a list", qfalse, qtrue ) )
@@ -4698,11 +4875,11 @@ static void ST_DrawEdit( void ) {
 		y += ST_CTRL_H + 6;
 	}
 
-	if ( s->action == ST_A_CAM_SHOT ) {
-		if ( ST_Button( ST_EDIT_X, y, ST_EDIT_W, "Edit shot in the camera editor", qfalse, qtrue ) ) {
+	if ( s->action == ST_A_CINEMATIC || s->action == ST_A_CAM_SHOT ) {
+		if ( ST_Button( ST_EDIT_X, y, ST_EDIT_W, s->action == ST_A_CAM_SHOT ? "Open in the cinematic manager" : "Edit in the cinematic manager", qfalse, qtrue ) ) {
 			// a new one gets a name of its own
 			if ( !s->values[0][0] ) {
-				Com_sprintf( s->values[0], ST_VALUE_LEN, "shot%i", st.stepList.sel + 1 );
+				Com_sprintf( s->values[0], ST_VALUE_LEN, "cinematic%i", st.stepList.sel + 1 );
 				ST_Changed();
 			}
 			CL_RpCinematic_Edit( s->values[0], qtrue );
@@ -4739,12 +4916,14 @@ static void ST_DrawEdit( void ) {
 			: ST_TriggerUse( s ) ? "Used from when this step starts waiting: by you, or by anyone with this client with experimental on."
 			: ST_Number( s, 8 ) > 0 ? "Someone in already counts from when the step starts. Players out of sight count too; NPCs only near you."
 			: "Someone already in has to leave and come back. Players out of sight count too; NPCs only near you.", stDim, 3 );
-	} else if ( s->action == ST_A_IF ) {
+	} else if ( s->action == ST_A_IF && ST_UnderWhen( st.steps, st.stepList.sel ) ) {
 		const int lines = ST_TextWrapped( ST_EDIT_X, y, ST_EDIT_W, va( "%s: the steps after it play, else the ones after its Else.", ST_IfSummary( s ) ), stDim, 3 );
 		ST_TextWrapped( ST_EDIT_X, y + ( lines + 1 ) * ST_ROW_H, ST_EDIT_W, ST_TriggerChat( s )
 			? "Said in chat since the story began playing. End the If's steps with End if."
 			: ST_TriggerUse( s ) ? "Used since the story began playing. End the If's steps with End if."
 			: "Looked at once, when the story gets to it; players out of sight count too, NPCs only near you. End the If's steps with End if.", stDim, 3 );
+	} else if ( ST_IsCondition( s->action ) && !ST_UnderWhen( st.steps, st.stepList.sel ) ) {
+		ST_TextWrapped( ST_EDIT_X, y, ST_EDIT_W, S_COLOR_YELLOW "It goes under a When step: move it below one (Ctrl+Down), or add a When above it. Played as it is, the story stops here.", stWhite, 3 );
 	} else if ( s->action == ST_A_ELSE || s->action == ST_A_ENDIF ) {
 		ST_TextWrapped( ST_EDIT_X, y, ST_EDIT_W, s->action == ST_A_ELSE ? "The steps from here to the End if play when the If was false."
 			: "The If's steps end here; the story goes on either way.", stDim, 3 );
@@ -4942,7 +5121,7 @@ static void ST_ChooseApply( int row ) {
 }
 
 static void ST_DrawChoosePopup( void ) {
-	static const char *titles[] = { "Pick a trigger", "Pick a door or button", "Pick an effect", "Pick a route" };
+	static const char *titles[] = { "Pick a trigger", "Pick a door", "Pick an effect", "Pick a route" };
 	const float x = ST_POPUP_X, y = 80, w = ST_POPUP_W, h = 320;
 	const int count = ST_ChooseRows();
 	int picked = -1;
@@ -4954,7 +5133,7 @@ static void ST_DrawChoosePopup( void ) {
 			? "No routes saved yet: make one in the NPC manager, Manage tab, Walk row, Route on map."
 			: st.chooseKind == ST_CHOOSE_EFFECT
 			? "Asking the server for the map's effects... If none come, put some there with the effect manager."
-			: st.chooseKind == ST_CHOOSE_TRIGGER ? "This map has no triggers." : "This map has no doors or buttons.", stDim, 3 );
+			: st.chooseKind == ST_CHOOSE_TRIGGER ? "This map has no triggers." : "This map has no doors.", stDim, 3 );
 	} else {
 		picked = ST_List( &st.chooseList, count, x + 8, y + 26, w - 16, h - 60, ST_DrawChooseRow, NULL );
 	}
@@ -5060,8 +5239,8 @@ static void ST_DrawPopup( void ) {
 		const float y = 180, h = 90;
 		ST_Box( x, y, w, h, stPanelOpaque );
 		ST_Text( x + 8, y + 8, "Save the story as", stWhite );
-		ST_TextBox( x + 8, y + 26, w - 16, st.saveName, (qboolean)( st.focus == ST_F_SAVE_NAME ), "name" );
-		if ( ST_Clicked( x + 8, y + 26, w - 16, ST_CTRL_H ) )
+		const float fh = ST_TextBox( x + 8, y + 26, w - 16, st.saveName, (qboolean)( st.focus == ST_F_SAVE_NAME ), "name" );
+		if ( ST_TextBoxClicked( x + 8, y + 26, w - 16, fh, st.saveName ) )
 			st.focus = ST_F_SAVE_NAME;
 		ST_Text( x + 8, y + 46, va( S_COLOR_GREY "In %s/, letters, digits, _ and -", ST_SAVE_DIR ), stWhite );
 		if ( ST_Button( x + 8, y + h - 22, 80, "Save", qfalse, (qboolean)( st.saveName[0] != '\0' ) ) )
@@ -5425,5 +5604,6 @@ void CL_Storyteller_Draw( void ) {
 	st.click = qfalse;
 	st.wheel = 0;
 
+	WG_DrawOverlay();
 	re->DrawStretchPic( st.cursorX, st.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }

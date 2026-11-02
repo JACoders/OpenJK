@@ -1306,16 +1306,33 @@ Ghoul2 Insert Start
 
 	if (name[0] == '#')
 	{
-		char		temp[MAX_QPATH];
+		char		temp[MAX_QPATH], worldDir[MAX_QPATH];
+		const char	*path = va("maps/%s.bsp", name + 1);
 
+		// another map drawn as a model (the map editor's, misc_bsp's): one there is, once, while
+		// there's room, and not over the server's map still waiting to be read
+		if ( tr.numBSPModels >= MAX_SUB_BSP ) {
+			ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterModel: no room for another map (%s), %d are loaded\n", name, MAX_SUB_BSP );
+			return 0;
+		}
+		if ( ri.CM_GetCachedMapDiskImage() || ri.FS_ReadFile( path, NULL ) <= 0 ) {
+			ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterModel: can't load map %s\n", path );
+			return 0;
+		}
+		// the world's own folder stays: its external lightmaps are looked for in it
+		Q_strncpyz( worldDir, tr.worldDir, sizeof( worldDir ) );
 		tr.numBSPModels++;
-		RE_LoadWorldMap_Actual(va("maps/%s.bsp", name + 1), tr.bspModels[tr.numBSPModels - 1], tr.numBSPModels);
+		RE_LoadWorldMap_Actual(path, tr.bspModels[tr.numBSPModels - 1], tr.numBSPModels);
+		Q_strncpyz( tr.worldDir, worldDir, sizeof( tr.worldDir ) );
 		Com_sprintf(temp, MAX_QPATH, "*%d-0", tr.numBSPModels);
 		hash = generateHashValue(temp, FILE_HASH_SIZE);
 		for (mh=mhHashTable[hash]; mh; mh=mh->next)
 		{
 			if (Q_stricmp(mh->name, temp) == 0)
 			{
+				// asked for again by its name, it's this one, not loaded again
+				if ( mh->handle > 0 && mh->handle < tr.numModels )
+					RE_InsertModelIntoHash( name, tr.models[mh->handle] );
 				return mh->handle;
 			}
 		}
@@ -1933,4 +1950,28 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 	VectorCopy( frame->bounds[1], maxs );
 }
 
+/*
+================
+R_ForgetBadModels
 
+loadpk3: the models that failed to load are out of the name hash, so they're looked for again;
+their handles stay, as bad as they were. How many
+================
+*/
+int R_ForgetBadModels( void ) {
+	int count = 0;
+
+	for ( int h = 0; h < FILE_HASH_SIZE; h++ ) {
+		for ( modelHash_t **link = &mhHashTable[h]; *link; ) {
+			const int handle = ( *link )->handle;
+
+			if ( handle > 0 && handle < tr.numModels && tr.models[handle] && tr.models[handle]->type == MOD_BAD ) {
+				*link = ( *link )->next;
+				count++;
+				continue;
+			}
+			link = &( *link )->next;
+		}
+	}
+	return count;
+}

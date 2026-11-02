@@ -1,105 +1,54 @@
-# OpenJK
+# OpenJK-rpmod
 
-OpenJK is a community effort to maintain and improve the game and engine powering Jedi Academy and Jedi Outcast, while maintaining _full backwards compatibility_ with the existing games and mods.  
-This project does not intend to add major features, rebalance, or otherwise modify core gameplay.
+A Jedi Academy multiplayer client, built on [OpenJK](https://github.com/JACoders/OpenJK), with tools that work alongside **RPMod**, the JEDI clan's roleplay mod.
 
-Our aims are to:
+[![build](https://github.com/Ber-til/OpenJK-rpmod/actions/workflows/build.yml/badge.svg)](https://github.com/Ber-til/OpenJK-rpmod/actions/workflows/build.yml)
+[![release](https://img.shields.io/github/v/release/Ber-til/OpenJK-rpmod)](https://github.com/Ber-til/OpenJK-rpmod/releases/latest)
 
-- Improve the stability of the engine by fixing bugs and improving performance.
-- Support more hardware (x86_64, Arm, Apple Silicon) and software platforms (Linux, macOS)
-- Provide a clean base from which new code modifications can be made.
+## What it is, and what it isn't
 
-[![discord](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/dPNCfeQ)
-[![forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-brightgreen.svg)](https://jkhub.org/forums/forum/49-openjk/)
+OpenJK-rpmod is not a replacement for RPMod, and doesn't try to recreate what RPMod does. It adds tools on top of what RPMod and OpenJK already give you, to make building scenes, events and stories easier, plus quality-of-life features for everyone.
 
-[![build](https://github.com/JACoders/OpenJK/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/JACoders/OpenJK/actions/workflows/build.yml?query=branch%3Amaster)
-[![coverity](https://scan.coverity.com/projects/1153/badge.svg)](https://scan.coverity.com/projects/1153)
+Most of it lives in the engine, so it works with the game module RPMod's server loads. The tools send RPMod's own commands (`rpmodel`, `rpeffect`, `npc`, `rpsound`...), so your usual RPMod permissions apply.
 
-## Supported Games
+## What's in it
 
-| Game | Single Player | Multi Player |
-| - | - | - |
-| Jedi Academy | ✅ Stable | ✅ Stable |
-| Jedi Outcast | 😧 Works, needs attention | 🙅 Not supported - consider [JK2MV](https://jk2mv.org) |
+- **Managers** for models, NPCs, shaders, effects, sounds and music: browse every asset your game has, preview it, place it from a free camera, and send it with one click
+- **Storyteller**: missions made of steps, played on cue or armed to play when someone walks in, says or uses something
+- **Cinematic Manager**: whole cut scenes on one timeline, camera shots, actors, effects and sounds, played for everyone at once
+- **Map Editor**: move or hide parts of the map, add models, lights, fog, sounds and triggers, and share them
+- **Chat and console**: languages, long chat in parts, capitals, colours while typing, console settings, selection and find, a console key of your own
+- **Small things**: radial menus, saber styles, saber light, emote preview, wall stick, toggle crouch, widescreen text and more
 
-Please direct support queries, discussions and feature requests to the JKHub sub-forum or Discord linked above.
+Everything is described in [FEATURES.md](FEATURES.md), the commands and settings are in [COMMANDS.md](COMMANDS.md), and what changed in each version is in [CHANGELOG.md](CHANGELOG.md).
 
-## License
+### Experimental features
 
-OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in [LICENSE.txt](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
+A few features reach other players hidden inside RPMod's `rpnotify`, until RPMod supports them itself. Only players with this client, up to date, see them, and they stay off until you turn on **TOGGLE EXPERIMENTAL** (or `/rpexperimental on`). They're listed in [FEATURES.md](FEATURES.md#experimental-features).
 
-## For players
+## Installing
 
-To install OpenJK, you will first need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](https://store.steampowered.com/app/6020/), [Amazon](https://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy).
+You need Jedi Academy installed, from [Steam](https://store.steampowered.com/app/6020/) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy) for example.
 
-Download the [latest build](https://github.com/JACoders/OpenJK/releases/tag/latest) ([alt link](https://builds.openjk.org)) for your operating system.
+1. [Download the latest release](https://github.com/Ber-til/OpenJK-rpmod/releases/latest) for your system: `OpenJK-windows-x86.zip` on Windows.
+2. Extract everything in it into Jedi Academy's `GameData` folder, the renderer (`rd-vanilla_x86.dll`) included: several features need it. For Steam that's `<Steam folder>/steamapps/common/Jedi Academy/GameData/`. On Linux and macOS, extract the archive there the same way.
+3. If you already used OpenJK, you're ready. If not, tick **Use OpenJK if available** in the RPMod launcher.
 
-Installing and running OpenJK:
+## Building
 
-1. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData/`.
-1. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` app bundle (macOS), depending on your operating system.
+The client is built 32-bit (x86), as RPMod's game modules are. On Windows, from an *x86 Native Tools Command Prompt* for Visual Studio:
 
-### Linux Instructions
+```
+cmake -B build-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-x86 --target openjk.x86
+```
 
-If you do not have an existing JKA installation and need to download the base game:
+then copy `build-x86/openjk.x86.exe` (and the renderer, if you changed it) into `GameData`. OpenJK's [compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide) covers the rest, Linux and macOS included.
 
-1. Download and Install SteamCMD [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Linux).
-1. Set the download path using steamCMD: `force_install_dir /path/to/install/jka/`
-1. Using SteamCMD Set the platform to windows to download any windows game on steam. @sSteamCmdForcePlatformType "windows"
-1. Using SteamCMD download the game, `app_update 6020`.
+Bugs and ideas go in the [issues](https://github.com/Ber-til/OpenJK-rpmod/issues).
 
-Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData/`.
+## License and credits
 
-### macOS Instructions
+OpenJK-rpmod is free software under the GPLv2, as OpenJK is: see [LICENSE.txt](LICENSE.txt).
 
-If you have the Mac App Store Version of Jedi Academy, follow these steps to get OpenJK runnning under macOS:
-
-1. Install [Homebrew](https://brew.sh/) if you don't have it.
-1. Open the Terminal app, and enter the command `brew install sdl2`.
-1. Extract the contents of the OpenJK DMG into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
-1. Run `OpenJK.app` or `OpenJK SP.app`
-1. Savegames, Config Files and Log Files are stored in `/Users/$USER/Library/Application Support/OpenJK/`
-
-## For Developers
-
-### Building OpenJK
-
-- [Compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
-- [Debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging)
-
-### Contributing to OpenJK
-
-- [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
-- Create a new branch and make your changes
-- Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (JACoders/OpenJK)
-
-### Using OpenJK as a base for a new mod
-
-- [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
-- Change the JK_VERSION define in codemp/qcommon/game_version.h from "OpenJK" to your project name
-- If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
-
-## Maintainers (full list: [@JACoders](https://github.com/orgs/JACoders/people))
-
-Leads:
-
-- [Ensiform](https://github.com/ensiform)
-- [razor](https://github.com/Razish)
-- [Xycaleth](https://github.com/xycaleth)
-
-## Significant contributors ([full list](https://github.com/JACoders/OpenJK/graphs/contributors))
-
-- [bibendovsky](https://github.com/bibendovsky) (save games, platform support)
-- [BobaFett](https://github.com/Lrns123)
-- [BSzili](https://github.com/BSzili) (JK2, platform support)
-- [Cat](https://github.com/deepy) (infra)
-- [Didz](https://github.com/dionrhys)
-- [eezstreet](https://github.com/eezstreet)
-- exidl (SDL2, platform support)
-- [ImperatorPrime](https://github.com/ImperatorPrime) (JK2)
-- [mrwonko](https://github.com/mrwonko)
-- [redsaurus](https://github.com/redsaurus)
-- [Scooper](https://github.com/xScooper)
-- [Sil](https://github.com/TheSil)
-- [smcv](https://github.com/smcv) (debian packaging)
-- [Tristamus](https://tristamus.com>) (icon)
+It's built on the work of the [OpenJK team](https://github.com/JACoders/OpenJK#maintainers-full-list-jacoders) and [its contributors](https://github.com/JACoders/OpenJK/graphs/contributors), who keep Jedi Academy running on today's systems. Changes to OpenJK itself belong [upstream](https://github.com/JACoders/OpenJK).

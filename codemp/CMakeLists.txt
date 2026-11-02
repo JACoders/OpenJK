@@ -457,6 +457,9 @@ if(BuildMPEngine)
 		"${MPDir}/client/cl_console.cpp"
 		"${MPDir}/client/cl_fighterassist.cpp"
 		"${MPDir}/client/cl_chatrange.cpp"
+		"${MPDir}/client/cl_whisper.cpp"
+		"${MPDir}/client/cl_loadpk3.cpp"
+		"${MPDir}/client/cl_update.cpp"
 		"${MPDir}/client/cl_input.cpp"
 		"${MPDir}/client/cl_keys.cpp"
 		"${MPDir}/client/cl_lan.cpp"
@@ -481,6 +484,15 @@ if(BuildMPEngine)
 		"${MPDir}/client/cl_npcwalk.cpp"
 		"${MPDir}/client/cl_languages.cpp"
 		"${MPDir}/client/cl_rpcinematic.cpp"
+		"${MPDir}/client/cl_rpcinematic.h"
+		"${MPDir}/client/cl_cinematic.cpp"
+		"${MPDir}/client/cl_gizmo.cpp"
+		"${MPDir}/client/cl_widgets.cpp"
+		"${MPDir}/client/cl_chatsplit.cpp"
+		"${MPDir}/client/cl_saberlight.cpp"
+		"${MPDir}/client/cl_consettings.cpp"
+		"${MPDir}/client/cl_gizmo.h"
+		"${MPDir}/client/cl_widgets.h"
 		"${MPDir}/client/cl_ui.cpp"
 		"${MPDir}/client/cl_uiapi.cpp"
 		"${MPDir}/client/cl_uiapi.h"
@@ -661,6 +673,9 @@ if(BuildMPEngine)
 
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client")
+	if(WIN32)
+		set(MPEngineLibraries ${MPEngineLibraries} "winhttp")
+	endif(WIN32)
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
 endif(BuildMPEngine)
 

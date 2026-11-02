@@ -569,6 +569,7 @@ private:
 		bool	mPortalEffect;	// rww - render this before skyportals, and not in the normal world view.
 		bool	mIsRelative;	// bolt this puppy on keep it updated
 		short	mOwner;			// the player whose own it is, -1 none: drawn with their player shaders
+		float	mScale;			// how big it's drawn, 1 as made
 		CGhoul2Info_v *ghoul2;
 		vec3_t	mOrigin;
 		matrix3_t	mAxis;
@@ -648,6 +649,14 @@ public:
 	// the player whose own the effect being played or created is, -1 none: its pieces take
 	// that player's shader manager player shaders in place of the standard ones
 	int		mOwner;
+
+	// how big the effect being played or created is drawn, 1 as it was made: its sizes, the
+	// distances its pieces start from the middle and the speeds they go out at, all times this.
+	// mNextScale is for the next one played, 1 to let the effect manager say (see
+	// CL_EffectManager_FxScale); what an effect plays from inside it is as big as it
+	float	mScale;
+	float	mNextScale;
+	bool	mInCreate;
 
 	CFxScheduler();
 

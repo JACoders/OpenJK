@@ -1080,7 +1080,9 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		g_clAutoMapInput.yaw = 0.0f;
 		g_clAutoMapInput.pitch = 0.0f;
 	}
-	else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
+	else if ( Key_GetCatcher( ) & KEYCATCH_CONSETTINGS ) {
+		CL_ConSettings_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		UIVM_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MODELMANAGER ) {
 		CL_ModelManager_MouseEvent( dx, dy );

@@ -101,6 +101,7 @@ cvar_t	*cl_autolodscale;
 
 cvar_t	*cl_consoleKeys;
 cvar_t	*cl_consoleUseScanCode;
+cvar_t	*cl_consoleTildeKey;
 cvar_t	*cl_consoleShiftRequirement;
 
 cvar_t  *cl_lanForcePackets;
@@ -188,6 +189,9 @@ void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd ) {
 	// RPMod: what would crash the server stays here
 	if ( !isDisconnectCmd && !CL_RpHooks_AllowCommand( cmd ) )
 		return;
+	// a /me of your own is known for yours when it comes back
+	if ( !isDisconnectCmd )
+		CL_ChatRange_OutgoingCommand( cmd );
 	// an emote's animation is watched for, a Help click shows one
 	if ( !isDisconnectCmd )
 		CL_EmotePreview_Command( cmd );
@@ -850,6 +854,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 
 	// wipe the client connection
 	Com_Memset( &clc, 0, sizeof( clc ) );
+	CL_ResetCgameCommands();
 
 	cls.state = CA_DISCONNECTED;
 
@@ -881,6 +886,7 @@ so when they are typed in at the console, they will need to be forwarded.
 */
 void CL_ForwardCommandToServer( const char *string ) {
 	char	*cmd;
+	char	capped[MAX_STRING_CHARS];
 
 	cmd = Cmd_Argv(0);
 
@@ -893,6 +899,15 @@ void CL_ForwardCommandToServer( const char *string ) {
 		Com_Printf ("Unknown command \"%s" S_COLOR_WHITE "\"\n", cmd);
 		return;
 	}
+
+	// a chat given its capitals, then, too long for the server, in parts
+	if ( CL_ChatCaps_Forward( capped, sizeof( capped ) ) ) {
+		Cmd_TokenizeString( capped );
+		string = capped;
+		cmd = Cmd_Argv( 0 );
+	}
+	if ( CL_ChatSplit_Forward() )
+		return;
 
 	if ( Cmd_Argc() > 1 ) {
 		CL_AddReliableCommand( string, qfalse );
@@ -2368,6 +2383,11 @@ void CL_Frame ( int msec ) {
 	// drop the connection
 	CL_CheckTimeout();
 
+	// the parts of a long chat, one by one
+	CL_ChatSplit_Frame();
+	CL_LoadPk3_Frame();
+	CL_Update_Frame();
+
 	// send intentions now
 	CL_SendCmd();
 
@@ -2468,6 +2488,8 @@ void CL_InitRenderer( void ) {
 
 	cls.whiteShader = re->RegisterShader( "white" );
 	cls.consoleShader = re->RegisterShader( "console" );
+	CL_ConSettings_RendererRestarted();
+	CL_SaberLight_RendererRestarted();
 	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 	g_consoleField.widthInChars = g_console_field_width;
 
@@ -2871,16 +2893,22 @@ void CL_Init( void ) {
 	CL_SoundManager_Init ();
 	CL_RpHooks_Init ();
 	CL_RpAdmin_Init ();
+	CL_Update_Init ();
 	cl_ratioFix = Cvar_Get( "cl_ratioFix", "0", CVAR_ARCHIVE_ND, "Widescreen: text, and the engine's own, as on a 4:3 screen instead of stretched" );
 	cls.widthRatioCoef = 1.0f;
 	CL_RadialMenu_Init ();
 	CL_Languages_Init ();
+	CL_ChatSplit_Init ();
+	CL_SaberLight_Init ();
+	CL_ConSettings_Init ();
 	CL_SaberStyle_Init ();
 	CL_EmotePreview_Init ();
 	CL_RpCinematic_Init ();
 
 	CL_FighterAssist_Init ();
 	CL_ChatRange_Init ();
+	CL_Whisper_Init ();
+	CL_LoadPk3_Init ();
 
 	//
 	// register our variables
@@ -2973,6 +3001,7 @@ void CL_Init( void ) {
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE, "Which keys are used to toggle the console");
 	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE, "Use native console key detection" );
+	cl_consoleTildeKey = Cvar_Get( "cl_consoleTildeKey", "1", CVAR_ARCHIVE_ND, "The key under Esc opens the console; 0 it's a key as others, the console opened by the one con_keybind sets" );
 	cl_consoleShiftRequirement = Cvar_Get( "cl_consoleShiftRequirement", "0", CVAR_ARCHIVE, "Require shift key to be pressed for native console key detection" );
 
 	cl_filterGames = Cvar_Get( "cl_filterGames", "MBII MBIIOpenBeta", CVAR_ARCHIVE_ND, "List of fs_game to filter (space separated)" );
@@ -3108,6 +3137,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("csusage");
 	CL_RpHooks_Shutdown();
 	Cmd_RemoveCommand( "toolaccess" );
+	CL_Update_Shutdown();
 	Cmd_RemoveCommand( "+radial" );
 	Cmd_RemoveCommand( "-radial" );
 	Cmd_RemoveCommand( "radial" );
@@ -3119,6 +3149,8 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("clientinfo");
 	Cmd_RemoveCommand ("snd_restart");
 	Cmd_RemoveCommand ("vid_restart");
+	CL_ConSettings_Shutdown();
+	CL_SaberLight_Shutdown();
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("record");
 	Cmd_RemoveCommand ("demo");

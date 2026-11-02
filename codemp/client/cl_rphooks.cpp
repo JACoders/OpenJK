@@ -44,6 +44,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //     away; they name it by its text or its number in the list. clear empties the
 //     list, or with "done" only takes the struck ones. cmd:objective: <text> adds.
 //
+//   cmd:cine/<id>/<part>/<parts>: <text>
+//     a cinematic from the cinematic manager, played once all its parts are in; cmd:cine/stop
+//     ends it. See cl_cinematic.cpp.
 //   cmd:cin/<verb>/...
 //     a cinematic camera for everyone with this client; see cl_rpcinematic.cpp.
 //
@@ -56,9 +59,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //     they change, as the map starts and as someone joins. cmd:mine/<client number>/clear
 //     drops them. See cl_shadermanager.cpp.
 //
-//   cmd:sky/<r g b>/<degrees a second>/<pitch yaw roll>/<x y z>
-//     the sky tinted, spun round and turned, a 3D skybox's view also moved, until the
-//     map changes; see cl_shadermanager.cpp. cmd:sky/off puts it back.
+//   cmd:fxscale/<x y z>/<size>[/once]: <effect>
+//     the effect playing there drawn that much bigger or smaller, 1 as made; see
+//     cl_effectmanager.cpp.
+//
+//   cmd:sky/<r g b>/<degrees a second>/<pitch yaw roll>/<x y z>[/<portal x y z>|-[/<zoom>]]
+//     the sky tinted, spun round, turned and zoomed, a 3D skybox's view also moved, the map
+//     seen from a spot in place of the sky with a portal, until the map changes; see
+//     cl_shadermanager.cpp. cmd:sky/off puts it back.
 //     cmd:startcinematic and cmd:endcinematic start and end one too.
 //
 // Hooks only ever show things: nothing a server sends here runs a command.
@@ -424,6 +432,10 @@ static rhResult_t RH_Run( const char *text ) {
 		return RH_Npc( argv + 1, argc - 1, message );
 	if ( !Q_stricmp( argv[0], "objective" ) || !Q_stricmp( argv[0], "objectives" ) )
 		return RH_Objective( argv + 1, argc - 1, message );
+	if ( !Q_stricmp( argv[0], "cine" ) ) {
+		CL_Cinematic_Hook( argv + 1, argc - 1, message );
+		return RH_DROP;
+	}
 	if ( !Q_stricmp( argv[0], "cin" ) || !Q_stricmp( argv[0], "cinematic" ) ) {
 		CL_RpCinematic_Hook( argv + 1, argc - 1 );
 		return RH_DROP;
@@ -442,6 +454,10 @@ static rhResult_t RH_Run( const char *text ) {
 	}
 	if ( !Q_stricmp( argv[0], "sky" ) ) {
 		CL_ShaderManager_SkyHook( argv + 1, argc - 1 );
+		return RH_DROP;
+	}
+	if ( !Q_stricmp( argv[0], "fxscale" ) ) {
+		CL_EffectManager_ScaleHook( argv + 1, argc - 1, message );
 		return RH_DROP;
 	}
 	if ( !Q_stricmp( argv[0], "anim" ) ) {

@@ -542,10 +542,21 @@ void RE_SetSkyLook( const float *tint, const vec3_t angles, const vec3_t shift )
 	VectorCopy( shift, tr.skyLookShift );
 }
 
+void RE_SetSkyZoom( float zoom ) {
+	tr.skyZoom = Com_Clamp( 0.1f, 10.0f, zoom );
+}
+
 // the sky look on this scene: a 3D skybox's view turned the other way round its sky and moved,
 // the sky shader turned in the other views
 static void R_SkyLook( const refdef_t *fd ) {
 	matrix3_t axis;
+
+	// the zoom: a 3D skybox's view narrower or wider, the sky shader drawn so in the backend
+	tr.refdef.skyZoom = tr.skyZoom > 0.0f ? tr.skyZoom : 1.0f;
+	if ( ( fd->rdflags & RDF_SKYBOXPORTAL ) && !( fd->rdflags & RDF_NOWORLDMODEL ) && tr.refdef.skyZoom != 1.0f ) {
+		tr.refdef.fov_x = RAD2DEG( 2.0f * atanf( tanf( DEG2RAD( fd->fov_x ) * 0.5f ) / tr.refdef.skyZoom ) );
+		tr.refdef.fov_y = RAD2DEG( 2.0f * atanf( tanf( DEG2RAD( fd->fov_y ) * 0.5f ) / tr.refdef.skyZoom ) );
+	}
 
 	tr.refdef.skyTinted = tr.refdef.skyTurned = qfalse;
 	if ( !tr.skyLookOn || ( fd->rdflags & RDF_NOWORLDMODEL ) )

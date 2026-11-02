@@ -822,6 +822,28 @@ void RB_StageIteratorSky( void )
 	// to be drawn
 	RB_ClipSkyPolygons( &tess );
 
+	// the client's sky zoom: the sky drawn through a narrower or wider lens than the view. Zoomed,
+	// what shows through the sky's surfaces isn't the part of the box they cover, so all of it
+	// is drawn; the world drawn after covers what isn't sky
+	const qboolean zoomed = (qboolean)( backEnd.refdef.skyZoom > 0.0f && backEnd.refdef.skyZoom != 1.0f
+		&& !( backEnd.refdef.rdflags & RDF_SKYBOXPORTAL ) );
+
+	if ( zoomed ) {
+		float m[16];
+
+		for ( int k = 0; k < 6; k++ ) {
+			sky_mins[0][k] = sky_mins[1][k] = -1.0f;
+			sky_maxs[0][k] = sky_maxs[1][k] = 1.0f;
+		}
+		memcpy( m, backEnd.viewParms.projectionMatrix, sizeof( m ) );
+		m[0] *= backEnd.refdef.skyZoom;
+		m[5] *= backEnd.refdef.skyZoom;
+		qglMatrixMode( GL_PROJECTION );
+		qglPushMatrix();
+		qglLoadMatrixf( m );
+		qglMatrixMode( GL_MODELVIEW );
+	}
+
 	// r_showsky will let all the sky blocks be drawn in
 	// front of everything to allow developers to see how
 	// much sky is getting sucked in
@@ -867,6 +889,11 @@ void RB_StageIteratorSky( void )
 
 	// draw the inner skybox
 
+	if ( zoomed ) {
+		qglMatrixMode( GL_PROJECTION );
+		qglPopMatrix();
+		qglMatrixMode( GL_MODELVIEW );
+	}
 
 	// back to normal depth range
 	qglDepthRange( 0.0, 1.0 );

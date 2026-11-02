@@ -6344,3 +6344,24 @@ float CalcDistance(EMPOINT A, EMPOINT B)
 	return (float)sqrt(sqr(A.fX - B.fX)+sqr(A.fY - B.fY) + sqr(A.fZ - B.fZ));
 }
 #endif
+
+// loadpk3: sounds that couldn't be found are looked for again the next time they're registered;
+// how many
+int S_ForgetMissing( void ) {
+	int count = 0;
+
+	for ( int i = 1; i < s_numSfx; i++ ) {
+		sfx_t *sfx = &s_knownSfx[i];
+
+		if ( !sfx->bDefaultSound || sfx->pSoundData )
+			continue;
+#ifdef USE_OPENAL
+		if ( sfx->Buffer )
+			continue;
+#endif
+		sfx->bDefaultSound = qfalse;
+		sfx->bInMemory = qfalse;
+		count++;
+	}
+	return count;
+}
