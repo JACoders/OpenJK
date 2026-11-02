@@ -2318,6 +2318,10 @@ int RE_GetFogs( vec3_t *colors, float *depths, vec3_t *mins, vec3_t *maxs, int *
 void RE_SetFog( int fog, const float *color, float depth );
 int RE_AddFog( const vec3_t mins, const vec3_t maxs, const float *color, float depth );
 void RE_ClearAddedFogs( void );
+// OpenJK-rpmod: the map editor's world: triangles hidden, pieces moved as models of their own
+extern int tr_worldLoads;
+void RE_HideWorldTriangles( const int *surfaces, const int *triangles, int count );
+qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int count, const vec3_t origin );
 
 /*
 =============================================================

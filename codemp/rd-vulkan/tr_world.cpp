@@ -1554,3 +1554,269 @@ void R_AddWorldSurfaces ( void ) {
 	}
 #endif // USE_PMLIGHT
 }
+
+/*
+===============================================================================
+
+OpenJK-rpmod: the map editor's world (as in rd-vanilla)
+
+Triangles of the world are hidden by making them nothing, three times the same corner,
+and come back from a copy of the surface's indexes. With world caching (r_vbo) the
+surface's triangles are on the graphics card as the map has them, so a surface with
+hidden ones is drawn the uncached way meanwhile. A piece of the world is a brush model
+of its own, with the same shaders, lightmaps and vertex light, so it looks as it did
+wherever it's put. Both are for the world they were made in: a new one drops them.
+
+===============================================================================
+*/
+
+#define WE_MAX_HIDDEN	4096
+#define WE_MAX_PIECES	256
+
+int tr_worldLoads;
+
+typedef struct {
+	int			surface;
+	int			*indexes;		// the surface's own, in the world
+	int			*saved;			// what they were
+	int			numIndexes;
+	int			*vboItemIndex;	// the surface's place in the world cache, 0 meanwhile
+	int			vboItem;		// what it was
+} weHidden_t;
+
+static weHidden_t	weHidden[WE_MAX_HIDDEN];
+static int			weNumHidden;
+static void			*wePieces[WE_MAX_PIECES];
+static int			weNumPieces;
+static int			weWorld = -1;
+
+// a world surface's triangle list, NULL for a curve or a flare
+static int *WE_Indexes( int surface, int *numIndexes, int **vboItemIndex ) {
+	msurface_t *surf;
+
+	if ( !tr.world || surface < 0 || surface >= tr.world->numsurfaces )
+		return NULL;
+	surf = &tr.world->surfaces[surface];
+	if ( *surf->data == SF_TRIANGLES ) {
+		srfTriangles_t *tri = (srfTriangles_t *)surf->data;
+
+		*numIndexes = tri->numIndexes;
+		*vboItemIndex = &tri->vboItemIndex;
+		return tri->indexes;
+	}
+	if ( *surf->data == SF_FACE ) {
+		srfSurfaceFace_t *face = (srfSurfaceFace_t *)surf->data;
+
+		*numIndexes = face->numIndices;
+		*vboItemIndex = &face->vboItemIndex;
+		return (int *)( (byte *)face + face->ofsIndices );
+	}
+	return NULL;
+}
+
+// before the world's changed back: what was kept for one gone is just let go
+static void WE_CheckWorld( void ) {
+	if ( weWorld == tr_worldLoads )
+		return;
+	for ( int i = 0; i < weNumHidden; i++ )
+		Z_Free( weHidden[i].saved );
+	weNumHidden = 0;
+	for ( int i = 0; i < weNumPieces; i++ )
+		Z_Free( wePieces[i] );
+	weNumPieces = 0;
+	weWorld = tr_worldLoads;
+}
+
+static const weHidden_t *WE_FindHidden( int surface ) {
+	for ( int i = 0; i < weNumHidden; i++ ) {
+		if ( weHidden[i].surface == surface )
+			return &weHidden[i];
+	}
+	return NULL;
+}
+
+// the surface's triangles as the map has them, even with some hidden
+static const int *WE_SourceIndexes( int surface, int *numIndexes ) {
+	const weHidden_t *h = WE_FindHidden( surface );
+	int *vboItemIndex;
+
+	if ( h ) {
+		*numIndexes = h->numIndexes;
+		return h->saved;
+	}
+	return WE_Indexes( surface, numIndexes, &vboItemIndex );
+}
+
+void RE_HideWorldTriangles( const int *surfaces, const int *triangles, int count ) {
+	weHidden_t *h = NULL;
+
+	WE_CheckWorld();
+	// all back as the map has them, then hidden again as asked
+	for ( int i = 0; i < weNumHidden; i++ ) {
+		memcpy( weHidden[i].indexes, weHidden[i].saved, weHidden[i].numIndexes * sizeof( int ) );
+		*weHidden[i].vboItemIndex = weHidden[i].vboItem;
+		Z_Free( weHidden[i].saved );
+	}
+	weNumHidden = 0;
+
+	for ( int i = 0; i < count; i++ ) {
+		const int t = triangles[i];
+
+		if ( !h || h->surface != surfaces[i] ) {
+			int numIndexes, *vboItemIndex, *indexes = WE_Indexes( surfaces[i], &numIndexes, &vboItemIndex );
+
+			h = (weHidden_t *)WE_FindHidden( surfaces[i] );
+			if ( !h ) {
+				if ( !indexes || weNumHidden >= WE_MAX_HIDDEN )
+					continue;
+				h = &weHidden[weNumHidden++];
+				h->surface = surfaces[i];
+				h->indexes = indexes;
+				h->numIndexes = numIndexes;
+				h->saved = (int *)Z_Malloc( numIndexes * sizeof( int ), TAG_GENERAL, qfalse );
+				memcpy( h->saved, indexes, numIndexes * sizeof( int ) );
+				// out of the world cache while it has hidden triangles
+				h->vboItemIndex = vboItemIndex;
+				h->vboItem = *vboItemIndex;
+				*vboItemIndex = 0;
+			}
+		}
+		if ( t < 0 || t * 3 + 2 >= h->numIndexes )
+			continue;
+		h->indexes[t * 3 + 1] = h->indexes[t * 3 + 2] = h->indexes[t * 3];
+	}
+}
+
+// a world vertex, as a triangle surface has them
+static void WE_Vertex( msurface_t *surf, int index, const vec3_t origin, drawVert_t *out ) {
+	if ( *surf->data == SF_TRIANGLES ) {
+		*out = ( (srfTriangles_t *)surf->data )->verts[index];
+	} else {
+		const srfSurfaceFace_t *face = (srfSurfaceFace_t *)surf->data;
+		const float *p = face->points[index];
+
+		memset( out, 0, sizeof( *out ) );
+		VectorCopy( p, out->xyz );
+		out->st[0] = p[3];
+		out->st[1] = p[4];
+		for ( int k = 0; k < MAXLIGHTMAPS; k++ ) {
+			out->lightmap[k][0] = p[VERTEX_LM + k * 2];
+			out->lightmap[k][1] = p[VERTEX_LM + k * 2 + 1];
+			memcpy( out->color[k], &p[VERTEX_COLOR + k], 4 );
+		}
+		VectorCopy( face->plane.normal, out->normal );
+	}
+	VectorSubtract( out->xyz, origin, out->xyz );
+}
+
+// the triangles, grouped by surface, as one model
+qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int count, const vec3_t origin ) {
+	static int remap[SHADER_MAX_VERTEXES * 4];
+	int numRuns = 0, size;
+	bmodel_t *bmodel;
+	msurface_t *msurf;
+	model_t *mod;
+	byte *mem, *p;
+
+	WE_CheckWorld();
+	if ( !tr.world || count <= 0 || weNumPieces >= WE_MAX_PIECES )
+		return 0;
+
+	// how much: a surface for each run of one source surface, its vertices and triangles
+	size = sizeof( bmodel_t );
+	for ( int i = 0; i < count; ) {
+		int numIndexes, numTris = 0, j;
+		const int *indexes = WE_SourceIndexes( surfaces[i], &numIndexes );
+
+		for ( j = i; j < count && surfaces[j] == surfaces[i]; j++ )
+			numTris++;
+		if ( indexes ) {
+			// at most three vertices a triangle
+			size += sizeof( msurface_t ) + sizeof( srfTriangles_t ) + numTris * 3 * sizeof( drawVert_t ) + numTris * 3 * sizeof( int );
+			size += 16;
+			numRuns++;
+		}
+		i = j;
+	}
+	if ( !numRuns )
+		return 0;
+
+	mod = R_AllocModel();
+	if ( !mod )
+		return 0;
+	mem = (byte *)Z_Malloc( size, TAG_GENERAL, qtrue );
+	wePieces[weNumPieces++] = mem;
+
+	bmodel = (bmodel_t *)mem;
+	msurf = (msurface_t *)( bmodel + 1 );
+	p = (byte *)( msurf + numRuns );
+	bmodel->firstSurface = msurf;
+	bmodel->numSurfaces = 0;
+	ClearBounds( bmodel->bounds[0], bmodel->bounds[1] );
+
+	for ( int i = 0; i < count; ) {
+		int numIndexes, j, numTris = 0;
+		const int *indexes = WE_SourceIndexes( surfaces[i], &numIndexes );
+		msurface_t *src = &tr.world->surfaces[surfaces[i]];
+		srfTriangles_t *tri;
+		int sourceVerts;
+
+		for ( j = i; j < count && surfaces[j] == surfaces[i]; j++ )
+			numTris++;
+		if ( !indexes ) {
+			i = j;
+			continue;
+		}
+		sourceVerts = *src->data == SF_TRIANGLES ? ( (srfTriangles_t *)src->data )->numVerts : ( (srfSurfaceFace_t *)src->data )->numPoints;
+
+		tri = (srfTriangles_t *)p;
+		p += sizeof( srfTriangles_t );
+		p = (byte *)( ( (intptr_t)p + 15 ) & ~(intptr_t)15 );
+		tri->surfaceType = SF_TRIANGLES;
+		tri->verts = (drawVert_t *)p;
+		p += numTris * 3 * sizeof( drawVert_t );
+		tri->indexes = (int *)p;
+		p += numTris * 3 * sizeof( int );
+		tri->numVerts = tri->numIndexes = 0;
+		ClearBounds( tri->bounds[0], tri->bounds[1] );
+
+		for ( int v = 0; v < sourceVerts && v < (int)ARRAY_LEN( remap ); v++ )
+			remap[v] = -1;
+		for ( int k = i; k < j; k++ ) {
+			const int t = triangles[k];
+
+			if ( t < 0 || t * 3 + 2 >= numIndexes )
+				continue;
+			for ( int c = 0; c < 3; c++ ) {
+				const int v = indexes[t * 3 + c];
+
+				if ( v < 0 || v >= sourceVerts || v >= (int)ARRAY_LEN( remap ) )
+					break;
+				if ( remap[v] < 0 ) {
+					remap[v] = tri->numVerts++;
+					WE_Vertex( src, v, origin, &tri->verts[remap[v]] );
+					AddPointToBounds( tri->verts[remap[v]].xyz, tri->bounds[0], tri->bounds[1] );
+				}
+				tri->indexes[tri->numIndexes++] = remap[v];
+			}
+			// a corner that was out of range: the triangle isn't taken
+			tri->numIndexes -= tri->numIndexes % 3;
+		}
+		if ( tri->numIndexes ) {
+			msurface_t *out = &msurf[bmodel->numSurfaces++];
+
+			out->viewCount = 0;
+			out->shader = src->shader;
+			out->fogIndex = src->fogIndex;
+			out->data = (surfaceType_t *)tri;
+			AddPointToBounds( tri->bounds[0], bmodel->bounds[0], bmodel->bounds[1] );
+			AddPointToBounds( tri->bounds[1], bmodel->bounds[0], bmodel->bounds[1] );
+		}
+		i = j;
+	}
+
+	mod->type = MOD_BRUSH;
+	mod->data.bmodel = bmodel;
+	Com_sprintf( mod->name, sizeof( mod->name ), "*mapedit%i", weNumPieces );
+	return mod->index;
+}

@@ -1485,6 +1485,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.ext.SetFog							= RE_SetFog;			// OpenJK-rpmod
 	re.ext.AddFog							= RE_AddFog;			// OpenJK-rpmod
 	re.ext.ClearAddedFogs					= RE_ClearAddedFogs;	// OpenJK-rpmod
+	re.ext.HideWorldTriangles				= RE_HideWorldTriangles;	// OpenJK-rpmod
+	re.ext.WorldPieceModel					= RE_WorldPieceModel;	// OpenJK-rpmod
 
 	return &re;
 }
