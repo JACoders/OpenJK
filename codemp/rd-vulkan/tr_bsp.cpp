@@ -2439,6 +2439,7 @@ void RE_LoadWorldMap( const char *name )
 	ri.CM_SetUsingCache( qtrue );
 	RE_LoadWorldMap_Actual( name, s_worldData, 0 );
 	ri.CM_SetUsingCache( qfalse );
+	vk_rpmod_map_grade( name ); // OpenJK-rpmod: the map's own colour grading, if it has one
 
 	vk_set_clearcolor();
 }

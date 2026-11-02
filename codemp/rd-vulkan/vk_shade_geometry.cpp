@@ -2737,6 +2737,18 @@ void RB_StageIteratorGeneric( void )
 		}
 #endif
 
+		// OpenJK-rpmod: soft particles: an effect's stage (sprites, effect polys; not the map's own
+		// surfaces, whose glows and overlays lie flat on walls) faded where it meets what's behind
+		if ( vk_rpmod_soft_active() && !is_refraction && fog_stage == 0 && !tess.vbo_model
+			&& ( tess.surfType == SF_ENTITY || tess.surfType == SF_POLY ) && !tess.shader->polygonOffset ) {
+			const uint32_t soft = vk_rpmod_soft_pipeline( pipeline );
+
+			if ( soft != pipeline ) {
+				pipeline = soft;
+				vk_update_descriptor( VK_DESC_TEXTURE1, vk_rpmod_soft_set() );
+			}
+		}
+
 		vk_bind_pipeline( pipeline );
 		vk_bind_geometry( tess_flags );
 		vk_draw_geometry( tess.depthRange, qtrue );

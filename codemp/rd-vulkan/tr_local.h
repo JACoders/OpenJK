@@ -2334,6 +2334,7 @@ void RE_SetSkyZoom( float zoom );													// OpenJK-rpmod
 void RE_SetSkyPortal( const vec3_t origin );										// OpenJK-rpmod
 void RE_SetDepthOfField( float focus, float range, float blur );					// OpenJK-rpmod
 void RE_SetScreenFilter( const screenFilter_t *filter );							// OpenJK-rpmod
+int vk_rpmod_split( const drawSurf_t *drawSurfs, int numDrawSurfs );				// OpenJK-rpmod
 int RE_ForgetMissing( const char **shaderFiles, int numShaderFiles );				// OpenJK-rpmod: loadpk3
 int R_ForgetBadSkins( void );														// OpenJK-rpmod: loadpk3
 // OpenJK-rpmod: the map editor's fog

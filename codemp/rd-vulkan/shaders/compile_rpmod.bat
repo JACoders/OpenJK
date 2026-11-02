@@ -1,6 +1,6 @@
 @echo off
-rem OpenJK-rpmod: compiles only the shaders in glsl\rpmod (the cinematic camera's depth of field and
-rem filter) into spirv\shader_data_rpmod.c, which vk_shaders.cpp includes. Needs the Vulkan SDK
+rem OpenJK-rpmod: compiles only the shaders in glsl\rpmod (vk_rpmod_post.cpp's: ambient occlusion,
+rem soft particles and the passes over the view) into spirv\shader_data_rpmod.c, which vk_shaders.cpp includes. Needs the Vulkan SDK
 rem (glslangValidator); tools\bin2hex.exe is built by compile.bat, or here if it's missing.
 
 setlocal
@@ -26,6 +26,19 @@ call :frag rpmod_depth_ms_frag_spv glsl\rpmod\depth.frag -DUSE_MSAA || exit /b 1
 call :frag rpmod_dof_frag_spv glsl\rpmod\dof.frag || exit /b 1
 call :frag rpmod_filter_frag_spv glsl\rpmod\filter.frag || exit /b 1
 call :frag rpmod_copy_frag_spv glsl\rpmod\copy.frag || exit /b 1
+call :frag rpmod_ssao_frag_spv glsl\rpmod\ssao.frag || exit /b 1
+call :frag rpmod_aoblur_frag_spv glsl\rpmod\aoblur.frag || exit /b 1
+call :frag rpmod_aoapply_frag_spv glsl\rpmod\aoapply.frag || exit /b 1
+call :frag rpmod_soft_gen_frag_spv glsl\rpmod\soft.frag -DSOFT_GEN || exit /b 1
+call :frag rpmod_soft_ident_frag_spv glsl\rpmod\soft.frag -DSOFT_IDENT || exit /b 1
+call :frag rpmod_soft_fixed_frag_spv glsl\rpmod\soft.frag -DSOFT_FIXED || exit /b 1
+call :frag rpmod_shafts_mask_frag_spv glsl\rpmod\shafts.frag -DSHAFTS_MASK || exit /b 1
+call :frag rpmod_shafts_blur_frag_spv glsl\rpmod\shafts.frag -DSHAFTS_BLUR || exit /b 1
+call :frag rpmod_shafts_add_frag_spv glsl\rpmod\shafts.frag -DSHAFTS_ADD || exit /b 1
+call :frag rpmod_mblur_frag_spv glsl\rpmod\mblur.frag || exit /b 1
+call :frag rpmod_grade_frag_spv glsl\rpmod\grade.frag || exit /b 1
+call :frag rpmod_fxaa_frag_spv glsl\rpmod\fxaa.frag || exit /b 1
+call :frag rpmod_cas_frag_spv glsl\rpmod\cas.frag || exit /b 1
 
 del /Q %tmpf%
 echo done: %outf%

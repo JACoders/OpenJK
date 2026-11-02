@@ -468,6 +468,7 @@ typedef struct {
 		byte rgb;
 		byte alpha;
 	} color;
+	int rpmod_soft; // OpenJK-rpmod: soft particles' shader: how it fades | how far over << 2 (vk_rpmod_post.cpp)
 } Vk_Pipeline_Def;
 
 typedef struct VK_Pipeline {
@@ -1140,7 +1141,11 @@ VkPipeline	vk_gen_pipeline( uint32_t index );
 void		vk_begin_render_pass( VkRenderPass renderPass, VkFramebuffer frameBuffer, qboolean clearValues, uint32_t width, uint32_t height );
 void		vk_end_render_pass( void );
 
-// OpenJK-rpmod: vk_rpmod_post.cpp, the cinematic camera's depth of field and filter
+// OpenJK-rpmod: vk_rpmod_post.cpp, the cinematic camera's depth of field and filter, ambient
+// occlusion, soft particles and the passes over the view
+#define VK_RPMOD_SETS 7	// its image sets, in the descriptor pool
+void		vk_rpmod_register_cvars( void );
+void		vk_rpmod_map_grade( const char *bspName );
 qboolean	vk_rpmod_depth_readable( void );
 void		vk_rpmod_init( void );
 void		vk_rpmod_shutdown( void );
@@ -1155,8 +1160,13 @@ void		vk_rpmod_create_framebuffers( void );
 void		vk_rpmod_destroy_framebuffers( void );
 void		vk_rpmod_create_pipelines( void );
 void		vk_rpmod_destroy_pipelines( void );
-void		vk_rpmod_depth( void );
+void		vk_rpmod_after_opaque( void );
 void		vk_rpmod_post( void );
+qboolean	vk_rpmod_soft_active( void );
+VkDescriptorSet vk_rpmod_soft_set( void );
+uint32_t	vk_rpmod_soft_pipeline( uint32_t pipeline );
+VkShaderModule *vk_rpmod_soft_module( int shaderType );
+const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, float alphaTestValue, float identityColor, float identityAlpha );
 void		vk_begin_screenmap_render_pass( void );
 void		vk_begin_main_render_pass( void );
 void		vk_get_pipeline_def( uint32_t pipeline, Vk_Pipeline_Def *def );

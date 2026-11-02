@@ -6,7 +6,9 @@
 layout(set = 0, binding = 0) uniform sampler2D sceneTexture;
 layout(set = 1, binding = 0) uniform sampler2D distanceTexture;
 
-// a: focus, 1 / range, radius in pixels; rect: the view's pixels, x0 y0 x1 y1
+// a: focus, 1 / range, radius in pixels, bokeh (0: the fifteen taps, as rd-vanilla; more: a disc of
+// taps where bright ones count for more, so highlights open into round discs)
+// rect: the view's pixels, x0 y0 x1 y1
 layout(push_constant) uniform Params {
 	vec4 a;
 	vec4 rect;
@@ -34,6 +36,25 @@ void main()
 	const vec2 p = gl_FragCoord.xy;
 	const float dist = texelFetch( distanceTexture, ivec2( p ), 0 ).r;
 	const float r = clamp( abs( dist - pc.a.x ) * pc.a.y, 0.0, 1.0 ) * pc.a.z;
+	if ( pc.a.w > 0.0 ) {
+		// OpenJK-rpmod: bokeh: 32 taps spread evenly over the disc
+		vec3 sum = vec3( 0.0 );
+		float weights = 0.0;
+
+		for ( int i = 0; i < 32; i++ ) {
+			const float t = sqrt( ( float( i ) + 0.5 ) / 32.0 );
+			const float angle = float( i ) * 2.3999632;
+			const vec3 c = Sample( p + vec2( cos( angle ), sin( angle ) ) * ( r * t ), size ).rgb;
+			const float l = dot( min( c, 1.0 ), vec3( 0.299, 0.587, 0.114 ) );
+			const float w = 1.0 + pc.a.w * 8.0 * l * l * l * l;
+
+			sum += c * w;
+			weights += w;
+		}
+		out_color = vec4( sum / weights, 1.0 );
+		return;
+	}
+
 	vec4 sum = Sample( p, size );
 
 	for ( int i = 0; i < 14; i++ )

@@ -1047,7 +1047,19 @@ const void	*RB_DrawSurfs( const void *data ) {
 	// clear the z buffer, set the modelview, etc
 	RB_BeginDrawingView();
 
-	RB_RenderDrawSurfList( cmd->drawSurfs, cmd->numDrawSurfs );
+	// OpenJK-rpmod: the solid surfaces, then the view's distances and ambient occlusion, then the
+	// see-through ones (soft particles), when something needs those distances
+	{
+		const int split = vk_rpmod_split( cmd->drawSurfs, cmd->numDrawSurfs );
+
+		if ( split < 0 ) {
+			RB_RenderDrawSurfList( cmd->drawSurfs, cmd->numDrawSurfs );
+		} else {
+			RB_RenderDrawSurfList( cmd->drawSurfs, split );
+			vk_rpmod_after_opaque();
+			RB_RenderDrawSurfList( cmd->drawSurfs + split, cmd->numDrawSurfs - split );
+		}
+	}
 
 #ifdef USE_VBO
 	VBO_UnBind();
@@ -1093,10 +1105,6 @@ const void	*RB_DrawSurfs( const void *data ) {
 		backEnd.refractionFill = qfalse;
 	}
 
-	// OpenJK-rpmod: the cinematic camera's depth of field: the view's distances, before dynamic
-	// glow clears the depth buffer
-	vk_rpmod_depth();
-
 	// checked in previous RB_RenderDrawSurfList() if there is at least one glowing surface
 	if ( vk.dglowActive && !( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) && backEnd.hasGlowSurfaces )
 	{
@@ -1111,7 +1119,8 @@ const void	*RB_DrawSurfs( const void *data ) {
 		backEnd.isGlowPass = qfalse;
 	}
 
-	// OpenJK-rpmod: and its depth of field and filter over the view and its glow
+	// OpenJK-rpmod: the passes over the view and its glow: sun shafts, motion blur, depth of field,
+	// grading, the cinematic filter, FXAA, sharpening
 	vk_rpmod_post();
 
 	//TODO Maybe check for rdf_noworld stuff but q3mme has full 3d ui

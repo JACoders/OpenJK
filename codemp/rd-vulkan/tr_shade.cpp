@@ -59,6 +59,9 @@ void RB_BeginSurface( shader_t *shader, int fogNum ) {
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;
 	tess.multiDrawPrimitives = 0;
+#ifdef USE_VBO
+	tess.surfType = SF_BAD;	// OpenJK-rpmod: set by what's added, for soft particles to know effects
+#endif
 
 	tess.shader = state;
 	tess.fogNum = fogNum;

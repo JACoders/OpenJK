@@ -78,6 +78,25 @@ static const rmRow_t rmRows[] = {
 	{ "ui_rd_vbomodels", "r_vbo_models", "0", "Model Caching:",
 		"Keeps models on the graphics card: more frames per second",
 		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+	// Vulkan's own additions (rd-vulkan's vk_rpmod_post.cpp); JKA's Setup menu has room for 15 rows
+	{ "ui_rd_ssao", "r_ssao", "0", "Ambient Occlusion:",
+		"Darkens corners, creases and the ground under things; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+	{ "ui_rd_soft", "r_softParticles", "0", "Soft Particles:",
+		"Smoke and fire fade where they meet walls instead of cutting into them; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+	{ "ui_rd_fxaa", "r_fxaa", "0", "FXAA:",
+		"Smooths edges over the finished picture, grass and fences too; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+	{ "ui_rd_sharpen", "r_sharpen", "0", "Sharpening:",
+		"Crisper detail, against the softness of FXAA or a lower render scale; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"Low\" 0.4 \"High\" 0.8 }", qtrue },
+	{ "ui_rd_shafts", "r_sunShafts", "0", "Sun Shafts:",
+		"Beams of light from the sun through gaps, on maps with a sun; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
+	{ "ui_rd_tonemap", "r_tonemap", "0", "Tone Mapping:",
+		"Bright light rolls off like film instead of clipping to white; needs Post Effects",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue },
 };
 static const int rmNumRows = (int)ARRAY_LEN( rmRows );
 

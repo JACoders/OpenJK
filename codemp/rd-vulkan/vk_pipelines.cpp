@@ -100,7 +100,7 @@ void vk_create_descriptor_layout( void )
 
         pool_size[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         pool_size[0].descriptorCount = MAX_DRAWIMAGES + 1 + 1 + 1 + ( VK_NUM_BLUR_PASSES * 4 ) + 1
-            + 5; // OpenJK-rpmod: vk_rpmod_post.cpp's
+            + VK_RPMOD_SETS; // OpenJK-rpmod: vk_rpmod_post.cpp's
 
         pool_size[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         pool_size[1].descriptorCount = VK_DESC_UNIFORM_COUNT * NUM_COMMAND_BUFFERS;
@@ -918,6 +918,10 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     }
 #endif
 
+    // OpenJK-rpmod: soft particles: our fragment shader for the single texture one (never fogged)
+    if ( def->rpmod_soft && vk_rpmod_soft_module( def->shader_type ) )
+        fs_module = vk_rpmod_soft_module( def->shader_type );
+
     if ( def->fog_stage ) {
         switch ( def->shader_type ) {
             case TYPE_FOG_ONLY:
@@ -1155,7 +1159,12 @@ VkPipeline vk_create_pipeline( const Vk_Pipeline_Def *def, renderPass_t renderPa
     }
 #endif
 
-    shader_stages[1].pSpecializationInfo = &frag_spec_info;     
+    shader_stages[1].pSpecializationInfo = &frag_spec_info;
+
+    // OpenJK-rpmod: and its constants
+    if ( def->rpmod_soft && vk_rpmod_soft_module( def->shader_type ) )
+        shader_stages[1].pSpecializationInfo = vk_rpmod_soft_spec( def->rpmod_soft, frag_spec_data.alpha_test_func,
+            frag_spec_data.alpha_test_value, frag_spec_data.identity_color, frag_spec_data.identity_alpha );     
 
     // vertex input state (binding and attributes)
     vk_push_vertex_input_binding_attribute( def );

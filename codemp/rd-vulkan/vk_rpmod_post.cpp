@@ -18,49 +18,181 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-// vk_rpmod_post.cpp -- OpenJK-rpmod: the cinematic camera's depth of field and filter, as rd-vanilla
-// draws them (RB_DepthOfField, RB_ScreenFilter), over the world's main view:
+// vk_rpmod_post.cpp -- OpenJK-rpmod: what Vulkan adds to the world's main view, beyond TaystJK's
+// renderer: the cinematic camera's depth of field and filter (as rd-vanilla draws them), and
+// ambient occlusion, soft particles, sun shafts, motion blur, colour grading and tone mapping,
+// FXAA and sharpening.
 //
-//   before dynamic glow   the view's depth as distances, into an image of its own (dynamic glow
-//                         clears the depth buffer)
-//   after it              the depth of field twice, the second time half as far out, between two
-//                         images of the screen's size; the filter over that; then the result back
-//                         into the view
+//   the solid surfaces drawn  the view's depth as distances, into an image of its own; ambient
+//                             occlusion from them, multiplied into the view
+//   the see-through ones      effects (sprites, effect polys) faded where they meet what's behind,
+//                             by a shader of our own that reads the distances (soft particles)
+//   after dynamic glow        the passes over the view, between two images of the screen's size:
+//                             sun shafts, motion blur, depth of field, grading, the cinematic
+//                             filter, FXAA, sharpening; then the result back into the view
 //
 // Only with the post effects (r_fbo 1): the view is drawn into an image the passes can read. The
-// shaders are glsl/rpmod/*.frag, compiled by shaders/compile_rpmod.bat into shader_data_rpmod.c.
+// shaders are glsl/rpmod/*, compiled by shaders/compile_rpmod.bat into shader_data_rpmod.c.
 
 #include "tr_local.h"
 #include "shaders/spirv/shader_data_rpmod.c"
+
+static cvar_t	*r_ssao;
+static cvar_t	*r_ssaoRadius;
+static cvar_t	*r_ssaoIntensity;
+static cvar_t	*r_softParticles;
+static cvar_t	*r_softParticlesDepth;
+static cvar_t	*r_fxaa;
+static cvar_t	*r_sharpen;
+static cvar_t	*r_tonemap;
+static cvar_t	*r_exposure;
+static cvar_t	*r_saturation;
+static cvar_t	*r_contrast;
+static cvar_t	*r_warmth;
+static cvar_t	*r_mapGrades;
+static cvar_t	*r_sunShafts;
+static cvar_t	*r_sunShaftsIntensity;
+static cvar_t	*r_motionBlur;
+static cvar_t	*r_dofBokeh;
 
 static struct {
 	qboolean			usable;			// the depth buffer can be read by a shader
 	qboolean			ready;			// everything is there for this window
 
 	VkShaderModule		depthFs, depthMsFs, dofFs, filterFs, copyFs;
+	VkShaderModule		ssaoFs, aoBlurFs, aoApplyFs, softFs[3], shaftsFs[3], mblurFs, gradeFs, fxaaFs, casFs;
 	VkPipelineLayout	layout;			// two image sets, 128 bytes of push constants
 
-	// the screen's size: two images the effect goes between, and the distances
+	// the screen's size: two images the passes go between, the distances, ambient occlusion
 	VkImage				postImage[2];
 	VkImageView			postView[2];
 	VkDeviceMemory		postMemory[2];
 	VkImage				distImage;
 	VkImageView			distView;
 	VkDeviceMemory		distMemory;
+	VkImage				aoImage[2];
+	VkImageView			aoView[2];
+	VkDeviceMemory		aoMemory[2];
 	VkImageView			depthView;		// the depth buffer's depth, to read
 
-	VkDescriptorSet		sceneSet, postSet[2], distSet, depthSet;
+	VkDescriptorSet		sceneSet, postSet[2], distSet, depthSet, aoSet[2];
 	qboolean			setsAllocated;
 
-	VkRenderPass		postPass, distPass;
-	VkFramebuffer		postFb[2], distFb;
+	VkRenderPass		postPass, distPass, aoPass;
+	VkFramebuffer		postFb[2], distFb, aoFb[2];
 
 	VkPipeline			depthPipe, dofPipe, filterPipe, copyPipe;
+	VkPipeline			ssaoPipe, aoBlurPipe, aoApplyPipe, shaftsPipe[3], mblurPipe, gradePipe, fxaaPipe, casPipe;
 
 	qboolean			haveDistance;	// this view's distances are in distImage
+	qboolean			softOn;			// and effects drawn now are faded by them
+
+	// the main view's camera the frame before, for motion blur
+	qboolean			prevValid;
+	vec3_t				prevOrigin;
+	vec3_t				prevAxis[3];
+	int					prevTime;
+	VkRect2D			prevRect;
 } rp;
 
-#define RP_NUM_SETS 5	// sceneSet, postSet[2], distSet, depthSet: in the descriptor pool's size
+#define RP_NUM_SETS 7	// sceneSet, postSet[2], distSet, depthSet, aoSet[2]
+#if RP_NUM_SETS > VK_RPMOD_SETS
+#error the descriptor pool has to have room for these sets
+#endif
+
+// a map's own look (maps/<name>.grade), in place of r_exposure and the rest while it's loaded
+static struct {
+	qboolean	valid;
+	float		exposure, saturation, contrast, warmth;
+	int			tonemap;
+} mapGrade;
+
+/*
+===============
+the settings
+===============
+*/
+void vk_rpmod_register_cvars( void ) {
+	const char *fbo = "\nRequires " S_COLOR_CYAN "\\r_fbo 1";
+
+	r_ssao = ri.Cvar_Get( "r_ssao", "0", CVAR_ARCHIVE_ND, va( "Ambient occlusion: corners, creases and the ground under things darkened%s", fbo ) );
+	ri.Cvar_CheckRange( r_ssao, 0, 1, qtrue );
+	r_ssaoRadius = ri.Cvar_Get( "r_ssaoRadius", "48", CVAR_ARCHIVE_ND, "How far ambient occlusion reaches, in world units" );
+	ri.Cvar_CheckRange( r_ssaoRadius, 4, 256, qfalse );
+	r_ssaoIntensity = ri.Cvar_Get( "r_ssaoIntensity", "1", CVAR_ARCHIVE_ND, "How dark ambient occlusion makes things" );
+	ri.Cvar_CheckRange( r_ssaoIntensity, 0, 4, qfalse );
+	r_softParticles = ri.Cvar_Get( "r_softParticles", "0", CVAR_ARCHIVE_ND, va( "Soft particles: smoke, fire and other effects fade where they meet walls and floors instead of cutting into them%s", fbo ) );
+	ri.Cvar_CheckRange( r_softParticles, 0, 1, qtrue );
+	r_softParticlesDepth = ri.Cvar_Get( "r_softParticlesDepth", "24", CVAR_ARCHIVE_ND, "How far in front of a wall soft particles start to fade, in world units" );
+	ri.Cvar_CheckRange( r_softParticlesDepth, 1, 256, qtrue );
+	r_fxaa = ri.Cvar_Get( "r_fxaa", "0", CVAR_ARCHIVE_ND, va( "FXAA: smooths edges over the finished view, those of grass and fences too%s", fbo ) );
+	ri.Cvar_CheckRange( r_fxaa, 0, 1, qtrue );
+	r_sharpen = ri.Cvar_Get( "r_sharpen", "0", CVAR_ARCHIVE_ND, va( "Sharpening, from 0 (off) to 1%s", fbo ) );
+	ri.Cvar_CheckRange( r_sharpen, 0, 1, qfalse );
+	r_tonemap = ri.Cvar_Get( "r_tonemap", "0", CVAR_ARCHIVE_ND, va( "Tone mapping: bright light rolled off along a film-like curve instead of clipping%s", fbo ) );
+	ri.Cvar_CheckRange( r_tonemap, 0, 1, qtrue );
+	r_exposure = ri.Cvar_Get( "r_exposure", "1", CVAR_ARCHIVE_ND, va( "Colour grading: the view's light scaled by this%s", fbo ) );
+	ri.Cvar_CheckRange( r_exposure, 0.25f, 4, qfalse );
+	r_saturation = ri.Cvar_Get( "r_saturation", "1", CVAR_ARCHIVE_ND, va( "Colour grading: 0 grey, 1 as it is, more for stronger colours%s", fbo ) );
+	ri.Cvar_CheckRange( r_saturation, 0, 2, qfalse );
+	r_contrast = ri.Cvar_Get( "r_contrast", "1", CVAR_ARCHIVE_ND, va( "Colour grading: 1 as it is, more for more contrast%s", fbo ) );
+	ri.Cvar_CheckRange( r_contrast, 0.5f, 2, qfalse );
+	r_warmth = ri.Cvar_Get( "r_warmth", "0", CVAR_ARCHIVE_ND, va( "Colour grading: -1 cold (blue) to 1 warm (orange)%s", fbo ) );
+	ri.Cvar_CheckRange( r_warmth, -1, 1, qfalse );
+	r_mapGrades = ri.Cvar_Get( "r_mapGrades", "1", CVAR_ARCHIVE_ND, "A map's own colour grading (maps/<map>.grade) in place of yours while it's loaded" );
+	ri.Cvar_CheckRange( r_mapGrades, 0, 1, qtrue );
+	r_sunShafts = ri.Cvar_Get( "r_sunShafts", "0", CVAR_ARCHIVE_ND, va( "Sun shafts: beams of light from the sun through gaps, on maps whose sky has a sun%s", fbo ) );
+	ri.Cvar_CheckRange( r_sunShafts, 0, 1, qtrue );
+	r_sunShaftsIntensity = ri.Cvar_Get( "r_sunShaftsIntensity", "1", CVAR_ARCHIVE_ND, "How bright sun shafts are" );
+	ri.Cvar_CheckRange( r_sunShaftsIntensity, 0, 4, qfalse );
+	r_motionBlur = ri.Cvar_Get( "r_motionBlur", "0", CVAR_ARCHIVE_ND, va( "Motion blur when the camera moves, from 0 (off) to 1%s", fbo ) );
+	ri.Cvar_CheckRange( r_motionBlur, 0, 1, qfalse );
+	r_dofBokeh = ri.Cvar_Get( "r_dofBokeh", "1", CVAR_ARCHIVE_ND, "Bokeh in the cinematic camera's depth of field: bright points blur into round discs, from 0 (off, as in OpenGL) to 1" );
+	ri.Cvar_CheckRange( r_dofBokeh, 0, 1, qfalse );
+}
+
+/*
+===============
+a map's own grading: maps/<name>.grade, lines of "exposure 1.2", "saturation 0.9", "contrast 1.1",
+"warmth 0.3", "tonemap 1"
+===============
+*/
+void vk_rpmod_map_grade( const char *bspName ) {
+	char name[MAX_QPATH];
+	char *buf;
+	const char *p, *token;
+
+	Com_Memset( &mapGrade, 0, sizeof( mapGrade ) );
+	COM_StripExtension( bspName, name, sizeof( name ) );
+	Q_strcat( name, sizeof( name ), ".grade" );
+	if ( ri.FS_ReadFile( name, (void **)&buf ) <= 0 || !buf )
+		return;
+
+	mapGrade.exposure = mapGrade.saturation = mapGrade.contrast = 1.0f;
+	p = buf;
+	while ( 1 ) {
+		char key[64];
+
+		token = COM_ParseExt( &p, qtrue );
+		if ( !token[0] )
+			break;
+		Q_strncpyz( key, token, sizeof( key ) );
+		token = COM_ParseExt( &p, qfalse );
+		if ( !Q_stricmp( key, "exposure" ) )
+			mapGrade.exposure = Com_Clamp( 0.25f, 4.0f, atof( token ) );
+		else if ( !Q_stricmp( key, "saturation" ) )
+			mapGrade.saturation = Com_Clamp( 0.0f, 2.0f, atof( token ) );
+		else if ( !Q_stricmp( key, "contrast" ) )
+			mapGrade.contrast = Com_Clamp( 0.5f, 2.0f, atof( token ) );
+		else if ( !Q_stricmp( key, "warmth" ) )
+			mapGrade.warmth = Com_Clamp( -1.0f, 1.0f, atof( token ) );
+		else if ( !Q_stricmp( key, "tonemap" ) )
+			mapGrade.tonemap = atoi( token ) ? 1 : 0;
+	}
+	ri.FS_FreeFile( buf );
+	mapGrade.valid = qtrue;
+	ri.Printf( PRINT_DEVELOPER, "colour grading from %s\n", name );
+}
 
 static VkShaderModule RP_ShaderModule( const unsigned char *bytes, size_t size, const char *name ) {
 	VkShaderModuleCreateInfo desc;
@@ -74,6 +206,8 @@ static VkShaderModule RP_ShaderModule( const unsigned char *bytes, size_t size, 
 	VK_SET_OBJECT_NAME( module, name, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT );
 	return module;
 }
+
+#define RP_MODULE( m, data, name ) m = RP_ShaderModule( data, sizeof( data ), name )
 
 // the depth buffer read by a shader: its format has to allow it
 qboolean vk_rpmod_depth_readable( void ) {
@@ -95,11 +229,24 @@ void vk_rpmod_init( void ) {
 
 	Com_Memset( &rp, 0, sizeof( rp ) );
 
-	rp.depthFs = RP_ShaderModule( rpmod_depth_frag_spv, sizeof( rpmod_depth_frag_spv ), "rpmod depth to distance" );
-	rp.depthMsFs = RP_ShaderModule( rpmod_depth_ms_frag_spv, sizeof( rpmod_depth_ms_frag_spv ), "rpmod depth to distance msaa" );
-	rp.dofFs = RP_ShaderModule( rpmod_dof_frag_spv, sizeof( rpmod_dof_frag_spv ), "rpmod depth of field" );
-	rp.filterFs = RP_ShaderModule( rpmod_filter_frag_spv, sizeof( rpmod_filter_frag_spv ), "rpmod screen filter" );
-	rp.copyFs = RP_ShaderModule( rpmod_copy_frag_spv, sizeof( rpmod_copy_frag_spv ), "rpmod copy" );
+	RP_MODULE( rp.depthFs, rpmod_depth_frag_spv, "rpmod depth to distance" );
+	RP_MODULE( rp.depthMsFs, rpmod_depth_ms_frag_spv, "rpmod depth to distance msaa" );
+	RP_MODULE( rp.dofFs, rpmod_dof_frag_spv, "rpmod depth of field" );
+	RP_MODULE( rp.filterFs, rpmod_filter_frag_spv, "rpmod screen filter" );
+	RP_MODULE( rp.copyFs, rpmod_copy_frag_spv, "rpmod copy" );
+	RP_MODULE( rp.ssaoFs, rpmod_ssao_frag_spv, "rpmod ambient occlusion" );
+	RP_MODULE( rp.aoBlurFs, rpmod_aoblur_frag_spv, "rpmod ambient occlusion blur" );
+	RP_MODULE( rp.aoApplyFs, rpmod_aoapply_frag_spv, "rpmod ambient occlusion apply" );
+	RP_MODULE( rp.softFs[0], rpmod_soft_gen_frag_spv, "rpmod soft particles" );
+	RP_MODULE( rp.softFs[1], rpmod_soft_ident_frag_spv, "rpmod soft particles identity" );
+	RP_MODULE( rp.softFs[2], rpmod_soft_fixed_frag_spv, "rpmod soft particles fixed colour" );
+	RP_MODULE( rp.shaftsFs[0], rpmod_shafts_mask_frag_spv, "rpmod sun shafts mask" );
+	RP_MODULE( rp.shaftsFs[1], rpmod_shafts_blur_frag_spv, "rpmod sun shafts blur" );
+	RP_MODULE( rp.shaftsFs[2], rpmod_shafts_add_frag_spv, "rpmod sun shafts add" );
+	RP_MODULE( rp.mblurFs, rpmod_mblur_frag_spv, "rpmod motion blur" );
+	RP_MODULE( rp.gradeFs, rpmod_grade_frag_spv, "rpmod colour grading" );
+	RP_MODULE( rp.fxaaFs, rpmod_fxaa_frag_spv, "rpmod fxaa" );
+	RP_MODULE( rp.casFs, rpmod_cas_frag_spv, "rpmod sharpen" );
 
 	push.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	push.offset = 0;
@@ -115,7 +262,9 @@ void vk_rpmod_init( void ) {
 }
 
 void vk_rpmod_shutdown( void ) {
-	VkShaderModule *modules[] = { &rp.depthFs, &rp.depthMsFs, &rp.dofFs, &rp.filterFs, &rp.copyFs };
+	VkShaderModule *modules[] = { &rp.depthFs, &rp.depthMsFs, &rp.dofFs, &rp.filterFs, &rp.copyFs,
+		&rp.ssaoFs, &rp.aoBlurFs, &rp.aoApplyFs, &rp.softFs[0], &rp.softFs[1], &rp.softFs[2],
+		&rp.shaftsFs[0], &rp.shaftsFs[1], &rp.shaftsFs[2], &rp.mblurFs, &rp.gradeFs, &rp.fxaaFs, &rp.casFs };
 
 	for ( size_t i = 0; i < ARRAY_LEN( modules ); i++ ) {
 		if ( *modules[i] != VK_NULL_HANDLE )
@@ -226,7 +375,7 @@ the renderer points its own (vk_update_attachment_descriptors: new window size, 
 */
 void vk_rpmod_init_descriptors( void ) {
 	VkDescriptorSetAllocateInfo alloc;
-	VkDescriptorSet *sets[RP_NUM_SETS] = { &rp.sceneSet, &rp.postSet[0], &rp.postSet[1], &rp.distSet, &rp.depthSet };
+	VkDescriptorSet *sets[RP_NUM_SETS] = { &rp.sceneSet, &rp.postSet[0], &rp.postSet[1], &rp.distSet, &rp.depthSet, &rp.aoSet[0], &rp.aoSet[1] };
 
 	Com_Memset( &alloc, 0, sizeof( alloc ) );
 	alloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -242,7 +391,8 @@ void vk_rpmod_init_descriptors( void ) {
 // the descriptor pool emptied: the sets are gone with it
 void vk_rpmod_forget_descriptors( void ) {
 	rp.setsAllocated = qfalse;
-	rp.sceneSet = rp.postSet[0] = rp.postSet[1] = rp.distSet = rp.depthSet = VK_NULL_HANDLE;
+	rp.sceneSet = rp.postSet[0] = rp.postSet[1] = rp.distSet = rp.depthSet = rp.aoSet[0] = rp.aoSet[1] = VK_NULL_HANDLE;
+	rp.haveDistance = rp.softOn = qfalse;
 }
 
 void vk_rpmod_update_descriptors( void ) {
@@ -252,6 +402,8 @@ void vk_rpmod_update_descriptors( void ) {
 	RP_SetImage( rp.postSet[0], rp.postView[0], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, GL_LINEAR );
 	RP_SetImage( rp.postSet[1], rp.postView[1], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, GL_LINEAR );
 	RP_SetImage( rp.distSet, rp.distView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, GL_NEAREST );
+	RP_SetImage( rp.aoSet[0], rp.aoView[0], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, GL_NEAREST );
+	RP_SetImage( rp.aoSet[1], rp.aoView[1], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, GL_NEAREST );
 	if ( rp.depthView != VK_NULL_HANDLE )
 		RP_SetImage( rp.depthSet, rp.depthView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, GL_NEAREST );
 }
@@ -259,6 +411,7 @@ void vk_rpmod_update_descriptors( void ) {
 void vk_rpmod_create_attachments( void ) {
 	VkImageViewCreateInfo vdesc;
 	VkCommandBuffer cmd;
+	VkImage *images[] = { &rp.postImage[0], &rp.postImage[1], &rp.distImage, &rp.aoImage[0], &rp.aoImage[1] };
 
 	rp.ready = qfalse;
 	rp.usable = qfalse;
@@ -269,12 +422,13 @@ void vk_rpmod_create_attachments( void ) {
 	RP_CreateImage( vk.color_format, &rp.postImage[0], &rp.postView[0], &rp.postMemory[0], "rpmod post 0" );
 	RP_CreateImage( vk.color_format, &rp.postImage[1], &rp.postView[1], &rp.postMemory[1], "rpmod post 1" );
 	RP_CreateImage( VK_FORMAT_R32_SFLOAT, &rp.distImage, &rp.distView, &rp.distMemory, "rpmod distance" );
+	RP_CreateImage( VK_FORMAT_R8_UNORM, &rp.aoImage[0], &rp.aoView[0], &rp.aoMemory[0], "rpmod ambient occlusion 0" );
+	RP_CreateImage( VK_FORMAT_R8_UNORM, &rp.aoImage[1], &rp.aoView[1], &rp.aoMemory[1], "rpmod ambient occlusion 1" );
 
 	// as the render passes have them before and after
 	cmd = vk_begin_command_buffer();
-	vk_record_image_layout_transition( cmd, rp.postImage[0], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0 );
-	vk_record_image_layout_transition( cmd, rp.postImage[1], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0 );
-	vk_record_image_layout_transition( cmd, rp.distImage, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0 );
+	for ( size_t i = 0; i < ARRAY_LEN( images ); i++ )
+		vk_record_image_layout_transition( cmd, *images[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0 );
 	vk_end_command_buffer( cmd, __func__ );
 
 	// the depth buffer's depth, without its stencil
@@ -302,6 +456,8 @@ void vk_rpmod_destroy_attachments( void ) {
 	RP_DestroyImage( &rp.postImage[0], &rp.postView[0], &rp.postMemory[0] );
 	RP_DestroyImage( &rp.postImage[1], &rp.postView[1], &rp.postMemory[1] );
 	RP_DestroyImage( &rp.distImage, &rp.distView, &rp.distMemory );
+	RP_DestroyImage( &rp.aoImage[0], &rp.aoView[0], &rp.aoMemory[0] );
+	RP_DestroyImage( &rp.aoImage[1], &rp.aoView[1], &rp.aoMemory[1] );
 }
 
 /*
@@ -356,15 +512,18 @@ void vk_rpmod_create_render_passes( void ) {
 		return;
 	rp.postPass = RP_CreatePass( vk.color_format, "render pass - rpmod post" );
 	rp.distPass = RP_CreatePass( VK_FORMAT_R32_SFLOAT, "render pass - rpmod distance" );
+	rp.aoPass = RP_CreatePass( VK_FORMAT_R8_UNORM, "render pass - rpmod ambient occlusion" );
 }
 
 void vk_rpmod_destroy_render_passes( void ) {
+	VkRenderPass *passes[] = { &rp.postPass, &rp.distPass, &rp.aoPass };
+
 	rp.ready = qfalse;
-	if ( rp.postPass != VK_NULL_HANDLE )
-		qvkDestroyRenderPass( vk.device, rp.postPass, NULL );
-	if ( rp.distPass != VK_NULL_HANDLE )
-		qvkDestroyRenderPass( vk.device, rp.distPass, NULL );
-	rp.postPass = rp.distPass = VK_NULL_HANDLE;
+	for ( size_t i = 0; i < ARRAY_LEN( passes ); i++ ) {
+		if ( *passes[i] != VK_NULL_HANDLE )
+			qvkDestroyRenderPass( vk.device, *passes[i], NULL );
+		*passes[i] = VK_NULL_HANDLE;
+	}
 }
 
 static VkFramebuffer RP_CreateFramebuffer( VkRenderPass pass, VkImageView view, const char *name ) {
@@ -390,10 +549,12 @@ void vk_rpmod_create_framebuffers( void ) {
 	rp.postFb[0] = RP_CreateFramebuffer( rp.postPass, rp.postView[0], "framebuffer - rpmod post 0" );
 	rp.postFb[1] = RP_CreateFramebuffer( rp.postPass, rp.postView[1], "framebuffer - rpmod post 1" );
 	rp.distFb = RP_CreateFramebuffer( rp.distPass, rp.distView, "framebuffer - rpmod distance" );
+	rp.aoFb[0] = RP_CreateFramebuffer( rp.aoPass, rp.aoView[0], "framebuffer - rpmod ambient occlusion 0" );
+	rp.aoFb[1] = RP_CreateFramebuffer( rp.aoPass, rp.aoView[1], "framebuffer - rpmod ambient occlusion 1" );
 }
 
 void vk_rpmod_destroy_framebuffers( void ) {
-	VkFramebuffer *fbs[] = { &rp.postFb[0], &rp.postFb[1], &rp.distFb };
+	VkFramebuffer *fbs[] = { &rp.postFb[0], &rp.postFb[1], &rp.distFb, &rp.aoFb[0], &rp.aoFb[1] };
 
 	rp.ready = qfalse;
 	for ( size_t i = 0; i < ARRAY_LEN( fbs ); i++ ) {
@@ -408,7 +569,7 @@ void vk_rpmod_destroy_framebuffers( void ) {
 the pipelines: a quad over the viewport, which is set as each pass draws
 ===============
 */
-static VkPipeline RP_CreatePipeline( VkShaderModule fs, VkRenderPass pass, VkSampleCountFlagBits samples, const char *name ) {
+static VkPipeline RP_CreatePipeline( VkShaderModule fs, VkRenderPass pass, VkSampleCountFlagBits samples, qboolean multiply, const char *name ) {
 	VkPipelineShaderStageCreateInfo stages[2];
 	VkPipelineVertexInputStateCreateInfo vertexInput;
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
@@ -459,6 +620,16 @@ static VkPipeline RP_CreatePipeline( VkShaderModule fs, VkRenderPass pass, VkSam
 
 	Com_Memset( &blendAttachment, 0, sizeof( blendAttachment ) );
 	blendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	if ( multiply ) {
+		// what's there times what's drawn
+		blendAttachment.blendEnable = VK_TRUE;
+		blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_DST_COLOR;
+		blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+		blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+		blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+		blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	}
 	Com_Memset( &blend, 0, sizeof( blend ) );
 	blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	blend.attachmentCount = 1;
@@ -496,7 +667,9 @@ static VkPipeline RP_CreatePipeline( VkShaderModule fs, VkRenderPass pass, VkSam
 }
 
 void vk_rpmod_destroy_pipelines( void ) {
-	VkPipeline *pipes[] = { &rp.depthPipe, &rp.dofPipe, &rp.filterPipe, &rp.copyPipe };
+	VkPipeline *pipes[] = { &rp.depthPipe, &rp.dofPipe, &rp.filterPipe, &rp.copyPipe, &rp.ssaoPipe, &rp.aoBlurPipe,
+		&rp.aoApplyPipe, &rp.shaftsPipe[0], &rp.shaftsPipe[1], &rp.shaftsPipe[2], &rp.mblurPipe, &rp.gradePipe,
+		&rp.fxaaPipe, &rp.casPipe };
 
 	rp.ready = qfalse;
 	for ( size_t i = 0; i < ARRAY_LEN( pipes ); i++ ) {
@@ -507,16 +680,29 @@ void vk_rpmod_destroy_pipelines( void ) {
 }
 
 void vk_rpmod_create_pipelines( void ) {
+	const VkSampleCountFlagBits one = VK_SAMPLE_COUNT_1_BIT;
+
 	vk_rpmod_destroy_pipelines();
 	if ( !vk.fboActive || rp.postFb[0] == VK_NULL_HANDLE || rp.layout == VK_NULL_HANDLE )
 		return;
 
-	if ( rp.usable )
-		rp.depthPipe = RP_CreatePipeline( vk.msaaActive ? rp.depthMsFs : rp.depthFs, rp.distPass, VK_SAMPLE_COUNT_1_BIT, "rpmod depth to distance" );
-	rp.dofPipe = RP_CreatePipeline( rp.dofFs, rp.postPass, VK_SAMPLE_COUNT_1_BIT, "rpmod depth of field" );
-	rp.filterPipe = RP_CreatePipeline( rp.filterFs, rp.postPass, VK_SAMPLE_COUNT_1_BIT, "rpmod screen filter" );
-	// back into the view: drawn in the main render pass, as many samples as it has
-	rp.copyPipe = RP_CreatePipeline( rp.copyFs, vk.render_pass.main.handle, (VkSampleCountFlagBits)vkSamples, "rpmod copy" );
+	if ( rp.usable ) {
+		rp.depthPipe = RP_CreatePipeline( vk.msaaActive ? rp.depthMsFs : rp.depthFs, rp.distPass, one, qfalse, "rpmod depth to distance" );
+		rp.ssaoPipe = RP_CreatePipeline( rp.ssaoFs, rp.aoPass, one, qfalse, "rpmod ambient occlusion" );
+		rp.aoBlurPipe = RP_CreatePipeline( rp.aoBlurFs, rp.aoPass, one, qfalse, "rpmod ambient occlusion blur" );
+		// into the view: drawn in the main render pass, as many samples as it has
+		rp.aoApplyPipe = RP_CreatePipeline( rp.aoApplyFs, vk.render_pass.main.handle, (VkSampleCountFlagBits)vkSamples, qtrue, "rpmod ambient occlusion apply" );
+	}
+	rp.dofPipe = RP_CreatePipeline( rp.dofFs, rp.postPass, one, qfalse, "rpmod depth of field" );
+	rp.filterPipe = RP_CreatePipeline( rp.filterFs, rp.postPass, one, qfalse, "rpmod screen filter" );
+	for ( int i = 0; i < 3; i++ )
+		rp.shaftsPipe[i] = RP_CreatePipeline( rp.shaftsFs[i], rp.postPass, one, qfalse, "rpmod sun shafts" );
+	rp.mblurPipe = RP_CreatePipeline( rp.mblurFs, rp.postPass, one, qfalse, "rpmod motion blur" );
+	rp.gradePipe = RP_CreatePipeline( rp.gradeFs, rp.postPass, one, qfalse, "rpmod colour grading" );
+	rp.fxaaPipe = RP_CreatePipeline( rp.fxaaFs, rp.postPass, one, qfalse, "rpmod fxaa" );
+	rp.casPipe = RP_CreatePipeline( rp.casFs, rp.postPass, one, qfalse, "rpmod sharpen" );
+	// back into the view
+	rp.copyPipe = RP_CreatePipeline( rp.copyFs, vk.render_pass.main.handle, (VkSampleCountFlagBits)vkSamples, qfalse, "rpmod copy" );
 	rp.ready = qtrue;
 }
 
@@ -543,6 +729,18 @@ static qboolean RP_ViewRect( VkRect2D *r ) {
 	r->extent.width = (uint32_t)w;
 	r->extent.height = (uint32_t)h;
 	return qtrue;
+}
+
+static void RP_RectVec( const VkRect2D *r, float *v ) {
+	v[0] = (float)r->offset.x;
+	v[1] = (float)r->offset.y;
+	v[2] = (float)( r->offset.x + r->extent.width );
+	v[3] = (float)( r->offset.y + r->extent.height );
+}
+
+static void RP_TanHalf( float *v ) {
+	v[0] = tanf( DEG2RAD( backEnd.viewParms.fovX ) * 0.5f );
+	v[1] = tanf( DEG2RAD( backEnd.viewParms.fovY ) * 0.5f );
 }
 
 static void RP_SetViewport( const VkRect2D *r ) {
@@ -599,21 +797,20 @@ static void RP_DepthBarrier( qboolean toRead ) {
 		0, 0, NULL, 0, NULL, 1, &b );
 }
 
-// back into the view's render pass, everything in it kept, and the state the renderer had
+// back into the view's render pass, everything in it kept
 static void RP_Resume( void ) {
 	vk_begin_post_blend_render_pass( vk.render_pass.refraction.extract.handle, qfalse );
 }
 
+// and the state the renderer had: its pipeline, its image sets, its depth range and viewport
 static void RP_Restore( void ) {
 	uint32_t offsets[VK_DESC_UNIFORM_COUNT], offsetCount;
 
-	// force depth range and viewport/scissor updates: ours were the view's alone
 	vk.cmd->depth_range = DEPTH_RANGE_COUNT;
-	if ( vk.cmd->last_pipeline == VK_NULL_HANDLE )
-		return;
-
-	qvkCmdBindPipeline( vk.cmd->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk.cmd->last_pipeline );
-	vk_update_mvp( NULL );
+	if ( vk.cmd->last_pipeline != VK_NULL_HANDLE ) {
+		qvkCmdBindPipeline( vk.cmd->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk.cmd->last_pipeline );
+		vk_update_mvp( NULL );
+	}
 
 	for ( int i = 0; i < VK_DESC_COUNT; i++ ) {
 		if ( vk.cmd->descriptor_set.current[i] == VK_NULL_HANDLE )
@@ -633,27 +830,98 @@ static void RP_Restore( void ) {
 	}
 }
 
-// the world's main view in an image the passes can read
+// the world's main view in an image the passes can read; not the sky portal's scene, the main
+// view after it covers that too
 static qboolean RP_MainView( void ) {
 	return (qboolean)( rp.ready && rp.setsAllocated && vk.fboActive && vk.renderPassIndex != RENDER_PASS_SCREENMAP
-		&& backEnd.viewParms.portalView == PV_NONE && !( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) );
+		&& backEnd.viewParms.portalView == PV_NONE && !( backEnd.refdef.rdflags & ( RDF_NOWORLDMODEL | RDF_SKYBOXPORTAL ) ) );
 }
 
 /*
 ===============
-vk_rpmod_depth
-
-Before dynamic glow: the view's depth as distances, when it has a depth of field
+the sun, for sun shafts: where it is in the view and how much its beams show; qfalse when the
+map's sky has no sun, or it's behind the camera or too far off the side of the view
 ===============
 */
-void vk_rpmod_depth( void ) {
+static qboolean RP_Sun( const VkRect2D *r, float *pos, float *color ) {
+	const float *axis0 = backEnd.viewParms.ori.axis[0], *axis1 = backEnd.viewParms.ori.axis[1], *axis2 = backEnd.viewParms.ori.axis[2];
+	const float m = MAX( tr.sunLight[0], MAX( tr.sunLight[1], tr.sunLight[2] ) );
+	float tanHalf[2], z, nx, ny, fade;
+
+	if ( !r_sunShafts->integer || r_sunShaftsIntensity->value <= 0.0f || m <= 0.0f )
+		return qfalse;
+
+	// in the camera's space as the shaders have it: x right, y down, z forward
+	z = DotProduct( tr.sunDirection, axis0 );
+	if ( z <= 0.05f )
+		return qfalse;
+	RP_TanHalf( tanHalf );
+	nx = -DotProduct( tr.sunDirection, axis1 ) / ( z * tanHalf[0] );
+	ny = -DotProduct( tr.sunDirection, axis2 ) / ( z * tanHalf[1] );
+	fade = Com_Clamp( 0.0f, 1.0f, ( z - 0.05f ) * 4.0f ) * Com_Clamp( 0.0f, 1.0f, 2.5f - MAX( fabsf( nx ), fabsf( ny ) ) );
+	if ( fade <= 0.0f )
+		return qfalse;
+
+	pos[0] = r->offset.x + ( nx * 0.5f + 0.5f ) * r->extent.width;
+	pos[1] = r->offset.y + ( ny * 0.5f + 0.5f ) * r->extent.height;
+	for ( int i = 0; i < 3; i++ )
+		color[i] = tr.sunLight[i] / m * r_sunShaftsIntensity->value * fade;
+	color[3] = 0.0f;
+	return qtrue;
+}
+
+// what needs the view's distances
+static qboolean RP_NeedDistance( const VkRect2D *r ) {
+	float pos[2], color[4];
+
+	if ( !rp.usable || rp.depthPipe == VK_NULL_HANDLE )
+		return qfalse;
+	return (qboolean)( backEnd.refdef.dofBlur > 0.0f || r_ssao->integer || r_softParticles->integer
+		|| r_motionBlur->value > 0.0f || RP_Sun( r, pos, color ) );
+}
+
+/*
+===============
+vk_rpmod_split
+
+Where the view's surfaces split into the solid ones and the see-through ones drawn over them, if
+anything needs the distances in between; -1 if not
+===============
+*/
+int vk_rpmod_split( const drawSurf_t *drawSurfs, int numDrawSurfs ) {
+	VkRect2D r;
+	int i;
+
+	rp.haveDistance = rp.softOn = qfalse;
+	if ( !RP_MainView() || !RP_ViewRect( &r ) || !RP_NeedDistance( &r ) )
+		return -1;
+
+	for ( i = 0; i < numDrawSurfs; i++ ) {
+		int entityNum, fogNum, dlighted;
+		shader_t *shader;
+
+		R_DecomposeSort( drawSurfs[i].sort, &entityNum, &shader, &fogNum, &dlighted );
+		if ( shader->sort >= SS_BANNER )
+			break;
+	}
+	return i;
+}
+
+/*
+===============
+vk_rpmod_after_opaque
+
+Between the solid surfaces and the see-through ones: the view's distances, ambient occlusion from
+them multiplied into the view, and soft particles on from here
+===============
+*/
+void vk_rpmod_after_opaque( void ) {
 	const float zNear = backEnd.viewParms.zNear, zFar = backEnd.viewParms.zFar;
+	const qboolean ssao = (qboolean)( r_ssao->integer && r_ssaoIntensity->value > 0.0f && rp.ssaoPipe != VK_NULL_HANDLE );
 	float push[4];
 	VkRect2D r;
 
-	rp.haveDistance = qfalse;
-	if ( !RP_MainView() || backEnd.refdef.dofBlur <= 0.0f || rp.depthPipe == VK_NULL_HANDLE
-		|| zFar <= zNear || !RP_ViewRect( &r ) )
+	if ( zFar <= zNear || !RP_ViewRect( &r ) )
 		return;
 
 	push[0] = zNear * zFar;
@@ -665,30 +933,315 @@ void vk_rpmod_depth( void ) {
 	RP_DepthBarrier( qtrue );
 	RP_Pass( rp.distPass, rp.distFb, rp.depthPipe, rp.depthSet, VK_NULL_HANDLE, push, sizeof( push ), &r );
 	RP_DepthBarrier( qfalse );
+
+	if ( ssao ) {
+		const float radius = r_ssaoRadius->value;
+		struct {
+			float rect[4];
+			float a[4];
+			float b[4];
+		} p;
+		struct {
+			float rect[4];
+			float dir[4];
+		} blur;
+
+		RP_RectVec( &r, p.rect );
+		RP_TanHalf( p.a );
+		p.a[2] = radius;
+		p.a[3] = r_ssaoIntensity->value;
+		p.b[0] = zFar;
+		p.b[1] = 0.0f;
+		p.b[2] = (float)r.extent.height;
+		p.b[3] = 0.0f;
+		RP_Pass( rp.aoPass, rp.aoFb[0], rp.ssaoPipe, rp.distSet, VK_NULL_HANDLE, &p, sizeof( p ), &r );
+
+		Com_Memset( &blur, 0, sizeof( blur ) );
+		RP_RectVec( &r, blur.rect );
+		blur.dir[0] = 1.0f;
+		RP_Pass( rp.aoPass, rp.aoFb[1], rp.aoBlurPipe, rp.aoSet[0], rp.distSet, &blur, sizeof( blur ), &r );
+		blur.dir[0] = 0.0f;
+		blur.dir[1] = 1.0f;
+		RP_Pass( rp.aoPass, rp.aoFb[0], rp.aoBlurPipe, rp.aoSet[1], rp.distSet, &blur, sizeof( blur ), &r );
+	}
+
 	RP_Resume();
+	vk.renderPassIndex = RENDER_PASS_MAIN;	// the see-through surfaces' pipelines as ever
+	if ( ssao )
+		RP_Quad( rp.aoApplyPipe, rp.aoSet[0], VK_NULL_HANDLE, NULL, 0, &r );
 	RP_Restore();
+
 	rp.haveDistance = qtrue;
+	rp.softOn = (qboolean)( r_softParticles->integer != 0 );
+}
+
+/*
+===============
+soft particles: the renderer's own pipelines for an effect's single texture stage swapped for ones
+with a shader of ours, which reads the distances where a second texture would be
+===============
+*/
+qboolean vk_rpmod_soft_active( void ) {
+	return (qboolean)( rp.softOn && vk.renderPassIndex == RENDER_PASS_MAIN && !backEnd.isGlowPass && !backEnd.projection2D );
+}
+
+VkDescriptorSet vk_rpmod_soft_set( void ) {
+	return rp.distSet;
+}
+
+// the pipeline with soft particles in place of the given one, or that one if they don't suit it
+uint32_t vk_rpmod_soft_pipeline( uint32_t pipeline ) {
+	Vk_Pipeline_Def def;
+	uint32_t src, dst;
+	int mode;
+
+	vk_get_pipeline_def( pipeline, &def );
+	if ( def.rpmod_soft || def.fog_stage || def.surface_sprite_flags || def.shadow_phase != SHADOW_DISABLED
+		|| def.primitives != TRIANGLE_LIST
+#ifdef USE_VBO
+		|| def.vbo_ghoul2 || def.vbo_mdv
+#endif
+		|| ( def.state_bits & GLS_DEPTHMASK_TRUE ) )
+		return pipeline;
+
+	switch ( def.shader_type ) {
+		case TYPE_SINGLE_TEXTURE:
+		case TYPE_SINGLE_TEXTURE_ENV:
+		case TYPE_SINGLE_TEXTURE_IDENTITY:
+		case TYPE_SINGLE_TEXTURE_IDENTITY_ENV:
+		case TYPE_SINGLE_TEXTURE_FIXED_COLOR:
+		case TYPE_SINGLE_TEXTURE_FIXED_COLOR_ENV:
+			break;
+		default:
+			return pipeline;
+	}
+
+	// how it blends decides how it fades
+	src = def.state_bits & GLS_SRCBLEND_BITS;
+	dst = def.state_bits & GLS_DSTBLEND_BITS;
+	if ( ( src == GLS_SRCBLEND_ONE && ( dst == GLS_DSTBLEND_ONE || dst == GLS_DSTBLEND_ONE_MINUS_SRC_COLOR || dst == GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA ) )
+		|| ( src == GLS_SRCBLEND_ZERO && dst == GLS_DSTBLEND_ONE_MINUS_SRC_COLOR ) )
+		mode = 1;	// adds, or takes away: scaled to nothing
+	else if ( ( src == GLS_SRCBLEND_DST_COLOR && dst == GLS_DSTBLEND_ZERO ) || ( src == GLS_SRCBLEND_ZERO && dst == GLS_DSTBLEND_SRC_COLOR ) )
+		mode = 2;	// multiplies: taken to white
+	else if ( src == GLS_SRCBLEND_SRC_ALPHA && ( dst == GLS_DSTBLEND_ONE || dst == GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA ) )
+		mode = 3;	// by its alpha: that scaled to nothing
+	else
+		return pipeline;
+
+	// how far it fades over goes in too, so a new one is a new pipeline
+	def.rpmod_soft = mode | ( Com_Clampi( 1, 256, r_softParticlesDepth->integer ) << 2 );
+	return vk_find_pipeline_ext( 0, &def, qfalse );
+}
+
+// for vk_create_pipeline: our fragment shader for the renderer's single texture one
+VkShaderModule *vk_rpmod_soft_module( int shaderType ) {
+	switch ( shaderType ) {
+		case TYPE_SINGLE_TEXTURE:
+		case TYPE_SINGLE_TEXTURE_ENV:
+			return &rp.softFs[0];
+		case TYPE_SINGLE_TEXTURE_IDENTITY:
+		case TYPE_SINGLE_TEXTURE_IDENTITY_ENV:
+			return &rp.softFs[1];
+		case TYPE_SINGLE_TEXTURE_FIXED_COLOR:
+		case TYPE_SINGLE_TEXTURE_FIXED_COLOR_ENV:
+			return &rp.softFs[2];
+		default:
+			return NULL;
+	}
+}
+
+// and its constants: the alpha test and fixed colour as the renderer's, how it fades
+const VkSpecializationInfo *vk_rpmod_soft_spec( int soft, int alphaTestFunc, float alphaTestValue, float identityColor, float identityAlpha ) {
+	static struct {
+		int32_t		alphaTestFunc;
+		float		alphaTestValue;
+		float		identityColor;
+		float		identityAlpha;
+		float		scale;
+		int32_t		mode;
+	} data;
+	static VkSpecializationMapEntry entries[6];
+	static VkSpecializationInfo info;
+	const uint32_t ids[6] = { 0, 1, 9, 10, 20, 21 };
+
+	data.alphaTestFunc = alphaTestFunc;
+	data.alphaTestValue = alphaTestValue;
+	data.identityColor = identityColor;
+	data.identityAlpha = identityAlpha;
+	data.scale = 1.0f / (float)MAX( 1, soft >> 2 );
+	data.mode = soft & 3;
+
+	for ( int i = 0; i < 6; i++ ) {
+		entries[i].constantID = ids[i];
+		entries[i].offset = i * 4;
+		entries[i].size = 4;
+	}
+	info.mapEntryCount = ARRAY_LEN( entries );
+	info.pMapEntries = entries;
+	info.dataSize = sizeof( data );
+	info.pData = &data;
+	return &info;
+}
+
+/*
+===============
+the main view's camera, kept for the next frame's motion blur
+===============
+*/
+static void RP_KeepCamera( const VkRect2D *r ) {
+	VectorCopy( backEnd.viewParms.ori.origin, rp.prevOrigin );
+	AxisCopy( backEnd.viewParms.ori.axis, rp.prevAxis );
+	rp.prevTime = backEnd.refdef.time;
+	rp.prevRect = *r;
+	rp.prevValid = qtrue;
+}
+
+// this camera's space (x right, y down, z forward) to the one before's: rows, then where this
+// camera is in that one's; qfalse when there's nothing to blur from
+static qboolean RP_MotionBlur( const VkRect2D *r, float *m, float *scale ) {
+	vec3_t cur[3], prev[3], d;
+	int dt;
+
+	if ( r_motionBlur->value <= 0.0f || !rp.prevValid || rp.mblurPipe == VK_NULL_HANDLE )
+		return qfalse;
+	dt = backEnd.refdef.time - rp.prevTime;
+	if ( dt <= 0 || dt > 200 || memcmp( &rp.prevRect, r, sizeof( *r ) ) )
+		return qfalse;
+
+	// a cut or a teleport: not a move
+	VectorSubtract( backEnd.viewParms.ori.origin, rp.prevOrigin, d );
+	if ( VectorLength( d ) > 256.0f || DotProduct( backEnd.viewParms.ori.axis[0], rp.prevAxis[0] ) < 0.5f )
+		return qfalse;
+
+	for ( int i = 0; i < 3; i++ ) {
+		cur[0][i] = -backEnd.viewParms.ori.axis[1][i];
+		cur[1][i] = -backEnd.viewParms.ori.axis[2][i];
+		cur[2][i] = backEnd.viewParms.ori.axis[0][i];
+		prev[0][i] = -rp.prevAxis[1][i];
+		prev[1][i] = -rp.prevAxis[2][i];
+		prev[2][i] = rp.prevAxis[0][i];
+	}
+	for ( int row = 0; row < 3; row++ ) {
+		for ( int col = 0; col < 3; col++ )
+			m[row * 4 + col] = DotProduct( prev[row], cur[col] );
+		m[row * 4 + 3] = 0.0f;
+		m[12 + row] = DotProduct( prev[row], d );
+	}
+	m[15] = 0.0f;
+
+	// as long a smear as a frame of 60 a second would leave, whatever the frame rate
+	*scale = r_motionBlur->value * Com_Clamp( 0.25f, 4.0f, ( 1000.0f / 60.0f ) / dt );
+	return qtrue;
+}
+
+// the colour grading to use, the map's own or the settings'; qfalse if it would change nothing
+static qboolean RP_Grade( float *a, float *tint ) {
+	float exposure, saturation, contrast, warmth;
+	int tonemap;
+
+	if ( mapGrade.valid && r_mapGrades->integer ) {
+		exposure = mapGrade.exposure;
+		saturation = mapGrade.saturation;
+		contrast = mapGrade.contrast;
+		warmth = mapGrade.warmth;
+		tonemap = mapGrade.tonemap;
+	} else {
+		exposure = r_exposure->value;
+		saturation = r_saturation->value;
+		contrast = r_contrast->value;
+		warmth = r_warmth->value;
+		tonemap = r_tonemap->integer;
+	}
+	if ( !tonemap && exposure == 1.0f && saturation == 1.0f && contrast == 1.0f && warmth == 0.0f )
+		return qfalse;
+
+	a[0] = exposure;
+	a[1] = tonemap ? 1.0f : 0.0f;
+	a[2] = saturation;
+	a[3] = contrast;
+	tint[0] = 1.0f + 0.15f * warmth;
+	tint[1] = 1.0f + 0.03f * warmth;
+	tint[2] = 1.0f - 0.15f * warmth;
+	tint[3] = 1.0f;
+	return qtrue;
 }
 
 /*
 ===============
 vk_rpmod_post
 
-After dynamic glow: the depth of field and the filter over the view
+After dynamic glow: the passes over the view, each from the last one's image into the other
 ===============
 */
 void vk_rpmod_post( void ) {
-	const qboolean dof = (qboolean)( rp.haveDistance && backEnd.refdef.dofBlur > 0.0f );
+	const qboolean dist = rp.haveDistance;
+	const qboolean dof = (qboolean)( dist && backEnd.refdef.dofBlur > 0.0f );
 	const qboolean filter = (qboolean)( backEnd.refdef.filterOn && backEnd.refdef.filter.strength > 0.0f );
+	const qboolean fxaa = (qboolean)( r_fxaa->integer != 0 );
+	const qboolean sharpen = (qboolean)( r_sharpen->value > 0.0f );
+	float sunPos[2], sunColor[4], mblur[16], mblurScale = 0.0f, grade[4], tint[4];
+	qboolean shafts, motion, graded;
 	VkDescriptorSet src = rp.sceneSet;
 	int next = 0;
 	VkRect2D r;
 
-	rp.haveDistance = qfalse;
-	if ( !RP_MainView() || ( !dof && !filter ) || !RP_ViewRect( &r ) )
+	rp.haveDistance = rp.softOn = qfalse;
+	if ( !RP_MainView() || !RP_ViewRect( &r ) )
+		return;
+
+	shafts = (qboolean)( dist && RP_Sun( &r, sunPos, sunColor ) );
+	motion = (qboolean)( dist && RP_MotionBlur( &r, mblur, &mblurScale ) );
+	graded = RP_Grade( grade, tint );
+	RP_KeepCamera( &r );
+	if ( !shafts && !motion && !dof && !graded && !filter && !fxaa && !sharpen )
 		return;
 
 	vk_end_render_pass();
+
+#define RP_NEXT( pipe, set1, push ) \
+	RP_Pass( rp.postPass, rp.postFb[next], pipe, src, set1, &push, sizeof( push ), &r ); \
+	src = rp.postSet[next]; \
+	next ^= 1;
+
+	if ( shafts ) {
+		// the sky's bright parts, smeared toward the sun twice, added to the view: always first,
+		// so both images are free for the beams
+		struct {
+			float rect[4];
+			float sun[4];
+			float color[4];
+		} p;
+
+		RP_RectVec( &r, p.rect );
+		p.sun[0] = sunPos[0];
+		p.sun[1] = sunPos[1];
+		p.sun[2] = backEnd.viewParms.zFar;
+		p.sun[3] = 0.6f;
+		Com_Memcpy( p.color, sunColor, sizeof( p.color ) );
+		RP_Pass( rp.postPass, rp.postFb[0], rp.shaftsPipe[0], rp.sceneSet, rp.distSet, &p, sizeof( p ), &r );
+		RP_Pass( rp.postPass, rp.postFb[1], rp.shaftsPipe[1], rp.postSet[0], VK_NULL_HANDLE, &p, sizeof( p ), &r );
+		p.sun[3] = 0.25f;
+		RP_Pass( rp.postPass, rp.postFb[0], rp.shaftsPipe[1], rp.postSet[1], VK_NULL_HANDLE, &p, sizeof( p ), &r );
+		RP_Pass( rp.postPass, rp.postFb[1], rp.shaftsPipe[2], rp.sceneSet, rp.postSet[0], &p, sizeof( p ), &r );
+		src = rp.postSet[1];
+		next = 0;
+	}
+
+	if ( motion ) {
+		struct {
+			float m[16];
+			float a[4];
+			float rect[4];
+		} p;
+
+		Com_Memcpy( p.m, mblur, sizeof( p.m ) );
+		RP_TanHalf( p.a );
+		p.a[2] = mblurScale;
+		p.a[3] = r.extent.height * 0.06f;
+		RP_RectVec( &r, p.rect );
+		RP_NEXT( rp.mblurPipe, rp.distSet, p );
+	}
 
 	if ( dof ) {
 		const float radius = backEnd.refdef.dofBlur * glConfig.vidHeight / 480.0f;
@@ -700,17 +1253,25 @@ void vk_rpmod_post( void ) {
 		p.a[0] = backEnd.refdef.dofFocus;
 		p.a[1] = 1.0f / backEnd.refdef.dofRange;
 		p.a[2] = radius;
-		p.a[3] = 0.0f;
-		p.rect[0] = (float)r.offset.x;
-		p.rect[1] = (float)r.offset.y;
-		p.rect[2] = (float)( r.offset.x + r.extent.width );
-		p.rect[3] = (float)( r.offset.y + r.extent.height );
-		// twice, the second time half as far out, to fill in between the first's taps
-		RP_Pass( rp.postPass, rp.postFb[0], rp.dofPipe, src, rp.distSet, &p, sizeof( p ), &r );
-		p.a[2] = radius * 0.5f;
-		RP_Pass( rp.postPass, rp.postFb[1], rp.dofPipe, rp.postSet[0], rp.distSet, &p, sizeof( p ), &r );
-		src = rp.postSet[1];
-		next = 0;
+		p.a[3] = r_dofBokeh->value;
+		RP_RectVec( &r, p.rect );
+		RP_NEXT( rp.dofPipe, rp.distSet, p );
+		// as rd-vanilla: a second time, half as far out, to fill in between the first's taps
+		if ( p.a[3] <= 0.0f ) {
+			p.a[2] = radius * 0.5f;
+			RP_NEXT( rp.dofPipe, rp.distSet, p );
+		}
+	}
+
+	if ( graded ) {
+		struct {
+			float a[4];
+			float tint[4];
+		} p;
+
+		Com_Memcpy( p.a, grade, sizeof( p.a ) );
+		Com_Memcpy( p.tint, tint, sizeof( p.tint ) );
+		RP_NEXT( rp.gradePipe, VK_NULL_HANDLE, p );
 	}
 
 	if ( filter ) {
@@ -753,10 +1314,31 @@ void vk_rpmod_post( void ) {
 				p.ramp[at >> 2] |= (uint32_t)f->rampColors[k][c] << ( ( at & 3 ) * 8 );
 			}
 		}
-
-		RP_Pass( rp.postPass, rp.postFb[next], rp.filterPipe, src, VK_NULL_HANDLE, &p, sizeof( p ), &r );
-		src = rp.postSet[next];
+		RP_NEXT( rp.filterPipe, VK_NULL_HANDLE, p );
 	}
+
+	if ( fxaa ) {
+		struct {
+			float rect[4];
+		} p;
+
+		RP_RectVec( &r, p.rect );
+		RP_NEXT( rp.fxaaPipe, VK_NULL_HANDLE, p );
+	}
+
+	if ( sharpen ) {
+		struct {
+			float rect[4];
+			float a[4];
+		} p;
+
+		RP_RectVec( &r, p.rect );
+		p.a[0] = r_sharpen->value;
+		p.a[1] = p.a[2] = p.a[3] = 0.0f;
+		RP_NEXT( rp.casPipe, VK_NULL_HANDLE, p );
+	}
+
+#undef RP_NEXT
 
 	// back into the view
 	RP_Resume();
