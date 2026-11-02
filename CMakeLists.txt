@@ -347,16 +347,46 @@ else()
 endif()
 
 # Current Git tag/version
-# ideally we would separate the hash suffix into its own variable, but sed is not available everywhere
+# A build of a release's own commit is that release's tag ("v0.7.3"). Any other build is the
+# version after the newest release tag, wherever it is, and the commit ("v0.7.4-dev-g5cc1ce8"),
+# so a branch the release merges aren't part of still counts on from the newest release.
 execute_process(
-	COMMAND "git" "describe" "--tag"
+	COMMAND "git" "describe" "--tags" "--exact-match"
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	OUTPUT_VARIABLE GIT_TAG
 	RESULT_VARIABLE GIT_TAG_ERROR
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+	ERROR_QUIET)
 if(GIT_TAG_ERROR AND NOT GIT_TAG_ERROR EQUAL 0)
-	message(WARNING "Unable to determine Git tag")
+	execute_process(
+		COMMAND "git" "tag" "--list" "v*" "--sort=-v:refname"
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		OUTPUT_VARIABLE GIT_TAGS
+		RESULT_VARIABLE GIT_TAG_ERROR
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		ERROR_QUIET)
+	execute_process(
+		COMMAND "git" "rev-parse" "--short" "HEAD"
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		OUTPUT_VARIABLE GIT_HASH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		ERROR_QUIET)
 	set(GIT_TAG vUNKNOWN)
+	# the newest tag that's a version: v<major>.<minor>.<patch>
+	string(REPLACE "\n" ";" GIT_TAGS "${GIT_TAGS}")
+	foreach(tag ${GIT_TAGS})
+		if(tag MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
+			math(EXPR GIT_NEXT_PATCH "${CMAKE_MATCH_3} + 1")
+			set(GIT_TAG "v${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${GIT_NEXT_PATCH}-dev")
+			if(GIT_HASH)
+				set(GIT_TAG "${GIT_TAG}-g${GIT_HASH}")
+			endif()
+			break()
+		endif()
+	endforeach()
+	if(GIT_TAG STREQUAL "vUNKNOWN")
+		message(WARNING "Unable to determine Git tag")
+	endif()
 endif()
 message(STATUS "Git tag is ${GIT_TAG}")
 

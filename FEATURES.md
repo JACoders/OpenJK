@@ -617,7 +617,7 @@ Know when there's a newer OpenJK-rpmod.
 - When yours is older, the console says so and the main menu shows it at the bottom
 - `/version` shows your version and the newest, with the link to download a newer one; `/version check` asks again now
 - `/cl_updateCheck 0` never asks
-- A build made between releases isn't told it's out of date
+- A build made between releases is named after the next one (`v0.7.4-dev-g5cc1ce8`), and is out of date once that one is out
 - Windows only for now
 
 ## Experimental features

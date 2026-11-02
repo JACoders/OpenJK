@@ -26,8 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   version          this version, the newest, whether this is up to date, and where to get it
 //   version check    asks GitHub again now
 //
-// cl_updateCheck 0 never asks. A build between releases ("v0.7.3-5-gabc123") isn't told it's
-// out of date. Only Windows can ask for now.
+// cl_updateCheck 0 never asks. A build between releases is named after the next one
+// ("v0.7.4-dev-g5cc1ce8", the build's CMake): it's out of date once that release is out.
+// Only Windows can ask for now.
 
 #include "client.h"
 #include "qcommon/game_version.h"
@@ -88,8 +89,8 @@ static qboolean UP_Parse( const char *tag, int v[3], qboolean *dev ) {
 	return qtrue;
 }
 
-// -1 this one's out of date, 0 up to date, 1 newer than the newest (a build between releases),
-// 2 not known
+// -1 this one's out of date, 0 up to date, 1 newer than the newest (a build towards the next
+// release), 2 not known
 static int UP_Compare( void ) {
 	int mine[3], newest[3];
 	qboolean dev;
@@ -97,13 +98,11 @@ static int UP_Compare( void ) {
 	if ( !up.latest[0] || !UP_Parse( GIT_TAG, mine, &dev ) || !UP_Parse( up.latest, newest, NULL ) )
 		return 2;
 	for ( int i = 0; i < 3; i++ ) {
-		if ( mine[i] != newest[i] ) {
-			if ( mine[i] > newest[i] )
-				return 1;
-			return dev ? 2 : -1;
-		}
+		if ( mine[i] != newest[i] )
+			return mine[i] > newest[i] ? 1 : -1;
 	}
-	return dev ? 1 : 0;
+	// a build towards this version, from before it came out
+	return dev ? -1 : 0;
 }
 
 static void UP_Say( void ) {
@@ -115,7 +114,7 @@ static void UP_Say( void ) {
 		Com_Printf( "OpenJK-rpmod %s is the newest\n", GIT_TAG );
 		break;
 	case 1:
-		Com_Printf( "OpenJK-rpmod %s, newer than the newest release (%s)\n", GIT_TAG, up.latest );
+		Com_Printf( "OpenJK-rpmod %s, a build towards the next release (newest %s)\n", GIT_TAG, up.latest );
 		break;
 	default:
 		Com_Printf( "OpenJK-rpmod %s, newest release %s\n", GIT_TAG, up.latest[0] ? up.latest : "not known" );
