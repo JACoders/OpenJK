@@ -4,10 +4,10 @@ What changed in OpenJK-rpmod from version to version, newest first. What each fe
 
 OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
-## 0.7.5 (unreleased)
+## Unreleased
 
-- [Added] `Renderer settings in the Setup menu`. Setup has a RENDERER button under DEFAULTS, in the main menu and in game: the renderer (OpenGL or Vulkan), anti-aliasing and dynamic glow, and with Vulkan its post effects, bloom, HDR, supersampling, dithering and world and model caching. Changes apply with the video page's Apply, as the rest of Setup's do. The button and page are added to whichever Setup menu the game has, RPMod's included, as it loads; nothing is shipped for them.
-- [Added] `Vulkan renderer` (experimental). EternalJK/TaystJK's Vulkan renderer comes with the game, next to the usual one: `/cl_renderer rd-vulkan` then `/vid_restart` switches to it, `/cl_renderer rd-vanilla` back. It adds anti-aliasing, supersampling, bloom, HDR and a render scale (most of them need `/r_fbo 1`). Not in it yet: the map editor's fog and hiding or moving the map's triangles, the shader manager's sky look, zoom and portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before; those say so or do nothing, and the rest of the client works as ever.
+- [Added] `Renderer settings in the Setup menu`. Setup has a RENDERER button under DEFAULTS, in the main menu and in game: the renderer (OpenGL or Vulkan), anti-aliasing and dynamic glow, and with Vulkan its post effects, bloom, HDR, dithering and world and model caching. Changes apply with the video page's Apply, as the rest of Setup's do. The button and page are added to whichever Setup menu the game has, RPMod's included, as it loads; nothing is shipped for them.
+- [Added] `Vulkan renderer` (experimental). EternalJK/TaystJK's Vulkan renderer comes with the game, next to the usual one: `/cl_renderer rd-vulkan` then `/vid_restart` switches to it, `/cl_renderer rd-vanilla` back. It adds anti-aliasing, bloom, HDR and a render scale (most of them need `/r_fbo 1`); its supersampling is left off for now, as it loses the graphics device (TaystJK's own build too). Turning on everything at once (post effects, bloom, dynamic glow and anti-aliasing) no longer stops the game with "Attachments array overflow". Not in it yet: the map editor's fog and hiding or moving the map's triangles, the shader manager's sky look, zoom and portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before; those say so or do nothing, and the rest of the client works as ever.
 
 ## 0.7.4 - Nov 2nd 2026
 

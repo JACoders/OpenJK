@@ -94,7 +94,9 @@ typedef unsigned int uvec4_t[4];
 #define USE_DEDICATED_ALLOCATION
 #endif
 // depth + msaa + msaa-resolve + screenmap.msaa + screenmap.resolve + screenmap.depth + (bloom_extract + blur pairs + dglow_extract + blur pairs) + dglow-msaa
-#define MAX_ATTACHMENTS_IN_POOL			( 6 + ( ( 1 + VK_NUM_BLUR_PASSES * 2 ) * 2 ) + 1  ) 
+// OpenJK-rpmod: + refraction + the supersampling capture: with everything on (r_fbo, r_bloom, r_DynamicGlow,
+// r_ext_multisample, r_ext_supersample and a map with refraction) that's 27, and the pool held 26
+#define MAX_ATTACHMENTS_IN_POOL			( 8 + ( ( 1 + VK_NUM_BLUR_PASSES * 2 ) * 2 ) + 1  ) 
 
 #define GLOBAL_SHADER_C
 #include "shaders/glsl/global.h"

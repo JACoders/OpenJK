@@ -627,10 +627,11 @@ Know when there's a newer OpenJK-rpmod.
 
 - Setup's RENDERER page (under DEFAULTS, in the main menu and in game) picks it and sets what's below; Apply restarts the video with them. The rows for Vulkan's own settings show once Vulkan is picked
 - Or by hand: `/cl_renderer rd-vulkan` then `/vid_restart` switches to it, without leaving the server; `/cl_renderer rd-vanilla` and `/vid_restart` switch back
-- Anti-aliasing (`r_ext_multisample 2`, 4 or 8), supersampling (`r_ext_supersample 1`), bloom (`r_bloom 1`), HDR (`r_hdr`), dithering (`r_dither 1`) and a render resolution of its own (`r_renderScale`, `r_renderWidth`, `r_renderHeight`); most of them need `r_fbo 1`
+- Anti-aliasing (`r_ext_multisample 2`, 4 or 8), bloom (`r_bloom 1`), HDR (`r_hdr`), dithering (`r_dither 1`) and a render resolution of its own (`r_renderScale`, `r_renderWidth`, `r_renderHeight`); most of them need `r_fbo 1`
 - `r_vbo 1` and `r_vbo_models 1` keep the map's and the models' surfaces on the graphics card, for more frames per second
 - `r_device` picks the graphics card when there's more than one
 - Every tool works with it, but some of what they change in the picture isn't in it yet: the map editor's fog and hiding or moving the map's triangles, the shader manager's sky look, zoom and portal, the cinematic camera's depth of field and filters, and /loadpk3 finding shaders and models it couldn't before. Those say so or do nothing
+- Its supersampling (`r_ext_supersample`) is left off for now: it loses the graphics device, in TaystJK's own build too
 - On macOS it needs MoltenVK, which macOS doesn't come with
 
 ## Experimental features

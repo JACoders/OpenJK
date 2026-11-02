@@ -37,7 +37,7 @@ typedef struct vk_attach_desc_s {
     VkFormat                image_format;
 } vk_attach_desc_t;
 
-static vk_attach_desc_t attachments[MAX_ATTACHMENTS_IN_POOL + 1]; // +1 for SSAA
+static vk_attach_desc_t attachments[MAX_ATTACHMENTS_IN_POOL]; // OpenJK-rpmod: SSAA and refraction are in the count now
 static uint32_t num_attachments = 0;
 
 static void vk_clear_attachment_pool( void )
@@ -192,7 +192,7 @@ static void vk_add_attachment_desc( VkImage desc, VkImageView *image_view, VkIma
     VkFormat image_format, VkImageAspectFlags aspect_flags, VkImageLayout image_layout )
 {
     if (num_attachments >= ARRAY_LEN(attachments)) {
-        ri.Error(ERR_FATAL, "Attachments array overflow: max attachments: %d while %d given", (int)ARRAY_LEN(vk.image_memory), num_attachments);
+        ri.Error(ERR_FATAL, "Attachments array overflow: max attachments: %d while %d given", (int)ARRAY_LEN(attachments), num_attachments + 1);
     }
     else {
         attachments[num_attachments].descriptor = desc;
@@ -371,7 +371,7 @@ void vk_create_attachments( void )
         }
 
         // SSAA
-        if ( r_ext_supersample->integer ) {
+        if ( R_SUPERSAMPLE ) { // OpenJK-rpmod: was r_ext_supersample->integer
             // capture buffer
             usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
             create_color_attachment( gls.captureWidth, gls.captureHeight, VK_SAMPLE_COUNT_1_BIT, vk.capture_format,

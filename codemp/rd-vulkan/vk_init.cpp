@@ -67,7 +67,7 @@ static void vk_set_render_scale( void )
 		vk.windowAdjusted = qtrue;
 	}
 
-	if (r_fbo->integer && r_ext_supersample->integer && !r_renderScale->integer)
+	if (r_fbo->integer && R_SUPERSAMPLE && !r_renderScale->integer) // OpenJK-rpmod: was r_ext_supersample->integer
 	{
 		vk.blitFilter = GL_LINEAR;
 	}
@@ -346,7 +346,7 @@ void vk_create_window( void ) {
 		
 			//ri.CL_SetScaling(1.0, gls.captureWidth, gls.captureHeight);	// consolefont and avi capture
 
-			if (r_ext_supersample->integer){
+			if (R_SUPERSAMPLE){ // OpenJK-rpmod: was r_ext_supersample->integer
 				glConfig.vidWidth *= 2;
 				glConfig.vidHeight *= 2;
 

@@ -921,6 +921,8 @@ void R_Register( void )
 	ri.Cvar_CheckRange(r_ext_multisample, 0, 64, qtrue);
 	r_ext_supersample					= ri.Cvar_Get("r_ext_supersample",					"0",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
 	ri.Cvar_CheckRange(r_ext_supersample, 0, 1, qtrue);
+	if ( r_ext_supersample->integer && !R_SUPERSAMPLE ) // OpenJK-rpmod
+		ri.Printf( PRINT_WARNING, "r_ext_supersample is left off: Vulkan's supersampling loses the graphics device for now\n" );
 	r_ext_alpha_to_coverage				= ri.Cvar_Get("r_ext_alpha_to_coverage",			"0",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
 	ri.Cvar_CheckRange(r_ext_alpha_to_coverage, 0, 1, qtrue);
 	r_fbo								= ri.Cvar_Get("r_fbo",								"0",						CVAR_ARCHIVE_ND | CVAR_LATCH, "");
