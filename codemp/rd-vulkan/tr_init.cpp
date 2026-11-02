@@ -1481,6 +1481,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.ext.Font_StrLenPixels				= RE_Font_StrLenPixelsNew;
 	re.ext.SetSkyLook						= RE_SetSkyLook;		// OpenJK-rpmod
 	re.ext.SetSkyZoom						= RE_SetSkyZoom;		// OpenJK-rpmod
+	re.ext.SetSkyPortal						= RE_SetSkyPortal;		// OpenJK-rpmod
 	re.ext.GetFogs							= RE_GetFogs;			// OpenJK-rpmod
 	re.ext.SetFog							= RE_SetFog;			// OpenJK-rpmod
 	re.ext.AddFog							= RE_AddFog;			// OpenJK-rpmod

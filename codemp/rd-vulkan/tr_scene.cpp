@@ -611,6 +611,47 @@ static void R_SkyLook( const refdef_t *fd ) {
 	}
 }
 
+/*
+=====================
+OpenJK-rpmod: the shader manager's sky portal (as in rd-vanilla): the map seen from a spot in place
+of the sky, as a 3D skybox does, even on a map without one
+=====================
+*/
+void RE_SetSkyPortal( const vec3_t origin ) {
+	if ( !origin ) {
+		// the world's sky surfaces were left out for the portal's view: drawn again. A map's own
+		// 3D skybox turns this back on with its next view
+		if ( tr.portalSkyOn )
+			skyboxportal = 0;
+		tr.portalSkyOn = qfalse;
+		return;
+	}
+	tr.portalSkyOn = qtrue;
+	VectorCopy( origin, tr.portalSkyOrg );
+}
+
+// the client's sky portal before a world scene: the same view from its spot, as a 3D skybox's,
+// without the scene's entities, lights and polys, which are left for the world scene after it
+static void R_RenderPortalSky( const refdef_t *fd ) {
+	const int numEntities = r_numentities, numDlights = r_numdlights, numPolys = r_numpolys;
+	refdef_t sky = *fd;
+
+	VectorCopy( tr.portalSkyOrg, sky.vieworg );
+	sky.rdflags |= RDF_SKYBOXPORTAL | RDF_DRAWSKYBOX;
+	sky.rdflags &= ~RDF_AUTOMAP;
+	// the snapshot's areas are the player's; from the spot, every area may be seen
+	memset( sky.areamask, 0, sizeof( sky.areamask ) );
+	r_numentities = r_firstSceneEntity;
+	r_numdlights = r_firstSceneDlight;
+	r_numpolys = r_firstScenePoly;
+	tr.inPortalSky = qtrue;
+	RE_RenderScene( &sky );
+	tr.inPortalSky = qfalse;
+	r_numentities = numEntities;
+	r_numdlights = numDlights;
+	r_numpolys = numPolys;
+}
+
 void RE_RenderScene( const refdef_t *fd ) {
 	renderCommand_t	lastRenderCommand;
 	viewParms_t		parms;
@@ -629,6 +670,28 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	if (!tr.world && !(fd->rdflags & RDF_NOWORLDMODEL)) {
 		Com_Error(ERR_DROP, "R_RenderScene: NULL worldmodel");
+	}
+
+	// OpenJK-rpmod: the client's sky portal: a map's own 3D skybox moved to its spot, else one
+	// drawn before each world scene
+	if ( !( fd->rdflags & RDF_NOWORLDMODEL ) && !tr.inPortalSky ) {
+		if ( fd->rdflags & RDF_SKYBOXPORTAL ) {
+			tr.portalSkyDrawn = qtrue;
+			if ( tr.portalSkyOn ) {
+				refdef_t sky = *fd;
+
+				VectorCopy( tr.portalSkyOrg, sky.vieworg );
+				memset( sky.areamask, 0, sizeof( sky.areamask ) );
+				tr.inPortalSky = qtrue;
+				RE_RenderScene( &sky );
+				tr.inPortalSky = qfalse;
+				return;
+			}
+		} else {
+			if ( tr.portalSkyOn && !tr.portalSkyDrawn )
+				R_RenderPortalSky( fd );
+			tr.portalSkyDrawn = qfalse;
+		}
 	}
 
 	memcpy(tr.refdef.text, fd->text, sizeof(tr.refdef.text));
