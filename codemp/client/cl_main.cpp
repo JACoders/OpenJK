@@ -2678,6 +2678,12 @@ void CL_InitRef( void ) {
 	ri.PD_Store = PD_Store;
 	ri.PD_Load = PD_Load;
 
+	// rd-vulkan
+	ri.VK_IsMinimized = WIN_VK_IsMinimized;
+	ri.VK_GetInstanceProcAddress = WIN_VK_GetInstanceProcAddress;
+	ri.VK_createSurfaceImpl = WIN_VK_createSurfaceImpl;
+	ri.VK_destroyWindow = WIN_VK_destroyWindow;
+
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
 //	Com_Printf( "-------------------------------\n");
@@ -2894,6 +2900,7 @@ void CL_Init( void ) {
 	CL_RpHooks_Init ();
 	CL_RpAdmin_Init ();
 	CL_Update_Init ();
+	CL_RenderMenu_Init();
 	cl_ratioFix = Cvar_Get( "cl_ratioFix", "0", CVAR_ARCHIVE_ND, "Widescreen: text, and the engine's own, as on a 4:3 screen instead of stretched" );
 	cls.widthRatioCoef = 1.0f;
 	CL_RadialMenu_Init ();
@@ -3138,6 +3145,7 @@ void CL_Shutdown( void ) {
 	CL_RpHooks_Shutdown();
 	Cmd_RemoveCommand( "toolaccess" );
 	CL_Update_Shutdown();
+	CL_RenderMenu_Shutdown();
 	Cmd_RemoveCommand( "+radial" );
 	Cmd_RemoveCommand( "-radial" );
 	Cmd_RemoveCommand( "radial" );

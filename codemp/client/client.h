@@ -1030,6 +1030,9 @@ void CL_RpAdmin_Frame( void );
 // cl_update.cpp
 void CL_Update_Init( void );
 void CL_Update_Shutdown( void );
+// cl_rendermenu.cpp: the RENDERER page in the Setup menu
+void CL_RenderMenu_Init( void );
+void CL_RenderMenu_Shutdown( void );
 void CL_Update_Frame( void );
 void CL_Update_Draw( void );
 

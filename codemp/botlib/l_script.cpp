@@ -1330,6 +1330,10 @@ int FileLength(FILE *fp)
 // Returns:					-
 // Changes Globals:		-
 //============================================================================
+// OpenJK-rpmod: the client's chance to change a file as it's read (cl_rendermenu.cpp: the Setup
+// menus); what it hands back is used instead, NULL leaves the file as it is
+const char *( *LoadScriptFile_Patch )( const char *filename, const char *text, int *length ) = NULL;
+
 script_t *LoadScriptFile(const char *filename)
 {
 #ifdef BOTLIB
@@ -1390,6 +1394,18 @@ script_t *LoadScriptFile(const char *filename)
 #endif
 	//
 	script->length = COM_Compress(script->buffer);
+
+	if ( LoadScriptFile_Patch ) {
+		int patchedLength = script->length;
+		const char *patched = LoadScriptFile_Patch( filename, script->buffer, &patchedLength );
+
+		if ( patched ) {
+			script_t *changed = LoadScriptMemory( (char *)patched, patchedLength, (char *)filename );
+
+			FreeMemory( buffer );
+			return changed;
+		}
+	}
 
 	return script;
 } //end of the function LoadScriptFile

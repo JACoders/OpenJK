@@ -35,6 +35,7 @@ Some features reach other players through workarounds only this client understan
 - [Console Settings](#console-settings)
 - [Model Safeguards](#model-safeguards)
 - [Update Check](#update-check)
+- [Vulkan Renderer](#vulkan-renderer-experimental)
 - [Experimental features](#experimental-features)
 
 ## Model Manager
@@ -175,7 +176,7 @@ Click any surface, see what it's made of, and swap its texture for everyone on t
 - Zoom it, from 0.25x to 4x, to make the sky look nearer or farther; a 3D skybox or sky portal zooms its view
 - On a map with a 3D skybox, the whole skybox turns, and can be moved too
 - Shown on your screen as you change it; **Share with all** *(experimental)* sends it to everyone with this client until the map changes, **Reset for all** puts the map's sky back
-- Click a sky in the free camera and *Sky look...* takes you there. *Needs the rd-vanilla_x86.dll from the release.*
+- Click a sky in the free camera and *Sky look...* takes you there. *Needs the release's renderer, OpenGL (rd-vanilla_x86.dll) or Vulkan (rd-vulkan_x86.dll).*
 - **Sky portal**: the map seen from a spot in place of the sky, as a 3D skybox does, even on a map without one. Pick the map's own 3D skybox, or add the free camera's spot; the spots are kept per map. Turn and move it with the sliders above, and Share with all sends it too
 
 ### Player shaders (Mine tab)
@@ -321,8 +322,8 @@ Make a whole cut scene on one timeline, the camera's shots and what the players 
 - Preview it on your own screen, from the start or the moment picked
 - **Play for everyone** sends it whole (a part a second), then it plays on every screen with this client at the same time; **End for everyone** stops it. NPCs are brought on the server to where their moves end, so players without this client see them there too
 - Cinematics are saved by name and played with the Storyteller's Play cinematic step, or `/cinematicmanager send <name>`. Camera shots made before open as a cinematic of one shot
-- **Depth of field**: sharp at the distance you set, on whatever the camera looks at, or on a player or NPC as they move, or on a moving spot, blurred in front and behind; each shot keeps its own, and each spot can change it. A moving spot is a circle in the view as wide as what stays sharp: drag it onto what is to be in focus, then at another moment of the timeline drag it again for another key, and the focus goes from key to key; the wheel on it makes it deeper or shallower, and its keys drag along the timeline. *Needs the rd-vanilla_x86.dll from the release.*
-- **Filters** for each shot: black and white, noir, sepia, old film, night vision, thermal, security camera, VHS tape, hologram, warm, cold, faded or negative. *Needs the rd-vanilla_x86.dll from the release.*
+- **Depth of field**: sharp at the distance you set, on whatever the camera looks at, or on a player or NPC as they move, or on a moving spot, blurred in front and behind; each shot keeps its own, and each spot can change it. A moving spot is a circle in the view as wide as what stays sharp: drag it onto what is to be in focus, then at another moment of the timeline drag it again for another key, and the focus goes from key to key; the wheel on it makes it deeper or shallower, and its keys drag along the timeline. *Needs the rd-vanilla_x86.dll from the release, or the Vulkan renderer with `r_fbo 1`.*
+- **Filters** for each shot: black and white, noir, sepia, old film, night vision, thermal, security camera, VHS tape, hologram, warm, cold, faded or negative. *Needs the rd-vanilla_x86.dll from the release, or the Vulkan renderer with `r_fbo 1`.*
 - **Transitions** in and out of each shot: a fade, or a wipe from the left, the right, the top or the bottom, in black or any color, as long as you like
 - Players moved or animated, you too, are only seen that way by those with this client, and go back where they were when it ends
 - With the HUD hidden, the chat box is hidden too, so chat shows as subtitles at the bottom of the screen: NPC talk, and the players' chat your `rpc_chatRange_*` settings would show, green like the chat box unless the line has its own colors
@@ -347,7 +348,7 @@ Edit the map on your own screen: move or hide any part of it, place models, ligh
 - **Hold use**: a use trigger can be held, in milliseconds as JKA's `usetime`: it's only used once the use key has been held on it that long, a bar showing how far along, while the character works the console (`emconsole`) and stops when it's done or let go
 - **Sounds**: speakers that play any music or sound, heard near them or everywhere, looping
 - **Styles**: give the map's switchable lights a new pattern (flicker, pulse, strobe...) and color, change its existing light styles, or the lighting of the whole map
-- **Fog**: the color and thickness of each of the map's fogs, `No fog` to take one away, or fog volumes of your own. *Needs the rd-vanilla_x86.dll from the release.*
+- **Fog**: the color and thickness of each of the map's fogs, `No fog` to take one away, or fog volumes of your own. *Needs the release's renderer, OpenGL (rd-vanilla_x86.dll) or Vulkan (rd-vulkan_x86.dll); with Vulkan's own fog (`r_drawfog 2`, its default) up to 16 fogs in all.*
 - **Locks**: every door and trigger_multiple in the map with its lock. Lock one to a rank (*-1* for no one) with a name shown to whoever it refuses, change it or unlock it, or remove every lock, through RPMod's `rplock`; locked ones are drawn in red. These are the server's, so everyone is held by them
 - A map always starts without edits: they show when you load one of its layouts, or when someone shares theirs, so no one's edits load against anyone else's (`rpc_mapEdits 0` only shows them in the editor)
 - They're saved as entities a server could spawn, ready for when RPMod supports it
@@ -619,6 +620,28 @@ Know when there's a newer OpenJK-rpmod.
 - `/cl_updateCheck 0` never asks
 - A build made between releases is named after the next one (`v0.7.4-dev-g5cc1ce8`), and is out of date once that one is out
 - On Linux and macOS it needs libcurl, which macOS always has and most Linux systems do; without it the game runs as ever, only without the check
+
+## Vulkan Renderer *(experimental)*
+
+[TaystJK](https://github.com/taysta/TaystJK)'s Vulkan renderer comes with the game, next to the usual OpenGL one, which stays the default.
+
+- Setup's RENDERER page (under DEFAULTS, in the main menu and in game) picks it and sets what's below; Apply restarts the video with them. The rows for Vulkan's own settings show once Vulkan is picked, and *More Settings >* at the bottom goes to a second page of them
+- Or by hand: `/cl_renderer rd-vulkan` then `/vid_restart` switches to it, without leaving the server; `/cl_renderer rd-vanilla` and `/vid_restart` switch back
+- Anti-aliasing (`r_ext_multisample 2`, 4 or 8), bloom (`r_bloom 1`), HDR (`r_hdr`), dithering (`r_dither 1`) and a render resolution of its own (`r_renderScale`, `r_renderWidth`, `r_renderHeight`); most of them need `r_fbo 1`
+- `r_vbo 1` and `r_vbo_models 1` keep the map's and the models' surfaces on the graphics card, for more frames per second
+- `r_device` picks the graphics card when there's more than one
+- **Supersampling** (`r_ext_supersample 1`, needs `r_fbo 1`): the picture drawn at twice the width and height and scaled down to the window, smoothing every edge, for about four times the drawing. Screenshots come out at the larger size
+- Effects of its own, each off until turned on, all needing `r_fbo 1`; all but colour grading are on the RENDERER page too:
+  - **Ambient occlusion** (`r_ssao 1`): corners, creases and the ground under things darkened. `r_ssaoRadius` is how far it reaches (48 units), `r_ssaoIntensity` how dark (1)
+  - **Soft particles** (`r_softParticles 1`): smoke, fire, sprites and other effects fade where they meet walls and floors instead of cutting into them with a hard line; `r_softParticlesDepth` is how far in front of a wall they start to fade (24). In fog too; not on the map's own surfaces
+  - **FXAA** (`r_fxaa 1`): smooths edges over the finished picture, the edges of grass and fences too, which anti-aliasing misses
+  - **Sharpening** (`r_sharpen`, 0 to 1): crisper detail, against the softness of FXAA or a lower `r_renderScale`
+  - **Sun shafts** (`r_sunShafts 1`): beams of light from the sun through gaps, on maps whose sky has a sun; `r_sunShaftsIntensity` how bright (1)
+  - **Tone mapping** (`r_tonemap 1`): bright light rolls off along a film-like curve instead of clipping to white
+  - **Colour grading**: `r_exposure` (1), `r_saturation` (1), `r_contrast` (1), `r_warmth` (-1 cold to 1 warm). A map can bring its own look in `maps/<map>.grade`, lines like `saturation 0.9` or `warmth 0.3` (and `exposure`, `contrast`, `tonemap 1`), used in place of yours while it's loaded unless `r_mapGrades 0`
+  - **Motion blur** (`r_motionBlur`, 0 to 1): the picture smears when the camera moves or turns, as long a smear whatever the frame rate; cuts and teleports don't blur
+- Every tool works with it; the cinematic camera's depth of field and filters need `r_fbo 1`. Its depth of field blurs bright points into round discs (bokeh, `r_dofBokeh`, 0 to 1; 0 is OpenGL's look)
+- On macOS it needs MoltenVK, which macOS doesn't come with
 
 ## Experimental features
 

@@ -21,6 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <SDL_vulkan.h>
 #include "qcommon/qcommon.h"
 #include "rd-common/tr_types.h"
 #include "sys/sys_local.h"
@@ -140,6 +141,8 @@ Minimize the game so that user is back at the desktop
 void GLimp_Minimize(void)
 {
 	SDL_MinimizeWindow( screen );
+	// Vulkan: no frames while it's minimized, or the swapchain is made again at size 0
+	Cvar_SetValue( "com_minimized", 1 );
 }
 
 void WIN_Present( window_t *window )
@@ -331,6 +334,10 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 	{
 		flags |= SDL_WINDOW_OPENGL;
 	}
+	else if ( windowDesc->api == GRAPHICS_API_VULKAN )
+	{
+		flags |= SDL_WINDOW_VULKAN;
+	}
 
 	Com_Printf( "Initializing display\n");
 
@@ -448,7 +455,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 	stencilBits = r_stencilbits->integer;
 	samples = r_ext_multisample->integer;
 
-	if ( windowDesc->api == GRAPHICS_API_OPENGL )
+	if ( windowDesc->api == GRAPHICS_API_OPENGL || windowDesc->api == GRAPHICS_API_VULKAN )
 	{
 		for (i = 0; i < 16; i++)
 		{
@@ -513,6 +520,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 			else
 				perChannelColorBits = 4;
 
+			if ( windowDesc->api == GRAPHICS_API_OPENGL ) {
 			SDL_GL_SetAttribute( SDL_GL_RED_SIZE, perChannelColorBits );
 			SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, perChannelColorBits );
 			SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, perChannelColorBits );
@@ -570,6 +578,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 
 			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 			SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, !r_allowSoftwareGL->integer );
+			}
 
 			if( ( screen = SDL_CreateWindow( windowTitle, x, y,
 					glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
@@ -605,15 +614,17 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 				}
 			}
 
-			if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
-			{
-				Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
-				continue;
-			}
+			if ( windowDesc->api == GRAPHICS_API_OPENGL ) {
+				if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+				{
+					Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
+					continue;
+				}
 
-			if ( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
-			{
-				Com_DPrintf( "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError() );
+				if ( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
+				{
+					Com_DPrintf( "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError() );
+				}
 			}
 
 			glConfig->colorBits = testColorBits;
@@ -625,7 +636,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 			break;
 		}
 
-		if (opengl_context == NULL) {
+		if ( windowDesc->api == GRAPHICS_API_OPENGL ? opengl_context == NULL : screen == NULL ) {
 			SDL_FreeSurface(icon);
 			return RSERR_UNKNOWN;
 		}
@@ -897,4 +908,49 @@ void *WIN_GL_GetProcAddress( const char *proc )
 qboolean WIN_GL_ExtensionSupported( const char *extension )
 {
 	return SDL_GL_ExtensionSupported( extension ) == SDL_TRUE ? qtrue : qfalse;
+}
+
+// ---- Vulkan (rd-vulkan, from TaystJK) ----
+
+// minimized: nothing drawn, or the swapchain would be made again at size 0
+qboolean WIN_VK_IsMinimized( void )
+{
+	if ( com_minimized->integer )
+	{
+		// asked of the window again: the cvar can be behind
+		Uint32 flags = SDL_GetWindowFlags( screen );
+
+		if ( ( flags & SDL_WINDOW_MINIMIZED ) || ( flags & SDL_WINDOW_HIDDEN ) )
+			return qtrue;
+
+		Cvar_SetValue( "com_minimized", 0 );
+	}
+
+	return qfalse;
+}
+
+void *WIN_VK_GetInstanceProcAddress( void )
+{
+	int code = SDL_Vulkan_LoadLibrary( NULL );
+
+	if ( code )
+		Com_Error( ERR_FATAL, "Failed to load Vulkan library (code %d): %s", code, SDL_GetError() );
+
+	return SDL_Vulkan_GetVkGetInstanceProcAddr();
+}
+
+qboolean WIN_VK_createSurfaceImpl( VkInstance instance, VkSurfaceKHR *surface )
+{
+	if ( !SDL_Vulkan_CreateSurface( screen, instance, surface ) )
+	{
+		*surface = VK_NULL_HANDLE;
+		Com_Error( ERR_FATAL, "SDL_Vulkan_CreateSurface(): %s", SDL_GetError() );
+	}
+
+	return qtrue;
+}
+
+// the window stays: it's closed as OpenGL's is
+void WIN_VK_destroyWindow( void )
+{
 }
