@@ -28,7 +28,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // cl_updateCheck 0 never asks. A build between releases is named after the next one
 // ("v0.7.4-dev-g5cc1ce8", the build's CMake): it's out of date once that release is out.
-// Only Windows can ask for now.
+//
+// Windows asks through WinHTTP. Linux and macOS through libcurl, looked for as it asks rather
+// than linked: a computer without it (a 64-bit Linux without the 32-bit libcurl) still runs the
+// game, only without the check.
 
 #include "client.h"
 #include "qcommon/game_version.h"
@@ -37,6 +40,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #if defined(_WIN32)
 #include <windows.h>
 #include <winhttp.h>
+#else
+#include <dlfcn.h>
+#include <pthread.h>
 #endif
 
 #define UP_HOST			"api.github.com"
@@ -170,30 +176,145 @@ static DWORD WINAPI UP_Thread( LPVOID ) {
 	InterlockedExchange( &up.finished, 1 );
 	return 0;
 }
+
+static qboolean UP_StartThread( void ) {
+	HANDLE thread = CreateThread( NULL, 0, UP_Thread, NULL, 0, NULL );
+
+	if ( !thread ) {
+		Q_strncpyz( up.error, "couldn't start asking", sizeof( up.error ) );
+		return qfalse;
+	}
+	CloseHandle( thread );
+	return qtrue;
+}
+
+#else
+
+// the little of libcurl's interface used, its numbers as curl.h has them: they never change
+typedef void CURL;
+typedef size_t ( *curlWrite_t )( char *data, size_t size, size_t count, void *user );
+
+#define UP_CURL_GLOBAL_DEFAULT		3L
+#define UP_CURLOPT_WRITEDATA		10001
+#define UP_CURLOPT_URL				10002
+#define UP_CURLOPT_USERAGENT		10018
+#define UP_CURLOPT_FOLLOWLOCATION	52
+#define UP_CURLOPT_NOSIGNAL			99
+#define UP_CURLOPT_TIMEOUT_MS		155
+#define UP_CURLOPT_CONNECTTIMEOUT_MS	156
+#define UP_CURLOPT_WRITEFUNCTION	20011
+#define UP_CURLINFO_RESPONSE_CODE	0x200002
+
+static struct {
+	void		*lib;
+	int			( *global_init )( long flags );
+	CURL		*( *easy_init )( void );
+	int			( *easy_setopt )( CURL *curl, int option, ... );
+	int			( *easy_perform )( CURL *curl );
+	int			( *easy_getinfo )( CURL *curl, int info, ... );
+	void		( *easy_cleanup )( CURL *curl );
+} curl;
+
+static int upLen;
+
+// libcurl, found once; qfalse when the computer hasn't got it
+static qboolean UP_LoadCurl( void ) {
+	static const char *names[] = {
+#if defined(__APPLE__)
+		"libcurl.4.dylib", "libcurl.dylib", "/usr/lib/libcurl.4.dylib",
+#else
+		"libcurl.so.4", "libcurl-gnutls.so.4", "libcurl-nss.so.4", "libcurl.so",
+#endif
+	};
+
+	if ( curl.lib )
+		return qtrue;
+	for ( size_t i = 0; i < ARRAY_LEN( names ) && !curl.lib; i++ )
+		curl.lib = dlopen( names[i], RTLD_NOW | RTLD_LOCAL );
+	if ( !curl.lib )
+		return qfalse;
+	*(void **)&curl.global_init = dlsym( curl.lib, "curl_global_init" );
+	*(void **)&curl.easy_init = dlsym( curl.lib, "curl_easy_init" );
+	*(void **)&curl.easy_setopt = dlsym( curl.lib, "curl_easy_setopt" );
+	*(void **)&curl.easy_perform = dlsym( curl.lib, "curl_easy_perform" );
+	*(void **)&curl.easy_getinfo = dlsym( curl.lib, "curl_easy_getinfo" );
+	*(void **)&curl.easy_cleanup = dlsym( curl.lib, "curl_easy_cleanup" );
+	if ( !curl.global_init || !curl.easy_init || !curl.easy_setopt || !curl.easy_perform || !curl.easy_getinfo || !curl.easy_cleanup
+		|| curl.global_init( UP_CURL_GLOBAL_DEFAULT ) != 0 ) {
+		dlclose( curl.lib );
+		memset( &curl, 0, sizeof( curl ) );
+		return qfalse;
+	}
+	return qtrue;
+}
+
+// what GitHub sends, into up.body; past its end left out
+static size_t UP_Write( char *data, size_t size, size_t count, void * ) {
+	const size_t total = size * count;
+	const int room = UP_BODY - 1 - upLen;
+	const int n = (int)Q_min( (size_t)Q_max( room, 0 ), total );
+
+	if ( n > 0 ) {
+		memcpy( up.body + upLen, data, n );
+		upLen += n;
+		up.body[upLen] = '\0';
+	}
+	return total;
+}
+
+// the asking, on its own thread: only up.body, up.status and up.finished are touched
+static void *UP_Thread( void * ) {
+	CURL *c = curl.easy_init();
+
+	up.status = 0;
+	up.body[0] = '\0';
+	upLen = 0;
+	if ( c ) {
+		long code = 0;
+
+		curl.easy_setopt( c, UP_CURLOPT_URL, "https://" UP_HOST UP_PATH );
+		curl.easy_setopt( c, UP_CURLOPT_USERAGENT, "OpenJK-rpmod" );
+		curl.easy_setopt( c, UP_CURLOPT_WRITEFUNCTION, (curlWrite_t)UP_Write );
+		curl.easy_setopt( c, UP_CURLOPT_WRITEDATA, (void *)NULL );
+		curl.easy_setopt( c, UP_CURLOPT_NOSIGNAL, 1L );
+		curl.easy_setopt( c, UP_CURLOPT_FOLLOWLOCATION, 1L );
+		curl.easy_setopt( c, UP_CURLOPT_CONNECTTIMEOUT_MS, (long)UP_TIMEOUT_MS );
+		curl.easy_setopt( c, UP_CURLOPT_TIMEOUT_MS, (long)( UP_TIMEOUT_MS * 2 ) );
+		if ( curl.easy_perform( c ) == 0 && curl.easy_getinfo( c, UP_CURLINFO_RESPONSE_CODE, &code ) == 0 )
+			up.status = (int)code;
+		curl.easy_cleanup( c );
+	}
+	__atomic_store_n( &up.finished, 1, __ATOMIC_RELEASE );
+	return NULL;
+}
+
+static qboolean UP_StartThread( void ) {
+	pthread_t thread;
+
+	if ( !UP_LoadCurl() ) {
+		Q_strncpyz( up.error, "libcurl isn't on this computer", sizeof( up.error ) );
+		return qfalse;
+	}
+	if ( pthread_create( &thread, NULL, UP_Thread, NULL ) != 0 ) {
+		Q_strncpyz( up.error, "couldn't start asking", sizeof( up.error ) );
+		return qfalse;
+	}
+	pthread_detach( thread );
+	return qtrue;
+}
 #endif
 
 static void UP_Ask( qboolean show ) {
 	if ( up.state == UP_ASKING )
 		return;
 	up.show = show;
-#if defined(_WIN32)
-	{
-		HANDLE thread;
-
-		up.finished = 0;
-		thread = CreateThread( NULL, 0, UP_Thread, NULL, 0, NULL );
-		if ( thread ) {
-			CloseHandle( thread );
-			up.state = UP_ASKING;
-			if ( show )
-				Com_Printf( "Asking GitHub for the newest OpenJK-rpmod...\n" );
-			return;
-		}
-		Q_strncpyz( up.error, "couldn't start asking", sizeof( up.error ) );
+	up.finished = 0;
+	if ( UP_StartThread() ) {
+		up.state = UP_ASKING;
+		if ( show )
+			Com_Printf( "Asking GitHub for the newest OpenJK-rpmod...\n" );
+		return;
 	}
-#else
-	Q_strncpyz( up.error, "only Windows can ask for now", sizeof( up.error ) );
-#endif
 	up.state = UP_FAILED;
 	if ( show )
 		Com_Printf( "Update check: %s\n", up.error );
@@ -203,8 +324,15 @@ static void UP_Ask( qboolean show ) {
 void CL_Update_Frame( void ) {
 	char tag[64];
 
-	if ( up.state != UP_ASKING || !up.finished )
+	if ( up.state != UP_ASKING )
 		return;
+#if defined(_WIN32)
+	if ( !InterlockedCompareExchange( &up.finished, 0, 0 ) )
+		return;
+#else
+	if ( !__atomic_load_n( &up.finished, __ATOMIC_ACQUIRE ) )
+		return;
+#endif
 	if ( up.status == 200 && UP_ReadTag( up.body, tag, sizeof( tag ) ) ) {
 		Q_strncpyz( up.latest, tag, sizeof( up.latest ) );
 		Cvar_Set( "cl_updateLast", va( "%lld %s", (long long)time( NULL ), up.latest ) );
