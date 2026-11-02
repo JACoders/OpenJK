@@ -213,6 +213,7 @@ The console commands, keys and settings this client adds. What each feature does
 ## Other tools
 
 - `/toolaccess` shows whether the admin tools open for you on this server; `/toolaccess check` asks again
+- `/version` shows your OpenJK-rpmod version and whether it's the newest, with the link to a newer one; `/version check` asks GitHub again
 - `/rpexperimental [on|off]` turns the experimental features on or off, and keeps them so every time the game starts
 - `/emotepreview` lists the emotes the Help menu can preview; `/emotepreview forget <emote>` learns one again; `/emotepreview watch` prints your animation's changes after an emote
 
@@ -230,6 +231,7 @@ The console commands, keys and settings this client adds. What each feature does
 
 - `rpc_removeExtraColorsInConsole 0` shows RPMod's extra colors in the console
 - `rpc_chatRangeConsole_mode <0-3>`, `rpc_chatRangeConsole_min`, `rpc_chatRangeConsole_max`, `rpc_chatRangeConsole_alpha` set the chat range in the console
+- `cl_updateCheck 0` never asks GitHub whether there's a newer OpenJK-rpmod
 - `cl_whisper 1` shows whispers (chat in ^k) only to those close by, `cl_whisperHear` and `cl_whisperNotice` set how close
 - `cl_shaderCrosshair 1` names the shader under your crosshair
 - `cl_fighterTakeoffGuard 0` turns the fighter takeoff guard off

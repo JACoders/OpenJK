@@ -34,6 +34,7 @@ Some features reach other players through workarounds only this client understan
 - [Wall Stick](#wall-stick)
 - [Console Settings](#console-settings)
 - [Model Safeguards](#model-safeguards)
+- [Update Check](#update-check)
 - [Experimental features](#experimental-features)
 
 ## Model Manager
@@ -607,6 +608,17 @@ Don't get disconnected by a model the game can't draw.
 - `/cl_safeModels 1` shows such a map object as a missing model instead, with a warning in the console
 - `/cl_safePlayerModels 1` shows such a player or NPC model as Kyle instead, with a warning in the console
 - They protect the models loaded after you turn them on
+
+## Update Check
+
+Know when there's a newer OpenJK-rpmod.
+
+- As the game starts, at most once a day, it asks GitHub for the newest release, without holding the game up
+- When yours is older, the console says so and the main menu shows it at the bottom
+- `/version` shows your version and the newest, with the link to download a newer one; `/version check` asks again now
+- `/cl_updateCheck 0` never asks
+- A build made between releases isn't told it's out of date
+- Windows only for now
 
 ## Experimental features
 

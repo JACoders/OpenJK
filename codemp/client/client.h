@@ -1027,6 +1027,12 @@ qboolean CL_RpAdmin_Allow( const char *tool, const char *command );
 qboolean CL_RpAdmin_ServerPrint( const char *text );
 void CL_RpAdmin_Frame( void );
 
+// cl_update.cpp
+void CL_Update_Init( void );
+void CL_Update_Shutdown( void );
+void CL_Update_Frame( void );
+void CL_Update_Draw( void );
+
 void CL_Storyteller_Init( void );
 void CL_Storyteller_Shutdown( void );
 void CL_Storyteller_f( void );

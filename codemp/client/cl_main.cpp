@@ -2386,6 +2386,7 @@ void CL_Frame ( int msec ) {
 	// the parts of a long chat, one by one
 	CL_ChatSplit_Frame();
 	CL_LoadPk3_Frame();
+	CL_Update_Frame();
 
 	// send intentions now
 	CL_SendCmd();
@@ -2892,6 +2893,7 @@ void CL_Init( void ) {
 	CL_SoundManager_Init ();
 	CL_RpHooks_Init ();
 	CL_RpAdmin_Init ();
+	CL_Update_Init ();
 	cl_ratioFix = Cvar_Get( "cl_ratioFix", "0", CVAR_ARCHIVE_ND, "Widescreen: text, and the engine's own, as on a 4:3 screen instead of stretched" );
 	cls.widthRatioCoef = 1.0f;
 	CL_RadialMenu_Init ();
@@ -3135,6 +3137,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("csusage");
 	CL_RpHooks_Shutdown();
 	Cmd_RemoveCommand( "toolaccess" );
+	CL_Update_Shutdown();
 	Cmd_RemoveCommand( "+radial" );
 	Cmd_RemoveCommand( "-radial" );
 	Cmd_RemoveCommand( "radial" );

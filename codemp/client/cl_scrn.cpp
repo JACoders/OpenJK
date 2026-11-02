@@ -497,6 +497,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	if ( Key_GetCatcher( ) & KEYCATCH_UI && cls.uiStarted ) {
 		UIVM_Refresh( cls.realtime );
 		CL_RpHooks_Draw();
+		CL_Update_Draw();
 		CL_EmotePreview_Draw();
 	}
 
