@@ -286,6 +286,75 @@ time_t Sys_FileTime( const char *path )
 	return buf.st_mtime;
 }
 
+// OpenJK-rpmod: the 32-bit Windows client is large address aware, so it can get memory above 2 GB.
+// Old mods (RPMod's UI among them) test pointers with "(int)ptr > 0", which fails up there: a game
+// module that loads above 2 GB breaks (its menus stop parsing). So an area below 2 GB is kept back
+// from startup, and handed over only while a game module loads, so that modules always land in it.
+// Whatever is free in the area is taken back after each load and unload
+#if defined(_WIN32) && !defined(_WIN64)
+#include <windows.h>
+
+#define LOWMEM_SIZE		( 128 << 20 )
+#define LOWMEM_LIMIT	0x80000000u
+#define LOWMEM_MAX_HOLDS	64
+
+static uintptr_t lowMemStart, lowMemEnd;		// the area, set once at startup
+static void *lowMemHolds[LOWMEM_MAX_HOLDS];	// what's held in it now
+static int lowMemNumHolds;
+
+static void Sys_LowMemory_Reserve( void ) {
+	static qboolean started = qfalse;
+
+	if ( !started ) {
+		started = qtrue;
+
+		// only for a large address aware exe: without it nothing can land above 2 GB anyway
+		const BYTE *image = (const BYTE *)GetModuleHandle( NULL );
+		const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)( image + ((const IMAGE_DOS_HEADER *)image)->e_lfanew );
+		if ( !( nt->FileHeader.Characteristics & IMAGE_FILE_LARGE_ADDRESS_AWARE ) )
+			return;
+
+		void *area = VirtualAlloc( NULL, LOWMEM_SIZE, MEM_RESERVE, PAGE_NOACCESS );
+		if ( !area )
+			return;
+		if ( (uintptr_t)area + LOWMEM_SIZE > LOWMEM_LIMIT ) {
+			VirtualFree( area, 0, MEM_RELEASE ); // nothing left below 2 GB
+			return;
+		}
+		lowMemStart = (uintptr_t)area;
+		lowMemEnd = lowMemStart + LOWMEM_SIZE;
+		lowMemHolds[lowMemNumHolds++] = area;
+		return;
+	}
+
+	// hold every free piece of the area again
+	MEMORY_BASIC_INFORMATION mbi;
+	for ( uintptr_t addr = lowMemStart; addr < lowMemEnd && lowMemNumHolds < LOWMEM_MAX_HOLDS; ) {
+		if ( !VirtualQuery( (void *)addr, &mbi, sizeof( mbi ) ) )
+			break;
+		uintptr_t start = (uintptr_t)mbi.BaseAddress, end = start + mbi.RegionSize;
+		if ( end > lowMemEnd )
+			end = lowMemEnd;
+		if ( mbi.State == MEM_FREE ) {
+			uintptr_t from = ( start + 0xFFFF ) & ~(uintptr_t)0xFFFF; // reservations start on 64 KB
+			void *hold = from < end ? VirtualAlloc( (void *)from, end - from, MEM_RESERVE, PAGE_NOACCESS ) : NULL;
+			if ( hold )
+				lowMemHolds[lowMemNumHolds++] = hold;
+		}
+		addr = start + mbi.RegionSize;
+	}
+}
+
+static void Sys_LowMemory_Release( void ) {
+	for ( int i = 0; i < lowMemNumHolds; i++ )
+		VirtualFree( lowMemHolds[i], 0, MEM_RELEASE );
+	lowMemNumHolds = 0;
+}
+#else
+static void Sys_LowMemory_Reserve( void ) {}
+static void Sys_LowMemory_Release( void ) {}
+#endif
+
 /*
 =================
 Sys_UnloadDll
@@ -300,6 +369,7 @@ void Sys_UnloadDll( void *dllHandle )
 	}
 
 	Sys_UnloadLibrary(dllHandle);
+	Sys_LowMemory_Reserve(); // OpenJK-rpmod: take its space below 2 GB back for the next module
 }
 
 /*
@@ -477,7 +547,7 @@ static void FreeUnpackDLLResult(UnpackDLLResult *result)
 		Z_Free((void *)result->tempDLLPath);
 }
 
-void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallProc *systemcalls )
+static void *Sys_LoadLegacyGameDll_Low( const char *name, VMMainProc **vmMain, SystemCallProc *systemcalls )
 {
 	void	*libHandle = NULL;
 	char	filename[MAX_OSPATH];
@@ -559,6 +629,14 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 	return libHandle;
 }
 
+void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallProc *systemcalls )
+{
+	Sys_LowMemory_Release(); // OpenJK-rpmod: so the module loads below 2 GB
+	void *libHandle = Sys_LoadLegacyGameDll_Low( name, vmMain, systemcalls );
+	Sys_LowMemory_Reserve();
+	return libHandle;
+}
+
 void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 {
 	void	*libHandle = NULL;
@@ -610,7 +688,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 	return libHandle;
 }
 
-void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
+static void *Sys_LoadGameDll_Low( const char *name, GetModuleAPIProc **moduleAPI )
 {
 	void	*libHandle = NULL;
 	char	filename[MAX_OSPATH];
@@ -682,6 +760,14 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 		return NULL;
 	}
 
+	return libHandle;
+}
+
+void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
+{
+	Sys_LowMemory_Release(); // OpenJK-rpmod: so the module loads below 2 GB
+	void *libHandle = Sys_LoadGameDll_Low( name, moduleAPI );
+	Sys_LowMemory_Reserve();
 	return libHandle;
 }
 
@@ -758,6 +844,7 @@ int main ( int argc, char* argv[] )
 	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
+	Sys_LowMemory_Reserve(); // OpenJK-rpmod: before anything else can take the space below 2 GB
 	Sys_PlatformInit( argc, argv );
 	CON_Init();
 

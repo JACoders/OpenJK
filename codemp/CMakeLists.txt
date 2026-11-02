@@ -628,6 +628,14 @@ if(BuildMPEngine)
 
 	if(WIN32)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
+		# OpenJK-rpmod: let the 32-bit client use 4 GB on 64-bit Windows instead of 2 GB
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+			if(MSVC)
+				target_link_options(${MPEngine} PRIVATE "/LARGEADDRESSAWARE")
+			else()
+				target_link_options(${MPEngine} PRIVATE "-Wl,--large-address-aware")
+			endif()
+		endif()
 		if(UseInternalSDL2)
 			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 				set(MPEngineExtraInstallFiles
