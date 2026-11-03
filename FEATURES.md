@@ -560,8 +560,8 @@ Lightsabers light up what's around them in their own color, pulsing as they hum.
 Put the crosshair on an NPC and its name shows, as a player's does, in the same place and lettering.
 
 - `cl_npcNames 1` shows the targetname of the NPC under the crosshair (the default); NPCs without one show nothing; *0* off
-- Only RPMod's `npc list` says who's who, and it's for admins: an admin with this client and **TOGGLE EXPERIMENTAL** on reads it quietly as soon as an NPC spawns near them, and every 30 seconds, and sees the names
-- They reach everyone else with this client only when the admin shares them: `/npcnames` reads the list again and sends the names as they are then; NPCs spawned and players who joined after that need another `/npcnames`. `/npcnames clear` takes them back. Until an admin shares them, players see no names
+- Only RPMod's `npc list` says who's who, and it's for admins, so nothing shows until an admin with this client and **TOGGLE EXPERIMENTAL** on runs `/npcnames`: it reads the list quietly and sends the names as they are then to everyone with this client, the admin included. Names not made for roleplay stay out of the way until an admin wants them
+- NPCs spawned and players who joined after that need another `/npcnames`. `/npcnames clear` takes them back from everyone
 
 ## RPMod Colors in the Console
 
