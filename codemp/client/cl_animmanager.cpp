@@ -219,6 +219,8 @@ static struct {
 	float		cursorX, cursorY;
 	qboolean	click;
 	float		clickX, clickY;
+	qboolean	rclick;				// the right button, where the left one was
+	float		rclickX, rclickY;
 	int			wheel;
 	char		*focus;
 	int			focusSize;
@@ -235,6 +237,9 @@ static struct {
 	int			animSel;			// in the skeleton's animations, -1 none
 	int			filter;
 	int			animScroll;
+	qboolean	skelList;			// the skeletons listed to pick from, in the animations' place
+	int			skelListView[AM_MAX_SKELS];	// the ones with animations
+	int			skelListScroll;
 	char		speedText[AM_NUM_LEN];
 
 	// the preview
@@ -1388,7 +1393,8 @@ static qboolean AM_Open( void ) {
 	am.focus = NULL;
 	am.cursorX = SCREEN_WIDTH * 0.5f;
 	am.cursorY = SCREEN_HEIGHT * 0.5f;
-	am.click = qfalse;
+	am.click = am.rclick = qfalse;
+	am.skelList = qfalse;
 	am.wheel = 0;
 	am.lastTime = cls.realtime;
 	Key_SetCatcher( Key_GetCatcher() | KEYCATCH_ANIMMANAGER );
@@ -1588,6 +1594,11 @@ void CL_AnimManager_KeyEvent( int key, qboolean down ) {
 		am.clickX = am.cursorX;
 		am.clickY = am.cursorY;
 		return;
+	case A_MOUSE2:
+		am.rclick = qtrue;
+		am.rclickX = am.cursorX;
+		am.rclickY = am.cursorY;
+		return;
 	case A_MWHEELUP:
 		am.wheel -= 3;
 		return;
@@ -1629,6 +1640,8 @@ void CL_AnimManager_MouseEvent( int dx, int dy ) {
 void CL_AnimManager_Escape( void ) {
 	if ( am.focus )
 		am.focus = NULL;
+	else if ( am.skelList )
+		am.skelList = qfalse;
 	else
 		AM_Close();
 }
@@ -1709,6 +1722,13 @@ static qboolean AM_Clicked( float x, float y, float w, float h ) {
 	if ( !am.click || am.clickX < x || am.clickX >= x + w || am.clickY < y || am.clickY >= y + h )
 		return qfalse;
 	am.click = qfalse;
+	return qtrue;
+}
+
+static qboolean AM_RightClicked( float x, float y, float w, float h ) {
+	if ( !am.rclick || am.rclickX < x || am.rclickX >= x + w || am.rclickY < y || am.rclickY >= y + h )
+		return qfalse;
+	am.rclick = qfalse;
 	return qtrue;
 }
 
@@ -2441,6 +2461,29 @@ static void AM_PickAnim( int index ) {
 	am.paused = qfalse;
 }
 
+// the next skeleton with animations, dir 1 or -1 for the one before
+static void AM_StepSkel( int dir ) {
+	for ( int k = 1; k <= amNumSkels; k++ ) {
+		const int next = ( ( am.skel + dir * k ) % amNumSkels + amNumSkels ) % amNumSkels;
+
+		if ( amSkels[next].numAnims ) {
+			am.skel = next;
+			break;
+		}
+	}
+	am.animSel = -1;
+	am.animScroll = 0;
+	AM_RebuildView();
+}
+
+static void AM_SkelRow( int row, float x, float y, float w, qboolean selected ) {
+	const amSkel_t *s = &amSkels[am.skelListView[row]];
+	const char *count = va( "%i", s->numAnims );
+
+	AM_TextClipped( x, y, w - 34, s->label, s->custom ? amAdded : amWhite );
+	AM_Text( x + w - AM_TextWidth( count ), y, count, amDim );
+}
+
 static void AM_AnimRow( int row, float x, float y, float w, qboolean selected ) {
 	const amAnim_t *a = &amSkels[am.skel].anims[am.view[row]];
 	const char *len = va( "%.1fs", AM_LengthMs( a, 0, -1, 1.0f ) / 1000.0f );
@@ -2464,25 +2507,45 @@ static void AM_DrawAnimsTab( amShow_t *show ) {
 			AM_RebuildView();
 		}
 	}
-	if ( AM_Button( AM_LEFT_X, AM_TOP_Y, 120, am.skel >= 0 && am.skel < amNumSkels
-		? va( "%s (%i)", amSkels[am.skel].label, amSkels[am.skel].numAnims ) : "No skeletons", qfalse, (qboolean)( amNumSkels > 1 ) ) ) {
-		for ( int k = 1; k <= amNumSkels; k++ ) {
-			const int next = ( am.skel + k ) % amNumSkels;
+	// the skeleton: a click the next, a right click the one before, the arrow all of them in a list
+	{
+		const qboolean several = (qboolean)( amNumSkels > 1 );
 
-			if ( amSkels[next].numAnims ) {
-				am.skel = next;
-				break;
-			}
+		if ( several && AM_RightClicked( AM_LEFT_X, AM_TOP_Y, 100, AM_CTRL_H ) )
+			AM_StepSkel( -1 );
+		if ( AM_Button( AM_LEFT_X, AM_TOP_Y, 100, am.skel >= 0 && am.skel < amNumSkels
+			? va( "%s (%i)", amSkels[am.skel].label, amSkels[am.skel].numAnims ) : "No skeletons", qfalse, several ) )
+			AM_StepSkel( 1 );
+		if ( AM_Button( AM_LEFT_X + 102, AM_TOP_Y, 18, am.skelList ? "^" : "v", am.skelList, several ) ) {
+			am.skelList = (qboolean)!am.skelList;
+			am.skelListScroll = 0;
 		}
-		am.animSel = -1;
-		am.animScroll = 0;
-		AM_RebuildView();
 	}
 	AM_Field( AM_LEFT_X + 180, AM_TOP_Y, listW - 180, am.search, sizeof( am.search ), AM_K_TEXT, "search" );
 
-	clicked = AM_List( AM_LEFT_X, listY, listW, listH, am.numView, -1, &am.animScroll, AM_AnimRow );
+	if ( am.skelList ) {
+		int numSkels = 0, sel = -1;
+
+		for ( int i = 0; i < amNumSkels; i++ ) {
+			if ( !amSkels[i].numAnims )
+				continue;
+			if ( i == am.skel )
+				sel = numSkels;
+			am.skelListView[numSkels++] = i;
+		}
+		clicked = AM_List( AM_LEFT_X, listY, listW, listH, numSkels, sel, &am.skelListScroll, AM_SkelRow );
+		if ( clicked >= 0 ) {
+			am.skel = am.skelListView[clicked];
+			am.skelList = qfalse;
+			am.animSel = -1;
+			am.animScroll = 0;
+			AM_RebuildView();
+		}
+		clicked = -1;
+	} else
+		clicked = AM_List( AM_LEFT_X, listY, listW, listH, am.numView, -1, &am.animScroll, AM_AnimRow );
 	// the picked one's row lit
-	for ( int i = 0; i < am.numView; i++ ) {
+	for ( int i = 0; i < am.numView && !am.skelList; i++ ) {
 		if ( am.view[i] == am.animSel ) {
 			const int visible = (int)( listH / AM_ROW_H );
 
@@ -3196,7 +3259,7 @@ void CL_AnimManager_Draw( void ) {
 	if ( am.message[0] && cls.realtime - am.messageTime < AM_MESSAGE_MS )
 		AM_TextClipped( AM_LEFT_X, 456, SCREEN_WIDTH - 32, am.message, amWhite );
 	WG_DrawOverlay();
-	am.click = qfalse;
+	am.click = am.rclick = qfalse;
 	am.wheel = 0;
 	re->SetColor( NULL );
 	re->DrawStretchPic( am.cursorX, am.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
