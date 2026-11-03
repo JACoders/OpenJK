@@ -264,6 +264,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `cl_storyMarkers 0` hides where the armed stories wait
 - `cl_npcNames 0` hides the NPC names under the crosshair
 - `cl_customEmotes 0` hides the custom emotes admins share
+- `cl_discord 1` your Discord profile shows what you're playing (off by default); `cl_discordPrivate 1` your Discord status leaves out the server and your character's name
 - `cl_adminFlags 0` hides the noclip, nodraw, nonsolid and notarget line
 - `ui_cameraSettings 1` shows the camera settings beside the in-game menu (Setup > Game Options > Camera Settings)
 - `cl_modelFollowFront 1` keeps what's in the modelmanager's hand in front of you; `cl_modelHoldDistance` how far (128)

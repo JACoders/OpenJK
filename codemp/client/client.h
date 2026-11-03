@@ -939,6 +939,12 @@ void CL_AdminFlags_Command( void );
 void CL_AdminFlags_ServerPrint( const char *text );
 void CL_AdminFlags_Draw( void );
 
+// cl_discord.cpp
+void CL_StripAllColors( char *text );
+void CL_Discord_Init( void );
+void CL_Discord_Frame( void );
+void CL_Discord_Shutdown( void );
+
 // cl_quickconnect.cpp
 void CL_QuickConnect_Init( void );
 void CL_QuickConnect_Frame( void );

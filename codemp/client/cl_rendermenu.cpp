@@ -501,6 +501,17 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 			RM_SetRectY( item, crossY + rowStep * at );
 			RM_ReplaceWord( item, "highlight1", va( "highlight%i", at + 1 ) );
 			add += "\n" + item + "\n";
+
+			// Discord Status, the row under it
+			item = s.substr( cross->start, cross->end - cross->start );
+			RM_SetValue( item, "name", "discordstatus" );
+			RM_SetValue( item, "text", RM_Quote( "Discord Status:" ) );
+			RM_SetValue( item, "cvar", RM_Quote( "cl_discord" ) );
+			RM_SetValue( item, "descText", RM_Quote( "Your Discord profile shows the server, your character, the map and the players" ) );
+			RM_ReplaceBlock( item, "cvarFloatList", "cvarFloatList { \"Off\" 0 \"On\" 1 }" );
+			RM_SetRectY( item, crossY + rowStep * ( at + 1 ) );
+			RM_ReplaceWord( item, "highlight1", va( "highlight%i", at + 2 ) );
+			add += "\n" + item + "\n";
 		}
 	}
 

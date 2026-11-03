@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## Unreleased
 
+- [Added] `Discord status`. Your Discord profile shows you playing ::JEDI::: the server, your character, the players, the time, the map's picture, and a Join JEDI button. Off until turned on in Setup > Game Options, or `cl_discord 1`; `cl_discordPrivate 1` leaves the server and your character's name out.
 - [Added] `Quick connect`. **QUICK CONNECT** in the in-game menu, before Exit: JEDI's Temple, Grounds, Region and Galaxy with their addresses, maps and players as they are now; one click and you're on your way.
 - [Added] `Admin flags on screen`. While noclip, nodraw, nonsolid or notarget is on for you, a small line at the bottom says which: on in green, off in red.
 - [Added] `Presets`. **PRESETS** in the in-game menu, or `/presets`: characters saved (name, model, skin, sabers and their colours) and shown as cards with the name in its colours, RPMod's too, the character standing, its skin, sabers and the date; one click and you're that character.

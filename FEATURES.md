@@ -19,6 +19,7 @@ Some features reach other players through workarounds only this client understan
 - [Emote Preview](#emote-preview)
 - [Animation Manager](#animation-manager-custom-emotes-are-experimental)
 - [Presets](#presets)
+- [Discord Status](#discord-status)
 - [In-game Menu and Camera Settings](#in-game-menu-and-camera-settings)
 - [Widescreen Text](#widescreen-text)
 - [Console Selection and Find](#console-selection-and-find)
@@ -462,6 +463,13 @@ Characters saved, and swapped to in one click: for missions, or anyone you play.
 - Each preset is a card: the name in its colours (RPMod's too), the character standing with its hilts in hand, the skin, the sabers and when it was saved
 - Click a card to become that character at once; **Update** saves who you are now over it, **Delete** (twice) takes it out
 - Kept in `presets.txt`
+
+## Discord Status
+
+Your Discord profile shows what you're playing: "Playing ::JEDI::", the server ("On JEDI Temple"), "Playing as" your character, the players there, the time since you joined, the map's picture (Temple, Grounds, Region and Galaxy's maps; the logo on any other), and a **Join JEDI** button.
+
+- Spoken straight to the Discord app on your computer: nothing to install, and nothing happens when Discord isn't running
+- Off until you turn it on: **Setup > Game Options > Discord Status**, or `cl_discord 1`; `cl_discordPrivate 1` leaves out the server and your character's name
 
 ## In-game Menu and Camera Settings
 
