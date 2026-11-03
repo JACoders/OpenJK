@@ -40,6 +40,7 @@ Some features reach other players through workarounds only this client understan
 - [Console Settings](#console-settings)
 - [Model Safeguards](#model-safeguards)
 - [Update Check](#update-check)
+- [Feedback](#feedback)
 - [Vulkan Renderer](#vulkan-renderer-experimental)
 - [Experimental features](#experimental-features)
 
@@ -677,6 +678,20 @@ Know when there's a newer OpenJK-rpmod.
 - `/cl_updateCheck 0` never asks
 - A build made between releases is named after the next one (`v0.7.4-dev-g5cc1ce8`), and is out of date once that one is out
 - On Linux and macOS it needs libcurl, which macOS always has and most Linux systems do; without it the game runs as ever, only without the check
+
+## Feedback
+
+Send a bug or an idea for the OpenJK-RPMod project, and read the answers, without leaving the game. Not every idea will be in RPMod itself.
+
+- `/feedback` opens the window, in game or from the main menu
+- **New report**: a bug or an idea, a title, and what happened (what you did, what happened and what you expected) or what the idea is. The game's version, renderer, map and server go with it, shown under the text before you send
+- A report goes with your RPMod account, read from `rpinfo` without showing it in the console: you send it from an RPMod server, logged in. Logged out, or from the main menu, the window says so and nothing is sent
+- It's answered on the project's Discord, and marked planned or fixed, or closed
+- **My reports** lists what you've sent, with its status: open, planned, fixed or closed. Pick one to read what you wrote and its answers, and answer them; a closed one can't be answered any more. My reports works from the main menu too
+- The game asks for news when it starts and every few minutes after (every 30 seconds while My reports is open). A report with news has a yellow mark, the tab says how many, and the console says what's new: an answer, a new status, or both. `/feedback` then opens on it
+- Reading the answers needs no login: your game makes a private key the first time you send a report, kept in `feedback.key` in your game's home folder, and only that key sees your reports. Another computer, or the file deleted, doesn't see them
+- One bug or idea a report, please: each is answered on its own. A few reports an hour at most
+- On Linux and macOS it needs libcurl, as the update check does
 
 ## Vulkan Renderer *(experimental)*
 

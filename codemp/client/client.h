@@ -687,7 +687,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_CONSETTINGS	0x4000	// engine only, the console settings window owns keyboard and mouse
 #define KEYCATCH_ANIMMANAGER	0x8000	// engine only, the animation manager owns keyboard and mouse
 #define KEYCATCH_PRESETS		0x10000	// engine only, the presets own keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS )	// mods never see or clear these
+#define KEYCATCH_FEEDBACK		0x20000	// engine only, the feedback window owns keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -1019,6 +1020,21 @@ void CL_ConSettings_MouseEvent( int dx, int dy );
 void CL_ConSettings_Escape( void );
 qhandle_t CL_ConSettings_Background( void );
 void CL_ConSettings_RendererRestarted( void );
+
+// cl_feedback.cpp
+void CL_Feedback_Init( void );
+void CL_Feedback_Shutdown( void );
+void CL_Feedback_Frame( void );
+qboolean CL_Feedback_Active( void );
+void CL_Feedback_Close( void );
+void CL_Feedback_Draw( void );
+void CL_Feedback_KeyEvent( int key, qboolean down );
+void CL_Feedback_CharEvent( int ch );
+void CL_Feedback_MouseEvent( int dx, int dy );
+void CL_Feedback_Escape( void );
+void CL_Feedback_RendererRestarted( void );
+qboolean CL_Feedback_ServerPrint( const char *text );
+void CL_Feedback_Disconnect( void );
 
 // cl_languages.cpp
 void CL_Languages_Init( void );

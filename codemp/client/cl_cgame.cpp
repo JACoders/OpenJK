@@ -558,6 +558,12 @@ rescan:
 		}
 	}
 
+	// /feedback reads rpinfo for the RPMod account, and hides the reply it asked for
+	if ( !strcmp( cmd, "print" ) && CL_Feedback_ServerPrint( Cmd_Argv( 1 ) ) ) {
+		Cmd_TokenizeString( "print \"\"" );
+		return qtrue;
+	}
+
 	// the admin check reads rpstatus, and hides the reply it asked for
 	if ( !strcmp( cmd, "print" ) && CL_RpAdmin_ServerPrint( Cmd_Argv( 1 ) ) ) {
 		Cmd_TokenizeString( "print \"\"" );

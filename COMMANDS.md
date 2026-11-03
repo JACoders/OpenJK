@@ -231,6 +231,7 @@ The console commands, keys and settings this client adds. What each feature does
 ## Other tools
 
 - `/toolaccess` shows whether the admin tools open for you on this server; `/toolaccess check` asks again
+- `/feedback` sends a bug report or an idea for the OpenJK-RPMod project, with your RPMod account, and shows the answers; `/feedback mine` opens on your reports, `/feedback close` closes it
 - `/version` shows your OpenJK-rpmod version and whether it's the newest, with the link to a newer one; `/version check` asks GitHub again
 - `/rpexperimental [on|off]` turns the experimental features on or off, and keeps them so every time the game starts
 - `/emotepreview` lists the emotes the Help menu can preview; `/emotepreview forget <emote>` learns one again; `/emotepreview watch` prints your animation's changes after an emote
@@ -250,6 +251,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `rpc_removeExtraColorsInConsole 0` shows RPMod's extra colors in the console
 - `rpc_chatRangeConsole_mode <0-3>`, `rpc_chatRangeConsole_min`, `rpc_chatRangeConsole_max`, `rpc_chatRangeConsole_alpha` set the chat range in the console
 - `cl_updateCheck 0` never asks GitHub whether there's a newer OpenJK-rpmod
+- `cl_feedbackUrl` is where /feedback sends reports and asks for their answers
 - `renderersettings sync` / `apply`: what Setup's RENDERER page uses to show the renderer settings and to set them at the next `vid_restart`
 - `cl_renderer rd-vulkan` then `vid_restart` draws the game with the Vulkan renderer *(experimental)*, `cl_renderer rd-vanilla` with the usual one; the Vulkan one's own settings (`r_fbo`, `r_bloom`, `r_ext_multisample`, `r_vbo`, `r_ext_supersample`, `r_ssao`, `r_softParticles`, `r_fxaa`, `r_sharpen`, `r_sunShafts`, `r_tonemap`, `r_motionBlur` and more) are in [FEATURES.md](FEATURES.md#vulkan-renderer-experimental)
 - `cl_whisper 1` shows whispers (chat in ^k) only to those close by, `cl_whisperHear` and `cl_whisperNotice` set how close

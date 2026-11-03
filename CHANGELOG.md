@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## Unreleased
 
+- [Added] `Feedback`. `/feedback` opens a window to send a bug report or an idea for the OpenJK-RPMod project, in game or from the main menu: a title, and what happened or what the idea is. It goes with your RPMod account, so it's sent from an RPMod server, logged in; the game's version, renderer, map and server go with it. It's answered on the project's Discord, and marked planned or fixed, or closed. The answers come back under **My reports**, where you can answer them too, and the console says when one of your reports has news.
 - [Fixed] `Vulkan: the map's light style looks`. A look given to the whole map's light (style 0: the map editor's Dusk, Night and the rest) left the world as it was with Vulkan: its lightmaps, and with world caching on (`r_vbo 1`) its vertex lit rocks and mountains too; all of it follows the look now, as with OpenGL. The grass and foliage sprites on the ground follow it too now, in OpenGL as well as Vulkan.
 - [Changed] `NPC names under the crosshair: shared when the admin says`. An admin's client no longer shares the NPC names by itself, as NPCs spawn or players join: `/npcnames` shares them as they are now with everyone with this client, `/npcnames clear` takes them back. The admin still sees them as before.
 - [Changed] `Quick connect: Esc closes the panel first`. With the quick connect panel out, Esc puts it away and leaves the in-game menu open; a second Esc closes the menu.

@@ -65,6 +65,18 @@ void		WG_FieldClick( char *buf, float clickX, float clickY );
 // the grown field, over everything else; each tool calls it last in its frame
 void		WG_DrawOverlay( void );
 
+/*
+A box of several lines typed in: the text wrapped to its width, as many lines as fit in h shown,
+scrolled to the cursor when focused. A click in it goes to WG_FieldClick, as a field's does.
+*/
+void		WG_TextBox( const wgStyle_t *style, float x, float y, float w, float h, char *buf, qboolean focused,
+				const char *placeholder, float cursorX, float cursorY );
+
+// text to read, wrapped to w: how many lines it takes, and those from first on drawn at x, y
+// (count of them). A ^ is drawn as itself
+int			WG_TextLines( const wgStyle_t *style, const char *text, float w );
+void		WG_DrawText( const wgStyle_t *style, float x, float y, float w, const char *text, int first, int count, const float *color );
+
 // the field typed in: its cursor and selection forgotten, as when another one is clicked
 void		WG_EditReset( void );
 

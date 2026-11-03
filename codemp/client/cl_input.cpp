@@ -1082,6 +1082,8 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_CONSETTINGS ) {
 		CL_ConSettings_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_FEEDBACK ) {
+		CL_Feedback_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		UIVM_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MODELMANAGER ) {

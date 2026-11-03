@@ -122,7 +122,7 @@ What was typed is shown as it is: a ^ is drawn as itself, not taken for a colour
 ===============================================================================
 */
 
-#define WG_MAX_LINES		64		// a field's wrapped lines
+#define WG_MAX_LINES		128		// a field's wrapped lines
 #define WG_SHOWN_LINES		10		// grown no taller than this; it scrolls to the cursor
 #define WG_DOUBLECLICK_MS	350
 
@@ -523,6 +523,92 @@ void WG_DrawOverlay( void ) {
 		WG_Bar( &wg.top, wg.x + wg.w - WG_SCROLL_W - 1, wg.y + 1, h - 2, (float)l.num, (float)shown, &top,
 			-1.0f, -1.0f, NULL, 0.0f, 0.0f );
 	}
+}
+
+/*
+===============================================================================
+
+THE TEXT BOX AND READ-ONLY TEXT
+
+===============================================================================
+*/
+
+void WG_TextBox( const wgStyle_t *style, float x, float y, float w, float h, char *buf, qboolean focused,
+	const char *placeholder, float cursorX, float cursorY ) {
+	const int rows = Q_max( 1, (int)( ( h - style->padY * 2.0f ) / style->lineH ) );
+	wgLines_t l;
+
+	wg.lastBuf = buf;
+	wg.lastStyle = *style;
+	wg.lastX = x, wg.lastY = y, wg.lastW = w, wg.lastH = h;
+
+	if ( !focused ) {
+		if ( wg.buf == buf )
+			WG_EditReset();
+		if ( !buf[0] ) {
+			if ( placeholder && placeholder[0] )
+				re->Font_DrawString( (int)( x + style->padX ), (int)( y + style->padY ), placeholder, style->dim, style->font, -1, style->scale );
+			return;
+		}
+		WG_Wrap( style, buf, WG_TextW( style, w ), &l );
+		for ( int i = 0; i < rows && i < l.num; i++ )
+			WG_DrawRun( style, x + style->padX, y + style->padY + i * style->lineH, buf + l.start[i], l.start[i + 1] - l.start[i], style->text );
+		return;
+	}
+
+	WG_Focus( buf );
+	WG_Clamp( buf );
+	wg.style = *style;
+	wg.x = x, wg.y = y, wg.w = w, wg.h = h;
+
+	if ( wg.dragging ) {
+		if ( WG_MouseDown() ) {
+			const int at = WG_IndexAt( buf, cursorX, cursorY );
+
+			if ( at != wg.cursor )
+				wg.blinkFrom = cls.realtime;
+			wg.cursor = at;
+		} else {
+			wg.dragging = qfalse;
+		}
+	}
+
+	// scrolled to the cursor
+	WG_FocusLines( buf, &l );
+	{
+		const int line = WG_LineOf( &l, wg.cursor );
+
+		if ( line < wg.top )
+			wg.top = line;
+		else if ( line >= wg.top + rows )
+			wg.top = line - rows + 1;
+		wg.top = Com_Clampi( 0, Q_max( 0, l.num - rows ), wg.top );
+	}
+	WG_DrawLines( buf, &l, wg.top, rows, x, y );
+	if ( l.num > rows ) {
+		float top = (float)wg.top;
+
+		WG_Bar( &wg.top, x + w - WG_SCROLL_W - 1, y + 1, h - 2, (float)l.num, (float)rows, &top, -1.0f, -1.0f, NULL, 0.0f, 0.0f );
+	}
+}
+
+int WG_TextLines( const wgStyle_t *style, const char *text, float w ) {
+	wgLines_t l;
+
+	if ( !text[0] )
+		return 0;
+	WG_Wrap( style, text, w, &l );
+	return l.num;
+}
+
+void WG_DrawText( const wgStyle_t *style, float x, float y, float w, const char *text, int first, int count, const float *color ) {
+	wgLines_t l;
+
+	if ( !text[0] )
+		return;
+	WG_Wrap( style, text, w, &l );
+	for ( int i = Q_max( 0, first ); i < first + count && i < l.num; i++ )
+		WG_DrawRun( style, x, y + ( i - first ) * style->lineH, text + l.start[i], l.start[i + 1] - l.start[i], color );
 }
 
 /*

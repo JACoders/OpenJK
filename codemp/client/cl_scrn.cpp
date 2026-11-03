@@ -512,6 +512,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	// Engine internal menu
 	CL_DrawEngineMenus();
 
+	// /feedback, over the game and the menus alike
+	CL_Feedback_Draw();
+
 	// console draws next
 	Con_DrawConsole ();
 

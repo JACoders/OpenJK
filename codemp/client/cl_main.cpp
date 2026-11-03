@@ -849,6 +849,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	CL_ClearState ();
 	CL_RpHooks_Disconnect();
 	CL_RpAdmin_Disconnect();
+	CL_Feedback_Disconnect();
 	CL_NpcNames_Disconnect();
 	CL_AdminFlags_Reset();
 	CL_RpCinematic_Reset();
@@ -2392,6 +2393,8 @@ void CL_Frame ( int msec ) {
 	CL_ChatSplit_Frame();
 	CL_LoadPk3_Frame();
 	CL_Update_Frame();
+	// /feedback's answers in
+	CL_Feedback_Frame();
 	// what you're playing, on your Discord profile
 	CL_Discord_Frame();
 
@@ -2496,6 +2499,7 @@ void CL_InitRenderer( void ) {
 	cls.whiteShader = re->RegisterShader( "white" );
 	cls.consoleShader = re->RegisterShader( "console" );
 	CL_ConSettings_RendererRestarted();
+	CL_Feedback_RendererRestarted();
 	CL_SaberLight_RendererRestarted();
 	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 	g_consoleField.widthInChars = g_console_field_width;
@@ -2907,6 +2911,7 @@ void CL_Init( void ) {
 	CL_RpHooks_Init ();
 	CL_RpAdmin_Init ();
 	CL_Update_Init ();
+	CL_Feedback_Init ();
 	CL_RenderMenu_Init();
 	CL_Discord_Init();
 	cl_ratioFix = Cvar_Get( "cl_ratioFix", "0", CVAR_ARCHIVE_ND, "Widescreen: text, and the engine's own, as on a 4:3 screen instead of stretched" );
@@ -3158,6 +3163,7 @@ void CL_Shutdown( void ) {
 	CL_RpHooks_Shutdown();
 	Cmd_RemoveCommand( "toolaccess" );
 	CL_Update_Shutdown();
+	CL_Feedback_Shutdown();
 	CL_RenderMenu_Shutdown();
 	CL_Discord_Shutdown();
 	Cmd_RemoveCommand( "+radial" );

@@ -1624,6 +1624,12 @@ void CL_KeyDownEvent( int key, unsigned time )
 			return;
 		}
 
+		// the feedback window, over everything
+		if ( Key_GetCatcher() & KEYCATCH_FEEDBACK ) {
+			CL_Feedback_Escape();
+			return;
+		}
+
 		// a radial menu open closes
 		if ( CL_RadialMenu_Escape() )
 			return;
@@ -1725,6 +1731,9 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// console
 	else if ( Key_GetCatcher() & KEYCATCH_CONSOLE )
 		Console_Key( key );
+	// the feedback window, over the game and the menus
+	else if ( Key_GetCatcher() & KEYCATCH_FEEDBACK )
+		CL_Feedback_KeyEvent( key, qtrue );
 	else if ( cls.cursorActive ) {
 		CL_CursorButton( key );
 	}
@@ -1875,6 +1884,7 @@ void CL_CharEvent( int key ) {
 	// distribute the key down event to the appropriate handler
 		 if ( Key_GetCatcher() & KEYCATCH_CONSETTINGS )	CL_ConSettings_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_CONSOLE )		{ if ( !Con_CharEvent( key ) ) Field_CharEvent( &g_consoleField, key ); }
+	else if ( Key_GetCatcher() & KEYCATCH_FEEDBACK )	CL_Feedback_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_UI )			UIVM_KeyEvent( key|K_CHAR_FLAG, qtrue );
 	else if ( Key_GetCatcher() & KEYCATCH_MODELMANAGER )	CL_ModelManager_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_NPCMANAGER )	CL_NpcManager_CharEvent( key );
