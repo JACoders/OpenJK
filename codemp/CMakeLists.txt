@@ -496,6 +496,7 @@ if(BuildMPEngine)
 		"${MPDir}/client/cl_widgets.cpp"
 		"${MPDir}/client/cl_chatsplit.cpp"
 		"${MPDir}/client/cl_saberlight.cpp"
+		"${MPDir}/client/cl_npcnames.cpp"
 		"${MPDir}/client/cl_consettings.cpp"
 		"${MPDir}/client/cl_gizmo.h"
 		"${MPDir}/client/cl_widgets.h"

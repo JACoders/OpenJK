@@ -139,6 +139,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `Ctrl+click / Shift+click` pick several; `Ctrl+C, Ctrl+X, Ctrl+V` copy, cut, paste; `Ctrl+A` pick all
 - `Del` delete them, `Tab` next box
 - `Esc` back / close
+- In the diagram: the wheel, `Up/Down`, `Left/Right` and `PgUp/PgDn` scroll, `Home` back to the top, `Esc` back
 
 ## Cinematic Manager (playing it for others is experimental)
 
@@ -245,6 +246,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `rpc_mapEdits 0` only shows your map edits inside the editor
 - `rpc_mapShare 0` ignores map edits other players share
 - `cl_storyMarkers 0` hides where the armed stories wait
+- `cl_npcNames 0` hides the NPC names under the crosshair
 - `cl_modelFollowFront 1` keeps what's in the modelmanager's hand in front of you; `cl_modelHoldDistance` how far (128)
 - `cl_wallStick 1` keeps you on a wall you grabbed until you press jump again (`/cl_wallstick`)
 - `cl_cinRecordKey F10` the key that ends a recording in the cinematic manager

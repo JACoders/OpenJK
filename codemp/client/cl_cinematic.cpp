@@ -38,6 +38,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   emote <ent> <seconds in> <seconds, 0 to the end> <emote> <loop 0|1> <for real 0|1>
 //   place <ent> <seconds in> <smooth 0|1> <ms x y z pitch yaw roll>|...
 //   rec <ent> <seconds in> <recording>, the recording's moments in
+//   tele <ent> <seconds in> <x y z yaw>             a teleport: a position of one key, at once
+//   npccmd <ent> <seconds in> <command> [value]     an npc command, spaces in it as _
+//   spawn <ent> <seconds in> <x y z yaw> <team> <NPC type>   its targetname the ent's who
+//   remove <ent> <seconds in>                       taken out with npc kill
 //   rs <recording> <ms> <x y z> <pitch> <yaw> <legs> <torso> <flips> <holstered> <force powers> <saber move>
 // The shots of the camera editor from before (camshots/*.cam) open as a cinematic of one shot.
 //
@@ -46,7 +50,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // on screens with this client only; a player moved goes back where they are when it ends.
 // Played for everyone it goes out whole first, hidden in rpnotify hooks (see Sending), and
 // whoever sent it teleports its NPCs where their moves end, for the server and the players
-// without this client.
+// without this client; its NPC commands, spawns and removals it sends at their moment.
 //
 // This lives in the engine rather than cgame so it works whatever cgame the server's mod
 // ships (RPMod loads its own).
@@ -99,8 +103,17 @@ typedef enum {
 	CM_CLIP_EMOTE,
 	CM_CLIP_PLACE,
 	CM_CLIP_RECORD,
+	CM_CLIP_NPCCMD,		// an npc command at its moment: freeze, follow, dialog, hologram...
+	CM_CLIP_SPAWN,		// the NPC spawned at its moment, its targetname the ent's who
+	CM_CLIP_REMOVE,		// and taken out
 	CM_NUM_CLIPS
 } cmClipKind_t;
+
+// what an NPC command can be
+static const char *cmNpcCmds[] = { "freeze", "unfreeze", "follow me", "stop following", "dialog", "no dialog",
+	"hologram", "projector", "no hologram", "kill" };
+static const char *cmTeams[] = { "default", "player", "enemy" };
+#define CM_ACT_MS			600			// how long an NPC command, a spawn or a removal shows on the timeline
 
 // a position's key: where they are and how they're turned, ms into it
 typedef struct {
@@ -164,6 +177,16 @@ typedef struct {
 
 	// a recording: which of the cinematic's
 	int			rec;
+
+	// a position of one key that's a teleport: there at once, as a spot and a yaw
+	qboolean	tele;
+
+	// an NPC command: which (cmNpcCmds), its dialog in text
+	char		cmd[24];
+
+	// a spawn: the NPC type and team, where in keys[0]
+	char		npcType[MAX_QPATH];
+	char		team[16];
 } cmClip_t;
 
 typedef struct {
@@ -356,6 +379,20 @@ static qboolean CM_Moves( int kind ) {
 	return (qboolean)( kind == CM_CLIP_MOVE || kind == CM_CLIP_PLACE || kind == CM_CLIP_RECORD );
 }
 
+// an NPC command, a spawn or a removal: done at its moment, at once
+static qboolean CM_Instant( int kind ) {
+	return (qboolean)( kind == CM_CLIP_NPCCMD || kind == CM_CLIP_SPAWN || kind == CM_CLIP_REMOVE );
+}
+
+// someone taken out by then: not posed after
+static qboolean CM_GoneAt( const cmCine_t *c, int ent, int t ) {
+	for ( int i = 0; i < c->numClips; i++ ) {
+		if ( c->clips[i].ent == ent && c->clips[i].kind == CM_CLIP_REMOVE && t >= c->clips[i].start )
+			return qtrue;
+	}
+	return qfalse;
+}
+
 static const cmRec_t *CM_Rec( const cmCine_t *c, const cmClip_t *clip ) {
 	return clip->rec >= 0 && clip->rec < CM_MAX_RECS && c->recs[clip->rec].count ? &c->recs[clip->rec] : NULL;
 }
@@ -469,88 +506,99 @@ static int CM_PlanLen( const cmCine_t *c, const cmPlan_t *p, const cmClip_t *cli
 	return CL_NpcWalk_RouteMs( p->pts[m], p->numPts, p->speed );
 }
 
-// the moves, positions and recordings worked out: each from where its entity stands now, or
+// one entity's moves, positions and recordings worked out: each from where it stands now, or
 // where the one before has it then
+static void CM_PlanEnt( const cmCine_t *c, cmPlan_t *plans, int e ) {
+	int order[CM_MAX_CLIPS], n = 0, nums[CM_MAX_GROUP], count, prev = -1;
+
+	for ( int i = 0; i < c->numClips; i++ ) {
+		if ( c->clips[i].ent == e ) {
+			plans[i].count = 0;
+			plans[i].ms = 0;
+		}
+	}
+
+	for ( int i = 0; i < c->numClips; i++ ) {
+		const cmClip_t *clip = &c->clips[i];
+		int j = n;
+
+		if ( clip->ent != e || !CM_Moves( clip->kind ) || ( clip->kind == CM_CLIP_MOVE && !clip->numPts )
+			|| ( clip->kind == CM_CLIP_PLACE && !clip->numKeys ) || ( clip->kind == CM_CLIP_RECORD && !CM_Rec( c, clip ) ) )
+			continue;
+		for ( ; j > 0 && c->clips[order[j - 1]].start > clip->start; j-- )
+			order[j] = order[j - 1];
+		order[j] = i;
+		n++;
+	}
+	if ( !n )
+		return;
+	count = CM_Resolve( c->ents[e].who, nums, CM_MAX_GROUP );
+	for ( int k = 0; k < n; k++ ) {
+		const cmClip_t *clip = &c->clips[order[k]];
+		cmPlan_t *p = &plans[order[k]];
+		vec3_t starts[CM_MAX_GROUP], middle;
+		int members = 0;
+
+		if ( prev < 0 ) {
+			for ( int m = 0; m < count; m++ ) {
+				if ( CM_EntOrigin( nums[m], starts[members] ) )
+					p->nums[members++] = nums[m];
+			}
+			// out of sight, from the first spot or key
+			if ( !members && count == 1 && clip->kind != CM_CLIP_RECORD ) {
+				p->nums[0] = nums[0];
+				VectorCopy( clip->kind == CM_CLIP_PLACE ? clip->keys[0].org : clip->pts[0], starts[0] );
+				members = 1;
+			}
+		} else {
+			const cmPlan_t *q = &plans[prev];
+
+			members = q->count;
+			for ( int m = 0; m < members; m++ ) {
+				vec3_t ang;
+
+				p->nums[m] = q->nums[m];
+				CM_PlanAt( c, q, &c->clips[prev], m, clip->start - c->clips[prev].start, starts[m], ang );
+			}
+		}
+		if ( !members )
+			continue;
+		CL_NpcWalk_GroupMiddle( starts, members, middle );
+		for ( int m = 0; m < members; m++ ) {
+			vec3_t offset;
+
+			VectorCopy( starts[m], p->pts[m][0] );
+			VectorSubtract( starts[m], middle, offset );
+			offset[2] = 0.0f;
+			if ( clip->kind == CM_CLIP_PLACE ) {
+				if ( members == 1 )
+					VectorClear( offset );
+				VectorCopy( offset, p->pts[m][1] );
+			}
+			for ( int j = 0; clip->kind == CM_CLIP_MOVE && j < clip->numPts; j++ ) {
+				if ( members == 1 )
+					VectorCopy( clip->pts[j], p->pts[m][j + 1] );
+				else
+					CL_NpcWalk_GroupSpot( clip->pts[j], offset, p->pts[m][j + 1] );
+			}
+		}
+		p->count = members;
+		p->numPts = clip->kind == CM_CLIP_MOVE ? clip->numPts + 1 : 1;
+		p->speed = CL_NpcWalk_PaceSpeed( clip->run );
+		for ( int m = 0; m < members; m++ )
+			p->ms = Q_max( p->ms, CM_PlanLen( c, p, clip, m ) );
+		prev = order[k];
+	}
+}
+
+// everyone's
 static void CM_Plan( const cmCine_t *c, cmPlan_t *plans ) {
 	for ( int i = 0; i < c->numClips; i++ ) {
 		plans[i].count = 0;
 		plans[i].ms = 0;
 	}
-	for ( int e = 0; e < c->numEnts; e++ ) {
-		int order[CM_MAX_CLIPS], n = 0, nums[CM_MAX_GROUP], count, prev = -1;
-
-		for ( int i = 0; i < c->numClips; i++ ) {
-			const cmClip_t *clip = &c->clips[i];
-			int j = n;
-
-			if ( clip->ent != e || !CM_Moves( clip->kind ) || ( clip->kind == CM_CLIP_MOVE && !clip->numPts )
-				|| ( clip->kind == CM_CLIP_PLACE && !clip->numKeys ) || ( clip->kind == CM_CLIP_RECORD && !CM_Rec( c, clip ) ) )
-				continue;
-			for ( ; j > 0 && c->clips[order[j - 1]].start > clip->start; j-- )
-				order[j] = order[j - 1];
-			order[j] = i;
-			n++;
-		}
-		if ( !n )
-			continue;
-		count = CM_Resolve( c->ents[e].who, nums, CM_MAX_GROUP );
-		for ( int k = 0; k < n; k++ ) {
-			const cmClip_t *clip = &c->clips[order[k]];
-			cmPlan_t *p = &plans[order[k]];
-			vec3_t starts[CM_MAX_GROUP], middle;
-			int members = 0;
-
-			if ( prev < 0 ) {
-				for ( int m = 0; m < count; m++ ) {
-					if ( CM_EntOrigin( nums[m], starts[members] ) )
-						p->nums[members++] = nums[m];
-				}
-				// out of sight, from the first spot or key
-				if ( !members && count == 1 && clip->kind != CM_CLIP_RECORD ) {
-					p->nums[0] = nums[0];
-					VectorCopy( clip->kind == CM_CLIP_PLACE ? clip->keys[0].org : clip->pts[0], starts[0] );
-					members = 1;
-				}
-			} else {
-				const cmPlan_t *q = &plans[prev];
-
-				members = q->count;
-				for ( int m = 0; m < members; m++ ) {
-					vec3_t ang;
-
-					p->nums[m] = q->nums[m];
-					CM_PlanAt( c, q, &c->clips[prev], m, clip->start - c->clips[prev].start, starts[m], ang );
-				}
-			}
-			if ( !members )
-				continue;
-			CL_NpcWalk_GroupMiddle( starts, members, middle );
-			for ( int m = 0; m < members; m++ ) {
-				vec3_t offset;
-
-				VectorCopy( starts[m], p->pts[m][0] );
-				VectorSubtract( starts[m], middle, offset );
-				offset[2] = 0.0f;
-				if ( clip->kind == CM_CLIP_PLACE ) {
-					if ( members == 1 )
-						VectorClear( offset );
-					VectorCopy( offset, p->pts[m][1] );
-				}
-				for ( int j = 0; clip->kind == CM_CLIP_MOVE && j < clip->numPts; j++ ) {
-					if ( members == 1 )
-						VectorCopy( clip->pts[j], p->pts[m][j + 1] );
-					else
-						CL_NpcWalk_GroupSpot( clip->pts[j], offset, p->pts[m][j + 1] );
-				}
-			}
-			p->count = members;
-			p->numPts = clip->kind == CM_CLIP_MOVE ? clip->numPts + 1 : 1;
-			p->speed = CL_NpcWalk_PaceSpeed( clip->run );
-			for ( int m = 0; m < members; m++ )
-				p->ms = Q_max( p->ms, CM_PlanLen( c, p, clip, m ) );
-			prev = order[k];
-		}
-	}
+	for ( int e = 0; e < c->numEnts; e++ )
+		CM_PlanEnt( c, plans, e );
 }
 
 static cvar_t *rpc_cinNoPredict;		// 1 while cg_noPredict is ours to put back to 0, a crash included
@@ -623,7 +671,7 @@ static void CM_Apply( const cmCine_t *c, const cmPlan_t *plans, int t ) {
 		const int from = cmEvT[order[k]];
 
 		cmEvT[order[k]] = t;
-		if ( t <= clip->start )
+		if ( t <= clip->start || CM_GoneAt( c, clip->ent, t ) )
 			continue;
 		if ( heard && clip->kind == CM_CLIP_RECORD )
 			CM_RecEvents( CM_Rec( c, clip ), clip, from, t, p->nums, p->count );
@@ -662,7 +710,8 @@ static void CM_Apply( const cmCine_t *c, const cmPlan_t *plans, int t ) {
 		const rcAnim_t *a = &clip->a;
 		int targets[CM_MAX_GROUP], numTargets;
 
-		if ( ( clip->kind != CM_CLIP_ANIM && clip->kind != CM_CLIP_EMOTE ) || t < clip->start || ( len > 0 && t >= clip->start + len ) )
+		if ( ( clip->kind != CM_CLIP_ANIM && clip->kind != CM_CLIP_EMOTE ) || t < clip->start || ( len > 0 && t >= clip->start + len )
+			|| CM_GoneAt( c, clip->ent, t ) )
 			continue;
 		// an emote shows the animation it plays
 		if ( clip->kind == CM_CLIP_EMOTE ) {
@@ -803,6 +852,28 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 			Com_sprintf( line, sizeof( line ), "emote %i %g %g %s %i %i\n", clip->ent, RC_Seconds( clip->start ), RC_Seconds( clip->a.ms ),
 				clip->emote[0] ? clip->emote : "-", clip->a.loop ? 1 : 0, clip->realEmote ? 1 : 0 );
 			CM_ADD( line );
+		} else if ( clip->kind == CM_CLIP_PLACE && clip->tele && clip->numKeys ) {
+			const cmPlace_t *k = &clip->keys[0];
+
+			CM_ADD( va( "tele %i %g %i %i %i %i\n", clip->ent, RC_Seconds( clip->start ), RC_Round( k->org[0] ), RC_Round( k->org[1] ),
+				RC_Round( k->org[2] ), RC_Round( AngleNormalize360( k->ang[YAW] ) ) ) );
+		} else if ( clip->kind == CM_CLIP_NPCCMD ) {
+			char word[sizeof( clip->cmd )];
+
+			Q_strncpyz( word, clip->cmd[0] ? clip->cmd : cmNpcCmds[0], sizeof( word ) );
+			for ( char *w = word; *w; w++ ) {
+				if ( *w == ' ' )
+					*w = '_';
+			}
+			CM_ADD( va( "npccmd %i %g %s%s%s\n", clip->ent, RC_Seconds( clip->start ), word, clip->text[0] ? " " : "", clip->text ) );
+		} else if ( clip->kind == CM_CLIP_SPAWN ) {
+			const cmPlace_t *k = &clip->keys[0];
+
+			CM_ADD( va( "spawn %i %g %i %i %i %i %s %s\n", clip->ent, RC_Seconds( clip->start ), RC_Round( k->org[0] ), RC_Round( k->org[1] ),
+				RC_Round( k->org[2] ), RC_Round( AngleNormalize360( k->ang[YAW] ) ), clip->team[0] ? clip->team : "default",
+				clip->npcType[0] ? clip->npcType : "-" ) );
+		} else if ( clip->kind == CM_CLIP_REMOVE ) {
+			CM_ADD( va( "remove %i %g\n", clip->ent, RC_Seconds( clip->start ) ) );
 		} else if ( clip->kind == CM_CLIP_PLACE ) {
 			Com_sprintf( line, sizeof( line ), "place %i %g %i", clip->ent, RC_Seconds( clip->start ), clip->smooth ? 1 : 0 );
 			for ( int j = 0; j < clip->numKeys; j++ ) {
@@ -964,6 +1035,70 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 				if ( k )
 					k++;
 			}
+			c->numClips++;
+		} else if ( !Q_stricmpn( line, "tele ", 5 ) && c->numClips < CM_MAX_CLIPS ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+			float start;
+			int ent;
+
+			memset( clip, 0, sizeof( *clip ) );
+			if ( sscanf( line + 5, "%i %f %f %f %f %f", &ent, &start, &clip->keys[0].org[0], &clip->keys[0].org[1], &clip->keys[0].org[2],
+				&clip->keys[0].ang[YAW] ) < 6 || ent < 0 || ent >= CM_MAX_ENTS )
+				continue;
+			clip->kind = CM_CLIP_PLACE;
+			clip->tele = qtrue;
+			clip->ent = ent;
+			clip->start = RC_SecondsMs( start );
+			clip->numKeys = 1;
+			c->numClips++;
+		} else if ( !Q_stricmpn( line, "npccmd ", 7 ) && c->numClips < CM_MAX_CLIPS ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+			char word[sizeof( clip->cmd )];
+			float start;
+			int ent, n = 0;
+
+			memset( clip, 0, sizeof( *clip ) );
+			if ( sscanf( line + 7, "%i %f %23s %n", &ent, &start, word, &n ) < 3 || ent < 0 || ent >= CM_MAX_ENTS )
+				continue;
+			for ( char *w = word; *w; w++ ) {
+				if ( *w == '_' )
+					*w = ' ';
+			}
+			clip->kind = CM_CLIP_NPCCMD;
+			clip->ent = ent;
+			clip->start = RC_SecondsMs( start );
+			Q_strncpyz( clip->cmd, word, sizeof( clip->cmd ) );
+			if ( n > 0 )
+				Q_strncpyz( clip->text, line + 7 + n, sizeof( clip->text ) );
+			c->numClips++;
+		} else if ( !Q_stricmpn( line, "spawn ", 6 ) && c->numClips < CM_MAX_CLIPS ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+			char team[16], type[MAX_QPATH];
+			float start;
+			int ent;
+
+			memset( clip, 0, sizeof( *clip ) );
+			if ( sscanf( line + 6, "%i %f %f %f %f %f %15s %63s", &ent, &start, &clip->keys[0].org[0], &clip->keys[0].org[1],
+				&clip->keys[0].org[2], &clip->keys[0].ang[YAW], team, type ) < 8 || ent < 0 || ent >= CM_MAX_ENTS )
+				continue;
+			clip->kind = CM_CLIP_SPAWN;
+			clip->ent = ent;
+			clip->start = RC_SecondsMs( start );
+			clip->numKeys = 1;
+			Q_strncpyz( clip->team, team, sizeof( clip->team ) );
+			Q_strncpyz( clip->npcType, strcmp( type, "-" ) ? type : "", sizeof( clip->npcType ) );
+			c->numClips++;
+		} else if ( !Q_stricmpn( line, "remove ", 7 ) && c->numClips < CM_MAX_CLIPS ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+			float start;
+			int ent;
+
+			memset( clip, 0, sizeof( *clip ) );
+			if ( sscanf( line + 7, "%i %f", &ent, &start ) < 2 || ent < 0 || ent >= CM_MAX_ENTS )
+				continue;
+			clip->kind = CM_CLIP_REMOVE;
+			clip->ent = ent;
+			clip->start = RC_SecondsMs( start );
 			c->numClips++;
 		} else if ( !Q_stricmpn( line, "rec ", 4 ) && c->numClips < CM_MAX_CLIPS ) {
 			cmClip_t *clip = &c->clips[c->numClips];
@@ -1156,6 +1291,9 @@ static struct {
 	qboolean	teleSent[CM_MAX_CLIPS][CM_MAX_GROUP];
 	qboolean	said[CM_MAX_CLIPS];
 	qboolean	emoted[CM_MAX_CLIPS];
+	qboolean	acted[CM_MAX_CLIPS];	// its NPC command, spawn or removal sent, or let go
+	qboolean	entSeen[CM_MAX_ENTS];	// here when its moves were worked out: one spawned later, then
+	int			seenNext;
 	int			fxNext[CM_MAX_FX];		// when each effect plays again; a one-off, 1 once it has
 	int			sndNext[CM_MAX_SND];	// the same for each sound
 } cmp;
@@ -1377,6 +1515,66 @@ static void CM_RunEmotes( int t ) {
 	}
 }
 
+// an NPC command, a spawn or a removal as the server takes it; NULL if it has nothing to go on
+static const char *CM_ActCommand( const cmCine_t *c, const cmClip_t *clip ) {
+	const char *who = c->ents[clip->ent].who;
+
+	if ( !who[0] || strchr( who, ',' ) )
+		return NULL;
+	if ( clip->kind == CM_CLIP_REMOVE )
+		return va( "npc kill %s", who );
+	if ( clip->kind == CM_CLIP_SPAWN ) {
+		if ( !clip->npcType[0] || Q_isanumber( who ) )
+			return NULL;
+		return CL_NpcManager_SpawnCommand( clip->npcType, qfalse, who, clip->team[0] ? clip->team : "default", "", "", clip->keys[0].org,
+			RC_Round( AngleNormalize360( clip->keys[0].ang[YAW] ) ) );
+	}
+	if ( clip->kind != CM_CLIP_NPCCMD )
+		return NULL;
+	if ( !Q_stricmp( clip->cmd, "freeze" ) )			return va( "npc freeze %s 1", who );
+	if ( !Q_stricmp( clip->cmd, "unfreeze" ) )			return va( "npc freeze %s 0", who );
+	if ( !Q_stricmp( clip->cmd, "follow me" ) )			return va( "npc follow %i %s", clc.clientNum, who );
+	if ( !Q_stricmp( clip->cmd, "stop following" ) )	return va( "npc follow none %s", who );
+	if ( !Q_stricmp( clip->cmd, "dialog" ) )			return clip->text[0] ? va( "npc dialog %s %s", clip->text, who ) : NULL;
+	if ( !Q_stricmp( clip->cmd, "no dialog" ) )			return va( "npc dialog none %s", who );
+	if ( !Q_stricmp( clip->cmd, "hologram" ) )			return va( "npc hologram normal %s", who );
+	if ( !Q_stricmp( clip->cmd, "projector" ) )			return va( "npc hologram projector %s", who );
+	if ( !Q_stricmp( clip->cmd, "no hologram" ) )		return va( "npc hologram off %s", who );
+	if ( !Q_stricmp( clip->cmd, "kill" ) )				return va( "npc kill %s", who );
+	return NULL;
+}
+
+// the NPC commands, spawns and removals whose time has come: sent by whoever sent it, one played
+// from the middle that's long past not
+static void CM_RunActs( int t ) {
+	for ( int i = 0; i < cmp.cine.numClips; i++ ) {
+		const cmClip_t *clip = &cmp.cine.clips[i];
+		const char *cmd;
+
+		if ( !CM_Instant( clip->kind ) || cmp.acted[i] || t < clip->start )
+			continue;
+		cmp.acted[i] = qtrue;
+		if ( !cmp.driver || t - clip->start > CM_SAY_LATE_MS || !( cmd = CM_ActCommand( &cmp.cine, clip ) ) )
+			continue;
+		CM_Queue( cmd );
+	}
+}
+
+// someone spawned since it began: their moves worked out now they're here, on every screen
+static void CM_PlanSpawned( void ) {
+	if ( cls.realtime < cmp.seenNext )
+		return;
+	cmp.seenNext = cls.realtime + 250;
+	for ( int e = 0; e < cmp.cine.numEnts; e++ ) {
+		int nums[CM_MAX_GROUP];
+
+		if ( cmp.entSeen[e] || !CM_Resolve( cmp.cine.ents[e].who, nums, CM_MAX_GROUP ) )
+			continue;
+		cmp.entSeen[e] = qtrue;
+		CM_PlanEnt( &cmp.cine, cmPlayPlans, e );
+	}
+}
+
 static void CM_StopPlaying( void ) {
 	if ( !cmp.playing )
 		return;
@@ -1411,6 +1609,8 @@ static void CM_PlayerFrame( void ) {
 		CM_DriverTeles( t, qfalse );
 	CM_RunSays( t );
 	CM_RunEmotes( t );
+	CM_RunActs( t );
+	CM_PlanSpawned();
 }
 
 // from fromMs in, on this screen; local, it's on this screen alone
@@ -1427,6 +1627,13 @@ static qboolean CM_Play( const cmCine_t *c, int fromMs, qboolean local ) {
 	memset( cmp.teleSent, 0, sizeof( cmp.teleSent ) );
 	memset( cmp.said, 0, sizeof( cmp.said ) );
 	memset( cmp.emoted, 0, sizeof( cmp.emoted ) );
+	memset( cmp.acted, 0, sizeof( cmp.acted ) );
+	cmp.seenNext = 0;
+	for ( int e = 0; e < c->numEnts; e++ ) {
+		int nums[CM_MAX_GROUP];
+
+		cmp.entSeen[e] = (qboolean)( CM_Resolve( c->ents[e].who, nums, CM_MAX_GROUP ) > 0 );
+	}
 	memset( cmp.fxNext, 0, sizeof( cmp.fxNext ) );
 	memset( cmp.sndNext, 0, sizeof( cmp.sndNext ) );
 	CM_Plan( &cmp.cine, cmPlayPlans );
@@ -1738,7 +1945,10 @@ typedef enum {
 	CM_TYPE_FOCUS,
 	CM_TYPE_SAY,
 	CM_TYPE_SAYNAME,
-	CM_TYPE_EMOTE
+	CM_TYPE_EMOTE,
+	CM_TYPE_NEWNPC,		// a targetname for an NPC to spawn
+	CM_TYPE_NPCTYPE,	// a spawn's NPC type
+	CM_TYPE_DIALOG		// an NPC command's dialog
 } cmTyping_t;
 
 typedef enum {
@@ -1816,6 +2026,7 @@ static struct {
 	gzDrag_t	gzDrag;
 	int			gzHot;
 	qboolean	addOpen;			// the actions to add are listed
+	char		newNpc[MAX_QPATH];	// an NPC to spawn in it, by its targetname, being typed
 	int			listAsked;			// cls.realtime the NPC list was last asked for
 	int			entScroll, pickScroll;
 	int			typing;				// cmTyping_t
@@ -2345,7 +2556,8 @@ static int CM_AddTime( int kind ) {
 		if ( clip->ent != cm.ent || CM_Moves( clip->kind ) != CM_Moves( kind ) )
 			continue;
 		at = Q_max( at, CM_Moves( clip->kind ) ? clip->start + ( cmEditPlans[i].count ? cmEditPlans[i].ms : 1000 )
-			: clip->kind == CM_CLIP_SAY ? clip->start + CM_SAY_MS : clip->start + CM_AnimLen( &cm.cine, clip ) );
+			: clip->kind == CM_CLIP_SAY ? clip->start + CM_SAY_MS : CM_Instant( clip->kind ) ? clip->start + CM_ACT_MS
+			: clip->start + CM_AnimLen( &cm.cine, clip ) );
 	}
 	return Q_min( at, Q_max( 0, CM_Total( &cm.cine ) - 500 ) );
 }
@@ -2353,7 +2565,7 @@ static int CM_AddTime( int kind ) {
 static void CM_AddPlaceKey( cmClip_t *clip );
 static void CM_StartRecording( int clip );
 
-static void CM_AddClip( int kind ) {
+static void CM_AddClip( int kind, qboolean tele ) {
 	cmCine_t *c = &cm.cine;
 	cmClip_t *clip;
 
@@ -2386,9 +2598,25 @@ static void CM_AddClip( int kind ) {
 		clip->realEmote = qtrue;
 		cm.typing = CM_TYPE_EMOTE;
 		CM_Message( "Pick the emote from the list, or type its name" );
+	} else if ( kind == CM_CLIP_PLACE && tele ) {
+		clip->tele = qtrue;
+		CM_Message( "Where they're teleported to: where you aim, or drag it in the view" );
 	} else if ( kind == CM_CLIP_PLACE ) {
 		clip->smooth = qtrue;
 		CM_Message( "Set where they are and how they're turned; move the moment and + Key for the next" );
+	} else if ( kind == CM_CLIP_NPCCMD ) {
+		Q_strncpyz( clip->cmd, cmNpcCmds[0], sizeof( clip->cmd ) );
+		CM_Message( "Pick the command" );
+	} else if ( kind == CM_CLIP_SPAWN ) {
+		Q_strncpyz( clip->team, "default", sizeof( clip->team ) );
+		clip->numKeys = 1;
+		if ( cm.haveAim )
+			VectorCopy( cm.aim, clip->keys[0].org );
+		clip->keys[0].ang[YAW] = cm.camAng[YAW] + 180.0f;
+		cm.typing = CM_TYPE_NPCTYPE;
+		CM_Message( "Type the NPC type, e.g. stormtrooper; it spawns where you aim" );
+	} else if ( kind == CM_CLIP_REMOVE ) {
+		CM_Message( "Taken out of the game at its moment: drag it on the timeline" );
 	} else if ( kind == CM_CLIP_RECORD ) {
 		clip->rec = -1;
 	} else {
@@ -2952,6 +3180,19 @@ static char *CM_TypedText( int *size ) {
 			return NULL;
 		*size = sizeof( clip->emote );
 		return clip->emote;
+	case CM_TYPE_NEWNPC:
+		*size = sizeof( cm.newNpc );
+		return cm.newNpc;
+	case CM_TYPE_NPCTYPE:
+		if ( !clip || clip->kind != CM_CLIP_SPAWN )
+			return NULL;
+		*size = sizeof( clip->npcType );
+		return clip->npcType;
+	case CM_TYPE_DIALOG:
+		if ( !clip || clip->kind != CM_CLIP_NPCCMD )
+			return NULL;
+		*size = sizeof( clip->text );
+		return clip->text;
 	case CM_TYPE_SAY:
 	case CM_TYPE_SAYNAME:
 		if ( !clip || clip->kind != CM_CLIP_SAY )
@@ -2966,8 +3207,8 @@ static char *CM_TypedText( int *size ) {
 // a character the box typed in takes: a line anything, a name shown anything but the | that
 // ends it in the file; the rest names, who can be several with commas between
 static qboolean CM_AllowChar( int ch ) {
-	if ( cm.typing == CM_TYPE_SAY || cm.typing == CM_TYPE_SAYNAME )
-		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing == CM_TYPE_SAYNAME && ch == '|' ) );
+	if ( cm.typing == CM_TYPE_SAY || cm.typing == CM_TYPE_SAYNAME || cm.typing == CM_TYPE_DIALOG )
+		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing != CM_TYPE_SAY && ch == '|' ) || ( cm.typing == CM_TYPE_DIALOG && ch == ';' ) );
 	return (qboolean)( CM_NameChar( ch ) || ( ( cm.typing == CM_TYPE_WHO || cm.typing == CM_TYPE_FOCUS ) && ch == ',' ) );
 }
 
@@ -3397,6 +3638,20 @@ static void CM_AddScene( void ) {
 		static const byte place[4] = { 60, 200, 210, 255 }, placeFaint[4] = { 60, 200, 210, 110 };
 		static const byte recColor[4] = { 230, 70, 70, 255 }, recFaint[4] = { 230, 70, 70, 110 };
 
+		if ( clip->kind == CM_CLIP_SPAWN ) {
+			static const byte spawn[4] = { 90, 115, 190, 255 }, spawnFaint[4] = { 90, 115, 190, 110 };
+			const byte *color = sel ? cmSelColor : clip->ent == cm.ent ? spawn : spawnFaint;
+			vec3_t forward, tip, top;
+
+			CM_Cross( clip->keys[0].org, sel ? 10.0f : 6.0f, color );
+			AngleVectors( clip->keys[0].ang, forward, NULL, NULL );
+			VectorMA( clip->keys[0].org, 24.0f, forward, tip );
+			CM_Line( clip->keys[0].org, tip, color );
+			VectorCopy( clip->keys[0].org, top );
+			top[2] += 64.0f;
+			CM_Line( clip->keys[0].org, top, color );
+			continue;
+		}
 		if ( clip->kind == CM_CLIP_PLACE ) {
 			const byte *color = sel ? cmSelColor : clip->ent == cm.ent ? place : placeFaint;
 
@@ -4719,6 +4974,124 @@ static void CM_DrawPlaceClip( float x, float y, float w, cmClip_t *clip ) {
 	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "the whole body, as one thrown would be", cmWhite );
 }
 
+// a spot and a yaw, for a teleport or a spawn: where you aim, or nudged
+static float CM_SpotControls( float x, float y, float w, cmPlace_t *k ) {
+	const float half = ( w - 4 ) * 0.5f;
+	int steps;
+
+	if ( CM_Button( x, y, w, "Where you aim", qfalse, cm.haveAim ) ) {
+		VectorCopy( cm.aim, k->org );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_MiniStepper( x, y, half, "X", va( "%i", RC_Round( k->org[0] ) ) );
+	CM_Adjust( &k->org[0], steps, 8.0f, -65536.0f, 65536.0f );
+	steps = CM_MiniStepper( x + half + 4, y, half, "Y", va( "%i", RC_Round( k->org[1] ) ) );
+	CM_Adjust( &k->org[1], steps, 8.0f, -65536.0f, 65536.0f );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_MiniStepper( x, y, half, "Z", va( "%i", RC_Round( k->org[2] ) ) );
+	CM_Adjust( &k->org[2], steps, 8.0f, -65536.0f, 65536.0f );
+	steps = CM_MiniStepper( x + half + 4, y, half, "Yaw", va( "%i", RC_Round( AngleNormalize360( k->ang[YAW] ) ) ) );
+	CM_Adjust( &k->ang[YAW], steps, 15.0f, -3600.0f, 3600.0f );
+	return y + CM_CTRL_H + CM_GAP;
+}
+
+static void CM_DrawTeleClip( float x, float y, float w, cmClip_t *clip ) {
+	int nums[4];
+	const int n = CM_Resolve( cm.cine.ents[clip->ent].who, nums, ARRAY_LEN( nums ) );
+
+	if ( !clip->numKeys ) {
+		clip->numKeys = 1;
+		CM_EntityNow( clip->ent, clip->keys[0].org, clip->keys[0].ang );
+	}
+	cm.spot = 0;
+	y = CM_SpotControls( x, y, w, &clip->keys[0] );
+	CM_Text( x, y, va( S_COLOR_GREY "At %.1f s: drag it on the timeline,", clip->start / 1000.0f ), cmWhite );
+	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "the spot in the view", cmWhite );
+	y += CM_ROW_H * 2 + 4;
+	if ( n && nums[0] < MAX_CLIENTS ) {
+		CM_Text( x, y, S_COLOR_GREY "A player is only seen there, on screens", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "with this client, till it ends", cmWhite );
+	} else {
+		CM_Text( x, y, S_COLOR_GREY "Teleported for real (npc tele) when it's", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "played for everyone", cmWhite );
+	}
+}
+
+// an NPC's, or several with one targetname: someone who isn't a player
+static qboolean CM_NpcEnt( int ent ) {
+	int nums[4];
+	const char *who = cm.cine.ents[ent].who;
+
+	if ( !who[0] || !Q_stricmp( who, "me" ) || CM_FindPlayer( who ) >= 0 )
+		return qfalse;
+	return (qboolean)( !CM_Resolve( who, nums, ARRAY_LEN( nums ) ) || nums[0] >= MAX_CLIENTS );
+}
+
+static void CM_DrawNpcCmdClip( float x, float y, float w, cmClip_t *clip ) {
+	int which = 0, steps;
+
+	for ( int i = 0; i < (int)ARRAY_LEN( cmNpcCmds ); i++ ) {
+		if ( !Q_stricmp( clip->cmd, cmNpcCmds[i] ) )
+			which = i;
+	}
+	steps = CM_Stepper( x, y, w, "Command", cmNpcCmds[which] );
+	if ( steps ) {
+		which = ( ( which + steps ) % (int)ARRAY_LEN( cmNpcCmds ) + (int)ARRAY_LEN( cmNpcCmds ) ) % (int)ARRAY_LEN( cmNpcCmds );
+		Q_strncpyz( clip->cmd, cmNpcCmds[which], sizeof( clip->cmd ) );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( !Q_stricmp( clip->cmd, "dialog" ) ) {
+		CM_TextBox( x, y, w, clip->text, "type the dialog", CM_TYPE_DIALOG, NULL );
+		y += CM_CTRL_H + CM_GAP;
+	}
+	CM_Text( x, y + 2, va( S_COLOR_GREY "At %.1f s: drag it on the timeline", clip->start / 1000.0f ), cmWhite );
+	y += CM_ROW_H + 4;
+	if ( !CM_NpcEnt( clip->ent ) )
+		CM_Text( x, y, S_COLOR_YELLOW "Only NPCs take it: this is a player", cmWhite );
+	else
+		CM_Text( x, y, S_COLOR_GREY "Sent when it's played for everyone", cmWhite );
+}
+
+static void CM_DrawSpawnClip( float x, float y, float w, cmClip_t *clip ) {
+	const char *who = cm.cine.ents[clip->ent].who;
+	int team = 0, steps;
+
+	CM_TextBox( x, y, w, clip->npcType, "the NPC type, e.g. stormtrooper", CM_TYPE_NPCTYPE, NULL );
+	y += CM_CTRL_H + CM_GAP;
+	for ( int i = 0; i < (int)ARRAY_LEN( cmTeams ); i++ ) {
+		if ( !Q_stricmp( clip->team, cmTeams[i] ) )
+			team = i;
+	}
+	steps = CM_Stepper( x, y, w, "Team", cmTeams[team] );
+	if ( steps ) {
+		team = ( ( team + steps ) % (int)ARRAY_LEN( cmTeams ) + (int)ARRAY_LEN( cmTeams ) ) % (int)ARRAY_LEN( cmTeams );
+		Q_strncpyz( clip->team, cmTeams[team], sizeof( clip->team ) );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	clip->numKeys = 1;
+	y = CM_SpotControls( x, y, w, &clip->keys[0] );
+	CM_Text( x, y, va( S_COLOR_GREY "At %.1f s, its targetname %s", clip->start / 1000.0f, who[0] ? who : "?" ), cmWhite );
+	y += CM_ROW_H + 2;
+	if ( !CM_NpcEnt( clip->ent ) || !who[0] || Q_isanumber( who ) || strchr( who, ',' ) )
+		CM_Text( x, y, S_COLOR_YELLOW "Spawns need an NPC's targetname here", cmWhite );
+	else
+		CM_Text( x, y, S_COLOR_GREY "Spawned when it's played for everyone", cmWhite );
+}
+
+static void CM_DrawRemoveClip( float x, float y, float w, cmClip_t *clip ) {
+	CM_Text( x, y + 2, va( S_COLOR_GREY "At %.1f s: drag it on the timeline", clip->start / 1000.0f ), cmWhite );
+	y += CM_ROW_H + 4;
+	if ( !CM_NpcEnt( clip->ent ) ) {
+		CM_Text( x, y, S_COLOR_YELLOW "Only NPCs can be taken out: this is a player", cmWhite );
+		return;
+	}
+	CM_Text( x, y, S_COLOR_GREY "Taken out of the game (npc kill) when", cmWhite );
+	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "it's played for everyone", cmWhite );
+}
+
 static int CM_RecordStopKey( void );
 
 static void CM_DrawRecordClip( float x, float y, float w, cmClip_t *clip ) {
@@ -4738,8 +5111,17 @@ static void CM_DrawRecordClip( float x, float y, float w, cmClip_t *clip ) {
 }
 
 static void CM_DrawEntitiesTab( float x, float y, float w ) {
-	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record" };
-	static const int order[CM_NUM_CLIPS] = { CM_CLIP_MOVE, CM_CLIP_PLACE, CM_CLIP_RECORD, CM_CLIP_ANIM, CM_CLIP_EMOTE, CM_CLIP_SAY };
+	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record", "NPC command", "Spawn", "Remove" };
+	// the actions to add: a teleport is a position of one key
+	static const struct {
+		const char	*label;
+		int			kind;
+		qboolean	tele;
+	} adds[] = {
+		{ "Move", CM_CLIP_MOVE, qfalse }, { "Position", CM_CLIP_PLACE, qfalse }, { "Teleport", CM_CLIP_PLACE, qtrue },
+		{ "Record", CM_CLIP_RECORD, qfalse }, { "Animation", CM_CLIP_ANIM, qfalse }, { "Emote", CM_CLIP_EMOTE, qfalse },
+		{ "Say", CM_CLIP_SAY, qfalse }, { "NPC command", CM_CLIP_NPCCMD, qfalse }, { "Spawn", CM_CLIP_SPAWN, qfalse },
+		{ "Remove", CM_CLIP_REMOVE, qfalse } };
 	cmCine_t *c = &cm.cine;
 	const int rows = CM_Clip() && cm.ent >= 0 && CM_Clip()->ent == cm.ent ? 4 : 6;
 	const cmPerson_t *picked = NULL;
@@ -4787,7 +5169,18 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	}
 	if ( !cmNumPeople )
 		CM_Text( x + 4, y + 2, S_COLOR_GREY "Nobody here", cmWhite );
-	y += rows * CM_ROW_H + 6;
+	y += rows * CM_ROW_H + 4;
+	// an NPC that isn't here yet, spawned in it: by the targetname it'll have
+	CM_TextBox( x, y, w - 74, cm.newNpc, "an NPC to spawn: its targetname", CM_TYPE_NEWNPC, NULL );
+	if ( CM_Button( x + w - 70, y, 70, "+ To spawn", qfalse, (qboolean)( cm.newNpc[0] && !Q_isanumber( cm.newNpc ) ) ) ) {
+		if ( CM_AddEnt( cm.newNpc ) >= 0 ) {
+			cm.newNpc[0] = '\0';
+			cm.typing = CM_TYPE_NONE;
+			CM_AddClip( CM_CLIP_SPAWN, qfalse );
+		}
+		return;
+	}
+	y += CM_CTRL_H + 4;
 	if ( !picked ) {
 		CM_Text( x, y, S_COLOR_GREY "Pick someone here, or click them", cmWhite );
 		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "in the view", cmWhite );
@@ -4808,14 +5201,14 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	if ( cm.addOpen ) {
 		const float third = ( w - 8 ) / 3.0f;
 
-		for ( int k = 0; k < CM_NUM_CLIPS; k++ ) {
-			if ( CM_Button( x + ( k % 3 ) * ( third + 4 ), y + ( k / 3 ) * ( CM_CTRL_H + 1 ), third, kinds[order[k]], qfalse, qtrue ) ) {
+		for ( int k = 0; k < (int)ARRAY_LEN( adds ); k++ ) {
+			if ( CM_Button( x + ( k % 3 ) * ( third + 4 ), y + ( k / 3 ) * ( CM_CTRL_H + 1 ), third, adds[k].label, qfalse, qtrue ) ) {
 				cm.addOpen = qfalse;
-				CM_AddClip( order[k] );
+				CM_AddClip( adds[k].kind, adds[k].tele );
 				return;
 			}
 		}
-		y += ( CM_CTRL_H + 1 ) * 2;
+		y += ( CM_CTRL_H + 1 ) * ( ( (int)ARRAY_LEN( adds ) + 2 ) / 3 );
 	}
 	y += CM_GAP + 3;
 
@@ -4826,7 +5219,7 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 		return;
 	}
 	CM_Fill( x, y - 2, w, 1, cmBorder );
-	CM_Text( x, y + 2, kinds[Com_Clampi( 0, CM_NUM_CLIPS - 1, clip->kind )], cmWhite );
+	CM_Text( x, y + 2, clip->kind == CM_CLIP_PLACE && clip->tele ? "Teleport" : kinds[Com_Clampi( 0, CM_NUM_CLIPS - 1, clip->kind )], cmWhite );
 	if ( CM_Button( x + w - 50, y, 50, "Delete", qfalse, qtrue ) ) {
 		CM_DeleteClip();
 		return;
@@ -4838,10 +5231,18 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 		CM_DrawSayClip( x, y, w, clip );
 	else if ( clip->kind == CM_CLIP_EMOTE )
 		CM_DrawEmoteClip( x, y, w, clip );
+	else if ( clip->kind == CM_CLIP_PLACE && clip->tele )
+		CM_DrawTeleClip( x, y, w, clip );
 	else if ( clip->kind == CM_CLIP_PLACE )
 		CM_DrawPlaceClip( x, y, w, clip );
 	else if ( clip->kind == CM_CLIP_RECORD )
 		CM_DrawRecordClip( x, y, w, clip );
+	else if ( clip->kind == CM_CLIP_NPCCMD )
+		CM_DrawNpcCmdClip( x, y, w, clip );
+	else if ( clip->kind == CM_CLIP_SPAWN )
+		CM_DrawSpawnClip( x, y, w, clip );
+	else if ( clip->kind == CM_CLIP_REMOVE )
+		CM_DrawRemoveClip( x, y, w, clip );
 	else
 		CM_DrawAnimClip( x, y, w, clip );
 }
@@ -5739,6 +6140,7 @@ static vec4_t cmTlSay		= { 0.2f, 0.6f, 0.35f, 0.85f };
 static vec4_t cmTlPlace		= { 0.15f, 0.6f, 0.68f, 0.85f };
 static vec4_t cmTlRec		= { 0.8f, 0.22f, 0.22f, 0.85f };
 static vec4_t cmTlEmote		= { 0.8f, 0.35f, 0.6f, 0.85f };
+static vec4_t cmTlAct		= { 0.35f, 0.45f, 0.75f, 0.85f };	// an NPC command, a spawn or a removal
 static vec4_t cmTlMissing	= { 0.5f, 0.5f, 0.5f, 0.6f };
 static vec4_t cmTlSel		= { 0.25f, 0.85f, 1.0f, 1.0f };
 static vec4_t cmTlHead		= { 1.0f, 0.3f, 0.25f, 1.0f };
@@ -5772,6 +6174,8 @@ static int CM_ClipEnd( int i, int span ) {
 		return clip->start + ( cmEditPlans[i].count ? Q_max( 300, cmEditPlans[i].ms ) : 1000 );
 	if ( clip->kind == CM_CLIP_SAY )
 		return clip->start + CM_SAY_MS;
+	if ( CM_Instant( clip->kind ) )
+		return clip->start + CM_ACT_MS;
 	return clip->a.ms > 0 ? clip->start + clip->a.ms : span;
 }
 
@@ -6225,7 +6629,14 @@ static void CM_DrawTimeline( void ) {
 						: !clip->numPts ? "no spots yet" : "not here", sel );
 				else if ( clip->kind == CM_CLIP_PLACE )
 					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmEditPlans[i].count ? cmTlPlace : cmTlMissing,
-						va( "position, %i key%s", clip->numKeys, clip->numKeys == 1 ? "" : "s" ), sel );
+						clip->tele ? "teleport" : va( "position, %i key%s", clip->numKeys, clip->numKeys == 1 ? "" : "s" ), sel );
+				else if ( clip->kind == CM_CLIP_NPCCMD )
+					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlAct, clip->cmd[0] ? clip->cmd : "command", sel );
+				else if ( clip->kind == CM_CLIP_SPAWN )
+					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, clip->npcType[0] ? cmTlAct : cmTlMissing,
+						clip->npcType[0] ? va( "spawn %s", clip->npcType ) : "spawn: no type yet", sel );
+				else if ( clip->kind == CM_CLIP_REMOVE )
+					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlAct, "remove", sel );
 				else if ( clip->kind == CM_CLIP_RECORD )
 					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, CM_Rec( c, clip ) ? cmTlRec : cmTlMissing,
 						CM_Rec( c, clip ) ? va( "recorded, %.1f s", CM_RecLen( c, clip ) / 1000.0f ) : "not recorded yet", sel );

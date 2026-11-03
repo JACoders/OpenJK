@@ -855,6 +855,7 @@ qboolean CL_Storyteller_ChatLine( void );
 qboolean CL_Storyteller_ServerPrint( const char *text );
 void CL_Storyteller_Hook( char **argv, int argc, const char *message );
 void CL_Storyteller_TriggerUsed( const char *name );
+int CL_Storyteller_UseLock( const char *name, const char **text );
 const char *CL_MapEditor_AimedUseTrigger( void );
 void CL_MapEditor_PickForStory( int kind );
 void CL_Storyteller_TriggerPicked( const char *value );
@@ -996,6 +997,13 @@ qboolean CL_ChatCaps_Forward( char *out, int size );
 //
 // cl_saberlight.cpp
 //
+void CL_NpcNames_Init( void );
+void CL_NpcNames_Disconnect( void );
+void CL_NpcNames_Frame( void );
+void CL_NpcNames_Draw( void );
+void CL_NpcNames_View( const refdef_t *fd );
+void CL_NpcNames_Hook( char **argv, int argc, const char *message );
+
 void CL_SaberLight_Init( void );
 void CL_SaberLight_Shutdown( void );
 void CL_SaberLight_RendererRestarted( void );
@@ -1025,6 +1033,8 @@ void CL_RpAdmin_Init( void );
 void CL_RpAdmin_Disconnect( void );
 qboolean CL_RpAdmin_Allow( const char *tool, const char *command );
 qboolean CL_RpAdmin_ServerPrint( const char *text );
+qboolean CL_RpAdmin_IsAdmin( void );
+void CL_RpAdmin_AskQuietly( void );
 void CL_RpAdmin_Frame( void );
 
 // cl_update.cpp

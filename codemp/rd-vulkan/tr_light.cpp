@@ -251,6 +251,21 @@ Calculates all the lighting values that will be used
 by the Calc_* functions
 =================
 */
+#ifdef USE_PMLIGHT
+// OpenJK-rpmod: whether r_dlightMode 2's per-pixel pass lights the model with the dynamic lights: only
+// md3s add lit surfaces (tr_mesh.cpp); ghoul2 models (players, NPCs) and the rest don't, so they're
+// lit the old way, through their light, or no dynamic light reached them at all (a saber's light
+// fell on the floor and the walls but not on whoever held it)
+static qboolean R_EntityLitPerPixel( const trRefEntity_t *ent ) {
+	const model_t *mod;
+
+	if ( ent->e.reType != RT_MODEL || ent->e.ghoul2 )
+		return qfalse;
+	mod = R_GetModelByHandle( ent->e.hModel );
+	return (qboolean)( mod && mod->type == MOD_MESH );
+}
+#endif
+
 void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	int				i;
 	const dlight_t	*dl;
@@ -328,7 +343,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	VectorScale(ent->lightDir, d, lightDir);
 
 #ifdef USE_PMLIGHT
-	if (r_dlightMode->integer == 2) {
+	if (r_dlightMode->integer == 2 && R_EntityLitPerPixel(ent)) { // OpenJK-rpmod: md3s only
 		// only direct lights
 		// but we need to deal with shadow light direction
 		VectorCopy(lightDir, shadowLightDir);

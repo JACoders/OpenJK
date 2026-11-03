@@ -24,6 +24,7 @@ Some features reach other players through workarounds only this client understan
 - [Chat Capitals](#chat-capitals)
 - [Console Key](#console-key)
 - [Saber Light](#saber-light)
+- [NPC Names](#npc-names)
 - [RPMod Colors in the Console](#rpmod-colors-in-the-console)
 - [Chat Range in the Console](#chat-range-in-the-console)
 - [Whispers](#whispers)
@@ -259,7 +260,7 @@ Assemble a mission out of steps, then play it: NPCs, models, effects, sounds, mu
 
 ![](https://i.ibb.co/cc1QJSmd/openjk-x86-2026-10-14-20-17-25-677.png)
 
-- **Flow**: wait a number of seconds, "wait for me" until you press Continue (or `/storyteller continue`), a "when" for each kind of trigger (someone enters a map trigger, comes near a spot or an effect, a door moves, someone says something or uses a use trigger), If / Else / End if under a "when", and run any console command
+- **Flow**: wait a number of seconds, "wait for me" until you press Continue (or `/storyteller continue`), a "when" for each kind of trigger (someone enters a map trigger, comes near a spot or an effect, a door moves, someone says something or uses a use trigger), If / Else / End if under a "when", play another saved story alongside (**Play story**), and run any console command
 - **Speech**: say a line in chat, as you or as one of the players on the server *(experimental)*, a center message for everyone or one player, a notification with a countdown, NPC talk and objectives *(experimental)*
 - **NPCs**: spawn an NPC, teleport NPCs, walk them along a route *(experimental)*, and any `npc` command on them
 - **World**: place a model, play an effect, a screen effect (fade, shake...), remap a shader, a screen overlay, the sky's look *(experimental)*, lock or unlock a door, play a sound, change the music
@@ -271,9 +272,12 @@ Assemble a mission out of steps, then play it: NPCs, models, effects, sounds, mu
 
 ### Conditions and timers
 
-- **If** goes under a "when" step and looks once, when the story gets to it: how many players, NPCs or people are in a map trigger or near a spot or an effect (at least, at most or exactly so many), or whether someone has said one of the words you give since the story began. True, the steps after it play; false, the ones after its **Else**. **End if** closes it, and Ifs can sit inside Ifs. If, Else and End if are greyed out until there's a "when" above where they'd go; one left above every "when" shows in red, and the story stops there
+- **If** goes under a "when" step and looks once, when the story gets to it: how many players, NPCs or people are in a map trigger or near a spot or an effect (at least, at most or exactly so many), whether someone has said one of the words you give since the story began, or **who set off** the "when" above it, by name (the whole of it, or a part of three letters or more). True, the steps after it play; false, the ones after its **Else**. **End if** closes it, and Ifs can sit inside Ifs. If, Else and End if are greyed out until there's a "when" above where they'd go; one left above every "when" shows in red, and the story stops there
 - A "when" on an area can wait for them to **stay** in it a number of seconds; "When someone says" waits for one of the words you give (`|` between them)
 - "When someone uses a trigger" waits for one of the Map Editor's use triggers, the one you look at or pick in a free camera (a held one once it's been held long enough); If can ask whether someone used it too
+- Its **Too early** keeps the story in order: while the story is at an earlier step (or waits armed for its first), the use trigger is hidden from the players, or shows them its message instead of being used, until the story gets there. Dinner after breakfast: one story, "When someone uses breakfast", then "When someone uses dinner" with Too early set. For players with this client, while the storyteller is on the map
+- **Play story** plays a saved story alongside the one playing, which goes on: from its start, or once its own first "when" is set off. "When someone uses lever", then "Play story Story2", and the lever starts Story2
+- **Diagram** shows the story as a flowchart: the "whens", each If splitting into a yes and a no side that join again at its End if, and the stories it plays; click a step to pick it, or a Play story to open that story's diagram. The wheel or the arrows scroll, Esc goes back
 - Map triggers and doors are picked where you stand or aim, in a free camera, or from a list
 - The **Notification** step shows a line in the top left corner with `rpnotify`, for everyone or one player; give it a countdown and it shows the seconds left, live (`<timer>`)
 - The **Lock** step locks a door or a trigger to a rank with `rplock`, or unlocks it, picked in the Map Editor's Locks tab
@@ -307,12 +311,16 @@ Make a whole cut scene on one timeline, the camera's shots and what the players 
 
 - `/cinematicmanager` (or `/cincam edit`) opens it: fly a free camera over the map, the panel on the right, the timeline under the view
 - **Camera tab**: the cinematic's shots, one after the other. A shot is a path through spots (smooth or steady, optionally always looking at a point), one spot held still, or an orbit round a point with zoom. Add spots where the camera is with Enter, look through each one, watch the trail between them
-- **Entities tab**: every player on the server, you included, and every NPC in the NPC list; pick one there or click them in the view, then **+ Add action**:
+- **Entities tab**: every player on the server, you included, and every NPC in the NPC list; pick one there or click them in the view, or type the targetname of an NPC that isn't here yet and press **+ To spawn**; then **+ Add action**:
   - **Move**: aim at the floor and press Enter for each spot they walk or run through; click a spot in the view to pick it, drag it to move it, Del takes it off. A move starts from wherever they are then, a group of NPCs with the same name keeping their shape
   - **Animation**: JKA's own, a range of frames, one held, or played backwards, once or looping, at any speed, picked from the model's own list and shown on it as you make it
   - **Say**: a line, as the Storyteller's Say and NPC talk do: a player's shows in chat as theirs for everyone with this client, yours you say in chat, an NPC's with the name you give it
   - **Emote**: one of RPMod's emotes at that moment, once or looping, for as long as you drag it; an NPC's, or yours, is done for real too when it's played for everyone
   - **Position**: put them anywhere, turned any way, X Y Z, yaw, pitch and roll, in keys along the timeline, smooth or straight from one to the next; pitch and roll tip the whole body, so with an emote you can have someone thrown across the room by an explosion and land on their back. Drag the keys in the view
+  - **Teleport**: they're somewhere else at once, a spot and the way they face: where you aim, or dragged in the view. An NPC is teleported for real (`npc tele`) when it's played for everyone; a player is only seen there, on screens with this client, until it ends
+  - **NPC command**: freeze or unfreeze, follow you or stop, a dialog or none, a hologram, a projector or none, or kill, at that moment, sent when it's played for everyone
+  - **Spawn**: the NPC appears at that moment, of the type and team you pick, where you aim, with the row's targetname, so its moves and lines can follow; sent when it's played for everyone (the NPC manager's spawn)
+  - **Remove**: the NPC is taken out of the game at that moment (`npc kill`), and nothing after it moves it
   - **Record**: act it out yourself after a 3-2-1, moving, jumping, swinging your saber, using the force, and press *F10* (or `cl_cinRecordKey`) to stop: they do exactly that from where they are at that moment, up to 30 s. While you record someone else you see through their eyes, where they are and the way they face, wherever you stand and face yourself, moving as you move, and the rest of the cinematic plays along in time, other recordings included, so you can fight or talk with them; you still bump into the walls where you really are, so act it out in the open
 - Blades that meet anywhere along them while a cinematic plays clash, sparks and a ring, fast swings too; a blade through someone else cuts them, sparks and a hiss
 - A recording keeps what you are heard doing: saber swings, igniting it, jumps, rolls
@@ -505,6 +513,13 @@ Lightsabers light up what's around them in their own color, pulsing as they hum.
 - On your screen only, nothing is sent: you see everyone's blades light up, whatever client they use
 - Needs dynamic lights on (`r_dynamiclight 1`)
 
+## NPC Names
+
+Put the crosshair on an NPC and its name shows, as a player's does, in the same place and lettering.
+
+- `cl_npcNames 1` shows the targetname of the NPC under the crosshair (the default); NPCs without one show nothing; *0* off
+- Only RPMod's `npc list` says who's who, and it's for admins: an admin with this client and **TOGGLE EXPERIMENTAL** on reads it quietly as soon as an NPC spawns near them, and every 30 seconds, and shares the names with everyone with this client, and again for each player who joins, once they're in. With no such admin on the map, players see no names
+
 ## RPMod Colors in the Console
 
 All of RPMod's extra colors now show properly in the console, instead of being stripped out.
@@ -663,6 +678,8 @@ Features not listed here are not experimental.
   - Not required (everyone): spawning, managing and the other NPC commands, a route walked with `local` on your own screen
 - **Storyteller**
   - Client required (Experimental): the steps Say as a player, NPC talk, Walk a route, Objective, Sky look and Play cinematic; seeing players out of sight walk into a watched area
+- **NPC Names**
+  - Client required (Experimental): an admin sharing the names; seeing them needs this client, not the toggle
   - Not required (everyone): every other step, condition and timer
 - **Objectives**
   - Client required (Experimental): changing them for everyone with `/objective`

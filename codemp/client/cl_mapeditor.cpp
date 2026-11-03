@@ -107,6 +107,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define ME_USE_REACH		96.0f		// a use trigger is used from this near
 #define ME_MAX_USETIME		60000		// ms a use trigger can be held for
 #define ME_CROUCH_MS		120			// a held use trigger's emote ended with a crouch this long
+#define ME_EARLY_MS			3000		// a use trigger used too early: its message shows this long
 #define ME_CROUCH_KEY		"1023"		// the crouch's own key number: the player's C isn't let go with it
 #define ME_MAX_FOGS			64
 #define ME_FOG_NONE			65536.0f	// a fog this thin isn't seen
@@ -417,6 +418,8 @@ typedef struct {
 	qboolean	holdDone;			// used: not again until the key is let go
 	qboolean	holdEmote;			// emconsole played while it's held
 	int			crouchUntil;		// the crouch ending it, let go then; 0 none
+	char		earlyText[96];		// used too early: the storyteller's message, shown a while
+	int			earlyTime;
 
 	// opened from the storyteller to click a trigger for a step: 0 a map trigger, 1 a door or
 	// button, 2 a use trigger; -1 not
@@ -3647,6 +3650,9 @@ static int ME_UseAimed( void ) {
 
 		if ( it->kind != ME_ITEM_TRIGGER || !it->use )
 			continue;
+		// too early for the story, and hidden till then
+		if ( CL_Storyteller_UseLock( it->name, NULL ) == 1 )
+			continue;
 		ME_ItemBounds( it, mins, maxs );
 		t = ME_RayBox( eye, dir, mins, maxs );
 		if ( t >= 0.0f && t < best ) {
@@ -3713,10 +3719,17 @@ static void ME_RunTriggers( void ) {
 		meItem_t *it = &me.items[me.useAim];
 
 		if ( !me.useDown ) {
+			const char *early = NULL;
+
 			me.holdItem = me.useAim;
 			me.holdStart = cls.realtime;
 			me.holdDone = qfalse;
-			if ( it->usetime <= 0 ) {
+			// too early for the story: the storyteller's message instead, and nothing used
+			if ( CL_Storyteller_UseLock( it->name, &early ) == 2 ) {
+				Q_strncpyz( me.earlyText, early && early[0] ? early : "Not yet.", sizeof( me.earlyText ) );
+				me.earlyTime = cls.realtime;
+				me.holdDone = qtrue;
+			} else if ( it->usetime <= 0 ) {
 				ME_UseTrigger( it, qtrue );
 				me.holdDone = qtrue;
 			} else {
@@ -5742,6 +5755,18 @@ void CL_MapEditor_Draw( void ) {
 
 			ME_Text( ( SCREEN_WIDTH - ME_TextWidth( hold ) ) * 0.5f, SCREEN_HEIGHT * 0.5f + 34, hold, meWhite );
 		}
+	}
+	// used too early: the storyteller's message, a few seconds, fading
+	if ( me.earlyTime && cls.realtime - me.earlyTime < ME_EARLY_MS && !Key_GetCatcher() ) {
+		const float fade = Com_Clamp( 0.0f, 1.0f, ( ME_EARLY_MS - ( cls.realtime - me.earlyTime ) ) / 500.0f );
+		const vec4_t color = { 1.0f, 1.0f, 1.0f, fade };
+
+		if ( !me.font ) {
+			me.font = re->RegisterFont( "arialnb" );
+			if ( !me.font )
+				me.font = cls.menuFont;
+		}
+		ME_Text( ( SCREEN_WIDTH - ME_TextWidth( me.earlyText ) ) * 0.5f, SCREEN_HEIGHT * 0.5f + 48, me.earlyText, color );
 	}
 }
 

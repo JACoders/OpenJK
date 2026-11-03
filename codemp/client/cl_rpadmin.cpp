@@ -200,6 +200,19 @@ void CL_RpAdmin_Frame( void ) {
 	ra.tool[0] = ra.command[0] = '\0';
 }
 
+// known to have an admin rank: asks nothing
+qboolean CL_RpAdmin_IsAdmin( void ) {
+	return (qboolean)( ra.state == RA_ADMIN );
+}
+
+// the rank asked for, the answer kept and not shown, unless it's known or being asked already
+void CL_RpAdmin_AskQuietly( void ) {
+	if ( ra.state == RA_UNKNOWN && cls.state == CA_ACTIVE ) {
+		ra.tool[0] = ra.command[0] = '\0';
+		RA_Ask( qfalse );
+	}
+}
+
 static void RA_ToolAccess_f( void ) {
 	if ( !Q_stricmp( Cmd_Argv( 1 ), "check" ) ) {
 		if ( cls.state != CA_ACTIVE ) {

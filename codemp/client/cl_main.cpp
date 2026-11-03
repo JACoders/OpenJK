@@ -849,6 +849,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	CL_ClearState ();
 	CL_RpHooks_Disconnect();
 	CL_RpAdmin_Disconnect();
+	CL_NpcNames_Disconnect();
 	CL_RpCinematic_Reset();
 	CL_NpcWalk_Reset();
 
@@ -2907,6 +2908,7 @@ void CL_Init( void ) {
 	CL_Languages_Init ();
 	CL_ChatSplit_Init ();
 	CL_SaberLight_Init ();
+	CL_NpcNames_Init ();
 	CL_ConSettings_Init ();
 	CL_SaberStyle_Init ();
 	CL_EmotePreview_Init ();

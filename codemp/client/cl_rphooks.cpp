@@ -69,6 +69,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //     cl_shadermanager.cpp. cmd:sky/off puts it back.
 //     cmd:startcinematic and cmd:endcinematic start and end one too.
 //
+//   cmd:npcnames/<part>/<parts>: <entity number>=<name>|...
+//     the NPCs' targetnames, from an admin's npc list, shown when the crosshair is on one; see
+//     cl_npcnames.cpp. Part 1 starts the list over.
+//
 // Hooks only ever show things: nothing a server sends here runs a command.
 
 #include "client.h"
@@ -450,6 +454,10 @@ static rhResult_t RH_Run( const char *text ) {
 	}
 	if ( !Q_stricmp( argv[0], "story" ) ) {
 		CL_Storyteller_Hook( argv + 1, argc - 1, message );
+		return RH_DROP;
+	}
+	if ( !Q_stricmp( argv[0], "npcnames" ) ) {
+		CL_NpcNames_Hook( argv + 1, argc - 1, message );
 		return RH_DROP;
 	}
 	if ( !Q_stricmp( argv[0], "sky" ) ) {
