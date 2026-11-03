@@ -7,6 +7,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 ## Unreleased
 
 - [Fixed] `Vulkan: the map's light style looks`. A look given to the whole map's light (style 0: the map editor's Dusk, Night and the rest) left the world's lightmaps as they were with Vulkan; they follow it now as with OpenGL, world caching on or off.
+- [Changed] `NPC names under the crosshair: shared when the admin says`. An admin's client no longer shares the NPC names by itself, as NPCs spawn or players join: `/npcnames` shares them as they are now with everyone with this client, `/npcnames clear` takes them back. The admin still sees them as before.
 
 ## 0.8.0 - Nov 3rd 2026
 

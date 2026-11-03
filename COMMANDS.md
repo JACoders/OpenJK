@@ -74,6 +74,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `/npcmanager walk <npc>[,<npc>...] stop` stops them where they are; `/npcmanager routes` lists the saved routes
 - `/npcmanager reindex` rescans for NPC types and models, e.g. after installing a new pk3
 - `/npcmanager close` closes the manager
+- `/npcnames` shares the NPC names under the crosshair with everyone with this client, as they are now (admins, experimental); `/npcnames clear` takes them back
 
 ## Shader Manager
 
