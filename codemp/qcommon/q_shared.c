@@ -559,7 +559,9 @@ void SkipRestOfLine ( const char **data ) {
 
 	p = *data;
 
-	if ( !*p )
+	// OpenJK-rpmod: at the end of the data COM_Parse leaves it NULL; a file whose last word has no
+	// line break after it crashed here
+	if ( !p || !*p )
 		return;
 
 	while ( (c = *p++) != 0 ) {

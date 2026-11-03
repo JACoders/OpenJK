@@ -2945,6 +2945,7 @@ static qboolean ST_Open( void ) {
 	CL_EffectManager_Close();
 	CL_RpCinematic_EditorClose();
 	CL_SoundManager_Close();
+	CL_AnimManager_Close();
 	CL_MapEditor_Close();
 
 	st.font = re->RegisterFont( "arialnb" );
@@ -4213,6 +4214,7 @@ static void ST_PickFrame( void ) {
 	CL_ShaderManager_Close();
 	CL_NpcManager_Close();
 	CL_SoundManager_Close();
+	CL_AnimManager_Close();
 	if ( st.pick == ST_PICK_LOCK || st.pick == ST_PICK_TRIGGER )
 		CL_MapEditor_Close();
 	// a trigger clicked: the step's

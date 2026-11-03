@@ -17,6 +17,7 @@ Some features reach other players through workarounds only this client understan
 - [Radial Menus](#radial-menus)
 - [Saber Styles](#saber-styles)
 - [Emote Preview](#emote-preview)
+- [Animation Manager](#animation-manager-custom-emotes-are-experimental)
 - [Widescreen Text](#widescreen-text)
 - [Console Selection and Find](#console-selection-and-find)
 - [Lists and Text Boxes](#lists-and-text-boxes)
@@ -439,6 +440,17 @@ Choose which styles your style key cycles through, or jump straight to one.
 - The server only knows "next style", so the client cycles for you until you're there; the styles in between show for a moment
 - Dual sabers and the staff are left as they are
 
+## Animation Manager *(custom emotes are experimental)*
+
+Every animation in the game, emotes made of emotes, and emotes of your own. `/animationmanager` opens it (bind it to a key).
+
+- **Animations**: every animation of every skeleton loaded, the base game's and custom pk3s', with a search; each plays on your own model (other skeletons on theirs), drag it to turn it. Pause it, step it a frame at a time, drag the bar through it, change its speed. **Play on me** plays it on your character, on your screen only, until you move
+  - Each says where it comes from: the base game, or the pk3 that **added** it (green) or **changed** it (blue, with the base game's frames and speed beside), found by comparing the animation list in use with the base game's own copy. **All / Base / Custom** shows only those
+- **Emote chains**: one command for several emotes: `/emgreet` does `/emsalute`, then `/emyes` once its animation is over. Pick the emotes from the list (or type any command), set a step's seconds or leave it to its animation's length, reorder them. They're the server's own emotes, so everyone sees them. Moving stops the chain
+- **Custom emotes** *(experimental)*: an animation, played whole or from one frame to another, at a speed, once or looping, ending with it or held until you move; then bones of it following another animation (the arm waving while the rest sits), turned (pitch, yaw, roll) or moved (X, Y, Z), picked from the skeleton's bones; tags move with their bones. The picked bone has rings and arrows on the model: drag a ring to turn it, an arrow to move it, or type the numbers. **Reset this bone** takes it back. An admin's, with **TOGGLE EXPERIMENTAL** on, show for everyone with this client; anyone else's on their own screen only. **Under it** plays an RPMod emote with it, so players without this client see something too
+- Chains and custom emotes are commands of their own, named `em...` like the server's, saved in `emotes/`
+- `cl_customEmotes 0` hides the custom emotes admins share
+
 ## Emote Preview
 
 See an emote before you do it, right in the Help menu.
@@ -678,9 +690,12 @@ Features not listed here are not experimental.
   - Not required (everyone): spawning, managing and the other NPC commands, a route walked with `local` on your own screen
 - **Storyteller**
   - Client required (Experimental): the steps Say as a player, NPC talk, Walk a route, Objective, Sky look and Play cinematic; seeing players out of sight walk into a watched area
+  - Not required (everyone): every other step, condition and timer
 - **NPC Names**
   - Client required (Experimental): an admin sharing the names; seeing them needs this client, not the toggle
-  - Not required (everyone): every other step, condition and timer
+- **Animation Manager**
+  - Client required (Experimental): a custom emote shared by an admin; seeing it needs this client, not the toggle. The Custom emotes tab itself is experimental
+  - Not required (everyone): previewing animations, emote chains, a custom emote on your own screen
 - **Objectives**
   - Client required (Experimental): changing them for everyone with `/objective`
   - Not required (everyone): `/objective list`

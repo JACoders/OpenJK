@@ -706,6 +706,7 @@ void CL_ShutdownCGame( void ) {
 	CL_MapEditor_Shutdown();
 	CL_Storyteller_Shutdown();
 	CL_SoundManager_Shutdown();
+	CL_AnimManager_Shutdown();
 	CL_RadialMenu_Shutdown();
 	CL_Languages_Shutdown();
 	CL_EmotePreview_Shutdown();

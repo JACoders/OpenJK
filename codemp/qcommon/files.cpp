@@ -2588,6 +2588,68 @@ void FS_ListFilesRecursiveFrom( const char *path, const char *extension,
 	}
 }
 
+/*
+=================
+FS_ReadFileFromPak
+
+OpenJK-rpmod: a file read out of one pak in particular, named as FS_ListFilesRecursiveFrom names
+it ("gamedir/pakname.pk3"), whichever copy the game itself uses. The pak is opened again for it,
+so a file being read from it meanwhile isn't disturbed. The buffer is Z_Malloc'd, ended with a
+0, for Z_Free; its length, or -1 if it isn't there
+=================
+*/
+long FS_ReadFileFromPak( const char *source, const char *filename, void **buffer ) {
+	searchpath_t	*search;
+	char			name[MAX_OSPATH];
+
+	*buffer = NULL;
+	if ( !fs_searchpaths || !source || !filename ) {
+		return -1;
+	}
+	for ( search = fs_searchpaths; search; search = search->next ) {
+		pack_t *pak = search->pack;
+
+		if ( !pak ) {
+			continue;
+		}
+		Com_sprintf( name, sizeof( name ), "%s/%s.pk3", pak->pakGamename, pak->pakBasename );
+		if ( Q_stricmp( name, source ) ) {
+			continue;
+		}
+		for ( int i = 0; i < pak->numfiles; i++ ) {
+			const fileInPack_t *file = &pak->buildBuffer[i];
+			unzFile z;
+			byte *buf;
+			int read;
+
+			if ( Q_stricmp( file->name, filename ) ) {
+				continue;
+			}
+			z = unzOpen( pak->pakFilename );
+			if ( !z ) {
+				return -1;
+			}
+			if ( unzSetOffset( z, file->pos ) != UNZ_OK || unzOpenCurrentFile( z ) != UNZ_OK ) {
+				unzClose( z );
+				return -1;
+			}
+			buf = (byte *)Z_Malloc( file->len + 1, TAG_FILESYS, qfalse );
+			read = unzReadCurrentFile( z, buf, file->len );
+			unzCloseCurrentFile( z );
+			unzClose( z );
+			if ( read != (int)file->len ) {
+				Z_Free( buf );
+				return -1;
+			}
+			buf[file->len] = 0;
+			*buffer = buf;
+			return (long)file->len;
+		}
+		return -1;
+	}
+	return -1;
+}
+
 typedef struct {
 	void	(*callback)( const char *name, void *ctx );
 	void	*ctx;

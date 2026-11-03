@@ -2176,6 +2176,10 @@ GetRefAPI
 @@@@@@@@@@@@@@@@@@@@@
 */
 extern "C" {
+// OpenJK-rpmod: G2_API.cpp
+extern "C++" qboolean G2API_SetBoneAnglesOffset( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, const vec3_t angles,
+	const vec3_t offset, const int flags, const Eorientations up, const Eorientations left, const Eorientations forward, int blendTime, int currentTime );
+
 Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	static refexport_t	re;
 
@@ -2369,6 +2373,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.ext.Font_StrLenPixels = RE_Font_StrLenPixelsNew;
 	re.ext.G2API_GetSkins = G2API_GetSkins;
+	re.ext.G2API_SetBoneAnglesOffset = G2API_SetBoneAnglesOffset;	// OpenJK-rpmod
 
 	return &re;
 }

@@ -1191,6 +1191,12 @@ static void RC_AnimateModel( const refEntity_t *ent ) {
 	RC_SetFrame( g2, frame, last );
 }
 
+// the cgame told to start an entity's own animation again, as when one of ours lets it go
+void CL_RpCinematic_RestartAnim( int num ) {
+	if ( num >= 0 && num < MAX_GENTITIES )
+		rcFlip[num] = (qboolean)!rcFlip[num];
+}
+
 // a snapshot's entity, and the player's own state, on their way to the cgame: one let go
 // starts its animation again
 void CL_RpCinematic_SnapEntity( entityState_t *es ) {

@@ -3009,3 +3009,21 @@ const char *G2API_GetModelName ( CGhoul2Info_v& ghoul2, int modelIndex )
 {
 	return ghoul2[modelIndex].mFileName;
 }
+
+// OpenJK-rpmod: the animation manager's: a bone turned, and moved by offset in the model's space
+qboolean G2_Set_Bone_Offset( CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const float *offset );
+
+qboolean G2API_SetBoneAnglesOffset( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, const vec3_t angles,
+								   const vec3_t offset, const int flags, const Eorientations up, const Eorientations left,
+								   const Eorientations forward, int blendTime, int currentTime )
+{
+	CGhoul2Info *ghlInfo;
+
+	if ( !G2API_SetBoneAngles( ghoul2, modelIndex, boneName, angles, flags, up, left, forward, NULL, blendTime, currentTime ) )
+	{
+		return qfalse;
+	}
+	ghlInfo = &ghoul2[modelIndex];
+	ghlInfo->mSkelFrameNum = 0;
+	return G2_Set_Bone_Offset( ghlInfo, ghlInfo->mBlist, boneName, offset );
+}

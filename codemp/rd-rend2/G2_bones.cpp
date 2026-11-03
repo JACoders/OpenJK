@@ -4828,3 +4828,22 @@ int	G2_Get_Bone_Index(CGhoul2Info *ghoul2, const char *boneName)
 
 	return (G2_Find_Bone(mod_a, ghoul2->mBlist, boneName));
 }
+
+// OpenJK-rpmod: an offset added to a bone's angle override, in the model's space; both copies of
+// it, the one drawn and the one blended from
+qboolean G2_Set_Bone_Offset( CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const float *offset )
+{
+	const model_t *mod_a = (model_t *)ghlInfo->animModel;
+	const int index = G2_Find_Bone( mod_a, blist, boneName );
+
+	if ( index == -1 )
+	{
+		return qfalse;
+	}
+	for ( int i = 0; i < 3; i++ )
+	{
+		blist[index].matrix.matrix[i][3] += offset[i];
+		blist[index].newMatrix.matrix[i][3] += offset[i];
+	}
+	return qtrue;
+}
