@@ -1681,6 +1681,9 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_ConSettings_Escape();
 			return;
 		}
+		// the in-game menu's quick connect panel closes before the menu
+		if ( CL_QuickConnect_Escape() )
+			return;
 
 		// escape always gets out of CGAME stuff
 		if ( Key_GetCatcher() & KEYCATCH_CGAME ) {

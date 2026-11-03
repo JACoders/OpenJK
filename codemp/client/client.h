@@ -948,6 +948,7 @@ void CL_Discord_Shutdown( void );
 // cl_quickconnect.cpp
 void CL_QuickConnect_Init( void );
 void CL_QuickConnect_Frame( void );
+qboolean CL_QuickConnect_Escape( void );
 qboolean CL_QuickConnect_InfoResponse( const netadr_t *from, const char *info );
 
 // cl_presets.cpp

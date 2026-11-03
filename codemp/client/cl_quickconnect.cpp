@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // clicked; a server clicked is connected to.
 
 #include "client.h"
+#include "cl_uiapi.h"
 
 #define QC_TIMEOUT_MS		3000
 
@@ -84,7 +85,20 @@ qboolean CL_QuickConnect_InfoResponse( const netadr_t *from, const char *info ) 
 	return qfalse;
 }
 
+// Esc with the panel out closes the panel, not the menu: the in-game menu opened again, which
+// puts the panel away (its onOpen, see cl_rendermenu.cpp). qtrue if it did
+qboolean CL_QuickConnect_Escape( void ) {
+	if ( !( Key_GetCatcher() & KEYCATCH_UI ) || cls.state != CA_ACTIVE || !Cvar_VariableIntegerValue( "ui_qcOpen" ) )
+		return qfalse;
+	Cvar_Set( "ui_qcOpen", "0" );
+	UIVM_SetActiveMenu( UIMENU_INGAME );
+	return qtrue;
+}
+
 void CL_QuickConnect_Frame( void ) {
+	// the menu gone, by whatever way: the panel with it
+	if ( !( Key_GetCatcher() & KEYCATCH_UI ) && Cvar_VariableIntegerValue( "ui_qcOpen" ) )
+		Cvar_Set( "ui_qcOpen", "0" );
 	if ( !qc.askTime || cls.realtime - qc.askTime < QC_TIMEOUT_MS )
 		return;
 	for ( int i = 0; i < QC_NUM; i++ ) {
