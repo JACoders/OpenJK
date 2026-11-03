@@ -932,6 +932,18 @@ void CL_AnimManager_Hook( char **argv, int argc, const char *message );
 // cl_rendermenu.cpp: the camera follows right behind with the camera settings on
 void CL_CameraSettings_Frame( void );
 
+// cl_adminflags.cpp
+void CL_AdminFlags_Init( void );
+void CL_AdminFlags_Reset( void );
+void CL_AdminFlags_Command( void );
+void CL_AdminFlags_ServerPrint( const char *text );
+void CL_AdminFlags_Draw( void );
+
+// cl_quickconnect.cpp
+void CL_QuickConnect_Init( void );
+void CL_QuickConnect_Frame( void );
+qboolean CL_QuickConnect_InfoResponse( const netadr_t *from, const char *info );
+
 // cl_presets.cpp
 void CL_Presets_Init( void );
 void CL_Presets_Shutdown( void );

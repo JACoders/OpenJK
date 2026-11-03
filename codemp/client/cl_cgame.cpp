@@ -598,6 +598,10 @@ rescan:
 		return qtrue;
 	}
 
+	// noclip, nodraw, nonsolid and notarget turned on or off for us
+	if ( !strcmp( cmd, "print" ) )
+		CL_AdminFlags_ServerPrint( Cmd_Argv( 1 ) );
+
 	// and the sound manager with "rpsound list"
 	if ( !strcmp( cmd, "print" ) && CL_SoundManager_ServerPrint( Cmd_Argv( 1 ) ) ) {
 		Cmd_TokenizeString( "print \"\"" );

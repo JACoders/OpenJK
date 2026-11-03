@@ -6,6 +6,8 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## Unreleased
 
+- [Added] `Quick connect`. **QUICK CONNECT** in the in-game menu, before Exit: JEDI's Temple, Grounds, Region and Galaxy with their addresses, maps and players as they are now; one click and you're on your way.
+- [Added] `Admin flags on screen`. While noclip, nodraw, nonsolid or notarget is on for you, a small line at the bottom says which: on in green, off in red.
 - [Added] `Presets`. **PRESETS** in the in-game menu, or `/presets`: characters saved (name, model, skin, sabers and their colours) and shown as cards with the name in its colours, RPMod's too, the character standing, its skin, sabers and the date; one click and you're that character.
 - [Added] `Camera settings in the in-game menu`. **Setup > Game Options > Camera Settings** shows the third person camera's settings beside the in-game menu: distance, angle, height, side, tilt, aim follow, see-through, field of view, the HUD, and defaults; while it's on the camera keeps right behind you, so it never swings round. They can be saved by name and loaded again (**<** and **>** go through them), or with `/campreset`.
 - [Changed] `In-game menu`. No Vote, Call Vote or Add Bot; PRESETS is between Profile and Controls.

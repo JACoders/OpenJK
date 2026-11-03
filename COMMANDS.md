@@ -217,6 +217,8 @@ The console commands, keys and settings this client adds. What each feature does
 
 - `/presets` opens or closes them (the in-game menu's PRESETS)
 - `/presets save` saves who you are now as a preset; `/presets list` lists them, numbered; `/presets <number>` makes you that one
+- `/quickconnect connect <1-4>` goes to JEDI Temple, Grounds, Region or Galaxy; `/quickconnect refresh` asks them for their map and players; `/quickconnect` lists them
+- `/adminflags` noclip, nodraw, nonsolid and notarget as known for you; `/adminflags reset` all taken as off
 - `/campreset save|load|delete [name]` the camera settings saved or loaded by name (the camera panel's box when none is given); `/campreset next|prev` loads the next saved one or the one before; `/campreset list`
 
 ## Saber Styles
@@ -262,6 +264,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `cl_storyMarkers 0` hides where the armed stories wait
 - `cl_npcNames 0` hides the NPC names under the crosshair
 - `cl_customEmotes 0` hides the custom emotes admins share
+- `cl_adminFlags 0` hides the noclip, nodraw, nonsolid and notarget line
 - `ui_cameraSettings 1` shows the camera settings beside the in-game menu (Setup > Game Options > Camera Settings)
 - `cl_modelFollowFront 1` keeps what's in the modelmanager's hand in front of you; `cl_modelHoldDistance` how far (128)
 - `cl_wallStick 1` keeps you on a wall you grabbed until you press jump again (`/cl_wallstick`)

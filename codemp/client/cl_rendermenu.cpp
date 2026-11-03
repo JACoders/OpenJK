@@ -797,6 +797,62 @@ static std::string IM_CameraPanel( void ) {
 
 static std::string imPatched;
 
+// an item's whole rect
+static void IM_SetRect( std::string &item, float x, float y, float w, float h ) {
+	const size_t rect = RM_FindWord( item, "rect", 0 );
+	size_t start, end = 0;
+
+	if ( rect == RM_NONE )
+		return;
+	start = RM_SkipSpace( item, rect + 4 );
+	end = start;
+	for ( int k = 0; k < 4; k++ )
+		RM_Token( item, end, &end );
+	item.replace( start, end - start, va( "%g %g %g %g", x, y, w, h ) );
+}
+
+#define QC_X		392.0f
+#define QC_Y		34.0f
+#define QC_W		242.0f
+#define QC_ENTRY	54.0f
+#define QC_SERVERS	4
+
+// the quick connect panel under its button: each server, its address, map and players (ui_qc<n>_*,
+// see cl_quickconnect.cpp), clicked to connect
+static std::string IM_QuickConnectPanel( void ) {
+	static const char *names[QC_SERVERS] = { "JEDI Temple", "JEDI Grounds", "JEDI Region", "JEDI Galaxy" };
+	static const char *lines[3] = { "server", "map", "players" };
+	const float h = 24.0f + QC_ENTRY * QC_SERVERS + 4.0f;
+	std::string out;
+
+	out += va( "itemDef {\nname quickconnect_bg\ngroup quickconnect\nstyle WINDOW_STYLE_FILLED\nrect %g %g %g %g\nborder 1\n"
+		"bordercolor .5 .5 .7 1\nbackcolor 0 0 .08 .85\nforecolor 1 1 1 1\nvisible 0\ndecoration\n}\n", QC_X, QC_Y, QC_W, h );
+	out += va( "itemDef {\nname quickconnect_refresh\ngroup quickconnect\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"Refresh\"\n"
+		"rect %g %g 60 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx 30\nbackcolor .15 .15 .25 .8\nforecolor 1 .682 0 1\n"
+		"visible 0\naction { play \"sound/interface/button1.wav\" ; exec \"quickconnect refresh\" }\n}\n", QC_X + 6, QC_Y + 5 );
+	out += va( "itemDef {\nname quickconnect_close\ngroup quickconnect\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"Close\"\n"
+		"rect %g %g 50 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx 25\nbackcolor .15 .15 .25 .8\nforecolor 1 .682 0 1\n"
+		"visible 0\naction { play \"sound/interface/button1.wav\" ; hide quickconnect ; show camerapanel }\n}\n", QC_X + QC_W - 56, QC_Y + 5 );
+	for ( int i = 0; i < QC_SERVERS; i++ ) {
+		const float y = QC_Y + 24.0f + QC_ENTRY * i;
+
+		// the name, and Connect beside it
+		out += va( "itemDef {\nname quickconnect_name%i\ngroup quickconnect\nstyle WINDOW_STYLE_EMPTY\ntype ITEM_TYPE_BUTTON\ntext \"%s\"\n"
+			"rect %g %g %g 14\nfont 2\ntextscale .7\ntextalign ITEM_ALIGN_LEFT\ntextalignx 0\nforecolor 1 .682 0 1\nvisible 0\n"
+			"descText \"Connect to %s\"\naction { play \"sound/interface/button1.wav\" ; exec \"quickconnect connect %i\" }\n}\n",
+			i, names[i], QC_X + 8, y, QC_W - 80, names[i], i + 1 );
+		out += va( "itemDef {\nname quickconnect_go%i\ngroup quickconnect\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"Connect\"\n"
+			"rect %g %g 64 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx 32\nbackcolor .15 .3 .15 .8\nforecolor 1 1 1 1\n"
+			"visible 0\naction { play \"sound/interface/button1.wav\" ; exec \"quickconnect connect %i\" }\n}\n", i, QC_X + QC_W - 70, y + 1, i + 1 );
+		for ( int k = 0; k < 3; k++ ) {
+			out += va( "itemDef {\nname quickconnect_%s%i\ngroup quickconnect\nstyle WINDOW_STYLE_EMPTY\ncvar \"ui_qc%i_%s\"\n"
+				"rect %g %g %g 11\nfont 4\ntextscale .8\ntextalign ITEM_ALIGN_LEFT\ntextalignx 0\nforecolor .8 .8 .8 1\nvisible 0\ndecoration\n}\n",
+				lines[k], i, i + 1, lines[k], QC_X + 14, y + 15 + k * 11, QC_W - 20 );
+		}
+	}
+	return out;
+}
+
 // the in-game menu: no votes, PRESETS, the camera panel
 static const char *IM_Patch( const char *filename, const char *text, int *length ) {
 	static const char *drop[] = { "vote", "voteButton", "callvote", "callvoteButton", "addBot", "addBotButton" };
@@ -845,6 +901,26 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 		add += "\n" + frame + "\n" + button + "\n";
 	}
 	add += IM_CameraPanel();
+
+	// QUICK CONNECT: where Vote and Call Vote were, before Exit
+	{
+		std::string button = s.substr( controls->start, controls->end - controls->start );
+		std::string frame = s.substr( controlsButton->start, controlsButton->end - controlsButton->start );
+
+		RM_ReplaceWord( button, "controlsButton", "quickconnectButton" );
+		RM_SetValue( button, "name", "quickconnectmenu" );
+		RM_SetValue( button, "text", RM_Quote( "Quick Connect" ) );
+		RM_SetValue( button, "textalignx", "70" );
+		RM_RemoveValue( button, "cvarTest" );
+		RM_ReplaceBlock( button, "hideCvar", "" );
+		RM_ReplaceBlock( button, "showCvar", "" );
+		RM_ReplaceBlock( button, "action", "action { play \"sound/interface/button1.wav\" ; hide camerapanel ; show quickconnect ; exec \"quickconnect refresh\" }" );
+		RM_SetValue( frame, "name", "quickconnectButton" );
+		IM_SetRect( button, 425, 0, 140, 32 );
+		IM_SetRect( frame, 425, 0, 140, 32 );
+		add += "\n" + frame + "\n" + button + "\n";
+	}
+	add += IM_QuickConnectPanel();
 
 	// the ones that go, last first so the places stay right
 	for ( int i = (int)items.size() - 1; i >= 0; i-- ) {

@@ -850,6 +850,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	CL_RpHooks_Disconnect();
 	CL_RpAdmin_Disconnect();
 	CL_NpcNames_Disconnect();
+	CL_AdminFlags_Reset();
 	CL_RpCinematic_Reset();
 	CL_NpcWalk_Reset();
 
@@ -900,6 +901,9 @@ void CL_ForwardCommandToServer( const char *string ) {
 		Com_Printf ("Unknown command \"%s" S_COLOR_WHITE "\"\n", cmd);
 		return;
 	}
+
+	// noclip, nodraw, nonsolid and notarget at ourselves, for their replies
+	CL_AdminFlags_Command();
 
 	// a chat given its capitals, then, too long for the server, in parts
 	if ( CL_ChatCaps_Forward( capped, sizeof( capped ) ) ) {
@@ -2914,6 +2918,8 @@ void CL_Init( void ) {
 	CL_EmotePreview_Init ();
 	CL_AnimManager_Init ();
 	CL_Presets_Init ();
+	CL_AdminFlags_Init ();
+	CL_QuickConnect_Init ();
 	CL_RpCinematic_Init ();
 
 	CL_FighterAssist_Init ();
@@ -3261,6 +3267,10 @@ void CL_ServerInfoPacket( const netadr_t *from, msg_t *msg ) {
 	int		prot;
 
 	infoString = MSG_ReadString( msg );
+
+	// one of the quick connect servers answering
+	if ( CL_QuickConnect_InfoResponse( from, infoString ) )
+		return;
 
 	// if this isn't the correct protocol version, ignore it
 	prot = atoi( Info_ValueForKey( infoString, "protocol" ) );

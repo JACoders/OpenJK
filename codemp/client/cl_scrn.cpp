@@ -471,6 +471,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_SoundManager_Frame();
 			CL_AnimManager_Frame();
 			CL_CameraSettings_Frame();
+			CL_QuickConnect_Frame();
 			CL_RadialMenu_Frame();
 			CL_SaberStyle_Frame();
 			CL_RpAdmin_Frame();
@@ -482,6 +483,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_CGameRendering( stereoFrame );
 			CL_RpCinematic_Draw();
 			CL_NpcNames_Draw();
+			CL_AdminFlags_Draw();
 			SCR_DrawDemoRecording();
 			CL_ShaderManager_Draw();
 			CL_ModelManager_Draw();
