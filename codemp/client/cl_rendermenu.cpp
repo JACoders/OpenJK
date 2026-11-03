@@ -538,6 +538,15 @@ the in-game menu
 ================================================================================
 */
 
+// with the camera settings on, the camera keeps right behind you: a looser one swings round as you
+// turn, and looks to those not used to it as if it spins
+#define IM_CAM_FOLLOW		"cg_thirdPersonCameraDamp"
+
+void CL_CameraSettings_Frame( void ) {
+	if ( Cvar_VariableIntegerValue( "ui_cameraSettings" ) && Cvar_VariableValue( IM_CAM_FOLLOW ) != 1.0f )
+		Cvar_Set( IM_CAM_FOLLOW, "1" );
+}
+
 // the camera panel's rows: a setting, its label, and for a slider its default, least and most
 typedef struct {
 	const char	*cvar;
@@ -553,7 +562,6 @@ static const imCamRow_t imCamRows[] = {
 	{ "cg_thirdPersonVertOffset",	"Height",		16, -100, 100,	NULL },
 	{ "cg_thirdPersonHorzOffset",	"Side",			0, -100, 100,	NULL },
 	{ "cg_thirdPersonPitchOffset",	"Tilt",			0, -90, 90,		NULL },
-	{ "cg_thirdPersonCameraDamp",	"Follow",		0.3f, 0, 1,		NULL },
 	{ "cg_thirdPersonTargetDamp",	"Aim follow",	0.5f, 0, 1,		NULL },
 	{ "cg_thirdPersonAlpha",		"See-through",	1, 0, 1,		NULL },
 	{ "cg_fov",						"Field of view",	80, 20, 130,	NULL },

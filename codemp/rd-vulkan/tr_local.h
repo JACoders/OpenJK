@@ -753,6 +753,7 @@ typedef struct trRefdef_s {
 
 	int					time;						// time in milliseconds for shader effects and other time dependent rendering issues
 	int					frametime;
+	int					g2Time;						// OpenJK-rpmod: the ghoul2 animations' time as the scene was given, for the backend's bones
 	int					rdflags;					// RDF_NOWORLDMODEL, etc
 
 	// 1 bits will prevent the associated area from rendering at all

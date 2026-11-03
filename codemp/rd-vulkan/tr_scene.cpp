@@ -727,6 +727,9 @@ void RE_RenderScene( const refdef_t *fd ) {
 	VectorCopy(fd->viewaxis[2], tr.refdef.viewaxis[2]);
 
 	tr.refdef.time = fd->time;
+	// OpenJK-rpmod: the bones are worked out in the backend, after the UI may have set the ghoul2 clock
+	// to its own (a menu open): the animations' time is taken now, the cgame's, as OpenGL takes it
+	tr.refdef.g2Time = G2API_GetTime( tr.refdef.time );
 	tr.refdef.frametime = fd->time - lastTime;
 
 	if (fd->rdflags & RDF_SKYBOXPORTAL)

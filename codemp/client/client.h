@@ -929,6 +929,9 @@ void CL_AnimManager_Draw( void );
 void CL_AnimManager_Entity( const refEntity_t *ent );
 void CL_AnimManager_Hook( char **argv, int argc, const char *message );
 
+// cl_rendermenu.cpp: the camera follows right behind with the camera settings on
+void CL_CameraSettings_Frame( void );
+
 // cl_presets.cpp
 void CL_Presets_Init( void );
 void CL_Presets_Shutdown( void );

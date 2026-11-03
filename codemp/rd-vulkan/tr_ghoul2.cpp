@@ -3579,7 +3579,9 @@ void RB_TransformBones( const trRefEntity_t *ent, const trRefdef_t *refdef )
 		return;
 	}
 
-	int currentTime = G2API_GetTime(refdef->time);
+	// OpenJK-rpmod: the time the scene was given at, not the clock now: a menu open set it to its own,
+	// and bodies stood still while their sabers, worked out by the cgame, went on
+	int currentTime = refdef->g2Time ? refdef->g2Time : G2API_GetTime(refdef->time);
 
 	HackadelicOnClient = true;
 

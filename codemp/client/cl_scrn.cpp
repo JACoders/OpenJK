@@ -470,6 +470,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_Storyteller_Frame();
 			CL_SoundManager_Frame();
 			CL_AnimManager_Frame();
+			CL_CameraSettings_Frame();
 			CL_RadialMenu_Frame();
 			CL_SaberStyle_Frame();
 			CL_RpAdmin_Frame();
