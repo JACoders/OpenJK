@@ -4847,3 +4847,22 @@ qboolean G2_Set_Bone_Offset( CGhoul2Info *ghlInfo, boneInfo_v &blist, const char
 	}
 	return qtrue;
 }
+
+// OpenJK-rpmod: the animation manager's: a bone let go. G2_Remove_Bone leaves one alone while it's
+// still turned or animated, so its turn (and its animation, when anim) are taken off first
+qboolean G2_Free_Bone( CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, qboolean anim )
+{
+	const model_t *mod_a = (model_t *)ghlInfo->animModel;
+	const int index = G2_Find_Bone( mod_a, blist, boneName );
+
+	if ( index == -1 || ( blist[index].flags & BONE_ANGLES_RAGDOLL ) )
+	{
+		return qfalse;
+	}
+	blist[index].flags &= ~BONE_ANGLES_TOTAL;
+	if ( anim )
+	{
+		blist[index].flags &= ~( BONE_ANIM_TOTAL | BONE_NEED_TRANSFORM );
+	}
+	return G2_Remove_Bone_Index( blist, index );
+}

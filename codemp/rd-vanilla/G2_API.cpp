@@ -3027,3 +3027,22 @@ qboolean G2API_SetBoneAnglesOffset( CGhoul2Info_v &ghoul2, const int modelIndex,
 	ghlInfo->mSkelFrameNum = 0;
 	return G2_Set_Bone_Offset( ghlInfo, ghlInfo->mBlist, boneName, offset );
 }
+
+qboolean G2_Free_Bone( CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, qboolean anim );
+
+qboolean G2API_FreeBone( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, qboolean anim )
+{
+	CGhoul2Info *ghlInfo;
+
+	if ( !ghoul2.IsValid() || modelIndex < 0 || modelIndex >= ghoul2.size() || !boneName )
+	{
+		return qfalse;
+	}
+	ghlInfo = &ghoul2[modelIndex];
+	if ( !G2_SetupModelPointers( ghlInfo ) )
+	{
+		return qfalse;
+	}
+	ghlInfo->mSkelFrameNum = 0;
+	return G2_Free_Bone( ghlInfo, ghlInfo->mBlist, boneName, anim );
+}

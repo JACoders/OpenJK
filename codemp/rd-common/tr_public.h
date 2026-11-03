@@ -302,6 +302,9 @@ typedef struct refexport_s {
 		qboolean			(*G2API_SetBoneAnglesOffset)			( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, const vec3_t angles,
 																	  const vec3_t offset, const int flags, const Eorientations up, const Eorientations left,
 																	  const Eorientations forward, int blendTime, int currentTime );
+		// a bone let go: its turn taken off, its animation too when anim, then removed (G2API_RemoveBone
+		// alone leaves a bone still turned or animated as it is)
+		qboolean			(*G2API_FreeBone)						( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, qboolean anim );
 	} ext;
 
 } refexport_t;

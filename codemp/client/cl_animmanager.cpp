@@ -661,6 +661,17 @@ static void AM_BoneSet( CGhoul2Info_v &g2, const char *bone, const vec3_t twist,
 		re->G2API_SetBoneAngles( g2, 0, bone, angles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, re->G2API_GetTime( 0 ) );
 }
 
+// a bone let go: Ghoul2's RemoveBone leaves one alone while it's still turned or animated, so its
+// turn (and its animation, when it's ours) are taken off first
+static void AM_FreeBone( CGhoul2Info_v &g2, const char *bone, qboolean anim ) {
+	if ( !bone || !bone[0] )
+		return;
+	if ( re->ext.G2API_FreeBone )
+		re->ext.G2API_FreeBone( g2, 0, bone, anim );
+	else
+		re->G2API_RemoveBone( g2, 0, bone );
+}
+
 static void AM_BoneValues( const amCBone_t *b, vec3_t twist, vec3_t offset ) {
 	for ( int k = 0; k < 3; k++ ) {
 		twist[k] = b ? AM_Num( b->twist[k], 0 ) : 0.0f;
@@ -703,7 +714,7 @@ static void AM_ApplyCustom( CGhoul2Info_v &g2, int skel, const amCustom_t *c, fl
 // its bones let go, the body's left to the cgame
 static void AM_ReleaseCustom( CGhoul2Info_v &g2, const amCustom_t *c ) {
 	for ( int i = 0; i < c->numBones; i++ )
-		re->G2API_RemoveBone( g2, 0, c->bones[i].bone );
+		AM_FreeBone( g2, c->bones[i].bone, (qboolean)( c->bones[i].anim[0] != '\0' ) );
 }
 
 // how long one plays before it's over, 0 never (it loops, or holds until you move)
@@ -1916,7 +1927,7 @@ static void AM_ResetPreviewBones( int skel ) {
 		return;
 	AM_ReadBones( &amSkels[skel] );
 	for ( int i = 0; i < amSkels[skel].numBones; i++ )
-		re->G2API_RemoveBone( *am.g2, 0, amSkels[skel].bones[i].name );
+		AM_FreeBone( *am.g2, amSkels[skel].bones[i].name, qtrue );
 }
 
 // a point in the world on the preview's screen, in 640x480; qfalse behind it
@@ -2084,7 +2095,7 @@ static void AM_MeasureGizmo( const char *bone, const amCBone_t *cb ) {
 	if ( cb )
 		AM_BoneSet( *am.g2, bone, twist, offset );
 	else
-		re->G2API_RemoveBone( *am.g2, 0, bone );
+		AM_FreeBone( *am.g2, bone, qfalse );
 	am.gz.valid = qtrue;
 }
 

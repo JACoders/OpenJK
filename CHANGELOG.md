@@ -10,6 +10,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 - [Changed] `NPC names under the crosshair: shared when the admin says`. An admin's client no longer shares the NPC names by itself, as NPCs spawn or players join: `/npcnames` shares them as they are now with everyone with this client, `/npcnames clear` takes them back. The admin still sees them as before.
 - [Changed] `Quick connect: Esc closes the panel first`. With the quick connect panel out, Esc puts it away and leaves the in-game menu open; a second Esc closes the menu.
 - [Changed] `Animation manager: going back a skeleton`. On the Animations tab a right click on the skeleton's button goes back one, and the arrow beside it lists every skeleton to pick one, so the humanoid is a click away.
+- [Fixed] `Animation manager: bones left turned`. A bone turned or moved in a custom emote stayed that way after it: in the preview of every other animation and emote, even once the emote was deleted, and on a player's model after the emote played on it. They're let go now.
 
 ## 0.8.0 - Nov 3rd 2026
 

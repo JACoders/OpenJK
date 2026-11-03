@@ -1292,6 +1292,7 @@ extern "C" {
 // OpenJK-rpmod: G2_API.cpp
 extern "C++" qboolean G2API_SetBoneAnglesOffset( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, const vec3_t angles,
 	const vec3_t offset, const int flags, const Eorientations up, const Eorientations left, const Eorientations forward, int blendTime, int currentTime );
+extern "C++" qboolean G2API_FreeBone( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, qboolean anim );
 
 Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	static refexport_t re;
@@ -1489,6 +1490,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.ext.SetScreenFilter					= RE_SetScreenFilter;	// OpenJK-rpmod
 	re.ext.ForgetMissing					= RE_ForgetMissing;		// OpenJK-rpmod
 	re.ext.G2API_SetBoneAnglesOffset = G2API_SetBoneAnglesOffset;	// OpenJK-rpmod
+	re.ext.G2API_FreeBone = G2API_FreeBone;	// OpenJK-rpmod
 	re.ext.GetFogs							= RE_GetFogs;			// OpenJK-rpmod
 	re.ext.SetFog							= RE_SetFog;			// OpenJK-rpmod
 	re.ext.AddFog							= RE_AddFog;			// OpenJK-rpmod
