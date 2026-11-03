@@ -73,9 +73,9 @@ void CL_AdminFlags_Command( void ) {
 			char mine[MAX_QPATH], typed[MAX_QPATH];
 
 			Q_strncpyz( mine, ofs ? Info_ValueForKey( cl.gameState.stringData + ofs, "n" ) : "", sizeof( mine ) );
-			Q_StripColor( mine );
+			CL_StripAllColors( mine );
 			Q_strncpyz( typed, Cmd_ArgsFrom( 1 ), sizeof( typed ) );
-			Q_StripColor( typed );
+			CL_StripAllColors( typed );
 			self = (qboolean)( mine[0] && typed[0] && ( !Q_stricmp( mine, typed ) || ( strlen( typed ) >= 3 && Q_stristr( mine, typed ) ) ) );
 		}
 		if ( self )
@@ -90,7 +90,7 @@ void CL_AdminFlags_ServerPrint( const char *text ) {
 	int len = 0;
 
 	Q_strncpyz( line, text, sizeof( line ) );
-	Q_StripColor( line );
+	CL_StripAllColors( line );
 	// the hyphens out, "non-solid" read as "nonsolid"
 	for ( const char *p = line; *p && len < (int)sizeof( joined ) - 1; p++ ) {
 		if ( *p != '-' )

@@ -20,7 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // cl_update.cpp -- whether this is the newest OpenJK-rpmod
 //
-// At start, at most once a day, the newest release is asked of GitHub, out of the way of the
+// Each time the game starts, the newest release is asked of GitHub, out of the way of the
 // game. When there's a newer one than this, it's said in the console and shown on the main menu.
 //
 //   version          this version, the newest, whether this is up to date, and where to get it
@@ -48,7 +48,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define UP_HOST			"api.github.com"
 #define UP_PATH			"/repos/Ber-til/OpenJK-rpmod/releases/latest"
 #define UP_PAGE			"https://github.com/Ber-til/OpenJK-rpmod/releases/latest"
-#define UP_EVERY		( 24 * 60 * 60 )	// seconds between asks
 #define UP_TIMEOUT_MS	8000
 #define UP_BODY			65536
 
@@ -386,28 +385,17 @@ static void UP_Version_f( void ) {
 }
 
 void CL_Update_Init( void ) {
-	long long when = 0;
-	char tag[64] = "";
-
 	// still asking from before: the thread has it
 	if ( up.state != UP_ASKING )
 		memset( &up, 0, sizeof( up ) );
 	cl_updateCheck = Cvar_Get( "cl_updateCheck", "1", CVAR_ARCHIVE_ND,
-		"1 asks GitHub at start, once a day at most, whether there's a newer OpenJK-rpmod" );
+		"1 asks GitHub as the game starts whether there's a newer OpenJK-rpmod" );
 	cl_updateLast = Cvar_Get( "cl_updateLast", "", CVAR_ARCHIVE_ND | CVAR_INTERNAL, "When GitHub was last asked, and the newest then" );
 	Cmd_AddCommand( "version", UP_Version_f, "This OpenJK-rpmod's version, and whether it's the newest" );
 
 	if ( !cl_updateCheck->integer || up.state == UP_ASKING )
 		return;
-	// asked lately: what it said then stands
-	if ( sscanf( cl_updateLast->string, "%lld %63s", &when, tag ) == 2 )
-		Q_strncpyz( up.latest, tag, sizeof( up.latest ) );
-	if ( up.latest[0] && when > 0 && (long long)time( NULL ) - when < UP_EVERY && (long long)time( NULL ) >= when ) {
-		up.state = UP_DONE;
-		if ( UP_Compare() == -1 )
-			UP_Say();
-		return;
-	}
+	// every start, so a release out an hour ago is known at once
 	UP_Ask( qfalse );
 }
 

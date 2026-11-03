@@ -2392,6 +2392,8 @@ void CL_Frame ( int msec ) {
 	CL_ChatSplit_Frame();
 	CL_LoadPk3_Frame();
 	CL_Update_Frame();
+	// what you're playing, on your Discord profile
+	CL_Discord_Frame();
 
 	// send intentions now
 	CL_SendCmd();
@@ -2906,6 +2908,7 @@ void CL_Init( void ) {
 	CL_RpAdmin_Init ();
 	CL_Update_Init ();
 	CL_RenderMenu_Init();
+	CL_Discord_Init();
 	cl_ratioFix = Cvar_Get( "cl_ratioFix", "0", CVAR_ARCHIVE_ND, "Widescreen: text, and the engine's own, as on a 4:3 screen instead of stretched" );
 	cls.widthRatioCoef = 1.0f;
 	CL_RadialMenu_Init ();
@@ -3156,6 +3159,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand( "toolaccess" );
 	CL_Update_Shutdown();
 	CL_RenderMenu_Shutdown();
+	CL_Discord_Shutdown();
 	Cmd_RemoveCommand( "+radial" );
 	Cmd_RemoveCommand( "-radial" );
 	Cmd_RemoveCommand( "radial" );

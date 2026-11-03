@@ -19,6 +19,7 @@ Some features reach other players through workarounds only this client understan
 - [Emote Preview](#emote-preview)
 - [Animation Manager](#animation-manager-custom-emotes-are-experimental)
 - [Presets](#presets)
+- [Discord Status](#discord-status)
 - [In-game Menu and Camera Settings](#in-game-menu-and-camera-settings)
 - [Widescreen Text](#widescreen-text)
 - [Console Selection and Find](#console-selection-and-find)
@@ -463,6 +464,13 @@ Characters saved, and swapped to in one click: for missions, or anyone you play.
 - Click a card to become that character at once; **Update** saves who you are now over it, **Delete** (twice) takes it out
 - Kept in `presets.txt`
 
+## Discord Status
+
+Your Discord profile shows what you're playing: "Playing ::JEDI::", the server ("On JEDI Temple"), "Playing as" your character, the players there, the time since you joined, the map's picture (Temple, Grounds, Region and Galaxy's maps; the logo on any other), and a **Join JEDI** button.
+
+- Spoken straight to the Discord app on your computer: nothing to install, and nothing happens when Discord isn't running
+- Off until you turn it on: **Setup > Game Options > Discord Status**, or `cl_discord 1`; `cl_discordPrivate 1` leaves out the server and your character's name
+
 ## In-game Menu and Camera Settings
 
 - The in-game menu (Esc) has no Vote, Call Vote or Add Bot, and a **PRESETS** button between Profile and Controls
@@ -662,7 +670,7 @@ Don't get disconnected by a model the game can't draw.
 
 Know when there's a newer OpenJK-rpmod.
 
-- As the game starts, at most once a day, it asks GitHub for the newest release, without holding the game up
+- Each time the game starts, it asks GitHub for the newest release, without holding the game up
 - When yours is older, the console says so and the main menu shows it at the bottom
 - `/version` shows your version and the newest, with the link to download a newer one; `/version check` asks again now
 - `/cl_updateCheck 0` never asks
