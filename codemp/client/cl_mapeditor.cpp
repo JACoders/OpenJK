@@ -5415,7 +5415,7 @@ static void ME_DrawStylesTab( float x, float y, float w ) {
 		}
 	}
 	if ( !me.sel )
-		ME_TextClipped( x, y, w, S_COLOR_GREY "The world follows it with the vanilla renderer", meWhite );
+		ME_TextClipped( x, y, w, S_COLOR_GREY "The whole world follows it", meWhite );
 }
 
 // where a point is on the screen, anywhere on it or off it; qfalse behind the camera

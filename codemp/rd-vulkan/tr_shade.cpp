@@ -38,6 +38,12 @@ because a surface may be forced to perform a RB_End due
 to overflow.
 ==============
 */
+// OpenJK-rpmod: the map's normal light, style 0, made other than white (the client's map editor):
+// the world's lightmaps follow it, as with OpenGL
+qboolean R_Style0Tinted( void ) {
+	return (qboolean)( styleColors[0][0] != 255 || styleColors[0][1] != 255 || styleColors[0][2] != 255 );
+}
+
 void RB_BeginSurface( shader_t *shader, int fogNum ) {
 	shader_t *state = (shader->remappedShader) ? shader->remappedShader : shader;
 
@@ -48,6 +54,10 @@ void RB_BeginSurface( shader_t *shader, int fogNum ) {
 	else {
 		tess.allowVBO = qfalse;
 	}
+	// OpenJK-rpmod: a lightmapped surface tinted by style 0 has its colours worked out each frame: the
+	// world cache's are baked in
+	if ( tess.allowVBO && state->lightmapIndex[0] >= 0 && R_Style0Tinted() )
+		tess.allowVBO = qfalse;
 #endif
 
 #ifdef USE_PMLIGHT

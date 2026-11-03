@@ -2518,6 +2518,13 @@ void RB_StageIteratorGeneric( void )
 		const qboolean skyTint = (qboolean)( tess.shader->sky && backEnd.refdef.skyTinted && !tess.vbo_model );
 		if ( skyTint && !forceRGBGen )
 			forceRGBGen = pStage->bundle[0].rgbGen ? pStage->bundle[0].rgbGen : CGEN_IDENTITY;
+		// OpenJK-rpmod: style 0 not white: a lightmap stage's colours worked out, then tinted by it,
+		// as OpenGL does (the other styles' stages have theirs already)
+		const qboolean styleTint = (qboolean)( !tess.vbo_model && !tess.vbo_world_index && R_Style0Tinted()
+			&& ( pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap )
+			&& pStage->bundle[0].rgbGen != CGEN_LIGHTMAPSTYLE && !pStage->lightmapStyle[0] );
+		if ( styleTint && !forceRGBGen )
+			forceRGBGen = pStage->bundle[0].rgbGen ? pStage->bundle[0].rgbGen : CGEN_IDENTITY;
 
 		// refraction
 #ifdef RF_DISTORTION
@@ -2576,6 +2583,13 @@ void RB_StageIteratorGeneric( void )
 					for ( int v = 0; v < tess.numVertexes; v++ ) {
 						for ( int c = 0; c < 3; c++ )
 							tess.svars.colors[i][v][c] = (byte)Com_Clampi( 0, 255, (int)( tess.svars.colors[i][v][c] * backEnd.refdef.skyTint[c] ) );
+					}
+				}
+				// OpenJK-rpmod: the stage's colour, once: the pipeline takes the first bundle's
+				if ( styleTint && i == 0 ) {
+					for ( int v = 0; v < tess.numVertexes; v++ ) {
+						for ( int c = 0; c < 3; c++ )
+							tess.svars.colors[0][v][c] = (byte)( tess.svars.colors[0][v][c] * styleColors[0][c] / 255 );
 					}
 				}
 			}

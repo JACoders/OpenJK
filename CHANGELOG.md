@@ -4,6 +4,10 @@ What changed in OpenJK-rpmod from version to version, newest first. What each fe
 
 OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
+## Unreleased
+
+- [Fixed] `Vulkan: the map's light style looks`. A look given to the whole map's light (style 0: the map editor's Dusk, Night and the rest) left the world's lightmaps as they were with Vulkan; they follow it now as with OpenGL, world caching on or off.
+
 ## 0.8.0 - Nov 3rd 2026
 
 - [Added] `Discord status`. Your Discord profile shows you playing ::JEDI::: the server, your character, the players, the time, the map's picture, and a Join JEDI button. Off until turned on in Setup > Game Options, or `cl_discord 1`; `cl_discordPrivate 1` leaves the server and your character's name out.
