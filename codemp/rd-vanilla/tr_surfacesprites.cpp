@@ -27,6 +27,31 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_quicksprite.h"
 #include "tr_WorldEffects.h"
 
+// OpenJK-rpmod: the map's normal light, style 0, made other than white (the client's map editor):
+// the sprites (grass, foliage) follow it as the ground under them does. Their brightness is the
+// ground's vertex blue, which for a vertex lit surface has the style's blue in it already
+static float ssStyleTint[3];
+static qboolean ssStyleTinted;
+
+static void SS_StyleTintBegin( void ) {
+	const byte *s = styleColors[0];
+	const float base = ( tess.shader && tess.shader->lightmapIndex[0] == LIGHTMAP_BY_VERTEX && s[2] ) ? s[2] : 255.0f;
+
+	ssStyleTinted = (qboolean)( s[0] != 255 || s[1] != 255 || s[2] != 255 );
+	for ( int c = 0; c < 3; c++ )
+		ssStyleTint[c] = s[c] / base;
+}
+
+static void SS_StyleTint( color4ub_t color ) {
+	if ( !ssStyleTinted )
+		return;
+	for ( int c = 0; c < 3; c++ ) {
+		const float v = color[c] * ssStyleTint[c];
+
+		color[c] = (byte)( v > 255.0f ? 255 : v );
+	}
+}
+
 
 /////===== Part of the VERTIGON system =====/////
 // The surfacesprites are a simple system.  When a polygon with this shader stage on it is drawn,
@@ -403,6 +428,7 @@ static void RB_VerticalSurfaceSprite(vec3_t loc, float width, float height, byte
 	color[1]=light;
 	color[2]=light;
 	color[3]=alpha;
+	SS_StyleTint( color );
 
 	// Bottom right
 //	VectorAdd(loc, right, point);
@@ -499,6 +525,7 @@ static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float hei
 	color[1]=light;
 	color[2]=light;
 	color[3]=alpha;
+	SS_StyleTint( color );
 
 	// Bottom right
 //	VectorAdd(loc, right, point);
@@ -844,6 +871,7 @@ static void RB_OrientedSurfaceSprite(vec3_t loc, float width, float height, byte
 	color[1]=light;
 	color[2]=light;
 	color[3]=alpha;
+	SS_StyleTint( color );
 
 	if (faceup)
 	{
@@ -1119,6 +1147,7 @@ static void RB_EffectSurfaceSprite(vec3_t loc, float width, float height, byte l
 	color[1]=light;	//light;
 	color[2]=light;	//light;
 	color[3]=alpha;	//alpha;
+	SS_StyleTint( color );
 
 	if (faceup)
 	{
@@ -1433,6 +1462,7 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 	uint32_t	glbits=stage->stateBits;
 
 	R_SurfaceSpriteFrameUpdate();
+	SS_StyleTintBegin();
 
 	//
 	// Check fog

@@ -2215,6 +2215,7 @@ struct shaderCommands_s
 extern	shaderCommands_t	tess;
 extern	color4ub_t			styleColors[MAX_LIGHT_STYLES];
 qboolean R_Style0Tinted( void );	// OpenJK-rpmod: style 0 isn't white, the world follows it
+qboolean R_StyleUncached( const shader_t *shader );	// OpenJK-rpmod: so drawn without the world cache
 
 void RB_BeginSurface( shader_t *shader, int fogNum );
 void RB_EndSurface( void );

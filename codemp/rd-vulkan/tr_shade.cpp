@@ -44,6 +44,14 @@ qboolean R_Style0Tinted( void ) {
 	return (qboolean)( styleColors[0][0] != 255 || styleColors[0][1] != 255 || styleColors[0][2] != 255 );
 }
 
+// a lightmapped or vertex lit surface while style 0 is tinted: its colours (and its surface
+// sprites') are worked out each frame, as the world cache has them baked in
+qboolean R_StyleUncached( const shader_t *shader ) {
+	if ( shader->remappedShader )
+		shader = shader->remappedShader;
+	return (qboolean)( ( shader->lightmapIndex[0] >= 0 || shader->lightmapIndex[0] == LIGHTMAP_BY_VERTEX ) && R_Style0Tinted() );
+}
+
 void RB_BeginSurface( shader_t *shader, int fogNum ) {
 	shader_t *state = (shader->remappedShader) ? shader->remappedShader : shader;
 
@@ -54,9 +62,9 @@ void RB_BeginSurface( shader_t *shader, int fogNum ) {
 	else {
 		tess.allowVBO = qfalse;
 	}
-	// OpenJK-rpmod: a lightmapped surface tinted by style 0 has its colours worked out each frame: the
-	// world cache's are baked in
-	if ( tess.allowVBO && state->lightmapIndex[0] >= 0 && R_Style0Tinted() )
+	// OpenJK-rpmod: a lightmapped or vertex lit surface tinted by style 0 has its colours worked out
+	// each frame: the world cache's are baked in
+	if ( tess.allowVBO && R_StyleUncached( state ) )
 		tess.allowVBO = qfalse;
 #endif
 

@@ -6,7 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## Unreleased
 
-- [Fixed] `Vulkan: the map's light style looks`. A look given to the whole map's light (style 0: the map editor's Dusk, Night and the rest) left the world's lightmaps as they were with Vulkan; they follow it now as with OpenGL, world caching on or off.
+- [Fixed] `Vulkan: the map's light style looks`. A look given to the whole map's light (style 0: the map editor's Dusk, Night and the rest) left the world as it was with Vulkan: its lightmaps, and with world caching on (`r_vbo 1`) its vertex lit rocks and mountains too; all of it follows the look now, as with OpenGL. The grass and foliage sprites on the ground follow it too now, in OpenGL as well as Vulkan.
 - [Changed] `NPC names under the crosshair: shared when the admin says`. An admin's client no longer shares the NPC names by itself, as NPCs spawn or players join: `/npcnames` shares them as they are now with everyone with this client, `/npcnames clear` takes them back. The admin still sees them as before.
 - [Changed] `Quick connect: Esc closes the panel first`. With the quick connect panel out, Esc puts it away and leaves the in-game menu open; a second Esc closes the menu.
 - [Changed] `Animation manager: going back a skeleton`. On the Animations tab a right click on the skeleton's button goes back one, and the arrow beside it lists every skeleton to pick one, so the humanoid is a click away.

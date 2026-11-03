@@ -375,7 +375,9 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 		R_AddDrawSurf( surf->data, surf->shader, surf->fogIndex, 0 );
 		
 #if defined(USE_VBO_SS)
-		if ( vk.vboWorldActive && r_surfaceSprites->integer )
+		// OpenJK-rpmod: not while style 0 tints the surface: its sprites' colours are baked in
+		// here, so they're drawn with it instead (see RB_StageIteratorGeneric), tinted
+		if ( vk.vboWorldActive && r_surfaceSprites->integer && !R_StyleUncached( surf->shader ) )
 		{
 			for ( uint32_t i = 0, numSprites = surf->surface_sprites.num_stages; i < numSprites; ++i )
 			{
