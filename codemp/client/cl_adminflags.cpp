@@ -112,6 +112,13 @@ void CL_AdminFlags_ServerPrint( const char *text ) {
 	}
 }
 
+// a HUD cvar of the game's at 0; one it hasn't made counts as on
+static qboolean AF_HudOff( const char *name ) {
+	const char *value = Cvar_VariableString( name );
+
+	return (qboolean)( value[0] && !atoi( value ) );
+}
+
 void CL_AdminFlags_Draw( void ) {
 	char text[MAX_STRING_CHARS];
 	qboolean any = qfalse;
@@ -119,6 +126,9 @@ void CL_AdminFlags_Draw( void ) {
 	int w;
 
 	if ( !cl_adminFlags || !cl_adminFlags->integer || cls.state != CA_ACTIVE || ( Key_GetCatcher() & KEYCATCH_UI ) )
+		return;
+	// the HUD hidden: the line with it
+	if ( AF_HudOff( "cg_draw2D" ) || AF_HudOff( "cg_drawStatus" ) )
 		return;
 	// noclip the server shows us anyway
 	if ( cl.snap.valid && cl.snap.ps.pm_type == PM_NOCLIP )

@@ -11,6 +11,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 - [Changed] `Quick connect: Esc closes the panel first`. With the quick connect panel out, Esc puts it away and leaves the in-game menu open; a second Esc closes the menu.
 - [Changed] `Animation manager: going back a skeleton`. On the Animations tab a right click on the skeleton's button goes back one, and the arrow beside it lists every skeleton to pick one, so the humanoid is a click away.
 - [Fixed] `Animation manager: bones left turned`. A bone turned or moved in a custom emote stayed that way after it: in the preview of every other animation and emote, even once the emote was deleted, and on a player's model after the emote played on it. They're let go now.
+- [Changed] `Admin flags on screen: hidden with the HUD`. The noclip, nodraw, nonsolid and notarget line hides with `cg_draw2D 0` or `cg_drawStatus 0`, as the rest of the HUD does.
 
 ## 0.8.0 - Nov 3rd 2026
 
