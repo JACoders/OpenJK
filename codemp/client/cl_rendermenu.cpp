@@ -26,6 +26,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // Two pages: JKA's Setup menu has room for 15 rows, and a button at the end of each goes to the other.
 //
+// The camera panel's settings can be saved by name and loaded again (campreset, camerapresets.txt):
+// a name box, < and > going through the saved ones and loading each, Save and Delete.
+//
+// Setup's Game Options get a Camera Settings row (ui_cameraSettings), and the in-game menu, the bar
+// Esc opens: no Vote, Call Vote or Add Bot, a PRESETS button between Profile and Controls (see
+// cl_presets.cpp), and with Camera Settings on a panel of the third person camera's settings, the
+// game's own cg_thirdPerson* and cg_fov.
+//
 // The page's rows are ui_rd_* copies of the settings: most of them only take with a vid_restart, and
 // a latched cvar reads as it was until then. "renderersettings sync" fills the copies as the page
 // opens, and the video restart's Yes runs "renderersettings apply" before its vid_restart.
@@ -474,6 +482,28 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 		add += item + "\n";
 	}
 
+	// Game Options: Camera Settings under the language button, as its Draw Crosshair row is
+	{
+		const rmItem_t *cross = RM_Item( items, "draw_crosshair" );
+		const rmItem_t *lang = RM_Item( items, "langapply" );
+
+		if ( cross ) {
+			std::string item = s.substr( cross->start, cross->end - cross->start );
+			const float crossY = RM_RectY( item );
+			// the row after the language button, or the 14th
+			const int at = lang ? (int)( ( RM_RectY( s.substr( lang->start, lang->end - lang->start ) ) + 32.0f - crossY ) / rowStep + 0.999f ) : 13;
+
+			RM_SetValue( item, "name", "camerasettings" );
+			RM_SetValue( item, "text", RM_Quote( "Camera Settings:" ) );
+			RM_SetValue( item, "cvar", RM_Quote( "ui_cameraSettings" ) );
+			RM_SetValue( item, "descText", RM_Quote( "In the in-game menu (Esc), the third person camera's settings beside it" ) );
+			RM_ReplaceBlock( item, "cvarFloatList", "cvarFloatList { \"Off\" 0 \"On\" 1 }" );
+			RM_SetRectY( item, crossY + rowStep * at );
+			RM_ReplaceWord( item, "highlight1", va( "highlight%i", at + 1 ) );
+			add += "\n" + item + "\n";
+		}
+	}
+
 	// the menu's own scripts: its other pages hide these two, and the restart applies them
 	RM_AfterCommand( s, "show", "video2", " hide " RM_GROUP " hide " RM_GROUP2 );
 	RM_AfterCommand( s, "hide", "video2", " hide " RM_GROUP " hide " RM_GROUP2 );
@@ -504,6 +534,344 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 
 /*
 ================================================================================
+the in-game menu
+================================================================================
+*/
+
+// the camera panel's rows: a setting, its label, and for a slider its default, least and most
+typedef struct {
+	const char	*cvar;
+	const char	*label;
+	float		def, min, max;
+	const char	*list;			// a choice instead of a slider
+} imCamRow_t;
+
+static const imCamRow_t imCamRows[] = {
+	{ "cg_thirdPerson",				"Third person",	0, 0, 0,		"cvarFloatList { \"Off\" 0 \"On\" 1 }" },
+	{ "cg_thirdPersonRange",		"Distance",		80, 20, 300,	NULL },
+	{ "cg_thirdPersonAngle",		"Around",		0, -180, 180,	NULL },
+	{ "cg_thirdPersonVertOffset",	"Height",		16, -100, 100,	NULL },
+	{ "cg_thirdPersonHorzOffset",	"Side",			0, -100, 100,	NULL },
+	{ "cg_thirdPersonPitchOffset",	"Tilt",			0, -90, 90,		NULL },
+	{ "cg_thirdPersonCameraDamp",	"Follow",		0.3f, 0, 1,		NULL },
+	{ "cg_thirdPersonTargetDamp",	"Aim follow",	0.5f, 0, 1,		NULL },
+	{ "cg_thirdPersonAlpha",		"See-through",	1, 0, 1,		NULL },
+	{ "cg_fov",						"Field of view",	80, 20, 130,	NULL },
+	{ "cg_draw2D",					"HUD",			1, 0, 0,		"cvarFloatList { \"Off\" 0 \"On\" 1 }" },
+};
+
+#define IM_CAM_X		436.0f
+#define IM_CAM_Y		40.0f
+#define IM_CAM_W		198.0f
+#define IM_CAM_ROW		17.0f
+#define IM_CAM_LABEL	518.0f		// where the labels end and the sliders start
+#define IM_CAM_SHOW		"cvarTest \"ui_cameraSettings\" showCvar { \"1\" }\n"
+
+/*
+================================================================================
+camera presets
+================================================================================
+*/
+
+#define CP_FILE			"camerapresets.txt"
+#define CP_MAX			64
+#define CP_NAME_CVAR	"ui_camPresetName"
+
+typedef struct {
+	char	name[32];
+	char	values[ARRAY_LEN( imCamRows )][16];
+} cpPreset_t;
+
+static cpPreset_t	cpPresets[CP_MAX];
+static int			cpNum;
+
+static void CP_Load( void ) {
+	char *buf;
+	const char *p;
+
+	cpNum = 0;
+	if ( FS_ReadFile( CP_FILE, (void **)&buf ) <= 0 || !buf )
+		return;
+	p = buf;
+	COM_BeginParseSession( CP_FILE );
+	while ( cpNum < CP_MAX ) {
+		const char *token = COM_ParseExt( &p, qtrue );
+		cpPreset_t *c;
+
+		if ( !token[0] )
+			break;
+		c = &cpPresets[cpNum];
+		memset( c, 0, sizeof( *c ) );
+		Q_strncpyz( c->name, token, sizeof( c->name ) );
+		// its settings, as many as the line has
+		while ( 1 ) {
+			char key[64];
+
+			token = COM_ParseExt( &p, qfalse );
+			if ( !token[0] )
+				break;
+			Q_strncpyz( key, token, sizeof( key ) );
+			token = COM_ParseExt( &p, qfalse );
+			for ( size_t k = 0; k < ARRAY_LEN( imCamRows ); k++ ) {
+				if ( !Q_stricmp( key, imCamRows[k].cvar ) )
+					Q_strncpyz( c->values[k], token, sizeof( c->values[k] ) );
+			}
+		}
+		cpNum++;
+	}
+	FS_FreeFile( buf );
+}
+
+static void CP_Save( void ) {
+	const fileHandle_t f = FS_FOpenFileWrite( CP_FILE );
+	const char *head = "// Camera presets: a name and its settings, a line\n";
+
+	if ( !f )
+		return;
+	FS_Write( head, strlen( head ), f );
+	for ( int i = 0; i < cpNum; i++ ) {
+		std::string line = va( "\"%s\"", cpPresets[i].name );
+
+		for ( size_t k = 0; k < ARRAY_LEN( imCamRows ); k++ ) {
+			if ( cpPresets[i].values[k][0] )
+				line += va( " %s \"%s\"", imCamRows[k].cvar, cpPresets[i].values[k] );
+		}
+		line += "\n";
+		FS_Write( line.c_str(), line.size(), f );
+	}
+	FS_FCloseFile( f );
+}
+
+static int CP_Find( const char *name ) {
+	for ( int i = 0; i < cpNum; i++ ) {
+		if ( !Q_stricmp( cpPresets[i].name, name ) )
+			return i;
+	}
+	return -1;
+}
+
+static void CP_Apply( int i ) {
+	for ( size_t k = 0; k < ARRAY_LEN( imCamRows ); k++ ) {
+		if ( cpPresets[i].values[k][0] )
+			Cvar_Set( imCamRows[k].cvar, cpPresets[i].values[k] );
+	}
+	Cvar_Set( CP_NAME_CVAR, cpPresets[i].name );
+	Com_Printf( "Camera preset %s\n", cpPresets[i].name );
+}
+
+static int QDECL CP_Compare( const void *a, const void *b ) {
+	return Q_stricmp( ( (const cpPreset_t *)a )->name, ( (const cpPreset_t *)b )->name );
+}
+
+// campreset save|load|delete [name], next, prev, list: the name, when it's not given, the panel's box
+static void CP_Cmd_f( void ) {
+	const char *verb = Cmd_Argv( 1 );
+	char name[32];
+	int i;
+
+	Q_strncpyz( name, Cmd_Argc() > 2 ? Cmd_ArgsFrom( 2 ) : Cvar_VariableString( CP_NAME_CVAR ), sizeof( name ) );
+	for ( char *c = name; *c; c++ ) {
+		if ( *c == '"' || *c == ';' || *c == '\n' )
+			*c = '_';
+	}
+	CP_Load();
+	if ( !Q_stricmp( verb, "save" ) ) {
+		if ( !name[0] ) {
+			Com_Printf( "campreset: give it a name first\n" );
+			return;
+		}
+		i = CP_Find( name );
+		if ( i < 0 ) {
+			if ( cpNum >= CP_MAX ) {
+				Com_Printf( "campreset: there are as many as there can be\n" );
+				return;
+			}
+			i = cpNum++;
+		}
+		memset( &cpPresets[i], 0, sizeof( cpPresets[i] ) );
+		Q_strncpyz( cpPresets[i].name, name, sizeof( cpPresets[i].name ) );
+		for ( size_t k = 0; k < ARRAY_LEN( imCamRows ); k++ )
+			Q_strncpyz( cpPresets[i].values[k], Cvar_VariableString( imCamRows[k].cvar ), sizeof( cpPresets[i].values[k] ) );
+		qsort( cpPresets, cpNum, sizeof( cpPresets[0] ), CP_Compare );
+		CP_Save();
+		Cvar_Set( CP_NAME_CVAR, name );
+		Com_Printf( "Camera preset %s saved\n", name );
+	} else if ( !Q_stricmp( verb, "load" ) ) {
+		i = CP_Find( name );
+		if ( i < 0 )
+			Com_Printf( "campreset: no camera preset called %s\n", name );
+		else
+			CP_Apply( i );
+	} else if ( !Q_stricmp( verb, "delete" ) ) {
+		i = CP_Find( name );
+		if ( i < 0 ) {
+			Com_Printf( "campreset: no camera preset called %s\n", name );
+			return;
+		}
+		memmove( &cpPresets[i], &cpPresets[i + 1], ( cpNum - i - 1 ) * sizeof( cpPresets[0] ) );
+		cpNum--;
+		CP_Save();
+		Cvar_Set( CP_NAME_CVAR, "" );
+		Com_Printf( "Camera preset %s deleted\n", name );
+	} else if ( !Q_stricmp( verb, "next" ) || !Q_stricmp( verb, "prev" ) ) {
+		const int step = !Q_stricmp( verb, "next" ) ? 1 : -1;
+
+		if ( !cpNum ) {
+			Com_Printf( "campreset: none saved yet\n" );
+			return;
+		}
+		i = CP_Find( name );
+		i = i < 0 ? ( step > 0 ? 0 : cpNum - 1 ) : ( i + step + cpNum ) % cpNum;
+		CP_Apply( i );
+	} else if ( !Q_stricmp( verb, "list" ) ) {
+		for ( i = 0; i < cpNum; i++ )
+			Com_Printf( "  %s\n", cpPresets[i].name );
+	} else {
+		Com_Printf( "usage: campreset save|load|delete [name]   the camera settings by name; the panel's box when no name\n" );
+		Com_Printf( "       campreset next|prev                the next or the one before, loaded\n" );
+		Com_Printf( "       campreset list\n" );
+	}
+}
+
+// a button of the panel's preset row
+static std::string IM_CamButton( const char *name, const char *label, float x, float y, float w, const char *cmd ) {
+	return va( "itemDef {\nname %s\ngroup camerapanel\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"%s\"\n"
+		"rect %g %g %g 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx %g\nbackcolor .15 .15 .25 .8\n"
+		"forecolor 1 .682 0 1\nvisible 1\n" IM_CAM_SHOW "action { play \"sound/interface/button1.wav\" ; exec \"campreset %s\" }\n}\n",
+		name, label, x, y, w, w * 0.5f, cmd );
+}
+
+static std::string IM_CameraPanel( void ) {
+	const float h = 30.0f + IM_CAM_ROW * ( ARRAY_LEN( imCamRows ) + 1 ) + 40.0f;
+	std::string out;
+	std::string defaults;
+
+	out += va( "itemDef {\nname camerapanel\ngroup camerapanel\nstyle WINDOW_STYLE_FILLED\nrect %g %g %g %g\nborder 1\nbordercolor .5 .5 .7 1\n"
+		"backcolor 0 0 .08 .75\nforecolor 1 1 1 1\nvisible 1\ndecoration\n" IM_CAM_SHOW "}\n", IM_CAM_X, IM_CAM_Y, IM_CAM_W, h );
+	out += va( "itemDef {\nname camerapanel_title\ngroup camerapanel\nstyle WINDOW_STYLE_EMPTY\ntext \"Camera\"\nrect %g %g %g 14\n"
+		"font 2\ntextscale .7\ntextalign ITEM_ALIGN_CENTER\ntextalignx %g\nforecolor 1 .682 0 1\nvisible 1\ndecoration\n" IM_CAM_SHOW "}\n",
+		IM_CAM_X, IM_CAM_Y + 3, IM_CAM_W, IM_CAM_W * 0.5f );
+	for ( size_t i = 0; i < ARRAY_LEN( imCamRows ); i++ ) {
+		const imCamRow_t *r = &imCamRows[i];
+		const float y = IM_CAM_Y + 24 + IM_CAM_ROW * i;
+
+		out += "itemDef {\n";
+		out += va( "name camerapanel_%i\ngroup camerapanel\n", (int)i );
+		if ( r->list )
+			out += va( "type ITEM_TYPE_MULTI\ncvar \"%s\"\n%s\n", r->cvar, r->list );
+		else
+			out += va( "type ITEM_TYPE_SLIDER\ncvarfloat \"%s\" %g %g %g\n", r->cvar, r->def, r->min, r->max );
+		out += va( "text \"%s\"\nrect %g %g 110 12\ntextalign ITEM_ALIGN_RIGHT\ntextalignx 0\ntextaligny 0\nfont 4\ntextscale .9\n"
+			"forecolor .8 .8 .8 1\nvisible 1\n" IM_CAM_SHOW "action { play \"sound/interface/button1.wav\" }\n}\n", r->label, IM_CAM_LABEL, y );
+		defaults += va( "setcvar %s \"%g\" ; ", r->cvar, r->def );
+	}
+	// all of them as the game has them
+	out += va( "itemDef {\nname camerapanel_defaults\ngroup camerapanel\nstyle WINDOW_STYLE_EMPTY\ntype ITEM_TYPE_BUTTON\ntext \"Defaults\"\n"
+		"rect %g %g %g 14\nfont 4\ntextscale .9\ntextalign ITEM_ALIGN_CENTER\ntextalignx %g\nforecolor 1 .682 0 1\nvisible 1\n" IM_CAM_SHOW
+		"action { play \"sound/interface/button1.wav\" ; %s }\n}\n",
+		IM_CAM_X, IM_CAM_Y + 26 + IM_CAM_ROW * ARRAY_LEN( imCamRows ), IM_CAM_W, IM_CAM_W * 0.5f, defaults.c_str() );
+
+	// presets: < the name >, then Save and Delete
+	{
+		const float y = IM_CAM_Y + 26 + IM_CAM_ROW * ( ARRAY_LEN( imCamRows ) + 1 );
+
+		out += IM_CamButton( "camerapanel_prev", "<", IM_CAM_X + 6, y, 18, "prev" );
+		out += va( "itemDef {\nname camerapanel_name\ngroup camerapanel\ntype ITEM_TYPE_EDITFIELD\nstyle WINDOW_STYLE_FILLED\n"
+			"text \"\"\ncvar \"" CP_NAME_CVAR "\"\nmaxChars 30\nmaxPaintChars 20\nrect %g %g %g 13\nfont 4\ntextscale .85\n"
+			"textalign ITEM_ALIGN_LEFT\ntextalignx 3\nbackcolor 0 0 0 .6\nforecolor 1 1 1 1\nvisible 1\n" IM_CAM_SHOW
+			"descText \"A camera preset's name: < and > go through the saved ones\"\n}\n", IM_CAM_X + 28, y, IM_CAM_W - 56 );
+		out += IM_CamButton( "camerapanel_next", ">", IM_CAM_X + IM_CAM_W - 24, y, 18, "next" );
+		out += IM_CamButton( "camerapanel_save", "Save", IM_CAM_X + 6, y + 17, IM_CAM_W * 0.5f - 9, "save" );
+		out += IM_CamButton( "camerapanel_delete", "Delete", IM_CAM_X + IM_CAM_W * 0.5f + 3, y + 17, IM_CAM_W * 0.5f - 9, "delete" );
+	}
+	return out;
+}
+
+static std::string imPatched;
+
+// the in-game menu: no votes, PRESETS, the camera panel
+static const char *IM_Patch( const char *filename, const char *text, int *length ) {
+	static const char *drop[] = { "vote", "voteButton", "callvote", "callvoteButton", "addBot", "addBotButton" };
+	std::string s( text, *length );
+	std::vector<rmItem_t> items;
+	const rmItem_t *controls, *controlsButton;
+	std::string add;
+	size_t menu, menuOpen, menuEnd;
+
+	if ( RM_FindWord( s, "presetsButton", 0 ) != RM_NONE )
+		return NULL;	// done already
+	RM_Items( s, items );
+	controls = RM_Item( items, "controls" );
+	controlsButton = RM_Item( items, "controlsButton" );
+	if ( !controls || !controlsButton ) {
+		Com_DPrintf( "Presets: %s isn't laid out as JKA's in-game menu; left as it is\n", filename );
+		return NULL;
+	}
+
+	// PRESETS: Controls' button and its frame, in the gap after Profile
+	{
+		std::string button = s.substr( controls->start, controls->end - controls->start );
+		std::string frame = s.substr( controlsButton->start, controlsButton->end - controlsButton->start );
+		const size_t rect = RM_FindWord( button, "rect", 0 );
+		size_t start, end;
+
+		RM_ReplaceWord( button, "controlsButton", "presetsButton" );
+		RM_SetValue( button, "name", "presets" );
+		RM_SetValue( button, "text", RM_Quote( "Presets" ) );
+		RM_RemoveValue( button, "cvarTest" );
+		RM_ReplaceBlock( button, "hideCvar", "" );
+		RM_ReplaceBlock( button, "showCvar", "" );
+		RM_ReplaceBlock( button, "action", "action { play \"sound/interface/button1.wav\" ; uiScript closeingame ; exec \"presets\" }" );
+		RM_SetValue( frame, "name", "presetsButton" );
+		// x 215: where Voice Chat and Add Bot were
+		for ( std::string *item : { &button, &frame } ) {
+			const size_t r = RM_FindWord( *item, "rect", 0 );
+
+			if ( r == RM_NONE )
+				continue;
+			start = RM_SkipSpace( *item, r + 4 );
+			RM_Token( *item, start, &end );
+			item->replace( start, end - start, "215" );
+		}
+		(void)rect;
+		add += "\n" + frame + "\n" + button + "\n";
+	}
+	add += IM_CameraPanel();
+
+	// the ones that go, last first so the places stay right
+	for ( int i = (int)items.size() - 1; i >= 0; i-- ) {
+		for ( size_t k = 0; k < ARRAY_LEN( drop ); k++ ) {
+			if ( !Q_stricmp( items[i].name.c_str(), drop[k] ) ) {
+				s.erase( items[i].start, items[i].end - items[i].start );
+				break;
+			}
+		}
+	}
+
+	menu = RM_FindWord( s, "menuDef", 0 );
+	if ( menu == RM_NONE )
+		return NULL;
+	menuOpen = RM_SkipSpace( s, menu + 7 );
+	if ( menuOpen >= s.size() || s[menuOpen] != '{' || ( menuEnd = RM_BlockEnd( s, menuOpen ) ) == RM_NONE )
+		return NULL;
+	s.insert( menuEnd - 1, add );
+
+	imPatched.swap( s );
+	*length = (int)imPatched.size();
+	return imPatched.c_str();
+}
+
+// every menu read goes by here: the in-game menu, or the Setup menus
+static const char *MP_Patch( const char *filename, const char *text, int *length ) {
+	const char *base = COM_SkipPath( (char *)filename );
+
+	if ( !Q_stricmp( base, "ingame.menu" ) && Q_stristr( filename, "jamp" ) )
+		return IM_Patch( filename, text, length );
+	return RM_Patch( filename, text, length );
+}
+
+/*
+================================================================================
 init
 ================================================================================
 */
@@ -514,7 +882,10 @@ void CL_RenderMenu_Init( void ) {
 			Cvar_Get( rmRows[i].ui, rmRows[i].def, 0, "The Setup menu's RENDERER page: renderersettings apply sets it" );
 	}
 	Cmd_AddCommand( "renderersettings", RM_Settings_f, "The Setup menu's RENDERER page: sync or apply" );
-	LoadScriptFile_Patch = RM_Patch;
+	Cvar_Get( "ui_cameraSettings", "0", CVAR_ARCHIVE_ND, "The in-game menu shows the third person camera's settings" );
+	Cvar_Get( CP_NAME_CVAR, "", CVAR_ARCHIVE_ND, "The camera panel's preset name" );
+	Cmd_AddCommand( "campreset", CP_Cmd_f, "Camera settings saved and loaded by name" );
+	LoadScriptFile_Patch = MP_Patch;
 }
 
 void CL_RenderMenu_Shutdown( void ) {

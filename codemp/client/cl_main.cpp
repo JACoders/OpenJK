@@ -2913,6 +2913,7 @@ void CL_Init( void ) {
 	CL_SaberStyle_Init ();
 	CL_EmotePreview_Init ();
 	CL_AnimManager_Init ();
+	CL_Presets_Init ();
 	CL_RpCinematic_Init ();
 
 	CL_FighterAssist_Init ();

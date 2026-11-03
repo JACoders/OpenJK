@@ -686,7 +686,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_LANGUAGES		0x2000	// engine only, the languages window owns keyboard and mouse
 #define KEYCATCH_CONSETTINGS	0x4000	// engine only, the console settings window owns keyboard and mouse
 #define KEYCATCH_ANIMMANAGER	0x8000	// engine only, the animation manager owns keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER )	// mods never see or clear these
+#define KEYCATCH_PRESETS		0x10000	// engine only, the presets own keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -927,6 +928,15 @@ void CL_AnimManager_Frame( void );
 void CL_AnimManager_Draw( void );
 void CL_AnimManager_Entity( const refEntity_t *ent );
 void CL_AnimManager_Hook( char **argv, int argc, const char *message );
+
+// cl_presets.cpp
+void CL_Presets_Init( void );
+void CL_Presets_Shutdown( void );
+void CL_Presets_Close( void );
+void CL_Presets_KeyEvent( int key, qboolean down );
+void CL_Presets_MouseEvent( int dx, int dy );
+void CL_Presets_Escape( void );
+void CL_Presets_Draw( void );
 void CL_RpCinematic_Draw( void );
 void CL_RpCinematic_Frame( void );
 qboolean CL_RpCinematic_ShotHook( const char *name, char *hook, int size, int *ms );

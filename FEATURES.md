@@ -18,6 +18,8 @@ Some features reach other players through workarounds only this client understan
 - [Saber Styles](#saber-styles)
 - [Emote Preview](#emote-preview)
 - [Animation Manager](#animation-manager-custom-emotes-are-experimental)
+- [Presets](#presets)
+- [In-game Menu and Camera Settings](#in-game-menu-and-camera-settings)
 - [Widescreen Text](#widescreen-text)
 - [Console Selection and Find](#console-selection-and-find)
 - [Lists and Text Boxes](#lists-and-text-boxes)
@@ -450,6 +452,23 @@ Every animation in the game, emotes made of emotes, and emotes of your own. `/an
 - **Custom emotes** *(experimental)*: an animation, played whole or from one frame to another, at a speed, once or looping, ending with it or held until you move; then bones of it following another animation (the arm waving while the rest sits), turned (pitch, yaw, roll) or moved (X, Y, Z), picked from the skeleton's bones; tags move with their bones. The picked bone has rings and arrows on the model: drag a ring to turn it, an arrow to move it, or type the numbers. **Reset this bone** takes it back. An admin's, with **TOGGLE EXPERIMENTAL** on, show for everyone with this client; anyone else's on their own screen only. **Under it** plays an RPMod emote with it, so players without this client see something too
 - Chains and custom emotes are commands of their own, named `em...` like the server's, saved in `emotes/`
 - `cl_customEmotes 0` hides the custom emotes admins share
+
+## Presets
+
+Characters saved, and swapped to in one click: for missions, or anyone you play.
+
+- **PRESETS** in the in-game menu (between Profile and Controls), or `/presets`
+- **Save who I am now** keeps your name, model and skin, its colours, and your sabers and their colours, with the date
+- Each preset is a card: the name in its colours (RPMod's too), the character standing with its hilts in hand, the skin, the sabers and when it was saved
+- Click a card to become that character at once; **Update** saves who you are now over it, **Delete** (twice) takes it out
+- Kept in `presets.txt`
+
+## In-game Menu and Camera Settings
+
+- The in-game menu (Esc) has no Vote, Call Vote or Add Bot, and a **PRESETS** button between Profile and Controls
+- **Setup > Game Options > Camera Settings** on shows the third person camera's settings beside the in-game menu: third person on or off, distance, angle around you, height, side, tilt, how closely it follows you and your aim, see-through, field of view and the HUD, and **Defaults**. They're the game's own settings (`cg_thirdPerson...`, `cg_fov`)
+- **Camera presets**: type a name under the settings and **Save** them as it; **<** and **>** go through the saved ones, each loaded as it comes up; **Delete** takes the one named out. Kept in `camerapresets.txt`, also `/campreset`
+- Nothing is shipped for it: the menus, RPMod's or the base game's, are changed as the game reads them
 
 ## Emote Preview
 

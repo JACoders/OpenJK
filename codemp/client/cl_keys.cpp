@@ -1661,6 +1661,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_AnimManager_Escape();
 			return;
 		}
+		if ( ( Key_GetCatcher() & KEYCATCH_PRESETS ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
+			CL_Presets_Escape();
+			return;
+		}
 		if ( ( Key_GetCatcher() & KEYCATCH_CINEDITOR ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
 			CL_RpCinematic_EditorEscape();
 			return;
@@ -1757,6 +1761,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// animation manager
 	else if ( Key_GetCatcher() & KEYCATCH_ANIMMANAGER ) {
 		CL_AnimManager_KeyEvent( key, qtrue );
+	}
+	// presets
+	else if ( Key_GetCatcher() & KEYCATCH_PRESETS ) {
+		CL_Presets_KeyEvent( key, qtrue );
 	}
 	// camera editor
 	else if ( Key_GetCatcher() & KEYCATCH_CINEDITOR ) {

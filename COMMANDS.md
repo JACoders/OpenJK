@@ -213,6 +213,12 @@ The console commands, keys and settings this client adds. What each feature does
 - `/em<name>` does a chain or plays a custom emote made in it; again stops it
 - In it: `Up/Down` the next animation, step or bone, `Space` pause, `Esc` back / close
 
+## Presets
+
+- `/presets` opens or closes them (the in-game menu's PRESETS)
+- `/presets save` saves who you are now as a preset; `/presets list` lists them, numbered; `/presets <number>` makes you that one
+- `/campreset save|load|delete [name]` the camera settings saved or loaded by name (the camera panel's box when none is given); `/campreset next|prev` loads the next saved one or the one before; `/campreset list`
+
 ## Saber Styles
 
 - `/saberstyles <style> <style> ...` sets the styles saberAttackCycle goes through: fast, medium, strong, desann, tavion
@@ -256,6 +262,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `cl_storyMarkers 0` hides where the armed stories wait
 - `cl_npcNames 0` hides the NPC names under the crosshair
 - `cl_customEmotes 0` hides the custom emotes admins share
+- `ui_cameraSettings 1` shows the camera settings beside the in-game menu (Setup > Game Options > Camera Settings)
 - `cl_modelFollowFront 1` keeps what's in the modelmanager's hand in front of you; `cl_modelHoldDistance` how far (128)
 - `cl_wallStick 1` keeps you on a wall you grabbed until you press jump again (`/cl_wallstick`)
 - `cl_cinRecordKey F10` the key that ends a recording in the cinematic manager

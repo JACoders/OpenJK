@@ -1092,6 +1092,7 @@ static void RS_Open( void ) {
 	CL_RpCinematic_EditorClose();
 	CL_SoundManager_Close();
 	CL_AnimManager_Close();
+	CL_Presets_Close();
 	RM_Close();
 	RM_Load();
 

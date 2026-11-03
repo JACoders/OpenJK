@@ -6,6 +6,9 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## Unreleased
 
+- [Added] `Presets`. **PRESETS** in the in-game menu, or `/presets`: characters saved (name, model, skin, sabers and their colours) and shown as cards with the name in its colours, RPMod's too, the character standing, its skin, sabers and the date; one click and you're that character.
+- [Added] `Camera settings in the in-game menu`. **Setup > Game Options > Camera Settings** shows the third person camera's settings beside the in-game menu: distance, angle, height, side, tilt, follow, see-through, field of view, the HUD, and defaults. They can be saved by name and loaded again (**<** and **>** go through them), or with `/campreset`.
+- [Changed] `In-game menu`. No Vote, Call Vote or Add Bot; PRESETS is between Profile and Controls.
 - [Added] `Animation manager: turn and move bones on the model`. In a custom emote's preview the picked bone has rings for pitch, yaw and roll and arrows for X, Y and Z: drag them to turn and move it. Bones can be moved now, not only turned (it takes this client's own renderers, any of them).
 - [Fixed] `A crash reading game files`. A file whose last word had no line break after it could crash the game while it was read, at times as a player's model changed.
 - [Fixed] `Animation manager: yaw and roll the right way round`. A bone's Yaw turned it as a roll did, and Roll as a yaw.

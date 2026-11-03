@@ -1373,6 +1373,7 @@ static qboolean AM_Open( void ) {
 	CL_RpCinematic_EditorClose();
 	CL_MapEditor_Close();
 	CL_SoundManager_Close();
+	CL_Presets_Close();
 
 	am.font = re->RegisterFont( "arialnb" );
 	if ( !am.font )

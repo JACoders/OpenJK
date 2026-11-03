@@ -1100,6 +1100,8 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		CL_SoundManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_ANIMMANAGER ) {
 		CL_AnimManager_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_PRESETS ) {
+		CL_Presets_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CINEDITOR ) {
 		CL_RpCinematic_EditorMouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_RADIALMENU ) {
