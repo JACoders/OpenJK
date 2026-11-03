@@ -922,17 +922,36 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 		RM_ReplaceWord( button, "controlsButton", "quickconnectButton" );
 		RM_SetValue( button, "name", "quickconnectmenu" );
 		RM_SetValue( button, "text", RM_Quote( "Quick Connect" ) );
-		RM_SetValue( button, "textalignx", "70" );
+		RM_SetValue( button, "textalignx", "42.5" );
 		RM_RemoveValue( button, "cvarTest" );
 		RM_ReplaceBlock( button, "hideCvar", "" );
 		RM_ReplaceBlock( button, "showCvar", "" );
 		RM_ReplaceBlock( button, "action", "action { play \"sound/interface/button1.wav\" ; hide camerapanel ; show quickconnect ; setcvar " QC_OPEN_CVAR " 1 ; exec \"quickconnect refresh\" }" );
 		RM_SetValue( frame, "name", "quickconnectButton" );
-		IM_SetRect( button, 425, 0, 140, 32 );
-		IM_SetRect( frame, 425, 0, 140, 32 );
+		IM_SetRect( button, 425, 0, 85, 32 );
+		IM_SetRect( frame, 425, 0, 85, 32 );
 		add += "\n" + frame + "\n" + button + "\n";
 	}
 	add += IM_QuickConnectPanel();
+
+	// FEEDBACK: between Quick Connect and Exit, which is made narrower for it
+	{
+		std::string button = s.substr( controls->start, controls->end - controls->start );
+		std::string frame = s.substr( controlsButton->start, controlsButton->end - controlsButton->start );
+
+		RM_ReplaceWord( button, "controlsButton", "feedbackButton" );
+		RM_SetValue( button, "name", "feedbackmenu" );
+		RM_SetValue( button, "text", RM_Quote( "Feedback" ) );
+		RM_SetValue( button, "textalignx", "31" );
+		RM_RemoveValue( button, "cvarTest" );
+		RM_ReplaceBlock( button, "hideCvar", "" );
+		RM_ReplaceBlock( button, "showCvar", "" );
+		RM_ReplaceBlock( button, "action", "action { play \"sound/interface/button1.wav\" ; uiScript closeingame ; exec \"feedback\" }" );
+		RM_SetValue( frame, "name", "feedbackButton" );
+		IM_SetRect( button, 510, 0, 62, 32 );
+		IM_SetRect( frame, 510, 0, 62, 32 );
+		add += "\n" + frame + "\n" + button + "\n";
+	}
 
 	// the ones that go, last first so the places stay right
 	for ( int i = (int)items.size() - 1; i >= 0; i-- ) {
@@ -940,6 +959,30 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 			if ( !Q_stricmp( items[i].name.c_str(), drop[k] ) ) {
 				s.erase( items[i].start, items[i].end - items[i].start );
 				break;
+			}
+		}
+	}
+
+	// Exit and its frame narrower, at the end, past FEEDBACK
+	{
+		std::vector<rmItem_t> now;
+		const rmItem_t *leave, *leaveButton;
+
+		RM_Items( s, now );
+		leave = RM_Item( now, "leave" );
+		leaveButton = RM_Item( now, "leaveButton" );
+		if ( leave && leaveButton ) {
+			// the later one first, so the earlier one's place stays right
+			const rmItem_t *order[2] = { leave->start > leaveButton->start ? leave : leaveButton,
+				leave->start > leaveButton->start ? leaveButton : leave };
+
+			for ( int k = 0; k < 2; k++ ) {
+				std::string text = s.substr( order[k]->start, order[k]->end - order[k]->start );
+
+				IM_SetRect( text, 572, 0, 63, 32 );
+				if ( order[k] == leave )
+					RM_SetValue( text, "textalignx", "31.5" );
+				s.replace( order[k]->start, order[k]->end - order[k]->start, text );
 			}
 		}
 	}
