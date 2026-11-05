@@ -12,13 +12,13 @@ This repository is a fork of OpenJK (branch `feature/poc-netcode`, forked from O
 | `entityState_t`, `playerState_t` | `tools/fieldinfo` built against `qcommon/q_shared.h` | 532 and 1,552 bytes, every networked field one 32-bit word; `data/fields.json` (schema 2) |
 | Huffman frequencies (`msg_hData`) | extracted from both files and compared | identical (256 values). The active table is `qcommon/msg.cpp:2801`; the one at `:2539` is commented out |
 | Bit layer, delta entity, delta player state, arrays | read | same bitstream. OpenJK adds overflow checks (`MSG_WriteBits`, `MSG_ReadBits`, `Huff_offsetReceive` / `Huff_offsetTransmit` take a bound), `lc` range checks in the readers, and replaces `MSG_WriteShort` of the array masks by `MSG_WriteBits(..., MAX_STATS)` etc., which writes the same 16 bits. In OOB mode it fixes the 32-bit write (`msg->bit += 32` instead of `8`); OOB data does not use the delta path |
-| Whole decode of the study's captures with these tables | `jkadec.py` run with `SRC` pointing at `codemp/qcommon/msg.cpp` | 7,101 / 7,101 and 1,605 / 1,605 messages decoded, as with the 1.01 tables |
+| Whole decode of the study's captures and of the demo corpus with these tables | `jkadec.py` with the generated descriptors | 7,101 / 7,101 and 1,605 / 1,605 capture messages; 80 selected demos round-trip with 0 failures (8.5) |
 | Gamestate tail | read | the same as 1.01: after the checksum feed, a short (0; the old random-mission terrain filler, `server/sv_client.cpp:468`) |
 | Client demos (`.dm_26`) | read | same layout as 1.01 (`CL_WriteDemoMessage`, `client/cl_main.cpp:206`); the message is the server message after the netchan header, with `svc_EOF`; recording starts at the first snapshot without a base (`client/cl_parse.cpp:260`) |
 
 The only wire difference found:
 
-- **Pilot player state.** In 1.01 a pilot riding inside a vehicle is written with only `ARRAY_LEN(pilotPlayerStateFields) - 82` = **58** fields. OpenJK writes all 140 (writer `qcommon/msg.cpp:2133`, reader `:2382`), since OpenJK commit `3409151cb` (2015, "Stop clobbering number of fields in playerstate for pilots", reported as a cause of the "seeker bug", OpenJK issue 708). An OpenJK client reads a 1.01 server correctly (it accepts `lc` up to 140). A 1.01 client connected to an OpenJK server fails with `invalid playerState field count` as soon as a field after the 58th changes. The captures contain no pilot state, so no measurement depends on it. `codec2.py` and `fuzz.py` follow the 1.01 rule.
+- **Pilot player state.** In 1.01 a pilot riding inside a vehicle is written with only `ARRAY_LEN(pilotPlayerStateFields) - 82` = **58** fields. OpenJK writes all 140 (writer `qcommon/msg.cpp:2133`, reader `:2382`), since OpenJK commit `3409151cb` (2015, "Stop clobbering number of fields in playerstate for pilots", reported as a cause of the "seeker bug", OpenJK issue 708). An OpenJK client reads a 1.01 server correctly (it accepts `lc` up to 140). A 1.01 client connected to an OpenJK server fails with `invalid playerState field count` as soon as a field after the 58th changes. The captures contain no pilot state; servers of the demo corpus that carry the OpenJK fix send pilot states with `lc` up to 96, and `codec2.py` codes all 140 fields (progress/step-04-demo-corpus.md).
 
 **Decision (4 November 2026):** do not restore the `- 82` rule. The new codec sends changed fields only, so the rule saves nothing, and OpenJK removed it because it caused bugs.
 
@@ -37,12 +37,12 @@ The only wire difference found:
 | `SV_RateMsec` | `(min(size,1500)+48)*1000/rate` | the same, with `sv_minRate` / `sv_maxRate` and `timescale` applied | unchanged | `server/sv_snapshot.cpp:679` |
 | `g_smoothClients` / `cg_smoothClients` | 1 / 1 | 1 / 1 | unchanged | `game/g_xcvar.h:157`, `cgame/cg_xcvar.h:129` |
 
-Branch decision (4 November 2026): keep OpenJK's code, policies and the pilot fix; set `sv_fps` to 20 so that the snapshot rate matches the captures (with `sv_snapsPolicy` 1 every client then receives 20 snapshots per second); set `sv_clientRate` to 25000 (the client default). At 25000 bytes per second and 50 ms, a message is rate-delayed from 1,202 bytes (`(size + 48) * 1000 / 25000 >= 50`); on the test part of the 5-minute capture this delays 0.0 % of snapshots for both the engine and the new codec (03, section 3.10, row 25,000). OpenJK's upstream pair (50000 bytes per second, 40 snapshots per second) has the same threshold.
+Branch decision (4 and 5 November 2026): keep OpenJK's code, policies and the pilot fix; set `sv_fps` to 20 so that the snapshot rate matches the captures and the demo corpus measurements (with `sv_snapsPolicy` 1 every client then receives 20 snapshots per second); set `sv_clientRate` to 25000 (the client default). At 25000 bytes per second and 50 ms, a message is rate-delayed from 1,202 bytes (`(size + 48) * 1000 / 25000 >= 50`); on the test part of the 5-minute capture this delays 0.0 % of snapshots for both the engine and the new codec (03, section 3.10, row 25,000). OpenJK's upstream pair (50000 bytes per second, 40 snapshots per second) has the same threshold.
 
 Consequences for the results of [03](03-results.md):
 
 1. **Rate table (3.10).** The table describes a 1.01 server with client rates from 4000 up. With this branch's or OpenJK's defaults, only messages from 1,202 bytes are delayed.
-2. **Base age.** The loss and latency results (3.9) convert RTT to base age with 50 ms per snapshot, which is this branch's rate. At OpenJK's upstream 40 snapshots per second the same RTT gives twice the age; sizes at 40 Hz were not measured.
+2. **Base age.** The loss and latency results (3.9) convert RTT to base age with 50 ms per snapshot, which is this branch's rate. At OpenJK's upstream 40 snapshots per second the same RTT gives twice the age; sizes at 40 Hz were not measured (the demo corpus is at 20 and 30 Hz).
 3. **To stay on the 1.01 conditions**, set `sv_ratePolicy 2`, `sv_maxRate 90000` (see 8.4 for why `sv_maxRate` must not stay 0), and on the client `rate 4000`, `snaps 20`. No code change is needed.
 
 ## 8.3 Other differences relevant to the netcode
@@ -56,14 +56,32 @@ Consequences for the results of [03](03-results.md):
 | Server-side demos | `sv_autoDemo`: the server records the messages it sends; same format as client demos | `server/sv_ccmds.cpp:1562`, `:1785` |
 | IPv6 | none: `qcommon/net_ip.cpp` opens `AF_INET` sockets only | `qcommon/net_ip.cpp:175` |
 | Clients | `MAX_CLIENTS` 32 | `qcommon/q_shared.h:890` |
-| Player trajectories | the base game module: with `g_smoothClients` 1 players are sent as `TR_LINEAR_STOP` with `trTime` = `commandTime` through `BG_PlayerStateToEntityStateExtraPolate(..., qfalse)`, never rounded ("Don't snap the origin of players! It screws prediction all up"), as in the 1.01 module and the captures | `game/g_active.c:3326`, `:3768` |
+| Player trajectories | the base game module: with `g_smoothClients` 1 players are sent as `TR_LINEAR_STOP` with `trTime` = `commandTime` through `BG_PlayerStateToEntityStateExtraPolate(..., qfalse)`, never rounded ("Don't snap the origin of players! It screws prediction all up"), as in the 1.01 module, the captures and the demo corpus. This is the target game module (decided 5 November 2026) | `game/g_active.c:3326`, `:3768` |
 | Licence | 447 files under `codemp/` and `shared/` carry "GNU General Public License version 2 as"; 27 carry "version 2 or any later version" (or "either version 2 of the License, or"). The GPL-v2-only conclusion of 02 section 2.9 holds for this tree | grep, not a legal reading |
 
 ## 8.4 A bug found on the way
 
 With `sv_ratePolicy 2` and the default `sv_maxRate 0`, `SV_UserinfoChanged` clamps the client rate with `Com_Clampi(sv_minRate, sv_maxRate, i)` = `Com_Clampi(0, 0, i)`, so the rate becomes 0 (`server/sv_client.cpp:1090`). `SV_RateMsec` then divides by `rate * timescale` = 0 (`server/sv_snapshot.cpp:679`). Not tested; read only. Set `sv_maxRate` when using policy 2, or fix the clamp.
 
-## 8.5 Where the functions of 02 and 07 are in this tree
+## 8.5 Findings of 5 November 2026 and measurements in this tree
+
+| finding (where first written) | location |
+|---|---|
+| Booleans are `qboolean`, an enum; 1 bit wide in the tables (02 section 2.2) | `shared/qcommon/q_platform.h:360` |
+| `user*` fields 1 bit wide, only the lowest bit sent; unused by the game module (02 section 2.2) | `qcommon/msg.cpp:1010-1021`; `MSG_WriteBits` `:137` |
+| `rocketLockTime` / `rocketTargetTime` floats holding a `serverTime`, sent as 32-bit integers (step 2) | `game/bg_pmove.c:5961`, `:5966` |
+| `fd.forceGripCripple` an `int` used as a 0/1 flag (step 2) | `game/w_force.c:497`, `:5258`, `:5268` |
+| Runtime width overrides, removed from the new protocol | `qcommon/msg.cpp:1890` |
+| `serverTime` = `sv.time`, the game clock, advanced by `1000 / sv_fps` per frame, following real time (02 section 2.4) | `server/sv_snapshot.cpp:198-200`, `server/sv_main.cpp:1169`, `:1226-1228` |
+| Demo writer `cursize = (bit >> 3) + 1`; `svc_EOF` appended (step 4) | `qcommon/msg.cpp:227`; `server/sv_net_chan.cpp:155` |
+
+| check, run in this repository on 5 November 2026 with rebuilt caches | result |
+|---|---|
+| `run_full.py` (study codec) | snapshot mean 139.1 bytes (5min), 106.5 (bots), 9.3 (solo); 0 failures |
+| `run_pred.py pi --fuzz` (step 1) | 107.3 / 82.7 / 8.0 bytes; 0 failures; fuzz seeds 1 to 5, 3,630 messages each, 0 failures |
+| Round trip of the 80 selected demos (step 4) | 427,468 messages, 0 failures |
+
+## 8.6 Where the functions of 02 and 07 are in this tree
 
 Generated with a script that searches each definition (lines of 5 November 2026). Functions only; sub-ranges cited in 02 are inside these functions.
 

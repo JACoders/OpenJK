@@ -44,7 +44,7 @@ Both parts of the check are met.
    General rule for the C++ implementation: every input of a prediction must be taken from what the client also holds, in the same canonical form.
 4. **Second-order angles need the base's own base.** Both sides keep, with each snapshot, the snapshot it was decoded against.
 5. **The trick of the rANS initial state** recovers 1.5 bytes per snapshot (3 bytes on a 9-byte message).
-6. **Game module dependency.** The captures come from the 1.01 base module, where players are `TR_LINEAR_STOP` with `trTime` = `commandTime`; the position prediction uses that `trTime`. A game module that sends players as `TR_INTERPOLATE` (without `trTime`) is handled too: the codec uses the `serverTime` difference of the message and its base. That rule is implemented and covered by the synthetic corpus, but no real recording exercises it.
+6. **Game module dependency** (settled on 5 November 2026: the target is the base game module, players as `TR_LINEAR_STOP`, 08 section 8.3). The captures come from the 1.01 base module, where players are `TR_LINEAR_STOP` with `trTime` = `commandTime`; the position prediction uses that `trTime`. A game module that sends players as `TR_INTERPOLATE` (without `trTime`) is handled too: the codec uses the `serverTime` difference of the message and its base. That rule is implemented and covered by the synthetic corpus, but no real recording exercises it.
 7. **Latency.** The codec does not change the round-trip time. It reduces rate delays and fragmentation (which matter at low `rate`, not at this branch's 25000). The latency gains are expected from steps 9 (acknowledgements) and 10 (interpolation delay computed instead of `cl_timeNudge`).
 
 ## Limits

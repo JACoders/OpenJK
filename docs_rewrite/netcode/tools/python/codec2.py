@@ -10,7 +10,7 @@ from codec import (EncIO, DecIO, Tables, rans_encode, cls_put, cls_get, put_fiel
 EF_NODRAW = 1 << 8
 ARR = C.PF2[len(B.T["ps"]):]
 PS_TABLES = {0: list(B.T["ps"]) + ARR,
-             1: list(B.T["pilot"][:len(B.T["pilot"]) - 82]) + ARR,      # the engine only sends the first (size - 82) fields
+             1: list(B.T["pilot"]) + ARR,      # all 140 fields: the 1.01 "size - 82" rule is a bug, and servers with the OpenJK fix send more (step 4)
              2: list(B.T["veh"]) + ARR}
 OPS = {"nop": 1, "gs": 2, "cmd": 3, "snap": 4, "setgame": 5, "dl": 6, "mapchange": 7}
 OPNAME = {v: k for k, v in OPS.items()}

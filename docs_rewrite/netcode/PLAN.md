@@ -2,7 +2,7 @@
 
 This plan turns [04](04-recommendations.md) into steps to do one after the other. Each step has a deliverable, a check that says when it is done, and the steps it depends on. Progress, results of finished steps and the next action are in [progress/README.md](progress/README.md). The plan follows the owner's goals listed in the study's [README](README.md): no loss of precision, no compatibility constraint, as few network settings as possible, netcode that other JKA forks can reuse, and Windows and Linux (x86 and x64) as targets.
 
-The work happens in this repository (a fork of OpenJK, branch `feature/poc-netcode`). Paths are relative to `codemp/`; where a function is cited, its line in this tree is in [08-openjk.md](08-openjk.md) section 8.5. Effort labels: S = days, M = weeks, L = months, for one engineer who knows the code.
+The work happens in this repository (a fork of OpenJK, branch `feature/poc-netcode`). Paths are relative to `codemp/`; where a function is cited, its line in this tree is in [08-openjk.md](08-openjk.md) section 8.6. Effort labels: S = days, M = weeks, L = months, for one engineer who knows the code.
 
 ## 1. Principles
 
@@ -51,6 +51,8 @@ Depends on: step 2. **No longer needed before step 5**: client demos give the da
 ### Step 4: demo corpus (S; the owner supplies the demos)
 
 Depends on: nothing (decided 5 November 2026: client demos replace new recordings).
+
+**Done on 5 November 2026** ([progress/step-04-demo-corpus.md](progress/step-04-demo-corpus.md)): 1,116 demos (148 hours, CTF, team FFA, siege, duel; 1.01 protocol; no JA+ or JAPRO) indexed; 60 training and 20 held-out demos (held out by map), first 5,400 messages each; round trip 0 failures after removing the 1.01 pilot rule from `codec2.py`. All demos stay in `data/demos/train/` as supplied; the sets are a column of `data/demos/selection.tsv`, not folders.
 
 Why demos work: the client writes into a demo exactly the server message it received, after removing the netchan header (fragments reassembled) and the XOR, and before nothing else is changed (`CL_PacketEvent` and `CL_WriteDemoMessage`, `codemp/client/cl_main.cpp:2052-2104`, `:206`). The proxy captures of the study hold the same message taken on the server just before `SV_Netchan_Transmit`. Differences, all handled by the reader:
 
@@ -102,7 +104,7 @@ Depends on: step 6.
 
 - Server: build every message with the codec in `SV_SendClientSnapshot`, `SV_SendClientGameState`, `SV_WriteDownloadToClient` and `SV_SendClientMapChange`; keep the base selection of `SV_WriteSnapshotToClient` for now (step 9 changes it).
 - Client: decode in `CL_ParseServerMessage` into `clSnapshot_t`, `cl.parseEntities` and `cl.entityBaselines`, with the validity rules of `CL_ParseSnapshot` (base valid, matching message number, entities not overwritten) and the `%` sanitation of strings.
-- Cover: bots (built but not sent), spectators, vehicles and pilots, downloads (UDP; HTTP downloads are separate), `svc_setgame`, `svc_mapchange`, and both demo systems: client demos and the server-side demos (`sv_autoDemo`) record the message stream, so the demo format changes with the protocol (old demos need the old reader or a converter; decide).
+- Cover: bots (built but not sent), spectators, vehicles and pilots, downloads (UDP; HTTP downloads are separate), `svc_setgame`, `svc_mapchange`, and both demo systems: client demos and the server-side demos (`sv_autoDemo`, present in OpenJK) record the message stream, so the demo format changes with the protocol (old demos need the old reader or a converter; decide).
 - New protocol number; refuse a mismatch at the `connect` handshake. Out-of-band messages keep their own format.
 - Statistics cvars or commands: bytes per snapshot, symbols, escapes, base age.
 - Check: a normal game plays with no visible difference; `cg_showmiss` shows no new prediction misses; the statistics match step 5 within 5 %; client and server demos record and play back.

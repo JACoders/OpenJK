@@ -6,17 +6,20 @@ CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fullmsgs.pkl")
 
 def s32(v): return v - (1 << 32) if v >= (1 << 31) else v
 
-def load_stream(fn, T, dec):
+def load_stream(fn, T, dec, demo=False):
+    """demo=True: fn is a client demo (its first demo_select.MAX_MSGS messages). The first gamestate of a demo is the
+    one the recording client rebuilt: use it for decoding, never for gamestate sizes."""
     cl = J.Client(); sid = None; seen = False; out = []
-    for seg, hdr, data in J.read_capture(fn):
+    ends = ("EOF", "BADEND", "gamestate") if demo else ("data", "gamestate")
+    for seg, hdr, data in (J.demo_capture(fn, bdata.demo_select.MAX_MSGS) if demo else J.read_capture(fn)):
         if hdr["sid"] != sid:
             cl = J.Client(); sid = hdr["sid"]; seen = False
         log = []
         try:
-            m = J.parse_message(data, hdr, T, dec, cl, log)
+            m = J.parse_message(data, hdr, T, dec, cl, log, demo)
         except Exception:
             continue
-        if m["end"] not in ("data", "gamestate"):
+        if m["end"] not in ends:
             continue
         if m["end"] == "gamestate": seen = True
         if not seen: continue
@@ -38,7 +41,7 @@ def load_stream(fn, T, dec):
             else:
                 raise ValueError(k)
         delta = next((op["delta"] for op in ops if op["t"] == "snap"), 0)
-        out.append(dict(seq=hdr["seq"], msg=dict(ack=ack, ops=ops), delta=delta))
+        out.append(dict(seq=hdr["seq"], msg=dict(ack=ack, ops=ops), delta=delta, nbytes=m.get("size", len(data))))
     return out
 
 def load_all():
@@ -46,6 +49,17 @@ def load_all():
     T, dec = J.setup()
     res = {k: load_stream(v, T, dec) for k, v in bdata.FILES.items()}
     pickle.dump(res, open(CACHE, "wb"), protocol=4)
+    return res
+
+def load_demo(rel):
+    """Whole messages of one selected demo (path relative to data/demos), cached."""
+    c = bdata.demo_cache(rel, "full")
+    if os.path.exists(c):
+        return pickle.load(open(c, "rb"))
+    T, dec = J.setup()
+    res = load_stream(os.path.join(bdata.demo_select.ROOT, rel), T, dec, demo=True)
+    os.makedirs(bdata.DEMO_CACHE, exist_ok=True)
+    pickle.dump(res, open(c, "wb"), protocol=4)
     return res
 
 if __name__ == "__main__":

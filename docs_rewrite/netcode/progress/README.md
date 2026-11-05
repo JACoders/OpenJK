@@ -2,24 +2,23 @@
 
 This folder records where the work stands, so that a new session (human or model) can resume without re-reading everything. One document per finished step of [PLAN.md](../PLAN.md); this page is the summary and is updated at the end of every session.
 
-Last update: 5 November 2026 (step 2 done; next is the demo reader, step 4, when the first demo is supplied).
+Last update: 5 November 2026 (steps 2 and 4 done; next is step 5, measurements on the demos).
 
 ## Where we are
 
 | step of the plan | status | result | document |
 |---|---|---|---|
-| before the plan: study moved into this repository (OpenJK), re-checked | done | every number of the study reproduced in this repository; OpenJK is wire-compatible with 1.01 except the pilot player state | [../08-openjk.md](../08-openjk.md), [../06-reproduction.md](../06-reproduction.md) section 6.7 |
+| before the plan: study moved into this repository (OpenJK), re-checked | done | every number of the study and of the demo round trip reproduced here; OpenJK is wire-compatible with 1.01 except the pilot player state | [../08-openjk.md](../08-openjk.md), [../06-reproduction.md](../06-reproduction.md) section 6.7 |
 | 1. prediction modes and rANS trick in the Python codec | **done** | 139.1 to **107.3** real bytes per snapshot (engine 337.6), 0 round-trip failures | [step-01-prediction-codec.md](step-01-prediction-codec.md) |
 | 2. field descriptors from one source | **done** | `data/fields.json` (schema 2) generated from `msg.cpp`, offsets and C types by the compiler; tools read it; 139.1 and 107.3 unchanged; runtime overrides removed | [step-02-field-descriptors.md](step-02-field-descriptors.md) |
 | 3. state recorder in the server | later | not needed before step 5 since demos are used | |
-| 4. demo corpus | **next**, with the owner | `.dm_26` reader to write; the owner supplies demos | |
+| 4. demo corpus | **done** | 1,116 demos indexed (148 h); 60 train + 20 held-out demos (held out by map), 427,468 messages; round trip 0 failures; pilot rule removed from `codec2.py` | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
 | 5 to 13 | to do | | |
 
 ## Next actions
 
-1. Step 4 of the plan: write the `.dm_26` reader in `jkadec.py` (strip the final `svc_EOF`; do not measure the rebuilt gamestate) and test it on the first demo supplied. `data/demos/` does not exist yet.
-2. Owner: put demos in `data/demos/train/` and `data/demos/holdout/` (the held-out ones chosen before any measurement): protocol 1.01 (`.dm_26`), several humans, many maps, FFA, CTF, team FFA, duel, siege, race, several mods; note for each the map, mode, mod, player count, and `sv_fps` if known.
-3. Then step 5: re-run the measurements on the demos.
+1. Step 5: re-run the measurements on the selected demos (train on `train`, measure on `holdout`), by game type, map, server build, snapshot interval and base age; check the gap between held-out and training sizes ([step-04-demo-corpus.md](step-04-demo-corpus.md), "What step 5 needs").
+2. Corpus scope (owner, 5 November 2026): no race, no JA+ or JAPRO demos will come. Possible addition: one FFA bot demo on this branch (base game module), only for the FFA game type.
 
 ## Decisions taken (with the date)
 
@@ -27,7 +26,6 @@ Last update: 5 November 2026 (step 2 done; next is the demo reader, step 4, when
 |---|---|---|
 | 4 Nov 2026 | Measurements stay referenced to the original 1.01 server (the captures) | [../08-openjk.md](../08-openjk.md) |
 | 4 Nov 2026 | Owner's goals: no loss of precision (values identical to today's or more precise, never less); no compatibility constraint; as few network settings as possible, computed at run time; netcode reusable by other JKA forks | [../README.md](../README.md), "Owner's goals" |
-| 4 Nov 2026 | Branch defaults: `sv_fps` 20 (was 40), `sv_clientRate` 25000 (was 50000); `snaps` stays 40, `rate` 25000, `cl_maxpackets` 63; rate and snaps policies and the pilot fix are kept | `codemp/server/sv_init.cpp:960`, `:983`; [../08-openjk.md](../08-openjk.md) section 8.2 |
 | 4 Nov 2026 | Do not restore the 1.01 pilot rule (`size - 82`): it was a bug | [../08-openjk.md](../08-openjk.md) section 8.1 |
 | 4 Nov 2026 | No rounding of positions, neither on the client nor on the server (float32 is finer than any useful grid) | [../04-recommendations.md](../04-recommendations.md) section 4.3 |
 | 4 Nov 2026 | Settings to remove and compute at run time; new debug cvars and commands are welcome | [../04-recommendations.md](../04-recommendations.md) section 4.10 |
@@ -39,15 +37,19 @@ Last update: 5 November 2026 (step 2 done; next is the demo reader, step 4, when
 | 5 Nov 2026 | Descriptors carry the C type of each field (schema version 2); the new codec sends booleans as "changed" only and codes `user*` fields by C type | [../04-recommendations.md](../04-recommendations.md) section 4.2; [step-02-field-descriptors.md](step-02-field-descriptors.md) |
 | 5 Nov 2026 | `serverTime` stays the game clock; a real send timestamp is evaluated in step 10 | [../04-recommendations.md](../04-recommendations.md) section 4.9; [../02-engine-code-findings.md](../02-engine-code-findings.md) section 2.4 |
 | 5 Nov 2026 | Runtime width overrides (`netf_overrides.txt`, `psf_overrides.txt`) removed from the new protocol; mod compatibility is never a criterion, not even a question to ask | [step-02-field-descriptors.md](step-02-field-descriptors.md); [../README.md](../README.md), "Owner's goals" item 2 |
+| 5 Nov 2026 | Demo selection: exclude files with more than 5 % undecodable messages or under 3 minutes; held-out set by map (about 20 % of the maps per game type, seed 1); 60 training and 20 held-out demos, first 5,400 messages each | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
+| 5 Nov 2026 | `codec2.py` codes all 140 pilot fields (1.01 rule dropped): real servers send more than 58 | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
+| 5 Nov 2026 | Branch defaults: `sv_fps` 20 (upstream 40), `sv_clientRate` 25000 (upstream 50000); other defaults upstream (`sv_snapsPolicy` 1, `cl_maxpackets` 63); rate and snaps policies and the pilot fix are kept | `codemp/server/sv_init.cpp:960`, `:983`; [../08-openjk.md](../08-openjk.md) section 8.2 |
+| 5 Nov 2026 | Target game module: the base one (OpenJK's), players sent as `TR_LINEAR_STOP` with `g_smoothClients` 1, never rounded; game code keeps the base game's precision; no `TR_INTERPOLATE` recording needed | [../08-openjk.md](../08-openjk.md) section 8.3 |
 | 5 Nov 2026 | Step 2 before step 4, since no demo is available yet; field offsets computed by a small CMake program (`tools/fieldinfo`) built by the owner, not by parsing headers | [step-02-field-descriptors.md](step-02-field-descriptors.md) |
 
 ## Open questions for the owner
 
 
-- Which game module the new game will use: the 1.01 base module (players sent as `TR_LINEAR_STOP`, like the captures) or one that sends players as `TR_INTERPOLATE` (some mods). The codec handles both; the recordings of step 4 should cover the one that will ship.
 - Five transport questions of [../07-transport-study.md](../07-transport-study.md) section 7.7 (encryption, player count, IPv6, server browser, Apache-2.0 / OpenSSL licence position; platforms is answered). Not needed before step 9.
 
 ## Known issues found on the way (not fixed)
+
 
 - The `user*` mod fields are networked 1 bit wide, floats included: only the lowest bit reaches the client unless a mod widens them with the overrides files ([../02-engine-code-findings.md](../02-engine-code-findings.md) section 2.2).
 
@@ -56,7 +58,8 @@ Last update: 5 November 2026 (step 2 done; next is the demo reader, step 4, when
 ## State of the repository
 
 - Nothing of this work is committed unless the owner did it. Check `git status` at the start of a session.
-- Branch changes in the engine so far: the two defaults above in `codemp/server/sv_init.cpp`. Everything else is under `docs_rewrite/netcode/`.
+- This repository is the OpenJK fork `E:\Git\jka\OpenJK_Netcode`, branch `feature/poc-netcode`.
+- Branch changes outside `docs_rewrite/netcode/`: the two defaults in `codemp/server/sv_init.cpp` (`sv_fps` 20, `sv_clientRate` 25000) and `*.dm_26` in `.gitignore`. Nothing in the game module.
 - Python caches (`*.pkl`) are rebuilt by the tools and ignored by git. Delete `bdata.pkl` and `fullmsgs.pkl` after regenerating `data/fields.json`.
 - `tools/fieldinfo/build/` is ignored by git; the owner builds `fieldinfo.exe` there.
 

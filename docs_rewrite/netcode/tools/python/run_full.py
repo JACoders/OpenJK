@@ -73,9 +73,10 @@ def decode_check(msgs, modes, tables, label):
         print("      %-28s n=%5d  real bytes mean %7.1f p95 %5d max %5d" % ("+".join(k), len(v), sum(v) / len(v), v[int(len(v) * .95)], v[-1]))
     return bad
 
-def main():
+def train():
+    """modes and tables trained on the first 60 % of the 5min capture"""
     msgs = RAW["5min"]; cut = int(len(msgs) * 0.6)
-    train, test = msgs[:cut], msgs[cut:]
+    train = msgs[:cut]
     # snapshots ps/ents training data for the modes: reuse bench2 data for the 5min train part
     items = B.data["5min"]; st5 = B.states["5min"]
     modes = B.choose_modes(items[:int(len(items) * 0.6)], st5, 0, None)
@@ -83,6 +84,11 @@ def main():
     encode_stream(train, modes, counts=counts, only=lambda s, m: False)
     tables = C.Tables(counts, 0.01)
     print("tables trained on %d messages, %d contexts" % (cut, len(counts)))
+    return modes, tables
+
+def main():
+    msgs = RAW["5min"]
+    modes, tables = train()
     # the test part needs the store of the train part (bases): replay whole stream, check only the test messages
     class Part(list): pass
     bad = decode_check(msgs, modes, tables, "5min (all; first 60%% = train)")

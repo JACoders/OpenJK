@@ -18,6 +18,7 @@ FLOAT_INT_BIAS = 1 << (FLOAT_INT_BITS - 1)
 NYT = 256
 INTERNAL = 257
 PACKET_BACKUP = 32
+MAX_MSGLEN = 49152
 
 # ---------------------------------------------------------------- huffman
 class Node:
@@ -335,7 +336,10 @@ class Client:
         self.baselines = {}
         self.snaps = {}      # seq -> dict(ps, vps, ents(list of (num,state)))
 
-def parse_message(data, hdr, T, dec, cl, log):
+def parse_message(data, hdr, T, dec, cl, log, demo=False):
+    """demo=True: a client demo message, which ends with the svc_EOF the server appends after the capture point.
+    Then out["size"] is the message size without it (the server's cursize before svc_EOF: (bit >> 3) + 1)
+    and out["end"] is "EOF" only if the message ends 1 to 8 bits after it, else "BADEND"."""
     r = Reader(data, dec)
     r.log = log
     r.tag = ("h", "ack")
@@ -343,13 +347,17 @@ def parse_message(data, hdr, T, dec, cl, log):
     out = {"seq": seq, "time": hdr["time"], "client": hdr["client"], "len": len(data), "ops": []}
     r.long()    # reliableAcknowledge
     while True:
-        if len(data) * 8 - r.bit <= 8:   # capture is taken before the EOF byte is appended
+        if not demo and len(data) * 8 - r.bit <= 8:   # capture is taken before the EOF byte is appended
             out["end"] = "data"; break
         p0 = r.bit
         r.tag = ("h", "cmd")
         cmd = r.byte()
         if cmd == 10:
-            out["end"] = "EOF"; break
+            out["end"] = "EOF"
+            if demo:
+                out["size"] = (p0 >> 3) + 1
+                if not 1 <= len(data) * 8 - r.bit <= 8: out["end"] = "BADEND"
+            break
         if cmd == 1:
             out["ops"].append(("nop", r.bit - p0))
         elif cmd == 5:
@@ -474,6 +482,23 @@ def read_capture(fn):
             p += 24 + ln
         else:
             raise ValueError("bad tag at %d" % p)
+
+def read_demo(fn):
+    """Client demo (.dm_26, CL_WriteDemoMessage / CL_StopRecord_f): per message int32 sequence, int32 length, the bytes;
+    the end marker is -1 -1. Returns ([(seq, data)], end) with end "marker", "eof" (no marker), "truncated" or "badlen"."""
+    d = open(fn, "rb").read(); p = 0; out = []
+    while p + 8 <= len(d):
+        seq, ln = struct.unpack_from("<ii", d, p)
+        if ln == -1: return out, "marker"
+        if not 0 <= ln <= MAX_MSGLEN: return out, "badlen"
+        if p + 8 + ln > len(d): return out, "truncated"
+        out.append((seq, d[p + 8:p + 8 + ln])); p += 8 + ln
+    return out, "eof" if p == len(d) else "truncated"
+
+def demo_capture(fn, limit=None):
+    """The first `limit` messages of a demo in the shape of read_capture: (seg, hdr, data); no receive time, one sid."""
+    for seq, data in read_demo(fn)[0][:limit]:
+        yield None, dict(time=None, seq=seq, sid=0, client=None), data
 
 def setup():
     src = open(SRC, encoding="latin-1").read()

@@ -37,12 +37,12 @@ The check is met.
 
 1. **Booleans.** All 8 entity and 15 or 2 player-state `qboolean` fields are 1 bit wide. Today a changed boolean costs 2 or 3 bits (02 section 2.2); the value bit is redundant. The new codec sends only "changed" for them (04 section 4.2).
 2. **`user*` fields are truncated to 1 bit**, floats included (02 section 2.2). Coded by C type in the new codec.
-3. **`rocketLockTime` and `rocketTargetTime`** are floats that hold a `serverTime` (`game/bg_pmove.c:5961`, `:5966`) and are sent as their raw 32-bit pattern (width 32, integer path): lossless, but not coded as floats. Coded by type, they become integral floats that the T mode (time against the message's `serverTime`) can predict. Separate game-side limit: a float holds integers exactly only up to 2^24 ms (4.7 hours of server time); beyond that the stored time is already rounded by the game, before the network.
-4. **`fd.forceGripCripple`** is an `int` used as a flag (set to 0 or 1, `game/w_force.c:497`, `:5258`, `:5268`) and sent in 1 bit. Treating it as a boolean needs its type changed to `qboolean` in `q_shared.h` (allowed by the owner's goal 2); until then it stays an integer for the codec.
+3. **`rocketLockTime` and `rocketTargetTime`** are floats that hold a `serverTime` (`game/bg_pmove.c:5961`, `:5966` in OpenJK) and are sent as their raw 32-bit pattern (width 32, integer path): lossless, but not coded as floats. Coded by type, they become integral floats that the T mode (time against the message's `serverTime`) can predict. Separate game-side limit: a float holds integers exactly only up to 2^24 ms (4.7 hours of server time); beyond that the stored time is already rounded by the game, before the network.
+4. **`fd.forceGripCripple`** is an `int` used as a flag (set to 0 or 1, `game/w_force.c:497`, `:5258`, `:5268` in OpenJK) and sent in 1 bit. Treating it as a boolean needs its type changed to `qboolean` in `q_shared.h` (allowed by the owner's goal 2); until then it stays an integer for the codec.
 
 ## Decision: runtime width overrides are removed (5 November 2026)
 
-`MSG_CheckNETFPSFOverrides` (`codemp/qcommon/msg.cpp:1890`) reads `ext_data/MP/netf_overrides.txt` and `psf_overrides.txt` from the game's files and changes the widths of the entity and player-state tables at run time ([../02-engine-code-findings.md](../02-engine-code-findings.md) section 2.3). A mod that ships these files changes the wire format; a demo of such a server does not decode with the default tables. The new protocol removes the mechanism: the `user*` fields are coded by their C type, so every value is sent whole and nothing needs widening. Compatibility with existing mods, their files or the old protocol is never a criterion (owner's goal 2, restated 5 November 2026): do not ask whether a mod uses something before changing or removing it. The legacy path in the branch keeps the mechanism until step 7 replaces it. According to the owner (5 November 2026), no mod ships `netf_overrides.txt` or `psf_overrides.txt`. Demos therefore decode with the default tables.
+`MSG_CheckNETFPSFOverrides` (`codemp/qcommon/msg.cpp:1890` in OpenJK) reads `ext_data/MP/netf_overrides.txt` and `psf_overrides.txt` from the game's files and changes the widths of the entity and player-state tables at run time ([../02-engine-code-findings.md](../02-engine-code-findings.md) section 2.3). A mod that ships these files changes the wire format; a demo of such a server does not decode with the default tables. The new protocol removes the mechanism: the `user*` fields are coded by their C type, so every value is sent whole and nothing needs widening. Compatibility with existing mods, their files or the old protocol is never a criterion (owner's goal 2, restated 5 November 2026): do not ask whether a mod uses something before changing or removing it. The legacy path in the branch keeps the mechanism until step 7 replaces it. According to the owner (5 November 2026), no mod ships `netf_overrides.txt` or `psf_overrides.txt`. Demos therefore decode with the default tables.
 
 ## Regenerate
 
@@ -56,6 +56,8 @@ python gen_fields.py --exe ../fieldinfo/build/Release/fieldinfo.exe   # writes .
 
 Delete `bdata.pkl` and `fullmsgs.pkl` afterwards so that the caches are rebuilt with the new tables.
 
+`fieldinfo` has been built only with MSVC (Release) so far. The offsets and sizes in `data/fields.json` are therefore checked on that compiler only; building it with GCC and Clang, x86 and x64, and comparing the output belongs to the Linux builds of step 6.
+
 ## What the next steps need from this one
 
-- Step 6 (C++) reads the same descriptors: either `fields.json` at build time, or a C++ table generated from it, checked against the schema hash. The 1.01 pilot rule (`size - 82`) is a protocol rule kept in `codec2.py`, not a descriptor.
+- Step 6 (C++) reads the same descriptors: either `fields.json` at build time, or a C++ table generated from it, checked against the schema hash. The 1.01 pilot rule (`size - 82`) is a protocol rule, not a descriptor; `codec2.py` dropped it in step 4 ([step-04-demo-corpus.md](step-04-demo-corpus.md)).

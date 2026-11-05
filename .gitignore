@@ -194,3 +194,5 @@ compile_commands.json
 #############
 [Bb]uild*/
 cmake-build-*
+
+*.dm_26

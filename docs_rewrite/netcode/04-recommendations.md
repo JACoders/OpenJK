@@ -133,20 +133,20 @@ Recommendation: do the codec first on the existing netchan (steps 1 to 8 of the 
 
 ## 4.9 Other server-side policy to revisit
 
-- **Default `rate`.** At the 1.01 client default of 4000 bytes per second the engine delays 93 % of snapshots; the new codec delays 39 %. This branch's defaults (rate 25000 imposed by the server) delay none on the study's data (08 section 8.2). The plan replaces the setting by a measured bandwidth estimate (4.10).
+- **Default `rate`.** At the 1.01 client default of 4000 bytes per second the engine delays 93 % of snapshots; the new codec delays 39 %. This branch's defaults (rate 25000 imposed by the server, 20 snapshots per second) delay none on the study's data (08 section 8.2). The plan replaces the setting by a measured bandwidth estimate (4.10).
 - **Snapshot rate.** `snaps` 20 and `sv_fps` 20 are the defaults used in the captures. A higher rate is cheaper in bytes per snapshot with the new codec, but the study did not measure its effect on size per second.
 - **Time base** (5 November 2026). `serverTime` is the game clock, which follows real time in steps of `1000 / sv_fps` ms (02 section 2.4); it must stay the time the positions refer to, so replacing it by `Sys_Milliseconds()` would be wrong. What the client lacks is the real send time and the server's processing delay, which would help its clock synchronisation (`CL_AdjustTimeDelta`) and the computed interpolation delay of 4.10. To evaluate in step 10 as an additional timestamp, costed in bytes.
 - **Not studied (and potentially large):** per-client priority and bandwidth budgets, distance-based update frequency, interest management (culling entities the client does not need), and delta coding of entities relative to each other. The study measured only how well a given set of updates is coded, not which updates to send.
 
 ## 4.10 Settings to remove or compute (owner's goal 3 in the README)
 
-Network settings found in OpenJK (defaults in brackets). The aim is that players and administrators set none of them; the engine measures and adapts. New commands and cvars for debugging and statistics are welcome (for example forcing a value to test it, or printing the measured bandwidth, RTT, jitter, base age and bytes per snapshot); they must not be needed for normal play. Judgement, not measured.
+Network settings found in OpenJK (defaults in brackets; `cl_maxpackets` is 63 and `sv_snapsPolicy` 1 in OpenJK, 08 section 8.2). The aim is that players and administrators set none of them; the engine measures and adapts. New commands and cvars for debugging and statistics are welcome (for example forcing a value to test it, or printing the measured bandwidth, RTT, jitter, base age and bytes per snapshot); they must not be needed for normal play. Judgement, not measured.
 
 | setting | what it does today | replacement |
 |---|---|---|
 | `rate` (25000), `sv_maxRate`, `sv_minRate`, `sv_ratePolicy`, `sv_clientRate`, `sv_lanForceRate` | fixed bytes-per-second budget per client | bandwidth estimate per connection from the acknowledgement record (delivery rate, RTT growth, loss), as delay-based congestion control does; LAN detected by measurement, not by address class. An administrator cap on total upload may remain |
 | `snaps` (40), `sv_snapsMin`, `sv_snapsMax`, `sv_snapsPolicy` | snapshots per second per client | one snapshot per server frame, reduced only when the bandwidth estimate requires it |
-| `cl_maxpackets` (63), `cl_lanForcePackets` | client packets per second | one packet per client frame that has new input, limited by the same bandwidth estimate |
+| `cl_maxpackets` (100), `cl_lanForcePackets` | client packets per second | one packet per client frame that has new input, limited by the same bandwidth estimate |
 | `cl_packetdup` (1) | repeats earlier `usercmd`s | resend every input not yet acknowledged by the server, up to a cap (the Overwatch scheme, 05 section 5.9) |
 | `cl_timeNudge` (0), `cl_timenudgeDuration`, `cg_smoothClients` (1) | shifts the client's view of time (negative = less interpolation delay, more extrapolation) and selects extrapolation of other players | interpolation delay computed from the measured snapshot interval and jitter (enough buffer to always have the next snapshot, no more); no user offset |
 | `cl_nodelta` (0) | asks for snapshots without a base | debugging only |

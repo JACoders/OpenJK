@@ -37,6 +37,9 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 | file | purpose |
 |---|---|
 | `gen_fields.py` | Plan step 2: generates `../fieldinfo/fields.inc` from `codemp/qcommon/msg.cpp`, and with `--exe <fieldinfo.exe>` writes `data/fields.json` (field tables, widths, C types, offsets, arrays, schema version and hash). Every other tool reads `fields.json` ([progress/step-02-field-descriptors.md](progress/step-02-field-descriptors.md)). |
+| `demo_index.py` | Plan step 4: decodes every client demo under `data/demos` (in parallel) and writes `data/demos/index.tsv` (decode counts, server, mod, map, game type, players, snapshot interval, duration, engine snapshot size). |
+| `demo_select.py` | Plan step 4: train and held-out selection from the index, written to `data/demos/selection.tsv`; `selection()` returns it. `bdata.load_demo` and `fullload.load_demo` load one selected demo, cached in `data/demos/cache/`. |
+| `run_demos.py` | Plan step 4 check: round trip of the selected demos with `codec2`, tables trained as `run_full.py` (in parallel). |
 | `jkadec.py` | Decoder of the engine read path: Huffman tree, `MSG_ReadBits`, delta entity and player state, `svc_*` operations. `python jkadec.py file.bin` prints a decode summary and writes `file.bin.dec.pkl`. Also the library imported by the others. |
 | `bdata.py` | Builds the per-snapshot corpus (states, call lists) from the three captures; cache `bdata.pkl`. |
 | `fullload.py` | Builds the whole-message corpus (all operations with payloads); cache `fullmsgs.pkl`. |
