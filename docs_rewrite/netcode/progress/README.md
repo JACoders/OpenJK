@@ -14,7 +14,8 @@ Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ cod
 | 3. state recorder in the server | later | not needed before step 5 since demos are used | |
 | 4. demo corpus | **done** | 1,116 demos indexed (148 h); 60 train + 20 held-out demos (held out by map), 427,468 messages; round trip 0 failures; pilot rule removed from `codec2.py` | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
 | 5. measurements on the demos | **done** | held-out snapshots 69.0 bytes against 155.1 for the engine (ratio 0.445; all messages 0.483); held-out within 6 % of training; one global table set, no age context; 0 round-trip failures | [step-05-demo-measurements.md](step-05-demo-measurements.md) |
-| 6 to 13 | to do | | |
+| 6. C++ codec library | in progress | Python reference updated first: final rANS state little-endian, booleans as flips, `user*` by C type; sizes unchanged, 0 failures | [step-06-cpp-codec.md](step-06-cpp-codec.md) |
+| 7 to 13 | to do | | |
 
 ## Next actions
 
@@ -44,6 +45,9 @@ Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ cod
 | 5 Nov 2026 | Target game module: the base one (OpenJK's), players sent as `TR_LINEAR_STOP` with `g_smoothClients` 1, never rounded; game code keeps the base game's precision; no `TR_INTERPOLATE` recording needed | [../08-openjk.md](../08-openjk.md) section 8.3 |
 | 5 Nov 2026 | One global table set, without the base age as a context (per game type and age context each save about 2 %, less than the differences between maps); one table set must work at any `sv_fps` | [step-05-demo-measurements.md](step-05-demo-measurements.md); [../04-recommendations.md](../04-recommendations.md) section 4.5 |
 | 5 Nov 2026 | Ideal-byte benchmarks (`bench2.py`, `bench5.py`) not re-run on the demos, real codec instead; `TR_INTERPOLATE` check dropped (base game module) | [step-05-demo-measurements.md](step-05-demo-measurements.md) |
+| 5 Nov 2026 | rANS: ryg_rans `rans_byte.h` design (32-bit state, byte renormalisation, reciprocal encoder), with the initial-state trick (`X0 = 1`), a decoder that stops at the end of the input, and the final state little-endian at the start of the message (`codec.py` changed; sizes and round trips unchanged) | `tools/python/codec.py`; step 6 |
+| 5 Nov 2026 | Step 6 layout: directory `codemp/netcodec/`, its own CMake target (named after the role, not the entropy coder, which may be replaced; not in `shared/`, which is common to the single-player, JK2 and multiplayer trees); C++17 allowed (newer than OpenJK's C++11); plain C++ interface, no C interface (the engine and the forks are C++); CMake builds with MSVC, GCC and Clang; trained tables compiled into the binary (generated source), not a data file; test traces generated locally from the demos, never committed (player names) | [../PLAN.md](../PLAN.md) step 6 |
+| 5 Nov 2026 | No interleaved rANS states: about 1.5 times faster but about 4 bytes more per message, while CPU is not a constraint (04 section 4.4) | step 6 |
 | 5 Nov 2026 | Step 2 before step 4, since no demo is available yet; field offsets computed by a small CMake program (`tools/fieldinfo`) built by the owner, not by parsing headers | [step-02-field-descriptors.md](step-02-field-descriptors.md) |
 
 ## Open questions for the owner

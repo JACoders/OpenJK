@@ -83,7 +83,7 @@ Depends on: steps 1 and 4. **Done** 5 November 2026: [progress/step-05-demo-meas
 
 Depends on: steps 2 and 5.
 
-- New directory `qcommon/netcodec/` (name to be decided), C++ with a C interface, no dependency on server or client:
+- New directory `codemp/netcodec/` (decided 5 November 2026; not `shared/`, which holds code common to the single-player, JK2 and multiplayer trees), C++17 with a plain C++ interface (a few functions and plain structures, no STL or exceptions in the public header; no C interface, since the engine and the forks that would reuse it are C++), no dependency on server or client; CMake builds it with MSVC, GCC and Clang; the trained tables are compiled in:
 
 | unit | content | reference |
 |---|---|---|

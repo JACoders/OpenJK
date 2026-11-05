@@ -18,6 +18,25 @@ for a in B.bdata.J.FIELDS["arrays"]:
 NP = len(PF2)
 PNAMES = [n for n, b in PF2]
 
+# C types of the fields (fields.json): booleans are sent as "changed" only (new = !old), the user* mod fields by their
+# C type (32-bit int or float) instead of their 1-bit legacy width (04 section 4.2)
+CTYPE = {}
+for _tn, _t in B.bdata.J.FIELDS["tables"].items():
+    for _f in _t:
+        _cn = ("e:" if _tn == "ent" else "p:") + _f["name"]
+        assert CTYPE.get(_cn, _f["type"]) == _f["type"], _cn
+        CTYPE[_cn] = _f["type"]
+
+def ctype_bits(pre, name, bits):
+    """width the new codec uses for a field: the legacy width, except user* fields (by C type: 32 = int, 0 = float) and
+    booleans (qboolean is an int: a value other than 0 / 1 is sent whole, 32 bits)"""
+    if CTYPE.get(pre + name) == "bool": return 32         # array fields (stats[], ...) are int, not in CTYPE
+    if not name.startswith("user"): return bits
+    return 0 if CTYPE[pre + name] == "float" else 32
+
+EF[:] = [(n, ctype_bits("e:", n, b)) for n, b in EF]
+PF2[:] = [(n, ctype_bits("p:", n, b)) for n, b in PF2]
+
 f32 = B.f32; s32 = B.s32; zz = B.zz; fkind = B.fkind; cls_of = B.cls_of
 A16 = 360.0 / 65536
 def rnd(x): return int(math.floor(x + 0.5))
@@ -50,7 +69,7 @@ def chunks(n):
 class DecIO:
     def __init__(self, buf, tables):
         self.buf = buf; self.pos = 4; self.T = tables
-        self.x = int.from_bytes(buf[:4], "big")
+        self.x = int.from_bytes(buf[:4], "little")          # final encoder state, little-endian (as ryg_rans)
     def _get(self, f, cum):
         slot = self.x & PM
         s = bisect.bisect_right(cum, slot) - 1
@@ -102,7 +121,7 @@ def rans_encode(units, tables):
         while x >= xmax:
             out.append(x & 255); x >>= 8
         x = ((x // freq) << PB) + (x % freq) + start
-    out += x.to_bytes(4, "little")
+    out += x.to_bytes(4, "big")                          # reversed below: little-endian at the start
     return bytes(reversed(out))
 
 # ------------------------------------------------------------------ value coding (symmetric put / get)
@@ -212,6 +231,10 @@ def pred_a2(cn, ov):
 
 def put_field(io, name, bits, nv, ov, modes, pre):
     mode = modes.get(name, "d"); cn = pre + name       # playerstate and entity fields keep separate contexts
+    if CTYPE.get(cn) == "bool":                         # only changed fields are coded: 0/1 to 1/0 needs no value
+        flip = nv in (0, 1) and ov in (0, 1)
+        io.s((cn, "b"), 2, 0 if flip else 1)
+        if flip: return
     pm = PMODES.get(cn)
     if pm == "t" and bits == 32 and CTX.get("time") is not None:
         d = ((nv - (CTX["time"] & 0xFFFFFFFF) + (1 << 31)) % (1 << 32)) - (1 << 31)
@@ -234,6 +257,7 @@ def put_field(io, name, bits, nv, ov, modes, pre):
 
 def get_field(io, name, bits, ov, modes, pre):
     mode = modes.get(name, "d"); cn = pre + name
+    if CTYPE.get(cn) == "bool" and io.s((cn, "b"), 2) == 0: return ov ^ 1
     pm = PMODES.get(cn)
     if pm == "t" and bits == 32 and CTX.get("time") is not None:
         return ((CTX["time"] & 0xFFFFFFFF) + unzz(cls_get(io, (cn, "t"), 36))) % (1 << 32)
