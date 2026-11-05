@@ -40,6 +40,8 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 | `demo_index.py` | Plan step 4: decodes every client demo under `data/demos` (in parallel) and writes `data/demos/index.tsv` (decode counts, server, mod, map, game type, players, snapshot interval, duration, engine snapshot size). |
 | `demo_select.py` | Plan step 4: train and held-out selection from the index, written to `data/demos/selection.tsv`; `selection()` returns it. `bdata.load_demo` and `fullload.load_demo` load one selected demo, cached in `data/demos/cache/`. |
 | `run_demos.py` | Plan step 4 check: round trip of the selected demos with `codec2`, tables trained as `run_full.py` (in parallel). |
+| `run_step5.py` | Plan step 5: step 1 codec trained on the training demos, measured on all selected demos with three table sets (global, per game type, age as context), sizes by set, game type, interval, base age, map, server build. |
+| `sim_loss_demos.py` | Plan step 5: the `sim_loss.py` grid on the held-out demos with the step 1 codec and one global table set. |
 | `jkadec.py` | Decoder of the engine read path: Huffman tree, `MSG_ReadBits`, delta entity and player state, `svc_*` operations. `python jkadec.py file.bin` prints a decode summary and writes `file.bin.dec.pkl`. Also the library imported by the others. |
 | `bdata.py` | Builds the per-snapshot corpus (states, call lists) from the three captures; cache `bdata.pkl`. |
 | `fullload.py` | Builds the whole-message corpus (all operations with payloads); cache `fullmsgs.pkl`. |

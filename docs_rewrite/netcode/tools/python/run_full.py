@@ -38,7 +38,8 @@ def encode_stream(msgs, modes, tables=None, counts=None, only=None):
 
 EncIO = C.EncIO
 
-def decode_check(msgs, modes, tables, label):
+def decode_check(msgs, modes, tables, label, rec=None):
+    """rec: list that receives (message, op kinds, coded bytes) of every checked message"""
     store_srv = {}; store_cli = {}; baselines_s = {}; baselines_c = {}
     bad = 0; n = 0; sizes = collections.defaultdict(list); first_bad = []
     for m in msgs:
@@ -58,6 +59,7 @@ def decode_check(msgs, modes, tables, label):
         n += 1
         kinds = tuple(sorted({op["t"] for op in msg["ops"]}))
         sizes[kinds].append(len(buf))
+        if rec is not None: rec.append((m, kinds, len(buf)))
         if not ok:
             bad += 1
             if len(first_bad) < 3: first_bad.append((seq, kinds))

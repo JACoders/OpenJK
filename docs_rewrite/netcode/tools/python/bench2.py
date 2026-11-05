@@ -220,6 +220,10 @@ def snap_events(i, items, st, k, cfg, prevhdr):
 
 def choose_modes(train, st, k, quant):
     """per-field abs vs delta, by empirical entropy on train"""
+    return pick_modes(mode_stats(train, st, k, quant))
+
+def mode_stats(train, st, k, quant):
+    """per field and mode: [Counter of (ctx, sym), raw bits]; stats of several streams add up (merge_mode_stats)"""
     samples = collections.defaultdict(list)
     cfg0 = dict(modes={}, quant=None, variant="gap", valcls=False)
     for s in train:
@@ -235,16 +239,31 @@ def choose_modes(train, st, k, quant):
         for num, stt in new.items():
             ch = ent_changes(stt, old.get(num) or s["baselines"].get(num, {}))
             for (i, name, bits, a, b) in ch: samples[name].append((bits, a, b))
-    modes = {}
+    out = {}
     for name, lst in samples.items():
-        bits = lst[0][0]
-        best = None
+        out[name] = {}
         for mode in ("a", "d"):
-            cnt = collections.Counter(); raw = 0; N = 0
+            cnt = collections.Counter(); raw = 0
             for (bi, a, b) in lst:
                 toks = tokens(name, bi, a, b, {name: mode}, quant)
                 for ctx, K, sym, r in toks:
-                    cnt[(ctx, sym)] += 1; raw += r; N += 1
+                    cnt[(ctx, sym)] += 1; raw += r
+            out[name][mode] = [cnt, raw]
+    return out
+
+def merge_mode_stats(acc, st):
+    for name, by in st.items():
+        for mode, (cnt, raw) in by.items():
+            e = acc.setdefault(name, {}).setdefault(mode, [collections.Counter(), 0])
+            e[0].update(cnt); e[1] += raw
+    return acc
+
+def pick_modes(st):
+    modes = {}
+    for name, by in st.items():
+        best = None
+        for mode in ("a", "d"):
+            cnt, raw = by[mode]
             ctxn = collections.Counter()
             for (ctx, sym), c in cnt.items(): ctxn[ctx] += c
             ent = 0.0

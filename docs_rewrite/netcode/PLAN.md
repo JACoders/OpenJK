@@ -71,7 +71,7 @@ Work:
 
 ### Step 5: re-measure on the new data, finish the model (S)
 
-Depends on: steps 1 and 4.
+Depends on: steps 1 and 4. **Done** 5 November 2026: [progress/step-05-demo-measurements.md](progress/step-05-demo-measurements.md). One global table set, no age context; held-out ratio to the engine 0.445 on snapshots; `bench2.py` / `bench5.py` and the `TR_INTERPOLATE` check dropped.
 
 - Re-run `bench2.py`, `bench5.py`, `run_pred.py` and the loss simulation on the demos: sizes per map, mode, mod and `sv_fps`; training on the train set, test on the held-out set. Compare with the study's figures (one map, bots).
 - The demos carry real base ages: report sizes by base age as well, and compare with `sim_loss.py`.
@@ -213,7 +213,7 @@ Not studied; the largest unexplored potential (05 section 5.7):
 
 ## 6. Targets taken from the study
 
-Targets for the study's content (one map, bots, 20 snapshots per second); to be re-measured in step 5:
+Targets for the study's content (one map, bots, 20 snapshots per second). Re-measured in step 5 on the demos: these targets hold for the study's content only; on the held-out demos the codec gives 0.445 of the engine size for snapshots (69.0 bytes against 155.1) and 0.483 for all messages ([progress/step-05-demo-measurements.md](progress/step-05-demo-measurements.md)):
 
 - snapshot payload mean at most 110 bytes against 337.6 today, p95 about 190, maximum below 450 for ordinary snapshots;
 - gamestate about 4 KB instead of 7 KB on the study map;

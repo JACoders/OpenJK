@@ -2,7 +2,7 @@
 
 This folder records where the work stands, so that a new session (human or model) can resume without re-reading everything. One document per finished step of [PLAN.md](../PLAN.md); this page is the summary and is updated at the end of every session.
 
-Last update: 5 November 2026 (steps 2 and 4 done; next is step 5, measurements on the demos).
+Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ codec).
 
 ## Where we are
 
@@ -13,11 +13,12 @@ Last update: 5 November 2026 (steps 2 and 4 done; next is step 5, measurements o
 | 2. field descriptors from one source | **done** | `data/fields.json` (schema 2) generated from `msg.cpp`, offsets and C types by the compiler; tools read it; 139.1 and 107.3 unchanged; runtime overrides removed | [step-02-field-descriptors.md](step-02-field-descriptors.md) |
 | 3. state recorder in the server | later | not needed before step 5 since demos are used | |
 | 4. demo corpus | **done** | 1,116 demos indexed (148 h); 60 train + 20 held-out demos (held out by map), 427,468 messages; round trip 0 failures; pilot rule removed from `codec2.py` | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
-| 5 to 13 | to do | | |
+| 5. measurements on the demos | **done** | held-out snapshots 69.0 bytes against 155.1 for the engine (ratio 0.445; all messages 0.483); held-out within 6 % of training; one global table set, no age context; 0 round-trip failures | [step-05-demo-measurements.md](step-05-demo-measurements.md) |
+| 6 to 13 | to do | | |
 
 ## Next actions
 
-1. Step 5: re-run the measurements on the selected demos (train on `train`, measure on `holdout`), by game type, map, server build, snapshot interval and base age; check the gap between held-out and training sizes ([step-04-demo-corpus.md](step-04-demo-corpus.md), "What step 5 needs").
+1. Step 6: the codec library in C++ ([PLAN.md](../PLAN.md) step 6), with the table design of step 5 ([step-05-demo-measurements.md](step-05-demo-measurements.md), "What step 6 needs").
 2. Corpus scope (owner, 5 November 2026): no race, no JA+ or JAPRO demos will come. Possible addition: one FFA bot demo on this branch (base game module), only for the FFA game type.
 
 ## Decisions taken (with the date)
@@ -41,6 +42,8 @@ Last update: 5 November 2026 (steps 2 and 4 done; next is step 5, measurements o
 | 5 Nov 2026 | `codec2.py` codes all 140 pilot fields (1.01 rule dropped): real servers send more than 58 | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
 | 5 Nov 2026 | Branch defaults: `sv_fps` 20 (upstream 40), `sv_clientRate` 25000 (upstream 50000); other defaults upstream (`sv_snapsPolicy` 1, `cl_maxpackets` 63); rate and snaps policies and the pilot fix are kept | `codemp/server/sv_init.cpp:960`, `:983`; [../08-openjk.md](../08-openjk.md) section 8.2 |
 | 5 Nov 2026 | Target game module: the base one (OpenJK's), players sent as `TR_LINEAR_STOP` with `g_smoothClients` 1, never rounded; game code keeps the base game's precision; no `TR_INTERPOLATE` recording needed | [../08-openjk.md](../08-openjk.md) section 8.3 |
+| 5 Nov 2026 | One global table set, without the base age as a context (per game type and age context each save about 2 %, less than the differences between maps); one table set must work at any `sv_fps` | [step-05-demo-measurements.md](step-05-demo-measurements.md); [../04-recommendations.md](../04-recommendations.md) section 4.5 |
+| 5 Nov 2026 | Ideal-byte benchmarks (`bench2.py`, `bench5.py`) not re-run on the demos, real codec instead; `TR_INTERPOLATE` check dropped (base game module) | [step-05-demo-measurements.md](step-05-demo-measurements.md) |
 | 5 Nov 2026 | Step 2 before step 4, since no demo is available yet; field offsets computed by a small CMake program (`tools/fieldinfo`) built by the owner, not by parsing headers | [step-02-field-descriptors.md](step-02-field-descriptors.md) |
 
 ## Open questions for the owner
