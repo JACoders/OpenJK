@@ -5,7 +5,7 @@ Status: **in progress** (started 5 November 2026). Plan: [PLAN.md](../PLAN.md), 
 ## Decisions (owner, 5 November 2026)
 
 - Directory `codemp/netcodec/`, its own `CMakeLists.txt`, usable as a subdirectory of OpenJK and standalone (tests and benchmark without the rest of the engine). Not `shared/` (common to the single-player, JK2 and multiplayer trees) and not `lib/` (third-party libraries); the directory holds JKA-specific data (field schema, trained tables).
-- C++17, plain C++ interface (a few functions and plain structures, no STL or exceptions in the public header); no C interface.
+- C++20 inside the library (first C++17, moved to C++20 for `std::span`, C++ Core Guidelines I.13 and Bounds.1); the engine includes only a public header kept compatible with its own standard. Plain C++ interface (a few functions and plain structures, no STL or exceptions in the public header); no C interface. Code follows the C++ Core Guidelines (owner, 5 November 2026).
 - CMake builds with MSVC, GCC and Clang. Development builds here with llvm-mingw (clang), CMake and Ninja (portable, in `C:\Logiciels`); the owner validates with Visual Studio 2026 and GCC on Debian 12 (VirtualBox virtual machines). Timings in a virtual machine are indicative; comparisons inside one run are valid.
 - Trained tables compiled into the binary (generated source file), not a data file.
 - Test traces generated locally from the demos and never committed (the demos contain player names).
@@ -36,9 +36,43 @@ Techniques to use or measure:
 
 Sources: [ryg_rans](https://github.com/rygorous/ryg_rans), [rANS with static probability distributions](https://fgiesen.wordpress.com/2014/02/18/rans-with-static-probability-distributions/), [rANS in practice](https://fgiesen.wordpress.com/2015/12/21/rans-in-practice/), [Interleaved entropy coders](https://arxiv.org/pdf/1402.3392).
 
+## Unit `rans` (done)
+
+Files: `codemp/netcodec/CMakeLists.txt` (standalone or inside OpenJK; options `NETCODEC_TESTS`, `NETCODEC_SANITIZE`), `rans.h` (header only), `tests/trace.h` and `tests/test_rans.cpp`, `bench/bench_rans.cpp`, `bench/ryg/rans_byte.h` (the original, public domain, for comparison only; kept in the repository for now, owner 5 November 2026). Trace: `tools/python/export_rans_trace.py` writes `data/traces/rans_trace.bin` (ignored by git): the rANS units and expected bytes of the 8,842 capture messages, tables trained as `run_full.py`, `X0 = 1`.
+
+- Encoder: records the symbols, then codes them last to first with the reciprocal of each frequency (no division); raw chunks with shifts; output buffer and record buffer owned by the caller; refuses (returns 0) when either is too small.
+- Decoder: stops refilling at the end of the input; symbol lookup by a coarse table of 2^6 buckets per context (128 bytes per table) and a forward search.
+
+| check | result |
+|---|---|
+| Golden trace, clang 23 (llvm-mingw) x64 `-O3` (CMake `Release`), x64 `-O0`, x86 `-O3`, x64 with ASan + UBSan | 8,842 messages, 3.2 million units: 0 encode and 0 decode mismatches against the Python bytes, in every build |
+| Truncated, mutated and random inputs (5,056) | no fault under ASan + UBSan |
+| Output buffer one byte too small | refused in 92 of 92 cases |
+| Warnings (`-Wall -Wextra -Wpedantic`; MSVC `/W4`) | none, after three fixes for MSVC (uninitialised trace variables, `_CRT_SECURE_NO_WARNINGS` for the test programs, C4244 masked around the unchanged `rans_byte.h`) |
+| Owner's validation after the move to C++20 and spans (5 November 2026) | MSVC x64 Release and Debug (debug index checks), Win32; GCC 12.2 x64 Release, Debug (`_GLIBCXX_ASSERTIONS`), x86, ASan + UBSan; Clang (Debian 12) x64: 0 mismatches, exit code 0, no warning. Benchmark unchanged within noise: MSVC encode 1,402 / decode 1,731 ns per message (before 1,388 / 1,689), GCC 1,268 / 1,670 (before 1,272 / 1,656), Clang 1,386 / 1,749 (before 1,348 / 1,696) |
+| Owner's validation (5 November 2026) | MSVC 19.51 (VS 2026) x64 and Win32, GCC 12.2 x64, x86 and x64 with ASan + UBSan, Clang (Debian 12) x64: 0 mismatches, all checks pass, no warning |
+
+C++ Core Guidelines (owner's request, 5 November 2026): named casts instead of C casts (ES.48, ES.49), `noexcept` (F.6), `[[nodiscard]]` on results, `constexpr` symbol setup (Con.5), every member initialised (ES.20), preconditions as `assert` (I.6), RAII for the trace file (R.1), unsigned arithmetic kept on purpose for bit manipulation (ES.101). Buffers and tables are `std::span` (I.13, Bounds.1; C++20), with index checks in debug builds (`_GLIBCXX_ASSERTIONS`, libc++ hardening, MSVC debug checks). No performance change: with spans, encode 1,359 to 1,383 ns and decode 1,683 to 1,692 ns per message; three runs after the changes give encode 1,368 to 1,429 ns and decode 1,645 to 1,762 ns per message (before: 1,403 to 1,486 and 1,807), the ratio to ryg unchanged.
+
+Benchmark (`netcodec_bench_rans`, AMD Ryzen 9 9950X3D, Windows 11, clang 23 `-O3` x64, best of 20 runs over the trace; capture messages average 362 units and 139 bytes; run-to-run variation 5 to 10 %):
+
+| | ns per message | ns per unit |
+|---|---|---|
+| encode, netcodec | 1,486 | 4.10 |
+| encode, ryg `rans_byte.h` (reciprocal for symbols, division for raw bits) | 1,665 | 4.60 |
+| decode, netcodec, coarse table 2^6 (kept) | 1,807 | 4.99 |
+| decode, netcodec, binary search | 2,139 | 5.91 |
+| decode, netcodec, linear search | 2,322 | 6.41 |
+| decode, netcodec, coarse 2^8 / 2^10 | 1,921 / 2,169 | 5.31 / 5.99 |
+| decode, netcodec, full slot-to-symbol table (517 × 64 KB) | 6,868 | 18.97 |
+| decode, ryg, binary search / coarse 2^8 / full table | 2,352 / 2,023 / 7,098 | 6.50 / 5.59 / 19.61 |
+
+MSVC (Visual Studio 2026, MSBuild 18.11, x64 Release, owner's VirtualBox machine; indicative timings): golden test 0 encode and 0 decode mismatches, robustness and small-buffer checks pass, exit code 0. Benchmark in ns per message: encode netcodec 1,388, ryg 1,593; decode netcodec coarse 2^6 1,689, binary search 3,514, linear 2,044, coarse 2^8 1,749, coarse 2^10 1,974, full table 3,991; ryg full table 4,141, binary search 3,544, coarse 2^8 1,921. GCC 12.2 (Debian 12, owner's VirtualBox machine, x64 Release, no warning with `-Wall -Wextra -Wpedantic`): golden test 0 mismatches, also with ASan + UBSan; benchmark in ns per message: encode netcodec 1,272, ryg 1,388; decode netcodec coarse 2^6 1,656, binary search 3,225, linear 2,017, coarse 2^8 1,762, full table 3,831; ryg coarse 2^8 1,760, binary search 3,220, full table 3,832. Clang (Debian 12 package, x64 Release, no warning): 0 mismatches; encode netcodec 1,348, ryg 1,383; decode netcodec coarse 2^6 1,696, binary search 1,938, coarse 2^8 1,815, full table 3,695; ryg binary search 1,887, coarse 2^8 1,891. GCC 12.2 x86 (`-m32`, no warning): 0 mismatches, robustness and small-buffer checks pass. The coarse table 2^6 is the fastest on the three compilers; binary search is much slower with MSVC (branches instead of conditional moves).
+
+Size: netcodec 1.43 bytes per message smaller than ryg (initial-state trick). With the same symbol lookup, the netcodec decoder is faster than ryg's (raw bits with shifts); the full table is the slowest (out of the caches), as expected.
+
 ## Next
 
-1. `codemp/netcodec/` skeleton: CMake (standalone and inside OpenJK), `rans` with its tests and a benchmark against the original `rans_byte.h`.
-2. Export from Python: schema (from `fields.json`), tables and per-field modes (generated source), golden traces (local).
-3. `fieldcodec`, `msgcodec`, `escape`; byte identity with Python on all captures and demos; fuzz; sanitizers; determinism on MSVC, GCC, Clang, x86 and x64.
-4. Profile the whole codec and optimise where the time goes.
+1. Export from Python: schema (from `fields.json`), tables and per-field modes (generated source), golden traces (local).
+2. `fieldcodec`, `msgcodec`, `escape`; byte identity with Python on all captures and demos; fuzz; sanitizers; determinism on MSVC, GCC, Clang, x86 and x64.
+3. Profile the whole codec and optimise where the time goes.

@@ -196,3 +196,6 @@ compile_commands.json
 cmake-build-*
 
 *.dm_26
+
+# netcodec traces generated from the recordings (docs_rewrite/netcode/tools/python/export_*.py)
+docs_rewrite/netcode/data/traces/
