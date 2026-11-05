@@ -1,0 +1,3399 @@
+{
+ "schema_version": 2,
+ "schema_hash": "007482d1162a52c69b0d17418749ecd093008b6d8dd4fc1ab6a5e42c37aa5c32",
+ "source": "codemp/qcommon/msg.cpp",
+ "sizeof": {
+  "entityState_t": 532,
+  "playerState_t": 1552
+ },
+ "tables": {
+  "ent": [
+   {
+    "name": "pos.trTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 20,
+    "size": 4
+   },
+   {
+    "name": "pos.trBase[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 32,
+    "size": 4
+   },
+   {
+    "name": "pos.trBase[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 28,
+    "size": 4
+   },
+   {
+    "name": "apos.trBase[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 68,
+    "size": 4
+   },
+   {
+    "name": "pos.trBase[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 36,
+    "size": 4
+   },
+   {
+    "name": "apos.trBase[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 64,
+    "size": 4
+   },
+   {
+    "name": "pos.trDelta[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 40,
+    "size": 4
+   },
+   {
+    "name": "pos.trDelta[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 44,
+    "size": 4
+   },
+   {
+    "name": "eType",
+    "bits": 8,
+    "type": "int",
+    "offset": 4,
+    "size": 4
+   },
+   {
+    "name": "angles[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 124,
+    "size": 4
+   },
+   {
+    "name": "pos.trDelta[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 48,
+    "size": 4
+   },
+   {
+    "name": "origin[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 96,
+    "size": 4
+   },
+   {
+    "name": "origin[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 100,
+    "size": 4
+   },
+   {
+    "name": "origin[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 104,
+    "size": 4
+   },
+   {
+    "name": "weapon",
+    "bits": 8,
+    "type": "int",
+    "offset": 296,
+    "size": 4
+   },
+   {
+    "name": "apos.trType",
+    "bits": 8,
+    "type": "enum",
+    "offset": 52,
+    "size": 4
+   },
+   {
+    "name": "legsAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 300,
+    "size": 4
+   },
+   {
+    "name": "torsoAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 304,
+    "size": 4
+   },
+   {
+    "name": "genericenemyindex",
+    "bits": 32,
+    "type": "int",
+    "offset": 176,
+    "size": 4
+   },
+   {
+    "name": "eFlags",
+    "bits": 32,
+    "type": "int",
+    "offset": 8,
+    "size": 4
+   },
+   {
+    "name": "pos.trDuration",
+    "bits": 32,
+    "type": "int",
+    "offset": 24,
+    "size": 4
+   },
+   {
+    "name": "teamowner",
+    "bits": 8,
+    "type": "int",
+    "offset": 284,
+    "size": 4
+   },
+   {
+    "name": "groundEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 196,
+    "size": 4
+   },
+   {
+    "name": "pos.trType",
+    "bits": 8,
+    "type": "enum",
+    "offset": 16,
+    "size": 4
+   },
+   {
+    "name": "angles[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 128,
+    "size": 4
+   },
+   {
+    "name": "angles[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 120,
+    "size": 4
+   },
+   {
+    "name": "solid",
+    "bits": 24,
+    "type": "int",
+    "offset": 268,
+    "size": 4
+   },
+   {
+    "name": "fireflag",
+    "bits": 2,
+    "type": "int",
+    "offset": 172,
+    "size": 4
+   },
+   {
+    "name": "event",
+    "bits": 10,
+    "type": "int",
+    "offset": 272,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[3]",
+    "bits": 8,
+    "type": "int",
+    "offset": 364,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[0]",
+    "bits": 8,
+    "type": "int",
+    "offset": 352,
+    "size": 4
+   },
+   {
+    "name": "speed",
+    "bits": 0,
+    "type": "float",
+    "offset": 168,
+    "size": 4
+   },
+   {
+    "name": "clientNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 232,
+    "size": 4
+   },
+   {
+    "name": "apos.trBase[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 72,
+    "size": 4
+   },
+   {
+    "name": "apos.trTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 56,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[1]",
+    "bits": 8,
+    "type": "int",
+    "offset": 356,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[2]",
+    "bits": 8,
+    "type": "int",
+    "offset": 360,
+    "size": 4
+   },
+   {
+    "name": "saberEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 244,
+    "size": 4
+   },
+   {
+    "name": "g2radius",
+    "bits": 8,
+    "type": "int",
+    "offset": 220,
+    "size": 4
+   },
+   {
+    "name": "otherEntityNum2",
+    "bits": 10,
+    "type": "int",
+    "offset": 192,
+    "size": 4
+   },
+   {
+    "name": "owner",
+    "bits": 10,
+    "type": "int",
+    "offset": 280,
+    "size": 4
+   },
+   {
+    "name": "modelindex2",
+    "bits": 8,
+    "type": "int",
+    "offset": 228,
+    "size": 4
+   },
+   {
+    "name": "eventParm",
+    "bits": 8,
+    "type": "int",
+    "offset": 276,
+    "size": 4
+   },
+   {
+    "name": "saberMove",
+    "bits": 8,
+    "type": "int",
+    "offset": 248,
+    "size": 4
+   },
+   {
+    "name": "apos.trDelta[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 80,
+    "size": 4
+   },
+   {
+    "name": "boneAngles1[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 432,
+    "size": 4
+   },
+   {
+    "name": "modelindex",
+    "bits": -16,
+    "type": "int",
+    "offset": 224,
+    "size": 4
+   },
+   {
+    "name": "emplacedOwner",
+    "bits": 32,
+    "type": "int",
+    "offset": 184,
+    "size": 4
+   },
+   {
+    "name": "apos.trDelta[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 76,
+    "size": 4
+   },
+   {
+    "name": "apos.trDelta[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 84,
+    "size": 4
+   },
+   {
+    "name": "torsoFlip",
+    "bits": 1,
+    "type": "bool",
+    "offset": 312,
+    "size": 4
+   },
+   {
+    "name": "angles2[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 136,
+    "size": 4
+   },
+   {
+    "name": "lookTarget",
+    "bits": 10,
+    "type": "int",
+    "offset": 348,
+    "size": 4
+   },
+   {
+    "name": "origin2[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 116,
+    "size": 4
+   },
+   {
+    "name": "modelGhoul2",
+    "bits": 8,
+    "type": "int",
+    "offset": 216,
+    "size": 4
+   },
+   {
+    "name": "loopSound",
+    "bits": 8,
+    "type": "int",
+    "offset": 204,
+    "size": 4
+   },
+   {
+    "name": "origin2[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 108,
+    "size": 4
+   },
+   {
+    "name": "shouldtarget",
+    "bits": 1,
+    "type": "bool",
+    "offset": 288,
+    "size": 4
+   },
+   {
+    "name": "trickedentindex",
+    "bits": 16,
+    "type": "int",
+    "offset": 152,
+    "size": 4
+   },
+   {
+    "name": "otherEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 188,
+    "size": 4
+   },
+   {
+    "name": "origin2[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 112,
+    "size": 4
+   },
+   {
+    "name": "time2",
+    "bits": 32,
+    "type": "int",
+    "offset": 92,
+    "size": 4
+   },
+   {
+    "name": "legsFlip",
+    "bits": 1,
+    "type": "bool",
+    "offset": 308,
+    "size": 4
+   },
+   {
+    "name": "bolt2",
+    "bits": 10,
+    "type": "int",
+    "offset": 148,
+    "size": 4
+   },
+   {
+    "name": "constantLight",
+    "bits": 32,
+    "type": "int",
+    "offset": 200,
+    "size": 4
+   },
+   {
+    "name": "time",
+    "bits": 32,
+    "type": "int",
+    "offset": 88,
+    "size": 4
+   },
+   {
+    "name": "hasLookTarget",
+    "bits": 1,
+    "type": "bool",
+    "offset": 344,
+    "size": 4
+   },
+   {
+    "name": "boneAngles1[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 436,
+    "size": 4
+   },
+   {
+    "name": "activeForcePass",
+    "bits": 6,
+    "type": "int",
+    "offset": 180,
+    "size": 4
+   },
+   {
+    "name": "health",
+    "bits": 10,
+    "type": "int",
+    "offset": 368,
+    "size": 4
+   },
+   {
+    "name": "loopIsSoundset",
+    "bits": 1,
+    "type": "bool",
+    "offset": 208,
+    "size": 4
+   },
+   {
+    "name": "saberHolstered",
+    "bits": 2,
+    "type": "int",
+    "offset": 256,
+    "size": 4
+   },
+   {
+    "name": "npcSaber1",
+    "bits": 9,
+    "type": "int",
+    "offset": 376,
+    "size": 4
+   },
+   {
+    "name": "maxhealth",
+    "bits": 10,
+    "type": "int",
+    "offset": 372,
+    "size": 4
+   },
+   {
+    "name": "trickedentindex2",
+    "bits": 16,
+    "type": "int",
+    "offset": 156,
+    "size": 4
+   },
+   {
+    "name": "forcePowersActive",
+    "bits": 32,
+    "type": "int",
+    "offset": 252,
+    "size": 4
+   },
+   {
+    "name": "iModelScale",
+    "bits": 10,
+    "type": "int",
+    "offset": 332,
+    "size": 4
+   },
+   {
+    "name": "powerups",
+    "bits": 16,
+    "type": "int",
+    "offset": 292,
+    "size": 4
+   },
+   {
+    "name": "soundSetIndex",
+    "bits": 8,
+    "type": "int",
+    "offset": 212,
+    "size": 4
+   },
+   {
+    "name": "brokenLimbs",
+    "bits": 8,
+    "type": "int",
+    "offset": 336,
+    "size": 4
+   },
+   {
+    "name": "csSounds_Std",
+    "bits": 8,
+    "type": "int",
+    "offset": 384,
+    "size": 4
+   },
+   {
+    "name": "saberInFlight",
+    "bits": 1,
+    "type": "bool",
+    "offset": 240,
+    "size": 4
+   },
+   {
+    "name": "angles2[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 132,
+    "size": 4
+   },
+   {
+    "name": "frame",
+    "bits": 16,
+    "type": "int",
+    "offset": 236,
+    "size": 4
+   },
+   {
+    "name": "angles2[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 140,
+    "size": 4
+   },
+   {
+    "name": "forceFrame",
+    "bits": 16,
+    "type": "int",
+    "offset": 316,
+    "size": 4
+   },
+   {
+    "name": "generic1",
+    "bits": 8,
+    "type": "int",
+    "offset": 320,
+    "size": 4
+   },
+   {
+    "name": "boneIndex1",
+    "bits": 6,
+    "type": "int",
+    "offset": 408,
+    "size": 4
+   },
+   {
+    "name": "NPC_class",
+    "bits": 8,
+    "type": "int",
+    "offset": 476,
+    "size": 4
+   },
+   {
+    "name": "apos.trDuration",
+    "bits": 32,
+    "type": "int",
+    "offset": 60,
+    "size": 4
+   },
+   {
+    "name": "boneOrient",
+    "bits": 9,
+    "type": "int",
+    "offset": 424,
+    "size": 4
+   },
+   {
+    "name": "bolt1",
+    "bits": 8,
+    "type": "int",
+    "offset": 144,
+    "size": 4
+   },
+   {
+    "name": "trickedentindex3",
+    "bits": 16,
+    "type": "int",
+    "offset": 160,
+    "size": 4
+   },
+   {
+    "name": "m_iVehicleNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 480,
+    "size": 4
+   },
+   {
+    "name": "trickedentindex4",
+    "bits": 16,
+    "type": "int",
+    "offset": 164,
+    "size": 4
+   },
+   {
+    "name": "surfacesOff",
+    "bits": 32,
+    "type": "int",
+    "offset": 404,
+    "size": 4
+   },
+   {
+    "name": "eFlags2",
+    "bits": 10,
+    "type": "int",
+    "offset": 12,
+    "size": 4
+   },
+   {
+    "name": "isJediMaster",
+    "bits": 1,
+    "type": "bool",
+    "offset": 260,
+    "size": 4
+   },
+   {
+    "name": "isPortalEnt",
+    "bits": 1,
+    "type": "bool",
+    "offset": 264,
+    "size": 4
+   },
+   {
+    "name": "heldByClient",
+    "bits": 6,
+    "type": "int",
+    "offset": 324,
+    "size": 4
+   },
+   {
+    "name": "ragAttach",
+    "bits": 10,
+    "type": "int",
+    "offset": 328,
+    "size": 4
+   },
+   {
+    "name": "boltToPlayer",
+    "bits": 6,
+    "type": "int",
+    "offset": 340,
+    "size": 4
+   },
+   {
+    "name": "npcSaber2",
+    "bits": 9,
+    "type": "int",
+    "offset": 380,
+    "size": 4
+   },
+   {
+    "name": "csSounds_Combat",
+    "bits": 8,
+    "type": "int",
+    "offset": 388,
+    "size": 4
+   },
+   {
+    "name": "csSounds_Extra",
+    "bits": 8,
+    "type": "int",
+    "offset": 392,
+    "size": 4
+   },
+   {
+    "name": "csSounds_Jedi",
+    "bits": 8,
+    "type": "int",
+    "offset": 396,
+    "size": 4
+   },
+   {
+    "name": "surfacesOn",
+    "bits": 32,
+    "type": "int",
+    "offset": 400,
+    "size": 4
+   },
+   {
+    "name": "boneIndex2",
+    "bits": 6,
+    "type": "int",
+    "offset": 412,
+    "size": 4
+   },
+   {
+    "name": "boneIndex3",
+    "bits": 6,
+    "type": "int",
+    "offset": 416,
+    "size": 4
+   },
+   {
+    "name": "boneIndex4",
+    "bits": 6,
+    "type": "int",
+    "offset": 420,
+    "size": 4
+   },
+   {
+    "name": "boneAngles1[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 428,
+    "size": 4
+   },
+   {
+    "name": "boneAngles2[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 440,
+    "size": 4
+   },
+   {
+    "name": "boneAngles2[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 444,
+    "size": 4
+   },
+   {
+    "name": "boneAngles2[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 448,
+    "size": 4
+   },
+   {
+    "name": "boneAngles3[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 452,
+    "size": 4
+   },
+   {
+    "name": "boneAngles3[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 456,
+    "size": 4
+   },
+   {
+    "name": "boneAngles3[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 460,
+    "size": 4
+   },
+   {
+    "name": "boneAngles4[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 464,
+    "size": 4
+   },
+   {
+    "name": "boneAngles4[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 468,
+    "size": 4
+   },
+   {
+    "name": "boneAngles4[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 472,
+    "size": 4
+   },
+   {
+    "name": "userInt1",
+    "bits": 1,
+    "type": "int",
+    "offset": 484,
+    "size": 4
+   },
+   {
+    "name": "userInt2",
+    "bits": 1,
+    "type": "int",
+    "offset": 488,
+    "size": 4
+   },
+   {
+    "name": "userInt3",
+    "bits": 1,
+    "type": "int",
+    "offset": 492,
+    "size": 4
+   },
+   {
+    "name": "userFloat1",
+    "bits": 1,
+    "type": "float",
+    "offset": 496,
+    "size": 4
+   },
+   {
+    "name": "userFloat2",
+    "bits": 1,
+    "type": "float",
+    "offset": 500,
+    "size": 4
+   },
+   {
+    "name": "userFloat3",
+    "bits": 1,
+    "type": "float",
+    "offset": 504,
+    "size": 4
+   },
+   {
+    "name": "userVec1[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 508,
+    "size": 4
+   },
+   {
+    "name": "userVec1[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 512,
+    "size": 4
+   },
+   {
+    "name": "userVec1[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 516,
+    "size": 4
+   },
+   {
+    "name": "userVec2[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 520,
+    "size": 4
+   },
+   {
+    "name": "userVec2[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 524,
+    "size": 4
+   },
+   {
+    "name": "userVec2[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 528,
+    "size": 4
+   }
+  ],
+  "ps": [
+   {
+    "name": "commandTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 0,
+    "size": 4
+   },
+   {
+    "name": "origin[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 24,
+    "size": 4
+   },
+   {
+    "name": "origin[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 20,
+    "size": 4
+   },
+   {
+    "name": "viewangles[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 188,
+    "size": 4
+   },
+   {
+    "name": "viewangles[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 184,
+    "size": 4
+   },
+   {
+    "name": "origin[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 28,
+    "size": 4
+   },
+   {
+    "name": "velocity[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 32,
+    "size": 4
+   },
+   {
+    "name": "velocity[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 36,
+    "size": 4
+   },
+   {
+    "name": "velocity[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 40,
+    "size": 4
+   },
+   {
+    "name": "bobCycle",
+    "bits": 8,
+    "type": "int",
+    "offset": 8,
+    "size": 4
+   },
+   {
+    "name": "weaponTime",
+    "bits": -16,
+    "type": "int",
+    "offset": 56,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[1]",
+    "bits": 16,
+    "type": "int",
+    "offset": 84,
+    "size": 4
+   },
+   {
+    "name": "speed",
+    "bits": 0,
+    "type": "float",
+    "offset": 72,
+    "size": 4
+   },
+   {
+    "name": "legsAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 108,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[0]",
+    "bits": 16,
+    "type": "int",
+    "offset": 80,
+    "size": 4
+   },
+   {
+    "name": "torsoAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 116,
+    "size": 4
+   },
+   {
+    "name": "groundEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 100,
+    "size": 4
+   },
+   {
+    "name": "eFlags",
+    "bits": 32,
+    "type": "int",
+    "offset": 132,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePower",
+    "bits": 8,
+    "type": "int",
+    "offset": 964,
+    "size": 4
+   },
+   {
+    "name": "eventSequence",
+    "bits": 16,
+    "type": "int",
+    "offset": 140,
+    "size": 4
+   },
+   {
+    "name": "torsoTimer",
+    "bits": 16,
+    "type": "int",
+    "offset": 112,
+    "size": 4
+   },
+   {
+    "name": "legsTimer",
+    "bits": 16,
+    "type": "int",
+    "offset": 104,
+    "size": 4
+   },
+   {
+    "name": "viewheight",
+    "bits": -8,
+    "type": "int",
+    "offset": 196,
+    "size": 4
+   },
+   {
+    "name": "fd.saberAnimLevel",
+    "bits": 4,
+    "type": "int",
+    "offset": 1252,
+    "size": 4
+   },
+   {
+    "name": "rocketLockIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 624,
+    "size": 4
+   },
+   {
+    "name": "fd.saberDrawAnimLevel",
+    "bits": 4,
+    "type": "int",
+    "offset": 1256,
+    "size": 4
+   },
+   {
+    "name": "genericEnemyIndex",
+    "bits": 32,
+    "type": "int",
+    "offset": 668,
+    "size": 4
+   },
+   {
+    "name": "events[0]",
+    "bits": 10,
+    "type": "int",
+    "offset": 144,
+    "size": 4
+   },
+   {
+    "name": "events[1]",
+    "bits": 10,
+    "type": "int",
+    "offset": 148,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[0]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1412,
+    "size": 4
+   },
+   {
+    "name": "movementDir",
+    "bits": 4,
+    "type": "int",
+    "offset": 128,
+    "size": 4
+   },
+   {
+    "name": "saberEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 588,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[3]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1424,
+    "size": 4
+   },
+   {
+    "name": "weaponstate",
+    "bits": 4,
+    "type": "int",
+    "offset": 180,
+    "size": 4
+   },
+   {
+    "name": "saberMove",
+    "bits": 32,
+    "type": "int",
+    "offset": 548,
+    "size": 4
+   },
+   {
+    "name": "standheight",
+    "bits": 10,
+    "type": "int",
+    "offset": 1428,
+    "size": 4
+   },
+   {
+    "name": "crouchheight",
+    "bits": 10,
+    "type": "int",
+    "offset": 1432,
+    "size": 4
+   },
+   {
+    "name": "basespeed",
+    "bits": -16,
+    "type": "int",
+    "offset": 76,
+    "size": 4
+   },
+   {
+    "name": "pm_flags",
+    "bits": 16,
+    "type": "int",
+    "offset": 12,
+    "size": 4
+   },
+   {
+    "name": "jetpackFuel",
+    "bits": 8,
+    "type": "int",
+    "offset": 1496,
+    "size": 4
+   },
+   {
+    "name": "cloakFuel",
+    "bits": 8,
+    "type": "int",
+    "offset": 1500,
+    "size": 4
+   },
+   {
+    "name": "pm_time",
+    "bits": -16,
+    "type": "int",
+    "offset": 16,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[1]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1416,
+    "size": 4
+   },
+   {
+    "name": "clientNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 172,
+    "size": 4
+   },
+   {
+    "name": "duelIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 1320,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[2]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1420,
+    "size": 4
+   },
+   {
+    "name": "gravity",
+    "bits": 16,
+    "type": "int",
+    "offset": 68,
+    "size": 4
+   },
+   {
+    "name": "weapon",
+    "bits": 8,
+    "type": "int",
+    "offset": 176,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[2]",
+    "bits": 16,
+    "type": "int",
+    "offset": 88,
+    "size": 4
+   },
+   {
+    "name": "saberCanThrow",
+    "bits": 1,
+    "type": "bool",
+    "offset": 604,
+    "size": 4
+   },
+   {
+    "name": "viewangles[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 192,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowersKnown",
+    "bits": 32,
+    "type": "int",
+    "offset": 876,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerLevel[FP_LEVITATION]",
+    "bits": 2,
+    "type": "int",
+    "offset": 980,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerDebounce[FP_LEVITATION]",
+    "bits": 32,
+    "type": "int",
+    "offset": 808,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerSelected",
+    "bits": 8,
+    "type": "int",
+    "offset": 884,
+    "size": 4
+   },
+   {
+    "name": "torsoFlip",
+    "bits": 1,
+    "type": "bool",
+    "offset": 124,
+    "size": 4
+   },
+   {
+    "name": "externalEvent",
+    "bits": 10,
+    "type": "int",
+    "offset": 160,
+    "size": 4
+   },
+   {
+    "name": "damageYaw",
+    "bits": 8,
+    "type": "int",
+    "offset": 204,
+    "size": 4
+   },
+   {
+    "name": "damageCount",
+    "bits": 8,
+    "type": "int",
+    "offset": 212,
+    "size": 4
+   },
+   {
+    "name": "inAirAnim",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1372,
+    "size": 4
+   },
+   {
+    "name": "eventParms[1]",
+    "bits": 8,
+    "type": "int",
+    "offset": 156,
+    "size": 4
+   },
+   {
+    "name": "fd.forceSide",
+    "bits": 2,
+    "type": "int",
+    "offset": 1208,
+    "size": 4
+   },
+   {
+    "name": "saberAttackChainCount",
+    "bits": 4,
+    "type": "int",
+    "offset": 1332,
+    "size": 4
+   },
+   {
+    "name": "pm_type",
+    "bits": 8,
+    "type": "int",
+    "offset": 4,
+    "size": 4
+   },
+   {
+    "name": "externalEventParm",
+    "bits": 8,
+    "type": "int",
+    "offset": 164,
+    "size": 4
+   },
+   {
+    "name": "eventParms[0]",
+    "bits": -16,
+    "type": "int",
+    "offset": 152,
+    "size": 4
+   },
+   {
+    "name": "lookTarget",
+    "bits": 10,
+    "type": "int",
+    "offset": 1408,
+    "size": 4
+   },
+   {
+    "name": "weaponChargeSubtractTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 64,
+    "size": 4
+   },
+   {
+    "name": "weaponChargeTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 60,
+    "size": 4
+   },
+   {
+    "name": "legsFlip",
+    "bits": 1,
+    "type": "bool",
+    "offset": 120,
+    "size": 4
+   },
+   {
+    "name": "damageEvent",
+    "bits": 8,
+    "type": "int",
+    "offset": 200,
+    "size": 4
+   },
+   {
+    "name": "rocketTargetTime",
+    "bits": 32,
+    "type": "float",
+    "offset": 636,
+    "size": 4
+   },
+   {
+    "name": "activeForcePass",
+    "bits": 6,
+    "type": "int",
+    "offset": 680,
+    "size": 4
+   },
+   {
+    "name": "electrifyTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 772,
+    "size": 4
+   },
+   {
+    "name": "fd.forceJumpZStart",
+    "bits": 0,
+    "type": "float",
+    "offset": 1124,
+    "size": 4
+   },
+   {
+    "name": "loopSound",
+    "bits": 16,
+    "type": "int",
+    "offset": 516,
+    "size": 4
+   },
+   {
+    "name": "hasLookTarget",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1404,
+    "size": 4
+   },
+   {
+    "name": "saberBlocked",
+    "bits": 8,
+    "type": "int",
+    "offset": 556,
+    "size": 4
+   },
+   {
+    "name": "damageType",
+    "bits": 2,
+    "type": "int",
+    "offset": 216,
+    "size": 4
+   },
+   {
+    "name": "rocketLockTime",
+    "bits": 32,
+    "type": "float",
+    "offset": 632,
+    "size": 4
+   },
+   {
+    "name": "forceHandExtend",
+    "bits": 8,
+    "type": "int",
+    "offset": 1272,
+    "size": 4
+   },
+   {
+    "name": "saberHolstered",
+    "bits": 2,
+    "type": "int",
+    "offset": 1336,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowersActive",
+    "bits": 32,
+    "type": "int",
+    "offset": 880,
+    "size": 4
+   },
+   {
+    "name": "damagePitch",
+    "bits": 8,
+    "type": "int",
+    "offset": 208,
+    "size": 4
+   },
+   {
+    "name": "m_iVehicleNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 1436,
+    "size": 4
+   },
+   {
+    "name": "generic1",
+    "bits": 8,
+    "type": "int",
+    "offset": 512,
+    "size": 4
+   },
+   {
+    "name": "jumppad_ent",
+    "bits": 10,
+    "type": "int",
+    "offset": 520,
+    "size": 4
+   },
+   {
+    "name": "hasDetPackPlanted",
+    "bits": 1,
+    "type": "bool",
+    "offset": 684,
+    "size": 4
+   },
+   {
+    "name": "saberInFlight",
+    "bits": 1,
+    "type": "bool",
+    "offset": 544,
+    "size": 4
+   },
+   {
+    "name": "forceDodgeAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 1284,
+    "size": 4
+   },
+   {
+    "name": "zoomMode",
+    "bits": 2,
+    "type": "int",
+    "offset": 1344,
+    "size": 4
+   },
+   {
+    "name": "hackingTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1488,
+    "size": 4
+   },
+   {
+    "name": "zoomTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1348,
+    "size": 4
+   },
+   {
+    "name": "brokenLimbs",
+    "bits": 8,
+    "type": "int",
+    "offset": 1400,
+    "size": 4
+   },
+   {
+    "name": "zoomLocked",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1352,
+    "size": 4
+   },
+   {
+    "name": "zoomFov",
+    "bits": 0,
+    "type": "float",
+    "offset": 1356,
+    "size": 4
+   },
+   {
+    "name": "fd.forceRageRecoveryTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1192,
+    "size": 4
+   },
+   {
+    "name": "fallingToDeath",
+    "bits": 32,
+    "type": "int",
+    "offset": 1364,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex",
+    "bits": 16,
+    "type": "int",
+    "offset": 1176,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex2",
+    "bits": 16,
+    "type": "int",
+    "offset": 1180,
+    "size": 4
+   },
+   {
+    "name": "lastHitLoc[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1384,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex3",
+    "bits": 16,
+    "type": "int",
+    "offset": 1184,
+    "size": 4
+   },
+   {
+    "name": "lastHitLoc[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1376,
+    "size": 4
+   },
+   {
+    "name": "eFlags2",
+    "bits": 10,
+    "type": "int",
+    "offset": 136,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex4",
+    "bits": 16,
+    "type": "int",
+    "offset": 1188,
+    "size": 4
+   },
+   {
+    "name": "lastHitLoc[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1380,
+    "size": 4
+   },
+   {
+    "name": "fd.sentryDeployed",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1244,
+    "size": 4
+   },
+   {
+    "name": "saberLockTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 560,
+    "size": 4
+   },
+   {
+    "name": "saberLockFrame",
+    "bits": 16,
+    "type": "int",
+    "offset": 568,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerLevel[FP_SEE]",
+    "bits": 2,
+    "type": "int",
+    "offset": 1032,
+    "size": 4
+   },
+   {
+    "name": "saberLockEnemy",
+    "bits": 10,
+    "type": "int",
+    "offset": 564,
+    "size": 4
+   },
+   {
+    "name": "fd.forceGripCripple",
+    "bits": 1,
+    "type": "int",
+    "offset": 1152,
+    "size": 4
+   },
+   {
+    "name": "emplacedIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 640,
+    "size": 4
+   },
+   {
+    "name": "holocronBits",
+    "bits": 32,
+    "type": "int",
+    "offset": 768,
+    "size": 4
+   },
+   {
+    "name": "isJediMaster",
+    "bits": 1,
+    "type": "bool",
+    "offset": 648,
+    "size": 4
+   },
+   {
+    "name": "forceRestricted",
+    "bits": 1,
+    "type": "bool",
+    "offset": 652,
+    "size": 4
+   },
+   {
+    "name": "trueJedi",
+    "bits": 1,
+    "type": "bool",
+    "offset": 656,
+    "size": 4
+   },
+   {
+    "name": "trueNonJedi",
+    "bits": 1,
+    "type": "bool",
+    "offset": 660,
+    "size": 4
+   },
+   {
+    "name": "duelTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1324,
+    "size": 4
+   },
+   {
+    "name": "duelInProgress",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1328,
+    "size": 4
+   },
+   {
+    "name": "saberLockAdvance",
+    "bits": 1,
+    "type": "bool",
+    "offset": 584,
+    "size": 4
+   },
+   {
+    "name": "heldByClient",
+    "bits": 6,
+    "type": "int",
+    "offset": 1388,
+    "size": 4
+   },
+   {
+    "name": "ragAttach",
+    "bits": 10,
+    "type": "int",
+    "offset": 1392,
+    "size": 4
+   },
+   {
+    "name": "iModelScale",
+    "bits": 10,
+    "type": "int",
+    "offset": 1396,
+    "size": 4
+   },
+   {
+    "name": "hackingBaseTime",
+    "bits": 16,
+    "type": "int",
+    "offset": 1492,
+    "size": 4
+   },
+   {
+    "name": "userInt1",
+    "bits": 1,
+    "type": "int",
+    "offset": 1504,
+    "size": 4
+   },
+   {
+    "name": "userInt2",
+    "bits": 1,
+    "type": "int",
+    "offset": 1508,
+    "size": 4
+   },
+   {
+    "name": "userInt3",
+    "bits": 1,
+    "type": "int",
+    "offset": 1512,
+    "size": 4
+   },
+   {
+    "name": "userFloat1",
+    "bits": 1,
+    "type": "float",
+    "offset": 1516,
+    "size": 4
+   },
+   {
+    "name": "userFloat2",
+    "bits": 1,
+    "type": "float",
+    "offset": 1520,
+    "size": 4
+   },
+   {
+    "name": "userFloat3",
+    "bits": 1,
+    "type": "float",
+    "offset": 1524,
+    "size": 4
+   },
+   {
+    "name": "userVec1[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1528,
+    "size": 4
+   },
+   {
+    "name": "userVec1[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1532,
+    "size": 4
+   },
+   {
+    "name": "userVec1[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1536,
+    "size": 4
+   },
+   {
+    "name": "userVec2[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1540,
+    "size": 4
+   },
+   {
+    "name": "userVec2[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1544,
+    "size": 4
+   },
+   {
+    "name": "userVec2[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1548,
+    "size": 4
+   }
+  ],
+  "pilot": [
+   {
+    "name": "commandTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 0,
+    "size": 4
+   },
+   {
+    "name": "origin[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 24,
+    "size": 4
+   },
+   {
+    "name": "origin[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 20,
+    "size": 4
+   },
+   {
+    "name": "viewangles[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 188,
+    "size": 4
+   },
+   {
+    "name": "viewangles[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 184,
+    "size": 4
+   },
+   {
+    "name": "origin[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 28,
+    "size": 4
+   },
+   {
+    "name": "weaponTime",
+    "bits": -16,
+    "type": "int",
+    "offset": 56,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[1]",
+    "bits": 16,
+    "type": "int",
+    "offset": 84,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[0]",
+    "bits": 16,
+    "type": "int",
+    "offset": 80,
+    "size": 4
+   },
+   {
+    "name": "eFlags",
+    "bits": 32,
+    "type": "int",
+    "offset": 132,
+    "size": 4
+   },
+   {
+    "name": "eventSequence",
+    "bits": 16,
+    "type": "int",
+    "offset": 140,
+    "size": 4
+   },
+   {
+    "name": "rocketLockIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 624,
+    "size": 4
+   },
+   {
+    "name": "events[0]",
+    "bits": 10,
+    "type": "int",
+    "offset": 144,
+    "size": 4
+   },
+   {
+    "name": "events[1]",
+    "bits": 10,
+    "type": "int",
+    "offset": 148,
+    "size": 4
+   },
+   {
+    "name": "weaponstate",
+    "bits": 4,
+    "type": "int",
+    "offset": 180,
+    "size": 4
+   },
+   {
+    "name": "pm_flags",
+    "bits": 16,
+    "type": "int",
+    "offset": 12,
+    "size": 4
+   },
+   {
+    "name": "pm_time",
+    "bits": -16,
+    "type": "int",
+    "offset": 16,
+    "size": 4
+   },
+   {
+    "name": "clientNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 172,
+    "size": 4
+   },
+   {
+    "name": "weapon",
+    "bits": 8,
+    "type": "int",
+    "offset": 176,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[2]",
+    "bits": 16,
+    "type": "int",
+    "offset": 88,
+    "size": 4
+   },
+   {
+    "name": "viewangles[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 192,
+    "size": 4
+   },
+   {
+    "name": "externalEvent",
+    "bits": 10,
+    "type": "int",
+    "offset": 160,
+    "size": 4
+   },
+   {
+    "name": "eventParms[1]",
+    "bits": 8,
+    "type": "int",
+    "offset": 156,
+    "size": 4
+   },
+   {
+    "name": "pm_type",
+    "bits": 8,
+    "type": "int",
+    "offset": 4,
+    "size": 4
+   },
+   {
+    "name": "externalEventParm",
+    "bits": 8,
+    "type": "int",
+    "offset": 164,
+    "size": 4
+   },
+   {
+    "name": "eventParms[0]",
+    "bits": -16,
+    "type": "int",
+    "offset": 152,
+    "size": 4
+   },
+   {
+    "name": "weaponChargeSubtractTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 64,
+    "size": 4
+   },
+   {
+    "name": "weaponChargeTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 60,
+    "size": 4
+   },
+   {
+    "name": "rocketTargetTime",
+    "bits": 32,
+    "type": "float",
+    "offset": 636,
+    "size": 4
+   },
+   {
+    "name": "fd.forceJumpZStart",
+    "bits": 0,
+    "type": "float",
+    "offset": 1124,
+    "size": 4
+   },
+   {
+    "name": "rocketLockTime",
+    "bits": 32,
+    "type": "float",
+    "offset": 632,
+    "size": 4
+   },
+   {
+    "name": "m_iVehicleNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 1436,
+    "size": 4
+   },
+   {
+    "name": "generic1",
+    "bits": 8,
+    "type": "int",
+    "offset": 512,
+    "size": 4
+   },
+   {
+    "name": "eFlags2",
+    "bits": 10,
+    "type": "int",
+    "offset": 136,
+    "size": 4
+   },
+   {
+    "name": "legsAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 108,
+    "size": 4
+   },
+   {
+    "name": "torsoAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 116,
+    "size": 4
+   },
+   {
+    "name": "torsoTimer",
+    "bits": 16,
+    "type": "int",
+    "offset": 112,
+    "size": 4
+   },
+   {
+    "name": "legsTimer",
+    "bits": 16,
+    "type": "int",
+    "offset": 104,
+    "size": 4
+   },
+   {
+    "name": "jetpackFuel",
+    "bits": 8,
+    "type": "int",
+    "offset": 1496,
+    "size": 4
+   },
+   {
+    "name": "cloakFuel",
+    "bits": 8,
+    "type": "int",
+    "offset": 1500,
+    "size": 4
+   },
+   {
+    "name": "saberCanThrow",
+    "bits": 1,
+    "type": "bool",
+    "offset": 604,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerDebounce[FP_LEVITATION]",
+    "bits": 32,
+    "type": "int",
+    "offset": 808,
+    "size": 4
+   },
+   {
+    "name": "torsoFlip",
+    "bits": 1,
+    "type": "bool",
+    "offset": 124,
+    "size": 4
+   },
+   {
+    "name": "legsFlip",
+    "bits": 1,
+    "type": "bool",
+    "offset": 120,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowersActive",
+    "bits": 32,
+    "type": "int",
+    "offset": 880,
+    "size": 4
+   },
+   {
+    "name": "hasDetPackPlanted",
+    "bits": 1,
+    "type": "bool",
+    "offset": 684,
+    "size": 4
+   },
+   {
+    "name": "fd.forceRageRecoveryTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1192,
+    "size": 4
+   },
+   {
+    "name": "saberInFlight",
+    "bits": 1,
+    "type": "bool",
+    "offset": 544,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex",
+    "bits": 16,
+    "type": "int",
+    "offset": 1176,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex2",
+    "bits": 16,
+    "type": "int",
+    "offset": 1180,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex3",
+    "bits": 16,
+    "type": "int",
+    "offset": 1184,
+    "size": 4
+   },
+   {
+    "name": "fd.forceMindtrickTargetIndex4",
+    "bits": 16,
+    "type": "int",
+    "offset": 1188,
+    "size": 4
+   },
+   {
+    "name": "fd.sentryDeployed",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1244,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerLevel[FP_SEE]",
+    "bits": 2,
+    "type": "int",
+    "offset": 1032,
+    "size": 4
+   },
+   {
+    "name": "holocronBits",
+    "bits": 32,
+    "type": "int",
+    "offset": 768,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePower",
+    "bits": 8,
+    "type": "int",
+    "offset": 964,
+    "size": 4
+   },
+   {
+    "name": "velocity[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 32,
+    "size": 4
+   },
+   {
+    "name": "velocity[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 36,
+    "size": 4
+   },
+   {
+    "name": "velocity[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 40,
+    "size": 4
+   },
+   {
+    "name": "bobCycle",
+    "bits": 8,
+    "type": "int",
+    "offset": 8,
+    "size": 4
+   },
+   {
+    "name": "speed",
+    "bits": 0,
+    "type": "float",
+    "offset": 72,
+    "size": 4
+   },
+   {
+    "name": "groundEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 100,
+    "size": 4
+   },
+   {
+    "name": "viewheight",
+    "bits": -8,
+    "type": "int",
+    "offset": 196,
+    "size": 4
+   },
+   {
+    "name": "fd.saberAnimLevel",
+    "bits": 4,
+    "type": "int",
+    "offset": 1252,
+    "size": 4
+   },
+   {
+    "name": "fd.saberDrawAnimLevel",
+    "bits": 4,
+    "type": "int",
+    "offset": 1256,
+    "size": 4
+   },
+   {
+    "name": "genericEnemyIndex",
+    "bits": 32,
+    "type": "int",
+    "offset": 668,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[0]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1412,
+    "size": 4
+   },
+   {
+    "name": "movementDir",
+    "bits": 4,
+    "type": "int",
+    "offset": 128,
+    "size": 4
+   },
+   {
+    "name": "saberEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 588,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[3]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1424,
+    "size": 4
+   },
+   {
+    "name": "saberMove",
+    "bits": 32,
+    "type": "int",
+    "offset": 548,
+    "size": 4
+   },
+   {
+    "name": "standheight",
+    "bits": 10,
+    "type": "int",
+    "offset": 1428,
+    "size": 4
+   },
+   {
+    "name": "crouchheight",
+    "bits": 10,
+    "type": "int",
+    "offset": 1432,
+    "size": 4
+   },
+   {
+    "name": "basespeed",
+    "bits": -16,
+    "type": "int",
+    "offset": 76,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[1]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1416,
+    "size": 4
+   },
+   {
+    "name": "duelIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 1320,
+    "size": 4
+   },
+   {
+    "name": "customRGBA[2]",
+    "bits": 8,
+    "type": "int",
+    "offset": 1420,
+    "size": 4
+   },
+   {
+    "name": "gravity",
+    "bits": 16,
+    "type": "int",
+    "offset": 68,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowersKnown",
+    "bits": 32,
+    "type": "int",
+    "offset": 876,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerLevel[FP_LEVITATION]",
+    "bits": 2,
+    "type": "int",
+    "offset": 980,
+    "size": 4
+   },
+   {
+    "name": "fd.forcePowerSelected",
+    "bits": 8,
+    "type": "int",
+    "offset": 884,
+    "size": 4
+   },
+   {
+    "name": "damageYaw",
+    "bits": 8,
+    "type": "int",
+    "offset": 204,
+    "size": 4
+   },
+   {
+    "name": "damageCount",
+    "bits": 8,
+    "type": "int",
+    "offset": 212,
+    "size": 4
+   },
+   {
+    "name": "inAirAnim",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1372,
+    "size": 4
+   },
+   {
+    "name": "fd.forceSide",
+    "bits": 2,
+    "type": "int",
+    "offset": 1208,
+    "size": 4
+   },
+   {
+    "name": "saberAttackChainCount",
+    "bits": 4,
+    "type": "int",
+    "offset": 1332,
+    "size": 4
+   },
+   {
+    "name": "lookTarget",
+    "bits": 10,
+    "type": "int",
+    "offset": 1408,
+    "size": 4
+   },
+   {
+    "name": "moveDir[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 48,
+    "size": 4
+   },
+   {
+    "name": "moveDir[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 44,
+    "size": 4
+   },
+   {
+    "name": "damageEvent",
+    "bits": 8,
+    "type": "int",
+    "offset": 200,
+    "size": 4
+   },
+   {
+    "name": "moveDir[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 52,
+    "size": 4
+   },
+   {
+    "name": "activeForcePass",
+    "bits": 6,
+    "type": "int",
+    "offset": 680,
+    "size": 4
+   },
+   {
+    "name": "electrifyTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 772,
+    "size": 4
+   },
+   {
+    "name": "damageType",
+    "bits": 2,
+    "type": "int",
+    "offset": 216,
+    "size": 4
+   },
+   {
+    "name": "loopSound",
+    "bits": 16,
+    "type": "int",
+    "offset": 516,
+    "size": 4
+   },
+   {
+    "name": "hasLookTarget",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1404,
+    "size": 4
+   },
+   {
+    "name": "saberBlocked",
+    "bits": 8,
+    "type": "int",
+    "offset": 556,
+    "size": 4
+   },
+   {
+    "name": "forceHandExtend",
+    "bits": 8,
+    "type": "int",
+    "offset": 1272,
+    "size": 4
+   },
+   {
+    "name": "saberHolstered",
+    "bits": 2,
+    "type": "int",
+    "offset": 1336,
+    "size": 4
+   },
+   {
+    "name": "damagePitch",
+    "bits": 8,
+    "type": "int",
+    "offset": 208,
+    "size": 4
+   },
+   {
+    "name": "jumppad_ent",
+    "bits": 10,
+    "type": "int",
+    "offset": 520,
+    "size": 4
+   },
+   {
+    "name": "forceDodgeAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 1284,
+    "size": 4
+   },
+   {
+    "name": "zoomMode",
+    "bits": 2,
+    "type": "int",
+    "offset": 1344,
+    "size": 4
+   },
+   {
+    "name": "hackingTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1488,
+    "size": 4
+   },
+   {
+    "name": "zoomTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1348,
+    "size": 4
+   },
+   {
+    "name": "brokenLimbs",
+    "bits": 8,
+    "type": "int",
+    "offset": 1400,
+    "size": 4
+   },
+   {
+    "name": "zoomLocked",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1352,
+    "size": 4
+   },
+   {
+    "name": "zoomFov",
+    "bits": 0,
+    "type": "float",
+    "offset": 1356,
+    "size": 4
+   },
+   {
+    "name": "fallingToDeath",
+    "bits": 32,
+    "type": "int",
+    "offset": 1364,
+    "size": 4
+   },
+   {
+    "name": "lastHitLoc[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1384,
+    "size": 4
+   },
+   {
+    "name": "lastHitLoc[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1376,
+    "size": 4
+   },
+   {
+    "name": "lastHitLoc[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1380,
+    "size": 4
+   },
+   {
+    "name": "saberLockTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 560,
+    "size": 4
+   },
+   {
+    "name": "saberLockFrame",
+    "bits": 16,
+    "type": "int",
+    "offset": 568,
+    "size": 4
+   },
+   {
+    "name": "saberLockEnemy",
+    "bits": 10,
+    "type": "int",
+    "offset": 564,
+    "size": 4
+   },
+   {
+    "name": "fd.forceGripCripple",
+    "bits": 1,
+    "type": "int",
+    "offset": 1152,
+    "size": 4
+   },
+   {
+    "name": "emplacedIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 640,
+    "size": 4
+   },
+   {
+    "name": "isJediMaster",
+    "bits": 1,
+    "type": "bool",
+    "offset": 648,
+    "size": 4
+   },
+   {
+    "name": "forceRestricted",
+    "bits": 1,
+    "type": "bool",
+    "offset": 652,
+    "size": 4
+   },
+   {
+    "name": "trueJedi",
+    "bits": 1,
+    "type": "bool",
+    "offset": 656,
+    "size": 4
+   },
+   {
+    "name": "trueNonJedi",
+    "bits": 1,
+    "type": "bool",
+    "offset": 660,
+    "size": 4
+   },
+   {
+    "name": "duelTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1324,
+    "size": 4
+   },
+   {
+    "name": "duelInProgress",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1328,
+    "size": 4
+   },
+   {
+    "name": "saberLockAdvance",
+    "bits": 1,
+    "type": "bool",
+    "offset": 584,
+    "size": 4
+   },
+   {
+    "name": "heldByClient",
+    "bits": 6,
+    "type": "int",
+    "offset": 1388,
+    "size": 4
+   },
+   {
+    "name": "ragAttach",
+    "bits": 10,
+    "type": "int",
+    "offset": 1392,
+    "size": 4
+   },
+   {
+    "name": "iModelScale",
+    "bits": 10,
+    "type": "int",
+    "offset": 1396,
+    "size": 4
+   },
+   {
+    "name": "hackingBaseTime",
+    "bits": 16,
+    "type": "int",
+    "offset": 1492,
+    "size": 4
+   },
+   {
+    "name": "userInt1",
+    "bits": 1,
+    "type": "int",
+    "offset": 1504,
+    "size": 4
+   },
+   {
+    "name": "userInt2",
+    "bits": 1,
+    "type": "int",
+    "offset": 1508,
+    "size": 4
+   },
+   {
+    "name": "userInt3",
+    "bits": 1,
+    "type": "int",
+    "offset": 1512,
+    "size": 4
+   },
+   {
+    "name": "userFloat1",
+    "bits": 1,
+    "type": "float",
+    "offset": 1516,
+    "size": 4
+   },
+   {
+    "name": "userFloat2",
+    "bits": 1,
+    "type": "float",
+    "offset": 1520,
+    "size": 4
+   },
+   {
+    "name": "userFloat3",
+    "bits": 1,
+    "type": "float",
+    "offset": 1524,
+    "size": 4
+   },
+   {
+    "name": "userVec1[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1528,
+    "size": 4
+   },
+   {
+    "name": "userVec1[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1532,
+    "size": 4
+   },
+   {
+    "name": "userVec1[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1536,
+    "size": 4
+   },
+   {
+    "name": "userVec2[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1540,
+    "size": 4
+   },
+   {
+    "name": "userVec2[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1544,
+    "size": 4
+   },
+   {
+    "name": "userVec2[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1548,
+    "size": 4
+   }
+  ],
+  "veh": [
+   {
+    "name": "commandTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 0,
+    "size": 4
+   },
+   {
+    "name": "origin[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 24,
+    "size": 4
+   },
+   {
+    "name": "origin[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 20,
+    "size": 4
+   },
+   {
+    "name": "viewangles[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 188,
+    "size": 4
+   },
+   {
+    "name": "viewangles[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 184,
+    "size": 4
+   },
+   {
+    "name": "origin[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 28,
+    "size": 4
+   },
+   {
+    "name": "velocity[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 32,
+    "size": 4
+   },
+   {
+    "name": "velocity[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 36,
+    "size": 4
+   },
+   {
+    "name": "velocity[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 40,
+    "size": 4
+   },
+   {
+    "name": "weaponTime",
+    "bits": -16,
+    "type": "int",
+    "offset": 56,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[1]",
+    "bits": 16,
+    "type": "int",
+    "offset": 84,
+    "size": 4
+   },
+   {
+    "name": "speed",
+    "bits": 0,
+    "type": "float",
+    "offset": 72,
+    "size": 4
+   },
+   {
+    "name": "legsAnim",
+    "bits": 16,
+    "type": "int",
+    "offset": 108,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[0]",
+    "bits": 16,
+    "type": "int",
+    "offset": 80,
+    "size": 4
+   },
+   {
+    "name": "groundEntityNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 100,
+    "size": 4
+   },
+   {
+    "name": "eFlags",
+    "bits": 32,
+    "type": "int",
+    "offset": 132,
+    "size": 4
+   },
+   {
+    "name": "eventSequence",
+    "bits": 16,
+    "type": "int",
+    "offset": 140,
+    "size": 4
+   },
+   {
+    "name": "legsTimer",
+    "bits": 16,
+    "type": "int",
+    "offset": 104,
+    "size": 4
+   },
+   {
+    "name": "rocketLockIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 624,
+    "size": 4
+   },
+   {
+    "name": "events[0]",
+    "bits": 10,
+    "type": "int",
+    "offset": 144,
+    "size": 4
+   },
+   {
+    "name": "events[1]",
+    "bits": 10,
+    "type": "int",
+    "offset": 148,
+    "size": 4
+   },
+   {
+    "name": "weaponstate",
+    "bits": 4,
+    "type": "int",
+    "offset": 180,
+    "size": 4
+   },
+   {
+    "name": "pm_flags",
+    "bits": 16,
+    "type": "int",
+    "offset": 12,
+    "size": 4
+   },
+   {
+    "name": "pm_time",
+    "bits": -16,
+    "type": "int",
+    "offset": 16,
+    "size": 4
+   },
+   {
+    "name": "clientNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 172,
+    "size": 4
+   },
+   {
+    "name": "gravity",
+    "bits": 16,
+    "type": "int",
+    "offset": 68,
+    "size": 4
+   },
+   {
+    "name": "weapon",
+    "bits": 8,
+    "type": "int",
+    "offset": 176,
+    "size": 4
+   },
+   {
+    "name": "delta_angles[2]",
+    "bits": 16,
+    "type": "int",
+    "offset": 88,
+    "size": 4
+   },
+   {
+    "name": "viewangles[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 192,
+    "size": 4
+   },
+   {
+    "name": "externalEvent",
+    "bits": 10,
+    "type": "int",
+    "offset": 160,
+    "size": 4
+   },
+   {
+    "name": "eventParms[1]",
+    "bits": 8,
+    "type": "int",
+    "offset": 156,
+    "size": 4
+   },
+   {
+    "name": "pm_type",
+    "bits": 8,
+    "type": "int",
+    "offset": 4,
+    "size": 4
+   },
+   {
+    "name": "externalEventParm",
+    "bits": 8,
+    "type": "int",
+    "offset": 164,
+    "size": 4
+   },
+   {
+    "name": "eventParms[0]",
+    "bits": -16,
+    "type": "int",
+    "offset": 152,
+    "size": 4
+   },
+   {
+    "name": "vehOrientation[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1440,
+    "size": 4
+   },
+   {
+    "name": "vehOrientation[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1444,
+    "size": 4
+   },
+   {
+    "name": "moveDir[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 48,
+    "size": 4
+   },
+   {
+    "name": "moveDir[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 44,
+    "size": 4
+   },
+   {
+    "name": "vehOrientation[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1448,
+    "size": 4
+   },
+   {
+    "name": "moveDir[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 52,
+    "size": 4
+   },
+   {
+    "name": "rocketTargetTime",
+    "bits": 32,
+    "type": "float",
+    "offset": 636,
+    "size": 4
+   },
+   {
+    "name": "electrifyTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 772,
+    "size": 4
+   },
+   {
+    "name": "loopSound",
+    "bits": 16,
+    "type": "int",
+    "offset": 516,
+    "size": 4
+   },
+   {
+    "name": "rocketLockTime",
+    "bits": 32,
+    "type": "float",
+    "offset": 632,
+    "size": 4
+   },
+   {
+    "name": "m_iVehicleNum",
+    "bits": 10,
+    "type": "int",
+    "offset": 1436,
+    "size": 4
+   },
+   {
+    "name": "vehTurnaroundTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1464,
+    "size": 4
+   },
+   {
+    "name": "hackingTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1488,
+    "size": 4
+   },
+   {
+    "name": "brokenLimbs",
+    "bits": 8,
+    "type": "int",
+    "offset": 1400,
+    "size": 4
+   },
+   {
+    "name": "vehWeaponsLinked",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1468,
+    "size": 4
+   },
+   {
+    "name": "hyperSpaceTime",
+    "bits": 32,
+    "type": "int",
+    "offset": 1472,
+    "size": 4
+   },
+   {
+    "name": "eFlags2",
+    "bits": 10,
+    "type": "int",
+    "offset": 136,
+    "size": 4
+   },
+   {
+    "name": "hyperSpaceAngles[1]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1480,
+    "size": 4
+   },
+   {
+    "name": "vehBoarding",
+    "bits": 1,
+    "type": "bool",
+    "offset": 1452,
+    "size": 4
+   },
+   {
+    "name": "vehTurnaroundIndex",
+    "bits": 10,
+    "type": "int",
+    "offset": 1460,
+    "size": 4
+   },
+   {
+    "name": "vehSurfaces",
+    "bits": 16,
+    "type": "int",
+    "offset": 1456,
+    "size": 4
+   },
+   {
+    "name": "hyperSpaceAngles[0]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1476,
+    "size": 4
+   },
+   {
+    "name": "hyperSpaceAngles[2]",
+    "bits": 0,
+    "type": "float",
+    "offset": 1484,
+    "size": 4
+   },
+   {
+    "name": "userInt1",
+    "bits": 1,
+    "type": "int",
+    "offset": 1504,
+    "size": 4
+   },
+   {
+    "name": "userInt2",
+    "bits": 1,
+    "type": "int",
+    "offset": 1508,
+    "size": 4
+   },
+   {
+    "name": "userInt3",
+    "bits": 1,
+    "type": "int",
+    "offset": 1512,
+    "size": 4
+   },
+   {
+    "name": "userFloat1",
+    "bits": 1,
+    "type": "float",
+    "offset": 1516,
+    "size": 4
+   },
+   {
+    "name": "userFloat2",
+    "bits": 1,
+    "type": "float",
+    "offset": 1520,
+    "size": 4
+   },
+   {
+    "name": "userFloat3",
+    "bits": 1,
+    "type": "float",
+    "offset": 1524,
+    "size": 4
+   },
+   {
+    "name": "userVec1[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1528,
+    "size": 4
+   },
+   {
+    "name": "userVec1[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1532,
+    "size": 4
+   },
+   {
+    "name": "userVec1[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1536,
+    "size": 4
+   },
+   {
+    "name": "userVec2[0]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1540,
+    "size": 4
+   },
+   {
+    "name": "userVec2[1]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1544,
+    "size": 4
+   },
+   {
+    "name": "userVec2[2]",
+    "bits": 1,
+    "type": "float",
+    "offset": 1548,
+    "size": 4
+   }
+  ]
+ },
+ "arrays": [
+  {
+   "name": "stats",
+   "bits": -16,
+   "count": 16,
+   "offset": 244,
+   "elem_size": 4,
+   "special": {
+    "index": 4,
+    "bits": 19
+   }
+  },
+  {
+   "name": "persistant",
+   "bits": -16,
+   "count": 16,
+   "offset": 308,
+   "elem_size": 4
+  },
+  {
+   "name": "ammo",
+   "bits": -16,
+   "count": 16,
+   "offset": 436,
+   "elem_size": 4
+  },
+  {
+   "name": "powerups",
+   "bits": -32,
+   "count": 16,
+   "offset": 372,
+   "elem_size": 4
+  }
+ ]
+}

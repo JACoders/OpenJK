@@ -78,7 +78,7 @@ The study ran on one machine with one Python and one MSVC build. Before shipping
 
 | id | mistake | how it was found | fix |
 |---|---|---|---|
-| M1 | The table extractor matched lines commented out with `//`, which shifted field indices after about index 75 of the player state | decoding a later message failed with a strange entity order | strip `//` and `/* */` comments before the regular expression; check table lengths (before the fix the three player-state tables had 152, 152 and 80 entries; after it 137, 140 and 69, and the pilot table length matters for the "minus 82" rule) |
+| M1 | The table extractor matched lines commented out with `//`, which shifted field indices after about index 75 of the player state | decoding a later message failed with a strange entity order | strip `//` and `/* */` comments before the regular expression (the extractor is now `gen_fields.py`, step 2, which does the same); check table lengths (before the fix the three player-state tables had 152, 152 and 80 entries; after it 137, 140 and 69, and the pilot table length matters for the "minus 82" rule) |
 | M2 | Capture started after joining: no gamestate, so baselines and bases were missing | 1,105 undecodable messages | the capture cvar must be on before the map loads |
 | M3 | "Speed does not matter" in the first reasoning | the owner corrected it | speed was then measured; it turned out not to be a constraint, but as a result of measurement, not assumption |
 | M4 | Estimated CPU of simple coders at 2 to 7 % of a core | C benchmark | measured 0.03 to 0.25 % |

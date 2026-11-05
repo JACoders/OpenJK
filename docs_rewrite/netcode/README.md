@@ -11,9 +11,10 @@ The work was done by an AI assistant (Claude) working with the owner. Every numb
 These constrain every recommendation in this folder:
 
 1. **No loss of precision.** Values may be encoded differently (indices, prediction with a residual, another format) and may even be more precise than today, but never less precise than what the client receives from the original code. In practice this means the decoded values are identical to today's: float32 positions have a resolution of about 0.00006 unit near 1,000 units, finer than any fixed grid worth sending, so rounding to a grid (on the client or on the server) would lose precision and is excluded.
-2. **No compatibility constraint.** Protocol, structures, mods and the client's prediction and interpolation code can all be rewritten; the existing code may contain bugs or poor calculations.
+2. **No compatibility constraint.** Protocol, structures, mods and the client's prediction and interpolation code can all be rewritten; the existing code may contain bugs or poor calculations. Stated again on 5 November 2026: compatibility with mods, their files or the old protocol is never a criterion and never a question to ask before changing something; nothing is fixed if changing it improves the result, including the types of the networked structures (booleans stored as 32-bit integers) and the time base (`serverTime` is `sv.time`, the game clock advanced by `1000 / sv_fps` ms per server frame, `server/sv_main.cpp:1169`, `:1228`; written at `server/sv_snapshot.cpp:200`).
 3. **As few network settings as possible.** Values such as `rate`, `snaps`, `cl_maxpackets`, `cl_packetdup` or the base selection should be computed or measured at run time (bandwidth, RTT, loss), not set by hand.
 4. **Reusable.** The netcode should be generic enough to be reused by other JKA forks: driven by the field tables (`entityStateFields`, `playerStateFields`) and by the common trajectory fields, not by rules of one game module.
+5. **Windows and Linux** (added 5 November 2026). Client and dedicated server on Windows and Linux, x86 and x64, with MSVC, GCC and Clang; a client on one platform must work with a server on the other. macOS and ARM (aarch64) are not targeted for now.
 
 ## What the investigation found, in ten lines
 

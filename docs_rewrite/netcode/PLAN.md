@@ -1,6 +1,6 @@
 # Netcode rewrite: implementation plan
 
-This plan turns [04](04-recommendations.md) into steps to do one after the other. Each step has a deliverable, a check that says when it is done, and the steps it depends on. Progress, results of finished steps and the next action are in [progress/README.md](progress/README.md). The plan follows the owner's goals listed in the study's [README](README.md): no loss of precision, no compatibility constraint, as few network settings as possible, and netcode that other JKA forks can reuse.
+This plan turns [04](04-recommendations.md) into steps to do one after the other. Each step has a deliverable, a check that says when it is done, and the steps it depends on. Progress, results of finished steps and the next action are in [progress/README.md](progress/README.md). The plan follows the owner's goals listed in the study's [README](README.md): no loss of precision, no compatibility constraint, as few network settings as possible, netcode that other JKA forks can reuse, and Windows and Linux (x86 and x64) as targets.
 
 The work happens in this repository (a fork of OpenJK, branch `feature/poc-netcode`). Paths are relative to `codemp/`; where a function is cited, its line in this tree is in [08-openjk.md](08-openjk.md) section 8.5. Effort labels: S = days, M = weeks, L = months, for one engineer who knows the code.
 
@@ -34,8 +34,10 @@ Depends on: nothing.
 
 Depends on: nothing (can run alongside step 1).
 
+**Done on 5 November 2026** ([progress/step-02-field-descriptors.md](progress/step-02-field-descriptors.md)): `data/fields.json`, offsets and C types computed by the compiler (`tools/fieldinfo`); schema version 2 adds the C type of each field (bool, int, float, enum).
+
 - Generate, from the arrays of `qcommon/msg.cpp` (`entityStateFields`, `playerStateFields`, `pilotPlayerStateFields`, `vehPlayerStateFields`, the four player-state arrays), a descriptor list: name, offset, width, float flag, array membership, plus a schema version and hash.
-- Decide the fate of the runtime width overrides (`netf_overrides.txt`, `psf_overrides.txt`, 02 section 2.3): read at start and folded into the descriptors, or removed with the needed widths written in the tables.
+- Decide the fate of the runtime width overrides (`netf_overrides.txt`, `psf_overrides.txt`, 02 section 2.3). Decided: removed from the new protocol; `user*` fields are coded by C type.
 - Check: the descriptors reproduce the tables extracted by `jkadec.py` (132, 137, 140, 69 entries); the Python tools read the same generated file.
 
 ### Step 3: state recorder in the server (S)
@@ -86,7 +88,7 @@ Depends on: steps 2 and 5.
 | `rans` | 32-bit byte-renormalising rANS, 12 to 15-bit probabilities, initial-state trick | ryg_rans (CC0); `codec.py` |
 | `schema` | generated descriptors of step 2, pilot and vehicle subsets, arrays | step 2 output |
 | `tables` | loader of trained tables and per-field modes, version and schema hash, uniform fallback | `codec.py` `Tables` |
-| `fieldcodec` | absolute / delta classes, float kinds (zero, integral, angle index, other), prediction modes T, P2, A2 | `put_int`, `put_float`, `get_int`, `get_float` in `codec.py` |
+| `fieldcodec` | absolute / delta classes, float kinds (zero, integral, angle index, other), prediction modes T, P2, A2; booleans by C type (changed = inverse, no value); `user*` fields by C type, not by their 1-bit legacy width (04 section 4.2) | `put_int`, `put_float`, `get_int`, `get_float` in `codec.py` |
 | `msgcodec` | whole message: header, operations, snapshot, gamestate, commands, setgame, download, mapchange | `codec2.py` |
 | `escape` | raw coding of an entity or a message and the rule that picks it (worst case, 04 section 4.8) | not in the study |
 | `tests` | golden traces, synthetic fuzz, garbage-input fuzz, determinism | section 4 |
@@ -130,6 +132,7 @@ Depends on: step 9.
 
 - Bandwidth estimate per connection from the acknowledgement record; it sets the snapshot and packet rates. Removes `rate`, `sv_maxRate`, `sv_minRate`, `sv_ratePolicy`, `sv_clientRate`, `sv_lanForceRate`, `snaps`, `sv_snapsMin`, `sv_snapsMax`, `sv_snapsPolicy`, `cl_maxpackets`, `cl_lanForcePackets`.
 - Interpolation delay computed from the measured snapshot interval and jitter. Removes `cl_timeNudge`, `cl_timenudgeDuration` and the user choice of `cg_smoothClients`.
+- Evaluate a real send timestamp (or the server's frame-to-send delay) in each snapshot, for the client's clock synchronisation; `serverTime` stays the game clock (04 section 4.9, "Time base").
 - Timeouts derived from the keep-alive interval.
 - Debug cvars to force each value and to print the measured ones.
 - Check: on links from LAN to 400 ms RTT and from 2 % to 20 % loss, no setting is needed to reach the snapshot rate the link allows; the forced-value debug cvars reproduce the old behaviour for comparison.
@@ -184,6 +187,7 @@ Not studied; the largest unexplored potential (05 section 5.7):
 | Synthetic fuzz | `fuzz.py` generator ported to C++ (any base age, vehicle and pilot, download, extreme values) | every build |
 | Garbage fuzz | random and mutated byte streams into the decoder under ASAN / UBSAN | nightly |
 | Determinism | MSVC, GCC, Clang, x86 and x64, optimised and not: all angle indices, P2 predictions on recorded positions | every build |
+| Platforms | build and run the tests above on Linux (GCC and Clang); a Windows client against a Linux server and the reverse | every build from step 6 (decided 5 November 2026: Linux is built and tested alongside Windows) |
 | Size regression | evaluator on held-out recordings; fail if the mean grows by more than 3 % | table or schema change |
 | Loss, latency, jitter | simulator over recordings: loss 0 to 20 % with bursts, RTT 0 to 400 ms, jitter, lost acknowledgements | transport change |
 | Worst case | adversarial snapshots stay within the cap and decode | every build |

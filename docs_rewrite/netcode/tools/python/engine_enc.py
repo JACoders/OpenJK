@@ -7,7 +7,7 @@ import bench2 as B, codec as C
 
 EF = B.EF; NE = B.NE
 PS = list(B.T["ps"])
-ARRS = ("stats", "persistant", "ammo", "powerups")
+ARRS = B.bdata.J.FIELDS["arrays"]   # stats, persistant, ammo, powerups
 FIB = 13; BIAS = 1 << (FIB - 1)
 
 def f32(b): return struct.unpack("<f", struct.pack("<I", b & 0xFFFFFFFF))[0]
@@ -42,23 +42,23 @@ def write_fields(calls, fields, new, old, entity):
 
 def write_arrays(calls, new, old):
     masks = {}
-    for pre in ARRS:
+    for a in ARRS:
         m = 0
-        for i in range(16):
-            k = "%s[%d]" % (pre, i)
+        for i in range(a["count"]):
+            k = "%s[%d]" % (a["name"], i)
             if new.get(k, 0) != old.get(k, 0): m |= 1 << i
-        masks[pre] = m
+        masks[a["name"]] = m
     if not any(masks.values()): calls.append((1, 0)); return
     calls.append((1, 1))
-    for pre in ARRS:
+    for a in ARRS:
+        pre = a["name"]; sp = a.get("special"); w = abs(a["bits"])
         if not masks[pre]: calls.append((1, 0)); continue
-        calls.append((1, 1)); calls.append((16, masks[pre]))
-        for i in range(16):
+        calls.append((1, 1)); calls.append((a["count"], masks[pre]))
+        for i in range(a["count"]):
             if masks[pre] >> i & 1:
                 v = new.get("%s[%d]" % (pre, i), 0)
-                if pre == "stats" and i == 4: calls.append((19, v))
-                elif pre == "powerups": calls.append((32, v & 0xFFFFFFFF))
-                else: calls.append((16, v & 0xFFFF))
+                if sp and i == sp["index"]: calls.append((sp["bits"], v))
+                else: calls.append((w, v & ((1 << w) - 1)))
 
 def snapshot_calls(msg_ack, op, base, baselines):
     """calls for ack + one snapshot op (no server commands, no vehicle)"""

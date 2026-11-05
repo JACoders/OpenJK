@@ -11,9 +11,10 @@ EF = B.EF; NE = B.NE; ET_IDX = B.ET_IDX
 ENAMES = [n for n, b in EF]
 # playerstate fields with signed array extras (reader returns signed shorts / longs for the arrays)
 PF2 = list(B.T["ps"])
-for pre, bits in (("stats", -16), ("persistant", -16), ("ammo", -16), ("powerups", -32)):
-    for i in range(16):
-        PF2.append(("%s[%d]" % (pre, i), 19 if (pre == "stats" and i == 4) else bits))
+for a in B.bdata.J.FIELDS["arrays"]:
+    sp = a.get("special")
+    for i in range(a["count"]):
+        PF2.append(("%s[%d]" % (a["name"], i), sp["bits"] if sp and i == sp["index"] else a["bits"]))
 NP = len(PF2)
 PNAMES = [n for n, b in PF2]
 

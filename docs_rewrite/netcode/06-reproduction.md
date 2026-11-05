@@ -36,6 +36,7 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 
 | file | purpose |
 |---|---|
+| `gen_fields.py` | Plan step 2: generates `../fieldinfo/fields.inc` from `codemp/qcommon/msg.cpp`, and with `--exe <fieldinfo.exe>` writes `data/fields.json` (field tables, widths, C types, offsets, arrays, schema version and hash). Every other tool reads `fields.json` ([progress/step-02-field-descriptors.md](progress/step-02-field-descriptors.md)). |
 | `jkadec.py` | Decoder of the engine read path: Huffman tree, `MSG_ReadBits`, delta entity and player state, `svc_*` operations. `python jkadec.py file.bin` prints a decode summary and writes `file.bin.dec.pkl`. Also the library imported by the others. |
 | `bdata.py` | Builds the per-snapshot corpus (states, call lists) from the three captures; cache `bdata.pkl`. |
 | `fullload.py` | Builds the whole-message corpus (all operations with payloads); cache `fullmsgs.pkl`. |
@@ -57,11 +58,13 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 | `worst.py` | Crowded and adversarial snapshots; writes `bench_worst_*.bin` for the C benchmark. |
 | `dump_bench.py` | Writes `bench_input.bin` (6.8) for the C benchmark. |
 
+`tools/fieldinfo/`: `fieldinfo.cpp` and `CMakeLists.txt`, a program that prints the offsets, sizes and C types of the fields listed in `fields.inc` (built by the owner; `build/` is not committed).
+
 `tools/cpubench/`: `bench.c` (own coders A to D), `bench_libs.cpp` (ryg_rans, FSE, qbc, nibrans), `nibrans_impl.c` (nibrans compiled as C), `CMakeLists.txt` (expects the third-party sources under `third_party/`).
 
 Also in this folder:
 
-- `data/`: the three captures, `msg.cpp` (a copy of `codemp/qcommon/msg.cpp` as used by the study, from which the decoder extracts the field tables and the Huffman frequencies), `bench_input.bin` (13 MB, the C benchmark input), `bench_worst_A32.bin` and `bench_worst_A128.bin` (the crowd scenarios). Checksums are in 6.5.
+- `data/`: the three captures, `msg.cpp` (a copy of `codemp/qcommon/msg.cpp` as used by the study, from which the decoder reads the Huffman frequencies; until step 2 also the field tables), `fields.json` (the generated field descriptors, step 2), `bench_input.bin` (13 MB, the C benchmark input), `bench_worst_A32.bin` and `bench_worst_A128.bin` (the crowd scenarios). Checksums are in 6.5.
 - `bin/`: `jkabench.exe` and `jkabench_libs.exe`, the Windows x64 Release builds used for the C measurements (checksums in 6.5). They run on the files in `data/`, for example `bin\jkabench.exe data\bench_input.bin`. They need no installation. Timings vary by about 10 % from run to run and between machines (a re-run on 4 November gave 6.4 µs where the study table has 7.2 µs for the engine's encoder).
 
 Not copied (rebuild or re-fetch): the Python caches (`*.pkl`), `bench_worst_B128.bin` and `bench_worst_B1000.bin` (10 MB and 37 MB, produced by `worst.py` in seconds, and unusable by the C benchmark anyway), the CMake `build/` folder, and `third_party/`. A `.gitignore` in this folder excludes the caches.
@@ -156,14 +159,14 @@ The copies in `tools/python` use paths relative to the script, so nothing needs 
 
 | file | constant | value |
 |---|---|---|
-| `jkadec.py` | `SRC` | `../../data/msg.cpp` (SHA-256 `d0eea2162bb3b2c917ede93fc4582aff7af88cb2cc706d881176966742fa9d63`, 91,189 bytes), falling back to `../../../../codemp/qcommon/msg.cpp` (this repository's copy, OpenJK; its tables and `msg_hData` are identical, see 08); tables and `msg_hData` are extracted from it |
+| `jkadec.py` | `SRC` | `../../data/msg.cpp` (SHA-256 `d0eea2162bb3b2c917ede93fc4582aff7af88cb2cc706d881176966742fa9d63`, 91,189 bytes), falling back to `../../../../codemp/qcommon/msg.cpp` (this repository's copy, OpenJK; its tables and `msg_hData` are identical, see 08); `msg_hData` is extracted from it. The field tables come from `../../data/fields.json` (`FIELDS`) since step 2 |
 | `bdata.py` | `TMP` | `../../data` (the three capture files) |
 | `dump_bench.py` | `OUT` | `../../data/bench_input.bin` |
 | `worst.py` | `OUTDIR` | `../../data` (writes `bench_worst_*.bin` there) |
 
 The study itself ran with the absolute paths `E:\Git\jka\jediacademy\codemp\...` and `E:\Git\jka\jediacademy\tmp\...`; results are identical. A complete re-run in this repository on 4 November 2026 (every command of 6.6 except `dump_bench.py`, whose output `bench_input.bin` was checked by checksum instead) reproduced every size, count and failure figure of 03 exactly; `worst.py` rewrote `bench_worst_A32.bin` and `bench_worst_A128.bin` byte for byte. The executables of `bin/` (checksums unchanged) gave the same bytes and timings within 10 % of the table (for example engine encode 6,692 ns against 7,177; ryg_rans 954 against 951; engine at 128 crowd entities 54,938 against 59,911).
 
-Caches are created next to the scripts: `hufftree.pkl` (decode table), `bdata.pkl`, `fullmsgs.pkl`. Delete them after changing `jkadec.py`, the capture files or the source of `msg.cpp`.
+Caches are created next to the scripts: `hufftree.pkl` (decode table), `bdata.pkl`, `fullmsgs.pkl`. Delete them after changing `jkadec.py`, the capture files, the source of `msg.cpp` or `data/fields.json`. Regenerating `fields.json` needs the repository's `codemp/` and a C++ compiler; using it does not, so the folder stays self-contained.
 
 ## 6.8 `bench_input.bin` format (read by `bench.c` and `bench_libs.cpp`)
 

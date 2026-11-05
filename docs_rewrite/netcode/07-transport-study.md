@@ -159,7 +159,7 @@ Answered so far (4 November 2026): compatibility with the old protocol and mods 
 
 1. Is authenticated encryption a requirement? If yes, is a backend that issues connect tokens acceptable, or must anyone be able to connect to a public server directly?
 2. Target number of simultaneous players per server (the answer decides between libraries with client caps, 100 for yojimbo as documented, and larger designs).
-3. Platforms for the client and the dedicated server (the engine has Windows and Linux dedicated servers).
+3. Platforms for the client and the dedicated server (the engine has Windows and Linux dedicated servers). **Answered 5 November 2026:** Windows and Linux, x86 and x64, client and dedicated server; not macOS or ARM for now.
 4. IPv6 required at release?
 5. Are the existing server browser and master-server protocols to be kept?
 6. Is the legal position on linking Apache-2.0 / OpenSSL 3 components with GPL v2 code acceptable, or must the transport avoid them?

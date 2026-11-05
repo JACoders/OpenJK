@@ -2,13 +2,15 @@
 Ports huffman.cpp (tree build) and the MSG_Read* / CL_Parse* paths of codemp as-is.
 Run with: python -I jkadec.py file.bin [more.bin]
 """
-import re, struct, sys, pickle, os, collections
+import re, struct, sys, pickle, os, collections, json
 
 _here = os.path.dirname(os.path.abspath(__file__))
 # the copy of msg.cpp kept in data/ is the version the study used; the repository copy is only a fallback
 SRC = os.path.normpath(os.path.join(_here, "..", "..", "data", "msg.cpp"))
 if not os.path.exists(SRC):
     SRC = os.path.normpath(os.path.join(_here, "..", "..", "..", "..", "codemp", "qcommon", "msg.cpp"))
+# field descriptors generated from codemp/qcommon/msg.cpp by gen_fields.py (PLAN.md step 2)
+FIELDS = json.load(open(os.path.normpath(os.path.join(_here, "..", "..", "data", "fields.json"))))
 GENTITYNUM_BITS = 10
 MAX_GENTITIES = 1 << GENTITYNUM_BITS
 FLOAT_INT_BITS = 13
@@ -16,7 +18,6 @@ FLOAT_INT_BIAS = 1 << (FLOAT_INT_BITS - 1)
 NYT = 256
 INTERNAL = 257
 PACKET_BACKUP = 32
-MAX_WEAPONS = 19  # checked below against source
 
 # ---------------------------------------------------------------- huffman
 class Node:
@@ -173,25 +174,8 @@ def build_decode_table(hdata, cache):
     return out
 
 # ---------------------------------------------------------------- field tables
-def load_tables(src):
-    def block(name, nth=0):
-        idx = [m.start() for m in re.finditer(r"netField_t\s+" + name + r"\[\]\s*=", src)][nth]
-        end = src.index("\n};", idx)
-        body = re.sub(r"//[^\n]*", "", src[idx:end])
-        body = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
-        # drop preprocessor-excluded XBOX lines is not needed: only #ifndef _XBOX blocks exist here
-        out = []
-        for m in re.finditer(r"\{\s*(?:NETF|PSF)\((.+?)\),\s*([-\w]+)\s*\}", body):
-            b = m.group(2)
-            b = {"GENTITYNUM_BITS": GENTITYNUM_BITS, "MAX_POWERUPS": 16}.get(b) or int(b)   # OpenJK spells two widths as macros
-            out.append((m.group(1), b))
-        return out
-    return dict(
-        ent=block("entityStateFields"),
-        ps=block("playerStateFields", 0),
-        pilot=block("pilotPlayerStateFields"),
-        veh=block("vehPlayerStateFields"),
-    )
+def load_tables():
+    return {k: [(f["name"], f["bits"]) for f in v] for k, v in FIELDS["tables"].items()}
 
 # ---------------------------------------------------------------- bit reader
 class Reader:
@@ -334,23 +318,14 @@ def read_ps(r, T, old, is_veh, rec):
     p = r.bit
     r.tag = ("p", "#arr")
     if r.read(1):
-        if r.read(1):
-            bm = r.short() & 0xFFFF
-            for i in range(16):
-                if bm & (1 << i):
-                    s["stats[%d]" % i] = r.read(MAX_WEAPONS) if i == 4 else r.short()   # STAT_WEAPONS checked at load
-        if r.read(1):
-            bm = r.short() & 0xFFFF
-            for i in range(16):
-                if bm & (1 << i): s["persistant[%d]" % i] = r.short()
-        if r.read(1):
-            bm = r.short() & 0xFFFF
-            for i in range(16):
-                if bm & (1 << i): s["ammo[%d]" % i] = r.short()
-        if r.read(1):
-            bm = r.short() & 0xFFFF
-            for i in range(16):
-                if bm & (1 << i): s["powerups[%d]" % i] = r.long()
+        for a in FIELDS["arrays"]:          # stats, persistant, ammo, powerups
+            if r.read(1):
+                bm = r.read(a["count"])
+                sp = a.get("special")         # stats[STAT_WEAPONS] in MAX_WEAPONS bits
+                for i in range(a["count"]):
+                    if bm & (1 << i):
+                        s["%s[%d]" % (a["name"], i)] = (r.read(sp["bits"]) if sp and i == sp["index"]
+                                                        else r.short() if a["bits"] == -16 else r.long())
     rec.append(("#arrays", 0, "arr", 0, r.bit - p))
     return s
 
@@ -502,9 +477,7 @@ def read_capture(fn):
 
 def setup():
     src = open(SRC, encoding="latin-1").read()
-    global MAX_WEAPONS
-    # MAX_WEAPONS / STAT_WEAPONS come from other headers
-    T = load_tables(src)
+    T = load_tables()
     hd = load_hdata(src)
     cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hufftree.pkl")
     dec = build_decode_table(hd, cache)

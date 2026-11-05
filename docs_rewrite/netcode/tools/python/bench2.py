@@ -9,9 +9,10 @@ obj = bdata.load_all()
 T = obj["T"]; data = obj["data"]; states = obj["states"]
 EF = T["ent"]; PF = list(T["ps"])
 ET_IDX = [i for i, (n, b) in enumerate(EF) if n == "eType"][0]
-for pre, bits in (("stats", 16), ("persistant", 16), ("ammo", 16), ("powerups", 32)):
-    for i in range(16):
-        PF.append(("%s[%d]" % (pre, i), 19 if (pre == "stats" and i == 4) else bits))
+for a in bdata.J.FIELDS["arrays"]:          # stats, persistant, ammo, powerups; widths unsigned here
+    sp = a.get("special")
+    for i in range(a["count"]):
+        PF.append(("%s[%d]" % (a["name"], i), sp["bits"] if sp and i == sp["index"] else abs(a["bits"])))
 NE = len(EF); NP = len(PF)
 
 def zz(d): return (d << 1) if d >= 0 else ((-d << 1) - 1)
