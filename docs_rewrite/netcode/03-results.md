@@ -1,6 +1,6 @@
 # 3. Results
 
-All tables come from the scripts in `tools/` (the script is named under each table). "5min-test" is the last 40 % of the 5-minute capture; "bots" is the second capture with bots; "solo" is the capture with one player. Models are always trained on the first 60 % of the 5-minute capture. Reasons and limits are in [01-methodology.md](01-methodology.md); the weaknesses of these numbers are listed in [06-verification-guide.md](06-verification-guide.md).
+All tables come from the scripts in `tools/` (the script is named under each table). "5min-test" is the last 40 % of the 5-minute capture; "bots" is the second capture with bots; "solo" is the capture with one player. Models are always trained on the first 60 % of the 5-minute capture. Reasons and limits are in [01-methodology.md](01-methodology.md); the weaknesses of these numbers are listed in [05-verification-guide.md](05-verification-guide.md).
 
 Sizes are payload bytes per snapshot message (without netchan header, UDP/IP or encryption tag) unless a table says otherwise.
 
@@ -262,9 +262,47 @@ Against the engine (337.6) the combined variant is -68.6 %; against the recommen
 
 Details and limits:
 
-- In the captures (1.01 base game module, `g_smoothClients` 1) players are sent as `TR_LINEAR_STOP` with `trTime` = the client's `commandTime` (`BG_PlayerStateToEntityStateExtraPolate`, 09 section 9.5), so `trTime - serverTime` is small and the elapsed time of the prediction is known exactly from `trTime`, which is the first entity field.
+- In the captures (1.01 base game module, `g_smoothClients` 1) players are sent as `TR_LINEAR_STOP` with `trTime` = the client's `commandTime` (`BG_PlayerStateToEntityStateExtraPolate`, 08 section 8.5), so `trTime - serverTime` is small and the elapsed time of the prediction is known exactly from `trTime`, which is the first entity field.
 - **This depends on the game module, not on the cvar value.** The captures were made with `g_smoothClients 1`, the value servers use; in the 1.01 base module any non-zero value selects the extrapolated form (`E:\Git\jka\jediacademy\codemp\game\g_active.c:3420`, `:3856`). A game module that calls `BG_PlayerStateToEntityState` instead (`g_smoothClients 0`, or some mods) sends players as `TR_INTERPOLATE` and does not update `trTime`. Then variant T has nothing to gain on entities, and P1 / P2 must take the elapsed time from the two snapshots' `serverTime` instead of `trTime` (the decoder knows both). The mode chooser handles the first point; the second needs one more prediction rule. Not measured, because no capture uses such a module.
 - The residual of P1 / P2 is the difference of the 32-bit patterns of the value and of the prediction rounded to float32. The prediction is computed in double from float32 inputs and rounded once; an implementation must fix this arithmetic (no fused multiply-add, same operation order) so that both sides compute the same 32 bits.
 - T is forced on in this run. It loses on the solo capture (6.4 to 7.4: a human's `commandTime` is further from `serverTime` than a bot's), so in the codec it must be one more mode offered to the per-field chooser, not a fixed rule.
 - A2 needs the base's own base. The client has it (it was needed to decode the base) as long as it is still in its snapshot ring, but the server must use the base's real delta source; `bench5.py` uses `seq - 2 * age`, which is right for these captures only (all ages are 1).
 - All captures are at 20 snapshots per second with bots; P2 and A2 should gain more at 40 Hz (smaller motion per delta) and less with human aiming. Not measured.
+
+## 3.13 Prediction modes in the real codec (step 1 of [PLAN.md](PLAN.md), 5 November 2026)
+
+Script: `run_pred.py` (whole-message codec of `codec2.py`, run as in `run_full.py`), `run_pred.py pi --fuzz`, `run_pred.py pf --fuzz --loss`. Real bytes; tables trained on the first 60 % of the 5-minute capture.
+
+The modes are offered to a per-field choice made on the training part: a mode is kept when it saves more than 8 bits over the whole training part. Of 64 candidates, 11 were kept: `pos.trTime` against `serverTime` (entities); positions `pos.trBase[0..2]` (entities) and `origin[0..2]` (player state) predicted from the mean velocity; angles `apos.trBase[0..1]` (entities) and `viewangles[0..1]` (player state) predicted to second order. `commandTime` against `serverTime` was not kept.
+
+Snapshot messages (without server commands), mean real bytes; p95 and max for the 5-minute capture:
+
+| configuration | 5min (p95, max) | bots | solo |
+|---|---|---|---|
+| study codec (3.7) | 139.1 (240, 744) | 106.5 | 9.3 |
+| same, fields reordered for prediction (velocity before position) | 138.8 (239, 754) | 106.4 | 9.3 |
+| + rANS initial-state trick | 137.3 (238, 753) | 105.1 | 8.1 |
+| + prediction modes, float arithmetic (`pf`) | **106.8** (191, 650) | 82.3 | 8.0 |
+| + prediction modes, integer arithmetic (`pi`) | **107.3** (191, 650) | 82.7 | 8.0 |
+
+Server commands + snapshot: 210.9 to 178.4 bytes (`pi`). Gamestate: 4,024 to 4,014 bytes. `svc_mapchange`: 9 to 6 bytes.
+
+Correctness: 0 round-trip failures on the 8,842 real messages in every configuration; 0 failures on 18,150 synthetic messages (`fuzz.py` seeds 1 to 5, uniform tables) with both arithmetics; 0 failures in the 20 runs of the loss and latency grid (`pf`).
+
+Loss and latency with prediction (`pf`, same grid and training as 3.9; mean real bytes per snapshot message, the value without prediction from 3.9 in brackets):
+
+| loss | RTT 50 ms | 100 ms | 200 ms | 400 ms |
+|---|---|---|---|---|
+| 0 % | 118.3 (152.2) | 150.9 (183.8) | 206.7 (235.0) | 291.5 (322.4) |
+| 10 % | 123.4 (156.2) | 155.0 (187.0) | 209.6 (237.5) | 292.6 (323.2) |
+| 20 % | 127.9 (159.7) | 158.4 (189.8) | 213.6 (241.3) | 294.0 (324.2) |
+
+The gain in bytes stays about the same with the base age (-34 bytes at age 1, -31 at age 8), so in relative terms it shrinks; acknowledgement latency (step 9 of the plan) matters as much as before.
+
+Decisions taken from these numbers:
+
+- **Integer arithmetic for the position prediction.** It costs 0.5 byte per snapshot more than the float version and does not depend on how a compiler handles floating point. Definition (both sides): `r(x) = floor(x * 65536 + 0.5)` on the float32 inputs widened to double (exact); `p = r(old) + floor((r(v_old) + r(v_new)) * dt / 2000)` in 64-bit integers; prediction = `(float)(p / 65536.0)`; no prediction when an input is not finite or has a magnitude of 2^24 or more, or when `|dt|` is 65,536 ms or more. The residual is the signed difference of the 32-bit patterns of the value and of the prediction.
+- **Elapsed time:** `trTime` difference for `TR_LINEAR_STOP` entities; `serverTime` difference between the message and its base for `TR_INTERPOLATE` entities (not exercised by the captures); `commandTime` difference for the player state. No prediction for other trajectory types, for entities coded from a baseline, or when the base state is all zero.
+- **Second-order angles** use the base's own base. The client keeps, with each snapshot, the snapshot it was decoded against (`Ref` in `codec2.py`); the server keeps the same with what it sent.
+- **Two rules found by the fuzz test**, which a C++ implementation must keep because both sides must take the same decision: the vehicle state of an older snapshot exists only if that snapshot's player state had a vehicle; "the base state exists" is tested on its values (missing and zero fields are the same state), not on the presence of keys.
+- **The rANS initial-state trick** (the encoder starts at state 1; the decoder stops reading at the end of the buffer) saves 1.5 bytes per snapshot (1.2 on the solo capture, 3 on `svc_mapchange`).

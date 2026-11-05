@@ -1,6 +1,6 @@
-# 8. Transport study (exploratory)
+# 7. Transport study (exploratory)
 
-**Status: exploratory. Do not act on this document before the new codec exists (steps 1 to 8 of [05](05-implementation-plan.md)).** It records what was read in the engine and about candidate libraries, derives requirements from the measurements of [03](03-results.md), and proposes how to decide. Nothing here was prototyped or measured on a network. Statements about libraries come from reading their repositories on 4 November 2026 (README, licence, standard, headers, a line count); they were not built or run.
+**Status: exploratory. Do not act on this document before the new codec exists (steps 1 to 8 of [PLAN.md](PLAN.md)).** It records what was read in the engine and about candidate libraries, derives requirements from the measurements of [03](03-results.md), and proposes how to decide. Nothing here was prototyped or measured on a network. Statements about libraries come from reading their repositories on 4 November 2026 (README, licence, standard, headers, a line count); they were not built or run.
 
 Why wait for the codec:
 
@@ -8,11 +8,11 @@ Why wait for the codec:
 - Several transport requirements depend on what the codec produces: message sizes decide whether fragmentation matters, the acknowledgement record decides the base age, and the table-update procedure decides what must be reliable.
 - A library choice should be made with the real codec payloads, on a prototype, with measured overhead and CPU. Doing it now would repeat the codec study's main mistake (modelling instead of measuring) for a component that is more expensive to replace.
 
-## 8.1 How the current transport works (read in the code)
+## 7.1 How the current transport works (read in the code)
 
 ### Connection
 
-This section describes the 1.01 code. OpenJK (this repository) replaces the `rand()` challenge by a stateless HMAC-MD5 challenge and rate-limits connectionless packets per address; see [09-openjk.md](09-openjk.md) section 9.3.
+This section describes the 1.01 code. OpenJK (this repository) replaces the `rand()` challenge by a stateless HMAC-MD5 challenge and rate-limits connectionless packets per address; see [08-openjk.md](08-openjk.md) section 8.3.
 
 
 - Out-of-band (OOB) packets carry the handshake: `getchallenge`, `challengeResponse`, `connect`, plus `getinfo` and `getstatus` for server browsers and master servers. The `connect` string is compressed with the adaptive Huffman coder (`Huff_Compress`).
@@ -36,7 +36,7 @@ This section describes the 1.01 code. OpenJK (this repository) replaces the `ran
 - Server to client (`server/sv_net_chan.cpp`, `SV_Netchan_Encode`): every byte after the first few is XORed with a **one-byte key** (`byte key`) that starts as `client->challenge ^ netchan.outgoingSequence` and is modified at each byte by the characters of the last client command string. Client to server: the `usercmd` key above (an int, from public or previously exchanged values).
 - The challenge is sent in the clear during the handshake, and the sequence number is in the clear in every packet. There is no secret. There is no integrity check. The scheme only obfuscates.
 
-## 8.2 Security: is it the same as with Huffman?
+## 7.2 Security: is it the same as with Huffman?
 
 Short answer: **Huffman never gave any security, and the new codec gives none either. Nothing gets worse from the codec by itself, but it adds a new parser that must be written defensively.** Compression is not encryption: it makes data smaller, not secret, and does not detect modification.
 
@@ -54,12 +54,12 @@ Short answer: **Huffman never gave any security, and the new codec gives none ei
 What this implies:
 
 1. **Do not describe the codec as protection.** It is neither better nor worse than Huffman on confidentiality or integrity.
-2. **Harden the decoder.** Bounds-check every index and length (entity number below `MAX_GENTITIES`, field index below the table length, string and download lengths), limit the number of operations per message, fail closed (drop the message) and fuzz it in CI. The plan has this in 04 section 4.8 and 05 step 8. The decoder never writes outside a fixed-size output structure, which is the usual class of exploitable bugs.
+2. **Harden the decoder.** Bounds-check every index and length (entity number below `MAX_GENTITIES`, field index below the table length, string and download lengths), limit the number of operations per message, fail closed (drop the message) and fuzz it in CI. The plan has this in 04 section 4.8 and step 8 of the plan. The decoder never writes outside a fixed-size output structure, which is the usual class of exploitable bugs.
 3. **A decompression-bomb risk does not apply** in the usual sense: every decoded symbol is bounded by the schema (a message produces at most one value per field per entity and at most `MAX_GENTITIES` entities).
-4. **Real security is a transport decision.** If cheating by packet injection, spoofing or traffic reading matters to the project, an authenticated encrypted transport is needed (section 8.4). That has a cost in bytes (section 8.5) and in connection design (connect tokens, section 8.4).
+4. **Real security is a transport decision.** If cheating by packet injection, spoofing or traffic reading matters to the project, an authenticated encrypted transport is needed (section 7.4). That has a cost in bytes (section 7.4, "What the numbers imply for the choice") and in connection design (connect tokens, section 7.4).
 5. **Side channels from compression**: compressing attacker-influenced data together with secrets and then encrypting it can leak information (the CRIME / BREACH class). This does not apply to the design here, because the codec uses static tables with no cross-packet state and the secret (keys) is never inside the coded payload. Keep it that way.
 
-## 8.3 Requirements derived from the study
+## 7.3 Requirements derived from the study
 
 Evidence is from [03](03-results.md) unless noted. "Must" means the codec's gains are lost or the design is unsafe without it; "should" is a measured benefit; "could" is a judgement.
 
@@ -71,16 +71,16 @@ Evidence is from [03](03-results.md) unless noted. "Must" means the codec's gain
 | T4 | Message size above the MTU handled by the transport (fragmentation with reassembly), or avoided by the codec | should | 2 of 8,836 messages exceed 1,300 bytes for ordinary play; the gamestate (4,024 bytes) and crowd snapshots do |
 | T5 | Low fixed overhead per packet | should | the solo payload is 7 to 9 bytes; the netchan header is 4 bytes plus 28 bytes of IP and UDP |
 | T6 | Bandwidth control that adapts, with no setting to tune (owner's goal 3) | must | at the default `rate` 4000 the engine delays 93 % of snapshots (3.10) |
-| T7 | Authenticated and encrypted packets | could / decision for the owner | the current scheme has none (8.2) |
-| T8 | Connection handshake with stateless, unpredictable cookies and amplification limits | should | challenge from `rand()`, `getstatus` amplification (8.1, 8.2) |
-| T9 | IPv6 | should | no IPv6 in `win_net.cpp` (8.1) |
+| T7 | Authenticated and encrypted packets | could / decision for the owner | the current scheme has none (7.2) |
+| T8 | Connection handshake with stateless, unpredictable cookies and amplification limits | should | challenge from `rand()`, `getstatus` amplification (7.1, 7.2) |
+| T9 | IPv6 | should | no IPv6 in `win_net.cpp` (7.1) |
 | T10 | 32 to 64 or more simultaneous clients on a dedicated server (Windows and Linux) | must | the owner's player count is not fixed (`MAX_CLIENTS` is 32 in OpenJK); the engine has a Linux dedicated server |
 | T11 | Licence compatible with GPL v2 (BSD-2, BSD-3, MIT, zlib, CC0), no Apache-2.0 / GPL v3 dependency in the linked code, or an explicit decision on the licence of the whole | must | most CleanJK files are GPL v2 only (02, section 2.9) |
 | T12 | The server-browser and master-server queries (`getinfo`, `getstatus`, heartbeats) keep working or are replaced | must | the server list is how players find games |
-| T13 | Statistics: RTT, jitter, loss per connection, to drive T6 | must | step 10 of 05 computes the settings from these measurements; today only the ping in the snapshots exists |
+| T13 | Statistics: RTT, jitter, loss per connection, to drive T6 | must | step 10 of the plan computes the settings from these measurements; today only the ping in the snapshots exists |
 | T14 | A way to test with loss, latency and jitter (a simulator) | should | the study's loss results are models |
 
-## 8.4 Candidate approaches
+## 7.4 Candidate approaches
 
 ### What was read about each library
 
@@ -129,9 +129,9 @@ Per-packet overhead matters most when the payload is small. With the study's pay
 
 So an authenticated transport adds roughly 10 to 17 % to a normal snapshot and 44 to 73 % to an idle one. Compared with the codec's savings (about 58 %) this is affordable for normal traffic; it matters for idle clients, spectators and low-rate links.
 
-## 8.5 Proposed way to decide (to start once the codec exists)
+## 7.5 Proposed way to decide (to start once the codec exists)
 
-1. **Fix the owner's constraints** (questions in 8.7).
+1. **Fix the owner's constraints** (questions in 7.7).
 2. **Prototype the in-place improvements in the simulator** (ack bitfield, faster gamestate resend) using `sim_loss.py`-style simulation with the real codec; measure the effect on bytes and gamestate time.
 3. **Build a small test harness**, outside the game, that sends the codec's recorded messages through (a) the netchan model, (b) netcode + reliable, and optionally (c) GameNetworkingSockets, with emulated latency, jitter and loss. Measure: overhead per packet, CPU per client at 64 clients, behaviour under 5 / 10 / 20 % loss, behaviour with large messages (gamestate), reconnect time.
 4. **Review the licences and builds** on the target platforms (Windows and Linux dedicated server), including libsodium and OpenSSL if used, with a legal reading where the licence is not plainly compatible.
@@ -145,7 +145,7 @@ Design notes whichever option is chosen:
 - The OOB queries for server browsers (`getinfo`, `getstatus`) keep a plain path; they should be rate-limited per address and their answers kept no larger than the request where possible.
 - `usercmd` coding (about 30 packets per second per client by default) is a separate study; it is not covered by the codec results.
 
-## 8.6 What was not read or not done
+## 7.6 What was not read or not done
 
 - `client/cl_main.cpp` connection state machine in detail, `server/sv_main.cpp` query rate limiting, master-server heartbeat code, `qcommon/net_ip` and `win32/win_net.cpp` beyond the address types, the Linux socket code.
 - `usercmd` coding (`msg.cpp:685-860`) beyond noting the key.
@@ -153,7 +153,7 @@ Design notes whichever option is chosen:
 - Any benchmark or build of a transport library. Licences were read from the repository files; library behaviour comes from their documentation.
 - Whether the encrypted-transport overhead is acceptable for the owner's target: that is a product decision, not a measurement.
 
-## 8.7 Questions for the owner (needed before step 1)
+## 7.7 Questions for the owner (needed before step 1)
 
 Answered so far (4 November 2026): compatibility with the old protocol and mods is not required; network settings should be computed, not configured. The questions below are still open.
 

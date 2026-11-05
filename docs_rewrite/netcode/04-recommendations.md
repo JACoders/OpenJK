@@ -10,11 +10,11 @@ Each recommendation states how strongly the evidence supports it: **measured** (
 | Do not use | Adaptive coders (qbc, nibrans, adaptive binary), generic compressors (zstd, deflate, lzma), context mixing, anything whose state survives across packets | measured, judgement |
 | Message model | Replace the snapshot encoding by the schema in 4.2: one stream per message, delta against an acknowledged base, no `lc` byte, changed fields listed as gaps with context, per-field trained distributions | measured |
 | Precision | Never less precise than today (owner's goal). Code view angles and entity angles as 16-bit indices (lossless). Do not round positions, on the client or on the server. | measured, read |
-| Prediction | Add lossless prediction modes (time against `serverTime`, position from velocity, second-order angle) to the per-field chooser: 136.9 to 106.1 ideal bytes | measured (ideal bytes only) |
+| Prediction | Add lossless prediction modes (time against `serverTime`, position from velocity in integer arithmetic, second-order angle) to the per-field chooser: 139.1 to 107.3 real bytes, rANS initial-state trick included (03 section 3.13) | measured |
 | Tables | Generate the probability tables offline from recorded states, version them, load them as data, and ship a fallback of uniform contexts | judgement |
 | Safety | Add a raw-format escape path and a hard cap on message size | measured (worst case) |
-| Transport | Codec first on the existing netchan (steps 1 to 8 of 05); then an acknowledgement record, newest-acknowledged base and a reliable path for the gamestate and commands (step 9). Evaluate libraries only against the requirements in 4.7 | measured (what matters), judgement (how) |
-| Settings | Remove `rate`, `snaps`, `cl_maxpackets`, `cl_packetdup`, `cl_timeNudge` and similar; compute them at run time (4.10, step 10 of 05) | judgement |
+| Transport | Codec first on the existing netchan (steps 1 to 8 of the plan, [PLAN.md](PLAN.md)); then an acknowledgement record, newest-acknowledged base and a reliable path for the gamestate and commands (step 9). Evaluate libraries only against the requirements in 4.7 | measured (what matters), judgement (how) |
+| Settings | Remove `rate`, `snaps`, `cl_maxpackets`, `cl_packetdup`, `cl_timeNudge` and similar; compute them at run time (4.10, step 10 of the plan) | judgement |
 | Reuse | Keep the codec a library driven by the field tables, so other JKA forks can link it with their own tables | judgement |
 | Not studied | Entity priority, interest culling, bandwidth budgets, client to server direction | not measured |
 
@@ -56,7 +56,7 @@ Floating-point fields have a kind symbol: zero; integral value within +-4096; **
 
 ### Prediction modes to add (measured in ideal bytes, 03 section 3.12)
 
-Offer three more modes to the per-field chooser: a time field against the message's `serverTime`; a position against `old + velocity * elapsed` (mean of the old and the new velocity, with the velocity fields coded first), residual taken on the float32 patterns; an angle index against `2 * old - older` (the base's own base). Together they took 136.9 to 106.1 bytes on the test part. They need a fixed, specified float computation for the position prediction and access to the base's base on both sides. Confirm them with the real encoder before relying on the number.
+Offer three more modes to the per-field chooser: a time field against the message's `serverTime`; a position against `old + velocity * elapsed` (mean of the old and the new velocity, with the velocity fields coded first), residual taken on the float32 patterns; an angle index against `2 * old - older` (the base's own base). Together they took 136.9 to 106.1 ideal bytes; in the real codec, 139.1 to 107.3 bytes with the rANS initial-state trick (03 section 3.13). The position prediction uses the integer arithmetic defined in 03 section 3.13, so client and server compute the same bits on any compiler. Both sides need the base's own base.
 
 ## 4.3 Precision policy
 
@@ -70,7 +70,7 @@ Reasons for not rounding positions (read, 02 section 2.8):
 
 Measured upside of rounding other entities' positions to 1/16 unit: from 136.9 to 113.9 bytes (a further 17 %). It could be revisited for entity types that are neither solid nor used for aiming (for example cosmetic effects) after reading `cg_players.c`, `cg_weapons.c` and `cg_event.c`, which were counted but not read. It is not part of the recommended design.
 
-Angle decoding must produce the same float as the engine: `(float)(k * (360.0 / 65536))` with `k` a 32-bit integer and the product evaluated in double. `360/65536` is an exact binary fraction, so the product is exact and the rounding to float is the standard one; this is bit-exact on any IEEE-754 compiler. The encoder sends an angle as an index only if re-computing that float gives the same 32 bits; otherwise it falls back to the full-float kind. Validate the equality on the target compilers (06, section 6.4).
+Angle decoding must produce the same float as the engine: `(float)(k * (360.0 / 65536))` with `k` a 32-bit integer and the product evaluated in double. `360/65536` is an exact binary fraction, so the product is exact and the rounding to float is the standard one; this is bit-exact on any IEEE-754 compiler. The encoder sends an angle as an index only if re-computing that float gives the same 32 bits; otherwise it falls back to the full-float kind. Validate the equality on the target compilers (05, section 5.4).
 
 ## 4.4 Entropy coder
 
@@ -86,7 +86,7 @@ Switch to FSE/tANS if the 2-byte saving matters. It matters when packets are tin
 
 The interface should hide the coder: `encode(units) -> bytes` and `decode(bytes, context provider) -> symbols`, where a unit is a symbol with its context or a run of raw bits. `codec.py` is written this way.
 
-Rejected, with measured reasons: static Huffman per context (+10 %), adaptive binary (no gain on trained tables, 2 to 3 times the CPU, about 5 binary decisions per symbol), qbc and nibrans (no better than the engine's own table), zstd, deflate, lzma (no gain, large frame overhead on tiny packets). Draco and fsc (Apache-2.0) and Turbo-Range-Coder (GPL v3) cannot be combined with the GPL-v2-only files of CleanJK without relicensing. Context mixing was not measured; its size benefit over static tables is unknown (06, section 6.7).
+Rejected, with measured reasons: static Huffman per context (+10 %), adaptive binary (no gain on trained tables, 2 to 3 times the CPU, about 5 binary decisions per symbol), qbc and nibrans (no better than the engine's own table), zstd, deflate, lzma (no gain, large frame overhead on tiny packets). Draco and fsc (Apache-2.0) and Turbo-Range-Coder (GPL v3) cannot be combined with the GPL-v2-only files of CleanJK without relicensing. Context mixing was not measured; its size benefit over static tables is unknown (05, section 5.7).
 
 ## 4.5 Tables and training
 
@@ -109,7 +109,7 @@ Compatibility with existing mods and with the old protocol is not required (owne
 
 ## 4.7 Transport
 
-**Exploratory. See [08-transport-study.md](08-transport-study.md) for the facts read in the code, the security analysis, the requirements and the candidate libraries as read. Do not act on this section before the codec exists (steps 1 to 8 of 05); the transport choice should be made with the real codec payloads.**
+**Exploratory. See [07-transport-study.md](07-transport-study.md) for the facts read in the code, the security analysis, the requirements and the candidate libraries as read. Do not act on this section before the codec exists (steps 1 to 8 of the plan, [PLAN.md](PLAN.md)); the transport choice should be made with the real codec payloads.**
 
 What the measurements say about what the transport must do:
 
@@ -120,18 +120,18 @@ What the measurements say about what the transport must do:
 5. **Fixed overhead.** Per packet today: 4 bytes netchan + 28 bytes IP/UDP. In the one-player case the new codec payload is 7 to 9 bytes, so headers are 80 % of the packet. An authentication tag (16 bytes in the hand-off's figure, not verified) would make the solo case cost more than today's unencrypted traffic (9.3 against 7.9 kbit/s in the study's table). Decide whether encryption is wanted before choosing.
 6. **Licence and scale.** Anything adopted must be compatible with GPL v2 (BSD-3, MIT, zlib, CC0 are; Apache-2.0 and GPL v3 are not for the GPL-v2-only files), support the intended player count (the hand-off notes yojimbo at a maximum of 64 clients), IPv6, and a non-blocking API usable from the existing socket code.
 
-Recommendation: do the codec first on the existing netchan (steps 1 to 8 of 05). The codec is independent of the transport and carries the largest measured gains. Then change the acknowledgement path and the gamestate path (step 9), then the settings (step 10). Evaluate yojimbo and GameNetworkingSockets only against the list above; their licences, maintenance, dependencies and costs were **not** checked in this study, and a single third-party report in the hand-off (GameNetworkingSockets at 8.4 % CPU with 256 clients) was not verified.
+Recommendation: do the codec first on the existing netchan (steps 1 to 8 of the plan, [PLAN.md](PLAN.md)). The codec is independent of the transport and carries the largest measured gains. Then change the acknowledgement path and the gamestate path (step 9), then the settings (step 10). Evaluate yojimbo and GameNetworkingSockets only against the list above; their licences, maintenance, dependencies and costs were **not** checked in this study, and a single third-party report in the hand-off (GameNetworkingSockets at 8.4 % CPU with 256 clients) was not verified.
 
 ## 4.8 Safety
 
 - **Raw-format escape.** In the absolute worst case (every field of every entity random) the new codec is 1.34 times the engine's size. An escape (per entity or per message) that sends the plain field values bounds the message to the size of a simple raw layout. Choose the escape per entity when its coded size would exceed the raw size, with a flag costing a fraction of a bit when unused.
 - **Message cap.** `MAX_MSGLEN` is 49,152. The server should detect an overflow and fall back to fewer entities or a full-state retry, not to a dropped snapshot (the engine drops the snapshot and prints a warning, `sv_snapshot.cpp:792`).
-- **Fuzzing in the build.** Keep the synthetic corpus (06, section 6.3) as a test: decode(encode(x)) == x on random valid states, plus decoding of random bytes without crashing (decoder bounds checks: array indices, entity numbers, string lengths).
+- **Fuzzing in the build.** Keep the synthetic corpus (05, section 5.3) as a test: decode(encode(x)) == x on random valid states, plus decoding of random bytes without crashing (decoder bounds checks: array indices, entity numbers, string lengths).
 - **Determinism.** The encoder and decoder tables and arithmetic are integer. The only floating-point step is the angle decode above.
 
 ## 4.9 Other server-side policy to revisit
 
-- **Default `rate`.** At the 1.01 client default of 4000 bytes per second the engine delays 93 % of snapshots; the new codec delays 39 %. This branch's defaults (rate 25000 imposed by the server) delay none on the study's data (09 section 9.2). The plan replaces the setting by a measured bandwidth estimate (4.10).
+- **Default `rate`.** At the 1.01 client default of 4000 bytes per second the engine delays 93 % of snapshots; the new codec delays 39 %. This branch's defaults (rate 25000 imposed by the server) delay none on the study's data (08 section 8.2). The plan replaces the setting by a measured bandwidth estimate (4.10).
 - **Snapshot rate.** `snaps` 20 and `sv_fps` 20 are the defaults used in the captures. A higher rate is cheaper in bytes per snapshot with the new codec, but the study did not measure its effect on size per second.
 - **Not studied (and potentially large):** per-client priority and bandwidth budgets, distance-based update frequency, interest management (culling entities the client does not need), and delta coding of entities relative to each other. The study measured only how well a given set of updates is coded, not which updates to send.
 
@@ -144,7 +144,7 @@ Network settings found in OpenJK (defaults in brackets). The aim is that players
 | `rate` (25000), `sv_maxRate`, `sv_minRate`, `sv_ratePolicy`, `sv_clientRate`, `sv_lanForceRate` | fixed bytes-per-second budget per client | bandwidth estimate per connection from the acknowledgement record (delivery rate, RTT growth, loss), as delay-based congestion control does; LAN detected by measurement, not by address class. An administrator cap on total upload may remain |
 | `snaps` (40), `sv_snapsMin`, `sv_snapsMax`, `sv_snapsPolicy` | snapshots per second per client | one snapshot per server frame, reduced only when the bandwidth estimate requires it |
 | `cl_maxpackets` (63), `cl_lanForcePackets` | client packets per second | one packet per client frame that has new input, limited by the same bandwidth estimate |
-| `cl_packetdup` (1) | repeats earlier `usercmd`s | resend every input not yet acknowledged by the server, up to a cap (the Overwatch scheme, 06 section 6.9) |
+| `cl_packetdup` (1) | repeats earlier `usercmd`s | resend every input not yet acknowledged by the server, up to a cap (the Overwatch scheme, 05 section 5.9) |
 | `cl_timeNudge` (0), `cl_timenudgeDuration`, `cg_smoothClients` (1) | shifts the client's view of time (negative = less interpolation delay, more extrapolation) and selects extrapolation of other players | interpolation delay computed from the measured snapshot interval and jitter (enough buffer to always have the next snapshot, no more); no user offset |
 | `cl_nodelta` (0) | asks for snapshots without a base | debugging only |
 | `cg_errorDecay` (100), `cg_snapshotTimeout` (10) | prediction-error smoothing time; time before a missing snapshot is reported | derived from the snapshot interval and RTT |

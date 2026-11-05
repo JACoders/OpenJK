@@ -4,3 +4,6 @@ __pycache__/
 tools/cpubench/build/
 tools/cpubench/third_party/
 data/bench_worst_B*.bin
+
+# client demos supplied by the owner (not committed)
+data/demos/

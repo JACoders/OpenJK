@@ -17,6 +17,23 @@ OPNAME = {v: k for k, v in OPS.items()}
 
 def s32(v): return v - (1 << 32) if v >= (1 << 31) else v
 
+class Ref:
+    """the base snapshot a message was coded against, kept in its header record so that the next message can use it
+    as 'older' (second-order prediction); it never takes part in comparisons of header records"""
+    __slots__ = ("v",)
+    def __init__(self, v): self.v = v
+    def __eq__(self, other): return isinstance(other, Ref)
+    def __ne__(self, other): return not self.__eq__(other)
+
+def _older_of(bh):
+    r = bh.get("base") if bh else None
+    return r.v if r is not None else None
+
+def enable_prediction():
+    move = C.enable_prediction()
+    for t in PS_TABLES.values():
+        move(t, {"velocity[0]", "velocity[1]", "velocity[2]"}, {"origin[0]", "origin[1]", "origin[2]"})
+
 # ------------------------------------------------------------------ strings
 def str_put(io, kind, b):
     for x in b: io.s(("str", kind), 256, x)
@@ -30,8 +47,16 @@ def str_get(io, kind):
         out.append(x)
 
 # ------------------------------------------------------------------ playerstates
+def _older_ps(tab):
+    o = C.CTX.get("older_snap")
+    if o is None: return None
+    if tab == 2:   # the client holds a vehicle state only for snapshots whose player state had a vehicle
+        return (o.get("vps") or {}) if o["ps"].get("m_iVehicleNum", 0) else {}
+    return o["ps"]
+
 def ps_put2(io, new, old, modes, tab):
     fields = PS_TABLES[tab]; n = len(fields); prev = -1
+    C.ps_ctx(new, old, _older_ps(tab))
     for i in range(n):
         nm, bits = fields[i]
         a = new.get(nm, 0); b = old.get(nm, 0)
@@ -42,6 +67,7 @@ def ps_put2(io, new, old, modes, tab):
 
 def ps_get2(io, old, modes, tab):
     fields = PS_TABLES[tab]; n = len(fields); s = dict(old); prev = -1
+    C.ps_ctx(s, old, _older_ps(tab))
     while True:
         i = io.s(("pg", tab, prev), n + 1)
         if i == n: return s
@@ -56,6 +82,7 @@ def msg_put(io, msg, base, bh, baselines, modes, delta):
     """base: snapshot state the client holds (or None); bh: its header dict (ack, time, cmdseq) or None;
     delta: sequence distance to that base (0 = none). The decoder needs delta first to find the base."""
     io.s(("m", "delta"), 256, delta)
+    C.CTX.clear(); C.CTX.update(time=None, btime=bh["time"] if bh else None, older_snap=_older_of(bh))
     cls_put(io, ("m", "ack"), 36, zz(msg["ack"] - (bh["ack"] if bh else 0)))
     lastcmd = bh["cmdseq"] if bh else 0
     cmdseq = lastcmd; time = None; prev = 0
@@ -83,7 +110,7 @@ def msg_put(io, msg, base, bh, baselines, modes, delta):
             cls_put(io, ("m", "dllen"), 20, len(op["data"]))
             for x in op["data"]: io.s(("dl",), 256, x)
         elif op["t"] == "snap":
-            time = op["time"]
+            time = op["time"]; C.CTX["time"] = time
             cls_put(io, ("h", "time"), 36, zz(op["time"] - (bh["time"] if bh else 0)))
             io.s(("h", "flags"), 256, op["flags"])
             io.s(("h", "area"), 256, len(op["areas"]))
@@ -96,11 +123,13 @@ def msg_put(io, msg, base, bh, baselines, modes, delta):
                 ps_put2(io, sn["vps"] or {}, (base["vps"] or {}) if base else {}, modes, 2)
             ents_put(io, sn["ents"], base["ents"] if base else [], baselines, modes)
     io.s(("op", prev), 8, 0)
-    return dict(ack=msg["ack"], time=time, cmdseq=cmdseq)
+    C.CTX["time"] = None
+    return dict(ack=msg["ack"], time=time, cmdseq=cmdseq, base=Ref(base))
 
 def msg_get(io, lookup, baselines, modes):
     delta = io.s(("m", "delta"), 256)
     base, bh = lookup(delta)
+    C.CTX.clear(); C.CTX.update(time=None, btime=bh["time"] if bh else None, older_snap=_older_of(bh))
     msg = dict(ack=(bh["ack"] if bh else 0) + unzz(cls_get(io, ("m", "ack"), 36)), ops=[])
     lastcmd = bh["cmdseq"] if bh else 0
     cmdseq = lastcmd; snap = None; time = None; prev = 0
@@ -130,7 +159,7 @@ def msg_get(io, lookup, baselines, modes):
             n = cls_get(io, ("m", "dllen"), 20)
             op["data"] = bytes(io.s(("dl",), 256) for _ in range(n))
         elif name == "snap":
-            op["time"] = (bh["time"] if bh else 0) + unzz(cls_get(io, ("h", "time"), 36)); time = op["time"]
+            op["time"] = (bh["time"] if bh else 0) + unzz(cls_get(io, ("h", "time"), 36)); time = op["time"]; C.CTX["time"] = time
             op["delta"] = delta; op["flags"] = io.s(("h", "flags"), 256)
             na = io.s(("h", "area"), 256); op["areas"] = [io.s(("h", "area"), 256) for _ in range(na)]
             pil = io.s(("ps", "pilot"), 2)
@@ -141,7 +170,8 @@ def msg_get(io, lookup, baselines, modes):
             ents = ents_get(io, base["ents"] if base else [], baselines, modes)
             op["snap"] = dict(ps=ps, vps=vps, ents=ents); snap = op["snap"]
         msg["ops"].append(op)
-    return msg, dict(ack=msg["ack"], time=time, cmdseq=cmdseq), snap, baselines
+    C.CTX["time"] = None
+    return msg, dict(ack=msg["ack"], time=time, cmdseq=cmdseq, base=Ref(base)), snap, baselines
 
 # ------------------------------------------------------------------ canonical forms for comparison
 ALLNAMES = sorted({n for t in PS_TABLES.values() for n, b in t})

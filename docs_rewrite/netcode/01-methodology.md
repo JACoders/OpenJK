@@ -21,7 +21,7 @@ The study began from a hand-off note written after an earlier analysis session (
 No real traffic was available, so a capture tool was written in the server module proxy (`E:\Git\jka\JKA_YBEProxy`). That proxy hooks the original 1.01 dedicated server at run time.
 
 - Hook point: `Proxy_SV_SendMessageToClient` (`src/JKA_YBEProxy/Engine/Hooks/server/sv_snapshot.cpp`), just before `SV_Netchan_Transmit`. At that point the message is complete and has not yet gone through `SV_Netchan_Encode` (the XOR "encryption"). The trailing `svc_EOF` byte is appended later, in `SV_Netchan_Transmit` (`server/sv_net_chan.cpp:140`), so captured messages do not include it.
-- Output: `ybeproxy_netcapture.bin` in the server working directory, written in append mode through a 256 KB buffered `FILE`, enabled by the cvar `proxy_sv_captureNet 1`. The format is described in 07, section 7.2.
+- Output: `ybeproxy_netcapture.bin` in the server working directory, written in append mode through a 256 KB buffered `FILE`, enabled by the cvar `proxy_sv_captureNet 1`. The format is described in 06, section 6.2.
 - Only messages sent to human clients are captured. Bots are never sent snapshots (`SV_SendClientSnapshot`, `server/sv_snapshot.cpp:768`), so their view of the world is not available.
 - The capture must be switched on **before** the map loads, because the gamestate (which carries the entity baselines the decoder needs) is only sent at connection or map load. A first capture made after joining contained 1,105 undecodable messages for that reason.
 - The capture code was written without a compiler in the assistant's environment; the owner compiled and ran it.
@@ -34,7 +34,7 @@ Captures used (all map `mp/ffa3`, game type 6 = FFA, `sv_fps` 20, `sv_maxclients
 | `ybeproxy_netcapture_with_bots.bin` | same set-up, another game | 82 s | 1,605 | all |
 | `ybeproxy_netcapture_no_bots.bin` | one human, no bots | 79 s of server time | 1,240 | 136 (capture started after joining) |
 
-Checksums are in 07, section 7.5.
+Checksums are in 06, section 6.5.
 
 ## 1.3 Decoding the captures offline
 
@@ -42,7 +42,7 @@ The captured bytes are the engine's own bitstream (bits and Huffman-coded bytes 
 
 1. **Huffman tree.** `huffman.cpp` builds an adaptive tree at start-up by calling `Huff_addRef` `msg_hData[i]` times for each byte value `i` (the active table is at `qcommon/msg.cpp:2958`). The tree is then used statically for decoding. The port reproduces the node structure exactly (the C free-list of pointer cells is replaced by fresh Python cells, which is equivalent).
 2. **Bit layout.** `MSG_ReadBits` (`msg.cpp:211`) reads the low `bits & 7` bits raw, least significant bit first, then one Huffman symbol per remaining byte. The port keeps the same order, and the same sign-extension quirk (the sign bit is tested with the width reduced by the raw part; harmless because every negative width in the tables is a multiple of 8).
-3. **Field tables.** The 132 entity fields, the player-state tables and their widths are **extracted from `msg.cpp` by regular expression**, not retyped. This once failed (see 06, mistake M1): the expression also matched lines commented out with `//`. Comments are now removed first.
+3. **Field tables.** The 132 entity fields, the player-state tables and their widths are **extracted from `msg.cpp` by regular expression**, not retyped. This once failed (see 05, mistake M1): the expression also matched lines commented out with `//`. Comments are now removed first.
 4. **Which build options are active.** `_OPTIMIZED_VEHICLE_NETWORKING` is defined (`game/q_shared.h:2154`) and `_ONEBIT_COMBO` is not (`q_shared.h:2150`, commented out). So the player-state tables used are the optimised ones (normal 137 fields, pilot, vehicle) and each non-vehicle player state starts with a pilot bit.
 5. **Message structure.** `svc_*` operations (`qcommon/qcommon.h:233`), `CL_ParseSnapshot`, `CL_ParsePacketEntities`, `CL_ParseGamestate` are followed as written. State needed for deltas (previous snapshots, entity baselines) is kept per client.
 6. **Validation of the decoder.** A decoded message must end within 1 to 8 bits of its recorded length (the engine writes `cursize = (bit >> 3) + 1`). On the main captures all 7,101 + 1,605 messages satisfy this, except one 3-byte `svc_mapchange` message in each file that was first reported as an error and is now handled. A wrong table, wrong width or wrong order would desynchronise the bitstream long before the end, so this test is strong evidence that the tables and the read path are right. It also means the retail 1.01 binary matches the source tree on these paths.
@@ -82,7 +82,7 @@ The ideal numbers are produced for many variants because they are cheap; real en
 3. **Coder families** (`bench3.py`): the same symbol streams under ideal, rANS 12/15 bits, per-context Huffman and adaptive binary.
 4. **Generic compressors and real rANS** (`bench4.py`): zstd with a trained dictionary, deflate with a preset dictionary, lzma on the engine's raw (non-Huffman) layout; a real 32-bit rANS encoder and decoder with round trip on 400 packets.
 5. **CPU benchmark in C** (`tools/cpubench/bench.c`): own implementations of the engine Huffman, a static per-context Huffman, a 12-bit rANS and a binary adaptive coder, replaying real symbol streams exported by `dump_bench.py`. Timing covers coding of already-built symbol lists only.
-6. **Third-party library benchmark** (`bench_libs.cpp`): ryg_rans and FSE (one tANS state shared across contexts by switching tables) on the new-schema streams; qbc and nibrans on the engine byte stream. Source commits are listed in 07, section 7.4.
+6. **Third-party library benchmark** (`bench_libs.cpp`): ryg_rans and FSE (one tANS state shared across contexts by switching tables) on the new-schema streams; qbc and nibrans on the engine byte stream. Source commits are listed in 06, section 6.4.
 7. **Precision study**: what the engine sends for floating-point fields, which values lie on a grid, size with angles as 16-bit indices, size with positions rounded (rejected afterwards, see 04), and a read of the client prediction code.
 8. **Full codec** (`codec.py`, `codec2.py`): a complete encoder and decoder of the new schema (header, player state, entities, server commands, gamestate, downloads, pilot and vehicle states), static rANS, one stream per message, and an exact round-trip check on real and synthetic data.
 9. **Network behaviour** (`sim_loss.py`, `frag_rate.py`): loss and latency simulation, netchan fragmentation, `rate` limiting, gamestate retransmission.
@@ -96,11 +96,11 @@ For each message the harness plays both roles, with separate state:
 - the **client** side decodes the bytes using only its own stored copies of the earlier decoded snapshots, the baselines it decoded from the gamestate and the header of the base;
 - the decoded header, player state(s) and entity list are compared field by field with the original (all fields of each table, taken by value, not by key presence), and the decoded header record (ack, time, last server-command number) is compared with the encoder's.
 
-"Equal" means equal to **what the current client would see**, not to the server's memory: for instance a `-0.0` float is received as `+0.0`, and a field is truncated to its declared width. This is the right equivalence for a protocol replacement, and it explains one known mismatch in the engine-writer model (06, section 6.4).
+"Equal" means equal to **what the current client would see**, not to the server's memory: for instance a `-0.0` float is received as `+0.0`, and a field is truncated to its declared width. This is the right equivalence for a protocol replacement, and it explains one known mismatch in the engine-writer model (05, section 5.4).
 
 ## 1.9 Synthetic data
 
-The captures contain no vehicle, no pilot player state, no download, no snapshot without a base and no base older than one snapshot. `fuzz.py` therefore generates messages that are valid under the engine's own rules and exercises every branch: random values over the whole domain of each field (zero, minimum, maximum, integral floats, angle-grid values, NaN, infinities), entities added, changed, removed or equal to their baseline, pilot player states (only the first 58 fields of the pilot table, `size - 82`, are sent, as in the 1.01 engine; OpenJK sends all 140, see 09), vehicle player states, downloads, server commands, `setgame`, `nop`, `svc_mapchange`, gamestates, base ages 1 to 11 and no base. Two table sets are used: uniform (empty) and trained on half of the generated streams.
+The captures contain no vehicle, no pilot player state, no download, no snapshot without a base and no base older than one snapshot. `fuzz.py` therefore generates messages that are valid under the engine's own rules and exercises every branch: random values over the whole domain of each field (zero, minimum, maximum, integral floats, angle-grid values, NaN, infinities), entities added, changed, removed or equal to their baseline, pilot player states (only the first 58 fields of the pilot table, `size - 82`, are sent, as in the 1.01 engine; OpenJK sends all 140, see 08), vehicle player states, downloads, server commands, `setgame`, `nop`, `svc_mapchange`, gamestates, base ages 1 to 11 and no base. Two table sets are used: uniform (empty) and trained on half of the generated streams.
 
 **Synthetic data proves exactness. It says nothing about size or speed**, because its values are random and unrelated to real play. It was used for size only in the worst-case study, where an upper bound is wanted (03, section 3.11).
 
@@ -133,5 +133,5 @@ These are models, not measurements on a live server.
 - No measurement with several human players, other maps or other modes.
 - No study of the client-to-server direction (`usercmd`), of entity prioritisation, interest management or bandwidth budgets.
 - No evaluation of transport libraries (yojimbo, GameNetworkingSockets) beyond the notes in the hand-off.
-- No context-mixing coder, no temporal context, no velocity-based prediction (06, section 6.7 lists these as candidates).
+- No context-mixing coder, no temporal context, no velocity-based prediction (05, section 5.7 lists these as candidates).
 - No test on a live server with real network conditions.

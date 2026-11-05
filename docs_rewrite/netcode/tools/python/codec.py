@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bench2 as B, bench3 as B3
 
 PB = 15; PM = (1 << PB) - 1; RL = 1 << 23
+X0 = RL          # initial encoder state; 1 = initial-state trick (the first coded bits need no final-state room, 05 section 5.9)
 EF = B.EF; NE = B.NE; ET_IDX = B.ET_IDX
 ENAMES = [n for n, b in EF]
 # playerstate fields with signed array extras (reader returns signed shorts / longs for the arrays)
@@ -53,7 +54,7 @@ class DecIO:
         slot = self.x & PM
         s = bisect.bisect_right(cum, slot) - 1
         self.x = f[s] * (self.x >> PB) + slot - cum[s]
-        while self.x < RL:
+        while self.x < RL and self.pos < len(self.buf):      # with X0 < RL the state ends below RL once the input is used up
             self.x = (self.x << 8) | self.buf[self.pos]; self.pos += 1
         return s
     def s(self, ctx, K):
@@ -65,7 +66,7 @@ class DecIO:
             slot = self.x & PM
             v = slot >> (PB - b)
             self.x = (1 << (PB - b)) * (self.x >> PB) + slot - (v << (PB - b))
-            while self.x < RL:
+            while self.x < RL and self.pos < len(self.buf):
                 self.x = (self.x << 8) | self.buf[self.pos]; self.pos += 1
             val |= v << sh; sh += b
         return val
@@ -94,7 +95,7 @@ def rans_encode(units, tables):
         else:
             f, cum = tables.table(ctx, K)
             pairs.append((cum[sym], f[sym]))
-    x = RL; out = bytearray()
+    x = X0; out = bytearray()
     for start, freq in reversed(pairs):
         xmax = ((RL >> PB) << 8) * freq
         while x >= xmax:
@@ -151,7 +152,9 @@ def put_float(io, name, nv, ov, mode):
         else: cls_put(io, (name, "fd"), 36, zz(s32(nv) - (s32(ov) if ok else 0)))
 
 def get_float(io, name, ov, mode):
-    k = io.s((name, "k"), 4)
+    return _get_float_k(io, name, ov, mode, io.s((name, "k"), 4))
+
+def _get_float_k(io, name, ov, mode, k):
     ok = fkind(ov)
     if k == 0: return 0
     if k == 1:
@@ -164,14 +167,99 @@ def get_float(io, name, ov, mode):
     if mode == "a": return io.r(32)
     return ((s32(ov) if ok else 0) + unzz(cls_get(io, (name, "fd"), 36))) & 0xFFFFFFFF
 
+# ------------------------------------------------------------------ prediction modes (03 section 3.12), lossless
+# PMODES maps a prefixed field name to "t" (time against serverTime), "pf" / "pi" (position predicted from the mean
+# velocity, float or integer arithmetic) or "a2" (angle index predicted to second order). Empty = study behaviour.
+# CTX is filled by the callers: time (message serverTime), btime (base serverTime), pred (False when the old state is
+# not the same object's previous state), cur (state being built: the new state when encoding, the partly decoded one
+# when decoding), old (base state), older (base's own base state or None).
+PMODES = {}
+CTX = {}
+TR_INTERPOLATE, TR_LINEAR_STOP = 1, 3
+LIM = 1 << 24
+
+def _fin(x): return x == x and abs(x) < LIM
+
+def predict_pos(cn, mode):
+    """predicted float32 bits of a position field, or None. Inputs are fields coded before it (see enable_prediction)."""
+    if not CTX.get("pred"): return None
+    cur, old = CTX["cur"], CTX["old"]; i = cn[-2]
+    if cn.startswith("e:"):
+        tn, to = cur.get("pos.trType", 0), old.get("pos.trType", 0)
+        if tn == to == TR_LINEAR_STOP: dt = s32(cur.get("pos.trTime", 0)) - s32(old.get("pos.trTime", 0))
+        elif tn == to == TR_INTERPOLATE and CTX.get("btime") is not None: dt = CTX["time"] - CTX["btime"]
+        else: return None
+        o, vo, vn = (f32(old.get("pos.trBase[%s]" % i, 0)), f32(old.get("pos.trDelta[%s]" % i, 0)), f32(cur.get("pos.trDelta[%s]" % i, 0)))
+    else:
+        dt = s32(cur.get("commandTime", 0)) - s32(old.get("commandTime", 0))
+        o, vo, vn = (f32(old.get("origin[%s]" % i, 0)), f32(old.get("velocity[%s]" % i, 0)), f32(cur.get("velocity[%s]" % i, 0)))
+    if not (_fin(o) and _fin(vo) and _fin(vn) and abs(dt) < 65536): return None
+    if mode == "pf":     # double arithmetic, this exact operation order, one rounding to float32
+        p = o + ((vo + vn) * 0.5) * dt / 1000.0
+    else:                # integer arithmetic in 1/65536 units; int64 in C; floor division
+        r = lambda x: int(math.floor(x * 65536.0 + 0.5))
+        p = (r(o) + ((r(vo) + r(vn)) * dt) // 2000) / 65536.0
+    return pack(p)
+
+def pred_a2(cn, ov):
+    """(predicted angle index) or None; uses only the old and the older value"""
+    older = CTX.get("older") if CTX.get("pred") else None
+    if older is None: return None
+    o2 = older.get(cn[2:], 0)
+    if not (is_a16(ov) and is_a16(o2)): return None
+    return 2 * old_index(ov) - old_index(o2)
+
 def put_field(io, name, bits, nv, ov, modes, pre):
     mode = modes.get(name, "d"); cn = pre + name       # playerstate and entity fields keep separate contexts
+    pm = PMODES.get(cn)
+    if pm == "t" and bits == 32 and CTX.get("time") is not None:
+        d = ((nv - (CTX["time"] & 0xFFFFFFFF) + (1 << 31)) % (1 << 32)) - (1 << 31)
+        return cls_put(io, (cn, "t"), 36, zz(d))
+    if pm and bits == 0:
+        k = fkind(nv)
+        if k == 2 and is_a16(nv): k = 3
+        if pm in ("pf", "pi") and k == 2:
+            p = predict_pos(cn, pm)
+            if p is not None:
+                io.s((cn, "k"), 4, 2)
+                return cls_put(io, (cn, "fp"), 36, zz(s32(nv) - s32(p)))
+        if pm == "a2" and k == 3:
+            p = pred_a2(cn, ov)
+            if p is not None:
+                io.s((cn, "k"), 4, 3)
+                return cls_put(io, (cn, "a2"), 40, zz(rnd(f32(nv) / A16) - p))
     if bits == 0: put_float(io, cn, nv, ov, mode)
     else: put_int(io, cn, bits, nv, ov, mode)
 
 def get_field(io, name, bits, ov, modes, pre):
     mode = modes.get(name, "d"); cn = pre + name
+    pm = PMODES.get(cn)
+    if pm == "t" and bits == 32 and CTX.get("time") is not None:
+        return ((CTX["time"] & 0xFFFFFFFF) + unzz(cls_get(io, (cn, "t"), 36))) % (1 << 32)
+    if pm in ("pf", "pi", "a2") and bits == 0:
+        k = io.s((cn, "k"), 4)
+        if k == 2 and pm != "a2":
+            p = predict_pos(cn, pm)
+            if p is not None: return (s32(p) + unzz(cls_get(io, (cn, "fp"), 36))) & 0xFFFFFFFF
+        if k == 3 and pm == "a2":
+            p = pred_a2(cn, ov)
+            if p is not None: return pack((p + unzz(cls_get(io, (cn, "a2"), 40))) * A16)
+        return _get_float_k(io, cn, ov, mode, k)
     return get_float(io, cn, ov, mode) if bits == 0 else get_int(io, cn, bits, ov, mode)
+
+def enable_prediction():
+    """code what the predictions read before what they predict: pos.trType and pos.trDelta before pos.trBase,
+    velocity before origin (commandTime and pos.trTime are already first)"""
+    global ET_IDX
+    def move(lst, first, before):
+        items = [x for x in lst if x[0] in first]; rest = [x for x in lst if x[0] not in first]
+        j = min(i for i, x in enumerate(rest) if x[0] in before)
+        lst[:] = rest[:j] + items + rest[j:]
+    move(EF, {"pos.trType", "pos.trDelta[0]", "pos.trDelta[1]", "pos.trDelta[2]"}, {"pos.trBase[0]", "pos.trBase[1]", "pos.trBase[2]"})
+    ENAMES[:] = [n for n, b in EF]; ET_IDX = ENAMES.index("eType"); B.ET_IDX = ET_IDX
+    move(PF2, {"velocity[0]", "velocity[1]", "velocity[2]"}, {"origin[0]", "origin[1]", "origin[2]"})
+    PNAMES[:] = [n for n, b in PF2]
+    return move
 
 # ------------------------------------------------------------------ header
 def header_put(io, h, hb):
@@ -191,7 +279,19 @@ def header_get(io, hb):
     return h
 
 # ------------------------------------------------------------------ playerstate
+def ps_ctx(cur, old, older_ps):
+    # missing fields and zero fields are the same state: test the values, not the dict (both sides then agree)
+    CTX.update(cur=cur, old=old, older=older_ps, pred=any(v != 0 for v in old.values()))
+
+def older_ents():
+    o = CTX.get("older_snap")
+    if o is None: return {}
+    d = CTX.get("_older_ents")
+    if d is None or d[0] is not o: d = CTX["_older_ents"] = (o, dict(o["ents"]))
+    return d[1]
+
 def ps_put(io, new, old, modes):
+    o = CTX.get("older_snap"); ps_ctx(new, old, o["ps"] if o else None)
     prev = -1
     for i in range(NP):
         nm, bits = PF2[i]
@@ -203,6 +303,7 @@ def ps_put(io, new, old, modes):
 
 def ps_get(io, old, modes):
     s = dict(old); prev = -1
+    o = CTX.get("older_snap"); ps_ctx(s, old, o["ps"] if o else None)
     while True:
         i = io.s(("pg", prev), NP + 1)
         if i == NP: return s
@@ -233,6 +334,7 @@ def ents_put(io, new_list, old_list, baselines, modes):
         io.s(("eo", prevop), 4, op); prevop = op
         if op in (2, 3): continue
         st = new[num]
+        CTX.update(cur=st, old=basest, older=older_ents().get(num) if op == 0 else None, pred=(op == 0))
         bcls = cls_of(basest.get("eType", 0)); ncls = cls_of(st.get("eType", 0))
         chd = {c[0]: c for c in ch}
         c = chd.get(ET_IDX)
@@ -261,6 +363,7 @@ def ents_get(io, old_list, baselines, modes):
         st = dict(basest); st["number"] = num
         if op == 3:
             cur[num] = st; continue
+        CTX.update(cur=st, old=basest, older=older_ents().get(num) if op == 0 else None, pred=(op == 0))
         bcls = cls_of(basest.get("eType", 0))
         if io.s(("ef", "et", bcls), 2):
             st["eType"] = io.s(("ev", "et", bcls), 256)
@@ -279,6 +382,7 @@ def ents_get(io, old_list, baselines, modes):
 def snap_put(io, item, base, hb, baselines, modes):
     h = header(item)
     header_put(io, h, hb)
+    CTX.update(time=h["time"], btime=hb["time"] if hb else None)
     sn = item["snap"]
     assert not sn["ps"].get("m_iVehicleNum", 0)
     ps_put(io, sn["ps"], base["ps"] if base else {}, modes)
@@ -286,6 +390,7 @@ def snap_put(io, item, base, hb, baselines, modes):
 
 def snap_get(io, base, hb, baselines, modes):
     h = header_get(io, hb)
+    CTX.update(time=h["time"], btime=hb["time"] if hb else None)
     ps = ps_get(io, base["ps"] if base else {}, modes)
     ents = ents_get(io, base["ents"] if base else [], baselines, modes)
     return h, ps, ents

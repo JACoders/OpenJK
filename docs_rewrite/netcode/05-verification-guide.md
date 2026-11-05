@@ -1,18 +1,18 @@
-# 6. Verification guide: how to re-check this work, where it may be wrong, and what was not tried
+# 5. Verification guide: how to re-check this work, where it may be wrong, and what was not tried
 
 This document is for a reviewer, human or model, who is asked to re-verify the study and to look for better solutions. It lists the claims that matter, how much confidence they deserve, how each can be re-checked, the weak points of the evidence, the mistakes already made and corrected, and ideas that were not explored. Read it before the other documents if your task is to challenge the work.
 
-## 6.1 How to approach the re-verification
+## 5.1 How to approach the re-verification
 
-1. Re-run the cheap checks first (section 6.2, claims C1 to C6): they validate the foundation (the decoder and the corpus). If the decoder is wrong, everything after it is wrong.
+1. Re-run the cheap checks first (section 5.2, claims C1 to C6): they validate the foundation (the decoder and the corpus). If the decoder is wrong, everything after it is wrong.
 2. Re-run the size experiments with different seeds, splits and smoothing values to see whether the conclusions depend on a choice (claims C7 to C12).
 3. Audit the code readings against the source (02): each has a `file:line`.
-4. Try to beat the proposed schema (section 6.7). The study measured one design; it is not claimed to be optimal.
-5. Be suspicious of anything that rests on bots-only, single-map, single-human data (section 6.5).
+4. Try to beat the proposed schema (section 5.7). The study measured one design; it is not claimed to be optimal.
+5. Be suspicious of anything that rests on bots-only, single-map, single-human data (section 5.5).
 
-Tools and commands are in [07-reproduction.md](07-reproduction.md).
+Tools and commands are in [06-reproduction.md](06-reproduction.md).
 
-## 6.2 Claims, confidence, and how to re-check each
+## 5.2 Claims, confidence, and how to re-check each
 
 Confidence: **high** = checked several independent ways; **medium** = checked once or relies on a stated assumption; **low** = reasoned or modelled.
 
@@ -21,7 +21,7 @@ Confidence: **high** = checked several independent ways; **medium** = checked on
 | C1 | The Python decoder reproduces the engine's read path exactly | every message ends within 1 to 8 bits of its recorded length; replaying the call list reproduces the measured bit count of 2,554 test snapshots with 0 differences | high | `jkadec.py`, `bdata.py`, `bench1.py` (prints "L0 replay mismatches"); change one field width and watch the decode fail |
 | C2 | The field tables used are the right ones for the 1.01 retail binary | same as C1 (a wrong table desynchronises the stream) | high | as above |
 | C3 | The captured data are complete server messages before the XOR encoding and without the trailing `svc_EOF` | read in the proxy hook and `sv_net_chan.cpp:140`; decode lengths | high | read `NetCapture.cpp` in the proxy repository |
-| C4 | The engine writer model reproduces the sizes of real snapshots | 1,499 of 1,500 real snapshots (06, section 6.4) | high | `engine_enc.py` |
+| C4 | The engine writer model reproduces the sizes of real snapshots | 1,499 of 1,500 real snapshots (05, section 5.4) | high | `engine_enc.py` |
 | C5 | The codec round-trips exactly on all real messages and on the synthetic corpus | 8,842 real messages and 27,225 synthetic, 0 failures; 517,000 real floats and 400,000 random floats | high for the covered branches | `run_full.py`, `fuzz.py` (several seeds), `rt_float.py`; add new generators for branches not covered |
 | C6 | Remaining equivalence caveat: `-0.0` | the engine turns it into `+0.0`; the codec does the same; one real snapshot differs in the engine model because of a hidden server-side bit pattern | medium | search the captures for snapshots where the engine model and the measured bits differ |
 | C7 | Replacing only Huffman gains 4.6 % | ideal order-0 coder on the engine's byte stream, test part: 321.9 against 337.6 | high | `bench1.py` |
@@ -39,16 +39,16 @@ Confidence: **high** = checked several independent ways; **medium** = checked on
 | C19 | Worst case is 1.34 times the engine's size | scenario B | high as a bound; not a realistic case | `worst.py` |
 | C20 | No licence conflict for ryg_rans, FSE, qbc, nibrans | licence files read | medium: legal reading of file headers across CleanJK is a grep | read the headers file by file |
 | C21 | Multi-human traffic behaves like bot traffic | assumed by the cloning scenario | **low, untested** | record two or more humans |
-| C22 | Prediction (time fields against `serverTime`, positions from velocity, second-order angles) saves a further 22 % (136.9 to 106.1 ideal bytes) | `bench5.py`, ideal bytes only | medium: no real encoder yet, bots only, 20 Hz | port the three modes into `codec.py` and check the round trip and real bytes |
-| C23 | OpenJK (this repository) is wire-compatible with the 1.01 server except for the pilot player state | tables and Huffman frequencies compared; captures decoded with OpenJK's tables (09) | high | `jkadec.py` with `SRC` set to `codemp/qcommon/msg.cpp` |
+| C22 | Prediction (time fields against `serverTime`, positions from velocity, second-order angles) saves a further 23 % (139.1 to 107.3 real bytes with the rANS trick) | `bench5.py` (ideal), `run_pred.py` (real codec; round trip on real, synthetic and simulated-loss messages) | medium: bots only, one map, 20 Hz; the `TR_INTERPOLATE` rule is untested on data | re-run on the demos of step 4 of the plan |
+| C23 | OpenJK (this repository) is wire-compatible with the 1.01 server except for the pilot player state | tables and Huffman frequencies compared; captures decoded with OpenJK's tables (08) | high | `jkadec.py` with `SRC` set to `codemp/qcommon/msg.cpp` |
 
-## 6.3 The synthetic corpus: what it covers and what it proves
+## 5.3 The synthetic corpus: what it covers and what it proves
 
 `fuzz.py` creates structurally valid streams. It covers: every operation type; normal, pilot and vehicle player states (the pilot state's untransmitted fields are generated to equal the old values, as the engine would leave them); zero, minimum, maximum, integral, angle-grid, NaN and infinite values; entities added, changed, removed, equal to baseline; base ages 1 to 11 and no base; downloads with and without the block-0 size; random per-field absolute or delta modes; uniform and trained tables. It proves the exactness of encoder and decoder on those inputs. It does not prove anything about sizes.
 
 Ideas to extend it: states built from real snapshots with random mutation of a few fields (closer to real distributions and good for finding table-boundary bugs); streams with a gamestate in the middle (map change); error injection (truncation, bit flips) to test decoder robustness; very large entity counts (the worst-case study reached 1,000).
 
-## 6.4 Determinism checks still to do
+## 5.4 Determinism checks still to do
 
 The study ran on one machine with one Python and one MSVC build. Before shipping:
 
@@ -61,20 +61,20 @@ The study ran on one machine with one Python and one MSVC build. Before shipping
 
 `engine_enc.py` differs from the measured bits on one snapshot of 1,500 (sequence 984): the engine wrote a larger last-changed index for one entity than the decoded states imply. The probable cause is a server-side field that differs in bits (`-0.0` against `+0.0`) while both decode to the same value, so the engine counts it as a change. It is harmless for the study but shows that "equal values" is the observable criterion and server memory can differ.
 
-## 6.5 Weaknesses of the evidence, in order of importance
+## 5.5 Weaknesses of the evidence, in order of importance
 
 1. **One map, one mode, one human, bots.** The captures are `mp/ffa3`, FFA. Human aiming, saber combat, force powers, vehicles, team modes and larger maps are absent from the data. The size results may be optimistic on varied content (tables fit this content) and the entity-count scenarios clone bot behaviour. The control captures are other games on the same map.
 2. **Training and test come from the same sessions.** The time split avoids sample leakage, but game state is autocorrelated (same map, same bots, same players). The gamestate result is optimistic (its strings are in the training data).
 3. **The idealised sizes use smoothed static counts.** The real rANS round trip confirms them on 400 packets and in the full codec, but the smoothing constant was tuned on the same session's validation slice.
-4. **The per-field absolute/delta choice and the field contexts were found on the training part** and applied unchanged to the test part; a different choice rule could do better (see 6.7).
+4. **The per-field absolute/delta choice and the field contexts were found on the training part** and applied unchanged to the test part; a different choice rule could do better (see 5.7).
 5. **CPU numbers come from one machine** and from simple implementations, and exclude building symbols from the engine's structures.
-6. **The network-layer results are models, and they use 1.01 defaults** (`sv_fps` 20, `rate` 4000). OpenJK's upstream defaults (`sv_fps` 40, rate forced to 50000) change the base age for a given RTT; this branch sets `sv_fps` 20 (09, section 9.2); no capture at 40 Hz exists. Loss is independent, acknowledgements are lossless, the rate model assumes 50 ms server frames, and the effect of fewer snapshots on delta age is not fed back. No live test was done.
+6. **The network-layer results are models, and they use 1.01 defaults** (`sv_fps` 20, `rate` 4000). OpenJK's upstream defaults (`sv_fps` 40, rate forced to 50000) change the base age for a given RTT; this branch sets `sv_fps` 20 (08, section 8.2); no capture at 40 Hz exists. Loss is independent, acknowledgements are lossless, the rate model assumes 50 ms server frames, and the effect of fewer snapshots on delta age is not fed back. No live test was done.
 7. **Client code coverage.** Only `cg_predict.c` and parts of `cg_ents.c` and `cg_draw.c` were read. The position-rounding decision depends on the rest (`cg_players.c` has 122 uses of `lerpOrigin`).
 8. **Transport libraries were not evaluated.** The recommendations in 04, section 4.7 are reasoning from the measured behaviour of the existing netchan.
 9. **The client-to-server direction was not studied.** `usercmd` packets are small but frequent; their share of the total bandwidth is unknown.
 10. **No test of the retail binary other than through the captures.** The captures prove the read path matches; the write path was inferred from the source plus the engine-writer model check.
 
-## 6.6 Mistakes made during the study and corrected (so you can watch for similar ones)
+## 5.6 Mistakes made during the study and corrected (so you can watch for similar ones)
 
 | id | mistake | how it was found | fix |
 |---|---|---|---|
@@ -92,9 +92,9 @@ The study ran on one machine with one Python and one MSVC build. Before shipping
 | M12 | A compiler downloaded from PyPI (zig) was refused by the sandbox and not worked around | permission denial | the owner compiled the C benchmarks; do not rely on running downloaded executables |
 | M13 | A first benchmark of nibrans failed to compile as C++ (it uses C99 compound literals) | the owner's compiler output | its implementation is compiled as C |
 | M14 | The `K=18` class alphabet of the angle delta in the cost estimate was too small for the unbounded delta | found while writing the real codec (K=24 needed) | the real codec uses 24 |
-| M15 | The documents said a pilot state sends "the first 122 fields"; `140 - 82` is 58 | re-reading the code (09) | corrected in 01 and 02; the code (`codec2.py`) was right |
+| M15 | The documents said a pilot state sends "the first 122 fields"; `140 - 82` is 58 | re-reading the code (08) | corrected in 01 and 02; the code (`codec2.py`) was right |
 
-## 6.7 Ideas that were not explored, with a rough sense of potential
+## 5.7 Ideas that were not explored, with a rough sense of potential
 
 These are suggestions, not findings. Sizes quoted are the study's, so potential gains are relative to them.
 
@@ -118,7 +118,7 @@ These are suggestions, not findings. Sizes quoted are the study's, so potential 
 13. **Transport design.** Ack bitfields, reliable fragment recovery, authenticated packets; and header compression (the 32 bytes of header exceed the payload in the solo case).
 14. **Client to server.** `usercmd` coding and its rate.
 
-## 6.8 Questions a reviewer should try to answer
+## 5.8 Questions a reviewer should try to answer
 
 - Does the conclusion "the coder family does not matter" survive a richer model (items 3 to 6 above)? A stronger model class could change which coder is best.
 - Does the angle-index trick still hold on human input (view angles come from `usercmd` shorts, so yes by construction, but check the ratio of on-grid values in human captures)?
@@ -127,18 +127,18 @@ These are suggestions, not findings. Sizes quoted are the study's, so potential 
 - Is the single-state FSE across tables correct in general, or only for the same table log? (It round-tripped in the benchmark; the library does not document it.)
 - How much of the 32-byte network header can be removed or shared?
 
-## 6.9 What published work says (web reading, 4 November 2026)
+## 5.9 What published work says (web reading, 4 November 2026)
 
 Read from articles and talk summaries, not reproduced. Each line says what it implies for this design.
 
 | source | what it does | implication here |
 |---|---|---|
 | Glenn Fiedler, "Snapshot Compression" (gafferongames.com) | Delta against the newest acknowledged baseline; changed objects sent either as delta-coded indices or as one changed bit per object, chosen per snapshot with a header bit; bounded small / large deltas found by a greedy search over captures; quantised positions and "smallest three" quaternions; he reports that an arithmetic coder by Fabian Giesen beat his best bit-packing by 25 % | Same structure as the recommended schema (acked base, gap list of changed fields, trained distributions instead of hand-picked ranges). His data is quantised by design; JKA's prediction needs exact values (02, section 2.8), so quantisation stays out unless the game itself quantises (next rows) |
-| Fiedler, "State Synchronization" (**excluded by the owner's goal 1 in the README: a grid coarser than float32 loses precision, even when applied to the server's own state**) | Quantises the state **on both sides** (4096 values per metre, 15-bit quaternion components) so that both simulations run on the same values; falls back to absolute coding when the baseline is too old | A lossless way to get quantisation gains: quantise the **server's own state** after each move (Quake 3 did this with `SnapVector` in `BG_PlayerStateToEntityState(..., qtrue)`; JKA calls it with `qfalse`, positions are not snapped). Then the client receives the server's exact values, and rounding costs nothing in prediction. It changes movement physics, which matters for racing (09, section 9.3). Not measured; the 1/16-unit rounding rows of 3.6 give the order of the size gain (136.9 to about 109) |
+| Fiedler, "State Synchronization" (**excluded by the owner's goal 1 in the README: a grid coarser than float32 loses precision, even when applied to the server's own state**) | Quantises the state **on both sides** (4096 values per metre, 15-bit quaternion components) so that both simulations run on the same values; falls back to absolute coding when the baseline is too old | A lossless way to get quantisation gains: quantise the **server's own state** after each move (Quake 3 did this with `SnapVector` in `BG_PlayerStateToEntityState(..., qtrue)`; JKA calls it with `qfalse`, positions are not snapped). Then the client receives the server's exact values, and rounding costs nothing in prediction. It changes movement physics, which matters for racing (08, section 8.3). Not measured; the 1/16-unit rounding rows of 3.6 give the order of the size gain (136.9 to about 109) |
 | RAD Oodle Network (radgametools.com, cbloom rants 2013 and 2016) | Static model trained offline on captured packets, shipped with the game, shared by all channels, each packet compressed independently; claims 25 to 80 % on packets that are already delta-coded and bit-packed; models of 4 to 8 MB; retrain when the game changes | The same principle as the recommendation (static trained tables, no cross-packet state, retrain with the content). Proprietary, so not usable here. Its gain on bit-packed streams comes from a large context model; the per-field model of this study plays that role with about 7 KB of non-zero entries |
 | Burtscher and Ratanaworabhan, FPC (IEEE TC 2009); fpzip; the FCBench survey (VLDB 2024) | Lossless float compression by prediction then residual: FPC XORs value and prediction and counts leading zero bytes; fpzip maps both floats to integers and codes their difference | `bench5.py` P1 / P2 use the fpzip form (difference of 32-bit patterns), which keeps the residual small when prediction and value share sign and exponent; an XOR residual is the alternative to try if sign changes around zero turn out to be frequent |
 | Jarek Duda on encode.su; Fabian Giesen, "rANS in practice" | The final 32-bit rANS state costs about 4 bytes per stream; it can be recovered by starting the encoder from a state that carries data bits (start at 1 and encode until the state passes the renormalisation bound), or used as a free checksum (start from a known state, check it at the end of decoding) | The real rANS of the study costs 3.5 bytes above the ideal per packet (03, section 3.4). The initial-state trick should recover most of it: about 3 % of a 106-byte packet, more on idle packets. The checksum variant gives an integrity check of the decode for free. Not implemented |
-| David Aldridge, "I Shot You First: Networking the Gameplay of Halo: Reach" (GDC 2011); Tribes networking model (GDC 1999) | Per-object, per-client priority (distance, direction, size, speed, damage), packets filled in priority order under flow control; profiling recorded in replays; Reach used 20 % of Halo 3's bandwidth | Confirms that "what to send" (6.7 item 11) is a larger lever than coding |
+| David Aldridge, "I Shot You First: Networking the Gameplay of Halo: Reach" (GDC 2011); Tribes networking model (GDC 1999) | Per-object, per-client priority (distance, direction, size, speed, damage), packets filled in priority order under flow control; profiling recorded in replays; Reach used 20 % of Halo 3's bandwidth | Confirms that "what to send" (5.7 item 11) is a larger lever than coding |
 | Tim Ford, "Overwatch Gameplay Architecture and Netcode" (GDC 2017) and summaries | Server-authoritative ECS with heavy prediction; floats quantised to low precision so client and server do not drift; every unacknowledged input resent in each packet | Same remark as State Synchronization: quantisation is safe only when the simulation itself uses the quantised values. The "resend unacknowledged inputs" scheme is what `cl_packetdup` approximates |
 | Unreal Engine Iris (Epic forum and bug tracker) | Serialisation split into quantise, then serialise the quantised form; delta compression per class against baselines | No new technique for this study; quantised form plus per-class baselines is the same idea as per-type contexts |
 

@@ -1,12 +1,12 @@
-# 7. Reproduction: tools, formats, data, commands
+# 6. Reproduction: tools, formats, data, commands
 
-## 7.1 Environment used
+## 6.1 Environment used
 
 - Windows 11, Git Bash; Python 3.14.2 (standard library only, apart from the standard `compression.zstd` module used by `bench4.py` for the zstd comparison; no third-party Python package).
 - C and C++ benchmarks: CMake and Visual Studio 2022 (MSVC, x64, Release) on the owner's machine. The assistant's environment had no compiler; the C code was written without being compiled by its author and then compiled and run by the owner, who also supplied the executables for the final runs.
-- No network access is needed to re-run anything except cloning the third-party sources (7.4).
+- No network access is needed to re-run anything except cloning the third-party sources (6.4).
 
-## 7.2 Capture file format (written by the proxy)
+## 6.2 Capture file format (written by the proxy)
 
 Defined at the top of `src/JKA_YBEProxy/Engine/NetCapture.cpp` in `E:\Git\jka\JKA_YBEProxy` (committed there; verify). Little endian, append mode.
 
@@ -30,9 +30,9 @@ Message (any number):
 
 The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before the map loads. Only human clients are captured (bots receive no messages). The file is flushed when the buffer fills and when the proxy module is unloaded (map change or shutdown); a crash loses the buffer.
 
-## 7.3 Tools
+## 6.3 Tools
 
-`tools/python/` (all hard-code the paths listed in 7.7; run from that directory without `python -I`, because the scripts import each other):
+`tools/python/` (all hard-code the paths listed in 6.7; run from that directory without `python -I`, because the scripts import each other):
 
 | file | purpose |
 |---|---|
@@ -43,6 +43,7 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 | `bench2.py` | New schema in ideal bytes: gap or flag coding, value contexts, quantisation, base age, angle-index option (`ANG16`), position rounding option (`POSQ`, `POS_FIELDS`). Defines the data structures used by the others. |
 | `bench3.py` | Coder families on the same symbols: ideal, rANS 12 and 15-bit, Huffman per context, adaptive binary. |
 | `bench4.py` | zstd, deflate and lzma on the raw layout; a real 32-bit rANS with round trip. |
+| `run_pred.py` | Step 1 of the plan: prediction modes and the rANS initial-state trick in the whole-message codec; per-field choice, round trip on the real messages, `--fuzz` (seeds 1 to 5), `--loss` (loss grid); `pf` or `pi` selects the arithmetic. It sets module attributes of `codec.py` (`X0`, `PMODES`) and calls `codec2.enable_prediction()`; with their defaults every earlier script gives the study's numbers (re-checked) |
 | `bench5.py` | Prediction variants on top of `bench2` (time fields against `serverTime`, positions predicted from velocity, second-order angle prediction), ideal bytes; added on 4 November 2026 (03, section 3.12). |
 | `run2.py`, `run_k.py` | Drivers: gap/flag/value-context/quantisation variants; base ages 1, 2, 4, 8. |
 | `rt_float.py` | Independent encoder and decoder of the float kinds; round trip on real and random floats. |
@@ -54,20 +55,20 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 | `frag_rate.py` | Fragmentation, rate limiting and gamestate retransmission calculations. |
 | `engine_enc.py` | A model of the engine's snapshot writer; `python engine_enc.py` checks it against the measured sizes. |
 | `worst.py` | Crowded and adversarial snapshots; writes `bench_worst_*.bin` for the C benchmark. |
-| `dump_bench.py` | Writes `bench_input.bin` (7.8) for the C benchmark. |
+| `dump_bench.py` | Writes `bench_input.bin` (6.8) for the C benchmark. |
 
 `tools/cpubench/`: `bench.c` (own coders A to D), `bench_libs.cpp` (ryg_rans, FSE, qbc, nibrans), `nibrans_impl.c` (nibrans compiled as C), `CMakeLists.txt` (expects the third-party sources under `third_party/`).
 
 Also in this folder:
 
-- `data/`: the three captures, `msg.cpp` (a copy of `codemp/qcommon/msg.cpp` as used by the study, from which the decoder extracts the field tables and the Huffman frequencies), `bench_input.bin` (13 MB, the C benchmark input), `bench_worst_A32.bin` and `bench_worst_A128.bin` (the crowd scenarios). Checksums are in 7.5.
-- `bin/`: `jkabench.exe` and `jkabench_libs.exe`, the Windows x64 Release builds used for the C measurements (checksums in 7.5). They run on the files in `data/`, for example `bin\jkabench.exe data\bench_input.bin`. They need no installation. Timings vary by about 10 % from run to run and between machines (a re-run on 4 November gave 6.4 µs where the study table has 7.2 µs for the engine's encoder).
+- `data/`: the three captures, `msg.cpp` (a copy of `codemp/qcommon/msg.cpp` as used by the study, from which the decoder extracts the field tables and the Huffman frequencies), `bench_input.bin` (13 MB, the C benchmark input), `bench_worst_A32.bin` and `bench_worst_A128.bin` (the crowd scenarios). Checksums are in 6.5.
+- `bin/`: `jkabench.exe` and `jkabench_libs.exe`, the Windows x64 Release builds used for the C measurements (checksums in 6.5). They run on the files in `data/`, for example `bin\jkabench.exe data\bench_input.bin`. They need no installation. Timings vary by about 10 % from run to run and between machines (a re-run on 4 November gave 6.4 µs where the study table has 7.2 µs for the engine's encoder).
 
 Not copied (rebuild or re-fetch): the Python caches (`*.pkl`), `bench_worst_B128.bin` and `bench_worst_B1000.bin` (10 MB and 37 MB, produced by `worst.py` in seconds, and unusable by the C benchmark anyway), the CMake `build/` folder, and `third_party/`. A `.gitignore` in this folder excludes the caches.
 
-The Python tools find the data and `msg.cpp` through paths relative to their own location (`../../data`; the repository's `codemp/qcommon/msg.cpp` is only a fallback), so the folder can be copied anywhere and run without editing. This was tested on a copy outside the repository. Only two things are not self-contained: the `file:line` references in these documents point into the repository's source tree, and rebuilding `jkabench_libs` needs the third-party sources of 7.4.
+The Python tools find the data and `msg.cpp` through paths relative to their own location (`../../data`; the repository's `codemp/qcommon/msg.cpp` is only a fallback), so the folder can be copied anywhere and run without editing. This was tested on a copy outside the repository. Only two things are not self-contained: the `file:line` references in these documents point into the repository's source tree, and rebuilding `jkabench_libs` needs the third-party sources of 6.4.
 
-## 7.4 Third-party sources used by the C++ benchmark
+## 6.4 Third-party sources used by the C++ benchmark
 
 Cloned with `git clone --depth 1` into `third_party/<name>`. Commits used:
 
@@ -82,7 +83,7 @@ Cloned with `git clone --depth 1` into `third_party/<name>`. Commits used:
 
 The FSE static library is built from `fse_compress.c`, `fse_decompress.c`, `entropy_common.c`, `hist.c`, `debug.c`.
 
-## 7.5 Data checksums
+## 6.5 Data checksums
 
 SHA-256 and sizes of the captures used (map `mp/ffa3`):
 
@@ -100,9 +101,9 @@ Other files in `data/` and `bin/`:
 | `bin/jkabench.exe` | 23,040 | `b1e5b46b62aa917185703da947bdc0a8b9fe5c911a3b9fc6630aafcee4fa4fc3` |
 | `bin/jkabench_libs.exe` | 43,520 | `b82ff095f1efacd5eb38b01c4e52e885d732bfd366026b3297be95c1c9d47164` |
 
-The captures are the only copy of the data. Keep them (or a derived recording) with the repository if the study is to be re-run. `bench_input.bin` is derived from the 5-minute capture by `dump_bench.py`; the executables are built from `tools/cpubench` (7.6).
+The captures are the only copy of the data. Keep them (or a derived recording) with the repository if the study is to be re-run. `bench_input.bin` is derived from the 5-minute capture by `dump_bench.py`; the executables are built from `tools/cpubench` (6.6).
 
-## 7.6 Commands, in the order of the study
+## 6.6 Commands, in the order of the study
 
 From `docs_rewrite/netcode/tools/python` (approximate run times on the study machine in brackets):
 
@@ -116,6 +117,8 @@ python run_k.py                       # base age 1, 2, 4, 8                     
 python bench3.py                      # coder families                                      [25 s]
 python bench4.py                      # zstd / deflate / lzma, real rANS                    [60 s]
 python bench5.py                      # prediction variants base T P1 P2 A2 T+P2+A2          [110 s]
+python run_pred.py pi --fuzz          # step 1: real codec with prediction, integer arithmetic [90 s]
+python run_pred.py pf --fuzz --loss   # the same with float arithmetic, plus the loss grid    [4 min]
 python rt_float.py                    # float round trip                                    [5 s]
 python fullload.py                    # whole-message corpus (builds fullmsgs.pkl)          [5 s]
 python codec.py                       # snapshot codec round trip, real bytes               [8 s]
@@ -147,22 +150,22 @@ The worst-case files `bench_worst_B*.bin` exceed the benchmark's fixed buffers (
 
 To change an option of `bench2.py` from a driver, set the module attributes before running: `B.ANG16 = True`, `B.POSQ = 16`, `B.POS_FIELDS = {...}`.
 
-## 7.7 Hard-coded paths and caches
+## 6.7 Hard-coded paths and caches
 
 The copies in `tools/python` use paths relative to the script, so nothing needs editing in a normal checkout. The constants are:
 
 | file | constant | value |
 |---|---|---|
-| `jkadec.py` | `SRC` | `../../data/msg.cpp` (SHA-256 `d0eea2162bb3b2c917ede93fc4582aff7af88cb2cc706d881176966742fa9d63`, 91,189 bytes), falling back to `../../../../codemp/qcommon/msg.cpp` (this repository's copy, OpenJK; its tables and `msg_hData` are identical, see 09); tables and `msg_hData` are extracted from it |
+| `jkadec.py` | `SRC` | `../../data/msg.cpp` (SHA-256 `d0eea2162bb3b2c917ede93fc4582aff7af88cb2cc706d881176966742fa9d63`, 91,189 bytes), falling back to `../../../../codemp/qcommon/msg.cpp` (this repository's copy, OpenJK; its tables and `msg_hData` are identical, see 08); tables and `msg_hData` are extracted from it |
 | `bdata.py` | `TMP` | `../../data` (the three capture files) |
 | `dump_bench.py` | `OUT` | `../../data/bench_input.bin` |
 | `worst.py` | `OUTDIR` | `../../data` (writes `bench_worst_*.bin` there) |
 
-The study itself ran with the absolute paths `E:\Git\jka\jediacademy\codemp\...` and `E:\Git\jka\jediacademy\tmp\...`; results are identical. A complete re-run in this repository on 4 November 2026 (every command of 7.6 except `dump_bench.py`, whose output `bench_input.bin` was checked by checksum instead) reproduced every size, count and failure figure of 03 exactly; `worst.py` rewrote `bench_worst_A32.bin` and `bench_worst_A128.bin` byte for byte. The executables of `bin/` (checksums unchanged) gave the same bytes and timings within 10 % of the table (for example engine encode 6,692 ns against 7,177; ryg_rans 954 against 951; engine at 128 crowd entities 54,938 against 59,911).
+The study itself ran with the absolute paths `E:\Git\jka\jediacademy\codemp\...` and `E:\Git\jka\jediacademy\tmp\...`; results are identical. A complete re-run in this repository on 4 November 2026 (every command of 6.6 except `dump_bench.py`, whose output `bench_input.bin` was checked by checksum instead) reproduced every size, count and failure figure of 03 exactly; `worst.py` rewrote `bench_worst_A32.bin` and `bench_worst_A128.bin` byte for byte. The executables of `bin/` (checksums unchanged) gave the same bytes and timings within 10 % of the table (for example engine encode 6,692 ns against 7,177; ryg_rans 954 against 951; engine at 128 crowd entities 54,938 against 59,911).
 
 Caches are created next to the scripts: `hufftree.pkl` (decode table), `bdata.pkl`, `fullmsgs.pkl`. Delete them after changing `jkadec.py`, the capture files or the source of `msg.cpp`.
 
-## 7.8 `bench_input.bin` format (read by `bench.c` and `bench_libs.cpp`)
+## 6.8 `bench_input.bin` format (read by `bench.c` and `bench_libs.cpp`)
 
 Little endian.
 
@@ -180,7 +183,7 @@ for each snapshot:
   u32 nbits; u32 nbytes; u8 packet[nbytes]             (the engine bitstream)
 ```
 
-## 7.9 Recording more data
+## 6.9 Recording more data
 
 1. Build the proxy (`E:\Git\jka\JKA_YBEProxy`), start the dedicated server, set `proxy_sv_captureNet 1` **before** the first `map`.
 2. Load the map, join, play. Change map or stop the server cleanly to flush.
@@ -190,7 +193,7 @@ for each snapshot:
 
 For the study's open gap, record sessions with several human players, and on other maps and modes, and keep some recordings out of any training.
 
-## 7.10 Known fragilities of the tooling
+## 6.10 Known fragilities of the tooling
 
 - Several scripts rely on module-level switches (`B.ANG16`); set them before calling functions that tokenise values.
 - `jkadec.py` returns the decoded snapshot states by reference; scripts that mutate them would corrupt the corpus. They copy where they write.

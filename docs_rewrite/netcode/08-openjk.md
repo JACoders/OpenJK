@@ -1,10 +1,10 @@
-# 9. OpenJK: what differs from the 1.01 tree, and where the code is
+# 8. OpenJK: what differs from the 1.01 tree, and where the code is
 
-This repository is a fork of OpenJK (branch `feature/poc-netcode`, forked from OpenJK `260c59c2`, 29 September 2026) and is the proof-of-concept base of the rewrite. The analysis in [02](02-engine-code-findings.md) and [08](08-transport-study.md) cites the 1.01 tree (`E:\Git\jka\jediacademy\codemp`), the code of the server that produced the captures. This page says what is different in OpenJK, what was re-checked here, and where every function is in this tree. Paths are relative to `codemp/` unless stated.
+This repository is a fork of OpenJK (branch `feature/poc-netcode`, forked from OpenJK `260c59c2`, 29 September 2026) and is the proof-of-concept base of the rewrite. The analysis in [02](02-engine-code-findings.md) and [07](07-transport-study.md) cites the 1.01 tree (`E:\Git\jka\jediacademy\codemp`), the code of the server that produced the captures. This page says what is different in OpenJK, what was re-checked here, and where every function is in this tree. Paths are relative to `codemp/` unless stated.
 
 **The 1.01 server stays the reference for the measurements.** Where OpenJK differs, the difference is either a default setting (a cvar that can be set back) or one rule of the pilot player state, described below.
 
-## 9.1 Wire compatibility with 1.01: checked
+## 8.1 Wire compatibility with 1.01: checked
 
 | item | how it was checked | result |
 |---|---|---|
@@ -13,6 +13,7 @@ This repository is a fork of OpenJK (branch `feature/poc-netcode`, forked from O
 | Bit layer, delta entity, delta player state, arrays | read | same bitstream. OpenJK adds overflow checks (`MSG_WriteBits`, `MSG_ReadBits`, `Huff_offsetReceive` / `Huff_offsetTransmit` take a bound), `lc` range checks in the readers, and replaces `MSG_WriteShort` of the array masks by `MSG_WriteBits(..., MAX_STATS)` etc., which writes the same 16 bits. In OOB mode it fixes the 32-bit write (`msg->bit += 32` instead of `8`); OOB data does not use the delta path |
 | Whole decode of the study's captures with these tables | `jkadec.py` run with `SRC` pointing at `codemp/qcommon/msg.cpp` | 7,101 / 7,101 and 1,605 / 1,605 messages decoded, as with the 1.01 tables |
 | Gamestate tail | read | the same as 1.01: after the checksum feed, a short (0; the old random-mission terrain filler, `server/sv_client.cpp:468`) |
+| Client demos (`.dm_26`) | read | same layout as 1.01 (`CL_WriteDemoMessage`, `client/cl_main.cpp:206`); the message is the server message after the netchan header, with `svc_EOF`; recording starts at the first snapshot without a base (`client/cl_parse.cpp:260`) |
 
 The only wire difference found:
 
@@ -20,7 +21,7 @@ The only wire difference found:
 
 **Decision (4 November 2026):** do not restore the `- 82` rule. The new codec sends changed fields only, so the rule saves nothing, and OpenJK removed it because it caused bugs.
 
-## 9.2 Defaults that differ (settings, not format)
+## 8.2 Defaults that differ (settings, not format)
 
 | setting | 1.01 | OpenJK upstream | this branch | where |
 |---|---|---|---|---|
@@ -41,9 +42,9 @@ Consequences for the results of [03](03-results.md):
 
 1. **Rate table (3.10).** The table describes a 1.01 server with client rates from 4000 up. With this branch's or OpenJK's defaults, only messages from 1,202 bytes are delayed.
 2. **Base age.** The loss and latency results (3.9) convert RTT to base age with 50 ms per snapshot, which is this branch's rate. At OpenJK's upstream 40 snapshots per second the same RTT gives twice the age; sizes at 40 Hz were not measured.
-3. **To stay on the 1.01 conditions**, set `sv_ratePolicy 2`, `sv_maxRate 90000` (see 9.4 for why `sv_maxRate` must not stay 0), and on the client `rate 4000`, `snaps 20`. No code change is needed.
+3. **To stay on the 1.01 conditions**, set `sv_ratePolicy 2`, `sv_maxRate 90000` (see 8.4 for why `sv_maxRate` must not stay 0), and on the client `rate 4000`, `snaps 20`. No code change is needed.
 
-## 9.3 Other differences relevant to the netcode
+## 8.3 Other differences relevant to the netcode
 
 | item | OpenJK | where |
 |---|---|---|
@@ -57,11 +58,11 @@ Consequences for the results of [03](03-results.md):
 | Player trajectories | the base game module: with `g_smoothClients` 1 players are sent as `TR_LINEAR_STOP` with `trTime` = `commandTime` through `BG_PlayerStateToEntityStateExtraPolate(..., qfalse)`, never rounded ("Don't snap the origin of players! It screws prediction all up"), as in the 1.01 module and the captures | `game/g_active.c:3326`, `:3768` |
 | Licence | 447 files under `codemp/` and `shared/` carry "GNU General Public License version 2 as"; 27 carry "version 2 or any later version" (or "either version 2 of the License, or"). The GPL-v2-only conclusion of 02 section 2.9 holds for this tree | grep, not a legal reading |
 
-## 9.4 A bug found on the way
+## 8.4 A bug found on the way
 
 With `sv_ratePolicy 2` and the default `sv_maxRate 0`, `SV_UserinfoChanged` clamps the client rate with `Com_Clampi(sv_minRate, sv_maxRate, i)` = `Com_Clampi(0, 0, i)`, so the rate becomes 0 (`server/sv_client.cpp:1090`). `SV_RateMsec` then divides by `rate * timescale` = 0 (`server/sv_snapshot.cpp:679`). Not tested; read only. Set `sv_maxRate` when using policy 2, or fix the clamp.
 
-## 9.5 Where the functions of 02 and 08 are in this tree
+## 8.5 Where the functions of 02 and 07 are in this tree
 
 Generated with a script that searches each definition (lines of 5 November 2026). Functions only; sub-ranges cited in 02 are inside these functions.
 
