@@ -629,7 +629,11 @@ static const imCamRow_t imCamRows[] = {
 #define IM_CAM_W		198.0f
 #define IM_CAM_ROW		17.0f
 #define IM_CAM_LABEL	518.0f		// where the labels end and the sliders start
-#define IM_CAM_SHOW		"cvarTest \"ui_cameraSettings\" showCvar { \"1\" }\n"
+// the camera panel shows with its setting on and Exit's menu (ingame_leave) not over it: ui_camPanel
+// is the two together, kept by CL_RenderMenu_Frame, as an item tests one cvar only
+#define IM_CAM_CVAR		"ui_camPanel"
+#define IM_LEAVE_CVAR	"ui_leaveOpen"	// Exit's menu is open, set by its own onOpen and onClose
+#define IM_CAM_SHOW		"cvarTest \"" IM_CAM_CVAR "\" showCvar { \"1\" }\n"
 
 /*
 ================================================================================
@@ -1154,12 +1158,47 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 	return imPatched.c_str();
 }
 
-// every menu read goes by here: the in-game menu, or the Setup menus
+// Exit's menu says when it's open, so the camera panel under it gets out of the way
+static const char *LV_Patch( const char *filename, const char *text, int *length ) {
+	static std::string patched;
+	std::string s( text, *length );
+	size_t menu, menuOpen, firstItem, at;
+
+	if ( RM_FindWord( s, IM_LEAVE_CVAR, 0 ) != RM_NONE )
+		return NULL;	// done already
+	menu = RM_FindWord( s, "menuDef", 0 );
+	if ( menu == RM_NONE )
+		return NULL;
+	menuOpen = RM_SkipSpace( s, menu + 7 );
+	if ( menuOpen >= s.size() || s[menuOpen] != '{' )
+		return NULL;
+	firstItem = RM_FindWord( s, "itemDef", menuOpen );
+	// onClose first, so onOpen's place stays right whichever comes first
+	at = RM_FindWord( s, "onClose", menuOpen, firstItem );
+	if ( at != RM_NONE && ( at = RM_SkipSpace( s, at + 7 ) ) < s.size() && s[at] == '{' )
+		s.insert( at + 1, " setcvar " IM_LEAVE_CVAR " 0 ;" );
+	else
+		s.insert( menuOpen + 1, "\nonClose { setcvar " IM_LEAVE_CVAR " 0 }\n" );
+	firstItem = RM_FindWord( s, "itemDef", menuOpen );
+	at = RM_FindWord( s, "onOpen", menuOpen, firstItem );
+	if ( at != RM_NONE && ( at = RM_SkipSpace( s, at + 6 ) ) < s.size() && s[at] == '{' )
+		s.insert( at + 1, " setcvar " IM_LEAVE_CVAR " 1 ;" );
+	else
+		s.insert( menuOpen + 1, "\nonOpen { setcvar " IM_LEAVE_CVAR " 1 }\n" );
+	Com_DPrintf( "%s: tells the camera panel when it's open\n", filename );
+	patched.swap( s );
+	*length = (int)patched.size();
+	return patched.c_str();
+}
+
+// every menu read goes by here: the in-game menu, Exit's, or the Setup menus
 static const char *MP_Patch( const char *filename, const char *text, int *length ) {
 	const char *base = COM_SkipPath( (char *)filename );
 
 	if ( !Q_stricmp( base, "ingame.menu" ) && Q_stristr( filename, "jamp" ) )
 		return IM_Patch( filename, text, length );
+	if ( !Q_stricmp( base, "ingame_leave.menu" ) && Q_stristr( filename, "jamp" ) )
+		return LV_Patch( filename, text, length );
 	return RM_Patch( filename, text, length );
 }
 
@@ -1177,6 +1216,12 @@ void CL_RenderMenu_Frame( void ) {
 
 	if ( !rmPostfx )
 		return;
+	// the camera panel: its setting on, and Exit's menu not over it (gone with the menus)
+	if ( !( Key_GetCatcher() & KEYCATCH_UI ) && Cvar_VariableIntegerValue( IM_LEAVE_CVAR ) )
+		Cvar_Set( IM_LEAVE_CVAR, "0" );
+	on = (qboolean)( Cvar_VariableIntegerValue( "ui_cameraSettings" ) == 1 && !Cvar_VariableIntegerValue( IM_LEAVE_CVAR ) );
+	if ( Cvar_VariableIntegerValue( IM_CAM_CVAR ) != on )
+		Cvar_Set( IM_CAM_CVAR, on ? "1" : "0" );
 	on = (qboolean)( !Q_stricmp( rmRenderer->string, RM_VULKAN ) && rmFbo->integer );
 	if ( rmPostfx->integer != on )
 		Cvar_Set( RM_POSTFX, on ? "1" : "0" );
@@ -1193,6 +1238,8 @@ void CL_RenderMenu_Init( void ) {
 	rmPostfx = Cvar_Get( RM_POSTFX, "0", CVAR_ROM, "The Setup menu's RENDERER page has Vulkan and Post Effects on: their effects show" );
 	Cvar_Get( "ui_cameraSettings", "0", CVAR_ARCHIVE_ND, "The in-game menu shows the third person camera's settings" );
 	Cvar_Get( QC_OPEN_CVAR, "0", 0, "The in-game menu's quick connect panel is out: Esc closes it first" );
+	Cvar_Get( IM_LEAVE_CVAR, "0", 0, "The in-game menu's Exit menu is open: the camera panel steps out of its way" );
+	Cvar_Get( IM_CAM_CVAR, "0", 0, "The in-game menu's camera panel shows: ui_cameraSettings on, and Exit's menu not open" );
 	Cvar_Get( CP_NAME_CVAR, "", CVAR_ARCHIVE_ND, "The camera panel's preset name" );
 	Cmd_AddCommand( "campreset", CP_Cmd_f, "Camera settings saved and loaded by name" );
 	LoadScriptFile_Patch = MP_Patch;
