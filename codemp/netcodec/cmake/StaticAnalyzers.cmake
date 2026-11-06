@@ -1,0 +1,28 @@
+# clang-tidy (checks in codemp/netcodec/.clang-tidy, C++ Core Guidelines among them) and cppcheck on the netcodec
+# targets, after cpp-best-practices/cmake_template (cmake/StaticAnalyzers.cmake). Off by default.
+function(netcodec_enable_clang_tidy target warnings_as_errors)
+	find_program(NETCODEC_CLANG_TIDY clang-tidy)
+	if(NOT NETCODEC_CLANG_TIDY)
+		message(WARNING "netcodec: clang-tidy requested but not found")
+		return()
+	endif()
+	set(cmd ${NETCODEC_CLANG_TIDY} -extra-arg=-Wno-unknown-warning-option)
+	if(warnings_as_errors)
+		list(APPEND cmd -warnings-as-errors=*)
+	endif()
+	set_target_properties(${target} PROPERTIES CXX_CLANG_TIDY "${cmd}")
+endfunction()
+
+function(netcodec_enable_cppcheck target warnings_as_errors)
+	find_program(NETCODEC_CPPCHECK cppcheck)
+	if(NOT NETCODEC_CPPCHECK)
+		message(WARNING "netcodec: cppcheck requested but not found")
+		return()
+	endif()
+	set(cmd ${NETCODEC_CPPCHECK} --enable=style,performance,warning,portability --inline-suppr --std=c++20
+		--suppress=unmatchedSuppression --suppress=missingIncludeSystem)
+	if(warnings_as_errors)
+		list(APPEND cmd --error-exitcode=2)
+	endif()
+	set_target_properties(${target} PROPERTIES CXX_CPPCHECK "${cmd}")
+endfunction()

@@ -1,0 +1,30 @@
+# clang-tidy checks of netcodec: C++ Core Guidelines, bugs, performance, portability, part of modernize and
+# readability (after cpp-best-practices/cmake_template). Disabled checks and why:
+#  - magic numbers: the codec is made of format constants (widths, alphabet sizes) named where they matter;
+#  - pro-bounds-constant-array-index: std::span / std::array indices are checked in debug builds instead;
+#  - pro-bounds-pointer-arithmetic: only in the byte-image accessors, through std::span;
+#  - identifier-length, trailing return types: style only.
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-no-recursion,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-function-cognitive-complexity
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*netcodec/(include|src)/.*'
+FormatStyle: none

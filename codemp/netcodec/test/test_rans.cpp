@@ -1,7 +1,7 @@
 // rANS golden test: every message of the trace must encode to the bytes of the Python reference codec, and decode
 // back to the same units. Also: truncated and random inputs never read out of bounds (run under ASan / UBSan).
 // Usage: netcodec_test_rans <rans_trace.bin>
-#include "trace.h"
+#include "rans_trace.h"
 
 #include <cstdio>
 #include <random>

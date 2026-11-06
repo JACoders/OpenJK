@@ -2,12 +2,11 @@
 // symbols. Encoding: record + reverse coding. Decoding: three symbol lookups (binary search, linear search, full
 // slot-to-symbol table). Times are the best of several runs over all messages of the trace.
 // Usage: netcodec_bench_rans <rans_trace.bin> [runs]
-#include "../tests/trace.h"
+#include "rans_trace.h"
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4244)   // in the original rans_byte.h, kept unchanged
+#pragma warning(push, 0)          // the original rans_byte.h, kept unchanged (system include for the other compilers)
 #endif
-#include "ryg/rans_byte.h"
+#include <rans_byte.h>
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -97,7 +96,7 @@ int main(int argc, char **argv) {
 				if (u.table == trace::kRaw) e.PutRaw(u.value, u.bits);
 				else rans::Put(e, t.tables[u.table], u.value);
 			}
-			acc += static_cast<uint32_t>(e.Finish(out));
+			acc += ToU32(e.Finish(out));
 		}
 		sink = sink + acc;
 	});

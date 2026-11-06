@@ -1,0 +1,100 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/../../build-netcodec/${presetName}"
+    },
+    {
+      "name": "windows",
+      "hidden": true,
+      "inherits": "base",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "linux",
+      "hidden": true,
+      "inherits": "base",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
+    },
+    { "name": "msvc-x64", "displayName": "MSVC x64 (Visual Studio 2026)", "inherits": "windows", "generator": "Visual Studio 18 2026", "architecture": "x64" },
+    { "name": "msvc-x86", "displayName": "MSVC x86 (Visual Studio 2026)", "inherits": "windows", "generator": "Visual Studio 18 2026", "architecture": "Win32" },
+    {
+      "name": "msvc-asan",
+      "displayName": "MSVC x64 with AddressSanitizer",
+      "inherits": "msvc-x64",
+      "cacheVariables": { "netcodec_ENABLE_SANITIZER_ADDRESS": "ON" }
+    },
+    {
+      "name": "mingw-clang",
+      "hidden": true,
+      "inherits": "windows",
+      "generator": "Ninja",
+      "cacheVariables": { "CMAKE_CXX_COMPILER": "clang++" }
+    },
+    { "name": "mingw-clang-release", "displayName": "clang (llvm-mingw) x64 Release", "inherits": "mingw-clang", "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "mingw-clang-debug", "displayName": "clang (llvm-mingw) x64 Debug", "inherits": "mingw-clang", "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
+    {
+      "name": "mingw-clang-asan",
+      "displayName": "clang (llvm-mingw) x64 with ASan + UBSan",
+      "inherits": "mingw-clang",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "netcodec_ENABLE_SANITIZER_ADDRESS": "ON", "netcodec_ENABLE_SANITIZER_UNDEFINED": "ON" }
+    },
+    {
+      "name": "mingw-clang-x86",
+      "displayName": "clang (llvm-mingw) x86 Release",
+      "inherits": "windows",
+      "generator": "Ninja",
+      "cacheVariables": { "CMAKE_CXX_COMPILER": "i686-w64-mingw32-clang++", "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "mingw-clang-tidy",
+      "displayName": "clang (llvm-mingw) x64 with clang-tidy",
+      "inherits": "mingw-clang",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "netcodec_ENABLE_CLANG_TIDY": "ON" }
+    },
+    { "name": "gcc-release", "displayName": "GCC x64 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "gcc-debug", "displayName": "GCC x64 Debug", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_BUILD_TYPE": "Debug" } },
+    {
+      "name": "gcc-asan",
+      "displayName": "GCC x64 with ASan + UBSan",
+      "inherits": "linux",
+      "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_BUILD_TYPE": "RelWithDebInfo", "netcodec_ENABLE_SANITIZER_ADDRESS": "ON", "netcodec_ENABLE_SANITIZER_UNDEFINED": "ON" }
+    },
+    { "name": "gcc-x86", "displayName": "GCC x86 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_CXX_FLAGS": "-m32", "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "clang-release", "displayName": "Clang x64 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "clang++", "CMAKE_BUILD_TYPE": "Release" } }
+  ],
+  "buildPresets": [
+    { "name": "msvc-x64-release", "configurePreset": "msvc-x64", "configuration": "Release" },
+    { "name": "msvc-x64-debug", "configurePreset": "msvc-x64", "configuration": "Debug" },
+    { "name": "msvc-x86-release", "configurePreset": "msvc-x86", "configuration": "Release" },
+    { "name": "msvc-asan", "configurePreset": "msvc-asan", "configuration": "RelWithDebInfo" },
+    { "name": "mingw-clang-release", "configurePreset": "mingw-clang-release" },
+    { "name": "mingw-clang-debug", "configurePreset": "mingw-clang-debug" },
+    { "name": "mingw-clang-asan", "configurePreset": "mingw-clang-asan" },
+    { "name": "mingw-clang-x86", "configurePreset": "mingw-clang-x86" },
+    { "name": "mingw-clang-tidy", "configurePreset": "mingw-clang-tidy" },
+    { "name": "gcc-release", "configurePreset": "gcc-release" },
+    { "name": "gcc-debug", "configurePreset": "gcc-debug" },
+    { "name": "gcc-asan", "configurePreset": "gcc-asan" },
+    { "name": "gcc-x86", "configurePreset": "gcc-x86" },
+    { "name": "clang-release", "configurePreset": "clang-release" }
+  ],
+  "testPresets": [
+    { "name": "msvc-x64-release", "configurePreset": "msvc-x64", "configuration": "Release", "output": { "verbosity": "verbose" } },
+    { "name": "msvc-x64-debug", "configurePreset": "msvc-x64", "configuration": "Debug", "output": { "verbosity": "verbose" } },
+    { "name": "msvc-x86-release", "configurePreset": "msvc-x86", "configuration": "Release", "output": { "verbosity": "verbose" } },
+    { "name": "msvc-asan", "configurePreset": "msvc-asan", "configuration": "RelWithDebInfo", "output": { "verbosity": "verbose" } },
+    { "name": "mingw-clang-release", "configurePreset": "mingw-clang-release", "output": { "verbosity": "verbose" } },
+    { "name": "mingw-clang-debug", "configurePreset": "mingw-clang-debug", "output": { "verbosity": "verbose" } },
+    { "name": "mingw-clang-asan", "configurePreset": "mingw-clang-asan", "output": { "verbosity": "verbose" } },
+    { "name": "mingw-clang-x86", "configurePreset": "mingw-clang-x86", "output": { "verbosity": "verbose" } },
+    { "name": "gcc-release", "configurePreset": "gcc-release", "output": { "verbosity": "verbose" } },
+    { "name": "gcc-debug", "configurePreset": "gcc-debug", "output": { "verbosity": "verbose" } },
+    { "name": "gcc-asan", "configurePreset": "gcc-asan", "output": { "verbosity": "verbose" } },
+    { "name": "gcc-x86", "configurePreset": "gcc-x86", "output": { "verbosity": "verbose" } },
+    { "name": "clang-release", "configurePreset": "clang-release", "output": { "verbosity": "verbose" } }
+  ]
+}

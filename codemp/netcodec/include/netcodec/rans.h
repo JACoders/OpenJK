@@ -14,9 +14,20 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <span>
+#include <type_traits>
 
 namespace netcodec {
+
+// size or count to uint32_t: a cast on 64-bit targets, none on 32-bit ones (where GCC calls the cast useless)
+template <class T> [[nodiscard]] constexpr uint32_t ToU32(T v) noexcept {
+	static_assert(std::is_unsigned_v<T>, "ToU32 takes unsigned values");
+	assert(v <= std::numeric_limits<uint32_t>::max());
+	if constexpr (std::is_same_v<T, uint32_t>) return v;
+	else return static_cast<uint32_t>(v);
+}
+
 namespace rans {
 
 constexpr uint32_t kProbBits = 15;
@@ -116,6 +127,7 @@ public:
 	}
 
 	[[nodiscard]] size_t Count() const noexcept { return n_; }
+	[[nodiscard]] bool Overflow() const noexcept { return overflow_; }   // the record buffer was too small
 
 private:
 	std::span<Op> ops_;
@@ -183,7 +195,7 @@ struct Table {
 	std::span<const EncSymbol> enc;                 // K entries
 	std::span<const uint16_t, kCoarseSize> coarse;
 
-	[[nodiscard]] uint32_t K() const noexcept { return static_cast<uint32_t>(enc.size()); }
+	[[nodiscard]] uint32_t K() const noexcept { return ToU32(enc.size()); }
 };
 
 // cum: K + 1 entries ending with kProbScale
