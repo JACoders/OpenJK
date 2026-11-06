@@ -2,6 +2,10 @@
 #include "field_codec.h"
 
 #include <algorithm>
+#include <array>
+#include <charconv>
+#include <string_view>
+#include <utility>
 
 namespace netcodec {
 
@@ -210,10 +214,172 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 	return true;
 }
 
+// ------------------------------------------------------------------ server commands
+// A command is coded against an earlier command with the same first token (verb) that the client holds: one sent
+// earlier in the same message, or one at most kCommandWindow sequence numbers back and not after the base's last
+// command. Then the difference of the token counts (tokens are separated by single spaces) and, per token, "same as
+// the reference token" or the new token: a difference with a numeric reference token, a number, or text. Without a
+// reference (distance 0) the command is sent as text. Text is coded byte by byte given the previous byte.
+constexpr int64_t kMaxTokens = 4096;           // decoder limit against malformed input
+
+// the tokens of a text, one after the other
+class Tokens {
+public:
+	explicit Tokens(std::string_view text) noexcept : rest_(text) {}
+
+	[[nodiscard]] static size_t Count(std::string_view text) noexcept {
+		return 1 + static_cast<size_t>(std::ranges::count(text, ' '));
+	}
+
+	// the next token (call at most Count() times)
+	[[nodiscard]] std::string_view Next() noexcept {
+		const size_t sp = std::min(rest_.find(' '), rest_.size());
+		std::string_view t = rest_;
+		t.remove_suffix(t.size() - sp);
+		rest_.remove_prefix(std::min(sp + 1, rest_.size()));
+		return t;
+	}
+
+private:
+	std::string_view rest_;
+};
+
+std::string_view Verb(std::string_view text) noexcept { return Tokens(text).Next(); }
+
+// a decimal integer in canonical form, so that printing it gives the token back: "0", or an optional '-' and 1 to
+// 18 digits without a leading zero
+bool ParseNumber(std::string_view t, int64_t &v) noexcept {
+	const bool neg = !t.empty() && t.front() == '-';
+	if (neg) t.remove_prefix(1);
+	if (t.empty() || t.size() > 18 || (t.front() == '0' && (t.size() > 1 || neg))) return false;
+	int64_t x = 0;
+	for (const char ch : t) {
+		if (ch < '0' || ch > '9') return false;
+		x = (x * 10) + (ch - '0');
+	}
+	v = neg ? -x : x;
+	return true;
+}
+
+// the text of command seq if the client holds it: earlier in this message, or in the history up to the base's last
+// command
+const std::string *HeldCommand(int64_t seq, std::span<const Op> before, int64_t known, const CommandHistory &history) {
+	for (const Op &op : before)
+		if (op.type == OpType::Command && op.seq == seq) return &op.text;
+	return seq <= known ? history.Find(seq) : nullptr;
+}
+
+// command text: bytes then a 0 terminator, each byte coded given the previous one
+template <class O> void PutCommandText(O &io, std::string_view text) {
+	uint32_t prev = 0;
+	for (const char ch : text) {
+		const auto b = static_cast<uint8_t>(ch);
+		io.Symbol(ctx::CommandText(prev), b);   // a 0 byte would end the text: commands hold none
+		prev = b;
+	}
+	io.Symbol(ctx::CommandText(prev), 0);
+}
+
+bool GetCommandText(In &io, std::string &text) {
+	uint32_t prev = 0;
+	for (uint32_t b = io.Symbol(ctx::CommandText(0)); b != 0; b = io.Symbol(ctx::CommandText(prev))) {
+		if (text.size() >= In::kMaxString) return false;
+		text.push_back(static_cast<char>(b));
+		prev = b;
+	}
+	return true;
+}
+
+uint32_t SameCtx(bool prevSame, bool refNumber) noexcept {
+	return Of(kCmdSame0) + (prevSame ? 0U : 1U) + (refNumber ? 0U : 2U);
+}
+
+template <class O>
+void PutCommand(O &io, const Op &op, std::span<const Op> before, int64_t known, const CommandHistory &history) {
+	const std::string_view verb = Verb(op.text);
+	const std::string *ref = nullptr;
+	int64_t dist = 0;
+	while (ref == nullptr && dist < kCommandWindow) {
+		dist++;
+		const std::string *t = HeldCommand(op.seq - dist, before, known, history);
+		if (t != nullptr && Verb(*t) == verb) ref = t;
+	}
+	if (ref == nullptr) {
+		io.Class(Of(kCmdRef), 0);
+		PutCommandText(io, op.text);
+		return;
+	}
+	io.Class(Of(kCmdRef), static_cast<uint64_t>(dist));
+	const size_t nn = Tokens::Count(op.text), nr = Tokens::Count(*ref);
+	io.Class(Of(kCmdTokens), Zz(static_cast<int64_t>(nn) - static_cast<int64_t>(nr)));
+	Tokens nt(op.text), rt(*ref);
+	bool prevSame = true;
+	for (size_t i = 0; i < nn; i++) {
+		const std::string_view tok = nt.Next();
+		int64_t rv = 0;
+		bool refNumber = false;
+		if (i < nr) {
+			const std::string_view rtok = rt.Next();
+			refNumber = ParseNumber(rtok, rv);
+			const bool same = tok == rtok;
+			io.Symbol(SameCtx(prevSame, refNumber), same ? 0 : 1);
+			prevSame = same;
+			if (same) continue;
+		}
+		int64_t v = 0;
+		const bool number = ParseNumber(tok, v);
+		io.Symbol(refNumber ? Of(kCmdKindRefNum) : Of(kCmdKindOther), number ? 0 : 1);
+		if (number && refNumber) io.Class(Of(kCmdNumDelta), Zz(v - rv));
+		else if (number) io.Class(Of(kCmdNum), Zz(v));
+		else PutCommandText(io, tok);
+	}
+}
+
+bool GetCommand(In &io, Op &op, std::span<const Op> before, int64_t known, const CommandHistory &history) {
+	op.text.clear();
+	const uint64_t dist = io.Class(Of(kCmdRef));
+	if (dist == 0) return GetCommandText(io, op.text);
+	if (dist > static_cast<uint64_t>(kCommandWindow)) return false;
+	const std::string *ref = HeldCommand(op.seq - static_cast<int64_t>(dist), before, known, history);
+	if (ref == nullptr) return false;
+	const size_t nr = Tokens::Count(*ref);
+	const int64_t n = static_cast<int64_t>(nr) + Unzz(io.Class(Of(kCmdTokens)));
+	if (n < 1 || n > kMaxTokens) return false;
+	Tokens rt(*ref);
+	bool prevSame = true;
+	std::array<char, 24> digits{};
+	for (int64_t i = 0; i < n; i++) {
+		if (i > 0) op.text.push_back(' ');
+		int64_t rv = 0;
+		bool refNumber = false;
+		if (std::cmp_less(i, nr)) {
+			const std::string_view rtok = rt.Next();
+			refNumber = ParseNumber(rtok, rv);
+			const bool same = io.Symbol(SameCtx(prevSame, refNumber)) == 0;
+			prevSame = same;
+			if (same) {
+				op.text.append(rtok);
+				continue;
+			}
+		}
+		if (io.Symbol(refNumber ? Of(kCmdKindRefNum) : Of(kCmdKindOther)) == 0) {
+			// unsigned addition: a malformed difference wraps around instead of overflowing
+			const uint64_t x = refNumber ? static_cast<uint64_t>(rv) + static_cast<uint64_t>(Unzz(io.Class(Of(kCmdNumDelta))))
+			                             : static_cast<uint64_t>(Unzz(io.Class(Of(kCmdNum))));
+			const auto res = std::to_chars(digits.data(), digits.data() + digits.size(), static_cast<int64_t>(x));
+			op.text.append(digits.data(), res.ptr);
+		} else if (!GetCommandText(io, op.text)) {
+			return false;
+		}
+		if (op.text.size() > In::kMaxString) return false;
+	}
+	return true;
+}
+
 // ------------------------------------------------------------------ messages
 template <class O>
-void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<Entity> &baselines, HeaderRecord &rec,
-                const Model &m) {
+void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+                const CommandHistory &history, HeaderRecord &rec, const Model &m) {
 	const HeaderRecord *bh = base.header;
 	io.Symbol(Of(kMDelta), base.delta);
 	PredCtx c;
@@ -221,6 +387,7 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 	c.olderSnap = bh != nullptr ? bh->older : nullptr;
 	io.Class(Of(kMAck), Zz(msg.ack - (bh != nullptr ? bh->ack : 0)));
 	int64_t lastcmd = bh != nullptr ? bh->cmdSeq : 0;
+	const int64_t known = lastcmd;         // the client holds every command up to this one
 	std::optional<int64_t> time;
 	uint32_t prev = 0;
 	const std::vector<Entity> *bl = &baselines;
@@ -233,7 +400,7 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 		case OpType::Command:
 			io.Class(Of(kMCmdSeq), Zz(op.seq - (lastcmd + 1)));
 			lastcmd = op.seq;
-			io.String(Of(kStrCmd), op.text);
+			PutCommand(io, op, std::span<const Op>(msg.ops.data(), static_cast<size_t>(&op - msg.ops.data())), known, history);
 			break;
 		case OpType::SetGame:
 			io.String(Of(kStrSetgame), op.text);
@@ -309,7 +476,8 @@ Op &NextOp(Message &msg, size_t &used) {
 	return op;
 }
 
-bool GetMessage(In &io, const BaseLookup &lookup, std::vector<Entity> &baselines, Message &msg, uint32_t &delta,
+bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history, std::vector<Entity> &baselines,
+                Message &msg, uint32_t &delta,
                 HeaderRecord &rec, const Model &m) {
 	delta = io.Symbol(Of(kMDelta));
 	const Snapshot *base = nullptr;
@@ -320,6 +488,7 @@ bool GetMessage(In &io, const BaseLookup &lookup, std::vector<Entity> &baselines
 	c.olderSnap = bh != nullptr ? bh->older : nullptr;
 	msg.ack = (bh != nullptr ? bh->ack : 0) + Unzz(io.Class(Of(kMAck)));
 	int64_t lastcmd = bh != nullptr ? bh->cmdSeq : 0;
+	const int64_t known = lastcmd;
 	std::optional<int64_t> time;
 	uint32_t prev = 0;
 	size_t used = 0;
@@ -336,7 +505,7 @@ bool GetMessage(In &io, const BaseLookup &lookup, std::vector<Entity> &baselines
 		case OpType::Command:
 			op.seq = lastcmd + 1 + Unzz(io.Class(Of(kMCmdSeq)));
 			lastcmd = op.seq;
-			if (!io.String(Of(kStrCmd), op.text)) return false;
+			if (!GetCommand(io, op, std::span<const Op>(msg.ops.data(), used - 1), known, history)) return false;
 			break;
 		case OpType::SetGame:
 			if (!io.String(Of(kStrSetgame), op.text)) return false;
@@ -412,7 +581,8 @@ constexpr auto kEntityOffsets = [] {
 std::span<const uint16_t> EntityFieldOffsets() noexcept { return detail::kEntityOffsets; }
 std::span<const uint16_t> PlayerFieldOffsets() noexcept { return detail::kPlayerAllOffsets; }
 
-bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vector<Entity> &baselines, size_t maxBytes,
+bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+                            const CommandHistory &history, size_t maxBytes,
                             std::vector<uint8_t> &out, HeaderRecord &record) {
 	const detail::Model &m = detail::Model::Get();
 	if (base.delta > 255 || (base.delta != 0) != (base.snap != nullptr)) return false;
@@ -420,7 +590,7 @@ bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vec
 	for (;;) {
 		rans::Encoder e(ops_);
 		detail::Out io(e, m);
-		detail::PutMessage(io, msg, base, baselines, record, m);
+		detail::PutMessage(io, msg, base, baselines, history, record, m);
 		if (e.Overflow()) {
 			ops_.resize(ops_.size() * 2);
 			continue;
@@ -434,24 +604,29 @@ bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vec
 }
 
 SymbolCounts NewSymbolCounts() {
-	SymbolCounts counts(detail::ctx::kCount);
-	for (uint32_t c = 0; c < detail::ctx::kCount; c++) counts[c].resize(detail::ctx::Alphabet(c));
+	SymbolCounts counts;
+	counts.symbols.resize(detail::ctx::kCount);
+	for (uint32_t c = 0; c < detail::ctx::kCount; c++) counts.symbols[c].resize(detail::ctx::Alphabet(c));
+	counts.rawBits.resize(detail::ctx::kCount);
 	return counts;
 }
 
-bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity> &baselines, HeaderRecord &record,
-                  SymbolCounts &counts) {
-	if (base.delta > 255 || (base.delta != 0) != (base.snap != nullptr) || counts.size() != detail::ctx::kCount) return false;
+bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+                  const CommandHistory &history, HeaderRecord &record, SymbolCounts &counts) {
+	if (base.delta > 255 || (base.delta != 0) != (base.snap != nullptr) || counts.symbols.size() != detail::ctx::kCount ||
+	    counts.rawBits.size() != detail::ctx::kCount)
+		return false;
 	detail::CountOut io(counts);
-	detail::PutMessage(io, msg, base, baselines, record, detail::Model::Get());
+	detail::PutMessage(io, msg, base, baselines, history, record, detail::Model::Get());
 	return !io.Bad();
 }
 
-bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup, std::vector<Entity> &baselines, Message &msg,
+bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup, const CommandHistory &history,
+                   std::vector<Entity> &baselines, Message &msg,
                    uint32_t &delta, HeaderRecord &record) {
 	const detail::Model &m = detail::Model::Get();
 	detail::In io(bytes, m);
-	return io.Ok() && detail::GetMessage(io, lookup, baselines, msg, delta, record, m);
+	return io.Ok() && detail::GetMessage(io, lookup, history, baselines, msg, delta, record, m);
 }
 
 } // namespace netcodec

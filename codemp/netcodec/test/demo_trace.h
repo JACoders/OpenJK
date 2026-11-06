@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -83,10 +84,28 @@ private:
 	bool ok_ = false;
 };
 
+// The server commands one side holds, by sequence number (tests and tools keep all of them).
+class CommandLog final : public CommandHistory {
+public:
+	void Add(const Message &m) {
+		for (const Op &op : m.ops)
+			if (op.type == OpType::Command) texts_[op.seq] = op.text;
+	}
+
+	[[nodiscard]] const std::string *Find(int64_t seq) const override {
+		const auto it = texts_.find(seq);
+		return it != texts_.end() ? &it->second : nullptr;
+	}
+
+private:
+	std::unordered_map<int64_t, std::string> texts_;
+};
+
 // The server side of a stream: for every message whose base the server still holds (a message whose base is
 // missing is skipped, as the server would not have sent it against that base), calls
-// code(message, base, baselines, record), which codes it and fills its header record. The stored snapshots point
-// into the stream, so the stream must outlive the loop. Returns the number of messages code() refused.
+// code(message, base, baselines, history, record), which codes it and fills its header record; history holds the
+// commands of the earlier messages. The stored snapshots point into the stream, so the stream must outlive the
+// loop. Returns the number of messages code() refused.
 template <class F> size_t ServerLoop(const DemoStream &s, F code) {
 	struct Stored {
 		const Snapshot *snap = nullptr;
@@ -94,18 +113,23 @@ template <class F> size_t ServerLoop(const DemoStream &s, F code) {
 	};
 	std::map<uint32_t, Stored> store;
 	std::vector<Entity> baselines;
+	CommandLog history;
 	size_t refused = 0;
 	for (const DemoMessage &m : s.messages) {
 		Base base;
 		base.delta = m.delta;
+		const auto it = m.delta != 0 ? store.find(m.seq - m.delta) : store.end();
+		if (m.delta != 0 && it == store.end()) {
+			history.Add(m.msg);
+			continue;
+		}
 		if (m.delta != 0) {
-			const auto it = store.find(m.seq - m.delta);
-			if (it == store.end()) continue;
 			base.snap = it->second.snap;
 			base.header = &it->second.header;
 		}
 		HeaderRecord rec;
-		if (!code(m, base, std::as_const(baselines), rec)) refused++;
+		if (!code(m, base, std::as_const(baselines), std::as_const(history), rec)) refused++;
+		history.Add(m.msg);
 		for (const Op &op : m.msg.ops)
 			if (op.type == OpType::GameState) baselines = op.gameState.baselines;
 		if (const Snapshot *sn = SnapshotOf(m.msg)) store[m.seq] = Stored{ .snap = sn, .header = rec };

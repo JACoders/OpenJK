@@ -76,22 +76,25 @@ void RoundTrip(const trace::DemoStream &s, const char *label, Totals &t) {
 	std::vector<uint8_t> out;
 	ClientStore client;
 	std::vector<Entity> clientBaselines;
+	trace::CommandLog clientHistory;
 	Message dm;
 	t.encodeFailures += trace::ServerLoop(s, [&](const trace::DemoMessage &m, const Base &base, const std::vector<Entity> &baselines,
-	                                             HeaderRecord &rec) {
+	                                             const CommandHistory &history, HeaderRecord &rec) {
 		t.messages++;
-		if (!enc.Encode(m.msg, base, baselines, 1 << 20, out, rec)) return false;
+		if (!enc.Encode(m.msg, base, baselines, history, 1 << 20, out, rec)) return false;
 		t.bytes += out.size();
 		uint32_t delta = 0;
 		HeaderRecord drec;
 		client.seq = m.seq;
-		const bool ok = DecodeMessage(out, client, clientBaselines, dm, delta, drec);
+		const bool ok = DecodeMessage(out, client, clientHistory, clientBaselines, dm, delta, drec);
 		if (!ok || delta != m.delta || !trace::SameMessage(dm, m.msg)) {
 			if (t.decodeFailures++ < 5)
 				std::fprintf(stderr, "round trip failure: %s %s seq %u%s\n", s.Meta(1).c_str(), label, m.seq, ok ? "" : " (decoder failed)");
 		}
-		if (ok)
+		if (ok) {
+			clientHistory.Add(dm);
 			if (const Snapshot *sn = trace::SnapshotOf(dm)) client.bySeq[m.seq] = ClientStore::Stored{ .snap = *sn, .header = drec };
+		}
 		if (m.seq > 255) client.bySeq.erase(client.bySeq.begin(), client.bySeq.lower_bound(m.seq - 255));
 		return true;
 	});

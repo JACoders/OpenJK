@@ -4,12 +4,12 @@
 // Messages with operations the legacy glue does not drive (gamestate, download, ...) only update the stores.
 //
 // Memory: the stores point into the loaded trace instead of copying snapshots. Every message is first coded and
-// decoded once by both codecs and checked (netcodec: same bytes as the Python reference, which the golden test
-// checks for decoding too; legacy: decoded fields equal to the recording), so the recorded snapshots are what each
-// side holds as bases.
+// decoded once by both codecs and checked (decoded fields equal to the recording), so the recorded snapshots are
+// what each side holds as bases. The trace's own coded bytes (an earlier format) are not used.
 // Usage: netcodec_bench_codec <codec_trace.bin> [passes]
-#include "codec_trace.h"
+#include "demo_trace.h"
 #include "legacy/legacy_codec.h"
+#include "message_compare.h"
 
 #include <algorithm>
 #include <chrono>
@@ -84,6 +84,7 @@ struct LegacyInput {
 struct Item {
 	const trace::CodecMessage *cm = nullptr;
 	Base base;                                          // netcodec, server side
+	std::vector<uint8_t> bytes;                         // netcodec
 	std::vector<Entity> *baselines = nullptr;           // not changed by the benchmarked messages (no gamestate)
 	const LegacyInput *legacyIn = nullptr;
 	const legacy::SnapshotView *legacyBase = nullptr;
@@ -94,6 +95,7 @@ struct Item {
 struct StreamRun {
 	std::vector<Item> items;                            // benchmarked messages
 	Store server, client;
+	trace::CommandLog serverHistory, clientHistory;
 	std::vector<std::unique_ptr<std::vector<Entity>>> baselineSets;
 	std::vector<std::unique_ptr<std::vector<EntityState>>> legacyBaselineImages;
 	std::vector<std::unique_ptr<std::vector<const uint8_t *>>> legacyBaselinePtrs;
@@ -184,14 +186,22 @@ int main(int argc, char **argv) {
 				it.legacyBase = lb != run->legacyBySeq.end() ? &lb->second->view.snap : nullptr;
 				bench = bench && it.legacyBase != nullptr;
 			}
-			// netcodec once: same bytes as Python, decodes
+			// netcodec once: encodes, decodes to the same message
 			HeaderRecord rec, drec;
-			if (!enc.Encode(cm.msg, it.base, *it.baselines, 1 << 20, out, rec) || out != cm.bytes) newBad++;
+			if (!enc.Encode(cm.msg, it.base, *it.baselines, run->serverHistory, 1 << 20, out, rec)) newBad++;
+			it.bytes = out;
+			run->serverHistory.Add(cm.msg);
 			Message dm;
 			uint32_t delta = 0;
 			run->client.seq = cm.seq;
 			std::vector<Entity> clientBaselines = *it.baselines;
-			if (!DecodeMessage(cm.bytes, run->client, clientBaselines, dm, delta, drec)) newBad++;
+			const bool decoded = DecodeMessage(it.bytes, run->client, run->clientHistory, clientBaselines, dm, delta, drec);
+			for (Op &op : dm.ops) {   // the number is not networked: set it as the engine glue will (and as the trace has it)
+				for (Entity &e : op.snap.entities) SetNumber(e.state, e.number);
+				for (Entity &e : op.gameState.baselines) SetNumber(e.state, e.number);
+			}
+			if (!decoded || delta != cm.delta || !trace::SameMessage(dm, cm.msg)) newBad++;
+			run->clientHistory.Add(dm);
 			// legacy once: encode, decode, compare with the recording
 			auto in = std::make_unique<LegacyInput>();
 			FillLegacyInput(cm.msg, static_cast<int>(cm.delta), *in);
@@ -202,7 +212,7 @@ int main(int argc, char **argv) {
 				const bool ok = n > 0 && legacy::Decode(it.legacyBytes.data(), n, it.legacyBase, it.legacyBaselines, scratch) &&
 				                (!sop || LegacyMatches(scratch, sop->snap));
 				if (!ok) { legacyBad++; bench = false; }
-				else { nBench++; bytesNew += cm.bytes.size(); bytesLegacy += it.legacyBytes.size(); }
+				else { nBench++; bytesNew += it.bytes.size(); bytesLegacy += it.legacyBytes.size(); }
 			}
 			for (const Op &op : cm.msg.ops)
 				if (op.type == OpType::GameState) addBaselines(op.gameState.baselines);
@@ -226,7 +236,7 @@ int main(int argc, char **argv) {
 		for (auto &r : runs)
 			for (const Item &it : r->items) {
 				HeaderRecord rec;
-				if (enc.Encode(it.cm->msg, it.base, *it.baselines, 1 << 20, out, rec)) acc += out.size();
+				if (enc.Encode(it.cm->msg, it.base, *it.baselines, r->serverHistory, 1 << 20, out, rec)) acc += out.size();
 			}
 		sink = sink + acc;
 	});
@@ -246,7 +256,7 @@ int main(int argc, char **argv) {
 				uint32_t delta = 0;
 				HeaderRecord drec;
 				r->client.seq = it.cm->seq;
-				if (DecodeMessage(it.cm->bytes, r->client, *it.baselines, dm, delta, drec)) acc += dm.ops.size();
+				if (DecodeMessage(it.bytes, r->client, r->clientHistory, *it.baselines, dm, delta, drec)) acc += dm.ops.size();
 			}
 		sink = sink + acc;
 	});

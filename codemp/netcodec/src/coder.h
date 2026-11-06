@@ -9,6 +9,7 @@
 
 #include <bit>
 #include <string>
+#include <string_view>
 
 namespace netcodec::detail {
 
@@ -22,7 +23,7 @@ public:
 	}
 
 	// bytes then a 0 terminator (a 0 byte inside cannot be coded)
-	void String(uint32_t ctx, const std::string &text) noexcept {
+	void String(uint32_t ctx, std::string_view text) noexcept {
 		for (const char ch : text) {
 			const auto b = static_cast<uint8_t>(ch);
 			if (b == 0) bad_ = true;
@@ -67,21 +68,24 @@ private:
 	const Model *m_;
 };
 
-// counts the symbols per context (counts[ctx] sized by the context's alphabet); raw bits are not counted
+// counts the symbols per context (symbols[ctx] sized by the context's alphabet), and the raw bits per context of the
+// symbol before them (every message starts with a symbol)
 class CountOut : public SymbolWriter<CountOut> {
 public:
 	explicit CountOut(SymbolCounts &counts) noexcept : counts_(&counts) {}
 
 	void Symbol(uint32_t ctx, uint64_t sym) noexcept {
-		std::vector<uint64_t> &c = (*counts_)[ctx];
+		std::vector<uint64_t> &c = counts_->symbols[ctx];
 		if (sym >= c.size()) { bad_ = true; return; }
 		c[static_cast<uint32_t>(sym)]++;   // below the alphabet size
+		last_ = ctx;
 	}
 
-	void Raw(uint64_t /*v*/, uint32_t /*n*/) noexcept {}
+	void Raw(uint64_t /*v*/, uint32_t n) noexcept { counts_->rawBits[last_] += n; }
 
 private:
 	SymbolCounts *counts_;
+	uint32_t last_ = 0;
 };
 
 class In {

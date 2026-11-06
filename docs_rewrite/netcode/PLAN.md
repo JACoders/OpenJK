@@ -106,6 +106,7 @@ Depends on: step 6.
 - Client: decode in `CL_ParseServerMessage` into `clSnapshot_t`, `cl.parseEntities` and `cl.entityBaselines`, with the validity rules of `CL_ParseSnapshot` (base valid, matching message number, entities not overwritten) and the `%` sanitation of strings.
 - Cover: bots (built but not sent), spectators, vehicles and pilots, downloads (UDP; HTTP downloads are separate), `svc_setgame`, `svc_mapchange`, and both demo systems: client demos and the server-side demos (`sv_autoDemo`, present in OpenJK) record the message stream, so the demo format changes with the protocol (old demos need the old reader or a converter; decide).
 - New protocol number; refuse a mismatch at the `connect` handshake. Out-of-band messages keep their own format.
+- Server commands are coded against earlier commands (step 6, part 2 B): server and client give the codec their command history (`CommandHistory`), and both keep the last 256 commands (the engine keeps 128 today, `MAX_RELIABLE_COMMANDS`).
 - Statistics cvars or commands: bytes per snapshot, symbols, escapes, base age.
 - Check: a normal game plays with no visible difference; `cg_showmiss` shows no new prediction misses; the statistics match step 5 within 5 %; client and server demos record and play back.
 
@@ -123,7 +124,7 @@ Depends on: step 7.
 Depends on: step 7. The options and the decision procedure are in [07](07-transport-study.md).
 
 - Acknowledgement record in every client packet (bitfield of the last 32 or more messages); the server uses the newest acknowledged snapshot as base.
-- Gamestate, server commands and client commands on a reliable path with its own fast resend, instead of the 1,000 ms gamestate resend wait; snapshots never wait behind reliable data.
+- Gamestate, server commands and client commands on a reliable path with its own fast resend, instead of the 1,000 ms gamestate resend wait; snapshots never wait behind reliable data. Measured on the held-out demos (step 6): every server command is sent 2.59 times on average (repeated in every message until acknowledged), about 60 % of the command bytes.
 - Client input: every `usercmd` not yet acknowledged is resent in each packet, up to a cap; removes `cl_packetdup`.
 - Snapshot history sized from the supported RTT; replaces the fixed `PACKET_BACKUP`.
 - Check: simulated loss, latency and jitter (as `sim_loss.py`, extended to burst loss and lost acknowledgements) and two-machine tests; 0 decode failures; base age equal to RTT / frame time plus at most one frame.

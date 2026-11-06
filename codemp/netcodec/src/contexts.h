@@ -6,7 +6,8 @@
 //    an empty alphabet;
 //  - index of the next changed field given the previous one: player, pilot and vehicle tables, then entities per class;
 //  - entity operation given the previous one; entity type changed and new type, per class of the base;
-//  - message operation given the previous one; the scalar contexts of the message (enum Scalar).
+//  - message operation given the previous one; the scalar contexts of the message (enum Scalar);
+//  - bytes of server command text given the previous byte (0 at the start of a text).
 #pragma once
 
 #include "schema.h"
@@ -21,13 +22,21 @@ inline constexpr uint32_t kOpAlphabet = 8;
 // the player-state tables, in the order of the pilot flag and the vehicle state
 inline constexpr std::array<std::span<const FieldDesc>, 3> kPlayerTables{ kPlayerFields, kPilotFields, kVehicleFields };
 
+// Server commands (see PutCommand): the distance to the reference command, the difference of the token counts, the
+// "same token" flag given the previous token's flag and whether the reference token is a number, the kind of a new
+// token given whether the reference token is a number, number differences and numbers (their text is coded with the
+// CommandText contexts).
 enum class Scalar : uint8_t {
 	kMDelta, kMAck, kMCmdSeq, kMRelSeq, kMNumCs, kMCsGap, kMClientNum, kMDlBlock, kMDlSize, kMDlLen, kDlByte, kHTime,
-	kHFlags, kHArea, kPsPilot, kStrCmd, kStrSetgame, kStrCs, kEntGap, kScalarCount
+	kHFlags, kHArea, kPsPilot, kStrSetgame, kStrCs, kEntGap,
+	kCmdRef, kCmdTokens, kCmdSame0, kCmdSame1, kCmdSame2, kCmdSame3, kCmdKindRefNum, kCmdKindOther, kCmdNumDelta, kCmdNum,
+	kScalarCount
 };
-// alphabets of the scalars: 36 for a class of a 64-bit value (zigzag differences), 256 for bytes
-inline constexpr std::array<uint16_t, static_cast<size_t>(Scalar::kScalarCount)> kScalarAlphabet{ 256, 36, 36, 36, 16, 16, 36, 20, 36, 20, 256, 36,
-                                                                     256, 256, 2, 256, 256, 256, 42 };
+// alphabets of the scalars: 36 for a class of a value below 2^35 (zigzag differences), 65 for any 64-bit value,
+// 256 for bytes
+inline constexpr std::array<uint16_t, static_cast<size_t>(Scalar::kScalarCount)> kScalarAlphabet{
+	256, 36, 36, 36, 16, 16, 36, 20, 36, 20, 256, 36, 256, 256, 2, 256, 256, 42,
+	8, 36, 2, 2, 2, 2, 2, 2, 65, 65 };
 
 inline constexpr uint32_t kEntityField = 0;
 inline constexpr uint32_t kPlayerField = kEntityField + (kNumEntityFields * kKinds);
@@ -41,7 +50,8 @@ inline constexpr uint32_t kTypeChanged = kEntityOp + 4;
 inline constexpr uint32_t kTypeValue = kTypeChanged + kEntityClassCount;
 inline constexpr uint32_t kOp = kTypeValue + kEntityClassCount;
 inline constexpr uint32_t kScalar = kOp + kOpAlphabet;
-inline constexpr uint32_t kCount = kScalar + static_cast<uint32_t>(Scalar::kScalarCount);
+inline constexpr uint32_t kCommandText = kScalar + static_cast<uint32_t>(Scalar::kScalarCount);
+inline constexpr uint32_t kCount = kCommandText + 256;
 
 // The contexts of one field: row[kind] is the context of that kind.
 struct Row {
@@ -55,6 +65,7 @@ struct Row {
 [[nodiscard]] constexpr uint32_t PlayerGap(uint32_t table) noexcept { return kPlayerGapStart[table]; }
 [[nodiscard]] constexpr uint32_t EntityGap(uint32_t cls) noexcept { return kEntityGap + (cls * kEntityGapAlphabet); }
 [[nodiscard]] constexpr uint32_t Of(Scalar s) noexcept { return kScalar + static_cast<uint32_t>(s); }
+[[nodiscard]] constexpr uint32_t CommandText(uint32_t previousByte) noexcept { return kCommandText + previousByte; }
 
 // alphabet of a field kind: absolute integers up to 8 bits directly, wider ones and differences by class (bit
 // length, 0 to the width, plus one for a sign); float kind, integral float classes (16), angle index differences (24),
@@ -105,7 +116,8 @@ struct Row {
 	if (c < kTypeValue) return 2;
 	if (c < kOp) return 256;
 	if (c < kScalar) return kOpAlphabet;
-	return c < kCount ? kScalarAlphabet[c - kScalar] : 0;
+	if (c < kCommandText) return kScalarAlphabet[c - kScalar];
+	return c < kCount ? 256 : 0;
 }
 
 } // namespace netcodec::detail::ctx

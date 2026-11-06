@@ -79,7 +79,7 @@ struct Message {
 struct HeaderRecord {
 	int64_t ack = 0;
 	std::optional<int64_t> time;           // set when the message had a snapshot
-	int64_t cmdSeq = 0;
+	int64_t cmdSeq = 0;                    // the client holds every server command up to this one
 	const Snapshot *older = nullptr;       // the snapshot this message was coded against (second-order prediction)
 };
 
@@ -90,13 +90,29 @@ struct Base {
 	const HeaderRecord *header = nullptr;
 };
 
+// The texts of the server commands, by sequence number, as each side holds them (the server for retransmission, the
+// client once received). A command is coded against an earlier one that the client is known to hold: in the same
+// message, or at most kCommandWindow sequence numbers back and not after the base's HeaderRecord::cmdSeq. Both sides
+// must keep at least the last 2 * kCommandWindow + 2 commands (retransmitted commands may run ahead of the window).
+inline constexpr int64_t kCommandWindow = 127;
+
+struct CommandHistory {
+	CommandHistory() = default;
+	CommandHistory(const CommandHistory &) = delete;
+	CommandHistory &operator=(const CommandHistory &) = delete;
+	CommandHistory(CommandHistory &&) = delete;
+	CommandHistory &operator=(CommandHistory &&) = delete;
+	virtual ~CommandHistory() = default;
+	[[nodiscard]] virtual const std::string *Find(int64_t seq) const = 0;   // nullptr if not held
+};
+
 class MessageEncoder {
 public:
 	// Codes msg against base; baselines: the entity baselines of the current gamestate (updated by a gamestate op
-	// inside the message for the ops after it). Returns false if a value is outside the model (a bug) or the output
-	// does not fit in maxBytes.
+	// inside the message for the ops after it); history: the server's commands. Returns false if a value is outside
+	// the model (a bug) or the output does not fit in maxBytes.
 	[[nodiscard]] bool Encode(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
-	                          size_t maxBytes, std::vector<uint8_t> &out, HeaderRecord &record);
+	                          const CommandHistory &history, size_t maxBytes, std::vector<uint8_t> &out, HeaderRecord &record);
 
 private:
 	std::vector<rans::Encoder::Op> ops_;   // record buffer of the rANS encoder, reused between messages
@@ -119,18 +135,22 @@ struct BaseLookup {
 [[nodiscard]] std::span<const uint16_t> EntityFieldOffsets() noexcept;
 [[nodiscard]] std::span<const uint16_t> PlayerFieldOffsets() noexcept;
 
-// Decodes one message. baselines: in, the current baselines; out, replaced if the message has a gamestate.
-// Returns false on malformed input (the message must then be dropped).
-[[nodiscard]] bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup,
+// Decodes one message. baselines: in, the current baselines; out, replaced if the message has a gamestate; history:
+// the commands the client holds. Returns false on malformed input (the message must then be dropped).
+[[nodiscard]] bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup, const CommandHistory &history,
                                  std::vector<Entity> &baselines, Message &msg, uint32_t &delta, HeaderRecord &record);
 
-// Training (tools). counts[ctx][symbol]: the symbols the encoder codes, per context; a context that is never coded
-// has no entry. CountMessage adds the symbols of one message (same arguments and result as Encode, no output).
-// Quantize turns the counts of one context into the frequencies of its table (freq.size() symbols).
-using SymbolCounts = std::vector<std::vector<uint64_t>>;
+// Training (tools). symbols[ctx][symbol]: the symbols the encoder codes, per context (a context that is never coded
+// has no entry); rawBits[ctx]: the raw bits coded right after a symbol of the context. CountMessage adds one message
+// (same arguments and result as Encode, no output). Quantize turns the counts of one context into the frequencies of
+// its table (freq.size() symbols).
+struct SymbolCounts {
+	std::vector<std::vector<uint64_t>> symbols;
+	std::vector<uint64_t> rawBits;
+};
 [[nodiscard]] SymbolCounts NewSymbolCounts();
 [[nodiscard]] bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
-                                HeaderRecord &record, SymbolCounts &counts);
+                                const CommandHistory &history, HeaderRecord &record, SymbolCounts &counts);
 void Quantize(std::span<const uint64_t> counts, std::span<uint16_t> freq) noexcept;
 
 } // namespace netcodec

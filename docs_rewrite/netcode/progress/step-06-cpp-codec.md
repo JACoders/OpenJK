@@ -1,6 +1,6 @@
 # Step 6: the codec library in C++
 
-Status: **in progress** (started 5 November 2026; last update 6 November 2026: first stage, part 1 of the second stage, part 2 A (data, trainer and size benchmark in C++) and the first fix of part 2 B (`-0.0`, round-trip test) done; next is B.2, the field index coding). Plan: [PLAN.md](../PLAN.md), step 6.
+Status: **in progress** (started 5 November 2026; last update 6 November 2026: first stage, part 1 of the second stage, part 2 A (data, trainer and size benchmark in C++) and in part 2 B the `-0.0` fix (round-trip test) and the coding of server commands against the commands the client holds; next by size: other float deltas). Plan: [PLAN.md](../PLAN.md), step 6.
 
 ## Decisions (owner, 5 November 2026)
 
@@ -174,6 +174,44 @@ The C++ is now the reference of the format (decision of 6 November 2026). The go
 | `netcodec_bench_codec` (two runs) | encode 3,444 and 3,572 ns against legacy 10,893 and 10,961 (0.32 and 0.33 of the legacy time; before 0.33 to 0.35); decode 3,373 and 3,339 against 4,132 and 4,060 (0.82, unchanged) |
 
 Lead for later, not done: a `.dm_26` reader in C++ on top of OpenJK's own `msg.cpp` (already built by the legacy benchmark) would remove the Python and the 1.8 GB of traces from the pipeline, and the demos would be decoded by the engine's own code.
+
+### Where the bytes go (6 November 2026, before B.2)
+
+`netcodec_train train.bin jka_tables.inc holdout.bin` reports the cost of the held-out messages with the trained tables (symbol entropy with the quantised tables, plus raw bits attributed to the context of the symbol before them). Held-out set, bytes per message (all messages, 107.4 real bytes per message on average):
+
+| part | symbols | raw bits | total | share | trained frequencies |
+|---|---|---|---|---|---|
+| entity field values | 14.13 | 37.78 | 51.91 | 48.9 % | 9,170 |
+| player-state field values | 3.71 | 10.32 | 14.03 | 13.2 % | 6,614 |
+| entity field indices | 4.95 | | 4.95 | 4.7 % | 67,431 |
+| player-state field indices | 1.88 | | 1.88 | 1.8 % | 38,899 |
+| entity numbers and operations | 2.98 | 0.68 | 3.65 | 3.4 % | 58 |
+| server commands | 26.57 | | 26.57 | 25.0 % | 256 |
+| config strings, setgame | 0.72 | | 0.72 | 0.7 % | 256 |
+| entity type, message operations, header and other scalars | 1.59 | 0.87 | 2.46 | 2.3 % | 2,068 |
+| total | | | 106.17 | | |
+
+Field values by kind (entities and player states): other float delta 21.49 (18.63 of it raw bits), position prediction 16.00, angle prediction 8.03, time prediction 5.61, integral float delta 5.21, integer absolute 3.47, integer delta 3.47, float kind 2.22, angle index delta 0.40.
+
+Findings:
+
+- The field indices (B.2) are 6.5 % of the bytes but 85 % of the stored frequencies: B.2 is mainly a table-size change. Coding the gap instead of the index with the same context (the previous field) is a relabelling of the symbols with the same entropy.
+- Server commands are a quarter of the bytes, coded byte by byte without context. On the held-out demos (tables from a quarter of the training demos, each reliable command counted once): order 0 (today) 0.540 bytes per text byte, order 1 (previous byte as context) 0.378, order 2 0.276, order 3 0.236. 87.7 % of the space-separated tokens equal the token at the same position in the previous command with the same verb. The commands are `tinfo` (team overlay, 56 % of the command bytes), `scores` (29 %), `kls` (7 %), `cs` (3 %), chat and prints.
+- Every command is sent 2.59 times on average on the held-out demos: the server repeats every unacknowledged command in every message until the client's acknowledgement comes back (one round trip). About 60 % of the command bytes are such repeats; the codec cannot remove them (a repeat is never against an acknowledged message), the transport can (plan step 9).
+- Other float deltas (velocities, `trDelta`, ...) are the second target: 21.5 bytes per message, mostly raw mantissa bits.
+
+### Server commands against the commands the client holds (done 6 November 2026, owner's choice before B.2)
+
+A command is coded against an earlier command with the same verb (first token) that the client is known to hold: one earlier in the same message, or one at most `kCommandWindow` (127) sequence numbers back and not after the base's last command (`HeaderRecord::cmdSeq`: the client acknowledged the base, so it holds every command up to it). The encoder takes the most recent such command and sends its distance (0: none); then the difference of the token counts and, per token (tokens separated by single spaces), a "same as the reference token" flag (context: previous flag, reference token numeric or not) or the new token: the difference with a numeric reference token, a number, or text (canonical decimal numbers only, so that printing the number gives the token back). Text (tokens, commands without a reference) is coded byte by byte with the previous byte as context (256 contexts). Interface: `Encode`, `DecodeMessage` and `CountMessage` take a `CommandHistory` (the texts by sequence number; the engine already keeps 128 on each side, the codec needs the last 256: retransmitted commands can run ahead of the window). `netcodec.codec_golden` (Python bytes) is removed; `bench_codec` checks its own round trip.
+
+| held-out set | before | commands against the history | + text with the previous byte |
+|---|---|---|---|
+| server commands, bytes per message (report) | 26.57 | 8.03 | 5.93 |
+| all messages but the gamestate, ratio to the engine | 0.483 | 0.400 | **0.391** |
+| snapshot-only messages | 69.0 bytes | unchanged | unchanged |
+| trained frequencies | 124,752 | 125,198 | 164,618 |
+
+Commands by context after the change (bytes per message): text bytes 3.60, number differences 1.00, "same" flags 0.76, reference distance 0.21, token counts 0.14, kinds 0.14, numbers 0.08. Training set ratio 0.393, captures 0.373. Round trip 0 failures (recorded and `-0.0` variants; clang x64 Release, Debug, ASan + UBSan, x86); trainer x86 and x64 identical; clang-tidy clean. Speed: the first version split the tokens into vectors (two allocations per command) and cost about 10 % more encoding time (0.37 to 0.38 of the legacy time, decode 0.83 to 0.84); with a token cursor and no allocation, encode 0.33 and decode 0.77 to 0.79 of the legacy time (two runs), as before the change. Owner's Debian 12 (`scripts/validate.sh`, all OK): GCC Release, Debug, ASan + UBSan, x86 and Clang 14 build and pass both tests; held-out 0.391 in Release and under ASan + UBSan; the x86 trainer writes the committed tables; `bench_codec` 0 mismatches, encode 2,937 and 3,153 ns against legacy 8,273 and 8,295 (0.36, 0.38; part 2 A: 0.35), decode 3,082 and 3,123 against 5,341 and 5,370 (0.58; part 2 A: 0.60). The first Windows run (`scripts/validate.bat`) passed every build and test; it showed 6,689 `bench_codec` mismatches, also present here: the benchmark sets `entityState_t::number` in the trace images for the legacy code and the new check compared whole images, while the codec does not send that field (it is not networked); the benchmark now sets it in the decoded images, as the engine glue will. Second Windows run, all OK: MSVC x64 Release and Debug, Win32, x64 with AddressSanitizer build and pass both tests; held-out 0.391 in Release and with AddressSanitizer; the Win32 trainer writes the committed tables; `bench_codec` 0 mismatches, encode 3,709 and 3,666 ns against legacy 9,916 and 9,901 (0.37, 0.37; part 2 A runs: 0.38, 0.35, 0.35), decode 3,359 and 3,308 against 4,270 and 4,271 (0.79, 0.77; part 2 A: 0.78, 0.79, 0.76). Within the spread seen so far, encoding perhaps slightly slower with MSVC; to watch in the next measurements.
 
 ### B. Format fixes, one at a time
 
