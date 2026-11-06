@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // the server sends of the player. So each is read from the replies: a line naming it, with on or off
 // (enabled, disabled...) in it, soon after you sent it at yourself, or one saying it's yours. While
 // any is on, a small line at the bottom of the screen says which: noclip: on | nodraw: off | ...
+// Following someone as a spectator it waits: what the server sends then is theirs.
 
 #include "client.h"
 
@@ -130,9 +131,16 @@ void CL_AdminFlags_Draw( void ) {
 	// the HUD hidden: the line with it
 	if ( AF_HudOff( "cg_draw2D" ) || AF_HudOff( "cg_drawStatus" ) )
 		return;
-	// noclip the server shows us anyway
-	if ( cl.snap.valid && cl.snap.ps.pm_type == PM_NOCLIP )
-		af.on[0] = qtrue;
+	if ( cl.snap.valid ) {
+		// following someone: what the server sends is theirs, and the line is about us
+		if ( ( cl.snap.ps.pm_flags & PMF_FOLLOW ) || cl.snap.ps.clientNum != clc.clientNum )
+			return;
+		// noclip the server shows us anyway, on or off (dead, in a vehicle... left as it was)
+		if ( cl.snap.ps.pm_type == PM_NOCLIP )
+			af.on[0] = qtrue;
+		else if ( cl.snap.ps.pm_type == PM_NORMAL )
+			af.on[0] = qfalse;
+	}
 	text[0] = '\0';
 	for ( int i = 0; i < AF_NUM; i++ ) {
 		if ( af.on[i] )

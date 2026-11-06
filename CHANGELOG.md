@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Fixed] `Admin flags line while spectating`. Following a player in noclip showed noclip on at the bottom as your own, and it stayed on after following someone else. The line now waits while you follow someone, and your noclip is read from the server both on and off, so it can't stick. Reported in /feedback #7.
 - [Fixed] `Console text the same size with supersampling`. With Vulkan's supersampling on, the console and the lines over the game came out half their size, the picture being drawn at twice the window's size. They're now sized to the window, as is a render resolution of its own (`r_renderScale`). Reported in /feedback #11.
 - [Fixed] `Custom emotes: the rotation rings no longer fold into each other`. With a bone turned (most of all pitched towards 90) the preview's Pitch, Yaw and Roll rings leaned into each other until they overlapped. They now stay square to each other, each one turns the bone round its own axis, and the three angles are worked out from that. Reported in /feedback #5.
 - [Added] `Renderer page: AO Strength`. Under Ambient Occlusion, Low, Medium or Strong: how dark it makes corners and creases (`r_ssaoIntensity` 0.3, 0.6 or 1). Medium is the default now; Strong is how it was.
