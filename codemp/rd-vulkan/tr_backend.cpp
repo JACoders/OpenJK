@@ -566,7 +566,6 @@ Used for cinematics.
 */
 void RE_StretchRaw ( int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty )
 {
-	int			i, j;
 	int			start, end;
 
 	if (!tr.registered) {
@@ -578,19 +577,8 @@ void RE_StretchRaw ( int x, int y, int w, int h, int cols, int rows, const byte 
 		start = ri.Milliseconds() * ri.Cvar_VariableValue("timescale");
 	}
 
-	// make sure rows and cols are powers of 2
-	for (i = 0; (1 << i) < cols; i++)
-	{
-		;
-	}
-	for (j = 0; (1 << j) < rows; j++)
-	{
-		;
-	}
-
-	if ((1 << i) != cols || (1 << j) != rows) {
-		Com_Error(ERR_DROP, "Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
-	}
+	// OpenJK-rpmod: any size, as in OpenGL: RoQs are powers of 2, mp4/webm cinematics whatever they
+	// were made at (1920x1080...), which a Vulkan image takes as it is
 
 	RE_UploadCinematic( cols, rows, (byte*)data, client, dirty );
 

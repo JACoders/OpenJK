@@ -6,7 +6,8 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
-- [Added] `Background audio`. `/s_backgroundAudio 1` keeps the game's sound playing with it minimized or another window in front, instead of turning it off until you come back (off by default).
+- [Fixed] `Vulkan: HD video cinematics`. An mp4, webm, mkv or mov cinematic of a size other than a power of 2 (1920x1080...) stopped the game with Vulkan: "Draw_StretchRaw: size not a power of 2". They play as with OpenGL now.
+- [Added] `Background audio`. **Background Audio** in Setup > Sound, or `/s_backgroundAudio 1`, keeps the game's sound playing with it minimized or another window in front, instead of turning it off until you come back (off by default).
 - [Fixed] `Cinematics out of sync after alt-tab`. A cinematic's sound (`/rpcinematic`, a RoQ or an HD video) was paused with the window out of focus, and fell behind its picture, beeping, once you came back. It keeps playing now while a cinematic plays, whatever the setting.
 - [Changed] `Renderer page: the effects under Post Effects`. With Vulkan, bloom, HDR, dithering, ambient occlusion and the second page's effects only work with Post Effects (`r_fbo`) on, so they show only then, under it; with it off they're out of the way, instead of seeming to do nothing.
 - [Fixed] `Vulkan: "vkWaitForFences returned VK_TIMEOUT"`. With a second game started next to it, two clients at once, the graphics card can be kept busy for a while, and after 10 seconds the game closed with this error. It waits now, saying so in the console, and gives up only after a minute. A window restored from the taskbar at the wrong moment could also leave the card waiting for good, with the same error; not any more.

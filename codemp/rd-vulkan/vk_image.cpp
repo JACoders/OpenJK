@@ -1530,6 +1530,10 @@ void RE_UploadCinematic( int cols, int rows, const byte *data, int client, qbool
 
     // if the scratchImage isn't in the format we want, specify it as a new texture
     if ( cols != image->width || rows != image->height )  {
+		// OpenJK-rpmod: the frames still drawing use the old image, which is destroyed here: a video
+		// of another size (a 1920x1080 mp4 after the 256x256 one made for it) could crash the driver
+		vk_wait_idle();
+
 		image->width = image->uploadWidth = cols;
 		image->height = image->uploadHeight = rows;
 

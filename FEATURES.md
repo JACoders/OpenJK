@@ -413,7 +413,7 @@ Your characters speak the galaxy's languages, and only understand the ones they 
 
 ## HD Video Cinematics
 
-`/rpcinematic` is no longer limited to RoQ files: it can play real videos, sound included.
+`/rpcinematic` is no longer limited to RoQ files: it can play real videos, sound included, with OpenGL or Vulkan.
 
 - Plays `video/<name>.mp4`, *.webm*, *.mkv* or *.mov* when one exists, and falls back to `<name>.roq` otherwise; the command doesn't change
 - Any resolution up to 2048 pixels wide, 1920x1080 included
@@ -651,7 +651,7 @@ Stay on a wall you grabbed while you chat.
 Keep hearing the game with it minimized or another window in front.
 
 - JKA turns its sound off while its window isn't the one in front, until you come back to it
-- `/s_backgroundAudio 1` keeps it playing (off by default)
+- **Background Audio** in Setup > Sound, under EAX, or `/s_backgroundAudio 1`, keeps it playing (off by default; the row hides while EAX is on)
 - While a cinematic with sound plays (`/rpcinematic`, a RoQ or an HD video), the sound always keeps playing, the setting on or off: paused, it fell behind the picture and beeped once you came back
 
 ## Console Settings

@@ -259,7 +259,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `cl_fighterTakeoffGuard 0` turns the fighter takeoff guard off
 - `+vehboost` fires a fighter's boost on its own key
 - `cl_crouch 1` keeps you crouched while on foot
-- `s_backgroundAudio 1` the sound keeps playing with the game minimized or another window in front; during a cinematic it always does
+- `s_backgroundAudio 1` the sound keeps playing with the game minimized or another window in front (Setup > Sound > Background Audio); during a cinematic it always does
 - `cl_ratioFix 1` turns the widescreen text fix on
 - `cl_saberStyles` holds the styles set with `/saberstyles`
 - `rpc_cinematics 0` keeps cinematics sent through RPMod from taking your camera

@@ -527,6 +527,35 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 		}
 	}
 
+	// Sound: Background Audio, the row under EAX, a copy of it; hidden while EAX is on, where the
+	// EAX picture goes
+	{
+		const rmItem_t *eax = RM_Item( items, "eax" );
+		const rmItem_t *quality = RM_Item( items, "sound_quality" );
+
+		if ( eax && quality ) {
+			std::string item = s.substr( eax->start, eax->end - eax->start );
+			const float eaxY = RM_RectY( item );
+			const float step = eaxY - RM_RectY( s.substr( quality->start, quality->end - quality->start ) );
+			const size_t hl = item.find( "highlight" );
+
+			if ( step > 0.0f && hl != std::string::npos ) {
+				const int high = atoi( item.c_str() + hl + 9 );
+
+				RM_SetValue( item, "name", "backgroundaudio" );
+				RM_SetValue( item, "text", RM_Quote( "Background Audio:" ) );
+				RM_SetValue( item, "cvar", RM_Quote( "s_backgroundAudio" ) );
+				RM_SetValue( item, "descText", RM_Quote( "Sound keeps playing with the game minimized or another window in front; cinematics always do" ) );
+				RM_ReplaceBlock( item, "cvarFloatList", "cvarFloatList { \"Off\" 0 \"On\" 1 }" );
+				RM_ReplaceBlock( item, "action", "action { play \"sound/interface/button1.wav\" }" );
+				RM_SetRectY( item, eaxY + step );
+				RM_ReplaceWord( item, va( "highlight%i", high ), va( "highlight%i", high + (int)( step / rowStep + 0.5f ) ) );
+				item.insert( item.rfind( '}' ), "cvarTest \"s_UseOpenAL\" hideCvar { 1 }\n" );
+				add += "\n" + item + "\n";
+			}
+		}
+	}
+
 	// the menu's own scripts: its other pages hide these two, and the restart applies them
 	RM_AfterCommand( s, "show", "video2", " hide " RM_GROUP " hide " RM_GROUP2 );
 	RM_AfterCommand( s, "hide", "video2", " hide " RM_GROUP " hide " RM_GROUP2 );
