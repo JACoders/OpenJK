@@ -714,7 +714,7 @@ Send a bug or an idea for the OpenJK-RPMod project, and read the answers, withou
 - `r_device` picks the graphics card when there's more than one
 - **Supersampling** (`r_ext_supersample 1`, needs `r_fbo 1`): the picture drawn at twice the width and height and scaled down to the window, smoothing every edge, for about four times the drawing. Screenshots come out at the larger size
 - Effects of its own, each off until turned on, all needing `r_fbo 1`; all but colour grading are on the RENDERER page too:
-  - **Ambient occlusion** (`r_ssao 1`): corners, creases and the ground under things darkened. `r_ssaoRadius` is how far it reaches (48 units), `r_ssaoIntensity` how dark (1)
+  - **Ambient occlusion** (`r_ssao 1`): corners, creases and the ground under things darkened. `r_ssaoRadius` is how far it reaches (48 units), `r_ssaoIntensity` how dark (1); the RENDERER page's **AO Strength** under it sets that: Low (0.3), Medium (0.6) or Strong (1, as it was)
   - **Soft particles** (`r_softParticles 1`): smoke, fire, sprites and other effects fade where they meet walls and floors instead of cutting into them with a hard line; `r_softParticlesDepth` is how far in front of a wall they start to fade (24). In fog too; not on the map's own surfaces
   - **FXAA** (`r_fxaa 1`): smooths edges over the finished picture, the edges of grass and fences too, which anti-aliasing misses
   - **Sharpening** (`r_sharpen`, 0 to 1): crisper detail, against the softness of FXAA or a lower `r_renderScale`

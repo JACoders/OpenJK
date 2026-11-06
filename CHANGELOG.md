@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Added] `Renderer page: AO Strength`. Under Ambient Occlusion, Low, Medium or Strong (as it was): how dark it makes corners and creases, for a picture that looks too dark with it on (`r_ssaoIntensity` 0.3, 0.6 or 1).
 - [Fixed] `Vulkan: HD video cinematics`. An mp4, webm, mkv or mov cinematic of a size other than a power of 2 (1920x1080...) stopped the game with Vulkan: "Draw_StretchRaw: size not a power of 2". They play as with OpenGL now.
 - [Added] `Background audio`. **Background Audio** in Setup > Sound, or `/s_backgroundAudio 1`, keeps the game's sound playing with it minimized or another window in front, instead of turning it off until you come back (off by default).
 - [Fixed] `Cinematics out of sync after alt-tab`. A cinematic's sound (`/rpcinematic`, a RoQ or an HD video) was paused with the window out of focus, and fell behind its picture, beeping, once you came back. It keeps playing now while a cinematic plays, whatever the setting.
