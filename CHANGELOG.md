@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Added] `Custom emotes: Copy this pose`. On the Animations tab, the frame shown of any skeleton's animation (a mod's .gla on the humanoid's bones, a cutscene's, or the humanoid's own) is copied into the custom emote as bones turned and moved, so those with this client but without that .gla see the pose too. A skeleton with no model of its own now shows its animations copied onto your model. The animation manager also lists every skeleton found, not the first 32. Asked for in /feedback #10.
 - [Changed] `Admin flags line off by default`. The noclip, nodraw, nonsolid and notarget line at the bottom shows only with `cl_adminFlags 1` now.
 - [Fixed] `Admin flags line while spectating`. Following a player in noclip showed noclip on at the bottom as your own, and it stayed on after following someone else. The line now waits while you follow someone, and your noclip is read from the server both on and off, so it can't stick. Reported in /feedback #7.
 - [Fixed] `Console text the same size with supersampling`. With Vulkan's supersampling on, the console and the lines over the game came out half their size, the picture being drawn at twice the window's size. They're now sized to the window, as is a render resolution of its own (`r_renderScale`). Reported in /feedback #11.

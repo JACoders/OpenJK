@@ -52,6 +52,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "ghoul2/G2.h"
+#include "qcommon/matcomp.h"
 #include "cl_widgets.h"
 
 #define AM_CMD				"animationmanager"
@@ -60,7 +61,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define AM_CUSTOM_EXT		".emote"
 #define AM_HUMANOID			"models/players/_humanoid/_humanoid"
 
-#define AM_MAX_SKELS		32
+#define AM_MAX_SKELS		256		// every .gla found counts, vehicles and props too
 #define AM_MAX_ANIMS		4096
 #define AM_MAX_SKEL_BONES	256
 #define AM_MAX_CHAINS		64
@@ -509,7 +510,10 @@ static void AM_ListSkels( void ) {
 	FS_ListFilesRecursive( "models", ".gla", AM_ListSkel, NULL );
 }
 
+static void AM_GlaFree( void );
+
 static void AM_FreeSkels( void ) {
+	AM_GlaFree();
 	for ( int i = 0; i < amNumSkels; i++ ) {
 		if ( amSkels[i].anims )
 			Z_Free( amSkels[i].anims );
@@ -1359,6 +1363,7 @@ static void AM_FreePreview( void ) {
 static void AM_Close( void ) {
 	if ( !am.open )
 		return;
+	AM_GlaFree();
 	am.open = qfalse;
 	am.focus = NULL;
 	am.dragging = am.scrubbing = qfalse;
@@ -2367,6 +2372,399 @@ static qboolean AM_Gizmo( const char *bone, float x, float y, float w, float h )
 	return qfalse;
 }
 
+/*
+===============================================================================
+
+A POSE COPIED FROM ANOTHER SKELETON
+
+===============================================================================
+*/
+
+// A frame of any skeleton's animation (a mod's .gla on the humanoid's bones, or the humanoid's own)
+// copied into a custom emote as turned and moved bones, so it shows for those without that .gla.
+// Where each bone is on a frame is worked out from the file, as Ghoul2 does: its parent's, times
+// its own for that frame. One turned and moved is its parent's, times its frame, times the turn
+// round its unposed place (base * turn * base inverse) with the move added; so for each bone, the
+// parent first, the turn and move that take the humanoid's, on the emote's animation, to where
+// the other frame has it. Bones with no match in the humanoid are left as they are.
+
+#define AM_POSE_MIN_DEG		0.5f	// turned less than this, and moved less than
+#define AM_POSE_MIN_MOVE	0.05f	// this, a bone's left alone
+
+static void AM_TidyBones( amCustom_t *c );
+
+typedef struct {
+	char		gla[MAX_QPATH];
+	byte		*buf;
+	int			len;
+	int			lastUsed;
+	int			numBones, numFrames;
+	int			ofsFrames, ofsPool;
+	int			parent[AM_MAX_SKEL_BONES];
+	char		name[AM_MAX_SKEL_BONES][MAX_QPATH];
+	mdxaBone_t	base[AM_MAX_SKEL_BONES], baseInv[AM_MAX_SKEL_BONES];
+	int			order[AM_MAX_SKEL_BONES];	// parents before their children
+} amGla_t;
+
+static amGla_t		amGlas[2];		// the humanoid's and the one copied from, kept while it's open
+static int			amGlaUse;
+static int			amPoseKey;		// the preview's copied pose made again when it changes
+
+static void AM_GlaFree( void ) {
+	for ( size_t i = 0; i < ARRAY_LEN( amGlas ); i++ ) {
+		if ( amGlas[i].buf )
+			FS_FreeFile( amGlas[i].buf );
+		memset( &amGlas[i], 0, sizeof( amGlas[i] ) );
+	}
+	amPoseKey++;
+}
+
+static qboolean AM_GlaRead( amGla_t *g, const char *gla ) {
+	const mdxaHeader_t *h;
+	const mdxaSkelOffsets_t *offsets;
+	int done[AM_MAX_SKEL_BONES], numDone = 0;
+
+	Q_strncpyz( g->gla, gla, sizeof( g->gla ) );
+	g->len = FS_ReadFile( va( "%s.gla", gla ), (void **)&g->buf );
+	if ( g->len < (int)sizeof( mdxaHeader_t ) || !g->buf )
+		return qfalse;
+	h = (const mdxaHeader_t *)g->buf;
+	g->numBones = LittleLong( h->numBones );
+	g->numFrames = LittleLong( h->numFrames );
+	g->ofsFrames = LittleLong( h->ofsFrames );
+	g->ofsPool = LittleLong( h->ofsCompBonePool );
+	if ( LittleLong( h->ident ) != MDXA_IDENT || LittleLong( h->version ) != MDXA_VERSION || g->numBones < 1
+		|| g->numBones > AM_MAX_SKEL_BONES || g->numFrames < 1 || (int)sizeof( *h ) + g->numBones * 4 > g->len
+		|| g->ofsFrames < 0 || g->ofsFrames + g->numFrames * g->numBones * 3 > g->len || g->ofsPool < 0 || g->ofsPool > g->len )
+		return qfalse;
+	offsets = (const mdxaSkelOffsets_t *)( g->buf + sizeof( *h ) );
+	for ( int i = 0; i < g->numBones; i++ ) {
+		const int ofs = (int)sizeof( *h ) + LittleLong( offsets->offsets[i] );
+		const mdxaSkel_t *bone;
+
+		if ( ofs < 0 || ofs > g->len - (int)sizeof( mdxaSkel_t ) )
+			return qfalse;
+		bone = (const mdxaSkel_t *)( g->buf + ofs );
+		Q_strncpyz( g->name[i], bone->name, sizeof( g->name[i] ) );
+		g->parent[i] = LittleLong( bone->parent );
+		if ( g->parent[i] < 0 || g->parent[i] >= g->numBones || g->parent[i] == i )
+			g->parent[i] = -1;
+		g->base[i] = bone->BasePoseMat;
+		g->baseInv[i] = bone->BasePoseMatInv;
+		done[i] = 0;
+	}
+	// parents first, whatever order the file has them in
+	while ( numDone < g->numBones ) {
+		const int before = numDone;
+
+		for ( int i = 0; i < g->numBones; i++ ) {
+			if ( !done[i] && ( g->parent[i] < 0 || done[g->parent[i]] ) ) {
+				done[i] = 1;
+				g->order[numDone++] = i;
+			}
+		}
+		if ( numDone == before )
+			return qfalse;	// round in a circle
+	}
+	return qtrue;
+}
+
+// a .gla read, or the one read already
+static const amGla_t *AM_Gla( const char *gla ) {
+	amGla_t *g = &amGlas[0];
+
+	for ( size_t i = 0; i < ARRAY_LEN( amGlas ); i++ ) {
+		if ( amGlas[i].buf && !Q_stricmp( amGlas[i].gla, gla ) ) {
+			amGlas[i].lastUsed = ++amGlaUse;
+			return &amGlas[i];
+		}
+		if ( amGlas[i].lastUsed < g->lastUsed )
+			g = &amGlas[i];
+	}
+	if ( g->buf )
+		FS_FreeFile( g->buf );
+	memset( g, 0, sizeof( *g ) );
+	g->lastUsed = ++amGlaUse;
+	if ( !AM_GlaRead( g, gla ) ) {
+		if ( g->buf )
+			FS_FreeFile( g->buf );
+		g->buf = NULL;
+		return NULL;
+	}
+	return g;
+}
+
+static void AM_MatIdentity( mdxaBone_t *m ) {
+	memset( m, 0, sizeof( *m ) );
+	m->matrix[0][0] = m->matrix[1][1] = m->matrix[2][2] = 1.0f;
+}
+
+// out = a * b, as Ghoul2 puts them together
+static void AM_MatMul( const mdxaBone_t *a, const mdxaBone_t *b, mdxaBone_t *out ) {
+	mdxaBone_t t;
+
+	for ( int i = 0; i < 3; i++ ) {
+		for ( int j = 0; j < 4; j++ )
+			t.matrix[i][j] = a->matrix[i][0] * b->matrix[0][j] + a->matrix[i][1] * b->matrix[1][j] + a->matrix[i][2] * b->matrix[2][j];
+		t.matrix[i][3] += a->matrix[i][3];
+	}
+	*out = t;
+}
+
+static void AM_MatInverse( const mdxaBone_t *m, mdxaBone_t *out ) {
+	const float ( *a )[4] = m->matrix;
+	float det, c[3][3];
+	mdxaBone_t t;
+
+	c[0][0] = a[1][1] * a[2][2] - a[1][2] * a[2][1];
+	c[0][1] = a[0][2] * a[2][1] - a[0][1] * a[2][2];
+	c[0][2] = a[0][1] * a[1][2] - a[0][2] * a[1][1];
+	c[1][0] = a[1][2] * a[2][0] - a[1][0] * a[2][2];
+	c[1][1] = a[0][0] * a[2][2] - a[0][2] * a[2][0];
+	c[1][2] = a[0][2] * a[1][0] - a[0][0] * a[1][2];
+	c[2][0] = a[1][0] * a[2][1] - a[1][1] * a[2][0];
+	c[2][1] = a[0][1] * a[2][0] - a[0][0] * a[2][1];
+	c[2][2] = a[0][0] * a[1][1] - a[0][1] * a[1][0];
+	det = a[0][0] * c[0][0] + a[0][1] * c[1][0] + a[0][2] * c[2][0];
+	if ( fabsf( det ) < 1e-8f ) {
+		AM_MatIdentity( out );
+		return;
+	}
+	for ( int i = 0; i < 3; i++ ) {
+		for ( int j = 0; j < 3; j++ )
+			t.matrix[i][j] = c[i][j] / det;
+		t.matrix[i][3] = -( t.matrix[i][0] * a[0][3] + t.matrix[i][1] * a[1][3] + t.matrix[i][2] * a[2][3] );
+	}
+	*out = t;
+}
+
+// a bone on a frame, against its parent
+static qboolean AM_GlaBone( const amGla_t *g, int frame, int bone, mdxaBone_t *out ) {
+	const byte *index = g->buf + g->ofsFrames + ( frame * g->numBones + bone ) * 3;
+	const int ofs = g->ofsPool + ( index[0] | ( index[1] << 8 ) | ( index[2] << 16 ) ) * (int)sizeof( mdxaCompQuatBone_t );
+
+	if ( ofs < 0 || ofs > g->len - (int)sizeof( mdxaCompQuatBone_t ) )
+		return qfalse;
+	MC_UnCompressQuat( out->matrix, ( (const mdxaCompQuatBone_t *)( g->buf + ofs ) )->Comp );
+	return qtrue;
+}
+
+// the turn and move that take a bone, on its frame (local) under its parent where it is (parent),
+// to where it's to be; *out the matrix they make, as rounded. How far it's turned, in degrees
+static float AM_PoseBone( const amGla_t *g, int bone, const mdxaBone_t *local, const mdxaBone_t *parent,
+	const mdxaBone_t *to, vec3_t twist, vec3_t offset, mdxaBone_t *out ) {
+	mdxaBone_t inv, o, r;
+	matrix3_t axis;
+	float cosine;
+
+	// o = local^-1 * parent^-1 * to; and o's turn round the unposed bone, base^-1 * o * base
+	AM_MatInverse( parent, &inv );
+	AM_MatMul( &inv, to, &o );
+	AM_MatInverse( local, &inv );
+	AM_MatMul( &inv, &o, &o );
+	AM_MatMul( &g->baseInv[bone], &o, &r );
+	AM_MatMul( &r, &g->base[bone], &r );
+	for ( int i = 0; i < 3; i++ )
+		for ( int j = 0; j < 3; j++ )
+			axis[j][i] = r.matrix[i][j];
+	AM_AxisAngles( axis, twist );
+	for ( int k = 0; k < 3; k++ ) {
+		twist[k] = floorf( twist[k] * 10.0f + 0.5f ) / 10.0f + 0.0f;
+		if ( twist[k] > 180.0f )
+			twist[k] -= 360.0f;
+		else if ( twist[k] < -180.0f )
+			twist[k] += 360.0f;
+	}
+	// the turn as Ghoul2 will make it, and what's left over of the move
+	AnglesToAxis( twist, axis );
+	memset( &r, 0, sizeof( r ) );
+	for ( int i = 0; i < 3; i++ )
+		for ( int j = 0; j < 3; j++ )
+			r.matrix[i][j] = axis[j][i];
+	AM_MatMul( &g->base[bone], &r, out );
+	AM_MatMul( out, &g->baseInv[bone], out );
+	for ( int i = 0; i < 3; i++ ) {
+		offset[i] = floorf( ( o.matrix[i][3] - out->matrix[i][3] ) * 100.0f + 0.5f ) / 100.0f + 0.0f;
+		out->matrix[i][3] += offset[i];
+	}
+	cosine = ( axis[0][0] + axis[1][1] + axis[2][2] - 1.0f ) * 0.5f;
+	return RAD2DEG( acosf( Com_Clamp( -1.0f, 1.0f, cosine ) ) );
+}
+
+// c's bones set so that the humanoid, on the first frame of c's animation (BOTH_STAND1 when it
+// has none), takes the pose of that frame of anim, on skel; it's then held on that frame. How many
+// bones it took, or -1 with *why
+static int AM_CopyPose( amCustom_t *c, int skel, const amAnim_t *anim, int frame, const char **why ) {
+	static mdxaBone_t srcPose[AM_MAX_SKEL_BONES], local[AM_MAX_SKEL_BONES], to[AM_MAX_SKEL_BONES], got[AM_MAX_SKEL_BONES];
+	int map[AM_MAX_SKEL_BONES], matched = 0, numPicked = 0, srcFrame, humFrame;
+	float score[AM_MAX_SKEL_BONES];
+	qboolean picked[AM_MAX_SKEL_BONES];
+	const int humSkel = AM_Skel( AM_HUMANOID );
+	const amGla_t *hum, *src;
+	const amAnim_t *base;
+	mdxaBone_t ident, o;
+	vec3_t twist, offset;
+
+	*why = NULL;
+	if ( humSkel < 0 || skel < 0 || skel >= amNumSkels || !anim ) {
+		*why = "Nothing to copy";
+		return -1;
+	}
+	if ( !c->anim[0] )
+		Q_strncpyz( c->anim, "BOTH_STAND1", sizeof( c->anim ) );
+	base = AM_FindAnim( humSkel, c->anim );
+	if ( !base ) {
+		*why = "The emote's animation isn't one of the humanoid's";
+		return -1;
+	}
+	hum = AM_Gla( amSkels[humSkel].gla );
+	src = hum && skel != humSkel ? AM_Gla( amSkels[skel].gla ) : hum;
+	if ( !hum || !src ) {
+		*why = "Couldn't read the skeleton's .gla";
+		return -1;
+	}
+	srcFrame = anim->first + Com_Clampi( 0, Q_max( 0, anim->num - 1 ), frame );
+	humFrame = base->first + Com_Clampi( 0, Q_max( 0, base->num - 1 ), AM_CustomFrom( c ) );
+	if ( srcFrame < 0 || srcFrame >= src->numFrames || humFrame < 0 || humFrame >= hum->numFrames ) {
+		*why = "That frame isn't in the .gla";
+		return -1;
+	}
+	AM_MatIdentity( &ident );
+
+	// the other skeleton on its frame
+	for ( int k = 0; k < src->numBones; k++ ) {
+		const int b = src->order[k], p = src->parent[b];
+
+		if ( !AM_GlaBone( src, srcFrame, b, &srcPose[b] ) ) {
+			*why = "The .gla is damaged";
+			return -1;
+		}
+		if ( p >= 0 )
+			AM_MatMul( &srcPose[p], &srcPose[b], &srcPose[b] );
+	}
+	// the humanoid's bones in it, by name
+	for ( int b = 0; b < hum->numBones; b++ ) {
+		map[b] = -1;
+		for ( int s = 0; s < src->numBones; s++ ) {
+			if ( !Q_stricmp( hum->name[b], src->name[s] ) ) {
+				map[b] = s;
+				matched++;
+				break;
+			}
+		}
+		if ( !AM_GlaBone( hum, humFrame, b, &local[b] ) ) {
+			*why = "The humanoid's .gla is damaged";
+			return -1;
+		}
+	}
+	if ( matched * 2 < hum->numBones ) {
+		*why = "Its bones aren't the humanoid's";
+		return -1;
+	}
+	// where each is to be: where the other has it, through each one's unposed place; one with no
+	// match goes along with its parent
+	for ( int k = 0; k < hum->numBones; k++ ) {
+		const int b = hum->order[k], p = hum->parent[b], s = map[b];
+
+		if ( s >= 0 ) {
+			AM_MatMul( &srcPose[s], &src->base[s], &to[b] );
+			AM_MatMul( &to[b], &hum->baseInv[b], &to[b] );
+		} else
+			AM_MatMul( p >= 0 ? &to[p] : &ident, &local[b], &to[b] );
+	}
+	// how far each is from it, its parent there, and the most turned or moved ones picked
+	for ( int b = 0; b < hum->numBones; b++ ) {
+		const int p = hum->parent[b];
+
+		score[b] = 0.0f;
+		picked[b] = qfalse;
+		if ( map[b] < 0 )
+			continue;
+		score[b] = AM_PoseBone( hum, b, &local[b], p >= 0 ? &to[p] : &ident, &to[b], twist, offset, &o );
+		if ( score[b] < AM_POSE_MIN_DEG && VectorLength( offset ) < AM_POSE_MIN_MOVE )
+			score[b] = 0.0f;
+		else
+			score[b] += VectorLength( offset ) + 0.001f;
+	}
+	while ( numPicked < AM_MAX_CBONES ) {
+		int best = -1;
+
+		for ( int b = 0; b < hum->numBones; b++ ) {
+			if ( !picked[b] && score[b] > 0.0f && ( best < 0 || score[b] > score[best] ) )
+				best = b;
+		}
+		if ( best < 0 )
+			break;
+		picked[best] = qtrue;
+		numPicked++;
+	}
+	// again, each from where its parent did get to, so what one's rounding or leaving out did is
+	// made up below it
+	c->numBones = 0;
+	for ( int k = 0; k < hum->numBones; k++ ) {
+		const int b = hum->order[k], p = hum->parent[b];
+		const mdxaBone_t *parent = p >= 0 ? &got[p] : &ident;
+		amCBone_t *cb;
+
+		if ( !picked[b] ) {
+			AM_MatMul( parent, &local[b], &got[b] );
+			continue;
+		}
+		AM_PoseBone( hum, b, &local[b], parent, &to[b], twist, offset, &o );
+		AM_MatMul( parent, &local[b], &got[b] );
+		AM_MatMul( &got[b], &o, &got[b] );
+		cb = &c->bones[c->numBones++];
+		memset( cb, 0, sizeof( *cb ) );
+		Q_strncpyz( cb->bone, hum->name[b], sizeof( cb->bone ) );
+		for ( int i = 0; i < 3; i++ ) {
+			if ( twist[i] != 0.0f )
+				Com_sprintf( cb->twist[i], sizeof( cb->twist[i] ), "%g", twist[i] );
+			if ( VectorLength( offset ) >= AM_POSE_MIN_MOVE && offset[i] != 0.0f )
+				Com_sprintf( cb->offset[i], sizeof( cb->offset[i] ), "%g", offset[i] );
+		}
+	}
+	AM_TidyBones( c );
+	// held on the frame it was worked out on
+	Com_sprintf( c->to, sizeof( c->to ), "%i", AM_CustomFrom( c ) );
+	return c->numBones;
+}
+
+// a skeleton with a model of its own to show it on
+static qboolean AM_SkelHasModel( int skel ) {
+	static char lastGla[MAX_QPATH];
+	static qboolean has;
+
+	if ( Q_stricmp( lastGla, amSkels[skel].gla ) ) {
+		char glm[MAX_QPATH], skin[MAX_QPATH];
+
+		Q_strncpyz( lastGla, amSkels[skel].gla, sizeof( lastGla ) );
+		AM_PreviewModel( skel, glm, sizeof( glm ), skin, sizeof( skin ) );
+		has = (qboolean)( glm[0] && FS_ReadFile( glm, NULL ) > 0 );
+	}
+	return has;
+}
+
+// the preview of another skeleton's animation, with no model of its own: the frame shown copied
+// onto the humanoid, as Copy pose would make it; NULL if it can't be
+static const amCustom_t *AM_PreviewPose( int skel, const amAnim_t *a, int frame ) {
+	static amCustom_t pose;
+	static int lastKey = -1, lastSkel = -1, lastFrame = -1;
+	static const amAnim_t *lastAnim;
+	static qboolean ok;
+
+	if ( lastKey != amPoseKey || lastSkel != skel || lastAnim != a || lastFrame != frame ) {
+		const char *why;
+
+		lastKey = amPoseKey;
+		lastSkel = skel;
+		lastAnim = a;
+		lastFrame = frame;
+		memset( &pose, 0, sizeof( pose ) );
+		ok = (qboolean)( AM_CopyPose( &pose, skel, a, frame, &why ) >= 0 );
+	}
+	return ok ? &pose : NULL;
+}
+
 // what the preview plays, set each frame by the tab: one animation, or a custom emote
 typedef struct {
 	int				skel;
@@ -2379,6 +2777,7 @@ typedef struct {
 static void AM_DrawPreview( const amShow_t *show ) {
 	const float x = AM_PV_X, y = AM_PV_Y, w = AM_PV_W, h = AM_PV_H;
 	const amAnim_t *a = show->anim;
+	const amCustom_t *posed;
 	float lengthMs = 0.0f, speed = 1.0f;
 	qboolean loop = qfalse;
 	int last = 0;
@@ -2407,11 +2806,22 @@ static void AM_DrawPreview( const amShow_t *show ) {
 			am.ms = 0.0f;
 	}
 
-	AM_UpdatePreview( show->skel );
+	// another skeleton's animation with no model of its own: the frame shown copied onto the humanoid
+	posed = NULL;
+	if ( !show->custom && a ) {
+		am.frame = AM_Frame( a, 0, -1, speed, loop, Q_min( am.ms, lengthMs ), &last );
+		if ( show->skel != AM_Skel( AM_HUMANOID ) && !AM_SkelHasModel( show->skel ) )
+			posed = AM_PreviewPose( show->skel, a, (int)am.frame - a->first );
+	}
+
+	AM_UpdatePreview( posed ? AM_Skel( AM_HUMANOID ) : show->skel );
 	if ( !am.g2 || !a ) {
 		AM_TextClipped( x + 8, y + h * 0.5f - 6, w - 16, am.g2Error ? am.g2Error : show->custom ? "Pick its animation" : "Pick an animation", amDim );
 	} else {
-		if ( show->custom ) {
+		if ( posed ) {
+			AM_ResetPreviewBones( AM_Skel( AM_HUMANOID ) );
+			AM_ApplyCustom( *am.g2, AM_Skel( AM_HUMANOID ), posed, 0.0f );
+		} else if ( show->custom ) {
 			AM_ResetPreviewBones( show->skel );
 			AM_ApplyCustom( *am.g2, show->skel, show->custom, Q_min( am.ms, lengthMs ) );
 			am.frame = AM_Frame( a, AM_CustomFrom( show->custom ), AM_CustomTo( show->custom ), speed, loop, Q_min( am.ms, lengthMs ), &last );
@@ -2444,6 +2854,8 @@ static void AM_DrawPreview( const amShow_t *show ) {
 	}
 	if ( show->caption )
 		AM_TextClipped( x + 4, y + 3, w - 8, show->caption, amDim );
+	if ( posed && am.g2 )
+		AM_TextClipped( x + 4, y + h - 14, w - 8, "Copied onto your model", amDim );
 
 	// under it: play or pause, a frame back or on, the frame dragged to
 	{
@@ -2670,6 +3082,26 @@ static void AM_DrawAnimsTab( amShow_t *show ) {
 				am.tab = AM_TAB_CUSTOM;
 				am.ms = 0.0f;
 				AM_Message( va( "The custom emote plays %s", a->name ) );
+			}
+			y += AM_CTRL_H + 4;
+			// the frame shown, as bones turned on the custom emote's animation: it shows for those
+			// without this skeleton too
+			if ( AM_Button( x, y, w, "Copy this pose to it", qfalse, qtrue ) ) {
+				const int frame = (int)am.frame - a->first;
+				const char *why;
+				amCustom_t c = am.custom;
+				int n;
+
+				n = AM_CopyPose( &c, am.skel, a, frame, &why );
+				if ( n < 0 )
+					AM_Message( va( S_COLOR_YELLOW "Can't copy it: %s", why ) );
+				else {
+					am.custom = c;
+					am.tab = AM_TAB_CUSTOM;
+					am.ms = 0.0f;
+					AM_Message( va( "Frame %i of %s copied: %i bones turned on %s, held on its frame %i", frame, a->name, n,
+						am.custom.anim, AM_CustomFrom( &am.custom ) ) );
+				}
 			}
 			y += AM_CTRL_H + 10;
 			AM_TextClipped( x, y, w, "Orange lengths loop.", amDim );
