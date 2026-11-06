@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Changed] `In-game menu: TOOLS in FEEDBACK's place`. Its panel lists every tool this client adds, Feedback with them, five a page with Back and Next, each with what it does and its command, and opens the one clicked.
 - [Added] `Asset manager`. `/assetmanager` lists what's on the map (rpmodels, rpeffects, looping rpsounds, overlays and remapped shaders) and the pk3 each comes from, custom or the base game's, and packs the custom ones into a new pk3 in `assetpacks/` with what they need: shaders, textures, LODs, skins, skeletons, an effect's models and sounds.
 - [Added] `Skin select`. `/skinselect` shows every skin of your model as a card, worn in a click; a model made of head, torso and legs parts gets a card to put them together a part at a time. **All models** shows every model installed, worn as it is or opened for its skins. Asked for in /feedback #15.
 - [Added] `Presets: favorites, search and more pages`. A star makes a preset a favorite, **Favorites** shows only those, a search box finds them by name, model or saber, and there's room for 256, with first and last page buttons.

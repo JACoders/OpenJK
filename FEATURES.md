@@ -506,7 +506,7 @@ Your Discord profile shows what you're playing: "Playing ::JEDI::", the server (
 ## In-game Menu and Camera Settings
 
 - The in-game menu (Esc) has no Vote, Call Vote or Add Bot, and a **PRESETS** button between Profile and Controls
-- **FEEDBACK** between Quick Connect and Exit opens [Feedback](#feedback)
+- **TOOLS** between Quick Connect and Exit opens a panel of every tool this client adds, in the menu's own look, five a page with **Back** and **Next**: the Model, NPC, Effect, Shader, Sound, Music, Animation and Asset managers, the Map Editor, the Storyteller, the Cinematic Manager, Presets, Skin Select, Languages, Radial Menus, Console Settings and [Feedback](#feedback). Each says what it does and its command; clicked, the menu closes and the tool opens. Esc puts the panel away
 - **QUICK CONNECT** after Setup: JEDI Temple, Grounds, Region and Galaxy, each with its address and its map and players as the server says now (asked when it opens, or **Refresh**); click one, or its **Connect**, to go there
 - **Admin flags** (`cl_adminFlags 1`, off by default): when noclip, nodraw, nonsolid or notarget is turned on for you, a small line at the bottom says which are on (green) and off (red), until they're all off. They're read from the commands' replies (noclip from the game too); it hides with the HUD (`cg_draw2D 0`, `cg_drawStatus 0`), `/adminflags` lists them, `/adminflags reset` takes them all as off
 - **Setup > Game Options > Camera Settings** on shows the third person camera's settings beside the in-game menu: third person on or off, distance, angle around you, height, side, tilt, how closely it follows your aim, see-through, field of view and the HUD, and **Defaults**. While it's on, the camera keeps right behind you (`cg_thirdPersonCameraDamp 1`), so it never swings round as you turn. They're the game's own settings (`cg_thirdPerson...`, `cg_fov`)
@@ -723,7 +723,7 @@ Know when there's a newer OpenJK-rpmod.
 
 Send a bug or an idea for the OpenJK-RPMod project, and read the answers, without leaving the game. Not every idea will be in RPMod itself.
 
-- **FEEDBACK** in the in-game menu (Esc), between Quick Connect and Exit, or `/feedback`, opens the window; `/feedback` works from the main menu too
+- **Feedback** in the in-game menu's **TOOLS** (Esc), or `/feedback`, opens the window; `/feedback` works from the main menu too
 - **New report**: a bug or an idea, a title, and what happened (what you did, what happened and what you expected) or what the idea is. The game's version, renderer, map and server go with it, shown under the text before you send
 - A report goes with your RPMod account, read from `rpinfo` without showing it in the console: you send it from an RPMod server, logged in. Logged out, or from the main menu, the window says so and nothing is sent
 - It's answered on the project's Discord, and marked planned or fixed, or closed

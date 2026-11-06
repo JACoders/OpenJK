@@ -34,7 +34,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Setup's Game Options get a Camera Settings row (ui_cameraSettings), and the in-game menu, the bar
 // Esc opens: no Vote, Call Vote or Add Bot, a PRESETS button between Profile and Controls (see
 // cl_presets.cpp), and with Camera Settings on a panel of the third person camera's settings, the
-// game's own cg_thirdPerson* and cg_fov.
+// game's own cg_thirdPerson* and cg_fov. QUICK CONNECT and TOOLS open panels under the bar: the
+// servers, and every tool this client adds (Feedback with them), five a page.
 //
 // The page's rows are ui_rd_* copies of the settings: most of them only take with a vid_restart, and
 // a latched cvar reads as it was until then. "renderersettings sync" fills the copies as the page
@@ -873,6 +874,90 @@ static void IM_SetRect( std::string &item, float x, float y, float w, float h ) 
 #define QC_SERVERS	4
 #define QC_OPEN_CVAR	"ui_qcOpen"	// 1 while the panel is out: Esc closes it first (see cl_quickconnect.cpp)
 
+// TOOLS: every tool, its command run as the menu closes, five a page
+#define TL_X		392.0f
+#define TL_Y		34.0f
+#define TL_W		242.0f
+#define TL_ENTRY	30.0f
+#define TL_PER_PAGE	5
+
+static const struct {
+	const char	*name;
+	const char	*command;
+	const char	*desc;
+} imTools[] = {
+	{ "Model Manager",		"modelmanager",		"Place models, move the map's (rpmodel)" },
+	{ "NPC Manager",		"npcmanager",		"Spawn NPCs and command them" },
+	{ "Effect Manager",		"effectmanager",	"Preview effects and play them (rpeffect)" },
+	{ "Shader Manager",		"shadermanager",	"Remap shaders, overlays, the sky" },
+	{ "Map Editor",			"mapedit",			"Move, hide and retexture the map; lights, fog" },
+	{ "Storyteller",		"storyteller",		"Missions out of steps, played for everyone" },
+	{ "Cinematic Manager",	"cinematicmanager",	"Camera shots and what everyone does in them" },
+	{ "Sound Manager",		"soundmanager",		"Hear sounds and play them (rpsound)" },
+	{ "Music Manager",		"musicmanager",		"Hear music and play it for everyone" },
+	{ "Animation Manager",	"animationmanager",	"Every animation; emote chains, custom emotes" },
+	{ "Asset Manager",		"assetmanager",		"What's on the map, its pk3s, packed in one" },
+	{ "Presets",			"presets",			"Characters saved, swapped to in a click" },
+	{ "Skin Select",		"skinselect",		"Every skin and model, worn in a click" },
+	{ "Languages",			"languages",		"Your characters' languages" },
+	{ "Radial Menus",		"radialsettings",	"Make radial menus and bind keys to them" },
+	{ "Console Settings",	"consolesettings",	"How the console looks" },
+	{ "Feedback",			"feedback",			"Report a bug or send an idea" },
+};
+#define TL_NUM		( (int)ARRAY_LEN( imTools ) )
+#define TL_PAGES	( ( TL_NUM + TL_PER_PAGE - 1 ) / TL_PER_PAGE )
+
+// every part of the tools panel put away
+static const char *IM_ToolsHide( void ) {
+	static char out[256];
+
+	Q_strncpyz( out, "hide tools ;", sizeof( out ) );
+	for ( int p = 0; p < TL_PAGES; p++ )
+		Q_strcat( out, sizeof( out ), va( " hide tools_p%i ;", p ) );
+	return out;
+}
+
+static std::string IM_ToolsPanel( void ) {
+	const float h = 24.0f + TL_ENTRY * TL_PER_PAGE + 4.0f;
+	std::string out, hide = IM_ToolsHide();
+
+	out += va( "itemDef {\nname tools_bg\ngroup tools\nstyle WINDOW_STYLE_FILLED\nrect %g %g %g %g\nborder 1\n"
+		"bordercolor .5 .5 .7 1\nbackcolor 0 0 .08 .85\nforecolor 1 1 1 1\nvisible 0\ndecoration\n}\n", TL_X, TL_Y, TL_W, h );
+	out += va( "itemDef {\nname tools_close\ngroup tools\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"Close\"\n"
+		"rect %g %g 50 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx 25\nbackcolor .15 .15 .25 .8\nforecolor 1 .682 0 1\n"
+		"visible 0\naction { play \"sound/interface/button1.wav\" ; %s show camerapanel ; setcvar " QC_OPEN_CVAR " 0 }\n}\n", TL_X + TL_W - 56, TL_Y + 5, hide.c_str() );
+	for ( int p = 0; p < TL_PAGES; p++ ) {
+		// the page: where it is, and the way to the ones either side
+		out += va( "itemDef {\nname tools_page%i\ngroup tools_p%i\nstyle WINDOW_STYLE_EMPTY\ntext \"Tools  %i/%i\"\n"
+			"rect %g %g 80 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_LEFT\ntextalignx 0\nforecolor .8 .8 .8 1\nvisible 0\ndecoration\n}\n",
+			p, p, p + 1, TL_PAGES, TL_X + 8, TL_Y + 5 );
+		if ( p > 0 )
+			out += va( "itemDef {\nname tools_back%i\ngroup tools_p%i\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"Back\"\n"
+				"rect %g %g 44 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx 22\nbackcolor .15 .15 .25 .8\nforecolor 1 .682 0 1\n"
+				"visible 0\naction { play \"sound/interface/button1.wav\" ; hide tools_p%i ; show tools_p%i }\n}\n", p, p, TL_X + 84, TL_Y + 5, p, p - 1 );
+		if ( p < TL_PAGES - 1 )
+			out += va( "itemDef {\nname tools_next%i\ngroup tools_p%i\nstyle WINDOW_STYLE_FILLED\ntype ITEM_TYPE_BUTTON\ntext \"Next\"\n"
+				"rect %g %g 44 13\nfont 4\ntextscale .85\ntextalign ITEM_ALIGN_CENTER\ntextalignx 22\nbackcolor .15 .15 .25 .8\nforecolor 1 .682 0 1\n"
+				"visible 0\naction { play \"sound/interface/button1.wav\" ; hide tools_p%i ; show tools_p%i }\n}\n", p, p, TL_X + 132, TL_Y + 5, p, p + 1 );
+		for ( int k = 0; k < TL_PER_PAGE; k++ ) {
+			const int i = p * TL_PER_PAGE + k;
+			const float y = TL_Y + 24.0f + TL_ENTRY * k;
+
+			if ( i >= TL_NUM )
+				break;
+			// its name, clicked to open it, and what it does under it
+			out += va( "itemDef {\nname tools_name%i\ngroup tools_p%i\nstyle WINDOW_STYLE_EMPTY\ntype ITEM_TYPE_BUTTON\ntext \"%s\"\n"
+				"rect %g %g %g 14\nfont 2\ntextscale .7\ntextalign ITEM_ALIGN_LEFT\ntextalignx 0\nforecolor 1 .682 0 1\nvisible 0\n"
+				"descText \"Open the %s (/%s)\"\naction { play \"sound/interface/button1.wav\" ; setcvar " QC_OPEN_CVAR " 0 ; uiScript closeingame ; exec \"%s\" }\n}\n",
+				i, p, imTools[i].name, TL_X + 8, y, TL_W - 16, imTools[i].name, imTools[i].command, imTools[i].command );
+			out += va( "itemDef {\nname tools_desc%i\ngroup tools_p%i\nstyle WINDOW_STYLE_EMPTY\ntext \"%s   /%s\"\n"
+				"rect %g %g %g 11\nfont 4\ntextscale .75\ntextalign ITEM_ALIGN_LEFT\ntextalignx 0\nforecolor .8 .8 .8 1\nvisible 0\ndecoration\n}\n",
+				i, p, imTools[i].desc, imTools[i].command, TL_X + 14, y + 15, TL_W - 20 );
+		}
+	}
+	return out;
+}
+
 // the quick connect panel under its button: each server, its address, map and players (ui_qc<n>_*,
 // see cl_quickconnect.cpp), clicked to connect
 static std::string IM_QuickConnectPanel( void ) {
@@ -970,7 +1055,7 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 		RM_RemoveValue( button, "cvarTest" );
 		RM_ReplaceBlock( button, "hideCvar", "" );
 		RM_ReplaceBlock( button, "showCvar", "" );
-		RM_ReplaceBlock( button, "action", "action { play \"sound/interface/button1.wav\" ; hide camerapanel ; show quickconnect ; setcvar " QC_OPEN_CVAR " 1 ; exec \"quickconnect refresh\" }" );
+		RM_ReplaceBlock( button, "action", va( "action { play \"sound/interface/button1.wav\" ; %s hide camerapanel ; show quickconnect ; setcvar " QC_OPEN_CVAR " 1 ; exec \"quickconnect refresh\" }", IM_ToolsHide() ) );
 		RM_SetValue( frame, "name", "quickconnectButton" );
 		IM_SetRect( button, 425, 0, 85, 32 );
 		IM_SetRect( frame, 425, 0, 85, 32 );
@@ -978,24 +1063,27 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 	}
 	add += IM_QuickConnectPanel();
 
-	// FEEDBACK: between Quick Connect and Exit, which is made narrower for it
+	// TOOLS: between Quick Connect and Exit, which is made narrower for it; its panel under it, in
+	// Quick Connect's place, Esc putting it away the same way
 	{
 		std::string button = s.substr( controls->start, controls->end - controls->start );
 		std::string frame = s.substr( controlsButton->start, controlsButton->end - controlsButton->start );
 
-		RM_ReplaceWord( button, "controlsButton", "feedbackButton" );
-		RM_SetValue( button, "name", "feedbackmenu" );
-		RM_SetValue( button, "text", RM_Quote( "Feedback" ) );
+		RM_ReplaceWord( button, "controlsButton", "toolsButton" );
+		RM_SetValue( button, "name", "toolsmenu" );
+		RM_SetValue( button, "text", RM_Quote( "Tools" ) );
 		RM_SetValue( button, "textalignx", "31" );
 		RM_RemoveValue( button, "cvarTest" );
 		RM_ReplaceBlock( button, "hideCvar", "" );
 		RM_ReplaceBlock( button, "showCvar", "" );
-		RM_ReplaceBlock( button, "action", "action { play \"sound/interface/button1.wav\" ; uiScript closeingame ; exec \"feedback\" }" );
-		RM_SetValue( frame, "name", "feedbackButton" );
+		RM_ReplaceBlock( button, "action", va( "action { play \"sound/interface/button1.wav\" ; hide quickconnect ; hide camerapanel ; %s show tools ; "
+			"show tools_p0 ; setcvar " QC_OPEN_CVAR " 1 }", IM_ToolsHide() ) );
+		RM_SetValue( frame, "name", "toolsButton" );
 		IM_SetRect( button, 510, 0, 62, 32 );
 		IM_SetRect( frame, 510, 0, 62, 32 );
 		add += "\n" + frame + "\n" + button + "\n";
 	}
+	add += IM_ToolsPanel();
 
 	// the ones that go, last first so the places stay right
 	for ( int i = (int)items.size() - 1; i >= 0; i-- ) {
@@ -1007,7 +1095,7 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 		}
 	}
 
-	// Exit and its frame narrower, at the end, past FEEDBACK
+	// Exit and its frame narrower, at the end, past TOOLS
 	{
 		std::vector<rmItem_t> now;
 		const rmItem_t *leave, *leaveButton;
@@ -1047,9 +1135,10 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 		return NULL;
 	s.insert( menuEnd - 1, add );
 
-	// the menu opens with the quick connect panel put away, the camera panel back
+	// the menu opens with the quick connect and tools panels put away, the camera panel back
 	{
-		static const char *reset = " hide quickconnect ; show camerapanel ; setcvar " QC_OPEN_CVAR " 0 ;";
+		const std::string resetText = va( " hide quickconnect ; %s show camerapanel ; setcvar " QC_OPEN_CVAR " 0 ;", IM_ToolsHide() );
+		const char *reset = resetText.c_str();
 		const size_t firstItem = RM_FindWord( s, "itemDef", menuOpen );
 		const size_t onOpen = RM_FindWord( s, "onOpen", menuOpen, firstItem );
 		const size_t open = onOpen != RM_NONE ? RM_SkipSpace( s, onOpen + 6 ) : RM_NONE;
