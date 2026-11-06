@@ -345,6 +345,7 @@ static struct {
 	qboolean	indexed;
 	std::vector<std::string> shaderNames;
 	std::set<std::string> skyShaders;			// the ones with skyParms, by lowercase name
+	std::set<std::string> growShaders;			// the ones with surfaceSprites: grass and such grow on them
 	std::map<std::string, qhandle_t> previews;	// 2D handles, by lowercase name
 	std::vector<int> shaderView;
 	qboolean	viewSky;					// shaderView only holds skies, for a sky
@@ -1807,7 +1808,7 @@ static void SM_ParseShaderFile( const char *path ) {
 	const char *p, *token;
 	char name[MAX_QPATH], key[MAX_QPATH];
 	int depth;
-	qboolean sky;
+	qboolean sky, grows;
 
 	if ( FS_ReadFile( path, (void **)&buf ) <= 0 || !buf )
 		return;
@@ -1822,7 +1823,7 @@ static void SM_ParseShaderFile( const char *path ) {
 		if ( Q_stricmp( token, "{" ) )
 			break;
 		// skip the body, noting a skyParms among its own keywords
-		sky = qfalse;
+		sky = grows = qfalse;
 		for ( depth = 1; depth > 0; ) {
 			token = COM_ParseExt( &p, qtrue );
 			if ( !token[0] )
@@ -1833,11 +1834,17 @@ static void SM_ParseShaderFile( const char *path ) {
 				depth--;
 			else if ( depth == 1 && !Q_stricmp( token, "skyParms" ) )
 				sky = qtrue;
+			else if ( !Q_stricmp( token, "surfaceSprites" ) )
+				grows = qtrue;
 		}
 		SM_AddShaderName( name );
 		if ( sky ) {
 			SM_ShaderKey( name, key, sizeof( key ) );
 			sm.skyShaders.insert( key );
+		}
+		if ( grows ) {
+			SM_ShaderKey( name, key, sizeof( key ) );
+			sm.growShaders.insert( key );
 		}
 	}
 	FS_FreeFile( buf );
@@ -1856,6 +1863,7 @@ static void SM_BuildIndex( void ) {
 
 	sm.shaderNames.clear();
 	sm.skyShaders.clear();
+	sm.growShaders.clear();
 	files = FS_ListFiles( "shaders", ".shader", &numFiles );
 	for ( int i = 0; i < numFiles; i++ )
 		SM_ParseShaderFile( va( "shaders/%s", files[i] ) );
@@ -1897,6 +1905,33 @@ static qboolean SM_IsSky( const char *name ) {
 		return qfalse;
 	SM_ShaderKey( name, key, sizeof( key ) );
 	return (qboolean)( sm.skyShaders.find( key ) != sm.skyShaders.end() );
+}
+
+// the index, for the map editor's Textures tab: built the first time it's asked for
+int CL_ShaderManager_ShaderCount( void ) {
+	if ( !sm.indexed )
+		SM_BuildIndex();
+	return (int)sm.shaderNames.size();
+}
+
+const char *CL_ShaderManager_ShaderName( int i ) {
+	return i >= 0 && i < (int)sm.shaderNames.size() ? sm.shaderNames[i].c_str() : "";
+}
+
+// one with surfaceSprites: grass, bushes and such grow up from what it's on
+qboolean CL_ShaderManager_Grows( const char *name ) {
+	char key[MAX_QPATH];
+
+	if ( !sm.indexed )
+		SM_BuildIndex();
+	SM_ShaderKey( name, key, sizeof( key ) );
+	return (qboolean)( sm.growShaders.find( key ) != sm.growShaders.end() );
+}
+
+qboolean CL_ShaderManager_IsSky( const char *name ) {
+	if ( !sm.indexed )
+		SM_BuildIndex();
+	return SM_IsSky( name );
 }
 
 static qboolean SM_RemapAllowed( const char *from, const char *to ) {
@@ -4534,6 +4569,7 @@ void CL_ShaderManager_Shutdown( void ) {
 	sm.indexed = qfalse;
 	std::vector<std::string>().swap( sm.shaderNames );
 	std::set<std::string>().swap( sm.skyShaders );
+	std::set<std::string>().swap( sm.growShaders );
 	sm.previews.clear();
 	sm.shaderView.clear();
 }

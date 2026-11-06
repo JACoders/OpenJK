@@ -1457,6 +1457,8 @@ int			RE_ForgetMissing( const char **shaderFiles, int numShaderFiles );
 int			R_ForgetBadModels( void );
 int			R_ForgetBadSkins( void );
 qhandle_t	RE_WorldPieceModel( const int *surfaces, const int *triangles, int count, const vec3_t origin );
+void		RE_SetWorldShaders( const int *surfaces, const char * const *shaders, int count );
+void		RE_MakeSpriteShader( const char *name, const char *ground, const char *sprite, int width, int height, int spacing );
 
 void    	R_Init( void );
 

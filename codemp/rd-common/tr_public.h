@@ -305,6 +305,15 @@ typedef struct refexport_s {
 		// a bone let go: its turn taken off, its animation too when anim, then removed (G2API_RemoveBone
 		// alone leaves a bone still turned or animated as it is)
 		qboolean			(*G2API_FreeBone)						( CGhoul2Info_v &ghoul2, const int modelIndex, const char *boneName, qboolean anim );
+		// the client's map editor: world surfaces, in the bsp's order, given other shaders, all at once
+		// (count 0 puts them all back); each made with the surface's lightmaps so it's lit as it was.
+		// A sky, or a shader that can't be found, is left as it is. A piece taken as a model keeps the
+		// map's shader
+		void				(*SetWorldShaders)						( const int *surfaces, const char * const *shaders, int count );
+		// the client's map editor: a shader named name made of the ground shader (or image) with the
+		// sprite image growing up from it, width by height, spacing apart (as surfaceSprites vertical);
+		// until the shaders are loaded again
+		void				(*MakeSpriteShader)						( const char *name, const char *ground, const char *sprite, int width, int height, int spacing );
 	} ext;
 
 } refexport_t;

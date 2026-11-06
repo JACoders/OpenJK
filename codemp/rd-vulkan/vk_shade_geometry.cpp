@@ -2798,9 +2798,10 @@ void RB_StageIteratorGeneric( void )
 
 	// Now check for surfacesprites.
 	// OpenJK-rpmod: with the world cache on, a surface style 0 tints is drawn without it, and
-	// its sprites with it here (tr_world.cpp leaves them out of the cached ones)
+	// its sprites with it here (tr_world.cpp leaves them out of the cached ones); so is one the
+	// map editor gave another shader, whose sprites weren't made when the map loaded
 	if ( r_surfaceSprites->integer && ( !vk.vboWorldActive
-		|| ( !tess.vbo_world_index && tess.shader && R_StyleUncached( tess.shader ) ) ) )
+		|| ( !tess.vbo_world_index && tess.shader && ( R_StyleUncached( tess.shader ) || tess.shader->worldSwapped ) ) ) )
 	{
 		qboolean ssFound = qfalse;
 

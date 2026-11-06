@@ -2193,13 +2193,25 @@ shader name. If found, it will return a valid shader, return NULL if not found.
 static char *s_addedShaderText[MAX_ADDED_SHADER_TEXTS];
 static int s_numAddedShaderText;
 
+// OpenJK-rpmod: shaders the client makes while the game runs (the map editor's: a ground with
+// sprites growing on it), looked in first; until the shaders are loaded again
+#define MAX_MADE_SHADER_TEXTS	256
+static char *s_madeShaderText[MAX_MADE_SHADER_TEXTS];
+static int s_numMadeShaderText;
+
 static const char *FindShaderInShaderText( const char *shadername ) {
 	char		*token;
 	const char	*p;
 
 	int i, hash;
 
-	// OpenJK-rpmod: an added pk3's own first
+	// OpenJK-rpmod: one the client made first, then an added pk3's own
+	for ( i = 0; i < s_numMadeShaderText; i++ ) {
+		p = s_madeShaderText[i];
+		token = COM_ParseExt( &p, qtrue );
+		if ( !Q_stricmp( token, shadername ) )
+			return p;
+	}
 	for ( i = s_numAddedShaderText - 1; i >= 0; i-- ) {
 		p = s_addedShaderText[i];
 		while ( 1 ) {
@@ -5173,6 +5185,7 @@ void R_InitShaders( qboolean server )
 	memset(hashTable, 0, sizeof(hashTable));
 	// OpenJK-rpmod: the added pk3s' are in the shader files now
 	s_numAddedShaderText = 0;
+	s_numMadeShaderText = 0;
 
 	if ( !server )
 	{
@@ -5250,4 +5263,61 @@ int RE_ForgetMissing( const char **shaderFiles, int numShaderFiles ) {
 		}
 	}
 	return count;
+}
+
+/*
+====================
+RE_MakeSpriteShader
+
+OpenJK-rpmod: the client's map editor: a shader named name, the ground shader as it is (or, with no
+shader of that name, the image lit by its lightmap) with sprites of the image sprite growing up
+from it: width and height, and spacing apart, as surfaceSprites has them. Made once a name, until
+the shaders are loaded again
+====================
+*/
+void RE_MakeSpriteShader( const char *name, const char *ground, const char *sprite, int width, int height, int spacing ) {
+	char stage[1024];
+	const char *p, *start = NULL, *end = NULL;
+	char *text;
+	int len;
+
+	if ( !name || !name[0] || !ground || !ground[0] || !sprite || !sprite[0] || s_numMadeShaderText >= MAX_MADE_SHADER_TEXTS )
+		return;
+	for ( int i = 0; i < s_numMadeShaderText; i++ ) {
+		p = s_madeShaderText[i];
+		if ( !Q_stricmp( COM_ParseExt( &p, qtrue ), name ) )
+			return;
+	}
+	Com_sprintf( stage, sizeof( stage ), "\t{\n\t\tmap %s\n\t\tsurfaceSprites vertical %i %i %i 1000\n\t\tssFademax 2000\n\t\tssFadescale 1\n"
+		"\t\tssVariance 1 2\n\t\tssWind 0.5\n\t\talphaFunc GE192\n\t\tblendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA\n\t\tdepthWrite\n"
+		"\t\trgbGen vertex\n\t}\n}\n", sprite, Com_Clampi( 1, 512, width ), Com_Clampi( 1, 512, height ), Com_Clampi( 4, 512, spacing ) );
+
+	// the ground's own stages, up to its last brace
+	p = FindShaderInShaderText( ground );
+	if ( p ) {
+		while ( *p && *p != '{' )
+			p++;
+		if ( *p == '{' ) {
+			const char *q = p;
+
+			if ( SkipBracedSection( &q, 0 ) ) {
+				start = p;
+				end = q;
+				while ( end > start && *end != '}' )
+					end--;
+			}
+		}
+	}
+	len = strlen( name ) + strlen( stage ) + strlen( ground ) + 160 + ( start ? (int)( end - start ) : 0 );
+	text = (char *)ri.Hunk_Alloc( len, h_low );
+	if ( start ) {
+		Com_sprintf( text, len, "%s\n", name );
+		memcpy( text + strlen( text ), start, end - start );
+		text[strlen( name ) + 1 + ( end - start )] = '\0';
+		Q_strcat( text, len, "\n" );
+		Q_strcat( text, len, stage );
+	} else {
+		Com_sprintf( text, len, "%s\n{\n\t{\n\t\tmap $lightmap\n\t}\n\t{\n\t\tmap %s\n\t\tblendFunc GL_DST_COLOR GL_ZERO\n\t}\n%s", name, ground, stage );
+	}
+	s_madeShaderText[s_numMadeShaderText++] = text;
 }

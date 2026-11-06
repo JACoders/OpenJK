@@ -346,7 +346,7 @@ Make a whole cut scene on one timeline, the camera's shots and what the players 
 
 ## Map Editor
 
-Edit the map on your own screen: move or hide any part of it, place models, lights and fog, change its lighting, and share it all with the people on the map.
+Edit the map on your own screen: move or hide any part of it, place models, lights and fog, change its lighting and textures, and share it all with the people on the map.
 
 ### Editing
 
@@ -363,6 +363,7 @@ Edit the map on your own screen: move or hide any part of it, place models, ligh
 - **Sounds**: speakers that play any music or sound, heard near them or everywhere, looping
 - **Styles**: give the map's switchable lights a new pattern (flicker, pulse, strobe...) and color, change its existing light styles, or the lighting of the whole map
 - **Fog**: the color and thickness of each of the map's fogs, `No fog` to take one away, or fog volumes of your own. *Needs the release's renderer, OpenGL (rd-vanilla_x86.dll) or Vulkan (rd-vulkan_x86.dll); with Vulkan's own fog (`r_drawfog 2`, its default) up to 16 fogs in all.*
+- **Textures**: give the map's surfaces another texture, only where you want it, e.g. snow on the ground outside while the same stone inside stays as it is. Pointing at the map outlines in blue what a click would pick and names its texture: the surface, the ones of its texture joined to it (**Joined**), or every surface of its texture (**All of it**). Shift+click adds more or takes some off; what's picked is outlined in pink, over the grass and bushes a surface grows too. Search a texture: the one pointed at in the list, or the one chosen, shows on the picked surfaces straight away, and **Keep it on the picked** keeps it; **Put back** returns them to the map's. Tall grass, bushes and flowers grow from a shader, not an image: the ones marked **grows** in the list (e.g. *textures/yavin/ground_grasssprite*) grow them on what they're given to. To grow a sprite image of your choice, such as *gfx/sprites/y_grass_tall*, on any ground, pick it under **Grows on it**: it grows on the texture chosen under **Texture**, or with that left empty on each surface's own ground, as it looks now. **Width**, **Height** and **Apart** set the sprites' size and how far apart they grow. The new texture keeps the surface's own light and shadows. **Given** lists the textures given and how many surfaces each, a click picking them again. Saved in layouts and shared with the rest. *Needs the release's renderer, OpenGL (rd-vanilla_x86.dll) or Vulkan (rd-vulkan_x86.dll).*
 - **Locks**: every door and trigger_multiple in the map with its lock. Lock one to a rank (*-1* for no one) with a name shown to whoever it refuses, change it or unlock it, or remove every lock, through RPMod's `rplock`; locked ones are drawn in red. These are the server's, so everyone is held by them
 - A map always starts without edits: they show when you load one of its layouts, or when someone shares theirs, so no one's edits load against anyone else's (`rpc_mapEdits 0` only shows them in the editor)
 - They're saved as entities a server could spawn, ready for when RPMod supports it

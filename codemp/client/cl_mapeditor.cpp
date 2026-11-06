@@ -40,6 +40,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // server keeps those, not this screen.
 // Fog: the fog the map was built with, over all of it or in volumes, given a colour and a
 // thickness of our own, or taken away; and fog volumes of our own, boxes of fog anywhere.
+// Textures: the map's surfaces given other textures, picked by a click: the surface, the ones
+// of its texture joined to it, or all of its texture. The renderer makes the new texture with
+// the surface's own lightmaps, so it's lit as it was. Kept by the bsp's surface numbers.
 //
 // RPMod has no server side for any of it yet, so only this screen sees the edits. A map
 // always starts without any: they're kept only by name as layouts, in
@@ -52,8 +55,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   cmd:map/add/<id>/<part>: <edit> | <edit> | ...
 //   cmd:map/end/<id>/<parts>               shown in place of the player's own until
 //                                          cmd:map/clear: <map>, or another map
-// An edit is m (a model), p (a map prop), l (a light), a (a speaker), s (a light style) or
-// h (a hidden brush entity), then its numbers; a model's path and a style's letters come last, with
+// An edit is m (a model), p (a map prop), l (a light), a (a speaker), s (a light style),
+// h (a hidden brush entity) or t (surfaces given a texture: their numbers, =, the texture), then its numbers; a model's path and a style's letters come last, with
 // spaces put in so no word is long, and taken out again. Triggers stay with whoever made
 // them: a print never runs a command. Only what's drawn changes: walls hidden still block,
 // props moved don't, as the server knows nothing of it. Players who join later see the
@@ -111,6 +114,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define ME_CROUCH_KEY		"1023"		// the crouch's own key number: the player's C isn't let go with it
 #define ME_MAX_FOGS			64
 #define ME_FOG_NONE			65536.0f	// a fog this thin isn't seen
+#define ME_MAX_TEXNAMES		64			// textures given to the map's surfaces
+#define ME_TEX_CHUNK		200			// surface numbers in one saved or shared edit, in characters
+#define ME_MAX_TEXEDITS		512			// shared edits of textures
+#define ME_TEX_ROWS			8
+#define ME_TEX_NAME_LEN		200			// a texture given: a shader, or a ground with sprites growing on it
+#define ME_GROW_PREFIX		"~grow/"	// ~grow/<ground>@<sprite>@<width>@<height>@<spacing>; no ground: each surface's own
+#define ME_MAX_GROW_CACHE	32
 
 typedef enum {
 	ME_TAB_MAP,
@@ -121,11 +131,12 @@ typedef enum {
 	ME_TAB_STYLES,
 	ME_TAB_LOCKS,
 	ME_TAB_FOG,
+	ME_TAB_TEXTURES,
 	ME_NUM_TABS
 } meTab_t;
 
-static const char *meTabNames[ME_NUM_TABS] = { "Map", "Models", "Lights", "Triggers", "Sounds", "Styles", "Locks", "Fog" };
-#define ME_TABS_PER_ROW		4
+static const char *meTabNames[ME_NUM_TABS] = { "Map", "Models", "Lights", "Triggers", "Sounds", "Styles", "Locks", "Fog", "Textures" };
+#define ME_TABS_PER_ROW		5
 
 // what can be chosen
 typedef enum {
@@ -297,7 +308,9 @@ typedef enum {
 	ME_FIELD_SOUND,			// a speaker's sound
 	ME_FIELD_LOCKNAME,		// a lock's name
 	ME_FIELD_TRIGGERNAME,	// a trigger's name, the storyteller's
-	ME_FIELD_TRIGGERDISPLAY	// what a use trigger is shown as
+	ME_FIELD_TRIGGERDISPLAY,	// what a use trigger is shown as
+	ME_FIELD_TEXTURE,		// a texture to give the picked surfaces
+	ME_FIELD_GROW			// a sprite image to grow on them
 } meField_t;
 
 typedef struct {
@@ -397,6 +410,37 @@ typedef struct {
 	int			*compTris;			// what was found last
 	int			numCompTris;
 	qboolean	propsDirty, propsShown;
+
+	// textures: each surface's shader in the bsp (-1 one that can't take another), its corners,
+	// and the texture it's given (0 none, else 1 + one of texNames)
+	int			numTexSurfs;
+	int			*surfShader;
+	char		( *bspShaders )[MAX_QPATH];
+	int			numBspShaders;
+	vec3_t		*texVerts;
+	int			*surfFirstVert, *surfNumVert;
+	short		( *surfGrid )[2];		// a curve's control points across and down, 0 0 for the rest
+	meVertKey_t	*surfKeys;				// the surfaces' corners, sorted; .tri is the surface
+	int			numSurfKeys;
+	int			( *patchTris )[4];		// a curve's triangles from its control points: surface, corners
+	int			numPatchTris;
+	short		*surfTex;
+	byte		*texPicked;
+	int			numTexPicked;
+	char		texNames[ME_MAX_TEXNAMES][ME_TEX_NAME_LEN];
+	int			numTexNames;
+	int			texMode;				// what a click takes: 0 the surface, 1 its texture joined to it, 2 all its texture
+	char		texSearch[MAX_QPATH];
+	int			texScroll, texSwapScroll;
+	qboolean	texDirty, texShown;
+	char		texPreview[ME_TEX_NAME_LEN];	// shown on the picked surfaces, not kept yet; "" none
+	int			texPage;				// the list gives 0 the texture, 1 the sprite growing on it
+	char		texGrow[MAX_QPATH];		// the sprite image growing on them, "" none
+	int			growWidth, growHeight, growSpacing;
+	int			texHover;				// the surface under the cursor, -1 none
+	int			*texHoverSet;			// what a click there would take
+	int			numTexHover;
+	float		texHoverKey[9];			// the cursor, camera and mode it was found for
 
 	// the world's solid brushes, to take one whole: their planes, and boxes to skip them by
 	float		( *brushPlanes )[4];
@@ -952,7 +996,9 @@ The map's props: the world's triangles, and which are joined
 static void ME_FreeTris( void ) {
 	void **mem[] = { (void **)&me.bspVerts, (void **)&me.tris, (void **)&me.surfFirstTri, (void **)&me.keys,
 		(void **)&me.triStamp, (void **)&me.triTaken, (void **)&me.compTris, (void **)&me.brushPlanes, (void **)&me.brushFirst,
-		(void **)&me.brushNum, (void **)&me.brushMins, (void **)&me.brushMaxs };
+		(void **)&me.brushNum, (void **)&me.brushMins, (void **)&me.brushMaxs, (void **)&me.surfShader, (void **)&me.bspShaders,
+		(void **)&me.texVerts, (void **)&me.surfFirstVert, (void **)&me.surfNumVert, (void **)&me.surfGrid, (void **)&me.surfKeys,
+		(void **)&me.patchTris, (void **)&me.surfTex, (void **)&me.texPicked, (void **)&me.texHoverSet };
 
 	for ( int i = 0; i < (int)ARRAY_LEN( mem ); i++ ) {
 		if ( *mem[i] )
@@ -963,6 +1009,8 @@ static void ME_FreeTris( void ) {
 	me.numBrushes = 0;
 	me.numCandSeeds = 0;
 	me.candBrush = -1;
+	me.numTexSurfs = me.numBspShaders = me.numSurfKeys = me.numPatchTris = me.numTexPicked = me.numTexHover = 0;
+	me.texHover = -1;
 }
 
 static void ME_KeyFor( const vec3_t p, meVertKey_t *k ) {
@@ -1137,6 +1185,95 @@ static void ME_BuildTris( const byte *buf, int len ) {
 			}
 		}
 	}
+}
+
+// every surface the world draws, curves too, for the Textures tab: its shader, its corners
+// and, for a curve, triangles of its control points to click it by
+static void ME_BuildSurfData( const byte *buf, int len ) {
+	const dheader_t *header = (const dheader_t *)buf;
+	const dsurface_t *surfs;
+	const drawVert_t *verts;
+	const dshader_t *shaders;
+	int numSurfs, numVerts, numKeys = 0, numPatchTris = 0;
+
+	if ( !ME_LumpOk( header, LUMP_SURFACES, len, sizeof( dsurface_t ) ) || !ME_LumpOk( header, LUMP_DRAWVERTS, len, sizeof( drawVert_t ) )
+		|| !ME_LumpOk( header, LUMP_SHADERS, len, sizeof( dshader_t ) ) )
+		return;
+	surfs = (const dsurface_t *)( buf + LittleLong( header->lumps[LUMP_SURFACES].fileofs ) );
+	numSurfs = LittleLong( header->lumps[LUMP_SURFACES].filelen ) / sizeof( dsurface_t );
+	verts = (const drawVert_t *)( buf + LittleLong( header->lumps[LUMP_DRAWVERTS].fileofs ) );
+	numVerts = LittleLong( header->lumps[LUMP_DRAWVERTS].filelen ) / sizeof( drawVert_t );
+	shaders = (const dshader_t *)( buf + LittleLong( header->lumps[LUMP_SHADERS].fileofs ) );
+	me.numBspShaders = LittleLong( header->lumps[LUMP_SHADERS].filelen ) / sizeof( dshader_t );
+	if ( numSurfs <= 0 || numVerts <= 0 )
+		return;
+
+	me.numTexSurfs = numSurfs;
+	me.surfShader = (int *)Z_Malloc( numSurfs * sizeof( int ), TAG_GENERAL, qfalse );
+	me.surfFirstVert = (int *)Z_Malloc( numSurfs * sizeof( int ), TAG_GENERAL, qtrue );
+	me.surfNumVert = (int *)Z_Malloc( numSurfs * sizeof( int ), TAG_GENERAL, qtrue );
+	me.surfGrid = (short ( * )[2])Z_Malloc( numSurfs * sizeof( me.surfGrid[0] ), TAG_GENERAL, qtrue );
+	me.surfTex = (short *)Z_Malloc( numSurfs * sizeof( short ), TAG_GENERAL, qtrue );
+	me.texPicked = (byte *)Z_Malloc( numSurfs, TAG_GENERAL, qtrue );
+	me.bspShaders = (char ( * )[MAX_QPATH])Z_Malloc( Q_max( 1, me.numBspShaders ) * MAX_QPATH, TAG_GENERAL, qtrue );
+	for ( int i = 0; i < me.numBspShaders; i++ )
+		Q_strncpyz( me.bspShaders[i], shaders[i].shader, MAX_QPATH );
+	me.texVerts = (vec3_t *)Z_Malloc( numVerts * sizeof( vec3_t ), TAG_GENERAL, qfalse );
+	for ( int i = 0; i < numVerts; i++ ) {
+		for ( int k = 0; k < 3; k++ )
+			me.texVerts[i][k] = LittleFloat( verts[i].xyz[k] );
+	}
+
+	for ( int i = 0; i < numSurfs; i++ ) {
+		const dsurface_t *ds = &surfs[i];
+		const int type = LittleLong( ds->surfaceType ), shader = LittleLong( ds->shaderNum );
+		const int fv = LittleLong( ds->firstVert ), nv = LittleLong( ds->numVerts );
+
+		me.surfShader[i] = -1;
+		if ( type != MST_PLANAR && type != MST_TRIANGLE_SOUP && type != MST_PATCH )
+			continue;
+		if ( shader < 0 || shader >= me.numBspShaders || ( LittleLong( shaders[shader].surfaceFlags ) & ( SURF_SKY | SURF_NODRAW ) ) )
+			continue;
+		if ( fv < 0 || nv <= 0 || fv + nv > numVerts )
+			continue;
+		if ( type == MST_PATCH ) {
+			const int w = LittleLong( ds->patchWidth ), h = LittleLong( ds->patchHeight );
+
+			if ( w < 2 || h < 2 || w * h > nv || w > 0x7fff || h > 0x7fff )
+				continue;
+			me.surfGrid[i][0] = (short)w;
+			me.surfGrid[i][1] = (short)h;
+			numPatchTris += ( w - 1 ) * ( h - 1 ) * 2;
+		}
+		me.surfShader[i] = shader;
+		me.surfFirstVert[i] = fv;
+		me.surfNumVert[i] = nv;
+		numKeys += nv;
+	}
+
+	me.surfKeys = (meVertKey_t *)Z_Malloc( Q_max( 1, numKeys ) * sizeof( meVertKey_t ), TAG_GENERAL, qfalse );
+	me.patchTris = (int ( * )[4])Z_Malloc( Q_max( 1, numPatchTris ) * sizeof( me.patchTris[0] ), TAG_GENERAL, qfalse );
+	for ( int i = 0; i < numSurfs; i++ ) {
+		const int w = me.surfGrid[i][0], h = me.surfGrid[i][1], fv = me.surfFirstVert[i];
+
+		if ( me.surfShader[i] < 0 )
+			continue;
+		for ( int v = 0; v < me.surfNumVert[i]; v++ ) {
+			ME_KeyFor( me.texVerts[fv + v], &me.surfKeys[me.numSurfKeys] );
+			me.surfKeys[me.numSurfKeys++].tri = i;
+		}
+		for ( int r = 0; r + 1 < h; r++ ) {
+			for ( int c = 0; c + 1 < w; c++ ) {
+				const int a = fv + r * w + c;
+				int *t = me.patchTris[me.numPatchTris++];
+
+				t[0] = i; t[1] = a; t[2] = a + 1; t[3] = a + w;
+				t = me.patchTris[me.numPatchTris++];
+				t[0] = i; t[1] = a + 1; t[2] = a + w + 1; t[3] = a + w;
+			}
+		}
+	}
+	qsort( me.surfKeys, me.numSurfKeys, sizeof( me.surfKeys[0] ), ME_CompareKeys );
 }
 
 // a point inside a brush, give or take eps
@@ -1367,6 +1504,386 @@ static void ME_BuildProp( meItem_t *it ) {
 /*
 ===============================================================================
 
+Textures: the map's surfaces given others
+
+===============================================================================
+*/
+
+static qboolean ME_ShiftDown( void );
+
+// a texture's place among the ones given, added if it's new; -1 if there's no room
+static int ME_TexName( const char *name ) {
+	for ( int i = 0; i < me.numTexNames; i++ ) {
+		if ( !Q_stricmp( me.texNames[i], name ) )
+			return i;
+	}
+	if ( me.numTexNames >= ME_MAX_TEXNAMES || !name[0] )
+		return -1;
+	Q_strncpyz( me.texNames[me.numTexNames], name, sizeof( me.texNames[0] ) );
+	return me.numTexNames++;
+}
+
+// the textures no surface has any more are let go
+static void ME_TexTidy( void ) {
+	int used[ME_MAX_TEXNAMES] = { 0 }, map[ME_MAX_TEXNAMES], n = 0;
+
+	for ( int i = 0; i < me.numTexSurfs; i++ ) {
+		if ( me.surfTex[i] > 0 && me.surfTex[i] <= me.numTexNames )
+			used[me.surfTex[i] - 1]++;
+	}
+	for ( int i = 0; i < me.numTexNames; i++ ) {
+		map[i] = used[i] ? n : -1;
+		if ( used[i] ) {
+			if ( n != i )
+				Q_strncpyz( me.texNames[n], me.texNames[i], sizeof( me.texNames[0] ) );
+			n++;
+		}
+	}
+	for ( int i = 0; i < me.numTexSurfs; i++ ) {
+		if ( me.surfTex[i] > 0 )
+			me.surfTex[i] = me.surfTex[i] <= me.numTexNames ? (short)( map[me.surfTex[i] - 1] + 1 ) : 0;
+	}
+	me.numTexNames = n;
+}
+
+static qboolean ME_IsGrow( const char *name ) {
+	return (qboolean)( !Q_stricmpn( name, ME_GROW_PREFIX, strlen( ME_GROW_PREFIX ) ) );
+}
+
+// a ground, "" each surface's own, with sprite growing on it as the steppers have it
+static const char *ME_GrowName( const char *ground, const char *sprite ) {
+	return va( ME_GROW_PREFIX "%s@%s@%i@%i@%i", ground, sprite, me.growWidth, me.growHeight, me.growSpacing );
+}
+
+// a grow's ground and sprite, and its numbers; qfalse if it isn't one
+static qboolean ME_GrowParts( const char *name, char *ground, char *sprite, int *w, int *h, int *spacing ) {
+	const char *p = name + strlen( ME_GROW_PREFIX ), *at;
+
+	if ( !ME_IsGrow( name ) || !( at = strchr( p, '@' ) ) )
+		return qfalse;
+	Q_strncpyz( ground, p, Q_min( MAX_QPATH, (int)( at - p ) + 1 ) );
+	p = at + 1;
+	if ( !( at = strchr( p, '@' ) ) )
+		return qfalse;
+	Q_strncpyz( sprite, p, Q_min( MAX_QPATH, (int)( at - p ) + 1 ) );
+	return (qboolean)( sscanf( at + 1, "%d@%d@%d", w, h, spacing ) == 3 );
+}
+
+// what a surface is given of name: a grow on its own ground has its shader filled in
+static const char *ME_TexFor( const char *name, int surf ) {
+	static char out[ME_TEX_NAME_LEN];
+
+	if ( ME_IsGrow( name ) && name[strlen( ME_GROW_PREFIX )] == '@' ) {
+		Com_sprintf( out, sizeof( out ), ME_GROW_PREFIX "%s%s", me.bspShaders[me.surfShader[surf]], name + strlen( ME_GROW_PREFIX ) );
+		return out;
+	}
+	return name;
+}
+
+// the shader the renderer draws it with: a grow is made, under a name of its own, the same on
+// every client
+static void ME_TexShader( const char *name, char *out, int size ) {
+	char ground[MAX_QPATH], sprite[MAX_QPATH];
+	unsigned hash = 2166136261u;
+	int w, h, spacing;
+
+	if ( !ME_GrowParts( name, ground, sprite, &w, &h, &spacing ) ) {
+		Q_strncpyz( out, name, size );
+		return;
+	}
+	for ( const char *c = name; *c; c++ )
+		hash = ( hash ^ (unsigned)tolower( (unsigned char)*c ) ) * 16777619u;
+	Com_sprintf( out, size, "mapedit/grow_%08x", hash );
+	if ( re->ext.MakeSpriteShader )
+		re->ext.MakeSpriteShader( out, ground, sprite, w, h, spacing );
+}
+
+// how it's shown in the panel: a grow as its sprite on its ground
+static const char *ME_TexLabel( const char *name ) {
+	char ground[MAX_QPATH], sprite[MAX_QPATH];
+	int w, h, spacing;
+
+	if ( !ME_GrowParts( name, ground, sprite, &w, &h, &spacing ) )
+		return name;
+	return va( "%s " S_COLOR_GREY "growing on" S_COLOR_WHITE " %s", sprite, ground[0] ? ground : "their own" );
+}
+
+// the renderer told: every surface given a texture, the picked ones showing the one being
+// looked at, or none while the edits aren't shown
+static void ME_ApplyTextures( void ) {
+	const qboolean preview = (qboolean)( me.texPreview[0] && me.open );
+	const char **names;
+	int *surfs, n = 0;
+
+	me.texDirty = qfalse;
+	me.texShown = ME_Shown();
+	if ( !re->ext.SetWorldShaders )
+		return;
+	static char cacheName[ME_MAX_GROW_CACHE][ME_TEX_NAME_LEN], cacheShader[ME_MAX_GROW_CACHE][MAX_QPATH];
+	char ( *shaders )[MAX_QPATH];
+	int numCache = 0;
+
+	surfs = (int *)Z_Malloc( ( me.numTexSurfs + 1 ) * sizeof( int ), TAG_GENERAL, qfalse );
+	names = (const char **)Z_Malloc( ( me.numTexSurfs + 1 ) * sizeof( char * ), TAG_GENERAL, qfalse );
+	shaders = (char ( * )[MAX_QPATH])Z_Malloc( ( me.numTexSurfs + 1 ) * MAX_QPATH, TAG_GENERAL, qfalse );
+	for ( int i = 0; i < me.numTexSurfs && me.texShown; i++ ) {
+		const char *name = NULL;
+		int c;
+
+		if ( preview && me.texPicked[i] )
+			name = ME_TexFor( me.texPreview, i );
+		else if ( me.surfTex[i] > 0 && me.surfTex[i] <= me.numTexNames )
+			name = me.texNames[me.surfTex[i] - 1];
+		if ( !name )
+			continue;
+		// the same few over and over: each made once
+		for ( c = 0; c < numCache && strcmp( cacheName[c], name ); c++ )
+			;
+		if ( c == numCache ) {
+			if ( numCache < ME_MAX_GROW_CACHE ) {
+				Q_strncpyz( cacheName[numCache], name, sizeof( cacheName[0] ) );
+				ME_TexShader( name, cacheShader[numCache++], MAX_QPATH );
+				Q_strncpyz( shaders[n], cacheShader[c], MAX_QPATH );
+			} else
+				ME_TexShader( name, shaders[n], MAX_QPATH );
+		} else
+			Q_strncpyz( shaders[n], cacheShader[c], MAX_QPATH );
+		surfs[n] = i;
+		names[n] = shaders[n];
+		n++;
+	}
+	re->ext.SetWorldShaders( surfs, names, n );
+	Z_Free( surfs );
+	Z_Free( (void *)names );
+	Z_Free( shaders );
+}
+
+// the distance along the ray to a triangle, -1 if it misses
+static float ME_RayTri( const vec3_t org, const vec3_t dir, const vec3_t a, const vec3_t b, const vec3_t c ) {
+	vec3_t e1, e2, pv, tv, qv;
+	float det, u, v;
+
+	VectorSubtract( b, a, e1 );
+	VectorSubtract( c, a, e2 );
+	CrossProduct( dir, e2, pv );
+	det = DotProduct( e1, pv );
+	if ( fabsf( det ) < 0.000001f )
+		return -1.0f;
+	VectorSubtract( org, a, tv );
+	u = DotProduct( tv, pv ) / det;
+	if ( u < 0.0f || u > 1.0f )
+		return -1.0f;
+	CrossProduct( tv, e1, qv );
+	v = DotProduct( dir, qv ) / det;
+	if ( v < 0.0f || u + v > 1.0f )
+		return -1.0f;
+	return DotProduct( e2, qv ) / det;
+}
+
+// the surface a ray meets first that can take a texture, -1 none: flat ones and the map's models
+// by their triangles, curves by their control points'
+static int ME_TexHit( const vec3_t org, const vec3_t dir ) {
+	float best;
+	const int tri = ME_TriHit( org, dir, &best );
+	int hit = tri >= 0 ? me.tris[tri].surf : -1;
+
+	for ( int i = 0; i < me.numPatchTris; i++ ) {
+		const int *t = me.patchTris[i];
+		const float d = ME_RayTri( org, dir, me.texVerts[t[1]], me.texVerts[t[2]], me.texVerts[t[3]] );
+
+		if ( d > 0.1f && d < best ) {
+			best = d;
+			hit = t[0];
+		}
+	}
+	return hit >= 0 && hit < me.numTexSurfs && me.surfShader[hit] >= 0 ? hit : -1;
+}
+
+static int ME_FindSurfKey( const meVertKey_t *k ) {
+	int lo = 0, hi = me.numSurfKeys;
+
+	while ( lo < hi ) {
+		const int mid = ( lo + hi ) / 2;
+
+		if ( ME_CompareKey( &me.surfKeys[mid], k ) < 0 )
+			lo = mid + 1;
+		else
+			hi = mid;
+	}
+	return lo;
+}
+
+// what a click on seed takes, onto out and marked: the surface, the ones of its texture joined
+// to it by corners, or all of its texture; how many
+static int ME_TexTake( int seed, int mode, int *out, byte *mark ) {
+	const int shader = me.surfShader[seed];
+	int n = 0, head = 0;
+
+	if ( mode == 2 ) {
+		for ( int i = 0; i < me.numTexSurfs; i++ ) {
+			if ( me.surfShader[i] == shader )
+				out[n++] = i;
+		}
+		return n;
+	}
+	out[n++] = seed;
+	mark[seed] = 1;
+	while ( mode == 1 && head < n ) {
+		const int s = out[head++];
+
+		for ( int v = 0; v < me.surfNumVert[s]; v++ ) {
+			meVertKey_t key;
+
+			ME_KeyFor( me.texVerts[me.surfFirstVert[s] + v], &key );
+			for ( int k = ME_FindSurfKey( &key ); k < me.numSurfKeys && !ME_CompareKey( &me.surfKeys[k], &key ); k++ ) {
+				const int other = me.surfKeys[k].tri;
+
+				if ( mark[other] || me.surfShader[other] != shader )
+					continue;
+				mark[other] = 1;
+				out[n++] = other;
+			}
+		}
+	}
+	return n;
+}
+
+static void ME_TexCountPicked( void ) {
+	me.texDirty = qtrue;
+	me.numTexPicked = 0;
+	for ( int i = 0; i < me.numTexSurfs; i++ ) {
+		if ( me.texPicked[i] )
+			me.numTexPicked++;
+	}
+}
+
+static void ME_TexPickNone( void ) {
+	if ( me.texPicked )
+		memset( me.texPicked, 0, me.numTexSurfs );
+	me.numTexPicked = 0;
+	me.texDirty = qtrue;
+}
+
+// a click on the map in the Textures tab: what it takes is picked; with Shift, added, or let
+// go when it's picked already
+static void ME_TexClick( const vec3_t dir ) {
+	const qboolean shift = ME_ShiftDown();
+	const int surf = me.surfTex ? ME_TexHit( me.camOrg, dir ) : -1;
+	qboolean add;
+	byte *mark;
+	int *out, n;
+
+	if ( surf < 0 ) {
+		if ( !shift )
+			ME_TexPickNone();
+		ME_Message( S_COLOR_YELLOW "No surface there that takes a texture" );
+		return;
+	}
+	out = (int *)Z_Malloc( me.numTexSurfs * sizeof( int ), TAG_GENERAL, qfalse );
+	mark = (byte *)Z_Malloc( me.numTexSurfs, TAG_GENERAL, qtrue );
+	n = ME_TexTake( surf, me.texMode, out, mark );
+	add = (qboolean)( !shift || !me.texPicked[surf] );
+	if ( !shift )
+		ME_TexPickNone();
+	for ( int i = 0; i < n; i++ )
+		me.texPicked[out[i]] = add ? 1 : 0;
+	Z_Free( out );
+	Z_Free( mark );
+	ME_TexCountPicked();
+	ME_Message( va( "%s: %i surface%s %s", me.bspShaders[me.surfShader[surf]], n, n == 1 ? "" : "s", add ? "picked" : "let go" ) );
+}
+
+// the picked surfaces given a texture, or put back as the map has them with NULL
+static void ME_TexSet( const char *name ) {
+	int n = 0, left = 0;
+
+	for ( int i = 0; i < me.numTexSurfs; i++ ) {
+		int index = -1;
+
+		if ( !me.texPicked[i] )
+			continue;
+		// a grow on their own ground is each one's own
+		if ( name && ( index = ME_TexName( ME_TexFor( name, i ) ) ) < 0 ) {
+			left++;
+			continue;
+		}
+		me.surfTex[i] = (short)( index + 1 );
+		n++;
+	}
+	if ( left ) {
+		ME_TexTidy();
+		me.texDirty = qtrue;
+		ME_Changed();
+		ME_Message( va( S_COLOR_YELLOW "%i left as they were: the map's surfaces can have %i textures given at most", left, ME_MAX_TEXNAMES ) );
+		return;
+	}
+	ME_TexTidy();
+	me.texDirty = qtrue;
+	ME_Changed();
+	if ( !name )
+		me.texPreview[0] = '\0';
+	ME_Message( name ? va( S_COLOR_GREEN "%i surface%s given %s", n, n == 1 ? "" : "s", ME_TexLabel( name ) ) : va( "%i surface%s put back", n, n == 1 ? "" : "s" ) );
+}
+
+// the surfaces given texture n, from *from on, as numbers and runs ("12 40-45"), as many as fit;
+// *from where it stopped, numTexSurfs at the end
+static void ME_TexRanges( int n, int *from, char *out, int size ) {
+	int s = *from;
+
+	out[0] = '\0';
+	while ( s < me.numTexSurfs ) {
+		char piece[32];
+		int e = s;
+
+		if ( me.surfTex[s] != n + 1 ) {
+			s++;
+			continue;
+		}
+		while ( e + 1 < me.numTexSurfs && me.surfTex[e + 1] == n + 1 )
+			e++;
+		if ( e > s )
+			Com_sprintf( piece, sizeof( piece ), "%s%i-%i", out[0] ? " " : "", s, e );
+		else
+			Com_sprintf( piece, sizeof( piece ), "%s%i", out[0] ? " " : "", s );
+		if ( (int)( strlen( out ) + strlen( piece ) ) >= size )
+			break;
+		Q_strcat( out, size, piece );
+		s = e + 1;
+	}
+	*from = s;
+}
+
+// numbers and runs of surfaces given texture n
+static void ME_TexParseRanges( const char *p, int n ) {
+	while ( *p ) {
+		char *end;
+		long a, b;
+
+		while ( *p == ' ' )
+			p++;
+		a = strtol( p, &end, 10 );
+		if ( end == p )
+			break;
+		p = end;
+		b = a;
+		if ( *p == '-' ) {
+			b = strtol( p + 1, &end, 10 );
+			if ( end == p + 1 )
+				break;
+			p = end;
+		}
+		a = Q_max( 0L, a );
+		b = Q_min( (long)me.numTexSurfs - 1, b );
+		for ( long i = a; i <= b; i++ ) {
+			if ( me.surfShader[i] >= 0 )
+				me.surfTex[i] = (short)( n + 1 );
+		}
+	}
+}
+
+/*
+===============================================================================
+
 Light styles: which the map's surfaces use, and ours over the server's
 
 ===============================================================================
@@ -1430,8 +1947,9 @@ static void ME_ScanStyles( void ) {
 			}
 		}
 	}
-	// and its triangles, for the props
+	// and its triangles, for the props; its surfaces, for the textures
 	ME_BuildTris( buf, len );
+	ME_BuildSurfData( buf, len );
 	FS_FreeFile( buf );
 }
 
@@ -1592,10 +2110,16 @@ static void ME_ForgetHandles( void ) {
 	// the renderer's world comes back whole
 	me.propsDirty = qtrue;
 	me.fogsRead = qfalse;
+	me.texDirty = qtrue;
 }
 
 static void ME_Clear( void ) {
 	me.numItems = 0;
+	if ( me.surfTex )
+		memset( me.surfTex, 0, me.numTexSurfs * sizeof( me.surfTex[0] ) );
+	me.numTexNames = 0;
+	ME_TexPickNone();
+	me.texDirty = qtrue;
 	for ( int i = 0; i < MAX_LIGHT_STYLES; i++ ) {
 		me.styles[i].override = qfalse;
 		me.styles[i].pattern[0] = '\0';
@@ -2158,6 +2682,22 @@ static int ME_SaveTo( const char *path ) {
 		FS_Printf( f, "}\n" );
 		count++;
 	}
+	// a texture's surfaces, as many entities as it takes
+	for ( int n = 0; n < me.numTexNames; n++ ) {
+		for ( int from = 0; from < me.numTexSurfs; ) {
+			char ranges[ME_TEX_CHUNK + 16];
+
+			ME_TexRanges( n, &from, ranges, sizeof( ranges ) );
+			if ( !ranges[0] )
+				break;
+			FS_Printf( f, "{\n" );
+			ME_Print( f, "classname", "rpm_texture" );
+			ME_Print( f, "shader", me.texNames[n] );
+			ME_Print( f, "surfaces", ranges );
+			FS_Printf( f, "}\n" );
+			count++;
+		}
+	}
 	FS_FCloseFile( f );
 	return count;
 }
@@ -2296,6 +2836,14 @@ static void ME_LoadEntity( const meKv_t *kv, int num ) {
 			if ( bmodel && me.ents[i].bmodel == bmodel )
 				me.ents[i].hidden = qtrue;
 		}
+	} else if ( !Q_stricmp( classname, "rpm_texture" ) && me.surfTex ) {
+		const int n = ME_TexName( ME_Value( kv, num, "shader", "" ) );
+
+		if ( n < 0 )
+			return;
+		ME_TexParseRanges( ME_Value( kv, num, "surfaces", "" ), n );
+		ME_TexTidy();
+		me.texDirty = qtrue;
 	}
 }
 
@@ -2497,7 +3045,9 @@ static const char *ME_ShareItem( const meItem_t *it ) {
 // everything shown, to everyone: begin, the edits a hook at a time, end
 static void ME_Share( void ) {
 	char part[ME_SHARE_LEN + 1] = "";
-	const char *edits[ME_MAX_ITEMS + MAX_LIGHT_STYLES + ME_MAX_HIDDEN + ME_MAX_FOGS];
+	const char *edits[ME_MAX_ITEMS + MAX_LIGHT_STYLES + ME_MAX_HIDDEN + ME_MAX_FOGS + ME_MAX_TEXEDITS];
+	static char texText[ME_MAX_TEXEDITS][ME_TEX_CHUNK + ME_TEX_NAME_LEN * 2 + 16];
+	int numTex = 0;
 	static char styleText[MAX_LIGHT_STYLES][MAX_QPATH * 2 + 32];
 	static char fogText[ME_MAX_FOGS][64];
 	static char itemText[ME_MAX_ITEMS][ME_SHARE_LEN];
@@ -2545,6 +3095,19 @@ static void ME_Share( void ) {
 		if ( me.ents[i].hidden && me.ents[i].bmodel ) {
 			Com_sprintf( hideText[numHide], sizeof( hideText[0] ), "h %i", me.ents[i].bmodel );
 			edits[numEdits++] = hideText[numHide++];
+		}
+	}
+	// a texture's surfaces, =, the texture
+	for ( int n = 0; n < me.numTexNames; n++ ) {
+		for ( int from = 0; from < me.numTexSurfs && numTex < ME_MAX_TEXEDITS; ) {
+			char ranges[ME_TEX_CHUNK + 16];
+
+			ME_TexRanges( n, &from, ranges, sizeof( ranges ) );
+			if ( !ranges[0] )
+				break;
+			Com_sprintf( texText[numTex], sizeof( texText[0] ), "t %s = ", ranges );
+			ME_AppendSplit( texText[numTex], sizeof( texText[0] ), me.texNames[n] );
+			edits[numEdits++] = texText[numTex++];
 		}
 	}
 
@@ -2612,7 +3175,7 @@ static void ME_ApplyShared( const char *edit ) {
 	meKv_t kv[8];
 	float f[12];
 	int n = 0, used = 0;
-	char rest[MAX_QPATH * 2];
+	char rest[ME_TEX_NAME_LEN];
 
 	while ( *edit == ' ' )
 		edit++;
@@ -2718,6 +3281,19 @@ static void ME_ApplyShared( const char *edit ) {
 		ME_KV( "classname", "rpm_hide" );
 		ME_KV( "model", va( "*%i", (int)f[0] ) );
 		break;
+	case 't': {
+		const char *eq = strchr( edit, '=' );
+		char ranges[ME_CMD_LEN];
+
+		if ( !eq )
+			return;
+		Q_strncpyz( ranges, edit + 1, Q_min( (int)sizeof( ranges ), (int)( eq - edit ) ) );
+		ME_Unsplit( eq + 1, rest, sizeof( rest ) );
+		ME_KV( "classname", "rpm_texture" );
+		ME_KV( "shader", rest );
+		ME_KV( "surfaces", ranges );
+		break;
+	}
 	default:
 		return;
 	}
@@ -2731,7 +3307,7 @@ static void ME_ApplyBatch( void ) {
 	int before;
 
 	// ours aren't lost under theirs
-	if ( me.dirty && !me.shared && me.numItems ) {
+	if ( me.dirty && !me.shared && ( me.numItems || me.numTexNames ) ) {
 		const char *name = ME_LayoutNameOk( me.layoutName ) ? me.layoutName : "before-shared";
 
 		ME_SaveLayout( name );
@@ -3223,6 +3799,11 @@ static void ME_ClickWorld( float x, float y ) {
 		return;
 	}
 	ME_CursorRay( x, y, dir );
+	// the Textures tab picks surfaces
+	if ( me.tab == ME_TAB_TEXTURES && !me.showLayouts ) {
+		ME_TexClick( dir );
+		return;
+	}
 	// the Locks tab picks a door or a trigger, never a prop
 	if ( ME_LocksTab() ) {
 		if ( ME_Pick( me.camOrg, dir, &kind, &index ) && kind == ME_SEL_ENT )
@@ -3402,6 +3983,12 @@ static char *ME_FieldBuffer( int *size ) {
 		return it->noise;
 	case ME_FIELD_LOCKNAME:
 		return ME_LockNameBuffer( size );
+	case ME_FIELD_TEXTURE:
+		*size = sizeof( me.texSearch );
+		return me.texSearch;
+	case ME_FIELD_GROW:
+		*size = sizeof( me.texGrow );
+		return me.texGrow;
 	default:
 		return NULL;
 	}
@@ -3412,6 +3999,8 @@ static void ME_FieldEdited( void ) {
 		me.entScroll = 0;
 	else if ( me.field == ME_FIELD_SEARCH )
 		me.searchScroll = 0;
+	else if ( me.field == ME_FIELD_TEXTURE || me.field == ME_FIELD_GROW )
+		me.texScroll = 0;
 	else if ( me.field != ME_FIELD_LAYOUT && me.field != ME_FIELD_LOCKNAME )
 		ME_Changed();
 	if ( me.field == ME_FIELD_PATTERN && me.selKind == ME_SEL_STYLE && me.sel >= 0 && me.sel < MAX_LIGHT_STYLES )
@@ -3867,6 +4456,13 @@ void CL_MapEditor_Frame( void ) {
 	}
 	if ( me.propsDirty || me.propsShown != ME_Shown() )
 		ME_ApplyProps();
+	// the preview only while the Textures tab is up
+	if ( me.texPreview[0] && ( !me.open || me.tab != ME_TAB_TEXTURES || me.showLayouts ) ) {
+		me.texPreview[0] = '\0';
+		me.texDirty = qtrue;
+	}
+	if ( me.texDirty || me.texShown != ME_Shown() )
+		ME_ApplyTextures();
 	if ( !me.fogsRead )
 		ME_ReadFogs();
 	if ( me.fogsDirty || me.fogsShown != ME_Shown() || me.fogItemsSum != ME_FogItemsSum() )
@@ -4050,6 +4646,148 @@ static qboolean ME_IsHover( int kind, int index ) {
 	return (qboolean)( me.hoverKind == kind && me.hover == index );
 }
 
+// a surface's edges: a flat one's outline, a curve's control points' border, a box round one of
+// the map's models
+// the outlines' edges, drawn over the picture in 2D: in 3D, the grass and bushes a surface grows
+// (surface sprites) can be drawn over them
+#define ME_MAX_TEXSEGS		1500
+
+static struct {
+	vec3_t		a, b;
+	const byte	*color;
+} meTexSegs[ME_MAX_TEXSEGS];
+static int meNumTexSegs;
+
+static void ME_TexSeg( const vec3_t a, const vec3_t b, const byte *color ) {
+	if ( meNumTexSegs >= ME_MAX_TEXSEGS )
+		return;
+	VectorCopy( a, meTexSegs[meNumTexSegs].a );
+	VectorCopy( b, meTexSegs[meNumTexSegs].b );
+	meTexSegs[meNumTexSegs++].color = color;
+}
+
+static void ME_TexOutline( int s, const byte *color ) {
+	const int w = me.surfGrid[s][0], h = me.surfGrid[s][1], fv = me.surfFirstVert[s];
+	int first, count = 0;
+
+	if ( w ) {
+		for ( int c = 0; c + 1 < w; c++ ) {
+			ME_TexSeg( me.texVerts[fv + c], me.texVerts[fv + c + 1], color );
+			ME_TexSeg( me.texVerts[fv + ( h - 1 ) * w + c], me.texVerts[fv + ( h - 1 ) * w + c + 1], color );
+		}
+		for ( int r = 0; r + 1 < h; r++ ) {
+			ME_TexSeg( me.texVerts[fv + r * w], me.texVerts[fv + ( r + 1 ) * w], color );
+			ME_TexSeg( me.texVerts[fv + r * w + w - 1], me.texVerts[fv + ( r + 1 ) * w + w - 1], color );
+		}
+		return;
+	}
+	if ( me.tris && s < me.numBspSurfs && me.surfFirstTri[s] >= 0 ) {
+		first = me.surfFirstTri[s];
+		while ( first + count < me.numTris && me.tris[first + count].surf == s )
+			count++;
+	}
+	if ( !count || count > 64 ) {
+		vec3_t mins, maxs, a, b;
+
+		ClearBounds( mins, maxs );
+		for ( int v = 0; v < me.surfNumVert[s]; v++ )
+			AddPointToBounds( me.texVerts[fv + v], mins, maxs );
+		for ( int e = 0; e < 12; e++ ) {
+			// the twelve edges: four along each axis
+			const int axis = e / 4, o1 = ( axis + 1 ) % 3, o2 = ( axis + 2 ) % 3;
+
+			a[axis] = mins[axis];
+			b[axis] = maxs[axis];
+			a[o1] = b[o1] = ( e & 1 ) ? maxs[o1] : mins[o1];
+			a[o2] = b[o2] = ( e & 2 ) ? maxs[o2] : mins[o2];
+			ME_TexSeg( a, b, color );
+		}
+		return;
+	}
+	for ( int t = 0; t < count; t++ ) {
+		const meTri_t *tri = &me.tris[first + t];
+
+		for ( int e = 0; e < 3; e++ ) {
+			const int a = tri->v[e], b = tri->v[( e + 1 ) % 3];
+			qboolean inner = qfalse;
+
+			// an edge two of its triangles share is inside it
+			for ( int u = 0; u < count && !inner; u++ ) {
+				const meTri_t *o = &me.tris[first + u];
+
+				for ( int f = 0; f < 3 && u != t; f++ ) {
+					if ( o->v[f] == b && o->v[( f + 1 ) % 3] == a )
+						inner = qtrue;
+				}
+			}
+			if ( !inner )
+				ME_TexSeg( me.bspVerts[a], me.bspVerts[b], color );
+		}
+	}
+}
+
+static int QDECL ME_CompareSurfDist( const void *a, const void *b ) {
+	const float da = DistanceSquared( me.texVerts[me.surfFirstVert[*(const int *)a]], me.camOrg );
+	const float db = DistanceSquared( me.texVerts[me.surfFirstVert[*(const int *)b]], me.camOrg );
+
+	return da < db ? -1 : da > db ? 1 : 0;
+}
+
+// the surface under the cursor, and what a click there would take; found again only when the
+// cursor, the camera or what a click takes has changed
+static void ME_TexFindHover( void ) {
+	const float key[9] = { me.cursorX, me.cursorY, me.camOrg[0], me.camOrg[1], me.camOrg[2], me.camAng[0], me.camAng[1],
+		(float)me.texMode, (float)me.numTexSurfs };
+	vec3_t dir;
+	byte *mark;
+
+	if ( !memcmp( key, me.texHoverKey, sizeof( key ) ) )
+		return;
+	memcpy( me.texHoverKey, key, sizeof( key ) );
+	me.texHover = -1;
+	me.numTexHover = 0;
+	if ( me.flying || me.cursorX >= ME_PANEL_X || !me.surfTex )
+		return;
+	ME_CursorRay( me.cursorX, me.cursorY, dir );
+	me.texHover = ME_TexHit( me.camOrg, dir );
+	if ( me.texHover < 0 )
+		return;
+	if ( !me.texHoverSet )
+		me.texHoverSet = (int *)Z_Malloc( me.numTexSurfs * sizeof( int ), TAG_GENERAL, qfalse );
+	mark = (byte *)Z_Malloc( me.numTexSurfs, TAG_GENERAL, qtrue );
+	me.numTexHover = ME_TexTake( me.texHover, me.texMode, me.texHoverSet, mark );
+	Z_Free( mark );
+}
+
+// what a click would take outlined, then the picked, the nearest first while there are lines to
+// spare
+static void ME_TexLines( void ) {
+	static const byte hoverColor[4] = { 90, 230, 255, 255 };
+	int *list, n = 0;
+
+	meNumTexSegs = 0;
+	ME_TexFindHover();
+	if ( me.numTexHover ) {
+		list = (int *)Z_Malloc( me.numTexHover * sizeof( int ), TAG_GENERAL, qfalse );
+		memcpy( list, me.texHoverSet, me.numTexHover * sizeof( int ) );
+		qsort( list, me.numTexHover, sizeof( int ), ME_CompareSurfDist );
+		for ( int i = 0; i < me.numTexHover && meNumTexSegs < ME_MAX_TEXSEGS / 2; i++ )
+			ME_TexOutline( list[i], hoverColor );
+		Z_Free( list );
+	}
+	if ( !me.numTexPicked || !me.texPicked )
+		return;
+	list = (int *)Z_Malloc( me.numTexPicked * sizeof( int ), TAG_GENERAL, qfalse );
+	for ( int i = 0; i < me.numTexSurfs && n < me.numTexPicked; i++ ) {
+		if ( me.texPicked[i] )
+			list[n++] = i;
+	}
+	qsort( list, n, sizeof( int ), ME_CompareSurfDist );
+	for ( int i = 0; i < n && meNumTexSegs < ME_MAX_TEXSEGS; i++ )
+		ME_TexOutline( list[i], meCandColor );
+	Z_Free( list );
+}
+
 static void ME_AddEditorLines( void ) {
 	static meNear_t near_[ME_MAX_ENTS];
 	int numNear = 0;
@@ -4057,6 +4795,8 @@ static void ME_AddEditorLines( void ) {
 	me.numLines = 0;
 	if ( me.haveAim && ( me.flying || me.grabbing ) )
 		ME_Cross( me.aim, 4.0f, meAimColor );
+	if ( me.tab == ME_TAB_TEXTURES && !me.showLayouts )
+		ME_TexLines();
 
 	// ours first, they're what's worked on
 	for ( int i = 0; i < me.numItems; i++ ) {
@@ -5262,6 +6002,212 @@ static void ME_DrawAddedFogs( float x, float y, float w ) {
 	}
 }
 
+static void ME_DrawTexturesTab( float x, float y, float w ) {
+	static const char *modes[3] = { "Surface", "Joined", "All of it" };
+	static int matches[32768];
+	const float third = ( w - 8 ) / 3.0f, half = ( w - 4 ) * 0.5f;
+	const int total = CL_ShaderManager_ShaderCount(), rows = 3;
+	int numMatches = 0, clicked, firstPicked = -1, pickedGiven = 0, counts[ME_MAX_TEXNAMES] = { 0 };
+	qboolean found = qfalse, growFound = qfalse;
+	float rowW;
+
+	if ( !re->ext.SetWorldShaders ) {
+		ME_Text( x, y, S_COLOR_GREY "Textures can be changed with the release's", meWhite );
+		ME_Text( x, y + ME_ROW_H, S_COLOR_GREY "renderers, OpenGL or Vulkan", meWhite );
+		return;
+	}
+	if ( !me.surfTex ) {
+		ME_Text( x, y, S_COLOR_GREY "The map's surfaces couldn't be read", meWhite );
+		return;
+	}
+	for ( int i = 0; i < me.numTexSurfs; i++ ) {
+		if ( me.texPicked[i] ) {
+			if ( firstPicked < 0 )
+				firstPicked = i;
+			if ( me.surfTex[i] )
+				pickedGiven++;
+		}
+		if ( me.surfTex[i] > 0 && me.surfTex[i] <= me.numTexNames )
+			counts[me.surfTex[i] - 1]++;
+	}
+
+	// what a click on the map picks
+	ME_Text( x, y, "A click on the map picks", meDim );
+	y += ME_ROW_H;
+	for ( int i = 0; i < 3; i++ ) {
+		if ( ME_Button( x + i * ( third + 4 ), y, third, modes[i], (qboolean)( me.texMode == i ), qtrue ) )
+			me.texMode = i;
+	}
+	y += ME_CTRL_H + ME_GAP;
+	ME_TextClipped( x, y, w, me.texMode == 0 ? S_COLOR_GREY "the surface clicked" : me.texMode == 1 ? S_COLOR_GREY "it and the ones of its texture joined to it"
+		: S_COLOR_GREY "every surface of its texture in the map", meWhite );
+	y += ME_ROW_H + 2;
+	if ( firstPicked >= 0 )
+		ME_TextClipped( x, y, w, va( "%i picked" S_COLOR_GREY "  %s", me.numTexPicked, me.bspShaders[me.surfShader[firstPicked]] ), meWhite );
+	else
+		ME_TextClipped( x, y, w, S_COLOR_GREY "Click a surface; Shift+click adds or takes off", meWhite );
+	y += ME_ROW_H + 2;
+	if ( ME_Button( x, y, half, "Pick none", qfalse, (qboolean)( me.numTexPicked > 0 ) ) )
+		ME_TexPickNone();
+	if ( ME_Button( x + half + 4, y, half, "Put back", qfalse, (qboolean)( pickedGiven > 0 ) ) )
+		ME_TexSet( NULL );
+	y += ME_CTRL_H + ME_GAP + 4;
+
+	// the texture to give them, or the sprite to grow on them: typed, or picked from the ones
+	// that match
+	if ( ME_Button( x, y, half, "Texture", (qboolean)( me.texPage == 0 ), qtrue ) && me.texPage != 0 ) {
+		me.texPage = 0;
+		me.texScroll = 0;
+		me.field = ME_FIELD_NONE;
+	}
+	if ( ME_Button( x + half + 4, y, half, me.texGrow[0] ? "Grows on it: on" : "Grows on it", (qboolean)( me.texPage == 1 ), qtrue ) && me.texPage != 1 ) {
+		me.texPage = 1;
+		me.texScroll = 0;
+		me.field = ME_FIELD_NONE;
+	}
+	y += ME_CTRL_H + ME_GAP;
+	{
+		char *field = me.texPage ? me.texGrow : me.texSearch;
+
+		for ( int i = 0; i < total; i++ ) {
+			const char *name = CL_ShaderManager_ShaderName( i );
+
+			if ( me.texSearch[0] && !Q_stricmp( name, me.texSearch ) )
+				found = qtrue;
+			if ( me.texGrow[0] && !Q_stricmp( name, me.texGrow ) )
+				growFound = qtrue;
+			if ( numMatches < (int)ARRAY_LEN( matches ) && ( field[0] ? Q_stristr( name, field ) != NULL
+				: me.texPage ? Q_stristr( name, "sprite" ) != NULL : !Q_stricmpn( name, "textures/", 9 ) ) )
+				matches[numMatches++] = i;
+		}
+		ME_TextBox( x, y, w, me.texPage ? ME_FIELD_GROW : ME_FIELD_TEXTURE, field, me.texPage ? "a sprite image to grow; empty: none"
+			: me.texGrow[0] ? "the ground; empty: their own" : "type to look for one, e.g. snow" );
+		if ( field[0] && !( me.texPage ? growFound : found ) )
+			ME_Text( x + w - 4 - ME_TextWidth( "not found" ), y + 2, S_COLOR_RED "not found", meWhite );
+		y += ME_CTRL_H + ME_GAP;
+		clicked = ME_ListRows( x, y, w, ME_TEX_ROWS, numMatches, &me.texScroll, &rowW );
+		for ( int r = 0; r < ME_TEX_ROWS && me.texScroll + r < numMatches; r++ ) {
+			const char *name = CL_ShaderManager_ShaderName( matches[me.texScroll + r] );
+			const qboolean grows = CL_ShaderManager_Grows( name );
+
+			if ( !Q_stricmp( name, field ) )
+				ME_RowHighlight( x, y, rowW, r + me.texScroll, me.texScroll, ME_TEX_ROWS );
+			// one that grows grass and such says so
+			ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, rowW - 8 - ( grows ? ME_TextWidth( "grows" ) + 4 : 0 ), name, meWhite );
+			if ( grows )
+				ME_Text( x + rowW - 4 - ME_TextWidth( "grows" ), y + 1 + r * ME_ROW_H, S_COLOR_GREEN "grows", meWhite );
+		}
+		if ( !numMatches )
+			ME_Text( x + 4, y + 2, S_COLOR_GREY "None match", meWhite );
+		if ( clicked >= 0 ) {
+			Q_strncpyz( field, CL_ShaderManager_ShaderName( matches[clicked] ), MAX_QPATH );
+			me.field = ME_FIELD_NONE;
+			if ( me.texPage )
+				growFound = qtrue;
+			else
+				found = qtrue;
+		}
+		// shown on the picked as it's looked at: the row under the mouse, else the ones chosen
+		{
+			const char *hover = "", *ground, *sprite;
+			char want[ME_TEX_NAME_LEN];
+
+			for ( int r = 0; r < ME_TEX_ROWS && me.texScroll + r < numMatches; r++ ) {
+				if ( ME_InRect( x, y + 1 + r * ME_ROW_H, rowW, ME_ROW_H ) )
+					hover = CL_ShaderManager_ShaderName( matches[me.texScroll + r] );
+			}
+			ground = !me.texPage && hover[0] ? hover : found ? me.texSearch : "";
+			sprite = me.texPage && hover[0] ? hover : growFound ? me.texGrow : "";
+			Q_strncpyz( want, !me.numTexPicked ? "" : sprite[0] ? ME_GrowName( ground, sprite ) : ground, sizeof( want ) );
+			if ( Q_stricmp( want, me.texPreview ) ) {
+				Q_strncpyz( me.texPreview, want, sizeof( me.texPreview ) );
+				me.texDirty = qtrue;
+			}
+		}
+		y += ME_TEX_ROWS * ME_ROW_H + 4;
+	}
+
+	// the sprites' size and how far apart, as surfaceSprites has them
+	{
+		static const char *labels[3] = { "Width", "Height", "Apart" };
+		int *values[3] = { &me.growWidth, &me.growHeight, &me.growSpacing };
+
+		for ( int k = 0; k < 3; k++ ) {
+			const float cx = x + k * ( third + 4 );
+			const char *value = va( "%i", *values[k] );
+			const qboolean on = (qboolean)( me.texGrow[0] != '\0' );
+			int steps = 0;
+
+			ME_Text( cx, y + 2, labels[k], on ? meDim : meBorder );
+			if ( ME_Button( cx + third - 46, y, 14, "-", qfalse, on ) )
+				steps--;
+			ME_Text( cx + third - 23 - ME_TextWidth( value ) * 0.5f, y + 2, value, on ? meWhite : meBorder );
+			if ( ME_Button( cx + third - 14, y, 14, "+", qfalse, on ) )
+				steps++;
+			if ( on && me.wheel && ME_InRect( cx, y, third, ME_CTRL_H ) ) {
+				steps -= me.wheel;
+				me.wheel = 0;
+			}
+			if ( steps ) {
+				*values[k] = Com_Clampi( 4, 256, *values[k] + steps * (int)ME_Step( 4.0f ) );
+				me.texDirty = qtrue;
+			}
+		}
+		y += ME_CTRL_H + ME_GAP;
+	}
+	ME_TextClipped( x, y, w, me.texPreview[0] ? va( S_COLOR_CYAN "Showing: " S_COLOR_WHITE "%s", ME_TexLabel( me.texPreview ) )
+		: me.numTexPicked ? S_COLOR_GREY "Point at one in the list to see it on the picked" : S_COLOR_GREY "Pick surfaces to try textures on them", meWhite );
+	y += ME_ROW_H + 2;
+	{
+		const char *keep = growFound ? ME_GrowName( found ? me.texSearch : "", me.texGrow ) : found ? me.texSearch : "";
+		char kept[ME_TEX_NAME_LEN];
+
+		Q_strncpyz( kept, keep, sizeof( kept ) );
+		if ( ME_Button( x, y, w, me.numTexPicked ? va( "Keep it on the %i picked", me.numTexPicked ) : "Keep it on the picked", qfalse,
+			(qboolean)( me.numTexPicked > 0 && kept[0] ) ) )
+			ME_TexSet( kept );
+	}
+	y += ME_CTRL_H + ME_GAP + 6;
+
+	// the textures given, each picking its surfaces again
+	ME_Text( x, y, va( "Given (%i)", me.numTexNames ), meDim );
+	y += ME_ROW_H;
+	clicked = ME_ListRows( x, y, w, rows, me.numTexNames, &me.texSwapScroll, &rowW );
+	for ( int r = 0; r < rows && me.texSwapScroll + r < me.numTexNames; r++ ) {
+		const int n = me.texSwapScroll + r;
+		const char *count = va( "%i", counts[n] );
+
+		ME_TextClipped( x + 4, y + 1 + r * ME_ROW_H, rowW - 12 - ME_TextWidth( count ), ME_TexLabel( me.texNames[n] ), meWhite );
+		ME_Text( x + rowW - 4 - ME_TextWidth( count ), y + 1 + r * ME_ROW_H, count, meDim );
+	}
+	if ( !me.numTexNames )
+		ME_Text( x + 4, y + 2, S_COLOR_GREY "None yet", meWhite );
+	if ( clicked >= 0 ) {
+		for ( int i = 0; i < me.numTexSurfs; i++ )
+			me.texPicked[i] = (byte)( me.surfTex[i] == clicked + 1 );
+		ME_TexCountPicked();
+		// what it was made of, back in the fields
+		{
+			char ground[MAX_QPATH], sprite[MAX_QPATH];
+			int gw, gh, gs;
+
+			if ( ME_GrowParts( me.texNames[clicked], ground, sprite, &gw, &gh, &gs ) ) {
+				Q_strncpyz( me.texSearch, ground, sizeof( me.texSearch ) );
+				Q_strncpyz( me.texGrow, sprite, sizeof( me.texGrow ) );
+				me.growWidth = gw;
+				me.growHeight = gh;
+				me.growSpacing = gs;
+			} else {
+				Q_strncpyz( me.texSearch, me.texNames[clicked], sizeof( me.texSearch ) );
+				me.texGrow[0] = '\0';
+			}
+		}
+	}
+	y += rows * ME_ROW_H + 6;
+	ME_Text( x, y, S_COLOR_GREY "Click one to pick its surfaces again; kept", meWhite );
+	ME_Text( x, y + ME_ROW_H, S_COLOR_GREY "ones are saved and shared with the layout", meWhite );
+}
+
 static void ME_DrawFogTab( float x, float y, float w ) {
 	const float half = ( w - 4 ) * 0.5f;
 	const meItem_t *sel = ME_SelectedItem();
@@ -5439,6 +6385,48 @@ static qboolean ME_Project( const vec3_t point, float *x, float *y ) {
 	if ( !ME_ProjectAny( point, x, y ) )
 		return qfalse;
 	return (qboolean)( *x >= 0 && *x <= ME_PANEL_X && *y >= 0 && *y <= SCREEN_HEIGHT );
+}
+
+// the outlines' edges on the screen, cut where they go behind the camera; the panel, drawn
+// after, covers what goes past it
+static void ME_DrawTexSegs( void ) {
+	for ( int i = 0; i < meNumTexSegs; i++ ) {
+		vec3_t a, b, d;
+		float fa, fb, x0, y0, x1, y1, len;
+
+		VectorCopy( meTexSegs[i].a, a );
+		VectorCopy( meTexSegs[i].b, b );
+		VectorSubtract( a, me.viewOrg, d );
+		fa = DotProduct( d, me.viewAxis[0] );
+		VectorSubtract( b, me.viewOrg, d );
+		fb = DotProduct( d, me.viewAxis[0] );
+		if ( fa < 5.0f && fb < 5.0f )
+			continue;
+		// the end behind moved up to where it's just in front
+		if ( fa < 5.0f ) {
+			const float t = ( fb - 5.0f ) / ( fb - fa );
+
+			for ( int k = 0; k < 3; k++ )
+				a[k] = b[k] + t * ( a[k] - b[k] );
+		} else if ( fb < 5.0f ) {
+			const float t = ( fa - 5.0f ) / ( fa - fb );
+
+			for ( int k = 0; k < 3; k++ )
+				b[k] = a[k] + t * ( b[k] - a[k] );
+		}
+		if ( !ME_ProjectAny( a, &x0, &y0 ) || !ME_ProjectAny( b, &x1, &y1 ) )
+			continue;
+		len = sqrtf( ( x1 - x0 ) * ( x1 - x0 ) + ( y1 - y0 ) * ( y1 - y0 ) );
+		if ( len < 0.5f || len > 4000.0f )
+			continue;
+		{
+			const vec4_t color = { meTexSegs[i].color[0] / 255.0f, meTexSegs[i].color[1] / 255.0f, meTexSegs[i].color[2] / 255.0f, 1.0f };
+
+			re->SetColor( color );
+			re->DrawRotatePic2( ( x0 + x1 ) * 0.5f, ( y0 + y1 ) * 0.5f, len, 1.2f, 0, 0, 1, 1, RAD2DEG( atan2f( y1 - y0, x1 - x0 ) ), cls.whiteShader );
+		}
+	}
+	re->SetColor( NULL );
 }
 
 // names over what's near, and over what's chosen or under the cursor
@@ -5643,6 +6631,22 @@ static void ME_DrawEditor( void ) {
 
 	ME_DrawLabels();
 
+	// in the Textures tab, the outlines over the picture, and what's under the cursor and what a
+	// click takes
+	if ( me.tab == ME_TAB_TEXTURES && !me.showLayouts )
+		ME_DrawTexSegs();
+	if ( me.tab == ME_TAB_TEXTURES && !me.showLayouts && !me.flying && me.cursorX < ME_PANEL_X ) {
+		if ( me.texHover >= 0 && me.texHover < me.numTexSurfs ) {
+			const char *name = me.bspShaders[me.surfShader[me.texHover]];
+
+			ME_TextClipped( me.cursorX + 18, me.cursorY + 4, ME_PANEL_X - me.cursorX - 22, name, meWhite );
+			ME_TextClipped( me.cursorX + 18, me.cursorY + 4 + ME_ROW_H, ME_PANEL_X - me.cursorX - 22,
+				va( S_COLOR_CYAN "click: %i surface%s%s", me.numTexHover, me.numTexHover == 1 ? "" : "s", ME_ShiftDown() ? ", Shift: add or take off" : "" ), meWhite );
+		} else if ( me.surfTex ) {
+			ME_TextClipped( me.cursorX + 18, me.cursorY + 4, ME_PANEL_X - me.cursorX - 22, S_COLOR_GREY "nothing here takes a texture", meWhite );
+		}
+	}
+
 	// top left: what this is, how it went
 	ME_Text( 8, 40, va( "Map editor" S_COLOR_GREY "   %s   fov %i", me.map, ME_Round( me.camFov ) ), meWhite );
 	if ( me.storyPick >= 0 )
@@ -5703,6 +6707,7 @@ static void ME_DrawEditor( void ) {
 	case ME_TAB_SOUNDS:		ME_DrawSoundsTab( x, y, w );	break;
 	case ME_TAB_LOCKS:		ME_DrawLocksTab( x, y, w );		break;
 	case ME_TAB_FOG:		ME_DrawFogTab( x, y, w );		break;
+	case ME_TAB_TEXTURES:	ME_DrawTexturesTab( x, y, w );	break;
 	default:				ME_DrawStylesTab( x, y, w );	break;
 	}
 
@@ -5841,6 +6846,9 @@ void CL_MapEditor_Init( void ) {
 	memset( &me, 0, sizeof( me ) );
 	me.sel = -1;
 	me.camFov = 90.0f;
+	me.growWidth = 24;
+	me.growHeight = 32;
+	me.growSpacing = 40;
 	me.flashStyle = -1;
 	me.kvEnt = -1;
 	me.showTriggers = me.showBrushes = qtrue;

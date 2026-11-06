@@ -814,6 +814,10 @@ int CL_ShaderManager_Owner( const vec3_t org, int entNum );
 qhandle_t CL_ShaderManager_OwnerShader( int owner, qhandle_t shader );
 qhandle_t CL_ShaderManager_MineFor( qhandle_t shader, const vec3_t org, int entNum );
 const refEntity_t *CL_ShaderManager_MineEntity( const refEntity_t *ent, refEntity_t *copy );
+int CL_ShaderManager_ShaderCount( void );
+const char *CL_ShaderManager_ShaderName( int i );
+qboolean CL_ShaderManager_IsSky( const char *name );
+qboolean CL_ShaderManager_Grows( const char *name );
 void CL_ShaderManager_MineHook( char **argv, int argc, const char *message );
 
 //

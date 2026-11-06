@@ -1711,15 +1711,27 @@ The map editor's world
 Triangles of the world are hidden by making them nothing, three times the same corner,
 and come back from a copy of the surface's indexes. A piece of the world is a brush
 model of its own, with the same shaders, lightmaps and vertex light, so it looks as it
-did wherever it's put. Both are for the world they were made in: a new one drops them.
+did wherever it's put. A surface can be given another shader, made with its own lightmaps
+and light styles so it's lit as it was. All are for the world they were made in: a new one
+drops them.
 
 ===============================================================================
 */
 
 #define WE_MAX_HIDDEN	4096
 #define WE_MAX_PIECES	256
+#define WE_MAX_SHADED	16384
 
 int tr_worldLoads;
+
+// a surface given another shader, and the one it had
+typedef struct {
+	int			surface;
+	shader_t	*shader;
+} weShaded_t;
+
+static weShaded_t	weShaded[WE_MAX_SHADED];
+static int			weNumShaded;
 
 typedef struct {
 	int			surface;
@@ -1766,7 +1778,17 @@ static void WE_CheckWorld( void ) {
 	for ( int i = 0; i < weNumPieces; i++ )
 		Z_Free( wePieces[i] );
 	weNumPieces = 0;
+	weNumShaded = 0;
 	weWorld = tr_worldLoads;
+}
+
+// a surface's shader as the map has it
+static shader_t *WE_MapShader( int surface ) {
+	for ( int i = 0; i < weNumShaded; i++ ) {
+		if ( weShaded[i].surface == surface )
+			return weShaded[i].shader;
+	}
+	return tr.world->surfaces[surface].shader;
 }
 
 static const weHidden_t *WE_FindHidden( int surface ) {
@@ -1943,7 +1965,7 @@ qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int cou
 			msurface_t *out = &msurf[bmodel->numSurfaces++];
 
 			out->viewCount = 0;
-			out->shader = src->shader;
+			out->shader = WE_MapShader( surfaces[i] );
 			out->fogIndex = src->fogIndex;
 			out->data = (surfaceType_t *)tri;
 			AddPointToBounds( tri->bounds[0], bmodel->bounds[0], bmodel->bounds[1] );
@@ -1956,4 +1978,34 @@ qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int cou
 	mod->bmodel = bmodel;
 	Com_sprintf( mod->name, sizeof( mod->name ), "*mapedit%i", weNumPieces );
 	return mod->index;
+}
+
+void RE_SetWorldShaders( const int *surfaces, const char * const *shaders, int count ) {
+	R_IssuePendingRenderCommands();
+	WE_CheckWorld();
+	// all back as the map has them, then given theirs again
+	for ( int i = 0; i < weNumShaded; i++ )
+		tr.world->surfaces[weShaded[i].surface].shader = weShaded[i].shader;
+	weNumShaded = 0;
+	if ( !tr.world )
+		return;
+
+	for ( int i = 0; i < count && weNumShaded < WE_MAX_SHADED; i++ ) {
+		const int s = surfaces[i];
+		msurface_t *surf;
+		shader_t *sh;
+
+		if ( s < 0 || s >= tr.world->numsurfaces || !shaders[i] || !shaders[i][0] )
+			continue;
+		surf = &tr.world->surfaces[s];
+		// a sky is drawn by the sky code, a flare isn't a surface to see
+		if ( !surf->shader || surf->shader->sky || *surf->data == SF_FLARE || WE_MapShader( s ) != surf->shader )
+			continue;
+		sh = R_FindShader( shaders[i], surf->shader->lightmapIndex, surf->shader->styles, qtrue );
+		if ( !sh || sh->defaultShader || sh->sky )
+			continue;
+		weShaded[weNumShaded].surface = s;
+		weShaded[weNumShaded++].shader = surf->shader;
+		surf->shader = sh;
+	}
 }

@@ -1491,6 +1491,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.ext.ForgetMissing					= RE_ForgetMissing;		// OpenJK-rpmod
 	re.ext.G2API_SetBoneAnglesOffset = G2API_SetBoneAnglesOffset;	// OpenJK-rpmod
 	re.ext.G2API_FreeBone = G2API_FreeBone;	// OpenJK-rpmod
+	re.ext.SetWorldShaders					= RE_SetWorldShaders;	// OpenJK-rpmod
+	re.ext.MakeSpriteShader					= RE_MakeSpriteShader;	// OpenJK-rpmod
 	re.ext.GetFogs							= RE_GetFogs;			// OpenJK-rpmod
 	re.ext.SetFog							= RE_SetFog;			// OpenJK-rpmod
 	re.ext.AddFog							= RE_AddFog;			// OpenJK-rpmod

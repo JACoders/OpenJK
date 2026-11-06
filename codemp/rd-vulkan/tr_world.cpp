@@ -1567,15 +1567,31 @@ and come back from a copy of the surface's indexes. With world caching (r_vbo) t
 surface's triangles are on the graphics card as the map has them, so a surface with
 hidden ones is drawn the uncached way meanwhile. A piece of the world is a brush model
 of its own, with the same shaders, lightmaps and vertex light, so it looks as it did
-wherever it's put. Both are for the world they were made in: a new one drops them.
+wherever it's put. A surface can be given another shader, made with its own lightmaps and
+light styles; the cache has it drawn with the map's, so it's drawn the uncached way too.
+All are for the world they were made in: a new one drops them.
 
 ===============================================================================
 */
 
 #define WE_MAX_HIDDEN	4096
 #define WE_MAX_PIECES	256
+#define WE_MAX_SHADED	16384
 
 int tr_worldLoads;
+
+// a surface given another shader: the one it had, its place in the world cache, and its
+// surface sprites, the map's shader's, cached too
+typedef struct {
+	int			surface;
+	shader_t	*shader;
+	int			*vboItemIndex;
+	int			vboItem;
+	uint32_t	numSprites;
+} weShaded_t;
+
+static weShaded_t	weShaded[WE_MAX_SHADED];
+static int			weNumShaded;
 
 typedef struct {
 	int			surface;
@@ -1626,6 +1642,7 @@ static void WE_CheckWorld( void ) {
 	for ( int i = 0; i < weNumPieces; i++ )
 		Z_Free( wePieces[i] );
 	weNumPieces = 0;
+	weNumShaded = 0;
 	weWorld = tr_worldLoads;
 }
 
@@ -1635,6 +1652,21 @@ static const weHidden_t *WE_FindHidden( int surface ) {
 			return &weHidden[i];
 	}
 	return NULL;
+}
+
+static weShaded_t *WE_FindShaded( int surface ) {
+	for ( int i = 0; i < weNumShaded; i++ ) {
+		if ( weShaded[i].surface == surface )
+			return &weShaded[i];
+	}
+	return NULL;
+}
+
+// a surface's shader as the map has it
+static shader_t *WE_MapShader( int surface ) {
+	const weShaded_t *s = WE_FindShaded( surface );
+
+	return s ? s->shader : tr.world->surfaces[surface].shader;
 }
 
 // the surface's triangles as the map has them, even with some hidden
@@ -1655,8 +1687,14 @@ void RE_HideWorldTriangles( const int *surfaces, const int *triangles, int count
 	WE_CheckWorld();
 	// all back as the map has them, then hidden again as asked
 	for ( int i = 0; i < weNumHidden; i++ ) {
+		weShaded_t *s = WE_FindShaded( weHidden[i].surface );
+
 		memcpy( weHidden[i].indexes, weHidden[i].saved, weHidden[i].numIndexes * sizeof( int ) );
-		*weHidden[i].vboItemIndex = weHidden[i].vboItem;
+		// still with another shader: out of the cache still, which keeps where it was
+		if ( s )
+			s->vboItem = weHidden[i].vboItem;
+		else
+			*weHidden[i].vboItemIndex = weHidden[i].vboItem;
 		Z_Free( weHidden[i].saved );
 	}
 	weNumHidden = 0;
@@ -1677,9 +1715,10 @@ void RE_HideWorldTriangles( const int *surfaces, const int *triangles, int count
 				h->numIndexes = numIndexes;
 				h->saved = (int *)Z_Malloc( numIndexes * sizeof( int ), TAG_GENERAL, qfalse );
 				memcpy( h->saved, indexes, numIndexes * sizeof( int ) );
-				// out of the world cache while it has hidden triangles
+				// out of the world cache while it has hidden triangles; with another shader it's out
+				// already, and that keeps where it was
 				h->vboItemIndex = vboItemIndex;
-				h->vboItem = *vboItemIndex;
+				h->vboItem = WE_FindShaded( surfaces[i] ) ? WE_FindShaded( surfaces[i] )->vboItem : *vboItemIndex;
 				*vboItemIndex = 0;
 			}
 		}
@@ -1808,7 +1847,7 @@ qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int cou
 			msurface_t *out = &msurf[bmodel->numSurfaces++];
 
 			out->viewCount = 0;
-			out->shader = src->shader;
+			out->shader = WE_MapShader( surfaces[i] );
 			out->fogIndex = src->fogIndex;
 			out->data = (surfaceType_t *)tri;
 			AddPointToBounds( tri->bounds[0], bmodel->bounds[0], bmodel->bounds[1] );
@@ -1821,4 +1860,71 @@ qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int cou
 	mod->data.bmodel = bmodel;
 	Com_sprintf( mod->name, sizeof( mod->name ), "*mapedit%i", weNumPieces );
 	return mod->index;
+}
+
+// a world surface's place in the world cache, NULL for one that has none
+static int *WE_VboSlot( msurface_t *surf ) {
+	switch ( *surf->data ) {
+	case SF_TRIANGLES:	return &( (srfTriangles_t *)surf->data )->vboItemIndex;
+	case SF_FACE:		return &( (srfSurfaceFace_t *)surf->data )->vboItemIndex;
+	case SF_GRID:		return &( (srfGridMesh_t *)surf->data )->vboItemIndex;
+	default:			return NULL;
+	}
+}
+
+void RE_SetWorldShaders( const int *surfaces, const char * const *shaders, int count ) {
+	WE_CheckWorld();
+	// all back as the map has them, then given theirs again
+	for ( int i = 0; i < weNumShaded; i++ ) {
+		weHidden_t *h = (weHidden_t *)WE_FindHidden( weShaded[i].surface );
+
+		tr.world->surfaces[weShaded[i].surface].shader = weShaded[i].shader;
+		tr.world->surfaces[weShaded[i].surface].surface_sprites.num_stages = weShaded[i].numSprites;
+		// still with hidden triangles: out of the cache still, which keeps where it was
+		if ( weShaded[i].vboItemIndex ) {
+			if ( h )
+				h->vboItem = weShaded[i].vboItem;
+			else
+				*weShaded[i].vboItemIndex = weShaded[i].vboItem;
+		}
+	}
+	weNumShaded = 0;
+	if ( !tr.world )
+		return;
+
+	for ( int i = 0; i < count && weNumShaded < WE_MAX_SHADED; i++ ) {
+		const int s = surfaces[i];
+		msurface_t *surf;
+		shader_t *sh;
+		weShaded_t *out;
+		weHidden_t *h;
+
+		if ( s < 0 || s >= tr.world->numsurfaces || !shaders[i] || !shaders[i][0] )
+			continue;
+		surf = &tr.world->surfaces[s];
+		// a sky is drawn by the sky code, a flare isn't a surface to see
+		if ( !surf->shader || surf->shader->isSky || *surf->data == SF_FLARE || WE_FindShaded( s ) )
+			continue;
+		sh = R_FindShader( shaders[i], surf->shader->lightmapIndex, surf->shader->styles, qtrue );
+		if ( !sh || sh->defaultShader || sh->isSky )
+			continue;
+		out = &weShaded[weNumShaded++];
+		out->surface = s;
+		out->shader = surf->shader;
+		out->vboItemIndex = WE_VboSlot( surf );
+		out->vboItem = 0;
+		// out of the cache, where the map's shader has it; with hidden triangles it's out already,
+		// and where it was is kept there
+		h = (weHidden_t *)WE_FindHidden( s );
+		if ( out->vboItemIndex ) {
+			out->vboItem = h ? h->vboItem : *out->vboItemIndex;
+			*out->vboItemIndex = 0;
+		}
+		// the map's shader's grass and such go with it; the new one's are grown each frame, as
+		// only the map's own were made when it loaded
+		out->numSprites = surf->surface_sprites.num_stages;
+		surf->surface_sprites.num_stages = 0;
+		sh->worldSwapped = qtrue;
+		surf->shader = sh;
+	}
 }

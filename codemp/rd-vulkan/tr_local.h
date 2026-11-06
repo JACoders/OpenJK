@@ -656,6 +656,7 @@ typedef struct shader_s {
 	qboolean	entityMergable;						// merge across entites optimizable (smoke, blood)
 
 	qboolean	isSky;
+	qboolean	worldSwapped;						// OpenJK-rpmod: given to world surfaces by the map editor, its surface sprites grown each frame
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
 
@@ -2351,6 +2352,8 @@ void RE_ClearAddedFogs( void );
 extern int tr_worldLoads;
 void RE_HideWorldTriangles( const int *surfaces, const int *triangles, int count );
 qhandle_t RE_WorldPieceModel( const int *surfaces, const int *triangles, int count, const vec3_t origin );
+void RE_SetWorldShaders( const int *surfaces, const char * const *shaders, int count );
+void RE_MakeSpriteShader( const char *name, const char *ground, const char *sprite, int width, int height, int spacing );
 
 /*
 =============================================================
