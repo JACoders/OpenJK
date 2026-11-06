@@ -4573,3 +4573,32 @@ void CL_ShaderManager_Shutdown( void ) {
 	sm.previews.clear();
 	sm.shaderView.clear();
 }
+
+// the asset manager: the overlays, asked of the server, and the shaders remapped
+void CL_ShaderManager_RequestOverlays( void ) {
+	if ( cls.state != CA_ACTIVE )
+		return;
+	sm.overlays.clear();
+	sm.overlayListTime = cls.realtime;
+	CL_AddReliableCommand( "rpshader overlay list", qfalse );
+}
+
+int CL_ShaderManager_NumOverlays( void ) {
+	return (int)sm.overlays.size();
+}
+
+const char *CL_ShaderManager_OverlayShader( int i ) {
+	return i >= 0 && i < (int)sm.overlays.size() ? sm.overlays[i].shader.c_str() : "";
+}
+
+int CL_ShaderManager_NumRemaps( void ) {
+	return (int)sm.remapFrom.size();
+}
+
+const char *CL_ShaderManager_RemapFrom( int i ) {
+	return i >= 0 && i < (int)sm.remapFrom.size() ? sm.remapFrom[i].c_str() : "";
+}
+
+const char *CL_ShaderManager_RemapTo( int i ) {
+	return i >= 0 && i < (int)sm.remapTo.size() ? sm.remapTo[i].c_str() : "";
+}

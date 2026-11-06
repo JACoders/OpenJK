@@ -1841,3 +1841,17 @@ void CL_SoundManager_Draw( void ) {
 	WG_DrawOverlay();
 	re->DrawStretchPic( sm.cursorX, sm.cursorY, 32, 32, 0, 0, 1, 1, cls.cursorShader );
 }
+
+// the asset manager: the looping sounds, asked of the server, and as its list has them
+void CL_SoundManager_RequestList( void ) {
+	if ( cls.state == CA_ACTIVE )
+		SM_RequestList();
+}
+
+int CL_SoundManager_NumLoops( void ) {
+	return sm.numLoops;
+}
+
+const char *CL_SoundManager_LoopPath( int i ) {
+	return i >= 0 && i < sm.numLoops ? sm.loops[i].path : "";
+}

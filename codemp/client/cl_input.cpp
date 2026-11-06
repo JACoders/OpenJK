@@ -1104,6 +1104,8 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		CL_AnimManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_PRESETS ) {
 		CL_Presets_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_ASSETMANAGER ) {
+		CL_AssetManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CINEDITOR ) {
 		CL_RpCinematic_EditorMouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_RADIALMENU ) {

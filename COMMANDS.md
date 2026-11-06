@@ -217,7 +217,9 @@ The console commands, keys and settings this client adds. What each feature does
 ## Presets
 
 - `/presets` opens or closes them (the in-game menu's PRESETS)
-- `/presets save` saves who you are now as a preset; `/presets list` lists them, numbered; `/presets <number>` makes you that one
+- `/presets save` saves who you are now as a preset; `/presets list` lists them, numbered (`*` a favorite); `/presets <number>` makes you that one
+- `/skinselect` the skins of your model, to wear in a click; `/skinselect <model>` another model's; `/skinselect models` every model installed
+- `/assetmanager` what's on the map and the pk3 each is from; `/assetmanager scan` asks the server again; `/assetmanager list` prints it; `/assetmanager build [name]` packs the custom ones checked into `assetpacks/<name>.pk3`
 - `/quickconnect connect <1-4>` goes to JEDI Temple, Grounds, Region or Galaxy; `/quickconnect refresh` asks them for their map and players; `/quickconnect` lists them
 - `/adminflags` noclip, nodraw, nonsolid and notarget as known for you; `/adminflags reset` all taken as off
 - `/campreset save|load|delete [name]` the camera settings saved or loaded by name (the camera panel's box when none is given); `/campreset next|prev` loads the next saved one or the one before; `/campreset list`

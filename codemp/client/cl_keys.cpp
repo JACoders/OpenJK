@@ -1667,6 +1667,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_AnimManager_Escape();
 			return;
 		}
+		if ( ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
+			CL_AssetManager_Escape();
+			return;
+		}
 		if ( ( Key_GetCatcher() & KEYCATCH_PRESETS ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
 			CL_Presets_Escape();
 			return;
@@ -1777,6 +1781,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// presets
 	else if ( Key_GetCatcher() & KEYCATCH_PRESETS ) {
 		CL_Presets_KeyEvent( key, qtrue );
+	}
+	// asset manager
+	else if ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER ) {
+		CL_AssetManager_KeyEvent( key, qtrue );
 	}
 	// camera editor
 	else if ( Key_GetCatcher() & KEYCATCH_CINEDITOR ) {
@@ -1894,6 +1902,8 @@ void CL_CharEvent( int key ) {
 	else if ( Key_GetCatcher() & KEYCATCH_STORYTELLER )	CL_Storyteller_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_SOUNDMANAGER )	CL_SoundManager_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_ANIMMANAGER )	CL_AnimManager_CharEvent( key );
+	else if ( Key_GetCatcher() & KEYCATCH_PRESETS )		CL_Presets_CharEvent( key );
+	else if ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER )	CL_AssetManager_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_CINEDITOR )	CL_RpCinematic_EditorCharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_RADIALMENU )	CL_RadialMenu_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_LANGUAGES )	CL_Languages_CharEvent( key );

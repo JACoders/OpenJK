@@ -499,6 +499,7 @@ if(BuildMPEngine)
 		"${MPDir}/client/cl_npcnames.cpp"
 		"${MPDir}/client/cl_animmanager.cpp"
 		"${MPDir}/client/cl_presets.cpp"
+		"${MPDir}/client/cl_assetmanager.cpp"
 		"${MPDir}/client/cl_adminflags.cpp"
 		"${MPDir}/client/cl_quickconnect.cpp"
 		"${MPDir}/client/cl_discord.cpp"

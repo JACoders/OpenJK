@@ -6,6 +6,9 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Added] `Asset manager`. `/assetmanager` lists what's on the map (rpmodels, rpeffects, looping rpsounds, overlays and remapped shaders) and the pk3 each comes from, custom or the base game's, and packs the custom ones into a new pk3 in `assetpacks/` with what they need: shaders, textures, LODs, skins, skeletons, an effect's models and sounds.
+- [Added] `Skin select`. `/skinselect` shows every skin of your model as a card, worn in a click; a model made of head, torso and legs parts gets a card to put them together a part at a time. **All models** shows every model installed, worn as it is or opened for its skins. Asked for in /feedback #15.
+- [Added] `Presets: favorites, search and more pages`. A star makes a preset a favorite, **Favorites** shows only those, a search box finds them by name, model or saber, and there's room for 256, with first and last page buttons.
 - [Added] `Storyteller: edit in the diagram`. Blocks are dragged to move them (an If with all of it, several picked together), Ctrl/Shift+click picks several, and copy, cut, paste, select all and delete work there. Its **Panel** shows the actions, dragged into the diagram where a marker shows the step would go, and the picked step's settings.
 - [Added] `Storyteller: Center message placement and typewriter`. A centre message can start at the bottom of the screen or a number of lines down (the \\n's rpcentersay takes), and can be typed out a letter at a time, each with a sound picked in the sound manager.
 - [Added] `Storyteller: team triggers`. A "when" or an If can count only one team's players, red or blue, as the server has them: only that team sets it off, so only one team moves the story on. Words and use triggers count by the team the player was on when they said or used them. Asked for in /feedback #13.

@@ -689,7 +689,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_ANIMMANAGER	0x8000	// engine only, the animation manager owns keyboard and mouse
 #define KEYCATCH_PRESETS		0x10000	// engine only, the presets own keyboard and mouse
 #define KEYCATCH_FEEDBACK		0x20000	// engine only, the feedback window owns keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK )	// mods never see or clear these
+#define KEYCATCH_ASSETMANAGER	0x40000	// engine only, the asset manager owns keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -818,6 +819,27 @@ int CL_ShaderManager_ShaderCount( void );
 const char *CL_ShaderManager_ShaderName( int i );
 qboolean CL_ShaderManager_IsSky( const char *name );
 qboolean CL_ShaderManager_Grows( const char *name );
+void CL_ShaderManager_RequestOverlays( void );
+int CL_ShaderManager_NumOverlays( void );
+const char *CL_ShaderManager_OverlayShader( int i );
+int CL_ShaderManager_NumRemaps( void );
+const char *CL_ShaderManager_RemapFrom( int i );
+const char *CL_ShaderManager_RemapTo( int i );
+void CL_ModelManager_RequestList( void );
+int CL_ModelManager_NumPlaced( void );
+const char *CL_ModelManager_PlacedName( int i );
+void CL_SoundManager_RequestList( void );
+int CL_SoundManager_NumLoops( void );
+const char *CL_SoundManager_LoopPath( int i );
+void CL_AssetManager_Init( void );
+void CL_AssetManager_Shutdown( void );
+void CL_AssetManager_Close( void );
+void CL_AssetManager_Frame( void );
+void CL_AssetManager_KeyEvent( int key, qboolean down );
+void CL_AssetManager_CharEvent( int ch );
+void CL_AssetManager_MouseEvent( int dx, int dy );
+void CL_AssetManager_Escape( void );
+void CL_AssetManager_Draw( void );
 void CL_ShaderManager_MineHook( char **argv, int argc, const char *message );
 
 //
@@ -965,6 +987,7 @@ void CL_Presets_Shutdown( void );
 void CL_Presets_Close( void );
 void CL_Presets_KeyEvent( int key, qboolean down );
 void CL_Presets_MouseEvent( int dx, int dy );
+void CL_Presets_CharEvent( int ch );
 void CL_Presets_Escape( void );
 void CL_Presets_Draw( void );
 void CL_RpCinematic_Draw( void );

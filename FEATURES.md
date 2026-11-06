@@ -19,6 +19,8 @@ Some features reach other players through workarounds only this client understan
 - [Emote Preview](#emote-preview)
 - [Animation Manager](#animation-manager-custom-emotes-are-experimental)
 - [Presets](#presets)
+- [Skin Select](#skin-select)
+- [Asset Manager](#asset-manager)
 - [Discord Status](#discord-status)
 - [In-game Menu and Camera Settings](#in-game-menu-and-camera-settings)
 - [Widescreen Text](#widescreen-text)
@@ -472,7 +474,27 @@ Characters saved, and swapped to in one click: for missions, or anyone you play.
 - **Save who I am now** keeps your name, model and skin, its colours, and your sabers and their colours, with the date
 - Each preset is a card: the name in its colours (RPMod's too), the character standing with its hilts in hand, the skin, the sabers and when it was saved
 - Click a card to become that character at once; **Update** saves who you are now over it, **Delete** (twice) takes it out
+- The **\*** in a card's corner makes it a **favorite**; **Favorites** shows only those
+- **Search** finds them by name, model, skin or saber
+- Up to 256, eight a page: **<<**, **<**, **>**, **>>**, the wheel, the arrows, Home and End go through the pages
 - Kept in `presets.txt`
+
+## Skin Select
+
+Every skin of your model, and every model you have, worn in one click.
+
+- `/skinselect` shows the skins of the model you are: each `model_<skin>.skin` as a card, the character wearing it; click one to wear it. The one worn now is outlined
+- A model made of parts (`head_`, `torso_` and `lower_` skins, as the base game's Jedi are) has a **Put together** card first: step through the heads, torsos and legs with **<** and **>**, see them together, click it to wear that combination
+- **All models** shows every model installed, as it is: **Wear it**, or click it for its skins. **Back to all models** goes back
+- The same window as the presets, with their **Presets** tab, its search and its pages; `/skinselect <model>` opens on that model's skins, `/skinselect models` on all of them
+
+## Asset Manager
+
+What's been put on the map, where each comes from, and all of it packed into a pk3 of its own.
+
+- `/assetmanager` asks the server what's on the map, a list after the other: the rpmodels, the rpeffects, the looping rpsounds, the overlays, and the shaders remapped
+- Each shows the pk3 it's from: green from a custom pk3, grey the base game's, red not found here. **Custom only** hides the base game's
+- **Build it** packs the custom ones checked into `assetpacks/<name>.pk3` in the game folder, with what they need that's custom too: a model's shaders and textures and its other LODs, a Ghoul2 model's skins and skeleton, an effect's models, sounds and shaders, a shader's `.shader` file and images. The game doesn't load what's in `assetpacks/`: move the pk3 into the game folder, or hand it to the server, for it to be used
 
 ## Discord Status
 

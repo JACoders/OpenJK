@@ -2399,6 +2399,7 @@ void CL_Frame ( int msec ) {
 	CL_Update_Frame();
 	// /feedback's answers in
 	CL_Feedback_Frame();
+	CL_AssetManager_Frame();
 	// the RENDERER page's effects, shown with Post Effects on
 	CL_RenderMenu_Frame();
 	// the sound on with the window out of focus: when asked, and always while a cinematic plays,
@@ -2935,6 +2936,7 @@ void CL_Init( void ) {
 	CL_EmotePreview_Init ();
 	CL_AnimManager_Init ();
 	CL_Presets_Init ();
+	CL_AssetManager_Init ();
 	CL_AdminFlags_Init ();
 	CL_QuickConnect_Init ();
 	CL_RpCinematic_Init ();

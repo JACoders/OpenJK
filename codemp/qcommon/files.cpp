@@ -2650,6 +2650,46 @@ long FS_ReadFileFromPak( const char *source, const char *filename, void **buffer
 	return -1;
 }
 
+/*
+=================
+FS_FileSource
+
+OpenJK-rpmod: where the copy of a file the game reads is, looked for as reading it does: the
+first pure pak or (when the server allows) loose directory that has it. "gamedir/pakname.pk3",
+"gamedir" for a loose file, NULL if there's none
+=================
+*/
+const char *FS_FileSource( const char *filename ) {
+	static char		source[MAX_OSPATH];
+	searchpath_t	*search;
+
+	if ( !fs_searchpaths || !filename || !filename[0] ) {
+		return NULL;
+	}
+	for ( search = fs_searchpaths; search; search = search->next ) {
+		if ( search->pack ) {
+			pack_t *pak = search->pack;
+			fileInPack_t *file;
+
+			if ( !FS_PakIsPure( pak ) || !pak->hashTable ) {
+				continue;
+			}
+			for ( file = pak->hashTable[FS_HashFileName( filename, pak->hashSize )]; file; file = file->next ) {
+				if ( !FS_FilenameCompare( file->name, filename ) ) {
+					Com_sprintf( source, sizeof( source ), "%s/%s.pk3", pak->pakGamename, pak->pakBasename );
+					return source;
+				}
+			}
+		} else if ( search->dir && !fs_numServerPaks ) {
+			if ( FS_FileInPathExists( FS_BuildOSPath( search->dir->path, search->dir->gamedir, filename ) ) ) {
+				Q_strncpyz( source, search->dir->gamedir, sizeof( source ) );
+				return source;
+			}
+		}
+	}
+	return NULL;
+}
+
 typedef struct {
 	void	(*callback)( const char *name, void *ctx );
 	void	*ctx;

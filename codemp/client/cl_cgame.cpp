@@ -718,6 +718,7 @@ void CL_ShutdownCGame( void ) {
 	CL_SoundManager_Shutdown();
 	CL_AnimManager_Shutdown();
 	CL_Presets_Shutdown();
+	CL_AssetManager_Shutdown();
 	CL_RadialMenu_Shutdown();
 	CL_Languages_Shutdown();
 	CL_EmotePreview_Shutdown();

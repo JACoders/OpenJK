@@ -4105,3 +4105,18 @@ void CL_ModelManager_Draw( void ) {
 	else if ( mm.state == MM_CAMERA )
 		MM_DrawCamera();
 }
+
+// the asset manager: the map's rpmodels, asked of the server, and as its list has them
+void CL_ModelManager_RequestList( void ) {
+	if ( cls.state == CA_ACTIVE )
+		MM_RequestList();
+}
+
+int CL_ModelManager_NumPlaced( void ) {
+	return mm.numPieces;
+}
+
+// relative to models/, no extension, as rpmodel takes it; "" for one not on the server
+const char *CL_ModelManager_PlacedName( int i ) {
+	return i >= 0 && i < mm.numPieces && mm.pieces[i].num >= 0 ? mm.pieces[i].name : "";
+}
