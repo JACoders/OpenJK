@@ -41,7 +41,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // it shows them a message instead of being used (its step's Too early), until the story gets there.
 //
 // An If can ask who set off the When it's under, by name; a Play story step plays another saved
-// story alongside. Diagram shows the story as blocks: its Whens, its Ifs branching and joining,
+// story alongside. A Go back step plays again from an earlier step: the When before it, which
+// waits again, the start, or a Mark by its name, so an Else can send a story back to wait.
+// A When or an If can count only the players on one team, red or blue, as the server has them. Diagram shows the story as blocks: its Whens, its Ifs branching and joining,
 // the stories it plays, which open in it when clicked.
 //
 // Several stories can be open at once, each in a numbered tab, and steps copied between
@@ -72,6 +74,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define ST_DOUBLECLICK_MS	400
 #define ST_TRACE_DIST		8192.0f
 #define ST_GROUND_HEIGHT	25.0f	// NPC origins sit this far above the floor
+#define ST_MAX_JUMPS		16		// Go backs a story takes in a frame: one going round with nothing to wait on goes on next frame
+#define ST_TEAM_RED			1		// a player's team, as the server's player info has it ("t")
+#define ST_TEAM_BLUE		2
 
 // layout, in 640x480
 #define ST_ROW_H			13.0f
@@ -111,6 +116,8 @@ typedef enum {
 	ST_A_IF,
 	ST_A_ELSE,
 	ST_A_ENDIF,
+	ST_A_GOBACK,		// plays again from an earlier step
+	ST_A_MARK,			// where a Go back can go, by its name
 	ST_A_COMMAND,
 	ST_A_SAY,
 	ST_A_CENTER,
@@ -158,10 +165,10 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 		{ "Seconds", ST_K_NUMBER, "2", NULL } } },
 	{ "pause", "Wait for me", "Flow", "Stops until you press Continue, or run /storyteller continue (bind it to a key). The note shows while it waits.", -1, -1, 1, {
 		{ "Note", ST_K_TEXT, "", NULL } } },
-	{ "trigger", "When someone comes", "Flow", "Waits until someone comes into a map trigger or near a spot or an effect, a door moves, someone says one of the words (| between them), or someone uses one of the map editor's use triggers (by its name). With For, they have to stay in that many seconds. A story starting with it can be armed. Players out of sight are found too: those with this client say where they are (with experimental on), the others are asked for with rporigin.", 5, -1, 11, {
+	{ "trigger", "When someone comes", "Flow", "Waits until someone comes into a map trigger or near a spot or an effect, a door moves, someone says one of the words (| between them), or someone uses one of the map editor's use triggers (by its name). Who can be a team's players only, red or blue. With For, they have to stay in that many seconds. A story starting with it can be armed. Players out of sight are found too: those with this client say where they are (with experimental on), the others are asked for with rporigin.", 5, -1, 11, {
 		{ "Where", ST_K_CHOICE, "map trigger", "map trigger|near a spot|near an effect|door|someone says|someone uses" },
 		{ "Which", ST_K_TEXT, "", NULL },
-		{ "Who", ST_K_CHOICE, "any player", "any player|any NPC|anyone|me|named" },
+		{ "Who", ST_K_CHOICE, "any player", "any player|any NPC|anyone|me|named|red team|blue team" },
 		{ "Name", ST_K_TEXT, "", NULL },
 		{ "Radius", ST_K_NUMBER, "96", NULL },
 		{ "X", ST_K_NUMBER, "", NULL },
@@ -173,7 +180,7 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 	{ "if", "If", "Flow", "Goes under a When step, and looks once, when the story gets to it: how many are in a map trigger or near a spot or an effect, or whether someone has said one of the words (| between them), or used the use trigger by that name, since the story began, or whether who set off the When above it has that name. True, the steps after it play; false, the ones after its Else, or after its End if.", 5, -1, 10, {
 		{ "Where", ST_K_CHOICE, "map trigger", "map trigger|near a spot|near an effect|someone says|someone uses|who set it off" },
 		{ "Which", ST_K_TEXT, "", NULL },
-		{ "Who", ST_K_CHOICE, "any player", "any player|any NPC|anyone|me|named" },
+		{ "Who", ST_K_CHOICE, "any player", "any player|any NPC|anyone|me|named|red team|blue team" },
 		{ "Name", ST_K_TEXT, "", NULL },
 		{ "Radius", ST_K_NUMBER, "96", NULL },
 		{ "X", ST_K_NUMBER, "", NULL },
@@ -183,6 +190,11 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 		{ "Count", ST_K_NUMBER, "1", NULL } } },
 	{ "else", "Else", "Flow", "The steps after it play when the If before it was false, up to its End if.", -1, -1, 0, { } },
 	{ "endif", "End if", "Flow", "Where an If's steps end: the story goes on from here either way.", -1, -1, 0, { } },
+	{ "goback", "Go back", "Flow", "Plays again from an earlier step: the When before it, which waits again, the start of the story, or a Mark by its name. Under an Else it sends a wrong answer back to wait: When someone uses the console, If who set it off is Rex, open the door, Else, Go back. Words said and triggers used count again from when it went back.", -1, -1, 2, {
+		{ "To", ST_K_CHOICE, "the When before it", "the When before it|the start|a mark" },
+		{ "Mark", ST_K_TEXT, "", NULL } } },
+	{ "mark", "Mark", "Flow", "A place in the story a Go back can go back to, by this name.", -1, -1, 1, {
+		{ "Name", ST_K_TEXT, "", NULL } } },
 	{ "command", "Run a command", "Flow", "Runs it as if typed in the console, e.g. rpcinematic intro, or exec mission.cfg. Separate several with ;", -1, -1, 1, {
 		{ "Command", ST_K_TEXT, "", NULL } } },
 	{ "say", "Say", "Speech", "Says this in chat, as you, or as one of the players on the server: by their number or a part of their name. As a player it shows in chat as theirs for everyone with this client (sent hidden in an rpnotify; others see the raw line in their console).", -1, -1, 3, {
@@ -721,6 +733,8 @@ static qboolean ST_FieldShown( const stStep_t *s, int field ) {
 	}
 	if ( s->action == ST_A_MUSIC )
 		return (qboolean)( field != 1 || !Q_stricmp( s->values[0], "play" ) );
+	if ( s->action == ST_A_GOBACK )
+		return (qboolean)( field != 1 || !Q_stricmp( s->values[0], "a mark" ) );
 	if ( s->action == ST_A_SAY )
 		return (qboolean)( field != 2 || !Q_stricmp( s->values[1], "a player" ) );
 	if ( s->action == ST_A_OVERLAY )
@@ -969,6 +983,12 @@ static const char *ST_StepCommand( const stStep_t *s, qboolean *local, const cha
 
 	case ST_A_ELSE:
 	case ST_A_ENDIF:
+	case ST_A_MARK:
+		return NULL;
+
+	case ST_A_GOBACK:
+		if ( !Q_stricmp( v[0], "a mark" ) && !v[1][0] )
+			*error = "Type the name of the Mark to go back to";
 		return NULL;
 
 	case ST_A_PLAYSTORY:
@@ -1478,8 +1498,45 @@ static const char *ST_EntLabel( const char *which ) {
 	return va( "%s%s%s (*%i)", e->classname, e->targetname[0] ? " " : "", e->targetname, e->model );
 }
 
+// the team a Who counts, -1 for none
+static int ST_WhoTeam( const char *who ) {
+	if ( !Q_stricmp( who, "red team" ) )
+		return ST_TEAM_RED;
+	if ( !Q_stricmp( who, "blue team" ) )
+		return ST_TEAM_BLUE;
+	return -1;
+}
+
+// a player's team as the server has it, -1 for no one there
+static int ST_ClientTeam( int c ) {
+	int ofs;
+
+	if ( c < 0 || c >= MAX_CLIENTS || !( ofs = cl.gameState.stringOffsets[CS_PLAYERS + c] ) )
+		return -1;
+	return atoi( Info_ValueForKey( cl.gameState.stringData + ofs, "t" ) );
+}
+
+// the team of the player by that name (colours left out), -1 if there's none
+static int ST_NameTeam( const char *name ) {
+	for ( int c = 0; c < MAX_CLIENTS; c++ ) {
+		const int ofs = cl.gameState.stringOffsets[CS_PLAYERS + c];
+		char n[MAX_QPATH];
+
+		if ( !ofs )
+			continue;
+		Q_strncpyz( n, Info_ValueForKey( cl.gameState.stringData + ofs, "n" ), sizeof( n ) );
+		Q_StripColor( n );
+		if ( n[0] && !Q_stricmp( n, name ) )
+			return ST_ClientTeam( c );
+	}
+	return -1;
+}
+
 static const char *ST_WhoText( const stStep_t *s ) {
 	const char *who = s->values[2];
+
+	if ( ST_WhoTeam( who ) == ST_TEAM_RED )		return "a red team player";
+	if ( ST_WhoTeam( who ) == ST_TEAM_BLUE )	return "a blue team player";
 
 	if ( !Q_stricmp( who, "any NPC" ) )		return "an NPC";
 	if ( !Q_stricmp( who, "anyone" ) )		return "anyone";
@@ -1491,6 +1548,9 @@ static const char *ST_WhoText( const stStep_t *s ) {
 // more than one of who's counted
 static const char *ST_WhoPlural( const stStep_t *s ) {
 	const char *who = s->values[2];
+
+	if ( ST_WhoTeam( who ) == ST_TEAM_RED )		return "red team players";
+	if ( ST_WhoTeam( who ) == ST_TEAM_BLUE )	return "blue team players";
 
 	if ( !Q_stricmp( who, "any NPC" ) )		return "NPCs";
 	if ( !Q_stricmp( who, "anyone" ) )		return "people";
@@ -1690,6 +1750,7 @@ static qboolean ST_Counts( const stStep_t *s, const stPerson_t *p ) {
 	if ( !Q_stricmp( who, "anyone" ) )		return qtrue;
 	if ( !Q_stricmp( who, "me" ) )			return (qboolean)( !p->npc && p->num == cl.snap.ps.clientNum );
 	if ( !Q_stricmp( who, "named" ) )		return ST_NameIs( p, s->values[3] );
+	if ( ST_WhoTeam( who ) >= 0 )			return (qboolean)( !p->npc && ST_ClientTeam( p->num ) == ST_WhoTeam( who ) );
 	return (qboolean)!p->npc;
 }
 
@@ -1841,6 +1902,26 @@ static qboolean ST_IfTrue( const stRun_t *r, const stStep_t *s ) {
 	return (qboolean)( count >= want );
 }
 
+// where a Go back at pc goes: the When before it, the start, or the Mark by its name; -1 none
+static int ST_GoBackTo( const stStep_t *steps, int numSteps, int pc ) {
+	const stStep_t *s = &steps[pc];
+
+	if ( !Q_stricmp( s->values[0], "the start" ) )
+		return 0;
+	if ( !Q_stricmp( s->values[0], "a mark" ) ) {
+		for ( int i = 0; i < numSteps; i++ ) {
+			if ( steps[i].enabled && steps[i].action == ST_A_MARK && s->values[1][0] && !Q_stricmp( steps[i].values[0], s->values[1] ) )
+				return i;
+		}
+		return -1;
+	}
+	for ( int i = pc - 1; i >= 0; i-- ) {
+		if ( steps[i].enabled && steps[i].action == ST_A_TRIGGER )
+			return i;
+	}
+	return -1;
+}
+
 // from an If or an Else, the step after its Else (toElse) or its End if, Ifs inside it skipped
 // whole; the end of the story when there's none
 static int ST_SkipBranch( const stStep_t *steps, int numSteps, int pc, qboolean toElse ) {
@@ -1905,6 +1986,13 @@ static const char *ST_StepSummary( const stStep_t *s ) {
 		break;
 	case ST_A_ENDIF:
 		Q_strncpyz( buf, "End if", sizeof( buf ) );
+		break;
+	case ST_A_GOBACK:
+		Com_sprintf( buf, sizeof( buf ), "Go back to %s", !Q_stricmp( s->values[0], "a mark" ) ? va( "mark %s", s->values[1][0] ? s->values[1] : "?" )
+			: !Q_stricmp( s->values[0], "the start" ) ? "the start" : "the When before" );
+		break;
+	case ST_A_MARK:
+		Com_sprintf( buf, sizeof( buf ), "Mark %s", s->values[0][0] ? s->values[0] : "?" );
 		break;
 	case ST_A_NOTIFY:
 		Com_sprintf( buf, sizeof( buf ), "Notify %s, %s s%s: %s", s->values[0][0] ? s->values[0] : "all", s->values[1],
@@ -2301,6 +2389,7 @@ static qboolean ST_Play( stRun_t *r, stStep_t *steps, int numSteps, const char *
 	const char *cmd, *error;
 	qboolean local;
 	stStep_t *s;
+	int jumps = 0;
 
 	if ( armed )
 		Com_sprintf( prefix, sizeof( prefix ), "Storyteller (%s): ", armed );
@@ -2380,8 +2469,32 @@ static qboolean ST_Play( stRun_t *r, stStep_t *steps, int numSteps, const char *
 			continue;
 
 		case ST_A_ENDIF:
+		case ST_A_MARK:
 			r->pc++;
 			continue;
+
+		case ST_A_GOBACK: {
+			const int to = ST_GoBackTo( steps, numSteps, r->pc );
+
+			if ( to < 0 ) {
+				Com_Printf( S_COLOR_YELLOW "%sstep %i: %s to go back to; it goes on\n", prefix, r->pc + 1,
+					!Q_stricmp( s->values[0], "a mark" ) ? va( "no Mark %s", s->values[1] ) : "no When before it" );
+				r->pc++;
+				continue;
+			}
+			// round and round with nothing to wait on: the rest of it next frame
+			if ( ++jumps > ST_MAX_JUMPS )
+				return qfalse;
+			Com_Printf( S_COLOR_GREEN "%s" S_COLOR_WHITE "step %i: back to step %i\n", prefix, r->pc + 1, to + 1 );
+			// a When there waits again for someone new, and what's said or used counts from now
+			r->pc = to;
+			r->watching = qfalse;
+			r->numInside = 0;
+			r->stepStart = 0;
+			r->by[0] = '\0';
+			r->started = cls.realtime;
+			continue;
+		}
 
 		default:
 			// the server's flood protection: any command this client sent counts, an NPC
@@ -3015,6 +3128,7 @@ static struct {
 	int		time;					// cls.realtime it came
 	char	name[MAX_QPATH];		// without colours
 	char	text[MAX_STRING_CHARS / 2];
+	int		team;					// theirs when they said it, -1 not known
 } stChat[ST_MAX_CHAT];
 static int stChatNext;
 
@@ -3050,6 +3164,7 @@ qboolean CL_Storyteller_ChatLine( void ) {
 	stChat[stChatNext].time = cls.realtime;
 	Q_strncpyz( stChat[stChatNext].name, name, sizeof( stChat[0].name ) );
 	Q_strncpyz( stChat[stChatNext].text, text, sizeof( stChat[0].text ) );
+	stChat[stChatNext].team = ST_NameTeam( name );
 	stChatNext = ( stChatNext + 1 ) % ST_MAX_CHAT;
 	return qfalse;
 }
@@ -3087,6 +3202,9 @@ static qboolean ST_ChatSaid( const stStep_t *s, int since, char *by, int bySize 
 		if ( !stChat[i].time || stChat[i].time < since )
 			continue;
 		if ( !Q_stricmp( who, "me" ) && Q_stricmp( stChat[i].name, mine ) )
+			continue;
+		// the team they were on when they said it
+		if ( ST_WhoTeam( who ) >= 0 && stChat[i].team != ST_WhoTeam( who ) )
 			continue;
 		if ( !Q_stricmp( who, "named" ) ) {
 			char typed[MAX_QPATH];
@@ -3184,6 +3302,7 @@ static struct {
 	int		time;
 	char	name[48];
 	char	by[MAX_QPATH];
+	int		team;					// theirs when they used it, -1 not known
 } stUses[ST_MAX_USES];
 static int stUseNext;
 
@@ -3496,6 +3615,7 @@ static void ST_LogUse( const char *name, const char *by ) {
 	stUses[stUseNext].time = cls.realtime;
 	Q_strncpyz( stUses[stUseNext].name, name, sizeof( stUses[0].name ) );
 	Q_strncpyz( stUses[stUseNext].by, by, sizeof( stUses[0].by ) );
+	stUses[stUseNext].team = ST_NameTeam( by );
 	stUseNext = ( stUseNext + 1 ) % ST_MAX_USES;
 }
 
@@ -3519,6 +3639,8 @@ static qboolean ST_UsedSince( const stStep_t *s, int since, char *by, int bySize
 		if ( !Q_stricmp( who, "any NPC" ) )
 			continue;
 		if ( !Q_stricmp( who, "me" ) && Q_stricmp( stUses[i].by, ST_ClientName( clc.clientNum ) ) )
+			continue;
+		if ( ST_WhoTeam( who ) >= 0 && stUses[i].team != ST_WhoTeam( who ) )
 			continue;
 		if ( !Q_stricmp( who, "named" ) ) {
 			char typed[MAX_QPATH];
@@ -4902,7 +5024,8 @@ static void ST_DrawStepRow( int row, float x, float y, float w ) {
 		return;
 	}
 	ST_TextClipped( x + indent, y, w - indent, s->enabled ? summary : va( "(off) %s", summary ),
-		s->enabled && ( s->action == ST_A_IF || s->action == ST_A_ELSE || s->action == ST_A_ENDIF ) && ST_StepUsable( s ) ? stAccent : color );
+		s->enabled && ( s->action == ST_A_IF || s->action == ST_A_ELSE || s->action == ST_A_ENDIF || s->action == ST_A_GOBACK
+		|| s->action == ST_A_MARK ) && ST_StepUsable( s ) ? stAccent : color );
 }
 
 static const float *ST_StepFill( int row ) {
