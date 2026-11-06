@@ -2564,7 +2564,7 @@ static void *CM_GetCachedMapDiskImage( void ) { return gpvCachedMapDiskImage; }
 static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr; }
 static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
 
-#define G2_VERT_SPACE_SERVER_SIZE 256
+#define G2_VERT_SPACE_SERVER_SIZE 2048	// KB; 256 in JKA, too small for high-poly custom models
 IHeapAllocator *G2VertSpaceServer = NULL;
 CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
@@ -2837,7 +2837,7 @@ static void CL_AddFavorite_f( void ) {
 	}
 }
 
-#define G2_VERT_SPACE_CLIENT_SIZE 256
+#define G2_VERT_SPACE_CLIENT_SIZE 2048	// KB; 256 in JKA, too small for high-poly custom models
 
 /*
 ===============

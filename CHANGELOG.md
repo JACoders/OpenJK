@@ -4,6 +4,10 @@ What changed in OpenJK-rpmod from version to version, newest first. What each fe
 
 OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
+## 0.8.2
+
+- [Fixed] `"Ran out of transform space for Ghoul2 Models"`. Near a very detailed character model, a saber hit or anything else that checks its exact shape could drop you to the menu with this error. The game has eight times the room for it now (2 MB, JKA's was 256 KB).
+
 ## 0.8.1 - Nov 3rd 2026
 
 - [Added] `Feedback`. **FEEDBACK** in the in-game menu, between Quick Connect and Exit, or `/feedback`, opens a window to send a bug report or an idea for the OpenJK-RPMod project, in game or from the main menu: a title, and what happened or what the idea is. It goes with your RPMod account, so it's sent from an RPMod server, logged in; the game's version, renderer, map and server go with it. It's answered on the project's Discord, and marked planned or fixed, or closed. The answers come back under **My reports**, where you can answer them too, and the console says when one of your reports has news.

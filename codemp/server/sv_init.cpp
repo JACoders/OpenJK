@@ -771,7 +771,7 @@ void SV_BotInitBotLib(void);
 
 #ifdef DEDICATED
 
-#define G2_VERT_SPACE_SERVER_SIZE 256
+#define G2_VERT_SPACE_SERVER_SIZE 2048	// KB; 256 in JKA, too small for high-poly custom models
 IHeapAllocator *G2VertSpaceServer = NULL;
 CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
