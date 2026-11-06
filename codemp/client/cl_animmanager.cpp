@@ -42,6 +42,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Both kinds are saved in emotes/, <name>.chain and <name>.emote, and each is a command of its
 // own, its name starting with em as the server's emotes do.
 //
+// A custom emote can have keys: its bones posed at times, gone through one after the other (see
+// KEYS below). The first is its bones' own values, so a client without keys shows that pose.
+//
 // In the custom emote's preview the picked bone has rings to turn it (pitch, yaw, roll) and arrows
 // to move it (X, Y, Z), dragged with the mouse. Where each ring and arrow goes is measured, not
 // worked out: the bone is nudged each way and where it went read back, so they're right however
@@ -68,6 +71,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define AM_MAX_STEPS		24
 #define AM_MAX_CUSTOMS		64
 #define AM_MAX_CBONES		32
+#define AM_MAX_KEYS			10		// a custom emote's poses over time, the first its bones' own
 #define AM_MAX_PLAYING		32
 #define AM_NAME_LEN			32
 #define AM_FIELD_LEN		48
@@ -76,6 +80,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define AM_NEAR				64.0f	// a model drawn this near an entity is its
 #define AM_SEND_PART		400		// of an emote, in one rpnotify
 #define AM_RECV_LEN			4096
+#define AM_SEND_LEN			( AM_RECV_LEN / AM_SEND_PART * AM_SEND_PART )	// the most one takes
 #define AM_MOVE_SPEED		40.0f	// moving this fast ends your own emote
 #define AM_MOVE_GRACE_MS	500		// not in its first moments
 #define AM_HOLD_MS			400		// one that's over holds its last pose this long
@@ -168,6 +173,12 @@ typedef struct {
 	char		offset[3][AM_NUM_LEN];	// moved, in the model's space
 } amCBone_t;
 
+// the bones posed at a time: each one's pitch, yaw, roll and X, Y, Z, in the order of its bones
+typedef struct {
+	char		secs[AM_NUM_LEN];	// seconds into it; the first key's 0
+	float		v[AM_MAX_CBONES][6];
+} amKey_t;
+
 typedef struct {
 	char		name[AM_NAME_LEN];
 	char		anim[48];
@@ -175,8 +186,10 @@ typedef struct {
 	qboolean	loop;
 	qboolean	untilMove;			// holds its last pose until you move, else ends with the animation
 	char		under[AM_FIELD_LEN];	// an RPMod emote sent with it
-	amCBone_t	bones[AM_MAX_CBONES];
+	amCBone_t	bones[AM_MAX_CBONES];	// turned and moved as at its first key (in the editor, the picked key)
 	int			numBones;
+	int			numKeys;			// 0 it holds the one pose; else 2 or more, the bones going from one to the next
+	amKey_t		keys[AM_MAX_KEYS];
 } amCustom_t;
 
 // one playing on someone
@@ -280,6 +293,8 @@ static struct {
 	amCustom_t	custom;
 	int			customScroll;
 	int			boneSel, boneScroll;	// in the skeleton's bones
+	int			keySel;				// the key its bones' fields show
+	int			keyStep;			// the preview's < or >: the key before or after, picked next frame
 
 	// the picked bone's rings and arrows in the preview
 	struct {
@@ -688,6 +703,188 @@ static void AM_BoneValues( const amCBone_t *b, vec3_t twist, vec3_t offset ) {
 	}
 }
 
+/*
+===============================================================================
+
+KEYS: THE BONES POSED AT TIMES
+
+===============================================================================
+*/
+
+// A custom emote with keys goes through their poses: each bone turned and moved as the key before
+// has it, eased into the key after's. The first key, at 0 seconds, is its bones' own values, what
+// it was before it had keys (and all a client without keys sees of it); the others are numbers in
+// the order of its bones. The turns go the short way round, as one turn from the one to the other.
+
+static void AM_AxisAngles( const matrix3_t axis, vec3_t angles );
+
+static float AM_Round( float v, float scale ) {
+	return floorf( v * scale + 0.5f ) / scale + 0.0f;
+}
+
+static void AM_NumText( char *out, float v ) {
+	if ( v == 0.0f )
+		out[0] = '\0';
+	else
+		Com_sprintf( out, AM_NUM_LEN, "%g", v + 0.0f );
+}
+
+static float AM_KeySecs( const amCustom_t *c, int k ) {
+	return k > 0 ? Q_max( 0.0f, AM_Num( c->keys[k].secs, 0 ) ) : 0.0f;
+}
+
+// the last key's time
+static float AM_KeyEnd( const amCustom_t *c ) {
+	float end = 0.0f;
+
+	for ( int k = 0; k < c->numKeys; k++ )
+		end = Q_max( end, AM_KeySecs( c, k ) );
+	return end;
+}
+
+// its bones' fields into key k, and back out
+static void AM_KeyStore( amCustom_t *c, int k ) {
+	for ( int i = 0; i < c->numBones; i++ )
+		AM_BoneValues( &c->bones[i], c->keys[k].v[i], c->keys[k].v[i] + 3 );
+}
+
+static void AM_KeyLoad( amCustom_t *c, int k ) {
+	for ( int i = 0; i < c->numBones; i++ ) {
+		for ( int j = 0; j < 3; j++ ) {
+			AM_NumText( c->bones[i].twist[j], c->keys[k].v[i][j] );
+			AM_NumText( c->bones[i].offset[j], c->keys[k].v[i][3 + j] );
+		}
+	}
+}
+
+// a bone turned or moved in any key
+static qboolean AM_KeyBoneUsed( const amCustom_t *c, int i ) {
+	for ( int k = 0; k < c->numKeys; k++ ) {
+		for ( int j = 0; j < 6; j++ ) {
+			if ( c->keys[k].v[i][j] != 0.0f )
+				return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+static void AM_AxisQuat( const matrix3_t m, vec4_t q ) {
+	const float tr = m[0][0] + m[1][1] + m[2][2];
+	float s;
+
+	if ( tr > 0.0f ) {
+		s = 0.5f / sqrtf( tr + 1.0f );
+		q[3] = 0.25f / s;
+		q[0] = ( m[2][1] - m[1][2] ) * s;
+		q[1] = ( m[0][2] - m[2][0] ) * s;
+		q[2] = ( m[1][0] - m[0][1] ) * s;
+	} else if ( m[0][0] > m[1][1] && m[0][0] > m[2][2] ) {
+		s = 2.0f * sqrtf( 1.0f + m[0][0] - m[1][1] - m[2][2] );
+		q[3] = ( m[2][1] - m[1][2] ) / s;
+		q[0] = 0.25f * s;
+		q[1] = ( m[0][1] + m[1][0] ) / s;
+		q[2] = ( m[0][2] + m[2][0] ) / s;
+	} else if ( m[1][1] > m[2][2] ) {
+		s = 2.0f * sqrtf( 1.0f + m[1][1] - m[0][0] - m[2][2] );
+		q[3] = ( m[0][2] - m[2][0] ) / s;
+		q[0] = ( m[0][1] + m[1][0] ) / s;
+		q[1] = 0.25f * s;
+		q[2] = ( m[1][2] + m[2][1] ) / s;
+	} else {
+		s = 2.0f * sqrtf( 1.0f + m[2][2] - m[0][0] - m[1][1] );
+		q[3] = ( m[1][0] - m[0][1] ) / s;
+		q[0] = ( m[0][2] + m[2][0] ) / s;
+		q[1] = ( m[1][2] + m[2][1] ) / s;
+		q[2] = 0.25f * s;
+	}
+}
+
+static void AM_QuatAxis( const vec4_t q, matrix3_t m ) {
+	const float x = q[0], y = q[1], z = q[2], w = q[3];
+
+	m[0][0] = 1 - 2 * ( y * y + z * z );	m[0][1] = 2 * ( x * y - z * w );		m[0][2] = 2 * ( x * z + y * w );
+	m[1][0] = 2 * ( x * y + z * w );		m[1][1] = 1 - 2 * ( x * x + z * z );	m[1][2] = 2 * ( y * z - x * w );
+	m[2][0] = 2 * ( x * z - y * w );		m[2][1] = 2 * ( y * z + x * w );		m[2][2] = 1 - 2 * ( x * x + y * y );
+}
+
+// angles f of the way from a to b, the short way round
+static void AM_SlerpAngles( const vec3_t a, const vec3_t b, float f, vec3_t out ) {
+	matrix3_t m;
+	vec4_t qa, qb, q;
+	float dot, s0, s1, len;
+
+	AnglesToAxis( a, m );
+	AM_AxisQuat( m, qa );
+	AnglesToAxis( b, m );
+	AM_AxisQuat( m, qb );
+	dot = qa[0] * qb[0] + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3];
+	if ( dot < 0.0f ) {
+		for ( int i = 0; i < 4; i++ )
+			qb[i] = -qb[i];
+		dot = -dot;
+	}
+	if ( dot > 0.9995f ) {
+		s0 = 1.0f - f;
+		s1 = f;
+	} else {
+		const float th = acosf( dot ), sn = sinf( th );
+
+		s0 = sinf( ( 1.0f - f ) * th ) / sn;
+		s1 = sinf( f * th ) / sn;
+	}
+	for ( int i = 0; i < 4; i++ )
+		q[i] = qa[i] * s0 + qb[i] * s1;
+	len = sqrtf( q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3] );
+	for ( int i = 0; i < 4 && len > 1e-6f; i++ )
+		q[i] /= len;
+	AM_QuatAxis( q, m );
+	AM_AxisAngles( m, out );
+}
+
+// where the keys have bone i, secs into them
+static void AM_KeyValues( const amCustom_t *c, int i, float secs, vec3_t twist, vec3_t offset ) {
+	int prev = -1, next = -1;
+	float f;
+
+	for ( int k = 0; k < c->numKeys; k++ ) {
+		const float t = AM_KeySecs( c, k );
+
+		if ( t <= secs && ( prev < 0 || t >= AM_KeySecs( c, prev ) ) )
+			prev = k;
+		if ( t > secs && ( next < 0 || t < AM_KeySecs( c, next ) ) )
+			next = k;
+	}
+	if ( prev < 0 ) {
+		prev = next;
+		next = -1;
+	}
+	if ( prev < 0 ) {
+		VectorClear( twist );
+		VectorClear( offset );
+		return;
+	}
+	VectorCopy( c->keys[prev].v[i], twist );
+	VectorCopy( c->keys[prev].v[i] + 3, offset );
+	if ( next < 0 )
+		return;
+	f = ( secs - AM_KeySecs( c, prev ) ) / Q_max( 0.001f, AM_KeySecs( c, next ) - AM_KeySecs( c, prev ) );
+	f = f * f * ( 3.0f - 2.0f * f );	// eased in and out
+	if ( !VectorCompare( c->keys[prev].v[i], c->keys[next].v[i] ) )
+		AM_SlerpAngles( c->keys[prev].v[i], c->keys[next].v[i], f, twist );
+	for ( int j = 0; j < 3; j++ )
+		offset[j] = c->keys[prev].v[i][3 + j] + f * ( c->keys[next].v[i][3 + j] - c->keys[prev].v[i][3 + j] );
+}
+
+// the keys' clock ms into it: looping, round again after the last
+static float AM_KeyClock( const amCustom_t *c, float ms ) {
+	const float end = AM_KeyEnd( c );
+	float secs = Q_max( 0.0f, ms ) / 1000.0f;
+
+	if ( c->loop && end > 0.0f && secs > end )
+		secs = fmodf( secs, end );
+	return secs;
+}
+
 // a custom emote ms into it, on a model of that skeleton
 static void AM_ApplyCustom( CGhoul2Info_v &g2, int skel, const amCustom_t *c, float ms ) {
 	static const char *body[] = { "model_root", "lower_lumbar", "Motion" };
@@ -708,6 +905,20 @@ static void AM_ApplyCustom( CGhoul2Info_v &g2, int skel, const amCustom_t *c, fl
 
 		if ( a )
 			AM_SetBoneFrame( g2, b->bone, AM_Frame( a, 0, -1, speed, c->loop, ms, &last ), last );
+	}
+	if ( c->numKeys ) {
+		const float secs = AM_KeyClock( c, ms );
+
+		// each set every frame, unturned too, so none keeps the last key's turn
+		for ( int i = 0; i < c->numBones; i++ ) {
+			vec3_t twist, offset;
+
+			if ( !AM_KeyBoneUsed( c, i ) )
+				continue;
+			AM_KeyValues( c, i, secs, twist, offset );
+			AM_BoneSet( g2, c->bones[i].bone, twist, offset );
+		}
+		return;
 	}
 	for ( int i = 0; i < c->numBones; i++ ) {
 		const amCBone_t *b = &c->bones[i];
@@ -732,7 +943,8 @@ static float AM_CustomMs( const amCustom_t *c ) {
 
 	if ( !a || c->loop || c->untilMove )
 		return 0.0f;
-	return AM_LengthMs( a, AM_CustomFrom( c ), AM_CustomTo( c ), AM_CustomSpeed( c ) ) + AM_HOLD_MS;
+	// the animation or the keys, whichever goes on longer
+	return Q_max( AM_LengthMs( a, AM_CustomFrom( c ), AM_CustomTo( c ), AM_CustomSpeed( c ) ), AM_KeyEnd( c ) * 1000.0f ) + AM_HOLD_MS;
 }
 
 /*
@@ -857,8 +1069,10 @@ static void AM_Clean( const char *in, char *out, int size ) {
 	out[len] = '\0';
 }
 
-// a <anim> <from> <to> <speed> <loop> <until moved>|b <bone> <anim or -> <pitch> <yaw> <roll>|...
-static void AM_Encode( const amCustom_t *c, char *out, int size ) {
+// a <anim> <from> <to> <speed> <loop> <until moved>|b <bone> <anim or -> <pitch> <yaw> <roll> <x> <y> <z>|...
+// then each key after the first: |k <seconds> <pitch> <yaw> <roll> [<x> <y> <z>],... a bone at a time,
+// in the order of the b's. Keys that don't fit are left off; the number left off is returned
+static int AM_Encode( const amCustom_t *c, char *out, int size ) {
 	char anim[48], bone[MAX_QPATH], banim[48];
 
 	AM_Clean( c->anim, anim, sizeof( anim ) );
@@ -873,6 +1087,22 @@ static void AM_Encode( const amCustom_t *c, char *out, int size ) {
 			AM_Num( b->twist[0], 0 ), AM_Num( b->twist[1], 0 ), AM_Num( b->twist[2], 0 ),
 			AM_Num( b->offset[0], 0 ), AM_Num( b->offset[1], 0 ), AM_Num( b->offset[2], 0 ) ) );
 	}
+	for ( int k = 1; k < c->numKeys; k++ ) {
+		char seg[2048];
+
+		Com_sprintf( seg, sizeof( seg ), "|k %g ", AM_Round( AM_KeySecs( c, k ), 100.0f ) );
+		for ( int i = 0; i < c->numBones; i++ ) {
+			const float *v = c->keys[k].v[i];
+
+			Q_strcat( seg, sizeof( seg ), va( "%s%g %g %g", i ? "," : "", AM_Round( v[0], 10.0f ), AM_Round( v[1], 10.0f ), AM_Round( v[2], 10.0f ) ) );
+			if ( v[3] != 0.0f || v[4] != 0.0f || v[5] != 0.0f )
+				Q_strcat( seg, sizeof( seg ), va( " %g %g %g", AM_Round( v[3], 100.0f ), AM_Round( v[4], 100.0f ), AM_Round( v[5], 100.0f ) ) );
+		}
+		if ( (int)( strlen( out ) + strlen( seg ) ) >= size )
+			return c->numKeys - k;
+		Q_strcat( out, size, seg );
+	}
+	return 0;
 }
 
 static qboolean AM_Decode( const char *text, amCustom_t *c ) {
@@ -909,8 +1139,29 @@ static qboolean AM_Decode( const char *text, amCustom_t *c ) {
 			Com_sprintf( bone->twist[0], AM_NUM_LEN, "%g", f1 );
 			Com_sprintf( bone->twist[1], AM_NUM_LEN, "%g", f2 );
 			Com_sprintf( bone->twist[2], AM_NUM_LEN, "%g", f3 );
+		} else if ( part[0] == 'k' && part[1] == ' ' && c->numKeys < AM_MAX_KEYS ) {
+			amKey_t *key;
+			char *s = part + 2;
+
+			if ( !c->numKeys )
+				c->numKeys = 1;
+			key = &c->keys[c->numKeys++];
+			memset( key, 0, sizeof( *key ) );
+			Com_sprintf( key->secs, sizeof( key->secs ), "%g", Q_max( 0.0f, (float)strtod( s, &s ) ) );
+			for ( int i = 0; i < AM_MAX_CBONES && s && *s; i++ ) {
+				char *end = strchr( s, ',' );
+				float *v = key->v[i];
+
+				if ( end )
+					*end++ = '\0';
+				sscanf( s, "%f %f %f %f %f %f", &v[0], &v[1], &v[2], &v[3], &v[4], &v[5] );
+				s = end;
+			}
 		}
 	}
+	// the first key is its bones as they are
+	if ( c->numKeys )
+		AM_KeyStore( c, 0 );
 	return (qboolean)( c->anim[0] != '\0' );
 }
 
@@ -919,17 +1170,29 @@ static qboolean AM_CanShare( void ) {
 	return (qboolean)( CL_RpHooks_Experimental() && CL_RpAdmin_IsAdmin() && !com_sv_running->integer );
 }
 
-static void AM_Share( const amCustom_t *c ) {
+// the number of keys too many to send is returned
+static int AM_Share( const amCustom_t *c ) {
 	char text[AM_RECV_LEN];
-	int len, parts;
+	int start[AM_RECV_LEN / AM_SEND_PART], size[AM_RECV_LEN / AM_SEND_PART];
+	int len, parts = 0, left;
 
-	AM_Encode( c, text, sizeof( text ) );
+	// a little short of the most, as the parts can come out a little short
+	left = AM_Encode( c, text, AM_SEND_LEN - 30 );
 	len = strlen( text );
-	parts = ( len + AM_SEND_PART - 1 ) / AM_SEND_PART;
-	for ( int i = 0; i < parts; i++ ) {
-		CL_AddReliableCommand( va( "rpnotify -1 1 cmd:emote/%i/%i/%i: %.*s", clc.clientNum, i + 1, parts, AM_SEND_PART,
-			text + i * AM_SEND_PART ), qfalse );
+	// cut away from spaces: one at the start of a part is lost on the way
+	for ( int pos = 0; pos < len && parts < (int)ARRAY_LEN( start ); parts++ ) {
+		int end = Q_min( len, pos + AM_SEND_PART );
+
+		while ( end < len && end > pos + 1 && ( text[end] == ' ' || text[end - 1] == ' ' ) )
+			end--;
+		start[parts] = pos;
+		size[parts] = end - pos;
+		pos = end;
 	}
+	for ( int i = 0; i < parts; i++ ) {
+		CL_AddReliableCommand( va( "rpnotify -1 1 cmd:emote/%i/%i/%i: %.*s", clc.clientNum, i + 1, parts, size[i], text + start[i] ), qfalse );
+	}
+	return left;
 }
 
 static void AM_ShareStop( void ) {
@@ -1004,7 +1267,11 @@ static void AM_PlayOwn( const amCustom_t *c, qboolean share ) {
 		return;
 	p->own = qtrue;
 	if ( share && AM_CanShare() ) {
-		AM_Share( c );
+		const int left = AM_Share( c );
+
+		if ( left )
+			Com_Printf( S_COLOR_YELLOW "%s: its last %i key%s too much to send, the others see it without\n", c->name[0] ? c->name : "Custom emote",
+				left, left == 1 ? " is" : "s are" );
 		p->shared = qtrue;
 	}
 	// what everyone else sees under it
@@ -1207,6 +1474,16 @@ static qboolean AM_SaveCustom( const amCustom_t *c ) {
 		AM_WriteLine( f, va( "bone \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"\n", b->bone, b->anim, b->twist[0], b->twist[1], b->twist[2],
 			b->offset[0], b->offset[1], b->offset[2] ) );
 	}
+	// the keys after the first: its seconds, then each bone's pitch, yaw, roll, X, Y, Z
+	for ( int k = 1; k < c->numKeys; k++ ) {
+		AM_WriteLine( f, va( "key \"%g\"", AM_KeySecs( c, k ) ) );
+		for ( int i = 0; i < c->numBones; i++ ) {
+			const float *v = c->keys[k].v[i];
+
+			AM_WriteLine( f, va( "  %g %g %g %g %g %g", v[0] + 0.0f, v[1] + 0.0f, v[2] + 0.0f, v[3] + 0.0f, v[4] + 0.0f, v[5] + 0.0f ) );
+		}
+		AM_WriteLine( f, "\n" );
+	}
 	FS_FCloseFile( f );
 	return qtrue;
 }
@@ -1255,6 +1532,7 @@ static void AM_LoadCustom( const char *name ) {
 	COM_BeginParseSession( name );
 	while ( 1 ) {
 		const char *token = COM_ParseExt( &p, qtrue );
+		qboolean endOfLine = qfalse;
 
 		if ( !token[0] )
 			break;
@@ -1276,10 +1554,30 @@ static void AM_LoadCustom( const char *name ) {
 				Q_strncpyz( b->twist[k], COM_ParseExt( &p, qfalse ), sizeof( b->twist[k] ) );
 			for ( int k = 0; k < 3; k++ )
 				Q_strncpyz( b->offset[k], COM_ParseExt( &p, qfalse ), sizeof( b->offset[k] ) );
+		} else if ( !Q_stricmp( token, "key" ) && c->numKeys < AM_MAX_KEYS ) {
+			amKey_t *key;
+
+			if ( !c->numKeys )
+				c->numKeys = 1;
+			key = &c->keys[c->numKeys++];
+			Q_strncpyz( key->secs, COM_ParseExt( &p, qfalse ), sizeof( key->secs ) );
+			for ( int n = 0; n < AM_MAX_CBONES * 6 && endOfLine == qfalse; n++ ) {
+				const char *value = COM_ParseExt( &p, qfalse );
+
+				// the line's end, gone past already
+				if ( !value[0] )
+					endOfLine = qtrue;
+				else
+					key->v[n / 6][n % 6] = (float)atof( value );
+			}
 		}
-		SkipRestOfLine( &p );
+		if ( !endOfLine )
+			SkipRestOfLine( &p );
 	}
 	FS_FreeFile( buf );
+	// the first key is its bones as they are
+	if ( c->numKeys )
+		AM_KeyStore( c, 0 );
 	amNumCustoms++;
 	AM_AddCommand( c->name );
 }
@@ -2392,6 +2690,8 @@ A POSE COPIED FROM ANOTHER SKELETON
 #define AM_POSE_MIN_MOVE	0.05f	// this, a bone's left alone
 
 static void AM_TidyBones( amCustom_t *c );
+static void AM_KeyPick( int k );
+static int AM_KeyTakePose( const amCustom_t *pose );
 
 typedef struct {
 	char		gla[MAX_QPATH];
@@ -2778,6 +3078,7 @@ static void AM_DrawPreview( const amShow_t *show ) {
 	const float x = AM_PV_X, y = AM_PV_Y, w = AM_PV_W, h = AM_PV_H;
 	const amAnim_t *a = show->anim;
 	const amCustom_t *posed;
+	const qboolean keyed = (qboolean)( show->custom && show->custom->numKeys );
 	float lengthMs = 0.0f, speed = 1.0f;
 	qboolean loop = qfalse;
 	int last = 0;
@@ -2789,6 +3090,8 @@ static void AM_DrawPreview( const amShow_t *show ) {
 		loop = show->custom->loop;
 		if ( a )
 			lengthMs = AM_LengthMs( a, AM_CustomFrom( show->custom ), AM_CustomTo( show->custom ), speed );
+		if ( keyed )
+			lengthMs = Q_max( lengthMs, AM_KeyEnd( show->custom ) * 1000.0f );
 	} else if ( a ) {
 		speed = AM_Num( am.speedText, 100 ) / 100.0f;
 		loop = (qboolean)( a->loop != -1 );
@@ -2805,6 +3108,9 @@ static void AM_DrawPreview( const amShow_t *show ) {
 		else if ( am.ms > lengthMs + AM_PREVIEW_HOLD_MS )
 			am.ms = 0.0f;
 	}
+	// with keys, paused it's on the picked one, to pose it there
+	if ( keyed && am.paused && !am.scrubbing )
+		am.ms = AM_KeySecs( show->custom, am.keySel ) * 1000.0f;
 
 	// another skeleton's animation with no model of its own: the frame shown copied onto the humanoid
 	posed = NULL;
@@ -2836,7 +3142,8 @@ static void AM_DrawPreview( const amShow_t *show ) {
 		am.firstFrame = a->first;
 		am.lastFrame = a->first + a->num - 1;
 		AM_RenderPreview( x + 1, y + 1, w - 2, h - 2 );
-		if ( show->custom && show->markBone && am.tab == AM_TAB_CUSTOM )
+		// with keys, posed only while held on one
+		if ( show->custom && show->markBone && am.tab == AM_TAB_CUSTOM && ( !keyed || ( am.paused && !am.scrubbing ) ) )
 			AM_Gizmo( show->markBone, x, y, w, h );
 		else
 			AM_MarkBone( show->markBone );
@@ -2865,20 +3172,34 @@ static void AM_DrawPreview( const amShow_t *show ) {
 
 		if ( AM_Button( x, cy, 50, am.paused ? "Play" : "Pause", qfalse, (qboolean)( a != NULL ) ) )
 			am.paused = (qboolean)!am.paused;
-		if ( AM_Button( x + 54, cy, 22, "<", qfalse, (qboolean)( a != NULL ) ) && a ) {
-			am.paused = qtrue;
-			am.ms = Q_max( 0.0f, am.ms - 1000.0f / fabsf( a->fps ) / Q_max( 0.05f, speed ) );
+		if ( keyed ) {
+			// a key back or on, the frames being the keys'
+			if ( AM_Button( x + 54, cy, 22, "<", qfalse, (qboolean)( am.keySel > 0 ) ) )
+				am.keyStep = -1;
+			if ( AM_Button( x + 78, cy, 22, ">", qfalse, (qboolean)( am.keySel < show->custom->numKeys - 1 ) ) )
+				am.keyStep = 1;
+			AM_TextClipped( x + 106, cy + 2, w - 106, va( "%.1fs, key %i of %i", am.ms / 1000.0f, am.keySel + 1, show->custom->numKeys ), amDim );
+		} else {
+			if ( AM_Button( x + 54, cy, 22, "<", qfalse, (qboolean)( a != NULL ) ) && a ) {
+				am.paused = qtrue;
+				am.ms = Q_max( 0.0f, am.ms - 1000.0f / fabsf( a->fps ) / Q_max( 0.05f, speed ) );
+			}
+			if ( AM_Button( x + 78, cy, 22, ">", qfalse, (qboolean)( a != NULL ) ) && a ) {
+				am.paused = qtrue;
+				am.ms = Q_min( lengthMs, am.ms + 1000.0f / fabsf( a->fps ) / Q_max( 0.05f, speed ) );
+			}
+			if ( a )
+				AM_TextClipped( x + 106, cy + 2, w - 106, va( "frame %i of %i", (int)am.frame - a->first, a->num - 1 ), amDim );
 		}
-		if ( AM_Button( x + 78, cy, 22, ">", qfalse, (qboolean)( a != NULL ) ) && a ) {
-			am.paused = qtrue;
-			am.ms = Q_min( lengthMs, am.ms + 1000.0f / fabsf( a->fps ) / Q_max( 0.05f, speed ) );
-		}
-		if ( a )
-			AM_TextClipped( x + 106, cy + 2, w - 106, va( "frame %i of %i", (int)am.frame - a->first, a->num - 1 ), amDim );
 
 		AM_Box( x, barY, w, 10, amPanelLight );
 		if ( a && lengthMs > 0.0f )
 			AM_Fill( x + 1, barY + 1, ( w - 2 ) * Com_Clamp( 0, 1, am.ms / span ), 8, amHighlight );
+		for ( int k = 0; keyed && k < show->custom->numKeys; k++ ) {
+			const float kx = x + 1 + ( w - 3 ) * Com_Clamp( 0, 1, AM_KeySecs( show->custom, k ) * 1000.0f / span );
+
+			AM_Fill( kx, barY - 2, 2, 14, k == am.keySel ? amAccent : amWhite );
+		}
 		if ( am.click && a && am.clickX >= x && am.clickX < x + w && am.clickY >= barY && am.clickY < barY + 10 ) {
 			am.click = qfalse;
 			am.scrubbing = qtrue;
@@ -3089,13 +3410,23 @@ static void AM_DrawAnimsTab( amShow_t *show ) {
 			if ( AM_Button( x, y, w, "Copy this pose to it", qfalse, qtrue ) ) {
 				const int frame = (int)am.frame - a->first;
 				const char *why;
-				amCustom_t c = am.custom;
+				static amCustom_t c;
 				int n;
 
+				c = am.custom;
+				c.numKeys = 0;
 				n = AM_CopyPose( &c, am.skel, a, frame, &why );
 				if ( n < 0 )
 					AM_Message( va( S_COLOR_YELLOW "Can't copy it: %s", why ) );
-				else {
+				else if ( am.custom.numKeys ) {
+					// with keys, into the picked one: a frame a key, and it goes through them
+					const int left = AM_KeyTakePose( &c );
+
+					am.tab = AM_TAB_CUSTOM;
+					AM_KeyPick( am.keySel );
+					AM_Message( va( "Frame %i of %s copied into key %i: %i bones turned%s", frame, a->name, am.keySel + 1, n - left,
+						left ? va( S_COLOR_YELLOW ", %i left out (an emote turns %i bones in all)", left, AM_MAX_CBONES ) : "" ) );
+				} else {
 					am.custom = c;
 					am.tab = AM_TAB_CUSTOM;
 					am.ms = 0.0f;
@@ -3374,6 +3705,7 @@ static void AM_NewCustom( void ) {
 	Q_strncpyz( am.custom.name, "em", sizeof( am.custom.name ) );
 	am.custom.untilMove = qtrue;
 	am.customSel = -1;
+	am.keySel = 0;
 }
 
 static void AM_CustomRow( int row, float x, float y, float w, qboolean selected ) {
@@ -3392,20 +3724,147 @@ static amCBone_t *AM_CustomBone( amCustom_t *c, const char *bone, qboolean make 
 		return NULL;
 	memset( &c->bones[c->numBones], 0, sizeof( amCBone_t ) );
 	Q_strncpyz( c->bones[c->numBones].bone, bone, sizeof( c->bones[0].bone ) );
+	// unturned in every key
+	for ( int k = 0; k < AM_MAX_KEYS; k++ )
+		memset( c->keys[k].v[c->numBones], 0, sizeof( c->keys[k].v[0] ) );
 	return &c->bones[c->numBones++];
 }
 
-// a bone with nothing on it any more is taken out
+// a bone with nothing on it any more, in any key, is taken out
 static void AM_TidyBones( amCustom_t *c ) {
 	for ( int i = 0; i < c->numBones; i++ ) {
 		const amCBone_t *b = &c->bones[i];
 
-		if ( !b->anim[0] && AM_Zero3( b->twist ) && AM_Zero3( b->offset ) ) {
+		if ( !b->anim[0] && AM_Zero3( b->twist ) && AM_Zero3( b->offset ) && !AM_KeyBoneUsed( c, i ) ) {
 			memmove( &c->bones[i], &c->bones[i + 1], ( c->numBones - i - 1 ) * sizeof( c->bones[0] ) );
+			for ( int k = 0; k < AM_MAX_KEYS; k++ )
+				memmove( c->keys[k].v[i], c->keys[k].v[i + 1], ( c->numBones - i - 1 ) * sizeof( c->keys[k].v[0] ) );
 			c->numBones--;
 			i--;
 		}
 	}
+}
+
+// the fields over to key k, the ones shown kept in theirs
+static void AM_KeySwap( int k ) {
+	amCustom_t *c = &am.custom;
+
+	if ( !c->numKeys || k == am.keySel || k < 0 || k >= c->numKeys )
+		return;
+	AM_KeyStore( c, am.keySel );
+	am.keySel = k;
+	AM_KeyLoad( c, k );
+	am.focus = NULL;
+}
+
+// key k picked: the preview held on it
+static void AM_KeyPick( int k ) {
+	if ( !am.custom.numKeys )
+		return;
+	AM_KeySwap( Com_Clampi( 0, am.custom.numKeys - 1, k ) );
+	am.ms = AM_KeySecs( &am.custom, am.keySel ) * 1000.0f;
+	am.paused = qtrue;
+}
+
+// a key where the preview is, or a second after the last, posed as it is there
+static void AM_KeyAdd( void ) {
+	amCustom_t *c = &am.custom;
+	float secs, v[AM_MAX_CBONES][6];
+	int at;
+
+	if ( c->numKeys >= AM_MAX_KEYS ) {
+		AM_Message( va( S_COLOR_YELLOW "An emote takes %i keys", AM_MAX_KEYS ) );
+		return;
+	}
+	if ( !c->numKeys ) {
+		c->numKeys = 1;
+		c->keys[0].secs[0] = '\0';
+		am.keySel = 0;
+	}
+	AM_KeyStore( c, am.keySel );
+	secs = AM_Round( Q_max( 0.0f, am.ms ) / 1000.0f, 10.0f );
+	for ( int k = 0; k < c->numKeys; k++ ) {
+		if ( fabsf( AM_KeySecs( c, k ) - secs ) < 0.05f ) {
+			secs = AM_KeyEnd( c ) + 1.0f;
+			break;
+		}
+	}
+	for ( int i = 0; i < c->numBones; i++ ) {
+		AM_KeyValues( c, i, secs, v[i], v[i] + 3 );
+		for ( int j = 0; j < 6; j++ )
+			v[i][j] = AM_Round( v[i][j], j < 3 ? 10.0f : 100.0f );
+	}
+	// in its place by time
+	for ( at = 1; at < c->numKeys && AM_KeySecs( c, at ) <= secs; at++ )
+		;
+	memmove( &c->keys[at + 1], &c->keys[at], ( c->numKeys - at ) * sizeof( c->keys[0] ) );
+	c->numKeys++;
+	memset( &c->keys[at], 0, sizeof( c->keys[at] ) );
+	Com_sprintf( c->keys[at].secs, sizeof( c->keys[at].secs ), "%g", secs );
+	memcpy( c->keys[at].v, v, c->numBones * sizeof( v[0] ) );
+	am.keySel = at;
+	AM_KeyLoad( c, at );
+	am.ms = secs * 1000.0f;
+	am.paused = qtrue;
+	am.focus = NULL;
+	AM_Message( va( "Key %i at %g seconds: pose it, and the bones go there from the key before", at + 1, secs ) );
+}
+
+static void AM_KeyRemove( void ) {
+	amCustom_t *c = &am.custom;
+	const int k = am.keySel;
+
+	if ( k <= 0 || k >= c->numKeys )
+		return;
+	memmove( &c->keys[k], &c->keys[k + 1], ( c->numKeys - k - 1 ) * sizeof( c->keys[0] ) );
+	c->numKeys--;
+	am.keySel = k - 1;
+	// one left: it holds that pose, as one with no keys
+	if ( c->numKeys == 1 ) {
+		c->numKeys = 0;
+		am.keySel = 0;
+	}
+	AM_KeyLoad( c, am.keySel );
+	AM_TidyBones( c );
+	am.ms = AM_KeySecs( c, am.keySel ) * 1000.0f;
+	am.focus = NULL;
+}
+
+// a pose copied into the picked key: the bones it turns as it has them, the others unturned in
+// it; the number that didn't fit is returned
+static int AM_KeyTakePose( const amCustom_t *pose ) {
+	amCustom_t *c = &am.custom;
+	int left = 0;
+
+	Q_strncpyz( c->anim, pose->anim, sizeof( c->anim ) );
+	Q_strncpyz( c->to, pose->to, sizeof( c->to ) );
+	for ( int i = 0; i < c->numBones; i++ ) {
+		for ( int j = 0; j < 3; j++ )
+			c->bones[i].twist[j][0] = c->bones[i].offset[j][0] = '\0';
+	}
+	for ( int i = 0; i < pose->numBones; i++ ) {
+		amCBone_t *cb = AM_CustomBone( c, pose->bones[i].bone, qtrue );
+
+		if ( !cb ) {
+			left++;
+			continue;
+		}
+		memcpy( cb->twist, pose->bones[i].twist, sizeof( cb->twist ) );
+		memcpy( cb->offset, pose->bones[i].offset, sizeof( cb->offset ) );
+	}
+	AM_KeyStore( c, am.keySel );
+	AM_TidyBones( c );
+	return left;
+}
+
+// the one being made as it's kept and played: its bones' fields as at its first key
+static void AM_EditedCustom( amCustom_t *out ) {
+	if ( am.custom.numKeys )
+		AM_KeyStore( &am.custom, am.keySel );
+	AM_TidyBones( &am.custom );
+	*out = am.custom;
+	if ( out->numKeys )
+		AM_KeyLoad( out, 0 );
 }
 
 static int amBoneSkel;
@@ -3423,6 +3882,7 @@ static void AM_BoneRow( int row, float x, float y, float w, qboolean selected ) 
 static void AM_SaveCustomEdit( void ) {
 	const char *old = am.customSel >= 0 && am.customSel < amNumCustoms ? amCustoms[am.customSel].name : NULL;
 	const char *why = AM_NameProblem( am.custom.name, old );
+	static amCustom_t saved;
 	int index;
 
 	if ( why ) {
@@ -3433,8 +3893,8 @@ static void AM_SaveCustomEdit( void ) {
 		AM_Message( S_COLOR_YELLOW "Can't save it: pick its animation first" );
 		return;
 	}
-	AM_TidyBones( &am.custom );
-	if ( !AM_SaveCustom( &am.custom ) ) {
+	AM_EditedCustom( &saved );
+	if ( !AM_SaveCustom( &saved ) ) {
 		AM_Message( S_COLOR_YELLOW "Couldn't write the file" );
 		return;
 	}
@@ -3451,7 +3911,7 @@ static void AM_SaveCustomEdit( void ) {
 		AM_Message( S_COLOR_YELLOW "There are as many custom emotes as there can be" );
 		return;
 	}
-	amCustoms[index] = am.custom;
+	amCustoms[index] = saved;
 	AM_AddCommand( am.custom.name );
 	qsort( amCustoms, amNumCustoms, sizeof( amCustoms[0] ), AM_CompareCustoms );
 	am.customSel = AM_FindCustom( am.custom.name );
@@ -3482,6 +3942,22 @@ static void AM_DrawCustomTab( amShow_t *show ) {
 	float y = AM_TOP_Y;
 	int clicked;
 
+	// the preview's < and > step through the keys; its bar, dragged, picks the nearest
+	if ( am.custom.numKeys ) {
+		if ( am.keyStep )
+			AM_KeyPick( am.keySel + am.keyStep );
+		else if ( am.scrubbing ) {
+			int nearest = 0;
+
+			for ( int k = 1; k < am.custom.numKeys; k++ ) {
+				if ( fabsf( AM_KeySecs( &am.custom, k ) * 1000.0f - am.ms ) < fabsf( AM_KeySecs( &am.custom, nearest ) * 1000.0f - am.ms ) )
+					nearest = k;
+			}
+			AM_KeySwap( nearest );
+		}
+	}
+	am.keyStep = 0;
+
 	clicked = AM_List( AM_LEFT_X, AM_TOP_Y, AM_MID_X - 6 - AM_LEFT_X, listH, amNumCustoms + 1, am.customSel < 0 ? amNumCustoms : am.customSel,
 		&am.customScroll, AM_CustomRow );
 	if ( clicked >= 0 ) {
@@ -3490,6 +3966,7 @@ static void AM_DrawCustomTab( amShow_t *show ) {
 		} else {
 			am.customSel = clicked;
 			am.custom = amCustoms[clicked];
+			am.keySel = 0;
 		}
 		am.focus = NULL;
 		am.ms = 0.0f;
@@ -3628,6 +4105,33 @@ static void AM_DrawCustomTab( amShow_t *show ) {
 		}
 	}
 
+	// its keys: the bones posed at times, gone through one after the other
+	{
+		float ky = AM_BUTTON_Y - 16 - 2 * ( AM_CTRL_H + 4 );
+		amCustom_t *c = &am.custom;
+
+		AM_Label( x, ky, "Keys" );
+		if ( !c->numKeys )
+			AM_TextClipped( x + 32, ky + 2, w - 32, "none: it holds the one pose", amDim );
+		for ( int k = 0; k < c->numKeys; k++ ) {
+			if ( AM_Button( x + 32 + k * 22, ky, 20, va( "%i", k + 1 ), (qboolean)( k == am.keySel ), qtrue ) )
+				AM_KeyPick( k );
+		}
+		ky += AM_CTRL_H + 4;
+		if ( c->numKeys ) {
+			AM_Label( x, ky, va( "Key %i at", am.keySel + 1 ) );
+			if ( am.keySel > 0 )
+				AM_Field( x + 50, ky, 40, c->keys[am.keySel].secs, sizeof( c->keys[0].secs ), AM_K_NUMBER, "0" );
+			else
+				AM_Text( x + 54, ky + 2, "0", amDim );
+			AM_Label( x + 94, ky, "seconds" );
+		}
+		if ( AM_Button( x + w - 128, ky, 70, c->numKeys ? "Add key" : "Add keys", qfalse, (qboolean)( c->numKeys < AM_MAX_KEYS ) ) )
+			AM_KeyAdd();
+		if ( AM_Button( x + w - 54, ky, 54, "Remove", qfalse, (qboolean)( am.keySel > 0 && c->numKeys ) ) )
+			AM_KeyRemove();
+	}
+
 	if ( AM_Button( x, AM_BUTTON_Y, 56, "Save", qfalse, qtrue ) )
 		AM_SaveCustomEdit();
 	{
@@ -3637,8 +4141,10 @@ static void AM_DrawCustomTab( amShow_t *show ) {
 			if ( p ) {
 				AM_StopOwn( qfalse );
 			} else {
-				AM_TidyBones( &am.custom );
-				AM_PlayOwn( &am.custom, qtrue );
+				static amCustom_t edited;
+
+				AM_EditedCustom( &edited );
+				AM_PlayOwn( &edited, qtrue );
 				AM_Close();
 				return;
 			}
@@ -3648,6 +4154,9 @@ static void AM_DrawCustomTab( amShow_t *show ) {
 		AM_DeleteCustom();
 	AM_TextClipped( x + 198, AM_BUTTON_Y + 2, w - 198, S_COLOR_YELLOW "experimental", amWhite );
 
+	// the picked key as its fields have it, for the preview
+	if ( am.custom.numKeys )
+		AM_KeyStore( &am.custom, am.keySel );
 	show->skel = skel;
 	show->custom = &am.custom;
 	show->caption = am.custom.anim[0] ? am.custom.anim : NULL;
