@@ -81,7 +81,7 @@ Depends on: steps 1 and 4. **Done** 5 November 2026: [progress/step-05-demo-meas
 
 ### Step 6: the codec library in C++ (M)
 
-Depends on: steps 2 and 5.
+Depends on: steps 2 and 5. **In progress** (6 November 2026): rANS and whole-message codec in `codemp/netcodec/`, identical to the Python reference, restructured, faster than OpenJK; next the format in C++ only ([progress/step-06-cpp-codec.md](progress/step-06-cpp-codec.md), "Part 2").
 
 - New directory `codemp/netcodec/` (decided 5 November 2026; not `shared/`, which holds code common to the single-player, JK2 and multiplayer trees), C++20 inside the library (`std::span` for buffers, C++ Core Guidelines I.13) with a plain C++ interface (a few functions and plain structures, no STL or exceptions in the public header; no C interface, since the engine and the forks that would reuse it are C++), no dependency on server or client; CMake builds it with MSVC, GCC and Clang; the trained tables are compiled in:
 

@@ -2,7 +2,7 @@
 
 This folder records where the work stands, so that a new session (human or model) can resume without re-reading everything. One document per finished step of [PLAN.md](../PLAN.md); this page is the summary and is updated at the end of every session.
 
-Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ codec).
+Last update: 6 November 2026 (step 6 in progress: C++ codec identical to the Python reference, restructured and faster than OpenJK; next is the format in C++ only).
 
 ## Where we are
 
@@ -14,13 +14,23 @@ Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ cod
 | 3. state recorder in the server | later | not needed before step 5 since demos are used | |
 | 4. demo corpus | **done** | 1,116 demos indexed (148 h); 60 train + 20 held-out demos (held out by map), 427,468 messages; round trip 0 failures; pilot rule removed from `codec2.py` | [step-04-demo-corpus.md](step-04-demo-corpus.md) |
 | 5. measurements on the demos | **done** | held-out snapshots 69.0 bytes against 155.1 for the engine (ratio 0.445; all messages 0.483); held-out within 6 % of training; one global table set, no age context; 0 round-trip failures | [step-05-demo-measurements.md](step-05-demo-measurements.md) |
-| 6. C++ codec library | in progress | Python reference updated (little-endian rANS state, booleans as flips, `user*` by C type; sizes unchanged); `codemp/netcodec/rans.h` byte-identical to Python on 8,842 messages, faster than `rans_byte.h` | [step-06-cpp-codec.md](step-06-cpp-codec.md) |
+| 6. C++ codec library | in progress | `codemp/netcodec/`: rANS unit and whole-message codec in C++20, byte-identical to the Python reference on 35,842 messages (captures and demos), restructured into units, clang-tidy clean; against OpenJK's own `msg.cpp` / `huffman.cpp` on the same messages: 2.3 times fewer bytes, encoding 2.8 to 3.4 times faster, decoding 13 to 34 % faster (MSVC, GCC, Clang); validated on MSVC x64 / Win32, GCC x64 / x86 / ASan, Clang. Next: the format in C++ only (part 2) | [step-06-cpp-codec.md](step-06-cpp-codec.md) |
 | 7 to 13 | to do | | |
 
 ## Next actions
 
-1. Step 6: the codec library in C++ ([PLAN.md](../PLAN.md) step 6), with the table design of step 5 ([step-05-demo-measurements.md](step-05-demo-measurements.md), "What step 6 needs").
-2. Corpus scope (owner, 5 November 2026): no race, no JA+ or JAPRO demos will come. Possible addition: one FFA bot demo on this branch (base game module), only for the FFA game type.
+1. Step 6, second stage, part 2: the format in C++ only. Detailed plan, order and leads in [step-06-cpp-codec.md](step-06-cpp-codec.md), section "Part 2: the format in C++ only". In short: a C++ trainer that builds the tables from the demo traces, a C++ size benchmark on the training and held-out demos, then the format fixes one by one, each measured (bytes and time) and kept only if it helps.
+2. Then in step 6: worst-case `escape` path, libFuzzer on the decoder, determinism tests (angle indices, positions) on every compiler, the engine-facing interface for step 7.
+3. Corpus scope (owner, 5 November 2026): no race, no JA+ or JAPRO demos will come. Possible addition: one FFA bot demo on this branch (base game module), only for the FFA game type ([step-04-demo-corpus.md](step-04-demo-corpus.md), "Corpus scope").
+
+## Working practices (owner's requests, keep them)
+
+- Language: answers to the owner in French, short; everything persisted (docs, comments, commits) in English, full sentences. Never mention the earlier proof-of-concept code base.
+- The owner commits, never Claude: give a Conventional Commits title with the step first, for example `feat(netcodec): step 6, ...`; do not stage files.
+- C++: C++20 inside netcodec, C++ Core Guidelines (named casts, `noexcept`, `[[nodiscard]]`, `constexpr`, `std::span`, RAII, initialised members), unsigned arithmetic for bit manipulation; strict warnings as errors (top-level project); clang-tidy at zero (`mingw-clang-tidy` preset); no exceptions. Comments describe the format and the code, never the Python prototype.
+- Every change: build and run the golden tests on several presets (Release, Debug with index checks, x86, ASan + UBSan), then the benchmarks; a cleanup must show no performance regression. Compare timings with the legacy timings of the same run (this machine varies by up to 8 % between runs).
+- GCC-only warnings exist (`-Wuseless-cast` on 32 / 64-bit size types: use `ToU32`); MSVC is stricter on old engine code (the legacy benchmark is built in C++11 without the project settings).
+- Mod compatibility is never a criterion and never a question to ask; no loss of precision; as few settings as possible.
 
 ## Decisions taken (with the date)
 
@@ -59,6 +69,8 @@ Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ cod
 
 ## Known issues found on the way (not fixed)
 
+- Legacy client (`CL_ParseSnapshot`, `codemp/client/cl_parse.cpp`): when the old snapshot had no vehicle, the server deltas the vehicle player state from nothing (`MSG_WriteDeltaPlayerstate(msg, NULL, &frame->vps, qtrue)`) but the client deltas it from `old->vps`. Seen while writing the legacy benchmark; not tested (the benchmark follows the server and the client as written and found no failure on the recordings).
+
 
 - The `user*` mod fields are networked 1 bit wide, floats included: only the lowest bit reaches the client unless a mod widens them with the overrides files ([../02-engine-code-findings.md](../02-engine-code-findings.md) section 2.2).
 
@@ -66,14 +78,24 @@ Last update: 5 November 2026 (steps 2, 4 and 5 done; next is step 6, the C++ cod
 
 ## State of the repository
 
-- Nothing of this work is committed unless the owner did it. Check `git status` at the start of a session.
+- Nothing of this work is committed unless the owner did it. Check `git status` and `git log` at the start of a session.
 - This repository is the OpenJK fork `E:\Git\jka\OpenJK_Netcode`, branch `feature/poc-netcode`.
-- Branch changes outside `docs_rewrite/netcode/`: the two defaults in `codemp/server/sv_init.cpp` (`sv_fps` 20, `sv_clientRate` 25000) and `*.dm_26` in `.gitignore`. Nothing in the game module.
+- Branch changes outside `docs_rewrite/netcode/`: the two defaults in `codemp/server/sv_init.cpp` (`sv_fps` 20, `sv_clientRate` 25000), `.gitignore` (`*.dm_26`, `docs_rewrite/netcode/data/traces/`) and the new library `codemp/netcodec/` (not yet part of OpenJK's CMake: that is step 7). Nothing in the game module.
+- `codemp/netcodec/`: `CMakeLists.txt`, `CMakePresets.json`, `.clang-tidy`, `cmake/` (warnings, sanitizers, static analyzers), `include/netcodec/` (`codec.h`, `rans.h`), `src/` (`schema.h`, `numeric.h`, `model.h` / `.cpp`, `coder.h`, `field_codec.h`, `message_codec.cpp`, `generated/jka_schema.inc`, `generated/jka_tables.inc`), `test/` (golden tests and trace readers), `bench/` (`bench_rans.cpp`, `bench_codec.cpp`, `legacy/` glue of OpenJK's `msg.cpp` / `huffman.cpp`, `ryg/rans_byte.h` kept for comparison).
+- Local data, not committed (rebuilt by scripts): `docs_rewrite/netcode/data/traces/` (`tables.pkl` from `train_tables.py`, `rans_trace.bin` from `export_rans_trace.py`, `codec_trace.bin` from `export_codec_trace.py`, 144 MB); `data/demos/` (demos and their caches); build directories `build-netcodec/<preset>` at the repository root.
 - Python caches (`*.pkl`) are rebuilt by the tools and ignored by git. Delete `bdata.pkl` and `fullmsgs.pkl` after regenerating `data/fields.json`.
 - `tools/fieldinfo/build/` is ignored by git; the owner builds `fieldinfo.exe` there.
 
 ## How to resume
 
-1. Read this page, then the document of the last finished step, then the next step in [PLAN.md](../PLAN.md).
-2. Check that the tools still give the recorded numbers: from `docs_rewrite/netcode/tools/python`, `python run_full.py` (study codec: snapshot mean 139.1, 0 failures) and `python run_pred.py pi --fuzz` (step 1: 107.3, 0 failures). About 2 minutes in all.
-3. At the end of the session, write the step document, update the tables above, and record new decisions with their date.
+1. Read this page, then [step-06-cpp-codec.md](step-06-cpp-codec.md) (the step in progress; its last sections say what comes next and how), then step 6 of [PLAN.md](../PLAN.md).
+2. Python checks, from `docs_rewrite/netcode/tools/python` (about 3 minutes): `python run_full.py` (study codec: snapshot mean 139.1, 0 failures) and `python run_pred.py pi --fuzz` (step 1: 107.3, 0 failures).
+3. C++ checks, from `codemp/netcodec` in Git Bash on this machine (tools: llvm-mingw clang 23 in `C:\Logiciels\llvm-mingw-20261104-ucrt-x86_64`, CMake 4.4.5 in `C:\Logiciels\cmake-4.4.5`, Ninja in `C:\Logiciels\ninja`; none in the `PATH`, nothing installed as a service):
+   ```
+   export PATH="/c/Logiciels/llvm-mingw-20261104-ucrt-x86_64/bin:/c/Logiciels/cmake-4.4.5/bin:/c/Logiciels/ninja:$PATH"
+   cmake --preset mingw-clang-release && cmake --build --preset mingw-clang-release && ctest --preset mingw-clang-release
+   ../../build-netcodec/mingw-clang-release/bench/netcodec_bench_codec.exe ../../docs_rewrite/netcode/data/traces/codec_trace.bin 10
+   ```
+   Expected: both golden tests 0 mismatches; benchmark 35,831 messages, netcodec 96.6 bytes against 218.5, encoding about 3.1 µs against 9.4 µs, decoding about 2.9 µs against 3.5 µs. Other presets: `mingw-clang-debug`, `mingw-clang-asan`, `mingw-clang-x86`, `mingw-clang-tidy` (clang-tidy, must report nothing). If the traces are missing: `python train_tables.py`, `python export_rans_trace.py`, `python export_codec_trace.py` (needs the demos and their caches; about 10 minutes).
+4. The owner validates on two VirtualBox machines sharing this repository (`Z:\OpenJK_Netcode` on Windows, `/media/sf_jka/OpenJK_Netcode` on Debian): Windows 11 with Visual Studio 2026 (presets `msvc-x64`, `msvc-x86`; 16 GB), Debian 12 with GCC 12.2 and Clang 14 (presets `gcc-release`, `gcc-debug`, `gcc-asan`, `gcc-x86`, `clang-release`; 8 GB, so keep programs well below that). Give the owner the full command list from `codemp/netcodec` (configure, build, `ctest`, benchmark); the build directories are shared, so deleting them on the VMs also deletes this machine's builds.
+5. At the end of the session, write the step document, update the tables above, and record new decisions with their date.

@@ -42,6 +42,12 @@ The cvar is `proxy_sv_captureNet` (default 0, not archived). Switch it on before
 | `run_demos.py` | Plan step 4 check: round trip of the selected demos with `codec2`, tables trained as `run_full.py` (in parallel). |
 | `run_step5.py` | Plan step 5: step 1 codec trained on the training demos, measured on all selected demos with three table sets (global, per game type, age as context), sizes by set, game type, interval, base age, map, server build. |
 | `sim_loss_demos.py` | Plan step 5: the `sim_loss.py` grid on the held-out demos with the step 1 codec and one global table set. |
+| `train_tables.py` | Plan step 6: product tables and modes trained on the 60 training demos, saved to `data/traces/tables.pkl` (local). |
+| `gen_netcodec.py` | Plan step 6: writes the C++ schema and tables, `codemp/netcodec/src/generated/jka_schema.inc` and `jka_tables.inc`. |
+| `export_rans_trace.py` | Plan step 6: rANS golden trace of the captures (`data/traces/rans_trace.bin`, local). |
+| `export_codec_trace.py` | Plan step 6: message-codec golden trace of the captures and 5 demos (`data/traces/codec_trace.bin`, local, 144 MB). |
+
+C++ (`codemp/netcodec/`, plan step 6; build with the presets of `CMakePresets.json`, see [progress/README.md](progress/README.md), "How to resume"): `netcodec_test_rans` and `netcodec_test_codec` (golden tests, run by `ctest`), `netcodec_bench_rans` (rANS against `rans_byte.h`), `netcodec_bench_codec` (whole messages against OpenJK's own `msg.cpp` and `huffman.cpp`).
 | `jkadec.py` | Decoder of the engine read path: Huffman tree, `MSG_ReadBits`, delta entity and player state, `svc_*` operations. `python jkadec.py file.bin` prints a decode summary and writes `file.bin.dec.pkl`. Also the library imported by the others. |
 | `bdata.py` | Builds the per-snapshot corpus (states, call lists) from the three captures; cache `bdata.pkl`. |
 | `fullload.py` | Builds the whole-message corpus (all operations with payloads); cache `fullmsgs.pkl`. |
