@@ -120,7 +120,7 @@ void vk_rpmod_register_cvars( void ) {
 	ri.Cvar_CheckRange( r_ssao, 0, 1, qtrue );
 	r_ssaoRadius = ri.Cvar_Get( "r_ssaoRadius", "48", CVAR_ARCHIVE_ND, "How far ambient occlusion reaches, in world units" );
 	ri.Cvar_CheckRange( r_ssaoRadius, 4, 256, qfalse );
-	r_ssaoIntensity = ri.Cvar_Get( "r_ssaoIntensity", "1", CVAR_ARCHIVE_ND, "How dark ambient occlusion makes things" );
+	r_ssaoIntensity = ri.Cvar_Get( "r_ssaoIntensity", "0.6", CVAR_ARCHIVE_ND, "How dark ambient occlusion makes things: 0.3 low, 0.6 medium, 1 strong" );
 	ri.Cvar_CheckRange( r_ssaoIntensity, 0, 4, qfalse );
 	r_softParticles = ri.Cvar_Get( "r_softParticles", "0", CVAR_ARCHIVE_ND, va( "Soft particles: smoke, fire and other effects fade where they meet walls and floors instead of cutting into them%s", fbo ) );
 	ri.Cvar_CheckRange( r_softParticles, 0, 1, qtrue );
@@ -130,8 +130,8 @@ void vk_rpmod_register_cvars( void ) {
 	ri.Cvar_CheckRange( r_fxaa, 0, 1, qtrue );
 	r_sharpen = ri.Cvar_Get( "r_sharpen", "0", CVAR_ARCHIVE_ND, va( "Sharpening, from 0 (off) to 1%s", fbo ) );
 	ri.Cvar_CheckRange( r_sharpen, 0, 1, qfalse );
-	r_tonemap = ri.Cvar_Get( "r_tonemap", "0", CVAR_ARCHIVE_ND, va( "Tone mapping: bright light rolled off along a film-like curve instead of clipping%s", fbo ) );
-	ri.Cvar_CheckRange( r_tonemap, 0, 1, qtrue );
+	r_tonemap = ri.Cvar_Get( "r_tonemap", "0", CVAR_ARCHIVE_ND, va( "Tone mapping: bright light rolled off instead of clipping to white. 1 soft: the rest of the picture as it is; 2 film (ACES): darker shadows too%s", fbo ) );
+	ri.Cvar_CheckRange( r_tonemap, 0, 2, qtrue );
 	r_exposure = ri.Cvar_Get( "r_exposure", "1", CVAR_ARCHIVE_ND, va( "Colour grading: the view's light scaled by this%s", fbo ) );
 	ri.Cvar_CheckRange( r_exposure, 0.25f, 4, qfalse );
 	r_saturation = ri.Cvar_Get( "r_saturation", "1", CVAR_ARCHIVE_ND, va( "Colour grading: 0 grey, 1 as it is, more for stronger colours%s", fbo ) );
@@ -155,7 +155,7 @@ void vk_rpmod_register_cvars( void ) {
 /*
 ===============
 a map's own grading: maps/<name>.grade, lines of "exposure 1.2", "saturation 0.9", "contrast 1.1",
-"warmth 0.3", "tonemap 1"
+"warmth 0.3", "tonemap 1" (or 2, film)
 ===============
 */
 void vk_rpmod_map_grade( const char *bspName ) {
@@ -188,7 +188,7 @@ void vk_rpmod_map_grade( const char *bspName ) {
 		else if ( !Q_stricmp( key, "warmth" ) )
 			mapGrade.warmth = Com_Clamp( -1.0f, 1.0f, atof( token ) );
 		else if ( !Q_stricmp( key, "tonemap" ) )
-			mapGrade.tonemap = atoi( token ) ? 1 : 0;
+			mapGrade.tonemap = Com_Clampi( 0, 2, atoi( token ) );
 	}
 	ri.FS_FreeFile( buf );
 	mapGrade.valid = qtrue;
@@ -1166,7 +1166,7 @@ static qboolean RP_Grade( float *a, float *tint ) {
 		return qfalse;
 
 	a[0] = exposure;
-	a[1] = tonemap ? 1.0f : 0.0f;
+	a[1] = (float)tonemap;	// 0 off, 1 soft, 2 film
 	a[2] = saturation;
 	a[3] = contrast;
 	tint[0] = 1.0f + 0.15f * warmth;
