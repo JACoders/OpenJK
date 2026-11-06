@@ -6,6 +6,8 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Added] `Background audio`. `/s_backgroundAudio 1` keeps the game's sound playing with it minimized or another window in front, instead of turning it off until you come back (off by default).
+- [Fixed] `Cinematics out of sync after alt-tab`. A cinematic's sound (`/rpcinematic`, a RoQ or an HD video) was paused with the window out of focus, and fell behind its picture, beeping, once you came back. It keeps playing now while a cinematic plays, whatever the setting.
 - [Changed] `Renderer page: the effects under Post Effects`. With Vulkan, bloom, HDR, dithering, ambient occlusion and the second page's effects only work with Post Effects (`r_fbo`) on, so they show only then, under it; with it off they're out of the way, instead of seeming to do nothing.
 - [Fixed] `Vulkan: "vkWaitForFences returned VK_TIMEOUT"`. With a second game started next to it, two clients at once, the graphics card can be kept busy for a while, and after 10 seconds the game closed with this error. It waits now, saying so in the console, and gives up only after a minute. A window restored from the taskbar at the wrong moment could also leave the card waiting for good, with the same error; not any more.
 - [Fixed] `"Ran out of transform space for Ghoul2 Models"`. Near a very detailed character model, a saber hit or anything else that checks its exact shape could drop you to the menu with this error. The game has eight times the room for it now (2 MB, JKA's was 256 KB).

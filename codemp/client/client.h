@@ -620,6 +620,7 @@ void CIN_SetExtents (int handle, int x, int y, int w, int h);
 void CIN_SetLooping (int handle, qboolean loop);
 void CIN_UploadCinematic(int handle);
 void CIN_CloseAllVideos(void);
+qboolean CIN_PlayingWithSound( void );
 
 //
 // cl_cgame.c

@@ -52,6 +52,10 @@ cvar_t	*rconAddress;
 
 cvar_t	*cl_timeout;
 cvar_t	*cl_maxpackets;
+static cvar_t	*s_backgroundAudio;	// OpenJK-rpmod: the sound plays on with the window out of focus
+
+// shared/sdl/sdl_sound.cpp: the sound kept playing whatever the window's focus
+void SNDDMA_KeepActive( qboolean keep );
 cvar_t	*cl_packetdup;
 cvar_t	*cl_timeNudge;
 cvar_t	*cl_showTimeDelta;
@@ -2397,6 +2401,9 @@ void CL_Frame ( int msec ) {
 	CL_Feedback_Frame();
 	// the RENDERER page's effects, shown with Post Effects on
 	CL_RenderMenu_Frame();
+	// the sound on with the window out of focus: when asked, and always while a cinematic plays,
+	// or its sound would fall behind its picture
+	SNDDMA_KeepActive( (qboolean)( s_backgroundAudio->integer || CIN_PlayingWithSound() ) );
 	// what you're playing, on your Discord profile
 	CL_Discord_Frame();
 
@@ -2970,6 +2977,7 @@ void CL_Init( void ) {
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE_ND );
 
 	cl_maxpackets = Cvar_Get ("cl_maxpackets", "63", CVAR_ARCHIVE );
+	s_backgroundAudio = Cvar_Get( "s_backgroundAudio", "0", CVAR_ARCHIVE_ND, "Sound keeps playing when the game is minimized or another window is in front; it always does while a cinematic plays" );
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE_ND );
 
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE_ND, "Always run");

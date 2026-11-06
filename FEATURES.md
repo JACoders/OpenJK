@@ -37,6 +37,7 @@ Some features reach other players through workarounds only this client understan
 - [Fighter Takeoff Guard](#fighter-takeoff-guard)
 - [Toggle Crouch](#toggle-crouch)
 - [Wall Stick](#wall-stick)
+- [Background Audio](#background-audio)
 - [Console Settings](#console-settings)
 - [Model Safeguards](#model-safeguards)
 - [Update Check](#update-check)
@@ -644,6 +645,14 @@ Stay on a wall you grabbed while you chat.
 
 - `/cl_wallstick` turns it on or off; grab a wall holding jump as usual and you stay on it
 - Chatting, typing in the console or opening a menu no longer drops you; press jump again to push off
+
+## Background Audio
+
+Keep hearing the game with it minimized or another window in front.
+
+- JKA turns its sound off while its window isn't the one in front, until you come back to it
+- `/s_backgroundAudio 1` keeps it playing (off by default)
+- While a cinematic with sound plays (`/rpcinematic`, a RoQ or an HD video), the sound always keeps playing, the setting on or off: paused, it fell behind the picture and beeped once you came back
 
 ## Console Settings
 

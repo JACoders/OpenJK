@@ -31,6 +31,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 extern dma_t		dma;
 SDL_AudioDeviceID	dev;
+
+// OpenJK-rpmod: the sound pauses with the window out of focus, unless the game asks it to keep
+// playing (SNDDMA_KeepActive: background audio on, or a cinematic playing, whose sound would
+// fall behind its picture)
+static qboolean sndFocused = qtrue;
+static qboolean sndKeep = qfalse;
+static qboolean sndActive = qtrue;
+static void SNDDMA_Apply( void );
 qboolean snd_inited = qfalse;
 
 cvar_t *s_sdlBits;
@@ -250,6 +258,8 @@ qboolean SNDDMA_Init(int sampleFrequencyInKHz)
 
 	Com_Printf("Starting SDL audio callback...\n");
 	SDL_PauseAudioDevice(dev, 0);  // start callback.
+	sndActive = qtrue; // OpenJK-rpmod: paused again below if the window is out of focus, as before it was made
+	SNDDMA_Apply();
 
 	Com_Printf("SDL audio initialized.\n");
 	snd_inited = qtrue;
@@ -310,9 +320,14 @@ void SNDDMA_BeginPainting (void)
 extern int s_UseOpenAL;
 #endif
 
-// (De)activates sound playback
-void SNDDMA_Activate( qboolean activate )
+static void SNDDMA_Apply( void )
 {
+	const qboolean activate = (qboolean)( sndFocused || sndKeep );
+
+	if ( activate == sndActive )
+		return;
+	sndActive = activate;
+
 #ifdef USE_OPENAL
 	if ( s_UseOpenAL )
 	{
@@ -326,4 +341,18 @@ void SNDDMA_Activate( qboolean activate )
 	}
 
 	SDL_PauseAudioDevice( dev, !activate );
+}
+
+// (De)activates sound playback: the window's focus
+void SNDDMA_Activate( qboolean activate )
+{
+	sndFocused = activate;
+	SNDDMA_Apply();
+}
+
+// OpenJK-rpmod: keep playing whatever the window's focus
+void SNDDMA_KeepActive( qboolean keep )
+{
+	sndKeep = keep;
+	SNDDMA_Apply();
 }

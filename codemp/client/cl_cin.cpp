@@ -157,6 +157,18 @@ void CIN_CloseAllVideos(void) {
 }
 
 
+// OpenJK-rpmod: a cinematic with sound playing, a RoQ or a video: its sound keeps going with the
+// window out of focus, or it falls behind the picture
+qboolean CIN_PlayingWithSound( void ) {
+	for ( int i = 0; i < MAX_VIDEO_HANDLES; i++ ) {
+		const cin_cache_t *c = &cinTable[i];
+
+		if ( c->fileName[0] && !c->silent && ( c->status == FMV_PLAY || c->status == FMV_LOOPED ) )
+			return qtrue;
+	}
+	return qfalse;
+}
+
 static int CIN_HandleForVideo(void) {
 	int		i;
 
