@@ -174,7 +174,7 @@ static void AF_Cmd_f( void ) {
 }
 
 void CL_AdminFlags_Init( void ) {
-	cl_adminFlags = Cvar_Get( "cl_adminFlags", "1", CVAR_ARCHIVE_ND, "Show noclip, nodraw, nonsolid and notarget at the bottom while one is on" );
+	cl_adminFlags = Cvar_Get( "cl_adminFlags", "0", CVAR_ARCHIVE_ND, "Show noclip, nodraw, nonsolid and notarget at the bottom while one is on" );
 	Cmd_AddCommand( "adminflags", AF_Cmd_f, "Noclip, nodraw, nonsolid and notarget on you, as known" );
 	CL_AdminFlags_Reset();
 }
