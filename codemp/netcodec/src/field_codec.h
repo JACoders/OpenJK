@@ -61,7 +61,7 @@ constexpr int64_t kTwo31 = 2147483648LL, kTwo32 = 4294967296LL;
 	return (2 * OldIndex(ov)) - OldIndex(o2);
 }
 
-inline void PutInt(Out &io, const CtxRow &row, int bits, int64_t nv, int64_t ov, bool absolute) noexcept {
+template <class O> void PutInt(O &io, ctx::Row row, int bits, int64_t nv, int64_t ov, bool absolute) noexcept {
 	const auto ab = static_cast<uint32_t>(bits < 0 ? -bits : bits);
 	const auto m = static_cast<int64_t>(uint64_t{ 1 } << ab);
 	if (absolute) {
@@ -72,7 +72,7 @@ inline void PutInt(Out &io, const CtxRow &row, int bits, int64_t nv, int64_t ov,
 	}
 }
 
-[[nodiscard]] inline int64_t GetInt(In &io, const CtxRow &row, int bits, int64_t ov, bool absolute) noexcept {
+[[nodiscard]] inline int64_t GetInt(In &io, ctx::Row row, int bits, int64_t ov, bool absolute) noexcept {
 	const auto ab = static_cast<uint32_t>(bits < 0 ? -bits : bits);
 	const auto m = static_cast<int64_t>(uint64_t{ 1 } << ab);
 	const bool sgn = bits < 0;
@@ -93,7 +93,7 @@ inline void PutInt(Out &io, const CtxRow &row, int bits, int64_t nv, int64_t ov,
 	return k == 2 && IsAngleIndex(nv) ? 3 : k;
 }
 
-inline void PutFloat(Out &io, const CtxRow &row, int64_t nv, int64_t ov, bool absolute) noexcept {
+template <class O> void PutFloat(O &io, ctx::Row row, int64_t nv, int64_t ov, bool absolute) noexcept {
 	const uint32_t k = FloatKind(nv);
 	io.Symbol(row[fctx::kK], k);
 	const uint32_t ok = FKind(ov);
@@ -110,7 +110,7 @@ inline void PutFloat(Out &io, const CtxRow &row, int64_t nv, int64_t ov, bool ab
 	}
 }
 
-[[nodiscard]] inline int64_t GetFloatOfKind(In &io, const CtxRow &row, int64_t ov, bool absolute, uint32_t k) noexcept {
+[[nodiscard]] inline int64_t GetFloatOfKind(In &io, ctx::Row row, int64_t ov, bool absolute, uint32_t k) noexcept {
 	const uint32_t ok = FKind(ov);
 	if (k == 0) return 0;
 	if (k == 1) {
@@ -123,7 +123,7 @@ inline void PutFloat(Out &io, const CtxRow &row, int64_t nv, int64_t ov, bool ab
 	return Low32((ok != 0 ? S32(ov) : 0) + Unzz(io.Class(row[fctx::kFD])));
 }
 
-inline void PutField(Out &io, const PredCtx &c, const FieldDesc &f, const CtxRow &row, int64_t nv, int64_t ov,
+template <class O> void PutField(O &io, const PredCtx &c, const FieldDesc &f, ctx::Row row, int64_t nv, int64_t ov,
                      int trTypeBits) noexcept {
 	if (f.ctype == CType::kBool) {
 		const bool flip = (nv == 0 || nv == 1) && (ov == 0 || ov == 1);
@@ -155,7 +155,7 @@ inline void PutField(Out &io, const PredCtx &c, const FieldDesc &f, const CtxRow
 	else PutInt(io, row, f.bits, nv, ov, f.absolute);
 }
 
-[[nodiscard]] inline int64_t GetField(In &io, const PredCtx &c, const FieldDesc &f, const CtxRow &row, int64_t ov,
+[[nodiscard]] inline int64_t GetField(In &io, const PredCtx &c, const FieldDesc &f, ctx::Row row, int64_t ov,
                                       int trTypeBits) noexcept {
 	if (f.ctype == CType::kBool && io.Symbol(row[fctx::kB]) == 0) return ov == 0 ? 1 : 0;   // a flip
 	if (f.pmode == PredMode::kTime && f.bits == 32 && c.time)

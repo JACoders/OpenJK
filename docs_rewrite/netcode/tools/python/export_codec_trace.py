@@ -31,39 +31,55 @@ def default_demos():
     out += [rel for s, rel in rows if s == "train" and "hoth" in meta[rel]["map"]][:1]
     return out
 
+EIDX = PIDX = None
+
+def init_indices():
+    """Field indices of the C++ schema; call after K2.enable_prediction(), which reorders the entity fields."""
+    global EIDX, PIDX
+    EIDX = {n: i for i, (n, b) in enumerate(C.EF)}; PIDX = {n: i for i, n in enumerate(K2.ALLNAMES)}
+
+def u32(v): return struct.pack("<I", v & 0xFFFFFFFF)
+def i64(v): return struct.pack("<q", v)
+def bstr(b): return struct.pack("<I", len(b)) + bytes(b)
+
+def ps_bytes(ps):
+    items = [(PIDX[n], v) for n, v in ps.items() if n in PIDX and v != 0]
+    return struct.pack("<H", len(items)) + b"".join(struct.pack("<H", i) + u32(v) for i, v in sorted(items))
+
+def ents_bytes(ents):
+    out = [struct.pack("<I", len(ents))]
+    for num, st in ents:
+        items = sorted((EIDX[n], v) for n, v in st.items() if n in EIDX and v != 0)
+        out.append(struct.pack("<HH", num, len(items)) + b"".join(struct.pack("<H", i) + u32(v) for i, v in items))
+    return b"".join(out)
+
+def op_bytes(op):
+    t = op["t"]; b = struct.pack("<B", OPS[t])
+    if t == "cmd": return b + i64(op["seq"]) + bstr(op["text"])
+    if t == "setgame": return b + bstr(op["text"])
+    if t == "gs":
+        return (b + i64(op["rseq"]) + struct.pack("<I", len(op["cs"])) +
+                b"".join(struct.pack("<H", i) + bstr(x) for i, x in op["cs"]) + ents_bytes(op["baselines"]) +
+                i64(op["clientNum"]) + i64(op["checksum"]))
+    if t == "dl": return b + struct.pack("<I", op["block"]) + i64(op["fsize"] or 0) + bstr(op["data"])
+    if t == "snap":
+        sn = op["snap"]
+        return (b + i64(op["time"]) + struct.pack("<II", op["flags"], len(op["areas"])) + bytes(op["areas"]) +
+                ps_bytes(sn["ps"]) + struct.pack("<B", sn["vps"] is not None) +
+                (ps_bytes(sn["vps"]) if sn["vps"] is not None else b"") + ents_bytes(sn["ents"]))
+    return b
+
+def msg_bytes(m):
+    """seq, delta, ack, nops and the operations of one message"""
+    msg = m["msg"]
+    return (struct.pack("<II", m["seq"], m["delta"]) + i64(msg["ack"]) + struct.pack("<I", len(msg["ops"])) +
+            b"".join(op_bytes(op) for op in msg["ops"]))
+
 def main():
-    K2.enable_prediction()
+    K2.enable_prediction(); init_indices()
     tr = pickle.load(open(train_tables.OUT, "rb"))
     C.PMODES = tr["pmodes"]; C.X0 = 1
     modes = tr["modes"]; tables = C.Tables(tr["counts"], tr["alpha"])
-    eidx = {n: i for i, (n, b) in enumerate(C.EF)}; pidx = {n: i for i, n in enumerate(K2.ALLNAMES)}
-    def u32(v): return struct.pack("<I", v & 0xFFFFFFFF)
-    def i64(v): return struct.pack("<q", v)
-    def bstr(b): return struct.pack("<I", len(b)) + bytes(b)
-    def ps_bytes(ps):
-        items = [(pidx[n], v) for n, v in ps.items() if n in pidx and v != 0]
-        return struct.pack("<H", len(items)) + b"".join(struct.pack("<H", i) + u32(v) for i, v in sorted(items))
-    def ents_bytes(ents):
-        out = [struct.pack("<I", len(ents))]
-        for num, st in ents:
-            items = sorted((eidx[n], v) for n, v in st.items() if n in eidx and v != 0)
-            out.append(struct.pack("<HH", num, len(items)) + b"".join(struct.pack("<H", i) + u32(v) for i, v in items))
-        return b"".join(out)
-    def op_bytes(op):
-        t = op["t"]; b = struct.pack("<B", OPS[t])
-        if t == "cmd": return b + i64(op["seq"]) + bstr(op["text"])
-        if t == "setgame": return b + bstr(op["text"])
-        if t == "gs":
-            return (b + i64(op["rseq"]) + struct.pack("<I", len(op["cs"])) +
-                    b"".join(struct.pack("<H", i) + bstr(x) for i, x in op["cs"]) + ents_bytes(op["baselines"]) +
-                    i64(op["clientNum"]) + i64(op["checksum"]))
-        if t == "dl": return b + struct.pack("<I", op["block"]) + i64(op["fsize"] or 0) + bstr(op["data"])
-        if t == "snap":
-            sn = op["snap"]
-            return (b + i64(op["time"]) + struct.pack("<II", op["flags"], len(op["areas"])) + bytes(op["areas"]) +
-                    ps_bytes(sn["ps"]) + struct.pack("<B", sn["vps"] is not None) +
-                    (ps_bytes(sn["vps"]) if sn["vps"] is not None else b"") + ents_bytes(sn["ents"]))
-        return b
 
     streams = [RF.RAW[k] for k in ("5min", "bots", "solo")]
     demos = sys.argv[1:] or default_demos()
@@ -75,9 +91,7 @@ def main():
         for msgs in streams:
             recs = []
             for m, units, _ in RF.encode_stream(msgs, modes):
-                msg = m["msg"]
-                recs.append(struct.pack("<II", m["seq"], m["delta"]) + i64(msg["ack"]) + struct.pack("<I", len(msg["ops"])) +
-                            b"".join(op_bytes(op) for op in msg["ops"]) + bstr(C.rans_encode(units, tables)))
+                recs.append(msg_bytes(m) + bstr(C.rans_encode(units, tables)))
             f.write(struct.pack("<I", len(recs)) + b"".join(recs)); total += len(recs)
     print("wrote %s: %d streams (%d demos), %d messages, %d MB" % (OUT, len(streams), len(demos), total, os.path.getsize(OUT) >> 20))
 

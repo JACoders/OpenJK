@@ -1,8 +1,10 @@
 // netcodec internals: the symbol layer on top of rANS, as the format uses it. A symbol is coded with the table of its
 // context; raw bits are coded uniformly; a "class" codes a value by its bit length in a context, then the bits
-// below the leading one raw.
+// below the leading one raw. The writers share the format's classes and strings (SymbolWriter): Out codes, CountOut
+// counts the symbols per context for the trainer.
 #pragma once
 
+#include "contexts.h"
 #include "model.h"
 
 #include <bit>
@@ -10,7 +12,37 @@
 
 namespace netcodec::detail {
 
-class Out {
+// classes and strings over the writer's Symbol and Raw
+template <class W> class SymbolWriter {
+public:
+	void Class(uint32_t ctx, uint64_t x) noexcept {
+		const auto c = static_cast<uint32_t>(std::bit_width(x));
+		Self().Symbol(ctx, c);
+		if (c > 1) Self().Raw(x - (uint64_t{ 1 } << (c - 1)), c - 1);
+	}
+
+	// bytes then a 0 terminator (a 0 byte inside cannot be coded)
+	void String(uint32_t ctx, const std::string &text) noexcept {
+		for (const char ch : text) {
+			const auto b = static_cast<uint8_t>(ch);
+			if (b == 0) bad_ = true;
+			Self().Symbol(ctx, b);
+		}
+		Self().Symbol(ctx, 0);
+	}
+
+	[[nodiscard]] bool Bad() const noexcept { return bad_; }
+
+protected:
+	bool bad_ = false;   // a value outside the model (a bug): the message is refused
+
+private:
+	friend W;
+	SymbolWriter() = default;
+	W &Self() noexcept { return static_cast<W &>(*this); }
+};
+
+class Out : public SymbolWriter<Out> {
 public:
 	Out(rans::Encoder &e, const Model &m) noexcept : e_(&e), m_(&m) {}
 
@@ -30,28 +62,26 @@ public:
 		e_->PutRaw(static_cast<uint32_t>(v), n);
 	}
 
-	void Class(uint32_t ctx, uint64_t x) noexcept {
-		const auto c = static_cast<uint32_t>(std::bit_width(x));
-		Symbol(ctx, c);
-		if (c > 1) Raw(x - (uint64_t{ 1 } << (c - 1)), c - 1);
-	}
-
-	// bytes then a 0 terminator (a 0 byte inside cannot be coded)
-	void String(uint32_t ctx, const std::string &text) noexcept {
-		for (const char ch : text) {
-			const auto b = static_cast<uint8_t>(ch);
-			if (b == 0) bad_ = true;
-			Symbol(ctx, b);
-		}
-		Symbol(ctx, 0);
-	}
-
-	[[nodiscard]] bool Bad() const noexcept { return bad_; }
-
 private:
 	rans::Encoder *e_;
 	const Model *m_;
-	bool bad_ = false;
+};
+
+// counts the symbols per context (counts[ctx] sized by the context's alphabet); raw bits are not counted
+class CountOut : public SymbolWriter<CountOut> {
+public:
+	explicit CountOut(SymbolCounts &counts) noexcept : counts_(&counts) {}
+
+	void Symbol(uint32_t ctx, uint64_t sym) noexcept {
+		std::vector<uint64_t> &c = (*counts_)[ctx];
+		if (sym >= c.size()) { bad_ = true; return; }
+		c[static_cast<uint32_t>(sym)]++;   // below the alphabet size
+	}
+
+	void Raw(uint64_t /*v*/, uint32_t /*n*/) noexcept {}
+
+private:
+	SymbolCounts *counts_;
 };
 
 class In {

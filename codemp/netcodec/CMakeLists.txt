@@ -1,6 +1,6 @@
 # netcodec: snapshot and message codec of the new netcode (docs_rewrite/netcode/PLAN.md, step 6).
 #
-# Layout after cpp-best-practices/cmake_template: include/ (public headers), src/, test/, bench/, cmake/.
+# Layout after cpp-best-practices/cmake_template: include/ (public headers), src/, test/, bench/, tools/, cmake/.
 # Two uses:
 #  - top-level project (development, tests, benchmarks): see CMakePresets.json, for example
 #      cmake --preset gcc-release && cmake --build --preset gcc-release && ctest --preset gcc-release
@@ -24,6 +24,7 @@ endif()
 
 option(netcodec_BUILD_TESTS "Build the netcodec tests" ${PROJECT_IS_TOP_LEVEL})
 option(netcodec_BUILD_BENCHMARKS "Build the netcodec benchmarks" ${PROJECT_IS_TOP_LEVEL})
+option(netcodec_BUILD_TOOLS "Build the netcodec tools (table trainer)" ${PROJECT_IS_TOP_LEVEL})
 option(netcodec_WARNINGS_AS_ERRORS "Treat warnings as errors" ${PROJECT_IS_TOP_LEVEL})
 option(netcodec_ENABLE_SANITIZER_ADDRESS "AddressSanitizer" OFF)
 option(netcodec_ENABLE_SANITIZER_UNDEFINED "UndefinedBehaviorSanitizer" OFF)
@@ -58,6 +59,7 @@ add_library(netcodec STATIC
 	include/netcodec/codec.h
 	include/netcodec/rans.h
 	src/coder.h
+	src/contexts.h
 	src/field_codec.h
 	src/message_codec.cpp
 	src/model.cpp
@@ -89,6 +91,17 @@ function(netcodec_add_program name)
 	if(MINGW)
 		target_link_options(${name} PRIVATE -static)
 	endif()
+	if(MSVC AND netcodec_ENABLE_SANITIZER_ADDRESS)
+		# MSVC's AddressSanitizer runtime is a DLL of the compiler's directory, not in the PATH: copied next to the program
+		get_filename_component(netcodec_msvc_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+			set(netcodec_asan_dll "clang_rt.asan_dynamic-x86_64.dll")
+		else()
+			set(netcodec_asan_dll "clang_rt.asan_dynamic-i386.dll")
+		endif()
+		add_custom_command(TARGET ${name} POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+		                   "${netcodec_msvc_bin}/${netcodec_asan_dll}" "$<TARGET_FILE_DIR:${name}>")
+	endif()
 endfunction()
 
 if(netcodec_BUILD_TESTS)
@@ -97,4 +110,7 @@ if(netcodec_BUILD_TESTS)
 endif()
 if(netcodec_BUILD_BENCHMARKS)
 	add_subdirectory(bench)
+endif()
+if(netcodec_BUILD_TOOLS)
+	add_subdirectory(tools)
 endif()

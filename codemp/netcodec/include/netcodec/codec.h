@@ -124,4 +124,13 @@ struct BaseLookup {
 [[nodiscard]] bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup,
                                  std::vector<Entity> &baselines, Message &msg, uint32_t &delta, HeaderRecord &record);
 
+// Training (tools). counts[ctx][symbol]: the symbols the encoder codes, per context; a context that is never coded
+// has no entry. CountMessage adds the symbols of one message (same arguments and result as Encode, no output).
+// Quantize turns the counts of one context into the frequencies of its table (freq.size() symbols).
+using SymbolCounts = std::vector<std::vector<uint64_t>>;
+[[nodiscard]] SymbolCounts NewSymbolCounts();
+[[nodiscard]] bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+                                HeaderRecord &record, SymbolCounts &counts);
+void Quantize(std::span<const uint64_t> counts, std::span<uint16_t> freq) noexcept;
+
 } // namespace netcodec

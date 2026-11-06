@@ -37,7 +37,6 @@ struct FieldDesc {
 namespace fctx {
 constexpr size_t kA = 0, kD = 1, kK = 2, kIA = 3, kID = 4, kAD = 5, kFD = 6, kT = 7, kFP = 8, kA2 = 9, kB = 10, kCount = 11;
 }
-using CtxRow = std::array<uint16_t, fctx::kCount>;
 
 #include "generated/jka_schema.inc"
 

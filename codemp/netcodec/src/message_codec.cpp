@@ -8,6 +8,9 @@ namespace netcodec {
 namespace detail {
 namespace {
 
+using ctx::Of;
+using enum ctx::Scalar;
+
 constexpr size_t kMaxOps = 4096;               // decoder limit against malformed input
 constexpr uint32_t kEfNodraw = 1U << 8U;
 constexpr uint32_t kEntityClassCap = 18;       // entity types 18 and above share a context class
@@ -32,7 +35,8 @@ const uint8_t *OlderPlayer(const PredCtx &c, bool vehicle) noexcept {
 }
 
 // the fields are sent as "index of the next changed field, given the previous one", then the field's value
-void PutPlayer(Out &io, PredCtx &c, std::span<const FieldDesc> fields, std::span<const uint16_t> gap, ImageView nw,
+template <class O>
+void PutPlayer(O &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t gap, ImageView nw,
                ImageView old, const uint8_t *older, const Model &m) noexcept {
 	c.cur = nw; c.old = old; c.older = older; c.pred = AnyNonZero(old);
 	const uint32_t n = ToU32(fields.size());
@@ -40,25 +44,25 @@ void PutPlayer(Out &io, PredCtx &c, std::span<const FieldDesc> fields, std::span
 	for (uint32_t i = 0; i < n; i++) {
 		const FieldDesc &f = fields[i];
 		if (!FieldDiffers(nw, old, f)) continue;
-		io.Symbol(gap[next], i);
+		io.Symbol(gap + next, i);
 		next = i + 1;
-		PutField(io, c, f, kPlayerFieldCtx[f.ctx], Value(nw, f), Value(old, f), m.TrTypeBits());
+		PutField(io, c, f, ctx::PlayerField(f.ctx), Value(nw, f), Value(old, f), m.TrTypeBits());
 	}
-	io.Symbol(gap[next], n);
+	io.Symbol(gap + next, n);
 }
 
-bool GetPlayer(In &io, PredCtx &c, std::span<const FieldDesc> fields, std::span<const uint16_t> gap, ImageView old,
+bool GetPlayer(In &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t gap, ImageView old,
                PlayerState &out, const uint8_t *older, const Model &m) noexcept {
 	std::ranges::copy(old, out.begin());
 	c.cur = out; c.old = old; c.older = older; c.pred = AnyNonZero(old);
 	const uint32_t n = ToU32(fields.size());
 	uint32_t next = 0;
 	for (;;) {
-		const uint32_t i = io.Symbol(gap[next]);
+		const uint32_t i = io.Symbol(gap + next);
 		if (i == n) return true;
 		if (i < next) return false;
 		const FieldDesc &f = fields[i];
-		Store(out, f, GetField(io, c, f, kPlayerFieldCtx[f.ctx], Value(old, f), m.TrTypeBits()));
+		Store(out, f, GetField(io, c, f, ctx::PlayerField(f.ctx), Value(old, f), m.TrTypeBits()));
 		next = i + 1;
 	}
 }
@@ -86,25 +90,27 @@ uint32_t Changes(ImageView a, ImageView b, ChangeList &list) noexcept {
 	return n;
 }
 
-void PutEntity(Out &io, const PredCtx &c, ImageView nw, ImageView basest, std::span<const uint8_t> changes, const Model &m) noexcept {
+template <class O>
+void PutEntity(O &io, const PredCtx &c, ImageView nw, ImageView basest, std::span<const uint8_t> changes, const Model &m) noexcept {
 	const uint32_t bcls = ClassOf(basest), ncls = ClassOf(nw);
 	const bool typeChanged = std::ranges::find(changes, kEntityTypeIndex) != changes.end();
-	io.Symbol(kTypeChangedCtx[bcls], typeChanged ? 1 : 0);
-	if (typeChanged) io.Symbol(kTypeValueCtx[bcls], static_cast<uint64_t>(Value(nw, kEntityFields[kEntityTypeIndex])));
-	const auto &gap = kEntityGapCtx[ncls];
+	io.Symbol(ctx::kTypeChanged + bcls, typeChanged ? 1 : 0);
+	if (typeChanged) io.Symbol(ctx::kTypeValue + bcls, static_cast<uint64_t>(Value(nw, kEntityFields[kEntityTypeIndex])));
+	const uint32_t gap = ctx::EntityGap(ncls);
 	uint32_t next = 0;
 	for (const uint8_t i : changes) {
 		if (i == kEntityTypeIndex) continue;
 		const FieldDesc &f = kEntityFields[i];
-		io.Symbol(gap[next], i);
+		io.Symbol(gap + next, i);
 		next = i + 1U;
-		PutField(io, c, f, kEntityFieldCtx[f.ctx], Value(nw, f), Value(basest, f), m.TrTypeBits());
+		PutField(io, c, f, ctx::EntityField(f.ctx), Value(nw, f), Value(basest, f), m.TrTypeBits());
 	}
-	io.Symbol(gap[next], kNumEntityFields);
+	io.Symbol(gap + next, kNumEntityFields);
 }
 
 // entity operations: 0 changed, 1 new from its baseline, 2 removed, 3 new and equal to its baseline
-void PutEntities(Out &io, PredCtx &c, std::span<const Entity> nw, std::span<const Entity> old,
+template <class O>
+void PutEntities(O &io, PredCtx &c, std::span<const Entity> nw, std::span<const Entity> old,
                  std::span<const Entity> baselines, const Model &m) noexcept {
 	ChangeList list{};
 	size_t i = 0, j = 0;
@@ -133,12 +139,12 @@ void PutEntities(Out &io, PredCtx &c, std::span<const Entity> nw, std::span<cons
 		const int64_t gap = num - prevnum - 1;
 		prevnum = num;
 		if (gap < int64_t{ kEntityGapRaw }) {
-			io.Symbol(kEntGap, static_cast<uint64_t>(gap));
+			io.Symbol(Of(kEntGap), static_cast<uint64_t>(gap));
 		} else {
-			io.Symbol(kEntGap, kEntityGapRaw);
+			io.Symbol(Of(kEntGap), kEntityGapRaw);
 			io.Raw(static_cast<uint64_t>(gap), 10);
 		}
-		io.Symbol(kEntityOpCtx[prevop], op);
+		io.Symbol(ctx::kEntityOp + prevop, op);
 		prevop = op;
 		if (op == 2 || op == 3) continue;
 		c.cur = ne->state; c.old = basest; c.pred = op == 0;
@@ -146,7 +152,7 @@ void PutEntities(Out &io, PredCtx &c, std::span<const Entity> nw, std::span<cons
 		c.older = older != nullptr ? older->state.data() : nullptr;
 		PutEntity(io, c, ne->state, basest, std::span<const uint8_t>(list.data(), nch), m);
 	}
-	io.Symbol(kEntGap, kEntityListEnd);
+	io.Symbol(Of(kEntGap), kEntityListEnd);
 }
 
 bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<const Entity> baselines,
@@ -157,7 +163,7 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 	uint32_t prevop = 0;
 	const FieldDesc &typeField = kEntityFields[kEntityTypeIndex];
 	for (;;) {
-		const uint32_t g = io.Symbol(kEntGap);
+		const uint32_t g = io.Symbol(Of(kEntGap));
 		if (g == kEntityListEnd) break;
 		const uint64_t gap = g == kEntityGapRaw ? io.Raw(10) : g;
 		const uint64_t num = static_cast<uint64_t>(prevnum + 1) + gap;
@@ -166,7 +172,7 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 		while (j < old.size() && old[j].number < num) out.push_back(old[j++]);
 		const Entity *oe = j < old.size() && old[j].number == num ? &old[j] : nullptr;
 		if (oe != nullptr) j++;
-		const uint32_t op = io.Symbol(kEntityOpCtx[prevop]);
+		const uint32_t op = io.Symbol(ctx::kEntityOp + prevop);
 		prevop = op;
 		if (op == 2) {
 			if (oe == nullptr) return false;
@@ -188,15 +194,15 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 		const Entity *older = op == 0 && c.olderSnap != nullptr ? FindEntity(c.olderSnap->entities, static_cast<uint32_t>(num)) : nullptr;
 		c.older = older != nullptr ? older->state.data() : nullptr;
 		const uint32_t bcls = ClassOf(basest);
-		if (io.Symbol(kTypeChangedCtx[bcls]) != 0) Store(st.state, typeField, io.Symbol(kTypeValueCtx[bcls]));
-		const auto &gapCtx = kEntityGapCtx[ClassOf(st.state)];
+		if (io.Symbol(ctx::kTypeChanged + bcls) != 0) Store(st.state, typeField, io.Symbol(ctx::kTypeValue + bcls));
+		const uint32_t gapCtx = ctx::EntityGap(ClassOf(st.state));
 		uint32_t next = 0;
 		for (;;) {
-			const uint32_t i = io.Symbol(gapCtx[next]);
+			const uint32_t i = io.Symbol(gapCtx + next);
 			if (i == kNumEntityFields) break;
 			if (i < next || i == kEntityTypeIndex) return false;
 			const FieldDesc &f = kEntityFields[i];
-			Store(st.state, f, GetField(io, c, f, kEntityFieldCtx[f.ctx], Value(basest, f), m.TrTypeBits()));
+			Store(st.state, f, GetField(io, c, f, ctx::EntityField(f.ctx), Value(basest, f), m.TrTypeBits()));
 			next = i + 1;
 		}
 	}
@@ -205,14 +211,15 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 }
 
 // ------------------------------------------------------------------ messages
-void PutMessage(Out &io, const Message &msg, const Base &base, const std::vector<Entity> &baselines, HeaderRecord &rec,
+template <class O>
+void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<Entity> &baselines, HeaderRecord &rec,
                 const Model &m) {
 	const HeaderRecord *bh = base.header;
-	io.Symbol(kMDelta, base.delta);
+	io.Symbol(Of(kMDelta), base.delta);
 	PredCtx c;
 	c.btime = bh != nullptr ? bh->time : std::nullopt;
 	c.olderSnap = bh != nullptr ? bh->older : nullptr;
-	io.Class(kMAck, Zz(msg.ack - (bh != nullptr ? bh->ack : 0)));
+	io.Class(Of(kMAck), Zz(msg.ack - (bh != nullptr ? bh->ack : 0)));
 	int64_t lastcmd = bh != nullptr ? bh->cmdSeq : 0;
 	std::optional<int64_t> time;
 	uint32_t prev = 0;
@@ -220,56 +227,56 @@ void PutMessage(Out &io, const Message &msg, const Base &base, const std::vector
 	const std::span<const Entity> none;
 	for (const Op &op : msg.ops) {
 		const auto t = static_cast<uint32_t>(op.type);
-		io.Symbol(kOpCtx[prev], t);
+		io.Symbol(ctx::kOp + prev, t);
 		prev = t;
 		switch (op.type) {
 		case OpType::Command:
-			io.Class(kMCmdSeq, Zz(op.seq - (lastcmd + 1)));
+			io.Class(Of(kMCmdSeq), Zz(op.seq - (lastcmd + 1)));
 			lastcmd = op.seq;
-			io.String(kStrCmd, op.text);
+			io.String(Of(kStrCmd), op.text);
 			break;
 		case OpType::SetGame:
-			io.String(kStrSetgame, op.text);
+			io.String(Of(kStrSetgame), op.text);
 			break;
 		case OpType::GameState: {
 			const GameState &gs = op.gameState;
-			io.Class(kMRelSeq, Zz(gs.relSeq));
-			io.Class(kMNumCs, gs.configStrings.size());
+			io.Class(Of(kMRelSeq), Zz(gs.relSeq));
+			io.Class(Of(kMNumCs), gs.configStrings.size());
 			int64_t pi = -1;
 			for (const ConfigString &cs : gs.configStrings) {
-				io.Class(kMCsGap, static_cast<uint64_t>(cs.index - pi - 1));
+				io.Class(Of(kMCsGap), static_cast<uint64_t>(cs.index - pi - 1));
 				pi = cs.index;
-				io.String(kStrCs, cs.text);
+				io.String(Of(kStrCs), cs.text);
 			}
 			PutEntities(io, c, gs.baselines, none, none, m);
-			io.Class(kMClientNum, Zz(gs.clientNum));
+			io.Class(Of(kMClientNum), Zz(gs.clientNum));
 			io.Raw(static_cast<uint32_t>(gs.checksum), 32);
 			bl = &gs.baselines;
 			break;
 		}
 		case OpType::Download:
-			io.Class(kMDlBlock, op.block);
-			if (op.block == 0) io.Class(kMDlSize, Zz(op.fileSize));
-			io.Class(kMDlLen, op.data.size());
-			for (const uint8_t b : op.data) io.Symbol(kDlByte, b);
+			io.Class(Of(kMDlBlock), op.block);
+			if (op.block == 0) io.Class(Of(kMDlSize), Zz(op.fileSize));
+			io.Class(Of(kMDlLen), op.data.size());
+			for (const uint8_t b : op.data) io.Symbol(Of(kDlByte), b);
 			break;
 		case OpType::Snapshot: {
 			time = op.time;
 			c.time = op.time;
-			io.Class(kHTime, Zz(op.time - (bh != nullptr && bh->time ? *bh->time : 0)));
-			io.Symbol(kHFlags, op.flags);
-			io.Symbol(kHArea, op.areas.size());
-			for (const uint8_t a : op.areas) io.Symbol(kHArea, a);
+			io.Class(Of(kHTime), Zz(op.time - (bh != nullptr && bh->time ? *bh->time : 0)));
+			io.Symbol(Of(kHFlags), op.flags);
+			io.Symbol(Of(kHArea), op.areas.size());
+			for (const uint8_t a : op.areas) io.Symbol(Of(kHArea), a);
 			const Snapshot &sn = op.snap;
 			const bool pilot = IsPilot(sn.ps);
-			io.Symbol(kPsPilot, pilot ? 1 : 0);
+			io.Symbol(Of(kPsPilot), pilot ? 1 : 0);
 			const PlayerState &basePs = base.snap != nullptr ? base.snap->ps : ZeroPlayer();
-			if (pilot) PutPlayer(io, c, kPilotFields, kPlayerGapCtx1, sn.ps, basePs, OlderPlayer(c, false), m);
-			else PutPlayer(io, c, kPlayerFields, kPlayerGapCtx0, sn.ps, basePs, OlderPlayer(c, false), m);
+			if (pilot) PutPlayer(io, c, kPilotFields, ctx::PlayerGap(1), sn.ps, basePs, OlderPlayer(c, false), m);
+			else PutPlayer(io, c, kPlayerFields, ctx::PlayerGap(0), sn.ps, basePs, OlderPlayer(c, false), m);
 			if (VehicleNum(sn.ps) != 0) {
 				const PlayerState &nv = sn.hasVehicle ? sn.vps : ZeroPlayer();
 				const PlayerState &ov = base.snap != nullptr && base.snap->hasVehicle ? base.snap->vps : ZeroPlayer();
-				PutPlayer(io, c, kVehicleFields, kPlayerGapCtx2, nv, ov, OlderPlayer(c, true), m);
+				PutPlayer(io, c, kVehicleFields, ctx::PlayerGap(2), nv, ov, OlderPlayer(c, true), m);
 			}
 			PutEntities(io, c, sn.entities, base.snap != nullptr ? std::span<const Entity>(base.snap->entities) : none, *bl, m);
 			break;
@@ -279,7 +286,7 @@ void PutMessage(Out &io, const Message &msg, const Base &base, const std::vector
 			break;
 		}
 	}
-	io.Symbol(kOpCtx[prev], 0);
+	io.Symbol(ctx::kOp + prev, 0);
 	rec = HeaderRecord{ .ack = msg.ack, .time = time, .cmdSeq = lastcmd, .older = base.snap };
 }
 
@@ -304,14 +311,14 @@ Op &NextOp(Message &msg, size_t &used) {
 
 bool GetMessage(In &io, const BaseLookup &lookup, std::vector<Entity> &baselines, Message &msg, uint32_t &delta,
                 HeaderRecord &rec, const Model &m) {
-	delta = io.Symbol(kMDelta);
+	delta = io.Symbol(Of(kMDelta));
 	const Snapshot *base = nullptr;
 	const HeaderRecord *bh = nullptr;
 	if (delta != 0 && !lookup.Find(delta, base, bh)) return false;
 	PredCtx c;
 	c.btime = bh != nullptr ? bh->time : std::nullopt;
 	c.olderSnap = bh != nullptr ? bh->older : nullptr;
-	msg.ack = (bh != nullptr ? bh->ack : 0) + Unzz(io.Class(kMAck));
+	msg.ack = (bh != nullptr ? bh->ack : 0) + Unzz(io.Class(Of(kMAck)));
 	int64_t lastcmd = bh != nullptr ? bh->cmdSeq : 0;
 	std::optional<int64_t> time;
 	uint32_t prev = 0;
@@ -319,7 +326,7 @@ bool GetMessage(In &io, const BaseLookup &lookup, std::vector<Entity> &baselines
 	std::optional<size_t> gsOp;            // index of a gamestate op of this message: its baselines apply after it
 	const std::span<const Entity> none;
 	for (;;) {
-		const uint32_t t = io.Symbol(kOpCtx[prev]);
+		const uint32_t t = io.Symbol(ctx::kOp + prev);
 		prev = t;
 		if (t == 0) break;
 		if (used == kMaxOps) return false;
@@ -327,56 +334,56 @@ bool GetMessage(In &io, const BaseLookup &lookup, std::vector<Entity> &baselines
 		op.type = static_cast<OpType>(t);
 		switch (op.type) {
 		case OpType::Command:
-			op.seq = lastcmd + 1 + Unzz(io.Class(kMCmdSeq));
+			op.seq = lastcmd + 1 + Unzz(io.Class(Of(kMCmdSeq)));
 			lastcmd = op.seq;
-			if (!io.String(kStrCmd, op.text)) return false;
+			if (!io.String(Of(kStrCmd), op.text)) return false;
 			break;
 		case OpType::SetGame:
-			if (!io.String(kStrSetgame, op.text)) return false;
+			if (!io.String(Of(kStrSetgame), op.text)) return false;
 			break;
 		case OpType::GameState: {
 			GameState &gs = op.gameState;
-			gs.relSeq = Unzz(io.Class(kMRelSeq));
-			const uint64_t n = io.Class(kMNumCs);
+			gs.relSeq = Unzz(io.Class(Of(kMRelSeq)));
+			const uint64_t n = io.Class(Of(kMNumCs));
 			int64_t pi = -1;
 			for (uint64_t k = 0; k < n; k++) {
-				const int64_t idx = pi + 1 + static_cast<int64_t>(io.Class(kMCsGap));
+				const int64_t idx = pi + 1 + static_cast<int64_t>(io.Class(Of(kMCsGap)));
 				if (idx > 0xFFFF) return false;
 				pi = idx;
 				ConfigString &cs = gs.configStrings.emplace_back();
 				cs.index = static_cast<uint16_t>(idx);
-				if (!io.String(kStrCs, cs.text)) return false;
+				if (!io.String(Of(kStrCs), cs.text)) return false;
 			}
 			if (!GetEntities(io, c, none, none, gs.baselines, m)) return false;
-			gs.clientNum = Unzz(io.Class(kMClientNum));
+			gs.clientNum = Unzz(io.Class(Of(kMClientNum)));
 			gs.checksum = S32(static_cast<uint32_t>(io.Raw(32)));
 			gsOp = used - 1;
 			break;
 		}
 		case OpType::Download: {
-			op.block = static_cast<uint32_t>(io.Class(kMDlBlock));
-			op.fileSize = op.block == 0 ? Unzz(io.Class(kMDlSize)) : 0;
-			op.data.resize(static_cast<uint32_t>(io.Class(kMDlLen)));   // below 2^19 (20 classes)
-			for (uint8_t &b : op.data) b = static_cast<uint8_t>(io.Symbol(kDlByte));
+			op.block = static_cast<uint32_t>(io.Class(Of(kMDlBlock)));
+			op.fileSize = op.block == 0 ? Unzz(io.Class(Of(kMDlSize))) : 0;
+			op.data.resize(static_cast<uint32_t>(io.Class(Of(kMDlLen))));   // below 2^19 (20 classes)
+			for (uint8_t &b : op.data) b = static_cast<uint8_t>(io.Symbol(Of(kDlByte)));
 			break;
 		}
 		case OpType::Snapshot: {
-			op.time = (bh != nullptr && bh->time ? *bh->time : 0) + Unzz(io.Class(kHTime));
+			op.time = (bh != nullptr && bh->time ? *bh->time : 0) + Unzz(io.Class(Of(kHTime)));
 			time = op.time;
 			c.time = op.time;
-			op.flags = io.Symbol(kHFlags);
-			op.areas.resize(io.Symbol(kHArea));
-			for (uint8_t &a : op.areas) a = static_cast<uint8_t>(io.Symbol(kHArea));
+			op.flags = io.Symbol(Of(kHFlags));
+			op.areas.resize(io.Symbol(Of(kHArea)));
+			for (uint8_t &a : op.areas) a = static_cast<uint8_t>(io.Symbol(Of(kHArea)));
 			Snapshot &sn = op.snap;
-			const bool pilot = io.Symbol(kPsPilot) != 0;
+			const bool pilot = io.Symbol(Of(kPsPilot)) != 0;
 			const PlayerState &basePs = base != nullptr ? base->ps : ZeroPlayer();
-			const bool okPs = pilot ? GetPlayer(io, c, kPilotFields, kPlayerGapCtx1, basePs, sn.ps, OlderPlayer(c, false), m)
-			                        : GetPlayer(io, c, kPlayerFields, kPlayerGapCtx0, basePs, sn.ps, OlderPlayer(c, false), m);
+			const bool okPs = pilot ? GetPlayer(io, c, kPilotFields, ctx::PlayerGap(1), basePs, sn.ps, OlderPlayer(c, false), m)
+			                        : GetPlayer(io, c, kPlayerFields, ctx::PlayerGap(0), basePs, sn.ps, OlderPlayer(c, false), m);
 			if (!okPs) return false;
 			sn.hasVehicle = VehicleNum(sn.ps) != 0;
 			if (sn.hasVehicle) {
 				const PlayerState &ov = base != nullptr && base->hasVehicle ? base->vps : ZeroPlayer();
-				if (!GetPlayer(io, c, kVehicleFields, kPlayerGapCtx2, ov, sn.vps, OlderPlayer(c, true), m)) return false;
+				if (!GetPlayer(io, c, kVehicleFields, ctx::PlayerGap(2), ov, sn.vps, OlderPlayer(c, true), m)) return false;
 			}
 			const std::vector<Entity> &bl = gsOp ? msg.ops[*gsOp].gameState.baselines : baselines;
 			if (!GetEntities(io, c, base != nullptr ? std::span<const Entity>(base->entities) : none, bl, sn.entities, m)) return false;
@@ -424,6 +431,20 @@ bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vec
 		out.assign(scratch_.begin(), scratch_.begin() + static_cast<std::ptrdiff_t>(n));
 		return n != 0;
 	}
+}
+
+SymbolCounts NewSymbolCounts() {
+	SymbolCounts counts(detail::ctx::kCount);
+	for (uint32_t c = 0; c < detail::ctx::kCount; c++) counts[c].resize(detail::ctx::Alphabet(c));
+	return counts;
+}
+
+bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity> &baselines, HeaderRecord &record,
+                  SymbolCounts &counts) {
+	if (base.delta > 255 || (base.delta != 0) != (base.snap != nullptr) || counts.size() != detail::ctx::kCount) return false;
+	detail::CountOut io(counts);
+	detail::PutMessage(io, msg, base, baselines, record, detail::Model::Get());
+	return !io.Bad();
 }
 
 bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup, std::vector<Entity> &baselines, Message &msg,

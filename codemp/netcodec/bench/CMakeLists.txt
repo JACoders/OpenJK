@@ -4,6 +4,10 @@ netcodec_add_program(netcodec_bench_rans bench_rans.cpp)
 target_include_directories(netcodec_bench_rans PRIVATE "${PROJECT_SOURCE_DIR}/test")
 target_include_directories(netcodec_bench_rans SYSTEM PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ryg")
 
+# Coded size of the corpus traces against the bytes the server sent (docs_rewrite/netcode/tools/python/export_demo_traces.py).
+netcodec_add_program(netcodec_bench_size bench_size.cpp)
+target_include_directories(netcodec_bench_size PRIVATE "${PROJECT_SOURCE_DIR}/test")
+
 # Codec benchmark against the legacy coding: OpenJK's own codemp/qcommon/msg.cpp and huffman.cpp, built as the
 # engine builds them (C++11, FINAL_BUILD, its headers), without the project's warnings (engine code, unchanged).
 set(netcodec_OPENJK_DIR "${PROJECT_SOURCE_DIR}/../.." CACHE PATH "OpenJK source tree, for the legacy benchmark")
@@ -27,6 +31,12 @@ if(EXISTS "${netcodec_OPENJK_DIR}/codemp/qcommon/msg.cpp")
 	target_compile_options(netcodec_legacy PRIVATE $<IF:$<BOOL:${MSVC}>,/W0,-w>)
 	# not netcodec_options: its C++20 requirement would turn on MSVC's conformance mode, which the engine code does
 	# not build with (the engine builds msg.cpp as C++11); the legacy code is not instrumented by the sanitizers
+	if(MSVC AND netcodec_ENABLE_SANITIZER_ADDRESS)
+		# except AddressSanitizer with MSVC: its standard library refuses to link objects built with and without it, or
+		# with different container annotations (same settings as cmake/Sanitizers.cmake)
+		target_compile_options(netcodec_legacy PRIVATE /fsanitize=address)
+		target_compile_definitions(netcodec_legacy PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION)
+	endif()
 
 	netcodec_add_program(netcodec_bench_codec bench_codec.cpp)
 	target_include_directories(netcodec_bench_codec PRIVATE "${PROJECT_SOURCE_DIR}/test" "${CMAKE_CURRENT_SOURCE_DIR}")
