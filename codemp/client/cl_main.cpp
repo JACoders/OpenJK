@@ -2395,6 +2395,8 @@ void CL_Frame ( int msec ) {
 	CL_Update_Frame();
 	// /feedback's answers in
 	CL_Feedback_Frame();
+	// the RENDERER page's effects, shown with Post Effects on
+	CL_RenderMenu_Frame();
 	// what you're playing, on your Discord profile
 	CL_Discord_Frame();
 

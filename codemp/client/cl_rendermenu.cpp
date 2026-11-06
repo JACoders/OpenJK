@@ -25,6 +25,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // QUALITY row, so they look as the rest of it does whoever made it; a menu without those is left be.
 //
 // Two pages: JKA's Setup menu has room for 15 rows, and a button at the end of each goes to the other.
+// With Vulkan, the effects that need Post Effects (r_fbo) show only once it's on, under it, and the
+// second page with them: a row shows for one cvar only, so ui_rd_postfx says both are so.
 //
 // The camera panel's settings can be saved by name and loaded again (campreset, camerapresets.txt):
 // a name box, < and > going through the saved ones and loading each, Save and Delete.
@@ -50,6 +52,13 @@ extern const char *( *LoadScriptFile_Patch )( const char *filename, const char *
 #define RM_BUTTON		"renderermenubutton"
 #define RM_GLOW			"rendererbutton_glow"
 #define RM_VULKAN		"rd-vulkan"
+#define RM_POSTFX		"ui_rd_postfx"	// 1 while the page has Vulkan picked and Post Effects on
+
+typedef enum {
+	RM_SHOW_ALWAYS,
+	RM_SHOW_VULKAN,		// when Vulkan is picked
+	RM_SHOW_POSTFX		// when Vulkan is picked and Post Effects on
+} rmShow_t;
 
 typedef struct {
 	const char	*ui;			// the page's copy; NULL for the button to the other page
@@ -58,72 +67,73 @@ typedef struct {
 	const char	*label;
 	const char	*desc;
 	const char	*list;			// cvarStrList (commas between) or cvarFloatList (none), braces and all
-	qboolean	vulkanOnly;		// shown when Vulkan is picked
+	rmShow_t	show;
 	int			page;			// 0 or 1
 } rmRow_t;
 
 static const rmRow_t rmRows[] = {
 	{ "ui_rd_renderer", "cl_renderer", "rd-vanilla", "Renderer:",
 		"OpenGL is the usual one; Vulkan is TaystJK's, with more effects (experimental)",
-		"cvarStrList { \"OpenGL\" , \"rd-vanilla\" , \"Vulkan\" , \"rd-vulkan\" }", qfalse, 0 },
+		"cvarStrList { \"OpenGL\" , \"rd-vanilla\" , \"Vulkan\" , \"rd-vulkan\" }", RM_SHOW_ALWAYS, 0 },
 	{ "ui_rd_msaa", "r_ext_multisample", "0", "Anti-aliasing:",
 		"Smooths jagged edges; more costs more frames",
-		"cvarFloatList { \"Off\" 0 \"2x\" 2 \"4x\" 4 \"8x\" 8 }", qfalse, 0 },
+		"cvarFloatList { \"Off\" 0 \"2x\" 2 \"4x\" 4 \"8x\" 8 }", RM_SHOW_ALWAYS, 0 },
 	{ "ui_rd_glow", "r_DynamicGlow", "0", "Dynamic Glow:",
 		"Glowing lights and sabers; with Vulkan it needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qfalse, 0 },
-	{ "ui_rd_fbo", "r_fbo", "0", "Post Effects:",
-		"Draws to a picture first: needed for bloom, HDR, dithering, glow and the effects on the next page",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
-	{ "ui_rd_bloom", "r_bloom", "0", "Bloom:",
-		"Bright light bleeds into its surroundings; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
-	{ "ui_rd_hdr", "r_hdr", "1", "HDR:",
-		"More colour depth in the picture, less banding; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
-	{ "ui_rd_dither", "r_dither", "0", "Dithering:",
-		"Hides banding in smooth gradients; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_ALWAYS, 0 },
 	{ "ui_rd_vbo", "r_vbo", "0", "World Caching:",
 		"Keeps the map on the graphics card: more frames per second",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_VULKAN, 0 },
 	{ "ui_rd_vbomodels", "r_vbo_models", "0", "Model Caching:",
 		"Keeps models on the graphics card: more frames per second",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_VULKAN, 0 },
+	{ "ui_rd_fbo", "r_fbo", "0", "Post Effects:",
+		"Draws to a picture first: on, it shows bloom, HDR, glow and the rest of the effects here",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_VULKAN, 0 },
+	// what needs Post Effects, under it
+	{ "ui_rd_bloom", "r_bloom", "0", "Bloom:",
+		"Bright light bleeds into its surroundings",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 0 },
+	{ "ui_rd_hdr", "r_hdr", "1", "HDR:",
+		"More colour depth in the picture, less banding",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 0 },
+	{ "ui_rd_dither", "r_dither", "0", "Dithering:",
+		"Hides banding in smooth gradients",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 0 },
 	{ "ui_rd_ssao", "r_ssao", "0", "Ambient Occlusion:",
-		"Darkens corners, creases and the ground under things; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 0 },
+		"Darkens corners, creases and the ground under things",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 0 },
 	{ NULL, NULL, NULL, "More Settings >",
 		"Supersampling, soft particles, FXAA, sharpening, sun shafts, tone mapping, motion blur",
-		NULL, qtrue, 0 },
+		NULL, RM_SHOW_POSTFX, 0 },
 	// the second page: Vulkan's own additions (rd-vulkan's vk_rpmod_post.cpp)
 	{ "ui_rd_ssaa", "r_ext_supersample", "0", "Supersampling:",
-		"Draws the picture at twice the size and scales it down: smooths every edge, costs about four times the drawing; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+		"Draws the picture at twice the size and scales it down: smooths every edge, costs about four times the drawing",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_soft", "r_softParticles", "0", "Soft Particles:",
-		"Smoke and fire fade where they meet walls instead of cutting into them; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+		"Smoke and fire fade where they meet walls instead of cutting into them",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_fxaa", "r_fxaa", "0", "FXAA:",
-		"Smooths edges over the finished picture, grass and fences too; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+		"Smooths edges over the finished picture, grass and fences too",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_sharpen", "r_sharpen", "0", "Sharpening:",
-		"Crisper detail, against the softness of FXAA or supersampling; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"Low\" 0.4 \"High\" 0.8 }", qtrue, 1 },
+		"Crisper detail, against the softness of FXAA or supersampling",
+		"cvarFloatList { \"Off\" 0 \"Low\" 0.4 \"High\" 0.8 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_shafts", "r_sunShafts", "0", "Sun Shafts:",
-		"Beams of light from the sun through gaps, on maps with a sun; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+		"Beams of light from the sun through gaps, on maps with a sun",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_shaftsstrength", "r_sunShaftsIntensity", "1", "Sun Shaft Strength:",
 		"How bright the sun shafts are",
-		"cvarFloatList { \"Low\" 0.5 \"Medium\" 1 \"High\" 2 \"Very High\" 3 }", qtrue, 1 },
+		"cvarFloatList { \"Low\" 0.5 \"Medium\" 1 \"High\" 2 \"Very High\" 3 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_tonemap", "r_tonemap", "0", "Tone Mapping:",
-		"Bright light rolls off like film instead of clipping to white; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"On\" 1 }", qtrue, 1 },
+		"Bright light rolls off like film instead of clipping to white",
+		"cvarFloatList { \"Off\" 0 \"On\" 1 }", RM_SHOW_POSTFX, 1 },
 	{ "ui_rd_mblur", "r_motionBlur", "0", "Motion Blur:",
-		"The picture smears as the camera moves or turns; needs Post Effects",
-		"cvarFloatList { \"Off\" 0 \"Low\" 0.3 \"Medium\" 0.6 \"High\" 1 }", qtrue, 1 },
+		"The picture smears as the camera moves or turns",
+		"cvarFloatList { \"Off\" 0 \"Low\" 0.3 \"Medium\" 0.6 \"High\" 1 }", RM_SHOW_POSTFX, 1 },
 	{ NULL, NULL, NULL, "< Back",
 		"The renderer, anti-aliasing, glow, post effects and the rest",
-		NULL, qtrue, 1 },
+		NULL, RM_SHOW_POSTFX, 1 },
 };
 static const int rmNumRows = (int)ARRAY_LEN( rmRows );
 
@@ -477,8 +487,10 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 			RM_ReplaceBlock( item, "action", "action { play \"sound/interface/button1\" show applyChanges }" );
 			item.insert( item.rfind( '}' ), std::string( rr->list ) + "\n" );
 		}
-		if ( rr->vulkanOnly )
+		if ( rr->show == RM_SHOW_VULKAN )
 			item.insert( item.rfind( '}' ), "cvarTest \"ui_rd_renderer\" showCvar { \"" RM_VULKAN "\" }\n" );
+		else if ( rr->show == RM_SHOW_POSTFX )
+			item.insert( item.rfind( '}' ), "cvarTest \"" RM_POSTFX "\" showCvar { \"1\" }\n" );
 		add += item + "\n";
 	}
 
@@ -1036,12 +1048,28 @@ init
 ================================================================================
 */
 
+static cvar_t *rmRenderer, *rmFbo, *rmPostfx;
+
+// the page's Vulkan and Post Effects rows, as they are picked on it
+void CL_RenderMenu_Frame( void ) {
+	qboolean on;
+
+	if ( !rmPostfx )
+		return;
+	on = (qboolean)( !Q_stricmp( rmRenderer->string, RM_VULKAN ) && rmFbo->integer );
+	if ( rmPostfx->integer != on )
+		Cvar_Set( RM_POSTFX, on ? "1" : "0" );
+}
+
 void CL_RenderMenu_Init( void ) {
 	for ( int i = 0; i < rmNumRows; i++ ) {
 		if ( rmRows[i].ui )
 			Cvar_Get( rmRows[i].ui, rmRows[i].def, 0, "The Setup menu's RENDERER page: renderersettings apply sets it" );
 	}
 	Cmd_AddCommand( "renderersettings", RM_Settings_f, "The Setup menu's RENDERER page: sync or apply" );
+	rmRenderer = Cvar_Get( "ui_rd_renderer", "rd-vanilla", 0 );
+	rmFbo = Cvar_Get( "ui_rd_fbo", "0", 0 );
+	rmPostfx = Cvar_Get( RM_POSTFX, "0", CVAR_ROM, "The Setup menu's RENDERER page has Vulkan and Post Effects on: their effects show" );
 	Cvar_Get( "ui_cameraSettings", "0", CVAR_ARCHIVE_ND, "The in-game menu shows the third person camera's settings" );
 	Cvar_Get( QC_OPEN_CVAR, "0", 0, "The in-game menu's quick connect panel is out: Esc closes it first" );
 	Cvar_Get( CP_NAME_CVAR, "", CVAR_ARCHIVE_ND, "The camera panel's preset name" );

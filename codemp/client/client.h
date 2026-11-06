@@ -932,6 +932,8 @@ void CL_AnimManager_Hook( char **argv, int argc, const char *message );
 
 // cl_rendermenu.cpp: the camera follows right behind with the camera settings on
 void CL_CameraSettings_Frame( void );
+// and the RENDERER page's effects show as Vulkan and Post Effects are picked on it
+void CL_RenderMenu_Frame( void );
 
 // cl_adminflags.cpp
 void CL_AdminFlags_Init( void );
