@@ -813,6 +813,15 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	return window;
 }
 
+// OpenJK-rpmod: the window's own size, in pixels; 0 by 0 with none. The renderer's (vidWidth,
+// vidHeight) can differ: supersampling draws at twice it, a render resolution at its own
+void WIN_GetWindowSize( int *width, int *height )
+{
+	*width = *height = 0;
+	if ( screen )
+		SDL_GetWindowSize( screen, width, height );
+}
+
 /*
 ===============
 GLimp_Shutdown

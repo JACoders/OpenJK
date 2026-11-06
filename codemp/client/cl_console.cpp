@@ -821,6 +821,23 @@ Con_CheckResize
 If the line width has changed, reformat the buffer.
 ================
 */
+void WIN_GetWindowSize( int *width, int *height );
+
+// OpenJK-rpmod: the console's letters are in the renderer's pixels, which with supersampling are
+// half the window's (twice as many) and with a render resolution of its own whatever that makes
+// them; scaled by this they're the same size on the screen either way
+static float Con_PixelScale( void )
+{
+	int w, h;
+	float s;
+
+	WIN_GetWindowSize( &w, &h );
+	if ( w <= 0 || cls.glconfig.vidWidth <= 0 )
+		return 1.0f;
+	s = (float)cls.glconfig.vidWidth / w;
+	return fabsf( s - 1.0f ) < 0.02f ? 1.0f : Com_Clamp( 0.25f, 4.0f, s );
+}
+
 void Con_CheckResize (void)
 {
 	int		charWidth, rowwidth, width;
@@ -828,7 +845,7 @@ void Con_CheckResize (void)
 
 	assert(SMALLCHAR_HEIGHT >= SMALLCHAR_WIDTH);
 
-	scale = ((con_scale->value > 0.0f) ? con_scale->value : 1.0f);
+	scale = ((con_scale->value > 0.0f) ? con_scale->value : 1.0f) * Con_PixelScale();
 	charWidth = scale * SMALLCHAR_WIDTH;
 
 	if (charWidth < 1) {
@@ -2070,7 +2087,7 @@ void Con_DrawNotify (void)
 			int col = 0, last = lineLimit;
 
 			if ( ns > 0.0f ) {
-				con.charWidth = Q_max( 1, (int)( SMALLCHAR_WIDTH * Com_Clamp( 0.5f, 4.0f, ns ) + 0.5f ) );
+				con.charWidth = Q_max( 1, (int)( SMALLCHAR_WIDTH * Com_Clamp( 0.5f, 4.0f, ns ) * Con_PixelScale() + 0.5f ) );
 				con.charHeight = con.charWidth * SMALLCHAR_HEIGHT / SMALLCHAR_WIDTH;
 			}
 			while ( last > 0 && text[last - 1].f.character == ' ' )

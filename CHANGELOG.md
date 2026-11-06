@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Fixed] `Console text the same size with supersampling`. With Vulkan's supersampling on, the console and the lines over the game came out half their size, the picture being drawn at twice the window's size. They're now sized to the window, as is a render resolution of its own (`r_renderScale`). Reported in /feedback #11.
 - [Fixed] `Custom emotes: the rotation rings no longer fold into each other`. With a bone turned (most of all pitched towards 90) the preview's Pitch, Yaw and Roll rings leaned into each other until they overlapped. They now stay square to each other, each one turns the bone round its own axis, and the three angles are worked out from that. Reported in /feedback #5.
 - [Added] `Renderer page: AO Strength`. Under Ambient Occlusion, Low, Medium or Strong: how dark it makes corners and creases (`r_ssaoIntensity` 0.3, 0.6 or 1). Medium is the default now; Strong is how it was.
 - [Changed] `Vulkan: tone mapping that doesn't darken`. Tone mapping (`r_tonemap 1`) used a film curve (ACES) that also pushed the shadows down, so with it on the game looked darker all over on dim maps. `r_tonemap 1` (**Soft** on the RENDERER page) now only rolls off the brightest light and leaves the rest as it is; the film curve is still there as `r_tonemap 2` (**Film**), and in a map's `.grade` as `tonemap 2`.
