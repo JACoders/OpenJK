@@ -629,8 +629,9 @@ static const imCamRow_t imCamRows[] = {
 #define IM_CAM_W		198.0f
 #define IM_CAM_ROW		17.0f
 #define IM_CAM_LABEL	518.0f		// where the labels end and the sliders start
-// the camera panel shows with its setting on and Exit's menu (ingame_leave) not over it: ui_camPanel
-// is the two together, kept by CL_RenderMenu_Frame, as an item tests one cvar only
+// the camera panel shows with its setting on and nothing over it, Exit's menu (ingame_leave) or the
+// quick connect or tools panel (ui_qcOpen): ui_camPanel is them together, kept by CL_RenderMenu_Frame,
+// as an item tests one cvar only
 #define IM_CAM_CVAR		"ui_camPanel"
 #define IM_LEAVE_CVAR	"ui_leaveOpen"	// Exit's menu is open, set by its own onOpen and onClose
 #define IM_CAM_SHOW		"cvarTest \"" IM_CAM_CVAR "\" showCvar { \"1\" }\n"
@@ -1123,12 +1124,17 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 		}
 	}
 
-	// the menu's own buttons (Setup, Profile...) leave the panel behind: Esc there is theirs again
-	for ( size_t at = RM_FindWord( s, "action", 0 ); at != RM_NONE; at = RM_FindWord( s, "action", at + 1 ) ) {
-		const size_t open = RM_SkipSpace( s, at + 6 );
+	// the menu's own buttons (Setup, Profile, Exit...) put the quick connect and tools panels away: Exit's
+	// menu opens where they are, and Esc there is theirs again
+	{
+		const std::string putAway = va( " hide quickconnect ; %s setcvar " QC_OPEN_CVAR " 0 ;", IM_ToolsHide() );
 
-		if ( open < s.size() && s[open] == '{' )
-			s.insert( open + 1, " setcvar " QC_OPEN_CVAR " 0 ;" );
+		for ( size_t at = RM_FindWord( s, "action", 0 ); at != RM_NONE; at = RM_FindWord( s, "action", at + 1 ) ) {
+			const size_t open = RM_SkipSpace( s, at + 6 );
+
+			if ( open < s.size() && s[open] == '{' )
+				s.insert( open + 1, putAway );
+		}
 	}
 
 	menu = RM_FindWord( s, "menuDef", 0 );
@@ -1216,10 +1222,12 @@ void CL_RenderMenu_Frame( void ) {
 
 	if ( !rmPostfx )
 		return;
-	// the camera panel: its setting on, and Exit's menu not over it (gone with the menus)
+	// the camera panel: its setting on, and nothing over it: Exit's menu (gone with the menus), or the
+	// quick connect or tools panel
 	if ( !( Key_GetCatcher() & KEYCATCH_UI ) && Cvar_VariableIntegerValue( IM_LEAVE_CVAR ) )
 		Cvar_Set( IM_LEAVE_CVAR, "0" );
-	on = (qboolean)( Cvar_VariableIntegerValue( "ui_cameraSettings" ) == 1 && !Cvar_VariableIntegerValue( IM_LEAVE_CVAR ) );
+	on = (qboolean)( Cvar_VariableIntegerValue( "ui_cameraSettings" ) == 1 && !Cvar_VariableIntegerValue( IM_LEAVE_CVAR )
+		&& !Cvar_VariableIntegerValue( QC_OPEN_CVAR ) );
 	if ( Cvar_VariableIntegerValue( IM_CAM_CVAR ) != on )
 		Cvar_Set( IM_CAM_CVAR, on ? "1" : "0" );
 	on = (qboolean)( !Q_stricmp( rmRenderer->string, RM_VULKAN ) && rmFbo->integer );
