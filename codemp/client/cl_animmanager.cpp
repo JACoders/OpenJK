@@ -45,7 +45,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // In the custom emote's preview the picked bone has rings to turn it (pitch, yaw, roll) and arrows
 // to move it (X, Y, Z), dragged with the mouse. Where each ring and arrow goes is measured, not
 // worked out: the bone is nudged each way and where it went read back, so they're right however
-// the bone is turned.
+// the bone is turned. The rings stay square to each other, where the angles are with the bone
+// unturned: the angles' own axes lean into each other as it turns (at a pitch of 90 yaw and roll
+// are the same turn), so a ring turns the bone round its axis and the three angles are worked out
+// from where that leaves it.
 
 #include "client.h"
 #include "ghoul2/G2.h"
@@ -281,7 +284,7 @@ static struct {
 	struct {
 		qboolean	valid;
 		vec3_t		pos;
-		vec3_t		rotAxis[3];		// each angle's axis in the world, turning it positive
+		vec3_t		rotAxis[3];		// each ring's axis in the world: the angle's axis with the bone unturned
 		vec3_t		moveDir[3];		// where a unit of each offset moves it
 		float		radius;
 		int			hot;			// 0-2 a ring, 3-5 an arrow, -1 none
@@ -289,6 +292,8 @@ static struct {
 		int			part;
 		float		startX, startY, startValue;
 		float		startAngle, sign;
+		float		turned;			// a ring: how far round it's been dragged, in radians
+		vec3_t		startTwist;		// a ring: the bone's angles when grabbed
 		float		sx, sy;			// an arrow: screen pixels a unit
 	} gz;
 } am;
@@ -2065,12 +2070,17 @@ static void AM_MeasureGizmo( const char *bone, const amCBone_t *cb ) {
 	AM_BoneValues( cb, twist, offset );
 	VectorCopy( pos, am.gz.pos );
 	am.gz.radius = ( am.maxs[2] - am.mins[2] ) * 0.09f;
+	// the rings from the bone unturned, so they stay square to each other
+	VectorClear( t2 );
+	AM_BoneSet( *am.g2, bone, t2, offset );
+	if ( !AM_BoneNow( bone, p2, m ) )
+		return;
 	for ( int k = 0; k < 3; k++ ) {
 		float r[3][3];
 		vec3_t axis;
 
-		VectorCopy( twist, t2 );
-		t2[k] += 3.0f;
+		VectorClear( t2 );
+		t2[k] = 3.0f;
 		AM_BoneSet( *am.g2, bone, t2, offset );
 		if ( !AM_BoneNow( bone, p2, m2 ) )
 			return;
@@ -2239,7 +2249,8 @@ static void AM_GzBegin( int part, const amCBone_t *cb ) {
 		vec3_t u, v, q0, q1;
 		float x0, y0, x1, y1, cx, cy;
 
-		am.gz.startValue = twist[part];
+		VectorCopy( twist, am.gz.startTwist );
+		am.gz.turned = 0.0f;
 		am.gz.startAngle = AM_GzAngle( am.cursorX, am.cursorY );
 		// which way round on the screen turns it positive
 		AM_GzBasis( am.gz.rotAxis[part], u, v );
@@ -2264,7 +2275,21 @@ static void AM_GzBegin( int part, const amCBone_t *cb ) {
 	}
 }
 
-// as the mouse goes: the angle or the move into the bone's fields
+// AnglesToAxis the other way round; at a pitch of 90 the roll is left at 0 and the yaw does it all
+static void AM_AxisAngles( const matrix3_t axis, vec3_t angles ) {
+	const float pitch = asinf( Com_Clamp( -1.0f, 1.0f, -axis[0][2] ) );
+
+	angles[PITCH] = RAD2DEG( pitch );
+	if ( cosf( pitch ) > 1e-4f ) {
+		angles[YAW] = RAD2DEG( atan2f( axis[0][1], axis[0][0] ) );
+		angles[ROLL] = RAD2DEG( atan2f( axis[1][2], axis[2][2] ) );
+	} else {
+		angles[YAW] = RAD2DEG( atan2f( -axis[1][0], axis[1][1] ) );
+		angles[ROLL] = 0.0f;
+	}
+}
+
+// as the mouse goes: the turn or the move into the bone's fields
 static void AM_GzDrag( const char *bone ) {
 	amCBone_t *cb = AM_CustomBone( &am.custom, bone, qtrue );
 	float value;
@@ -2272,24 +2297,39 @@ static void AM_GzDrag( const char *bone ) {
 	if ( !cb )
 		return;
 	if ( am.gz.part < 3 ) {
-		float delta = AM_GzAngle( am.cursorX, am.cursorY ) - am.gz.startAngle;
+		const float now = AM_GzAngle( am.cursorX, am.cursorY );
+		float delta = now - am.gz.startAngle;
+		vec3_t turn = { 0, 0, 0 }, angles;
+		matrix3_t q, r, out;
 
+		// added up a frame at a time, so it goes on round past half a turn
 		while ( delta > M_PI )
 			delta -= 2.0f * M_PI;
 		while ( delta < -M_PI )
 			delta += 2.0f * M_PI;
-		// past half a turn it goes on round, the start moved along
-		value = am.gz.startValue + am.gz.sign * RAD2DEG( delta );
-		if ( fabsf( delta ) > M_PI * 0.75f ) {
-			am.gz.startValue = value;
-			am.gz.startAngle = AM_GzAngle( am.cursorX, am.cursorY );
+		am.gz.turned += delta;
+		am.gz.startAngle = now;
+		turn[am.gz.part] = floorf( am.gz.sign * RAD2DEG( am.gz.turned ) + 0.5f );
+		if ( turn[am.gz.part] == 0.0f )
+			VectorCopy( am.gz.startTwist, angles );
+		else {
+			// the turn round the ring's axis, then the bone as it was: the angles' matrices take
+			// their axes as columns, so out = r q in these rows
+			AnglesToAxis( turn, q );
+			AnglesToAxis( am.gz.startTwist, r );
+			for ( int j = 0; j < 3; j++ )
+				for ( int i = 0; i < 3; i++ )
+					out[j][i] = r[j][0] * q[0][i] + r[j][1] * q[1][i] + r[j][2] * q[2][i];
+			AM_AxisAngles( out, angles );
 		}
-		value = floorf( value + 0.5f );
-		while ( value > 180.0f )
-			value -= 360.0f;
-		while ( value < -180.0f )
-			value += 360.0f;
-		Com_sprintf( cb->twist[am.gz.part], AM_NUM_LEN, "%g", value );
+		for ( int k = 0; k < 3; k++ ) {
+			value = turn[am.gz.part] == 0.0f ? angles[k] : floorf( angles[k] * 10.0f + 0.5f ) / 10.0f + 0.0f;
+			while ( value > 180.0f )
+				value -= 360.0f;
+			while ( value < -180.0f )
+				value += 360.0f;
+			Com_sprintf( cb->twist[k], AM_NUM_LEN, "%g", value );
+		}
 	} else {
 		const float s2 = am.gz.sx * am.gz.sx + am.gz.sy * am.gz.sy;
 
