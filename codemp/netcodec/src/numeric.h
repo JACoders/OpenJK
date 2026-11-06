@@ -40,9 +40,12 @@ inline constexpr double kAngleStep = 360.0 / 65536;   // a 16-bit angle index st
 [[nodiscard]] constexpr uint32_t Pack(double x) noexcept { return std::bit_cast<uint32_t>(static_cast<float>(x)); }
 [[nodiscard]] inline int64_t Rnd(double x) noexcept { return static_cast<int64_t>(std::floor(x + 0.5)); }
 
-// float kind: 0 zero, 1 integral in [-4096, 4096), 2 other (3, angle index, is decided by the caller)
+// float kind: 0 zero, 1 integral in [-4096, 4096), 2 other (3, angle index, is decided by the caller). -0.0 is
+// "other": the integral kind would decode it as +0.0.
 [[nodiscard]] inline uint32_t FKind(int64_t pattern) noexcept {
+	constexpr int64_t kNegativeZero = 0x80000000LL;
 	if (pattern == 0) return 0;
+	if (pattern == kNegativeZero) return 2;
 	const double f = F32(pattern);
 	return (f == f && f >= -4096 && f < 4096 && std::trunc(f) == f) ? 1 : 2;
 }

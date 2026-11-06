@@ -83,12 +83,6 @@ private:
 	bool ok_ = false;
 };
 
-[[nodiscard]] inline const Snapshot *SnapshotOf(const Message &m) noexcept {
-	for (const Op &op : m.ops)
-		if (op.type == OpType::Snapshot) return &op.snap;
-	return nullptr;
-}
-
 // The server side of a stream: for every message whose base the server still holds (a message whose base is
 // missing is skipped, as the server would not have sent it against that base), calls
 // code(message, base, baselines, record), which codes it and fills its header record. The stored snapshots point

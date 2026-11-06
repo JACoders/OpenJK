@@ -1,6 +1,6 @@
 # Step 6: the codec library in C++
 
-Status: **in progress** (started 5 November 2026; last update 6 November 2026: first stage, part 1 of the second stage and part 2 A (data, trainer and size benchmark in C++) done; part 2 B next). Plan: [PLAN.md](../PLAN.md), step 6.
+Status: **in progress** (started 5 November 2026; last update 6 November 2026: first stage, part 1 of the second stage, part 2 A (data, trainer and size benchmark in C++) and the first fix of part 2 B (`-0.0`, round-trip test) done; next is B.2, the field index coding). Plan: [PLAN.md](../PLAN.md), step 6.
 
 ## Decisions (owner, 5 November 2026)
 
@@ -139,7 +139,7 @@ Structure after [cpp-best-practices/cmake_template](https://github.com/cpp-best-
 - Options: `netcodec_BUILD_TESTS`, `netcodec_BUILD_BENCHMARKS`, `netcodec_BUILD_TOOLS` (added with part 2 A), `netcodec_WARNINGS_AS_ERRORS`, `netcodec_ENABLE_SANITIZER_ADDRESS`, `netcodec_ENABLE_SANITIZER_UNDEFINED`, `netcodec_ENABLE_CLANG_TIDY`, `netcodec_ENABLE_CPPCHECK`.
 - Warnings: the template's lists (`-Wconversion`, `-Wsign-conversion`, `-Wshadow`, `-Wold-style-cast`, `-Wdouble-promotion`, ..., GCC extras; MSVC `/W4` and the template's `/w1...`).
 - Always on, also inside OpenJK: C++20, floating-point determinism (`-ffp-contract=off`, SSE2 on 32-bit x86, MSVC `/fp:precise`), index checks of spans and containers in debug builds.
-- Tests through CTest (`netcodec.rans_golden`, `netcodec.codec_golden`; traces from `netcodec_TRACE_DIR`, default `docs_rewrite/netcode/data/traces`).
+- Tests through CTest (`netcodec.rans_golden`, `netcodec.codec_golden`, and since part 2 B `netcodec.roundtrip`; traces from `netcodec_TRACE_DIR`, default `docs_rewrite/netcode/data/traces`).
 - Presets: `msvc-x64`, `msvc-x86`, `msvc-asan`, `mingw-clang-release`, `-debug`, `-asan`, `-x86`, `-tidy`, `gcc-release`, `gcc-debug`, `gcc-asan`, `gcc-x86`, `clang-release`; build directories `build-netcodec/<preset>` at the repository root.
 - Not taken: CPM and Catch2 (no external dependency), Emscripten, packaging and CPack, ccache, precompiled headers, unity builds, hardening flags.
 
@@ -179,7 +179,7 @@ Lead for later, not done: a `.dm_26` reader in C++ on top of OpenJK's own `msg.c
 
 Each change: implement in the coder and the trainer, retrain, measure held-out bytes and time, keep it only if it is not worse (or if it is a correctness fix), write the result here.
 
-1. **`-0.0` (correctness, required by the no-loss goal):** a float `-0.0` is classified as an integral 0 and decoded as `+0.0` (the 1.01 engine does the same). Fix: the integral kind must exclude the pattern `0x80000000`.
+1. **`-0.0` (correctness, required by the no-loss goal):** a float `-0.0` is classified as an integral 0 and decoded as `+0.0` (the 1.01 engine does the same). Fix: the integral kind must exclude the pattern `0x80000000`. **Done (6 November 2026):** `FKind` puts `-0.0` in the "other" kind (its exact pattern is coded). New test `netcodec.roundtrip` (`test/test_roundtrip.cpp`): the captures and the held-out demos (23 streams, 116,842 messages) are coded by the server loop and decoded by a client that keeps its own decoded bases, each message compared field by field; each stream runs twice, as recorded and with every zero float set to `-0.0` (the recordings come from the legacy coding, which sends `-0.0` as 0, so they hold none). Before the fix: recorded 0 failures, `-0.0` variant 116,839 failures; after: 0 and 0 (clang x64 Release, Debug, ASan + UBSan, x86; owner's Debian 12: GCC Release, Debug, ASan + UBSan, x86 and Clang 14, no warning; owner's Windows 11: MSVC x64 Release and Debug, Win32, x64 with AddressSanitizer, no warning; 5 seconds in Release, 30 in GCC Debug, 42 in MSVC Debug). Corpus bytes and trained tables unchanged (the golden tests still pass), speed unchanged (encode 0.34, decode 0.81 of the legacy time). Not measurable on the demos: how often the server's own states hold `-0.0`, and so what this costs on a live server (a `-0.0` costs about a 32-bit value instead of one kind symbol); to measure with the state recorder (plan step 3) or the live statistics (step 7), and if it matters, give `-0.0` its own float kind.
 2. **Field index coding:** "index of the next changed field given the previous one" uses alphabets of 133 (entities, per class) and 202 to 205 (player states); these tables hold 101,080 of the 119,724 frequencies (84 %). Try coding the gap to the next changed field (small alphabet), with the previous field or a bucket of it as context; measure bytes and table size.
 3. **Prediction enabled for the player state:** today when the base has any non-zero networked field (a scan of 216 words per message); use "the message has a base" instead.
 4. **Per-field modes keyed by the full field (entity or player state)** instead of the bare name shared by both.

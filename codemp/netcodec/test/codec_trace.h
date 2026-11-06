@@ -105,6 +105,13 @@ private:
 	FILE *f_;
 };
 
+// the snapshot operation of a message, if any
+[[nodiscard]] inline const Snapshot *SnapshotOf(const Message &m) noexcept {
+	for (const Op &op : m.ops)
+		if (op.type == OpType::Snapshot) return &op.snap;
+	return nullptr;
+}
+
 inline bool LoadCodecTrace(const char *path, std::vector<CodecStream> &streams) {
 	const std::unique_ptr<FILE, int (*)(FILE *)> file(fopen(path, "rb"), &fclose);
 	if (!file) { fprintf(stderr, "cannot open %s\n", path); return false; }
